@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.52 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_particle.cpp,v 1.53 2001/12/06 16:50:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,9 +95,50 @@ static const uint quadBufSize = 800; // size used for quad particles batching.
 static const uint shockWaveBufSize = 64; // number of shockwave to be processed at once
 
 
-static const uint meshBufSize = 16; // number of meshs to be processed at once...
 
-static const uint constraintMeshBufSize = 64; // number of meshs to be processed at once...
+
+////////////////////
+// vertex buffers //
+////////////////////
+
+/// the various kind of vertex buffers we need for quads
+CVertexBuffer CPSQuad::_VBPos;
+CVertexBuffer CPSQuad::_VBPosCol;
+CVertexBuffer CPSQuad::_VBPosTex1;
+CVertexBuffer CPSQuad::_VBPosTex1Col;				
+CVertexBuffer CPSQuad::_VBPosTex1Anim;
+CVertexBuffer CPSQuad::_VBPosTex1AnimCol;
+//==========
+CVertexBuffer CPSQuad::_VBPosTex1Tex2;
+CVertexBuffer CPSQuad::_VBPosTex1ColTex2;	
+CVertexBuffer CPSQuad::_VBPosTex1AnimTex2;
+CVertexBuffer CPSQuad::_VBPosTex1AnimColTex2;
+//==========
+CVertexBuffer CPSQuad::_VBPosTex1Tex2Anim;
+CVertexBuffer CPSQuad::_VBPosTex1ColTex2Anim;	
+CVertexBuffer CPSQuad::_VBPosTex1AnimTex2Anim;
+CVertexBuffer CPSQuad::_VBPosTex1AnimColTex2Anim;
+	
+CVertexBuffer    * const CPSQuad::_VbTab[] = 
+{ 
+  // tex1 only
+  &_VBPos, &_VBPosCol, &_VBPosTex1,  &_VBPosTex1Col,
+  NULL,   NULL,		 &_VBPosTex1Anim, &_VBPosTex1AnimCol,
+  // tex1 & tex2
+  NULL, NULL, &_VBPosTex1Tex2, &_VBPosTex1ColTex2,
+  NULL,   NULL,		 &_VBPosTex1AnimTex2, &_VBPosTex1AnimColTex2,
+  // tex2 & !tex1 (invalid)
+  NULL, NULL, NULL, NULL,
+  NULL, NULL, NULL, NULL,
+  // tex2 & !tex1 (invalid)
+  // tex1 & tex2
+  NULL, NULL, &_VBPosTex1Tex2Anim, &_VBPosTex1ColTex2Anim,
+  NULL,   NULL,		 &_VBPosTex1AnimTex2Anim, &_VBPosTex1AnimColTex2Anim,
+};
+
+
+  
+
 
 
 /////////////////////////////////
@@ -880,6 +921,107 @@ void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 // CPSQuad implementation       //
 //////////////////////////////////
 
+/// fill textures coordinates for a quad vb
+static void SetupQuadVBTexCoords(CVertexBuffer &vb, uint texCoordSet)
+{
+	nlassert(texCoordSet < 2);
+	// the size used for buffer can't be higher than quad buf size
+	// to have too large buffer will broke the cache
+	for (uint32 k = 0; k < quadBufSize; ++k)
+	{		
+
+		vb.setTexCoord(k * 4, texCoordSet, CUV(0, 0));
+		vb.setTexCoord(k * 4 + 1, texCoordSet, CUV(1, 0));
+		vb.setTexCoord(k * 4 + 2, texCoordSet, CUV(1, 1));
+		vb.setTexCoord(k * 4 + 3, texCoordSet, CUV(0, 1));	
+	}		
+}
+
+
+
+
+/// this static func init vertex buffers
+void CPSQuad::initVertexBuffers()
+{
+	for (uint k = 0; k < 32; ++k)
+	{
+		CVertexBuffer *vb = _VbTab[k];
+		if (_VbTab[k]) // valid vb ?
+		{
+			uint32 vf = CVertexBuffer::PositionFlag;
+			/// setup vertex format
+			if (k & (uint) VBCol) vf |= CVertexBuffer::PrimaryColorFlag;
+			if (k & (uint) VBTex  || k & (uint) VBTexAnimated) vf |= CVertexBuffer::TexCoord0Flag;
+			if (k & (uint) VBTex2 || k & (uint) VBTex2Animated) vf |= CVertexBuffer::TexCoord1Flag;
+			vb->setVertexFormat(vf);
+			vb->setNumVertices(quadBufSize << 2);
+
+			if ((k & (uint) VBTex) && !(k & (uint) VBTexAnimated))
+			{
+				SetupQuadVBTexCoords(*vb, 0);
+			}
+
+			if ((k & (uint) VBTex2) && !(k & (uint) VBTex2Animated))
+			{
+				SetupQuadVBTexCoords(*vb, 1);
+			}
+			
+		}
+	}
+}
+
+/// choose the vertex buffex that we need
+CVertexBuffer &CPSQuad::getNeededVB()
+{
+	uint flags = 0;
+	if (_UseColorScheme) flags |= (uint) VBCol;
+	if (_TexGroup)
+	{
+		flags |= VBTex | VBTexAnimated;
+	}
+	else if (_Tex)
+	{
+
+		flags |= VBTex;
+	}
+
+	/// check is multitexturing is enabled, and which texture are enabled and / or animated
+	if (CPSMultiTexturedParticle::isMultiTextureEnabled())
+	{
+		if (!isAlternateTextureUsed())
+		{
+			if ((flags & VBTex) && (_TexScroll[0].x != 0 || _TexScroll[0].y	!= 0)) flags |= VBTexAnimated;
+			if (_Texture2)
+			{				
+				if (_MainOp != Decal && (_TexScroll[1].x != 0 || _TexScroll[1].y != 0))
+				{
+					flags |= VBTex2 | VBTex2Animated;
+				}
+				else
+				{
+					flags |= VBTex2;
+				}
+			}
+		}
+		else
+		{
+			if ((flags & VBTex) && (_TexScrollAlternate[0].x != 0 || _TexScrollAlternate[0].y	!= 0)) flags |= VBTexAnimated;
+			if (_AlternateTexture2)
+			{				
+				if (_AlternateOp != Decal && (_TexScrollAlternate[1].x != 0 || _TexScrollAlternate[1].y != 0)) 
+				{
+					flags |= VBTex2 | VBTex2Animated;
+				}
+				else
+				{
+					flags |= VBTex2;
+				}
+			}
+		}
+	}
+	nlassert(_VbTab[flags] != NULL);
+	return *(_VbTab[flags]); // get the vb
+}
 
 CPSQuad::CPSQuad(CSmartPtr<ITexture> tex)
 {
@@ -923,7 +1065,14 @@ void CPSQuad::init(void)
 
 void CPSQuad::updateMatAndVbForTexture(void)
 {	
-	_Mat.setTexture(0, _TexGroup ? (ITexture *) _TexGroup : (ITexture *) _Tex);	
+	if (CPSMultiTexturedParticle::isMultiTextureEnabled())
+	{
+		touch();
+	}
+	else
+	{
+		_Mat.setTexture(0, _TexGroup ? (ITexture *) _TexGroup : (ITexture *) _Tex);
+	}	
 }
 
 bool CPSQuad::completeBBox(NLMISC::CAABBox &box) const  
@@ -946,111 +1095,227 @@ void CPSQuad::resize(uint32 aSize)
 
 	resizeSize(aSize);
 	resizeColor(aSize);
-	resizeTextureIndex(aSize);
-
-	// the size used for buffer can't be higher that quad buf size
-	// to have too large buffer will broke the cache
-
-	const uint32 size = aSize > quadBufSize ? quadBufSize : aSize;
-
-	_Vb.setNumVertices(size << 2);
-		
-
-	
-
-
-	for (uint32 k = 0; k < size; ++k)
-	{		
-
-		_Vb.setTexCoord(k * 4, 0, CUV(0, 0));
-		_Vb.setTexCoord(k * 4 + 1, 0, CUV(1, 0));
-		_Vb.setTexCoord(k * 4 + 2, 0, CUV(1, 1));
-		_Vb.setTexCoord(k * 4 + 3, 0, CUV(0, 1));	
-	}		
+	resizeTextureIndex(aSize);	
 }
 
+//==============================================================
 void CPSQuad::updateMatAndVbForColor(void)
 {
+	// no vb to setup, now..
 	if (!_UseColorScheme)
-	{
-		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);		
+	{		
 		_Mat.setColor(_Color);
 	}
 	else
-	{
-		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
+	{	
 		_Mat.setColor(CRGBA::White);
-	}
-
-	if (_Owner)
-	{
-		resize(_Owner->getMaxSize());
-	}		
+	}	
 }
 
+//==============================================================
 void CPSQuad::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);		
+	sint ver = f.serialVersion(2);		
 	CPSParticle::serial(f);	
 	CPSSizedParticle::serialSizeScheme(f);
 	CPSColoredParticle::serialColorScheme(f);
 	CPSTexturedParticle::serialTextureScheme(f);
 	serialMaterial(f);
+	if (ver > 1)
+	{
+		CPSMultiTexturedParticle::serialMultiTex(f);
+	}
 }
 
-
-void CPSQuad::updateVbColNUVForRender(uint32 startIndex, uint32 size)
+//==============================================================
+// static func used to fill texture coordinates of quads, with global time
+static void FillQuadCoords(uint8 *dest, uint stride, const NLMISC::CVector2f &speed, float time, uint num)
 {
-nlassert(_Owner);
+	if (!num) return;
+	const float topV    = speed.y * time;
+	const float bottomV = topV + 1.f;
+	const float leftU   = speed.x * time;
+	const float rightU  = leftU + 1.f;
 
-if (!size) return;
 
-if (_UseColorScheme)
-{
-	// compute the colors, each color is replicated 4 times
-	_ColorScheme->make4(_Owner, startIndex, _Vb.getColorPointer(), _Vb.getVertexSize(), size);
+	do
+	{
+		((NLMISC::CUV *) dest)->set(leftU, topV);
+		((NLMISC::CUV *) (dest + stride))->set(rightU, topV);
+		((NLMISC::CUV *) (dest + (stride << 1)))->set(rightU, bottomV);
+		((NLMISC::CUV *) (dest + (stride * 3)))->set(leftU, bottomV);
+
+		
+		dest += stride << 2;
+	}
+	while (--num);
 }
 
+//==============================================================
+// static func used to fill texture coordinates of quads, with local time
+static void FillQuadCoordsLocalTime(uint8 *dest, uint stride, const NLMISC::CVector2f &speed, float *timePt, uint num)
+{
+	if (!num) return;	
 
-if (_TexGroup) // if it has a constant texture we are sure it has been setupped before...
-{	
-	sint32 textureIndex[quadBufSize];
-	const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1;
-	uint8 *currUV = (uint8 *) _Vb.getTexCoordPointer();				
+
+	do
+	{
+		const float topV    = speed.y * *timePt;
+		const float bottomV = topV + 1.f;
+		const float leftU   = speed.x * *timePt;
+		const float rightU  = leftU + 1.f;
+
+		((NLMISC::CUV *) dest)->set(leftU, topV);
+		((NLMISC::CUV *) (dest + stride))->set(rightU, topV);
+		((NLMISC::CUV *) (dest + (stride << 1)))->set(rightU, bottomV);
+		((NLMISC::CUV *) (dest + (stride * 3)))->set(leftU, bottomV);
+		
+		dest += stride << 2;
+		++timePt;
+	}
+	while (--num);
+}
+
+//==============================================================
+void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint32 size)
+{
+	nlassert(_Owner);
+
+	if (!size) return;
+
+	if (_UseColorScheme)
+	{
+		// compute the colors, each color is replicated 4 times
+		_ColorScheme->make4(_Owner, startIndex, vb.getColorPointer(), vb.getVertexSize(), size);
+	}
+
+
+	if (_TexGroup) // if it has a constant texture we are sure it has been setupped before...
+	{	
+		sint32 textureIndex[quadBufSize];
+		const uint32 stride = vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1;
+		uint8 *currUV = (uint8 *) vb.getTexCoordPointer();				
+		
+
+		const sint32 *currIndex;		
+		uint32 currIndexIncr; 
+
+		if (_UseTextureIndexScheme)
+		{
+			currIndex = (sint32 *) _TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size, true);			
+			currIndexIncr = 1;
+		}
+		else
+		{
+			currIndex = &_TextureIndex;
+			currIndexIncr  = 0;
+		}
+
+		while (size--)
+		{
+			// for now, we don't make texture index wrapping
+			const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex);
+
+			// copy the 4 uv's for this face
+			*(CUV *) currUV = uvGroup.uv0;
+			*(CUV *) (currUV + stride) = uvGroup.uv1;
+			*(CUV *) (currUV + stride2) = uvGroup.uv2;
+			*(CUV *) (currUV + stride3) = uvGroup.uv3;
+
+			// point the next face
+			currUV += stride4;
+			currIndex += currIndexIncr;
+		}		
+	}
+
+	nlassert(_Owner && _Owner->getOwner());
+	const float date= (float) _Owner->getOwner()->getSystemDate();
 	
+	//#error prendre le bon temps
 
-	const sint32 *currIndex;		
-	uint32 currIndexIncr; 
+	/// todo: vertex programm optimisation (& choose the vb accordingly)
 
-	if (_UseTextureIndexScheme)
+	if (CPSMultiTexturedParticle::isMultiTextureEnabled())
 	{
-		currIndex = (sint32 *) _TextureIndexScheme->make(_Owner, startIndex, textureIndex, sizeof(sint32), size, true);			
-		currIndexIncr = 1;
-	}
-	else
-	{
-		currIndex = &_TextureIndex;
-		currIndexIncr  = 0;
-	}
+		
+		// perform tex1 animation if needed
+		if (!_TexGroup) // doesn't work with texGroup enabled
+		{
+			if (!isAlternateTextureUsed())
+			{
+				if (_Tex && (_TexScroll[0].x != 0 || _TexScroll[0].y != 0))
+				{
+					// animation of texture 1 with main speed
+					if (!getUseLocalDate())
+					{
+						FillQuadCoords((uint8 *) vb.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScroll[0], date, size);
+					}
+					else
+					{
+						FillQuadCoordsLocalTime((uint8 *) vb.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScroll[0], &(*(_Owner->getTime().begin() + startIndex)), size);
+					}
+				}
+			}
+			else
+			{
+				if (_Tex && (_TexScrollAlternate[0].x != 0 || _TexScrollAlternate[0].y != 0))
+				{
+					// animation of texture 1 with alternate speed
+					if (!getUseLocalDateAlt())
+					{
+						FillQuadCoords((uint8 *) vb.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScrollAlternate[0], date, size);
+					}
+					else
+					{
+						FillQuadCoordsLocalTime((uint8 *) vb.getTexCoordPointer(0, 0), vb.getVertexSize(), _TexScrollAlternate[0], &(*(_Owner->getTime().begin() + startIndex)), size);
+					}
+				}
+			}
+		}
 
-	while (size--)
-	{
-		// for now, we don't make texture index wrapping
-		const CTextureGrouped::TFourUV &uvGroup = _TexGroup->getUVQuad((uint32) *currIndex);
+		// perform tex2 animation if needed
+		if (!isAlternateTextureUsed())
+		{
+			if (_Texture2 && (_TexScroll[1].x != 0 || _TexScroll[1].y != 0))
+			{
+				// animation of texture 2 with main speed
+				if (!getUseLocalDate())
+				{
+					FillQuadCoords((uint8 *) vb.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScroll[1], date, size);
+				}
+				else
+				{
+					FillQuadCoordsLocalTime((uint8 *) vb.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScroll[1], &(*(_Owner->getTime().begin() + startIndex)), size);
+				}
+			}
+		}
+		else
+		{
+			if (_AlternateTexture2 && (_TexScrollAlternate[1].x != 0 || _TexScrollAlternate[1].y != 0))
+			{
+				// animation of texture 2 with alternate speed
+				if (!getUseLocalDateAlt())
+				{
+					FillQuadCoords((uint8 *) vb.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScrollAlternate[1], date, size);
+				}				
+				else
+				{
+					FillQuadCoordsLocalTime((uint8 *) vb.getTexCoordPointer(0, 1), vb.getVertexSize(), _TexScrollAlternate[1], &(*(_Owner->getTime().begin() + startIndex)), size);
+				}
+			}
+		}
 
-		// copy the 4 uv's for this face
-		*(CUV *) currUV = uvGroup.uv0;
-		*(CUV *) (currUV + stride) = uvGroup.uv1;
-		*(CUV *) (currUV + stride2) = uvGroup.uv2;
-		*(CUV *) (currUV + stride3) = uvGroup.uv3;
-
-		// point the next face
-		currUV += stride4;
-		currIndex += currIndexIncr;
-	}		
+	}	
 }
-}
 
+void	CPSQuad::setupTexShaderMatrix(IDriver *drv)
+{
+	if (CPSMultiTexturedParticle::isEnvBumpMapUsed())
+	{
+		static const float idMat[] = {1.0f, 0, 0, 1.0f};
+		drv->setMatrix2DForTextureOffsetAddrMode(1, idMat);
+	}
+}
 
 //////////////////////////////////
 // CPSFaceLookAt implementation //
@@ -1085,8 +1350,7 @@ void CPSFaceLookAt::resize(uint32 capacity)
 
 void CPSFaceLookAt::draw(bool opaque)
 {
-	PARTICLES_CHECK_MEM;
-
+	PARTICLES_CHECK_MEM;	
 	nlassert(_Owner);
 
 	const uint32 size = _Owner->getSize();
@@ -1095,12 +1359,17 @@ void CPSFaceLookAt::draw(bool opaque)
 
 	
 	IDriver *driver = getDriver();
-
+	if (isMultiTextureEnabled())
+	{
+		setupTexShaderMatrix(driver);
+		setupMaterial(_Tex, driver, _Mat);
+	}
+	CVertexBuffer &vb = getNeededVB();
 	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
-
-
 	setupDriverModelMatrix();
-	driver->activeVertexBuffer(_Vb);	
+	driver->activeVertexBuffer(vb);
+
+	
 
 	
 
@@ -1127,7 +1396,7 @@ void CPSFaceLookAt::draw(bool opaque)
 	uint8 *ptPos;
 
 	// strides to go from one vertex to another one
-	const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2;
+	const uint32 stride = vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2;
 
 	
 	
@@ -1139,7 +1408,7 @@ void CPSFaceLookAt::draw(bool opaque)
 		do
 		{			
 				// restart at the beginning of the vertex buffer
-				ptPos = (uint8 *) _Vb.getVertexCoordPointer();
+				ptPos = (uint8 *) vb.getVertexCoordPointer();
 				toProcess = leftToDo <= quadBufSize ? leftToDo : quadBufSize;
 
 				if (_UseSizeScheme)
@@ -1152,7 +1421,7 @@ void CPSFaceLookAt::draw(bool opaque)
 				}
 
 				//
-				updateVbColNUVForRender(size - leftToDo, toProcess);
+				updateVbColNUVForRender(vb, size - leftToDo, toProcess);
 
 						
 				TPSAttribVector::iterator endIt = it + toProcess;
@@ -1186,25 +1455,25 @@ void CPSFaceLookAt::draw(bool opaque)
 						{
 							while (it != endIt)
 							{
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
 								((CVector *) ptPos)->x = it->x  + *currentSize * v1.x;  			
 								((CVector *) ptPos)->y = it->y  + *currentSize * v1.y;  			
 								((CVector *) ptPos)->z = it->z  + *currentSize * v1.z;  			
 								ptPos += stride;
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
 								((CVector *) ptPos)->x = it->x  + *currentSize * v2.x;  			
 								((CVector *) ptPos)->y = it->y  + *currentSize * v2.y;  			
 								((CVector *) ptPos)->z = it->z  + *currentSize * v2.z;  			
 								ptPos += stride;
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
 								((CVector *) ptPos)->x = it->x  - *currentSize * v1.x;  			
 								((CVector *) ptPos)->y = it->y  - *currentSize * v1.y;  			
 								((CVector *) ptPos)->z = it->z  - *currentSize * v1.z;  			
 								ptPos += stride;
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
 								((CVector *) ptPos)->x = it->x  - *currentSize * v2.x;  			
 								((CVector *) ptPos)->y = it->y  - *currentSize * v2.y;  			
 								((CVector *) ptPos)->z = it->z  - *currentSize * v2.z;  			
@@ -1223,25 +1492,25 @@ void CPSFaceLookAt::draw(bool opaque)
 
 							while (it != endIt)
 							{
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
 								((CVector *) ptPos)->x = it->x  + myV1.x;  			
 								((CVector *) ptPos)->y = it->y  + myV1.y;  			
 								((CVector *) ptPos)->z = it->z  + myV1.z;  			
 								ptPos += stride;
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
 								((CVector *) ptPos)->x = it->x  + myV2.x;  			
 								((CVector *) ptPos)->y = it->y  + myV2.y;  			
 								((CVector *) ptPos)->z = it->z  + myV2.z;  			
 								ptPos += stride;
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
 								((CVector *) ptPos)->x = it->x  - myV1.x;  			
 								((CVector *) ptPos)->y = it->y  - myV1.y;  			
 								((CVector *) ptPos)->z = it->z  - myV1.z;  			
 								ptPos += stride;
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
 								((CVector *) ptPos)->x = it->x  - myV2.x;  			
 								((CVector *) ptPos)->y = it->y  - myV2.y;  			
 								((CVector *) ptPos)->z = it->z  - myV2.z;  			
@@ -1276,25 +1545,25 @@ void CPSFaceLookAt::draw(bool opaque)
 
 						while (it != endIt)
 						{
-							CHECK_VERTEX_BUFFER(_Vb, ptPos);
+							CHECK_VERTEX_BUFFER(vb, ptPos);
 							((CVector *) ptPos)->x = it->x  - *currentSize * v1.x + *currentSize2 * v2.x;  			
 							((CVector *) ptPos)->y = it->y  - *currentSize * v1.y + *currentSize2 * v2.y;  			
 							((CVector *) ptPos)->z = it->z  - *currentSize * v1.z + *currentSize2 * v2.z;
 							ptPos += stride;
 
-							CHECK_VERTEX_BUFFER(_Vb, ptPos);
+							CHECK_VERTEX_BUFFER(vb, ptPos);
 							((CVector *) ptPos)->x = it->x  + *currentSize * v1.x + *currentSize2 * v2.x;  			
 							((CVector *) ptPos)->y = it->y  + *currentSize * v1.y + *currentSize2 * v2.y;  			
 							((CVector *) ptPos)->z = it->z  + *currentSize * v1.z + *currentSize2 * v2.z;
 							ptPos += stride;
 
-							CHECK_VERTEX_BUFFER(_Vb, ptPos);
+							CHECK_VERTEX_BUFFER(vb, ptPos);
 							((CVector *) ptPos)->x = it->x  + *currentSize * v1.x - *currentSize2 * v2.x;  			
 							((CVector *) ptPos)->y = it->y  + *currentSize * v1.y - *currentSize2 * v2.y;  			
 							((CVector *) ptPos)->z = it->z  + *currentSize * v1.z - *currentSize2 * v2.z;
 							ptPos += stride;
 
-							CHECK_VERTEX_BUFFER(_Vb, ptPos);
+							CHECK_VERTEX_BUFFER(vb, ptPos);
 							((CVector *) ptPos)->x = it->x  - *currentSize * v1.x - *currentSize2 * v2.x;  			
 							((CVector *) ptPos)->y = it->y  - *currentSize * v1.y - *currentSize2 * v2.y;  			
 							((CVector *) ptPos)->z = it->z  - *currentSize * v1.z - *currentSize2 * v2.z;
@@ -1399,47 +1668,47 @@ void CPSFaceLookAt::draw(bool opaque)
 									*(CVector *) (ptPos + stride3) = *it + mbv12;
 								
 								
-									CHECK_VERTEX_BUFFER(_Vb, ptPos);
+									CHECK_VERTEX_BUFFER(vb, ptPos);
 									((CVector *) ptPos)->x = it->x  - mbv2.x;  			
 									((CVector *) ptPos)->y = it->y  - mbv2.y;
 									((CVector *) ptPos)->z = it->z  - mbv2.z;
 									
-									CHECK_VERTEX_BUFFER(_Vb, ptPos + stride);
+									CHECK_VERTEX_BUFFER(vb, ptPos + stride);
 									((CVector *) (ptPos + stride))->x = it->x  + mbv1.x;  			
 									((CVector *) (ptPos + stride))->y = it->y  + mbv1.y;  			
 									((CVector *) (ptPos + stride))->z = it->z  + mbv1.z;  			
 
-									CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2);
+									CHECK_VERTEX_BUFFER(vb, ptPos + stride2);
 									((CVector *) (ptPos + stride2))->x = it->x  + mbv2.x;  			
 									((CVector *) (ptPos + stride2))->y = it->y  + mbv2.y;  			
 									((CVector *) (ptPos + stride2))->z = it->z  + mbv2.z;  			
 
 
-									CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3);
+									CHECK_VERTEX_BUFFER(vb, ptPos + stride3);
 									((CVector *) (ptPos + stride3))->x = it->x  + mbv12.x;  			
 									((CVector *) (ptPos + stride3))->y = it->y  + mbv12.y;  			
 									((CVector *) (ptPos + stride3))->z = it->z  + mbv12.z;  												
 								
 							}
-							else // speed too small, we must avoid a zero divide
+							else // speed too small, we must avoid imprecision
 							{
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
 								((CVector *) ptPos)->x = it->x  - *currentSize * v2.x;  			
 								((CVector *) ptPos)->y = it->y  - *currentSize * v2.y;  			
 								((CVector *) ptPos)->z = it->z  - *currentSize * v2.z;  			
 								
-								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride);
+								CHECK_VERTEX_BUFFER(vb, ptPos + stride);
 								((CVector *) (ptPos + stride))->x = it->x  + *currentSize * v1.x;  			
 								((CVector *) (ptPos + stride))->y = it->y  + *currentSize * v1.y;  			
 								((CVector *) (ptPos + stride))->z = it->z  + *currentSize * v1.z;  			
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2);
+								CHECK_VERTEX_BUFFER(vb, ptPos + stride2);
 								((CVector *) (ptPos + stride2))->x = it->x  + *currentSize * v2.x;  			
 								((CVector *) (ptPos + stride2))->y = it->y  + *currentSize * v2.y;  			
 								((CVector *) (ptPos + stride2))->z = it->z  + *currentSize * v2.z;  			
 
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3);
+								CHECK_VERTEX_BUFFER(vb, ptPos + stride3);
 								((CVector *) (ptPos + stride3))->x = it->x  - *currentSize * v1.x;  			
 								((CVector *) (ptPos + stride3))->y = it->y  - *currentSize * v1.y;  			
 								((CVector *) (ptPos + stride3))->z = it->z  - *currentSize * v1.z;  							
@@ -1448,23 +1717,23 @@ void CPSFaceLookAt::draw(bool opaque)
 						else
 						{
 
-							CHECK_VERTEX_BUFFER(_Vb, ptPos);
+							CHECK_VERTEX_BUFFER(vb, ptPos);
 							((CVector *) ptPos)->x = it->x  - *currentSize * v2.x;  			
 							((CVector *) ptPos)->y = it->y  - *currentSize * v2.y;  			
 							((CVector *) ptPos)->z = it->z  - *currentSize * v2.z;  			
 							
-							CHECK_VERTEX_BUFFER(_Vb, ptPos + stride);
+							CHECK_VERTEX_BUFFER(vb, ptPos + stride);
 							((CVector *) (ptPos + stride))->x = it->x  + *currentSize * v1.x;  			
 							((CVector *) (ptPos + stride))->y = it->y  + *currentSize * v1.y;  			
 							((CVector *) (ptPos + stride))->z = it->z  + *currentSize * v1.z;  			
 
-							CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2);
+							CHECK_VERTEX_BUFFER(vb, ptPos + stride2);
 							((CVector *) (ptPos + stride2))->x = it->x  + *currentSize * v2.x;  			
 							((CVector *) (ptPos + stride2))->y = it->y  + *currentSize * v2.y;  			
 							((CVector *) (ptPos + stride2))->z = it->z  + *currentSize * v2.z;  			
 
 
-							CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3);
+							CHECK_VERTEX_BUFFER(vb, ptPos + stride3);
 							((CVector *) (ptPos + stride3))->x = it->x  - *currentSize * v1.x;  			
 							((CVector *) (ptPos + stride3))->y = it->y  - *currentSize * v1.y;  			
 							((CVector *) (ptPos + stride3))->z = it->z  - *currentSize * v1.z;  			
@@ -1474,10 +1743,10 @@ void CPSFaceLookAt::draw(bool opaque)
 						
 							/*
 
-								CHECK_VERTEX_BUFFER(_Vb, ptPos);
-								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride);
-								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2);
-								CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3);
+								CHECK_VERTEX_BUFFER(vb, ptPos);
+								CHECK_VERTEX_BUFFER(vb, ptPos + stride);
+								CHECK_VERTEX_BUFFER(vb, ptPos + stride2);
+								CHECK_VERTEX_BUFFER(vb, ptPos + stride3);
 
 								*(CVector *) ptPos = *it - *currentSize * v2;
 								*(CVector *) (ptPos + stride) = *it  + *currentSize * v1;  			
@@ -1516,7 +1785,7 @@ void CPSFaceLookAt::draw(bool opaque)
 		{
 			
 				// restart at the beginning of the vertex buffer
-				ptPos = (uint8 *) _Vb.getVertexCoordPointer();
+				ptPos = (uint8 *) vb.getVertexCoordPointer();
 				toProcess = leftToDo <= quadBufSize ? leftToDo : quadBufSize;
 
 				if (_UseSizeScheme)
@@ -1530,7 +1799,7 @@ void CPSFaceLookAt::draw(bool opaque)
 				currentAngle = (float *) _Angle2DScheme->make(_Owner, size - leftToDo, pAngles, sizeof(float), toProcess, true);					
 
 				//
-				updateVbColNUVForRender(size - leftToDo, toProcess);
+				updateVbColNUVForRender(vb, size - leftToDo, toProcess);
 
 						
 				TPSAttribVector::iterator endIt = it + toProcess;
@@ -1556,10 +1825,10 @@ void CPSFaceLookAt::draw(bool opaque)
 						v2.y = *currentSize * (rotTable[tabIndex + 2] * I.y + rotTable[tabIndex + 3] * K.y);
 						v2.z = *currentSize * (rotTable[tabIndex + 2] * I.z + rotTable[tabIndex + 3] * K.z);
 						
-						CHECK_VERTEX_BUFFER(_Vb, ptPos);
-						CHECK_VERTEX_BUFFER(_Vb, ptPos + stride);
-						CHECK_VERTEX_BUFFER(_Vb, ptPos + stride2);
-						CHECK_VERTEX_BUFFER(_Vb, ptPos + stride3);
+						CHECK_VERTEX_BUFFER(vb, ptPos);
+						CHECK_VERTEX_BUFFER(vb, ptPos + stride);
+						CHECK_VERTEX_BUFFER(vb, ptPos + stride2);
+						CHECK_VERTEX_BUFFER(vb, ptPos + stride3);
 
 						/*
 						*(CVector *) ptPos = *it  + v1;  			
@@ -1626,25 +1895,25 @@ void CPSFaceLookAt::draw(bool opaque)
 						v1 = cosAngle * I  + sinAngle * K;
 						v2 = - sinAngle * I + cosAngle * K;
 
-						CHECK_VERTEX_BUFFER(_Vb, ptPos);
+						CHECK_VERTEX_BUFFER(vb, ptPos);
 						((CVector *) ptPos)->x = it->x  - *currentSize * v1.x + *currentSize2 * v2.x;  			
 						((CVector *) ptPos)->y = it->y  - *currentSize * v1.y + *currentSize2 * v2.y;  			
 						((CVector *) ptPos)->z = it->z  - *currentSize * v1.z + *currentSize2 * v2.z;
 						ptPos += stride;
 
-						CHECK_VERTEX_BUFFER(_Vb, ptPos);
+						CHECK_VERTEX_BUFFER(vb, ptPos);
 						((CVector *) ptPos)->x = it->x  + *currentSize * v1.x + *currentSize2 * v2.x;  			
 						((CVector *) ptPos)->y = it->y  + *currentSize * v1.y + *currentSize2 * v2.y;  			
 						((CVector *) ptPos)->z = it->z  + *currentSize * v1.z + *currentSize2 * v2.z;
 						ptPos += stride;
 
-						CHECK_VERTEX_BUFFER(_Vb, ptPos);
+						CHECK_VERTEX_BUFFER(vb, ptPos);
 						((CVector *) ptPos)->x = it->x  + *currentSize * v1.x - *currentSize2 * v2.x;  			
 						((CVector *) ptPos)->y = it->y  + *currentSize * v1.y - *currentSize2 * v2.y;  			
 						((CVector *) ptPos)->z = it->z  + *currentSize * v1.z - *currentSize2 * v2.z;
 						ptPos += stride;
 
-						CHECK_VERTEX_BUFFER(_Vb, ptPos);
+						CHECK_VERTEX_BUFFER(vb, ptPos);
 						((CVector *) ptPos)->x = it->x  - *currentSize * v1.x - *currentSize2 * v2.x;  			
 						((CVector *) ptPos)->y = it->y  - *currentSize * v1.y - *currentSize2 * v2.y;  			
 						((CVector *) ptPos)->z = it->z  - *currentSize * v1.z - *currentSize2 * v2.z;
@@ -3793,9 +4062,6 @@ void CPSRibbon::setupUV(CRibbonsDesc &rb)
 // CPSFace implementation //
 ////////////////////////////
 
-
-
-
 CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
 {   
 	_Name = std::string("Face");	
@@ -3811,29 +4077,32 @@ void CPSFace::draw(bool opaque)
 	if (!size) return;
 
 
-	setupDriverModelMatrix();
+
+	IDriver *driver = getDriver();
+	
+
+	if (isMultiTextureEnabled())
+	{
+		setupTexShaderMatrix(driver);
+		setupMaterial(_Tex, driver, _Mat);
+	}
 
 	
 
-	const uint32 vSize = _Vb.getVertexSize();
-	
-	
-	uint8 *currVertex ; 
-
-
-
+	CVertexBuffer &vb = getNeededVB();
+	const uint32 vSize = vb.getVertexSize();	
+	uint8 *currVertex; 	
 
 	// number of left faces to draw, number of faces to process at once
 	uint32 leftFaces = size, toProcess;
+	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose		
+	driver->activeVertexBuffer(vb);
 
-
-	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
-
-
-	IDriver *driver = getDriver();
-
-
-	driver->activeVertexBuffer(_Vb);	
+	if (isMultiTextureEnabled())
+	{
+		setupTexShaderMatrix(driver);
+		setupMaterial(_Tex, driver, _Mat);
+	}
 
 	float sizeBuf[quadBufSize];
 	float *ptSize;
@@ -3868,7 +4137,7 @@ void CPSFace::draw(bool opaque)
 
 
 
-			currVertex = (uint8 *) _Vb.getVertexCoordPointer() ; 
+			currVertex = (uint8 *) vb.getVertexCoordPointer() ; 
 
 			if (_UseSizeScheme)
 			{				
@@ -3880,10 +4149,10 @@ void CPSFace::draw(bool opaque)
 			}
 			
 			
-			updateVbColNUVForRender(size - leftFaces, toProcess);
+			updateVbColNUVForRender(vb, size - leftFaces, toProcess);
 			
 
-			const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1;
+			const uint32 stride = vb.getVertexSize(), stride2 = stride << 1, stride3 = stride2 + stride, stride4 = stride2 << 1;
 
 			endPosIt = posIt + toProcess;
 
@@ -3912,25 +4181,25 @@ void CPSFace::draw(bool opaque)
 			
 				const CPlaneBasis &currBasis = _PrecompBasis[*indexIt].Basis;
 
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
+				CHECK_VERTEX_BUFFER(vb, currVertex);
 				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis.X.x;  			
 				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis.X.y;  			
 				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis.X.z;  			
 				currVertex += stride;
 
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
+				CHECK_VERTEX_BUFFER(vb, currVertex);
 				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis.Y.x;  			
 				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis.Y.y;  			
 				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis.Y.z;  			
 				currVertex += stride;
 
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
+				CHECK_VERTEX_BUFFER(vb, currVertex);
 				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis.X.x;  			
 				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis.X.y;  			
 				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis.X.z;  			
 				currVertex += stride;
 
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
+				CHECK_VERTEX_BUFFER(vb, currVertex);
 				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis.Y.x;  			
 				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis.Y.y;  			
 				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis.Y.z;  			
@@ -3965,7 +4234,7 @@ void CPSFace::draw(bool opaque)
 
 		CPlaneBasis *currBasis;
 		uint32    ptPlaneBasisIncrement = _UsePlaneBasisScheme ? 1 : 0;
-		const uint32 vSize = _Vb.getVertexSize();
+		const uint32 vSize = vb.getVertexSize();
 
 
 		do
@@ -3975,7 +4244,7 @@ void CPSFace::draw(bool opaque)
 
 
 
-			currVertex = (uint8 *) _Vb.getVertexCoordPointer() ; 
+			currVertex = (uint8 *) vb.getVertexCoordPointer() ; 
 
 			if (_UseSizeScheme)
 			{				
@@ -3996,7 +4265,7 @@ void CPSFace::draw(bool opaque)
 			}
 			
 			
-			updateVbColNUVForRender(size - leftFaces, toProcess);
+			updateVbColNUVForRender(vb, size - leftFaces, toProcess);
 			
 
 			
@@ -4009,25 +4278,25 @@ void CPSFace::draw(bool opaque)
 			
 
 				// we use this instead of the + operator, because we avoid 4 constructor calls this way
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
+				CHECK_VERTEX_BUFFER(vb, currVertex);
 				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis->X.x;  			
 				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis->X.y;  			
 				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis->X.z;  			
 				currVertex += vSize;
 
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
+				CHECK_VERTEX_BUFFER(vb, currVertex);
 				((CVector *) currVertex)->x = posIt->x  + *ptSize * currBasis->Y.x;  			
 				((CVector *) currVertex)->y = posIt->y  + *ptSize * currBasis->Y.y;  			
 				((CVector *) currVertex)->z = posIt->z  + *ptSize * currBasis->Y.z;  			
 				currVertex += vSize;
 
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
+				CHECK_VERTEX_BUFFER(vb, currVertex);
 				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis->X.x;  			
 				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis->X.y;  			
 				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis->X.z;  			
 				currVertex += vSize;
 
-				CHECK_VERTEX_BUFFER(_Vb, currVertex);
+				CHECK_VERTEX_BUFFER(vb, currVertex);
 				((CVector *) currVertex)->x = posIt->x  - *ptSize * currBasis->Y.x;  			
 				((CVector *) currVertex)->y = posIt->y  - *ptSize * currBasis->Y.y;  			
 				((CVector *) currVertex)->z = posIt->z  - *ptSize * currBasis->Y.z;  			
@@ -4162,6 +4431,7 @@ void CPSFace::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 	{
 		_IndexInPrecompBasis[_Owner->getNewElementIndex()] = rand() % nbConf;
 	}
+	newColorElement(emitterLocated, emitterIndex);
 }
 	
 	
@@ -4174,6 +4444,7 @@ void CPSFace::deleteElement(uint32 index)
 		// replace ourself by the last element...
 		_IndexInPrecompBasis[index] = _IndexInPrecompBasis[_Owner->getSize() - 1];
 	}
+	deleteColorElement(index);
 }
 	
 void CPSFace::resize(uint32 size)
@@ -4184,7 +4455,6 @@ void CPSFace::resize(uint32 size)
 		_IndexInPrecompBasis.resize(size);
 	}
 	CPSQuad::resize(size);
-
 }
 
 
@@ -4220,6 +4490,7 @@ bool CPSShockWave::hasTransparentFaces(void)
 {
 	return getBlendingMode() != CPSMaterial::alphaTest ;
 }
+
 bool CPSShockWave::hasOpaqueFaces(void)
 {
 	return !hasTransparentFaces();
@@ -4576,1186 +4847,6 @@ void CPSShockWave::resize(uint32 aSize)
 
 	}
 }
-
-
-////////////////////////////
-// CPSMesh implementation //
-////////////////////////////
-
-
-
-/** a private function that create a dummy mesh :a cube with dummy textures
- */ 
-
-static CMesh *CreateDummyShape(void)
-{
-	CMesh::CMeshBuild mb;
-	CMeshBase::CMeshBaseBuild mbb;
-
-	mb.VertexFlags = CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag;
-	mb.Vertices.push_back(CVector(-.5f, -.5f, -.5f));
-	mb.Vertices.push_back(CVector(.5f, -.5f, -.5f));
-	mb.Vertices.push_back(CVector(.5f, -.5f, .5f));
-	mb.Vertices.push_back(CVector(-.5f, -.5f, .5f));
-
-	mb.Vertices.push_back(CVector(-.5f, .5f, -.5f));
-	mb.Vertices.push_back(CVector(.5f, .5f, -.5f));
-	mb.Vertices.push_back(CVector(.5f, .5f, .5f));
-	mb.Vertices.push_back(CVector(-.5f, .5f, .5f));
-
-	// index for each face
-	uint32 tab[] = { 4, 1, 0
-					,4, 5, 1
-					, 5, 2, 1
-					, 5, 6, 2
-					, 6, 3, 2
-					, 6, 7, 3
-					, 7, 0, 3
-					, 7, 4, 0
-					, 7, 5, 4
-					, 7, 6, 5
-					, 2, 0, 1
-					, 2, 3, 0
-					};
-	for (uint k = 0; k < 6; ++k)
-	{
-		CMesh::CFace f;
-		f.Corner[0].Vertex = tab[6 * k];
-		f.Corner[0].Uvs[0] = CUV(0, 0);
-
-		f.Corner[1].Vertex = tab[6 * k + 1];
-		f.Corner[1].Uvs[0] = CUV(1, 1);
-
-		f.Corner[2].Vertex = tab[6 * k + 2];
-		f.Corner[2].Uvs[0] = CUV(0, 1);
-
-		f.MaterialId = 0;
-
-		mb.Faces.push_back(f);
-
-		f.Corner[0].Vertex = tab[6 * k + 3];
-		f.Corner[0].Uvs[0] = CUV(0, 0);
-
-		f.Corner[1].Vertex = tab[6 * k + 4];
-		f.Corner[1].Uvs[0] = CUV(1, 0);
-
-		f.Corner[2].Vertex = tab[6 * k + 5];
-		f.Corner[2].Uvs[0] = CUV(1, 1);
-
-		f.MaterialId = 0;
-		mb.Faces.push_back(f);
-		
-	}
-
-	CMaterial mat;
-	CTextureMem *tex = new CTextureMem;
-	tex->makeDummy();
-	mat.setTexture(0, tex);
-	mat.setLighting(false);
-	mat.setColor(CRGBA::White);
-
-	mbb.Materials.push_back(mat);
-	CMesh *m = new CMesh;
-	m->build(mbb, mb);
-	return m;
-} 
-
-void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{	
-
-	f.serialVersion(1);	
-	CPSParticle::serial(f);
-	CPSSizedParticle::serialSizeScheme(f);
-	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f);
-	CPSRotated2DParticle::serialAngle2DScheme(f);
-
-	f.serial(_Shape);
-
-	if (f.isReading())
-	{
-		invalidate();
-	}
-
-
-}
-
-
-uint32 CPSMesh::getMaxNumFaces(void) const
-{
-	/// we don't draw any face ! (the meshs are drawn by the scene)
-	return 0;
-}
-
-
-
-bool CPSMesh::hasTransparentFaces(void)
-{
-	/// we don't draw any face ! (the meshs are drawn by the scene)
-	return false;
-}
-bool CPSMesh::hasOpaqueFaces(void)
-{
-	/// we don't draw any face ! (the meshs are drawn by the scene)
-	return false;
-}
-
-
-void CPSMesh::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
-{
-	newPlaneBasisElement(emitterLocated, emitterIndex);
-	newAngle2DElement(emitterLocated, emitterIndex);
-	newSizeElement(emitterLocated, emitterIndex);
-
-	nlassert(_Owner);
-	nlassert(_Owner->getOwner());
-
-	CScene *scene = _Owner->getScene();
-	nlassert(scene); // the setScene method of the particle system should have been called
-	//CTransformShape *instance = _Shape->createInstance(*scene);
-
-	CTransformShape *instance = scene->createInstance(_Shape);
-
-	if (!instance)
-	{
-		const std::string dummyShapeName("dummy mesh shape");
-		// mesh not found ...
-		IShape *is = CreateDummyShape();
-		scene->getShapeBank()->add(dummyShapeName, is);
-		instance = scene->createInstance(dummyShapeName);
-		nlassert(instance);
-	}
-
-
-	instance->setTransformMode(CTransform::DirectMatrix);
-
-	instance->hide(); // the object hasn't the right matrix yet so we hide it. It'll be shown once it is computed
-	nlassert(instance);
-
-	_Instances.insert(instance);
-}
-	
-void CPSMesh::deleteElement(uint32 index)
-{	
-	deleteSizeElement(index);
-	deleteAngle2DElement(index);
-	deletePlaneBasisElement(index);
-
-	// check wether CTransformShape have been instanciated
-	if (_Invalidated) return;
-
-	nlassert(_Owner);
-	nlassert(_Owner->getOwner());
-
-	CScene *scene = _Owner->getScene();
-	nlassert(scene); // the setScene method of the particle system should have been called
-
-	scene->deleteInstance(_Instances[index]);
-	_Instances.remove(index);
-}
-
-
-void CPSMesh::draw(bool opaque)
-{
-	PARTICLES_CHECK_MEM;
-
-	nlassert(_Owner);
-	const uint32 size = _Owner->getSize();
-	if (!size) return;
-
-
-	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
-
-
-	if (_Invalidated)
-	{
-		// need to rebuild all the transform shapes
-		nlassert(_Owner);
-		nlassert(_Owner->getOwner());
-
-		CScene *scene = _Owner->getScene();
-		nlassert(scene); // the setScene method of the particle system should have been called
-	
-
-		resize(_Owner->getMaxSize());
-
-		for (uint k = 0; k < size; ++k)
-		{
-			CTransformShape *instance = scene->createInstance(_Shape);
-			instance->setTransformMode(CTransform::DirectMatrix);
-			instance->hide();
-			_Instances.insert(instance);
-		}
-
-		_Invalidated = false;
-	}
-	
-	float sizes[meshBufSize];
-	float angles[meshBufSize];
-	static CPlaneBasis planeBasis[meshBufSize];
-
-	uint32 leftToDo = size, toProcess;
-
-
-	float *ptCurrSize;
-	const uint  ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0;
-
-	float *ptCurrAngle;
-	const uint  ptCurrAngleIncrement = _UseAngle2DScheme ? 1 : 0;
-
-	CPlaneBasis *ptBasis;
-	const uint  ptCurrPlaneBasisIncrement = _UsePlaneBasisScheme ? 1 : 0;
-
-	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt;
-
-
-	TInstanceCont::iterator instanceIt = _Instances.begin();
-
-	do
-	{
-		toProcess = leftToDo < meshBufSize ? leftToDo : meshBufSize;
-
-		if (_UseSizeScheme)
-		{
-			ptCurrSize  = (float *) (_SizeScheme->make(_Owner, size - leftToDo, &sizes[0], sizeof(float), toProcess, true));			
-		}
-		else
-		{
-			ptCurrSize =& _ParticleSize;
-		}
-
-		if (_UseAngle2DScheme)
-		{
-			ptCurrAngle  = (float *) (_Angle2DScheme->make(_Owner, size - leftToDo, &angles[0], sizeof(float), toProcess, true));			
-		}
-		else
-		{
-			ptCurrAngle =& _Angle2D;
-		}
-
-
-		if (_UsePlaneBasisScheme)
-		{
-			ptBasis  = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size - leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess, true));			
-		}
-		else
-		{
-			ptBasis = &_PlaneBasis;
-		}
-
-		endPosIt = posIt + toProcess;
-
-
-		
-		CMatrix mat, tmat;
-		
-
-		// the matrix used to get in the right basis
-		const CMatrix &transfo = _Owner->isInSystemBasis() ? /*_Owner->getOwner()->*/getSysMat() : CMatrix::Identity;
-
-		do
-		{
-			(*instanceIt)->show();
-
-			tmat.identity();
-			mat.identity();
-
-			tmat.translate(*posIt);
-
-			
-
-			mat.setRot( ptBasis->X * CPSUtil::getCos((sint32) *ptCurrAngle) + ptBasis->Y * CPSUtil::getSin((sint32) *ptCurrAngle)
-						, ptBasis->X * CPSUtil::getCos((sint32) *ptCurrAngle + 64) + ptBasis->Y * CPSUtil::getSin((sint32) *ptCurrAngle + 64)
-						, ptBasis->X ^ ptBasis->Y
-					  );
-
-			mat.scale(*ptCurrSize);			
-			
-			(*instanceIt)->setMatrix(transfo * tmat * mat);			
-
-			++instanceIt;
-			++posIt;
-			ptCurrSize += ptCurrSizeIncrement;
-			ptCurrAngle += ptCurrAngleIncrement;
-			ptBasis += ptCurrPlaneBasisIncrement;
-		}
-		while (posIt != endPosIt);
-
-
-
-		leftToDo -= toProcess;
-	}
-	while (leftToDo);
-
-	PARTICLES_CHECK_MEM;
-}
-
-void CPSMesh::resize(uint32 size)
-{
-	resizeSize(size);
-	resizeAngle2D(size);
-	resizePlaneBasis(size);
-	_Instances.resize(size);
-}
-
-
-CPSMesh::~CPSMesh()
-{
-
-	nlassert(_Owner);
-	nlassert(_Owner->getOwner());
-
-	CScene *scene = _Owner->getScene();
-	nlassert(scene); // the setScene method of the particle system should have been called
-
-	for (TInstanceCont::iterator it = _Instances.begin(); it != _Instances.end(); ++it)
-	{
-		scene->deleteInstance(*it);
-	}
-}
-
-//////////////////////////////////////
-// CPSConstraintMesh implementation //
-//////////////////////////////////////
-
-/// private : eval the number of triangles in a mesh
-static uint getMeshNumTri(const CMesh &m)
-{	
-	uint numFaces = 0;
-	for (uint k = 0 ; k < m.getNbMatrixBlock(); ++k)
-	{
-		for (uint l = 0; l  < m.getNbRdrPass(k); ++l)
-		{
-			const CPrimitiveBlock pb = m.getRdrPassPrimitiveBlock(k, l);
-			numFaces += (pb.getNumLine() << 1) + pb.getNumTri() + (pb.getNumQuad() << 1);
-
-		}
-	}
-	return numFaces;
-}
-
-/** This duplicate a primitive block n time in the destination primitive block
- *  This is used to draw several mesh at once
- *  For each duplication, vertices indices are shifted from the given offset
- */
-
-static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveBlock &destBlock, uint nbReplicate, uint vertOffset)
-{
-	PARTICLES_CHECK_MEM;
-
-	// this must be update each time a new primitive is added
-	
-	// loop counters, and index of the current primitive in the dest pb
-	uint k, l, index;
-
-	// the current vertex offset.
-	uint currVertOffset;
-
-
-	// duplicate triangles
-
-	uint numTri = srcBlock.getNumTri();
-	destBlock.reserveTri(numTri * nbReplicate);
-	
-	index = 0;
-	currVertOffset = 0;
-
-	const uint32 *triPtr = srcBlock.getTriPointer();
-	const uint32 *currTriPtr; // current Tri
-	for (k = 0; k < nbReplicate; ++k)
-	{
-		currTriPtr = triPtr;
-		for (l = 0; l < numTri; ++l)
-		{
-			destBlock.setTri(index, currTriPtr[0] + currVertOffset, currTriPtr[1] + currVertOffset, currTriPtr[2] + currVertOffset);
-			currTriPtr += 3;
-			++ index;
-		}
-		currVertOffset += vertOffset;
-	}
-
-
-	// duplicate quads
-
-	uint numQuad = srcBlock.getNumQuad();
-	destBlock.reserveQuad(numQuad * nbReplicate);
-	
-	index = 0;
-	currVertOffset = 0;
-
-	const uint32 *QuadPtr = srcBlock.getQuadPointer();
-	const uint32 *currQuadPtr; // current Quad
-	for (k = 0; k < nbReplicate; ++k)
-	{
-		currQuadPtr = QuadPtr;
-		for (l = 0; l < numQuad; ++l)
-		{
-			destBlock.setQuad(index, currQuadPtr[0] + currVertOffset, currQuadPtr[1] + currVertOffset, currQuadPtr[2] + currVertOffset, currQuadPtr[3] + currVertOffset);
-			currQuadPtr += 4;
-			++ index;
-		}
-		currVertOffset += vertOffset;
-	}
-
-	// duplicate lines
-
-	uint numLine = srcBlock.getNumLine();
-	destBlock.reserveLine(numLine * nbReplicate);
-	
-	index = 0;
-	currVertOffset = 0;
-
-	const uint32 *LinePtr = srcBlock.getLinePointer();
-	const uint32 *currLinePtr; // current Line
-	for (k = 0; k < nbReplicate; ++k)
-	{
-		currLinePtr = LinePtr;
-		for (l = 0; l < numLine; ++l)
-		{
-			destBlock.setLine(index, currLinePtr[0] + currVertOffset, currLinePtr[1] + currVertOffset);
-			currLinePtr += 4;
-			++ index;
-		}
-		currVertOffset += vertOffset;
-	}
-
-	// duplicate lines
-
-
-	// TODO quad / strips duplication : (unimplemented in primitive blocks for now)
-
-	PARTICLES_CHECK_MEM;
-}
-
-
-
-uint32 CPSConstraintMesh::getMaxNumFaces(void) const
-{
-//	nlassert(_ModelVb);
-	return _NumFaces * _Owner->getMaxSize();
-	
-}
-
-
-
-bool CPSConstraintMesh::hasTransparentFaces(void)
-{
-	if (!_Touched) return _HasTransparentFaces;
-	/// we must construct the mesh to know wether it has transparent faces
-	update();
-	return _HasTransparentFaces;
-}
-bool CPSConstraintMesh::hasOpaqueFaces(void)
-{
-	if (!_Touched) return _HasOpaqueFaces;	
-	update();
-	return _HasOpaqueFaces;
-}
-
-
-void CPSConstraintMesh::setShape(const std::string &meshFileName)
-{
-	_MeshShapeFileName = meshFileName;
-	_Touched = true;
-}
-
-
-void CPSConstraintMesh::update(void)
-{
-	if (!_Touched) return;
-
-	clean();
-	
-	nlassert(_Owner->getScene());
-
-	CScene *scene = _Owner->getScene();
-
-	CShapeBank *sb = scene->getShapeBank();
-
-	
-	try
-	{
-		sb->load(_MeshShapeFileName);
-	}	
-	catch (NLMISC::EPathNotFound &)
-	{
-		// shape not found, create a dummy shape
-	}
-
-	IShape *is;
-
-	if (!sb->isPresent(_MeshShapeFileName))
-	{	
-		is = CreateDummyShape();
-		sb->add(std::string("dummy constraint mesh shape"), is);
-	}
-	else
-	{
-		is = sb->addRef(_MeshShapeFileName);
-	}
-
-
-	nlassert(dynamic_cast<CMesh *>(is));
-	const CMesh &m  = * (CMesh *) is;
-
-	/// update the number of faces
-	_NumFaces = getMeshNumTri(m);
-	notifyOwnerMaxNumFacesChanged();
-	
-	// we don't support skinning, so there must be only one matrix block
-	// duplicate rendering pass
-
-	nlassert(m.getNbMatrixBlock() == 1);  // SKINNING UNSUPPORTED
-
-	_RdrPasses.resize(m.getNbRdrPass(0));
-
-	const CVertexBuffer &srcVb = m.getVertexBuffer();
-
-	_HasTransparentFaces = false;
-	_HasOpaqueFaces = false;
-	
-	for (uint k = 0; k < m.getNbRdrPass(0); ++k)
-	{
-		_RdrPasses[k].Mat = m.getMaterial(m.getRdrPassMaterial(0, k));
-		if (!_RdrPasses[k].Mat.getZWrite())
-		{
-			_HasTransparentFaces = true;
-		}
-		else // z-buffer write or no blending -> the face is opaque
-		{
-			_HasOpaqueFaces = true;
-		}
-			 
-		DuplicatePrimitiveBlock(m.getRdrPassPrimitiveBlock(0, k), _RdrPasses[k].Pb, constraintMeshBufSize, srcVb.getNumVertices() );		
-	}
-	
-
-	// make a reference to the original vbuffer
-
-	_ModelVb = &m.getVertexBuffer();
-
-	setupPreRotatedVb(_ModelVb->getVertexFormat());
-	setupVb(_ModelVb->getVertexFormat());
-
-	_ModelBank = sb;
-	_ModelShape = is;
-
-	_Touched = false;
-
-	/// check for transparent faces
-
-	
-}
-
-
-
-
-void CPSConstraintMesh::setupPreRotatedVb(sint vertexFlags)
-{
-	nlassert(vertexFlags & CVertexBuffer::PositionFlag);
-	// in the prerotated Vb, we only need the normal and the position...
-	if (_PrecompBasis.size())
-	{
-		// we need only the position and the normal (when present ...)
-		_PreRotatedMeshVb.setVertexFormat(vertexFlags & (CVertexBuffer::NormalFlag | CVertexBuffer::PositionFlag));
-		_PreRotatedMeshVb.setNumVertices(_ModelVb->getNumVertices() * _PrecompBasis.size() );
-
-
-		const uint vSize = _ModelVb->getVertexSize();
-
-		// duplicate position and normals
-		uint index = 0;
-
-
-		for (uint k = 0; k < _PrecompBasis.size(); ++k)
-		{
-			for (uint l = 0; l < _ModelVb->getNumVertices(); ++l)
-			{
-				_PreRotatedMeshVb.setVertexCoord(index
-												 , *(CVector *) ((uint8 *) _ModelVb->getVertexCoordPointer() + l * vSize) 
-												);
-
-				// duplicate the normal if present
-				if (vertexFlags  & CVertexBuffer::NormalFlag)
-				{
-					_PreRotatedMeshVb.setNormalCoord(index
-													 , *(CVector *) ((uint8 *) _ModelVb->getNormalCoordPointer() + l * vSize)
-													);	
-				}
-				++ index;
-			}
-		}
-	}
-
-}
-
-	
-void CPSConstraintMesh::setupVb(sint vertexFlags)
-{
-	PARTICLES_CHECK_MEM;
-
-	nlassert(vertexFlags & CVertexBuffer::PositionFlag); // need the position at least
-
-	_MeshBatchVb.setVertexFormat(vertexFlags);
-	_MeshBatchVb.setNumVertices(_ModelVb->getNumVertices() * constraintMeshBufSize );
-	
-
-
-	// duplicate the model mesh vertices data (even position and normal, though they will be updated each time a mesh is drawn)
-
-	const uint mSize = _MeshBatchVb.getVertexSize() * _ModelVb->getNumVertices();
-
-
-	for (uint k = 0; k < constraintMeshBufSize; ++k)	
-	{
-		memcpy((uint8 *) _MeshBatchVb.getVertexCoordPointer() + k * mSize, _ModelVb->getVertexCoordPointer(), mSize);
-	}
-
-	PARTICLES_CHECK_MEM;
-}
-
-
-void CPSConstraintMesh::hintRotateTheSame(uint32 nbConfiguration
-										, float minAngularVelocity
-										, float maxAngularVelocity
-										)
-{
-
-	// TODO : avoid code duplication with CPSFace ...
-	_MinAngularVelocity = minAngularVelocity;
-	_MaxAngularVelocity = maxAngularVelocity;
-
-
-
-	_PrecompBasis.resize(nbConfiguration);
-
-	if (nbConfiguration)
-	{
-		// each precomp basis is created randomly;
-		for (uint k = 0; k < nbConfiguration; ++k)
-		{
-			 CVector v = MakeRandomUnitVect();
-			_PrecompBasis[k].Basis = CPlaneBasis(v);
-			_PrecompBasis[k].Axis = MakeRandomUnitVect();
-			_PrecompBasis[k].AngularVelocity = minAngularVelocity 
-											   + (rand() % 20000) / 20000.f * (maxAngularVelocity - minAngularVelocity);
-
-		}	
-
-		// we need to do this because nbConfs may have changed
-		fillIndexesInPrecompBasis();
-	}
-
-	/** make sure build() was called
-	 *  If this was'nt done, setupPreRotatedVb will be called during the build call
-	 */
-
-
-	if (_ModelVb)
-	{
-		setupPreRotatedVb(_ModelVb->getVertexFormat());
-	}
-}
-
-
-void CPSConstraintMesh::fillIndexesInPrecompBasis(void)
-{
-	// TODO : avoid code duplication with CPSFace ...
-	const uint32 nbConf = _PrecompBasis.size();
-	if (_Owner)
-	{
-		_IndexInPrecompBasis.resize( _Owner->getMaxSize() );
-	}	
-	for (std::vector<uint32>::iterator it = _IndexInPrecompBasis.begin(); it != _IndexInPrecompBasis.end(); ++it)
-	{
-		*it = rand() % nbConf;
-	}
-}
-
-	
-/// serialisation. Derivers must override this, and call their parent version
-void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
-{
-
-	f.serialVersion(1);
-	if (f.isReading())
-	{
-		clean();
-	}
-
-
-	CPSParticle::serial(f);
-	CPSSizedParticle::serialSizeScheme(f);
-	CPSRotated3DPlaneParticle::serialPlaneBasisScheme(f);
-
-	// prerotations ...
-
-	if (f.isReading())
-	{
-		uint32 nbConfigurations;
-		f.serial(nbConfigurations);
-		if (nbConfigurations)
-		{
-			f.serial(_MinAngularVelocity, _MaxAngularVelocity);		
-		}
-		hintRotateTheSame(nbConfigurations, _MinAngularVelocity, _MaxAngularVelocity);	
-	}
-	else	
-	{				
-		uint32 nbConfigurations = _PrecompBasis.size();
-		f.serial(nbConfigurations);
-		if (nbConfigurations)
-		{
-			f.serial(_MinAngularVelocity, _MaxAngularVelocity);		
-		}
-	}
-
-	// saves the model file name, or an empty string if nothing has been set
-	
-	static std::string emptyStr("");
-
-	if (!f.isReading())
-	{
-		if (_ModelShape)
-		{
-			f.serial(_MeshShapeFileName);			
-		}
-		else
-		{
-			f.serial(emptyStr); 
-		}
-	}
-	else
-	{	
-		f.serial(_MeshShapeFileName);		
-		_Touched = true;			
-	}
-
-
-}
-
-CPSConstraintMesh::~CPSConstraintMesh() 
-{
-	clean();
-}
-
-void CPSConstraintMesh::clean(void)
-{
-	if (_ModelBank)
-	{
-		nlassert(_ModelShape);
-		/// todo Nicolas: check this \\// (Hulud)
-		if (_ModelShape)
-		{
-			_ModelBank->release(_ModelShape);
-		}
-		_ModelBank = NULL;
-		_ModelShape = NULL;
-		_ModelVb = NULL;
-	}
-
-	_RdrPasses.clear(); 
-}
-
-	
-	
-
-void CPSConstraintMesh::draw(bool opaque)
-{
-	PARTICLES_CHECK_MEM;
-	nlassert(_Owner);
-
-	update(); // update mesh datas if needed
-
-	if (!_ModelVb) return; // no mesh has been set for now
-
-	const uint32 size = _Owner->getSize();
-
-	if (!size) return;
-
-
-
-	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
-
-
-	// size for model vertices
-	const uint vSize = _ModelVb->getVertexSize();
-
-
-
-	const uint normalOff = _ModelVb->getVertexFormat() & CVertexBuffer::NormalFlag ? _ModelVb->getNormalOff() : 0;
-
-	const uint nbVerticesInSource = _ModelVb->getNumVertices();
-
-	IDriver *driver = getDriver();
-
-	// a loop counter
-	uint k ; 
-
-	uint8 *currVertex, *currSrcVertex;
-
-	setupDriverModelMatrix();	
-
-
-	float sizes[constraintMeshBufSize];
-
-	float *ptCurrSize;
-	uint ptCurrSizeIncrement = _UseSizeScheme ? 1 : 0;
-
-	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt;
-	uint leftToDo = size, toProcess;
-
-	driver->activeVertexBuffer(_MeshBatchVb);
-
-
-	// do we use pre-rotated meshs ?
-	if (_PrecompBasis.size() != 0)
-	{
-		// we do...
-
-		// size for vertices in prerotated model
-		const uint vpSize = _PreRotatedMeshVb.getVertexSize();
-
-		// size of a complete prerotated model
-		const uint prerotatedModelSize = vpSize * _ModelVb->getNumVertices();
-
-		// offset of normals in vertices of the prerotated model
-		const uint pNormalOff = _PreRotatedMeshVb.getVertexFormat() & CVertexBuffer::NormalFlag ? _PreRotatedMeshVb.getNormalOff() : 0;
-
-		// TODO : mettre la bonne valeur ici !!
-		const float ellapsedTime = 0.01f;
-
-		// rotate basis
-		// and compute the set of prerotated meshs that will then duplicated (with scale and translation) to create the Vb of what must be drawn
-
-		currVertex = (uint8 *) _PreRotatedMeshVb.getVertexCoordPointer();
-
-		for (std::vector< CPlaneBasisPair >::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
-		{
-			// not optimized at all, but this will apply to very few elements anyway...
-			CMatrix mat;
-			mat.rotate(CQuat(it->Axis, ellapsedTime * it->AngularVelocity));
-			CVector n = mat * it->Basis.getNormal();
-			it->Basis = CPlaneBasis(n);
-
-		
-			mat.identity();
-			mat.setRot(it->Basis.X, it->Basis.Y, it->Basis.X ^ it->Basis.Y);
-
-			currSrcVertex = (uint8 *) _ModelVb->getVertexCoordPointer();
-
-			k = nbVerticesInSource;
-
-			// check wether we need to rotate normals as well...
-			if (_ModelVb->getVertexFormat() & CVertexBuffer::NormalFlag)
-			{
-			
-				do
-				{
-					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex);
-					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex + normalOff);
-					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currVertex);
-					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currVertex + pNormalOff);
-
-					* (CVector *) currVertex =  mat.mulVector(* (CVector *) currSrcVertex);
-					* (CVector *) (currVertex + pNormalOff) =  mat.mulVector(* (CVector *) (currSrcVertex + normalOff) );
-					currVertex += vpSize;
-					currSrcVertex += vSize;
-				}
-				while (--k);		
-			}
-			else
-			{
-				// no normal included
-				do
-				{	
-					
-					CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currVertex);	
-					CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex);					
-
-					* (CVector *) currVertex =  mat.mulVector(* (CVector *) currSrcVertex);
-					currVertex += vpSize;
-					currSrcVertex += vSize;
-				}
-				while (--k);	
-
-			}
-		}
-		
-
-	
-		std::vector<uint32>::const_iterator indexIt = _IndexInPrecompBasis.begin();
-		
-
-		do
-		{
-			currVertex = (uint8 *) _MeshBatchVb.getVertexCoordPointer();
-
-			toProcess = leftToDo  < constraintMeshBufSize ? leftToDo : constraintMeshBufSize;
-
-			if (_UseSizeScheme)
-			{
-				ptCurrSize = (float *) (_SizeScheme->make(_Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess, true));				
-			}
-			else
-			{
-				ptCurrSize = &_ParticleSize;
-			}
-
-			endPosIt = posIt + toProcess;
-
-			do
-			{
-	
-				currSrcVertex = (uint8 *) _PreRotatedMeshVb.getVertexCoordPointer() + prerotatedModelSize * *indexIt;
-				k = nbVerticesInSource;
-
-				// do we need a normal ?
-
-				if (_ModelVb->getVertexFormat() & CVertexBuffer::NormalFlag)
-				{
-					// offset of normals in the prerotated mesh				
-					do
-					{
-						CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex);	
-						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex);	
-						CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex + pNormalOff);	
-						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex + normalOff);	
-
-						// translate and resize the vertex (relatively to the mesh origin)
-						*(CVector *) currVertex = *posIt + *ptCurrSize * *(CVector *) currSrcVertex ;										
-						// copy the normal
-						*(CVector *) (currVertex + normalOff) = *(CVector *) (currSrcVertex + pNormalOff);
-
-						currSrcVertex += vpSize;
-						currVertex += vSize;
-					}
-					while (--k);
-				}
-				else
-				{
-					// no normal ...
-
-					do
-					{
-						CHECK_VERTEX_BUFFER(_PreRotatedMeshVb, currSrcVertex);	
-						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex);							
-						
-						// translate and resize the vertex (relatively to the mesh origin)
-						*(CVector *) currVertex = *posIt + *ptCurrSize * *(CVector *) currSrcVertex ;																
-
-						currSrcVertex += vpSize;
-						currVertex += vSize;
-					}
-					while (--k);
-				}
-
-				++indexIt;
-				++posIt;
-				ptCurrSize += ptCurrSizeIncrement;
-			}
-			while (posIt != endPosIt);
-			
-			// render meshs : we process each rendering pass
-
-			for (TRdrPassVect::iterator rdrPassIt = _RdrPasses.begin() 
-				 ; rdrPassIt != _RdrPasses.end(); ++rdrPassIt)
-			{
-				// TODO : update this when new primitive will be added
-
-				/// check wether this material has to be rendered
-				if ((opaque && rdrPassIt->Mat.getZWrite()) || (!opaque && !rdrPassIt->Mat.getZWrite()))
-				{
-					rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess / constraintMeshBufSize);
-					rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess / constraintMeshBufSize);
-					rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess / constraintMeshBufSize);
-				}
-
-				driver->render(rdrPassIt->Pb, rdrPassIt->Mat);
-
-			}
-
-			leftToDo -= toProcess;
-
-		}
-		while (leftToDo);
-	
-
-		
-
-	}
-	else
-	{
-		// we don't have precomputed mesh there ... so each mesh must be transformed, which is the worst case
-
-		
-	
-		CPlaneBasis planeBasis[constraintMeshBufSize];
-
-		CPlaneBasis *ptBasis;
-
-		uint ptBasisIncrement = _UsePlaneBasisScheme ? 1 : 0;
-
-		CVector K; // the K vector of the current basis
-		
-		do
-		{
-			currVertex = (uint8 *) _MeshBatchVb.getVertexCoordPointer();
-
-			toProcess = leftToDo  < constraintMeshBufSize ? leftToDo : constraintMeshBufSize;
-
-			if (_UseSizeScheme)
-			{
-				ptCurrSize  = (float *) (_SizeScheme->make(_Owner, size -leftToDo, &sizes[0], sizeof(float), toProcess, true));				
-			}
-			else
-			{
-				ptCurrSize = &_ParticleSize;
-			}
-
-			if (_UsePlaneBasisScheme)
-			{
-				ptBasis = (CPlaneBasis *) (_PlaneBasisScheme->make(_Owner, size -leftToDo, &planeBasis[0], sizeof(CPlaneBasis), toProcess, true));				
-			}
-			else
-			{
-				ptBasis = &_PlaneBasis;
-			}
-
-			endPosIt = posIt + toProcess;
-
-			// transfo matri & scaled transfo matrix;
-
-			CMatrix  M, sM ;
-
-			do
-			{
-	
-				currSrcVertex = (uint8 *) _ModelVb->getVertexCoordPointer();
-				k = nbVerticesInSource;
-
-				
-
-
-				// do we need a normal ?
-
-				if (_ModelVb->getVertexFormat() & CVertexBuffer::NormalFlag)
-				{
-					M.identity();
-					M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
-					sM = M;
-					sM.scale(*ptCurrSize);
-
-					// offset of normals in the prerotated mesh				
-					do
-					{
-						CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex);	
-						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex);	
-						CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex + normalOff);	
-						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex + normalOff);	
-
-						// translate and resize the vertex (relatively to the mesh origin)
-						*(CVector *) currVertex = *posIt + sM * *(CVector *) currSrcVertex ;										
-						// copy the normal
-						*(CVector *) (currVertex + normalOff) = M * *(CVector *) (currSrcVertex + normalOff);
-
-						currSrcVertex += vSize;
-						currVertex += vSize;
-					}
-					while (--k);
-				}
-				else
-				{
-					// no normal to transform
-					sM.identity();
-					sM.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);
-					sM.scale(*ptCurrSize);
-
-					do
-					{
-						CHECK_VERTEX_BUFFER(*_ModelVb, currSrcVertex);	
-						CHECK_VERTEX_BUFFER(_MeshBatchVb, currVertex);	
-						// translate and resize the vertex (relatively to the mesh origin)
-						*(CVector *) currVertex = *posIt + sM * *(CVector *) currSrcVertex ;																
-
-						currSrcVertex += vSize;
-						currVertex += vSize;
-					}
-					while (--k);
-				}
-
-				
-				++posIt;
-				ptCurrSize += ptCurrSizeIncrement;
-				ptBasis += ptBasisIncrement;
-			}
-			while (posIt != endPosIt);
-			
-			// render meshs
-
-			// render meshs : we process each rendering pass
-
-			for (TRdrPassVect::iterator rdrPassIt = _RdrPasses.begin() 
-				 ; rdrPassIt != _RdrPasses.end(); ++rdrPassIt)
-			{
-				// TODO : update this when new primitive will be added
-
-				// check wether this material has to be rendered
-				if ((opaque && rdrPassIt->Mat.getZWrite()) || (!opaque && !rdrPassIt->Mat.getZWrite()))
-				{
-					rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess / constraintMeshBufSize);
-					rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess / constraintMeshBufSize);
-					rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess / constraintMeshBufSize);
-				}
-				driver->render(rdrPassIt->Pb, rdrPassIt->Mat);
-
-			}
-
-			leftToDo -= toProcess;
-
-		}
-		while (leftToDo);
-
-	}
-
-	PARTICLES_CHECK_MEM;
-}
-
-
-void CPSConstraintMesh::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
-{
-	newSizeElement(emitterLocated, emitterIndex);
-	newPlaneBasisElement(emitterLocated, emitterIndex);
-	// TODO : avoid code cuplication with CPSFace ...
-	const uint32 nbConf = _PrecompBasis.size();
-	if (nbConf) // do we use precomputed basis ?
-	{
-		_IndexInPrecompBasis[_Owner->getNewElementIndex()] = rand() % nbConf;
-	}
-}
-	
-	
-void CPSConstraintMesh::deleteElement(uint32 index)
-{
-	deleteSizeElement(index);
-	deletePlaneBasisElement(index);
-	// TODO : avoid code cuplication with CPSFace ...
-	if (_PrecompBasis.size()) // do we use precomputed basis ?
-	{
-		// replace ourself by the last element...
-		_IndexInPrecompBasis[index] = _IndexInPrecompBasis[_Owner->getSize() - 1];
-	}
-}
-	
-void CPSConstraintMesh::resize(uint32 size)
-{
-	resizeSize(size);
-	resizePlaneBasis(size);
-	// TODO : avoid code cuplication with CPSFace ...
-	if (_PrecompBasis.size()) // do we use precomputed basis ?
-	{
-		_IndexInPrecompBasis.resize(size);
-	}
-}	
 
 
 

@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.18 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_particle.h,v 1.19 2001/12/06 16:50:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NL3D {
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
- *	this is just a coloured dot that fade to black during its life
+ *	this is just a coloured dot
  */
 
 class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
@@ -110,6 +110,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
  class CPSQuad : public CPSParticle
 	           , public CPSColoredParticle
 			   , public CPSTexturedParticle
+			   , public CPSMultiTexturedParticle
 			   , public CPSSizedParticle
 			   , public CPSMaterial
  {
@@ -129,6 +130,10 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 
 		/// return the max number of faces needed for display. This is needed for LOD balancing
 		virtual uint32 getMaxNumFaces(void) const;
+
+		/// init the vertex buffers
+		static void initVertexBuffers();
+
 
 	protected:		
 
@@ -163,20 +168,57 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 		void resize(uint32 capacity);
 	
 		/// complete the bbox depending on the size of particles
-		virtual bool completeBBox(NLMISC::CAABBox &box) const  ;
+		virtual bool completeBBox(NLMISC::CAABBox &box) const;
 
 		/** calculate current color and texture coordinate before any rendering
 		 *  size can't be higher that quadBufSize ...
 		 */
-		void updateVbColNUVForRender(uint32 startIndex, uint32 numQuad)	;	
+		void updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint32 numQuad);
 
 		/// DERIVERS MUST CALL this		 
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 		virtual CPSLocated *getColorOwner(void) { return _Owner; }
 		virtual CPSLocated *getSizeOwner(void) { return _Owner; }
 		virtual CPSLocated *getTextureIndexOwner(void) { return _Owner; }
-		
-		CVertexBuffer	 _Vb;	
+
+
+
+				
+		enum VBType
+		{
+			VBCol			= 0x0001, // the vb has colors
+			VBTex			= 0x0002, // the vb has textures coordinates
+			VBTexAnimated	= 0x0004, // the texture coordinate can be animated (not precomputed)
+			VBTex2		    = 0x0008, // the vb has second texture coordinates 
+			VBTex2Animated  = 0x0010, // the second texture coordinates can be animated (not precomputed)
+		};
+
+		/// the various kind of vertex buffers we need
+		static CVertexBuffer _VBPos;
+		static CVertexBuffer _VBPosCol;
+		static CVertexBuffer _VBPosTex1;
+		static CVertexBuffer _VBPosTex1Col;				
+		static CVertexBuffer _VBPosTex1Anim;
+		static CVertexBuffer _VBPosTex1AnimCol;
+		//==========
+		static CVertexBuffer _VBPosTex1Tex2;
+		static CVertexBuffer _VBPosTex1ColTex2;	
+		static CVertexBuffer _VBPosTex1AnimTex2;
+		static CVertexBuffer _VBPosTex1AnimColTex2;
+		//==========
+		static CVertexBuffer _VBPosTex1Tex2Anim;
+		static CVertexBuffer _VBPosTex1ColTex2Anim;	
+		static CVertexBuffer _VBPosTex1AnimTex2Anim;
+		static CVertexBuffer _VBPosTex1AnimColTex2Anim;
+
+		/// get the vertex buffer that is needed for drawing
+		CVertexBuffer &getNeededVB();
+
+		/// setup the texture shaders 2d matrix usef for EMBM to the identity (when needed)
+		void	setupTexShaderMatrix(IDriver *drv);
+
+		/// used to get a pointer on the right vb dependant on its type (cf. values of VBType)
+		static CVertexBuffer    * const CPSQuad::_VbTab[];
  };
 
 
@@ -1065,294 +1107,6 @@ protected:
 
 };
 
-
-/** This class is for mesh handling. It operates with any mesh, but it must insert them in the scene...
- *  It is not very adapted for lots of little meshs..
- *  To create the mesh basis, we use CPlaneBasis here. It give us the I and J vector of the basis for each mesh 
- *  and compute K ( K =  I ^ J)
- */
-
-class CPSMesh : public  CPSParticle, public CPSSizedParticle
-				, public CPSRotated3DPlaneParticle, public CPSRotated2DParticle
-				, public CPSShapeParticle
-{
-public:
-	/// construct the system by using the given shape for mesh
-	CPSMesh(const std::string &shape = "") : _Invalidated(false)
-	{
-		_Shape = shape;
-		_Name = std::string("Mesh");
-	}
-
-	/// set a new shape for that kind of particles
-	void setShape(const std::string &shape) { _Shape = shape; }
-
-	/// get the shape used for those particles	
-	std::string getShape(void) const { return _Shape; }
-
-		/// serialisation. Derivers must override this, and call their parent version
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
-
-	virtual ~CPSMesh();
-
-	NLMISC_DECLARE_CLASS(CPSMesh);
-
-
-	/** invalidate the transformShapes that were inserted in the scene, so they need to be rebuilt
-	 *  during the next rendering. This is useful for clipping, or when the system has been loaded
-	 */
-
-	void invalidate() 
-	{ 
-		_Invalidated = true; 
-		_Instances.clear();
-	}
-
-	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void);
-
-	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void);
-
-	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const;
-
-protected:
-	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
-	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
-	
-	/** Delete an element given its index
-	 *  Attributes of the located that hold this bindable are still accessible for the index given
-	 *  index out of range -> nl_assert
-	 */
-	virtual void deleteElement(uint32 index) ;
-
-
-	virtual void draw(bool opaque);
-
-	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
-	 * should not be called directly. Call CPSLocated::resize instead
-	 */
-	virtual void resize(uint32 size) ;	
-
-	//CSmartPtr<IShape> _Shape;
-
-	std::string _Shape;
-
-	// a container for mesh instances
-	typedef CPSAttrib<CTransformShape *> TInstanceCont;
-
-	TInstanceCont _Instances;
-
-	// this is set to true when the transformed shape have to be recerated
-
-	bool _Invalidated;
-
-	virtual CPSLocated *getSizeOwner(void) { return _Owner; }
-	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
-	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
-}; 
-
-
-/** This class is for mesh that have very simple geometry. The constraint is that they can only have one matrix block. 
- *  They got a hint for constant rotation scheme. With little meshs, this is the best to draw a maximum of them
- */
-
-class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle
-						, public CPSRotated3DPlaneParticle
-						, public CPSHintParticleRotateTheSame
-						, public CPSShapeParticle
-{
-public:	
-	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL), _Touched(true)
-	{		
-		_Name = std::string("ConstraintMesh");
-	}
-
-	virtual ~CPSConstraintMesh();
-
-	/** construct the mesh by using the given mesh shape file	
-	 */
-	void setShape(const std::string &meshFileName);
-
-
-
-	/// get the shape used for those particles	
-	std::string getShape(void) const { return _MeshShapeFileName; }
-
-	/** Tells that all meshs are turning in the same manner, and only have a rotationnal bias
-	 *  This is a lot faster then other method. Any previous set scheme for 3d rotation is kept.
-	 *	\param: the number of rotation configuration we have. The more high it is, the slower it'll be
-	 *          If this is too low, a lot of particles will have the same orientation	           	 
-	 *          If it is 0, then the hint is disabled	
- 	 *  \param  minAngularVelocity : the maximum angular velocity for particle rotation	 
-	 *  \param  maxAngularVelocity : the maximum angular velocity for particle rotation	 
-	 *  \see    CPSRotated3dPlaneParticle
-	 */
-	void hintRotateTheSame(uint32 nbConfiguration
-							, float minAngularVelocity = NLMISC::Pi
-							, float maxAngularVelocity = NLMISC::Pi
-						  );
-
-	/** disable the hint 'hintRotateTheSame'
-	 *  The previous set scheme for roation is used
-	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
-	 */
-	void disableHintRotateTheSame(void)
-	{
-		hintRotateTheSame(0);
-	}
-
-	/** check wether a call to hintRotateTheSame was performed
-	 *  \return 0 if the hint is disabled, the number of configurations else
-	 *  \see hintRotateTheSame(), CPSRotated3dPlaneParticle
-	 */
-
-	uint32 checkHintRotateTheSame(float &min, float &max) const
-	{
-		min = _MinAngularVelocity;
-		max = _MaxAngularVelocity;
-		return _PrecompBasis.size(); 
-	}
-
-
-	/// serialisation. Derivers must override this, and call their parent version
-	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
-
-	
-	NLMISC_DECLARE_CLASS(CPSConstraintMesh);
-	
-	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void);
-
-	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void);
-
-	/// return the max number of faces needed for display. This is needed for LOD balancing
-	virtual uint32 getMaxNumFaces(void) const;
-
-protected:
-	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
-	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
-	
-	/** Delete an element given its index
-	 *  Attributes of the located that hold this bindable are still accessible for the index given
-	 *  index out of range -> nl_assert
-	 */
-	virtual void deleteElement(uint32 index) ;
-
-	/** called when particles must be drawn
-	  * \param opaque true if we are dealing with the opaque pass, false for transparent faces
-	  */
-	virtual void draw(bool opaque);
-
-	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
-	 * should not be called directly. Call CPSLocated::resize instead
-	 */
-	virtual void resize(uint32 size) ;	
-	
-
-	/// build the mesh data
-	void update(void);
-
-	
-
-	/// a rendering pass
-	struct RdrPass
-	{
-		CMaterial Mat;
-		CPrimitiveBlock Pb;
-		
-	};
-
-	// cache the number of faces in the source shape
-	uint32 _NumFaces;
-
-	// name of the mesh shape  it was generated from
-	std::string _MeshShapeFileName;
-
-	// A new mesh has been set, so we must reconstruct it when needed
-	bool _Touched;
-
-	// flags that indicate wether the object has transparent faces. When touched, it is undefined
-	bool _HasTransparentFaces;
-
-	// flags that indicate wether the object has opaques faces. When touched, it is undefined
-	bool _HasOpaqueFaces;
-
-
-	// the shape bank containing the shape
-	CShapeBank  *_ModelBank;
-
-	//  the shape we're using
-	IShape  *_ModelShape;
-
-	typedef std::vector<RdrPass> TRdrPassVect;
-	// the rendering passes
-	TRdrPassVect _RdrPasses;
-
-	
-	//  the only vertex buffer for the model mesh 5if points the vb of the mesh used as a model)
-	const CVertexBuffer *_ModelVb;
-
-
-	// the vertex buffer for pre-rotated meshs (it is computed before each new mesh is shown)
-	// it does only contains position and normal when present
-	CVertexBuffer  _PreRotatedMeshVb;
-
-
-	/** the vertex buffer for a batch of mesh
-	 *  If contains all vertices data, and only position and normal (when used)	 are uspdated
-	 *  By using datas from _PreRotatedMeshVb
-	 */
-	CVertexBuffer _MeshBatchVb;
-
-
-	/** the primitive block for a batch of meshs. It is only computed once when build() is called.
-	 *  It contains duplication of the original mesh pb
-	 */
-	CPrimitiveBlock _MeshBatchPb;
-
-
-	
-	// we must store them for serialization
-	float _MinAngularVelocity;
-	float _MaxAngularVelocity;
-
-
-	// use for rotation of precomputed meshs
-	struct CPlaneBasisPair
-	{		
-		CPlaneBasis Basis;
-		CVector Axis; // an axis for rotation
-		float AngularVelocity; // an angular velocity
-	};
-
-	/// a set of precomp basis, before and after transfomation in world space, used if the hint 'RotateTheSame' has been called
-	std::vector< CPlaneBasisPair > _PrecompBasis;
-
-	/// this contain an index in _PrecompBasis for each particle
-	std::vector<uint32> _IndexInPrecompBasis;
-
-	/// fill _IndexInPrecompBasis with index in the range [0.. nb configurations[
-	void fillIndexesInPrecompBasis(void);
-
-	/// when pre-rotated mesh are used, this setup the vb and ib used for copy
-	void setupPreRotatedVb(sint vertexFlags);
-
-	// when a new model mesh is set, this setup the Vb used for drawing
-	void setupVb(sint vertexFlags);
-
-
-	// release the model shape (dtor, or before loading)
-	void clean(void);
-
-	virtual CPSLocated *getSizeOwner(void) { return _Owner; }	
-	virtual CPSLocated *getPlaneBasisOwner(void) { return _Owner; }
-
-}; 
 
 
 

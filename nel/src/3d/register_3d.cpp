@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.5 2001/03/08 11:02:52 corvazier Exp $
+ * $Id: register_3d.cpp,v 1.6 2001/03/13 17:14:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,38 +52,46 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerTCBVector);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerTCBQuat);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerTCBInt);
+		NLMISC_REGISTER_CLASS(CTrackKeyFramerTCBRGBA);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerBezierFloat);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerBezierVector);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerBezierQuat);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerBezierInt);
+		NLMISC_REGISTER_CLASS(CTrackKeyFramerBezierRGBA);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearFloat);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearVector);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearQuat);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearInt);
+		NLMISC_REGISTER_CLASS(CTrackKeyFramerLinearRGBA);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerConstFloat);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerConstVector);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerConstQuat);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerConstInt);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerConstString);
 		NLMISC_REGISTER_CLASS(CTrackKeyFramerConstBool);
+		NLMISC_REGISTER_CLASS(CTrackKeyFramerConstRGBA);
 		NLMISC_REGISTER_CLASS(CTrackDefaultFloat);
 		NLMISC_REGISTER_CLASS(CTrackDefaultVector);
 		NLMISC_REGISTER_CLASS(CTrackDefaultQuat);
 		NLMISC_REGISTER_CLASS(CTrackDefaultInt);
 		NLMISC_REGISTER_CLASS(CTrackDefaultString);
 		NLMISC_REGISTER_CLASS(CTrackDefaultBool);
+		NLMISC_REGISTER_CLASS(CTrackDefaultRGBA);
 
 		// Keys
 		NLMISC_REGISTER_CLASS(CKeyTCBFloat);
 		NLMISC_REGISTER_CLASS(CKeyTCBVector);
 		NLMISC_REGISTER_CLASS(CKeyTCBQuat);
 		NLMISC_REGISTER_CLASS(CKeyTCBInt);
+		NLMISC_REGISTER_CLASS(CKeyTCBRGBA);
 		NLMISC_REGISTER_CLASS(CKeyBezierFloat);
 		NLMISC_REGISTER_CLASS(CKeyBezierVector);
 		NLMISC_REGISTER_CLASS(CKeyBezierQuat);
 		NLMISC_REGISTER_CLASS(CKeyBezierInt);
+		NLMISC_REGISTER_CLASS(CKeyBezierRGBA);
 		NLMISC_REGISTER_CLASS(CKeyString);
 		NLMISC_REGISTER_CLASS(CKeyBool);
+		NLMISC_REGISTER_CLASS(CKeyRGBA);
 
 		// Don't register CTextureCroos,, since local, and not designed to be serialised.
 

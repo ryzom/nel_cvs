@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.46 2004/03/15 11:14:55 legros Exp $
+ * $Id: move_container.cpp,v 1.47 2004/03/29 11:32:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -201,6 +201,8 @@ void  CMoveContainer::evalCollision (double deltaTime, uint8 worldImage)
 
 	// Get first collision
 	_PreviousCollisionNode = &_TimeOT[0];
+	if(_PreviousCollisionNode == NULL)
+		return;
 
 	// Eval all collisions
 	evalAllCollisions (0.f, worldImage);

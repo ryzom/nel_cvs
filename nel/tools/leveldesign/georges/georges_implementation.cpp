@@ -132,7 +132,7 @@ void CGeorgesImpl::go()
 void CGeorgesImpl::releaseUI()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	delete _MainFrame;
+	_MainFrame->DestroyWindow();
 	_MainFrame = NULL;
 } // releaseUI
 

@@ -20,8 +20,11 @@ void	filterRyzomBug(const char *dirSrc, const char *dirDst, uint patchVersionWan
 {
 	if(!CFile::isDirectory(dirDst))
 	{
-		myinfo("%s is not a directory", dirDst);
-		return;
+		if(!CFile::createDirectory(dirDst))
+		{
+			myinfo("%s is not a directory and cannot create it", dirDst);
+			return;
+		}
 	}
 
 	vector<string>	fileList;

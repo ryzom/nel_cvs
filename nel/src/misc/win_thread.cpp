@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.11 2002/05/17 06:34:38 corvazier Exp $
+ * $Id: win_thread.cpp,v 1.12 2004/09/22 14:52:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,6 +209,12 @@ uint64 CWinProcess::getCPUMask()
 		return 1;
 }
 
+bool CWinProcess::setCPUMask(uint64 mask)
+{
+	// Ask the system for number of processor available for this process
+	DWORD processAffinityMask= (DWORD)mask;
+	return SetProcessAffinityMask((HANDLE)_ProcessHandle, processAffinityMask)!=0;
+}
 
 
 } // NLMISC

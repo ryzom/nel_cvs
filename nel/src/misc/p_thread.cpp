@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (Posix threads)
  *
- * $Id: p_thread.cpp,v 1.12 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: p_thread.cpp,v 1.13 2004/09/22 14:52:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,6 +176,13 @@ IProcess *IProcess::getCurrentProcess ()
  * getCPUMask
  */
 uint64 CPProcess::getCPUMask()
+{
+	/// \todo: handle processor selection under posix thread
+	return 1;
+}
+
+/// set the CPU mask
+bool CPProcess::setCPUMask(uint64 mask)
 {
 	/// \todo: handle processor selection under posix thread
 	return 1;

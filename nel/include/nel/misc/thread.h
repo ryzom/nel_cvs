@@ -1,7 +1,7 @@
 /** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.20 2004/09/14 13:14:58 cado Exp $
+ * $Id: thread.h,v 1.21 2004/09/22 14:53:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,6 +166,12 @@ public:
 	  * Not implemented under Linux.
 	  */
 	virtual uint64 getCPUMask()=0;
+
+	/**
+	  * Set the process CPU mask. Each bit stand for a CPU usable by the process threads.
+	  * Not implemented under Linux.
+	  */
+	virtual bool setCPUMask(uint64 mask)=0;
 };
 
 

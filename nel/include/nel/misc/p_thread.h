@@ -1,7 +1,7 @@
 /** \file p_thread.h
  * Posix implementation of CThread class (look at thread.h)
  *
- * $Id: p_thread.h,v 1.9 2002/05/17 06:34:30 corvazier Exp $
+ * $Id: p_thread.h,v 1.10 2004/09/22 14:53:37 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,8 @@ class CPProcess : public IProcess
 public:
 
 	virtual uint64 getCPUMask();
+	virtual bool setCPUMask(uint64 mask);
+	
 };
 
 } // NLMISC

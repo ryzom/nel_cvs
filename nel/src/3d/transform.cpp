@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.65 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: transform.cpp,v 1.66 2003/11/06 09:28:15 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -217,6 +217,7 @@ void	CTransform::initModel()
 }
 
 
+
 // ***************************************************************************
 void		CTransform::hide()
 {
@@ -233,6 +234,36 @@ void		CTransform::hide()
 		}
 	}
 }
+
+// ***************************************************************************
+void		CTransform::setTransparency(bool v)
+{ 
+	if (getStateFlag(IsTransparent) != v)
+	{
+		setStateFlag(IsTransparent, v);
+		if(isSkinned())
+		{
+			nlassert(_FatherSkeletonModel);
+			_FatherSkeletonModel->dirtSkinRenderLists();
+		}
+	}
+}
+
+// ***************************************************************************
+void		CTransform::setOpacity(bool v)
+{ 
+	if (getStateFlag(IsOpaque) != v)
+	{
+		setStateFlag(IsOpaque, v);
+		if(isSkinned())
+		{
+			nlassert(_FatherSkeletonModel);
+			_FatherSkeletonModel->dirtSkinRenderLists();
+		}
+	}
+}
+
+
 // ***************************************************************************
 void		CTransform::show()
 {

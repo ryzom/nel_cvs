@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.45 2003/09/01 09:19:48 berenguier Exp $
+ * $Id: transform.h,v 1.46 2003/11/06 09:28:15 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,11 +166,9 @@ public:
 public:
 
 	/** Accessors for opacity/transparency
-	 *	Warning: if you call it on a Skin which is already binded to a skeleton, you should call
-	 *	CSkeletonModel::dirtSkinRenderLists(), else it won't takes effect.
 	 */
-	void			setTransparency(bool v) { setStateFlag(IsTransparent, v); }
-	void			setOpacity(bool v) { setStateFlag(IsOpaque, v); }
+	void			setTransparency(bool v);
+	void			setOpacity(bool v);
 	// return a non-zero value if true
 	uint32			isOpaque() { return getStateFlag(IsOpaque); }
 	uint32			isTransparent() { return getStateFlag(IsTransparent); }

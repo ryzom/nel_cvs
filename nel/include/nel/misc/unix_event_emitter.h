@@ -1,7 +1,7 @@
-/** \file event_emitter.h
- * class CEventEmitter
+/** \file unix_event_emitter.h
+ * <File description>
  *
- * $Id: event_emitter.h,v 1.7 2000/12/19 09:55:14 lecroart Exp $
+ * $Id: unix_event_emitter.h,v 1.1 2000/12/19 09:55:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,42 +23,52 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_EVENT_EMITTER_H
-#define NL_EVENT_EMITTER_H
+#ifndef NL_UNIX_EVENT_EMITTER_H
+#define NL_UNIX_EVENT_EMITTER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/misc/event_server.h"
+#include "nel/misc/event_emitter.h"
 
+#ifdef NL_OS_UNIX
 
 namespace NLMISC {
 
-/*===================================================================*/
-
-class CEventServer;
 
 /**
- * CEventEmitter
- * Send events to the event server
- * \author Stephane Coutelas
+ * <Class description>
+ * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
  */
-class IEventEmitter
+class CUnixEventEmitter : public CEventEmitter
 {
 public:
+
+	/// Constructor
+	CUnixEventEmitter()
+
 	/** 
 	 * sends all events to server
 	 * (should call CEventServer method postEvent() ) 
 	 * \param server
 	 */	
-	virtual void submitEvents(CEventServer & server) = 0;
-		
+	virtual void submitEvents(CEventServer & server);
+
+public:
+	/** Process a win32 message.
+	  */
+	void processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server=NULL);
+private:
+	CWinEventServer _InternalServer;
+	uint32 _HWnd;
+
 };
 
 
 } // NLMISC
 
+#endif // NL_OS_UNIX
 
-#endif // NL_EVENT_EMITTER_H
+#endif // NL_UNIX_EVENT_EMITTER_H
 
-/* End of event_emitter.h */
+/* End of unix_event_emitter.h */

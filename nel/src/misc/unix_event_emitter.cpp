@@ -1,7 +1,7 @@
-/** \file event_emitter.cpp
+/** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.16 2000/12/19 09:55:14 lecroart Exp $
+ * $Id: unix_event_emitter.cpp,v 1.1 2000/12/19 09:55:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,41 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/unix_event_emitter.h"
+
+#ifdef NL_OS_UNIX
+
 namespace NLMISC {
 
+CUnixEventEmitter::CUnixEventEmitter ()
+{
+}
+
+void CUnixEventEmitter::submitEvents(CEventServer & server)
+{
+	// Window Mode cool.
+	// On va empecher de bouger la fenetre.
+	while (XPending(dpy))
+	{
+		XEvent	Event;
+		XNextEvent(dpy, &Event);
+		if(Event.xany.window==win && Event.type==ConfigureNotify)
+		{
+			XConfigureEvent	Conf;
+			Conf=Event.xconfigure;
+			if(Conf.x!=GLX_WinX || Conf.y!=GLX_WinY)
+			{
+				;
+			}
+		}
+	}
+}
+
+void CUnixEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server)
+{
+	// switch d evenement
+}
 
 } // NLMISC
+
+#endif // NL_OS_UNIX

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.24 2000/12/19 09:47:42 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.25 2000/12/19 09:55:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,11 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/event_emitter.h"
 
+#ifdef NL_OS_WINDOWS
+#include "nel/misc/win_event_emitter.h"
+#elif defined (NL_OS_UNIX)
+#include "nel/misc/unix_event_emitter.h"
+#endif // NL_OS_UNIX
 
 namespace NL3D {
 
@@ -83,41 +88,6 @@ public:
 
 class CDriverGL : public IDriver
 {
-private:
-	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-	static const uint32		ReleaseVersion;
-
-#ifdef NL_OS_WINDOWS
-	friend static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-#endif // NL_OS_WINDOWS
-
-private:
-
-#ifdef NL_OS_WINDOWS
-	HWND					_hWnd;
-	HDC						_hDC;
-	PIXELFORMATDESCRIPTOR	_pfd;
-    HGLRC					_hRC;
-	NLMISC::CEventEmitterWin32	_EventEmitter;
-	static uint				_Registered;
-	DEVMODE					_OldScreenMode;
-	bool					_FullScreen;
-#else
-	Display *dpy;
-	GLXContext ctx;
-	Window win;
-#endif // NL_OS_WINDOWS
-
-	bool					setupVertexBuffer(CVertexBuffer& VB);
-
-	CMatrix					_ViewMtx;
-
-	// Prec settings, for optimisation.
-	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
-	CMaterial*				_CurrentMaterial;
-
-	bool					activateTexture(uint stage, ITexture *tex);
-
 public:
 
 #ifdef NL_OS_WINDOWS
@@ -139,11 +109,7 @@ public:
 
 	virtual bool			activate();
 
-#ifdef NL_OS_WINDOWS
-	virtual NLMISC::IEventEmitter*	getEventEmitter() { return&_EventEmitter; };
-#else
-	virtual NLMISC::IEventEmitter*	getEventEmitter() { return NULL; };
-#endif // NL_OS_WINDOWS
+	virtual NLMISC::IEventEmitter	*getEventEmitter() { return&_EventEmitter; };
 
 	virtual bool			clear2D(CRGBA rgba);
 
@@ -189,6 +155,41 @@ public:
 
 	// between 0.0 and 1.0
 	virtual void setMousePos(float x, float y);
+
+
+private:
+	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
+	static const uint32		ReleaseVersion;
+
+#ifdef NL_OS_WINDOWS
+
+	friend static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	
+	HWND						_hWnd;
+	HDC							_hDC;
+	PIXELFORMATDESCRIPTOR		_pfd;
+    HGLRC						_hRC;
+	NLMISC::CWinEventEmitter	_EventEmitter;
+	static uint					_Registered;
+	DEVMODE						_OldScreenMode;
+	bool						_FullScreen;
+#elif defined (NL_OS_UNIX)
+	Display *dpy;
+	GLXContext ctx;
+	Window win;
+	NLMISC::CUnixEventEmitter	_EventEmitter;
+#endif // NL_OS_UNIX
+
+	bool					setupVertexBuffer(CVertexBuffer& VB);
+
+	CMatrix					_ViewMtx;
+
+	// Prec settings, for optimisation.
+	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
+	CMaterial*				_CurrentMaterial;
+
+	bool					activateTexture(uint stage, ITexture *tex);
+
 };
 
 } // NL3D

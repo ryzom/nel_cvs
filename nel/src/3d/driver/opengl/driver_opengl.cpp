@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.35 2000/12/19 09:47:42 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.36 2000/12/19 09:55:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,12 +279,13 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 	int sAttribList[] =
 	{
 	GLX_RGBA,
-	GLX_RED_SIZE, 1,
-	GLX_GREEN_SIZE, 1,
-	GLX_BLUE_SIZE, 1,
-	GLX_DEPTH_SIZE, 16,
-	GLX_BUFFER_SIZE, 32, 
 	GLX_DOUBLEBUFFER,
+	GLX_BUFFER_SIZE, 32, 
+	GLX_DEPTH_SIZE, 16,
+	GLX_RED_SIZE, 8,
+	GLX_GREEN_SIZE, 8,
+	GLX_BLUE_SIZE, 8,
+	GLX_ALPHA_SIZE, 8,
 	None
 	};
 
@@ -337,8 +338,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 
 	XMapWindow(dpy, win);
    
-	XEvent event;
-	XIfEvent(dpy, &event, WaitForNotify, (char *)this);
+//	XEvent event;
+//	XIfEvent(dpy, &event, WaitForNotify, (char *)this);
 
 #endif // NL_OS_WINDOWS
 

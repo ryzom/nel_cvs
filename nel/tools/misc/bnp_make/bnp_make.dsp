@@ -118,7 +118,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "__STL_DEBUG" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm- /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "NL_DEBUG_FAST" /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D "NL_DEBUG_FAST" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -137,21 +137,9 @@ LINK32=link.exe
 # Name "bnp_make - Win32 Debug"
 # Name "bnp_make - Win32 ReleaseDebug"
 # Name "bnp_make - Win32 DebugFast"
-# Begin Group "Source Files"
-
-# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
 SOURCE=.\main.cpp
 # End Source File
-# End Group
-# Begin Group "Header Files"
-
-# PROP Default_Filter "h;hpp;hxx;hm;inl"
-# End Group
-# Begin Group "Resource Files"
-
-# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-# End Group
 # End Target
 # End Project

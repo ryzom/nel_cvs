@@ -164,11 +164,9 @@ void packSubRecurse ()
 {
 	vector<string>	pathContent;
 
-	char sCurDir[MAX_PATH];
-
-	getcwd (sCurDir, MAX_PATH);
-	printf ("Treating directory : %s\n", sCurDir);
-	CPath::getPathContent(sCurDir, true, false, true, pathContent);
+	string cp = CPath::getCurrentPath();
+	printf ("Treating directory : %s\n", cp.c_str());
+	CPath::getPathContent(cp, true, false, true, pathContent);
 
 	// Sort filename
 	sort (pathContent.begin(), pathContent.end(), i_comp);
@@ -349,8 +347,8 @@ int main (int nNbArg, char **ppArgs)
 				nlwarning ("ERROR (bnp_make.exe) : can't set current directory to %s", ppArgs[2]);
 				return -1;
 			}
-			getcwd (sCurDir, MAX_PATH);
-			gDestBNPFile = string(sCurDir) + string(".bnp");
+			//getcwd (sCurDir, MAX_PATH);
+			gDestBNPFile = CPath::getCurrentPath() + string(".bnp");
 		}
 		
 		remove (gDestBNPFile.c_str());
@@ -380,8 +378,7 @@ int main (int nNbArg, char **ppArgs)
 			char sCurDir[MAX_PATH];
 			if (chdir (path.c_str()) != -1)
 			{
-				getcwd (sCurDir, MAX_PATH);
-				path = sCurDir;
+				path = CPath::getCurrentPath();
 			}
 			else
 			{

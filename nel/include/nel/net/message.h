@@ -1,7 +1,7 @@
 /** \file message.h
  * CMessage class
  *
- * $Id: message.h,v 1.18 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: message.h,v 1.19 2001/05/03 13:29:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NLNET
  * Message memory stream for network. Can be serialized to/from (see SerialBuffer()). Can be sent or received
  * over a network, using a CSocket or preferably a CMsgSocket object.
  *
- * warning: if you don't put a sida, the message type will not be associated with id so, it'll not be optimized
+ * warning: if you don't give a sida, the message type will not be associated with id so, it'll not be optimized
  *
  * \author Vianney Lecroart
  * \author Nevrax France
@@ -187,20 +187,28 @@ public:
 		}
 	}
 
+	// Returns true if the message type was already set
 	bool typeIsSet () const
 	{
 		return _TypeSet;
 	}
 
+	// Clear the message. With this function, you can reuse a message to create another message
 	void clear ()
 	{
 		CMemStream::clear ();
 		_TypeSet = false;
 	}
 
+	/// Returns the type name in string if available. Be sure that the message have the name of the message type
 	std::string getName () const { nlassert (_TypeSet && TypeHasAName); return _Name; }
+	
+	/// Returns the type id of this message is available.
 	NLMISC::CStringIdArray::TStringId getId () const { nlassert (_TypeSet && TypeHasAnId); return _Id; }
 
+	/** Returns a readable string to display it to the screen. It's only for debugging purpose!
+	 * Don't use it for anything else than to debugging, the string format could change in the futur
+	 */
 	std::string toString () const
 	{
 		nlassert (_TypeSet);

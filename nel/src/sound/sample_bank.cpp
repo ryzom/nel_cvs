@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.16 2003/07/03 15:16:12 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.17 2003/07/22 13:29:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -195,6 +195,9 @@ CSampleBank::~CSampleBank()
 		// need to wait for loading end.
 		nlSleep(100);
 	}
+
+	if (_Loaded)
+		unload();
 
 	// remove the bank from the list of known banks
 	TSampleBankContainer::iterator iter(_Banks.begin()), end(_Banks.end());

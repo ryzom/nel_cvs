@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.56 2003/08/18 14:31:42 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.57 2003/11/06 14:51:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "std3d.h"
+#include "std3d.h" 
 
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
@@ -61,7 +61,8 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 											   _InClusterAndVisible(false),
 											   _EmitterActive(true),
 											   _BypassGlobalUserParam(0),
-											   _AnimType(CParticleSystem::AnimVisible)
+											   _AnimType(CParticleSystem::AnimVisible),
+											   _UserColor(CRGBA::White)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -191,6 +192,7 @@ void CParticleSystemModel::reallocRsc()
 	{		
 		touch((uint)CParticleSystemModel::PSParam0 + k, OwnerBit);
 	}
+	_ParticleSystem->setUserColor(_UserColor);
 	//
 	if (!_EmitterActive) _ParticleSystem->activateEmitters(false);
 }
@@ -655,8 +657,7 @@ void	CParticleSystemModel::traverseClip()
 			}
 			//
 			if (visible)
-			{				
-				_Visible = true;
+			{								
 				insertInVisibleList();				
 				_InClusterAndVisible = true;
 				return;
@@ -668,7 +669,7 @@ void	CParticleSystemModel::traverseClip()
 					CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)Shape);
 					nlassert(pss);
 					// invalidate the system if too far
-					const CVector pos = getWorldMatrix().getPos();
+					const CVector pos = _AncestorSkeletonModel->getWorldMatrix().getPos();
 					const CVector d = pos - clipTrav.CamPos;
 					if (d * d > pss->_MaxViewDist * pss->_MaxViewDist) 
 					{
@@ -683,8 +684,7 @@ void	CParticleSystemModel::traverseClip()
 				{				
 					// NB : The test to see wether the system is not too far is performed by the particle system manager					
 					if (!_EditionMode)
-					{
-						_Visible = true;     // system near, but maybe not in cluster..
+					{						
 						insertInVisibleList();
 					}					
 				}
@@ -741,14 +741,11 @@ void	CParticleSystemModel::traverseClip()
 				{					
 					if ( (pyramid[i]   *  mat  ).d > 0.0f )  // in its basis, the system is at the center
 
-					{						
-						_Visible = true;
+					{												
 						insertInVisibleList();
 						return;
 					}
-				}	
-				
-				_Visible = true;
+				}									
 				insertInVisibleList();				
 				_InClusterAndVisible = true;
 				return;						
@@ -760,15 +757,11 @@ void	CParticleSystemModel::traverseClip()
 				for(sint i=0; i < (sint)pyramid.size(); i++)
 				{					
 					if ( !pss->_PrecomputedBBox.clipBack(pyramid[i]  * mat  ) ) 
-					{
-						
-						_Visible = true;
+					{												
 						insertInVisibleList();
 						return;					
 					}
-				}			
-
-				_Visible = true;
+				}							
 				insertInVisibleList();
 				_InClusterAndVisible = true;
 				return;
@@ -798,15 +791,12 @@ void	CParticleSystemModel::traverseClip()
 		{
 			if (!_EditionMode)
 			{
-				// system near, but maybe not in cluster..	
-				_Visible = true;
+				// system near, but maybe not in cluster..					
 				insertInVisibleList();
 			}				
 			return;
 		}
-		
-
-		_Visible = true;
+				
 		insertInVisibleList();
 		_InClusterAndVisible = true;
 }
@@ -893,6 +883,13 @@ bool CParticleSystemModel::hasActiveEmitters() const
 		}
 	#endif
 	return _EmitterActive;
+}
+
+//===================================================================
+void CParticleSystemModel::setUserColor(NLMISC::CRGBA userColor)
+{
+	if (_ParticleSystem) _ParticleSystem->setUserColor(userColor);
+	_UserColor = userColor;
 }
 
 

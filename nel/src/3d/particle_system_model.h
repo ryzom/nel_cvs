@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.34 2003/08/18 14:31:42 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.35 2003/11/06 14:51:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -262,6 +262,9 @@ public:
 	// test if there are active emitters in the system
 	bool    hasActiveEmitters() const;
 
+	// user color
+	void			setUserColor(NLMISC::CRGBA userColor);
+	NLMISC::CRGBA	getUserColor() const { return _UserColor; }	
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -288,10 +291,11 @@ private:
 
 	// insert the model in the Clip/AnimDetail/LoadBalacing visible list.
 	void				insertInVisibleList()
-	{
+	{		
 		// if not already not inserted
 		if (!_InsertedInVisibleList)
 		{
+			_Visible = true;
 			_InsertedInVisibleList = true;
 			// add to clip/anim/load Trav.
 			getOwnerScene()->getClipTrav().addVisibleModel(this);
@@ -308,7 +312,7 @@ private:
 	CParticleSystemManager::TModelHandle    _ModelHandle; /** a handle to say when the resources
 															* of the model (_ParticleSystem) are deleted
 															*/
-	CParticleSystemManager::TModelHandle    _AnimatedModelHandle; // handle for permanenlty animated models																
+	CParticleSystemManager::TAlwaysAnimatedModelHandle    _AnimatedModelHandle; // handle for permanenlty animated models																
 	NLMISC::CSmartPtr<CParticleSystem>		_ParticleSystem;
 	CScene							  	   *_Scene;
 	TAnimationTime						    _EllapsedTime;
@@ -332,7 +336,8 @@ private:
 	CAnimatedValueBool						_TriggerAnimatedValue;
 	/// user params of the system
 	CAnimatedValueFloat						_UserParam[MaxPSUserParam];
-	uint8                                    _BypassGlobalUserParam;  // mask to bypass a global user param. This state is not serialized
+	uint8                                   _BypassGlobalUserParam;  // mask to bypass a global user param. This state is not serialized
+	NLMISC::CRGBA							_UserColor;
 
 };
 

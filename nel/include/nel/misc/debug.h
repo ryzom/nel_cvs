@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.56 2003/09/09 15:26:20 lecroart Exp $
+ * $Id: debug.h,v 1.57 2003/10/23 13:31:44 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #ifndef NL_DEBUG_H
 #define NL_DEBUG_H
+
 #include <stdio.h>
 
 #include "nel/misc/common.h"
@@ -34,12 +35,12 @@
 #include "nel/misc/displayer.h"
 
 namespace NLMISC
-{
+{	
 
 //
 // Externals
 //
-
+	
 extern CLog *ErrorLog;
 extern CLog *WarningLog;
 extern CLog *InfoLog;
@@ -84,7 +85,6 @@ extern bool GlobalAssertCall;
 
 // Macros
 
-
 /**
  * \def nldebug(exp)
  * Log a debug string. You don't have to put the final new line. It will be automatically append at the end of the string.
@@ -99,22 +99,28 @@ extern bool GlobalAssertCall;
  *\endcode
  */
 #ifdef NL_RELEASE
-#define nldebug 0&&
+#	define nldebug 0&&
 #else // NL_RELEASE
-#define nldebug NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
+#	ifdef NL_OS_WINDOWS
+#		define nldebug NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::_nldebug
+#	else
+#		define nldebug NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
+#	endif
 #endif // NL_RELEASE
-
 
 /**
  * \def nlinfo(exp)
  * Same as nldebug but it will be display in debug and in release mode.
  */
 #ifdef NL_RELEASE
-#define nlinfo 0&&
+#	define nlinfo 0&&
 #else // NL_RELEASE
-#define nlinfo NLMISC::createDebug (), NLMISC::InfoLog->setPosition( __LINE__, __FILE__ ), NLMISC::InfoLog->displayNL
+#	ifdef NL_OS_WINDOWS
+#		define nlinfo NLMISC::createDebug (), NLMISC::InfoLog->setPosition( __LINE__, __FILE__ ), NLMISC::_nlinfo
+#	else
+#		define nlinfo NLMISC::createDebug (), NLMISC::InfoLog->setPosition( __LINE__, __FILE__ ), NLMISC::InfoLog->displayNL
+#	endif
 #endif // NL_RELEASE
-
 
 /**
  * \def nlwarning(exp)
@@ -133,12 +139,16 @@ extern bool GlobalAssertCall;
 	}
  *\endcode
  */
-#ifdef NL_RELEASE
-#define nlwarning 0&&
-#else // NL_RELEASE
-#define nlwarning NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog->displayNL
-#endif // NL_RELEASE
 
+#ifdef NL_RELEASE
+#	define nlwarning 0&&
+#else // NL_RELEASE
+#	ifdef NL_OS_WINDOWS
+#		define nlwarning NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::_nlwarning
+#	else
+#		define nlwarning NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog->displayNL
+#	endif
+#endif // NL_RELEASE
 
 /**
  * \def nlerror(exp)
@@ -542,6 +552,121 @@ template<class T, class U>	inline T	type_cast(U o)
 
 // Beep (Windows only, no effect elsewhere)
 void beep( uint freq, uint duration );
+
+
+
+
+#ifdef NL_OS_WINDOWS
+
+//
+// These functions are needed by template system to failed the compilation if you pass bad type on nlinfo...
+//
+
+inline void _check(int a) { }
+inline void _check(unsigned int a) { }
+inline void _check(char a) { }
+inline void _check(unsigned char a) { }
+inline void _check(long a) { }
+inline void _check(unsigned long a) { }
+inline void _check(uint8 a) { }
+inline void _check(sint8 a) { }
+inline void _check(uint16 a) { }
+inline void _check(sint16 a) { }
+inline void _check(uint32 a) { }
+inline void _check(sint32 a) { }
+inline void _check(uint64 a) { }
+inline void _check(sint64 a) { }
+inline void _check(float a) { }
+inline void _check(double a) { }
+inline void _check(const char *a) { }
+inline void _check(const void *a) { }
+
+inline void _nldebug(const char *fmt) { NLMISC::DebugLog->displayNL(fmt); }
+template<class A> void _nldebug(const char *fmt, A a) { _check(a); NLMISC::DebugLog->displayNL(fmt, a); }
+template<class A, class B> void _nldebug(const char *fmt, A a, B b) { _check(a); _check(b); NLMISC::DebugLog->displayNL(fmt, a, b); }
+template<class A, class B, class C> void _nldebug(const char *fmt, A a, B b, C c) { _check(a); _check(b); _check(c); NLMISC::DebugLog->displayNL(fmt, a, b, c); }
+template<class A, class B, class C, class D> void _nldebug(const char *fmt, A a, B b, C c, D d) { _check(a); _check(b); _check(c); _check(d); NLMISC::DebugLog->displayNL(fmt, a, b, c, d); }
+template<class A, class B, class C, class D, class E> void _nldebug(const char *fmt, A a, B b, C c, D d, E e) { _check(a); _check(b); _check(c); _check(d); _check(e); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e); }
+template<class A, class B, class C, class D, class E, class F> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f); }
+template<class A, class B, class C, class D, class E, class F, class G> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g); }
+template<class A, class B, class C, class D, class E, class F, class G, class H> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W, class X> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); _check(x); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W, class X, class Y> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x, Y y) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); _check(x); _check(y); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W, class X, class Y, class Z> void _nldebug(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x, Y y, Z z) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); _check(x); _check(y); _check(z); NLMISC::DebugLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z); }
+
+inline void _nlinfo(const char *fmt) { NLMISC::InfoLog->displayNL(fmt); }
+template<class A> void _nlinfo(const char *fmt, A a) { _check(a); NLMISC::InfoLog->displayNL(fmt, a); }
+template<class A, class B> void _nlinfo(const char *fmt, A a, B b) { _check(a); _check(b); NLMISC::InfoLog->displayNL(fmt, a, b); }
+template<class A, class B, class C> void _nlinfo(const char *fmt, A a, B b, C c) { _check(a); _check(b); _check(c); NLMISC::InfoLog->displayNL(fmt, a, b, c); }
+template<class A, class B, class C, class D> void _nlinfo(const char *fmt, A a, B b, C c, D d) { _check(a); _check(b); _check(c); _check(d); NLMISC::InfoLog->displayNL(fmt, a, b, c, d); }
+template<class A, class B, class C, class D, class E> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e) { _check(a); _check(b); _check(c); _check(d); _check(e); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e); }
+template<class A, class B, class C, class D, class E, class F> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f); }
+template<class A, class B, class C, class D, class E, class F, class G> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g); }
+template<class A, class B, class C, class D, class E, class F, class G, class H> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W, class X> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); _check(x); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W, class X, class Y> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x, Y y) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); _check(x); _check(y); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W, class X, class Y, class Z> void _nlinfo(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x, Y y, Z z) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); _check(x); _check(y); _check(z); NLMISC::InfoLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z); }
+
+inline void _nlwarning(const char *fmt) { NLMISC::WarningLog->displayNL(fmt); }
+template<class A> void _nlwarning(const char *fmt, A a) { _check(a); NLMISC::WarningLog->displayNL(fmt, a); }
+template<class A, class B> void _nlwarning(const char *fmt, A a, B b) { _check(a); _check(b); NLMISC::WarningLog->displayNL(fmt, a, b); }
+template<class A, class B, class C> void _nlwarning(const char *fmt, A a, B b, C c) { _check(a); _check(b); _check(c); NLMISC::WarningLog->displayNL(fmt, a, b, c); }
+template<class A, class B, class C, class D> void _nlwarning(const char *fmt, A a, B b, C c, D d) { _check(a); _check(b); _check(c); _check(d); NLMISC::WarningLog->displayNL(fmt, a, b, c, d); }
+template<class A, class B, class C, class D, class E> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e) { _check(a); _check(b); _check(c); _check(d); _check(e); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e); }
+template<class A, class B, class C, class D, class E, class F> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f); }
+template<class A, class B, class C, class D, class E, class F, class G> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g); }
+template<class A, class B, class C, class D, class E, class F, class G, class H> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W, class X> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); _check(x); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W, class X, class Y> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x, Y y) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); _check(x); _check(y); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y); }
+template<class A, class B, class C, class D, class E, class F, class G, class H, class I, class J, class K, class L, class M, class N, class O, class P, class Q, class R, class S, class T, class U, class V, class W, class X, class Y, class Z> void _nlwarning(const char *fmt, A a, B b, C c, D d, E e, F f, G g, H h, I i, J j, K k, L l, M m, N N, O o, P p, Q q, R r, S s, T t, U u, V v, W w, X x, Y y, Z z) { _check(a); _check(b); _check(c); _check(d); _check(e); _check(f); _check(g); _check(h); _check(i); _check(j); _check(k); _check(l); _check(m); _check(n); _check(o); _check(p); _check(q); _check(r); _check(s); _check(t); _check(u); _check(v); _check(w); _check(x); _check(y); _check(z); NLMISC::WarningLog->displayNL(fmt, a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z); }
+
+#endif // NL_OS_WINDOWS
+
 
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.4 2003/08/13 16:31:41 cado Exp $
+ * $Id: ligo_config.cpp,v 1.5 2003/08/14 08:52:08 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -75,12 +75,9 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 {
 	// File exist ?
 	string filename = _fileName;
-	if (!CPath::exists (_fileName))
-	{
-		filename = CPath::lookup (_fileName, false, false, false);
-		if (filename.empty())
-			filename = _fileName;
-	}
+	filename = CPath::lookup (_fileName, false, false, false);
+	if (filename.empty())
+		filename = _fileName;
 
 	// The context strings
 	set<string> contextStrings;
@@ -160,7 +157,7 @@ bool CLigoConfig::readPrimitiveClass (const char *_fileName)
 	{
 		errorMessage ("Can't open the file %s for reading.", filename.c_str());
 	}
-	return true;
+	return false;
 }
 
 // ***************************************************************************

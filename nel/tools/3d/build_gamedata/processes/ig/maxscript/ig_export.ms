@@ -157,6 +157,13 @@ try
 									if ( (getIg node) == ig_array[ig]) then
 										selectmore node
 								)
+								-- Select all lights in this ig
+								for node in lights do
+								(
+									-- Select it if in the ig
+									if ( (getIg node) == ig_array[ig]) then
+										selectmore node
+								)
 
 								-- Check export
 								try
@@ -196,6 +203,12 @@ try
 							-- Some instance ref ?
 							if ( ((getAppData node NEL_OBJECT_NAME_DATA) != undefined) or (isAccelerator node) ) then
 								selectmore node
+						)
+						-- Select all lights in this ig
+						for node in lights do
+						(
+							-- Select it 
+							selectmore node
 						)
 
 						-- To export

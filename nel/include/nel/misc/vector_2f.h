@@ -1,7 +1,7 @@
 /** \file vector_2f.h
  * <File description>
  *
- * $Id: vector_2f.h,v 1.1 2001/05/09 09:37:50 berenguier Exp $
+ * $Id: vector_2f.h,v 1.2 2001/06/13 12:25:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_VECTOR_2F_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
 #include <math.h>
 #include "nel/misc/stream.h"
 #include <string>
@@ -55,10 +56,12 @@ public:		// Methods.
 	//@{
 	/// Constructor wich do nothing.
 	CVector2f() {}
-	/// Constructor .
+	/// Constructor.
 	CVector2f(float	_x, float _y) : x(_x), y(_y) {}
 	/// Copy Constructor.
 	CVector2f(const CVector2f &v) : x(v.x), y(v.y) {}
+	/// Constructor that uses the (x,y) coordinates of a CVector.
+	CVector2f(const CVector &v) : x(v.x), y(v.y) {}
 	//@}
 
 	/// @name Base Maths.

@@ -1,7 +1,7 @@
 /** \file input_device.h
  * <File description>
  *
- * $Id: input_device.h,v 1.1 2002/03/28 10:36:37 vizerie Exp $
+ * $Id: input_device.h,v 1.2 2002/04/10 12:41:07 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -75,9 +75,10 @@ struct IInputDevice
 		/** For device server usage :
 		  * Says that the next message is for another device, or that it is the last message that will be received.
 		  * This allow to pack several messages in one (for example, to sum up mouse moves until a click occurs)
-		  * The default does nothing
+		  * The default does nothing.
+		  * The next message can be used to get a time stamp for example. It may be NULL is no next message is available
 		  */
-		virtual void transitionOccured(CEventServer *server) {}
+		virtual void transitionOccured(CEventServer *server, const IInputDeviceEvent *nextMessage) {}
 	//@}
 
 	// dtor

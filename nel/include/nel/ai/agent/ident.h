@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.15 2001/03/21 14:59:34 chafik Exp $
+ * $Id: ident.h,v 1.16 2001/03/21 15:32:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,20 +30,13 @@
 #include "nel/misc/file.h"
 #include "nel/ai/e/ai_exception.h" 
 #include "nel/ai/agent/agent_string.h"
+#include "nel/ai/agent/identtype.h"
 
 namespace NLAIAGENT
 {	
 	class IRefrence;
 
-#ifndef _MAX__INDEX_DEFINED
-		const sint32 maxIndex = 2;
-		#define _MAX__INDEX_DEFINED
 
-		const uint64 maxResolutionNumer = ((uint64)2 << 48) - (uint64)1;
-#else
-		extern const sint32 maxIndex;
-		extern const uint64 maxResolutionNumer;
-#endif
 
 	/**	
 	  This class is a basic hi nomber manipulation. An index variant is an maxIndex*64 bit number.
@@ -321,152 +314,7 @@ namespace NLAIAGENT
 		}
 	};
 
-	struct CAgentNumber: public NLMISC::IStreamable
-	{
-		static uint8 ServerID;
-
-		uint64	DynamicId   :  8;
-		uint64	CreatorId   :  8;
-		uint64	AgentNumber : 48;
-
-		CAgentNumber()
-		{
-			CreatorId = (uint64)ServerID;
-			DynamicId = (uint64)ServerID;
-			AgentNumber = 0;
-		}		
-
-		CAgentNumber(uint64 id,uint64 creator,uint64 dyn)
-		{
-			CreatorId = creator;
-			DynamicId = dyn;
-			AgentNumber = id;
-		}
-
-		CAgentNumber(const CAgentNumber &a)
-		{
-			CreatorId = a.CreatorId;			
-			DynamicId = a.DynamicId;
-			AgentNumber = a.AgentNumber;
-		}
-
-		///fill from read stream.
-		CAgentNumber(NLMISC::IStream &is)
-		{
-			uint8 p;
-			is.serial(p);
-			CreatorId = (uint64)p;
-			is.serial(p);
-			DynamicId = (uint64)p;
-			uint64 x;
-			is.serial(x);
-			AgentNumber = x;
-		}
-
-		CAgentNumber(const char *id);
-
-		///\name comparison of two CIndexVariant.
-		//@{
-		bool operator == (const CAgentNumber &a) const
-		{			
-			return (AgentNumber == a.AgentNumber && CreatorId == a.CreatorId);			
-		}
-				
-		bool operator < (const CAgentNumber &a) const
-		{			
-			if(AgentNumber < a.AgentNumber) return true; 
-			else
-			if(AgentNumber == a.AgentNumber) return (CreatorId < a.CreatorId);
-
-			return false;
-		}
-
-		bool operator > (const CAgentNumber &a) const
-		{			
-			if(AgentNumber > a.AgentNumber) return true; 
-			else
-			if(AgentNumber == a.AgentNumber) return (CreatorId > a.CreatorId);
-
-			return false;
-		}
-		//@}
-
-		const CAgentNumber &operator ++(int)/// throw (NLAIE::CExceptionIndexError)
-		{
-			if(AgentNumber < maxResolutionNumer)
-			{
-				AgentNumber ++;
-			}
-			else
-			{
-				throw NLAIE::CExceptionIndexError();
-			}
-			return *this;
-		}
-
-		const CAgentNumber &operator = (const CAgentNumber &a)
-		{
-			CreatorId = a.CreatorId;			
-			DynamicId = a.DynamicId;
-			AgentNumber = a.AgentNumber;
-			return *this;
-		}
-
-		const CAgentNumber &operator = (uint64 a)
-		{			
-			AgentNumber = a;
-			return *this;
-		}
-
-		///saving the nomber in an output stream.
-		virtual void save(NLMISC::IStream &os)
-		{			
-			uint8 p = (uint8)CreatorId;
-			os.serial(p);
-			p = (uint8)DynamicId;
-			os.serial(p);
-			uint64 x = AgentNumber;
-			os.serial(x);
-		}
-
-		///loading the nomber from an input stream.
-		virtual void load(NLMISC::IStream &is)
-		{
-			uint8 p;
-			is.serial(p);
-			CreatorId = (uint64)p;
-			is.serial(p);
-			DynamicId = (uint64)p;
-			uint64 x;
-			is.serial(x);
-			AgentNumber = x;
-
-		}
-		///Have a debug string.
-		void getDebugString(char *str) const;		
-
-		/// \name NLMISC::IStreamable method.
-		//@{
-		virtual std::string	getClassName()
-		{
-			return std::string("<CAgentNumber>");
-		}
-
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
-		{
-			if(f.isReading())
-			{
-				load(f);
-			}
-			else
-			{				
-				save(f);
-			}
-
-		}
-		//@}
-
-	};	
+	
 
 	/**
 	Generator of unique ident for objects.

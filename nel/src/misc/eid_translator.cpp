@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.30 2004/10/06 13:05:11 guignot Exp $
+ * $Id: eid_translator.cpp,v 1.30.8.1 2005/01/12 15:21:19 legros Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -469,12 +469,15 @@ string CEntityIdTranslator::getUserName (uint32 uid)
 	return 0;
 }
 
-void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, string &userName, bool &online)
+void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entityName, sint8 &entitySlot, uint32 &uid, string &userName, bool &online, std::string* additional)
 {
 	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
 	CEntityId reid(eid);
 	reid.setCreatorId(0);
 	reid.setDynamicId(0);
+
+	if (additional != NULL)
+		additional->clear();
 
 	reit it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
@@ -493,6 +496,9 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 		uid = (*it).second.UId;
 		userName = (*it).second.UserName;
 		online = (*it).second.Online;
+
+		if (EntityInfoCallback != NULL && additional != NULL)
+			*additional = EntityInfoCallback(eid);
 	}
 }
 
@@ -632,10 +638,11 @@ NLMISC_CATEGORISED_COMMAND(nel,findEIdByEntity,"Find entity id using the entity 
 	uint32 uid;
 	string userName;
 	bool online;
+	std::string	extinf;
 
-	CEntityIdTranslator::getInstance()->getEntityIdInfo(eid, entityName, entitySlot, uid, userName, online);
+	CEntityIdTranslator::getInstance()->getEntityIdInfo(eid, entityName, entitySlot, uid, userName, online, &extinf);
 
-	log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", uid, userName.c_str(), eid.toString().c_str(), entityName.toString().c_str(), (sint16)entitySlot, (online?"Online":"Offline"));
+	log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s%s%s", uid, userName.c_str(), eid.toString().c_str(), entityName.toString().c_str(), (sint16)entitySlot, (extinf.c_str()), (extinf.empty() ? "" : " "), (online?"Online":"Offline"));
 	
 	return true;
 }
@@ -711,9 +718,10 @@ NLMISC_CATEGORISED_COMMAND(nel,playerInfo,"Get informations about a player or al
 			uint32 uid2;
 			string userName;
 			bool online;
-			CEntityIdTranslator::getInstance()->getEntityIdInfo (res[i], entityName, entitySlot, uid2, userName, online);
+			std::string	extinf;
+			CEntityIdTranslator::getInstance()->getEntityIdInfo (res[i], entityName, entitySlot, uid2, userName, online, &extinf);
 
-			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", uid2, userName.c_str(), res[i].toString().c_str(), entityName.toString().c_str(), (sint16)entitySlot, (online?"Online":"Offline"));
+			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s%s%s", uid2, userName.c_str(), res[i].toString().c_str(), entityName.toString().c_str(), (sint16)entitySlot, (extinf.c_str()), (extinf.empty() ? "" : " "), (online?"Online":"Offline"));
 		}
 
 		return true;

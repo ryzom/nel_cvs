@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.8 2001/08/24 16:55:53 vizerie Exp $
+ * $Id: source_user.h,v 1.9 2001/09/03 14:20:20 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/sound/u_source.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/time_nl.h"
 #include "playable.h"
 
 
@@ -51,7 +52,7 @@ class CSourceUser : public USource, public IPlayable
 public:
 
 	/// Constructor
-	CSourceUser( TSoundId id=NULL );
+	CSourceUser( TSoundId id=NULL, bool spawn=false );
 	/// Destructor
 	virtual ~CSourceUser();
 
@@ -82,8 +83,8 @@ public:
 	virtual void					play();
 	/// Stop playing
 	virtual void					stop();
-	/// Get playing state (logical)
-	virtual bool					isPlaying()									{ return _Playing; }
+	/// Get playing state. Return false even if the source has stopped on its own.
+	virtual bool					isPlaying();
 	//@}
 
 
@@ -145,7 +146,13 @@ public:
 	void							leaveTrack();
 	/// Return the track
 	CTrack							*getTrack()									{ return _Track; }
+	/// Return true if playing is finished or stop() has been called.
+	bool							isStopped();
+	/// Return the spawn state
+	bool							isSpawn() const								{ return _Spawn; }
 
+
+	// From IPlayable
 
 	/// Enable (play with high priority) or disable (stop and set low priority)
 	virtual void					enable( bool toplay, float gain );
@@ -153,6 +160,7 @@ public:
 	virtual void					moveTo( const NLMISC::CVector& pos )		{ setPos( pos ); }
 	/// Serial sound and looping state (warning: partial serial)
 	virtual void					serial( NLMISC::IStream& s );
+
 	NLMISC_DECLARE_CLASS(CSourceUser);
 	
 protected:
@@ -181,6 +189,12 @@ private:
 
 	// Position to return, for a stereo source
 	const NLMISC::CVector			*_3DPosition;
+
+	// Playing start time
+	NLMISC::TTime					_PlayStart;
+
+	// Spawn state
+	const bool						_Spawn;
 };
 
 

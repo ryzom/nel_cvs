@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.12 2001/08/28 16:59:34 cado Exp $
+ * $Id: source_user.cpp,v 1.13 2001/09/03 14:20:20 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,11 +41,11 @@ namespace NLSOUND {
 /*
  * Constructor
  */
-CSourceUser::CSourceUser( TSoundId id ) :
+CSourceUser::CSourceUser( TSoundId id, bool spawn ) :
 	_Priority(MidPri), _Playing(false),
 	_Position(CVector::Null), _Velocity(CVector::Null), _Direction(CVector::Null),
 	_Gain(1.0f), _Pitch(1.0f), _RelativeMode(false), _Looping(false),
-	_Track(NULL), _3DPosition(NULL)
+	_Track(NULL), _3DPosition(NULL), _PlayStart(0), _Spawn(spawn)
 {
 	setSound( id );
 }
@@ -56,7 +56,7 @@ CSourceUser::CSourceUser( TSoundId id ) :
  */
 CSourceUser::~CSourceUser()
 {
-	if ( _Track != NULL )
+	/*if ( _Track != NULL )
 	{
 		if ( _Playing )
 		{
@@ -64,7 +64,7 @@ CSourceUser::~CSourceUser()
 		}
 		_Track->setUserSource( NULL );
 	}
-	CAudioMixerUser::instance()->removeSource( this );
+	CAudioMixerUser::instance()->removeSource( this );*/
 }
 
 
@@ -73,6 +73,10 @@ CSourceUser::~CSourceUser()
  */
 void					CSourceUser::setSound( TSoundId id )
 {
+	if ( id == NULL )
+	{
+		stop();
+	}
 	_Sound = id;
 	if ( _Sound != NULL )
 	{
@@ -157,9 +161,10 @@ void					CSourceUser::play()
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->play();
-		nldebug( "AM: Playing source" );
+		nldebug( "AM: Playing source %s", getSound() ? getSound()->getName().c_str() : "" );
 	}
 	_Playing = true;
+	_PlayStart = CTime::getLocalTime();
 }
 
 
@@ -171,7 +176,7 @@ void					CSourceUser::stop()
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->stop();
-		nldebug( "AM: Source stopped" );
+		nldebug( "AM: Source %s stopped", getSound() ? getSound()->getName().c_str() : "" );
 	}
 	_Playing = false;
 }
@@ -382,11 +387,11 @@ void					CSourceUser::enterTrack( CTrack *track )
 			// Play physically
 			_Track->DrvSource->play();
 		}
-		nldebug( "AM: Source selected for playing" );
+		nldebug( "AM: Source %s selected for playing", getSound() ? getSound()->getName().c_str() : "" );
 	}
 	else
 	{
-		nldebug( "AM: Source unselected" );
+		nldebug( "AM: Source %s unselected", getSound() ? getSound()->getName().c_str() : "" );
 	}
 }
 
@@ -395,7 +400,7 @@ void					CSourceUser::enterTrack( CTrack *track )
  * Unset the corresponding track
  */
 void					CSourceUser::leaveTrack()
-{
+{	
 	if ( _Track != NULL )
 	{
 		_Track->setUserSource( NULL );
@@ -458,6 +463,91 @@ void					CSourceUser::serial( NLMISC::IStream& s )
 		// Put into tracks
 		CAudioMixerUser::instance()->addSource( this );
 		CAudioMixerUser::instance()->giveTrack( this );
+	}
+}
+
+
+/*
+ * Get playing state. Return false even if the source has stopped on its own.
+ */
+bool					CSourceUser::isPlaying()
+{
+	if ( _Playing )
+	{
+		if ( getTrack() != NULL )
+		{
+			// Check if "online" source is still playing
+			if ( getTrack()->DrvSource->isPlaying() )
+			{
+				return true;
+			}
+			else
+			{
+				_Playing = false;
+				return false;
+			}
+		}
+		else
+		{
+			// Check if "offline" source should have stopped playing
+			nlassert( _Sound );
+			if ( _PlayStart == 0 )
+			{
+				// Not played yet
+				return false;
+			}
+			else if ( _Looping || (CTime::getLocalTime()-_PlayStart < _Sound->getDuration()) )
+			{
+				return true;
+			}
+			else
+			{
+				_Playing = false;
+				return false;
+			}
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+
+/*
+ * Return true if playing is finished or stop() has been called.
+ */
+bool					CSourceUser::isStopped()
+{
+	if ( getTrack() != NULL )
+	{
+		if ( getTrack()->DrvSource->isStopped() )
+		{
+			_Playing = false;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		nlassert( _Sound );
+		if ( _PlayStart == 0 )
+		{
+			// Not played yet
+			return false;
+		}
+		else if ( (!_Looping) && (CTime::getLocalTime()-_PlayStart > _Sound->getDuration()) )
+		{
+			_Playing = false;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }
 

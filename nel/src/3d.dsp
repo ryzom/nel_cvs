@@ -133,6 +133,14 @@ SOURCE=..\include\nel\3d\camera.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\landscape_model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\landscape_model.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\transform.cpp
 # End Source File
 # Begin Source File
@@ -248,6 +256,14 @@ SOURCE=.\3d\scene.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\scene.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\scene_ut.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\scene_ut.h
 # End Source File
 # Begin Source File
 

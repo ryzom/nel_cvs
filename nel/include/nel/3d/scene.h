@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.4 2000/11/07 15:35:11 berenguier Exp $
+ * $Id: scene.h,v 1.5 2000/11/07 17:07:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,6 +124,8 @@ public:
 	void	initDefaultRoots();
 	/// Set the driver to render Traversal.
 	void	setDriver(IDriver *drv);
+	/// Get the driver of render Traversal.
+	IDriver *getDriver() const;
 	//@}
 
 	/** Add a ITrav or a ITravScene to the scene.
@@ -142,7 +144,10 @@ public:
 	void	render(bool	doHrcPass=true);
 
 	/// Clear all the buffer of the RenderTrav current driver window .
-	void	clear(NLMISC::CRGBA col= NLMISC::CRGBA(0,0,0,0));
+	void	clearBuffers(NLMISC::CRGBA col= NLMISC::CRGBA(0,0,0,0));
+
+	/// Swap the buffer of the RenderTrav current driver window .
+	void	swapBuffers();
 
 
 	/// Set the current camera (smartptr-ed!!).

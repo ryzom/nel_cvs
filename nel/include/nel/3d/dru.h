@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.1 2000/11/07 15:35:20 berenguier Exp $
+ * $Id: dru.h,v 1.2 2000/11/07 17:07:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,9 +33,13 @@
 namespace NL3D 
 {
 
-
-/// Portable Function which create a GL Driver (using gl dll...).
-IDriver		*druCreateGlDriver();
+/// The driver Utilities class of static.
+class	CDRU
+{
+public:
+	/// Portable Function which create a GL Driver (using gl dll...).
+	static IDriver		*createGlDriver();
+};
 
 
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.3 2000/11/07 15:34:45 berenguier Exp $
+ * $Id: landscape.cpp,v 1.4 2000/11/07 17:08:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -252,54 +252,6 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 
 }
 
-
-// ***************************************************************************
-// ***************************************************************************
-// The Landscape in MOT.
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-void	CLandscapeModel::registerBasic()
-{
-	CMOT::registerModel(LandscapeId, TransformId, CLandscapeModel::creator);
-	CMOT::registerObs(ClipTravId, LandscapeId, CLandscapeClipObs::creator);
-	CMOT::registerObs(RenderTravId, LandscapeId, CLandscapeRenderObs::creator);
-}
-
-// ***************************************************************************
-bool	CLandscapeClipObs::clip(IBaseClipObs *caller, bool &renderable)
-{
-	renderable= true;
-	
-	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
-	if(landModel->Landscape)
-	{
-		CClipTrav		*trav= (CClipTrav*)Trav;
-		vector<CPlane>	&pyramid= trav->WorldPyramid;
-		// We are sure that pyramid has normalized plane normals.
-		landModel->Landscape->clip(trav->CamPos, pyramid);
-	}
-
-	// Well, always visible....
-	return true;
-}
-
-// ***************************************************************************
-void	CLandscapeRenderObs::traverse(IObs *caller)
-{
-	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
-	if(landModel->Landscape)
-	{
-		CRenderTrav		*trav= (CRenderTrav*)Trav;
-
-		// First, refine.
-		landModel->Landscape->refine(trav->CamPos);
-		// then render.
-		landModel->Landscape->render(trav->getDriver(), trav->CamPos);
-	}
-}
 
 
 } // RK3D

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.5 2000/11/07 15:34:45 berenguier Exp $
+ * $Id: scene.cpp,v 1.6 2000/11/07 17:08:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,10 +155,17 @@ void	CScene::render(bool	doHrcPass)
 }
 
 // ***************************************************************************
-void	CScene::clear(CRGBA col)
+void	CScene::clearBuffers(CRGBA col)
 {
-	RenderTrav->getDriver()->clear2D(col);
-	RenderTrav->getDriver()->clearZBuffer();
+	getDriver()->clear2D(col);
+	getDriver()->clearZBuffer();
+}
+
+
+// ***************************************************************************
+void	CScene::swapBuffers()
+{
+	getDriver()->swapBuffers();
 }
 
 
@@ -173,6 +180,13 @@ void	CScene::setDriver(IDriver *drv)
 {
 	RenderTrav->setDriver(drv);
 }
+
+// ***************************************************************************
+IDriver	*CScene::getDriver() const
+{
+	return RenderTrav->getDriver();
+}
+
 
 
 }

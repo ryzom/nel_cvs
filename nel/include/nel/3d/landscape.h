@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.2 2000/11/07 15:35:11 berenguier Exp $
+ * $Id: landscape.h,v 1.3 2000/11/07 17:07:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,8 +30,6 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_id.h"
 #include "nel/3d/zone.h"
-#include "nel/3d/transform.h"
-#include "nel/3d/render_trav.h"
 
 
 namespace NL3D 
@@ -116,68 +114,6 @@ private:
 	CSmartPtr<CTexture>		FarText;
 	CSmartPtr<CTexture>		TileText;
 
-};
-
-
-
-// ***************************************************************************
-// ***************************************************************************
-// The Landscape in MOT.
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
-const NLMISC::CClassId		LandscapeId=NLMISC::CClassId(0x5a573b55, 0x6b395829);
-
-
-// ***************************************************************************
-/**
- * The model for MOT. A landscape is not designed to move, but easier here.
- */
-class	CLandscapeModel : public CTransform
-{
-public:
-	/// Call at the begining of the program, to register the model, and the basic observers.
-	static	void	registerBasic();
-
-public:
-	CLandscape		*Landscape;
-
-public:
-	CLandscapeModel()
-	{
-		Landscape= NULL;
-	}
-
-	static IModel	*creator() {return new CLandscapeModel;}
-};
-
-
-// Clip obs.
-//*************
-/// Landscape Clip observer.
-class	CLandscapeClipObs : public CTransformClipObs
-{
-public:
-
-	/// Hey!! I'm renderable!!!
-	virtual	bool	clip(IBaseClipObs *caller, bool &renderable);
-
-	// The creator.
-	static IObs	*creator() {return new CLandscapeClipObs;}
-};
-// Render obs.
-//*************
-/// Landscape Render observer.
-class	CLandscapeRenderObs : public IBaseRenderObs
-{
-public:
-	/// Do nothing, and don't traverseSons() too.
-	virtual	void	traverse(IObs *caller);
-
-	// The creator.
-	static IObs	*creator() {return new CLandscapeRenderObs;}
 };
 
 

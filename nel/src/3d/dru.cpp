@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.1 2000/11/07 15:34:57 berenguier Exp $
+ * $Id: dru.cpp,v 1.2 2000/11/07 17:08:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NL3D
 typedef IDriver* (*IDRV_CREATE_PROC)(void); 
 
 
-IDriver		*druCreateGlDriver()
+IDriver		*CDRU::createGlDriver()
 {
 	// WINDOWS code.
 	HINSTANCE			hInst;

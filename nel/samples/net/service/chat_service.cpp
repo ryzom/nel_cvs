@@ -1,7 +1,7 @@
 /** \file service/chat_service.cpp
  * example of the IService class
  *
- * $Id: chat_service.cpp,v 1.5 2003/08/27 16:16:25 distrib Exp $
+ * $Id: chat_service.cpp,v 1.6 2003/11/04 09:27:56 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,9 +78,13 @@ public:
 		// to continue or return false if you want to exit the service.
 		// the loop is called evenly (by default, at least one time per second).
 
-//		nlinfo ("update() was called");
+		nlinfo ("update() was called");
 
-	  nlstop;
+		/*		static uint ii = 0;
+		if(ii++ == 15)
+		  {
+			nlstop;
+			}*/
 
 //////debug to test log flood for memory leak
 

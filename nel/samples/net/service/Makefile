@@ -13,7 +13,7 @@ MAKE         = make
 CXXFLAGS     = -g -pipe -D_REENTRANT -D_GNU_SOURCE -DNL_RELEASE_DEBUG \
 				-I$(HOME)/install/release/include \
 				-I/usr/include/stlport \
-				-I/usr/local/include
+				-I/usr/include
 
 # The flags for the linker
 LDFLAGS      = -L$(HOME)/install/release/lib \

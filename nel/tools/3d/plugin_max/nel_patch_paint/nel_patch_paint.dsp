@@ -171,6 +171,10 @@ SOURCE=.\paint_fill.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\paint_light.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\paint_tileset.h
 # End Source File
 # Begin Source File
@@ -1512,6 +1516,10 @@ SOURCE=.\paint_file.cpp
 # Begin Source File
 
 SOURCE=.\paint_fill.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\paint_light.cpp
 # End Source File
 # Begin Source File
 

@@ -25,6 +25,7 @@
 #include "paint_to_nel.h"
 #include "paint_fill.h"
 #include "paint_tileset.h"
+#include "paint_light.h"
 #include "../../../code/nel/tools/3d/plugin_max/nel_mesh_lib/export_nel.h"
 
 using namespace NL3D;
@@ -4111,6 +4112,11 @@ DWORD WINAPI myThread (LPVOID vData)
 						TheLand->Landscape.flushTiles (CNELU::Scene.getDriver(), (uint16)tileSet->getTransition(tl)->getTile (), 1);
 				}
 			}
+
+			// Setup lights
+			CPaintLight lights;
+			lights.build (*pData->eproc->ip);
+			lights.setup (TheLand->Landscape, CNELU::Scene);
 
 			// MAIN LOOP
 			do

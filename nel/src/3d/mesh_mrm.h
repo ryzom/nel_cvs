@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.3 2001/06/21 12:58:53 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.4 2001/06/21 14:33:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/mesh_base.h"
 #include "3d/mesh.h"
 #include "3d/mrm_mesh.h"
+#include "3d/mrm_parameters.h"
 #include "3d/bone.h"
 #include <set>
 #include <vector>
@@ -76,8 +77,9 @@ public:
 
 	/** Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
 	 * this is much slower than CMesh::build(), because it computes the MRM.
+	 * \param params parameters of the MRM build process.
 	 */
-	void			build(CMesh::CMeshBuild &m);
+	void			build(CMesh::CMeshBuild &m, const CMRMParameters &params= CMRMParameters());
 
 
 	/// \name From IShape

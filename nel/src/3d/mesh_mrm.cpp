@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.7 2001/06/21 12:58:53 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.8 2001/06/21 14:33:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ CMeshMRM::CMeshMRM()
 
 
 // ***************************************************************************
-void			CMeshMRM::build(CMesh::CMeshBuild &m)
+void			CMeshMRM::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
 {
 	/// First, copy MeshBase info: materials ....
 	//======================
@@ -93,7 +93,7 @@ void			CMeshMRM::build(CMesh::CMeshBuild &m)
 	CMRMBuilder			mrmBuilder;
 	CMeshBuildMRM		meshBuildMRM;
 
-	mrmBuilder.compileMRM(m, CMRMParameters(), meshBuildMRM);
+	mrmBuilder.compileMRM(m, params, meshBuildMRM);
 
 	// Then just copy result!
 	_VBuffer= meshBuildMRM.VBuffer;

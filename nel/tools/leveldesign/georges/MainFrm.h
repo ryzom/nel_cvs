@@ -9,7 +9,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-class CMainFrame : public CFrameWnd
+class CMainFrame : public CMDIFrameWnd
 {
 protected: // create from serialization only	
 	DECLARE_DYNCREATE(CMainFrame)

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.24 2000/12/04 16:58:59 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.25 2000/12/05 10:40:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,26 +74,6 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		pDriver->_EventEmitter.processMessage ((uint32)hWnd, message, wParam, lParam);
 	}
 
-	switch(message)
-	{
-	// ---
-	case WM_DESTROY:
-		break;
-	// ---
-	case WM_KEYDOWN:
-		if (wParam==VK_ESCAPE)
-		{
-			PostQuitMessage(0x01);
-		}
-		break;
-	// ---
-	case WM_COMMAND:
-		break;
-	// ---
-	default:
-		break;
-	// ---
-	}
 	return( DefWindowProc(hWnd, message, wParam, lParam) );
 }
 #endif

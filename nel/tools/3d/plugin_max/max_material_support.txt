@@ -11,6 +11,7 @@ SUMMARY
 -> How to use "color vertex"
 -> How to use "alpha vertex"
 -> How to use multitexture
+-> How to manage multiple textures set for a single material
 
 -------------------------------------------------
 
@@ -90,3 +91,21 @@ The source of the copy must be 0, the destination is the channel you have choose
 See the sample "specular.max"
 
 -------------------------------------------------
+-> How to manage multiple textures set for a single material
+
+When selecting a map, you can choose bitmap as a map type, but you can also select Nel Multi Bitmap.
+With a NeL multi bitmap, you can have 4 sets of maps for a single material.
+The 'bitmap' slot of the map isn't used anymore, it is just useful to select the currently displayed map.
+The 4 slots are in the 'Aditionnals bitmap' rollout.
+If the file name is left blank, that means that there's no map assigned for that slot.
+The 'Get' button allows you to choose the bitmap, and a 'View' button allows to display it
+
+You can convert all maps in an object to 'Nel Multi Bitmap' maps by using macro script called 'ConvertMaxBitmapToNelBitmapMacroScript'
+It operates on the selection, and can convert materials that are either StdMat, NelMaterial, or MultiMaterial.
+
+Once you start using Nel MultiBitmaps, you can toggle which bitmap is displayed in the viewport by using the macro scripts
+called SelectNelBitmapSet1..4. Sometimes you may need to refresh the display to get it work..
+If a slot hasn't been defined, the first slot is taken as a default.
+
+Note : you can also change the displayed set of texture in the object viewer, in the 'View' menu.
+

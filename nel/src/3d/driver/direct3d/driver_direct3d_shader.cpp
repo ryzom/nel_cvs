@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.8 2004/09/02 16:58:14 vizerie Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.9 2004/09/07 15:25:29 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -514,5 +514,231 @@ void CDriverD3D::disableHardwareTextureShader()
 }
 
 // ***************************************************************************
+//
+/*
+class CStateRecordLightEnable : public CStateRecord 
+{ 
+public:
+	virtual void apply(class CDriverD3D &drv) 
+	{ 
+		drv.enableLight ((uint8)Index, Enable!=FALSE); 
+	}
+	DWORD Index;
+	BOOL  Enable;
+}
+//
+class CStateRecordLight : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		drv._LightCache[Index].Light = *pLight;
+		touchRenderVariable (&_LightCache[Index]);
+	}
+	DWORD	  Index;
+	D3DLIGHT9 Light;
+};
+//
+class CStateRecordMaterial : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv) 
+	{ 
+		drv.setMaterialState(Material);
+	}
+	D3DMATERIAL9 Material;
+};
+//
+class CStateRecordPixelShader : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		drv.setPixelShader(PixelShader);
+	}
+	LPDIRECT3DPIXELSHADER9 PixelShader;
+};
+//
+class CStateRecordSetPixelShaderConstantB : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		const BOOL *curr = &Values[0];
+		const BOOL *last = &Values[0] + Values.size();
+		uint i = StartRegister;
+		while (curr != last)		
+		{
+			drv.setPixelShaderConstant (i, curr);
+			curr += 4;
+			++ i;
+		}
+	}
+	std::vector<BOOL> Values;
+	uint			  StartRegister;
+};
+//
+class CStateRecordPixelShaderConstantF : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		const FLOAT *curr = &Values[0];
+		const FLOAT *last = &Values[0] + Values.size();
+		uint i = StartRegister;
+		while (curr != last)		
+		{
+			drv.setPixelShaderConstant (i, curr);
+			curr += 4;
+			++ i;
+		}
+	}
+	std::vector<FLOAT> Values;
+	uint			  StartRegister;
+};
+//
+class CStateRecordPixelShaderConstantI : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		const INT *curr = &Values[0];
+		const INT *last = &Values[0] + Values.size();
+		uint i = StartRegister;
+		while (curr != last)		
+		{
+			drv.setPixelShaderConstant (i, curr);
+			curr += 4;
+			++ i;
+		}
+	}
+	std::vector<INT>  Values;
+	uint			  StartRegister;
+};
+//
+class CStateRecordRenderState : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		drv.setRenderState(State, Value);
+	}
+	D3DRENDERSTATETYPE State;
+	DWORD Value;
+};
+//
+class CStateRecordSamplerState : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		drv.setSamplerState(Sampler, Type, Value);
+	}
+	DWORD Sampler;
+	D3DSAMPLERSTATETYPE Type;
+	DWORD Value;
+};
+//
+class CStateRecordTexture : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+#error checker ça
+	}
+	DWORD Stage;
+	LPDIRECT3DBASETEXTURE9 Texture;
+};
+//
+class CStateRecordTextureStageState : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		if (Type == D3DTSS_TEXCOORDINDEX)
+			drv.setTextureIndexUV (Stage, Value);
+		else
+			drv.setTextureState (Stage, Type, Value);
+	}
+	DWORD Stage;
+	D3DTEXTURESTAGESTATETYPE Type;
+	DWORD Value;
+};
+//
+class CStateRecordTransform : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		drv.setMatrix(State, Matrix);
+	}
+	D3DTRANSFORMSTATETYPE State;
+	D3DMATRIX Matrix;
+};
+//
+class CStateRecordVertexShader : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		drv.setVertexProgram(Shader);
+	}
+	LPDIRECT3DVERTEXSHADER9 Shader;
+};
+class CStateRecordVertexShaderConstantB : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		const BOOL *curr = &Values[0];
+		const BOOL *last = &Values[0] + Values.size();
+		uint i = StartRegister;
+		while (curr != last)		
+		{
+			drv.setVertexProgramconstant(i, curr);
+			curr += 4;
+			++ i;
+		}
+	}
+	std::vector<BOOL> Values;
+	uint			  StartRegister;
+};
+class CStateRecordVertexShaderConstantF : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		const FLOAT *curr = &Values[0];
+		const FLOAT *last = &Values[0] + Values.size();
+		uint i = StartRegister;
+		while (curr != last)		
+		{
+			drv.setVertexProgramconstant(i, curr);
+			curr += 4;
+			++ i;
+		}
+	}
+	std::vector<FLOAT> Values;
+	uint			   StartRegister;
+};
+class CStateRecordVertexShaderConstantI : public CStateRecord
+{
+public:
+	virtual void apply(class CDriverD3D &drv)
+	{
+		const INT *curr = &Values[0];
+		const INT *last = &Values[0] + Values.size();
+		uint i = StartRegister;
+		while (curr != last)		
+		{
+			drv.setVertexProgramconstant(i, curr);
+			curr += 4;
+			++ i;
+		}
+	}
+	std::vector<INT> Values;
+	uint			   StartRegister;
+};
+*/
 
 } // NL3D

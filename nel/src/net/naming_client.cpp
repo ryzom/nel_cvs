@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.27 2001/05/04 14:44:24 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.28 2001/05/09 17:19:02 berenguier Exp $
  *
  */
 
@@ -946,7 +946,7 @@ string sIdToString( TServiceId sid )
 
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
-	msgin.serialMap( addressmap );
+	msgin.serialCont( addressmap );
 	
 }*/
 

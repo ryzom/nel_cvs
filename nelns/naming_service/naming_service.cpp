@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.4 2001/05/04 14:42:56 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.5 2001/05/09 17:19:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1137,7 +1137,7 @@ static void cbQueryPort (CMessage& msgin, TSockId from, CCallbackNetBase &netbas
 		addresses.insert( make_pair((*inm).second.sId(),(CInetAddress)((*inm).second)) );
 	}
 	CMessage msgout( "" ); // ALKS
-	msgout.serialMap( addresses );
+	msgout.serialCont( addresses );
 	CMsgSocket::send( msgout, from );
 
 	nlinfo( "%d services found", addresses.size() );

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.25 2004/06/17 16:58:56 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.26 2004/06/18 08:31:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,6 @@
 #include "object_viewer.h"
 #include "start_stop_particle_system.h"
 #include "located_properties.h"
-#include "choose_animation.h"
 #include "select_string.h"
 //
 #include "3d/particle_system.h"
@@ -598,7 +597,8 @@ void CStartStopParticleSystem::restartAllFX()
 			if (_PlayingNodes[k] && isRunning(_PlayingNodes[k]))
 			{									
 				_PlayingNodes[k]->restoreState();				
-				_PlayingNodes[k]->getPSPointer()->setSystemDate(0.f);				
+				_PlayingNodes[k]->getPSPointer()->setSystemDate(0.f);
+				_PlayingNodes[k]->getPSModel()->activateEmitters(false);
 			}
 		}
 	}

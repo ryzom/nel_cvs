@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.33 2003/03/24 17:09:25 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.34 2003/03/25 16:56:53 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,7 +256,7 @@ public:
 	//static void					allowMissingWave( bool b )				{ CSound::allowMissingWave( b ); }	
 
 	/// Set the global path to the sample banks
-	virtual void				setSamplePath(const std::string& path)		{ _SamplePath = path; }
+	virtual void				setSamplePath(const std::string& path);
 	virtual void				setPackedSheetOption(const std::string &path, bool update);
 	std::string					&getPackedSheetPath()						{return _PackedSheetPath; }
 	bool						getPackedSheetUpdate()						{return _UpdatePackedSheet; }

@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.13 2003/03/24 17:09:25 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.14 2003/03/25 16:56:53 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,18 +170,15 @@ void				CSampleBank::load(bool async)
 		return;
 	}
 
-	_LoadingDone = false;
-
-//	CPath::getPathContent(_Path, true, false, true, filenames);
-
-	std::string list = CPath::lookup(_Name+CAudioMixerUser::SampleBankListExt);
+	std::string list = CPath::lookup(_Name+CAudioMixerUser::SampleBankListExt, false);
 	if (list.empty())
 	{
 		nlwarning("File %s not found to load sample bank %s", (_Name+CAudioMixerUser::SampleBankListExt).c_str(), _Name.c_str());
 		return;
 	}
 
-//	std::vector<std::string> filenames;
+	_LoadingDone = false;
+
 	NLMISC::CIFile sampleBankList(list);
 	sampleBankList.serialCont(filenames);
 

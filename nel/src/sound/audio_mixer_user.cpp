@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.44 2003/03/24 18:09:53 corvazier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.45 2003/03/25 16:56:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -347,6 +347,12 @@ void	CAudioMixerUser::setPackedSheetOption(const std::string &path, bool update)
 }
 
 
+void CAudioMixerUser::setSamplePath(const std::string& path)
+{
+	_SamplePath = CPath::standardizePath(path, true); 
+}
+
+
 // ******************************************************************
 
 void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
@@ -442,10 +448,13 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 			nlassert(!temp.empty());
 			std::string listName(temp.back());
 
-			COFile file(_PackedSheetPath+listName+SampleBankListExt);
+			COFile file(_SamplePath+listName+SampleBankListExt);
 			file.serialCont(sampleList);
 			dirList.pop_back();
 		}
+
+		// update the searh path content
+		CPath::addSearchPath(_SamplePath);
 	}
 
 

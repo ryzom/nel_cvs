@@ -1,7 +1,7 @@
 /** \file point_light_model.cpp
  * <File description>
  *
- * $Id: point_light_model.cpp,v 1.5 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: point_light_model.cpp,v 1.6 2003/08/06 17:02:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,8 +125,8 @@ void	CPointLightModel::traverseLight()
 		}
 		else
 		{
-			// We are hidden because a skeleton has hide us (or else don't know why).
-			nlassert(_AncestorSkeletonModel);
+			// We are hidden because a skeleton has hide us, or created during anim detail traversal (or else don't know why).
+			if (!_AncestorSkeletonModel) return;
 			const CMatrix &skMatrix= _AncestorSkeletonModel->getWorldMatrix();
 
 			PointLight.setPosition( skMatrix * _DeltaPosToSkeletonWhenOutOfFrustum );

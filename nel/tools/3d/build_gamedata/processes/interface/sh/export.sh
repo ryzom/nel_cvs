@@ -39,7 +39,7 @@ for i in tga_tmp/*.[tT][gG][aA] ; do
 
 	# Destination file
 	dest=`echo $i | sed -e 's/tga_tmp/tga/g'`
-	dest=`echo $dest | sed -e 's/.[tT][gG][aA]/.dds/g'`
+	dest=`echo $dest | sed -e 's/\.[tT][gG][aA]/.dds/g'`
 
 	if ( ! test -e $dest ) || ( test $i -nt $dest )
 	then

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.228 2004/10/19 12:46:36 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.229 2004/10/19 13:18:57 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -99,7 +99,7 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0xb; // nico
+const uint32		CDriverGL::ReleaseVersion = 0xc; // nico
 
 // Number of register to allocate for the EXTVertexShader extension
 const uint CDriverGL::_EVSNumConstant = 97;

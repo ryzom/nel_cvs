@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.24 2004/10/19 12:42:36 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.25 2004/10/19 13:18:57 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -87,7 +87,7 @@ namespace NL3D
 // ***************************************************************************
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverD3D::ReleaseVersion = 0xb; // nico
+const uint32		CDriverD3D::ReleaseVersion = 0xc; // nico
 
 
 

@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.25 2002/11/21 15:55:06 berenguier Exp $
+ * $Id: computed_string.cpp,v 1.26 2002/11/21 16:32:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,15 +269,16 @@ void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 {
 	if (Vertices.getNumVertices() == 0)
 		return;
-	// Computing hotspot translation vector
-	CVector hotspotVector = getHotSpotVector(hotspot);
-	matrix.translate(hotspotVector);
 
 	// get window size
 	uint32	wndWidth, wndHeight;
 	driver.getWindowSize(wndWidth, wndHeight);
 	// scale according to window height (backward compatibility)
 	matrix.scale(1.0f/wndHeight);
+
+	// Computing hotspot translation vector
+	CVector hotspotVector = getHotSpotVector(hotspot);
+	matrix.translate(hotspotVector);
 
 	// render
 	driver.setupModelMatrix(matrix);

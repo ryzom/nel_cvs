@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.20 2002/04/04 14:45:32 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.21 2002/04/23 14:38:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -243,9 +243,10 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 	v[0]  == Pos to center, with v[0].w == BendWeight * v[0].norm()
 	v[9]  == BendInfo/BlendInfo (xyzw) = {v[0].norm(), BendPhase, BendFrequencyFactor, BlendDist}
 
-	NB: if Unlit and Not 2Sided, v[4] is present, but not used (prefer do this for gestion purpose:
-		to have only one VBAllocator for both modes).
-		same reasoning for v[9].w. Used only in Unlit+2Sided+AlphaBlend
+	NB: v[9].w. is used only in Unlit+2Sided+AlphaBlend. But prefer do this for gestion purpose:
+		to have only one VBAllocator for all modes.
+
+	NB: Color and Secondary color Alpha Part contains Dynamic LightMap UV, (in 8 bits).
 
 	Constant:
 	--------
@@ -284,13 +285,15 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 		28 (bend-quaternion) + 
 		16 (rotNormal + bend + lit 2Sided) + 
 		5  (proj + tex)
-		49
+		2  (Dynamic lightmap copy)
+		51
 
 	Normal program length (unlit/2Sided) is:
 		11 (bend-delta) + 
 		2  (unlit 2Sided) + 
 		5  (proj + tex)
-		18
+		2  (Dynamic lightmap copy)
+		20
 
 */
 
@@ -552,7 +555,11 @@ const char* NL3D_CommonEndVegetableProgram=
 	DP4 o[HPOS].y, c[1], R5;															\n\
 	DP4 o[HPOS].z, c[2], R5;															\n\
 	DP4 o[HPOS].w, c[3], R5;															\n\
-	MOV o[TEX0].xy, v[8];																\n\
+	# copy Dynamic lightmap UV in stage0, from colors Alpha part.						\n\
+	MOV o[TEX0].x, v[3].w;																\n\
+	MOV o[TEX0].y, v[4].w;																\n\
+	# copy diffuse texture uv to stage 1.												\n\
+	MOV o[TEX1].xy, v[8];																\n\
 	END																					\n\
 ";
 
@@ -981,6 +988,9 @@ inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceD
 			}
 		}
 
+		// Keep correct U of Dynamic Lightmap UV encoded in primaryRGBA Alpha part.
+		resColor.A= primaryRGBA.A;
+
 		// copy to dest
 		*dstFront= resColor;
 	}
@@ -1011,6 +1021,9 @@ inline void		computeVegetVertexLighting(const CVector &rotNormal, bool instanceD
 				resColor.addRGBOnly(col, resColor);
 			}
 		}
+
+		// Keep correct V of Dynamic Lightmap UV encoded in secondaryRGBA Alpha part.
+		resColor.A= secondaryRGBA.A;
 
 		// copy to dest
 		*dstBack= resColor;
@@ -1059,6 +1072,9 @@ inline void		computeVegetVertexLightingForceBestSided(const CVector &rotNormal, 
 			}
 		}
 
+		// Keep correct U of Dynamic Lightmap UV encoded in primaryRGBA Alpha part.
+		resColor.A= primaryRGBA.A;
+
 		// copy to dest
 		*dstFront= resColor;
 	}
@@ -1067,6 +1083,9 @@ inline void		computeVegetVertexLightingForceBestSided(const CVector &rotNormal, 
 	if(instanceDoubleSided)
 	{
 		// Since forceBestSided, same color as front_facing
+
+		// Keep correct V of Dynamic Lightmap UV encoded in secondaryRGBA Alpha part.
+		resColor.A= secondaryRGBA.A;
 
 		// copy to dest
 		*dstBack= resColor;
@@ -1079,7 +1098,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
 		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax,
-		TVegetableWater vegetWaterState)
+		TVegetableWater vegetWaterState, CVegetableUV8 dlmUV)
 {
 	sint	i;
 
@@ -1120,9 +1139,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 	// For Unlit and Lighted, modulate with global light.
 	primaryRGBA.modulateFromColorRGBOnly(diffuseRGBA, _GlobalDiffuse);
-	primaryRGBA.A= 255;
 	secondaryRGBA.modulateFromColorRGBOnly(ambientRGBA, _GlobalAmbient);
-	secondaryRGBA.A= 255;
 
 	// if the instance is not lighted, then suppose full lighting => add ambient and diffuse
 	if(!instanceLighted)
@@ -1133,6 +1150,10 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		// useFull if 2Sided
 		secondaryRGBA= primaryRGBA;
 	}
+
+	// Copy Dynamic Lightmap UV in Alpha part (save memory for an extra cost of 1 VP instruction)
+	primaryRGBA.A= dlmUV.U;
+	secondaryRGBA.A= dlmUV.V;
 
 	// get ref on the vegetLex.
 	CVegetableLightEx	&vegetLex= ig->VegetableLightEx;
@@ -1321,15 +1342,13 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			// normal and secondary color
 			if(destLighted)
 			{
-				// normal and ambient
+				// normal
 				*(CVector*)(dstPtr + dstNormalOff)= normalMat.mulVector( *(CVector*)(srcPtr + srcNormalOff) );
-				*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
 			}
-			else if(instanceDoubleSided)
-			{
-				// secondary color computed.
-				*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
-			}
+			// If destLighted, secondaryRGBA is the ambient
+			// else if(instanceDoubleSided), secondaryRGBA is backface color.
+			// else, still important to copy secondaryRGBA, because alpha part contains Dynamic LightMap V.
+			*(CRGBA*)(dstPtr + dstColor1Off)= secondaryRGBA;
 		}
 		else
 		{
@@ -1521,6 +1540,8 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		// copy colors unmodulated by global light.
 		vli.MatAmbient= ambientRGBA;
 		vli.MatDiffuse= diffuseRGBA;
+		// store dynamic lightmap UV
+		vli.DlmUV= dlmUV;
 		// where vertices of this instances are wrote in the VegetRdrPass
 		vli.StartIdInRdrPass= offVertex;
 
@@ -1632,7 +1653,8 @@ void			CVegetableManager::loadTexture(const string &texName)
 void			CVegetableManager::loadTexture(ITexture *itex)
 {
 	// setup a ITexture (smartPtr-ized).
-	_VegetableMaterial.setTexture(0, itex);
+	// Store in stage1, for dynamicLightmaping
+	_VegetableMaterial.setTexture(1, itex);
 }
 
 // ***************************************************************************
@@ -1737,7 +1759,8 @@ void			CVegetableManager::setupVertexProgramConstants(IDriver *driver)
 
 
 // ***************************************************************************
-void			CVegetableManager::render(const CVector &viewCenter, const CVector &frontVector, const std::vector<CPlane> &pyramid, IDriver *driver)
+void			CVegetableManager::render(const CVector &viewCenter, const CVector &frontVector, const std::vector<CPlane> &pyramid, 
+	ITexture *textureDLM, IDriver *driver)
 {
 	CVegetableClipBlock		*rootToRender= NULL;
 
@@ -1843,6 +1866,37 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 
 	// setup VP constants.
 	setupVertexProgramConstants(driver);
+
+
+	// Setup TexEnvs for Dynamic lightmapping
+	//--------------------
+	// if the dynamic lightmap is provided
+	if(textureDLM)
+	{
+		// stage0 RGB is Diffuse + DLM.
+		_VegetableMaterial.setTexture(0, textureDLM);
+		_VegetableMaterial.texEnvOpRGB(0, CMaterial::Add);
+		_VegetableMaterial.texEnvArg0RGB(0, CMaterial::Texture, CMaterial::SrcColor);
+		_VegetableMaterial.texEnvArg1RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
+		// stage1 RGB is Previous * Texture
+		_VegetableMaterial.texEnvOpRGB(1, CMaterial::Modulate);
+		_VegetableMaterial.texEnvArg0RGB(1, CMaterial::Texture, CMaterial::SrcColor);
+		_VegetableMaterial.texEnvArg1RGB(1, CMaterial::Previous, CMaterial::SrcColor);
+	}
+	else
+	{
+		// reset stage0 (to skip it)
+		_VegetableMaterial.setTexture(0, NULL);
+		// stage1 RGB is Diffuse * Texture
+		_VegetableMaterial.texEnvOpRGB(1, CMaterial::Modulate);
+		_VegetableMaterial.texEnvArg0RGB(1, CMaterial::Texture, CMaterial::SrcColor);
+		_VegetableMaterial.texEnvArg1RGB(1, CMaterial::Diffuse, CMaterial::SrcColor);
+	}
+	// stage1 Alpha is always "Modulate texture with diffuse Alpha"
+	_VegetableMaterial.texEnvOpAlpha(1, CMaterial::Modulate);
+	_VegetableMaterial.texEnvArg0Alpha(1, CMaterial::Texture, CMaterial::SrcAlpha);
+	_VegetableMaterial.texEnvArg1Alpha(1, CMaterial::Diffuse, CMaterial::SrcAlpha);
+
 
 
 	// Render !ZSORT pass
@@ -2366,14 +2420,16 @@ uint		CVegetableManager::updateInstanceLighting(CVegetableInstanceGroup *ig, uin
 	// Diffuse and ambient, modulated by current GlobalAmbient and GlobalDiffuse.
 	CRGBA	primaryRGBA, secondaryRGBA;
 	primaryRGBA.modulateFromColorRGBOnly(vegetLI.MatDiffuse, _GlobalDiffuse);
-	primaryRGBA.A= 255;
 	secondaryRGBA.modulateFromColorRGBOnly(vegetLI.MatAmbient, _GlobalAmbient);
-	secondaryRGBA.A= 255;
 	// get normal matrix
 	CMatrix		&normalMat= vegetLI.NormalMat;
 	// array of vertex id to update
 	uint32		*ptrVid= vegetRdrPass.Vertices.getPtr() + vegetLI.StartIdInRdrPass;
 	uint		numVertices= shape->InstanceVertices.size();
+
+	// Copy Dynamic Lightmap UV in Alpha part (save memory for an extra cost of 1 VP instruction)
+	primaryRGBA.A= vegetLI.DlmUV.U;
+	secondaryRGBA.A= vegetLI.DlmUV.V;
 
 
 	// get VertexBuffer info.

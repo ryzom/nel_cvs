@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.84 2002/04/16 17:09:47 berenguier Exp $
+ * $Id: patch.cpp,v 1.85 2002/04/23 14:38:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -928,6 +928,14 @@ void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
 	TessBlocks[numtb].RdrTileRoot[numtm]= tm;
 	TessBlocks[numtb].FaceTileMaterialRefCount++;
 	TessBlocks[numtb].TileMaterialRefCount++;
+	// The master block contains the whole patch TileMaterialRefCount
+	MasterBlock.TileMaterialRefCount++;
+
+	// DynamicLighting. When in near, must compute the context, to have good UVs.
+	//==========
+	// inc ref to the context, creating it if needed.
+	addRefDLMContext();
+	// NB: do it before creating the vegetableBlock, because vegetables use DLM Uvs.
 
 	// if was no tiles before in this tessBlock, create a Vegetable block.
 	//==========
@@ -937,10 +945,6 @@ void			CPatch::appendTileMaterialToRenderList(CTileMaterial *tm)
 		createVegetableBlock(numtb, tm->TileS, tm->TileT);
 	}
 
-	// DynamicLighting. When in near, must compute the context, to have good UVs.
-	//==========
-	// inc ref to the context, creating it if needed.
-	addRefDLMContext();
 }
 // ***************************************************************************
 void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
@@ -952,6 +956,8 @@ void			CPatch::removeTileMaterialFromRenderList(CTileMaterial *tm)
 	TessBlocks[numtb].RdrTileRoot[numtm]= NULL;
 	TessBlocks[numtb].FaceTileMaterialRefCount--;
 	TessBlocks[numtb].TileMaterialRefCount--;
+	// The master block contains the whole patch TileMaterialRefCount
+	MasterBlock.TileMaterialRefCount--;
 
 	// if no more tiles in this tessBlock, delete the vegetable Block.
 	//==========

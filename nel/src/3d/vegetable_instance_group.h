@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.8 2002/03/15 16:10:44 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.9 2002/04/23 14:38:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/vegetable_instance_group.h"
 #include "3d/vegetable_def.h"
 #include "3d/vegetable_light_ex.h"
+#include "3d/vegetable_uv8.h"
 #include <vector>
 
 
@@ -95,6 +96,8 @@ private:
 		// The color (not modulated by global ambients/diffuses).
 		NLMISC::CRGBA		MatAmbient;
 		NLMISC::CRGBA		MatDiffuse;
+		// The UV to lookup in landscape Dynamic Lightmap
+		CVegetableUV8		DlmUV;
 		// The index on the first index in CVegetableRdrPass::Vertices array.
 		uint				StartIdInRdrPass;
 	};

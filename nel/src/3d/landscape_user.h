@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.13 2002/04/09 15:32:10 berenguier Exp $
+ * $Id: landscape_user.h,v 1.14 2002/04/23 14:38:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,6 +102,9 @@ public:
 	  */
 	virtual	void	setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant, float multiply);
 
+	virtual	void	setPointLightDiffuseMaterial(CRGBA diffuse);
+	virtual	CRGBA	getPointLightDiffuseMaterial () const;
+
 	virtual	void	setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
 
 	virtual	void	setUpdateLightingFrequency(float freq);
@@ -159,6 +162,13 @@ public:
 	virtual	void		setupVegetableLighting(const CRGBA &ambient, const CRGBA &diffuse, const CVector &directionalLight);
 	virtual	void		setVegetableWind(const CVector &windDir, float windFreq, float windPower, float windBendMin);
 	virtual	void		setVegetableUpdateLightingFrequency(float freq);
+	// @}
+
+
+	/// \name Dynamic Lighting management
+	// @{
+	virtual	void		setDLMGlobalVegetableColor(CRGBA gvc);
+	virtual	CRGBA		getDLMGlobalVegetableColor() const;
 	// @}
 
 public:

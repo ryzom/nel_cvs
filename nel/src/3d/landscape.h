@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.37 2002/04/18 15:32:14 berenguier Exp $
+ * $Id: landscape.h,v 1.38 2002/04/23 14:38:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -354,6 +354,20 @@ public:
 
 
 	/**
+	  *  Setup the equivalent material diffuse component used for both Static and Dynamic PointLights.
+	  *	 Default is White.
+	  */
+	void	setPointLightDiffuseMaterial(CRGBA diffuse);
+	/**
+	  *	\see setPointLightDiffuseMaterial
+	  */
+	CRGBA	getPointLightDiffuseMaterial () const
+	{
+		return _PointLightDiffuseMaterial;
+	}
+
+
+	/**
 	  *  Enable automatic near lightmap computing. use setupStaticLight().
 	  *	 Default is disabled.
 	  *	 NB: calling this method won't flush all texture near already computed.
@@ -381,7 +395,7 @@ public:
 	 *	Additionaly, it stores a map<lightGroupName, NLMISC::CRGBA nFactor>, so each added zone will
 	 *	be correclty assigned.
 	 */
-	void			setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
+	void	setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
 
 
 	// @}
@@ -466,7 +480,7 @@ public:
 	  * color 2 = intersect water
 	  * color 3 = vegetable disabled
 	  */
-	void setupColorsFromTileFlags(const NLMISC::CRGBA colors[4]);
+	void		setupColorsFromTileFlags(const NLMISC::CRGBA colors[4]);
 
 	// @}
 
@@ -541,6 +555,15 @@ public:
 	/** see setDynamicLightingMaxAttEnd()
 	 */
 	float			getDynamicLightingMaxAttEnd() const {return _DLMMaxAttEnd;}
+
+	/** For Vegetable Dynamic ligthing only: this is an approximate color of all vegetables.
+	 *	Default is (180, 180, 180).
+	 */
+	void			setDLMGlobalVegetableColor(CRGBA gvc);
+
+	/** see setDLMGlobalVegetableColor()
+	 */
+	CRGBA			getDLMGlobalVegetableColor() const {return _DLMGlobalVegetableColor;}
 
 	// @}
 
@@ -920,6 +943,13 @@ private:
 	CPatchDLMContextList		*getPatchDLMContextList() const {return _PatchDLMContextList;}
 	/// Max AttEnd
 	float						_DLMMaxAttEnd;
+
+	/// an approximate value used to simulate diffuse material of vegetables
+	CRGBA						_DLMGlobalVegetableColor;
+
+	/// The diffuse material of landscape, used for StaticPointLights and DynamicPointLights
+	CRGBA						_PointLightDiffuseMaterial;
+
 	// @}
 
 };

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.112 2002/04/18 16:05:38 berenguier Exp $
+ * $Id: landscape.cpp,v 1.113 2002/04/23 14:38:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,6 +186,9 @@ CLandscape::CLandscape() :
 	
 	// Init far lighting with White/black
 	setupStaticLight (CRGBA(255,255,255), CRGBA(0,0,0), 1.f);
+	// Default material for pointLights
+	_PointLightDiffuseMaterial= CRGBA::White;
+
 
 	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
 
@@ -224,6 +227,8 @@ CLandscape::CLandscape() :
 	// Init vegetable  setup.
 	_VegetableManagerEnabled= false;
 	_DriverOkForVegetable= false;
+	// default global vegetable color, used for dynamic lighting only (arbitrary).
+	_DLMGlobalVegetableColor.set(180, 180, 180);
 
 	_PZBModelPosition= CVector::Null;
 
@@ -1443,10 +1448,59 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// 5. Vegetable Management.
 	//================================
 
+	// First, update Dynamic Lighting for Vegetable, ie just copy.
+	// ==================
+	if(isVegetableActive())
+	{
+		/* Actually we modulate the DLM with an arbitrary constant for this reason:
+			Color of vegetable (ie their material) are NOT modulated with DLM.
+			Doing this without using PixelShader / additional UVs seems to be impossible.
+			And add new UVs (+700K in AGP) just for this is not worth the effort.
+
+			We prefer using a constant to simulate the "global vegetable color", which is a big trick.
+
+			Additionally, the vegetable take the diffuse lighting of landscape, which is
+			false because it replaces the diffuse lighting it should have (ie with his own Normal and 
+			his own "global vegetable color")
+
+			We can't do anything for "correct normal vegetable", but it is possible to replace landscape
+			material with vegetable material, by dividing _DLMGlobalVegetableColor by LandscapeDiffuseMaterial.
+			This is a very approximate result because of CRGBA clamp, but it is acceptable.
+		*/
+		CRGBA	vegetDLMCte;
+		// the constant is _DLMGlobalVegetableColor / PointLightDiffuseMaterial
+		uint	v;
+		v= (_DLMGlobalVegetableColor.R*256) / (_PointLightDiffuseMaterial.R+1);
+		vegetDLMCte.R= (uint8)min(v, 255U);
+		v= (_DLMGlobalVegetableColor.G*256) / (_PointLightDiffuseMaterial.G+1);
+		vegetDLMCte.G= (uint8)min(v, 255U);
+		v= (_DLMGlobalVegetableColor.B*256) / (_PointLightDiffuseMaterial.B+1);
+		vegetDLMCte.B= (uint8)min(v, 255U);
+
+		// Parse all patch which have some vegetables
+		dlmCtxPtr= _PatchDLMContextList->begin();
+		while(dlmCtxPtr!=NULL)
+		{
+			// do it only if the patch has some vegetable stuff to render, and if it is visible
+			// NB: we may have some vegetable stuff to render if the patch has some TileMaterial created.
+			if(dlmCtxPtr->getPatch()->getTileMaterialRefCount()>0
+				 && !dlmCtxPtr->getPatch()->isRenderClipped() )
+			{
+				// NB: no-op if both src and dst are already full black.
+				dlmCtxPtr->compileLighting(CPatchDLMContext::ModulateConstant, vegetDLMCte);
+			}
+
+			// next
+			dlmCtxPtr= (CPatchDLMContext*)dlmCtxPtr->Next;
+		}
+	}
+
+
 	// profile.
 	_VegetableManager->resetNumVegetableFaceRendered();
 
 	// render all vegetables, only if driver support VertexProgram.
+	// ==================
 	if(isVegetableActive())
 	{
 		// Use same plane as TessBlock for faster clipping.
@@ -1456,7 +1510,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		{
 			vegetablePyramid[i]= pyramid[i];
 		}
-		_VegetableManager->render(refineCenter, frontVector, vegetablePyramid, driver);
+		_VegetableManager->render(refineCenter, frontVector, vegetablePyramid, _TextureDLM, driver);
 	}
 
 }
@@ -3260,7 +3314,7 @@ void			CLandscape::computeDynamicLighting(const std::vector<CPointLight*>	&pls)
 	for(i=0;i<dlmPls.size();i++)
 	{
 		// compile the pl.
-		dlmPls[i].compile(*pls[i], _DLMMaxAttEnd);
+		dlmPls[i].compile(*pls[i], _PointLightDiffuseMaterial, _DLMMaxAttEnd);
 	}
 
 
@@ -3342,6 +3396,20 @@ uint			CLandscape::getDynamicLightingMemoryLoad() const
 	}
 
 	return mem;
+}
+
+
+// ***************************************************************************
+void			CLandscape::setDLMGlobalVegetableColor(CRGBA gvc)
+{
+	_DLMGlobalVegetableColor= gvc;
+}
+
+
+// ***************************************************************************
+void			CLandscape::setPointLightDiffuseMaterial(CRGBA diffuse)
+{
+	_PointLightDiffuseMaterial= diffuse;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.9 2002/04/22 17:11:28 berenguier Exp $
+ * $Id: patchdlm_context.cpp,v 1.10 2002/04/23 14:38:13 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -49,14 +49,14 @@ namespace NL3D
 
 
 // ***************************************************************************
-void		CPatchDLMPointLight::compile(const CPointLight &pl, float maxAttEnd)
+void		CPatchDLMPointLight::compile(const CPointLight &pl, NLMISC::CRGBA landDiffMat, float maxAttEnd)
 {
 	nlassert(maxAttEnd>0);
 
 	// copy color
-	R= pl.getDiffuse().R;
-	G= pl.getDiffuse().G;
-	B= pl.getDiffuse().B;
+	R= (float) (( pl.getDiffuse().R*(landDiffMat.R+1) ) >>8);
+	G= (float) (( pl.getDiffuse().G*(landDiffMat.G+1) ) >>8);
+	B= (float) (( pl.getDiffuse().B*(landDiffMat.B+1) ) >>8);
 	// Copy Spot/Pos/Dir.
 	IsSpot= pl.getType() == CPointLight::SpotLight;
 	Pos= pl.getPosition();
@@ -243,7 +243,7 @@ bool			CPatchDLMContext::generate(CPatch *patch, CTextureDLM *textureDLM, CPatch
 		_DLMTexture= NULL;
 	}
 
-	// Ig the lightmap is correclty allocated in the global texture, compute UVBias.
+	// If the lightmap is correclty allocated in the global texture, compute UVBias.
 	if(_DLMTexture)
 	{
 		// Compute patch UV matrix from pixels. Must map to center of pixels.
@@ -267,6 +267,26 @@ bool			CPatchDLMContext::generate(CPatch *patch, CTextureDLM *textureDLM, CPatch
 	DLMVScale= _Patch->getOrderT();
 	DLMUBias= 0;
 	DLMVBias= 0;*/
+
+
+	// Bound 8bits UV for Vegetable. This is to ensure vegetable Dlm UVs won't peek in neighbor lightmaps.
+	sint	tmpU, tmpV;
+	// Bound U minimum
+	tmpU= (sint)ceil ( (DLMUBias) * 255 );
+	clamp(tmpU, 0, 255);
+	MinU8= tmpU;
+	// Bound U maximum
+	tmpU= (sint)floor( (DLMUBias+DLMUScale) * 255 );
+	clamp(tmpU, (sint)MinU8, 255);
+	MaxU8= tmpU;
+	// Bound V minimum
+	tmpV= (sint)ceil ( (DLMVBias) * 255 );
+	clamp(tmpV, 0, 255);
+	MinV8= tmpV;
+	// Bound V maximum
+	tmpV= (sint)floor( (DLMVBias+DLMVScale) * 255 );
+	clamp(tmpV, (sint)MinV8, 255);
+	MaxV8= tmpV;
 
 
 	// Allocate RAM Lightmap
@@ -865,7 +885,7 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 
 
 // ***************************************************************************
-void			CPatchDLMContext::compileLighting(TCompileType compType)
+void			CPatchDLMContext::compileLighting(TCompileType compType, CRGBA modulateCte)
 {
 	// If srcTexture is full black, and if dst texture is already full black too, don't need to update dst texture
 	if(! (_IsSrcTextureFullBlack && _IsDstTextureFullBlack) )
@@ -901,6 +921,12 @@ void			CPatchDLMContext::compileLighting(TCompileType compType)
 				{
 					// modulate and fill dest.
 					_DLMTexture->modulateAndfillRect8888(TextPosX, TextPosY, Width, Height, &_LightMap[0], &_TextureFar[0]);
+				}
+				// else if must modulate with constante
+				else if(compType == ModulateConstant)
+				{
+					// modulate and fill dest.
+					_DLMTexture->modulateConstantAndfillRect(TextPosX, TextPosY, Width, Height, &_LightMap[0], modulateCte);
 				}
 				// else, no Modulate.
 				else

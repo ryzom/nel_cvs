@@ -1,7 +1,7 @@
 /** \file texture_dlm.h
  * <File description>
  *
- * $Id: texture_dlm.h,v 1.4 2002/04/18 13:06:53 berenguier Exp $
+ * $Id: texture_dlm.h,v 1.5 2002/04/23 14:38:13 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -124,6 +124,10 @@ public:
 	/** same as copyRect(), but modulate textMap with an array of CRGBA color, before copying.
 	 */
 	void			modulateAndfillRect8888(uint x, uint y, uint w, uint h, CRGBA  *textMap, CRGBA *modColor);
+
+	/** same as copyRect(), but modulate textMap with a cte color, before copying.
+	 */
+	void			modulateConstantAndfillRect(uint x, uint y, uint w, uint h, CRGBA  *textMap, CRGBA modColor);
 
 	/// Set a lightmap as free for use. It is an error to free a not allocated lightmap. (nlassert!!)
 	void			releaseLightMap(uint x, uint y);

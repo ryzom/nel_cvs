@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.15 2002/03/15 16:10:44 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.16 2002/04/23 14:38:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/fast_floor.h"
 #include "3d/tile_vegetable_desc.h"
 #include "3d/vegetable_light_ex.h"
+#include "3d/patchdlm_context.h"
 
 
 using namespace std;
@@ -168,6 +169,20 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	vegetLex.computeCurrentColors();
 
 
+	// Compute Dynamic Lightmap UV for this tile.
+	nlassert(_DLMContext);
+	CUV		dlmUV;
+	// get coordinate in 0..1 in texture.
+	dlmUV.U= _DLMContext->DLMUBias + _DLMContext->DLMUScale * tileU;
+	dlmUV.V= _DLMContext->DLMVBias + _DLMContext->DLMVScale * tileV;
+	// get coordinate in 0..255.
+	CVegetableUV8	dlmUV8;
+	dlmUV8.U= (uint8)OptFastFloor(dlmUV.U * 255 + 0.5f);
+	dlmUV8.V= (uint8)OptFastFloor(dlmUV.V * 255 + 0.5f);
+	// bound them, ensuring 8Bits UV "uncompressed" by driver are in the lightmap area.
+	clamp(dlmUV8.U, _DLMContext->MinU8, _DLMContext->MaxU8);
+	clamp(dlmUV8.V, _DLMContext->MinV8, _DLMContext->MaxV8);
+
 
 	// for all vegetable of this list, generate instances.
 	// =========================
@@ -237,7 +252,7 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 			// generate the instance of the vegetable
 			veget.generateInstance(vegetIg, matInstance, ambientF, 
 				diffuseColorF[ (lumelT<<NL_LUMEL_BY_TILE_SHIFT) + lumelS ],
-				(distType+1) * NL3D_VEGETABLE_BLOCK_ELTDIST, (CVegetable::TVegetableWater)vegetWaterState);
+				(distType+1) * NL3D_VEGETABLE_BLOCK_ELTDIST, (CVegetable::TVegetableWater)vegetWaterState, dlmUV8);
 		}
 	}
 }

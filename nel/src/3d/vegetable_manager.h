@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.14 2002/03/15 16:10:44 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.15 2002/04/23 14:38:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "3d/vegetable_shape.h"
 #include "3d/vegetablevb_allocator.h"
 #include "3d/material.h"
+#include "3d/vegetable_uv8.h"
 
 
 namespace NL3D 
@@ -179,13 +180,14 @@ public:
 	 *
 	 *	nlassert() if no sufficient space reserved in reserveIgCompile().
 	 *
+	 *	\param dlmUV is the dynamic lightmap UV for this vegetable.
 	 *	\see reserveIgAddInstances() reserveIgCompile()
 	 */
 	void						addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
 		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
 		float	bendFactor, float bendPhase, float bendFreqFactor, float blendDistMax,
-		TVegetableWater vegetWaterState);
+		TVegetableWater vegetWaterState, CVegetableUV8 dlmUV);
 
 	// @}
 
@@ -213,8 +215,10 @@ public:
 
 	/** render the manager into a driver, with current viewMatrix/frustum/fog  setuped
 	 *	Buffers should be unlocked. 
+	 *	\param	textureDLM is the dynamic lightmap to use. can be NULL if don't want DLM
 	 */
-	void			render(const CVector &viewCenter, const CVector &frontVector, const std::vector<CPlane> &pyramid, IDriver *driver);
+	void			render(const CVector &viewCenter, const CVector &frontVector, const std::vector<CPlane> &pyramid, 
+		ITexture *textureDLM, IDriver *driver);
 
 	// @}
 

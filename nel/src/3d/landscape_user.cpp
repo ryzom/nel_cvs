@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.22 2002/04/09 15:32:10 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.23 2002/04/23 14:38:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -307,6 +307,28 @@ void		CLandscapeUser::enableAdditive (bool enable)
 bool		CLandscapeUser::isAdditiveEnabled () const
 {
 	return _Landscape->isAdditive ();
+}
+
+//****************************************************************************
+void		CLandscapeUser::setPointLightDiffuseMaterial(CRGBA diffuse)
+{
+	_Landscape->Landscape.setPointLightDiffuseMaterial(diffuse);
+}
+//****************************************************************************
+CRGBA		CLandscapeUser::getPointLightDiffuseMaterial () const
+{
+	return _Landscape->Landscape.getPointLightDiffuseMaterial();
+}
+
+//****************************************************************************
+void		CLandscapeUser::setDLMGlobalVegetableColor(CRGBA gvc)
+{
+	_Landscape->Landscape.setDLMGlobalVegetableColor(gvc);
+}
+//****************************************************************************
+CRGBA		CLandscapeUser::getDLMGlobalVegetableColor() const
+{
+	return _Landscape->Landscape.getDLMGlobalVegetableColor();
 }
 
 

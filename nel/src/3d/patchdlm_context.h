@@ -1,7 +1,7 @@
 /** \file patchdlm_context.h
  * <File description>
  *
- * $Id: patchdlm_context.h,v 1.6 2002/04/18 13:06:52 berenguier Exp $
+ * $Id: patchdlm_context.h,v 1.7 2002/04/23 14:38:13 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/tess_list.h"
 #include "nel/misc/bsphere.h"
 #include "nel/misc/aabbox.h"
+#include "nel/misc/rgba.h"
 #include "3d/landscape_def.h"
 
 
@@ -54,7 +55,7 @@ class	CPatchDLMContextList;
 class CPatchDLMPointLight
 {
 public:
-	// Diffuse Color of the Spot. 0..255
+	// Diffuse Color of the Spot, pre-modulated with landscape PointLightDiffuseMaterial. 0..255
 	float		R, G, B;
 	// Is this a spot? NB: if false, cosMin/cosMax are still well computed for correctLighting (cosMax=-1, cosMin= -2).
 	bool		IsSpot;
@@ -85,7 +86,7 @@ public:
 
 public:
 	// compile from a pointlight. NB: attenuation end is clamped to maxAttEnd (must be >0)
-	void		compile(const CPointLight &pl, float maxAttEnd= 30.f);
+	void		compile(const CPointLight &pl, NLMISC::CRGBA landDiffMat, float maxAttEnd= 30.f);
 };
 
 
@@ -107,15 +108,18 @@ public:
 	};
 
 	/// see compileLighting()
-	enum	TCompileType	{ModulateTileColor=0, ModulateTextureFar, NoModulate};
+	enum	TCompileType	{ModulateTileColor=0, ModulateTextureFar, ModulateConstant, NoModulate};
 
 public:
 
 	/// DLM info
 	/// The position and size of the DLM in the texture, in pixels.
 	uint			TextPosX, TextPosY, Width, Height;
-	/// Mapping to this rectangle in 0-1 basis
+	/// Mapping to this rectangle from 0-1 basis
 	float			DLMUScale, DLMVScale, DLMUBias, DLMVBias;
+	/// texture coordinate bound in 8 bits. Important for Vegetable special DLM mapping
+	uint8			MinU8, MaxU8;
+	uint8			MinV8, MaxV8;
 
 	/** Lighting Process: number of light contribution to this patch in last rneder, and in cur Render.
 	 *	Modified by CPatch and CLandscape
@@ -151,9 +155,11 @@ public:
 	/**	update VRAM texture with RAM texture. Uploaded in 16 bits format.
 	 *	NB: full dst blackness is cached.
 	 *	\param compType say if, before writing to the texture, the lightmap is modulated with _Patch TileColor,
-	 *	_Patch textureFar (precomputed in the context), or not modulated at all (for vegetables rendering).
+	 *	_Patch textureFar (precomputed in the context), modulate with a constant or not modulated at all
+	 *	\param modulateCte used only if compType==ModulateConstant. this is the cte to be modulate by lightmap 
+	 *	before copy to texture
 	 */
-	void			compileLighting(TCompileType compType);
+	void			compileLighting(TCompileType compType, NLMISC::CRGBA modulateCte= NLMISC::CRGBA::White);
 
 	CPatch			*getPatch() const {return _Patch;}
 

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.26 2002/04/18 13:06:52 berenguier Exp $
+ * $Id: patch.h,v 1.27 2002/04/23 14:38:12 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -781,6 +781,9 @@ public:
 
 	// @}
 
+
+	/// Get number of TileMaterial created in this Patch
+	uint		getTileMaterialRefCount() const {return MasterBlock.TileMaterialRefCount;}
 
 // Private part.
 private:

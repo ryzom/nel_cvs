@@ -1,7 +1,7 @@
 /** \file bsphere.h
  * <File description>
  *
- * $Id: bsphere.h,v 1.1 2001/02/28 14:31:21 berenguier Exp $
+ * $Id: bsphere.h,v 1.2 2001/08/01 15:42:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/plane.h"
+#include "nel/misc/matrix.h"
 
 
 namespace NLMISC 
@@ -36,6 +37,7 @@ namespace NLMISC
 
 using NLMISC::CVector;
 using NLMISC::CPlane;
+using NLMISC::CMatrix;
 
 
 /**
@@ -54,6 +56,17 @@ public:
 	CBSphere() {}
 	/// Constructor.
 	CBSphere(const CVector & center, float radius) : Center(center), Radius(radius) {}
+
+
+	/// \name transform
+	// @{
+
+	/** compute res= mat * this. NB: radius is maximized, taking max of the 3 axis of the matrix.
+	 * NB: this may be false if the matrix is not orthogonal...
+	 */
+	void	applyTransform(const CMatrix &mat, CBSphere &res);
+
+	// @}
 
 	/// \name Clip
 	// @{

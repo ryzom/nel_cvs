@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.17 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: matrix.h,v 1.18 2001/08/01 15:42:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -296,6 +296,10 @@ public:
 	void		serial(IStream &f);
 	/// return true if the matrix has a scale part (by scale(), by multiplication etc...)
 	bool		hasScalePart() const;
+	/// return true if hasScalePart() and if if this scale is uniform.
+	bool		hasScaleUniform() const;
+	/// return true the uniform scale. valid only if hasScaleUniform() is true, else 1 is returned.
+	float		getScaleUniform() const;
 	/// return true if the matrix has a projection part (by setProj(), by multiplication etc...)
 	bool		hasProjectionPart() const;
 	//@}

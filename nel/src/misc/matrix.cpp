@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.26 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: matrix.cpp,v 1.27 2001/08/01 15:42:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,20 @@ bool		CMatrix::hasProjectionPart() const
 {
 	return (StateBit&MAT_PROJ)!=0;
 }
+
+
+bool		CMatrix::hasScaleUniform() const
+{
+	return (StateBit&MAT_SCALEUNI)!=0 && (StateBit&MAT_SCALEANY)==0;
+}
+float		CMatrix::getScaleUniform() const
+{
+	if(hasScaleUniform())
+		return Scale33;
+	else
+		return 1;
+}
+
 
 
 // ======================================================================================================

@@ -1,7 +1,7 @@
 /** \file bsphere.cpp
  * <File description>
  *
- * $Id: bsphere.cpp,v 1.1 2001/02/28 14:39:04 berenguier Exp $
+ * $Id: bsphere.cpp,v 1.2 2001/08/01 15:42:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,10 @@
 
 #include "nel/misc/bsphere.h"
 #include "nel/misc/common.h"
+#include <algorithm>
+
 using namespace	NLMISC;
+using namespace	std;
 
 
 namespace NLMISC {
@@ -79,6 +82,39 @@ bool	CBSphere::intersect(const CBSphere &s) const
 
 	return r2<=sqr(Radius+s.Radius);
 
+}
+
+
+void	CBSphere::applyTransform(const CMatrix &mat, CBSphere &res)
+{
+	res.Center= mat*Center;
+
+	if(!mat.hasScalePart())
+		res.Radius= Radius;
+	else
+	{
+		if(mat.hasScaleUniform())
+			res.Radius= Radius*mat.getScaleUniform();
+		else
+		{
+			// must compute max of 3 axis.
+			float	m, mx;
+			CVector	i,j,k,sum;
+			i= mat.getI();
+			j= mat.getJ();
+			k= mat.getK();
+			// take the max of the 3 axis.
+			m= i.sqrnorm();
+			mx= m;
+			m= j.sqrnorm();
+			mx= max(m, mx);
+			m= k.sqrnorm();
+			mx= max(m, mx);
+
+			// result.
+			res.Radius= Radius * (float)sqrt(mx);
+		}
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.20 2002/04/18 12:44:43 besson Exp $
+ * $Id: path.h,v 1.21 2002/04/26 10:00:15 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -134,6 +134,21 @@ public:
 	 */
 	static void			getPathContent (const std::string &path, bool recurse, bool wantDir, bool wantFile, std::vector<std::string> &result);
 
+	/** Get the full path based on a file/path and the current directory. Example, imagine that the current path is c:\temp and toto is a directory
+	 * GetFullPath ("toto") returns "c:/temp/toto/"
+	 * GetFullPath ("../toto") returns "c:/temp/../toto/"
+	 * GetFullPath ("d:\dir\toto") returns "d:/dir/toto/"
+	 * GetFullPath ("\toto") returns "c:/toto/"
+	 * GetFullPath ("") returns "c:/temp/"
+	 *
+	 * \param path the path
+	 * \return the full path
+	 */
+	static std::string getFullPath (const std::string &path, bool addFinalSlash = true);
+
+	/** Returns the current path of the applicated.
+	 */
+	static std::string getCurrentPath ();
 
 private:
 

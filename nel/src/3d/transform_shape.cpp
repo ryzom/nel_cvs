@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.9 2001/06/29 14:27:40 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.10 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,7 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 
 	// render the shape.
 	if(m->Shape)
-		m->Shape->render(drv, m);
+		m->Shape->render( drv, m, trav->isCurrentPassOpaque() );
 }
 
 

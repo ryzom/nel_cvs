@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.9 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: render_trav.cpp,v 1.10 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,9 @@
 #include "3d/clip_trav.h"
 #include "3d/light_trav.h"
 #include "3d/driver.h"
+
+#include "3d/transform.h"
+
 using namespace std;
 using namespace NLMISC;
 
@@ -47,7 +50,10 @@ namespace	NL3D
 CRenderTrav::CRenderTrav()
 {
 	RenderList.reserve(1024);
-	Driver= NULL;
+	OrderOpaqueList.init(1024);
+	OrderTransparentList.init(1024);
+	Driver = NULL;
+	_CurrentPassOpaque = true;
 }
 // ***************************************************************************
 IObs		*CRenderTrav::createDefaultObs() const
@@ -64,6 +70,42 @@ void		CRenderTrav::traverse()
 	getDriver()->setupViewMatrix(ViewMatrix);
 	getDriver()->setupViewport(_Viewport);
 
+
+	// Sort the observers by distance from camera
+	// This is done here and not in the addRenderObs because of the LoadBalancing traversal which can modify
+	// the transparency flag (multi lod for instance)
+	std::vector<IBaseRenderObs*>::iterator it = RenderList.begin();
+	uint32 nNbObs = RenderList.size();
+	IBaseRenderObs *pObs;
+	CTransform *pTransform;
+	float rPseudoZ, rPseudoZ2;
+	for( uint32 i = 0; i < nNbObs; ++i )
+	{
+		pObs = *it;
+		pTransform = pObs->getTransformModel();
+
+		rPseudoZ = (pObs->HrcObs->WorldMatrix.getPos() - CamPos).norm();
+		rPseudoZ =  sqrtf( rPseudoZ / this->Far );
+		// rPseudoZ from 0.0 -> 1.0
+
+		if( ( pTransform != NULL ) && ( pTransform->isOpaque() ) )
+		{
+			rPseudoZ2 = rPseudoZ * OrderOpaqueList.getSize();
+			clamp( rPseudoZ2, 0.0f, OrderOpaqueList.getSize() - 1 );
+			OrderOpaqueList.insert( (uint32)rPseudoZ2, pObs );
+		}
+		if( ( pTransform != NULL ) && ( pTransform->isTransparent() ) )
+		{
+			rPseudoZ2 = rPseudoZ * OrderTransparentList.getSize();
+			rPseudoZ2 = OrderTransparentList.getSize() - rPseudoZ2;
+			clamp( rPseudoZ2, 0.0f, OrderOpaqueList.getSize() - 1 );
+			OrderTransparentList.insert( (uint32)rPseudoZ2, pObs );
+		}
+		++it;
+	}
+
+
+
 	// Don't Clear screen, leave it to caller.
 
 	// First traverse the root.
@@ -71,15 +113,34 @@ void		CRenderTrav::traverse()
 		Root->traverse(NULL);
 
 	// Then traverse the render list.
-	for(sint i=0;i<(sint)RenderList.size();i++)
+	// Render the opaque materials
+	_CurrentPassOpaque = true;
+	OrderOpaqueList.begin();
+	IBaseRenderObs *pBRO;
+	while( OrderOpaqueList.get() != NULL )
 	{
-		RenderList[i]->traverse(NULL);
+		pBRO = OrderOpaqueList.get();
+		pBRO->traverse(NULL);
+		OrderOpaqueList.next();
 	}
+
+	 // Render transparent materials
+	_CurrentPassOpaque = false;
+	OrderTransparentList.begin();
+	while( OrderTransparentList.get() != NULL )
+	{
+		pBRO = OrderTransparentList.get();
+		pBRO->traverse(NULL);
+		OrderTransparentList.next();
+	}
+
 }
 // ***************************************************************************
 void		CRenderTrav::clearRenderList()
 {
 	RenderList.clear();
+	OrderOpaqueList.reset();
+	OrderTransparentList.reset();
 }
 // ***************************************************************************
 void		CRenderTrav::addRenderObs(IBaseRenderObs *o)

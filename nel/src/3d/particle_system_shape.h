@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: particle_system_shape.h,v 1.3 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,7 +88,7 @@ public:
 	/** render() a particle system in a driver, with the specified TransformShape information.
 	 * CTransfromShape call this method in the render traversal.
 	 */
-	virtual void				render(IDriver *drv, CTransformShape *trans) ;
+	virtual void				render(IDriver *drv, CTransformShape *trans, bool passOpaque);
 
 	/** get an approximation of the number of triangles this instance will render for a fixed distance.
 	  *

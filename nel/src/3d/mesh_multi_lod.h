@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.3 2001/07/04 16:24:41 corvazier Exp $
+ * $Id: mesh_multi_lod.h,v 1.4 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,7 +119,7 @@ public:
 	virtual bool	clip(const std::vector<CPlane>	&pyramid);
 
 	/// render() this mesh in a driver.
-	virtual void	render(IDriver *drv, CTransformShape *trans);
+	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque);
 
 	/// get an approximation of the number of triangles this instance will render for a fixed distance.
 	virtual float	getNumTriangles (float distance);

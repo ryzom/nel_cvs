@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.9 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: mesh_base.cpp,v 1.10 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -203,6 +203,21 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi)
 	mi->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );
 	mi->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
 	mi->ITransformable::setPivot( ((CAnimatedValueVector&)_DefaultPivot.getValue()).Value  );
+
+	// Check materials for transparency
+	uint32 i;
+
+	mi->setTransparency( false );
+	mi->setOpacity( false );
+	for( i = 0; i < mi->Materials.size(); ++i )
+	if( mi->Materials[i].getBlend() )
+	{
+		mi->setTransparency( true );
+	}
+	else
+	{
+		mi->setOpacity( true );
+	}
 }
 
 

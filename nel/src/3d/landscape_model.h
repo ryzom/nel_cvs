@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape_model.h,v 1.2 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,7 +134,7 @@ public:
 // Render obs.
 //*************
 /// Landscape Render observer.
-class	CLandscapeRenderObs : public IBaseRenderObs
+class	CLandscapeRenderObs : public CTransformRenderObs
 {
 public:
 	/// Do nothing, and don't traverseSons() too.

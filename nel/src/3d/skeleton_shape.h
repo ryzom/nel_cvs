@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * <File description>
  *
- * $Id: skeleton_shape.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: skeleton_shape.h,v 1.3 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,7 +75,7 @@ public:
 	}
 
 	/// render() this skeletonshape in a driver  (no-op)
-	virtual void	render(IDriver *drv, CTransformShape *trans)
+	virtual void	render(IDriver *drv, CTransformShape *trans, bool opaquePass)
 	{
 	}
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.14 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: mesh_mrm.cpp,v 1.15 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -380,7 +380,7 @@ bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid)
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans)
+void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
 	nlassert(drv);
 	if(_Lods.size()==0)
@@ -1248,9 +1248,9 @@ bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid)
 
 
 // ***************************************************************************
-void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
+void	CMeshMRM::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
-	_MeshMRMGeom.render(drv, trans);
+	_MeshMRMGeom.render(drv, trans, passOpaque);
 }
 
 

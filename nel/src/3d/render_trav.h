@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: render_trav.h,v 1.2 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_RENDER_TRAV_H
 
 #include "3d/trav_scene.h"
+#include "3d/ordering_table.h"
 #include "nel/3d/viewport.h"
 #include <vector>
 
@@ -44,6 +45,7 @@ class	IBaseClipObs;
 class	IBaseLightObs;
 class	IDriver;
 
+class	CTransform;
 
 // ***************************************************************************
 // ClassIds.
@@ -110,13 +112,21 @@ public:
 		return _Viewport;
 	}
 
+	bool isCurrentPassOpaque() { return _CurrentPassOpaque; }
+
 private:
+	
 	// A grow only list of observers to be rendered.
-	// We don't use a ZList, since it may unusefull if we sort primitives by material.
 	std::vector<IBaseRenderObs*>	RenderList;
+	// Ordering Table to sort transparent objects
+	COrderingTable<IBaseRenderObs>	OrderOpaqueList;
+	COrderingTable<IBaseRenderObs>	OrderTransparentList;
 
 	IDriver			*Driver;
 	CViewport		_Viewport;
+
+	// Temporary for the render
+	bool			_CurrentPassOpaque;
 };
 
 
@@ -165,7 +175,15 @@ public:
 	 */
 	virtual	void	traverse(IObs *caller)=0;
 
+	/**
+	 * To avoid dynamic casting in mot fault of yoyo
+	 */
+	virtual CTransform* getTransformModel() 
+	{
+		return NULL;
+	}
 };
+
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.4 2001/07/04 16:24:41 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.5 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,7 +164,7 @@ bool CMeshMultiLod::clip(const std::vector<CPlane>	&pyramid)
 
 // ***************************************************************************
 
-void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans)
+void CMeshMultiLod::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
 	// Render good meshes
 	nlassert (dynamic_cast<CMeshMultiLodInstance*>(trans));
@@ -450,8 +450,8 @@ void CMeshMultiLod::render (uint slot, IDriver *drv, CMeshMultiLodInstance *tran
 		// Here
 		if (slotRef.MeshGeom)
 		{
-			/// \toto hulud: manage alpha blending and polygon count here..
-			slotRef.MeshGeom->render (drv, trans);
+			/// \todo hulud: manage alpha blending and polygon count here..
+			slotRef.MeshGeom->render (drv, trans, true);
 		}
 	}
 }

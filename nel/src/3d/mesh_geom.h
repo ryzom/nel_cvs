@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh_geom.h,v 1.3 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ public:
 
 	/** render() this meshGeom in a driver, with the specified TransformShape instance information.
 	 */
-	virtual void	render(IDriver *drv, CTransformShape *trans) =0;
+	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque) =0;
 
 	/// \name Load balancing methods
 	// @{

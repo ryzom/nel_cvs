@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.4 2001/06/29 14:27:40 berenguier Exp $
+ * $Id: transform_shape.h,v 1.5 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,7 +155,7 @@ public:
  * \author Nevrax France
  * \date 2000
  */
-class	CTransformShapeRenderObs : public IBaseRenderObs
+class	CTransformShapeRenderObs : public CTransformRenderObs
 {
 public:
 

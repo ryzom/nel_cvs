@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.29 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: mesh.cpp,v 1.30 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -291,7 +291,6 @@ bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid)
 	return true;
 }
 
-
 // ***************************************************************************
 void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 {
@@ -350,7 +349,7 @@ void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 
 
 // ***************************************************************************
-void	CMeshGeom::render(IDriver *drv, CTransformShape *trans)
+void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass)
 {
 	nlassert(drv);
 	// get the mesh instance.
@@ -425,6 +424,8 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans)
 		{
 			CRdrPass	&rdrPass= mBlock.RdrPass[i];
 			// Render with the Materials of the MeshInstance.
+			if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (opaquePass == true) ) ||
+				( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (opaquePass == false) )		)
 			drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
 		}
 	}
@@ -981,9 +982,9 @@ bool	CMesh::clip(const std::vector<CPlane>	&pyramid)
 
 
 // ***************************************************************************
-void	CMesh::render(IDriver *drv, CTransformShape *trans)
+void	CMesh::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
-	_MeshGeom->render(drv, trans);
+	_MeshGeom->render(drv, trans, passOpaque);
 }
 
 

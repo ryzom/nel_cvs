@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.2 2001/06/28 09:17:34 berenguier Exp $
+ * $Id: transform.h,v 1.3 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,6 +79,11 @@ public:
 
 public:
 
+	/// Accessors for opacity/transparency
+	void setTransparency(bool v) { _Transparent = v; }
+	void setOpacity(bool v) { _Opaque = v; }
+	bool isOpaque() { return _Opaque; }
+	bool isTransparent() { return _Transparent; }
 
 	/// Hide the object and his sons.
 	void		hide();
@@ -166,6 +171,9 @@ private:
 	// Last date of ITransformable matrix.
 	uint64			_LastTransformableMatrixDate;
 
+	// Information of transparency
+	bool			_Opaque;
+	bool			_Transparent;
 };
 
 
@@ -184,9 +192,7 @@ class	CTransformHrcObs : public IBaseHrcObs
 {
 public:
 
-
 	virtual	void	update();
-
 
 	/// \name Utility methods.
 	//@{
@@ -200,7 +206,7 @@ public:
 	/// The base behavior is to update() the observer, updateWorld() states, and traverseSons().
 	virtual	void	traverse(IObs *caller);
 	//@}
-
+	static IObs	*creator() {return new CTransformHrcObs;}
 };
 
 
@@ -239,6 +245,7 @@ public:
 	 */
 	virtual	void	traverse(IObs *caller);
 
+	static IObs	*creator() {return new CTransformClipObs;}
 };
 
 
@@ -263,11 +270,40 @@ public:
 	 */
 	virtual	void	traverse(IObs *caller);
 
+	static IObs	*creator() {return new CTransformAnimDetailObs;}
 };
 
+// ***************************************************************************
+/**
+ * \sa CTransformRenderObs
+ * \author Matthieu Besson
+ * \author Nevrax France
+ * \date 2001
+ */
+class CTransformRenderObs : public IBaseRenderObs
+{
+public:
+	/** 
+	 * The base render method.
+	 * The observers should not traverseSons(), for speed improvement.
+	 */
+	virtual	void	traverse(IObs *caller)
+	{
+	}
 
+	/**
+	 * To avoid dynamic casting in mot fault of yoyo
+	 */
+	virtual CTransform* getTransformModel()
+	{
+		return static_cast<CTransform*>(Model);
+	}
 
-}
+	static IObs	*creator() {return new CTransformRenderObs;}
+
+};
+
+} // namespace NL3D
 
 
 #endif // NL_TRANSFORM_H

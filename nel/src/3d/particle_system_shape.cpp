@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.10 2001/07/04 12:38:08 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.11 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,7 +136,7 @@ bool CParticleSystemShape::clip(const std::vector<CPlane>	&pyramid)
 }
 
 
-void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans)
+void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
 	nlassert(dynamic_cast<CParticleSystemModel *>(trans)) ;
 	nlassert(drv) ;

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.19 2001/06/28 09:17:34 berenguier Exp $
+ * $Id: transform.cpp,v 1.20 2001/07/05 09:38:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,16 +32,13 @@ namespace	NL3D
 
 
 // ***************************************************************************
-static	IObs	*creatorHrcObs() {return new CTransformHrcObs;}
-static	IObs	*creatorClipObs() {return new CTransformClipObs;}
-static	IObs	*creatorAnimDetailObs() {return new CTransformAnimDetailObs;}
-
 void	CTransform::registerBasic()
 {
-	CMOT::registerModel(TransformId, 0, CTransform::creator);
-	CMOT::registerObs(HrcTravId, TransformId, creatorHrcObs);
-	CMOT::registerObs(ClipTravId, TransformId, creatorClipObs);
-	CMOT::registerObs(AnimDetailTravId, TransformId, creatorAnimDetailObs);
+	CMOT::registerModel( TransformId, 0, CTransform::creator);
+	CMOT::registerObs( HrcTravId,			TransformId, CTransformHrcObs::creator			);
+	CMOT::registerObs( ClipTravId,			TransformId, CTransformClipObs::creator			);
+	CMOT::registerObs( AnimDetailTravId,	TransformId, CTransformAnimDetailObs::creator	);
+	CMOT::registerObs( RenderTravId,		TransformId, CTransformRenderObs::creator		);
 }
 
 
@@ -55,6 +52,9 @@ CTransform::CTransform()
 	_LastTransformableMatrixDate= 0;
 
 	_FatherSkeletonModel= NULL;
+
+	_Transparent = false;
+	_Opaque = true;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.22 2004/02/18 17:08:41 legros Exp $
+ * $Id: build_surf.cpp,v 1.23 2004/03/02 17:01:45 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1117,7 +1117,7 @@ void	NLPACS::CZoneTessellation::compile()
 
 	if (HasInvertedUnderWater)
 	{
-		nlwarning("zone '%s' has reversed landscape under water", (getZoneNameById(CentralZoneId)+ZoneExt).c_str());
+		nlwarning("zone '%s' has reversed landscape under water", (getZoneNameById((uint16)CentralZoneId)+ZoneExt).c_str());
 	}
 
 

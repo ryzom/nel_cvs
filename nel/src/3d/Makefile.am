@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.90 2002/10/10 15:05:31 coutelas Exp $
+# $Id: Makefile.am,v 1.91 2002/10/28 15:51:14 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -35,6 +35,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        anim_detail_trav.h \
                        async_file_manager.cpp \
                        async_file_manager.h \
+                       async_texture_block.cpp \
+                       async_texture_block.h \
                        async_texture_manager.cpp \
                        async_texture_manager.h \
                        base_anim_detail_obs.cpp \
@@ -87,6 +89,8 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        event_mouse_listener.h \
                        fast_floor.cpp \
                        fast_floor.h \
+		       fasthls_modifier.cpp \
+		       fasthls_modifier.h \
                        flare_model.cpp \
                        flare_model.h \
                        flare_shape.cpp \
@@ -99,6 +103,12 @@ libnel3d_la_SOURCES  = animatable.cpp \
                        heat_haze.cpp \
                        heat_haze.h \
                        height_map.cpp \
+		       hls_color_texture.cpp \
+		       hls_color_texture.h \
+		       hls_texture_bank.cpp \
+		       hls_texture_bank.h \
+		       hls_texture_manager.cpp \
+		       hls_texture_manager.h \
                        hrc_trav.cpp \
                        hrc_trav.h \
                        ig_surface_light_build.cpp \

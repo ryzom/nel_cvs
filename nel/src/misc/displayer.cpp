@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.31 2002/01/14 17:54:08 lecroart Exp $
+ * $Id: displayer.cpp,v 1.32 2002/06/06 15:48:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "stdmisc.h"
 
+#include <stdio.h>
 #include <time.h>
 
 #include <iostream>
@@ -333,6 +334,13 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 	if (needSpace) { ss << " : "; needSpace = false; }
 
 	ss << message;
+
+	// if the file is too big (>5mb), rename it and create another one
+	if (CFile::getFileSize(_FileName) > 5000000)
+	{
+		string name = CFile::findNewFile (_FileName);
+		rename (_FileName.c_str(), name.c_str());
+	}
 
 	ofstream ofs (_FileName.c_str (), ios::out | ios::app);
 	if (ofs.is_open ())

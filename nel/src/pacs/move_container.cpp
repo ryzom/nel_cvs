@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.32 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: move_container.cpp,v 1.33 2002/10/01 13:40:13 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "nel/misc/i_xml.h"
 #include <math.h>
+#include <float.h>
 
 using namespace NLMISC;
 
@@ -172,7 +173,7 @@ void  CMoveContainer::evalCollision (double deltaTime, uint8 worldImage)
 
 #ifdef NL_DEBUG
 	// Check list integrity
-	checkSortedList ();
+	//checkSortedList ();
 #endif // NL_DEBUG
 
 	// Get first collision
@@ -288,7 +289,7 @@ bool CMoveContainer::testMove (UMovePrimitive* primitive, const CVectorD& speed,
 
 #ifdef NL_DEBUG
 	// Check list integrity
-	checkSortedList ();
+//	checkSortedList ();
 #endif // NL_DEBUG
 
 	// Result
@@ -645,7 +646,17 @@ bool CMoveContainer::evalOneTerrainCollision (double beginTime, CMovePrimitive *
 			{
 				// Ref on the collision
 				CCollisionSurfaceDesc desc=(*result)[c];
-				desc.ContactTime=(_DeltaTime-beginTime)*desc.ContactTime+beginTime;
+				double contactTime = (_DeltaTime-beginTime)*desc.ContactTime+beginTime;
+
+				/*
+				 *  If beginTime is 0.999999999 and desc.ContactTime<1.0, contactTime will be 1.0.
+				 *  In this case, we force contactTime to be beginTime to avoid collision at time == 1.0.
+				**/
+				if ((contactTime >= 1.0) && (beginTime < 1.0) && (desc.ContactTime < 1.0))
+					contactTime = beginTime;
+
+				// Set the container's time space contact time
+				desc.ContactTime = contactTime;
 
 				// ptr on the surface
 				const CRetrievableSurface *surf= _Retriever->getSurfaceById (desc.ContactSurface);
@@ -1026,10 +1037,14 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 
 	// Time
 	double time=desc.ContactTime;
+/*
+	if (time == _DeltaTime)
+		time -= _DeltaTime*FLT_EPSILON;
+*/
 
 	// Check time interval
-	nlassert (beginTime<=time);
-	nlassert (time<_DeltaTime);
+	nlassertex (beginTime<=time, ("beginTime=%f, time=%f", beginTime, time));
+	nlassertex (time<_DeltaTime, ("time=%f, _DeltaTime=%f", time, _DeltaTime));
 
 	// Time of the collision.
 	time-=NELPACS_DIST_BACK/wI->getSpeed().norm();
@@ -1808,6 +1823,9 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 		CCollisionOTInfo *firstCollision = NULL;
 		do
 		{
+
+			nlassert (beginTime < 1.0);
+
 			// Update the primitive
 			wI->update (beginTime, deltaTime, *(CMovePrimitive*)primitive);
 
@@ -1873,6 +1891,7 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 			{
 				collisionTime = firstCollision->getCollisionTime ();
 				reaction (*firstCollision);
+				nlassert (collisionTime != 1);
 			}
 			else
 			{
@@ -1888,7 +1907,7 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 					wI->doMove (_DeltaTime);
 				}
 			}
-
+			
 			beginTime = collisionTime;
 		}
 		while (firstCollision);

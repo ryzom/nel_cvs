@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.17 2004/07/12 13:51:29 miller Exp $
+ * $Id: variable.h,v 1.18 2004/07/12 14:28:49 miller Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -228,7 +228,8 @@ public:
 				const T &defaultValue, 
 				uint nbMeanValue = 0, 
 				bool useConfigFile = false, 
-				void (*cc)(IVariable &var)=NULL) :
+				void (*cc)(IVariable &var)=NULL,
+				bool executeCallbackForDefaultValue=false ) :
 		IVariable (categoryName, commandName, commandHelp, "[<value>|stat|mean|min|max]", useConfigFile, cc), _Mean(nbMeanValue), _First(true)
 	{
 		set (defaultValue, executeCallbackForDefaultValue);

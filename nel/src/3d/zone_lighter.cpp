@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.27 2003/03/20 17:55:16 lecroart Exp $
+ * $Id: zone_lighter.cpp,v 1.28 2003/03/24 18:09:01 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1741,8 +1741,174 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 			bool clampV;
 			uint8 alphaTestThreshold;
 			bool doubleSided;
-			getTexture (material, texture, clampU, clampV, alphaTestThreshold, doubleSided);
+			if (getTexture (material, texture, clampU, clampV, alphaTestThreshold, doubleSided))
+			{
+				// Dump triangles
+				const uint32* triIndex=primitive.getTriPointer ();
+				uint numTri=primitive.getNumTri ();
+				uint tri;
+				for (tri=0; tri<numTri; tri++)
+				{
+					// Vertex
+					CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3]));
+					CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+1]));
+					CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+2]));
 
+					// UV
+					float u[3];
+					float v[3];
+					for (uint i=0; i<3; i++)
+					{
+						// Get UV coordinates
+						float *uv = (float*)vb.getTexCoordPointer (triIndex[tri*3+i], 0);
+						if (uv)
+						{
+							// Copy it
+							u[i] = uv[0];
+							v[i] = uv[1];
+						}
+					}
+
+					// Make a triangle
+					triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
+						alphaTestThreshold));
+				}
+
+				// Dump quad
+				triIndex=primitive.getQuadPointer ();
+				numTri=primitive.getNumQuad ();
+				for (tri=0; tri<numTri; tri++)
+				{
+					// Vertex
+					CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4]));
+					CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+1]));
+					CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+2]));
+					CVector v3=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+3]));
+
+					// UV
+					float u[4];
+					float v[4];
+					for (uint i=0; i<4; i++)
+					{
+						// Get UV coordinates
+						float *uv = (float*)vb.getTexCoordPointer (triIndex[tri*4+i], 0);
+						if (uv)
+						{
+							// Copy it
+							u[i] = uv[0];
+							v[i] = uv[1];
+						}
+					}
+
+					// Make 2 triangles
+					triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
+						alphaTestThreshold));
+					u[1] = u[2];
+					u[2] = u[3];
+					v[1] = v[2];
+					v[2] = v[3];
+					triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v2, v3), doubleSided, texture, clampU, clampV, u, v, 
+						alphaTestThreshold));
+				}
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+
+bool CZoneLighter::getTexture (const CMaterial &material, CBitmap *&result, bool &clampU, bool &clampV, uint8 &alphaTestThreshold, bool &doubleSided)
+{
+	// Texture informations, not NULL only if texture is used for alpha test
+	result = NULL;
+	clampU = false;
+	clampV = false;
+
+	// Alpha test threashold
+	float alphaTestThresholdF = material.getAlphaTestThreshold () * 255;
+	clamp (alphaTestThresholdF, 0.f, 255.f);
+	alphaTestThreshold = (uint8)alphaTestThresholdF;
+
+	// Drawable material ?
+	if (material.getBlend ())
+		return false;
+
+	// Use alpha test ?
+	if (material.getAlphaTest ())
+	{
+		// Get the texture
+		ITexture *texture = material.getTexture (0);
+
+		// Is texture shared ?
+		if (texture && texture->supportSharing ())
+		{
+			// Share name
+			string name = texture->getShareName();
+
+			// Texture exist ?
+			std::map<string, NLMISC::CBitmap>::iterator ite = _Bitmaps.find (name);
+			if (ite != _Bitmaps.end ())
+			{
+				// Yes
+				result = &(ite->second);
+			}
+			else
+			{
+				// No, add it
+				ite = _Bitmaps.insert (std::map<string, NLMISC::CBitmap>::value_type (name, CBitmap())).first;
+				result = &(ite->second);
+
+				// Generate the texture
+				texture->generate ();
+
+				// Convert to RGBA
+				texture->convertToType (CBitmap::RGBA);
+
+				// Copy it
+				*result = *texture;
+
+				// Release the texture
+				texture->release ();
+			}
+
+			// Wrap flags
+			clampU = texture->getWrapS () == ITexture::Clamp;
+			clampV = texture->getWrapT () == ITexture::Clamp;
+		}
+	}
+
+	// Get double sided flag
+	doubleSided = material.getDoubleSided ();
+	return true;
+}
+
+// ***************************************************************************
+
+void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshMRMGeom &meshGeom, const CMatrix& modelMT, std::vector<CTriangle>& triangleArray)
+{
+	// Get the vertex buffer
+	const CVertexBuffer &vb=meshGeom.getVertexBuffer();
+
+	// For each render pass
+	uint numRenderPass=meshGeom.getNbRdrPass(0);
+	for (uint pass=0; pass<numRenderPass; pass++)
+	{
+		// Get the primitive block
+		const CPrimitiveBlock &primitive=meshGeom.getRdrPassPrimitiveBlock ( 0, pass);
+
+		// Get the material
+		const CMaterial &material = meshBase.getMaterial (meshGeom.getRdrPassMaterial (0, pass));
+
+		// ** Get the bitmap
+
+		// Texture informations, not NULL only if texture is used for alpha test
+		CBitmap *texture;
+		bool clampU;
+		bool clampV;
+		uint8 alphaTestThreshold;
+		bool doubleSided;
+		if (getTexture (material, texture, clampU, clampV, alphaTestThreshold, doubleSided))
+		{
 			// Dump triangles
 			const uint32* triIndex=primitive.getTriPointer ();
 			uint numTri=primitive.getNumTri ();
@@ -1810,165 +1976,6 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 				triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v2, v3), doubleSided, texture, clampU, clampV, u, v, 
 					alphaTestThreshold));
 			}
-		}
-	}
-}
-
-// ***************************************************************************
-
-void CZoneLighter::getTexture (const CMaterial &material, CBitmap *&result, bool &clampU, bool &clampV, uint8 &alphaTestThreshold, bool &doubleSided)
-{
-	// Texture informations, not NULL only if texture is used for alpha test
-	result = NULL;
-	clampU = false;
-	clampV = false;
-
-	// Alpha test threashold
-	float alphaTestThresholdF = material.getAlphaTestThreshold () * 255;
-	clamp (alphaTestThresholdF, 0.f, 255.f);
-	alphaTestThreshold = (uint8)alphaTestThresholdF;
-
-	// Use alpha test ?
-	if (material.getAlphaTest ())
-	{
-		// Get the texture
-		ITexture *texture = material.getTexture (0);
-
-		// Is texture shared ?
-		if (texture && texture->supportSharing ())
-		{
-			// Share name
-			string name = texture->getShareName();
-
-			// Texture exist ?
-			std::map<string, NLMISC::CBitmap>::iterator ite = _Bitmaps.find (name);
-			if (ite != _Bitmaps.end ())
-			{
-				// Yes
-				result = &(ite->second);
-			}
-			else
-			{
-				// No, add it
-				ite = _Bitmaps.insert (std::map<string, NLMISC::CBitmap>::value_type (name, CBitmap())).first;
-				result = &(ite->second);
-
-				// Generate the texture
-				texture->generate ();
-
-				// Convert to RGBA
-				texture->convertToType (CBitmap::RGBA);
-
-				// Copy it
-				*result = *texture;
-
-				// Release the texture
-				texture->release ();
-			}
-
-			// Wrap flags
-			clampU = texture->getWrapS () == ITexture::Clamp;
-			clampV = texture->getWrapT () == ITexture::Clamp;
-		}
-	}
-
-	// Get double sided flag
-	doubleSided = material.getDoubleSided ();
-}
-
-// ***************************************************************************
-
-void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshMRMGeom &meshGeom, const CMatrix& modelMT, std::vector<CTriangle>& triangleArray)
-{
-	// Get the vertex buffer
-	const CVertexBuffer &vb=meshGeom.getVertexBuffer();
-
-	// For each render pass
-	uint numRenderPass=meshGeom.getNbRdrPass(0);
-	for (uint pass=0; pass<numRenderPass; pass++)
-	{
-		// Get the primitive block
-		const CPrimitiveBlock &primitive=meshGeom.getRdrPassPrimitiveBlock ( 0, pass);
-
-		// Get the material
-		const CMaterial &material = meshBase.getMaterial (meshGeom.getRdrPassMaterial (0, pass));
-
-		// ** Get the bitmap
-
-		// Texture informations, not NULL only if texture is used for alpha test
-		CBitmap *texture;
-		bool clampU;
-		bool clampV;
-		uint8 alphaTestThreshold;
-		bool doubleSided;
-		getTexture (material, texture, clampU, clampV, alphaTestThreshold, doubleSided);
-
-		// Dump triangles
-		const uint32* triIndex=primitive.getTriPointer ();
-		uint numTri=primitive.getNumTri ();
-		uint tri;
-		for (tri=0; tri<numTri; tri++)
-		{
-			// Vertex
-			CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3]));
-			CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+1]));
-			CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*3+2]));
-
-			// UV
-			float u[3];
-			float v[3];
-			for (uint i=0; i<3; i++)
-			{
-				// Get UV coordinates
-				float *uv = (float*)vb.getTexCoordPointer (triIndex[tri*3+i], 0);
-				if (uv)
-				{
-					// Copy it
-					u[i] = uv[0];
-					v[i] = uv[1];
-				}
-			}
-
-			// Make a triangle
-			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
-				alphaTestThreshold));
-		}
-
-		// Dump quad
-		triIndex=primitive.getQuadPointer ();
-		numTri=primitive.getNumQuad ();
-		for (tri=0; tri<numTri; tri++)
-		{
-			// Vertex
-			CVector v0=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4]));
-			CVector v1=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+1]));
-			CVector v2=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+2]));
-			CVector v3=modelMT*(*(CVector*)vb.getVertexCoordPointer (triIndex[tri*4+3]));
-
-			// UV
-			float u[4];
-			float v[4];
-			for (uint i=0; i<4; i++)
-			{
-				// Get UV coordinates
-				float *uv = (float*)vb.getTexCoordPointer (triIndex[tri*4+i], 0);
-				if (uv)
-				{
-					// Copy it
-					u[i] = uv[0];
-					v[i] = uv[1];
-				}
-			}
-
-			// Make 2 triangles
-			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
-				alphaTestThreshold));
-			u[1] = u[2];
-			u[2] = u[3];
-			v[1] = v[2];
-			v[2] = v[3];
-			triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v2, v3), doubleSided, texture, clampU, clampV, u, v, 
-				alphaTestThreshold));
 		}
 	}
 }

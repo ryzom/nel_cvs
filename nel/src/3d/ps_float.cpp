@@ -1,7 +1,7 @@
 /** \file ps_size.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.6 2001/09/13 14:22:21 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.7 2001/09/13 14:26:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,13 +148,6 @@ void CPSFloatLagrangeFunctor::updateCoeffs(void) const
 }
 
 
-class CPSFloatLagrange : public CPSAttribMakerT<float, CPSFloatLagrangeFunctor>
-{
-public:
-	CPSFloatLagrange() : CPSAttribMakerT<float, CPSFloatLagrangeFunctor>(1) {}
-	NLMISC_DECLARE_CLASS(CPSFloatLagrange);
-	CPSAttribMakerBase *clone() const { return new CPSFloatLagrange(*this); }
-};
 
 
 

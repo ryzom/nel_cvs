@@ -1,7 +1,7 @@
 /** \file ps_size.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.5 2001/09/13 14:22:21 vizerie Exp $
+ * $Id: ps_float.h,v 1.6 2001/09/13 14:26:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,6 +158,16 @@ class CPSFloatLagrangeFunctor
 		/// the polynom used for interpolation
 		mutable NLMISC::CVectorH	_Coeffs;
 };
+
+
+class CPSFloatLagrange : public CPSAttribMakerT<float, CPSFloatLagrangeFunctor>
+{
+public:
+	CPSFloatLagrange() : CPSAttribMakerT<float, CPSFloatLagrangeFunctor>(1) {}
+	NLMISC_DECLARE_CLASS(CPSFloatLagrange);
+	CPSAttribMakerBase *clone() const { return new CPSFloatLagrange(*this); }
+};
+
 
 
 } // NL3D

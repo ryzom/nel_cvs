@@ -14,9 +14,9 @@ general interface description documents for each component are provided. There i
 separate global programming manual, describing exactly how to code for a complete product
 using NeL components.
 
-<The NeL library is cut into few library, network, ai, 3d and misc. If you want
-to use ai, 3d or network you also need misc library. but ai, 3d and network are
-totally independant so you can use only parts you really needs in your project.>
+The NeL library is further divided into a few libraries, chiefly network, ai, 3d and misc. If you want
+to use ai, 3d or network you also need to use the misc part of the library. Ai, 3d and network are
+totally independant from each other so you can use only the parts you really need in your project.
 
 \section build Building system
 
@@ -41,12 +41,15 @@ must be done after a checkout.
 
 \subsection winbuild Windows build
 
-<First, you need to have visual c++ (VC++) version 6 and at least VC++ service pack 4.
+First, you need to have visual c++ (VC++) version 6 and at least VC++ service pack 4.
 Only .dsp (project) files and .dsw (workspace) are stored in the CVS tree. All
 other specific visual c++ files are automatically created in the build process.
 To build NeL, you have to start vc++ and load the nel workspace and compile
 all projects contains in the workspace. Each project create a .lib (library) file in
-the lib directory.>
+the lib directory.
+
+Other compilation environments on a Win system may be possible, but are not currently
+supported.
 
 \section components Components
 
@@ -54,14 +57,14 @@ the lib directory.>
 
 The purpose of the 3D Library is to provide a graphical view of a full 3D Universe. It
 is not based on a pre-existing high-level library because of specific constraints on the
-final environment to render, which is consists of large landscapes with smooth natural
+final environment to render, which consists of large landscapes with smooth natural
 features and lots of objects.
 
 To achieve this objective, the library implements several techniques:
 
 - Geometry:
   - The ROAM algorithm, which provides an adaptative subdivision of the landscape base
-    <depending differents parameters like distance, steep of the landscape>
+    depending on various parameters like distance, steep of the landscape, etc.
   - Use of Bezier Patches to create smooth-looking landscapes
   - Multi-Resolution Meshes, to provide a smooth reduction in polygon count as objects
     retreat further in distance, details degree and so on
@@ -96,7 +99,7 @@ The 3d library itself is organised in three successive layers:
   light and so on) and rendering.
 - Layer 3, or high level layer, which provide the spatial manipulation and the
   necessary interfaces to create the whole scene, and modify it according to your model
-  of your universe. <It manages the scene graph depending of the needs.>
+  of your universe. It manages the scene graph depending of the needs of the environment.
 
 Modification of the layer 1 should be very rare, as it is the most stable part of the
 NeL 3D library. New extensions to OpenGL or new drivers will require intervention in
@@ -157,16 +160,16 @@ or external compiled code.
 
 \subsection componentdb Database & File
 
-<The storage library provides access to hard drive file. It provides an API for general
-use based on a serialize class. All class can be serializable by inheriting a based class.
-Doing this enable the class to be serialized on every stream. It could be memory stream,
-file stream, network stream and so on. It's a full extensible system that allow us to
-add new complex stream like compressed file stream or distributed file stream.
+The storage library provides access to hard drive files. It provides an API for general
+use based on a serialize class. All class can be serializable by inheriting a base class.
+Doing this enable the class to be serialized on every type of streams, which could be memory streams,
+file streams, network streams and so on. It is a full extensible system that allow NeL to
+add new complex streams like compressed file stream or distributed file stream.
 
 The database is managed by a third party library. It's a commercial object oriented
 database (OODBMS) that support quick object storage and access, security and backup
-system.
->
+system. The NeL database interface merely provides access to that specific databse,
+but NeL does not require any kind of database to be useable.
 
 \subsection componentnet Network
 
@@ -191,7 +194,6 @@ distributed service:
 
 The library will also provide pre-existing services:
 
-<
 - Naming service (1 per logical cluster)
   - This service handles the association between a service and the process or processes
     that execute code to provide the service. Each service is registered with an ip and
@@ -209,21 +211,20 @@ The library will also provide pre-existing services:
     the Logging service. They also executes all Admin service requests.
 - World service (n per logial cluster)
   - Manages agents and all the game systems created by AI.
->
 
 Finally, the network library also proposes some basic function that are required to
 build a service able to "run" a 3D Universe, such as:
 
 - Fast communication across unreliable long-delay networks
-<- Dead reckoning that enable smooth moves on a slow Internet connection>
+- Dead reckoning that enable smooth moves on a slow Internet connection
 
 The purely network library is typically self-contained, and not much subject to
 modification, unless one wants to change the entire paradigm around which the platform
 runs. Addition of a specific and non-standard network or network API would be the only
 reason one would change layer 1.
 
-<The service system provides an easy way to add new specifical service needed by
-the game.>
+The service system provides an easy way to add new specifical service needed by
+the universe.
 
 The structure of distributed services is the point that requires the most attention,
 as these define the logical structure of a cluster.
@@ -245,10 +246,11 @@ system resources, thread class, sound management, keyboard and mouse inputs and 
 \subsection componentmisc Miscellaneous
 
 This contains all the various utility functions, classes and objects that are not
-complex and large enough to warrant their own separate component.
+complex and large enough to warrant their own separate component, yet are fundamental
+to the function of the NeL platform.
 
-<It contains, for example, debug features, smart pointers, internationalization system,
-math classes, generic streaming system, and so on.>
+It contains, for example, debug features, smart pointers, internationalization system,
+math classes, generic streaming system, and so on.
 
 \section externals External components
 

@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.9 2000/12/05 10:39:26 corvazier Exp $
+ * $Id: texture.cpp,v 1.10 2000/12/06 12:51:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ void CTextureFile::generate()
 \*------------------------------------------------------------------*/
 void CTextureMem::generate()
 {
-	NLMISC::CMemStream m;
+	NLMISC::CMemStream m (true);
 	if (_Data)
 	{
 		m.fill (_Data, _Length);

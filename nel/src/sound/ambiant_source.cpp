@@ -1,7 +1,7 @@
 /** \file ambiant_source.cpp
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.cpp,v 1.3 2001/07/18 17:14:34 cado Exp $
+ * $Id: ambiant_source.cpp,v 1.4 2001/09/03 14:19:37 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -58,11 +58,9 @@ CAmbiantSource::CAmbiantSource() :
  */
 CAmbiantSource::~CAmbiantSource()
 {
-	/*CAudioMixerUser::instance()->removeSource( &_StereoChannels[AMBIANT_CH1] );
-	CAudioMixerUser::instance()->removeSource( &_StereoChannels[AMBIANT_CH2] );
-	CAudioMixerUser::instance()->removeSource( &_StereoChannels[SPARSE_CH] );
-	// Removed in ~CSourceUser
-	*/
+	CAudioMixerUser::instance()->removeMySource( &_StereoChannels[AMBIANT_CH1] );
+	CAudioMixerUser::instance()->removeMySource( &_StereoChannels[AMBIANT_CH2] );
+	CAudioMixerUser::instance()->removeMySource( &_StereoChannels[SPARSE_CH] );
 
 	// Delete sounds
 	vector<CSound*>::iterator ipsnds;

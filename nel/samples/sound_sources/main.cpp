@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Simple example of NeL sound engine usage
  *
- * $Id: main.cpp,v 1.3 2001/08/28 17:05:26 cado Exp $
+ * $Id: main.cpp,v 1.4 2001/09/03 14:22:42 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -200,7 +200,5 @@ void main()
 	// Finalization
 	printf( "Press ENTER again to exit\n" );
 	getchar();
-	delete src1;
-	delete src2;
 	delete AudioMixer;
 }

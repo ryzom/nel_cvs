@@ -171,3 +171,8 @@ Export a shape file with the node. Filename is the output filename.
 NelViewShape ()
 
 View the selected shapes with the NeL engine.
+
+**********************************************
+NelExportScene ObjectArray Filename.ig
+
+Export reference of the objects in the array in an instance group file.

@@ -952,7 +952,7 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 						}
 
 					}
-					nldebug( "Inserted %u parent(s)", nbinsertedparents );
+					nlinfo( "Inserted %u parent(s)", nbinsertedparents );
 				}
 				// NOTE: Changing the parent is not currently implemented!
 				continue;
@@ -1078,9 +1078,9 @@ void	convertCsvFile( const string &file, bool generate, const string& sheetType 
 					{
 						isModified = true;
 						if (!displayed)
-							nldebug("in %s:", filename.c_str());
+							nlinfo("in %s:", filename.c_str());
 						displayed = true;
-						nldebug("%s = %s", var.c_str(), memberVal.c_str());
+						nlinfo("%s = %s", var.c_str(), memberVal.c_str());
 					}
 
 				}

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.194 2003/10/08 14:45:24 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.195 2003/10/22 08:17:55 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1384,9 +1384,9 @@ bool CDriverGL::getModes(std::vector<GfxMode> &modes)
 		{
 			// Add this mode
 			GfxMode mode;
-			mode.Width = devMode.dmPelsWidth;
-			mode.Height = devMode.dmPelsHeight;
-			mode.Depth = devMode.dmBitsPerPel;
+			mode.Width = (uint16)devMode.dmPelsWidth;
+			mode.Height = (uint16)devMode.dmPelsHeight;
+			mode.Depth = (uint8)devMode.dmBitsPerPel;
 			mode.Frequency = devMode.dmDisplayFrequency;
 			modes.push_back (mode);
 		}

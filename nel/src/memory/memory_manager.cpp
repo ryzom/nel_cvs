@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.4 2003/07/01 15:33:14 corvazier Exp $
+ * $Id: memory_manager.cpp,v 1.5 2003/10/22 08:17:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ namespace NLMEMORY
 
 // Global allocator
 CHeapAllocator *GlobalHeapAllocator = NULL;
+sint32			GlobalHeapAllocatorSystemAllocated = 0;
 
 // *********************************************************
 
@@ -135,6 +136,13 @@ MEMORY_API unsigned int GetAllocatedSystemMemoryByAllocator ()
 MEMORY_API unsigned int GetAllocatedSystemMemory ()
 {
 	return GlobalHeapAllocator->getAllocatedSystemMemory ();
+}
+
+// *********************************************************
+
+MEMORY_API unsigned int GetAllocatedSystemMemoryHook ()
+{
+	return GlobalHeapAllocatorSystemAllocated;
 }
 
 // *********************************************************

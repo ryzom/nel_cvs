@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.7 2003/10/17 15:01:54 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.8 2003/10/22 08:17:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1520,11 +1520,12 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 
 		// Write the system heap info file
 		uint systemMemory = getAllocatedSystemMemory ();
+		uint hookedSystemMemory = GetAllocatedSystemMemoryHook ();
 		uint nelSystemMemory = getAllocatedSystemMemoryByAllocator ();
 
 		fprintf (file, "\n\nSYSTEM HEAP STATISTICS\n");
-		fprintf (file, "TOTAL ALLOCATED MEMORY, NEL ALLOCATED MEMORY, OTHER ALLOCATED MEMORY\n");
-		fprintf (file, "%d, %d, %d\n", systemMemory, nelSystemMemory, systemMemory-nelSystemMemory);
+		fprintf (file, "SYSTEM HEAP ALLOCATED MEMORY, TOTAL HOOKED MEMORY, NEL ALLOCATED MEMORY, OTHER ALLOCATED MEMORY, NOT HOOKED MEMORY\n");
+		fprintf (file, "%d, %d, %d, %d, %d\n", systemMemory, hookedSystemMemory, nelSystemMemory, hookedSystemMemory-nelSystemMemory, systemMemory-hookedSystemMemory);
 		
 		// **************************
 		
@@ -2374,6 +2375,8 @@ uint CHeapAllocator::getAllocatedSystemMemoryByAllocator ()
 	HANDLE hHeap[100];
 	DWORD heapCount = GetProcessHeaps (100, hHeap);
 
+	FILE *file = fopen ("dump.bin", "wb");
+
 	uint heap;
 	for (heap = 0; heap < heapCount; heap++)
 	{
@@ -2388,10 +2391,17 @@ uint CHeapAllocator::getAllocatedSystemMemoryByAllocator ()
 				if ( CPointerEntry::find (entries, (void*)((char*)entry.lpData)) || 
 					CPointerEntry::find (entries, (void*)((char*)entry.lpData+32) ) )
 					nelSystemMemory += entry.cbData + entry.cbOverhead;
+				else
+				{
+					fwrite (entry.lpData, 1, entry.cbData, file);
+				}
 			}
 			block++;
 		}
 	}
+	
+	fclose (file);
+
 #endif // NL_OS_WINDOWS
 
 	return nelSystemMemory;

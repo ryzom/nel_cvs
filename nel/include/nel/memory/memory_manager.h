@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.16 2003/07/10 09:01:42 corvazier Exp $
+ * $Id: memory_manager.h,v 1.17 2003/10/22 08:17:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,11 @@
 	// Returns the amount of system memory allocated tracing the process heap
 	// Works only with nel memory allocator
 	unsigned int GetAllocatedSystemMemory ();
-
+	
+	// Get the amount of system memory allocated since the dll as been loaded. Use memory hook, available only in _DEBUG mode.
+	// Works only with nel memory allocator
+	unsigned int GetAllocatedSystemMemoryHook ();
+	  
 	// Check the heap
 	bool		CheckHeap (bool stopOnError);
 
@@ -98,7 +102,7 @@
 	// Get the flag
 	// Works with standard memory allocator in _DEBUG and with nel memory allocator with debug features activated
 	bool		IsAlwaysCheckMemory();
-  
+
 */
 
 // Memory debug for windows
@@ -212,6 +216,7 @@ inline unsigned int GetBlockSize (void *pointer) { return 0;}
 inline float		GetFragmentationRatio () { return 0.0f;}
 inline unsigned int GetAllocatedSystemMemoryByAllocator () { return 0;}
 inline unsigned int GetAllocatedSystemMemory () { return 0;}
+inline unsigned int GetAllocatedSystemMemoryHook () { return 0; }
 inline void			ReportMemoryLeak() 
 {
 #ifdef WIN32
@@ -274,6 +279,7 @@ MEMORY_API unsigned int GetBlockSize (void *pointer);
 MEMORY_API float		GetFragmentationRatio ();
 MEMORY_API unsigned int GetAllocatedSystemMemoryByAllocator ();
 MEMORY_API unsigned int GetAllocatedSystemMemory ();
+MEMORY_API unsigned int GetAllocatedSystemMemoryHook ();
 MEMORY_API bool			CheckHeap (bool stopOnError);
 MEMORY_API bool			StatisticsReport (const char *filename, bool memoryDump);
 MEMORY_API void			ReportMemoryLeak ();

@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.6 2003/04/25 14:50:54 coutelas Exp $
+ * $Id: object_vector.h,v 1.7 2003/10/22 08:17:54 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,12 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/debug.h"
 
+// With NeL Memory Debug, use new
+#ifndef NL_USE_DEFAULT_MEMORY_MANAGER
+# ifndef NLMISC_HEAP_ALLOCATION_NDEBUG
+#  define NL_OV_USE_NEW_ALLOCATOR
+# endif NLMISC_HEAP_ALLOCATION_NDEBUG
+#endif // NL_USE_DEFAULT_MEMORY_MANAGER
 
 namespace NLMISC {
 
@@ -118,7 +124,12 @@ public:
 	void		clear()
 	{
 		destruct(0, _Size);
+#ifndef NL_OV_USE_NEW_ALLOCATOR
 		free(_Ptr);
+#else // NL_OV_USE_NEW_ALLOCATOR
+		if (_Ptr)
+			delete [] (char*)_Ptr;
+#endif // NL_OV_USE_NEW_ALLOCATOR
 		_Ptr= NULL;
 		_Size= 0;
 	}
@@ -316,8 +327,29 @@ private:
 	// realloc, and manage allocation failure. Don't modify _Size.
 	void	myRealloc(uint32 size)
 	{
+#ifndef NL_OV_USE_NEW_ALLOCATOR
 		// try to realloc the array.
 		T	*newPtr= (T*)realloc(_Ptr, size*sizeof(T));
+#else // NL_OV_USE_NEW_ALLOCATOR
+		uint allocSize= size*sizeof(T);
+		T	*newPtr= NULL;
+		if (!_Ptr || (allocSize > _Size*sizeof(T)))
+		{
+			// Reallocate
+			char *newblock = new char[allocSize];
+			if (_Ptr)
+			{
+				memcpy (newblock, _Ptr, _Size*sizeof(T));
+				delete [] (char*)_Ptr;
+			}
+			newPtr = (T*)newblock;
+		}
+		else
+		{
+			// Old block is big enough
+			newPtr = _Ptr;
+		}
+#endif // NL_OV_USE_NEW_ALLOCATOR
 		// if realloc failure
 		if(newPtr==NULL)
 		{

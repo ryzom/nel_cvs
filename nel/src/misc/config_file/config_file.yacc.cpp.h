@@ -1,21 +1,22 @@
 typedef union	{
 			cf_value Val;
 		} YYSTYPE;
-#define	ASSIGN	257
-#define	VARIABLE	258
-#define	STRING	259
-#define	SEMICOLON	260
-#define	PLUS	261
-#define	MINUS	262
-#define	MULT	263
-#define	DIVIDE	264
-#define	RPAREN	265
-#define	LPAREN	266
-#define	RBRACE	267
-#define	LBRACE	268
-#define	COMMA	269
-#define	INT	270
-#define	REAL	271
+#define	ADD_ASSIGN	257
+#define	ASSIGN	258
+#define	VARIABLE	259
+#define	STRING	260
+#define	SEMICOLON	261
+#define	PLUS	262
+#define	MINUS	263
+#define	MULT	264
+#define	DIVIDE	265
+#define	RPAREN	266
+#define	LPAREN	267
+#define	RBRACE	268
+#define	LBRACE	269
+#define	COMMA	270
+#define	INT	271
+#define	REAL	272
 
 
 extern YYSTYPE cflval;

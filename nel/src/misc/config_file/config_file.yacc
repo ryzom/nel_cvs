@@ -70,7 +70,7 @@ int yyerror (const char *);
 			cf_value Val;
 		}
 
-%token <Val> ASSIGN VARIABLE STRING SEMICOLON
+%token <Val> ADD_ASSIGN ASSIGN VARIABLE STRING SEMICOLON
 %token <Val> PLUS MINUS MULT DIVIDE
 %token <Val> RPAREN LPAREN RBRACE LBRACE
 %token <Val> COMMA INT REAL
@@ -136,6 +136,53 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 				else
 				{
 					DEBUG_PRINTF ("yacc: don't reassign var '%s' because cf_OverwriteExistingVariable is false\n", $1.String);
+				}
+
+				cf_CurrentVar.IntValues.clear ();
+				cf_CurrentVar.RealValues.clear ();
+				cf_CurrentVar.StrValues.clear ();
+				cf_CurrentVar.Comp = false;
+			}
+			;
+
+inst:		VARIABLE ADD_ASSIGN expression SEMICOLON
+			{
+				DEBUG_PRINTF("                                   (VARIABLE+=");
+				cf_print ($1);
+				DEBUG_PRINTF("), (VALUE=");
+				cf_print ($3);
+				DEBUG_PRINTF(")\n");
+				int i;
+				// on recherche l'existence de la variable
+				for(i = 0; i < (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size()); i++)
+				{
+					if ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Name == $1.String)
+					{
+						DEBUG_PRINTF("Variable '%s' existe deja, ajout\n", $1.String);
+						break;
+					}
+				}
+				NLMISC::CConfigFile::CVar Var;
+				Var.Comp = false;
+				Var.Callback = NULL;
+				if (cf_CurrentVar.Comp) Var = cf_CurrentVar;
+				else cf_setVar (Var, $3);
+				Var.Name = $1.String;
+				if (i == (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size ()))
+				{
+					// nouvelle variable
+					DEBUG_PRINTF ("yacc: new add assign var '%s'\n", $1.String);
+					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).push_back (Var);
+				}
+				else
+				{
+					// reaffectation d'une variable
+					Var.Callback = (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Callback;
+					DEBUG_PRINTF ("yacc: add assign var '%s'\n", $1.String);
+					Var.add ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i]);
+					if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
+						(Var.Callback)(Var);
+					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
 				}
 
 				cf_CurrentVar.IntValues.clear ();

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.32 2002/05/02 12:48:59 lecroart Exp $
+ * $Id: config_file.cpp,v 1.33 2002/06/06 13:13:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,6 +175,19 @@ bool CConfigFile::CVar::operator==	(const CVar& var) const
 bool CConfigFile::CVar::operator!=	(const CVar& var) const
 {
 	return !(*this==var);
+}
+
+void CConfigFile::CVar::add (const CVar &var)
+{
+	if (Type == var.Type)
+	{
+		switch (Type)
+		{
+		case T_INT: IntValues.insert (IntValues.end(), var.IntValues.begin(), var.IntValues.end()); break;
+		case T_REAL: RealValues.insert (RealValues.end(), var.RealValues.begin(), var.RealValues.end()); break;
+		case T_STRING: StrValues.insert (StrValues.end(), var.StrValues.begin(), var.StrValues.end()); break;
+		}
+	}
 }
 
 int CConfigFile::CVar::size () const
@@ -369,58 +382,62 @@ void CConfigFile::save () const
 	fclose (fp);
 }
 
-
 void CConfigFile::print () const
+{
+	print(InfoLog);
+}
+
+void CConfigFile::print (CLog *log) const
 {
 	createDebug ();
 
-	InfoLog->displayRawNL ("ConfigFile %s have %d variables:", _FileName.c_str(), _Vars.size());
-	InfoLog->displayRawNL ("------------------------------------------------------");
+	log->displayRawNL ("ConfigFile %s have %d variables:", _FileName.c_str(), _Vars.size());
+	log->displayRawNL ("------------------------------------------------------");
 	for(int i = 0; i < (int)_Vars.size(); i++)
 	{
-		InfoLog->displayRaw ((_Vars[i].Callback==NULL)?"   ":"CB ");
+		log->displayRaw ((_Vars[i].Callback==NULL)?"   ":"CB ");
 		if (_Vars[i].Comp)
 		{
 			switch (_Vars[i].Type)
 			{
 			case CConfigFile::CVar::T_INT:
 			{
-				InfoLog->displayRaw ("%-20s { ", _Vars[i].Name.c_str());
+				log->displayRaw ("%-20s { ", _Vars[i].Name.c_str());
 				for (int it=0; it < (int)_Vars[i].IntValues.size(); it++)
 				{
-					InfoLog->displayRaw ("'%d' ", _Vars[i].IntValues[it]);
+					log->displayRaw ("'%d' ", _Vars[i].IntValues[it]);
 				}
-				InfoLog->displayRawNL ("}");
+				log->displayRawNL ("}");
 				break;
 			}
 			case CConfigFile::CVar::T_STRING:
 			{
-				InfoLog->displayRaw ("%-20s { ", _Vars[i].Name.c_str());
+				log->displayRaw ("%-20s { ", _Vars[i].Name.c_str());
 				for (int st=0; st < (int)_Vars[i].StrValues.size(); st++)
 				{
-					InfoLog->displayRaw ("\"%s\" ", _Vars[i].StrValues[st].c_str());
+					log->displayRaw ("\"%s\" ", _Vars[i].StrValues[st].c_str());
 				}
-				InfoLog->displayRawNL ("}");
+				log->displayRawNL ("}");
 				break;
 			}
 			case CConfigFile::CVar::T_REAL:
 			{
-				InfoLog->displayRaw ("%-20s { " , _Vars[i].Name.c_str());
+				log->displayRaw ("%-20s { " , _Vars[i].Name.c_str());
 				for (int rt=0; rt < (int)_Vars[i].RealValues.size(); rt++)
 				{
-					InfoLog->displayRaw ("`%f` ", _Vars[i].RealValues[rt]);
+					log->displayRaw ("`%f` ", _Vars[i].RealValues[rt]);
 				}
-				InfoLog->displayRawNL ("}");
+				log->displayRawNL ("}");
 				break;
 			}
 			case CConfigFile::CVar::T_UNKNOWN:
 			{
-				 InfoLog->displayRawNL ("%-20s { }" , _Vars[i].Name.c_str());
+				 log->displayRawNL ("%-20s { }" , _Vars[i].Name.c_str());
 				break;
 			}
 			default:
 			{
-				InfoLog->displayRawNL ("%-20s <default case>" , _Vars[i].Name.c_str());
+				log->displayRawNL ("%-20s <default case>" , _Vars[i].Name.c_str());
 				break;
 			}
 			}
@@ -430,17 +447,17 @@ void CConfigFile::print () const
 			switch (_Vars[i].Type)
 			{
 			case CConfigFile::CVar::T_INT:
-				InfoLog->displayRawNL ("%-20s '%d'", _Vars[i].Name.c_str(), _Vars[i].IntValues[0]);
+				log->displayRawNL ("%-20s '%d'", _Vars[i].Name.c_str(), _Vars[i].IntValues[0]);
 				break;
 			case CConfigFile::CVar::T_STRING:
-				InfoLog->displayRawNL ("%-20s \"%s\"", _Vars[i].Name.c_str(), _Vars[i].StrValues[0].c_str());
+				log->displayRawNL ("%-20s \"%s\"", _Vars[i].Name.c_str(), _Vars[i].StrValues[0].c_str());
 				break;
 			case CConfigFile::CVar::T_REAL:
-				InfoLog->displayRawNL ("%-20s `%f`", _Vars[i].Name.c_str(), _Vars[i].RealValues[0]);
+				log->displayRawNL ("%-20s `%f`", _Vars[i].Name.c_str(), _Vars[i].RealValues[0]);
 				break;
 			default:
 			{
-				InfoLog->displayRawNL ("%-20s <default case>" , _Vars[i].Name.c_str());
+				log->displayRawNL ("%-20s <default case>" , _Vars[i].Name.c_str());
 				break;
 			}
 			}

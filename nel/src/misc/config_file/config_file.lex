@@ -68,6 +68,7 @@ string		\"[^\"]*\"
 ")"			{ if (!cf_Ignore) return RPAREN; }
 "("			{ if (!cf_Ignore) return LPAREN; }
 "="			{ if (!cf_Ignore) return ASSIGN; }
+"+="		{ if (!cf_Ignore) return ADD_ASSIGN; }
 ";"			{ if (!cf_Ignore) return SEMICOLON; }
 "}"			{ if (!cf_Ignore) return RBRACE; }
 "{"			{ if (!cf_Ignore) return LBRACE; }

@@ -1,7 +1,7 @@
 /** \file mhics.h
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.h,v 1.4 2003/07/03 12:15:21 robert Exp $
+ * $Id: mhics.h,v 1.5 2003/07/04 15:09:52 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -130,15 +130,13 @@ public :
 	*/
 	void selectBehavior(TMotivation motivationName,
 						const CCSPerception* psensorMap,
-						sint16		&lastClassifierNumber,
-						TTargetId	&target,
-						double		&lastSelectionMaxPriority);
-	void selectBehavior(TAction VirtualActionName,
-						const CCSPerception* psensorMap,
-						sint16		&lastClassifierNumber,
-						TTargetId	&target,
-						double		&lastSelectionMaxPriority);
+						std::multimap<double, std::pair<sint16, TTargetId> > &mapActivableCS);
 
+//	void selectBehavior(TAction VirtualActionName,
+//						const CCSPerception* psensorMap,
+//						std::multimap<double, std::pair<sint16, TTargetId> > &mapActivableCS,
+//						TTargetId	&target);
+		
 	/**
 	  * Give the action part of a given Classifier.
 	  * \param motivationName is the name of the CS
@@ -196,13 +194,13 @@ public :
 	double getMotivationIntensity(TAction virtualAction) const;
 
 	/// Retourne l'intensité d'exécution d'une action
-	double getExecutionIntensity(TAction action) const;
+//	double getExecutionIntensity(TAction action) const;
 
 	/// Return the Behavior that must be active
-	const std::map<TAction, TTargetId>* selectBehavior();
+	const std::map<TTargetId, std::map<TAction, CMotivationEnergy> >* selectBehavior();
 
 	/// Inform the MHiCSAgent that an action ended
-	void behaviorTerminate(TBehaviorTerminate how_does_it_terminate);
+//	void behaviorTerminate(TBehaviorTerminate how_does_it_terminate);
 
 	/// Update the values in the NetCS
 	void run();
@@ -221,23 +219,37 @@ private :
 		TTargetId			TargetId;				// Id of the laste TaretID selected by this motivation
 		double				LastSelectionMaxPriority;//LastSelectionMaxPriority is the Priority given to the last selected classifier
 		CMotivationEnergy	MotivationIntensity;
-		uint16				dbgNumberOfActivations;	// For debug purpose
+
 	public :
 		CMotivateCS()
 		{
 			ClassifierNumber		= -1;
-			dbgNumberOfActivations	= 0;
 			TargetId = 0; //NullTargetId;
 			LastSelectionMaxPriority = 0;
 		}
 	};
 
+//	class CActionToExecute
+//	{
+//	public :
+//		TAction				Action;
+//		TTargetId			TargetId;
+//		CMotivationEnergy	ExecutionIntensity;
+//
+//	public :
+//		CActionToExecute()
+//		{
+//			Action = NLAINIMAT::Action_DoNothing;
+//			TargetId = NLAINIMAT::NullTargetId;
+//		}
+//	};
+
 	// Will spread the reckon of the motivation value along a motivation branch.
-	void spreadMotivationReckon(TMotivation CS);
-	void spreadMotivationReckon(TAction CS);
+//	void spreadMotivationReckon(TMotivation CS);
+//	void spreadMotivationReckon(TAction CS);
 
 	void motivationCompute();
-	void virtualActionCompute();
+// 	void virtualActionCompute();
 
 	private :
 	/// function used in debug to change a TTargetId in a string
@@ -247,9 +259,10 @@ private :
 	std::map<TMotivation, CMotivateCS>		_ClassifiersAndMotivationIntensity;		// <motivationName, classeur> the motivationName is also the CS name.
 	std::map<TAction, CMotivateCS>			_ClassifiersAndVirtualActionIntensity;	// <virtualActionName, classeur> the virtualActionName is also the CS name.
 	CCSPerception*							_pSensorsValues;						// Valeurs des senseurs
-	std::map<TAction, CMotivationEnergy>	_ActionsExecutionIntensity;				// <actionName, ExecutionIntensity>
-	std::map<TAction, TTargetId>			_IdByActions;							// Id associate with each action (virtual or not).
-	std::map<TAction, TTargetId>::iterator	_ItCurrentAction;						// Iterator on the current active action in _IdByActions
+	std::map<TTargetId, std::map<TAction, CMotivationEnergy> >	_ActionsExecutionIntensityByTarget;
+//	std::map<TAction, CMotivationEnergy>	_ActionsExecutionIntensity;				// <actionName, ExecutionIntensity>
+//	std::map<TAction, TTargetId>			_IdByActions;							// Id associate with each action (virtual or not).
+//	std::map<TAction, TTargetId>::iterator	_ItCurrentAction;						// Iterator on the current active action in _IdByActions
 };
 
 } // NLAINIMAT

@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.14 2003/06/17 12:15:27 robert Exp $
+ * $Id: classifier.h,v 1.15 2003/07/04 15:09:52 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,6 @@ static NLMISC::CStringConversion<TBehaviorTerminate> conversionBehaviorTerminate
 
 typedef	char							TSensorValue;
 typedef	std::map<TSensor, TSensorValue>	TSensorMap;
-typedef uint32							TTargetId;
 
 /**
   * Base interface for an action function.
@@ -220,15 +219,10 @@ public :
 	/**
 	  * Select a behavior according to the values in the sensorMap.
 	  * \param sensorMap is a map whose key is the sensor name and value the sensor value.
-	  * \param lastClassifierNumber is the number of the last classifier selected. Also used as a return value.
-	  * \param lastTarget is the ID of the last target associated with the last classifier. Also used as a return value.
-	  * \param lastSelectionMaxPriority is the Priority given to the last selected classifier
-	  *									(witch is the max of all the last activable classifier priority). Also used as a return value.
+	  * \param mapActivableCS is the return value for the map containing all the activable CS. double is the priority, sint16 the classifier number and TTargetId la cible de l'action
 	  */
 	void selectBehavior(const CCSPerception* psensorMap, 
-						sint16		&lastClassifierNumber, 
-						TTargetId	&lastTarget,
-						double		&lastSelectionMaxPriority);
+						std::multimap<double, std::pair<sint16, TTargetId> > &mapActivableCS);
 
 	/**
 	  * Give the action part of a given Classifier.

@@ -1,7 +1,7 @@
 /** \file sensors_motivations_actions_def.h
  * Sensors, motivations and actions list of enums.
  *
- * $Id: sensors_motivations_actions_def.h,v 1.5 2003/07/03 12:15:19 robert Exp $
+ * $Id: sensors_motivations_actions_def.h,v 1.6 2003/07/04 15:09:52 robert Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@
 namespace NLAINIMAT
 {
 
+typedef uint32							TTargetId;
+	
 ///////////////////////////
 // All the Enums
 ///////////////////////////
@@ -221,7 +223,7 @@ public:
 	virtual ~CActionResources();
 
 	/// Let in the map myActionsByPriority all actions with no more actions Resources (thoses actions shouldn't be executed)
-	void filterMyActions (std::multimap<double, TAction>& myActionsByPriority);
+	void filterMyActions (std::multimap<double, std::pair<TTargetId,TAction> >& myActionsByPriority);
 
 private:
 	std::multimap<TAction, TActionResources>	_ActionsResources;

@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.16 2003/06/17 12:15:48 robert Exp $
+ * $Id: classifier.cpp,v 1.17 2003/07/04 15:09:53 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -316,54 +316,55 @@ std::multimap<double, std::pair<CClassifierSystem::TitClassifiers, TTargetId> >:
 }
 
 void CClassifierSystem::selectBehavior( const CCSPerception* psensorMap,
-									    sint16		&lastClassifierNumber,
-										TTargetId	&lastTarget,
-										double		&lastSelectionMaxPriority)
+										std::multimap<double, std::pair<sint16, TTargetId> > &mapActivableCS)
 {
-	std::multimap<double, std::pair<TitClassifiers, TTargetId> > mapActivableCS;
-	
 	// We update the internal sensor values for the no target sensors
 	updateNoTargetSensors(psensorMap);
 
-	/*	First we look if we have a current action or not (lastClassifierNumber != -1)
-	 *	If we have a current action, we give it the priority of execution.
-	 *	Only Classifiers with a strictly higher priority may also be selected.
-	 */
-	double maxPriorityDoingTheSameAction = computeMaxPriorityDoingTheSameAction(psensorMap,
-																				lastClassifierNumber,
-																				lastTarget,
-																				lastSelectionMaxPriority,
-																				mapActivableCS);
-
-	// We now look for all other classifier with a priority higher than "maxPriorityDoingTheSameAction"
-	double higherPriority = computeHigherPriority(psensorMap, maxPriorityDoingTheSameAction, mapActivableCS);
+	TitClassifiers itClassifiers;
+	
+	for (itClassifiers = _Classifiers.begin();
+	itClassifiers != _Classifiers.end();
+	itClassifiers++)
+	{
+		// S'il y a des conditions dépendantes d'une cible, ce n'est pas activable.
+		if ((*itClassifiers).second->ConditionWithTarget.begin() == (*itClassifiers).second->ConditionWithTarget.end())
+		{
+			if ( (*itClassifiers).second->isActivable())
+			{
+				mapActivableCS.insert(std::make_pair((*itClassifiers).second->Priority, std::make_pair((*itClassifiers).first, NullTargetId)));
+			}
+		}
+	}
+	
+	// We now do the same, but with target sensors.
+	std::map<TTargetId, TSensorMap>::const_iterator itTargetSensorMap;
+	for (itTargetSensorMap = psensorMap->TargetSensors.begin(); itTargetSensorMap != psensorMap->TargetSensors.end(); itTargetSensorMap++)
+	{
+		TTargetId myTarget = (*itTargetSensorMap).first;
+		// We update the internal sensor values for the target sensors
+		updateTargetSensors(psensorMap, myTarget);
+		
+		// We select the activables classifiers
+		for (itClassifiers = _Classifiers.begin();
+		itClassifiers != _Classifiers.end();
+		itClassifiers++)
+		{
+			if ( (*itClassifiers).second->isActivable())
+			{
+				mapActivableCS.insert(std::make_pair((*itClassifiers).second->Priority, std::make_pair((*itClassifiers).first, myTarget)));
+			}
+		}
+		RAZTargetSensors();
+	}
 	
 	// We set the sensors back to the default value.
 	RAZNoTargetSensors();
 
-	// If higherPriority == 0, there's no activable classifier. ***G*** But here we must add a rule creation mechanisme.
-	if(higherPriority>0)
-	{
-		// We select a classifier in the active classifier with a roullette wheel variation.
-		std::multimap<double, std::pair<TitClassifiers, TTargetId> >::iterator itMapCSweel = mapActivableCS.end();
-		itMapCSweel--;
-		itMapCSweel = roulletteWheelVariation(mapActivableCS, itMapCSweel);
-		CClassifier* pClassifierSelection = (*((*itMapCSweel).second.first)).second;
-		sint16 selectionNumber = (*((*itMapCSweel).second.first)).first;
-		TTargetId myTarget = (*itMapCSweel).second.second;
-
-		// We set the return values.
-		lastClassifierNumber = selectionNumber;
-		lastTarget = myTarget;
-		lastSelectionMaxPriority = higherPriority;
-	}
-	else
-	{
-		// We set the return values.
-		lastClassifierNumber = -1;
-		lastTarget = NullTargetId;
-		lastSelectionMaxPriority = 0;
-	}
+//		// We set the return values.
+//		lastClassifierNumber = selectionNumber;
+//		lastTarget = myTarget;
+//		lastSelectionMaxPriority = higherPriority;
 }
 
 TAction CClassifierSystem::getActionPart(sint16 classifierNumber)

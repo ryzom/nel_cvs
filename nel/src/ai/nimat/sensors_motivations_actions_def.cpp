@@ -1,7 +1,7 @@
 /** \file sensors_motivations_actions_def.cpp
  * Sensors, motivations and actions list of enums.
  *
- * $Id: sensors_motivations_actions_def.cpp,v 1.3 2003/07/03 12:15:22 robert Exp $
+ * $Id: sensors_motivations_actions_def.cpp,v 1.4 2003/07/04 15:09:53 robert Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -73,23 +73,23 @@ CActionResources::~CActionResources()
 }
 
 /// Let in the map myActionsByPriority all actions with no more actions Resources (thoses actions shouldn't be executed).
-void CActionResources::filterMyActions (std::multimap<double, TAction>& myActionsByPriority)
+void CActionResources::filterMyActions (std::multimap<double, std::pair<TTargetId,TAction> >& myActionsByPriority)
 {
 	// We build a set of used resources.
 	std::set<TActionResources> usedActionsResources;
 
 	// For each wanted action in from the highest priority to the lowest
-	std::map<double, TAction>::reverse_iterator itMyActionsByPriority( myActionsByPriority.end());
-	std::map<double, TAction>::reverse_iterator itLast(myActionsByPriority.begin());
+	std::multimap<double, std::pair<TTargetId,TAction> >::reverse_iterator itMyActionsByPriority( myActionsByPriority.end());
+	std::multimap<double, std::pair<TTargetId,TAction> >::reverse_iterator itLast(myActionsByPriority.begin());
 	std::set<TActionResources>::iterator	itUsedActionsResources;
 	std::multimap<TAction, TActionResources>::iterator	itActionsResources, itActionsResources_begin, itActionsResources_last;
 	bool actionIsOK = false;
-	std::map<double, TAction>::iterator itMyActionsByPriority2Remove;
+	std::multimap<double, std::pair<TTargetId,TAction> >::iterator itMyActionsByPriority2Remove;
 	
 	while (itMyActionsByPriority != itLast )
 	{
 		double priority = (*itMyActionsByPriority).first;
-		TAction action =  (*itMyActionsByPriority).second;
+		TAction action =  (*itMyActionsByPriority).second.second;
 		itMyActionsByPriority++;
 		
 		// if none of the resources are used, the action may be executed and resources are stored as used.

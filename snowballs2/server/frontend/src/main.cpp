@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.2 2001/07/23 13:30:41 valignat Exp $
+ * $Id: main.cpp,v 1.3 2001/07/24 17:00:47 valignat Exp $
  */
 
 /*
@@ -35,12 +35,31 @@
 #include <nel/net/net_manager.h>
 #include <nel/net/login_server.h>
 
+#include <hash_map>
+#include <utility>
+
 using namespace NLMISC;
 using namespace NLNET;
 using namespace std;
 
+
 //TSockId clientfrom;
 
+/*
+ * Keep a list of the players connected to that Frontend. Only map Id
+ * to a Connection
+ */
+
+struct _player
+{
+	_player(uint32 Id, TSockId Con) : id(Id), con(Con) { }
+	uint32   id;
+	TSockId  con;
+};
+
+typedef hash_map<uint32, _player> _pmap;
+
+_pmap localPlayers;
 
 
 /****************************************************************************
@@ -87,7 +106,7 @@ void cbChatService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	CMessage msgout( CNetManager::getSIDA( "FS" ), "CHAT" );
 	msgout.serial( message );
 
-	// Send the mesasge to all connected clients
+	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
 
 	nlinfo( "Sent chat message \"%s\" to all clients", message.c_str());
@@ -155,7 +174,7 @@ void cbPosService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 	msgout.serial( angle );
 	msgout.serial( state );
 
-	// Send the mesasge to all connected clients
+	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
 
 	nlinfo( "Sent ENTITY_POS message to all the connected clients");
@@ -206,28 +225,53 @@ void cbAddClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
  ****************************************************************************/
 void cbAddService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 {
+	bool    all;
+	uint32  to;
 	uint32  id;
 	string  name;
 	uint8   race;
 	CVector start;
 
 	// Input: process the reply of the position service
+	msgin.serial( all );
+	msgin.serial( to );
 	msgin.serial( id );
 	msgin.serial( name );
 	msgin.serial( race );
 	msgin.serial( start );
 
-	// Output: send the reply to the client
+	// Output: prepare the reply to the clients
 	CMessage msgout( CNetManager::getSIDA( "FS" ), "ADD_ENTITY" );
 	msgout.serial( id );
 	msgout.serial( name );
 	msgout.serial( race );
 	msgout.serial( start );
 
-	// Send the mesasge to all connected clients
-	CNetManager::send( "FS", msgout, 0 );
+	if ( all == true )
+	{
+		// Send the message to all connected clients
+		CNetManager::send( "FS", msgout, 0 );
 
-	nlinfo( "Sent ADD_ENTITY message to all the connected clients");
+		nlinfo( "Sent ADD_ENTITY message to all the connected clients");
+	}
+	else
+	{
+		// Send the message about a former connected client to the new client
+		_pmap::iterator ItPlayer;
+		ItPlayer = localPlayers.find(to);
+		if ( ItPlayer == localPlayers.end() )
+		{
+			nlinfo( "New player id %s not found !", to );
+		}
+		else
+		{
+			TSockId conToClient = ((*ItPlayer).second).con;
+			CNetManager::send( "FS", msgout, conToClient );
+
+			nlinfo( "Sent ADD_ENTITY about all the connected clients to the new client.");
+		}
+	}
+
 }
 
 
@@ -275,10 +319,85 @@ void cbRemoveService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb
 	CMessage msgout( CNetManager::getSIDA( "FS" ), "REMOVE_ENTITY" );
 	msgout.serial( id );
 
-	// Send the mesasge to all connected clients
+	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
 
 	nlinfo( "Sent REMOVE_ENTITY message to all the connected clients");
+}
+
+
+/****************************************************************************
+ * cdSnowballService
+ *
+ * Receive an SNOWBALL messages from the Position Service to send it to all
+ * the clients.
+ ****************************************************************************/
+void cbSnowballService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
+{
+	uint32  id;
+	CVector start,
+			target;
+	float   speed;
+	TTime   startTime;
+
+	// Input: process the reply of the position service
+	msgin.serial( id );
+	msgin.serial( start );
+	msgin.serial( target );
+	msgin.serial( speed );
+	msgin.serial( startTime );
+
+	// Output: send the reply to the client
+	CMessage msgout( CNetManager::getSIDA( "FS" ), "SNOWBALL" );
+	msgout.serial( id );
+	msgout.serial( start );
+	msgout.serial( target );
+	msgout.serial( speed );
+	msgout.serial( startTime );
+
+	// Send the message to all connected clients
+	CNetManager::send( "FS", msgout, 0 );
+
+	nlinfo( "Sent SNOWBALL message to all the connected clients");
+}
+
+
+/****************************************************************************
+ * cbSnowballClient
+ *
+ * Receive an SNOWBALL message from a client and send it to the Position
+ * Service.
+ ****************************************************************************/
+void cbSnowballClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
+{
+	uint32  id;
+	CVector start,
+			target;
+	float   speed;
+	TTime   startTime;
+
+	// Input from the client is stored.
+	msgin.serial( id );
+	msgin.serial( start );
+	msgin.serial( target );
+	msgin.serial( speed );
+	msgin.serial( startTime );
+
+	// Prepare the message to send to the Position service
+	CMessage msgout( CNetManager::getSIDA( "POS" ), "SNOWBALL" );
+	msgout.serial( id );
+	msgout.serial( start );
+	msgout.serial( target );
+	msgout.serial( speed );
+	msgout.serial( startTime );
+
+	/*
+	 * The incomming message from the client is sent to the Position service
+	 * under the "POS" identification.
+	 */
+	CNetManager::send( "POS", msgout );
+
+	nlinfo( "Received SNOWBALL from the client");
 }
 
 
@@ -290,10 +409,11 @@ void cbRemoveService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb
  ****************************************************************************/
 TCallbackItem ClientCallbackArray[] =
 {
-	{ "ADD_ENTITY",    cbAddClient    },
-	{ "ENTITY_POS",    cbPosClient    },
-	{ "CHAT",          cbChatClient   },
-	{ "REMOVE_ENTITY", cbRemoveClient }
+	{ "ADD_ENTITY",    cbAddClient      },
+	{ "ENTITY_POS",    cbPosClient      },
+	{ "CHAT",          cbChatClient     },
+	{ "REMOVE_ENTITY", cbRemoveClient   },
+	{ "SNOWBALL",      cbSnowballClient }
 };
 
 
@@ -317,9 +437,10 @@ TCallbackItem ChatCallbackArray[] =
  ****************************************************************************/
 TCallbackItem PosCallbackArray[] =
 {
-	{ "ADD_ENTITY",    cbAddService    },
-	{ "ENTITY_POS",    cbPosService    },
-	{ "REMOVE_ENTITY", cbRemoveService }
+	{ "ADD_ENTITY",    cbAddService      },
+	{ "ENTITY_POS",    cbPosService      },
+	{ "REMOVE_ENTITY", cbRemoveService   },
+	{ "SNOWBALL",      cbSnowballService }
 };
 
 
@@ -384,14 +505,20 @@ void onConnectionClient (TSockId from, const CLoginCookie &cookie)
 
 	nlinfo( "The client with uniq Id %d is connected", id );
 
-	// store the user id in appId
-	from->setAppId( id );
+	// Add new client to the list of player managed by this FrontEnd
+	pair<_pmap::iterator, bool>
+		player = localPlayers.insert( _pmap::value_type( id,
+														 _player( id,
+																  from )));
+	
+	// store the player info in appId
+	from->setAppId((uint64)(uint)&(player.second));
 
 	// Output: send the IDENTIFICATION number to the new connected client
 	CMessage msgout( CNetManager::getSIDA( "FS" ), "IDENTIFICATION" );
 	msgout.serial( id );
 
-	// Send the mesasge to connected client "from"
+	// Send the message to connected client "from"
 	CNetManager::send( "FS", msgout, from );
 
 	nlinfo( "Sent IDENTIFICATION message to the new client");
@@ -405,21 +532,24 @@ void onDisconnectClient (const std::string &serviceName, TSockId from, void *arg
 {
 	uint32 id;
 
-	id = from->appId();
+	id = ((_player *)(uint)(from->appId()))->id;
+
+	// remove the player from the local player list
+	localPlayers.erase(id);
 
 	nlinfo ("A client with uniq Id %d has disconnected", id );
 
 	// tell the login system that this client is disconnected
 	CLoginServer::clientDisconnected ( id );
 
-	// Output: send the REMOVE_ENTITY to all connected clients
-	CMessage msgout( CNetManager::getSIDA( "FS" ), "REMOVE_ENTITY" );
+	// Output: send the REMOVE_ENTITY to the position manager.
+	CMessage msgout( CNetManager::getSIDA( "POS" ), "REMOVE_ENTITY" );
 	msgout.serial( id );
 
-	// Send the mesasge to connected client "from"
-	CNetManager::send( "FS", msgout, 0 );
+	// Send the message to the position manager
+	CNetManager::send( "POS", msgout);
 
-	nlinfo( "Sent REMOVE_ENTITY message to all connected clients");
+	nlinfo( "Sent REMOVE_ENTITY message to the position manager.");
 }
 
 

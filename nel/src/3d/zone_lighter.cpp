@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.7 2001/10/29 16:09:18 lecroart Exp $
+ * $Id: zone_lighter.cpp,v 1.8 2001/10/30 10:20:10 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -348,37 +348,37 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 			}
 
 			// Look for the min coordinate
-			CVector min;
-			min.minof (triangle.Triangle.V0, triangle.Triangle.V1);
-			min.minof (min, triangle.Triangle.V2);
+			CVector minv;
+			minv.minof (triangle.Triangle.V0, triangle.Triangle.V1);
+			minv.minof (minv, triangle.Triangle.V2);
 
 			// Look for the max coordinate
-			CVector max;
-			max.maxof (triangle.Triangle.V0, triangle.Triangle.V1);
-			max.maxof (max, triangle.Triangle.V2);
+			CVector maxv;
+			maxv.maxof (triangle.Triangle.V0, triangle.Triangle.V1);
+			maxv.maxof (maxv, triangle.Triangle.V2);
 
 			// Insert in the quad grid
 			for (cpu=0; cpu<_ProcessCount; cpu++)
-				_QuadGrid[cpu].insert (min, max, &triangle);
+				_QuadGrid[cpu].insert (minv, maxv, &triangle);
 
 			// Lanscape tri ?
-			if (triangle.ZoneId!=-1)
+			if (triangle.ZoneId!=0xffffffff)
 			{
 				// Fill the heightfield
-				sint minX=max (0, (sint)floor (0.5f+(min.x-_OrigineHeightField.x)/_HeightfieldCellSize));
-				sint maxX=min (_HeightFieldCellCount, (sint)floor (0.5f+(max.x-_OrigineHeightField.x)/_HeightfieldCellSize));
-				sint minY=max (0, (sint)floor (0.5f+(min.y-_OrigineHeightField.y)/_HeightfieldCellSize));
-				sint maxY=min (_HeightFieldCellCount, (sint)floor (0.5f+(max.y-_OrigineHeightField.y)/_HeightfieldCellSize));
+				sint minX=std::max (0, (sint)floor (0.5f+(minv.x-_OrigineHeightField.x)/_HeightfieldCellSize));
+				sint maxX=std::min (_HeightFieldCellCount, (sint)floor (0.5f+(maxv.x-_OrigineHeightField.x)/_HeightfieldCellSize));
+				sint minY=std::max (0, (sint)floor (0.5f+(minv.y-_OrigineHeightField.y)/_HeightfieldCellSize));
+				sint maxY=std::min (_HeightFieldCellCount, (sint)floor (0.5f+(maxv.y-_OrigineHeightField.y)/_HeightfieldCellSize));
 
 				// Calc position in the heightfield
 				for (sint y=minY; y<maxY; y++)
 				for (sint x=minX; x<maxX; x++)
 				{
 					// Valid position, try to insert it
-					if (max.z>_HeightField[x+y*_HeightFieldCellCount])
+					if (maxv.z>_HeightField[x+y*_HeightFieldCellCount])
 					{
 						// New height in this cell
-						_HeightField[x+y*_HeightFieldCellCount]=max.z;
+						_HeightField[x+y*_HeightFieldCellCount]=maxv.z;
 					}
 				}
 			}
@@ -2070,8 +2070,8 @@ void CZoneLighter::buildZoneInformation (CLandscape &landscape, const vector<uin
 
 		// Sample edge normal
 		CVector normals[NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1][4];
-		uint sFixed[4] = { 0, -1, lumelS-1, -1 };
-		uint tFixed[4] = { -1, lumelT-1, -1, 0 };
+		uint sFixed[4] = { 0, 0xffffffff, lumelS-1, 0xffffffff };
+		uint tFixed[4] = { 0xffffffff, lumelT-1, 0xffffffff, 0 };
 		float sOri[4] = { 0, -1, (float)lumelS, -1 };
 		float tOri[4] = { -1, (float)lumelT, -1, 0 };
 		for (uint edge=0; edge<4; edge++)

@@ -1,7 +1,7 @@
 /** \file zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.3 2001/09/10 07:41:30 corvazier Exp $
+ * $Id: zone_lighter.h,v 1.4 2001/10/30 10:20:10 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:
 		// Sky intensity [0, 1]
 		float					SkyIntensity;
 
-		// Nombre de CPU
+		// Nombrer of CPU used
 		uint					NumCPU;
 	};
 
@@ -140,8 +140,8 @@ public:
 		CTriangle (const NLMISC::CTriangle& triangle)
 		{
 			Triangle=triangle;
-			ZoneId=-1;
-			PatchId=-1;
+			ZoneId=0xffffffff;
+			PatchId=0xffffffff;
 			StartS=0;
 			EndS=0;
 			StartT=0;

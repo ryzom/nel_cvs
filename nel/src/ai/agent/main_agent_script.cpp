@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.11 2001/02/08 17:27:53 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.12 2001/03/26 08:44:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,6 +142,8 @@ namespace NLAIAGENT
 		}				
 
 		processMessages();
+
+		if(haveActivity()) runActivity();
 
 		setState(processIdle,NULL);
 		return getState();

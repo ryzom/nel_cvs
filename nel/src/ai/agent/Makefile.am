@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.15 2001/03/15 17:44:42 valignat Exp $
+# $Id: Makefile.am,v 1.16 2001/03/26 08:44:57 chafik Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -17,7 +17,7 @@ libagent_la_SOURCES     = actor.cpp actor_script.cpp agent_input.cpp \
                           message_script.cpp msg.cpp msg_action.cpp \
                           msg_container.cpp msg_debug.cpp msg_fact.cpp \
                           msg_goal.cpp msg_group.cpp msg_notify.cpp \
-                          msg_on_change.cpp paire_type.cpp
+                          msg_on_change.cpp paire_type.cpp agent_3dvector.cpp
 
 
 # End of Makefile.am

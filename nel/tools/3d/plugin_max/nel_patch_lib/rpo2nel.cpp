@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.18 2002/05/13 10:28:47 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.19 2002/05/13 12:49:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,19 +227,19 @@ bool RPatchMesh::transformTile (const CTileBank &bank, uint &tile, uint &tileRot
 				// Symmetry ?
 				if (symmetry)
 				{
-					CTileSet::TFlagBorder tmp = oriented[(0+tileRotation)&3];
-					oriented[(0+tileRotation)&3] = CTileSet::getInvertBorder (oriented[(2+tileRotation)&3]);
-					oriented[(2+tileRotation)&3] = CTileSet::getInvertBorder (tmp);
-					oriented[(1+tileRotation)&3] = CTileSet::getInvertBorder (oriented[(1+tileRotation)&3]);
-					oriented[(3+tileRotation)&3] = CTileSet::getInvertBorder (oriented[(3+tileRotation)&3]);
+					CTileSet::TFlagBorder tmp = oriented[(0)&3];
+					oriented[(0)&3] = CTileSet::getInvertBorder (oriented[(2)&3]);
+					oriented[(2)&3] = CTileSet::getInvertBorder (tmp);
+					oriented[(1)&3] = CTileSet::getInvertBorder (oriented[(1)&3]);
+					oriented[(3)&3] = CTileSet::getInvertBorder (oriented[(3)&3]);
 				}
 
 				// Rotation
 				CTileSet::TFlagBorder edges[4];
-				edges[0] = pTileSet->getOrientedBorder (CTileSet::left, oriented[(0 + rotate)&3]);
-				edges[1] = pTileSet->getOrientedBorder (CTileSet::bottom, oriented[(1 + rotate)&3]);
-				edges[2] = pTileSet->getOrientedBorder (CTileSet::right, oriented[(2 + rotate)&3]);
-				edges[3] = pTileSet->getOrientedBorder (CTileSet::top, oriented[(3 + rotate)&3]);
+				edges[0] = pTileSet->getOrientedBorder (CTileSet::left, oriented[(0 + rotate )&3]);
+				edges[1] = pTileSet->getOrientedBorder (CTileSet::bottom, oriented[(1 + rotate )&3]);
+				edges[2] = pTileSet->getOrientedBorder (CTileSet::right, oriented[(2 + rotate )&3]);
+				edges[3] = pTileSet->getOrientedBorder (CTileSet::top, oriented[(3 + rotate )&3]);
 
 				// Get the good tile number
 				CTileSet::TTransition transition = pTileSet->getTransitionTile (edges[3], edges[1], edges[0], edges[2]);

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.55 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: log.cpp,v 1.56 2003/11/18 13:46:15 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -317,7 +317,11 @@ void CLog::displayString (const char *str)
 /*
  * Display the string with decoration and final new line to all attached displayers
  */
+#ifdef NL_OS_WINDOWS
+void CLog::_displayNL (const char *format, ...)
+#else
 void CLog::displayNL (const char *format, ...)
+#endif
 {
 	if ( noDisplayer() )
 	{
@@ -338,7 +342,11 @@ void CLog::displayNL (const char *format, ...)
 /*
  * Display the string with decoration to all attached displayers
  */
+#ifdef NL_OS_WINDOWS
+void CLog::_display (const char *format, ...)
+#else
 void CLog::display (const char *format, ...)
+#endif
 {
 	if ( noDisplayer() )
 	{
@@ -350,7 +358,6 @@ void CLog::display (const char *format, ...)
 
 	displayString (str);
 }
-
 
 void CLog::displayRawString (const char *str)
 {
@@ -429,7 +436,11 @@ void CLog::displayRawString (const char *str)
 /*
  * Display a string (and nothing more) to all attached displayers
  */
+#ifdef NL_OS_WINDOWS
+void CLog::_displayRawNL( const char *format, ... )
+#else
 void CLog::displayRawNL( const char *format, ... )
+#endif
 {
 	if ( noDisplayer() )
 	{
@@ -450,7 +461,11 @@ void CLog::displayRawNL( const char *format, ... )
 /*
  * Display a string (and nothing more) to all attached displayers
  */
+#ifdef NL_OS_WINDOWS
+void CLog::_displayRaw( const char *format, ... )
+#else
 void CLog::displayRaw( const char *format, ... )
+#endif
 {
 	if ( noDisplayer() )
 	{
@@ -464,7 +479,11 @@ void CLog::displayRaw( const char *format, ... )
 }
 
 
+#ifdef NL_OS_WINDOWS
+void CLog::_forceDisplayRaw (const char *format, ...)
+#else
 void CLog::forceDisplayRaw (const char *format, ...)
+#endif
 {
 	if ( noDisplayer() )
 	{

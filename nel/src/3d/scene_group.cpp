@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.75 2004/08/03 16:21:40 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.76 2004/09/27 13:31:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,12 +61,15 @@ CInstanceGroup::CInstance::CInstance ()
 	LocalAmbientId= 0xFF;
 	DontCastShadowForInterior= false;
 	DontCastShadowForExterior= false;
+	Visible= true;
 }
 
 // ***************************************************************************
 void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 {
 	/*
+	Version 7:
+		- Visible
 	Version 6:
 		- DontCastShadowForExterior
 	Version 5:
@@ -81,8 +84,12 @@ void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 		- Clusters
 	*/
 	// Serial a version number
-	sint version=f.serialVersion (6);
+	sint version=f.serialVersion (7);
 
+
+	// Visible
+	if (version >= 7)
+		f.serial(Visible);
 
 	// DontCastShadowForExterior
 	if (version >= 6)
@@ -591,6 +598,10 @@ bool CInstanceGroup::addToSceneWhenAllShapesLoaded (CScene& scene, IDriver *driv
 				_Instances[i]->setRotQuat (rInstanceInfo.Rot);
 				_Instances[i]->setScale (rInstanceInfo.Scale);
 				_Instances[i]->setPivot (CVector::Null);
+				if(rInstanceInfo.Visible)
+					_Instances[i]->show();
+				else
+					_Instances[i]->hide();
 
 				if (scene.getWaterCallback())
 				{				

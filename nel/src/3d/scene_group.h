@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.30 2004/07/20 16:23:49 berenguier Exp $
+ * $Id: scene_group.h,v 1.31 2004/09/27 13:31:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,7 +102,12 @@ public:
 
 		// Name of the instance
 		std::string InstanceName;
-		bool DontAddToScene;
+
+		/// If true, then the shape is even not loaded/displayed (used for shadow casting?)
+		bool	DontAddToScene;
+
+		/// If false, the shape is load but hid by default (NB: can be used for camera collision)
+		bool	Visible;
 
 		/// Precomputed Lighting. 
 		// If true (false by default), then the instance don't cast shadow (used by ig_lighter.exe).

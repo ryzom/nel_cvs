@@ -399,13 +399,13 @@ BEGIN
     CONTROL         "Don't export the shape. If checked, no shape file will be exported from this object.",
                     IDC_DONT_EXPORT,"Button",BS_AUTO3STATE | WS_TABSTOP,5,86,
                     271,10
-    GROUPBOX        "Collision",IDC_STATIC,5,175,170,40
+    GROUPBOX        "Collision",IDC_STATIC,5,180,170,40
     CONTROL         "Collision Mesh",IDC_CHECK_COLLISION,"Button",
-                    BS_AUTO3STATE | WS_TABSTOP,15,185,110,10
+                    BS_AUTO3STATE | WS_TABSTOP,15,191,110,10
     CONTROL         "Collision Mesh Exterior",IDC_CHECK_COLLISION_EXTERIOR,
-                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,199,110,10
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,204,110,10
     LTEXT           "Enter ... to erase all.",IDC_STATIC,195,15,108,10
-    GROUPBOX        "Camera Collision",IDC_STATIC,5,105,270,55
+    GROUPBOX        "Camera Collision",IDC_STATIC,5,105,270,70
     CONTROL         "Automatic (collision only if mesh is lightmapped)",
                     IDC_CAMERA_COL_RADIO1,"Button",BS_AUTORADIOBUTTON,15,115,
                     230,10
@@ -414,6 +414,9 @@ BEGIN
                     230,10
     CONTROL         "Forced (collision with camera, even if not lightmapped)",
                     IDC_CAMERA_COL_RADIO3,"Button",BS_AUTORADIOBUTTON,15,145,
+                    230,10
+    CONTROL         "Camera collision only (mesh not displayed)",
+                    IDC_CAMERA_COL_RADIO4,"Button",BS_AUTORADIOBUTTON,15,160,
                     230,10
 END
 

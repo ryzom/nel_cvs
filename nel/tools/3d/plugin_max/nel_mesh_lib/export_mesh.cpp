@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.68 2004/08/03 16:30:03 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.69 2004/09/27 13:33:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -556,7 +556,12 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 	}
 
 	// Export Camera Third person related
-	buildMesh.CollisionMeshGeneration= (NL3D::CMeshBase::TCameraCollisionGenerate)CExportNel::getScriptAppData (&node, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, 0);
+	sint	appDataCameraCol= CExportNel::getScriptAppData (&node, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, 0);
+	// 3 means ForceCameraCol and Hide. Hide is encoded in the IG (not in the mesh)
+	if(appDataCameraCol>=3)
+		buildMesh.CollisionMeshGeneration= NL3D::CMeshBase::ForceCameraCol;
+	else
+		buildMesh.CollisionMeshGeneration= (NL3D::CMeshBase::TCameraCollisionGenerate)appDataCameraCol;
 
 	// *** ****************
 	// *** Export materials

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.40 2004/07/20 16:25:22 berenguier Exp $
+ * $Id: export_scene.cpp,v 1.41 2004/09/27 13:33:46 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,6 +103,11 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 			{
 				aIGArray[nNumIG].InstanceName = pNode->GetName();
 			}
+
+			// Visible? always true, but if special flag for camera collision
+			sint	appDataCameraCol= CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_CAMERA_COLLISION_MESH_GENERATION, 0);
+			aIGArray[nNumIG].Visible= appDataCameraCol!=3;
+
 
 			INode *pParent = pNode->GetParentNode();
 

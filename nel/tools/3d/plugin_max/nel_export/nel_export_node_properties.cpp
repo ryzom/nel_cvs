@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.60 2004/07/20 16:25:10 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.61 2004/09/27 13:33:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -280,7 +280,7 @@ public:
 	int						RemanenceSliceNumber;
 	float					RemanenceSamplingPeriod;
 	float                   RemanenceRollupRatio;
-	int						CollisionMeshGeneration; // -1->undeterminate   0->Auto 1->NoCameraCol 2->ForceCameraCol
+	int						CollisionMeshGeneration; // -1->undeterminate   0->Auto 1->NoCameraCol 2->ForceCameraCol 3->ForceCameraColAndHideInIG
 
 	// Animation
 	int						ExportNodeAnimation;
@@ -941,8 +941,8 @@ int CALLBACK InstanceDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_CHECK_COLLISION_EXTERIOR), BM_SETCHECK, currentParam->CollisionExterior, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
 
-			bool colOk = currentParam->CollisionMeshGeneration>=0 && currentParam->CollisionMeshGeneration<3;
-			CheckRadioButton (hwndDlg, IDC_CAMERA_COL_RADIO1, IDC_CAMERA_COL_RADIO3, colOk?(IDC_CAMERA_COL_RADIO1+(currentParam->CollisionMeshGeneration)):0);
+			bool colOk = currentParam->CollisionMeshGeneration>=0 && currentParam->CollisionMeshGeneration<4;
+			CheckRadioButton (hwndDlg, IDC_CAMERA_COL_RADIO1, IDC_CAMERA_COL_RADIO4, colOk?(IDC_CAMERA_COL_RADIO1+(currentParam->CollisionMeshGeneration)):0);
 			
 			InstanceStateChanged(hwndDlg);
 		}
@@ -977,11 +977,13 @@ int CALLBACK InstanceDialogCallback (
 
 							// Get the CollisionMeshGeneration
 							if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO1) == BST_CHECKED)
-								currentParam->CollisionMeshGeneration = NL3D::CMeshBase::AutoCameraCol;
+								currentParam->CollisionMeshGeneration = 0;
 							else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO2) == BST_CHECKED)
-								currentParam->CollisionMeshGeneration = NL3D::CMeshBase::NoCameraCol;
+								currentParam->CollisionMeshGeneration = 1;
 							else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO3) == BST_CHECKED)
-								currentParam->CollisionMeshGeneration = NL3D::CMeshBase::ForceCameraCol;
+								currentParam->CollisionMeshGeneration = 2;
+							else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO4) == BST_CHECKED)
+								currentParam->CollisionMeshGeneration = 3;
 							else
 								currentParam->CollisionMeshGeneration = -1;
 						}
@@ -999,13 +1001,16 @@ int CALLBACK InstanceDialogCallback (
 					case IDC_CAMERA_COL_RADIO1:
 					case IDC_CAMERA_COL_RADIO2:
 					case IDC_CAMERA_COL_RADIO3:
+					case IDC_CAMERA_COL_RADIO4:
 						// Get the acceleration type
 						if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO1) == BST_CHECKED)
-							currentParam->CollisionMeshGeneration = NL3D::CMeshBase::AutoCameraCol;
+							currentParam->CollisionMeshGeneration = 0;
 						else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO2) == BST_CHECKED)
-							currentParam->CollisionMeshGeneration = NL3D::CMeshBase::NoCameraCol;
+							currentParam->CollisionMeshGeneration = 1;
 						else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO3) == BST_CHECKED)
-							currentParam->CollisionMeshGeneration = NL3D::CMeshBase::ForceCameraCol;
+							currentParam->CollisionMeshGeneration = 2;
+						else if (IsDlgButtonChecked (hwndDlg, IDC_CAMERA_COL_RADIO4) == BST_CHECKED)
+							currentParam->CollisionMeshGeneration = 3;
 						else
 							currentParam->CollisionMeshGeneration = -1;
 						break;

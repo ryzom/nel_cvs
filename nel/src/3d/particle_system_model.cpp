@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.62 2004/03/04 14:27:08 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.63 2004/03/09 13:45:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -251,7 +251,16 @@ void CParticleSystemModel::reallocRsc()
 	//MINI_TIMER(PSStatsReallocRsc)
 	nlassert(_ParticleSystem == NULL);
 	#ifdef PS_FAST_ALLOC
-		_ParticleSystem = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->instanciatePS(*_Scene, &_Allocator);
+		CParticleSystemShape		*shape = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape);
+		if (shape->isShared())
+		{
+			// there's a single CparticleSystemInstance even if there are several models
+			_ParticleSystem = shape->instanciatePS(*_Scene, &shape->Allocator);
+		}
+		else
+		{			
+			_ParticleSystem = shape->instanciatePS(*_Scene, &_Allocator);
+		}		
 	#else
 		_ParticleSystem = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape)->instanciatePS(*_Scene);
 	#endif
@@ -281,7 +290,8 @@ void CParticleSystemModel::releasePSPointer()
 {	
 	MINI_TIMER(PSStatsReleasePSPointer)
 	nlassert(_ParticleSystem != NULL);
-	if (_ParticleSystem.getNbRef() == 1)
+	sint numRefs = _ParticleSystem.getNbRef();
+	if (numRefs == 1)
 	{	
 		// Backup user params (in animated value) so that they will be restored when the system is recreated
 		for (uint k = 0; k < MaxPSUserParam; ++k)
@@ -301,6 +311,17 @@ void CParticleSystemModel::releasePSPointer()
 	}
 	//
 	_ParticleSystem = NULL; // one less ref with the smart ptr 
+	#ifdef PS_FAST_ALLOC
+		CParticleSystemShape		*shape = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape);			
+		if (shape->isShared())
+		{		
+			if (numRefs == 1)
+			{
+				// release allocator in the shape
+				shape->Allocator.release();
+			}
+		}
+	#endif
 }
 
 ///=====================================================================================
@@ -381,7 +402,13 @@ void CParticleSystemModel::releaseRscAndInvalidate()
 		(*it)->invalidPS(this); // if this crash, then you forgot to call removePSModelObserver !
 	}
 	#ifdef PS_FAST_ALLOC
-		_Allocator.release();
+		CParticleSystemShape		*shape = NLMISC::safe_cast<CParticleSystemShape *>((IShape *) Shape);
+		if (!shape->isShared())
+		{		
+			_Allocator.release();
+		}
+		// else ..
+		// if system if shared, the allocator is placed in the shape, so no-op there		
 	#endif
 }
 

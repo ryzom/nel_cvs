@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.20 2004/03/04 14:28:17 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.21 2004/03/09 13:45:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -145,8 +145,7 @@ public:
 	CParticleSystem *instanciatePS(CScene &scene, NLMISC::CContiguousBlockAllocator *blockAllocator = NULL);
 public:
 	/// inherited from ishape
-	virtual void				flushTextures (IDriver &driver, uint selectedTexture);
-
+	virtual void				flushTextures (IDriver &driver, uint selectedTexture);	
 protected:
 
 	/** A memory stream containing a particle system. Each system is instanciated from this prototype
@@ -183,6 +182,14 @@ protected:
 	// Given that a .ps can allocate numerous small block, this can be slow indeed.. 
 	uint				_NumBytesWanted;
 	
+public:
+	#ifdef PS_FAST_ALLOC
+		// for fast allocation of ps resources. Used only if the system is shared
+		// In this case, only one CParticleSystem instance is created, even if there are several models,
+		// and because the allocator must remains until the instance is released, we must keep it in the shape
+		// 
+		NLMISC::CContiguousBlockAllocator		Allocator;
+	#endif
 };
 
 } // NL3D

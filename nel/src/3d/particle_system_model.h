@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.39 2004/03/04 14:27:08 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.40 2004/03/09 13:45:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -342,8 +342,7 @@ private:
 
 	// old animation mode for the system
 	CParticleSystem::TAnimType				_AnimType;
-
-	///\todo nico : may optimize this with a bitfield...
+	
 	bool									_AutoGetEllapsedTime        : 1;		
 	bool									_ToolDisplayEnabled         : 1;
 	bool									_TransparencyStateTouched   : 1;

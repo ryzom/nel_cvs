@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.2 2001/06/15 16:24:46 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.3 2001/08/23 12:31:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -728,7 +728,7 @@ public:
 	void TurnPatch(PatchMesh *patch);
 
 	// Export a zone to NeL format
-	void exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int zoneId);
+	bool exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int zoneId);
 
 	// *** Vertex color Methods
 

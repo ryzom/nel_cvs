@@ -1,7 +1,7 @@
 /** \file nel_export_zone.cpp
  * <File description>
  *
- * $Id: nel_export_zone.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: nel_export_zone.cpp,v 1.3 2001/08/23 12:31:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,25 +52,26 @@ bool CNelExport::exportZone (const char *sPath, INode& node, TimeValue time)
 		{
 			// Build the zone
 			CZone zone;
-			pPatchObject->rpatch->exportZone (&node, &pPatchObject->patch, zone, 0);
-
-			// Open a file
-			COFile file;
-			if (file.open (sPath))
+			if (pPatchObject->rpatch->exportZone (&node, &pPatchObject->patch, zone, 0))
 			{
-				try
+				// Open a file
+				COFile file;
+				if (file.open (sPath))
 				{
-					// Serial the zone
-					zone.serial (file);
+					try
+					{
+						// Serial the zone
+						zone.serial (file);
 
-					// All is good
-					bRet=true;
+						// All is good
+						bRet=true;
+					}
+					catch (...)
+					{
+					}
 				}
-				catch (...)
-				{
-				}
+				file.close ();
 			}
-			file.close ();
 
 #ifdef NL_DEBUG
 			// load the zone

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.3 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.4 2001/08/23 12:31:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,7 +119,7 @@ static int getEdge(PatchMesh* pPM, Patch* patch, int iv1, int iv2)
 	return(-1);
 }
 
-void RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int zoneId)
+bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int zoneId)
 {
 	Matrix3					TM;
 	CPatchInfo				pi;
@@ -222,9 +222,9 @@ void RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 			pi.TileColors[u+v*(pi.OrderS+1)].Color565=rgba.get565();
 		}
 
-		/*// ** Export tile shading
+		// ** Export tile shading
 
-		pi.Lumels.resize ((pi.OrderS*4+1)*(pi.OrderT*4+1));*/
+		pi.Lumels.resize ((pi.OrderS*4)*(pi.OrderT*4), 255);
 
 		// Add this tile info
 		patchinfo.push_back(pi);
@@ -261,6 +261,7 @@ void RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 					if (icv==-1)
 					{
 						nlassert (0);		// no!
+						return false;
 					}
 					if (idstedge==orderdstvtx) 
 					{
@@ -283,6 +284,7 @@ void RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 						if (icv==-1)
 						{
 							nlassert (0);		// no!
+							return false;
 						}
 					}
 				}
@@ -298,6 +300,7 @@ void RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 						if (icv==-1)
 						{
 							nlassert (0);		// no!
+							return false;
 						}
 					}
 				}
@@ -308,6 +311,7 @@ void RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 					if (isrcedge==-1)
 					{
 							nlassert (0);		// no!
+							return false;
 					}
 					// let's fill the dst patch (n is important here... it's the order)
 					patchinfo[idstpatch].BindEdges[idstedge].NPatchs++;
@@ -362,39 +366,6 @@ void RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 		// Only one neighbor ?
 	}
 
-#if 0
-	// ---
-	// --- Debug infos in your eyes
-	// ---
-	{
-		FILE*	file;
-
-		file=fopen("e:\\debug.txt","w+t");
-		if (file)
-		{
-			for(j=0 ; j<pPM->numVerts ; j++)
-			{
-				fprintf(file,"%02d : %d %d %d\n",j,(int)pPM->verts[j].p.x,(int)pPM->verts[j].p.y,(int)pPM->verts[j].p.z);
-			}
-			for(i=0 ; i<pPM->numPatches ; i++)
-			{
-				fprintf(file,"-------------------------------------------------------\n");
-				pPatch=&pPM->patches[i];
-				pi=patchinfo[i];
-				fprintf(file,"%d %d %d %d\n",pPatch->v[0],pPatch->v[1],pPatch->v[2],pPatch->v[3]);
-				for(int e=0 ; e<4 ; e++)
-				{
-					fprintf(file,"patch %d, edge %d : %d patch connected\n",i,e,pi.BindEdges[e].NPatchs);
-					for(j=0 ; j<pi.BindEdges[e].NPatchs ; j++)
-					{
-						fprintf(file,"\tTo patch %d on its edge %d\n",pi.BindEdges[e].Next[j],pi.BindEdges[e].Edge[j]);
-					}
-					fprintf(file,"\n");
-				}
-			}
-			fclose(file);
-		}
-	}
-#endif
 	zone.build(zoneId, patchinfo, std::vector<CBorderVertex>());
+	return true;
 }

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.17 2001/08/16 15:50:00 besson Exp $
+ * $Id: calc_lm.cpp,v 1.18 2001/08/23 12:31:36 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3001,15 +3001,25 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 				if( ! PutFaceUV1InLumelCoord( gOptions.rLumelSize, AllVertices, 
 										AllFaces.begin()+offsetSmooth, FaceGroupBySmooth[nSmoothNb] ) )
 				{
+					// Make an error message
 					string sTmp = "Warning : ";
 					sTmp += ZeNode.GetName();
 					sTmp += " has mapping problem";
-					gOptions.FeedBack->setLine (11, sTmp);
-					sTmp = "Mat(" + toString(1+nMat) + ") at least one group with texture";						
-					gOptions.FeedBack->setLine (12, sTmp);
-					sTmp = "surface equal to zero";
-					gOptions.FeedBack->setLine (13, sTmp);
-					gOptions.FeedBack->update ();
+
+					// Script trace
+					mprintf ((sTmp+"\n").c_str());
+
+					// Feedback is here ?
+					if (gOptions.FeedBack != NULL)
+					{
+						gOptions.FeedBack->setLine (11, sTmp);
+
+						sTmp = "Mat(" + toString(1+nMat) + ") at least one group with texture";						
+						gOptions.FeedBack->setLine (12, sTmp);
+						sTmp = "surface equal to zero";
+						gOptions.FeedBack->setLine (13, sTmp);
+						gOptions.FeedBack->update ();
+					}
 					continue;
 				}
 

@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.3 2001/06/15 16:24:46 corvazier Exp $
+ * $Id: script.cpp,v 1.4 2001/08/23 12:31:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,16 +135,17 @@ export_zone_cf (Value** arg_list, int count)
 
 			// Create a zone
 			CZone zone;
-			tri->rpatch->exportZone (node, &tri->patch, zone, nZone);
-
-			// Export path 
-			const char* sPath=arg_list[1]->to_string();
-
-			COFile file;
-			if (file.open (sPath))
+			if (tri->rpatch->exportZone (node, &tri->patch, zone, nZone))
 			{
-				zone.serial (file);
-				ret=&true_value;
+				// Export path 
+				const char* sPath=arg_list[1]->to_string();
+
+				COFile file;
+				if (file.open (sPath))
+				{
+					zone.serial (file);
+					ret=&true_value;
+				}
 			}
 		}
 	}

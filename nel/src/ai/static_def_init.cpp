@@ -39,7 +39,7 @@
 	using namespace NLAILOGIC;
 	using namespace NLAIFUZZY;
 
-	CLocWordNumRef::tMapRef *CLocWordNumRef::_LocRefence = new CLocWordNumRef::tMapRef;
+	NLMISC::CSynchronized<CLocWordNumRef::tMapRef> CLocWordNumRef::_LocRefence("CLocWordNumRef::_LocRefence");// = new CLocWordNumRef::tMapRef;
 	CAgentNumber CNumericIndex::_I = CAgentNumber();	
 
 	CIndexedVarName::CNameStruc *CIndexedVarName::_TableName = NULL;

@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.15 2001/12/17 16:44:02 chafik Exp $
+ * $Id: ident.cpp,v 1.16 2001/12/20 10:16:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,10 +120,11 @@ namespace NLAIAGENT
 
 	CLocWordNumRef::~CLocWordNumRef()
 	{
-		tMapRef::iterator Itr = CLocWordNumRef::_LocRefence->find(_Id);
-		if(Itr != CLocWordNumRef::_LocRefence->end())
+		NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
+		tMapRef::iterator Itr = a.value().find(_Id);
+		if(Itr != a.value().end())
 		{				
-			CLocWordNumRef::_LocRefence->erase(Itr);
+			a.value().erase(Itr);
 		}
 		else throw NLAIE::CExceptionIndexHandeledError();
 	}
@@ -135,13 +136,33 @@ namespace NLAIAGENT
 
 	IRefrence *CLocWordNumRef::getRef(const CNumericIndex &id)
 	{
-		tMapRef::iterator Itr = CLocWordNumRef::_LocRefence->find(id);
-		if(Itr != CLocWordNumRef::_LocRefence->end())
+		NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
+		tMapRef::iterator Itr = a.value().find(id);
+		if(Itr != a.value().end())
 		{				
 			return (*Itr).second;
 		}
-		//else throw NLAIE::CExceptionIndexHandeledError();
+		else
+		{
+			throw NLAIE::CExceptionIndexHandeledError();
+		}
 		return NULL;
+	}
+
+	void CLocWordNumRef::Init()
+	{
+		/*NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
+		a.value() = new CLocWordNumRef::tMapRef;*/
+	}
+
+	void CLocWordNumRef::clear()
+	{			
+		/*NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
+		if(a.value() )
+		{
+			delete a.value();
+			a.value() = NULL;
+		}*/			
 	}
 
 	void releaseAgentLib()

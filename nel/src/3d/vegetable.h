@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.2 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: vegetable.h,v 1.3 2001/11/07 16:41:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,9 +110,11 @@ public:
 	 *	\param posInWorld center (approx) of the surface which generate group of vegetable
 	 *	\param surfaceNormal UNIT up vector of the surface to compare with (0,0,1), to modulate density
 	 *	\param area area of the surface, to know number of elements to generate for this surface
+	 *	\param vegetSeed "random" value which Should be different for all vegetables in the same area.
+	 *	usefull if lot of different vegetable generated in same area: positions won't be generated at same place. 
 	 *	\param instances the generated position of instances.
 	 */
-	void	generateGroup(const CVector &posInWorld, const CVector &surfaceNormal, float area, std::vector<CVector2f> &instances) const;
+	void	generateGroup(const CVector &posInWorld, const CVector &surfaceNormal, float area, uint vegetSeed, std::vector<CVector2f> &instances) const;
 
 
 	/** posInWorld should be a matrix of position + rotation (typically for surface alignement). 

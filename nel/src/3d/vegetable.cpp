@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.3 2001/11/07 13:11:39 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.4 2001/11/07 16:41:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,7 +108,7 @@ void	CVegetable::registerToManager(CVegetableManager *manager)
 
 
 // ***************************************************************************
-void	CVegetable::generateGroup(const CVector &posInWorld, const CVector &surfaceNormal, float area, std::vector<CVector2f> &instances) const
+void	CVegetable::generateGroup(const CVector &posInWorld, const CVector &surfaceNormal, float area, uint vegetSeed, std::vector<CVector2f> &instances) const
 {
 
 	// Density evaluation.
@@ -143,6 +143,7 @@ void	CVegetable::generateGroup(const CVector &posInWorld, const CVector &surface
 	// For now, generate them randomly.
 	static CVector2f	dSeed(0.513f, 0.267f);	// random values.
 	CVector				seed= posInWorld;
+	seed.z+= vegetSeed * 0.723f;	// 0.723f is a random value.
 	for(sint i=0; i<nbInstances; i++)
 	{
 		instances[i].x= RandomGenerator.evalOneLevelRandom(seed);

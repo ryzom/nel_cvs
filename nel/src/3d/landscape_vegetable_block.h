@@ -1,7 +1,7 @@
 /** \file landscape_vegetable_block.h
  * <File description>
  *
- * $Id: landscape_vegetable_block.h,v 1.1 2001/11/05 16:26:44 berenguier Exp $
+ * $Id: landscape_vegetable_block.h,v 1.2 2001/11/07 16:41:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "3d/tess_list.h"
+#include "3d/landscape_def.h"
 
 
 namespace NL3D 
@@ -45,12 +46,6 @@ class	CPatch;
 class	CLandscapeVegetableBlockCreateContext;
 
 // ***************************************************************************
-/// Distance Types are: 10, 20, 30, 40, 50.
-#define	NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST	5
-#define	NL3D_LANDSCAPE_VEGETABLE_BLOCK_ELTDIST	10.0f
-
-
-
 #define	NL3D_LANDSCAPE_VEGETABLE_BLOCK_NCTXVERTS	9
 
 

@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.2 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.3 2001/11/07 16:41:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
 #include "3d/fast_floor.h"
+#include "3d/tile_vegetable_desc.h"
 
 
 using namespace std;
@@ -61,7 +62,9 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	uint	tileId= Tiles[tt * OrderS + ts].Tile[0];
 
 	// get list of vegetable for this tile, and for hist distanceType category.
-	const vector<CVegetable*>	&vegetableList= getLandscape()->getTileVegetableList(tileId, distType);
+	const CTileVegetableDesc		&tileVegetDesc= getLandscape()->getTileVegetableDesc(tileId);
+	const std::vector<CVegetable>	&vegetableList= tileVegetDesc.getVegetableList(distType);
+	uint							distAddSeed= tileVegetDesc.getVegetableSeed(distType);
 	
 
 	// compute approximate tile position and normal: get the middle
@@ -121,11 +124,11 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	for(i= 0; i<numVegetable; i++)
 	{
 		// get the vegetable
-		CVegetable	*veget=	vegetableList[i];
+		const CVegetable	&veget=	vegetableList[i];
 
 		// generate instance for this vegetable.
 		static	vector<CVector2f>	instanceUV;
-		veget->generateGroup(tilePos, tileNormal, NL3D_PATCH_TILE_AREA, instanceUV);
+		veget.generateGroup(tilePos, tileNormal, NL3D_PATCH_TILE_AREA, i + distAddSeed, instanceUV);
 
 		// For all instance, generate the real instances.
 		for(uint j=0; j<instanceUV.size(); j++)
@@ -144,7 +147,7 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 			clamp(lumelT, 0, NL_LUMEL_BY_TILE-1);
 
 			// generate the instance of the vegetable
-			veget->generateInstance(vegetIg, matInstance, ambientF, 
+			veget.generateInstance(vegetIg, matInstance, ambientF, 
 				diffuseColorF[ (lumelT<<NL_LUMEL_BY_TILE_SHIFT) + lumelS ]);
 		}
 	}

@@ -540,14 +540,6 @@ SOURCE=.\3d\tile_lumel.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\tile_noise_map.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\tile_noise_map.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\zone.cpp
 # End Source File
 # Begin Source File
@@ -721,6 +713,22 @@ SOURCE=.\3d\tile_far_bank.cpp
 # Begin Source File
 
 SOURCE=.\3d\tile_far_bank.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tile_noise_map.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tile_noise_map.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tile_vegetable_desc.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tile_vegetable_desc.h
 # End Source File
 # End Group
 # Begin Group "Shapes"

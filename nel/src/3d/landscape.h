@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.21 2001/11/07 13:11:39 berenguier Exp $
+ * $Id: landscape.h,v 1.22 2001/11/07 16:41:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,7 @@ class	CHeightMap;
 class	CTileNoiseMap;
 class	CVegetableManager;
 class	CVegetable;
-
+class	CTileVegetableDesc;
 
 using NLMISC::Exception;
 using NLMISC::CTriangle;
@@ -703,11 +703,10 @@ private:
 	/// List of VegetableBlock, to be tested for creation each frame.
 	CTessList<CLandscapeVegetableBlock>		_VegetableBlockList;
 
-	/** For a given tile Id, look into tileSet, and get the list of vegetable for this tile.
+	/** For a given tile Id, look into tileSet, and get the tile vegetable descriptor
 	 *	\param tileId the tile [0..65535] to get the list of vegetable to create.
-	 *	\param distType the distanceType which intereset in creation.
 	 */
-	const std::vector<CVegetable*>	&getTileVegetableList(uint16 tileId, uint distType);
+	const CTileVegetableDesc	&getTileVegetableDesc(uint16 tileId);
 
 	// @}
 

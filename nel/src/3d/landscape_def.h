@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.3 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: landscape_def.h,v 1.4 2001/11/07 16:41:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,12 @@ class	IDriver;
 // ***************************************************************************
 // see CTessFace::updateRefineMerge()
 #define	NL3D_REFINE_MERGE_THRESHOLD		2.0f
+
+
+// ***************************************************************************
+/// For Landscape Vegetable: Distance Types are: 10m, 20m, 30m, 40m, 50m.
+#define	NL3D_LANDSCAPE_VEGETABLE_BLOCK_NUMDIST	5
+#define	NL3D_LANDSCAPE_VEGETABLE_BLOCK_ELTDIST	10.0f
 
 
 // ***************************************************************************

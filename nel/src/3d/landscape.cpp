@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.89 2001/11/07 13:11:39 berenguier Exp $
+ * $Id: landscape.cpp,v 1.90 2001/11/07 16:41:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/vegetable.h"
 #include "3d/landscape_vegetable_block.h"
 #include "3d/fast_floor.h"
+#include "3d/tile_vegetable_desc.h"
 
 
 #include "3d/vertex_program.h"
@@ -2653,20 +2654,19 @@ void		CLandscape::setVegetableWindAnimationTime(double windTime)
 
 
 // ***************************************************************************
-const std::vector<CVegetable*>	&CLandscape::getTileVegetableList(uint16 tileId, uint distType)
+const CTileVegetableDesc	&CLandscape::getTileVegetableDesc(uint16 tileId)
 {
 	// TODO_VEGET: manage landscape tileSet.
-	static std::vector<CVegetable*>		grassArray0;
-	static std::vector<CVegetable*>		grassArray1;
-	static std::vector<CVegetable*>		grassArrayEmpty;
-	static CVegetable					grass0;
-	static CVegetable					grass1;
+	static CTileVegetableDesc			tvDesc;
 	static bool							init= false;
 
 	if(!init)
 	{
 		init= true;
 
+		CVegetable						grass0;
+		CVegetable						grass1;
+		vector<CLandscapeVegetable>		landVegets;
 
 		// init the grass vegetable.
 		grass0.ShapeName= "grassUnlit.veget";
@@ -2711,12 +2711,8 @@ const std::vector<CVegetable*>	&CLandscape::getTileVegetableList(uint16 tileId, 
 		grass0.BendFactor.Abs= 0.5;
 		grass0.BendFactor.Rand= 0.5;
 
-
-		// load the shape.
-		grass0.registerToManager(_VegetableManager);
-
 		// init the array
-		grassArray0.push_back(&grass0);
+		landVegets.push_back(CLandscapeVegetable(grass0, 4));
 
 
 		// Copy.
@@ -2727,17 +2723,16 @@ const std::vector<CVegetable*>	&CLandscape::getTileVegetableList(uint16 tileId, 
 		grass1.Sz.Rand*= 0.2f;
 		grass1.Density.Abs*= 10;
 		grass1.Density.Rand*= 10;
-		grass1.registerToManager(_VegetableManager);
-		grassArray1.push_back(&grass1);
+		landVegets.push_back(CLandscapeVegetable(grass1, 0));
 
+		// build the desc.
+		tvDesc.build(landVegets);
+
+		// and compile
+		tvDesc.registerToManager(_VegetableManager);
 	}
 
-	if(distType==0)
-		return	grassArray1;
-	else if(distType==4)
-		return	grassArray0;
-	else
-		return	grassArrayEmpty;
+	return	tvDesc;
 }
 
 

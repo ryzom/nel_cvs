@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.24 2001/10/05 15:05:14 lecroart Exp $
+ * $Id: config_file.h,v 1.25 2001/11/19 14:08:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,6 +130,8 @@ public:
 	{
 	public:
 
+		CVar () : Type(T_UNKNOWN) {}
+
 		/// \name Access to the variable content.
 		//@{
 		/// Get the content of the variable as an integer
@@ -175,7 +177,7 @@ public:
 		//@{
 		static char *TypeName[];
 
-		enum TVarType { T_INT, T_STRING, T_REAL };
+		enum TVarType { T_UNKNOWN, T_INT, T_STRING, T_REAL };
 
 		std::string					Name;
 		TVarType					Type;

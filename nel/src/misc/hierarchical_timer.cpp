@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.38 2004/08/27 12:57:22 legros Exp $
+ * $Id: hierarchical_timer.cpp,v 1.38.4.1 2004/11/04 11:13:29 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -940,6 +940,7 @@ bool CHTimer::CStatSorter::operator()(const CHTimer::CStats *lhs, const CHTimer:
 		case CHTimer::NumVisits:				return lhs->NumVisits >= rhs->NumVisits;
 		case CHTimer::MaxTime:					return lhs->MaxTime >= rhs->MaxTime;
 		case CHTimer::MinTime:					return lhs->MinTime < rhs->MinTime;	
+		case CHTimer::MaxSession:				return lhs->SessionMaxTime > rhs->SessionMaxTime;
 		default:
 			nlassert(0); // not a valid criterion
 		break;
@@ -1066,16 +1067,42 @@ void	CHTimer::updateSessionStats()
 // Commands
 //
 
-NLMISC_CATEGORISED_COMMAND(nel,displayMeasures, "display hierarchical timer", "[depth]")
+#define	CASE_DISPLAYMEASURES(crit, alternative)	\
+	if (args[0] == #crit || depth == alternative)	\
+	{	\
+		CHTimer::TSortCriterion	criterion = CHTimer::crit;	\
+		if (hasDepth && depth != alternative)	\
+			CHTimer::displaySummary(&log, criterion, true, 64, 2, depth);	\
+		else	\
+			CHTimer::display(&log, criterion);	\
+	}	\
+	else
+
+NLMISC_CATEGORISED_COMMAND(nel,displayMeasures, "display hierarchical timer", "[TotalTime(=-2)|NoSort(=-3)|TotalTimeWithoutSons(=-4)|MeanTime(=-5)|NumVisits(=-6)|MaxTime(=-7)|MinTime(=-8)|MaxSession(=-9)] [depth]")
 {
 	if (args.size() < 1)
 	{
 		CHTimer::display(&log);
 		CHTimer::displayHierarchicalByExecutionPathSorted (&log, CHTimer::TotalTime, true, 64);
+		return true;
 	}
-	else
+
+	sint	depth = 0;
+	bool	hasDepth = (sscanf(args[0].c_str(), "%d", &depth) == 1 || (args.size() > 1 && sscanf(args[1].c_str(), "%d", &depth) == 1));
+
+	CASE_DISPLAYMEASURES(NoSort, -3)
+	CASE_DISPLAYMEASURES(TotalTime, -2)
+	CASE_DISPLAYMEASURES(TotalTimeWithoutSons, -4)
+	CASE_DISPLAYMEASURES(MeanTime, -5)
+	CASE_DISPLAYMEASURES(NumVisits, -6)
+	CASE_DISPLAYMEASURES(MaxTime, -7)
+	CASE_DISPLAYMEASURES(MinTime, -8)
+	CASE_DISPLAYMEASURES(MaxSession, -9)
 	{
-		CHTimer::displaySummary(&log, CHTimer::TotalTime, true, 64, 2, atoi(args[0].c_str()));
+		if (hasDepth)
+			CHTimer::displaySummary(&log, CHTimer::TotalTime, true, 64, 2, depth);
+		else
+			CHTimer::display(&log, CHTimer::TotalTime);
 	}
 
 	return true;

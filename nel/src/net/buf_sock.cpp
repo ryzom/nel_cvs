@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.16 2001/09/12 16:55:23 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.17 2001/09/21 13:36:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,7 @@ string stringFromVectorPart( const vector<uint8>& v, uint32 pos, uint32 len )
 		string::iterator is;
 		for ( is=s.begin(); is!=s.end(); ++is )
 		{
-			if ( ! isprint((uint8)(*is)) )
+			if ( ! isprint((uint8)(*is)) || (*is) == '%' )
 			{
 				(*is) = '?';
 			}

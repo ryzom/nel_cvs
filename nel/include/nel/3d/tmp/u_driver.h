@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.2 2001/02/28 16:24:23 berenguier Exp $
+ * $Id: u_driver.h,v 1.3 2001/03/05 09:56:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,13 @@ public:
 								Height=0;
 								Depth=0;
 							}
-							CMode(uint16 w, uint16 h, uint8 d, bool windowed= true);
+							CMode(uint16 w, uint16 h, uint8 d, bool windowed= true)
+							{
+								Windowed=windowed;
+								Width=w;
+								Height=h;
+								Depth=d;
+							}
 	};
 
 	typedef std::vector<CMode> TModeList;
@@ -241,12 +247,12 @@ public:
 	 */
 	virtual	void			setMatrixMode2D(const CFrustum &frust) =0;
 	/// Tool function: same as setMatrixMode2D(), using a CFrustum(0,1,0,1,-1,1,false).
-	virtual	void			setMatrixMode2D11()
+	void					setMatrixMode2D11()
 	{
 		setMatrixMode2D(CFrustum(0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f,false));
 	}
 	/// Tool function: same as setMatrixMode2D(), using a CFrustum(0,4/3,0,1,-1,1,false).
-	virtual	void			setMatrixMode2D43()
+	void					setMatrixMode2D43()
 	{
 		setMatrixMode2D(CFrustum(0.0f,4.0f/3.0f,0.0f,1.0f,-1.0f,1.0f,false));
 	}

@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.16 2001/05/17 15:37:17 cado Exp $
+ * $Id: buf_fifo.cpp,v 1.17 2001/05/31 15:27:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@ namespace NLMISC {
 
 CBufFIFO::CBufFIFO() : _Buffer(NULL), _BufferSize(0), _Head(NULL), _Tail(NULL), _Empty(true), _Rewinder(NULL)
 {
+	// reset statistic
 	_BiggestBlock = 0;
 	_SmallestBlock = 999999999;
 	_BiggestBuffer = 0;
@@ -65,7 +66,8 @@ CBufFIFO::~CBufFIFO()
 
 void CBufFIFO::push(const std::vector<uint8> &buffer)
 {
-	nlassert( buffer.size() < 0x10000 ); // size check in debug mode
+	// if the buffer is more than 1 meg, there s surely a problem, no?
+	nlassert( buffer.size() < 1000000 ); // size check in debug mode
 
 	TTicks before = CTime::getPerformanceTime();
 

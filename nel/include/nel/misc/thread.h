@@ -1,7 +1,7 @@
 /** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.19 2003/05/09 12:46:08 corvazier Exp $
+ * $Id: thread.h,v 1.20 2004/09/14 13:14:58 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,10 +105,10 @@ public:
 	// Starts the thread.
 	virtual void start()=0;
 
-	// Terminate the thread. (use with caution under win98)
+	// Terminate the thread (risky method, use only in extreme cases)
 	virtual void terminate()=0;
 
-	// In the calling program, wait until the specified thread has exited (use with caution under win98)
+	// In the calling program, wait until the specified thread has exited. After wait() has returned, you can delete the thread object.
 	virtual void wait()=0;
 
 	/// Return a pointer to the runnable object

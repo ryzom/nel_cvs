@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.16 2001/07/24 09:00:32 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.17 2001/07/25 13:17:31 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -730,8 +730,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 							nt->PS->setFontGenerator(_ParticleDlg->FontGenerator) ;
 
 							
-							buildTreeFromPS(nt->PS, nt->PSModel) ;
-							rebuildLocatedInstance() ;
+							buildTreeFromPS(nt->PS, nt->PSModel) ;							
 																
 						}
 						else

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.36 2001/05/01 16:45:52 cado Exp $
+ * $Id: debug.cpp,v 1.37 2001/05/02 10:32:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -145,34 +145,9 @@ void createDebug ()
 		mbd = new CMsgBoxDisplayer;
 		fd = new CFileDisplayer ("log.log", true);
 		
-		MutexNLDebug = new CMutex;
-
 		initDebug2();
 
 		alreadyCreate = true;
-	}
-}
-
-void initDebug (bool setDisplayerInReleaseModeToo)
-{
-	// deprecated!!!
-	// you don't need to call initDebug anymore
-	nlstop;
-}
-
-CMutex *MutexNLDebug = NULL;
-
-
-void nlMtDebug( const char *format, ... )
-{
-	createDebug ();
-
-	if ( ! DebugLog->noDisplayer() )
-	{
-		char *str;
-		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
-		DebugLog->displayNL (str);
-		MutexNLDebug->leave();
 	}
 }
 

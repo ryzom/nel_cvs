@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.24 2001/03/07 14:56:23 cado Exp $
+ * $Id: log.cpp,v 1.25 2001/05/02 10:32:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,9 +62,26 @@ void CLog::setProcessName (const std::string &processName)
 
 void CLog::setPosition (sint line, char *filename)
 {
-    _Line = line;
-	_FileName = filename;
+	if ( ! DebugLog->noDisplayer() )
+	{
+		_Mutex.enter();
+
+	    _Line = line;
+		_FileName = filename;
+	}
 }
+
+/// Symetric to setPosition(). Automatically called by display...(). Do not call if noDisplayer().
+void CLog::unsetPosition()
+{
+	nlassert( !noDisplayer() );
+
+	_Line = -1;
+	_FileName = NULL;
+
+	_Mutex.leave(); // needs setPosition() to have been called
+}
+
 
 void CLog::addDisplayer (IDisplayer *displayer)
 {
@@ -119,6 +136,11 @@ bool CLog::attached(IDisplayer *displayer) const
  */
 void CLog::displayNL (const char *format, ...)
 {
+	if ( noDisplayer() )
+	{
+		return;
+	}
+	
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
@@ -135,19 +157,29 @@ void CLog::displayNL (const char *format, ...)
  */
 void CLog::display (const char *format, ...)
 {
+	if ( noDisplayer() )
+	{
+		return;
+	}
+
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
-	time_t date;
-	time (&date);
+	TDisplayInfo args;
+	time (&args.Date);
+	args.LogType = _LogType;
+	args.ProcessName = _ProcessName;
+	args.ThreadId = getThreadId();
+	args.Filename = _FileName;
+	args.Line = _Line;
 
 	// Send to the attached displayers
 	for (CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
 	{
-		(*idi)->display (date, _LogType, _ProcessName, _FileName, _Line, str);
+		(*idi)->display( args, str );
 	}
 
-	setPosition (-1, NULL);	
+	unsetPosition();
 
 /*
 	char cstime[25];
@@ -185,6 +217,11 @@ void CLog::display (const char *format, ...)
  */
 void CLog::displayRawNL( const char *format, ... )
 {
+	if ( noDisplayer() )
+	{
+		return;
+	}
+
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
@@ -201,14 +238,29 @@ void CLog::displayRawNL( const char *format, ... )
  */
 void CLog::displayRaw( const char *format, ... )
 {
+	if ( noDisplayer() )
+	{
+		return;
+	}
+
 	char *str;
 	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	TDisplayInfo args;
+	args.Date = 0;
+	args.LogType = LOG_NO;
+	args.ProcessName = "";
+	args.ThreadId = 0;
+	args.Filename = NULL;
+	args.Line = -1;
 
 	// Send to the attached displayers
 	for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
 	{
-		(*idi)->display (0, LOG_NO, "", NULL, -1, str);
+		(*idi)->display( args, str );
 	}
+
+	unsetPosition();
 }
 
 

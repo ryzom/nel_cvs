@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.13 2001/04/11 10:37:19 lecroart Exp $
+ * $Id: displayer.cpp,v 1.14 2001/05/02 10:32:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,12 +107,12 @@ IDisplayer::~IDisplayer()
 /*
  * Display the string where it does.
  */
-void IDisplayer::display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message)
+void IDisplayer::display ( const TDisplayInfo& args, const char *message )
 {
 	_Mutex->enter();
 	try
 	{
-		doDisplay( date, logType, processName, fileName, line, message );
+		doDisplay( args, message );
 	}
 	catch (Exception &)
 	{
@@ -123,31 +123,34 @@ void IDisplayer::display (time_t date, CLog::TLogType logType, const std::string
 
 
 // Log format : "<LogType> <FileName> <Line>: <Msg>"
-void CStdDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string &processName, const char *filename, sint line, const char *message)
+void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 {
 	bool needSpace = false;
 	stringstream ss;
 
-	if (logType != CLog::LOG_NO)
+	if (args.LogType != CLog::LOG_NO)
 	{
-		ss << logTypeToString(logType);
+		ss << logTypeToString(args.LogType);
 		needSpace = true;
 	}
 
 	// Write thread identifier
-	ss << setw(5) << getThreadId();
+	if ( args.ThreadId != 0 )
+	{
+		ss << setw(5) << args.ThreadId;
+	}
 
-	if (filename != NULL)
+	if (args.Filename != NULL)
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
-		ss << CFile::getFilename(filename);
+		ss << CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
-	if (line != -1)
+	if (args.Line != -1)
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
-		ss << line;
+		ss << args.Line;
 		needSpace = true;
 	}
 	
@@ -167,24 +170,27 @@ void CStdDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string
 		stringstream ss2;
 		needSpace = false;
 
-		if (filename != NULL) ss2 << filename;
+		if (args.Filename != NULL) ss2 << args.Filename;
 
-		if (line != -1)
+		if (args.Line != -1)
 		{
-			ss2 << '(' << line << ')';
+			ss2 << '(' << args.Line << ')';
 			needSpace = true;
 		}
 
 		if (needSpace) { ss2 << " : "; needSpace = false; }
 
-		if (logType != CLog::LOG_NO)
+		if (args.LogType != CLog::LOG_NO)
 		{
-			ss2 << logTypeToString(logType);
+			ss2 << logTypeToString(args.LogType);
 			needSpace = true;
 		}
 
 		// Write thread identifier
-		ss2 << setw(5) << getThreadId() << ": ";
+		if ( args.ThreadId != 0 )
+		{
+			ss2 << setw(5) << args.ThreadId << ": ";
+		}
 
 		ss2 << message;
 
@@ -207,23 +213,23 @@ CFileDisplayer::CFileDisplayer(const std::string& filename, bool eraseLastLog) :
 
 
 // Log format: "2000/01/15 12:05:30 <LogType>: <Msg>"
-void CFileDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string &processName, const char *filename, sint line, const char *message)
+void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 {
 	bool needSpace = false;
 	stringstream ss;
 
 	if (_FileName.empty()) return;
 
-	if (date != 0)
+	if (args.Date != 0)
 	{
-		ss << dateToHumanString(date);
+		ss << dateToHumanString(args.Date);
 		needSpace = true;
 	}
 
-	if (logType != CLog::LOG_NO)
+	if (args.LogType != CLog::LOG_NO)
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
-		ss << logTypeToString(logType);
+		ss << logTypeToString(args.LogType);
 		needSpace = true;
 	}
 
@@ -250,7 +256,7 @@ void CFileDisplayer::doDisplay (time_t date, CLog::TLogType logType, const strin
 // Log format in clipboard: "2000/01/15 12:05:30 <LogType> <ProcessName> <FileName> <Line>: <Msg>"
 // Log format on the screen: in debug   "<ProcessName> <FileName> <Line>: <Msg>"
 //                           in release "<Msg>"
-void CMsgBoxDisplayer::doDisplay (time_t date, CLog::TLogType logType, const string &processName, const char *filename, sint line, const char *message)
+void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message)
 {
 #ifdef NL_OS_WINDOWS
 
@@ -259,37 +265,37 @@ void CMsgBoxDisplayer::doDisplay (time_t date, CLog::TLogType logType, const str
 
 	// create the string for the clipboard
 
-	if (date != 0)
+	if (args.Date != 0)
 	{
-		ss << dateToHumanString(date);
+		ss << dateToHumanString(args.Date);
 		needSpace = true;
 	}
 
-	if (logType != CLog::LOG_NO)
+	if (args.LogType != CLog::LOG_NO)
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
-		ss << logTypeToString(logType);
+		ss << logTypeToString(args.LogType);
 		needSpace = true;
 	}
 
-	if (!processName.empty())
+	if (!args.ProcessName.empty())
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
-		ss << processName;
+		ss << args.ProcessName;
 		needSpace = true;
 	}
 	
-	if (filename != NULL)
+	if (args.Filename != NULL)
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
-		ss << CFile::getFilename(filename);
+		ss << CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
-	if (line != -1)
+	if (args.Line != -1)
 	{
 		if (needSpace) { ss << " "; needSpace = false; }
-		ss << line;
+		ss << args.Line;
 		needSpace = true;
 	}
 
@@ -316,24 +322,24 @@ void CMsgBoxDisplayer::doDisplay (time_t date, CLog::TLogType logType, const str
 	stringstream ss2;
 
 #ifdef NL_DEBUG
-	if (!processName.empty())
+	if (!args.ProcessName.empty())
 	{
 		if (needSpace) { ss2 << " "; needSpace = false; }
-		ss2 << processName;
+		ss2 << args.ProcessName;
 		needSpace = true;
 	}
 	
-	if (filename != NULL)
+	if (args.Filename != NULL)
 	{
 		if (needSpace) { ss2 << " "; needSpace = false; }
-		ss2 << CFile::getFilename(filename);
+		ss2 << CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
-	if (line != -1)
+	if (args.Line != -1)
 	{
 		if (needSpace) { ss2 << " "; needSpace = false; }
-		ss2 << line;
+		ss2 << args.Line;
 		needSpace = true;
 	}
 
@@ -342,7 +348,7 @@ void CMsgBoxDisplayer::doDisplay (time_t date, CLog::TLogType logType, const str
 
 	ss2 << message;
 	ss2 << endl << endl << "(this message was copied in the clipboard)";
-	MessageBox (NULL, ss2.str().c_str (), logTypeToString(logType, true), MB_OK | MB_ICONEXCLAMATION);
+	MessageBox (NULL, ss2.str().c_str (), logTypeToString(args.LogType, true), MB_OK | MB_ICONEXCLAMATION);
 
 #endif
 }
@@ -413,4 +419,4 @@ void CMsgBoxDisplayer::display (const std::string& str)
 */
 
 
-} // MKMISC
+} // NLMISC

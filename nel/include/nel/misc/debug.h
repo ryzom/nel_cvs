@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.30 2001/05/01 16:45:52 cado Exp $
+ * $Id: debug.h,v 1.31 2001/05/02 10:32:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,12 +52,6 @@ void nlFatalError (const char *format, ...);
 /// Never use this function but call the nlerror macro (internal use only)
 void nlError (const char *format, ...);
 
-/* Add standard displayer in all log in debug mode
- * If you want the function also adds displayers in release
- * mode too, just put true in the first parameter.
- */
-void initDebug (bool setDisplayerInReleaseModeToo = false);
-
 // internal use only
 void createDebug ();
 
@@ -77,27 +71,10 @@ void createDebug ();
 	}
  *\endcode
  */
-//#ifdef NL_DEBUG
-//#define nldebug NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
-//#else
-//#define nldebug //
-//#endif
-
-extern CMutex *MutexNLDebug;
-void nlMtDebug( const char *format, ... );
-
-
-inline void EnterMutexNLDebug()
-{
-	if ( ! DebugLog->noDisplayer() )
-	{
-		MutexNLDebug->enter();
-	}
-}
 
 
 #define nldebug \
-NLMISC::createDebug (), NLMISC::EnterMutexNLDebug(), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlMtDebug
+NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
 
 
 /**

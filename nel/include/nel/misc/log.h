@@ -1,7 +1,7 @@
 /** \file log.h
  * CLog class
  *
- * $Id: log.h,v 1.17 2001/05/01 16:45:52 cado Exp $
+ * $Id: log.h,v 1.18 2001/05/02 10:32:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_LOG_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/mutex.h"
 
 #include <string>
 #include <vector>
@@ -40,6 +41,8 @@ class IDisplayer;
 
 /**
  * When display() is called, the logger builds a string a sends it to its attached displayers.
+ * See the nldebug/nlinfo... macros in debug.h.
+ *
  * \ref log_howto
  * \todo cado display() and displayRaw() should save the string and send it only when displayRawNL()
  * (or a flush()-style method) is called.
@@ -68,25 +71,28 @@ public:
 	/// Set the name of the process
 	static void setProcessName (const std::string &processName);
 
-	/// Sets line and file parameters
+	/// If !noDisplayer(), sets line and file parameters, and enters the mutex. If !noDisplayer(), don't forget to call display...() after, to release the mutex.
 	void setPosition (sint line, char *fileName);
 
-	/// Display a string in decorated and final new line form to all attached displayers. Call setPosition before.
+	/// Display a string in decorated and final new line form to all attached displayers. Call setPosition() before. Releases the mutex.
 	void displayNL (const char *format, ...);
 
-	/// Display a string in decorated form to all attached displayers. Call setPosition before.
+	/// Display a string in decorated form to all attached displayers. Call setPosition() before. Releases the mutex.
 	void display (const char *format, ...);
 
-	/// Display a string with a final new line to all attached displayers
+	/// Display a string with a final new line to all attached displayers. Call setPosition() before. Releases the mutex.
 	void displayRawNL (const char *format, ...);
 
-	/// Display a string (and nothing more) to all attached displayers
+	/// Display a string (and nothing more) to all attached displayers. Call setPosition() before. Releases the mutex.
 	void displayRaw (const char *format, ...);
 
 	/// Returns true if no displayer is attached
 	bool noDisplayer() const { return _Displayers.empty(); }
 
 protected:
+
+	/// Symetric to setPosition(). Automatically called by display...(). Do not call if noDisplayer().
+	void unsetPosition();
 
 	TLogType                          _LogType;
 	static std::string		          _ProcessName;
@@ -97,6 +103,8 @@ protected:
 	typedef std::vector<IDisplayer *> CDisplayers;
 
 	CDisplayers                       _Displayers;
+
+	CMutex							  _Mutex;
 };
 
 

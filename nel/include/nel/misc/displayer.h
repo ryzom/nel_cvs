@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Little easy displayers implementation
  *
- * $Id: displayer.h,v 1.7 2001/03/07 14:53:50 cado Exp $
+ * $Id: displayer.h,v 1.8 2001/05/02 10:32:46 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,21 @@
 namespace NLMISC
 {
 
+
+// Debug information
+struct TDisplayInfo
+{
+	TDisplayInfo() {}
+	
+	time_t				Date;
+	CLog::TLogType		LogType;
+	std::string			ProcessName;
+	uint				ThreadId;
+	const char			*Filename;
+	sint				Line;
+};
+
+
 class CMutex;
 
 
@@ -54,13 +69,15 @@ public:
 	virtual ~IDisplayer();
 
 	/// Display the string where it does.
-	void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
+	void display( const TDisplayInfo& args, const char *message );
 
 protected:
 
 	/// Method to implement in the deriver
-	virtual void doDisplay(time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message) = 0;
+	virtual void doDisplay( const TDisplayInfo& args, const char *message) = 0;
 
+	
+	/// Convert log type to string
 	static const char *logTypeToString (CLog::TLogType logType, bool longFormat = false);
 
 	/// Convert the current date to human string
@@ -94,7 +111,7 @@ class CStdDisplayer : virtual public IDisplayer
 protected:
 
 	/// Display the string to stdout and OutputDebugString on Windows
-	virtual void doDisplay (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
+	virtual void doDisplay ( const TDisplayInfo& args, const char *message );
 };
 
 
@@ -114,7 +131,7 @@ public:
 
 protected:
 	/// Put the string into the file.
-    virtual void doDisplay (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
+    virtual void doDisplay ( const TDisplayInfo& args, const char *message );
 
 private:
 	std::string _FileName;
@@ -138,7 +155,7 @@ public:
 
 protected:
 	/// Put the string into the file.
-    virtual void doDisplay (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
+    virtual void doDisplay ( const TDisplayInfo& args, const char *message );
 };
 
 

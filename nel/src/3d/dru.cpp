@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.16 2000/12/18 14:07:03 lecroart Exp $
+ * $Id: dru.cpp,v 1.17 2000/12/18 15:30:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,10 +35,6 @@
 #else // NL_OS_WINDOWS
 
 #include <dlfcn.h>
-#include <sys/fcntl.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <iso/stdlib_iso.h> /* EXIT_* */
 
 #endif // NL_OS_WINDOWS
 

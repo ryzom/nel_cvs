@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.22 2000/12/18 15:23:08 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.23 2000/12/18 15:30:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #ifdef NL_OS_WINDOWS
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#else
+#include <GL/glx.h>
 #endif // NL_OS_WINDOWS
 
 #include <GL/gl.h>
@@ -100,6 +102,10 @@ private:
 	static uint				_Registered;
 	DEVMODE					_OldScreenMode;
 	bool					_FullScreen;
+#else
+	Display *dpy;
+	GLXContext ctx;
+	Window win;
 #endif // NL_OS_WINDOWS
 
 	bool					setupVertexBuffer(CVertexBuffer& VB);

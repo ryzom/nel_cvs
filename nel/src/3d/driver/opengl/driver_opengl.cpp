@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.33 2000/12/18 15:23:08 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.34 2000/12/18 15:30:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,12 +243,20 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 
 #else // NL_OS_WINDOWS
 
-	Display *dpy;
-	GLXContext ctx;
-	Window win;
-
 	dpy = XOpenDisplay(NULL);
 	nlassert (dpy != NULL);
+
+	static int gl_attribs[20];
+	memset(&gl_attribs, 0, 20*sizeof(int));
+
+	int i = 0;
+	gl_attribs[i++] = GLX_BUFFER_SIZE;
+	gl_attribs[i++] = 16;
+	gl_attribs[i++] = GLX_DOUBLEBUFFER;
+	gl_attribs[i++] = GLX_RGBA;
+	gl_attribs[i++] = GLX_DEPTH_SIZE;
+	gl_attribs[i++] = 16;
+	//	gl_attribs[i++] = ;
 
 	XVisualInfo *visual_info = glXChooseVisual (dpy, DefaultScreen(dpy), gl_attribs);
 
@@ -280,6 +288,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode)
 	size_hints.min_height = mode.Height;
 	size_hints.max_width = mode.Width;
 	size_hints.max_height = mode.Height;
+
+	XTextProperty text_property;
+	char *title="NeL window";
+	XStringListToTextProperty(&title, 1, &text_property);
 
 	XSetWMProperties (dpy, win, &text_property, &text_property,  0, 0, &size_hints, 0, 0);
 	glXMakeCurrent (dpy, win, ctx);
@@ -417,7 +429,7 @@ bool CDriverGL::swapBuffers()
 #ifdef NL_OS_WINDOWS
 	return SwapBuffers(_hDC) == TRUE;
 #else // NL_OS_WINDOWS
-	glXSwapBuffers(get_display(), get_window());
+	glXSwapBuffers(dpy, win);
 	return true;
 #endif // NL_OS_WINDOWS
 }

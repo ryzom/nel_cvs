@@ -1,7 +1,7 @@
 /** \file patchuv_locator.cpp
  * <File description>
  *
- * $Id: patchuv_locator.cpp,v 1.2 2001/07/26 15:10:49 berenguier Exp $
+ * $Id: patchuv_locator.cpp,v 1.3 2001/07/27 13:22:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ void	CPatchUVLocator::build(const CPatch *patchCenter, sint edgeCenter, CPatch::
 {
 	nlassert(bindInfo.Zone);
 	// copy basic. NB: NPatchs==0 means patchCenter is binded on a 1/X patch.
-	_CenterPatch= patchCenter;
+	_CenterPatch= const_cast<CPatch*>(patchCenter);
 	_CenterPatchEdge= edgeCenter;
 	_NPatchs= bindInfo.NPatchs;
 
@@ -196,7 +196,7 @@ uint	CPatchUVLocator::selectPatch(const CVector2f &uvIn)
 
 
 // ***************************************************************************
-void	CPatchUVLocator::locateUV(const CVector2f &uvIn, uint patch, const CPatch *&patchOut, CVector2f &uvOut)
+void	CPatchUVLocator::locateUV(const CVector2f &uvIn, uint patch, CPatch *&patchOut, CVector2f &uvOut)
 {
 	if(_NPatchs==1)
 	{

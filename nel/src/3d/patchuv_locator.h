@@ -1,7 +1,7 @@
 /** \file patchuv_locator.h
  * <File description>
  *
- * $Id: patchuv_locator.h,v 1.2 2001/07/26 15:10:49 berenguier Exp $
+ * $Id: patchuv_locator.h,v 1.3 2001/07/27 13:22:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,7 @@ public:
 
 	// for an uv given in src patch basis, and the number of patch we want (for bind 1/X, see selectPatch),
 	// find the neighbor UV, and the neighbor patch.
-	void	locateUV(const CVector2f &uvIn, uint patch, const CPatch *&patchOut, CVector2f &uvOut);
+	void	locateUV(const CVector2f &uvIn, uint patch, CPatch *&patchOut, CVector2f &uvOut);
 
 
 	/** return true only if the 2 edges have same number of tiles.
@@ -79,10 +79,10 @@ private:
 	};
 
 private:
-	const CPatch		*_CenterPatch;
+	CPatch				*_CenterPatch;
 	sint				_CenterPatchEdge;
 	sint				_NPatchs;
-	const CPatch		*_NeighborPatch[4];
+	CPatch				*_NeighborPatch[4];
 	CUVBasis			_NeighborBasis[4];
 	bool				_SameEdgeOrder;
 

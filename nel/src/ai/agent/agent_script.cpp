@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.135 2002/09/30 13:13:53 chafik Exp $
+ * $Id: agent_script.cpp,v 1.136 2002/11/07 09:19:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -718,10 +718,12 @@ namespace NLAIAGENT
 	{
 		std::set<std::string>::iterator it = mapSet.find(s);
 		if(it != mapSet.end()) return true;
-		/*else
-		if(isClassInheritedFrom(CStringVarName(s.c_str())) >= 0) return true;*/
 		else
-		if(s == (const char *) getType()) return true;
+		if(isClassInheritedFrom(CStringVarName(s.c_str())) >= 0) 
+			return true;
+		else
+			if(s == (const char *) getType()) 
+				return true;
 		
 		return false;
 	}

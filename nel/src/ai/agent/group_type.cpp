@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.29 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: group_type.cpp,v 1.30 2002/11/07 09:19:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -887,10 +887,10 @@ namespace NLAIAGENT
 		while(i != _Vector.end())
 		{
 			const IObjectIA *o = *i++;
-			if( *o == obj) l.push_back();
+			if( *o == obj) 
+				l.push_back( o );
 		}
 		return l;
-
 	}
 
 	const IObjectIA *CVectorGroupType::operator[] (sint32 index) const

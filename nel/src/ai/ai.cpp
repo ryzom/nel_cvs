@@ -66,8 +66,8 @@ namespace NLAILINK
 		CAgentOperation::releaseClass();
 
 		staticReleaseLibClass();
-
 	}
+
 
 	void setLocalServerID(uint8 u)
 	{

@@ -26,7 +26,7 @@
 #include "nel/ai/logic/fsm_seq_script.h"
 #include "nel/ai/agent/performative.h"
 #include "nel/ai/agent/object_ident.h"
-#include "nel/ai/agent/goal_stack.h"
+#include "nel/ai/logic/goal_stack.h"
 
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/agent/msg_notify.h"

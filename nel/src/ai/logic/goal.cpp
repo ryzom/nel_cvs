@@ -107,6 +107,7 @@ namespace NLAILOGIC
 
 	void IGoal::success()
 	{
+
 		if ( _Sender != NULL )
 		{
 			NLAIAGENT::IMessageBase *msg = new NLAIAGENT::CSuccessMsg((NLAIAGENT::IBasicAgent *)NULL);

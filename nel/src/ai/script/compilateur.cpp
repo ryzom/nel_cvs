@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.21 2002/11/05 14:07:50 chafik Exp $
+ * $Id: compilateur.cpp,v 1.22 2002/11/07 09:19:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,23 +61,31 @@ namespace NLAISCRIPT
 #ifdef NL_DEBUG
 		const char *nameDB = className.getString();
 #endif
-		try
+
+		NLAIC::CRegistry *reg = NLAIC::getRegistry();
+		if ( reg->existsClass( className.getString() ) )
 		{				
 			NLAIC::CIdentType id(className.getString());
 			return id;
 		}
-		catch (NLAIE::IException &err)
-		{				
+		else
+		{
 			IClassInterpret *cl= _SelfClass.find(&className);								
 			if(cl == NULL) 
 			{
-				throw CExceptionHaveNoType(err.what());
+				throw CExceptionHaveNoType("Can't find class");
 			}
 			else
 			{
 				return getTypeOfClass(*cl->getInheritanceName());
 			}				
 		}
+		
+/*
+		try
+		catch (NLAIE::IException &err)
+		{				
+		}*/
 	}
 
 	void CCompilateur::Echo(char *Er,...)

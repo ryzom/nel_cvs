@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: goal_path.cpp,v 1.2 2002/11/04 15:40:43 boucher Exp $
+ * $Id: goal_path.cpp,v 1.3 2002/11/07 09:19:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,6 @@ namespace NLAILOGIC
 			msg->setSender( this );
 			msg->setReceiver( _Father);
 			_Father->sendMessage(msg);
-
 		}
 		else
 		{
@@ -149,7 +148,6 @@ namespace NLAILOGIC
 		{
 			case 0:
 				{					
-
 #ifdef NL_DEBUG
 					//const char *dbg_name = name->getStr().getString();
 #endif
@@ -161,16 +159,13 @@ namespace NLAILOGIC
 						_Goals.push_back( (NLAILOGIC::CGoal *) param->getFront()->clone() );
 						param->popFront();
 					}
+					_CurrentState = 0;
 					return IObjectIA::CProcessResult();
 				} 
 				break;
 
 			case 1:
 				{					
-
-#ifdef NL_DEBUG
-					//const char *dbg_name = name->getStr().getString();
-#endif
 					// If the constructor() function is explicitely called and the object has already been initialised
 					while ( param->size() )
 					{

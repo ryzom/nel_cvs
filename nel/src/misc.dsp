@@ -471,6 +471,14 @@ SOURCE=..\include\nel\misc\common.h
 # End Source File
 # Begin Source File
 
+SOURCE=R:\code\nel\src\misc\cpu_info.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\include\nel\misc\cpu_info.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\debug.cpp
 # End Source File
 # Begin Source File

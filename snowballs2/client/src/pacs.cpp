@@ -1,7 +1,7 @@
 /** \file pacs.cpp
  * pacs management
  *
- * $Id: pacs.cpp,v 1.7 2001/07/27 09:07:31 lecroart Exp $
+ * $Id: pacs.cpp,v 1.8 2001/08/14 13:45:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,7 +106,7 @@ void	initPACS()
 			primitive->setObstacle(true);
 
 			// setup the radius of each mesh in the instance group
-			string	name = InstanceGroups[j]->getInstanceName(i);
+			string	name = InstanceGroups[j]->getShapeName(i);
 			float rad;
 
 			     if (strlwr(name) == "pi_po_igloo_a")		rad = 4.5f;
@@ -118,7 +118,7 @@ void	initPACS()
 			else
 			{
 				rad = 2.0f;
-				nlwarning ("Instance name %s doesn't have a good radius for collision", name.c_str());
+				nlwarning ("Instance name '%s' doesn't have a good radius for collision", name.c_str());
 			}
 
 			primitive->setRadius(rad);

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.21 2001/07/17 15:53:07 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.22 2001/07/18 09:07:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -597,7 +597,7 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 					{
 						deleteElement(0) ;
 					}
-					while ( --_Size !=maxToHave) ;				
+					while (_Size !=maxToHave) ;				
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.23 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.24 2001/12/31 15:56:22 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "stdopengl.h"
 
 #include "driver_opengl_extension.h"
+#include "3d/material.h"
 
 
 
@@ -583,7 +584,9 @@ void	registerGlExtensions(CGlExtensions &ext)
 	if(ext.ARBMultiTexture)
 	{
 		glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &ntext);
-		ext.NbTextureStages= ntext;
+		// We could have more than IDRV_MAT_MAXTEXTURES but the interface only 
+		// support IDRV_MAT_MAXTEXTURES texture stages so take min
+		ext.NbTextureStages= (ntext<IDRV_MAT_MAXTEXTURES?ntext:IDRV_MAT_MAXTEXTURES);
 	}
 
 	// Check EXTTextureEnvCombine

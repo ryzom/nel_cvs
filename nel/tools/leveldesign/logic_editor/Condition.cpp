@@ -230,7 +230,7 @@ void CCondition::conditionDeleted( CString name)
 
 
 //-----------------------------------------------------
-//	cConditionNodeToCLogicConditionNode
+//	cConditionNodeToCLogicConditionNode (Editor --> Service)
 //
 //-----------------------------------------------------
 void cConditionNodeToCLogicConditionNode(CConditionNode& conditionNode, CLogicConditionNode& logicConditionNode )
@@ -292,7 +292,7 @@ void cConditionNodeToCLogicConditionNode(CConditionNode& conditionNode, CLogicCo
 
 
 //-----------------------------------------------------
-//	cConditionToCLogicCondition
+//	cConditionToCLogicCondition (Editor --> Service)
 //
 //-----------------------------------------------------
 void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicCondition )
@@ -304,9 +304,14 @@ void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicC
 	POSITION pos;
 	for( pos = condition.m_ctConditionTree.GetHeadPosition(); pos != NULL; )
 	{
+		// get the node
 		CConditionNode * pConditionNode = condition.m_ctConditionTree.GetNext( pos );
+		
+		// convert the node
 		CLogicConditionNode logicConditionNode;
 		cConditionNodeToCLogicConditionNode( *pConditionNode,logicConditionNode );
+
+		// add the node
 		logicCondition.addNode( logicConditionNode );
 	}
 
@@ -320,7 +325,7 @@ void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicC
 
 
 //-----------------------------------------------
-//	cLogicConditionToCCondition // TODO : use a recursive function
+//	cLogicConditionToCCondition // TODO : use a recursive function (Service --> Editor)
 //
 //-----------------------------------------------
 void cLogicConditionToCCondition( CLogicCondition& logicCondition, CCondition& condition )
@@ -375,7 +380,7 @@ void cLogicConditionToCCondition( CLogicCondition& logicCondition, CCondition& c
 				// TEMP : other case are not managed yet, the node is set to termiator
 				default :
 				{
-					node->m_type = CConditionNode::TERMINATOR;
+					node->m_type = CConditionNode::TERMINATOR; //TEMP
 				}
 
 			}
@@ -390,3 +395,5 @@ void cLogicConditionToCCondition( CLogicCondition& logicCondition, CCondition& c
 	}
 
 } // cLogicConditionToCCondition //
+
+

@@ -1,6 +1,6 @@
 /** \file logic_editor_interface.cpp
  *
- * $Id: logic_editor_interface.h,v 1.2 2001/12/04 10:55:35 coutelas Exp $
+ * $Id: logic_editor_interface.h,v 1.3 2001/12/07 14:56:42 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,9 @@ public:
 
 	// load a logic file
 	virtual void loadFile( const char * fileName ) = 0;
+
+	// create a default file
+	virtual void createDefaultFile( const char * filename = "logic.logic ") = 0;
 	
 	// Get instance
 	static LOGIC_EDITOR_EXPORT ILogicEditor * getInterface( int version = LOGIC_EDITOR_VERSION );

@@ -91,6 +91,12 @@ public:
 	virtual void loadFile( const char * fileName );
 
 	/**
+	 * create a default file
+	 */
+	virtual void createDefaultFile( const char * filename = "logic.logic ");
+	
+
+	/**
 	 *	Release the UI
 	 */
 	void releaseUI ();

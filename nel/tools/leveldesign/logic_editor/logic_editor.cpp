@@ -334,6 +334,22 @@ void CLogicEditor::loadFile( const char * fileName )
 
 
 //---------------------------------------------
+//	create a default file
+//
+//---------------------------------------------
+void CLogicEditor::createDefaultFile( const char * fileName )
+{
+	// create an empty doc
+	CLogic_editorDoc * pDoc = CLogic_editorDoc::getNewDoc();
+
+	// save the doc
+	pDoc->OnSaveDocument( fileName );
+
+} // createDefaultFile //
+
+
+
+//---------------------------------------------
 //	getMainFrame
 //
 //---------------------------------------------

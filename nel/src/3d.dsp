@@ -989,6 +989,66 @@ SOURCE=.\3d\Makefile.am
 # Begin Group "sfx"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\particle_system.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\particle_system.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_attrib.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_emitter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_emitter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_force.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_force.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_located.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_located.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_particle.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_particle.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_util.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_util.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_zone.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_zone.h
+# End Source File
 # End Group
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.8 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: polygon.cpp,v 1.9 2002/01/28 14:19:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 #include "nel/misc/polygon.h"
 #include "nel/misc/plane.h"
+#include "nel/misc/triangle.h"
+
 
 using namespace std;
 using namespace NLMISC;
@@ -106,7 +108,7 @@ void CPolygon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 
-CPolygon2D::CPolygon2D(const CPolygon &src, CMatrix &projMat)
+CPolygon2D::CPolygon2D(const CPolygon &src, const CMatrix &projMat)
 {
 	uint size = src.Vertices.size();
 	Vertices.resize(size);
@@ -321,9 +323,9 @@ void		CPolygon2D::getBestTriplet(uint &index0, uint &index1, uint &index2)
 	}
 }
 
+
 /// ***************************************************************************************
 // scan a an edge of a poly and write it into a table
-
 static void ScanEdge(CPolygon2D::TRasterVect &outputVect, sint topY, const CVector2f &v1, const CVector2f &v2, bool rightEdge = true)
 {
 	 const uint rol16 = 65536;
@@ -376,6 +378,7 @@ static void ScanEdge(CPolygon2D::TRasterVect &outputVect, sint topY, const CVect
 }
 
 
+// *******************************************************************************
 // This function alow to cycle forward through a vertex vector like if it was a circular list
 static inline CPolygon2D::TVec2fVect::const_iterator Next(const CPolygon2D::TVec2fVect::const_iterator &it, const CPolygon2D::TVec2fVect &cont)
 {
@@ -385,6 +388,7 @@ static inline CPolygon2D::TVec2fVect::const_iterator Next(const CPolygon2D::TVec
 }
 
 
+// *******************************************************************************
 // This function alow to cycle backward through a (non null) vertex vector like if it was a circular list
 static inline CPolygon2D::TVec2fVect::const_iterator Prev(const CPolygon2D::TVec2fVect::const_iterator &it, const CPolygon2D::TVec2fVect &cont)
 {
@@ -393,10 +397,7 @@ static inline CPolygon2D::TVec2fVect::const_iterator Prev(const CPolygon2D::TVec
 	return (it - 1);
 }
 
-
-
 // *******************************************************************************
-
 void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 {
 	// an 'alias' to the vertices
@@ -559,8 +560,146 @@ void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 	}
 }
 
+// *******************************************************************************
+/// Sum the dot product of this poly vertices against a plane
+float		CPolygon2D::sumDPAgainstLine(float a, float b, float c) const
+{
+	float sum = 0.f;
+	for (uint k = 0; k < Vertices.size(); ++k)
+	{
+		const CVector2f &p = Vertices[k];
+		sum += a * p.x + b * p.y + c;
+	}
+	return sum;
+}
 
 
+// *******************************************************************************	
+bool  CPolygon2D::getNonNullSeg(uint &index) const
+{
+	nlassert(Vertices.size() > 0);
+	float bestLength = 0.f;
+	sint  bestIndex = -1;
+	for (uint k = 0; k < Vertices.size() - 1; ++k)
+	{
+		float norm2 = (Vertices[k + 1] - Vertices[k]).sqrnorm();
+		if ( norm2 > bestLength)
+		{
+			bestLength = norm2;
+			bestIndex = (int) k;
+		}
+	}
+	float norm2 = (Vertices[Vertices.size() - 1] - Vertices[0]).sqrnorm();
+	if ( norm2 > bestLength) 
+	{ 
+		bestIndex = Vertices.size() - 1;
+		return true;
+	}
 
+	if (bestIndex != -1)
+	{
+		index = bestIndex;
+		return true;
+	}
+	else
+	{
+		return false;
+	}	
+}
+
+
+// *******************************************************************************	
+void  CPolygon2D::getLineEquation(uint index, float &a, float &b, float &c) const
+{
+	nlassert(index < Vertices.size());
+	const CVector2f &v0 = getSegRef0(index);
+	const CVector2f &v1 = getSegRef1(index);
+	
+	NLMISC::CVector2f seg = v0 - v1;
+	a = seg.y;
+	b = - seg.x;
+	c = - v0.x * a - v0.y * b;
+}
+
+// *******************************************************************************
+bool        CPolygon2D::intersect(const CPolygon2D &other) const
+{
+	nlassert(other.Vertices.size() > 0);
+	uint nonNullSegIndex;
+	/// get the orientation of this poly
+	if (getNonNullSeg(nonNullSegIndex))
+	{
+		float a0, b0, c0; /// contains the seg 2d equation
+		getLineEquation(nonNullSegIndex, a0, b0, c0);
+		float orient = sumDPAgainstLine(a0, b0, c0);
+
+		for (uint k = 0; k < Vertices.size(); ++k)
+		{
+			/// don't check against a null segment
+		    if ( (getSegRef0(k) - getSegRef1(k)).sqrnorm() == 0.f) continue;
+
+			/// get the line equation of the current segment
+			float a, b, c; /// contains the seg 2d equation
+			getLineEquation(k, a, b, c);			
+			for (uint l = 0; l < other.Vertices.size(); ++l)
+			{
+				const CVector2f &ov = other.Vertices[l];
+				if ( orient * (ov.x * a + ov.y * b +c) > 0.f) break;
+			}
+			if (l == other.Vertices.size()) // all point on the outside
+			{
+				return false; // outside
+			}
+		}
+		return true;
+	}
+	else // this poly is just a point
+	{
+		return other.contains(Vertices[0]);
+	}
+}
+
+// *******************************************************************************
+bool		CPolygon2D::contains(const CVector2f &p) const
+{
+	nlassert(Vertices.size() > 0);
+	uint nonNullSegIndex;
+	/// get the orientation of this poly
+	if (getNonNullSeg(nonNullSegIndex))
+	{
+		float a0, b0, c0; /// contains the seg 2d equation
+		getLineEquation(nonNullSegIndex, a0, b0, c0);
+		float orient = sumDPAgainstLine(a0, b0, c0);
+
+		for (uint k = 0; k < Vertices.size(); ++k)
+		{
+			/// don't check against a null segment
+		    if ( (getSegRef0(k) - getSegRef1(k)).sqrnorm() == 0.f) continue;
+
+			/// get the line equation of the current segment
+			float a, b, c; /// contains the seg 2d equation
+			getLineEquation(k, a, b, c);
+
+			if (a * p.x + b * p.y + c < 0) return false;
+			
+		}
+		return true;
+	}
+	else // this poly is just a point
+	{
+		return p == Vertices[0];
+	}		
+}
+
+
+// *******************************************************************************
+CPolygon2D::CPolygon2D(const CTriangle &tri, const CMatrix &projMat)
+{
+	Vertices.resize(3);
+	NLMISC::CVector proj[3] = { projMat * tri.V0, projMat * tri.V1, projMat * tri.V2 };
+	Vertices[0].set(proj[0].x, proj[0].y);
+	Vertices[1].set(proj[1].x, proj[1].y);
+	Vertices[2].set(proj[2].x, proj[2].y);
+}
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file listen_sock.cpp
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.cpp,v 1.7 2003/03/06 18:32:50 coutelas Exp $
+ * $Id: listen_sock.cpp,v 1.8 2003/03/06 19:33:58 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,9 +104,10 @@ void CListenSock::init( const CInetAddress& addr )
 	{
 		throw ESocket( "ReuseAddr failed" );
 	}
-#endif
 
 	ioctl(_Sock, FIOCLEX, NULL);
+
+#endif
 
 	// Bind socket to port	
 	if ( ::bind( _Sock, (const sockaddr *)addr.sockAddr(), sizeof(sockaddr_in) ) != 0 )

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.2 2001/03/19 09:13:19 corvazier Exp $
+ * $Id: bitmap.cpp,v 1.3 2001/05/08 13:37:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2088,6 +2088,123 @@ void CBitmap::rotateCCW()
 	_Width=_Height;
 	_Height=tmp;
 	_Data[0]=copy;
+}
+
+bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
+{
+
+	nlassert(this->PixelFormat == src->PixelFormat) ;
+	if (this->PixelFormat != src->PixelFormat)
+	{
+		return false ;
+	}
+
+
+	// check for dxtc use
+
+	const bool useDXTC =  PixelFormat == DXTC1 || PixelFormat == DXTC1Alpha || PixelFormat == DXTC3 || PixelFormat ==	DXTC5 ;
+	
+
+	if (useDXTC)
+	{
+		// blit pos must be multiple of 4
+
+		nlassert(! (x & ~3  || y & ~3) ) ;
+		if (x & ~3  || y & ~3) return false ;
+
+	}
+
+	nlassert(PixelFormat != DonTKnow) ;
+
+	// the width to copy
+	sint width = src->_Width ;
+	// the height to copy
+	sint height = src->_Height ;
+
+	uint destStartX, destStartY ;
+	uint srcStartX, srcStartY ;
+
+
+	// clip against left
+	if (x < 0)
+	{
+		width += x ;
+		if (width <= 0) return true ;
+		destStartX = 0 ;
+		srcStartX = -x ;
+	}
+	else
+	{
+		destStartX = x ;
+		srcStartX = 0 ;
+	}
+
+	// clip against top
+	if (y < 0)
+	{
+		height += y ;
+		if (height <= 0) return true ;
+		srcStartY = -y ;
+		destStartY = 0 ;
+	}
+	else
+	{
+		destStartY = y ;
+		srcStartY = 0 ;
+	}
+
+	// clip against right
+	if ((destStartX + width - 1) >= _Width)
+	{
+		width = _Width - destStartX ;
+		if (width <= 0) return true ;
+	}
+
+	// clip against bottom
+	if ((destStartY + height - 1) >= _Height)
+	{
+		height = _Height - destStartY ;
+		if (width <= 0) return true ;
+	}
+
+
+	// divide all distance by 4 when usinf DXTC
+	if (useDXTC)
+	{
+		destStartX <<= 2 ;
+		destStartY <<= 2 ;
+		srcStartX <<= 2 ;
+		srcStartY <<= 2 ;
+		width <<= 2 ;
+		height <<= 2 ;
+	}
+	
+
+	// bit per pixs is for either one pixel or 16 (a 4x4 block in DXTC)
+	const uint bytePerPixs = (( useDXTC ? 16 : 1 ) *  bitPerPixels[PixelFormat]) >> 3  ;
+
+	// size to go to the next line in the destination
+	const uint destStride = _Width * bytePerPixs ;
+
+	// size to go to the next line in the source
+	const uint srcStride = src->_Width * bytePerPixs ;
+	
+	// line in bytes of a line to copy
+	const uint lineLenght = width * bytePerPixs ;
+
+
+	uint8  *destPos = &(_Data[0][0]) + destStride * destStartY + bytePerPixs * destStartX ;
+	const uint8 *srcPos = &(src->_Data[0][0]) + srcStride * srcStartY + bytePerPixs * srcStartX ;
+
+
+	for (sint k = 0 ; k < height ; ++k)
+	{
+		::memcpy(destPos, srcPos, lineLenght) ;
+		destPos += destStride ;
+		srcPos += srcStride ;
+	}
+
+	return true ;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.2 2001/03/19 09:13:19 corvazier Exp $
+ * $Id: bitmap.h,v 1.3 2001/05/08 13:37:35 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -400,6 +400,17 @@ public:
 	{
 		_LoadGrayscaleAsAlpha;
 	}
+
+
+	/**
+	 * Perform a simple blit from the source to this bitmap at the (x, y) pos
+	 * The dimension of the original bitmap are preserved
+	 * For now, this texture and the source must have the same format
+	 * With DXTC format, the dest coordinates must be a multiple of 4
+	 * mipmap are noit rebuild when present
+	 * \return true if the params were corrects and if the blit occures. In debug build there's an assertion
+	 */
+	bool blit(const CBitmap *src, sint32 x, sint32 y) ;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.91 2001/04/12 13:52:58 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.92 2001/04/13 09:50:05 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1560,7 +1560,6 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 {
 	CMatrix3x4		*pMat;
-	CVector			tmp;
 
 	// TODO_OPTIMIZE: SSE verion...
 
@@ -1576,23 +1575,20 @@ void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 
 
 	// Sum influences.
+	pDst->set(0,0,0);
 
 	// 0th matrix influence.
 	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[0];
-	pMat->mulPoint(*srcVec, tmp);
-	*pDst=  tmp * srcWgt[0];
+	pMat->mulAddPoint(*srcVec, srcWgt[0], *pDst);
 	// 1th matrix influence.
 	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[1];
-	pMat->mulPoint(*srcVec, tmp);
-	*pDst+= tmp * srcWgt[1];
+	pMat->mulAddPoint(*srcVec, srcWgt[1], *pDst);
 	// 2th matrix influence.
 	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[2];
-	pMat->mulPoint(*srcVec, tmp);
-	*pDst+= tmp * srcWgt[2];
+	pMat->mulAddPoint(*srcVec, srcWgt[2], *pDst);
 	// 3th matrix influence.
 	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[3];
-	pMat->mulPoint(*srcVec, tmp);
-	*pDst+= tmp * srcWgt[3];
+	pMat->mulAddPoint(*srcVec, srcWgt[3], *pDst);
 
 }
 
@@ -1601,7 +1597,6 @@ void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
 void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pDst)
 {
 	CMatrix3x4		*pMat;
-	CVector			tmp;
 
 	// TODO_OPTIMIZE: SSE verion...
 
@@ -1617,23 +1612,20 @@ void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pDst)
 
 	
 	// Sum influences.
+	pDst->set(0,0,0);
 
 	// 0th matrix influence.
 	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[0];
-	pMat->mulVector(*srcNormal, tmp);
-	*pDst= tmp * srcWgt[0];
+	pMat->mulAddVector(*srcNormal, srcWgt[0], *pDst);
 	// 1th matrix influence.
 	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[1];
-	pMat->mulVector(*srcNormal, tmp);
-	*pDst+= tmp * srcWgt[1];
+	pMat->mulAddVector(*srcNormal, srcWgt[1], *pDst);
 	// 2th matrix influence.
 	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[2];
-	pMat->mulVector(*srcNormal, tmp);
-	*pDst+= tmp * srcWgt[2];
+	pMat->mulAddVector(*srcNormal, srcWgt[2], *pDst);
 	// 3th matrix influence.
 	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[3];
-	pMat->mulVector(*srcNormal, tmp);
-	*pDst+= tmp * srcWgt[3];
+	pMat->mulAddVector(*srcNormal, srcWgt[3], *pDst);
 }
 
 // ***************************************************************************

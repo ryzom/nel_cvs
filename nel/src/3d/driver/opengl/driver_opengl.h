@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.59 2001/04/12 13:52:58 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.60 2001/04/13 09:50:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -267,19 +267,19 @@ private:
 
 		// Copy from a matrix.
 		void	set(const CMatrix &mat);
-		// mulvector. NB: in should be different as v!! (else don't work).
-		void	mulVector(const CVector &in, CVector &out)
+		// mulAddvector. NB: in should be different as v!! (else don't work).
+		void	mulAddVector(const CVector &in, float scale, CVector &out)
 		{
-			out.x= a11*in.x + a12*in.y + a13*in.z;
-			out.y= a21*in.x + a22*in.y + a23*in.z;
-			out.z= a31*in.x + a32*in.y + a33*in.z;
+			out.x+= (a11*in.x + a12*in.y + a13*in.z) * scale;
+			out.y+= (a21*in.x + a22*in.y + a23*in.z) * scale;
+			out.z+= (a31*in.x + a32*in.y + a33*in.z) * scale;
 		}
-		// mulpoint. NB: in should be different as v!! (else don't work).
-		void	mulPoint(const CVector &in, CVector &out)
+		// mulAddpoint. NB: in should be different as v!! (else don't work).
+		void	mulAddPoint(const CVector &in, float scale, CVector &out)
 		{
-			out.x= a11*in.x + a12*in.y + a13*in.z + a14;
-			out.y= a21*in.x + a22*in.y + a23*in.z + a24;
-			out.z= a31*in.x + a32*in.y + a33*in.z + a34;
+			out.x+= (a11*in.x + a12*in.y + a13*in.z + a14) * scale;
+			out.y+= (a21*in.x + a22*in.y + a23*in.z + a24) * scale;
+			out.z+= (a31*in.x + a32*in.y + a33*in.z + a34) * scale;
 		}
 	};
 

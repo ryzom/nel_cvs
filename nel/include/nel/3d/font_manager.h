@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.6 2000/12/08 13:45:36 lecroart Exp $
+ * $Id: font_manager.h,v 1.7 2000/12/18 14:25:02 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,8 +125,8 @@ public:
 	 * \param output computed string
 	 */	
 	void computeString (const std::string& s,
-						CFontGenerator * fontGen, 
-						NLMISC::CRGBA& color,
+						CFontGenerator *fontGen, 
+						const NLMISC::CRGBA &color,
 						uint32 fontSize, 
 						const CDisplayDescriptor& desc, 
 						CComputedString& output);
@@ -136,7 +136,7 @@ public:
 	 */
 	void computeString (const ucstring &s,
 						CFontGenerator *fontGen, 
-						NLMISC::CRGBA &color,
+						const NLMISC::CRGBA &color,
 						uint32 fontSize, 
 						const CDisplayDescriptor &desc, 
 						CComputedString &output);

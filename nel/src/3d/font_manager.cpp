@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.11 2000/12/18 14:25:02 lecroart Exp $
+ * $Id: font_manager.cpp,v 1.12 2000/12/18 14:26:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,7 +118,7 @@ NLMISC::CSmartPtr<CTextureFont> CFontManager::getFontTexture(CFontDescriptor des
  */
 template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::basic_string<T, std::char_traits<T>, std::allocator<T> > &s,
 				CFontGenerator *fontGen, 
-				NLMISC::CRGBA &color,
+				const NLMISC::CRGBA &color,
 				uint32 fontSize, 
 				const CDisplayDescriptor &desc, 
 				CComputedString &output)

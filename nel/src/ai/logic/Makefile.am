@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.5 2001/03/29 11:57:24 chafik Exp $
+# $Id: Makefile.am,v 1.6 2001/03/29 12:00:00 chafik Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -11,7 +11,7 @@ liblogic_la_SOURCES     = ai_assert.cpp bool_assert.cpp bool_cond.cpp \
                           fact.cpp factbase.cpp fo_assert.cpp \
                           fo_operator.cpp interpret_object_operator.cpp \
                           operator.cpp operator_script.cpp rule.cpp  fsm_seq.cpp fsm_script.cpp \
-                          valueset.cpp var.cpp varset.cpp goal.cpp fsm_seq_script.cpp
+                          valueset.cpp var.cpp varset.cpp goal.cpp
 
 
 # End of Makefile.am

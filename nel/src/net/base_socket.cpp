@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.45 2001/02/19 09:54:55 cado Exp $
+ * $Id: base_socket.cpp,v 1.46 2001/02/23 13:29:58 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,8 +255,9 @@ void CBaseSocket::setNoDelay( bool value ) throw (ESocket)
 	{
 		throw ESocket( "Cannot setNoDelay on an unreliable socket", false );
 	}
-		
-	if ( setsockopt( _Sock, IPPROTO_TCP, TCP_NODELAY, (char*)&value, sizeof(value) ) != 0 )
+
+	int b = value?1:0;
+	if ( setsockopt( _Sock, IPPROTO_TCP, TCP_NODELAY, (char*)(&b), sizeof(b) ) != 0 )
 	{
 		throw ESocket( "setNoDelay failed" );
 	}

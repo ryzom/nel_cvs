@@ -1,7 +1,7 @@
 /** \file value_smoother.h
  * <File description>
  *
- * $Id: value_smoother.h,v 1.4 2002/10/30 17:00:37 berenguier Exp $
+ * $Id: value_smoother.h,v 1.5 2003/03/20 17:52:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,34 +41,92 @@ namespace NLMISC {
  * \author Nevrax France
  * \date 2001
  */
-class CValueSmoother
+template <class T>
+class CValueSmootherTemplate
 {
 public:
 
 	/// Constructor
-	CValueSmoother(uint n=16);
+	explicit CValueSmootherTemplate(uint n=16)
+	{
+		init(n);
+	}
 
 	/// reset the ValueSmoother, and set the number of frame to smooth.
-	void		init(uint n);
+	void		init(uint n)
+	{
+		// reset all the array to 0.
+		_LastFrames.clear();
 
+		if (n>0)
+			_LastFrames.resize(n, 0);
+		
+		_CurFrame= 0;
+		_NumFrame= 0;
+		_FrameSum= 0;
+	}
+	
 	/// reset only the ValueSmoother
-	void		reset();
+	void		reset()
+	{
+		fill(_LastFrames.begin(), _LastFrames.end(), T(0));
+		
+		_CurFrame= 0;
+		_NumFrame= 0;
+		_FrameSum= 0;
+	}
 
 	/// add a new value to be smoothed.
-	void		addValue(float dt);
+	void		addValue(T dt)
+	{
+		if (_LastFrames.empty())
+			return;
 
+		// update the frame sum. NB: see init(), at start, array is full of 0. so it works even for un-inited values.
+		_FrameSum-= _LastFrames[_CurFrame];
+		_FrameSum+= dt;
+		
+		// backup this value in the array.
+		_LastFrames[_CurFrame]= dt;
+		
+		// next frame.
+		_CurFrame++;
+		_CurFrame%=_LastFrames.size();
+		
+		// update the number of frames added.
+		_NumFrame++;
+		_NumFrame= std::min(_NumFrame, _LastFrames.size());
+	}
+	
 	/// get the smoothed value.
-	float		getSmoothValue();
+	T		getSmoothValue() const
+	{
+		if(_NumFrame>0)
+			return _FrameSum / _NumFrame;
+		else
+			return T(0);
+	}
+
+	uint getNumFrame() const
+	{
+		return _NumFrame;
+	}
+
+	const std::vector<T> &getLastFrames() const
+	{
+		return _LastFrames;
+	}
 
 private:
-	std::vector<float>		_LastFrames;
+	std::vector<T>			_LastFrames;
 	uint					_CurFrame;
 	uint					_NumFrame;
-	float					_FrameSum;
-
-
+	T						_FrameSum;
 };
 
+class CValueSmoother : public CValueSmootherTemplate<float>
+{
+};
 
 } // NLMISC
 

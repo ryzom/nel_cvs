@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.21 2003/03/06 09:59:56 lecroart Exp $
+ * $Id: command.h,v 1.22 2003/03/20 17:52:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include <istream>
 
 #include "nel/misc/stream.h"
-
+#include "nel/misc/config_file.h"
 #include "nel/misc/log.h"
 
 
@@ -79,10 +79,10 @@ namespace NLMISC {
 struct __name##Class: public NLMISC::ICommand \
 { \
 	__name##Class() : NLMISC::ICommand(#__name,__help,__args) { } \
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log); \
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet); \
 }; \
 __name##Class __name##Instance; \
-bool __name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &log)
+bool __name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet)
 
 
 /**
@@ -100,7 +100,7 @@ public:
 
 	virtual ICommand::~ICommand();
 
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log) = 0;
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet) = 0;
 
 	std::string HelpString;
 	std::string CommandArgs;
@@ -115,6 +115,8 @@ public:
 
 	static TCommand *Commands;
 	static bool		 CommandsInit;
+
+	static void init (CConfigFile &configFile);
 
 	/// Executes the command and display output to the log
 	/// \param quiet true if you don't want to display the "executing the command ..."

@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.23 2003/02/21 15:52:10 lecroart Exp $
+ * $Id: command.cpp,v 1.24 2003/03/20 17:53:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,18 @@ ICommand::~ICommand()
 	}
 	// commands is not found
 	nlstop;
+}
+
+void ICommand::init (NLMISC::CConfigFile &configFile)
+{
+	for (TCommand::iterator comm = (*Commands).begin(); comm != (*Commands).end(); comm++)
+	{
+		// todo faut mettre variable a la fin
+		if ((*comm).second->Type == Unknown)
+		{
+			
+		}
+	}
 }
 
 void ICommand::execute (const std::string &commandWithArgs, CLog &log, bool quiet)
@@ -258,7 +270,7 @@ end:
 		else
 		{
 			//printf("execute command\n");
-			if (!(*comm).second->execute (commands[u].second, log))
+			if (!(*comm).second->execute (commands[u].second, log, quiet))
 			{
 				if (!quiet) log.displayNL("Bad command usage, try 'help %s'", commands[u].first.c_str());
 			}

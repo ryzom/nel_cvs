@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.1 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: memory_manager.cpp,v 1.2 2002/10/29 12:52:53 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -241,14 +241,14 @@ void* operator new(size_t size)
 
 // *********************************************************
 
-CAllocContext::CAllocContext (const char* str)
+NLMISC::CAllocContext::CAllocContext (const char* str)
 {
 	(NLMISC::getGlobalHeapAllocator ())->debugPushCategoryString (str);
 }
 
 // *********************************************************
 
-CAllocContext::~CAllocContext ()
+NLMISC::CAllocContext::~CAllocContext ()
 {
 	(NLMISC::getGlobalHeapAllocator ())->debugPopCategoryString ();
 }

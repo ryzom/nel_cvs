@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.34 2001/07/31 12:11:49 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.35 2001/08/29 15:34:31 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -481,8 +481,8 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 				CMaterial::CTexEnv	env;
 				activateTexEnvMode(stage, env);
 				// special modulate2x.
-				glActiveTextureARB(GL_TEXTURE0_ARB+stage);
-				glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 2);
+				//glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+				//glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 2);
 
 
 				// setup UV, with UV0.
@@ -525,8 +525,8 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 			activateTexEnvMode(stage, env);
 		}
 		// special: disable  modulate2x.
-		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
-		glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1);
+		//glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		//glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1);
 	}
 
 	// special for all stage, normal UV behavior.

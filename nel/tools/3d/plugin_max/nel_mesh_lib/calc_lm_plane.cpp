@@ -2,7 +2,7 @@
  * This is a sub-module for calculating ligtmaps
  * This is the code of the plane wich regroup lightmap faces
  *
- * $Id: calc_lm_plane.cpp,v 1.1 2001/08/21 16:33:50 besson Exp $
+ * $Id: calc_lm_plane.cpp,v 1.2 2001/08/29 15:34:31 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,18 +80,21 @@ void SLMPlane::copyColToBitmap32 (CBitmap* pImage, uint32 nLayerNb)
 
 	for( uint32 i = 0; i < w*h; ++i )
 	{
-		if( (127.0*col[i+w*h*nLayerNb].R) > 255.0 )
+		// if we are in multiply x2 we have to set the following value to 127.0
+		const float fMult = 255.0;
+		if( (fMult*col[i+w*h*nLayerNb].R) > 255.0 )
 			vBitmap[4*i+0] = 255;
 		else
-			vBitmap[4*i+0] = (uint8)(127.0*col[i+w*h*nLayerNb].R);
-		if( (127.0*col[i+w*h*nLayerNb].G) > 255.0 )
+			vBitmap[4*i+0] = (uint8)(fMult*col[i+w*h*nLayerNb].R);
+
+		if( (fMult*col[i+w*h*nLayerNb].G) > 255.0 )
 			vBitmap[4*i+1] = 255;
 		else
-			vBitmap[4*i+1] = (uint8)(127.0*col[i+w*h*nLayerNb].G);
-		if( (127.0*col[i+w*h*nLayerNb].B) > 255.0 )
+			vBitmap[4*i+1] = (uint8)(fMult*col[i+w*h*nLayerNb].G);
+		if( (fMult*col[i+w*h*nLayerNb].B) > 255.0 )
 			vBitmap[4*i+2] = 255;
 		else
-			vBitmap[4*i+2] = (uint8)(127.0*col[i+w*h*nLayerNb].B);
+			vBitmap[4*i+2] = (uint8)(fMult*col[i+w*h*nLayerNb].B);
 		vBitmap[4*i+3] = 255;
 	}
 }

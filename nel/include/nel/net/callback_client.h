@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.4 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: callback_client.h,v 1.5 2001/05/17 15:39:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,7 +59,7 @@ public:
 	void	update ( sint32 timeout=0 );
 
 	/// Returns true if the connection is still connected
-	bool	connected () const { return CStreamClient::connected (); } 
+	virtual bool	connected () const { return CStreamClient::connected (); } 
 
 	/// Disconnect a connection
 	void	disconnect (TSockId hostid = 0) { CStreamClient::disconnect (); }

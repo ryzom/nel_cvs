@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.3 2001/07/24 08:41:05 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.4 2001/09/04 16:13:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1435,6 +1435,13 @@ public:
 	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) 
 	{ 
 		nlassert(_Scheme) ; // you should have called setScheme !
+
+		// we should create the contained scheme before this one if it has memory...
+		if (_Scheme->hasMemory())
+		{
+			_Scheme->newElement(emitterLocated, emitterIndex) ;
+		}
+
 		if (emitterLocated)
 		{
 			_T.insert(_Scheme->get(emitterLocated, emitterIndex)) ;
@@ -1446,11 +1453,7 @@ public:
 			  */
 
 			_T.insert(_DefaultValue) ;
-		}
-		if (_Scheme->hasMemory())
-		{
-			_Scheme->newElement(emitterLocated, emitterIndex) ;
-		}
+		}		
 	}
 	virtual void resize(uint32 capacity, uint32 nbPresentElements)
 	{

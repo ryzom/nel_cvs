@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.22 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: material.h,v 1.23 2004/01/30 13:52:25 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -451,10 +451,14 @@ public:
 	// @{
 	/// Set the ith lightmap. undef results if holes in lightmap array.
 	void					setLightMap(uint lmapId, ITexture *lmap);
-	/// Get the ith lightmap. (NULl if none)
+	/// Get the ith lightmap. (NULL if none)
 	ITexture				*getLightMap(uint lmapId) const;
-	/// Set the lightmap intensity. (default to 255).
+	/// Set the lightmap intensity. (def : White)
 	void					setLightMapFactor(uint lmapId, CRGBA factor);
+	/// Set the lightmap color (usefull in 8 bits format) (def : White)
+	void					setLightMapColor(uint lmapId, CRGBA color);
+	/// Set the multiply x 2 mode to burn colors (used with lightmaps 8 bits) (def: false)
+	void					setLightMapMulx2(bool val) { _LightMapsMulx2 = val; }
 	// @}
 
 
@@ -592,15 +596,19 @@ public:
 	{
 		CSmartPtr<ITexture>		Texture;
 		CRGBA					Factor;
+		CRGBA					Color;
 		CLightMap()
 		{
 			Factor.set(255, 255, 255, 255);
+			Color.set(255, 255, 255, 255);
 		}
 
-		void	serial(NLMISC::IStream &f);
+		void	serial(NLMISC::IStream &f); // Deprecated...
+		void	serial2(NLMISC::IStream &f); // New with version number
 	};
 	typedef	std::vector<CLightMap>	TTexturePtrs;
 	TTexturePtrs			_LightMaps;
+	bool					_LightMapsMulx2;
 	
 
 	uint32					getFlags() const {return _Flags;}

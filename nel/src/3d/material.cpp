@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.43 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: material.cpp,v 1.44 2004/01/30 13:52:25 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ CMaterial::CMaterial()
 	_StainedGlassWindow = false;
 	_AlphaTestThreshold= 0.5f;	
 	_TexCoordGenMode= 0;
+	_LightMapsMulx2= false;
 }
 
 // ***************************************************************************
@@ -104,6 +105,7 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 
 	// copy lightmaps.
 	_LightMaps= mat._LightMaps;
+	_LightMapsMulx2= mat._LightMapsMulx2;
 
 	// copy texture matrix if there.
 	if (mat._TexUserMat.get())
@@ -137,6 +139,8 @@ CMaterial::~CMaterial()
 void		CMaterial::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 7:
+		- Lightmap color and Mulx2
 	Version 6:
 		- Texture matrix animation
 	Version 5:
@@ -153,7 +157,7 @@ void		CMaterial::serial(NLMISC::IStream &f)
 		- base version.
 	*/
 
-	sint	ver= f.serialVersion(6);
+	sint	ver= f.serialVersion(7);
 	// For the version <=1:
 	nlassert(IDRV_MAT_MAXTEXTURES==4);
 
@@ -205,7 +209,27 @@ void		CMaterial::serial(NLMISC::IStream &f)
 
 	if(ver>=3)
 	{
-		f.serialCont(_LightMaps);
+		if(ver>=7)
+		{
+			uint32 n;
+			if (f.isReading())
+			{
+				f.serial(n);
+				_LightMaps.resize(n);
+			}
+			else
+			{
+				n = _LightMaps.size();
+				f.serial(n);
+			}
+			for (uint32 i = 0; i < n; ++i)
+				_LightMaps[i].serial2(f);
+			f.serial(_LightMapsMulx2);
+		}
+		else
+		{
+			f.serialCont(_LightMaps);
+		}
 	}
 
 	if (ver >= 4)
@@ -396,11 +420,45 @@ void					CMaterial::setLightMapFactor(uint lmapId, CRGBA factor)
 	}
 }
 
+// ***************************************************************************
+void					CMaterial::setLightMapColor(uint lmapId, CRGBA color)
+{
+	if (_ShaderType==CMaterial::LightMap)
+	{
+		if(lmapId>=_LightMaps.size())
+			_LightMaps.resize(lmapId+1);
+		_LightMaps[lmapId].Color= color;
+
+		_Touched|=IDRV_TOUCHED_LIGHTMAP;
+	}
+}
 
 // ***************************************************************************
+// DEPRECATED VERSION
 void			CMaterial::CLightMap::serial(NLMISC::IStream &f)
 {
 	f.serial(Factor);
+	// Serial texture descriptor.
+	ITexture*	text= NULL;
+	if(f.isReading())
+	{
+		f.serialPolyPtr(text);
+		Texture= text;
+	}
+	else
+	{
+		text= Texture;
+		f.serialPolyPtr(text);
+	}
+}
+
+// ***************************************************************************
+void			CMaterial::CLightMap::serial2(NLMISC::IStream &f)
+{
+	sint	ver= f.serialVersion(0);
+
+	f.serial(Factor);
+	f.serial(Color);
 	// Serial texture descriptor.
 	ITexture*	text= NULL;
 	if(f.isReading())

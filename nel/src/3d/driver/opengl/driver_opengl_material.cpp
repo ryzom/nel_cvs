@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.80 2003/11/18 17:58:41 corvazier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.81 2004/01/30 13:53:06 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -719,7 +719,10 @@ void			CDriverGL::setupLightMapPass(uint pass)
 			// get text and factor.
 			ITexture *text	 = mat._LightMaps[whichLightMap].Texture;
 			CRGBA lmapFactor = mat._LightMaps[whichLightMap].Factor;
-			lmapFactor.A= 255;
+			lmapFactor.R = (uint8)((((uint32)lmapFactor.R)  * ((uint32)mat._LightMaps[whichLightMap].Color.R)) / 255);
+			lmapFactor.G = (uint8)((((uint32)lmapFactor.G)  * ((uint32)mat._LightMaps[whichLightMap].Color.G)) / 255);
+			lmapFactor.B = (uint8)((((uint32)lmapFactor.B)  * ((uint32)mat._LightMaps[whichLightMap].Color.B)) / 255);
+			lmapFactor.A = 255;
 
 			activateTexture(stage,text);
 
@@ -838,6 +841,12 @@ void			CDriverGL::setupLightMapPass(uint pass)
 					setupUVPtr(stage, _LastVB, 0);
 					_LightMapUVMap[stage]= 0;
 				}
+
+				if (mat._LightMapsMulx2)
+				{
+					// Multiply x 2
+					glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 2);
+				}
 			}
 		}
 		else
@@ -922,6 +931,16 @@ void			CDriverGL::endLightMapMultiPass()
 	// nothing to do with blending/lighting, since always setuped in activeMaterial().
 	// If material is the same, then it is still a lightmap material (if changed => touched => different!)
 	// So no need to reset lighting/blending here.
+
+	// Clean up all stage for Multiply x 2
+	if (_CurrentMaterial->_LightMapsMulx2)
+	{
+		for (uint32 i = 0; i < (_NLightMapPerPass+1); ++i)
+		{
+			_DriverGLStates.activeTextureARB(i);
+			glTexEnvi(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, 1);
+		}
+	}
 }
 
 

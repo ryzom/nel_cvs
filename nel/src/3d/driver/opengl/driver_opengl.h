@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.40 2001/01/11 13:57:04 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.41 2001/01/11 17:29:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,6 +177,8 @@ public:
 	virtual void			getWindowSize (uint32 &width, uint32 &height);
 
 	virtual void			getBuffer (CBitmap &bitmap);
+
+	virtual void			setPolygonMode (TPolygonMode mode);
 
 private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.

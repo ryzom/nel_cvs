@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.48 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: driver.h,v 1.49 2001/01/11 17:29:11 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,18 +123,26 @@ protected:
 	typedef	TShaderPtrList::iterator				ItShaderPtrList;
 	typedef	TVBDrvInfoPtrList::iterator				ItVBDrvInfoPtrList;
 
+public:
+	enum TMessageBoxId { okId=0, yesId, noId, abortId, retryId, cancelId, ignoreId };
+	enum TMessageBoxType { okType=0, okCancelType, yesNoType, abortRetryIgnoreType, yesNoCancelType, retryCancelType, typeCount };
+	enum TMessageBoxIcon { noIcon=0, handIcon, questionIcon, exclamationIcon, asteriskIcon, warningIcon, errorIcon, informationIcon, stopIcon, iconCount };
+
+	/**
+	  * Driver's polygon modes.
+	  *
+	  * \see setPolygonMode, getPolygonMode
+	  */
+	enum TPolygonMode { Filled, Line, Point };
 
 protected:
 	TTexDrvInfoPtrMap		_TexDrvInfos;
 	TTexDrvSharePtrList		_TexDrvShares;
 	TShaderPtrList			_Shaders;
 	TVBDrvInfoPtrList		_VBDrvInfos;
+	TPolygonMode			_PolygonMode;
 
 public:
-	enum TMessageBoxId { okId=0, yesId, noId, abortId, retryId, cancelId, ignoreId };
-	enum TMessageBoxType { okType=0, okCancelType, yesNoType, abortRetryIgnoreType, yesNoCancelType, retryCancelType, typeCount };
-	enum TMessageBoxIcon { noIcon=0, handIcon, questionIcon, exclamationIcon, asteriskIcon, warningIcon, errorIcon, informationIcon, stopIcon, iconCount };
-
 							IDriver(void);
 	virtual					~IDriver(void);
 
@@ -234,6 +242,26 @@ public:
 	  */
 	virtual void			getBuffer (CBitmap &bitmap) = 0;
 
+	/** Set the global polygon mode. Can be filled, line or point. The implementation driver must
+	  * call IDriver::setPolygonMode and active this mode.
+	  *
+	  * \param polygon mode choose in this driver.
+	  * \see getPolygonMode(), TPolygonMode
+	  */
+	virtual void			setPolygonMode (TPolygonMode mode)
+	{
+		_PolygonMode=mode;
+	}
+
+	/** Get the global polygon mode.
+	  *
+	  * \param polygon mode choose in this driver.
+	  * \see setPolygonMode(), TPolygonMode
+	  */
+	TPolygonMode 	getPolygonMode ()
+	{
+		return _PolygonMode;
+	}
 };
 
 // --------------------------------------------------

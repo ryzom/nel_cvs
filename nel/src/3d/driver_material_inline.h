@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.8 2002/02/15 16:57:57 vizerie Exp $
+ * $Id: driver_material_inline.h,v 1.9 2002/08/19 09:34:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,7 @@ inline void CMaterial::setColor(NLMISC::CRGBA rgba)
 	}
 }
 
-inline void CMaterial::setLighting(	bool active, bool DefMat,
+inline void CMaterial::setLighting(	bool active, 
 									NLMISC::CRGBA emissive, 
 									NLMISC::CRGBA ambient, 
 									NLMISC::CRGBA diffuse, 
@@ -134,14 +134,6 @@ inline void CMaterial::setLighting(	bool active, bool DefMat,
 	if (active)
 	{
 		_Flags|=IDRV_MAT_LIGHTING;
-		if (DefMat)
-		{
-			_Flags|=IDRV_MAT_DEFMAT;
-		}
-		else
-		{
-			_Flags&=~IDRV_MAT_DEFMAT;
-		}
 	}
 	else
 	{

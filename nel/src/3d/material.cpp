@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.37 2002/08/09 09:43:21 berenguier Exp $
+ * $Id: material.cpp,v 1.38 2002/08/19 09:34:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ CMaterial::CMaterial()
 void			CMaterial::initUnlit()
 {
 	setShader(Normal);
-	setLighting(false, false);
+	setLighting(false);
 	setColor(CRGBA(255,255,255,255));
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 		setTexture(i ,NULL);
@@ -73,7 +73,7 @@ void			CMaterial::initUnlit()
 void			CMaterial::initLighted()
 {
 	initUnlit();
-	setLighting(true, false);
+	setLighting(true);
 }
 
 
@@ -220,6 +220,15 @@ void		CMaterial::serial(NLMISC::IStream &f)
 
 	if(f.isReading())
 	{
+		// Converte Deprecated DEFMAT to std Mat.
+		if(_Flags & IDRV_MAT_DEFMAT)
+		{
+			setEmissive(CRGBA::Black);
+			setAmbient(CRGBA::White);
+			setDiffuse(CRGBA::White);
+			setSpecular(CRGBA::Black);
+		}
+
 		// All states of material are modified.
 		_Touched= IDRV_TOUCHED_ALL;
 

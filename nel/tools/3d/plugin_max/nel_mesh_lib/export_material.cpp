@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.33 2002/07/08 17:23:12 corvazier Exp $
+ * $Id: export_material.cpp,v 1.34 2002/08/19 09:31:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,7 +248,7 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 		materials[maxBaseBuild.FirstMaterial].initLighted();
 
 		// Default mat
-		materials[maxBaseBuild.FirstMaterial].setLighting(true, true);
+		materials[maxBaseBuild.FirstMaterial].setLighting(true, CRGBA::Black, CRGBA::White, CRGBA::White, CRGBA::Black);
 
 		// Export the main material
 		maxBaseBuild.MaterialInfo[0].MaterialName = "Default";
@@ -1002,7 +1002,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 			shininess=(float)pow(2.0, shininess * 10.0) * 4.f;
 
 			// Light parameters
-			material.setLighting (true, false, nelEmissive, nelAmbient, nelDiffuse, nelSpecular, shininess);
+			material.setLighting (true, nelEmissive, nelAmbient, nelDiffuse, nelSpecular, shininess);
 
 			// Double sided
 			int bDoubleSided;

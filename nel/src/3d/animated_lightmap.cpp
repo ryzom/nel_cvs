@@ -1,7 +1,7 @@
 /** \file animated_lightmap.cpp
  * <File description>
  *
- * $Id: animated_lightmap.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
+ * $Id: animated_lightmap.cpp,v 1.3 2002/08/19 09:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ CAnimatedLightmap::CAnimatedLightmap()
 		diff.A= c;
 
 		// setup material.
-		_Lightmap->setLighting(true, false, _Emissive.Value, _Ambient.Value, diff, _Specular.Value, _Shininess.Value);
+		_Lightmap->setLighting(true, _Emissive.Value, _Ambient.Value, diff, _Specular.Value, _Shininess.Value);
 
 		// clear flags.
 		clearFlag(AmbientValue);

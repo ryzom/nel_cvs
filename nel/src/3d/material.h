@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.16 2002/06/13 08:44:50 berenguier Exp $
+ * $Id: material.h,v 1.17 2002/08/19 09:34:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ const uint32 IDRV_MAT_ZWRITE		=	0x00000004;
 const uint32 IDRV_MAT_ZLIST			=	0x00000008;
 const uint32 IDRV_MAT_LIGHTING		=	0x00000010;
 const uint32 IDRV_MAT_SPECULAR		=	0x00000020;
-const uint32 IDRV_MAT_DEFMAT		=	0x00000040;
+const uint32 IDRV_MAT_DEFMAT		=	0x00000040;	// NB: Deprecated, but may still exist streams.
 const uint32 IDRV_MAT_BLEND			=	0x00000080;
 const uint32 IDRV_MAT_DOUBLE_SIDED	=	0x00000100;
 const uint32 IDRV_MAT_ALPHA_TEST	= 	0x00000200;
@@ -324,24 +324,24 @@ public:
 	void					setColor(CRGBA rgba);
 
 	/// Batch setup lighting. Opacity is in diffuse.A.
-	void					setLighting(	bool active, bool DefMat=true,
+	void					setLighting(	bool active, 
 											CRGBA emissive=CRGBA(0,0,0), 
 											CRGBA ambient=CRGBA(0,0,0), 
 											CRGBA diffuse=CRGBA(0,0,0), 
 											CRGBA specular=CRGBA(0,0,0),
 											float shininess= 10);
 
-	/// Set the emissive part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the emissive part ot material. Usefull only if setLighting(true) has been done.
 	void					setEmissive( CRGBA emissive=CRGBA(0,0,0) );
-	/// Set the Ambient part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the Ambient part ot material. Usefull only if setLighting(true) has been done.
 	void					setAmbient( CRGBA ambient=CRGBA(0,0,0) );
-	/// Set the Diffuse part ot material. Usefull only if setLighting(true, false) has been done. NB: opacity is NOT copied from diffuse.A.
+	/// Set the Diffuse part ot material. Usefull only if setLighting(true) has been done. NB: opacity is NOT copied from diffuse.A.
 	void					setDiffuse( CRGBA diffuse=CRGBA(0,0,0) );
-	/// Set the Opacity part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the Opacity part ot material. Usefull only if setLighting(true) has been done.
 	void					setOpacity( uint8	opa );
-	/// Set the specular part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the specular part ot material. Usefull only if setLighting(true) has been done.
 	void					setSpecular( CRGBA specular=CRGBA(0,0,0) );
-	/// Set the shininess part ot material. Usefull only if setLighting(true, false) has been done.
+	/// Set the shininess part ot material. Usefull only if setLighting(true) has been done.
 	void					setShininess( float shininess );
 	/// Set the color material flag. Used when the material is lighted. True to use the diffuse color of the material when lighted, false to use the color vertex.
 	void					setLightedVertexColor (bool useLightedVertexColor);
@@ -442,7 +442,7 @@ public:
 	 */
 	void					initUnlit();
 	/** Init the material as default white lighted material. normal shader, lighting ....
-	 * Default to: normal shader, lighting to default material, no texture, ZBias=0, ZFunc= lessequal, ZWrite==true, no blend.
+	 * Default to: normal shader, full black lighting, no texture, ZBias=0, ZFunc= lessequal, ZWrite==true, no blend.
 	 * All other states are undefined (such as blend function, since blend is disabled).
 	 */
 	void					initLighted();

@@ -217,6 +217,22 @@ plugin material NelMaterial
 		iConstantAlpha_2		type:#integer default:255 ui:sdConstantAlpha
 	)
 
+    parameters slot3
+    (
+	)
+
+    parameters slot4
+    (
+	)
+
+    parameters slot5
+    (
+	)
+
+    parameters slot6
+    (
+	)
+
     rollout NelParams "Nel Material" rolledUp:true
     (
 		-- UI update timer
@@ -975,7 +991,7 @@ plugin material NelMaterial
 			updateUI false
 		)
 	)
-    
+
 	fn loadShader shader =
 	(
 		-- Disable all slot

@@ -1,7 +1,7 @@
 /** \file tile_lumel.h
  * <File description>
  *
- * $Id: tile_lumel.h,v 1.1 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: tile_lumel.h,v 1.2 2001/01/24 14:11:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,7 +151,7 @@ inline void CTileLumel::CStreamBit::pushBackBool (bool bBoolean)
 // ***************************************************************************
 inline void CTileLumel::CStreamBit::pushBack4bits (uint8 fourBits)
 {
-	nlassert ((fourBits>=0)&&(fourBits<0x10));
+	nlassert (fourBits<0x10);
 
 	pushBackBool ((fourBits&0x8)!=0);
 	pushBackBool ((fourBits&0x4)!=0);

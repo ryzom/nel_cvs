@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.56 2001/11/09 15:33:36 corvazier Exp $
+# $Id: Makefile.am,v 1.57 2001/11/09 16:04:30 corvazier Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -85,8 +85,6 @@ libnel3d_la_SOURCES  = anim_detail_trav.h \
                        mrm_parameters.h \
                        nelu.h \
                        noise_value.h \
-                       nv_tri_strip_objects.h \
-                       nv_vertex_cache.h \
                        ordering_table.h \
                        particle_system.h \
                        particle_system_instance_user.h \
@@ -283,8 +281,6 @@ libnel3d_la_SOURCES  = anim_detail_trav.h \
                        mrm_parameters.cpp \
                        nelu.cpp \
                        noise_value.cpp \
-                       nv_tri_strip_objects.cpp \
-                       nv_vertex_cache.cpp \
                        particle_system.cpp \
                        particle_system_instance_user.cpp \
                        particle_system_model.cpp \

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.73 2002/04/29 13:12:10 berenguier Exp $
+ * $Id: scene.cpp,v 1.74 2002/05/02 12:42:18 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -411,13 +411,15 @@ void	CScene::render(bool	doHrcPass)
 	_ParticleSystemManager.refreshModels(ClipTrav->WorldFrustumPyramid, ClipTrav->CamPos);
 
 
-	// Instance handling
+	// Wainting Instance handling
 	// Parse all the waiting instance
+	_ShapeBank->processWaitingShapes ();	// Process waiting shapes load shape, texture, and lightmaps
+											// and upload all to VRAM pieces by pieces
 	TWaitingInstancesMMap::iterator wimmIt = _WaitingInstances.begin();
 	while( wimmIt != _WaitingInstances.end() )
 	{
 		CShapeBank::TShapeState st = _ShapeBank->isPresent(wimmIt->first);
-		if (st == CShapeBank::ErrorInAsyncLoading)
+		if (st == CShapeBank::AsyncLoad_Error)
 		{
 			// Delete the waiting instance - Nobody can be informed of that...
 			TWaitingInstancesMMap::iterator	itDel= wimmIt;
@@ -433,7 +435,7 @@ void	CScene::render(bool	doHrcPass)
 			++wimmIt;
 			_WaitingInstances.erase(itDel);
 		}
-		else // st == CShapeBank::NotPresent
+		else // st == CShapeBank::NotPresent or loading
 		{
 			++wimmIt;
 		}

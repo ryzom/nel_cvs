@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.13 2001/10/24 16:37:04 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.14 2001/11/09 11:23:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,7 @@
  */
 #include "nel/ai/pyserver/pylib.h"
 #include "object.h"
+#include "osdefs.h"
 
 extern PyTypeObject StackDef;
 extern PyMethodDef M_STACK[];
@@ -177,6 +178,7 @@ namespace NLAIPYSERVER
 
 		Py_Initialize();
 
+#ifdef NL_DEBUG
 		char *k = (char *)Py_GetPlatform();
 		k = (char *)Py_GetVersion();
 		k = (char *)Py_GetProgramFullPath();
@@ -184,30 +186,37 @@ namespace NLAIPYSERVER
 		k = (char *)Py_GetProgramName();
 		k = (char *)Py_GetPrefix();
 		k = (char *)Py_GetExecPrefix();
+#endif	
 
-		Py_Initialize();		
-
-		char *PathPython;
-		PathPython = new char[ strlen(Py_GetPath() ) + strlen(pathWay) + 3];
-		memset(PathPython,0,strlen(Py_GetPath() ) + strlen(pathWay) + 3);		
+		std::string PathPython = Py_GetPath();
+		//PathPython = new char[ strlen(Py_GetPath() ) + strlen(pathWay) + 3];
+		//memset(PathPython,0,strlen(Py_GetPath() ) + strlen(pathWay) + 3);		
 
 		/*strcpy(S,PathPython);
 		strcat(S,"/PyLib");*/
+
+		const char delem[2] = {DELIM,0};		
 				
-#ifdef NL_OS_WINDOWS
-		sprintf(PathPython,"%s;%s",Py_GetPath(),pathWay);
+		PathPython += delem;
+/*#ifdef NL_OS_WINDOWS
+		//sprintf(PathPython,"%s;%s",Py_GetPath(),pathWay);
+		PathPython += ";";
 #else
-		sprintf(PathPython,"%s:%s",Py_GetPath(),pathWay);
-#endif
+		//sprintf(PathPython,"%s:%s",Py_GetPath(),pathWay);
+		PathPython += ":";
+#endif*/
+		PathPython += pathWay;
 				
 		CPyExport *m_pPyLib = new CPyExport;
 
-		PySys_SetPath(PathPython);
-		k = (char *)Py_GetPath();
-		
-		PyObject *O = Py_InitModule("RysonSytemeIO",M_Constructeur);		
+		PySys_SetPath((char *)PathPython.c_str());
 
-		delete PathPython;
+#ifdef NL_DEBUG
+		NLAIC::Out((char *)Py_GetPath());
+		k = (char *)Py_GetPath();
+#endif
+		
+		PyObject *O = Py_InitModule("RysonSytemeIO",M_Constructeur);
 
 		char CodeExec[] =	"import sys\n"
 							"from RysonSytemeIO import *\n"

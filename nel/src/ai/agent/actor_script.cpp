@@ -131,9 +131,10 @@ namespace NLAIAGENT
 			if ( !r.empty() )
 			{	
 				_OnUnActivateIndex = r.top().Index;
-				if ( getAgentManager() != NULL )
+				const NLAIAGENT::IAgentManager *manager = getAgentManager();
+				if ( manager != NULL )
 				{
-					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) manager->getAgentContext();
 					context->Self = this;
 					runMethodeMember( _OnUnActivateIndex ,context);
 					_OnActivateIndex = -1;

@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.15 2001/11/05 11:02:27 chafik Exp $
+ * $Id: ident_type.cpp,v 1.16 2001/11/09 11:23:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,6 @@ namespace NLAIC
 
 	std::string stringGetBuild(const char *str, ...)
 	{
-
 		char	temp[64*1024];
 		va_list argument;
 		va_start (argument, str);
@@ -116,7 +115,7 @@ namespace NLAIC
 	
 	CIdentType::CIdentType(const char *ident,const IClassFactory &classCFactory,const CTypeOfObject &objType,const CTypeOfOperator &opSupport): _Index(-1),
 		_ObjType((CTypeOfObject *)objType.clone()),_OpSupport((CTypeOfOperator *)opSupport.clone())
-	{
+	{	
 		_Ident = new char [strlen(ident) + 1];
 		strcpy((char *)_Ident,ident);
 				

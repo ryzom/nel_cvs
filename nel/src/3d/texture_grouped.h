@@ -1,7 +1,7 @@
 /** \file texture_grouped.h
  * <File description>
  *
- * $Id: texture_grouped.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture_grouped.h,v 1.2 2001/06/27 16:55:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,8 @@ public:
 
 	void getTextures(CSmartPtr<ITexture> *textureTab) const ;
 
+	// get a texture in the list
+	CSmartPtr<ITexture> getTexture(uint32 index) { return _Textures[index] ; }
 	
 	/** Get the U-delta and V delta in the groupedTexture for one unit texture (they all have the same size).	 
 	 *  return (0, 0) if no textures have been set
@@ -135,7 +137,14 @@ public:
 	// Get a tab of 4 UVs for a texture in the group : 0 = top-left, 1 = top-right, 2 = bottom-right, 3 = bottom-left
 	const TFourUV &getUVQuad(uint texIndex)
 	{
-		return _TexUVs[texIndex] ;
+		if (texIndex < _NbTex)
+		{
+			return _TexUVs[texIndex] ;
+		}
+		else
+		{
+			return _TexUVs[texIndex % _NbTex] ;
+		}
 	}
 
 	

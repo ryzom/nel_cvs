@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.17 2002/12/18 14:56:38 legros Exp $
+ * $Id: u_global_retriever.h,v 1.18 2003/04/18 09:37:00 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,6 +115,11 @@ public:
 	  * Retrieves the position of an estimated point in the global retriever (double instead.) with a snapping threshold
 	  */
 	virtual UGlobalPosition			retrievePosition(const NLMISC::CVectorD &estimated, double threshold) const =0;
+
+	/**
+	  * Checks pos is valid (e.g. is really inside the surface it points to)
+	  */
+	virtual bool					testPosition(UGlobalPosition &pos) const =0;
 
 	/**
 	  * Insure position inside a surface

@@ -1,7 +1,7 @@
-/** \file ps_particle.h
- * <File description>
+/** \file ps_particle2.h
+ * Some more particles
  *
- * $Id: ps_particle2.h,v 1.2 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_particle2.h,v 1.3 2002/01/28 14:37:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,15 +29,161 @@
 
 #include "3d/ps_particle_basic.h"
 #include "3d/vertex_buffer.h"
+#include "3d/primitive_block.h"
+
 
 namespace NL3D {
 
+/** Base class for ribbons. If can be used to compute ribbons trajectory. 
+  * It can perform lagrange or linear interpolation.
+  * to get the ribbon shape. It can also be used to have fixed size ribbons.
+  * NB : Ribbons that don't herit from this are deprecated but may be kept for compatibility.
+  * \author Nicolas Vizerie
+  * \author Nevrax France
+  * \date 2002
+  */
+class CPSRibbonBase : public CPSParticle, public CPSTailParticle
+{
+public:		
+	enum TRibbonMode		{ VariableSize = 0, FixedSize, RibbonModeLast };
+	enum TInterpolationMode { Linear = 0, Hermitte, InterpModeLast };
+
+	///\name Object
+	///@{
+		CPSRibbonBase();
+		/// serialisation. Derivers must override this, and call their parent version
+		virtual void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	///@}
+
+	///\name Behaviour
+	///@{
+		/// NB : a fixed size isn't applied with parametric motion.
+		void					setRibbonMode(TRibbonMode mode);
+		TRibbonMode				getRibbonMode() const { return _RibbonMode; }
+		void					setInterpolationMode(TInterpolationMode mode);
+		TInterpolationMode		getInterpolationMode() const { return _InterpolationMode; }
+	///@}	
+
+	///\name Geometry
+	///@{
+		/// set the number of segments used with this particle. In this case, it can't be lower than 2
+		void				setTailNbSeg(uint32 nbSegs);
+		/// get the number of segments used with this particle
+		uint32				getTailNbSeg(void) const { return _NbSegs; }
+		/** Set how many seconds need a seg to be traversed. Long times will create longer ribbons. Default is 0.02.
+		  * It gives the sampling rate for each type of ribbon
+		  */
+		void				setSegDuration(TAnimationTime ellapsedTime);		
+		TAnimationTime		getSegDuration(void) const { return _SegDuration; }
+
+		/** The the length in meter of the ribbon. This is used only if the ribbon mode is set to FixedSize.
+		* These kind of ribbon are usually slower than variable size ribbons.
+		* The default is one metter.
+		*/
+		void					setRibbonLength(float length);
+		float			        getRibbonLength() const { return _RibbonLength; }
+	///@}
+		
+	/** Allow degradation of ribbons with distance of the system (may not be suited when theit paths have wicked angles)
+	  * \param percent 1 mean no degradation, 0 mean nothing will be draw when the system is at its max dist. 1 is the default
+	  */
+	void					setLODDegradation(float percent)
+	{ 
+		nlassert(percent >= 0 && percent <= 1)
+		_LODDegradation = percent;
+	}
+	float					getLODDegradation() const { return _LODDegradation; }
+
+protected:
+	uint32							  _NbSegs;
+	TAnimationTime					  _SegDuration;
+	bool							  _Parametric; // if this is set to true, then the owner has activated parametric motion.	
+	
+	/// inherited from CPSLocatedBindable
+	virtual void					newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	/// inherited from CPSLocatedBindable
+	virtual void					deleteElement(uint32 index);
+	/// inherited from CPSLocatedBindable	
+	virtual void					resize(uint32 size);
+	/// called when the motion type has changed, this allow us to draw smoother ribbons when parametric anim is used
+	virtual	void					motionTypeChanged(bool parametric);
+	
+	/** Get position of the i-th ribbon and store them in a table of vector.	  
+	  * It uses the interpolation setting of this object. 
+	  * The dest tab must have at least nbSegs + 1 entries.
+	  */
+	void							computeRibbon( uint index,
+												   NLMISC::CVector *dest,
+												   uint stride = sizeof(NLMISC::CVector)
+												  );
+
+	/// Called each time the time of the system change in order to update the ribbons positions
+	void							updateGlobals();
+
+	/// must be called for the lod to apply (updates UsedNbSegs)
+	void                            updateLOD();
+
+	
+	/// value to use after lod computation
+	uint32							  _UsedNbSegs;
+	TAnimationTime					  _UsedSegDuration;
+	float							  _UsedSegLength;
+
+private:
+	typedef std::vector<NLMISC::CVector> TPosVect;
+	typedef	std::vector<float>			 TFloatVect; // all positions for each ribbons packed in a single vector
+
+	TPosVect						  _Ribbons;	
+	TFloatVect					      _SamplingDate;
+	uint							  _RibbonIndex;  // indicate which is the first index for the ribbons head	
+	TAnimationTime					  _LastUpdateDate;	
+	TRibbonMode						  _RibbonMode;
+	TInterpolationMode				  _InterpolationMode;
+	float							  _RibbonLength; // used if _RibbonMode == FixedSize
+	float							  _SegLength;
+	float							  _LODDegradation;
+
+	
+
+
+
+	void					initDateVect();
+	void					resetSingleRibbon(uint index, const NLMISC::CVector &pos);
+	void					resetFromOwner();	
+
+	/// copy datas from one ribbon to another
+	void					dupRibbon(uint dest, uint src);	
+
+	/// Compute the ribbon points using linear interpolation between each sampling point.
+	void					computeLinearRibbon( uint index,
+											     NLMISC::CVector *dest,
+										         uint stride = sizeof(NLMISC::CVector)
+										       );
+	/// The same as compute linear ribbon but try to make its length constant
+	void					computeLinearCstSizeRibbon( uint index,
+											     NLMISC::CVector *dest,
+										         uint stride = sizeof(NLMISC::CVector)
+										       );
+	/// Compute the ribbon points using hermitte splines between each sampling point.
+	void					computeHermitteRibbon( uint index,
+											     NLMISC::CVector *dest,
+										         uint stride = sizeof(NLMISC::CVector)
+										       );
+
+	/** Compute the ribbon points using hermitte splines between each sampling point,
+	  * and make a rough approximation to get a constant lenght
+	  */
+	void					computeHermitteCstSizeRibbon( uint index,
+											     NLMISC::CVector *dest,
+										         uint stride = sizeof(NLMISC::CVector)
+										       );
+};
 
 
 /** A ribbon look at particle. It is like a ribbon, but textured (with no animation), and it always faces the user
   */
-class CPSRibbonLookAt : public  CPSParticle, public CPSSizedParticle, public CPSColoredParticle,
-						public  CPSMaterial, public CPSTailParticle, public CPSTexturedParticleNoAnim
+class CPSRibbonLookAt : public  CPSRibbonBase, public CPSSizedParticle, public CPSColoredParticle,
+						public  CPSMaterial, public CPSTexturedParticleNoAnim
 {
 public:	
 	///\name Object
@@ -59,28 +205,19 @@ public:
 		/// get the texture used for this particle
 		ITexture *getTexture(void) { return _Tex;}
 		const ITexture		*getTexture(void) const { return _Tex;}
-	///@}
-
-	///\name Geometry
-	///@{
-		/// set the number of segments used with this particle. In this case, it can't be lower than 2
-		void				setTailNbSeg(uint32 nbSegs);
-		/// get the number of segments used with this particle
-		uint32				getTailNbSeg(void) const { return _NbSegs; }
-		/// set how many seconds need a seg to be traversed. Long times will create lonegr ribbons. Default is 0.02
-		void				setSegDuration(TAnimationTime ellapsedTime);
-		/// set how many seconds need a seg to be traversed. Long times will create lonegr ribbons.
-		TAnimationTime		getSegDuration(void) const;
-	///@}
+	///@}		
 
 	///\name Behaviour
 	///@{
 			/** (de)activate color fading
-			* when its done, colors fades to black along the tail
+			* when its done, colors fades to black along the tail.
+			* NOT SUPPORTED FOR NOW
 			*/
 			virtual void setColorFading(bool onOff = true) {}
 
-			/// test wether color fading is activated
+			/** Test wether color fading is activated.
+			  * NOT SUPPORTED FOR NOW
+			  */
 			virtual bool getColorFading(void) const { return false; }
 
 			/** tells in which basis is the tail
@@ -105,39 +242,14 @@ public:
 	virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 
 	/// return true if there are transparent faces in the object
-	virtual bool hasTransparentFaces(void);
+	virtual bool			hasTransparentFaces(void);
 
 	/// return true if there are Opaque faces in the object
-	virtual bool hasOpaqueFaces(void);
+	virtual bool			hasOpaqueFaces(void);
 
-	virtual uint32 getMaxNumFaces(void) const;
+	virtual uint32			getMaxNumFaces(void) const;
 
-protected:
-	uint32									_NbSegs;
-	TAnimationTime							_SegDuration;
-	bool									_Parametric; // if this is set to true, then the owner has activated parametric motion, 
-														 // so we don't need to memorize previous position
-
-	//////////
-	typedef std::vector<NLMISC::CVector>	TPointVect;
-	struct CRibbons 
-	{		
-		TPointVect					    _Pts;		// several arrays of vectors packed in a single one. Contains previous pos for each ribbons
-		std::vector<TAnimationTime>		_Times;     // ellapsed time for each ribbon		
-		void reset(void) 
-		{ 
-			NLMISC::contReset(_Pts);
-			NLMISC::contReset(_Times);
-		}
-	};		
-	CRibbons						_Ribbons;
-	CRibbons						*_DyingRibbons;
-	uint32							_NbDyingRibbons;
-	/////////
-
-
-	CVertexBuffer					_VB;		// the vb used to draw the ribbons
-	std::vector<uint32>				_IB;		// an index buffer, should be removed when strips are availables	
+protected:				
 	CSmartPtr<ITexture>				_Tex;
 
 	// the number of dying ribbons that are present
@@ -152,39 +264,38 @@ protected:
 	virtual void					resize(uint32 size);
 	virtual CPSLocated				*getSizeOwner(void) { return _Owner; }
 	virtual CPSLocated				*getColorOwner(void) { return _Owner; }	
-	/** resize and setup Vb (and index buffer also)	 
-	 */
-	void resizeVb(void);
-	/// setup the initial colors in the whole vb : black or a precomputed gradient for constant color
-	void setupColor();
-	/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
-	virtual void					updateMatAndVbForColor(void);
 
-	/// copy one ribbon to another one
-	void							dup(CRibbons &src, CRibbons &dest, uint32 srcIndex, uint32 dstIndex);
-	/// resize ribbons
-	void							resizeRibbons(CRibbons &r, uint32 size);
-	/// performs alive ribbons motion
-	void							performMotion(TAnimationTime ellapsedTime);
-	/** Perform motion of one ribbon portion by decaling of the given amount.
-	  * \param alpha The amount to move one point toward the next in the list.
-	  * \param ribbonIndex The index of the ribbon that is being modified.
-	  * \param startIndex  First point of the ribbon to change
-	  * \param numPoints   Number of points to move. As the next point is needed, numPoints + 1 position are read
-	  */
-	void							performSubMotion(float alpha, uint32 ribbonIndex, uint32 startIndex, uint32 numPoints); 
+
+private:	
+
+	/// update the material and the vb so that they match the color scheme. Inherited from CPSColoredParticle
+	virtual void					updateMatAndVbForColor(void);	
 
 	/// display a set of ribbons
-	void							displayRibbons(CRibbons &r, uint32 nbRibbons);
-	/// init one ribbon at the given pos. At startup, all points of the ribbons are at the same pos
-	void							initRibbon(CRibbons &r, uint32 index, const NLMISC::CVector &pos, const NLMISC::CVector &speed);
-	/// create ribbon with a null lenght from the positions given by the owner
-	void							reinitFromOwner(void);
-	/// dump a ribbon content, for debug purpose
-	void							dumpRibbon(uint32 index);
+	void							displayRibbons(uint32 nbRibbons);
 
-	/// called when the motion type has changed, this allow us to draw smoother ribbons when parametric anim is used
-	virtual	void	    motionTypeChanged(bool parametric);
+	/**\name Vertex buffers & their corresponding index buffers. We keep a map of pretextured vertex buffer (with or without colors).
+	  * Vb for ribbons that have the same size are shared.
+	  */
+		
+	//@{
+			/// a struct containing a vertex buffer and a primitive block
+			struct CVBnPB
+			{
+				CVertexBuffer		VB;
+				CPrimitiveBlock		PB;
+			};
+			typedef std::map<uint, CVBnPB> TVBMap;
+
+			static TVBMap					_VBMap;			  // index buffers with no color
+			static TVBMap					_ColoredVBMap;    // index buffer + colors			
+
+			/// get a vertex buffer and a primitive suited for the current ribbon
+			CVBnPB &getVBnPB();
+
+			/// get the number of ribbons contained in a vb for a given length. (e.g the number of ribbons that can be batched)
+			uint	getNumRibbonsInVB() const;
+	//@}		
 };
 
 

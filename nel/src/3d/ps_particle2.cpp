@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle2.cpp,v 1.4 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_particle2.cpp,v 1.5 2002/01/28 14:37:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,37 +56,637 @@
 
 namespace NL3D {
 
+/// build some hermite spline value, with the given points and tangents
+static inline void BuildHermiteVector(const NLMISC::CVector &P0,
+							   const NLMISC::CVector &P1,
+							   const NLMISC::CVector &T0,
+							   const NLMISC::CVector &T1,
+									 NLMISC::CVector &dest,									 
+							   float lambda
+							   )
+{	
+	const float lambda2 = lambda * lambda;
+	const float lambda3 = lambda2 * lambda;
+	const float h1 = 2 * lambda3 - 3 * lambda2 + 1; 
+	const float h2 = - 2 * lambda3 + 3 * lambda2; 
+	const float h3 = lambda3 - 2 * lambda2 + lambda; 
+	const float h4 = lambda3 - lambda2;
+	/// just avoid some ctor calls here...
+	dest.set (h1 * P0.x + h2 * P1.x + h3 * T0.x + h4 * T1.x,
+			  h1 * P0.y + h2 * P1.y + h3 * T0.y + h4 * T1.y,
+			  h1 * P0.z + h2 * P1.z + h3 * T0.z + h4 * T1.z);
+
+}
+
+/// for test
+static inline void BuildLinearVector(const NLMISC::CVector &P0,
+									 const NLMISC::CVector &P1,							   
+									 NLMISC::CVector &dest,									 
+									 float lambda,
+									 float oneMinusLambda
+							        )
+{		
+	dest.set (lambda * P1.x + oneMinusLambda * P0.x,
+			  lambda * P1.y + oneMinusLambda * P0.y,
+			  lambda * P1.z + oneMinusLambda * P0.z);			  		
+}
 
 
+const uint EndRibbonStorage = 2;
+
+////////////////////////////////////
+//  CPSRibbonBase implementation  //
+////////////////////////////////////
+
+//=======================================================
+CPSRibbonBase::CPSRibbonBase() : _NbSegs(8),
+								 _SegDuration(0.02f),
+								 _RibbonIndex(0),
+								 _LastUpdateDate(0),
+								 _Parametric(false),
+								 _RibbonMode(VariableSize),
+								 _InterpolationMode(Hermitte),
+								 _RibbonLength(1),
+								 _SegLength(_RibbonLength / _NbSegs),
+								 _LODDegradation(1)
+
+{
+	initDateVect();
+}
+
+//=======================================================
+void	CPSRibbonBase::setRibbonLength(float length)
+{ 
+	nlassert(length > 0.f);
+	_RibbonLength = length;
+	_SegLength = length / _NbSegs;
+}
+
+//=======================================================
+void	CPSRibbonBase::setRibbonMode(TRibbonMode mode)
+{
+	nlassert(mode < RibbonModeLast);
+	_RibbonMode = mode;
+}
+
+
+//=======================================================
+void	CPSRibbonBase::setInterpolationMode(TInterpolationMode mode)
+{
+	nlassert(mode < InterpModeLast);
+	_InterpolationMode = mode;
+}
+
+//=======================================================
+void	CPSRibbonBase::setTailNbSeg(uint32 nbSegs)
+{
+	nlassert(nbSegs >= 1);	
+	_NbSegs = nbSegs;
+	nlassert(_Owner);
+	_RibbonIndex = 0;
+	resize(_Owner->getMaxSize());	
+	initDateVect();
+}
+
+
+//=======================================================	
+void	CPSRibbonBase::setSegDuration(TAnimationTime ellapsedTime)
+{
+	_SegDuration = ellapsedTime;
+
+}
+
+//=======================================================	
+void	CPSRibbonBase::updateGlobals()
+{
+	nlassert(!_Parametric);
+	nlassert(_Owner);
+	const uint size = _Owner->getSize();
+	if (!size) return;
+	const TAnimationTime currDate = _Owner->getOwner()->getSystemDate();
+	if (currDate  - _LastUpdateDate >= _SegDuration)
+	{
+		if (_RibbonIndex == 0) _RibbonIndex = _NbSegs + EndRibbonStorage;
+		else --_RibbonIndex;
+		
+		/// decal date
+		::memmove(&_SamplingDate[1], &_SamplingDate[0], sizeof(float) * (_NbSegs + EndRibbonStorage));
+		_LastUpdateDate = currDate;
+	}
+	
+	/// save current date
+	_SamplingDate[0] = currDate;
+
+	/// updating ribbons positions	
+	TPSAttribVector::iterator posIt = _Owner->getPos().begin();
+	TPosVect::iterator currIt = _Ribbons.begin() + _RibbonIndex;
+	uint k = size;
+	for (;;)
+	{
+		*currIt = *posIt;
+		--k;
+		if (!k) break;
+		++posIt;
+		currIt += (_NbSegs + 1 + EndRibbonStorage);
+	}
+}
+
+
+//=======================================================	
+void	CPSRibbonBase::computeHermitteRibbon(uint index, NLMISC::CVector *dest, uint stride /* = sizeof(NLMISC::CVector)*/)
+{	
+	nlassert(!_Parametric);	
+	TPosVect::iterator startIt = _Ribbons.begin() + (_NbSegs + 1 + EndRibbonStorage) * index;
+	TPosVect::iterator endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
+	TPosVect::iterator currIt  = startIt + _RibbonIndex;	
+	TPosVect::iterator nextIt  = currIt + 1;
+	if (nextIt == endIt) nextIt = startIt;
+	TPosVect::iterator nextNextIt = nextIt + 1;	
+	if (nextNextIt == endIt) nextNextIt = startIt;	
+	float *date = &_SamplingDate[0];			
+
+	NLMISC::CVector t0 = (*currIt - *nextIt);
+	NLMISC::CVector t1 = 0.5f * (*nextNextIt - *currIt);
+
+	uint leftToDo = _UsedNbSegs + 1;
+
+	float lambda = 0.f;
+	float lambdaStep = 1.f;
+
+	for (;;)
+	{		
+		float dt = date[0] - date[1];
+
+		if (dt < 10E-6f) // we reached the start of ribbon
+		{
+
+			do
+			{
+				*dest = *currIt;
+				dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+			}
+			while (--leftToDo);			
+			return;
+		}
+
+		float newLambdaStep = _UsedSegDuration / dt;
+		// readapt lambda
+		lambda *= newLambdaStep / lambdaStep;
+		lambdaStep = newLambdaStep;
+		for(;;)
+		{
+			if (lambda >= 1.f) break;
+			/// compute a location
+			BuildHermiteVector(*currIt, *nextIt, t0, t1, *dest, lambda);
+			dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+			-- leftToDo;
+			if (!leftToDo) return;												
+			lambda += lambdaStep;			
+		}
+
+		++date;
+		lambda -= 1.f;
+
+		// Start new segment and compute new tangents
+		t0 = t1;
+		currIt = nextIt;
+		nextIt = nextNextIt;
+		++nextNextIt;
+		if (nextNextIt == endIt) nextNextIt = startIt;
+		t1 = 0.5f * (*nextNextIt - *currIt);		
+	}
+}
+
+//=======================================================	
+void CPSRibbonBase::computeLinearRibbon(uint index, NLMISC::CVector *dest, uint stride /* = sizeof(NLMISC::CVector)*/)
+{
+	/// well we could avoid code duplication with computeHermitteRibbon, but this is simply easier than using templates for now...
+	nlassert(!_Parametric);	
+	TPosVect::iterator startIt = _Ribbons.begin() + (_NbSegs + 1 + EndRibbonStorage) * index;
+	TPosVect::iterator endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
+	TPosVect::iterator currIt  = startIt + _RibbonIndex;	
+	TPosVect::iterator nextIt  = currIt + 1;
+	if (nextIt == endIt) nextIt = startIt;
+	TPosVect::iterator nextNextIt = nextIt + 1;	
+	if (nextNextIt == endIt) nextNextIt = startIt;	
+	float *date = &_SamplingDate[0];				
+
+	uint leftToDo = _NbSegs + 1;
+
+	float lambda = 0.f;
+	float lambdaStep = 1.f;
+
+	for (;;)
+	{		
+		float dt = date[0] - date[1];
+
+		if (dt < 10E-6f) // we reached the start of ribbon
+		{
+
+			do
+			{
+				*dest = *currIt;
+				dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+			}
+			while (--leftToDo);			
+			return;
+		}
+
+		float newLambdaStep = _UsedSegDuration / dt;
+		// readapt lambda
+		lambda *= newLambdaStep / lambdaStep;
+		lambdaStep = newLambdaStep;
+
+		float oneMinusLambda = 1.f - lambda;
+		for(;;)
+		{
+			if (lambda >= 1.f) break;
+			/// compute a location
+			BuildLinearVector(*currIt, *nextIt, *dest, lambda, oneMinusLambda);
+			dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+			-- leftToDo;
+			if (!leftToDo) return;												
+			lambda += lambdaStep;
+			oneMinusLambda -= lambdaStep;
+		}
+
+		++date;
+		lambda -= 1.f;
+		
+		currIt = nextIt;
+		nextIt = nextNextIt;
+		++nextNextIt;
+		if (nextNextIt == endIt) nextNextIt = startIt;		
+	}
+}
+
+
+
+//=======================================================	
+void CPSRibbonBase::computeLinearCstSizeRibbon(uint index, NLMISC::CVector *dest, uint stride /* = sizeof(NLMISC::CVector)*/)
+{	
+	nlassert(!_Parametric);	
+	TPosVect::iterator startIt = _Ribbons.begin() + (_NbSegs + 1 + EndRibbonStorage) * index;
+	TPosVect::iterator endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
+	TPosVect::iterator currIt  = startIt + _RibbonIndex;	
+	TPosVect::iterator firstIt = currIt;	
+	TPosVect::iterator nextIt  = currIt + 1;
+	if (nextIt == endIt) nextIt = startIt;
+	TPosVect::iterator nextNextIt = nextIt + 1;	
+	if (nextNextIt == endIt) nextNextIt = startIt;		
+
+	uint leftToDo = _UsedNbSegs + 1;
+
+	float lambda = 0.f;
+	float lambdaStep = 1.f;	
+
+	
+	/// Our goal here is to match the length of the ribbon, But if it isn't moving fast enough, we must truncate it
+	for (;;)
+	{	
+		/// compute length between the 2 sampling points
+		const float sampleLength = (*nextIt - *currIt).norm();		
+		if (sampleLength > 10E-6f)
+		{					
+			/// compute lambda so that it match the length needed for each segment
+			float newLambdaStep = _UsedSegLength / sampleLength;
+			// readapt lambda
+			lambda *= newLambdaStep / lambdaStep;
+			lambdaStep = newLambdaStep;
+
+			float oneMinusLambda = 1.f - lambda;
+			for(;;)
+			{
+				if (lambda >= 1.f) break;
+				/// compute a location
+				BuildLinearVector(*currIt, *nextIt, *dest, lambda, oneMinusLambda);
+				dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+				-- leftToDo;
+				if (!leftToDo) return;												
+				lambda += lambdaStep;
+				oneMinusLambda -= lambdaStep;
+			}
+			lambda -= 1.f;
+		}
+		
+		/// go to next sampling pos
+		currIt = nextIt;
+		nextIt = nextNextIt;
+		++nextNextIt;
+		if (nextNextIt == endIt) nextNextIt = startIt;
+		if (nextNextIt == firstIt)
+		{
+			// The length of the sampling curve is too short
+			// must truncate the ribbon.
+			NLMISC::CVector &toDup = *nextIt;
+			while (leftToDo --)
+			{
+				*dest = toDup;
+				dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+			}
+			return;
+		}
+	}
+}
+
+//=======================================================	
+void CPSRibbonBase::computeHermitteCstSizeRibbon(uint index, NLMISC::CVector *dest, uint stride /* = sizeof(NLMISC::CVector)*/)
+{	
+	nlassert(!_Parametric);	
+	TPosVect::iterator startIt = _Ribbons.begin() + (_NbSegs + 1 + EndRibbonStorage) * index;
+	TPosVect::iterator endIt   = startIt + (_NbSegs + 1 + EndRibbonStorage);
+	TPosVect::iterator currIt  = startIt + _RibbonIndex;	
+	TPosVect::iterator firstIt = currIt;	
+	TPosVect::iterator nextIt  = currIt + 1;
+	if (nextIt == endIt) nextIt = startIt;
+	TPosVect::iterator nextNextIt = nextIt + 1;	
+	if (nextNextIt == endIt) nextNextIt = startIt;
+
+	NLMISC::CVector t0 = (*currIt - *nextIt);
+	NLMISC::CVector t1 = 0.5f * (*nextNextIt - *currIt);
+
+	uint leftToDo = _UsedNbSegs + 1;
+
+	float lambda = 0.f;
+	float lambdaStep = 1.f;	
+
+	
+	/// Our goal here is to match the length of the ribbon, But if it isn't moving fast enough, we must truncate it
+	/// Having a constant speed over a hermite curve is expensive, so we make a (very) rough approximation...
+	for (;;)
+	{	
+		/// compute length between the 2 sampling points
+		const float sampleLength = (*nextIt - *currIt).norm();		
+		if (sampleLength > 10E-6f)
+		{					
+			/// compute lambda so that it match the length needed for each segment
+			float newLambdaStep = _UsedSegLength / sampleLength;
+			// readapt lambda
+			lambda *= newLambdaStep / lambdaStep;
+			lambdaStep = newLambdaStep;
+			
+			for(;;)
+			{
+				if (lambda >= 1.f) break;
+				/// compute a location
+				BuildHermiteVector(*currIt, *nextIt, t0, t1, *dest, lambda);
+				dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+				-- leftToDo;
+				if (!leftToDo) return;												
+				lambda += lambdaStep;				
+			}
+			lambda -= 1.f;
+		}
+		
+		/// go to next sampling pos
+		currIt = nextIt;
+		nextIt = nextNextIt;
+		++nextNextIt;
+		if (nextNextIt == endIt) nextNextIt = startIt;
+		if (nextNextIt == firstIt)
+		{
+			// The length of the sampling curve is too short
+			// must truncate the ribbon.
+			NLMISC::CVector &toDup = *nextIt;
+			while (leftToDo --)
+			{
+				*dest = toDup;
+				dest  = (NLMISC::CVector *) ((uint8 *) dest + stride);
+			}
+			return;
+		}
+		/// update tangents
+		t0 = t1;
+		t1 = 0.5f * (*nextNextIt - *currIt);
+	}
+}
+
+
+//=======================================================	
+inline void CPSRibbonBase::computeRibbon(uint index, NLMISC::CVector *dest, uint stride /* = sizeof(NLMISC::CVector)*/)
+{
+	switch (_InterpolationMode)
+	{
+		case Linear:
+			if (_RibbonMode == VariableSize)
+			{
+				computeLinearRibbon(index, dest, stride);
+			}
+			else
+			{
+				computeLinearCstSizeRibbon(index, dest, stride);
+			}
+		break;
+		case Hermitte:
+			if (_RibbonMode == VariableSize)
+			{
+				computeHermitteRibbon(index, dest, stride);	
+			}
+			else
+			{
+				computeHermitteCstSizeRibbon(index, dest, stride);	
+			}
+		break;
+		default:
+			nlassert(0);
+		break;
+	}
+}
+
+
+//=======================================================	
+void	CPSRibbonBase::dupRibbon(uint dest, uint src)
+{
+	nlassert(!_Parametric);
+	nlassert(_Owner);
+	const uint size = _Owner->getSize();
+	nlassert(dest < size && src < size);
+	::memcpy(&_Ribbons[dest * (_NbSegs + EndRibbonStorage + 1)], &_Ribbons[src * (_NbSegs + EndRibbonStorage + 1)], sizeof(NLMISC::CVector) * (_NbSegs + 1 + EndRibbonStorage));
+}
+
+//=======================================================	
+void	CPSRibbonBase::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+{
+	if (_Parametric) return;
+	/// dump the same pos for all pos of the ribbon
+	const uint index = _Owner->getNewElementIndex();
+	const NLMISC::CVector &pos = _Owner->getPos()[index]; // get the pos of the new element;
+	resetSingleRibbon(index, pos);
+}
+
+//=======================================================	
+void	CPSRibbonBase::deleteElement(uint32 index)
+{
+	if (_Parametric) return;
+	const uint32 size = _Owner->getSize();
+	if(index == (size - 1)) return; // was the last element, no permutation needed.
+	dupRibbon(index, size - 1);
+}
+
+//=======================================================	
+void	CPSRibbonBase::resize(uint32 size)
+{
+	if (_Parametric) return;
+	_Ribbons.resize(size * (_NbSegs + 1 + EndRibbonStorage));
+	resetFromOwner();
+}
+
+
+//=======================================================	
+void CPSRibbonBase::resetSingleRibbon(uint index, const NLMISC::CVector &pos)
+{
+	nlassert(!_Parametric);
+	TPosVect::iterator it = _Ribbons.begin() + (index * (_NbSegs + 1 + EndRibbonStorage));
+	std::fill(it, it + (_NbSegs + 1 + EndRibbonStorage), pos);
+}
+
+
+
+//=======================================================	
+void CPSRibbonBase::resetFromOwner()
+{
+	nlassert(!_Parametric);
+	const uint32 size = _Owner->getSize();
+	TPSAttribVector::iterator posIt = _Owner->getPos().begin();
+	TPSAttribVector::iterator endPosIt = _Owner->getPos().end();
+	for (uint k = 0; posIt != endPosIt; ++posIt, ++k)
+	{
+		resetSingleRibbon(k, *posIt);
+	}
+}
+
+//=======================================================	
+void CPSRibbonBase::motionTypeChanged(bool parametric)
+{
+	_Parametric = parametric;
+	if (parametric)
+	{
+		_Ribbons.swap(TPosVect()); // kill the vector		
+	}
+	else
+	{
+		nlassert(_Owner);
+		resize(_Owner->getMaxSize());
+		initDateVect();		
+		resetFromOwner();		
+	}	
+}
+
+
+//=======================================================	
+void CPSRibbonBase::initDateVect()
+{
+	_SamplingDate.resize( _NbSegs + 1 + EndRibbonStorage);
+	std::fill(_SamplingDate.begin(), _SamplingDate.begin() + (_NbSegs + 1 + EndRibbonStorage), 0.f);
+}
+
+
+//=======================================================	
+void CPSRibbonBase::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	CPSParticle::serial(f);
+	sint ver = f.serialVersion(1);
+	f.serialEnum(_RibbonMode);
+	f.serialEnum(_InterpolationMode);
+	f.serial(_NbSegs, _SegDuration);	
+	if (_RibbonMode == FixedSize)
+	{
+		f.serial(_RibbonLength);
+		if (f.isReading())
+		{
+			_SegLength = _RibbonLength / _NbSegs;
+		}
+	}
+
+	if (f.isReading())
+	{
+		nlassert(_Owner);
+		resize(_Owner->getMaxSize());
+		initDateVect();		
+		resetFromOwner();		
+	}
+
+	if (ver >= 1)
+	{
+		f.serial(_LODDegradation);
+	}
+}
+
+
+//=======================================================	
+void CPSRibbonBase::updateLOD()
+{
+	nlassert(_Owner)
+	float ratio = _Owner->getOwner()->getOneMinusCurrentLODRatio();
+	float lodRatio = _LODDegradation + (1.f - _LODDegradation ) * ratio * ratio;
+	
+	_UsedNbSegs = (uint) (_NbSegs * lodRatio);
+	NLMISC::clamp(_UsedNbSegs, 0u, _NbSegs);
+	const float epsilon = 10E-4f;	
+	_UsedSegDuration =  _SegDuration / std::max(epsilon, lodRatio);
+	_UsedSegLength   =  _SegLength / std::max(epsilon, lodRatio);
+
+}
 
 ////////////////////////////////////
 // CPSRibbonLookAt implementation //
 ////////////////////////////////////
 
-CPSRibbonLookAt::CPSRibbonLookAt() : _DyingRibbons(NULL), _SegDuration(0.02f), 
-									 _NbSegs(8), _NbDyingRibbons(0), _Parametric(false)
+const float ZEpsilon = 10E-3f;
+const float NormEpsilon = 10E-8f;
+
+
+struct CVectInfo
+{
+	NLMISC::CVector Interp;
+	NLMISC::CVector Proj;	
+};
+typedef std::vector<CVectInfo> TRibbonVect; // a vector used for intermediate computations
+
+CPSRibbonLookAt::TVBMap		CPSRibbonLookAt::_VBMap;			// index buffers with no color
+CPSRibbonLookAt::TVBMap		CPSRibbonLookAt::_ColoredVBMap;  // index buffer + colors	
+
+//=======================================================	
+CPSRibbonLookAt::CPSRibbonLookAt()
 {
 }
 
+//=======================================================	
 CPSRibbonLookAt::~CPSRibbonLookAt()
 {
-	delete _DyingRibbons;
+//	delete _DyingRibbons;
 }
 
+//=======================================================	
 void CPSRibbonLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(3);
-	CPSParticle::serial(f);
+	/** Version 4 : added CPSRibbonBase has a base class instead of CPSParticle
+	  * 
+	  */
+	sint ver = f.serialVersion(4);
+	if (ver > 3)
+	{
+		CPSRibbonBase::serial(f);
+	}
+	else
+	{
+		CPSParticle::serial(f);
+	}
 	CPSColoredParticle::serialColorScheme(f);	
 	CPSSizedParticle::serialSizeScheme(f);		
 	serialMaterial(f);
-	f.serial(_SegDuration, _NbSegs, _NbDyingRibbons);
+	uint32 dummy = 0; /* _NbDyingRibbons */
+	if (ver <= 3)
+	{
+		f.serial(_SegDuration, _NbSegs, dummy /*_NbDyingRibbons*/);
+	}
 	ITexture *tex = NULL;
 
 	if (ver > 2)
 	{
 		f.serial(_Parametric);
 	}
+
 
 	if (!f.isReading())
 	{		
@@ -98,39 +698,36 @@ void CPSRibbonLookAt::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialPolyPtr(tex);
 		setTexture(tex);
 		setTailNbSeg(_NbSegs); // force to build the vb
-	}	
+	}
+
+	
 }
 
+
+//=======================================================	
 void CPSRibbonLookAt::setTexture(CSmartPtr<ITexture> tex)
 {
 	_Tex = tex;
 	updateMatAndVbForColor();
 }
 
-void CPSRibbonLookAt::setTailNbSeg(uint32 nbSegs)
-{
-	nlassert(nbSegs >= 2);
-	_NbSegs = nbSegs;
-	if (!_Owner) return; // no attachement occured yet ...
-	const uint32 size = _Owner->getMaxSize();
-	resize(size);
-	reinitFromOwner();
-}
-		
+
+//=======================================================	
 void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
-{		
+{	
 	if (pass == PSPostdynamic) // performs motion by using the speed obtained after forces integration
 	{		
-		performMotion(ellapsedTime);
+		updateGlobals();		
 	}
+	else
 	if (
 		(pass == PSBlendRender && hasTransparentFaces())
 		|| (pass == PSSolidRender && hasOpaqueFaces())
 		)
 	{
 		nlassert(_Owner);		
-		displayRibbons(_Ribbons, _Owner->getSize());
-		if (_DyingRibbons) displayRibbons(*_DyingRibbons, _NbDyingRibbons);
+		displayRibbons(_Owner->getSize());
+	//	if (_DyingRibbons) displayRibbons(*_DyingRibbons, _NbDyingRibbons);
 	}
 	else 
 	if (pass == PSToolRender) // edition mode only
@@ -139,228 +736,40 @@ void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 	}	
 }
 
+
+//=======================================================	
 void CPSRibbonLookAt::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
+	CPSRibbonBase::newElement(emitterLocated, emitterIndex);
 	newColorElement(emitterLocated, emitterIndex);
-	newSizeElement(emitterLocated, emitterIndex);
-	if (_Parametric) return;
-	nlassert(_Owner);	
-	const uint32 index =  _Owner->getNewElementIndex();
-	initRibbon(_Ribbons, index , _Owner->getPos()[index],  _Owner->getSpeed()[index]);
+	newSizeElement(emitterLocated, emitterIndex);	
 }
 
+
+//=======================================================	
 void CPSRibbonLookAt::deleteElement(uint32 index)
 {
+	CPSRibbonBase::deleteElement(index);
 	deleteColorElement(index);
-	deleteSizeElement(index);
-	if (_Parametric) return;
-	nlassert(_Owner);
-	const uint32 size = _Owner->getSize();
-	if(index == (size - 1)) return;
-	dup(_Ribbons, _Ribbons, size - 1, index);
+	deleteSizeElement(index);	
 }
 
+
+//=======================================================	
 void CPSRibbonLookAt::resize(uint32 size)
 {
-	resizeVb();
-	if (_Parametric) return;
+	CPSRibbonBase::resize(size);	
 	resizeColor(size);
-	resizeSize(size);		
-	resizeRibbons(_Ribbons, size);
-	if (_DyingRibbons)
-	{
-		resizeRibbons(*_DyingRibbons, size);
-	}
+	resizeSize(size);			
 }
 
-
-void CPSRibbonLookAt::resizeRibbons(CRibbons &r, uint32 size)
-{
-	nlassert(!_Parametric);
-	r._Pts.resize(size * (_NbSegs + 1));
-	r._Times.resize(size);	
-}
-
+//=======================================================	
 void CPSRibbonLookAt::updateMatAndVbForColor(void)
 {
 	_Mat.setTexture(0, _Tex);
 }
 
-
-	
-void CPSRibbonLookAt::dup(CRibbons &src, CRibbons &dest, uint32 srcIndex, uint32 dstIndex)
-{
-	nlassert(!_Parametric);
-	// copy pos & size
-	std::copy(src._Pts.begin() + (srcIndex * (_NbSegs + 1)), src._Pts.begin() + ((srcIndex + 1) * (_NbSegs + 1))
-			  , dest._Pts.begin() + (dstIndex * (_NbSegs + 1))
-			  );	
-	dest._Times[dstIndex] = src._Times[srcIndex];		
-}
-
-
-/// build some hermite spline value, with the given points and tangents
-static inline void BuildHermiteVector(const NLMISC::CVector P0,
-							   const NLMISC::CVector P1,
-							   const NLMISC::CVector T0,
-							   const NLMISC::CVector T1,
-									 NLMISC::CVector *dest,									 
-							   float lambda,
-							   float lambdaStep,
-							   sint32 numValues
-							   )
-{
-	for (sint32 k = 0; k < numValues; ++k)
-	{
-		const float lambda2 = lambda * lambda;
-		const float lambda3 = lambda2 * lambda;
-		const float h1 = 2 * lambda3 - 3 * lambda2 + 1; 
-		const float h2 = - 2 * lambda3 + 3 * lambda2; 
-		const float h3 = lambda3 - 2 * lambda2 + lambda; 
-		const float h4 = lambda3 - lambda2; 
-		*dest = h1 * P0 + h2 * P1 + h3 * T0 + h4 * T1;
-		++dest;
-	}
-}
-
-	
-void CPSRibbonLookAt::performMotion(TAnimationTime ellapsedTime)
-{
-	if (ellapsedTime == 0) return;
-	nlassert(_Owner);
-	const uint32 nbRibbons = _Owner->getSize();
-	if (nbRibbons == 0) return ;
-	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin();
-	TPSAttribVector::const_iterator speedIt = _Owner->getSpeed().begin();
-
-
-	
-	
-
-	if (ellapsedTime <= _SegDuration)
-	{				
-		for (uint k = 0; k < nbRibbons; ++k)
-		{			
-			const float newTime = _Ribbons._Times[k] + ellapsedTime;			
-		/*	const float delta = _SegDuration - _Ribbons._Times[k];			
-			const float alpha = ellapsedTime / (delta > 10E-2f ? delta : 10E-2f); // too low value leads to numerical instability
-			performSubMotion(alpha, k, 0, _NbSegs);*/
-							
-			
-			if (newTime >= _SegDuration)
-			{
-				_Ribbons._Times[k] = newTime - _SegDuration;
-				std::copy(_Ribbons._Pts.begin() + (_NbSegs + 1) * k + 1,
-						 _Ribbons._Pts.begin() + (_NbSegs + 1) * (k + 1) ,
-						 _Ribbons._Pts.begin() + (_NbSegs + 1) * k);				
-			}
-			else
-			{
-				_Ribbons._Times[k] = newTime;				
-			}
-			// set last point		
-			_Ribbons._Pts[k * (_NbSegs + 1) + _NbSegs] = *posIt;			
-			
-			
-			
-			++posIt;
-			++speedIt;
-		}
-
-	}
-	else // lag situation, must approximate previous position by using hermite interpolation
-	{
-		TPSAttribVector::const_iterator speedIt = _Owner->getSpeed().begin();
-		uint numStep = (uint) (ellapsedTime / _SegDuration);
-		uint numStepInc;
-		const TAnimationTime fracTime = ellapsedTime - numStep * _SegDuration;
-		// use hermite interpolation to create intermediate values
-		NLMISC::CVector T0, T1, P0, P1;
-
-	//	setupDriverModelMatrix();
-		for (uint k = 0; k < nbRibbons; ++k)
-		{	
-			//dumpRibbon(k);
-			const float newTime = _Ribbons._Times[k] + fracTime;
-			if (newTime >= _SegDuration)
-			{
-				_Ribbons._Times[k] = newTime - _SegDuration;
-				numStepInc = numStep + 1;
-			}
-			else
-			{
-				_Ribbons._Times[k] = newTime;
-				numStepInc = numStep;
-			}
-			
-			if (numStepInc < _NbSegs) 
-			{				
-				/// decal positions
-				std::copy(_Ribbons._Pts.begin() + (_NbSegs + 1) * k + numStepInc,
-							 _Ribbons._Pts.begin() + (_NbSegs + 1) * (k + 1),
-							 _Ribbons._Pts.begin() + (_NbSegs + 1) * k);
-				//dumpRibbon(k);				
-
-				const float lambdaStep = 1.f / numStepInc;
-				float lambda = lambdaStep;
-
-				
-
-				TPointVect::iterator pos = _Ribbons._Pts.begin() + (_NbSegs + 1) * k + (_NbSegs + 1 - numStepInc);
-
-				P1 = *posIt;
-				P0 = *(pos - 1);
-				NLMISC::CVector tg = _SegDuration * (P1 - P0) / ellapsedTime;
-
-				T0 =  ellapsedTime * 0.5f * ( tg + *(pos - 1) - *(pos - 2) ) /*/ _SegDuration*/;
-				T1 =  ellapsedTime * 0.5f * ( tg + _SegDuration * *speedIt) /*/ _SegDuration*/;
-
-			/*	CPSUtil::displayArrow(getDriver(), P0, T0, 1.5f, NLMISC::CRGBA::White, NLMISC::CRGBA::Red);		
-				CPSUtil::displayArrow(getDriver(), P1, T1, 1.5f, NLMISC::CRGBA::White, NLMISC::CRGBA::Red);		*/
-
-				// compute with hermite spline
-				BuildHermiteVector(P0, P1, T0, T1, &*pos, lambda, lambdaStep, numStepInc);
-							   
-				/// perform sub motion
-			/*	const float delta = _SegDuration - _Ribbons._Times[k];			
-				const float alpha = fracTime / (delta > 10E-2f ? delta : 10E-2f); // too low value leads to numerical instability
-				performSubMotion(alpha, k, 0, _NbSegs - numStepInc - 1);*/
-								
-			}
-			else // all position are new
-			{			
-				TPointVect::iterator pos = _Ribbons._Pts.begin() + (_NbSegs + 1) * (k + 1);
-				P1 = *posIt;
-				NLMISC::CVector tg = _SegDuration * (P1 - P0) / ellapsedTime;
-				T0 =  ellapsedTime * 0.5f * ( tg + *(pos - 1) - *(pos - 2) ) / _SegDuration;
-				T1 =  ellapsedTime * 0.5f * ( tg + _SegDuration * *speedIt) / _SegDuration;
-				const float lambdaStep = _SegDuration * ellapsedTime;
-				float lambda = 1.f - (_NbSegs + 1) * lambdaStep;
-				pos = pos - (_NbSegs + 1);
-			
-				BuildHermiteVector(P0, P1, T0, T1, &*pos, lambda, lambdaStep, _NbSegs + 1);
-			}
-
-			++posIt;
-			++speedIt;
-		}
-	}
-}
-
-
-
-const float ZEpsilon = 10E-3f;
-const float NormEpsilon = 10E-8f;
-
-
-struct CVectInfo
-{
-	NLMISC::CVector Interp;
-	NLMISC::CVector Proj;	
-};
-typedef std::vector<CVectInfo> TRibbonVect;
-	
-
+//=======================================================	
 static inline void MakeProj(NLMISC::CVector &dest, const NLMISC::CVector &src)
 {		
 	if (fabsf(src.y) > NormEpsilon * NormEpsilon)
@@ -371,17 +780,14 @@ static inline void MakeProj(NLMISC::CVector &dest, const NLMISC::CVector &src)
 	}	
 }
 
-
-// build one slice of the ribbon
-
 static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uint8 *currVert, uint32 vertexSize,
 							  const NLMISC::CVector &I, 
 							  const NLMISC::CVector &K, 
   							  TRibbonVect::iterator  pos,
 							  TRibbonVect::iterator  prev,
 							  TRibbonVect::iterator  next,
-							  float ribSize
-							  )
+							  float ribSize)
+/// TODO: some optimisation to get a better speed
 {
 	CHECK_VERTEX_BUFFER(vb, currVert);
 	CHECK_VERTEX_BUFFER(vb, currVert);
@@ -484,273 +890,263 @@ static inline void BuildSlice(const NLMISC::CMatrix &mat, CVertexBuffer &vb, uin
 		*(NLMISC::CVector *) currVert = pos->Interp;
 		*(NLMISC::CVector *) (currVert + vertexSize) = pos->Interp;
 	}
-
-	
-	
 	
 }
 
 
-	
-void CPSRibbonLookAt::displayRibbons(CRibbons &r, uint32 nbRibbons)
+//==========================================================================	
+void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons)
 {	
 	if (!nbRibbons) return;
 	nlassert(_Owner);	
+	CPSRibbonBase::updateLOD();
+	if (_UsedNbSegs < 2) return;
+
 	const float date = _Owner->getOwner()->getSystemDate();
 	uint8						*currVert;
-	const uint32				vertexSize  = _VB.getVertexSize();
+
+	CVBnPB						&VBnPB = getVBnPB(); // get the appropriate vb (build it if needed)
+	CVertexBuffer				&VB = VBnPB.VB;
+	CPrimitiveBlock				&PB = VBnPB.PB;
+
+	const uint32				vertexSize  = VB.getVertexSize();
+	uint						colorOffset;
 	const uint32				vertexSizeX2  = vertexSize << 1;
 	const NLMISC::CVector       I = _Owner->computeI();
 	const NLMISC::CVector       K = _Owner->computeK();
-	TPointVect::const_iterator posIt;	
-	if (!_Parametric) posIt = r._Pts.begin();
+
+	
+	CMatrix mat =  _Owner->isInSystemBasis() ? getViewMat()  *  getSysMat()
+																  : getViewMat();
+	IDriver *drv = this->getDriver();
+	setupDriverModelMatrix();
+	drv->activeVertexBuffer(VB);
+	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose	
+	
+	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribons to process at once
+	
 
 	static TRibbonVect				   currRibbon;
 	static std::vector<float>		   sizes;
 	static std::vector<NLMISC::CRGBA>  colors;
 
-	float	*ptCurrSize;
-	uint32  ptCurrSizeIncrement;	
-	if (_SizeScheme)
-	{
-		sizes.resize(nbRibbons);
-		_SizeScheme->make(this->_Owner, 0, &sizes[0], sizeof(float), nbRibbons);
-		ptCurrSize = &sizes[0];
-		ptCurrSizeIncrement = 1;
-	}
-	else
-	{
-		ptCurrSize = &_ParticleSize;
-		ptCurrSizeIncrement = 0;
-	}
 
+	
+	
 
-	NLMISC::CRGBA	*ptCurrColor;
-	uint32  ptCurrColorIncrement;	
+	if (_UsedNbSegs == 0) return;
+
+	currRibbon.resize(_UsedNbSegs + 1);
+	sizes.resize(numRibbonBatch);
 	if (_ColorScheme)
 	{
-		colors.resize(nbRibbons);
-		ptCurrColor = (NLMISC::CRGBA *) _ColorScheme->make(this->_Owner, 0, &colors[0], sizeof(NLMISC::CRGBA), nbRibbons, true);
-		ptCurrColorIncrement = 1;
+		colorOffset = VB.getColorOff();
+		colors.resize(numRibbonBatch);
+		_Mat.setColor(NLMISC::CRGBA::White);
 	}
 	else
 	{
-		ptCurrColor = &_Color;
-		ptCurrColorIncrement = 0;
+		_Mat.setColor(_Color);
 	}
-
-
-	currRibbon.resize(_NbSegs + 1);
-
-
-
-
-	CMatrix mat =  _Owner->isInSystemBasis() ? getViewMat()  *  getSysMat()
-															  : getViewMat();
-
-	IDriver *drv = this->getDriver();
-	setupDriverModelMatrix();
-	drv->activeVertexBuffer(_VB);
-	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose		
-
-	for (uint k = 0; k < nbRibbons; ++k)
-	{			
-		currVert = (uint8 *) _VB.getVertexCoordPointer();		
-
-		
-		TRibbonVect::iterator rIt = currRibbon.begin(), rItEnd = currRibbon.end(), rItEndMinusOne = rItEnd - 1;
-
-		////////////////////////////////////
-		// interpolate and project points //
-		////////////////////////////////////
 	
-			if (!_Parametric)
-			{
+	uint toProcess;
+	uint ribbonIndex = 0; // index of the first ribbon in the batch being processed
 
-				//////////////////////
-				// INCREMENTAL CASE //
-				//////////////////////								
-				// we use the previous position to build the curve				
-
-				// get the lambda to decal ribbon slices
-				float lambda = r._Times[k] / _SegDuration;
-				float oneMinusLambda = 1.f - lambda;
-
-				do
-				{
-					rIt->Interp = lambda * *(posIt + 1) + oneMinusLambda * *posIt;			
-					MakeProj(rIt->Proj, mat * rIt->Interp);
-					++rIt;
-					++posIt;						
-				}
-				while (rIt != rItEndMinusOne);
-
-				rIt->Interp = *posIt;		
-				MakeProj(rIt->Proj, mat * rIt->Interp);
-				++posIt;
-			}
-			else
-			{
-				//////////////////////
-				// PARAMETRIC  CASE //
-				//////////////////////
-				// we compute each pos thanks to the parametric curve
-				_Owner->integrateSingle(date - _SegDuration * (_NbSegs + 1), _SegDuration, _NbSegs + 1, k,
-									 &rIt->Interp, sizeof(CVectInfo) );
-				// project each position now
-				do
-				{					
-					MakeProj(rIt->Proj, mat * rIt->Interp); // we don't multiply by mat, this was done during integarteSingle
-					++rIt;				
-				}
-				while (rIt != rItEnd);			
-
-			}
-
-			rIt = currRibbon.begin();
-
-		////////////////////////////
-		// deals with first point //
-		////////////////////////////		
-		BuildSlice(mat, _VB, currVert, vertexSize, I, K, rIt, rIt, rIt + 1, *ptCurrSize); 
-		currVert += vertexSizeX2;		
-		++rIt;
-
-		/////////////////////////////
-		// deals with other points //
-		/////////////////////////////
-
-		for (;;) // we assume at least 2 segments, so we must have a middle point		
-		{						
-			// build 2 vertices with the right tangent. /* to project 2 */ is old projected point
-			BuildSlice(mat, _VB, currVert, vertexSize, I, K, rIt, rIt - 1, rIt + 1, *ptCurrSize); 
-			// next position		
-			++rIt;
-			if (rIt == rItEndMinusOne) break;					
-			// next vertex			
-			currVert += vertexSizeX2;		
-		}
-		currVert += vertexSizeX2;
-		// last point.
-		BuildSlice(mat, _VB, currVert, vertexSize, I, K, rIt , rIt - 1, rIt, *ptCurrSize); 			
-		
-		_Mat.setColor(*ptCurrColor);
-
-		// display the result
-		drv->renderTriangles(_Mat, &_IB[0], _NbSegs << 1);
-
-		ptCurrSize += ptCurrSizeIncrement;
-		ptCurrColor += ptCurrColorIncrement;
-	}
-}
-	
-void CPSRibbonLookAt::initRibbon(CRibbons &r, uint32 index, const NLMISC::CVector &pos, const NLMISC::CVector &speed)
-{
-	std::fill(r._Pts.begin() + (index * (_NbSegs + 1)), r._Pts.begin() + (index + 1) * (_NbSegs + 1), pos );	
-	r._Times[index] = 0.f;	
-	
-}
-
-void CPSRibbonLookAt::resizeVb(void)
-{
-	_VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag /*| CVertexBuffer::PrimaryColorFlag*/);
-	_VB.setNumVertices((_NbSegs + 1) * 2);
-	_IB.resize(_NbSegs * 6);
-	for (uint k = 0; k < _NbSegs; ++k)
+	do
 	{
-	/*	_VB.setColor(2 * k, NLMISC::CRGBA::White);
-		_VB.setColor(2 * k + 1, NLMISC::CRGBA::White);*/
-
-		_VB.setTexCoord(2 * k, 0, CUV(k / (float) _NbSegs, 0));
-		_VB.setTexCoord(2 * k + 1, 0, CUV(k / (float) _NbSegs, 1));		
-		_IB[6 * k] = k * 2;
-		_IB[6 * k + 1] = k * 2 + 1;
-		_IB[6 * k + 2] = k * 2 + 2;
-
-		_IB[6 * k + 3] = k * 2 + 2;
-		_IB[6 * k + 4] = k * 2 + 1;
-		_IB[6 * k + 5] = k * 2 + 3;
-	}
-	_VB.setTexCoord(2 * _NbSegs, 0, CUV(1, 0));
-	_VB.setTexCoord(2 * _NbSegs + 1, 0, CUV(1, 1));		
-/*	_VB.setColor(2 * _NbSegs, NLMISC::CRGBA::White);
-	_VB.setColor(2 * _NbSegs + 1, NLMISC::CRGBA::White);*/
+		toProcess = std::min((uint) (nbRibbons - ribbonIndex) /* = left to do */, numRibbonBatch);
 	
-}
-/*
-void CPSRibbonLookAt::setupColor(CRibbons &rb)
-{
 
-} 
-*/
+		/// setup sizes
+		const float	*ptCurrSize;
+		uint32  ptCurrSizeIncrement;
+		if (_SizeScheme)
+		{			
+			ptCurrSize = (float *) _SizeScheme->make(this->_Owner, ribbonIndex, &sizes[0], sizeof(float), toProcess, true);			
+			ptCurrSizeIncrement = 1;
+		}
+		else
+		{
+			ptCurrSize = &_ParticleSize;
+			ptCurrSizeIncrement = 0;
+		}
 
+		/// setup colors
+		NLMISC::CRGBA	*ptCurrColor;		
+		if (_ColorScheme)
+		{
+			colors.resize(nbRibbons);
+			ptCurrColor = (NLMISC::CRGBA *) _ColorScheme->make(this->_Owner, ribbonIndex, &colors[0], sizeof(NLMISC::CRGBA), toProcess, true);			
+		}		
+		
+		currVert = (uint8 *) VB.getVertexCoordPointer();
+		for (uint k = ribbonIndex; k < ribbonIndex + toProcess; ++k)
+		{			
+			
+			TRibbonVect::iterator rIt = currRibbon.begin(), rItEnd = currRibbon.end(), rItEndMinusOne = rItEnd - 1;
+
+			////////////////////////////////////
+			// interpolate and project points //
+			////////////////////////////////////
+		
+				if (!_Parametric)
+				{
+
+					//////////////////////
+					// INCREMENTAL CASE //
+					//////////////////////
+
+					// the parent class has a method to get the ribbons positions
+					computeRibbon(k, &rIt->Interp, sizeof(CVectInfo));				
+					do
+					{					
+						MakeProj(rIt->Proj, mat * rIt->Interp); 
+						++rIt;				
+					}
+					while (rIt != rItEnd);			
+				}
+				else
+				{
+					//////////////////////
+					// PARAMETRIC  CASE //
+					//////////////////////
+					// we compute each pos thanks to the parametric curve				
+					_Owner->integrateSingle(date - _UsedSegDuration * (_UsedNbSegs + 1), _UsedSegDuration, _UsedNbSegs + 1, k,
+											 &rIt->Interp, sizeof(CVectInfo) );				
+					// project each position now
+					do
+					{					
+						MakeProj(rIt->Proj, mat * rIt->Interp); 
+						++rIt;				
+					}
+					while (rIt != rItEnd);			
+				}
+
+				rIt = currRibbon.begin();
+
+		
+				// setup colors
+				if (_ColorScheme)
+				{
+					uint8 *currColVertex = currVert + colorOffset;
+					uint colCount = (_UsedNbSegs + 1) << 1;
+					do
+					{
+						* (CRGBA *) currColVertex = *ptCurrColor;
+						currColVertex += vertexSize;
+					}
+					while (--colCount);
+
+					++ptCurrColor;			
+				}
+
+				/// build the ribbon in vb				
+				// deals with first point				
+				BuildSlice(mat, VB, currVert, vertexSize, I, K, rIt, rIt, rIt + 1, *ptCurrSize);				
+				currVert += vertexSizeX2;		
+				++rIt;
+
+				
+				// deals with other points				
+				for (;;) // we assume at least 2 segments, so we must have a middle point		
+				{						
+					// build 2 vertices with the right tangent. /* to project 2 */ is old projected point
+					BuildSlice(mat, VB, currVert, vertexSize, I, K, rIt, rIt - 1, rIt + 1, *ptCurrSize); 
+					// next position		
+					++rIt;
+					if (rIt == rItEndMinusOne) break;					
+					// next vertex			
+					currVert += vertexSizeX2;		
+				}
+				currVert += vertexSizeX2;
+				// last point.
+				BuildSlice(mat, VB, currVert, vertexSize, I, K, rIt , rIt - 1, rIt, *ptCurrSize);										
+				ptCurrSize += ptCurrSizeIncrement;
+				currVert += vertexSizeX2;
+		}
+
+		PB.setNumTri((_UsedNbSegs << 1) * toProcess);
+		// display the result
+		drv->render(PB, _Mat);
+		ribbonIndex += toProcess;		
+	}
+	while (ribbonIndex != nbRibbons);
+}	
+
+//==========================================================================	
 bool CPSRibbonLookAt::hasTransparentFaces(void)
 {
 	return getBlendingMode() != CPSMaterial::alphaTest ;
 }
+
+
+//==========================================================================	
 bool CPSRibbonLookAt::hasOpaqueFaces(void)
 {
 	return !hasTransparentFaces();
 }
 
+//==========================================================================	
 uint32 CPSRibbonLookAt::getMaxNumFaces(void) const
 {
 	nlassert(_Owner);
 	return _Owner->getMaxSize() * _NbSegs * 2;	
 }
 
-void CPSRibbonLookAt::reinitFromOwner(void)
-{
-	if (_Parametric) return;
-	if (!_Owner) return;
-	const uint32 size = _Owner->getMaxSize();
-	resize(size);
-	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt = _Owner->getPos().end();
-	TPSAttribVector::const_iterator speedIt = _Owner->getSpeed().begin();
 
-	for (uint32 k = 0; posIt != endPosIt; ++posIt, ++k, ++speedIt)
+
+//==========================================================================	
+CPSRibbonLookAt::CVBnPB &CPSRibbonLookAt::getVBnPB()
+{
+	TVBMap &map = _ColorScheme ? _VBMap : _ColoredVBMap;	
+	TVBMap::iterator it = map.find(_UsedNbSegs + 1);
+	if (it != map.end())
 	{
-		initRibbon(_Ribbons, k, *posIt, *speedIt);
+		return it->second;
+	}
+	else	// must create this vb
+	{
+		const uint numRibbonInVB = getNumRibbonsInVB();
+		CVBnPB &VBnPB = map[_UsedNbSegs + 1]; // make an entry
+
+		/// set the vb format & size
+		CVertexBuffer &vb = VBnPB.VB;
+		vb.setVertexFormat(CVertexBuffer::PositionFlag |
+						   CVertexBuffer::TexCoord0Flag | 
+						   (_ColorScheme ? CVertexBuffer::PrimaryColorFlag : 0));
+		vb.setNumVertices(2 * (_UsedNbSegs + 1) * numRibbonInVB );
+
+		// set the primitive block size
+		CPrimitiveBlock &pb = VBnPB.PB;
+		pb.setNumTri((_UsedNbSegs << 1) * numRibbonInVB);
+		/// Setup the pb and vb parts. Not very fast but executed only once
+		uint vbIndex = 0;
+		uint pbIndex = 0; 
+		for (uint i = 0; i < numRibbonInVB; ++i)
+		{
+			for (uint k = 0; k < (_UsedNbSegs + 1); ++k)
+			{				
+				vb.setTexCoord(vbIndex, 0, CUV((1.f - k / (float) _UsedNbSegs), 0)); /// top vertex
+				vb.setTexCoord(vbIndex + 1, 0, CUV((1.f - k / (float) _UsedNbSegs), 1)); /// bottom vertex
+				if (k != _UsedNbSegs)
+				{
+					/// add 2 tri in the primitive block
+					pb.setTri(pbIndex ++, vbIndex + 1, vbIndex + 2, vbIndex);
+					pb.setTri(pbIndex ++, vbIndex + 1, vbIndex + 3, vbIndex + 2);
+				}
+				vbIndex += 2;
+			}
+		}
+		return VBnPB;
 	}
 }
 
-void CPSRibbonLookAt::setSegDuration(TAnimationTime ellapsedTime)
+//==========================================================================	
+uint	CPSRibbonLookAt::getNumRibbonsInVB() const
 {
-	_SegDuration = ellapsedTime;
-}
-
-TAnimationTime	CPSRibbonLookAt::getSegDuration(void) const
-{
-	return _SegDuration;
-}
-
-
-void	CPSRibbonLookAt::dumpRibbon(uint32 index)
-{
-	nlassert(!_Parametric);
-	TPointVect::iterator posIt = _Ribbons._Pts.begin() + (_NbSegs + 1) * index;
-	TPointVect::iterator endPosIt = posIt + _NbSegs + 1;
-	nlinfo("**** RIBBON ****");
-	while (posIt != endPosIt)
-	{
-		nlinfo("(%f, %f, %f)", posIt->x, posIt->y, posIt->z);
-		++posIt;
-	}
-}
-
-
-void	    CPSRibbonLookAt::motionTypeChanged(bool parametric)
-{
-	_Parametric = parametric;
-	if (parametric)
-	{
-		_Ribbons.reset();
-	}
-	else
-	{
-		reinitFromOwner();
-	}
-
+	/// approximation of the max number of vertices we want in a vb
+	const uint vertexInVB = 256;	
+	return std::max(1u, (uint) (vertexInVB / (_UsedNbSegs + 1)));
 }
 
 } // NL3D

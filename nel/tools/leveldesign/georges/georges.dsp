@@ -160,6 +160,10 @@ SOURCE=.\ChildFrm.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ComboInListView.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\georges.cpp
 # End Source File
 # Begin Source File
@@ -176,11 +180,7 @@ SOURCE=.\georgesView.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\InPlaceEdit.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ListViewEx.cpp
+SOURCE=.\listeditctrl.cpp
 # End Source File
 # Begin Source File
 
@@ -188,8 +188,24 @@ SOURCE=.\MainFrm.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\MySuperGrid.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\newitem.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\StdAfx.cpp
 # ADD CPP /Yc"stdafx.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\supergridctrl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\testtreedlg.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -198,6 +214,10 @@ SOURCE=.\StdAfx.cpp
 # Begin Source File
 
 SOURCE=.\ChildFrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ComboInListView.h
 # End Source File
 # Begin Source File
 
@@ -217,15 +237,19 @@ SOURCE=.\georgesView.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\InPlaceEdit.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\ListViewEx.h
+SOURCE=.\listeditctrl.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\MainFrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MySuperGrid.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\newitem.h
 # End Source File
 # Begin Source File
 
@@ -234,6 +258,14 @@ SOURCE=.\Resource.h
 # Begin Source File
 
 SOURCE=.\StdAfx.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\supergridctrl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\testtreedlg.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

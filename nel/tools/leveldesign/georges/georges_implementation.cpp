@@ -35,16 +35,16 @@ public:
 	virtual void initUILight (int x, int y, int cx, int cy);
 
 	// Go
-	virtual void go ();
+	virtual void go ();	
 
 	// Release the UI
-	virtual void releaseUI ();
+	virtual void releaseUI (); 
 
 	// Get the main frame
-	virtual void*getMainFrame ();
+	virtual void* getMainFrame (); 
 	
 	// Get instance
-	static GEORGES_EXPORT IGeorges * getInterface (int version = GEORGES_VERSION);
+	static GEORGES_EXPORT IGeorges* getInterface (int version = GEORGES_VERSION); 
 
 	// Release instance
 	static GEORGES_EXPORT void releaseInterface (IGeorges* pGeorges);

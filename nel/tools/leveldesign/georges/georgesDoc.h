@@ -14,6 +14,7 @@
 #include "../georges_lib/Item.h"
 
 class CFormFile;
+class CStringList;
 
 class CGeorgesDoc : public CDocument
 {
@@ -21,21 +22,27 @@ protected: // create from serialization only
 	CGeorgesDoc();
 	DECLARE_DYNCREATE(CGeorgesDoc)
 
+	CLoader		loader;
+	CItem		item;
+	CStringEx	sxrootdirectory;
+	CStringEx	sxworkdirectory;
+
 // Attributes
 public:
 //	CFormFile*	pff;	//	Only for tests
-	CLoader		loader;
-	CItem		item;
 
 // Operations 
 public:
 	void SetItemValue( const unsigned int _index, const CString s );
 	unsigned int GetItemNbElt() const;
+	unsigned int GetItemNbElt( const unsigned int _index ) const;
 	unsigned int GetItemInfos( const unsigned int _index ) const;
 	CString GetItemName( const unsigned int _index ) const;
 	CString GetItemCurrentResult( const unsigned int _index ) const;
 	CString GetItemCurrentValue( const unsigned int _index ) const;
 	CString GetItemFormula( const unsigned int _index ) const;
+	bool IsItemEnum( const unsigned int _index ) const;
+	void GetItemListPredef( const unsigned int _index, CStringList* _slist ) const;
 	
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -43,10 +50,12 @@ public:
 	public:
 	virtual BOOL OnNewDocument();
 	virtual void Serialize(CArchive& ar);
+	virtual void DeleteContents();
+
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 	virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);
-	virtual void DeleteContents();
 	virtual void OnCloseDocument();
+
 	//}}AFX_VIRTUAL
 
 // Implementation

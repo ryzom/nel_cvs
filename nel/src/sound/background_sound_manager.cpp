@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.11 2002/11/25 14:11:40 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.12 2002/11/28 16:41:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ void CBackgroundSoundManager::setBackgroundFlags(const UAudioMixer::TBackgroundF
 	_BackgroundFlags = backgroundFlags;
 }
 
-void CBackgroundSoundManager::addSound(const std::string &soundName, const std::vector<NLMISC::CVector> &points, bool isPath)
+void CBackgroundSoundManager::addSound(const std::string &soundName, const std::vector<NLLIGO::CPrimVector> &points, bool isPath)
 {
 	CAudioMixerUser *mixer = CAudioMixerUser::instance();
 	uint layerId = 0;
@@ -143,7 +143,12 @@ void CBackgroundSoundManager::addSound(const std::string &soundName, const std::
 	sd.SoundName = name;
 	sd.Sound = mixer->getSoundId(sd.SoundName);
 	sd.Source = 0;
-	sd.Points = points;
+
+	// Copy the points
+	sd.Points.resize (points.size ());
+	for (uint i=0; i<points.size (); i++)
+		sd.Points[i] = points[i];
+
 	sd.Selected = false;
 	sd.IsPath = isPath;
 
@@ -196,7 +201,12 @@ void CBackgroundSoundManager::loadSamplesFromRegion(const NLLIGO::CPrimRegion &r
 		if (region.VZones[i].VPoints.size() > 2)
 		{
 			TBanksData	bd;
-			bd.Points = region.VZones[i].VPoints;
+			uint pointCount = region.VZones[i].VPoints.size ();
+			bd.Points.resize (pointCount);
+			for (uint j=0; j<pointCount; j++)
+			{
+				bd.Points[j] = region.VZones[i].VPoints[j];
+			}
 
 			// compute bouding box.
 			CVector	vmin(FLT_MAX, FLT_MAX, 0), vmax(-FLT_MAX, -FLT_MAX, 0);
@@ -273,7 +283,7 @@ void CBackgroundSoundManager::loadSoundsFromRegion(const CPrimRegion &region)
 	}
 	for (i = 0; i < region.VPoints.size(); i++)
 	{
-		std::vector<CVector>	points;
+		std::vector<CPrimVector>	points;
 		points.push_back(region.VPoints[i].Point);
 
 		addSound(region.VPoints[i].Name, points, false);

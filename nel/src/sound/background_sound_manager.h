@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.3 2002/11/04 15:40:43 boucher Exp $
+ * $Id: background_sound_manager.h,v 1.4 2002/11/28 16:41:45 corvazier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -131,7 +131,7 @@ private:
 	virtual					~CBackgroundSoundManager();
 
 	/// Internal use only for loading.
-	void addSound(const std::string &soundName, const std::vector<NLMISC::CVector> &points, bool isPath);
+	void addSound(const std::string &soundName, const std::vector<NLLIGO::CPrimVector> &points, bool isPath);
 
 	/// TODO : Utility... should be in NLMISC ?
 	template <class CharType>

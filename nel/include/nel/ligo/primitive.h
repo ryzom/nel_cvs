@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.7 2002/11/28 16:19:14 corvazier Exp $
+ * $Id: primitive.h,v 1.8 2002/11/28 16:41:45 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -405,6 +405,10 @@ public:
 	// Deprecated
 	void serial (NLMISC::IStream &f);
 
+	// Returns true if the vector v is inside of the patatoid
+	static bool contains (const NLMISC::CVector &v, const std::vector<NLMISC::CVector> &points);
+	// Returns true if the vector v is inside of the patatoid and set the distance of the nearest segement and the position of the nearsest point.
+	static bool contains (const NLMISC::CVector &v, const std::vector<NLMISC::CVector> &points, float &distance, NLMISC::CVector &nearPos, bool isPath);
 	// Returns true if the vector v is inside of the patatoid
 	static bool contains (const NLMISC::CVector &v, const std::vector<CPrimVector> &points);
 	// Returns true if the vector v is inside of the patatoid and set the distance of the nearest segement and the position of the nearsest point.

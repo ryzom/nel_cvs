@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: config_file.h,v 1.5 2000/10/04 16:06:18 lecroart Exp $
+ * $Id: config_file.h,v 1.6 2000/10/04 16:20:17 lecroart Exp $
  *
  * Manage a configuration files
  */
@@ -45,14 +45,14 @@ namespace NLMISC
  *\code
  * try
  * {
- * 	 // Load and parse "test.txt" file
+ * 	// Load and parse "test.txt" file
  * 	CConfigFile cf ("test.txt");
  * 
- * 	// Get the foo variable (suppose it's a string variable)
- * 	CConfigFile::CVar &foo = cf.getVar ("foo");
+ *	// Get the foo variable (suppose it's a string variable)
+ *	CConfigFile::CVar &foo = cf.getVar ("foo");
  * 
- * 	// Display the content of the variable
- * 	printf ("foo = %s\n", foo.asString ().c_str ());
+ *	// Display the content of the variable
+ *	printf ("foo = %s\n", foo.asString ().c_str ());
  * 
  * 	// Get the bar variable (suppose it's an array of int)
  * 	CConfigFile::CVar &bar = cf.getVar ("bar");
@@ -140,7 +140,7 @@ public:
 		// Get the size of the variable. It's the number of element of the array or 1 if it's not an array.
 		int			 size ();
 
-		/// \name Internal use. \internal
+		/// \name Internal use only.
 		//@{
 		static char *TypeName[];
 
@@ -177,23 +177,23 @@ public:
 	/// set a callback function to a variable, it will be called when this variable is modified
 	void setCallback (const std::string VarName, void (*cb)(CConfigFile::CVar &var));
 
-	/// \internal
+	/// Internal use only
 	static void checkConfigFiles ();
 
 private:
 
-	/// \internal
+	/// Internal use only
 	void (*_Callback)();
 
-	/// \internal
+	/// Internal use only
 	std::vector<CVar>	_Vars;
 
-	/// \internal
+	/// Internal use only
 	std::string _FileName;
 
-	/// \internal
+	/// Internal use only
 	uint32	getLastModified ();
-	/// \internal
+	/// Internal use only
 	uint32	_LastModified;
 
 	static std::vector<CConfigFile *> _ConfigFiles;
@@ -243,7 +243,6 @@ struct EFileNotFound : public EConfigFile
 	EFileNotFound (std::string fileName, int currentLine) : FileName(fileName) {}
 	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "File \"%s\" not found", FileName.c_str ()); return str; }
 };
-
 
 } // NLMISC
 

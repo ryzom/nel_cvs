@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: config_file.cpp,v 1.3 2000/10/04 15:09:30 lecroart Exp $
+ * $Id: config_file.cpp,v 1.4 2000/10/04 16:20:17 lecroart Exp $
  *
  * Implementation of CConfigFile.
  */
@@ -26,6 +26,7 @@
 /// \todo: docs
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
 
 #include <vector>
 #include <string>
@@ -106,42 +107,40 @@ int CConfigFile::CVar::size ()
 
 CConfigFile::~CConfigFile ()
 {
-	vector<CConfigFile *>::iterator it = find (ConfigFiles.begin (), ConfigFiles.end (), this);
-	if (it != ConfigFiles.end ())
+	vector<CConfigFile *>::iterator it = find (_ConfigFiles.begin (), _ConfigFiles.end (), this);
+	if (it != _ConfigFiles.end ())
 	{
-		ConfigFiles.erase (it);
-		printf("rem %s\n", FileName.c_str ());
+		_ConfigFiles.erase (it);
 	}
 }
 
 void CConfigFile::parse (const string fileName)
 {
-	FileName = fileName;
-	CConfigFile::ConfigFiles.push_back (this);
-	printf("add %s\n", FileName.c_str ());
+	_FileName = fileName;
+	CConfigFile::_ConfigFiles.push_back (this);
 	reparse ();
 }
 
 void CConfigFile::reparse ()
 {
-	LastModified = getLastModified ();
-	cfin = fopen (FileName.c_str (), "r");
+	_LastModified = getLastModified ();
+	cfin = fopen (_FileName.c_str (), "r");
 	if (cfin != NULL)
 	{
-		bool parsingOK = (cfparse (&(Vars)) == 0);
+		bool parsingOK = (cfparse (&(_Vars)) == 0);
 		fclose (cfin);
-		if (!parsingOK) throw EParseError (FileName, cf_CurrentLine);
+		if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);
 	}
 }
 
 
 CConfigFile::CVar &CConfigFile::getVar (const std::string varName)
 {
-	for (int i = 0; i < Vars.size(); i++)
+	for (int i = 0; i < _Vars.size(); i++)
 	{
-		if (Vars[i].Name == varName)
+		if (_Vars[i].Name == varName)
 		{
-			return Vars[i];
+			return _Vars[i];
 			break;
 		}
 	}
@@ -150,40 +149,41 @@ CConfigFile::CVar &CConfigFile::getVar (const std::string varName)
 
 void CConfigFile::print ()
 {
-	printf("%d results:\n-------------------------------------\n", Vars.size());
-	for(int i = 0; i < Vars.size(); i++)
+	printf ("%d results:\n", _Vars.size());
+	printf ("-------------------------------------\n");
+	for(int i = 0; i < _Vars.size(); i++)
 	{
-		printf((Vars[i].Callback==NULL)?"   ":"CB ");
-		if (Vars[i].Comp)
+		printf ((_Vars[i].Callback==NULL)?"   ":"CB ");
+		if (_Vars[i].Comp)
 		{
-			switch (Vars[i].Type)
+			switch (_Vars[i].Type)
 			{
 			case CConfigFile::CVar::T_INT:
 			{
-				printf("%-20s { ", Vars[i].Name.c_str());
-				for (int it=0; it < Vars[i].IntValues.size(); it++)
+				printf("%-20s { ", _Vars[i].Name.c_str());
+				for (int it=0; it < _Vars[i].IntValues.size(); it++)
 				{
-					printf("'%d' ", Vars[i].IntValues[it]);
+					printf("'%d' ", _Vars[i].IntValues[it]);
 				}
 				printf ("}\n");
 				break;
 			}
 			case CConfigFile::CVar::T_STRING:
 			{
-				printf("%-20s { ", Vars[i].Name.c_str());
-				for (int st=0; st < Vars[i].StrValues.size(); st++)
+				printf("%-20s { ", _Vars[i].Name.c_str());
+				for (int st=0; st < _Vars[i].StrValues.size(); st++)
 				{
-					printf("\"%s\" ", Vars[i].StrValues[st].c_str());
+					printf("\"%s\" ", _Vars[i].StrValues[st].c_str());
 				}
 				printf ("}\n");
 				break;
 			}
 			case CConfigFile::CVar::T_REAL:
 			{
-				printf("%-20s { " , Vars[i].Name.c_str());
-				for (int rt=0; rt < Vars[i].RealValues.size(); rt++)
+				printf("%-20s { " , _Vars[i].Name.c_str());
+				for (int rt=0; rt < _Vars[i].RealValues.size(); rt++)
 				{
-					printf("`%f` ", Vars[i].RealValues[rt]);
+					printf("`%f` ", _Vars[i].RealValues[rt]);
 				}
 				printf ("}\n");
 				break;
@@ -192,16 +192,16 @@ void CConfigFile::print ()
 		}
 		else
 		{
-			switch (Vars[i].Type)
+			switch (_Vars[i].Type)
 			{
 			case CConfigFile::CVar::T_INT:
-				printf("%-20s '%d'\n", Vars[i].Name.c_str(), Vars[i].IntValues[0]);
+				printf("%-20s '%d'\n", _Vars[i].Name.c_str(), _Vars[i].IntValues[0]);
 				break;
 			case CConfigFile::CVar::T_STRING:
-				printf("%-20s \"%s\"\n", Vars[i].Name.c_str(), Vars[i].StrValues[0].c_str());
+				printf("%-20s \"%s\"\n", _Vars[i].Name.c_str(), _Vars[i].StrValues[0].c_str());
 				break;
 			case CConfigFile::CVar::T_REAL:
-				printf("%-20s `%f`\n", Vars[i].Name.c_str(), Vars[i].RealValues[0]);
+				printf("%-20s `%f`\n", _Vars[i].Name.c_str(), _Vars[i].RealValues[0]);
 				break;
 			}
 		}
@@ -210,12 +210,12 @@ void CConfigFile::print ()
 
 void CConfigFile::setCallback (void (*cb)())
 {
-	Callback = cb;
+	_Callback = cb;
 }
 
 void CConfigFile::setCallback (const string VarName, void (*cb)(CConfigFile::CVar &var))
 {
-	for (vector<CVar>::iterator it = Vars.begin (); it != Vars.end (); it++)
+	for (vector<CVar>::iterator it = _Vars.begin (); it != _Vars.end (); it++)
 	{
 		if (VarName == (*it).Name)
 		{
@@ -227,14 +227,14 @@ void CConfigFile::setCallback (const string VarName, void (*cb)(CConfigFile::CVa
 	CVar Var;
 	Var.Name = VarName;
 	Var.Callback = cb;
-	Vars.push_back (Var);
+	_Vars.push_back (Var);
 }
 
 
 // ***************************************************************************
 
 
-vector<CConfigFile *> CConfigFile::ConfigFiles;
+vector<CConfigFile *> CConfigFile::_ConfigFiles;
 
 uint32 CConfigFile::getLastModified ()
 {
@@ -244,7 +244,7 @@ uint32 CConfigFile::getLastModified ()
 	struct stat buf;
 #endif
 
-	int result = _stat (FileName.c_str (), &buf);
+	int result = _stat (_FileName.c_str (), &buf);
 	if (result != 0) return 0;
 	else return buf.st_mtime;
 }
@@ -258,18 +258,18 @@ void CConfigFile::checkConfigFiles ()
 
 	LastCheckClock = clock ();
 
-	for (vector<CConfigFile *>::iterator it = ConfigFiles.begin (); it != ConfigFiles.end (); it++)
+	for (vector<CConfigFile *>::iterator it = _ConfigFiles.begin (); it != _ConfigFiles.end (); it++)
 	{
-		if ((*it)->LastModified != (*it)->getLastModified ())
+		if ((*it)->_LastModified != (*it)->getLastModified ())
 		{
-			if ((*it)->Callback != NULL) (*it)->Callback();
+			if ((*it)->_Callback != NULL) (*it)->_Callback();
 			try
 			{
 				(*it)->reparse ();
 			}
 			catch (EConfigFile &ee)
 			{
-				printf("warning: %s\n", ee.what ());
+				nlwarning(ee.what ());
 			}
 		}
 	}

@@ -103,7 +103,7 @@ namespace NLAILINK
 
 		}
 		
-		virtual void Echo(char *str, ...)		
+		virtual void Echo(char *str, ...) const	
 		{
 			char	temp[32*1024];		
 			va_list argument;
@@ -114,7 +114,7 @@ namespace NLAILINK
 			NLAIC::Out("%s",LaseErrorCodeOrdreInterprete);			
 				
 		}
-		virtual const std::string InPut()
+		virtual const std::string InPut() const
 		{
 			return std::string();
 		}

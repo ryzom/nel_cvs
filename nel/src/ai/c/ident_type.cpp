@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.14 2001/10/29 16:11:45 chafik Exp $
+ * $Id: ident_type.cpp,v 1.15 2001/11/05 11:02:27 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,18 @@ namespace NLAIC
 		char *s = new char [strlen(temp)+1];
 		strcpy(s,temp);
 		return s;
-	}	
+	}
+
+	const IIO *DefaultIIO = NULL;
+	void setDefaultIIO(const IIO *io)
+	{
+		DefaultIIO = io;
+	}
+
+	const IIO *getDefaultIIO()
+	{
+		return DefaultIIO;
+	}
 
 	void Out(const char *str,...)
 	{		
@@ -56,8 +67,13 @@ namespace NLAIC
 		va_start (argument, str);
 		
 		vsprintf(temp, str, argument);
-		fprintf(stderr,temp);
-		fflush(stderr);
+		if(DefaultIIO != NULL) 
+			DefaultIIO->Echo(temp);
+		else
+		{
+			fprintf(stderr,temp);
+			fflush(stderr);
+		}
 	}
 
 	std::string stringGetBuild(const char *str, ...)

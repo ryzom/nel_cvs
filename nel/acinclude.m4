@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.7 2002/01/29 13:21:42 valignat Exp $
+dnl $Id: acinclude.m4,v 1.8 2002/02/18 12:58:38 lecroart Exp $
 dnl 
 dnl =========================================================================
 
@@ -364,7 +364,12 @@ AC_ARG_WITH( stlport-lib,
                           path to the STLPort library files directory.
                           e.g. /usr/local/stlport/lib])
 
-stlport_lib="stlport_gcc"
+if test "$with_debug" = "full"
+then
+ stlport_lib="stlport_gcc_stldebug"
+else
+ stlport_lib="stlport_gcc"
+fi
 
 if test "$with_stlport" = no
 then

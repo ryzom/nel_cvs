@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.6 2002/04/11 08:40:38 corvazier Exp $
+ * $Id: polygon.h,v 1.7 2002/04/11 09:22:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,16 +72,6 @@ public:
 	/// Clip a polygon with a set of planes. Cohen-sutherland clipping... clipPolygonBack() is used on planes.
 	void			clip(const std::vector<CPlane> &planes);
 
-	/**
-	  * Chain the arg polygons with this polygon.
-	  *
-	  * The polygon a-b-c-d-e-a chained with f-g-h-i-j-f will give a polygon like a-b-f-g-h-i-j-f-b-c-d-e-a
-	  * if the edge f-j is not clipped by any edge plane.
-	  *
-	  * \return false if chain failed.
-	  */
-	bool			chain (const CPolygon &other);
-
 	/// Serial this polygon
 	void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
@@ -100,7 +90,20 @@ public:
 	  */
 	bool			toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const;
 
-	// Used by the method toConvexPolygons
+	/**
+	  * Chain the arg polygons with this polygon testing 2d intersections.
+	  * The 2d intersection test has been done in the XY plane of the basis passed at the function.
+	  *
+	  * The polygon a-b-c-d-e chained with f-g-h-i-j will give the polygon a-b-f-g-h-i-j-f-b-c-d-e
+	  * if the edge b-f is not 2d clipped by any edge plane in the XY plane of basis.
+	  *
+	  * \param basis is the basis of the polygon projection.
+	  * \return false if chain failed. else true.
+	  */
+	bool			chain (const CPolygon &other, const CMatrix& basis);
+
+	// Used by the method toConvexPolygons and chain
+	void			toConvexPolygonsLocalAndBSP (std::vector<CVector> &localVertices, CBSPNode2v &root, const CMatrix &basis) const;
 	static bool		toConvexPolygonsEdgeIntersect (const CVector2f& a0, const CVector2f& a1, const CVector2f& b0, const CVector2f& b1);
 	static bool		toConvexPolygonsLeft (const std::vector<CVector> &vertex, uint a, uint b, uint c);
 	static bool		toConvexPolygonsLeftOn (const std::vector<CVector> &vertex, uint a, uint b, uint c);

@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.11 2002/04/11 08:40:38 corvazier Exp $
+ * $Id: polygon.cpp,v 1.12 2002/04/11 09:22:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,24 +104,6 @@ void CPolygon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 // ***************************************************************************
-bool CPolygon::chain (const CPolygon &other)
-{
-	// Look for a joining vertex
-	uint i, j;
-	uint firstSize = Vertices.size();
-	uint secondSize = other.Vertices.size();
-	for (i=0; i<firstSize; i++)
-	for (j=0; j<secondSize; j++)
-	{
-		// Check the edge in the polygon
-		//if (clip
-	}
-	return false;
-}
-
-
-
-// ***************************************************************************
 
 class CConcavePolygonsVertexDesc
 {
@@ -164,6 +146,7 @@ bool CPolygon::toConvexPolygonsEdgeIntersect (const CVector2f& a0, const CVector
 class CBSPNode2v
 {
 public:
+	CBSPNode2v () {}
 	CBSPNode2v ( const CPlane &plane, CVector p0, CVector p1, uint v0, uint v1 ) : Plane (plane), P0 (p0), P1 (p1)
 	{
 		Back = NULL;
@@ -353,56 +336,71 @@ bool CPolygon::toConvexPolygonsDiagonal (const std::vector<CVector> &vertex, con
 
 // ***************************************************************************
 
+void CPolygon::toConvexPolygonsLocalAndBSP (std::vector<CVector> &localVertices, CBSPNode2v &root, const CMatrix &basis) const
+{
+	// Invert matrix
+	CMatrix invert = basis;
+	invert.invert ();
+
+	// Insert vertices in an ordered table
+	uint vertexCount = Vertices.size();
+	TCConcavePolygonsVertexMap vertexMap;
+	localVertices.resize (vertexCount);
+	uint i, j;
+	
+	// Transform the vertex
+	for (i=0; i<vertexCount; i++)
+	{
+		CVector local = invert*Vertices[i];
+		localVertices[i] = CVector (local.x, local.y, 0);
+	}
+
+	// Plane direction
+	i=0;
+	j=Vertices.size()-1;
+	CVector normal = localVertices[i] - localVertices[j];
+	normal = normal ^ CVector::K;
+	CPlane clipPlane;
+	clipPlane.make(normal, localVertices[i]);
+
+	// Build the BSP root
+	root = CBSPNode2v (clipPlane, localVertices[i], localVertices[j], i, j);
+
+	// Insert all others edges
+	j=i++;
+	for (; i<Vertices.size(); i++)
+	{
+		// Plane direction
+		normal = localVertices[i] - localVertices[j];
+		normal = normal ^ CVector::K;
+		clipPlane.make(normal, localVertices[i]);
+
+		// Build the BSP root
+		root.insert ( new CBSPNode2v (clipPlane, localVertices[i], localVertices[j], i, j) );
+
+		j=i;
+	}
+}
+
+// ***************************************************************************
+
 bool CPolygon::toConvexPolygons (std::list<CPolygon>& outputPolygons, const CMatrix& basis) const
 {
 	// Some vertices ?
 	if (Vertices.size()>2)
 	{
-		// Invert matrix
-		CMatrix invert = basis;
-		invert.invert ();
-
-		// Insert vertices in an ordered table
-		uint vertexCount = Vertices.size();
-		TCConcavePolygonsVertexMap vertexMap;
-		std::vector<CVector>	localVertices (vertexCount);
-		uint i, j;
-		
-		// Transform the vertex
-		for (i=0; i<vertexCount; i++)
-		{
-			CVector local = invert*Vertices[i];
-			localVertices[i] = CVector (local.x, local.y, 0);
-		}
-
-		// Plane direction
-		i=0;
-		j=Vertices.size()-1;
-		CVector normal = localVertices[i] - localVertices[j];
-		normal = normal ^ CVector::K;
-		CPlane clipPlane;
-		clipPlane.make(normal, localVertices[i]);
+		// Local vertices
+		std::vector<CVector>	localVertices;
 
 		// Build the BSP root
-		CBSPNode2v root (clipPlane, localVertices[i], localVertices[j], i, j);
+		CBSPNode2v root;
 
-		// Insert all others edges
-		j=i++;
-		for (; i<Vertices.size(); i++)
-		{
-			// Plane direction
-			normal = localVertices[i] - localVertices[j];
-			normal = normal ^ CVector::K;
-			clipPlane.make(normal, localVertices[i]);
-
-			// Build the BSP root
-			root.insert ( new CBSPNode2v (clipPlane, localVertices[i], localVertices[j], i, j) );
-
-			j=i;
-		}
+		// Build the local array and the BSP
+		toConvexPolygonsLocalAndBSP (localVertices, root, basis);
 
 		// Build a vertex list
 		std::list<uint> vertexList;
+		uint i;
 		for (i=0; i<Vertices.size(); i++)
 			vertexList.push_back (i);
 
@@ -565,6 +563,68 @@ again:;
 		}
 		while (current != begin);
 	}
+	return false;
+}
+
+// ***************************************************************************
+
+bool CPolygon::chain (const CPolygon &other, const CMatrix& basis)
+{
+	// Local vertices
+	std::vector<CVector>	localVertices;
+
+	// Build the BSP root
+	CBSPNode2v root;
+
+	// Build the local array and the BSP
+	toConvexPolygonsLocalAndBSP (localVertices, root, basis);
+
+	// Local vertices
+	std::vector<CVector>	localVerticesOther;
+
+	// Build the BSP root
+	CBSPNode2v rootOther;
+
+	// Build the local array and the BSP
+	other.toConvexPolygonsLocalAndBSP (localVerticesOther, rootOther, basis);
+
+	// Look for a couple..
+	uint thisCount = Vertices.size();
+	uint otherCount = other.Vertices.size();
+	for (uint i=0; i<thisCount; i++)
+	for (uint j=0; j<otherCount; j++)
+	{
+		// Test this segement
+		if (
+			(!root.intersect (localVertices[i], localVerticesOther[j], i, 0xffffffff)) &&
+			(!rootOther.intersect (localVertices[i], localVerticesOther[j], 0xffffffff, j)) 
+			)
+		{
+			// Insert new vertices
+			Vertices.insert (Vertices.begin()+i, 2+otherCount, CVector());
+
+			// Copy the first vertex
+			Vertices[i] = Vertices[i+otherCount+2];
+
+			// Copy the new vertices
+			uint k;
+			for (k=0; k<otherCount; k++)
+			{
+				uint index = j+k;
+				if (index>=otherCount)
+					index -= otherCount;
+				Vertices[i+k+1] = other.Vertices[index];
+			}
+
+			// Copy the last one
+			Vertices[i+otherCount+1] = other.Vertices[j];
+
+			// Ok
+			return true;
+		}
+	}
+
+	// Can't link the 2 polygons
 	return false;
 }
 

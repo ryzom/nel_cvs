@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.5 2001/06/29 08:48:37 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.6 2001/07/05 09:20:04 lecroart Exp $
  *
  *
  */
@@ -55,6 +55,11 @@ using namespace NLNET;
 #pragma comment(lib, "glib-1.3.lib")
 #pragma comment(lib, "gthread-1.3.lib")
 #endif
+
+
+
+
+#define NO_DEBUG_OUTPUT
 
 //
 // Variables
@@ -254,9 +259,51 @@ static void cbSaveConfig ()
 	saveConfig ();
 }
 
+static void cbAddAdminService ()
+{
+	string name, addr;
+
+	// ask values from the user
+
+	if (!queryValue (name)) return;
+	if (!queryValue (addr)) return;
+
+	// check if these values are not already in the array
+
+	CConfigFile::CVar &host = ConfigFile.getVar ("ASHosts");
+	for (sint i = 0 ; i < host.size (); i += 3)
+	{
+		if (host.asString(i) == name)
+		{
+			nlwarning ("already have this name");
+			return;
+		}
+		if (host.asString(i+1) == addr)
+		{
+			nlwarning ("already have this address");
+			return;
+		}
+	}
+
+	// add it at the end of the config file
+
+	host.setAsString (name, host.size ());
+	host.setAsString (addr, host.size ());
+	host.setAsString ("0", host.size ());
+
+	// add the AS in the list
+
+	AdminServices.push_back (CAdminService());
+	CAdminService *as = &(AdminServices.back());
+	as->ASName = name;
+	as->ASAddr = addr;
+	interfAddAS (as);
+}
+
 
 static GtkItemFactoryEntry IMenuItems[] = {
-	{ "/Save Configuration", NULL, cbSaveConfig, 0, NULL },
+	{ "/Save configuration", NULL, cbSaveConfig, 0, NULL },
+	{ "/Add admin service", NULL, cbAddAdminService, 0, NULL },
 };
 
 
@@ -305,9 +352,11 @@ static void cbConnectToAS()
 
 	gtk_item_factory_create_items (item_factory, 1, &ife, NULL);
 */
+	nlassert (PopupAS != NULL);
+
 	if (PopupAS->Connected)
 	{
-		nlwarning("already connected!!!");
+		nlwarning("%s is already connected!", PopupAS->ASName.c_str());
 		return;
 	}
 
@@ -320,9 +369,11 @@ static void cbConnectToAS()
 
 static void cbDisconnectToAS()
 {
+	nlassert (PopupAS != NULL);
+
 	if (!PopupAS->Connected)
 	{
-		nlwarning("not connected!!!");
+		nlwarning("%s is not connected!", PopupAS->ASName.c_str());
 		return;
 	}
 
@@ -338,6 +389,12 @@ static void cbDisconnectToAS()
 static void cbStartAllServices()
 {
 	nlassert (PopupAS != NULL);
+
+	if (!PopupAS->Connected)
+	{
+		nlwarning("%s is not connected!", PopupAS->ASName.c_str());
+		return;
+	}
 	
 	string cmd = "startall ";
 	cmd += toString (PopupAS->Id);
@@ -350,9 +407,38 @@ static void cbStopAllServices()
 {
 	nlassert (PopupAS != NULL);
 	
+	if (!PopupAS->Connected)
+	{
+		nlwarning("%s is not connected!", PopupAS->ASName.c_str());
+		return;
+	}
+
 	string cmd = "stopall ";
 	cmd += toString (PopupAS->Id);
 	ICommand::execute (cmd, logstdout);
+
+	PopupAS = NULL;
+}
+
+static void cbRemoveAdminService()
+{
+	nlassert (PopupAS != NULL);
+	
+	if (PopupAS->Connected)
+	{
+		connectionASRelease (PopupAS);
+	}
+
+	interfRemoveAS (PopupAS);
+
+	for (ASIT asit = AdminServices.begin(); asit != AdminServices.end(); asit++)
+	{
+		if (&(*asit) == PopupAS)
+		{
+			AdminServices.erase (asit);
+			break;
+		}
+	}	
 
 	PopupAS = NULL;
 }
@@ -362,7 +448,7 @@ static GtkItemFactoryEntry ASMenuItems[] = {
 	{ "/Disconnect", NULL, cbDisconnectToAS, 0, NULL },
 	{ "/Start All Services", NULL, cbStartAllServices, 0, NULL },
 	{ "/Stop All Services", NULL, cbStopAllServices, 0, NULL },
-//	{ "/Services", NULL, NULL, 0, "<Branch>" },
+	{ "/Remove this admin service", NULL, cbRemoveAdminService, 0, NULL },
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -473,15 +559,14 @@ void interfAddAS (CAdminService *as)
 	createTreeItem (RootSubTree, as->RootTreeItem, as->Bitmap, as->Label);
 	
 	setBitmap ("as_dcnt.xpm", as->Bitmap);
-	
+
 	string name;
-	name = "AS";
-	name += toString(as->Id);
-	name += " '";
-	name += as->ASName;
-	name += "' (";
-	name += as->ASAddr;
-	name += ")";
+#ifdef NO_DEBUG_OUTPUT
+	name = as->ASName + " (ip:" + as->ASAddr + ")";
+#else // NO_DEBUG_OUTPUT
+	name = "AS" + toString(as->Id) + " '" + as->ASName + "' (" + as->ASAddr + ")";
+#endif // NO_DEBUG_OUTPUT
+
 	setLabel (name, as->Label);
 
 //	gtk_signal_connect (GTK_OBJECT (as->RootTreeItem), "select", GTK_SIGNAL_FUNC(cbASSelected), as);
@@ -502,13 +587,11 @@ void interfAddAS (CAdminService *as)
 void interfUpdateAES (CAdminExecutorService *aes)
 {
 	string name;
-	name = "AES";
-	name += toString(aes->Id);
-	name += " '";
-	name += aes->ServerAlias;
-	name += "' (";
-	name += aes->ServerAddr;
-	name += ")";
+#ifdef NO_DEBUG_OUTPUT
+	name = aes->ServerAlias + " (ip: " + aes->ServerAddr + ")";
+#else // NO_DEBUG_OUTPUT
+	name = "AES" + toString(aes->Id) + " '" + aes->ServerAlias + "' (" + aes->ServerAddr + ")";
+#endif // NO_DEBUG_OUTPUT
 
 	string icon;
 	if (aes->Connected)
@@ -663,23 +746,11 @@ void cbExecuteVariable (gpointer callback_data, guint callback_action, GtkWidget
 void interfUpdateService (CService *s)
 {
 	string name;
-	name = "S";
-	name += toString(s->Id);
-	name += " '";
-	name += s->AliasName;
-	name += "' '";
-	name += s->ShortName;
-	name += "' '";
-	name += s->LongName;
-	name += "' (U";
-	name += toString(s->Unknown);
-	name += ", C";
-	name += toString(s->Connected);
-	name += ", I";
-	name += toString(s->InConfig);
-	name += ", R";
-	name += toString(s->Ready);
-	name += ")";
+#ifdef NO_DEBUG_OUTPUT
+	name = s->AliasName + " " + s->ShortName + " " + s->LongName;
+#else // NO_DEBUG_OUTPUT
+	name = "S" + toString(s->Id) + " '" + s->AliasName + "' '" + s->ShortName + "' '" + s->LongName + "' (U" + toString(s->Unknown) + ", C" + toString(s->Connected) + ", I" + toString(s->InConfig) + ", R" + toString(s->Ready) + ")";
+#endif // NO_DEBUG_OUTPUT
 
 	string icon;
 	if (s->Unknown)
@@ -885,18 +956,18 @@ gint cbPopupCMenu (GtkWidget *widget, GdkEvent *event, gpointer data)
 void interfUpdateVariable (CAdminSerialCommand *c)
 {
 	string name;
-	name = "C";
-	name += " '";
-	name += c->Name;
-	name += " = '";
-	name += c->Value;
-	name += "' (A";
-	name += toString(c->IsActive);
-	name += ", T";
-	name += toString(c->Type);
-	name += ", F";
-	name += toString(c->UpdateFrequency);
+#ifdef NO_DEBUG_OUTPUT
+	name = c->Name + " = " + c->Value + " (update ";
+	switch (c->UpdateFrequency)
+	{
+	case -1: name += "one time"; break;
+	case  0: name += "every time"; break;
+	default: name += "every "+toString(c->UpdateFrequency/1000)+"s"; break;
+	}
 	name += ")";
+#else // NO_DEBUG_OUTPUT
+	name = "C '" + c->Name + "' = '" + c->Value + "' (A" + toString(c->IsActive) + ", T" + toString(c->Type) + ", F" + toString(c->UpdateFrequency) + ")";
+#endif // NO_DEBUG_OUTPUT
 
 	// check if we already create widgets
 	nlassert (c->RootTreeItem != NULL);
@@ -1001,6 +1072,7 @@ void interfRemoveVariable (CAdminSerialCommand *c)
 // windows delete event => quit
 gint delete_event (GtkWidget *widget, GdkEvent *event, gpointer data)
 {
+	saveConfig ();
 	gtk_main_quit();
 
 	return FALSE;
@@ -1069,7 +1141,7 @@ gint KeyIn(GtkWidget *Widget, GdkEventKey *Event, gpointer *Data)
 	{
 	case GDK_Escape : gtk_entry_set_text (GTK_ENTRY(Widget), ""); break;
 	case GDK_Up : if (CommandHistoryPos > 0) { CommandHistoryPos--; gtk_entry_set_text (GTK_ENTRY(Widget), CommandHistory[CommandHistoryPos].c_str()); } break;
-	case GDK_Down : if (CommandHistoryPos < CommandHistory.size() - 1) { CommandHistoryPos++; gtk_entry_set_text (GTK_ENTRY(Widget), CommandHistory[CommandHistoryPos].c_str()); } break;
+	case GDK_Down : if (CommandHistoryPos + 1 < CommandHistory.size()) { CommandHistoryPos++; gtk_entry_set_text (GTK_ENTRY(Widget), CommandHistory[CommandHistoryPos].c_str()); } break;
 	case GDK_KP_Enter : gtk_signal_emit_by_name(GTK_OBJECT(Widget),"activate"); return FALSE; break;
 	default : return FALSE;
 	}
@@ -1361,9 +1433,6 @@ void runInterf ()
 	WarningLog->removeDisplayer (GtkDisplayer);
 	InfoLog->removeDisplayer (GtkDisplayer);
 	ErrorLog->removeDisplayer (GtkDisplayer);
-
-	// save config in config file
-	saveConfig ();
 }
 
 
@@ -1373,6 +1442,7 @@ NLMISC_COMMAND (quit, "quit", "")
 {
 	if(args.size() != 0) return false;
 
+	saveConfig ();
 	gtk_main_quit ();
 	
 	return true;
@@ -1509,17 +1579,18 @@ void saveConfig ()
 	if (RootTreeItem != NULL && GTK_TREE_ITEM(RootTreeItem)->expanded)
 	{
 		exp.push_back (path1);
-		nlinfo ("%s is expanded", path1.c_str());
+		nlinfo ("%s saved as expanded", path1.c_str());
 	}
 
 	ASIT asit;
 	for (asit = AdminServices.begin(); asit != AdminServices.end(); asit++)
 	{
 		string path2 = path1 + (*asit).ASName;
+		GtkTreeItem *g = GTK_TREE_ITEM((*asit).RootTreeItem);
 		if ((*asit).RootTreeItem != NULL && GTK_TREE_ITEM((*asit).RootTreeItem)->expanded)
 		{
 			exp.push_back (path2);
-			nlinfo ("%s is expanded", path2.c_str());
+			nlinfo ("%s saved as expanded", path2.c_str());
 		}
 
 		hs.push_back ((*asit).ASName);
@@ -1533,7 +1604,7 @@ void saveConfig ()
 			if ((*aesit).RootTreeItem != NULL && GTK_TREE_ITEM((*aesit).RootTreeItem)->expanded)
 			{
 				exp.push_back (path3);
-				nlinfo ("%s is expanded", path3.c_str());
+				nlinfo ("%s saved as expanded", path3.c_str());
 			}
 
 			SIT sit;
@@ -1543,18 +1614,21 @@ void saveConfig ()
 				if ((*sit).RootTreeItem != NULL && GTK_TREE_ITEM((*sit).RootTreeItem)->expanded)
 				{
 					exp.push_back (path4);
-					nlinfo ("%s is expanded", path4.c_str());
+					nlinfo ("%s saved as expanded", path4.c_str());
 				}
 
-				CIT cit;
-				for (cit = (*sit).Commands.begin(); cit != (*sit).Commands.end(); cit++)
+				if (!(*sit).AliasName.empty())
 				{
-					if ((*cit).IsActive)
+					CIT cit;
+					for (cit = (*sit).Commands.begin(); cit != (*sit).Commands.end(); cit++)
 					{
-						string path5 = path4 + "/" + (*cit).Name;
-						act.push_back (path5);
-						act.push_back (toString((*cit).UpdateFrequency));
-						nlinfo ("%s is active var", path5.c_str());
+						if ((*cit).IsActive)
+						{
+							string path5 = path4 + "/" + (*cit).Name;
+							act.push_back (path5);
+							act.push_back (toString((*cit).UpdateFrequency));
+							nlinfo ("%s savec as active var", path5.c_str());
+						}
 					}
 				}
 			}

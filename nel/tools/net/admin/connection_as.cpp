@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.6 2001/06/29 08:48:37 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.7 2001/07/05 09:20:04 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -543,10 +543,17 @@ TCallbackItem ASCallbackArray[] =
 
 void connectionASInit (CAdminService *as)
 {
-	CNetManager::setConnectionCallback (as->ASAddr, cbASConnection, as);
-	CNetManager::setDisconnectionCallback (as->ASAddr, cbASDisconnection, NULL);
-	CNetManager::addClient (as->ASAddr, as->ASAddr+":49995", false);
-	CNetManager::addCallbackArray (as->ASAddr, ASCallbackArray, sizeof(ASCallbackArray)/sizeof(ASCallbackArray[0]));
+	try
+	{
+		CNetManager::setConnectionCallback (as->ASAddr, cbASConnection, as);
+		CNetManager::setDisconnectionCallback (as->ASAddr, cbASDisconnection, NULL);
+		CNetManager::addClient (as->ASAddr, as->ASAddr+":49995", false);
+		CNetManager::addCallbackArray (as->ASAddr, ASCallbackArray, sizeof(ASCallbackArray)/sizeof(ASCallbackArray[0]));
+	}
+	catch (ESocket &e)
+	{
+		nlwarning ("Can't connect to the as (%s)", e.what ());
+	}
 }
 
 void connectionASRelease (CAdminService *as)

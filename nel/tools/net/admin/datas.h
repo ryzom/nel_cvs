@@ -1,7 +1,7 @@
 /** \file datas.h
  *
  *
- * $Id: datas.h,v 1.6 2001/06/29 08:48:37 lecroart Exp $
+ * $Id: datas.h,v 1.7 2001/07/05 09:20:04 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 
 #include <list>
 #include <string>
+
 
 // Structures
 struct CAdminExecutorService;

@@ -1,7 +1,7 @@
-/** \file zone_lighter.cpp
+/** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.15 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.16 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

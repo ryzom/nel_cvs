@@ -1,7 +1,7 @@
-/** \file driver_user.cpp
+/** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.10 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_user2.cpp,v 1.11 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

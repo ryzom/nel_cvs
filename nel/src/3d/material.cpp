@@ -1,7 +1,7 @@
-/** \file material.cpp
+/** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.32 2002/02/04 10:33:48 vizerie Exp $
+ * $Id: material.cpp,v 1.33 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,6 +1,6 @@
-/** \file zone.cpp
+/** \file character/zone.cpp
  *
- * $Id: zone.cpp,v 1.3 2001/03/26 11:28:18 chafik Exp $
+ * $Id: zone.cpp,v 1.4 2002/02/20 18:08:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

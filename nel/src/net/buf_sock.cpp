@@ -1,7 +1,7 @@
-/** \file buf_net_base.cpp
+/** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.19 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.20 2002/02/20 18:09:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

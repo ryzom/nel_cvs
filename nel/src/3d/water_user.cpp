@@ -1,7 +1,7 @@
-/** \file water_imp.cpp
+/** \file water_user.cpp
  * implementation of the user interface for water
  *
- * $Id: water_user.cpp,v 1.1 2001/11/21 16:05:44 vizerie Exp $
+ * $Id: water_user.cpp,v 1.2 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

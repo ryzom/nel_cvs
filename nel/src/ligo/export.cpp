@@ -1,7 +1,7 @@
-/** \file export.cpp
+/** \file ligo/export.cpp
  * Implementation of export from leveldesign data to client data
  *
- * $Id: export.cpp,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: export.cpp,v 1.2 2002/02/20 18:09:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

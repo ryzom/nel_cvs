@@ -1,6 +1,6 @@
-/** \file mai_agent_script.cpp
+/** \file main_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.29 2002/01/22 09:13:37 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.30 2002/02/20 18:08:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

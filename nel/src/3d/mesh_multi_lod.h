@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.11 2001/09/10 07:41:30 corvazier Exp $
+ * $Id: mesh_multi_lod.h,v 1.12 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,6 +110,7 @@ public:
 
 	/// Build a mesh from material info, and a builded MeshGeom. WARNING: This has a side effect of deleting AnimatedMaterials.
 	void			build(CMeshMultiLodBuild &mbuild);
+	// @}
 
 	/// \name From IShape
 	// @{

@@ -1,6 +1,6 @@
-/** \file register_type.cpp
+/** \file registry_type.cpp
  *
- * $Id: registry_type.cpp,v 1.6 2001/03/14 13:19:34 chafik Exp $
+ * $Id: registry_type.cpp,v 1.7 2002/02/20 18:08:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

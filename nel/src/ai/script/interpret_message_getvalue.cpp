@@ -1,6 +1,6 @@
-/** \file interpret_message_action.cpp
+/** \file interpret_message_getvalue.cpp
  *
- * $Id: interpret_message_getvalue.cpp,v 1.1 2001/12/05 10:13:32 portier Exp $
+ * $Id: interpret_message_getvalue.cpp,v 1.2 2002/02/20 18:08:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

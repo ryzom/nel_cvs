@@ -1,7 +1,7 @@
 /** \file animated_morph.h
  * <File description>
  *
- * $Id: animated_morph.h,v 1.1 2001/10/10 16:06:02 besson Exp $
+ * $Id: animated_morph.h,v 1.2 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,7 @@ public:
 	/** Constructor.
 	 */
 	CAnimatedMorph (CMorphBase*mb);
+	// @}
 
 
 	/// \name Herited from IAnimatable

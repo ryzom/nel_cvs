@@ -1,7 +1,7 @@
-/** \file quad_grid.h
+/** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.3 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: quad_grid.h,v 1.4 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

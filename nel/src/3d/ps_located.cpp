@@ -1,7 +1,7 @@
-/** \file particle_system_located.cpp
+/** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.42 2002/02/20 11:13:03 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.43 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

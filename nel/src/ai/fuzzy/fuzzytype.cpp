@@ -1,7 +1,7 @@
-/** \file interpret_fuzzytype.cpp
+/** \file fuzzytype.cpp
  * Base class for the integration of fuzzy facts in conditions
  *
- * $Id: fuzzytype.cpp,v 1.6 2001/05/22 16:08:16 chafik Exp $
+ * $Id: fuzzytype.cpp,v 1.7 2002/02/20 18:08:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

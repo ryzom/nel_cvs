@@ -1,10 +1,10 @@
-/** \file export.h
+/** \file ligo/export.h
  * Export from leveldesign data to client data
  * Ligo To NeL
  * Get the .land, the reference zones and the heightmap and generate
  * all zones that will be next welded and lighted.
  *
- * $Id: export.h,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: export.h,v 1.2 2002/02/20 18:09:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

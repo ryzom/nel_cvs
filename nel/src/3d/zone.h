@@ -1,7 +1,7 @@
-/** \file zone.h
+/** \file 3d/zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.14 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: zone.h,v 1.15 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file listener_user.h
  * UListenerUser: implementation of UListener
  *
- * $Id: listener_user.h,v 1.6 2001/08/27 08:50:56 cado Exp $
+ * $Id: listener_user.h,v 1.7 2002/02/20 18:09:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "driver/listener.h"
 
 
-/// This namespace contains the sound classes
+// This namespace contains the sound classes
 namespace NLSOUND {
 
 

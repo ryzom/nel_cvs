@@ -1,7 +1,7 @@
-/** \file zone_lighter.h
+/** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.9 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: zone_lighter.h,v 1.10 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

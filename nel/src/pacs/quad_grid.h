@@ -1,7 +1,7 @@
-/** \file quad_grid.h
+/** \file pacs/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.2 2002/02/01 18:17:58 berenguier Exp $
+ * $Id: quad_grid.h,v 1.3 2002/02/20 18:09:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

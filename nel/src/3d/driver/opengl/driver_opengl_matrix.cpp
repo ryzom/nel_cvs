@@ -1,7 +1,7 @@
-/** \file driver_matrix.cpp
+/** \file driver_opengl_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.12 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.13 2002/02/20 18:07:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

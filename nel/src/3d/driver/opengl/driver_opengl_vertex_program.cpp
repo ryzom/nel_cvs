@@ -1,7 +1,7 @@
-/** \file driver_opengl_vertx_program.cpp
+/** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.9 2002/02/11 10:01:34 berenguier Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.10 2002/02/20 18:07:42 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */

@@ -1,6 +1,6 @@
-/** \file libcode.cpp
+/** \file test_method.cpp
  *
- * $Id: test_method.cpp,v 1.13 2001/12/11 09:27:05 chafik Exp $
+ * $Id: test_method.cpp,v 1.14 2002/02/20 18:08:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file ps_attrib_maker_bin_op.h
+/** \file ps_attrib_maker_bin_op_inline.h
  * implementation of binary operator in particle systems
  *
- * $Id: ps_attrib_maker_bin_op_inline.h,v 1.3 2002/02/15 17:01:29 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op_inline.h,v 1.4 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.19 2002/02/01 14:52:01 berenguier Exp $
+ * $Id: local_retriever.h,v 1.20 2002/02/20 18:09:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -389,6 +389,7 @@ public:
 	/// Serialises the CLocalRetriever.
 	void								serial(NLMISC::IStream &f);
 
+	// @}
 
 	/// \name  Collisions part.
 	// @{

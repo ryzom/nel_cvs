@@ -1,6 +1,6 @@
-/** \file msg_contenair.cpp
+/** \file msg_container.cpp
  *
- * $Id: msg_container.cpp,v 1.8 2001/01/17 10:42:55 chafik Exp $
+ * $Id: msg_container.cpp,v 1.9 2002/02/20 18:08:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

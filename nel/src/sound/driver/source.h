@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.7 2001/09/03 14:21:31 cado Exp $
+ * $Id: source.h,v 1.8 2002/02/20 18:09:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,6 +74,7 @@ public:
 	 * otherwise the source is considered as a 3D source.
 	 */
 	virtual void					setStreamLoader( ILoader *loader )	{ _Loader = loader; }
+	//@}
 
 	
 	/// \name Playback control

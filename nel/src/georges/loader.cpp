@@ -1,7 +1,7 @@
-/** \file loader.cpp
+/** \file georges/loader.cpp
  * Georges system files
  *
- * $Id: loader.cpp,v 1.1 2002/02/14 10:40:39 corvazier Exp $
+ * $Id: loader.cpp,v 1.2 2002/02/20 18:09:02 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

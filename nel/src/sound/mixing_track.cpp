@@ -1,7 +1,7 @@
-/** \file track.cpp
+/** \file mixing_track.cpp
  * CTrack: a source selected for playing
  *
- * $Id: mixing_track.cpp,v 1.3 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: mixing_track.cpp,v 1.4 2002/02/20 18:09:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

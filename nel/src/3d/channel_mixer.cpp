@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.16 2001/08/01 09:38:25 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.17 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,7 +193,7 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 
 // ***************************************************************************
 
-void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultTrack, uint32 valueId, uint32 ownerValueId, bool detail)
+void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId, uint32 ownerValueId, bool detail)
 {
 	// Check the animationSet has been set
 	nlassert (_AnimationSet);
@@ -201,7 +201,7 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 	// Check args
 	nlassert (animatable);
 	nlassert (value);
-	nlassert (defaultTrack);
+	nlassert (defaultValue);
 
 	// Get the channel Id having the same name than the tracks in this animation set.
 	uint iDInAnimationSet=_AnimationSet->getChannelIdByName (channelName);
@@ -226,7 +226,7 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 
 
 		// Set the default track pointer
-		entry._DefaultTracks=defaultTrack;
+		entry._DefaultTracks=defaultValue;
 
 		// Set the value ID in the object
 		entry._ValueId=valueId;

@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.9 2002/02/20 11:15:46 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.10 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -310,6 +310,7 @@ public:
 
 		/// Get the the type of texture animation
 		TTexAnimType getTexAnimType() const;
+	//@}
 
 		//\name Global texture animation. Calls to these method are only valid if texture animation is global.
 		//@{
@@ -340,8 +341,6 @@ public:
 			bool  isGlobalAnimTimeResetOnNewElementForced()  const { return _ReinitGlobalAnimTimeOnNewElement != 0; }
 
 		//@}
-	//@}
-
 
 	
 

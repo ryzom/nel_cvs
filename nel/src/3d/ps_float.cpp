@@ -1,7 +1,7 @@
-/** \file ps_size.cpp
+/** \file ps_float.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.11 2002/02/15 17:04:01 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.12 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file light.cpp
+/** \file 3d/light.cpp
  * CLight definition
  *
- * $Id: light.cpp,v 1.4 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: light.cpp,v 1.5 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

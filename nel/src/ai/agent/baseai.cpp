@@ -1,6 +1,6 @@
-/** \file baseia.cpp
+/** \file baseai.cpp
  *
- * $Id: baseai.cpp,v 1.35 2002/01/24 13:28:20 chafik Exp $
+ * $Id: baseai.cpp,v 1.36 2002/02/20 18:08:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file loader.h
+/** \file driver/loader.h
  * ILoader: sound loader interface
  *
- * $Id: loader.h,v 1.1 2001/06/26 15:28:10 cado Exp $
+ * $Id: loader.h,v 1.2 2002/02/20 18:09:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file plane_basis_maker.h
+/** \file ps_plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.8 2002/02/15 17:10:22 vizerie Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.9 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

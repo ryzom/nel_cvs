@@ -1,7 +1,7 @@
-/** \file ps_size.h
+/** \file ps_float.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.8 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_float.h,v 1.9 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

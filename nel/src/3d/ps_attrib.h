@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.11 2002/02/20 11:00:49 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.12 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -308,6 +308,7 @@ public:
 
 		/// Get a  const_iterator at the end of the container
 		const_iterator			end(void) const { return _Tab.end(); }	
+	//@}
 	
 	/// \name Add / remove methods
 	//@{

@@ -1,7 +1,7 @@
-/** \file loader.cpp
+/** \file driver/loader.cpp
  * <File description>
  *
- * $Id: loader.cpp,v 1.1 2001/06/26 15:28:10 cado Exp $
+ * $Id: loader.cpp,v 1.2 2002/02/20 18:09:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
-/** \file ps_ribbon_look_a.cpp
+/** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.2 2002/02/20 11:19:52 vizerie Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.3 2002/02/20 18:08:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

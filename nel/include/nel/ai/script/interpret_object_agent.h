@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.13 2001/02/01 17:15:20 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.14 2001/02/02 09:10:10 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -185,7 +185,7 @@ namespace NLAISCRIPT
 
 		//// Static components
 		virtual sint32 registerComponent(const NLAIAGENT::IVarName &type_name);
-		virtual sint32 registerComponent(const NLAIAGENT::IVarName &type_name, NLAIAGENT::CStringVarName &field_name);
+		virtual sint32 registerComponent(const NLAIAGENT::IVarName &type_name, const NLAIAGENT::CStringVarName &field_name);
 		/// Returns a CComponent struct describing a static component from its index in the class
 		/// Only the class's own static members are considered, not the inherited ones.
 		virtual CComponent *getComponent(sint32 i) const;

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.45 2001/09/12 14:43:37 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.46 2001/09/12 16:02:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,9 +47,12 @@
 #include <algorithm>
 
 
-
-#define CHECK_VERTEX_BUFFER(vb, pt) nlassert((uint8 *) (pt) >= (uint8 *) (vb).getVertexCoordPointer()  \
-									&& (uint8 *) (pt) < ((uint8 *) (vb).getVertexCoordPointer() + (vb).getVertexSize() * (vb).getNumVertices()));
+#ifdef NL_DEBUG
+	#define CHECK_VERTEX_BUFFER(vb, pt) nlassert((uint8 *) (pt) >= (uint8 *) (vb).getVertexCoordPointer()  \
+										&& (uint8 *) (pt) < ((uint8 *) (vb).getVertexCoordPointer() + (vb).getVertexSize() * (vb).getNumVertices()));
+#else
+	#define CHECK_VERTEX_BUFFER
+#endif
 
 
 // this macro check the memory integrity (windows platform for now). It may be useful after violent vb access

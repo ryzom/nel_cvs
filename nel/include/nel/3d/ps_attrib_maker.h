@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.7 2001/06/06 08:24:06 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.8 2001/06/08 08:52:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,7 +106,7 @@ template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 	/** Retrieve the number of cycles
 	 *  \see setNbCycles()
 	 */
-	float getNbCycles(void) const { return nbCycles ; }
+	float getNbCycles(void) const { return _NbCycles ; }
 
 
 	/** construct the attrib maker specifying the number of cycles to do.

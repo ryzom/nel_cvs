@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.4 2000/11/21 14:55:25 berenguier Exp $
+ * $Id: font_manager.h,v 1.5 2000/11/21 15:26:14 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,9 +45,8 @@ struct CDisplayDescriptor;
 struct CComputedString;
 struct CFontDescriptor;
 
-
-typedef std::pair< std::list<NLMISC::CSmartPtr<CTextureFont> >::iterator,  uint32> pairRefPtrIntProut;
-struct pairRefPtrInt : public pairRefPtrIntProut
+// we don't create a typedef because it generates too long decorated name, intead we, create a structure.
+struct pairRefPtrInt : public std::pair< std::list<NLMISC::CSmartPtr<CTextureFont> >::iterator,  uint32>
 {
 	pairRefPtrInt (std::list<NLMISC::CSmartPtr<CTextureFont> >::iterator ite,  uint32 intt)
 	{
@@ -55,6 +54,7 @@ struct pairRefPtrInt : public pairRefPtrIntProut
 		second=intt;
 	}
 };
+
 typedef std::map< CFontDescriptor , pairRefPtrInt> mapFontDec;
 
 
@@ -124,14 +124,22 @@ public:
 	 * \param desc display descriptor (screen size, font ratio)
 	 * \param output computed string
 	 */	
-	void computeString (//const ucstring s, 
-						const std::string& s, //
+	void computeString (const std::string& s,
 						CFontGenerator * fontGen, 
 						NLMISC::CRGBA& color,
 						uint32 fontSize, 
 						const CDisplayDescriptor& desc, 
 						CComputedString& output);
 
+	/** 
+	 * Same as computeString but works with an unicode string (ucstring)
+	 */
+	void computeString (const ucstring &s,
+						CFontGenerator *fontGen, 
+						NLMISC::CRGBA &color,
+						uint32 fontSize, 
+						const CDisplayDescriptor &desc, 
+						CComputedString &output);
 };
 
 
@@ -142,6 +150,3 @@ public:
 #endif // NL_FONT_MANAGER_H
 
 /* End of font_manager.h */
-
-
-

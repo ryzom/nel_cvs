@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.2 2000/11/14 14:55:08 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.3 2000/11/21 15:26:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,14 +124,7 @@ uint8 *CFontGenerator::getBitmap (ucchar c, uint32 size, uint32 &width, uint32 &
 	{
 		nlerror ("FT_Render_Glyph() failed: %s", getFT2Error(error));
 	}
-       
-/*
-	error = FT_Load_Char (_Face, c, FT_LOAD_RENDER);
-	if (error)
-	{
-		nlerror ("FT_Load_Char() failed: %s", getFT2Error(error));
-	}
-*/
+
 	width = _Face->glyph->bitmap.width;
 	height = _Face->glyph->bitmap.rows;
 	pitch = _Face->glyph->bitmap.pitch;

@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.3 2000/11/17 14:57:33 coutelas Exp $
+ * $Id: font_manager.cpp,v 1.4 2000/11/21 15:26:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,6 @@
 
 
 namespace NL3D {
-
 
 
 
@@ -113,19 +112,16 @@ NLMISC::CSmartPtr<CTextureFont> CFontManager::getFontTexture(CFontDescriptor des
 
 
 
-
-/*------------------------------------------------------------------*\
-							computeString()
-\*------------------------------------------------------------------*/
-void CFontManager::computeString (//const ucstring& s,  
-								  const std::string& s,  //!!!!!!!!!! TEMP 
-								  CFontGenerator *fontGen, 
-								  NLMISC::CRGBA& color,
-								  uint32 fontSize, 
-								  const CDisplayDescriptor& desc, 
-								  CComputedString& output)
+/* This function compute a basic_string
+ *
+ */
+template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::basic_string<T, std::char_traits<T>, std::allocator<T> > &s,
+				CFontGenerator *fontGen, 
+				NLMISC::CRGBA &color,
+				uint32 fontSize, 
+				const CDisplayDescriptor &desc, 
+				CComputedString &output)
 {
-
 	// Setting vertices format
 	output.Vertices.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_RGBA | IDRV_VF_UV[0]);
 	output.Vertices.setNumVertices(4 * s.size());
@@ -140,7 +136,7 @@ void CFontManager::computeString (//const ucstring& s,
 	for(uint i=0; i<s.size(); i++)
 	{
 		// Creating font
-		CSmartPtr<CTextureFont> pTexFont = this->getFontTexture(CFontDescriptor(fontGen,s[i],fontSize));
+		CSmartPtr<CTextureFont> pTexFont = fm->getFontTexture(CFontDescriptor(fontGen,s[i],fontSize));
 		
 		// Creating vertices
 		sint32 dx = pTexFont->Left;
@@ -204,6 +200,36 @@ void CFontManager::computeString (//const ucstring& s,
 	}
 
 }
+
+
+
+/*------------------------------------------------------------------*\
+							computeString()
+\*------------------------------------------------------------------*/
+void CFontManager::computeString (const std::string &s,
+								  CFontGenerator *fontGen,
+								  NLMISC::CRGBA &color,
+								  uint32 fontSize,
+								  const CDisplayDescriptor &desc,
+								  CComputedString &output)
+{
+	NL3DcomputeString (this, s, fontGen, color, fontSize, desc, output);
+}
+
+
+/*------------------------------------------------------------------*\
+							computeString()
+\*------------------------------------------------------------------*/
+void CFontManager::computeString (const ucstring &s,
+								  CFontGenerator *fontGen,
+								  NLMISC::CRGBA &color,
+								  uint32 fontSize,
+								  const CDisplayDescriptor &desc,
+								  CComputedString &output)
+{
+	NL3DcomputeString (this, s, fontGen, color, fontSize, desc, output);
+}
+
 
 
 

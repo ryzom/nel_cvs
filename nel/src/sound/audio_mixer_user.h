@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.22 2002/06/19 08:34:02 hanappe Exp $
+ * $Id: audio_mixer_user.h,v 1.23 2002/06/28 19:32:25 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,7 +185,11 @@ public:
 	//static void					allowMissingWave( bool b )				{ CSound::allowMissingWave( b ); }	
 
 	/// Set the global path to the sample banks
-	virtual void				setSamplePath(std::string& path)		{ _SamplePath = path; }
+	virtual void				setSamplePath(const std::string& path)		{ _SamplePath = path; }
+
+	/// Write profiling information about the mixer to the output stream.
+	virtual void				writeProfile(std::ostream& out);
+
 
 protected:
 
@@ -261,6 +265,17 @@ public: // Temp (EDIT)
 	NLMISC::TTicks				_StartTime;
 
 	uint32						curTime() { return (uint32) (NLMISC::CTime::getLocalTime() - _StartTime); }
+
+
+#define NL_PROFILE_MIXER 1
+#if NL_PROFILE_MIXER
+public:
+
+    double _UpdateTime;
+    double _CreateTime;
+	uint32 _UpdateCount;
+	uint32 _CreateCount;
+#endif
 
 };
 

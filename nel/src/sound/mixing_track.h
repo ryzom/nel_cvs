@@ -1,7 +1,7 @@
 /** \file mixing_track.h
  * CTrack: a source selected for playing
  *
- * $Id: mixing_track.h,v 1.1 2001/08/23 14:29:13 lecroart Exp $
+ * $Id: mixing_track.h,v 1.2 2002/06/28 19:32:24 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,9 @@ public:
 
 
 	/// Return availability
-	bool			isAvailable() const					{ return (_UserSource==NULL); }
+	// FIXME: SWAPTEST
+	//bool			isAvailable() const					{ return (_UserSource==NULL); }
+	bool			isAvailable() const					{ nlassert( DrvSource != NULL ); return (_UserSource==NULL) && DrvSource->isStopped(); }
 	/// Returns true if the track is physically playing (different from getUserSource()->isPlaying())
 	bool			isPlaying() const					{ nlassert( DrvSource != NULL ); return DrvSource->isPlaying(); }
 	/// Set logical source (if NULL, the track becomes available)

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.23 2002/07/02 08:55:23 legros Exp $
+ * $Id: win_displayer.cpp,v 1.24 2002/07/02 09:00:57 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -366,7 +366,7 @@ void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint 
 	AdjustWindowRect(&WndRect,WndFlags,FALSE);
 	
 	// create the window
-	_HWnd = CreateWindow ("NLDisplayerClass", wn.c_str(), WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
+	_HWnd = CreateWindow ("NLDisplayerClass", "", WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
 	SetWindowLong (_HWnd, GWL_USERDATA, (LONG)this);
 	
 	// create the font

@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.16 2001/12/19 14:37:05 robert Exp $
+ * $Id: agent_digital.h,v 1.17 2002/09/10 08:26:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -234,7 +234,7 @@ namespace NLAIAGENT
 
 		virtual void getDebugString(std::string &text) const
 		{
-			text += NLAIC::stringGetBuild("%.5e",getValue());
+			text += NLAIC::stringGetBuild("%.5f",getValue());
 		}		
 
 		virtual const CProcessResult &run();

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.50 2002/08/27 09:25:38 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.51 2002/09/10 08:27:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -853,7 +853,9 @@ namespace NLAISCRIPT
 			}
 		}
 		else
+		{			
 			return NULL;
+		}
 	}
 
 	const IClassInterpret *CAgentClass::getBaseClass() const

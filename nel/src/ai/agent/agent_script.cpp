@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.131 2002/08/22 08:54:48 portier Exp $
+ * $Id: agent_script.cpp,v 1.132 2002/09/10 08:26:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -718,8 +718,8 @@ namespace NLAIAGENT
 	{
 		std::set<std::string>::iterator it = mapSet.find(s);
 		if(it != mapSet.end()) return true;
-		else
-		if(isClassInheritedFrom(CStringVarName(s.c_str())) >= 0) return true;
+		/*else
+		if(isClassInheritedFrom(CStringVarName(s.c_str())) >= 0) return true;*/
 		else
 		if(s == (const char *) getType()) return true;
 		
@@ -1536,7 +1536,7 @@ namespace NLAIAGENT
 		
 		NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext();
 		context->Self = this;
-		runMethodeMember(_AgentClass->getRunMethod(), context);
+		if(_AgentClass->getRunMethod() >= 0) runMethodeMember(_AgentClass->getRunMethod(), context);
 		
 		return ProcessRun;
 	}

@@ -1,11 +1,11 @@
 /**
 \page time_system How does the time work on the shard ?
 
-$Id: time.dxt,v 1.1 2001/05/30 08:20:34 lecroart Exp $
+$Id: time.dxt,v 1.2 2001/10/30 14:14:45 lecroart Exp $
 
 \author Vianney Lecroart
 
-\date 05/28/2001
+\date Updated November 30, 2001
 
 \subsection time_system_intro Introduction
 
@@ -31,6 +31,8 @@ convert this tick value into seconds.
 
 \subsection time_system_unitime_h Universal Time
 
+\warning DEPRECATED
+
 The universal time is the basis of time in a NeL system. This value is the same on all computers and is used in all services and clients
 to date events. This value is a \c sint64 (\c TTime type) containing the number of milliseconds since the creation of the virtual universe.
 
@@ -52,6 +54,8 @@ There are 2 methods in the class CUniTime, one that you have to call on the clie
 another one in the front-end service (\c installServer()).
 
 \subsection time_system_works How it works ?
+
+\warning DEPRECATED
 
 We use 2 different algorithms depending of the type the connection between the 2 programs.
 

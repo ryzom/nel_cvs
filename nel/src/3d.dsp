@@ -1055,6 +1055,10 @@ SOURCE=..\include\nel\3d\u_3d_mouse_listener.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\u_animation.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\3d\u_animation_set.h
 # End Source File
 # Begin Source File
@@ -1116,6 +1120,10 @@ SOURCE=..\include\nel\3d\u_text_context.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\u_texture.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\u_track.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.14 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: track.cpp,v 1.15 2001/07/03 09:46:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,16 @@
 
 #include "3d/track.h"
 
+#include "nel/misc/rgba.h"
+
+using namespace NLMISC;
 
 namespace NL3D 
 {
 
+// ***************************************************************************
+
+/*
 // Some compilation check: force Visual to compile to template
 CTrackDefaultFloat ttoto10;
 CTrackDefaultVector ttoto11;
@@ -37,5 +43,162 @@ CTrackDefaultInt ttoto13;
 CTrackDefaultRGBA ttoto16;
 CTrackDefaultString ttoto14;
 CTrackDefaultBool ttoto15;
+*/
+
+// ***************************************************************************
+
+bool ITrack::interpolate (CAnimationTime time, float& res)
+{
+	// Evaluate it 
+	eval (time);
+
+	// Get a pointer on the value
+	const CAnimatedValueFloat *value=dynamic_cast<const CAnimatedValueFloat*>(&getValue ());
+
+	// Type is good ?
+	if (value)
+	{
+		// Ok, return the value
+		res=value->Value;
+		return true;
+	}
+	else
+		// No, return false
+		return false;
+}
+
+// ***************************************************************************
+
+bool ITrack::interpolate (CAnimationTime time, sint32& res)
+{
+	// Evaluate it 
+	eval (time);
+
+	// Get a pointer on the value
+	const CAnimatedValueInt *value=dynamic_cast<const CAnimatedValueInt*>(&getValue ());
+
+	// Type is good ?
+	if (value)
+	{
+		// Ok, return the value
+		res=value->Value;
+		return true;
+	}
+	else
+		// No, return false
+		return false;
+}
+
+// ***************************************************************************
+
+bool ITrack::interpolate (CAnimationTime time, CRGBA& res)
+{
+	// Evaluate it 
+	eval (time);
+
+	// Get a pointer on the value
+	const CAnimatedValueRGBA *value=dynamic_cast<const CAnimatedValueRGBA*>(&getValue ());
+
+	// Type is good ?
+	if (value)
+	{
+		// Ok, return the value
+		res=value->Value;
+		return true;
+	}
+	else
+		// No, return false
+		return false;
+}
+
+// ***************************************************************************
+
+bool ITrack::interpolate (CAnimationTime time, CVector& res)
+{
+	// Evaluate it 
+	eval (time);
+
+	// Get a pointer on the value
+	const CAnimatedValueVector *value=dynamic_cast<const CAnimatedValueVector*>(&getValue ());
+
+	// Type is good ?
+	if (value)
+	{
+		// Ok, return the value
+		res=value->Value;
+		return true;
+	}
+	else
+		// No, return false
+		return false;
+}
+
+// ***************************************************************************
+
+bool ITrack::interpolate (CAnimationTime time, CQuat& res)
+{
+	// Evaluate it 
+	eval (time);
+
+	// Get a pointer on the value
+	const CAnimatedValueQuat *value=dynamic_cast<const CAnimatedValueQuat*>(&getValue ());
+
+	// Type is good ?
+	if (value)
+	{
+		// Ok, return the value
+		res=value->Value;
+		return true;
+	}
+	else
+		// No, return false
+		return false;
+}
+
+// ***************************************************************************
+
+bool ITrack::interpolate (CAnimationTime time, std::string& res)
+{
+	// Evaluate it 
+	eval (time);
+
+	// Get a pointer on the value
+	const CAnimatedValueString *value=dynamic_cast<const CAnimatedValueString*>(&getValue ());
+
+	// Type is good ?
+	if (value)
+	{
+		// Ok, return the value
+		res=value->Value;
+		return true;
+	}
+	else
+		// No, return false
+		return false;
+}
+
+// ***************************************************************************
+
+bool ITrack::interpolate (CAnimationTime time, bool& res)
+{
+	// Evaluate it 
+	eval (time);
+
+	// Get a pointer on the value
+	const CAnimatedValueBool *value=dynamic_cast<const CAnimatedValueBool*>(&getValue ());
+
+	// Type is good ?
+	if (value)
+	{
+		// Ok, return the value
+		res=value->Value;
+		return true;
+	}
+	else
+		// No, return false
+		return false;
+}
+
+// ***************************************************************************
 
 } // NL3D

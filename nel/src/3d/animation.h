@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: animation.h,v 1.2 2001/07/03 09:46:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,10 @@
 #define NL_ANIMATION_H
 
 #include "nel/misc/types_nl.h"
+
 #include "nel/3d/animation_time.h"
+#include "nel/3d/u_animation.h"
+
 #include <memory>
 #include <map>
 #include <set>
@@ -52,7 +55,7 @@ class ITrack;
  * \author Nevrax France
  * \date 2001
  */
-class CAnimation
+class CAnimation : public UAnimation
 {
 public:
 
@@ -89,11 +92,21 @@ public:
 	  */
 	void getTrackNames (std::set<std::string>& setString) const;
 
-	/** Get a track pointer
+	/** Get a const track pointer
 	  *
 	  * \param channelId is the id of the desired channel.
 	  */
 	const ITrack* getTrack (uint trackId) const
+	{
+		// Get the trackId-th track pointer
+		return _TrackVector[trackId];
+	}
+
+	/** Get a track pointer
+	  *
+	  * \param channelId is the id of the desired channel.
+	  */
+	ITrack* getTrack (uint trackId)
 	{
 		// Get the trackId-th track pointer
 		return _TrackVector[trackId];
@@ -123,6 +136,15 @@ public:
 
 	/// Serial the template
 	void serial (NLMISC::IStream& f);
+
+	/// \name From UAnimation
+	// @{
+
+	virtual UTrack*		getTrackByName (const char* name);
+	virtual void		releaseTrack (UTrack* track);
+
+	// @}
+
 
 private:
 	/// \name Members

@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: track.h,v 1.2 2001/07/03 09:46:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,10 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
+
 #include "nel/3d/animation_time.h"
+#include "nel/3d/u_track.h"
+
 #include "3d/animated_value.h"
 
 
@@ -52,7 +55,7 @@ using NLMISC::CVector;
  * \author Nevrax France
  * \date 2001
  */
-class ITrack : public NLMISC::IStreamable
+class ITrack : public NLMISC::IStreamable, public UTrack
 {
 public:
 	/**
@@ -75,19 +78,18 @@ public:
 	  */
 	virtual const IAnimatedValue& getValue () const=0;
 
-	/**
-	  * Get begin time of the track.
-	  *
-	  * \return the begin time.
-	  */
-	virtual CAnimationTime getBeginTime () const=0;
+	/// \name From UTrack
+	// @{
 
-	/**
-	  * Get end time of the track.
-	  *
-	  * \return the end time.
-	  */
-	virtual CAnimationTime getEndTime () const=0;
+	virtual bool interpolate (CAnimationTime time, float& res);
+	virtual bool interpolate (CAnimationTime time, sint32& res);
+	virtual bool interpolate (CAnimationTime time, NLMISC::CRGBA& res);
+	virtual bool interpolate (CAnimationTime time, NLMISC::CVector& res);
+	virtual bool interpolate (CAnimationTime time, NLMISC::CQuat& res);
+	virtual bool interpolate (CAnimationTime time, std::string& res);
+	virtual bool interpolate (CAnimationTime time, bool& res);
+
+	// @}
 };
 
 

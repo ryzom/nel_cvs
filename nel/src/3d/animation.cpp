@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.8 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: animation.cpp,v 1.9 2001/07/03 09:46:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,9 @@
 
 #include "3d/animation.h"
 #include "3d/track.h"
-#include "nel/misc/stream.h"
 
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
 
 namespace NL3D 
 {
@@ -135,6 +136,64 @@ CAnimationTime CAnimation::getEndTime () const
 	}
 
 	return highest;
+}
+
+// ***************************************************************************
+
+UTrack* CAnimation::getTrackByName (const char* name)
+{
+	// Get track id
+	uint id=getIdTrackByName (name);
+
+	// Not found ?
+	if (id==CAnimation::NotFound)
+		// Error, return NULL
+		return NULL;
+	else
+		// No error, return the track
+		return getTrack (id);
+}
+
+// ***************************************************************************
+
+void CAnimation::releaseTrack (UTrack* track)
+{
+	// Nothing to do
+}
+
+// ***************************************************************************
+
+UAnimation* UAnimation::createAnimation (const char* sPath)
+{
+	// Allocate an animation
+	std::auto_ptr<CAnimation> anim (new CAnimation);
+
+	// Read it
+	NLMISC::CIFile file;
+	if (file.open ( NLMISC::CPath::lookup( sPath ) ) )
+	{
+		// Serial the animation
+		file.serial (*anim);
+
+		// Return pointer
+		CAnimation *ret=anim.release ();
+
+		// Return the animation interface
+		return ret;
+	}
+	else 
+		return NULL;
+}
+
+// ***************************************************************************
+
+void UAnimation::releaseAnimation (UAnimation* animation)
+{
+	// Cast the pointer
+	CAnimation* release=(CAnimation*)animation;
+
+	// Delete it
+	delete release;
 }
 
 // ***************************************************************************

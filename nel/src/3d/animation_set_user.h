@@ -1,7 +1,7 @@
 /** \file animation_set_user.h
  * <File description>
  *
- * $Id: animation_set_user.h,v 1.3 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: animation_set_user.h,v 1.4 2001/07/03 09:46:22 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,7 +89,7 @@ public:
 	uint addAnimation (const char* fileName, const char* animName)
 	{
 		// Allocate an animation
-		CAnimation *anim=new CAnimation;
+		std::auto_ptr<CAnimation> anim (new CAnimation);
 
 		// Read it
 		NLMISC::CIFile file;
@@ -99,7 +99,7 @@ public:
 			file.serial (*anim);
 
 			// Add the animation
-			uint id=_AnimationSet->addAnimation (animName, anim);
+			uint id=_AnimationSet->addAnimation (animName, anim.release());
 
 			// Return id
 			return id;

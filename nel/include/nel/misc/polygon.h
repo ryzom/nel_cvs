@@ -1,7 +1,7 @@
 /** \file polygon.h
  * <File description>
  *
- * $Id: polygon.h,v 1.1 2001/02/28 14:31:21 berenguier Exp $
+ * $Id: polygon.h,v 1.2 2001/10/26 08:31:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/stream.h"
 #include <vector>
 
 
@@ -65,6 +66,8 @@ public:
 	void			clip(const CPlane *planes, uint nPlanes);
 	/// Clip a polygon with a set of planes. Cohen-sutherland clipping... clipPolygonBack() is used on planes.
 	void			clip(const std::vector<CPlane> &planes);
+	/// Serial this polygon
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 };
 

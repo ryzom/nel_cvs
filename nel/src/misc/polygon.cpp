@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.1 2001/02/28 14:39:04 berenguier Exp $
+ * $Id: polygon.cpp,v 1.2 2001/10/26 08:30:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,5 +84,12 @@ void			CPolygon::clip(const std::vector<CPlane> &planes)
 }
 
 
+
+// ***************************************************************************
+void CPolygon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	f.serialVersion(0);
+	f.serialCont(Vertices);
+}
 
 } // NLMISC

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.8 2000/09/13 14:57:28 berenguier Exp $
+ * $Id: stream.h,v 1.9 2000/09/14 09:52:14 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -63,7 +63,53 @@ class	IStreamable;
 /**
  * A IO stream interface.
  * This is the base interface for stream objects. Differents kind of streams may be implemented,
- * by specifying serialBuffer() methods. Sample of streams: COutMemoryStream, CInFileStream ...
+ * by specifying serialBuffer() methods.
+ *
+ * \b Deriver \b Use:
+ *
+ * The deriver must:
+ * \li construct object specifying his type, see IStream(). A stream may be setup Input or Output at construction, but cannot
+ * change during his life.
+ * \li specify serialBuffer(), to save or load pack of bytes.
+ * \li specify serialBit(), to save() or load() a bit.
+ * \li call resetPtrTable() when the stream reset itself (e.g.: CIFile::close() )
+ *
+ * Sample of streams: COutMemoryStream, CInFileStream ...
+ *
+ * \b Client \b Use:
+ *
+ * An object which can be serialized, must provide a "void serial(IStream &)" method. In this method, he can use
+ * any of the IStream method to help himself like:
+ * \li serial() with a base type (uint32, string, char...), or even with an object which provide "void serial(IStream &)"
+ * \li template serial(T0&, T1&, ...) to serialize multiple object/variables in one call (up to 6).
+ * \li serialCont() and serialMap() to serialize containers.
+ * \li serialVersion() to check/store a version number of his class.
+ * \li serialPtr() to use the ptr support of IStream (see serialPtr() for more information)
+ * \li isReading() to know if he write in the stream, or if he read.
+ *
+ * The using is very simple as shown in this example:
+ *
+ * \code
+ class A
+ {
+ public:
+	float	x;
+	uint32	y;
+	Class1	a;		// this class must provide a serial() method too...
+	Base	*c,*d;	// Base must derive from IStreamable
+	vector<Class2>	tab;
+
+ public:
+	void	serial(IStream &f)
+	{
+		sint	streamver= serialVersion(3);
+		serial(x,y,a);
+		serialPtr(c);
+		if(streamver>=2)
+			serialPtr(d);
+	}
+ };
+ \endcode
  * \author Lionel Berenguier
  * \author Vianney Lecroart
  * \author Nevrax France
@@ -104,7 +150,7 @@ public:
 	virtual ~IStream() {}
 
 	/// Is this stream a Read/Input stream?
-	bool			isReading();
+	bool			isReading() const;
 
 
 	/**

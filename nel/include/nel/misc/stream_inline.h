@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream_inline.h,v 1.5 2000/09/13 14:57:34 berenguier Exp $
+ * $Id: stream_inline.h,v 1.6 2000/09/14 09:52:13 berenguier Exp $
  *
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  */
@@ -53,7 +53,7 @@ inline	IStream::IStream(bool inputStream, bool needSwap)
 
 
 // ======================================================================================================
-inline	bool		IStream::isReading()
+inline	bool		IStream::isReading() const
 {
 	return _InputStream;
 }

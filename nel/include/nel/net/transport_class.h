@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.9 2002/04/15 14:30:50 lecroart Exp $
+ * $Id: transport_class.h,v 1.10 2002/06/03 09:52:01 miller Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 	enum TProp {
 		PropUInt8, PropUInt16, PropUInt32, PropUInt64,
 		PropSInt8, PropSInt16, PropSInt32, PropSInt64,
-		PropBool, PropFloat, PropDouble, PropString, PropEntityId, PropUKN };
+		PropBool, PropFloat, PropDouble, PropString, PropEntityId, PropSheetId, PropUKN };
 
 
 	//
@@ -149,7 +149,7 @@ public:
 		{
 		case PropUInt8: case PropSInt8: case PropBool: nlassert(sizeof(T) == sizeof (uint8)); break;
 		case PropUInt16: case PropSInt16: nlassert(sizeof(T) == sizeof (uint16)); break;
-		case PropUInt32: case PropSInt32: nlassert(sizeof(T) == sizeof (uint32)); break;
+		case PropUInt32: case PropSInt32: case PropSheetId: nlassert(sizeof(T) == sizeof (uint32)); break;
 		case PropUInt64: case PropSInt64: nlassert(sizeof(T) == sizeof (uint64)); break;
 		case PropFloat: nlassert(sizeof(T) == sizeof (float)); break;
 		case PropDouble: nlassert(sizeof(T) == sizeof (double)); break;

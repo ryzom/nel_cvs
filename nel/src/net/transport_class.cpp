@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.8 2002/04/15 14:49:34 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.9 2002/06/03 09:54:52 miller Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -77,7 +77,7 @@ string typeToString (CTransportClass::TProp type)
 	string conv[] = {
 		"PropUInt8", "PropUInt16", "PropUInt32", "PropUInt64",
 		"PropSInt8", "PropSInt16", "PropSInt32", "PropSInt64",
-		"PropBool", "PropFloat", "PropDouble", "PropString", "PropEntityId", "PropUKN" };
+		"PropBool", "PropFloat", "PropDouble", "PropString", "PropEntityId", "PropSheetId", "PropUKN" };
 
 	if (type > CTransportClass::PropUKN)
 		return "<InvalidType>";
@@ -346,6 +346,7 @@ void CTransportClass::init ()
 	nlassert (PropDouble < PropUKN); DummyProp[PropDouble] = new CTransportClass::CRegisteredProp<double>;
 	nlassert (PropString < PropUKN); DummyProp[PropString] = new CTransportClass::CRegisteredProp<string>;
 	nlassert (PropEntityId < PropUKN); DummyProp[PropEntityId] = new CTransportClass::CRegisteredProp<CEntityId>;
+	nlassert (PropSheetId < PropUKN); DummyProp[PropSheetId] = new CTransportClass::CRegisteredProp<CSheetId>;
 
 	// we have to know when a service comes, so add callback (put the callback before all other one because we have to send this message first)
 	CUnifiedNetwork::getInstance()->setServiceUpCallback("*", cbTCUpService, NULL, false);

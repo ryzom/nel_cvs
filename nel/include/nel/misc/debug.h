@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.25 2001/02/16 11:36:03 lecroart Exp $
+ * $Id: debug.h,v 1.26 2001/03/07 14:53:11 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 
 #include "nel/misc/common.h"
 #include "nel/misc/log.h"
+#include "nel/misc/mutex.h"
 
 namespace NLMISC
 {
@@ -74,11 +75,18 @@ void initDebug (bool setDisplayerInReleaseModeToo = false);
  *\endcode
  */
 //#ifdef NL_DEBUG
-#define nldebug \
-NLMISC::DebugLog.setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
+//#define nldebug \
+//NLMISC::DebugLog.setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
 //#else
 //#define nldebug //
 //#endif
+
+extern CMutex MutexNLDebug;
+void nlMtDebug( const char *format, ... );
+
+#define nldebug \
+NLMISC::MutexNLDebug.enter(), NLMISC::DebugLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlMtDebug
+
 
 /**
  * \def nlinfo(exp)

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.29 2001/02/16 11:35:54 lecroart Exp $
+ * $Id: debug.cpp,v 1.30 2001/03/07 14:53:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
+
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
@@ -109,6 +110,19 @@ void initDebug (bool setDisplayerInReleaseModeToo)
 		nlwarning ("NLMISC::initDebug() already called");
 	}
 }
+
+
+CMutex MutexNLDebug;
+
+
+void nlMtDebug( const char *format, ... )
+{
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+	DebugLog.displayNL (str);
+	MutexNLDebug.leave();
+}
+
 
 
 } // NLMISC

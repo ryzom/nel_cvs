@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.77 2004/08/03 16:31:57 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.78 2004/08/13 15:31:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,7 @@ namespace NL3D
 // ***************************************************************************
 CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDriverGL *drvGl) : ITextureDrvInfos(drv, it)
 {
+	H_AUTO_OGL(CTextureDrvInfosGL_CTextureDrvInfosGL)
 	// The id is auto created here.
 	glGenTextures(1,&ID);
 	
@@ -73,6 +74,7 @@ CTextureDrvInfosGL::CTextureDrvInfosGL(IDriver *drv, ItTexDrvInfoPtrMap it, CDri
 // ***************************************************************************
 CTextureDrvInfosGL::~CTextureDrvInfosGL()
 {
+	H_AUTO_OGL(CTextureDrvInfosGL_CTextureDrvInfosGLDtor)
 	// The id is auto deleted here.
 	glDeleteTextures(1,&ID);
 
@@ -89,6 +91,7 @@ CTextureDrvInfosGL::~CTextureDrvInfosGL()
 // Get the glText mirror of an existing setuped texture.
 static	inline CTextureDrvInfosGL*	getTextureGl(ITexture& tex)
 {
+	H_AUTO_OGL(getTextureGl)
 	CTextureDrvInfosGL*	gltex;
 	gltex= (CTextureDrvInfosGL*)(ITextureDrvInfos*)(tex.TextureDrvShare->DrvTexture);
 	return gltex;
@@ -99,6 +102,7 @@ static	inline CTextureDrvInfosGL*	getTextureGl(ITexture& tex)
 // Translation of TexFmt mode.
 GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 {
+	H_AUTO_OGL(CDriverGL_getGlTextureFormat)
 	ITexture::TUploadFormat		texfmt= tex.getUploadFormat();
 
 	// If auto, retrieve the pixel format of the bitmap.
@@ -170,6 +174,7 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 // ***************************************************************************
 static GLint	getGlSrcTextureFormat(ITexture &tex, GLint glfmt)
 {
+	H_AUTO_OGL(getGlSrcTextureFormat)
 
 	// Is destination format is alpha or lumiance ?
 	if ((glfmt==GL_ALPHA8)||(glfmt==GL_LUMINANCE8_ALPHA8)||(glfmt==GL_LUMINANCE8))
@@ -200,6 +205,7 @@ static GLint	getGlSrcTextureFormat(ITexture &tex, GLint glfmt)
 // ***************************************************************************
 static GLenum getGlSrcTextureComponentType(GLint texSrcFormat)
 {
+	H_AUTO_OGL(getGlSrcTextureComponentType)
 	switch (texSrcFormat)
 	{
 		case GL_DSDT_NV:
@@ -216,6 +222,7 @@ static GLenum getGlSrcTextureComponentType(GLint texSrcFormat)
 // ***************************************************************************
 uint				CDriverGL::computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const
 {
+	H_AUTO_OGL(CDriverGL_computeMipMapMemoryUsage)
 	switch(glfmt)
 	{
 	case GL_RGBA8:		return w*h* 4;
@@ -247,6 +254,7 @@ uint				CDriverGL::computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const
 // Translation of Wrap mode.
 static inline GLenum	translateWrapToGl(ITexture::TWrapMode mode, const CGlExtensions	&extensions)
 {
+	H_AUTO_OGL(translateWrapToGl)
 	if(mode== ITexture::Repeat)
 		return GL_REPEAT;
 	else
@@ -262,6 +270,7 @@ static inline GLenum	translateWrapToGl(ITexture::TWrapMode mode, const CGlExtens
 // ***************************************************************************
 static inline GLenum	translateMagFilterToGl(CTextureDrvInfosGL *glText)
 {	
+	H_AUTO_OGL(translateMagFilterToGl)
 #ifdef NEL_FORCE_NEAREST
 	return GL_NEAREST;
 #else // NEL_FORCE_NEAREST
@@ -281,6 +290,7 @@ static inline GLenum	translateMagFilterToGl(CTextureDrvInfosGL *glText)
 // ***************************************************************************
 static inline GLenum	translateMinFilterToGl(CTextureDrvInfosGL *glText)
 {
+	H_AUTO_OGL(translateMinFilterToGl)
 #ifdef NEL_FORCE_NEAREST
 	return GL_NEAREST;
 #else // NEL_FORCE_NEAREST
@@ -323,6 +333,7 @@ static inline GLenum	translateMinFilterToGl(CTextureDrvInfosGL *glText)
 // ***************************************************************************
 static inline bool		sameDXTCFormat(ITexture &tex, GLint glfmt)
 {
+	H_AUTO_OGL(sameDXTCFormat)
 	if(glfmt==GL_COMPRESSED_RGB_S3TC_DXT1_EXT && tex.PixelFormat==CBitmap::DXTC1)
 		return true;
 	if(glfmt==GL_COMPRESSED_RGBA_S3TC_DXT1_EXT && tex.PixelFormat==CBitmap::DXTC1Alpha)
@@ -339,6 +350,7 @@ static inline bool		sameDXTCFormat(ITexture &tex, GLint glfmt)
 // ***************************************************************************
 static inline bool		isDXTCFormat(GLint glfmt)
 {
+	H_AUTO_OGL(isDXTCFormat)
 	if(glfmt==GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
 		return true;
 	if(glfmt==GL_COMPRESSED_RGBA_S3TC_DXT1_EXT)
@@ -355,6 +367,7 @@ static inline bool		isDXTCFormat(GLint glfmt)
 // ***************************************************************************
 bool CDriverGL::setupTexture (ITexture& tex)
 {
+	H_AUTO_OGL(setupTexture)
 	bool nTmp;
 	return setupTextureEx (tex, true, nTmp);
 }
@@ -362,6 +375,7 @@ bool CDriverGL::setupTexture (ITexture& tex)
 // ***************************************************************************
 bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded, bool bMustRecreateSharedTexture)
 {
+	H_AUTO_OGL(setupTextureEx)
 	bAllUploaded = false;
 	
 	if(tex.isTextureCube() && (!_Extensions.ARBTextureCubeMap))
@@ -825,6 +839,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 // ***************************************************************************
 bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 {
+	H_AUTO_OGL(uploadTexture)
 	if (tex.TextureDrvShare == NULL)
 		return false; // Texture not created
 	if (tex.TextureDrvShare->DrvTexture == NULL)
@@ -956,6 +971,7 @@ bool CDriverGL::uploadTexture (ITexture& tex, CRect& rect, uint8 nNumMipMap)
 // ***************************************************************************
 bool CDriverGL::uploadTextureCube (ITexture& tex, CRect& rect, uint8 nNumMipMap, uint8 nNumFace)
 {
+	H_AUTO_OGL(uploadTextureCube)
 	if (tex.TextureDrvShare == NULL)
 		return false; // Texture not created
 	if (!tex.isTextureCube())
@@ -967,6 +983,7 @@ bool CDriverGL::uploadTextureCube (ITexture& tex, CRect& rect, uint8 nNumMipMap,
 // ***************************************************************************
 bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 {
+	H_AUTO_OGL(activateTexture)
 	if (this->_CurrentTexture[stage]!=tex)
 	{
 		_DriverGLStates.activeTextureARB(stage);
@@ -1105,6 +1122,7 @@ static	const	GLenum	InterpolateSrcLUT[8]= { GL_TEXTURE, GL_TEXTURE, GL_TEXTURE, 
 // Set general tex env using ENV_COMBINE4 for the current setupped stage (used by forceActivateTexEnvMode)
 static void	forceActivateTexEnvModeEnvCombine4(const CMaterial::CTexEnv  &env)
 {
+	H_AUTO_OGL(forceActivateTexEnvModeEnvCombine4)
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);					
 	
 		
@@ -1394,6 +1412,7 @@ static void	forceActivateTexEnvModeEnvCombine4(const CMaterial::CTexEnv  &env)
 // ***************************************************************************
 void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 {
+	H_AUTO_OGL(forceActivateTexEnvMode)
 	// cache mgt.
 	_CurrentTexEnv[stage].EnvPacked= env.EnvPacked;
 	// Disable Special tex env f().
@@ -1532,6 +1551,7 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 // ***************************************************************************
 void		CDriverGL::activateTexEnvColor(uint stage, NLMISC::CRGBA col)
 {
+	H_AUTO_OGL(CDriverGL_activateTexEnvColor)
 	if (col != _CurrentTexEnv[stage].ConstantColor)
 	{	
 		forceActivateTexEnvColor(stage, col);	
@@ -1542,6 +1562,7 @@ void		CDriverGL::activateTexEnvColor(uint stage, NLMISC::CRGBA col)
 // ***************************************************************************
 void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 {
+	H_AUTO_OGL(CDriverGL_activateTexEnvMode)
 	// If a special Texture environnement is setuped, or if not the same normal texture environnement,
 	// must setup a new normal Texture environnement.
 	if(_CurrentTexEnvSpecial[stage] != TexEnvSpecialDisabled || _CurrentTexEnv[stage].EnvPacked!= env.EnvPacked)
@@ -1554,6 +1575,7 @@ void		CDriverGL::activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env)
 // ***************************************************************************
 void		CDriverGL::activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
 {
+	H_AUTO_OGL(CDriverGL_activateTexEnvColor)
 	if(_CurrentTexEnv[stage].ConstantColor!= env.ConstantColor)
 	{ 
 		forceActivateTexEnvColor(stage, env);
@@ -1564,12 +1586,14 @@ void		CDriverGL::activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
 // ***************************************************************************
 void		CDriverGL::forceDXTCCompression(bool dxtcComp)
 {
+	H_AUTO_OGL(CDriverGL_forceDXTCCompression)
 	_ForceDXTCCompression= dxtcComp;
 }
 
 // ***************************************************************************
 void		CDriverGL::forceTextureResize(uint divisor)
 {
+	H_AUTO_OGL(CDriverGL_forceTextureResize)
 	clamp(divisor, 1U, 256U);
 
 	// 16 -> 4.
@@ -1580,6 +1604,7 @@ void		CDriverGL::forceTextureResize(uint divisor)
 // ***************************************************************************
 void		CDriverGL::swapTextureHandle(ITexture &tex0, ITexture &tex1)
 {
+	H_AUTO_OGL(CDriverGL_swapTextureHandle)
 	// ensure creation of both texture
 	setupTexture(tex0);
 	setupTexture(tex1);
@@ -1612,6 +1637,7 @@ void		CDriverGL::swapTextureHandle(ITexture &tex0, ITexture &tex1)
 // ***************************************************************************
 uint CDriverGL::getTextureHandle(const ITexture &tex)
 {
+	H_AUTO_OGL(CDriverGL_getTextureHandle)
 	// If DrvShare not setuped
 	if(!tex.TextureDrvShare)
 		return 0;
@@ -1636,6 +1662,7 @@ uint CDriverGL::getTextureHandle(const ITexture &tex)
 
 bool CDriverGL::setRenderTarget (ITexture *tex, uint32 x, uint32 y, uint32 width, uint32 height, uint32 mipmapLevel, uint32 cubeFace)
 {
+	H_AUTO_OGL(CDriverGL_setRenderTarget )
 	// Check the texture is a render target
 	if (tex)
 		nlassertex (tex->getRenderTarget(), ("The texture must be a render target. Call ITexture::setRenderTarget(true)."));
@@ -1684,6 +1711,7 @@ bool CDriverGL::copyTargetToTexture (ITexture *tex,
 												 uint32 height,
 		                                         uint32 mipmapLevel)
 {
+	H_AUTO_OGL(CDriverGL_copyTargetToTexture)
 	if (!_TextureTarget)
 		return false;
 	_TextureTargetUpload = false;
@@ -1705,6 +1733,7 @@ bool CDriverGL::copyTargetToTexture (ITexture *tex,
 
 bool CDriverGL::getRenderTargetSize (uint32 &width, uint32 &height)
 {
+	H_AUTO_OGL(CDriverGL_getRenderTargetSize)
 	if (_TextureTarget)
 	{
 		width = _TextureTarget->getWidth();

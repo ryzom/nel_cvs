@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.177 2004/08/03 16:31:57 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.178 2004/08/13 15:31:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,14 @@
 #    undef max
 #  endif
 
+//#define NL_PROFILE_DRIVER_OGL
+#ifdef NL_PROFILE_DRIVER_OGL
+#define H_AUTO_OGL(label) H_AUTO(label)
+#else
+#define H_AUTO_OGL(label)
+#endif
+
+
 #else // NL_OS_UNIX
 
 #define GLX_GLXEXT_PROTOTYPES
@@ -64,6 +72,7 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/event_emitter.h"
 #include "nel/misc/bit_set.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "3d/ptr_set.h"
 #include "nel/misc/heap_memory.h"
 #include "nel/misc/event_emitter_multi.h"
@@ -424,6 +433,12 @@ public:
 	virtual	void			endProfileVBHardLock(std::vector<std::string> &result);
 
 	virtual	void			profileVBHardAllocation(std::vector<std::string> &result);
+
+	virtual	void			startProfileIBLock();
+
+	virtual	void			endProfileIBLock(std::vector<std::string> &result);
+
+	virtual	void			profileIBAllocation(std::vector<std::string> &result);
 	
 	virtual bool			release();
 
@@ -800,6 +815,7 @@ private:
 	}
 	void					forceActivateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env)
 	{	
+		H_AUTO_OGL(CDriverGL_forceActivateTexEnvColor)
 		forceActivateTexEnvColor(stage, env.ConstantColor);	
 	}
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.21 2004/04/06 13:39:28 vizerie Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.22 2004/08/13 15:31:54 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -47,6 +47,7 @@ namespace NL3D
 // ***************************************************************************
 CVertexProgamDrvInfosGL::CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInfoPtrList it) : IVertexProgramDrvInfos (drv, it) 
 {
+	H_AUTO_OGL(CVertexProgamDrvInfosGL_CVertexProgamDrvInfosGL)
 	// Extension must exist
 	nlassert (drv->_Extensions.NVVertexProgram
 		      || drv->_Extensions.EXTVertexShader
@@ -72,12 +73,14 @@ CVertexProgamDrvInfosGL::CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInf
 // ***************************************************************************
 bool CDriverGL::isVertexProgramSupported () const
 {	
+	H_AUTO_OGL(CVertexProgamDrvInfosGL_isVertexProgramSupported)
 	return _Extensions.NVVertexProgram || _Extensions.EXTVertexShader || _Extensions.ARBVertexProgram;
 }
 
 // ***************************************************************************
 bool CDriverGL::isVertexProgramEmulated () const
 {
+	H_AUTO_OGL(CVertexProgamDrvInfosGL_isVertexProgramEmulated)
 	return _Extensions.NVVertexProgramEmulated;
 }
 
@@ -86,6 +89,7 @@ bool CDriverGL::isVertexProgramEmulated () const
 // ***************************************************************************
 bool CDriverGL::activeNVVertexProgram (CVertexProgram *program)
 {
+	H_AUTO_OGL(CVertexProgamDrvInfosGL_activeNVVertexProgram)
 	// Setup or unsetup ?
 	if (program)
 	{
@@ -202,6 +206,7 @@ bool CDriverGL::activeNVVertexProgram (CVertexProgram *program)
 static 
 inline GLenum convSwizzleToGLFormat(CVPSwizzle::EComp comp, bool negate)
 {
+	H_AUTO_OGL(convSwizzleToGLFormat)
 	if (!negate)
 	{
 		switch(comp)
@@ -237,6 +242,7 @@ inline GLenum convSwizzleToGLFormat(CVPSwizzle::EComp comp, bool negate)
   */ 
 static GLuint convOutputRegisterToEXTVertexShader(CVPOperand::EOutputRegister r)
 {
+	H_AUTO_OGL(convOutputRegisterToEXTVertexShader)
 	switch (r)
 	{
 		case 	CVPOperand::OHPosition:			return GL_OUTPUT_VERTEX_EXT;
@@ -272,6 +278,7 @@ static GLuint convOutputRegisterToEXTVertexShader(CVPOperand::EOutputRegister r)
   */ 
 static uint convInputRegisterToVBFlag(uint index)
 {
+	H_AUTO_OGL(convInputRegisterToVBFlag)
 	switch (index)
 	{	
 		case CVPOperand::IPosition:				return CVertexBuffer::PositionFlag;
@@ -313,6 +320,7 @@ static uint convInputRegisterToVBFlag(uint index)
 // For debugging with swizzling
 static void doSwizzle(GLuint res, GLuint in, GLenum outX, GLenum outY, GLenum outZ, GLenum outW)
 {
+	H_AUTO_OGL(doSwizzle)
 	nglSwizzleEXT(res, in, outX, outY, outZ, outW);
 #ifdef DEBUG_SETUP_EXT_VERTEX_SHADER
 	std::string swzStr = "Swizzle : ";
@@ -362,6 +370,7 @@ static void doSwizzle(GLuint res, GLuint in, GLenum outX, GLenum outY, GLenum ou
 // Perform write mask and output de bug informations
 static void doWriteMask(GLuint res, GLuint in, GLenum outX, GLenum outY, GLenum outZ, GLenum outW)
 {
+	H_AUTO_OGL(doWriteMask)
 	nglWriteMaskEXT(res, in, outX, outY, outZ, outW);
 	#ifdef DEBUG_SETUP_EXT_VERTEX_SHADER
 	nlinfo("Write Mask : %c%c%c%c",
@@ -378,6 +387,7 @@ static void doWriteMask(GLuint res, GLuint in, GLenum outX, GLenum outY, GLenum 
   */ 
 bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters)
 {
+	H_AUTO_OGL(CDriverGL_setupEXTVertexShader)
 	// counter to see what is generated
 	uint numOp = 0;
 	uint numOpIndex = 0;
@@ -1197,6 +1207,7 @@ static const char *ARBVertexProgramOutputRegisterToName[] =
 //=================================================================================================
 static void ARBVertexProgramDumpWriteMask(uint mask, std::string &out)
 {
+	H_AUTO_OGL(ARBVertexProgramDumpWriteMask)
 	if (mask == 0xf)
 	{
 		out = "";
@@ -1212,6 +1223,7 @@ static void ARBVertexProgramDumpWriteMask(uint mask, std::string &out)
 //=================================================================================================
 static void ARBVertexProgramDumpSwizzle(const CVPSwizzle &swz, std::string &out)
 {
+	H_AUTO_OGL(ARBVertexProgramDumpSwizzle)
 	if (swz.isIdentity())
 	{
 		out = "";
@@ -1238,6 +1250,7 @@ static void ARBVertexProgramDumpSwizzle(const CVPSwizzle &swz, std::string &out)
 //=================================================================================================
 static void ARBVertexProgramDumpOperand(const CVPOperand &op, bool destOperand, std::string &out)
 {
+	H_AUTO_OGL(ARBVertexProgramDumpOperand)
 	out = op.Negate ? " -" : " ";
 	switch(op.Type)
 	{
@@ -1276,6 +1289,7 @@ static void ARBVertexProgramDumpOperand(const CVPOperand &op, bool destOperand, 
   */
 static void ARBVertexProgramDumpInstr(const CVPInstruction &instr, std::string &out)
 {
+	H_AUTO_OGL(ARBVertexProgramDumpInstr)
 	nlassert(instr.Opcode < CVPInstruction::OpcodeCount);
 	// Special case for EXP with a scalar output argument (y component) -> translate to FRC		
 	out = ARBVertexProgramInstrToName[instr.Opcode];	
@@ -1299,6 +1313,7 @@ static void ARBVertexProgramDumpInstr(const CVPInstruction &instr, std::string &
 // ***************************************************************************
 bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgram, GLuint id, bool &specularWritten)
 {
+	H_AUTO_OGL(CDriverGL_setupARBVertexProgram)
 	// tmp
 	CVPParser::TProgram parsedProgram = inParsedProgram;
 	//
@@ -1432,6 +1447,7 @@ bool CDriverGL::setupARBVertexProgram (const CVPParser::TProgram &inParsedProgra
 // ***************************************************************************
 bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 {
+	H_AUTO_OGL(CDriverGL_activeARBVertexProgram)
 	// Setup or unsetup ?
 	if (program)
 	{		
@@ -1501,6 +1517,7 @@ bool CDriverGL::activeARBVertexProgram (CVertexProgram *program)
 // ***************************************************************************
 bool CDriverGL::activeEXTVertexShader (CVertexProgram *program)
 {
+	H_AUTO_OGL(CDriverGL_activeEXTVertexShader)
 	// Setup or unsetup ?
 	if (program)
 	{		
@@ -1573,6 +1590,7 @@ bool CDriverGL::activeEXTVertexShader (CVertexProgram *program)
 // ***************************************************************************
 bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 {
+	H_AUTO_OGL(CDriverGL_activeVertexProgram)
 	// Extension here ?
 	if (_Extensions.NVVertexProgram)
 	{
@@ -1596,6 +1614,7 @@ bool CDriverGL::activeVertexProgram (CVertexProgram *program)
 
 void CDriverGL::setConstant (uint index, float f0, float f1, float f2, float f3)
 {
+	H_AUTO_OGL(CDriverGL_setConstant)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
@@ -1618,6 +1637,7 @@ void CDriverGL::setConstant (uint index, float f0, float f1, float f2, float f3)
 
 void CDriverGL::setConstant (uint index, double d0, double d1, double d2, double d3)
 {
+	H_AUTO_OGL(CDriverGL_setConstant)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
@@ -1640,6 +1660,7 @@ void CDriverGL::setConstant (uint index, double d0, double d1, double d2, double
 
 void CDriverGL::setConstant (uint index, const NLMISC::CVector& value)
 {
+	H_AUTO_OGL(CDriverGL_setConstant)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
@@ -1662,6 +1683,7 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVector& value)
 
 void CDriverGL::setConstant (uint index, const NLMISC::CVectorD& value)
 {
+	H_AUTO_OGL(CDriverGL_setConstant)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
@@ -1683,6 +1705,7 @@ void CDriverGL::setConstant (uint index, const NLMISC::CVectorD& value)
 // ***************************************************************************
 void	CDriverGL::setConstant (uint index, uint num, const float *src)
 {
+	H_AUTO_OGL(CDriverGL_setConstant)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
@@ -1707,6 +1730,7 @@ void	CDriverGL::setConstant (uint index, uint num, const float *src)
 // ***************************************************************************
 void	CDriverGL::setConstant (uint index, uint num, const double *src)
 {
+	H_AUTO_OGL(CDriverGL_setConstant)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
@@ -1753,6 +1777,7 @@ const uint CDriverGL::GLTransform[IDriver::NumTransform]=
 
 void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform)
 {
+	H_AUTO_OGL(CDriverGL_setConstantMatrix)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
@@ -1824,6 +1849,7 @@ void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver:
 
 void CDriverGL::setConstantFog (uint index)
 {
+	H_AUTO_OGL(CDriverGL_setConstantFog)
 	const float *values = _ModelViewMatrix.get();
 	setConstant (index, -values[2], -values[6], -values[10], -values[14]);
 }
@@ -1832,6 +1858,7 @@ void CDriverGL::setConstantFog (uint index)
 
 void CDriverGL::enableVertexProgramDoubleSidedColor(bool doubleSided)
 {
+	H_AUTO_OGL(CDriverGL_enableVertexProgramDoubleSidedColor)
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
@@ -1855,6 +1882,7 @@ void CDriverGL::enableVertexProgramDoubleSidedColor(bool doubleSided)
 // ***************************************************************************
 bool CDriverGL::supportVertexProgramDoubleSidedColor() const
 {
+	H_AUTO_OGL(CDriverGL_supportVertexProgramDoubleSidedColor)
 	// currenlty only supported by NV_VERTEX_PROGRAM && ARB_VERTEX_PROGRAM
 	return _Extensions.NVVertexProgram || _Extensions.ARBVertexProgram;
 }

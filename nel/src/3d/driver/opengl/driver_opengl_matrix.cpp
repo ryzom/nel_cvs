@@ -1,7 +1,7 @@
 /** \file driver_opengl_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.19 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.20 2004/08/13 15:31:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@ namespace NL3D {
 // ***************************************************************************
 void CDriverGL::setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective)
 {
+	H_AUTO_OGL(CDriverGL_setFrustum)
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	if (perspective)
@@ -53,6 +54,7 @@ void CDriverGL::setFrustum(float left, float right, float bottom, float top, flo
 // ***************************************************************************
 void CDriverGL::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)
 {
+	H_AUTO_OGL(CDriverGL_setupViewMatrixEx)
 	_UserViewMtx= mtx;
 
 	// Setup the matrix to transform the CScene basis in openGL basis.
@@ -86,6 +88,7 @@ void CDriverGL::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)
 // ***************************************************************************
 void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 {
+	H_AUTO_OGL(CDriverGL_setupViewMatrix)
 	_UserViewMtx= mtx;
 
 	// Setup the matrix to transform the CScene basis in openGL basis.
@@ -118,12 +121,14 @@ void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 // ***************************************************************************
 CMatrix CDriverGL::getViewMatrix(void) const
 {
+	H_AUTO_OGL(CDriverGL_getViewMatrix)
 	return _UserViewMtx;
 }
 
 // ***************************************************************************
 void CDriverGL::setupModelMatrix(const CMatrix& mtx)
 {
+	H_AUTO_OGL(CDriverGL_setupModelMatrix)
 	// profiling
 	_NbSetupModelMatrixCall++;
 
@@ -143,6 +148,7 @@ void CDriverGL::setupModelMatrix(const CMatrix& mtx)
 // ***************************************************************************
 void CDriverGL::doRefreshRenderSetup()
 {
+	H_AUTO_OGL(CDriverGL_doRefreshRenderSetup)
 	// Check if the light setup has been modified first
 	if (_LightSetupDirty)
 		// Recompute light setup

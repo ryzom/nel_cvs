@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.12 2004/06/22 10:05:58 berenguier Exp $
+ * $Id: driver_opengl_light.cpp,v 1.13 2004/08/13 15:31:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NL3D
 // ***************************************************************************
 uint	CDriverGL::getMaxLight () const
 {
+	H_AUTO_OGL(CDriverGL_getMaxLight )
 	// return min(maxLight supported by openGL, MaxLight=8).
 	return _MaxDriverLight;
 }
@@ -43,6 +44,7 @@ uint	CDriverGL::getMaxLight () const
 // ***************************************************************************
 void	CDriverGL::setLight (uint8 num, const CLight& light)
 {
+	H_AUTO_OGL(CDriverGL_setLight )
 	// bkup real light, for lightmap dynamic lighting purpose
 	if(num==0)
 	{
@@ -58,6 +60,7 @@ void	CDriverGL::setLight (uint8 num, const CLight& light)
 // ***************************************************************************
 void	CDriverGL::setLightInternal(uint8 num, const CLight& light)
 {
+	H_AUTO_OGL(CDriverGL_setLightInternal)
 	// Check light count is good
 //	nlassert (num<_MaxDriverLight);
 	
@@ -161,6 +164,7 @@ void	CDriverGL::setLightInternal(uint8 num, const CLight& light)
 // ***************************************************************************
 void	CDriverGL::enableLight (uint8 num, bool enable)
 {
+	H_AUTO_OGL(CDriverGL_enableLight )
 	// User call => set the User flag
 	if(num<_MaxDriverLight)
 	{
@@ -178,6 +182,7 @@ void	CDriverGL::enableLight (uint8 num, bool enable)
 // ***************************************************************************
 void	CDriverGL::enableLightInternal(uint8 num, bool enable)
 {
+	H_AUTO_OGL(CDriverGL_enableLightInternal)
 	// Check light count is good
 	//	nlassert (num<_MaxDriverLight);
 	
@@ -200,6 +205,7 @@ void	CDriverGL::enableLightInternal(uint8 num, bool enable)
 
 void	CDriverGL::setAmbientColor (CRGBA color)
 {
+	H_AUTO_OGL(CDriverGL_setAmbientColor )
 	// Gl array
 	GLfloat array[4];
 	array[0]=(float)color.R/255.f;
@@ -215,6 +221,7 @@ void	CDriverGL::setAmbientColor (CRGBA color)
 // ***************************************************************************
 void				CDriverGL::cleanLightSetup ()
 {
+	H_AUTO_OGL(CDriverGL_cleanLightSetup )
 	// Should be dirty
 	nlassert (_LightSetupDirty);
 	
@@ -304,6 +311,7 @@ void				CDriverGL::cleanLightSetup ()
 // ***************************************************************************
 void			CDriverGL::setLightMapDynamicLight (bool enable, const CLight& light)
 {
+	H_AUTO_OGL(CDriverGL_setLightMapDynamicLight )
 	// just store, for future setup in lightmap material rendering
 	_LightMapDynamicLightEnabled= enable;
 	_LightMapDynamicLight= light;
@@ -314,6 +322,7 @@ void			CDriverGL::setLightMapDynamicLight (bool enable, const CLight& light)
 // ***************************************************************************
 void			CDriverGL::setupLightMapDynamicLighting(bool enable)
 {
+	H_AUTO_OGL(CDriverGL_setupLightMapDynamicLighting)
 	// start lightmap dynamic lighting
 	if(enable)
 	{

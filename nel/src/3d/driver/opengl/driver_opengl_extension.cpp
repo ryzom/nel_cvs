@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.47 2004/06/29 13:53:03 vizerie Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.48 2004/08/13 15:31:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -476,6 +476,7 @@ namespace	NL3D
 // *********************************
 static bool setupARBMultiTexture(const char	*glext)
 {
+	H_AUTO_OGL(setupARBMultiTexture)
 	if(strstr(glext, "GL_ARB_multitexture")==NULL)
 		return false;
 
@@ -523,6 +524,7 @@ static bool setupARBMultiTexture(const char	*glext)
 // *********************************
 static bool setupEXTTextureEnvCombine(const char	*glext)
 {
+	H_AUTO_OGL(setupEXTTextureEnvCombine)
 	if(strstr(glext, "GL_EXT_texture_env_combine")==NULL)
 		return false;
 
@@ -533,6 +535,7 @@ static bool setupEXTTextureEnvCombine(const char	*glext)
 // *********************************
 static bool	setupARBTextureCompression(const char	*glext)
 {
+	H_AUTO_OGL(setupARBTextureCompression)
 	if(strstr(glext, "GL_ARB_texture_compression")==NULL)
 	  return false;
 
@@ -551,6 +554,7 @@ static bool	setupARBTextureCompression(const char	*glext)
 // *********************************
 static bool	setupNVVertexArrayRange(const char	*glext)
 {
+	H_AUTO_OGL(setupNVVertexArrayRange)
 	// \todo_yoyo: TODO_LINUX: for now, just return false.
 #ifndef NL_OS_WINDOWS
 	return false;
@@ -590,6 +594,7 @@ static bool	setupNVVertexArrayRange(const char	*glext)
 // *********************************
 static bool	setupEXTTextureCompressionS3TC(const char	*glext)
 {
+	H_AUTO_OGL(setupEXTTextureCompressionS3TC)
 	if(strstr(glext, "GL_EXT_texture_compression_s3tc")==NULL)
 		return false;
 
@@ -600,6 +605,7 @@ static bool	setupEXTTextureCompressionS3TC(const char	*glext)
 // *********************************
 static bool	setupEXTVertexWeighting(const char	*glext)
 {
+	H_AUTO_OGL(setupEXTVertexWeighting)
 	if(strstr (glext, "GL_EXT_vertex_weighting")==NULL)
 		return false;
 
@@ -615,6 +621,7 @@ static bool	setupEXTVertexWeighting(const char	*glext)
 // *********************************
 static bool	setupEXTSeparateSpecularColor(const char	*glext)
 {
+	H_AUTO_OGL(setupEXTSeparateSpecularColor)
 	if(strstr(glext, "GL_EXT_separate_specular_color")==NULL)
 		return false;
 
@@ -625,6 +632,7 @@ static bool	setupEXTSeparateSpecularColor(const char	*glext)
 // *********************************
 static bool	setupNVTextureEnvCombine4(const char	*glext)
 {
+	H_AUTO_OGL(setupNVTextureEnvCombine4)
 	if(strstr(glext, "GL_NV_texture_env_combine4")==NULL)
 		return false;
 
@@ -634,6 +642,7 @@ static bool	setupNVTextureEnvCombine4(const char	*glext)
 // *********************************
 static bool	setupATITextureEnvCombine3(const char	*glext)
 {
+	H_AUTO_OGL(setupATITextureEnvCombine3)
 	if(strstr(glext, "GL_ATI_texture_env_combine3")==NULL)
 		return false;
 
@@ -643,6 +652,7 @@ static bool	setupATITextureEnvCombine3(const char	*glext)
 // *********************************
 static bool	setupATIXTextureEnvRoute(const char *glext)
 {
+	H_AUTO_OGL(setupATIXTextureEnvRoute)
 	return false;
 	/*if(strstr(glext, "GL_ATIX_texture_env_route")==NULL)
 		return false;*/
@@ -653,6 +663,7 @@ static bool	setupATIXTextureEnvRoute(const char *glext)
 // *********************************
 static bool	setupATIEnvMapBumpMap(const char	*glext)
 {
+	H_AUTO_OGL(setupATIEnvMapBumpMap)
 	if(strstr(glext, "GL_ATI_envmap_bumpmap")==NULL)
 		return false;
 	if (!(nglTexBumpParameterivATI = (PFNGLTEXBUMPPARAMETERIVATIPROC) nelglGetProcAddress("glTexBumpParameterivATI"))) return false;
@@ -666,6 +677,7 @@ static bool	setupATIEnvMapBumpMap(const char	*glext)
 // *********************************
 static bool	setupARBTextureCubeMap(const char	*glext)
 {
+	H_AUTO_OGL(setupARBTextureCubeMap)
 	if(strstr(glext, "GL_ARB_texture_cube_map")==NULL)
 		return false;
 
@@ -676,6 +688,7 @@ static bool	setupARBTextureCubeMap(const char	*glext)
 // *********************************
 static bool	setupNVVertexProgram(const char	*glext)
 {	
+	H_AUTO_OGL(setupNVVertexProgram)
 	if(strstr(glext, "GL_NV_vertex_program")==NULL)
 		return false;
 
@@ -751,6 +764,7 @@ static bool	setupNVVertexProgram(const char	*glext)
 // *********************************
 static bool	setupEXTVertexShader(const char	*glext)
 {					
+	H_AUTO_OGL(setupEXTVertexShader)
 	if(strstr(glext, "GL_EXT_vertex_shader")==NULL)
 		return false;
 	if (!(nglBeginVertexShaderEXT = (NEL_PFNGLBEGINVERTEXSHADEREXTPROC)nelglGetProcAddress("glBeginVertexShaderEXT"))) return false;
@@ -825,6 +839,7 @@ static bool	setupEXTVertexShader(const char	*glext)
 // *********************************
 static bool	setupEXTSecondaryColor(const char	*glext)
 {
+	H_AUTO_OGL(setupEXTSecondaryColor)
 	if(strstr(glext, "GL_EXT_secondary_color")==NULL)
 		return false;
 
@@ -854,6 +869,7 @@ static bool	setupEXTSecondaryColor(const char	*glext)
 // *********************************
 static bool	setupWGLARBPBuffer(const char	*glext)
 {
+	H_AUTO_OGL(setupWGLARBPBuffer)
 	if(strstr(glext, "WGL_ARB_pbuffer")==NULL)
 		return false;
 
@@ -872,6 +888,7 @@ static bool	setupWGLARBPBuffer(const char	*glext)
 // *********************************
 static bool	setupWGLARBPixelFormat (const char	*glext)
 {
+	H_AUTO_OGL(setupWGLARBPixelFormat)
 	if(strstr(glext, "WGL_ARB_pixel_format")==NULL)
 		return false;
 
@@ -886,6 +903,7 @@ static bool	setupWGLARBPixelFormat (const char	*glext)
 // *********************************
 static bool	setupNVTextureShader(const char	*glext)
 {
+	H_AUTO_OGL(setupNVTextureShader)
 	if(strstr(glext, "GL_NV_texture_shader")==NULL)
 		return false;
 
@@ -896,6 +914,7 @@ static bool	setupNVTextureShader(const char	*glext)
 // *********************************
 static bool	setupEXTBlendColor(const char	*glext)
 {
+	H_AUTO_OGL(setupEXTBlendColor)
 	if(strstr(glext, "GL_EXT_blend_color")==NULL)
 		return false;
 
@@ -908,6 +927,7 @@ static bool	setupEXTBlendColor(const char	*glext)
 // *********************************
 static bool	setupNVVertexArrayRange2(const char	*glext)
 {
+	H_AUTO_OGL(setupNVVertexArrayRange2)
 	if(strstr(glext, "GL_NV_vertex_array_range2")==NULL)
 		return false;
 
@@ -918,6 +938,7 @@ static bool	setupNVVertexArrayRange2(const char	*glext)
 // *********************************
 static bool	setupATIVertexArrayObject(const char *glext)
 {
+	H_AUTO_OGL(setupATIVertexArrayObject)
 	if(strstr(glext, "GL_ATI_vertex_array_object")==NULL)
 		return false;
 	
@@ -948,6 +969,7 @@ static bool	setupATIVertexArrayObject(const char *glext)
 
 static bool	setupATIMapObjectBuffer(const char *glext)
 {		
+	H_AUTO_OGL(setupATIMapObjectBuffer)
 	if(strstr(glext, "GL_ATI_map_object_buffer")==NULL)
 		return false;
 	if (!(nglMapObjectBufferATI= (NEL_PFNGLMAPOBJECTBUFFERATIPROC)nelglGetProcAddress("glMapObjectBufferATI"))) return false;
@@ -960,6 +982,7 @@ static bool	setupATIMapObjectBuffer(const char *glext)
 // *********************************
 static bool	setupATIFragmentShader(const char *glext)
 {
+	H_AUTO_OGL(setupATIFragmentShader)
 	if(strstr(glext, "GL_ATI_fragment_shader")==NULL)
 		return false;
 	if (!(nglGenFragmentShadersATI= (NEL_PFNGLGENFRAGMENTSHADERSATIPROC)nelglGetProcAddress("glGenFragmentShadersATI"))) return false;
@@ -983,6 +1006,7 @@ static bool	setupATIFragmentShader(const char *glext)
 // *********************************
 static bool setupATIVertexAttribArrayObject(const char *glext)
 {
+	H_AUTO_OGL(setupATIVertexAttribArrayObject)
 	if (strstr(glext, "GL_ATI_vertex_attrib_array_object")==NULL)
 		return false;
 	if (!(nglVertexAttribArrayObjectATI= (NEL_PFNGLVERTEXATTRIBARRAYOBJECTATIPROC)nelglGetProcAddress("glVertexAttribArrayObjectATI"))) return false;
@@ -994,6 +1018,7 @@ static bool setupATIVertexAttribArrayObject(const char *glext)
 // *********************************
 static bool	setupARBFragmentProgram(const char *glext)
 {
+	H_AUTO_OGL(setupARBFragmentProgram)
 	if(strstr(glext, "GL_ARB_fragment_program")==NULL)
 		return false;
 
@@ -1023,6 +1048,7 @@ static bool	setupARBFragmentProgram(const char *glext)
 // ***************************************************************************
 static bool	setupARBVertexBufferObject(const char	*glext)
 {
+	H_AUTO_OGL(setupARBVertexBufferObject)
 	if(strstr(glext, "GL_ARB_vertex_buffer_object")==NULL)
 		return false;
 	if (!(nglBindBufferARB= (PFNGLBINDBUFFERARBPROC)nelglGetProcAddress("glBindBufferARB"))) return false;
@@ -1043,6 +1069,7 @@ static bool	setupARBVertexBufferObject(const char	*glext)
 // ***************************************************************************
 static bool	setupARBVertexProgram(const char	*glext)
 {
+	H_AUTO_OGL(setupARBVertexProgram)
 	if(strstr(glext, "GL_ARB_vertex_program")==NULL)
 		return false;
 	 if (!(nglVertexAttrib1sARB= (PFNGLVERTEXATTRIB1SARBPROC)nelglGetProcAddress("glVertexAttrib1sARB"))) return false;
@@ -1113,6 +1140,7 @@ static bool	setupARBVertexProgram(const char	*glext)
 // ***************************************************************************
 static bool	setupNVOcclusionQuery(const char	*glext)
 {
+	H_AUTO_OGL(setupNVOcclusionQuery)
 	if(strstr(glext, "GL_NV_occlusion_query")==NULL)
 		return false;	
 	if (!(nglGenOcclusionQueriesNV= (NEL_PFNGLGENOCCLUSIONQUERIESNVPROC)nelglGetProcAddress("glGenOcclusionQueriesNV"))) return false;
@@ -1129,6 +1157,7 @@ static bool	setupNVOcclusionQuery(const char	*glext)
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
 {
+	H_AUTO_OGL(registerGlExtensions)
 	// OpenGL 1.2 ??
 	const char	*glVersion= (const char *) glGetString (GL_VERSION);
 	sint	a=0, b=0;
@@ -1202,9 +1231,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 		ext.EXTVertexShader = false;
 		ext.ARBVertexProgram = false;
 	}
-
-
-
+			
 	// Check texture shaders
 	// Disable feature ???
 	if(!ext.DisableHardwareTextureShader)
@@ -1285,6 +1312,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 // *********************************
 static bool	setupWGLEXTSwapControl(const char	*glext)
 {
+	H_AUTO_OGL(setupWGLEXTSwapControl)
 	if(strstr(glext, "WGL_EXT_swap_control")==NULL)
 		return false;
 
@@ -1301,6 +1329,7 @@ static bool	setupWGLEXTSwapControl(const char	*glext)
 // ***************************************************************************
 void	registerWGlExtensions(CGlExtensions &ext, HDC hDC)
 {
+	H_AUTO_OGL(registerWGlExtensions)
 	// Get proc adress
 	if(!(wglGetExtensionsStringARB=(PFNWGFGETEXTENSIONSSTRINGARB)nelglGetProcAddress("wglGetExtensionsStringARB")))
 	{

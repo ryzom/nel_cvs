@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.52 2004/08/03 16:31:06 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.53 2004/08/13 15:31:54 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -69,6 +69,7 @@ namespace NL3D
 
 CVBDrvInfosGL::CVBDrvInfosGL(CDriverGL *drv, ItVBDrvInfoPtrList it, CVertexBuffer *vb) : IVBDrvInfos(drv, it, vb)
 {
+	H_AUTO_OGL(CVBDrvInfosGL_CVBDrvInfosGL)
 	_DriverGL = drv;
 	_VBHard = NULL;
 	_SystemMemory = NULL;
@@ -78,6 +79,7 @@ CVBDrvInfosGL::CVBDrvInfosGL(CDriverGL *drv, ItVBDrvInfoPtrList it, CVertexBuffe
 
 CVBDrvInfosGL::~CVBDrvInfosGL()
 {
+	H_AUTO_OGL(CVBDrvInfosGL_CVBDrvInfosGLDtor)
 	// Restaure non resident memory
 	if (VertexBufferPtr)
 	{
@@ -101,6 +103,7 @@ CVBDrvInfosGL::~CVBDrvInfosGL()
 // ***************************************************************************
 uint8 *CVBDrvInfosGL::lock (uint first, uint last, bool readOnly)
 {
+	H_AUTO_OGL(CVBDrvInfosGL_lock)
 	if (_VBHard)
 	{
 		return (uint8*)_VBHard->lock ();
@@ -116,6 +119,7 @@ uint8 *CVBDrvInfosGL::lock (uint first, uint last, bool readOnly)
 // ***************************************************************************
 void CVBDrvInfosGL::unlock (uint first, uint last)
 {
+	H_AUTO_OGL(CVBDrvInfosGL_unlock)
 	if (_VBHard)
 	{
 		_VBHard->unlock(first, last);
@@ -130,6 +134,7 @@ void CVBDrvInfosGL::unlock (uint first, uint last)
 // ***************************************************************************
 bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 {
+	H_AUTO_OGL(CDriverGL_setupVertexBuffer)
 	// 2. If necessary, do modifications.
 	//==================================
 	const bool touched = (VB.getTouchFlags() & (CVertexBuffer::TouchedReserve|CVertexBuffer::TouchedVertexFormat)) != 0;
@@ -185,6 +190,7 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 // ***************************************************************************
 bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 {
+	H_AUTO_OGL(CDriverGL_activeVertexBuffer)
 	// NB: must duplicate changes in activeVertexBufferHard()	
 	uint32	flags;
 
@@ -248,6 +254,7 @@ bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 // ***************************************************************************
 bool CDriverGL::activeIndexBuffer(CIndexBuffer& IB)
 {
+	H_AUTO_OGL(CDriverGL_activeIndexBuffer)
 	_LastIB.setupIndexBuffer(IB);
 	return true;
 }
@@ -256,6 +263,7 @@ bool CDriverGL::activeIndexBuffer(CIndexBuffer& IB)
 
 bool CDriverGL::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 {		
+	H_AUTO_OGL(CDriverGL_renderLines)
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -298,6 +306,7 @@ bool CDriverGL::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 
 bool CDriverGL::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
 {	
+	H_AUTO_OGL(CDriverGL_renderTriangles)
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -340,6 +349,7 @@ bool CDriverGL::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris)
 
 bool CDriverGL::renderSimpleTriangles(uint32 firstTri, uint32 ntris)
 {	
+	H_AUTO_OGL(CDriverGL_renderSimpleTriangles)
 	nlassert(ntris>0);
 
 	// update matrix and Light in OpenGL if needed
@@ -369,6 +379,7 @@ bool CDriverGL::renderSimpleTriangles(uint32 firstTri, uint32 ntris)
 
 bool CDriverGL::renderRawPoints(CMaterial& mat, uint32 startIndex, uint32 numPoints)
 {	
+	H_AUTO_OGL(CDriverGL_renderRawPoints)
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -409,6 +420,7 @@ bool CDriverGL::renderRawPoints(CMaterial& mat, uint32 startIndex, uint32 numPoi
 
 bool CDriverGL::renderRawLines(CMaterial& mat, uint32 startIndex, uint32 numLines)
 {	
+	H_AUTO_OGL(CDriverGL_renderRawLines)
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -449,6 +461,7 @@ bool CDriverGL::renderRawLines(CMaterial& mat, uint32 startIndex, uint32 numLine
 
 bool CDriverGL::renderRawTriangles(CMaterial& mat, uint32 startIndex, uint32 numTris)
 {	
+	H_AUTO_OGL(CDriverGL_renderRawTriangles)
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
 
@@ -491,6 +504,7 @@ bool CDriverGL::renderRawTriangles(CMaterial& mat, uint32 startIndex, uint32 num
 
 bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuads)
 {
+	H_AUTO_OGL(CDriverGL_renderRawQuads)
 	if (!numQuads) return true;
 	// update matrix and Light in OpenGL if needed
 	refreshRenderSetup();
@@ -614,6 +628,7 @@ bool CDriverGL::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuad
 
 void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 {
+	H_AUTO_OGL(CDriverGL_setupUVPtr)
 	// sould not be called with vertex program Array setuped.
 	nlassert(!_LastSetupGLArrayVertexProgram);
 
@@ -658,6 +673,7 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 // ***************************************************************************
 void		CDriverGL::mapTextureStageToUV(uint stage, uint uv)
 {
+	H_AUTO_OGL(CDriverGL_mapTextureStageToUV)
 	// Just call it for last VertexBuffer setuped.
 	setupUVPtr(stage, _LastVB, uv);
 }
@@ -674,6 +690,7 @@ void		CDriverGL::mapTextureStageToUV(uint stage, uint uv)
 // ***************************************************************************
 bool			CDriverGL::supportVertexBufferHard() const
 {
+	H_AUTO_OGL(CDriverGL_supportVertexBufferHard)
 	return _SupportVBHard;
 }
 
@@ -681,6 +698,7 @@ bool			CDriverGL::supportVertexBufferHard() const
 // ***************************************************************************
 bool			CDriverGL::slowUnlockVertexBufferHard() const
 {
+	H_AUTO_OGL(CDriverGL_slowUnlockVertexBufferHard)
 	return _SlowUnlockVBHard;
 }
 
@@ -688,6 +706,7 @@ bool			CDriverGL::slowUnlockVertexBufferHard() const
 // ***************************************************************************
 uint			CDriverGL::getMaxVerticesByVertexBufferHard() const
 {
+	H_AUTO_OGL(CDriverGL_getMaxVerticesByVertexBufferHard)
 	return _MaxVerticesByVBHard;
 }
 
@@ -695,6 +714,7 @@ uint			CDriverGL::getMaxVerticesByVertexBufferHard() const
 // ***************************************************************************
 IVertexBufferHardGL	*CDriverGL::createVertexBufferHard(uint size, uint numVertices, CVertexBuffer::TPreferredMemory vbType, CVertexBuffer *vb)
 {
+	H_AUTO_OGL(CDriverGL_createVertexBufferHard)
 	// choose the VertexArrayRange of good type
 	IVertexArrayRange	*vertexArrayRange= NULL;
 	switch(vbType)
@@ -820,6 +840,7 @@ const uint		CDriverGL::GLVertexAttribIndex[CVertexBuffer::NumValue]=
 // ***************************************************************************
 void		CDriverGL::setupGlArraysStd(CVertexBufferInfo &vb)
 {
+	H_AUTO_OGL(CDriverGL_setupGlArraysStd)
 	uint32	flags= vb.VertexFormat;
 
 	if (vb.VBMode == CVertexBufferInfo::HwARB)
@@ -931,6 +952,7 @@ void		CDriverGL::setupGlArraysStd(CVertexBufferInfo &vb)
 // ***************************************************************************
 void		CDriverGL::toggleGlArraysForNVVertexProgram()
 {
+	H_AUTO_OGL(CDriverGL_toggleGlArraysForNVVertexProgram)
 	// If change of setup type, must disable olds.
 	//=======================
 
@@ -974,6 +996,7 @@ void		CDriverGL::toggleGlArraysForNVVertexProgram()
 // ***************************************************************************
 void		CDriverGL::toggleGlArraysForARBVertexProgram()
 {
+	H_AUTO_OGL(CDriverGL_toggleGlArraysForARBVertexProgram)
 	// If change of setup type, must disable olds.
 	//=======================
 	
@@ -1038,6 +1061,7 @@ void		CDriverGL::toggleGlArraysForARBVertexProgram()
 // ***************************************************************************
 void		CDriverGL::toggleGlArraysForEXTVertexShader()
 {
+	H_AUTO_OGL(CDriverGL_toggleGlArraysForEXTVertexShader)
 	// If change of setup type, must disable olds.
 	//=======================
 
@@ -1085,6 +1109,7 @@ void		CDriverGL::toggleGlArraysForEXTVertexShader()
 // ***************************************************************************
 void		CDriverGL::setupGlArraysForNVVertexProgram(CVertexBufferInfo &vb)
 {
+	H_AUTO_OGL(CDriverGL_setupGlArraysForNVVertexProgram)
 	uint32	flags= vb.VertexFormat;
 	
 	// For each value
@@ -1187,6 +1212,7 @@ static const GLboolean ARBVertexProgramMustNormalizeAttrib[] =
 // ***************************************************************************
 void		CDriverGL::setupGlArraysForARBVertexProgram(CVertexBufferInfo &vb)
 {			
+	H_AUTO_OGL(CDriverGL_setupGlArraysForARBVertexProgram)
 	
 	uint32	flags= vb.VertexFormat;
 	
@@ -1267,6 +1293,7 @@ void		CDriverGL::setupGlArraysForARBVertexProgram(CVertexBufferInfo &vb)
 // ***************************************************************************
 void		CDriverGL::setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb)
 {
+	H_AUTO_OGL(CDriverGL_setupGlArraysForEXTVertexShader)
 	
 
 	CVertexProgram *vp = _LastSetuppedVP;
@@ -1452,6 +1479,7 @@ void		CDriverGL::setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb)
 // ***************************************************************************
 void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 {	
+	H_AUTO_OGL(CDriverGL_setupGlArrays)
 	uint32	flags= vb.VertexFormat;
 	
 	/** \todo yoyo, or nico: this code should change with ATI VertexProgram.
@@ -1509,6 +1537,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 // ***************************************************************************
 void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 {
+	H_AUTO_OGL(CDriverGL_setupVertexBuffer)
 	sint	i;
 	uint	flags= vb.getVertexFormat();
 	VertexFormat= flags;
@@ -1558,6 +1587,7 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 // ***************************************************************************
 void			CDriverGL::resetVertexArrayRange()
 {	
+	H_AUTO_OGL(CDriverGL_resetVertexArrayRange)
 	if(_CurrentVertexBufferHard)
 	{
 		// Must ensure it has ended any drawing
@@ -1580,6 +1610,7 @@ void			CDriverGL::resetVertexArrayRange()
 // ***************************************************************************
 bool			CDriverGL::initVertexBufferHard(uint agpMem, uint vramMem)
 {	
+	H_AUTO_OGL(CDriverGL_initVertexBufferHard)
 	if(!supportVertexBufferHard())
 		return false;
 	
@@ -1650,6 +1681,7 @@ bool			CDriverGL::initVertexBufferHard(uint agpMem, uint vramMem)
 // ***************************************************************************
 uint32				CDriverGL::getAvailableVertexAGPMemory ()
 {	
+	H_AUTO_OGL(CDriverGL_getAvailableVertexAGPMemory )
 	if (_AGPVertexArrayRange)
 		return _AGPVertexArrayRange->sizeAllocated();
 	else
@@ -1660,6 +1692,7 @@ uint32				CDriverGL::getAvailableVertexAGPMemory ()
 // ***************************************************************************
 uint32				CDriverGL::getAvailableVertexVRAMMemory ()
 {	
+	H_AUTO_OGL(CDriverGL_getAvailableVertexVRAMMemory )
 	if (_VRAMVertexArrayRange)
 		return _VRAMVertexArrayRange->sizeAllocated();
 	else
@@ -1670,6 +1703,7 @@ uint32				CDriverGL::getAvailableVertexVRAMMemory ()
 // ***************************************************************************
 void				CDriverGL::fenceOnCurVBHardIfNeeded(IVertexBufferHardGL *newVBHard)
 {	
+	H_AUTO_OGL(CDriverGL_fenceOnCurVBHardIfNeeded)
 	// If old is not a VBHard, or if not a NVidia VBHard, no-op.
 	if( _CurrentVertexBufferHard==NULL || !_CurrentVertexBufferHard->VBType == IVertexBufferHardGL::NVidiaVB)
 		return;
@@ -1704,6 +1738,7 @@ void				CDriverGL::fenceOnCurVBHardIfNeeded(IVertexBufferHardGL *newVBHard)
 
 CIndexBufferInfo::CIndexBufferInfo()
 {
+	H_AUTO_OGL(CIndexBufferInfo_CIndexBufferInfo)
 	_Values = NULL;
 }
 
@@ -1711,6 +1746,7 @@ CIndexBufferInfo::CIndexBufferInfo()
 
 void CIndexBufferInfo::setupIndexBuffer(CIndexBuffer &ib)
 {
+	H_AUTO_OGL(CIndexBufferInfo_setupIndexBuffer)
 	CIndexBufferReadWrite access;
 	ib.lock (access);
 	_Values = access.getPtr();

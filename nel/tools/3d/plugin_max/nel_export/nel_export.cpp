@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.29 2002/04/23 16:26:59 vizerie Exp $
+ * $Id: nel_export.cpp,v 1.30 2002/05/13 16:49:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@ static const char *SWTFilter="NeL Skeleton Weight Template file (*.swt)\0*.swt\0
 static const char *InstanceGroupFilter="NeL Instance Group file (*.ig)\0*.ig\0All files (*.*)\0*.*\0";
 static const char *skeletonFilter="NeL Skeleton file (*.skel)\0*.skel\0All files (*.*)\0*.*\0";
 static const char *vegetableFilter="NeL Vegetable file (*.veget)\0*.veget\0All files (*.*)\0*.*\0";
+static const char *lodCharacterFilter="NeL LodCharacter file (*.clod)\0*.clod\0All files (*.*)\0*.*\0";
 
 
 void *CNelExportClassDesc::Create(BOOL loading)
@@ -358,6 +359,27 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 									// Error message
 									char sErrorMsg[512];
 									sprintf (sErrorMsg, "Error exporting the vegetable %s in the file\n%s", pNode->GetName(), sSavePath);
+									MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
+								}
+							}
+						}
+						// Try to export a lod character
+						else if (CExportNel::isLodCharacter (*pNode, time))
+						{
+							// Save path
+							char sSavePath[256];
+							strcpy (sSavePath, pNode->GetName());
+
+							// Choose a file to export
+							if (!CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_DONTEXPORT, 0))
+							if (theCNelExport.SelectFileForSave(hWnd, sNodeMsg, lodCharacterFilter, sSavePath))
+							{
+								// Export the mesh
+								if (!theCNelExport.exportLodCharacter (sSavePath, *pNode, time))
+								{
+									// Error message
+									char sErrorMsg[512];
+									sprintf (sErrorMsg, "Error exporting the lod character %s in the file\n%s", pNode->GetName(), sSavePath);
 									MessageBox (hWnd, sErrorMsg, "NeL export", MB_OK|MB_ICONEXCLAMATION);
 								}
 							}

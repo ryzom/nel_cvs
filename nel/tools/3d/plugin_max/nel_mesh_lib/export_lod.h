@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.23 2002/04/23 16:28:14 vizerie Exp $
+ * $Id: export_lod.h,v 1.24 2002/05/13 16:49:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,10 +121,14 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 #define NEL3D_APPDATA_BONE_LOD_DISTANCE				(1423062615)
 
 
+#define NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING	(1423062616)
+
+
 #define NEL3D_APPDATA_AUTOMATIC_ANIMATION			(1423062617)
 
 
-#define NEL3D_APPDATA_VEGETABLE_FORCE_BEST_SIDED_LIGHTING	(1423062616)
+/// Lod for skeleton / Character shape
+#define NEL3D_APPDATA_CHARACTER_LOD					(1423062618)
 
 
 // ***************************************************************************

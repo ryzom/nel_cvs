@@ -175,6 +175,8 @@ BEGIN
                     IDC_STATIC,190,120,160,10
     EDITTEXT        IDC_BONE_LOD_DISTANCE,190,130,45,12,ES_AUTOHSCROLL | 
                     ES_NUMBER
+    CONTROL         "Export as Lod character (.clod)",IDC_EXPORT_CLOD,"Button",
+                    BS_AUTO3STATE | WS_TABSTOP,190,160,150,10
 END
 
 IDD_ACCEL DIALOG DISCARDABLE  0, 0, 360, 200

@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.15 2002/03/29 14:58:33 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.16 2002/05/13 16:49:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/animation.h"
 #include "3d/skeleton_shape.h"
 #include "3d/vegetable_shape.h"
+#include "3d/lod_character_shape.h"
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_mesh_lib/export_lod.h"
 
@@ -252,3 +253,71 @@ bool CNelExport::exportSkeleton	(const char *sPath, INode* pNode, TimeValue time
 
 // --------------------------------------------------
 
+bool CNelExport::exportLodCharacter (const char *sPath, INode& node, TimeValue time)
+{
+	// Result to return
+	bool bRet=false;
+
+	// Eval the object a time
+	ObjectState os = node.EvalWorldState(time);
+
+	// Object exist ?
+	if (os.obj)
+	{
+		// Skeleton shape
+		CSkeletonShape *skeletonShape=NULL;
+		TInodePtrInt *mapIdPtr=NULL;
+		TInodePtrInt mapId;
+
+		// If model skinned ?
+		if (CExportNel::isSkin (node))
+		{
+			// Create a skeleton
+			INode *skeletonRoot=CExportNel::getSkeletonRootBone (node);
+
+			// Skeleton exist ?
+			if (skeletonRoot)
+			{
+				// Build a skeleton
+				skeletonShape=new CSkeletonShape();
+
+				// Add skeleton bind pos info
+				CExportNel::mapBoneBindPos boneBindPos;
+				CExportNel::addSkeletonBindPos (node, boneBindPos);
+
+				// Build the skeleton based on the bind pos information
+				_ExportNel->buildSkeletonShape (*skeletonShape, *skeletonRoot, &boneBindPos, mapId, time);
+
+				// Set the pointer to not NULL
+				mapIdPtr=&mapId;
+
+				// Erase the skeleton
+				if (skeletonShape)
+					delete skeletonShape;
+			}
+		}
+
+		// Conversion success ?
+		CLodCharacterShapeBuild		lodBuild;
+		if (_ExportNel->buildLodCharacter (lodBuild, node, time, mapIdPtr) )
+		{
+			// Open a file
+			COFile file;
+			if (file.open (sPath))
+			{
+				try
+				{
+					// Serial the shape
+					lodBuild.serial (file);
+
+					// All is good
+					bRet=true;
+				}
+				catch (...)
+				{
+				}
+			}
+		}
+	}
+	return bRet;
+}

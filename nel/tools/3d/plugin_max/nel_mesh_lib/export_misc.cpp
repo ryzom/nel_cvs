@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.21 2002/05/07 09:04:32 vizerie Exp $
+ * $Id: export_misc.cpp,v 1.22 2002/05/13 16:49:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -700,6 +700,13 @@ void CExportNel::outputErrorMessage (const char *message)
 bool CExportNel::isVegetable (INode& node, TimeValue time)
 {
 	return CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE, BST_UNCHECKED) != BST_UNCHECKED;
+}
+
+// --------------------------------------------------
+
+bool CExportNel::isLodCharacter (INode& node, TimeValue time)
+{
+	return CExportNel::getScriptAppData (&node, NEL3D_APPDATA_CHARACTER_LOD, BST_UNCHECKED) != BST_UNCHECKED;
 }
 
 // --------------------------------------------------

@@ -189,6 +189,10 @@ SOURCE=.\export_light.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\export_lod_character.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\export_material.cpp
 # End Source File
 # Begin Source File

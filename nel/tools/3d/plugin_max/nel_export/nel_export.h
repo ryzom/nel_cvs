@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.14 2002/04/05 13:30:01 corvazier Exp $
+ * $Id: nel_export.h,v 1.15 2002/05/13 16:49:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,8 @@ public:
 	bool	exportPACSPrimitives (const char *sPath, std::vector<INode *> &nodes, TimeValue time);
 
 	bool	exportVegetable (const char *sPath, INode& node, TimeValue time);
+
+	bool	exportLodCharacter (const char *sPath, INode& node, TimeValue time);
 
 	void	viewMesh (TimeValue time, CExportNelOptions &opt);
 

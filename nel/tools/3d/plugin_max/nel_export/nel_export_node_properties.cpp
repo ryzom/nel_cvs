@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.36 2002/05/07 13:11:38 vizerie Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.37 2002/05/13 16:49:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,6 +121,7 @@ public:
 	std::string				DistanceFinest;
 	std::string				DistanceMiddle;
 	std::string				DistanceCoarsest;
+	int						ExportLodCharacter;
 
 	const std::set<INode*> *ListNode;
 
@@ -477,7 +478,6 @@ int CALLBACK MRMDialogCallback (
 			SendMessage (GetDlgItem (hwndDlg, IDC_COARSE_MESH), BM_SETCHECK, currentParam->CoarseMesh, 0);
 			SendMessage (GetDlgItem (hwndDlg, IDC_DYNAMIC_MESH), BM_SETCHECK, currentParam->DynamicMesh, 0);
 
-
 			EnableWindow (GetDlgItem (hwndDlg, IDC_LIST1), currentParam->ListActived);
 			EnableWindow (GetDlgItem (hwndDlg, IDC_ADD), currentParam->ListActived);
 			EnableWindow (GetDlgItem (hwndDlg, IDC_REMOVE), currentParam->ListActived);
@@ -509,6 +509,9 @@ int CALLBACK MRMDialogCallback (
 				SendMessage (hwndList, LB_ADDSTRING, 0, (LPARAM) ite->c_str());
 				ite++;
 			}
+
+			// default LodCharacter
+			SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_CLOD), BM_SETCHECK, currentParam->ExportLodCharacter, 0);
 		}
 		break;
 
@@ -572,6 +575,9 @@ int CALLBACK MRMDialogCallback (
 								// Push it back
 								currentParam->ListLodName.push_back (tmp);
 							}
+
+							// default LodCharacter
+							currentParam->ExportLodCharacter= SendMessage (GetDlgItem (hwndDlg, IDC_EXPORT_CLOD), BM_GETCHECK, 0, 0);
 						}
 					break;
 					case IDC_ADD:
@@ -669,6 +675,7 @@ int CALLBACK MRMDialogCallback (
 					case IDC_BLEND_IN:
 					case IDC_BLEND_OUT:
 					case IDC_DYNAMIC_MESH:
+					case IDC_EXPORT_CLOD:
 						{
 							if (SendMessage (hwndButton, BM_GETCHECK, 0, 0)==BST_INDETERMINATE)
 								SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
@@ -2187,6 +2194,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 	// Get 
 	uint nNumSelNode=listNode.size();
 
+
 	if (nNumSelNode)
 	{
 		// Get the selected node
@@ -2308,6 +2316,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		// Collision
 		param.Collision= CExportNel::getScriptAppData (node, NEL3D_APPDATA_COLLISION, BST_UNCHECKED);
 		param.CollisionExterior= CExportNel::getScriptAppData (node, NEL3D_APPDATA_COLLISION_EXTERIOR, BST_UNCHECKED);
+
+
+		// ExportLodCharacter
+		param.ExportLodCharacter= CExportNel::getScriptAppData (node, NEL3D_APPDATA_CHARACTER_LOD, BST_UNCHECKED);
 
 
 		// Something selected ?
@@ -2478,6 +2490,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.Collision= BST_INDETERMINATE;
 			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_COLLISION_EXTERIOR, BST_UNCHECKED) != param.CollisionExterior)
 				param.CollisionExterior= BST_INDETERMINATE;
+
+			// ExportLodCharacter
+			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_CHARACTER_LOD, BST_UNCHECKED) != param.ExportLodCharacter)
+				param.ExportLodCharacter= BST_INDETERMINATE;
 
 			// Next sel
 			ite++;
@@ -2660,6 +2676,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_COLLISION, param.Collision);
 				if (param.CollisionExterior != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_COLLISION_EXTERIOR, param.CollisionExterior);
+
+				// ExportLodCharacter
+				if(param.ExportLodCharacter!= BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_CHARACTER_LOD, param.ExportLodCharacter);
 
 				// Next node
 				ite++;

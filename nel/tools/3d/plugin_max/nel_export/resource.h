@@ -195,6 +195,7 @@
 #define IDC_BYPASS_VP                   1131
 #define IDC_VP_TEXT                     1132
 #define IDC_AUTOMATIC_ANIM              1135
+#define IDC_EXPORT_CLOD                 1136
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -206,7 +207,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        124
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1136
+#define _APS_NEXT_CONTROL_VALUE         1137
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

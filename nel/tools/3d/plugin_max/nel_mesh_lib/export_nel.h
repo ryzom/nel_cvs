@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.51 2002/04/23 16:30:19 vizerie Exp $
+ * $Id: export_nel.h,v 1.52 2002/05/13 16:49:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@ namespace NL3D
 	class IMeshGeom;
 	class CInstanceGroup;
 	class CVegetableShape;
+	class CLodCharacterShapeBuild;
 };
 
 
@@ -589,6 +590,20 @@ public:
 	 * mapBindPos is the pointer of the map of bind pos by bone. Can be NULL if the skeleton is already in the bind pos.
 	 */
 	bool							buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INode& node, TimeValue time);
+
+
+	// ********************
+	// *** Export Lod Character
+	// ********************
+
+	/* is this node a lod character ???
+	 */
+	static bool						isLodCharacter (INode& node, TimeValue time);
+
+	/* 
+	 * Build a lod character from a node
+	 */
+	bool							buildLodCharacter (NL3D::CLodCharacterShapeBuild& lodBuild, INode& node, TimeValue time, const TInodePtrInt *nodeMap);
 
 	// *************
 	// *** Misc  ***

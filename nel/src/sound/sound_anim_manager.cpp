@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.cpp,v 1.12 2003/07/03 15:16:12 boucher Exp $
+ * $Id: sound_anim_manager.cpp,v 1.13 2003/07/10 15:04:18 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,8 @@ CSoundAnimManager::CSoundAnimManager(NLSOUND::UAudioMixer* mixer) : _Mixer(mixer
 
 CSoundAnimManager::~CSoundAnimManager()
 {
+	if (_Instance == NULL)
+		return;
 	/*
 	set<CSoundAnimPlayer*>::iterator iter;
 

@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.11 2003/01/08 15:45:14 boucher Exp $
+ * $Id: sound_anim_manager.h,v 1.12 2003/07/10 15:04:02 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,7 @@ class CSoundAnimManager
 public:
 
 	static CSoundAnimManager* instance() { return _Instance; }
+	static void release() { delete _Instance; }
 
 	CSoundAnimManager(UAudioMixer* mixer);
 	virtual ~CSoundAnimManager();

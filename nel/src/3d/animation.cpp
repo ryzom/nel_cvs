@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.2 2001/03/08 11:02:52 corvazier Exp $
+ * $Id: animation.cpp,v 1.3 2001/03/08 13:29:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,30 +39,6 @@ CAnimation::~CAnimation ()
 	for (uint i=0; i<_TrackVector.size(); i++)
 		// Delete
 		delete _TrackVector[i];
-}
-
-// ***************************************************************************
-
-uint CAnimation::getIdTrackByName (const std::string& name) const
-{
-	// Find an entry in the name/id map
-	TMapStringUInt::const_iterator ite=_IdByName.find (name);
-
-	// Not found ?
-	if (ite==_IdByName.end ())
-		// yes, error
-		return NotFound;
-	else
-		// no, return track ID
-		return (uint)ite->second;
-}
-
-// ***************************************************************************
-
-const ITrack* CAnimation::getTrack (uint trackId) const
-{
-	// Get the trackId-th track pointer
-	return _TrackVector[trackId];
 }
 
 // ***************************************************************************

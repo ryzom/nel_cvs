@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.4 2001/03/08 12:57:40 corvazier Exp $
+ * $Id: animation_set.h,v 1.5 2001/03/08 13:29:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,31 +56,49 @@ public:
 	uint getNumChannelId () const;
 
 	/**
-	  * Get a channel ID with its name.
+	  * Get a channel ID with its name. If no channel is found, method returns NotFound.
 	  */
 	uint getChannelIdByName (const std::string& name) const;
 
 	/**
-	  * Get a animation ID by name.
+	  * Get a animation ID by name. If no channel is found, method returns NotFound.
 	  */
 	uint getAnimationIdByName (const std::string& name) const;
 
 	/**
 	  * Get a read only animation pointer.
 	  */
-	const CAnimation* getAnimation (uint animationId) const;
+	const CAnimation* getAnimation (uint animationId) const
+	{
+		return &_Animation[animationId];
+	}
 
 	/**
 	  * Get a writable animation pointer.
 	  */
-	CAnimation* getAnimation (uint animationId);
+	CAnimation* getAnimation (uint animationId)
+	{
+		return &_Animation[animationId];
+	}
 
 	/**
-	  * Add an animation to the set.
+	  * Add an animation empty to the set.
 	  *
 	  * \return the id of the new animation.
 	  */
-	uint addAnimation (const std::string& name) const;
+	uint addAnimation (const std::string& name);
+
+	/**
+	  * Final build of the animation set.
+	  *
+	  * First, for each animation you want to add to the set, you must:
+	  * 1) add an empty animation using the method addAnimation().
+	  * 2) get a writable animation pointer on it with getAnimation().
+	  * 3) build this animation.
+	  *
+	  * When all animations are built, call this method to finlize the set.
+	  */
+	void build ();
 
 private:
 	std::vector <CAnimation>		_Animation;

@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.2 2001/03/08 12:57:40 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.3 2001/03/08 13:29:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,10 +50,58 @@ uint CAnimationSet::getChannelIdByName (const std::string& name) const
 
 // ***************************************************************************
 
-const CAnimation* CAnimationSet::getAnimation (uint animationId) const
+uint CAnimationSet::getAnimationIdByName (const std::string& name) const
 {
 	// Look for an id with this name
-	return &_Animation[animationId];
+	std::map <std::string, uint32>::const_iterator ite=_AnimationIdByName.find (name);
+	if (ite!=_AnimationIdByName.end ())
+		return ite->second;
+	else
+		return NotFound;
+}
+
+// ***************************************************************************
+
+uint CAnimationSet::addAnimation (const std::string& name)
+{
+	// Add an animation
+	_Animation.resize (_Animation.size()+1);
+
+	// Add an entry name / animation
+	_AnimationIdByName.insert (std::map <std::string, uint32>::value_type (name, _Animation.size()-1));
+
+	// Return animation id
+	return _Animation.size()-1;
+}
+
+// ***************************************************************************
+
+void CAnimationSet::build ()
+{
+	// Clear the channel map
+	_ChannelIdByName.clear ();
+
+	// Set of names
+	std::set<std::string> channelNames;
+
+	// For each animation in the set
+	for (uint a=0; a<_Animation.size(); a++)
+	{
+		// Fill the set of channel names
+		getAnimation (a)->getTrackNames (channelNames);
+	}
+
+	// Add this name in the map with there iD
+	uint id=0;
+	std::set<std::string>::iterator ite=channelNames.begin ();
+	while (ite!=channelNames.end ())
+	{
+		// Insert an entry
+		_ChannelIdByName.insert (std::map <std::string, uint32>::value_type (*ite, id++));
+
+		// Next entry
+		ite++;
+	}
 }
 
 // ***************************************************************************

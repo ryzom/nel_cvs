@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.56 2004/06/17 17:02:14 vizerie Exp $
+ * $Id: object_viewer.h,v 1.57 2004/06/29 13:40:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -492,6 +492,8 @@ public:
 	bool		getFXMatrixVisible() const { return _FXMatrixVisible; }
 	void		setFXUserMatrixVisible(bool visible) { _FXUserMatrixVisible = visible; }
 	bool		getFXUserMatrixVisible() const { return _FXUserMatrixVisible; }
+	void		setOcclusionTestMeshsVisible(bool visible) { _OcclusionTestMeshsVisible = visible; }
+	bool		getOcclusionTestMeshsVisible() const { return _OcclusionTestMeshsVisible; }
 
 private:
 
@@ -595,6 +597,7 @@ private:
 	bool										_FXMatrixVisible;
 	bool										_FXUserMatrixVisible;
 	bool										_SceneMatrixVisible;
+	bool										_OcclusionTestMeshsVisible;
 
 	// the lightInfo linked to the ig.
 	class	COVLogicInfo : public NL3D::ILogicInfo

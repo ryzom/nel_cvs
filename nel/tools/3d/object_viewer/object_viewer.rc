@@ -2618,6 +2618,9 @@ BEGIN
         MENUITEM "Show scene matrix",           IDM_SHOW_SCENE_MATRIX
         MENUITEM "Show fx matrix",              IDM_SHOW_FX_MATRIX
         MENUITEM "Show FX user matrix",         IDM_SHOW_FX_USER_MATRIX
+        MENUITEM SEPARATOR
+        MENUITEM "Show occlusion test meshs",   iDM_SHOW_OCCLUSION_TEST_MESHS
+
     END
     POPUP "&Scene"
     BEGIN

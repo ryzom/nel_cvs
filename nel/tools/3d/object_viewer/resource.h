@@ -905,6 +905,7 @@
 #define IDM_VIEW_PS_FILENAME            32980
 #define IDM_REMOVE_ALL_PS               32981
 #define IDM_SAVE_PS_AS                  32982
+#define iDM_SHOW_OCCLUSION_TEST_MESHS   32983
 #define ID_PS_EDITOR_STATUS             36111
 
 // Next default values for new objects
@@ -912,7 +913,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1146
-#define _APS_NEXT_COMMAND_VALUE         32983
+#define _APS_NEXT_COMMAND_VALUE         32984
 #define _APS_NEXT_CONTROL_VALUE         1411
 #define _APS_NEXT_SYMED_VALUE           1001
 #endif

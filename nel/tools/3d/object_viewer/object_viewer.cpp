@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.122 2004/06/17 17:02:14 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.123 2004/06/29 13:40:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,8 @@ using namespace NLSOUND;
 using namespace NLPACS;
 
 
+
+				
 
 static char SDrive[256];
 static char SDir[256];
@@ -276,6 +278,7 @@ CObjectViewer::CObjectViewer ()
 	_FXMatrixVisible = false;
 	_FXUserMatrixVisible = false;
 	_SceneMatrixVisible = false;
+	_OcclusionTestMeshsVisible = false;
 	_CS = NULL;
 }
 
@@ -1192,6 +1195,10 @@ void CObjectViewer::go ()
 				}
 			}
 			
+			if (_OcclusionTestMeshsVisible)
+			{				
+				CNELU::Scene->renderOcclusionTestMeshs();
+			}
 
 			// Profile polygon count
 			CPrimitiveProfile in, out;

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: pipo.h,v 1.2 2000/11/14 14:42:03 berenguier Exp $
+ * $Id: pipo.h,v 1.3 2000/11/14 14:47:31 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,8 @@ public:
 // --------------------------------------------------
 
 
-   
+
+
 
 // --------------------------------------------------
 
@@ -275,6 +276,11 @@ public:
 	void				setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2);
 
 	uint32*				getTriPointer(void);
+
+	uint toto();
+	uint tata();
+	uint popo();
+	uint pipi();
 };
 
 // --------------------------------------------------

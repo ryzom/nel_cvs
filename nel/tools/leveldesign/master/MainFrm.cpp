@@ -52,6 +52,12 @@ CEnvironnement::CEnvironnement()
 	GeorgesY = 50;
 	GeorgesCX = 300;
 	GeorgesCY = 300;
+
+	LogicEditorOpened = false;
+	LogicEditorX = 50;
+	LogicEditorY = 50;
+	LogicEditorCX = 300;
+	LogicEditorCY = 300;
 }
 
 // ---------------------------------------------------------------------------
@@ -78,6 +84,12 @@ void CEnvironnement::serial (NLMISC::IStream& s)
 	s.serial (GeorgesY);
 	s.serial (GeorgesCX);
 	s.serial (GeorgesCY);
+
+	s.serial (LogicEditorOpened);
+	s.serial (LogicEditorX);
+	s.serial (LogicEditorY);
+	s.serial (LogicEditorCX);
+	s.serial (LogicEditorCY);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -111,6 +123,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 
 	ON_COMMAND(ID_WINDOWS_WORLDEDITOR, onWindowsWorldEditor)
 	ON_COMMAND(ID_WINDOWS_GEORGES, onWindowsGeorges)
+	ON_COMMAND(ID_WINDOWS_LOGICEDITOR, onWindowsLogicEditor)
 
 	ON_WM_CREATE()
 	ON_WM_ERASEBKGND()
@@ -128,6 +141,7 @@ CMainFrame::CMainFrame()
 {
 	_WorldEditor = NULL;
 	_Georges = NULL;
+	_LogicEditor = NULL;
 	_Tree = NULL;
 }
 
@@ -198,7 +212,7 @@ void CMainFrame::getAllInterfaces()
 			_LogicEditorModule = AfxLoadLibrary ("Logic_Editor_release_debug.dll");
 		#endif
 		#ifdef NL_DEBUG_FAST
-			_LogicEditorModule = AfxLoadLibrary ("Logic_Editor_debug_fast.dll");
+			_LogicEditorModule = AfxLoadLibrary ("Logic_Editor_df.dll");
 		#endif
 		ILEGetInterface = (ILOGICEDITOR_GETINTERFACE)::GetProcAddress (_LogicEditorModule, ILOGICEDITOR_GETINTERFACE_NAME);
 		if (ILEGetInterface != NULL)
@@ -1122,6 +1136,15 @@ void CMainFrame::onWindowsGeorges ()
 		openGeorges ();
 	else
 		closeGeorges ();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onWindowsLogicEditor ()
+{
+	if (!_Environnement.LogicEditorOpened)
+		openLogicEditor ();
+	else
+		closeLogicEditor ();
 }
 
 // ---------------------------------------------------------------------------

@@ -152,6 +152,7 @@ protected:
 
 	afx_msg void onWindowsWorldEditor ();
 	afx_msg void onWindowsGeorges ();
+	afx_msg void onWindowsLogicEditor ();
 
 	afx_msg void OnClose ();
 		// NOTE - the ClassWizard will add and remove member functions here.

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.9 2001/11/05 15:42:36 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.10 2001/11/13 11:57:17 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -279,7 +279,7 @@ void CWinDisplayer::open (string windowNameEx, sint x, sint y, sint w, sint h, s
 		wn += windowNameEx;
 		wn += ": ";
 	}
-	wn = "Nel Service Console (compiled " __DATE__ " " __TIME__ ") ";
+	wn += "Nel Service Console (compiled " __DATE__ " " __TIME__ ") ";
 
 	// create the window
 	_HWnd = CreateWindow ("NLClass", wn.c_str(), WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);

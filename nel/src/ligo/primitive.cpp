@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.17 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: primitive.cpp,v 1.18 2003/08/13 08:43:15 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1486,28 +1486,30 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 			
 			// Get the property
 			IProperty *result;
-			CPropertyString *pString = NULL;
-			CPropertyStringArray *pStringArray = NULL;
 			if (!getPropertyByName (parameter.Name.c_str(), result))
 			{
 				// Create the property
 				if (parameter.Type == CPrimitiveClass::CParameter::StringArray)
-				{
-					pStringArray = new CPropertyStringArray();
-					nlverify (addPropertyByName (parameter.Name.c_str(), pStringArray));
-				}
+					result = new CPropertyStringArray();
 				else
-				{
-					pString = new CPropertyString();
-					nlverify (addPropertyByName (parameter.Name.c_str(), pString));
-				}
+					result = new CPropertyString();
+				nlverify (addPropertyByName (parameter.Name.c_str(), result));
 			}
-			else
-			{
-				pString = dynamic_cast<CPropertyString*>(result);
-				if (!pString)
-					pStringArray = dynamic_cast<CPropertyStringArray*>(result);
-			}
+		}
+			
+		// Set the default values
+		for (i=0; i<count; i++)
+		{
+			const CPrimitiveClass::CParameter &parameter = primitiveClass->Parameters[i];
+
+			CPropertyString *pString = NULL;
+			CPropertyStringArray *pStringArray = NULL;
+
+			IProperty *result;
+			nlverify (getPropertyByName (parameter.Name.c_str(), result));
+			pString = dynamic_cast<CPropertyString*>(result);
+			if (!pString)
+				pStringArray = dynamic_cast<CPropertyStringArray*>(result);
 
 			// Property have default values ?
 			if (pString)
@@ -1517,8 +1519,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 				{
 					// Set as default
 					pString->Default = true;
-					if (parameter.DefaultValue.size()>=1)
-						pString->String = parameter.DefaultValue[0].Name;
+					parameter.getDefaultValue (pString->String, *this, *primitiveClass);
 				}
 			}
 			else if (pStringArray)
@@ -1528,10 +1529,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 				{
 					// Set as default
 					pStringArray->Default = true;
-					uint i;
-					pStringArray->StringArray.resize (parameter.DefaultValue.size());
-					for (i=0; i<pStringArray->StringArray.size(); i++)
-						pStringArray->StringArray[i] = parameter.DefaultValue[i].Name;
+					parameter.getDefaultValue (pStringArray->StringArray, *this, *primitiveClass);
 				}
 			}
 		}

@@ -1,7 +1,7 @@
 /** \file primitive_class.h
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.h,v 1.1 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: primitive_class.h,v 1.2 2003/08/13 08:43:14 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -37,6 +37,7 @@
 namespace NLLIGO
 {
 
+class IPrimitive;
 class IProperty;
 class CLigoConfig;
 
@@ -89,9 +90,6 @@ public:
 
 	/// Show arrow ?
 	bool					ShowArrow;
-
-	/// Autonaming
-	std::string				Autoname;
 
 	/// Init parameters
 	class CInitParameters
@@ -174,6 +172,13 @@ public:
 
 		// Map of combobox value per context
 		std::map<std::string, CConstStringValue>	ComboValues;
+
+		/// Get the autoname translation
+		bool	translateAutoname (std::string &result, const IPrimitive &primitive, const CPrimitiveClass &primitiveClass) const;
+
+		// Get a default value
+		bool	getDefaultValue (std::string &result, const IPrimitive &primitive, const CPrimitiveClass &primitiveClass, std::string *fromWhere = NULL) const;
+		bool	getDefaultValue (std::vector<std::string> &result, const IPrimitive &primitive, const CPrimitiveClass &primitiveClass, std::string *fromWhere = NULL) const;
 	};
 
 	/// Parameters

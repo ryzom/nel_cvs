@@ -1,7 +1,7 @@
 /** \file primitive_class.cpp
  * Ligo primitive class description. Give access at common properties for a primitive class. Properties are given in an XML file
  *
- * $Id: primitive_class.cpp,v 1.1 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: primitive_class.cpp,v 1.2 2003/08/13 08:43:15 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -208,10 +208,6 @@ bool CPrimitiveClass::read (xmlNodePtr primitiveNode, const char *filename, cons
 		// File extension
 		FileExtension = "";
 		CIXml::getPropertyString (FileExtension, primitiveNode, "FILE_EXTENSION");
-
-		// Autonaming for "name"
-		Autoname = "";
-		CIXml::getPropertyString (Autoname, primitiveNode, "AUTONAME");
 
 		// File type
 		FileType = "";
@@ -549,6 +545,128 @@ bool CPrimitiveClass::CParameter::CConstStringValue::operator== (const CConstStr
 bool CPrimitiveClass::CParameter::CConstStringValue::operator< (const CConstStringValue &other) const
 {
 	return Values < other.Values;
+}
+
+// ***************************************************************************
+
+bool CPrimitiveClass::CParameter::translateAutoname (std::string &result, const IPrimitive &primitive, const CPrimitiveClass &primitiveClass) const
+{
+	result = "";
+	uint strBegin = 0;
+	uint strEnd = 0;
+	while (strBegin != Autoname.size())
+	{
+		strEnd = Autoname.find ('$', strBegin);
+		if (strEnd == string::npos)
+		{
+			strEnd = Autoname.size();
+			result += Autoname.substr (strBegin, strEnd-strBegin);
+		}
+		else
+		{
+			// Copy the remaining string
+			result += Autoname.substr (strBegin, strEnd-strBegin);
+			if (strEnd != Autoname.size())
+			{
+				strBegin = strEnd+1;
+				strEnd = Autoname.find ('$', strBegin);
+				if (strEnd == string::npos)
+					strEnd = Autoname.size();
+				else
+				{
+					string keyWord = Autoname.substr (strBegin, strEnd-strBegin);
+
+					// Loop for the parameter
+					uint i;
+					for (i=0; i<primitiveClass.Parameters.size (); i++)
+					{
+						if (primitiveClass.Parameters[i].Name == keyWord)
+						{
+							// Get its string value
+							string str;
+							if (primitive.getPropertyByName (keyWord.c_str(), str))
+							{
+								if (!str.empty())
+								{
+									result += str;
+									break;
+								}
+							}
+							// Get its string array value
+							const vector<string> *strArray;
+							if (primitive.getPropertyByName (keyWord.c_str(), strArray))
+							{
+								if (!strArray->empty())
+								{
+									result += (*strArray)[0];
+									break;
+								}
+							}
+							// Get its default value
+							std::string result2;
+							if (primitiveClass.Parameters[i].getDefaultValue (result2, primitive, primitiveClass))
+							{
+								result += result2;
+								break;
+							}
+						}
+					}
+					strEnd++;
+				}
+				
+			}
+		}
+		strBegin = strEnd;
+	}
+	return true;
+}
+
+// ***************************************************************************
+
+bool CPrimitiveClass::CParameter::getDefaultValue (std::string &result, const IPrimitive &primitive, const CPrimitiveClass &primitiveClass, std::string *fromWhere) const
+{
+	result = "";
+	if (!Autoname.empty())
+	{
+		if (fromWhere)
+			*fromWhere = "Autoname value : "+Autoname;
+		return translateAutoname (result, primitive, primitiveClass);
+	}
+	else
+	{
+		if (fromWhere)
+			*fromWhere = "Default value";
+		if (!DefaultValue.empty())
+			result = DefaultValue[0].Name;
+	}
+	return true;
+}
+
+// ***************************************************************************
+
+bool CPrimitiveClass::CParameter::getDefaultValue (std::vector<std::string> &result, const IPrimitive &primitive, const CPrimitiveClass &primitiveClass, std::string *fromWhere) const
+{
+	if (!Autoname.empty())
+	{
+		string temp;
+		if (translateAutoname (temp, primitive, primitiveClass))
+		{
+			result.clear ();
+			if (!temp.empty())
+				result.push_back (temp);
+			return true;
+		}
+		else
+			return false;
+	}
+	else
+	{
+		uint i;
+		result.resize (DefaultValue.size());
+		for (i=0; i<DefaultValue.size(); i++)
+			result[i] = DefaultValue[i].Name;
+	}
+	return true;
 }
 
 // ***************************************************************************

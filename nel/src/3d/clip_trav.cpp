@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.34 2003/04/14 09:31:43 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.35 2003/06/26 14:54:34 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,6 +248,10 @@ void CClipTrav::traverse()
 	{
 		sceneRoot->clipAddChild(RootCluster);
 		vCluster.push_back (RootCluster);
+	}
+	else
+	{
+		sceneRoot->clipDelChild(RootCluster);
 	}
 
 	/// Flag all cluster to know if they are in camera or not.

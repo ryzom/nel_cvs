@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.10 2004/10/05 17:17:47 vizerie Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.11 2004/10/05 17:23:13 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -72,9 +72,7 @@ void CDriverD3D::convertToIndices16(uint firstIndex, uint numIndices)
 	do
 	{
 		#ifdef NL_DEBUG
-			nlassertex(*currIndex < _MaxVertexIndex, ("In this implementation, only 16 bit indices are supported"));
-			extern CVertexBuffer *lastVb;
-			nlassert(*currIndex < lastVb->getNumVertices());
+			nlassertex(*currIndex < _MaxVertexIndex, ("In this implementation, only 16 bit indices are supported"));			
 		#endif
 		*ptr++ = (uint16&) (*currIndex++);
 	}

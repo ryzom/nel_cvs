@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.5 2001/09/05 17:19:48 lecroart Exp $
+ * $Id: login_server.cpp,v 1.6 2001/10/04 15:45:40 lecroart Exp $
  *
  */
 
@@ -250,7 +250,7 @@ void CLoginServer::clientDisconnected (uint32 userId)
 // Commands
 //
 
-NLMISC_COMMAND (users, "displays the list of all connected users", "")
+NLMISC_COMMAND (ls_users, "displays the list of all connected users", "")
 {
 	if(args.size() != 0) return false;
 
@@ -264,7 +264,7 @@ NLMISC_COMMAND (users, "displays the list of all connected users", "")
 	return true;
 }
 
-NLMISC_COMMAND (pending, "displays the list of all pending users", "")
+NLMISC_COMMAND (ls_pending, "displays the list of all pending users", "")
 {
 	if(args.size() != 0) return false;
 

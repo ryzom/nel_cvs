@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.39 2001/07/27 14:09:59 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.40 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,66 +55,54 @@ using namespace NLMISC;
 // CGlobalRetriever methods implementation
 
 //
-NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::getInstanceFullAccess(const CVector &position)
+void	NLPACS::CGlobalRetriever::init()
 {
-	float				offsetX = position.x - _BBox.getMin().x;
-	float				offsetY = _BBox.getMax().y - position.y;
-	// please NOTE that offsetY decreases as position.y increases!!
-	static const float	zdim = 160.0f;
-	return getInstanceFullAccess((uint)(offsetX/zdim), (uint)(offsetY/zdim));
+	_BBox.setCenter(CVector::Null);
+	_BBox.setHalfSize(CVector::Null);
+
+	_InstanceGrid.create(128, 160.0f);
 }
 
-const NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::getInstance(const CVector &position) const
+void	NLPACS::CGlobalRetriever::initQuadGrid()
 {
-	float				offsetX = position.x - _BBox.getMin().x;
-	float				offsetY = _BBox.getMax().y - position.y;
-	// please NOTE that offsetY decreases as position.y increases!!
-	static const float	zdim = 160.0f;
-	return getInstance((uint)(offsetX/zdim), (uint)(offsetY/zdim));
+	_InstanceGrid.clear();
+	_InstanceGrid.create(128, 160.0f);
+
+	uint	i;
+	for (i=0; i<_Instances.size(); ++i)
+		_InstanceGrid.insert(_Instances[i].getBBox().getMin(), _Instances[i].getBBox().getMax(), i);
 }
 
-void	NLPACS::CGlobalRetriever::getInstances(const CVector &p, const CRetrieverInstance *instances[4]) const
+void	NLPACS::CGlobalRetriever::initRetrieveTable()
 {
-	float				offsetX = p.x - _BBox.getMin().x;
-	float				offsetY = _BBox.getMax().y - p.y;
-	// please NOTE that offsetY decreases as position.y increases!!
-	static const float	zdim = 160.0f;
-	uint				xp = (uint)(offsetX/zdim),
-						yp = (uint)(offsetY/zdim);
-	CVector				c = getInstanceCenter(xp, yp);
+	uint	i;
+	uint	size = 0;
 
-	instances[0] = getInstancePtr(xp, yp);
-	
-	if (p.x > c.x)
+	for (i=0; i<_Instances.size(); ++i)
 	{
-		if (p.y > c.y)
+		if (_Instances[i].getInstanceId() != -1 && _Instances[i].getRetrieverId() != -1)
 		{
-			instances[1] = getInstancePtr(xp+1, yp);
-			instances[2] = getInstancePtr(xp, yp-1);
-			instances[3] = getInstancePtr(xp+1, yp-1);
-		}
-		else
-		{
-			instances[1] = getInstancePtr(xp+1, yp);
-			instances[2] = getInstancePtr(xp, yp+1);
-			instances[3] = getInstancePtr(xp+1, yp+1);
+			const CLocalRetriever	&retriever = getRetriever(_Instances[i].getRetrieverId());
+			size =  std::max(retriever.getSurfaces().size(), size);
 		}
 	}
-	else
-	{
-		if (p.y > c.y)
-		{
-			instances[1] = getInstancePtr(xp-1, yp-1);
-			instances[2] = getInstancePtr(xp, yp-1);
-			instances[3] = getInstancePtr(xp-1, yp);
-		}
-		else
-		{
-			instances[1] = getInstancePtr(xp-1, yp);
-			instances[2] = getInstancePtr(xp-1, yp+1);
-			instances[3] = getInstancePtr(xp, yp+1);
-		}
-	}
+
+	_RetrieveTable.resize(size);
+	for (i=0; i<size; ++i)
+		_RetrieveTable[i] = 0;
+}
+
+//
+
+void	NLPACS::CGlobalRetriever::selectInstances(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst) const
+{
+	_InstanceGrid.select(bbox.getMin(), bbox.getMax());
+	cst.CollisionInstances.clear();
+
+	NL3D::CQuadGrid<uint32>::CIterator	it;
+	for (it=_InstanceGrid.begin(); it!=_InstanceGrid.end(); ++it)
+		if (_Instances[*it].getBBox().intersect(bbox))
+			cst.CollisionInstances.push_back(*it);
 }
 
 //
@@ -122,141 +110,46 @@ void	NLPACS::CGlobalRetriever::getInstances(const CVector &p, const CRetrieverIn
 void	NLPACS::CGlobalRetriever::serial(NLMISC::IStream &f)
 {
 	f.serialCont(_Instances);
-	f.serial(_Width, _Height);
 	f.serial(_BBox);
+
+	if (f.isReading())
+	{
+		initQuadGrid();
+		initRetrieveTable();
+	}
 }
 
 //
 
 void	NLPACS::CGlobalRetriever::makeLinks(uint n)
 {
-	uint	x, y;
-	convertId(n, x, y);
+	CRetrieverInstance	&instance = _Instances[n];
 
-	if (_Instances[n].getInstanceId() == -1)
-		return;
+	selectInstances(instance.getBBox(), _InternalCST);
 
-	// links nth instance with its leftmost neighbor.
-	if (x > 0  && y > 0 && _Instances[n-1-_Width].getInstanceId() >= 0)
+	uint	i;
+	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
 	{
+		CRetrieverInstance	&neighbor = _Instances[_InternalCST.CollisionInstances[i]];
+
+		if (neighbor.getInstanceId() == instance.getInstanceId())
+			continue;
+
 		try
 		{
-			_Instances[n].link(_Instances[n-1-_Width], _RetrieverBank->getRetrievers());
-			_Instances[n-1-_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
+			instance.link(neighbor, _RetrieverBank->getRetrievers());
+			neighbor.link(instance, _RetrieverBank->getRetrievers());
 		}
 		catch (Exception &e)
 		{
 			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
-			nlwarning("caught an exception: %s", e.what());
+			nlwarning("caught an exception during linkage of %d and %d: %s", instance.getInstanceId(), neighbor.getInstanceId(), e.what());
 		}
 	}
 
-	// links nth instance with its leftmost neighbor.
-	if (x > 0 && _Instances[n-1].getInstanceId() >= 0)
-	{
-		try
-		{
-			_Instances[n].link(_Instances[n-1], _RetrieverBank->getRetrievers());
-			_Instances[n-1].link(_Instances[n], _RetrieverBank->getRetrievers());
-		}
-		catch (Exception &e)
-		{
-			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
-			nlwarning("caught an exception: %s", e.what());
-		}
-	}
-
-	// links nth instance with its leftmost neighbor.
-	if (x > 0  && y < (uint)(_Height-1) && _Instances[n-1+_Width].getInstanceId() >= 0)
-	{
-		try
-		{
-			_Instances[n].link(_Instances[n-1+_Width], _RetrieverBank->getRetrievers());
-			_Instances[n-1+_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
-		}
-		catch (Exception &e)
-		{
-			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
-			nlwarning("caught an exception: %s", e.what());
-		}
-	}
-
-	// links nth instance with its downmost neighbor.
-	if (y < (uint)(_Height-1) && _Instances[n+_Width].getInstanceId() >= 0)
-	{
-		try
-		{
-			_Instances[n].link(_Instances[n+_Width], _RetrieverBank->getRetrievers());
-			_Instances[n+_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
-		}
-		catch (Exception &e)
-		{
-			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
-			nlwarning("caught an exception: %s", e.what());
-		}
-	}
-
-	// links nth instance with its rightmost neighbor.
-	if (x < (uint)(_Width-1) && y < (uint)(_Height-1) && _Instances[n+1+_Width].getInstanceId() >= 0)
-	{
-		try
-		{
-			_Instances[n].link(_Instances[n+1+_Width], _RetrieverBank->getRetrievers());
-			_Instances[n+1+_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
-		}
-		catch (Exception &e)
-		{
-			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
-			nlwarning("caught an exception: %s", e.what());
-		}
-	}
-
-	// links nth instance with its rightmost neighbor.
-	if (x < (uint)(_Width-1) && _Instances[n+1].getInstanceId() >= 0)
-	{
-		try
-		{
-			_Instances[n].link(_Instances[n+1], _RetrieverBank->getRetrievers());
-			_Instances[n+1].link(_Instances[n], _RetrieverBank->getRetrievers());
-		}
-		catch (Exception &e)
-		{
-			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
-			nlwarning("caught an exception: %s", e.what());
-		}
-	}
-
-	// links nth instance with its rightmost neighbor.
-	if (x < (uint)(_Width-1) && y > 0 && _Instances[n+1-_Width].getInstanceId() >= 0)
-	{
-		try
-		{
-			_Instances[n].link(_Instances[n+1-_Width], _RetrieverBank->getRetrievers());
-			_Instances[n+1-_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
-		}
-		catch (Exception &e)
-		{
-			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
-			nlwarning("caught an exception: %s", e.what());
-		}
-	}
-
-	// links nth instance with its uppermost neighbor.
-	if (y > 0 && _Instances[n-_Width].getInstanceId() >= 0)
-	{
-		try
-		{
-			_Instances[n].link(_Instances[n-_Width], _RetrieverBank->getRetrievers());
-			_Instances[n-_Width].link(_Instances[n], _RetrieverBank->getRetrievers());
-		}
-		catch (Exception &e)
-		{
-			nlwarning("in NLPACS::CGlobalRetriever::makeLinks()");
-			nlwarning("caught an exception: %s", e.what());
-		}
-	}
+	if (getRetriever(instance.getRetrieverId()).getType() == CLocalRetriever::Interior)
+		instance.linkEdgeQuad(*this);
 }
-
 
 void	NLPACS::CGlobalRetriever::resetAllLinks()
 {
@@ -281,22 +174,51 @@ void	NLPACS::CGlobalRetriever::initAll()
 	for (n=0; n<_Instances.size(); ++n)
 		if (_Instances[n].getInstanceId() != -1 && _Instances[n].getRetrieverId() != -1)
 			_Instances[n].init(_RetrieverBank->getRetriever(_Instances[n].getRetrieverId()));
+
+	initQuadGrid();
+	initRetrieveTable();
 }
 
 //
 
-NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint x, uint y, uint32 retriever, uint8 orientation, const CVector &origin)
+const NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint32 retrieverId, uint8 orientation, const CVector &origin)
 {
-	CRetrieverInstance	&inst = getInstanceFullAccess(x, y);
-	inst.make(convertId(x, y), retriever, _RetrieverBank->getRetriever(retriever), orientation, origin);
-	return inst;
-}
+	uint	id;
+	for (id=0; id<_Instances.size() && _Instances[id].getInstanceId()!=-1; ++id)
+		;
 
+	if (id == _Instances.size())
+		_Instances.resize(id+1);
 
-NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint x, uint y, uint32 retriever, uint8 orientation)
-{
-	CVector	center = getInstanceCenter(x, y);
-	return makeInstance(x, y, retriever, orientation, center);
+	CRetrieverInstance		&instance = _Instances[id];
+	const CLocalRetriever	&retriever = getRetriever(retrieverId);
+
+	if (_RetrieveTable.size() < retriever.getSurfaces().size())
+	{
+		uint	oldSize = _RetrieveTable.size(),
+				newSize = retriever.getSurfaces().size();
+
+		_RetrieveTable.resize(newSize);
+		for (; oldSize<newSize; ++oldSize)
+			_RetrieveTable[oldSize] = 0;
+	}
+
+	instance.make(id, retrieverId, retriever, orientation, origin);
+
+	if (_BBox.getHalfSize() == CVector::Null)
+	{
+		_BBox = instance.getBBox();
+	}
+	else
+	{
+		_BBox.extend(instance.getBBox().getMin());
+		_BBox.extend(instance.getBBox().getMax());
+	}
+
+	if (getRetriever(instance.getRetrieverId()).getType() == CLocalRetriever::Interior)
+		instance.initEdgeQuad(*this);
+
+	return instance;
 }
 
 //
@@ -305,75 +227,69 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 {
 	// the retrieved position
 	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
-	// get the 4 best matching instances
-	const CRetrieverInstance	*instances[4];
-	getInstances(estimated, instances);
+
+	if (!_BBox.include(estimated))
+		return result;
+	
+	// get the best matching instances
+	CAABBox	bbpos;
+	bbpos.setCenter(estimated);
+	bbpos.setHalfSize(CVector(0.5f, 0.5f, 0.5f));
+	selectInstances(bbpos, _InternalCST);
 
 	uint	i;
 	float	bestDist = 1.0e10f;
 
 	// for each instance, try to retrieve the position
-	for (i=0; i<4; ++i)
+	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
 	{
-		if (instances[i] != NULL)
+		uint32	id = _InternalCST.CollisionInstances[i];
+		// if the retrieved position is on a surface and it best match the estimated position
+		// remember it
+		CLocalRetriever::CLocalPosition	ret = _Instances[id].retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()));
+		float	d = (float)fabs(estimated.z-ret.Estimation.z);
+		if (d < bestDist && ret.Surface != -1)
 		{
-			// if the retrieved position is on a surface and it best match the estimated position
-			// remember it
-			CLocalRetriever::CLocalPosition	ret = instances[i]->retrievePosition(estimated, _RetrieverBank->getRetriever(instances[i]->getRetrieverId()));
-			float	d = (float)fabs(estimated.z-ret.Estimation.z);
-			if (d < bestDist && ret.Surface != -1)
-			{
-				bestDist = d;
-				result.LocalPosition = ret;
-				result.InstanceId = instances[i]->getInstanceId();
-			}
+			bestDist = d;
+			result.LocalPosition = ret;
+			result.InstanceId = _Instances[id].getInstanceId();
 		}
 	}
 
 	return result;
-	
-/*
-	const CRetrieverInstance	&instance = getInstance(estimated);
-	if (instance.getRetrieverId() >= 0)
-	{
-		// if there is an actual instance at this position, retrieve the position
-		CLocalRetriever::CLocalPosition	localPosition = instance.retrievePosition(estimated, _RetrieverBank->getRetriever(instance.getRetrieverId()));
-		return CGlobalPosition(instance.getInstanceId(), localPosition);
-	}
-	else
-	{
-		// if there is no instance there, return a blank position
-		return CGlobalPosition(instance.getInstanceId(), CLocalRetriever::CLocalPosition(-1, estimated));
-	}
-*/
 }
 
 NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVectorD &estimated) const
 {
 	// the retrieved position
 	CGlobalPosition				result = CGlobalPosition(-1, CLocalRetriever::CLocalPosition(-1, estimated));
-	// get the 4 best matching instances
-	const CRetrieverInstance	*instances[4];
-	getInstances(estimated, instances);
+
+	if (!_BBox.include(CVector((float)estimated.x, (float)estimated.y, (float)estimated.z)))
+		return result;
+	
+	
+	// get the best matching instances
+	CAABBox	bbpos;
+	bbpos.setCenter(estimated);
+	bbpos.setHalfSize(CVector(0.5f, 0.5f, 0.5f));
+	selectInstances(bbpos, _InternalCST);
 
 	uint	i;
-	double	bestDist = 1.0e10f;
+	float	bestDist = 1.0e10f;
 
 	// for each instance, try to retrieve the position
-	for (i=0; i<4; ++i)
+	for (i=0; i<_InternalCST.CollisionInstances.size(); ++i)
 	{
-		if (instances[i] != NULL)
+		uint32	id = _InternalCST.CollisionInstances[i];
+		// if the retrieved position is on a surface and it best match the estimated position
+		// remember it
+		CLocalRetriever::CLocalPosition	ret = _Instances[id].retrievePosition(estimated, _RetrieverBank->getRetriever(_Instances[id].getRetrieverId()));
+		float	d = (float)fabs(estimated.z-ret.Estimation.z);
+		if (d < bestDist && ret.Surface != -1)
 		{
-			// if the retrieved position is on a surface and it best match the estimated position
-			// remember it
-			CLocalRetriever::CLocalPosition	ret = instances[i]->retrievePosition(estimated, _RetrieverBank->getRetriever(instances[i]->getRetrieverId()));
-			double	d = fabs(estimated.z-ret.Estimation.z);
-			if (d < bestDist && ret.Surface != -1)
-			{
-				bestDist = d;
-				result.LocalPosition = ret;
-				result.InstanceId = instances[i]->getInstanceId();
-			}
+			bestDist = d;
+			result.LocalPosition = ret;
+			result.InstanceId = _Instances[id].getInstanceId();
 		}
 	}
 
@@ -405,17 +321,6 @@ CVectorD	NLPACS::CGlobalRetriever::getDoubleGlobalPosition(const NLPACS::UGlobal
 		return CVectorD::Null;
 	}
 }
-
-//
-
-CVector		NLPACS::CGlobalRetriever::getInstanceCenter(uint x, uint y) const
-{
-	const float	zdim = 160.0f;
-	CVector	bmin = _BBox.getMin();
-	CVector	bmax = _BBox.getMax();
-	return CVector(bmin.x+zdim*((float)x+0.5f), bmax.y-zdim*((float)y+0.5f), 0.0f);
-}
-
 
 //
 
@@ -713,35 +618,6 @@ void	NLPACS::CGlobalRetriever::findPath(const NLPACS::UGlobalPosition &begin,
 
 
 // ***************************************************************************
-void	NLPACS::CGlobalRetriever::getInstanceBounds(sint32 &x0, sint32 &y0, sint32 &x1, sint32 &y1, const NLMISC::CAABBox &bbox) const
-{
-	CVector		minP= bbox.getMin() - _BBox.getMin();
-	CVector		maxP= bbox.getMax() - _BBox.getMin();
-
-	// \todo yoyo: TODO_INTERIOR: this is ugly and works only for Ben's "UnCut" modification.
-	minP.x -=160;
-	minP.y -=160;
-	maxP.x +=160;
-	maxP.y +=160;
-
-	// A zone is 160x160 meters.
-	x0= (sint32)floor(minP.x / 160);
-	y0= (sint32)floor(minP.y / 160);
-	x1= (sint32) ceil(maxP.x / 160);
-	y1= (sint32) ceil(maxP.y / 160);
-	x0= max(x0, (sint32)0);
-	y0= max(y0, (sint32)0);
-	x1= min(x1, (sint32)_Width);
-	y1= min(y1, (sint32)_Height);
-
-	// invert y.
-	y0= _Height-y0;
-	y1= _Height-y1;
-	// y0<=y1.
-	swap(y0, y1);
-}
-
-
 
 // ***************************************************************************
 // ***************************************************************************
@@ -780,25 +656,11 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 
 	// 1. Find Instances which may hit this movement.
 	//===========
-	cst.CollisionInstances.clear();
-
-	// First, add zones which hit this bbox.
-	// Find instances which intersect the bbox.
-	sint32	x0, y0, x1, y1;
 	CAABBox		bboxMoveGlobal= bboxMove;
 	bboxMoveGlobal.setCenter(bboxMoveGlobal.getCenter()+origin);
-	this->getInstanceBounds(x0, y0, x1, y1, bboxMoveGlobal);
-	// Add them to the list.
-	sint32	x,y;
-	for(y=y0; y<y1; y++)
-	{
-		for(x=x0; x<x1; x++)
-		{
-			cst.CollisionInstances.push_back(this->convertId(x,y));
-		}
-	}
-
+	selectInstances(bboxMoveGlobal, cst);
 	// \todo yoyo: TODO_INTERIOR: add interiors meshes (static/dynamic houses etc...) to this list.
+	// -> done automatically with the select
 
 
 	// 2. Fill CollisionChains.
@@ -831,6 +693,12 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 		CVector2f	transBase(-deltaOrigin.x, -deltaOrigin.y);
 		// Go! fill collision chains that this movement intersect.
 		localRetriever.testCollision(cst, bboxMoveLocal, transBase);
+		// if an interior, also test for external collisions
+		/// \todo yoyo/ben: TODO_INTERIOR: activate this and modify code below
+/*
+		if (retrieverInstance.getType() == CLocalRetriever::Interior)
+			retrieverInstance.testExteriorCollision(cst, bboxMoveLocal, transBase, localRetriever);
+*/
 		// how many collision chains added?  : nCollisionChain-firstCollisionChain.
 		sint		nCollisionChain= cst.CollisionChains.size();
 
@@ -858,21 +726,6 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 				// get the link to the next surface from the instance
 				link = retrieverInstance.getBorderChainLink(CChain::convertBorderChainId(cc.RightSurface.SurfaceId));
 
-/*
-				// On which edge of the zone is this chain.
-				sint	edgeChain= originalChain.getEdge();
-				nlassert(edgeChain>=0);
-				// get edgeId in global space. (rotate).
-				edgeChain= (edgeChain + retrieverInstance.getOrientation())%4;
-
-				// Get the good neighbor instance Id.
-				//================
-				// get the neighbor instanceId.
-				sint	neighborInstanceId= retrieverInstance.getNeighbor(edgeChain);
-				// store in the current collisionChain Right.
-				cc.RightSurface.RetrieverInstanceId= neighborInstanceId;
-*/
-
 				// get the neighbor instanceId.
 				sint	neighborInstanceId= link.Instance;
 				// store in the current collisionChain Right.
@@ -888,25 +741,6 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 				{
 					// Get the good neighbor surfaceId.
 					cc.RightSurface.SurfaceId= link.SurfaceId;
-
-					// Get the good neighbor surfaceId.
-					//================
-					// get the chainId of the neighborInstance 's localRetriever.
-/*
-					sint	neighborChainId= retrieverInstance.getEdgeChainLink(edgeChain, 
-						CChain::convertEdgeId(cc.RightSurface.SurfaceId));
-
-					sint	neighborBorderChain = link.Id;
-					const CRetrieverInstance	&neighborInstance= getInstance(neighborInstanceId);
-
-					sint	neighborChainId= (_RetrieverBank->getRetriever(neighborInstance.getRetrieverId())).getBorderChain(neighborBorderChain);
-
-					// get the chain of the neighborInstance 's localRetriever.
-					const CChain		&neighborChain= (_RetrieverBank->getRetriever(neighborInstance.getRetrieverId())).getChain(neighborChainId);
-
-					// Now we have this chain, we are sure that chain.Left is our SurfaceId of cc.Right.
-					cc.RightSurface.SurfaceId= neighborChain.getLeft();
-*/
 				}
 			}
 		}
@@ -1766,9 +1600,11 @@ NLPACS::UGlobalRetriever *NLPACS::UGlobalRetriever::createGlobalRetriever (const
 	if (file.open(CPath::lookup(globalRetriever)))
 	{
 		CGlobalRetriever	*retriever = new CGlobalRetriever();
-		file.serial(*retriever);
 
+		// always set the retriever bank before serializing !!
 		retriever->setRetrieverBank(bank);
+
+		file.serial(*retriever);
 		retriever->initAll();
 
 		return static_cast<UGlobalRetriever *>(retriever);
@@ -1791,7 +1627,7 @@ void NLPACS::UGlobalRetriever::deleteGlobalRetriever (UGlobalRetriever *retrieve
 
 // ***************************************************************************
 
-float			NLPACS::CGlobalRetriever::getMeanHeight(const UGlobalPosition &pos)
+float			NLPACS::CGlobalRetriever::getMeanHeight(const UGlobalPosition &pos) const
 {
 	if ((pos.InstanceId==-1)||(pos.LocalPosition.Surface==-1))
 		return 0;

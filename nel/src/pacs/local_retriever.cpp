@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.21 2001/07/24 08:44:19 legros Exp $
+ * $Id: local_retriever.cpp,v 1.22 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -685,6 +685,9 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 	for (i=0; i<NumCreatureModels; ++i)
 		f.serialCont(_Topologies[i]);
 	f.serial(_ChainQuad);
+	f.serial(_BBox);
+	f.serialEnum(_Type);
+	f.serial(_ExteriorMesh);
 }
 
 
@@ -717,7 +720,7 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 		const vector<CVector2s>	&vertices = sub.getVertices();
 		uint					start = 0, stop = vertices.size()-1;
 
-		// TODO: trivial up/down check using bbox.
+		/// \todo trivial up/down check using bbox.
 
 		// then finds the smallest segment of the chain that includes the estimated position.
 		while (stop-start > 1)
@@ -804,7 +807,7 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 
 	_ChainQuad.selectEdges(a, b, cst);
 
-	// TODO: use smart allocations here
+	/// \todo Ben use smart allocations here
 	vector<CIntersectionMarker>	intersections;
 
 	uint	i, j;
@@ -1055,6 +1058,7 @@ void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CA
 			cst.CollisionChains.push_back();
 			// Fill it with default.
 			cst.CollisionChains[ccId].Tested= false;
+			cst.CollisionChains[ccId].ExteriorEdge = false;
 			cst.CollisionChains[ccId].FirstEdgeCollide= 0xFFFFFFFF;
 			cst.CollisionChains[ccId].ChainId= chainId;
 			// Fill Left right info.

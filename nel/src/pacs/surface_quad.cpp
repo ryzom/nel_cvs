@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.5 2001/07/19 10:14:21 legros Exp $
+ * $Id: surface_quad.cpp,v 1.6 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,7 @@ void	NLPACS::CSurfaceQuadTree::init(float maxThickness, uint maxLevel, CVector &
 	_BBox.setHalfSize(CVector(halfSize, halfSize, 10000.0f));
 }
 
-void	NLPACS::CSurfaceQuadTree::addVertex(CVector &v)
+void	NLPACS::CSurfaceQuadTree::addVertex(const CVector &v)
 {
 	if (!_BBox.include(v))
 		return;
@@ -194,7 +194,7 @@ void	NLPACS::CQuadBranch::reduceChildren()
 	}
 }
 
-void	NLPACS::CQuadBranch::addVertex(CVector &v)
+void	NLPACS::CQuadBranch::addVertex(const CVector &v)
 {
 	IQuadNode::addVertex(v);
 	uint	child;

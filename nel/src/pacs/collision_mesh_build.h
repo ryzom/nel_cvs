@@ -1,7 +1,7 @@
 /** \file collision_mesh_build.h
  * 
  *
- * $Id: collision_mesh_build.h,v 1.2 2001/07/24 13:26:18 legros Exp $
+ * $Id: collision_mesh_build.h,v 1.3 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include "nel/misc/vector.h"
 #include "nel/misc/file.h"
 
+#include "nel/misc/vector.h"
+#include "nel/misc/aabbox.h"
 
 
 namespace NLPACS
@@ -39,24 +41,43 @@ namespace NLPACS
 
 struct CCollisionFace
 {
+	/// \name Attributes to set
+	// @{
+
 	/// The number of the vertices of the face.
 	uint32	V[3];
-
-	/// The link to the neighbor faces -- not to be filled.
-	sint32	Edge[3];
 
 	/// The visibility of each edge.
 	bool	Visibility[3];
 
-	/// True iff this face contains an exit on one of its edges.
-	bool	HasExit;
+	/// The number of the surface of which it is associated. -1 means exterior surface.
+	sint32	Surface;
 
-	/// True iff the face contains a door on one of its edges.
-	bool	HasDoor;
+	// @}
 
-	/// True iff the the face belongs to the interior collision mesh.
-	bool	IsInterior;
 
+	/// \name Internal attributes
+	// @{
+
+	/// The link to the neighbor faces -- don't fill
+	sint32	Edge[3];
+
+	/// The number of the connex surface associated -- don't fill
+	sint32	InternalSurface;
+
+	/// The flags for each edge -- don't fill
+	bool	EdgeFlags[3];
+
+	// @}
+
+
+	/// The exterior/interior surfaces id
+	enum 
+	{ 
+		ExteriorSurface = -1, 
+		InteriorSurfaceFirst = 0
+	};
+	
 	/// Serialise the face
 	void	serial(NLMISC::IStream &f)
 	{
@@ -68,9 +89,7 @@ struct CCollisionFace
 		f.serial(Visibility[1]);
 		f.serial(Visibility[2]);
 
-		f.serial(HasExit);
-		f.serial(HasDoor);
-		f.serial(IsInterior);
+		f.serial(Surface);
 	}
 };
 
@@ -95,6 +114,28 @@ public:
 	{
 		f.serialCont(Vertices);
 		f.serialCont(Faces);
+	}
+
+	void	translate(const NLMISC::CVector &translation)
+	{
+		uint	i;
+		for (i=0; i<Vertices.size(); ++i)
+			Vertices[i] += translation;
+	}
+
+	NLMISC::CVector	computeTrivialTranslation() const
+	{
+		uint	i;
+		NLMISC::CAABBox	bbox;
+
+		if (!Vertices.empty())
+		{
+			bbox.setCenter(Vertices[0]);
+			for (i=1; i<Vertices.size(); ++i)
+				bbox.extend(Vertices[i]);
+		}
+
+		return -bbox.getCenter();
 	}
 };
 

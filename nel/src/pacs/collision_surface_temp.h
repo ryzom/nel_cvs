@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.2 2001/06/08 15:38:28 legros Exp $
+ * $Id: collision_surface_temp.h,v 1.3 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,12 +74,15 @@ public:
 	uint16			ChainId;
 	/// In the algorithm, this chain has been tested???
 	bool			Tested;
+	/// If the chain is an exterior edge
+	bool			ExteriorEdge;
 
 public:
 	CCollisionChain()
 	{
 		FirstEdgeCollide= 0xFFFFFFFF;
 		Tested= false;
+		ExteriorEdge = false;
 	}
 
 
@@ -91,13 +94,13 @@ public:
 	}
 
 	/// test if Left or Right == surf.
-	bool		hasSurface(const CSurfaceIdent &surf)
+	bool		hasSurface(const CSurfaceIdent &surf) const
 	{
 		return LeftSurface==surf || RightSurface==surf;
 	}
 
 	/// Return Left if surf==Right, else return Right.
-	const CSurfaceIdent		&getOtherSurface(const CSurfaceIdent &surf)
+	const CSurfaceIdent		&getOtherSurface(const CSurfaceIdent &surf) const
 	{
 		if(RightSurface==surf)
 			return LeftSurface;
@@ -124,6 +127,26 @@ public:
 	/// the end edge of the ordered chain, found in this quad. "end edge" is lastEdge+1: numEdges= end-start.
 	uint16		EdgeEnd;
 };
+
+
+// ***************************************************************************
+/**
+ * Temp collision data used for exterior mesh collision detection.
+ * \author Benjamin Legros
+ * \author Nevrax France
+ * \date 2001
+ */
+class CExteriorEdgeEntry
+{
+public:
+	/// The id of the edge.
+	uint16			EdgeId;
+	/// The id of the interior chain id
+	uint16			ChainId;
+	/// The interior and exterior surfaces along this edge
+	CSurfaceIdent	Interior, Exterior;
+};
+
 
 
 // ***************************************************************************
@@ -217,9 +240,13 @@ public:
 class CCollisionSurfaceTemp
 {
 public:
+	typedef std::pair<uint16, uint16>	TExteriorEdgeIndex;
+
+public:
 	/// For CChainQuad::selectEdges().
 	uint16							OChainLUT[65536];
 	std::vector<CEdgeChainEntry>	EdgeChainEntries;
+	std::vector<uint16>				ExteriorEdgeIndexes;
 
 
 	/// Array of near Collision Chains.

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.9 2001/06/27 15:15:34 corvazier Exp $
+ * $Id: move_container.cpp,v 1.10 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -394,9 +394,7 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive, uint8 worldImage)
 		if ( elm )
 		{
 			// Check
-			nlassert (elm->X>=0);
 			nlassert (elm->X<_CellCountWidth);
-			nlassert (elm->Y>=0);
 			nlassert (elm->Y<_CellCountHeight);
 
 			// Must remove it ?
@@ -414,7 +412,7 @@ void CMoveContainer::updateCells (CMovePrimitive *primitive, uint8 worldImage)
 				// Update position
 #ifndef TEST_CELL
 				_VectorCell[worldImage][elm->X+elm->Y*_CellCountWidth].updateSortedLists (elm, worldImage);
-#endif TEST_CELL
+#endif
 
 				// Check found cells
 				found[ elm->X - minx + ((elm->Y - miny) << (maxx-minx)) ]=true;
@@ -1211,9 +1209,7 @@ void CMoveContainer::removeFromModifiedList (CMovePrimitive* primitive, uint8 wo
 void CMoveContainer::unlinkMoveElement  (CMoveElement *element, uint8 worldImage)
 {
 	// Some checks
-	nlassert (element->X>=0);
 	nlassert (element->X<_CellCountWidth);
-	nlassert (element->Y>=0);
 	nlassert (element->Y<_CellCountHeight);
 
 	// Unlink it

@@ -1,7 +1,7 @@
 /** \file exterior_mesh.h
  * 
  *
- * $Id: exterior_mesh.h,v 1.1 2001/07/24 08:44:19 legros Exp $
+ * $Id: exterior_mesh.h,v 1.2 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,21 +56,41 @@ namespace NLPACS
 class CExteriorMesh
 {
 public:
+	/// An edge of the edge list
 	struct CEdge
 	{
 		NLMISC::CVector					Start;
 		sint32							Link;
+
+		CEdge() {}
+		CEdge(const CVector &start, sint32 link) : Start(start), Link(link) {}
+		void	serial(NLMISC::IStream &f) { f.serial(Start, Link); }
 	};
 
+	/// A list of edges that are sorted
 	struct COrderedEdges
 	{
 		uint32							Start, End;
 		bool							Forward;
+		void	serial(NLMISC::IStream &f) { f.serial(Start, End, Forward); }
+	};
+
+	/// A neighbor link, on an interior surface
+	class CLink
+	{
+	public:
+		uint16				BorderChainId;
+		uint16				ChainId;
+		uint16				SurfaceId;
+		CLink() : BorderChainId(0xFFFF), ChainId(0xFFFF), SurfaceId(0xFFFF) {}
+		void	serial(NLMISC::IStream &f) { f.serial(BorderChainId, ChainId, SurfaceId); }
 	};
 
 protected:
 	std::vector<CEdge>					_Edges;
 	std::vector<COrderedEdges>			_OrderedEdges;
+
+	std::vector<CLink>					_Links;
 
 	NLMISC::CAABBox						_BBox;
 
@@ -101,6 +121,15 @@ public:
 	const COrderedEdges					&getOrderedEdges(uint n) const { return _OrderedEdges[n]; }
 
 
+	/// Get the links
+	const std::vector<CLink>			&getLinks() const { return _Links; }
+	/// Get a specific link
+	const CLink							&getLink(uint n) const { return _Links[n]; }
+
+	/// Get the link on a specific edge
+	CLink								getLinkFromEdge(uint edge) const { return (_Edges[edge].Link != -1) ? _Links[_Edges[edge].Link] : CLink(); }
+
+
 	/// Get the bbox of the mesh
 	const NLMISC::CAABBox				&getBBox() const { return _BBox; }
 
@@ -110,9 +139,16 @@ public:
 	/// @name Mutators/initialisation
 	// @{
 
+	/// Set the edges
 	void								setEdges(const std::vector<CEdge> &edges);
 
+	/// Set the links
+	void								setLinks(const std::vector<CLink> &links) { _Links = links; }
+
 	// @}
+
+	/// Serializes the mesh
+	void								serial(NLMISC::IStream &f);
 };
 
 }; // NLPACS

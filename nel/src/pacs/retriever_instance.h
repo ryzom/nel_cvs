@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.6 2001/07/12 14:27:09 legros Exp $
+ * $Id: retriever_instance.h,v 1.7 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,10 +36,11 @@
 #include "nel/misc/aabbox.h"
 
 #include "pacs/local_retriever.h"
+#include "pacs/edge_quad.h"
 
 namespace NLPACS
 {
-
+class CCollisionSurfaceTemp;
 
 /// Precision of Snap. 1/1024 meter. If you change this, CEdgeCollide::testPointMove() won't work.
 const	float	SnapPrecision= 1024;
@@ -61,11 +62,11 @@ public:
 	class CLink
 	{
 	public:
-		sint16				Instance;
-		sint16				BorderChainId;
-		sint16				ChainId;
-		sint16				SurfaceId;
-		CLink() : Instance(-1), BorderChainId(-1), ChainId(-1), SurfaceId(-1) {}
+		uint16				Instance;
+		uint16				BorderChainId;
+		uint16				ChainId;
+		uint16				SurfaceId;
+		CLink() : Instance(0xFFFF), BorderChainId(0xFFFF), ChainId(0xFFFF), SurfaceId(0xFFFF) {}
 		void	serial(NLMISC::IStream &f) { f.serial(Instance, BorderChainId, ChainId, SurfaceId); }
 	};
 
@@ -87,8 +88,8 @@ protected:
 
 		CAStarNodeAccess() :InstanceId(-1), NodeId(0xffff), ThroughChain(0xffff) {}
 
-		bool	operator == (const CAStarNodeAccess &node) { return InstanceId == node.InstanceId && NodeId == node.NodeId; }
-		bool	operator != (const CAStarNodeAccess &node) { return InstanceId != node.InstanceId || NodeId != node.NodeId; }
+		bool	operator == (const CAStarNodeAccess &node) const { return InstanceId == node.InstanceId && NodeId == node.NodeId; }
+		bool	operator != (const CAStarNodeAccess &node) const { return InstanceId != node.InstanceId || NodeId != node.NodeId; }
 	};
 
 	/**
@@ -123,24 +124,38 @@ protected:
 	/// The id of the retrievable surface pattern.
 	sint32								_RetrieverId;
 
+	/// The type of the instance (see CLocalRetriever::_Type)
+	CLocalRetriever::EType				_Type;
+
 	/// @name Instance displacement.
-	//@{
+	// @{
 	uint8								_Orientation;
 	NLMISC::CVector						_Origin;
-	//@}
+
+	/// The BBox of the instance.
+	NLMISC::CAABBox						_BBox;
+
+	// @}
 
 	/// @name Instance linkage.
-	//@{
+	// @{
 
 	/// The instance ids of the neighbors.
 	std::vector<sint32>					_Neighbors;
 
-	/// The neighbor  chains on the border (cf tips.)
+	/// The neighbor chains on the border.
 	std::vector<CLink>					_BorderChainLinks;
-	//@}
+	// @}
 
-	/// The BBox.
-//	NLMISC::CAABBox						_BBox;
+	/// @name Interior instance coolision management.
+	// @{
+
+	/** The edges of the exterior collision mesh, stored in a quad grid.
+		The edges are stored in the instance rather than in the local retriever.
+	*/
+	CEdgeQuad							_ExteriorEdgeQuad;
+
+	// @}
 
 public:
 	/// Default constructor.
@@ -161,7 +176,8 @@ public:
 	uint8								getOrientation() const { return _Orientation; }
 	/// Returns the origin translation of this instance.
 	NLMISC::CVector						getOrigin() const { return _Origin; }
-
+	/// Returns the type of the instance
+	CLocalRetriever::EType				getType() const { return _Type; }
 
 	/// Gets the neighbors.
 	std::vector<sint32>					getNeighbors() const { return _Neighbors; }
@@ -178,9 +194,18 @@ public:
 	/// Returns the number of the edge on the retriever corresponding to the edge on the instance.
 	uint8								getRetrieverEdge(uint8 instanceEdge) const { return (instanceEdge+4-_Orientation)%4; }
 
+	/// Returns the bbox of the instance (using the translation and orientation of the retriever)
+	const NLMISC::CAABBox				&getBBox() const { return _BBox; }
 
 	/// Inits the instance (after a serial for instance.)
 	void								init(const CLocalRetriever &retriever);
+
+	/** Inits the edgequad (only for Interior instances, and only after all the landscape
+	 * instances have been built.
+	 */
+	void								initEdgeQuad(CGlobalRetriever &gr);
+	/// link the edge quad of the interior with the the landscape instances
+	void								linkEdgeQuad(CGlobalRetriever &gr);
 
 	/// Builds the instance.
 	void								make(sint32 instanceId, sint32 retrieverId, const CLocalRetriever &retriever,
@@ -244,6 +269,19 @@ public:
 	}
 	// @}
 
+	/// \name Collision part
+	// @{
+
+	/** Test for collisions with the exterior mesh of an interior instance.
+		This only works for interior instances !!
+		see also testCollision() in CLocalRetriever
+	*/
+	void								testExteriorCollision(CCollisionSurfaceTemp &cst, 
+															  const NLMISC::CAABBox &bboxMoveLocal, 
+															  const NLMISC::CVector2f &transBase, 
+															  const CLocalRetriever &localRetriever) const;
+
+	// @}
 };
 
 }; // NLPACS

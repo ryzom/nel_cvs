@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.19 2001/07/12 14:27:09 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.20 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/debug.h"
 
 #include "pacs/retriever_instance.h"
+#include "pacs/global_retriever.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -65,12 +66,12 @@ void	NLPACS::CRetrieverInstance::resetLinks(uint32 id)
 
 	uint	i;
 	for (i=0; i<_BorderChainLinks.size(); ++i)
-		if (_BorderChainLinks[i].Instance == (sint16)id)
+		if (_BorderChainLinks[i].Instance == (uint16)id)
 		{
-			_BorderChainLinks[i].Instance = -1;
-			_BorderChainLinks[i].BorderChainId = -1;
-			_BorderChainLinks[i].ChainId = -1;
-			_BorderChainLinks[i].SurfaceId = -1;
+			_BorderChainLinks[i].Instance = 0xFFFF;
+			_BorderChainLinks[i].BorderChainId = 0xFFFF;
+			_BorderChainLinks[i].ChainId = 0xFFFF;
+			_BorderChainLinks[i].SurfaceId = 0xFFFF;
 		}
 }
 
@@ -104,6 +105,7 @@ void	NLPACS::CRetrieverInstance::init(const CLocalRetriever &retriever)
 		_NodesInformation[i].Position = CVector2f(pos.x, pos.y);
 	}
 
+	_Type = retriever.getType();
 	_BorderChainLinks.resize(retriever.getBorderChains().size());
 }
 
@@ -123,7 +125,56 @@ void	NLPACS::CRetrieverInstance::make(sint32 instanceId, sint32 retrieverId, con
 	_Orientation = (orientation%4);
 	_Origin = origin;
 
+	_BBox = retriever.getBBox();
+	_BBox.setCenter(_BBox.getCenter()+_Origin);
+
+	if (_Orientation == 1 || _Orientation == 3)
+	{
+		CVector	hs = _BBox.getHalfSize();
+		std::swap(hs.x, hs.y);
+		_BBox.setHalfSize(hs);
+	}
+
 	init(retriever);
+}
+
+//
+void	NLPACS::CRetrieverInstance::initEdgeQuad(NLPACS::CGlobalRetriever &gr)
+{
+	const CLocalRetriever	&lr = gr.getRetriever(_RetrieverId);
+
+	if (lr.getType() != CLocalRetriever::Interior)
+	{
+		nlerror("Attempt to init the edgequad of instance %d whereas local retriever %d is not interior", _InstanceId, _RetrieverId);
+	}
+
+	// build the edge quad
+	_ExteriorEdgeQuad.build(lr.getExteriorMesh(), gr, gr.getInternalCST(),_InstanceId);
+}
+
+void	NLPACS::CRetrieverInstance::linkEdgeQuad(NLPACS::CGlobalRetriever &gr)
+{
+	const CLocalRetriever				&lr = gr.getRetriever(_RetrieverId);
+	const CExteriorMesh					&em = lr.getExteriorMesh();
+
+	const vector<CExteriorEdgeEntry>	&ee = _ExteriorEdgeQuad.getEdgeEntries();
+
+	// here we fill (partially) the _BorderChainLinks table
+	uint	i;
+	for (i=0; i<ee.size(); ++i)
+	{
+		const CExteriorMesh::CEdge	&edge = em.getEdge(ee[i].EdgeId);
+		if (edge.Link != -1)
+		{
+			const CExteriorMesh::CLink		&link = em.getLink(edge.Link);
+
+			CRetrieverInstance::CLink	&borderLink = _BorderChainLinks[link.BorderChainId];
+			borderLink.ChainId = 0xFFFF;		// no opposite chain
+			borderLink.BorderChainId = 0xFFFF;	// idem
+			borderLink.Instance = (uint16)(ee[i].Exterior.RetrieverInstanceId);
+			borderLink.SurfaceId = (uint16)(ee[i].Exterior.SurfaceId);
+		}
+	}
 }
 
 /* Links the current retriever instance to another instance
@@ -163,8 +214,8 @@ void	NLPACS::CRetrieverInstance::link(CRetrieverInstance &neighbor,
 	for (i=0; i<borderChains.size(); ++i)
 	{
 		// if the chain is already linked, just step
-		if (_BorderChainLinks[i].Instance != -1 || _BorderChainLinks[i].BorderChainId != -1 ||
-			_BorderChainLinks[i].ChainId != -1 || _BorderChainLinks[i].SurfaceId != -1)
+		if (_BorderChainLinks[i].Instance != 0xFFFF || _BorderChainLinks[i].BorderChainId != 0xFFFF ||
+			_BorderChainLinks[i].ChainId != 0xFFFF || _BorderChainLinks[i].SurfaceId != 0xFFFF)
 			continue;
 
 		float	bestDist = 1.0f;
@@ -172,8 +223,8 @@ void	NLPACS::CRetrieverInstance::link(CRetrieverInstance &neighbor,
 
 		for (j=0; j<nBorderChains.size(); ++j)
 		{
-			if (neighbor._BorderChainLinks[j].Instance != -1 || neighbor._BorderChainLinks[j].BorderChainId != -1 ||
-				neighbor._BorderChainLinks[j].ChainId != -1 || neighbor._BorderChainLinks[j].SurfaceId != -1)
+			if (neighbor._BorderChainLinks[j].Instance != 0xFFFF || neighbor._BorderChainLinks[j].BorderChainId != 0xFFFF ||
+				neighbor._BorderChainLinks[j].ChainId != 0xFFFF || neighbor._BorderChainLinks[j].SurfaceId != 0xFFFF)
 				continue;
 
 			float	d = (chainTips[i].first-nChainTips[j].second).norm()+(chainTips[i].second-nChainTips[j].first).norm();
@@ -431,6 +482,95 @@ CVectorD	NLPACS::CRetrieverInstance::getDoubleGlobalPosition(const CVector &loca
 
 
 
+// ***************************************************************************
+void	NLPACS::CRetrieverInstance::testExteriorCollision(NLPACS::CCollisionSurfaceTemp &cst, const CAABBox &bboxMove, const CVector2f &transBase, const NLPACS::CLocalRetriever &retriever) const
+{
+	sint	i;
+
+	// 0. select ordered chains in the chainquad.
+	//=====================================
+	sint	nEei= _ExteriorEdgeQuad.selectEdges(bboxMove, cst);
+	// NB: cst.OChainLUT is assured to be full of 0xFFFF after this call (if was right before).
+
+
+	// 1. regroup them in chains. build cst.CollisionChains
+	//=====================================
+	// NB: use cst.OChainLUT to look if a Chain has been inserted before.
+	uint16	*edgeLUT= cst.OChainLUT;
+
+	// bkup where we begin to add chains.
+	uint	firstChainAdded= cst.CollisionChains.size();
+
+	// For all exterioredge entry.
+	for(i=0;i<nEei;i++)
+	{
+		// get the edge entry and the edge
+		uint16						eei = cst.ExteriorEdgeIndexes[i];
+		const CExteriorEdgeEntry	&eee = _ExteriorEdgeQuad.getEdgeEntry(eei);
+
+		// add/retrieve the id in cst.CollisionChains.
+		//=================================
+		uint				ccId;
+		// if never added.
+		if(edgeLUT[eei]==0xFFFF)
+		{
+			// add a new CCollisionChain.
+			ccId= cst.CollisionChains.size();
+			cst.CollisionChains.push_back();
+			// Fill it with default.
+			cst.CollisionChains[ccId].Tested= false;
+			cst.CollisionChains[ccId].ExteriorEdge = true;
+			cst.CollisionChains[ccId].FirstEdgeCollide= 0xFFFFFFFF;
+			cst.CollisionChains[ccId].ChainId= eei;
+			// Fill Left right info.
+			cst.CollisionChains[ccId].LeftSurface = eee.Interior;
+			cst.CollisionChains[ccId].RightSurface = eee.Exterior;
+
+			// store this Id in the LUT of chains.
+			edgeLUT[eei]= ccId;
+		}
+		else
+		{
+			// get the id of this collision chain.
+			ccId= edgeLUT[eei];
+		}
+
+		// add edge collide to the list.
+		//=================================
+		CCollisionChain			&colChain= cst.CollisionChains[ccId];
+
+		CVector2f	p0 = CVector2f(retriever._ExteriorMesh.getEdge(eee.EdgeId).Start);
+		CVector2f	p1 = CVector2f(retriever._ExteriorMesh.getEdge(eee.EdgeId+1).Start);
+
+		// alloc a new edgeCollide.
+		uint32	ecnId= cst.allocEdgeCollideNode();
+		CEdgeCollideNode	&ecn= cst.getEdgeCollideNode(ecnId);
+
+		// append to the front of the list.
+		ecn.Next= colChain.FirstEdgeCollide;
+		colChain.FirstEdgeCollide= ecnId;
+
+		// build this edge.
+		p0+= transBase;
+		p1+= transBase;
+		ecn.make(p0, p1);
+	}
+
+
+
+	// 2. Reset LUT to 0xFFFF.
+	//=====================================
+
+	// for all collisions chains inserted (starting from firstChainAdded), reset LUT.
+	for(i=firstChainAdded; i<(sint)cst.CollisionChains.size(); i++)
+	{
+		uint	ccId= cst.CollisionChains[i].ChainId;
+		edgeLUT[ccId]= 0xFFFF;
+	}
+
+}
+
+
 
 
 void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
@@ -439,6 +579,8 @@ void	NLPACS::CRetrieverInstance::serial(NLMISC::IStream &f)
 	f.serial(_InstanceId, _RetrieverId, _Orientation, _Origin);
 	f.serialCont(_Neighbors);
 	f.serialCont(_BorderChainLinks);
+	f.serial(_BBox);
+//	f.serial(_Type);
 
 	// serialises the number of nodes
 	uint16	totalNodes = _RetrieveTable.size();

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.6 2001/07/24 08:44:19 legros Exp $
+ * $Id: local_retriever.h,v 1.7 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,6 +170,9 @@ protected:
 	/// The surfaces inside the zone.
 	std::vector<CRetrievableSurface>	_Surfaces;
 
+	/// The bbox of the local retriever
+	NLMISC::CAABBox						_BBox;
+
 	/// The tips making links between different chains.
 	std::vector<CTip>					_Tips;
 
@@ -193,7 +196,6 @@ protected:
 
 	/// In case of an interior retriever, the exterior mesh
 	CExteriorMesh						_ExteriorMesh;
-
 
 private:
 	/// The intersection between an ordered chain and the path.
@@ -241,9 +243,9 @@ public:
 	/// retruns the nth chain.
 	const CChain						&getChain(uint n) const { return _Chains[n]; }
 
-	/// Returns the ids of the chains on the edge-th edge of the retriever.
+	/// Returns the ids of the chains on the edges of the retriever.
 	const std::vector<uint16>			&getBorderChains() const { return _BorderChains; }
-	/// Returns the id of the nth chain on the edge-th edge of the retriever.
+	/// Returns the id of the nth chain on the edges of the retriever.
 	uint16								getBorderChain(uint n) const { return _BorderChains[n]; }
 
 	/// Returns the surfaces.
@@ -251,6 +253,14 @@ public:
 	/// Returns the nth surface.
 	const CRetrievableSurface			&getSurface(uint n) const { return _Surfaces[n]; }
 
+	/// Returns the type of the retriever
+	EType								getType() const { return _Type; }
+
+	/// Returns the bbox
+	const NLMISC::CAABBox				&getBBox() const { return _BBox; }
+
+	/// Returns the exterior mesh of the retriever
+	const CExteriorMesh					&getExteriorMesh() const { return _ExteriorMesh; }
 
 	// @}
 
@@ -270,6 +280,16 @@ public:
 	 */
 	sint32								addChain(const std::vector<NLMISC::CVector> &vertices,
 												 sint32 left, sint32 right);
+
+	/// Set the type of the retriever (see EType)
+	void								setType(EType type) { _Type = type; }
+
+	/// Sets the exterior mesh
+	void								setExteriorMesh(const CExteriorMesh &em) { _ExteriorMesh = em; }
+
+	/// Sets the bbox of the retriever
+	void								setBBox(const NLMISC::CAABBox &bbox) { _BBox = bbox; }
+
 
 	/// Builds topologies tables.
 	void								computeTopologies();

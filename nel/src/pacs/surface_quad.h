@@ -1,7 +1,7 @@
 /** \file surface_quad.h
  * 
  *
- * $Id: surface_quad.h,v 1.1 2001/06/08 15:10:18 legros Exp $
+ * $Id: surface_quad.h,v 1.2 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ public:
 	virtual float			getMaxHeight() const { return _MaxHeight; }
 	virtual uint8			getLevel() const { return _Level; }
 	virtual const IQuadNode	*getChild(uint child) const = 0;
-	virtual void			addVertex(NLMISC::CVector &v)
+	virtual void			addVertex(const NLMISC::CVector &v)
 	{
 		if (v.z < _MinHeight)	_MinHeight = v.z;
 		if (v.z > _MaxHeight)	_MaxHeight = v.z;
@@ -136,7 +136,7 @@ public:
 		if (child > 3)	nlerror("Can't set child %d on the branch", child);
 		_Children[child] = node;
 	}
-	void					addVertex(NLMISC::CVector &v);
+	void					addVertex(const NLMISC::CVector &v);
 	bool					check() const;
 
 	void					translate(const NLMISC::CVector &translation)
@@ -173,7 +173,7 @@ public:
 
 	void						clear();
 	void						init(float maxThickness, uint maxLevel, NLMISC::CVector &center, float halfSize=80.0f);
-	void						addVertex(NLMISC::CVector &v);
+	void						addVertex(const NLMISC::CVector &v);
 	void						compile();
 
 	bool						check() const;

@@ -1,7 +1,7 @@
 /** \file exterior_mesh.cpp
  *
  *
- * $Id: exterior_mesh.cpp,v 1.1 2001/07/24 08:44:19 legros Exp $
+ * $Id: exterior_mesh.cpp,v 1.2 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ namespace NLPACS
 		_OrderedEdges.clear();
 
 		uint	i;
-		for (i=0; i<_Edges.size()-1; )
+		for (i=0; i+1<_Edges.size(); )
 		{
 			_OrderedEdges.resize(_OrderedEdges.size()+1);
 			COrderedEdges	&edges = _OrderedEdges.back();
@@ -81,7 +81,7 @@ namespace NLPACS
 				{
 					++i;
 				}
-				while (i<_Edges.size()-1 && isStrictlyLess(_Edges[i].Start, _Edges[i+1].Start));
+				while (i+1<_Edges.size() && isStrictlyLess(_Edges[i].Start, _Edges[i+1].Start));
 			}
 			else
 			{
@@ -90,9 +90,17 @@ namespace NLPACS
 				{
 					++i;
 				}
-				while (i<_Edges.size()-1 && isStrictlyGreater(_Edges[i].Start, _Edges[i+1].Start));
+				while (i+1<_Edges.size() && isStrictlyGreater(_Edges[i].Start, _Edges[i+1].Start));
 			}
 			edges.End = i;
 		}
+	}
+
+	void	CExteriorMesh::serial(NLMISC::IStream &f)
+	{
+		f.serialCont(_Edges);
+		f.serialCont(_OrderedEdges);
+		f.serialCont(_Links);
+		f.serial(_BBox);
 	}
 };

@@ -1,7 +1,7 @@
 /** \file vector_2s.h
  * <File description>
  *
- * $Id: vector_2s.h,v 1.2 2001/07/09 09:15:52 legros Exp $
+ * $Id: vector_2s.h,v 1.3 2001/08/07 14:14:32 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,44 @@ const float		Vector2sAccuracy = 128.0f;
  */
 class CVector2s
 {
-public:
+private:
+	// safely pack a float into a fixed16
+	static sint16	pack(float f)
+	{
+		sint64	res = (sint64)(f*Vector2sAccuracy);
+		if (res>32767 || res<-32768)
+			nlerror("in CVector2s::pack(): Couldn't pack float into sint16 (float=%f, sint=%" NL_I64 "d)", f, res);
+		return (sint16)res;
+	}
+
+	// unpack a fixed16 into a float
+	static float	unpack(sint16 s)
+	{
+		return (float)s/Vector2sAccuracy;
+	}
+
+	// safely cast a fixed64 into a fixed16
+	static sint16	safeCastSint16(sint64 s)
+	{
+#ifdef _DEBUG
+		if (s>32767 || s<-32768)
+			nlerror("in CVector2s::setSafe(): value doesn't fit sint16 (value=%" NL_I64 "d)", s);
+#endif
+		return (sint16)s;
+	}
+
+	// safely cast a premuled float into a fixed16
+	static sint16	safeCastSint16(float f)
+	{
+#ifdef _DEBUG
+		sint64	s = (sint64)f;
+		if (s>32767 || s<-32768)
+			nlerror("in CVector2s::setSafe(): value doesn't fit sint16 (value=%f)", f);
+		return (sint16)s;
+#else
+		return (sint16)f;
+#endif
+	}
 
 public:		// Attributes.
 	sint16	x, y;
@@ -57,35 +94,34 @@ public:		// Methods.
 	CVector2s() {}
 	/// Constructor .
 	CVector2s(sint16 _x, sint16 _y) : x(_x), y(_y) {}
-	/// Constructor .
-//	CVector2s(float _x, float _y) : x((sint16)(_x*256.0)), y((sint16)(_y*256.0)) {}
 	/// Copy Constructor.
 	CVector2s(const CVector2s &v) : x(v.x), y(v.y) {}
-	CVector2s(const NLMISC::CVector &v) : x((sint16)(v.x*Vector2sAccuracy)), y((sint16)(v.y*Vector2sAccuracy)) {}
+	CVector2s(const NLMISC::CVector &v) { pack(v); }
 	//@}
+
 
 	/// @name Base Maths.
 	//@{
-	CVector2s	&operator+=(const CVector2s &v)		{x+=v.x; y+=v.y; return *this;}
-	CVector2s	&operator-=(const CVector2s &v)		{x-=v.x; y-=v.y; return *this;}
-	CVector2s	operator+(const CVector2s &v) const	{return CVector2s(x+v.x, y+v.y);}
-	CVector2s	operator-(const CVector2s &v) const	{return CVector2s(x-v.x, y-v.y);}
-	CVector2s	operator-() const					{return CVector2s(-x, -y);}
+	CVector2s	&operator+=(const CVector2s &v)		{x=safeCastSint16((sint64)v.x+(sint64)x); y=safeCastSint16((sint64)v.y+(sint64)y); return *this;}
+	CVector2s	&operator-=(const CVector2s &v)		{x=safeCastSint16((sint64)v.x-(sint64)x); y=safeCastSint16((sint64)v.y-(sint64)y); return *this;}
+	CVector2s	operator+(const CVector2s &v) const	{return CVector2s(safeCastSint16((sint64)v.x+(sint64)x), safeCastSint16((sint64)v.y+(sint64)y));}
+	CVector2s	operator-(const CVector2s &v) const	{return CVector2s(safeCastSint16((sint64)v.x-(sint64)x), safeCastSint16((sint64)v.y-(sint64)y));}
+	CVector2s	operator-() const					{return CVector2s(safeCastSint16(-(sint64)x), safeCastSint16(-(sint64)y));}
 
-	CVector2s	&operator*=(float f)				{ x = (sint16)(f*x); y = (sint16)(f*y); return *this; }
-	CVector2s	&operator/=(float f)				{ x = (sint16)(f/x); y = (sint16)(f/y); return *this; }
-	CVector2s	operator*(float f) const			{return CVector2s((sint16)(x*f), (sint16)(y*f));}
-	CVector2s	operator/(float f) const			{return CVector2s((sint16)(x/f), (sint16)(y/f));}
+	CVector2s	&operator*=(float f)				{ x = safeCastSint16(f*x); y = safeCastSint16(f*y); return *this; }
+	CVector2s	&operator/=(float f)				{ x = safeCastSint16(f/x); y = safeCastSint16(f/y); return *this; }
+	CVector2s	operator*(float f) const			{return CVector2s(safeCastSint16(x*f), safeCastSint16(y*f));}
+	CVector2s	operator/(float f) const			{return CVector2s(safeCastSint16(x/f), safeCastSint16(y/f));}
 	//@}
 
 	/// @name Advanced Maths.
 	//@{
 	/// Dot product.
-	float	operator*(const CVector2s &v) const		{return (float)((sint32)x*(sint32)v.x + (sint32)y*(sint32)v.y)/(Vector2sAccuracy*Vector2sAccuracy);}
+	float	operator*(const CVector2s &v) const		{return ((float)x*(float)v.x + (float)y*(float)v.y)/(Vector2sAccuracy*Vector2sAccuracy);}
 	/// Return the norm of the vector.
 	float	norm() const							{return (float)sqrt(sqrnorm());}
 	/// Return the square of the norm of the vector.
-	float	sqrnorm() const							{return (float)((sint32)x*(sint32)x + (sint32)y*(sint32)y)/(Vector2sAccuracy*Vector2sAccuracy);}
+	float	sqrnorm() const							{return ((float)x*(float)x + (float)y*(float)y)/(Vector2sAccuracy*Vector2sAccuracy);}
 	/// Normalize the vector.
 	void	normalize()
 	{
@@ -124,10 +160,10 @@ public:		// Methods.
 	void	serial(NLMISC::IStream &f)				{f.serial(x,y);}
 	//@}
 
-	void				pack(const NLMISC::CVector &v)		{ x = (sint16)(v.x*Vector2sAccuracy); y = (sint16)(v.y*Vector2sAccuracy); }
-	void				pack(const NLMISC::CVector2f &v)	{ x = (sint16)(v.x*Vector2sAccuracy); y = (sint16)(v.y*Vector2sAccuracy); }
-	NLMISC::CVector2f	unpack() const						{ return NLMISC::CVector2f((float)x/Vector2sAccuracy, (float)y/Vector2sAccuracy); }
-	NLMISC::CVector		unpack3f() const					{ return NLMISC::CVector((float)x/Vector2sAccuracy, (float)y/Vector2sAccuracy, 0.0f); }
+	void				pack(const NLMISC::CVector &v)		{ x = pack(v.x); y = pack(v.y); }
+	void				pack(const NLMISC::CVector2f &v)	{ x = pack(v.x); y = pack(v.y); }
+	NLMISC::CVector2f	unpack() const						{ return NLMISC::CVector2f(unpack(x), unpack(y)); }
+	NLMISC::CVector		unpack3f(float hintz=0.0f) const	{ return NLMISC::CVector(unpack(x), unpack(y), hintz); }
 };
 
 } // NLPACS

@@ -1,6 +1,6 @@
 /** \file digital.cpp
  *
- * $Id: digital.cpp,v 1.6 2001/01/17 10:14:52 saffray Exp $
+ * $Id: digital.cpp,v 1.7 2001/01/18 10:06:12 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -336,9 +336,12 @@ namespace NLAIAGENT
 		case 0:
 			{
 				CIteratorContener i = param.getIterator();
-				x(((DigitalType *)i++)->getValue());
-				y(((DigitalType *)i++)->getValue());
-				z(((DigitalType *)i++)->getValue());
+				const INombreDefine *o = (const INombreDefine *)i++;
+				x((float)o->getNumber());
+				o = (const INombreDefine *)i++;				
+				y((float)o->getNumber());
+				o = (const INombreDefine *)i++;				
+				z((float)o->getNumber());
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
 				a.Result = NULL;
@@ -357,7 +360,8 @@ namespace NLAIAGENT
 
 		case 2:
 			{
-				x(((DigitalType *)param.get())->getValue());
+				
+				x((float)((const INombreDefine *)param.get())->getNumber());
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
 				a.Result = NULL;
@@ -376,7 +380,7 @@ namespace NLAIAGENT
 
 		case 4:
 			{
-				y(((DigitalType *)param.get())->getValue());
+				y((float)((const INombreDefine *)param.get())->getNumber());
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
 				a.Result = NULL;
@@ -395,7 +399,7 @@ namespace NLAIAGENT
 
 		case 6:
 			{
-				z(((DigitalType *)param.get())->getValue());
+				z((float)((const INombreDefine *)param.get())->getNumber());
 				IObjectIA::CProcessResult a;
 				a.ResultState = processIdle;
 				a.Result = NULL;

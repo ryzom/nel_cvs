@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network_mt.h,v 1.1 2002/08/22 13:20:53 lecroart Exp $
+ * $Id: unified_network_mt.h,v 1.2 2002/10/24 08:39:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,15 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+
+/***************************************************************************
+**** This is the same class as unified network but thread safe but contains
+**** lot of bugs so it was #if 0 and only here "in case of"
+***************************************************************************/
+
+#if 0
+
 
 #ifndef NL_UNIFIED_NETWORD_H
 #define NL_UNIFIED_NETWORD_H
@@ -79,7 +88,7 @@ class CUnifiedNetwork
 
 public:
 
-	/** Returns the singleton instance of the CNetManager class.
+	/** Returns the singleton instance of the CUnifiedNetwork class.
 	 */
 	static CUnifiedNetwork *getInstance ();
 
@@ -340,5 +349,7 @@ private:
 
 
 #endif // NL_UNIFIED_NETWORK_H
+
+#endif // #if 0
 
 /* End of unified_network.h */

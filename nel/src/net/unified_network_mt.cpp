@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network_mt.cpp,v 1.1 2002/08/22 12:09:55 lecroart Exp $
+ * $Id: unified_network_mt.cpp,v 1.2 2002/10/24 08:39:20 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -22,6 +22,14 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+
+/***************************************************************************
+**** This is the same class as unified network but thread safe but contains
+**** lot of bugs so it was #if 0 and only here "in case of"
+***************************************************************************/
+
+#if 0
 
 #include "stdnet.h"
 
@@ -1589,3 +1597,5 @@ NLMISC_COMMAND(msgout, "Send a message to a specified service", "<ServiceName>|<
 }
 
 } // NLNET
+
+#endif // #if 0

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.2 2001/10/08 14:03:41 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.3 2001/10/09 16:36:18 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -52,6 +52,29 @@ public:
 	/// Assignment operator
 	CBitMemStream&	operator=( const CBitMemStream& other ) { CMemStream::operator=( other ); _FreeBits = other._FreeBits; return *this; }
 
+	/** Returns the length (size) of the message, in bytes.
+	 * If isReading(), it is the number of bytes that can be read,
+	 * otherwise it is the number of bytes that have been written.
+	 */
+	virtual uint32	length() const
+	{
+		if ( isReading() )
+		{
+			return lengthR();
+		}
+		else
+		{
+			if ( _Buffer.empty() )
+			{
+				return 0;
+			}
+			else
+			{
+				return lengthS() + 1;
+			}
+		}
+	}
+
 	/// Transforms the message from input to output or from output to input
 	virtual void	invert();
 
@@ -62,9 +85,9 @@ public:
 	virtual void	serialBit( bool& bit );
 
 	/** Serialize only the nbits lower bits of value
-	 * When reading a value from a stream, don't forget to reset your value to zero before calling serial().
+	 * When using this method, always leave resetvalue to true
 	 */
-	virtual void	serial( uint32& value, uint nbits );
+	virtual void	serial( uint32& value, uint nbits, bool resetvalue=true );
 
 	/// Template serialisation (should take the one from IStream)
     template<class T>
@@ -149,9 +172,9 @@ public:
 
 protected:
 
-	uint			_FreeBits; // from 8 downto 1
-};
+	uint			_FreeBits; // 7-6-5-4-3-2-1-8
 
+};
 
 } // NLMISC
 

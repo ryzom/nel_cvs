@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.5 2001/10/16 09:27:14 legros Exp $
+ * $Id: welcome_service.cpp,v 1.6 2001/11/13 12:02:32 lecroart Exp $
  *
  */
 
@@ -300,8 +300,12 @@ public:
 	/// Init the service, load the universal time.
 	void init ()
 	{
-		CUnifiedNetwork::getInstance()->setServiceUpCallback("FS", cbFESConnection, NULL);
-		CUnifiedNetwork::getInstance()->setServiceDownCallback("FS", cbFESDisconnection, NULL);
+		string FrontendServiceName = ConfigFile.getVar ("FrontendServiceName").asString();
+
+		nlinfo ("Waiting frontend service named '%s'", FrontendServiceName.c_str());
+
+		CUnifiedNetwork::getInstance()->setServiceUpCallback(FrontendServiceName, cbFESConnection, NULL);
+		CUnifiedNetwork::getInstance()->setServiceDownCallback(FrontendServiceName, cbFESDisconnection, NULL);
 
 		// add a connection to the LS
 		string LSAddr = ConfigFile.getVar("LSHost").asString() + ":49998";

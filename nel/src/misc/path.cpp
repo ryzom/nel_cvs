@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.109 2004/07/30 15:37:30 boucher Exp $
+ * $Id: path.cpp,v 1.109.4.1 2004/09/29 14:18:24 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -152,7 +152,7 @@ void CPath::getFileListByName(const std::string &extension, const std::string &n
 			for (; first != last; ++ first)
 			{
 				string ext = inst->SSMext.get(first->second.idExt);
-				if (first->first.find(name) != -1 && (ext == extension || extension.empty()))
+				if (first->first.find(name) != string::npos && (ext == extension || extension.empty()))
 				{
 					filenames.push_back(first->first);
 				}
@@ -1232,7 +1232,12 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 
 			if (path2 == sPathOnly)
 				return;
-			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it\n%s\n%s", filename.c_str(), filepath.c_str(), remap, extension.c_str(), path2.c_str(),filepath.c_str(),path2.c_str());
+			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", 
+				filename.c_str(), 
+				filepath.c_str(), 
+				remap, 
+				extension.c_str(), 
+				path2.c_str());
 		}
 	}
 	else
@@ -1659,57 +1664,71 @@ void CFile::checkFileChange (TTime frequency)
 	}
 }
 
-
 static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool failIfExists = false)
 {
 	if (!dest || !src) return false;
 	if (!strlen(dest) || !strlen(src)) return false;	
-#ifdef NL_OS_WINDOWS
-	std::string dosdest = CPath::standardizeDosPath(dest);
-	std::string dossrc = CPath::standardizeDosPath(src);
-
-	return copyFile  ? CopyFile(dossrc.c_str(), dosdest.c_str(), failIfExists) != FALSE
-					 : MoveFile(dossrc.c_str(), dosdest.c_str()) != FALSE;
-#else
 	std::string sdest = CPath::standardizePath(dest,false);
 	std::string ssrc = CPath::standardizePath(src,false);
 
+//	return copyFile  ? CopyFile(dossrc.c_str(), dosdest.c_str(), failIfExists) != FALSE
+//					 : MoveFile(dossrc.c_str(), dosdest.c_str()) != FALSE;
+
 	if(copyFile)
-	  {
+	{
 		FILE *fp1 = fopen(ssrc.c_str(), "rb");
 		if (fp1 == NULL)
-		  {
+		{
 			nlwarning ("PATH: CopyMoveFile error: can't fopen in read mode '%s'", ssrc.c_str());
 			return false;
-		  }
+		}
 		FILE *fp2 = fopen(sdest.c_str(), "wb");
 		if (fp2 == NULL)
-		  {
+		{
 			nlwarning ("PATH: CopyMoveFile error: can't fopen in read write mode '%s'", sdest.c_str());
 			return false;
-		  }
+		}
 		static char buffer [1000];
-		int s;
-		for(s = fread(buffer, 1, sizeof(buffer), fp1); s > 0 && (s = fread(buffer, 1, sizeof(buffer), fp1)) ; fwrite(buffer, 1, s, fp2));
+		size_t s;
+
+		s = fread(buffer, 1, sizeof(buffer), fp1);
+		while (s != 0)
+		{
+			size_t ws = fwrite(buffer, 1, s, fp2);
+			if (ws != s)
+			{
+				nlwarning("Error copying '%s' to '%s', trying to write %u bytes, only %u written",
+					ssrc.c_str(),
+					sdest.c_str(),
+					s,
+					ws);
+			}
+			s = fread(buffer, 1, sizeof(buffer), fp1);
+		}
+
 		fclose(fp1);
 		fclose(fp2);
-	  }
+	}
 	else
-	  {
+	{
+#ifdef NL_OS_WINDOWS
+		if (MoveFile(ssrc.c_str(), sdest.c_str()) == 0)
+#else
 		if (link (ssrc.c_str(), sdest.c_str()) == -1)
-		  {
-			nlwarning ("PATH: CopyMoveFile error: can't link '%s' into '%s'", ssrc.c_str(), sdest.c_str());
+#endif
+		{
+			nlwarning ("PATH: CopyMoveFile error: can't link/move '%s' into '%s'", ssrc.c_str(), sdest.c_str());
 			return false;
-		  }
-
+		}
+#ifndef NL_OS_WINDOWS
 		if (unlink (ssrc.c_str()) == -1)
-		  {
-			nlwarning ("PATH: CopyMoveFile error: can't unlink '%s'", ssrc.c_str());
+		{
+			nlwarning ("PATH: CopyMoveFile error: can't delete/unlink '%s'", ssrc.c_str());
 			return false;
-		  }
-	  }
-	  return true;
-#endif	
+		}
+#endif
+	}
+	return true;
 }
 
 bool CFile::copyFile(const char *dest, const char *src, bool failIfExists /*=false*/)

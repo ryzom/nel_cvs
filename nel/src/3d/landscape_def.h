@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.2 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: landscape_def.h,v 1.3 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,6 +55,10 @@ class	IDriver;
 // NB: RENDER ORDER: CLOUD*LIGHTMAP is done BEFORE ADDITIVE.
 
 
+// ***************************************************************************
+// see CTessFace::updateRefineMerge()
+#define	NL3D_REFINE_MERGE_THRESHOLD		2.0f
+
 
 // ***************************************************************************
 class	CLandscapeGlobals
@@ -71,9 +75,6 @@ public:
 	static	float	RefineThreshold;
 	// Guess.
 	static	float	OORefineThreshold;
-	// Limits for merge/split propagation. See refine(). Defaults:  1.1, 1.9, 2.1.
-	static	float	ChildrenStartComputeLimit;
-	static	float	SelfEndComputeLimit;
 
 
 	// Tile Global Info.
@@ -115,9 +116,6 @@ public:
 	static	CLandscapeVBAllocator	*CurrentFar1VBAllocator;
 	// The current VertexBuffer Allocator for Tile.
 	static	CLandscapeVBAllocator	*CurrentTileVBAllocator;
-
-	// For CLandscape::setRefineModeFrequency()
-	static	uint					PatchRefinePeriod;
 
 
 	// PATCH GLOBAL INTERFACE.  patch must setup them at the begining at refine()/render().

@@ -1,7 +1,7 @@
 /** \file landscape_profile.h
  * Yoyo: for landscape profile only.
  *
- * $Id: landscape_profile.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape_profile.h,v 1.2 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@
 #define		NL3D_PROFILE_LAND
 // Hidden in release.
 #ifdef NL_RELEASE
-#undef		NL3D_PROFILE_LAND
+//#undef		NL3D_PROFILE_LAND
 #endif
 
 #ifdef	NL3D_PROFILE_LAND
@@ -60,6 +60,11 @@ extern	sint		ProfNRefineComputeFaces;
 extern	sint		ProfNRefineLeaves;
 extern	sint		ProfNSplits;
 extern	sint		ProfNMerges;
+// New PriorityList vars.
+extern	sint		ProfNRefineInTileTransition;
+extern	sint		ProfNRefineWithLowDistance;
+extern	sint		ProfNSplitsPass;
+
 
 } // NL3D
 

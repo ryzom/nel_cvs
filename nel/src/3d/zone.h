@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.11 2001/10/02 08:47:00 berenguier Exp $
+ * $Id: zone.h,v 1.12 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -387,8 +387,6 @@ public:
 	// NB: for all those function, CTessFace static rendering context must be setup.
 	/// Clip a zone. To know if must be rendered etc... A zone is IN if in BACK of at least one plane of the pyramid.
 	void			clip(const std::vector<CPlane>	&pyramid);
-	/// Refine a zone (if needed).
-	void			refine();
 	/// PreRender a zone (if needed).
 	void			preRender();
 	// release Far render pass/reset Tile/Far render. Delete also VB, and FaceVectors
@@ -396,7 +394,6 @@ public:
 	/// For changing TileMaxSubdivision. force tesselation to be under tile.
 	void			forceMergeAtTileLevel();
 
-	
 	/// force Refine a zone.
 	void			refineAll();
 	/// This is especially for Pacs. exlude a patch to be refineAll()ed.
@@ -484,11 +481,6 @@ private:
 	friend	class CTessFace;
 	// Should do this, for texture mgt.
 	friend	class CPatch;
-
-	// Local info for CTessFace tiles. CZone must setup them at the begining at refine()/render().
-	// Should we compute the error metric part for tile?? Stored by Zone, as a pre-pass because test is made by patch.
-	bool			ComputeTileErrorMetric;
-	// REMIND: can't have any patch/zone global, since a propagated split()/updateErrorMetric() can arise.
 
 	sint			ClipResult;
 	enum	TClipResult {ClipIn= 0, ClipOut= 1, ClipSide= 2};

@@ -456,6 +456,14 @@ SOURCE=.\3d\tess_block.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\tess_face_priority_list.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\tess_face_priority_list.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\tess_list.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file landscape_profile.cpp
  * <File description>
  *
- * $Id: landscape_profile.cpp,v 1.3 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape_profile.cpp,v 1.4 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,9 @@ sint		ProfNRefineComputeFaces;
 sint		ProfNRefineLeaves;
 sint		ProfNSplits;
 sint		ProfNMerges;
-
+// New PriorityList vars.
+sint		ProfNRefineInTileTransition;
+sint		ProfNRefineWithLowDistance;
+sint		ProfNSplitsPass;
 
 } // NL3D

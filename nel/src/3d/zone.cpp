@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.54 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: zone.cpp,v 1.55 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,6 @@ bool			CPatchInfo::getCornerSmoothFlag(uint corner) const
 // ***************************************************************************
 CZone::CZone()
 {
-	ComputeTileErrorMetric= false;
 	ZoneId= 0;
 	Compiled= false;
 	Landscape= NULL;
@@ -814,12 +813,6 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 		}
 	}
 
-	// Fill computeTileErrorMetric.
-	CBSphere		zonesphere(ZoneBB.getCenter(), ZoneBB.getRadius());
-	if(zonesphere.intersect(CLandscapeGlobals::TileFarSphere))
-		ComputeTileErrorMetric= true;
-	else
-		ComputeTileErrorMetric= false;
 
 	// Easy Clip  :)
 	if(Patchs.size()==0)
@@ -938,74 +931,6 @@ static	void	checkTess()
 
 
 // ***************************************************************************
-// DebugYoyo.
-//volatile sint pipo1;
-//volatile sint pipo2;
-void			CZone::refine()
-{
-	nlassert(Compiled);
-	// Must be 2^X-1.
-	static const	sint	hideRefineFreq= 15;
-	sint	showRefineFreq= CLandscapeGlobals::PatchRefinePeriod-1;
-
-	// DebugYoyo.
-	// For the monkey bind test.
-	/*extern sint numFrames;
-	pipo1=(rand()>>12)&1;
-	pipo2=(rand()>>12)&1;
-	//if(pipo1 && numFrames>1360)
-	if(true)
-	{
-		TZoneMap	pipoMap;
-		pipoMap[ZoneId]= this;
-		bindPatch(pipoMap, Patchs[0], PatchConnects[0]);
-	}*/
-
-	
-	// Force refine of invisible zones only every 8 times.
-	if(ClipResult==ClipOut && (CLandscapeGlobals::CurrentDate & hideRefineFreq)!=(ZoneId & hideRefineFreq))
-		return;
-	// Fuck stlport....
-	if(Patchs.size()==0)
-		return;
-
-	CPatch		*pPatch= &(*Patchs.begin());
-	if(ClipResult==ClipSide)
-	{
-		// Force refine of invisible patchs only every 16 times.
-		// NB: do this only if zone is clipSide
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-		{
-			// "ZoneId+n", because there is only 70 approx patchs per zone. doing this may stabilize framerate.
-			if(pPatch->isClipped())
-			{
-				if( (CLandscapeGlobals::CurrentDate & hideRefineFreq)!=((ZoneId+n) & hideRefineFreq) )
-					continue;
-			}
-			// Visible.
-			else
-			{
-				if( (CLandscapeGlobals::CurrentDate & showRefineFreq)!=((ZoneId+n) & showRefineFreq) )
-					continue;
-			}
-			// If really want to refine, do it.
-			pPatch->refine();
-		}
-	}
-	else
-	{
-		// Else refine ALL patchs (even those which may be invisible).
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-		{
-			if( (CLandscapeGlobals::CurrentDate & showRefineFreq)==((ZoneId+n) & showRefineFreq) )
-				pPatch->refine();
-		}
-	}
-
-}
-
-
-// ***************************************************************************
 void			CZone::excludePatchFromRefineAll(uint patch, bool exclude)
 {
 	nlassert(Compiled);
@@ -1028,7 +953,6 @@ void			CZone::refineAll()
 		return;
 
 	// Do a dummy clip.
-	ComputeTileErrorMetric= true;
 	CPatch		*pPatch= &(*Patchs.begin());
 	sint n;
 	for(n=(sint)Patchs.size();n>0;n--, pPatch++)

@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.6 2001/10/08 15:02:30 corvazier Exp $
+ * $Id: patch_render.cpp,v 1.7 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -920,7 +920,7 @@ inline void		CPatch::fillFar0VertexVB(CTessFarVertex *pVert)
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
 		geomInfo.U= pVert->Src->MaxFaceSize * CLandscapeGlobals::OORefineThreshold;
-		geomInfo.V= pVert->Src->MaxNearLimit * CLandscapeGlobals::RefineThreshold;
+		geomInfo.V= pVert->Src->MaxNearLimit;
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar0VBInfo.GeomInfoOff)= geomInfo;
 
 		// v[11]== EndPos - StartPos
@@ -981,7 +981,7 @@ inline void		CPatch::fillFar1VertexVB(CTessFarVertex *pVert)
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
 		geomInfo.U= pVert->Src->MaxFaceSize * CLandscapeGlobals::OORefineThreshold;
-		geomInfo.V= pVert->Src->MaxNearLimit * CLandscapeGlobals::RefineThreshold;
+		geomInfo.V= pVert->Src->MaxNearLimit;
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentFar1VBInfo.GeomInfoOff)= geomInfo;
 
 		// v[11]== EndPos - StartPos
@@ -1037,7 +1037,7 @@ inline void		CPatch::fillTileVertexVB(CTessNearVertex *pVert)
 		// v[10]== GeomInfo.
 		static CUV	geomInfo;
 		geomInfo.U= pVert->Src->MaxFaceSize * CLandscapeGlobals::OORefineThreshold;
-		geomInfo.V= pVert->Src->MaxNearLimit * CLandscapeGlobals::RefineThreshold;
+		geomInfo.V= pVert->Src->MaxNearLimit;
 		*(CUV*)(CurVBPtr + CLandscapeGlobals::CurrentTileVBInfo.GeomInfoOff)= geomInfo;
 
 		// v[11]== EndPos - StartPos

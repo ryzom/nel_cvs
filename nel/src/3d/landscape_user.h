@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.5 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: landscape_user.h,v 1.6 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,8 +116,6 @@ public:
 	virtual	void	setTileMaxSubdivision (uint tileDiv);
 	/// Get Maximum Tile subdivision.
 	virtual	uint 	getTileMaxSubdivision ();
-	virtual	void	setRefinePeriod(uint period);
-	virtual	uint	getRefinePeriod() const;
 	// @}
 
 

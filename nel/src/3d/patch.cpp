@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.66 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: patch.cpp,v 1.67 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -985,8 +985,6 @@ void			CPatch::makeRoots()
 	// Son0.
 	Son0->Patch= this;
 	Son0->Level= 0;
-	// Roots always need to be computed, unless if their sons say "NO!"
-	Son0->NeedCompute= true;
 	if(OrderS>=OrderT)
 	{
 		Son0->VBase= b;
@@ -1021,8 +1019,6 @@ void			CPatch::makeRoots()
 	// Son1.
 	Son1->Patch= this;
 	Son1->Level= 0;
-	// Roots always need to be computed, unless if their sons say "NO!"
-	Son1->NeedCompute= true;
 	if(OrderS>=OrderT)
 	{
 		Son1->VBase= d;
@@ -1167,48 +1163,12 @@ CVector			CPatch::computeVertex(float s, float t) const
 		return patch->eval(s,t);
 	}
 }
-// ***************************************************************************
-void			CPatch::refine()
-{
-	// Default: we are not in TileFarTransition. This can only be true if Zone->ComputeTileErrorMetric==true.
-	TileFarTransition= false;
-	if(Zone->ComputeTileErrorMetric)
-	{
-		// Must test more precisely...
-		if(BSphere.intersect(CLandscapeGlobals::TileFarSphere))
-			ComputeTileErrorMetric= true;
-		else
-			ComputeTileErrorMetric= false;
-		// If true, must test if we are in transition, or totaly IN.
-		if(ComputeTileErrorMetric)
-		{
-			// Do the zone include ALL the patch???
-			if(!CLandscapeGlobals::TileNearSphere.include(BSphere))
-				TileFarTransition= true;
-		}
-	}
-	else
-		ComputeTileErrorMetric= false;
-	nlassert(Son0);
-	nlassert(Son1);
-	Son0->refine();
-	Son1->refine();
-}
 
 
 // ***************************************************************************
 void			CPatch::refineAll()
 {
-	if(Zone->ComputeTileErrorMetric)
-	{
-		// Must test more precisely...
-		if(BSphere.intersect(CLandscapeGlobals::TileFarSphere))
-			ComputeTileErrorMetric= true;
-		else
-			ComputeTileErrorMetric= false;
-	}
-	else
-		ComputeTileErrorMetric= false;
+	// refineAll.
 	nlassert(Son0);
 	nlassert(Son1);
 	Son0->refineAll();

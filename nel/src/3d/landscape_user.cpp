@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.9 2001/10/09 13:57:38 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.10 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,19 +209,6 @@ CVector		CLandscapeUser::getHeightFieldDeltaZ(float x, float y) const
 void		CLandscapeUser::setHeightField(const CHeightMap &hf)
 {
 	_Landscape->Landscape.setHeightField(hf);
-}
-
-
-//****************************************************************************
-void	CLandscapeUser::setRefinePeriod(uint period)
-{
-	_Landscape->Landscape.setRefinePeriod(period);
-}
-
-//****************************************************************************
-uint	CLandscapeUser::getRefinePeriod() const
-{
-	return _Landscape->Landscape.getRefinePeriod();
 }
 
 

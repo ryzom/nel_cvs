@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.16 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: landscape.h,v 1.17 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@
 #include "nel/misc/block_memory.h"
 #include "3d/landscapevb_allocator.h"
 #include "3d/landscape_face_vector_manager.h"
+#include "3d/tess_face_priority_list.h"
 
 #include <map>
 
@@ -196,12 +197,6 @@ public:
 	/// Enable the noise or not. NB: only new tesselation computed is modified, so you should call it only at init time.
 	void			setNoiseMode(bool enabled);
 	bool			getNoiseMode() const;
-
-	/** set the refine Mode frequency. raised to the nearest power of 2 (eg: 1,2,4,8...). 4 by default.
-	 *	The more is the Period, the more you'll get pops in landscape tesselation.
-	 */
-	void			setRefinePeriod(uint period);
-	uint			getRefinePeriod() const;
 
 	// \todo yoyo: other landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CLandscapeGlobals statics.
@@ -455,7 +450,6 @@ private:
 	bool			_RefineMode;
 	float			_FarTransition;
 	uint			_TileMaxSubdivision;
-	uint			_RefinePeriod;
 	// For VertexProgram. true if change has occured in threshold since the last render().
 	float			_VPThresholdChange;
 
@@ -640,12 +634,15 @@ private:
 
 	/// Priority list.
 	// @{
-	/// The priority list of faces to compute their refine.
-	// TODO_PLIST
-	//CTessFacePriorityList		_RefinePriorityList;
+	/// The priority list of faces which may need to split
+	CTessFacePriorityList		_SplitPriorityList;
+	/// The priority list of faces which may need to merge
+	CTessFacePriorityList		_MergePriorityList;
 	/// OldRefineCenter setuped in prec refine()
 	CVector						_OldRefineCenter;
-	bool						_RefineCenterSetuped;
+	bool						_OldRefineCenterSetuped;
+	/// newTessFace() append the face to _RootNewLeaves.
+	CTessFacePListNode			_RootNewLeaves;
 	// @}
 
 

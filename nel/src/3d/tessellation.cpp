@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.55 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.56 2001/10/10 15:48:38 berenguier Exp $
  *
  */
 
@@ -105,17 +105,16 @@ void		CTessVertex::computeGeomPos()
 	// Compute ErrorMetric modified by TileNear transition, only if TileNear transition.
 	if( sqrDist< CLandscapeGlobals::TileDistFarSqr )
 	{
-		float	maxNearLimit= MaxNearLimit * CLandscapeGlobals::RefineThreshold;
 		// Soft optim: do it only if necessary, ie result of max(errorMetric, errorMetricModified) is foreseeable here.
-		if(pgeom < maxNearLimit)
+		if(pgeom < MaxNearLimit)
 		{
-			float	f= (sqrDist - CLandscapeGlobals::TileDistNearSqr) * CLandscapeGlobals::OOTileDistDeltaSqr;
+			float	f= (CLandscapeGlobals::TileDistFarSqr - sqrDist) * CLandscapeGlobals::OOTileDistDeltaSqr;
 			clamp(f, 0, 1);
-			f= 1-f;
 			// ^4 gives better smooth result
-			f= sqr(f);	f= sqr(f);
+			f= sqr(f);
+			f= sqr(f);
 			// interpolate the errorMetric
-			pgeom= maxNearLimit*f + pgeom*(1-f);
+			pgeom= MaxNearLimit*f + pgeom*(1-f);
 		}
 	}
 
@@ -155,12 +154,8 @@ CTessFace::CTessFace()
 	FBase=FLeft=FRight= NULL;
 	Father=SonLeft=SonRight= NULL;
 	Level=0;
-	ProjectedSizeDate= 0;
+	ErrorMetricDate= 0;
 	// Size, Center, paramcoord undetermined.
-
-	// By default, a new face (freshly splitted) don't compute em.
-	// Exception: the root faces...
-	NeedCompute= false;	
 
 	TileMaterial= NULL;
 	// Very important (for split reasons). Init Tilefaces to NULL.
@@ -209,7 +204,10 @@ float			CTessFace::computeNearLimit()
 	// <=> ProjectedSize= (2^WantedLevel) * RefineThreshold / (2^Level);
 	// <=> ProjectedSize= (1<<WantedLevel) * RefineThreshold / (1<<Level);
 	// UnOptimised formula: limit= (1<<Patch->TileLimitLevel) / (1<<Level);
-	return (1<<Patch->TileLimitLevel) * (OO32768*(32768>>Level));
+	nlassert(Level<=20);
+	static const uint	BigValue= 1<<20;
+	static const float	OOBigValue= 1.0f / BigValue;
+	return (1<<Patch->TileLimitLevel) * (OOBigValue*(BigValue>>Level));
 }
 
 
@@ -233,7 +231,6 @@ void			CTessFace::computeTileErrorMetric()
 	{
 		float	nearLimit;
 		nearLimit= CLandscapeGlobals::RefineThreshold * computeNearLimit();
-		nlassert(Level<14);
 		// If we are not so subdivided.
 		if(ErrorMetric<nearLimit)
 		{
@@ -244,11 +241,11 @@ void			CTessFace::computeTileErrorMetric()
 			else
 			{
 				// Smooth transition to the nearLimit of tesselation.
-				float	f= (sqrdist- CLandscapeGlobals::TileDistNearSqr) * CLandscapeGlobals::OOTileDistDeltaSqr;
+				float	f= ( CLandscapeGlobals::TileDistFarSqr - sqrdist ) * CLandscapeGlobals::OOTileDistDeltaSqr;
 				// sqr gives better result, by smoothing more the start of transition.
-				f= sqr((1-f));
 				f= sqr(f);
-				ErrorMetric= nearLimit*f + ErrorMetric*(1-f);
+				f= sqr(f);
+				ErrorMetric= ErrorMetric + (nearLimit-ErrorMetric)*f;
 
 				// If threshold is big like 0.5, transition is still hard, and pops occurs. But The goal is 
 				// 0.005 and less, so don't bother. 
@@ -262,7 +259,7 @@ void			CTessFace::computeTileErrorMetric()
 void		CTessFace::updateErrorMetric()
 {
 	// If already updated for this pass...
-	if(ProjectedSizeDate>= CLandscapeGlobals::CurrentDate)
+	if(ErrorMetricDate>= CLandscapeGlobals::CurrentDate)
 		return;
 
 	CVector	viewdir= SplitPoint - CLandscapeGlobals::RefineCenter;
@@ -270,44 +267,56 @@ void		CTessFace::updateErrorMetric()
 
 	// trivial formula.
 	//-----------------
-	ErrorMetric= ProjectedSize= Size/ sqrdist;
+	ErrorMetric= Size/ sqrdist;
 
 
 	// Hoppe97 formula:  k²= a² * ("v-e"² - ((v-e).n)²) / "v-e"^4.
 	//-----------------
-	// Here, we have:
-	// Size==a², where a is the surface error term.  (correct???)
-	// k²==em (correct???).
-	// v-e==viewdir.
-	// "v-e"²== sqrdist.
-	// n==Normal.
-	/*float	viewscal= viewdir*Normal;
-	em= Size * (sqrdist - viewscal*viewscal) / (sqrdist*sqrdist);
-	*/
-	// Results: Lot of pops!! because this is not uniform, and sons may have a greater error than father.
-	// And to complicate updateErrorMetric, may not be a good idea.
-	// think to it...
-
-
-	// Yoyo test. Same as Hoppe97, but with increased impact of perpendicular factor.
-	//----------------------------
-	/*
-	float	perpfact= (sqrdist - sqr(viewscal)) / sqrdist;
-	// perpfact E [0,1].  (since "Normal"==1.).
-	perpfact= pow(perpfact,2);			// rise it to N.
-	em= Size * perpfact / sqrdist;		// remark the similarity with trivial formula...
-	*/
+	// Can't do it because geomorph is made on Graphic card, so the simplier is the better.
 
 
 	// TileMode Impact.
 	//-----------------
 	// TileMode Impact. We must split at least at TileLimitLevel.
-	if(Patch->ComputeTileErrorMetric && Level<Patch->TileLimitLevel)
+	if(Level<Patch->TileLimitLevel)
 	{
 		computeTileErrorMetric();
 	}
 
-	ProjectedSizeDate= CLandscapeGlobals::CurrentDate;
+	ErrorMetricDate= CLandscapeGlobals::CurrentDate;
+}
+
+
+// ***************************************************************************
+inline float	CTessFace::computeTileEMForUpdateRefine(float distSplitPoint, float distMinFace, float nearLimit)
+{
+	float	ema;
+	// Normal ErrorMetric simulation.
+	ema= Size / sqr(distSplitPoint);
+
+	// TileErrorMetric simulation.
+	if(distMinFace < CLandscapeGlobals::TileDistFar)
+	{
+		// If we are not so subdivided.
+		if( ema<nearLimit )
+		{
+			if( distMinFace< CLandscapeGlobals::TileDistNear)
+			{
+				ema= nearLimit;
+			}
+			else
+			{
+				// Smooth transition to the nearLimit of tesselation.
+				float	f= ( CLandscapeGlobals::TileDistFarSqr - sqr(distMinFace) ) * CLandscapeGlobals::OOTileDistDeltaSqr;
+				// sqr gives better result, by smoothing more the start of transition.
+				f= sqr(f);
+				f= sqr(f);
+				ema= ema + (nearLimit-ema)*f;
+			}
+		}
+	}
+
+	return ema * CLandscapeGlobals::OORefineThreshold;
 }
 
 
@@ -1189,13 +1198,8 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 		}
 	}
 
-
-	// 6. Fathers must compute their errormetric.
-	//-------------------------------------------
-	NeedCompute=true;
-
 	
-	// 7. Must remove father from rdr list, and insert sons.
+	// 6. Must remove father from rdr list, and insert sons.
 	//------------------------------------------------------
 	// UGLY REFCOUNT SIDE EFFECT: do the append first.
 	Patch->appendFaceToRenderList(f0l);
@@ -1204,6 +1208,26 @@ void		CTessFace::splitRectangular(bool propagateSplit)
 	Patch->appendFaceToRenderList(f1r);
 	Patch->removeFaceFromRenderList(f0);
 	Patch->removeFaceFromRenderList(f1);
+
+
+	// 7. Update priority list.
+	//------------------------------------------------------
+	// Since we are freshly splitted, unlink from any list, and link to the MergePriorityList, because must look 
+	// now when should merge.
+	Patch->getLandscape()->_MergePriorityList.insert(0, f0);
+	Patch->getLandscape()->_MergePriorityList.insert(0, f1);
+
+	// Since we are split, no need to test father for merge, because it cannot!
+	if(f0->Father)
+	{
+		// remove father from any priority list.
+		f0->Father->unlinkInPList();
+	}
+	if(f1->Father)
+	{
+		// remove father from any priority list.
+		f1->Father->unlinkInPList();
+	}
 
 }
 
@@ -1451,18 +1475,27 @@ void		CTessFace::split(bool propagateSplit)
 		nlassert(SonLeft->isLeaf() && SonRight->isLeaf());
 	}
 
-	// 6. Fathers must compute their errormetric.
-	//-------------------------------------------
-	NeedCompute=true;
 
-
-	// 7. Must remove father from rdr list, and insert sons.
+	// 6. Must remove father from rdr list, and insert sons.
 	//------------------------------------------------------
 	// UGLY REFCOUNT SIDE EFFECT: do the append first.
 	Patch->appendFaceToRenderList(SonLeft);
 	Patch->appendFaceToRenderList(SonRight);
 	Patch->removeFaceFromRenderList(this);
 
+
+	// 7. Update priority list.
+	//------------------------------------------------------
+	// Since we are freshly splitted, unlink from any list, and link to the MergePriorityList, because must look 
+	// now when should merge.
+	Patch->getLandscape()->_MergePriorityList.insert(0, this);
+
+	// Since we are split, no need to test father for merge, because it cannot!
+	if(Father)
+	{
+		// remove father from any priority list.
+		Father->unlinkInPList();
+	}
 }
 
 // ***************************************************************************
@@ -1657,8 +1690,24 @@ void		CTessFace::doMerge()
 		}
 	}
 
-	// Since I am merged, I should compute myself.
-	NeedCompute= true;
+
+	// Update priority list.
+	//------------------------------------------------------
+	// Since we are freshly merged, unlink from any list, and link to the SplitPriorityList, because must look 
+	// now when we should split again.
+	Patch->getLandscape()->_SplitPriorityList.insert(0, this);
+
+	// since we are now merged maybe re-insert father in priority list.
+	if(Father)
+	{
+		nlassert(!Father->isLeaf());
+		// If sons of father are both leaves (ie this, and the other (complexe case if rectangle) )
+		if( Father->SonLeft->isLeaf() && Father->SonRight->isLeaf() )
+		{
+			Patch->getLandscape()->_MergePriorityList.insert(0, Father);
+		}
+	}
+
 }
 
 
@@ -1682,126 +1731,6 @@ bool		CTessFace::merge()
 
 	return true;
 }
-
-// ***************************************************************************
-void		CTessFace::refine()
-{
-	NL3D_PROFILE_LAND_ADD(ProfNRefineFaces, 1);
-	NL3D_PROFILE_LAND_ADD(ProfNRefineLeaves, isLeaf()?1:0);
-
-	/*
-		if(ps<RefineThreshold), the face must be merged (ie have no leaves).
-		if(ps E [RefineThreshold, RefineTreshold*2]), the face must be splitted (ave leaves), and is geomorphed.
-		if(ps>RefineThreshold*2), the face is fully splitted/geomoprhed (tests reported on sons...).
-	*/
-
-	// In Tile/Far Transition zone, force the needCompute.
-	// This is important, since the rule "the error metric of the son is appoximately the half of 
-	// the father" is no more true, and then a son should be tested as soon as possible.
-	if(Patch->TileFarTransition && Level<Patch->TileLimitLevel)
-	{
-		NeedCompute= true;
-	}
-
-
-	if(NeedCompute)
-	{
-		NL3D_PROFILE_LAND_ADD(ProfNRefineComputeFaces, 1);
-
-		updateErrorMetric();
-		float	ps=ErrorMetric;
-		ps*= CLandscapeGlobals::OORefineThreshold;
-		// 1.0f is the point of split().
-		// 2.0f is the end of geomorph.
-
-
-		// Test split/merge.
-		//---------------------
-		// If wanted, not already done, and limit not reached, split().
-		if(isLeaf())
-		{
-			if(ps>1.0f && Level< (Patch->TileLimitLevel + CLandscapeGlobals::TileMaxSubdivision) )
-				split();
-		}
-		else
-		{
-			// Else, if splitted, must merge (if not already the case).
-			if(ps<1.0f)
-			{
-				// Merge only if agree, and neighbors agree.
-				// canMerge() test all the good thing: FBase==CantMergeFace, or this is rectangular etc...
-				// The test is propagated to neighbors.
-				if(canMerge(true))
-				{
-					merge();
-				}
-			}
-		}
-
-
-		// Update NeedCompute.
-		//-----------------------
-
-		// If father should compute himself for geomoprh....
-		// NB: this is done BEFORE ps may be modified. ie, ps==ErrorMetric, not ProjectedSize.
-		if(Father && ps<CLandscapeGlobals::SelfEndComputeLimit*0.5)				// 2.1/2
-		{
-			// Force him to do it. This is done too in doMerge().
-			Father->NeedCompute= true;
-		}
-
-		if(isLeaf())
-		{
-			// If leaf and below a merge(), I may not need to compute.
-			if(Father && ps<CLandscapeGlobals::ChildrenStartComputeLimit*0.5)	// 1.9/2
-			{
-				NeedCompute= false;
-				// Remark: see below, Father IS NeedComputed (because SelfEndComputeLimit>ChildrenStartComputeLimit).
-			}
-		}
-		else
-		{
-			// If SonLeft reach the tile level, we must test ps with ProjectedSize, not ErrorMetric...
-			// Why? because of computeTileErrorMetric() which makes a false (too big) value.
-			// Tiles faces ErrorMetric do NOT computeTileErrorMetric(), so this test.
-			if(SonLeft->Level>=Patch->TileLimitLevel)
-				ps= ProjectedSize*CLandscapeGlobals::OORefineThreshold;
-
-			// We may force our sons to compute, only if they are not already at MaxSubdivision.
-			if(SonLeft->Level<Patch->TileLimitLevel+CLandscapeGlobals::TileMaxSubdivision)
-			{
-				if(ps>CLandscapeGlobals::ChildrenStartComputeLimit)				// 1.9
-				{
-					// The sons may split soon.
-					SonLeft->NeedCompute= true;
-					SonRight->NeedCompute= true;
-
-					// We may decide to stop compute us, because the geomorph is ended.
-					// Do this only if sons Compute themselves (because this is them which update NeedCompute of us.
-					if(ps>CLandscapeGlobals::SelfEndComputeLimit)				// 2.1
-					{
-						NeedCompute=false;
-					}
-					// Remark: see below, Sons ARE NeedComputed (because SelfEndComputeLimit>ChildrenStartComputeLimit).
-				}
-			}
-			// NB: NeedCompute is automatically set to true in split().
-		}
-	}
-
-	// Recurs.
-	//-----------------------
-	if(SonLeft)
-	{
-		SonLeft->refine();
-		SonRight->refine();
-	}
-
-
-	// Unstable case: the child say "NeedCompute=false", but his father say "child->NeedCompute=true".
-	// OK: At the next refine, the child will be processed again...
-}
-
 
 // ***************************************************************************
 void		CTessFace::refineAll()
@@ -1859,6 +1788,368 @@ void		CTessFace::refineAll()
 		SonRight->refineAll();
 	}
 
+}
+
+
+// ***************************************************************************
+// Some updateRefine***() Doc:
+
+// Split or merge, and meaning of errorMetric:
+/*
+	if(errorMetric<RefineThreshold), the face must be merged (ie have no leaves).
+	if(errorMetric E [RefineThreshold, RefineTreshold*2]), the face must be splitted (ave leaves), and is geomorphed.
+	if(errorMetric>RefineThreshold*2), the face is fully splitted/geomoprhed.
+*/
+
+
+// Compute distNormalSplitMerge: distance from refineCenter to normal split/merge (ie without tile transition):
+/* 
+	normal ErrorMetric formula is:
+		em = Size*OORefineThreshold/ dist^2;	with dist == (SplitPoint - CLandscapeGlobals::RefineCenter).norm()
+	So inverse this function and we have:
+		dist= sqrt(Size*OORefineThreshold/em).
+	Split or merge is when em==1, so 
+		distSplitMerge= sqrt(Size*OORefineThreshold)
+*/
+
+
+// Compute distTileTransSplitMerge.
+/* When we are sure that CLandscapeGlobals::TileDistNear < distMinFace < CLandscapeGlobals::TileDistFar, 
+	the clamp in the original formula is skipped
+	
+	So the TileErrorMetric formula is:
+
+	{
+		ema= Sife*OORefineThreshold / distSP^2.
+		f= (TileDistFar^2 - distMinFace^2) * OOTileDeltaDist^2
+		f= f ^ 4.		// no clamp. see above.
+		emb= NL*f + ema*(1-f)
+		emFinal= max(ema, emb).
+	}
+
+	The problem is that the formula is too complex (degree 8 equation). 
+	So search for the result recursively.
+*/
+
+
+// ***************************************************************************
+void		CTessFace::updateRefineSplit()
+{
+	NL3D_PROFILE_LAND_ADD(ProfNRefineFaces, 1);
+
+	nlassert(Patch);
+	// The face must be not splitted, because tested for split.
+	nlassert(isLeaf());
+
+	/*
+		NB: see above for some updateRefine*** doc.
+	*/
+
+	// Test for Split.
+	//-----------------------
+	bool	splitted= false;
+	{
+		updateErrorMetric();
+		float	ps=ErrorMetric;
+		ps*= CLandscapeGlobals::OORefineThreshold;
+		// 1.0f is the point of split().
+		// 2.0f is the end of geomorph.
+
+
+		// Test split.
+		//---------------------
+		// If wanted and limit not reached, split().
+		if(ps>1.0f && Level< (Patch->TileLimitLevel + CLandscapeGlobals::TileMaxSubdivision) )
+		{
+			split();
+
+			// if split ok
+			if(!isLeaf())
+			{
+				splitted= true;
+			}
+		}
+	}
+
+	// If splitted, then insertion in Landscape->MergePriorityList at 0 has been done. so nothing to update.
+	// Else, must compute when whe should re-test.
+	if(!splitted)
+	{
+		// the face is not splitted here.
+		nlassert(isLeaf());
+
+		// Insert the face in the priority list.
+		//-----------------------
+		float	minDeltaDistToUpdate;
+
+
+		// The distance of SplitPoint to center.
+		float	distSplitPoint= (SplitPoint - CLandscapeGlobals::RefineCenter).norm();
+		// The distance where we should split/merge. see updateRefin() doc.
+		float	distNormalSplitMerge= (float)sqrt(Size*CLandscapeGlobals::OORefineThreshold);
+
+
+		// If the face is at its max subdivision
+		if(Level>=Patch->TileLimitLevel+CLandscapeGlobals::TileMaxSubdivision)
+		{
+			// special case: the face do not need to be tested for splitting, because Max subdivision reached.
+			// Hence just unlink from any list, and return.
+			unlinkInPList();
+			return;
+		}
+		else if(Level>=Patch->TileLimitLevel)
+		{
+			// Always normal ErrorMetric. Because Faces at Tile level decide to split or merge their sons independently 
+			// of "Tile ErrorMetric".
+			// compute distance to split.
+			minDeltaDistToUpdate= distSplitPoint - distNormalSplitMerge;
+		}
+		else
+		{
+			// Compute Distance of the face from RefineCenter. It is the min of the 3 points, as in computeTileErrorMetric().
+			float	s0= (VBase->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+			float	s1= (VLeft->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+			float	s2= (VRight->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+			float	distMinFace= (float)sqrt( minof(s0, s1, s2) );
+
+			// compute the delta distance to the normal split point. See above for doc.
+			float	normalEMDeltaDist;
+			normalEMDeltaDist= distSplitPoint - distNormalSplitMerge;
+
+
+			/* 
+			There is 3 possibles cases, according to level, and the distances minFaceDist:
+			*/
+			///	TileDistFar to +oo.
+			if( distMinFace > CLandscapeGlobals::TileDistFar )
+			{
+				// normal geomorph. Any face compute the distance to the SplitPoint, and take min with distance to
+				// the TileDistFar sphere. 
+				minDeltaDistToUpdate= normalEMDeltaDist;
+
+				// We must know when we enter in TileErrorMetric zone, because the computing is different.
+				minDeltaDistToUpdate= min(minDeltaDistToUpdate, distMinFace - CLandscapeGlobals::TileDistFar);
+			}
+			/// TileDistNear to TileDistFar.
+			else if( distMinFace > CLandscapeGlobals::TileDistNear )
+			{
+				// Profile
+				NL3D_PROFILE_LAND_ADD(ProfNRefineInTileTransition, 1);
+
+				// Compute distance to split/Merge in TileTransition
+				float	distTileTransSplitMerge;
+				float	maxDeltaDist= 8;
+				float	minDeltaDist= 0;
+				uint	nbRecurs= 6;
+				float	nearLimit;
+				nearLimit= CLandscapeGlobals::RefineThreshold * computeNearLimit();
+				// search the distance to split recursively.
+				for(uint i=0; i< nbRecurs; i++)
+				{
+					float	pivotDeltaDist= (maxDeltaDist-minDeltaDist)/2;
+					// If the em computed with this distance is still <1 (ie merged), then we can move further.
+					if ( computeTileEMForUpdateRefine(distSplitPoint-pivotDeltaDist, distMinFace-pivotDeltaDist, nearLimit ) < 1)
+						minDeltaDist= pivotDeltaDist;
+					// else we must move not as far
+					else
+						maxDeltaDist= pivotDeltaDist;
+				}
+				// And so take the minimum resulting delta distance
+				distTileTransSplitMerge= minDeltaDist;
+				
+				// take the min with distance of distMinFace to the TileDistNear and TileDistFar sphere, because formula change at
+				// those limits.
+				minDeltaDistToUpdate= min(distTileTransSplitMerge, CLandscapeGlobals::TileDistFar - distMinFace );
+				minDeltaDistToUpdate= min(minDeltaDistToUpdate, distMinFace - CLandscapeGlobals::TileDistNear);
+			}
+			/// 0 to TileDistNear.
+			else
+			{
+				// because the face is not a Tile Level (ie Level<Patch->TileLimitLevel), it should be splitted, 
+				// and won't merge until reaching at least the TileDistNear sphere.
+				// if not splited (should not arise), force the split next time.
+				minDeltaDistToUpdate= 0;
+			}
+
+		}
+
+		// Profile.
+		if(minDeltaDistToUpdate<0.0625)
+		{
+			NL3D_PROFILE_LAND_ADD(ProfNRefineWithLowDistance, 1);
+		}
+
+
+		// insert in the Split priority list.
+		// Until the RefineCenter move under minDeltaDistToUpdate, we don't need to test face.
+		Patch->getLandscape()->_SplitPriorityList.insert(minDeltaDistToUpdate, this);
+	}
+}
+
+
+// ***************************************************************************
+void		CTessFace::updateRefineMerge()
+{
+	NL3D_PROFILE_LAND_ADD(ProfNRefineFaces, 1);
+
+	nlassert(Patch);
+	// The face must be splitted, because tested for merge.
+	nlassert(!isLeaf());
+
+	/*
+		NB: see above for some updateRefine*** doc.
+	*/
+
+	// Test for merge.
+	//-----------------------
+	bool	merged= false;
+	{
+		updateErrorMetric();
+		float	ps=ErrorMetric;
+		ps*= CLandscapeGlobals::OORefineThreshold;
+		// 1.0f is the point of split().
+		// 2.0f is the end of geomorph.
+
+
+		// Test merge.
+		//---------------------
+		// Else, must merge ??
+		if(ps<1.0f)
+		{
+			// Merge only if agree, and neighbors agree.
+			// canMerge() test all the good thing: FBase==CantMergeFace, or this is rectangular etc...
+			// The test is propagated to neighbors.
+			if(canMerge(true))
+			{
+				merge();
+
+				// NB: here, merge() is not propagated to fathers (supposed to be not very usefull).
+
+				if(isLeaf())
+				{
+					merged= true;
+				}
+			}
+		}
+	}
+
+	// If merged, then insertion in Landscape->SplitPriorityList at 0 has been done. so nothing to update.
+	// Else, must compute when whe should re-test.
+	if(!merged)
+	{
+		// the face is splitted here.
+		nlassert(!isLeaf());
+
+
+		// Insert the face in the priority list.
+		//-----------------------
+		float	minDeltaDistToUpdate;
+
+
+		// The distance of SplitPoint to center.
+		float	distSplitPoint= (SplitPoint - CLandscapeGlobals::RefineCenter).norm();
+		// Compute distance from refineCenter to normal split/merge (ie without tile transition).
+		float	distNormalSplitMerge= (float)sqrt(Size*CLandscapeGlobals::OORefineThreshold);
+
+
+		// If the face is at its max subdivision
+		if(Level>=Patch->TileLimitLevel+CLandscapeGlobals::TileMaxSubdivision)
+		{
+			// since the face is splitted, then must test always this face, because we must merge it (as soon as it is possible).
+			minDeltaDistToUpdate= 0;
+		}
+		else if(Level>=Patch->TileLimitLevel)
+		{
+			// Always normal ErrorMetric. Because Faces at Tile level decide to split or merge their sons independently 
+			// of "Tile ErrorMetric".
+			// since splitted, compute distance to merge.
+			minDeltaDistToUpdate= distNormalSplitMerge - distSplitPoint;
+			// NB: it is possible that minDeltaDistToUpdate<0. A good example is when we are enforced split.
+			// Then, distSplitMerge may be < distSplitPoint, meaning we should have not split, but a neigbhor has enforced us.
+			// So now, must test every frame if we can merge....
+			minDeltaDistToUpdate= max( 0.f, minDeltaDistToUpdate );
+		}
+		else
+		{
+			// Compute Distance of the face from RefineCenter. It is the min of the 3 points, as in computeTileErrorMetric().
+			float	s0= (VBase->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+			float	s1= (VLeft->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+			float	s2= (VRight->EndPos - CLandscapeGlobals::RefineCenter).sqrnorm();
+			float	distMinFace= (float)sqrt( minof(s0, s1, s2) );
+
+			// compute the delta distance to the normal split point. See above for doc.
+			float	normalEMDeltaDist;
+			normalEMDeltaDist= distNormalSplitMerge - distSplitPoint;
+			normalEMDeltaDist= max( 0.f, normalEMDeltaDist );
+
+
+			/* 
+			There is 3 possibles cases, according to level, and the distances minFaceDist:
+			*/
+			///	TileDistFar to +oo.
+			if( distMinFace > CLandscapeGlobals::TileDistFar )
+			{
+				// normal geomorph. Any face compute the distance to the SplitPoint, and take min with distance to
+				// the TileDistFar sphere. 
+				minDeltaDistToUpdate= normalEMDeltaDist;
+
+				// We must know when we enter in TileErrorMetric zone, because the computing is different.
+				minDeltaDistToUpdate= min(minDeltaDistToUpdate, distMinFace - CLandscapeGlobals::TileDistFar);
+			}
+			/// TileDistNear to TileDistFar.
+			else if( distMinFace > CLandscapeGlobals::TileDistNear )
+			{
+				// Profile
+				NL3D_PROFILE_LAND_ADD(ProfNRefineInTileTransition, 1);
+
+
+				// Compute distance to split/Merge in TileTransition
+				float	distTileTransSplitMerge;
+				float	maxDeltaDist= 8;
+				float	minDeltaDist= 0;
+				uint	nbRecurs= 6;
+				float	nearLimit;
+				nearLimit= CLandscapeGlobals::RefineThreshold * computeNearLimit();
+				// Since splitted, compute distance to merge.
+				// search the distance recursively.
+				for(uint i=0; i< nbRecurs; i++)
+				{
+					float	pivotDeltaDist= (maxDeltaDist-minDeltaDist)/2;
+					// If the em computed with this distance is still >1 (ie splitted), then we can move further.
+					if ( computeTileEMForUpdateRefine(distSplitPoint+pivotDeltaDist, distMinFace+pivotDeltaDist, nearLimit ) > 1)
+						minDeltaDist= pivotDeltaDist;
+					// else we must move not as far
+					else
+						maxDeltaDist= pivotDeltaDist;
+				}
+				// And so take the minimum resulting delta distance
+				distTileTransSplitMerge= minDeltaDist;
+				
+				// take the min with distance of distMinFace to the TileDistNear and TileDistFar sphere, because formula change at
+				// those limits.
+				minDeltaDistToUpdate= min(distTileTransSplitMerge, CLandscapeGlobals::TileDistFar - distMinFace );
+				minDeltaDistToUpdate= min(minDeltaDistToUpdate, distMinFace - CLandscapeGlobals::TileDistNear);
+			}
+			/// 0 to TileDistNear.
+			else
+			{
+				// because the face is not a Tile Level (ie Level<Patch->TileLimitLevel), it should be splitted, 
+				// and won't merge until reaching at least the TileDistNear sphere.
+				// Since splitted, Must enter in TileErrorMetric area to know when to merge.
+				minDeltaDistToUpdate= CLandscapeGlobals::TileDistNear - distMinFace;
+			}
+
+		}
+
+		// Merge Refine Threshold: because of enforced splits, we have lot of faces whit minDeltaDistToUpdate<0, because
+		// they alwayas want to merge. To avoid this, add a delta, which delay the test for merge.
+		// The caveat is that faces which do not need this may merge later. But 2 meters won't add too many faces.
+		minDeltaDistToUpdate+= NL3D_REFINE_MERGE_THRESHOLD;
+
+		// insert in the Merge priority list.
+		// Until the RefineCenter move under minDeltaDistToUpdate, we don't need to test face.
+		Patch->getLandscape()->_MergePriorityList.insert(minDeltaDistToUpdate, this);
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.3 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.4 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -363,7 +363,6 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 		It's means vertices are re-computed when the RefineThreshold setup change.
 
 		* MaxNearLimit= max(nearLimitFaceA, nearLimitFaceB)
-		NB: vertices are re-computed when the RefineThreshold setup change here too.
 
 	v[11].xyz == EndPos-StartPos
 
@@ -379,7 +378,7 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	c[0..3]= ModelViewProjection Matrix.
 	c[4]= {0, 1, 0.5, 0}
 	c[5]= RefineCenter
-	c[6]= {TileDistNearSqr, OOTileDistDeltaSqr, *, *}
+	c[6]= {TileDistFarSqr, OOTileDistDeltaSqr, *, *}
 	c[7]= ???
 	c[8..11]= ModelView Matrix (for Fog).
 
@@ -404,8 +403,8 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 	- R1= CurrentPos geomorphed
 	- R2.x= sqrDist= (startPos - RefineCenter).sqrnorm(). Usefull for alpha computing.
 
-Pgr Len= 19.
-NB: 9 ope for normal errorMetric, and 10 ope for smoothing with TileNear.
+Pgr Len= 18.
+NB: 9 ope for normal errorMetric, and 9 ope for smoothing with TileNear.
 
 	The C code for this Program is:  (v[] means data is a vertex input, c[] means it is a constant)
 	{
@@ -414,9 +413,8 @@ NB: 9 ope for normal errorMetric, and 10 ope for smoothing with TileNear.
 		ErrorMetric= v[GeomFactor] / sqrDist
 
 		// Compute ErrorMetric modified by TileNear transition.
-		f= (sqrDist - c[TileDistNearSqr]) * c[OOTileDistDeltaSqr]
+		f= (c[TileDistFarSqr] - sqrDist) * c[OOTileDistDeltaSqr]
 		clamp(f, 0, 1);
-		f= 1-f;
 		// ^4 gives better smooth result
 		f= sqr(f);	f= sqr(f);
 		// interpolate the errorMetric
@@ -441,13 +439,12 @@ const char* NL3D_LandscapeCommonStartProgram=
 	MUL	R0.x, v[10].x, R0.x;		# R0.x= ErrorMetric= GeomFactor / sqrDist			\n\
 																						\n\
 	# compute Transition Factor To TileNear Geomorph, into R0.z							\n\
-	ADD	R0.z, R2.x, -c[6].x;		# R0.z= sqrDist - TileDistNearSqr					\n\
-	MUL	R0.z, R0.z, c[6].y;			# R0.z= f= (sqrDist - TileDistNearSqr) * OOTileDistDeltaSqr	\n\
+	ADD	R0.z, c[6].x, -R2.x;		# R0.z= TileDistFarSqr - sqrDist					\n\
+	MUL	R0.z, R0.z, c[6].y;			# R0.z= f= (TileDistFarSqr - sqrDist ) * OOTileDistDeltaSqr	\n\
 	MAX R0.z, R0.z, c[4].x;																\n\
 	MIN R0.z, R0.z, c[4].y;			# R0.z= f= clamp(f, 0, 1);							\n\
-	ADD	R0.z, c[4].y, -R0.z;		# R0.z= 1-f											\n\
 	MUL R0.z, R0.z, R0.z;																\n\
-	MUL R0.z, R0.z, R0.z;			# R0.z= finalFactor= (1-f)^4						\n\
+	MUL R0.z, R0.z, R0.z;			# R0.z= finalFactor= f^4							\n\
 																						\n\
 	# Apply the transition factor to the ErrorMetric => R0.w= ErrorMetricModified.		\n\
 	ADD	R0.w, v[10].y, -R0.x;		# R0.w= maxNearLimit - ErrorMetric					\n\

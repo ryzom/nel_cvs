@@ -1,7 +1,7 @@
 /** \file landscape_def.cpp
  * Definition for Landscape
  *
- * $Id: landscape_def.cpp,v 1.2 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: landscape_def.cpp,v 1.3 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,9 +41,6 @@ CVector		CLandscapeGlobals::RefineCenter= CVector::Null;
 float		CLandscapeGlobals::RefineThreshold= 0.001f;
 float		CLandscapeGlobals::OORefineThreshold= 1.0f / CLandscapeGlobals::RefineThreshold;
 
-float		CLandscapeGlobals::ChildrenStartComputeLimit= 1.9f;
-float		CLandscapeGlobals::SelfEndComputeLimit= 2.1f;
-
 float		CLandscapeGlobals::TileDistNear= 50;
 float		CLandscapeGlobals::TileDistFar= CLandscapeGlobals::TileDistNear+20;
 float		CLandscapeGlobals::TileDistNearSqr= sqr(CLandscapeGlobals::TileDistNear);
@@ -69,9 +66,6 @@ CNearVertexBufferInfo	CLandscapeGlobals::CurrentTileVBInfo;
 CLandscapeVBAllocator	*CLandscapeGlobals::CurrentFar0VBAllocator= NULL;
 CLandscapeVBAllocator	*CLandscapeGlobals::CurrentFar1VBAllocator= NULL;
 CLandscapeVBAllocator	*CLandscapeGlobals::CurrentTileVBAllocator= NULL;
-
-
-uint		CLandscapeGlobals::PatchRefinePeriod= 1;
 
 
 IDriver					*CLandscapeGlobals::PatchCurrentDriver= NULL;

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.84 2001/10/08 15:02:30 corvazier Exp $
+ * $Id: landscape.cpp,v 1.85 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,16 +60,18 @@ namespace NL3D
 
 // ***************************************************************************
 // This value is important for the precision of the priority list
-#define	NL3D_REFINE_PLIST_DIST_STEP		0.25
+#define	NL3D_REFINE_PLIST_DIST_STEP		0.0625
 /* This value is important, because faces will be inserted at maximum at this entry in the priority list.
 	If not so big (eg 500 meters), a big bunch of faces may be inserted in this entry, which may cause slow down
 	sometimes, when all this bunch comes to 0 in the priority list.
+	To avoid such a thing, see CTessFacePriorityList::init(), and use of NL3D_REFINE_PLIST_DIST_MAX_MOD.
 */
-#define	NL3D_REFINE_PLIST_DIST_MAX		3000
+#define	NL3D_REFINE_PLIST_DIST_MAX		1000
+#define	NL3D_REFINE_PLIST_DIST_MAX_MOD	0.7*NL3D_REFINE_PLIST_DIST_MAX
 
 /*
 	OverHead size of the priority list is 8 * (NL3D_REFINE_PLIST_DIST_MAX / NL3D_REFINE_PLIST_DIST_STEP).
-	So here, it is "only" 108K.
+	So here, it is "only" 128K.
 */
 
 
@@ -180,7 +182,6 @@ CLandscape::CLandscape() :
 	_TileDistNear=100.f;
 	_Threshold= 0.001f;
 	_RefineMode=true;
-	_RefinePeriod= 4;
 
 	_TileMaxSubdivision= 0;
 
@@ -200,9 +201,9 @@ CLandscape::CLandscape() :
 	_RenderMustRefillVB= false;
 
 	// priority list.
-	// TODO_PLIST
-	//_RefineCenterSetuped= false;
-	//_RefinePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX);
+	_OldRefineCenterSetuped= false;
+	_SplitPriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD);
+	_MergePriorityList.init(NL3D_REFINE_PLIST_DIST_STEP, NL3D_REFINE_PLIST_DIST_MAX, NL3D_REFINE_PLIST_DIST_MAX_MOD);
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -269,21 +270,6 @@ void			CLandscape::setTileMaxSubdivision (uint tileDiv)
 uint 			CLandscape::getTileMaxSubdivision ()
 {
 	return _TileMaxSubdivision;
-}
-
-
-// ***************************************************************************
-void			CLandscape::setRefinePeriod(uint period)
-{
-	_RefinePeriod= raiseToNextPowerOf2(period);
-	_RefinePeriod= max(_RefinePeriod, 1U);
-}
-
-
-// ***************************************************************************
-uint			CLandscape::getRefinePeriod() const
-{
-	return _RefinePeriod;
 }
 
 
@@ -475,22 +461,92 @@ void			CLandscape::refine(const CVector &refineCenter)
 	NL3D_PROFILE_LAND_SET(ProfNRefineLeaves, 0);
 	NL3D_PROFILE_LAND_SET(ProfNSplits, 0);
 	NL3D_PROFILE_LAND_SET(ProfNMerges, 0);
-
+	NL3D_PROFILE_LAND_SET(ProfNRefineInTileTransition, 0);
+	NL3D_PROFILE_LAND_SET(ProfNRefineWithLowDistance, 0);
+	NL3D_PROFILE_LAND_SET(ProfNSplitsPass, 0);
 
 	if(!_RefineMode)
 		return;
 
-	// -1. Update globals
+	// Update the priority list.
+	// ==========================
+	CTessFacePListNode		rootSplitTessFaceToUpdate;
+	CTessFacePListNode		rootMergeTessFaceToUpdate;
+	if( !_OldRefineCenterSetuped )
+	{
+		// If never refine, and setup OldRefineCetner
+		_OldRefineCenterSetuped= true;
+		_OldRefineCenter= refineCenter;
+
+		// then shift all faces
+		_SplitPriorityList.shiftAll(rootSplitTessFaceToUpdate);
+		_MergePriorityList.shiftAll(rootMergeTessFaceToUpdate);
+	}
+	else
+	{
+		// else, compute delta between positions
+		float	dist= (refineCenter - _OldRefineCenter).norm();
+		_OldRefineCenter= refineCenter;
+
+		// and shift according to distance of deplacement.
+		_SplitPriorityList.shift(dist, rootSplitTessFaceToUpdate);
+		_MergePriorityList.shift(dist, rootMergeTessFaceToUpdate);
+	}
+
+
+	// Refine Faces which may need it.
+	// ==========================
+	// Update globals
 	updateGlobalsAndLockBuffers (refineCenter);
 	// NB: refine may change vertices in VB in visible patchs => buffers are locked.
 
 	// Increment the update date.
 	CLandscapeGlobals::CurrentDate++;
 
-	for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+	/* While there is still face in list, update them
+		NB: updateRefine() always insert the face in _***PriorityList, so face is removed from 
+		root***TessFaceToUpdate list.
+		NB: it is possible ( with enforced merge() ) that faces dissapears from root***TessFaceToUpdate list 
+		before they are traversed here. It is why we must use a Circular list system, and not an array of elements.
+		Basically. TessFaces are ALWAYS in a list, either in one of the entry list in _***PriorityList, or in
+		root***TessFaceToUpdate list.
+
+		It is newTessFace() and deleteTessFace() which insert/remove the nodes in the list.
+	*/
+	// Update the Merge priority list.
+	while( rootMergeTessFaceToUpdate.nextInPList() )
 	{
-		(*it).second->refine();
+		// Get the face.
+		CTessFace	*face= static_cast<CTessFace*>(rootMergeTessFaceToUpdate.nextInPList());
+
+		// update the refine of this face. This may lead in deletion (merge) of other faces which are still in 
+		// root***TessFaceToUpdate, but it's work.
+		face->updateRefineMerge();
 	}
+
+
+	// Update the Split priority list.
+	do
+	{
+		NL3D_PROFILE_LAND_ADD(ProfNSplitsPass, 1);
+
+		// Append the new leaves, to the list of triangles to update
+		rootSplitTessFaceToUpdate.appendPList(_RootNewLeaves);
+
+		// While triangle to test for split exists
+		while( rootSplitTessFaceToUpdate.nextInPList() )
+		{
+			// Get the face.
+			CTessFace	*face= static_cast<CTessFace*>(rootSplitTessFaceToUpdate.nextInPList());
+
+			// update the refine of this face.
+			face->updateRefineSplit();
+		}
+
+	}
+	// do it until we are sure no more split is needed, ie no more faces are created
+	while( _RootNewLeaves.nextInPList() );
+
 
 	// Must realase VB Buffers
 	unlockBuffers();
@@ -598,9 +654,6 @@ void			CLandscape::updateGlobalsAndLockBuffers (const CVector &refineCenter)
 	CLandscapeGlobals::CurrentFar0VBAllocator= &_Far0VB;
 	CLandscapeGlobals::CurrentFar1VBAllocator= &_Far1VB;
 	CLandscapeGlobals::CurrentTileVBAllocator= &_TileVB;
-
-	// RefinePeriod
-	CLandscapeGlobals::PatchRefinePeriod= _RefinePeriod;
 
 	// Must check driver, and create VB infos,locking buffers.
 	if(_Driver)
@@ -832,7 +885,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 		// c[5] take RefineCenter
 		driver->setConstant(5, &refineCenter);
 		// c[6] take info for Geomorph trnasition to TileNear.
-		driver->setConstant(6, CLandscapeGlobals::TileDistNearSqr, CLandscapeGlobals::OOTileDistDeltaSqr, 0, 0);
+		driver->setConstant(6, CLandscapeGlobals::TileDistFarSqr, CLandscapeGlobals::OOTileDistDeltaSqr, 0, 0);
 		// c[8..11] take the ModelView Matrix.
 		driver->setConstantMatrix(8, IDriver::ModelView, IDriver::Identity);
 	}
@@ -2359,7 +2412,13 @@ void		CLandscape::getTessellationLeaves(std::vector<const CTessFace*>  &leaves) 
 // ***************************************************************************
 CTessFace			*CLandscape::newTessFace()
 {
-	return TessFaceAllocator.allocate();
+	// allcoate the face.
+	CTessFace		*face= TessFaceAllocator.allocate();
+
+	// for refine() mgt, append the face to the list of newLeaves, so they will be tested in refine()
+	face->linkInPList(_RootNewLeaves);
+
+	return face;
 }
 
 // ***************************************************************************
@@ -2395,6 +2454,9 @@ CTileFace			*CLandscape::newTileFace()
 // ***************************************************************************
 void				CLandscape::deleteTessFace(CTessFace *f)
 {
+	// for refine() mgt, must remove from refine priority list, or from the temp rootTessFaceToUpdate list.
+	f->unlinkInPList();
+
 	TessFaceAllocator.free(f);
 }
 

@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.5 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: u_landscape.h,v 1.6 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,13 +114,6 @@ public:
 	virtual	void	setTileMaxSubdivision (uint tileDiv) =0;
 	/// Get Maximum Tile subdivision.
 	virtual	uint 	getTileMaxSubdivision () =0;
-
-	/** set the refine Mode frequency. raised to the nearest power of 2 (eg: 1,2,4,8...). 4 by default.
-	 *	The more is the Period, the more you'll get pops in landscape tesselation.
-	 */
-	virtual	void	setRefinePeriod(uint period) =0;
-	virtual	uint	getRefinePeriod() const =0;
-
 	// @}
 
 

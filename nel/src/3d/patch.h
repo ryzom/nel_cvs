@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.14 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: patch.h,v 1.15 2001/10/10 15:48:38 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -418,9 +418,7 @@ public:
 	void			forceRenderClip() {RenderClipped= true;}
 	/// Classify this patch.
 	void			clip(const std::vector<CPlane>	&pyramid);
-	/// Refine this patch. Even if clipped.
-	void			refine();
-	/// Refine this patch. Even if clipped. Don't bother NeedCompute. Refine all leaves.
+	/// Refine this patch. Even if clipped. Refine all nodes.
 	void			refineAll();
 
 
@@ -712,12 +710,6 @@ private:
 	// are we cliped in prec Render? Yes by default. updated by updateClipPatchVB().
 	bool			OldRenderClipped;
 
-	// Do we must compute the Tile errormetric part??
-	bool			ComputeTileErrorMetric;
-	
-	// Are we in the Tile/Far transition. if ComputeTileErrorMetric==true, and TileFarTransition==false, we are 
-	// TOTALY IN the Tile zone sphere.
-	bool			TileFarTransition;
 	// }
 	
 	// The render Pass of Far0 and Far1.

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.10 2001/10/04 11:57:36 berenguier Exp $
+ * $Id: tessellation.h,v 1.11 2001/10/10 15:48:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/uv.h"
 #include "nel/misc/bsphere.h"
 #include "3d/tess_list.h"
+#include "3d/tess_face_priority_list.h"
 #include "3d/landscape_def.h"
 #include "3d/patch_rdr_pass.h"
 
@@ -100,7 +101,7 @@ public:
 	CVector			StartPos, EndPos;
 	// Geomorph Information, for VertexProgram geomorph. NB: no RefineThreshold dependency here.
 	float			MaxFaceSize;	// max(SizeFaceA, SizeFaceB)
-	float			MaxNearLimit;	// max(NearLimitFaceA, NearLimitFaceB) with NearLimitFace= (1<<Patch->TileLimitLevel) * (OO32768*(32768>>Level));
+	float			MaxNearLimit;	// max(NearLimitFaceA, NearLimitFaceB) with NearLimitFace= (1<<Patch->TileLimitLevel) / (1<<Level);
 
 	CTessVertex()
 	{
@@ -200,11 +201,12 @@ struct	CTileMaterial
 // ***************************************************************************
 /**
  * A Landscape Triangle.
+ *	MemSize: 28*4 octets. => for 100K faces, it takes 11.2 Mo.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
  */
-class	CTessFace : public CTessNodeList
+class	CTessFace : public CTessNodeList, public CTessFacePListNode
 {
 public:
 
@@ -219,8 +221,6 @@ public:
 	CParamCoord		PVBase, PVLeft, PVRight;
 	// To know if we can split or not, and to compute tile errormetric.
 	uint8			Level;			// Level of Detail of this face. (++ at each split).
-	// See ErrorMetric part. NeedCompute says if this face need to compute his errorMetric.
-	bool			NeedCompute;
 	// Mark of recursion (see canMerge() ...).
 	bool			RecursMarkCanMerge;
 	bool			RecursMarkForceMerge;
@@ -241,12 +241,11 @@ public:
 	/// \name Error metric.
 	// @{
 	// Size could be computed from TileSize: Size= Patch->BaseSize / (1<<(TileSize-Patch->BaseTileSize)). (or optimized)
-	// But used by computeErrorMetric(), and must be as fast as possible.
-	sint			ProjectedSizeDate;	// The date of errormetric update.
+	// But used by updateErrorMetric(), and must be as fast as possible.
+	sint			ErrorMetricDate;	// The date of errormetric update.
 	float			Size;				// /2 at each split.
 	CVector			SplitPoint;			// Midle of VLeft/VRight. Used to compute the errorMetric.
-	float			ProjectedSize;		// The result of errormetric: the projected size of face.
-	float			ErrorMetric;		// equal to ProjectedSize, but greater for the transition Far-Near.
+	float			ErrorMetric;		// equal to projected size of face, but greater for the transition Far-Near.
 	// @}
 
 
@@ -280,16 +279,19 @@ public:
 	// compute the NearLimit for this face. NearLimit= (1<<Patch->TileLimitLevel) / (1<<Level)
 	float			computeNearLimit();
 
-	// update the error metric (even if !NeedCompute).
+	// update the error metric
 	void			updateErrorMetric();
 	// can split leaf only.
 	void			split(bool propagateSplit=true);
 	// can merge "short roots" only (roots which have leafs).
 	bool			merge();
-	// if NeedCompute, refine the node, and his sons.
-	void			refine();
-	/// refine the node, and his sons. Don't bother NeedCompute. Refine all leaves.
+	/// refine the node, and his sons. Refine all nodes.
 	void			refineAll();
+	// update the refinement of the node, split if necessary (and then updateRefine() his splitted sons), 
+	// Then re-insert this face in the appropriate CLandscape priority list.
+	void			updateRefineSplit();
+	// Same for merge.
+	void			updateRefineMerge();
 
 
 	// compute the SplitPoint. VBase / VLeft and VRight must be valid.
@@ -372,8 +374,10 @@ private:
 
 	// see updateErrorMetric.
 	void	computeTileErrorMetric();
+	// see updateRefine().
+	float	computeTileEMForUpdateRefine(float distSplitPoint, float distMinFace, float nearLimit);
 
-	// See refine() and merge().
+	// See updateRefine() and merge().
 	bool	canMerge(bool testEm);
 
 	// see split().

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.48 2003/04/16 17:01:35 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.49 2003/04/17 16:14:06 lecroart Exp $
  *
  */
 
@@ -519,7 +519,7 @@ void addRequestWaitingNb (uint32 rid)
 			return;
 		}
 	}
-	nlstop;
+	nlwarning ("addRequestWaitingNb: can't find the rid %d", rid);
 }
 
 void subRequestWaitingNb (uint32 rid)
@@ -533,7 +533,7 @@ void subRequestWaitingNb (uint32 rid)
 			return;
 		}
 	}
-	nlstop;
+	nlwarning ("subRequestWaitingNb: can't find the rid %d", rid);
 }
 
 void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<string> > >&answer)

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * TODO: File description
  *
- * $Id: water_model.cpp,v 1.50 2005/01/20 14:17:10 berenguier Exp $
+ * $Id: water_model.cpp,v 1.50.2.1 2005/01/31 15:30:47 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1251,6 +1251,10 @@ void CWaterModel::link()
 	CRenderTrav &rt = scene->getRenderTrav();
 	_Prev = &rt._FirstWaterModel;
 	_Next = rt._FirstWaterModel;
+	if (_Next)
+	{
+		_Next->_Prev = &_Next;
+	}
 	rt._FirstWaterModel = this;
 }
 

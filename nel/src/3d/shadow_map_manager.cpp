@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.7 2004/03/31 13:33:41 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.8 2004/04/07 14:02:48 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -165,6 +165,7 @@ CShadowMapManager::CShadowMapManager()
 	_ReceiveShadowMaterial.initUnlit();
 	_ReceiveShadowMaterial.setBlend(true);
 	_ReceiveShadowMaterial.setBlendFunc(CMaterial::zero, CMaterial::srccolor);
+	_ReceiveShadowMaterial.setZWrite(false);
 	// FillRate Optim
 	_ReceiveShadowMaterial.setAlphaTest(true);
 	_ReceiveShadowMaterial.setAlphaTestThreshold(0.01f);

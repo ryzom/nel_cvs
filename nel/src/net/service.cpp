@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.205 2004/03/15 15:17:23 cado Exp $
+ * $Id: service.cpp,v 1.206 2004/04/30 18:46:33 distrib Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -559,8 +559,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		{
 			cbExecuteCommands(*var);
 		}
-		
-		
+
 		//
 		// Create the window if needed
 		//

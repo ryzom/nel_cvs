@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.77 2004/04/26 18:30:31 cado Exp $
+ * $Id: unified_network.cpp,v 1.78 2004/04/30 18:46:33 distrib Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -27,10 +27,11 @@
 
 #include "nel/net/unified_network.h"
 #include "nel/misc/entity_id.h" // for createMessage()
+#include "nel/misc/variable.h"
 
-//#ifdef NL_OS_UNIX
-//#include <sched.h>
-//#endif
+#ifdef NL_OS_UNIX
+#include <sched.h>
+#endif
 
 using namespace std;
 using namespace NLMISC;
@@ -47,6 +48,7 @@ static const uint64 AppIdDeadConnection = 0xDEAD;
 
 static uint32 TotalCallbackCalled = 0;
 
+CVariable<uint32> UseYieldMethod( "UseYieldMethod", "0=Nothing 1=Yield 2=nanosleep 3=usleep", 3, 0, true );
 
 #define AUTOCHECK_DISPLAY nlwarning
 //#define AUTOCHECK_DISPLAY CUnifiedNetwork::getInstance()->displayInternalTables (), nlerror
@@ -1031,12 +1033,18 @@ void	CUnifiedNetwork::update(TTime timeout)
 		if (CTime::getLocalTime() - t0 > timeout)
 			break;
 		
-//#ifdef NL_OS_WINDOWS
+#ifdef NL_OS_WINDOWS
 		// Enable windows multithreading before rescanning all connections
 		H_TIME(L5UpdateSleep, nlSleep(1);); // 0 (yield) would be too harmful to other applications
-//#else
-//		sched_yield(); // makes all slow!
-//#endif
+#else
+		switch ( UseYieldMethod.get() )
+		{
+		case 0: break;
+		case 1:	sched_yield(); break; // makes all slow!
+		case 2: { H_TIME(L5UpdateSleep, nlSleep(1);); break; }
+		default: { H_TIME(L5UpdateSleep, usleep(1000);); break; }
+		}
+#endif
 	}
 	H_AFTER(UNUpdateCnx);
 

@@ -1,7 +1,7 @@
 /** \file opcode_lpt.h
  * Sevral op-code for loading referance object to the stack.
  *
- * $Id: opcode_lpt.h,v 1.6 2001/02/27 12:58:41 chafik Exp $
+ * $Id: opcode_lpt.h,v 1.7 2001/02/27 13:16:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,7 @@ namespace NLAISCRIPT
 		~CLptMemberOpCode()
 		{			
 		}
-	};*/
+	};
 
 	class CLptStackMemberiOpCode : public IOpRunCode
 	{
@@ -181,7 +181,7 @@ namespace NLAISCRIPT
 		}
 	};
 
-	class CLptMemberiOpCode : public IOpRunCode
+	/*class CLptMemberiOpCode : public IOpRunCode
 	{
 	public:
 		static const NLAIC::CIdentType IdLptMemberiOpCode;
@@ -229,7 +229,7 @@ namespace NLAISCRIPT
 		~CLptMemberiOpCode()
 		{			
 		}
-	};
+	};*/
 
 	class CLptRefOpCode : public IOpRunCode
 	{

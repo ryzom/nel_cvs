@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.5 2001/07/17 14:19:59 cado Exp $
+ * $Id: source_al.cpp,v 1.6 2001/07/19 12:47:28 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,7 +138,7 @@ void					CSourceAL::stop()
 	{
 		// Streaming mode
 		nlwarning( "AM: Cannot stop null buffer; streaming not implemented" );
-		nlstop;
+		//nlstop;
 	}
 }
 

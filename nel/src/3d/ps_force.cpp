@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.25 2002/01/28 14:28:27 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.26 2002/02/15 17:04:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -908,6 +908,7 @@ void CPSCylindricVortex::deleteElement(uint32 index)
 }
 void CPSCylindricVortex::resize(uint32 size) 
 { 
+	nlassert(size < (1 << 16));
 	CPSForceIntensityHelper::resize(size); 
 	_Normal.resize(size);
 	_Radius.resize(size);

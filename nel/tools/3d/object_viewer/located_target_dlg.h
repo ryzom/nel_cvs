@@ -1,7 +1,7 @@
 /** \file located_target_dlg.h
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.h,v 1.3 2001/06/25 13:24:16 vizerie Exp $
+ * $Id: located_target_dlg.h,v 1.4 2001/06/27 16:48:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,13 +28,17 @@
 
 #if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// located_target_dlg.h : header file
-//
+#endif 
+
+
 
 #include "3d/ps_located.h"
-
+#include "3d/ps_force.h"
 #include "dialog_stack.h"
+#include "ps_wrapper.h"
+
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedTargetDlg dialog
@@ -79,6 +83,18 @@ protected:
 	virtual BOOL OnInitDialog();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+	//////////////////////////////////////////////
+	// wrapper to tune the intensity of a force //
+	//////////////////////////////////////////////
+	struct CForceIntensityWrapper : public IPSWrapperFloat
+	{
+		NL3D::CPSForceIntensity *F ;
+		float get(void) const { return F->getIntensity() ; }
+		void set(const float &value) {F->setIntensity(value) ; }
+
+	} _ForceIntensityWrapper ;
+
 };
 
 //{{AFX_INSERT_LOCATION}}

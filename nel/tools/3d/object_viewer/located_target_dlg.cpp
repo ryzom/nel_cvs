@@ -1,7 +1,7 @@
 /** \file located_target_dlg.cpp
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.cpp,v 1.2 2001/06/25 13:24:16 vizerie Exp $
+ * $Id: located_target_dlg.cpp,v 1.3 2001/06/27 16:48:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "object_viewer.h"
 #include "located_target_dlg.h"
 #include "collision_zone_dlg.h"
+#include "editable_range.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -133,6 +134,8 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
+	RECT r ;
+
 	uint k ;
 	uint nbTarg = _LBTarget->getNbTargets() ;
 
@@ -180,6 +183,26 @@ BOOL CLocatedTargetDlg::OnInitDialog()
 		CCollisionZoneDlg *czd = new CCollisionZoneDlg(dynamic_cast<NL3D::CPSZone *>(_LBTarget)) ;
 		pushWnd(czd) ;
 		czd->init(posX, posY, this) ;
+	}
+
+
+	// force with intensity case
+
+	if (dynamic_cast<NL3D::CPSForceIntensity *>(_LBTarget))
+	{
+		_ForceIntensityWrapper.F = dynamic_cast<NL3D::CPSForceIntensity *>(_LBTarget) ;
+		CEditableRangeFloat *fi = new CEditableRangeFloat(std::string("FORCE INTENSITY"), 0, 100) ;
+		pushWnd(fi) ;			
+		fi->setWrapper(&_ForceIntensityWrapper) ;
+		fi->init(posX + 140, posY, this) ;
+		CStatic *s = new CStatic ;			
+		pushWnd(s) ;
+		s->Create("Force intensity :", SS_LEFT, CRect(posX, posY, posX + 139, posY + 32), this) ;
+		s->ShowWindow(SW_SHOW) ;
+
+
+		fi->GetClientRect(&r) ;
+		posY += r.bottom + 3 ;			
 	}
 
 	

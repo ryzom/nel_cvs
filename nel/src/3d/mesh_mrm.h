@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.19 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.20 2002/03/04 17:03:31 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -180,6 +180,12 @@ public:
 	}
 
 	// @}
+
+	/// Return true if the mesh is skinned, else return false.
+	bool isSkinned () const
+	{
+		return _Skinned;
+	}
 
 
 // ************************

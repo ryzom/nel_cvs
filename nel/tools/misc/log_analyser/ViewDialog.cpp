@@ -1,7 +1,7 @@
 /** \file ViewDialog.cpp
  * implementation file
  *
- * $Id: ViewDialog.cpp,v 1.4 2003/04/02 18:03:46 cado Exp $
+ * $Id: ViewDialog.cpp,v 1.5 2003/05/14 17:26:11 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -291,6 +291,7 @@ void CViewDialog::DoDataExchange(CDataExchange* pDX)
  */
 void		CViewDialog::reload()
 {
+	SessionDatePassed = false;
 	CWaitCursor wc;
 	if ( LogSessionStartDate.IsEmpty() || (LogSessionStartDate == "Beginning") )
 	{
@@ -317,6 +318,12 @@ void		CViewDialog::reload()
  */
 void		CViewDialog::loadFileOrSeries()
 {
+	string actualFilenames = "Files loaded";
+	if ( LogSessionStartDate.IsEmpty() )
+		actualFilenames += ":\r\n";
+	else
+		actualFilenames += " for Session of " + LogSessionStartDate + ":\r\n";
+
 	for ( unsigned int i=0; i!=Filenames.size(); ++i )
 	{
 		CString& filename = Filenames[i];
@@ -331,7 +338,10 @@ void		CViewDialog::loadFileOrSeries()
 				{
 					// Stop if the session is finished
 					if ( (! LogSessionStartDate.IsEmpty()) && (strstr( line, LogDateString )) )
-						return;
+					{
+						actualFilenames += filename + "\r\n";
+						goto endOfLoading;
+					}
 
 					// Apply the filters
 					if ( passFilter( line ) )
@@ -346,14 +356,22 @@ void		CViewDialog::loadFileOrSeries()
 					}
 				}
 			}
+
+			if ( SessionDatePassed )
+			{
+				actualFilenames += string(filename) + "\r\n";
+			}
 		}
 		else
 		{
 			CString s;
-			s.Format( "<Cannot open log file %s>", filename );
-			addLine( s );
+			s.Format( "<Cannot open file %s>\r\n", filename );
+			actualFilenames += s;
 		}
 	}
+
+endOfLoading:
+	((CLog_analyserDlg*)GetParent())->displayCurrentLine( actualFilenames.c_str() );
 }
 
 
@@ -480,6 +498,7 @@ BEGIN_MESSAGE_MAP(CViewDialog, CDialog)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST1, OnItemchangedList1)
 	ON_NOTIFY(NM_SETFOCUS, IDC_LIST1, OnSetfocusList1)
 	ON_BN_CLICKED(IDC_BUTTON2, OnButtonFind)
+	ON_WM_LBUTTONDOWN()
 	ON_REGISTERED_MESSAGE( WM_FINDREPLACE, OnFindReplace )
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -520,14 +539,14 @@ void CViewDialog::OnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult)
 /*
  * Resize
  */
-void CViewDialog::resizeView( int index, int nbViews, int top )
+void CViewDialog::resizeView( int nbViews, int top, int left )
 {
 	RECT parentRect;
 	GetParent()->GetClientRect( &parentRect );
 
-	int width = (parentRect.right-32)/nbViews;
+	int width = (int)((parentRect.right-32)*WidthR);
 	RECT viewRect;
-	viewRect.left = index*width;
+	viewRect.left = left;
 	viewRect.top = top;
 	viewRect.right = viewRect.left + width;
 	viewRect.bottom = parentRect.bottom-10;
@@ -538,6 +557,9 @@ void CViewDialog::resizeView( int index, int nbViews, int top )
 	lvc.mask = LVCF_WIDTH;
 	lvc.cx = width-24;
 	m_ListCtrl.SetColumn( 0, &lvc );
+	m_ListCtrl.SetColumnWidth( 0, LVSCW_AUTOSIZE );
+
+	GetDlgItem( IDC_DragBar )->MoveWindow( 0, 0, 32, viewRect.bottom-top );
 }
 
 
@@ -578,6 +600,7 @@ void CViewDialog::fillGaps( int maxNbLines )
 void CViewDialog::commitAddedLines()
 {
 	m_ListCtrl.SetItemCount( Buffer.size() );
+	m_ListCtrl.SetColumnWidth( 0, LVSCW_AUTOSIZE );
 }
 
 
@@ -645,15 +668,15 @@ void CViewDialog::clear()
  */
 void CViewDialog::OnButtonFilter() 
 {
-	if ( ((CLog_analyserDlg*)GetParent())->FilterDialog.DoModal() )
+	if ( ((CLog_analyserDlg*)GetParent())->FilterDialog.DoModal() == IDOK )
 	{
 		PosFilter = ((CLog_analyserDlg*)GetParent())->FilterDialog.getPosFilter();
 		NegFilter = ((CLog_analyserDlg*)GetParent())->FilterDialog.getNegFilter();
-	}
 
-	if ( ! ((CLog_analyserDlg*)GetParent())->Trace )
-	{
-		reload();
+		if ( ! ((CLog_analyserDlg*)GetParent())->Trace )
+		{
+			reload();
+		}
 	}
 }
 
@@ -668,6 +691,7 @@ BOOL CViewDialog::OnInitDialog()
 
 	BeginFindIndex = -1;
 	FindDialog = NULL;
+	WidthR = 0.0f;
 	return TRUE;
 }
 
@@ -688,6 +712,22 @@ COLORREF CViewDialog::getColorForLine( int index )
 }
 
 
+void formatLogStr( CString& str, bool displayHeaders )
+{
+	if ( ! displayHeaders )
+	{
+		int pos = str.Find( " : " );
+		if ( pos != -1 )
+		{
+			str.Delete( 0, pos + 3 );
+		}
+	}
+}
+
+
+/*
+ *
+ */
 void CViewDialog::OnGetdispinfoList1(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	LV_DISPINFO* pDispInfo = (LV_DISPINFO*)pNMHDR;
@@ -696,7 +736,9 @@ void CViewDialog::OnGetdispinfoList1(NMHDR* pNMHDR, LRESULT* pResult)
 	int iItemIndx = pItem->iItem;
 	if (pItem->mask & LVIF_TEXT) //valid text buffer?
 	{
-		lstrcpy( pItem->pszText, Buffer[iItemIndx] );
+		CString str = Buffer[iItemIndx];
+		formatLogStr( str, ((CButton*)(((CLog_analyserDlg*)GetParent())->GetDlgItem( IDC_DispLineHeaders )))->GetCheck() );
+		lstrcpy( pItem->pszText, str );
 	}
 	*pResult = 0;
 }
@@ -713,7 +755,9 @@ void CViewDialog::displayString()
 	while ( pos != NULL )
 	{
 		int index = m_ListCtrl.GetNextSelectedItem( pos );
-		s += Buffer[index] + "\r\n";
+		CString str = Buffer[index];
+		formatLogStr( str, ((CButton*)(((CLog_analyserDlg*)GetParent())->GetDlgItem( IDC_DispLineHeaders )))->GetCheck() );
+		s += str + "\r\n";
 	}
 
 	// Display it
@@ -803,3 +847,15 @@ afx_msg LONG CViewDialog::OnFindReplace(WPARAM wParam, LPARAM lParam)
 }
 
 
+void CViewDialog::OnLButtonDown(UINT nFlags, CPoint point) 
+{
+	if ( (Index > 0) && (ChildWindowFromPoint( point ) == GetDlgItem( IDC_DragBar )) )
+	{
+		((CLog_analyserDlg*)GetParent())->beginResizeView( Index );
+	}
+	else
+	{
+		//PostMessage(WM_NCHITTEST,HTCAPTION,MAKELPARAM(point.x,point.y));	
+		CDialog::OnLButtonDown(nFlags, point);
+	}
+}

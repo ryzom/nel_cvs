@@ -1,7 +1,7 @@
 /** \file Log_analyserDlg.h
  * header file
  *
- * $Id: log_analyserDlg.h,v 1.2 2003/04/02 18:03:46 cado Exp $
+ * $Id: log_analyserDlg.h,v 1.3 2003/05/14 17:26:11 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -55,7 +55,10 @@ public:
 	CLog_analyserDlg(CWnd* pParent = NULL);	// standard constructor
 
 	///
-	CViewDialog *				onAddCommon( const CString& filename );
+	void						addView( std::vector<CString>& pathNames );
+
+	///
+	CViewDialog *				onAddCommon( const std::vector<CString>& filenames );
 
 	///
 	void						displayCurrentLine( const CString& line );
@@ -66,8 +69,18 @@ public:
 	///
 	void						getLogSeries( const CString& filenameStr, std::vector<CString>& filenameList );
 
+	///
+	bool						isLogSeriesEnabled() const { return ((CButton*)GetDlgItem( IDC_CheckAllFileSeries ))->GetCheck() == 1; }
+
+	///
+	void						resizeViews();
+
+	///
+	void						beginResizeView( int index );
+
 	CFilterDialog						FilterDialog;
 	bool								Trace;
+	int									ResizeViewInProgress;
 
 // Dialog Data
 	//{{AFX_DATA(CLog_analyserDlg)
@@ -105,6 +118,9 @@ protected:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnDestroy();
 	afx_msg void OnHelpBtn();
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnDropFiles( HDROP hDropInfo );
+	afx_msg void OnDispLineHeaders();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

@@ -1,7 +1,7 @@
 /** \file LogSessions.h
  * header file
  *
- * $Id: LogSessions.h,v 1.2 2003/04/02 18:03:46 cado Exp $
+ * $Id: LogSessions.h,v 1.3 2003/05/14 17:26:11 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -47,13 +47,14 @@ public:
 	void		addLogSession( CString line );
 
 	///
-	void		clear() { Lines.clear(); }
+	void		clear() { Sessions.clear(); }
 
 	///
 	CString		getStartDate() const;
 
-	std::vector<CString> Lines;
-
+	std::vector<CString> Sessions;
+	std::vector<CString> Filenames;
+	
 // Dialog Data
 	//{{AFX_DATA(CLogSessions)
 	enum { IDD = IDD_LOGSESSIONS };

@@ -1,7 +1,7 @@
 /** \file LogSessions.cpp
  * implementation file
  *
- * $Id: LogSessions.cpp,v 1.1 2002/10/18 12:04:56 cado Exp $
+ * $Id: LogSessions.cpp,v 1.2 2003/05/14 17:26:11 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -75,7 +75,7 @@ END_MESSAGE_MAP()
  */
 void CLogSessions::addLogSession( CString line )
 {
-	Lines.push_back( line );
+	Sessions.push_back( line );
 }
 
 
@@ -103,11 +103,11 @@ BOOL CLogSessions::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	vector<CString>::iterator il;
-	for (il=Lines.begin(); il!=Lines.end(); ++il )
+	for (il=Sessions.begin(); il!=Sessions.end(); ++il )
 	{
 		m_ListBox.AddString( *il );
 	}
-	Lines.clear();
+	Sessions.clear();
 
 	return TRUE;
 }

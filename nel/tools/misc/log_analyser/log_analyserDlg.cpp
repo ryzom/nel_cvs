@@ -1,7 +1,7 @@
 /** \file log_analyserDlg.cpp
  * implementation file
  *
- * $Id: log_analyserDlg.cpp,v 1.4 2003/04/02 18:03:46 cado Exp $
+ * $Id: log_analyserDlg.cpp,v 1.5 2003/05/14 17:26:11 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "log_analyserDlg.h"
 //#include <nel/misc/config_file.h>
 #include <fstream>
+#include <algorithm>
 
 using namespace std;
 //using namespace NLMISC;
@@ -41,6 +42,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
+extern CLog_analyserApp		theApp;
 CString						LogDateString;
 
 
@@ -78,6 +80,9 @@ BEGIN_MESSAGE_MAP(CLog_analyserDlg, CDialog)
 	ON_WM_SIZE()
 	ON_WM_DESTROY()
 	ON_BN_CLICKED(IDC_HelpBtn, OnHelpBtn)
+	ON_WM_LBUTTONUP()
+	ON_WM_DROPFILES()
+	ON_BN_CLICKED(IDC_DispLineHeaders, OnDispLineHeaders)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -89,7 +94,9 @@ BOOL CLog_analyserDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	Trace = false;
+	ResizeViewInProgress = -1;
 	((CButton*)GetDlgItem( IDC_CheckSessions ))->SetCheck( 1 );
+	((CButton*)GetDlgItem( IDC_DispLineHeaders ))->SetCheck( 1 );
 
 	/*try
 	{
@@ -107,6 +114,24 @@ BOOL CLog_analyserDlg::OnInitDialog()
 	//  when the application's main window is not a dialog
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
+
+	// Add files given in command-line
+	string cmdLine = string(theApp.m_lpCmdLine);
+	vector<CString> v;
+	/*int pos = cmdLine.find_first_of(' '); // TODO: handle "" with blank characters
+	while ( pos != string::npos )
+	{
+		v.push_back( cmdLine.substr( 0, pos ).c_str() );
+		cmdLine = cmdLine.substr( pos );
+		pos = cmdLine.find_first_of(' ');
+	}*/
+	if ( ! cmdLine.empty() )
+	{
+		v.push_back( cmdLine.c_str() );
+		addView( v );
+	}
+
+	DragAcceptFiles( true );
 	
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -149,24 +174,117 @@ HCURSOR CLog_analyserDlg::OnQueryDragIcon()
 
 
 /*
+ * Open in the same view
+ */
+void CLog_analyserDlg::OnDropFiles( HDROP hDropInfo )
+{
+	UINT nbFiles = DragQueryFile( hDropInfo, 0xFFFFFFFF, NULL, 0 );
+	vector<CString> v;
+	for ( UINT i=0; i!=nbFiles; ++i )
+	{
+		CString filename;
+		DragQueryFile( hDropInfo, i, filename.GetBufferSetLength( 200 ), 200 );
+		v.push_back( filename );
+	}
+	addView( v );
+}
+
+
+bool	isNumberChar( char c )
+{
+	return (c >= '0') && (c <= '9');
+}
+
+/*
  *
  */
-void CLog_analyserDlg::OnAddView() 
+void CLog_analyserDlg::OnAddView()
 {
-	CFileDialog openDialog( true, NULL, "log.log", OFN_HIDEREADONLY, "Log files (*.log)|*.log|All files|*.*||", this );
-	if ( openDialog.DoModal() == IDOK )
+	vector<CString> v;
+	addView( v );
+}
+
+
+/*
+ *	 
+ */
+void CLog_analyserDlg::addView( std::vector<CString>& pathNames ) 
+{
+	if ( pathNames.empty() )
 	{
-		CWaitCursor wc;
-
-		CViewDialog *view = onAddCommon( openDialog.GetPathName() );
-
-		// Set filters
-		FilterDialog.Trace = false;
-		if ( FilterDialog.DoModal() )
+		CFileDialog openDialog( true, NULL, "log.log", OFN_HIDEREADONLY | OFN_ALLOWMULTISELECT, "Log files (*.log)|*.log|All files|*.*||", this );
+		CString filenameList;
+		openDialog.m_ofn.lpstrFile = filenameList.GetBufferSetLength( 8192 );
+		openDialog.m_ofn.nMaxFile = 8192;
+		if ( openDialog.DoModal() == IDOK )
 		{
-			view->PosFilter = FilterDialog.getPosFilter();
-			view->NegFilter = FilterDialog.getNegFilter();
+			CWaitCursor wc;
+
+			// Get the selected filenames
+			CString pathName;
+			POSITION it = openDialog.GetStartPosition();
+			while ( it != NULL )
+			{
+				pathNames.push_back( openDialog.GetNextPathName( it ) );
+			}
+			if ( pathNames.empty() )
+				return;
 		}
+		else
+			return;
+	}
+
+	unsigned int i;
+	if ( pathNames.size() > 1 )
+	{
+		// Sort the filenames
+		for ( i=0; i!=pathNames.size(); ++i )
+		{
+			// Ensure that a log file without number comes *after* the ones with a number
+			string name = string(pathNames[i]);
+			unsigned int dotpos = name.find_last_of('.');
+			if ( (dotpos!=string::npos) && (dotpos > 2) )
+			{
+				if ( ! (isNumberChar(name[dotpos-1]) && isNumberChar(name[dotpos-2]) && isNumberChar(name[dotpos-3])) )
+				{
+					name = name.substr( 0, dotpos ) + "ZZZ" + name.substr( dotpos );
+					pathNames[i] = name.c_str();
+				}
+			}
+		}
+		sort( pathNames.begin(), pathNames.end() );
+		for ( i=0; i!=pathNames.size(); ++i )
+		{
+			// Set the original names back
+			string name = pathNames[i];
+			unsigned int tokenpos = name.find( "ZZZ." );
+			if ( tokenpos != string::npos )
+			{
+				name = name.substr( 0, tokenpos ) + name.substr( tokenpos + 3 );
+				pathNames[i] = name.c_str();
+			}
+		}
+	}
+
+	// Display the filenames
+	string names;
+	if ( isLogSeriesEnabled() )
+		names += "Loading series corresponding to :\r\n";
+	else
+		names += "Loading files:\r\n";
+	for ( i=0; i!=pathNames.size(); ++i )
+		names += string(pathNames[i]) + "\r\n";
+	displayCurrentLine( names.c_str() );
+	
+	// Add view and browse sessions if needed
+	CViewDialog *view = onAddCommon( pathNames );
+
+	// Set filters
+	FilterDialog.Trace = false;
+	if ( FilterDialog.DoModal() == IDOK )
+	{
+		view->PosFilter = FilterDialog.getPosFilter();
+		view->NegFilter = FilterDialog.getNegFilter();
 
 		// Load file
 		view->reload();
@@ -182,7 +300,9 @@ void CLog_analyserDlg::OnAddtraceview()
 	CFileDialog openDialog( true, NULL, "log.log", OFN_HIDEREADONLY, "Log files (*.log)|*.log|All files|*.*||", this );
 	if ( openDialog.DoModal() == IDOK )
 	{
-		CViewDialog *view = onAddCommon( openDialog.GetPathName() );
+		vector<CString> pathNames;
+		pathNames.push_back( openDialog.GetPathName() );
+		CViewDialog *view = onAddCommon( pathNames );
 
 		// Set filters
 		FilterDialog.Trace = true;
@@ -200,39 +320,53 @@ void CLog_analyserDlg::OnAddtraceview()
 /*
  *
  */
-CViewDialog *CLog_analyserDlg::onAddCommon( const CString& filename )
+CViewDialog *CLog_analyserDlg::onAddCommon( const vector<CString>& filenames )
 {
 	CWaitCursor wc;
 	
 	// Create view
 	CViewDialog *view = new CViewDialog();
 	view->Create( IDD_View, this );
+	view->Index = Views.size();
 	RECT editRect;
 	m_Edit.GetWindowRect( &editRect );
 	ScreenToClient( &editRect );
+	RECT parentRect;
+	GetClientRect( &parentRect );
 	Views.push_back( view );
-	int i;
+	int i, w = 0;
 	for ( i=0; i!=(int)Views.size(); ++i )
 	{
-		Views[i]->resizeView( i, Views.size(), editRect.bottom+10 );
+		Views[i]->WidthR = 1.0f/(float)Views.size();
+		Views[i]->resizeView( Views.size(), editRect.bottom+10, w );
+		w += (int)(Views[i]->WidthR*(parentRect.right-32));
 	}
 	view->ShowWindow( SW_SHOW );
 
 	// Set params
-	view->Index = Views.size()-1;
-	view->Seriesname = filename;
-	getLogSeries( filename, view->Filenames );
+	if ( filenames.size() == 1 )
+	{
+		// One file or a whole log series
+		view->Seriesname = filenames.front();
+		getLogSeries( filenames.front(), view->Filenames );
+	}
+	else
+	{
+		// Multiple files
+		view->Seriesname = filenames.front() + "...";
+		view->Filenames = filenames;
+	}
+
 	view->LogSessionStartDate = "";
-	view->SessionDatePassed = false;
 	LogSessionsDialog.clear();
 
 	if ( ((CButton*)GetDlgItem( IDC_CheckSessions ))->GetCheck() == 1 )
 	{
 		LogSessionsDialog.addLogSession( "Beginning" );
-		for ( i=0; i!=view->Filenames.size(); ++i )
+		int nbsessions = 0;
+		for ( i=0; i!=(int)(view->Filenames.size()); ++i )
 		{
 			// Scan file for log sessions dates
-			int nbsessions = 0;
 			ifstream ifs( view->Filenames[i] );
 			if ( ! ifs.fail() )
 			{
@@ -246,11 +380,11 @@ CViewDialog *CLog_analyserDlg::onAddCommon( const CString& filename )
 						++nbsessions;
 					}
 				}
-				if ( (nbsessions>1) && (LogSessionsDialog.DoModal() == IDOK) )
-				{
-					view->LogSessionStartDate = LogSessionsDialog.getStartDate();
-				}
 			}
+		}
+		if ( (nbsessions>1) && (LogSessionsDialog.DoModal() == IDOK) )
+		{
+			view->LogSessionStartDate = LogSessionsDialog.getStartDate();
 		}
 	}
 
@@ -280,7 +414,7 @@ int smprintf( char *buffer, size_t count, const char *format, ... )
  */
 void CLog_analyserDlg::getLogSeries( const CString& filenameStr, std::vector<CString>& filenameList )
 {
-	if ( ((CButton*)GetDlgItem( IDC_CheckAllFileSeries ))->GetCheck() == 1 )
+	if ( isLogSeriesEnabled() )
 	{
 		string filename = filenameStr;
 		unsigned int dotpos = filename.find_last_of ('.');
@@ -476,6 +610,19 @@ void CLog_analyserDlg::OnReset()
 
 
 /*
+ * 
+ */
+void CLog_analyserDlg::OnDispLineHeaders() 
+{
+	vector<CViewDialog*>::iterator iv;
+	for ( iv=Views.begin(); iv!=Views.end(); ++iv )
+	{
+		(*iv)->Invalidate();
+	}		
+}
+
+
+/*
  *
  */
 void CLog_analyserDlg::OnSize(UINT nType, int cx, int cy) 
@@ -497,12 +644,72 @@ void CLog_analyserDlg::OnSize(UINT nType, int cx, int cy)
 		m_Edit.MoveWindow( &editRect );
 		m_ScrollBar.MoveWindow( &sbRect );
 
-		int i;
-		for ( i=0; i!=(int)Views.size(); ++i )
-		{
-			Views[i]->resizeView( i, Views.size(), editRect.bottom+10 );
-		}
+		resizeViews();
 	}
+}
+
+
+/*
+ *
+ */
+void CLog_analyserDlg::resizeViews()
+{
+	RECT editRect;
+	m_Edit.GetWindowRect( &editRect );
+	ScreenToClient( &editRect );
+	RECT parentRect;
+	GetClientRect( &parentRect );
+	int i, w = 0;
+	for ( i=0; i!=(int)Views.size(); ++i )
+	{
+		Views[i]->resizeView( Views.size(), editRect.bottom+10, w );
+		w += (int)(Views[i]->WidthR*(parentRect.right-32));
+	}
+}
+
+
+/*
+ *
+ */
+void CLog_analyserDlg::beginResizeView( int index )
+{
+	ResizeViewInProgress = index;
+	SetCursor( theApp.LoadStandardCursor( IDC_SIZEWE ) );
+	SetCapture();
+}
+
+
+/*
+ * 
+ */
+void CLog_analyserDlg::OnLButtonUp(UINT nFlags, CPoint point) 
+{
+	if ( ResizeViewInProgress != -1 )
+	{
+		if ( ResizeViewInProgress > 0 )
+		{
+			RECT viewRect, appClientRect;
+			Views[ResizeViewInProgress]->GetWindowRect( &viewRect );
+			ScreenToClient( &viewRect );
+			GetClientRect( &appClientRect );
+			if ( point.x < 0 )
+				point.x = 10;
+			int deltaPosX = point.x - viewRect.left;
+			float deltaR = (float)deltaPosX / (float)(appClientRect.right-32);
+			if ( -deltaR > Views[ResizeViewInProgress-1]->WidthR )
+				deltaR = -Views[ResizeViewInProgress-1]->WidthR + 0.01f;
+			if ( deltaR > Views[ResizeViewInProgress]->WidthR )
+				deltaR = Views[ResizeViewInProgress]->WidthR - 0.01f;
+			Views[ResizeViewInProgress-1]->WidthR += deltaR;
+			Views[ResizeViewInProgress]->WidthR -= deltaR;
+		}
+		ResizeViewInProgress = -1;
+		ReleaseCapture();
+		SetCursor( theApp.LoadStandardCursor( IDC_ARROW ) );
+		resizeViews();
+	}
+
+	CDialog::OnLButtonUp(nFlags, point);
 }
 
 
@@ -522,23 +729,30 @@ void CLog_analyserDlg::OnDestroy()
  */
 void CLog_analyserDlg::OnHelpBtn() 
 {
-	CString s = "NeL Log Analyser v1.2.0\n(c) 2002-2003 Nevrax\n\n";
+	CString s = "NeL Log Analyser v1.3.0-alpha\n(c) 2002-2003 Nevrax\n\n";
 	s += "Simple Mode: open one or more log files using the button 'Add View...'.\n";
-	s += "If the file being opened contains several log sessions, you can choose one or choose\n";
-	s += "to display all sessions, if the checkbox 'Browse Log Sessions' is enabled. If the\n";
+	s += "You can make a multiple selection, then the files will be sorted by log order.\n";
+	s += "If the file(s) being opened contain(s) several log sessions, you can choose one or\n";
+	s += "choose to display all sessions, if the checkbox 'Browse Log Sessions' is enabled. If the\n";
 	s += "checkbox 'Browse All File Series' is checked and you choose my_service.log, all log\n";
 	s += "files of the series beginning with my_service000.log up to the biggest number found,\n";
 	s += "and ending with my_service.log, will be opened in the same view.\n";
 	s += "You can add some filters. Finally, you may click a log line to display it in its\n";
-	s += "entirety in the top field.\n\n";
+	s += "entirety in the top field.\n";
+	s += "Another way to open a file is to pass its filename as an argument. An alternative way to\n";
+	s += "open one or more files is to drag & drop them onto the main window!.\n";
+	s += "To actualize a file (which may have changed if a program is still writing into it), just\n";
+	s += "click 'Filter...' and OK.\n";
+	s += "Resizing a view is done by dragging its left border.\n\n";
 	s += "Trace Mode: open several log files in Trace Format (see below) using the button\n";
 	s += "'Add Trace View...', you can limit the lines loaded to the ones containing a\n";
 	s += "specific service shortname (see below). Then click the button 'Compute Traces'\n";
 	s += "to display the matching lines. The lines are sorted using their gamecycle and\n";
 	s += "blank lines are filled so that different parallel views have the same timeline.\n";
-	s += "Use the right scrollbar to scroll all the views at the same time.\n\n";
+	s += "Use the right scrollbar to scroll all the views at the same time.\n";
 	s += "The logs in Trace Format should contains some lines that have a substring sTRACE:n:\n";
 	s += "where s is an optional service name (e.g. FS) and n is the gamecycle of the action\n";
 	s += "(an integer).";
 	MessageBox( s );	
 }
+

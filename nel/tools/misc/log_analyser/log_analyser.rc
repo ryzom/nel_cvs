@@ -26,38 +26,41 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_LOG_ANALYSER_DIALOG DIALOGEX 0, 0, 454, 277
+IDD_LOG_ANALYSER_DIALOG DIALOGEX 0, 0, 493, 277
 STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
     WS_SYSMENU | WS_THICKFRAME
 EXSTYLE WS_EX_APPWINDOW
 CAPTION "NeL Log Analyser"
 FONT 8, "MS Sans Serif"
 BEGIN
-    EDITTEXT        IDC_EDIT1,5,25,445,45,ES_MULTILINE | WS_VSCROLL
+    EDITTEXT        IDC_EDIT1,5,25,481,45,ES_MULTILINE | WS_VSCROLL
     PUSHBUTTON      "Add View...",IDC_AddView,5,5,55,14
     PUSHBUTTON      "Add Trace View...",IDC_ADDTRACEVIEW,65,5,55,14
     PUSHBUTTON      "Compute Traces",IDC_ComputeTraces,125,5,55,14
-    SCROLLBAR       IDC_SCROLLBAR1,440,85,10,185,SBS_VERT | NOT WS_VISIBLE
+    SCROLLBAR       IDC_SCROLLBAR1,476,85,10,185,SBS_VERT | NOT WS_VISIBLE
     PUSHBUTTON      "Reset",IDC_Reset,185,5,50,14
     CONTROL         "Browse Log Sessions",IDC_CheckSessions,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,295,5,120,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,295,5,101,10
     PUSHBUTTON      "Help",IDC_HelpBtn,240,5,50,14
     CONTROL         "Browse All File Series",IDC_CheckAllFileSeries,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,295,15,81,10
+                    BS_AUTOCHECKBOX | WS_TABSTOP,295,15,99,10
+    CONTROL         "Display line headers",IDC_DispLineHeaders,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,396,6,78,9
 END
 
 IDD_View DIALOG DISCARDABLE  0, 0, 492, 282
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         " ",IDC_Service,"Static",SS_SIMPLE | WS_GROUP,70,5,415,8
+    CONTROL         " ",IDC_Service,"Static",SS_SIMPLE | WS_GROUP,67,5,418,8
     PUSHBUTTON      "Filter...",IDC_BUTTON1,5,5,30,10,NOT WS_VISIBLE
     CONTROL         "List1",IDC_LIST1,"SysListView32",LVS_REPORT | 
                     LVS_OWNERDATA | WS_BORDER | WS_TABSTOP,5,20,480,255
     PUSHBUTTON      "Find...",IDC_BUTTON2,35,5,30,10,NOT WS_VISIBLE
+    GROUPBOX        "",IDC_DragBar,1,7,8,268,NOT WS_VISIBLE
 END
 
-IDD_FILTERDIALOG DIALOG DISCARDABLE  0, 0, 269, 95
+IDD_FILTERDIALOG DIALOG DISCARDABLE  0, 0, 269, 104
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Filtering preferences"
 FONT 8, "MS Sans Serif"
@@ -94,8 +97,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,1,0,1
- PRODUCTVERSION 1,1,0,1
+ FILEVERSION 1,3,0,1
+ PRODUCTVERSION 1,3,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -113,14 +116,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "NeL Log Analyser\0"
-            VALUE "FileVersion", "1, 1, 0, 1\0"
+            VALUE "FileVersion", "1, 3, 0, 1\0"
             VALUE "InternalName", "log_analyser\0"
-            VALUE "LegalCopyright", "Copyright (C) 2002 Nevrax\0"
+            VALUE "LegalCopyright", "Copyright (C) 2002-2003 Nevrax\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "NeL Log Analyser\0"
-            VALUE "ProductVersion", "1, 1, 0, 1\0"
+            VALUE "ProductVersion", "1, 3, 0, 1\0"
             VALUE "SpecialBuild", "\0"
         END
     END
@@ -144,7 +147,7 @@ BEGIN
     IDD_LOG_ANALYSER_DIALOG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 447
+        RIGHTMARGIN, 486
         TOPMARGIN, 7
         BOTTOMMARGIN, 270
     END
@@ -162,7 +165,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 262
         TOPMARGIN, 7
-        BOTTOMMARGIN, 88
+        BOTTOMMARGIN, 97
     END
 
     IDD_LOGSESSIONS, DIALOG

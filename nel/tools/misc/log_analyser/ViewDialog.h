@@ -1,7 +1,7 @@
 /** \file ViewDialog.h
  * header file
  *
- * $Id: ViewDialog.h,v 1.3 2003/04/02 18:03:46 cado Exp $
+ * $Id: ViewDialog.h,v 1.4 2003/05/14 17:26:11 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -82,7 +82,7 @@ public:
 	bool		passFilter( const char *filter ) const;
 
 	/// Resize
-	void		resizeView( int index, int nbViews, int top );
+	void		resizeView( int nbViews, int top, int left );
 
 	/// Clear
 	void		clear();
@@ -134,7 +134,7 @@ public:
 	int						BeginFindIndex;
 	CFindReplaceDialog		*FindDialog;
 	CString					FindStr;
-
+	float					WidthR; // ratio to the app's client window
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -156,6 +156,7 @@ protected:
 	afx_msg void OnItemchangedList1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnSetfocusList1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnButtonFind();
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

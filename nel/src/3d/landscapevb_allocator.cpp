@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.12 2003/03/13 13:40:58 corvazier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.13 2003/08/07 08:47:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,9 +53,10 @@ namespace NL3D
 
 
 // ***************************************************************************
-CLandscapeVBAllocator::CLandscapeVBAllocator(TType type)
+CLandscapeVBAllocator::CLandscapeVBAllocator(TType type, const std::string &vbName)
 {
 	_Type= type;
+	_VBName= vbName;
 	_VertexFreeMemory.reserve(NL3D_VERTEX_FREE_MEMORY_RESERVE);
 
 	_ReallocationOccur= false;
@@ -388,7 +389,12 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 		// try to create new one, in AGP Ram
 		// If too many vertices wanted, abort VBHard.
 		if(numVertices <= NL3D_VERTEX_MAX_VERTEX_VBHARD)
+		{
 			_VBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP, _VB.getUVRouting());
+			// Set Name For lock Profiling.
+			if(_VBHard)
+				_VBHard->setName(_VBName);
+		}
 		else
 			_VBHard= NULL;
 

@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.h
  * <File description>
  *
- * $Id: landscapevb_allocator.h,v 1.5 2003/04/23 10:08:58 berenguier Exp $
+ * $Id: landscapevb_allocator.h,v 1.6 2003/08/07 08:47:52 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ public:
 	enum	TType	{Far0, Far1, Tile};
 
 	/// Constructor
-	CLandscapeVBAllocator(TType type);
+	CLandscapeVBAllocator(TType type, const std::string &vbName);
 	~CLandscapeVBAllocator();
 
 	/** setup driver, and test for possible VBHard reallocation.
@@ -132,6 +132,7 @@ private:
 
 private:
 	TType						_Type;
+	std::string					_VBName;
 	
 	bool						_ReallocationOccur;
 	// List of vertices free.

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.9 2003/07/30 15:59:49 vizerie Exp $
+ * $Id: lod_character_manager.cpp,v 1.10 2003/08/07 08:47:52 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -327,6 +327,9 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 	{
 		_VBHard= driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getValueTypePointer(), 
 			_MaxNumVertices, IDriver::VBHardAGP, _VBuffer.getUVRouting());
+		// Set Name For Profiling
+		if(_VBHard)
+			_VBHard->setName("CLodManagerVB");
 	}
 
 	// Last try to create a std VertexBuffer if the VBHard does not exist.

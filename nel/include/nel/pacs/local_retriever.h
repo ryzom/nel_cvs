@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.4 2001/05/10 12:18:41 legros Exp $
+ * $Id: local_retriever.h,v 1.5 2001/05/14 09:58:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,9 @@
 #include "nel/pacs/surface_quad.h"
 #include "nel/pacs/chain.h"
 #include "nel/pacs/retrievable_surface.h"
+#include "nel/pacs/chain_quad.h"
+
+
 
 namespace NLPACS
 {
@@ -145,6 +148,9 @@ protected:
 	/// The topologies within the zone.
 	std::vector<CTopology>				_Topologies[NumCreatureModels];
 
+	/// For collisions, the chainquad.
+	CChainQuad							_ChainQuad;
+
 public:
 	struct CXPred
 	{
@@ -191,7 +197,6 @@ public:
 
 	sint32								addChain(const std::vector<NLMISC::CVector> &vertices,
 												 sint32 left, sint32 right);
-
 	void								computeTopologies();
 
 	void								sortTips();
@@ -200,6 +205,14 @@ public:
 	void								findEdgeChains();
 
 	void								serial(NLMISC::IStream &f);
+
+
+	/// \name  Collisions part.
+	// @{
+	/// compute the chain quad, used for collisions. the ChainQuad is serialised in serial(). _OrderedChains must be OK.
+	void								computeCollisionChainQuad();
+	// @}
+
 
 protected:
 	friend class	CRetrieverInstance;

@@ -129,6 +129,14 @@ SOURCE=..\include\nel\pacs\surface_quad.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\pacs\chain_quad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\chain_quad.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\pacs\collision_desc.cpp
 # End Source File
 # Begin Source File

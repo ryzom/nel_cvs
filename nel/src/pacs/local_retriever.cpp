@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.3 2001/05/10 12:19:02 legros Exp $
+ * $Id: local_retriever.cpp,v 1.4 2001/05/14 09:58:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -285,6 +285,12 @@ void	NLPACS::CLocalRetriever::computeTopologies()
 
 void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 {
+	/*
+	Version 0:
+		- base verison (with collision info).
+	*/
+	sint	ver= f.serialVersion(0);
+
 	uint	i;
 	f.serialCont(_Chains);
 	f.serialCont(_OrderedChains);
@@ -298,6 +304,7 @@ void	NLPACS::CLocalRetriever::serial(NLMISC::IStream &f)
 		f.serialCont(_EdgeChains[i]);
 	for (i=0; i<NumCreatureModels; ++i)
 		f.serialCont(_Topologies[i]);
+	f.serial(_ChainQuad);
 }
 
 
@@ -375,3 +382,19 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 		}
 	}
 }
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Collisions part.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void	NLPACS::CLocalRetriever::computeCollisionChainQuad()
+{
+	_ChainQuad.build(_OrderedChains);
+}
+

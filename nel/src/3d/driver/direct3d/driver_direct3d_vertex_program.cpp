@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex_program.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_vertex_program.cpp,v 1.2 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d_vertex_program.cpp,v 1.3 2004/09/17 15:06:08 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -344,7 +344,7 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 	if (program)
 	{
 		CVertexProgamDrvInfosD3D *info = static_cast<CVertexProgamDrvInfosD3D *>((IVertexProgramDrvInfos*)program->_DrvInfo);
-		setVertexProgram (info->Shader);
+		setVertexProgram (info->Shader, program);
 
 		/* D3DRS_FOGSTART and D3DRS_FOGEND must be set with [1, 0] else the fog doesn't work properly on VertexShader and non-VertexShader objects 
 		(random fog flicking) with Geforce4 TI 4200 (drivers 53.03 and 45.23). The other cards seam to interpret the "oFog"'s values using D3DRS_FOGSTART, 
@@ -357,7 +357,7 @@ bool CDriverD3D::activeVertexProgram (CVertexProgram *program)
 	}
 	else
 	{
-		setVertexProgram (NULL);
+		setVertexProgram (NULL, NULL);
 
 		// Set the old fog range
 		setRenderState (D3DRS_FOGSTART, *((DWORD*) (&_FogStart)));

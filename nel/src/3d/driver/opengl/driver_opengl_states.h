@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.7 2001/11/14 15:50:27 vizerie Exp $
+ * $Id: driver_opengl_states.h,v 1.8 2001/11/21 16:11:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 namespace NL3D 
 {
+
 
 
 // ***************************************************************************
@@ -114,6 +115,10 @@ public:
 	enum			TTextureMode {TextureDisabled, Texture2D, TextureCubeMap, TextureModeCount};
 	/// same as glActiveTextureARB(). usefull for setTextureMode.
 	void			activeTextureARB(uint stage);
+	/// same as active texture arb, but with no cache check
+	void			forceActiveTextureARB(uint stage);
+	/// get active texture
+	uint			getActiveTextureARB() const { return _CurrentActiveTextureARB; }
 	/** change if needed the texture mode of the current active Texture ARB.
 	 *	NB: if CubeMap extension not supported, TextureCubeMap <=> TextureDisabled.
 	 */
@@ -137,7 +142,7 @@ public:
 	/// For vertexProgram. do not check if supported or not.
 	void			enableVertexAttribArray(uint glIndex, bool enable);
 	// @}
-
+	
 private:
 	bool			_CurBlend;
 	bool			_CurCullFace;
@@ -167,7 +172,7 @@ private:
 	bool			_SecondaryColorArrayEnabled;
 	uint			_CurrentClientActiveTextureARB;
 	bool			_TexCoordArrayEnabled[IDRV_MAT_MAXTEXTURES];
-	bool			_VertexAttribArrayEnabled[CVertexBuffer::NumValue];
+	bool			_VertexAttribArrayEnabled[CVertexBuffer::NumValue];	
 };
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.8 2001/11/14 15:50:27 vizerie Exp $
+ * $Id: driver_opengl_states.cpp,v 1.9 2001/11/21 16:10:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-CDriverGLStates::CDriverGLStates()
+	CDriverGLStates::CDriverGLStates()
 {
 	_TextureCubeMapSupported= false;
 }
@@ -365,8 +365,7 @@ void			CDriverGLStates::resetTextureMode()
 
 // ***************************************************************************
 void			CDriverGLStates::setTextureMode(TTextureMode texMode)
-{
-	//if (_NVTextureShaderEnabled) return; // ignored when texture shaders are used
+{	
 	TTextureMode	oldTexMode = _TextureMode[_CurrentActiveTextureARB];
 	if(oldTexMode != texMode)
 	{
@@ -406,6 +405,13 @@ void			CDriverGLStates::activeTextureARB(uint stage)
 		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
 		_CurrentActiveTextureARB= stage;
 	}
+}
+
+// ***************************************************************************
+void			CDriverGLStates::forceActiveTextureARB(uint stage)
+{	
+	glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+	_CurrentActiveTextureARB= stage;	
 }
 
 

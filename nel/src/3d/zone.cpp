@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.44 2001/07/23 14:40:21 berenguier Exp $
+ * $Id: zone.cpp,v 1.45 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,41 @@ namespace NL3D {
 const sint	ClipIn= 0;
 const sint	ClipOut= 1;
 const sint	ClipSide= 2;
+
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CPatchInfo
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CPatchInfo::setCornerSmoothFlag(uint corner, bool smooth)
+{
+	nlassert(corner<=3);
+	uint	mask= 1<<corner;
+	if(smooth)
+		_CornerSmoothFlag|= mask;
+	else
+		_CornerSmoothFlag&= ~mask;
+}
+
+// ***************************************************************************
+bool			CPatchInfo::getCornerSmoothFlag(uint corner) const
+{
+	nlassert(corner<=3);
+	uint	mask= 1<<corner;
+	return	(_CornerSmoothFlag & mask)!=0;
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CZone
+// ***************************************************************************
+// ***************************************************************************
 
 
 // ***************************************************************************
@@ -118,6 +153,17 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 		pa.Flags&=~NL_PATCH_SMOOTH_FLAG_MASK;
 		pa.Flags|=NL_PATCH_SMOOTH_FLAG_MASK&(pi.Flags<<NL_PATCH_SMOOTH_FLAG_SHIFT);
 
+
+		// Noise Data
+		// copy noise rotation.
+		pa.NoiseRotation= pi.NoiseRotation;
+		// copy all noise smoothing info.
+		for(i=0;i<4;i++)
+		{
+			pa.setCornerSmoothFlag(i, pi.getCornerSmoothFlag(i));
+		}
+
+
 		// Build the patch.
 		for(i=0;i<4;i++)
 			pa.Vertices[i].pack(p.Vertices[i], PatchBias, PatchScale);
@@ -180,6 +226,21 @@ void			CZone::retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVerte
 		CBezierPatch		&p= pi.Patch;
 		CPatch				&pa= Patchs[j];
 		CPatchConnect		&pc= PatchConnects[j];
+
+
+		// Smoothing flags
+		pi.Flags= (pa.Flags&NL_PATCH_SMOOTH_FLAG_MASK)>>NL_PATCH_SMOOTH_FLAG_SHIFT;
+
+
+		// Noise Data
+		// copy noise rotation.
+		pi.NoiseRotation= pa.NoiseRotation;
+		// copy all noise smoothing info.
+		for(i=0;i<4;i++)
+		{
+			pi.setCornerSmoothFlag(i, pa.getCornerSmoothFlag(i));
+		}
+
 
 		// re-Build the uncompressed bezier patch.
 		for(i=0;i<4;i++)
@@ -1102,6 +1163,16 @@ void			CZone::changePatchTextureAndColor (sint numPatch, const std::vector<CTile
 		Patchs[numPatch].deleteTileUvs();
 		Patchs[numPatch].recreateTileUvs();
 	}
+}
+
+
+// ***************************************************************************
+void			CZone::refreshTesselationGeometry(sint numPatch)
+{
+	nlassert(numPatch>=0);
+	nlassert(numPatch<getNumPatchs());
+
+	Patchs[numPatch].refreshTesselationGeometry();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.9 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: bezier_patch.cpp,v 1.10 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,6 +82,24 @@ void		CBezierPatch::applyMatrix(const CMatrix &m)
 
 
 // ***************************************************************************
+static inline	void	mulAdd(CVector &tgt, const CVector &src, float f)
+{
+	tgt.x+= src.x*f;
+	tgt.y+= src.y*f;
+	tgt.z+= src.z*f;
+}
+
+
+// ***************************************************************************
+static inline	void	mulAddD(CVectorD &tgt, const CVector &src, double f)
+{
+	tgt.x+= src.x*f;
+	tgt.y+= src.y*f;
+	tgt.z+= src.z*f;
+}
+
+
+// ***************************************************************************
 CVector		CBezierPatch::eval(float ps, float pt) const
 {
 	CVector	p;
@@ -101,22 +119,23 @@ CVector		CBezierPatch::eval(float ps, float pt) const
 	float t2 = 3.0f * pt2 * pt1;
 	float t3 = pt2 * pt;
 
-	p = Vertices[0]	* s0 * t0	+ 
-		Tangents[7] * s1 * t0	+ 
-		Tangents[6] * s2 * t0	+ 
-		Vertices[3] * s3 * t0;
-	p+= Tangents[0] * s0 * t1	+ 
-		Interiors[0]* s1 * t1	+ 
-		Interiors[3]* s2 * t1	+ 
-		Tangents[5] * s3 * t1;
-	p+=	Tangents[1] * s0 * t2	+ 
-		Interiors[1]* s1 * t2	+ 
-		Interiors[2]* s2 * t2	+ 
-		Tangents[4] * s3 * t2;
-	p+=	Vertices[1] * s0 * t3	+ 
-		Tangents[2] * s1 * t3	+ 
-		Tangents[3] * s2 * t3	+ 
-		Vertices[2] * s3 * t3;
+	p.set(0,0,0);
+	mulAdd(p, Vertices[0] , s0 * t0);
+	mulAdd(p, Tangents[7] , s1 * t0);
+	mulAdd(p, Tangents[6] , s2 * t0);
+	mulAdd(p, Vertices[3] , s3 * t0);
+	mulAdd(p, Tangents[0] , s0 * t1);
+	mulAdd(p, Interiors[0], s1 * t1);
+	mulAdd(p, Interiors[3], s2 * t1);
+	mulAdd(p, Tangents[5] , s3 * t1);
+	mulAdd(p, Tangents[1] , s0 * t2);
+	mulAdd(p, Interiors[1], s1 * t2);
+	mulAdd(p, Interiors[2], s2 * t2);
+	mulAdd(p, Tangents[4] , s3 * t2);
+	mulAdd(p, Vertices[1] , s0 * t3);
+	mulAdd(p, Tangents[2] , s1 * t3);
+	mulAdd(p, Tangents[3] , s2 * t3);
+	mulAdd(p, Vertices[2] , s3 * t3);
 	
 	return p;
 }
@@ -140,22 +159,23 @@ CVectorD	CBezierPatch::evalDouble(double ps, double pt) const
 	double t2 = 3.0f * pt2 * pt1;
 	double t3 = pt2 * pt;
 
-	p = CVectorD(Vertices[0]) * s0 * t0	+ 
-		CVectorD(Tangents[7]) * s1 * t0	+ 
-		CVectorD(Tangents[6]) * s2 * t0	+ 
-		CVectorD(Vertices[3]) * s3 * t0;
-	p+= CVectorD(Tangents[0]) * s0 * t1	+ 
-		CVectorD(Interiors[0])* s1 * t1	+ 
-		CVectorD(Interiors[3])* s2 * t1	+ 
-		CVectorD(Tangents[5]) * s3 * t1;
-	p+=	CVectorD(Tangents[1]) * s0 * t2	+ 
-		CVectorD(Interiors[1])* s1 * t2	+ 
-		CVectorD(Interiors[2])* s2 * t2	+ 
-		CVectorD(Tangents[4]) * s3 * t2;
-	p+=	CVectorD(Vertices[1]) * s0 * t3	+ 
-		CVectorD(Tangents[2]) * s1 * t3	+ 
-		CVectorD(Tangents[3]) * s2 * t3	+ 
-		CVectorD(Vertices[2]) * s3 * t3;
+	p.set(0,0,0);
+	mulAddD(p, Vertices[0] , s0 * t0);
+	mulAddD(p, Tangents[7] , s1 * t0);
+	mulAddD(p, Tangents[6] , s2 * t0);
+	mulAddD(p, Vertices[3] , s3 * t0);
+	mulAddD(p, Tangents[0] , s0 * t1);
+	mulAddD(p, Interiors[0], s1 * t1);
+	mulAddD(p, Interiors[3], s2 * t1);
+	mulAddD(p, Tangents[5] , s3 * t1);
+	mulAddD(p, Tangents[1] , s0 * t2);
+	mulAddD(p, Interiors[1], s1 * t2);
+	mulAddD(p, Interiors[2], s2 * t2);
+	mulAddD(p, Tangents[4] , s3 * t2);
+	mulAddD(p, Vertices[1] , s0 * t3);
+	mulAddD(p, Tangents[2] , s1 * t3);
+	mulAddD(p, Tangents[3] , s2 * t3);
+	mulAddD(p, Vertices[2] , s3 * t3);
 
 	return p;
 }
@@ -188,22 +208,23 @@ CVector		CBezierPatch::evalNormal(float ps, float pt) const
 	t2 = 3.0f * pt2 * pt1;
 	t3 = pt2 * pt;
 
-	tgtS =	Vertices[0]	* s0 * t0	+ 
-			Tangents[7] * s1 * t0	+ 
-			Tangents[6] * s2 * t0	+ 
-			Vertices[3] * s3 * t0;
-	tgtS+=	Tangents[0] * s0 * t1	+ 
-			Interiors[0]* s1 * t1	+ 
-			Interiors[3]* s2 * t1	+ 
-			Tangents[5] * s3 * t1;
-	tgtS+=	Tangents[1] * s0 * t2	+ 
-			Interiors[1]* s1 * t2	+ 
-			Interiors[2]* s2 * t2	+ 
-			Tangents[4] * s3 * t2;
-	tgtS+=	Vertices[1] * s0 * t3	+ 
-			Tangents[2] * s1 * t3	+ 
-			Tangents[3] * s2 * t3	+ 
-			Vertices[2] * s3 * t3;
+	tgtS.set(0,0,0);
+	mulAdd(tgtS, Vertices[0] , s0 * t0);
+	mulAdd(tgtS, Tangents[7] , s1 * t0);
+	mulAdd(tgtS, Tangents[6] , s2 * t0);
+	mulAdd(tgtS, Vertices[3] , s3 * t0);
+	mulAdd(tgtS, Tangents[0] , s0 * t1);
+	mulAdd(tgtS, Interiors[0], s1 * t1);
+	mulAdd(tgtS, Interiors[3], s2 * t1);
+	mulAdd(tgtS, Tangents[5] , s3 * t1);
+	mulAdd(tgtS, Tangents[1] , s0 * t2);
+	mulAdd(tgtS, Interiors[1], s1 * t2);
+	mulAdd(tgtS, Interiors[2], s2 * t2);
+	mulAdd(tgtS, Tangents[4] , s3 * t2);
+	mulAdd(tgtS, Vertices[1] , s0 * t3);
+	mulAdd(tgtS, Tangents[2] , s1 * t3);
+	mulAdd(tgtS, Tangents[3] , s2 * t3);
+	mulAdd(tgtS, Vertices[2] , s3 * t3);
 	
 	// Compute tangentT
 	//=================
@@ -218,22 +239,23 @@ CVector		CBezierPatch::evalNormal(float ps, float pt) const
 	t2 =-9*pt2 + 6*pt ;
 	t3 = 3* pt2;
 
-	tgtT =	Vertices[0]	* s0 * t0	+ 
-			Tangents[7] * s1 * t0	+ 
-			Tangents[6] * s2 * t0	+ 
-			Vertices[3] * s3 * t0;
-	tgtT+=	Tangents[0] * s0 * t1	+ 
-			Interiors[0]* s1 * t1	+ 
-			Interiors[3]* s2 * t1	+ 
-			Tangents[5] * s3 * t1;
-	tgtT+=	Tangents[1] * s0 * t2	+ 
-			Interiors[1]* s1 * t2	+ 
-			Interiors[2]* s2 * t2	+ 
-			Tangents[4] * s3 * t2;
-	tgtT+=	Vertices[1] * s0 * t3	+ 
-			Tangents[2] * s1 * t3	+ 
-			Tangents[3] * s2 * t3	+ 
-			Vertices[2] * s3 * t3;
+	tgtT.set(0,0,0);
+	mulAdd(tgtT, Vertices[0] , s0 * t0);
+	mulAdd(tgtT, Tangents[7] , s1 * t0);
+	mulAdd(tgtT, Tangents[6] , s2 * t0);
+	mulAdd(tgtT, Vertices[3] , s3 * t0);
+	mulAdd(tgtT, Tangents[0] , s0 * t1);
+	mulAdd(tgtT, Interiors[0], s1 * t1);
+	mulAdd(tgtT, Interiors[3], s2 * t1);
+	mulAdd(tgtT, Tangents[5] , s3 * t1);
+	mulAdd(tgtT, Tangents[1] , s0 * t2);
+	mulAdd(tgtT, Interiors[1], s1 * t2);
+	mulAdd(tgtT, Interiors[2], s2 * t2);
+	mulAdd(tgtT, Tangents[4] , s3 * t2);
+	mulAdd(tgtT, Vertices[1] , s0 * t3);
+	mulAdd(tgtT, Tangents[2] , s1 * t3);
+	mulAdd(tgtT, Tangents[3] , s2 * t3);
+	mulAdd(tgtT, Vertices[2] , s3 * t3);
 	
 
 	// Return the normal.

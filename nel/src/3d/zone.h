@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.6 2001/07/23 14:40:21 berenguier Exp $
+ * $Id: zone.h,v 1.7 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,6 +121,15 @@ public:
 	/** "The don't smooth" flags. For each edge of the patch (0~3), the flag means that this patch mustn't be smoothed
 	with its neightbor. The n-th edge links the vertices "n" and "(n+1)%4". The flag for the n-th edge is (1<<n). */
 	uint8			Flags;
+
+
+	/// The orientation of the NoiseMap. 0,1,2,3. This represent a CCW rotation of the NoiseMap.
+	uint8			NoiseRotation;
+
+	/// setup NoiseSmooth flags: used for Noise geometry and lighting. NB: convention: corner0==A, corner1==B ...
+	void			setCornerSmoothFlag(uint corner, bool smooth);
+	bool			getCornerSmoothFlag(uint corner) const;
+
 	// @}
 
 
@@ -179,7 +188,15 @@ public:
 	CPatchInfo()
 	{
 		ErrorSize= 0;
+		// No Rotation / not smooth by default.
+		NoiseRotation= 0;
+		_CornerSmoothFlag= 0;
 	}
+
+private:
+	// Noise Smooth flags.
+	uint8			_CornerSmoothFlag;
+
 };
 
 
@@ -319,6 +336,21 @@ public:
 	 * \param colors the patch texture. assert if not of good size ((OrderS+1)*(OrderT+1)). Can be NULL if you don't want to change the patch colors.
 	 */
 	void			changePatchTextureAndColor (sint numPatch, const std::vector<CTileElement> *tiles, const std::vector<CTileColor> *colors);
+
+
+	/** 
+	 * refresh the geometry (re-compute vertices).
+	 * Usefull for Tile Noise edition. Do it after calling changePatchTextureAndColor().
+	 *	NB: a refreshTesselationGeometry() should be done on All patchs, and all direct neighbors of this patch (including
+	 *	patchs on corners).
+	 *	WARNING: specially coded for Tile edition. Result is not perfect:
+	 *		- only EndPos of tesselation is modified. because Tile edition always subdivide at max.
+	 *		- Pos=EndPos. because TileEdition always subdivide at max, and don't refine...
+	 *		- TessBlocks BSphere may be too big. Clip is worse (too big), but doesn't matter.
+	 * \param numPatch the index of patch in this zone. assert if bad id.
+	 */
+	void			refreshTesselationGeometry(sint numPatch);
+
 
 	/** 
 	 * Get a patch texture.

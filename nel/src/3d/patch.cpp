@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.58 2001/07/23 14:40:20 berenguier Exp $
+ * $Id: patch.cpp,v 1.59 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/landscape.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/common.h"
+#include "3d/patchuv_locator.h"
 using	namespace	std;
 using	namespace	NLMISC;
 
@@ -74,7 +75,7 @@ CPatch::CPatch()
 	_BindZoneNeighbor[3]= NULL;
 	NoiseRotation= 0;
 	// No smooth by default.
-	_NoiseSmooth= 0;
+	_CornerSmoothFlag= 0;
 
 }
 // ***************************************************************************
@@ -619,6 +620,23 @@ void			CPatch::getNumTessBlock(CParamCoord pc, TFarVertType &type, uint &numtb)
 }
 
 
+
+// ***************************************************************************
+void			CPatch::extendTessBlockWithEndPos(CTessFace *face)
+{
+	if(face->Level>=TessBlockLimitLevel)
+	{
+		// get the tessBlock of the face.
+		uint	numtb= getNumTessBlock(face);
+
+		// Must enlarge the BSphere of the tesblock!!
+		TessBlocks[numtb].extendSphere(face->VBase->EndPos);
+		TessBlocks[numtb].extendSphere(face->VLeft->EndPos);
+		TessBlocks[numtb].extendSphere(face->VRight->EndPos);
+	}
+}
+
+
 // ***************************************************************************
 void			CPatch::appendFaceToRenderList(CTessFace *face)
 {
@@ -1033,14 +1051,23 @@ CVector			CPatch::computeVertex(float s, float t) const
 {
 	// \todo yoyo: TODO_UVCORRECT: use UV correction.
 
-	// compute displacement map to disturb result.
-	CVector		displace;
-	computeNoise(s,t, displace);
+	if(getLandscape()->getNoiseMode())
+	{
+		// compute displacement map to disturb result.
+		CVector		displace;
+		computeNoise(s,t, displace);
 
-	// return patch(s,t) + dispalcement result.
-	// unpack. Do it after computeNoise(), because this last may change the cache.
-	CBezierPatch	*patch= unpackIntoCache();
-	return patch->eval(s,t) + displace;
+		// return patch(s,t) + dispalcement result.
+		// unpack. Do it after computeNoise(), because this last may change the cache.
+		CBezierPatch	*patch= unpackIntoCache();
+		return patch->eval(s,t) + displace;
+	}
+	else
+	{
+		// unpack and return patch(s,t).
+		CBezierPatch	*patch= unpackIntoCache();
+		return patch->eval(s,t);
+	}
 }
 // ***************************************************************************
 void			CPatch::refine()
@@ -1094,6 +1121,30 @@ void			CPatch::averageTesselationVertices()
 	// Average the tesselation of sons.
 	Son0->averageTesselationVertices();
 	Son1->averageTesselationVertices();
+}
+
+
+// ***************************************************************************
+void			CPatch::refreshTesselationGeometry()
+{
+	nlassert(Son0);
+	nlassert(Son1);
+
+	// Recompute the BaseVertices.
+	CTessVertex *a= BaseVertices[0];
+	CTessVertex *b= BaseVertices[1];
+	CTessVertex *c= BaseVertices[2];
+	CTessVertex *d= BaseVertices[3];
+	// Set positions.
+	a->Pos= a->StartPos= a->EndPos= computeVertex(0,0);
+	b->Pos= b->StartPos= b->EndPos= computeVertex(0,1);
+	c->Pos= c->StartPos= c->EndPos= computeVertex(1,1);
+	d->Pos= d->StartPos= d->EndPos= computeVertex(1,0);
+
+
+	// refresh the tesselation of sons.
+	Son0->refreshTesselationGeometry();
+	Son1->refreshTesselationGeometry();
 }
 
 
@@ -1163,13 +1214,13 @@ void			CPatch::serial(NLMISC::IStream &f)
 	if(ver>=3)
 	{
 		f.serial(NoiseRotation);
-		f.serial(_NoiseSmooth);
+		f.serial(_CornerSmoothFlag);
 	}
 	else
 	{
-		// No Rotation / smooth by default.
+		// No Rotation / not smooth by default.
 		NoiseRotation= 0;
-		_NoiseSmooth= 0;
+		_CornerSmoothFlag= 0;
 	}
 
 }
@@ -1526,86 +1577,795 @@ void			CPatch::recreateTileUvs()
 
 	}
 }
-extern "C" void	NL3D_bilinearTileLightMap(CRGBA *tex);
-uint		CPatch::getTileLightMap(sint ts, sint tt, CPatchRdrPass *&rdrpass)
-// ***************************************************************************
-	// Compute the lightmap texture, with help of TileColors.
-	CRGBA	lightText[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE];
-	
-	// Following code assume size of 5...
-	nlassert (NL_TILE_LIGHTMAP_SIZE==5);
-	float	c= -normal*getLandscape()->getAutomaticLightDir();
-	// Warning: Uncompressed data should be filled now. Rebuild the shadow map ?
-	if (UncompressedLumels.begin()==UncompressedLumels.end())
-	// FastFloor using fistp. Don't care convention.
-		// Resize the lumel array
-		UncompressedLumels.resize ((OrderS*4+1)*(OrderT*4+1));
-	{
-		// Unpack the far shadow map
-		unpackShadowMap (&UncompressedLumels[0]);
-				dest[y*stride + x]=colorTable[UncompressedLumels[offset + x + (y<<NL_LUMEL_BY_TILE_SHIFT)]];
-		}
-	// Get the static lighting array
-	const CRGBA* pStaticLight=Zone->getLandscape()->getStaticLight();
-{
-	// Get the tilecolors at the corners.
-	for(sint i=0;i<4;i++)
 
-		static	uint	lut[4]= {0, 4, 20, 24};
+// ***************************************************************************
+void		CPatch::getTileTileColors(uint ts, uint tt, CRGBA corners[4])
+{
+	for(sint i=0;i<4;i++)
+	{
 		CTileColor	&tcol= TileColors[ (tt+(i>>1))*(OrderS+1) + (ts+(i&1)) ];
-	modulateTileLightmapPixelWithTileColors(ts, tt, s, t, dest);
-		// Blend the color.
-		CRGBA	col;
+		CRGBA		&col= corners[i];
 		col.set565 (tcol.Color565);
-		col.A=255;
-void		CPatch::computeTileLightmapPixelAroundCorner(const CVector2f &stIn, CRGBA *dest, bool lookAround)
-		// TestYoyo: test with a dummy light.
-		/*CBezierPatch	*pa= unpackIntoCache();
-		float	t= (float)(tt+(i>>1))/OrderT;
-		float	s= (float)(ts+(i&1))/OrderS;
-		CVector	norm, light(0, 1, -0.75);
-		norm= pa->evalNormal(s,t);
-		light.normalize();
-		float	f= -norm*light;
-		clamp(f, 0, 1);
-		col.R= 0;
-		col.G= f*255;
-		col.B= 0;*/
-	sint	u, v;
-		lightText[lut[i]]= col;
-		// try to know if we must go on a neighbor patch (maybe false with bind X/1).
-		if( u<0 || u>=OrderS*NL_LUMEL_BY_TILE || v<0 || v>=OrderT*NL_LUMEL_BY_TILE)
-	// Bilinear!!!
-	NL3D_bilinearTileLightMap(lightText);
-			mustLookOnNeighbor= true;
-	// Add shadow
-	CRGBA *texel=lightText;
-	CTileLumel *lumels=&UncompressedLumels[ 4*tt*(OrderS*4+1) + 4*ts ];
-	for (int y=0; y<NL_TILE_LIGHTMAP_SIZE; y++)
 	}
-		for (int x=0; x<NL_TILE_LIGHTMAP_SIZE; x++)
-			computeTileLightmapPixel(ts+decalS, tt+decalT, subS, subT, dest);
-			// Modulate with the color of the shadow
-			texel->modulateFromColor (*texel, pStaticLight[lumels[x].Shaded]);
-			texel++;
-					}
-				}
-		// Next line
-		lumels+=OrderS*4+1;
+}
+
+
+// ***************************************************************************
+// bilinear at center of the pixels. x E [0, 3], y E [0, 3].
+inline void		bilinearTileColorAndModulate(CRGBA	corners[4], uint x, uint y, CRGBA &res)
+{
+
+	// Fast bilinear and modulate. 
+	// \todo yoyo: TODO_OPTIMIZE: should be ASMed later. (MMX...)
+	// hardcoded for 4 pixels.
+	nlassert(NL_LUMEL_BY_TILE==4);
+
+	// expand to be on center of pixel=> 1,3,5 or 7.
+	x= (x<<1)+1;
+	y= (y<<1)+1;
+	uint	x1= 8-x;
+	uint	y1= 8-y;
+
+	// compute weight factors.
+	uint	xy=		x*y;
+	uint	x1y=	x1*y;
+	uint	xy1=	x*y1;
+	uint	x1y1=	x1*y1;
+
+	// bilinear
+	uint	R,G,B;
+	// pix left top.
+	R = corners[0].R * x1y1;
+	G = corners[0].G * x1y1;
+	B = corners[0].B * x1y1;
+	// pix right top.
+	R+= corners[1].R * xy1;
+	G+= corners[1].G * xy1;
+	B+= corners[1].B * xy1;
+	// pix left bottom.
+	R+= corners[2].R * x1y;
+	G+= corners[2].G * x1y;
+	B+= corners[2].B * x1y;
+	// pix right bottom.
+	R+= corners[3].R * xy;
+	G+= corners[3].G * xy;
+	B+= corners[3].B * xy;
+
+	// modulate with input.
+	R*= res.R;
+	G*= res.G;
+	B*= res.B;
+
+	// result.
+	res.R= R >> 14;
+	res.G= G >> 14;
+	res.B= B >> 14;
+}
+
+
+// ***************************************************************************
+void		CPatch::modulateTileLightmapWithTileColors(uint ts, uint tt, CRGBA *dest, uint stride)
+{
+	// Get the tileColors around this tile
+	CRGBA	corners[4];
+	getTileTileColors(ts, tt, corners);
+
+	// For all lumel, bilinear.
+	uint	x, y;
+	for(y=0; y<NL_LUMEL_BY_TILE; y++)
+	{
+		for(x=0; x<NL_LUMEL_BY_TILE; x++)
+		{
+			// compute this pixel, and modulate
+			bilinearTileColorAndModulate(corners, x, y, dest[y*stride + x]);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::modulateTileLightmapEdgeWithTileColors(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse)
+{
+	// Get the tileColors around this tile
+	CRGBA	corners[4];
+	getTileTileColors(ts, tt, corners);
+
+	// get coordinate according to edge.
+	uint	x,y;
+	switch(edge)
+	{
+	case 0: x= 0; break;
+	case 1: y= NL_LUMEL_BY_TILE-1; break;
+	case 2: x= NL_LUMEL_BY_TILE-1; break;
+	case 3: y= 0; break;
+	};
+
+	// For all lumel of the edge, bilinear.
+	uint	i;
+	for(i=0; i<NL_LUMEL_BY_TILE; i++)
+	{
+		// if vertical edge
+		if( (edge&1)==0 )	y= i;
+		// else horizontal edge
+		else				x= i;
+
+		// manage inverse.
+		uint	where;
+		if(inverse)		where= (NL_LUMEL_BY_TILE-1)-i;
+		else			where= i;
+		// compute this pixel, and modulate
+		bilinearTileColorAndModulate(corners, x, y, dest[where*stride]);
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::modulateTileLightmapPixelWithTileColors(uint ts, uint tt, uint s, uint t, CRGBA *dest)
+{
+	// Get the tileColors around this tile
+	CRGBA	corners[4];
+	// compute this pixel, and modulate
+	bilinearTileColorAndModulate(corners, s, t, *dest);
+
+	// compute this pixel, and modulate
+	bilinearTileColorAndModulate(corners, s, t, *dest);
+}
+
+
+
+// ***************************************************************************
+void		CPatch::computeTileLightmapAutomatic(uint ts, uint tt, CRGBA *dest, uint stride)
+{
+	uint	x, y;
+	for(y=0; y<NL_LUMEL_BY_TILE; y++)
+	{
+		for(x=0; x<NL_LUMEL_BY_TILE; x++)
+		{
+			// compute this pixel.
+			computeTileLightmapPixelAutomatic(ts, tt, x, y, dest+ y*stride + x);
+		}
+	}
+}
+
+// ***************************************************************************
+void		CPatch::computeTileLightmapEdgeAutomatic(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse)
+{
+	// get coordinate according to edge.
+	uint	x,y;
+	switch(edge)
+	{
+	case 0: x= 0; break;
+	case 1: y= NL_LUMEL_BY_TILE-1; break;
+	case 2: x= NL_LUMEL_BY_TILE-1; break;
+	case 3: y= 0; break;
+	};
+
+	uint	i;
+	for(i=0; i<NL_LUMEL_BY_TILE; i++)
+	{
+		// if vertical edge
+		if( (edge&1)==0 )	y= i;
+		// else horizontal edge
+		else				x= i;
+
+		// manage inverse.
+		uint	where;
+		if(inverse)		where= (NL_LUMEL_BY_TILE-1)-i;
+		else			where= i;
+		// compute this pixel.
+		computeTileLightmapPixelAutomatic(ts, tt, x, y, dest+ where*stride);
+	}
+}
+
+// ***************************************************************************
+void		CPatch::computeTileLightmapPixelAutomatic(uint ts, uint tt, uint s, uint t, CRGBA *dest)
+{
+	float		u,v;
+	static const float	lumelSize= 1.f/NL_LUMEL_BY_TILE;
+
+	// use 3 computeVertex to compute a normal. This is slow....
+	CVector		p0, p1 ,p2;
+	// 1st vert. Top-left of the lumel.
+	u= (ts + s*lumelSize )/OrderS;
+	v= (tt + t*lumelSize )/OrderT;
+	p0= computeVertex(u, v);
+	// 2nd vert. Bottom-left of the lumel.
+	u= (ts + s*lumelSize )/OrderS;
+	v= (tt + (t+1)*lumelSize )/OrderT;
+	p1= computeVertex(u, v);
+	// 3rd vert. Center-Right of the lumel.
+	u= (ts + (s+1)*lumelSize )/OrderS;
+	v= (tt + (t+0.5f)*lumelSize )/OrderT;
+	p2= computeVertex(u, v);
+
+	// the normal.
+	CVector		normal;
+	normal= (p1-p0)^(p2-p0);
+	normal.normalize();
+
+	// lighting.
+	float	c= -normal*getLandscape()->getAutomaticLightDir();
+	c= max(c, 0.f);
+	sint	ic;
+
+#ifdef NL_OS_WINDOWS
+	// FastFloor using fistp. Don't care convention.
+	float	fc= c*256;
+	_asm
+	{
+		fld fc
+		fistp ic
+	}
+#else
+	ic= (sint)floor(c*256);
+#endif
+	clamp(ic, 0, 255);
+
+	// ambiant/diffuse lighting.
+
+// ***************************************************************************
+// TempYoyo.
+static	CRGBA	dummyGetColor(uint ts, uint tt)
+{
+	CRGBA	col;
+	ts&=1;
+	tt&=1;
+	if(ts==0 && tt==0) col.set(128,128,128);
+	if(ts==1 && tt==1) col.R= 255;
+	if(ts==1 && tt==0) col.G= 255;
+	if(ts==0 && tt==1) col.B= 255;
+	return col;
+}
+	*dest= getLandscape()->getStaticLight()[ic];
+}
+
+
+	// TempYoyo.
+	CRGBA	col= dummyGetColor(ts, tt);
+	{
+	uint	x, y;
+	for(y=0; y<NL_LUMEL_BY_TILE; y++)
+	{
+		for(x=0; x<NL_LUMEL_BY_TILE; x++)
+		// For each lumels
+			dest[y*stride + x]= col;
+				// lumel
+				dest[y*stride + x]=colorTable[UncompressedLumels[offset + x + (y<<NL_LUMEL_BY_TILE_SHIFT)]];
 			}
 		}
-	return Zone->Landscape->getTileLightMap(lightText, rdrpass);
+	}
+static uint NL3DDeltaLumel[4]={4, 1, 4, 1};
 
+	// TempYoyo.
+	CRGBA	col= dummyGetColor(ts, tt);
+{
+	uint	x;
+	for(x=0; x<NL_LUMEL_BY_TILE; x++)
+
+		// fuck inverse.
+		dest[x*stride]= col;
+				offset+=delta;
+			}
+		}
+	}
 }
-void		CPatch::getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias)
 
-	Zone->Landscape->getTileLightMapUvInfo(tileLightMapId, uvScaleBias);
-	uint	ttDec= tt & 1;
+	// TempYoyo.
+	CRGBA	col= dummyGetColor(ts, tt);
+{
+	*dest= col;
+		// Return the lumel
+		*dest=colorTable[UncompressedLumels[ts+tt*(OrderS<<NL_LUMEL_BY_TILE_SHIFT)+s+(t*OrderS<<2)]];
+	}
 }
-void		CPatch::releaseTileLightMap(uint tileLightMapId)
 
-	Zone->Landscape->releaseTileLightMap(tileLightMapId);
+
+
+// ***************************************************************************
+void		CPatch::computeTileLightmap(uint ts, uint tt, CRGBA *dest, uint stride)
+{
+	if(getLandscape()->getAutomaticLighting())
+		computeTileLightmapAutomatic(ts, tt, dest, stride);
+	else
+		computeTileLightmapPrecomputed(ts, tt, dest, stride);
+
+
+
+	// modulate dest with tileColors (at center of lumels).
+	modulateTileLightmapWithTileColors(ts, tt, dest, stride);
+}
+// ***************************************************************************
+void		CPatch::computeTileLightmapEdge(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse)
+{
+	if(getLandscape()->getAutomaticLighting())
+		computeTileLightmapEdgeAutomatic(ts, tt, edge, dest, stride, inverse);
+	else
+		computeTileLightmapEdgePrecomputed(ts, tt, edge, dest, stride, inverse);
+
+	// modulate dest with tileColors (at center of lumels).
+	modulateTileLightmapEdgeWithTileColors(ts, tt, edge, dest, stride, inverse);
+}
+
+
+// ***************************************************************************
+void		CPatch::computeTileLightmapPixel(uint ts, uint tt, uint s, uint t, CRGBA *dest)
+{
+	if(getLandscape()->getAutomaticLighting())
+		computeTileLightmapPixelAutomatic(ts, tt, s, t, dest);
+	else
+		computeTileLightmapPixelPrecomputed(ts, tt, s, t, dest);
+
+	// modulate dest with tileColors (at center of lumels).
+	modulateTileLightmapPixelWithTileColors(ts, tt, s, t, dest);
+}
+
+
+// ***************************************************************************
+void		CPatch::computeTileLightmapPixelAroundCorner(const CVector2f &stIn, CRGBA *dest, bool lookAround)
+{
+	bool	mustLookOnNeighbor= false;
+
+	// Get the Uv, in [0,Order?*NL_LUMEL_BY_TILE] basis (ie lumel basis).
+	sint	u, v;
+	u= (sint)floor(stIn.x*NL_LUMEL_BY_TILE);
+	v= (sint)floor(stIn.y*NL_LUMEL_BY_TILE);
+
+	// if allowed, try to go on neighbor patch.
+	if(lookAround)
 	{
+		// try to know if we must go on a neighbor patch (maybe false with bind X/1).
+		if( u<0 || u>=OrderS*NL_LUMEL_BY_TILE || v<0 || v>=OrderT*NL_LUMEL_BY_TILE)
+			mustLookOnNeighbor= true;
+	}
+
+
+	// If we must get (if possible) the pixel in the current patch, do it.
+	if(!mustLookOnNeighbor)
+	{
+		// if out this patch, abort.
+		if( u<0 || u>=OrderS*NL_LUMEL_BY_TILE || v<0 || v>=OrderT*NL_LUMEL_BY_TILE)
+			return;
+		else
+		{
+			// get this pixel.
+			computeTileLightmapPixel(u>>NL_LUMEL_BY_TILE_SHIFT, v>>NL_LUMEL_BY_TILE_SHIFT, u&(NL_LUMEL_BY_TILE-1), v&(NL_LUMEL_BY_TILE-1), dest);
+		}
+	}
+	// else get from the best neighbor patch.
+	else
+	{
+		// choose against which edge we must find the pixel.
+		uint	edge;
+		if(u<0)					edge=0;
+		else if(v>=OrderT*NL_LUMEL_BY_TILE)	edge=1;
+		else if(u>=OrderS*NL_LUMEL_BY_TILE)	edge=2;
+		else if(v<0)			edge=3;
+
+		// retrieve info on neighbor.
+		CBindInfo			bindInfo;
+		getBindNeighbor(edge, bindInfo);
+
+		// if neighbor present.
+		if(bindInfo.Zone)
+		{
+			CVector2f	stOut;
+			CPatch		*patchOut;
+			uint		patchId;
+
+			// Ok, search uv on this patch.
+			CPatchUVLocator		uvLocator;
+			uvLocator.build(this, edge, bindInfo);
+			patchId= uvLocator.selectPatch(stIn);
+			uvLocator.locateUV(stIn, patchId, patchOut, stOut);
+
+			// retry only one time, so at next call, must find the data IN htis patch (else abort).
+			patchOut->computeTileLightmapPixelAroundCorner(stOut, dest, false);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void		CPatch::computeNearBlockLightmap(uint uts, uint utt, CRGBA	*lightText)
+{
+	sint	ts= uts;
+	sint	tt= utt;
+
+	// hardcoded for 10x10.
+	nlassert(NL_TILE_LIGHTMAP_SIZE==10);
+	CRGBA	*dest;
+	uint	edge;
+	uint	corner;
+
+	// Compute center of the TessBlock: the 2x2 tiles.
+	//=================
+	// compute tile 0,0 of the tessBlock. must decal of 1 pixel.
+	dest= lightText+NL_TILE_LIGHTMAP_SIZE+1;
+	computeTileLightmap(ts, tt, dest, NL_TILE_LIGHTMAP_SIZE);
+	// compute tile 1,0 of the tessBlock. must decal of 1 pixel.
+	dest= lightText + NL_LUMEL_BY_TILE + NL_TILE_LIGHTMAP_SIZE+1 ;
+	computeTileLightmap(ts+1, tt, dest, NL_TILE_LIGHTMAP_SIZE);
+	// compute tile 0,1 of the tessBlock. must decal of 1 pixel.
+	dest= lightText + NL_LUMEL_BY_TILE*NL_TILE_LIGHTMAP_SIZE + NL_TILE_LIGHTMAP_SIZE+1 ;
+	computeTileLightmap(ts, tt+1, dest, NL_TILE_LIGHTMAP_SIZE);
+	// compute tile 1,1 of the tessBlock. must decal of 1 pixel.
+	dest= lightText + NL_LUMEL_BY_TILE*NL_TILE_LIGHTMAP_SIZE + NL_LUMEL_BY_TILE + NL_TILE_LIGHTMAP_SIZE+1 ;
+	computeTileLightmap(ts+1, tt+1, dest, NL_TILE_LIGHTMAP_SIZE);
+
+
+	// Compute edges of the TessBlock.
+	//=================
+	bool	edgeBorder[4];
+	// where are we on a border of a patch??
+	edgeBorder[0]= ( ts==0 );
+	edgeBorder[1]= ( tt == OrderT-2 );
+	edgeBorder[2]= ( ts == OrderS-2 );
+	edgeBorder[3]= ( tt==0 );
+
+	// For all edges.
+	for(edge=0; edge<4; edge++)
+	{
+		// compute dest info.
+		//==============
+		// Are we on a vertical edge or horizontal edge??
+		uint	stride= (edge&1)==0? NL_TILE_LIGHTMAP_SIZE : 1;
+
+		// must compute on which tile we must find info.
+		sint	decalS=0;
+		sint	decalT=0;
+		// and must compute ptr, where we store the result of the edge.
+		switch(edge)
+		{
+		case 0: decalS=-1; dest= lightText + 0 + NL_TILE_LIGHTMAP_SIZE; break;
+		case 1: decalT= 2; dest= lightText + 1 + (NL_TILE_LIGHTMAP_SIZE-1)*NL_TILE_LIGHTMAP_SIZE; break;
+		case 2: decalS= 2; dest= lightText + (NL_TILE_LIGHTMAP_SIZE-1) + NL_TILE_LIGHTMAP_SIZE; break;
+		case 3: decalT=-1; dest= lightText + 1; break;
+		};
+
+		// compute the second tile dest info.
+		CRGBA	*dest2;
+		sint	decalS2;
+		sint	decalT2;
+		// if vertical edge.
+		if((edge&1)==0)
+		{
+			// Next Y tile.
+			dest2= dest + NL_LUMEL_BY_TILE*NL_TILE_LIGHTMAP_SIZE;
+			decalS2= decalS;
+			decalT2= decalT+1;
+		}
+		else
+		{
+			// Next X tile.
+			dest2= dest + NL_LUMEL_BY_TILE;
+			decalS2= decalS+1;
+			decalT2= decalT;
+		}
+
+
+		// If we are not on a border of a patch, just compute on the interior of the patch.
+		//==============
+		if(!edgeBorder[edge])
+		{
+			// find the result on the mirrored border of us. First tile.
+			computeTileLightmapEdge(ts+decalS, tt+decalT, (edge+2)&3, dest, stride, false);
+
+			// find the result on the mirrored border of us. Second Tile.
+			computeTileLightmapEdge(ts+decalS2, tt+decalT2, (edge+2)&3, dest2, stride, false);
+
+		}
+		// else, slightly complicated, must find the result on neighbor patch(s).
+		//==============
+		else
+		{
+			CPatchUVLocator		uvLocator;
+			CBindInfo			bindInfo;
+			bindInfo.Zone= NULL;
+
+			// if smmothed edge, search the neighbor.
+			if(getSmoothFlag(edge))
+			{
+				// Build the bindInfo against this edge.
+				getBindNeighbor(edge, bindInfo);
+
+				// if ok, build the uv info against this edge.
+				if(bindInfo.Zone)
+				{
+					uvLocator.build(this, edge, bindInfo);
+					// if there is not same tile order across the edge, invalidate the smooth.
+					// This is rare, so don't bother.
+					if(!uvLocator.sameEdgeOrder())
+						bindInfo.Zone= NULL;
+				}
+			}
+
+
+			// Fast reject: if no neighbor, or if not smoothed, or if edge order pb, just copy from my interior.
+			if(!bindInfo.Zone)
+			{
+				CRGBA	*src;
+				switch(edge)
+				{
+				case 0: src= dest + 1; break;
+				case 1: src= dest - NL_TILE_LIGHTMAP_SIZE; break;
+				case 2: src= dest - 1; break;
+				case 3: src= dest + NL_TILE_LIGHTMAP_SIZE; break;
+				};
+				
+				// fill the NL_LUMEL_BY_TILE*2 (8) pixels.
+				for(uint n=NL_LUMEL_BY_TILE*2; n>0; n--, src+=stride, dest+=stride)
+					*dest= *src;
+			}
+			// else, ok, get from neighbor.
+			else
+			{
+				CVector2f	stIn, stOut;
+				CPatch		*patchOut;
+				uint		patchId;
+				uint		edgeOut;
+				bool		inverse;
+
+				// First Tile.
+				//=========
+				// to remove floor pbs, take the center of the wanted tile.
+				stIn.set(ts+decalS + 0.5f, tt+decalT + 0.5f);
+				patchId= uvLocator.selectPatch(stIn);
+				uvLocator.locateUV(stIn, patchId, patchOut, stOut);
+				// must find what edge on neighbor to compute, and if we must inverse (swap) result.
+				// easy: the edge of the tile is the edge of the patch where we are binded.
+				edgeOut= bindInfo.Edge[patchId];
+				// edge0 is oriented in T increasing order. edge1 is oriented in S increasing order.
+				// edge2 is oriented in T decreasing order. edge3 is oriented in S decreasing order.
+				// inverse is true if same sens on both edges (because of mirroring, sens should be different).
+				inverse= (edge>>1)==(edgeOut>>1);
+				// compute the lightmap on the edge of the neighbor.
+				patchOut->computeTileLightmapEdge((sint)floor(stOut.x), (sint)floor(stOut.y), edgeOut, dest, stride, inverse);
+
+				// Second Tile.
+				//=========
+				// same reasoning.
+				stIn.set(ts+decalS2 + 0.5f, tt+decalT2 + 0.5f);
+				patchId= uvLocator.selectPatch(stIn);
+				uvLocator.locateUV(stIn, patchId, patchOut, stOut);
+				edgeOut= bindInfo.Edge[patchId];
+				inverse= (edge>>1)==(edgeOut>>1);
+				patchOut->computeTileLightmapEdge((sint)floor(stOut.x), (sint)floor(stOut.y), edgeOut, dest2, stride, inverse);
+			}
+
+		}
+	}
+
+
+	// Compute corners of the TessBlock.
+	//=================
+	bool	cornerOnPatchEdge[4];
+	bool	cornerOnPatchCorner[4];
+	// where are we on a edge border of a patch??
+	cornerOnPatchEdge[0]= edgeBorder[3] != edgeBorder[0];
+	cornerOnPatchEdge[1]= edgeBorder[0] != edgeBorder[1];
+	cornerOnPatchEdge[2]= edgeBorder[1] != edgeBorder[2];
+	cornerOnPatchEdge[3]= edgeBorder[2] != edgeBorder[3];
+	// where are we on a corner border of a patch??
+	cornerOnPatchCorner[0]= edgeBorder[3] && edgeBorder[0];
+	cornerOnPatchCorner[1]= edgeBorder[0] && edgeBorder[1];
+	cornerOnPatchCorner[2]= edgeBorder[1] && edgeBorder[2];
+	cornerOnPatchCorner[3]= edgeBorder[2] && edgeBorder[3];
+
+	// For all corners.
+	for(corner=0; corner<4; corner++)
+	{
+		// compute dest info.
+		//==============
+		// must compute on which tile we must find info.
+		sint	decalS=0;
+		sint	decalT=0;
+		// and must compute ptr, where we store the result of the corner.
+		switch(corner)
+		{
+		case 0: decalS=-1; decalT=-1; dest= lightText + 0 + 0; break;
+		case 1: decalS=-1; decalT= 2; dest= lightText + 0 + (NL_TILE_LIGHTMAP_SIZE-1)*NL_TILE_LIGHTMAP_SIZE; break;
+		case 2: decalS= 2; decalT= 2; dest= lightText + (NL_TILE_LIGHTMAP_SIZE-1) + (NL_TILE_LIGHTMAP_SIZE-1)*NL_TILE_LIGHTMAP_SIZE; break;
+		case 3: decalS= 2; decalT=-1; dest= lightText + (NL_TILE_LIGHTMAP_SIZE-1) + 0; break;
+		};
+
+
+		// If we are not on a border of a patch, just compute on the interior of the patch.
+		//==============
+		// if the corner is IN the patch.
+		if(!cornerOnPatchCorner[corner] && !cornerOnPatchEdge[corner])
+		{
+			// what pixel to read.
+			uint	subS, subT;
+			if(decalS==-1)	subS= NL_LUMEL_BY_TILE-1;
+			else			subS= 0;
+			if(decalT==-1)	subT= NL_LUMEL_BY_TILE-1;
+			else			subT= 0;
+
+			// find the result on the corner of the neighbor tile.
+			computeTileLightmapPixel(ts+decalS, tt+decalT, subS, subT, dest);
+		}
+		else
+		{
+			// By default, fill the corner with our interior corner. Because other methods may fail.
+			CRGBA	*src;
+			switch(corner)
+			{
+			case 0: src= dest + 1 + NL_TILE_LIGHTMAP_SIZE; break;
+			case 1: src= dest + 1 - NL_TILE_LIGHTMAP_SIZE; break;
+			case 2: src= dest - 1 - NL_TILE_LIGHTMAP_SIZE; break;
+			case 3: src= dest - 1 + NL_TILE_LIGHTMAP_SIZE; break;
+			};
+			
+			// fill the pixel.
+			*dest= *src;
+
+			// get the coordinate of the corner, in our [0,Order] basis. get it at the center of the pixel.
+			CBindInfo			bindInfo;
+			CPatchUVLocator		uvLocator;
+			CVector2f			stIn, stOut;
+			CPatch				*patchOut;
+			uint				patchId;
+			float				decX, decY;
+			static const float	lumelSize= 1.f/NL_LUMEL_BY_TILE;
+			static const float	semiLumelSize= 0.5f*lumelSize;
+
+			if(decalS==-1)	decX= -  semiLumelSize;
+			else			decX= 2+ semiLumelSize;
+			if(decalT==-1)	decY= -  semiLumelSize;
+			else			decY= 2+ semiLumelSize;
+			stIn.set( ts+decX, tt+decY);
+
+
+			// if the corner is on One edge only of the patch.
+			if(cornerOnPatchEdge[corner])
+			{
+				// find the edge where to read this corner: hard edge after or before this corner.
+				if(edgeBorder[corner])	edge= corner;
+				else					edge= (corner+4-1) & 3;
+
+				// if this edge is smoothed, find on neighbor.
+				if(getSmoothFlag(edge))
+				{
+					// retrieve neigbhor info.
+					getBindNeighbor(edge, bindInfo);
+
+					// if neighbor present.
+					if(bindInfo.Zone)
+					{
+						// Ok, search uv on this patch.
+						uvLocator.build(this, edge, bindInfo);
+						patchId= uvLocator.selectPatch(stIn);
+						uvLocator.locateUV(stIn, patchId, patchOut, stOut);
+
+						// Get the Uv, in [0,Order?*NL_LUMEL_BY_TILE] basis (ie lumel basis), and get from neighbor patch
+						sint	u, v;
+						u= (sint)floor(stOut.x*NL_LUMEL_BY_TILE);
+						v= (sint)floor(stOut.y*NL_LUMEL_BY_TILE);
+						patchOut->computeTileLightmapPixel(u>>NL_LUMEL_BY_TILE_SHIFT, v>>NL_LUMEL_BY_TILE_SHIFT, u&(NL_LUMEL_BY_TILE-1), v&(NL_LUMEL_BY_TILE-1), dest);
+					}
+				}
+				// else we must still smooth with our lumel on this patch, so get it from neighbor on edge.
+				else
+				{
+					// first, clamp to our patch (recenter on the previous pixel)
+					if(stIn.x<0)			stIn.x+= lumelSize;
+					else if(stIn.x>OrderS)	stIn.x-= lumelSize;
+					else if(stIn.y<0)		stIn.y+= lumelSize;
+					else if(stIn.y>OrderT)	stIn.y-= lumelSize;
+
+					// Get the Uv, in [0,Order?*NL_LUMEL_BY_TILE] basis (ie lumel basis), and get from this patch
+					sint	u, v;
+					u= (sint)floor(stIn.x*NL_LUMEL_BY_TILE);
+					v= (sint)floor(stIn.y*NL_LUMEL_BY_TILE);
+					computeTileLightmapPixel(u>>NL_LUMEL_BY_TILE_SHIFT, v>>NL_LUMEL_BY_TILE_SHIFT, u&(NL_LUMEL_BY_TILE-1), v&(NL_LUMEL_BY_TILE-1), dest);
+				}
+			}
+			// else it is on a corner of the patch.
+			else
+			{
+				// if the corner of the patch (same as tile corner) is smoothed, find on neighbor
+				if(getCornerSmoothFlag(corner))
+				{
+					// retrieve neigbhor info. NB: use edgeId=corner, (corner X is the start of the edge X)it works.
+					getBindNeighbor(corner, bindInfo);
+
+					// if neighbor present.
+					if(bindInfo.Zone)
+					{
+						// Ok, search uv on this patch.
+						uvLocator.build(this, corner, bindInfo);
+						patchId= uvLocator.selectPatch(stIn);
+						uvLocator.locateUV(stIn, patchId, patchOut, stOut);
+
+						// same reasoning as in computeDisplaceCornerSmooth(), must find the pixel on the neighbor 
+						// of our neighbor. But the current corner may be a corner on a bind X/1. All is managed by doing
+						// this way.
+						patchOut->computeTileLightmapPixelAroundCorner(stOut, dest, true);
+					}
+				}
+			}
+		}
+
+	}
+
+
+}
+
+
+// ***************************************************************************
+void		CPatch::getTileLightMap(uint ts, uint tt, CPatchRdrPass *&rdrpass)
+{
+	// TessBlocks must have been allocated.
+	nlassert(TessBlocks.size()!=0);
+	computeTbTm(numtb, numtm, ts, tt, OrderS);
+	// get what tessBlock to use.
+	uint	numtb, numtm;
+	computeTbTm(numtb, numtm, ts, tt);
+	CTessBlock	&tessBlock= TessBlocks[numtb];
+
+	// If the lightmap Id has not been computed, compute it.
+	if(tessBlock.LightMapRefCount==0)
+	{
+		// Compute the lightmap texture, with help of TileColors, with neighboring info etc...
+		CRGBA	lightText[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE];
+		computeNearBlockLightmap(ts&(~1), tt&(~1), lightText);
+
+		// Create a rdrPass with this texture, donlod to Driver etc...
+		tessBlock.LightMapId= Zone->Landscape->getTileLightMap(lightText, rdrpass);
+
+		// store this rdrpass ptr.
+		tessBlock.LightMapRdrPass= rdrpass;
+	}
+
+	// We are using this 2x2 tiles lightmap.
+	tessBlock.LightMapRefCount++;
+
+
+	// get the rdrpass ptr of the tessBlock lightmap
+	rdrpass= tessBlock.LightMapRdrPass;
+}
+
+
+// ***************************************************************************
+void		CPatch::getTileLightMapUvInfo(uint ts, uint tt, CVector &uvScaleBias)
+{
+	// TessBlocks must have been allocated.
+	nlassert(TessBlocks.size()!=0);
+	computeTbTm(numtb, numtm, ts, tt, OrderS);
+	// get what tessBlock to use.
+	uint	numtb, numtm;
+	computeTbTm(numtb, numtm, ts, tt);
+	CTessBlock	&tessBlock= TessBlocks[numtb];
+
+	// Get the uvScaleBias for the tile 0,0  of the block.
+	Zone->Landscape->getTileLightMapUvInfo(tessBlock.LightMapId, uvScaleBias);
+
+	// Must increment the bias, for the good tile in the 2x2 block Lightmap.
+	uint	tsDec= ts & 1;
+	uint	ttDec= tt & 1;
+	uvScaleBias.x+= tsDec * uvScaleBias.z;
+	uvScaleBias.y+= ttDec * uvScaleBias.z;
+}
+
+
+// ***************************************************************************
+void		CPatch::releaseTileLightMap(uint ts, uint tt)
+{
+	// TessBlocks must have been allocated.
+	nlassert(TessBlocks.size()!=0);
+	computeTbTm(numtb, numtm, ts, tt, OrderS);
+	// get what tessBlock to use.
+	uint	numtb, numtm;
+	computeTbTm(numtb, numtm, ts, tt);
+	CTessBlock	&tessBlock= TessBlocks[numtb];
+
+	// If no more tileMaterial use this lightmap, release it.
+	nlassert(tessBlock.LightMapRefCount>0);
+	tessBlock.LightMapRefCount--;
+	if(tessBlock.LightMapRefCount==0)
+	{
+		Zone->Landscape->releaseTileLightMap(tessBlock.LightMapId);
+
 	}
 extern "C" void	NL3D_bilinearShadingLightMap4x (uint8 *tex, uint lineSize);
 void		CPatch::expandShading (uint8 * Shading, uint ratio)

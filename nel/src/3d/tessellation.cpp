@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.48 2001/07/11 13:08:08 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.49 2001/08/20 14:56:11 berenguier Exp $
  *
  */
 
@@ -626,7 +626,7 @@ void		CTessFace::initTileUvLightmap(CParamCoord pointCoord, CParamCoord middle, 
 	
 	// Get Tile Lightmap Uv info: bias and scale.
 	CVector		uvScaleBias;
-	Patch->getTileLightMapUvInfo(TileMaterial->LightMapId, uvScaleBias);
+	Patch->getTileLightMapUvInfo(TileMaterial->TileS, TileMaterial->TileT, uvScaleBias);
 
 	// Scale the UV.
 	uv.U*= uvScaleBias.z;
@@ -686,8 +686,9 @@ void		CTessFace::computeTileMaterial()
 		// Add this new material to the render list.
 		Patch->appendTileMaterialToRenderList(TileMaterial);
 
-		// First, build a lightmap for this tile, and get his id.
-		TileMaterial->LightMapId= Patch->getTileLightMap(ts, tt, TileMaterial->Pass[NL3D_TILE_PASS_LIGHTMAP]);
+		// First, get a lightmap for this tile. NB: important to do this after appendTileMaterialToRenderList(), 
+		// because use TessBlocks.
+		Patch->getTileLightMap(ts, tt, TileMaterial->Pass[NL3D_TILE_PASS_LIGHTMAP]);
 
 		// Fill pass of multi pass material.
 		for(i=0;i<NL3D_MAX_TILE_PASS;i++)
@@ -797,8 +798,8 @@ void	CTessFace::releaseTileMaterial()
 		// After, release Tile faces.
 		deleteTileFaces();
 
-		// Release the tile lightmap part.
-		Patch->releaseTileLightMap(TileMaterial->LightMapId);
+		// Release the tile lightmap part. Do it before removeTileMaterialFromRenderList().
+		Patch->releaseTileLightMap(TileMaterial->TileS, TileMaterial->TileT);
 
 		// Remove this material from the render list. DO it before deletion of course :).
 		// NB: TileS/TileT still valid.
@@ -1988,6 +1989,30 @@ void		CTessFace::averageTesselationVertices()
 	SonRight->averageTesselationVertices();
 }
 
+
+// ***************************************************************************
+void		CTessFace::refreshTesselationGeometry()
+{
+	// must enlarge the little tessBlock (if any), for clipping.
+	Patch->extendTessBlockWithEndPos(this);
+
+	// If we are not splitted, no-op.
+	if(isLeaf())
+		return;
+
+
+	/* NB: rectangular case: just need to take SonLeft->VBase, because my neighbor on FBase will compute his son
+		on an other branch of the recurs call.
+	*/
+	// re-compute this position (maybe with new noise geometry in Tile Edition).
+	SonLeft->VBase->EndPos= Patch->computeVertex(SonLeft->PVBase.getS(), SonLeft->PVBase.getT());
+	// overwrite cur Pos (NB: specialy hardcoded for Tile edition).
+	SonLeft->VBase->Pos= SonLeft->VBase->EndPos;
+
+	// Do same thing for sons. NB: see above, we are not a leaf.
+	SonLeft->refreshTesselationGeometry();
+	SonRight->refreshTesselationGeometry();
+}
 
 
 // ***************************************************************************

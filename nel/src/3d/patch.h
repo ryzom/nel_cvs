@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.8 2001/07/23 14:40:20 berenguier Exp $
+ * $Id: patch.h,v 1.9 2001/08/20 14:56:11 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -32,6 +32,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/vector_2f.h"
 #include "3d/tessellation.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/bsphere.h"
@@ -322,17 +323,15 @@ public:
 	/// The orientation of the NoiseMap. 0,1,2,3. This represent a CCW rotation of the NoiseMap.
 	uint8			NoiseRotation;
 
-	/// setup NoiseSmooth flags: used for Noise geometry and lighting.
-	void			setNoiseSmoothEdge(uint edge, bool smooth);
-	/// setup NoiseSmooth flags: used for Noise geometry and lighting. NB: convention: corner0==A, corner1==B ...
-	void			setNoiseSmoothCorner(uint corner, bool smooth);
-
-	bool			getNoiseSmoothEdge(uint edge) const;
-	bool			getNoiseSmoothCorner(uint corner) const;
+	/** setup Smooth flags for Noise on corner: used for Noise geometry and for lighting. 
+	 *	NB: convention: corner0==A, corner1==B ...
+	 */
+	void			setCornerSmoothFlag(uint corner, bool smooth);
+	bool			getCornerSmoothFlag(uint corner) const;
 
 private:
 	/// Put here for packing with NoiseRotation.
-	uint8			_NoiseSmooth;
+	uint8			_CornerSmoothFlag;
 
 public:
 	// @}
@@ -368,6 +367,8 @@ public:
 	float			getErrorSize() const {return ErrorSize;}
 	sint			getFar0() const {return Far0;}
 	sint			getFar1() const {return Far1;}
+	/// return neighborhood information.
+	void			getBindNeighbor(uint edge, CBindInfo &neighborEdge) const;
 
 	/// Build the bbox of the patch, according to ctrl points, and displacement map max value.
 	CAABBox			buildBBox() const;
@@ -427,6 +428,8 @@ public:
 	// For CZone changePatchTexture only.
 	void			deleteTileUvs();
 	void			recreateTileUvs();
+	// For CZone::refreshTesselationGeometry() only.
+	void			refreshTesselationGeometry();
 
 
 	// Serial just the un-compiled part.
@@ -498,7 +501,7 @@ public:
 	/**
 	  * Get the smooth flag for the n-th edge. Return false if this edge must by smoothed, true else.
 	  */
-	bool getSmoothFlag (uint edge)
+	bool getSmoothFlag (uint edge) const
 	{
 		// Test it
 		return ((Flags&(1<<(edge+NL_PATCH_SMOOTH_FLAG_SHIFT)))!=0);
@@ -547,6 +550,14 @@ public:
 
 	// only usefull for CZone refine.
 	bool			isClipped() const {return Clipped;}
+
+
+	// get the according vertex for a corner. use wisely
+	const CTessVertex	*getCornerVertex(uint corner)
+	{
+		return BaseVertices[corner];
+	}
+
 
 // Private part.
 private:
@@ -687,6 +698,8 @@ private:
 	// for changePatchTexture, insert just the TileFace into the good render List.
 	void			appendFaceToTileRenderList(CTessFace *face);
 	void			removeFaceFromTileRenderList(CTessFace *face);
+	// For refreshTesselationGeometry() only. enlarge the TessBlock (if any) with face->V*->EndPos.
+	void			extendTessBlockWithEndPos(CTessFace *face);
 
 	// Set/Unset (to NULL) a TileMaterial from the TessBlocks. Material must exist for both functions.
 	// And TileS/TileT must be OK.
@@ -716,13 +729,41 @@ private:
 
 	// Tile LightMap mgt.
 	// @{
-	// for a given tile (accessed from the (ts,tt) coordinates), compute and get a lightmapId, and a RenderPass.
-	// The id returned must be stored, for getTileLightMapUvInfo() and releaseTileLightMap().
-	uint		getTileLightMap(sint ts, sint tt, CPatchRdrPass *&rdrpass);
-	// tileLightMapId must be the id returned  by getTileLightMap().
-	void		getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBias);
-	// tileLightMapId must be the id returned  by getTileLightMap().
-	void		releaseTileLightMap(uint tileLightMapId);
+	// for a given tile (accessed from the (ts,tt) coordinates), compute a lightmap if necessary, and get a RenderPass.
+	void		getTileLightMap(uint ts, uint tt, CPatchRdrPass *&rdrpass);
+	// get uvInfo for tile. NB: ts,tt form because simpler.
+	void		getTileLightMapUvInfo(uint ts, uint tt, CVector &uvScaleBias);
+	// release the tile lightmap. NB: ts,tt form because simpler.
+	void		releaseTileLightMap(uint ts, uint tt);
+
+	// Compute the Lightmap for 2x2 tiles. => 10x10 pixels. ts, tt is in [0,OrderS], [0, OrderT].
+	void		computeNearBlockLightmap(uint ts, uint tt, CRGBA	*lightText);
+	void		computeTileLightmapPixelAroundCorner(const NLMISC::CVector2f &stIn, CRGBA *dest, bool lookAround);
+
+	// Compute a lightmap for a tile (ts,tt). 4x4 lumels are processed. NB: result= lumel*userColor.
+	void		computeTileLightmap(uint ts, uint tt, CRGBA *dest, uint stride);
+	// Compute a lightmap for an edge of a tile. 1x4 lumels. "edge" say what edge of the tile to compute.
+	// pixels will be written in (dest+i*stride), where i vary from 0 to 3 or 3 to 0 (according to "inverse").
+	void		computeTileLightmapEdge(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse);
+	// Compute a lightmap just for a pixel (s,t) of a tile (ts,tt). (s,t) E [0;3], [0;3].
+	void		computeTileLightmapPixel(uint ts, uint tt, uint s, uint t, CRGBA *dest);
+
+
+	// Methods for automatic Lighting. NB: result= lumel only (no TileColors).
+	void		computeTileLightmapAutomatic(uint ts, uint tt, CRGBA *dest, uint stride);
+	void		computeTileLightmapEdgeAutomatic(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse);
+	void		computeTileLightmapPixelAutomatic(uint ts, uint tt, uint s, uint t, CRGBA *dest);
+	// Methods for Precomputed Lighting. NB: result= lumel only (no TileColors).
+	void		computeTileLightmapPrecomputed(uint ts, uint tt, CRGBA *dest, uint stride);
+	void		computeTileLightmapEdgePrecomputed(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse);
+	void		computeTileLightmapPixelPrecomputed(uint ts, uint tt, uint s, uint t, CRGBA *dest);
+	// Methods to modulate dest with TileColors. NB: A unmodified.
+	void		modulateTileLightmapWithTileColors(uint ts, uint tt, CRGBA *dest, uint stride);
+	void		modulateTileLightmapEdgeWithTileColors(uint ts, uint tt, uint edge, CRGBA *dest, uint stride, bool inverse);
+	void		modulateTileLightmapPixelWithTileColors(uint ts, uint tt, uint s, uint t, CRGBA *dest);
+	// get the tileColors at the corners of the tile. corner order: 0,0; 1,0; 0,1; 1,1. NB: A undefined.
+	void		getTileTileColors(uint ts, uint tt, CRGBA corners[4]);
+
 	// @}
 
 	// For Render. Those methods compute the vertices for Driver (in CTessFace::Current*VB).
@@ -770,8 +811,6 @@ private:
 	/// The 4 neighbors zone of this patch (setuped at bind() time). NB: NULL if zone not loaded, or if no patch near us.
 	CZone		*_BindZoneNeighbor[4];
 
-	/// return neighborhood information.
-	void		getBindNeighbor(uint edge, CBindInfo &neighborEdge) const;
 	// @}
 
 
@@ -780,6 +819,9 @@ private:
 	// @{
 
 
+	float		computeDisplaceRawInteger(sint ts, sint tt, sint ms, sint mt) const;
+	void		computeDisplaceRawCoordinates(float sTile, float tTile, float s, float t,
+	sint &ts, sint &tt, sint &ms, sint &mt) const;
 	/** compute the displacement for s,t ([0;OrderS], [0;OrderT]) 
 	 *  (sTile, tTile) choose what NoiseMap to use, and (s,t) choose the coordinate in the patch to compute this NoiseMap.
 	 *	Any rotation of the NoiseMap is included in this method.

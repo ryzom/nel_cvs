@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.8 2001/07/23 14:40:20 berenguier Exp $
+ * $Id: landscape.h,v 1.9 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,8 +61,8 @@ const	sint	NbTilesMax= 65536;
 // Size of a CTextureNear. 256 by default (works everywhere).
 // Texures must be square, because of uvscalebias...
 const	sint	TextureNearSize= 256;
-const	sint	NbTilesByLine= TextureNearSize/NL_TILE_LIGHTMAP_SIZE;
-const	sint	NbTilesByTexture= NbTilesByLine*NbTilesByLine;
+const	sint	NbTileLightMapByLine= TextureNearSize/NL_TILE_LIGHTMAP_SIZE;
+const	sint	NbTileLightMapByTexture= NbTileLightMapByLine*NbTileLightMapByLine;
 
 
 
@@ -186,6 +186,11 @@ public:
 	void			setTileMaxSubdivision (uint tileDiv);
 	/// Get Maximum Tile subdivision.
 	uint 			getTileMaxSubdivision ();
+
+	/// Enable the noise or not. NB: only new tesselation computed is modified, so you should call it only at init time.
+	void			setNoiseMode(bool enabled);
+	bool			getNoiseMode() const;
+
 
 	// \todo yoyo: other landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CTessFace statics.
@@ -319,6 +324,25 @@ public:
 	{
 		return _LightValue;
 	}
+
+
+	/**
+	  *  Enable automatic near lightmap computing. use setupStaticLight().
+	  *	 Default is disabled.
+	  *	 NB: calling this method won't flush all texture near already computed.
+	  */
+	void	enableAutomaticLighting(bool enable);
+	/**
+	  *  For automatic near lightmap computing (if enabled): setup the lightdir
+	  *
+	  *  \param lightDir is the direction of the light vector used for the lighting. NB: the vector is normalized.
+	  */
+	void	setupAutomaticLightDir(const CVector &lightDir);
+	/// return true if AutomaticLighting is enabled.
+	bool	getAutomaticLighting() const {return _AutomaticLighting;}
+	/// return the light direction setuped in enableAutomaticLighting().
+	const CVector &getAutomaticLightDir() const {return _AutomaticLightDir;}
+
 	// @}
 
 
@@ -498,6 +522,9 @@ private:
 	// *** Lighting
 	CRGBA			_LightValue[256];
 
+	bool			_AutomaticLighting;
+	CVector			_AutomaticLightDir;
+
 private:
 	// Internal only. Force load of the tile (with TileBank).
 	void			loadTile(uint16 tileId);
@@ -505,7 +532,7 @@ private:
 	ITexture		*findTileTexture(const std::string &textName);
 	CPatchRdrPass	*findTileRdrPass(const CPatchRdrPass &pass);
 
-	// Tile LightMap mgt.
+	// Tile LightMap mgt. NB: a lightmap is now a 2x2 tiles lightmap (10x10 pixels).
 	// @{
 	// Compute and get a lightmapId/lightmap renderpass.
 	// lightmap returned is to be uses with getTileRenderPass(). The id returned must be stored.
@@ -580,6 +607,9 @@ private:
 
 	/// Noise Geometry.
 	// @{
+	// guess.
+	bool			_NoiseEnabled;
+
 	/// Retrieve the Tile Noise Map for the wanted tile/tileSubNoise.
 	CTileNoiseMap	*getTileNoiseMap(uint16 tileId, uint tileSubNoise);
 	// @}

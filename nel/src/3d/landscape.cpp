@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.69 2001/07/23 14:40:20 berenguier Exp $
+ * $Id: landscape.cpp,v 1.70 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -179,6 +179,11 @@ CLandscape::CLandscape() :
 	_Far1VBHard= NULL;
 	_TileVBHard= NULL;
 
+	// By default Automatic light comes from up.
+	_AutomaticLightDir= -CVector::K;
+
+	// By default, noise is enabled.
+	_NoiseEnabled= true;
 }
 // ***************************************************************************
 CLandscape::~CLandscape()
@@ -1266,7 +1271,7 @@ uint		CLandscape::getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHT
 	//===================================================
 	lightMapId= nearText->getTileAndFillRect(map);
 	// Compute the Id.
-	lightMapId= textNum*NbTilesByTexture + lightMapId;
+	lightMapId= textNum*NbTileLightMapByTexture + lightMapId;
 
 	// Result:
 	lightmapRdrPass= nearRdrPass;
@@ -1278,22 +1283,22 @@ void		CLandscape::getTileLightMapUvInfo(uint tileLightMapId, CVector &uvScaleBia
 	uint	id, s,t;
 
 	// Scale.
-	float	scale5= (float)NL_TILE_LIGHTMAP_SIZE/TextureNearSize;
-	float	scale4= (float)(NL_TILE_LIGHTMAP_SIZE-1)/TextureNearSize;
-	float	scale1= (float)(1)/TextureNearSize;
+	static const float	scale10= (float)NL_TILE_LIGHTMAP_SIZE/TextureNearSize;
+	static const float	scale4= 4.f/TextureNearSize;
+	static const float	scale1= 1.f/TextureNearSize;
 	// The size of a minilightmap, mapped onto the polygon, is still 4 pixels.
 	uvScaleBias.z= scale4;
 
 	// Get the id local in the texture.
-	id= tileLightMapId%NbTilesByTexture;
+	id= tileLightMapId%NbTileLightMapByTexture;
 
 	// Commpute UVBias.
 	// Get the coordinate of the tile, in tile number.
-	s= id%NbTilesByLine;
-	t= id/NbTilesByLine;
-	// But the real size of a minilightmap is 5 pixels, and we must reach the center of the pixel.
-	uvScaleBias.x= s*scale5 + 0.5f*scale1;
-	uvScaleBias.y= t*scale5 + 0.5f*scale1;
+	s= id%NbTileLightMapByLine;
+	t= id/NbTileLightMapByLine;
+	// But the real size of a minilightmap is 10 pixels, and we must reach the pixel 1,1.
+	uvScaleBias.x= s*scale10 + scale1;
+	uvScaleBias.y= t*scale10 + scale1;
 }
 // ***************************************************************************
 void		CLandscape::releaseTileLightMap(uint tileLightMapId)
@@ -1301,8 +1306,8 @@ void		CLandscape::releaseTileLightMap(uint tileLightMapId)
 	uint	id, textNum;
 
 	// Get the id local in the texture.
-	textNum= tileLightMapId/NbTilesByTexture;
-	id= tileLightMapId%NbTilesByTexture;
+	textNum= tileLightMapId / NbTileLightMapByTexture;
+	id= tileLightMapId % NbTileLightMapByTexture;
 	nlassert(textNum>=0 && textNum<_TextureNears.size());
 
 	// Release the tile in this texture.
@@ -1910,6 +1915,19 @@ void			CLandscape::setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant,
 	}
 }
 
+// ***************************************************************************
+void			CLandscape::enableAutomaticLighting(bool enable)
+{
+	_AutomaticLighting= enable;
+}
+
+// ***************************************************************************
+void			CLandscape::setupAutomaticLightDir(const CVector &lightDir)
+{
+	_AutomaticLightDir= lightDir;
+	_AutomaticLightDir.normalize();
+}
+
 
 // ***************************************************************************
 CVector		CLandscape::getHeightFieldDeltaZ(float x, float y) const
@@ -2300,9 +2318,22 @@ void				CLandscape::updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHa
 
 
 // ***************************************************************************
+void			CLandscape::setNoiseMode(bool enable)
+{
+	_NoiseEnabled= enable;
+}
+
+// ***************************************************************************
+bool			CLandscape::getNoiseMode() const
+{
+	return _NoiseEnabled;
+}
+
+
+// ***************************************************************************
 CTileNoiseMap	*CLandscape::getTileNoiseMap(uint16 tileId, uint tileSubNoise)
 {
-	// TODODO.
+	// TempYoyo.
 
 
 	static	const uint8	bitmap[1024]= {  
@@ -2341,82 +2372,11 @@ CTileNoiseMap	*CLandscape::getTileNoiseMap(uint16 tileId, uint tileSubNoise)
 	}; 
 
 
-	static	const uint8	bitmapFull[1024]= {  
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-	}; 
-
-
-	static	const uint8	bitmapEmpty[1024]= {  
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-	}; 
-
-
 	static CTileNoiseMap	test;
 	static CTileNoiseMap	testFull;
 	static CTileNoiseMap	testEmpty;
 	static bool				init= false;
+	static uint				fact=64;
 	if(!init)
 	{
 		init=true;
@@ -2426,20 +2386,24 @@ CTileNoiseMap	*CLandscape::getTileNoiseMap(uint16 tileId, uint tileSubNoise)
 			for(x=0; x<NL3D_TILE_NOISE_MAP_SIZE; x++)
 			{
 				sint	index= y*NL3D_TILE_NOISE_MAP_SIZE + x;
-				test.Pixels[index]= bitmap[index]*127;
-				testFull.Pixels[index]= bitmapFull[index]*127;
-				testEmpty.Pixels[index]= bitmapEmpty[index]*127;
+				test.Pixels[index]= bitmap[index]*fact + (rand()&31);
+				testFull.Pixels[index]= 1*127;
+				testEmpty.Pixels[index]= 0;
+			
+				//testEmpty.Pixels[index]= bitmapEmpty[index]*fact + (rand()&31);
 			}
 		}
 
 
 	}
 
+
 	/*if(tileId<100)
 		return &test;
 	else
 		return &testFull;*/
 	return &testEmpty;
+	//return &testFull;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of Noise
  *
- * $Id: patch_noise.cpp,v 1.1 2001/07/23 14:40:21 berenguier Exp $
+ * $Id: patch_noise.cpp,v 1.2 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,22 +42,103 @@ namespace NL3D
 
 
 // ***************************************************************************
-#define	NL3D_PATCH_NOISE_SMOOTH_EDGE_OFFSET		0
-#define	NL3D_PATCH_NOISE_SMOOTH_CORNER_OFFSET	4
+
+
+#ifdef NL_OS_WINDOWS
+
+/* This floor works only for floor with noise, because floor/ceil are only made on decimal coordinates:
+	sTile =1.25 ....  NB: because of difference of mapping (rare case), we may have sometimes values with
+	precision < 1/4 (eg 1.125). Just use f*256 to compute the floor.
+
+  NB: using a fastFloor() (fistp changing the controlfp() is not very a good idea here, because 
+  computeNoise() are not "packed", so change on controlFp() would bee to frequent... 
+  And also because we need either floor() or ceil() here.
+*/
+inline	sint noiseFloor(float f)
+{
+	// build a fixed 24:8.
+	sint	a;
+	f*=256;
+
+	// fast ftol. work if no decimal.
+	_asm
+	{
+		fld f
+		fistp a
+	}
+
+	// floor.
+	a>>=8;
+
+	return a;
+}
+
+
+inline	sint noiseCeil(float f)
+{
+	// build a fixed 24:8.
+	sint	a;
+	f*=256;
+
+	// fast ftol. work if no decimal.
+	_asm
+	{
+		fld f
+		fistp a
+	}
+
+	// ceil.
+	a+=255;
+	a>>=8;
+
+	return a;
+}
+
+
+inline	float noiseFloorF(float f)
+{
+	return (float)noiseFloor(f);
+}
+inline	float noiseCeilF(float f)
+{
+	return (float)noiseCeil(f);
+}
+
+
+#else
+
+
+inline	float noiseFloorF(float f)
+{
+	return (float)floor(f);
+}
+inline	float noiseCeilF(float f)
+{
+	return (float)ceil(f);
+}
+
+inline	sint noiseFloor(float f)
+{
+	return (sint)floor(f);
+}
+inline	sint noiseCeil(float f)
+{
+	return (sint)ceil(f);
+}
+
+#endif
+
 
 
 // ***************************************************************************
-float		CPatch::computeDisplaceRaw(float sTile, float tTile, float s, float t) const
+float		CPatch::computeDisplaceRawInteger(sint ts, sint tt, sint ms, sint mt) const
 {
 	// Choose the noiseMap.
 	// ===============================
-	// Compute coordinate in the patch.
-	uint	ts= (uint)floor(sTile);
-	uint	tt= (uint)floor(tTile);
-	clamp(ts, (uint)0, (uint)(OrderS-1));
-	clamp(tt, (uint)0, (uint)(OrderT-1));
-	uint	tileId= tt*OrderS + ts;
+	clamp(ts, 0, OrderS-1);
+	clamp(tt, 0, OrderT-1);
 
+	uint	tileId= tt*OrderS + ts;
 	// Get the tile for pass0. This is the principal tile, and this one tells what noise to take.
 	sint	tileNumber= Tiles[tileId].Tile[0];
 	// Get the subNoise from tileElement.
@@ -66,6 +147,28 @@ float		CPatch::computeDisplaceRaw(float sTile, float tTile, float s, float t) co
 	// retrieve the wanted noiseMap.
 	CTileNoiseMap	*noiseMap;
 	noiseMap= getLandscape()->getTileNoiseMap(tileNumber, tileSubNoise);
+
+
+	// Sample the noiseMap with (s,t).
+	// ===============================
+
+	// sample from map.
+	sint8	pix= noiseMap->Pixels[mt*NL3D_TILE_NOISE_MAP_SIZE + ms];
+
+	// normalize.
+	return  (float)pix * (NL3D_NOISE_MAX / 127.f);
+}
+
+
+// ***************************************************************************
+void		CPatch::computeDisplaceRawCoordinates(float sTile, float tTile, float s, float t,
+	sint &ts, sint &tt, sint &ms, sint &mt) const
+{
+	// Choose the noiseMap.
+	// ===============================
+	// Compute coordinate in the patch.
+	ts= noiseFloor(sTile);
+	tt= noiseFloor(tTile);
 
 
 	// Sample the noiseMap with (s,t).
@@ -98,26 +201,31 @@ float		CPatch::computeDisplaceRaw(float sTile, float tTile, float s, float t) co
 	}
 
 	// direct map (no bilinear, no round, the case where s,t < 1/4 of a tile is very rare).
-	sint	ms= (sint)floor(uv.U);
-	sint	mt= (sint)floor(uv.V);
+	ms= noiseFloor(uv.U);
+	mt= noiseFloor(uv.V);
 
 	// Manage Tiling (add NL3D_TILE_NOISE_MAP_SIZE*1 should be sufficient, but take margin).
 	ms= (ms + (NL3D_TILE_NOISE_MAP_SIZE*256)) & (NL3D_TILE_NOISE_MAP_SIZE-1);
 	mt= (mt + (NL3D_TILE_NOISE_MAP_SIZE*256)) & (NL3D_TILE_NOISE_MAP_SIZE-1);
+}
 
-	// sample from map.
-	sint8	pix= noiseMap->Pixels[mt*NL3D_TILE_NOISE_MAP_SIZE + ms];
 
-	// normalize.
-	return  (float)pix * NL3D_NOISE_MAX / 127.f;
+
+// ***************************************************************************
+float		CPatch::computeDisplaceRaw(float sTile, float tTile, float s, float t) const
+{
+	sint	ts,tt,ms,mt;
+	computeDisplaceRawCoordinates(sTile, tTile, s, t, ts, tt, ms, mt);
+	return computeDisplaceRawInteger(ts, tt, ms, mt);
+
 }
 
 // ***************************************************************************
 static inline	void	computeDisplaceBilinear(float sTile, float tTile, 
 	float &sInc, float &tInc, float &sa, float &ta, float &sa1, float &ta1)
 {
-	float	sDecimal= sTile-(float)floor(sTile);
-	float	tDecimal= tTile-(float)floor(tTile);
+	float	sDecimal= sTile-noiseFloor(sTile);
+	float	tDecimal= tTile-noiseFloor(tTile);
 	float	sDist, tDist;
 
 	// Do a bilinear centered on 0.5, 0.5.
@@ -156,10 +264,17 @@ float		CPatch::computeDisplaceInteriorSmooth(float s, float t) const
 
 	// NB: to have smooth transition, must keep the same (s,t), so we do a transition with the noise tile of 
 	// our neigbhor, but under us.
-	ret = computeDisplaceRaw(sTile,tTile, s,t) * sa * ta;
-	ret+= computeDisplaceRaw(sTile+sInc,tTile, s,t) * sa1 * ta;
-	ret+= computeDisplaceRaw(sTile,tTile+tInc, s,t) * sa * ta1;
-	ret+= computeDisplaceRaw(sTile+sInc,tTile+tInc, s,t) * sa1 * ta1;
+
+	// speed up, using just one computeDisplaceRawCoordinates(), and multiple computeDisplaceRawInteger().
+	sint	ts,tt,ms,mt;
+	computeDisplaceRawCoordinates(sTile, tTile, s, t, ts, tt, ms, mt);
+
+	sint	sIncInt= (sint) sInc;
+	sint	tIncInt= (sint) tInc;
+	ret = computeDisplaceRawInteger(ts, tt, ms,mt) * sa * ta;
+	ret+= computeDisplaceRawInteger(ts+sIncInt, tt, ms,mt) * sa1 * ta;
+	ret+= computeDisplaceRawInteger(ts, tt+tIncInt, ms,mt) * sa * ta1;
+	ret+= computeDisplaceRawInteger(ts+sIncInt, tt+tIncInt, ms,mt) * sa1 * ta1;
 
 	return ret;
 }
@@ -222,8 +337,8 @@ float		CPatch::computeDisplaceEdgeSmooth(float s, float t, sint8 smoothBorderX, 
 
 			Notice that we do this AFTER computeDisplaceBilinear() of course.
 		*/
-		sTile= (float)floor(sTile) + 0.5f;
-		tTile= (float)floor(tTile) + 0.5f;
+		sTile= noiseFloor(sTile) + 0.5f;
+		tTile= noiseFloor(tTile) + 0.5f;
 		// If we were exactly on the superior edge, prec compute is false... so correct this here.
 		if(sTile>OrderS) sTile--;
 		if(tTile>OrderT) tTile--;
@@ -406,8 +521,8 @@ float		CPatch::computeDisplaceCornerSmooth(float s, float t, sint8 smoothBorderX
 
 		/* NB: see floor problems note in computeDisplaceEdgeSmooth();
 		*/
-		sTile= (float)floor(sTile) + 0.5f;
-		tTile= (float)floor(tTile) + 0.5f;
+		sTile= noiseFloor(sTile) + 0.5f;
+		tTile= noiseFloor(tTile) + 0.5f;
 		// If we were exactly on the superior edge, prec compute is false... so correct this here.
 		if(sTile>OrderS) sTile--;
 		if(tTile>OrderT) tTile--;
@@ -485,7 +600,7 @@ CVector		CPatch::computeNormalEdgeSmooth(float s, float t, sint8 smoothBorderX, 
 	else nlstop;
 
 	// If the edge is smoothed, blend with neighbor.
-	if(getNoiseSmoothEdge(edge))
+	if(getSmoothFlag(edge))
 	{
 		// Build the bindInfo against this edge.
 		getBindNeighbor(edge, bindInfo);
@@ -504,10 +619,10 @@ CVector		CPatch::computeNormalEdgeSmooth(float s, float t, sint8 smoothBorderX, 
 			float		se=s;
 			float		te=t;
 			float		coef;
-			if(smoothBorderX==-1)		se= (float)floor(se), coef=s-se;
-			else if(smoothBorderX==1)	se= (float)ceil(se), coef=se-s;
-			else if(smoothBorderY==-1)	te= (float)floor(te), coef=t-te;
-			else if(smoothBorderY==1)	te= (float)ceil(te), coef=te-t;
+			if(smoothBorderX==-1)		se= noiseFloorF(se), coef=s-se;
+			else if(smoothBorderX==1)	se= noiseCeilF(se), coef=se-s;
+			else if(smoothBorderY==-1)	te= noiseFloorF(te), coef=t-te;
+			else if(smoothBorderY==1)	te= noiseCeilF(te), coef=te-t;
 			coef= 0.5f + coef*0.5f;
 
 			// Compute contribution of the normal on the neighbor, on the border of the edge.
@@ -537,10 +652,10 @@ CVector		CPatch::computeNormalEdgeSmooth(float s, float t, sint8 smoothBorderX, 
 		float		se=s;
 		float		te=t;
 		float		coef;
-		if(smoothBorderX==-1)		se= (float)floor(se), coef=s-se;
-		else if(smoothBorderX==1)	se= (float)ceil(se), coef=se-s;
-		else if(smoothBorderY==-1)	te= (float)floor(te), coef=t-te;
-		else if(smoothBorderY==1)	te= (float)ceil(te), coef=te-t;
+		if(smoothBorderX==-1)		se= noiseFloorF(se), coef=s-se;
+		else if(smoothBorderX==1)	se= noiseCeilF(se), coef=se-s;
+		else if(smoothBorderY==-1)	te= noiseFloorF(te), coef=t-te;
+		else if(smoothBorderY==1)	te= noiseCeilF(te), coef=te-t;
 
 		// Compute our contribution.
 		CVector		r0;
@@ -641,7 +756,7 @@ CVector		CPatch::computeNormalCornerSmooth(float	s, float t, sint8 smoothBorderX
 	}
 
 	// If this corner is smoothed, blend with 4 neighbors patchs.
-	if(getNoiseSmoothCorner(corner))
+	if(getCornerSmoothFlag(corner))
 	{
 		// Build the bindInfo against the 2 edge.
 		getBindNeighbor(edgeX, bindInfoX);
@@ -660,10 +775,10 @@ CVector		CPatch::computeNormalCornerSmooth(float	s, float t, sint8 smoothBorderX
 			float		te=t;
 			float		coefX;
 			float		coefY;
-			if(smoothBorderX==-1)	se= (float)floor(se), coefX=s-se;
-			else					se= (float)ceil(se), coefX=se-s;
-			if(smoothBorderY==-1)	te= (float)floor(te), coefY=t-te;
-			else					te= (float)ceil(te), coefY=te-t;
+			if(smoothBorderX==-1)	se= noiseFloorF(se), coefX=s-se;
+			else					se= noiseCeilF(se), coefX=se-s;
+			if(smoothBorderY==-1)	te= noiseFloorF(te), coefY=t-te;
+			else					te= noiseCeilF(te), coefY=te-t;
 			coefX= 0.5f + coefX*0.5f;
 			coefY= 0.5f + coefY*0.5f;
 
@@ -717,10 +832,10 @@ CVector		CPatch::computeNormalCornerSmooth(float	s, float t, sint8 smoothBorderX
 		float		te=t;
 		float		coefX;
 		float		coefY;
-		if(smoothBorderX==-1)	se= (float)floor(se), coefX=s-se;
-		else					se= (float)ceil(se), coefX=se-s;
-		if(smoothBorderY==-1)	te= (float)floor(te), coefY=t-te;
-		else					te= (float)ceil(te), coefY=te-t;
+		if(smoothBorderX==-1)	se= noiseFloorF(se), coefX=s-se;
+		else					se= noiseCeilF(se), coefX=se-s;
+		if(smoothBorderY==-1)	te= noiseFloorF(te), coefY=t-te;
+		else					te= noiseCeilF(te), coefY=te-t;
 
 
 		// To have smooth continuities with smooth on edge (if any), we must do this.
@@ -829,39 +944,22 @@ void		CPatch::computeNoise(float s, float t, CVector &displace) const
 
 
 // ***************************************************************************
-void			CPatch::setNoiseSmoothEdge(uint edge, bool smooth)
-{
-	nlassert(edge<=3);
-	uint	mask= 1<<(NL3D_PATCH_NOISE_SMOOTH_EDGE_OFFSET + edge);
-	if(smooth)
-		_NoiseSmooth|= mask;
-	else
-		_NoiseSmooth&= ~mask;
-}
-// ***************************************************************************
-void			CPatch::setNoiseSmoothCorner(uint corner, bool smooth)
+void			CPatch::setCornerSmoothFlag(uint corner, bool smooth)
 {
 	nlassert(corner<=3);
-	uint	mask= 1<<(NL3D_PATCH_NOISE_SMOOTH_CORNER_OFFSET + corner);
+	uint	mask= 1<<corner;
 	if(smooth)
-		_NoiseSmooth|= mask;
+		_CornerSmoothFlag|= mask;
 	else
-		_NoiseSmooth&= ~mask;
+		_CornerSmoothFlag&= ~mask;
 }
 
 // ***************************************************************************
-bool			CPatch::getNoiseSmoothEdge(uint edge) const
-{
-	nlassert(edge<=3);
-	uint	mask= 1<<(NL3D_PATCH_NOISE_SMOOTH_EDGE_OFFSET + edge);
-	return	(_NoiseSmooth & mask)!=0;
-}
-// ***************************************************************************
-bool			CPatch::getNoiseSmoothCorner(uint corner) const
+bool			CPatch::getCornerSmoothFlag(uint corner) const
 {
 	nlassert(corner<=3);
-	uint	mask= 1<<(NL3D_PATCH_NOISE_SMOOTH_CORNER_OFFSET + corner);
-	return	(_NoiseSmooth & mask)!=0;
+	uint	mask= 1<<corner;
+	return	(_CornerSmoothFlag& mask)!=0;
 }
 
 

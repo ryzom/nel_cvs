@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.4 2001/07/10 10:01:19 berenguier Exp $
+ * $Id: tessellation.h,v 1.5 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -330,6 +330,8 @@ public:
 
 	// Used by CPatch::averageTesselationVertices(). See CLandscape doc. recurs call.
 	void			averageTesselationVertices();
+	// For CZone::refreshTesselationGeometry() only. recurs call.
+	void			refreshTesselationGeometry();
 
 
 	// Used by CZone::changePatchTexture().

@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * <File description>
  *
- * $Id: tess_block.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tess_block.h,v 1.2 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,9 @@ namespace NL3D
 #define	NL3D_TESSBLOCK_TILESIZE	4
 
 
+class	CPatchRdrPass;
+
+
 // ***************************************************************************
 /**
  * A block of 2*2 tiles, for accurate clipping.
@@ -71,6 +74,11 @@ public:
 	CTileMaterial				*RdrTileRoot[NL3D_TESSBLOCK_TILESIZE];
 
 
+	// For memory optimisation, Info for Lightmap per block of 2x2 tiles are stored here too.
+	uint						LightMapId;
+	uint						LightMapRefCount;
+	CPatchRdrPass				*LightMapRdrPass;
+
 public:
 	CTessBlock()
 	{
@@ -85,6 +93,9 @@ public:
 		{
 			RdrTileRoot[i]=NULL;
 		}
+
+		// init LightMap.
+		LightMapRefCount= 0;
 	}
 
 	// BBox.

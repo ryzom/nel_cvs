@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.10 2001/08/10 12:51:16 legros Exp $
+ * $Id: zone_welder.cpp,v 1.11 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,8 +31,10 @@
 #include "nel/misc/file.h"
 #include "nel/3d/quad_tree.h"
 #include "3d/zone.h"
+#include "3d/landscape.h"
 #include "3d/zone_smoother.h"
 #include "3d/zone_tgt_smoother.h"
+#include "3d/zone_corner_smoother.h"
 #include <vector>
 #include <set>
 
@@ -75,6 +77,22 @@ struct CWeldableVertexInfos
 			return false;
 		return PatchVertex<wvinf.PatchVertex;
 	}
+};
+
+
+struct	CVectorInfluence
+{
+	CVector		Vertex;
+	float		Inf;
+	bool		OnBorder;
+};
+
+
+struct	CAdjacentVertex
+{
+	CVector		Vertex;
+	uint		IdOnCenterZone;
+	bool		OnBorder;
 };
 
 
@@ -184,6 +202,9 @@ void weldZones(const char *center)
 
 	// Yoyo was here: Smooth the tangents of the zone.
 	//================================================
+	// NB: do it only for edges sharing 2 patchs of centerZone. (don't care adjacent zones).
+	// smoothing with adjacent zones is done with a better smoothing tool: CZoneTgtSmoother, see below, 
+	// after the weld of the zone.
 	{
 		CZoneSmoother	zonesmoother;
 		CZoneSmoother::CZoneInfo	smoothZones[5];
@@ -543,6 +564,160 @@ void weldZones(const char *center)
 	}
 
 
+	// Yoyo: compute the mean on vertices beetween zones.
+	//====================================
+	// do it before "make coplanar beetween zones", because CZoneTgtSmoother use tangents and vertices to smooth.
+	{
+		// build all input vertices for center and adjacents zones 
+		//------------------
+
+		// For center zone rebuild vertices.
+		vector<CVector>		centerVertices;
+		// for all patch, fill the array of vertices.
+		for(ptch=0; ptch<centerZonePatchs.size(); ptch++)
+		{
+			CPatchInfo	&pa= centerZonePatchs[ptch];
+			for(uint corner= 0; corner<4; corner++)
+			{
+				uint	idVert= pa.BaseVertices[corner];
+
+				// write this vertex in array.
+				centerVertices.resize( max(centerVertices.size(), idVert+1) );
+				centerVertices[idVert]= pa.Patch.Vertices[corner];
+			}
+		}
+
+		// For all adjacent zone rebuild vertices.
+		map<uint16, vector<CAdjacentVertex> >		adjVertices;
+		for(i=0;i<8;i++)
+		{
+			if(adjZonesName[i]=="empty") continue;
+			if(!adjZoneFileFound[i]) continue;
+
+			// create the entry in the map.
+			vector<CAdjacentVertex> &verts= adjVertices[adjZonesId[i]];
+
+			// for all patch, fill the array of vertices.
+			std::vector<CPatchInfo>		&adjZonePatchs= adjZoneInfos[i].Patchs;
+			for(ptch=0; ptch<adjZonePatchs.size(); ptch++)
+			{
+				CPatchInfo	&pa= adjZonePatchs[ptch];
+				for(uint corner= 0; corner<4; corner++)
+				{
+					uint	idVert= pa.BaseVertices[corner];
+
+					// write this vertex in array.
+					verts.resize( max(verts.size(), idVert+1) );
+					verts[idVert].Vertex= pa.Patch.Vertices[corner];
+					verts[idVert].OnBorder= false;
+				}
+			}
+
+			// for all borderVertices with centerZoneId, fill verts neighbor info.
+			std::vector<CBorderVertex>	&adjZoneBorderVertices= adjZoneInfos[i].BorderVertices;
+			uint	bv;
+			for(bv=0; bv<adjZoneBorderVertices.size(); bv++)
+			{
+				CBorderVertex	&adjBV= adjZoneBorderVertices[bv];
+				if(adjBV.NeighborZoneId == centerZoneId)
+				{
+					verts[adjBV.CurrentVertex].OnBorder= true;
+					verts[adjBV.CurrentVertex].IdOnCenterZone= adjBV.NeighborVertex;
+				}
+			}
+
+		}
+
+		// compute the mean on border vertices
+		//------------------
+
+
+		// create / reset the result vertices.
+		vector<CVectorInfluence>	outVertices;
+		outVertices.resize(centerVertices.size());
+		for(i=0; i<outVertices.size(); i++)
+		{
+			outVertices[i].Vertex= centerVertices[i];
+			outVertices[i].Inf= 1;
+			outVertices[i].OnBorder= false;
+		}
+
+
+		// For all borderVertices of centerZone, choose the good vertex, add neighbor influence
+		uint	bv;
+		for(bv=0; bv<centerZoneBorderVertices.size(); bv++)
+		{
+			CBorderVertex	&centerBV= centerZoneBorderVertices[bv];
+			uint	centerVert= centerBV.CurrentVertex;
+			if( adjVertices.find(centerBV.NeighborZoneId) != adjVertices.end() )
+			{
+				outVertices[centerVert].Vertex+= adjVertices[centerBV.NeighborZoneId][centerBV.NeighborVertex].Vertex;
+				outVertices[centerVert].Inf++;
+				outVertices[centerVert].OnBorder= true;
+			}
+		}
+		// normalize influence.
+		for(i=0; i<outVertices.size(); i++)
+		{
+			if(outVertices[i].Inf!=1)
+			{
+				outVertices[i].Vertex/= outVertices[i].Inf;
+				outVertices[i].Inf= 1;
+			}
+		}
+
+
+		// for all zones, get the new vertices.
+		//------------------
+
+		// For center zone, for all patchs, copy from outVertices.
+		for(ptch=0; ptch<centerZonePatchs.size(); ptch++)
+		{
+			CPatchInfo	&pa= centerZonePatchs[ptch];
+			for(uint corner= 0; corner<4; corner++)
+			{
+				uint	idVert= pa.BaseVertices[corner];
+
+				if(outVertices[idVert].OnBorder)
+				{
+					// copy the vertex.
+					pa.Patch.Vertices[corner]= outVertices[idVert].Vertex;
+				}
+			}
+		}
+
+
+		// For all borderVertices of adjacentZone, copy from outVertices.
+		for(i=0;i<8;i++)
+		{
+			if(adjZonesName[i]=="empty") continue;
+			if(!adjZoneFileFound[i]) continue;
+
+			// get the entry in the map.
+			vector<CAdjacentVertex> &verts= adjVertices[adjZonesId[i]];
+
+			// for all patch, get vertices which are n Border of the cetnerZone.
+			std::vector<CPatchInfo>		&adjZonePatchs= adjZoneInfos[i].Patchs;
+			for(ptch=0; ptch<adjZonePatchs.size(); ptch++)
+			{
+				CPatchInfo	&pa= adjZonePatchs[ptch];
+				for(uint corner= 0; corner<4; corner++)
+				{
+					uint	idVert= pa.BaseVertices[corner];
+
+					if(verts[idVert].OnBorder)
+					{
+						pa.Patch.Vertices[corner]= outVertices[verts[idVert].IdOnCenterZone].Vertex;
+					}
+				}
+			}
+
+		}
+
+	}
+
+
+
 	// Yoyo: make coplanar beetween zones.
 	//====================================
 	{
@@ -583,6 +758,58 @@ void weldZones(const char *center)
 	}
 
 
+	// Yoyo: compute corner smooth info.
+	//====================================
+	// CANNOT DO IT HERE, BECAUSE THE CURRENT ZONE MAY NOT BE CORRECLTY WELDED.
+	// MUST DO IT IN ZONE_LIGHTER.
+	/*{
+		// build a landscape, because CZoneCornerSmooth use compiled zones.
+		CLandscape	land;
+		CZoneCornerSmoother		zcs;
+
+		land.init();
+
+		// add center zone.
+		zone.build(centerZoneId, centerZonePatchs, centerZoneBorderVertices);
+		land.addZone(zone);
+		CZone	*centerZone= land.getZone(centerZoneId);
+
+		// add adjacent zones.
+		vector<CZone*>			nbZones;
+		for(i=0;i<8;i++)
+		{
+			if(adjZonesName[i]=="empty") continue;
+			if(!adjZoneFileFound[i]) continue;
+
+			std::vector<CPatchInfo>		&adjZonePatchs= adjZoneInfos[i].Patchs;
+			std::vector<CBorderVertex>	&adjZoneBorderVertices= adjZoneInfos[i].BorderVertices;
+
+			adjZones[i].build(adjZonesId[i], adjZonePatchs, adjZoneBorderVertices);
+			land.addZone(adjZones[i]);
+
+			CZone	*nbZone= land.getZone(adjZonesId[i]);
+			if(nbZone)
+				nbZones.push_back(nbZone);
+		}
+
+		// now, do the zoneCornerSmoother.
+		if(centerZone)
+		{
+			// go.
+			zcs.computeAllCornerSmoothFlags(centerZone, nbZones);
+			
+			// get result from the compiled zone, and copy in the uncompiled one (ie in centerZonePatchs).
+			for(i=0;i<centerZonePatchs.size();i++)
+			{
+				const CPatch	&paSrc= *((const CZone*)centerZone)->getPatch(i);
+				CPatchInfo		&paDst= centerZonePatchs[i];
+				for(uint corner=0; corner<4; corner++)
+					paDst.setCornerSmoothFlag(corner, paSrc.getCornerSmoothFlag(corner));
+			}
+		}
+	}*/
+
+
 	// Save adjacent zones.
 	//=====================
 	for(i=0;i<8;i++)
@@ -620,6 +847,8 @@ void weldZones(const char *center)
 
 }
 
+
+
 /*******************************************************************\
 							main()
 \*******************************************************************/
@@ -643,6 +872,8 @@ int main(sint argc, char **argv)
 	fdbg = fopen("log.txt","wt");
 	fprintf(fdbg,"Center zone : %s\n",argv[1]);
 #endif
+
+	printf("Center zone : %s\n",argv[1]);
 
 	inputDir = getDir (argv[1]);
 	inputExt = getExt (argv[1]);

@@ -89,7 +89,7 @@ LIB32=xilink6.exe -lib
 # PROP Intermediate_Dir "../obj/ReleaseDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /FR /FD /c
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -288,6 +288,14 @@ SOURCE=.\3d\zone_search.h
 # Begin Group "Tools"
 
 # PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\zone_corner_smoother.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\zone_corner_smoother.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\3d\zone_smoother.cpp

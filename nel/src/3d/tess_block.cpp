@@ -1,7 +1,7 @@
 /** \file tess_block.cpp
  * <File description>
  *
- * $Id: tess_block.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: tess_block.cpp,v 1.3 2001/08/20 14:56:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "3d/tess_block.h"
+#include "3d/patch_rdr_pass.h"
 
 
 namespace NL3D 

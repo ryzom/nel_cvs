@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.38 2001/05/09 17:07:20 berenguier Exp $
+ * $Id: stream.h,v 1.39 2001/05/10 12:45:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,7 @@ class	IStreamable;
  * any of the IStream method to help himself like:
  * - serial() with a base type (uint32, string, char...), or even with an object which provide "void serial(IStream &)"
  * - template serial(T0&, T1&, ...) to serialize multiple object/variables in one call (up to 6).
- * - serialCont() and serialMap() to serialize containers.
+ * - serialCont() to serialize containers.
  * - serialVersion() to check/store a version number of his class.
  * - serialPtr() to use the ptr support of IStream (see serialPtr() for more information)
  * - isReading() to know if he write in the stream, or if he read.

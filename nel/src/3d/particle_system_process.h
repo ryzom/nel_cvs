@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.7 2002/02/15 17:00:19 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.8 2002/02/20 11:08:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ class CFontManager ;
  *  PSToolRender  : for edition purpose, show representations for forces, emitters...
  */
 enum TPSProcessPass 
-{ PSEmit, PSCollision, PSMotion, PSDynamic, PSPostdynamic, PSSolidRender, PSBlendRender, PSToolRender } ;
+{ PSEmit, PSCollision, PSMotion, PSSolidRender, PSBlendRender, PSToolRender } ;
 
 
 
@@ -146,7 +146,12 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		virtual bool		 isParametricMotionEnabled(void) const { return false;}
 
 		/// perform parametric motion if enabled
-			virtual void performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime) { nlassert(0);}
+		virtual void performParametricMotion(TAnimationTime date,
+											 TAnimationTime ellapsedTime,
+											 TAnimationTime realEllapsedTime) { nlassert(0);}
+
+		/// Update the life of objects..
+		virtual void updateLife(TAnimationTime ellapsedTime) = 0;
 			
 	protected:
 		CParticleSystem *_Owner ;

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.46 2002/07/03 09:55:30 lecroart Exp $
+ * $Id: path.cpp,v 1.47 2002/07/10 17:08:10 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -551,16 +551,23 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative)
 	H_AUTO_INST(addSearchPath);
 
 	CPath *inst = CPath::getInstance();
-	string newPath = standardizePath(path);
-
-	nlinfo ("CPath::addSearchPath(%s, %d, %d): adding the path '%s'", path.c_str(), recurse, alternative, newPath.c_str());
 
 	// check empty directory
-	if (newPath.empty())
+	if (path.empty())
 	{
 		nlwarning ("CPath::addSearchPath(%s, %d, %d): can't add empty directory, skip it", path.c_str(), recurse, alternative);
 		return;
 	}
+
+	// check if it s a directory
+	if (!CFile::isDirectory (path))
+	{
+		nlinfo ("CPath::addSearchPath(%s, %d, %d): '%s' is not a directory, I'll call addSearchFile()", path.c_str(), recurse, alternative, path.c_str());
+		addSearchFile (path);
+		return;
+	}
+
+	string newPath = standardizePath(path);
 
 	// check if it s a directory
 	if (!CFile::isExists (newPath))
@@ -569,12 +576,7 @@ void CPath::addSearchPath (const string &path, bool recurse, bool alternative)
 		return;
 	}
 
-	// check if it s a directory
-	if (!CFile::isDirectory (newPath))
-	{
-		nlwarning ("CPath::addSearchPath(%s, %d, %d): '%s' is not a directory, skip it", path.c_str(), recurse, alternative, newPath.c_str());
-		return;
-	}
+	nlinfo ("CPath::addSearchPath(%s, %d, %d): adding the path '%s'", path.c_str(), recurse, alternative, newPath.c_str());
 
 	NL_DISPLAY_PATH("CPath::addSearchPath(%s, %d, %d): try to add '%s'", path.c_str(), recurse, alternative, newPath.c_str());
 

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.16 2002/02/12 13:55:38 lecroart Exp $
+ * $Id: common.cpp,v 1.17 2002/02/28 15:17:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,23 @@
 
 using namespace std;
 
+#ifdef NL_OS_WINDOWS
+#  ifdef __STL_DEBUG
+#    define STL_MODE "debug"
+#  else
+#    define STL_MODE "normal"
+#  endif // __STL_DEBUG
+#  if(__SGI_STL_PORT < 0x400)
+#    define STL_STR_VER "< 4.0"
+#  elif(__SGI_STL_PORT == 0x400)
+#    define STL_STR_VER "4.0"
+#  elif(__SGI_STL_PORT == 0x450)
+#    define STL_STR_VER "< 4.5"
+#  elif(__SGI_STL_PORT > 0x450)
+#    define STL_STR_VER "> 4.5"
+#  endif // __SGI_STL_PORT
+#  pragma message("Using STLport version "STL_STR_VER" in "STL_MODE" mode")
+#endif // NL_OS_WINDOWS
 
 namespace	NLMISC
 {
@@ -75,10 +92,39 @@ uint getThreadId()
 /*
  * Returns a readable string from a vector of bytes. '\0' are replaced by ' '
  */
-string stringFromVector( const vector<uint8>& v )
+string stringFromVector( const vector<uint8>& v, bool limited )
 {
 	string s;
 
+	if (!v.empty())
+	{
+		int size = v.size ();
+		if (limited && size > 1000)
+		{
+			string middle = "...<buf too big,skip middle part>...";
+			s.resize (1000 + middle.size());
+			memcpy (&*s.begin(), &*v.begin(), 500);
+			memcpy (&*s.begin()+500, &*middle.begin(), middle.size());
+			memcpy (&*s.begin()+500+middle.size(), &*v.begin()+size-500, 500);
+		}
+		else
+		{
+			s.resize (size);
+			memcpy( &*s.begin(), &*v.begin(), v.size() );
+		}
+
+		// Replace '\0' characters
+		string::iterator is;
+		for ( is=s.begin(); is!=s.end(); ++is )
+		{
+			// remplace non printable char and % with '?' chat
+			if ( ! isprint((*is)) || (*is) == '%')
+			{
+				(*is) = '?';
+			}
+		}
+	}
+/*
 	if ( ! v.empty() )
 	{
 		// Copy contents
@@ -96,7 +142,7 @@ string stringFromVector( const vector<uint8>& v )
 			}
 		}
 	}
-	return s;
+*/	return s;
 }
 
 

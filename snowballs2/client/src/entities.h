@@ -1,7 +1,7 @@
 /** \file entities.h
  * 
  *
- * $Id: entities.h,v 1.8 2001/07/13 16:17:41 legros Exp $
+ * $Id: entities.h,v 1.9 2001/07/16 13:01:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,11 +86,13 @@ void	addEntity (uint32 eid, CEntity::TType type, const NLMISC::CVector &startPos
 void	removeEntity (uint32 eid);
 
 void	updateEntities ();
+void	initEntities();
 
 void	shotSnowball(uint32 eid, const NLMISC::CVector &target);
 
 void	initRadar ();
 void	updateRadar ();
+void	renderEntitiesNames ();
 
 
 #endif // ENTITIES_H

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.11 2001/07/13 16:17:41 legros Exp $
+ * $Id: entities.cpp,v 1.12 2001/07/16 13:01:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,6 +86,9 @@ float RadarPosX, RadarPosY, RadarWidth, RadarHeight, RadarBorder;
 CRGBA RadarBackColor, RadarFrontColor, RadarBorderColor, RadarSelfColor;
 float RadarEntitySize;
 float RadarZoom;
+
+float EntityNameSize;
+CRGBA EntityNameColor;
 
 CEntity		*Self = NULL;
 
@@ -198,8 +201,10 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 */
 		entity.MovePrimitive = NULL;
 
+		// allows collision snapping to the ceiling
+		entity.VisualCollisionEntity->setCeilMode(true);
+
 		entity.Instance = Scene->createInstance("box.shape");
-//		entity.Instance = Scene->createInstance("snowball.ps");
 		entity.Instance->setPos (startPosition);
 		entity.Speed = 10.0f;
 
@@ -240,7 +245,8 @@ void stateAppear (CEntity &entity)
 		entity.StateStartTime = CTime::getLocalTime ();
 	}
 
-	entity.MovePrimitive->move(CVector(0,0,0), 0);
+	if (entity.MovePrimitive != NULL)
+		entity.MovePrimitive->move(CVector(0,0,0), 0);
 }
 
 void stateDisappear (CEntity &entity)
@@ -273,7 +279,8 @@ void stateDisappear (CEntity &entity)
 		VisualCollisionManager->deleteEntity (entity.VisualCollisionEntity);
 		entity.VisualCollisionEntity = NULL;
 
-		MoveContainer->removePrimitive(entity.MovePrimitive);
+		if (entity.MovePrimitive != NULL)
+			MoveContainer->removePrimitive(entity.MovePrimitive);
 		entity.MovePrimitive = NULL;
 
 		nlinfo ("Remove the entity %u from the Entities list", entity.Id);
@@ -282,7 +289,8 @@ void stateDisappear (CEntity &entity)
 	}
 	else
 	{
-		entity.MovePrimitive->move(CVector(0,0,0), 0);
+		if (entity.MovePrimitive != NULL)
+			entity.MovePrimitive->move(CVector(0,0,0), 0);
 	}
 }
 
@@ -309,6 +317,8 @@ void stateNormal (CEntity &entity)
 	}
 	else if (entity.Type == CEntity::Snowball && entity.AutoMove && pDelta.norm() < 0.1f)
 	{
+		removeEntity(entity.Id);
+
 	}
 /// \todo end of the remove block when server entities will work
 
@@ -348,7 +358,10 @@ void stateNormal (CEntity &entity)
 		entity.Angle = (float)atan2(pDelta.y, pDelta.x);
 		pDeltaOri *= -entity.Speed;
 		entity.Position += pDeltaOri*(float)dt;
-
+		if ((entity.ServerPosition-entity.Position)*pDeltaOri < 0.0f)
+		{
+			entity.Position = entity.ServerPosition;
+		}
 	}
 	else
 	{
@@ -425,6 +438,14 @@ void updateEntities ()
 			entity.VisualCollisionEntity->snapToGround(entity.Position);
 		}
 
+		if (entity.Type == CEntity::Snowball && SnapSnowballs)
+		{
+			CVector	snapPos = entity.Position;
+			entity.VisualCollisionEntity->snapToGround(snapPos);
+			entity.Instance->setPos(snapPos);
+			CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
+			entity.Instance->setRotQuat(jdir);
+		} else
 		if (entity.Instance != NULL)
 		{
 			entity.Instance->setPos(entity.Position);
@@ -437,6 +458,46 @@ void updateEntities ()
 	}
 }
 
+void renderEntitiesNames ()
+{
+	Driver->setMatrixMode3D (*Camera);
+	TextContext->setHotSpot (UTextContext::MiddleTop);
+	TextContext->setColor (EntityNameColor);
+	TextContext->setFontSize ((uint32)EntityNameSize);
+	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
+	{
+		CEntity	&entity = (*eit).second;
+		if (entity.Instance != NULL && entity.Type != CEntity::Snowball)
+		{
+			CMatrix		mat = Camera->getMatrix();
+			mat.setPos(entity.Position + CVector(0.0f, 0.0f, 2.0f));
+//			CMatrix		mat = entity.Instance->getMatrix();
+//			mat.translate(CVector(0.0f, 0.0f, 2.0f));
+			mat.scale(4.0f);
+//			mat.setRot(Camera->get
+			TextContext->render3D(mat, entity.Name);
+		}
+	}
+}
+
+void cbUpdateEntities (CConfigFile::CVar &var)
+{
+	if (var.Name == "EntityNameColor") EntityNameColor.set (var.asInt(0), var.asInt(1), var.asInt(2), var.asInt(3));
+	else if (var.Name == "EntityNameSize") EntityNameSize = var.asFloat ();
+	else nlwarning ("Unknown variable update %s", var.Name.c_str());
+}
+
+void initEntities()
+{
+	ConfigFile.setCallback ("EntityNameColor", cbUpdateEntities);
+	ConfigFile.setCallback ("EntityNameSize", cbUpdateEntities);
+
+	cbUpdateEntities (ConfigFile.getVar ("EntityNameColor"));
+	cbUpdateEntities (ConfigFile.getVar ("EntityNameSize"));
+}
+
+
+//
 void cbUpdateRadar (CConfigFile::CVar &var)
 {
 	if (var.Name == "RadarPosX") RadarPosX = var.asFloat ();
@@ -565,9 +626,8 @@ void	shotSnowball(uint32 eid, const CVector &target)
 			CVector	snapped = testPos;
 			CVector	normal;
 			// here use normal to check if we have collision
-			snowball.VisualCollisionEntity->snapToGround(snapped, normal);
-//			if ((testPos.z-snapped.z)*normal.z > 0.0f)
-			if ((testPos.z-snapped.z) < 0.0f)
+//			snowball.VisualCollisionEntity->snapToGround(snapped, normal);
+			if (snowball.VisualCollisionEntity->snapToGround(snapped, normal) && (testPos.z-snapped.z)*normal.z < 0.0f)
 			{
 				testPos -= step*0.5f;
 				break;

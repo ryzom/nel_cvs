@@ -1,7 +1,7 @@
 /** \file client.h
  * 
  *
- * $Id: client.h,v 1.5 2001/07/12 14:18:54 legros Exp $
+ * $Id: client.h,v 1.6 2001/07/16 13:01:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,8 @@ extern NL3D::UTextContext		*TextContext;
 extern NL3D::U3dMouseListener	*MouseListener;
 
 extern NLMISC::TTime			LastTime, NewTime;
+
+extern bool						SnapSnowballs;
 
 #endif // CLIENT_H
 

@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.5 2001/07/12 17:06:58 legros Exp $
+ * $Id: camera.cpp,v 1.6 2001/07/16 13:01:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,8 +39,9 @@ using namespace NL3D;
 
 UCamera				*Camera = NULL;
 
-float				ViewLagBehind = 3.0f;
+float				ViewLagBehind = 2.0f;
 float				ViewHeight = 2.0f;
+float				ViewTargetHeight = 2.0f;
 
 UInstance			*Snow = NULL;
 
@@ -69,7 +70,7 @@ void	updateCamera()
 
 	CMatrix	mat = MouseListener->getViewMatrix();
 	mat.translate(CVector(0.0f, -ViewLagBehind, ViewHeight));
-	float	alpha = (float)atan(ViewHeight/ViewLagBehind);
+	float	alpha = (float)atan((ViewHeight-ViewTargetHeight)/ViewLagBehind);
 	mat.rotateX(-alpha);
 	Camera->setMatrix(mat);
 

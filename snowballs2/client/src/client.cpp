@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.25 2001/07/13 16:17:41 legros Exp $
+ * $Id: client.cpp,v 1.26 2001/07/16 13:01:02 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,10 +85,11 @@ TTime				LastTime,
 
 
 // true if you want to exit the main loop
-bool				 NeedExit = false;
+bool				NeedExit = false;
 
-bool				 ShowRadar;
-bool				 ShowCommands;
+bool				ShowRadar;
+bool				ShowCommands;
+bool				SnapSnowballs;
 
 //
 // Main
@@ -108,6 +109,8 @@ int main(int argc, char **argv)
 
 	ShowCommands = ConfigFile.getVar("ShowCommands").asInt () == 1;
 	ShowRadar = ConfigFile.getVar("ShowRadar").asInt () == 1;
+
+	SnapSnowballs = false;
 
 	// Manage paths
 
@@ -148,6 +151,9 @@ int main(int argc, char **argv)
 
 	// Init the radar
 	initRadar ();
+
+	// Init the entities prefs
+	initEntities();
 
 	// Init the landscape using the previously created UScene
 	initLandscape();
@@ -201,6 +207,8 @@ int main(int argc, char **argv)
 		// Update the radar
 		if (ShowRadar) updateRadar ();
 
+		renderEntitiesNames();
+
 		TextContext->setHotSpot (UTextContext::TopRight);
 		TextContext->setColor (isOnline()?CRGBA(0, 255, 0):CRGBA(255, 0, 0));
 		TextContext->setFontSize (18);
@@ -226,11 +234,15 @@ int main(int argc, char **argv)
 		{
 			ShowRadar = !ShowRadar;
 		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF7))
+		{
+			SnapSnowballs = !SnapSnowballs;
+		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyF12))
 		{
 			clearCommands ();
 		}
-		else if (Driver->AsyncListener.isKeyPushed (KeySPACE))
+		else if (Driver->AsyncListener.isKeyPushed (KeyCONTROL))
 		{
 			if (Self != NULL)
 			{

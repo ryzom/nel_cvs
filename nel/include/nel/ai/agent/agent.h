@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: agent.h,v 1.6 2001/01/09 17:16:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,8 +71,10 @@ namespace NLAIAGENT
 
 		/**
 		Run message is the message processing.
+
+		Exception: throw (NLAIE::CExceptionNotImplemented)
 		*/
-		virtual IObjectIA *run(const IMessageBase &) throw (NLAIE::CExceptionNotImplemented)
+		virtual IObjectIA *run(const IMessageBase &)
 		{
 			char text[2048*8];
 			sprintf(text,"Function <IObjectIA *run(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());

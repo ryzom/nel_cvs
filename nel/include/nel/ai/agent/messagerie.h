@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: messagerie.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: messagerie.h,v 1.6 2001/01/09 17:16:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,7 +115,7 @@ namespace NLAIAGENT
 		}		
 		
 		///Get the IBasicMessageGroup whiche define the group of the message. 
-		const IBasicMessageGroup &getGroup() const throw (NLAIE::CExceptionUnReference)
+		const IBasicMessageGroup &getGroup() const/// throw (NLAIE::CExceptionUnReference)
 		{
 			if(_MsgGroup == NULL) throw NLAIE::CExceptionUnReference("_MsgGroup in the iMessage class is not corectly inistializ");
 			return *_MsgGroup;

@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: interpret_object_agent.h,v 1.6 2001/01/09 17:16:52 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -159,7 +159,7 @@ namespace NLAISCRIPT
 		/// \name Methods.
 		//@{
 		virtual sint32 addBrancheCode(const NLAIAGENT::IVarName &,const CParam &);
-		virtual CMethodeName &getBrancheCode() const; ///throw Exc::CExceptionUnReference;
+		virtual CMethodeName &getBrancheCode() const; ///throw NLAIE::CExceptionUnReference;
 		virtual CMethodeName &getBrancheCode(sint32) const;
 		virtual CMethodeName &getBrancheCode(sint32, sint32) const;
 		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const;

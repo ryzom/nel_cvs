@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: type_def.h,v 1.6 2001/01/09 17:16:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,7 +91,7 @@ namespace NLAISCRIPT
 			return &NLAIC::CIdentType::VoidType;
 		}
 
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		virtual void serial(NLMISC::IStream	&f)/// throw(NLMISC::EStream)
 		{
 			if ( f.isReading() )
 			{
@@ -213,7 +213,7 @@ namespace NLAISCRIPT
 			return true;
 		}
 
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		virtual void serial(NLMISC::IStream	&f)/// throw(NLMISC::EStream)
 		{
 			if ( f.isReading() )
 			{
@@ -267,7 +267,7 @@ namespace NLAISCRIPT
 			_RunIsDone = false;
 		}
 
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		virtual void serial(NLMISC::IStream	&f)/// throw(NLMISC::EStream)
 		{
 			if(_Id != NULL)
 			{
@@ -388,7 +388,7 @@ namespace NLAISCRIPT
 			_Id = NULL;
 		}
 
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		virtual void serial(NLMISC::IStream	&f)/// throw(NLMISC::EStream)
 		{
 			if(_Id != NULL)
 			{
@@ -514,7 +514,7 @@ namespace NLAISCRIPT
 			_TxtInfo = NULL;
 		}
 
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		virtual void serial(NLMISC::IStream	&f)/// throw(NLMISC::EStream)
 		{
 			if(_Id != NULL)
 			{
@@ -653,7 +653,7 @@ namespace NLAISCRIPT
 			strcpy(_TxtInfo,txt);
 		}
 
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		virtual void serial(NLMISC::IStream	&f)/// throw(NLMISC::EStream)
 		{
 			if(_Id != NULL)
 			{

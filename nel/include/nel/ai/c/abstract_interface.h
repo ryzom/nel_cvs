@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.6 2001/01/08 14:39:59 valignat Exp $
+ * $Id: abstract_interface.h,v 1.7 2001/01/09 17:16:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ namespace NLAIC //Gen pour general.
 		{
 			return std::string("<unnamed>");
 		}
-		virtual void serial(NLMISC::IStream	&) throw(NLMISC::EStream)
+		virtual void serial(NLMISC::IStream	&)/// throw(NLMISC::EStream)
 		{
 		}
 		//@}
@@ -153,18 +153,18 @@ namespace NLAIC //Gen pour general.
 
 	public:
 		///Construct object with a stream.
-		CIdentType(NLMISC::IStream &) throw(NLMISC::EStream);
+		CIdentType(NLMISC::IStream &);/// throw(NLMISC::EStream);
 		/**Construct object with a name. Object must be mounted in the class factory else an exception wil occur. 
 		CExceptionContainer share an CExceptionUnRegisterClassError exception object.
 		*/
-		CIdentType(const char *ident) throw (NLAIE::CExceptionContainer);
+		CIdentType(const char *ident);/// throw (NLAIE::CExceptionContainer);
 		/**
 		Construct object. Object must be mounted in the class factory else an exception wil occur. 
 		CExceptionContainer share an CExceptionUnRegisterClassError exception object.
 		*/
 		CIdentType(const char *ident,const IClassCFactory &classCFactory,
 									const CTypeOfObject &objType,
-									const CTypeOfOperator &opSupport) throw (NLAIE::CExceptionContainer);
+									const CTypeOfOperator &opSupport);/// throw (NLAIE::CExceptionContainer);
 		///Copy contructor
 		CIdentType(const CIdentType &i);
 		~CIdentType();
@@ -225,7 +225,7 @@ namespace NLAIC //Gen pour general.
 		///Get the class factory associate.
 		const IClassCFactory *getFactory() const;
 		
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream);	
+		virtual void serial(NLMISC::IStream	&f);/// throw(NLMISC::EStream);	
 	};
 
 
@@ -295,7 +295,7 @@ namespace NLAIC //Gen pour general.
 		{
 		}
 
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
+		virtual void serial(NLMISC::IStream	&f)/// throw(NLMISC::EStream)
 		{
 			if ( f.isReading() )
 				load( f );
@@ -478,7 +478,7 @@ namespace NLAIC //Gen pour general.
 		}
 
 		///user can serial this object.
-		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream);		
+		virtual void serial(NLMISC::IStream	&f);/// throw(NLMISC::EStream);		
 	};
 	
 

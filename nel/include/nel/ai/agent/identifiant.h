@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identifiant.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: identifiant.h,v 1.5 2001/01/09 17:16:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,7 @@ namespace NLAIAGENT
 		\param n The first index to increment.
 		*/		
 
-		void inc(int n) throw (NLAIE::CExceptionIndexError)
+		void inc(int n)/// throw (NLAIE::CExceptionIndexError)
 		{
 			if (n == getMaxIndex())
 			{
@@ -116,7 +116,7 @@ namespace NLAIAGENT
 		}
 
 		///increment the number.
-		const CIndexVariant &operator ++(int) throw (NLAIE::CExceptionIndexError)
+		const CIndexVariant &operator ++(int)/// throw (NLAIE::CExceptionIndexError)
 		{
 			try
 			{
@@ -407,8 +407,10 @@ namespace NLAIAGENT
 		Construct object with an CNumericIndex objects.
 
 		This constroctor allow to reload an IRefrence defined with the CNumericIndex &ref.
+
+		Exception: throw (NLAIE::CExceptionIndexHandeledError)
 		*/
-		CLocWordNumRef(const CNumericIndex &ref) throw (NLAIE::CExceptionIndexHandeledError):_Id(ref),_Stock(NULL)
+		CLocWordNumRef(const CNumericIndex &ref) :_Id(ref),_Stock(NULL)
 		{			
 			tMapRef::iterator Itr = _LocRefence->find(_Id);
 			if(Itr != _LocRefence->end())
@@ -420,8 +422,9 @@ namespace NLAIAGENT
 
 		/**
 		Copy Constructor.
+		Exception: throw (NLAIE::CExceptionIndexHandeledError)
 		*/
-		CLocWordNumRef(const CLocWordNumRef &l) throw (NLAIE::CExceptionIndexHandeledError):_Id(l._Id),_Stock(NULL)
+		CLocWordNumRef(const CLocWordNumRef &l) :_Id(l._Id),_Stock(NULL)
 		{						
 			tMapRef::iterator itr = _LocRefence->find(_Id);
 			if(itr != _LocRefence->end())
@@ -433,9 +436,10 @@ namespace NLAIAGENT
 		
 		/**
 		Copy Constructor.
+		Exception: throw (NLAIE::CExceptionIndexHandeledError)
 		*/
 
-		CLocWordNumRef(NLMISC::IStream &is) throw (NLAIE::CExceptionIndexHandeledError) :_Stock(NULL)
+		CLocWordNumRef(NLMISC::IStream &is) :_Stock(NULL)
 		{						
 			load(is);			
 		}
@@ -470,7 +474,8 @@ namespace NLAIAGENT
 		{
 			_Id.save(os);
 		}
-		virtual void load(NLMISC::IStream &is) throw (NLAIE::CExceptionIndexHandeledError)
+		///Exception: throw (NLAIE::CExceptionIndexHandeledError)
+		virtual void load(NLMISC::IStream &is)
 		{			
 			_Id.load(is);
 			tMapRef::iterator Itr = _LocRefence->find(_Id);

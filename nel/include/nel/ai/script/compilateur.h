@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.6 2001/01/08 14:39:59 valignat Exp $
+ * $Id: compilateur.h,v 1.7 2001/01/09 17:16:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,7 +384,7 @@ namespace NLAISCRIPT
 		bool getDebugMode() const {return _Debug;}
 
 	protected:
-		NLAIC::CIdentType getTypeOfClass(const NLAIAGENT::IVarName &className) throw (NLAIE::IException)
+		NLAIC::CIdentType getTypeOfClass(const NLAIAGENT::IVarName &className)/// throw (NLAIE::IException)
 		{
 			try
 			{				

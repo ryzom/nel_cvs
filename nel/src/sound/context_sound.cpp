@@ -1,6 +1,6 @@
 /** \file context_sound.cpp
  *
- * $Id: context_sound.cpp,v 1.4 2003/07/03 15:16:12 boucher Exp $
+ * $Id: context_sound.cpp,v 1.5 2003/11/21 16:21:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -143,7 +143,7 @@ CSound	*CContextSound::getContextSound(CSoundContext &context)
 			return 0;
 	}
 
-	if (_Random != 0)
+	if (_Random > 1)
 	{
 		// compute the random value.
 		uint32	r;

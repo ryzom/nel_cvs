@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.cpp,v 1.17 2003/04/14 15:31:48 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.18 2003/08/22 09:02:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,20 +34,20 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "located_properties.h"
-
-#include "3d/ps_located.h"
-
 #include "particle_dlg.h"
 #include "particle_tree_ctrl.h"
 #include "attrib_dlg.h"
 #include "lb_extern_id_dlg.h"
+#include "object_viewer.h"
+//
+#include "3d/ps_located.h"
+#include "3d/particle_system.h"
 
 using NL3D::CPSLocated;
 
+//****************************************************************************************************************
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedProperties dialog
-
-
 CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdlg)
 	: CDialog(CLocatedProperties::IDD, pdlg), _Located(loc), _ParticleDlg(pdlg), _MassDialog(NULL), _LifeDialog(NULL)
 {
@@ -60,18 +60,22 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdl
 	m_TriggerOnDeath = FALSE;
 	//}}AFX_DATA_INIT
 
-
+	nlassert(pdlg->getObjectViewer());
+	pdlg->getObjectViewer()->registerMainLoopCallBack(this);
 	
 
 	_MaxNbParticles = new CEditableRangeUInt("MAX_NB_PARTICLES", 1, 501);
 	_MaxNbParticles->enableUpperBound(30000, false);
 
-	_SkipFramesDlg = new CEditableRangeUInt("LOCATED SKIP FRAME RATE", 0, 4);
-	
+	_SkipFramesDlg = new CEditableRangeUInt("LOCATED SKIP FRAME RATE", 0, 4);	
 }
 
+//****************************************************************************************************************
 CLocatedProperties::~CLocatedProperties()
 {
+	nlassert(_ParticleDlg && _ParticleDlg->getObjectViewer());
+	_ParticleDlg->getObjectViewer()->removeMainLoopCallBack(this);
+	
 	_MassDialog->DestroyWindow();
 	_LifeDialog->DestroyWindow();
 	_MaxNbParticles->DestroyWindow();
@@ -84,6 +88,7 @@ CLocatedProperties::~CLocatedProperties()
 	
 }
 
+//****************************************************************************************************************
 void CLocatedProperties::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
@@ -109,12 +114,13 @@ BEGIN_MESSAGE_MAP(CLocatedProperties, CDialog)
 	ON_BN_CLICKED(IDC_PARAMETRIC_MOTION, OnParametricMotion)
 	ON_BN_CLICKED(IDC_EDIT_TRIGGER_ON_DEATH, OnEditTriggerOnDeath)
 	ON_BN_CLICKED(IDC_TRIGGER_ON_DEATH, OnTriggerOnDeath)
+	ON_BN_CLICKED(IDC_ASSIGN_COUNT, OnAssignCount)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
+//****************************************************************************************************************
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedProperties message handlers
-
 BOOL CLocatedProperties::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
@@ -127,6 +133,7 @@ BOOL CLocatedProperties::OnInitDialog()
 ///////////////////////////////////////////
 
 
+//****************************************************************************************************************
 void CLocatedProperties::init(uint32 x, uint32 y)
 {
 
@@ -145,6 +152,7 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	_LifeDialog->enableMemoryScheme(false);
 
 	_LifeWrapper.Located = _Located;
+	_LifeWrapper.SSPS = _ParticleDlg->StartStopDlg;
 
 	_LifeDialog->setWrapper(&_LifeWrapper);			
 
@@ -183,6 +191,11 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	_MaxNbParticles->setWrapper(&_MaxNbParticlesWrapper);	
 	_MaxNbParticles->init(r.left - pr.left, r.top - pr.top, this);
 
+	if (_Located->getOwner())
+	{
+		_MaxNbParticles->EnableWindow(_Located->getOwner()->getAutoCountFlag() ? FALSE : TRUE);
+	}
+	
 	
 	m_SystemBasis				= _Located->isInSystemBasis();	
 	m_LimitedLifeTime			= _Located->getLastForever() ? FALSE : TRUE;
@@ -199,10 +212,9 @@ void CLocatedProperties::init(uint32 x, uint32 y)
 	updateTriggerOnDeath();
 	UpdateData(FALSE);
 	ShowWindow(SW_SHOW);
-
-
 }
 
+//****************************************************************************************************************
 void CLocatedProperties::updateTriggerOnDeath(void)
 {
 	nlassert(_Located);
@@ -213,27 +225,55 @@ void CLocatedProperties::updateTriggerOnDeath(void)
 									  );
 }
 
+//****************************************************************************************************************
 void CLocatedProperties::updateIntegrable(void) 
 {
 	m_ParametricMotion			= _Located->isParametricMotionEnabled();
 	m_ParametricMotionCtrl.EnableWindow(_Located->supportParametricMotion());
 }
 
+//****************************************************************************************************************
 void CLocatedProperties::OnLimitedLifeTime() 
-{
-	
-	UpdateData();
-	
-
+{	
+	UpdateData();	
 	if (!m_LimitedLifeTime)
 	{
+		bool forceApplied = false;
+		// check that no force are applied on the located
+		std::vector<NL3D::CPSTargetLocatedBindable *> targeters;
+		_ParticleDlg->getCurrPS()->getTargeters(_Located, targeters);
+		for(uint k = 0; k < targeters.size(); ++k)
+		{
+			if (targeters[k]->getType() == NL3D::PSForce)
+			{
+				forceApplied = true;
+				break;
+			}
+		}		
+		if (forceApplied)
+		{
+			CString caption;
+			CString mess;
+			caption.LoadString(IDS_WARNING);
+			mess.LoadString(IDS_HAS_FORCE_APPLIED);
+			if (MessageBox((LPCTSTR) mess, (LPCTSTR) caption, MB_OKCANCEL) != IDOK)
+			{
+				m_LimitedLifeTime = true;
+				UpdateData(FALSE);
+				return;
+			}
+		}
 		if (_Located->setLastForever())
 		{		
 			_LifeDialog->EnableWindow(FALSE);
 		}
 		else
 		{
-			MessageBox(PS_NO_FINITE_DURATION_ARROR_MSG, "Error", MB_ICONEXCLAMATION);
+			CString mess;
+			mess.LoadString(IDS_PS_NO_FINITE_DURATION);
+			CString errorStr;
+			errorStr.LoadString(IDS_ERROR);
+			MessageBox((LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);
 			m_LimitedLifeTime = TRUE;
 			UpdateData(FALSE);
 		}
@@ -244,8 +284,10 @@ void CLocatedProperties::OnLimitedLifeTime()
 		_LifeDialog->EnableWindow(TRUE);
 	}
 	updateTriggerOnDeath();
+	_ParticleDlg->StartStopDlg->resetAutoCount();
 }
 
+//****************************************************************************************************************
 void CLocatedProperties::OnSystemBasis() 
 {
 	UpdateData();
@@ -254,6 +296,7 @@ void CLocatedProperties::OnSystemBasis()
 	UpdateData(FALSE);
 }
 
+//****************************************************************************************************************
 void CLocatedProperties::OnDisgradeWithLod() 
 {
 	UpdateData();
@@ -261,12 +304,14 @@ void CLocatedProperties::OnDisgradeWithLod()
 	
 }
 
+//****************************************************************************************************************
 void CLocatedProperties::OnParametricMotion() 
 {
 	UpdateData();
 	_Located->enableParametricMotion(m_ParametricMotion ? true : false);
 }
 
+//****************************************************************************************************************
 void CLocatedProperties::OnEditTriggerOnDeath() 
 {
 	UpdateData();
@@ -279,9 +324,30 @@ void CLocatedProperties::OnEditTriggerOnDeath()
 	
 }
 
+//****************************************************************************************************************
 void CLocatedProperties::OnTriggerOnDeath() 
 {
 	UpdateData();
 	_Located->enableTriggerOnDeath(m_TriggerOnDeath ? true : false /* MSVC6 wraning */);
 	updateTriggerOnDeath();
+}
+
+//****************************************************************************************************************
+void CLocatedProperties::go()
+{
+	nlassert(_ParticleDlg);
+	if (_ParticleDlg->getCurrPS()->getAutoCountFlag()) 
+	{
+		// update number of particle from ps
+		_MaxNbParticles->update();
+	}
+	// in all cases, show the current number of particles being used
+	GetDlgItem(IDC_CURR_NUM_PARTS)->SetWindowText(NLMISC::toString(_Located->getSize()).c_str());
+}
+
+//****************************************************************************************************************
+void CLocatedProperties::OnAssignCount() 
+{
+	_Located->resize(_Located->getSize()); // set new max size
+	_MaxNbParticles->update();
 }

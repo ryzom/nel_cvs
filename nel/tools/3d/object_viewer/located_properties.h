@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.h,v 1.9 2001/10/03 15:53:38 vizerie Exp $
+ * $Id: located_properties.h,v 1.10 2003/08/22 09:02:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #include "editable_range.h"
 #include "particle_tree_ctrl.h"
 #include "dialog_stack.h"
+#include "start_stop_particle_system.h"
 
 namespace  NL3D
 {
@@ -54,7 +55,7 @@ class CAttribDlgFloat;
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedProperties dialog
 
-class CLocatedProperties : public CDialog
+class CLocatedProperties : public CDialog, public CObjectViewer::IMainLoopCallBack
 {
 // Construction
 public:
@@ -63,6 +64,9 @@ public:
 	~CLocatedProperties();
 
 	void init(uint32 x, uint32 y);
+
+	CEditableRangeUInt *getParticleCountDlg() const { return _MaxNbParticles; }
+	
 // Dialog Data
 	//{{AFX_DATA(CLocatedProperties)
 	enum { IDD = IDD_LOCATED_PROPERTIES };
@@ -141,11 +145,12 @@ protected:
 
 		struct CLifeWrapper : public IPSWrapperFloat, IPSSchemeWrapperFloat
 		{
+		   CStartStopParticleSystem *SSPS;
 		   NL3D::CPSLocated *Located;
 		   float get(void) const { return Located->getInitialLife(); }
-		   void set(const float &v) { Located->setInitialLife(v); }
+		   void set(const float &v) { Located->setInitialLife(v); SSPS->resetAutoCount(); }
 		   virtual scheme_type *getScheme(void) const { return Located->getLifeScheme(); }
-		   virtual void setScheme(scheme_type *s) { Located->setLifeScheme(s); }
+		   virtual void setScheme(scheme_type *s) { Located->setLifeScheme(s); SSPS->resetAutoCount();; }
 		} _LifeWrapper;
 
 						
@@ -172,6 +177,8 @@ protected:
 	/// update the 'trigger on death' control
 	void updateTriggerOnDeath(void);
 
+	// from CObjectViewer::IMainLoopCallBack
+	virtual void go();
 
 
 	// Generated message map functions
@@ -183,6 +190,7 @@ protected:
 	afx_msg void OnParametricMotion();
 	afx_msg void OnEditTriggerOnDeath();
 	afx_msg void OnTriggerOnDeath();
+	afx_msg void OnAssignCount();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.26 2004/09/07 15:22:19 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.27 2004/09/17 15:11:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,6 +60,15 @@
 // Define this to enable the render state caching (default is defined)
 #define NL_D3D_USE_RENDER_STATE_CACHE
 
+// allows to enable / disable cache test at runtime (for debug)
+//#define NL_D3D_RUNTIME_DEBUG_CACHE_TEST
+#ifdef NL_D3D_RUNTIME_DEBUG_CACHE_TEST
+	#define NL_D3D_CACHE_TEST(label, cond) if (!_CacheTest[label] || (cond))
+#else
+	#define NL_D3D_CACHE_TEST(label, cond) if (cond)
+#endif
+	
+
 // Define this to disable hardware vertex program (default is undefined)
 // #define NL_DISABLE_HARDWARE_VERTEX_PROGAM
 
@@ -82,11 +91,14 @@
 // Define this to enable profiling of driver functions (default is undefined).
 //#define NL_PROFILE_DRIVER_D3D
 
+
 #ifdef NL_PROFILE_DRIVER_D3D
 	#define H_AUTO_D3D(label) H_AUTO(label)
 #else
 	#define H_AUTO_D3D(label)
 #endif
+
+
 
 inline operator==(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
 {
@@ -101,6 +113,8 @@ inline operator!=(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
 
 namespace NL3D 
 {
+
+	
 
 using NLMISC::CMatrix;
 using NLMISC::CVector;
@@ -117,11 +131,11 @@ typedef std::list<COcclusionQueryD3D *> TOcclusionQueryList;
 class COcclusionQueryD3D : public IOcclusionQuery
 {
 public:
-	IDirect3DQuery9					*Query;         // NULL is the query has been lost
+	IDirect3DQuery9					*Query;
 	NLMISC::CRefPtr<CDriverD3D>		Driver;			// owner driver
 	TOcclusionQueryList::iterator   Iterator;		// iterator in owner driver list of queries
 	TOcclusionType					OcclusionType;  // current type of occlusion
-	uint							VisibleCount;	// number of samples that passed the test	
+	uint							VisibleCount;	// number of samples that passed the test
 	bool							QueryIssued;
 	bool							WasLost; // tells that query was lost, so calls to end() will have not effects (there's no matching begin)
 	// From IOcclusionQuery
@@ -215,10 +229,10 @@ public:
 	{
 		H_AUTO_D3D(CMaterialDrvInfosD3D_CMaterialDrvInfosD3D);
 		PixelShader = NULL;
-		PixelShaderUnlightedNoVertexColor = NULL;				
-	}	
-	void buildTexEnv (uint stage, const CMaterial::CTexEnv &env, bool textured);		
-};	
+		PixelShaderUnlightedNoVertexColor = NULL;
+	}
+	void buildTexEnv (uint stage, const CMaterial::CTexEnv &env, bool textured);
+};
 
 // ***************************************************************************
 
@@ -293,7 +307,7 @@ public:
 
 
 	ID3DXEffect				*Effect;
-	bool					Validated;
+	bool					Validated;	
 
 	// Texture handles
 	D3DXHANDLE				TextureHandle[MaxShaderTexture];
@@ -480,6 +494,28 @@ public:
 class CDriverD3D : public IDriver, ID3DXEffectStateManager 
 {
 public:
+	enum
+	{
+		CacheTest_CullMode = 0,
+		CacheTest_RenderState = 1, 
+		CacheTest_TextureState = 2,
+		CacheTest_TextureIndexMode = 3,
+		CacheTest_TextureIndexUV = 4,
+		CacheTest_Texture = 5,
+		CacheTest_VertexProgram = 6,
+		CacheTest_PixelShader = 7,
+		CacheTest_VertexProgramConstant = 8,
+		CacheTest_PixelShaderConstant = 9,
+		CacheTest_SamplerState = 10,
+		CacheTest_VertexBuffer = 11,
+		CacheTest_IndexBuffer = 12,
+		CacheTest_VertexDecl = 13,
+		CacheTest_Matrix = 14,
+		CacheTest_RenderTarget = 15,
+		CacheTest_MaterialState = 16,
+		CacheTest_DepthRange = 17,
+		CacheTest_Count
+	};
 
 	// Some constants
 	enum 
@@ -508,6 +544,7 @@ public:
 							CDriverD3D();
 	virtual					~CDriverD3D();
 
+	virtual	bool			isLost() const { return _Lost; }
 	// ***************************************************************************
 	// Implementation
 	// see nel\src\3d\driver.h
@@ -757,8 +794,8 @@ private:
 	{
 		CRenderVariable()
 		{
-			NextModified = NULL;						
-			Modified = false;						
+			NextModified = NULL;
+			Modified = false;
 		}
 
 		// Type of render state
@@ -846,6 +883,8 @@ private:
 			VertexProgram = NULL;
 		}
 		LPDIRECT3DVERTEXSHADER9		VertexProgram;
+		// for debug
+		const CVertexProgram        *VP;
 		virtual void apply(CDriverD3D *driver);
 	};
 
@@ -857,7 +896,7 @@ private:
 			Type = PixelShaderPtrState;
 			PixelShader = NULL;
 		}
-		LPDIRECT3DPIXELSHADER9		PixelShader;
+		LPDIRECT3DPIXELSHADER9		PixelShader;		
 		virtual void apply(CDriverD3D *driver);
 	};
 
@@ -1077,7 +1116,7 @@ private:
 		// Ref on the state
 		CRenderState &_renderState = _RenderStateCache[renderState];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_renderState.Value != value)
+		NL_D3D_CACHE_TEST(CacheTest_RenderState, _renderState.Value != value)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_renderState.Value = value;
@@ -1098,7 +1137,7 @@ public:
 		// Ref on the state
 		CTextureState &_textureState = _TextureStateCache[stage][textureState];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_textureState.Value != value)
+		NL_D3D_CACHE_TEST(CacheTest_TextureState, _textureState.Value != value)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_textureState.Value = value;
@@ -1117,7 +1156,7 @@ private:
 
 		CTextureIndexState &_textureState = _TextureIndexStateCache[stage];		
 		#ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_textureState.TexGen = texGenEnabled || _textureState.TexGenMode != value)
+			NL_D3D_CACHE_TEST(CacheTest_TextureIndexMode, _textureState.TexGen = texGenEnabled || _textureState.TexGenMode != value)
 		#endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{		
 			// Ref on the state
@@ -1138,7 +1177,7 @@ private:
 		// Ref on the state
 		CTextureIndexState &_textureState = _TextureIndexStateCache[stage];
 		#ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_textureState.TexGen || _textureState.UVChannel != value)
+			NL_D3D_CACHE_TEST(CacheTest_TextureIndexUV, _textureState.TexGen || _textureState.UVChannel != value)
 		#endif
 		{		
 			_textureState.TexGen = false;
@@ -1157,7 +1196,7 @@ private:
 		// Ref on the state
 		CTexturePtrState &_textureState = _TexturePtrStateCache[stage];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_textureState.Texture != texture)
+		NL_D3D_CACHE_TEST(CacheTest_RenderState, _textureState.Texture != texture)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_textureState.Texture = texture;
@@ -1190,17 +1229,18 @@ private:
 	}
 
 	// Access vertex program
-	inline void setVertexProgram (LPDIRECT3DVERTEXSHADER9 vertexProgram)
+	inline void setVertexProgram (LPDIRECT3DVERTEXSHADER9 vertexProgram, const CVertexProgram *vp)
 	{
 		H_AUTO_D3D(CDriverD3D_setVertexProgram);
 		nlassert (_DeviceInterface);
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_VertexProgramCache.VertexProgram != vertexProgram)
+		NL_D3D_CACHE_TEST(CacheTest_VertexProgram, _VertexProgramCache.VertexProgram != vertexProgram)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_VertexProgramCache.VertexProgram = vertexProgram;
+			_VertexProgramCache.VP = vp;
 			touchRenderVariable (&_VertexProgramCache);
 		}
 	}
@@ -1213,7 +1253,7 @@ private:
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_PixelShaderCache.PixelShader != pixelShader)
+		NL_D3D_CACHE_TEST(CacheTest_PixelShader, _PixelShaderCache.PixelShader != pixelShader)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_PixelShaderCache.PixelShader = pixelShader;
@@ -1231,11 +1271,12 @@ private:
 		// Ref on the state
 		CVertexProgramConstantState &state = _VertexProgramConstantCache[index];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if ( ((*(float*)(state.Values+0)) != values[0]) ||
-			((*(float*)(state.Values+1)) != values[1]) ||
-			((*(float*)(state.Values+2)) != values[2]) ||
-			((*(float*)(state.Values+3)) != values[3]) || 
-			(state.ValueType != CVertexProgramConstantState::Float) )
+		bool doUpdate = ((*(float*)(state.Values+0)) != values[0]) ||
+					((*(float*)(state.Values+1)) != values[1]) ||
+					((*(float*)(state.Values+2)) != values[2]) ||
+					((*(float*)(state.Values+3)) != values[3]) || 
+					(state.ValueType != CVertexProgramConstantState::Float);
+		NL_D3D_CACHE_TEST(CacheTest_VertexProgramConstant, doUpdate)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			*(float*)(state.Values+0) = values[0];
@@ -1257,11 +1298,12 @@ private:
 		// Ref on the state
 		CVertexProgramConstantState &state = _VertexProgramConstantCache[index];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if ( ((*(int*)(state.Values+0)) != values[0]) ||
-			((*(int*)(state.Values+1)) != values[1]) ||
-			((*(int*)(state.Values+2)) != values[2]) ||
-			((*(int*)(state.Values+3)) != values[3]) || 
-			(state.ValueType != CVertexProgramConstantState::Int) )
+		bool doUpdate =	((*(int*)(state.Values+0)) != values[0]) ||
+					((*(int*)(state.Values+1)) != values[1]) ||
+					((*(int*)(state.Values+2)) != values[2]) ||
+					((*(int*)(state.Values+3)) != values[3]) || 
+					(state.ValueType != CVertexProgramConstantState::Int);
+		NL_D3D_CACHE_TEST(CacheTest_VertexProgramConstant, doUpdate)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			*(int*)(state.Values+0) = values[0];
@@ -1283,11 +1325,12 @@ private:
 		// Ref on the state
 		CPixelShaderConstantState &state = _PixelShaderConstantCache[index];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if ( ((*(float*)(state.Values+0)) != values[0]) ||
-			((*(float*)(state.Values+1)) != values[1]) ||
-			((*(float*)(state.Values+2)) != values[2]) ||
-			((*(float*)(state.Values+3)) != values[3]) || 
-			(state.ValueType != CPixelShaderConstantState::Float) )
+		bool doUpdate =	((*(float*)(state.Values+0)) != values[0]) ||
+					((*(float*)(state.Values+1)) != values[1]) ||
+					((*(float*)(state.Values+2)) != values[2]) ||
+					((*(float*)(state.Values+3)) != values[3]) || 
+					(state.ValueType != CPixelShaderConstantState::Float);
+		NL_D3D_CACHE_TEST(CacheTest_PixelShaderConstant, doUpdate)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			*(float*)(state.Values+0) = values[0];
@@ -1309,11 +1352,12 @@ private:
 		// Ref on the state
 		CPixelShaderConstantState &state = _PixelShaderConstantCache[index];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if ( ((*(int*)(state.Values+0)) != values[0]) ||
-			((*(int*)(state.Values+1)) != values[1]) ||
-			((*(int*)(state.Values+2)) != values[2]) ||
-			((*(int*)(state.Values+3)) != values[3]) || 
-			(state.ValueType != CPixelShaderConstantState::Int) )
+		bool doUpdate =	((*(int*)(state.Values+0)) != values[0]) ||
+					((*(int*)(state.Values+1)) != values[1]) ||
+					((*(int*)(state.Values+2)) != values[2]) ||
+					((*(int*)(state.Values+3)) != values[3]) || 
+					(state.ValueType != CPixelShaderConstantState::Int);
+		NL_D3D_CACHE_TEST(CacheTest_PixelShaderConstant, doUpdate)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			*(int*)(state.Values+0) = values[0];
@@ -1336,7 +1380,7 @@ private:
 		// Ref on the state
 		CSamplerState &_samplerState = _SamplerStateCache[sampler][samplerState];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_samplerState.Value != value)
+		NL_D3D_CACHE_TEST(CacheTest_SamplerState, _samplerState.Value != value)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_samplerState.Value = value;
@@ -1352,7 +1396,7 @@ private:
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if ((_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset) || (stride != _VertexBufferCache.Stride))
+		NL_D3D_CACHE_TEST(CacheTest_VertexBuffer, (_VertexBufferCache.VertexBuffer != vertexBuffer) || (_VertexBufferCache.Offset != offset) || (stride != _VertexBufferCache.Stride))
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_VertexBufferCache.VertexBuffer = vertexBuffer;
@@ -1384,7 +1428,7 @@ private:
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_IndexBufferCache.IndexBuffer != indexBuffer)
+		NL_D3D_CACHE_TEST(CacheTest_IndexBuffer, _IndexBufferCache.IndexBuffer != indexBuffer)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_IndexBufferCache.IndexBuffer = indexBuffer;
@@ -1401,7 +1445,7 @@ private:
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_VertexDeclCache.Decl != vertexDecl || stride != _VertexDeclCache.Stride)
+		NL_D3D_CACHE_TEST(CacheTest_VertexDecl, _VertexDeclCache.Decl != vertexDecl || stride != _VertexDeclCache.Stride)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_VertexDeclCache.Decl = vertexDecl;
@@ -1430,7 +1474,7 @@ private:
 
 		CMatrixState &theMatrix = _MatrixCache[type];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE		
-		if ((matrix._11 != theMatrix.Matrix._11) ||
+		bool doUpdate = (matrix._11 != theMatrix.Matrix._11) ||
 			(matrix._12 != theMatrix.Matrix._12) ||
 			(matrix._13 != theMatrix.Matrix._13) ||
 			(matrix._14 != theMatrix.Matrix._14) ||
@@ -1445,7 +1489,8 @@ private:
 			(matrix._41 != theMatrix.Matrix._41) ||
 			(matrix._42 != theMatrix.Matrix._42) ||
 			(matrix._43 != theMatrix.Matrix._43) ||
-			(matrix._44 != theMatrix.Matrix._44))			
+			(matrix._44 != theMatrix.Matrix._44);
+		NL_D3D_CACHE_TEST(CacheTest_Matrix, doUpdate)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			theMatrix.Matrix = matrix;
@@ -1461,7 +1506,7 @@ private:
 
 		// Ref on the state
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (_RenderTarget.Target != target)
+		NL_D3D_CACHE_TEST(CacheTest_RenderTarget, _RenderTarget.Target != target)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_RenderTarget.Target = target;
@@ -1479,10 +1524,11 @@ private:
 	{
 		H_AUTO_D3D(setMaterialState);	
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		if (material.Power != _MaterialState.Current.Power ||
+		bool update = material.Power != _MaterialState.Current.Power ||
 			material.Ambient != _MaterialState.Current.Ambient ||
 			material.Emissive != _MaterialState.Current.Emissive ||
-			material.Specular != _MaterialState.Current.Specular)
+			material.Specular != _MaterialState.Current.Specular;
+		NL_D3D_CACHE_TEST(CacheTest_MaterialState, update)
 #endif
 		{
 			_MaterialState.Current = material;
@@ -1552,6 +1598,19 @@ private:
 	
 	bool validateShader(CShader *shader);
 
+	void activePass (uint pass)
+	{
+		H_AUTO_D3D(CDriverD3D_activePass);		
+		if (_CurrentShader)
+		{			
+			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);			
+			drvInfo->Effect->Pass (pass);			
+		}
+
+		// Update render states
+		updateRenderVariablesInternal();
+	}
+
 	void beginMultiPass ()
 	{
 		H_AUTO_D3D(CDriverD3D_beginMultiPass);
@@ -1571,37 +1630,25 @@ private:
 				//setTextureState (i, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 			}
 
-			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
+			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);			
 			drvInfo->Effect->Begin (&_CurrentShaderPassCount, D3DXFX_DONOTSAVESTATE|D3DXFX_DONOTSAVESHADERSTATE);
 		}
 		else
 			// No shader setuped
 			_CurrentShaderPassCount = 1;
-	};
-
-	void activePass (uint pass)
-	{
-		H_AUTO_D3D(CDriverD3D_activePass);
-		if (_CurrentShader)
-		{
-			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
-			drvInfo->Effect->Pass (pass);
-		}
-
-		// Update render states
-		updateRenderVariablesInternal();
 	}
 
 	void endMultiPass ()
 	{
 		H_AUTO_D3D(CDriverD3D_endMultiPass);
 		if (_CurrentShader)
-		{
-			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
+		{			
+			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);			
 			drvInfo->Effect->End ();
 		}
 	}
 
+	
 	// Returns true if this material needs to compute the alpha component
 	static bool needsAlpha (CMaterial &mat);
 
@@ -1615,6 +1662,11 @@ private:
 	// Build a pixel shader for normal shader
 	IDirect3DPixelShader9	*buildPixelShader (const CNormalShaderDesc &normalShaderDesc, bool unlightedNoVertexColor);
 
+	
+	// Notify all the shaders drivers info that a device has been lost
+	void notifyAllShaderDrvOfLostDevice();
+	// Notify all the shaders drivers info that a device has been reset
+	void notifyAllShaderDrvOfResetDevice();
 
 	// *** Debug helpers
 
@@ -1715,6 +1767,7 @@ private:
 	bool					_DisableHardwarePixelShader;
 	bool					_MADOperatorSupported;
 	bool					_EMBMSupported;
+	bool					_CubbedMipMapSupported;
 	sint					_NbNeLTextureStages;			// Number of texture stage for NeL (max IDRV_MAT_MAXTEXTURES)
 	uint					_MaxVerticesByVertexBufferHard;
 	uint					_MaxLight;
@@ -1876,7 +1929,6 @@ private:
 	CShader					_ShaderWaterNoDiffuse;	
 	CShader					_ShaderWaterDiffuse;	
 
-	uint32					_StateBlockCategory; // category of render variables to be recorded in the state block
 
 	// Backup frame buffer
 	IDirect3DSurface9		*_BackBuffer;
@@ -1926,6 +1978,11 @@ private:
 
 	TCullMode		_CullMode;
 	
+	bool			_Lost;	
+	bool			_SceneBegun;
+
+	// for debug only
+	static bool		_CacheTest[CacheTest_Count];
 
 	// reset an index buffer and force it to be reallocated	
 	void deleteIndexBuffer(CIBDrvInfosD3D *ib);
@@ -1936,6 +1993,25 @@ public:
 	#ifdef 	NL_DEBUG
 		std::set<CVBDrvInfosD3D *> _LockedBuffers;
 	#endif	
+
+	bool beginScene()
+	{
+		nlassert(!_SceneBegun);
+		if (_DeviceInterface->BeginScene() != D3D_OK) return false;
+		_SceneBegun = true;
+		return true;
+	}
+
+	bool endScene()
+	{
+		nlassert(_SceneBegun);
+		if (_DeviceInterface->EndScene() != D3D_OK) return false;
+		_SceneBegun = false;
+		return true;
+	}
+
+	bool hasSceneBegun() const { return _SceneBegun; }
+	void checkPS();
 };
 
 #define NL_D3DCOLOR_RGBA(rgba) (D3DCOLOR_ARGB(rgba.A,rgba.R,rgba.G,rgba.B))
@@ -2013,24 +2089,3 @@ inline void copyRGBA2BGRA (uint32 *dest, const uint32 *src, uint nbPixels)
 extern HINSTANCE HInstDLL;
 
 #endif // NL_DRIVER_DIRECT3D_H
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

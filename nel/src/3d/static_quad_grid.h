@@ -1,7 +1,7 @@
 /** \file static_quad_grid.h
  * <File description>
  *
- * $Id: static_quad_grid.h,v 1.2 2002/02/13 17:34:41 berenguier Exp $
+ * $Id: static_quad_grid.h,v 1.3 2002/03/14 18:35:11 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -242,7 +242,7 @@ void			CStaticQuadGrid<T>::build(CQuadGrid<T> &quadGrid)
 			quadGrid.select(pos, pos);
 
 			// Setup quadNode ptr.
-			if(_Elements.size()>0)
+			if (curDupElt < _Elements.size())
 				_Grid[y*_Size + x].Nodes= &_Elements[curDupElt];
 
 			// For all elements.

@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.34 2002/04/30 13:37:40 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.35 2002/05/07 09:05:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2533,14 +2533,20 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 
 				if ( (param.InstanceShape != "") || (listNode.size()==1))
 					CExportNel::setScriptAppData (node, NEL_OBJET_NAME_DATA, param.InstanceShape);
+				if (param.InstanceShape == "...")
+					CExportNel::setScriptAppData (node, NEL_OBJET_NAME_DATA, "");
 				if (param.InstanceName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, param.InstanceName);
+				if (param.InstanceName == "...")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INSTANCE_NAME, "");
 				if (param.DontAddToScene != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_DONT_ADD_TO_SCENE, param.DontAddToScene);
 				if (param.AutomaticAnimation != BST_INDETERMINATE)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_AUTOMATIC_ANIMATION, param.AutomaticAnimation);
 				if (param.InstanceGroupName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_IGNAME, param.InstanceGroupName);
+				if (param.InstanceGroupName == "...")
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_IGNAME, "");
 				if (param.InterfaceFileName != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_INTERFACE_FILE, param.InterfaceFileName);
 				if (param.InterfaceThreshold != -1)

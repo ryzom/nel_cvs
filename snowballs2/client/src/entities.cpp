@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.25 2001/07/18 17:30:17 lecroart Exp $
+ * $Id: entities.cpp,v 1.26 2001/07/19 10:18:07 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -832,3 +832,42 @@ NLMISC_COMMAND(set_speed,"set the speed of an identity","<eid> <speed>")
 	}
 	return true;
 }
+
+NLMISC_COMMAND(teleport, "teleport an entity to a given position", "<eid> <x> <y>")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if(args.size() != 3) return false;
+
+	uint eid = (uint)atoi(args[0].c_str());
+	EIT eit = findEntity (eid);
+	CEntity	&entity = (*eit).second;
+
+	float	x, y;
+
+	x = (float)atof(args[1].c_str());
+	y = (float)atof(args[2].c_str());
+
+	//
+	if (entity.MovePrimitive != NULL && entity.VisualCollisionEntity != NULL)
+	{
+		UGlobalPosition	gPos;
+		entity.MovePrimitive->setGlobalPosition(CVectorD(x, y, 0.0f), 0);
+		// get the global position in pacs coordinates system
+		entity.MovePrimitive->getGlobalPosition(gPos, 0);
+		// convert it in a vector 3d
+		entity.Position = GlobalRetriever->getGlobalPosition(gPos);
+		// get the good z position
+		gPos.LocalPosition.Estimation.z = 0.0f;
+		entity.Position.z = GlobalRetriever->getMeanHeight(gPos);
+		// snap to the ground
+		entity.VisualCollisionEntity->snapToGround(entity.Position);
+
+		if (entity.Type == CEntity::Self)
+		{
+			MouseListener->setPosition(entity.Position);
+		}
+	}
+
+	return true;
+}
+

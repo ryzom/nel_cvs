@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.34 2003/12/29 13:32:53 lecroart Exp $
+ * $Id: entity_id.h,v 1.35 2004/01/13 18:32:36 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,7 +108,7 @@ public :
 	/// Generator of entity ids
 	static CEntityId			getNewEntityId( uint8 type )
 	{
-		nlassert( ! _NextEntityId.isUnknownId() );
+		nlassert( _NextEntityId != Unknown ); // type may be Unknown, so isUnknownId() would return true
 		NLMISC::CEntityId id = _NextEntityId++;
 		id.setType( type );
 		return id;

@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.2 2001/12/17 17:50:51 saffray Exp $
+ * $Id: entity_id.h,v 1.3 2001/12/20 14:01:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,19 +110,26 @@ struct CEntityId
 		char *creator;
 		char *dyn;
 		id = ident;
+		uint base = 10;
+
+		if (str == NULL)
+			return;
+
+		if(strlen(str) >= 2 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+			base = 16;
 
 		sint n = 0;
-		while(*(ident++) != ':');		
+		while(*(ident++) != ':') ;
 		type = ident;
-		while(*(ident++) != ':');		
+		while(*(ident++) != ':') ;
 		creator = ident;
-		while(*(ident++) != ':');		
+		while(*(ident++) != ':') ;
 		dyn = ident;	
 
-		DynamicId = atoiInt64(dyn);
-		CreatorId = atoiInt64(creator);
-		Type = atoiInt64(type);
-		Id = atoiInt64(id);
+		DynamicId = atoiInt64(dyn, base);
+		CreatorId = atoiInt64(creator, base);
+		Type = atoiInt64(type, base);
+		Id = atoiInt64(id, base);
 	}
 
 	///\name comparison of two CIndexVariant.

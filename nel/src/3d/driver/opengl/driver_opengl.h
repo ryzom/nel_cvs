@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.71 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.72 2001/07/05 09:19:03 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -526,6 +526,7 @@ private:
 
 	// Current (OpenGL basis) View matrix.
 	CMatrix					_ViewMtx;
+	CMatrix					_TexMtx;
 
 	// Current computed (OpenGL basis) ModelView matrix.
 	CMatrix					_ModelViewMatrix[MaxModelMatrix];

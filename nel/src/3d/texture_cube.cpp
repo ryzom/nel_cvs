@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.1 2001/06/27 17:41:12 besson Exp $
+ * $Id: texture_cube.cpp,v 1.2 2001/07/05 09:19:03 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ string CTextureCube::getShareName()
 void CTextureCube::doGenerate()
 {
 	uint i;
-	ITexture *pRefTex;
+	ITexture *pRefTex = NULL;
 
 	for( i = 0; i < 6; ++i )
 		if( _Textures[i] != NULL )
@@ -102,6 +102,19 @@ void CTextureCube::doGenerate()
 		{
 			_Textures[i]->resample( pRefTex->getWidth(), pRefTex->getHeight() );
 		}
+		// Let's apply the flips depending on the texture
+		if( ((TFace)i) == positive_x )
+			_Textures[i]->flipH();
+		if( ((TFace)i) == negative_x )
+			_Textures[i]->flipH();
+		if( ((TFace)i) == positive_y )
+			_Textures[i]->flipH();
+		if( ((TFace)i) == negative_y )
+			_Textures[i]->flipH();
+		if( ((TFace)i) == positive_z )
+			_Textures[i]->flipV();
+		if( ((TFace)i) == negative_z )
+			_Textures[i]->flipV();
 	}
 }
 

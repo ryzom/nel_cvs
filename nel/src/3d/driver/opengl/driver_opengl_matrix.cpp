@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.7 2001/04/11 13:03:22 berenguier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.8 2001/07/05 09:19:03 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,11 +55,17 @@ void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 	changeBasis.identity();
 	changeBasis.setRot(I,J,K, true);
 	// Optimize it...
-	changeBasis*= mtx;
-	_ViewMtx=changeBasis;
+//	changeBasis*= mtx;
+	_ViewMtx=changeBasis*mtx;
 
 	_MatrixSetupDirty= true;
 	_ViewMatrixSetupDirty= true;
+
+	_TexMtx = _ViewMtx;
+	_TexMtx.setPos(CVector(0.0f,0.0f,0.0f));
+	_TexMtx.invert();
+	_TexMtx = changeBasis *	_TexMtx;
+
 }
 
 CMatrix CDriverGL::getViewMatrix(void) const

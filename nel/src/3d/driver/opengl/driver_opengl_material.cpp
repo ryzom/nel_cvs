@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.31 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.32 2001/07/05 09:19:03 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -282,8 +282,10 @@ void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
 	{
 	case CMaterial::LightMap: 
 		setupLightMapPass(mat, pass);
+		break;
 	case CMaterial::Specular: 
 		setupSpecularPass(mat, pass);
+		break;
 
 	// All others materials do not require multi pass.
 	default: return;
@@ -298,8 +300,10 @@ void			CDriverGL::endMultiPass(const CMaterial &mat)
 	{
 	case CMaterial::LightMap: 
 		endLightMapMultiPass(mat);
+		break;
 	case CMaterial::Specular: 
 		endSpecularMultiPass(mat);
+		break;
 
 	// All others materials do not require multi pass.
 	default: return;
@@ -333,7 +337,6 @@ sint			CDriverGL::beginLightMapMultiPass(const CMaterial &mat)
 	// reset VertexColor array if necessary.
 	if (_LastVB.VertexFormat & IDRV_VF_COLOR)
 		glDisableClientState(GL_COLOR_ARRAY);
-
 
 	// Manage too if no lightmaps.
 	nPass= std::max(nPass, (uint)1);
@@ -442,7 +445,6 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 					// (but for the last pass).
 				}
 
-
 				// setup UV, with UV1.
 				setupUVPtr(stage, _LastVB, 1);
 			}
@@ -520,19 +522,15 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 	if (_LastVB.VertexFormat & IDRV_VF_COLOR)
 		glEnableClientState(GL_COLOR_ARRAY);
 
-
 	// NB: for now, nothing to do with blending/lighting, since always setuped in activeMaterial().
 }
 
 // ***************************************************************************
 sint			CDriverGL::beginSpecularMultiPass(const CMaterial &mat)
 {
-	CMatrix mTemp = _ViewMtx;
-	mTemp.setPos(CVector(0.0f,0.0f,0.0f));
-	mTemp.invert();
-	
+	glActiveTextureARB(GL_TEXTURE0_ARB+1);
 	glMatrixMode(GL_TEXTURE);
-	glLoadMatrixf( mTemp.get() );
+	glLoadMatrixf( _TexMtx.get() );
 	glMatrixMode(GL_MODELVIEW);
 
 	if(!_Extensions.ARBTextureCubeMap)
@@ -541,7 +539,11 @@ sint			CDriverGL::beginSpecularMultiPass(const CMaterial &mat)
 	// One texture stage hardware not supported.
 	if(getNbTextureStages()<2)
 		return 1;
-	return 2;
+
+	if( _Extensions.NVTextureEnvCombine4 ) // NVidia optimization
+		return 1;
+	else
+		return 2;
 
 }
 // ***************************************************************************
@@ -551,14 +553,79 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 	if(getNbTextureStages()<2)
 		return;
 
-	/// \TODO mb : Support NVidia combine 4 extension to do specular map in a single pass
-	//if( _Extensions.NVTextureEnvCombine4 )
-	//{ // Ok we can do it in a single pass
-	//}
-	//else
+	/// Support NVidia combine 4 extension to do specular map in a single pass
+	if( _Extensions.NVTextureEnvCombine4 )
+	{	// Ok we can do it in a single pass
+		glDisable(GL_BLEND);
+
+		// Stage 0
+		glActiveTextureARB(GL_TEXTURE0_ARB+0);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+		// Operator.
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
+		// Arg0.
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_TEXTURE );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA );
+		// Arg1.
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT);
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_ONE_MINUS_SRC_ALPHA );
+		// Arg2.
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_ZERO );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR );
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_ALPHA );
+		// Arg3.
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_SRC_COLOR);
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA );
+		// Result RGB : Texture*Diffuse, Alpha : Texture
+
+		// Set Stage 1
+		glActiveTextureARB(GL_TEXTURE0_ARB+1);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
+		// Operator Add (Arg0*Arg1+Arg2*Arg3)
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
+		glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_ADD );
+		// Arg0.
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_RGB_EXT, GL_SRC_COLOR );
+		// Arg1.
+		if( mat.getTexture(0) == NULL )
+		{
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_ONE_MINUS_SRC_COLOR);
+		}
+		else
+		{
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_ALPHA );
+		}
+		// Arg2.
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_RGB_EXT, GL_PREVIOUS_EXT );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_RGB_EXT, GL_SRC_COLOR );
+		// Arg3.
+		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO );
+		glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
+		// Result : Texture*Previous.Alpha+Previous
+
+		glEnable( GL_TEXTURE_CUBE_MAP_ARB );
+		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
+		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
+		glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
+		glEnable( GL_TEXTURE_GEN_S );
+		glEnable( GL_TEXTURE_GEN_T );
+		glEnable( GL_TEXTURE_GEN_R );
+	}
+	else
 	{ // We have to do it in 2 passes
 
-		if (pass == 0)
+		if( pass == 0 )
 		{ // Just display the texture
 			glDisable(GL_BLEND);
 			glActiveTextureARB(GL_TEXTURE0_ARB+1);
@@ -582,16 +649,26 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 
 
 			// Set stage 1
-			env.Env.OpRGB = CMaterial::Modulate;
-			env.Env.SrcArg0RGB = CMaterial::Texture;
-			env.Env.OpArg0RGB = CMaterial::SrcColor;
-
-			env.Env.SrcArg1RGB = CMaterial::Previous;
-			env.Env.OpArg1RGB = CMaterial::SrcColor;
+			if( mat.getTexture(0) == NULL )
+			{
+				env.Env.OpRGB = CMaterial::Replace;
+				env.Env.SrcArg0RGB = CMaterial::Texture;
+				env.Env.OpArg0RGB = CMaterial::SrcColor;
+			}
+			else
+			{
+				env.Env.OpRGB = CMaterial::Modulate;
+				env.Env.SrcArg0RGB = CMaterial::Texture;
+				env.Env.OpArg0RGB = CMaterial::SrcColor;
+			
+				env.Env.SrcArg1RGB = CMaterial::Previous;
+				env.Env.OpArg1RGB = CMaterial::SrcColor;
+			}
 
 			if(_CurrentTexEnv[1].EnvPacked!= env.EnvPacked)
 				activateTexEnvMode(1, env);
 
+			// Set Stage 1
 			glActiveTextureARB(GL_TEXTURE0_ARB+1);
 			glEnable( GL_TEXTURE_CUBE_MAP_ARB );
 			glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
@@ -606,11 +683,23 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 // ***************************************************************************
 void			CDriverGL::endSpecularMultiPass(const CMaterial &mat)
 {
-	glActiveTextureARB(GL_TEXTURE0_ARB+1);
-	glDisable(GL_TEXTURE_GEN_S);
-	glDisable(GL_TEXTURE_GEN_T);
-	glDisable(GL_TEXTURE_GEN_R);
-	glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+	glActiveTextureARB( GL_TEXTURE0_ARB+1);
+	glDisable( GL_TEXTURE_GEN_S );
+	glDisable( GL_TEXTURE_GEN_T );
+	glDisable( GL_TEXTURE_GEN_R );
+	//glDisable( GL_TEXTURE_CUBE_MAP_ARB );
+
+	if(_Extensions.NVTextureEnvCombine4)
+	{
+		CMaterial::CTexEnv	env;
+		activateTexEnvMode(0, env);
+		activateTexEnvMode(1, env);
+	}
+
+	// Happiness !!! we have already enabled the stage 1
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
 }
 
 } // NL3D

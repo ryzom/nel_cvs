@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.27 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.28 2001/07/05 09:19:03 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -315,10 +315,10 @@ bool CDriverGL::setupTexture(ITexture& tex)
 				{
 					static GLenum face_map[6] = {	GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
 													GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
-													GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
-													GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB,
+													GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB,
 													GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
-													GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB	};
+													GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
+													GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB };
 					// Regenerate all the texture.
 					tex.generate();
 					CTextureCube *pTC = (CTextureCube *)&tex;
@@ -559,7 +559,8 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 				// Activate texturing...
 				//======================
 				glEnable(GL_TEXTURE_2D);
-				glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+				if(_Extensions.ARBTextureCubeMap)
+					glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 				CTextureDrvInfosGL*	gltext;
 				gltext= getTextureGl(*tex);
 				glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);

@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.5 2001/09/06 15:20:54 besson Exp $
+ * $Id: texture_font.cpp,v 1.6 2001/09/06 16:24:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -358,55 +358,5 @@ CTextureFont::SLetterInfo* CTextureFont::getLetterInfo (SLetterKey& k)
 
 	return Front[cat];
 }
-
-
-
-/*==================================================================*\
-							CTEXTUREFONT
-\*==================================================================*/
-
-/*------------------------------------------------------------------*\
-							doGenerate()
-\*------------------------------------------------------------------*/
-/* Previous version
-void CTextureFont::doGenerate()
-{
-	// getting bitmap infos
-	uint32 pitch = 0;
-	uint8 *bitmap = _FontGen->getBitmap(Char, _Size, _CharWidth, _CharHeight, pitch, Left, Top, AdvX, GlyphIndex);
-
-	// computing new width and height as powers of 2
-	_Width = NLMISC::raiseToNextPowerOf2(_CharWidth+1);
-	CBitmap::_Width = _Width;
-	_Height = NLMISC::raiseToNextPowerOf2(_CharHeight+1);
-	CBitmap::_Height = _Height;
-
-	// calculating memory size taken by the bitmap
-	uint32 bitmapSize = _Width*_Height*4;
-	_Data[0].resize(bitmapSize);
-
-	// filling CBitmap buffer
-	for(uint i=0; i<_Height; i++)
-	{
-		for(uint j=0; j<_Width; j++)
-		{
-			if(j<_CharWidth && i<_CharHeight)
-			{
-				_Data[0][(i*_Width + j)*4] = 255;
-				_Data[0][(i*_Width + j)*4 + 1] = 255;
-				_Data[0][(i*_Width + j)*4 + 2] = 255;
-				_Data[0][(i*_Width + j)*4 + 3] = bitmap[i*pitch + j];
-			}
-			else
-			{
-				_Data[0][(i*_Width + j)*4] = 255;
-				_Data[0][(i*_Width + j)*4 + 1] = 255;
-				_Data[0][(i*_Width + j)*4 + 2] = 255;
-				_Data[0][(i*_Width + j)*4 + 3] = 0;
-			}
-		}
-	}
-}
-*/
 
 } // NL3D

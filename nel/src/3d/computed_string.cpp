@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.17 2001/09/06 15:20:54 besson Exp $
+ * $Id: computed_string.cpp,v 1.18 2001/09/06 16:24:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,17 +115,6 @@ void CComputedString::render2D (IDriver& driver,
 	Material->setZWrite (false);
 	Material->setColor (Color);
 	driver.renderQuads (*Material,0,Vertices.getNumVertices()/4);
-	
-	/*
-	for(uint32 i=0; i<Primitives.size(); i++)
-	{
-		// Disactive zbuffer
-		Materials[i]->setZFunc (CMaterial::always);
-		Materials[i]->setZWrite (false);
-
-		driver.render(Primitives[i], *Materials[i]);
-	}
-	*/
 }
 
 
@@ -146,19 +135,6 @@ void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 	Material->setZWrite (true);
 	Material->setColor (Color);
 	driver.renderQuads (*Material,0,Vertices.getNumVertices()/4);
-
-	/*
-	vector<CPrimitiveBlock>::iterator itpb = Primitives.begin();
-	int i = 0;
-	for(itpb = Primitives.begin(); itpb<Primitives.end(); itpb++)
-	{
-		// Active zbuffer
-		Materials[i]->setZFunc (CMaterial::lessequal);
-		Materials[i]->setZWrite (true);
-
-		driver.render((*itpb), *Materials[i]);
-		i++;
-	}*/	
 }
 
 

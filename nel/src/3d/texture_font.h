@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.2 2001/09/06 15:20:54 besson Exp $
+ * $Id: texture_font.h,v 1.3 2001/09/06 16:24:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,95 +103,6 @@ private:
 	SLetterInfo *Front[TEXTUREFONT_NBCATEGORY], *Back[TEXTUREFONT_NBCATEGORY];
 
 	void rebuildLetter (sint cat, sint x, sint y);
-
-
-
-/*
-	uint32 _CharWidth;
-	uint32 _CharHeight;
-	uint32 _Width;
-	uint32 _Height;
-
-	uint32 _Size;
-	CFontGenerator *_FontGen;
-public:
-	CTextureFont()
-	{ 
-		// Default char. This ctor is usefull for polymorphic serialisation only.
-		Char = ' ';
-		_Size = 10;
-		_CharWidth = 0;
-		_CharHeight = 0;
-		_FontGen = NULL;
-		_Width = 0;
-		_Height = 0;
-		
-		setWrapS(ITexture::Repeat);
-		setWrapT(ITexture::Repeat);
-
-		// Font are always Alpha only.
-		setUploadFormat(Alpha);
-	}
-	
-	CTextureFont(const CFontDescriptor& desc) 
-	{ 
-		Char = desc.C;
-		_Size = desc.Size;
-		_CharWidth = 0;
-		_CharHeight = 0;
-		_FontGen = desc.FontGen;
-		_Width = 0;
-		_Height = 0;
-
-		setWrapS(ITexture::Repeat);
-		setWrapT(ITexture::Repeat);
-
-		// Font are always Alpha only.
-		setUploadFormat(Alpha);
-	}
-
-	CTextureFont(CFontGenerator *fg, ucchar c, uint32 size) 
-	{ 
-		Char = c;
-		_Size = size;
-		_CharWidth = 0;
-		_CharHeight = 0;
-		_FontGen = fg;
-		_Width = 0;
-		_Height = 0;
-
-		setWrapS(ITexture::Repeat);
-		setWrapT(ITexture::Repeat);
-
-		// Font are always Alpha only.
-		setUploadFormat(Alpha);
-	}
-
-	uint32	getCharWidth() const {return _CharWidth;}
-	uint32	getCharHeight() const {return _CharHeight;}
-
-	uint32	getWidth() const {return _Width;}
-	uint32	getHeight() const {return _Height;}
-
-	CFontDescriptor getDescriptor() const
-	{
-		return CFontDescriptor(_FontGen, Char, _Size);
-	}
-
-	// Generate the texture
-	void doGenerate();
-
-	/// the unicode character
-	ucchar Char;
-	/// number of the character in the this font
-	uint32 GlyphIndex;
-	/// Distance between origin and top of the texture
-	sint32 Top;
-	/// Distance between origin and left of the texture
-	sint32 Left;
-	/// Advance to the next caracter
-	sint32 AdvX;
-*/
 
 	/// Todo: serialize a font texture.
 public:

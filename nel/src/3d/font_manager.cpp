@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.28 2001/09/06 15:20:54 besson Exp $
+ * $Id: font_manager.cpp,v 1.29 2001/09/06 16:24:01 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,8 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 
 	output.Color = color;
 	driver->getWindowSize (width, height);
-	FontRatio = FontRatio / height;
+	if (height > 0)
+		FontRatio = FontRatio / height;
 	
 	// resize fontSize if window not of 800x600.
 	if (keep800x600Ratio)
@@ -109,7 +110,9 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 	CTextureFont	*pTexFont = (CTextureFont*)(pMatFont->getTexture (0));
 	float hlfW = 0.5f / pTexFont->getWidth();
 	float hlfH = 0.5f / pTexFont->getHeight();
-	float hlfPix = 0.5f / height;
+	float hlfPix = 0.5f;
+	if (height > 0)
+		hlfPix = hlfPix / height;
 	CTextureFont::SLetterKey k;
 
 	output.StringHeight = 0;

@@ -43,7 +43,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib freetype.lib"
+				AdditionalDependencies="freetype219.lib maxscrpt.lib odbc32.lib odbccp32.lib comctl32.lib bmm.lib core.lib geom.lib gfx.lib mesh.lib paramblk2.lib maxutil.lib Maxscrpt.lib version.lib"
 				OutputFile="C:\3dsmax3_1\plugins\nelconvertpatch.dlm"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"

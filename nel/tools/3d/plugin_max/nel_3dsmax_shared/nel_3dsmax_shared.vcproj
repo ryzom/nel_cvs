@@ -171,7 +171,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="freetype.lib paramblk2.lib odbc32.lib odbccp32.lib maxscrpt.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib Maxscrpt.lib"
+				AdditionalDependencies="freetype219.lib paramblk2.lib odbc32.lib odbccp32.lib maxscrpt.lib core.lib geom.lib gfx.lib mesh.lib maxutil.lib Maxscrpt.lib"
 				OutputFile="C:\3dsmax3_1\nel_3dsmax_shared.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"

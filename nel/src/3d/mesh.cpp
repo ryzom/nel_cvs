@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.7 2001/03/27 09:54:29 berenguier Exp $
+ * $Id: mesh.cpp,v 1.8 2001/03/27 10:26:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -217,7 +217,7 @@ CTransformShape		*CMesh::createInstance(CScene &scene)
 		CAnimatedMaterial	aniMat(&it->second);
 
 		// set the target instance material.
-		nlassert(it->first<_mi->Materials.size());
+		nlassert(it->first < mi->Materials.size());
 		aniMat.setMaterial(&mi->Materials[it->first]);
 
 		// Append this animated material.

@@ -1,7 +1,7 @@
 /** \file dx_event_emitter.h
  * <File description>
  *
- * $Id: di_event_emitter.h,v 1.3 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: di_event_emitter.h,v 1.4 2003/04/28 12:31:43 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -119,10 +119,12 @@ public:
 
 	///\name From IDeviceManager, access to devices
 	//@{
+		// Test if a mouse has been created (by a call to getMouseDeivce)
+		virtual	bool			isMouseCreated() { return _Mouse != NULL; }
 		/** Create the mouse device if needed (one active at a time for that object, repeated calls returns the same pointer) and get an interface on it. An exception if thrown if it couldn't be obtained.
 		  * If this object has a pointer on a win32 emiter, Win32 mouse messages are replaced by this mouse messages.
 		  */
-		virtual IMouseDevice	*getMouseDevice(bool hardware) throw(EInputDevice);
+		virtual IMouseDevice	*getMouseDevice(bool hardware) throw(EInputDevice);		
 		/// remove the direct input mouse
 		virtual void	releaseMouse();
 		/** Create the keyboard device if needed (one active at a time for that object, repeated calls returns the same pointer)  and get an interface on it.

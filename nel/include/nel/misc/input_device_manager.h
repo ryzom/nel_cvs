@@ -1,7 +1,7 @@
 /** \file input_device_manager.h
  * <File description>
  *
- * $Id: input_device_manager.h,v 1.2 2003/02/27 15:44:04 corvazier Exp $
+ * $Id: input_device_manager.h,v 1.3 2003/04/28 12:32:26 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -51,6 +51,8 @@ struct EInputDevice : public Exception
   */
 struct IInputDeviceManager
 {
+	// Test if a mouse has been created (by a call to getMouseDeivce)
+	virtual	bool			isMouseCreated() = 0;
 	/// Create the low level mouse device if needed (one active at a time for that object, repeated calls returns the same pointer). An exception if thrown if it couldn't be obtained.
 	virtual IMouseDevice	*getMouseDevice(bool hardware) throw(EInputDevice) = 0;
 	/// remove the low level mouse

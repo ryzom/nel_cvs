@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.16 2002/06/12 10:20:24 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.17 2002/10/24 08:17:28 lecroart Exp $
  *
  */
 
@@ -52,68 +52,343 @@
 #include <list>
 
 #include "nel/misc/debug.h"
+#include "nel/misc/system_info.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/thread.h"
 #include "nel/misc/command.h"
 #include "nel/misc/path.h"
 
 #include "nel/net/service.h"
-#include "nel/net/net_manager.h"
+#include "nel/net/unified_network.h"
+#include "nel/net/varpath.h"
 
-/*#ifdef NL_OS_WINDOWS
-#define getcwd _getcwd
-#define chdir _chdir
-#endif
-*/
+//
+// Namespaces
+//
  
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
+//
+// Structures
+//
 
+struct CRequest
+{
+	CRequest (uint32 id, uint16 sid) : Id(id), NbWaiting(0), NbReceived(0), SId(sid)
+	{
+		Time = CTime::getSecondsSince1970 ();
+	}
+
+	uint32			Id;
+	uint			NbWaiting;
+	uint32			NbReceived;
+	uint16			SId;
+
+	uint32			Time;	// when the request was ask (timeout in 4 secondes)
+
+	vector<pair<vector<string>, vector<string> > > Answers;
+};
 
 struct CService
 {
-	CService(TSockId s) : SockId(s), Id(NextId++), Ready(false) { }
+	CService() : Ready(false) { }
 
-	TSockId			SockId;			/// connection to the service
-	uint32			Id;				/// uint32 to identify the service
 	string			AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
 	string			ShortName;		/// name of the service in short format ("NS" for example)
 	string			LongName;		/// name of the service in long format ("naming_service")
+	uint16			ServiceId;
 	bool			Ready;			/// true if the service is ready
 	vector<CSerialCommand>	Commands;
 
-private:
-	static	uint32 NextId;
+	vector<uint32>	WaitingRequestId;		/// contains all request that the server hasn't reply yet
+
+	void init (const string &shortName, uint16 serviceId)
+	{
+		ShortName = shortName;
+		ServiceId = serviceId;
+	}
+
+	void reset ()
+	{
+		ServiceId = 0;
+		AliasName = "";
+		ShortName = "";
+		LongName = "";
+		ServiceId = 0;
+		Ready = false;
+		Commands.clear ();
+	}
 };
 
-uint32 CService::NextId = 1;
+//
+// Variables
+//
 
-list<CService> Services;
-typedef list<CService>::iterator SIT;
+vector<CService> Services;
+typedef vector<CService>::iterator SIT;
 
-SIT find (TSockId sid)
+vector<CRequest> Requests;
+
+//
+// Request functions
+//
+
+void addRequestWaitingNb (uint32 request)
 {
-	SIT sit;
-	for (sit = Services.begin(); sit != Services.end(); sit++)
+	for (uint i = 0 ; i < Requests.size (); i++)
 	{
-		if ((*sit).SockId == sid) break;
+		if (Requests[i].Id == request)
+		{
+			Requests[i].NbWaiting++;
+			return;
+		}
 	}
-	return sit;
+	nlstop;
 }
+
+void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid)
+		{
+			Requests[i].Answers.push_back (make_pair(variables, values));
+
+			Requests[i].NbReceived++;
+
+			return;
+		}
+	}
+	// we received an unknown request, forget it
+	nlwarning ("Receive an answer for unknown request %d", rid);
+}
+
+bool emptyRequest (uint32 rid)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid && Requests[i].NbWaiting != 0)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void cleanRequest ()
+{
+	uint32 currentTime = CTime::getSecondsSince1970 ();
+
+	for (uint i = 0 ; i < Requests.size ();)
+	{
+		// timeout after 4 seconds
+		if (currentTime >= Requests[i].Time+4)
+		{
+			nlwarning ("Request %d timeouted, only %d on %d services has replied", Requests[i].Id, Requests[i].NbReceived, Requests[i].NbWaiting);
+			Requests[i].NbWaiting = Requests[i].NbReceived;
+		}
+
+		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
+		{
+			// the request is over, send to the php
+
+			CMessage msgout("VIEW");
+			msgout.serial (Requests[i].Id);
+
+			for (uint j = 0; j < Requests[i].Answers.size (); j++)
+			{
+				msgout.serialCont (Requests[i].Answers[j].first);
+				msgout.serialCont (Requests[i].Answers[j].second);
+			}
+
+			if (Requests[i].SId == 0)
+				nlinfo ("Receive a answer for the fake request %d", Requests[i].Id);
+			else
+				CUnifiedNetwork::getInstance ()->send (Requests[i].SId, msgout);
+
+			// set to 0 to erase it
+			Requests[i].NbWaiting = 0;
+		}
+
+		if (Requests[i].NbWaiting == 0)
+		{
+			Requests.erase (Requests.begin ()+i);
+		}
+		else
+		{
+			i++;
+		}
+	}
+}
+
+//
+// Functions
+//
 
 SIT findService (uint32 sid, bool asrt = true)
 {
 	SIT sit;
 	for (sit = Services.begin(); sit != Services.end(); sit++)
 	{
-		if ((*sit).Id == sid) break;
+		if ((*sit).ServiceId == sid) break;
 	}
 	if (asrt)
 		nlassert (sit != Services.end());
 	return sit;
 }
+
+void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
+{
+	nlinfo ("addRequest from %hu: '%s'", sid, rawvarpath.c_str ());
+
+	string str;
+	CLog logDisplayVars;
+	CMemDisplayer mdDisplayVars;
+	logDisplayVars.addDisplayer (&mdDisplayVars);
+
+	CVarPath varpath (rawvarpath);
+
+	// add the request
+	Requests.push_back (CRequest(rid, sid));
+
+	for (uint i = 0; i < varpath.Destination.size (); i++)
+	{
+		string service = varpath.Destination[i].first;
+
+		if (service == "*")
+		{
+			for (uint j = 0; j < Services.size (); j++)
+			{
+				if (Services[j].ServiceId != 0)
+				{
+					addRequestWaitingNb (rid);
+
+					Services[j].WaitingRequestId.push_back (rid);
+					CMessage msgout("GET_VIEW");
+					msgout.serial(rid);
+					msgout.serial (varpath.Destination[i].second);
+					CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
+					nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), Services[j].ShortName.c_str(), Services[j].ServiceId);
+				}
+			}
+		}
+		else
+		{
+			if (service.find ("AES") != string::npos)
+			{
+/*				// special case, the service is me!
+
+				CVarPath subvarpath(varpath.Destination[i].second);
+
+				CMessage msgout("VIEW");
+				msgout.serial(rid);
+
+				vector<string> vara;
+				vector<string> vala;
+
+				// add default row
+				vara.push_back ("service");
+				vala.push_back ("AES");
+
+				for (uint j = 0; j < subvarpath.Destination.size (); j++)
+				{
+					mdDisplayVars.clear ();
+					ICommand::execute(subvarpath.Destination[j].first, logDisplayVars, true);
+					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
+					if (strs.size()>0)
+					{
+						string s_ = strs[0];
+
+						uint32 pos = strs[0].find("=");
+						if(pos != string::npos && pos + 2 < strs[0].size())
+						{
+							uint32 pos2 = string::npos;
+							if(strs[0][strs[0].size()-1] == '\n')
+								pos2 = strs[0].size() - pos - 2 - 1;
+
+							str = strs[0].substr (pos+2, pos2);
+						}
+						else
+						{
+							str = "???";
+						}
+					}
+					else
+					{
+						str = "???";
+					}
+					mdDisplayVars.unlockStrings();
+
+					vara.push_back(subvarpath.Destination[j].first);
+					vala.push_back (str);
+					nlinfo ("Add to result view '%s' = '%s'", subvarpath.Destination[j].first.c_str(), str.c_str());
+				}
+
+				msgout.serial (vara);
+				msgout.serial (vala);
+
+				CUnifiedNetwork::getInstance ()->send (sid, msgout);
+				nlinfo ("Sent result view to service '%s-%hu'", serviceName.c_str(), sid);*/
+			}
+			else
+			{
+				uint pos = service.find ("-");
+				if (pos == string::npos)
+				{
+					for (uint j = 0; j < Services.size (); j++)
+					{
+						if (Services[j].ServiceId != 0 && Services[j].ShortName == service)
+						{
+							addRequestWaitingNb (rid);
+
+							Services[j].WaitingRequestId.push_back (rid);
+							CMessage msgout("GET_VIEW");
+							msgout.serial(rid);
+							msgout.serial (varpath.Destination[i].second);
+							CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
+							nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), Services[j].ShortName.c_str(), Services[j].ServiceId);
+						}
+					}
+				}
+				else
+				{
+					SIT sit = findService (atoi(service.substr(pos+1).c_str()), false);
+					if (sit == Services.end ())
+					{
+						nlwarning ("Service %s is not found in the list", service.c_str ());
+					}
+					else
+					{
+						addRequestWaitingNb (rid);
+						
+						(*sit).WaitingRequestId.push_back (rid);
+						CMessage msgout("GET_VIEW");
+						msgout.serial(rid);
+						msgout.serial (varpath.Destination[i].second);
+						CUnifiedNetwork::getInstance ()->send ((*sit).ServiceId, msgout);
+						nlinfo ("Sent view '%s' to service '%s-%hu'", varpath.Destination[i].second.c_str(), (*sit).ShortName.c_str(), (*sit).ServiceId);
+					}
+				}
+			}			
+		}
+	}
+
+	if (emptyRequest(rid))
+	{
+		// send an empty string to say to php that there's nothing
+		CMessage msgout("GET_VIEW");
+		msgout.serial(rid);
+		CUnifiedNetwork::getInstance ()->send (sid, msgout);
+	}
+}
+
+
+
+
+
+
 
 
 class CExecuteCommandThread : public IRunnable
@@ -254,9 +529,23 @@ void executeCommand (string command, TSockId from, CCallbackNetBase &netbase)
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+static void cbServiceIdentification (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-	CService *s = (CService*) (uint) from->appId();
+/*	if (sid >= Services.size ())
+	{
+		nlwarning ("Identification of an unknown service %s-%hu", serviceName.c_str(), sid);
+		return;
+	}
+
+	if (Services[sid].Id == 0)
+	{
+		nlwarning ("Identification of an unknown service %s-%hu", serviceName.c_str(), sid);
+		return;
+	}
+
+	nlinfo ("*:*:%d is identified to be '%s' '%s-%hu' '%s'", Services[sid].Id, Services[sid].AliasName.c_str(), Services[sid].ShortName.c_str(), Services[sid].ServiceId, Services[sid].LongName.c_str());
+*/
+/*	CService *s = (CService*) (uint) from->appId();
 
 	msgin.serial (s->AliasName, s->ShortName, s->LongName);
 	msgin.serialCont (s->Commands);
@@ -267,12 +556,27 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SID");
 	msgout.serial (s->Id, s->AliasName, s->ShortName, s->LongName);
 	msgout.serialCont (s->Commands);
-	CNetManager::send ("AESAS", msgout);
+	CNetManager::send ("AESAS", msgout);*/
 }
 
-static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+static void cbServiceReady /*(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)*/(CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-	CService *s = (CService*) (uint) from->appId();
+/*	if (sid >= Services.size ())
+	{
+		nlwarning ("Ready of an unknown service %s-%hu", serviceName.c_str(), sid);
+		return;
+	}
+
+	if (Services[sid].Id == 0)
+	{
+		nlwarning ("Ready of an unknown service %s-%hu", serviceName.c_str(), sid);
+		return;
+	}
+
+	nlinfo ("*:*:%d is ready (%s-%hu)", Services[sid].Id, Services[sid].ShortName.c_str (), Services[sid].ServiceId);
+	Services[sid].Ready = true;
+*/
+/*	CService *s = (CService*) (uint) from->appId();
 
 	nlinfo ("*:*:%d is ready", s->Id);
 	s->Ready = true;
@@ -280,12 +584,13 @@ static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &net
 	// broadcast the message to the admin service
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SR");
 	msgout.serial (s->Id);
-	CNetManager::send ("AESAS", msgout);
+	CNetManager::send ("AESAS", msgout);*/
 }
 
-static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+static void cbLog /*(CMessage& msgin, TSockId from, CCallbackNetBase &netbase)*/(CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-	CService *s = (CService*) (uint) from->appId();
+
+/*	CService *s = (CService*) (uint) from->appId();
 	// received an answer for a command, give it to the AS
 
 	// broadcast the message to the admin service
@@ -294,12 +599,55 @@ static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 	msgin.serial (log);
 	msgout.serial (s->Id);
 	msgout.serial (log);
-	CNetManager::send ("AESAS", msgout);
+	CNetManager::send ("AESAS", msgout);*/
 }
 
-void serviceConnection (const string &serviceName, TSockId from, void *arg)
+static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-	Services.push_back (CService (from));
+	// receive an view answer from the service
+	uint32 rid;
+	vector<string> vara;
+	vector<string> vala;
+
+	msgin.serial (rid);
+
+	msgin.serialCont (vara);
+	msgin.serialCont (vala);
+
+	SIT sit = findService (sid);
+	remove ((*sit).WaitingRequestId.begin (), (*sit).WaitingRequestId.end (), rid);
+
+	addRequestAnswer (rid, vara, vala);
+}
+
+
+static void cbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint32 rid;
+	string rawvarpath;
+
+	msgin.serial (rid);
+	msgin.serial (rawvarpath);
+
+	addRequest (rid, rawvarpath, sid);
+}
+
+void serviceConnection /*(const string &serviceName, TSockId from, void *arg)*/(const std::string &serviceName, uint16 sid, void *arg)
+{
+	// don't add AS
+	if (serviceName == "AS")
+		return;
+
+	if (sid >= Services.size ())
+	{
+		Services.resize (sid+1);
+	}
+
+	Services[sid].init (serviceName, sid);
+
+	nlinfo ("%s-%hu connected", Services[sid].ShortName.c_str (), Services[sid].ServiceId);
+
+/*	Services.push_back (CService (from));
 	CService *s = &(Services.back());
 	from->setAppId ((uint64)(uint)s);
 
@@ -309,13 +657,39 @@ void serviceConnection (const string &serviceName, TSockId from, void *arg)
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SC");
 	msgout.serial (s->Id);
 	CNetManager::send ("AESAS", msgout);
-}
+*/}
 
-void serviceDisconnection (const string &serviceName, TSockId from, void *arg)
+void serviceDisconnection /*(const string &serviceName, TSockId from, void *arg)*/(const std::string &serviceName, uint16 sid, void *arg)
 {
-	CService *s = (CService*) (uint) from->appId();
+	// don't remove AS
+	if (serviceName == "AS")
+		return;
 
-	nlinfo ("*:*:%d disconnected", s->Id);
+	if (sid >= Services.size ())
+	{
+		nlwarning ("Disconnection of an unknown service %s-%hu", serviceName.c_str(), sid);
+		return;
+	}
+
+	if (Services[sid].ServiceId == 0)
+	{
+		nlwarning ("Disconnection of an unknown service %s-%hu", serviceName.c_str(), sid);
+		return;
+	}
+
+	// we need to remove pending request
+
+	for(uint i = 0; i < Services[sid].WaitingRequestId.size (); i++)
+	{
+		Requests[Services[sid].WaitingRequestId[i]].NbWaiting--;
+	}
+
+	nlinfo ("%s-%hu disconnected", Services[sid].ShortName.c_str (), Services[sid].ServiceId);
+
+	Services[sid].reset();
+
+/*	CService *s = (CService*) (uint) from->appId();
+
 
 	// broadcast the message to the admin service
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "SD");
@@ -324,16 +698,19 @@ void serviceDisconnection (const string &serviceName, TSockId from, void *arg)
 
 	// remove the service from the list
 	Services.erase (findService(s->Id));
-}
+*/}
 
 
 /** Callback Array
  */
-TCallbackItem ServicesCallbackArray[] =
+TUnifiedCallbackItem CallbackArray[] =
 {
 	{ "SID", cbServiceIdentification },
 	{ "SR", cbServiceReady },
 	{ "LOG", cbLog },
+
+	{ "GET_VIEW", cbGetView },
+	{ "VIEW", cbView },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -341,7 +718,7 @@ TCallbackItem ServicesCallbackArray[] =
 ////////////////// CONNECTION TO THE AS ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
 void errorMessage(string message, TSockId from)
 {
 	CMessage msgout (CNetManager::getSIDA ("AESAS"), "ERR");
@@ -472,6 +849,18 @@ TCallbackItem AESASCallbackArray[] =
 	{ "STOPS", cbStopService },
 	{ "EXEC_COMMAND", cbExecCommand },
 };
+*/
+
+
+void ASConnection (const string &serviceName, uint16 sid, void *arg)
+{
+	nlinfo ("Connected to %s-%hu", serviceName.c_str (), sid);
+}
+
+static void ASDisconnection (const string &serviceName, uint16 sid, void *arg)
+{
+	nlinfo ("Disconnected to %s-%hu", serviceName.c_str (), sid);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -479,7 +868,7 @@ TCallbackItem AESASCallbackArray[] =
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void loadAndSendServicesAliasList (CConfigFile::CVar &services)
+/*void loadAndSendServicesAliasList (CConfigFile::CVar &services)
 {
 	vector<string> servicesaliaslist;
 	for (sint i = 0 ; i < services.size (); i++)
@@ -491,33 +880,94 @@ void loadAndSendServicesAliasList (CConfigFile::CVar &services)
 	msgout2.serialCont (servicesaliaslist);
 	CNetManager::send ("AESAS", msgout2, 0);
 }
-
+*/
 
 class CAdminExecutorService : public IService
 {
 public:
 
-	/// Init the service, load the universal time.
+	/// Init the service
 	void		init ()
 	{
-		CNetManager::setConnectionCallback ("AES", serviceConnection, NULL);
+		// be warn when a new service comes
+		CUnifiedNetwork::getInstance()->setServiceUpCallback ("*", serviceConnection, NULL);
+		CUnifiedNetwork::getInstance()->setServiceDownCallback ("*", serviceDisconnection, NULL);
+
+		// add connection to the admin service
+		CUnifiedNetwork::getInstance()->setServiceUpCallback ("AS", ASConnection, NULL);
+		CUnifiedNetwork::getInstance()->setServiceDownCallback ("AS", ASDisconnection, NULL);
+		//CUnifiedNetwork::getInstance()->addCallbackArray (ASCallbackArray, sizeof(ASCallbackArray)/sizeof(ASCallbackArray[0]));
+
+		string ASHost = ConfigFile.getVar ("ASHost").asString ();
+		if (ASHost.find (":") == string::npos)
+			ASHost += ":49996";
+
+		CUnifiedNetwork::getInstance()->addService ("AS", CInetAddress(ASHost));
+
+/*		CNetManager::setConnectionCallback ("AES", serviceConnection, NULL);
 		CNetManager::setDisconnectionCallback ("AES", serviceDisconnection, NULL);
 
 		// install the server for AS
 		CNetManager::setConnectionCallback ("AESAS", cbASServiceConnection, NULL);
 		CNetManager::addServer ("AESAS", 49996);
 		CNetManager::addCallbackArray ("AESAS", AESASCallbackArray, sizeof(AESASCallbackArray)/sizeof(AESASCallbackArray[0]));
-
-		ConfigFile.setCallback ("Services", loadAndSendServicesAliasList);
-		loadAndSendServicesAliasList (IService::ConfigFile.getVar ("Services"));
+*/
+//		ConfigFile.setCallback ("Services", loadAndSendServicesAliasList);
+//		loadAndSendServicesAliasList (IService::ConfigFile.getVar ("Services"));
 	}
 
 	bool		update ()
 	{
+		cleanRequest ();
+
 		return true;
 	}
 };
 
 
 /// Naming Service
-NLNET_OLD_SERVICE_MAIN (CAdminExecutorService, "AES", "admin_executor_service", 49997, ServicesCallbackArray, NELNS_CONFIG, NELNS_LOGS);
+NLNET_SERVICE_MAIN (CAdminExecutorService, "AES", "admin_executor_service", 49997, CallbackArray, NELNS_CONFIG, NELNS_LOGS);
+
+uint32 toto = 123, tata = 5456;
+
+NLMISC_VARIABLE(uint32, toto, "test the get view system");
+NLMISC_VARIABLE(uint32, tata, "test the get view system");
+
+NLMISC_COMMAND (getView, "send a view and receive an array as result", "<varpath>")
+{
+	if(args.size() != 1) return false;
+
+	addRequest (0, args[0], 0);
+
+	return true;
+}
+
+NLMISC_COMMAND (clearRequests, "clear all pending requests", "")
+{
+	if(args.size() != 0) return false;
+
+	// for all request, set the NbWaiting to NbReceived, next cleanRequest() will send answer and clear all request
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
+		{
+			Requests[i].NbWaiting = Requests[i].NbReceived;
+		}
+	}
+
+	return true;
+}
+
+NLMISC_COMMAND (displayRequests, "display all pending requests", "")
+{
+	if(args.size() != 0) return false;
+
+	log.displayNL ("Display %d pending requests", Requests.size ());
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		log.displayNL ("id: %d wait: %d recv: %d sid: %hu", Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived, Requests[i].SId);
+	}
+	log.displayNL ("End of display pending requests");
+
+	return true;
+}

@@ -1,7 +1,9 @@
+// todo kan un AES quitte, il faut virer les request en attende le consernant
+
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.15 2002/03/25 09:28:00 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.16 2002/10/24 08:17:42 lecroart Exp $
  *
  */
 
@@ -41,25 +43,79 @@
 #include <string>
 #include <list>
 
+#include <mysql.h>
+
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/command.h"
 
 #include "nel/net/service.h"
-#include "nel/net/net_manager.h"
+#include "nel/net/varpath.h"
+
+#include "connection_web.h"
+
+
+//
+// Namespaces
+//
 
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
-////////////////////////
+
+//
+// Structures
+//
+
+struct CRequest
+{
+	CRequest (uint32 id, TSockId from) : Id(id), NbWaiting(0), NbReceived(0), NbRow(0), From(from) { }
+
+	uint32			Id;
+	uint			NbWaiting;
+	uint32			NbReceived;
+	TSockId			From;
+	
+	uint32			NbRow;
+	vector<vector<string> > Array;	// it's the 2 dimensionnal array that will be send to the php
+
+	uint32 getVariable(const string &variable)
+	{
+		for (uint32 i = 0; i < NbRow; i++)
+			if (Array[i][0] == variable)
+				return i;
+
+		// need to add the variable
+		vector<string> NewRow;
+		NewRow.resize (NbWaiting+1);
+		NewRow[0] = variable;
+		Array.push_back (NewRow);
+		return NbRow++;
+	}
+
+	void display ()
+	{
+		nlinfo ("Display answer array for request %d: %d row %d lines", Id, NbRow, NbWaiting);
+		for (uint i = 0; i < NbWaiting+1; i++)
+		{
+			for (uint j = 0; j < NbRow; j++)
+			{
+				nlassert (Array.size () == NbRow);
+				nlassert (Array[j].size () == NbWaiting+1);
+				InfoLog->displayRaw ("%-10s", Array[j][i].c_str());
+			}
+			InfoLog->displayRawNL ("");
+		}
+		InfoLog->displayRawNL ("End of array");
+	}
+};
 
 
 struct CService
 {
-	CService () : Id(0xFFFFFFFF), Ready(false), Connected(false), InConfig(false) { }
+	CService () : Ready(false), Connected(false), InConfig(false) { }
 
-	uint32			Id;				/// uint32 to identify the service
 	string			AliasName;		/// alias of the service used in the AES and AS to find him (unique per AES)
 	string			ShortName;		/// name of the service in short format ("NS" for example)
 	string			LongName;		/// name of the service in long format ("naming_service")
@@ -71,7 +127,6 @@ struct CService
 	void setValues (const CService &t)
 	{
 		// copy all except gtk stuffs
-		Id = t.Id;
 		AliasName = t.AliasName;
 		ShortName = t.ShortName;
 		LongName = t.LongName;
@@ -86,24 +141,18 @@ typedef list<CService>::iterator SIT;
 
 struct CAdminExecutorService
 {
-	CAdminExecutorService () : Id(NextId++), SockId(NULL), Connected(false) { }
+	CAdminExecutorService (const string &name, uint16 sid) : Name(name), SId(sid) { }
 
-	TSockId	SockId;			/// connection to the AES
-	uint32	Id;				/// uint32 to identify the AES where the service is running
+	uint16	SId;			/// uniq number to identify the AES
+	string	Name;			/// name of the admin executor service
 
-	string	ServerAlias;	/// name of the layer4 connection, used to send message to this AES
-	string	ServerAddr;		/// address in a string format (only the ip)
-	bool	Connected;		/// true if the AES is connected
+	vector<uint32>	WaitingRequestId;		/// contains all request that the server hasn't reply yet
 
-	TServices Services;
-
-	vector<string>	ServiceAliasList;
-
-	SIT findService (uint32 sid, bool asrt = true)
+/*	SIT findService (uint16 sid, bool asrt = true)
 	{
 		SIT sit;
 		for (sit = Services.begin(); sit != Services.end(); sit++)
-			if ((*sit).Id == sid)
+			if ((*sit).SId == sid)
 				break;
 
 		if (asrt)
@@ -111,36 +160,222 @@ struct CAdminExecutorService
 		return sit;
 	}
 
-	SIT findService (const string &alias, bool asrt = true)
+	SIT findService (const string &name, bool asrt = true)
 	{
 		SIT sit;
 		for (sit = Services.begin(); sit != Services.end(); sit++)
-			if ((*sit).AliasName == alias)
+			if ((*sit).Name == name)
 				break;
 
 		if (asrt)
 			nlassert (sit != Services.end());
 		return sit;
 	}
-
-private:
-	static uint32 NextId;
-};
-
-uint32 CAdminExecutorService::NextId = 1;
+*/};
 
 typedef list<CAdminExecutorService> TAdminExecutorServices;
 typedef list<CAdminExecutorService>::iterator AESIT;
 
+//
+// Variables
+//
+
 TAdminExecutorServices AdminExecutorServices;
 
-/////////////////
+MYSQL *DatabaseConnection = NULL;
 
-AESIT findAdminExecutorService (uint32 aesid, bool asrt = true)
+string DatabaseHost = "net1";
+string DatabaseLogin = "root";
+string DatabasePassword = "";
+string DatabaseName = "nel_tool";
+
+vector<CRequest> Requests;
+
+//
+// Request functions
+//
+
+uint32 newRequest (TSockId from)
+{
+	static uint32 NextId = 0;
+
+	Requests.push_back (CRequest(NextId, from));
+
+	return NextId++;
+}
+
+void addRequestWaitingNb (uint32 request)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == request)
+		{
+			Requests[i].NbWaiting++;
+			return;
+		}
+	}
+	nlstop;
+}
+
+
+void addRequestReceived (uint32 rid)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid)
+		{
+			Requests[i].NbReceived++;
+			Requests[i].display ();
+			return;
+		}
+	}
+	nlstop;
+}
+
+void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid)
+		{
+			nlassert (variables.size() == values.size ())
+			for (uint j = 0; j < variables.size(); j++)
+			{
+				uint32 pos = Requests[i].getVariable (variables[j]);
+				Requests[i].Array[pos][Requests[i].NbReceived+1] = values[j];
+			}
+			return;
+		}
+	}
+	nlstop;
+}
+
+bool emptyRequest (uint32 rid)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid && Requests[i].NbWaiting != 0)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+void cleanRequest ()
+{
+	for (uint i = 0 ; i < Requests.size ();)
+	{
+		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
+		{
+			// the request is over, send to the php
+			string str = toString(Requests[i].NbRow) + " ";
+		
+			for (uint k = 0; k < Requests[i].NbWaiting+1; k++)
+			{
+				for (uint j = 0; j < Requests[i].NbRow; j++)
+				{
+					nlassert (Requests[i].Array.size () == Requests[i].NbRow);
+					nlassert (Requests[i].Array[j].size () == Requests[i].NbWaiting+1);
+					if (Requests[i].Array[j][k].empty ())
+						str += "??? ";
+					else
+						str += Requests[i].Array[j][k] + " ";
+				}
+			}
+
+			sendString (Requests[i].From, str);
+
+			// set to 0 to erase it
+			Requests[i].NbWaiting = 0;
+		}
+
+		if (Requests[i].NbWaiting == 0)
+		{
+			Requests.erase (Requests.begin ()+i);
+		}
+		else
+		{
+			i++;
+		}
+	}
+}
+
+//
+// SQL functions
+//
+
+void sqlInit ()
+{
+	MYSQL *db = mysql_init(NULL);
+	if(db == NULL)
+	{
+		nlerror ("mysql_init() failed");
+	}
+
+	DatabaseConnection = mysql_real_connect(db, DatabaseHost.c_str(), DatabaseLogin.c_str(), DatabasePassword.c_str(), DatabaseName.c_str(),0,NULL,0);
+	if (DatabaseConnection == NULL || DatabaseConnection != db)
+	{
+		nlerror ("mysql_real_connect() failed to '%s' with login '%s' and database name '%s'", DatabaseHost.c_str(), DatabaseLogin.c_str(), DatabaseName.c_str());
+	}
+}
+
+MYSQL_RES *sqlCurrentQueryResult = NULL;
+
+MYSQL_ROW sqlQuery (const char *format, ...)
+{
+	char *query;
+	NLMISC_CONVERT_VARGS (query, format, 1024);
+	
+	if (DatabaseConnection == 0)
+	{
+		nlwarning ("mysql_query (%s) failed: DatabaseConnection is 0", query);
+		return NULL;
+	}
+
+	int ret = mysql_query (DatabaseConnection, query);
+	if (ret != 0)
+	{
+		nlwarning ("mysql_query () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
+		return 0;
+	}
+
+	sqlCurrentQueryResult = mysql_store_result(DatabaseConnection);
+	if (sqlCurrentQueryResult == 0)
+	{
+		nlwarning ("mysql_store_result () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
+		return 0;
+	}
+
+	MYSQL_ROW row = mysql_fetch_row(sqlCurrentQueryResult);
+	if (row == 0)
+	{
+		nlwarning ("mysql_fetch_row () failed for query '%s': %s", query,  mysql_error(DatabaseConnection));
+	}
+
+	nldebug ("sqlQuery(%s) returns %d rows", query, mysql_num_rows(sqlCurrentQueryResult));
+	
+	return row;	
+}
+
+MYSQL_ROW sqlNextRow ()
+{
+	if (sqlCurrentQueryResult == 0)
+		return 0;
+
+	return mysql_fetch_row(sqlCurrentQueryResult);
+}
+
+
+//
+// Functions
+//
+
+AESIT findAES (uint16 sid, bool asrt = true)
 {
 	AESIT aesit;
 	for (aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
-		if ((*aesit).Id == aesid)
+		if ((*aesit).SId == sid)
 			break;
 
 	if (asrt)
@@ -148,11 +383,11 @@ AESIT findAdminExecutorService (uint32 aesid, bool asrt = true)
 	return aesit;
 }
 
-AESIT findAdminExecutorService (string ServerAlias, bool asrt = true)
+AESIT findAES (const string &name, bool asrt = true)
 {
 	AESIT aesit;
 	for (aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
-		if ((*aesit).ServerAlias == ServerAlias)
+		if ((*aesit).Name == name)
 			break;
 
 	if (asrt)
@@ -165,14 +400,14 @@ void displayServices ()
 	for (AESIT aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
 	{
 		nlinfo ("> Admin");
-		for (SIT sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
+/*		for (SIT sit = (*aesit).Services.begin(); sit != (*aesit).Services.end(); sit++)
 		{
 			nlinfo ("  > '%s' '%s' '%s' '%s' %d %d", (*aesit).SockId->asString().c_str(), (*sit).AliasName.c_str(), (*sit).ShortName.c_str(), (*sit).LongName.c_str(), (*aesit).Id, (*sit).Id);
 		}
-	}
+*/	}
 }
 
-
+/*
 // send a message to a client. if ok is 0 it s an error or it s a normal 
 void messageToClient (uint8 ok, string msg, TSockId from = NULL)
 {
@@ -180,14 +415,14 @@ void messageToClient (uint8 ok, string msg, TSockId from = NULL)
 	msgout.serial (ok, msg);
 	CNetManager::send ("AS", msgout, from);
 }
-
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////// SCRIPT MANAGER /////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
 bool StartAllServices = false;
 uint32 StartAllServicesPos;
 
@@ -303,7 +538,7 @@ void initStartAllServices ()
 
 	doNextStartAllServicesStep();
 }
-
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -311,7 +546,7 @@ void initStartAllServices ()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
+/*
 static void cbExecuteSystemCommandResult (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	vector<string> result;
@@ -412,10 +647,10 @@ static void cbServiceAliasList (CMessage& msgin, TSockId from, CCallbackNetBase 
 	CNetManager::send ("AS", msgout, 0);
 	
 	nlinfo("new service alias list");
-}
+}*/
 
 
-static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+/*static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
@@ -475,9 +710,9 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 	msgout.serialCont ((*sit).Commands);
 
 	CNetManager::send ("AS", msgout, 0);
-}
+}*/
 
-static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+/*static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
@@ -497,9 +732,9 @@ static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &net
 	// if we are in a script execution, continue
 	if (StartAllServices)
 		doNextStartAllServicesStep();
-}
+}*/
 
-static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+/*static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
@@ -510,16 +745,16 @@ static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase
 
 	// don't do anything. we have to wait identification to add it in out lists
 
-/*
-	aes->Services.push_back (CService(sid));
-*/
+
+//	aes->Services.push_back (CService(sid));
+
 	// broadcast the message to all admin client
 	CMessage msgout (CNetManager::getSIDA ("AS"), "SC");
 	msgout.serial (aes->Id, sid);
 	CNetManager::send ("AS", msgout, 0);
 }
-
-static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+*/
+/*static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
@@ -553,37 +788,79 @@ static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetB
 	}
 
 	displayServices ();
-}
+}*/
 
 // i'm connected to a new admin executor service
-void cbAESConnection (const string &serviceName, TSockId from, void *arg)
+void cbAESConnection /*(const string &serviceName, TSockId from, void *arg)*/(const std::string &serviceName, uint16 sid, void *arg)
 {
-	AESIT aesit = findAdminExecutorService (serviceName);	
-	CAdminExecutorService *aes = &(*aesit);
-	
-	// set the appid to find the aes in O(1)
-	from->setAppId ((uint64)(uint)aes);
+	TSockId from;
+	CCallbackNetBase *cnb = CUnifiedNetwork::getInstance ()->getNetBase (sid, from);
+	const CInetAddress &ia = cnb->hostAddress (from);
 
-	aes->Connected = true;
-	nlinfo ("*:%d:* connected", aes->Id);
+	AESIT aesit = findAES (sid, false);
+
+	if (aesit != AdminExecutorServices.end ())
+	{
+		nlwarning ("Connection of an AES that already are in the list, disconnecting him (%s)", ia.asString ().c_str ());
+		cnb->disconnect (from);
+		return;
+	}
+
+	MYSQL_ROW row = sqlQuery ("select name from server where address='%s'", ia.ipAddress().c_str());
+
+	if (row == NULL)
+	{
+		nlwarning ("Connection of an AES that is not in database server list, disconnecting him (%s)", ia.asString ().c_str ());
+		cnb->disconnect (from);
+		return;
+	}
+
+	AdminExecutorServices.push_back (CAdminExecutorService(row[0], sid));
+
+	nlinfo ("%s-%hu, shard name %s, connected and added in the list", serviceName.c_str(), sid, row[0]);
+	
 /*
 	// broadcast the message that an admin exec is connected to all admin client
 	CMessage msgout (CNetManager::getSIDA ("AS"), "AESC");
 	msgout.serial (aes->Id);
 	CNetManager::send ("AS", msgout, 0);
 */
-
+/*
 	// broadcast the new state of this AES
 	CMessage msgout (CNetManager::getSIDA ("AS"), "AES_LIST");
 	uint32 nbaes = 1;
 	msgout.serial (nbaes);
 	msgout.serial (aes->Id, aes->ServerAlias, aes->ServerAddr, aes->Connected);
 	CNetManager::send ("AS", msgout, 0);
-}
+*/}
 
 // i'm disconnected to an admin executor service
-void cbAESDisconnection (const string &serviceName, TSockId from, void *arg)
+void cbAESDisconnection /*(const string &serviceName, TSockId from, void *arg)*/(const std::string &serviceName, uint16 sid, void *arg)
 {
+	TSockId from;
+	CCallbackNetBase *cnb = CUnifiedNetwork::getInstance ()->getNetBase (sid, from);
+	const CInetAddress &ia = cnb->hostAddress (from);
+
+	AESIT aesit = findAES (sid, false);
+
+	if (aesit == AdminExecutorServices.end ())
+	{
+		nlwarning ("Disconnection of %s-%hu that is not in my list (%s)", serviceName.c_str (), sid, ia.asString ().c_str ());
+		return;
+	}
+
+	nlinfo ("%s-%hu, shard name %s, disconnected and removed from the list", serviceName.c_str(), sid, (*aesit).Name.c_str ());
+
+	// we need to remove pending request
+
+	for(uint i = 0; i < (*aesit).WaitingRequestId.size (); i++)
+	{
+		Requests[(*aesit).WaitingRequestId[i]].NbWaiting--;
+	}
+
+	AdminExecutorServices.erase (aesit);
+	
+/*	
 	// get the aes with the appid
 	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
@@ -608,13 +885,13 @@ void cbAESDisconnection (const string &serviceName, TSockId from, void *arg)
 	}
 
 	nlinfo ("*:%d:* disconnected", aes->Id);
-/*	
+*//*	
 	// broadcast the message to all admin client that an admin exec is disconnected
 	CMessage msgout (CNetManager::getSIDA ("AS"), "AESD");
 	msgout.serial (aes->Id);
 	CNetManager::send ("AS", msgout, 0);
 */
-
+/*
 	displayServices ();
 
 	// broadcast the new state of this AES
@@ -623,9 +900,10 @@ void cbAESDisconnection (const string &serviceName, TSockId from, void *arg)
 	msgout.serial (nbaes);
 	msgout.serial (aes->Id, aes->ServerAlias, aes->ServerAddr, aes->Connected);
 	CNetManager::send ("AS", msgout, 0);
+*/
 }
 
-static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+/*static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// received an answer for a command, give it to all admin client
 
@@ -643,12 +921,64 @@ static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 	msgout.serial (sid);
 	msgout.serial (log);
 	CNetManager::send ("AS", msgout, 0);
+}*/
+
+static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint32 rid;
+	msgin.serial (rid);
+
+	AESIT aesit = findAES (sid);
+
+	remove ((*aesit).WaitingRequestId.begin (), (*aesit).WaitingRequestId.end (), rid);
+
+	MYSQL_ROW row = sqlQuery ("select distinct shard from service where server='%s'", (*aesit).Name.c_str ());
+
+	vector<string> vara, vala;
+
+	while (msgin.getPos() < msgin.length())
+	{
+		vara.clear ();
+		vala.clear ();
+
+		// adding default row
+		vara.push_back ("shard");
+		vara.push_back ("server");
+
+		vala.push_back (row[0]);
+		vala.push_back ((*aesit).Name);
+
+		uint32 i, nb;
+		string var, val;
+
+		msgin.serial (nb);
+		for (i = 0; i < nb; i++)
+		{
+			msgin.serial (var);
+			vara.push_back (var);
+		}
+
+		msgin.serial (nb);
+		for (i = 0; i < nb; i++)
+		{
+			msgin.serial (val);
+			vala.push_back (val);
+		}
+		addRequestAnswer (rid, vara, vala);
+	}
+
+	// inc the NbReceived counter
+	addRequestReceived (rid);
 }
 
 
-TCallbackItem AESCallbackArray[] =
+
+TUnifiedCallbackItem CallbackArray[] =
 {
-	{ "ESCR", cbExecuteSystemCommandResult },
+	{ "VIEW", cbView },
+
+	
+/*	{ "ESCR", cbExecuteSystemCommandResult },
 
 	{ "SL", cbServiceList },
 	{ "SID", cbServiceIdentification },
@@ -658,16 +988,15 @@ TCallbackItem AESCallbackArray[] =
 
 	{ "SAL", cbServiceAliasList },
 
-	{ "XLOG", cbLog },
+	{ "XLOG", cbLog },*/
 };
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// CONNECTION TO THE CLIENT ////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
 //
 // A new admin client is connected.
 //
@@ -912,6 +1241,114 @@ TCallbackItem ClientCallbackArray[] =
 	{ "START_ALL_SERVICES", cbStartAllServices },
 	{ "STOP_ALL_SERVICES", cbStopAllServices },
 };
+*/
+
+
+
+
+void addRequest (const string &rawvarpath, TSockId from)
+{
+	nlinfo ("addRequest from %s: '%s'", from->asString ().c_str (), rawvarpath.c_str ());
+
+	if(rawvarpath.empty ())
+	{
+		// send an empty string to say to php that there's nothing
+		string str;
+		sendString (from, str);
+	}
+
+	CVarPath varpath (rawvarpath);
+
+	uint32 rid = newRequest (from);
+
+	for (uint i = 0; i < varpath.Destination.size (); i++)
+	{
+		string shard = varpath.Destination[i].first;
+
+		CVarPath subvarpath (varpath.Destination[i].second);
+
+		for (uint j = 0; j < subvarpath.Destination.size (); j++)
+		{
+			string server = subvarpath.Destination[j].first;
+
+			if (shard == "*" && server == "*")
+			{
+				// send to everybody I can
+
+				AESIT aesit;
+				for (aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
+				{
+					addRequestWaitingNb (rid);
+					(*aesit).WaitingRequestId.push_back (rid);
+
+					CMessage msgout("GET_VIEW");
+					msgout.serial (rid);
+					msgout.serial (subvarpath.Destination[j].second);
+					CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
+					nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
+				}
+			}
+			else if (server == "*")
+			{
+				MYSQL_ROW row = sqlQuery ("select distinct server from service where shard='%s'", shard.c_str ());
+
+				while (row != NULL)
+				{
+					AESIT aesit = findAES (row[0], false);
+
+					if (aesit != AdminExecutorServices.end())
+					{
+						addRequestWaitingNb (rid);
+						(*aesit).WaitingRequestId.push_back (rid);
+
+						CMessage msgout("GET_VIEW");
+						msgout.serial (rid);
+						msgout.serial (subvarpath.Destination[j].second);
+						CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
+						nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
+
+					}
+					row = sqlNextRow ();
+				}
+			}
+			else
+			{
+				AESIT aesit = findAES (server);
+
+				if (aesit != AdminExecutorServices.end())
+				{
+					addRequestWaitingNb (rid);
+					(*aesit).WaitingRequestId.push_back (rid);
+
+					CMessage msgout("GET_VIEW");
+					msgout.serial (rid);
+					msgout.serial (subvarpath.Destination[j].second);
+					CUnifiedNetwork::getInstance ()->send ((*aesit).SId, msgout);
+					nlinfo ("Sent view '%s' to shard name %s 'AES-%hu'", subvarpath.Destination[j].second.c_str(), (*aesit).Name.c_str(), (*aesit).SId);
+				}
+				else
+				{
+					nlwarning ("Server %s is not found in the list", server.c_str ());
+				}
+			}
+		}
+	}
+
+	if (emptyRequest(rid))
+	{
+		// send an empty string to say to php that there's nothing
+		string str;
+		sendString (from, str);
+	}
+}
+
+
+
+
+
+
+
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -926,18 +1363,26 @@ public:
 	/// Init the service, load the universal time.
 	void		init ()
 	{
-//		DebugLog->addNegativeFilter ("L0:");
-//		DebugLog->addNegativeFilter ("L1:");
-//		DebugLog->addNegativeFilter ("L2:");
-		
-		
-		CNetManager::setConnectionCallback ("AS", clientConnection, NULL);
+		sqlInit ();
+
+		connectionWebInit ();
+
+		//CVarPath toto ("*.*.*.*");
+		//CVarPath toto ("[srv1,srv2].*.*.*");
+		//CVarPath toto ("[svr1.svc1,srv2.svc2].*.*");
+		//CVarPath toto ("[svr1.[svc1,svc2].*.var1,srv2.svc2.fe*.var2].toto");
+		//CVarPath toto ("[svr1.svc1.*.toto,srv2.svc2.*.tata]");
+
+//		CNetManager::setConnectionCallback ("AS", clientConnection, NULL);
+
+		CUnifiedNetwork::getInstance ()->setServiceUpCallback ("AES", cbAESConnection);
+		CUnifiedNetwork::getInstance ()->setServiceDownCallback ("AES", cbAESDisconnection);
 
 		//
 		// Get the list of AESHosts, add in the structures and create connection to all AES
 		//
 
-		CConfigFile::CVar &host = ConfigFile.getVar ("AESHosts");
+		/*CConfigFile::CVar &host = ConfigFile.getVar ("AESHosts");
 		sint i;
 		for (i = 0 ; i < host.size (); i+=2)
 		{
@@ -955,12 +1400,12 @@ public:
 			CNetManager::setDisconnectionCallback (serverAlias, cbAESDisconnection, NULL);
 			CNetManager::addClient (serverAlias, serverAddr+":49996");
 			CNetManager::addCallbackArray (serverAlias, AESCallbackArray, sizeof (AESCallbackArray)/sizeof(AESCallbackArray[0]));
-		}
+		}*/
 
 		//
 		// Get the list of services in the shard
 		//
-
+/*
 		CConfigFile::CVar &serv = ConfigFile.getVar ("Services");
 		for (i = 0 ; i < serv.size (); i+=2)
 		{
@@ -976,12 +1421,63 @@ public:
 			(*aesit).Services.push_back (s);
 		}
 		displayServices ();
+*/	}
+
+	bool update ()
+	{
+		cleanRequest ();
+		connectionWebUpdate ();
+		return true;
+	}
+
+	void release ()
+	{
+		connectionWebRelease ();
 	}
 };
 
 
-// AS is a server connection to the admin client
-// AESAS is a client connection to the admin executor
-
 /// Naming Service
-NLNET_OLD_SERVICE_MAIN (CAdminService, "AS", "admin_service", 49995, ClientCallbackArray, NELNS_CONFIG, NELNS_LOGS);
+NLNET_SERVICE_MAIN (CAdminService, "AS", "admin_service", 49996, CallbackArray, NELNS_CONFIG, NELNS_LOGS);
+
+
+NLMISC_COMMAND (getView, "send a view and receive an array as result", "<varpath>")
+{
+	if(args.size() != 1) return false;
+
+	addRequest (args[0], NULL);
+
+	return true;
+}
+
+NLMISC_COMMAND (clearRequests, "clear all pending requests", "")
+{
+	if(args.size() != 0) return false;
+
+	// for all request, set the NbWaiting to NbReceived, next cleanRequest() will send answer and clear all request
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
+		{
+			Requests[i].NbWaiting = Requests[i].NbReceived;
+		}
+	}
+
+	return true;
+}
+
+NLMISC_COMMAND (displayRequests, "display all pending requests", "")
+{
+	if(args.size() != 0) return false;
+
+	log.displayNL ("Display %d pending requests", Requests.size ());
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		log.displayNL ("id: %d wait: %d recv: %d from: %s nbrow: %d", Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived, Requests[i].From->asString ().c_str (), Requests[i].NbRow);
+	}
+	log.displayNL ("End of display pending requests");
+
+	return true;
+}
+
+

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.122 2002/06/06 13:13:09 lecroart Exp $
+ * $Id: service.cpp,v 1.123 2002/06/06 15:16:10 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -1302,12 +1302,14 @@ NLMISC_DYNVARIABLE(uint64, SentQueueSize, "current size in bytes of the sent que
 
 NLMISC_DYNVARIABLE(string, Scroller, "current size in bytes of the sent queue size")
 {
-	// display the scroll text
-	static string foo =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
-						"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
-	static int pos = 0;
-	*pointer = foo.substr ((pos++)%(foo.size()/2), 10);
-	//				_WindowDisplayer->setLabel (scrollLabel, foo.substr ((pos++)%(foo.size()/2), 10));
+	if (get)
+	{
+		// display the scroll text
+		static string foo =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
+							"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
+		static int pos = 0;
+		*pointer = foo.substr ((pos++)%(foo.size()/2), 10);
+	}
 }
 
 NLMISC_COMMAND (quit, "exit the service", "")

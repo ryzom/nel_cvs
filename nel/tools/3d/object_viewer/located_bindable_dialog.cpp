@@ -1,5 +1,27 @@
-// located_bindable_dialog.cpp : implementation file
-//
+/** \file located_bindable_dialog.cpp
+ * <File description>
+ *
+ * $Id: located_bindable_dialog.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
 
 #include "std_afx.h"
 #include "object_viewer.h"
@@ -22,40 +44,6 @@ using NL3D::CPSLocatedBindable ;
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-
-
-////////////////////////////////////////////////////
-// WRAPPERS to set/get scheme and constant values //
-////////////////////////////////////////////////////
-
-
-//////////
-// size //
-//////////
-static float SizeReader(void *param) { return ((NL3D::CPSSizedParticle *) param)->getSize() ; }
-static void  SizeWriter(float value, void *param) { ((NL3D::CPSSizedParticle *) param)->setSize(value) ; }
-static NL3D::CPSAttribMaker<float> *SizeSchemeReader(void *param) { return ((NL3D::CPSSizedParticle *) param)->getSizeScheme() ; }
-static void  SizeSchemeWriter(NL3D::CPSAttribMaker<float> *scheme, void *param) { ((NL3D::CPSSizedParticle *) param)->setSizeScheme(scheme) ; }
-
-//////////////
-// angle 2D //
-//////////////
-
-static float Angle2DReader(void *param) { return ((NL3D::CPSRotated2DParticle *) param)->getAngle2D() ; }
-static void  Angle2DWriter(float value, void *param) { ((NL3D::CPSRotated2DParticle *) param)->setAngle2D(value) ; }
-static NL3D::CPSAttribMaker<float> *Angle2DSchemeReader(void *param) { return ((NL3D::CPSRotated2DParticle *) param)->getAngle2DScheme() ; }
-static void  Angle2DSchemeWriter(NL3D::CPSAttribMaker<float> *scheme, void *param) { ((NL3D::CPSRotated2DParticle *) param)->setAngle2DScheme(scheme) ; }
-
-//////////////
-// color    //
-//////////////
-
-static CRGBA ColorReader(void *param) { return ((NL3D::CPSColoredParticle *) param)->getColor() ; }
-static void  ColorWriter(CRGBA value, void *param) { ((NL3D::CPSColoredParticle *) param)->setColor(value) ; }
-static NL3D::CPSAttribMaker<CRGBA> *ColorSchemeReader(void *param) { return ((NL3D::CPSColoredParticle *) param)->getColorScheme() ; }
-static void  ColorSchemeWriter(NL3D::CPSAttribMaker<CRGBA> *scheme, void *param) { ((NL3D::CPSColoredParticle *) param)->setColorScheme(scheme) ; }
-
 
 
 
@@ -103,13 +91,9 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 			CAttribDlgRGBA *ad = new CAttribDlgRGBA("PARTICLE_COLOR") ;
 			_SubDialogs.push_back(ad) ;
 
-			NL3D::CPSColoredParticle  *sp = dynamic_cast<NL3D::CPSColoredParticle *>(_Bindable) ;
-
-			ad->setReader(ColorReader, sp) ;
-			ad->setWriter(ColorWriter, sp) ;
-			ad->setSchemeReader(ColorSchemeReader, sp) ;
-			ad->setSchemeWriter(ColorSchemeWriter, sp) ;
-			
+			_ColorWrapper.S = dynamic_cast<NL3D::CPSColoredParticle *>(_Bindable) ;		
+			ad->setWrapper(&_ColorWrapper) ;			
+			ad->setSchemeWrapper(&_ColorWrapper) ;
 
 			HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_PARTICLE_COLOR)) ;
 			ad->init(bmh, xPos, yPos, this) ;
@@ -124,14 +108,10 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 			CAttribDlgFloat *ad = new CAttribDlgFloat("PARTICLE_SIZE", 0.f, 10.f) ;
 			_SubDialogs.push_back(ad) ;
 
-			NL3D::CPSSizedParticle  *sp = dynamic_cast<NL3D::CPSSizedParticle *>(_Bindable) ;
-
-			ad->setReader(SizeReader, sp) ;
-			ad->setWriter(SizeWriter, sp) ;
-			ad->setSchemeReader(SizeSchemeReader, sp) ;
-			ad->setSchemeWriter(SizeSchemeWriter, sp) ;
-			
-
+			_SizeWrapper.S = dynamic_cast<NL3D::CPSSizedParticle *>(_Bindable) ;
+			ad->setWrapper(&_SizeWrapper) ;
+			ad->setSchemeWrapper(&_SizeWrapper) ;
+					
 			HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_PARTICLE_SIZE)) ;
 			ad->init(bmh, xPos, yPos, this) ;
 			ad->GetClientRect(&rect) ;
@@ -146,13 +126,9 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 			CAttribDlgFloat *ad = new CAttribDlgFloat("PARTICLE_ANGLE2D", 0.f, 256.f) ;
 			_SubDialogs.push_back(ad) ;
 
-			NL3D::CPSSizedParticle  *sp = dynamic_cast<NL3D::CPSSizedParticle *>(_Bindable) ;
-
-			ad->setReader(Angle2DReader, sp) ;
-			ad->setWriter(Angle2DWriter, sp) ;
-			ad->setSchemeReader(Angle2DSchemeReader, sp) ;
-			ad->setSchemeWriter(Angle2DSchemeWriter, sp) ;
-			
+			_Angle2DWrapper.S = dynamic_cast<NL3D::CPSRotated2DParticle *>(_Bindable) ;
+			ad->setWrapper(&_Angle2DWrapper) ;						
+			ad->setSchemeWrapper(&_Angle2DWrapper) ;	
 
 			HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_PARTICLE_ANGLE)) ;
 			ad->init(bmh, xPos, yPos, this) ;

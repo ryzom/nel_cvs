@@ -1,3 +1,28 @@
+/** \file attrib_list_box.h
+ * <File description>
+ *
+ * $Id: attrib_list_box.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
 #if !defined(AFX_ATTRIB_LIST_BOX_H__0927B20B_FD26_433B_856B_6EF2871C233E__INCLUDED_)
 #define AFX_ATTRIB_LIST_BOX_H__0927B20B_FD26_433B_856B_6EF2871C233E__INCLUDED_
 
@@ -8,7 +33,7 @@
 //
 
 class CValueGradientDlg ;
-
+struct IValueGradientDlgClient ;
 
 /////////////////////////////////////////////////////////////////////////////
 // CAttribListBox window
@@ -30,10 +55,9 @@ public:
 // Operations
 public:
 
-	void setDrawer(TDisplayValue displayValueFunc, void *displayValueFuncParam)
+	void setDrawer(IValueGradientDlgClient *drawer)
 	{
-		_DisplayValueFunc = displayValueFunc ;
-		_DisplayValueFuncParam = displayValueFuncParam ;
+		_DrawerInterface = drawer ;
 	}
 
 	void setCtrlID(uint id) { _Id = id ; }
@@ -60,8 +84,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 
-	TDisplayValue _DisplayValueFunc ;
-	void *_DisplayValueFuncParam ;
+	IValueGradientDlgClient *_DrawerInterface ;	
 	uint _Id ;
 };
 

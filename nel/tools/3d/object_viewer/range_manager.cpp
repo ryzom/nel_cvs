@@ -1,7 +1,7 @@
 /** \file range_manager.h
  * <File description>
  *
- * $Id: range_manager.cpp,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: range_manager.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,10 @@
 #include "range_manager.h"
 
 
+// here instanciate static fields of tange_manager
+
 // the range manager for floats
-CRangeManagerFloat RangeManagerFloat ;
+CRangeManager<float>::TRangeMap CRangeManager<float>::_RangeMap ;
 
 // the range manager for unsigned ints
-CRangeManagerUInt RangeManagerUInt ;
+CRangeManager<uint32>::TRangeMap CRangeManager<uint32>::_RangeMap ;

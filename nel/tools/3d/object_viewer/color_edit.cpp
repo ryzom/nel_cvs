@@ -1,5 +1,27 @@
-// color_edit.cpp : implementation file
-//
+/** \file color_edit.cpp
+ * <File description>
+ *
+ * $Id: color_edit.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
 
 #include "std_afx.h"
 #include "object_viewer.h"
@@ -16,8 +38,10 @@ static char THIS_FILE[] = __FILE__;
 // CColorEdit dialog
 
 
-CColorEdit::CColorEdit(CWnd* pParent /*=NULL*/)	
+CColorEdit::CColorEdit(std::string &, CWnd* pParent /*=NULL*/)	
 {
+	// we don't use the first parameter here, it is for template compatibility with CEditAttribDlg
+
 	//{{AFX_DATA_INIT(CColorEdit)
 	//}}AFX_DATA_INIT
 }
@@ -54,9 +78,9 @@ void CColorEdit::DoDataExchange(CDataExchange* pDX)
 
 void CColorEdit::updateColorFromReader(void)
 {
-	if (_Reader)
+	if (_Wrapper)
 	{
-		CRGBA col = _Reader(_ReaderParam) ;
+		CRGBA col = _Wrapper->get() ;
 		m_RedCtrl.SetScrollPos(col.R) ;
 		m_GreenCtrl.SetScrollPos(col.G) ;
 		m_BlueCtrl.SetScrollPos(col.B) ;
@@ -82,9 +106,9 @@ void CColorEdit::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 	if (nSBCode == SB_THUMBPOSITION || nSBCode == SB_THUMBTRACK)
 	{
 		UpdateData(TRUE) ;
-		nlassert(_Writer&&_Reader) ;
+		nlassert(_Wrapper) ;
 
-		CRGBA col = _Reader(_ReaderParam) ;
+		CRGBA col = _Wrapper->get() ;
 
 		if (pScrollBar == &m_RedCtrl)
 		{
@@ -105,7 +129,7 @@ void CColorEdit::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		}	
 		
 		m_Color.setColor(col) ;
-		_Writer(col, _WriterParam) ;
+		_Wrapper->set(col) ;
 	
 		UpdateData(FALSE) ;
 		CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
@@ -118,8 +142,8 @@ void CColorEdit::OnBrowseColor()
 {
 	static COLORREF colTab[16] = { 0, 0xff0000, 0x00ff00, 0xffff00, 0x0000ff, 0xff00ff, 0x00ffff, 0xffffff
 								   , 0x7f7f7f, 0xff7f7f, 0x7fff7f, 0xffff7f, 0x7f7fff, 0xff7fff, 0x7fffff, 0xff7f00 } ;
-	nlassert(_Reader) ;
-	CRGBA col = _Reader(_ReaderParam) ;
+	nlassert(_Wrapper) ;
+	CRGBA col = _Wrapper->get() ;
 	CHOOSECOLOR cc ;
 	cc.lStructSize = sizeof(CHOOSECOLOR) ;
 	cc.hwndOwner = this->m_hWnd ;
@@ -132,7 +156,7 @@ void CColorEdit::OnBrowseColor()
 		col.R = (uint8) (cc.rgbResult & 0xff) ;
 		col.G = (uint8) ((cc.rgbResult & 0xff00) >> 8) ;
 		col.B = (uint8) ((cc.rgbResult & 0xff0000) >> 16) ;
-		_Writer(col , _WriterParam) ;
+		_Wrapper->set(col) ;
 		updateColorFromReader() ;
 	}
 }

@@ -1,3 +1,29 @@
+/** \file color_edit.h
+ * <File description>
+ *
+ * $Id: color_edit.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+
 #if !defined(AFX_COLOR_EDIT_H__50C45CFE_2188_4161_B565_C773FE029BF3__INCLUDED_)
 #define AFX_COLOR_EDIT_H__50C45CFE_2188_4161_B565_C773FE029BF3__INCLUDED_
 
@@ -15,6 +41,8 @@ using NLMISC::CRGBA ;
 
 #include "color_button.h"
 
+#include "ps_wrapper.h"
+
 /////////////////////////////////////////////////////////////////////////////
 // CColorEdit dialog
 
@@ -25,7 +53,8 @@ class CColorEdit : public CEditAttribDlg
 {
 // Construction
 public:
-	CColorEdit(CWnd* pParent = NULL);   // standard constructor
+	// construct the dialog.
+	CColorEdit(std::string &id, CWnd* pParent = NULL);   // standard constructor
 
 
 	// inherited from CEditAttribDlg
@@ -52,18 +81,16 @@ public:
 
 
 public:
-// set a function to get back the datas (this may be a wrapper to an existing class)
-	void setReader(CRGBA (* reader) (void *lParam), void *lParam) { _Reader = reader ; _ReaderParam =  lParam ; }
-// set a function to write new datas
-	void setWriter(void (* writer) (CRGBA value, void *lParam), void *lParam) { _Writer = writer ; _WriterParam = lParam ; }
+	// set a wrapper to get the datas
+	void setWrapper(IPSWrapperRGBA *wrapper) { _Wrapper = wrapper ; }
+	
 
 protected:
 
 	CColorButton &getColorCtrl(void) { return  * (CColorButton *) GetDlgItem(IDC_PARTICLE_COLOR) ; }
-	CRGBA(* _Reader)(void *lParam)  ;
-	void(* _Writer) (CRGBA value, void *lParam)  ;
-	void *_ReaderParam, *_WriterParam ;
-
+	
+	// wrapper to the datas
+	IPSWrapperRGBA *_Wrapper ;
 
 	void CColorEdit::updateColorFromReader(void) ;
 

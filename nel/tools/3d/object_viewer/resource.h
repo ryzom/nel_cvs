@@ -82,10 +82,12 @@
 #define IDD_GRADIENT_DLG                1034
 #define IDC_CURRENT_FRAME               1035
 #define IDC_INVERT_SKELETON_WEIGHT      1035
+#define IDD_EMITTER_DIALOG              1035
 #define IDC_SPEED                       1036
 #define IDC_LOAD_MESH                   1036
 #define IDC_ENABLE                      1036
 #define IDC_LOAD_PLAYLIST               1037
+#define IDB_EMISSION_QUANTITY           1037
 #define IDC_CLEAR_SCENE                 1038
 #define IDC_SAVE_PLAYLIST               1039
 #define IDC_LOAD_SCENE                  1040
@@ -175,9 +177,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1035
+#define _APS_NEXT_RESOURCE_VALUE        1038
 #define _APS_NEXT_COMMAND_VALUE         32807
-#define _APS_NEXT_CONTROL_VALUE         1099
+#define _APS_NEXT_CONTROL_VALUE         1101
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

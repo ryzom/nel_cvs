@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * <File description>
  *
- * $Id: particle_tree_ctrl.cpp,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
+ 
 
 
 #include "nel/3d/particle_system.h"

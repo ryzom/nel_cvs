@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * <File description>
  *
- * $Id: editable_range.cpp,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,146 +165,74 @@ void CEditableRange::emptyDialog(void)
 	UpdateData(FALSE) ;
 }
 
-/////////////////////////////////////////
-//	CEditableRangeFloat implementation //
-/////////////////////////////////////////
-
-
-static bool CString2Float(const CString &c, float &result)
-{		
-		return sscanf((LPCTSTR) c, "%f", &result) == 1 ;		
-}
-
-static bool EditableRangeFloatValidator(const CString &lo, const CString &up)
-{
-	float upF, loF ;
-
-	if (!::CString2Float(lo, loF))
-	{
-		::MessageBox(NULL, "Invalid lower bound", "Range selection error", MB_OK) ;
-		return false ;
-	}
-
-	if (!::CString2Float(up, upF))
-	{
-		::MessageBox(NULL, "Invalid upper bound", "Range selection error", MB_OK) ;
-		return false ;
-	}
-
-
-	if (upF <= loF)
-	{
-		::MessageBox(NULL, "upper bound must be trictly greater than lower bound", "Range selection error", MB_OK) ;
-		return false ;
-	}
-
-	return true ;
-}
-
-
-CEditableRangeFloat::CEditableRangeFloat(const std::string &id, float defaultMin /* = 0.f */, float defaultMax /*= 1.f*/)
-: CEditableRange(id), _Range(defaultMin, defaultMax), _Reader(NULL), _Writer(NULL)
-{
-}
-
-void CEditableRangeFloat::updateRange(void)
-{	
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	// retrieve our range
-	_Range = RangeManagerFloat.getRange(_Id, _Range.first, _Range.second) ;
-	m_MinRange.Format("%g", (double) _Range.first) ;
-	m_MaxRange.Format("%g", (double) _Range.second) ;
-	if (_Reader)
-	{
-		setValue(_Reader(_ReaderParam)) ;
-	}
-	UpdateData(FALSE) ;
-}
-void CEditableRangeFloat::updateValueFromSlider(float sliderValue)
-{
-	nlassert(_Writer) ;
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	float value = _Range.first  + (_Range.second - _Range.first) * sliderValue ;
-	m_Value.Format("%g", (double) value) ;
-
-	if (_Writer)
-	{
-		_Writer(value, _WriterParam) ;
-	}
-
-	UpdateData(FALSE) ;
-}
-
-void CEditableRangeFloat::updateValueFromReader(void)
-{
-	if (_Reader)
-	{
-		setValue(_Reader(_ReaderParam)) ;		
-	}
-}
-
-
-void CEditableRangeFloat::updateValueFromText(void)
-{
-	float value ;
-	if (CString2Float(m_Value, value))
-	{
-		setValue(value) ;
-	}
-	else
-	{
-		MessageBox("invalid value", "error") ;
-	}
-}
-
-
-void CEditableRangeFloat::selectRange()
-{
-	CString lowerBound, upperBound ;
-	
-	lowerBound.Format("%g", (double) _Range.first) ;
-	upperBound.Format("%g", (double) _Range.second) ;
-	
-	CRangeSelector rs(lowerBound, upperBound, EditableRangeFloatValidator)  ;
-
-	if (rs.DoModal())
-	{
-		::CString2Float(rs.getLowerBound(), _Range.first) ;
-		::CString2Float(rs.getUpperBound(), _Range.second) ;				
-		RangeManagerFloat.setRange(_Id, _Range.first, _Range.second) ;
-		updateRange() ;
-	}
-}
-
-void CEditableRangeFloat::setValue(float value)
-{
-
-	m_Value.Format(_T("%g"), (double) value) ;
-
-	_Writer(value, _WriterParam) ;
-
-	if (value < _Range.first)
-	{
-		m_SliderPos = (uint) (m_SliderCtrl.GetRangeMin()) ;
-	}
-	else
-	if (value > _Range.second)
-	{
-		m_SliderPos = (uint) (m_SliderCtrl.GetRangeMax()) ;
-	}
-	else
-	{
-		m_SliderPos = (uint) ((value - _Range.first) / (_Range.second - _Range.first) * (m_SliderCtrl.GetRangeMax() - m_SliderCtrl.GetRangeMin())
-							+ m_SliderCtrl.GetRangeMin()) ;
-	}	
-	UpdateData(FALSE) ;
-	
-}
-
-
 void CEditableRange::OnSetfocusValue() 
 {
 	CEdit *ce = (CEdit *) GetDlgItem(IDC_VALUE) ;
 	ce->PostMessage(EM_SETSEL, 0, -1) ;	
 	ce->Invalidate() ;
 }
+
+
+///////////////////////////////////////////////////////
+// IMPLEMENTATION OF TEMPLATE METHOD SPECIALIZATIONS //
+///////////////////////////////////////////////////////
+
+
+	//////////////////////////
+	// float editable range //
+	//////////////////////////
+
+CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin, float defaultMax ) 
+			: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
+		{
+		}
+
+		void CEditableRangeT<float>::value2CString(float value, CString &dest)
+		{
+			dest.Format("%g", (double) value) ;
+		}
+		const char *CEditableRangeT<float>::string2value(const CString &value, float &result)
+		{			
+			if (sscanf((LPCTSTR) value, "%f", &result) == 1)
+			{			
+				return NULL ;
+			}
+			else
+			{
+				return "invalid value" ;
+			}	
+		}
+
+	///////////////////////////
+	// uint32 editable range //
+	///////////////////////////
+
+		CEditableRangeT<uint32>::CEditableRangeT(const std::string &id, uint32 defaultMin , uint32 defaultMax ) ;
+		void CEditableRangeT<uint32>::value2CString(uint32 value, CString &dest)
+		{
+			dest.Format("%d", value) ;
+		}
+		const char *CEditableRangeT<uint32>::string2value(const CString &value, uint32 &result)
+		{			
+			uint32 tmp ;
+			if (sscanf((LPCTSTR) value, "%d", &tmp) == 1)
+			{
+				if (strchr((LPCTSTR) value, '-'))
+				{
+					return "negative values not allowed" ;
+				}
+				else
+				{
+					result = tmp ;
+					return NULL ;
+				}
+			}
+			else
+			{
+				return "invalid value" ;
+			}	
+		}
+
+
+
+

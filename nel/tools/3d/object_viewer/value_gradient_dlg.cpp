@@ -1,5 +1,28 @@
-// value_gradient_dlg.cpp : implementation file
-//
+/** \file value_gradient_dlg.cpp
+ * <File description>
+ *
+ * $Id: value_gradient_dlg.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02
+*/
+
 
 #include "std_afx.h"
 #include "object_viewer.h"
@@ -17,16 +40,11 @@ static char THIS_FILE[] = __FILE__;
 // CValueGradientDlg dialog
 
 
-CValueGradientDlg::CValueGradientDlg(TCreateDialog createDialogFunc, TModifyGradient modifyGradientFunc, TDisplayValue displayValueFunc
-					, void *createLParam, void *modifyLParam, void *displayLParam				
-					, uint initialSize
-					, CWnd* pParent)
+CValueGradientDlg::CValueGradientDlg(IValueGradientDlgClient *clientInterface								
+									, CWnd* pParent)
 	: CDialog(CValueGradientDlg::IDD, pParent)
-	 , _CreateDialogFunc(createDialogFunc),  _ModifyGradientFunc(modifyGradientFunc),  _DisplayValueFunc(displayValueFunc)
-	 , _CreateLParam(createLParam), _ModifyLParam(modifyLParam), _DisplayLParam(displayLParam)	 
-	 , _Size(initialSize)
-	 , _EditValueDlg(NULL)
-	 , _InfoToDelete(NULL)
+	 , _ClientInterface(clientInterface)	
+	 , _EditValueDlg(NULL)	 
 {
 	//{{AFX_DATA_INIT(CValueGradientDlg)
 	//}}AFX_DATA_INIT
@@ -34,8 +52,7 @@ CValueGradientDlg::CValueGradientDlg(TCreateDialog createDialogFunc, TModifyGrad
 
 
 CValueGradientDlg::~CValueGradientDlg()
-{
-	delete _InfoToDelete ;
+{	
 	delete _EditValueDlg ;
 }
 
@@ -67,10 +84,10 @@ END_MESSAGE_MAP()
 
 void CValueGradientDlg::OnAddValue() 
 {
-	nlassert(_ModifyGradientFunc) ;
+	nlassert(_ClientInterface) ;
 	UpdateData() ;
 		++_Size ;
-		_ModifyGradientFunc(Add, 0, _ModifyLParam) ;
+		_ClientInterface->modifyGradient(IValueGradientDlgClient::Add, 0) ;
 		m_GradientList.AddString("value") ;		
 		m_RemoveCtrl.EnableWindow(TRUE) ;
 
@@ -82,11 +99,11 @@ void CValueGradientDlg::OnAddValue()
 
 void CValueGradientDlg::OnInsertValue() 
 {
-	nlassert(_ModifyGradientFunc) ;
+	nlassert(_ClientInterface) ;
 	UpdateData() ;
 		uint oldIndex = m_GradientList.GetCurSel() ;
 		++_Size ;
-		_ModifyGradientFunc(Insert, m_GradientList.GetCurSel(), _ModifyLParam) ;
+		_ClientInterface->modifyGradient(IValueGradientDlgClient::Insert, m_GradientList.GetCurSel()) ;
 		m_GradientList.InsertString(m_GradientList.GetCurSel(), "value") ;		
 		m_GradientList.Invalidate() ;
 		m_GradientList.SetCurSel(oldIndex) ;
@@ -96,11 +113,11 @@ void CValueGradientDlg::OnInsertValue()
 
 void CValueGradientDlg::OnRemoveValue() 
 {
-	nlassert(_ModifyGradientFunc) ;
+	nlassert(_ClientInterface) ;
 	UpdateData() ;
 		uint oldIndex = m_GradientList.GetCurSel() ;
 		--_Size ;
-		_ModifyGradientFunc(Delete, m_GradientList.GetCurSel(), _ModifyLParam) ;
+		_ClientInterface->modifyGradient(IValueGradientDlgClient::Delete, m_GradientList.GetCurSel()) ;
 		m_GradientList.DeleteString(m_GradientList.GetCurSel()) ;				
 
 		if (_Size <= 2)
@@ -133,6 +150,8 @@ void CValueGradientDlg::OnValueUp()
 
 BOOL CValueGradientDlg::OnInitDialog() 
 {
+	nlassert(_ClientInterface) ;
+	_Size = _ClientInterface->getSchemeSize() ;
 	CDialog::OnInitDialog();
 	UpdateData() ;
 
@@ -151,7 +170,7 @@ BOOL CValueGradientDlg::OnInitDialog()
 	m_GradientList.SetCurSel(0) ;
 
 	m_GradientList.setCtrlID(IDC_GRADIENT_LIST) ;
-	m_GradientList.setDrawer(_DisplayValueFunc, _DisplayLParam) ;
+	m_GradientList.setDrawer(_ClientInterface) ;
 
 	UpdateData(FALSE) ;		
 
@@ -161,10 +180,10 @@ BOOL CValueGradientDlg::OnInitDialog()
 
 void CValueGradientDlg::OnSelchangeGradientList() 
 {
+	nlassert(_ClientInterface) ;
 	UpdateData(TRUE) ;
 	delete _EditValueDlg ;	
-	delete _InfoToDelete ;
-	_EditValueDlg =	_CreateDialogFunc(m_GradientList.GetCurSel(), _CreateLParam, &_InfoToDelete, this) ;
+	_EditValueDlg =	_ClientInterface->createDialog(m_GradientList.GetCurSel(), this) ;
 
 	RECT r, or ;
 	GetWindowRect(&or) ;

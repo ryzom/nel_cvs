@@ -1,7 +1,7 @@
 /** \file editable_range.h
  * <File description>
  *
- * $Id: editable_range.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: editable_range.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,9 @@
 
 #include <string>
 #include "edit_attrib_dlg.h"
+#include "range_manager.h"
+#include "range_selector.h"
+#include "ps_wrapper.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -99,7 +102,7 @@ protected:
 	/** for derivers : value update : this is call with a float ranging from 0.f to 1.f (from the slider)
 	 *  And it must convert it to the desired value, changing the value of this dialog
 	 */
-	virtual void updateValueFromSlider(float sliderValue) = 0 ;
+	virtual void updateValueFromSlider(double sliderValue) = 0 ;
 
 	
 
@@ -129,40 +132,181 @@ protected:
 	DECLARE_MESSAGE_MAP()
 };
 
-// here, we define EditableRanges for the most common types
-// edit float with no specific values
-class CEditableRangeFloat : public CEditableRange
+/** here, we define a template for editable ranges EditableRanges, that help to instanciate it
+ *  Derivers have just to specialize 2 static methods : value2CString and string2value
+ */
+
+template <typename T>
+class CEditableRangeT : public CEditableRange
 {
 public:
 /// ctor, it gives the range for the values
-	CEditableRangeFloat(const std::string &id, float defaultMin, float defaultMax) ;
+	CEditableRangeT(const std::string &id, T defaultMin, T defaultMax)
+		: CEditableRange(id), _Range(defaultMin, defaultMax), _Wrapper(NULL)
+	{		
+	}
 	
-// set a function to get back the datas (this may be a wrapper to an existing class)
-	void setReader(float (* reader) (void *lParam), void *lParam) { _Reader = reader ; _ReaderParam =  lParam ; }
-// set a function to write new datas
-	void setWriter(void (* writer) (float value, void *lParam), void *lParam) { _Writer = writer ; _WriterParam = lParam ; }
+	// set an interface of a wrapper  to read / write values in the particle system
+	void setWrapper(IPSWrapper<T> *wrapper) { _Wrapper = wrapper ; }
 
 
-
-public:
-	virtual void updateRange(void) ;
-	virtual void updateValueFromReader(void) ;
+public:	
+	// SPECIALIZE THAT. write value into the given CString
+	static void value2CString(T value, CString &dest) ;
+	// SPECIALIZE THAT. convert a CString into a value, return NULL if ok, or a pointer to an error message
+	static const char *string2value(const CString &value, T &result) ;
+	
+	void updateRange(void)
+	{
+		// retrieve our range
+		_Range = CRangeManager<T>::GetRange(_Id, _Range.first, _Range.second) ;
+		value2CString(_Range.first, m_MinRange) ;
+		value2CString(_Range.second, m_MaxRange) ;		
+		if (_Wrapper)
+		{
+			setValue(_Wrapper->get()) ;
+		}
+		UpdateData(FALSE) ;
+	}
+	void updateValueFromReader(void)
+	{
+		if (_Wrapper)
+		{
+			setValue(_Wrapper->get()) ;		
+		}
+	}
 protected:	
-	virtual void updateValueFromText(void) ;	
-	virtual void selectRange(void) ;
-	virtual void updateValueFromSlider(float sliderValue) ;	
+	void updateValueFromText(void)
+	{
+		T value ;
+		const char *message = string2value(m_Value, value) ;
+		if (!message)
+		{
+			setValue(value) ;
+		}
+		else
+		{
+			MessageBox(message, "error") ;
+		}
+	}
+	void selectRange(void)
+	{
+		CString lowerBound, upperBound ;	
+		value2CString(_Range.first, lowerBound) ;
+		value2CString(_Range.second, upperBound) ;
+	
+		CRangeSelector rs(lowerBound, upperBound, EditableRangeValueValidator)  ;
+
+		if (rs.DoModal())
+		{
+			string2value(rs.getLowerBound(), _Range.first) ;
+			string2value(rs.getUpperBound(), _Range.second) ;				
+			CRangeManager<T>::SetRange(_Id, _Range.first, _Range.second) ;
+			updateRange() ;
+		}
+	}
+	void updateValueFromSlider(double sliderValue)
+	{
+		nlassert(_Wrapper) ;
+		
+		T value = _Range.first  + (T) ((_Range.second - _Range.first) * sliderValue) ;
+		value2CString(value, m_Value) ;
+
+		if (_Wrapper)
+		{
+			_Wrapper->set(value) ;
+		}
+
+		UpdateData(FALSE) ;
+	}
+
 	/// set a new value that will affect both slider and value display
-	void setValue(float value) ;
+	void setValue(T value)
+	{
+		value2CString(value, m_Value) ;
 
-	std::pair<float, float> _Range ;
+		_Wrapper->set(value) ;
+
+		if (value < _Range.first)
+		{
+			m_SliderPos = (uint) (m_SliderCtrl.GetRangeMin()) ;
+		}
+		else
+		if (value > _Range.second)
+		{
+			m_SliderPos = (uint) (m_SliderCtrl.GetRangeMax()) ;
+		}
+		else
+		{
+			m_SliderPos = (uint) ((double) (value - _Range.first) / (_Range.second - _Range.first) * (m_SliderCtrl.GetRangeMax() - m_SliderCtrl.GetRangeMin())
+								+ m_SliderCtrl.GetRangeMin()) ;
+		}	
+		UpdateData(FALSE) ;	
+	}
 
 
-	float(* _Reader)(void *lParam)  ;
-	void(* _Writer) (float value, void *lParam)  ;
+	static bool EditableRangeValueValidator(const CString &lo, const CString &up)
+	{
+		T upT, loT ;
 
-	void *_ReaderParam, *_WriterParam ;
+		const char *message = string2value(lo, loT) ;
+		if (message)
+		{
+			::MessageBox(NULL, message, "Range selection error", MB_OK) ;
+			return false ;
+		}
+
+		message = string2value(up, upT) ;
+		if (message)
+		{
+			::MessageBox(NULL, message, "Range selection error", MB_OK) ;
+			return false ;
+		}
+
+
+		if (upT <= loT)
+		{
+			::MessageBox(NULL, "upper bound must be strictly greater than lower bound", "Range selection error", MB_OK) ;
+			return false ;
+		}
+
+		return true ;
+	}
+
+
+	// min max values
+	std::pair<T, T> _Range ;
+
+	// wrapper to the particle system
+	IPSWrapper<T> *_Wrapper ;
+
 
 } ;
+
+
+////////////////////////////////////////////////////////
+// float specialization. Implementation is in the cpp //
+////////////////////////////////////////////////////////
+CEditableRangeT<float>::CEditableRangeT(const std::string &id, float defaultMin = 0.1f , float defaultMax = 10.1f) ;
+void CEditableRangeT<float>::value2CString(float value, CString &dest) ;
+const char *CEditableRangeT<float>::string2value(const CString &value, float &result) ;
+
+////////////////////////////////////////////////////////
+// uint32 specialization. Implementation is in the cpp //
+////////////////////////////////////////////////////////
+CEditableRangeT<uint32>::CEditableRangeT(const std::string &id, uint32 defaultMin = 0 , uint32 defaultMax = 10) ;
+void CEditableRangeT<uint32>::value2CString(uint32 value, CString &dest) ;
+const char *CEditableRangeT<uint32>::string2value(const CString &value, uint32 &result) ;
+
+
+
+
+// some typedefs
+
+
+typedef CEditableRangeT<float> CEditableRangeFloat ;
+typedef CEditableRangeT<uint32> CEditableRangeUInt ;
+
 
 
 //{{AFX_INSERT_LOCATION}}

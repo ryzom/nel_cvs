@@ -1,7 +1,7 @@
 /** \file located_properties.cpp
  * <File description>
  *
- * $Id: located_properties.cpp,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: located_properties.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc, CWnd* pParent /*=N
 	_MinMass = new CEditableRangeFloat("MIN_MASS", 0.1f, 1.1f) ;
 	_MaxMass = new CEditableRangeFloat("MAX_MASS", 0.1f, 1.1f) ;
 
-
+	_MaxNbParticles = new CEditableRangeUInt("MAX_NB_PARTICLES", 1, 501) ;
 }
 
 CLocatedProperties::~CLocatedProperties()
@@ -71,13 +71,14 @@ CLocatedProperties::~CLocatedProperties()
 	delete _MaxLife ;
 	delete _MinMass ;
 	delete _MaxMass ;
+	delete _MaxNbParticles ;
 }
 
 void CLocatedProperties::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLocatedProperties)
-	DDX_Control(pDX, IDC_PARTICLE_NUMBER_POS, m_ParticleNumberPos);
+	DDX_Control(pDX, IDC_PARTICLE_NUMBER_POS, m_MaxNbParticles);
 	DDX_Control(pDX, IDC_MASS_MIN_VALUE, m_MassMaxPos);
 	DDX_Control(pDX, IDC_MASS_MAX_VALUE, m_MassMinPos);
 	DDX_Control(pDX, IDC_LIFE_MAX_VALUE, m_LifeMaxPos);
@@ -107,50 +108,9 @@ BOOL CLocatedProperties::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-//////////////////////////////////////////////////////////////////
-// some function to wrap from the dialog to the particle system //
-//////////////////////////////////////////////////////////////////
-
-static float readerMinMass(void *lParam)
-{
-	return ((CPSLocated *) lParam)->getMinMass() ;
-}
-
-static void writerMinMass(float value, void *lParam)
-{
-	((CPSLocated *) lParam)->setMinMass(value) ;
-}
-
-static float readerMaxMass(void *lParam)
-{
-	return ((CPSLocated *) lParam)->getMaxMass() ;
-}
-
-static void writerMaxMass(float value, void *lParam)
-{
-	((CPSLocated *) lParam)->setMaxMass(value) ;
-}
 
 
-static float readerMinLife(void *lParam)
-{
-	return ((CPSLocated *) lParam)->getMinLife() ;
-}
 
-static void writerMinLife(float value, void *lParam)
-{
-	((CPSLocated *) lParam)->setLifeTime(value, ((CPSLocated *) lParam)->getMaxLife()) ;
-}
-
-static float readerMaxLife(void *lParam)
-{
-	return ((CPSLocated *) lParam)->getMaxLife() ;
-}
-
-static void writerMaxLife(float value, void *lParam)
-{
-	((CPSLocated *) lParam)->setLifeTime(((CPSLocated *) lParam)->getMaxLife(), value) ;
-}
 
 
 
@@ -178,25 +138,30 @@ void CLocatedProperties::init(uint32 x, uint32 y, CWnd *pParent)
 
 
 	m_LifeMinPos.GetWindowRect(&r) ;
-	_MinLife->setReader(readerMinLife, _Located) ;
-	_MinLife->setWriter(writerMinLife, _Located) ;
+	_MinLifeWrapper.Located = _Located ;
+	_MinLife->setWrapper(&_MinLifeWrapper) ;	
 	_MinLife->init(r.left - pr.left, r.top - pr.top, this) ;
 
 	m_LifeMaxPos.GetWindowRect(&r) ;
-	_MaxLife->setReader(readerMaxLife, _Located) ;
-	_MaxLife->setWriter(writerMaxLife, _Located) ;
+	_MaxLifeWrapper.Located = _Located ;
+	_MaxLife->setWrapper(&_MaxLifeWrapper) ;	
 	_MaxLife->init(r.left - pr.left, r.top - pr.top, this) ;
 
 
 	m_MassMinPos.GetWindowRect(&r) ;
-	_MinMass->setReader(readerMinMass, _Located) ;
-	_MinMass->setWriter(writerMinMass, _Located) ;
+	_MinMassWrapper.Located = _Located ;
+	_MinMass->setWrapper(&_MinMassWrapper) ;	
 	_MinMass->init(r.left - pr.left, r.top - pr.top, this) ;
 
-	m_MassMaxPos.GetWindowRect(&r) ;	
-	_MaxMass->setReader(readerMaxMass, _Located) ;
-	_MaxMass->setWriter(writerMaxMass, _Located) ;
+	m_MassMaxPos.GetWindowRect(&r) ;
+	_MaxMassWrapper.Located = _Located ;
+	_MaxMass->setWrapper(&_MaxMassWrapper) ;	
 	_MaxMass->init(r.left - pr.left, r.top - pr.top, this) ;
+
+	m_MaxNbParticles.GetWindowRect(&r) ;
+	_MaxNbParticlesWrapper.Located = _Located ;
+	_MaxNbParticles->setWrapper(&_MaxNbParticlesWrapper) ;	
+	_MaxNbParticles->init(r.left - pr.left, r.top - pr.top, this) ;
 
 	
 	m_SystemBasis = _Located->isInSystemBasis() ;

@@ -1,7 +1,7 @@
 /** \file located_properties.h
  * <File description>
  *
- * $Id: located_properties.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: located_properties.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CLocatedProperties)
 	enum { IDD = IDD_LOCATED_PROPERTIES };
-	CStatic	m_ParticleNumberPos;
+	CStatic	m_MaxNbParticles;
 	CStatic	m_MassMaxPos;
 	CStatic	m_MassMinPos;
 	CStatic	m_LifeMaxPos;
@@ -80,8 +80,54 @@ protected:
 
 	CEditableRangeFloat *_MinMass, *_MaxMass ;
 	CEditableRangeFloat *_MinLife, *_MaxLife ;
+	CEditableRangeUInt *_MaxNbParticles ;
 	 
 
+	/// some wrappers used to read / write value from / to the particle system
+
+		
+		struct tagMinMassWrapper : public IPSWrapperFloat
+		{
+		   NL3D::CPSLocated *Located ;
+		   float get(void) const { return Located->getMinMass() ; }
+		   void set(const float &v) { Located->setMinMass(v) ; }
+		} _MinMassWrapper ;
+
+		struct tagMaxMassWrapper: public IPSWrapperFloat
+		{
+			NL3D::CPSLocated *Located ;
+			float get(void) const { return Located->getMaxMass() ; }
+			void set(const float &v) { Located->setMaxMass(v) ; }
+		} _MaxMassWrapper ;
+
+
+		struct tagMaxNbParticlesWrapper : public IPSWrapperUInt
+		{
+			NL3D::CPSLocated *Located ;
+			uint32 get(void) const { return Located->getMaxSize() ; }
+			void set(const uint32 &v) { Located->resize(v) ; }
+		} _MaxNbParticlesWrapper ;
+
+
+		struct tagMinLifeWrapper : public IPSWrapperFloat
+		{
+			NL3D::CPSLocated *Located ;
+			float get(void) const { return Located->getMinLife() ; }
+			void set(const float &v) { Located->setLifeTime(v, Located->getMaxLife()) ; }
+		} _MinLifeWrapper ;
+
+		
+		struct tagMaxLifeWrapper : public IPSWrapperFloat
+		{
+			NL3D::CPSLocated *Located ;
+			float get(void) const { return Located->getMaxLife() ; }
+			void set(const float &v) { Located->setLifeTime(Located->getMinLife(), v) ; }
+		} _MaxLifeWrapper ;
+					
+				
+
+
+	// the located this dialog is editing
 
 	NL3D::CPSLocated *_Located ;
 

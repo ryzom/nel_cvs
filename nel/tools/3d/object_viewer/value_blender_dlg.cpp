@@ -1,3 +1,30 @@
+/** \file value_blender_dlg.cpp
+ * <File description>
+ *
+ * $Id: value_blender_dlg.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02
+*/
+
+
+
 // ValueBlenderDlg.cpp : implementation file
 //
 
@@ -16,11 +43,10 @@ static char THIS_FILE[] = __FILE__;
 // CValueBlenderDlg dialog
 
 
-CValueBlenderDlg::CValueBlenderDlg(TCreateDialog createFunc, void *lParam, CWnd* pParent /*=NULL*/)
-	: _CreateFunc(createFunc), _CreateFuncParam(lParam), CDialog(CValueBlenderDlg::IDD, pParent)
-	  , _InfoToDelete1(NULL), _InfoToDelete2(NULL)
+CValueBlenderDlg::CValueBlenderDlg(IValueBlenderDlgClient *creationInterface, CWnd* pParent)
+	: _CreateInterface(creationInterface) , CDialog(CValueBlenderDlg::IDD, pParent)
+	  
 {
-	nlassert(createFunc) ;
 	//{{AFX_DATA_INIT(CValueBlenderDlg)
 	//}}AFX_DATA_INIT
 }
@@ -29,8 +55,7 @@ CValueBlenderDlg::~CValueBlenderDlg()
 {
 	delete _Dlg1 ;
 	delete _Dlg2 ;
-	delete _InfoToDelete1 ;
-	delete _InfoToDelete2 ;
+	
 }
 
 
@@ -57,10 +82,10 @@ BOOL CValueBlenderDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	UpdateData() ;
-	nlassert(_CreateFunc) ;
+	nlassert(_CreateInterface) ;
 	
-	_Dlg1 = _CreateFunc(0, _CreateFuncParam, &_InfoToDelete1) ;
-	_Dlg2 = _CreateFunc(1, _CreateFuncParam, &_InfoToDelete2) ;
+	_Dlg1 = _CreateInterface->createDialog(0) ;
+	_Dlg2 = _CreateInterface->createDialog(1) ;
 
 
 

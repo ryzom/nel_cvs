@@ -1,7 +1,7 @@
 /** \file range_manager.h
  * <File description>
  *
- * $Id: range_manager.h,v 1.1 2001/06/12 08:39:50 vizerie Exp $
+ * $Id: range_manager.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,7 @@ public:
 	/** retrieve the range used for a given ID.
 	 *  If the ID wasn't present, a new entry is created, and the given values are returned
 	 */
-	std::pair<T, T> getRange(const std::string &id, const T &minRange, const T &maxRange)
+	static std::pair<T, T> GetRange(const std::string &id, const T &minRange, const T &maxRange)
 	{
 		if (_RangeMap.count(id) == 0) // not present yet ?
 		{
@@ -55,20 +55,20 @@ public:
 	 *  In release build, the entrie is created, but with uninitialized values ...
 	 */
 	
-	std::pair<T, T> getRange(const std::string &id)
+	static std::pair<T, T> GetRange(const std::string &id)
 	{
 		return _RangeMap[id] ;
 	}
 
 	/// set a new value for the given range
 
-	void setRange(const std::string &id, const T &minRange, const T &maxRange)
+	static void SetRange(const std::string &id, const T &minRange, const T &maxRange)
 	{
 		_RangeMap[id] = std::pair<T, T>(minRange, maxRange) ;	
 	}
 
 	/// serialization
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	static void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		uint32 size ;		
 		if (!f.isReading())
@@ -94,22 +94,14 @@ public:
 		}
 	}
 
-protected:
 	typedef std::map< std::string, std::pair<T, T> > TRangeMap ;
+
+protected:
+	
 	// the map that contains the ID, and their range values
-	TRangeMap _RangeMap ;
+	static TRangeMap _RangeMap ;
 	
 } ;
-
-
-
-// a specialization for floats
-typedef CRangeManager<float> CRangeManagerFloat ;
-extern CRangeManagerFloat RangeManagerFloat ;
-
-// a specialization for unsigned int
-typedef CRangeManager<uint32> CRangeManagerUInt ;
-extern CRangeManagerUInt RangeManagerUInt ;
 
 
 

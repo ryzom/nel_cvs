@@ -1,5 +1,32 @@
+/** \file attrib_dlg.cpp
+ * <File description>
+ *
+ * $Id: attrib_dlg.cpp,v 1.2 2001/06/12 17:12:35 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
 // attrib_dlg.cpp : implementation file
 //
+
+
 
 #include "std_afx.h"
 #include "object_viewer.h"
@@ -18,21 +45,6 @@
 #include "nel/3d/ps_plane_basis.h"
 
 
-/////////////////////////////////////////////////////////////////////
-// WRAPPERS to set / retrieve the NbCycles parameter of a scheme   //
-/////////////////////////////////////////////////////////////////////
-static float NbCyclesReader(void *lParam) { return ((CAttribDlg *) lParam)->getSchemeNbCycles() ; }
-static void NbCyclesWriter(float value, void *lParam) { ((CAttribDlg *) lParam)->setSchemeNbCycles(value) ; }
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -41,6 +53,162 @@ static void NbCyclesWriter(float value, void *lParam) { ((CAttribDlg *) lParam)-
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+
+/////////////////////////////////////////////////////////////////////
+// WRAPPERS to set / retrieve the NbCycles parameter of a scheme   //
+/////////////////////////////////////////////////////////////////////
+static float NbCyclesReader(void *lParam) { return ((CAttribDlg *) lParam)->getSchemeNbCycles() ; }
+static void NbCyclesWriter(float value, void *lParam) { ((CAttribDlg *) lParam)->setSchemeNbCycles(value) ; }
+
+
+///////////////////////////////////////////
+// GENERAL INTERFACE FOR BLENDER EDITION //
+///////////////////////////////////////////
+
+/**  T is the type to be edited (color, float, etc..)
+ *   E is the dialog to create. It must have at least a constructor with a single parameter of type std::string
+ *     It must also derive from CEditAttribDlg, and have a set wrapper method that match the T type
+ *   , even if it is unused
+ */
+
+template <typename T, class E> 
+class CValueBlenderDlgClientT : public IValueBlenderDlgClient
+{
+	public:
+		std::string Id ; // the Id of each of the dialog (it will be followed by %1 or %2)
+						 // must be filled by the user
+
+		// the scheme being used. Must be set by the user
+		NL3D::CPSValueBlender<T> *Scheme ;
+
+	protected:
+		virtual CEditAttribDlg *createDialog(uint index)
+		{
+			std::string id = Id ;
+			if (index == 0) id += "%1" ; else id += "%2" ;
+			E *dlg = new E(id) ;
+			dlg->setWrapper(&_ValueInfos[index]) ;
+			_ValueInfos[index].ValueIndex = index ;
+			_ValueInfos[index].Scheme = Scheme ;
+
+			return dlg ;
+		}
+
+		// inherited from IPSWrapper<T>
+
+		struct COneValueInfo : public IPSWrapper<T>
+		{
+			// valuet 0 or 1 being edited
+			uint ValueIndex ;
+			// the scheme being edited
+			NL3D::CPSValueBlender<T> *Scheme ;
+
+			virtual T get(void) const 
+			{ 
+				T t1, t2 ;
+				Scheme->_F.getValues(t1, t2) ;
+				return ValueIndex == 0 ? t1 : t2 ;
+			}			
+			virtual void set(const T &value)
+			{
+				T t1, t2 ;
+				Scheme->_F.getValues(t1, t2) ;
+				if (ValueIndex == 0 ) t1 = value ; else t2 = value ;
+				Scheme->_F.setValues(t1, t2) ;
+			}
+		} ;
+
+		COneValueInfo _ValueInfos[2] ;
+
+
+} ;
+
+
+////////////////////////////////////////////
+// GENERAL INTERFACE FOR GRADIENT EDITION //
+////////////////////////////////////////////
+
+/** This template generate an interface that is used with the gradient edition dialog
+ *  T is the type to be edited (color, floet, etc..)
+ *  V is the default value for creation
+ *  E is the class for one value edition. It must derives from CEditAttribDlg
+ */
+ 
+
+template <typename T, class E> 
+class CValueGradientDlgClientT : public IValueGradientDlgClient, public IPSWrapper<T>
+{
+public:
+
+	std::string Id ; // the Id of each of the dialog (it will be followed by %1 or %2)
+						 // must be filled by the user
+	// the gradient being edited, must be filled by the instancier
+	NL3D::CPSValueGradientFunc<T> *Scheme ;
+	// the gradient dialog, must be filled by the instancier
+	CValueGradientDlg *GradDlg ;
+	// the difault value for new values creation. Must be filled by the instancier
+	T DefaultValue ;
+
+	/// a function that can display a value in a gradient, with the given offset. Deriver must define this
+	virtual void displayValue(CDC *dc, uint index, sint x, sint y)  = 0;
+
+	
+	/// inherited from IPSWrapper
+	virtual T get(void) const { return Scheme->getValue(_CurrentEditedIndex) ; }
+	virtual void set(const T &v)
+	{
+		T *tab = new T[Scheme->getNumValues()] ;
+		Scheme->getValues(tab) ;
+		tab[_CurrentEditedIndex] = v ;
+		Scheme->setValues(tab, Scheme->getNumValues(), Scheme->getNumstages()) ;
+		delete[] tab ;
+		GradDlg->invalidateGrad() ;
+	}
+	
+	/** must provide a dialog for the edition of one value (only ONE exist at a time)
+	 * \param index the index of the value in the dialog
+	 * \grad the dlg that called this method (deriver can ask a redraw then)
+	 */
+	virtual CEditAttribDlg *createDialog(uint index, CValueGradientDlg *grad)
+	{						
+		E *dlg = new E(Id) ;
+		dlg->setWrapper(this) ;		
+		_CurrentEditedIndex = index ;
+		return dlg ;
+	}
+	/// a function that can add, remove, or insert a new element in the gradient
+	virtual void modifyGradient(TAction action, uint index)
+	{
+		
+		T *tab = new T[Scheme->getNumValues() + 1] ; // +1 is for the add / insert case
+		Scheme->getValues(tab) ;
+
+		switch(action)
+		{
+			case IValueGradientDlgClient::Add:
+				tab[Scheme->getNumValues()] = DefaultValue ;
+				Scheme->setValues(tab, Scheme->getNumValues() + 1, Scheme->getNumstages()) ;
+			break ;
+			case IValueGradientDlgClient::Insert:
+				memcpy(tab + (index + 1), tab + index, sizeof(T) * (Scheme->getNumValues() - index)) ;
+				tab[index] = DefaultValue ;
+				Scheme->setValues(tab, Scheme->getNumValues() + 1, Scheme->getNumstages()) ;
+			break ;
+			case IValueGradientDlgClient::Delete:
+				memcpy(tab + index, tab + index + 1, sizeof(T) * (Scheme->getNumValues() - index - 1)) ;
+				Scheme->setValues(tab, Scheme->getNumValues() - 1, Scheme->getNumstages()) ;
+			break ;
+		}
+		delete[] tab ;
+	}		
+	virtual uint32 getSchemeSize(void) const { return Scheme->getNumValues() ; }
+protected:
+		// index of the value OF the current dialog that exist
+		uint32 _CurrentEditedIndex ;	
+} ;
+
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CAttribDlg dialog
@@ -189,8 +357,10 @@ void CAttribDlg::schemeValueUpdate()
 	}
 
 
-	_NbCyclesDlg->setReader(NbCyclesReader, this) ;
-	_NbCyclesDlg->setWriter(NbCyclesWriter, this) ;
+	
+	_NbCyclesDlg->setWrapper(&_NbCyclesWrapper) ;
+	_NbCyclesWrapper.Dlg = this ;
+	
 	_NbCyclesDlg->updateRange() ;
 	_NbCyclesDlg->updateValueFromReader() ;
 
@@ -271,433 +441,291 @@ END_MESSAGE_MAP()
 ////////////////////////////////////
 
 
-//////////////////////////////////////////////////////////
-// WRAPPERS FOR THE FLOAT BLENDING EDITION DIALOG       ///
-//////////////////////////////////////////////////////////
+
+	//////////////////////////////////////////////////////////
+	// FLOAT GRADIENT EDITION INTERFACE						//
+	//////////////////////////////////////////////////////////
 
 
-struct BlendFloatCallBackInfo
-{
-	// Float 0 or 1 being edited
-	uint FloatIndex ;
-	// the scheme being edited
-	NL3D::CPSFloatBlender *Scheme ;
-} ;
-
-/// allow the blend dialog to read a Float from the scheme
-float BlendFloatDlgReader(void *lParam)
-{
-	float c1, c2 ;
-	BlendFloatCallBackInfo *bccbi = (BlendFloatCallBackInfo *) lParam ;
-	((BlendFloatCallBackInfo *) lParam)->Scheme->_F.getValues(c1, c2) ;
-	return (bccbi->FloatIndex == 0) ? c1 : c2 ;
-}
-
-/// allow the blend dialog to write a Float to the scheme
-void BlendFloatDlgWriter(float col, void *lParam)
-{
-	float c1, c2 ;
-	BlendFloatCallBackInfo *bccbi = (BlendFloatCallBackInfo *) lParam ;
-	bccbi->Scheme->_F.getValues(c1, c2) ;
-	if (bccbi->FloatIndex == 0)
+	class CFloatGradientDlgWrapper : public CValueGradientDlgClientT<float, CEditableRangeFloat>
 	{
-		c1 = col ;
-	}
-	else
+	public:	
+		/// a function that can display a value in a gradient, with the given offset. Deriver must define this
+		void displayValue(CDC *dc, uint index, sint x, sint y)
+		{		
+			
+			CString out ;
+			out.Format("%g",  Scheme->getValue(index) ) ;
+			dc->TextOut(x + 10, y + 4, out) ;
+		}
+	} ;
+
+
+
+	CAttribDlgFloat::CAttribDlgFloat(const std::string &valueID, float minRange, float maxRange)
+				:  CAttribDlgT<float>(valueID), _MinRange(minRange), _MaxRange(maxRange)			  
 	{
-		c2 = col ;
+			
 	}
-	bccbi->Scheme->_F.setValues(c1, c2) ;
-}
 
-/** create the sub dialog (one per Float) for the blending edition dialog 
- */
-  
-CEditAttribDlg *  BlendFloatDlgCreator(uint index, void *lParam, void **toDelete) 
-{ 
-	nlassert(lParam) ;	
-	BlendFloatCallBackInfo *bccbi = new BlendFloatCallBackInfo ;
-	bccbi->FloatIndex = index ;
-	bccbi->Scheme = (NL3D::CPSFloatBlender *) lParam ;
+	CEditAttribDlg *CAttribDlgFloat::createConstantValueDlg()
+	{
+		CEditableRangeFloat *erf = new CEditableRangeFloat(_CstValueId, _MinRange, _MaxRange) ;
+		erf->setWrapper(_Wrapper) ;		
+		return erf ;
+	}
 
-	CEditableRangeFloat *dlg = new CEditableRangeFloat(std::string("float blender"), 0.1f, 10.1f) ;
-	dlg->setWriter(BlendFloatDlgWriter, bccbi ) ;
-	dlg->setReader(BlendFloatDlgReader, bccbi ) ;
-	*toDelete = bccbi ;
-	return dlg ;
-}
+	uint CAttribDlgFloat::getNumScheme(void) const
+	{
+		return 2 ;
+	}
+	std::string CAttribDlgFloat::getSchemeName(uint index) const
+	{
+		nlassert(index < 2) ;
+		switch (index)
+		{
+			case 0 :
+				return std::string("value blender") ;
+			break ;
+			case 1 :
+				return std::string("values gradient") ;
+			break ;
+			default:
+				return std::string("") ;
+			break ;
+		}
+	}
+	void CAttribDlgFloat::editScheme(void)
+	{
+		const NL3D::CPSAttribMaker<float> *scheme = _SchemeWrapper->getScheme() ;	
 
-
-CAttribDlgFloat::CAttribDlgFloat(const std::string &valueID, float minRange, float maxRange)
-			:  CAttribDlgT<float>(valueID), _MinRange(minRange), _MaxRange(maxRange)			  
-{
+		if (dynamic_cast<const NL3D::CPSFloatBlender *>(scheme)) 
+		{				
+			CValueBlenderDlgClientT<float, CEditableRangeFloat> myInterface ;
+			myInterface.Id = std::string("FLOAT_BLENDER") ;
+			myInterface.Scheme = (NL3D::CPSValueBlender<float> *) scheme ;
+			
+			CValueBlenderDlg bd(&myInterface, this) ;
+			bd.DoModal() ;
 		
-}
+		}
+		if (dynamic_cast<const NL3D::CPSFloatGradient *>(scheme)) 
+		{
+			CFloatGradientDlgWrapper wrapper ;
+			wrapper.Scheme = &(((NL3D::CPSFloatGradient *) (_SchemeWrapper->getScheme()) )->_F) ;
+			CValueGradientDlg gd(&wrapper, this) ;		
+			wrapper.GradDlg = &gd ;
+			wrapper.DefaultValue = 0.f ;
+			wrapper.Id = std::string("FLOAT GRADIENT") ;
 
-CEditAttribDlg *CAttribDlgFloat::createConstantValueDlg()
-{
-	CEditableRangeFloat *erf = new CEditableRangeFloat(_CstValueId, _MinRange, _MaxRange) ;
-	erf->setReader(_Reader, _ReaderParam) ;
-	erf->setWriter(_Writer, _WriterParam) ;
-	return erf ;
-}
-
-uint CAttribDlgFloat::getNumScheme(void) const
-{
-	return 2 ;
-}
-std::string CAttribDlgFloat::getSchemeName(uint index) const
-{
-	nlassert(index < 2) ;
-	switch (index)
-	{
-		case 0 :
-			return std::string("value blender") ;
-		break ;
-		case 1 :
-			return std::string("values gradient") ;
-		break ;
-		default:
-			return std::string("") ;
-		break ;
-	}
-}
-void CAttribDlgFloat::editScheme(void)
-{
-	const NL3D::CPSAttribMaker<float> *scheme = _SchemeReader(_SchemeReaderParam) ;	
-
-	if (dynamic_cast<const NL3D::CPSFloatBlender *>(scheme)) 
-	{				
-		CValueBlenderDlg *bd = new CValueBlenderDlg(BlendFloatDlgCreator, _SchemeReader(_SchemeReaderParam), this) ;
-		bd->DoModal() ;
-	
-	}
-	if (dynamic_cast<const NL3D::CPSFloatGradient *>(scheme)) 
-	{
+			gd.DoModal() ;
+			
+		}
 		
 	}
-	
-}
 
-sint CAttribDlgFloat::getCurrentScheme(void) const
-{
-	const NL3D::CPSAttribMaker<float> *scheme = _SchemeReader(_SchemeReaderParam) ;	
-
-	if (dynamic_cast<const NL3D::CPSFloatBlender *>(scheme)) 
+	sint CAttribDlgFloat::getCurrentScheme(void) const
 	{
-		return 0 ;
-	}
-	if (dynamic_cast<const NL3D::CPSFloatGradient *>(scheme)) 
-	{
-		return 1 ;
-	}
-	return -1 ;
-}
+		const NL3D::CPSAttribMaker<float> *scheme = _SchemeWrapper->getScheme() ;	
 
-
-void CAttribDlgFloat::setCurrentScheme(uint index)
-{
-	nlassert(index < 2) ;
-
-
-	NL3D::CPSAttribMaker<float> *scheme = NULL ;
-
-	switch (index)
-	{
-		case 0 :
-			scheme = new NL3D::CPSFloatBlender ;
-		break ;
-		case 1 :
-			scheme = new NL3D::CPSFloatGradient ;
-		break ;
-		default:	
-		break ;
+		if (dynamic_cast<const NL3D::CPSFloatBlender *>(scheme)) 
+		{
+			return 0 ;
+		}
+		if (dynamic_cast<const NL3D::CPSFloatGradient *>(scheme)) 
+		{
+			return 1 ;
+		}
+		return -1 ;
 	}
 
-	if (scheme)
+
+	void CAttribDlgFloat::setCurrentScheme(uint index)
 	{
-		_SchemeWriter(scheme, _SchemeWriterParam) ;
+		nlassert(index < 2) ;
+
+
+		NL3D::CPSAttribMaker<float> *scheme = NULL ;
+
+		switch (index)
+		{
+			case 0 :
+				scheme = new NL3D::CPSFloatBlender ;
+			break ;
+			case 1 :
+				scheme = new NL3D::CPSFloatGradient ;
+			break ;
+			default:	
+			break ;
+		}
+
+		if (scheme)
+		{
+			_SchemeWrapper->setScheme(scheme) ;
+		}
 	}
-}
 
 
 
 ///////////////////////
 // CRGBA attributes  //
 ///////////////////////
-
-//////////////////////////////////////////////////////////
-// WRAPPERS FOR THE COLOR BLENDING EDITION DIALOG       ///
-//////////////////////////////////////////////////////////
-
-
-struct BlendColorCallBackInfo
-{
-	// Color 0 or 1 being edited
-	uint ColorIndex ;
-	// the scheme being edited
-	NL3D::CPSColorBlender *Scheme ;
-} ;
-
-/// allow the blend dialog to read a Color from the scheme
-static CRGBA BlendColorDlgReader(void *lParam)
-{
-	CRGBA c1, c2 ;
-	BlendColorCallBackInfo *bccbi = (BlendColorCallBackInfo *) lParam ;
-	((BlendColorCallBackInfo *) lParam)->Scheme->_F.getValues(c1, c2) ;
-	return (bccbi->ColorIndex == 0) ? c1 : c2 ;
-}
-
-/// allow the blend dialog to write a Color to the scheme
-static void BlendColorDlgWriter(CRGBA col, void *lParam)
-{
-	CRGBA c1, c2 ;
-	BlendColorCallBackInfo *bccbi = (BlendColorCallBackInfo *) lParam ;
-	bccbi->Scheme->_F.getValues(c1, c2) ;
-	if (bccbi->ColorIndex == 0)
-	{
-		c1 = col ;
-	}
-	else
-	{
-		c2 = col ;
-	}
-	bccbi->Scheme->_F.setValues(c1, c2) ;	
-}
-
-/** create the sub dialog (one per Color) for the blending Blendion dialog 
- */
-  
-CEditAttribDlg *  BlendColorDlgCreator(uint index, void *lParam, void **infoToDelete) 
-{ 
-	nlassert(lParam) ;	
-	BlendColorCallBackInfo *bccbi = new BlendColorCallBackInfo ;
-	bccbi->ColorIndex = index ;
-	bccbi->Scheme = (NL3D::CPSColorBlender *) lParam ;
-
-	CColorEdit *dlg = new CColorEdit ;
-	dlg->setWriter(BlendColorDlgWriter, bccbi ) ;
-	dlg->setReader(BlendColorDlgReader, bccbi ) ;
-
-	*infoToDelete = bccbi ;
-
-	return dlg ;
-}
-
-//////////////////////////////////////////////////////////
-// WRAPPERS FOR THE GRADIENT EDITION DIALOG            ///
-//////////////////////////////////////////////////////////
-
-struct GradientColorCallBackInfo
-{
-	// Color 0 or 1 being edited
-	uint ColorIndex ;
-	// the scheme being edited
-	NL3D::CPSColorGradient *Scheme ;
-
-	// the gradient dialog
-	CValueGradientDlg *GradDlg ;
-} ;
-
-
-/// allow the blend dialog to read a Color from the scheme
-static CRGBA GradientColorDlgReader(void *lParam)
-{	
-	GradientColorCallBackInfo *bccbi = (GradientColorCallBackInfo *) lParam ;
-	return bccbi->Scheme->_F.getValue(bccbi->ColorIndex) ;
-}
-static void GradientColorDlgWriter(CRGBA col, void *lParam)
-{
-	GradientColorCallBackInfo *bccbi = (GradientColorCallBackInfo *) lParam ;
-	CRGBA *tab = new CRGBA[bccbi->Scheme->_F.getNumValues()] ;
-	bccbi->Scheme->_F.getValues(tab) ;
-	tab[bccbi->ColorIndex] = col ;
-	bccbi->Scheme->_F.setValues(tab, bccbi->Scheme->_F.getNumValues(), bccbi->Scheme->_F.getNumstages()) ;
-	delete[] tab ;
-	bccbi->GradDlg->invalidateGrad() ;
-}
-static CEditAttribDlg *GradientColorDlgCreator(uint index, void *lParam, void **infoToDelete, CValueGradientDlg *gradDialog)
-{
-	nlassert(lParam) ;	
-	GradientColorCallBackInfo *bccbi = new GradientColorCallBackInfo ;
-	bccbi->ColorIndex = index ;
-	bccbi->Scheme = (NL3D::CPSColorGradient *) lParam ;
-	CColorEdit *dlg = new CColorEdit ;
-	dlg->setWriter(GradientColorDlgWriter, bccbi ) ;
-	dlg->setReader(GradientColorDlgReader, bccbi ) ;
-	bccbi->GradDlg = gradDialog ;
-	*infoToDelete = bccbi ;
-	return dlg ;	
-}
-void GradientColorModify(CValueGradientDlg::TAction action, uint index, void *lParam)
-{
-	NL3D::CPSValueGradientFunc<CRGBA> &scheme = ((NL3D::CPSValueGradient<CRGBA> *) lParam)->_F ;
-	CRGBA *tab = new CRGBA[scheme.getNumValues() + 1] ; // +1 is for the add / insert case
-	scheme.getValues(tab) ;
-
-	switch(action)
-	{
-		case CValueGradientDlg::Add:
-			tab[scheme.getNumValues()] = CRGBA::White ;
-			scheme.setValues(tab, scheme.getNumValues() + 1, scheme.getNumstages()) ;
-		break ;
-		case CValueGradientDlg::Insert:
-			memcpy(tab + (index + 1), tab + index, sizeof(CRGBA) * (scheme.getNumValues() - index)) ;
-			tab[index] = CRGBA::White ;
-			scheme.setValues(tab, scheme.getNumValues() + 1, scheme.getNumstages()) ;
-		break ;
-		case CValueGradientDlg::Delete:
-			memcpy(tab + index, tab + index + 1, sizeof(CRGBA) * (scheme.getNumValues() - index - 1)) ;
-			scheme.setValues(tab, scheme.getNumValues() - 1, scheme.getNumstages()) ;
-		break ;
-	}
-	delete[] tab ;
-}
-void GradientColorDisplay(CDC *dc, uint index, sint x, sint y, void *lParam)
-{
-
-	NL3D::CPSValueGradientFunc<CRGBA> &scheme = ((NL3D::CPSValueGradient<CRGBA> *) lParam)->_F ;
-
-	CRGBA col = scheme.getValue(index) ;
-
-	RECT r ;
-
-	r.left = x + 10;
-	r.top = y + 10 ;
-	r.right = x + 53 ;
-	r.bottom = y + 29 ;
-
-	CBrush b ;
-	b.CreateSolidBrush(RGB(col.R, col.G, col.B)) ;
-	dc->FillRect(&r, &b) ;	
-	b.DeleteObject() ;
-
-
-	b.CreateSolidBrush(RGB(0, 0, 0)) ;
-	CGdiObject *old = dc->SelectObject(&b) ;
 	
-	r.top = y + 10 ; r. bottom = y + 29 ;
-	r.right = x + 53; r.left = x + 10 ;
-	dc->FrameRect(&r, &b) ;
-	dc->SelectObject(old) ;
-	b.DeleteObject() ;
-}
+
+	//////////////////////////////////////////////////////////
+	// COLOR GRADIENT EDITION INTERFACE						//
+	//////////////////////////////////////////////////////////
 
 
-
-
-
-////////////////////////////
-
-CAttribDlgRGBA::CAttribDlgRGBA(const std::string &valueID)  : CAttribDlgT<CRGBA>(valueID)
-{
-}
-
-uint CAttribDlgRGBA::getNumScheme(void) const
-{
-	return 3 ;
-}
-
-std::string CAttribDlgRGBA::getSchemeName(uint index) const
-{
-	nlassert(index < 3) ;
-	switch (index)
+	class CColorGradientDlgWrapper : public CValueGradientDlgClientT<CRGBA, CColorEdit>
 	{
-		case 0 :
-			return std::string("color sampled blender") ;
-		break ;
-		case 1 :
-			return std::string("color gradient") ;
-		break ;
-		case 2 :
-			return std::string("color exact blender") ;
-		break ;
-		default:
-			return std::string("") ;
-		break ;
-	}
-}
+	public:	
+		/// a function that can display a value in a gradient, with the given offset. Deriver must define this
+		void displayValue(CDC *dc, uint index, sint x, sint y)
+		{		
+			CRGBA col = Scheme->getValue(index) ;
+
+			RECT r ;
+
+			r.left = x + 10;
+			r.top = y + 10 ;
+			r.right = x + 53 ;
+			r.bottom = y + 29 ;
+
+			CBrush b ;
+			b.CreateSolidBrush(RGB(col.R, col.G, col.B)) ;
+			dc->FillRect(&r, &b) ;	
+			b.DeleteObject() ;
+
+			b.CreateSolidBrush(RGB(0, 0, 0)) ;
+			CGdiObject *old = dc->SelectObject(&b) ;	
+			r.top = y + 10 ; r. bottom = y + 29 ;
+			r.right = x + 53; r.left = x + 10 ;
+			dc->FrameRect(&r, &b) ;
+			dc->SelectObject(old) ;
+			b.DeleteObject() ;
+		}
+	} ;
 
 
 
-void CAttribDlgRGBA::editScheme(void)
-{	
-	const NL3D::CPSAttribMaker<CRGBA> *scheme = _SchemeReader(_SchemeReaderParam) ;	
+	////////////////////////////
 
-	if (dynamic_cast<const NL3D::CPSColorBlender *>(scheme)) 
-	{				
-		CValueBlenderDlg *bd = new CValueBlenderDlg(BlendColorDlgCreator, _SchemeReader(_SchemeReaderParam), this) ;
-		bd->DoModal() ;
-	
-	}
-	if (dynamic_cast<const NL3D::CPSColorGradient *>(scheme)) 
+	CAttribDlgRGBA::CAttribDlgRGBA(const std::string &valueID)  : CAttribDlgT<CRGBA>(valueID)
 	{
-		NL3D::CPSColorGradient *scheme = (NL3D::CPSColorGradient *) _SchemeReader(_SchemeReaderParam) ;
-		CValueGradientDlg *gd = new CValueGradientDlg(GradientColorDlgCreator, GradientColorModify, GradientColorDisplay
-													  , scheme, scheme, scheme
-													  , scheme->_F.getNumValues()
-													  , this) ;		
-		gd->DoModal() ;
 	}
-	if (dynamic_cast<const NL3D::CPSColorBlenderExact *>(scheme)) 
+
+	uint CAttribDlgRGBA::getNumScheme(void) const
 	{
+		return 3 ;
+	}
+
+	std::string CAttribDlgRGBA::getSchemeName(uint index) const
+	{
+		nlassert(index < 3) ;
+		switch (index)
+		{
+			case 0 :
+				return std::string("color sampled blender") ;
+			break ;
+			case 1 :
+				return std::string("color gradient") ;
+			break ;
+			case 2 :
+				return std::string("color exact blender") ;
+			break ;
+			default:
+				return std::string("") ;
+			break ;
+		}
+	}
+
+
+
+	void CAttribDlgRGBA::editScheme(void)
+	{	
+		const NL3D::CPSAttribMaker<CRGBA> *scheme = _SchemeWrapper->getScheme() ;	
+
+		if (dynamic_cast<const NL3D::CPSColorBlender *>(scheme)) 
+		{				
+			CValueBlenderDlgClientT<CRGBA, CColorEdit> myInterface ;
+			myInterface.Id = std::string("RGBA_BLENDER") ;
+			myInterface.Scheme = (NL3D::CPSValueBlender<CRGBA> *) scheme ;
+			
+			CValueBlenderDlg bd(&myInterface, this) ;
+			bd.DoModal() ;
 		
+		}
+		if (dynamic_cast<const NL3D::CPSColorGradient *>(scheme)) 
+		{
+			CColorGradientDlgWrapper wrapper ;
+			wrapper.Scheme = &(((NL3D::CPSColorGradient *) (_SchemeWrapper->getScheme()) )->_F) ;
+			CValueGradientDlg gd(&wrapper, this) ;		
+			wrapper.GradDlg = &gd ;
+			wrapper.DefaultValue = CRGBA::White ;
+			wrapper.Id = std::string("RGBA_GRADIENT") ;
+
+			gd.DoModal() ;
+		}
+		if (dynamic_cast<const NL3D::CPSColorBlenderExact *>(scheme)) 
+		{
+			
+		}
 	}
-}
 
-void CAttribDlgRGBA::setCurrentScheme(uint index)
-{
-	nlassert(index < 3) ;
-
-	NL3D::CPSAttribMaker<CRGBA> *scheme = NULL ;
-
-	switch (index)
+	void CAttribDlgRGBA::setCurrentScheme(uint index)
 	{
-		case 0 :
-			scheme = new NL3D::CPSColorBlender ;
-		break ;
-		case 1 :
-			scheme = new NL3D::CPSColorGradient ;
-		break ;
-		case 2 :
-			scheme = new NL3D::CPSColorBlenderExact ;
-		break ;
-		default:	
-		break ;
+		nlassert(index < 3) ;
+
+		NL3D::CPSAttribMaker<CRGBA> *scheme = NULL ;
+
+		switch (index)
+		{
+			case 0 :
+				scheme = new NL3D::CPSColorBlender ;
+			break ;
+			case 1 :
+				scheme = new NL3D::CPSColorGradient ;
+			break ;
+			case 2 :
+				scheme = new NL3D::CPSColorBlenderExact ;
+			break ;
+			default:	
+			break ;
+		}
+
+		if (scheme)
+		{
+			_SchemeWrapper->setScheme(scheme) ;
+		}
 	}
 
-	if (scheme)
+	sint CAttribDlgRGBA::getCurrentScheme(void) const
 	{
-		_SchemeWriter(scheme, _SchemeWriterParam) ;
+		const NL3D::CPSAttribMaker<CRGBA> *scheme = _SchemeWrapper->getScheme() ;	
+
+		if (dynamic_cast<const NL3D::CPSColorBlender *>(scheme)) 
+		{
+			return 0 ;
+		}
+		if (dynamic_cast<const NL3D::CPSColorGradient *>(scheme)) 
+		{
+			return 1 ;
+		}
+		if (dynamic_cast<const NL3D::CPSColorBlenderExact *>(scheme)) 
+		{
+			return 2 ;
+		}
+		return -1 ;
 	}
-}
 
-sint CAttribDlgRGBA::getCurrentScheme(void) const
-{
-	const NL3D::CPSAttribMaker<CRGBA> *scheme = _SchemeReader(_SchemeReaderParam) ;	
-
-	if (dynamic_cast<const NL3D::CPSColorBlender *>(scheme)) 
+	CEditAttribDlg *CAttribDlgRGBA::createConstantValueDlg()
 	{
-		return 0 ;
-	}
-	if (dynamic_cast<const NL3D::CPSColorGradient *>(scheme)) 
-	{
-		return 1 ;
-	}
-	if (dynamic_cast<const NL3D::CPSColorBlenderExact *>(scheme)) 
-	{
-		return 2 ;
-	}
-	return -1 ;
-}
+		CColorEdit *ce = new CColorEdit(std::string("COLOR_ATTRIB_EDIT")) ;
 
-CEditAttribDlg *CAttribDlgRGBA::createConstantValueDlg()
-{
-	CColorEdit *ce = new CColorEdit ;
-
-	ce->setReader(_Reader, _ReaderParam) ;
-	ce->setWriter(_Writer, _WriterParam) ;
-	return ce ;
-}
+		ce->setWrapper(_Wrapper) ;
+	
+		return ce ;
+	}
 
 

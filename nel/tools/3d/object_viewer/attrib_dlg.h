@@ -1,3 +1,28 @@
+/** \file attrib_dlg.h
+ * <File description>
+ *
+ * $Id: attrib_dlg.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
 #if !defined(AFX_ATTRIB_DLG_H__DF35743E_C8B4_4218_9C42_A3DF4126BEF2__INCLUDED_)
 #define AFX_ATTRIB_DLG_H__DF35743E_C8B4_4218_9C42_A3DF4126BEF2__INCLUDED_
 
@@ -7,12 +32,14 @@
 
 
 #include "nel/misc/rgba.h"
+#include "editable_range.h"
+
+
 
 using NLMISC::CRGBA ;
 
 
-class CEditableRange ;
-class CEditableRangeFloat ;
+
 class CEditAttribDlg ;
 
 
@@ -112,6 +139,16 @@ protected:
 	// the dialog used to tune the nb cycles param (when available)
 	CEditableRangeFloat *_NbCyclesDlg ;	
 
+	// wrapper to tune the number of cycles
+	struct tagNbCyclesWrapper : public IPSWrapperFloat
+	{
+			CAttribDlg *Dlg ;
+			float get(void) const { return Dlg->getSchemeNbCycles() ; }
+			void set(const float &v) { Dlg->setSchemeNbCycles(v) ; }
+	} _NbCyclesWrapper ;
+
+
+
 	// the dialog used to tune a constant value
 	CEditAttribDlg *_CstValueDlg ;
 
@@ -136,21 +173,14 @@ template <typename T> class CAttribDlgT : public CAttribDlg
 {	
 public:
 
-	CAttribDlgT(const std::string &valueID) : CAttribDlg(valueID), _Reader(NULL)
-											, _Writer(NULL), _SchemeWriter(NULL), _SchemeReader(NULL)
+	CAttribDlgT(const std::string &valueID) : CAttribDlg(valueID), _Wrapper(NULL)
+											, _SchemeWrapper(NULL)
 	{
 	}
 		
-	// set a function to get back the constant datas (this may be a wrapper to an existing class)
-	void setReader(T (* reader) (void *lParam), void *lParam) { _Reader = reader ; _ReaderParam =  lParam ; }
-	// set a function to write new constant datas
-	void setWriter(void (* writer) (T value, void *lParam), void *lParam) { _Writer = writer ; _WriterParam = lParam ; }
 
-	// set a function to get back the float scheme
-	void setSchemeReader(NL3D::CPSAttribMaker<T> *(* reader) (void *lParam), void *lParam) { _SchemeReader = reader ; _SchemeReaderParam =  lParam ; }
-	// set a function to set a new float scheme
-	void setSchemeWriter(void (* writer) (NL3D::CPSAttribMaker<T> *scheme, void *lParam), void *lParam) { _SchemeWriter = writer ; _SchemeWriterParam = lParam ; }
-
+	void setWrapper(IPSWrapper<T> *wrapper) { nlassert(wrapper) ; _Wrapper = wrapper ; }
+	void setSchemeWrapper(IPSSchemeWrapper<T> *schemeWrapper) { nlassert(schemeWrapper) ; _SchemeWrapper = schemeWrapper ; }
 	
 	// inherited from CAttribDlg
 	virtual uint getNumScheme(void) const = 0 ;	
@@ -159,19 +189,19 @@ public:
 	virtual void setCurrentScheme(uint index) = 0 ;
 	virtual sint getCurrentScheme(void) const  = 0 ;
 
-	virtual bool hasSchemeCustomInput(void) const { return _SchemeReader(_SchemeReaderParam)->hasCustomInput() ; }
-	virtual uint getSchemeInput(void) const { return (uint)  _SchemeReader(_SchemeReaderParam)->getInput() ; }	
-	virtual void setSchemeInput(uint index) { _SchemeReader(_SchemeReaderParam)->setInput((NL3D::CPSLocated::AttributeType) index) ; }
+	virtual bool hasSchemeCustomInput(void) const { return _SchemeWrapper->getScheme()->hasCustomInput() ; }
+	virtual uint getSchemeInput(void) const { return (uint)  _SchemeWrapper->getScheme()->getInput() ; }	
+	virtual void setSchemeInput(uint index) { _SchemeWrapper->getScheme()->setInput((NL3D::CPSLocated::AttributeType) index) ; }
 
 
-	virtual float getSchemeNbCycles(void) const { return _SchemeReader(_SchemeReaderParam)->getNbCycles() ; }
-	virtual void setSchemeNbCycles(float nbCycles) { _SchemeReader(_SchemeReaderParam)->setNbCycles(nbCycles) ; }
+	virtual float getSchemeNbCycles(void) const { return _SchemeWrapper->getScheme()->getNbCycles() ; }
+	virtual void setSchemeNbCycles(float nbCycles) { _SchemeWrapper->getScheme()->setNbCycles(nbCycles) ; }
 
 
 	
-	virtual bool isSchemeClamped(void) const { return _SchemeReader(_SchemeReaderParam)->getClamping() ; }
-	virtual void clampScheme(bool clamped = true) { _SchemeReader(_SchemeReaderParam)->setClamping(true) ; }	
-	virtual bool isClampingSupported(void) const { return _SchemeReader(_SchemeReaderParam)->isClampingSupported() ; } ;
+	virtual bool isSchemeClamped(void) const { return _SchemeWrapper->getScheme()->getClamping() ; }
+	virtual void clampScheme(bool clamped = true) { _SchemeWrapper->getScheme()->setClamping(true) ; }	
+	virtual bool isClampingSupported(void) const { return _SchemeWrapper->getScheme()->isClampingSupported() ; } ;
 
 
 
@@ -180,21 +210,17 @@ protected:
 
 	virtual bool useScheme(void) const
 	{
-		nlassert(_SchemeReader) ;
-		return(_SchemeReader(_SchemeReaderParam) != NULL) ;
+		nlassert(_SchemeWrapper) ;
+		return(_SchemeWrapper->getScheme() != NULL) ;
 	}
 
 
 public:
-	// wrappers to set/get a constant float value, or a float scheme
-	T(* _Reader)(void *lParam)  ;
-	void(* _Writer) (T value, void *lParam)  ;
-	NL3D::CPSAttribMaker<T> *(* _SchemeReader) (void *lParam) ; 
-	void (* _SchemeWriter) (NL3D::CPSAttribMaker<T> *scheme, void *lParam) ;
+	// wrapper to set/get a constant float
+	IPSWrapper<T> *_Wrapper ;
 
-	// wrappers user parameters
-	void *_ReaderParam, *_WriterParam
-		 , *_SchemeReaderParam, *_SchemeWriterParam ;
+	// wrapper to set/get a scheme
+	IPSSchemeWrapper<T> *_SchemeWrapper	;
 
 } ;
 

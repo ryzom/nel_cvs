@@ -57,7 +57,6 @@ LINK32=link.exe
 # ADD LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 # SUBTRACT LINK32 /pdb:none
 
-
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
 
 # PROP BASE Use_MFC 6
@@ -270,6 +269,10 @@ SOURCE=.\bmp00009.bmp
 # End Source File
 # Begin Source File
 
+SOURCE=.\bmp00010.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\object_viewer.rc2
 # End Source File
 # Begin Source File
@@ -359,6 +362,10 @@ SOURCE=.\particle_tree_ctrl.cpp
 # Begin Source File
 
 SOURCE=.\particle_tree_ctrl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ps_wrapper.h
 # End Source File
 # Begin Source File
 

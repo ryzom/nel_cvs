@@ -357,6 +357,8 @@ void CNel_launcherDlg::launch (const string &str)
 
 	string rawargs = getValue (str, "nelArgs");
 
+	nlinfo ("extracting string '%s'", str.c_str ());
+
 	// convert the command line in an array of string for the _execvp() function
 
 	vector<string> vargs;
@@ -395,7 +397,6 @@ void CNel_launcherDlg::launch (const string &str)
 		args[i+1] = vargs[i].c_str ();
 	}
 	args[i+1] = NULL;
-
 
 	// execute, should better use CreateProcess()
 

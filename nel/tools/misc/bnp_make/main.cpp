@@ -3,6 +3,7 @@
 #include <io.h>
 #include <direct.h>
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
 
 #include <vector>
 #include <string>
@@ -138,9 +139,12 @@ void packSubRecurse ()
 		}
 		else if ((strcmp(findData.name, ".") != 0) && (strcmp(findData.name, "..") != 0))
 		{
-			chdir (findData.name);
+			// Should not failed
+			nlassert (chdir (findData.name) != -1);
 			packSubRecurse ();
-			chdir (sCurDir);
+
+			// Should not failed
+			nlassert (chdir (sCurDir) != -1);
 		}
 		if (_findnext (hFind, &findData) == -1)
 			break;
@@ -207,38 +211,57 @@ int main (int nNbArg, char **ppArgs)
 	
 			// go to the dest path
 			char sDestDir[MAX_PATH];
-			chdir (ppArgs[3]);
-			getcwd (sDestDir, MAX_PATH);
-			
-			// restore current path
-			chdir (sCurDir);
-			// go to the source dir
-			chdir (ppArgs[2]);
-			getcwd (sCurDir, MAX_PATH);
-			
-			gDestBNPFile = string(sDestDir) + '\\';
-
-			if(nNbArg == 5)
+			if (chdir (ppArgs[3]) != -1)
 			{
-				gDestBNPFile += ppArgs[4];
-				// add ext if necessary
-				if (string(ppArgs[4]).find(".") == string::npos)
-					gDestBNPFile += string(".bnp");
+				getcwd (sDestDir, MAX_PATH);
+				
+				// restore current path, should not failed
+				nlassert (chdir (sCurDir) != -1);
+
+				// go to the source dir
+				if (chdir (ppArgs[2]) != -1)
+				{
+					getcwd (sCurDir, MAX_PATH);
+					
+					gDestBNPFile = string(sDestDir) + '\\';
+
+					if(nNbArg == 5)
+					{
+						gDestBNPFile += ppArgs[4];
+						// add ext if necessary
+						if (string(ppArgs[4]).find(".") == string::npos)
+							gDestBNPFile += string(".bnp");
+					}
+					else
+					{
+						char *pos = strrchr (sCurDir, '\\');
+						if (pos != NULL)
+						{
+							gDestBNPFile += string(pos+1);
+						}
+						// get the dest file name
+						gDestBNPFile += string(".bnp");
+					}
+				}
+				else
+				{
+					nlwarning ("ERROR (bnp_make.exe) : can't set current directory to %s", ppArgs[2]);
+					return -1;
+				}
 			}
 			else
 			{
-				char *pos = strrchr (sCurDir, '\\');
-				if (pos != NULL)
-				{
-					gDestBNPFile += string(pos+1);
-				}
-				// get the dest file name
-				gDestBNPFile += string(".bnp");
+				nlwarning ("ERROR (bnp_make.exe) : can't set current directory to %s", ppArgs[3]);
+				return -1;
 			}
 		}
 		else
 		{
-			chdir (ppArgs[2]);
+			if (chdir (ppArgs[2]) == -1)
+			{
+				nlwarning ("ERROR (bnp_make.exe) : can't set current directory to %s", ppArgs[2]);
+				return -1;
+			}
 			getcwd (sCurDir, MAX_PATH);
 			gDestBNPFile = string(sCurDir) + string(".bnp");
 		}
@@ -268,9 +291,16 @@ int main (int nNbArg, char **ppArgs)
 			for (; i < (int)wholeName.size(); ++i)
 				gDestBNPFile += wholeName[i];
 			char sCurDir[MAX_PATH];
-			chdir (path.c_str());
-			getcwd (sCurDir, MAX_PATH);
-			path = sCurDir;
+			if (chdir (path.c_str()) != -1)
+			{
+				getcwd (sCurDir, MAX_PATH);
+				path = sCurDir;
+			}
+			else
+			{
+				nlwarning ("ERROR (bnp_make.exe) : can't set current directory to %s", path.c_str());
+				return -1;
+			}
 		}
 		if (stricmp (gDestBNPFile.c_str()+gDestBNPFile.size()-4, ".bnp") != 0)
 		{

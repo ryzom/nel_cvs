@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.13 2002/10/10 13:03:28 berenguier Exp $
+ * $Id: particle_system_instance_user.h,v 1.14 2002/10/10 13:30:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -81,13 +81,22 @@ public:
 		virtual void		removePSObserver	(IPSObserver *observer);		
 		virtual uint		getNumID() const;		
 		virtual uint32		getID(uint index) const;		
-		virtual bool		getIDs(std::vector<uint32> &dest) const;		  
+		virtual bool		getIDs(std::vector<uint32> &dest) const;
+		virtual bool		setActive(uint32 id, bool active);
+		virtual bool		activateEmitters(bool active);		
 	// @}
 
 	// \name inherited from  CParticleSystemModel::IPSModelObserver
 	// @{
 		virtual void invalidPS(CParticleSystemModel *psm); 
 	// @}
+
+	// @{
+		virtual bool		   hasParticles() const;
+		virtual bool		   hasEmmiters() const;
+	// @}
+		virtual bool		   isShared() const;
+
 
 	// No-op for ParticleSystem
 	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);

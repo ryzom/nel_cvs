@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.15 2002/10/10 13:03:28 berenguier Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.16 2002/10/10 13:30:26 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,116 +27,132 @@
 
 #include "3d/particle_system_instance_user.h"
 #include "3d/particle_system.h"
+#include "3d/particle_system_shape.h"
 #include "3d/ps_emitter.h"
 
 
 namespace NL3D {
 
+
+//===================================================================
 CParticleSystemInstanceUser::CParticleSystemInstanceUser(CScene *scene, IModel *model) 
 								: CTransformUser(scene, model), _Invalidated(false)
 {
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-	psm->registerPSModelObserver(this) ;
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	psm->registerPSModelObserver(this);
 }
 
+//===================================================================
 void				CParticleSystemInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
 {
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	psm->getAABBox(bbox);
 }
 
+//===================================================================
 CParticleSystemInstanceUser::~CParticleSystemInstanceUser()
 {	
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-	psm->removePSModelObserver(this) ;		
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	psm->removePSModelObserver(this);		
 }
 
+//===================================================================
 bool		CParticleSystemInstanceUser::isSystemPresent(void) const
 {
-	if (_Invalidated) return false ; // the system is not even valid
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-	return psm->getPS() != NULL ;
+	if (_Invalidated) return false; // the system is not even valid
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	return psm->getPS() != NULL;
 }
 
+//===================================================================
 bool		CParticleSystemInstanceUser::getSystemBBox(NLMISC::CAABBox &bbox)
 {
-	if (_Invalidated) return false ;
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-	if (!psm->getPS()) return false ;
-	psm->getPS()->computeBBox(bbox) ;
-	return true ;
+	if (_Invalidated) return false;
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	if (!psm->getPS()) return false;
+	psm->getPS()->computeBBox(bbox);
+	return true;
 }
 
+//===================================================================
 void		CParticleSystemInstanceUser::setUserParam(uint index, float value)
 {	
-	nlassert(index < MaxPSUserParam) ; // invalid parameter index
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-	// psm->getPS()->setUserParam(index, value) ;
+	nlassert(index < MaxPSUserParam); // invalid parameter index
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	// psm->getPS()->setUserParam(index, value);
 	IAnimatedValue *av = psm->getValue(CParticleSystemModel::PSParam0 + index);
 	NLMISC::safe_cast<CAnimatedValueFloat *>(av)->Value = value;
 	psm->touch(CParticleSystemModel::PSParam0 + index, CParticleSystemModel::OwnerBit);	
 }
 
+//===================================================================
 float		CParticleSystemInstanceUser::getUserParam(uint index) const
 {
-	//nlassert(isSystemPresent())      ; // user : you forgot to check wether the system was present with isPresent() !!
-	nlassert(index < MaxPSUserParam) ; // invalid parameter index
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-	//return psm->getPS()->getUserParam(index) ;
+	//nlassert(isSystemPresent()); // user : you forgot to check wether the system was present with isPresent() !!
+	nlassert(index < MaxPSUserParam); // invalid parameter index
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	//return psm->getPS()->getUserParam(index);
 	IAnimatedValue *av = psm->getValue(CParticleSystemModel::PSParam0 + index);
 	return NLMISC::safe_cast<CAnimatedValueFloat *>(av)->Value;
 }
 
+//===================================================================
 bool		CParticleSystemInstanceUser::isValid(void) const
 {
-	return !_Invalidated ;
+	return !_Invalidated;
 }
 
+//===================================================================
 void		CParticleSystemInstanceUser::registerPSObserver(IPSObserver *observer)
 {
-	nlassert(!isPSObserver(observer)) ;
-	_Observers.push_back(observer) ;
+	nlassert(!isPSObserver(observer));
+	_Observers.push_back(observer);
 }
 
+//===================================================================
 bool		CParticleSystemInstanceUser::isPSObserver(IPSObserver *observer)
 {
-	return std::find(_Observers.begin(), _Observers.end(), observer) != _Observers.end() ;
+	return std::find(_Observers.begin(), _Observers.end(), observer) != _Observers.end();
 }
 
+
+//===================================================================
 void		CParticleSystemInstanceUser::removePSObserver(IPSObserver *observer)
 {
-	nlassert(isPSObserver(observer)) ;
-	_Observers.erase(std::find(_Observers.begin(), _Observers.end(), observer)) ;
+	nlassert(isPSObserver(observer));
+	_Observers.erase(std::find(_Observers.begin(), _Observers.end(), observer));
 }
 
 
+//===================================================================
 void		CParticleSystemInstanceUser::invalidPS(CParticleSystemModel *psm)
 {
 	// the instance pointer is invalid now
-	_Invalidated = true ;
-	std::vector<IPSObserver *> obserCopy(_Observers.begin(), _Observers.end()) ;
-	for (std::vector<IPSObserver *>::iterator it = _Observers.begin(); it != _Observers.end() ; ++it)
+	_Invalidated = true;
+	std::vector<IPSObserver *> obserCopy(_Observers.begin(), _Observers.end());
+	for (std::vector<IPSObserver *>::iterator it = _Observers.begin(); it != _Observers.end(); ++it)
 	{
-		(*it)->systemDestroyed(this) ;
+		(*it)->systemDestroyed(this);
 	}
 }
 
-
-
+//===================================================================
 uint				CParticleSystemInstanceUser::getNumMaterials() const
 {
-	return 0 ;
+	return 0;
 }
 
+//===================================================================
 UInstanceMaterial	&CParticleSystemInstanceUser::getMaterial(uint materialId)
 {
-	nlassert(0) ; // no material for a particle system
+	nlassert(0); // no material for a particle system
 
 	// return dummy object
-	return *(UInstanceMaterial *) NULL ;
+	return *(UInstanceMaterial *) NULL;
 }
 
 
+//===================================================================
 static inline uint32 IDToLittleEndian(uint32 input)
 {
 	#ifdef NL_LITTLE_ENDIAN
@@ -149,6 +165,7 @@ static inline uint32 IDToLittleEndian(uint32 input)
 	#endif
 }
 
+//===================================================================
 bool	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
 {
 	const uint32 id = IDToLittleEndian(anId);
@@ -173,6 +190,9 @@ bool	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
 	return true;
 }
 
+
+
+//===================================================================
 bool CParticleSystemInstanceUser::removeByID(uint32 anId)
 {
 	const uint32 id = IDToLittleEndian(anId);
@@ -194,13 +214,14 @@ bool CParticleSystemInstanceUser::removeByID(uint32 anId)
 	return true;
 }
 
+//===================================================================
 void		CParticleSystemInstanceUser::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
 {
 	// no-op.
 }
 
 
-// ***************************************************************************
+//===================================================================
 uint CParticleSystemInstanceUser::getNumID() const
 {
 	if (!isSystemPresent()) return 0;
@@ -208,7 +229,7 @@ uint CParticleSystemInstanceUser::getNumID() const
 	return ps->getNumID();
 }
 
-// ***************************************************************************
+//===================================================================
 uint32 CParticleSystemInstanceUser::getID(uint index) const
 {
 	if (!isSystemPresent()) return 0;
@@ -216,7 +237,7 @@ uint32 CParticleSystemInstanceUser::getID(uint index) const
 	return ps->getID(index);
 }
 
-// ***************************************************************************
+//===================================================================
 bool CParticleSystemInstanceUser::getIDs(std::vector<uint32> &dest) const
 {
 	if (!isSystemPresent()) return false;
@@ -226,20 +247,20 @@ bool CParticleSystemInstanceUser::getIDs(std::vector<uint32> &dest) const
 }
 
 
-// ***************************************************************************
+//===================================================================
 void		CParticleSystemInstanceUser::setShapeDistMax(float distMax)
 {
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	if(psm && psm->Shape)
 	{
 		psm->Shape->setDistMax(distMax);
 	}
 }
 
-// ***************************************************************************
+//===================================================================
 float		CParticleSystemInstanceUser::getShapeDistMax() const
 {
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	if(psm && psm->Shape)
 	{
 		return psm->Shape->getDistMax();
@@ -247,6 +268,72 @@ float		CParticleSystemInstanceUser::getShapeDistMax() const
 	else
 		return -1;
 }
+
+//===================================================================
+bool CParticleSystemInstanceUser::setActive(uint32 anId, bool active)
+{
+	const uint32 id = IDToLittleEndian(anId);
+	if (!isSystemPresent()) return false;
+	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
+	uint numLb  = ps->getNumLocatedBindableByExternID(id);
+	if (numLb == 0) return false; // INVALID ID !!
+	for (uint k = 0; k < numLb; ++k)
+	{
+		CPSLocatedBindable *lb = ps->getLocatedBindableByExternID(id, k);
+		lb->setActive(active);		
+	}
+	return true;
+}
+
+
+//===================================================================
+bool CParticleSystemInstanceUser::activateEmitters(bool active)
+{	
+	if (!isSystemPresent()) return false;
+	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
+	for(uint k = 0; k < ps->getNbProcess(); ++k)
+	{
+		CPSLocated *loc = dynamic_cast<CPSLocated *>(ps->getProcess(k));
+		if (loc)
+		{
+			for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+			{
+				if (loc->getBoundObject(l)->getType() == PSEmitter)	
+					loc->getBoundObject(l)->setActive(active);
+			}
+		}
+	}
+	return true;
+}
+
+//===================================================================
+bool CParticleSystemInstanceUser::hasParticles() const
+{
+	if (!isSystemPresent()) return false;
+	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
+	return ps->hasParticles();
+}
+
+//===================================================================
+bool CParticleSystemInstanceUser::hasEmmiters() const
+{
+	if (!isSystemPresent()) return false;
+	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
+	return ps->hasEmitters();
+}
+//===================================================================
+bool CParticleSystemInstanceUser::isShared() const
+{
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	if(psm->Shape)
+	{
+		return NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape)->isShared();
+	}	
+	return false;
+}
+
+
+
 
 // ***************************************************************************
 void		CParticleSystemInstanceUser::enableAsyncTextureMode(bool enable) 

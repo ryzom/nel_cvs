@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.69 2003/11/27 16:51:38 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.70 2003/11/28 16:20:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -312,7 +312,7 @@ void CParticleSystem::stepLocated(TPSProcessPass pass, TAnimationTime et, TAnima
 
 
 ///=======================================================================================
-void CParticleSystem::updateLODRatio()
+inline void CParticleSystem::updateLODRatio()
 {
 	// temp
 	CVector sysPos = getSysMat().getPos();

@@ -1,7 +1,7 @@
 /** \file u_material.h
  * <File description>
  *
- * $Id: u_material.h,v 1.2 2002/02/06 14:48:09 vizerie Exp $
+ * $Id: u_material.h,v 1.3 2002/07/18 17:41:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,6 +102,14 @@ public:
 	virtual void			setColor(CRGBA rgba) =0;
 
 	virtual CRGBA			getColor(void) const =0;
+	
+
+	// @}
+
+	/// \name Culling
+	// @{
+		virtual void			setDoubleSided(bool doubleSided = true)  = 0;
+		virtual bool			getDoubleSided() const = 0;
 	// @}
 
 

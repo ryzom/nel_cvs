@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.4 2002/06/25 14:54:59 besson Exp $
+ * $Id: material_user.h,v 1.5 2002/07/18 17:41:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -174,6 +174,18 @@ public:
 	{
 		return _Material.getColor();
 	}
+	// @}
+
+	/// \name Culling
+	// @{
+		virtual void			setDoubleSided(bool doubleSided = true)
+		{
+			_Material.setDoubleSided(doubleSided);
+		}
+		virtual bool			getDoubleSided() const
+		{
+			return _Material.getDoubleSided();
+		}
 	// @}
 
 	/// \name Misc

@@ -1,7 +1,7 @@
 /** \file zone_bank.h
  * Zone Bank
  *
- * $Id: zone_bank.h,v 1.3 2001/11/07 13:28:38 besson Exp $
+ * $Id: zone_bank.h,v 1.4 2001/11/14 15:16:00 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -61,6 +61,9 @@ class CZoneBankElement
 public:
 
 	CZoneBankElement ();
+
+	// Set the mask of the zone bank element
+	void setMask (const std::vector<bool> &mask, uint32 sizeX, uint32 sizeY);
 
 	void addCategory (const std::string &CatType, const std::string &CatValue);
 	const std::string &getName ();

@@ -1,7 +1,7 @@
 /** \file zone_bank.cpp
  * Zone Bank
  *
- * $Id: zone_bank.cpp,v 1.3 2001/11/07 13:28:37 besson Exp $
+ * $Id: zone_bank.cpp,v 1.4 2001/11/14 15:16:00 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -122,6 +122,14 @@ void CZoneBankElement::serial (IStream &f)
 	convertSize();
 }
 
+
+// ---------------------------------------------------------------------------
+void CZoneBankElement::setMask (const std::vector<bool> &mask, uint32 sizeX, uint32 sizeY)
+{
+	_SizeX = sizeX;
+	_SizeY = sizeY;
+	_Mask = mask;
+}
 
 // ***************************************************************************
 // CZoneBank

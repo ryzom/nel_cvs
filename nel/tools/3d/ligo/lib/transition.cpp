@@ -1,7 +1,7 @@
 /** \file transition.cpp
  * A transition template implementation
  *
- * $Id: transition.cpp,v 1.1 2001/10/29 09:35:15 corvazier Exp $
+ * $Id: transition.cpp,v 1.2 2001/11/14 15:16:00 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NLLIGO
 sint32 CTransition::TransitionZoneEdges[TransitionZoneCount][4]=
 {
 	{+2, +2, -4, +4},	// 0
-	{+4, +2, +2, +3},	// 1
+	{+4, +2, +2, -3},	// 1
 	{+1, +3, +2, -3},	// 2
 	{-3, +3, +2, +2},	// 3
 	{+1, +1, +3, -4},	// 4

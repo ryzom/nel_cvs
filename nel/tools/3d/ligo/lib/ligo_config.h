@@ -1,7 +1,7 @@
 /** \file ligo_config.h
  * Ligo config file 
  *
- * $Id: ligo_config.h,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ * $Id: ligo_config.h,v 1.2 2001/11/14 15:16:00 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -52,6 +52,9 @@ public:
 
 	/// Snap precision for vertex position checking in meter
 	float	Snap;
+
+	/// Zone snap shot resolution
+	uint	ZoneSnapShotRes;
 };
 
 }

@@ -1,7 +1,7 @@
 /** \file ligo_config.cpp
  * Ligo config file 
  *
- * $Id: ligo_config.cpp,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ * $Id: ligo_config.cpp,v 1.2 2001/11/14 15:16:00 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -47,6 +47,8 @@ void CLigoConfig::read (const char *fileName)
 	CellSize = cell_size.asFloat ();
 	CConfigFile::CVar &snap = cf.getVar ("snap");
 	Snap = snap.asFloat ();
+	CConfigFile::CVar &snapShot = cf.getVar ("zone_snapeshot_res");
+	ZoneSnapShotRes = (uint)snapShot.asInt ();
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file zone_template.cpp
  * Ligo zone template implementation
  *
- * $Id: zone_template.cpp,v 1.2 2001/10/29 09:35:15 corvazier Exp $
+ * $Id: zone_template.cpp,v 1.3 2001/11/14 15:16:00 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -605,6 +605,131 @@ void CZoneTemplate::serial (NLMISC::IStream& s)
 
 	// Close the node
 	s.xmlPop ();
+}
+
+// ***************************************************************************
+
+void CZoneTemplate::getMask (std::vector<bool> &mask, uint &width, uint &height)
+{
+	// Some constantes
+	const static sint32 addX[4] = { 1, 0, -1, 0 };
+	const static sint32 addY[4] = { 0, 1, 0, -1 };
+	const static sint32 cellX[4] = { 0, -1, -1, 0 };
+	const static sint32 cellY[4] = { 0, 0, -1, -1 };
+	const static sint32 moveX[4] = { 0, 1, 0, -1 };
+	const static sint32 moveY[4] = { -1, 0, 1, 0 };
+
+	// Max
+	sint32 xMax = 0x80000000;
+	sint32 yMax = 0x80000000;
+
+	// For each edges
+	uint edges;
+	for (edges=0; edges<_Edges.size(); edges++)
+	{
+		// Get the rotation
+		uint32 rot = _Edges[edges].getRotation ();
+		nlassert (rot<4);
+
+		// Get X and Y max coordinates
+		sint32 x = _Edges[edges].getOffsetX () + addX[rot];
+		sint32 y = _Edges[edges].getOffsetY () + addY[rot];
+
+		// Greater ?
+		if (x > xMax)
+			xMax = x;
+		if (y > yMax)
+			yMax = y;
+	}
+	
+	// Build the array
+	width = (uint32) xMax;
+	height = (uint32) yMax;
+
+	// Bit array for each cell
+	vector<uint32> edgeArray (xMax*yMax, 0);
+
+	// Resize it
+	mask.resize (xMax*yMax, false);
+
+	// Set of the cells in the mask
+	set<pair<sint32, sint32> > setCell;
+
+	// For each edge
+	for (edges=0; edges<_Edges.size(); edges++)
+	{
+		// Get the rotation
+		uint32 rot = _Edges[edges].getRotation ();
+		nlassert (rot<4);
+
+		// Get its x and y cell coordinate
+		sint32 x = _Edges[edges].getOffsetX () + cellX[rot];
+		sint32 y = _Edges[edges].getOffsetY () + cellY[rot];
+
+		// Fill the edge array
+		edgeArray[x+y*width] |= (1<<rot);
+
+		// Insert the cell
+		setCell.insert ( pair<sint32, sint32> (x, y) );
+	}
+
+	// Second set
+	set<pair<sint32, sint32> > setCell2;
+
+	// For each element in the set
+	set<pair<sint32, sint32> >::iterator ite = setCell.begin();
+	while (ite != setCell.end())
+	{
+		// For each direction
+		for (uint dir=0; dir<4; dir++)
+		{
+			// Get its x and y cell coordinate
+			sint32 x = ite->first;
+			sint32 y = ite->second;
+
+			// Edge in this direction ?
+			while ( (edgeArray[x+y*width] & (1<<dir) ) == 0)
+			{
+				// Move in this direction
+				x += moveX[dir];
+				y += moveY[dir];
+
+				// insert it
+				setCell2.insert ( pair<sint32, sint32> (x, y) );
+
+				// Some checks
+				nlassert (x>=0);
+				nlassert (x<(sint32)width);
+				nlassert (y>=0);
+				nlassert (y<(sint32)height);
+			}
+		}
+
+		// Next one
+		ite++;
+	}
+
+	// Merge the two set
+	ite = setCell2.begin();
+	while (ite != setCell2.end())
+	{
+		// Merge
+		setCell.insert (*ite);
+
+		// Next element
+		ite++;
+	}
+
+	// Done, fill the array
+	ite = setCell.begin();
+	while (ite != setCell.end())
+	{
+		// Merge
+		mask[ite->first+ite->second*width] = true;
+
+		// Next element
+		ite++;
+	}
 }
 
 // ***************************************************************************

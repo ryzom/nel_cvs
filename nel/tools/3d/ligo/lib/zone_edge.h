@@ -1,7 +1,7 @@
 /** \file zone_edge.h
  * A ZoneEdge descriptor
  *
- * $Id: zone_edge.h,v 1.1 2001/10/29 09:35:15 corvazier Exp $
+ * $Id: zone_edge.h,v 1.2 2001/11/14 15:16:00 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -80,6 +80,11 @@ public:
 
 	/// Return the matrix
 	void buildMatrix (NLMISC::CMatrix& mat, const CLigoConfig &config) const;
+
+	/// Get values
+	uint32 getRotation () const { return _Rotation; }
+	sint32 getOffsetX () const { return _OffsetX; }
+	sint32 getOffsetY () const { return _OffsetY; }
 
 private:
 

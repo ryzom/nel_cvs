@@ -1,7 +1,7 @@
 /** \file zone_template.h
  * Ligo zone template definition
  *
- * $Id: zone_template.h,v 1.2 2001/10/29 09:35:15 corvazier Exp $
+ * $Id: zone_template.h,v 1.3 2001/11/14 15:16:00 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -66,6 +66,9 @@ public:
 
 	/// Get the vertex array of the template
 	const std::vector<CZoneEdge>	&getEdges () const { return _Edges; }
+
+	/// Get the mask of the template
+	void getMask (std::vector<bool> &mask, uint &width, uint &height);
 
 private:
 

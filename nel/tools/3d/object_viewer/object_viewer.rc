@@ -199,6 +199,7 @@ STRINGTABLE DISCARDABLE
 BEGIN
     IDS_BAD_ZBIAS           "Invalid ZBias value"
     IDS_FORCE_ZBIAS         "Force all object ZBias"
+    IDS_FX_HAS_LOOP         "The particle system has a loop of emitters. You must break the loop before you can play it."
 END
 
 #endif    // English (U.S.) resources
@@ -460,7 +461,7 @@ END
 
 IDD_LOCATED_PROPERTIES DIALOGEX 0, 0, 351, 266
 STYLE DS_CONTROL | WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Limited life time",IDC_LIMITED_LIFE_TIME,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,17,48,63,12

@@ -1,7 +1,7 @@
 /** \file emitter_dlg.cpp
  * a dialog to tune emitter properties in a particle system
  *
- * $Id: emitter_dlg.cpp,v 1.18 2004/02/13 09:40:21 vizerie Exp $
+ * $Id: emitter_dlg.cpp,v 1.19 2004/06/01 16:29:05 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,14 @@ void CEmitterDlg::OnSelchangeEmittedType()
 	uint k = m_EmittedTypeCtrl.GetCurSel();
 	if (!_Emitter->setEmittedType(_LocatedList[k]))
 	{
-		MessageBox("Can't perform operation : the system is flagged with 'No max nb steps' or uses the preset 'Spell FX', and thus, should have a finite duration. This operation create a loop in the system, and so is forbidden.", "Error", MB_ICONEXCLAMATION);
+		if (_ParticleDlg->getCurrPS()->getBehaviourType() == NL3D::CParticleSystem::SpellFX || _ParticleDlg->getCurrPS()->getBypassMaxNumIntegrationSteps())
+		{		
+			MessageBox("Can't perform operation : the system is flagged with 'No max nb steps' or uses the preset 'Spell FX', and thus, should have a finite duration. This operation create a loop in the system, and so is forbidden.", "Error", MB_ICONEXCLAMATION);
+		}
+		else
+		{
+			MessageBox("Loops with emitters are forbidden.", "Error", MB_ICONEXCLAMATION);
+		}
 		initEmittedType();
 	}	
 	_ParticleDlg->StartStopDlg->resetAutoCount();

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.40 2003/04/25 13:45:05 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.40.4.1 2003/09/05 13:07:13 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,6 +275,8 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f, uint mipMapSkip)
 
 	_Height = _DDSSurfaceDesc[2];
 	_Width  = _DDSSurfaceDesc[3];
+	_Height = (_Height&3)?(_Height&~3)+4:_Height;
+	_Width = (_Width&3)?(_Width&~3)+4:_Width;
 	_MipMapCount= (uint8) _DDSSurfaceDesc[6];
 	// If no mipmap.
 	if(_MipMapCount==0)

@@ -723,7 +723,7 @@ SOURCE=.\ai\logic\goal.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\ai\logic\goal_path.cpp
+SOURCE=.\ai\logic\goal_path.cpp
 # End Source File
 # Begin Source File
 

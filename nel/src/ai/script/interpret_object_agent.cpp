@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.18 2001/01/22 15:08:17 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.19 2001/01/22 16:42:31 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,9 +172,9 @@ namespace NLAISCRIPT
 	void CAgentClass::buildChildsMessageMap()
 	{
 		
-		sint32 i, child_index, father_index;
+		sint32 i, child_index;
 
-		std::vector< std::vector<sint32> > l_index;
+//		std::vector< std::vector<sint32> > l_index;
 #ifdef _NL_DEBUG_
 		const char *dbg_this_class_name = getClassName()->getString();
 #endif
@@ -182,67 +182,18 @@ namespace NLAISCRIPT
 		clearIndirectMsgTable();
 
 		_MsgIndirectTable = new sint32 *[ _Methode.size() ];
-		for (i = 0; i < (int) _Methode.size(); i++ )
+/*		for (i = 0; i < (int) _Methode.size(); i++ )
 		{
 			_MsgIndirectTable[i] =  NULL;
 			l_index.push_back( std::vector<sint32>() );
 		}
-
+*/
+		/// Counts the number of scripted components
 		for (i =0; i < (int) _Components.size() ; i++ ) // ... for each of its components ...
 		{
 			NLAIC::CIdentType c_type( _Components[ i ]->RegisterName->getString() );
-#ifdef _NL_DEBUG_
-			const char *dbg_class_name = _Components[ i ]->RegisterName->getString();
-#endif
-				if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
-				{
-					_NbScriptedComponents ++;
-					CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
-					// ... for each of its methods...
-#ifdef _NL_DEBUG_
-				sint32 dbg_nb_funcs = child_class->getBrancheCodeSize();
-#endif
-				for (child_index =0; child_index < child_class->getBrancheCodeSize(); child_index++ )
-				{
-					CMethodeName &method = child_class->getBrancheCode( (int) child_index );
-#ifdef _NL_DEBUG_
-					const char *dbg_meth_name = method.getName().getString();
-#endif
-
-#ifdef _NL_DEBUG_
-					int dbg_param_size = method.getParam().size();
-					char dbg_param_name [1024*8];
-					method.getParam().getDebugString(dbg_param_name);
-					char dbg_real_name [1024*8];
-					sprintf(dbg_real_name,"%s.%s %s",dbg_class_name,dbg_meth_name,dbg_param_name);
-#endif
-					if ( isMessageFunc( method.getParam() ) )	// ... if it's a message processing function...
-					{
-						// Looks if the father has a procecessing function for this message
-						sint32 father_index = findMethod( method.getName(), method.getParam() );
-						if ( father_index != -1 )
-						{
-							// The father processes this message.
-							l_index[ father_index ].push_back( child_index );
-						}
-						else
-						{
-
-							// Looks if the father has a procecessing function for this message
-							sint32 father_index = findMethod( method.getName(), method.getParam() );
-							if ( father_index != -1 )
-							{
-								// The father processes this message.
-								l_index[ father_index ].push_back( child_index );
-							}
-							else
-							{
-								// The father doesn't process this message so we've got to pick it up in its other message list.
-							}
-						}
-					}
-				}
-			}
+			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
+				_NbScriptedComponents ++;
 		}
 
 		// For each message processing function of the father, 
@@ -257,16 +208,50 @@ namespace NLAISCRIPT
 				for ( child_index = 0; child_index < _NbScriptedComponents; child_index++ )
 					_MsgIndirectTable[i][child_index] = -1;
 			}
+			else
+				_MsgIndirectTable[i] = NULL;
 		}
-
-		// Fills the table with translated indexes for the messages processed by the child
-		for ( father_index = 0; father_index < (int) l_index.size(); father_index++ )
+		
+		_NbScriptedComponents = 0;
+			
+		for (i =0; i < (int) _Components.size() ; i++ ) // ... for each of its components ...
 		{
-			if ( ! l_index[ father_index ].empty() )
+			NLAIC::CIdentType c_type( _Components[ i ]->RegisterName->getString() );
+#ifdef _DEBUG
+			const char *dbg_class_name = _Components[ i ]->RegisterName->getString();
+#endif
+			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
 			{
-				sint32 *index = _MsgIndirectTable[ father_index ];
-				for ( child_index = 0; child_index < (int) l_index[father_index].size(); child_index++ )
-					index[ (int) child_index ] = (l_index[ (int) father_index ])[ (int) child_index ];
+				CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
+#ifdef _DEBUG_
+				sint32 dbg_nb_funcs = child_class->getBrancheCodeSize();
+#endif
+				for (child_index =0; child_index < child_class->getBrancheCodeSize(); child_index++ ) // ... for each of its methods...
+				{
+					CMethodeName &method = child_class->getBrancheCode( (int) child_index );
+#ifdef _DEBUG_
+					const char *dbg_meth_name = method.getName().getString();
+#endif
+
+#ifdef _DEBUG
+					int dbg_param_size = method.getParam().size();
+					char dbg_param_name [1024*8];
+					method.getParam().getDebugString(dbg_param_name);
+					char dbg_real_name [1024*8];
+//					sprintf(dbg_real_name,"%s.%s %s",dbg_class_name,dbg_meth_name,dbg_param_name);
+#endif
+					if ( isMessageFunc( method.getParam() ) )	// ... if it's a message processing function...
+					{
+						// Looks if the father has a procecessing function for this message
+						sint32 father_index = findMethod( method.getName(), method.getParam() );
+						if ( father_index != -1 )
+						{
+							// The father processes this message.
+							_MsgIndirectTable[ father_index ][ _NbScriptedComponents ] = child_index;
+						}
+					}
+				}
+				_NbScriptedComponents++;
 			}
 		}
 	}

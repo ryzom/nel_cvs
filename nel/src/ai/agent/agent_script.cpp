@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.16 2001/01/22 16:12:51 chafik Exp $
+ * $Id: agent_script.cpp,v 1.17 2001/01/22 16:43:40 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,7 +221,13 @@ namespace NLAIAGENT
 #endif
 		_Components[ index ]->release();
 		_Components[ index ] = op;
-		if( ((const NLAIC::CTypeOfObject &)op->getType()) & (NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tAgentInterpret)) ((IAgent *)op)->setParent((const IWordNumRef *)*this);
+
+
+		if(((const NLAIC::CTypeOfObject &) op->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+		{
+			((CAgentScript *)op)->setParent( (const IWordNumRef *) *this);
+			( (CScriptMailBox *) ((CAgentScript *)op)->getLocalMailBox() )->setIndex( index );
+		}
 	}
 
 	sint32 CAgentScript::getStaticMemberSize() const

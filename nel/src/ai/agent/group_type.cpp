@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.16 2001/03/28 12:15:14 portier Exp $
+ * $Id: group_type.cpp,v 1.17 2001/04/03 12:32:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,8 +189,8 @@ namespace NLAIAGENT
 		case _Get:
 			{
 				IObjectIA::CProcessResult c;
-				const DigitalType *f = (const DigitalType *)param->get();
-				IObjectIA *a = (IObjectIA *)(*this)[(sint32)f->getValue()];
+				const INombreDefine *f = (const INombreDefine *)param->get();
+				IObjectIA *a = (IObjectIA *)(*this)[(sint32)f->getNumber()];
 				a->incRef();
 				c.Result = a;
 				c.ResultState = IObjectIA::ProcessIdle;
@@ -688,7 +688,8 @@ namespace NLAIAGENT
 			while(i != _Vector.end())
 			{
 				char temp[1024*8];
-				(*i++)->getDebugString(temp);				
+				const IObjectIA *o = *i++;
+				o->getDebugString(temp);				
 				strcat(text,temp);
 				if(i != _Vector.end()) strcat(text," ");
 			}

@@ -1,6 +1,6 @@
 /** \file list_manager.cpp
  *
- * $Id: list_manager.cpp,v 1.4 2001/03/29 10:26:56 chafik Exp $
+ * $Id: list_manager.cpp,v 1.5 2001/04/03 12:32:04 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -263,7 +263,8 @@ namespace NLAIAGENT
 
 	const NLAIC::IBasicType *CVectorGroupManager::clone() const
 	{
-		return new CVectorGroupManager(*this);
+		NLAIC::IBasicType *x = new CVectorGroupManager(*this);
+		return x;
 	}
 
 	const NLAIC::IBasicType *CVectorGroupManager::newInstance() const

@@ -2,7 +2,9 @@
 
 /* Includes */
 
+#ifndef __GNUC__
 #pragma warning (disable : 4786)
+#endif // __GNUC__
 
 #include <stdio.h>
 #include <vector>

@@ -1,5 +1,5 @@
 
-/*  A Bison parser, made from config_file.yacc
+/*  A Bison parser, made from cf_gramatical.yxx
     by GNU Bison version 1.28  */
 
 #define YYBISON 1  /* Identify Bison output.  */
@@ -28,12 +28,14 @@
 #define	INT	271
 #define	REAL	272
 
-#line 1 "config_file.yacc"
+#line 1 "cf_gramatical.yxx"
 
 
 /* Includes */
 
+#ifndef __GNUC__
 #pragma warning (disable : 4786)
+#endif // __GNUC__
 
 #include <stdio.h>
 #include <vector>
@@ -94,7 +96,7 @@ void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val);
 int yyerror (const char *);
 
 
-#line 69 "config_file.yacc"
+#line 71 "cf_gramatical.yxx"
 typedef union	{
 			cf_value Val;
 		} YYSTYPE;
@@ -167,9 +169,9 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-    88,    88,    88,    91,    92,    95,   148,   195,   196,   199,
-   200,   200,   201,   204,   205,   206,   209,   210,   211,   214,
-   215,   216,   217,   218,   219,   220,   223
+    90,    90,    90,    93,    94,    97,   150,   197,   198,   201,
+   202,   202,   203,   206,   207,   208,   211,   212,   213,   216,
+   217,   218,   219,   220,   221,   222,   225
 };
 #endif
 
@@ -783,23 +785,23 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 88 "config_file.yacc"
+#line 90 "cf_gramatical.yxx"
 { cf_CurrentLine = 1; cf_Ignore = false; ;
     break;}
 case 3:
-#line 88 "config_file.yacc"
+#line 90 "cf_gramatical.yxx"
 { ;
     break;}
 case 4:
-#line 91 "config_file.yacc"
+#line 93 "cf_gramatical.yxx"
 { ;
     break;}
 case 5:
-#line 92 "config_file.yacc"
+#line 94 "cf_gramatical.yxx"
 { ;
     break;}
 case 6:
-#line 96 "config_file.yacc"
+#line 98 "cf_gramatical.yxx"
 {
 				DEBUG_PRINTF("                                   (VARIABLE=");
 				cf_print (yyvsp[-3].Val);
@@ -852,7 +854,7 @@ case 6:
 			;
     break;}
 case 7:
-#line 149 "config_file.yacc"
+#line 151 "cf_gramatical.yxx"
 {
 				DEBUG_PRINTF("                                   (VARIABLE+=");
 				cf_print (yyvsp[-3].Val);
@@ -899,79 +901,79 @@ case 7:
 			;
     break;}
 case 8:
-#line 195 "config_file.yacc"
+#line 197 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = false; DEBUG_PRINTF("false\n"); ;
     break;}
 case 9:
-#line 196 "config_file.yacc"
+#line 198 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[-1].Val; cf_CurrentVar.Comp = true; DEBUG_PRINTF("true\n"); ;
     break;}
 case 10:
-#line 199 "config_file.yacc"
+#line 201 "cf_gramatical.yxx"
 { yyval.Val =  yyvsp[0].Val; cf_CurrentVar.Type = yyvsp[0].Val.Type; cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 11:
-#line 200 "config_file.yacc"
+#line 202 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Type = yyvsp[0].Val.Type; cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 13:
-#line 201 "config_file.yacc"
+#line 203 "cf_gramatical.yxx"
 { ;
     break;}
 case 14:
-#line 204 "config_file.yacc"
+#line 206 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 15:
-#line 205 "config_file.yacc"
+#line 207 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_PLUS); ;
     break;}
 case 16:
-#line 206 "config_file.yacc"
+#line 208 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MINUS); ;
     break;}
 case 17:
-#line 209 "config_file.yacc"
+#line 211 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 18:
-#line 210 "config_file.yacc"
+#line 212 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MULT); ;
     break;}
 case 19:
-#line 211 "config_file.yacc"
+#line 213 "cf_gramatical.yxx"
 { yyval.Val = cf_op (yyvsp[-2].Val, yyvsp[0].Val, OP_DIVIDE); ;
     break;}
 case 20:
-#line 214 "config_file.yacc"
+#line 216 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 21:
-#line 215 "config_file.yacc"
+#line 217 "cf_gramatical.yxx"
 { cf_value v; v.Type=NLMISC::CConfigFile::CVar::T_INT; /* just to avoid a warning, I affect 'v' with a dummy value */ yyval.Val = cf_op(yyvsp[0].Val,v,OP_NEG); ;
     break;}
 case 22:
-#line 216 "config_file.yacc"
+#line 218 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[-1].Val; ;
     break;}
 case 23:
-#line 217 "config_file.yacc"
+#line 219 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 24:
-#line 218 "config_file.yacc"
+#line 220 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 25:
-#line 219 "config_file.yacc"
+#line 221 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 26:
-#line 220 "config_file.yacc"
+#line 222 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 27:
-#line 224 "config_file.yacc"
+#line 226 "cf_gramatical.yxx"
 {
 				DEBUG_PRINTF("yacc: cont\n");
 				bool ok=false;
@@ -1226,7 +1228,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 256 "config_file.yacc"
+#line 258 "cf_gramatical.yxx"
 
 
 /* compute the good operation with a, b and op */

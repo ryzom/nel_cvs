@@ -52,7 +52,7 @@ CIFile cf_ifile;
 
 /* special include, need to know cf_value */
 
-#include "config_file.yacc.cpp.h"
+#include "cf_gramatical.h"
 
 /* Externals */
 
@@ -65,6 +65,10 @@ bool cf_Ignore;
 void comment ();
 
 %}
+
+%option nounput prefix="cf"
+%option 8bit full
+%pointer
 
 alpha		[A-Za-z]
 digit		[0-9]

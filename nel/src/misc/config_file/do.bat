@@ -1,8 +1,9 @@
 @echo off
-echo Generating config_file.lex.cpp
-flex -f -8 -Pcf -Scfflex.skl -oconfig_file.lex.cpp config_file.lex
+echo Generating cf_lexical.cpp
+flex -f -8 -Pcf -Scf_flex.skl -ocf_lexical.cpp cf_lexical.lxx
 
-echo Generating config_file.yacc.cpp
-set BISON_SIMPLE=cfbison.simple
-bison -d -p cf -o config_file.yacc.cpp config_file.yacc
+echo Generating cf_gramatical.cpp
+set BISON_SIMPLE=cf_bison.simple
+bison -d -p cf -o cf_gramatical.cpp cf_gramatical.yxx
+move cf_gramatical.cpp.h cf_gramatical.h
 pause

@@ -523,14 +523,6 @@ SOURCE=..\include\nel\misc\heap_memory.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\misc\memory_manager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\memory_manager.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\misc\object_vector.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.10 2002/06/28 20:01:41 hanappe Exp $
+ * $Id: i_xml.cpp,v 1.11 2002/11/05 16:48:24 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ using namespace std;
 namespace NLMISC 
 {
 
-// ***************************************************************************
+// *********************************************************
 
 const char SEPARATOR = ' ';
 

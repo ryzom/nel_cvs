@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.34 2002/11/04 15:40:42 boucher Exp $
+ * $Id: types_nl.h,v 1.35 2002/11/05 16:48:24 corvazier Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -224,6 +224,6 @@ typedef	uint16	ucchar;
 /**
  * Force the use of NeL memory manager
  */
-#include "nel/misc/memory_manager.h"
+#include "nel/memory/memory_manager.h"
 
 #endif // NL_TYPES_H

@@ -1,7 +1,7 @@
-/** \file tds.cpp
+/** \file memory_tds.cpp
  * Thread dependant storage class
  *
- * $Id: tds.cpp,v 1.3 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: memory_tds.cpp,v 1.1 2002/11/05 16:48:25 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,9 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "stdmisc.h"
-
-#include "nel/misc/tds.h"
+#include "memory_tds.h"
 
 #ifdef NL_OS_WINDOWS
 
@@ -33,12 +31,12 @@
 
 #endif // NL_OS_WINDOWS
 
-namespace NLMISC 
+namespace NLMEMORY 
 {
 
 // *********************************************************
 
-CTDS::CTDS ()
+CMemoryTDS::CMemoryTDS ()
 {
 	/* Please no assert in the constructor because it is called by the NeL memory allocator constructor */
 #ifdef NL_OS_WINDOWS
@@ -52,18 +50,18 @@ CTDS::CTDS ()
 
 // *********************************************************
 
-CTDS::~CTDS ()
+CMemoryTDS::~CMemoryTDS ()
 {
 #ifdef NL_OS_WINDOWS
-	nlverify (TlsFree (_Handle));
+	TlsFree (_Handle);
 #else // NL_OS_WINDOWS
-	nlverify (pthread_key_delete (_Key) == 0);
+	pthread_key_delete (_Key);
 #endif // NL_OS_WINDOWS
 }
 
 // *********************************************************
 
-void *CTDS::getPointer () const
+void *CMemoryTDS::getPointer () const
 {
 #ifdef NL_OS_WINDOWS
 	return TlsGetValue (_Handle);
@@ -74,15 +72,15 @@ void *CTDS::getPointer () const
 
 // *********************************************************
 
-void CTDS::setPointer (void* pointer)
+void CMemoryTDS::setPointer (void* pointer)
 {
 #ifdef NL_OS_WINDOWS
-	nlverify (TlsSetValue (_Handle, pointer));
+	TlsSetValue (_Handle, pointer);
 #else // NL_OS_WINDOWS
-	nlverify (pthread_setspecific (_Key, pointer) == 0);
+	pthread_setspecific (_Key, pointer);
 #endif // NL_OS_WINDOWS
 }
 
 // *********************************************************
 
-} // NLMISC
+} // NLMEMORY

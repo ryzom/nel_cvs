@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.h,v 1.3 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: heap_allocator.h,v 1.1 2002/11/05 16:48:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,38 +26,33 @@
 #ifndef NL_HEAP_ALLOCATOR_H
 #define NL_HEAP_ALLOCATOR_H
 
-/* 
- * Include "nel/misc/types_nl.h" but don't redefine new
- */
-#include "nel/misc/types_nl.h"
-#include "nel/misc/mutex.h"
-#include "nel/misc/tds.h"
+#include "memory_common.h"
+#include "memory_mutex.h"
+#include "memory_tds.h"
 
-#include <vector>
-
-namespace NLMISC 
+namespace NLMEMORY
 {
 
-/// \name Configuration
-
-// Define this to disable debug features (use to trace buffer overflow and add debug informations in memory headers)
-// #define NL_HEAP_ALLOCATION_NDEBUG
-
-// Define this to activate internal checks (use to debug the heap code)
-// #define NL_HEAP_ALLOCATOR_INTERNAL_CHECKS
-
-// Define this to disable small block optimizations
-//#define NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
-
-// Stop when free a NULL pointer
-//#define NL_HEAP_STOP_NULL_FREE
-
-// Mutex to use with the allocator
-typedef CFastMutex CAllocatorMutex;			// Not fair, non-system, using sleep(), but very fast
-//typedef CFairMutex CAllocatorMutex;		// Fair, fastest system mutex under Windows
-//typedef CUnfairMutex CAllocatorMutex;		// Unfair, slowest system mutex under Windows
-
 /// \name Macros
+
+/* Heap macro */
+#ifdef	NL_HEAP_ALLOCATION_NDEBUG
+
+/** NelAlloc: category can be NULL. Then, category string will be the last pushed category string. */
+#define NelAlloc(heap,size,category) ((heap).allocate (size))
+
+/** \todo NelRealloc: category can be NULL. Then, category string will be the last pushed category string. */
+#define NelRealloc(heap,size,ptr,category) (heap.reallocate (ptr, size))
+
+#else // NL_HEAP_ALLOCATION_NDEBUG
+
+/** NelAlloc: category can be NULL. Then, category string will be the last pushed category string. */
+#define NelAlloc(heap,size,category) ((heap).allocate (size, __FILE__, __LINE__, category))
+
+/** \todo NelRealloc: category can be NULL. Then, category string will be the last pushed category string. */
+#define NelRealloc(heap,size,ptr,category) (heap.reallocate (ptr, size, __FILE__, __LINE__, category))
+
+#endif	//NL_HEAP_ALLOCATION_NDEBUG
 
 /*
  * A heap allocator with a lot of functionnality.
@@ -67,17 +62,9 @@ class CHeapAllocator
 {
 public:
 
-	enum 
-	{ 
-		ReleaseHeaderSize		=	8,
-		CategoryStringLength	=	8,
-		BeginNodeMarkers		=	'<',
-		EndNodeMarkers			=	'>',
-		UnallocatedMemory		=	0xba,
-		UninitializedMemory		=	0xbc,
-		DeletedMemory			=	0xbd,
-		NameLength				=	32
-	};
+	// *********************************************************
+	/// \name Interface
+	// *********************************************************
 
 	/** 
 	  * Block allocation mode.
@@ -103,56 +90,49 @@ public:
 		ReturnNull 
 	};
 	
-	typedef char TCategoryString[CategoryStringLength];
-
-#ifndef NL_HEAP_ALLOCATION_NDEBUG
-
-	struct CMemoryLeakBlock
-	{
-	public:
-		void			*Adress;
-		uint			BlockSize;
-		const char		*SourceFile;
-		uint			Line;
-		TCategoryString	Category;
-	};
-
-#endif // NL_HEAP_ALLOCATION_NDEBUG
-
-	// Constructor / Destructor
+	/** Constructor / Destructor */
 	CHeapAllocator (	uint mainBlockSize=1024*1024*10, 
 			uint blockCount=1, 
 			TBlockAllocationMode blockAllocationMode = Grow, 
 			TOutOfMemoryMode outOfMemoryMode = ThrowException );
+
+	/** Destruction */
 	~CHeapAllocator ();
 
-	// Allocation / desallocation
-#ifndef	NL_HEAP_ALLOCATION_NDEBUG
-	/* Use the NelAlloc macro */
-	void					*allocate (uint size, const char *sourceFile, uint line, const char *category);
-	/* Use the NelRealloc macro */
-	void					*reallocate (void *ptr, uint size, const char *sourceFile, uint line, const char *category);
-#else	// NL_HEAP_ALLOCATION_NDEBUG
-	void					*allocate (uint size);
-	void					*realloc (void *ptr, uint size);
-#endif	// NL_HEAP_ALLOCATION_NDEBUG
+	/** To allocate, use the macro NelAlloc and NelRealloc */
+
+	/** Free a pointer */
 	void					free (void *ptr);
+
+	/** Free all the block allocated */
 	void					freeAll ();
+
+	/** \todo Free all the block allocated and release all the memory used by the allocator */
 	void					releaseMemory ();
+	
+	/** Get a block size with its pointer */
+	static uint			getBlockSize (void *block);
 
-	// Return an allocated block size
-	static uint				getBlockSize (void *block);
+	/// \name Performance control
 
-	// Performance control
-
-	// Returns false if the block size choosed i too big (>= 1 Go)
+	/** Returns false if the block size choosed i too big (>= 1 Go) */
 	bool					setMainBlockSize (uint mainBlockSize);
+
+	/** Get the size of the block */
 	uint					getMainBlockSize () const;
+
+	/** Set the block count */
 	bool					setMainBlockCount (uint blockCount);
+
+	/** Get the block count */
 	uint					getMainBlockCount () const;
+
 	void					setBlockAllocationMode (TBlockAllocationMode mode);
+	
 	TBlockAllocationMode	getBlockAllocationMode () const;
+	
 	void					setOutOfMemoryMode (TOutOfMemoryMode mode);
+	
 	TOutOfMemoryMode		getOutOfMemoryMode () const;
 
 	// Heap control
@@ -176,18 +156,28 @@ public:
 	uint					getAllocatedSystemMemoryByAllocator ();
 
 	float					getFragmentationRatio () const;
+	
 	void					setName (const char* name);
+	
 	const char				*getName () const;
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
+
 /*	void					debugAddBreakpoint (uint32 allocateNumber);
 	void					debugRemoveBreakpoints ();*/
+
 	uint					debugGetDebugInfoSize () const;
+	
 	uint					debugGetSBDebugInfoSize () const;
+	
 	uint					debugGetLBDebugInfoSize () const;
+	
 	uint					debugGetAllocatedMemoryByCategory (const char* category) const;
+	
 	bool					debugStatisticsReport (const char* stateFile, bool memoryMap);
+	
 	void					debugAlwaysCheckMemory (bool alwaysCheck);
+	
 	bool					debugIsAlwaysCheckMemory (bool alwaysCheck) const;
 
 	// Heap debug
@@ -195,9 +185,61 @@ public:
 
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
-	// Overridable
+	/// \name Overridable
+
+	/** Method used to allocate system memory */
 	virtual uint8			*allocateBlock (uint size);
+
+	/** Method used to free system memory */
 	virtual void			freeBlock (uint8 *block);
+	
+	// *********************************************************
+	/// \name Implementation
+	// *********************************************************
+
+private:
+
+	enum 
+	{ 
+		ReleaseHeaderSize		=	8,
+		CategoryStringLength	=	8,
+		BeginNodeMarkers		=	'<',
+		EndNodeMarkers			=	'>',
+		UnallocatedMemory		=	0xba,
+		UninitializedMemory		=	0xbc,
+		DeletedMemory			=	0xbd,
+		NameLength				=	32
+	};
+
+	typedef char TCategoryString[CategoryStringLength];
+
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+
+	struct CMemoryLeakBlock
+	{
+	public:
+		void			*Adress;
+		uint			BlockSize;
+		const char		*SourceFile;
+		uint			Line;
+		TCategoryString	Category;
+	};
+
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+
+public:
+	// Allocation / desallocation
+#ifndef	NL_HEAP_ALLOCATION_NDEBUG
+	/* Don't use it, use the NelAlloc macro */
+	void					*allocate (uint size, const char *sourceFile, uint line, const char *category);
+	/* \todo Don't use it, use the NelRealloc macro */
+	void					*reallocate (void *ptr, uint size, const char *sourceFile, uint line, const char *category);
+#else	// NL_HEAP_ALLOCATION_NDEBUG
+	void					*allocate (uint size);
+	void					*realloc (void *ptr, uint size);
+#endif	// NL_HEAP_ALLOCATION_NDEBUG
+
+private:
 
 private:
 
@@ -223,6 +265,7 @@ private:
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 	struct CFreeNode;
+	friend struct CNodeBegin;
 
 	struct CNodeBegin
 	{
@@ -386,7 +429,7 @@ private:
 	// Members
 	CFreeNode					*_FreeTreeRoot;
 	CNullNode					_NullNode;
-	mutable CAllocatorMutex		_MutexLB;
+	mutable CMemoryMutex		_MutexLB;
 
 	char						_Name[NameLength];
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
@@ -452,7 +495,7 @@ private:
 	volatile CNodeBegin			*_FreeSmallBlocks[NL_SMALLBLOCK_COUNT];
 	volatile CSmallBlockPool	*_SmallBlockPool;
 
-	mutable CAllocatorMutex		_MutexSB;
+	mutable CMemoryMutex		_MutexSB;
 
 	// *********************************************************
 
@@ -476,30 +519,9 @@ private:
 	};
 
 	/* Thread dependant storage of category stack */
-	CTDS	_CategoryStack;
+	CMemoryTDS	_CategoryStack;
 };
 
-/// \name Macros
-
-/* Heap macro */
-#ifdef	NL_HEAP_ALLOCATION_NDEBUG
-
-/* NelAlloc: category can be NULL. Then, category string will be the last pushed category string. */
-#define NelAlloc(heap,size,category) ((heap).allocate (size))
-
-/* NelRealloc: category can be NULL. Then, category string will be the last pushed category string. */
-#define NelRealloc(heap,size,ptr,category) (heap.allocate (ptr, size))
-
-#else // NL_HEAP_ALLOCATION_NDEBUG
-
-/* NelAlloc: category can be NULL. Then, category string will be the last pushed category string. */
-#define NelAlloc(heap,size,category) ((heap).allocate (size, __FILE__, __LINE__, category))
-
-/* NelRealloc: category can be NULL. Then, category string will be the last pushed category string. */
-#define NelRealloc(heap,size,ptr,category) (heap.allocate (ptr, size, __FILE__, __LINE__, category))
-
-#endif	//NL_HEAP_ALLOCATION_NDEBUG
-
-} // NLMISC 
+} // NLMEMORY 
 
 #endif // NL_HEAP_ALLOCATOR_H

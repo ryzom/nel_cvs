@@ -1,7 +1,7 @@
 /** \file heap_allocator_inline.h
  * A Heap allocator, inline functions
  *
- * $Id: heap_allocator_inline.h,v 1.2 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: heap_allocator_inline.h,v 1.1 2002/11/05 16:48:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_HEAP_ALLOCATOR_INLINE_H
 
 #ifdef NL_HEAP_ALLOCATOR_INTERNAL_CHECKS
-#define internalAssert(a) memory_assert(a)
+#define internalAssert(a) nlassert(a)
 #else // NL_HEAP_ALLOCATOR_INTERNAL_CHECKS
 #define internalAssert(a) ((void)0)
 #endif // NL_HEAP_ALLOCATOR_INTERNAL_CHECKS

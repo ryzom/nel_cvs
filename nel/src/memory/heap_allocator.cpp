@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.4 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.1 2002/11/05 16:48:25 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,22 +29,19 @@
 	"nel/misc/types_nl.h", we need to define NL_HEAP_ALLOCATOR_H
 	for this file to avoid new overriding. */
 
-#include "stdmisc.h"
+#include "heap_allocator.h"
 
-#include "nel/misc/heap_allocator.h"
-#include "nel/misc/debug.h"
+#include <stdio.h>
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
 #endif // NL_OS_WINDOWS
 
-#include <set>
-
-namespace NLMISC 
+namespace NLMEMORY 
 {
 
 // Include inlines functions
-#include "nel/misc/heap_allocator_inline.h"
+#include "heap_allocator_inline.h"
 
 #define NL_HEAP_SB_CATEGORY "_SmlBlk"
 #define NL_HEAP_CATEGORY_BLOCK_CATEGORY "_MemCat"
@@ -833,7 +830,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 				if (_OutOfMemoryMode == ReturnNull)
 					return NULL;
 				else
-					throw std::bad_alloc();
+					throw 0;
 			}
 
 			enterCriticalSectionLB ();
@@ -854,7 +851,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 					if (_OutOfMemoryMode == ReturnNull)
 						return NULL;
 					else
-						throw std::bad_alloc();
+						throw 0;
 				}
 
 				// The node
@@ -1367,17 +1364,38 @@ void fprintf_int (uint value)
 class CCategoryMap
 {
 public:
-	CCategoryMap ()
+	CCategoryMap (const char *name, CCategoryMap *next)
 	{
+		Name = name;
 		BlockCount = 0;
 		Size = 0;
 		Min = 0xffffffff;
 		Max = 0;
+		Next = next;
 	}
-	uint	BlockCount;
-	uint	Size;
-	uint	Min;
-	uint	Max;
+
+	static CCategoryMap *find (CCategoryMap *cat, const char *name)
+	{
+		while (cat)
+		{
+			if (strcmp (name, cat->Name) == 0)
+				break;
+			cat = cat->Next;
+		}
+		return cat;
+	}
+
+	static CCategoryMap *insert (const char *name, CCategoryMap *next)
+	{
+		return new CCategoryMap (name, next);
+	}
+
+	const char		*Name;
+	uint			BlockCount;
+	uint			Size;
+	uint			Min;
+	uint			Max;
+	CCategoryMap	*Next;
 };
 
 bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMap)
@@ -1390,9 +1408,8 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 	// Open files
 	FILE *file = fopen (stateFile, "wt");
 
-	// Block map
-	typedef std::map<std::string, CCategoryMap> TBlockMap;
-	TBlockMap blockMap;
+	// List of category
+	CCategoryMap *catMap = NULL;
 
 	// Both OK
 	if (file)
@@ -1416,20 +1433,21 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 				if (isNodeUsed (current))
 				{
 					// Find the node
-					TBlockMap::iterator ite = blockMap.find ((const char*)current->Category);
+					CCategoryMap *cat = CCategoryMap::find (catMap, (const char*)current->Category);
 
 					// Found ?
-					if (ite == blockMap.end ())
+					if (cat == NULL)
 					{
-						ite = blockMap.insert (TBlockMap::value_type (current->Category, CCategoryMap ())).first;
+						catMap = CCategoryMap::insert (current->Category, catMap);
+						cat = catMap;
 					}
 					uint size = getNodeSize (current) + ReleaseHeaderSize;
-					ite->second.BlockCount++;
-					ite->second.Size += size;
-					if (size < ite->second.Min)
-						ite->second.Min = size;
-					if (size > ite->second.Max)
-						ite->second.Max = size;
+					cat->BlockCount++;
+					cat->Size += size;
+					if (size < cat->Min)
+						cat->Min = size;
+					if (size > cat->Max)
+						cat->Max = size;
 				}
 
 				// Next node
@@ -1452,20 +1470,21 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 				if (isNodeUsed (current))
 				{
 					// Find the node
-					TBlockMap::iterator ite = blockMap.find ((const char*)current->Category);
+					CCategoryMap *cat = CCategoryMap::find (catMap, (const char*)current->Category);
 
 					// Found ?
-					if (ite == blockMap.end ())
+					if (cat == NULL)
 					{
-						ite = blockMap.insert (TBlockMap::value_type (current->Category, CCategoryMap ())).first;
+						catMap = CCategoryMap::insert (current->Category, catMap);
+						cat = catMap;
 					}
 					uint size = getNodeSize (current) + ReleaseHeaderSize;
-					ite->second.BlockCount++;
-					ite->second.Size += size;
-					if (size < ite->second.Min)
-						ite->second.Min = size;
-					if (size > ite->second.Max)
-						ite->second.Max = size;
+					cat->BlockCount++;
+					cat->Size += size;
+					if (size < cat->Min)
+						cat->Min = size;
+					if (size > cat->Max)
+						cat->Max = size;
 				}
 
 				// Next node
@@ -1508,9 +1527,11 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 		fprintf (file, "\n\n\nCATEGORY STATISTICS\n");
 		fprintf (file, "CATEGORY, BLOCK COUNT, MEMORY ALLOCATED, MIN BLOCK SIZE, MAX BLOCK SIZE, AVERAGE BLOCK SIZE, SB COUNT 8, SB COUNT 16, SB COUNT 24, SB COUNT 32, SB COUNT 40, SB COUNT 48, SB COUNT 56, SB COUNT 64, SB COUNT 72, SB COUNT 80, SB COUNT 88, SB COUNT 96, SB COUNT 104, SB COUNT 112, SB COUNT 120, SB COUNT 128\n");
 
-		TBlockMap::iterator ite = blockMap.begin();
-		while (ite != blockMap.end())
+		CCategoryMap *cat = catMap;
+		while (cat)
 		{
+			CCategoryMap *next = cat->Next;
+
 			// Number of small blocks
 			uint smallB[NL_SMALLBLOCK_COUNT];
 
@@ -1536,7 +1557,7 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 					if (isNodeUsed (current))
 					{
 						// Good node ?
-						if (current->Category == ite->first)
+						if (strcmp (current->Category, cat->Name) == 0)
 						{
 							// Get the small block index
 							uint index = NL_SIZE_TO_SMALLBLOCK_INDEX (getNodeSize (current));
@@ -1552,11 +1573,11 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 			}
 
 			// Average
-			uint average = ite->second.Size / ite->second.BlockCount;
+			uint average = cat->Size / cat->BlockCount;
 
 			// Print the line
-			fprintf (file, "%s, %d, %d, %d, %d, %d", ite->first.c_str(), ite->second.BlockCount, ite->second.Size, 
-				ite->second.Min, ite->second.Max, average);
+			fprintf (file, "%s, %d, %d, %d, %d, %d", cat->Name, cat->BlockCount, cat->Size, 
+				cat->Min, cat->Max, average);
 
 			// Print small blocks
 			for (smallBlock=0; smallBlock<NL_SMALLBLOCK_COUNT; smallBlock++)
@@ -1566,7 +1587,8 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 
 			fprintf (file, "\n");
 
-			ite++;
+			delete cat;
+			cat = next;
 		}
 
 		// **************************
@@ -1895,29 +1917,63 @@ void	CHeapAllocator::releaseMemory ()
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 
-struct CLeak
+class CLeak
 {
-	uint	Count;
-	uint	Memory;
+public:
+	
+	CLeak (const char *name, CLeak *next)
+	{
+		Name = new char[strlen (name)+1];
+		strcpy (Name, name);
+		Count = 0;
+		Memory = 0;
+		Next = next;
+	}
+
+	~CLeak ()
+	{
+		delete [] Name;
+		if (Next)
+			delete Next;
+	}
+
+	static CLeak *find (CLeak *cat, const char *name)
+	{
+		while (cat)
+		{
+			if (strcmp (name, cat->Name) == 0)
+				break;
+			cat = cat->Next;
+		}
+		return cat;
+	}
+
+	static CLeak *insert (const char *name, CLeak *next)
+	{
+		return new CLeak (name, next);
+	}
+
+	uint			Count;
+	uint			Memory;
+	char			*Name;
+	CLeak			*Next;
 };
 
-typedef std::map<std::string, CLeak> TLinkMap;
+// typedef std::map<std::string, CLeak> TLinkMap;
 
 void CHeapAllocator::debugReportMemoryLeak ()
 {
-	// enterCriticalSection ();
-
 	debugPushCategoryString (NL_HEAP_MEM_DEBUG_CATEGORY);
 
 	// Sum allocated memory
 	uint memory = 0;
 
 	// Leak map
-	TLinkMap leakMap;
+	CLeak *leakMap = NULL;
 
 	// Header
 	char report[2048];
-	smprintf (report, 2048, "Report Memory leak for allocator \"%s\"\n", _Name);
+	sprintf (report, "Report Memory leak for allocator \"%s\"\n", _Name);
 	CHeapAllocatorOutputError (report);
 
 	// For each small block
@@ -1935,22 +1991,23 @@ void CHeapAllocator::debugReportMemoryLeak ()
 			if (isNodeUsed (current) && ( (current->Category == NULL) || (current->Category[0] != '_')) )
 			{
 				// Make a report
-				smprintf (report, 2048, "%s(%d)\t: \"%s\"", current->File, current->Line, current->Category);
+				sprintf (report, "%s(%d)\t: \"%s\"", current->File, current->Line, current->Category);
 
 				// Look for this leak
-				TLinkMap::iterator ite = leakMap.find (report);
+				CLeak *ite = CLeak::find (leakMap, report);
 
 				// Not found ?
-				if (ite == leakMap.end ())
+				if (ite == NULL)
 				{
-					ite = leakMap.insert (TLinkMap::value_type (report, CLeak ())).first;
-					ite->second.Count = 0;
-					ite->second.Memory = 0;
+					ite = CLeak::insert (report, leakMap);
+					leakMap = ite;
+					ite->Count = 0;
+					ite->Memory = 0;
 				}
 
 				// One more leak
-				ite->second.Count++;
-				ite->second.Memory += getNodeSize (current);
+				ite->Count++;
+				ite->Memory += getNodeSize (current);
 
 				memory += getNodeSize (current);
 			}
@@ -1980,22 +2037,23 @@ void CHeapAllocator::debugReportMemoryLeak ()
 			if (isNodeUsed (current) && ( (current->Category == NULL) || (current->Category[0] != '_')) )
 			{
 				// Make a report
-				smprintf (report, 2048, "%s(%d)\t: \"%s\"",	current->File, current->Line, current->Category);
+				sprintf (report, "%s(%d)\t: \"%s\"",	current->File, current->Line, current->Category);
 
 				// Look for this leak
-				TLinkMap::iterator ite = leakMap.find (report);
+				CLeak *ite = CLeak::find (leakMap, report);
 
 				// Not found ?
-				if (ite == leakMap.end ())
+				if (ite == NULL)
 				{
-					ite = leakMap.insert (TLinkMap::value_type (report, CLeak ())).first;
-					ite->second.Count = 0;
-					ite->second.Memory = 0;
+					ite = CLeak::insert (report, leakMap);
+					leakMap = ite;
+					ite->Count = 0;
+					ite->Memory = 0;
 				}
 
 				// One more leak
-				ite->second.Count++;
-				ite->second.Memory += getNodeSize (current);
+				ite->Count++;
+				ite->Memory += getNodeSize (current);
 
 				memory += getNodeSize (current);
 			}
@@ -2006,32 +2064,34 @@ void CHeapAllocator::debugReportMemoryLeak ()
 	}
 
 	// Look for this leak
-	TLinkMap::iterator ite = leakMap.begin ();
-	while (ite != leakMap.end ())
+	CLeak *ite = leakMap;
+	while (ite)
 	{
 		// Make a report
-		smprintf (report, 2048, "%s,\tLeak count : %d,\tMemory allocated : %d\n", ite->first.c_str (), ite->second.Count, ite->second.Memory);
+		sprintf (report, "%s,\tLeak count : %d,\tMemory allocated : %d\n", ite->Name, ite->Count, ite->Memory);
 
 		// Report on stderr
 		CHeapAllocatorOutputError (report);
 
-		ite++;
+		ite = ite->Next;
 	}
 
 	// Make a report
 	if (memory)
 	{
-		smprintf (report, 2048, "%d byte(s) found\n", memory);
+		sprintf (report, "%d byte(s) found\n", memory);
 	}
 	else
 	{
-		smprintf (report, 2048, "No memory leak\n");
+		sprintf (report, "No memory leak\n");
 	}
 	CHeapAllocatorOutputError (report);
 
-	debugPopCategoryString ();
+	// Delete list
+	if (leakMap)
+		delete leakMap;
 
-	// leaveCriticalSection ();
+	debugPopCategoryString ();
 }
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
@@ -2265,20 +2325,42 @@ uint CHeapAllocator::getAllocatedSystemMemory ()
 
 // *********************************************************
 
+class CPointerEntry
+{
+public:
+	CPointerEntry (void	*pointer, CPointerEntry *entry)
+	{
+		Pointer = pointer;
+		Next = entry;
+	}
+	static CPointerEntry *find (CPointerEntry *cat, void *pointer)
+	{
+		while (cat)
+		{
+			if (pointer == cat->Pointer)
+				break;
+			cat = cat->Next;
+		}
+		return cat;
+	}
+	void			*Pointer;
+	CPointerEntry	*Next;
+};
+
 uint CHeapAllocator::getAllocatedSystemMemoryByAllocator ()
 {
 	uint nelSystemMemory = 0;
 
 	// Build a set of allocated system memory pointers
-	std::set<void*> ptrInUse;
+	CPointerEntry *entries = NULL;
 
 	// For each main block
 	CMainBlock *currentBlock = _MainBlockList;
 	while (currentBlock)
 	{
 		// Save pointers
-		ptrInUse.insert ((void*)currentBlock);
-		ptrInUse.insert ((void*)(currentBlock->Ptr));
+		entries = new CPointerEntry ((void*)currentBlock, entries);
+		entries = new CPointerEntry ((void*)currentBlock->Ptr, entries);
 
 		// Next block
 		currentBlock = currentBlock->Next;
@@ -2299,16 +2381,17 @@ uint CHeapAllocator::getAllocatedSystemMemoryByAllocator ()
 			if (entry.wFlags & PROCESS_HEAP_ENTRY_BUSY)
 			{
 				// This pointer is already used ?
-				if ( (ptrInUse.find ((void*)((char*)entry.lpData)) != ptrInUse.end ()) || 
-					(ptrInUse.find ((void*)((char*)entry.lpData+32)) != ptrInUse.end ()) )
+				if ( CPointerEntry::find (entries, (void*)((char*)entry.lpData)) || 
+					CPointerEntry::find (entries, (void*)((char*)entry.lpData+32) ) )
 					nelSystemMemory += entry.cbData + entry.cbOverhead;
 			}
 		}
 	}
 #endif // NL_OS_WINDOWS
+
 	return nelSystemMemory;
 }
 
 // *********************************************************
 
-} // NLMISC
+} // NLMEMORY

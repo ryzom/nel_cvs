@@ -1,7 +1,7 @@
-/** \file tds.cpp
- * Thread dependant storage class
+/** \file memory_mutex.cpp
+ * Mutex used by the memory manager
  *
- * $Id: tds.cpp,v 1.3 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: memory_mutex.cpp,v 1.1 2002/11/05 16:48:25 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,66 +23,64 @@
  * MA 02111-1307, USA.
  */
 
-#include "stdmisc.h"
+#include "memory_mutex.h"
 
-#include "nel/misc/tds.h"
+
+namespace NLMEMORY 
+{
 
 #ifdef NL_OS_WINDOWS
-
-#include <windows.h>
-
-#endif // NL_OS_WINDOWS
-
-namespace NLMISC 
-{
 
 // *********************************************************
 
-CTDS::CTDS ()
+CMemoryMutex::CMemoryMutex ()
 {
-	/* Please no assert in the constructor because it is called by the NeL memory allocator constructor */
-#ifdef NL_OS_WINDOWS
-	_Handle = TlsAlloc ();
-	TlsSetValue (_Handle, NULL);
-#else // NL_OS_WINDOWS
-	_Key = pthread_key_create (&_Key, NULL);
-	pthread_setspecific(_Key, NULL);
-#endif // NL_OS_WINDOWS
+	_Lock = 0;
+}
+
+#else NL_OS_WINDOWS
+
+/*
+ * Unix version
+ */
+
+// *********************************************************
+
+CMemoryMutex::CMemoryMutex()
+{
+	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }
 
 // *********************************************************
 
-CTDS::~CTDS ()
+CMemoryMutex::CMemoryMutex(	const std::string &name )
 {
-#ifdef NL_OS_WINDOWS
-	nlverify (TlsFree (_Handle));
-#else // NL_OS_WINDOWS
-	nlverify (pthread_key_delete (_Key) == 0);
-#endif // NL_OS_WINDOWS
+	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }
 
 // *********************************************************
 
-void *CTDS::getPointer () const
+CMemoryMutex::~CMemoryMutex()
 {
-#ifdef NL_OS_WINDOWS
-	return TlsGetValue (_Handle);
-#else // NL_OS_WINDOWS
-	return pthread_getspecific (_Key);
-#endif // NL_OS_WINDOWS
+	sem_destroy( const_cast<sem_t*>(&_Sem) ); // needs that no thread is waiting on the semaphore
 }
 
 // *********************************************************
 
-void CTDS::setPointer (void* pointer)
+void CMemoryMutex::enter()
 {
-#ifdef NL_OS_WINDOWS
-	nlverify (TlsSetValue (_Handle, pointer));
-#else // NL_OS_WINDOWS
-	nlverify (pthread_setspecific (_Key, pointer) == 0);
-#endif // NL_OS_WINDOWS
+	sem_wait( const_cast<sem_t*>(&_Sem) );
 }
 
 // *********************************************************
 
-} // NLMISC
+void CMemoryMutex::leave()
+{
+	sem_post( const_cast<sem_t*>(&_Sem) );
+}
+
+// *********************************************************
+
+#endif NL_OS_WINDOWS
+
+} // NLMEMORY

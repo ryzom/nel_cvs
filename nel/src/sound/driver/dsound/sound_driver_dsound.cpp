@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.13 2003/02/06 15:35:43 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.14 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ long FAR PASCAL CSoundDriverCreateWindowProc(HWND hWnd, unsigned message, WPARAM
 
 // ******************************************************************
 
-__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax)
+__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax, ISoundDriver::IStringMapperProvider *stringMapper)
 {
 	static bool Registered = false;
 
@@ -109,7 +109,7 @@ __declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useE
 	}
 	
 	CSoundDriverDSound *driver = new CSoundDriverDSound();
-	driver->init(CSoundDriverWnd, useEax);
+	driver->init(CSoundDriverWnd, useEax, stringMapper);
 
 	return driver;
 }
@@ -134,7 +134,8 @@ __declspec(dllexport) void NLSOUND_outputProfile(ostream &out)
 
 // ******************************************************************
 
-CSoundDriverDSound::CSoundDriverDSound() : ISoundDriver()
+CSoundDriverDSound::CSoundDriverDSound()
+:	_StringMapper(0)
 {
 	if ( _Instance == NULL )
 	{
@@ -207,7 +208,7 @@ CSoundDriverDSound::~CSoundDriverDSound()
 	_Instance = 0;
 }
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 
 LPKSPROPERTYSET	CSoundDriverDSound::createPropertySet(CSourceDSound *source)
 {
@@ -343,8 +344,9 @@ BOOL CALLBACK CSoundDriverDSoundEnumCallback(LPGUID guid, LPCSTR description, PC
 
 // ******************************************************************
 
-bool CSoundDriverDSound::init(HWND wnd, bool useEax)
+bool CSoundDriverDSound::init(HWND wnd, bool useEax, IStringMapperProvider *stringMapper)
 {
+	_StringMapper = stringMapper;
     if (FAILED(DirectSoundEnumerate(CSoundDriverDSoundEnumCallback, this)))
     {
         throw ESoundDriver("Failed to enumerate the DirectSound devices");
@@ -630,7 +632,9 @@ void CALLBACK CSoundDriverDSound::TimerCallback(UINT uID, UINT uMsg, DWORD dwUse
 	NLMISC::TTime now = NLMISC::CTime::getLocalTime();
 
 	if (now - lastUpdate > _TimerPeriod * 2)
+	{
 		nlwarning("CSoundDriverDSound::TimerCallback : no update since %u millisec (nominal update = %u", uint32(now-lastUpdate), uint32(_TimerPeriod));
+	}
 
 	lastUpdate = now;
 
@@ -646,6 +650,8 @@ void CSoundDriverDSound::update()
 #if NLSOUND_PROFILE
     TTicks now = CTime::getPerformanceTime();
 #endif
+
+	NLMISC::TTime now = NLMISC::CTime::getLocalTime();
 
 	set<CSourceDSound*>::iterator iter;
 
@@ -664,6 +670,12 @@ void CSoundDriverDSound::update()
 		}
 	}
 
+
+	NLMISC::TTime	last = CTime::getLocalTime() - now;
+	if (last > _TimerPeriod / 2)
+	{
+		nlwarning("CSoundDriverDSound::TimerCallback : update took %u millisec", uint32(last));
+	}
 
 #if NLSOUND_PROFILE
     _TotalUpdateTime += 1000.0 * CTime::ticksToSecond(CTime::getPerformanceTime() - now);

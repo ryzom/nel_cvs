@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.18 2002/11/25 14:10:29 boucher Exp $
+ * $Id: ps_sound.cpp,v 1.19 2003/03/03 12:57:27 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -24,12 +24,11 @@
  */
 
 #include "std3d.h"
-
+#include "nel/misc/string_mapper.h"
 #include "3d/ps_sound.h"
 #include "3d/particle_system.h"
 #include "nel/3d/u_ps_sound_interface.h"
 #include "3d/ps_attrib_maker.h"
-
 
 namespace NL3D 
 {
@@ -50,6 +49,7 @@ CPSSound::CPSSound() : _Gain(1.f),
 					   _SoundReactivated(false)
 {
 	_Name = std::string("sound");
+	_SoundName = NLMISC::CStringMapper::emptyId();
 }
 
 
@@ -246,7 +246,18 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSLocatedBindable::serial(f);
 	sint ver = f.serialVersion(2);
-	f.serial(_SoundName);
+	if (f.isReading())
+	{
+		std::string soundName;
+		f.serial(soundName);
+		_SoundName = NLMISC::CStringMapper::map(soundName);
+	}
+	else
+	{
+		std::string soundName = NLMISC::CStringMapper::unmap(_SoundName);
+		f.serial(soundName);
+	}
+		
 	sint32 nbSounds;
 	bool hasScheme;
 	if (f.isReading())

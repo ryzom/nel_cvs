@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.cpp
  * A sound event marker on a sound track
  *
- * $Id: sound_anim_marker.cpp,v 1.7 2003/01/08 15:45:14 boucher Exp $
+ * $Id: sound_anim_marker.cpp,v 1.8 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,10 +24,11 @@
  */
 
 #include "stdsound.h"
+#include "nel/misc/common.h"
+#include "nel/misc/string_mapper.h"
 #include "nel/sound/sound_anim_marker.h"
 #include "nel/sound/u_audio_mixer.h"
 #include "nel/sound/u_source.h"
-#include "nel/misc/common.h"
 
 using namespace std;
 using namespace NLSOUND;
@@ -45,11 +46,11 @@ CSoundAnimMarker::~CSoundAnimMarker()
 
 void CSoundAnimMarker::play(UAudioMixer* mixer, NL3D::CCluster *cluster, CSoundContext &context)
 {
-	set<string>::iterator iter;
+	TMarkerSoundSet::iterator first(_Sounds.begin()), last(_Sounds.end());
 
-	for (iter = _Sounds.begin(); iter != _Sounds.end(); iter++)
+	for (; first != last; ++first)
 	{
-		USource* source = mixer->createSource((*iter), true, NULL, NULL, cluster, &context);
+		USource* source = mixer->createSource((*first), true, NULL, NULL, cluster, &context);
 		if (source != NULL)
 		{
 			source->setRelativeGain(context.RelativeGain);
@@ -61,19 +62,19 @@ void CSoundAnimMarker::play(UAudioMixer* mixer, NL3D::CCluster *cluster, CSoundC
 
 // ********************************************************
 
-void CSoundAnimMarker::addSound(string& soundName)
+void CSoundAnimMarker::addSound(const NLMISC::TStringId& soundName)
 {
 	pair<TMarkerSoundSet::iterator, bool> inserted;
 	inserted = _Sounds.insert(soundName);
 	if (inserted.second == false)
 	{
-		nlwarning("Duplicate sound (%s)", soundName.c_str());
+		nlwarning("Duplicate sound (%s)", CStringMapper::unmap(soundName).c_str());
 	}
 }
 
 // ********************************************************
 
-void CSoundAnimMarker::removeSound(string& soundName)
+void CSoundAnimMarker::removeSound(const NLMISC::TStringId &soundName)
 {
 	TMarkerSoundSet::const_iterator iter = _Sounds.find(soundName);
     if (iter != _Sounds.end())
@@ -82,20 +83,22 @@ void CSoundAnimMarker::removeSound(string& soundName)
 	}
 	else
 	{
-		nlwarning("No sound was removed (%s)", soundName.c_str());		
+		nlwarning("No sound was removed (%s)", CStringMapper::unmap(soundName).c_str());		
 	}
 }
 
 // ********************************************************
 
-void CSoundAnimMarker::getSounds(vector<const char*>& sounds)
+void CSoundAnimMarker::getSounds(vector<NLMISC::TStringId> &sounds)
 {
-	set<string>::iterator iter;
+	sounds.insert(sounds.end(), _Sounds.begin(), _Sounds.end());
 
-	for (iter = _Sounds.begin(); iter != _Sounds.end(); iter++)
+/*	TMarkerSoundSet::iterator first(_Sounds.begin()), last(_Sounds.end());
+	for (; first != last; ++first)
 	{
-		sounds.push_back((*iter).c_str());
+		sounds.push_back((*first).c_str());
 	}
+*/
 }
 
 

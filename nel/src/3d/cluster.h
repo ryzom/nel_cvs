@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.8 2003/01/10 17:11:56 boucher Exp $
+ * $Id: cluster.h,v 1.9 2003/03/03 12:57:27 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_CLUSTER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/aabbox.h"
 
@@ -135,11 +136,13 @@ public:
 	//\name Sound related.
 	//@{
 	void				setSoundGroup(const std::string &soundGroup);
+	void				setSoundGroup(const NLMISC::TStringId &soundGroupId);
 	const std::string	&getSoundGroup();
-	uint				getSoundGroupId();
+	NLMISC::TStringId	getSoundGroupId();
 	void				setEnvironmentFx(const std::string &environmentFx);
+	void				setEnvironmentFx(const NLMISC::TStringId &environmentFxId);
 	const std::string	&getEnvironmentFx();
-	uint				getEnvironmentFxId();
+	NLMISC::TStringId	getEnvironmentFxId();
 	//@}
 	
 private:
@@ -170,11 +173,11 @@ private:
 	/// Sound group
 //	std::string		_SoundGroup;
 	/// Sound group name id
-	uint			_SoundGroupId;
+	NLMISC::TStringId	_SoundGroupId;
 	/// Environment Fx name
 ///	std::string		_EnvironmentFx;
 	/// Environement Fx name Id (using CStringMapper)
-	uint			_EnvironmentFxId;
+	NLMISC::TStringId	_EnvironmentFxId;
 
 private:
 	// This unlink this cluster from its sons and its parents

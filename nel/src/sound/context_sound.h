@@ -1,6 +1,6 @@
 /** \file context_sound.h
  *
- * $Id: context_sound.h,v 1.1 2002/11/25 14:11:41 boucher Exp $
+ * $Id: context_sound.h,v 1.2 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,7 @@ public:
 	virtual void		addSound(CSound *sound, const std::string &baseName) =0;
 	virtual CSound		*getSound(const CSoundContext &context, uint32 randomValue) =0;
 	virtual void		getSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const =0;
+	virtual float		getMaxDistance() const =0;
 };
 
 template <uint NbJoker, bool UseRandom, uint Shift = 5>
@@ -109,16 +110,24 @@ class CContextSoundContainer : public IContextSoundContainer
 
 	virtual void		init(uint *contextArgsIndex)
 	{
+		_MaxDist = 0;
 		NLMISC::CFastMem::memcpy(_ContextArgsIndex, contextArgsIndex, sizeof(uint) * NbJoker);
+	}
+
+	virtual float		getMaxDistance() const
+	{
+		return _MaxDist;
 	}
 
 	virtual void		addSound(CSound *sound, const std::string &baseName)
 	{
-		const std::string &patternName = sound->getName();
+		const std::string &patternName = CStringMapper::unmap(sound->getName());
 		nlassert(patternName.size() >= baseName.size());
 
 		std::string arg;
 		uint32		args[NbJoker];
+
+		_MaxDist = std::max(sound->getMaxDistance(), _MaxDist);
 
 		// extract the context values
 		std::string::const_iterator	first(patternName.begin() + baseName.size()), last(patternName.end());
@@ -189,7 +198,7 @@ class CContextSoundContainer : public IContextSoundContainer
 			randomValue = 0;
 		}
 			
-		// ok, now create the key and storea the sound.
+		// ok, now create the key and store the sound.
 		CContextMatcher<NbJoker, UseRandom, Shift>	cm(args, randomValue);
 
 #ifdef _DEBUG
@@ -215,7 +224,7 @@ class CContextSoundContainer : public IContextSoundContainer
 			THashContextSound::iterator it = _ContextSounds.find(cm);
 			nlassert(it != _ContextSounds.end());
 
-			nlwarning("Sound %s has the same context matcher as the sound %s", sound->getName().c_str(), it->second->getName().c_str());
+			nlwarning("Sound %s has the same context matcher as the sound %s", CStringMapper::unmap(sound->getName()).c_str(), CStringMapper::unmap(it->second->getName()).c_str());
 		}
 	}
 
@@ -241,13 +250,14 @@ class CContextSoundContainer : public IContextSoundContainer
 		THashContextSound::const_iterator first(_ContextSounds.begin()), last(_ContextSounds.end());
 		for (; first != last; ++first)
 		{
-			subsounds.push_back(std::make_pair(first->second->getName(), first->second));
+			subsounds.push_back(std::make_pair(CStringMapper::unmap(first->second->getName()), first->second));
 		}
 	}
 
 private:
 	uint32				_ContextArgsIndex[NbJoker];
 	THashContextSound	_ContextSounds;
+	float				_MaxDist;
 };
 
 class CContextSound : public CSound
@@ -277,6 +287,9 @@ public:
 	void				init();
 
 	void				serial(NLMISC::IStream &s);
+
+	float				getMaxDistance() const;
+
 
 
 private:

@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.9 2003/01/10 17:11:56 boucher Exp $
+ * $Id: source_dsound.h,v 1.10 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -386,7 +386,7 @@ private:
 
 	NLMISC::CVector			_Pos;
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	LPKSPROPERTYSET			_EAXSource;
 #endif
 

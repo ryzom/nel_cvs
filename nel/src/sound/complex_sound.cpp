@@ -44,11 +44,11 @@ void CComplexSound::parseSequence(const std::string &str, std::vector<uint32> &s
 void CComplexSound::getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const
 {
 	CAudioMixerUser *mixer = CAudioMixerUser::instance();
-	std::vector<std::string>::const_iterator first(_Sounds.begin()), last(_Sounds.end());
+	std::vector<NLMISC::TStringId>::const_iterator first(_Sounds.begin()), last(_Sounds.end());
 	for (; first != last; ++first)
 	{
 		CSound *sound = mixer->getSoundId(*first);
-		subsounds.push_back(make_pair((*first), sound));
+		subsounds.push_back(make_pair(CStringMapper::unmap(*first), sound));
 	}
 }
 
@@ -64,7 +64,7 @@ uint32 CComplexSound::getDuration()
 	CAudioMixerUser *mixer = CAudioMixerUser::instance();
 
 	vector<sint32>	durations;
-	std::vector<std::string>::iterator first(_Sounds.begin()), last(_Sounds.end());
+	std::vector<NLMISC::TStringId>::iterator first(_Sounds.begin()), last(_Sounds.end());
 	for (; first != last; ++first)
 	{
 		CSound *sound = mixer->getSoundId(*first);
@@ -121,7 +121,10 @@ uint32 CComplexSound::getDuration()
 		break;
 	case MODE_ALL_IN_ONE:
 		// only find the longueur sound.
-		_Duration = *(std::max_element(durations.begin(), durations.end()));
+		if (!durations.empty())
+			_Duration = *(std::max_element(durations.begin(), durations.end()));
+		else
+			_Duration = 0;
 		break;
 	default:
 		return 0;
@@ -172,7 +175,7 @@ float CComplexSound::getMaxDistance() const
 		CComplexSound *This = const_cast<CComplexSound*>(this);
 
 		This->_MaxDist = 0.0f;
-		std::vector<std::string>::const_iterator first(_Sounds.begin()), last(_Sounds.end());
+		std::vector<NLMISC::TStringId>::const_iterator first(_Sounds.begin()), last(_Sounds.end());
 
 		for (; first != last; ++first)
 		{
@@ -195,7 +198,28 @@ void	CComplexSound::serial(NLMISC::IStream &s)
 {
 	CSound::serial(s);
 	s.serialEnum(_PatternMode);
-	s.serialCont(_Sounds);
+	if (s.isReading())
+	{
+		uint32 nb;
+		s.serial(nb);
+
+		for (uint i=0; i<nb; ++i)
+		{
+			std::string name;
+			s.serial(name);
+			_Sounds.push_back(CStringMapper::map(name));
+		}
+	}
+	else
+	{
+		uint32 nb = _Sounds.size();
+		s.serial(nb);
+		for (uint i=0; i<nb; ++i)
+		{
+			std::string name = CStringMapper::unmap(_Sounds[i]);
+			s.serial(name);
+		}
+	}
 	s.serial(_TicksPerSeconds);
 	s.serialCont(_SoundSeq);
 	s.serialCont(_DelaySeq);
@@ -248,7 +272,7 @@ void	CComplexSound::importForm(const std::string& filename, NLGEORGES::UFormElm&
 			if (psoundsArray->getArrayValue(soundname, i))
 			{
 				soundname = CFile::getFilenameWithoutExtension(soundname);
-				_Sounds.push_back(soundname);
+				_Sounds.push_back(CStringMapper::map(soundname));
 			}
 		}
 	}
@@ -298,255 +322,4 @@ void	CComplexSound::importForm(const std::string& filename, NLGEORGES::UFormElm&
 	
 }
 
-// ********************************************************
-
-/*void CComplexSound::removeSound(std::string& name)
-{
-	vector<string>::iterator iter;
-
-	for (iter = _Sounds.begin(); iter != _Sounds.end(); iter++)
-	{
-		if (*iter == name)
-		{
-			_Sounds.erase(iter);
-			return;
-		}
-	}
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::getSounds(std::vector<std::string>& sounds)
-{
-	vector<string>::iterator iter;
-
-	for (iter = _Sounds.begin(); iter != _Sounds.end(); iter++)
-	{
-		sounds.push_back(*iter);
-	}
-}
-*/
-// ********************************************************
-
-/*string& CComplexSound::getSound(PatternIterator* iter)
-{
-	uint16 i = _SoundPattern[iter->_Value];
-	if (_Sounds[i].find('%') == _Sounds[i].npos)
-	{
-		return _Sounds[i];
-	}
-	else
-	{
-		expandString(_Sounds[i], _StringBuffer);
-		return _StringBuffer;
-	}
-}
-*/
-// ********************************************************
-
-/*void CComplexSound::setSoundPattern(const std::string& l)
-{
-//	parsePattern(l, _SoundPattern);
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::getSoundPattern(std::string& l)
-{
-//	concatenatePattern(l, _SoundPattern);
-}
-*/
-// ********************************************************
-/*
-uint16 CComplexSound::getInterval(IntervalIterator* iter)
-{
-	return _Intervals[iter->_Value];
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::generateRandomPattern(uint length)
-{
-//	generateRandomPattern(_SoundPattern, length, 0, _Sounds.size());
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::generateRandomMin1Pattern(uint length)
-{
-//	generateRandomMin1Pattern(_SoundPattern, length, 0, _Sounds.size());
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::setIntervals(const std::string& l)
-{
-//	parsePattern(l, _Intervals);
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::getIntervals(std::string& l)
-{
-//	concatenatePattern(l, _Intervals);
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::generateRandomIntervals(uint length, uint16 min, uint16 max)
-{
-//	generateRandomPattern(_Intervals, length, min, max);
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::generateRandomMin1Intervals(uint length, uint16 min, uint16 max)
-{
-//	generateRandomMin1Pattern(_Intervals, length, min, max);
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::parsePattern(const std::string& l, uint16_string& p)
-{
-	string buf;
-	enum { number, comma } state = comma;
-	char c;
-
-	for (uint index = 0; index <= l.size(); index++)
-	{
-		c = l.at(index);
-
-		switch (state)
-		{
-		case comma:
-			if (isdigit(c))
-			{
-				buf.append(1, c);
-				state = number;
-			}
-			else
-			{
-				throw exception();
-			}
-			break;
-
-		case number:
-			if (isdigit(c))
-			{
-				buf.append(1, c);
-			}
-			else if (c == ',')
-			{
-				uint16 n = atoi(buf.c_str());
-				p.push_back(n);
-				buf.erase();
-				state = comma;
-			}
-			else
-			{
-				throw exception();
-			}
-			break;
-		}
-	}
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::concatenatePattern(std::string& l, const uint16_string& p)
-{
-	uint16_string::const_iterator iter;
-	char s[64];
-
-	iter = p.begin();
-	if (iter == p.end())
-	{
-		return;
-	}
-
-	smprintf(s, 64, "%d", *iter);
-	l.append(s);
-
-	while (iter != p.end())
-	{
-		smprintf(s, 64, "%d", *iter);
-		l.append(",").append(s);
-		iter++;
-	}
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::generateRandomPattern(uint16_string& pattern, uint length, uint16 min, uint16 max)
-{
-	pattern.erase();
-	pattern.reserve(length);
-
-	for (uint i = 0; i < length; i++)
-	{
-		uint16 value;
-		value = rand() % length;
-		pattern.push_back(value);
-	}
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::generateRandomMin1Pattern(uint16_string& pattern, uint length, uint16 min, uint16 max)
-{
-	uint16 value;
-	sint32 prev = -1;
-
-	pattern.erase();
-	pattern.reserve(length);
-
-	for (uint i = 0; i < length; i++)
-	{
-		value = rand() % (length - 1);
-		if (prev != -1)
-		{
-			value = (prev + 1 + value) % length;
-		}
-		pattern.push_back(value);
-	}
-}
-*/
-// ********************************************************
-/*
-void CComplexSound::expandString(const std::string& s, std::string& buffer)
-{
-	buffer.erase();
-	buffer.reserve(s.size() + 128);
-
-	for (uint i = 0; i < s.size(); i++)
-	{
-		char c = s.at(i);
-
-		if (c == '%')
-		{
-			// get next character
-			if (++i == s.size())
-			{
-				throw exception("Invalid format string");
-			}
-
-			// replace the variable with corresponding string
-			switch (s.at(i))
-			{
-			case 's':
-				buffer.append("TATA");
-				break;
-
-			default:
-				throw exception("Invalid format string");
-			}
-		}
-		else
-		{
-			buffer.append(1, c);
-		}
-	}
-}
-*/
 }

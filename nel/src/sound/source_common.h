@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.h,v 1.4 2003/02/06 09:23:02 boucher Exp $
+ * $Id: source_common.h,v 1.5 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NLSOUND {
 
 class CSourceCommon : public USource
 {
+	friend class CAudioMixerUser;
 public:
 	
 	enum TSOURCE_TYPE
@@ -123,6 +124,10 @@ protected:
 	TSpawnEndCallback				_SpawnEndCb;
 	void							*_CbUserParam;
 	NL3D::CCluster					*_Cluster;
+
+	/// An optional user var controler.
+	NLMISC::TStringId				_UserVarControler;
+
 };
 
 } // NLSOUND

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.40 2003/02/06 15:35:51 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.41 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@
 #include "nel/georges/u_form_loader.h"
 #include "nel/georges/u_form.h"
 #include "nel/georges/u_form_elm.h"
+#include "nel/georges/load_form.h"
 
 
 #include "nel/misc/file.h"
@@ -58,12 +59,11 @@
 #include "context_sound.h"
 #include <iomanip.h>
 
-#if defined(EAX_AVAILABLE)
+#if EAX_AVAILABLE == 1
 # include <eax.h>
 #endif
 
 
-//#include <crtdbg.h>
 
 using namespace NLMISC;
 
@@ -114,15 +114,13 @@ UAudioMixer	*UAudioMixer::createAudioMixer()
 
 CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 									 _ListenPosition(CVector::Null),
-//									 _EnvSounds(NULL),
-//									 _BalancePeriod(0),
-									 _CurEnvEffect(NULL),
 									 _NbTracks(0),
 									 _MaxNbTracks(0),
 									 _Leaving(false),
 									 _BackgroundSoundManager(0),
 									 _PlayingSources(0),
-									 _ClusteredSound(0)
+									 _ClusteredSound(0),
+									_PackedSheetPath(".")
 {
 	if ( _Instance == NULL )
 	{
@@ -257,10 +255,11 @@ void				CAudioMixerUser::writeProfile(std::ostream& out)
 //	out << "Muted sources: " << max(0, sint(_PlayingSources.size())-sint(_NbTracks)) << " \n";
 	out << "Muted sources: " << max(0, sint(_PlayingSources)-sint(_NbTracks)) << " \n";
 	out << "Sources waiting for play: " << _SourceWaitingForPlay.size() << " \n";
-	out << "HighestPri: " << _ReserveUsage[HighestPri] << " \n";
-	out << "HighPri: " << _ReserveUsage[HighPri] << " \n";
-	out << "MidPri: " << _ReserveUsage[MidPri] << " \n";
-	out << "LowPri: " << _ReserveUsage[LowPri] << " \n";
+	out << "HighestPri: " << _ReserveUsage[HighestPri] << " / " << _PriorityReserve[HighestPri] << " \n";
+	out << "HighPri:    " << _ReserveUsage[HighPri] << " / " << _PriorityReserve[HighPri] << "\n";
+	out << "MidPri:     " << _ReserveUsage[MidPri] << " / " << _PriorityReserve[MidPri] << " \n";
+	out << "LowPri:     " << _ReserveUsage[LowPri] << " / " << _PriorityReserve[LowPri] << " \n";
+	out << "FreeTracks: " << _FreeTracks.size() << " / " << _NbTracks << " \n";
 	out << "Average update time: " << std::setw(10) << (1000.0 * _UpdateTime / _UpdateCount) << " msec\n";
 	out << "Average create time: " << std::setw(10) <<(1000.0 * _CreateTime / _CreateCount) << " msec\n";
 	out << "Estimated CPU: " << std::setiosflags(ios::right) << std::setprecision(6) << std::setw(10) << (100.0 * 1000.0 * (_UpdateTime + _CreateTime) / curTime()) << "%\n";
@@ -304,6 +303,26 @@ void				CAudioMixerUser::reset()
 		}
 	}
 
+	// Do a first multipass travesal to stop all playing source
+	// We can't do the work in 1 pass because stoping a source can lead to
+	// destruction of sub source, invalidating the iterators !
+	bool again;
+	do
+	{
+		again = false;
+		TSourceContainer::iterator first(_Sources.begin()), last(_Sources.end());
+		for (; first != last; ++first)
+		{
+			if ((*first)->isPlaying())
+			{
+				(*first)->stop();
+				again = true;
+				break;
+			}
+		}
+
+	} while (again);
+
 	// Sources
 	while (!_Sources.empty())
 	{
@@ -330,7 +349,7 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 	// Init sound driver
 	try
 	{
-		_SoundDriver = ISoundDriver::createDriver(useEax);
+		_SoundDriver = ISoundDriver::createDriver(useEax, this);
 	}
 	catch(...)
 	{
@@ -347,7 +366,6 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 	static bool initialized = false;
 	if (!initialized)
 	{
-//		CSimpleSource::init();
 		initialized = true;
 	}
 
@@ -374,7 +392,6 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 	{
 		// If the source generation failed, keep only the generated number of sources
 		_NbTracks = i;
-		//delete _Tracks[i]; // Bug: the desctructor would not work because the source's name is invalid
 	}
 
 	_MaxNbTracks = _NbTracks;
@@ -391,9 +408,6 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 
 	// Create the background sound manager.
 	_BackgroundSoundManager = new CBackgroundSoundManager();
-
-	// create the clustered sound class.
-//	_ClusteredSound = new CClusteredSound();
 
 	// Load the sound bank singleton
 	CSoundBank::instance()->load();
@@ -501,6 +515,9 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 	{
 		delete formLoader;
 	}
+
+	// init the user var bindings
+	initUserVar();
 }
 
 void				CAudioMixerUser::setBackgroundFlagName(uint flagIndex, const std::string &flagName)
@@ -538,6 +555,221 @@ const UAudioMixer::TBackgroundFilterFades &CAudioMixerUser::getBackgroundFilterF
 {
 	return _BackgroundSoundManager->getBackgroundFilterFades();
 }
+
+
+class CUserVarSerializer
+{
+public:
+	std::vector<CAudioMixerUser::CControledSources>		Controlers;
+	void readGeorges (const NLMISC::CSmartPtr<NLGEORGES::UForm> &form, const std::string &name)
+	{
+		try
+		{
+			std::string varname, soundName, paramId;
+			NLGEORGES::UFormElm &root = form->getRootNode();
+			NLGEORGES::UFormElm *items;
+			uint size;
+
+			CAudioMixerUser::CControledSources	cs;
+
+			// preset the default value
+			cs.Value = 1.0f;
+
+			root.getValueByName(varname, ".Name");
+			root.getValueByName(paramId, ".ParamId");
+
+			cs.Name = CStringMapper::map(varname);
+			if (paramId == "Gain")
+				cs.ParamId = CAudioMixerUser::gain_control;
+			else if (paramId == "Pitch")
+				cs.ParamId = CAudioMixerUser::pitch_control;
+			else
+				return;
+		
+			root.getNodeByName(&items, ".Sounds");
+			items->getArraySize(size);
+
+			for (uint i=0; i<size; ++i)
+			{
+				items->getArrayValue(soundName, i);
+				soundName = soundName.substr(0, soundName.find(".sound"));
+
+				cs.SoundNames.push_back(CStringMapper::map(soundName));
+			}
+
+			if (!cs.SoundNames.empty())
+				Controlers.push_back(cs);
+		}
+		catch(...)
+		{}
+	}
+
+	void serial (NLMISC::IStream &s)
+	{
+		s.serialCont(Controlers);
+	}
+
+	void removed()
+	{}
+
+	static uint getVersion () { return 2; }
+
+
+};
+
+void CAudioMixerUser::initUserVar()
+{
+	/// Temporary container.
+	std::map<std::string, CUserVarSerializer> Container;
+
+	// read all *.user_var_binding sheet in data/sound/user_var folder
+
+	// load the sound_group sheets
+	::loadForm("user_var_binding", _PackedSheetPath+"/user_var_binding.packed_sheets", Container, true);
+	// fill the real container.
+	std::map<std::string, CUserVarSerializer>::iterator first(Container.begin()), last(Container.end());
+	for (; first != last; ++first)
+	{
+		for (uint i=0; i<first->second.Controlers.size(); ++i)
+		{
+			_UserVarControls.insert(make_pair(first->second.Controlers[i].Name, first->second.Controlers[i]));
+		}
+	}
+
+	// update all the sounds to refer to the controler.
+	{
+		TUserVarControlsContainer::iterator first(_UserVarControls.begin()), last(_UserVarControls.end());
+		for(;  first != last; ++first)
+		{
+			std::vector<NLMISC::TStringId>::iterator first2(first->second.SoundNames.begin()), last2(first->second.SoundNames.end());
+			for (; first2 != last2; ++first2)
+			{
+				CSound *sound = getSoundId(*first2);
+				if (sound != 0)
+				{
+					// ok, the sound exist !
+					sound->_UserVarControler = first->second.Name;
+				}
+			}
+		}
+	}
+	
+}
+
+void CAudioMixerUser::CControledSources::serial (NLMISC::IStream &s)
+{
+	std::string name, soundName;
+	if (s.isReading())
+	{
+		s.serial(name);
+		Name = CStringMapper::map(name);
+		s.serialEnum(ParamId);
+
+		uint32 size;
+		s.serial(size);
+		for (uint i=0; i<size; ++i)
+		{
+			s.serial(soundName);
+			SoundNames.push_back(CStringMapper::map(soundName));
+		}
+	}
+	else
+	{
+		name = CStringMapper::unmap(Name);
+		s.serial(name);
+		s.serialEnum(ParamId);
+
+		uint32 size = SoundNames.size();
+		s.serial(size);
+
+		for (uint i=0; i<size; ++i)
+		{
+			soundName = CStringMapper::unmap(SoundNames[i]);
+			s.serial(soundName);
+		}
+	}
+
+	// Default value to 1.
+	Value = 1.0f;
+}
+
+
+
+
+void CAudioMixerUser::setUserVar(NLMISC::TStringId varName, float value)
+{
+	TUserVarControlsContainer::iterator it(_UserVarControls.find(varName));
+	if (it != _UserVarControls.end())
+	{
+		// ok we found the var !
+		// do some work only if the value is different (we don't trust client for
+		// being smart ;) )
+		if (it->second.Value != value)
+		{
+			it->second.Value = value;
+			// update all sources
+			std::set<CSourceCommon*>::iterator first(it->second.Sources.begin()), last(it->second.Sources.end());
+			for (; first != last; ++first)
+			{
+				if (it->second.ParamId == gain_control)
+				{
+					float relGain = (*first)->getRelativeGain();
+					float gain = (*first)->getSound()->getGain();
+					(*first)->setGain(gain * value);
+					(*first)->setRelativeGain(relGain);
+				}
+				else
+				{
+					(*first)->setPitch(value);
+				}
+			}
+		}
+	}
+}
+
+float CAudioMixerUser::getUserVar(NLMISC::TStringId varName)
+{
+	TUserVarControlsContainer::iterator it(_UserVarControls.find(varName));
+	if (it != _UserVarControls.end())
+	{
+		return it->second.Value;
+	}
+	// return a default value.
+	return 1.0f;
+}
+
+void CAudioMixerUser::addUserControledSource(CSourceCommon *source, NLMISC::TStringId varName)
+{
+	TUserVarControlsContainer::iterator it(_UserVarControls.find(varName));
+	if (it != _UserVarControls.end())
+	{
+		// ok, the var exist, insert this source
+		it->second.Sources.insert(source);
+		// update the controled parameter
+		if (it->second.ParamId == gain_control)
+		{
+			float relGain = source->getRelativeGain();
+			float gain = source->getSound()->getGain();
+			source->setGain(gain * it->second.Value);
+			source->setRelativeGain(relGain);
+		}
+		else
+		{
+			source->setPitch(it->second.Value);
+		}
+	}
+}
+
+void CAudioMixerUser::removeUserControledSource(CSourceCommon *source, NLMISC::TStringId varName)
+{
+	TUserVarControlsContainer::iterator it(_UserVarControls.find(varName));
+	if (it != _UserVarControls.end())
+	{
+		// ok, the var exist, remove this source
+		it->second.Sources.erase(source);
+	}
+}
+
 
 
 // ******************************************************************
@@ -599,39 +831,6 @@ ISoundDriver*		CAudioMixerUser::getSoundDriver()
 
 // ******************************************************************
 
-/*void				CAudioMixerUser::computeEnvEffect( const CVector& listenerpos, bool force )
-{
-	// Find the first matching, linear search
-	vector<CEnvEffect*>::iterator ipe;
-	for ( ipe=_EnvEffects.begin(); ipe!=_EnvEffects.end(); ++ipe )
-	{
-		if ( (*ipe)->include( listenerpos ) )
-		{
-			// Set the effect only if it has changed
-			if ( (_CurEnvEffect != *ipe) || force )
-			{
-				_CurEnvEffect = *ipe;
-				_Listener.getListener()->setEnvironment( _CurEnvEffect->getEnvNum(), _CurEnvEffect->getEnvSize() );
-				nldebug( "AM: Listener environmental effect changed to %u", _CurEnvEffect->getEnvNum() );
-			}
-			return;
-		}
-	}
-
-	// If not found, set the default (only if it wasn't the default before)
-	if ( _CurEnvEffect != NULL )
-	{
-		_Listener.getListener()->setEnvironment( ENVFX_DEFAULT_NUM );
-		_CurEnvEffect = NULL;
-		nldebug( "AM: Listener environmental effect reset" );
-	}
-
-}
-*/
-
-
-// ******************************************************************
-
 void				CAudioMixerUser::getFreeTracks( uint nb, CTrack **tracks )
 {
 	std::vector<CTrack*>::iterator first(_FreeTracks.begin()), last(_FreeTracks.end());
@@ -673,6 +872,7 @@ void				CAudioMixerUser::reloadSampleBanks(bool async)
 
 CTrack *CAudioMixerUser::getFreeTrack(CSimpleSource *source)
 {
+//	nldebug("There are %d free tracks", _FreeTracks.size() );
 	// at least some track free ?
 	if	(!_FreeTracks.empty())
 	{
@@ -723,6 +923,7 @@ CTrack *CAudioMixerUser::getFreeTrack(CSimpleSource *source)
 						CTrack *ret = _FreeTracks.back();
 						_FreeTracks.pop_back();
 						ret->setSource(source);
+						_ReserveUsage[source->getPriority()]++;
 						nldebug("Track %p assign to source %p", ret, ret->getSource());
 						return ret;
 					}
@@ -787,6 +988,12 @@ void CAudioMixerUser::getPlayingSoundsPos(bool virtualPos, std::vector<std::pair
 
 void				CAudioMixerUser::update()
 {
+/*	static NLMISC::TTime lastUpdate = NLMISC::CTime::getLocalTime();
+	NLMISC::TTime now = NLMISC::CTime::getLocalTime();
+
+	nldebug("Mixer update : %u ms", uint(now - lastUpdate));
+	lastUpdate = now;
+*/
 #if NL_PROFILE_MIXER
 	TTicks start = CTime::getPerformanceTime();
 #endif
@@ -928,7 +1135,7 @@ void				CAudioMixerUser::update()
 							_Tracks[i]->DrvSource->setPos(source->getPos() * (1-css->PosAlpha) + vpos*(css->PosAlpha));
 							// update the relative gain
 							_Tracks[i]->DrvSource->setGain(source->getRelativeGain()*source->getGain()*css->Gain);
-#if defined(EAX_AVAILABLE)
+#if EAX_AVAILABLE == 1
 							// update the occlusion parameters
 							_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSION, (void*)&css->Occlusion, sizeof(css->Occlusion));
 							_Tracks[i]->DrvSource->setEAXProperty(DSPROPERTY_EAXBUFFER_OCCLUSIONLFRATIO, (void*)&css->OcclusionLFFactor, sizeof(css->OcclusionLFFactor));
@@ -997,7 +1204,7 @@ void				CAudioMixerUser::update()
 
 // ******************************************************************
 
-TSoundId			CAudioMixerUser::getSoundId( const std::string &name )
+TSoundId			CAudioMixerUser::getSoundId( const NLMISC::TStringId &name )
 {
 	return CSoundBank::instance()->getSound(name);
 }
@@ -1042,7 +1249,7 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 		// This is a simple sound
 		if (simpleSound->getBuffer() == NULL)
 		{
-			nlwarning ("Can't create the sound '%s'", simpleSound->getBuffername().c_str());
+			nlwarning ("Can't create the sound '%s'", CStringMapper::unmap(simpleSound->getBuffername()).c_str());
 			return NULL;
 		}
 
@@ -1116,7 +1323,7 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 
 // ******************************************************************
 
-USource				*CAudioMixerUser::createSource( const std::string &name, bool spawn, TSpawnEndCallback cb, void *userParam, NL3D::CCluster *cluster, CSoundContext *context)
+USource				*CAudioMixerUser::createSource( const NLMISC::TStringId &name, bool spawn, TSpawnEndCallback cb, void *userParam, NL3D::CCluster *cluster, CSoundContext *context)
 {
 	return createSource( getSoundId( name ), spawn, cb, userParam, cluster, context);
 }
@@ -1196,13 +1403,11 @@ uint32			CAudioMixerUser::loadSampleBank(bool async, const std::string &filename
 
 	nldebug( "Loading samples from %s...", path.c_str() );
 
-	CSampleBank* bank = CSampleBank::findSampleBank(path);
+	CSampleBank* bank = CSampleBank::findSampleBank(CStringMapper::map(path));
 	if (bank == NULL)
 	{
 		// create a new sample bank
-//_CrtCheckMemory();
 		bank = new CSampleBank(path, _SoundDriver);
-//_CrtCheckMemory();
 	}
 
 	try 
@@ -1228,7 +1433,7 @@ bool CAudioMixerUser::unloadSampleBank( const std::string &filename)
 	path.append("/").append(filename);
 
 	nldebug( "Unloading samples from %s...", path.c_str() );
-	CSampleBank *pbank = CSampleBank::findSampleBank(path);
+	CSampleBank *pbank = CSampleBank::findSampleBank(CStringMapper::map(path));
 
 	if (pbank != NULL)
 	{
@@ -1242,7 +1447,7 @@ bool CAudioMixerUser::unloadSampleBank( const std::string &filename)
 
 // ******************************************************************
 
-void			CAudioMixerUser::getSoundNames( std::vector<std::string>& names ) const
+void			CAudioMixerUser::getSoundNames( std::vector<NLMISC::TStringId> &names ) const
 {
 	CSoundBank::instance()->getNames(names);
 }

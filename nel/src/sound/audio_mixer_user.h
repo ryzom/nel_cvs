@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.30 2003/02/06 09:17:54 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.31 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/sound/u_audio_mixer.h"
 #include "nel/misc/time_nl.h"
+#include "nel/georges/u_form.h"
 #include "driver/source.h"
 #include "listener_user.h"
 //#include "background_sound_manager.h"
@@ -97,7 +98,7 @@ struct THashPtr : public std::unary_function<const Pointer &, size_t>
  * \author Nevrax France
  * \date 2001
  */
-class CAudioMixerUser : public UAudioMixer
+class CAudioMixerUser : public UAudioMixer, public ISoundDriver::IStringMapperProvider
 {
 public:
 
@@ -107,6 +108,14 @@ public:
 	static CAudioMixerUser		*instance() { return _Instance; }
 	/// Destructor
 	virtual						~CAudioMixerUser();
+
+	//@{
+	/// @name IStringMapperProvider implementation
+	/// map a string
+	const NLMISC::TStringId map(const std::string &str)			{ return NLMISC::CStringMapper::map(str);}
+	/// unmap a string
+	const std::string &unmap(const NLMISC::TStringId &stringId)		{ return NLMISC::CStringMapper::unmap(stringId);}
+	//@}
 
 	
 	/** Initialization
@@ -175,7 +184,7 @@ public:
 	// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
 //	virtual	void				loadEnvSounds( const char *filename, UEnvSound **treeRoot=NULL );
 	/// Get a TSoundId from a name (returns NULL if not found)
-	virtual TSoundId			getSoundId( const std::string &name );
+	virtual TSoundId			getSoundId( const NLMISC::TStringId &name );
 
 
 	/** Add a logical sound source (returns NULL if name not found).
@@ -184,7 +193,7 @@ public:
 	 * pass a callback function that will be called (if not NULL) just before deleting the spawned
 	 * source.
 	 */
-	virtual USource				*createSource( const std::string &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context = 0 );
+	virtual USource				*createSource( const NLMISC::TStringId &name, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context = 0 );
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
 	virtual USource				*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL, NL3D::CCluster *cluster = 0, CSoundContext *context = 0 );
 	/// Add a source which was created by an EnvSound
@@ -215,7 +224,7 @@ public:
 
 
 	/// Return the names of the sounds (call this method after loadSounds())
-	virtual void				getSoundNames( std::vector<std::string>& names ) const;
+	virtual void				getSoundNames( std::vector<NLMISC::TStringId> &names ) const;
 	/// Return the number of mixing tracks (voices)
 	virtual uint				getPolyphony() const { return _NbTracks; }
 	/// Return the number of sources (slow)
@@ -246,6 +255,9 @@ public:
 
 	/// Set the global path to the sample banks
 	virtual void				setSamplePath(const std::string& path)		{ _SamplePath = path; }
+	virtual void				setPackedSheetPath(const std::string &path)	{_PackedSheetPath = path; }
+	std::string					&getPackedSheetPath()						{return _PackedSheetPath; }
+
 
 
 	CBackgroundSoundManager		*getBackgroundSoundManager()				{ return _BackgroundSoundManager; }
@@ -291,6 +303,10 @@ public:
 	void						incPlayingSource()	{ ++_PlayingSources; };
 	void						decPlayingSource()	{ --_PlayingSources; };
 
+	void		setUserVar(NLMISC::TStringId varName, float value);
+	float		getUserVar(NLMISC::TStringId varName);
+
+
 
 public:
 	/// Interface for registering object in the mixer update.
@@ -320,13 +336,10 @@ public:
 	/// Add a source for play as possible (for non discadable sound)
 	void						addSourceWaitingForPlay(CSimpleSource *source);
 
-	//@{
-	//@name Name mapping
-	/// Give an unique Id in exchange of a string
-	uint				mapName(const std::string &name);
-	/// Return the string that belong to the unique id.
-	const std::string	&unmapName(uint id);
-	//@}
+	/// Read all user controled var sheets
+	void						initUserVar();
+	void						addUserControledSource(CSourceCommon *source, NLMISC::TStringId varName);
+	void						removeUserControledSource(CSourceCommon *source, NLMISC::TStringId varName);
 
 private:
 
@@ -335,6 +348,34 @@ private:
 	typedef std::hash_map<IBuffer*, std::vector<class CSound*>, THashPtr<IBuffer*> >	TBufferToSourceContainer;
 	typedef std::multimap<NLMISC::TTime, IMixerEvent*>									TTimedEventContainer;
 	typedef std::multimap<IMixerEvent*, TTimedEventContainer::iterator>					TEventContainer;
+
+	/// Identify the parameter controled by user var.
+	enum TControledParamId
+	{
+		gain_control,
+		pitch_control,
+		nb_control,
+		bad_control
+	};
+
+	struct CControledSources
+	{
+		/// The user var name
+		NLMISC::TStringId				Name;
+		/// Witch parameter to control
+		TControledParamId				ParamId;
+		/// The controled sounds names.
+		std::vector<NLMISC::TStringId>	SoundNames;
+		/// Current parameter value
+		float							Value;
+		/// All the sources controled by this variable
+		std::set<CSourceCommon*>		Sources;
+
+		void serial (NLMISC::IStream &s);
+	};
+
+	friend struct CControledSources;
+	friend class CUserVarSerializer;
 
 protected:
 	/// List of object to update.
@@ -351,6 +392,10 @@ protected:
 	void						getFreeTracks( uint nb, CTrack **tracks );
 	/// Fill a vector of position and mute flag for all playing sound source.
 	virtual void				getPlayingSoundsPos(bool virtualPos, std::vector<std::pair<bool, NLMISC::CVector> > &pos);
+
+	typedef std::hash_map<NLMISC::TStringId, CControledSources>	TUserVarControlsContainer;
+	/// Container for all user controler and currently controled playing source
+	TUserVarControlsContainer	_UserVarControls;
 
 private:
 	/// The vector of curently free tracks.
@@ -390,15 +435,11 @@ private:
 
 	/// The path to the sample banks. This should be specified in the config file.
 	std::string					_SamplePath;
+	/// The path to the packed sheet files
+	std::string					_PackedSheetPath;
 
 	/// Assoc between buffer and source. Used when buffers are unloaded.
 	TBufferToSourceContainer	_BufferToSources;
-
-	/// A string mapper used for EAX env name and portal material name.
-	std::hash_map<std::string, uint>	_NameMapper;
-
-	/// The sound bank.
-//	CSoundBank					*_SoundBank;
 
 public: 
 
@@ -407,11 +448,6 @@ public:
 
 	/// Number of source currently playing
 	uint32					_PlayingSources;
-
-private:
-
-	/// Current effect
-	CEnvEffect					*_CurEnvEffect;
 
 public: // Temp (EDIT)
 	/// Physical sources array

@@ -1,6 +1,6 @@
 /** \file background_sound.cpp
  *
- * $Id: background_sound.cpp,v 1.3 2003/01/08 15:48:11 boucher Exp $
+ * $Id: background_sound.cpp,v 1.4 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,14 +95,12 @@ void CBackgroundSound::importForm(const std::string& filename, NLGEORGES::UFormE
 				if (psoundItem != NULL)
 				{
 					// Read the sound name.
-					psoundItem->getValueByName(sound.SoundName, "Sound");
-					sound.SoundName = CFile::getFilenameWithoutExtension(sound.SoundName);
+					std::string soundName;
+					psoundItem->getValueByName(soundName, "Sound");
+					sound.SoundName = CStringMapper::map(CFile::getFilenameWithoutExtension(soundName));
 
-//					psoundItem->getValueByName(sound.FilterFadeIn, "FilterFadeIn");
-//					psoundItem->getValueByName(sound.FilterFadeOut, "FilterFadeOut");
 
 					// Read the environnement flag.
-
 					for (uint j=0; j<UAudioMixer::TBackgroundFlags::NB_BACKGROUND_FLAGS; j++)
 					{
 						char tmp[200];
@@ -148,7 +146,7 @@ void CBackgroundSound::getSubSoundList(std::vector<std::pair<std::string, CSound
 	for (; first != last; ++first)
 	{
 		CSound *sound = mixer->getSoundId(first->SoundName);
-		subsounds.push_back(make_pair(first->SoundName, sound));
+		subsounds.push_back(make_pair(CStringMapper::unmap(first->SoundName), sound));
 	}
 }
 

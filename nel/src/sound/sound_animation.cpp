@@ -1,7 +1,7 @@
 /** \file sound_anim_track.cpp
  * An animation sound track
  *
- * $Id: sound_animation.cpp,v 1.5 2003/01/08 15:45:14 boucher Exp $
+ * $Id: sound_animation.cpp,v 1.6 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,7 @@ void CSoundAnimation::save()
 {
 	// File stream
 	COFile file;
-	vector<const char*>	sounds;
+	vector<NLMISC::TStringId>	sounds;
 
 	// Open the file
 	if (!file.open(_Filename.c_str()))
@@ -117,11 +117,11 @@ void CSoundAnimation::save()
 
 			marker->getSounds(sounds);
 
-			vector<const char*>::iterator iter2;
+			vector<NLMISC::TStringId>::iterator iter2;
 			for (iter2 = sounds.begin(); iter2 != sounds.end(); iter2++)
 			{
 				xmlNodePtr soundNode = xmlNewChild ( markerNode, NULL, (const xmlChar*)"SOUND", NULL );
-				xmlSetProp (soundNode, (const xmlChar*)"name", (const xmlChar*) (*iter2));
+				xmlSetProp (soundNode, (const xmlChar*)"name", (const xmlChar*) CStringMapper::unmap(*iter2).c_str());
 			}
 
 			sounds.clear();
@@ -199,7 +199,7 @@ void CSoundAnimation::load()
 					throw exception("Invalid sound animation marker");
 				}
 
-				marker->addSound(string(name));
+				marker->addSound(CStringMapper::map(string(name)));
 
 				xmlFree ((void*)name);
 

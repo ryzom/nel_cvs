@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.9 2003/01/08 15:48:11 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.10 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,6 @@
 #include "background_sound_manager.h"
 #include "sound_bank.h"
 
-//#include <crtdbg.h>
 
 using namespace std;
 using namespace NLMISC;
@@ -50,7 +49,7 @@ uint	CSampleBank::_LoadedSize = 0;
 
 
 // ********************************************************
-CSampleBank *CSampleBank::findSampleBank(const std::string &filename)
+CSampleBank *CSampleBank::findSampleBank(const NLMISC::TStringId &filename)
 {
 	TSampleBankContainer::iterator	it(_Banks.find(filename));
 
@@ -62,7 +61,7 @@ CSampleBank *CSampleBank::findSampleBank(const std::string &filename)
 
 // ********************************************************
 
-IBuffer*		CSampleBank::get(const std::string &name)
+IBuffer*		CSampleBank::get(const NLMISC::TStringId &name)
 {
 	IBuffer* buffer;
 	TSampleBankContainer::iterator iter;
@@ -98,10 +97,8 @@ void	 CSampleBank::reload(bool async)
 CSampleBank::CSampleBank(const std::string& path, ISoundDriver *sd) 
 	: _SoundDriver(sd), _Path(path), _Loaded(false), _LoadingDone(true), _ByteSize(0)
 {
-//_CrtCheckMemory();
 	_Name = CFile::getFilenameWithoutExtension(_Path);
-	_Banks.insert(make_pair(path, this));
-//_CrtCheckMemory();
+	_Banks.insert(make_pair(CStringMapper::map(path), this));
 }
 
 
@@ -109,17 +106,14 @@ CSampleBank::CSampleBank(const std::string& path, ISoundDriver *sd)
 
 CSampleBank::~CSampleBank()
 {
-//_CrtCheckMemory();
 	while (!_LoadingDone)
 	{
 		// need to wait for loading end.
 		nlSleep(100);
 	}
-//_CrtCheckMemory();
 
 	// remove the bank from the list of known banks
 	TSampleBankContainer::iterator iter(_Banks.begin()), end(_Banks.end());
-//_CrtCheckMemory();
 
 	for (; iter != end; ++iter)
 	{
@@ -129,16 +123,13 @@ CSampleBank::~CSampleBank()
 			break;
 		}
 	}
-//_CrtCheckMemory();
 
 
 	// delete all the samples.
 	while (!_Samples.empty())
 	{
-//_CrtCheckMemory();
 		delete _Samples.begin()->second;
 		_Samples.erase(_Samples.begin());
-//_CrtCheckMemory();
 	}
 }
 
@@ -170,12 +161,13 @@ void				CSampleBank::load(bool async)
 			buffer = _SoundDriver->createBuffer();
 			nlassert(buffer);
 
-			std::string sampleName(CFile::getFilenameWithoutExtension(*iter));
+//			std::string sampleName(CFile::getFilenameWithoutExtension(*iter));
+			NLMISC::TStringId sampleName(CStringMapper::map(CFile::getFilenameWithoutExtension(*iter)));
 
 			if (async)
 			{
 				buffer->presetName(sampleName);
-				nldebug("Preloading sample [%s]", sampleName.c_str());
+				nldebug("Preloading sample [%s]", CStringMapper::unmap(sampleName).c_str());
 			}
 			else
 			{
@@ -217,7 +209,7 @@ void				CSampleBank::load(bool async)
 		// send the first files
 		for (uint i=0; i<ASYNC_LOADING_SPLIT && !_LoadList.empty(); ++i)
 		{
-			CAsyncFileManagerSound::getInstance().loadWavFile(_LoadList.front().first, _Path+"/"+_LoadList.front().second+".wav");
+			CAsyncFileManagerSound::getInstance().loadWavFile(_LoadList.front().first, _Path+"/"+CStringMapper::unmap(_LoadList.front().second)+".wav");
 			_LoadList.pop_front();
 		}
 		// add a end loading event...
@@ -225,12 +217,10 @@ void				CSampleBank::load(bool async)
 		// and register for update on the mixer
 		CAudioMixerUser::instance()->registerUpdate(this);
 	}
-//_CrtCheckMemory();
 }
 
 void CSampleBank::onUpdate()
 {
-//_CrtCheckMemory();
 	if (_SplitLoadDone)
 	{
 		nldebug("Some samples have been loaded");
@@ -259,21 +249,19 @@ void CSampleBank::onUpdate()
 			_SplitLoadDone = false;
 			for (uint i=0; i<ASYNC_LOADING_SPLIT && !_LoadList.empty(); ++i)
 			{
-				CAsyncFileManagerSound::getInstance().loadWavFile(_LoadList.front().first, _Path+"/"+_LoadList.front().second+".wav");
+				CAsyncFileManagerSound::getInstance().loadWavFile(_LoadList.front().first, _Path+"/"+CStringMapper::unmap(_LoadList.front().second)+".wav");
 				_LoadList.pop_front();
 			}
 			// add a end loading event...
 			CAsyncFileManagerSound::getInstance().signal(&_SplitLoadDone);
 		}
 	}
-//_CrtCheckMemory();
 }
 
 // ********************************************************
 
 bool				CSampleBank::unload()
 {
-//_CrtCheckMemory();
 	vector<IBuffer*> vec;
 	TSampleTable::iterator it;
 
@@ -293,7 +281,7 @@ bool				CSampleBank::unload()
 		IBuffer *buffer = it->second;
 		if (buffer)
 		{
-			const std::string & bufferName = buffer->getName();
+			const NLMISC::TStringId & bufferName = buffer->getName();
 
 			// Warn the mixer to stop any track playing this buffer.
 			CAudioMixerUser::instance()->bufferUnloaded(buffer);
@@ -305,7 +293,6 @@ bool				CSampleBank::unload()
 			delete buffer;
 		}
 	}
-//_CrtCheckMemory();
 
 	_Loaded = false;
 
@@ -324,7 +311,7 @@ bool				CSampleBank::isLoaded()
 
 // ********************************************************
 
-IBuffer*			CSampleBank::getSample(const std::string &name)
+IBuffer*			CSampleBank::getSample(const NLMISC::TStringId &name)
 {
 	{
 /*		// dump the sample list.
@@ -382,9 +369,7 @@ void				CSampleBank::releaseAll()
 
 	while (!_Banks.empty())
 	{
-//_CrtCheckMemory();
 		delete _Banks.begin()->second;
-//_CrtCheckMemory();
 	}
 	nldebug( "SampleBanks: Released" );
 }

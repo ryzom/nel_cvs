@@ -1,7 +1,7 @@
 /** \file u_ps_sound_interface.h
  * <File description>
  *
- * $Id: u_ps_sound_interface.h,v 1.3 2002/02/20 18:04:40 lecroart Exp $
+ * $Id: u_ps_sound_interface.h,v 1.4 2003/03/03 12:55:12 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_PS_SOUND_INTERFACE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include <string>
 
 namespace NLMISC
@@ -56,7 +57,7 @@ struct UPSSoundServer
 	  * \param spawn     true if the sound must be spawned e.g it continues after this interface is removed 
 	  * \param cb		 useful only for spawned sound, it tells when a spawned sound has been removed
 	  */
-	virtual UPSSoundInstance *createSound(const std::string &soundName, bool spawn = false) = 0;
+	virtual UPSSoundInstance *createSound(const NLMISC::TStringId &soundName, bool spawn = false) = 0;
 };
 
 

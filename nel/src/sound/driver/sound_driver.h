@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.12 2003/01/10 17:11:56 boucher Exp $
+ * $Id: sound_driver.h,v 1.13 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_SOUND_DRIVER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include "nel/misc/common.h"
 
 /// This namespace contains the sound classes
@@ -38,10 +39,14 @@ class IListener;
 class ISource;
 
 /** Configuration for compiling with or without EAX support.
- *	Undef if you don't have EAX library or don't whant EAX support.
+ *	Set to 0 if you don't have EAX library or don't whant EAX support.
  *	This definition impact on code generation for driver AND sound lib.
  */
-#define EAX_AVAILABLE
+#define EAX_AVAILABLE	1
+/** Configuration to compile with manual or API (directx or open AL) rolloff factor.
+ *	Set it to 1 for manual rolloff, 0 for API rolloff.
+*/
+#define MANUAL_ROLLOFF	0
 
 
 #ifdef NL_OS_WINDOWS
@@ -102,6 +107,22 @@ class ISoundDriver
 {
 public:
 
+	/** The interface must be implemented and provided to the driver
+	 *	in order to have a coherent string mapping.
+	 *	The driver must not call directly CStringMapper method because
+	 *	the static map container are located in a lib, so the main
+	 *	code and the driver have theire own version of the static
+	 *	container !
+	 */
+	class IStringMapperProvider
+	{
+	public:
+		/// map a string
+		virtual const NLMISC::TStringId map(const std::string &str) =0;
+		/// unmap a string
+		virtual const std::string &unmap(const NLMISC::TStringId &stringId) =0;
+	};
+
 	/// Version of the driver interface. To increment when the interface change.
 	static const uint32		InterfaceVersion;
 
@@ -113,7 +134,7 @@ public:
 	 * buffer replay, then only hardware buffer are created when calling createBuffer.
 	 * If the number of available hardware buffer is less than 10, then EAX is ignored.
 	 */
-	static	ISoundDriver	*createDriver(bool useEax);
+	static	ISoundDriver	*createDriver(bool useEax, IStringMapperProvider *stringMapper);
 
 	/// Create a sound buffer
 	virtual	IBuffer			*createBuffer() = 0;

@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.6 2003/02/06 09:19:02 boucher Exp $
+ * $Id: background_sound_manager.h,v 1.7 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -162,6 +162,8 @@ private:
 	void addSound(const std::string &rawSoundName, const std::vector<NLLIGO::CPrimVector> &points, bool isPath);
 	/// add a sample bank zone
 	void addSampleBank(const std::vector<std::string> &bankNames, const std::vector<NLLIGO::CPrimVector> &points);
+	/// add a fx zone
+	void addFxZone(const std::string &fxName, const std::vector<NLLIGO::CPrimVector> &points);
 
 	/// TODO : Utility... should be in NLMISC ?
 	template <class CharType>
@@ -233,7 +235,7 @@ private:
 	struct TSoundData
 	{
 		/// The name of the sound.
-		std::string			SoundName;
+		NLMISC::TStringId	SoundName;
 		/// The reference to the sound.
 		CSound				*Sound;
 		/// A source instance of the sound (may be NULL).
@@ -274,6 +276,27 @@ private:
 			: SoundData(sd), Position(position), Gain(gain), Distance(distance)
 		{}
 	};
+	//@}
+
+	//@
+	//\name Env fx related thinks
+	/// Storage for a fx zone
+	struct TFxZone
+	{
+		/// Name of the env fx
+		NLMISC::TStringId				FxName;
+		/// The vector of points compositing the primitive
+		std::vector<NLMISC::CVector>	Points;
+		/// The min vector of the bounding box
+		NLMISC::CVector					MinBox;
+		/// The max vector of the bounding box
+		NLMISC::CVector					MaxBox;
+	};
+	/// Container for the fx primitive.
+	std::vector<TFxZone>		_FxZones;
+	/// Last setted env fx. Used when clustered sound is not active
+	NLMISC::TStringId			_LastEnv;
+
 	//@}
 };
 

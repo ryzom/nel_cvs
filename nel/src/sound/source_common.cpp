@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.cpp,v 1.3 2003/01/08 15:41:40 boucher Exp $
+ * $Id: source_common.cpp,v 1.4 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,9 +49,18 @@ CSourceCommon::CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void
 	_Spawn(spawn),
 	_SpawnEndCb(cb),
 	_CbUserParam(cbUserParam),
-	_Cluster(cluster)
+	_Cluster(cluster),
+	_UserVarControler(id->getUserVarControler())
 {
 	CAudioMixerUser::instance()->addSource(this);
+
+	// get a local copy of the sound parameter
+	_InitialGain = _Gain = id->getGain();
+	_Pitch = id->getPitch();
+	_Looping = id->getLooping();
+	_Priority = id->getPriority();
+	_Direction = id->getDirectionVector();
+
 }
 
 CSourceCommon::~CSourceCommon()
@@ -98,6 +107,9 @@ void					CSourceCommon::play()
 {
 	_Playing = true;
 	_PlayStart = CTime::getLocalTime();
+
+	if (_UserVarControler != CStringMapper::emptyId())
+		CAudioMixerUser::instance()->addUserControledSource(this, _UserVarControler);
 }
 
 /*
@@ -106,6 +118,9 @@ void					CSourceCommon::play()
 void					CSourceCommon::stop()
 {
 	_Playing = false;
+
+	if (_UserVarControler != CStringMapper::emptyId())
+		CAudioMixerUser::instance()->removeUserControledSource(this, _UserVarControler);
 }
 
 /* Set the position vector (default: (0,0,0)).
@@ -138,7 +153,7 @@ const NLMISC::CVector &CSourceCommon::getPos() const
  */
 void					CSourceCommon::setPitch( float pitch )
 {
-	nlassert( (pitch > 0) && (pitch <= 1.0f ) );
+//	nlassert( (pitch > 0) && (pitch <= 1.0f ) );
 	_Pitch = pitch;
 }
 

@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.10 2002/11/25 14:01:28 boucher Exp $
+ * $Id: u_ps_sound_impl.h,v 1.11 2003/03/03 12:54:59 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -160,9 +160,10 @@ public:
 
 
 	/// inherited from IPSSoundServer
-	UPSSoundInstance *createSound(const std::string &soundName, bool spawned = true)
+	UPSSoundInstance *createSound(const NLMISC::TStringId &soundName, bool spawned = true)
 	{		
-		if (!_AudioMixer) return NULL;
+		if (!_AudioMixer) 
+			return NULL;
 		CPSSoundInstanceImpl *sound = new CPSSoundInstanceImpl;
 		NLSOUND::USource *source = _AudioMixer->createSource(soundName, spawned, SpawnedSourceEndedCallback, sound );
 		if (source)

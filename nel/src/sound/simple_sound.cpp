@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: simple_sound.cpp,v 1.3 2003/01/08 15:45:14 boucher Exp $
+ * $Id: simple_sound.cpp,v 1.4 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,8 +82,8 @@ void CSimpleSound::setBuffer(IBuffer *buffer)
 void				CSimpleSound::getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const
 {
 	// A little hack, we use the reference vector to tag unavailable sample.
-	if (!_Buffername.empty() && const_cast<CSimpleSound*>(this)->getBuffer() == 0)
-		subsounds.push_back(pair<string, CSound*>(_Buffername+" (sample)", 0));
+	if (!(_Buffername == CStringMapper::emptyId()) && const_cast<CSimpleSound*>(this)->getBuffer() == 0)
+		subsounds.push_back(pair<string, CSound*>(CStringMapper::unmap(_Buffername)+" (sample)", 0));
 }
 
 
@@ -123,21 +123,28 @@ uint32				CSimpleSound::getDuration()
 
 void				CSimpleSound::serial(NLMISC::IStream &s)
 {
+	std::string bufferName;
 	CSound::serial(s);
 	
 	s.serial(_MinDist);
 	s.serial(_Alpha);
-	s.serial(_Buffername);
 
 	if (s.isReading())
 	{
+		s.serial(bufferName);
+		_Buffername = CStringMapper::map(bufferName);
 		setBuffer(NULL);
 
 		// contain % so it need a context to play
-		if (_Buffername.find ("%") != string::npos)
+		if (bufferName.find ("%") != string::npos)
 		{
 			_NeedContext = true;
 		}
+	}
+	else
+	{
+		bufferName = CStringMapper::unmap(_Buffername);
+		s.serial(bufferName);
 	}
 }
 
@@ -160,16 +167,18 @@ void				CSimpleSound::importForm(const std::string& filename, NLGEORGES::UFormEl
 	CSound::importForm(filename, root);
 
 	// Name
-	_Filename = filename;
+	_Filename = CStringMapper::map(filename);
 
 	// Buffername
-	root.getValueByName(_Buffername, ".SoundType.Filename");
-	_Buffername = CFile::getFilenameWithoutExtension(_Buffername);
+	std::string bufferName;
+	root.getValueByName(bufferName, ".SoundType.Filename");
+	bufferName = CFile::getFilenameWithoutExtension(bufferName);
+	_Buffername = CStringMapper::map(bufferName);
 
 	setBuffer(NULL);
 
 	// contain % so it need a context to play
-	if (_Buffername.find ("%") != string::npos)
+	if (bufferName.find ("%") != string::npos)
 	{
 		_NeedContext = true;
 	}

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.cpp,v 1.3 2003/02/06 09:22:43 boucher Exp $
+ * $Id: simple_source.cpp,v 1.4 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,13 +49,8 @@ CSimpleSource::CSimpleSource( CSimpleSound *simpleSound, bool spawn, TSpawnEndCa
 	nlassert(simpleSound != 0);
 	_Sound = simpleSound;
 
-	// get a local copy of the sound parameter
-	_InitialGain = _Gain = _Sound->getGain();
-	_Pitch = _Sound->getPitch();
-	_Looping = _Sound->getLooping();
-	_Priority = _Sound->getPriority();
+	// get a local copy of the simple sound parameter
 	_Alpha = _Sound->getAlpha();
-	_Direction = _Sound->getDirectionVector();
 }
 
 
@@ -179,6 +174,7 @@ void					CSimpleSource::play()
 		
 		// and play the sound		
 		bool play = _Track->DrvSource->play();
+
 		nlassert(play);
 //		nldebug("CSimpleSource %p : REAL play done", (CAudioMixerUser::IMixerEvent*)this);
 	}

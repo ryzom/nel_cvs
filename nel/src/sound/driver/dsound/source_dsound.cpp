@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.17 2003/02/06 15:35:37 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.18 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "listener_dsound.h"
 #include "../sound_driver.h"
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 #include <eax.h>
 #endif
 
@@ -95,6 +95,8 @@ uint32 CSourceDSound::_TotalUpdateSize = 0;
 #endif
 
 
+uint32 getWritePosAndSpace(uint32 &nextWritePos, uint32 playPos, uint32 writePos, uint32 bufferSize);
+
 
 // ******************************************************************
 
@@ -102,7 +104,7 @@ CSourceDSound::CSourceDSound( uint sourcename )
 :	ISource(), 
 	_SourceName(sourcename)
 {
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	_EAXSource = 0;
 #endif
 
@@ -153,7 +155,7 @@ void CSourceDSound::release()
 {
 	_Buffer = 0;
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	if (_EAXSource != 0)
 	{
 		_EAXSource->Release();
@@ -570,7 +572,25 @@ bool CSourceDSound::update2()
 		{
 			// Just pretend were writing silence by advancing the next 
 			// write position.
+			DWORD playPos, writePos;
+			uint32 space;
+
+			_SecondaryBuffer->GetCurrentPosition(&playPos, &writePos);
+
+			if (playPos == _NextWritePos)
+			{
+				LeaveCriticalSection(&_CriticalSection);
+				return false;
+			}
+
+			space = getWritePosAndSpace(_NextWritePos, playPos, writePos, _SecondaryBufferSize);
+
+			// not enougth space available
+			if (space < _UpdateCopySize)
+				break;
+			
 			_NextWritePos += _UpdateCopySize;
+
 			if (_NextWritePos >= _SecondaryBufferSize)
 			{
 				_NextWritePos  -= _SecondaryBufferSize;
@@ -928,10 +948,9 @@ void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
 }
 
 // ******************************************************************
-
 void CSourceDSound::updateVolume( const NLMISC::CVector& listener )
 {
-#if !defined(MANUAL_ROLLOFF)
+#if MANUAL_ROLLOFF = 1
 	_SecondaryBuffer->SetVolume(_Volume);
 	return;
 #endif
@@ -1104,7 +1123,7 @@ void CSourceDSound::getCone( float& innerAngle, float& outerAngle, float& outerG
 
 void CSourceDSound::setEAXProperty( uint prop, void *value, uint valuesize )
 {
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	if (_EAXSource == 0)
 	{
 		_EAXSource = CSoundDriverDSound::instance()->createPropertySet(this);
@@ -1186,7 +1205,7 @@ void copySampleTo16BitsTrack(void *dst, void *src, uint nbSample, TSampleFormat 
 	}
 	else
 	{
-		// use the fasmem copy buffer
+		// use the fastmem copy buffer
 		CFastMem::memcpy(dst, src, nbSample*2);
 	}
 }
@@ -1221,7 +1240,7 @@ void copySampleTo16BitsTrack(void *dst, void *src, uint nbSample, TSampleFormat 
   The user functions (the fades) modify the sample data that is right after
   the write cursor W maintained by DirectSound. The data has to be written 
   after W to hear the changes as soon as possible. When a fade is done, the
-  date already written in the buffer has to be overwritten. The function
+  data already written in the buffer has to be overwritten. The function
   getFadeOutSize() helps to found out how many samples are writen between
   W and NW and to what section of the original audio data they correspond.
 
@@ -1319,7 +1338,8 @@ bool CSourceDSound::fill()
 		return false;
 	}
 
-	space = getWritePosAndSpace(_NextWritePos, playPos, writePos, _SecondaryBufferSize);
+	uint32 nextWritePos = _NextWritePos;
+	space = getWritePosAndSpace(nextWritePos, playPos, writePos, _SecondaryBufferSize);
 
 	// Don't bother if the number of samples that can be written is too small.
 	if (space < _UpdateCopySize)
@@ -1327,6 +1347,7 @@ bool CSourceDSound::fill()
 		return false;
 	}
 
+	_NextWritePos = nextWritePos;
 
 	uint8* data = ((CBufferDSound*) _Buffer)->getData();
 	uint32 available = (_BytesWritten < _BufferSize) ? _BufferSize - _BytesWritten : 0;
@@ -1334,8 +1355,8 @@ bool CSourceDSound::fill()
 
 	// The number of samples bytes that will be copied. If bytes is 0
 	// than write silence to the buffer.
-	uint32 bytes = NLSOUND_MIN(_UpdateCopySize, available);
-	uint32 clear = _UpdateCopySize - available;
+	uint32 bytes = std::min(_UpdateCopySize, available);
+//	uint32 clear = _UpdateCopySize - available;
 
 
 	// Lock the buffer
@@ -1353,6 +1374,7 @@ bool CSourceDSound::fill()
 
 	// Start copying the samples
 
+ 
 	if (bytes1 <= bytes) {
 
 //		CFastMem::memcpy(ptr1, data + _BytesWritten, bytes1);
@@ -1474,7 +1496,7 @@ bool CSourceDSound::fill()
 		_NextWritePos  -= _SecondaryBufferSize;
 	}
  
-	DBGPOS(("[%p] FILL: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", this, playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
+	DBGPOS(("[%p] FILL: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", this, playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, Bytes1 + Bytes2));
 
 
 #if NLSOUND_PROFILE
@@ -2205,7 +2227,8 @@ void CSourceDSound::fadeIn()
 	_Buffer->getFormat(sampleFormat, freq);
 
 	// Set the correct pitch for this sound
-	setPitch(_Freq);
+//	setPitch(_Freq);
+//	setPitch(_SecondaryBuffer->GetFrequency());
 
 	// Set the correct volume
 	// FIXME: a bit of a hack

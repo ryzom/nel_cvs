@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.5 2003/02/06 09:21:28 boucher Exp $
+ * $Id: clustered_sound.cpp,v 1.6 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "3d/portal.h"
 #include "sound/driver/listener.h"
 #include "driver/sound_driver.h"
-#if defined(EAX_AVAILABLE)
+#if EAX_AVAILABLE == 1
 # include <eax.h>
 #endif
 #include "clustered_sound.h"
@@ -89,7 +89,7 @@ char *CClusteredSound::_MaterialNames[] =
 	NULL
 };
 
-#ifdef  EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 // An array to report all EAX predefined meterials
 float EAX_MATERIAL_PARAM[][3] =
 {
@@ -119,11 +119,11 @@ float EAX_MATERIAL_PARAM[] =
 #endif	// EAX_AVAILABLE
 
 
-// An utulity class to handle packed sheet loading/saving/updating
+// An utility class to handle packed sheet loading/saving/updating
 class CSoundGroupSerializer
 {
 public:
-	std::vector<std::pair<uint, std::string> >	_SoundGroupAssoc;
+	std::vector<std::pair<NLMISC::TStringId, NLMISC::TStringId> >	_SoundGroupAssoc;
 
 	// load the values using the george sheet (called by GEORGE::loadForm)
 	void readGeorges (const NLMISC::CSmartPtr<NLGEORGES::UForm> &form, const std::string &name)
@@ -156,7 +156,7 @@ public:
 					sound = sound.substr(0, n);
 				}
 
-				_SoundGroupAssoc.push_back(make_pair(CStringMapper::map(soundGroup), sound));
+				_SoundGroupAssoc.push_back(make_pair(CStringMapper::map(soundGroup), CStringMapper::map(sound)));
 			}
 		}
 		catch(...)
@@ -184,7 +184,7 @@ public:
 				s.serial(soundGroup);
 				s.serial(sound);
 
-				_SoundGroupAssoc.push_back(make_pair(CStringMapper::map(soundGroup), sound));
+				_SoundGroupAssoc.push_back(make_pair(CStringMapper::map(soundGroup), CStringMapper::map(sound)));
 			}
 			else
 			{
@@ -192,7 +192,7 @@ public:
 				std::string sound;
 
 				soundGroup = CStringMapper::unmap(_SoundGroupAssoc[i].first);
-				sound = _SoundGroupAssoc[i].second;
+				sound = CStringMapper::unmap(_SoundGroupAssoc[i].second);
 
 				s.serial(soundGroup);
 				s.serial(sound);
@@ -219,7 +219,8 @@ std::map<std::string, CSoundGroupSerializer> Container;
 
 CClusteredSound::CClusteredSound()
 :	_Scene(0),
-	_RootCluster(0)
+	_RootCluster(0),
+	_LastEnv(0xffffffff)
 {
 	// fill the env name table
 	uint i;
@@ -239,7 +240,7 @@ CClusteredSound::CClusteredSound()
 void CClusteredSound::init(NL3D::CScene *scene, float portalInterpolate, float maxEarDist, float minGain)
 {
 	// load the sound_group sheets
-	::loadForm("sound_group", "data/sound/sound_groups.packed_sheets", Container, true);
+	::loadForm("sound_group", CAudioMixerUser::instance()->getPackedSheetPath()+"/sound_groups.packed_sheets", Container, true);
 
 	// copy the container data into internal structure
 	std::map<std::string, CSoundGroupSerializer>::iterator first(Container.begin()), last(Container.end());
@@ -256,7 +257,6 @@ void CClusteredSound::init(NL3D::CScene *scene, float portalInterpolate, float m
 	_PortalInterpolate = portalInterpolate;
 	_MaxEarDistance = maxEarDist;
 	_MinGain = minGain;
-//	_MaxEarDistance = maxDistance;
 	if(scene != 0)
 	{
 		CClipTrav *pClipTrav = static_cast<CClipTrav*>(_Scene->getTrav (ClipTravId));
@@ -272,6 +272,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	{
 		// hum... what to do ?
 		nlwarning("CClusteredSound::update : no scene specified !");
+		return;
 	}
 	
 	CClipTrav *pClipTrav = static_cast<CClipTrav*>(_Scene->getTrav (ClipTravId));
@@ -280,6 +281,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	{
 		// hum... what to do ?
 		nlwarning("CClusteredSound::update : no clip traversal !");
+		return;
 	}
 	
 
@@ -294,20 +296,19 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	// create the initial travesal context
 	CSoundTravContext stc(listenerPos, false, false);
 
-	// and start the cluster traversal
+	// and start the cluster traversal to find out what cluster is audible and how we ear it
 	soundTraverse(vCluster, stc);
 
+	//-----------------------------------------------------
 	// update the clustered sound (create and stop sound)
+	//-----------------------------------------------------
 
-	// Place some fake sound.
-//	static std::map<std::string, CClusterSound>	sources;
-//	std::map<std::string, CClusterSound>		newSources;
 	std::hash_map<uint, CClusterSound>		newSources;
 
 	{
 		// fake the distance for all playing source
 //		std::map<std::string, CClusterSound>::iterator first(_Sources.begin()), last(_Sources.end());
-		std::hash_map<uint, CClusterSound>::iterator first(_Sources.begin()), last(_Sources.end());
+		std::hash_map<NLMISC::TStringId, CClusterSound>::iterator first(_Sources.begin()), last(_Sources.end());
 		for (; first != last; ++first)
 		{
 			first->second.Distance = FLT_MAX;
@@ -318,23 +319,18 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	TClusterStatusMap::const_iterator first(_AudibleClusters.begin()), last(_AudibleClusters.end());
 	for (; first != last; ++first )
 	{
-		static uint NO_SOUND_GROUP = CStringMapper::map("");
+		static NLMISC::TStringId NO_SOUND_GROUP = CStringMapper::emptyId();
 		const CClusterSoundStatus &css = first->second;
 		CCluster *cluster = first->first;
-//		std::string soundGroup;
-		uint soundGroup;
+		NLMISC::TStringId soundGroup;
 
 		soundGroup = cluster->getSoundGroupId();
-//		soundName = cluster->getSoundGroup();
 
 
-//		if (!soundName.empty())
 		if (soundGroup != NO_SOUND_GROUP)
 		{
-			// serch an associated sound name
-			std::hash_map<uint, CClusterSound>::iterator it(_Sources.find(soundGroup));
-
-//			std::map<std::string, CClusterSound>::iterator it(_Sources.find(soundName));
+			// search an associated sound name
+			std::hash_map<NLMISC::TStringId, CClusterSound>::iterator it(_Sources.find(soundGroup));
 			if (it != _Sources.end())
 			{
 				// the source is already playing, check and replace if needed
@@ -350,7 +346,6 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 					else
 						cs.Source->setRelativeGain(css.Gain);
 				}
-//				newSources.insert(make_pair(soundName, cs));
 				newSources.insert(make_pair(soundGroup, cs));
 			}
 			else
@@ -359,13 +354,13 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 
 				nldebug("Searching sound assoc for group [%s]", CStringMapper::unmap(soundGroup).c_str());
 
-				std::hash_map<uint, std::string>::iterator it2(_SoundGroupToSound.find(soundGroup));
+				std::hash_map<NLMISC::TStringId, NLMISC::TStringId>::iterator it2(_SoundGroupToSound.find(soundGroup));
 				if (it2 != _SoundGroupToSound.end())
 				{
-					const std::string &soundName = it2->second;
+					NLMISC::TStringId soundName = it2->second;
 					CClusterSound cs;
 
-					nldebug("Found the sound [%s] for sound group [%s]", soundName.c_str(), CStringMapper::unmap(soundGroup).c_str());
+					nldebug("Found the sound [%s] for sound group [%s]", CStringMapper::unmap(soundName).c_str(), CStringMapper::unmap(soundGroup).c_str());
 					
 					cs.Distance = css.Dist;
 					cs.Source = CAudioMixerUser::instance()->createSource(soundName, false, NULL, NULL, cluster);
@@ -377,7 +372,6 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 						else
 							cs.Source->setRelativeGain(css.Gain);
 						cs.Source->setLooping(true);
-	//					newSources.insert(make_pair(soundName, cs));
 						newSources.insert(make_pair(soundGroup, cs));
 					}
 				}
@@ -386,17 +380,16 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	}
 	// check for source to stop
 	{
-//		std::map<std::string, CClusterSound>	oldSources;
-
 #if _STLPORT_VERSION >= 0x450
-		std::hash_map<uint, CClusterSound>	oldSources;
+		std::hash_map<NLMISC::TStringId, CClusterSound>	oldSources;
 		oldSources.swap(_Sources);
 #else
-		std::hash_map<uint, CClusterSound>	oldSources(_Sources);
+		// there is a bug in the swap methode in stlport 4.5, so fallback to a
+		// very less effective create by copy and clear.
+		std::hash_map<NLMISC::TStringId, CClusterSound>	oldSources(_Sources);
 		_Sources.clear();
 #endif
 
-//		std::map<std::string, CClusterSound>::iterator first(newSources.begin()), last(newSources.end());
 		std::hash_map<uint, CClusterSound>::iterator first(newSources.begin()), last(newSources.end());
 		for (; first != last; ++first)
 		{
@@ -419,8 +412,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 	if (!vCluster.empty())
 	{
 		CAudioMixerUser *mixer = CAudioMixerUser::instance();
-//		const std::string &fx = vCluster[0]->getEnvironmentFx();
-		uint fxId = vCluster[0]->getEnvironmentFxId();
+		TStringId fxId = vCluster[0]->getEnvironmentFxId();
 
 		IListener *drvListener = static_cast<CListenerUser*>(mixer->getListener())->getListener();
 		const CAABBox &box = vCluster[0]->getBBox();
@@ -439,22 +431,27 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 			size = min(size, EAXLISTENER_MAXENVIRONMENTSIZE);
 		}
 
-		static uint lastEnv = 0xffffffff;
 		uint newEnv;
 
-		std::hash_map<uint, uint>::iterator it(_IdToEaxEnv.find(fxId));
+		// retreive the EAX environment number
+		std::hash_map<NLMISC::TStringId, uint>::iterator it(_IdToEaxEnv.find(fxId));
 		if (it != _IdToEaxEnv.end())
 		{
 			// there is an EAX effect
 			newEnv = it->second;
 		}
 		else
-			newEnv = CStringMapper::map("PLAIN");
-//			newEnv = 0;
-		if (newEnv != lastEnv)
+		{
+			// no effect, default to "PLAIN" effect
+			static TStringId plain = CStringMapper::map("PLAIN");
+			newEnv = _IdToEaxEnv[plain];
+		}
+
+		// only update environement if there is some change.
+		if (newEnv != _LastEnv)
 		{
 			drvListener->setEnvironment(newEnv, size);
-			lastEnv = newEnv;
+			_LastEnv = newEnv;
 		}
 	}
 }
@@ -661,9 +658,9 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 							css.Gain = travContext.Gain;
 							CVector soundDir = (nearPos - travContext.ListenerPos).normed();
 							uint occId = portal->getOcclusionModelId();
-							std::hash_map<uint, uint>::iterator it(_IdToMaterial.find(occId));
+							std::hash_map<NLMISC::TStringId, uint>::iterator it(_IdToMaterial.find(occId));
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 							if (it != _IdToMaterial.end())
 							{
 								// found an occlusion material for this portal
@@ -690,7 +687,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 /*							if (portal->getOcclusionModel() == "wood door")
 							{
 //								css.Gain *= 0.5f;
-#if defined(EAX_AVAILABLE)
+#if EAX_AVAILABLE == 1
 								css.Occlusion = max(EAXBUFFER_MINOCCLUSION, travContext.Occlusion + EAX_MATERIAL_THICKDOOR); //- 1800); //EAX_MATERIAL_THINDOOR;
 								css.OcclusionLFFactor = 0.1f * travContext.OcclusionLFFactor; //EAX_MATERIAL_THICKDOORLF; //0.66f; //0.0f; //min(EAX_MATERIAL_THINDOORLF, travContext.OcclusionLFFactor);
 								css.OcclusionRoomRatio = EAX_MATERIAL_THICKDOORROOMRATION * travContext.OcclusionRoomRatio;
@@ -700,7 +697,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 							}
 							else if (portal->getOcclusionModel() == "brick door")
 							{
-#if defined(EAX_AVAILABLE)
+#if EAX_AVAILABLE == 1
 								css.Occlusion = max(EAXBUFFER_MINOCCLUSION, travContext.Occlusion + EAX_MATERIAL_BRICKWALL);
 								css.OcclusionLFFactor = min(EAX_MATERIAL_BRICKWALLLF, travContext.OcclusionLFFactor);
 								css.OcclusionRoomRatio = EAX_MATERIAL_BRICKWALLROOMRATIO * travContext.OcclusionRoomRatio;
@@ -710,7 +707,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 							}
 							else
 							{
-#if defined(EAX_AVAILABLE)
+#if EAX_AVAILABLE == 1
 								css.Occlusion = travContext.Occlusion;
 								css.OcclusionLFFactor = travContext.OcclusionLFFactor;
 								css.OcclusionRoomRatio = travContext.OcclusionRoomRatio;
@@ -737,7 +734,7 @@ void CClusteredSound::soundTraverse(const std::vector<CCluster *> &clusters, CSo
 //								float sqrdist = (realListener - nearPoint).sqrnorm();
 								if (travContext.Dist < 2.0f)	// interpolate a 2 m
 									obst *= travContext.Dist / 2.0f;
-#if defined(EAX_AVAILABLE)
+#if EAX_AVAILABLE == 1
 								css.Obstruction = max(sint32(EAXBUFFER_MINOBSTRUCTION), sint32(travContext.Obstruction - sint32(obst)));
 								css.OcclusionLFFactor = 0.50f * travContext.OcclusionLFFactor;
 #else

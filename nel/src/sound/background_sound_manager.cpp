@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.14 2003/02/06 09:19:02 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.15 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/path.h"
 
 #include "nel/ligo/primitive.h"
+#include "3d/cluster.h"
 
 #include "nel/sound/u_source.h"
 #include "clustered_sound.h"
@@ -92,7 +93,7 @@ void CBackgroundSoundManager::addSound(const std::string &soundName, uint layerI
 	CAudioMixerUser *mixer = CAudioMixerUser::instance();
 	TSoundData	sd;
 
-	sd.SoundName = soundName;
+	sd.SoundName = CStringMapper::map(soundName);
 	sd.Sound = mixer->getSoundId(sd.SoundName);
 	sd.Source = 0;
 
@@ -139,7 +140,7 @@ void CBackgroundSoundManager::addSound(const std::string &soundName, uint layerI
 	}
 	else
 	{
-		nlwarning ("The sound '%s' can't be loaded", sd.SoundName.c_str());
+		nlwarning ("The sound '%s' can't be loaded", CStringMapper::unmap(sd.SoundName).c_str());
 	}
 }
 
@@ -401,6 +402,7 @@ void CBackgroundSoundManager::loadSoundsFromPrimitives(const NLLIGO::IPrimitive 
 void CBackgroundSoundManager::loadSamplesFromPrimitives(const NLLIGO::IPrimitive &sampleRoot)
 {
 	std::string className;
+	_Banks.clear();
 	if (sampleRoot.getPropertyByName("class", className))
 	{
 		if (className == "sample_banks")
@@ -431,13 +433,61 @@ void CBackgroundSoundManager::loadSamplesFromPrimitives(const NLLIGO::IPrimitive
 void CBackgroundSoundManager::loadEffectsFromPrimitives(const NLLIGO::IPrimitive &fxRoot)
 {
 	std::string className;
+	_FxZones.clear();
+
 	if (fxRoot.getPropertyByName("class", className))
 	{
 		if (className == "env_fx")
 		{
-			// TODO : load the env zone
+			for (uint i=0; i<fxRoot.getNumChildren(); ++i)
+			{
+				const NLLIGO::IPrimitive *child;
+				std::string primName;
+				fxRoot.getChild(child, i);
+
+				if (child->getPropertyByName("class", className))
+				{
+					child->getPropertyByName("name", primName);
+					if (className == "env_fx_zone")
+					{
+						std::string fxName;
+						if (child->getPropertyByName("fx_name", fxName))
+						{
+							addFxZone(fxName, static_cast<const CPrimZone*>(child)->VPoints);
+						}
+					}
+				}
+			}
 		}
 	}
+}
+
+void CBackgroundSoundManager::addFxZone(const std::string &fxName, const std::vector<NLLIGO::CPrimVector> &points)
+{
+	TFxZone	fxZone;
+
+	fxZone.FxName = CStringMapper::map(fxName);
+	fxZone.Points.resize (points.size());
+	for (uint j=0; j<points.size(); j++)
+	{
+		fxZone.Points[j] = points[j];
+	}
+
+	// compute bouding box.
+	CVector	vmin(FLT_MAX, FLT_MAX, 0), vmax(-FLT_MAX, -FLT_MAX, 0);
+
+	vector<CVector>::iterator first(fxZone.Points.begin()), last(fxZone.Points.end());
+	for (; first != last; ++first)
+	{
+		vmin.x = min(first->x, vmin.x);
+		vmin.y = min(first->y, vmin.y);
+		vmax.x = max(first->x, vmax.x);
+		vmax.y = max(first->y, vmax.y);
+	}
+	fxZone.MaxBox = vmax;
+	fxZone.MinBox = vmin;
+
+	_FxZones.push_back(fxZone);
 }
 
 
@@ -560,6 +610,7 @@ void CBackgroundSoundManager::load (const string &continent)
 		CIFile file;
 //		CPrimRegion region;
 		CPrimitives primitives;
+		primitives.RootNode = new CPrimNode;
 		string fn = continent+"_audio.primitive";
 
 		nlinfo ("loading '%s'", fn.c_str());
@@ -764,6 +815,101 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 		}
 	}
 
+	// evalutate the current env fx
+	{
+		NL3D::CCluster *rootCluster = 0;
+		if (mixer->getClusteredSound())
+			rootCluster = mixer->getClusteredSound()->getRootCluster();
+
+		std::vector<TFxZone>::iterator first(_FxZones.begin()), last(_FxZones.end());
+		for (; first != last; ++first)
+		{
+			if (listener.x >= first->MinBox.x && listener.x <= first->MaxBox.x
+				&& listener.y >= first->MinBox.y && listener.y <= first->MaxBox.y
+				)
+			{
+				// bounding box ok, 
+				if (CPrimZone::contains(listener, first->Points))
+				{
+					// stop at the first zone !
+					if (rootCluster)
+					{
+						// use the cluster system
+						rootCluster->setEnvironmentFx(first->FxName);
+					}
+					else
+					{
+						// no cluster system, set the env 'manualy'
+						IListener *drvListener = static_cast<CListenerUser*>(mixer->getListener())->getListener();
+
+						if (_LastEnv != first->FxName)
+						{
+							_LastEnv = first->FxName;
+							uint envNum;
+							if (first->FxName == CStringMapper::map("GENERIC"))
+								envNum = 0;
+							else if (first->FxName == CStringMapper::map("PADDEDCELL"))
+								envNum = 1;
+							else if (first->FxName == CStringMapper::map("ROOM"))
+								envNum = 2;
+							else if (first->FxName == CStringMapper::map("BATHROOM"))
+								envNum = 3;
+							else if (first->FxName == CStringMapper::map("LIVINGROOM"))
+								envNum = 4;
+							else if (first->FxName == CStringMapper::map("STONEROOM"))
+								envNum = 5;
+							else if (first->FxName == CStringMapper::map("AUDITORIUM"))
+								envNum = 6;
+							else if (first->FxName == CStringMapper::map("CONCERTHALL"))
+								envNum = 7;
+							else if (first->FxName == CStringMapper::map("CAVE"))
+								envNum = 8;
+							else if (first->FxName == CStringMapper::map("ARENA"))
+								envNum = 9;
+							else if (first->FxName == CStringMapper::map("HANGAR"))
+								envNum = 10;
+							else if (first->FxName == CStringMapper::map("CARPETEDHALLWAY"))
+								envNum = 11;
+							else if (first->FxName == CStringMapper::map("HALLWAY"))
+								envNum = 12;
+							else if (first->FxName == CStringMapper::map("STONECORRIDOR"))
+								envNum = 13;
+							else if (first->FxName == CStringMapper::map("ALLEY"))
+								envNum = 14;
+							else if (first->FxName == CStringMapper::map("FOREST"))
+								envNum = 15;
+							else if (first->FxName == CStringMapper::map("CITY"))
+								envNum = 16;
+							else if (first->FxName == CStringMapper::map("MOUNTAINS"))
+								envNum = 16;
+							else if (first->FxName == CStringMapper::map("QUARRY"))
+								envNum = 17;
+							else if (first->FxName == CStringMapper::map("PLAIN"))
+								envNum = 18;
+							else if (first->FxName == CStringMapper::map("PARKINGLOT"))
+								envNum = 19;
+							else if (first->FxName == CStringMapper::map("SEWERPIPE"))
+								envNum = 20;
+							else if (first->FxName == CStringMapper::map("UNDERWATER"))
+								envNum = 21;
+							else if (first->FxName == CStringMapper::map("DRUGGED"))
+								envNum = 22;
+							else if (first->FxName == CStringMapper::map("DIZZY"))
+								envNum = 23;
+							else if (first->FxName == CStringMapper::map("PSYCHOTIC"))
+								envNum = 24;
+							else
+								envNum = 18;
+
+							drvListener->setEnvironment(envNum, 10);
+						}
+					}
+					break;
+				}
+			}
+		}
+	}
+
 
 	// compute the list of load/unload banks.
 	{
@@ -948,7 +1094,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 							// set the volume
 							ss.SoundData.Source->setRelativeGain(gain);
 							// and the position
-							ss.Position.z += 5.0f;
+							ss.Position.z = _LastPosition.z + 5.0f;
 							ss.SoundData.Source->setPos(ss.Position);
 
 //							nldebug("Setting source %s at %f", ss.SoundData.SoundName.c_str(), gain);

@@ -1,7 +1,7 @@
 /** \file listener_dsound.h
  * DirectSound sound listener
  *
- * $Id: listener_dsound.h,v 1.6 2003/01/10 17:11:56 boucher Exp $
+ * $Id: listener_dsound.h,v 1.7 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "../sound_driver.h"
 #include <dsound.h>
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 #include <eax.h>
 #endif
 
@@ -137,7 +137,7 @@ private:
 	// TMP : TEST
 	NLMISC::CVector			_Pos;
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	LPKSPROPERTYSET			_EAXListener;
 #endif
 };

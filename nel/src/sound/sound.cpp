@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a generic sound and its static properties
  *
- * $Id: sound.cpp,v 1.27 2003/01/08 15:45:14 boucher Exp $
+ * $Id: sound.cpp,v 1.28 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,7 +101,8 @@ CSound::CSound() :
 	_Looping(false),
 	_ConeInnerAngle(6.283185f), 
 	_ConeOuterAngle(6.283185f), 
-	_ConeOuterGain( 1.0f )
+	_ConeOuterGain( 1.0f ),
+	_UserVarControler(CStringMapper::emptyId())
 {
 }
 
@@ -118,7 +119,17 @@ void	CSound::serial(NLMISC::IStream &s)
 	s.serial(_Direction);
 	s.serial(_Looping);
 	s.serial(_MaxDist);
-	s.serial(_Name);
+	if (s.isReading())
+	{
+		std::string name;
+		s.serial(name);
+		_Name = CStringMapper::map(name);
+	}
+	else
+	{
+		std::string name = CStringMapper::unmap(_Name);
+		s.serial(name);
+	}
 }
 
 
@@ -128,7 +139,7 @@ void	CSound::serial(NLMISC::IStream &s)
 void				CSound::importForm(const std::string& filename, NLGEORGES::UFormElm& root)
 {
 	// Name
-	_Name = CFile::getFilenameWithoutExtension(filename);	
+	_Name = CStringMapper::map(CFile::getFilenameWithoutExtension(filename));	
 
 	// InternalConeAngle
 	uint32 inner;
@@ -195,11 +206,20 @@ void				CSound::importForm(const std::string& filename, NLGEORGES::UFormElm& roo
  	root.getValueByName(prio, ".Priority");
 	switch (prio)
 	{
-	case 0: _Priority = LowPri; break;
-	default:
-	case 1: _Priority = MidPri; break;
-	case 2: _Priority = HighPri; break;
-	case 3: _Priority = HighestPri;	break;
+	case 0:		
+		_Priority = LowPri; 
+		break;
+	case 1:		
+		_Priority = MidPri; 
+		break;
+	case 2:		
+		_Priority = HighPri; 
+		break;
+	case 3:		
+		_Priority = HighestPri;	
+		break;
+	default:	
+		_Priority = MidPri;
 	}
 }
 

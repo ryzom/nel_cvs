@@ -1,7 +1,7 @@
 /** \file complex_sound.h
  *
  *
- * $Id: complex_sound.h,v 1.2 2002/11/25 14:11:41 boucher Exp $
+ * $Id: complex_sound.h,v 1.3 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_COMPLEX_SOUND_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include "sound.h"
 #include <string>
 
@@ -60,8 +61,8 @@ public:
 
 	const std::vector<uint32>		&getSoundSeq() const						{ return _SoundSeq;}
 	const std::vector<uint32>		&getDelaySeq() const						{ return _DelaySeq;}
-	const std::string				&getSound(uint index) const					{ return _Sounds[index%_Sounds.size()];}
-	const std::vector<std::string>	&getSounds() const							{ return _Sounds;}
+	const NLMISC::TStringId			&getSound(uint index) const					{ return _Sounds[index%_Sounds.size()];}
+	const std::vector<NLMISC::TStringId>	&getSounds() const							{ return _Sounds;}
 
 	uint32							getFadeLenght() const						{ return _XFadeLenght;} 
 
@@ -94,10 +95,10 @@ private:
 	void							parseSequence(const std::string &str, std::vector<uint32> &seq, uint scale = 1);
 	virtual float					getMaxDistance() const;
 
-	TPATTERN_MODE				_PatternMode;
-	std::vector<std::string>	_Sounds;
-	float						_TicksPerSeconds;
-	std::vector<uint32>			_SoundSeq;
+	TPATTERN_MODE					_PatternMode;
+	std::vector<NLMISC::TStringId>	_Sounds;
+	float							_TicksPerSeconds;
+	std::vector<uint32>				_SoundSeq;
 	/// Sequence of delay in millisec.
 	std::vector<uint32>			_DelaySeq;
 

@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.7 2003/01/10 17:11:56 boucher Exp $
+ * $Id: sound_driver_dsound.h,v 1.8 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	virtual	IListener *createListener();
 
 	/// Initialization
-	virtual bool init(HWND wnd, bool useEax);
+	virtual bool init(HWND wnd, bool useEax, IStringMapperProvider *stringMapper);
 
 	/// Create a sound buffer
 	virtual	IBuffer *createBuffer();
@@ -103,7 +103,10 @@ public:
     /// Get the gain
 	float getGain();
 
-#ifdef EAX_AVAILABLE
+	/// Return the string mapper
+	IStringMapperProvider	*getStringMapper()	{return _StringMapper;}
+
+#if EAX_AVAILABLE == 1
 	LPKSPROPERTYSET		createPropertySet(CSourceDSound *source);
 #endif
 
@@ -151,6 +154,8 @@ private:
 
 	/// The EAX support is requested and accepted (ie, there is enougth hardware 3D buffer)
 	bool	_UseEAX;
+	/// The string mapper provided by client code
+	IStringMapperProvider	*_StringMapper;
 
 #if NLSOUND_PROFILE
 protected:
@@ -164,6 +169,7 @@ protected:
 	uint32 _UpdateCount;
 	uint32 _UpdateSources;
 	uint32 _UpdateExec;
+
 
 public:
 

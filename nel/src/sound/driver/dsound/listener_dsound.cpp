@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.13 2003/01/10 17:11:56 boucher Exp $
+ * $Id: listener_dsound.cpp,v 1.14 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "stddsound.h"
 #include "../sound_driver.h"
 
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 # include <eax.h>
 #endif
 
@@ -50,14 +50,14 @@ CListenerDSound	*CListenerDSound::_Instance = NULL;
 CListenerDSound::CListenerDSound(LPDIRECTSOUND3DLISTENER8 dsoundListener) //: IListener()
 :	_Pos(CVector::Null)
 {
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	_EAXListener = 0;
 #endif
 	if ( _Instance == NULL )
 	{
 		_Instance = this;
         _Listener = dsoundListener;
-#if defined MANUAL_ROLLOFF
+#if MANUAL_ROLLOFF = 1
 		setRolloffFactor(DS3D_MINROLLOFFFACTOR);
 #endif
 	}
@@ -87,7 +87,7 @@ void CListenerDSound::release()
         _Listener->Release();
 		_Listener = NULL;
     }
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	if (_EAXListener != NULL)
 	{
 		_EAXListener->Release();
@@ -285,7 +285,7 @@ void CListenerDSound::setDopplerFactor( float f )
  */
 void CListenerDSound::setRolloffFactor( float f )
 {
-#if defined(MANUAL_ROLLOFF)
+#if MANUAL_ROLLOFF = 1
     if (_Listener != NULL)
     {
 		//clamp(f, DS3D_MINROLLOFFFACTOR, DS3D_MAXROLLOFFFACTOR);
@@ -333,7 +333,7 @@ void CListenerDSound::commit3DChanges()
  */
 void CListenerDSound::setEnvironment( uint env, float size )
 {
-#ifdef EAX_AVAILABLE
+#if EAX_AVAILABLE == 1
 	if (_EAXListener == NULL)
 	{
 		_EAXListener = CSoundDriverDSound::instance()->createPropertySet(NULL);

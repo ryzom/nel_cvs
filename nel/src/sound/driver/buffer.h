@@ -1,7 +1,7 @@
 /** \file buffer.h
  * IBuffer: sound buffer interface
  *
- * $Id: buffer.h,v 1.4 2002/11/25 14:11:41 boucher Exp $
+ * $Id: buffer.h,v 1.5 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_BUFFER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include "sound/driver/sound_driver.h"
 
 
@@ -54,7 +55,7 @@ public:
 	 *	If the name after loading of the buffer doesn't match the preset name,
 	 *	the load will assert.
 	 */
-	virtual void			presetName(const std::string &bufferName) = 0;
+	virtual void			presetName(const NLMISC::TStringId &bufferName) = 0;
 	/// Set the sample format. Example: freq=44100
 	virtual void			setFormat( TSampleFormat format, uint freq ) = 0;
 	/// Set the buffer size and fill the buffer.  Return true if ok. Call setFormat() first.
@@ -83,7 +84,7 @@ public:
 	virtual bool			fillMore( void *src, uint32 srcsize )	{ throw ESoundDriverNotSupp(); }
 
 	/// Return the name of this buffer
-	virtual const std::string&	getName() = 0;
+	virtual const NLMISC::TStringId&	getName() = 0;
 
 	/// Return true if the buffer is loaded. Used for async load/unload.
 	virtual bool			isBufferLoaded() = 0;

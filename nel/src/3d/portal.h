@@ -1,7 +1,7 @@
 /** \file portal.h
  * Definition of a cluster/portal visibility
  *
- * $Id: portal.h,v 1.4 2003/01/08 15:47:43 boucher Exp $
+ * $Id: portal.h,v 1.5 2003/03/03 12:57:27 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_PORTAL_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/plane.h"
 #include "nel/misc/quat.h"
@@ -124,8 +125,8 @@ private:
 
 //	std::string		_OcclusionModel;
 //	std::string		_OpenOcclusionModel;
-	uint		_OcclusionModelId;
-	uint		_OpenOcclusionModelId;
+	NLMISC::TStringId		_OcclusionModelId;
+	NLMISC::TStringId		_OpenOcclusionModelId;
 
 
 	/// Friend class

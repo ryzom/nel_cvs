@@ -1,7 +1,7 @@
 /** \file sample_bank.h
  * CSampleBank: a set of samples
  *
- * $Id: sample_bank.h,v 1.3 2002/11/04 15:40:44 boucher Exp $
+ * $Id: sample_bank.h,v 1.4 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/string_mapper.h"
 #include "nel/sound/u_source.h"
 #include "audio_mixer_user.h"
 #include <string>
@@ -51,8 +52,9 @@ struct eqname
 };
 */
 
-/// Sound names hash map
-typedef std::hash_map<std::string, IBuffer*> TSampleTable;
+/// Sample names hash map
+//typedef std::hash_map<std::string, IBuffer*> TSampleTable;
+typedef std::hash_map<NLMISC::TStringId, IBuffer*> TSampleTable;
 
 
 /**
@@ -66,11 +68,11 @@ class CSampleBank : public CAudioMixerUser::IMixerUpdate
 public:
 
 	/// Return an existing bank for the given file name, NULL if no bank for this file.
-	static CSampleBank *findSampleBank(const std::string &filename);
+	static CSampleBank *findSampleBank(const NLMISC::TStringId &filename);
 
 	/// Return the name corresponding to a name. The sample is searched
 	// in all the loaded sample banks.
-	static IBuffer*		get(const std::string &name);
+	static IBuffer*		get(const NLMISC::TStringId &name);
 
 	/// Reload all the sample bank.
 	static void				reload(bool async);
@@ -101,7 +103,7 @@ public:
 	bool				isLoaded();
 
 	/// Return a samples corresponding to a name.
-	IBuffer				*getSample(const std::string &name);
+	IBuffer				*getSample(const NLMISC::TStringId &name);
 
 	/// Return the number of samples in this bank.
 	uint				countSamples();
@@ -123,7 +125,8 @@ private:
 	/// The update method. Used when waiting for async sample loading.
 	void onUpdate();
 
-	typedef std::hash_map<std::string, CSampleBank*>				TSampleBankContainer;
+//	typedef std::hash_map<std::string, CSampleBank*>				TSampleBankContainer;
+	typedef std::hash_map<NLMISC::TStringId, CSampleBank*>			TSampleBankContainer;
 
 	// The map off all loaded sample banks
 	static TSampleBankContainer			_Banks;
@@ -151,7 +154,7 @@ private:
 	bool				_SplitLoadDone;
 
 	/// List of sample that need to be loaded asynchronously.
-	std::list<std::pair<IBuffer *, std::string> >	_LoadList;
+	std::list<std::pair<IBuffer *, NLMISC::TStringId> >	_LoadList;
 
 };
 

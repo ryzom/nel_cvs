@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: background_source.cpp,v 1.4 2003/02/06 09:20:21 boucher Exp $
+ * $Id: background_source.cpp,v 1.5 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,10 +35,10 @@ namespace NLSOUND
 {
 
 
-CBackgroundSource::CBackgroundSource(CBackgroundSound *backgroundSource, bool spawn, TSpawnEndCallback cb, void *cbUserParam, NL3D::CCluster *cluster)
-:	CSourceCommon(backgroundSource, spawn, cb, cbUserParam, cluster)
+CBackgroundSource::CBackgroundSource(CBackgroundSound *backgroundSound, bool spawn, TSpawnEndCallback cb, void *cbUserParam, NL3D::CCluster *cluster)
+:	CSourceCommon(backgroundSound, spawn, cb, cbUserParam, cluster)
 {
-	_BackgroundSound = backgroundSource;
+	_BackgroundSound = backgroundSound;
 }
 
 CBackgroundSource::~CBackgroundSource()
@@ -126,6 +126,8 @@ void CBackgroundSource::play()
 	{
 		TSubSource subSource;
 		subSource.Source = mixer->createSource(first->SoundName, false, 0, 0, _Cluster, 0);
+		if (subSource.Source != NULL)
+			subSource.Source->setPriority(_Priority);
 		subSource.Filter = first->Filter;
 		subSource.Status = SUB_STATUS_STOP;
 		_Sources.push_back(subSource);
@@ -183,7 +185,8 @@ void CBackgroundSource::updateFilterValues(const float *filterValues)
 			else if (gain > 0 && ss.Status != SUB_STATUS_PLAY)
 			{
 				// need to restard the sound
-				ss.Source->setRelativeGain(gain);
+				ss.Source->setRelativeGain(gain * _Gain);
+				ss.Source->setPitch(ss.Source->getSound()->getPitch() * _Pitch);
 				ss.Source->setPos(_Position);
 				ss.Source->play();
 				// some sub sound can be too far from the listener, 
@@ -196,7 +199,7 @@ void CBackgroundSource::updateFilterValues(const float *filterValues)
 			else if (ss.Status == SUB_STATUS_PLAY)
 			{
 				// just update the gain
-				ss.Source->setRelativeGain(gain);
+				ss.Source->setRelativeGain(gain * _Gain);
 			}
 		}
 	}

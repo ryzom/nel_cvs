@@ -1,7 +1,7 @@
 /** \file sound_bank.h
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.h,v 1.5 2002/11/26 10:15:55 boucher Exp $
+ * $Id: sound_bank.h,v 1.6 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_SOUND_BANK_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include <string>
 #include <hash_map>
 
@@ -55,11 +56,11 @@ public:
 	/** Called by CSampleBank when a sample(buffer) is unloaded.
 	 *	Remove link from CSound to unloaded IBuffer.
 	 */
-	void	bufferUnloaded(const std::string bufferName);
+	void	bufferUnloaded(const NLMISC::TStringId &bufferName);
 	/** Called by CSampleBank when a sample(buffer) is loaded.
 	 *	Regenerate link between CSound and IBuffer.
 	 */
-	void	bufferLoaded(const std::string bufferName, IBuffer *buffer);
+	void	bufferLoaded(const NLMISC::TStringId &bufferName, IBuffer *buffer);
 
 	/// Destructor
 	virtual ~CSoundBank();
@@ -74,10 +75,10 @@ public:
 	bool				isLoaded();
 
 	/// Return a sound corresponding to a name.
-	CSound				*getSound(const std::string &name);
+	CSound				*getSound(const NLMISC::TStringId &name);
 
 	/// Return the names of the sounds 
-	void				getNames( std::vector<std::string >& names );
+	void				getNames( std::vector<NLMISC::TStringId> &names );
 
 	/// Return the number of sounds in this bank.
 	uint				countSounds();
@@ -89,7 +90,7 @@ public:
 	static void			release();
 
 	void				addSound(CSound *sound);
-	void				removeSound(const std::string &name);
+	void				removeSound(const NLMISC::TStringId &name);
 
 
 private:
@@ -101,9 +102,11 @@ private:
 	static CSoundBank		*_Instance;
 
 	typedef std::hash_set<class CSimpleSound*, THashPtr<CSimpleSound*> >	TSimpleSoundContainer;
-	typedef std::hash_map<std::string, TSimpleSoundContainer >				TBufferAssocContainer;
+//	typedef std::hash_map<std::string, TSimpleSoundContainer >				TBufferAssocContainer;
+	typedef std::hash_map<NLMISC::TStringId, TSimpleSoundContainer >		TBufferAssocContainer;
 	/// Sound names hash map
-	typedef std::hash_map<std::string, CSound*>								TSoundTable;
+//	typedef std::hash_map<std::string, CSound*>								TSoundTable;
+	typedef std::hash_map<NLMISC::TStringId, CSound*>						TSoundTable;
 
 	/// Assoc from buffer to sound. Used for sound unloading.
 	TBufferAssocContainer		_BufferAssoc;

@@ -1,6 +1,6 @@
 /** \file context_sound.cpp
  *
- * $Id: context_sound.cpp,v 1.1 2002/11/25 14:11:41 boucher Exp $
+ * $Id: context_sound.cpp,v 1.2 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,11 +87,32 @@ bool		CContextSound::isDetailed() const
 {
 	return false;
 }
+
+float		CContextSound::getMaxDistance() const
+{
+	if (_ContextSounds == 0)
+	{
+		const_cast<CContextSound*>(this)->init();
+	}
+	return _ContextSounds->getMaxDistance();;
+}
+
 /// Return the length of the sound in ms
 uint32		CContextSound::getDuration() 
 {
-	return 0;
+	std::vector<std::pair<std::string, CSound*> > sounds;
+	getSubSoundList(sounds);
+
+	uint32 duration = 0;
+
+	std::vector<std::pair<std::string, CSound*> >::iterator first(sounds.begin()), last(sounds.end());
+	for (; first != last; ++first)
+	{
+		duration = std::max(duration, first->second->getDuration());
+	}
+	return duration;
 }
+
 /// Used by the george sound plugin to check sound recursion (ie sound 'toto' use sound 'titi' witch also use sound 'toto' ...).
 void		CContextSound::getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const 
 {
@@ -238,26 +259,27 @@ void CContextSound::init()
 
 	// ok, we have the container, now fill it with the sound
 	{
-		std::vector<std::string> allSounds;
+		std::vector<NLMISC::TStringId> allSounds;
 //		CSoundBank::getSoundNames(allSounds);
 		CAudioMixerUser::instance()->getSoundNames(allSounds);
 
-		std::vector<std::string>::iterator first(allSounds.begin()), last(allSounds.end());
+		std::vector<NLMISC::TStringId>::iterator first(allSounds.begin()), last(allSounds.end());
 		for (; first != last; ++first)
 		{
-			if (first->size() > _BaseName.size())
+			const std::string &soundName = CStringMapper::unmap(*first);
+			if (soundName.size() > _BaseName.size())
 			{
 				uint i;
 				for (i=0; i<_BaseName.size(); ++i)
 				{
-					if ((*first)[i] != _BaseName[i])
+					if (soundName[i] != _BaseName[i])
 						break;
 				}
 				if (i == _BaseName.size())
 				{
 					// The base name is ok, check that the next char is a digit (avoid conflit if some 
 					// sound have a longeur base name with same begining)
-					if ((*first)[i] >= '0' && (*first)[i] <= '9')
+					if (soundName[i] >= '0' && soundName[i] <= '9')
 						_ContextSounds->addSound(CAudioMixerUser::instance()->getSoundId(*first), _BaseName);
 				}
 			}

@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * <File description>
  *
- * $Id: ps_sound.h,v 1.8 2002/02/20 11:20:10 vizerie Exp $
+ * $Id: ps_sound.h,v 1.9 2003/03/03 12:57:27 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_PS_SOUND_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include "3d/ps_located.h"
 #include "3d/ps_attrib.h"
 
@@ -74,13 +75,13 @@ public:
 	virtual void					step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
 	
 	/// set the name of the sound
-	void							setSoundName(const std::string &soundName)
+	void							setSoundName(const NLMISC::TStringId &soundName)
 	{
 		_SoundName = soundName;
 	}
 
 	/// get the name of the sound
-	const std::string &				getSoundName(void) const
+	const NLMISC::TStringId &				getSoundName(void) const
 	{
 		return _SoundName;
 	}
@@ -165,7 +166,7 @@ protected:
 	void					removeAllSources();
 
 	CPSAttrib<UPSSoundInstance *>	_Sounds;
-	std::string						_SoundName;
+	NLMISC::TStringId				_SoundName;
 	float							_Gain;
 	CPSAttribMaker<float> *			_GainScheme;
 	float							_Pitch;

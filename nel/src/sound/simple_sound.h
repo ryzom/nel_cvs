@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: simple_sound.h,v 1.2 2002/11/25 14:11:41 boucher Exp $
+ * $Id: simple_sound.h,v 1.3 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_SIMPLE_SOUND_H
 #define NL_SIMPLE_SOUND_H
 
+#include "nel/misc/string_mapper.h"
 #include "sound.h"
 
 namespace NLSOUND {
@@ -58,8 +59,6 @@ public:
 	/// Load the sound parameters from georges' form
 	virtual void		importForm(const std::string& filename, NLGEORGES::UFormElm& formRoot);
 
-	/// Return the name of the buffer, can be depend of a context
-	const std::string	&getBuffername()					{ return _Buffername; }
 	/// Return the buffer and the buffername if not null
 	IBuffer*			getBuffer();
 	/// Return true if distance and cone are meaningful
@@ -71,9 +70,9 @@ public:
 	/// Return the length of the sound in ms
 	uint32				getDuration();
 	/// Return the filename
-	const std::string&	getFilename() const					{ return _Filename; }
+	const NLMISC::TStringId&	getFilename() const					{ return _Filename; }
 	/// Return the name of the buffer (must be unique)
-	const std::string&	getBuffername() const				{ return _Buffername; }
+	const NLMISC::TStringId&	getBuffername() const				{ return _Buffername; }
 
 	/// Save (output stream only) (EDIT)
 	//static void			save( const std::vector<CSound*>& container, NLMISC::IStream& s );
@@ -105,8 +104,10 @@ private:
 	bool				_NeedContext;
 
 	// Sound name and filename (required for output (EDIT))
-	std::string			_Filename;
-	std::string			_Buffername;
+//	std::string			_Filename;
+//	std::string			_Buffername;
+	NLMISC::TStringId	_Filename;
+	NLMISC::TStringId	_Buffername;
 
 };
 

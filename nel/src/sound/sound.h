@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.15 2002/11/25 14:11:41 boucher Exp $
+ * $Id: sound.h,v 1.16 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,7 +42,8 @@ class CSound;
 
 
 /// Sound names hash map
-typedef std::hash_map<std::string, CSound*> TSoundMap;
+//typedef std::hash_map<std::string, CSound*> TSoundMap;
+typedef std::hash_map<NLMISC::TStringId, CSound*> TSoundMap;
 
 /// Sound names set (for ambiant sounds)
 typedef std::set<CSound*> TSoundSet;
@@ -57,6 +58,7 @@ const double Sqrt12_2 = 1.0594630943592952645618252949463;  // 2^1/12
  */
 class CSound
 {
+	friend class CAudioMixerUser;
 public:
 	/// Factory for specialized sound.
 	static CSound *createSound(const std::string &filename, NLGEORGES::UFormElm& formRoot);
@@ -102,7 +104,7 @@ public:
 	/// Return the length of the sound in ms
 	virtual uint32		getDuration() = 0;
 	/// Return the name (must be unique)
-	const std::string&	getName() const						{ return _Name; }
+	const NLMISC::TStringId&	getName() const						{ return _Name; }
 	/// Return the max distance (if detailed())
 	virtual float		getMaxDistance() const				{ return _MaxDist; }
 
@@ -115,9 +117,11 @@ public:
 
 	virtual void		serial(NLMISC::IStream &s);
 
+	NLMISC::TStringId	getUserVarControler() { return _UserVarControler; }
+
 	bool				operator<( const CSound& otherSound ) const
 	{
-		return _Name < otherSound._Name;
+		return NLMISC::CStringMapper::unmap(_Name) < NLMISC::CStringMapper::unmap(otherSound._Name);
 	}
 
 protected:
@@ -135,7 +139,9 @@ protected:
 	float				_MaxDist;
 
 	// Sound name.
-	std::string			_Name;
+	NLMISC::TStringId	_Name;
+	/// An optional user var controler.
+	NLMISC::TStringId	_UserVarControler;
 
 };
 

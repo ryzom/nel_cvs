@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.h,v 1.4 2003/02/06 09:21:46 boucher Exp $
+ * $Id: complex_source.h,v 1.5 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,17 +114,26 @@ public:
 //	virtual bool					getSourceRelativeMode() const;
 
 private:
+
 	TSOURCE_TYPE getType() const {return SOURCE_COMPLEX;}
 
 	/// Mixer update implementation.
 	void onUpdate();
 	/// Mixer event implementation.
 	void onEvent();
+	/// Do the dirty work of starting to play. Called by play and by setGain or setRelativeGain when the source is muted.
+	void playStuf();
 
 	USource			*_Source1;
 	USource			*_Source2;
 
 	std::vector<USource	*>	_AllSources;
+
+	/** When play is called but the gain is 0, then the sound is muted.
+	 *	This flag keek track of this to restart the source when the
+	 *	gain is updated.
+	 */
+	bool				_Muted;
 
 //	NLMISC::TTime	_Lenght1;
 //	NLMISC::TTime	_Lenght2;

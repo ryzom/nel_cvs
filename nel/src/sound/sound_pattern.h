@@ -4,7 +4,7 @@
  * be selected randomly from a set, or have a composed sequence.
  * The intervals can be determined or selected randomly. 
  *
- * $Id: sound_pattern.h,v 1.1 2002/06/28 20:38:54 hanappe Exp $
+ * $Id: sound_pattern.h,v 1.2 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,7 +106,7 @@ public:
 	 */
 
 	virtual void				addSound(std::string& name)					{ _Sounds.push_back(name); }
-	virtual void				removeSound(std::string& name);
+	virtual void				removeSound(const NLMISC::TStringId& name);
 	virtual void				getSounds(std::vector<std::string>& sounds);
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.h,v 1.3 2003/02/06 09:21:28 boucher Exp $
+ * $Id: clustered_sound.h,v 1.4 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_CLUSTERED_SOUND_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/string_mapper.h"
 #include <vector>
 #include <map>
 
@@ -248,20 +249,21 @@ private:
 	TClusterStatusMap		_AudibleClusters;
 	/// The cluster for the next travesal step
 	TClusterTravContextMap	_NextTraversalStep;
+	/// The last setted environement.
+	uint					_LastEnv;
 	/// The segment of all the audio path.
 	std::vector<std::pair<NLMISC::CVector, NLMISC::CVector> >	_AudioPath;
 
 	/// The current cluster playing source indexed with sound group id
-//	std::map<std::string, CClusterSound>	_Sources;
-	std::hash_map<uint, CClusterSound>		_Sources;
+	std::hash_map<NLMISC::TStringId, CClusterSound>		_Sources;
 
 	/// The sound_group to sound assoc
-	std::hash_map<uint, std::string>		_SoundGroupToSound;
+	std::hash_map<NLMISC::TStringId, NLMISC::TStringId>	_SoundGroupToSound;
 
 	/// The mapping for env name Id to EAX environement number
-	std::hash_map<uint, uint>				_IdToEaxEnv;
+	std::hash_map<NLMISC::TStringId, uint>	_IdToEaxEnv;
 	/// The mapping for occlusion material name to material number
-	std::hash_map<uint, uint>				_IdToMaterial;
+	std::hash_map<NLMISC::TStringId, uint>	_IdToMaterial;
 	/// The environment name table for init.
 	static char								*_EnvironmentNames[];
 	/// The material name table for init.

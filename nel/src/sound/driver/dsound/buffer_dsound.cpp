@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.5 2002/11/04 15:40:44 boucher Exp $
+ * $Id: buffer_dsound.cpp,v 1.6 2003/03/03 12:58:09 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "stddsound.h"
 #include "buffer_dsound.h"
 #include "nel/misc/path.h"
+#include "sound_driver_dsound.h"
 
 
 #include <windows.h>
@@ -37,9 +38,11 @@ using namespace std;
 
 namespace NLSOUND {
 
+static const std::string	EmptyString;
 
 CBufferDSound::CBufferDSound()
 {
+	_Name = CSoundDriverDSound::instance()->getStringMapper()->map(EmptyString);
     _Data = NULL;
     _Size = 0; 
     _Format = Mono16;
@@ -48,7 +51,7 @@ CBufferDSound::CBufferDSound()
 
 CBufferDSound::~CBufferDSound()
 {
-	nldebug("Destroying DirectSound buffer %s (%p)", _Name.c_str(), this);
+//	nldebug("Destroying DirectSound buffer %s (%p)", CSoundDriverDSound::instance()->getStringMapper()->unmap(_Name).c_str(), this);
 
     if (_Data != NULL)
     {
@@ -56,7 +59,7 @@ CBufferDSound::~CBufferDSound()
     }
 }
 
-void CBufferDSound::presetName(const std::string &bufferName)
+void CBufferDSound::presetName(const NLMISC::TStringId &bufferName)
 {
 	_Name = bufferName;
 }
@@ -273,11 +276,13 @@ bool CBufferDSound::loadWavFile(const char* file)
     mmioClose(hmmio, 0);
 
 
-	std::string name = CFile::getFilenameWithoutExtension(file);
+	static NLMISC::TStringId	empty(CSoundDriverDSound::instance()->getStringMapper()->map(""));
+	NLMISC::TStringId name = CSoundDriverDSound::instance()->getStringMapper()->map(CFile::getFilenameWithoutExtension(file));
 	// if name is preseted, the name must match.
-	if (!_Name.empty())
+//	if (!_Name.empty())
+	if (_Name != empty)
 	{
-		nlassertex(_Name == name, ("The preseted name and buffer name doen't match !"));
+		nlassertex(name == _Name, ("The preseted name and buffer name doen't match !"));
 	}
 	_Name = name;
 

@@ -1,6 +1,6 @@
 /** \file background_sound.h
  *
- * $Id: background_sound.h,v 1.4 2003/02/06 09:18:27 boucher Exp $
+ * $Id: background_sound.h,v 1.5 2003/03/03 12:58:08 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 #ifndef NL_BACKGROUND_SOUND_H
 #define NL_BACKGROUND_SOUND_H
 
+#include "nel/misc/string_mapper.h"
 #include "sound.h"
 #include "nel/sound/u_audio_mixer.h"
 
@@ -71,18 +72,22 @@ public:
 	/// Associtation clas for storage of sound / filter.
 	struct TSoundInfo
 	{
-		std::string			SoundName;
-		/// Fade in length (ms) after environnement filter end. 
-//		uint32				FilterFadeIn;
-		/// Fade out length (ms) after environnement filter start.
-//		uint32				FilterFadeOut;
+		NLMISC::TStringId		SoundName;
 		UAudioMixer::TBackgroundFlags		Filter;
 
 		void serial(NLMISC::IStream &s)
 		{
-			s.serial(SoundName);
-//			s.serial(FilterFadeIn);
-//			s.serial(FilterFadeOut);
+			std::string soundName;
+			if (s.isReading())
+			{
+				s.serial(soundName);
+				SoundName = NLMISC::CStringMapper::map(soundName);
+			}
+			else
+			{
+				soundName = NLMISC::CStringMapper::unmap(SoundName);
+				s.serial(soundName);
+			}
 			s.serial(Filter);
 		}
 	};

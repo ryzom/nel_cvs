@@ -567,6 +567,14 @@ SOURCE=..\include\nel\3d\texture_font.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\texture_grouped.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\texture_grouped.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\texture_mem.cpp
 # End Source File
 # Begin Source File
@@ -1007,6 +1015,10 @@ SOURCE=..\include\nel\3d\ps_attrib_maker.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\ps_attrib_maker_template.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_color.cpp
 # End Source File
 # Begin Source File
@@ -1040,6 +1052,14 @@ SOURCE=.\3d\ps_force.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\ps_force.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_int.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_int.h
 # End Source File
 # Begin Source File
 

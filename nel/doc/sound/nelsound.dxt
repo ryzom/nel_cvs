@@ -4,7 +4,7 @@
 
 \author Olivier Cado
 
-\date Updated July 19, 2001
+\date Updated July 31, 2001
 
 \section sndoverview Overview
 
@@ -108,12 +108,13 @@ the game developers to identify the sounds by the names they have chosen.
 
 \section sndcompile Compiling the NeL OpenAL Sound Driver
 
-(Windows example)
+(The examples are given for my Windows configuration)
 
 Include paths needed:
 - OpenAL base platform dir (C:\NETSHARE\OPENAL\WIN)
 - OpenAL include dir (C:\NETSHARE\OPENAL\WIN\AL)
 - EAX include dir (C:\NETSHARE\CREATIVE LABS\EAX 2.0 EXTENSIONS SDK\INCLUDE)
+- NeL src dir (R:\CODE\NEL\SRC)
 
 Library paths needed:
 - OpenAL .lib location (C:\Netshare\openal\win\openal32\release)
@@ -121,7 +122,9 @@ Library paths needed:
 - EAX .lib location (C:\NETSHARE\CREATIVE LABS\EAX 2.0 EXTENSIONS SDK\LIBS)
 
 At runtime, the user needs openal32.dll and eax.dll
-(usually in the system directory)
+(usually in the system directory).
+
+Please report any problems to cado@nevrax.com or use the mailing list nel@nevrax.org.
 
 \section sndlater Later enhancements
 

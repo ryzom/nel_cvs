@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.2 2001/02/20 11:10:09 berenguier Exp $
+ * $Id: common.cpp,v 1.3 2001/03/07 14:51:59 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,22 @@ void nlSleep( uint32 ms )
 	usleep( ms*1000 );
 #endif
 }
+
+
+/*
+ * Returns Thread Id (note: on Linux, Process Id is the same as the Thread Id)
+ */
+uint getThreadId()
+{
+#ifdef NL_OS_WINDOWS
+	return (uint)GetCurrentThread(); // ???
+#elif defined NL_OS_UNIX
+	return getpid();
+#endif
+
+}
+
+
 
 
 } // NLMISC

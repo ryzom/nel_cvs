@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.20 2001/02/20 11:09:25 berenguier Exp $
+ * $Id: common.h,v 1.21 2001/03/07 14:52:05 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,6 +305,15 @@ public:
  * Note: the resolution of the timer is system-dependant and may be more than 1 millisecond.
  */
 void nlSleep( uint32 ms );
+
+
+/// Returns Process Id (note: on Linux, Process Id is the same as the Thread Id)
+#ifdef NL_OS_WINDOWS
+#define getpid _getpid
+#endif
+
+/// Returns Thread Id (note: on Linux, Process Id is the same as the Thread Id)
+uint getThreadId();
 
 
 }	// NLMISC

@@ -1,6 +1,6 @@
 /** \file vertex_program_parse.cpp
  *
- * $Id: vertex_program_parse.cpp,v 1.3 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: vertex_program_parse.cpp,v 1.4 2003/03/31 10:31:16 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -890,6 +890,21 @@ bool CVPParser::parseInstruction(CVPInstruction &instr, std::string &errorOutput
 
 
 //=================================================================================================
+bool CVPParser::isInputUsed(const TProgram &prg, CVPOperand::EInputRegister input)
+{
+	for(uint k = 0; k < prg.size(); ++k)
+	{
+		uint numSrc = prg[k].getNumUsedSrc();
+		for(uint l = 0; l < numSrc; ++l)
+		{
+			const CVPOperand &src =  prg[k].getSrc(l);
+			if (src.Type == CVPOperand::InputRegister && src.Value.InputRegisterValue == input) return true;
+		}
+	}
+	return false;
+}
+
+//=================================================================================================
 static std::string getStringUntilCR(const char *src)
 {
 	nlassert(src);
@@ -914,7 +929,7 @@ bool CVPParser::parse(const char *src, CVPParser::TProgram &result, std::string 
 	_LineStart = src;
 	_LineIndex = 1;
 	//
-	skipSpacesAndComments();
+	//skipSpacesAndComments(); // in fact space are not allowed at the start of the vertex program
 
 	// parse version
 	if (   _CurrChar[0] != '!' 

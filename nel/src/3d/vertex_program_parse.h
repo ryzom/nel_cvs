@@ -1,7 +1,7 @@
 /** \file vertex_program_parse.h
  * These are a set of classes used to parse a vertex program in proprietary format. This is used when
  * parsing isn't available in the target API (for example, missing OpenGL extension)
- * $Id: vertex_program_parse.h,v 1.2 2002/11/12 09:58:00 coutelas Exp $
+ * $Id: vertex_program_parse.h,v 1.3 2003/03/31 10:31:16 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -207,6 +207,9 @@ public:
 	  * This can serve as a base for other format code generation	  
 	  */
 	static void dump(const TProgram &prg, std::string &dest);
+
+	// test if a specific input is used by a vertex program
+	static bool isInputUsed(const TProgram &prg, CVPOperand::EInputRegister input);
 ////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////
 private:

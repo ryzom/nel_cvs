@@ -1,5 +1,12 @@
 <?php
 
+	// Variables
+
+	$LSHost = "localhost";
+	$LSPort = 49998;
+
+	// Functions
+
 	class CMemStream
 	{
 		var $Buffer;
@@ -83,11 +90,13 @@
 
 	function connectToLS(&$fp, &$res)
 	{
-		// connect to the login service that must be localhost:49990
-		$fp = fsockopen ("localhost", 49990, $errno, $errstr, 30);
+		global $LSHost, $LSPort;
+
+		// connect to the login service
+		$fp = fsockopen ($LSHost, $LSPort, $errno, $errstr, 30);
 		if (!$fp)
 		{
-			$res = "Can't connect to the login service ($errstr ($errno))";
+			$res = "Can't connect to the login service '$LSHost:$LSPort' ($errno: $errstr)";
 		}
 		else
 		{

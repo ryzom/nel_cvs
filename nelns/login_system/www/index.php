@@ -1,11 +1,20 @@
 <?php 
 
-// Warning: This script is not sure, It doesn't check if a user is already online and other possibility
+// Warning: This script is not safety, It doesn't check if a user is already online and other possibility
 
 	include_once('service_connection.inc');
 
 // ---------------------------------------------------------------------------------------- 
-// functions 
+// Variables
+// ---------------------------------------------------------------------------------------- 
+
+	$DBHost		= "localhost";
+	$DBUserName	= "";
+	$DBPassword	= "";
+	$DBName		= "nel";
+
+// ---------------------------------------------------------------------------------------- 
+// Functions
 // ---------------------------------------------------------------------------------------- 
 
 	// $state is the state that should be good when checking the login password
@@ -93,19 +102,19 @@
 					setcookie ("password", $password, time()+3600*24*15);
 					if(strlen($reason) != 0)
 					{
-						echo $reason."<br>";
+						echo $reason."<br>\n";
 					}
 				}
 				return 1;
 			}
 			else
 			{
-				echo "Authentification failed: ".$reason."<br>";
+				echo "Authentification failed: ".$reason."<br>\n";
 			}
 		}
 		else
 		{
-			echo "Authentification failed: login r$login and pass not set r$password<br>";
+			echo "Authentification failed: login r$login and pass not set r$password<br>\n";
 			return 0;
 		}
 	}
@@ -113,25 +122,25 @@
 	function patchForm($shardid, $clientApplication, $clientVersion, $serverVersion)
 	{
 		global $PHP_SELF;
-		echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
-		echo "<html><head><title>patch form</title></head><body>";
-		echo "<h1>Please wait while patching $clientApplication version $clientVersion to version $serverVersion </h1>";
-		echo '<!--nel="patch" serverVersion="'.$serverVersion.'" nelUrl="'.$PHP_SELF.'?cmd=login&shardid='.$shardid.'" nelServerPath="http://localhost/patch" nelUrlFailed="'.$PHP_SELF.'?cmd=patchFailed"';
-		echo "<h1>Current state</h1>";
-		echo "<!--nel_start_state--><!--nel_end_state--><br>";
-		echo "<h1>Log</h1>";
-		echo "<!--nel_start_log--><!--nel_end_log-->";
-		echo "</body></html>";
+		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
+		echo "<html><head><title>patch form</title></head><body>\n";
+		echo "<h1>Please wait while patching $clientApplication version $clientVersion to version $serverVersion </h1>\n";
+		echo '<!--nel="patch" serverVersion="'.$serverVersion.'" nelUrl="'.$PHP_SELF.'?cmd=login&shardid='.$shardid.'" nelServerPath="http://localhost/patch" nelUrlFailed="'.$PHP_SELF.'?cmd=patchFailed"'."\n";
+		echo "<h1>Current state</h1>\n";
+		echo "<!--nel_start_state--><!--nel_end_state--><br>\n";
+		echo "<h1>Log</h1>\n";
+		echo "<!--nel_start_log--><!--nel_end_log-->\n";
+		echo "</body></html>\n";
 	}
 
 	function patchFailed($reason)
 	{
 		global $PHP_SELF; 
-		echo '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">';
-		echo "<html><head><title>patch failed</title></head><body>";
-		echo "<h1>Patching failed</h1>";
-		echo "reason is: $reason";
-		echo "</body></html>";
+		echo "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n";
+		echo "<html><head><title>patch failed</title></head><body>\n";
+		echo "<h1>Patching failed</h1>\n";
+		echo "reason is: $reason<br>\n";
+		echo "</body></html>\n";
 	}
 
 	function loginForm()
@@ -178,19 +187,21 @@
 
 	function displayAvailableShards($clientApplication, $clientVersion)
 	{
-		global $PHP_SELF; 
-		$link = mysql_connect() or die ("Can't connect to database");
-		mysql_select_db ("nel") or die ("Can't access to the table");
+		global $PHP_SELF;
+		global $DBHost, $DBUserName, $DBPassword, $DBName;
+
+		$link = mysql_connect($DBHost, $DBUserName, $DBPassword) or die ("Can't connect to database");
+		mysql_select_db ($DBName) or die ("Can't access to the table");
 		$query = "SELECT * FROM shard WHERE ClientApplication='".$clientApplication."'";
 		$result = mysql_query ($query) or die ("Can't execute the query: ".$query);
 		
 		if (mysql_num_rows ($result) == 0)
 		{
-			echo '<h1>Sorry but now shards are available</h1>';
+			echo "<h1>Sorry but now shards are available</h1>\n";
 		}
 		else
 		{
-			echo '<h1>Please, select a shard:</h1>';
+			echo "<h1>Please, select a shard:</h1>\n";
 			while($row = mysql_fetch_array($result))
 			{
 				if ($row["ProgramName"] == $programName)
@@ -207,23 +218,23 @@
 					else
 						$ver = "version ".$row["Version"];
 
-					echo "<li>";
+					echo "<li>\n";
 					if ($row["Online"])
 					{
 						if ($versionok)
-							echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), wsip:'.$row["WsAddr"];
+							echo '<a href="'.basename($PHP_SELF).'?cmd=login&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), wsip:'.$row["WsAddr"]."\n";
 						else
-							echo '<a href="'.basename($PHP_SELF).'?cmd=patch&serverVersion='.$row["Version"].'&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), wsip:'.$row["WsAddr"];
+							echo '<a href="'.basename($PHP_SELF).'?cmd=patch&serverVersion='.$row["Version"].'&shardid='.$row["ShardId"].'"> '.$row["Name"].'</a> '.$ver.' ('.$row["NbPlayers"].' players), wsip:'.$row["WsAddr"]."\n";
 					}
 					else
 					{
-						echo $row["Name"].' '.$ver.' (offline), wsip:'.$row["WsAddr"];
+						echo $row["Name"].' '.$ver.' (offline), wsip:'.$row["WsAddr"]."\n";
 					}
-					echo "</li>";
+					echo "</li>\n";
 				}
 			}
 
-			echo '</ul>';
+			echo "</ul>\n";
 		}
 
 		mysql_close($link);
@@ -281,14 +292,14 @@
 
 			if (askClientConnection($shardid, $id, $res))
 			{
-				echo '<h1>Access validated</h1>Please wait while launching the application...<br>';
-				echo $res;
+				echo "<h1>Access validated</h1>Please wait while launching the application...<br>\n";
+				echo $res."<br>\n";
 			}
 			else
 			{
-				echo "<h1>Access denied</h1>";
-				echo "<p>$res</p>";
-				echo '<p><a href="'.basename($PHP_SELF).'">Back to the shards page</a></p>';
+				echo "<h1>Access denied</h1>\n";
+				echo "<p>$res</p>\n";
+				echo "<p><a href=\"".basename($PHP_SELF)."\">Back to the shards page</a></p>\n";
 			}
 		}
 		else if ($cmd == "patch")
@@ -305,14 +316,14 @@
 		{
 			// user logged, display the available shard
 
-echo "DEBUG: id: '$id' login: '$login' password: '$password' prog: '$clientApplication' version: '$clientVersion' ";
-echo "basename: '".basename($PHP_SELF)."'<br><br>";
+echo "DEBUG: id: '$id' login: '$login' password: '$password' prog: '$clientApplication' version: '$clientVersion'\n";
+echo "basename: '".basename($PHP_SELF)."'<br><br>\n";
 
-			echo "Hello $login, nice to meet you.";
+			echo "Hello $login, nice to meet you.<br>\n";
 
 			displayAvailableShards ($clientApplication, $clientVersion);
 
-			echo '<a href="'.basename($PHP_SELF).'?cmd=logout">logout</a><br>';
+			echo "<a href=\"".basename($PHP_SELF)."?cmd=logout\">logout</a><br>\n";
 		}
 	}
 ?>

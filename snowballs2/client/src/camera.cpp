@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.3 2001/07/12 14:36:33 lecroart Exp $
+ * $Id: camera.cpp,v 1.4 2001/07/12 15:43:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,10 +55,8 @@ void	initCamera()
 
 
 	Snow = Scene->createInstance("snow.ps");
-	Snow->setScale(1.0f, 1.0f, 1.0f);
+	Snow->setTransformMode (UTransformable::DirectMatrix);
 	Snow->setPivot(0.0f, 0.0f, 0.0f);
-	Snow->show();
-
 }
 
 void	updateCamera()
@@ -69,7 +67,11 @@ void	updateCamera()
 	mat.rotateX(-alpha);
 	Camera->setMatrix(mat);
 
-	Snow->setMatrix (mat);
+	// Set the new position of the snow emitter
+	CVector pos = mat.getPos ();
+	CMatrix mat2;
+	mat2.setPos (pos);
+	Snow->setMatrix (mat2);
 }
 
 void	releaseCamera()

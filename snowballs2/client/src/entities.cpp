@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.5 2001/07/12 14:36:33 lecroart Exp $
+ * $Id: entities.cpp,v 1.6 2001/07/12 15:43:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,6 +151,8 @@ void addEntity (uint32 eid, CEntity::TType type, CVector startPosition)
 		entity.Instance = Scene->createInstance("barman.shape");
 		break;
 	}
+
+	entity.Instance->setPos (startPosition);
 }
 
 void removeEntity (uint32 eid)
@@ -171,6 +173,8 @@ void removeEntity (uint32 eid)
 	Entities.erase (eit);
 }
 
+float EntityMaxSpeed = 1.0f;
+
 void updateEntities ()
 {
 	// move auto move entity
@@ -178,8 +182,9 @@ void updateEntities ()
 	{
 		if ((*eit).second.AutoMove)
 		{
-			(*eit).second.Position.x += frand (0.01f);
-			(*eit).second.Position.y += frand (0.01f);
+			(*eit).second.Position.x += frand (2*EntityMaxSpeed) - EntityMaxSpeed;
+			(*eit).second.Position.y += frand (2*EntityMaxSpeed) - EntityMaxSpeed;
+			(*eit).second.Instance->setPos ((*eit).second.Position);
 		}
 	}
 
@@ -237,8 +242,8 @@ void updateRadar ()
 		float userPosX, userPosY;
 
 		// convert from world coords to radar coords (0.0 -> 1.0)
-		userPosX = (*eit).second.Position.x;
-		userPosY = (*eit).second.Position.y;
+		userPosX = (*eit).second.Position.x / 1000.0f;
+		userPosY = -(*eit).second.Position.y / 1000.0f;
 
 		// userPosX and userPosY must be between 0.0 -> 1.0
 
@@ -265,22 +270,25 @@ NLMISC_COMMAND(remove_entity,"remove a local entity","<eid>")
 }
 
 
-NLMISC_COMMAND(add_entity,"add a local entity","<x> <y> <auto_update>")
+NLMISC_COMMAND(add_entity,"add a local entity","<nb_entities> <auto_update>")
 {
 	// check args, if there s not the right number of parameter, return bad
-	if(args.size() != 3) return false;
+	if(args.size() != 2) return false;
 
-	float x = (float)atof(args[0].c_str());
-	float y = (float)atof(args[1].c_str());
+	uint nb = (uint)atoi(args[0].c_str());
 
 	static uint32 nextEID = 0;
-	uint32 eid = nextEID++;
-	addEntity (eid, CEntity::Other, CVector(x, y, 0.0f));
-	EIT eit = findEntity (eid);
 
-	(*eit).second.Position.x = x;
-	(*eit).second.Position.y = y;
-	(*eit).second.AutoMove = atoi(args[2].c_str()) == 1;
+	for (uint i = 0; i < nb ; i++)
+	{
+		uint32 eid = nextEID++;
+		float x = 1000.0f; ///frand(1000.0f);
+		float y = -1000.0f; ///-frand(1000.0f);
+		float z = 2.0f;
+		addEntity (eid, CEntity::Other, CVector(x, y, z));
+		EIT eit = findEntity (eid);
+		(*eit).second.AutoMove = atoi(args[1].c_str()) == 1;
+	}
 
 	return true;
 }

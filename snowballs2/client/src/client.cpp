@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.18 2001/07/12 14:36:33 lecroart Exp $
+ * $Id: client.cpp,v 1.19 2001/07/12 15:43:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
 	initLandscape();
 
 	// Init the pacs
-//	initPACS();
+	initPACS();
 
 	// Display the firsts line
 	nlinfo ("Welcome to Snowballs 2");
@@ -173,9 +173,6 @@ int main(int argc, char **argv)
 
 		// Update the landscape
 		updateLandscape ();
-
-		// Update the commands panel
-		updateCommands ();
 
 		// update the box
 		CMatrix		cmat = MouseListener->getViewMatrix();
@@ -195,10 +192,12 @@ int main(int argc, char **argv)
 		// Update all entities positions
 		updateEntities();
 
+		// Set new animation date
+		Scene->animate (float(NewTime)/1000);
+
 		// Render
 		Scene->render ();
 
-	
 		// Update the commands panel
 		if (ShowCommands) updateCommands ();
 

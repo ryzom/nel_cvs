@@ -1,7 +1,7 @@
 /** \file lod_character_manager.h
  * TODO: File description
  *
- * $Id: lod_character_manager.h,v 1.7 2005/02/22 10:19:10 besson Exp $
+ * $Id: lod_character_manager.h,v 1.8 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -237,6 +237,17 @@ public:
 
 	// @}
 
+
+	/// \name Misc
+	// @{
+	/** test if the CLod intersect the ray (0, K) (after mul vertices by toRaySpace)
+	 *	\return false if not supported/no triangles, else true if can do the test (even if don't intersect!) 
+	 *	if intersect, dist2D=0, and distZ= Depth Distance
+	 *	if don't intersect, dist2D="nearest distance to the ray", and distZ=0
+	 *	\param computeDist2D if false and don't intersect, then return dist2D=FLT_MAX, and distZ=0
+	 */
+	bool	fastIntersect(const CLodCharacterInstance &instance, const NLMISC::CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D);
+	// @}
 
 // ******************************
 private:

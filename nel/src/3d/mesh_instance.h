@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * TODO: File description
  *
- * $Id: mesh_instance.h,v 1.18 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_instance.h,v 1.19 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,9 +81,16 @@ protected:
 	/// Called for lod character coloring.
 	virtual const std::vector<sint32>	*getSkinBoneUsage() const;
 
+	/// Called for more precise clipping.
+	virtual const std::vector<NLMISC::CBSphere>	*getSkinBoneSphere() const;
+
 	/// Implementation of the renderSkin
 	virtual void	renderSkin(float alphaMRM);
 
+	/// Skin intersection?
+	virtual	bool			supportIntersectSkin() const;
+	virtual	bool			intersectSkin(const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D);
+	
 	// @}
 
 	/// \name Special Traverse Feature.

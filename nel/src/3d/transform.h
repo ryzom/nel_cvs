@@ -1,7 +1,7 @@
 /** \file transform.h
  * TODO: File description
  *
- * $Id: transform.h,v 1.60 2005/02/22 10:19:12 besson Exp $
+ * $Id: transform.h,v 1.61 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -472,6 +472,24 @@ public:
 	/// non-zero if the CTransform can be casted to a CCluster
 	uint32				isCluster() const {return getStateFlag(IsCluster);}
 
+	/** true if the transform support fast intersection (fastIntersect() works)
+	 *	For now, supports 
+	 *		- skeleton with ALL skins that are shadowSkined (w or wo MRM)
+	 *		- mesh that are not skinned (Standard/MRM/MultiLod), and that have been flagged through 
+	 *			CShapeBank::buildSystemGeometryForshape()
+	 */
+	bool				supportFastIntersect() const {return _SupportFastIntersect;}
+	/** test if the transform intersect the ray (p0, dir). 
+	 *	\return false if not supported/no triangles, else true if can do the test (even if don't intersect!) 
+	 *	if intersect, dist2D=0, and distZ= Depth Distance
+	 *	if don't intersect, dist2D="nearest distance to the ray", and distZ=0
+	 *	\param computeDist2D if false and don't intersect, then return dist2D=FLT_MAX, and distZ=0
+	 */
+	virtual bool		fastIntersect(const NLMISC::CVector &p0, const NLMISC::CVector &dir, float &dist2D, float &distZ, bool computeDist2D) {return false;}
+
+	/// internal only: used by CMeshBase
+	void				enableFastIntersectSupport(bool enable) {_SupportFastIntersect= enable;}
+
 	// @}
 
 
@@ -663,6 +681,15 @@ protected:
 	virtual	sint			renderShadowSkinGeom(uint remainingVertices, uint8 *vbDest) {return 0;}
 	virtual	void			renderShadowSkinPrimitives(CMaterial &castMat, IDriver *drv, uint baseVertex) {}
 
+	/** Special use of skinning to compute intersection of a ray with it. 
+	 *	\return false if not supported/no triangles, else true if can do the test (even if don't intersect!) 
+ 	 *	if intersect, dist2D=0, and distZ= Depth Distance
+ 	 *	if don't intersect, dist2D="nearest distance to the ray", and distZ=0
+	 *	\param computeDist2D if false and don't intersect, then return dist2D=FLT_MAX, and distZ=0
+	 */
+	virtual	bool			supportIntersectSkin() const {return false;}
+	virtual	bool			intersectSkin(const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D) {return false;}
+	
 	// The SkeletonModel, root of us (skinning or sticked object). NULL , if normal mode.
 	CSkeletonModel	*_FatherSkeletonModel;
 	// If sticked object, id of the bone in the _FatherSkeletonModel.
@@ -800,6 +827,9 @@ private:
 
 	/// true if need to compute transform
 	bool				_TransformDirty   : 1;
+
+	// see supportFastIntersect. Filled by CSkeletonModel
+	bool				_SupportFastIntersect : 1;
 
 	/// See ILogicInfo. Used for lighting.	default is NULL.
 	ILogicInfo			*_LogicInfo;

@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * TODO: File description
  *
- * $Id: mesh_base_instance.h,v 1.28 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_base_instance.h,v 1.29 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,6 +209,12 @@ public:
 	// @}
 
 
+	/// \name Misc
+	// @{
+	/// see CTransform::fastIntersect()
+	virtual bool		fastIntersect(const NLMISC::CVector &p0, const NLMISC::CVector &dir, float &dist2D, float &distZ, bool computeDist2D);
+	// @}
+	
 protected:
 	/// Constructor
 	CMeshBaseInstance();

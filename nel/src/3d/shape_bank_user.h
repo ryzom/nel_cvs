@@ -1,7 +1,7 @@
 /** \file shape_bank_user.h
  * Implementation of the user interface managing shape bank.
  *
- * $Id: shape_bank_user.h,v 1.8 2005/02/22 10:19:12 besson Exp $
+ * $Id: shape_bank_user.h,v 1.9 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,7 @@ public:
 	virtual void	preLoadShapesFromBNP(const std::string &shapeCacheName, 
 		const std::string &bnpName, const std::string &wildCard, NLMISC::IProgressCallback *progress = NULL, bool flushTextures = false);
 	virtual UShape	getShape(const std::string &shapeName);
+	virtual void	buildSystemGeometryForshape(const std::string &shapeName);
 	
 	// The real shape bank
 	CShapeBank _ShapeBank;

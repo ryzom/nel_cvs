@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * TODO: File description
  *
- * $Id: mesh_base_instance.cpp,v 1.26 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_base_instance.cpp,v 1.27 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -362,6 +362,18 @@ const CMaterial	*CMeshBaseInstance::getMaterial (uint materialId) const
 CMaterial	*CMeshBaseInstance::getMaterial (uint materialId)
 {
 	return &(Materials[materialId]);
+}
+
+
+// ***************************************************************************
+bool		CMeshBaseInstance::fastIntersect(const NLMISC::CVector &p0, const NLMISC::CVector &dir, float &dist2D, float &distZ, bool computeDist2D)
+{
+	if(!Shape || !supportFastIntersect())
+		return false;
+
+	// Use the system geometry to test the intersection
+	CMeshBase *pMB = static_cast<CMeshBase*> (static_cast<IShape*> (Shape));
+	return pMB->getSystemGeometry().fastIntersect(getWorldMatrix(), p0, dir, dist2D, distZ, computeDist2D);
 }
 
 

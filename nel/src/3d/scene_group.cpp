@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * TODO: File description
  *
- * $Id: scene_group.cpp,v 1.81 2005/02/22 10:19:11 besson Exp $
+ * $Id: scene_group.cpp,v 1.82 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1350,11 +1350,7 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 
 				// choose a basis on this plane
 				CMatrix		mat;
-				if( fabs(p.getNormal().y)>0.9 )
-					mat.setRot(CVector::K, CVector::I, p.getNormal());
-				else
-					mat.setRot(CVector::I, CVector::J, p.getNormal());
-				mat.normalize(CMatrix::ZYX);
+				mat.setArbitraryRotK(p.getNormal());
 				mat.setPos(quadCenter);
 
 				// Build the initial Big quad

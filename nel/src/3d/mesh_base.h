@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * TODO: File description
  *
- * $Id: mesh_base.h,v 1.22 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_base.h,v 1.23 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "material.h"
 #include "animated_material.h"
 #include "animated_morph.h"
+#include "ray_mesh.h"
 #include <set>
 #include <vector>
 
@@ -249,6 +250,8 @@ public:
 	// @{
 	/// return the visual collision mesh. NULL if not supported
 	CVisualCollisionMesh		*getVisualCollisionMesh() const;
+	/// return the System Geometry (for fast intersection computation)
+	const CRayMesh				&getSystemGeometry() const {return _SystemGeometry;}
 	// @}
 
 
@@ -289,6 +292,14 @@ protected:
 	TCameraCollisionGenerate	_CollisionMeshGeneration;
 	// Built only by CMesh and CMeshMultiLod
 	CVisualCollisionMesh		*_VisualCollisionMesh;
+
+	/** (optional) SystemMem copy of the geometry, for ray intersection
+	 *	We cannot use the meshgeom, since once the VBuffer/IndexBuffer are resident (maybe AGP), 
+	 *	they can't be locked without heavy performance penalty
+	 *	This is built by CMesh/CMeshMRM/CMeshMultiLod::buildSystemGeometry()
+	 *	And only if it has been flagged through CShapeBank::buildSystemGeometryForshape()
+	 */
+	CRayMesh		_SystemGeometry;
 
 protected:
 	/// Just copy informations from a CMeshBaseBuild.

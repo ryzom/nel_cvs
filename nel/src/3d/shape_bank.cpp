@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * TODO: File description
  *
- * $Id: shape_bank.cpp,v 1.35 2005/02/22 10:19:12 besson Exp $
+ * $Id: shape_bank.cpp,v 1.36 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -610,6 +610,13 @@ void CShapeBank::add (const string &shapeNameNotLwr, IShape* pShp)
 {
 	string	shapeName= toLower(shapeNameNotLwr);
 
+	// request a system mem geometry copy?
+	if(pShp && _ShapeNeedingSystemGeometryCopy.find(shapeName)!=_ShapeNeedingSystemGeometryCopy.end())
+	{
+		// make a copy of the geometry, in RAM
+		pShp->buildSystemGeometry();
+	}
+
 	// Is the shape name already used ?
 	TShapeMap::iterator smIt = ShapeMap.find( shapeName );
 	if( smIt == ShapeMap.end() )
@@ -904,6 +911,12 @@ void CShapeBank::preLoadShapes(const std::string &shapeCacheName,
 		}
 	}
 
+}
+
+// ***************************************************************************
+void CShapeBank::buildSystemGeometryForshape(const std::string &shapeName)
+{
+	_ShapeNeedingSystemGeometryCopy.insert(toLower(shapeName));
 }
 
 

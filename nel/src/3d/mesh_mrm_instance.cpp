@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * TODO: File description
  *
- * $Id: mesh_mrm_instance.cpp,v 1.20 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.21 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -288,6 +288,24 @@ void			CMeshMRMInstance::renderShadowSkinPrimitives(CMaterial &castMat, IDriver 
 	// render the meshGeom
 	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
 	meshGeom.renderShadowSkinPrimitives(this, castMat, drv, baseVertex);
+}
+
+// ***************************************************************************
+bool			CMeshMRMInstance::supportIntersectSkin() const
+{
+	CMeshMRM		*pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
+	return meshGeom.supportIntersectSkin();
+}
+
+// ***************************************************************************
+bool			CMeshMRMInstance::intersectSkin(const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D)
+{
+	// Get a pointer on the shape
+	CMeshMRM		*pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+	// render the meshGeom
+	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
+	return meshGeom.intersectSkin(this, toRaySpace, dist2D, distZ, computeDist2D);
 }
 
 

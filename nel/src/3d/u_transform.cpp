@@ -1,7 +1,7 @@
 /** \file u_transform.cpp
  * Interface for transform objects.
  *
- * $Id: u_transform.cpp,v 1.4 2005/02/22 10:19:12 besson Exp $
+ * $Id: u_transform.cpp,v 1.5 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -418,6 +418,22 @@ float	UTransform::getShadowMapMaxDepth() const
 	NL3D_MEM_TRANSFORM
 	CTransform	*object = getObjectPtr();
 	return object->getShadowMapMaxDepth();
+}
+
+// ***************************************************************************
+bool	UTransform::supportFastIntersect() const
+{
+	NL3D_MEM_TRANSFORM
+	CTransform	*object = getObjectPtr();
+	return object->supportFastIntersect();
+}
+
+// ***************************************************************************
+bool	UTransform::fastIntersect(const NLMISC::CVector &p0, const NLMISC::CVector &dir, float &dist2D, float &distZ, bool computeDist2D)
+{
+	NL3D_MEM_TRANSFORM
+	CTransform	*object = getObjectPtr();
+	return object->fastIntersect(p0, dir, dist2D, distZ, computeDist2D);
 }
 
 

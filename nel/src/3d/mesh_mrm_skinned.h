@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangent space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.h,v 1.6 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_mrm_skinned.h,v 1.7 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@
 #include "bone.h"
 #include "mesh_geom.h"
 #include "mrm_level_detail.h"
+#include "shadow_skin.h"
 #include <set>
 #include <vector>
 
@@ -257,33 +258,6 @@ public:
 
 	/// \name ShadowMap Skin rendering
 	// @{
-	class		CShadowVertex
-	{
-	public:
-		CVector		Vertex;
-		uint32		MatrixId;
-		void		serial(NLMISC::IStream &f)
-		{
-			(void)f.serialVersion(0);
-
-			f.serial(Vertex);
-			f.serial(MatrixId);
-		}
-
-		// operator for sort
-		bool		operator==(const CShadowVertex &v) const
-		{
-			return MatrixId==v.MatrixId && Vertex==v.Vertex;
-		}
-		bool		operator<(const CShadowVertex &v) const
-		{
-			if(MatrixId!=v.MatrixId)
-				return MatrixId<v.MatrixId;
-			else
-				return Vertex<v.Vertex;
-		}
-	};
-
 	/// Setup the ShadowMesh 
 	void			setShadowMesh(const std::vector<CShadowVertex> &shadowVertices, const std::vector<uint32> &triangles);
 
@@ -295,6 +269,12 @@ public:
 	sint			renderShadowSkinGeom(CMeshMRMSkinnedInstance	*mi, uint remainingVertices, uint8 *vbDest);
 	void			renderShadowSkinPrimitives(CMeshMRMSkinnedInstance	*mi, CMaterial &castMat, IDriver *drv, uint baseVertex);
 
+	/** Special use of skinning to compute intersection of a ray with it.
+	 *	Internaly Use same system than ShadowSkinning, see CShadowSkin::getRayIntersection()
+ 	 */
+	bool			supportIntersectSkin() const {return supportShadowSkinGrouping();}
+	bool			intersectSkin(CMeshMRMSkinnedInstance	*mi, const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D);
+	
 	// @}
 
 // ************************
@@ -571,10 +551,8 @@ private:
 
 	/// \name ShadowMap Skin rendering
 	// @{
-	std::vector<CShadowVertex>		_ShadowSkinVertices;
-	std::vector<uint32>				_ShadowSkinTriangles;
+	CShadowSkin						_ShadowSkin;
 	bool							_SupportShadowSkinGrouping;
-	void		applyArrayShadowSkin(CShadowVertex *src, CVector *dst, CSkeletonModel *skeleton, uint numVerts);
 	// @}
 
 private:
@@ -634,7 +612,6 @@ public:
 	static  uint	NumCacheVertexNormal2;
 	static  uint	NumCacheVertexNormal3;
 	static  uint	NumCacheVertexNormal4;
-	static  uint	NumCacheVertexShadow;
 
 	// @}
 };

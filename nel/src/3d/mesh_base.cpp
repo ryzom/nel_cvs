@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * TODO: File description
  *
- * $Id: mesh_base.cpp,v 1.34 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_base.cpp,v 1.35 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -362,6 +362,8 @@ void	CMeshBase::instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene)
 	// a mesh is considered big for lightable if it uses localAttenuation
 	mi->setIsBigLightable(this->useLightingLocalAttenuation());
 
+	// The mesh support fast intersect, if the system geometry has been built
+	mi->enableFastIntersectSupport(!_SystemGeometry.empty());
 }
 
 

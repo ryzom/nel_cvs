@@ -1,7 +1,7 @@
 /** \file mesh.h
  * TODO: File description
  *
- * $Id: mesh.h,v 1.48 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh.h,v 1.49 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "mesh_geom.h"
 #include "mesh_morpher.h"
 #include "mesh_vertex_program.h"
+#include "shadow_skin.h"
 #include <set>
 #include <vector>
 
@@ -277,6 +278,9 @@ public:
 	/// profiling
 	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool opaquePass);
 
+	/// System Mem Geometry Copy, built at load time
+	virtual void	buildSystemGeometry();
+	
 	// @}
 
 	/// \name Geometry accessors
@@ -456,6 +460,13 @@ public:
 	/// return array of bones used by the skin. computeBonesId must has been called before.
 	const std::vector<sint32>	&getSkinBoneUsage() const {return _BonesId;}
 
+	/// see CTransform::getSkinBoneSphere() doc for the meaning of this value. computeBonesId must has been called before.
+	const std::vector<NLMISC::CBSphere>	&getSkinBoneSphere() const {return _BonesSphere;}
+	
+	/// Skin intersection
+	bool			supportIntersectSkin() const {return _Skinned;}
+	bool			intersectSkin(CTransformShape	*mi, const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D);
+	
 	// @}
 
 
@@ -702,7 +713,10 @@ private:
 	bool						_BoneIdComputed;
 	/// true if the _BonesIdExt have been computed (for bone Usage).
 	bool						_BoneIdExtended;
+	/// see CTransform::getSkinBoneSphere() doc for the meaning of this value
+	std::vector<NLMISC::CBSphere>	_BonesSphere;
 
+	
 	/// This array give the name of the local bones used.
 	std::vector<std::string>	_BonesName;
 	/// This array give the index in the skeleton of the local bones used. computed at first computeBoneId()
@@ -839,6 +853,11 @@ private:
 	void	computeSkinMatrixes(CSkeletonModel *skeleton, CMatrix3x4 *matrixes, CMatrixBlock  *prevBlock, CMatrixBlock &curBlock);
 	void	computeSoftwarePointSkinning(CMatrix3x4 *matrixes, CVector *srcVector, CPaletteSkin *srcPal, float *srcWgt, CVector *dstVector);
 	void	computeSoftwareVectorSkinning(CMatrix3x4 *matrixes, CVector *srcVector, CPaletteSkin *srcPal, float *srcWgt, CVector *dstVector);
+
+	// Shadow mapping and CMesh. NB: not serialized, but created at each load
+	CShadowSkin				_ShadowSkin;
+	// build the shadow skin, from the VertexBuffer/IndexBuffer
+	void	buildShadowSkin();
 
 	// @}
 

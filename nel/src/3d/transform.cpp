@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * TODO: File description
  *
- * $Id: transform.cpp,v 1.79 2005/02/22 10:19:12 besson Exp $
+ * $Id: transform.cpp,v 1.80 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,6 +123,9 @@ CTransform::CTransform()
 
 	// By default, always allow rendering of Transform Models.
 	_RenderFilterType= ~0;
+
+	// By default, don't suport fast intersection detection
+	_SupportFastIntersect= false;
 
 
 	// **** HRC Init Traversal Computed Data.

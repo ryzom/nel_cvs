@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * TODO: File description
  *
- * $Id: lod_character_manager.cpp,v 1.22 2005/02/22 10:19:10 besson Exp $
+ * $Id: lod_character_manager.cpp,v 1.23 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/hierarchical_timer.h"
 #include "nel/misc/fast_floor.h"
 #include "lod_character_texture.h"
+#include "ray_mesh.h"
 #include "nel/misc/file.h"
 #include "nel/misc/algo.h"
 #include "nel/misc/fast_mem.h"
@@ -1049,6 +1050,92 @@ void			CLodCharacterManager::endTextureCompute(CLodCharacterInstance &instance, 
 	// TestYoyo
 	/*NLMISC::COFile	f("tam.tga");
 	_BigTexture->writeTGA(f,32);*/
+}
+
+
+// ***************************************************************************
+bool	CLodCharacterManager::fastIntersect(const CLodCharacterInstance &instance, const NLMISC::CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D)
+{
+	H_AUTO ( NL3D_CharacterLod_fastIntersect )
+
+	uint			numVertices;
+	const CLodCharacterShape::CVector3s		*vertPtr;
+	CVector			matPos;
+	float			a00, a01, a02; 
+	float			a10, a11, a12; 
+	float			a20, a21, a22; 
+
+
+	// Get the Shape and current key.
+	//=============
+
+	// get the shape
+	const CLodCharacterShape	*clod= getShape(instance.ShapeId);
+	// if not found quit
+	if(!clod)
+		return false;
+
+	// get the anim key
+	CVector		unPackScaleFactor;
+	vertPtr= clod->getAnimKey(instance.AnimId, instance.AnimTime, instance.WrapMode, unPackScaleFactor);
+	// if not found quit
+	if(!vertPtr)
+		return false;
+	// get num verts
+	numVertices= clod->getNumVertices();
+
+	// empty shape??
+	if(numVertices==0)
+		return false;
+
+	// Prepare Transform
+	//=============
+
+	// Get matrix pos.
+	matPos= toRaySpace.getPos();
+	// Get rotation line vectors
+	const float *rayM= toRaySpace.get();
+	a00= rayM[0]; a01= rayM[4]; a02= rayM[8]; 
+	a10= rayM[1]; a11= rayM[5]; a12= rayM[9]; 
+	a20= rayM[2]; a21= rayM[6]; a22= rayM[10];
+
+	// multiply matrix with scale factor for Pos.
+	a00*= unPackScaleFactor.x; a01*= unPackScaleFactor.y; a02*= unPackScaleFactor.z; 
+	a10*= unPackScaleFactor.x; a11*= unPackScaleFactor.y; a12*= unPackScaleFactor.z; 
+	a20*= unPackScaleFactor.x; a21*= unPackScaleFactor.y; a22*= unPackScaleFactor.z; 
+	
+	// get dst Array.
+	// enlarge temp buffer
+	static std::vector<CVector>	lodInRaySpace;
+	if(numVertices>lodInRaySpace.size())
+		lodInRaySpace.resize(numVertices);
+	CVector	*dstPtr= &lodInRaySpace[0];
+
+
+	// Fill the temp skin
+	//=============
+	{
+		CVector		fVect;
+		
+		for(;numVertices>0;)
+		{
+			// transform vertex, and store.
+			fVect.x= vertPtr->x; fVect.y= vertPtr->y; fVect.z= vertPtr->z; 
+			++vertPtr;
+			dstPtr->x= a00 * fVect.x + a01 * fVect.y + a02 * fVect.z + matPos.x;
+			dstPtr->y= a10 * fVect.x + a11 * fVect.y + a12 * fVect.z + matPos.y;
+			dstPtr->z= a20 * fVect.x + a21 * fVect.y + a22 * fVect.z + matPos.z;
+
+			// next
+			dstPtr++;
+			numVertices--;
+		}
+	}
+
+	// Test intersection
+	//=============
+
+	return CRayMesh::getRayIntersection(lodInRaySpace, clod->getTriangleIndices(), dist2D, distZ, computeDist2D);
 }
 
 

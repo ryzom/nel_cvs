@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.26 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_multi_lod.h,v 1.27 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,9 @@ public:
 	/// profiling
 	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool opaquePass);
 
+	/// System Mem Geometry Copy, built at load time
+	virtual void	buildSystemGeometry();
+	
 	// @}
 
 	/// Geometry accessor

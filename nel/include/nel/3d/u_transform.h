@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * Interface for transform objects.
  *
- * $Id: u_transform.h,v 1.24 2005/02/22 10:14:13 besson Exp $
+ * $Id: u_transform.h,v 1.25 2005/03/10 17:26:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -205,6 +205,18 @@ public:
 
 	/// see setMeanColor()
 	NLMISC::CRGBA	getMeanColor() const ;
+
+	/** true if the transform support fast intersection (fastIntersect() works)
+	 *	For now, only supports skeleton with ALL skins that are shadowSkined and MRM
+	 */
+	bool		supportFastIntersect() const;
+	/** test if the transform intersect the ray (p0, dir). 
+	 *	\return false if not supported/no triangles, else true if can do the test (even if don't intersect!) 
+	 *	if intersect, dist2D=0, and distZ= Depth Distance
+	 *	if don't intersect, dist2D="nearest distance to the ray", and distZ=0
+	 *	\param computeDist2D if false and don't intersect, then return dist2D=FLT_MAX, and distZ=0
+	 */
+	bool		fastIntersect(const NLMISC::CVector &p0, const NLMISC::CVector &dir, float &dist2D, float &distZ, bool computeDist2D);
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * TODO: File description
  *
- * $Id: mesh.cpp,v 1.91 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh.cpp,v 1.92 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -998,7 +998,12 @@ void	CMeshGeom::compileRunTime()
 
 	// if skinned, prepare skinning
 	if(_Skinned)
+	{
+		// bkup vertices
 		bkupOriginalSkinVertices();
+		// build the shadow skin
+		buildShadowSkin();
+	}
 
 	// Do precise clipping for big object??
 	_PreciseClipping= _BBox.getRadius() >= NL3D_MESH_PRECISE_CLIP_THRESHOLD;
@@ -1486,12 +1491,13 @@ void	CMeshGeom::computeBonesId (CSkeletonModel *skeleton)
 		nlassert (skeleton);
 		if (skeleton)
 		{
-			// Resize boneId to the good size.
-			_BonesId.resize(_BonesName.size());
-
-			// For each matrix block
-			uint matrixBlock;
-			for (matrixBlock=0; matrixBlock<_MatrixBlocks.size(); matrixBlock++)
+			// **** For each bones, compute remap
+			std::vector<uint> remap;
+			skeleton->remapSkinBones(_BonesName, _BonesId, remap);
+			
+			
+			// **** Remap matrix blocks
+			for (uint matrixBlock=0; matrixBlock<_MatrixBlocks.size(); matrixBlock++)
 			{
 				// Ref on the matrix block
 				CMatrixBlock &mb = _MatrixBlocks[matrixBlock];
@@ -1501,29 +1507,65 @@ void	CMeshGeom::computeBonesId (CSkeletonModel *skeleton)
 				for (matrix=0; matrix<mb.NumMatrix; matrix++)
 				{
 					// Get bone id in the skeleton
-					nlassert (mb.MatrixId[matrix]<_BonesName.size());
-					sint32 boneId = skeleton->getBoneIdByName (_BonesName[mb.MatrixId[matrix]]);
-
-					// Setup the _BoneId.
-					_BonesId[mb.MatrixId[matrix]]= boneId;
-
-					// Bones found ?
-					if (boneId != -1)
-					{
-						// Set the bone id
-						mb.MatrixId[matrix] = (uint32)boneId;
-					}
-					else
-					{
-						// Put id 0
-						mb.MatrixId[matrix] = 0;
-
-						// Error
-						nlwarning ("Bone %s not found in the skeleton.", _BonesName[mb.MatrixId[matrix]].c_str());
-					}
+					nlassert (mb.MatrixId[matrix]<remap.size());
+					mb.MatrixId[matrix] = remap[mb.MatrixId[matrix]];
 				}
 			}
 
+			// **** Remap ShadowSkin, and compute Bone Sphere
+			// Prepare Sphere compute
+			static std::vector<CAABBox>		boneBBoxes;
+			static std::vector<bool>		boneBBEmpty;
+			boneBBoxes.clear();
+			boneBBEmpty.clear();
+			boneBBoxes.resize(_BonesId.size());
+			boneBBEmpty.resize(_BonesId.size(), true);
+			
+			// For simplicity, use the shadow skin info only, to compute bone sphere
+			for(uint vert=0;vert<_ShadowSkin.Vertices.size();vert++)
+			{
+				CShadowVertex	&v= _ShadowSkin.Vertices[vert];
+				// Check id
+				uint	srcId= v.MatrixId;
+				nlassert ( srcId < remap.size());
+				// remap
+				v.MatrixId= remap[srcId];
+				
+				// if the boneId is valid (ie found)
+				if(_BonesId[srcId]>=0)
+				{
+					// transform the vertex pos in BoneSpace
+					CVector		p= skeleton->Bones[_BonesId[srcId]].getBoneBase().InvBindPos * v.Vertex;
+					// extend the bone bbox.
+					if(boneBBEmpty[srcId])
+					{
+						boneBBoxes[srcId].setCenter(p);
+						boneBBEmpty[srcId]= false;
+					}
+					else
+					{
+						boneBBoxes[srcId].extend(p);
+					}
+				}
+			}
+			
+			// Compile spheres
+			_BonesSphere.resize(_BonesId.size());
+			for(uint bone=0;bone<_BonesSphere.size();bone++)
+			{
+				// If the bone is empty, mark with -1 in the radius.
+				if(boneBBEmpty[bone])
+				{
+					_BonesSphere[bone].Radius= -1;
+				}
+				else
+				{
+					_BonesSphere[bone].Center= boneBBoxes[bone].getCenter();
+					_BonesSphere[bone].Radius= boneBBoxes[bone].getRadius();
+				}
+			}
+			
+			
 			// Computed
 			_BoneIdComputed = true;
 		}
@@ -2017,6 +2059,137 @@ void	CMeshGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans,
 		{
 			rdrTrav->Scene->BenchRes.NumMeshRdrNormal++;
 			rdrTrav->Scene->BenchRes.NumMeshTriRdrNormal+= triCount;
+		}
+	}
+}
+
+// ***************************************************************************
+bool	CMeshGeom::intersectSkin(CTransformShape	*mi, const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D)
+{
+	// for Mesh, Use the Shadow Skinning (simple version).
+	
+	// get skeleton
+	if(!mi || _OriginalSkinVertices.empty())
+		return false;
+	CSkeletonModel	*skeleton= mi->getSkeletonModel();
+	if(!skeleton)
+		return false;
+	
+	// Compute skinning with all matrix this Mesh use. (the shadow geometry cannot use other Matrix than the mesh use).
+	static std::vector<uint32>	matInfs;
+	matInfs.resize(_BonesId.size());
+	for(uint i=0;i<matInfs.size();i++)
+	{
+		// treat any "missing bone" as the root one.
+		matInfs[i]= max(_BonesId[i], (sint32)0);
+	}
+	return _ShadowSkin.getRayIntersection(toRaySpace, *skeleton, matInfs, dist2D, distZ, computeDist2D);
+}
+
+// ***************************************************************************
+void	CMeshGeom::buildShadowSkin()
+{
+	/* ***********************************************
+	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
+	 *	It can be loaded/called through CAsyncFileManager for instance
+	 * ***********************************************/
+
+	// reset
+	contReset(_ShadowSkin.Vertices);
+	contReset(_ShadowSkin.Triangles);
+	
+	nlassert(_Skinned && (_VBuffer.getVertexFormat() & CVertexBuffer::PaletteSkinFlag)
+		&& (_VBuffer.getVertexFormat() & CVertexBuffer::PositionFlag) );
+
+
+	// *** Copy VBuffer content
+	{
+		// get num of vertices
+		uint	numVertices= _VBuffer.getNumVertices();
+
+		// lock VB
+		CVertexBufferRead vba;
+		_VBuffer.lock (vba);
+		uint8		*srcPal= (uint8*)vba.getPaletteSkinPointer(0);
+		uint8		*srcVert= (uint8*)vba.getVertexCoordPointer(0);
+		uint32		srcVertSize= _VBuffer.getVertexSize();
+		
+		// copy vertices from VBuffer
+		_ShadowSkin.Vertices.resize(numVertices);
+		for(uint i=0; i<numVertices;i++)
+		{
+			// Copy Vertex
+			_ShadowSkin.Vertices[i].Vertex= *((CVector*)srcVert);
+			// Suppose the 0 matrix inf is the highest (we are at least sure it is not 0)
+			// And SkinWeight Export show the 0th is the highest one...
+			_ShadowSkin.Vertices[i].MatrixId= ((CPaletteSkin*)srcPal)->MatrixId[0];
+
+			// Next
+			srcVert+= srcVertSize;
+			srcPal+= srcVertSize;
+		}
+	}
+
+	// But _ShadowSkin.Vertices[i].MatrixId is incorrect, since < IDriver::MaxModelMatrix
+
+	
+	// *** Count number of triangles, and get start index of each matrix block in the final Tri list
+	uint	numIndices= 0;
+	uint	mb;
+	// can't be static cause of ThreadSafe
+	vector<pair<uint32,uint32> >		mbIndexRange;
+	mbIndexRange.resize(_MatrixBlocks.size());
+	for(mb=0;mb<_MatrixBlocks.size();mb++)
+	{
+		// this matrix block start here
+		mbIndexRange[mb].first= numIndices;
+
+		// count tris rendered for this matrix block
+		const CMatrixBlock	&mBlock= _MatrixBlocks[mb];
+		for(uint rp=0;rp<mBlock.RdrPass.size();rp++)
+		{
+			const CRdrPass	&rPass= mBlock.RdrPass[rp];
+			numIndices+= rPass.PBlock.getNumIndexes();
+		}
+
+		// this matrix block end here
+		mbIndexRange[mb].second= numIndices;
+	}
+
+
+	// *** Fill Triangles
+	nlverify(retrieveTriangles(_ShadowSkin.Triangles));
+	nlassert(numIndices==_ShadowSkin.Triangles.size());
+
+	
+	// *** Reindex correctly MatrixId, (ie unpack matrix blocks)
+	// can't be static cause of ThreadSafe
+	vector<bool>	vertReIndexed;
+	vertReIndexed.resize(_ShadowSkin.Vertices.size(), false);
+	// for all matrix blocks
+	for(mb=0;mb<mbIndexRange.size();mb++)
+	{
+		const CMatrixBlock	&mBlock= _MatrixBlocks[mb];
+
+		uint	iStart= mbIndexRange[mb].first;
+		uint	iEnd= mbIndexRange[mb].second;
+		nlassert(iStart <= iEnd && iEnd<=_ShadowSkin.Triangles.size());
+
+		// For all indices in this range
+		uint32	*pIndex= &_ShadowSkin.Triangles[iStart];
+		uint	nbIndex= iEnd - iStart;
+		for(;nbIndex>0;--nbIndex, pIndex++)
+		{
+			uint	index= *pIndex;
+			// if not already reindexed
+			if(!vertReIndexed[index])
+			{
+				vertReIndexed[index]= true;
+				// reindex
+				uint	matId= _ShadowSkin.Vertices[index].MatrixId;
+				nlassert(matId<mBlock.NumMatrix);
+				_ShadowSkin.Vertices[index].MatrixId= mBlock.MatrixId[matId];
+			}
 		}
 	}
 }
@@ -2585,6 +2758,31 @@ void	CMesh::compileRunTime()
 			}
 		}
 	}
+}
+
+// ***************************************************************************
+void	CMesh::buildSystemGeometry()
+{
+	// clear any
+	_SystemGeometry.clear();
+	
+	// don't build a system copy if skinned. In this case, ray intersection is done through CSkeletonModel
+	// and intersectSkin() scheme
+	if(_MeshGeom->isSkinned())
+		return;
+
+	// retrieve geometry (if VB/IB not resident)
+	if( !_MeshGeom->retrieveVertices(_SystemGeometry.Vertices) || 
+		!_MeshGeom->retrieveTriangles(_SystemGeometry.Triangles))
+	{
+		_SystemGeometry.clear();
+	}
+
+	// TestYoyo
+	/*static uint32	totalMem= 0;
+	totalMem+= _SystemGeometry.Vertices.size()*sizeof(CVector);
+	totalMem+= _SystemGeometry.Triangles.size()*sizeof(uint32);
+	nlinfo("CMesh: TotalMem: %d", totalMem);*/
 }
 
 

@@ -1,7 +1,7 @@
 /** \file lod_character_shape.h
  * TODO: File description
  *
- * $Id: lod_character_shape.h,v 1.8 2005/02/22 10:19:10 besson Exp $
+ * $Id: lod_character_shape.h,v 1.9 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -194,6 +194,9 @@ public:
 
 	/// get a ptr to the triangles indices
 	const TLodCharacterIndexType *getTriangleArray() const;
+
+	/// get the vector of triangles indices
+	const std::vector<TLodCharacterIndexType>	&getTriangleIndices() const {return _TriangleIndices;}
 
 	/// get a ptr on the UVs.
 	const CUV		*getUVs() const;

@@ -1,7 +1,7 @@
 /** \file u_shape_bank.h
  * Game interface for managing shape bank.
  *
- * $Id: u_shape_bank.h,v 1.7 2005/02/22 10:14:13 besson Exp $
+ * $Id: u_shape_bank.h,v 1.8 2005/03/10 17:26:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,11 @@ public:
 	 *	returned will be empty
 	 */
 	virtual UShape	getShape(const std::string &shapeName) = 0;
+
+	/** Mark this shape name as needing a buildSystemGeometry() (typically used for selection)
+	 *	NB: this will take effect only for shapes on a subsequent add(), load() or loadAsync()
+	 */
+	virtual void	buildSystemGeometryForshape(const std::string &shapeName) = 0;
 
 };
 

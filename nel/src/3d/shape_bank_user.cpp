@@ -1,7 +1,7 @@
 /** \file shape_bank_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: shape_bank_user.cpp,v 1.9 2005/02/22 10:19:12 besson Exp $
+ * $Id: shape_bank_user.cpp,v 1.10 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,12 @@ UShape	CShapeBankUser::getShape(const std::string &shapeName)
 	ret.attach(_ShapeBank.getShape(shapeName));
 
 	return ret;
+}
+
+// ***************************************************************************
+void	CShapeBankUser::buildSystemGeometryForshape(const std::string &shapeName)
+{
+	_ShapeBank.buildSystemGeometryForshape(shapeName);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * TODO: File description
  *
- * $Id: skeleton_model.h,v 1.44 2005/02/22 10:19:12 besson Exp $
+ * $Id: skeleton_model.h,v 1.45 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -240,6 +240,11 @@ public:
 	 */
 	bool		computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld= false);
 
+	/** same as computeRenderedBBox(), always in world, but use the bone max sphere to enlarge the bbox
+	 *	NB: sticked objects don't influence the result
+	 */
+	bool		computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox);
+	
 	/** same as computeRenderedBBox() but force animation and compute of all bones => don't need render(), but slower.
 	 *	for all used bones, extend the bbox with their pos
 	 *	NB: AnimCtrl are not evaluated by this method (since computed with 0 pos).
@@ -264,6 +269,16 @@ public:
 	const CVector	&getSSSWODir() const {return _SSSWODir;}
 	/// don't use
 	CSkeletonSpawnScript	&getSSSScript() {return _SpawnScriptEvaluator;}
+
+	/// see CTransform::fastIntersect()
+	virtual bool	fastIntersect(const NLMISC::CVector &p0, const NLMISC::CVector &dir, float &dist2D, float &distZ, bool computeDist2D);
+
+	/** Internal. Tool method used by Skins, to remap their bones id to skeleton ones
+	 *	\param bonesName input list of bones name
+	 *	\param boneId output list of bone remapped (size==bonesName.size()). -1 if bone not found
+	 *	\param remap == boneId, but with 0 where boneId[i]==-1
+	*/
+	void		remapSkinBones(const std::vector<std::string> &bonesName, std::vector<sint32> &bonesId, std::vector<uint> &remap);
 
 	// @}
 
@@ -570,6 +585,57 @@ protected:
 	virtual void			deleteShadowMap();
 
 };
+
+
+// ***************************************************************************
+/*
+ *	Function used by CMeshMRM and CMeshMRMSkinned, to compute CMatrix3x4 of used skeleton bones
+ */
+template <class TMatrixArray>
+inline void	computeBoneMatrixes3x4(TMatrixArray &boneMat3x4, const std::vector<uint32> &matInfs, const CSkeletonModel *skeleton)
+{
+	// For all matrix this lod use.
+	for(uint i= 0; i<matInfs.size(); i++)
+	{
+		// Get Matrix info.
+		uint	matId= matInfs[i];
+		const CMatrix		&boneMat= skeleton->getActiveBoneSkinMatrix(matId);
+		
+		// compute "fast" matrix 3x4.
+		// resize Matrix3x4.
+		if(matId>=boneMat3x4.size())
+		{
+			boneMat3x4.resize(matId+1);
+		}
+		boneMat3x4[matId].set(boneMat);
+	}
+}
+
+
+/// Same as computeBoneMatrixes3x4, but premul by a matrix.
+template <class TMatrixArray>
+inline void	computeBoneMatrixes3x4PreMul(TMatrixArray &boneMat3x4, const CMatrix &preMulMat, const std::vector<uint32> &matInfs, const CSkeletonModel *skeleton)
+{
+	// For all matrix this lod use.
+	for(uint i= 0; i<matInfs.size(); i++)
+	{
+		// Get Matrix info.
+		uint	matId= matInfs[i];
+		const CMatrix		&boneMat= skeleton->getActiveBoneSkinMatrix(matId);
+		CMatrix		boneMatMul;
+		boneMatMul.setMulMatrixNoProj(preMulMat, boneMat);
+		
+		// compute "fast" matrix 3x4.
+		// resize Matrix3x4.
+		if(matId>=boneMat3x4.size())
+		{
+			boneMat3x4.resize(matId+1);
+		}
+		boneMat3x4[matId].set(boneMatMul);
+	}
+}
+
+
 
 
 

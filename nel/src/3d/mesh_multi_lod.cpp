@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.42 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.43 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -904,6 +904,54 @@ void	CMeshMultiLod::compileRunTime()
 		}
 	}
 }
+
+
+// ***************************************************************************
+void	CMeshMultiLod::buildSystemGeometry()
+{
+	// clear any
+	_SystemGeometry.clear();
+
+	// Use the first lod, for system geometry copy
+	if(getNumSlotMesh())
+	{
+		// the first is a meshGeom?
+		const CMeshGeom		*meshGeom= dynamic_cast<const CMeshGeom*>(&getMeshGeom(0));
+		if(meshGeom)
+		{
+			// retrieve geometry (if VB/IB not resident)
+			if( !meshGeom->retrieveVertices(_SystemGeometry.Vertices) || 
+				!meshGeom->retrieveTriangles(_SystemGeometry.Triangles))
+			{
+				_SystemGeometry.clear();
+			}
+		}
+		// else it is a mrm geom?
+		else
+		{
+			const CMeshMRMGeom		*meshMRMGeom= dynamic_cast<const CMeshMRMGeom*>(&getMeshGeom(0));
+			if(meshMRMGeom)
+			{
+				// Choose the best Lod available for system geometry
+				if(meshMRMGeom->getNbLodLoaded()==0)
+					return;
+				uint	lodId= meshMRMGeom->getNbLodLoaded()-1;
+				
+				// retrieve geometry (if VB/IB not resident)
+				if( !meshMRMGeom->buildGeometryForLod(lodId, _SystemGeometry.Vertices, _SystemGeometry.Triangles) )
+				{
+					_SystemGeometry.clear();
+				}
+			}
+		}
+	}
 	
+	// TestYoyo
+	/*static uint32	totalMem= 0;
+	totalMem+= _SystemGeometry.Vertices.size()*sizeof(CVector);
+	totalMem+= _SystemGeometry.Triangles.size()*sizeof(uint32);
+	nlinfo("CMeshMultiLod: TotalMem: %d", totalMem);*/
+}
 
 } // NL3D
+

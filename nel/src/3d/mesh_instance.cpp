@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * TODO: File description
  *
- * $Id: mesh_instance.cpp,v 1.25 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_instance.cpp,v 1.26 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,6 +109,20 @@ const std::vector<sint32>	*CMeshInstance::getSkinBoneUsage() const
 
 
 // ***************************************************************************
+const std::vector<NLMISC::CBSphere>	*CMeshInstance::getSkinBoneSphere() const
+{
+	// Get a pointer on the shape
+	CMesh *pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
+	
+	// Recompute the id, and skin spheres, if needed
+	pMesh->computeBonesId (_FatherSkeletonModel);
+	
+	// get it.
+	return &pMesh->getMeshGeom().getSkinBoneSphere();
+}
+
+
+// ***************************************************************************
 bool	CMeshInstance::isSkinnable() const
 {
 	if(Shape==NULL)
@@ -152,6 +166,24 @@ void	CMeshInstance::initRenderFilterType()
 		else
 			_RenderFilterType= UScene::FilterMeshNoVP;
 	}
+}
+
+// ***************************************************************************
+bool	CMeshInstance::supportIntersectSkin() const
+{
+	CMesh		*pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
+	CMeshGeom	&meshGeom= const_cast<CMeshGeom&>(pMesh->getMeshGeom ());
+	return meshGeom.supportIntersectSkin();
+}
+
+// ***************************************************************************
+bool	CMeshInstance::intersectSkin(const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D)
+{
+	// Get a pointer on the shape
+	CMesh		*pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
+	// render the meshGeom
+	CMeshGeom	&meshGeom= const_cast<CMeshGeom&>(pMesh->getMeshGeom ());
+	return meshGeom.intersectSkin(this, toRaySpace, dist2D, distZ, computeDist2D);
 }
 
 // ***************************************************************************

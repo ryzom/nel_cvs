@@ -1,7 +1,7 @@
 /** \file shadow_map.cpp
  * TODO: File description
  *
- * $Id: shadow_map.cpp,v 1.5 2005/02/22 10:19:12 besson Exp $
+ * $Id: shadow_map.cpp,v 1.6 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -134,11 +134,7 @@ void			CShadowMap::buildClipInfoFromMatrix()
 void			CShadowMap::buildCasterCameraMatrix(const CVector &lightDir, const CMatrix &localPosMatrix, const CAABBox &bbShape, CMatrix &cameraMatrix)
 {
 	// compute the orthogonal LightSpace camera matrix. Remind that J look forward and K is up here.
-	if(fabs(lightDir.z)<0.9f)
-		cameraMatrix.setRot(CVector::I, lightDir, CVector::K);
-	else
-		cameraMatrix.setRot(CVector::I, lightDir, CVector::J);
-	cameraMatrix.normalize(CMatrix::YZX);
+	cameraMatrix.setArbitraryRotJ(lightDir);
 
 	CAABBox		bbLocal;
 	bbLocal= CAABBox::transformAABBox(cameraMatrix.inverted() * localPosMatrix, bbShape);

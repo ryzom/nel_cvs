@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * TODO: File description
  *
- * $Id: shape_bank.h,v 1.19 2005/02/22 10:19:12 besson Exp $
+ * $Id: shape_bank.h,v 1.20 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,6 +159,11 @@ public:
 	 */
 	void			preLoadShapes(const std::string &shapeCacheName, 
 		const std::vector<std::string> &listFile, const std::string &wildCardNotLwr, NLMISC::IProgressCallback *progress = NULL, bool flushTextures = false, IDriver *drv = NULL);
+
+	/** Mark this shape name as needing a buildSystemGeometry() (typically used for selection)
+	 *	NB: this will take effect only for shapes on a subsequent add(), load() or loadAsync()
+	 */
+	void			buildSystemGeometryForshape(const std::string &shapeName);
 	// @}
 
 	// get the shape Name from the shape Ptr. return NULL if not found
@@ -236,6 +241,9 @@ private:
 	TShapeCacheNameMap		ShapeNameToShapeCacheName;
 	TShapeCacheMap			ShapeCacheNameToShapeCache;
 	TShapeInfoMap			ShapePtrToShapeInfo;
+
+	// Special for buildSystemGeometryForshape
+	std::set<std::string>	_ShapeNeedingSystemGeometryCopy;
 	//@}
 };
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * TODO: File description
  *
- * $Id: skeleton_model.cpp,v 1.63 2005/02/22 10:19:12 besson Exp $
+ * $Id: skeleton_model.cpp,v 1.64 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,7 +135,7 @@ CSkeletonModel::CSkeletonModel()
 	_SkinToRenderDirty= false;
 
 	_CLodVertexAlphaDirty= true;
-
+	
 	// Inform the transform that I am a skeleton
 	CTransform::setIsSkeleton(true);
 
@@ -1202,6 +1202,8 @@ void			CSkeletonModel::updateSkinRenderLists()
 		uint	transparentSize= 0;
 		uint	animDetailSize= 0;
 		ItTransformSet		it;
+		// also test if can support fast intersection
+		_SupportFastIntersect= !_Skins.empty();
 		for(it= _Skins.begin();it!=_Skins.end();it++)
 		{
 			CTransform	*skin= *it;
@@ -1269,6 +1271,10 @@ void			CSkeletonModel::updateSkinRenderLists()
 					}
 				}
 			}
+
+			// Whole skeleton model Support Fast intersection only if all 
+			// displayed skins support skin intersection
+			_SupportFastIntersect= _SupportFastIntersect && skin->supportIntersectSkin();
 		}
 
 		// MRM Max skin setup.
@@ -1714,6 +1720,54 @@ bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeIn
 
 
 // ***************************************************************************
+bool		CSkeletonModel::computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox)
+{
+	// Not visible => empty bbox
+	if(!isClipVisible())
+		return false;
+
+	if(_BoneToCompute.empty())
+		return false;
+	
+	// **** Compute The BBox with Bones of the skeleton
+	CVector		minBB, maxBB;
+	for(uint i=0;i<_BoneToCompute.size();i++)
+	{
+		CBone			*bone= _BoneToCompute[i].Bone;
+		// compute the world sphere
+		const	CMatrix	&worldMat= bone->getWorldMatrix();
+		CBSphere		worldSphere;
+		bone->_MaxSphere.applyTransform(worldMat, worldSphere);
+		// compute bone min max bounding cube.
+		CVector		minBone, maxBone;
+		minBone= maxBone= worldSphere.Center;
+		float	r= worldSphere.Radius;
+		minBone.x-= r;
+		minBone.y-= r;
+		minBone.z-= r;
+		maxBone.x+= r;
+		maxBone.y+= r;
+		maxBone.z+= r;
+		// set or extend
+		if(i==0)
+		{
+			minBB= minBone;
+			maxBB= maxBone;
+		}
+		else
+		{
+			minBB.minof(minBB, minBone);
+			maxBB.maxof(maxBB, maxBone);
+		}
+	}
+	
+	// build the bbox
+	bbox.setMinMax(minBB, maxBB);
+	return true;
+}
+
+
+// ***************************************************************************
 bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompute /* = false*/, bool computeInWorld)
 {
 	// animate all bones channels (detail only channels). don't bother cur lod state.
@@ -1821,6 +1875,115 @@ IAnimCtrl	*CSkeletonModel::getBoneAnimCtrl(uint boneId) const
 	return Bones[boneId]._AnimCtrl;
 }
 
+
+// ***************************************************************************
+bool		CSkeletonModel::fastIntersect(const NLMISC::CVector &p0, const NLMISC::CVector &dir, float &dist2D, float &distZ, bool computeDist2D)
+{
+	if(!_SupportFastIntersect)
+		return false;
+
+	// no intersection by default
+	dist2D= FLT_MAX;
+	distZ= FLT_MAX;
+	
+	// The skinning must be done in final RaySpace.
+	CMatrix		toRaySpace;
+	// compute the ray matrix
+	CVector	dirn= dir;
+	if(dirn.isNull())
+		dirn= CVector::K;
+	dirn.normalize();
+	toRaySpace.setArbitraryRotK(dirn);
+	toRaySpace.setPos(p0);
+	// The skinning must be done in ray space: (RayMat-1)*skelWorldMatrix;
+	toRaySpace.invert();
+	toRaySpace*= getWorldMatrix();
+	
+	// displayed as a CLod?
+	if(isDisplayedAsLodCharacter())
+	{
+		// must do the test with the CLod, because Bones are not animated at all (hence skinning would be false)
+		CLodCharacterManager	*mngr= getOwnerScene()->getLodCharacterManager();
+		if(!mngr)
+			return false;
+
+		// test the instance
+		if(!mngr->fastIntersect(_CLodInstance, toRaySpace, dist2D, distZ, computeDist2D))
+			return false;
+	}
+	else
+	{
+		// For all skins
+		ItTransformSet		it;
+		for(it= _Skins.begin();it!=_Skins.end();it++)
+		{
+			CTransform	*skin= *it;
+
+			// If the skin is hidden, don't test intersection!
+			if(skin->getVisibility()==CHrcTrav::Hide)
+				continue;
+			
+			if(!skin->supportIntersectSkin())
+				continue;
+
+			// compute intersection with this skin
+			float	skinDist2D, skinDistZ;
+			if(skin->intersectSkin(toRaySpace, skinDist2D, skinDistZ, computeDist2D))
+			{
+				// true intersection found?
+				if(skinDist2D==0)
+				{
+					dist2D= 0;
+					distZ= min(distZ, skinDistZ);
+				}
+				// else lower the distance to the skins?
+				else if(dist2D>0)
+				{
+					dist2D= min(dist2D, skinDist2D);
+				}
+			}
+		}
+	}
+		
+	// no intersection found? set Z to 0 (to be clean)
+	if(dist2D>0)
+		distZ= 0;
+
+	return true;
+}
+
+// ***************************************************************************
+void		CSkeletonModel::remapSkinBones(const std::vector<string> &bonesName, std::vector<sint32> &bonesId, std::vector<uint> &remap)
+{
+	// Resize boneId to the good size.
+	bonesId.resize(bonesName.size());
+	remap.resize(bonesName.size());
+	
+	// **** For each bones, compute remap
+	for (uint bone=0; bone<remap.size(); bone++)
+	{
+		// Look for the bone
+		sint32 boneId = getBoneIdByName (bonesName[bone]);
+		
+		// Setup the _BoneId.
+		bonesId[bone]= boneId;
+		
+		// Bones found ?
+		if (boneId != -1)
+		{
+			// Set the bone id
+			remap[bone] = (uint32)boneId;
+		}
+		else
+		{
+			// Put id 0
+			remap[bone] = 0;
+			
+			// Error
+			nlwarning ("Bone %s not found in the skeleton.", bonesName[bone].c_str());
+		}
+	}
+}
 
 // ***************************************************************************
 // ***************************************************************************

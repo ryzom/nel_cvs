@@ -970,6 +970,14 @@ SOURCE=.\3d\seg_remanence_shape.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\shadow_skin.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\shadow_skin.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\shape.cpp
 # End Source File
 # Begin Source File
@@ -2235,6 +2243,14 @@ SOURCE=.\3d\landscape_collision_grid.cpp
 # Begin Source File
 
 SOURCE=.\3d\landscape_collision_grid.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ray_mesh.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ray_mesh.h
 # End Source File
 # Begin Source File
 

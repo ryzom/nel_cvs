@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * TODO: File description
  *
- * $Id: u_skeleton.h,v 1.22 2005/02/22 10:14:13 besson Exp $
+ * $Id: u_skeleton.h,v 1.23 2005/03/10 17:26:47 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,6 +196,11 @@ public:
 	 */
 	bool		computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld= false);
 
+	/** same as computeRenderedBBox(), always in world, but use the bone max sphere to enlarge the bbox
+	 *	NB: sticked objects don't influence the result
+	 */
+	bool		computeRenderedBBoxWithBoneSphere(NLMISC::CAABBox &bbox);
+	
 	/** same as computeRenderedBBox() but force animation and compute of all bones => don't need render(), but slower.
 	 *	for all used bones, extend the bbox with their pos
 	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton is not skinned/sticked

@@ -1,7 +1,7 @@
 /** \file shape.h
  * TODO: File description
  *
- * $Id: shape.h,v 1.16 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: shape.h,v 1.17 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,6 +163,12 @@ public:
 	virtual IMeshGeom			*supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const {return NULL;}
 
 	// @}
+
+	/** Build a system copy of geometry, typically for fast intersection computation
+	 *	NB: typically, this must be called just after load, because the vertexbuffer must not be resident
+	 *	Supported only on a subset of Shape, and specially not the skinned one (not usefull since not relevant)
+	 */
+	virtual void				buildSystemGeometry() {}
 
 protected:
 

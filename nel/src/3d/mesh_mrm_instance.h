@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * TODO: File description
  *
- * $Id: mesh_mrm_instance.h,v 1.18 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_mrm_instance.h,v 1.19 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,6 +99,9 @@ protected:
 	virtual	sint			renderShadowSkinGeom(uint remainingVertices, uint8 *vbDest);
 	virtual	void			renderShadowSkinPrimitives(CMaterial &castMat, IDriver *drv, uint baseVertex);
 
+	virtual	bool			supportIntersectSkin() const;
+	virtual	bool			intersectSkin(const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D);
+	
 	/// Called for edition purpose (slow call O(NVertex))
 	virtual bool			getSkinBoneBBox(NLMISC::CAABBox &bbox, uint boneId);
 

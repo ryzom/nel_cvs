@@ -2,7 +2,7 @@
  * Optimised instance for skinned object with MRM, 1 UV coordinates, 1 to 4 skinning weight and 256 matrices.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned_instance.cpp,v 1.3 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_mrm_skinned_instance.cpp,v 1.4 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -283,6 +283,24 @@ void			CMeshMRMSkinnedInstance::renderShadowSkinPrimitives(CMaterial &castMat, I
 	// render the meshGeom
 	CMeshMRMSkinnedGeom	&meshGeom= const_cast<CMeshMRMSkinnedGeom&>(pMesh->getMeshGeom ());
 	meshGeom.renderShadowSkinPrimitives(this, castMat, drv, baseVertex);
+}
+
+// ***************************************************************************
+bool			CMeshMRMSkinnedInstance::supportIntersectSkin() const
+{
+	CMeshMRMSkinned		*pMesh = NLMISC::safe_cast<CMeshMRMSkinned *>((IShape*)Shape);
+	CMeshMRMSkinnedGeom	&meshGeom= const_cast<CMeshMRMSkinnedGeom&>(pMesh->getMeshGeom ());
+	return meshGeom.supportIntersectSkin();
+}
+
+// ***************************************************************************
+bool			CMeshMRMSkinnedInstance::intersectSkin(const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D)
+{
+	// Get a pointer on the shape
+	CMeshMRMSkinned		*pMesh = NLMISC::safe_cast<CMeshMRMSkinned *>((IShape*)Shape);
+	// render the meshGeom
+	CMeshMRMSkinnedGeom	&meshGeom= const_cast<CMeshMRMSkinnedGeom&>(pMesh->getMeshGeom ());
+	return meshGeom.intersectSkin(this, toRaySpace, dist2D, distZ, computeDist2D);
 }
 
 

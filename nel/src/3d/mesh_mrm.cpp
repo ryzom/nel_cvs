@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * TODO: File description
  *
- * $Id: mesh_mrm.cpp,v 1.80 2005/02/22 10:19:10 besson Exp $
+ * $Id: mesh_mrm.cpp,v 1.81 2005/03/10 17:27:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1712,23 +1712,8 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// if >= version 5, serial Shadow Skin Information
 	if(ver>=5)
 	{
-		f.serialCont (_ShadowSkinVertices);		
-		#ifndef NL_MESH_MRM_INDEX16
-			f.serialCont (_ShadowSkinTriangles);
-		#else			
-			// must convert to 32 bits at serial
-			nlassert(f.isReading());
-			{
-				std::vector<uint32> savedIndices;
-				f.serialCont(savedIndices);
-				_ShadowSkinTriangles.resize(savedIndices.size());
-				for(uint k = 0; k < savedIndices.size(); ++k)
-				{
-					nlassert(savedIndices[k] <= 0xffff); 
-					_ShadowSkinTriangles[k] = (TMeshMRMIndexType) savedIndices[k];
-				}
-			}
-		#endif
+		f.serialCont (_ShadowSkin.Vertices);		
+		f.serialCont (_ShadowSkin.Triangles);
 	}
 
 
@@ -1873,21 +1858,8 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// if >= version 5, serial Shadow Skin Information
 	if(ver>=5)
 	{
-		f.serialCont (_ShadowSkinVertices);
-		#ifndef NL_MESH_MRM_INDEX16
-			f.serialCont (_ShadowSkinTriangles);
-		#else			
-			nlassert(!f.isReading());
-			{
-				std::vector<uint32> savedIndices;
-				savedIndices.resize(_ShadowSkinTriangles.size());
-				for(uint k = 0; k < savedIndices.size(); ++k)
-				{
-					savedIndices[k] = _ShadowSkinTriangles[k];
-				}
-				f.serialCont(savedIndices);
-			}			
-		#endif
+		f.serialCont (_ShadowSkin.Vertices);
+		f.serialCont (_ShadowSkin.Triangles);
 	}
 
 	// Serial lod offsets.
@@ -2238,38 +2210,11 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 		nlassert (skeleton);
 		if (skeleton)
 		{
-			// Resize boneId to the good size.
-			_BonesId.resize(_BonesName.size());
-
-			// Remap bones id table
-			std::vector<uint> remap (_BonesName.size());
-
 			// **** For each bones, compute remap
-			uint bone;
-			for (bone=0; bone<remap.size(); bone++)
-			{
-				// Look for the bone
-				sint32 boneId = skeleton->getBoneIdByName (_BonesName[bone]);
-
-				// Setup the _BoneId.
-				_BonesId[bone]= boneId;
-
-				// Bones found ?
-				if (boneId != -1)
-				{
-					// Set the bone id
-					remap[bone] = (uint32)boneId;
-				}
-				else
-				{
-					// Put id 0
-					remap[bone] = 0;
-
-					// Error
-					nlwarning ("Bone %s not found in the skeleton.", _BonesName[bone].c_str());
-				}
-			}
-
+			std::vector<uint> remap;
+			skeleton->remapSkinBones(_BonesName, _BonesId, remap);
+			
+			
 			// **** Remap the vertices, and compute Bone Spheres.
 
 			// Find the Geomorph space: to process only real vertices, not geomorphed ones.
@@ -2334,7 +2279,7 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 
 			// Compile spheres
 			_BonesSphere.resize(_BonesId.size());
-			for(bone=0;bone<_BonesSphere.size();bone++)
+			for(uint bone=0;bone<_BonesSphere.size();bone++)
 			{
 				// If the bone is empty, mark with -1 in the radius.
 				if(boneBBEmpty[bone])
@@ -2364,9 +2309,9 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 			}
 
 			// **** Remap Shadow Vertices.
-			for(vert=0;vert<_ShadowSkinVertices.size();vert++)
+			for(vert=0;vert<_ShadowSkin.Vertices.size();vert++)
 			{
-				CShadowVertex	&v= _ShadowSkinVertices[vert];
+				CShadowVertex	&v= _ShadowSkin.Vertices[vert];
 				// Check id
 				nlassert (v.MatrixId < remap.size());
 				v.MatrixId= remap[v.MatrixId];
@@ -2509,9 +2454,9 @@ void	CMeshMRMGeom::compileRunTime()
 			!_MeshVertexProgram;
 
 		// Support Shadow SkinGrouping if Shadow setuped, and if not too many vertices.
-		_SupportShadowSkinGrouping= !_ShadowSkinVertices.empty() &&
+		_SupportShadowSkinGrouping= !_ShadowSkin.Vertices.empty() &&
 			NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT==CVertexBuffer::PositionFlag &&
-			_ShadowSkinVertices.size() <= NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES;
+			_ShadowSkin.Vertices.size() <= NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES;
 	}
 
 	// Support MeshBlockRendering only if not skinned/meshMorphed.
@@ -2588,6 +2533,151 @@ void	CMeshMRMGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *tra
 			rdrTrav->Scene->BenchRes.NumMeshMRMTriRdrNormal+= triCount;
 		}
 	}
+}
+
+
+// ***************************************************************************
+bool	CMeshMRMGeom::buildGeometryForLod(uint lodId, std::vector<CVector> &vertices, std::vector<uint32> &triangles) const
+{
+	if(lodId>=_Lods.size())
+		return false;
+
+	// avoid slow lock
+	if(_VBufferFinal.isResident())
+		return false;
+
+	// clear first
+	vertices.clear();
+	triangles.clear();
+
+
+	// **** First, for the lod indicate what vertex is used or not. Also index geomorphs to know what real vertex is used
+	static vector<sint>		vertexRemap;
+	vertexRemap.clear();
+	// -1 means "not used"
+	vertexRemap.resize(_VBufferFinal.getNumVertices(), -1);
+	// count also total number of indices
+	uint	numTotalIndices= 0;
+	// Parse all triangles.
+	uint	i;
+	for(i=0;i<getNbRdrPass(lodId);i++)
+	{
+		const CIndexBuffer &pb = getRdrPassPrimitiveBlock(lodId, i);
+		// avoid slow lock
+		if(pb.isResident())
+			return false;
+		CIndexBufferRead iba;
+		pb.lock (iba);
+		nlassert(iba.getFormat()==NL_MESH_MRM_INDEX_FORMAT);
+		TMeshMRMIndexType *src= (TMeshMRMIndexType *) iba.getPtr();
+		for(uint n= pb.getNumIndexes();n>0;n--, src++)
+		{
+			uint	idx= *src;
+			// Flag the vertex with its own index => used.
+			vertexRemap[idx]= idx;
+		}		
+
+		// total num indices
+		numTotalIndices+= pb.getNumIndexes();
+	}
+	// Special for Geomorphs: must take The End target vertex.
+	const std::vector<CMRMWedgeGeom>	&geomorphs= getGeomorphs(lodId);
+	for(i=0;i<geomorphs.size();i++)
+	{
+		uint	trueIdx= geomorphs[i].End;
+		// map to the Geomorph Target.
+		vertexRemap[i]= trueIdx;
+		// mark also the real vertex used as used.
+		vertexRemap[trueIdx]= trueIdx;
+	}
+	// if no index, abort
+	if(numTotalIndices==0)
+		return false;
+
+
+	// **** count number of vertices really used (skip geomorphs)
+	uint	numUsedVertices=0;
+	for(i=geomorphs.size();i<vertexRemap.size();i++)
+	{
+		if(vertexRemap[i]>=0)
+			numUsedVertices++;
+	}
+	// if none, abort
+	if(numUsedVertices==0)
+		return false;
+	// Then we have our vertices size
+	vertices.resize(numUsedVertices);
+
+
+	// **** Fill the vertex geometry
+	{
+		// Lock input VB
+		CVertexBufferRead	vba;
+		_VBufferFinal.lock(vba);
+
+		// get the start vert, beginning at end of geomorphs
+		const uint8	*pSrcVert= (const uint8*)vba.getVertexCoordPointer(geomorphs.size());
+		uint32		vertSize= _VBufferFinal.getVertexSize();
+		CVector		*pDstVert= &vertices[0];
+		uint		dstIndex= 0;
+
+		// Then run all input vertices (skip geomorphs)
+		for(i=geomorphs.size();i<vertexRemap.size();i++)
+		{
+			// if the vertex is used
+			if(vertexRemap[i]>=0)
+			{
+				// Final remaping of vertex to final index
+				vertexRemap[i]= dstIndex;
+				// copy to dest
+				*pDstVert= *(CVector*)pSrcVert;
+
+				// next dest
+				pDstVert++;
+				dstIndex++;
+			}
+
+			// next src
+			pSrcVert+= vertSize;
+		}
+
+		// should have fill the entire buffer
+		nlassert(uint(pDstVert-(&vertices[0]))==numUsedVertices);
+
+		// Resolve remapping for geomorphs
+		for(i=0;i<geomorphs.size();i++)
+		{
+			// use the same final index as the EndGeomorph vertex
+			uint	endGeomIdx= vertexRemap[i];
+			vertexRemap[i]= vertexRemap[endGeomIdx];
+		}
+	}
+
+
+	// **** Fill the indices
+	triangles.resize(numTotalIndices);
+	uint32	*pDstIndex= &triangles[0];
+	// for all render pass
+	for(i=0;i<getNbRdrPass(lodId);i++)
+	{
+		const CIndexBuffer &pb = getRdrPassPrimitiveBlock(lodId, i);
+		CIndexBufferRead iba;
+		pb.lock (iba);
+		TMeshMRMIndexType *src= (TMeshMRMIndexType *) iba.getPtr();
+		for(uint n= pb.getNumIndexes();n>0;n--, src++)
+		{
+			// resolve any geomorph, and final remapping
+			uint	remapedIdx= vertexRemap[*src];
+			nlassert(remapedIdx<vertices.size());
+			*pDstIndex= remapedIdx;
+			pDstIndex++;
+		}		
+	}
+	// should have filled the entire buffer
+	nlassert(uint(pDstIndex-(&triangles[0]))==numTotalIndices);
+		
+
+	return true;
 }
 
 
@@ -2959,6 +3049,34 @@ void	CMeshMRM::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, 
 	_MeshMRMGeom.profileSceneRender(rdrTrav, trans, trans->getNumTrianglesAfterLoadBalancing(), rdrFlags);
 }
 
+// ***************************************************************************
+void	CMeshMRM::buildSystemGeometry()
+{
+	// clear any
+	_SystemGeometry.clear();
+	
+	// don't build a system copy if skinned. In this case, ray intersection is done through CSkeletonModel
+	// and intersectSkin() scheme
+	if(_MeshMRMGeom.isSkinned())
+		return;
+	
+	// Choose the best Lod available for system geometry
+	if(_MeshMRMGeom.getNbLodLoaded()==0)
+		return;
+	uint	lodId= _MeshMRMGeom.getNbLodLoaded()-1;
+
+	// retrieve geometry (if VB/IB not resident)
+	if( !_MeshMRMGeom.buildGeometryForLod(lodId, _SystemGeometry.Vertices, _SystemGeometry.Triangles) )
+	{
+		_SystemGeometry.clear();
+	}
+
+	// TestYoyo
+	/*static uint32	totalMem= 0;
+	totalMem+= _SystemGeometry.Vertices.size()*sizeof(CVector);
+	totalMem+= _SystemGeometry.Triangles.size()*sizeof(uint32);
+	nlinfo("CMeshMRM: TotalMem: %d", totalMem);*/
+}
 
 
 // ***************************************************************************
@@ -3304,39 +3422,30 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 // ***************************************************************************
 void			CMeshMRMGeom::setShadowMesh(const std::vector<CShadowVertex> &shadowVertices, const std::vector<uint32> &triangles)
 {
-	_ShadowSkinVertices= shadowVertices;
-	#ifndef NL_MESH_MRM_INDEX16
-		_ShadowSkinTriangles= triangles;
-	#else
-		_ShadowSkinTriangles.resize(triangles.size());
-		for(uint k = 0; k < triangles.size(); ++k)
-		{
-			nlassert(triangles[k] <= 0xffff);
-			_ShadowSkinTriangles[k] = (uint16) triangles[k];
-		}
-	#endif
+	_ShadowSkin.Vertices= shadowVertices;
+	_ShadowSkin.Triangles= triangles;
 	// update flag. Support Shadow SkinGrouping if Shadow setuped, and if not too many vertices.
-	_SupportShadowSkinGrouping= !_ShadowSkinVertices.empty() &&
+	_SupportShadowSkinGrouping= !_ShadowSkin.Vertices.empty() &&
 		NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT==CVertexBuffer::PositionFlag &&
-		_ShadowSkinVertices.size() <= NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES;
+		_ShadowSkin.Vertices.size() <= NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES;
 }
 
 // ***************************************************************************
 uint			CMeshMRMGeom::getNumShadowSkinVertices() const
 {
-	return _ShadowSkinVertices.size();
+	return _ShadowSkin.Vertices.size();
 }
 
 // ***************************************************************************
 sint			CMeshMRMGeom::renderShadowSkinGeom(CMeshMRMInstance	*mi, uint remainingVertices, uint8 *vbDest)
 {
-	uint	numVerts= _ShadowSkinVertices.size();
+	uint	numVerts= _ShadowSkin.Vertices.size();
 
 	// if no verts, no draw
 	if(numVerts==0)
 		return 0;
 
-	// if no lods, there should be no verts, but still ensure no bug in applyArrayShadowSkin()
+	// if no lods, there should be no verts, but still ensure no bug in skinning
 	if(_Lods.empty())
 		return 0;
 	
@@ -3361,7 +3470,13 @@ sint			CMeshMRMGeom::renderShadowSkinGeom(CMeshMRMInstance	*mi, uint remainingVe
 	//===========
 
 	// skinning with normal, but no tangent space
-	applyArrayShadowSkin(&_ShadowSkinVertices[0], (CVector*)vbDest, skeleton, numVerts);
+	// For all matrix this Mesh use. (the shadow geometry cannot use other Matrix than the mesh use).
+	// NB: take the best lod since the lower lods cannot use other Matrix than the higher one.
+	static	vector<CMatrix3x4>		boneMat3x4;
+	CLod	&lod= _Lods[_Lods.size()-1];
+	computeBoneMatrixes3x4(boneMat3x4, lod.MatrixInfluences, skeleton);
+	
+	_ShadowSkin.applySkin((CVector*)vbDest, boneMat3x4);
 
 
 	// How many vertices are added to the VBuffer ???
@@ -3374,7 +3489,7 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 {
 	nlassert(drv);
 
-	if(_ShadowSkinTriangles.empty())
+	if(_ShadowSkin.Triangles.empty())
 		return;
 
 	// Profiling
@@ -3387,27 +3502,27 @@ void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial 
 	// TODO_SHADOW: optim: Special triangle cache for shadow!
 	static	CIndexBuffer shiftedTris;
 	NL_SET_IB_NAME(shiftedTris, "CMeshMRMGeom::renderShadowSkinPrimitives::shiftedTris");
-	if(shiftedTris.getNumIndexes()<_ShadowSkinTriangles.size())
+	if(shiftedTris.getNumIndexes()<_ShadowSkin.Triangles.size())
 	{
 		shiftedTris.setFormat(NL_MESH_MRM_INDEX_FORMAT);
-		shiftedTris.setNumIndexes(_ShadowSkinTriangles.size());
+		shiftedTris.setNumIndexes(_ShadowSkin.Triangles.size());
 	}	
 	shiftedTris.setPreferredMemory(CIndexBuffer::RAMVolatile, false);	
 	{
 		CIndexBufferReadWrite iba;
 		shiftedTris.lock(iba);
-		const TMeshMRMIndexType	*src= &_ShadowSkinTriangles[0];				
+		const uint32	*src= &_ShadowSkin.Triangles[0];				
 		TMeshMRMIndexType *dst= (TMeshMRMIndexType *) iba.getPtr();
-		for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
+		for(uint n= _ShadowSkin.Triangles.size();n>0;n--, src++, dst++)
 		{
-			*dst= *src + baseVertex;
+			*dst= (TMeshMRMIndexType)(*src + baseVertex);
 		}		
 	}
 
 	// Render Triangles with cache
 	//===========
 
-	uint	numTris= _ShadowSkinTriangles.size()/3;
+	uint	numTris= _ShadowSkin.Triangles.size()/3;
 
 	// Render with the Materials of the MeshInstance.
 	drv->activeIndexBuffer(shiftedTris);
@@ -3479,6 +3594,24 @@ bool		CMeshMRMGeom::getSkinBoneBBox(CSkeletonModel *skeleton, NLMISC::CAABBox &b
 
 	// return true if some influence found
 	return !bbEmpty;
+}
+
+
+// ***************************************************************************
+bool		CMeshMRMGeom::intersectSkin(CMeshMRMInstance	*mi, const CMatrix &toRaySpace, float &dist2D, float &distZ, bool computeDist2D)
+{
+	// for MeshMRM, Use the Shadow Skinning (simple and light version).
+
+	// no inst/verts/lod => no intersection
+	if(!mi || _ShadowSkin.Vertices.empty() || _Lods.empty())
+		return false;
+	CSkeletonModel	*skeleton= mi->getSkeletonModel();
+	if(!skeleton)
+		return false;
+	
+	// Compute skinning with all matrix this Mesh use. (the shadow geometry cannot use other Matrix than the mesh use).
+	// NB: take the best lod (_Lods.back()) since the lower lods cannot use other Matrix than the higher one.
+	return _ShadowSkin.getRayIntersection(toRaySpace, *skeleton, _Lods.back().MatrixInfluences, dist2D, distZ, computeDist2D);
 }
 
 

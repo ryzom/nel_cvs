@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.13 2002/09/04 10:28:59 corvazier Exp $
+ * $Id: form_elm.h,v 1.14 2002/10/08 09:13:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,19 +65,19 @@ public:
 	virtual void	getFormName (std::string &result, const CFormElm *child=NULL) const = 0;
 
 	// From UFormElm
-	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round=UFormElm::LastRound++);
-	virtual bool	getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (sint16 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (uint16 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (sint32 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (uint32 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
-	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=UFormElm::LastRound++) const;
+	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round=0xffffffff) const;
+	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round=0xffffffff);
+	virtual bool	getValueByName (std::string &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (sint8 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (uint8 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (sint16 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (uint16 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (sint32 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (uint32 &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (float &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (bool &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
+	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round=0xffffffff) const;
 	virtual bool	setValueByName (const char *value, const char *name, bool *created);
 	virtual bool	setValueByName (sint8 value, const char *name, bool *created);
 	virtual bool	setValueByName (uint8 value, const char *name, bool *created);
@@ -214,6 +214,9 @@ public:
 
 	// ** IO functions
 	virtual xmlNodePtr	write (xmlNodePtr node, const CForm *form, const char *structName = NULL, bool forceWrite = false) const = 0;
+
+	// Last value of round
+	static uint32		LastRound;
 
 protected:
 

@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.32 2002/10/02 13:33:01 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.33 2002/10/08 09:13:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ using namespace std;
 namespace NLGEORGES
 {	
 
-uint32 UFormElm::LastRound = 0;
+uint32 CFormElm::LastRound = 0;
 
 // ***************************************************************************
 // class CFormElm
@@ -360,6 +360,9 @@ CForm *CFormElm::getForm () const
 
 bool CFormElm::getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round)
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	const UFormElm *resultConst = NULL;
 	if (((const UFormElm*)this)->getNodeByName (&resultConst, name, where, verbose, round))
 	{
@@ -373,6 +376,9 @@ bool CFormElm::getNodeByName (UFormElm **result, const char *name, TWhereIsNode 
 
 bool CFormElm::getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// The parent Dfn
 	const CFormDfn *parentDfn;
 	const CFormDfn *nodeDfn;
@@ -406,6 +412,9 @@ bool CFormElm::getNodeByName (const UFormElm **result, const char *name, TWhereI
 
 bool CFormElm::getValueByName (string& result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// The parent Dfn
 	const CFormDfn *parentDfn;
 	const CFormDfn *nodeDfn;
@@ -449,6 +458,9 @@ bool CFormElm::getValueByName (string& result, const char *name, bool evaluate, 
 
 bool CFormElm::getValueByName (sint8 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -463,6 +475,9 @@ bool CFormElm::getValueByName (sint8 &result,	const char *name, bool evaluate, T
 
 bool CFormElm::getValueByName (uint8 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -477,6 +492,9 @@ bool CFormElm::getValueByName (uint8 &result,	const char *name, bool evaluate, T
 
 bool CFormElm::getValueByName (sint16 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -491,6 +509,9 @@ bool CFormElm::getValueByName (sint16 &result,	const char *name, bool evaluate, 
 
 bool CFormElm::getValueByName (uint16 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -505,6 +526,9 @@ bool CFormElm::getValueByName (uint16 &result,	const char *name, bool evaluate, 
 
 bool CFormElm::getValueByName (sint32 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -519,6 +543,9 @@ bool CFormElm::getValueByName (sint32 &result,	const char *name, bool evaluate, 
 
 bool CFormElm::getValueByName (uint32 &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -533,6 +560,9 @@ bool CFormElm::getValueByName (uint32 &result,	const char *name, bool evaluate, 
 
 bool CFormElm::getValueByName (float &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -547,6 +577,9 @@ bool CFormElm::getValueByName (float &result,	const char *name, bool evaluate, T
 
 bool CFormElm::getValueByName (double &result, const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -561,6 +594,9 @@ bool CFormElm::getValueByName (double &result, const char *name, bool evaluate, 
 
 bool CFormElm::getValueByName (bool &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -575,6 +611,9 @@ bool CFormElm::getValueByName (bool &result,	const char *name, bool evaluate, TW
 
 bool CFormElm::getValueByName (NLMISC::CRGBA &result,	const char *name, bool evaluate, TWhereIsValue *where, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = LastRound++;
+
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))

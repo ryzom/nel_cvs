@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.15 2002/09/25 09:38:05 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.16 2002/10/08 09:13:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -336,6 +336,9 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 
 uint CFormDfn::countParentDfn (uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = CFormElm::LastRound++;
+
 	// Checkout recurcive calls
 	if (Round == round)
 	{
@@ -359,6 +362,9 @@ uint CFormDfn::countParentDfn (uint32 round) const
 
 void CFormDfn::getParentDfn (std::vector<CFormDfn*> &array, uint32 round)
 {
+	if (round == 0xffffffff)
+		round = CFormElm::LastRound++;
+
 	// Checkout recurcive calls
 	if (Round == round)
 	{
@@ -382,6 +388,9 @@ void CFormDfn::getParentDfn (std::vector<CFormDfn*> &array, uint32 round)
 
 void CFormDfn::getParentDfn (std::vector<const CFormDfn*> &array, uint32 round) const
 {
+	if (round == 0xffffffff)
+		round = CFormElm::LastRound++;
+
 	// Checkout recurcive calls
 	if (Round == round)
 	{

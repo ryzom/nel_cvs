@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.7 2002/09/02 08:42:33 corvazier Exp $
+ * $Id: u_form_elm.h,v 1.8 2002/10/08 09:13:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,8 +79,8 @@ public:
 	  * "position.x"			:	get the element named x in the struct named position
 	  * "entities[2].color"		:	get the node named color in the second element of the entities array
 	  */
-	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true, uint32 round=UFormElm::LastRound++) = 0;
+	virtual bool	getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true, uint32 round=0xffffffff) const = 0;
+	virtual bool	getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where = NULL, bool reserved=true, uint32 round=0xffffffff) = 0;
 
 	
 	/// Where a value has been found
@@ -105,19 +105,19 @@ public:
 	  * \return true if the result has been filled, false if the value has not been found or the cast has failed or the evaluation has failed.
 	  * \see getNodeByName ()
 	  */
-	virtual bool	getValueByName (std::string &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getValueByName (sint8 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getValueByName (uint8 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getValueByName (sint16 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getValueByName (uint16 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getValueByName (sint32 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getValueByName (uint32 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getValueByName (float &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getValueByName (double &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
-	virtual bool	getValueByName (bool &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
+	virtual bool	getValueByName (std::string &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (sint8 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (uint8 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (sint16 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (uint16 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (sint32 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (uint32 &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (float &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (double &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
+	virtual bool	getValueByName (bool &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
 
 	/// Warning, only R, G and B members are filled, not A.
-	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=UFormElm::LastRound++) const = 0;
+	virtual bool	getValueByName (NLMISC::CRGBA &result, const char *name, bool evaluate = true, TWhereIsValue *where = NULL, uint32 round=0xffffffff) const = 0;
 
 	/**
 	  * Set a form value with its name. If the node doesn't exist, it is created.
@@ -246,9 +246,6 @@ public:
 
 	/// Warning, only R, G and B members are filled, not A.
 	virtual bool	getValue (NLMISC::CRGBA &result, bool evaluate = true) const = 0;
-
-	// Last value of round
-	static uint32 LastRound;
 };
 
 } // NLGEORGES

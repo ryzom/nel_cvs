@@ -1,7 +1,7 @@
 /** \file baseai.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.25 2002/02/20 18:04:49 lecroart Exp $
+ * $Id: baseai.h,v 1.26 2002/06/17 14:16:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -395,6 +395,10 @@ namespace NLAIAGENT
 		virtual void save(NLMISC::IStream &os) = 0;
 		virtual void load(NLMISC::IStream &is) = 0;
 		//@}
+
+
+		///That function allow user to change the 7 bit of the type field in the sid agent number;
+		void setTypeAt(uint64 t);		
 
 		virtual ~IRefrence();
 	};

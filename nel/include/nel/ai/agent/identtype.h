@@ -1,7 +1,7 @@
 /** \file identtype.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.23 2002/02/26 10:01:31 chafik Exp $
+ * $Id: identtype.h,v 1.24 2002/06/17 14:16:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@ namespace NLAIAGENT
 	struct CAgentNumber: public NLMISC::CEntityId
 	{		
 		///All agents id'S numbers have the 8th bit reserved on NLMISC::CEntityId::Type byte
+		///The CEntityId::Type field is for AI an user bits field becarful we dont't touch at the 8e bits.
 		static const uint8 AgentTypeBit;
 		static const CAgentNumber Unknow;
 
@@ -81,6 +82,42 @@ namespace NLAIAGENT
 		bool isAgentId() const
 		{
 			return (getType() & AgentTypeBit) != 0;
+		}
+
+		virtual bool operator < (const NLMISC::CEntityId &a) const
+		{
+			
+			if(isAgentId())
+			{
+				if (Id < a.Id)
+				{
+					return true;
+				}
+				else 
+				if (Id == a.Id)
+				{
+					if(CreatorId < a.CreatorId)
+					{
+						return true;
+					}
+					else
+						if(CreatorId == a.CreatorId)
+						{
+							return DynamicId < a.DynamicId;
+						}
+				}
+				return false;
+			}
+			else
+			{
+				return CEntityId::operator < (a);
+			}
+		}
+
+		///That function allow user to change the 7 bit of the type field in the sid agent number; We don't touche at the 8e bits.
+		void setTypeAt(uint64 t)
+		{
+			CEntityId::Type |= (t & 0x7f);
 		}
 
 	};

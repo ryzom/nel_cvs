@@ -1,6 +1,6 @@
 /** \file baseai.cpp
  *
- * $Id: baseai.cpp,v 1.36 2002/02/20 18:08:37 lecroart Exp $
+ * $Id: baseai.cpp,v 1.37 2002/06/17 14:17:44 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -474,11 +474,17 @@ namespace NLAIAGENT
 	{			
 		//if(_Parent != NULL) _Parent->incRef();
 		_NumRef = new CLocWordNumRef(this);
+		setTypeAt(A._NumRef->getNumIdent().getId().getType());
 	}		
 
 	const CIdent IRefrence::getIdentType() const
 	{
 		return CIdent(0,_NumRef->getNumIdent().getId());
+	}
+
+	void IRefrence::setTypeAt(uint64 t)
+	{
+		((CAgentNumber &)(_NumRef->getNumIdent().getId())).setTypeAt(t);
 	}
 
 

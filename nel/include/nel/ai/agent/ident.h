@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.20 2001/12/20 10:15:00 chafik Exp $
+ * $Id: ident.h,v 1.21 2002/06/17 14:16:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -365,6 +365,11 @@ namespace NLAIAGENT
 		{
 		}
 
+		void setTypeAt(uint64 t)
+		{
+			_Id.setTypeAt(t);
+		}
+
 		///\name comparison of two CIndexVariant.
 		//@{
 		bool operator == (const CNumericIndex &a) const
@@ -607,6 +612,11 @@ namespace NLAIAGENT
 		virtual const CNumericIndex &getNumIdent() const
 		{
 			return _Id;
+		}
+
+		void setTypeAt(uint64 t)
+		{
+			_Id.setTypeAt(t);
 		}
 
 		virtual ~CLocWordNumRef();		

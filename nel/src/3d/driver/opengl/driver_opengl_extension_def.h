@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.22 2004/04/27 12:11:21 vizerie Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.23 2004/04/28 12:54:53 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1458,14 +1458,10 @@ typedef void (APIENTRY * NEL_PFNGLUNMAPOBJECTBUFFERATIPROC)(GLuint buffer);
 // GL_ATI_vertex_attrib_array_object
 //==================================
 
-#ifndef GL_ATI_vertex_attrib_array_object
-#define GL_ATI_vertex_attrib_array_object 1
-
 typedef GLvoid (APIENTRY * NEL_PFNGLVERTEXATTRIBARRAYOBJECTATIPROC)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, GLuint buffer, GLuint offset);
 typedef GLvoid (APIENTRY * NEL_PFNGLGETVERTEXATTRIBARRAYOBJECTFVATIPROC)(GLuint index, GLenum pname, GLfloat *params);
 typedef GLvoid (APIENTRY * NEL_PFNGLGETVERTEXATTRIBARRAYOBJECTIVATIPROC)(GLuint index, GLenum pname, GLint *params);
 
-#endif /* GL_ATI_vertex_attrib_array_object */
 
 
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.159 2003/01/13 14:06:03 lecroart Exp $
+ * $Id: service.cpp,v 1.160 2003/01/14 13:47:37 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -421,13 +421,12 @@ static void AESDisconnection (const std::string &serviceName, uint16 sid, void *
 
 static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
-	nlwarning ("AES: Deprecated function call cbExecCommand");
-
-/*	string command;
+	string command;
 	msgin.serial (command);
 
+	nlinfo ("Executing command from network : '%s'", command.c_str());
 	ICommand::execute (command, commandLog);
-*/}
+}
 
 
 static void cbStopService (CMessage &msgin, const std::string &serviceName, uint16 sid)

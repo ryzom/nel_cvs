@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.14 2002/01/04 15:06:46 chafik Exp $
+ * $Id: registry.cpp,v 1.15 2002/10/15 15:03:34 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,5 +210,18 @@ namespace NLAIC
 	sint32 CRegistry::size() const
 	{
 		return _TableRegistry.size();
+	}
+
+	const bool CRegistry::existsClass(const char *class_name) const
+	{
+		std::vector<CRegistryClass *>::const_iterator it_rc = _TableRegistry.begin();
+		while ( it_rc != _TableRegistry.end() )
+		{
+			const char *rc_name = (const char *) (*it_rc)->NameClass;
+			if ( strcmp( class_name, rc_name ) == 0)
+				return true;
+			it_rc++;
+		}
+		return false;
 	}
 }

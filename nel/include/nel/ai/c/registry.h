@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: registry.h,v 1.4 2001/03/14 13:19:25 chafik Exp $
+ * $Id: registry.h,v 1.5 2002/10/15 15:03:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,6 +109,9 @@ namespace NLAIC
 
 		///Get CIdentType with an index.
 		const CIdentType& operator [](sint32 i) const;
+
+		// Returns true if a class with this name already exists in the registry, false otherwise
+		const bool existsClass(const char *) const;
 
 		///Get registry size.
 		sint32 size() const;

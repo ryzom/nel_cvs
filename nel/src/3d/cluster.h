@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.14 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: cluster.h,v 1.15 2004/04/13 17:01:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,6 +97,13 @@ public:
 	 * return true if the Sphere intersect the cluster
 	 */
 	bool isIn (const NLMISC::CVector& center, float size);
+
+	/**
+	 * return true if the segment intersect the cluster
+	 *	start / end are the input and ouptut clipped segment
+	 */
+	bool clipSegment (NLMISC::CVector &p0, NLMISC::CVector &p1);
+
 
 	NLMISC::CAABBox& getBBox() { return _BBox; }
 	

@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.22 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: cluster.cpp,v 1.23 2004/04/13 17:01:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -218,6 +218,17 @@ bool CCluster::isIn (const NLMISC::CVector& center, float size)
 	for (uint i = 0; i < _Volume.size(); ++i)
 		if (_Volume[i]*center > size)
 			return false;
+	return true;
+}
+
+// ***************************************************************************
+bool CCluster::clipSegment (NLMISC::CVector &p0, NLMISC::CVector &p1)
+{
+	for (uint i = 0; i < _Volume.size(); ++i)
+	{
+		if (!_Volume[i].clipSegmentBack(p0, p1))
+			return false;
+	}
 	return true;
 }
 
@@ -540,8 +551,10 @@ void CCluster::cameraRayClip(const CVector &start, const CVector &end, std::vect
 		}
 	}
 
-	// Link up in hierarchy
-	if ((FatherVisible)&&(Father != NULL))
+	/* Link up in hierarchy. Test the Inverse Flag, cause the path is inverted here!!!
+		ie: if I allow the camera to go out, it MUST can re-enter (ie if I am VisibleFromFather)
+	*/
+	if ((VisibleFromFather)&&(Father != NULL))
 	{
 		Father->cameraRayClip(start, end, clusterVisited);
 	}
@@ -549,7 +562,8 @@ void CCluster::cameraRayClip(const CVector &start, const CVector &end, std::vect
 	// Link down in hierarchy
 	for (i = 0; i < Children.size(); ++i)
 	{
-		if (Children[i]->VisibleFromFather)
+		// same remark. test FatherVisible, not VisibleFromFather
+		if (Children[i]->FatherVisible)
 		{
 			Children[i]->cameraRayClip(start, end, clusterVisited);
 		}

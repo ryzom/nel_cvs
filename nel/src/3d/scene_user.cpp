@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.59 2004/04/09 14:23:46 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.60 2004/04/13 17:01:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -625,23 +625,22 @@ CViewport		CSceneUser::getViewport()
 	return _Scene.getViewport();
 }
 
-void			CSceneUser::findCameraClusterSystemFromRay(UCamera *cam, UInstanceGroup *startClusterSystem,
-													  const NLMISC::CVector &startPos, const NLMISC::CVector &endPos)
+UInstanceGroup	*CSceneUser::findCameraClusterSystemFromRay(UInstanceGroup *startClusterSystem,
+			const NLMISC::CVector &startPos, NLMISC::CVector &endPos)
 {
 	NL3D_MEM_SCENE
 	NL3D_HAUTO_UI_SCENE;
 	
-	if(!cam)
-		return;
-
-	CCameraUser			*ucam= dynamic_cast<CCameraUser*>(cam);
 	CInstanceGroupUser	*uig= dynamic_cast<CInstanceGroupUser*>(startClusterSystem);
-	CCamera				*pCam= ucam->getCamera();
 	CInstanceGroup		*pIg= NULL;
 	if(uig)
 		pIg= &uig->_InstanceGroup;
 
-	_Scene.findCameraClusterSystemFromRay(pCam, pIg, startPos, endPos);
+	CInstanceGroup *resultIg= _Scene.findCameraClusterSystemFromRay(pIg, startPos, endPos);
+	if(resultIg)
+		return resultIg->getUserInterface();
+	else
+		return NULL;
 }
 
 // ***************************************************************************

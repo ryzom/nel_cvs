@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.53 2004/03/24 16:36:58 berenguier Exp $
+ * $Id: scene_user.h,v 1.54 2004/04/13 17:01:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,8 +129,8 @@ public:
 	virtual	UCamera			*getCam();
 	virtual	void			setViewport(const class CViewport& viewport);
 	virtual	CViewport		getViewport();
-	virtual	void			findCameraClusterSystemFromRay(UCamera *cam, UInstanceGroup *startClusterSystem,
-		const NLMISC::CVector &startPos, const NLMISC::CVector &endPos);
+	virtual	UInstanceGroup	*findCameraClusterSystemFromRay(UInstanceGroup *startClusterSystem,
+		const NLMISC::CVector &startPos, NLMISC::CVector &endPos);
 	//@}
 
 

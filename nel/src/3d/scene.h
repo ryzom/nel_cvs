@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.51 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: scene.h,v 1.52 2004/04/13 17:01:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,10 +190,11 @@ public:
 	/** Special For Camera Third person. Traverse the ClusterSystem with a Ray 
 	 *	(clip through portals, cluster system hierarchy...), to find where could lies 
 	 *	the camera at End point.
-	 *	As result, a camera->setClusterSystem() is done with the found cluster system
+	 *	\param endPos may be modified to ensure that it lies in a cluster of the found cluster system
+	 *	\return the found cluster System
 	 */
-	void			findCameraClusterSystemFromRay(CCamera *cam, CInstanceGroup *startClusterSystem,
-		const NLMISC::CVector &startPos, const NLMISC::CVector &endPos);
+	CInstanceGroup *findCameraClusterSystemFromRay(CInstanceGroup *startClusterSystem,
+		const NLMISC::CVector &startPos, NLMISC::CVector &endPos);
 	//@}
 
 

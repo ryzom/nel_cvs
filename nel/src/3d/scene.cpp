@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.118 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: scene.cpp,v 1.119 2004/04/13 17:01:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1265,9 +1265,11 @@ void			CScene::setShadowMapMaxCasterAround(uint num)
 }
 
 // ***************************************************************************
-void			CScene::findCameraClusterSystemFromRay(CCamera *cam, CInstanceGroup *startClusterSystem,
-											   const NLMISC::CVector &startPos, const NLMISC::CVector &endPos)
+CInstanceGroup *CScene::findCameraClusterSystemFromRay(CInstanceGroup *startClusterSystem,
+											   const NLMISC::CVector &startPos, NLMISC::CVector &endPos)
 {
+	CInstanceGroup	*resultCS= NULL;
+
 	CClipTrav	&clipTrav= getClipTrav();
 
 	// **** Search all cluster where the startPos is in
@@ -1324,18 +1326,60 @@ void			CScene::findCameraClusterSystemFromRay(CCamera *cam, CInstanceGroup *star
 		}
 	}
 
+	// If no cluster found, then we may be in a "Data Error case". 
+	// In this case, ensure the Camera position in a cluster
+	if(possibleClusterSystem.empty())
+	{
+		CCluster	*bestCluster= NULL;
+		float		shortDist= FLT_MAX;
+
+		for(i=0;i<vClusterVisited.size();i++)
+		{
+			// if the ray is at least partially in this cluster
+			CVector		a= startPos;
+			CVector		b= endPos;
+			if(vClusterVisited[i]->clipSegment(a, b))
+			{
+				float	dist= (endPos - b).norm();
+				if(dist<shortDist)
+				{
+					bestCluster= vClusterVisited[i];
+					shortDist= dist;
+				}
+			}
+		}
+
+		// if found
+		if(bestCluster)
+		{
+			// append the best one to the possible Cluster System
+			possibleClusterSystem.push_back(bestCluster->Group);
+
+			// and modify endPos, so the camera will really lies into this cluster
+			const float	threshold= 0.05f;
+			shortDist+= threshold;
+			// must not goes more than startPos!
+			float	rayDist= (startPos - endPos).norm();
+			shortDist= min(shortDist, rayDist);
+			endPos+= (startPos - endPos).normed() * shortDist;
+		}
+	}
+
+	// NB: still possible that the possibleClusterSystem is empty, if not in any cluster for instance :)
+
+
 	// **** From each possible clusterSystem, select the one that is the lower in hierarchy
 	// common case
 	if(possibleClusterSystem.empty())
-		cam->setClusterSystem(NULL);
+		resultCS= NULL;
 	else if(possibleClusterSystem.size()==1)
 	{
 		// if it is the rootCluster set NULL (should have the same behavior but do like standard case)
 		if(possibleClusterSystem[0]==RootCluster->getClusterSystem())
-			cam->setClusterSystem(NULL);
+			resultCS= NULL;
 		// set this cluster system
 		else
-			cam->setClusterSystem(possibleClusterSystem[0]);
+			resultCS= possibleClusterSystem[0];
 	}
 	// conflict case
 	else
@@ -1360,8 +1404,10 @@ void			CScene::findCameraClusterSystemFromRay(CCamera *cam, CInstanceGroup *star
 		}
 
 		// set the highest cluster system
-		cam->setClusterSystem(highest);
+		resultCS= highest;
 	}
+
+	return resultCS;
 }
 
 

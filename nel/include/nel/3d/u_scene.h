@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.50 2004/03/24 16:36:12 berenguier Exp $
+ * $Id: u_scene.h,v 1.51 2004/04/13 17:01:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,10 +139,11 @@ public:
 	/** Special For Camera Third person. Traverse the ClusterSystem with a Ray 
 	 *	(clip through portals, cluster system hierarchy...), to find where could lies 
 	 *	the camera at End point.
-	 *	As result, a camera->setClusterSystem() is done with the found cluster system
+	 *	\param endPos may be modified to ensure that it lies in a cluster of the found cluster system
+	 *	\return the found cluster System
 	 */
-	virtual	void			findCameraClusterSystemFromRay(UCamera *cam, UInstanceGroup *startClusterSystem,
-		const NLMISC::CVector &startPos, const NLMISC::CVector &endPos) =0;
+	virtual	UInstanceGroup	*findCameraClusterSystemFromRay(UInstanceGroup *startClusterSystem,
+		const NLMISC::CVector &startPos, NLMISC::CVector &endPos) =0;
 	//@}
 
 

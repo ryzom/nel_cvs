@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.cpp
  * <File description>
  *
- * $Id: visual_collision_mesh.cpp,v 1.1 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: visual_collision_mesh.cpp,v 1.2 2004/04/13 17:01:15 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -86,8 +86,8 @@ void	CVisualCollisionMesh::CStaticGrid::add(uint16 id, const NLMISC::CAABBox &bb
 	sint	ymax= (sint)ceilf(maxp.y*_GridScale.y);
 	clamp(xmin, 0, (sint)_GridSize-1);
 	clamp(ymin, 0, (sint)_GridSize-1);
-	clamp(xmax, 0, (sint)_GridSize);
-	clamp(ymax, 0, (sint)_GridSize);
+	clamp(xmax, xmin+1, (sint)_GridSize);
+	clamp(ymax, ymin+1, (sint)_GridSize);
 
 	// set in the elt build
 	_EltBuild[id].X0= xmin;
@@ -172,8 +172,8 @@ uint	CVisualCollisionMesh::CStaticGrid::select(const NLMISC::CAABBox &bbox, std:
 	sint	ymax= (sint)ceilf(maxp.y*_GridScale.y);
 	clamp(xmin, 0, (sint)_GridSize-1);
 	clamp(ymin, 0, (sint)_GridSize-1);
-	clamp(xmax, 0, (sint)_GridSize);
-	clamp(ymax, 0, (sint)_GridSize);
+	clamp(xmax, xmin+1, (sint)_GridSize);
+	clamp(ymax, ymin+1, (sint)_GridSize);
 
 	// for each case touched, increment NumElts
 	for(uint y=ymin;y<(uint)ymax;y++)

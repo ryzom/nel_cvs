@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * <File description>
  *
- * $Id: start_stop_particle_system.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.4 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,6 +100,8 @@ void CStartStopParticleSystem::OnStartSystem()
 	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.01f) ;
 	_ParticleDlg->getCurrPSModel()->enableDisplayTools(false) ; 
 
+	_ParticleDlg->ParticleTreeCtrl->suppressLocatedInstanceNbItem(0) ;
+
 	m_StartPicture.EnableWindow(FALSE) ;
 	m_StopPicture.EnableWindow(TRUE) ;
 	UpdateData(FALSE) ;	
@@ -108,6 +110,9 @@ void CStartStopParticleSystem::OnStartSystem()
 void CStartStopParticleSystem::OnStopSystem() 
 {
 	_SystemInitialPos.restoreSystem() ;
+
+	_ParticleDlg->ParticleTreeCtrl->rebuildLocatedInstance() ;
+
 	_ParticleDlg->getCurrPSModel()->setEllapsedTime(0.f) ; // pause
 	_ParticleDlg->getCurrPSModel()->enableDisplayTools(true) ; 
 

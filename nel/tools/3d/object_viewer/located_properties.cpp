@@ -1,7 +1,7 @@
 /** \file located_properties.cpp
  * <File description>
  *
- * $Id: located_properties.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: located_properties.cpp,v 1.5 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 
 #include "3d/ps_located.h"
 
+#include "particle_dlg.h"
+#include "particle_tree_ctrl.h"
 
 using NL3D::CPSLocated ;
 
@@ -46,8 +48,8 @@ static char THIS_FILE[] = __FILE__;
 // CLocatedProperties dialog
 
 
-CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc, CWnd* pParent /*=NULL*/)
-	: CDialog(CLocatedProperties::IDD, pParent), _Located(loc)
+CLocatedProperties::CLocatedProperties(NL3D::CPSLocated *loc,  CParticleDlg *pdlg)
+	: CDialog(CLocatedProperties::IDD, pdlg), _Located(loc), _ParticleDlg(pdlg)
 {
 	//{{AFX_DATA_INIT(CLocatedProperties)
 	m_LimitedLifeTime = FALSE;
@@ -126,10 +128,10 @@ BOOL CLocatedProperties::OnInitDialog()
 ///////////////////////////////////////////
 
 
-void CLocatedProperties::init(uint32 x, uint32 y, CWnd *pParent)
+void CLocatedProperties::init(uint32 x, uint32 y)
 {
 
-	Create(IDD_LOCATED_PROPERTIES, pParent) ;
+	Create(IDD_LOCATED_PROPERTIES, (CWnd *) _ParticleDlg) ;
 	RECT r, pr  ;
 	GetClientRect(&r) ;
 	MoveWindow(x, y, r.right, r.bottom) ;	
@@ -159,6 +161,7 @@ void CLocatedProperties::init(uint32 x, uint32 y, CWnd *pParent)
 	_MaxMass->init(r.left - pr.left, r.top - pr.top, this) ;
 
 	m_MaxNbParticles.GetWindowRect(&r) ;
+	_MaxNbParticlesWrapper.TreeCtrl = _ParticleDlg->ParticleTreeCtrl ;
 	_MaxNbParticlesWrapper.Located = _Located ;
 	_MaxNbParticles->setWrapper(&_MaxNbParticlesWrapper) ;	
 	_MaxNbParticles->init(r.left - pr.left, r.top - pr.top, this) ;

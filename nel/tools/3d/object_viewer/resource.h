@@ -75,7 +75,6 @@
 #define IDD_COLOR_EDIT                  1031
 #define IDC_END_EDIT                    1032
 #define IDC_CLAMP                       1032
-#define IDD_GRADIENT_EDIT               1032
 #define IDC_REPEAT                      1033
 #define IDD_VALUE_BLENDER               1033
 #define IDC_DISABLE                     1034
@@ -101,6 +100,7 @@
 #define IDB_LOCATED_INSTANCE            1042
 #define IDC_VIEW_SLOTS                  1043
 #define IDC_PLAY                        1043
+#define IDD_PS_MOVER                    1043
 #define IDC_LOOP                        1044
 #define IDC_RESET_CAMERA                1044
 #define IDC_EULER                       1045
@@ -137,7 +137,6 @@
 #define IDC_ATTRIB_NB_CYCLES            1078
 #define IDC_ATTR_BITMAP                 1081
 #define IDC_CONSTANT_VALUE_POS          1082
-#define IDC_LIST1                       1085
 #define IDC_AVAILABLE_TARGET            1086
 #define IDC_PARTICLE_COLOR              1087
 #define IDC_BINDABLE_TYPE               1088
@@ -157,6 +156,16 @@
 #define IDC_ADD_TARGET                  1109
 #define IDC_REMOVE_TARGET               1110
 #define IDC_TARGET                      1111
+#define IDC_ENABLE_X                    1112
+#define IDC_ENABLE_Y                    1113
+#define IDC_XPOS                        1113
+#define IDC_ENABLE_Z                    1114
+#define IDC_YPOS                        1114
+#define IDC_ZPOS                        1115
+#define IDC_UPDATE_XPOS                 1116
+#define IDC_UPDATE_YPOS                 1117
+#define IDC_UPDATE_ZPOS                 1118
+#define IDC_SUB_COMPONENT               1119
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -194,9 +203,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1043
+#define _APS_NEXT_RESOURCE_VALUE        1044
 #define _APS_NEXT_COMMAND_VALUE         32810
-#define _APS_NEXT_CONTROL_VALUE         1112
+#define _APS_NEXT_CONTROL_VALUE         1120
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

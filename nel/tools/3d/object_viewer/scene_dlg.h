@@ -1,7 +1,7 @@
 /** \file scene_dlg.h
  * <File description>
  *
- * $Id: scene_dlg.h,v 1.6 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: scene_dlg.h,v 1.7 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,9 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSceneDlg)
 	enum { IDD = IDD_SCENE };
+	CButton	EnableZCtrl;
+	CButton	EnableYCtrl;
+	CButton	EnableXCtrl;
 	CEdit	MoveSpeedCtrl;
 	BOOL	ViewAnimation;
 	BOOL	ViewAnimationSet;
@@ -55,6 +58,9 @@ public:
 	float	MoveSpeed;
 	BOOL	ViewParticle;
 	BOOL	MoveElement;
+	BOOL	EnableX;
+	BOOL	EnableY;
+	BOOL	EnableZ;
 	//}}AFX_DATA
 
 	class CObjectViewer	*ObjView;

@@ -1,7 +1,7 @@
 /** \file particle_dlg.h
  * <File description>
  *
- * $Id: particle_dlg.h,v 1.2 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.3 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,9 @@ public:
 
 // Implementation
 
+	public:
+	// the tree for viewing the system
+	CParticleTreeCtrl *ParticleTreeCtrl ;
 
 
 public:
@@ -99,6 +102,7 @@ public:
 	}
 
 
+
 	
 	// move the current selected element using the given matrix
 	void moveElement(const NLMISC::CMatrix &mat) ;
@@ -114,12 +118,17 @@ public:
 	NL3D::CFontManager *FontManager ;
 	NL3D::CFontGenerator *FontGenerator ;
 
+
+	// get the current right pane of the editor (NULL if none)
+	CWnd *getRightPane(void) { return CurrentRightPane ; }
+	const CWnd *getRightPane(void) const { return CurrentRightPane ; }
+
+
 protected:
 
 	
 
-	// the tree for viewing the system
-	CParticleTreeCtrl *_ParticleTreeCtrl ;
+
 
 
 	CStartStopParticleSystem *_StartStopDlg ;
@@ -135,8 +144,8 @@ protected:
 
 
 	// the current right pane of the editor
-	CWnd *_CurrentRightPane ;
-	sint32 _CurrRightPaneWidth, _CurrRightPaneHeight ;
+	CWnd *CurrentRightPane ;
+	sint32 CurrRightPaneWidth, CurrRightPaneHeight ;
 
 	CRect getTreeRect(int cx, int cy) const ;
 

@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.7 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: event_mouse_listener.cpp,v 1.8 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,9 +119,19 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			Pivot*=comeFromHotSpot;
 			Pivot*=turnX;
 			Pivot*=goToHotSpot;
-			Pivot*=_Matrix;
 
-			_Matrix=Pivot;
+			if (! _EnableModelMatrixEdition)
+			{
+				Pivot*=_Matrix;
+				_Matrix=Pivot;
+			}
+			else
+			{
+				Pivot*=_ModelMatrix;
+				_ModelMatrix=Pivot;
+			}
+
+			
 
 			// Normalize, too much transformation could give an ugly matrix..
 			_Matrix.normalize (CMatrix::XYZ);

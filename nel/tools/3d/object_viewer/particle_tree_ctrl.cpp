@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * <File description>
  *
- * $Id: particle_tree_ctrl.cpp,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.5 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,7 @@ static char THIS_FILE[] = __FILE__;
 #include "3d/ps_force.h"
 #include "3d/ps_zone.h"
 #include "3d/ps_emitter.h"
+#include "3d/ps_edit.h"
 #include "3d/nelu.h"
 
 #include "nel/misc/path.h"
@@ -59,6 +60,7 @@ static char THIS_FILE[] = __FILE__;
 #include "located_target_dlg.h"
 #include "scene_dlg.h"
 #include "object_viewer.h"
+#include "ps_mover_dlg.h"
 
 
 using NL3D::CParticleSystem ;
@@ -127,6 +129,46 @@ void CParticleTreeCtrl::rebuildLocatedInstance(void)
 		}
 		currLocated = GetNextItem(currLocated, TVGN_NEXT) ;
 	}
+
+	Invalidate() ;
+}
+
+
+
+
+
+void CParticleTreeCtrl::suppressLocatedInstanceNbItem(uint32 newSize)
+{
+	HTREEITEM currPS = GetRootItem(), currLocated, currLocElement, nextCurrLocElement ;
+
+	currLocated = this->GetChildItem(currPS) ;
+
+	while(currLocated)
+	{		
+		
+		currLocElement = GetChildItem(currLocated) ;			
+
+		while (currLocElement)
+		{
+			CNodeType *nt = (CNodeType *) GetItemData(currLocElement) ;
+
+			nextCurrLocElement = GetNextItem(currLocElement, TVGN_NEXT) ;
+			// remove instance item
+			if (nt->Type == CNodeType::locatedInstance)
+			{
+				if (nt->LocatedInstanceIndex >= newSize)
+				{
+					DeleteItem(currLocElement) ;
+				}
+			}
+			currLocElement = nextCurrLocElement ;
+		
+		}
+		
+		currLocated = GetNextItem(currLocated, TVGN_NEXT) ;
+	}	
+
+	Invalidate() ;
 }
 
 
@@ -223,8 +265,8 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 	{
 		case CNodeType::located:
 		{	
-			CLocatedProperties *lp = new CLocatedProperties(nt->Loc) ;
-			lp->init(0, 0, _ParticleDlg) ;	
+			CLocatedProperties *lp = new CLocatedProperties(nt->Loc, _ParticleDlg) ;
+			lp->init(0, 0) ;	
 			_ParticleDlg->setRightPane(lp) ;
 			if (lastClickedPS)
 			{
@@ -273,13 +315,16 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 		}
 		break ;
 		case CNodeType::locatedInstance:
-		{
-			_ParticleDlg->setRightPane(NULL) ;
+		{			
 			NL3D::CParticleSystem *ps = nt->Loc->getOwner() ;
 			ps->setCurrentEditedElement(nt->Loc, nt->LocatedInstanceIndex) ;
 			CObjectViewer *ov = _ParticleDlg->SceneDlg->ObjView ;
 			ov->getMouseListener().setModelMatrix(_ParticleDlg->getElementMatrix()) ;
 			lastClickedPS = ps ;
+			CPSMoverDlg *moverDlg = new CPSMoverDlg(this, GetSelectedItem()) ;			
+			moverDlg->init() ;
+			_ParticleDlg->setRightPane(moverDlg) ;
+			
 		}
 		break ;
 	}
@@ -731,8 +776,9 @@ void CParticleTreeCtrl::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
 }
 
 
-void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &mat)
+void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &m)
 {
+	NLMISC::CMatrix mat = m ;
 	
 	// the current element must be an instance
 	if (::IsWindow(m_hWnd))
@@ -743,7 +789,24 @@ void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &mat)
 			CNodeType *nt = (CNodeType *) GetItemData(currItem) ;
 			if (nt->Type == CNodeType::locatedInstance)
 			{
+				// translate
 				nt->Loc->getPos()[nt->LocatedInstanceIndex] = mat.getPos() ;
+
+				// rotate
+				mat.setPos(NLMISC::CVector::Null) ;
+
+				if (nt->LocBindable)
+				{				
+					if (dynamic_cast<NL3D::IPSMover *>(nt->LocBindable))
+					{
+						
+						(dynamic_cast<NL3D::IPSMover *>(nt->LocBindable))->setMatrix(nt->LocatedInstanceIndex, mat) ;
+					}
+				}
+
+				// update the dialog
+				nlassert (dynamic_cast<CPSMoverDlg *>(_ParticleDlg->getRightPane())) ;
+				(dynamic_cast<CPSMoverDlg *>(_ParticleDlg->getRightPane()))->updatePosition() ;
 			}
 		}
 	}

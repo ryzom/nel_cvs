@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_emitter.h,v 1.2 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,8 @@ public:
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
 	
 
+	/// display the emitter in edition mode
+	void showTool(void)  ;
 
 	/// set thetype of located to be emitted. THIS MUST BE CALLED
 	void setEmittedType(CPSLocated *et) { _EmittedType = et ; }
@@ -454,17 +456,15 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 
 	
-		virtual bool supportNonOrthonormalBasis(void) const { return true ; }
 
-
-	
+		// inherited from IPSMover
 		virtual bool supportUniformScaling(void) const { return true ; }
-		virtual bool supportScaling(void) const { return true ; }
-	
-		// left multiply the current matrix by the given one. No valid index -> assert
-		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
-		// return a matrix of the system. No valid index -> assert
-		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual bool supportNonUniformScaling(void) const { return true ; }			
+		virtual void setMatrix(uint32 index, const CMatrix &m) ;	
+		virtual CMatrix getMatrix(uint32 index) const ;			
+		virtual void setScale(uint32 index, float scale) ;	
+		virtual void setScale(uint32 index, const CVector &s) ;
+		CVector getScale(uint32 index) const ;
 
 	
 

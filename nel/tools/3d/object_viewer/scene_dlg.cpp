@@ -1,7 +1,7 @@
 /** \file scene_dlg.cpp
  * <File description>
  *
- * $Id: scene_dlg.cpp,v 1.10 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: scene_dlg.cpp,v 1.11 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,9 @@ CSceneDlg::CSceneDlg(CObjectViewer *objView, CWnd* pParent /*=NULL*/)
 	MoveSpeed = 10.0f;
 	ViewParticle = FALSE;
 	MoveElement = FALSE;
+	EnableX = FALSE;
+	EnableY = FALSE;
+	EnableZ = FALSE;
 	//}}AFX_DATA_INIT
 	ObjView=objView;
 
@@ -96,6 +99,9 @@ void CSceneDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSceneDlg)
+	DDX_Control(pDX, IDC_ENABLE_Z, EnableZCtrl);
+	DDX_Control(pDX, IDC_ENABLE_Y, EnableYCtrl);
+	DDX_Control(pDX, IDC_ENABLE_X, EnableXCtrl);
 	DDX_Control(pDX, IDC_MOVE_SPEED, MoveSpeedCtrl);
 	DDX_Check(pDX, IDC_VIEW_ANIMATION, ViewAnimation);
 	DDX_Check(pDX, IDC_VIEW_ANIMATIONSET, ViewAnimationSet);
@@ -105,6 +111,9 @@ void CSceneDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_MOVE_SPEED, MoveSpeed);
 	DDX_Check(pDX, IDC_VIEW_PARTICLE, ViewParticle);
 	DDX_Check(pDX, IDC_MOVE_ELEMENT, MoveElement);
+	DDX_Check(pDX, IDC_ENABLE_X, EnableX);
+	DDX_Check(pDX, IDC_ENABLE_Y, EnableY);
+	DDX_Check(pDX, IDC_ENABLE_Z, EnableZ);
 	//}}AFX_DATA_MAP
 }
 
@@ -461,4 +470,8 @@ void CSceneDlg::OnMoveElement()
 		ObjView->getMouseListener().enableModelMatrixEdition() ;
 		ObjView->getMouseListener().setModelMatrix(ObjView->getParticleDialog()->getElementMatrix()) ;
 	}
+
+	EnableXCtrl.EnableWindow(MoveElement) ;
+	EnableYCtrl.EnableWindow(MoveElement) ;
+	EnableZCtrl.EnableWindow(MoveElement) ;
 }

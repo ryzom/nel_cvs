@@ -1,7 +1,7 @@
 /** \file ps_edit.h
  * <File description>
  *
- * $Id: ps_edit.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: ps_edit.h,v 1.2 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,40 +58,34 @@ namespace NL3D {
  * \date 2001
  */
 
+
 struct IPSMover
 {
-	/** Send back true if non isometric transformation can be applied
-	 *  If it sends false, the use of non isometric transformation leads to undefine results
-	 */
-	virtual bool supportNonOrthonormalBasis(void) const { return false ; }
-
-
 	/** Send back true if uniform scaling can be applied
 	 *  If it sends false, uniform scaling leads to undefine results
 	 */
 	virtual bool supportUniformScaling(void) const { return false ; }
 
-	/** Send back true if non-uniform (general) scaling can be applied
-	 *  If it sends false, non-uniform scaling leads to undefine results
+	/** Send back true if non-uniform scaling can be applied
+	 *  If it sends false, non-uniform scaling leads to undefine results (default has no effect)
 	 */
-	virtual bool supportScaling(void) const { return false ; }
+	virtual bool supportNonUniformScaling(void) const { return false ; }
 
-	/// send back true if non-orthogonal transforms are supported
-	virtual bool supportNonOrthogonalTransform(void) const { return false ; }
+	// set the scale of the object (uniform scale). The default does nothing
+	virtual void setScale(uint32 index, float scale) {} ;
+
+	// set a non uniform scale (if supported)
+	virtual void setScale(uint32 index, const CVector &s) {}
+	
+	// get the scale of the object
+	CVector getScale(uint32 index) const { return CVector(1.f, 1.f, 1.f) ; }
 
 	
-	// left multiply the current matrix by the given one. No valid index -> assert
-	virtual void applyMatrix(uint32 index, const CMatrix &m) = 0 ;
-	// return a matrix of the system. No valid index -> assert
+	// set a new orthogonal matrix for the object
+	virtual void setMatrix(uint32 index, const CMatrix &m) = 0 ;
+	// return an orthogonal matrix of the system. No valid index -> assert
 	virtual CMatrix getMatrix(uint32 index) const = 0 ;
-
-	// Shortcut to make a translation. Index must be valid
-	virtual void translate(uint32 index, const CVector &v)
-	{
-		CMatrix m ;
-		m.translate(v) ;
-		applyMatrix(index, m) ;
-	}
+	
 };
 
 

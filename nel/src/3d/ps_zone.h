@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_zone.h,v 1.2 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,9 +166,8 @@ class CPSZonePlane : public CPSZone, public IPSMover
 		NLMISC_DECLARE_CLASS(CPSZonePlane) ;
 
 
-		// left multiply the current matrix by the given one. No valid index -> assert
-		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
-		// return a matrix of the system. No valid index -> assert
+		
+		virtual void setMatrix(uint32 index, const CMatrix &m) ;		
 		virtual CMatrix getMatrix(uint32 index) const ;
 
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
@@ -218,16 +217,19 @@ class CPSZoneSphere : public CPSZone, public IPSMover
 		{
 			_Name = std::string("ZoneSphere") ;
 		}
-		/// left multiply the current matrix by the given one. No valid index -> assert		 		 
-		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
-		// return a matrix of the system. No valid index -> assert
-		virtual CMatrix getMatrix(uint32 index) const ;
+	 
+	
 
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 
 		// inherited from IPSMover
 		virtual bool supportUniformScaling(void) const { return true ; }
+		virtual void setMatrix(uint32 index, const CMatrix &m) ;	
+		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual void setScale(uint32 k, float scale) ;
+		virtual CVector getScale(uint32 k) const ;
+
 
 	protected:		
 
@@ -260,15 +262,16 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 		NLMISC_DECLARE_CLASS(CPSZoneDisc) ;
 
 
-		// left multiply the current matrix by the given one. No valid index -> assert
-		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
-		// return a matrix of the system. No valid index -> assert
+		// inherited from IPSMover
+		virtual bool supportUniformScaling(void) const { return true ; }
+		virtual void setMatrix(uint32 index, const CMatrix &m) ;		
 		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual void setScale(uint32 k, float scale) ;
+		virtual CVector getScale(uint32 k) const ;
 
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
-		// inherited from IPSMover
-		virtual bool supportUniformScaling(void) const { return true ; }
+		
 
 	protected:
 		TPSAttribVector _Normal ;
@@ -302,20 +305,21 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 
 		NLMISC_DECLARE_CLASS(CPSZoneCylinder) ;
 
-
-		// left multiply the current matrix by the given one. No valid index -> assert
-		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
-		// return a matrix of the system. No valid index -> assert
+		// inherited from IPSMover
+		virtual bool supportUniformScaling(void) const { return true ; }
+		virtual bool supportNonUniformScaling(void) const { return true ; }	
+		virtual void setMatrix(uint32 index, const CMatrix &m) ;	
 		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual void setScale(uint32 k, float scale) ;
+		virtual void setScale(uint32 k, const CVector &s) ;
+		virtual CVector getScale(uint32 k) const ;
 
 		// serialization
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
-		// inherited from IPSMover
-		virtual bool supportUniformScaling(void) const { return true ; }
+	
 
-		// inherited from IPSMover
-		virtual bool supportScaling(void) const { return true ; }
+		
 
 	protected:
 
@@ -354,19 +358,20 @@ class CPSZoneRectangle : public CPSZone, public IPSMover
 		NLMISC_DECLARE_CLASS(CPSZoneRectangle) ;
 
 
-		// left multiply the current matrix by the given one. No valid index -> assert
-		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
-		// return a matrix of the system. No valid index -> assert
-		virtual CMatrix getMatrix(uint32 index) const ;
+	
+	
 
 		// serialization
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 		// inherited from IPSMover
-		virtual bool supportUniformScaling(void) const { return true ; }
-
-		// inherited from IPSMover
+		virtual bool supportUniformScaling(void) const { return true ; }		
 		virtual bool supportScaling(void) const { return true ; }
+		virtual void setMatrix(uint32 index, const CMatrix &m) ;	
+		virtual CMatrix getMatrix(uint32 index) const ;
+		virtual void setScale(uint32 index, float scale) ;	
+		virtual void setScale(uint32 index, const CVector &s) ;		
+		virtual CVector getScale(uint32 index) const ;
 
 	protected:
 

@@ -1,7 +1,7 @@
 /** \file particle_dlg.cpp
  * <File description>
  *
- * $Id: particle_dlg.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: particle_dlg.cpp,v 1.4 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
-	: CDialog(CParticleDlg::IDD, pParent), SceneDlg(sceneDlg), _CurrentRightPane(NULL)
+	: CDialog(CParticleDlg::IDD, pParent), SceneDlg(sceneDlg), CurrentRightPane(NULL)
 {
 	//{{AFX_DATA_INIT(CParticleDlg)
 		// NOTE: the ClassWizard will add member initialization here
@@ -85,15 +85,25 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 	FontManager = new NL3D::CFontManager ;	
 	FontManager->setMaxMemory(2000000);
 		
+	uint dSize = ::GetWindowsDirectory(NULL, 0) ;
+	nlverify(dSize) ;
+	char *wd = new char[dSize] ;	
+	nlverify(::GetWindowsDirectory(wd, dSize)) ;
+
+	std::string wds(wd) ;
+	wds+="\\fonts\\arial.ttf" ;
+
 	// Font generator
-	FontGenerator = new NL3D::CFontGenerator ("arial.ttf") ;
+	FontGenerator = new NL3D::CFontGenerator ( wds.c_str() ) ;
+
+	delete[] wd ;
 
 
 
 	//////
 
 
-	_ParticleTreeCtrl = new CParticleTreeCtrl(this) ;
+	ParticleTreeCtrl = new CParticleTreeCtrl(this) ;
 
 
 	// for now, let's create a dummy system for test
@@ -138,12 +148,12 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 
 void CParticleDlg::moveElement(const NLMISC::CMatrix &mat)
 {
-	_ParticleTreeCtrl->moveElement(mat) ;
+	ParticleTreeCtrl->moveElement(mat) ;
 }
 
 NLMISC::CMatrix CParticleDlg::getElementMatrix(void) const
 {
-	return _ParticleTreeCtrl->getElementMatrix() ;
+	return ParticleTreeCtrl->getElementMatrix() ;
 }
 
 
@@ -152,8 +162,8 @@ CParticleDlg::~CParticleDlg()
 {
 	//NL3D::CNELU::Scene.deleteInstance(_CurrSystemModel) ;
 
-	delete _ParticleTreeCtrl ;
-	delete _CurrentRightPane ;
+	delete ParticleTreeCtrl ;
+	delete CurrentRightPane ;
 
 	delete _StartStopDlg ;
 
@@ -195,14 +205,14 @@ BOOL CParticleDlg::OnInitDialog()
 	CRect r ;
 	GetWindowRect(&r) ;
 	
-	_ParticleTreeCtrl->Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD | WS_BORDER
+	ParticleTreeCtrl->Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD | WS_BORDER
    | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_EDITLABELS 
    | TVS_DISABLEDRAGDROP , r, this, 0x1005) ;
 
 
-	_ParticleTreeCtrl->buildTreeFromPS(_CurrPS, _CurrSystemModel) ;
-	_ParticleTreeCtrl->init() ;
-	_ParticleTreeCtrl->ShowWindow(SW_SHOW) ;
+	ParticleTreeCtrl->buildTreeFromPS(_CurrPS, _CurrSystemModel) ;
+	ParticleTreeCtrl->init() ;
+	ParticleTreeCtrl->ShowWindow(SW_SHOW) ;
 
 
 	_StartStopDlg->Create(IDD_PARTICLE_SYSTEM_START_STOP, this) ;	
@@ -222,19 +232,19 @@ void CParticleDlg::OnSize(UINT nType, int cx, int cy)
 
 	bool blocked = false ;
 
-	if (_ParticleTreeCtrl->m_hWnd && this->m_hWnd)
+	if (ParticleTreeCtrl->m_hWnd && this->m_hWnd)
 	{	
 
 	/*	if (_CurrentRightPane)
 		{
-			if (cx < (120 + _CurrRightPaneWidth))
+			if (cx < (120 + CurrRightPaneWidth))
 			{
-				cx = 120 + _CurrRightPaneWidth ;
+				cx = 120 + CurrRightPaneWidth ;
 				blocked = true ;
 			}
-			if (cy < (20 + _CurrRightPaneHeight))
+			if (cy < (20 + CurrRightPaneHeight))
 			{
-				cy  = 20 + _CurrRightPaneHeight ;
+				cy  = 20 + CurrRightPaneHeight ;
 				blocked = true ;
 			}
 		}
@@ -254,11 +264,11 @@ void CParticleDlg::OnSize(UINT nType, int cx, int cy)
 
 
 		CRect r = getTreeRect(cx, cy) ;			
-		_ParticleTreeCtrl->MoveWindow(&r) ;
+		ParticleTreeCtrl->MoveWindow(&r) ;
 
-		if (_CurrentRightPane)
+		if (CurrentRightPane)
 		{								
-			_CurrentRightPane->MoveWindow(r.right + 10, r.top, r.right + _CurrRightPaneWidth + 10, r.top + _CurrRightPaneHeight) ;
+			CurrentRightPane->MoveWindow(r.right + 10, r.top, r.right + CurrRightPaneWidth + 10, r.top + CurrRightPaneHeight) ;
 		}
 		
 
@@ -274,9 +284,9 @@ CRect CParticleDlg::getTreeRect(int cx, int cy) const
 {
 	const uint ox = 10, oy = 10 ;
 
-	if (_CurrentRightPane)
+	if (CurrentRightPane)
 	{		
-		CRect res(ox, oy, cx - _CurrRightPaneWidth - 10, cy - 10) ; 
+		CRect res(ox, oy, cx - CurrRightPaneWidth - 10, cy - 10) ; 
 		return res ;
 	}
 	else
@@ -289,8 +299,8 @@ CRect CParticleDlg::getTreeRect(int cx, int cy) const
 void CParticleDlg::setRightPane(CWnd *pane)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	delete _CurrentRightPane ;
-	_CurrentRightPane = pane ;
+	delete CurrentRightPane ;
+	CurrentRightPane = pane ;
 	RECT r ;	
 	if (pane)
 	{
@@ -298,10 +308,10 @@ void CParticleDlg::setRightPane(CWnd *pane)
 		pane->ShowWindow(SW_SHOW) ;
 	
 	
-		_CurrentRightPane->GetClientRect(&r) ;
+		CurrentRightPane->GetClientRect(&r) ;
 
-		_CurrRightPaneWidth = r.right ;
-		_CurrRightPaneHeight = r.bottom ;
+		CurrRightPaneWidth = r.right ;
+		CurrRightPaneHeight = r.bottom ;
 	
 	}
 
@@ -309,12 +319,12 @@ void CParticleDlg::setRightPane(CWnd *pane)
 	this->SendMessage(WM_SIZE, SIZE_RESTORED, r.right + (r.bottom << 16)) ;	
 	GetWindowRect(&r) ;
 	this->MoveWindow(&r) ;
-	if (_CurrentRightPane)
+	if (CurrentRightPane)
 	{
-		_CurrentRightPane->Invalidate() ;
+		CurrentRightPane->Invalidate() ;
 	}
 	this->Invalidate() ;
-	_ParticleTreeCtrl->Invalidate() ;
+	ParticleTreeCtrl->Invalidate() ;
 }
 
 
@@ -325,12 +335,12 @@ LRESULT CParticleDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 	if (message == WM_GETMINMAXINFO)
 	{
 		sint cx = 150, cy = 150 ;
-		if (_CurrentRightPane)
+		if (CurrentRightPane)
 		{
 			RECT r ;
-			_CurrentRightPane->GetClientRect(&r) ;
-			cx += _CurrRightPaneWidth ;
-			if (cy < (_CurrRightPaneHeight + 20) ) cy = _CurrRightPaneHeight + 20 ;
+			CurrentRightPane->GetClientRect(&r) ;
+			cx += CurrRightPaneWidth ;
+			if (cy < (CurrRightPaneHeight + 20) ) cy = CurrRightPaneHeight + 20 ;
 		}
 
 

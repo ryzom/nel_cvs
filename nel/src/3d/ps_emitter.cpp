@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.8 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_emitter.cpp,v 1.9 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "3d/ps_emitter.h"
+#include "3d/material.h"
+#include "nel/misc/line.h"
 
 
 namespace NL3D {
@@ -83,8 +85,62 @@ void CPSEmitter::setGenNbScheme(CPSAttribMaker<uint32> *scheme)
 }
 
 
+
+void CPSEmitter::showTool(void) 
+{
+	uint32 size = _Owner->getSize() ;
+	if (!size) return ;		
+	setupDriverModelMatrix() ;	
+
+	const CVector I = computeI() ;
+	const CVector K = computeK() ;
+
+	// ugly slow code, but not for runtime
+	for (uint  k = 0 ; k < size ; ++k)
+	{
+		// center of the current particle
+		const CVector p = _Owner->getPos()[k]  ;
+		const float sSize =0.1f ;	
+		std::vector<NLMISC::CLine> lines ;
+		NLMISC::CLine l ;
+		l.V0 = p - sSize * I ; l.V1 =  p + sSize * I ; lines.push_back(l) ;
+		l.V0 = p - sSize * K ; l.V1 =  p + sSize * K ; lines.push_back(l) ;
+		l.V0 = p - sSize * (I + K) ; l.V1 = p + sSize * (I + K) ; lines.push_back(l) ;
+		l.V0 = p - sSize * (I - K) ; l.V1 = p + sSize * (I - K) ; lines.push_back(l) ;
+							
+											
+		
+		
+	
+		CMaterial mat ;
+
+		mat.setBlendFunc(CMaterial::one, CMaterial::one) ;
+		mat.setZWrite(false) ;
+		mat.setLighting(false) ;
+		mat.setBlend(true) ;
+		mat.setZFunc(CMaterial::less) ;
+		
+	
+
+		CPSLocated *loc ;
+		uint32 index ;
+		_Owner->getOwner()->getCurrentEditedElement(loc, index) ;
+
+		mat.setColor(loc == _Owner && index == k  ? CRGBA::Red : CRGBA(127, 127, 127)) ;
+		
+
+		CDRU::drawLinesUnlit(lines, mat, *getDriver() ) ;
+	}
+
+}
+
 void CPSEmitter::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {
+if (pass == PSToolRender)
+{
+	showTool() ;
+	return ;
+}
 if (pass != PSMotion) return ;
 const uint32 size = _Owner->getSize() ;
 if (!size) return ;
@@ -346,35 +402,43 @@ void CPSEmitterRectangle::emit(uint32 index, CVector &pos, CVector &speed)
 					* (_Dir.x * _Basis[index].X+ _Dir.y * _Basis[index].Y + _Dir.z *  N) ;
 }
 
-void CPSEmitterRectangle::applyMatrix(uint32 index, const CMatrix &m)
+
+
+
+
+
+void CPSEmitterRectangle::setMatrix(uint32 index, const CMatrix &m)
 {
 	_Owner->getPos()[index] = m * _Owner->getPos()[index] ;
 
-	CVector w = _Width[index] * _Basis[index].X ;
-	_Width[index] = (m.mulVector(w)).norm() ;
-
-	CVector h = _Height[index] * _Basis[index].Y ;
-
-	_Height[index] = (m.mulVector(h)).norm() ;
-
-	 _Basis[index].X = m.mulVector(_Basis[index].X) ;
-	 _Basis[index].X.normalize() ;
-
-	 _Basis[index].Y = m.mulVector(_Basis[index].Y) ;
-	 _Basis[index].Y.normalize() ;
+	
+	 _Basis[index].X = m.getI() ;
+	 _Basis[index].Y = m.getJ() ;
 }
-
 
 CMatrix CPSEmitterRectangle::getMatrix(uint32 index) const
 {
 	CMatrix m ;
-
-	CVector N = _Basis[index].X ^ _Basis[index].Y ;
-	CVector I = _Width[index] * _Basis[index].X ;
-	CVector J = _Height[index] * _Basis[index].Y ;
-	m.setRot(I, J, N) ;
 	m.setPos(_Owner->getPos()[index]) ;
+	m.setRot(_Basis[index].X, _Basis[index].Y, _Basis[index].X ^ _Basis[index].Y, true) ;
 	return m ;
+}
+
+
+
+void CPSEmitterRectangle::setScale(uint32 index, float scale)
+{
+	_Width[index] = scale ;
+	_Height[index] = scale ;
+}
+void CPSEmitterRectangle::setScale(uint32 index, const CVector &s)
+{
+	_Width[index] = s.x ;
+	_Height[index] = s.y ;
+}
+CVector CPSEmitterRectangle::getScale(uint32 index) const
+{	
+	return CVector(_Width[index], _Height[index], 1.f) ; 
 }
 
 		

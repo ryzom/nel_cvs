@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * <File description>
  *
- * $Id: particle_tree_ctrl.h,v 1.2 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.3 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,6 +79,11 @@ public:
 	// rebuild the located instance in the tree (after loading for example)
 	void rebuildLocatedInstance(void) ;
 
+
+	  
+	/// suppress located instance item, so that they don't have higher index than the new size
+	void suppressLocatedInstanceNbItem(uint32 newSize) ;
+
 	void init(void) ;
 	// Generated message map functions
 
@@ -102,6 +107,7 @@ protected:
 	// the dialog that contain us
 	CParticleDlg *_ParticleDlg ;
 
+public:
 	/** this struct is used to identify the type of each node	
 	 */
 	struct CNodeType
@@ -120,12 +126,27 @@ protected:
 
 		// for the located instance type, this is the index of the instance
 		uint32 LocatedInstanceIndex ;
+		// for the located instance type, this the located bindable which is selected for rotation and scale opertations
+		NL3D::CPSLocatedBindable *LocBindable ;
 
 		// a located
 		CNodeType(NL3D::CPSLocated *loc) { Loc = loc ; Type = located ; }
 
 		// an instance of a located
-		CNodeType(NL3D::CPSLocated *loc, uint32 index) { Loc = loc ; Type = locatedInstance ; LocatedInstanceIndex = index ; }
+		CNodeType(NL3D::CPSLocated *loc, uint32 index) 
+		{ 
+			Loc = loc ; 
+			Type = locatedInstance ; 
+			LocatedInstanceIndex = index ; 
+			if (Loc->getNbBoundObjects())
+			{
+				LocBindable = Loc->getBoundObject(0) ;	
+			}
+			else
+			{
+				LocBindable = NULL ;
+			}
+		}
 		CNodeType(NL3D::CParticleSystem *ps, NL3D::CParticleSystemModel *psModel) 
 		{ 			
 			Type = particleSystem ; 
@@ -137,6 +158,7 @@ protected:
 
 	} ;
 
+protected:
 	// node that we allocated
 	std::vector<CNodeType *> _NodeTypes ;
 

@@ -1,7 +1,7 @@
 /** \file located_properties.h
  * <File description>
  *
- * $Id: located_properties.h,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: located_properties.h,v 1.3 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 
 
 #include "editable_range.h"
+#include "particle_tree_ctrl.h"
 
 namespace  NL3D
 {
@@ -50,11 +51,11 @@ class CLocatedProperties : public CDialog
 {
 // Construction
 public:
-	CLocatedProperties(NL3D::CPSLocated *loc, CWnd* pParent = NULL);   // standard constructor
+	CLocatedProperties(NL3D::CPSLocated *loc, CParticleDlg *pdlg);   // standard constructor
 
 	~CLocatedProperties() ;
 
-	void init(uint32 x, uint32 y, CWnd *pParent) ;
+	void init(uint32 x, uint32 y) ;
 // Dialog Data
 	//{{AFX_DATA(CLocatedProperties)
 	enum { IDD = IDD_LOCATED_PROPERTIES };
@@ -83,6 +84,8 @@ protected:
 	CEditableRangeUInt *_MaxNbParticles ;
 	 
 
+	CParticleDlg *_ParticleDlg ;
+
 	/// some wrappers used to read / write value from / to the particle system
 
 		
@@ -104,8 +107,20 @@ protected:
 		struct tagMaxNbParticlesWrapper : public IPSWrapperUInt
 		{
 			NL3D::CPSLocated *Located ;
+			CParticleTreeCtrl *TreeCtrl ;
 			uint32 get(void) const { return Located->getMaxSize() ; }
-			void set(const uint32 &v) { Located->resize(v) ; }
+			void set(const uint32 &v) 
+			{ 
+				// if the max new size is lower than the current number of instance, we must suppress item
+				// in the the CParticleTreeCtrl
+
+				if (v < Located->getSize())
+				{
+					TreeCtrl->suppressLocatedInstanceNbItem(v) ;
+				}
+
+				Located->resize(v) ; 
+			}
 		} _MaxNbParticlesWrapper ;
 
 

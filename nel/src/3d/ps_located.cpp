@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.14 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_located.cpp,v 1.15 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,6 +246,19 @@ void CPSLocated::deleteElement(uint32 index)
 
 void CPSLocated::resize(uint32 newSize)
 {
+
+	if (newSize < _Size)
+	{
+		for (uint32 k = _Size - 1 ; k >= newSize ; --k)
+		{
+			deleteElement(k) ;
+			
+			if (k == 0) break ; // we're dealing with unsigned quantities
+		}
+		_Size = newSize ;
+	}
+
+
 	_MaxSize = newSize ;
 	_InvMass.resize(newSize) ;
 	_Pos.resize(newSize) ;
@@ -257,6 +270,9 @@ void CPSLocated::resize(uint32 newSize)
 	{
 		_CollisionInfo->resizeNFill(newSize) ;
 	}
+
+
+	
 
 	// resize attributes for all bound objects
 	for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin() ; it != _LocatedBoundCont.end() ; ++it)

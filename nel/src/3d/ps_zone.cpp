@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.8 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_zone.cpp,v 1.9 2001/06/18 11:18:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -255,11 +255,10 @@ void CPSZonePlane::performMotion(CAnimationTime ellapsedTime)
 
 }
 
-void CPSZonePlane::applyMatrix(uint32 index, const CMatrix &m)
+void CPSZonePlane::setMatrix(uint32 index, const CMatrix &m)
 {
 	nlassert(index < _Normal.getSize()) ;
-
-	_Normal[index] = m.mulVector(_Normal[index]) ;
+	_Normal[index] = m.getK() ;
 	CVector &p = _Owner->getPos()[index] ;
 	p = m * p ;
 
@@ -271,6 +270,8 @@ CMatrix CPSZonePlane::getMatrix(uint32 index) const
 {
 	return buildBasis(index) ;
 }
+
+
 
 
 void CPSZonePlane::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
@@ -421,16 +422,10 @@ void CPSZoneSphere ::show(CAnimationTime ellapsedTime)
 	}
 }
 	
-void CPSZoneSphere::applyMatrix(uint32 index, const CMatrix &m)
+void CPSZoneSphere::setMatrix(uint32 index, const CMatrix &m)
 {
 	nlassert(index < _Radius.getSize()) ;
-	// slow, but for edition purposes ...
-	CVector I = _Radius[index].R * CVector::I ;
-	I = m.mulVector(I) ;
-	// compute new radius
-	_Radius[index].R = I.norm() ;
-	_Radius[index].R2 = _Radius[index].R * _Radius[index].R  ;
-
+		
 	// compute new pos
 	CVector &p = _Owner->getPos()[index] ;
 	p = m * p ;
@@ -441,9 +436,19 @@ CMatrix CPSZoneSphere::getMatrix(uint32 index) const
 {
 	nlassert(index < _Radius.getSize()) ;
 	CMatrix m ;
-	m.translate(_Owner->getPos()[index]) ;
-	m.scale(CVector(_Radius[index].R, _Radius[index].R, _Radius[index].R)) ;
+	m.identity() ;
+	m.translate(_Owner->getPos()[index]) ;	
 	return m ; 
+}
+
+void CPSZoneSphere::setScale(uint32 k, float scale)
+{
+	_Radius[k].R = scale ;
+	_Radius[k].R2 = scale * scale ;
+}
+CVector CPSZoneSphere::getScale(uint32 k) const
+{
+	return CVector(_Radius[k].R, _Radius[k].R, _Radius[k].R) ;
 }
 
 
@@ -588,22 +593,16 @@ void CPSZoneDisc::show(CAnimationTime ellapsedTime)
 
 
 
-void CPSZoneDisc::applyMatrix(uint32 index, const CMatrix &m)
+void CPSZoneDisc::setMatrix(uint32 index, const CMatrix &m)
 {
 	nlassert(index < _Radius.getSize()) ;
-	// slow, but for edition purposes ...
-	CVector I = _Radius[index].R * CVector::I ;
-	I = m.mulVector(I) ;
-	// compute new radius
-	_Radius[index].R = I.norm() ;
-	_Radius[index].R2 = _Radius[index].R * _Radius[index].R  ;
-
+	
 	// compute new pos
 	CVector &p = _Owner->getPos()[index] ;
 	p = m * p ;
 
 	// compute new normal
-	_Normal[index] = m.mulVector(_Normal[index]) ;
+	_Normal[index] = m.getK() ;
 }
 
 
@@ -611,10 +610,20 @@ void CPSZoneDisc::applyMatrix(uint32 index, const CMatrix &m)
 CMatrix CPSZoneDisc::getMatrix(uint32 index) const
 {
 	CMatrix m ;
-	m.translate(_Owner->getPos()[index]) ;	
-	m.scale(CVector(_Radius[index].R, _Radius[index].R, _Radius[index].R)) ;
+	m.translate(_Owner->getPos()[index]) ;		
 	m = m * CPSUtil::buildSchmidtBasis(_Normal[index]) ;
 	return m ;	
+}
+
+void CPSZoneDisc::setScale(uint32 k, float scale)
+{
+	_Radius[k].R = scale ;
+	_Radius[k].R2 = scale * scale ;
+}
+
+CVector CPSZoneDisc::getScale(uint32 k) const
+{
+	return CVector(_Radius[k].R, _Radius[k].R, _Radius[k].R)  ;
 }
 
 
@@ -1104,31 +1113,11 @@ void CPSZoneCylinder::show(CAnimationTime ellapsedTime)
 	
 
 
-void CPSZoneCylinder::applyMatrix(uint32 index, const CMatrix &m)
+void CPSZoneCylinder::setMatrix(uint32 index, const CMatrix &m)
 {
-	CVector Z = _Basis[index].X ^ _Basis[index].Y ;
-	// rescale dimensions
-	CVector dim ;
-	
-	
-	dim =  m.mulVector(_Dim[index].x * _Basis[index].X) ;
-	_Dim[index].x = dim.norm() ;
-
-	dim =  m.mulVector(_Dim[index].y * _Basis[index].Y) ;
-	_Dim[index].y = dim.norm() ;
-
-	dim =  m.mulVector(_Dim[index].z * Z) ;
-	_Dim[index].z = dim.norm() ;
-
-
-	// transform the basis
-	
-	_Basis[index].X = m.mulVector(_Basis[index].X) ;
-	_Basis[index].X.normalize() ;
-
-	_Basis[index].Y = m.mulVector(_Basis[index].Y) ;
-	_Basis[index].Y.normalize() ;
-
+	// transform the basis	
+	_Basis[index].X = m.getI() ;	
+	_Basis[index].Y = m.getJ() ;	
 
 	// compute new pos
 	CVector &p = _Owner->getPos()[index] ;
@@ -1141,11 +1130,25 @@ void CPSZoneCylinder::applyMatrix(uint32 index, const CMatrix &m)
 CMatrix CPSZoneCylinder::getMatrix(uint32 index) const
 {
 	CMatrix m ;
-	m.setRot(_Dim[index].x *  _Basis[index].X, _Dim[index].y *_Basis[index].Y 
-			 , _Dim[index].z * (_Basis[index].X ^ _Basis[index].Y)) ;
-
+	m.setRot(_Basis[index].X, _Basis[index].Y, _Basis[index].X ^_Basis[index].Y) ;
 	m.setPos(_Owner->getPos()[index]) ;	
 	return m ;
+}
+
+
+void CPSZoneCylinder::setScale(uint32 k, float scale)
+{
+	_Dim[k] = CVector(scale, scale, scale) ;
+}
+
+CVector CPSZoneCylinder::getScale(uint32 k) const
+{
+	return _Dim[k] ;
+}
+
+void CPSZoneCylinder::setScale(uint32 index, const CVector &s)
+{
+	_Dim[index] = s ;
 }
 
 
@@ -1298,37 +1301,41 @@ void CPSZoneRectangle::show(CAnimationTime ellapsedTime)
 	}
 }
 	
-void CPSZoneRectangle::applyMatrix(uint32 index, const CMatrix &m)
+void CPSZoneRectangle::setMatrix(uint32 index, const CMatrix &m)
 {
 	nlassert(_Owner) ;
 
 	_Owner->getPos()[index] = m * _Owner->getPos()[index] ;
-	CVector w = _Width[index] * _Basis[index].X ;
-	_Width[index] = (m.mulVector(w)).norm() ;
-
-	CVector h = _Height[index] * _Basis[index].Y ;
-
-	_Height[index] = (m.mulVector(h)).norm() ;
-
-	_Basis[index].X = m.mulVector(_Basis[index].X) ;
-	_Basis[index].X.normalize() ;
-
-	_Basis[index].Y = m.mulVector(_Basis[index].Y) ;
-	_Basis[index].Y.normalize() ;
+	_Basis[index].X = m.getI() ;
+	_Basis[index].Y = m.getJ() ;
 }
 
 
 CMatrix CPSZoneRectangle::getMatrix(uint32 index) const
 {
 	nlassert(_Owner) ;
-	CMatrix m ;
-	CVector N = _Basis[index].X ^ _Basis[index].Y ;
-	CVector I = _Width[index] * _Basis[index].X ;
-	CVector J = _Height[index] * _Basis[index].Y ;
-	m.setRot(I, J, N) ;
+	CMatrix m ;	
+	m.setRot(_Basis[index].X, _Basis[index].Y, _Basis[index].X ^ _Basis[index].Y) ;
 	m.setPos(_Owner->getPos()[index]) ;
 	return m ;
 }
+
+void CPSZoneRectangle::setScale(uint32 index, float scale)
+{
+	_Width[index] = scale ;
+	_Height[index] = scale ;
+}
+void CPSZoneRectangle::setScale(uint32 index, const CVector &s)
+{
+	_Width[index] = s.x ;
+	_Height[index] = s.y ;
+}
+CVector CPSZoneRectangle::getScale(uint32 index) const
+{
+	return CVector(_Width[index], _Height[index], 1.f) ;
+}
+
+
 
 void CPSZoneRectangle::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {

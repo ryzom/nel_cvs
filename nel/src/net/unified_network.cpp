@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.63 2003/03/13 10:29:40 cado Exp $
+ * $Id: unified_network.cpp,v 1.64 2003/03/19 15:44:57 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1418,7 +1418,7 @@ bool CUnifiedNetwork::isServiceLocal (uint16 sid)
 std::string			CUnifiedNetwork::getServiceName(uint16 sid)
 {
 	string s;
-	CUnifiedConnection *c = getUnifiedConnection(sid);
+	CUnifiedConnection *c = getUnifiedConnection(sid, false);
 	if (c)
 		s = c->ServiceName;
 	return s;
@@ -1426,14 +1426,14 @@ std::string			CUnifiedNetwork::getServiceName(uint16 sid)
 
 
 /*
- * Return a string identifying the service, using the format "NAME/sid" (or "sid" only if not found)
+ * Return a string identifying the service, using the format "NAME-sid" (or "sid" only if not found)
  */
-std::string			CUnifiedNetwork::getServiceNameAndId(uint16 sid)
+std::string			CUnifiedNetwork::getServiceUnifiedName(uint16 sid)
 {
 	string s;
-	CUnifiedConnection *c = getUnifiedConnection(sid);
+	CUnifiedConnection *c = getUnifiedConnection(sid, false);
 	if (c)
-		s = c->ServiceName + "/";
+		s = c->ServiceName + "-";
 	s += toString(sid);
 	return s;
 }
@@ -1462,7 +1462,7 @@ bool CUnifiedNetwork::isUsed ()
 //
 //
 
-CUnifiedNetwork::CUnifiedConnection	*CUnifiedNetwork::getUnifiedConnection (uint16 sid)
+CUnifiedNetwork::CUnifiedConnection	*CUnifiedNetwork::getUnifiedConnection (uint16 sid, bool warn)
 {
 	if (sid < _IdCnx.size () && _IdCnx[sid].State == CUnifiedConnection::Ready)
 	{
@@ -1475,7 +1475,8 @@ CUnifiedNetwork::CUnifiedConnection	*CUnifiedNetwork::getUnifiedConnection (uint
 	}
 	else
 	{
-		nlwarning ("Try to get a bad unified connection (sid %hu is not in the table)", sid);
+		if ( warn )
+			nlwarning ("Try to get a bad unified connection (sid %hu is not in the table)", sid);
 		return NULL;
 	}
 }

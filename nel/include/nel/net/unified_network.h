@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.37 2003/03/13 10:29:12 cado Exp $
+ * $Id: unified_network.h,v 1.38 2003/03/19 15:44:46 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -194,8 +194,8 @@ public:
 	/// Return the name of the specified service, or "" if not found
 	std::string			getServiceName(uint16 sid);
 
-	/// Return a string identifying the service, using the format "NAME/sid" (or "sid" only if not found)
-	std::string			getServiceNameAndId(uint16 sid);
+	/// Return a string identifying the service, using the format "NAME-sid" (or "sid" only if not found)
+	std::string			getServiceUnifiedName(uint16 sid);
 
 	
 	/// \warning You should not use getNetBase functions because it could have more than one connection to a service and in this case
@@ -479,7 +479,7 @@ private:
 
 	// Return the unified connection if available or NULL.
 	// Don't keep the pointer because it can be invalid if the table is resized.
-	CUnifiedConnection	*getUnifiedConnection (uint16 sid);
+	CUnifiedConnection	*getUnifiedConnection (uint16 sid, bool warn=true);
 
 	bool haveNamedCnx (const std::string &name, uint16 sid);
 	void addNamedCnx (const std::string &name, uint16 sid);

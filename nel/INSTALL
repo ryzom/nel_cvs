@@ -122,10 +122,13 @@ Compilation
    2. GNU/Linux compilation
    ------------------------
 
-      The compilation on GNU/Linux has been done only on RedHat 6.2 with
-      GCC 2.96.
-
       In the NeL directory do :
+
+       In the case (ex: after a cvs checkout) that you need to rebuild the
+       "configure" script and/or the "Makefile.in" files, execute the
+       "bootstrap" script in the NeL directory :
+ 
+         % ./bootstrap
 
          % ./configure --with-stlport=<Path_to_the_stlport_headers_files> \
                        --with-python=<Path_to_the_python_headers_files>
@@ -150,12 +153,6 @@ Compilation
       following command :
 
          % ./configure --help
-
-      In the case (ex: after a cvs checkout) that you need to rebuild the
-      "configure" script and/or the "Makefile.in" files, execute the
-      "bootstrap" script in the NeL directory :
-
-         % ./bootstrap
 
 
 Installation

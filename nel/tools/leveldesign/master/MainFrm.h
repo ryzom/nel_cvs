@@ -132,7 +132,10 @@ protected:
 	afx_msg int OnCreate (LPCREATESTRUCT lpCreateStruct);
 	afx_msg BOOL OnEraseBkgnd (CDC* pDC);
 
-	afx_msg void onRegionNew ();
+public:
+	afx_msg void onRegionNew (); // Called from MasterTree
+
+protected:
 	afx_msg void onRegionSave ();
 	afx_msg void onRegionEmptyTrash ();
 	afx_msg void onRegionEmptyBackup ();

@@ -39,13 +39,17 @@ CEnvironnement::CEnvironnement()
 	MasterTreeCX		= 100;
 	MasterTreeCY		= 100;
 	MasterTreeLocked	= true;
-	RootDir				= ".\\";
+
+	char tmp[MAX_PATH];
+	GetCurrentDirectory(MAX_PATH, tmp);
+	RootDir				= tmp;
+	RootDir += "\\";
 
 	WorldEdOpened = false;
 	WorldEdX = 50;
 	WorldEdY = 50;
-	WorldEdCX = 300;
-	WorldEdCY = 300;
+	WorldEdCX = 600;
+	WorldEdCY = 400;
 
 	GeorgesOpened = false;
 	GeorgesX = 50;
@@ -278,7 +282,7 @@ void CMainFrame::openWorldEditorFile(const char *fileName)
 // ---------------------------------------------------------------------------
 void CMainFrame::closeWorldEditor()
 {
-	onRegionSave();
+	//onRegionSave ();
 	if (!_Environnement.WorldEdOpened)
 		return;
 	_Environnement.WorldEdOpened = false;
@@ -314,7 +318,6 @@ void CMainFrame::openGeorgesFile (const char *fileName)
 // ---------------------------------------------------------------------------
 void CMainFrame::closeGeorges ()
 {
-	onRegionSave();
 	if (!_Environnement.GeorgesOpened)
 		return;
 	_Environnement.GeorgesOpened = false;
@@ -350,7 +353,6 @@ void CMainFrame::openLogicEditorFile (const char *fileName)
 // ---------------------------------------------------------------------------
 void CMainFrame::closeLogicEditor ()
 {
-	onRegionSave();
 	if (!_Environnement.LogicEditorOpened)
 		return;
 	_Environnement.LogicEditorOpened = false;
@@ -879,21 +881,23 @@ BOOL CMainFrame::PreCreateWindow (CREATESTRUCT& cs)
 		fIn.open ("master.cfg");
 		_Environnement.serial (fIn);
 	}
-	catch(Exception&e)
+	catch (Exception&e)
 	{
-		MessageBox (e.what(),"Warning");
+		MessageBox (e.what(), "Warning");
 	}
 
 	// Restore the master window position
 	cs.x = _Environnement.MasterX;
 	cs.y = _Environnement.MasterY;
 
-	if( !CFrameWnd::PreCreateWindow(cs) )
+	if (!CFrameWnd::PreCreateWindow(cs))
 		return FALSE;
 	
 	cs.style = WS_OVERLAPPED;	
 	cs.cx = 360;
-	cs.cy = 45;
+	cs.cy = GetSystemMetrics (SM_CYCAPTION) + 
+			GetSystemMetrics (SM_CYMENU) + 
+			GetSystemMetrics (SM_CYFRAME);
 
 	return TRUE;
 }
@@ -1163,42 +1167,30 @@ void CMainFrame::OnClose ()
 
 	// Master Tree saves
 	_Tree->GetWindowRect (&r);
-	_Environnement.MasterTreeX = r.top;
-	_Environnement.MasterTreeY = r.left;
+	_Environnement.MasterTreeX = r.left;
+	_Environnement.MasterTreeY = r.top;
 	_Environnement.MasterTreeCX = r.right-r.left;
 	_Environnement.MasterTreeCY = r.bottom-r.top;
 
 	// WorldEditor saves
 	if (_Environnement.WorldEdOpened)
 	{
-		CFrameWnd *pFW = (CFrameWnd*)_WorldEditor->getMainFrame();
-		pFW->GetWindowRect(&r);
-		_Environnement.WorldEdY = r.top;
-		_Environnement.WorldEdX = r.left;
-		_Environnement.WorldEdCY = r.bottom - r.top;
-		_Environnement.WorldEdCX = r.right - r.left;
+		closeWorldEditor ();
+		_Environnement.WorldEdOpened = true;
 	}
 
 	// Georges saves
 	if (_Environnement.GeorgesOpened)
 	{
-		CFrameWnd *pFW = (CFrameWnd*)_Georges->getMainFrame();
-		pFW->GetWindowRect(&r);
-		_Environnement.GeorgesY = r.top;
-		_Environnement.GeorgesX = r.left;
-		_Environnement.GeorgesCY = r.bottom - r.top;
-		_Environnement.GeorgesCX = r.right - r.left;
+		closeGeorges ();
+		_Environnement.GeorgesOpened = true;
 	}
 
 	// LogicEditor saves
 	if (_Environnement.LogicEditorOpened)
 	{
-		CFrameWnd *pFW = (CFrameWnd*)_LogicEditor->getMainFrame();
-		pFW->GetWindowRect(&r);
-		_Environnement.LogicEditorY = r.top;
-		_Environnement.LogicEditorX = r.left;
-		_Environnement.LogicEditorCY = r.bottom - r.top;
-		_Environnement.LogicEditorCX = r.right - r.left;
+		closeLogicEditor ();
+		_Environnement.LogicEditorOpened = true;
 	}
 
 	// Save the environnement
@@ -1212,7 +1204,9 @@ void CMainFrame::OnClose ()
 	{
 		MessageBox (e.what(), "Error", MB_ICONERROR|MB_OK);
 	}
-	
+
+	releaseAllInterfaces ();
+
 	DestroyWindow();
 }
 

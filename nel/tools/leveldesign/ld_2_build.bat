@@ -13,3 +13,4 @@ msdev leveldesign.dsw /MAKE "master - Win32 ReleaseDebug"
 rem wait the user input to quit
 
 pause
+cd \code\nel\tools\leveldesign

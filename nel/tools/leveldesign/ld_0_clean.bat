@@ -64,3 +64,4 @@ del /F /Q debugFast\*.*
 del /F /Q release\*.*
 del /F /Q releaseDebug\*.*
 
+cd \code\nel\tools\leveldesign

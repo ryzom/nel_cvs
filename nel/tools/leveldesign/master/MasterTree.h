@@ -27,6 +27,7 @@ class CMasterTree : public CTreeCtrl
 	bool _LDrag;
 	CImageList *_DragImg;
 	HTREEITEM _DragItem;
+	HTREEITEM _LastItemSelected;
 
 	UINT    m_nTimerID;
 	UINT    m_timerticks;
@@ -39,7 +40,10 @@ public:
 	afx_msg void OnLBeginDrag (NMHDR* pNMHDR, LRESULT* pResult);
 
 	afx_msg void OnMouseMove (UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDown (UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp (UINT nFlags, CPoint point);
+	afx_msg void OnLButtonDblClk (UINT nFlags, CPoint point);
+
 	afx_msg void OnRButtonDown (UINT nFlags, CPoint point);
 
 	// Top level (just under the root) handlers
@@ -47,6 +51,7 @@ public:
 	afx_msg void OnMenuBackupEmpty ();
 	afx_msg void OnMenuBackupClean ();
 	afx_msg void OnMenuBackupRestore ();
+	afx_msg void OnMenuRegionNew ();
 	afx_msg void OnMenuRegionTrash ();
 	afx_msg void OnMenuRegionBackup ();
 
@@ -91,9 +96,11 @@ public:
 	void update (const std::string& path);
 	
 	void openAnyFile (const char *fname);
+	void openAnyFileFromItem (HTREEITEM hItem);
 	void emptyTrash ();
 	void emptyBackup ();
 	void cleanBackup ();
+	void regionNew ();
 	void regionBackupAll ();
 	void regionTrashAll ();
 	void backupRestoreAll ();

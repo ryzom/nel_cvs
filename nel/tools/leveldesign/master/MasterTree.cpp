@@ -19,17 +19,18 @@ static char THIS_FILE[] = __FILE__;
 #define IDC_TREE					0x1000
 
 // Top level menus
-#define ID_MENU_TRASH_EMPTY			0x0050
-#define ID_MENU_BACKUP_EMPTY		0x0051
-#define ID_MENU_BACKUP_CLEAN		0x0052
-#define ID_MENU_BACKUP_RESTORE		0x0053
-#define ID_MENU_REGION_TRASH		0x0054
-#define ID_MENU_REGION_BACKUP		0x0055
+#define ID_MENU_TRASH_EMPTY			0x0040
+#define ID_MENU_BACKUP_EMPTY		0x0041
+#define ID_MENU_BACKUP_CLEAN		0x0042
+#define ID_MENU_BACKUP_RESTORE		0x0043
+#define ID_MENU_REGION_NEW			0x0044
+#define ID_MENU_REGION_TRASH		0x0045
+#define ID_MENU_REGION_BACKUP		0x0046
 
-#define ID_MENU_SORT_NAME_INC		0x0056
-#define ID_MENU_SORT_NAME_DEC		0x0057
-#define ID_MENU_SORT_DATE_INC		0x0058
-#define ID_MENU_SORT_DATE_DEC		0x0059
+#define ID_MENU_SORT_NAME_INC		0x0047
+#define ID_MENU_SORT_NAME_DEC		0x0048
+#define ID_MENU_SORT_DATE_INC		0x0049
+#define ID_MENU_SORT_DATE_DEC		0x0050
 
 // Region menus (a level under the top)
 
@@ -53,6 +54,8 @@ BEGIN_MESSAGE_MAP (CMasterTree, CTreeCtrl)
 	ON_NOTIFY_REFLECT(TVN_BEGINDRAG, OnLBeginDrag)
 
 	ON_WM_MOUSEMOVE()
+	ON_WM_LBUTTONDBLCLK()
+	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	ON_WM_RBUTTONDOWN()
 
@@ -60,6 +63,7 @@ BEGIN_MESSAGE_MAP (CMasterTree, CTreeCtrl)
 	ON_COMMAND(ID_MENU_BACKUP_EMPTY,		OnMenuBackupEmpty)
 	ON_COMMAND(ID_MENU_BACKUP_CLEAN,		OnMenuBackupClean)
 	ON_COMMAND(ID_MENU_BACKUP_RESTORE,		OnMenuBackupRestore)
+	ON_COMMAND(ID_MENU_REGION_NEW,			OnMenuRegionNew)
 	ON_COMMAND(ID_MENU_REGION_TRASH,		OnMenuRegionTrash)
 	ON_COMMAND(ID_MENU_REGION_BACKUP,		OnMenuRegionBackup)
 
@@ -81,6 +85,7 @@ END_MESSAGE_MAP()
 CMasterTree::CMasterTree ()
 {
 	_LDrag = false;
+	_LastItemSelected = NULL;
 }
 
 // ---------------------------------------------------------------------------
@@ -132,6 +137,51 @@ void CMasterTree::OnLBeginDrag (NMHDR* pNMHDR, LRESULT* pResult)
 	_DragImg->DragEnter (this, ((NM_TREEVIEW *)pNMHDR)->ptDrag);
 	SetCapture ();
 	*pResult = false;
+}
+
+// ---------------------------------------------------------------------------
+void CMasterTree::OnLButtonDown (UINT nFlags, CPoint point)
+{
+	HTREEITEM hItem = HitTest (point);
+	HTREEITEM hParent = GetParentItem (hItem) ;
+	if ((hParent != NULL)&&(GetParentItem(hParent) == NULL))
+	{
+		if ((GetParentItem(_LastItemSelected) != NULL)&&(GetParentItem(GetParentItem(_LastItemSelected)) == NULL))
+			Expand (_LastItemSelected, TVE_COLLAPSE);
+		_LastItemSelected = hItem;
+		Expand (hItem, TVE_EXPAND);
+	}
+	Select (hItem, TVGN_CARET);
+}
+
+// ---------------------------------------------------------------------------
+void CMasterTree::OnLButtonDblClk (UINT nFlags, CPoint point)
+{
+	HTREEITEM hItem = HitTest (point);
+	HTREEITEM hParent = GetParentItem (hItem);
+	
+	if (hItem != NULL)
+	{
+		CMasterTreeDlg *pDlg = (CMasterTreeDlg*)GetParent();
+
+		if ((hParent != NULL) && (GetParentItem (hParent) == NULL))
+		{
+			// Double click on a region open all editors
+			// Parse all files and open them in the good editor
+			HTREEITEM hChildItem = GetChildItem (hItem);
+
+			while (hChildItem != NULL)
+			{
+				pDlg->openAnyFileFromItem (hChildItem);
+				hChildItem = GetNextItem (hChildItem, TVGN_NEXT);
+			}
+			return;
+		}
+		else
+		{
+			pDlg->openAnyFileFromItem (hItem);
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -301,6 +351,7 @@ void CMasterTree::OnRButtonDown (UINT nFlags, CPoint point)
 			}
 			if (GetItemText(hItem) == "Regions")
 			{
+				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_NEW, "&New");
 				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_BACKUP, "&Backup");
 				pMenu->AppendMenu (MF_STRING, ID_MENU_REGION_TRASH, "&Trash");
 			}
@@ -361,6 +412,13 @@ void CMasterTree::OnMenuBackupRestore ()
 {
 	CMasterTreeDlg *pDlg = (CMasterTreeDlg*)GetParent();
 	pDlg->backupRestoreAll ();
+}
+
+// ---------------------------------------------------------------------------
+void CMasterTree::OnMenuRegionNew ()
+{
+	CMasterTreeDlg *pDlg = (CMasterTreeDlg*)GetParent();
+	pDlg->regionNew ();
 }
 
 // ---------------------------------------------------------------------------
@@ -480,7 +538,7 @@ BEGIN_MESSAGE_MAP(CMasterTreeDlg, CDialog)
 	//{{AFX_MSG_MAP(CMasterTreeDlg)
 	ON_WM_SIZE()
 	ON_NOTIFY(TVN_ITEMEXPANDING, IDC_TREE, OnExpanding)
-	ON_NOTIFY(NM_DBLCLK, IDC_TREE, OnLDblClkTree)
+	//ON_NOTIFY(NM_DBLCLK, IDC_TREE, OnLDblClkTree)
 	ON_WM_CREATE()
 	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
@@ -650,7 +708,7 @@ void CMasterTreeDlg::parseAdd(HTREEITEM itRoot, const string &path, char SortTyp
 			newPath += "\\";
 			newPath += SortTable[i].c_str();
 			parseAdd (item, newPath, SortType);
-			pTree->Expand (item, TVE_EXPAND);
+			//pTree->Expand (item, TVE_EXPAND);
 		}
 		else
 		{
@@ -774,6 +832,16 @@ void CMasterTreeDlg::openAnyFile (const char *fname)
 }
 
 // ---------------------------------------------------------------------------
+void CMasterTreeDlg::openAnyFileFromItem (HTREEITEM hItem)
+{
+	map<HTREEITEM,string>::iterator it = _Files.find (hItem);
+	if (it != _Files.end())
+	{
+		openAnyFile(it->second.c_str());
+	}
+}
+
+// ---------------------------------------------------------------------------
 void CMasterTreeDlg::emptyTrash ()
 {
 	CMainFrame *pMF = (CMainFrame *)GetParent();
@@ -799,6 +867,13 @@ void CMasterTreeDlg::regionBackupAll ()
 {
 	CMainFrame *pMF = (CMainFrame *)GetParent();
 	pMF->regionBackupAll ();
+}
+
+// ---------------------------------------------------------------------------
+void CMasterTreeDlg::regionNew ()
+{
+	CMainFrame *pMF = (CMainFrame *)GetParent();
+	pMF->onRegionNew ();
 }
 
 // ---------------------------------------------------------------------------
@@ -882,6 +957,7 @@ void CMasterTreeDlg::regionBackupOne (const char *str)
 }
 
 // ---------------------------------------------------------------------------
+/*
 void CMasterTreeDlg::OnLDblClkTree(NMHDR* pNMHDR, LRESULT* pResult) 
 {
 	CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem (IDC_TREE);
@@ -921,7 +997,7 @@ void CMasterTreeDlg::OnLDblClkTree(NMHDR* pNMHDR, LRESULT* pResult)
 	}
 
 }
-
+*/
 // ---------------------------------------------------------------------------
 void CMasterTreeDlg::OnCancel ()
 {

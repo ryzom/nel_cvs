@@ -1,7 +1,7 @@
 /** \file landscapevb_allocator.cpp
  * <File description>
  *
- * $Id: landscapevb_allocator.cpp,v 1.9 2002/04/18 13:06:52 berenguier Exp $
+ * $Id: landscapevb_allocator.cpp,v 1.10 2002/09/10 13:38:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,11 @@
 
 #include "3d/landscapevb_allocator.h"
 #include "3d/driver.h"
+#include "nel/misc/fast_mem.h"
 
 
 using namespace std;
+using namespace NLMISC;
 
 namespace NL3D 
 {
@@ -59,6 +61,7 @@ CLandscapeVBAllocator::CLandscapeVBAllocator(TType type)
 	_ReallocationOccur= false;
 	_NumVerticesAllocated= 0;
 	_VBHardOk= false;
+	_ATIVBHardOk= false;
 	_BufferLocked= false;
 
 	for(uint i=0;i<MaxVertexProgram;i++)
@@ -81,7 +84,10 @@ void			CLandscapeVBAllocator::updateDriver(IDriver *driver)
 	{
 		deleteVertexBuffer();
 		_Driver= driver;
-		_VBHardOk= _Driver->supportVertexBufferHard();
+		// Don't use std VBHard scheme if ATI slow unlock case.
+		_ATIVBHardOk = _Driver->supportVertexBufferHard() && _Driver->slowUnlockVertexBufferHard();
+		_VBHardOk =	   _Driver->supportVertexBufferHard() && !_Driver->slowUnlockVertexBufferHard();
+
 
 		// If change of driver, delete the VertexProgram first, if any
 		deleteVertexProgram();
@@ -120,6 +126,7 @@ void			CLandscapeVBAllocator::clear()
 	_ReallocationOccur= false;
 	_Driver= NULL;
 	_VBHardOk= false;
+	_ATIVBHardOk= false;
 }
 
 
@@ -246,6 +253,50 @@ void			CLandscapeVBAllocator::unlockBuffer()
 	}
 }
 
+// ***************************************************************************
+void			CLandscapeVBAllocator::synchronizeATIVBHard()
+{
+	// no-op if disabled, or if std _VBHard scheme
+	if(!_ATIVBHardOk)
+		return;
+
+	// num verts to sync
+	uint	numVertices= _VB.getNumVertices();
+
+	// if the ATI VBhard do not exist, or if too small, allocate it now
+	if( _ATIVBHard==NULL || _ATIVBHard->getNumVertices()<numVertices )
+	{
+		// delete possible old _ATIVBHard
+		if(_ATIVBHard!=NULL)
+		{
+			// VertexBufferHard lifetime < Driver lifetime.
+			nlassert(_Driver!=NULL);
+			_Driver->deleteVertexBufferHard(_ATIVBHard);
+		}
+
+		// try to create new one, in AGP Ram
+		// If too many vertices wanted, abort VBHard.
+		if(numVertices <= NL3D_VERTEX_MAX_VERTEX_VBHARD)
+			_ATIVBHard= _Driver->createVertexBufferHard(_VB.getVertexFormat(), _VB.getValueTypePointer(), numVertices, IDriver::VBHardAGP);
+		else
+			_ATIVBHard= NULL;
+
+		// If KO, never try again.
+		if(_ATIVBHard==NULL)
+			_ATIVBHardOk= false;
+	}
+
+	// if still ok, fill the VBHard with std VB.
+	if(_ATIVBHardOk)
+	{
+		void	*dst= _ATIVBHard->lock();
+		// fill the entire buffer.
+		CFastMem::memcpy(dst, _VB.getVertexCoordPointer(), numVertices*_VB.getVertexSize() );
+		// unlock the entire buffer
+		_ATIVBHard->unlock();
+	}
+}
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -270,6 +321,10 @@ void			CLandscapeVBAllocator::activate(uint vpId)
 	// Activate VB.
 	if(_VBHard)
 		_Driver->activeVertexBufferHard(_VBHard);
+	// If ATI VBHard possible, use it
+	else if(_ATIVBHard)
+		_Driver->activeVertexBufferHard(_ATIVBHard);
+	// must use std VB
 	else
 		_Driver->activeVertexBuffer(_VB);
 }
@@ -290,6 +345,17 @@ void				CLandscapeVBAllocator::deleteVertexBuffer()
 		// delete it from driver.
 		_Driver->deleteVertexBufferHard(_VBHard);
 		_VBHard= NULL;
+	}
+
+	// Do the same for ATI one if exist
+	if(_ATIVBHard!=NULL)
+	{
+		// A vbufferhard should still exist only if driver still exist.
+		nlassert(_Driver!=NULL);
+
+		// delete it from driver.
+		_Driver->deleteVertexBufferHard(_ATIVBHard);
+		_ATIVBHard= NULL;
 	}
 
 	// delete the soft one.
@@ -338,6 +404,9 @@ void				CLandscapeVBAllocator::allocateVertexBuffer(uint32 numVertices)
 		_VB.setNumVertices(numVertices);
 	}
 
+	/*
+		NB: ATI VBHard allocation is done in synchronizeATIVBHard()
+	*/
 
 	//nlinfo("Alloc a LandVB %s of %d vertices in %s", _Type==Far0?"Far0":(_Type==Far1?"Far1":"Tile"), numVertices, _VBHardOk?"VBHard":"VBSoft");
 }

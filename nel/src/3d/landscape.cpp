@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.123 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: landscape.cpp,v 1.124 2002/09/10 13:38:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -890,6 +890,13 @@ void			CLandscape::unlockBuffers()
 	_VegetableManager->unlockBuffers();
 }
 
+// ***************************************************************************
+void			CLandscape::synchronizeATIVBHards()
+{
+	_Far0VB.synchronizeATIVBHard();
+	_Far1VB.synchronizeATIVBHard();
+	_TileVB.synchronizeATIVBHard();
+}
 
 // ***************************************************************************
 void			CLandscape::updateTessBlocksFaceVector()
@@ -1088,6 +1095,10 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// NB: no parallelism is made between 3dCard and Fill of vertices.
 	// We Suppose Fill of vertices is rare, and so do not need to be parallelized.
 	unlockBuffers();
+
+
+	// Special for ATI: only copy all VBs to VBHard one time per frame
+	synchronizeATIVBHards();
 
 
 	// If VertexShader enabled, setup VertexProgram Constants.

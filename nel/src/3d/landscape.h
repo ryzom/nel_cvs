@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.42 2002/08/07 15:23:31 berenguier Exp $
+ * $Id: landscape.h,v 1.43 2002/09/10 13:38:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -648,6 +648,8 @@ private:
 	void lockBuffers ();
 	// unlockBuffers. This is the END call for updateGlobalsAndLockBuffers().
 	void unlockBuffers ();
+	// special for ATI. called in render()
+	void synchronizeATIVBHards();
 	// update TheFaceVector for which the faces may have been modified during refine(), refineAll() etc....
 	void updateTessBlocksFaceVector();
 

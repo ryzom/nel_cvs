@@ -1,7 +1,7 @@
 /** \file driver_direct3d_profile.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_profile.cpp,v 1.6 2004/08/13 15:27:14 vizerie Exp $
+ * $Id: driver_direct3d_profile.cpp,v 1.7 2004/10/08 13:32:55 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -82,7 +82,7 @@ uint32 CDriverD3D::getUsedTextureMemory() const
 	uint32 memory=0;
 
 	// For each texture used
-	set<CTextureDrvInfosD3D*>::iterator ite=_TextureUsed.begin();
+	set<CTextureDrvInfosD3D*>::const_iterator ite=_TextureUsed.begin();
 	while (ite!=_TextureUsed.end())
 	{
 		// Get the d3d texture

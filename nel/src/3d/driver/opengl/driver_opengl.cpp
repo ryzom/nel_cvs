@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.226 2004/10/05 17:05:59 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.227 2004/10/08 13:32:55 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -2627,7 +2627,7 @@ uint32			CDriverGL::getUsedTextureMemory() const
 	uint32 memory=0;
 
 	// For each texture used
-	set<CTextureDrvInfosGL*>::iterator ite=_TextureUsed.begin();
+	set<CTextureDrvInfosGL*>::const_iterator ite=_TextureUsed.begin();
 	while (ite!=_TextureUsed.end())
 	{
 		// Get the gl texture

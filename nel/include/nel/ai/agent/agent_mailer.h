@@ -1,7 +1,7 @@
 /** \file agent_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_mailer.h,v 1.7 2001/01/24 17:13:37 chafik Exp $
+ * $Id: agent_mailer.h,v 1.8 2001/01/25 08:56:23 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -183,9 +183,9 @@ namespace NLAIAGENT
 		}
 		virtual void runChildren();
 		virtual void processMessages();			
-		virtual IObjectIA::CProcessResult sendMessage(IMessageBase *msg)
+		virtual IObjectIA::CProcessResult sendMessage(IObjectIA *msg)
 		{
-			return _HostAgent->sendMessage(msg);
+			return ((IObjectIA  *)_HostAgent)->sendMessage(msg);
 		}
 		virtual IObjectIA::CProcessResult sendMessage(IMessageBase *msg, IBasicAgent &receiver)
 		{

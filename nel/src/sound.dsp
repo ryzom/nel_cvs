@@ -257,6 +257,38 @@ SOURCE=.\sound\sound.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound\sound_anim_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\sound\sound_anim_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sound_anim_marker.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\sound\sound_anim_marker.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sound_anim_player.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\sound\sound_anim_player.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sound_animation.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\sound\sound_animation.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound\sound_bank.cpp
 # End Source File
 # Begin Source File

@@ -38,18 +38,19 @@
 #include <vector>
 #include <string>
 
-
-using namespace std;
-
 #include "nel/misc/config_file.h"
 #include "nel/misc/common.h"
+#include "nel/misc/debug.h"
+
+using namespace std;
+using namespace NLMISC;
 
 /* Constantes */
 
 #define YYPARSE_PARAM pvararray
 
-//#define DEBUG_PRINTF	printf
-#define DEBUG_PRINTF	// printf
+//#define DEBUG_PRINTF	InfoLog->displayRaw
+#define DEBUG_PRINTF	// InfoLog->displayRaw
 
 /* Types */
 
@@ -75,6 +76,10 @@ NLMISC::CConfigFile::CVar		cf_CurrentVar;
 
 int		cf_CurrentLine;
 
+bool	cf_OverwriteExistingVariable;	// setup in the config_file.cpp reparse()
+
+
+
 /* Prototypes */
 
 int yylex (void);
@@ -88,7 +93,7 @@ void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val);
 int yyerror (const char *);
 
 
-#line 64 "config_file.yacc"
+#line 69 "config_file.yacc"
 typedef union	{
 			cf_value Val;
 		} YYSTYPE;
@@ -160,9 +165,9 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-    83,    83,    83,    86,    87,    90,   136,   137,   140,   141,
-   141,   142,   145,   146,   147,   150,   151,   152,   155,   156,
-   157,   158,   159,   160,   161,   164
+    88,    88,    88,    91,    92,    95,   148,   149,   152,   153,
+   153,   154,   157,   158,   159,   162,   163,   164,   167,   168,
+   169,   170,   171,   172,   173,   176
 };
 #endif
 
@@ -518,7 +523,8 @@ yyparse(YYPARSE_PARAM_ARG)
   YYSTYPE yyval;		/*  the variable used to return		*/
 				/*  semantic values from the action	*/
 				/*  routines				*/
-	yyval.Val.Int = 0;
+ // ace: big fake for VC7 because it checks if yyval is init or not
+  yyval.Val.Int = 0;
   int yylen;
 
 #if YYDEBUG != 0
@@ -775,23 +781,23 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 83 "config_file.yacc"
+#line 88 "config_file.yacc"
 { cf_CurrentLine = 1; cf_Ignore = false; ;
     break;}
 case 3:
-#line 83 "config_file.yacc"
+#line 88 "config_file.yacc"
 { ;
     break;}
 case 4:
-#line 86 "config_file.yacc"
+#line 91 "config_file.yacc"
 { ;
     break;}
 case 5:
-#line 87 "config_file.yacc"
+#line 92 "config_file.yacc"
 { ;
     break;}
 case 6:
-#line 91 "config_file.yacc"
+#line 96 "config_file.yacc"
 {
 				DEBUG_PRINTF("                                   (VARIABLE=");
 				cf_print (yyvsp[-3].Val);
@@ -804,7 +810,10 @@ case 6:
 				{
 					if ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Name == yyvsp[-3].Val.String)
 					{
-						DEBUG_PRINTF("Variable '%s' existe deja, ecrasement\n", yyvsp[-3].Val.String);
+						if (cf_OverwriteExistingVariable)
+						{
+							DEBUG_PRINTF("Variable '%s' existe deja, ecrasement\n", yyvsp[-3].Val.String);
+						}
 						break;
 					}
 				}
@@ -820,7 +829,7 @@ case 6:
 					DEBUG_PRINTF ("yacc: new assign var '%s'\n", yyvsp[-3].Val.String);
 					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).push_back (Var);
 				}
-				else
+				else if (cf_OverwriteExistingVariable)
 				{
 					// reaffectation d'une variable
 					Var.Callback = (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Callback;
@@ -828,6 +837,10 @@ case 6:
 					if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
 						(Var.Callback)(Var);
 					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
+				}
+				else
+				{
+					DEBUG_PRINTF ("yacc: don't reassign var '%s' because cf_OverwriteExistingVariable is false\n", yyvsp[-3].Val.String);
 				}
 
 				cf_CurrentVar.IntValues.clear ();
@@ -837,79 +850,79 @@ case 6:
 			;
     break;}
 case 7:
-#line 136 "config_file.yacc"
+#line 148 "config_file.yacc"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = false; DEBUG_PRINTF("false\n"); ;
     break;}
 case 8:
-#line 137 "config_file.yacc"
+#line 149 "config_file.yacc"
 { yyval.Val = yyvsp[-1].Val; cf_CurrentVar.Comp = true; DEBUG_PRINTF("true\n"); ;
     break;}
 case 9:
-#line 140 "config_file.yacc"
+#line 152 "config_file.yacc"
 { yyval.Val =  yyvsp[0].Val; cf_CurrentVar.Type = yyvsp[0].Val.Type; cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 10:
-#line 141 "config_file.yacc"
+#line 153 "config_file.yacc"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Type = yyvsp[0].Val.Type; cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 12:
-#line 142 "config_file.yacc"
+#line 154 "config_file.yacc"
 { ;
     break;}
 case 13:
-#line 145 "config_file.yacc"
+#line 157 "config_file.yacc"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 14:
-#line 146 "config_file.yacc"
+#line 158 "config_file.yacc"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_PLUS); ;
     break;}
 case 15:
-#line 147 "config_file.yacc"
+#line 159 "config_file.yacc"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MINUS); ;
     break;}
 case 16:
-#line 150 "config_file.yacc"
+#line 162 "config_file.yacc"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 17:
-#line 151 "config_file.yacc"
+#line 163 "config_file.yacc"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MULT); ;
     break;}
 case 18:
-#line 152 "config_file.yacc"
+#line 164 "config_file.yacc"
 { yyval.Val = cf_op (yyvsp[-2].Val, yyvsp[0].Val, OP_DIVIDE); ;
     break;}
 case 19:
-#line 155 "config_file.yacc"
+#line 167 "config_file.yacc"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 20:
-#line 156 "config_file.yacc"
+#line 168 "config_file.yacc"
 { cf_value v; v.Type=NLMISC::CConfigFile::CVar::T_INT; /* just to avoid a warning, I affect 'v' with a dummy value */ yyval.Val = cf_op(yyvsp[0].Val,v,OP_NEG); ;
     break;}
 case 21:
-#line 157 "config_file.yacc"
+#line 169 "config_file.yacc"
 { yyval.Val = yyvsp[-1].Val; ;
     break;}
 case 22:
-#line 158 "config_file.yacc"
+#line 170 "config_file.yacc"
 { yyval.Val = yylval.Val; ;
     break;}
 case 23:
-#line 159 "config_file.yacc"
+#line 171 "config_file.yacc"
 { yyval.Val = yylval.Val; ;
     break;}
 case 24:
-#line 160 "config_file.yacc"
+#line 172 "config_file.yacc"
 { yyval.Val = yylval.Val; ;
     break;}
 case 25:
-#line 161 "config_file.yacc"
+#line 173 "config_file.yacc"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 26:
-#line 165 "config_file.yacc"
+#line 177 "config_file.yacc"
 {
 				DEBUG_PRINTF("yacc: cont\n");
 				bool ok=false;
@@ -1164,7 +1177,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 197 "config_file.yacc"
+#line 209 "config_file.yacc"
 
 
 /* compute the good operation with a, b and op */

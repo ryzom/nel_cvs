@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.29 2002/04/15 12:58:48 lecroart Exp $
+ * $Id: config_file.cpp,v 1.30 2002/04/23 07:50:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 
 using namespace std;
@@ -37,7 +38,7 @@ extern void cfrestart (FILE *);	// used to reinit the file
 extern int cfparse (void *);	// used to parse the file
 extern FILE *cfin;
 extern int cf_CurrentLine;
-
+extern bool cf_OverwriteExistingVariable;
 
 // put true if you want that the config file class check type when you call asFunctions
 // (for example, check when you call asInt() that the variable is an int).
@@ -214,34 +215,70 @@ void CConfigFile::load (const string &fileName)
 	}
 	(*CConfigFile::_ConfigFiles).push_back (this);
 	reparse ();
+
+	// If we find a linked config file, load it but don't overload already existant variable
+	try
+	{
+		string RootConfigFilename = getVar ("RootConfigFilename").asString();
+		nlinfo ("RootConfigFilename variable found in the '%s' config file, parse it (%s)", fileName.c_str(), RootConfigFilename.c_str());
+		reparse (RootConfigFilename.c_str());
+	}
+	catch (EConfigFile &)
+	{
+		// variable not found, not important
+	}
+
+	//print ();
 }
 
 
 bool CConfigFile::loaded()
 {
-	return ( CConfigFile::_FileName != "" );
+	return !CConfigFile::_FileName.empty();
 }
 
 
-void CConfigFile::reparse ()
+void CConfigFile::reparse (const char *filename)
 {
-	_LastModified = getLastModified ();
-	cfin = fopen (_FileName.c_str (), "r");
-	if (cfin != NULL)
+	if (filename == NULL)
 	{
-// if we clear all the array, we'll lost the callback on variable and all information
-//		_Vars.clear();
-		cfrestart (cfin);
-		bool parsingOK = (cfparse (&(_Vars)) == 0);
-		fclose (cfin);
-		if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);
+		_LastModified = getLastModified ();
+		cfin = fopen (_FileName.c_str (), "r");
+		if (cfin != NULL)
+		{
+	// if we clear all the array, we'll lost the callback on variable and all information
+	//		_Vars.clear();
+			cfrestart (cfin);
+			cf_OverwriteExistingVariable = true;
+			bool parsingOK = (cfparse (&(_Vars)) == 0);
+			fclose (cfin);
+			if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);
+		}
+		else
+		{
+			nlwarning ("ConfigFile '%s' not found", _FileName.c_str());
+			throw EFileNotFound (_FileName);
+		}
 	}
 	else
 	{
-		nlwarning ("ConfigFile '%s' not found", _FileName.c_str());
-		throw EFileNotFound (_FileName);
+		// load external config filename, don't overwrite existant variable
+		cfin = fopen (filename, "r");
+		if (cfin != NULL)
+		{
+			cfrestart (cfin);
+			cf_OverwriteExistingVariable = false;
+			bool parsingOK = (cfparse (&(_Vars)) == 0);
+			fclose (cfin);
+			if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);
+		}
+		else
+		{
+			nlwarning ("RootConfigFilename '%s' not found", _FileName.c_str());
+		}
 	}
 }
+
 
 
 CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
@@ -326,53 +363,55 @@ void CConfigFile::save () const
 
 void CConfigFile::print () const
 {
-	printf ("%d results:\n", _Vars.size());
-	printf ("-------------------------------------\n");
+	createDebug ();
+
+	InfoLog->displayRawNL ("%d results:", _Vars.size());
+	InfoLog->displayRawNL ("-------------------------------------");
 	for(int i = 0; i < (int)_Vars.size(); i++)
 	{
-		printf ((_Vars[i].Callback==NULL)?"   ":"CB ");
+		InfoLog->displayRaw ((_Vars[i].Callback==NULL)?"   ":"CB ");
 		if (_Vars[i].Comp)
 		{
 			switch (_Vars[i].Type)
 			{
 			case CConfigFile::CVar::T_INT:
 			{
-				printf("%-20s { ", _Vars[i].Name.c_str());
+				InfoLog->displayRaw ("%-20s { ", _Vars[i].Name.c_str());
 				for (int it=0; it < (int)_Vars[i].IntValues.size(); it++)
 				{
-					printf("'%d' ", _Vars[i].IntValues[it]);
+					InfoLog->displayRaw ("'%d' ", _Vars[i].IntValues[it]);
 				}
-				printf ("}\n");
+				InfoLog->displayRawNL ("}");
 				break;
 			}
 			case CConfigFile::CVar::T_STRING:
 			{
-				printf("%-20s { ", _Vars[i].Name.c_str());
+				InfoLog->displayRaw ("%-20s { ", _Vars[i].Name.c_str());
 				for (int st=0; st < (int)_Vars[i].StrValues.size(); st++)
 				{
-					printf("\"%s\" ", _Vars[i].StrValues[st].c_str());
+					InfoLog->displayRaw ("\"%s\" ", _Vars[i].StrValues[st].c_str());
 				}
-				printf ("}\n");
+				InfoLog->displayRawNL ("}");
 				break;
 			}
 			case CConfigFile::CVar::T_REAL:
 			{
-				printf("%-20s { " , _Vars[i].Name.c_str());
+				InfoLog->displayRaw ("%-20s { " , _Vars[i].Name.c_str());
 				for (int rt=0; rt < (int)_Vars[i].RealValues.size(); rt++)
 				{
-					printf("`%f` ", _Vars[i].RealValues[rt]);
+					InfoLog->displayRaw ("`%f` ", _Vars[i].RealValues[rt]);
 				}
-				printf ("}\n");
+				InfoLog->displayRawNL ("}");
 				break;
 			}
 			case CConfigFile::CVar::T_UNKNOWN:
 			{
-				printf("%-20s { }\n" , _Vars[i].Name.c_str());
+				 InfoLog->displayRawNL ("%-20s { }" , _Vars[i].Name.c_str());
 				break;
 			}
 			default:
 			{
-				printf("%-20s <default case>\n" , _Vars[i].Name.c_str());
+				InfoLog->displayRawNL ("%-20s <default case>" , _Vars[i].Name.c_str());
 				break;
 			}
 			}
@@ -382,17 +421,17 @@ void CConfigFile::print () const
 			switch (_Vars[i].Type)
 			{
 			case CConfigFile::CVar::T_INT:
-				printf("%-20s '%d'\n", _Vars[i].Name.c_str(), _Vars[i].IntValues[0]);
+				InfoLog->displayRawNL ("%-20s '%d'", _Vars[i].Name.c_str(), _Vars[i].IntValues[0]);
 				break;
 			case CConfigFile::CVar::T_STRING:
-				printf("%-20s \"%s\"\n", _Vars[i].Name.c_str(), _Vars[i].StrValues[0].c_str());
+				InfoLog->displayRawNL ("%-20s \"%s\"", _Vars[i].Name.c_str(), _Vars[i].StrValues[0].c_str());
 				break;
 			case CConfigFile::CVar::T_REAL:
-				printf("%-20s `%f`\n", _Vars[i].Name.c_str(), _Vars[i].RealValues[0]);
+				InfoLog->displayRawNL ("%-20s `%f`", _Vars[i].Name.c_str(), _Vars[i].RealValues[0]);
 				break;
 			default:
 			{
-				printf("%-20s <default case>\n" , _Vars[i].Name.c_str());
+				InfoLog->displayRawNL ("%-20s <default case>" , _Vars[i].Name.c_str());
 				break;
 			}
 			}

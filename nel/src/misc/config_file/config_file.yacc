@@ -8,18 +8,19 @@
 #include <vector>
 #include <string>
 
-
-using namespace std;
-
 #include "nel/misc/config_file.h"
 #include "nel/misc/common.h"
+#include "nel/misc/debug.h"
+
+using namespace std;
+using namespace NLMISC;
 
 /* Constantes */
 
 #define YYPARSE_PARAM pvararray
 
-//#define DEBUG_PRINTF	printf
-#define DEBUG_PRINTF	// printf
+//#define DEBUG_PRINTF	InfoLog->displayRaw
+#define DEBUG_PRINTF	// InfoLog->displayRaw
 
 /* Types */
 
@@ -44,6 +45,10 @@ extern FILE *yyin;
 NLMISC::CConfigFile::CVar		cf_CurrentVar;
 
 int		cf_CurrentLine;
+
+bool	cf_OverwriteExistingVariable;	// setup in the config_file.cpp reparse()
+
+
 
 /* Prototypes */
 
@@ -100,7 +105,10 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 				{
 					if ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Name == $1.String)
 					{
-						DEBUG_PRINTF("Variable '%s' existe deja, ecrasement\n", $1.String);
+						if (cf_OverwriteExistingVariable)
+						{
+							DEBUG_PRINTF("Variable '%s' existe deja, ecrasement\n", $1.String);
+						}
 						break;
 					}
 				}
@@ -116,7 +124,7 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 					DEBUG_PRINTF ("yacc: new assign var '%s'\n", $1.String);
 					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).push_back (Var);
 				}
-				else
+				else if (cf_OverwriteExistingVariable)
 				{
 					// reaffectation d'une variable
 					Var.Callback = (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Callback;
@@ -124,6 +132,10 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 					if (Var != (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] && Var.Callback != NULL)
 						(Var.Callback)(Var);
 					(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i] = Var;
+				}
+				else
+				{
+					DEBUG_PRINTF ("yacc: don't reassign var '%s' because cf_OverwriteExistingVariable is false\n", $1.String);
 				}
 
 				cf_CurrentVar.IntValues.clear ();

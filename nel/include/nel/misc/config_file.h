@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.26 2002/04/09 12:27:39 lecroart Exp $
+ * $Id: config_file.h,v 1.27 2002/04/23 07:50:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,7 +204,7 @@ public:
 	bool loaded();
 
 	/// reload and reparse the file
-	void reparse ();
+	void reparse (const char *filename = NULL);
 
 	/// display all variables with nlinfo (debug use)
 	void print () const;

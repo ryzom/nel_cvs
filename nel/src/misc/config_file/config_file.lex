@@ -5,12 +5,15 @@
 #include <vector>
 #include <string>
 
+#include "nel/misc/debug.h"
+
 using namespace std;
+using namespace NLMISC;
 
 /* Constantes */
 
-//#define DEBUG_PRINTF	printf
-#define DEBUG_PRINTF	// printf
+//#define DEBUG_PRINTF	InfoLog->displayRaw
+#define DEBUG_PRINTF	// InfoLog->displayRaw
 
 #define YY_NEVER_INTERACTIVE 1
 

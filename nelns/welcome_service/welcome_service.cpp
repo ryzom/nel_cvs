@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.37 2004/07/08 09:38:38 legros Exp $
+ * $Id: welcome_service.cpp,v 1.38 2004/07/13 11:17:50 coutelas Exp $
  *
  */
 
@@ -63,7 +63,7 @@ using namespace NLNET;
 
 
 CVariable<sint> PlayerLimit(
-	"PlayerLimit", "Rough max number of players accepted on this shard (-1 for Unlimited)",
+	"ws","PlayerLimit", "Rough max number of players accepted on this shard (-1 for Unlimited)",
 	5000,
 	0, true );
 
@@ -85,18 +85,18 @@ enum TShardOpenState
  * 1 means open only for groups in config file (see OpenGroups variable) and :DEV:
  * 2 means open for all
  */
-CVariable<uint>		ShardOpen("ShardOpen", "Indicates if shard is open to public (0 closed for all but :DEV:, 1 open only for groups in cfg, 2 open for all)", 2, 0, true);
+CVariable<uint>		ShardOpen("ws", "ShardOpen", "Indicates if shard is open to public (0 closed for all but :DEV:, 1 open only for groups in cfg, 2 open for all)", 2, 0, true);
 
 /**
  * ShardOpenStateFile
  * true if shard is open to public
  */
-CVariable<string>	ShardOpenStateFile("ShardOpenStateFile", "Name of the file that contains ShardOpen state", "", 0, true, cbShardOpenStateFile);
+CVariable<string>	ShardOpenStateFile("ws", "ShardOpenStateFile", "Name of the file that contains ShardOpen state", "", 0, true, cbShardOpenStateFile);
 
 /**
  * OpenGroups
  */
-CVariable<string>	OpenGroups("OpenGroups", "list of groups allowed at ShardOpen Level 1", "", 0, true);
+CVariable<string>	OpenGroups("ws", "OpenGroups", "list of groups allowed at ShardOpen Level 1", "", 0, true);
 
 
 /**

@@ -1,7 +1,7 @@
 /** \file log_report.cpp
  * <File description>
  *
- * $Id: log_report.cpp,v 1.2 2004/06/15 13:34:48 cado Exp $
+ * $Id: log_report.cpp,v 1.3 2004/07/13 11:17:51 coutelas Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -34,7 +34,7 @@ using namespace NLMISC;
 using namespace std;
 
 
-CVariable<string> LogPath( "LogPath", "Path of the log files", ".", 0, true );
+CVariable<string> LogPath( "aes","LogPath", "Path of the log files", ".", 0, true );
 
 const uint MAX_LOG_LINE_SIZE = 1024;
 //nlctassert(MAX_LOG_LINE_SIZE>0);

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.33 2003/03/31 11:52:54 vizerie Exp $
+ * $Id: driver_opengl_extension.h,v 1.34 2003/04/29 16:51:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@ struct	CGlExtensions
 	// WGL ARB extensions, true if supported
 	bool	WGLARBPBuffer;
 	bool	WGLARBPixelFormat;
+	bool	WGLEXTSwapControl;
 
 	// ATI Extensions.
 	bool	ATIVertexArrayObject;
@@ -139,6 +140,7 @@ public:
 		EXTSecondaryColor= false;
 		WGLARBPBuffer= false;
 		WGLARBPixelFormat= false;
+		WGLEXTSwapControl= false;
 		EXTBlendColor= false;
 		ATIVertexArrayObject= false;
 		ATIEnvMapBumpMap = false;
@@ -479,6 +481,12 @@ extern PFNWGLQUERYPBUFFERARBPROC			wglQueryPbufferARB;
 extern PFNWGLGETPIXELFORMATATTRIBIVARBPROC	wglGetPixelFormatAttribivARB;
 extern PFNWGLGETPIXELFORMATATTRIBFVARBPROC	wglGetPixelFormatAttribfvARB;
 extern PFNWGLCHOOSEPIXELFORMATARBPROC		wglChoosePixelFormatARB;
+
+
+// Swap control extension
+//===========================
+extern PFNWGLSWAPINTERVALEXTPROC	wglSwapIntervalEXT;
+extern PFNWGLGETSWAPINTERVALEXTPROC	wglGetSwapIntervalEXT;
 
 
 // WGL_ARB_extensions_string

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.18 2003/03/31 14:52:31 berenguier Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.19 2003/04/29 16:51:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,9 @@ typedef BOOL		(APIENTRY * PFNWGLQUERYPBUFFERARBPROC) (HPBUFFERARB hPbuffer, int 
 typedef BOOL		(APIENTRY * PFNWGLGETPIXELFORMATATTRIBIVARBPROC) (HDC, int, int, UINT, const int *, int *);
 typedef BOOL		(APIENTRY * PFNWGLGETPIXELFORMATATTRIBFVARBPROC) (HDC, int, int, UINT, const int *, FLOAT *);
 typedef BOOL		(APIENTRY * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC, const int *, const FLOAT *, UINT, int *, UINT *);
+
+typedef BOOL		(APIENTRY * PFNWGLSWAPINTERVALEXTPROC) (int);
+typedef int			(APIENTRY * PFNWGLGETSWAPINTERVALEXTPROC) (void);
 
 typedef	const char*	(APIENTRY * PFNWGFGETEXTENSIONSSTRINGARB) (HDC);
 #endif

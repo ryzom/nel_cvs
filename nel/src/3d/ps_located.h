@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.8 2001/08/07 14:09:46 vizerie Exp $
+ * $Id: ps_located.h,v 1.9 2001/08/16 17:11:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -629,14 +629,15 @@ public:
 	/// ctor	
 	CPSLocatedBindable();	
 
+	/// dtor
+	virtual ~CPSLocatedBindable();	
+
 	//  CPSLocatedBindable() : _Owner(NULL) {}
 
 
 	/// serialization
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
-	/// dtor
-	virtual ~CPSLocatedBindable() {}
 
 	/// process one pass for this bindable
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) = 0;
@@ -651,10 +652,7 @@ public:
 	 *   
 	 *  \see CPSLocated::registerDTorObserver()
 	 */
-	virtual void notifyTargetRemoved(CPSLocated *ptr) ;
-	
-	
-
+	virtual void notifyTargetRemoved(CPSLocated *ptr) ;	
 	
 	/***
 	* The following is used to complete an aabbox that was computed using the located positions
@@ -775,6 +773,16 @@ public:
 	/// tells wether there are alive emitters
 	virtual bool hasEmitters(void) const { return false; }
 
+	/** set the extern ID of this located bindable. 0 means no extern access. The map of ID-locatedBindable. Is in th
+	  * particle system, so this located bindable must have been attached to a particle system, otherwise an assertion is raised
+	  */
+	void		setExternID(uint32 id);
+
+	/// get the extern ID of this located bindable
+	uint32		getExternID(void) const { return _ExternID; }
+
+
+
 
 protected:    
 
@@ -826,8 +834,9 @@ protected:
 		nlassert(psl); _Owner = psl; 
 	}
 
-	CPSLocated  *_Owner;	
-
+	CPSLocated  *_Owner;
+	
+	uint32 _ExternID;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.27 2004/06/18 09:51:23 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.28 2005/02/16 17:07:02 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -419,7 +419,7 @@ void CStartStopParticleSystem::stop()
 		break;
 	}
 	_State = Stopped;	
-	updateUIFromState();	
+	if (IsWindow(*this)) updateUIFromState();
 	if (m_LinkPlayToScenePlay) // is scene animation subordinated to the fx animation
 	{
 		// start animation for the scene too

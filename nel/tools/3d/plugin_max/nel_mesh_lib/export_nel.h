@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.35 2001/12/06 09:28:02 corvazier Exp $
+ * $Id: export_nel.h,v 1.36 2001/12/11 10:19:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,7 +228,7 @@ public:
 												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
 												INode& ZeNode, 
 												Interface& ip, TimeValue tvTime, bool absolutePath,
-												CExportNelOptions& structExport);
+												CExportNelOptions& structExport, uint firstMaterial);
 
 	static bool						calculateLMRad(NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
 												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
@@ -341,6 +341,13 @@ public:
 	// Enable / disable the skin modifier
 	static void						enableSkinModifier (INode& node, bool enable);
 
+	// **************
+	// *** Ëxport Lod
+	// **************
+
+	static void						addChildLodNode (std::set<INode*> &lodListToExclude, Interface &ip, INode *current = NULL);
+	static void						addParentLodNode (INode &node, std::set<INode*> &lodListToExclude, Interface &ip, INode *current = NULL);
+
 	// *********************
 	// *** Ëxport collision
 	// *********************
@@ -357,8 +364,11 @@ public:
 	// Convert a 3dsmax matrix in NeL matrix
 	static void						convertMatrix (NLMISC::CMatrix& nelMatrix, const Matrix3& maxMatrix);
 
+	// Convert a NeL matrix in 3dsmax matrix
+	static void						convertMatrix (Matrix3& maxMatrix, const NLMISC::CMatrix& nelMatrix);
+
 	// Convert a 3dsmax vector in NeL vector
-	static void							convertVector (NLMISC::CVector& nelVector, const Point3& maxVector);
+	static void						convertVector (NLMISC::CVector& nelVector, const Point3& maxVector);
 
 	// Get local node matrix
 	static void						getLocalMatrix (Matrix3& localMatrix, INode& node, TimeValue time);
@@ -557,7 +567,7 @@ private:
 	  * if skeletonShape is NULL, no skinning is exported.
 	  */
 	static void						buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildMesh, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
-															TimeValue time, bool absolutePath);
+															TimeValue time, bool absolutePath, const NLMISC::CMatrix& basis);
 
 	/**
 	  * Build a NeL mesh interface
@@ -585,7 +595,7 @@ private:
 	  */
 	static NL3D::IMeshGeom			*buildMeshGeom (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, bool absolutePath,
 													CExportNelOptions &opt, NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName,
-													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& WorldToparentMatrix, bool view);
+													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& parentMatrix, bool view);
 	/**
 	  * Build the mesh morpher info in the mesh geom	  */
 	static void						buildMeshMorph (NL3D::CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time, bool skined);

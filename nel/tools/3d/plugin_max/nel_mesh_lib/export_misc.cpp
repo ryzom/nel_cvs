@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.10 2001/12/06 09:28:02 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.11 2001/12/11 10:19:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,6 +122,44 @@ void CExportNel::convertMatrix (CMatrix& nelMatrix, const Matrix3& maxMatrix)
 
 	// Set the position part
 	nelMatrix.setPos(P);
+}
+
+// --------------------------------------------------
+
+// ConvertMatrix a 3dsmax matrix in NeL matrix
+void CExportNel::convertMatrix (Matrix3& maxMatrix, const CMatrix& nelMatrix)
+{
+	// Basis vector
+	Point3 I, J, K, P;
+
+	// Build the rot matrix
+	I.x= nelMatrix.getI().x;
+	I.y= nelMatrix.getI().y;
+	I.z= nelMatrix.getI().z;
+	J.x= nelMatrix.getJ().x;
+	J.y= nelMatrix.getJ().y;
+	J.z= nelMatrix.getJ().z;
+	K.x= nelMatrix.getK().x;
+	K.y= nelMatrix.getK().y;
+	K.z= nelMatrix.getK().z;
+
+	// Build the translation vector
+	P.x= nelMatrix.getPos().x;
+	P.y= nelMatrix.getPos().y;
+	P.z= nelMatrix.getPos().z;
+
+	// *** Build the NeL matrix
+
+	// Set it to identity to have the good flags in it
+	maxMatrix.IdentityMatrix();
+
+	// Set the rotation part
+	maxMatrix.SetRow (0, I);
+	maxMatrix.SetRow (1, J);
+	maxMatrix.SetRow (2, K);
+
+	// Set the position part
+	maxMatrix.SetTrans (P);
 }
 
 // --------------------------------------------------
@@ -568,6 +606,69 @@ void CExportNel::outputErrorMessage (Interface *ip, const char *message, const c
 bool CExportNel::isVegetable (INode& node, TimeValue time)
 {
 	return CExportNel::getScriptAppData (&node, NEL3D_APPDATA_VEGETABLE, BST_UNCHECKED) != BST_UNCHECKED;
+}
+
+// --------------------------------------------------
+
+void CExportNel::addChildLodNode (std::set<INode*> &lodListToExclude, Interface &ip, INode *current)
+{
+	// First node ?
+	if (current == NULL)
+		current = ip.GetRootNode();
+
+	// Get child count
+	uint lodCount = getScriptAppData (current, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
+	for (uint lod=0; lod<lodCount; lod++)
+	{
+		// Get lod name
+		std::string lodName = getScriptAppData (current, NEL3D_APPDATA_LOD_NAME+lod, "");
+		if (lodName != "")
+		{
+			// Get the lod by name
+			INode *lodNode = ip.GetINodeByName (lodName.c_str());
+			if (lodNode)
+			{
+				// Insert it in the set
+				lodListToExclude.insert (lodNode);
+			}
+		}
+	}
+
+	// Scan child nodes
+	for ( uint i = 0; i < (uint)current->NumberOfChildren(); ++i )
+		addChildLodNode ( lodListToExclude, ip, current->GetChildNode(i) );
+}
+
+// --------------------------------------------------
+
+void CExportNel::addParentLodNode (INode &child, std::set<INode*> &lodListToExclude, Interface &ip, INode *parent)
+{
+	// First node ?
+	if (parent == NULL)
+		parent = ip.GetRootNode();
+
+	// Get its child lod 
+	uint lodCount = getScriptAppData (parent, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
+	for (uint lod=0; lod<lodCount; lod++)
+	{
+		// Get lod name
+		std::string lodName = getScriptAppData (parent, NEL3D_APPDATA_LOD_NAME+lod, "");
+		if (lodName != "")
+		{
+			// Get the lod by name
+			INode *lodNode = ip.GetINodeByName (lodName.c_str());
+			if (lodNode == &child)
+			{
+				// Insert it in the set
+				lodListToExclude.insert (parent);
+				break;
+			}
+		}
+	}
+
+	// Scan child nodes
+	for ( uint i = 0; i < (uint)parent->NumberOfChildren(); ++i )
+		addParentLodNode ( child, lodListToExclude, ip, parent->GetChildNode(i) );
 }
 
 // --------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.12 2001/12/06 14:31:46 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.13 2001/12/11 10:19:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,6 +141,7 @@ bool CNelExport::exportVegetable (const char *sPath, INode& node, Interface& ip,
 			catch (Exception &e)
 			{
 				// Message box
+				const char *message = e.what();
 				CExportNel::outputErrorMessage (&ip, "Error during vegetable serialisation", "NeL Export", errorInDialog);
 			}
 		}

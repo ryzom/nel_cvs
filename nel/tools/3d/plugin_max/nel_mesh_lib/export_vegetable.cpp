@@ -1,7 +1,7 @@
 /** \file export_vegetable.cpp
  * Export from 3dsmax a NeL vegetable mesh
  *
- * $Id: export_vegetable.cpp,v 1.1 2001/12/06 09:28:02 corvazier Exp $
+ * $Id: export_vegetable.cpp,v 1.2 2001/12/11 10:19:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,14 @@ bool  CExportNel::buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INo
 			// Build a mesh base structure
 			CMeshBase::CMeshBaseBuild buildBaseMesh;
 			CMaxMeshBaseBuild maxBaseBuild;
-			buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, view);
+
+			// Get the node matrix
+			Matrix3 nodeMatrixMax;
+			CMatrix nodeMatrix;
+			getLocalMatrix (nodeMatrixMax, node, time);
+			convertMatrix (nodeMatrix, nodeMatrixMax);
+
+			buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, view, nodeMatrix);
 
 			// Build a mesh
 			CMesh::CMeshBuild buildMesh;

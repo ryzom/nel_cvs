@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.26 2001/11/14 17:07:12 besson Exp $
+ * $Id: calc_lm.cpp,v 1.27 2001/12/11 10:19:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2085,7 +2085,7 @@ void sans_majuscule_au_debut_LinkToObjectAround (CMesh::CMeshBuild *pMB, CMeshBa
 // this is very usefull for viewer inside MAX
 bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild, INode& ZeNode, 
 							Interface& ip, TimeValue tvTime, bool absolutePath,
-							CExportNelOptions &structExport )
+							CExportNelOptions &structExport, uint firstMaterial )
 {
 	uint32 i, j;
 
@@ -2132,9 +2132,18 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	getLightBuilds( AllLights, tvTime, ip );
 	// Get all lights L that have influence over the mesh selected
 	supprLightNoInteractOne( AllLights, pZeMeshBuild, pZeMeshBaseBuild, ZeNode );
-	// Get all meshes that are influenced by the lights L			
+
+	// Get all the lod child nodes and the node for which this node is a lod
+	std::set<INode*>	lodListToExclude;
+	addChildLodNode (lodListToExclude, ip);
+	addParentLodNode (ZeNode, lodListToExclude, ip);
+
+	// Remove from exclude the node
+	lodListToExclude.erase (&ZeNode);
+
+	// Get all meshes that are influenced by the lights L
 	//buildWorldRT( WorldRT, AllLights, ip, true );
-	WorldRT.build (ip, AllLights, -vGlobalPos, gOptions.bExcludeNonSelected);
+	WorldRT.build (ip, AllLights, -vGlobalPos, gOptions.bExcludeNonSelected, lodListToExclude);
 
 	//for( nNode=0; nNode < nNbMesh; ++nNode )
 	{
@@ -2388,14 +2397,27 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 				pLightMap->setFileName( sSaveName );
 			LightMap.copyColToBitmap32( pLightMap, j );
 			COFile f( sSaveName );
-			pLightMap->writeTGA( f, 32 );	
+			try
+			{
+				pLightMap->writeTGA( f, 32 );
+			}
+			catch(Exception &e)
+			{
+				if (gOptions.FeedBack != NULL)
+				{
+					char message[512];
+					sprintf (message, "Can't write the file %s : %s", sSaveName, e.what());
+					//MessageBox(NULL, message, "NeL Export", MB_ICONERROR|MB_OK);
+					mprintf (message);
+				}
+			}
 			pLightMap->setUploadFormat (ITexture::RGB565);
 			pLightMap->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
 			pLightMap->setAllowDegradation (false);
 			if (gOptions.bShowLumel)
 				pLightMap->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
 
-			for( i = 0; i < pMBB->Materials.size(); ++i )
+			for( i = firstMaterial; i < pMBB->Materials.size(); ++i )
 			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
 				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
@@ -2412,7 +2434,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	CMeshBase::CMeshBaseBuild *pMBB = pZeMeshBaseBuild;
 	pMB->VertexFlags |= CVertexBuffer::TexCoord1Flag;
 	// Build the mesh with the build interface
-	for( i = 0; i < pMBB->Materials.size(); ++i )
+	for( i = firstMaterial; i < pMBB->Materials.size(); ++i )
 	if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 	{
 		pMBB->Materials[i].setLighting( false );

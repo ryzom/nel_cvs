@@ -109,7 +109,7 @@ plugin material NelMaterial
 		bUnlighted type:#boolean default:false ui:cbUnlighted
 		bStainedGlassWindow type:#boolean default:false ui:cbStainedGlassWindow
 
-		bAlphaTest 		type:#boolean default:true ui:cbAlphaTest
+		bAlphaTest 		type:#boolean default:false ui:cbAlphaTest
 		bForceZWrite 	type:#boolean default:false ui:cbForceZWrite
 		bForceNoZWrite 	type:#boolean default:false ui:cbForceNoZWrite
 		bWater         	type:#boolean default:false

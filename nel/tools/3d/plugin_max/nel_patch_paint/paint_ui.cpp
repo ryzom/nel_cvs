@@ -366,7 +366,7 @@ void setBackgroundColor ()
 void LoadKeyCfg ()
 {
 	// Path of the dll
-	HMODULE hModule = GetModuleHandle("neleditpatch.dlm");
+	HMODULE hModule = GetModuleHandle("nelpaintpatch.dlm");
 	if (hModule)
 	{
 		char sModulePath[256];
@@ -415,7 +415,7 @@ void LoadKeyCfg ()
 void LoadLightCfg ()
 {
 	// Path of the dll
-	HMODULE hModule = GetModuleHandle("neleditpatch.dlm");
+	HMODULE hModule = GetModuleHandle("nelpaintpatch.dlm");
 	if (hModule)
 	{
 		char sModulePath[256];
@@ -436,49 +436,45 @@ void LoadLightCfg ()
 			// Load and parse "test.txt" file
 			cf.load (cgfPath);
 			
-			// For each keys
-			for (uint key=0; key<KeyCounter; key++)
+			// go
+			try
 			{
-				// go
-				try
+				// Get the light direction variable
+				CConfigFile::CVar &light_direction= cf.getVar ("LightDirection");
+				if (light_direction.size () == 3)
 				{
-					// Get the light direction variable
-					CConfigFile::CVar &light_direction= cf.getVar ("LightDirection");
-					if (light_direction.size () == 3)
-					{
-						// Copy the light direction
-						LightDirection.x = light_direction.asFloat (0);
-						LightDirection.y = light_direction.asFloat (1);
-						LightDirection.z = light_direction.asFloat (2);
-					}
-
-					// Get the light diffuse part
-					CConfigFile::CVar &light_diffuse= cf.getVar ("LightDiffuse");
-					if (light_diffuse.size () == 3)
-					{
-						LightDiffuse.R = light_diffuse.asInt (0);
-						LightDiffuse.G = light_diffuse.asInt (1);
-						LightDiffuse.B = light_diffuse.asInt (2);
-					}
-
-					// Get the light ambiant part
-					CConfigFile::CVar &light_ambiant= cf.getVar ("LightAmbiant");
-					if (light_ambiant.size () == 3)
-					{
-						LightAmbiant.R = light_ambiant.asInt (0);
-						LightAmbiant.G = light_ambiant.asInt (1);
-						LightAmbiant.B = light_ambiant.asInt (2);
-					}
-
-					// Get the light mulitply part
-					CConfigFile::CVar &light_multiply= cf.getVar ("LightMultiply");
-					LightMultiply = light_multiply.asFloat ();
+					// Copy the light direction
+					LightDirection.x = light_direction.asFloat (0);
+					LightDirection.y = light_direction.asFloat (1);
+					LightDirection.z = light_direction.asFloat (2);
 				}
-				catch (EConfigFile &e)
+
+				// Get the light diffuse part
+				CConfigFile::CVar &light_diffuse= cf.getVar ("LightDiffuse");
+				if (light_diffuse.size () == 3)
 				{
-					// Something goes wrong... catch that
-					const char* what=e.what();
+					LightDiffuse.R = light_diffuse.asInt (0);
+					LightDiffuse.G = light_diffuse.asInt (1);
+					LightDiffuse.B = light_diffuse.asInt (2);
 				}
+
+				// Get the light ambiant part
+				CConfigFile::CVar &light_ambiant= cf.getVar ("LightAmbiant");
+				if (light_ambiant.size () == 3)
+				{
+					LightAmbiant.R = light_ambiant.asInt (0);
+					LightAmbiant.G = light_ambiant.asInt (1);
+					LightAmbiant.B = light_ambiant.asInt (2);
+				}
+
+				// Get the light mulitply part
+				CConfigFile::CVar &light_multiply= cf.getVar ("LightMultiply");
+				LightMultiply = light_multiply.asFloat ();
+			}
+			catch (EConfigFile &e)
+			{
+				// Something goes wrong... catch that
+				const char* what=e.what();
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * <File description>
  *
- * $Id: light_trav.cpp,v 1.7 2002/02/28 12:59:49 besson Exp $
+ * $Id: light_trav.cpp,v 1.8 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
 #include "3d/root_model.h"
+#include "nel/misc/hierarchical_timer.h"
+
 using namespace std;
 using namespace NLMISC;
 
@@ -77,6 +79,9 @@ void		CLightTrav::addLightedObs(IBaseLightObs *o)
 // ***************************************************************************
 void		CLightTrav::traverse()
 {
+	H_AUTO( NL3D_TravLight );
+
+
 	// If lighting System disabled, skip
 	if(!LightingSystemEnabled)
 		return;

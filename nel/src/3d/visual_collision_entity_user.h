@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.7 2002/05/23 14:40:18 berenguier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.8 2002/06/10 09:30:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,50 +59,23 @@ public:
 	}
 
 
-	virtual bool	snapToGround(CVector &pos)
-	{
-		return _Entity->snapToGround(pos);
-	}
-	virtual bool	snapToGround(CVector &pos, CVector &normal)
-	{
-		return _Entity->snapToGround(pos, normal);
-	}
+	virtual bool	snapToGround(CVector &pos);
+	virtual bool	snapToGround(CVector &pos, CVector &normal);
 
 
 
-	virtual void	setGroundMode(bool groundMode)
-	{
-		_Entity->setGroundMode(groundMode);
-	}
-	virtual void	setCeilMode(bool ceilMode)
-	{
-		_Entity->setCeilMode(ceilMode);
-	}
-	virtual bool	getGroundMode() const
-	{
-		return _Entity->getGroundMode();
-	}
-	virtual bool	getCeilMode() const
-	{
-		return _Entity->getCeilMode();
-	}
+	virtual void	setGroundMode(bool groundMode);
+	virtual void	setCeilMode(bool ceilMode);
+	virtual bool	getGroundMode() const;
+	virtual bool	getCeilMode() const;
 
 
-	virtual void	setSnapToRenderedTesselation(bool snapMode)
-	{
-		_Entity->setSnapToRenderedTesselation(snapMode);
-	}
-	virtual bool	getSnapToRenderedTesselation() const
-	{
-		return _Entity->getSnapToRenderedTesselation();
-	}
+	virtual void	setSnapToRenderedTesselation(bool snapMode);
+	virtual bool	getSnapToRenderedTesselation() const;
 
 
 	virtual bool	getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, 
-		uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
-	{
-		return _Entity->getStaticLightSetup(pos, pointLightList, sunContribution, localAmbient);
-	}
+		uint8 &sunContribution, NLMISC::CRGBA &localAmbient);
 
 
 	virtual void	displayDebugGrid(UDriver &drv) const;

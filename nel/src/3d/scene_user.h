@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.27 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: scene_user.h,v 1.28 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,259 +134,53 @@ public:
 
 	/// \name Render
 	//@{
-	virtual	void			render()
-	{
-		// update waiting instances groups;
-		updateWaitingIG();
-
-		if(_CurrentCamera==NULL)
-			nlerror("render(): try to render with no camera linked (may have been deleted)");
-		_Scene.render();
-
-		// Update waiting instances
-		// Done after the _Scene.render because in this method the instance are checked for creation
-		std::map<UInstance**,CTransformShape*>::iterator it = _WaitingInstances.begin();
-		while( it != _WaitingInstances.end() )
-		{
-			if( it->second != NULL )
-			{
-				*(it->first) = dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, it->second)) );
-				std::map<UInstance**,CTransformShape*>::iterator delIt = it;
-				++it;
-				_WaitingInstances.erase(delIt);
-			}
-			else
-			{
-				++it;
-			}
-		}
-		
-
-		// Must restore the matrix context, so 2D/3D interface not disturbed.
-		_DriverUser->restoreMatrixContext();
-	}
-
-	virtual	void			animate(TGlobalAnimationTime time)
-	{
-		_Scene.animate(time);
-	}
-
+	virtual	void			render();
+	virtual	void			animate(TGlobalAnimationTime time);
 	//@}
 
 
 	/// \name Camera/Viewport.
 	//@{
-	virtual	void			setCam(UCamera *cam)
-	{
-		if(!cam)
-			nlerror("setCam(): cannot set a NULL camera");
-		CCameraUser		*newCam= dynamic_cast<CCameraUser*>(cam);
-		if( newCam->getScene() != &_Scene)
-			nlerror("setCam(): try to set a current camera not created from this scene");
-
-		_CurrentCamera= newCam;
-		_Scene.setCam(newCam->getCamera());
-	}
-	virtual	UCamera			*getCam()
-	{
-		return dynamic_cast<UCamera*>(_CurrentCamera);
-	}
-	virtual	void			setViewport(const class CViewport& viewport)
-	{
-		_Scene.setViewport(viewport);
-	}
-	virtual	CViewport		getViewport()
-	{
-		return _Scene.getViewport();
-	}
+	virtual	void			setCam(UCamera *cam);
+	virtual	UCamera			*getCam();
+	virtual	void			setViewport(const class CViewport& viewport);
+	virtual	CViewport		getViewport();
 	//@}
 
 
 	/// \name Component Mgt.
 	//@{
 
-	virtual	UCamera			*createCamera()
-	{
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		return dynamic_cast<UCamera*>( _Transforms.insert(new CCameraUser(&_Scene)) );
-	}
-	virtual	void			deleteCamera(UCamera *cam)
-	{
-		CCameraUser		*oldCam= dynamic_cast<CCameraUser*>(cam);
-		// Is this the current camera??
-		if(oldCam==_CurrentCamera)
-			_CurrentCamera=NULL;
+	virtual	UCamera			*createCamera();
+	virtual	void			deleteCamera(UCamera *cam);
 
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		_Transforms.erase(oldCam);
-	}
+	virtual	UInstance		*createInstance(const std::string &shapeName);
+	virtual	void			createInstanceAsync(const std::string &shapeName, UInstance**ppInstance);
+	virtual	void			deleteInstance(UInstance *inst);
 
-	virtual	UInstance		*createInstance(const std::string &shapeName)
-	{
-		IModel	*model= _Scene.createInstance(shapeName);
-		// If not found, return NULL.
-		if(model==NULL)
-			return NULL;
+	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset);
 
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		if (dynamic_cast<CParticleSystemModel *>(model))
-		{
-			/// particle system
-			return dynamic_cast<UInstance*>( _Transforms.insert(new CParticleSystemInstanceUser(&_Scene, model)) );
-		}
-		else
-		{
-			/// mesh
-			return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
-		}
-	}
-
-	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset)
-	{
-		_WaitingIGs.push_front(CWaitingIG(pIG, offset));
-		UInstanceGroup::createInstanceGroupAsync(instanceGroup, &(_WaitingIGs.begin()->IGToLoad));
-		// this list updat will be performed at each render, see updateWaitingIG
-	}
-
-	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG)
-	{
-		for(TWaitingIGList::iterator it = _WaitingIGs.begin(); it != _WaitingIGs.end(); ++it)
-		{
-			if (it->CallerPtr == pIG)
-			{
-				if (!it->IGToLoad)
-				{
-					UInstanceGroup::stopCreateInstanceGroupAsync(pIG);										
-				}
-				else
-				{
-					switch(it->IGToLoad->getAddToSceneState())
-					{
-						case UInstanceGroup::StateAdding:
-							it->IGToLoad->stopAddToSceneAsync();
-						break;
-						case UInstanceGroup::StateAdded:
-							it->IGToLoad->removeFromScene(*this);
-							delete it->IGToLoad;
-						break;
-						case UInstanceGroup::StateNotAdded:
-							delete it->IGToLoad;
-						break;
-					}
-				}
-				_WaitingIGs.erase(it);
-				return;
-			}
-		}		
-	}
-
+	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG);
 
 	/// should be called at each render
 	void	updateWaitingIG();
 
 
-	virtual	void createInstanceAsync(const std::string &shapeName, UInstance**ppInstance)
-	{
-		_WaitingInstances[ppInstance] = NULL;
-		_Scene.createInstanceAsync(shapeName,&_WaitingInstances[ppInstance]);
-//		IModel	*model= _Scene.createInstance(shapeName);
-		// If not found, return NULL.
-//		if(model==NULL)
-//			return NULL;
+	virtual UTransform		*createTransform();
+	virtual	void			deleteTransform(UTransform *tr);
 
-//		if( dynamic_cast<CMeshInstance*>(model)==NULL )
-//			nlerror("UScene::createInstance(): shape is not a mesh");
+	virtual	USkeleton		*createSkeleton(const std::string &shapeName);
+	virtual	void			deleteSkeleton(USkeleton *skel);
 
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-//		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
-	}
-
-	virtual UTransform *createTransform()
-	{
-		IModel	*model= _Scene.createModel(TransformId);
-		// If not found, return NULL.
-		if(model==NULL)
-			return NULL;
-
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		return dynamic_cast<UTransform*>( _Transforms.insert(new CTransformUser(&_Scene, model)) );
-	}
-
-	virtual	void			deleteInstance(UInstance *inst)
-	{
-	//	CTransformShape *pTSInstance = dynamic_cast<CTransformShape*>(inst->);
-	//	_Scene.deleteInstance(pTSInstance);
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		_Transforms.erase(dynamic_cast<CTransformUser*>(inst));
-	}
-
-
-	virtual	USkeleton		*createSkeleton(const std::string &shapeName)
-	{
-		IModel	*model= _Scene.createInstance(shapeName);
-		// If not found, return NULL.
-		if(model==NULL)
-			return NULL;
-
-		if( dynamic_cast<CSkeletonModel*>(model)==NULL )
-			nlerror("UScene::createSkeleton(): shape is not a skeletonShape");
-
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		return dynamic_cast<USkeleton*>( _Transforms.insert(new CSkeletonUser(&_Scene, model)) );
-	}
-	virtual	void			deleteSkeleton(USkeleton *skel)
-	{
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		_Transforms.erase(dynamic_cast<CTransformUser*>(skel));
-	}
-
-
-	virtual	ULandscape		*createLandscape()
-	{
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		return _Landscapes.insert(new CLandscapeUser(&_Scene));
-	}
-	virtual	void			deleteLandscape(ULandscape *land)
-	{
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		_Landscapes.erase((CLandscapeUser*) land);
-	}
+	virtual	ULandscape		*createLandscape();
+	virtual	void			deleteLandscape(ULandscape *land);
 /*
 
-	virtual	UInstanceGroup	*createInstanceGroup (const std::string &instanceGroup)
-	{
-		// Create the instance group
-		CInstanceGroupUser *user=new CInstanceGroupUser;
-
-		// Init the class
-		if (!user->load (instanceGroup))
-		{
-			// Prb, erase it
-			delete user;
-
-			// Return error code
-			return NULL;
-		}
-
-		// Insert the pointer in the pointer list
-		_InstanceGroups.insert (user);
-
-		// return the good value
-		return user;
-	}
-
-	virtual	void			deleteInstanceGroup (UInstanceGroup	*group)
-	{
-		// The component is auto added/deleted to _Scene in ctor/dtor.
-		_InstanceGroups.erase (dynamic_cast<CInstanceGroupUser*>(group));
-	}
+	virtual	UInstanceGroup	*createInstanceGroup (const std::string &instanceGroup);
+	virtual	void			deleteInstanceGroup (UInstanceGroup	*group);
 */
 
-	virtual void setToGlobalInstanceGroup(UInstanceGroup *pIG)
-	{
-		CInstanceGroupUser *pIGU = (CInstanceGroupUser*)pIG;
-		pIGU->_InstanceGroup.setClusterSystem (_Scene.getGlobalInstanceGroup());
-	}
+	virtual void setToGlobalInstanceGroup(UInstanceGroup *pIG);
 
 	virtual	UPointLight		*createPointLight();
 	virtual	void			deletePointLight(UPointLight *light);
@@ -415,14 +209,8 @@ public:
 
 	/// \name Visual Collision manager.
 	//@{
-	virtual	UVisualCollisionManager		*createVisualCollisionManager()
-	{
-		return _VisualCollisionManagers.insert(new CVisualCollisionManagerUser);
-	}
-	virtual	void						deleteVisualCollisionManager(UVisualCollisionManager *mgr)
-	{
-		_VisualCollisionManagers.erase(dynamic_cast<CVisualCollisionManagerUser*>(mgr));
-	}
+	virtual	UVisualCollisionManager		*createVisualCollisionManager();
+	virtual	void						deleteVisualCollisionManager(UVisualCollisionManager *mgr);
 	//@}
 
 

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.25 2002/04/29 08:27:15 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.26 2002/06/10 09:30:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/transform_shape.h"
 #include "3d/driver.h"
 #include "3d/skeleton_model.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 namespace NL3D 
@@ -122,6 +123,8 @@ bool	CTransformShapeClipObs::clip(IBaseClipObs *caller)
 // ***************************************************************************
 void	CTransformShapeRenderObs::traverse(IObs *caller)
 {
+	H_AUTO( NL3D_TrShape_Render );
+
 	CRenderTrav			*trav= (CRenderTrav*)Trav;
 	CTransformShape		*m= (CTransformShape*)Model;
 	IDriver				*drv= trav->getDriver();

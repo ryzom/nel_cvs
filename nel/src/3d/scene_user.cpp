@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.19 2002/05/21 14:25:05 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.20 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,20 +32,49 @@
 #include "3d/lod_character_manager.h"
 #include "3d/lod_character_shape.h"
 #include "3d/lod_character_shape_bank.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;
 
 namespace NL3D 
 {
 
+H_AUTO_DECL( NL3D_UI_Scene )
+H_AUTO_DECL( NL3D_Misc_Scene_CreateDel_Element )
+H_AUTO_DECL( NL3D_Load_AnimationSet )
+H_AUTO_DECL( NL3D_CreateOrLoad_Instance )
+H_AUTO_DECL( NL3D_CreateOrLoad_Skeleton )
+H_AUTO_DECL( NL3D_Load_CLodOrCoarseMesh )
+H_AUTO_DECL( NL3D_Load_AsyncIG )
+
+#define	NL3D_HAUTO_UI_SCENE						H_AUTO_USE( NL3D_UI_Scene )
+#define	NL3D_HAUTO_ELT_SCENE					H_AUTO_USE( NL3D_Misc_Scene_CreateDel_Element )
+#define	NL3D_HAUTO_LOAD_ANIMSET					H_AUTO_USE( NL3D_Load_AnimationSet )
+#define	NL3D_HAUTO_CREATE_INSTANCE				H_AUTO_USE( NL3D_CreateOrLoad_Instance )
+#define	NL3D_HAUTO_CREATE_SKELETON				H_AUTO_USE( NL3D_CreateOrLoad_Skeleton )
+#define	NL3D_HAUTO_LOAD_LOD						H_AUTO_USE( NL3D_Load_CLodOrCoarseMesh )
+#define	NL3D_HAUTO_ASYNC_IG						H_AUTO_USE( NL3D_Load_AsyncIG )
+
+// Render/Animate.
+H_AUTO_DECL( NL3D_Render_Scene )
+H_AUTO_DECL( NL3D_Render_Animate_Scene )
+
+#define	NL3D_HAUTO_RENDER_SCENE					H_AUTO_USE( NL3D_Render_Scene )
+#define	NL3D_HAUTO_RENDER_SCENE_ANIMATE			H_AUTO_USE( NL3D_Render_Animate_Scene )
+
+
 // ***************************************************************************
 UAnimationSet			*CSceneUser::createAnimationSet() 
 {
+	NL3D_HAUTO_ELT_SCENE;
+
 	return new CAnimationSetUser();
 }
 // ***************************************************************************
 UAnimationSet			*CSceneUser::createAnimationSet(const std::string &animationSetFile) 
 {
+	NL3D_HAUTO_LOAD_ANIMSET;
+
 	NLMISC::CIFile	f;
 	// throw exception if not found.
 	std::string	path= CPath::lookup(animationSetFile);
@@ -55,12 +84,16 @@ UAnimationSet			*CSceneUser::createAnimationSet(const std::string &animationSetF
 // ***************************************************************************
 void			CSceneUser::deleteAnimationSet(UAnimationSet	*animationSet) 
 {
+	NL3D_HAUTO_ELT_SCENE;
+
 	_AnimationSets.erase((CAnimationSetUser*)animationSet, "deleteAnimationSet(): Bad AnimationSet ptr");
 }
 
 // ***************************************************************************
 void			CSceneUser::setAutomaticAnimationSet(UAnimationSet *as)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	nlassert(as);
 	as->build();
 	CAnimationSetUser *asu = NLMISC::safe_cast<CAnimationSetUser *>(as);
@@ -70,11 +103,15 @@ void			CSceneUser::setAutomaticAnimationSet(UAnimationSet *as)
 // ***************************************************************************
 UPlayListManager			*CSceneUser::createPlayListManager() 
 {
+	NL3D_HAUTO_ELT_SCENE;
+
 	return _PlayListManagers.insert(new CPlayListManagerUser());
 }
 // ***************************************************************************
 void			CSceneUser::deletePlayListManager(UPlayListManager	*playListManager) 
 {
+	NL3D_HAUTO_ELT_SCENE;
+
 	_PlayListManagers.erase((CPlayListManagerUser*)playListManager, "deletePlayListManager(): Bad PlayListManager ptr");
 }
 
@@ -82,6 +119,8 @@ void			CSceneUser::deletePlayListManager(UPlayListManager	*playListManager)
 
 void			CSceneUser::setPolygonBalancingMode(CSceneUser::TPolygonBalancingMode polBalMode)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	nlassert( (uint)CScene::CountPolygonBalancing == (uint)CSceneUser::CountPolygonBalancing );
 	_Scene.setPolygonBalancingMode((CScene::TPolygonBalancingMode)(uint)(polBalMode));
 }
@@ -90,6 +129,8 @@ void			CSceneUser::setPolygonBalancingMode(CSceneUser::TPolygonBalancingMode pol
 
 CSceneUser::TPolygonBalancingMode	CSceneUser::getPolygonBalancingMode() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	nlassert( (uint)CScene::CountPolygonBalancing == (uint)CSceneUser::CountPolygonBalancing );
 	return (CSceneUser::TPolygonBalancingMode)(uint)_Scene.getPolygonBalancingMode();
 }
@@ -98,32 +139,44 @@ CSceneUser::TPolygonBalancingMode	CSceneUser::getPolygonBalancingMode() const
 // ***************************************************************************
 void			CSceneUser::setLoadMaxPolygon(uint nFaces)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setLoadMaxPolygon(nFaces);
 }
 // ***************************************************************************
 uint			CSceneUser::getLoadMaxPolygon()
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getLoadMaxPolygon();
 }
 // ***************************************************************************
 float			CSceneUser::getNbFaceAsked () const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getNbFaceAsked ();
 }
 
 // ***************************************************************************
 void			CSceneUser::setGroupLoadMaxPolygon(const std::string &group, uint nFaces)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setGroupLoadMaxPolygon(group, nFaces);
 }
 // ***************************************************************************
 uint			CSceneUser::getGroupLoadMaxPolygon(const std::string &group)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getGroupLoadMaxPolygon(group);
 }
 // ***************************************************************************
 float			CSceneUser::getGroupNbFaceAsked (const std::string &group) const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getGroupNbFaceAsked (group);
 }
 
@@ -132,6 +185,8 @@ float			CSceneUser::getGroupNbFaceAsked (const std::string &group) const
 
 void CSceneUser::setStaticCoarseMeshManagerTexture (const char *sPath)
 {
+	NL3D_HAUTO_LOAD_LOD;
+
 	// Get the manager
 	CCoarseMeshManager *manager=_Scene.getStaticCoarseMeshManager ();
 
@@ -147,6 +202,8 @@ void CSceneUser::setStaticCoarseMeshManagerTexture (const char *sPath)
 
 void CSceneUser::setDynamicCoarseMeshManagerTexture (const char *sPath)
 {
+	NL3D_HAUTO_LOAD_LOD;
+
 	// Get the manager
 	CCoarseMeshManager *manager=_Scene.getDynamicCoarseMeshManager ();
 
@@ -161,40 +218,56 @@ void CSceneUser::setDynamicCoarseMeshManagerTexture (const char *sPath)
 // ***************************************************************************
 void				CSceneUser::setCoarseMeshLightingUpdate(uint8 period)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setCoarseMeshLightingUpdate(period);
 }
 
 // ***************************************************************************
 uint8				CSceneUser::getCoarseMeshLightingUpdate() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getCoarseMeshLightingUpdate();
 }
 
 // ***************************************************************************
 void				CSceneUser::enableLightingSystem(bool enable)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.enableLightingSystem(enable);
 }
 
 // ***************************************************************************
 void				CSceneUser::setAmbientGlobal(NLMISC::CRGBA ambient)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setAmbientGlobal(ambient);
 }
 void				CSceneUser::setSunAmbient(NLMISC::CRGBA ambient)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setSunAmbient(ambient);
 }
 void				CSceneUser::setSunDiffuse(NLMISC::CRGBA diffuse)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setSunDiffuse(diffuse);
 }
 void				CSceneUser::setSunSpecular(NLMISC::CRGBA specular)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setSunSpecular(specular);
 }
 void				CSceneUser::setSunDirection(const NLMISC::CVector &direction)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setSunDirection(direction);
 }
 
@@ -202,22 +275,32 @@ void				CSceneUser::setSunDirection(const NLMISC::CVector &direction)
 // ***************************************************************************
 NLMISC::CRGBA		CSceneUser::getAmbientGlobal() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getAmbientGlobal();
 }
 NLMISC::CRGBA		CSceneUser::getSunAmbient() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getSunAmbient();
 }
 NLMISC::CRGBA		CSceneUser::getSunDiffuse() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getSunDiffuse();
 }
 NLMISC::CRGBA		CSceneUser::getSunSpecular() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getSunSpecular();
 }
 NLMISC::CVector		CSceneUser::getSunDirection() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getSunDirection();
 }
 
@@ -225,19 +308,27 @@ NLMISC::CVector		CSceneUser::getSunDirection() const
 // ***************************************************************************
 void				CSceneUser::setMaxLightContribution(uint nlights)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setMaxLightContribution(nlights);
 }
 uint				CSceneUser::getMaxLightContribution() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getMaxLightContribution();
 }
 
 void				CSceneUser::setLightTransitionThreshold(float lightTransitionThreshold)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setLightTransitionThreshold(lightTransitionThreshold);
 }
 float				CSceneUser::getLightTransitionThreshold() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getLightTransitionThreshold();
 }
 
@@ -245,6 +336,8 @@ float				CSceneUser::getLightTransitionThreshold() const
 // ***************************************************************************
 UPointLight		*CSceneUser::createPointLight()
 {
+	NL3D_HAUTO_ELT_SCENE;
+
 	IModel	*model= _Scene.createModel(PointLightModelId);
 	// If not found, return NULL.
 	if(model==NULL)
@@ -256,6 +349,8 @@ UPointLight		*CSceneUser::createPointLight()
 // ***************************************************************************
 void			CSceneUser::deletePointLight(UPointLight *light)
 {
+	NL3D_HAUTO_ELT_SCENE;
+
 	// The component is auto added/deleted to _Scene in ctor/dtor.
 	_Transforms.erase(dynamic_cast<CTransformUser*>(light));
 }
@@ -264,11 +359,15 @@ void			CSceneUser::deletePointLight(UPointLight *light)
 // ***************************************************************************
 void			CSceneUser::setGlobalWindPower(float gwp)
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.setGlobalWindPower(gwp);
 }
 // ***************************************************************************
 float			CSceneUser::getGlobalWindPower() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getGlobalWindPower();
 }
 // ***************************************************************************
@@ -279,6 +378,8 @@ void			CSceneUser::setGlobalWindDirection(const CVector &gwd)
 // ***************************************************************************
 const CVector	&CSceneUser::getGlobalWindDirection() const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getGlobalWindDirection();
 }
 
@@ -333,12 +434,16 @@ void CSceneUser::updateWaitingIG()
 // ***************************************************************************
 void				CSceneUser::resetCLodManager()
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	_Scene.getLodCharacterManager()->reset();
 }
 
 // ***************************************************************************
 uint32				CSceneUser::loadCLodShapeBank(const std::string &fileName)
 {
+	NL3D_HAUTO_LOAD_LOD;
+
 	// Open the file
 	CIFile	file(CPath::lookup(fileName));
 
@@ -361,6 +466,8 @@ uint32				CSceneUser::loadCLodShapeBank(const std::string &fileName)
 // ***************************************************************************
 void				CSceneUser::deleteCLodShapeBank(uint32 bankId)
 {
+	NL3D_HAUTO_LOAD_LOD;
+
 	// delete the bank
 	_Scene.getLodCharacterManager()->deleteShapeBank(bankId);
 
@@ -371,17 +478,337 @@ void				CSceneUser::deleteCLodShapeBank(uint32 bankId)
 // ***************************************************************************
 sint32				CSceneUser::getCLodShapeIdByName(const std::string &name) const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	return _Scene.getLodCharacterManager()->getShapeIdByName(name);
 }
 
 // ***************************************************************************
 sint32				CSceneUser::getCLodAnimIdByName(uint32 shapeId, const std::string &name) const
 {
+	NL3D_HAUTO_UI_SCENE;
+
 	const CLodCharacterShape	*shape= _Scene.getLodCharacterManager()->getShape(shapeId);
 	if(shape)
 		return shape->getAnimIdByName(name);
 	else
 		return -1;
+}
+
+
+// ***************************************************************************
+void			CSceneUser::render()
+{
+	// update waiting instances groups;
+	{
+		NL3D_HAUTO_ASYNC_IG
+
+		updateWaitingIG();
+	}
+
+	// render the scene.
+	{
+		NL3D_HAUTO_RENDER_SCENE
+
+		if(_CurrentCamera==NULL)
+			nlerror("render(): try to render with no camera linked (may have been deleted)");
+		_Scene.render();
+	}
+
+	// Update waiting instances
+	{
+		NL3D_HAUTO_ASYNC_IG
+
+		// Done after the _Scene.render because in this method the instance are checked for creation
+		std::map<UInstance**,CTransformShape*>::iterator it = _WaitingInstances.begin();
+		while( it != _WaitingInstances.end() )
+		{
+			if( it->second != NULL )
+			{
+				*(it->first) = dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, it->second)) );
+				std::map<UInstance**,CTransformShape*>::iterator delIt = it;
+				++it;
+				_WaitingInstances.erase(delIt);
+			}
+			else
+			{
+				++it;
+			}
+		}
+	}
+	
+
+	// Must restore the matrix context, so 2D/3D interface not disturbed.
+	_DriverUser->restoreMatrixContext();
+}
+
+void			CSceneUser::animate(TGlobalAnimationTime time)
+{
+	NL3D_HAUTO_RENDER_SCENE_ANIMATE;
+
+	_Scene.animate(time);
+}
+
+
+// ***************************************************************************
+void			CSceneUser::setCam(UCamera *cam)
+{
+	NL3D_HAUTO_UI_SCENE;
+
+	if(!cam)
+		nlerror("setCam(): cannot set a NULL camera");
+	CCameraUser		*newCam= dynamic_cast<CCameraUser*>(cam);
+	if( newCam->getScene() != &_Scene)
+		nlerror("setCam(): try to set a current camera not created from this scene");
+
+	_CurrentCamera= newCam;
+	_Scene.setCam(newCam->getCamera());
+}
+UCamera			*CSceneUser::getCam()
+{
+	NL3D_HAUTO_UI_SCENE;
+
+	return dynamic_cast<UCamera*>(_CurrentCamera);
+}
+void			CSceneUser::setViewport(const class CViewport& viewport)
+{
+	NL3D_HAUTO_UI_SCENE;
+
+	_Scene.setViewport(viewport);
+}
+CViewport		CSceneUser::getViewport()
+{
+	NL3D_HAUTO_UI_SCENE;
+
+	return _Scene.getViewport();
+}
+
+// ***************************************************************************
+UCamera			*CSceneUser::createCamera()
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	return dynamic_cast<UCamera*>( _Transforms.insert(new CCameraUser(&_Scene)) );
+}
+void			CSceneUser::deleteCamera(UCamera *cam)
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	CCameraUser		*oldCam= dynamic_cast<CCameraUser*>(cam);
+	// Is this the current camera??
+	if(oldCam==_CurrentCamera)
+		_CurrentCamera=NULL;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	_Transforms.erase(oldCam);
+}
+
+UInstance		*CSceneUser::createInstance(const std::string &shapeName)
+{
+	NL3D_HAUTO_CREATE_INSTANCE;
+
+	IModel	*model= _Scene.createInstance(shapeName);
+	// If not found, return NULL.
+	if(model==NULL)
+		return NULL;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	if (dynamic_cast<CParticleSystemModel *>(model))
+	{
+		/// particle system
+		return dynamic_cast<UInstance*>( _Transforms.insert(new CParticleSystemInstanceUser(&_Scene, model)) );
+	}
+	else
+	{
+		/// mesh
+		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
+	}
+}
+
+
+void CSceneUser::createInstanceAsync(const std::string &shapeName, UInstance**ppInstance)
+{
+	NL3D_HAUTO_CREATE_INSTANCE;
+
+	_WaitingInstances[ppInstance] = NULL;
+	_Scene.createInstanceAsync(shapeName,&_WaitingInstances[ppInstance]);
+//		IModel	*model= _Scene.createInstance(shapeName);
+	// If not found, return NULL.
+//		if(model==NULL)
+//			return NULL;
+
+//		if( dynamic_cast<CMeshInstance*>(model)==NULL )
+//			nlerror("UScene::createInstance(): shape is not a mesh");
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+//		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
+}
+
+void			CSceneUser::deleteInstance(UInstance *inst)
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	_Transforms.erase(dynamic_cast<CTransformUser*>(inst));
+}
+
+
+void CSceneUser::createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset)
+{
+	NL3D_HAUTO_ASYNC_IG;
+
+	_WaitingIGs.push_front(CWaitingIG(pIG, offset));
+	UInstanceGroup::createInstanceGroupAsync(instanceGroup, &(_WaitingIGs.begin()->IGToLoad));
+	// this list updat will be performed at each render, see updateWaitingIG
+}
+
+void CSceneUser::stopCreatingAndAddingIG(UInstanceGroup **pIG)
+{
+	NL3D_HAUTO_ASYNC_IG;
+
+	for(TWaitingIGList::iterator it = _WaitingIGs.begin(); it != _WaitingIGs.end(); ++it)
+	{
+		if (it->CallerPtr == pIG)
+		{
+			if (!it->IGToLoad)
+			{
+				UInstanceGroup::stopCreateInstanceGroupAsync(pIG);										
+			}
+			else
+			{
+				switch(it->IGToLoad->getAddToSceneState())
+				{
+					case UInstanceGroup::StateAdding:
+						it->IGToLoad->stopAddToSceneAsync();
+					break;
+					case UInstanceGroup::StateAdded:
+						it->IGToLoad->removeFromScene(*this);
+						delete it->IGToLoad;
+					break;
+					case UInstanceGroup::StateNotAdded:
+						delete it->IGToLoad;
+					break;
+				}
+			}
+			_WaitingIGs.erase(it);
+			return;
+		}
+	}		
+}
+
+
+UTransform *CSceneUser::createTransform()
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	IModel	*model= _Scene.createModel(TransformId);
+	// If not found, return NULL.
+	if(model==NULL)
+		return NULL;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	return dynamic_cast<UTransform*>( _Transforms.insert(new CTransformUser(&_Scene, model)) );
+}
+
+void			CSceneUser::deleteTransform(UTransform *tr)
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	_Transforms.erase(dynamic_cast<CTransformUser*>(tr));
+}
+
+
+USkeleton		*CSceneUser::createSkeleton(const std::string &shapeName)
+{
+	NL3D_HAUTO_CREATE_SKELETON;
+
+	IModel	*model= _Scene.createInstance(shapeName);
+	// If not found, return NULL.
+	if(model==NULL)
+		return NULL;
+
+	if( dynamic_cast<CSkeletonModel*>(model)==NULL )
+		nlerror("UScene::createSkeleton(): shape is not a skeletonShape");
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	return dynamic_cast<USkeleton*>( _Transforms.insert(new CSkeletonUser(&_Scene, model)) );
+}
+void			CSceneUser::deleteSkeleton(USkeleton *skel)
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	_Transforms.erase(dynamic_cast<CTransformUser*>(skel));
+}
+
+
+ULandscape		*CSceneUser::createLandscape()
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	return _Landscapes.insert(new CLandscapeUser(&_Scene));
+}
+void			CSceneUser::deleteLandscape(ULandscape *land)
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	_Landscapes.erase((CLandscapeUser*) land);
+}
+/*
+
+UInstanceGroup	*CSceneUser::createInstanceGroup (const std::string &instanceGroup)
+{
+	// Create the instance group
+	CInstanceGroupUser *user=new CInstanceGroupUser;
+
+	// Init the class
+	if (!user->load (instanceGroup))
+	{
+		// Prb, erase it
+		delete user;
+
+		// Return error code
+		return NULL;
+	}
+
+	// Insert the pointer in the pointer list
+	_InstanceGroups.insert (user);
+
+	// return the good value
+	return user;
+}
+
+void			CSceneUser::deleteInstanceGroup (UInstanceGroup	*group)
+{
+	// The component is auto added/deleted to _Scene in ctor/dtor.
+	_InstanceGroups.erase (dynamic_cast<CInstanceGroupUser*>(group));
+}
+*/
+
+void CSceneUser::setToGlobalInstanceGroup(UInstanceGroup *pIG)
+{
+	NL3D_HAUTO_UI_SCENE;
+
+	CInstanceGroupUser *pIGU = (CInstanceGroupUser*)pIG;
+	pIGU->_InstanceGroup.setClusterSystem (_Scene.getGlobalInstanceGroup());
+}
+
+// ***************************************************************************
+UVisualCollisionManager		*CSceneUser::createVisualCollisionManager()
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	return _VisualCollisionManagers.insert(new CVisualCollisionManagerUser);
+}
+void						CSceneUser::deleteVisualCollisionManager(UVisualCollisionManager *mgr)
+{
+	NL3D_HAUTO_ELT_SCENE;
+
+	_VisualCollisionManagers.erase(dynamic_cast<CVisualCollisionManagerUser*>(mgr));
 }
 
 

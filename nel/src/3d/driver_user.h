@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.10 2002/03/28 10:48:10 vizerie Exp $
+ * $Id: driver_user.h,v 1.11 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,15 +133,9 @@ public:
 	virtual	void			release() ;
 
 	/// Before rendering via a driver in a thread, must activate() (per thread).
-	virtual bool			activate(void)
-	{
-		return _Driver->activate();
-	}
+	virtual bool			activate(void);
 	/// Return true if driver is still active. Return false else. If he user close the window, must return false.
-	virtual bool			isActive()
-	{
-		return _Driver->isActive();
-	}
+	virtual bool			isActive();
 
 	// @}
 
@@ -149,26 +143,13 @@ public:
 	/// \name Buffers.
 	// @{
 	/// This clear only the RGBA back buffer
-	virtual	void			clearRGBABuffer(CRGBA col= CRGBA(255,255,255,255))
-	{
-		_Driver->clear2D(col);
-	}
+	virtual	void			clearRGBABuffer(CRGBA col= CRGBA(255,255,255,255));
 	/// This clear only the RGBA back buffer
-	virtual	void			clearZBuffer()
-	{
-		_Driver->clearZBuffer();
-	}
+	virtual	void			clearZBuffer();
 	/// This clear the buffers (ALL the buffer :) )
-	virtual	void			clearBuffers(CRGBA col= CRGBA(255,255,255,255))
-	{
-		_Driver->clear2D(col);
-		_Driver->clearZBuffer();
-	}
+	virtual	void			clearBuffers(CRGBA col= CRGBA(255,255,255,255));
 	/// This swap the back and front buffer (ALL the buffer :) ).
-	virtual	void			swapBuffers()
-	{
-		_Driver->swapBuffers();
-	}
+	virtual	void			swapBuffers();
 
 	// @}
 
@@ -176,38 +157,17 @@ public:
 
 	/// \name Fog support.
 	// @{
-	virtual	bool			fogEnabled()
-	{
-		return _Driver->fogEnabled();
-	}
-	virtual	void			enableFog(bool enable)
-	{
-		_Driver->enableFog(enable);
-	}
+	virtual	bool			fogEnabled();
+	virtual	void			enableFog(bool enable);
 	/// setup fog parameters. fog must enabled to see result. start and end are in [0,1] range.
-	virtual	void			setupFog(float start, float end, CRGBA color)
-	{
-		_Driver->setupFog(start, end, color);
-	}
+	virtual	void			setupFog(float start, float end, CRGBA color);
 	// @}
 
 	/// \name Light support.
 	// @{
-	virtual void			setLight (uint8 num, const ULight& light)
-	{
-		CLightUser	*plight= (CLightUser*)&light;
-		_Driver->setLight (num, plight->_Light);
-	}
-
-	virtual void			enableLight (uint8 num, bool enable=true)
-	{
-		_Driver->enableLight (num, enable);
-	}
-
-	virtual void			setAmbientColor (CRGBA color)
-	{
-		_Driver->setAmbientColor (color);
-	}
+	virtual void			setLight (uint8 num, const ULight& light);
+	virtual void			enableLight (uint8 num, bool enable=true);
+	virtual void			setAmbientColor (CRGBA color);
 	// @}
 
 
@@ -356,126 +316,32 @@ public:
 
 	/// \name Driver information/Queries
 	// @{
-	/**
-	  * Get the driver version. Not the same than interface version. Incremented at each implementation change.
-	  *
-	  * \see InterfaceVersion
-	  */
-	virtual uint32			getImplementationVersion () const
-	{
-		return _Driver->getImplementationVersion ();
-	}
-
-	/**
-	  * Get driver informations.
-	  * get the nel name of the driver (ex: "Opengl 1.2 NeL Driver")
-	  */
-	virtual const char*		getDriverInformation ()
-	{
-		return _Driver->getDriverInformation();
-	}
-
-	/**
-	  * Get videocard informations.
-	  * get the official name of the driver
-	  */
-	virtual const char*		getVideocardInformation ()
-	{
-		return _Driver->getVideocardInformation ();
-	}
-
-	/// Get the number of texture stage avaliable, for multitexturing (Normal material shaders). Valid only after setDisplay().
-	virtual	sint			getNbTextureStages()
-	{
-		return _Driver->getNbTextureStages();
-	}
-
-	/// Get the width and the height of the window
-	virtual void			getWindowSize (uint32 &width, uint32 &height)
-	{
-		_Driver->getWindowSize (width, height);
-	}
-
-
-	/** get the RGBA back buffer
-	  *
-	  * \param bitmap the buffer will be written in this bitmap
-	  */
-	virtual void			getBuffer (CBitmap &bitmap) 
-	{
-		_Driver->getBuffer (bitmap) ;
-	}
-
-	/** get the ZBuffer (back buffer).
-	  *
-	  * \param zbuffer the returned array of Z. size of getWindowSize() .
-	  */
-	virtual void			getZBuffer (std::vector<float>  &zbuffer) 
-	{
-		_Driver->getZBuffer (zbuffer) ;
-	}
-
-	/** get a part of the RGBA back buffer
-	  * NB: 0,0 is the bottom left corner of the screen.
-	  *
-	  * \param bitmap the buffer will be written in this bitmap
-	  * \param rect the in/out (wanted/clipped) part of Color buffer to retrieve.
-	  */
-	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) 
-	{
-		_Driver->getBufferPart (bitmap, rect) ;
-	}
-
-	/** get a part of the ZBuffer (back buffer).
-	  * NB: 0,0 is the bottom left corner of the screen.
-	  *
-	  * \param zbuffer the returned array of Z. size of rec.Width*rec.Height.
-	  * \param rect the in/out (wanted/clipped) part of ZBuffer to retrieve.
-	  */
-	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) 
-	{
-		_Driver->getZBufferPart (zbuffer, rect) ;
-	}
-
+	virtual uint32			getImplementationVersion () const;
+	virtual const char*		getDriverInformation ();
+	virtual const char*		getVideocardInformation ();
+	virtual	sint			getNbTextureStages();
+	virtual void			getWindowSize (uint32 &width, uint32 &height);
+	virtual void			getBuffer (CBitmap &bitmap) ;
+	virtual void			getZBuffer (std::vector<float>  &zbuffer) ;
+	virtual void			getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) ;
+	virtual void			getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) ;
 	// @}
 
 
 	/// \name Mouse / Keyboards / Game devices
 	// @{
-		virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable)
-		{
-			return _Driver->enableLowLevelMouse(enable);
-		}
-		//
-		virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable) 
-		{
-			return _Driver->enableLowLevelKeyboard(enable);
-		}
-
-				
-		virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager()
-		{
-			return _Driver->getLowLevelInputDeviceManager();
-		}
-
-		/// show cursor if b is true, or hide it if b is false
-		virtual void			showCursor (bool b)
-		{
-			_Driver->showCursor(b);
-		}
-
-		/// x and y must be between 0.0 and 1.0
-		virtual void			setMousePos (float x, float y)
-		{
-			_Driver->setMousePos (x, y);
-		}
-
-		/// If true, capture the mouse to force it to stay under the window.
-		virtual void			setCapture (bool b)
-		{
-			_Driver->setCapture (b);
-		}
+	virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable);
+	//
+	virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable) ;
+	virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager();
+	/// show cursor if b is true, or hide it if b is false
+	virtual void			showCursor (bool b);
+	/// x and y must be between 0.0 and 1.0
+	virtual void			setMousePos (float x, float y);
+	/// If true, capture the mouse to force it to stay under the window.
+	virtual void			setCapture (bool b);
 	// @}
+
 
 	/// \name Misc.
 	// @{
@@ -498,79 +364,12 @@ public:
 	  * \param polygon mode choose in this driver.
 	  * \see getPolygonMode(), TPolygonMode
 	  */
-	virtual void			setPolygonMode (TPolygonMode mode)
-	{
-		IDriver::TPolygonMode	dmode;
-		switch(mode)
-		{
-			case Filled:	dmode= IDriver::Filled; break;
-			case Line:		dmode= IDriver::Line; break;
-			case Point:		dmode= IDriver::Point; break;
-			default: nlstop;
-		};
-		_Driver->setPolygonMode (dmode);
-	}
-
-
-	/** Create a 3d mouse listener
-	  * 
-	  * \return a 3d mouse listener.
-	  */
-	virtual U3dMouseListener*	create3dMouseListener ()
-	{
-		// Alloc the listener
-		CEvent3dMouseListener *listener=new CEvent3dMouseListener();
-
-		// register it
-		listener->addToServer (EventServer);
-
-		return listener;
-	}
-
-	/** Delete a 3d mouse listener
-	  * 
-	  * \param listener a 3d mouse listener.
-	  */
-	virtual void delete3dMouseListener (U3dMouseListener *listener)
-	{
-		// Unregister
-		((CEvent3dMouseListener*)listener)->removeFromServer (EventServer);
-
-		delete (CEvent3dMouseListener*)listener;
-	}
-
-	/** Get the global polygon mode.
-	  *
-	  * \param polygon mode choose in this driver.
-	  * \see setPolygonMode(), TPolygonMode
-	  */
-	virtual TPolygonMode 	getPolygonMode () 
-	{
-		IDriver::TPolygonMode	dmode;
-		UDriver::TPolygonMode	umode;
-		dmode= _Driver->getPolygonMode();
-		switch(dmode)
-		{
-			case IDriver::Filled:	umode= UDriver::Filled; break;
-			case IDriver::Line:		umode= UDriver::Line; break;
-			case IDriver::Point:	umode= UDriver::Point; break;
-			default: nlstop;
-		};
-
-		return umode;
-	}
-
-	virtual void			forceDXTCCompression(bool dxtcComp)
-	{
-		_Driver->forceDXTCCompression(dxtcComp);
-	}
-
-	virtual void			forceTextureResize(uint divisor)
-	{
-		_Driver->forceTextureResize(divisor);
-	}
-
-
+	virtual void			setPolygonMode (TPolygonMode mode);
+	virtual U3dMouseListener*	create3dMouseListener ();
+	virtual void delete3dMouseListener (U3dMouseListener *listener);
+	virtual TPolygonMode 	getPolygonMode () ;
+	virtual void			forceDXTCCompression(bool dxtcComp);
+	virtual void			forceTextureResize(uint divisor);
 	// @}
 
 	/// \name Shape Bank

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.3 2002/05/15 16:55:55 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.4 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/lod_character_manager.h"
 #include "3d/lod_character_shape.h"
 #include "3d/lod_character_shape_bank.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using	namespace std;
@@ -36,6 +37,9 @@ using	namespace NLMISC;
 
 namespace NL3D 
 {
+
+
+H_AUTO_DECL ( NL3D_CharacterLod_Render )
 
 
 // ***************************************************************************
@@ -244,6 +248,8 @@ void			CLodCharacterManager::deleteVertexBuffer()
 // ***************************************************************************
 void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &managerPos)
 {
+	H_AUTO_USE ( NL3D_CharacterLod_Render )
+
 	// we must not be beewteen beginRender() and endRender()
 	nlassert(!isRendering());
 
@@ -314,6 +320,8 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TGlobalAnimationTime time, bool wrapMode, 
 	const CMatrix &worldMatrix, const std::vector<CRGBA> &colorVertex, CRGBA globalLighting)
 {
+	H_AUTO_USE ( NL3D_CharacterLod_Render )
+
 	nlassert(_Driver);
 	// we must be beewteen beginRender() and endRender()
 	nlassert(isRendering());
@@ -456,6 +464,8 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TG
 // ***************************************************************************
 void			CLodCharacterManager::endRender()
 {
+	H_AUTO_USE ( NL3D_CharacterLod_Render )
+
 	nlassert(_Driver);
 	// we must be beewteen beginRender() and endRender()
 	nlassert(isRendering());

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.11 2002/05/07 09:27:53 berenguier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.12 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,16 @@
 #include "3d/coarse_mesh_manager.h"
 #include "3d/mesh.h"
 #include "3d/texture_file.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 namespace NL3D 
 {
+
+
+H_AUTO_DECL( NL3D_StaticLod_AddDelMesh )
+H_AUTO_DECL( NL3D_StaticLod_UpdateMesh )
+
 
 // ***************************************************************************
 
@@ -79,6 +85,8 @@ void CCoarseMeshManager::setTextureFile (const char* file)
 
 uint64 CCoarseMeshManager::addMesh (const CMeshGeom& geom)
 {
+	H_AUTO_USE( NL3D_StaticLod_AddDelMesh );
+
 	// Get vertex buffer ref
 	const CVertexBuffer &vertexBuffer=geom.getVertexBuffer();
 
@@ -114,6 +122,8 @@ uint64 CCoarseMeshManager::addMesh (const CMeshGeom& geom)
 
 void CCoarseMeshManager::removeMesh (uint64 id)
 {
+	H_AUTO_USE( NL3D_StaticLod_AddDelMesh );
+
 	// Get the render pass id
 	uint32 renderPass = getRenderPassId (id);
 
@@ -131,6 +141,8 @@ void CCoarseMeshManager::removeMesh (uint64 id)
 
 void CCoarseMeshManager::setMatrixMesh (uint64 id, const CMeshGeom& geom, const CMatrix& matrix)
 {
+	H_AUTO_USE( NL3D_StaticLod_UpdateMesh );
+
 	// Get the render pass id
 	uint32 renderPass = getRenderPassId (id);
 
@@ -148,6 +160,8 @@ void CCoarseMeshManager::setMatrixMesh (uint64 id, const CMeshGeom& geom, const 
 
 void CCoarseMeshManager::setColorMesh (uint64 id, const CMeshGeom& geom, NLMISC::CRGBA color)
 {
+	H_AUTO_USE( NL3D_StaticLod_UpdateMesh );
+
 	// Get the render pass id
 	uint32 renderPass = getRenderPassId (id);
 
@@ -165,6 +179,8 @@ void CCoarseMeshManager::setColorMesh (uint64 id, const CMeshGeom& geom, NLMISC:
 
 void CCoarseMeshManager::render (IDriver *drv)
 {
+	H_AUTO( NL3D_StaticLod_Render );
+
 	// Set Ident matrix
 	drv->setupModelMatrix (CMatrix::Identity);
 

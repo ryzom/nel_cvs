@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.5 2002/02/28 12:59:52 besson Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.6 2002/06/10 09:30:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/vegetable_sort_block.h"
 #include "3d/render_trav.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace NLMISC;
@@ -81,6 +82,8 @@ void	CVegetableBlendLayerModel::setWorldPos(const CVector &pos)
 // ***************************************************************************
 void	CVegetableBlendLayerModel::render(IDriver *driver)
 {
+	H_AUTO( NL3D_Vegetable_Render );
+
 	nlassert(VegetableManager);
 
 	if(SortBlocks.size()==0)

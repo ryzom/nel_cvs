@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.31 2002/05/28 09:25:40 besson Exp $
+ * $Id: particle_system_shape.cpp,v 1.32 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/driver.h"
 #include "nel/misc/file.h"
 #include "nel/misc/mem_stream.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 namespace NL3D {
@@ -222,6 +223,8 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 ///===========================================================================
 void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
+	H_AUTO ( NL3D_Particles_Render );
+
 	nlassert(dynamic_cast<CParticleSystemModel *>(trans));
 	nlassert(drv);
 	CParticleSystemModel *psm = (CParticleSystemModel *) trans;

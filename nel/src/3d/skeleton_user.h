@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.6 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.7 2002/06/10 09:30:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,45 +86,18 @@ public:
 
 	/// \name Skin operation.
 	// @{
-	virtual	void		bindSkin(UInstance *mi)
-	{
-		if(mi==NULL)
-			nlerror("USkeleton::bindSkin(): mi is NULL");
-		CTransform			*trans= dynamic_cast<CTransformUser*>(mi)->getTransform();
-		CMeshBaseInstance	*meshi= dynamic_cast<CMeshBaseInstance*>(trans);
-		if(meshi==NULL)
-			nlerror("USkeleton::bindSkin(): mi is not a MeshInstance or MeshMRMInstance");
-		_Skeleton->bindSkin(meshi);
-	}
+	virtual	void		bindSkin(UInstance *mi);
 	virtual	void		stickObject(UTransform *mi, uint boneId);
 	virtual	void		stickObjectEx(UTransform *mi, uint boneId, bool forceCLod);
-	virtual	void		detachSkeletonSon(UTransform *mi)
-	{
-		if(mi==NULL)
-			nlerror("USkeleton::detachSkeletonSon(): mi is NULL");
-		CTransform		*trans= (dynamic_cast<CTransformUser*>(mi))->getTransform();
-		_Skeleton->detachSkeletonSon(trans);
-	}
+	virtual	void		detachSkeletonSon(UTransform *mi);
 	// @}
 
 
 	/// \name Bone access.
 	// @{
-	virtual	uint		getNumBones() const
-	{
-		return _Bones.size();
-	}
-	virtual	UBone		&getBone(uint boneId)
-	{
-		if(boneId>=_Bones.size())
-			nlerror("getBone(): bad boneId");
-		return dynamic_cast<UBone&>(_Bones[boneId]);
-	}
-	virtual	sint		getBoneIdByName(const std::string &boneName) const
-	{
-		return _Skeleton->getBoneIdByName(boneName);
-	}
-
+	virtual	uint		getNumBones() const;
+	virtual	UBone		&getBone(uint boneId);
+	virtual	sint		getBoneIdByName(const std::string &boneName) const;
 	// @}
 
 	/// \name Lod interaction

@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.24 2002/05/22 16:30:28 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.25 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/cluster.h"
 #include "3d/scene.h"
 #include <vector>
+#include "nel/misc/hierarchical_timer.h"
 using namespace std;
 using namespace NLMISC;
 
@@ -73,6 +74,7 @@ void	CLandscapeClipObs::init()
 // ***************************************************************************
 bool	CLandscapeClipObs::clip(IBaseClipObs *caller)
 {
+	H_AUTO( NL3D_Landscape_Clip );
 
 	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
 	CClipTrav		*clipTrav= (CClipTrav*)Trav;
@@ -130,11 +132,15 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 		landModel->Landscape.setVegetableUpdateLightingTime(scene->getCurrentSystemTime());
 
 		// updateLighting
+		H_BEFORE( NL3D_Landscape_UpdateLighting );
 		landModel->Landscape.updateLighting(scene->getCurrentSystemTime());
+		H_AFTER( NL3D_Landscape_UpdateLighting );
 
 		// if SceneLighting enabled
 		if(scene->isLightingSystemEnabled())
 		{
+			H_AUTO( NL3D_Landscape_DynamicLighting );
+
 			// For vegetable, set the lighting 
 			landModel->Landscape.setupVegetableLighting(scene->getSunAmbient(), scene->getSunDiffuse(), 
 				scene->getSunDirection());
@@ -149,9 +155,14 @@ void	CLandscapeRenderObs::traverse(IObs *caller)
 	}
 
 	// First, refine.
+	H_BEFORE( NL3D_Landscape_Refine );
 	landModel->Landscape.refine(trav->CamPos);
+	H_AFTER( NL3D_Landscape_Refine );
+
 	// then render.
+	H_BEFORE( NL3D_Landscape_Render );
 	landModel->Landscape.render(trav->CamPos, trav->CamLook, landModel->CurrentPyramid, landModel->isAdditive ());
+	H_AFTER( NL3D_Landscape_Render );
 }
 
 

@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.5 2001/09/21 14:24:14 berenguier Exp $
+ * $Id: text_context_user.h,v 1.6 2002/06/10 09:30:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,62 +69,20 @@ public:
 
 	/// \name Text look.
 	// @{
-	void setColor(NLMISC::CRGBA color)
-	{
-		_TextContext.setColor(color);
-	}
-	void setFontSize(uint32 fontSize) 
-	{
-		_TextContext.setFontSize(fontSize);
-	}
-	uint32 getFontSize() const  
-	{
-		return _TextContext.getFontSize();
-	}
-	void setHotSpot(THotSpot hotSpot)  
-	{
-		_TextContext.setHotSpot((CComputedString::THotSpot)(uint32)hotSpot) ;
-	}
-	THotSpot getHotSpot() const 
-	{
-		return (THotSpot)(uint32)_TextContext.getHotSpot();
-	}
-	void setScaleX(float scaleX)  
-	{
-		_TextContext.setScaleX(scaleX);
-	}
-	void setScaleY(float scaleY)  
-	{
-		_TextContext.setScaleZ(scaleY);
-	}
-	float getScaleX() const 
-	{
-		return _TextContext.getScaleX();
-	}
-	float getScaleY() const 
-	{
-		return _TextContext.getScaleZ();
-	}
-	void setShaded(bool b) 
-	{
-		_TextContext.setShaded(b);
-	}
-	bool getShaded() const  
-	{
-		return _TextContext.getShaded();
-	}
-	void setShadeExtent(float shext) 
-	{
-		_TextContext.setShadeExtent(shext);
-	}
-	virtual	void			setKeep800x600Ratio(bool keep)
-	{
-		_TextContext.setKeep800x600Ratio(keep);
-	}
-	virtual	bool			getKeep800x600Ratio() const
-	{
-		return _TextContext.getKeep800x600Ratio();
-	}
+	void setColor(NLMISC::CRGBA color);
+	void setFontSize(uint32 fontSize) ;
+	uint32 getFontSize() const  ;
+	void setHotSpot(THotSpot hotSpot)  ;
+	THotSpot getHotSpot() const ;
+	void setScaleX(float scaleX)  ;
+	void setScaleY(float scaleY)  ;
+	float getScaleX() const ;
+	float getScaleY() const ;
+	void setShaded(bool b) ;
+	bool getShaded() const  ;
+	void setShadeExtent(float shext) ;
+	virtual	void			setKeep800x600Ratio(bool keep);
+	virtual	bool			getKeep800x600Ratio() const;
 	// @}
 
 
@@ -133,82 +91,22 @@ public:
 	 *
 	 */
 	// @{
-	uint32 textPush(const char *format, ...)  
-	{
-		char *str;
-		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+	uint32 textPush(const char *format, ...)  ;
+	uint32 textPush(const ucstring &str)  ;
+	void erase(uint32 i)  ;
+	virtual	CStringInfo		getStringInfo(uint32 i);
+	void clear()  ;
+	void printAt(float x, float y, uint32 i) ;
+	void printAt(float x, float y, ucstring ucstr) ;
+	void printfAt(float x, float y, const char * format, ...) ;
 
-		return _TextContext.textPush(ucstring(str)) ;
-	}
-	uint32 textPush(const ucstring &str)  
-	{
-		return _TextContext.textPush(str) ;
-	}
-	void erase(uint32 i)  
-	{
-		_TextContext.erase(i);
-	}
-	virtual	CStringInfo		getStringInfo(uint32 i)
-	{
-		CComputedString		*cstr= _TextContext.getComputedString(i);
-		if(!cstr)
-			return CStringInfo(0,0);
-		else
-			return	CStringInfo(cstr->StringWidth, cstr->StringHeight);
-	}
-	void clear()  
-	{
-		_TextContext.clear();
-	}
-	void printAt(float x, float y, uint32 i) 
-	{
-		_TextContext.printAt(x, y, i);
-		_DriverUser->restoreMatrixContext();
-	}
-	void printAt(float x, float y, ucstring ucstr) 
-	{
-		_TextContext.printAt(x, y, ucstr);
-		_DriverUser->restoreMatrixContext();
-	}
-	void printfAt(float x, float y, const char * format, ...) 
-	{
-		char *str;
-		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+	void render3D(const CMatrix &mat, ucstring ucstr) ;
+	void render3D(const CMatrix &mat, const char *format, ...) ;
 
-		_TextContext.printAt(x, y, ucstring(str)) ;
-		_DriverUser->restoreMatrixContext();
-	}
-
-	void render3D(const CMatrix &mat, ucstring ucstr) 
-	{
-		CComputedString computedStr;
-		_TextContext.computeString(ucstr,computedStr);
-		
-		computedStr.render3D(*_Driver,mat);
-
-		_DriverUser->restoreMatrixContext();
-	}
-	void render3D(const CMatrix &mat, const char *format, ...) 
-	{
-		char *str;
-		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
-
-		render3D(mat, ucstring(str));
-
-		_DriverUser->restoreMatrixContext();
-	}
-
-
-	float getLastXBound() const 
-	{
-		return _TextContext.getLastXBound();
-	}
+	float getLastXBound() const ;
 	// @}
 
-	void			dumpCacheTexture (const char *filename)
-	{
-		_TextContext.dumpCache (filename);
-	}
+	void			dumpCacheTexture (const char *filename);
 
 };
 

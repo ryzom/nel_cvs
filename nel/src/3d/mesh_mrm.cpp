@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.37 2002/05/21 16:42:23 lecroart Exp $
+ * $Id: mesh_mrm.cpp,v 1.38 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/misc/bsphere.h"
 #include "3d/stripifier.h"
 #include "nel/misc/system_info.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace NLMISC;
@@ -883,8 +884,6 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// the loading....) (see loadHeader()).
 	updateVertexBufferHard(drv, _VBufferFinal.getNumVertices());
 
-	// Morphing
-	// ========
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel *skeleton;
 	skeleton = mi->getSkeletonModel();
@@ -894,6 +893,21 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	bool useNormal= (_VBufferFinal.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
 	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
 
+
+	// Profiling
+	//===========
+	// Special profile: Split between Skinned or not.
+#ifdef  ALLOW_TIMING_MEASURES
+	static NLMISC::CHTimer	NL3D_MeshMRMGeom_Render_Normal_timer( "NL3D_MeshMRMGeom_RenderNormal" ); 
+	static NLMISC::CHTimer	NL3D_MeshMRMGeom_Render_Skinned_timer( "NL3D_MeshMRMGeom_RenderSkinned" ); 
+	// choose what to time according to skin mode.
+	NLMISC::CAutoTimer	NL3D_MeshMRMGeom_Render_auto( 
+		bSkinApplied? &NL3D_MeshMRMGeom_Render_Skinned_timer : &NL3D_MeshMRMGeom_Render_Normal_timer);
+#endif
+
+
+	// Morphing
+	// ========
 	if (bMorphApplied)
 	{
 		// If Skinned we must update original skin vertices and normals because skinning use it

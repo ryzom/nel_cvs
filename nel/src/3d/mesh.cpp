@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.55 2002/06/06 14:38:35 vizerie Exp $
+ * $Id: mesh.cpp,v 1.56 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/bsphere.h"
 #include "3d/stripifier.h"
 #include "3d/fast_floor.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace std;
@@ -551,6 +552,18 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 	skeleton= mi->getSkeletonModel();
 	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
 	bool	skinOk= _Skinned && mi->isSkinApply() && skeleton;
+
+	// Profiling
+	//===========
+	// Special profile: Split between Skinned or not.
+#ifdef  ALLOW_TIMING_MEASURES
+	static NLMISC::CHTimer	NL3D_MeshGeom_Render_Normal_timer( "NL3D_MeshGeom_RenderNormal" ); 
+	static NLMISC::CHTimer	NL3D_MeshGeom_Render_Skinned_timer( "NL3D_MeshGeom_RenderSkinned" ); 
+	// choose what to time according to skin mode.
+	NLMISC::CAutoTimer	NL3D_MeshGeom_Render_auto( 
+		skinOk? &NL3D_MeshGeom_Render_Skinned_timer : &NL3D_MeshGeom_Render_Normal_timer);
+#endif
+
 
 
 	// If skinning, enable driver skinning.

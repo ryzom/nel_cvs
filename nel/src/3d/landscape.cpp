@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.115 2002/05/22 16:30:28 berenguier Exp $
+ * $Id: landscape.cpp,v 1.116 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "3d/tile_vegetable_desc.h"
 #include "3d/texture_dlm.h"
 #include "3d/patchdlm_context.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 #include "3d/vertex_program.h"
@@ -671,21 +672,25 @@ void			CLandscape::refine(const CVector &refineCenter)
 
 
 	// Before unlockBuffers, test for vegetable IG creation.
-	// Because CLandscapeVegetableBlock::update() use OptFastFloor..
-	OptFastFloorBegin();
-
-	// For each vegetableBlock, test IG creation
-	CLandscapeVegetableBlock	*vegetBlock= _VegetableBlockList.begin();
-	for(;vegetBlock!=NULL; vegetBlock= (CLandscapeVegetableBlock*)vegetBlock->Next)
 	{
-		vegetBlock->update(refineCenter, _VegetableManager);
+		H_AUTO( NL3D_Vegetable_Update );
+
+		// Because CLandscapeVegetableBlock::update() use OptFastFloor..
+		OptFastFloorBegin();
+
+		// For each vegetableBlock, test IG creation
+		CLandscapeVegetableBlock	*vegetBlock= _VegetableBlockList.begin();
+		for(;vegetBlock!=NULL; vegetBlock= (CLandscapeVegetableBlock*)vegetBlock->Next)
+		{
+			vegetBlock->update(refineCenter, _VegetableManager);
+		}
+
+		// update lighting for vegetables
+		_VegetableManager->updateLighting();
+
+		// Stop fastFloor optim.
+		OptFastFloorEnd();
 	}
-
-	// update lighting for vegetables
-	_VegetableManager->updateLighting();
-
-	// Stop fastFloor optim.
-	OptFastFloorEnd();
 
 
 	// Must realase VB Buffers

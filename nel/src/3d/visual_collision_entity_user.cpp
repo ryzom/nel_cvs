@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.cpp
  * <File description>
  *
- * $Id: visual_collision_entity_user.cpp,v 1.4 2002/05/23 14:40:18 berenguier Exp $
+ * $Id: visual_collision_entity_user.cpp,v 1.5 2002/06/10 09:30:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,11 +27,84 @@
 
 #include "3d/visual_collision_entity_user.h"
 #include "3d/driver_user.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 namespace NL3D 
 {
 
+H_AUTO_DECL( NL3D_UI_VisualCollisionEntity )
+H_AUTO_DECL( NL3D_Misc_VisualCollisionEntity_Snap )
+H_AUTO_DECL( NL3D_Misc_VisualCollisionEntity_GetLight )
+
+#define	NL3D_HAUTO_UI_VCE					H_AUTO_USE( NL3D_UI_VisualCollisionEntity )
+#define	NL3D_HAUTO_SNAP_VCE					H_AUTO_USE( NL3D_Misc_VisualCollisionEntity_Snap )
+#define	NL3D_HAUTO_LIGHT_VCE				H_AUTO_USE( NL3D_Misc_VisualCollisionEntity_GetLight )
+
+
+//****************************************************************************
+bool	CVisualCollisionEntityUser::snapToGround(CVector &pos)
+{
+	NL3D_HAUTO_SNAP_VCE;
+
+	return _Entity->snapToGround(pos);
+}
+bool	CVisualCollisionEntityUser::snapToGround(CVector &pos, CVector &normal)
+{
+	NL3D_HAUTO_SNAP_VCE;
+
+	return _Entity->snapToGround(pos, normal);
+}
+
+
+
+void	CVisualCollisionEntityUser::setGroundMode(bool groundMode)
+{
+	NL3D_HAUTO_UI_VCE;
+
+	_Entity->setGroundMode(groundMode);
+}
+void	CVisualCollisionEntityUser::setCeilMode(bool ceilMode)
+{
+	NL3D_HAUTO_UI_VCE;
+
+	_Entity->setCeilMode(ceilMode);
+}
+bool	CVisualCollisionEntityUser::getGroundMode() const
+{
+	NL3D_HAUTO_UI_VCE;
+
+	return _Entity->getGroundMode();
+}
+bool	CVisualCollisionEntityUser::getCeilMode() const
+{
+	NL3D_HAUTO_UI_VCE;
+
+	return _Entity->getCeilMode();
+}
+
+
+void	CVisualCollisionEntityUser::setSnapToRenderedTesselation(bool snapMode)
+{
+	NL3D_HAUTO_UI_VCE;
+
+	_Entity->setSnapToRenderedTesselation(snapMode);
+}
+bool	CVisualCollisionEntityUser::getSnapToRenderedTesselation() const
+{
+	NL3D_HAUTO_UI_VCE;
+
+	return _Entity->getSnapToRenderedTesselation();
+}
+
+
+bool	CVisualCollisionEntityUser::getStaticLightSetup(const CVector &pos, std::vector<CPointLightInfluence> &pointLightList, 
+	uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
+{
+	NL3D_HAUTO_LIGHT_VCE;
+
+	return _Entity->getStaticLightSetup(pos, pointLightList, sunContribution, localAmbient);
+}
 
 void	CVisualCollisionEntityUser::displayDebugGrid(UDriver &drv) const
 {

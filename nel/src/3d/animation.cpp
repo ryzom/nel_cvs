@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.14 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: animation.cpp,v 1.15 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,9 +30,15 @@
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/hierarchical_timer.h"
 
 namespace NL3D 
 {
+
+H_AUTO_DECL( NL3D_UI_Animation )
+
+#define	NL3D_HAUTO_UI_ANIMATION						H_AUTO_USE( NL3D_UI_Animation )
+
 
 // ***************************************************************************
 
@@ -107,6 +113,8 @@ void CAnimation::getTrackNames (std::set<std::string>& setString) const
 
 TAnimationTime CAnimation::getBeginTime () const
 {
+	NL3D_HAUTO_UI_ANIMATION;
+
 	if (_BeginTimeTouched)
 	{
 		// Track count
@@ -136,6 +144,8 @@ TAnimationTime CAnimation::getBeginTime () const
 
 TAnimationTime CAnimation::getEndTime () const
 {
+	NL3D_HAUTO_UI_ANIMATION;
+
 	if (_EndTimeTouched)
 	{
 		// Track count
@@ -163,6 +173,8 @@ TAnimationTime CAnimation::getEndTime () const
 // ***************************************************************************
 bool			CAnimation::allTrackLoop() const
 {
+	NL3D_HAUTO_UI_ANIMATION;
+
 	if(_AnimLoopTouched)
 	{
 		// Track count
@@ -190,6 +202,8 @@ bool			CAnimation::allTrackLoop() const
 
 UTrack* CAnimation::getTrackByName (const char* name)
 {
+	NL3D_HAUTO_UI_ANIMATION;
+
 	// Get track id
 	uint id=getIdTrackByName (name);
 
@@ -206,6 +220,8 @@ UTrack* CAnimation::getTrackByName (const char* name)
 
 void CAnimation::releaseTrack (UTrack* track)
 {
+	NL3D_HAUTO_UI_ANIMATION;
+
 	// Nothing to do
 }
 
@@ -213,6 +229,8 @@ void CAnimation::releaseTrack (UTrack* track)
 
 UAnimation* UAnimation::createAnimation (const char* sPath)
 {
+	NL3D_HAUTO_UI_ANIMATION;
+
 	// Allocate an animation
 	std::auto_ptr<CAnimation> anim (new CAnimation);
 
@@ -237,6 +255,8 @@ UAnimation* UAnimation::createAnimation (const char* sPath)
 
 void UAnimation::releaseAnimation (UAnimation* animation)
 {
+	NL3D_HAUTO_UI_ANIMATION;
+
 	// Cast the pointer
 	CAnimation* release=(CAnimation*)animation;
 

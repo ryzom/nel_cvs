@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.23 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.24 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/scene.h"
 #include "3d/coarse_mesh_manager.h"
 #include "3d/lod_character_manager.h"
+#include "nel/misc/hierarchical_timer.h"
 
 #include "3d/transform.h"
 
@@ -82,6 +83,8 @@ IObs		*CRenderTrav::createDefaultObs() const
 // ***************************************************************************
 void		CRenderTrav::traverse()
 {
+	H_AUTO( NL3D_TravRender );
+
 	ITravCameraScene::update();
 
 	// Bind to Driver.

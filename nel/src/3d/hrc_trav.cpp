@@ -1,7 +1,7 @@
 /** \file hrc_trav.cpp
  * <File description>
  *
- * $Id: hrc_trav.cpp,v 1.8 2002/02/28 12:59:49 besson Exp $
+ * $Id: hrc_trav.cpp,v 1.9 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/skip_model.h"
 #include "3d/clip_trav.h"
 #include "3d/anim_detail_trav.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -49,6 +50,24 @@ IObs				*CHrcTrav::createDefaultObs() const
 void				CHrcTrav::setSkipModelRoot(CSkipModel *m)
 {
 	SkipModelRoot= m;
+}
+
+
+// ***************************************************************************
+void				CHrcTrav::traverse()
+{
+	H_AUTO( NL3D_TravHRC );
+
+	_MovingObjects.clear();
+
+	// Traverse the graph.
+	if(Root)
+		Root->traverse(NULL);
+
+	// Inc the date.
+	// NB: Now, observers update is done before ALL traversals.
+	// Hence, we must inc the value before scene rendering. This is equivalent to start with 1, and inc at end of traverse().
+	CurrentDate++;
 }
 
 

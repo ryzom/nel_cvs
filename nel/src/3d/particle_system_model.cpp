@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.31 2002/04/25 10:33:38 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.32 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/scene.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 #include "cluster.h" // ask trap
@@ -499,6 +500,8 @@ void	CParticleSystemRenderObs::traverse(IObs *caller)
 	
 void	CParticleSystemClipObs::traverse(IObs *caller)
 {
+	H_AUTO ( NL3D_Particles_Clip );
+
 //	    CTransformClipObs::traverse(caller);
 		traverseSons();
 		nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));

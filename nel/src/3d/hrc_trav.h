@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.5 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.6 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,19 +90,7 @@ public:
 	IObs				*createDefaultObs() const;
 	NLMISC::CClassId	getClassId() const {return HrcTravId;}
 	sint				getRenderOrder() const {return 1000;}
-	void				traverse()
-	{
-		_MovingObjects.clear();
-
-		// Traverse the graph.
-		if(Root)
-			Root->traverse(NULL);
-
-		// Inc the date.
-		// NB: Now, observers update is done before ALL traversals.
-		// Hence, we must inc the value before scene rendering. This is equivalent to start with 1, and inc at end of traverse().
-		CurrentDate++;
-	}
+	void				traverse();
 	//@}
 
 

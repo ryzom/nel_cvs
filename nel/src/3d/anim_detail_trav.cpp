@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.6 2002/02/28 12:59:49 besson Exp $
+ * $Id: anim_detail_trav.cpp,v 1.7 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/clip_trav.h"
 #include "3d/transform.h"
 #include "3d/skeleton_model.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 namespace NL3D 
@@ -46,6 +47,8 @@ IObs				*CAnimDetailTrav::createDefaultObs() const
 // ***************************************************************************
 void				CAnimDetailTrav::traverse()
 {
+	H_AUTO( NL3D_TravAnimDetail );
+
 	// Inc the date.
 	CurrentDate++;
 

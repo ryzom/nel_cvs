@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.7 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.8 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
 #include "nel/misc/common.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace std;
@@ -147,6 +148,8 @@ CLoadBalancingTrav::CLoadBalancingTrav()
 // ***************************************************************************
 void				CLoadBalancingTrav::traverse()
 {
+	H_AUTO( NL3D_TravLoadBalancing );
+
 	ITravCameraScene::update();
 
 	// Reset each group.

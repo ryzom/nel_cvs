@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.20 2002/02/28 12:59:52 besson Exp $
+ * $Id: water_model.cpp,v 1.21 2002/06/10 09:30:09 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "nel/3d/animation_time.h"
 #include "nel/misc/vector_2d.h"
 #include "nel/misc/vector_h.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 
@@ -358,6 +359,8 @@ static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CMatrix &m
 
 void	CWaterRenderObs::traverse(IObs *caller)
 {			
+	H_AUTO( NL3D_Water_Render );
+
 	CRenderTrav					*trav			= NLMISC::safe_cast<CRenderTrav *>(Trav);
 	CWaterModel					*m				= NLMISC::safe_cast<CWaterModel *>(Model);
 	CWaterShape					*shape			= NLMISC::safe_cast<CWaterShape *>((IShape *) m->Shape);

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.25 2002/05/22 16:30:28 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.26 2002/06/10 09:30:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/scene.h"
 #include "3d/vegetable_blend_layer_model.h"
 #include "3d/vegetable_light_ex.h"
+#include "nel/misc/hierarchical_timer.h"
 
 
 using namespace std;
@@ -1775,6 +1776,8 @@ void			CVegetableManager::setupVertexProgramConstants(IDriver *driver)
 void			CVegetableManager::render(const CVector &viewCenter, const CVector &frontVector, const std::vector<CPlane> &pyramid, 
 	ITexture *textureDLM, IDriver *driver)
 {
+	H_AUTO( NL3D_Vegetable_Render );
+
 	CVegetableClipBlock		*rootToRender= NULL;
 
 	// get normalized front vector.

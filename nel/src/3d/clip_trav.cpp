@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.21 2002/02/28 12:59:49 besson Exp $
+ * $Id: clip_trav.cpp,v 1.22 2002/06/10 09:30:08 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/quad_grid_clip_cluster.h"
 #include "3d/quad_grid_clip_manager.h"
 #include "3d/root_model.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -98,6 +99,8 @@ bool CClipTrav::fullSearch (vector<CCluster*>& result, CInstanceGroup *pIG, CVec
 // ***************************************************************************
 void CClipTrav::traverse()
 {
+	H_AUTO( NL3D_TravClip );
+
 	// Increment the current date of the traversal
 	++CurrentDate;
 	// Update Clip infos.

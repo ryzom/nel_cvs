@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.14 2001/09/06 09:30:29 cado Exp $
+ * $Id: animation.cpp,v 1.15 2001/10/29 18:54:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,7 +101,7 @@ Anim AnimIdArray[][2] =
 void	computeAnimation (CEntity &entity, EAnim anim)
 {
 	// Get the current time
-	CAnimationTime currentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
+	double currentTime = double (CTime::getLocalTime ())/1000.0f;
 
 	//nlinfo ("playing animation %s ct%f st%f et%f", AnimIdArray[anim][0].Name, currentTime, AnimIdArray[anim][0].Animation->getBeginTime (), AnimIdArray[anim][0].Animation->getEndTime ());
 

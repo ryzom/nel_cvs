@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.47 2001/08/29 13:03:41 valignat Exp $
+ * $Id: client.cpp,v 1.48 2001/10/29 18:54:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,11 +30,18 @@
 #include <nel/misc/types_nl.h>
 
 #if defined(NL_OS_WINDOWS) && defined (NL_RELEASE)
-#include <windows.h>
+#  include <windows.h>
+#  ifdef min
+#    undef min
+#  endif
+#  ifdef max
+#    undef max
+#  endif
 #endif
 
 #include <time.h>
 #include <string>
+#include <vector>
 
 #include <nel/misc/config_file.h>
 #include <nel/misc/path.h>
@@ -634,7 +641,7 @@ void updateLoginInterface ()
 
 
 // Command to quit the client
-NLMISC_COMMAND(quit,"quit the client","")
+NLMISC_COMMAND(sb_quit,"quit the client","")
 {
 	// check args, if there s not the right number of parameter, return bad
 	if(args.size() != 0) return false;

@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.12 2004/03/19 10:11:35 corvazier Exp $
+ * $Id: landscape_def.h,v 1.13 2004/03/31 14:30:06 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,9 +62,9 @@ class	IDriver;
 
 
 // ***************************************************************************
-/// For Landscape Vegetable: Maximum AGP load (in number of vertices allowed )
-#define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_UNLIT		60000
-#define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_LIGHTED		15000
+/// For Landscape Vegetable: AGP load (in number of vertices allocated )
+#define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_UNLIT		50000
+#define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_LIGHTED		5000
 #define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_MAX	\
 	(max(NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_UNLIT, NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_LIGHTED))
 

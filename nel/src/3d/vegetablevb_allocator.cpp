@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.cpp
  * <File description>
  *
- * $Id: vegetablevb_allocator.cpp,v 1.12 2004/03/23 16:32:27 corvazier Exp $
+ * $Id: vegetablevb_allocator.cpp,v 1.13 2004/03/31 14:30:06 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 
 
 /*
-	Once a reallocation of a VBHard occurs, how many vertices we add to the re-allocation, to avoid 
+	Once a reallocation of a VB occurs, how many vertices we add to the re-allocation, to avoid 
 	as possible reallocations.
 */
 #define	NL3D_VEGETABLE_VERTEX_ALLOCATE_SECURITY		1024
@@ -64,6 +64,7 @@ CVegetableVBAllocator::CVegetableVBAllocator()
 	// Init vbhard
 	_VBHardOk= false;
 	_AGPBufferPtr= NULL;
+	_RAMBufferPtr= NULL;
 }
 
 
@@ -128,10 +129,13 @@ void			CVegetableVBAllocator::clear()
 	_VertexFreeMemory.clear();
 	_NumVerticesAllocated= 0;
 
+	// must unlock for vbhard and vbsoft
+	unlockBuffer();
+
 	// delete the VB.
 	deleteVertexBufferHard();
 	// really delete the VB soft too
-	_VB.deleteAllVertices();
+	_VBSoft.deleteAllVertices();
 
 	// clear other states.
 	_Driver= NULL;
@@ -145,18 +149,29 @@ void			CVegetableVBAllocator::lockBuffer()
 	// force unlock
 	unlockBuffer();
 
-	_VBHard.lock(_VBAHard);
-	_AGPBufferPtr=(uint8*)_VBAHard.getVertexCoordPointer();
+	// need to lock only if the VBHard is created
+	if(_VBHardOk)
+	{
+		// lock the VBHard for writing
+		_VBHard.lock(_VBAHard);
+		_AGPBufferPtr=(uint8*)_VBAHard.getVertexCoordPointer();
+
+		// lock the Input VertexBuffer for reading
+		_VBSoft.lock(_VBASoft);
+		_RAMBufferPtr=(const uint8*)_VBASoft.getVertexCoordPointer();
+	}
 }
 
 // ***************************************************************************
 void			CVegetableVBAllocator::unlockBuffer()
 {
-	if(_VBHard.isLocked())
-	{
-		_VBAHard.unlock();
-		_AGPBufferPtr= NULL;
-	}
+	// unlock the VBHard
+	_VBAHard.unlock();
+	_AGPBufferPtr= NULL;
+
+	// unlock the VBSoft
+	_VBASoft.unlock();
+	_RAMBufferPtr= NULL;
 }
 
 
@@ -241,15 +256,13 @@ void			CVegetableVBAllocator::flushVertex(uint i)
 {
 	if(_VBHardOk)
 	{
-		nlassert(_VBHard.getNumVertices() && _VBHard.isLocked());
-		
-		// copy the VB soft to the VBHard.
-		CVertexBufferRead vba;
-		_VB.lock(vba);
+		nlassert(_VBHard.getNumVertices() && _VBHard.isLocked() && _VBSoft.isLocked());
 
-		const void *src= vba.getVertexCoordPointer(i);
-		void	*dst= _AGPBufferPtr + i*_VB.getVertexSize();
-		memcpy(dst, src, _VB.getVertexSize());
+		// copy the VB soft to the VBHard.
+		uint	size= _VBSoft.getVertexSize();
+		const void	*src= _RAMBufferPtr + i*size;
+		void		*dst= _AGPBufferPtr + i*size;
+		memcpy(dst, src, size);
 	}
 }
 
@@ -258,12 +271,13 @@ void			CVegetableVBAllocator::activate()
 {
 	nlassert(_Driver);
 	nlassert(!_VBHard.isLocked());
-
+	nlassert(!_VBSoft.isLocked());
+	
 	// Activate VB.
 	if(_VBHard.getNumVertices())
 		_Driver->activeVertexBuffer(_VBHard);
 	else
-		_Driver->activeVertexBuffer(_VB);
+		_Driver->activeVertexBuffer(_VBSoft);
 }
 
 
@@ -295,73 +309,79 @@ void				CVegetableVBAllocator::deleteVertexBufferHard()
 // ***************************************************************************
 void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVertices)
 {
-	// resize the Soft VB.
-	_VB.setNumVertices(numVertices);
-
 	// no allocation must be done if the Driver is not setuped, or if the driver has been deleted by refPtr.
 	nlassert(_Driver);
 
-	// must unlock VBhard before.
+	// must unlock VBhard and VBSoft before.
 	bool	wasLocked= bufferLocked();
 	unlockBuffer();
 
+	// resize the Soft VB.
+	_VBSoft.setNumVertices(numVertices);
+	
 	// try to allocate a vbufferhard if possible.
 	if( _VBHardOk )
 	{
-		// delete possible old _VBHard.
-		if(_VBHard.getNumVertices()!=0)
+		/* Prefer allocate the VBHard with the Max Vertex count only ONCE, 
+			to avoid problems with AGP allocation
+			The problem is with 50000 AGP vertices, it costs 3 Mo. If we do iterative allocation
+			(500 Ko, 600 Ko, 700 Ko,.....)
+			we may have problem with free holes (Vegetable could no more enter in the 16 or 8 Mo AGP limit!)
+		*/
+		if(_VBHard.getNumVertices() != _MaxVertexInBufferHard)
 		{
-			// VertexBufferHard lifetime < Driver lifetime.
-			nlassert(_Driver!=NULL);
-			_VBHard.deleteAllVertices();
-		}
+			// delete possible old _VBHard.
+			if(_VBHard.getNumVertices()!=0)
+			{
+				// VertexBufferHard lifetime < Driver lifetime.
+				nlassert(_Driver!=NULL);
+				_VBHard.deleteAllVertices();
+			}
+			
+			// try to create new one, in AGP Ram
+			// If too many vertices wanted, abort VBHard.
+			if(numVertices <= _MaxVertexInBufferHard)
+			{
+				_VBHard = _VBSoft;
+				_VBHard.setPreferredMemory(CVertexBuffer::AGPPreferred);
+				_VBHard.setNumVertices (_MaxVertexInBufferHard);
 
-		// try to create new one, in AGP Ram
-		// If too many vertices wanted, abort VBHard.
-		if(numVertices <= _MaxVertexInBufferHard)
-		{
-			_VBHard = _VB;
-			_VBHard.setPreferredMemory(CVertexBuffer::AGPPreferred);
-			_VBHard.setNumVertices (numVertices);
+				// Force this VB to be hard
+				nlverify (_Driver->activeVertexBuffer (_VBHard));
+				nlassert (_VBHard.isResident());
 
-			// Force this VB to be hard
-			nlverify (_Driver->activeVertexBuffer (_VBHard));
-			nlassert (_VBHard.isResident());
-
-			/* todo hulud remove track out of AGP memory */
-			nlassert (_VBHard.getLocation() != CVertexBuffer::RAMResident);
-
-			if (_VBHard.getLocation() == CVertexBuffer::RAMResident)
+				// if fails, abort VBHard.
+				if (_VBHard.getLocation() == CVertexBuffer::RAMResident)
+					_VBHard.deleteAllVertices();
+				
+				// Set Name For lock Profiling.
+				if(_VBHard.getNumVertices()!=0)
+					_VBHard.setName("VegetableVB");
+			}
+			else
 				_VBHard.deleteAllVertices();
 
-			// Set Name For lock Profiling.
-			if(_VBHard.getNumVertices()!=0)
-				_VBHard.setName("VegetableVB");
-		}
-		else
-			_VBHard.deleteAllVertices();
-
-		// If KO, never try again.
-		if(_VBHard.getNumVertices()==0)
-			_VBHardOk= false;
-		else
-		{
-			// else, fill this AGP VBuffer Hard.
-			// lock before the AGP buffer
-			lockBuffer();
-
-			CVertexBufferRead vba;
-			_VB.lock (vba);
-
-			// copy all the vertices to AGP.
-			memcpy(_AGPBufferPtr, vba.getVertexCoordPointer(0), _VB.getVertexSize() * numVertices);
-
-			// If was not locked before, unlock this VB
-			if(!wasLocked)
-				unlockBuffer();
+			// If KO, never try again.
+			if(_VBHard.getNumVertices()==0)
+				_VBHardOk= false;
 		}
 	}
 
+	// if still OK, must refill the VBHard. Slow, but rare
+	if(_VBHardOk)
+	{
+		// else, fill this AGP VBuffer Hard.
+		// lock before the AGP buffer
+		lockBuffer();
+		
+		// copy all the vertices to AGP.
+		memcpy(_AGPBufferPtr, _RAMBufferPtr, _VBSoft.getVertexSize() * numVertices);
+		
+		// If was not locked before, unlock this VB
+		if(!wasLocked)
+			unlockBuffer();
+	}
+	
 	//nlinfo("VEGET: Alloc %d verts. %s", numVertices, _VBHardOk?"VBHard":"VBSoft");
 }
 
@@ -370,28 +390,28 @@ void				CVegetableVBAllocator::allocateVertexBufferAndFillVBHard(uint32 numVerti
 void				CVegetableVBAllocator::setupVBFormat()
 {
 	// Build the Vertex Format.
-	_VB.clearValueEx();
+	_VBSoft.clearValueEx();
 
 	// if lighted, need world space normal and AmbientColor for each vertex.
 	if( _Type == VBTypeLighted )
 	{
-		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_POS,	CVertexBuffer::Float3);		// v[0]
-		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_NORMAL, CVertexBuffer::Float3);		// v[2]
-		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_BENDINFO,	CVertexBuffer::Float3);		// v[9]
+		_VBSoft.addValueEx(NL3D_VEGETABLE_VPPOS_POS,	CVertexBuffer::Float3);		// v[0]
+		_VBSoft.addValueEx(NL3D_VEGETABLE_VPPOS_NORMAL, CVertexBuffer::Float3);		// v[2]
+		_VBSoft.addValueEx(NL3D_VEGETABLE_VPPOS_BENDINFO,	CVertexBuffer::Float3);		// v[9]
 	}
 	// If unlit
 	else
 	{
 		// slightly different VertexProgram, v[0].w== BendWeight, and v[9].x== v[0].norm()
-		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_POS,		CVertexBuffer::Float4);		// v[0]
+		_VBSoft.addValueEx(NL3D_VEGETABLE_VPPOS_POS,		CVertexBuffer::Float4);		// v[0]
 		// Unlit VP has BlendDistance in v[9].w
-		_VB.addValueEx(NL3D_VEGETABLE_VPPOS_BENDINFO,	CVertexBuffer::Float4);		// v[9]
+		_VBSoft.addValueEx(NL3D_VEGETABLE_VPPOS_BENDINFO,	CVertexBuffer::Float4);		// v[9]
 	}
-	_VB.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR0,		CVertexBuffer::UChar4);		// v[3]
-	_VB.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR1,		CVertexBuffer::UChar4);		// v[4]
-	_VB.addValueEx(NL3D_VEGETABLE_VPPOS_TEX0,		CVertexBuffer::Float2);		// v[8]
-	_VB.addValueEx(NL3D_VEGETABLE_VPPOS_CENTER,		CVertexBuffer::Float3);		// v[10]
-	_VB.initEx();
+	_VBSoft.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR0,		CVertexBuffer::UChar4);		// v[3]
+	_VBSoft.addValueEx(NL3D_VEGETABLE_VPPOS_COLOR1,		CVertexBuffer::UChar4);		// v[4]
+	_VBSoft.addValueEx(NL3D_VEGETABLE_VPPOS_TEX0,		CVertexBuffer::Float2);		// v[8]
+	_VBSoft.addValueEx(NL3D_VEGETABLE_VPPOS_CENTER,		CVertexBuffer::Float3);		// v[10]
+	_VBSoft.initEx();
 
 }
 

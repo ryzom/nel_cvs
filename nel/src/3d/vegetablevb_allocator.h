@@ -1,7 +1,7 @@
 /** \file vegetablevb_allocator.h
  * <File description>
  *
- * $Id: vegetablevb_allocator.h,v 1.3 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vegetablevb_allocator.h,v 1.4 2004/03/31 14:30:06 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,8 +65,7 @@ public:
 	CVegetableVBAllocator();
 	~CVegetableVBAllocator();
 	/** init the VB allocator, with the good type. must do it first.
-	 *	maxVertexInBufferHard is the maximum vertex allowed to reside in AGP mem.
-	 *	if More are allocated, then VBHard is disabled, and replaced with software VB (slower!), for ever.
+	 *	maxVertexInBufferHard is the number of AGP vertex allocated. if 0 => buffer soft only
 	 */
 	void			init(TVBType vbType, uint maxVertexInBufferHard);
 
@@ -94,9 +93,7 @@ public:
 	 */
 	uint			getNumUserVerticesAllocated() const;
 
-	/** Allocate free vertices in VB. (RAM and AGP if possible). work with locked or unlocked buffer.
-	 *	if VBHard reallocation occurs, VB is unlocked, destroyed, reallocated, and refilled.
-	 */
+	/// Allocate free vertices in VB. (RAM and AGP if possible). work with locked or unlocked buffer.
 	uint			allocateVertex();
 	/// Delete free vertices in VB. (AGP or RAM).
 	void			deleteVertex(uint vid);
@@ -107,9 +104,9 @@ public:
 	/// \name Buffer access.
 	// @{
 	// return soft VB, for info only.
-	CVertexBuffer			&getSoftwareVertexBuffer() {return _VB;}
+	CVertexBuffer			&getSoftwareVertexBuffer() {return _VBSoft;}
 	// return soft VB, for info only.
-	const CVertexBuffer		&getSoftwareVertexBuffer() const {return _VB;}
+	const CVertexBuffer		&getSoftwareVertexBuffer() const {return _VBSoft;}
 	/// If VBHard ok, copy the vertex in AGP. Warning: buffer must be locked!
 	void			flushVertex(uint i);
 
@@ -147,14 +144,16 @@ private:
 	// @{
 
 	// Our software VB. always here, and always correct.
-	CVertexBuffer						_VB;
+	CVertexBuffer						_VBSoft;
 	CVertexBuffer						_VBHard;
+	CVertexBufferRead					_VBASoft;
 	CVertexBufferReadWrite				_VBAHard;
-
+	
 	// a refPtr on the driver, to delete VBuffer Hard at clear().
 	NLMISC::CRefPtr<IDriver>			_Driver;
 	// tell if VBHard is possible.
 	bool								_VBHardOk;
+	const uint8							*_RAMBufferPtr;
 	uint8								*_AGPBufferPtr;
 	/// Maximum vertices in BufferHard allowed for this VBAllocator
 	uint								_MaxVertexInBufferHard;

@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.1 2002/11/05 16:48:25 corvazier Exp $
+ * $Id: memory_manager.cpp,v 1.2 2002/12/17 14:11:10 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,8 @@ MEMORY_API void* MemoryAllocateDebug (uint size, const char *filename, uint line
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
+
+#ifndef NL_USE_DEFAULT_MEMORY_MANAGER
 
 MEMORY_API unsigned int GetAllocatedMemory ()
 {
@@ -203,6 +205,8 @@ CReportMemoryLeak	ReportMemoryLeak;
 // *********************************************************
 
 #endif // NL_HEAP_ALLOCATION_NDEBUG
+
+#endif // NL_USE_DEFAULT_MEMORY_MANAGER
 
 } // NLMEMORY
 

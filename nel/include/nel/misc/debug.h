@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.69 2004/08/09 08:55:20 lecroart Exp $
+ * $Id: debug.h,v 1.69.4.1 2004/09/09 09:33:29 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -287,6 +287,39 @@ if(false)
 { exp; }
 #else // NL_RELEASE
 
+#ifdef NL_OS_UNIX
+
+// Linux set of asserts is reduced due tothat there is no message box displayer
+
+#define nlassert(exp) \
+{ \
+	if (!(exp)) { \
+		NLMISC::createDebug (); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
+		NLMISC_BREAKPOINT; \
+	} \
+}
+
+#define nlassertonce(exp) nlassert(exp)
+
+#define nlassertex(exp, str) \
+{ \
+	if (!(exp)) { \
+		NLMISC::createDebug (); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
+		NLMISC::AssertLog->displayRawNL str; \
+		NLMISC_BREAKPOINT; \
+	} \
+}
+
+#define nlverify(exp) nlassert(exp)
+#define nlverifyonce(exp) nlassert(exp)
+#define nlverifyex(exp, str) nlassertex(exp, str)
+
+#else // NL_OS_UNIX
+
 #define nlassert(exp) \
 { \
 	static bool ignoreNextTime = false; \
@@ -352,7 +385,7 @@ if(false)
 #define nlverify(exp) \
 { \
 	static bool ignoreNextTime = false; \
-	if (!ignoreNextTime && !(exp)) { \
+	if (!(exp) && !ignoreNextTime) { \
 		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
@@ -371,7 +404,7 @@ if(false)
 #define nlverifyonce(exp) \
 { \
 	static bool ignoreNextTime = false; \
-	if (!ignoreNextTime && !(exp)) { \
+	if (!(exp) && !ignoreNextTime) { \
 		ignoreNextTime = true; \
 		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
@@ -391,7 +424,7 @@ if(false)
 #define nlverifyex(exp, str) \
 { \
 	static bool ignoreNextTime = false; \
-	if (!ignoreNextTime && !(exp)) { \
+	if (!(exp) && !ignoreNextTime) { \
 		NLMISC::DebugNeedAssert = false; \
 		NLMISC::createDebug (); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
@@ -407,6 +440,8 @@ if(false)
 			NLMISC_BREAKPOINT; \
 	} \
 }
+#endif // NL_OS_UNIX
+
 #endif // NL_RELEASE
 
 

@@ -1,6 +1,6 @@
 /** \file patch.h
  *
- * $Id: patch.h,v 1.2 2003/05/23 08:59:59 lecroart Exp $
+ * $Id: patch.h,v 1.2.2.1 2003/07/24 15:45:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,10 @@ void startPatchThread (const std::string &serverPath, const std::string &serverV
 bool patchEnded (std::string &url, bool &ok);
 bool patchState (std::string &state, std::string &stateLog);
 
-
+int getTotalFilesToGet();
+int getCurrentFilesToGet();
+int getTotalBytesToGet();
+int getCurrentBytesToGet();
 
 
 // get the version with the VERSION file

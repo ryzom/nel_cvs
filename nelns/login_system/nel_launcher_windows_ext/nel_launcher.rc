@@ -84,15 +84,58 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 // Dialog
 //
 
-IDD_NEL_LAUNCHER_DIALOG DIALOGEX 0, 0, 334, 306
-STYLE WS_POPUP | WS_VISIBLE
+IDD_NEL_LAUNCHER_DIALOG DIALOGEX 0, 0, 334, 305
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE
 EXSTYLE WS_EX_APPWINDOW
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+END
+
+IDD_PROGRESS DIALOG DISCARDABLE  0, 0, 333, 31
+STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
-    CONTROL         130,IDC_STATIC,"Static",SS_BITMAP | SS_CENTERIMAGE | 
-                    SS_REALSIZEIMAGE,0,0,335,12
+    CONTROL         "",IDC_MSG_PROGRESS_STATIC,"Static",SS_LEFTNOWORDWRAP | 
+                    WS_GROUP,68,2,197,8
+END
+
+IDD_WEB DIALOG DISCARDABLE  0, 0, 301, 211
+STYLE WS_CHILD | WS_CLIPCHILDREN
+FONT 8, "MS Sans Serif"
+BEGIN
     CONTROL         "",IDC_EXPLORER1,"{8856F961-340A-11D0-A96B-00C04FD705A2}",
-                    WS_TABSTOP,0,12,335,296
+                    WS_TABSTOP,0,0,265,185
+END
+
+IDD_LOADING_PAGE DIALOG DISCARDABLE  0, 0, 241, 176
+STYLE WS_POPUP
+FONT 8, "MS Sans Serif"
+BEGIN
+END
+
+IDD_MSG DIALOGEX 0, 0, 187, 85
+STYLE DS_MODALFRAME | WS_POPUP
+EXSTYLE WS_EX_CLIENTEDGE
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,125,65,50,14
+    LTEXT           "Static",IDC_MSG_STATIC,15,15,150,45
+    LTEXT           "Static",IDC_TITLE_STATIC,0,0,100,15
+END
+
+IDD_LOGIN DIALOGEX 0, 0, 198, 85
+STYLE WS_POPUP
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         159,IDC_LOGIND_STATIC,"Static",SS_BITMAP,95,65,45,15
+    CTEXT           "Static",IDC_ERR_STATIC,75,5,110,10,0,WS_EX_TRANSPARENT
+    RTEXT           "Login : ",IDC_LOGIN_STATIC,85,25,30,10
+    RTEXT           "Password : ",IDC_PWD_STATIC,75,41,40,10
+    EDITTEXT        IDC_LOGIN_EDIT,120,25,65,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_PWD_EDIT,120,40,65,12,ES_PASSWORD | ES_AUTOHSCROLL
+    CONTROL         160,IDC_LOGINU_STATIC,"Static",SS_BITMAP,95,65,45,15
+    CONTROL         161,IDC_QUITD_STATIC,"Static",SS_BITMAP,145,65,40,15
+    CONTROL         162,IDC_QUITU_STATIC,"Static",SS_BITMAP,145,65,40,15
 END
 
 
@@ -136,22 +179,37 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// PICTURE_RESOURCE
+//
+
+IDP_BACKGROUND          PICTURE_RESOURCE MOVEABLE PURE "res\\background.jpg"
+IDP_BG_LOGIN            PICTURE_RESOURCE MOVEABLE PURE "res\\bg_login.jpg"
+IDP_TAB_SERVERS         PICTURE_RESOURCE MOVEABLE PURE "res\\tab_servers.jpg"
+IDP_TAB_SERVERS_FOCUS   PICTURE_RESOURCE MOVEABLE PURE "res\\tab_servers_focus.jpg"
+IDP_TAB_NEWS            PICTURE_RESOURCE MOVEABLE PURE "res\\tab_news.jpg"
+IDP_TAB_NEWS_FOCUS      PICTURE_RESOURCE MOVEABLE PURE "res\\tab_news_focus.jpg"
+IDP_TAB_RN              PICTURE_RESOURCE MOVEABLE PURE "res\\tab_rn.jpg"
+IDP_TAB_RN_FOCUS        PICTURE_RESOURCE MOVEABLE PURE "res\\tab_rn_focus.jpg"
+IDP_PROGRESS            PICTURE_RESOURCE MOVEABLE PURE "res\\progress.jpg"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Icon
 //
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON    DISCARDABLE     "res\\nel_launcher.ico"
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\ryzom.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog Info
 //
 
-IDD_NEL_LAUNCHER_DIALOG DLGINIT
+IDD_WEB DLGINIT
 BEGIN
     IDC_EXPLORER1, 0x376, 160, 0
-0x0000, 0x0000, 0x004c, 0x0000, 0x33fd, 0x0000, 0x31b6, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x004c, 0x0000, 0x2922, 0x0000, 0x1f1c, 0x0000, 0x0000, 
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
 0x0000, 0x0000, 0x004c, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001, 
 0x0000, 0xd0e0, 0x0057, 0x3573, 0x11cf, 0x69ae, 0x0008, 0x2e2b, 0x6212, 
@@ -169,7 +227,87 @@ END
 // Bitmap
 //
 
-IDB_TITLEBAR            BITMAP  DISCARDABLE     "res\\barre_top.bmp"
+IDB_LOGINU              BITMAP  DISCARDABLE     "res\\btn_login_up.bmp"
+IDB_LOGIND              BITMAP  DISCARDABLE     "res\\btn_login_down.bmp"
+IDB_QUITD               BITMAP  DISCARDABLE     "res\\btn_quit_down.bmp"
+IDB_QUITU               BITMAP  DISCARDABLE     "res\\btn_quit_up.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_PROGRESS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 326
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 24
+    END
+
+    IDD_WEB, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 294
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 204
+    END
+
+    IDD_LOADING_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 234
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
+
+    IDD_MSG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 180
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 78
+    END
+
+    IDD_LOGIN, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 191
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 78
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_POINTER             CURSOR  DISCARDABLE     "res\\cursor1.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_VERSION             "0.2"
+    IDS_HOST                "193.252.118.126"
+    IDS_URLMAIN             "/www_test/index2.php"
+    IDS_URLRN               "http://ryzom-europe.goa.com/news/launcher_rn.php3?id_rubrique=19"
+    IDS_URLNEWS             "http://ryzom-europe.goa.com/news/launcher_news.php3?id_rubrique=20"
+    IDS_APPLICATION_APP     "ryzom"
+    IDS_APPLICATION_EXE     "./client_ryzom_rd.exe"
+    IDS_APPLICATION_BASEPATH "./"
+    IDS_APPLICATION_APPBASEPATH " "
+END
+
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 

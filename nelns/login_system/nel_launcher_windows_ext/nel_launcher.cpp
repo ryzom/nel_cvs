@@ -1,31 +1,20 @@
 // nel_launcher.cpp : Defines the class behaviors for the application.
 //
-
-
-
-
-
-
-
-/**	TODO:
-
-  - find a way to remove the right-click-popup-window in the IE
-  - find a way to remove the right scroll bar when it s not needed
-  - if load page error, trap it and display an error, retry, quit...
-
-  */
-
-
-
 #include "stdafx.h"
 #include "nel_launcher.h"
 #include "nel_launcherDlg.h"
+#include <WinReg.h>
+#include "MsgDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#define	KEY_ROOT		_T("SOFTWARE\\Ryzom")
+#define	KEY_MAX_LENGTH	1024
+#define LOGFILE			"nel_launcher.log"
 
 /////////////////////////////////////////////////////////////////////////////
 // CNel_launcherApp
@@ -43,8 +32,16 @@ END_MESSAGE_MAP()
 
 CNel_launcherApp::CNel_launcherApp()
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
+	m_bAuthWeb	= FALSE;
+	m_bAuthGame	= FALSE;
+	m_dVersion	= 0;
+	m_bLog		= TRUE;
+
+	// Remove the log file
+	::DeleteFile(LOGFILE);
+
+	LoadVersion();
+	m_config.Load();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -72,19 +69,230 @@ BOOL CNel_launcherApp::InitInstance()
 
 	CNel_launcherDlg dlg;
 	m_pMainWnd = &dlg;
+
+	m_hcPointer	= LoadCursor(IDC_POINTER);
+
 	int nResponse = dlg.DoModal();
 	if (nResponse == IDOK)
 	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with OK
 	}
 	else if (nResponse == IDCANCEL)
 	{
-		// TODO: Place code here to handle when the dialog is
-		//  dismissed with Cancel
 	}
 
 	// Since the dialog has been closed, return FALSE so that we exit the
 	//  application, rather than start the application's message pump.
 	return FALSE;
+}
+
+BOOL CNel_launcherApp::GetWindowsVersion()
+{
+	DWORD	dwVersion = ::GetVersion();	
+	DWORD	dwWindowsMajorVersion =  (DWORD)(LOBYTE(LOWORD(dwVersion)));
+	DWORD	dwWindowsMinorVersion =  (DWORD)(HIBYTE(LOWORD(dwVersion)));
+	DWORD	dwBuild;
+
+	// Get the build number for Windows NT/Windows 2000 or Win32s.
+
+	if(dwVersion < 0x80000000)                // Windows NT/2000
+		dwBuild = (DWORD)(HIWORD(dwVersion));
+	else if(dwWindowsMajorVersion < 4)        // Win32s
+		dwBuild = (DWORD)(HIWORD(dwVersion) & ~0x8000);
+	else                  // Windows 95/98 -- No build number
+	{
+		dwBuild =  0;
+		return FALSE;
+	}
+	return TRUE;
+}
+
+CString CNel_launcherApp::GetRegKeyValue(const char* lpszEntry)
+{
+    HKEY	hkey;
+    TCHAR	szKey[KEY_MAX_LENGTH];
+	CString	csRet;
+
+	strcpy(szKey, KEY_ROOT);
+	if(RegOpenKeyEx(HKEY_LOCAL_MACHINE, szKey, 0, KEY_READ, &hkey) == ERROR_SUCCESS)
+	{
+		csRet	= ReadInfoFromRegistry(lpszEntry, hkey);
+		RegCloseKey(hkey);
+	}
+    return csRet;
+}
+
+void CNel_launcherApp::SetRegKey(char* lpszValueName, CString csValue)
+{
+	HKEY	hkey;
+    TCHAR	szKey[KEY_MAX_LENGTH];
+	DWORD	dwDisp;
+	char	lpszBuffer[KEY_MAX_LENGTH*2];
+
+	strcpy(szKey, KEY_ROOT);
+	if(RegCreateKeyEx(HKEY_LOCAL_MACHINE, szKey, 0, "", REG_OPTION_NON_VOLATILE, KEY_ALL_ACCESS, NULL, &hkey, &dwDisp) == ERROR_SUCCESS)
+    {
+		strcpy(lpszBuffer, csValue);
+		RegSetValueEx(hkey, _T(lpszValueName), 0L, REG_SZ, (const BYTE *)lpszBuffer, strlen(lpszBuffer)+1);
+		RegCloseKey(hkey);
+	}
+}
+
+CString CNel_launcherApp::ReadInfoFromRegistry(const char *lpszEntry, HKEY hkey)
+{
+	DWORD	dwType  = 0L;
+	DWORD	dwSize	= KEY_MAX_LENGTH;
+	CString	csRet;
+
+	if(RegQueryValueEx(hkey, _T(lpszEntry), NULL, &dwType, (unsigned char *)(csRet.GetBuffer(KEY_MAX_LENGTH)), &dwSize) == ERROR_SUCCESS)
+		csRet.ReleaseBuffer();
+	else
+	{
+		csRet.ReleaseBuffer();
+		csRet.Empty();
+	}
+	return csRet;
+}
+
+int CNel_launcherApp::ExitInstance() 
+{
+	ResetConnection();
+	
+	return CWinApp::ExitInstance();
+}
+
+void CNel_launcherApp::ResetConnection()
+{
+	CString csUrl	= "http://" + m_config.m_csHost + m_config.m_csUrlMain;
+
+	SetRegKey(_T("Login"), "");
+
+/*	CInternetSession session("nel_launcher");
+	session.SetCookie(csUrl, "login", "");
+	session.SetCookie(csUrl, "password", "");
+	session.SetCookie(csUrl, "digest", "");*/
+
+	BOOL bResult = FALSE;
+    BOOL bDone = FALSE;
+    LPINTERNET_CACHE_ENTRY_INFO lpCacheEntry = NULL;  
+ 
+    DWORD  dwTrySize, dwEntrySize = 4096; // start buffer size    
+    HANDLE hCacheDir = NULL;    
+    DWORD  dwError = ERROR_INSUFFICIENT_BUFFER;
+    
+    do 
+    {                               
+        switch (dwError)
+        {
+            // need a bigger buffer
+            case ERROR_INSUFFICIENT_BUFFER: 
+                delete [] lpCacheEntry;            
+                lpCacheEntry = (LPINTERNET_CACHE_ENTRY_INFO) new char[dwEntrySize];
+                lpCacheEntry->dwStructSize = dwEntrySize;
+                dwTrySize = dwEntrySize;
+                BOOL bSuccess;
+                if (hCacheDir == NULL)                
+                  
+                    bSuccess = (hCacheDir 
+                      = FindFirstUrlCacheEntry(NULL, lpCacheEntry,
+                      &dwTrySize)) != NULL;
+                else
+                    bSuccess = FindNextUrlCacheEntry(hCacheDir, lpCacheEntry, &dwTrySize);
+
+                if (bSuccess)
+                    dwError = ERROR_SUCCESS;    
+                else
+                {
+                    dwError = GetLastError();
+                    dwEntrySize = dwTrySize; // use new size returned
+                }
+                break;
+
+             // we are done
+            case ERROR_NO_MORE_ITEMS:
+                bDone = TRUE;
+                bResult = TRUE;                
+                break;
+
+             // we have got an entry
+            case ERROR_SUCCESS:                       
+        
+                // only cookies are concerned                 
+                if((lpCacheEntry->CacheEntryType & COOKIE_CACHE_ENTRY))
+				{
+					CString csUser;
+					DWORD	dwSize;
+
+					GetUserName(csUser.GetBuffer(2048), &dwSize);
+					csUser.ReleaseBuffer();
+					if(!strcmp(lpCacheEntry->lpszSourceUrlName, "Cookie:"+csUser+"@"+m_config.m_csHost+"/www_test/"))
+						DeleteUrlCacheEntry(lpCacheEntry->lpszSourceUrlName);
+				}
+                    
+                // get ready for next entry
+                dwTrySize = dwEntrySize;
+                if (FindNextUrlCacheEntry(hCacheDir, lpCacheEntry, &dwTrySize))
+                    dwError = ERROR_SUCCESS;          
+     
+                else
+                {
+                    dwError = GetLastError();
+                    dwEntrySize = dwTrySize; // use new size returned
+                }                    
+                break;
+
+            // unknown error
+            default:
+                bDone = TRUE;                
+                break;
+        }
+
+        if (bDone)
+        {   
+            delete [] lpCacheEntry; 
+            if (hCacheDir)
+                FindCloseUrlCache(hCacheDir);         
+                                  
+        }
+    } while (!bDone);
+
+}
+
+void CNel_launcherApp::LoadVersion()
+{
+	CString csVersion;
+
+	m_dVersion	= 0;
+
+	if(!csVersion.LoadString(IDS_VERSION))
+	{
+		MSGBOX("Error", "Cannot load version resource");
+	}
+	else
+	{
+		Log("Launcher' version " + csVersion);
+		m_dVersion	= atof(csVersion);
+	}
+}
+
+void CNel_launcherApp::EnableLog(BOOL bEnable)
+{
+	m_bLog	= bEnable;
+}
+
+void CNel_launcherApp::Log(CString cs)
+{
+	if(!m_bLog)
+		return;
+
+	CFile	f;
+
+	if(f.Open(LOGFILE, CFile::modeCreate | CFile::modeWrite | CFile::modeNoTruncate))
+	{
+		f.SeekToEnd();
+		cs	+= "\r\n";
+		f.Write(cs, cs.GetLength());
+		f.Close();
+	}
+	else
+		AfxMessageBox("Cannot access/create to log file");
 }

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.7 2001/07/04 12:33:00 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.8 2001/07/12 15:48:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -215,7 +215,7 @@ protected:
 	 *  \param pos the resulting pos of the particle, expressed in the emitter basis
 	 *  \param speed the reulting speed of the emitter, expressed in the emitter basis
 	 */
-	virtual void emit(uint32 index, CVector &pos, CVector &speed) = 0 ;
+	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) = 0 ;
 
 	/// a pointer on the type to be emitted
 	CPSLocated *_EmittedType ;
@@ -268,7 +268,7 @@ inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
 {
 	if (!_EmittedType) return ;
 
-	static CVector speed, pos ;
+	static NLMISC::CVector speed, pos ;
 	
 	if (!_SpeedBasisEmission)
 	{
@@ -292,7 +292,7 @@ inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
 	}
 	else
 	{
-		CMatrix m = CPSUtil::buildSchmidtBasis(_Owner->getSpeed()[index]) ;
+		NLMISC::CMatrix m = CPSUtil::buildSchmidtBasis(_Owner->getSpeed()[index]) ;
 		if (_SpeedInheritanceFactor == 0.f)
 		{		
 			while (nbToGenerate > 0)
@@ -423,7 +423,7 @@ class CPSEmitterDirectionnal : public CPSEmitter, public CPSModulatedEmitter
 public:
 
 
-	CPSEmitterDirectionnal() : _Dir(CVector::K)
+	CPSEmitterDirectionnal() : _Dir(NLMISC::CVector::K)
 	{ _Name = std::string("DirectionnalEmitter") ; }
 
 	/// serialisation
@@ -432,16 +432,16 @@ public:
 	
 	NLMISC_DECLARE_CLASS(CPSEmitterDirectionnal) ;
 	
-	virtual void emit(uint32 index, CVector &pos, CVector &speed) ;
+	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) ;
 
-	void setDir(const CVector &v) { _Dir = v ; }
+	void setDir(const NLMISC::CVector &v) { _Dir = v ; }
 
-	CVector getDir(void) const { return _Dir ; }
+	NLMISC::CVector getDir(void) const { return _Dir ; }
 
 
 protected:
 
-	CVector _Dir ;
+	NLMISC::CVector _Dir ;
 
 	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner ; }
 	virtual void newElement(CPSLocated *emitter, uint32 emitterIndex) ;
@@ -468,7 +468,7 @@ public:
 
 
 	/// emission of located
-	virtual void emit(uint32 index, CVector &pos, CVector &speed) ;
+	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) ;
 protected:
 	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner ; }
 	virtual void newElement(CPSLocated *emitter, uint32 emitterIndex) ;
@@ -488,7 +488,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 		// ctor
 
-		CPSEmitterRectangle() : _Dir(-CVector::K)
+		CPSEmitterRectangle() : _Dir(-NLMISC::CVector::K)
 		{
 			_Name = std::string("EmitterRectangle") ;
 		}
@@ -501,11 +501,11 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 		/// emission of located
 
-		virtual void emit(uint32 index, CVector &pos, CVector &speed) ;
+		virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) ;
 
-		virtual void setDir(const CVector &v) { _Dir = v ; }
+		virtual void setDir(const NLMISC::CVector &v) { _Dir = v ; }
 
-		CVector getDir(void) const { return _Dir ; }
+		NLMISC::CVector getDir(void) const { return _Dir ; }
 
 	
 		void showTool(void) ;
@@ -515,11 +515,11 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 		// inherited from IPSMover
 		virtual bool supportUniformScaling(void) const { return true ; }
 		virtual bool supportNonUniformScaling(void) const { return true ; }			
-		virtual void setMatrix(uint32 index, const CMatrix &m) ;	
-		virtual CMatrix getMatrix(uint32 index) const ;			
+		virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m) ;	
+		virtual NLMISC::CMatrix getMatrix(uint32 index) const ;			
 		virtual void setScale(uint32 index, float scale) ;	
-		virtual void setScale(uint32 index, const CVector &s) ;
-		CVector getScale(uint32 index) const ;
+		virtual void setScale(uint32 index, const NLMISC::CVector &s) ;
+		NLMISC::CVector getScale(uint32 index) const ;
 
 	
 
@@ -538,7 +538,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 		TPSAttribFloat _Height ;
 
 		// direction of emission (in each plane basis)
-		CVector _Dir ;
+		NLMISC::CVector _Dir ;
 
 		/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 		 */
@@ -575,7 +575,7 @@ public:
 
 
 	/// emission of located
-	virtual void emit(uint32 index, CVector &pos, CVector &speed) ;
+	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) ;
 
 	/// set a new radius for emission
 	void setRadius(float r) { _Radius = r ; }
@@ -584,7 +584,7 @@ public:
 	float getRadius(void) const { return _Radius ; }
 
 	/// set the direction for emission
-	virtual void setDir(const CVector &v) ;
+	virtual void setDir(const NLMISC::CVector &v) ;
 
 protected:
 	
@@ -614,7 +614,7 @@ public:
 
 	/// emission of located
 
-	virtual void emit(uint32 index, CVector &pos, CVector &speed) ;
+	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) ;
 
 	
 
@@ -625,10 +625,10 @@ public:
 	// inherited from IPSMover
 	virtual bool supportUniformScaling(void) const { return true ; }
 	virtual bool supportNonUniformScaling(void) const { return false ; }			
-	virtual void setMatrix(uint32 index, const CMatrix &m) ;	
-	virtual CMatrix getMatrix(uint32 index) const ;			
+	virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m) ;	
+	virtual NLMISC::CMatrix getMatrix(uint32 index) const ;			
 	virtual void setScale(uint32 index, float scale) { _Radius[index] = scale ; }		
-	CVector getScale(uint32 index) const { return CVector(_Radius[index], _Radius[index], _Radius[index]) ; }
+	NLMISC::CVector getScale(uint32 index) const { return NLMISC::CVector(_Radius[index], _Radius[index], _Radius[index]) ; }
 
 
 

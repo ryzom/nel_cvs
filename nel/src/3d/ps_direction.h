@@ -1,7 +1,7 @@
 /** \file ps_direction.h
  * <File description>
  *
- * $Id: ps_direction.h,v 1.1 2001/07/04 12:33:24 vizerie Exp $
+ * $Id: ps_direction.h,v 1.2 2001/07/12 15:50:26 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_PS_DIRECTION_H
 
 #include "nel/misc/types_nl.h"
-
+#include "nel/misc/vector.h"
 
 namespace NL3D {
 
@@ -39,8 +39,8 @@ namespace NL3D {
 class CPSDirection
 {
 public :	
-	virtual void setDir(const CVector &v) = 0 ;
-	virtual CVector getDir(void) const = 0 ;
+	virtual void setDir(const NLMISC::CVector &v) = 0 ;
+	virtual NLMISC::CVector getDir(void) const = 0 ;
 } ;
 
 

@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.3 2001/07/04 12:31:53 vizerie Exp $
+ * $Id: ps_force.h,v 1.4 2001/07/12 15:46:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,7 +196,7 @@ protected:
  *  {
  *    public:
  *      /// it is strongly recommended to have your operator inlined
- *      void operator() (const CVector &pos, CVector &speed, float invMass , CanimationTime ellapsedTime)
+ *      void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CanimationTime ellapsedTime)
  *      {
  *			// perform the speed update there
  *		}
@@ -315,7 +315,7 @@ class CPSDirectionnalForce : public CPSForceIntensityHelper, public CPSDirection
 	{ 
 		_Name = std::string("DirectionnalForce") ; 
 		setIntensity(i); 
-		_Dir = CVector(0, 0, -1) ;
+		_Dir = NLMISC::CVector(0, 0, -1) ;
 	}
 
 	/// serialization
@@ -325,14 +325,14 @@ class CPSDirectionnalForce : public CPSForceIntensityHelper, public CPSDirection
 	NLMISC_DECLARE_CLASS(CPSDirectionnalForce) ; 
 
 	/// set the direction of the force
-	virtual void setDir(const CVector &dir) { _Dir = dir ; }
+	virtual void setDir(const NLMISC::CVector &dir) { _Dir = dir ; }
 
 	/// get the direction of the force
-	virtual CVector getDir(void) const  { return _Dir ; }
+	virtual NLMISC::CVector getDir(void) const  { return _Dir ; }
 
 protected:
 
-	CVector _Dir ;	
+	NLMISC::CVector _Dir ;	
 } ;
 
 
@@ -431,7 +431,7 @@ public:
 	{		
 	}
 
-	 void operator() (const CVector &pos, CVector &speed, float invMass , CAnimationTime ellapsedTime)
+	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
 	 {
 		speed -= (ellapsedTime * _K * invMass * speed)  ;
 	 }
@@ -501,9 +501,9 @@ public:
 	{		
 	}
 
-	 void operator() (const CVector &pos, CVector &speed, float invMass , CAnimationTime ellapsedTime)
+	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
 	 {
-		speed += ellapsedTime * _K * invMass * CVector (rand() * (2.f / RAND_MAX) - 1.f,
+		speed += ellapsedTime * _K * invMass * NLMISC::CVector (rand() * (2.f / RAND_MAX) - 1.f,
 														rand() * (2.f / RAND_MAX) - 1.f,
 														rand() * (2.f / RAND_MAX) - 1.f) ;
 	 }
@@ -564,18 +564,18 @@ protected:
 
 struct CPSTurbulForceFunc
 {	
-	void operator() (const CVector &pos, CVector &speed, float invMass , CAnimationTime ellapsedTime)
+	void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
 	{
 		nlassert(0) ;
 
 		// TODO : complete that
 
-	/*	static const CVector v1(1.235f, - 45.32f, 157.5f) ;
-		static const CVector v2(-0.35f, 7.77f, 220.77f) ;
+	/*	static const NLMISC::CVector v1(1.235f, - 45.32f, 157.5f) ;
+		static const NLMISC::CVector v2(-0.35f, 7.77f, 220.77f) ;
 
 
 		speed += ellapsedTime * _Intensity 
-			   * CVector(2.f * (-0.5f + CPSUtil::buildPerlinNoise(_Scale * pos, _NumOctaves))
+			   * NLMISC::CVector(2.f * (-0.5f + CPSUtil::buildPerlinNoise(_Scale * pos, _NumOctaves))
 						 , 2.f * (-0.5f +  CPSUtil::buildPerlinNoise(_Scale * (pos +  v1) , _NumOctaves))
 						 , 2.f * (-0.5f +  CPSUtil::buildPerlinNoise(_Scale * (pos +  v2) , _NumOctaves))
 						 ) ;
@@ -668,13 +668,13 @@ public:
 	virtual bool supportUniformScaling(void) const { return true ; }
 	virtual bool supportNonUniformScaling(void) const { return false ; }		
 	virtual void setScale(uint32 k, float scale) { _Radius[k] = scale ; }
-	virtual CVector getScale(uint32 k) const { return CVector(_Radius[k], _Radius[k], _Radius[k]) ; }
+	virtual NLMISC::CVector getScale(uint32 k) const { return NLMISC::CVector(_Radius[k], _Radius[k], _Radius[k]) ; }
 	virtual bool onlyStoreNormal(void) const { return true ; }	
-	virtual CVector getNormal(uint32 index) { return _Normal[index] ; }	
-	virtual void setNormal(uint32 index, CVector n) { _Normal[index] = n ; }
+	virtual NLMISC::CVector getNormal(uint32 index) { return _Normal[index] ; }	
+	virtual void setNormal(uint32 index, NLMISC::CVector n) { _Normal[index] = n ; }
 
-	virtual void setMatrix(uint32 index, const CMatrix &m) ;
-	virtual CMatrix getMatrix(uint32 index) const ;
+	virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m) ;
+	virtual NLMISC::CMatrix getMatrix(uint32 index) const ;
 	
 	
 	void setRadialViscosity(float v) { _RadialViscosity = v ; }
@@ -700,7 +700,7 @@ protected:
 	virtual CPSLocated *getForceIntensityOwner(void) { return _Owner ; }
 
 	// the normal of the vortex
-	CPSAttrib<CVector> _Normal ;
+	CPSAttrib<NLMISC::CVector> _Normal ;
 	// radius of the vortex
 	TPSAttribFloat _Radius ;
 

@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.13 2001/06/18 07:57:09 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.14 2001/06/27 08:49:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,10 +104,10 @@ namespace NLAIAGENT
 				NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
 				accessor.value() = h;
 			}
-			CAgentManagerTimer::RunTimer = new CAgentManagerTimer::CRunTimer();
-			CAgentManagerTimer::TimerManagerRun =  NLMISC::IThread::create(CAgentManagerTimer::RunTimer);
-			CAgentManagerTimer::TimerManagerRun->start();
-			CAgentManagerTimer::IsRunning = true;
+			//CAgentManagerTimer::RunTimer = new CAgentManagerTimer::CRunTimer();
+			//CAgentManagerTimer::TimerManagerRun =  NLMISC::IThread::create(CAgentManagerTimer::RunTimer);
+			//CAgentManagerTimer::TimerManagerRun->start();
+			CAgentManagerTimer::IsRunning = false;
 		}
 	}
 
@@ -115,17 +115,23 @@ namespace NLAIAGENT
 	{
 		if(CAgentManagerTimer::IsRunning)
 		{
-			CAgentManagerTimer::TimerManagerRun->terminate();
+			if(CAgentManagerTimer::TimerManagerRun)
 			{
-				NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
-				delete accessor.value();
+				CAgentManagerTimer::TimerManagerRun->terminate();
+				{
+					NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
+					delete accessor.value();
+				}
 			}
 			delete CAgentManagerTimer::IdAgentTimer;
 			CAgentManagerTimer::IdAgentTimer = NULL;				
 			delete CAgentManagerTimer::TimerManager;
 			CAgentManagerTimer::TimerManager = NULL;
-			delete CAgentManagerTimer::RunTimer;
-			delete CAgentManagerTimer::TimerManagerRun;
+			if(CAgentManagerTimer::TimerManagerRun)
+			{				
+				delete CAgentManagerTimer::RunTimer;
+				delete CAgentManagerTimer::TimerManagerRun;
+			}
 			CAgentManagerTimer::IsRunning = false;
 		}
 	}

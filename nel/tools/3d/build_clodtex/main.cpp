@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
  * <File description>
  *
- * $Id: main.cpp,v 1.6 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: main.cpp,v 1.7 2004/05/10 14:50:33 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -206,24 +206,18 @@ int main(int argc, char *argv[])
 			uint32	fileInDate= CFile::getFileModificationDate(pathNameIn);
 			string	pathNameOut= shape_dir_out + "/" + fileNameIn;
 
-			// First try cache. If file exist and not newer, continue.
+			// Get the output file Date
+			uint32		fileOutDate= 0;
 			// If File Out exist 
 			if(CFile::fileExists(pathNameOut))
 			{
 				// If newer than file In (and also newer than retrieverInfos), skip
-				uint32		fileOutDate= CFile::getFileModificationDate(pathNameOut);
-				if(	fileOutDate >= fileInDate )
-				{
-					NLMISC::InfoLog->displayRaw("Skiping %s\n", fileNameIn.c_str());
-					continue;
-				}
+				fileOutDate= CFile::getFileModificationDate(pathNameOut);
 			}
 
-			// progress
-			NLMISC::InfoLog->displayRaw("Processing %s", fileNameIn.c_str());
-
 			// search in all lods if the file Name match a filter
-			uint j;
+			uint	j;
+			bool	skipped= false;
 			for(j=0;j<LodFilters.size();j++)
 			{
 				// Make the test case-unsensitive
@@ -233,23 +227,43 @@ int main(int argc, char *argv[])
 				strlwr(lwrFilter);
 				if( testWildCard(lwrFileName.c_str(), lwrFilter.c_str()) )
 				{
+					string	clodFile= clod_dir_in+"/"+LodNames[j]+".clod";
+
+					// test clod date against fileOut, only if the outFile is already newer than the fileIn
+					if(fileOutDate>=fileInDate)
+					{
+						// if the out file is newer than the clod, then don't need rebuild
+						uint32	clodDate= CFile::getFileModificationDate(clodFile);
+						if(fileOutDate>=clodDate)
+						{
+							NLMISC::InfoLog->displayRaw("Skiping %s\n", fileNameIn.c_str());
+							// skip other wildcards
+							skipped= true;
+							break;
+						}
+					}
+
 					// Ok, try to do the compute.
-					if( computeOneShape( (clod_dir_in+"/"+LodNames[j]+".clod").c_str(), pathNameIn.c_str(), pathNameOut.c_str() ) )
+					NLMISC::InfoLog->displayRaw("Processing %s", fileNameIn.c_str());
+					if( computeOneShape( clodFile.c_str(), pathNameIn.c_str(), pathNameOut.c_str() ) )
 					{
 						// succed => stop
-						NLMISC::InfoLog->displayRaw(" - CLod Textured with %s", LodNames[j].c_str());
+						NLMISC::InfoLog->displayRaw(" - CLod Textured with %s\n", LodNames[j].c_str());
 						break;
 					}
 				}
 			}
+
+			// if skip this shape
+			if(skipped)
+				continue;
+
 			// if fail to find a valid filter, just do a copy
 			if(j==LodFilters.size())
 			{
 				CFile::copyFile(pathNameOut.c_str(), pathNameIn.c_str());
-				NLMISC::InfoLog->displayRaw(" - Copied");
+				NLMISC::InfoLog->displayRaw("Processing %s - Copied\n", fileNameIn.c_str());
 			}
-
-			NLMISC::InfoLog->displayRaw("\n");
 		}
 	}
 

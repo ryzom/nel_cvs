@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.27 2003/04/02 15:37:01 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.28 2003/07/01 10:15:34 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -111,44 +111,6 @@ void CBitMemStream::serialBit( bool& bit )
 //sint32 CBitMemStream::getPosInBit ()
 
 
-#define displayByteBits(a,b,c)
-/*void displayByteBits( uint8 b, uint nbits, sint beginpos )
-{
-	string s1, s2;
-	sint i;
-	for ( i=nbits-1; i!=-1; --i )
-	{
-		s1 += ( (b >> i) & 1 ) ? "1" : "0";
-	}
-	nlinfo( "%s", s1.c_str() );
-	for ( i=nbits; i>beginpos+1; --i )
-	{
-		s2 += " ";
-	}
-	s2 += "^";
-	nlinfo( "%s beginpos=%u", s2.c_str(), beginpos );
-}*/
-
-
-#define displayDwordBits(a,b,c)
-/*void displayDwordBits( uint32 b, uint nbits, sint beginpos )
-{
-	string s1, s2;
-	sint i;
-	for ( i=nbits-1; i!=-1; --i )
-	{
-		s1 += ( (b >> i) & 1 ) ? "1" : "0";
-	}
-	nlinfo( "%s", s1.c_str() );
-	for ( i=nbits; i>beginpos+1; --i )
-	{
-		s2 += " ";
-	}
-	s2 += "^";
-	nlinfo( "%s beginpos=%u", s2.c_str(), beginpos );
-}*/
-
-
 #ifdef LOG_ALL_TRAFFIC
 
 void	CBitMemStream::_serialAndLog( const char *argstr, uint32& value, uint nbits )
@@ -226,16 +188,16 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 			value |= (v << (nbits-_FreeBits));
 			++_BufPos;
 			uint readbits = _FreeBits;
-			displayByteBits( *_BufPos, 8, readbits-1 );
+			//displayByteBits( *_BufPos, 8, readbits-1, false );
 			_FreeBits = 8;
 			serial( value, nbits - readbits, false ); // read without resetting value
 		}
 		else
 		{
 			//nlinfo( "Reading last byte %u from %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
-			//displayByteBits( *_BufPos, 8, _FreeBits-1 );
+			//displayByteBits( *_BufPos, 8, _FreeBits-1, false );
 			value |= (v >> (_FreeBits-nbits));
-			displayByteBits( *_BufPos, 8, _FreeBits-1 );
+			//displayByteBits( *_BufPos, 8, _FreeBits-1, false );
 			if ( _FreeBits == nbits )
 			{
 				_FreeBits = 8;
@@ -260,7 +222,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 			}
 			else
 			{
-				_BufPos++;
+				++_BufPos;
 			}
 //			_Buffer.push_back(0);
 //			_BufPos = _Buffer.end() - 1;
@@ -268,7 +230,7 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		}
 
 		// Clear high-order bits after nbits
-		//displayDwordBits( value, 32, nbits-1 );
+		//displayDwordBits( value, 32, nbits-1, false );
 
 		//uint32 mask = (-1 >> (32-nbits)); // does not work
 		uint32 v;
@@ -287,10 +249,10 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		{
 			// Longer than the room in the current byte
 			//nldebug( "Writing byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
-			displayDwordBits( value, 32, nbits-1 );
+			//displayDwordBits( value, 32, nbits-1, false );
 			*_BufPos |= (v >> (nbits - _FreeBits));
 			uint filledbits = _FreeBits;
-			displayByteBits( *_BufPos, 8, filledbits-1 );
+			//displayByteBits( *_BufPos, 8, filledbits-1, false );
 			_FreeBits = 8;
 			serial( v, nbits - filledbits );
 		}
@@ -298,9 +260,9 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
 		{
 			// Shorter or equal
 			//nldebug( "Writing last byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
-			displayByteBits( *_BufPos, 8, 7 );
+			//displayByteBits( *_BufPos, 8, 7, false );
 			*_BufPos |= (v << (_FreeBits-nbits));
-			displayByteBits( *_BufPos, 8, _FreeBits-1 );
+			//displayByteBits( *_BufPos, 8, _FreeBits-1, false );
 			_FreeBits = ((_FreeBits-1 - nbits) % 8) + 1; // ((uint)-1) % 8 equals 7
 		}
 	}
@@ -317,25 +279,27 @@ void	CBitMemStream::reserveBits( uint nbits )
 	if ( VerboseAllTraffic )
 		nldebug( "TRAFFIC/%p/%s: Reserving %u bits at bitpos %d", this, isReading()?"I":"O", nbits, getPosInBit() );	
 #endif
+
 	uint32 v = 0;
 	while ( nbits > 32 )
 	{
 		serial( v, 32 );
 		nbits -= 32;
 	}
-	serial( v, nbits );
+	if ( nbits != 0 )
+		serial( v, nbits );
 }
 
 
 /*
- * Helper for poke(), to write a value inside an output stream
+ * Helper for poke(), to write a value inside an output stream (works because reserveBits sets to 0)
  */
 void	CBitMemStream::serialPoke( uint32 value, uint nbits )
 {
 	// Resize if necessary
 	if ( _FreeBits == 8 ) // _FreeBits is from 7 downto 1, then 8
 	{
-		_BufPos++; // increment _BufPos but do not reset (*_BufPos)
+		++_BufPos; // increment _BufPos but do not reset (*_BufPos)
 	}
 
 	uint32 v;
@@ -354,10 +318,11 @@ void	CBitMemStream::serialPoke( uint32 value, uint nbits )
 	{
 		// Longer than the room in the current byte
 		//nldebug( "Writing byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
-		displayDwordBits( value, 32, nbits-1 );
+		//displayDwordBits( value, 32, nbits-1, false );
 		*_BufPos |= (v >> (nbits - _FreeBits));
+		
 		uint filledbits = _FreeBits;
-		displayByteBits( *_BufPos, 8, filledbits-1 );
+		//displayByteBits( *_BufPos, 8, filledbits-1, false );
 		_FreeBits = 8;
 		serialPoke( v, nbits - filledbits );
 	}
@@ -365,9 +330,9 @@ void	CBitMemStream::serialPoke( uint32 value, uint nbits )
 	{
 		// Shorter or equal
 		//nldebug( "Writing last byte %u into %u free bits (%u remaining bits)", lengthS(), _FreeBits, nbits );
-		displayByteBits( *_BufPos, 8, 7 );
+		//displayByteBits( *_BufPos, 8, 7, false );
 		*_BufPos |= (v << (_FreeBits-nbits));
-		displayByteBits( *_BufPos, 8, _FreeBits-1 );
+		//displayByteBits( *_BufPos, 8, _FreeBits-1, false );
 		_FreeBits = ((_FreeBits-1 - nbits) % 8) + 1; // ((uint)-1) % 8 equals 7
 	}
 }
@@ -417,6 +382,8 @@ void	CBitMemStream::pokeBits( const CBitSet& bitfield, uint bitpos )
 	_FreeBits = 8 - (bitpos - (bytepos << 3));
 	uint8 *savedBufPos = _BufPos;
 	_BufPos = _Buffer.getPtr() + bytepos;
+	if ( _FreeBits == 8 )
+		--_BufPos; // necessary because serialPoke increments it if 8
 
 	// Serial
 	const vector<uint32>& uintVec = bitfield.getVector();
@@ -424,9 +391,13 @@ void	CBitMemStream::pokeBits( const CBitSet& bitfield, uint bitpos )
 	{
 		for ( uint i=0; i<uintVec.size()-1; ++i )
 		{
+			//nldebug( "Bitfield: Poked %u at %d (bitpos %d)", uintVec[i], getPos(), getPosInBit() );
 			serialPoke( uintVec[i], 32 );
 		}
-		serialPoke( uintVec.back(), bitfield.size() % 32 );
+		//nldebug( "Bitfield: Poked %u at %d (bitpos %d)", uintVec.back(), getPos(), getPosInBit() );
+		uint remainingBits = bitfield.size() % 32;
+		if ( remainingBits != 0 )
+			serialPoke( uintVec.back(), remainingBits );
 	}
 
 	// Restore the current pointers
@@ -455,11 +426,13 @@ void	CBitMemStream::readBits( NLMISC::CBitSet& bitfield )
 		while ( len > 32 )
 		{
 			serial( v, 32 );
+			//nldebug( "Bitfield: Read %u at %d", v, _BufPos-_Buffer.getPtr()-4 );
 			bitfield.setUint( v, i );
 			len -= 32;
 			++i;
 		}
 		serial( v, len );
+		//nldebug( "Bitfield: Read %u at %d", v, _BufPos-_Buffer.getPtr()-4 );
 		bitfield.setUint( v, i );
 	}
 }
@@ -604,7 +577,7 @@ void	CBitMemStream::serialMemStream(CBitMemStream &b)
 
 #ifdef LOG_ALL_TRAFFIC
 	if ( VerboseAllTraffic )
-		nldebug( "TRAFFIC/%p/%s: Sub-bitmemstring (size 32+%u*8 bits) at bitpos %d", this, isReading()?"I":"O", len, bitpos );
+		nldebug( "TRAFFIC/%p/%s: Sub-bitmemstream (size 32+%u*8 bits) at bitpos %d", this, isReading()?"I":"O", len, bitpos );
 #endif
 }
 
@@ -657,6 +630,37 @@ void CBitMemStream::serialCont(std::vector<bool> &cont)
 
 }
 
+
+/*
+ * Display the bits of the stream just before the current pos
+ */
+void	CBitMemStream::displayLastBits( sint nbits, sint bitpos, NLMISC::CLog *log )
+{
+	if ( bitpos == -1 )
+		bitpos = getPosInBit();	
+	displayBitStream( *this, max(bitpos-nbits, 0), bitpos-1, log );
+}
+
+
+/*
+ * Display a part of a bitmemstream
+ */
+void	displayBitStream( const CBitMemStream& msg, sint beginbitpos, sint endbitpos, NLMISC::CLog *log )
+{
+	sint beginpos = beginbitpos/8;
+	sint endpos = endbitpos/8;
+	nlinfo( "beginpos %d endpos %d beginbitpos %d endbitpos %d", beginpos, endpos, beginbitpos, endbitpos );
+	displayByteBits( *(msg.buffer()+beginpos), 8, 8-(beginbitpos-beginpos*8), true, log );
+	const uint8 *p;
+	for ( p=msg.buffer()+beginpos+1; p<msg.buffer()+endpos-1; ++p )
+	{
+		displayByteBits( *p, 8, 0, false, log );
+	}
+	if ( endpos > beginpos )
+	{
+		displayByteBits( *(msg.buffer()+endpos), 8, 0, false, log );
+	}
+}
 
 
 } // NLMISC

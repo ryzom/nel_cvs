@@ -1,6 +1,6 @@
 /** \file nel_launcher_dlg.cpp
  *
- * $Id: nel_launcher_dlg.cpp,v 1.3 2004/01/08 11:38:58 lecroart Exp $
+ * $Id: nel_launcher_dlg.cpp,v 1.4 2004/01/29 14:18:58 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -330,7 +330,7 @@ void CNeLLauncherDlg::OnConnect()
 	if(!p)
 	{
 		MessageBox("Please, select a shard and then press Connect button", "Information");
-		return;
+		goto end;
 	}
 
 	while (p)

@@ -1,9 +1,9 @@
 #include "nel/ai/logic/goal.h"
 #include "nel/ai/logic/var.h"
+#include "nel/ai/agent/object_type.h"
 
 namespace NLAILOGIC
 {
-
 	CGoal::CGoal() : IBaseBoolType()
 	{
 		_Name = NULL;
@@ -12,6 +12,16 @@ namespace NLAILOGIC
 	CGoal::CGoal(const NLAIAGENT::IVarName &name) : IBaseBoolType()
 	{
 		_Name = (NLAIAGENT::IVarName *) name.clone();
+	}
+
+	CGoal::CGoal(const NLAIAGENT::IVarName &name, std::list<const NLAIAGENT::IObjectIA *> &args)
+	{
+		_Name = (NLAIAGENT::IVarName *) name.clone();
+		while ( !args.empty() )
+		{
+			_Args.push_back( (NLAIAGENT::IObjectIA *) args.front() );
+			args.pop_front();
+		}
 	}
 
 	CGoal::CGoal(const CGoal &c) : IBaseBoolType()
@@ -24,6 +34,10 @@ namespace NLAILOGIC
 	{
 		if ( _Name )
 			_Name->release();
+
+		int i;
+		for ( i = 0; i < (int) _Args.size(); i++ )
+			_Args[i]->release();
 	}
 
 	void CGoal::failure()
@@ -75,7 +89,9 @@ namespace NLAILOGIC
 
 	void CGoal::getDebugString(char *text) const
 	{
-		strcpy( text ,"CGoal");
+		strcpy( text ,"<CGoal> ");
+		if ( _Name ) 
+			strcat( text, _Name->getString() );
 	}
 
 	bool CGoal::isTrue() const
@@ -118,8 +134,69 @@ namespace NLAILOGIC
 		std::list<IBaseVar *>::iterator it_var = vars.begin();
 		while ( it_var != vars.end() )
 		{
-			_Vars.push_back( (IBaseVar *) (*it_var)->clone() );
+			_Args.push_back( (IBaseVar *) (*it_var)->clone() );
 			it_var++;
 		}
 	}
+
+	NLAIAGENT::tQueue CGoal::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
+	{
+		NLAIAGENT::tQueue r;
+		if(className == NULL)
+		{
+			if( (*funcName) == NLAIAGENT::CStringVarName( "Constructor" ) )
+			{					
+				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( CGoal::IdGoal ) );					
+				r.push( NLAIAGENT::CIdMethod( 0 + IObjetOp::getMethodIndexSize(), 0.0, NULL, c) );					
+			}
+		}
+		return r;
+	}
+
+	///\name Some IObjectIA method definition.
+	//@{		
+	NLAIAGENT::IObjectIA::CProcessResult CGoal::runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *)
+	{
+		return IObjectIA::CProcessResult();
+	}
+
+	NLAIAGENT::IObjectIA::CProcessResult CGoal::runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p)
+	{
+		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)p;
+
+		switch(index - IObjetOp::getMethodIndexSize())
+		{
+		case 0:
+			{					
+
+				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->get();
+				param->popFront();
+#ifdef NL_DEBUG
+				const char *dbg_name = name->getStr().getString();
+#endif
+				// If the constructor() function is explicitely called and the object has already been initialised
+				if ( _Name )
+					_Name->release();
+				_Args.clear();
+
+				_Name = (NLAIAGENT::IVarName *) name->getStr().clone();
+				std::list<const NLAIAGENT::IObjectIA *> args;
+				while ( param->size() )
+				{
+					_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront() );
+					param->popFront();
+				}
+				return IObjectIA::CProcessResult();		
+			}
+			break;
+		}
+
+		return IObjectIA::CProcessResult();
+	}
+
+	sint32 CGoal::getMethodIndexSize() const
+	{
+		return IBaseBoolType::getMethodIndexSize() + 1;
+	}
+	//@}
 }

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.48 2002/08/28 15:16:08 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.49 2002/08/29 10:15:27 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -586,6 +586,11 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 	// connect to all connection
 	bool	connectSuccess;
 	
+	if (uc->Connection.size () < addr.size ())
+	{
+		uc->Connection.resize (addr.size ());
+	}
+
 	vector<CInetAddress> laddr = CInetAddress::localAddresses();
 
 	for (uint i = 0; i < addr.size(); i++)
@@ -641,7 +646,7 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 		}
 		else
 		{
-			uc->Connection.push_back (CUnifiedNetwork::CUnifiedConnection::TConnection(cbc));
+			uc->Connection[i] = CUnifiedNetwork::CUnifiedConnection::TConnection(cbc);
 
 			// temp to savoir comment c est possible ce cas la
 			nlassert (uc->Connection.size()<3);
@@ -852,7 +857,8 @@ uint8 CUnifiedNetwork::findConnectionId (uint32 sid, uint8 nid)
 
 	if (nid == 0xFF)
 	{
-		nlinfo ("HNETL5: nid %hu, will use the default connection %hu", (uint16)nid, (uint16)connectionId);
+		// it s often appen because they didn't set a good network configuration, so it s in debug to disable it easily
+		nldebug ("HNETL5: nid %hu, will use the default connection %hu", (uint16)nid, (uint16)connectionId);
 	}
 	else if (nid >= _IdCnx[sid].NetworkConnectionAssociations.size())
 	{
@@ -870,16 +876,22 @@ uint8 CUnifiedNetwork::findConnectionId (uint32 sid, uint8 nid)
 		}
 	}
 
-retry:
 	if (connectionId >= _IdCnx[sid].Connection.size() || !_IdCnx[sid].Connection[connectionId].valid() || !_IdCnx[sid].Connection[connectionId].CbNetBase->connected())
 	{
-		if(connectionId != 0)
+		// there's a problem with the selected connectionID, so try to find a valid one
+		nlwarning ("HNETL5: Can't find selected connection id %hu to send message to %s because connection is not valid or connected, find a valid connection id", (uint16)connectionId, _IdCnx[sid].ServiceName.c_str ());
+
+		for (connectionId = 0; connectionId < _IdCnx[sid].Connection.size(); connectionId++)
 		{
-			nlwarning ("HNETL5: Can't send message to %s because connection is not valid or connected, use default connection", _IdCnx[sid].ServiceName.c_str ());
-			connectionId = 0;
-			goto retry;
+			if (_IdCnx[sid].Connection[connectionId].valid() && _IdCnx[sid].Connection[connectionId].CbNetBase->connected())
+			{
+				// we found one at last, use this one
+				nlinfo ("HNETL5: Ok, we found a valid connectionid, use %hu",  (uint16)connectionId);
+				break;
+			}
 		}
-		else
+
+		if (connectionId == _IdCnx[sid].Connection.size())
 		{
 			nlwarning ("HNETL5: Can't send message to %s because default connection is not exist, valid or connected", _IdCnx[sid].ServiceName.c_str ());
 			return 0xFF;

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.27 2002/08/28 15:16:04 lecroart Exp $
+ * $Id: unified_network.h,v 1.28 2002/08/29 10:15:38 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -309,7 +309,7 @@ private:
 		std::vector<TConnection>	Connection;
 		/// This is used to associate a nid (look addNetworkAssociation) with a TConnection.
 		std::vector<uint8>			NetworkConnectionAssociations;
-		/// This contains the connection id that will be used for default network
+		/// This contains the connection id that will be used for default network, it's a connection id used for Connection index
 		uint8						DefaultNetwork;
 
 		CUnifiedConnection() { reset(); }
@@ -348,6 +348,8 @@ private:
 			NetworkConnectionAssociations.clear();
 		}
 
+		// this function wrap the globa default network and network asssociation with this specific connection because they can have
+		// different index
 		void setupNetworkAssociation (const std::vector<uint32> &networkAssociations, const std::vector<std::string> &defaultNetwork)
 		{
 			for (uint8 i = 0; i < networkAssociations.size (); i++)

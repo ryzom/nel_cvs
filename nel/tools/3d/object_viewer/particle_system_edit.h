@@ -1,7 +1,7 @@
 /** \file particle_system_edit.h
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.h,v 1.6 2002/01/28 14:55:14 vizerie Exp $
+ * $Id: particle_system_edit.h,v 1.7 2002/02/15 17:20:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "ps_wrapper.h"
 #include "dialog_stack.h"
+#include "popup_notify.h"
 
 namespace NL3D
 {
@@ -40,6 +41,8 @@ namespace NL3D
 }
 
 
+
+class CAutoLODDlg;
 
 template <class T> class CEditableRangeT;
 typedef CEditableRangeT<float> CEditableRangeFloat;
@@ -91,7 +94,7 @@ public:
 /////////////////////////////////////////////////////////////////////////////
 // CParticleSystemEdit dialog
 
-class CParticleSystemEdit : public CDialog, public CDialogStack
+class CParticleSystemEdit : public CDialog, public CDialogStack, public IPopupNotify
 {
 // Construction
 public:
@@ -135,6 +138,9 @@ protected:
 
 	CEditableRangeFloat *_TimeThresholdDlg, *_MaxViewDistDlg, *_LODRatioDlg;
 	CEditableRangeUInt  *_MaxIntegrationStepDlg; 
+	CDialog				*_AutoLODDlg;
+	CDialog				*_GlobalColorDlg;
+
 
 	// Generated message map functions
 	//{{AFX_MSG(CParticleSystemEdit)
@@ -150,6 +156,12 @@ protected:
 	afx_msg void OnDieWhenOutOfFrustum();
 	afx_msg void OnSelchangeLifeMgtPresets();
 	afx_msg void OnSelchangeAnimTypeCtrl();
+	afx_msg void OnSharable();
+	afx_msg void OnEditAutoLod();
+	afx_msg void OnEnableAutoLod();
+	afx_msg void OnForceLifeTimeUpdate();
+	afx_msg void OnEditGlobalColor();
+	afx_msg void OnGlobalColor();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -158,6 +170,7 @@ protected:
 	void updateIntegrationParams(void);
 	void updateDieOnEventParams(void);
 	void updateLifeMgtPresets();
+	void childPopupClosed(CWnd *child);
 
 	static CTimeThresholdWrapper _TimeThresholdWrapper;
 

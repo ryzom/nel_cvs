@@ -1,7 +1,7 @@
 /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.8 2002/01/28 14:55:14 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.9 2002/02/15 17:20:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,10 @@
 #include "object_viewer.h"
 #include "particle_system_edit.h"
 #include "3d/particle_system.h"
+#include "3d/ps_color.h"
 #include "editable_range.h"
+#include "auto_lod_dlg.h"
+#include "ps_global_color_dlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,7 +54,8 @@ CUserParamWrapper CParticleSystemEdit::_UserParamWrapper[4];
 
 CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 	: _PS(ps), _TimeThresholdDlg(NULL), _MaxIntegrationStepDlg(NULL)
-		, _MaxViewDistDlg(NULL), _LODRatioDlg(NULL)
+		, _MaxViewDistDlg(NULL), _LODRatioDlg(NULL), _AutoLODDlg(NULL),
+		_GlobalColorDlg(NULL)
 {
 	//{{AFX_DATA_INIT(CParticleSystemEdit)
 	m_AccurateIntegration = FALSE;
@@ -64,11 +68,13 @@ CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps)
 
 CParticleSystemEdit::~CParticleSystemEdit()
 {
-	#define  REMOVE_WND(wnd) if (wnd) { wnd->DestroyWindow(); delete wnd; }
+	#define  REMOVE_WND(wnd) if (wnd) { wnd->DestroyWindow(); delete wnd; wnd = NULL; }
 	REMOVE_WND(_TimeThresholdDlg);	
 	REMOVE_WND(_MaxIntegrationStepDlg);
 	REMOVE_WND(_MaxViewDistDlg);
 	REMOVE_WND(_LODRatioDlg); 
+	REMOVE_WND(_AutoLODDlg);
+	REMOVE_WND(_GlobalColorDlg);
 }
 
 void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
@@ -125,11 +131,27 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
-	_PS->getAccurateIntegrationParams(t, max, csd);
+	bool klt;
+	_PS->getAccurateIntegrationParams(t, max, csd, klt);
 
 	m_AccurateIntegration = _PS->isAccurateIntegrationEnabled();
 	m_PrecomputeBBoxCtrl.SetCheck(!_PS->getAutoComputeBBox());
 	m_EnableSlowDown = csd;	
+	((CButton *)	GetDlgItem(IDC_SHARABLE))->SetCheck(_PS->isSharingEnabled());
+	((CButton *)	GetDlgItem(IDC_FORCE_LIFE_TIME_UPDATE))->SetCheck(klt);
+
+
+	BOOL bAutoLOD = _PS->isAutoLODEnabled();
+	((CButton *)	GetDlgItem(IDC_ENABLE_AUTO_LOD))->SetCheck(bAutoLOD);
+	GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(bAutoLOD);
+
+
+	/// global color
+	int bGlobalColor = _PS->getColorAttenuationScheme() != NULL ?  1 : 0;
+	((CButton *) GetDlgItem(IDC_GLOBAL_COLOR))->SetCheck(bGlobalColor);
+	GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(bGlobalColor);
+
+
 
 	updateIntegrationParams();
 	updatePrecomputedBBoxParams();	
@@ -237,6 +259,12 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_DIE_WHEN_OUT_OF_FRUSTRUM, OnDieWhenOutOfFrustum)	
 	ON_CBN_SELCHANGE(IDC_LIFE_MGT_PRESETS, OnSelchangeLifeMgtPresets)
 	ON_CBN_SELCHANGE(IDC_ANIM_TYPE_CTRL, OnSelchangeAnimTypeCtrl)
+	ON_BN_CLICKED(IDC_SHARABLE, OnSharable)
+	ON_BN_CLICKED(IDC_EDIT_AUTO_LOD, OnEditAutoLod)
+	ON_BN_CLICKED(IDC_ENABLE_AUTO_LOD, OnEnableAutoLod)
+	ON_BN_CLICKED(IDC_FORCE_LIFE_TIME_UPDATE, OnForceLifeTimeUpdate)
+	ON_BN_CLICKED(IDC_EDIT_GLOBAL_COLOR, OnEditGlobalColor)
+	ON_BN_CLICKED(IDC_GLOBAL_COLOR, OnGlobalColor)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -256,8 +284,9 @@ void CParticleSystemEdit::OnEnableSlowDown()
 	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
-	_PS->getAccurateIntegrationParams(t, max, csd);
-	_PS->setAccurateIntegrationParams(t, max, m_EnableSlowDown ? true : false);
+	bool klt;
+	_PS->getAccurateIntegrationParams(t, max, csd, klt);
+	_PS->setAccurateIntegrationParams(t, max, m_EnableSlowDown ? true : false, klt);
 }
 
 void CParticleSystemEdit::OnUpdateBbox() 
@@ -363,6 +392,80 @@ void CParticleSystemEdit::updateLifeMgtPresets()
 
 
 
+void CParticleSystemEdit::OnSharable() 
+{
+	bool shared = ((CButton *)	GetDlgItem(IDC_SHARABLE))->GetCheck() != 0;
+	_PS->enableSharing(shared);	
+}
+
+void CParticleSystemEdit::OnEditAutoLod() 
+{
+	GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(FALSE);
+	GetDlgItem(IDC_ENABLE_AUTO_LOD)->EnableWindow(FALSE);
+	nlassert(_AutoLODDlg == NULL);
+	CAutoLODDlg *autoLODDlg = new CAutoLODDlg(_PS, this, this);	
+	autoLODDlg->init(this);
+	_AutoLODDlg = autoLODDlg;
+}
+
+
+void CParticleSystemEdit::childPopupClosed(CWnd *child)
+{
+	if (child == _AutoLODDlg)
+	{
+		GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(TRUE);
+		GetDlgItem(IDC_ENABLE_AUTO_LOD)->EnableWindow(TRUE);
+		REMOVE_WND(_AutoLODDlg);
+	}
+	else
+	if (child == _GlobalColorDlg)
+	{
+		GetDlgItem(IDC_GLOBAL_COLOR)->EnableWindow(TRUE);
+		GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(TRUE);
+		REMOVE_WND(_GlobalColorDlg);
+	}
+			
+}
+
+
+
+void CParticleSystemEdit::OnEnableAutoLod() 
+{
+	BOOL bEnable = ((CButton *) GetDlgItem(IDC_ENABLE_AUTO_LOD))->GetCheck() != 0;
+	GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(bEnable);
+	_PS->enableAutoLOD(bEnable ? true : false /* performance warning */);
+}
+
+
+
+///=====================================================================
+void CParticleSystemEdit::OnEditGlobalColor() 
+{
+	nlassert(!_GlobalColorDlg);
+	GetDlgItem(IDC_GLOBAL_COLOR)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(FALSE);		
+	CPSGlobalColorDlg *gcd = new CPSGlobalColorDlg(_PS, this, this);
+	gcd->init(this);
+	_GlobalColorDlg = gcd;
+}
+
+///=====================================================================
+void CParticleSystemEdit::OnGlobalColor() 
+{	
+	/// if the system hasn't a global color scheme, add one.
+	if (_PS->getColorAttenuationScheme() == NULL)
+	{
+		_PS->setColorAttenuationScheme(new NL3D::CPSColorGradient);
+		GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(TRUE);
+	}
+	else
+	{
+		_PS->setColorAttenuationScheme(NULL);
+		GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(FALSE);
+	}
+}
+
+
 /////////////////////////////
 // WRAPPERS IMPLEMENTATION //
 /////////////////////////////
@@ -372,7 +475,8 @@ float CTimeThresholdWrapper::get(void) const
 	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
-	PS->getAccurateIntegrationParams(t, max, csd);
+	bool klt;
+	PS->getAccurateIntegrationParams(t, max, csd, klt);
 	return t;
 }
 void CTimeThresholdWrapper::set(const float &tt)
@@ -380,8 +484,9 @@ void CTimeThresholdWrapper::set(const float &tt)
 	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
-	PS->getAccurateIntegrationParams(t, max, csd);
-	PS->setAccurateIntegrationParams(tt, max, csd);	
+	bool klt;
+	PS->getAccurateIntegrationParams(t, max, csd, klt);
+	PS->setAccurateIntegrationParams(tt, max, csd, klt);	
 }
 
 uint32 CMaxNbIntegrationWrapper::get(void) const
@@ -389,7 +494,8 @@ uint32 CMaxNbIntegrationWrapper::get(void) const
 	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
-	PS->getAccurateIntegrationParams(t, max, csd);
+	bool klt;
+	PS->getAccurateIntegrationParams(t, max, csd, klt);
 	return max;
 }
 void CMaxNbIntegrationWrapper::set(const uint32 &nmax)
@@ -397,8 +503,9 @@ void CMaxNbIntegrationWrapper::set(const uint32 &nmax)
 	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
-	PS->getAccurateIntegrationParams(t, max, csd);
-	PS->setAccurateIntegrationParams(t, nmax, csd);	
+	bool klt;
+	PS->getAccurateIntegrationParams(t, max, csd, klt);
+	PS->setAccurateIntegrationParams(t, nmax, csd, klt);	
 }
 	
 float CUserParamWrapper::get(void) const 
@@ -426,7 +533,19 @@ float CLODRatioWrapper::get(void) const
 {
 	return PS->getLODRatio();
 }
+
 void CLODRatioWrapper::set(const float &v)
 {
 	PS->setLODRatio(v);
+}
+
+void CParticleSystemEdit::OnForceLifeTimeUpdate() 
+{
+	NL3D::TAnimationTime t;
+	uint32 max;
+	bool csd;
+	bool klt;	
+	_PS->getAccurateIntegrationParams(t, max, csd, klt);
+	klt = ((CButton *)	GetDlgItem(IDC_FORCE_LIFE_TIME_UPDATE))->GetCheck() != 0;
+	_PS->setAccurateIntegrationParams(t, max, csd, klt);
 }

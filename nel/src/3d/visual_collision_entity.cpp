@@ -1,7 +1,7 @@
 /** \file visual_collision_entity.cpp
  * <File description>
  *
- * $Id: visual_collision_entity.cpp,v 1.17 2003/11/17 16:33:13 berenguier Exp $
+ * $Id: visual_collision_entity.cpp,v 1.18 2003/12/02 12:48:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,8 +110,14 @@ CTrianglePatch		*CVisualCollisionEntity::getPatchTriangleUnderUs(const CVector &
 	{
 		// copy from cache.
 		res= _LastGPTPosOutput;
-		// copy into cache
-		_LastGPTPosInput= pos;
+		/* don't modify _LastGPTPosInput cache, for best cache behavior in all cases.
+			1/ this is not necessary (here, if pos!=_LastGPTPosInput, THEN pos==_LastGPTPosOutput, no other possibilities)
+			2/ it causes problems when getPatchTriangleUnderUs() is called randomly with the unsnapped or snapped position:
+				1st Time: zin:9.0  =>  zout:9.5	cache fail (ok, 1st time...)
+				2nd Time: zin:9.0  =>  zout:9.5	cache OK (_LastGPTPosInput.z==zin)
+				3rd Time: zin:9.5  =>  zout:9.5	cache OK (_LastGPTPosOutput.z==zin)
+				4th Time: zin:9.0  =>  zout:9.5	cache FAILS (_LastGPTPosInput.z= 9.5 => !=zin)
+		*/
 		// and return ptr on cache.
 		return &_LastGPTTrianglePatch;
 	}
@@ -224,6 +230,7 @@ bool		CVisualCollisionEntity::snapToGround(CVector &pos, CVector &normal)
 			// just snap to the accurate tile tesselation.
 			pos= res;
 		}
+
 
 		// compute the normal.
 		normal= (tri->V1-tri->V0)^(tri->V2-tri->V0);
@@ -385,7 +392,10 @@ bool		CVisualCollisionEntity::triangleIntersect(CTriangle &tri, const CVector &p
 	if(h<pos0.z)	return false;
 
 	// OK!!
-	hit= tmp;
+	// For cache completness, ensure that X and Y don't move, take same XY than pos0
+	hit.x= pos0.x;
+	hit.y= pos0.y;
+	hit.z= h;
 	return true;
 }
 
@@ -535,7 +545,7 @@ bool		CVisualCollisionEntity::getStaticLightSetup(const CVector &pos,
 		sunContribution= _Owner->_Landscape->getLumel(tri->PatchId, uv);
 		// see getStaticLightSetup.
 		sunContribution= _Owner->_SunContributionLUT[sunContribution];
-
+		
 		// append any lights of interest.
 		_Owner->_Landscape->appendTileLightInfluences(tri->PatchId, uv, pointLightList);
 

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.19 2003/01/15 15:50:20 lecroart Exp $
+ * $Id: command.h,v 1.20 2003/02/14 14:14:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -150,22 +150,16 @@ public: \
 		if (args.size() == 1) \
 		{ \
 			std::stringstream ls (args[0]); \
-			__type p; \
-			ls >> p; \
-			pointer (&p, false, log); \
+			__type p2; \
+			ls >> p2; \
+			pointer (&p2, false, log); \
 		} \
-		if (args.size() >= 0) \
-		{ \
-			__type p; \
-			pointer (&p, true, log); \
-			std::stringstream ls; \
-			ls << "Variable " << _CommandName << " = " << p; \
-			log.displayNL(ls.str().c_str()); \
-		} \
-		if (args.size() > 1) \
-			return false; \
-		 \
-		return true; \
+		__type p; \
+		pointer (&p, true, log); \
+		std::stringstream ls; \
+		ls << "Variable " << _CommandName << " = " << p; \
+		log.displayNL(ls.str().c_str()); \
+		return (args.size() <= 1); \
 	} \
  \
 	void pointer(__type *pointer, bool get, NLMISC::CLog &log); \
@@ -264,16 +258,12 @@ public:
 			std::stringstream s2 (args[0]);
 			s2 >> *_Pointer;
 		}
-		if (args.size() >= 0)
 		{
 			std::stringstream s;
 			s << "Variable " << _CommandName << " = " << *_Pointer;
 			log.displayNL(s.str().c_str());
 		}
-		if (args.size() > 1)
-			return false;
-		
-		return true;
+		return (args.size() <= 1);
 	}
 private:
 	T *_Pointer;

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.38 2003/04/15 10:18:52 corvazier Exp $
+ * $Id: move_container.cpp,v 1.38.2.1 2003/06/04 09:41:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -664,45 +664,52 @@ bool CMoveContainer::evalOneTerrainCollision (double beginTime, CMovePrimitive *
 				double contactTime = (_DeltaTime-beginTime)*desc.ContactTime+beginTime;
 
 				/*
-				 *  If beginTime is 0.999999999 and desc.ContactTime<1.0, contactTime will be 1.0.
-				 *  In this case, we force contactTime to be beginTime to avoid collision at time == 1.0.
-				**/
-				if ((contactTime >= 1.0) && (beginTime < 1.0) && (desc.ContactTime < 1.0))
-					contactTime = beginTime;
-
-				// Set the container's time space contact time
-				desc.ContactTime = contactTime;
-
-				// ptr on the surface
-				const CRetrievableSurface *surf= _Retriever->getSurfaceById (desc.ContactSurface);
-
-				// TODO: check surface flags  against primitive flags HERE:
-				// Is a wall ?
-				bool isWall;
-				if(!surf)
-					isWall= true;
-				else
-					isWall= !(surf->isFloor() || surf->isCeiling());
-
-				// stop on a wall.
-				if(isWall)
+				 *	Check retriever collision is not to close to deltaTime
+				 * Thus, avoid bad float accuracy rounds...
+				 */
+				if (desc.ContactTime < 0.999f)
 				{
-					// Test move ?
-					if (testMove)
-					{
-						// return contact normal only when testmove and vector provided
-						if (contactNormal)
-							*contactNormal = desc.ContactNormal;
-						return true;
-					}
-					else
-					{
-						// OK, collision if we are a collisionable primitive
-						newCollision (primitive, desc, primitiveWorldImage, beginTime, staticColInfo);
+					/*
+					 *  If beginTime is 0.999999999 and desc.ContactTime<1.0, contactTime will be 1.0.
+					 *  In this case, we force contactTime to be beginTime to avoid collision at time == 1.0.
+					**/
+					if ((contactTime >= 1.0) && (beginTime < 1.0) && (desc.ContactTime < 1.0))
+						contactTime = beginTime;
 
-						// One collision found
-						found=true;
-						break;
+					// Set the container's time space contact time
+					desc.ContactTime = contactTime;
+
+					// ptr on the surface
+					const CRetrievableSurface *surf= _Retriever->getSurfaceById (desc.ContactSurface);
+
+					// TODO: check surface flags  against primitive flags HERE:
+					// Is a wall ?
+					bool isWall;
+					if(!surf)
+						isWall= true;
+					else
+						isWall= !(surf->isFloor() || surf->isCeiling());
+
+					// stop on a wall.
+					if(isWall)
+					{
+						// Test move ?
+						if (testMove)
+						{
+							// return contact normal only when testmove and vector provided
+							if (contactNormal)
+								*contactNormal = desc.ContactNormal;
+							return true;
+						}
+						else
+						{
+							// OK, collision if we are a collisionable primitive
+							newCollision (primitive, desc, primitiveWorldImage, beginTime, staticColInfo);
+
+							// One collision found
+							found=true;
+							break;
+						}
 					}
 				}
 			}
@@ -803,9 +810,15 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 							if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
 								primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo, contactNormal))
 							{
-								if (testMove)
-									return true;
-								found=true;
+								/*
+								 *	Check collision occured not to close to deltaTime (in real time)
+								 */
+								if (dynamicColInfo->getCollisionDesc().ContactTime < _DeltaTime - 0.001)
+								{
+									if (testMove)
+										return true;
+									found=true;
+								}
 							}
 						}
 					}
@@ -835,9 +848,15 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 						if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
 							primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo, contactNormal))
 						{
-							if (testMove)
-								return true;
-							found=true;
+							/*
+							 *	Check collision occured not to close to deltaTime (in real time)
+							 */
+							if (dynamicColInfo->getCollisionDesc().ContactTime < _DeltaTime - 0.001)
+							{
+								if (testMove)
+									return true;
+								found=true;
+							}
 						}
 					}
 				}
@@ -1074,8 +1093,8 @@ void CMoveContainer::newCollision (CMovePrimitive* first, const CCollisionSurfac
 	time-=NELPACS_DIST_BACK/wI->getSpeed().norm();
 	time=std::max(time, beginTime);
 	double ratio=(time-beginTime)/(_DeltaTime-beginTime);
-	nlassert (ratio>=0);
-	nlassert (ratio<=1);
+	nlassertex (ratio>=0, ("ratio=%f", ratio));
+	nlassertex (ratio<=1, ("ratio=%f", ratio));
 
 	if (staticColInfo)
 	{

@@ -176,6 +176,15 @@ namespace NLAIAGENT
 				onPause();
 			_IsPaused = true;
 		}
+
+		// Calls the launched actors Pause callbacks
+		std::list<IBasicAgent *>::iterator it_l = _Launched.begin();
+		while ( it_l != _Launched.end() )
+		{
+			CActorScript *launched = (CActorScript *) *it_l;
+			launched->pause();
+			it_l++;
+		}
 	}
 
 	void CActorScript::onPause()
@@ -208,6 +217,15 @@ namespace NLAIAGENT
 			else
 				onRestart();
 			_IsPaused = false;
+		}
+
+		// Calls the launched actors Restart callbacks
+		std::list<IBasicAgent *>::iterator it_l = _Launched.begin();
+		while ( it_l != _Launched.end() )
+		{
+			CActorScript *launched = (CActorScript *) *it_l;
+			launched->restart();
+			it_l++;
 		}
 	}
 

@@ -2,7 +2,7 @@ dnl ==========================================================================
 dnl Configuration script for Snowballs
 dnl ==========================================================================
 dnl
-dnl $Id: configure.in,v 1.6 2001/10/29 18:56:28 lecroart Exp $
+dnl $Id: configure.in,v 1.7 2001/11/07 16:26:15 valignat Exp $
 dnl 
 
 
@@ -181,9 +181,8 @@ fi
 AC_SUBST(NEL_CFLAGS)
 AC_SUBST(NEL_LIBS)
 
-dnl Checking NeL instalation
-_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CXXFLAGS ${NEL_CFLAGS}"
+CXXFLAGS="$CXXFLAGS ${NEL_CFLAGS}"
+LIBS="$LIBS ${NEL_LIBS}"
 
 
 dnl ==========================================================================

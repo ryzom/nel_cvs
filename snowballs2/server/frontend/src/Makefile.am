@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.4 2001/10/29 18:56:28 lecroart Exp $
+# $Id: Makefile.am,v 1.5 2001/11/07 16:26:15 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -7,8 +7,6 @@ MAINTAINERCLEANFILES = Makefile.in
 bin_PROGRAMS         = sno_frontend
 
 sno_frontend_SOURCES = main.cpp
-
-sno_frontend_LDADD   = @NEL_LIBS@
 
 
 # End of Makefile.am

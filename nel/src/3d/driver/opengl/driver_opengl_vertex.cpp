@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.50 2004/06/07 17:29:48 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.51 2004/07/21 12:18:02 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -188,6 +188,10 @@ bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	// NB: must duplicate changes in activeVertexBufferHard()	
 	uint32	flags;
 
+	// In any case, we'll erase any special vertex setup for Lightmap Material
+	_LastVertexSetupIsLightMap= false;
+	
+	// setup
 	if (!setupVertexBuffer(VB))
 		return false;
 
@@ -1496,8 +1500,6 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 		// no vertex programs
 		setupGlArraysStd(vb);
 	}	
-	// Reset specials flags.
-	_LastVertexSetupIsLightMap= false;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.17 2004/04/07 11:54:12 berenguier Exp $
+ * $Id: main.cpp,v 1.18 2004/07/21 12:18:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,10 @@ void	displayGeom(FILE *logStream, const CMeshGeom &geom)
 	uint	nbBS= geom.getNbBlendShapes();
 	if(nbBS)
 		fprintf(logStream, "  NumBlendShapes: %d\n", nbBS );
+	IMeshVertexProgram	*mvp= geom.getMeshVertexProgram();
+	if(mvp)
+		fprintf(logStream, "  MeshVertexProgram: %s\n", typeid(*mvp).name() );
+	
 }
 
 void	displayMRMGeom(FILE *logStream, const CMeshMRMGeom &geom)

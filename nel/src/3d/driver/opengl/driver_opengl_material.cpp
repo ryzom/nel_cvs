@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.92 2004/06/29 13:52:21 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.93 2004/07/21 12:18:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1042,15 +1042,16 @@ void			CDriverGL::setupLightMapPass(uint pass)
 // ***************************************************************************
 void			CDriverGL::endLightMapMultiPass()
 {
-	// Cache it. reseted in setupGLArrays(), and setupMaterial()
-	_LastVertexSetupIsLightMap= true;
+	// Flag the fact that VertexSetup is dirty (special lightmap). reseted in activeVertexBuffer(), and setupMaterial()
+	// NB: if no lightmaps, no setupUVPtr() has been called => don't need to flag 
+	// (important else crash if graphist error while exporting a Lightmap material, with a MeshVertexProgram (WindTree) )
+	if(_NLightMaps!=0)
+		_LastVertexSetupIsLightMap= true;
 
 	// If multi-pass, then must reset the fog color
 	if(_NLightMapPass>=2 && _FogEnabled)
 	{
 		glFogfv(GL_FOG_COLOR, _CurrentFogColor);
-		
-			
 	}
 
 	// nothing to do with blending/lighting, since always setuped in activeMaterial().

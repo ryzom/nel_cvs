@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.41 2004/03/23 15:38:43 berenguier Exp $
+ * $Id: mesh.h,v 1.42 2004/07/21 12:17:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -488,6 +488,9 @@ public:
 
 	// Is this mesh Geom has a VertexProgram bound?
 	virtual bool	hasMeshVertexProgram() const {return _MeshVertexProgram!=NULL;}
+
+	// get the Mesh VertexProgram
+	IMeshVertexProgram	*getMeshVertexProgram() const {return _MeshVertexProgram;}
 
 // ************************
 private:

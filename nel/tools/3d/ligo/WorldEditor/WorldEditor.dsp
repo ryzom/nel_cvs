@@ -171,7 +171,7 @@ SOURCE=.\ExportDlg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Generate.cpp
+SOURCE=.\GenerateDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -193,6 +193,18 @@ SOURCE=.\toolsLogic.cpp
 # Begin Source File
 
 SOURCE=.\toolsZone.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TypeDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TypeManagerDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TypeSelDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -224,11 +236,15 @@ SOURCE=.\Display.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\edit_stack.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ExportDlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\Generate.h
+SOURCE=.\GenerateDlg.h
 # End Source File
 # Begin Source File
 
@@ -253,6 +269,18 @@ SOURCE=.\toolsLogic.h
 # Begin Source File
 
 SOURCE=.\toolsZone.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TypeDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TypeManagerDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TypeSelDlg.h
 # End Source File
 # Begin Source File
 

@@ -2,6 +2,7 @@
 #include "stdafx.h"
 
 #include "builderZone.h"
+#include "mainfrm.h"
 #include "display.h"
 #include "toolsZone.h"
 #include "../lib/primitive.h"
@@ -36,7 +37,7 @@ using NL3D::CViewport;
 using NL3D::CNELU;
 
 // ***************************************************************************
-// CDataBase
+// CDataBase::SCacheTexture
 // ***************************************************************************
 
 // ---------------------------------------------------------------------------
@@ -67,51 +68,25 @@ CDataBase::CDataBase ()
 	_RefSizeX = _RefSizeY = DATABASE_ZONE_SIZE; // Size of a zone in pixel
 	_RefCacheTextureNbEltX = _RefCacheTextureSizeX / _RefSizeX;
 	_RefCacheTextureNbEltY = _RefCacheTextureSizeY / _RefSizeY;
-	for (uint32 i; i < 64; ++i)
+	for (uint32 i = 0; i < 64; ++i)
 		_CacheTexture[i].Enabled = false;
 }
 
 // ---------------------------------------------------------------------------
 CDataBase::~CDataBase ()
 {
+	map<string,SElement>::iterator it = _ZoneDBmap.begin ();
+	while (it != _ZoneDBmap.end())
+	{
+		SElement &rElt = it->second;
+		delete rElt.WinBitmap;
+		++it;
+	}
 }
 
 // ---------------------------------------------------------------------------
 bool CDataBase::initFromPath (const string &Path)
 {
-	/*
-	char sDirBackup[512];
-	char sDirNew[512];
-	GetCurrentDirectory (512, sDirBackup);
-	strcpy (sDirNew, sDirBackup);
-	strcat (sDirNew, "\\");
-	strcat (sDirNew, Path.c_str());
-	SetCurrentDirectory (sDirNew);
-	WIN32_FIND_DATA findData;
-	HANDLE hFind;
-	hFind = FindFirstFile ("*.*", &findData);
-	
-	while (hFind != INVALID_HANDLE_VALUE)
-	{
-		// If the name of the file is not . or .. then its a valid entry in the DataBase
-		if (!((strcmp (findData.cFileName, ".") == 0) || (strcmp (findData.cFileName, "..") == 0)))
-		{
-			SElement zdbTmp;
-
-			// Read the texture file
-			zdbTmp.Name = findData.cFileName;
-			zdbTmp.Texture = loadTexture (zdbTmp.Name + ".TGA");
-			zdbTmp.WinBitmap = convertToWin (zdbTmp.Texture);
-
-			// Add the entry in the DataBase
-			_ZoneDB.push_back (zdbTmp);
-		}
-		if (FindNextFile (hFind, &findData) == 0)
-			break;
-	}
-	SetCurrentDirectory (sDirBackup);
-	return true;
-	*/
 	return false;
 }
 
@@ -320,83 +295,6 @@ NLMISC::CBitmap *CDataBase::loadBitmap (const std::string &fileName)
 
 	return pBitmap;
 }
-// ***************************************************************************
-// CBuilderZoneStack
-// ***************************************************************************
-
-#define BUILDERZONE_STACK_SIZE	32
-
-// ---------------------------------------------------------------------------
-CBuilderZoneStack::CBuilderZoneStack()
-{
-	_Stack.resize (BUILDERZONE_STACK_SIZE); // Depth of the stack
-	reset ();
-}
-
-// ---------------------------------------------------------------------------
-void CBuilderZoneStack::reset ()
-{
-	_Head = 0;
-	_Queue = 0;
-	_UndoPos = -1;
-}
-
-// ---------------------------------------------------------------------------
-void CBuilderZoneStack::setRegion (CBuilderZoneRegion* pReg,sint32 nPos)
-{
-	if ((_UndoPos+1)%BUILDERZONE_STACK_SIZE != _Queue)
-	{
-		_Queue = (_UndoPos+1)%BUILDERZONE_STACK_SIZE;
-	}
-	//_Queue = (_UndoPos+1)%BUILDERZONE_STACK_SIZE;
-
-	// Stack the region
-	_Stack[_Queue].BZRegion = *pReg;
-	_Stack[_Queue].RegionFrom = pReg;
-	_Stack[_Queue].Pos = nPos;
-
-	_UndoPos = _Queue;
-	_Queue = (_Queue+1)%BUILDERZONE_STACK_SIZE;
-	if (_Head == _Queue)
-		_Head = (_Head+1)%BUILDERZONE_STACK_SIZE;
-}
-
-// ---------------------------------------------------------------------------
-void CBuilderZoneStack::undo ()
-{
-	if (_UndoPos < 0)
-		return;
-	// Retrieve the last stacked element
-	if (_UndoPos != _Head)
-	{
-		_UndoPos--;
-		if (_UndoPos == -1)
-			_UndoPos = BUILDERZONE_STACK_SIZE-1;
-	}	
-	CBuilderZoneRegion *pReg = _Stack[_UndoPos].RegionFrom;
-	*pReg = _Stack[_UndoPos].BZRegion;
-}
-
-// ---------------------------------------------------------------------------
-void CBuilderZoneStack::redo ()
-{
-	if (_UndoPos < 0)
-		return;
-	if ((_UndoPos+1)%BUILDERZONE_STACK_SIZE == _Queue)
-		return;
-	_UndoPos = (_UndoPos+1)%BUILDERZONE_STACK_SIZE;
-	// Retrieve the last stacked element
-	CBuilderZoneRegion *pReg = _Stack[_UndoPos].RegionFrom;
-	*pReg = _Stack[_UndoPos].BZRegion;
-}
-
-// ---------------------------------------------------------------------------
-bool CBuilderZoneStack::isEmpty ()
-{
-	if (_Head == _Queue)
-		return true;
-	return false;
-}
 
 // ***************************************************************************
 // CBuilderZone
@@ -467,14 +365,13 @@ CBuilderZone::CBuilderZone ()
 	_RandomSelection = false;
 	_CurSelectedZone = -1;
 	_ApplyRot = 0;
-	_ApplyRotRan = false;
+	_ApplyRotType = 0;
 	_ApplyFlip = 0;
-	_ApplyFlipRan = false;
+	_ApplyFlipType = 0;
 
 	_Display = NULL;
-	//_ZoneRegions.push_back (new CBuilderZoneRegion());
-	//_ZoneRegionsName.push_back ("__New_Region__");
-	//_ZoneRegionSelected = 0;
+	_ApplyRotCycle = 0;
+	_ApplyFlipCycle = 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -484,7 +381,6 @@ bool CBuilderZone::init (const string &sPathName, bool makeAZone)
 	sZoneBankPath += "ZoneLigos\\";
 	// Init the ZoneBank
 	_ZoneBank.reset ();
-////////	_ZoneBank.debugInit (sZoneBankPath.c_str());
 	initZoneBank (sZoneBankPath);
 	
 	// Construct the DataBase from the ZoneBank
@@ -496,6 +392,46 @@ bool CBuilderZone::init (const string &sPathName, bool makeAZone)
 		newZone();
 	
 	return true;
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::uninit ()
+{
+	for (uint32 i = 0; i < _ZoneRegions.size(); ++i)
+	if (_ZoneRegions[i]->getMustAskSave())
+	{
+		askSaveRegion (i);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::askSaveRegion (int i)
+{
+	string sQuestion = "The region " + _ZoneRegionNames[i] + " has been modified.";
+	sQuestion += "\nWould you want to save it ?";
+	if (MessageBox (_Display->_MainFrame->m_hWnd, sQuestion.c_str(), "Warning", MB_OKCANCEL|MB_ICONQUESTION) == IDOK)
+	{
+		// Save this one
+		if (_FullNames[i] == "")
+		{
+			// SaveAs
+			CFileDialog dialog (false, "land");
+			if (dialog.DoModal() == IDOK)
+			{
+				_FullNames[i] = (LPCTSTR)dialog.GetFileName();
+			}
+		}
+	
+		if (_FullNames[i] != "")
+		{
+			COFile fileOut;
+			fileOut.open (_FullNames[i]);
+			_ZoneRegions[i]->reduceMin ();
+			_ZoneRegions[i]->serial (fileOut);
+			_ZoneRegionNames[i] = _FullNames[i];
+			fileOut.close ();
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -661,7 +597,7 @@ void CBuilderZone::autoSaveAll ()
 void CBuilderZone::newZone (bool bDisplay)
 {
 	_ZoneRegions.push_back (new CBuilderZoneRegion);
-	_ZoneRegionNames.push_back ("__New_Region__");
+	_ZoneRegionNames.push_back ("NewRegion");
 	_FullNames.push_back ("");
 	_ZoneRegionSelected = _ZoneRegions.size() - 1;
 	// Select starting point for the moment 0,0
@@ -689,6 +625,10 @@ void CBuilderZone::unload (uint32 pos)
 	uint32 i = 0;
 	if (_ZoneRegions.size() == 0)
 		return;
+
+	if (_ZoneRegions[pos]->getMustAskSave())
+		askSaveRegion (pos);
+	
 	delete _ZoneRegions[pos];
 	for (i = pos; i < (_ZoneRegions.size()-1); ++i)
 	{
@@ -728,12 +668,17 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 {
 	sint32 i, zoneSelected;
 
+//	MessageBox(NULL, "CBuilderZone::render", "1", MB_OK);
+
 	// Reset the cache
 	for (i = 0; i < (64+2); ++i)
 	{
 		_CacheRender[i].VB.setNumVertices (0);
 		_CacheRender[i].PB.setNumTri (0);
+		_CacheRender[i].Used = false;
 	}
+
+//	MessageBox(NULL, "CBuilderZone::render", "2", MB_OK);
 
 	// Select all blocks visible
 	float minx = floorf(viewMin.x/_Display->_CellSize)*_Display->_CellSize;
@@ -824,7 +769,7 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 			_CacheRender[i].PB.setTri (nBaseTri+0, nBasePt+0, nBasePt+1, nBasePt+2);
 			_CacheRender[i].PB.setTri (nBaseTri+1, nBasePt+0, nBasePt+2, nBasePt+3);
 
-			if ((zoneSelected>=0)&&(zoneSelected<_ZoneRegions.size()))
+			if ((zoneSelected>=0)&&(zoneSelected<(sint32)_ZoneRegions.size()))
 			{
 				if (_ZoneRegions[zoneSelected]->getFlip (x, y) == 1)
 				{
@@ -848,10 +793,18 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 
 			NLMISC::CRGBA color;
 
-			if (getZoneMask(x,y))
-				color = NLMISC::CRGBA(255, 255, 255, 255);
+			if ((zoneSelected>=0)&&(zoneSelected<(sint32)_ZoneRegions.size()))
+			{
+				if (getZoneMask(x,y))
+					color = NLMISC::CRGBA(255, 255, 255, 255);
+				else
+					color = NLMISC::CRGBA(127, 127, 127, 255);
+			}
 			else
-				color = NLMISC::CRGBA(127, 127, 127, 255);
+				color = NLMISC::CRGBA(255, 255, 255, 255);
+
+			if (pTexture == NULL)
+				color = _Display->_BackgroundColor;
 
 			_CacheRender[i].VB.setColor (nBasePt+0, color);
 			_CacheRender[i].VB.setColor (nBasePt+1, color);
@@ -863,6 +816,8 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 		minx += _Display->_CellSize;
 	}
 
+	//MessageBox(NULL, "CBuilderZone::render", "3", MB_OK);
+
 	// Flush the cache to the screen
 	CMatrix mtx;
 	mtx.identity();
@@ -870,6 +825,8 @@ void CBuilderZone::render (const NLMISC::CVector &viewMin, const NLMISC::CVector
 	CNELU::Driver->setupViewMatrix (mtx);
 	CNELU::Driver->setupModelMatrix (mtx);
 	CNELU::Driver->setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+
+	//MessageBox(NULL, "CBuilderZone::render", "4", MB_OK);
 
 	for (i = 0; i < (64+2); ++i)
 	if (_CacheRender[i].Used)
@@ -1047,7 +1004,8 @@ void CBuilderZone::add (const CVector &worldPos)
 		return;
 
 	if (_StackZone.isEmpty())
-		_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
+		//_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
+		_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
 
 	if (_RandomSelection)
 	{
@@ -1059,26 +1017,39 @@ void CBuilderZone::add (const CVector &worldPos)
 		}
 	}
 
-	if (_ApplyRotRan)
+	if (_ApplyRotType == 1)
 	{
 		uint32 nSel = (uint32)(NLMISC::frand (1.0) * 4);
 		NLMISC::clamp (nSel, (uint32)0, (uint32)3);
 		rot = (uint8)nSel;
 	}
-	else
+	else if (_ApplyRotType == 0)
 	{
 		rot = _ApplyRot;
 	}
+	else if (_ApplyRotType == 2)
+	{
+		rot = _ApplyRotCycle;
+		_ApplyRotCycle++;
+		_ApplyRotCycle = _ApplyRotCycle%4;
+	}
 
-	if (_ApplyFlipRan)
+
+	if (_ApplyFlipType == 1)
 	{
 		uint32 nSel = (uint32)(NLMISC::frand (1.0) * 2);
 		NLMISC::clamp (nSel, (uint32)0, (uint32)1);
 		flip = (uint8)nSel;
 	}
-	else
+	else if (_ApplyFlipType == 0)
 	{
 		flip = _ApplyFlip;
+	}
+	else if (_ApplyFlipType == 2)
+	{
+		flip = _ApplyFlipCycle;
+		_ApplyFlipCycle++;
+		_ApplyFlipCycle = _ApplyFlipCycle%2;
 	}
 
 	if ((_CurSelectedZone >= 0)&&(_CurSelectedZone <= ((sint32)_CurrentSelection.size()-1)))
@@ -1087,7 +1058,8 @@ void CBuilderZone::add (const CVector &worldPos)
 		_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
 		_ZoneRegions[_ZoneRegionSelected]->add (x, y, rot, flip, pZBE);
 	}
-	_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
+//	_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
+	_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
 }
 
 // ---------------------------------------------------------------------------
@@ -1100,12 +1072,14 @@ void CBuilderZone::del (const CVector &worldPos)
 		return;
 
 	if (_StackZone.isEmpty())
-		_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
+		//_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
+		_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
 
 	_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
 	_ZoneRegions[_ZoneRegionSelected]->del (x, y);
 
-	_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
+	//_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
+	_StackZone.add (_ZoneRegions[_ZoneRegionSelected]);
 }
 
 // ---------------------------------------------------------------------------

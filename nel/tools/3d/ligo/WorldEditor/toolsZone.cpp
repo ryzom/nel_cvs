@@ -9,7 +9,7 @@ using namespace std;
 
 // ---------------------------------------------------------------------------
 
-#define IDC_LIST			0x10000
+//#define IDC_LIST			0x10000
 
 
 // ***************************************************************************
@@ -216,9 +216,11 @@ BEGIN_MESSAGE_MAP (CToolsZone, CFormView)
 	ON_BN_CLICKED (IDC_ROT180, OnSelectRot180)
 	ON_BN_CLICKED (IDC_ROT270, OnSelectRot270)
 	ON_BN_CLICKED (IDC_ROTRANDOM, OnSelectRotRan)
+	ON_BN_CLICKED (IDC_ROTCYCLE, OnSelectRotCycle)
 	ON_BN_CLICKED (IDC_FLIPNO, OnSelectFlipNo)
 	ON_BN_CLICKED (IDC_FLIPYES, OnSelectFlipYes)
 	ON_BN_CLICKED (IDC_FLIPRANDOM, OnSelectFlipRan)
+	ON_BN_CLICKED (IDC_FLIPCYCLE, OnSelectFlipCycle)
 
 END_MESSAGE_MAP()
 
@@ -314,12 +316,12 @@ void CToolsZone::init (CMainFrame *pMF)
 		pButRan->SetCheck (0);
 
 	CButton *pButton;
-	if (_MainFrame->_ZoneBuilder._ApplyRotRan)
+	if (_MainFrame->_ZoneBuilder._ApplyRotType == 1) // Random
 	{
 		pButton = (CButton*)GetDlgItem(IDC_ROTRANDOM);
 		pButton->SetCheck (1);
 	}
-	else
+	else if (_MainFrame->_ZoneBuilder._ApplyRotType == 0) // Normal
 	{
 		switch (_MainFrame->_ZoneBuilder._ApplyRot)
 		{
@@ -330,19 +332,29 @@ void CToolsZone::init (CMainFrame *pMF)
 		}
 		pButton->SetCheck (1);
 	}
+	else if (_MainFrame->_ZoneBuilder._ApplyRotType == 2) // Cycle
+	{
+		pButton = (CButton*)GetDlgItem(IDC_ROTCYCLE);
+		pButton->SetCheck (1);
+	}
 
-	if (_MainFrame->_ZoneBuilder._ApplyFlipRan)
+	if (_MainFrame->_ZoneBuilder._ApplyFlipType == 1) // Random
 	{
 		pButton = (CButton*)GetDlgItem(IDC_FLIPRANDOM);
 		pButton->SetCheck (1);
 	}
-	else
+	else if (_MainFrame->_ZoneBuilder._ApplyFlipType == 0) // Normal
 	{
 		switch (_MainFrame->_ZoneBuilder._ApplyFlip)
 		{
 			case 0: pButton = (CButton*)GetDlgItem(IDC_FLIPNO); break;
 			case 1: pButton = (CButton*)GetDlgItem(IDC_FLIPYES); break;
 		}
+		pButton->SetCheck (1);
+	}
+	else if (_MainFrame->_ZoneBuilder._ApplyFlipType == 2) // Cycle
+	{
+		pButton = (CButton*)GetDlgItem(IDC_FLIPCYCLE);
 		pButton->SetCheck (1);
 	}
 
@@ -549,52 +561,64 @@ void CToolsZone::OnSelChange ()
 void CToolsZone::OnSelectRot0 ()
 {
 	_MainFrame->_ZoneBuilder._ApplyRot = 0;
-	_MainFrame->_ZoneBuilder._ApplyRotRan = false;
+	_MainFrame->_ZoneBuilder._ApplyRotType = 0;
 }
 
 // ---------------------------------------------------------------------------
 void CToolsZone::OnSelectRot90 ()
 {
 	_MainFrame->_ZoneBuilder._ApplyRot = 1;
-	_MainFrame->_ZoneBuilder._ApplyRotRan = false;
+	_MainFrame->_ZoneBuilder._ApplyRotType = 0;
 }
 
 // ---------------------------------------------------------------------------
 void CToolsZone::OnSelectRot180 ()
 {
 	_MainFrame->_ZoneBuilder._ApplyRot = 2;
-	_MainFrame->_ZoneBuilder._ApplyRotRan = false;
+	_MainFrame->_ZoneBuilder._ApplyRotType = 0;
 }
 
 // ---------------------------------------------------------------------------
 void CToolsZone::OnSelectRot270 ()
 {
 	_MainFrame->_ZoneBuilder._ApplyRot = 3;
-	_MainFrame->_ZoneBuilder._ApplyRotRan = false;
+	_MainFrame->_ZoneBuilder._ApplyRotType = 0;
 }
 
 // ---------------------------------------------------------------------------
 void CToolsZone::OnSelectRotRan ()
 {
-	_MainFrame->_ZoneBuilder._ApplyRotRan = true;
+	_MainFrame->_ZoneBuilder._ApplyRotType = 1;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectRotCycle ()
+{
+	_MainFrame->_ZoneBuilder._ApplyRotType = 2;
 }
 
 // ---------------------------------------------------------------------------
 void CToolsZone::OnSelectFlipNo ()
 {
 	_MainFrame->_ZoneBuilder._ApplyFlip = 0;
-	_MainFrame->_ZoneBuilder._ApplyFlipRan = false;
+	_MainFrame->_ZoneBuilder._ApplyFlipType = 0;
 }
 
 // ---------------------------------------------------------------------------
 void CToolsZone::OnSelectFlipYes ()
 {
 	_MainFrame->_ZoneBuilder._ApplyFlip = 1;
-	_MainFrame->_ZoneBuilder._ApplyFlipRan = false;
+	_MainFrame->_ZoneBuilder._ApplyFlipType = 0;
 }
 
 // ---------------------------------------------------------------------------
 void CToolsZone::OnSelectFlipRan ()
 {
-	_MainFrame->_ZoneBuilder._ApplyFlipRan = true;
+	_MainFrame->_ZoneBuilder._ApplyFlipType = 1;
+}
+
+// ---------------------------------------------------------------------------
+void CToolsZone::OnSelectFlipCycle ()
+{
+	_MainFrame->_ZoneBuilder._ApplyFlipType = 2;
 }

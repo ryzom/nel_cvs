@@ -68,6 +68,8 @@ private:
 	sint32						_MinX, _MinY;
 	sint32						_MaxX, _MaxY;
 
+	bool						_MustAskSave;
+
 	NLLIGO::CZoneBank			*_ZeBank;
 	CBuilderZone				*_Builder; // To use the global mask
 
@@ -90,6 +92,10 @@ private:
 
 	SZoneUnit			*getZoneAmongRegions (CBuilderZoneRegion*& pBZRfromAndRet, sint32 x, sint32 y);
 
+	void				set (sint32 x, sint32 y, sint32 nPosX, sint32 nPosY, const std::string &ZoneName, bool transition=false);
+	void				setRot (sint32 x, sint32 y, uint8 rot);
+	void				setFlip (sint32 x, sint32 y, uint8 flip);
+
 public:
 
 	CBuilderZoneRegion ();
@@ -103,25 +109,21 @@ public:
 	void				del (sint32 x, sint32 y, bool transition=false, void *pInternal=NULL);
 	void				serial (NLMISC::IStream &f);
 	void				move (sint32 x, sint32 y);
+	void				setStart (sint32 x, sint32 y);
+	void				reduceMin ();
 
-	// Helpers
-	void				set (sint32 x, sint32 y, sint32 nPosX, sint32 nPosY, const std::string &ZoneName, bool transition=false);
-	void				setRot (sint32 x, sint32 y, uint8 rot);
-	void				setFlip (sint32 x, sint32 y, uint8 flip);
+	// Accessors
 	const std::string	&getName (sint32 x, sint32 y);
 	uint8				getPosX (sint32 x, sint32 y);
 	uint8				getPosY (sint32 x, sint32 y);
 	uint8				getRot (sint32 x, sint32 y);
 	uint8				getFlip (sint32 x, sint32 y);
-	void				reduceMin ();
 
-	sint32				getMinX() { return _MinX; }
-	sint32				getMaxX() { return _MaxX; }
-	sint32				getMinY() { return _MinY; }
-	sint32				getMaxY() { return _MaxY; }
-	void				setStart(sint32 x, sint32 y);
-
-	//const CBuilderZoneRegion&	operator=(CBuilderZoneRegion&bzr);
+	sint32				getMinX () { return _MinX; }
+	sint32				getMaxX () { return _MaxX; }
+	sint32				getMinY () { return _MinY; }
+	sint32				getMaxY () { return _MaxY; }
+	bool				getMustAskSave () { return _MustAskSave; }
 };
 
 #endif // BUILDERZONEREGION_H

@@ -9,6 +9,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+// ---------------------------------------------------------------------------
+
 #include "3d/driver.h"
 #include "nel/misc/vector.h"
 #include "../lib/ligo_config.h"
@@ -16,18 +18,34 @@
 #include "BuilderLogic.h"
 #include "BuilderZone.h"
 
+// ---------------------------------------------------------------------------
+
+class CType 
+{
+public:
+	std::string		Name;
+	NLMISC::CRGBA	Color;
+
+	void serial (NLMISC::IStream&f);
+};
+
+// ---------------------------------------------------------------------------
+
 class CMainFrame : public CFrameWnd
 {
 
 public:
+
 	CMainFrame ();
 
 protected: 
+
 	DECLARE_DYNAMIC(CMainFrame)
 
 // Attributes
 public:
-	int					createX, createY, createCX, createCY;
+	
+	int					CreateX, CreateY, CreateCX, CreateCY;
 
 	bool				_Exit;
 	bool				_SplitterCreated;
@@ -36,8 +54,12 @@ public:
 	CBuilderZone		_ZoneBuilder;
 	sint32				_Mode;	// 0-Mode Zone, 1-Mode Logic
 	std::string			_RootDir;
+
+	std::vector<CType>	_Types;
+
 // Operations
 public:
+
 	void setRootDir (const char* str);
 	void loadLand (const char* str, const char* path);
 	void loadPrim (const char* str, const char* path);
@@ -48,6 +70,7 @@ public:
 
 	// Initialize the main frame (must be done before init of the tools)
 	bool init (bool bMakeAZone = true);
+	void uninit ();
 
 	void displayCoordinates(NLMISC::CVector &v);
 	void adjustSplitter();
@@ -90,9 +113,11 @@ protected:
 	afx_msg void OnMenuFileExportToClient ();
 	afx_msg void OnMenuModeZone ();
 	afx_msg void OnMenuModeLogic ();
+	afx_msg void OnMenuModeType ();
 	afx_msg void onMenuModeSelectZone ();
 	afx_msg void onMenuModeMove ();
 	afx_msg void OnMenuViewGrid ();
+	afx_msg void OnMenuViewBackground ();
 	afx_msg void OnClose ();
 	afx_msg void OnSize (UINT nType, int cx, int cy);
 

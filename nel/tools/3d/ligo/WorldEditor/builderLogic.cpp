@@ -47,7 +47,6 @@ SPrimBuild::SPrimBuild()
 CBuilderLogic::CBuilderLogic()
 {
 	_ItemSelected = NULL;
-	_VertexSelected = -1;
 	_RegionSelected = -1;
 	_ToolsLogic = NULL;
 }
@@ -62,6 +61,47 @@ void CBuilderLogic::setDisplay (CDisplay *pDisp)
 void CBuilderLogic::setToolsLogic (CToolsLogic *pTool)
 {
 	_ToolsLogic = pTool;
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::uninit()
+{
+	for (uint32 i = 0; i < _PRegions.size(); ++i)
+	if (_MustAskSaves[i])
+	{
+		askSaveRegion (i);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::askSaveRegion (int i)
+{
+	string sQuestion = "The region " + _PRegions[i]->Name + " has been modified.";
+	sQuestion += "\nWould you want to save it ?";
+	if (MessageBox (_Display->_MainFrame->m_hWnd, sQuestion.c_str(), "Warning", MB_OKCANCEL|MB_ICONQUESTION) == IDOK)
+	{
+		// Save this one
+		if (_FullNames[i] == "")
+		{
+			// SaveAs
+			CFileDialog dialog (false, "prim");
+			if (dialog.DoModal() == IDOK)
+			{
+				_FullNames[i] = (LPCTSTR)dialog.GetFileName();
+			}
+		}
+	
+		if (_FullNames[i] != "")
+		{
+			COFile file;
+			file.open (_FullNames[i]);
+			COXml output;
+			output.init (&file, "1.0");
+			_PRegions[i]->serial (output);
+			output.flush ();
+			file.close ();
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
@@ -126,6 +166,19 @@ void CBuilderLogic::updateToolsLogic ()
 		if (_ToolsLogic != NULL)
 			_ToolsLogic->expandAll (nReg);
 	}
+	// Select the item
+	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.begin ();
+	while (it != _Primitives.end())
+	{
+		if (_ItemSelectedName == getName(it->first))
+		{
+			_ItemSelected = it->first;
+			break;
+		}
+		++it;
+	}
+
+	_VerticesSelected.resize (0);
 }
 
 // ---------------------------------------------------------------------------
@@ -145,7 +198,8 @@ bool CBuilderLogic::load (const char *fileName, const char *path)
 	uint32 nPos = _PRegions.size ();
 	_PRegions.push_back (new CPrimRegion);
 	_FullNames.push_back("");
-	_PRegions[nPos]->Name = "__New_Region__";
+	_MustAskSaves.push_back(false);
+	_PRegions[nPos]->Name = "NewRegion";
 	_FullNames[nPos] = path;
 	_FullNames[nPos] += "\\";
 	_FullNames[nPos] += fileName;
@@ -163,6 +217,7 @@ bool CBuilderLogic::load (const char *fileName, const char *path)
 		MessageBox (NULL, e.what(), "Warning", MB_OK);
 	}
 
+	_StackPR.reset ();
 	updateToolsLogic ();
 
 	if (_Display)
@@ -205,8 +260,9 @@ void CBuilderLogic::newZone ()
 {
 	uint32 nPos = _PRegions.size ();
 	_PRegions.push_back (new CPrimRegion);
-	_PRegions[nPos]->Name = "__New_Region__";
+	_PRegions[nPos]->Name = "NewRegion";
 	_FullNames.push_back ("");
+	_MustAskSaves.push_back(false);
 	_RegionSelected = nPos;
 	updateToolsLogic ();
 }
@@ -216,14 +272,21 @@ void CBuilderLogic::unload (uint32 pos)
 {
 	if (_PRegions.size() == 0)
 		return;
+
+	if (_MustAskSaves[pos])
+		askSaveRegion (pos);
+
 	delete _PRegions[pos];
 	for (uint32 i = pos; i < _PRegions.size()-1; ++i)
 	{
 		_PRegions[i] = _PRegions[i+1];
 		_FullNames[i] = _FullNames[i+1];
+		_MustAskSaves[i] = _MustAskSaves[i+1];
 	}
 	_PRegions.resize (_PRegions.size()-1);
 	_FullNames.resize (_FullNames.size()-1);
+	_MustAskSaves.resize(_MustAskSaves.size()-1);
+	_StackPR.reset ();
 	updateToolsLogic ();
 }
 
@@ -247,6 +310,7 @@ void CBuilderLogic::move (const string &regName, float x, float y)
 	for (i = 0; i < _PRegions.size(); ++i)
 	if (_PRegions[i]->Name == regName)
 	{
+		_MustAskSaves[i] = true;
 		for (j = 0; j < _PRegions[i]->VPoints.size(); ++j)
 		{
 			_PRegions[i]->VPoints[j].Point.x += x;
@@ -275,12 +339,38 @@ void CBuilderLogic::move (const string &regName, float x, float y)
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::insertPoint (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName, NLMISC::CRGBA &col)
+void CBuilderLogic::undo ()
 {
+	_StackPR.undo ();
+	if (_Display)
+		_Display->OnDraw (NULL);
+	updateToolsLogic ();
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::redo ()
+{
+	_StackPR.redo ();
+	if (_Display)
+		_Display->OnDraw (NULL);
+	updateToolsLogic ();
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::stackReset ()
+{
+	_StackPR.reset ();
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::insertPoint (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName)
+{
+	if (_StackPR.isEmpty())
+		_StackPR.add (_PRegions[pos]);
+
 	CPrimPoint pp;
 	pp.LayerName = LayerName;
 	pp.Name = Name;
-	pp.Color = col;
 	pp.Point = CVector(0.0f, 0.0f, 0.0f);
 	_PRegions[pos]->VPoints.push_back(pp);
 	SPrimBuild pB;
@@ -288,36 +378,46 @@ void CBuilderLogic::insertPoint (uint32 pos, HTREEITEM item, const char *Name, c
 	pB.Pos = _PRegions[pos]->VPoints.size()-1;
 	pB.PRegion = _PRegions[pos];
 	_Primitives.insert (map<HTREEITEM, SPrimBuild>::value_type(item, pB));
+	_MustAskSaves[pos] = true;
+	_StackPR.add (_PRegions[pos]);
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::insertPath (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName, NLMISC::CRGBA &col)
+void CBuilderLogic::insertPath (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName)
 {
+	if (_StackPR.isEmpty())
+		_StackPR.add (_PRegions[pos]);
+
 	CPrimPath pp;
 	pp.LayerName = LayerName;
 	pp.Name = Name;
-	pp.Color = col;
 	_PRegions[pos]->VPaths.push_back (pp);
 	SPrimBuild pB;
 	pB.Type = 1; // Path
 	pB.Pos = _PRegions[pos]->VPaths.size()-1;
 	pB.PRegion = _PRegions[pos];
 	_Primitives.insert (map<HTREEITEM, SPrimBuild>::value_type(item, pB));
+	_MustAskSaves[pos] = true;
+	_StackPR.add (_PRegions[pos]);
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::insertZone (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName, NLMISC::CRGBA &col)
+void CBuilderLogic::insertZone (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName)
 {
+	if (_StackPR.isEmpty())
+		_StackPR.add (_PRegions[pos]);
+
 	CPrimZone pz;
 	pz.LayerName = LayerName;
 	pz.Name = Name;
-	pz.Color = col;
 	_PRegions[pos]->VZones.push_back (pz);
 	SPrimBuild pB;
 	pB.Type = 2; // Zone
 	pB.Pos = _PRegions[pos]->VZones.size()-1;
 	pB.PRegion = _PRegions[pos];
 	_Primitives.insert (map<HTREEITEM, SPrimBuild>::value_type(item, pB));
+	_MustAskSaves[pos] = true;
+	_StackPR.add (_PRegions[pos]);
 }
 
 // ---------------------------------------------------------------------------
@@ -326,10 +426,13 @@ void CBuilderLogic::del (HTREEITEM item)
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (item);
 	if (it != _Primitives.end())
 	{
+		uint32 i;
 		SPrimBuild &rPB = it->second;
 		CPrimRegion &PRegion = *rPB.PRegion;
 		// Delete the entry in the document
-		uint32 i;
+		if (_StackPR.isEmpty())
+			_StackPR.add (&PRegion);
+
 		switch (rPB.Type)
 		{
 			case 0:
@@ -366,6 +469,14 @@ void CBuilderLogic::del (HTREEITEM item)
 		}
 		// Delete the entry in the map
 		_Primitives.erase (it);
+		_StackPR.add (&PRegion);
+
+		for (uint32 z = 0; z < _PRegions.size(); ++z)
+		if (_PRegions[z] == &PRegion)
+		{
+			_MustAskSaves[z] = true;
+			break;
+		}
 	}
 
 	if (_Display)
@@ -423,6 +534,123 @@ void CBuilderLogic::regionHideAll (uint32 nPos, bool bHide)
 }
 
 // ---------------------------------------------------------------------------
+void CBuilderLogic::regionHideType (uint32 nPos, const string &Type, bool bHide)
+{
+	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.begin ();
+	while (it != _Primitives.end())
+	{
+		SPrimBuild &rPB = it->second;
+
+		if (rPB.PRegion == _PRegions[nPos])
+		{
+			string Name, Tmp;
+			switch (rPB.Type)
+			{
+				case 0: Name = _PRegions[nPos]->VPoints[rPB.Pos].Name; break;
+				case 1: Name = _PRegions[nPos]->VPaths[rPB.Pos].Name; break;
+				case 2: Name = _PRegions[nPos]->VZones[rPB.Pos].Name; break;
+			}
+
+			int i = 0;
+			while (Name[i] != '-') ++i;
+			i++;
+			while ((Name[i] != '-') && (i < Name.size()))
+			{
+				Tmp += Name[i];
+				++i;
+			}
+			if (Tmp == Type)
+				rPB.hidden = bHide;
+		}
+		
+		++it;
+	}
+	if (_Display)
+		_Display->OnDraw (NULL);
+}
+
+// ---------------------------------------------------------------------------
+int CBuilderLogic::getMaxPostfix (const char *prefix)
+{
+	int nTmp;
+	int nZeMax = -1;
+	int nPFLen = strlen(prefix);
+
+	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.begin ();
+	while (it != _Primitives.end())
+	{
+		SPrimBuild &rPB = it->second;
+
+		switch (rPB.Type)
+		{
+			case 0: // Point
+				if (strncmp(prefix, rPB.PRegion->VPoints[rPB.Pos].Name.c_str(), nPFLen) == 0)
+				{
+					nTmp  = (rPB.PRegion->VPoints[rPB.Pos].Name.c_str()[nPFLen+0] - '0')*100;
+					nTmp += (rPB.PRegion->VPoints[rPB.Pos].Name.c_str()[nPFLen+1] - '0')*10;
+					nTmp += (rPB.PRegion->VPoints[rPB.Pos].Name.c_str()[nPFLen+2] - '0')*1;
+				}
+			break;
+			case 1: // Path
+				if (strncmp(prefix, rPB.PRegion->VPaths[rPB.Pos].Name.c_str(), nPFLen) == 0)
+				{
+					nTmp  = (rPB.PRegion->VPaths[rPB.Pos].Name.c_str()[nPFLen+0] - '0')*100;
+					nTmp += (rPB.PRegion->VPaths[rPB.Pos].Name.c_str()[nPFLen+1] - '0')*10;
+					nTmp += (rPB.PRegion->VPaths[rPB.Pos].Name.c_str()[nPFLen+2] - '0')*1;
+				}
+			break;
+			case 2: // Zone
+				if (strncmp(prefix, rPB.PRegion->VZones[rPB.Pos].Name.c_str(), nPFLen) == 0)
+				{
+					nTmp  = (rPB.PRegion->VZones[rPB.Pos].Name.c_str()[nPFLen+0] - '0')*100;
+					nTmp += (rPB.PRegion->VZones[rPB.Pos].Name.c_str()[nPFLen+1] - '0')*10;
+					nTmp += (rPB.PRegion->VZones[rPB.Pos].Name.c_str()[nPFLen+2] - '0')*1;
+				}
+			break;
+			default:
+				nTmp = 0;
+			break;
+		}
+		
+		if (nZeMax < nTmp)
+			nZeMax = nTmp;
+
+		++it;
+	}
+	return nZeMax;
+}
+
+// ---------------------------------------------------------------------------
+bool CBuilderLogic::isAlreadyExisting (const char *sPrimitiveName)
+{
+	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.begin ();
+	while (it != _Primitives.end())
+	{
+		SPrimBuild &rPB = it->second;
+
+		switch (rPB.Type)
+		{
+			case 0: // Point
+				if (strcmp(sPrimitiveName, rPB.PRegion->VPoints[rPB.Pos].Name.c_str()) == 0)
+					return true;
+			break;
+			case 1: // Path
+				if (strcmp(sPrimitiveName, rPB.PRegion->VPaths[rPB.Pos].Name.c_str()) == 0)
+					return true;
+			break;
+			case 2: // Zone
+				if (strcmp(sPrimitiveName, rPB.PRegion->VZones[rPB.Pos].Name.c_str()) == 0)
+					return true;
+			break;
+			default:
+			break;
+		}
+		++it;
+	}
+	return false;
+}
+
+// ---------------------------------------------------------------------------
 const char* CBuilderLogic::getName (HTREEITEM item)
 {
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (item);
@@ -476,32 +704,6 @@ const char* CBuilderLogic::getLayerName (HTREEITEM item)
 	}
 }
 
-// ---------------------------------------------------------------------------
-NLMISC::CRGBA CBuilderLogic::getColor (HTREEITEM item)
-{
-	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (item);
-	if (it == _Primitives.end())
-		return CRGBA(0,0,0,0);
-	else
-	{
-		SPrimBuild &rPB = it->second;
-		CPrimRegion &PRegion = *rPB.PRegion;
-
-		switch (rPB.Type)
-		{
-			case 0:
-				return PRegion.VPoints[rPB.Pos].Color;
-			break;
-			case 1:
-				return PRegion.VPaths[rPB.Pos].Color;
-			break;
-			case 2:
-				return PRegion.VZones[rPB.Pos].Color;
-			break;
-		}
-		return CRGBA(0,0,0,0);
-	}
-}
 
 // ---------------------------------------------------------------------------
 bool CBuilderLogic::isHidden (HTREEITEM item)
@@ -541,6 +743,14 @@ void CBuilderLogic::setName (HTREEITEM item, const char* pStr)
 				PRegion.VZones[rPB.Pos].Name = pStr;
 			break;
 		}
+
+		for (uint32 z = 0; z < _PRegions.size(); ++z)
+		if (_PRegions[z] == &PRegion)
+		{
+			_MustAskSaves[z] = true;
+			break;
+		}
+
 	}
 }
 
@@ -567,30 +777,11 @@ void CBuilderLogic::setLayerName (HTREEITEM item, const char* pStr)
 				PRegion.VZones[rPB.Pos].LayerName = pStr;
 			break;
 		}
-	}
-}
 
-// ---------------------------------------------------------------------------
-void CBuilderLogic::setColor (HTREEITEM item, NLMISC::CRGBA &col)
-{
-	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (item);
-	if (it == _Primitives.end())
-		return;
-	else
-	{
-		SPrimBuild &rPB = it->second;
-		CPrimRegion &PRegion = *rPB.PRegion;
-
-		switch (rPB.Type)
+		for (uint32 z = 0; z < _PRegions.size(); ++z)
+		if (_PRegions[z] == &PRegion)
 		{
-			case 0:
-				PRegion.VPoints[rPB.Pos].Color = col;
-			break;
-			case 1:
-				PRegion.VPaths[rPB.Pos].Color = col;
-			break;
-			case 2:
-				PRegion.VZones[rPB.Pos].Color = col;
+			_MustAskSaves[z] = true;
 			break;
 		}
 	}
@@ -608,7 +799,10 @@ void CBuilderLogic::setSelPB (HTREEITEM item)
 	_ItemSelected = NULL;
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (item);
 	if (it != _Primitives.end())
+	{
 		_ItemSelected = item;
+		_ItemSelectedName = getName(_ItemSelected);
+	}
 
 	if (_Display)
 		_Display->OnDraw (NULL);
@@ -620,9 +814,10 @@ void CBuilderLogic::createVertexOnSelPB (CVector &v, uint32 pos)
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (_ItemSelected);
 	if (it == _Primitives.end())
 		return;
-
 	SPrimBuild &rPB = it->second;
 	CPrimRegion &PRegion = *rPB.PRegion;
+	if (_StackPR.isEmpty())
+		_StackPR.add (&PRegion);
 	switch (rPB.Type)
 	{
 		case 0:
@@ -647,14 +842,20 @@ void CBuilderLogic::createVertexOnSelPB (CVector &v, uint32 pos)
 			PRegion.VZones[rPB.Pos].VPoints.push_back(v);
 		break;
 	}
-	
+	for (uint32 z = 0; z < _PRegions.size(); ++z)
+	if (_PRegions[z] == &PRegion)
+	{
+		_MustAskSaves[z] = true;
+		break;
+	}
+
+	_StackPR.add (&PRegion);
 }
 
 // ---------------------------------------------------------------------------
-bool CBuilderLogic::selectVertexOnSelPB (CVector &selMin, CVector &selMax)
+bool CBuilderLogic::selectVerticesOnSelPB (CVector &selMin, CVector &selMax)
 {
-	_VertexSelected = -1;
-
+	_VerticesSelected.clear ();
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (_ItemSelected);
 	if (it == _Primitives.end())
 		return false;
@@ -682,83 +883,135 @@ bool CBuilderLogic::selectVertexOnSelPB (CVector &selMin, CVector &selMax)
 			pV = &(PRegion.VZones[rPB.Pos].VPoints[0]);
 		break;
 	}
+	float selMinX = min(selMin.x, selMax.x);
+	float selMinY = min(selMin.y, selMax.y);
+	float selMaxX = max(selMin.x, selMax.x);
+	float selMaxY = max(selMin.y, selMax.y);
 
 	for (uint32 i = 0; i < nNbV; ++i)
 	{
-		if ((pV[i].x > selMin.x) && (pV[i].x < selMax.x) &&
-			(pV[i].y > selMin.y) && (pV[i].y < selMax.y))
+		if ((pV[i].x > selMinX) && (pV[i].x < selMaxX) &&
+			(pV[i].y > selMinY) && (pV[i].y < selMaxY))
 		{
-			_VertexSelected = i;
-			break;
+			_VerticesSelected.push_back (i);
 		}
 	}
-	if (_VertexSelected == -1)
+	if (_VerticesSelected.size() == 0)
 		return false;
 	return true;
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::setSelVertexOnSelPB (NLMISC::CVector &v)
+bool CBuilderLogic::isSelection()
 {
-	if ((_VertexSelected == -1) || (_ItemSelected == NULL))
+	return (_VerticesSelected.size() > 0);
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::setSelVerticesOnSelPB (NLMISC::CVector &v)
+{
+	if ((_VerticesSelected.size() == 0) || (_ItemSelected == NULL))
 		return;
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (_ItemSelected);
 	if (it == _Primitives.end())
 		return;
-
 	SPrimBuild &rPB = it->second;
 	CPrimRegion &PRegion = *rPB.PRegion;
-	
-	switch (rPB.Type)
+	if (_StackPR.isEmpty())
+		_StackPR.add (&PRegion);
+	for (uint32 i = 0; i < _VerticesSelected.size(); ++i)
 	{
-		case 0:
-			PRegion.VPoints[rPB.Pos].Point = v;
-		break;
-		case 1:
-			PRegion.VPaths[rPB.Pos].VPoints[_VertexSelected] = v;
-		break;
-		case 2:
-			PRegion.VZones[rPB.Pos].VPoints[_VertexSelected] = v;
+		switch (rPB.Type)
+		{
+			case 0:
+				PRegion.VPoints[rPB.Pos].Point += v;
+			break;
+			case 1:
+				PRegion.VPaths[rPB.Pos].VPoints[_VerticesSelected[i]] += v;
+			break;
+			case 2:
+				PRegion.VZones[rPB.Pos].VPoints[_VerticesSelected[i]] += v;
+			break;
+		}
+	}
+
+	for (uint32 z = 0; z < _PRegions.size(); ++z)
+	if (_PRegions[z] == &PRegion)
+	{
+		_MustAskSaves[z] = true;
 		break;
 	}
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::delSelVertexOnSelPB ()
+void CBuilderLogic::delSelVerticesOnSelPB ()
 {
-	if ((_VertexSelected == -1) || (_ItemSelected == NULL))
+	if ((_VerticesSelected.size() == 0) || (_ItemSelected == NULL))
 		return;
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (_ItemSelected);
 	if (it == _Primitives.end())
 		return;
-
 	SPrimBuild &rPB = it->second;
 	CPrimRegion &PRegion = *rPB.PRegion;
-
+	if (_StackPR.isEmpty())
+		_StackPR.add (&PRegion);
 	uint32 i;
-	switch (rPB.Type)
+	for (uint32 k = 0; k < _VerticesSelected.size(); ++k)
 	{
-		case 0:
-			rPB.Created = false;
-		break;
-		case 1:
-			if (PRegion.VPaths[rPB.Pos].VPoints.size() == 1)
+		int VertexSelected = _VerticesSelected[k];
+		switch (rPB.Type)
+		{
+			case 0:
 				rPB.Created = false;
+			break;
+			case 1:
+				if (PRegion.VPaths[rPB.Pos].VPoints.size() == 1)
+					rPB.Created = false;
 
-			for (i = _VertexSelected+1; i < PRegion.VPaths[rPB.Pos].VPoints.size(); ++i)
-				PRegion.VPaths[rPB.Pos].VPoints[i-1] = PRegion.VPaths[rPB.Pos].VPoints[i];
-			PRegion.VPaths[rPB.Pos].VPoints.resize (PRegion.VPaths[rPB.Pos].VPoints.size()-1);
-		break;
-		case 2:
-			if (PRegion.VZones[rPB.Pos].VPoints.size() == 1)
-				rPB.Created = false;
+				for (i = VertexSelected+1; i < PRegion.VPaths[rPB.Pos].VPoints.size(); ++i)
+					PRegion.VPaths[rPB.Pos].VPoints[i-1] = PRegion.VPaths[rPB.Pos].VPoints[i];
+				PRegion.VPaths[rPB.Pos].VPoints.resize (PRegion.VPaths[rPB.Pos].VPoints.size()-1);
+			break;
+			case 2:
+				if (PRegion.VZones[rPB.Pos].VPoints.size() == 1)
+					rPB.Created = false;
 
-			for (i = _VertexSelected+1; i < PRegion.VZones[rPB.Pos].VPoints.size(); ++i)
-				PRegion.VZones[rPB.Pos].VPoints[i-1] = PRegion.VZones[rPB.Pos].VPoints[i];
-			PRegion.VZones[rPB.Pos].VPoints.resize (PRegion.VZones[rPB.Pos].VPoints.size()-1);
+				for (i = VertexSelected+1; i < PRegion.VZones[rPB.Pos].VPoints.size(); ++i)
+					PRegion.VZones[rPB.Pos].VPoints[i-1] = PRegion.VZones[rPB.Pos].VPoints[i];
+				PRegion.VZones[rPB.Pos].VPoints.resize (PRegion.VZones[rPB.Pos].VPoints.size()-1);
+			break;
+		}
+	}
+
+	for (uint32 z = 0; z < _PRegions.size(); ++z)
+	if (_PRegions[z] == &PRegion)
+	{
+		_MustAskSaves[z] = true;
 		break;
 	}
 
+	_StackPR.add (&PRegion);
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::stackSelPB ()
+{
+	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (_ItemSelected);
+	if (it == _Primitives.end())
+		return;
+	SPrimBuild &rPB = it->second;
+	CPrimRegion &PRegion = *rPB.PRegion;
+	_StackPR.add (&PRegion);
+}
+
+// ---------------------------------------------------------------------------
+CRGBA CBuilderLogic::findColor(const string &LayerName)
+{
+	vector<CType> &rTypes = _Display->_MainFrame->_Types;
+	for (uint32 i = 0; i < rTypes.size(); ++i)
+		if (LayerName == rTypes[i].Name)
+			return rTypes[i].Color;
+	return CRGBA (255, 255, 255, 255);
 }
 
 // ---------------------------------------------------------------------------
@@ -767,6 +1020,8 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 	// Accelerate rendering with vertex buffer
 	CVertexBuffer VB;
 	CPrimitiveBlock PB;
+	CVertexBuffer VBL;
+	CPrimitiveBlock PBL;
 	CMaterial Mat;
 
 	CRGBA colSel = CRGBA(255, 0, 0, 192);
@@ -777,6 +1032,7 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 	Mat.setBlend (true);
 	Mat.setColor (CRGBA(255, 255, 255, 192));
 	VB.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::PrimaryColorFlag);
+	VBL.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::PrimaryColorFlag);
 	
 	// Parse the map
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.begin();
@@ -803,21 +1059,21 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 
 		if (curPB.Type == 0) // Point
 		{
-			col = PRegion.VPoints[curPB.Pos].Color;
+			col = findColor (PRegion.VPoints[curPB.Pos].LayerName);
 			pVec = &PRegion.VPoints[curPB.Pos].Point;
 			nNbVec = 1;
 		}
 
 		if (curPB.Type == 1) // Path
 		{
-			col = PRegion.VPaths[curPB.Pos].Color;
+			col = findColor (PRegion.VPaths[curPB.Pos].LayerName);
 			pVec = &PRegion.VPaths[curPB.Pos].VPoints[0];
 			nNbVec = PRegion.VPaths[curPB.Pos].VPoints.size();
 		}
 
 		if (curPB.Type == 2) // Zone
 		{
-			col = PRegion.VZones[curPB.Pos].Color;
+			col = findColor (PRegion.VZones[curPB.Pos].LayerName);
 			pVec = &PRegion.VZones[curPB.Pos].VPoints[0];
 			nNbVec = PRegion.VZones[curPB.Pos].VPoints.size();
 		}
@@ -914,35 +1170,53 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 		// Draw all lines
 		
 		if ((curPB.Type == 1) || (curPB.Type == 2)) // For Pathes and Zones
-		for (i = 0; i < nNbVec-1; ++i)
 		{
-			CVector pos = pVec[i];
-			CVector pos2 = pVec[i+1];
-
-			convertToScreen (&pos, 1, viewMin, viewMax);
-			convertToScreen (&pos2, 1, viewMin, viewMax);
-			if (curItem == _ItemSelected)
-				renderDrawLine (pos, pos2, colSel, &VB, &PB);
-			else
-				renderDrawLine (pos, pos2, col, &VB, &PB);
+			int nNbLineToDraw = (curPB.Type == 2)?(nNbVec):(nNbVec-1);
+			if ((nNbLineToDraw == 1)&&(curPB.Type == 2))
+				nNbLineToDraw = 0;
+			for (i = 0; i < nNbLineToDraw; ++i)
+			{
+				CVector pos = pVec[i];
+				CVector pos2 = pVec[(i+1)%(nNbVec)];
+	
+				convertToScreen (&pos, 1, viewMin, viewMax);
+				convertToScreen (&pos2, 1, viewMin, viewMax);
+				if (curItem == _ItemSelected)
+					renderDrawLine (pos, pos2, colSel, &VBL, &PBL);
+				else
+					renderDrawLine (pos, pos2, col, &VBL, &PBL);
+			}
 		}
 
 		// Draw all points
+		bool bDrawPoints = true;
 
+		if (curPB.Type == 2) // Zone
+		if (curItem != _ItemSelected)
+			bDrawPoints = false; // Do not draw the points on zone other than selected one
+		
+		if (bDrawPoints)
 		for (i = 0; i < nNbVec; ++i)		// For Points, Pathes and Zones
 		{
 			CVector pos = pVec[i];
 			convertToScreen (&pos, 1, viewMin, viewMax);
 			if (curItem == _ItemSelected)
 			{
-				if (_VertexSelected == (sint32)i)
-					renderDrawPoint (pos, CRGBA (255, 255, 0, 192), &VB, &PB);
+				bool bFound = false;
+				for (uint32 k = 0; k < _VerticesSelected.size(); ++k)
+				if (_VerticesSelected[k] == (sint32)i)
+				{
+					bFound = true;
+					break;
+				}
+				if (bFound)
+					renderDrawPoint (pos, colSel, &VBL, &PBL);
 				else
-					renderDrawPoint (pos, col, &VB, &PB);
+					renderDrawPoint (pos, col, &VBL, &PBL);
 			}
 			else
 			{
-				renderDrawPoint (pos, col, &VB, &PB);
+				renderDrawPoint (pos, col, &VBL, &PBL);
 			}
 		}
 
@@ -959,6 +1233,8 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 	CNELU::Driver->setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
 	CNELU::Driver->activeVertexBuffer(VB);
 	CNELU::Driver->render(PB, Mat);
+	CNELU::Driver->activeVertexBuffer(VBL);
+	CNELU::Driver->render(PBL, Mat);
 }
 
 // ---------------------------------------------------------------------------

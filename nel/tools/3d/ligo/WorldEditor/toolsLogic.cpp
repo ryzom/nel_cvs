@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "toolsLogic.h"
 
+#include "typeSelDlg.h"
+
 #include "mainfrm.h"
 
 #include <string>
@@ -9,14 +11,16 @@ using namespace std;
 
 // ---------------------------------------------------------------------------
 
-#define ID_MENU_CREATE			0x10010
-#define ID_MENU_DELETE			0x10011
-#define ID_MENU_PROPERTIES		0x10012
-#define ID_MENU_HIDEALL			0x10013
-#define ID_MENU_UNHIDEALL		0x10014
-#define ID_MENU_HIDE			0x10015
-#define ID_MENU_REGIONUNHIDEALL	0x10016
-#define ID_MENU_REGIONHIDEALL	0x10017
+#define ID_MENU_CREATE				0x10010
+#define ID_MENU_DELETE				0x10011
+#define ID_MENU_PROPERTIES			0x10012
+#define ID_MENU_HIDEALL				0x10013
+#define ID_MENU_UNHIDEALL			0x10014
+#define ID_MENU_HIDE				0x10015
+#define ID_MENU_REGIONUNHIDEALL		0x10016
+#define ID_MENU_REGIONHIDEALL		0x10017
+#define ID_MENU_REGIONHIDETYPE		0x10018
+#define ID_MENU_REGIONUNHIDETYPE	0x10019
 
 // ---------------------------------------------------------------------------
 
@@ -34,6 +38,8 @@ BEGIN_MESSAGE_MAP(CToolsLogic, CTreeView)
 	ON_COMMAND(ID_MENU_HIDE, OnMenuHide)
 	ON_COMMAND(ID_MENU_REGIONHIDEALL, OnMenuRegionHideAll)
 	ON_COMMAND(ID_MENU_REGIONUNHIDEALL,OnMenuRegionUnhideAll)
+	ON_COMMAND(ID_MENU_REGIONHIDETYPE, OnMenuRegionHideType)
+	ON_COMMAND(ID_MENU_REGIONUNHIDETYPE,OnMenuRegionUnhideType)
 	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelChanged)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -140,6 +146,8 @@ void CToolsLogic::OnRButtonDown (UINT nFlags, CPoint point)
 			// Region contextual menu
 			pMenu->AppendMenu (MF_STRING, ID_MENU_REGIONHIDEALL, "Hide All");
 			pMenu->AppendMenu (MF_STRING, ID_MENU_REGIONUNHIDEALL, "Unhide All");
+			pMenu->AppendMenu (MF_STRING, ID_MENU_REGIONHIDETYPE, "Hide Type");
+			pMenu->AppendMenu (MF_STRING, ID_MENU_REGIONUNHIDETYPE, "Unhide Type");
 		}
 		else if (GetTreeCtrl().GetParentItem(hParent) == NULL)
 		{
@@ -182,28 +190,41 @@ void CToolsLogic::OnSelChanged (LPNMHDR pnmhdr, LRESULT *pLResult)
 // ---------------------------------------------------------------------------
 void CToolsLogic::OnMenuCreate()
 {
+	HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
+	HTREEITEM parent = GetTreeCtrl().GetParentItem (item);
+	uint32 i;
 	CCreateDialog dialog (this);
-	if (dialog.DoModal () == IDOK)
+	dialog.TypesForInit = &_MainFrame->_Types;
+
+	for (i = 0; i < _RegionsInfo.size(); ++i)
+	if (_RegionsInfo[i].RegionItem == parent)
 	{
-		HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
-		HTREEITEM parent = GetTreeCtrl().GetParentItem (item);
+		dialog.setRegionName (_RegionsInfo[i].Name);
+		break;
+	}
+
+	dialog.MainFrame = _MainFrame;
+
+	if (dialog.DoModal () == IDOK)
+	if (strlen(dialog.Name) > 0)
+	{
 		HTREEITEM newItem = GetTreeCtrl().InsertItem (dialog.Name, item);
 		GetTreeCtrl().Expand (item, TVE_EXPAND);
 		// Create the newItem
-		for (uint32 i = 0; i < _RegionsInfo.size(); ++i)
+		for (i = 0; i < _RegionsInfo.size(); ++i)
 		if (_RegionsInfo[i].RegionItem == parent)
 		{
 			if (item == _RegionsInfo[i].PointItem)
 			{
-				_MainFrame->_PRegionBuilder.insertPoint (i, newItem, dialog.Name, dialog.LayerName, dialog.ColorBut.getColor());
+				_MainFrame->_PRegionBuilder.insertPoint (i, newItem, dialog.Name, dialog.LayerName);
 			}
 			else if (item == _RegionsInfo[i].PathItem)
 			{
-				_MainFrame->_PRegionBuilder.insertPath (i, newItem, dialog.Name, dialog.LayerName, dialog.ColorBut.getColor());
+				_MainFrame->_PRegionBuilder.insertPath (i, newItem, dialog.Name, dialog.LayerName);
 			}
 			else if (item == _RegionsInfo[i].ZoneItem)
 			{
-				_MainFrame->_PRegionBuilder.insertZone (i, newItem, dialog.Name, dialog.LayerName, dialog.ColorBut.getColor());
+				_MainFrame->_PRegionBuilder.insertZone (i, newItem, dialog.Name, dialog.LayerName);
 			}
 			break;
 		}
@@ -222,17 +243,29 @@ void CToolsLogic::OnMenuDelete()
 void CToolsLogic::OnMenuProperties()
 {
 	CCreateDialog dialog (this);
+
 	HTREEITEM item = GetTreeCtrl().GetSelectedItem();
+	HTREEITEM parent = GetTreeCtrl().GetParentItem(item);
+	HTREEITEM parentparent = GetTreeCtrl().GetParentItem(parent);
 	strcpy (dialog.Name, _MainFrame->_PRegionBuilder.getName(item));
 	strcpy (dialog.LayerName, _MainFrame->_PRegionBuilder.getLayerName(item));
-//	dialog.ColorBut.setColor(_MainFrame->_PRegionBuilder.getColor(item));
-	dialog.colorInit = _MainFrame->_PRegionBuilder.getColor(item);
+	dialog.TypesForInit = &_MainFrame->_Types;
+	dialog.MainFrame = _MainFrame;
+	dialog.PropName = _MainFrame->_PRegionBuilder.getName(item);
+	dialog.PropType = _MainFrame->_PRegionBuilder.getLayerName(item);
+	for (uint32 i = 0; i < _RegionsInfo.size(); ++i)
+	if (_RegionsInfo[i].RegionItem == parentparent)
+	{
+		dialog.setRegionName (_RegionsInfo[i].Name);
+		break;
+	}
+
 	if (dialog.DoModal () == IDOK)
+	if (strlen(dialog.Name) > 0)
 	{
 		GetTreeCtrl().SetItemText (item, dialog.Name);
 		_MainFrame->_PRegionBuilder.setName (item, dialog.Name);
 		_MainFrame->_PRegionBuilder.setLayerName (item, dialog.LayerName);
-		_MainFrame->_PRegionBuilder.setColor (item, dialog.ColorBut.getColor());
 	}	
 }
 
@@ -307,13 +340,47 @@ void CToolsLogic::OnMenuRegionUnhideAll ()
 }
 
 // ---------------------------------------------------------------------------
+void CToolsLogic::OnMenuRegionHideType ()
+{
+	HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
+	for (uint32 i = 0; i < _RegionsInfo.size(); ++i)
+	if (_RegionsInfo[i].RegionItem == item)
+	{
+		CTypeSelDlg dial(this);
+		dial._TypesInit = &(_MainFrame->_Types);
+		if (dial.DoModal() == IDOK)
+		{
+			_MainFrame->_PRegionBuilder.regionHideType (i, dial._TypeSelected, true);
+		}
+		break;
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CToolsLogic::OnMenuRegionUnhideType ()
+{
+	HTREEITEM item = GetTreeCtrl().GetSelectedItem ();
+	for (uint32 i = 0; i < _RegionsInfo.size(); ++i)
+	if (_RegionsInfo[i].RegionItem == item)
+	{
+		CTypeSelDlg dial(this);
+		dial._TypesInit = &(_MainFrame->_Types);
+		if (dial.DoModal() == IDOK)
+		{
+			_MainFrame->_PRegionBuilder.regionHideType (i, dial._TypeSelected, false);
+		}
+		break;
+	}
+}
+
+// ---------------------------------------------------------------------------
 // CCreateDialog
 // ---------------------------------------------------------------------------
 BEGIN_MESSAGE_MAP(CCreateDialog, CDialog)
 	//{{AFX_MSG_MAP(CMainFrame)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code !
-		ON_BN_CLICKED(IDC_BUTTON1, OnColorButton)
+		ON_CBN_SELCHANGE(IDC_COMBOTYPE, OnSelChange)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -321,41 +388,110 @@ END_MESSAGE_MAP()
 // ---------------------------------------------------------------------------
 CCreateDialog::CCreateDialog (CWnd*pParent) : CDialog(IDD_CREATE_ELEMENT, pParent) 
 {
-	strcpy(Name, "EltName");
-	strcpy(LayerName, "EltLayerName");
-	colorInit = CRGBA(255,255,255,255);
+	Name[0] = 0;
+	LayerName[0] = 0;
 }
 
 // ---------------------------------------------------------------------------
 BOOL CCreateDialog::OnInitDialog ()
 {
 	CDialog::OnInitDialog();
-	ColorBut.setColor (colorInit);
+
+	for (uint32 i = 0; i < TypesForInit->size(); ++i)
+	{
+		ComboType.InsertString (-1, TypesForInit->operator[](i).Name.c_str());
+	}
+
+	if (ComboType.SelectString (0, LayerName) == CB_ERR)
+		ComboType.SetCurSel (0);
+	UpdateData();
+	OnSelChange();
+	
 	return true;
 }
 
 // ---------------------------------------------------------------------------
 void CCreateDialog::DoDataExchange (CDataExchange* pDX )
 {
-	DDX_Control(pDX, IDC_BUTTON1, ColorBut);
+	DDX_Control(pDX, IDC_COMBOTYPE, ComboType);
 
 	DDX_Text(pDX, IDC_EDIT_NAME, (LPTSTR)Name, 128);
 	DDV_MaxChars(pDX, Name, 128);
 
-	DDX_Text(pDX, IDC_EDIT_LAYERNAME, (LPTSTR)LayerName, 128);
+	DDX_Text(pDX, IDC_COMBOTYPE, (LPTSTR)LayerName, 128);
 	DDV_MaxChars(pDX, LayerName, 128);
 }
 
 // ---------------------------------------------------------------------------
-void CCreateDialog::OnColorButton ()
+void CCreateDialog::OnOK()
 {
-	CColorDialog coldlg;
-	if (coldlg.DoModal() == IDOK)
+	UpdateData ();
+
+	// If the "region_" do not exist add it
+	if (strncmp(RegionPost.c_str(), Name, strlen(RegionPost.c_str())) != 0)
 	{
-		int r = GetRValue(coldlg.GetColor());
-		int g = GetGValue(coldlg.GetColor());
-		int b = GetBValue(coldlg.GetColor());
-		ColorBut.setColor(CRGBA(r,g,b,255));
-		Invalidate();
+		char sTmp[128];
+		strcpy (sTmp, RegionPost.c_str());
+		strcat (sTmp, Name);
+		strcpy (Name, sTmp);
+		UpdateData (false);
 	}
+
+	if (strcmp(PropName.c_str(), Name) == 0)
+		CDialog::OnOK();
+	
+	if (MainFrame->_PRegionBuilder.isAlreadyExisting (Name))
+	{
+		MessageBox("This Element already exist. Please type another name", "Eror", MB_ICONERROR|MB_OK);
+		return;
+	}
+	CDialog::OnOK();
+}
+
+// ---------------------------------------------------------------------------
+void CCreateDialog::setRegionName (const string &rn)
+{
+	for (uint32 i = 0; i < rn.size(); ++i)
+	{
+		if (rn[i] == '.')
+		{
+			RegionPost += '-';
+			return;
+		}
+		RegionPost += rn[i];
+	}
+	RegionPost += '-';
+}
+
+// ---------------------------------------------------------------------------
+void CCreateDialog::OnSelChange ()
+{
+	int cs = ComboType.GetCurSel();
+	CString sTmp;
+	ComboType.GetLBText (cs, sTmp);
+
+	if (PropType == (LPCSTR)sTmp)
+	{
+		strcpy (Name, PropName.c_str());
+	}
+	else
+	{
+		strcpy (Name, RegionPost.c_str());
+		strcat (Name, (LPCSTR)sTmp);
+		strcat (Name, "-");
+
+		int nPreNum = MainFrame->_PRegionBuilder.getMaxPostfix (Name);
+		++nPreNum;
+		char sNumTmp[2];
+		sNumTmp[1] = 0;
+		sNumTmp[0] = '0'+(nPreNum/100)%10;
+		strcat (Name, sNumTmp);
+		sNumTmp[0] = '0'+(nPreNum/10 )%10;
+		strcat (Name, sNumTmp);
+		sNumTmp[0] = '0'+(nPreNum/1  )%10;
+		strcat (Name, sNumTmp);
+	}
+
+	UpdateData (false);
+	Invalidate ();
 }

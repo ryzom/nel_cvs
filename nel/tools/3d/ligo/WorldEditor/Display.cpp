@@ -27,8 +27,7 @@ BEGIN_MESSAGE_MAP(CDisplay, CView)
 	ON_WM_LBUTTONUP()
 	ON_WM_RBUTTONUP()
 	ON_WM_MOUSEMOVE()
-	ON_WM_KEYDOWN()
-	ON_WM_KEYUP()
+	ON_WM_CHAR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -42,14 +41,17 @@ CDisplay::CDisplay ()
 	_MouseRightDown = false;
 	_MouseLeftDown = false;
 	_MouseMidDown = false;
+	_MouseMoved = false;
 	_Factor = 1.0f;
 	_Offset = CVector(0.0f, 0.0f, 0.0f);
 	_DisplayGrid = true;
 	_DisplayLogic = true;
 	_DisplayZone = true;
+	_DisplaySelection = false;
 	_LastX = _LastY = -10000;
 	_CtrlKeyDown = false;
 	_MainFrame = NULL;
+	_BackgroundColor = CRGBA(255,255,255,255);
 }
 
 // ---------------------------------------------------------------------------
@@ -69,7 +71,7 @@ void CDisplay::init (CMainFrame *pMF)
 
 
 	// setMatrixMode2D11
-	CFrustum f(0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f,false);
+	CFrustum	f(0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f,false);
 	CVector		I(1,0,0);
 	CVector		J(0,0,1);
 	CVector		K(0,-1,0);
@@ -85,6 +87,8 @@ void CDisplay::init (CMainFrame *pMF)
 	CNELU::clearBuffers ();
 	CNELU::swapBuffers ();
 	OnDraw (NULL);
+
+	
 }
 
 // ---------------------------------------------------------------------------
@@ -93,6 +97,18 @@ void CDisplay::setCellSize (float size)
 	_CellSize = size;
 	_InitViewMax = CVector(5.5f*_CellSize, 5.5f*_CellSize, 0.0f);
 	_InitViewMin = CVector(-5.5f*_CellSize, -5.5f*_CellSize, 0.0f);
+}
+
+// ---------------------------------------------------------------------------
+void CDisplay::setBackgroundColor (NLMISC::CRGBA &col)
+{
+	_BackgroundColor = col;
+}
+
+// ---------------------------------------------------------------------------
+NLMISC::CRGBA CDisplay::getBackgroundColor ()
+{
+	return _BackgroundColor;
 }
 
 // ---------------------------------------------------------------------------
@@ -132,6 +148,26 @@ CVector CDisplay::convertToWorld (CPoint&p)
 }
 
 // ---------------------------------------------------------------------------
+void CDisplay::renderSelection()
+{
+	CVector p1, p2, p3, p4;
+	//p1.z = p2.z = p3.z = p4.z = 0.0f;
+	p1.x = (_SelectionMin.x-_CurViewMin.x) / (_CurViewMax.x-_CurViewMin.x);
+	p1.y = (_SelectionMin.y-_CurViewMin.y) / (_CurViewMax.y-_CurViewMin.y);
+	p3.x = (_SelectionMax.x-_CurViewMin.x) / (_CurViewMax.x-_CurViewMin.x);
+	p3.y = (_SelectionMax.y-_CurViewMin.y) / (_CurViewMax.y-_CurViewMin.y);
+	p2.x = p3.x;
+	p2.y = p1.y;
+	p4.x = p1.x;
+	p4.y = p3.y;
+
+	CDRU::drawLine (p1.x, p1.y, p2.x, p2.y, *CNELU::Driver, CRGBA(255,255,255,255));
+	CDRU::drawLine (p2.x, p2.y, p3.x, p3.y, *CNELU::Driver, CRGBA(255,255,255,255));
+	CDRU::drawLine (p3.x, p3.y, p4.x, p4.y, *CNELU::Driver, CRGBA(255,255,255,255));
+	CDRU::drawLine (p4.x, p4.y, p1.x, p1.y, *CNELU::Driver, CRGBA(255,255,255,255));
+}
+
+// ---------------------------------------------------------------------------
 void CDisplay::OnDraw (CDC* pDC)
 {
 	if ((CNELU::Driver == NULL)||(_MainFrame == NULL))
@@ -151,6 +187,9 @@ void CDisplay::OnDraw (CDC* pDC)
 	if (_DisplayLogic)
 		_MainFrame->_PRegionBuilder.render (_CurViewMin, _CurViewMax);
 
+	if (_DisplaySelection)
+		renderSelection ();
+
 	CNELU::Scene.render ();
 	
 	CNELU::swapBuffers ();
@@ -160,20 +199,11 @@ void CDisplay::OnDraw (CDC* pDC)
 void CDisplay::OnMouseWheel (UINT nFlags, short zDelta, CPoint point)
 {
 	if (zDelta > 0)
-	{
-		if (_Factor >= 1.0f)
-			_Factor += 1.0f;
-		else
-			_Factor += 0.05f;
-	}
+		_Factor *= 2.0f;
 	else
-	{
-		if (_Factor > 1.0f)
-			_Factor -= 1.0f;
-		else
-			_Factor -= 0.05f;
-	}
-	NLMISC::clamp (_Factor, 0.05f, 5.0f);
+		_Factor /= 2.0f;
+
+	NLMISC::clamp (_Factor, 0.015625f, 4.0f);
 	OnPaint();
 }
 
@@ -194,6 +224,8 @@ void CDisplay::OnMButtonUp (UINT nFlags, CPoint point)
 // ---------------------------------------------------------------------------
 void CDisplay::OnLButtonDown (UINT nFlags, CPoint point)
 {
+	if (_MouseRightDown || _MouseMidDown)
+		return;
 	_CurPos = convertToWorld (point);
 	if (_MainFrame->_Mode == 0) // Mode Zone
 	{
@@ -204,23 +236,16 @@ void CDisplay::OnLButtonDown (UINT nFlags, CPoint point)
 	
 	if (_MainFrame->_Mode == 1) // Mode Logic
 	{
+		_SelectionMin = _CurPos;
+		_MouseOnSelection = false;
 		if (_MainFrame->_PRegionBuilder.getSelPB() != NULL)
 		{
-			CVector p = convertToWorld (point);
-			// Select a vertex
-			bool bSelected = false;
-			CVector selMin = CVector(	p.x-(_CurViewMax.x-_CurViewMin.x)*0.01f,
-										p.y-(_CurViewMax.y-_CurViewMin.y)*0.01f, 0.0f );
-			CVector selMax = CVector(	p.x+(_CurViewMax.x-_CurViewMin.x)*0.01f,
-										p.y+(_CurViewMax.y-_CurViewMin.y)*0.01f, 0.0f );
-			bSelected = _MainFrame->_PRegionBuilder.selectVertexOnSelPB (selMin, selMax);
-			// if we cant select a vertex create one
-			if (!bSelected)
-			{
-				_MainFrame->_PRegionBuilder.createVertexOnSelPB (p);
-			}
+			if (_MainFrame->_PRegionBuilder.isSelection())
+				_MouseOnSelection = true;
 		}
 	}
+	_DisplaySelection = false;
+	_MouseMoved = false;
 	_MouseLeftDown = true;
 	_LastMousePos = point;
 	OnPaint();
@@ -230,11 +255,32 @@ void CDisplay::OnLButtonDown (UINT nFlags, CPoint point)
 void CDisplay::OnLButtonUp (UINT nFlags, CPoint point)
 {
 	_MouseLeftDown = false;
+	_DisplaySelection = false;
+	_CurPos = convertToWorld (point);
+
+	if ((!_MouseMoved)&&(!_MouseOnSelection))
+	{
+		_MainFrame->_PRegionBuilder.createVertexOnSelPB (_CurPos);
+	}
+
+	if ((_MouseMoved)&&(!_MouseOnSelection))
+	{
+		_MainFrame->_PRegionBuilder.selectVerticesOnSelPB (_SelectionMin, _SelectionMax);
+	}
+
+	if (_MouseOnSelection)
+	{
+		_MainFrame->_PRegionBuilder.stackSelPB ();
+	}
+	OnPaint ();
 }
 
 // ---------------------------------------------------------------------------
 void CDisplay::OnRButtonDown (UINT nFlags, CPoint point)
 {
+	if (_MouseLeftDown || _MouseMidDown)
+		return;
+	
 	_CurPos = convertToWorld (point);
 	if (_MainFrame->_Mode == 0) // Mode Zone
 	{
@@ -255,11 +301,12 @@ void CDisplay::OnRButtonDown (UINT nFlags, CPoint point)
 										p.y-(_CurViewMax.y-_CurViewMin.y)*0.01f, 0.0f );
 			CVector selMax = CVector(	p.x+(_CurViewMax.x-_CurViewMin.x)*0.01f,
 										p.y+(_CurViewMax.y-_CurViewMin.y)*0.01f, 0.0f );
-			bSelected = _MainFrame->_PRegionBuilder.selectVertexOnSelPB (selMin, selMax);
+			bSelected = _MainFrame->_PRegionBuilder.selectVerticesOnSelPB (selMin, selMax);
 
 			if (bSelected)
 			{
-				_MainFrame->_PRegionBuilder.delSelVertexOnSelPB ();
+				_MainFrame->_PRegionBuilder.delSelVerticesOnSelPB ();
+				_MainFrame->_PRegionBuilder.selectVerticesOnSelPB (selMin, selMax);
 			}
 		}
 	}
@@ -278,10 +325,9 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 {
 	if (_MainFrame == NULL)
 		return;
-	
 	// Get the current position in world
 	_CurPos = convertToWorld (point);
-
+	_MouseMoved = true;
 	if (_MouseLeftDown)
 	{
 		if (_MainFrame->_Mode == 0) // Mode Zone
@@ -297,7 +343,17 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 		}
 	
 		if (_MainFrame->_Mode == 1) // Mode Logic
-			_MainFrame->_PRegionBuilder.setSelVertexOnSelPB (_CurPos);
+		{
+			if (_MouseOnSelection)
+			{
+				_MainFrame->_PRegionBuilder.setSelVerticesOnSelPB (_CurPos-convertToWorld(_LastMousePos));
+			}
+			else
+			{
+				_DisplaySelection = true;
+				_SelectionMax = _CurPos;
+			}
+		}
 		_LastMousePos = point;
 		OnPaint();
 	}
@@ -337,27 +393,15 @@ void CDisplay::OnMouseMove (UINT nFlags, CPoint point)
 	// Display the current position in the world in the status bar
 	_MainFrame->displayCoordinates (_CurPos);
 }
-// ---------------------------------------------------------------------------
-void CDisplay::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
-{
-	if (nChar == 17)
-		_CtrlKeyDown = true;
-	if (_CtrlKeyDown)
-	{
-		if (nChar == 90)
-		{
-			_MainFrame->onMenuModeUndo ();
-		}
-		if (nChar == 89)
-		{
-			_MainFrame->onMenuModeRedo ();
-		}
-	}
-}
 
 // ---------------------------------------------------------------------------
-void CDisplay::OnKeyUp (UINT nChar, UINT nRepCnt, UINT nFlags)
+void CDisplay::OnChar (UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-	if (nChar == 17)
-		_CtrlKeyDown = false;
+	if (GetAsyncKeyState(VK_LCONTROL))
+	{
+		if (GetAsyncKeyState(0x5a)) // Z
+			_MainFrame->onMenuModeUndo ();
+		if (GetAsyncKeyState(0x59)) // Y
+			_MainFrame->onMenuModeRedo ();
+	}
 }

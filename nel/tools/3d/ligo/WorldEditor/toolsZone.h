@@ -101,9 +101,11 @@ public:
 	afx_msg void OnSelectRot180 ();
 	afx_msg void OnSelectRot270 ();
 	afx_msg void OnSelectRotRan ();
+	afx_msg void OnSelectRotCycle ();
 	afx_msg void OnSelectFlipNo ();
 	afx_msg void OnSelectFlipYes ();
 	afx_msg void OnSelectFlipRan ();
+	afx_msg void OnSelectFlipCycle ();
 	
 	void OnSelChange (); // Notified by hand
 

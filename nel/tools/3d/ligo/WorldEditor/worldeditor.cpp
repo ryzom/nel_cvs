@@ -1,7 +1,7 @@
 /** \file WorldEditor.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: worldeditor.cpp,v 1.3 2001/12/05 16:43:38 besson Exp $
+ * $Id: worldeditor.cpp,v 1.4 2001/12/17 13:54:50 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,7 @@ using namespace NLLIGO;
 
 /////////////////////////////////////////////////////////////////////////////
 // CWorldEditorApp
+
 class CWorldEditorApp : public CWinApp
 {
 public:
@@ -260,21 +261,29 @@ void CWorldEditor::initUI (HWND parent)
 void CWorldEditor::initUILight (int x, int y, int cx, int cy)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (_MainFrame != NULL)
 		return;
 
-	_MainFrame = new CMainFrame();
-
-	_MainFrame->createX = x;
-	_MainFrame->createY = y;
-	_MainFrame->createCX = cx;
-	_MainFrame->createCY = cy;
+	_MainFrame = new CMainFrame;
+	_MainFrame->CreateX = x;
+	_MainFrame->CreateY = y;
+	_MainFrame->CreateCX = cx;
+	_MainFrame->CreateCY = cy;
 	BOOL bRet = _MainFrame->LoadFrame (IDR_MAINFRAME, WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, NULL, NULL);
 	CMenu* pMenu = _MainFrame->GetMenu();
+	theApp.m_pMainWnd = _MainFrame;
 
 	if (pMenu != NULL && pMenu->GetMenuItemCount() > 0)
 	{
-		pMenu->DeleteMenu(0, MF_BYPOSITION);
+		pMenu->ModifyMenu (0, MF_BYPOSITION, 0, "&Close");
+		pMenu = pMenu->GetSubMenu (0);
+
+		while (pMenu->GetMenuItemCount() > 0)
+			pMenu->DeleteMenu(0, MF_BYPOSITION);
+
+		pMenu->InsertMenu(-1, MF_BYPOSITION, ID_FILE_UNLOAD, "&Unload Landscape");
+		pMenu->InsertMenu(-1, MF_BYPOSITION, ID_FILE_UNLOADLOGIC, "U&nload Logic");
 		// force a redraw of the menu bar
 		_MainFrame->DrawMenuBar();
 	}
@@ -290,7 +299,7 @@ void CWorldEditor::initUILight (int x, int y, int cx, int cy)
 
 void CWorldEditor::go ()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	AFX_MANAGE_STATE (AfxGetStaticModuleState());
 	_MainFrame->_Exit = false;
 	do
 	{
@@ -301,8 +310,8 @@ void CWorldEditor::go ()
 		MSG	msg;
 		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			TranslateMessage (&msg);
+			DispatchMessage (&msg);
 		}
 	}
 	while (!_MainFrame->_Exit);
@@ -312,11 +321,15 @@ void CWorldEditor::go ()
 
 void CWorldEditor::releaseUI ()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	// exit
-	delete _MainFrame;
+	AFX_MANAGE_STATE (AfxGetStaticModuleState());
+
+	if (_MainFrame == NULL)
+		return;
+
+	_MainFrame->uninit ();
+	_MainFrame->DestroyWindow ();
 	_MainFrame = NULL;
-	CNELU::release();
+	CNELU::release ();
 }
 
 // ***************************************************************************
@@ -382,6 +395,8 @@ void IWorldEditor::releaseInterface (IWorldEditor* wed)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+	wed->releaseUI ();
+	
 	delete wed;
 }
 

@@ -76,6 +76,7 @@ CBuilderZoneRegion::CBuilderZoneRegion ()
 	zuTmp.PosY = 0;
 	_Zones.push_back (zuTmp);
 	_ZeBank = NULL;
+	_MustAskSave = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -268,6 +269,8 @@ void CBuilderZoneRegion::add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIG
 
 	if (!_Builder->getZoneMask (x,y))
 		return;
+
+	_MustAskSave = true;
 
 	// Create the mask in the good rotation and flip
 	sMask.Tab.resize (sizeX*sizeY);
@@ -1127,7 +1130,7 @@ void CBuilderZoneRegion::del (sint32 x, sint32 y, bool transition, void *pIntern
 {
 	if (!_Builder->getZoneMask (x,y))
 		return;
-	
+
 	const string &rSZone = getName (x, y);
 
 	CToUpdate *pUpdate = (CToUpdate *)pInternal;
@@ -1135,6 +1138,8 @@ void CBuilderZoneRegion::del (sint32 x, sint32 y, bool transition, void *pIntern
 	CZoneBankElement *pZBE = _ZeBank->getElementByZoneName (rSZone);
 	if (pZBE != NULL)
 	{
+		_MustAskSave = true;
+
 		sint32 sizeX = pZBE->getSizeX(), sizeY = pZBE->getSizeY();
 		sint32 posX = getPosX (x, y), posY = getPosY (x, y);
 		uint8 rot = getRot (x, y);
@@ -1197,7 +1202,9 @@ void CBuilderZoneRegion::serial (NLMISC::IStream &f)
 	f.serial (_MinY);
 	f.serial (_MaxX);
 	f.serial (_MaxY);
-	f.serialCont(_Zones);
+	f.serialCont (_Zones);
+
+	_MustAskSave = false;
 }
 
 // ---------------------------------------------------------------------------
@@ -1207,6 +1214,8 @@ void CBuilderZoneRegion::move (sint32 x, sint32 y)
 	_MinY += y;
 	_MaxX += x;
 	_MaxY += y;
+
+	_MustAskSave = true;
 }
 
 // ---------------------------------------------------------------------------
@@ -1425,7 +1434,12 @@ void CBuilderZoneRegion::reduceMin ()
 		else
 			break;
 	}
-	resize (newMinX, newMaxX, newMinY, newMaxY);
+
+	if ((newMinX != _MinX) || (newMinY != _MinY) || (newMaxX != _MaxX) || (newMaxY != _MaxY))
+	{
+		resize (newMinX, newMaxX, newMinY, newMaxY);
+		_MustAskSave = true;
+	}
 }
 
 // ---------------------------------------------------------------------------

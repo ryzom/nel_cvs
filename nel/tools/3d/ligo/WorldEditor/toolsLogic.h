@@ -7,6 +7,7 @@
 #include <afxcview.h>
 #include "resource.h"
 #include "color_button.h"
+#include "mainfrm.h"
 
 // ***************************************************************************
 
@@ -55,6 +56,8 @@ public:
 	afx_msg void OnMenuHide ();
 	afx_msg void OnMenuRegionHideAll ();
 	afx_msg void OnMenuRegionUnhideAll ();
+	afx_msg void OnMenuRegionHideType ();
+	afx_msg void OnMenuRegionUnhideType ();
 	
 	DECLARE_MESSAGE_MAP()
 
@@ -67,9 +70,19 @@ class CCreateDialog : public CDialog
 	
 public:
 
-	char Name[128], LayerName[128];
-	CColorButton ColorBut;
-	CRGBA colorInit;
+	char			Name[128], 
+					LayerName[128];
+
+	std::vector<CType>	*TypesForInit;
+
+	std::string RegionPost;
+	CMainFrame	*MainFrame;
+
+	std::string PropName;
+	std::string PropType;
+
+
+	CComboBox		ComboType;
 
 public:
 
@@ -77,8 +90,11 @@ public:
 
 	virtual BOOL OnInitDialog ();
 	virtual void DoDataExchange (CDataExchange* pDX);
+	virtual void OnOK();
 
-	afx_msg void OnColorButton ();
+	void setRegionName(const std::string &rn);
+
+	afx_msg void OnSelChange();
 
 	DECLARE_MESSAGE_MAP()
 

@@ -19,6 +19,8 @@
 
 #include "builderZoneRegion.h"
 
+#include "edit_stack.h"
+
 #include <string>
 #include <vector>
 
@@ -102,30 +104,6 @@ public:
 };
 
 // ***************************************************************************
-// CBuilderZoneStack contains the stack of the state painting
-class CBuilderZoneStack
-{
-	struct SStackElt
-	{
-		CBuilderZoneRegion	BZRegion;
-		CBuilderZoneRegion	*RegionFrom;
-		sint32				Pos;
-	};
-
-	std::vector<SStackElt>	_Stack;
-	sint32					_Head, _Queue, _UndoPos;
-
-public:
-
-	CBuilderZoneStack ();
-	void reset ();
-	void setRegion (CBuilderZoneRegion* pReg,sint32 nPos);
-	void undo ();
-	void redo ();
-	bool isEmpty ();
-};
-
-// ***************************************************************************
 // CBuilderZone contains all the shared data between the tools and the engine
 // ZoneBank contains the macro zones that is composed of several zones plus a mask
 // DataBase contains the graphics for the zones
@@ -149,7 +127,8 @@ public:
 	CDisplay					*_Display;
 	CToolsZone					*_ToolsZone;
 
-	CBuilderZoneStack			_StackZone;
+	//CBuilderZoneStack			_StackZone;
+	CEditStack<CBuilderZoneRegion> _StackZone;
 
 public:
 
@@ -165,10 +144,12 @@ public:
 	sint32		_CurSelectedZone;
 
 	uint8		_ApplyRot;
-	bool		_ApplyRotRan;
+	uint8		_ApplyRotType;	// (0-Normal)(1-Random)(2-Cycle)
+	uint8		_ApplyRotCycle;
 
 	uint8		_ApplyFlip;
-	bool		_ApplyFlipRan;
+	uint8		_ApplyFlipType;	// (0-Normal)(1-Random)(2-Cycle)
+	uint8		_ApplyFlipCycle;
 
 	std::vector<NLLIGO::CZoneBankElement*> _CurrentSelection;
 
@@ -176,12 +157,14 @@ private:
 
 	void				calcMask();
 	bool				initZoneBank (const std::string &Path);
+	void				askSaveRegion (int i);
 
 public:
 
 	CBuilderZone();
 
 	bool				init (const std::string &sPath, bool bMakeAZone);
+	void				uninit ();
 
 	void				setDisplay (CDisplay *pDisp);
 	void				setToolsZone (CToolsZone *pTool);

@@ -3,6 +3,7 @@
 #define DISPLAY_H
 
 #include "nel/misc/vector.h"
+#include "nel/misc/rgba.h"
 
 class CMainFrame;
 
@@ -17,8 +18,11 @@ public:
 	bool	_MouseLeftDown;
 	bool	_MouseRightDown;
 	bool	_MouseMidDown;
+	bool	_MouseMoved;
+	bool	_MouseOnSelection;
 	CPoint	_LastMousePos;
-
+	NLMISC::CVector	_SelectionMin, _SelectionMax;
+	
 	// World infos
 	float	_Factor;
 	NLMISC::CVector _Offset;
@@ -27,12 +31,14 @@ public:
 	bool	_DisplayGrid;
 	bool	_DisplayLogic;
 	bool	_DisplayZone;
+	bool	_DisplaySelection;
 	// This is the inworld coordinate of the bounding square
 	NLMISC::CVector	_CurViewMin, _CurViewMax;
 	NLMISC::CVector	_CurPos;
 	sint32	_LastX, _LastY;
 
 	bool _CtrlKeyDown;
+	NLMISC::CRGBA _BackgroundColor;
 
 public:
 
@@ -40,10 +46,16 @@ public:
 	
 	void init (CMainFrame *pMF); // pMF For update of the statusbar
 	void setCellSize (float size);
+
+	void setBackgroundColor (NLMISC::CRGBA &col);
+	NLMISC::CRGBA getBackgroundColor ();
+
 	void setDisplayGrid (bool bDisp);
 	bool getDisplayGrid ();
 	void calcCurView();
 	NLMISC::CVector convertToWorld(CPoint &p);
+
+	void renderSelection ();
 
 	virtual void OnDraw (CDC* pDC);
 
@@ -55,8 +67,7 @@ public:
 	afx_msg void OnRButtonDown	(UINT nFlags, CPoint point);
 	afx_msg void OnRButtonUp	(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove	(UINT nFlags, CPoint point);
-	afx_msg void OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags);
-	afx_msg void OnKeyUp (UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnChar (UINT nChar, UINT nRepCnt, UINT nFlags);
 
 	DECLARE_MESSAGE_MAP()
 

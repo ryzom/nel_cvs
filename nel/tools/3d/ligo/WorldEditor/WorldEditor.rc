@@ -80,10 +80,12 @@ IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
 // Toolbar
 //
 
-IDR_MAINFRAME TOOLBAR DISCARDABLE  15, 16
+IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 16
 BEGIN
     BUTTON      ID_MODE_ZONE
     BUTTON      ID_MODE_LOGIC
+    SEPARATOR
+    BUTTON      ID_MODE_TYPE
     SEPARATOR
     BUTTON      ID_MODE_SELECT
 END
@@ -117,6 +119,7 @@ BEGIN
     BEGIN
         MENUITEM "&Zone",                       ID_MODE_ZONE, CHECKED
         MENUITEM "&Logic",                      ID_MODE_LOGIC
+        MENUITEM "&Type",                       ID_MODE_TYPE
         MENUITEM SEPARATOR
         MENUITEM "&Select Zone",                ID_MODE_SELECT
         MENUITEM "&Move",                       ID_MODE_MOVE
@@ -129,6 +132,8 @@ BEGIN
         MENUITEM "&Toolbar",                    ID_VIEW_TOOLBAR
         MENUITEM "&Status Bar",                 ID_VIEW_STATUS_BAR
         MENUITEM "&Grid",                       ID_VIEW_GRID, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "&Background",                 ID_VIEW_BACKGROUND
     END
     POPUP "&Help"
     BEGIN
@@ -153,7 +158,7 @@ BEGIN
     VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
     VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
     "Y",            ID_MODE_REDO,           VIRTKEY, CONTROL, NOINVERT
-    "^Z",           ID_MODE_UNDO,           ASCII,  NOINVERT
+    "Z",            ID_MODE_UNDO,           VIRTKEY, CONTROL, NOINVERT
 END
 
 
@@ -174,20 +179,18 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,178,7,50,14,WS_GROUP
 END
 
-IDD_CREATE_ELEMENT DIALOG DISCARDABLE  0, 0, 186, 66
+IDD_CREATE_ELEMENT DIALOG DISCARDABLE  0, 0, 247, 47
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Create Element"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
-    EDITTEXT        IDC_EDIT_NAME,57,7,62,14,ES_AUTOHSCROLL
-    LTEXT           "Name",IDC_STATIC,7,13,20,8
-    LTEXT           "Layer Name",IDC_STATIC,7,29,42,8
-    EDITTEXT        IDC_EDIT_LAYERNAME,57,26,62,14,ES_AUTOHSCROLL
-    LTEXT           "Color",IDC_STATIC,7,51,17,8
-    CONTROL         "",IDC_BUTTON1,"Button",BS_OWNERDRAW | WS_TABSTOP,57,45,
-                    20,14
+    DEFPUSHBUTTON   "OK",IDOK,190,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,190,24,50,14
+    EDITTEXT        IDC_EDIT_NAME,32,7,148,14,ES_AUTOHSCROLL
+    LTEXT           "Name",IDC_STATIC,7,7,20,8
+    LTEXT           "Type",IDC_STATIC,7,25,20,8
+    COMBOBOX        IDC_COMBOTYPE,32,25,148,106,CBS_DROPDOWN | CBS_SORT | 
+                    WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_TOOLS_ZONE DIALOG DISCARDABLE  0, 0, 246, 278
@@ -222,8 +225,6 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,180,22,59,18,WS_GROUP
     GROUPBOX        "",IDC_STATIC,180,41,59,18,WS_GROUP
     GROUPBOX        "",IDC_STATIC,180,60,59,18,WS_GROUP
-    CONTROL         "Random",IDC_RANDOM,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,196,7,43,10
     CONTROL         "0°",IDC_ROT0,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,
                     83,23,10
     CONTROL         "90°",IDC_ROT90,"Button",BS_AUTORADIOBUTTON,31,83,27,10
@@ -233,12 +234,18 @@ BEGIN
                     10
     CONTROL         "Ran",IDC_ROTRANDOM,"Button",BS_AUTORADIOBUTTON,123,83,
                     29,10
+    CONTROL         "Full Cycle",IDC_ROTCYCLE,"Button",BS_AUTORADIOBUTTON,
+                    152,83,46,10
     CONTROL         "NoFlip",IDC_FLIPNO,"Button",BS_AUTORADIOBUTTON | 
                     WS_GROUP,7,94,36,10
     CONTROL         "Flip",IDC_FLIPYES,"Button",BS_AUTORADIOBUTTON,45,94,27,
                     10
     CONTROL         "Ran",IDC_FLIPRANDOM,"Button",BS_AUTORADIOBUTTON,74,94,
                     29,10
+    CONTROL         "Full Cycle",IDC_FLIPCYCLE,"Button",BS_AUTORADIOBUTTON,
+                    103,94,46,10
+    CONTROL         "Random",IDC_RANDOM,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,189,7,43,10
 END
 
 IDD_SELECTZONE DIALOG DISCARDABLE  0, 0, 186, 95
@@ -305,6 +312,45 @@ BEGIN
                     49,49,25,10
 END
 
+IDD_TYPEMANAGER DIALOG DISCARDABLE  0, 0, 186, 156
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Type Manager"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,135,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,135,50,14
+    LISTBOX         IDC_LISTTYPE,7,26,172,102,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Add Type",IDC_ADDTYPE,7,7,50,14
+    PUSHBUTTON      "Remove Type",IDC_REMOVETYPE,68,7,50,14
+    PUSHBUTTON      "Edit Type",IDC_EDITTYPE,129,7,50,14
+END
+
+IDD_TYPE DIALOG DISCARDABLE  0, 0, 186, 46
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Type"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,24,50,14
+    LTEXT           "Name",IDC_STATIC,7,7,20,8
+    LTEXT           "Color",IDC_STATIC,7,29,17,8
+    EDITTEXT        IDC_EDITNAME,36,7,82,14,ES_AUTOHSCROLL
+    CONTROL         "Color",IDC_BUTTONCOLOR,"Button",BS_OWNERDRAW | 
+                    WS_TABSTOP,36,24,50,14
+END
+
+IDD_TYPESEL DIALOG DISCARDABLE  0, 0, 186, 95
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Select Type"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,129,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,129,74,50,14
+    LISTBOX         IDC_LIST,7,7,117,81,LBS_SORT | LBS_NOINTEGRALHEIGHT | 
+                    WS_VSCROLL | WS_TABSTOP
+END
+
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -368,9 +414,9 @@ BEGIN
     IDD_CREATE_ELEMENT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 179
+        RIGHTMARGIN, 240
         TOPMARGIN, 7
-        BOTTOMMARGIN, 59
+        BOTTOMMARGIN, 40
     END
 
     IDD_TOOLS_ZONE, DIALOG
@@ -411,6 +457,30 @@ BEGIN
         RIGHTMARGIN, 179
         TOPMARGIN, 7
         BOTTOMMARGIN, 67
+    END
+
+    IDD_TYPEMANAGER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 149
+    END
+
+    IDD_TYPE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 39
+    END
+
+    IDD_TYPESEL, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 88
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -501,6 +571,12 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_MODE_LOGIC           "Logic Edition"
     ID_MODE_ZONE            "Zone edition"
+    ID_MODE_SELECT          "Change the current zone"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_MODE_TYPE            "Type Edition"
 END
 
 #endif    // English (U.S.) resources

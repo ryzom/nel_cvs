@@ -5,6 +5,8 @@
 
 #include <afxdlgs.h> // CFileDialog
 
+#include "nel/misc/file.h"
+
 #include "WorldEditor.h"
 #include "display.h"
 #include "toolsLogic.h"
@@ -13,7 +15,8 @@
 #include "MainFrm.h"
 #include "resource.h"
 
-#include "generate.h"
+#include "generateDlg.h"
+#include "TypeManagerDlg.h"
 #include "moveDlg.h"
 #include "exportDlg.h"
 
@@ -21,12 +24,23 @@
 
 using namespace NLLIGO;
 using namespace std;
+using namespace NLMISC;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+/////////////////////////////////////////////////////////////////////////////
+// CType
+
+void CType::serial (NLMISC::IStream&f)
+{
+	f.serial (Name);
+	f.serial (Color);
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CMainFrame
@@ -53,12 +67,15 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_EXIT, OnMenuFileExit)
 	ON_COMMAND(ID_MODE_ZONE, OnMenuModeZone)
 	ON_COMMAND(ID_MODE_LOGIC, OnMenuModeLogic)
+	ON_COMMAND(ID_MODE_TYPE, OnMenuModeType)
 	ON_COMMAND(ID_MODE_SELECT, onMenuModeSelectZone)
 	ON_COMMAND(ID_MODE_UNDO, onMenuModeUndo)
 	ON_COMMAND(ID_MODE_REDO, onMenuModeRedo)
 	ON_COMMAND(ID_MODE_MOVE, onMenuModeMove)
 	ON_COMMAND(ID_VIEW_GRID, OnMenuViewGrid)
-	ON_WM_KEYDOWN()
+	ON_COMMAND(ID_VIEW_BACKGROUND, OnMenuViewBackground)
+
+	//ON_WM_KEYDOWN()
 	ON_WM_CLOSE()
 	ON_WM_SIZE()
 	//}}AFX_MSG_MAP
@@ -73,14 +90,14 @@ static UINT indicators[] =
 };
 
 /////////////////////////////////////////////////////////////////////////////
-// CMainFrame construction/destruction
+// CMainFrame construction/destruction contexthelp
 
 // ---------------------------------------------------------------------------
 CMainFrame::CMainFrame()
 {
 	_Mode = 0;
 	_SplitterCreated = false;
-	createX = createY = createCX = createCY =0;
+	CreateX = CreateY = CreateCX = CreateCY =0;
 }
 
 // ---------------------------------------------------------------------------
@@ -97,30 +114,30 @@ void CMainFrame::setRootDir (const char* str)
 // ---------------------------------------------------------------------------
 void CMainFrame::loadLand (const char* str, const char* path)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	AFX_MANAGE_STATE (AfxGetStaticModuleState());
 	_ZoneBuilder.load (str, path);
 	_ZoneBuilder.stackReset ();
-	OnMenuModeZone();
+	OnMenuModeZone ();
 }
 
 // ---------------------------------------------------------------------------
 void CMainFrame::loadPrim (const char* str, const char* path)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	AFX_MANAGE_STATE (AfxGetStaticModuleState());
 	_PRegionBuilder.load (str, path);
-	OnMenuModeLogic();
+	OnMenuModeLogic ();
 }
 
 // ---------------------------------------------------------------------------
 void CMainFrame::saveAll ()
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	_ZoneBuilder.autoSaveAll();
-	_PRegionBuilder.autoSaveAll();
+	AFX_MANAGE_STATE (AfxGetStaticModuleState());
+	_ZoneBuilder.autoSaveAll ();
+	_PRegionBuilder.autoSaveAll ();
 }
 
 // ---------------------------------------------------------------------------
-int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
+int CMainFrame::OnCreate (LPCREATESTRUCT lpCreateStruct)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if (CFrameWnd::OnCreate(lpCreateStruct) == -1)
@@ -144,36 +161,38 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
 
 	// TODO: Delete these three lines if you don't want the toolbar to be dockable
-	m_wndToolBar.EnableDocking(CBRS_ALIGN_ANY);
-	EnableDocking(CBRS_ALIGN_ANY);
-	DockControlBar(&m_wndToolBar);
+	m_wndToolBar.EnableDocking (CBRS_ALIGN_ANY);
+	EnableDocking (CBRS_ALIGN_ANY);
+	DockControlBar (&m_wndToolBar);
+
+	CDocument *pNewDoc = new CDocument;
+	InitialUpdateFrame(pNewDoc, TRUE);
 
 	return 0;
 }
 
 // ---------------------------------------------------------------------------
-BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
+BOOL CMainFrame::PreCreateWindow (CREATESTRUCT& cs)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	AFX_MANAGE_STATE (AfxGetStaticModuleState());
 
-	if ((createCX != 0)&&(createCY != 0))
+	if ((CreateCX != 0)&&(CreateCY != 0))
 	{
-		cs.x = createX;
-		cs.y = createY;
-		cs.cx = createCX;
-		cs.cy = createCY;
+		cs.x = CreateX;
+		cs.y = CreateY;
+		cs.cx = CreateCX;
+		cs.cy = CreateCY;
 	}
 
-	if( !CFrameWnd::PreCreateWindow(cs) )
+	if (!CFrameWnd::PreCreateWindow(cs))
 		return FALSE;
 	return TRUE;
 }
 
 // ---------------------------------------------------------------------------
-BOOL CMainFrame::OnCreateClient(LPCREATESTRUCT,
-	 CCreateContext* pContext)
+BOOL CMainFrame::OnCreateClient (LPCREATESTRUCT, CCreateContext* pContext)
 {
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	AFX_MANAGE_STATE (AfxGetStaticModuleState());
 	// create a splitter with 1 row, 2 columns
 	if (!m_wndSplitter.CreateStatic(this, 1, 2))
 	{
@@ -207,7 +226,7 @@ void CMainFrame::initDisplay()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	SetActiveView((CView*)m_wndSplitter.GetPane(0,0));
+	SetActiveView((CView*)m_wndSplitter.GetPane (0,0));
 	CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
 	dispWnd->setCellSize (_Config.CellSize);
 	dispWnd->init (this);
@@ -233,30 +252,31 @@ void CMainFrame::initTools()
 {
 	if (_Mode == 0) // Mode Zone
 	{
-		m_wndSplitter.DeleteView(0, 1);
-		m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CToolsZone), CSize(100, 100), NULL);
-		SetActiveView((CView*)m_wndSplitter.GetPane(0,1));
+		m_wndSplitter.DeleteView (0, 1);
+		m_wndSplitter.CreateView (0, 1, RUNTIME_CLASS(CToolsZone), CSize(100, 100), NULL);
+		SetActiveView ((CView*)m_wndSplitter.GetPane(0,1));
 		CToolsZone *toolWnd = dynamic_cast<CToolsZone*>(m_wndSplitter.GetPane(0,1));
 		toolWnd->init (this);
 		adjustSplitter ();
 	}
 	if (_Mode == 1) // Mode Logic
 	{
-		m_wndSplitter.DeleteView(0, 1);
-		m_wndSplitter.CreateView(0, 1, RUNTIME_CLASS(CToolsLogic), CSize(100, 100), NULL);
-		SetActiveView((CView*)m_wndSplitter.GetPane(0,1));
+		m_wndSplitter.DeleteView (0, 1);
+		m_wndSplitter.CreateView (0, 1, RUNTIME_CLASS(CToolsLogic), CSize(100, 100), NULL);
+		SetActiveView ((CView*)m_wndSplitter.GetPane(0,1));
 		CToolsLogic *toolWnd = dynamic_cast<CToolsLogic*>(m_wndSplitter.GetPane(0,1));
 		toolWnd->init (this);
 		adjustSplitter ();
 	}
+	SetActiveView ((CView*)m_wndSplitter.GetPane(0,0));
 }
 
 // ---------------------------------------------------------------------------
-void CMainFrame::displayCoordinates (NLMISC::CVector &v)
+void CMainFrame::displayCoordinates (CVector &v)
 {
 //	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	std::string sTmp;
-	sTmp = "( " + NLMISC::toString(v.x) + " , " + NLMISC::toString(v.y) + " )";
+	sTmp = "( " + toString(v.x) + " , " + toString(v.y) + " )";
 	m_wndStatusBar.SetWindowText (sTmp.c_str());
 }
 
@@ -287,33 +307,70 @@ void CMainFrame::Dump(CDumpContext& dc) const
 bool CMainFrame::init (bool bMakeAZone)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	// Get the module path
 
+	// Load the Ligoscape.cfg
 	try
 	{
 		string sConfigFileName = _RootDir;
 		sConfigFileName += "ligoscape.cfg";
 		// Load the config file
 		_Config.read (sConfigFileName.c_str());
-
-		_ZoneBuilder.init (_RootDir, bMakeAZone);
-		// ok
-		return true;
 	}
-	catch (NLMISC::Exception& e)
+	catch (Exception& e)
+	{
+		MessageBox (e.what(), "Warning");
+
+		// Can't found the module put some default values
+		_Config.CellSize = 160.0f;
+		_Config.Snap = 1.0f;
+	}
+
+	// Initialize the zoneBuilder (load bank and this kind of stuff)
+	_ZoneBuilder.init (_RootDir, bMakeAZone);
+
+	// Load the WorldEditor.cfg
+	try
+	{
+		CIFile fileIn;
+		string sWorldEdCfg = _RootDir;
+		sWorldEdCfg += "WorldEditor.cfg";
+		fileIn.open (sWorldEdCfg.c_str());
+		fileIn.serialCont (_Types);
+		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+		CRGBA rgbaTemp;
+		fileIn.serial (rgbaTemp);
+		dispWnd->setBackgroundColor (rgbaTemp);
+	}
+	catch (Exception& e)
 	{
 		MessageBox (e.what(), "Warning");
 	}
-	// Can't found the module put some default values
-//	_Config.CellSize = 160.0f;
-	_Config.CellSize = 10.0f;
-	_Config.Snap = 1.0f;
-
-
-	_ZoneBuilder.init (_RootDir, bMakeAZone);
-
-
 	return false;
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::uninit ()
+{
+	// Save the WorldEditor.cfg
+	try
+	{
+		COFile fileOut;
+		string sWorldEdCfg = _RootDir;
+		sWorldEdCfg += "WorldEditor.cfg";
+		fileOut.open (sWorldEdCfg.c_str());
+		fileOut.serialCont (_Types);
+		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+		fileOut.serial (dispWnd->getBackgroundColor());
+	}
+	catch (Exception& e)
+	{
+		MessageBox (e.what(), "Warning");
+	}
+
+	// Check to save all files
+	_ZoneBuilder.uninit ();
+	_PRegionBuilder.uninit ();
+
 }
 
 // ******************
@@ -412,7 +469,7 @@ void CMainFrame::OnMenuFileSaveLandscape ()
 // ---------------------------------------------------------------------------
 void CMainFrame::OnMenuFileGenerate ()
 {
-	CGenerate dialog;
+	CGenerateDlg dialog;
 	_ZoneBuilder.getZoneBank().getCategoryValues ("material", dialog.AllMaterials);
 	if (dialog.DoModal() == IDOK)
 	{
@@ -465,6 +522,18 @@ void CMainFrame::OnMenuModeLogic ()
 }
 
 // ---------------------------------------------------------------------------
+void CMainFrame::OnMenuModeType ()
+{
+	CTypeManagerDlg tmDial(this);
+
+	tmDial.set (_Types);
+	if (tmDial.DoModal () == IDOK)
+	{
+		_Types = tmDial.get ();
+	}
+}
+
+// ---------------------------------------------------------------------------
 void CMainFrame::onMenuModeSelectZone ()
 {
 	CSelectDialog seldial(this);
@@ -481,13 +550,19 @@ void CMainFrame::onMenuModeSelectZone ()
 // ---------------------------------------------------------------------------
 void CMainFrame::onMenuModeUndo ()
 {
-	_ZoneBuilder.undo();
+	if (_Mode == 0) // Mode Zone
+		_ZoneBuilder.undo ();
+	else
+		_PRegionBuilder.undo ();
 }
 
 // ---------------------------------------------------------------------------
 void CMainFrame::onMenuModeRedo ()
 {
-	_ZoneBuilder.redo();
+	if (_Mode == 0) // Mode Zone
+		_ZoneBuilder.redo ();
+	else
+		_PRegionBuilder.redo ();
 }
 
 // ---------------------------------------------------------------------------
@@ -519,6 +594,23 @@ void CMainFrame::OnMenuViewGrid ()
 	dispWnd->setDisplayGrid (!dispWnd->getDisplayGrid());
 	CMenu *menu = GetMenu();
 	menu->CheckMenuItem (ID_VIEW_GRID, dispWnd->getDisplayGrid()?MF_CHECKED|MF_BYCOMMAND:MF_UNCHECKED|MF_BYCOMMAND);
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuViewBackground ()
+{
+	CColorDialog colDial;
+
+	if (colDial.DoModal() == IDOK)
+	{
+		int r = GetRValue(colDial.GetColor());
+		int g = GetGValue(colDial.GetColor());
+		int b = GetBValue(colDial.GetColor());
+
+		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+		dispWnd->setBackgroundColor (CRGBA(r,g,b,255));
+		dispWnd->OnDraw	(NULL);
+	}
 }
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.1 2001/08/01 08:45:06 valignat Exp $
+# $Id: Makefile.am,v 1.2 2001/08/03 10:16:59 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -33,7 +33,7 @@ libnelsnd_la_SOURCES = ambiant_source.cpp                  \
 
 AM_CXXFLAGS          = -I$(top_srcdir)/src
 
-libnelsnd_la_LIBADD  = 
+libnelsnd_la_LIBADD  = driver/libnelsnd_lowlevel.la
 
 libnelsnd_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

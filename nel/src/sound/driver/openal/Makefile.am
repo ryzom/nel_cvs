@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.1 2001/08/01 08:45:06 valignat Exp $
+# $Id: Makefile.am,v 1.2 2001/08/03 10:16:59 valignat Exp $
 #
 
 MAINTAINERCLEANFILES         = Makefile.in
@@ -15,9 +15,9 @@ libnel_drv_openal_la_SOURCES = buffer_al.cpp               \
                                source_al.cpp               \
                                source_al.h
 
-AM_CXXFLAGS                  = -I$(top_srcdir)/src
+AM_CXXFLAGS                  = -I$(top_srcdir)/src @OPENAL_CFLAGS@
 
-libnel_drv_openal_la_LIBADD  = 
+libnel_drv_openal_la_LIBADD  = @OPENAL_LIBS@ -lopenal
 
 libnel_drv_openal_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

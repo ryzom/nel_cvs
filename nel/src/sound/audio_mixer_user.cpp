@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.74 2004/09/23 12:14:29 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.75 2004/09/23 15:03:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2261,7 +2261,20 @@ void CAudioMixerUser::debugLogEvent(const char *reason)
 bool	CAudioMixerUser::playMusic(const std::string &fileName)
 {
 	if(getSoundDriver())
-		return getSoundDriver()->playMusic(fileName);
+	{
+		NLMISC::CIFile		fileIn;
+		bool	state= false;
+		if(fileIn.open(CPath::lookup(fileName)))
+		{
+			state= getSoundDriver()->playMusic(fileIn);
+		}
+
+		// failed?
+		if(!state)
+			nlwarning("Sound: Error While reading music file: %s", fileName.c_str());
+
+		return state;
+	}
 	else
 		return false;
 }

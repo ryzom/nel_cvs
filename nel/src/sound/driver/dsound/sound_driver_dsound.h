@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.15 2004/09/23 12:15:25 berenguier Exp $
+ * $Id: sound_driver_dsound.h,v 1.16 2004/09/23 15:04:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,7 +113,7 @@ public:
 	LPKSPROPERTYSET		createPropertySet(CSourceDSound *source);
 #endif
 
-	virtual bool	playMusic(const std::string &fileName);
+	virtual bool	playMusic(NLMISC::CIFile &file);
 	virtual void	stopMusic();
 	virtual void	setMusicVolume(float gain);
 		

@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.22 2004/09/23 12:14:51 berenguier Exp $
+ * $Id: sound_driver.h,v 1.23 2004/09/23 15:04:22 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/string_mapper.h"
 #include "nel/misc/common.h"
+#include "nel/misc/file.h"
 
 /// This namespace contains the sound classes
 namespace NLSOUND {
@@ -161,9 +162,9 @@ public:
 	 *	FMOD: The File is loaded in memory, but decompressed by FMod in a thread
 	 *	Hence if the mp3 fileSize is 5 Mb, it will take only 5 Mb in memory (not the decompressed 40 Mb size)
 	 *	NB: if an old music was played, it is first stop with stopMusic()
-	 *	\param fileName full path of file name (no CPath::lookup is done)
+	 *	\param CIFile opened file
 	 */
-	virtual bool	playMusic(const std::string &fileName) =0;
+	virtual bool	playMusic(NLMISC::CIFile &file) =0;
 
 	/** Stop the music previously loaded and played (the Memory is also freed)
 	 */

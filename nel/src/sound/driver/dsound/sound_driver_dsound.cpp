@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.31 2004/09/23 12:15:25 berenguier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.32 2004/09/23 15:04:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1060,7 +1060,7 @@ void	CSoundDriverDSound::displayBench(CLog *log)
 
 
 // ***************************************************************************
-bool	CSoundDriverDSound::playMusic(const std::string &fileName)
+bool	CSoundDriverDSound::playMusic(NLMISC::CIFile &file)
 {
 	// unsupported
 	return false;

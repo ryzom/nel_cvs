@@ -1,7 +1,7 @@
 /** \file sound_dirver_fmod.h
  * DirectSound sound source
  *
- * $Id: sound_driver_fmod.h,v 1.3 2004/09/23 12:16:10 berenguier Exp $
+ * $Id: sound_driver_fmod.h,v 1.4 2004/09/23 15:05:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,7 +117,7 @@ public:
 	IStringMapperProvider	*getStringMapper()	{return _StringMapper;}
 
 	// play the music
-	virtual bool	playMusic(const std::string &fileName);
+	virtual bool	playMusic(NLMISC::CIFile &file);
 	
 	// stop the music
 	virtual void	stopMusic();

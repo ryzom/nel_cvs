@@ -1,7 +1,7 @@
 /** \file sound_driver_fmod.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_fmod.cpp,v 1.3 2004/09/23 12:16:10 berenguier Exp $
+ * $Id: sound_driver_fmod.cpp,v 1.4 2004/09/23 15:05:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -402,57 +402,45 @@ void	CSoundDriverFMod::toFModCoord(const CVector &in, float out[3])
 }
 
 // ***************************************************************************
-bool	CSoundDriverFMod::playMusic(const std::string &fileName)
+bool	CSoundDriverFMod::playMusic(NLMISC::CIFile &fileIn)
 {
 	if(!_FModOk)
 		return false;
-
+	
 	// stop old one
 	if(_FModMusicStream)
 		stopMusic();
-
+	
 	// try to load the new one in memory
-	uint32	fs= NLMISC::CFile::getFileSize(fileName);
+	uint32	fs= fileIn.getFileSize();
 	if(fs==0)
 		return false;
 	
-	// try to load into memory
-	NLMISC::CIFile		fileIn;
-	if(fileIn.open(fileName))
+	_FModMusicBuffer= new uint8 [fs];
+	// read
+	try
 	{
-		_FModMusicBuffer= new uint8 [fs];
-		// read
-		try
-		{
-			fileIn.serialBuffer(_FModMusicBuffer, fs);
-		}
-		catch(...)
-		{
-			nlwarning("Sound FMOD: Error While reading music file: %s", fileName.c_str());
-			delete[] _FModMusicBuffer;
-			_FModMusicBuffer= NULL;
-			return false;
-		}
-		// Load to a stream FMOD sample
-		_FModMusicStream= FSOUND_Stream_Open((const char*)_FModMusicBuffer, 
-			FSOUND_2D|FSOUND_LOADMEMORY|FSOUND_LOOP_NORMAL, 0, fs);
-		// not succeed?
-		if(!_FModMusicStream)
-		{
-			nlwarning("Sound FMOD: Error While creating the FMOD stream for music file: %s", fileName.c_str());
-			delete[] _FModMusicBuffer;
-			_FModMusicBuffer= NULL;
-			return false;
-		}
-			
-		fileIn.close();
+		fileIn.serialBuffer(_FModMusicBuffer, fs);
 	}
-	else
+	catch(...)
 	{
-		nlwarning("Sound FMOD: Error While reading music file: %s", fileName.c_str());
+		nlwarning("Sound FMOD: Error While reading music file");
+		delete[] _FModMusicBuffer;
+		_FModMusicBuffer= NULL;
 		return false;
 	}
-
+	// Load to a stream FMOD sample
+	_FModMusicStream= FSOUND_Stream_Open((const char*)_FModMusicBuffer, 
+		FSOUND_2D|FSOUND_LOADMEMORY|FSOUND_LOOP_NORMAL, 0, fs);
+	// not succeed?
+	if(!_FModMusicStream)
+	{
+		nlwarning("Sound FMOD: Error While creating the FMOD stream for music file");
+		delete[] _FModMusicBuffer;
+		_FModMusicBuffer= NULL;
+		return false;
+	}
+	
 	// loaded => play!
 	nlassert(_FModMusicStream);
 	_FModMusicChannel= FSOUND_Stream_Play(FSOUND_FREE, _FModMusicStream);
@@ -463,6 +451,7 @@ bool	CSoundDriverFMod::playMusic(const std::string &fileName)
 	
 	return true;
 }
+
 
 // ***************************************************************************
 void	CSoundDriverFMod::stopMusic()

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.48 2004/08/13 16:06:12 vizerie Exp $
+ * $Id: u_driver.h,v 1.48.4.1 2004/09/14 17:12:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,6 +155,7 @@ public:
 	virtual	~UDriver();
 	// @}
 
+	virtual	bool			isLost() const = 0;
 
 	/// \name Disable Hardware Feature 
 	/**	Disable some Feature that may be supported by the Hardware 

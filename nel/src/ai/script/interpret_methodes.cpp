@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.7 2001/01/12 11:52:20 portier Exp $
+ * $Id: interpret_methodes.cpp,v 1.8 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,14 +116,12 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CParam::clone() const
 	{
 		CParam *cl = new CParam( *this );
-		cl->incRef();
 		return cl;
 	}
 
 	const NLAIC::IBasicType *CParam::newInstance() const
 	{
 		CParam *instance = new CParam();
-		instance->incRef();
 		return instance;
 	}
 
@@ -298,14 +296,12 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CMethodeName::clone() const
 	{
 		CMethodeName *cl = new CMethodeName( *this );
-		cl->incRef();
 		return cl;
 	}
 
 	const NLAIC::IBasicType *CMethodeName::newInstance() const
 	{
 		CMethodeName *instance = new CMethodeName;
-		instance->incRef();
 		return instance;
 	}
 
@@ -340,7 +336,6 @@ namespace NLAISCRIPT
 	void CMethodeName::setCode(IOpCode *c)
 	{			
 		_Code = c;
-		//_Code->incRef();
 	}
 
 	IOpCode &CMethodeName::getCode()

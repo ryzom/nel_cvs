@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.7 2001/01/10 10:39:57 chafik Exp $
+ * $Id: registry_type.h,v 1.8 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -285,14 +285,12 @@ namespace NLAIC
 		virtual const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CTypeOfObject(*this);
-			x->incRef();
 			return x;
 		}		
 
 		virtual const NLAIC::IBasicType *newInstance() const
 		{
-			NLAIC::IBasicType *x = new CTypeOfObject();
-			x->incRef();
+			NLAIC::IBasicType *x = new CTypeOfObject();			
 			return x;
 		}
 
@@ -376,14 +374,12 @@ namespace NLAIC
 		virtual const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CTypeOfOperator(*this);
-			x->incRef();
 			return x;
 		}		
 
 		virtual const NLAIC::IBasicType *newInstance() const
 		{
 			NLAIC::IBasicType *x = new CTypeOfOperator();
-			x->incRef();
 			return x;
 		}
 

@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: messagerie.h,v 1.7 2001/01/15 17:58:20 chafik Exp $
+ * $Id: messagerie.h,v 1.8 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -297,7 +297,6 @@ namespace NLAIAGENT
 		CMessage()
 		{
 			CGroupType *x = new CGroupType();
-			x->incRef();
 			setMessageGroup(x);
 		}
 
@@ -332,14 +331,12 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicInterface *c = (NLAIC::IBasicInterface *)new CMessage(*this);
-			c->incRef();
 			return c;
 		}		
 
 		virtual const NLAIC::IBasicType *newInstance() const
 		{									
 			CMessage *instance = new CMessage;
-			instance->incRef();
 			return instance;
 		}		
 		//@}
@@ -366,7 +363,6 @@ namespace NLAIAGENT
 		CMessageVector()
 		{
 			CVectorGroupType *x = new CVectorGroupType();
-			x->incRef();
 			setMessageGroup(x);
 		}
 
@@ -403,7 +399,6 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicInterface *m = (NLAIC::IBasicInterface *)new CMessageVector(*this);
-			m->incRef();
 			return m;
 		}		
 

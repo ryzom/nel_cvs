@@ -1,6 +1,6 @@
 /** \file opcode_ldb.cpp
  *
- * $Id: opcode_ldb.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: opcode_ldb.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,7 +121,6 @@ namespace NLAISCRIPT
 		{
 			obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*i++);
 		}
-		//obj->incRef();
 		context.Stack[(int)context.Stack] = (NLAIAGENT::IObjectIA *)obj->clone();
 		
 		return NLAIAGENT::IObjectIA::ProcessIdle;

@@ -1,6 +1,6 @@
 /** \file object.cpp
  *
- * $Id: interpret_object.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: interpret_object.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,6 @@ namespace NLAISCRIPT
 	IClassInterpret::IClassInterpret(const NLAIAGENT::IVarName &name, const IClassInterpret &a): IObjectIA(a), _Name( (NLAIAGENT::IVarName *) name.clone() )
 	{				
 		_IdType = new NLAIC::CIdentType( name.getString(), CClassInterpretFactory( this ) , NLAIC::CTypeOfObject::tAgent, 0);
-		_IdType->incRef();
 	}
 
 	IClassInterpret::IClassInterpret(NLAIC::CIdentType *idType):_IdType(idType),_Name(NULL)
@@ -84,14 +83,13 @@ namespace NLAISCRIPT
 	void IClassInterpret::setType(NLAIC::CIdentType *idType)
 	{
 		_IdType = idType;
-		_IdType->incRef();
+		//_IdType->incRef();
 	}
 
 	void IClassInterpret::setType(const NLAIAGENT::IVarName &name, const IClassInterpret &a)
 	{
 		const char *txt = name.getString();
 		_IdType = new NLAIC::CIdentType( name.getString(), CClassInterpretFactory( this ), NLAIC::CTypeOfObject::tAgent, 0);
-		_IdType->incRef();
 	}
 
 	void IClassInterpret::setClassName(const NLAIAGENT::IVarName &name)
@@ -131,7 +129,6 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CClassInterpretFactory::clone() const
 	{
 		 NLAIC::IBasicType *x = new CClassInterpretFactory(_inst);
-		 x->incRef();
 		 return x;
 	}
 

@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.2 2001/01/11 17:02:18 chafik Exp $
+ * $Id: ident.h,v 1.3 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -461,13 +461,11 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicInterface *m = new CLocWordNumRef(*this);
-			m->incRef();
 			return m;
 		}		
 		virtual const NLAIC::IBasicType *newInstance() const
 		{
 			NLAIC::IBasicInterface *m = new CLocWordNumRef();
-			m->incRef();
 			return m;
 		}
 		virtual void save(NLMISC::IStream &os)

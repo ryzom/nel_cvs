@@ -1,7 +1,7 @@
 /** \file object_load.h
  * Sevral class for loading object from the context.
  *
- * $Id: object_load.h,v 1.4 2001/01/10 10:09:45 chafik Exp $
+ * $Id: object_load.h,v 1.5 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -100,14 +100,12 @@ namespace NLAISCRIPT
 		virtual const NLAIC::IBasicType *clone() const 
 		{
 			NLAIC::IBasicType *x= new CLoadSelfObject(_I);
-			x->incRef();
 			return x;
 		}		
 
 		virtual const NLAIC::IBasicType *newInstance() const 
 		{
 			NLAIC::IBasicType *x= new CLoadSelfObject();
-			x->incRef();
 			return x;
 		}
 
@@ -151,14 +149,12 @@ namespace NLAISCRIPT
 		virtual const NLAIC::IBasicType *clone() const 
 		{
 			NLAIC::IBasicType *x= new CLoadStackObject(_I);
-			x->incRef();
 			return x;
 		}		
 
 		virtual const NLAIC::IBasicType *newInstance() const 
 		{
 			NLAIC::IBasicType *x= new CLoadStackObject();
-			x->incRef();
 			return x;
 		}
 
@@ -202,14 +198,12 @@ namespace NLAISCRIPT
 		virtual const NLAIC::IBasicType *clone() const 
 		{
 			NLAIC::IBasicType *x= new CLoadHeapObject(_I,_N);
-			x->incRef();
 			return x;
 		}		
 
 		virtual const NLAIC::IBasicType *newInstance() const 
 		{
 			NLAIC::IBasicType *x= new CLoadHeapObject();
-			x->incRef();
 			return x;
 		}
 

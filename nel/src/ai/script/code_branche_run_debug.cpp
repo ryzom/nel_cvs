@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.5 2001/01/12 09:52:56 chafik Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,14 +81,12 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType* CCodeBrancheRunDebug::clone() const 
 	{
 		NLAIC::IBasicType *x = new CCodeBrancheRunDebug(*this);
-		x->incRef();
 		return x;
 	}
 
 	const NLAIC::IBasicType *CCodeBrancheRunDebug::newInstance() const 
 	{
 		NLAIC::IBasicType *x = new CCodeBrancheRunDebug(1,CHaltOpCode());
-		x->incRef();
 		return x;
 	}
 

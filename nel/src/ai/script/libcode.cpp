@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.6 2001/01/12 11:52:02 portier Exp $
+ * $Id: libcode.cpp,v 1.7 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,6 @@ namespace NLAISCRIPT
 				{
 					NLAISCRIPT::COperandSimple typeR(new NLAIC::CIdentType(NLAIAGENT::CStringType::IdStringType));
 					NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-					t->incRef();					
 					m.push(NLAIAGENT::CIdMethod(2,0.0,NULL,t));
 				}
 				else
@@ -63,7 +62,6 @@ namespace NLAISCRIPT
 				{
 					NLAISCRIPT::COperandVoid typeR;
 					NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-					t->incRef();
 					m.push(NLAIAGENT::CIdMethod(0,0.0,NULL,t));
 				}				
 				else
@@ -71,7 +69,6 @@ namespace NLAISCRIPT
 				{
 					NLAISCRIPT::COperandVoid typeR;
 					NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-					t->incRef();
 					m.push(NLAIAGENT::CIdMethod(1,0.0,NULL,t));
 				}
 			}
@@ -82,7 +79,6 @@ namespace NLAISCRIPT
 			{
 				NLAISCRIPT::COperandVoid typeR;
 				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-				t->incRef();
 				m.push(NLAIAGENT::CIdMethod(0,0.0,NULL,t));
 			}
 			else
@@ -90,7 +86,6 @@ namespace NLAISCRIPT
 			{
 				NLAISCRIPT::COperandVoid typeR;
 				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-				t->incRef();
 				m.push(NLAIAGENT::CIdMethod(1,0.0,NULL,t));
 			}
 		}

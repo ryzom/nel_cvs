@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.4 2001/01/17 10:16:08 saffray Exp $
+ * $Id: agent_nombre.h,v 1.5 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,39 +172,34 @@ namespace NLAIAGENT
 		virtual IObjetOp *operator < (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();
-			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value < v);
-			x->incRef();
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value < v);			
 			return x;
 		}
 
 		virtual IObjetOp *operator > (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();
-			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value > v);
-			x->incRef();
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value > v);			
 			return x;
 		}
 
 		virtual IObjetOp *operator <= (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();
-			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value <= v);
-			x->incRef();
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value <= v);			
 			return x;
 		}
 
 		virtual IObjetOp *operator >= (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();
-			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value >= v);
-			x->incRef();
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value >= v);			
 			return x;
 		}
 
 		virtual IObjetOp *operator ! () const
 		{			
-			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value == (tNombre)0);
-			x->incRef();
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value == (tNombre)0);			
 			return x;
 		}
 
@@ -212,7 +207,6 @@ namespace NLAIAGENT
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();			
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value != v);
-			x->incRef();
 			return x;
 		}
 
@@ -220,7 +214,6 @@ namespace NLAIAGENT
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();			
 			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value == v);
-			x->incRef();
 			return x;
 		}
 

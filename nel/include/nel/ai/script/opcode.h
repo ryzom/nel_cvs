@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: opcode.h,v 1.6 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLdbNewOpCode(*_B);
-			x->incRef();
 			return x;
 		}
 
@@ -161,7 +160,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const 
 		{			
 			NLAIC::IBasicType *x = new CNegOpCode();
-			x->incRef();
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -228,7 +226,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const 
 		{			
 			NLAIC::IBasicType *x = new CAddOpCode();
-			x->incRef();
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -295,7 +292,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CSubOpCode();
-			x->incRef();
 			return x;
 		}
 		
@@ -362,7 +358,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CDivOpCode();
-			x->incRef();
 			return x;
 		}
 		
@@ -430,7 +425,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CMulOpCode();
-			x->incRef();
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -499,7 +493,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CSupOpCode();
-			x->incRef();
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -568,7 +561,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CInfOpCode();
-			x->incRef();
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -637,7 +629,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CEqOpCode();
-			x->incRef();         
 			return x;            
 		}
 
@@ -705,7 +696,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CSupEqOpCode();
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -774,7 +764,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CInfEqOpCode();
-			x->incRef();         
 			return x;            
 		}
 
@@ -843,7 +832,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CDiffOpCode();
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -911,7 +899,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CNotOpCode();
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -982,7 +969,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CJFalseOpCode(_N);
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1047,7 +1033,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CJmpOpCode(_N);
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1128,7 +1113,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CAffOpCode(_I);
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1226,7 +1210,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CAffHeapMemberiOpCode(_I,_N);
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1295,7 +1278,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CAffMemberiOpCode(_I);
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1360,8 +1342,7 @@ namespace NLAISCRIPT
 
 		const NLAIC::IBasicType *clone() const
 		{
-			NLAIC::IBasicType *x = new CAffMemberOpCode(_I);
-			x->incRef();         
+			NLAIC::IBasicType *x = new CAffMemberOpCode(_I);			
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1425,7 +1406,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLocAlloc();
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1503,7 +1483,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CMarkAlloc();
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1556,7 +1535,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CFreeAlloc();
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1632,7 +1610,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CHaltOpCode();
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1684,7 +1661,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CNopOpCode();
-			x->incRef();         
 			return x;            
 		}
 		const NLAIC::IBasicType *newInstance() const 
@@ -1739,7 +1715,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CTellOpCode();
-			x->incRef();
 			return x;
 		}
 
@@ -1790,7 +1765,6 @@ namespace NLAISCRIPT
 		{
 			NLAIAGENT::IObjectIA *param = context.Stack[(int)context.Stack];
 			NLAIAGENT::IBaseGroupType *arglist = new NLAIAGENT::CGroupType;
-			arglist->incRef();
 			arglist->cpy(*param);
 			param->release();
 			context.Stack[(int)context.Stack] = arglist;
@@ -1808,7 +1782,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *clone = new CMakeArgOpCode();
-			clone->incRef();
 			return clone;
 		}
 
@@ -1876,7 +1849,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *clone = new CMarkMsg(_Heritance,_I);
-			clone->incRef();
 			return clone;
 		}
 

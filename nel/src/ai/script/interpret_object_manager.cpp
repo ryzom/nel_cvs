@@ -1,6 +1,6 @@
 /** \file interpret_object_manager.cpp
  *
- * $Id: interpret_object_manager.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: interpret_object_manager.cpp,v 1.5 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,14 +64,12 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CManagerClass::clone() const
 	{
 		NLAIC::IBasicType *clone = new CManagerClass(*this);
-		clone->incRef();
 		return clone;
 	}
 
 	const NLAIC::IBasicType *CManagerClass::newInstance() const
 	{
 		NLAIC::IBasicType *instance = new CManagerClass();
-		instance->incRef();
 		return instance;
 	}
 
@@ -84,8 +82,6 @@ namespace NLAISCRIPT
 		// Création des composants statiques
 		// Création du message
 		NLAIAGENT::CMainAgentScript *instance = new NLAIAGENT::CMainAgentScript(NULL);
-		instance->incRef();
-
 		return instance;
 	}
 

@@ -1,7 +1,7 @@
 /** \file opcode_lpt.h
  * Sevral op-code for loading referance object to the stack.
  *
- * $Id: opcode_lpt.h,v 1.4 2001/01/10 10:09:45 chafik Exp $
+ * $Id: opcode_lpt.h,v 1.5 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLptMemberOpCode(_B);
-			x->incRef();
 			return x;
 		}
 
@@ -100,7 +99,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLptStackMemberiOpCode(_I);
-			x->incRef();
 			return x;
 		}
 
@@ -152,7 +150,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLptHeapMemberiOpCode(_I,_N);
-			x->incRef();
 			return x;
 		}
 
@@ -203,7 +200,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLptMemberiOpCode(_I);
-			x->incRef();
 			return x;
 		}
 
@@ -253,7 +249,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLptRefOpCode(_B);
-			x->incRef();
 			return x;
 
 		}

@@ -1,6 +1,6 @@
 /** \file constraint_debug.cpp
  *
- * $Id: constraint_debug.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: constraint_debug.cpp,v 1.5 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,6 @@ namespace NLAISCRIPT
 	const IConstraint *CConstraintDebug::clone() const
 	{
 		IConstraint *x = new CConstraintDebug(_Lin,_Col);
-		x->incRef();
 		return x;
 	}
 

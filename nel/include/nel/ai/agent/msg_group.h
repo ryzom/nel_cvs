@@ -1,7 +1,7 @@
 /** \file msg_group.h
  * class for define a group of message (a group of message is same as a performative.
  *
- * $Id: msg_group.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: msg_group.h,v 1.3 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,14 +82,12 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const 
 		{
 			NLAIC::IBasicType *x = new CMessageGroup( *this );
-			x->incRef();
 			return x;
 		}
 
 		virtual const NLAIC::IBasicType *newInstance() const
 		{
 			NLAIC::IBasicType *x = new CMessageGroup( *this );
-			x->incRef();
 			return x;
 		}
 

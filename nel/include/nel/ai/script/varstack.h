@@ -1,7 +1,7 @@
 
 /** \file varstack.h
  *
- * $Id: varstack.h,v 1.5 2001/01/12 13:01:47 portier Exp $
+ * $Id: varstack.h,v 1.6 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,6 @@ namespace NLAISCRIPT
 		CVarPStack(sint32 val, const char *nameVar):
 		  _Val(val),_NameVar(new NLAIAGENT::CIndexedVarName(nameVar))
 		{			  
-			_NameVar->incRef();
 		}
 
 		CVarPStack(const CVarPStack &v):NLAIAGENT::IObjetOp(v),_Val(v._Val),_NameVar((NLAIAGENT::IVarName *)v._NameVar->clone())
@@ -95,7 +94,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CVarPStack(*this);
-			x->incRef();
 			return x;
 		}
 		
@@ -268,7 +266,6 @@ namespace NLAISCRIPT
 #ifdef NL_DEBUG
 		CVarPStackParam(sint32 val, const char *nameVar): _Val(val),_NameVar(new NLAIAGENT::CIndexedVarName(nameVar))
 		{			  
-			_NameVar->incRef();
 		}
 
 		CVarPStackParam(const CVarPStackParam &v):NLAIAGENT::IObjetOp(v),_Val(v._Val),_NameVar((NLAIAGENT::IVarName *)v._NameVar->clone())
@@ -314,7 +311,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CVarPStackParam(*this);
-			x->incRef();
 			return x;
 			//return (NLAIAGENT::IObjectIA  *)CVarPStack::_LocalTableRef[_Val + _Shift]->clone();
 		}
@@ -322,7 +318,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *newInstance() const 
 		{
 			NLAIC::IBasicType *x = new CVarPStackParam(*this);
-			x->incRef();
 			return x;
 		}
 

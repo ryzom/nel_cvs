@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.8 2001/01/12 16:44:09 saffray Exp $
+ * $Id: type_def.h,v 1.9 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,6 @@ namespace NLAISCRIPT
 		const IConstraint *clone() const
 		{
 			IConstraint *x = new COperandVoid();
-			x->incRef();
 			return x;
 		}		
 
@@ -204,7 +203,6 @@ namespace NLAISCRIPT
 		const IConstraint *clone() const
 		{
 			IConstraint *x = new COperandSimple(new NLAIC::CIdentType(*_Ident));
-			x->incRef();
 			return x;
 		}		
 
@@ -293,8 +291,7 @@ namespace NLAISCRIPT
 
 		const IConstraint *clone() const
 		{
-			IConstraint *x = new COperandUnknown((IConstraint *)_Constraint->clone());
-			x->incRef();
+			IConstraint *x = new COperandUnknown((IConstraint *)_Constraint->clone());		
 			return x;
 		}		
 
@@ -451,7 +448,6 @@ namespace NLAISCRIPT
 		const IConstraint *clone() const
 		{
 			IConstraint *x = new COperationType((const COperationType &)*_Operand,_Op);
-			x->incRef();   
 			return x;      				
 		}
 		
@@ -564,7 +560,6 @@ namespace NLAISCRIPT
 		const IConstraint *clone() const
 		{
 			IConstraint *x = new COperationTypeGD ((const COperationType &)*_OpG,(const COperationType &)*_OpD,_Op);
-			x->incRef();
 			return x;
 		}
 
@@ -675,7 +670,6 @@ namespace NLAISCRIPT
 		const IConstraint *clone() const
 		{
 			IConstraint *x = new COperandListType (*this);
-			x->incRef();
 			return x;
 		}
 
@@ -786,12 +780,10 @@ namespace NLAISCRIPT
 		{
 		case operandVoid:
 			x = new COperandVoid();
-			x->incRef();
 			return x;
 
 		case operandSimple:
 			x = new COperandSimple(f);
-			x->incRef();
 			return x;
 		}
 		return NULL;

@@ -1,7 +1,7 @@
 /** \file constraint.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: constraint.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: constraint.h,v 1.6 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,7 @@ namespace NLAISCRIPT
 		///Set the type of return method expression, the type is a NLAIAGENT::IObjectIA where its used the getType member method.		
 		void setTypeObject(NLAIAGENT::IObjectIA *o)
 		{
+			if(ReturnType) ReturnType->release();
 			ReturnType = o;
 			ReturnType->incRef();
 		}

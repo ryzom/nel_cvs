@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.5 2001/01/15 17:58:20 chafik Exp $
+ * $Id: module.h,v 1.6 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,8 +147,7 @@ namespace NLAISCRIPT
 			{
 				sint32 k = _ListCode.size();
 				CCodeBrancheRun *cbr;
-				cbr = new CCodeBrancheRun(k);			
-				cbr->incRef();
+				cbr = new CCodeBrancheRun(k);							
 				for(sint32 i = 0; i < k; i++)
 				{
 					CBagOfCode *x = _ListCode.front();
@@ -171,7 +170,6 @@ namespace NLAISCRIPT
 				sint32 k = _ListCode.size();
 				CCodeBrancheRunDebug *cbr;
 				cbr = new CCodeBrancheRunDebug(k, sourceCodeFileName);		
-				cbr->incRef();
 				for(sint32 i = 0; i < k; i++)
 				{
 					CBagOfCode *x = _ListCode.front();
@@ -197,7 +195,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new IBlock(_Debug);
-			x->incRef();
 			return x;
 		}
 
@@ -235,7 +232,7 @@ namespace NLAISCRIPT
 		///Add a op-code pointer, warnning the function increment the ref of the pointer by incRef()
 		void addCode(IOpCode *op)
 		{			
-			op->incRef();
+			//op->incRef();
 			CBagOfCode *x = new CBagOfCode(op);
 			_ListCode.push_back(x);
 
@@ -244,7 +241,6 @@ namespace NLAISCRIPT
 			if (_Debug && _FirstOpCodeInLine)
 			{
 				pcdb = new CConstraintDebug(_CurrentLine, 1);
-				pcdb->incRef();
 				x->addConstraint(pcdb);
 				_FirstOpCodeInLine = false;
 			}

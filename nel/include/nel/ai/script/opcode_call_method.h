@@ -1,7 +1,7 @@
 /** \file opcode_call_method.h
  * Sevral call op-code fonctionality.
  *
- * $Id: opcode_call_method.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: opcode_call_method.h,v 1.4 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CCallMethod(*this);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -190,7 +189,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CCallHeapMethodi(*this);
-			x->incRef();
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -267,7 +265,6 @@ namespace NLAISCRIPT
 		virtual const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CCallStackMethodi(*this);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -338,7 +335,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CCallStackNewMethodi(*this);
-			x->incRef();         
 			return x;
 		}
 
@@ -392,7 +388,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CCallMethodi(*this);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const

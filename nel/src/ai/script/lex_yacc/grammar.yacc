@@ -209,8 +209,7 @@ using  namespace NLAIFUZZY;
 
 								if(_IsVoid)
 								{
-									IOpType *x = new COperandVoid();
-									x->incRef();
+									IOpType *x = new COperandVoid();									
 									((IClassInterpret *)_SelfClass.get())->getBrancheCode().setTypeOfMethode(x);
 								}
 								else
@@ -267,8 +266,7 @@ using  namespace NLAIFUZZY;
 								}
 								if(_IsVoid)
 								{
-									IOpType *x = new COperandVoid();
-									x->incRef();
+									IOpType *x = new COperandVoid();									
 									((IClassInterpret *)_SelfClass.get())->getBrancheCode().setTypeOfMethode(x);
 								}
 								else
@@ -435,8 +433,7 @@ using  namespace NLAIFUZZY;
 	AppelleDeFoncDirect:	NonDeFonction PAR_G 
 							{
 								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
-								_Param.push_back(new CParam);
-								_Param.back()->incRef();
+								_Param.push_back(new CParam);								
 								_ExpressionTypeTmp.push_back(_ExpressionType); 
 								_ExpressionType = NULL;
 							}
@@ -444,8 +441,7 @@ using  namespace NLAIFUZZY;
 						|	NonDeFonction PAR_G
 							{								
 								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
-								_Param.push_back(new CParam);
-								_Param.back()->incRef();
+								_Param.push_back(new CParam);								
 								_ExpressionTypeTmp.push_back(_ExpressionType); 
 								_ExpressionType = NULL;
 							}
@@ -553,8 +549,7 @@ using  namespace NLAIFUZZY;
 								if(((IClassInterpret *)_SelfClass.get())->getComponent(NLAIAGENT::CStringVarName(LastyyText[1])) == NULL)
 								{
 									CComponent *c = ((IClassInterpret *)_SelfClass.get())->getComponent(_LastRegistered);
-									c->ObjectName = new NLAIAGENT::CStringVarName(LastyyText[1]);
-									c->ObjectName->incRef();
+									c->ObjectName = new NLAIAGENT::CStringVarName(LastyyText[1]);									
 								}
 								else
 								{
@@ -893,8 +888,7 @@ using  namespace NLAIFUZZY;
 
 	NewObject			:	NEW 
 							{
-								_LastStringParam.push_back(new NLAIAGENT::CGroupType());
-								_LastStringParam.back()->incRef();
+								_LastStringParam.push_back(new NLAIAGENT::CGroupType());								
 
 							}
 							NewObjectName PAR_G
@@ -917,8 +911,7 @@ using  namespace NLAIFUZZY;
 	NewObjectName		:	IDENT
 							{							
 								_LastStringParam.back()->cpy(NLAIAGENT::CStringType(NLAIAGENT::CStringVarName(LastyyText[1])));
-								_Param.push_back(new CParam);
-								_Param.back()->incRef();
+								_Param.push_back(new CParam);								
 							}
 						;	
 

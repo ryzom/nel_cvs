@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.5 2001/01/12 16:17:49 portier Exp $
+ * $Id: opcode.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,6 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CLocAllocDebug::clone() const
 	{
 		NLAIC::IBasicType *x = new CLocAllocDebug();
-		x->incRef();         
 		return x;            
 	}
 	const NLAIC::IBasicType *CLocAllocDebug::newInstance() const 
@@ -171,8 +170,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjectIA *i = (NLAIAGENT::IObjectIA *)context.Stack;
 		NLAIAGENT::CStringVarName vn(_VarName);
 		NLAIAGENT::IObjectIA *iD = (NLAIAGENT::IObjectIA *) new NLAIAGENT::CStringType(vn);
-		i->incRef();
-		iD->incRef();
+		i->incRef();		
 		NLAIAGENT::IObjectIA *tmp = context.Heap[(int)_I];
 		NLAIAGENT::IObjectIA *tmpD = context.ContextDebug.HeapDebug[(int)_I];
 		context.Heap[_I] = i;
@@ -194,7 +192,6 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CAffOpCodeDebug::clone() const
 	{
 		NLAIC::IBasicType *x = new CAffOpCodeDebug(_I, _VarName);
-		x->incRef();         
 		return x;            
 	}
 	const NLAIC::IBasicType *CAffOpCodeDebug::newInstance() const 
@@ -261,7 +258,6 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CFreeAllocDebug::clone() const
 	{
 		NLAIC::IBasicType *x = new CFreeAllocDebug();
-		x->incRef();         
 		return x;            
 	}
 	const NLAIC::IBasicType *CFreeAllocDebug::newInstance() const 
@@ -358,7 +354,6 @@ namespace NLAISCRIPT
 		_BaseClass->incRef();
 		_ObjectLoad->incRef();
 		NLAIC::IBasicType *clone = new CFindRunMsg(_MethodName,_Param,_BaseClass,_ObjectLoad);
-		clone->incRef();
 		return clone;
 	}
 
@@ -422,7 +417,6 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CAddParamNameDebug::clone() const
 	{
 		NLAIC::IBasicType *x = new CAddParamNameDebug(*_DebugAttrib);
-		x->incRef();
 		return x;            
 	}
 	

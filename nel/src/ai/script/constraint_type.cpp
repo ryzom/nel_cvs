@@ -1,6 +1,6 @@
 /** \file constraint_type.cpp
  *
- * $Id: constraint_type.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: constraint_type.cpp,v 1.5 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,6 @@ namespace NLAISCRIPT
 	const IConstraint *CConstraintChkMethodeType::clone() const
 	{
 		IConstraint *x = new CConstraintChkMethodeType(_Constraint,_Lin,_Col);
-		x->incRef();
 		return x;
 	}
 

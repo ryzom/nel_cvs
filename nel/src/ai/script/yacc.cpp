@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.7 2001/01/15 17:58:29 chafik Exp $
+ * $Id: yacc.cpp,v 1.8 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -150,28 +150,23 @@ namespace NLAISCRIPT
 						NLAIAGENT::IObjectIA *i;
 						if(_ExpressionType->satisfied())
 						{
-							IOpType * c= new COperandSimple(new NLAIC::CIdentType(*_ExpressionType->getConstraintTypeOf()));
-							c->incRef();
+							IOpType * c= new COperandSimple(new NLAIC::CIdentType(*_ExpressionType->getConstraintTypeOf()));							
 							i = new CObjectUnknown(c);
-							i->incRef();
 							_ExpressionType->release();
 							_ExpressionType = NULL;
 						}
 						else
 						{											
 							_ExpressionType->incRef();
-							i = new CObjectUnknown(_ExpressionType);
-							i->incRef();
+							i = new CObjectUnknown(_ExpressionType);							
 							_ConstraintType.push_back(_ExpressionType);
 							_ExpressionType = NULL;
 						}						
 						
 						#ifdef NL_DEBUG
 						_LastAffectation = new CVarPStackParam((sint32)_VarState,_LasAffectationVarStr.front().data());
-						_LastAffectation->incRef();
 						#else
 						_LastAffectation = new CVarPStackParam((sint32)_VarState);
-						_LastAffectation->incRef();
 						#endif
 
 						_LastBloc->allocLocVar(_LasAffectationVarStr.front().data(), _LastAffectation);
@@ -249,7 +244,6 @@ namespace NLAISCRIPT
 						dg->setOperationD(constr);
 						dg->setOperationG(_ExpressionType);
 						dg->setOp(NLAIC::CTypeOfOperator::opAff);
-						dg->incRef();
 						_ConstraintType.push_back(dg);						
 						_ExpressionType = NULL;						
 						_LastBloc->addCode(new CAffHeapMemberiOpCode( ref,((CVarPStackParam *)_LastAffectation)->getIndex()));
@@ -269,7 +263,6 @@ namespace NLAISCRIPT
 							cont->incRef();
 							c = new CConstraintStackComp(CConstraintStackComp::heapAffectation,((CVarPStackParam *)_LastAffectation)->getIndex(),
 																							_LasAffectationVarStr ,cont,0,0);
-							c->incRef();
 							_ConstraintType.push_back(c);
 						}
 						
@@ -277,8 +270,7 @@ namespace NLAISCRIPT
 						COperationTypeGD *dg = new COperationTypeGD();
 						dg->setOperationD(c);
 						dg->setOperationG(_ExpressionType);
-						dg->setOp(NLAIC::CTypeOfOperator::opAff);
-						dg->incRef();
+						dg->setOp(NLAIC::CTypeOfOperator::opAff);						
 						_ConstraintType.push_back(dg);						
 						_ExpressionType = NULL;						
 						b->addConstraint(c);
@@ -306,12 +298,10 @@ namespace NLAISCRIPT
 		{															
 			_LastBloc->addCode(new CAffMemberOpCode(member));
 			COperandSimple *a = new COperandSimple(new NLAIC::CIdentType(base->getStaticMember(member)->getType()));
-			a->incRef();
 			COperationTypeGD *gd = new COperationTypeGD();
 			gd->setOperationG(a);
 			gd->setOperationD(_ExpressionType);
 			gd->setOp(NLAIC::CTypeOfOperator::opAff);
-			gd->incRef();
 			if(gd->satisfied())
 			{
 				gd->release();
@@ -382,7 +372,6 @@ namespace NLAISCRIPT
 				{
 					ref.push_back(i);					
 					type = new COperandSimple(new NLAIC::CIdentType(c->getType()));
-					type->incRef();
 					return true;
 				}
 				else 
@@ -495,7 +484,6 @@ namespace NLAISCRIPT
 	void CCompilateur::nameMethodeProcessing()
 	{	
 		NLAIAGENT::IBaseGroupType *g = new NLAIAGENT::CGroupType;
-		g->incRef();
 		_LastStringParam.push_back(g);		
 		
 		std::list<NLAISCRIPT::CStringType>::iterator i = _LasVarStr.begin();
@@ -552,14 +540,12 @@ namespace NLAISCRIPT
 	{
 		clean();
 		_LastBloc = new IBlock(_Debug);
-		_LastBloc->incRef();
 		_Heap -= (sint32)_Heap;
 		CVarPStack::_LocalTableRef = &_Heap[0];
 		_VarState.clear();								
 		_VarState.pushMark();
 		if(!_InLineParse) _LastBloc->addCode((new CMarkAlloc));
 		_Param.push_back(new CParam);
-		_Param.back()->incRef();
 	}
 
 	bool CCompilateur::registerMethod()
@@ -571,7 +557,6 @@ namespace NLAISCRIPT
 		{
 			CParam p;			
 			COperandSimple *x = new COperandSimple(new NLAIC::CIdentType("Message"));
-			x->incRef();
 			p.push(x);						
 			
 			if( ( isRun && _Param.back()->size() > 1 )  || ( isSend && _Param.back()->size() != 1 ))
@@ -620,8 +605,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::CGroupType* debugAttrib;
 		if (_Debug)
 		{
-			debugAttrib = new NLAIAGENT::CGroupType();
-			debugAttrib->incRef();
+			debugAttrib = new NLAIAGENT::CGroupType();			
 		}
 
 		while(_Attrib.size() != 0)
@@ -629,10 +613,8 @@ namespace NLAISCRIPT
 			i--;
 #ifdef NL_DEBUG
 			_LastAffectation = new CVarPStackParam(i,_Attrib.back().first->getString());
-			_LastAffectation->incRef();
 #else
 			_LastAffectation = new CVarPStackParam(i);
-			_LastAffectation->incRef();
 #endif
 			// We put the functions atributs in the _LastBloc dico.
 			if(!_LastBloc->allocLocVar(_Attrib.back().first->getString(),_LastAffectation))
@@ -651,7 +633,6 @@ namespace NLAISCRIPT
 			{
 				// We store the function var name;
 				debugStringAttrib = new NLAIAGENT::CStringType(*(_Attrib.back().first));
-				debugStringAttrib->incRef();
 				debugAttrib->pushFront(debugStringAttrib);
 			}
 			_Attrib.back().first->release();
@@ -692,7 +673,6 @@ namespace NLAISCRIPT
 			else
 			{
 				COperandListType *c = new COperandListType();
-				c->incRef();
 				((IOpType *)a)->incRef();
 				c->add((IOpType *)a);
 				c->add(_ExpressionType);				
@@ -774,15 +754,13 @@ namespace NLAISCRIPT
 				_LastTypeCall = CConstraintMethode::normalCall;
 				c = getMethodConstraint(CConstraintMethode((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,_LastPosHeap,_LastbaseClass,_LastStringParam.back(),_Param.back(),0,0));
 			}
-		}
-		
+		}		
 		if(c == NULL)
 		{
 			c = new CConstraintMethode((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,_LastPosHeap,_LastbaseClass,_LastStringParam.back(),_Param.back(),yyLine,yyColone);
 			_LastStringParam.back()->incRef();
 			_Param.back()->incRef();
 			_MethodConstraint.push_back(c);
-			c->incRef();
 		}
 		b->addConstraint(c);
 		if(sendOp != NULL)
@@ -799,7 +777,6 @@ namespace NLAISCRIPT
 			if(_LastbaseClass == NULL)
 			{
 				_LastbaseClass = new COperandSimple(new NLAIC::CIdentType (_SelfClass.get()->getType()));
-				_LastbaseClass->incRef();
 				baseIsNew = true;
 			}
 			_LastbaseClass->incRef();
@@ -809,14 +786,12 @@ namespace NLAISCRIPT
 				_Param.back()->incRef();
 				if(_LastbaseClass && !baseIsNew) _LastbaseClass->incRef();
 				c = new CConstraintFindRun((CConstraintMethode::TCallTypeOpCode)_LastTypeCall,0,_LastbaseClass,nameRun,_Param.back(),yyLine,yyColone);				
-				c->incRef();
 				_MethodConstraint.push_back(c);
 			}
 			else
 			{
 				nameRun->release();
 			}
-			//c->incRef();			
 			sendOp->addConstraint(c);
 		}
 	}

@@ -41,14 +41,12 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CActorClass::clone() const
 	{
 		NLAIC::IBasicType *clone = new CActorClass(*this);
-		clone->incRef();
 		return clone;
 	}
 
 	const NLAIC::IBasicType *CActorClass::newInstance() const
 	{
 		NLAIC::IBasicType *instance = new CActorClass();
-		instance->incRef();
 		return instance;
 	}
 
@@ -64,8 +62,6 @@ namespace NLAISCRIPT
 
 		// Création du message
 		NLAIAGENT::CActorScript *instance = new NLAIAGENT::CActorScript( NULL, NULL ,components,  (CActorClass *) this );
-		instance->incRef();
-
 		return instance;
 	}
 

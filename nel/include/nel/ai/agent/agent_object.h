@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: agent_object.h,v 1.5 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,6 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicInterface *m = new CStringType(*this);
-			m->incRef();
 			return m;
 		}		
 
@@ -160,7 +159,6 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicInterface *m = new CPaireType(*this);
-			m->incRef();
 			return m;
 		}
 

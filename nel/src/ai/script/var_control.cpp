@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.7 2001/01/12 09:52:56 chafik Exp $
+ * $Id: var_control.cpp,v 1.8 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,6 @@ namespace NLAISCRIPT
 			{
 				NLAIC::CIdentType id(t.getString());
 				IOpType * c= new COperandSimple(new NLAIC::CIdentType(id));
-				c->incRef();
 				CObjectUnknown *o = (CObjectUnknown *)((CVarPStackParam *)var)->getObject();				
 				o->setClassType(c);
 				return true;
@@ -80,7 +79,6 @@ namespace NLAISCRIPT
 						{							
 							if(_FlotingExpressionType != NULL) delete _FlotingExpressionType;
 							_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType ((_SelfClass.get())->getStaticMember(i)->getType()));
-							_FlotingExpressionType->incRef();
 						}
 						catch(NLAIE::IException &a)
 						{							
@@ -137,9 +135,7 @@ namespace NLAISCRIPT
 									constr = new CConstraintStackComp(CConstraintStackComp::stackCall,0,_LastFact.MemberName,type,yyLine,yyColone);									
 								}
 								_FlotingExpressionType = constr;
-							}
-
-							_FlotingExpressionType->incRef();
+							}							
 
 							if(_LastFact.TypeStack) _LastFact.TypeStack->release();
 							_LastFact.TypeStack = _FlotingExpressionType;
@@ -172,14 +168,13 @@ namespace NLAISCRIPT
 						catch(NLAIE::CExceptionUnReference &)
 						{
 							_FlotingExpressionType = (IOpType *)((const CObjectUnknown *)((CVarPStackParam *)var)->getObject())->getClassType();
-						}
-						_FlotingExpressionType->incRef();
+							_FlotingExpressionType->incRef();
+						}						
 					}
 					else
 					{													
 						if(_FlotingExpressionType != NULL) _FlotingExpressionType->release();
-						_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(var->getType()));
-						_FlotingExpressionType->incRef();
+						_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(var->getType()));						
 					}					
 				}
 			}
@@ -286,8 +281,11 @@ namespace NLAISCRIPT
 						{
 							constr = new CConstraintStackComp(opCodeType,posStack,_LastFact.MemberName,type,yyLine,yyColone);									
 						}
-						_FlotingExpressionType = constr;
-						_FlotingExpressionType->incRef();
+						else
+						{
+							constr->incRef();
+						}
+						_FlotingExpressionType = constr;						
 					}					
 
 					if(_LastFact.TypeStack) _LastFact.TypeStack->release();
@@ -317,25 +315,20 @@ namespace NLAISCRIPT
 		{						
 			NLAIC::CIdentType idBase = getTypeOfClass(_LastBaseObjectDef);
 			COperandSimple *t = new COperandSimple(new NLAIC::CIdentType(idType));
-			COperandSimple *b = new COperandSimple(new NLAIC::CIdentType(idBase));
-			t->incRef();
+			COperandSimple *b = new COperandSimple(new NLAIC::CIdentType(idBase));			
 			_Param.back()->push(t);
-			t->incRef();
-			b->incRef();
+			t->incRef();			
 			i = new CObjectUnknown(t,b);
 		}
 		else
 		{			
 			COperandSimple *c = new COperandSimple(new NLAIC::CIdentType(idType));
-			c->incRef();
 			_Param.back()->push(c);
 			c->incRef();
 			i = new CObjectUnknown(c);//(NLAIAGENT::IObjectIA *)NLAIC::createInstance(id);
 		}
 				
-		i->incRef();
 		NLAIAGENT::IVarName *s = new NLAIAGENT::CStringVarName (LastyyText[1]);
-		s->incRef();
 		_Attrib.push_back(pairType(s,i));
 				
 		i->incRef();
@@ -365,8 +358,7 @@ namespace NLAISCRIPT
 		_LastFact.VarType = varTypeImediate;
 		_LastFact.IsUsed = false;		
 		if(_FlotingExpressionType != NULL) _FlotingExpressionType->release();
-		_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(_LastFact.Value->getType()));							
-		_FlotingExpressionType->incRef();
+		_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(_LastFact.Value->getType()));
 	}
 
 	void CCompilateur::setImediateVar()
@@ -374,12 +366,10 @@ namespace NLAISCRIPT
 		if(_LastFact.Value != NULL) 
 							_LastFact.Value->release();
 		_LastFact.Value = new NLAIAGENT::DigitalType(LastyyNum);
-		_LastFact.Value->incRef();
 		_LastFact.VarType = varTypeImediate;
 		_LastFact.IsUsed = false;		
 		if(_FlotingExpressionType != NULL) _FlotingExpressionType->release();
-		_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(_LastFact.Value->getType()));							
-		_FlotingExpressionType->incRef();
+		_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(_LastFact.Value->getType()));
 	}
 
 	void CCompilateur::setListVar()
@@ -388,33 +378,27 @@ namespace NLAISCRIPT
 		NLAIAGENT::CGroupType l;
 		if(_FlotingExpressionType != NULL) _FlotingExpressionType->release();
 		_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(l.getType()));
-		_FlotingExpressionType->incRef();	
 	}
 
 	void CCompilateur::setChaineVar()
 	{
 		if(_LastFact.Value != NULL) 
 							_LastFact.Value->release();
-		_LastFact.Value = new NLAIAGENT::CStringType(NLAIAGENT::CStringVarName(LastyyText[1]));
-		_LastFact.Value->incRef();
+		_LastFact.Value = new NLAIAGENT::CStringType(NLAIAGENT::CStringVarName(LastyyText[1]));		
 		_LastFact.VarType = varTypeImediate;
 		_LastFact.IsUsed = false;								
 		if(_FlotingExpressionType != NULL) _FlotingExpressionType->release();
 		_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(_LastFact.Value->getType()));
-		_FlotingExpressionType->incRef();
 	}
 
 	void CCompilateur::setStackVar(const NLAIC::CIdentType &type)
 	{
 		if(_LastFact.Value != NULL) 
 							_LastFact.Value->release();
-/*		_LastFact.Value = new NLAIAGENT::CStringType(NLAIAGENT::CStringVarName(LastyyText[1]));
-		_LastFact.Value->incRef();*/
 		_LastFact.VarType = varForFunc;
 		_LastFact.IsUsed = false;								
 		if(_FlotingExpressionType != NULL) _FlotingExpressionType->release();
 		_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType(type) );
-		_FlotingExpressionType->incRef();
 	}
 
 	void CCompilateur::setMethodVar()
@@ -447,14 +431,11 @@ namespace NLAISCRIPT
 			_Param.back()->incRef();
 			if(_LastbaseClass != NULL)_LastbaseClass->incRef();
 			c = new CConstraintMethode((CConstraintMethode::TCallTypeOpCode) _LastTypeCall,_LastPosHeap,_LastbaseClass,_LastStringParam.back(),_Param.back(),yyLine,yyColone);
-			_MethodConstraint.push_back(c);
-			c->incRef();
+			_MethodConstraint.push_back(c);			
 		}
 		c->incRef();		
-		IConstraint *cm = new CConstraintChkMethodeType(c,0,0);		
-		cm->incRef();		
+		IConstraint *cm = new CConstraintChkMethodeType(c,0,0);	
 		_FlotingExpressionType = new COperandUnknown(cm);			
-		_FlotingExpressionType->incRef();		
 		
 		_LastStringParam.back()->release();
 		_LastStringParam.pop_back();
@@ -476,8 +457,7 @@ namespace NLAISCRIPT
 			try
 			{
 				if(_FlotingExpressionType) _FlotingExpressionType->release();
-				_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType (id));
-				_FlotingExpressionType->incRef();
+				_FlotingExpressionType = new COperandSimple(new NLAIC::CIdentType (id));				
 
 				NLAIAGENT::IObjectIA *i = (NLAIAGENT::IObjectIA *)NLAIC::createInstance(id);
 				
@@ -487,13 +467,11 @@ namespace NLAISCRIPT
 				
 
 				NLAIAGENT::IBaseGroupType *g = new NLAIAGENT::CGroupType();
-				g->incRef();					
 				g->cpy(NLAIAGENT::CStringType(NLAIAGENT::CStringVarName(_CONSTRUCTOR_)));
 
 				_Param.back()->incRef();					
 				_FlotingExpressionType->incRef();
 				CConstraintMethode *cm = new CConstraintMethode(CConstraintMethode::newCall,0,_FlotingExpressionType,g,_Param.back(),0,0);
-				cm->incRef();
 				IConstraint *c = getMethodConstraint(*cm);					
 				if(c == NULL)
 				{
@@ -526,13 +504,11 @@ namespace NLAISCRIPT
 		if(_ExpressionType)
 		{								
 			COperandUnknown *gd = new COperandUnknown(_ExpressionType);
-			gd->incRef();
 			_ExpressionType = gd;
 		}
 		else
 		{
 			_ExpressionType = new COperandUnknown(_FlotingExpressionType);
-			_ExpressionType->incRef();			
 			_FlotingExpressionType = NULL;
 		}
 	}
@@ -545,12 +521,10 @@ namespace NLAISCRIPT
 			gd->setOperand(_ExpressionType);
 			gd->setOp(op);
 			_ExpressionType = gd;
-			_ExpressionType->incRef();
 		}
 		else
 		{
-			_ExpressionType = new COperationType;
-			_ExpressionType->incRef();
+			_ExpressionType = new COperationType;		
 			((COperationType *)_ExpressionType)->setOperand(_FlotingExpressionType);
 			((COperationType *)_ExpressionType)->setOp(op);
 			_FlotingExpressionType = NULL;
@@ -564,12 +538,10 @@ namespace NLAISCRIPT
 			COperationTypeGD *gd = new COperationTypeGD;
 			gd->setOperationG(_ExpressionType);
 			_ExpressionType = gd;
-			_ExpressionType->incRef();
 		}
 		else
 		{
 			_ExpressionType = new COperationTypeGD;
-			_ExpressionType->incRef();
 			((COperationTypeGD *)_ExpressionType)->setOperationG(_FlotingExpressionType);
 			_FlotingExpressionType = NULL;
 		}

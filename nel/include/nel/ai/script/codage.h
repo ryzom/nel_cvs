@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.11 2001/01/15 17:58:20 chafik Exp $
+ * $Id: codage.h,v 1.12 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -347,7 +347,7 @@ namespace NLAISCRIPT
 		Self(thisClass),
 		InputOutput(io)		
 		{
-			if(InputOutput != NULL) InputOutput->incRef();
+			//if(InputOutput != NULL) InputOutput->incRef();
 		}
 
 		///For reinit the context after using.
@@ -359,8 +359,8 @@ namespace NLAISCRIPT
 		///set the input output class.
 		void setIO(NLAIC::IIO *io)
 		{
-			InputOutput = io;
-			InputOutput->incRef();
+			if(InputOutput != NULL) InputOutput->release();
+			InputOutput = io;			
 		}
 
 		/// \name pure virtual method realize.		
@@ -374,8 +374,7 @@ namespace NLAISCRIPT
 		}
 		const NLAIC::IBasicType *clone(void) const
 		{
-			CCodeContext *x = new CCodeContext(Stack,Heap,Code,Self,InputOutput);
-			x->incRef();
+			CCodeContext *x = new CCodeContext(Stack,Heap,Code,Self,InputOutput);			
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance(void) const
@@ -648,8 +647,7 @@ namespace NLAISCRIPT
 		const NLAIC::CIdentType &getType() const;		
 		const NLAIC::IBasicType *clone() const 
 		{
-			NLAIC::IBasicType *x = new CCodeBrancheRun(*this);
-			x->incRef();
+			NLAIC::IBasicType *x = new CCodeBrancheRun(*this);			
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const;

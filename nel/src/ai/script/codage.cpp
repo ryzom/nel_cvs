@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.7 2001/01/15 17:58:29 chafik Exp $
+ * $Id: codage.cpp,v 1.8 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,6 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CCodeBrancheRun::newInstance() const		
 	{
 		NLAIC::IBasicType *x = new CCodeBrancheRun(1,CHaltOpCode());
-		x->incRef();
 		return x;
 	}
 

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.13 2001/01/16 17:25:57 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.14 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,53 +171,63 @@ namespace NLAISCRIPT
 	/// it's child equivalent message processing function index.
 	void CAgentClass::buildChildsMessageMap()
 	{
+		
+/*			sint32 i, child_index, father_index;
+
+		std::vector< std::vector<sint32> > l_index;
+#ifdef _DEBUG
+		const char *dbg_this_class_name = getClassName()->getString();
+#endif
+
+		clearIndirectMsgTable();
+
+		_MsgIndirectTable = new sint32 *[ _Methode.size() ];
+		for (i = 0; i < (int) _Methode.size(); i++ )
 		{
-			sint32 i, child_index, father_index;
+			_MsgIndirectTable[i] = 0;
+			l_index.push_back( std::vector<sint32>() );
+		}
 
-			std::vector< std::vector<sint32> > l_index;
+		for (i =0; i < (int) _Components.size() ; i++ ) // ... for each of its components ...
+		{
+			NLAIC::CIdentType c_type( _Components[ i ]->RegisterName->getString() );
 #ifdef _DEBUG
-			const char *dbg_this_class_name = getClassName()->getString();
+			const char *dbg_class_name = _Components[ i ]->RegisterName->getString();
 #endif
-
-			clearIndirectMsgTable();
-
-			_MsgIndirectTable = new sint32 *[ _Methode.size() ];
-			for (i = 0; i < (int) _Methode.size(); i++ )
+			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ... si il est de type interprété...
 			{
-				_MsgIndirectTable[i] = 0;
-				l_index.push_back( std::vector<sint32>() );
-			}
-
-			for (i =0; i < (int) _Components.size() ; i++ ) // ... for each of its components ...
-			{
-				NLAIC::CIdentType c_type( _Components[ i ]->RegisterName->getString() );
+				_NbScriptedComponents ++;
+				CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
+				// ... for each of its methods...
 #ifdef _DEBUG
-				const char *dbg_class_name = _Components[ i ]->RegisterName->getString();
+				sint32 dbg_nb_funcs = child_class->getBrancheCodeSize();
 #endif
-				if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ... si il est de type interprété...
+				for (child_index =0; child_index < child_class->getBrancheCodeSize(); child_index++ )
 				{
-					_NbScriptedComponents ++;
-					CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
-					// ... for each of its methods...
+					CMethodeName &method = child_class->getBrancheCode( (int) child_index );
 #ifdef _DEBUG
-					sint32 dbg_nb_funcs = child_class->getBrancheCodeSize();
-#endif
-					for (child_index =0; child_index < child_class->getBrancheCodeSize(); child_index++ )
-					{
-						CMethodeName &method = child_class->getBrancheCode( (int) child_index );
-#ifdef _DEBUG
-						const char *dbg_meth_name = method.getName().getString();
+					const char *dbg_meth_name = method.getName().getString();
 #endif
 
 #ifdef _DEBUG
-						int dbg_param_size = method.getParam().size();
-						char dbg_param_name [1024*8];
-						method.getParam().getDebugString(dbg_param_name);
-						char dbg_real_name [1024*8];
-						sprintf(dbg_real_name,"%s.%s %s",dbg_class_name,dbg_meth_name,dbg_param_name);
+					int dbg_param_size = method.getParam().size();
+					char dbg_param_name [1024*8];
+					method.getParam().getDebugString(dbg_param_name);
+					char dbg_real_name [1024*8];
+					sprintf(dbg_real_name,"%s.%s %s",dbg_class_name,dbg_meth_name,dbg_param_name);
 #endif
-						if ( isMessageFunc( method.getParam() ) )	// ... if it's a message processing function...
+					if ( isMessageFunc( method.getParam() ) )	// ... if it's a message processing function...
+					{
+						// Looks if the father has a procecessing function for this message
+						sint32 father_index = findMethod( method.getName(), method.getParam() );
+						if ( father_index != -1 )
 						{
+							// The father processes this message.
+							l_index[ father_index ].push_back( child_index );
+						}
+						else
+						{
+
 							// Looks if the father has a procecessing function for this message
 							sint32 father_index = findMethod( method.getName(), method.getParam() );
 							if ( father_index != -1 )
@@ -233,18 +243,18 @@ namespace NLAISCRIPT
 					}
 				}
 			}
-
-			for ( father_index = 0; father_index < (int) l_index.size(); father_index++ )
-			{
-				if ( ! l_index[ father_index ].empty() )
-				{
-					sint32 *index = new sint32[ _NbScriptedComponents ];
-					for ( child_index = 0; child_index < (int) l_index[father_index].size(); child_index++ )
-						index[ (int) child_index ] = (l_index[ (int) father_index ])[ (int) child_index ];
-					_MsgIndirectTable[ father_index ] = index;
-				}
-			}
 		}
+
+		for ( father_index = 0; father_index < (int) l_index.size(); father_index++ )
+		{
+			if ( ! l_index[ father_index ].empty() )
+			{
+				sint32 *index = new sint32[ _NbScriptedComponents ];
+				for ( child_index = 0; child_index < (int) l_index[father_index].size(); child_index++ )
+					index[ (int) child_index ] = (l_index[ (int) father_index ])[ (int) child_index ];
+				_MsgIndirectTable[ father_index ] = index;
+			}
+		}*/				
 	}
 
 	sint32 CAgentClass::getChildMessageIndex(const NLAIAGENT::IMessageBase *msg, sint32 child_index )
@@ -494,7 +504,6 @@ namespace NLAISCRIPT
 #endif
 		sint32 i = findMethod(name,param);
 		CMethodeName *m = new CMethodeName(name);
-		m->incRef();
 		if(i >= 0) 
 		{			
 			CMethodeName *oldM = _Methode[i];
@@ -548,7 +557,6 @@ namespace NLAISCRIPT
 						k.ReturnType->release();
 					}
 					k.ReturnType = new CObjectUnknown(t);
-					k.ReturnType->incRef();
 					if(k.Weight >= 0.0)
 					{
 						q.push(k);
@@ -699,7 +707,6 @@ namespace NLAISCRIPT
 
 		// Création de l'agent
 		NLAIAGENT::CAgentScript *instance = new NLAIAGENT::CAgentScript(NULL, NULL, components,  (CAgentClass *) this );
-		instance->incRef();
 
 		return instance;
 	}
@@ -707,14 +714,12 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CAgentClass::clone() const
 	{
 		NLAIC::IBasicType *x = new CAgentClass(*this);
-		x->incRef();
 		return x;
 	}
 
 	const NLAIC::IBasicType *CAgentClass::newInstance() const
 	{
 		NLAIC::IBasicType *x = new CAgentClass();
-		x->incRef();
 		return x;
 	}
 

@@ -1,7 +1,7 @@
 /** \file context_debug.cpp
  * Debug informations in the context.
  *
- * $Id: context_debug.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: context_debug.cpp,v 1.5 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,6 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType* CContextDebug::clone() const
 	{
 		NLAIC::IBasicType *x = new (CContextDebug);
-		x->incRef();
 		return x;
 	}
 

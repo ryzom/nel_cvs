@@ -1,7 +1,7 @@
 /** \file opcode_ldb.h
  * Sevral op-code for loading object to the stack.
  *
- * $Id: opcode_ldb.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: opcode_ldb.h,v 1.4 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLdbOpCode(*_B);
-			x->incRef();
 			return x;
 		}
 
@@ -104,7 +103,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLdbMemberOpCode(_B);
-			x->incRef();
 			return x;
 		}
 
@@ -157,7 +155,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLdbStackMemberiOpCode(_I);
-			x->incRef();
 			return x;
 		}
 
@@ -209,7 +206,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLdbHeapMemberiOpCode(_I,_N);
-			x->incRef();
 			return x;
 		}
 
@@ -263,7 +259,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLdbMemberiOpCode(_I);
-			x->incRef();
 			return x;
 		}
 
@@ -314,7 +309,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLdbRefOpCode(_B);
-			x->incRef();
 			return x;
 
 		}

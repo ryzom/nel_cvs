@@ -1,6 +1,6 @@
 /** \file constraint_find_run.cpp
  *
- * $Id: constraint_find_run.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: constraint_find_run.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,8 +40,7 @@ namespace NLAISCRIPT
 		if(_BaseClass) _BaseClass->incRef();
 		_MethodName->incRef();
 		_Param->incRef();
-		IConstraint *x = new CConstraintFindRun(_TypeOfCallType,_PosHeap,_BaseClass,_MethodName,_Param,_Lin,_Col);
-		x->incRef();
+		IConstraint *x = new CConstraintFindRun(_TypeOfCallType,_PosHeap,_BaseClass,_MethodName,_Param,_Lin,_Col);		
 		return x;
 	}
 
@@ -65,17 +64,14 @@ namespace NLAISCRIPT
 					{
 					case normalCall:
 						o = new CLoadStackObject(m.Member);
-						o->incRef();
 						break;
 
 					case stackCall:
 						o = new CLoadStackObject(m.Member);
-						o->incRef();
 						break;
 
 					case heapCall:
 						o = new CLoadHeapObject(m.Member,_PosHeap);
-						o->incRef();
 						break;
 
 					case newCall:
@@ -88,7 +84,6 @@ namespace NLAISCRIPT
 						
 					}
 					IOpCode *x = new CFindRunMsg(_MethodName,_Param,(IOpType *)_BaseClass,o);
-					x->incRef();
 					setOpCode(x);
 					return;
 				}
@@ -102,7 +97,6 @@ namespace NLAISCRIPT
 	{
 		const CFunctionTag &m = getfunctionTag();
 		IOpCode *x = new CMarkMsg(m.Inheritance, m.MethodNum);
-		x->incRef();
 		while(_Code.size())
 		{			
 			std::pair<int, CCodeBrancheRun *> &p = _Code.back();

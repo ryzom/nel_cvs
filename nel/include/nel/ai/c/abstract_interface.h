@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.11 2001/01/11 17:02:18 chafik Exp $
+ * $Id: abstract_interface.h,v 1.12 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,12 +62,12 @@ namespace NLAIC //Gen pour general.
 	public:
 
 		///Construct object with null reference.
-		IPointerGestion():_Ref(0)
+		IPointerGestion():_Ref(1)
 		{
 		}
 
 		///Construct object with null reference. because copy constructor don't conserve refernce.
-		IPointerGestion(const IPointerGestion &):_Ref(0)
+		IPointerGestion(const IPointerGestion &):_Ref(1)
 		{
 		}
 		
@@ -373,7 +373,6 @@ namespace NLAIC //Gen pour general.
 		const IBasicType *clone() const
 		{
 			 IBasicType *x = new CSelfClassCFactory(*_Inst);
-			 x->incRef();
 			 return x;
 		}
 		

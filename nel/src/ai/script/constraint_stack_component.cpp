@@ -1,6 +1,6 @@
 /** \file constraint_stack_component.cpp
  *
- * $Id: constraint_stack_component.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: constraint_stack_component.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,7 +93,6 @@ namespace NLAISCRIPT
 						break;
 						
 					}
-					x->incRef();
 
 					std::pair<sint32, CCodeBrancheRun *> &p = _Code.back();
 					IOpCode *op = (*p.second)[p.first];//
@@ -134,7 +133,6 @@ namespace NLAISCRIPT
 					x = new CAffHeapMemberiOpCode(b,_StackPos);
 					break;
 				}
-				x->incRef();
 
 				std::pair<sint32, CCodeBrancheRun *> &p = _Code.back();
 				IOpCode *op = (*p.second)[p.first];//
@@ -176,7 +174,6 @@ namespace NLAISCRIPT
 	{
 		_TypeStack->incRef();
 		IConstraint *x = new CConstraintStackComp(_OpCodeType,0,_MemberName,_TypeStack,_Lin,_Col);
-		x->incRef();
 		return x;
 	}
 

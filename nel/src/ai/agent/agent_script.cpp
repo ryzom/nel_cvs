@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.10 2001/01/17 10:29:05 portier Exp $
+ * $Id: agent_script.cpp,v 1.11 2001/01/17 10:30:40 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,7 +72,6 @@ namespace NLAIAGENT
 		else 
 		{
 			_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
-			_ScriptMail->incRef();
 		}
 		
 		_AgentManager = a._AgentManager;
@@ -94,7 +93,6 @@ namespace NLAIAGENT
 		_AgentManager = manager;
 		//MangerIsReferenced = false;
 		_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
-		_ScriptMail->incRef();
 	}
 
 	CAgentScript::CAgentScript(IAgentManager *manager, IBasicAgent *father,//The agent's father 
@@ -120,7 +118,6 @@ namespace NLAIAGENT
 
 			if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
-				//incRef();
 				((CAgentScript *)o)->setParent( (const IWordNumRef *) *this);
 				( (CScriptMailBox *) ((CAgentScript *)_Components[id_c])->getLocalMailBox() )->setIndex( nb_scripted );
 				nb_scripted++;
@@ -130,7 +127,7 @@ namespace NLAIAGENT
 			id_c++;
 		}		
 		_ScriptMail = new CScriptMailBox( (const IWordNumRef *) *this);
-		_ScriptMail->incRef();
+		
 	}	
 
 	CAgentScript::~CAgentScript()
@@ -272,7 +269,6 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CAgentScript::clone() const
 	{		
 		CAgentScript *result = new CAgentScript(*this);
-		result->incRef();		
 		return result;
 		// TODO: copie des fonctions
 	}
@@ -287,7 +283,6 @@ namespace NLAIAGENT
 		else 
 		{			
 			instance = new CAgentScript(NULL);
-			instance->incRef();
 		}
 		return instance;
 	}
@@ -345,7 +340,6 @@ namespace NLAIAGENT
 		}		
 		r.Result = &DigitalType::NullOperator;
 		r.Result->incRef();
-
 		return r;
 	}
 
@@ -360,8 +354,7 @@ namespace NLAIAGENT
 
 		tmapDefNameAgent::iterator it = _DynamicAgentName.find(s);
 		if(it == _DynamicAgentName.end())
-		{			
-			//o->incRef();
+		{
 			_DynamicAgentName.insert(tPairName(s,addChild(o)));
 		}
 		r.Result = NULL;
@@ -409,7 +402,6 @@ namespace NLAIAGENT
 		{
 			IMessageBase &msg = (IMessageBase &)_ScriptMail->getMessage();
 			IBaseGroupType *param = new CGroupType();
-			param->incRef();
 			msg.incRef();
 			param->push(&msg);
 			context.Stack ++;
@@ -422,8 +414,7 @@ namespace NLAIAGENT
 
 				if (context.ContextDebug.Active)
 				{
-					context.ContextDebug.Param.push_back(&listBidon);
-					listBidon.incRef();
+					context.ContextDebug.Param.push_back(&listBidon);					
 					listBidon.incRef();
 					methodContex = new NLAISCRIPT::CMethodContextDebug();
 				}				
@@ -559,7 +550,6 @@ namespace NLAIAGENT
 			{
 				context.ContextDebug.Param.push_back(&listBidon);
 				listBidon.incRef();
-				listBidon.incRef();
 			}
 		
 			IObjectIA::CProcessResult r = runMethodBase(index,(IObjectIA *)context.Param.back());
@@ -617,7 +607,6 @@ namespace NLAIAGENT
 			{
 				context.ContextDebug.Param.push_back(&listBidon);
 				listBidon.incRef();
-				listBidon.incRef();
 			}
 
 			IObjectIA::CProcessResult r = runMethodBase(index,(IObjectIA *)context.Param.back());
@@ -674,7 +663,6 @@ namespace NLAIAGENT
 			NLAISCRIPT::CParam p;
 			NLAISCRIPT::COperandSimple m(new NLAIC::CIdentType(NLAISCRIPT::CMessageClass::IdMessageClass));
 			m.incRef();
-			m.incRef();
 			p.push(&m);
 #ifdef NL_DEBUG
 	char txt1[1024*4];
@@ -688,7 +676,6 @@ namespace NLAIAGENT
 			{
 				NLAISCRIPT::COperandVoid typeR;
 				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-				t->incRef();
 				r.push(CIdMethod((IAgent::getMethodIndexSize() + sendTag),0.0,NULL,t));
 			}			
 			return r;
@@ -701,15 +688,12 @@ namespace NLAIAGENT
 			NLAISCRIPT::CParam p;
 			NLAISCRIPT::COperandSimple m(new NLAIC::CIdentType(CStringType::IdStringType));
 			m.incRef();
-			m.incRef();
 			p.push(&m);		
 					
 			if(p.eval( (const NLAISCRIPT::CParam &)param ) >= 0.0)
 			{
 				NLAISCRIPT::COperandSimple typeR(new NLAIC::CIdentType(IAgent::IdAgent));
-				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-				t->incRef();
-				
+				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());				
 				r.push(CIdMethod((IAgent::getMethodIndexSize() + getChildTag),0.0,NULL,t));
 			}
 				
@@ -724,10 +708,8 @@ namespace NLAIAGENT
 			NLAISCRIPT::COperandSimple n(new NLAIC::CIdentType("Agent"));
 
 			m.incRef();
-			m.incRef();
 			p.push(&m);
-
-			n.incRef();
+			
 			n.incRef();
 			p.push(&n);
 
@@ -735,7 +717,6 @@ namespace NLAIAGENT
 			{
 				NLAISCRIPT::COperandSimple typeR(new NLAIC::CIdentType(DigitalType::IdDigitalType));
 				NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-				t->incRef();
 				r.push(CIdMethod((IAgent::getMethodIndexSize() + addChildTag),0.0,NULL,t));
 			}
 			return r;

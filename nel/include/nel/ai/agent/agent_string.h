@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for string manipulation.
  *
- * $Id: agent_string.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
+ * $Id: agent_string.h,v 1.3 2001/01/17 10:32:29 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -234,7 +234,6 @@ namespace NLAIAGENT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicInterface *m = new CStringVarName(_Name);
-			m->incRef();
 			return m;
 		}
 

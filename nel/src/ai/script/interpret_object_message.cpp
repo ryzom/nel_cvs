@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: interpret_object_message.cpp,v 1.5 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,14 +63,12 @@ namespace NLAISCRIPT
 	const NLAIC::IBasicType *CMessageClass::clone() const
 	{
 		NLAIC::IBasicType *clone = new CMessageClass(*this);
-		clone->incRef();
 		return clone;
 	}
 
 	const NLAIC::IBasicType *CMessageClass::newInstance() const
 	{
 		NLAIC::IBasicType *instance = new CMessageClass();
-		instance->incRef();
 		return instance;
 	}
 
@@ -86,8 +84,6 @@ namespace NLAISCRIPT
 
 		// Création du message
 		NLAIAGENT::CMessageScript *instance = new NLAIAGENT::CMessageScript( components,  (CMessageClass *) this );
-		instance->incRef();
-
 		return instance;
 	}
 

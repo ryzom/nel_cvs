@@ -1,7 +1,7 @@
 /** \file libcode.h
  * Library class exemple for the script.
  *
- * $Id: libcode.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: libcode.h,v 1.4 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CCallPrint();
-			x->incRef();         
 			return x;            
 		}
 

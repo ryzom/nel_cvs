@@ -1,7 +1,7 @@
 /** \file opcode_call_lib_method.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode_call_lib_method.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: opcode_call_lib_method.h,v 1.4 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,7 +53,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLibMemberMethod(_Id);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -110,7 +109,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLibMemberInheritedMethod(_Inheritance,_Id);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -171,7 +169,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLibMemberMethodi(_Inheritance,_Id,_I);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -232,7 +229,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLibCallMethod(_Id,*_Lib);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -298,7 +294,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLibCallInheritedMethod(_Inheritance,_Id,*_Lib);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -367,7 +362,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLibCallMethodi(_Inheritance,_Id,_I,*_Lib);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -440,7 +434,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLibStackMemberMethod(_Id,_H,_I);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -501,7 +494,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLibStackNewMemberMethod(*this);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const
@@ -545,7 +537,6 @@ namespace NLAISCRIPT
 		const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicType *x = new CLibHeapMemberMethod(*this);
-			x->incRef();         
 			return x;
 		}
 		const NLAIC::IBasicType *newInstance() const

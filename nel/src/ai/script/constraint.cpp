@@ -1,6 +1,6 @@
 /** \file constraint.cpp
  *
- * $Id: constraint.cpp,v 1.6 2001/01/12 09:52:56 chafik Exp $
+ * $Id: constraint.cpp,v 1.7 2001/01/17 10:32:10 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,19 +144,15 @@ namespace NLAISCRIPT
 						{
 							x = new CCallMethodi(methodContex,_M.Inheritance,_M.MethodNum,_M.Member);
 						}
-						x->incRef();
 						break;
 					case stackCall:
 						x = new CCallStackMethodi(methodContex,_M.Inheritance,_M.MethodNum,_M.Member);
-						x->incRef();
 						break;
 					case heapCall:
 						x = new CCallHeapMethodi(methodContex,_M.Inheritance,_M.MethodNum,_PosHeap,_M.Member);
-						x->incRef();
 						break;
 					case newCall:
 						x = new CCallStackNewMethodi(methodContex,_M.Inheritance,_M.MethodNum,_M.Member);
-						x->incRef();
 						break;
 					case searchCall:
 						x = NULL;
@@ -196,19 +192,15 @@ namespace NLAISCRIPT
 							}
 						}
 					}
-					x->incRef();
 					break;
 				case stackCall:
 					x =  new CLibStackMemberMethod(_M.Inheritance,_M.MethodNum ,_M.Member);
-					x->incRef();
 					break;
 				case heapCall:
 					x =  new CLibHeapMemberMethod(_M.Inheritance,_M.MethodNum ,_M.Member,_PosHeap);
-					x->incRef();
 					break;
 				case newCall:					
-					x =  new CLibStackNewMemberMethod(_M.Inheritance,_M.MethodNum ,_M.Member);
-					x->incRef();
+					x =  new CLibStackNewMemberMethod(_M.Inheritance,_M.MethodNum ,_M.Member);					
 					break;
 
 				case searchCall:
@@ -216,20 +208,7 @@ namespace NLAISCRIPT
 					break;
 				}
 			}			
-			IConstraint *c;
-			/*if(_M.ReturnType != NULL)
-			{
-				c = (IConstraint *)((const IOpType *)*((CObjectUnknown *)_M.ReturnType));				
-				setOpCode(comp,x,c,false);
-				_M.ReturnType->release();
-				_M.ReturnType = NULL;
-			}
-			else
-			{				
-				c = new COperandSimple (new NLAIC::CIdentType (_M.Object->getType()));
-				c->incRef();
-				setOpCode(comp,x,c,true);
-			}*/
+			IConstraint *c;			
 
 			if(_M.Method != NULL)
 			{
@@ -250,13 +229,11 @@ namespace NLAISCRIPT
 						NLAIC::CIdentType type = _M.ReturnType->getType();
 						NLAIC::CIdentType *tmp = new NLAIC::CIdentType (type);
 						c = new COperandSimple ( tmp );
-						c->incRef();
 						setOpCode(comp,x,c,true);						
 					}
 					catch(NLAIE::IException &)
 					{	
 						c = new COperandSimple (new NLAIC::CIdentType (_M.Object->getType()));
-						c->incRef();
 						setOpCode(comp,x,c,true);
 					}
 					_M.ReturnType->release();
@@ -265,7 +242,6 @@ namespace NLAISCRIPT
 				else
 				{
 					c = new COperandSimple (new NLAIC::CIdentType (_M.Object->getType()));
-					c->incRef();
 					setOpCode(comp,x,c,true);
 				}				
 			}
@@ -320,8 +296,7 @@ namespace NLAISCRIPT
 		IConstraint *x = new CConstraintMethode(_CallType,_PosHeap,_BaseClass,_MethodName,_Param,_Lin,_Col);
 		_BaseClass->incRef();
 		_MethodName->incRef();
-		_Param->incRef();
-		x->incRef();
+		_Param->incRef();		
 		return x;
 	}	
 }

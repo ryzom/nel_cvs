@@ -1,7 +1,7 @@
 /** \file agent_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_mailer.h,v 1.4 2001/01/10 10:09:45 chafik Exp $
+ * $Id: agent_mailer.h,v 1.5 2001/01/17 10:32:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,15 +81,13 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *newInstance() const
 		{			
 			NLAIC::IBasicType *x = new CLocalAgentMail();
-			x->incRef();
 			return x;
 		}
 
 		virtual const NLAIC::IBasicType *clone() const
 		{
-			if(_HostAgent != NULL) _HostAgent->incRef();
-			NLAIC::IBasicType *x = new CLocalAgentMail(_HostAgent);
-			x->incRef();
+			//if(_HostAgent != NULL) _HostAgent->incRef();
+			NLAIC::IBasicType *x = new CLocalAgentMail(_HostAgent);			
 			return x;
 		}
 

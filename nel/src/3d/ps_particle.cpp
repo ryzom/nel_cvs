@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.43 2001/09/12 13:20:10 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.44 2001/09/12 14:35:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,15 +48,6 @@
 
 
 
-
-namespace NL3D {
-
-
-/** this macro check wether a pointer is inside a given VB. Has memory in Vertex Buffer if accessed directly, 
-  * we can't detect memory overwrite
-  * the first parameter is the VB, the second is a pointrer into it
-  */
-
 #define CHECK_VERTEX_BUFFER(vb, pt) nlassert((uint8 *) (pt) >= (uint8 *) (vb).getVertexCoordPointer()  \
 									&& (uint8 *) (pt) < ((uint8 *) (vb).getVertexCoordPointer() + (vb).getVertexSize() * (vb).getNumVertices()));
 
@@ -68,6 +59,17 @@ namespace NL3D {
 #else
 	#define PARTICLES_CHECK_MEM
 #endif
+
+
+
+namespace NL3D {
+
+
+/** this macro check wether a pointer is inside a given VB. Has memory in Vertex Buffer if accessed directly, 
+  * we can't detect memory overwrite
+  * the first parameter is the VB, the second is a pointrer into it
+  */
+
 
 
 
@@ -398,10 +400,9 @@ void CPSRotated2DParticle::initRotTable(void)
 		*ptFloat++ = -2 * ca;
 		*ptFloat++ = -2 * sa; */
 	}
-
-	#ifdef NL_DEBUG
-		_InitializedRotTab = true;
-	#endif
+//#ifdef NL_DEBUG
+	_InitializedRotTab = true;
+//#endif
 }
 
 
@@ -1087,6 +1088,7 @@ void CPSFaceLookAt::draw(bool opaque)
 	if (!size) return;
 
 
+	
 	IDriver *driver = getDriver();
 
 	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
@@ -1095,6 +1097,7 @@ void CPSFaceLookAt::draw(bool opaque)
 	setupDriverModelMatrix();
 	driver->activeVertexBuffer(_Vb);	
 
+	
 
 	const CVector I = computeI();
 	const CVector J = computeJ();
@@ -1104,8 +1107,6 @@ void CPSFaceLookAt::draw(bool opaque)
 	TPSAttribVector::iterator it = _Owner->getPos().begin();
 	const float *rotTable = CPSRotated2DParticle::getRotTable();	
 	// for each the particle can be constantly rotated or have an independant rotation for each particle
-		
-
 	// number of face left, and number of face to process at once
 	uint32 leftToDo = size, toProcess;
 
@@ -1121,7 +1122,9 @@ void CPSFaceLookAt::draw(bool opaque)
 	uint8 *ptPos;
 
 	// strides to go from one vertex to another one
-	const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2;					
+	const uint32 stride = _Vb.getVertexSize(), stride2 = stride << 1, stride3 = stride + stride2, stride4 = stride << 2;
+
+	
 	
 	if (!_UseAngle2DScheme)
 	{

@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\../obj7/DebugFast/net"
-			IntermediateDirectory=".\../obj7/DebugFast/net"
+			OutputDirectory=".\../obj/DebugFast/net"
+			IntermediateDirectory=".\../obj/DebugFast/net"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -22,18 +22,17 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="_LIB,WIN32,_DEBUG,NL_DEBUG_FAST"
+				PreprocessorDefinitions="_LIB,_DEBUG,NL_DEBUG_FAST,WIN32,LIBXML_STATIC"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdnet.h"
-				PrecompiledHeaderFile=".\../obj7/DebugFast/net/net.pch"
-				AssemblerListingLocation=".\../obj7/DebugFast/net/"
-				ObjectFile=".\../obj7/DebugFast/net/"
-				ProgramDataBaseFileName=".\../obj7/DebugFast/net/"
+				PrecompiledHeaderFile=".\../obj/DebugFast/net/net.pch"
+				AssemblerListingLocation=".\../obj/DebugFast/net/"
+				ObjectFile=".\../obj/DebugFast/net/"
+				ProgramDataBaseFileName=".\../obj/DebugFast/net/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -41,7 +40,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nlnet_df.lib"
+				OutputFile="../lib/nlnet_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -60,8 +59,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../obj7/Debug/net"
-			IntermediateDirectory=".\../obj7/Debug/net"
+			OutputDirectory=".\../obj/Debug/net"
+			IntermediateDirectory=".\../obj/Debug/net"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -69,18 +68,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
-				StringPooling="TRUE"
+				PreprocessorDefinitions="_LIB,__STL_DEBUG,_DEBUG,WIN32,LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdnet.h"
-				PrecompiledHeaderFile=".\../obj7/Debug/net/net.pch"
-				AssemblerListingLocation=".\../obj7/Debug/net/"
-				ObjectFile=".\../obj7/Debug/net/"
-				ProgramDataBaseFileName=".\../obj7/Debug/net/"
+				PrecompiledHeaderFile=".\../obj/Debug/net/net.pch"
+				AssemblerListingLocation=".\../obj/Debug/net/"
+				ObjectFile=".\../obj/Debug/net/"
+				ProgramDataBaseFileName=".\../obj/Debug/net/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -88,7 +85,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nlnet_d.lib"
+				OutputFile="../lib/nlnet_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -107,8 +104,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../obj7/Release/net"
-			IntermediateDirectory=".\../obj7/Release/net"
+			OutputDirectory=".\../obj/Release/net"
+			IntermediateDirectory=".\../obj/Release/net"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -116,25 +113,24 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32,LIBXML_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdnet.h"
-				PrecompiledHeaderFile=".\../obj7/Release/net/net.pch"
-				AssemblerListingLocation=".\../obj7/Release/net/"
-				ObjectFile=".\../obj7/Release/net/"
-				ProgramDataBaseFileName=".\../obj7/Release/net/"
+				PrecompiledHeaderFile=".\../obj/Release/net/net.pch"
+				AssemblerListingLocation=".\../obj/Release/net/"
+				ObjectFile=".\../obj/Release/net/"
+				ProgramDataBaseFileName=".\../obj/Release/net/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nlnet_r.lib"
+				OutputFile="../lib/nlnet_r.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -153,8 +149,8 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../obj7/ReleaseDebug/net"
-			IntermediateDirectory=".\../obj7/ReleaseDebug/net"
+			OutputDirectory=".\../obj/ReleaseDebug/net"
+			IntermediateDirectory=".\../obj/ReleaseDebug/net"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -162,18 +158,17 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,NL_RELEASE_DEBUG"
+				PreprocessorDefinitions="_LIB,NL_RELEASE_DEBUG,LIBXML_STATIC,WIN32,NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdnet.h"
-				PrecompiledHeaderFile=".\../obj7/ReleaseDebug/net/net.pch"
-				AssemblerListingLocation=".\../obj7/ReleaseDebug/net/"
-				ObjectFile=".\../obj7/ReleaseDebug/net/"
-				ProgramDataBaseFileName=".\../obj7/ReleaseDebug/net/"
+				PrecompiledHeaderFile=".\../obj/ReleaseDebug/net/net.pch"
+				AssemblerListingLocation=".\../obj/ReleaseDebug/net/"
+				ObjectFile=".\../obj/ReleaseDebug/net/"
+				ProgramDataBaseFileName=".\../obj/ReleaseDebug/net/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -181,7 +176,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nlnet_rd.lib"
+				OutputFile="../lib/nlnet_rd.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -232,6 +227,12 @@
 			</File>
 			<File
 				RelativePath="..\include\nel\net\tcp_sock.h">
+			</File>
+			<File
+				RelativePath=".\net\udp_sim_sock.cpp">
+			</File>
+			<File
+				RelativePath="..\include\nel\net\udp_sim_sock.h">
 			</File>
 			<File
 				RelativePath=".\net\udp_sock.cpp">
@@ -297,16 +298,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="Layer4"
-			Filter="">
-			<File
-				RelativePath=".\net\net_manager.cpp">
-			</File>
-			<File
-				RelativePath="..\include\nel\net\net_manager.h">
-			</File>
-		</Filter>
-		<Filter
 			Name="Layer5"
 			Filter="">
 			<File
@@ -316,6 +307,18 @@
 				RelativePath="..\include\nel\net\unified_network.h">
 			</File>
 		</Filter>
+		<File
+			RelativePath=".\net\admin.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\net\admin.h">
+		</File>
+		<File
+			RelativePath=".\net\email.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\net\email.h">
+		</File>
 		<File
 			RelativePath=".\net\login_client.cpp">
 		</File>
@@ -411,6 +414,12 @@
 		</File>
 		<File
 			RelativePath="..\include\nel\net\unitime.h">
+		</File>
+		<File
+			RelativePath=".\net\varpath.cpp">
+		</File>
+		<File
+			RelativePath="..\include\nel\net\varpath.h">
 		</File>
 	</Files>
 	<Globals>

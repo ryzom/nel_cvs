@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../obj7/Debug/logic"
-			IntermediateDirectory=".\../obj7/Debug/logic"
+			OutputDirectory=".\../obj/Debug/logic"
+			IntermediateDirectory=".\../obj/Debug/logic"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -21,15 +21,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
+				PreprocessorDefinitions="_LIB,__STL_DEBUG,_DEBUG,WIN32,LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../obj7/Debug/logic/logic.pch"
-				AssemblerListingLocation=".\../obj7/Debug/logic/"
-				ObjectFile=".\../obj7/Debug/logic/"
-				ProgramDataBaseFileName=".\../obj7/Debug/logic/"
+				PrecompiledHeaderFile=".\../obj/Debug/logic/logic.pch"
+				AssemblerListingLocation=".\../obj/Debug/logic/"
+				ObjectFile=".\../obj/Debug/logic/"
+				ProgramDataBaseFileName=".\../obj/Debug/logic/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -37,7 +36,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nllogic_d.lib"
+				OutputFile="../lib/nllogic_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -56,8 +55,8 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../obj7/ReleaseDebug/logic"
-			IntermediateDirectory=".\../obj7/ReleaseDebug/logic"
+			OutputDirectory=".\../obj/ReleaseDebug/logic"
+			IntermediateDirectory=".\../obj/ReleaseDebug/logic"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -65,16 +64,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB"
+				PreprocessorDefinitions="_LIB,LIBXML_STATIC,NL_RELEASE_DEBUG,WIN32,NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../obj7/ReleaseDebug/logic/logic.pch"
-				AssemblerListingLocation=".\../obj7/ReleaseDebug/logic/"
-				ObjectFile=".\../obj7/ReleaseDebug/logic/"
-				ProgramDataBaseFileName=".\../obj7/ReleaseDebug/logic/"
+				PrecompiledHeaderFile=".\../obj/ReleaseDebug/logic/logic.pch"
+				AssemblerListingLocation=".\../obj/ReleaseDebug/logic/"
+				ObjectFile=".\../obj/ReleaseDebug/logic/"
+				ProgramDataBaseFileName=".\../obj/ReleaseDebug/logic/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -82,7 +80,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nllogic_rd.lib"
+				OutputFile="../lib/nllogic_rd.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -101,8 +99,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../obj7/Release/logic"
-			IntermediateDirectory=".\../obj7/Release/logic"
+			OutputDirectory=".\../obj/Release/logic"
+			IntermediateDirectory=".\../obj/Release/logic"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -110,23 +108,22 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32,LIBXML_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../obj7/Release/logic/logic.pch"
-				AssemblerListingLocation=".\../obj7/Release/logic/"
-				ObjectFile=".\../obj7/Release/logic/"
-				ProgramDataBaseFileName=".\../obj7/Release/logic/"
+				PrecompiledHeaderFile=".\../obj/Release/logic/logic.pch"
+				AssemblerListingLocation=".\../obj/Release/logic/"
+				ObjectFile=".\../obj/Release/logic/"
+				ProgramDataBaseFileName=".\../obj/Release/logic/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nllogic_r.lib"
+				OutputFile="../lib/nllogic_r.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -145,8 +142,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\../obj7/DebugFast/logic"
-			IntermediateDirectory=".\../obj7/DebugFast/logic"
+			OutputDirectory=".\../obj/DebugFast/logic"
+			IntermediateDirectory=".\../obj/DebugFast/logic"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -155,15 +152,14 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,NL_DEBUG_FAST"
+				PreprocessorDefinitions="_LIB,_DEBUG,NL_DEBUG_FAST,WIN32,LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../obj7/DebugFast/logic/logic.pch"
-				AssemblerListingLocation=".\../obj7/DebugFast/logic/"
-				ObjectFile=".\../obj7/DebugFast/logic/"
-				ProgramDataBaseFileName=".\../obj7/DebugFast/logic/"
+				PrecompiledHeaderFile=".\../obj/DebugFast/logic/logic.pch"
+				AssemblerListingLocation=".\../obj/DebugFast/logic/"
+				ObjectFile=".\../obj/DebugFast/logic/"
+				ProgramDataBaseFileName=".\../obj/DebugFast/logic/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -171,7 +167,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nllogic_df.lib"
+				OutputFile="../lib/nllogic_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>

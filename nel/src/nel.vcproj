@@ -13,8 +13,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../obj7/Debug/nel"
-			IntermediateDirectory=".\../obj7/Debug/nel"
+			OutputDirectory=".\../obj/Debug/nel"
+			IntermediateDirectory=".\../obj/Debug/nel"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool
@@ -28,8 +28,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\../obj7/DebugFast/nel"
-			IntermediateDirectory=".\../obj7/DebugFast/nel"
+			OutputDirectory=".\../obj/DebugFast/nel"
+			IntermediateDirectory=".\../obj/DebugFast/nel"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool
@@ -43,8 +43,8 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../obj7/ReleaseDebug/nel"
-			IntermediateDirectory=".\../obj7/ReleaseDebug/nel"
+			OutputDirectory=".\../obj/ReleaseDebug/nel"
+			IntermediateDirectory=".\../obj/ReleaseDebug/nel"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool
@@ -58,8 +58,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../obj7/Release/nel"
-			IntermediateDirectory=".\../obj7/Release/nel"
+			OutputDirectory=".\../obj/Release/nel"
+			IntermediateDirectory=".\../obj/Release/nel"
 			ConfigurationType="10"
 			UseOfMFC="0">
 			<Tool

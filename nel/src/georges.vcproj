@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\../obj7/DebugFast/georges"
-			IntermediateDirectory=".\../obj7/DebugFast/georges"
+			OutputDirectory=".\../obj/DebugFast/georges"
+			IntermediateDirectory=".\../obj/DebugFast/georges"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -21,17 +21,17 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="WIN32,_DEBUG,_LIB,NL_DEBUG_FAST"
+				InlineFunctionExpansion="1"
+				PreprocessorDefinitions="_LIB,_DEBUG,NL_DEBUG_FAST,WIN32,LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdgeorges.h"
-				PrecompiledHeaderFile=".\../obj7/DebugFast/georges/georges.pch"
-				AssemblerListingLocation=".\../obj7/DebugFast/georges/"
-				ObjectFile=".\../obj7/DebugFast/georges/"
-				ProgramDataBaseFileName=".\../obj7/DebugFast/georges/"
+				PrecompiledHeaderFile=".\../obj/DebugFast/georges/georges.pch"
+				AssemblerListingLocation=".\../obj/DebugFast/georges/"
+				ObjectFile=".\../obj/DebugFast/georges/"
+				ProgramDataBaseFileName=".\../obj/DebugFast/georges/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -39,7 +39,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nlgeorges_df.lib"
+				OutputFile="../lib/nlgeorges_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -58,8 +58,8 @@
 		</Configuration>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../obj7/ReleaseDebug/georges"
-			IntermediateDirectory=".\../obj7/ReleaseDebug/georges"
+			OutputDirectory=".\../obj/ReleaseDebug/georges"
+			IntermediateDirectory=".\../obj/ReleaseDebug/georges"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -67,18 +67,17 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,NL_RELEASE_DEBUG"
+				PreprocessorDefinitions="_LIB,NL_RELEASE_DEBUG,LIBXML_STATIC,WIN32,NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdgeorges.h"
-				PrecompiledHeaderFile=".\../obj7/ReleaseDebug/georges/georges.pch"
-				AssemblerListingLocation=".\../obj7/ReleaseDebug/georges/"
-				ObjectFile=".\../obj7/ReleaseDebug/georges/"
-				ProgramDataBaseFileName=".\../obj7/ReleaseDebug/georges/"
+				PrecompiledHeaderFile=".\../obj/ReleaseDebug/georges/georges.pch"
+				AssemblerListingLocation=".\../obj/ReleaseDebug/georges/"
+				ObjectFile=".\../obj/ReleaseDebug/georges/"
+				ProgramDataBaseFileName=".\../obj/ReleaseDebug/georges/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -86,7 +85,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nlgeorges_rd.lib"
+				OutputFile="../lib/nlgeorges_rd.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -105,8 +104,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../obj7/Debug/georges"
-			IntermediateDirectory=".\../obj7/Debug/georges"
+			OutputDirectory=".\../obj/Debug/georges"
+			IntermediateDirectory=".\../obj/Debug/georges"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -114,17 +113,16 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="_LIB,__STL_DEBUG,WIN32,_DEBUG"
+				PreprocessorDefinitions="_LIB,__STL_DEBUG,_DEBUG,WIN32,LIBXML_STATIC"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdgeorges.h"
-				PrecompiledHeaderFile=".\../obj7/Debug/georges/georges.pch"
-				AssemblerListingLocation=".\../obj7/Debug/georges/"
-				ObjectFile=".\../obj7/Debug/georges/"
-				ProgramDataBaseFileName=".\../obj7/Debug/georges/"
+				PrecompiledHeaderFile=".\../obj/Debug/georges/georges.pch"
+				AssemblerListingLocation=".\../obj/Debug/georges/"
+				ObjectFile=".\../obj/Debug/georges/"
+				ProgramDataBaseFileName=".\../obj/Debug/georges/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -132,7 +130,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nlgeorges_d.lib"
+				OutputFile="../lib/nlgeorges_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -151,8 +149,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../obj7/Release/georges"
-			IntermediateDirectory=".\../obj7/Release/georges"
+			OutputDirectory=".\../obj/Release/georges"
+			IntermediateDirectory=".\../obj/Release/georges"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -160,25 +158,24 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="."
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB"
+				PreprocessorDefinitions="NDEBUG,_LIB,WIN32,LIBXML_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
 				UsePrecompiledHeader="3"
 				PrecompiledHeaderThrough="stdgeorges.h"
-				PrecompiledHeaderFile=".\../obj7/Release/georges/georges.pch"
-				AssemblerListingLocation=".\../obj7/Release/georges/"
-				ObjectFile=".\../obj7/Release/georges/"
-				ProgramDataBaseFileName=".\../obj7/Release/georges/"
+				PrecompiledHeaderFile=".\../obj/Release/georges/georges.pch"
+				AssemblerListingLocation=".\../obj/Release/georges/"
+				ObjectFile=".\../obj/Release/georges/"
+				ProgramDataBaseFileName=".\../obj/Release/georges/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../lib7/nlgeorges_r.lib"
+				OutputFile="../lib/nlgeorges_r.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>

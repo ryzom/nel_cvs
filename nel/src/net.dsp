@@ -263,10 +263,6 @@ SOURCE=..\include\nel\net\email.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\net\login_client.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\include\nel\net\login_client.h
 # End Source File
 # Begin Source File

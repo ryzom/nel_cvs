@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../../../../obj7/ReleaseDebug/driver_dsound"
-			IntermediateDirectory=".\../../../../obj7/ReleaseDebug/driver_dsound"
+			OutputDirectory=".\../../../../obj/ReleaseDebug/driver_dsound"
+			IntermediateDirectory=".\../../../../obj/ReleaseDebug/driver_dsound"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -21,16 +21,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\.."
-				PreprocessorDefinitions="NDEBUG;NL_RELEASE_DEBUG;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32;NLSOUND_PROFILE"
+				PreprocessorDefinitions="NL_RELEASE_DEBUG;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;LIBXML_STATIC;WIN32;NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../../obj7/ReleaseDebug/driver_dsound/driver_dsound.pch"
-				AssemblerListingLocation=".\../../../../obj7/ReleaseDebug/driver_dsound/"
-				ObjectFile=".\../../../../obj7/ReleaseDebug/driver_dsound/"
-				ProgramDataBaseFileName=".\../../../../obj7/ReleaseDebug/driver_dsound/"
+				PrecompiledHeaderFile=".\../../../../obj/ReleaseDebug/driver_dsound/driver_dsound.pch"
+				AssemblerListingLocation=".\../../../../obj/ReleaseDebug/driver_dsound/"
+				ObjectFile=".\../../../../obj/ReleaseDebug/driver_dsound/"
+				ProgramDataBaseFileName=".\../../../../obj/ReleaseDebug/driver_dsound/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -39,21 +38,21 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib dsound.lib eax.lib eaxguid.lib"
-				OutputFile="../../../../lib7/nldriver_dsound_rd.dll"
+				AdditionalDependencies="nlsound_lowlevel_rd.lib odbc32.lib odbccp32.lib nlmisc_rd.lib eax.lib eaxguid.lib dsound.lib"
+				OutputFile="../../../../lib/nel_drv_dsound_win_rd.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\driver_dsound.def"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\../../../../obj7/ReleaseDebug/driver_dsound/nldriver_dsound_rd.pdb"
-				ImportLibrary=".\../../../../obj7/ReleaseDebug/driver_dsound/nldriver_dsound_rd.lib"/>
+				ProgramDatabaseFile=".\../../../../obj/ReleaseDebug/driver_dsound/nel_drv_dsound_win_rd.pdb"
+				ImportLibrary=".\../../../../obj/ReleaseDebug/driver_dsound/nel_drv_dsound_win_rd.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj7/ReleaseDebug/driver_dsound/driver_dsound.tlb"/>
+				TypeLibraryName=".\../../../../obj/ReleaseDebug/driver_dsound/driver_dsound.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -71,8 +70,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../../../../obj7/Debug/driver_dsound"
-			IntermediateDirectory=".\../../../../obj7/Debug/driver_dsound"
+			OutputDirectory=".\../../../../obj/Debug/driver_dsound"
+			IntermediateDirectory=".\../../../../obj/Debug/driver_dsound"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -80,16 +79,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\.."
-				PreprocessorDefinitions="_DEBUG;__STL_DEBUG;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32"
+				PreprocessorDefinitions="_DEBUG;__STL_DEBUG;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32;LIBXML_STATIC"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../../obj7/Debug/driver_dsound/driver_dsound.pch"
-				AssemblerListingLocation=".\../../../../obj7/Debug/driver_dsound/"
-				ObjectFile=".\../../../../obj7/Debug/driver_dsound/"
-				ProgramDataBaseFileName=".\../../../../obj7/Debug/driver_dsound/"
+				PrecompiledHeaderFile=".\../../../../obj/Debug/driver_dsound/driver_dsound.pch"
+				AssemblerListingLocation=".\../../../../obj/Debug/driver_dsound/"
+				ObjectFile=".\../../../../obj/Debug/driver_dsound/"
+				ProgramDataBaseFileName=".\../../../../obj/Debug/driver_dsound/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -98,21 +96,21 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib dsound.lib eax.lib eaxguid.lib"
-				OutputFile="../../../../lib7/nldriver_dsound_d.dll"
+				AdditionalDependencies="nlsound_lowlevel_d.lib odbc32.lib odbccp32.lib nlmisc_d.lib eax.lib eaxguid.lib dsound.lib"
+				OutputFile="../../../../lib/nel_drv_dsound_win_d.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\driver_dsound.def"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\../../../../obj7/Debug/driver_dsound/nldriver_dsound_d.pdb"
-				ImportLibrary=".\../../../../obj7/Debug/driver_dsound/nldriver_dsound_d.lib"/>
+				ProgramDatabaseFile=".\../../../../obj/Debug/driver_dsound/nel_drv_dsound_win_d.pdb"
+				ImportLibrary=".\../../../../obj/Debug/driver_dsound/nel_drv_dsound_win_d.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj7/Debug/driver_dsound/driver_dsound.tlb"/>
+				TypeLibraryName=".\../../../../obj/Debug/driver_dsound/driver_dsound.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -130,8 +128,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../../../../obj7/Release/driver_dsound"
-			IntermediateDirectory=".\../../../../obj7/Release/driver_dsound"
+			OutputDirectory=".\../../../../obj/Release/driver_dsound"
+			IntermediateDirectory=".\../../../../obj/Release/driver_dsound"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -139,16 +137,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\.."
-				PreprocessorDefinitions="NDEBUG;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32;NLSOUND_PROFILE"
+				PreprocessorDefinitions="NDEBUG;NLSOUND_PROFILE;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32;LIBXML_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../../obj7/Release/driver_dsound/driver_dsound.pch"
-				AssemblerListingLocation=".\../../../../obj7/Release/driver_dsound/"
-				ObjectFile=".\../../../../obj7/Release/driver_dsound/"
-				ProgramDataBaseFileName=".\../../../../obj7/Release/driver_dsound/"
+				PrecompiledHeaderFile=".\../../../../obj/Release/driver_dsound/driver_dsound.pch"
+				AssemblerListingLocation=".\../../../../obj/Release/driver_dsound/"
+				ObjectFile=".\../../../../obj/Release/driver_dsound/"
+				ProgramDataBaseFileName=".\../../../../obj/Release/driver_dsound/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
@@ -156,19 +153,19 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="dsound.lib eax.lib eaxguid.lib"
-				OutputFile="../../../../lib7/nldriver_dsound_r.dll"
+				AdditionalDependencies="nlsound_lowlevel_r.lib nlmisc_r.lib eax.lib eaxguid.lib dsound.lib"
+				OutputFile="../../../../lib/nel_drv_dsound_win_r.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\driver_dsound.def"
-				ImportLibrary=".\../../../../obj7/Release/driver_dsound/nldriver_dsound_r.lib"/>
+				ImportLibrary=".\../../../../obj/Release/driver_dsound/nel_drv_dsound_win_r.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="NDEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj7/Release/driver_dsound/driver_dsound.tlb"/>
+				TypeLibraryName=".\../../../../obj/Release/driver_dsound/driver_dsound.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -186,8 +183,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\../../../../obj7/DebugFast/driver_dsound"
-			IntermediateDirectory=".\../../../../obj7/DebugFast/driver_dsound"
+			OutputDirectory=".\../../../../obj/DebugFast/driver_dsound"
+			IntermediateDirectory=".\../../../../obj/DebugFast/driver_dsound"
 			ConfigurationType="2"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -196,16 +193,15 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\.."
-				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32;NLSOUND_PROFILE"
+				PreprocessorDefinitions="_DEBUG;NL_DEBUG_FAST;_WINDOWS;_USRDLL;DRIVER_DSOUND_EXPORTS;WIN32;LIBXML_STATIC"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../../obj7/DebugFast/driver_dsound/driver_dsound.pch"
-				AssemblerListingLocation=".\../../../../obj7/DebugFast/driver_dsound/"
-				ObjectFile=".\../../../../obj7/DebugFast/driver_dsound/"
-				ProgramDataBaseFileName=".\../../../../obj7/DebugFast/driver_dsound/"
+				PrecompiledHeaderFile=".\../../../../obj/DebugFast/driver_dsound/driver_dsound.pch"
+				AssemblerListingLocation=".\../../../../obj/DebugFast/driver_dsound/"
+				ObjectFile=".\../../../../obj/DebugFast/driver_dsound/"
+				ProgramDataBaseFileName=".\../../../../obj/DebugFast/driver_dsound/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -214,21 +210,21 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="odbc32.lib odbccp32.lib dsound.lib eax.lib eaxguid.lib"
-				OutputFile="../../../../lib7/nldriver_dsound_df.dll"
+				AdditionalDependencies="nlsound_lowlevel_df.lib odbc32.lib odbccp32.lib nlmisc_df.lib eax.lib eaxguid.lib dsound.lib"
+				OutputFile="../../../../lib/nel_drv_dsound_win_df.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile=".\driver_dsound.def"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\../../../../obj7/DebugFast/driver_dsound/nldriver_dsound_df.pdb"
-				ImportLibrary=".\../../../../obj7/DebugFast/driver_dsound/nldriver_dsound_df.lib"/>
+				ProgramDatabaseFile=".\../../../../obj/DebugFast/driver_dsound/nel_drv_dsound_win_df.pdb"
+				ImportLibrary=".\../../../../obj/DebugFast/driver_dsound/nel_drv_dsound_win_df.lib"/>
 			<Tool
 				Name="VCMIDLTool"
 				PreprocessorDefinitions="_DEBUG"
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\../../../../obj7/DebugFast/driver_dsound/driver_dsound.tlb"/>
+				TypeLibraryName=".\../../../../obj/DebugFast/driver_dsound/driver_dsound.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -275,6 +271,13 @@
 		</File>
 		<File
 			RelativePath=".\stddsound.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					UsePrecompiledHeader="1"
+					PrecompiledHeaderThrough="stddsound.h"/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath=".\stddsound.h">

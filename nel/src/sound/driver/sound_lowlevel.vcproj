@@ -12,8 +12,8 @@
 	<Configurations>
 		<Configuration
 			Name="ReleaseDebug|Win32"
-			OutputDirectory=".\../../../obj7/ReleaseDebug/sound_lowlevel"
-			IntermediateDirectory=".\../../../obj7/ReleaseDebug/sound_lowlevel"
+			OutputDirectory=".\../../../obj/ReleaseDebug/sound_lowlevel"
+			IntermediateDirectory=".\../../../obj/ReleaseDebug/sound_lowlevel"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -21,16 +21,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\.."
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,_AFXDLL,NL_RELEASE_DEBUG"
+				PreprocessorDefinitions="NL_RELEASE_DEBUG,_LIB,_AFXDLL,LIBXML_STATIC,WIN32,NDEBUG"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../obj7/ReleaseDebug/sound_lowlevel/sound_lowlevel.pch"
-				AssemblerListingLocation=".\../../../obj7/ReleaseDebug/sound_lowlevel/"
-				ObjectFile=".\../../../obj7/ReleaseDebug/sound_lowlevel/"
-				ProgramDataBaseFileName=".\../../../obj7/ReleaseDebug/sound_lowlevel/"
+				PrecompiledHeaderFile=".\../../../obj/ReleaseDebug/sound_lowlevel/sound_lowlevel.pch"
+				AssemblerListingLocation=".\../../../obj/ReleaseDebug/sound_lowlevel/"
+				ObjectFile=".\../../../obj/ReleaseDebug/sound_lowlevel/"
+				ProgramDataBaseFileName=".\../../../obj/ReleaseDebug/sound_lowlevel/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -38,7 +37,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../../../obj7/ReleaseDebug/sound_lowlevel/nlsound_lowlevel_rd.lib"
+				OutputFile="../../../lib/nlsound_lowlevel_rd.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -57,8 +56,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\../../../obj7/Debug/sound_lowlevel"
-			IntermediateDirectory=".\../../../obj7/Debug/sound_lowlevel"
+			OutputDirectory=".\../../../obj/Debug/sound_lowlevel"
+			IntermediateDirectory=".\../../../obj/Debug/sound_lowlevel"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -66,16 +65,15 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\.."
-				PreprocessorDefinitions="_LIB,_AFXDLL,__STL_DEBUG,WIN32,_DEBUG"
+				PreprocessorDefinitions="__STL_DEBUG,_DEBUG,_LIB,_AFXDLL,WIN32,LIBXML_STATIC"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../obj7/Debug/sound_lowlevel/sound_lowlevel.pch"
-				AssemblerListingLocation=".\../../../obj7/Debug/sound_lowlevel/"
-				ObjectFile=".\../../../obj7/Debug/sound_lowlevel/"
-				ProgramDataBaseFileName=".\../../../obj7/Debug/sound_lowlevel/"
+				PrecompiledHeaderFile=".\../../../obj/Debug/sound_lowlevel/sound_lowlevel.pch"
+				AssemblerListingLocation=".\../../../obj/Debug/sound_lowlevel/"
+				ObjectFile=".\../../../obj/Debug/sound_lowlevel/"
+				ProgramDataBaseFileName=".\../../../obj/Debug/sound_lowlevel/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -83,7 +81,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../../../obj7/Debug/sound_lowlevel/nlsound_lowlevel_d.lib"
+				OutputFile="../../../lib/nlsound_lowlevel_d.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -102,8 +100,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\../../../obj7/Release/sound_lowlevel"
-			IntermediateDirectory=".\../../../obj7/Release/sound_lowlevel"
+			OutputDirectory=".\../../../obj/Release/sound_lowlevel"
+			IntermediateDirectory=".\../../../obj/Release/sound_lowlevel"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -111,23 +109,22 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\.."
-				PreprocessorDefinitions="WIN32,NDEBUG,_LIB,_AFXDLL"
+				PreprocessorDefinitions="NDEBUG,_LIB,_AFXDLL,WIN32,LIBXML_STATIC"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="TRUE"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../obj7/Release/sound_lowlevel/sound_lowlevel.pch"
-				AssemblerListingLocation=".\../../../obj7/Release/sound_lowlevel/"
-				ObjectFile=".\../../../obj7/Release/sound_lowlevel/"
-				ProgramDataBaseFileName=".\../../../obj7/Release/sound_lowlevel/"
+				PrecompiledHeaderFile=".\../../../obj/Release/sound_lowlevel/sound_lowlevel.pch"
+				AssemblerListingLocation=".\../../../obj/Release/sound_lowlevel/"
+				ObjectFile=".\../../../obj/Release/sound_lowlevel/"
+				ProgramDataBaseFileName=".\../../../obj/Release/sound_lowlevel/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../../../obj7/Release/sound_lowlevel/nlsound_lowlevel_r.lib"
+				OutputFile="../../../lib/nlsound_lowlevel_r.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>
@@ -146,8 +143,8 @@
 		</Configuration>
 		<Configuration
 			Name="DebugFast|Win32"
-			OutputDirectory=".\../../../obj7/DebugFast/sound_lowlevel"
-			IntermediateDirectory=".\../../../obj7/DebugFast/sound_lowlevel"
+			OutputDirectory=".\../../../obj/DebugFast/sound_lowlevel"
+			IntermediateDirectory=".\../../../obj/DebugFast/sound_lowlevel"
 			ConfigurationType="4"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -156,16 +153,15 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\.."
-				PreprocessorDefinitions="_LIB,_AFXDLL,WIN32,_DEBUG,NL_DEBUG_FAST"
+				PreprocessorDefinitions="_DEBUG,NL_DEBUG_FAST,_LIB,_AFXDLL,WIN32,LIBXML_STATIC"
 				StringPooling="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				RuntimeTypeInfo="TRUE"
-				PrecompiledHeaderFile=".\../../../obj7/DebugFast/sound_lowlevel/sound_lowlevel.pch"
-				AssemblerListingLocation=".\../../../obj7/DebugFast/sound_lowlevel/"
-				ObjectFile=".\../../../obj7/DebugFast/sound_lowlevel/"
-				ProgramDataBaseFileName=".\../../../obj7/DebugFast/sound_lowlevel/"
+				PrecompiledHeaderFile=".\../../../obj/DebugFast/sound_lowlevel/sound_lowlevel.pch"
+				AssemblerListingLocation=".\../../../obj/DebugFast/sound_lowlevel/"
+				ObjectFile=".\../../../obj/DebugFast/sound_lowlevel/"
+				ProgramDataBaseFileName=".\../../../obj/DebugFast/sound_lowlevel/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"/>
@@ -173,7 +169,7 @@
 				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
-				OutputFile="../../../obj7/DebugFast/sound_lowlevel/nlsound_lowlevel_df.lib"
+				OutputFile="../../../lib/nlsound_lowlevel_df.lib"
 				SuppressStartupBanner="TRUE"/>
 			<Tool
 				Name="VCMIDLTool"/>

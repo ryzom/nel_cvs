@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.47 2002/04/03 13:23:34 lecroart Exp $
+ * $Id: local_retriever.cpp,v 1.48 2002/04/10 12:45:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -629,7 +629,7 @@ void	NLPACS::CLocalRetriever::buildSurfacePolygons(uint32 surface, list<CPolygon
 		for (j=0; j<surf._Loops[i].size(); ++j)
 		{
 			const CChain	&chain = _Chains[surf._Loops[i][j]];
-			bool			chainforward = (chain._Left == surface);
+			bool			chainforward = ((uint32)chain._Left == surface);
 
 			if (chainforward)
 			{

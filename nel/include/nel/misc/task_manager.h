@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * CTaskManager class
  *
- * $Id: task_manager.h,v 1.3 2001/01/03 11:01:43 saffray Exp $
+ * $Id: task_manager.h,v 1.4 2001/02/16 14:47:54 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLMISC {
  * \author Nevrax France
  * \date 2000
  */
-class CTaskManager : public NLMISC::IRunnable
+class CTaskManager : public IRunnable
 {
 public:
 
@@ -60,7 +60,7 @@ public:
 	bool deleteTask(IRunnable *r);
 
 	/// Sleep a Task
-	void sleepTask(void) { _Thread->sleep(); }
+	void sleepTask(void) { nlSleep(0); }
 
 	/// Task list size
 	uint taskListSize(void); 

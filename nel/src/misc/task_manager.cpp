@@ -1,7 +1,7 @@
 /** \file task_manager.cpp
  * <File description>
  *
- * $Id: task_manager.cpp,v 1.3 2001/01/03 11:01:26 saffray Exp $
+ * $Id: task_manager.cpp,v 1.4 2001/02/16 14:47:40 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NLMISC {
 CTaskManager::CTaskManager()
 {
 	_TreadRunning = true;
-	_Thread = IThread::create (this);
+	_Thread = IThread::create(this);
 	_Thread->start();
 }
 

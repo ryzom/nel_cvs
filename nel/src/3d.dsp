@@ -276,6 +276,14 @@ SOURCE=..\include\nel\3d\texture.h
 
 SOURCE=.\3d\vertex_buffer.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\viewport.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\viewport.h
+# End Source File
 # End Group
 # Begin Group "Math"
 
@@ -352,6 +360,25 @@ SOURCE=.\3d\bitmap.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\bitmap.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\event_mouse_listener.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\event_mouse_listener.h
 # End Source File
 # Begin Source File
 

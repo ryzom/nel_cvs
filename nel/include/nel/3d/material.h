@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.4 2001/01/05 10:57:30 berenguier Exp $
+ * $Id: material.h,v 1.5 2001/01/05 15:07:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,8 +90,11 @@ public:
 public:
 	/// \name Object.
 	// @{
-	/// ctor.
-	CMaterial() {_Touched= 0;_Flags=0;}
+	/** ctor.
+	 * By default, shader is normal, SrcBlend is srcalpha, dstblend is invsrcalpha, ZFunction is lessequal, ZBias is 0,
+	 * Color is White: (255,255,255,255).
+	 */
+	CMaterial();
 	/// see operator=.
 	CMaterial(const CMaterial &mat) {_Touched= 0;_Flags=0; operator=(mat);}
 	/// dtor.

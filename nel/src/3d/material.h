@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.9 2001/11/30 13:15:48 berenguier Exp $
+ * $Id: material.h,v 1.10 2001/12/06 16:47:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,6 +307,8 @@ public:
 	void					setShininess( float shininess );
 	/// Set the color material flag. Used when the material is lighted. True to use the diffuse color of the material when lighted, false to use the color vertex.
 	void					setLightedVertexColor (bool useLightedVertexColor);
+	/// Get the lighted vertex color flag
+	bool					getLightedVertexColor () const;
 
 
 	bool					isLighted() const {return (_Flags&IDRV_MAT_LIGHTING)!=0;}

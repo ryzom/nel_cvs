@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.5 2001/11/30 13:15:48 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.6 2001/12/06 16:47:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,6 +200,12 @@ inline void	CMaterial::setLightedVertexColor( bool useLightedVertexColor )
 	else
 		_Flags &= ~IDRV_MAT_LIGHTED_VERTEX_COLOR;
 	_Touched|=IDRV_TOUCHED_LIGHTING;
+}
+
+// ***************************************************************************
+inline bool		CMaterial::getLightedVertexColor () const
+{
+	return (_Flags & IDRV_MAT_LIGHTED_VERTEX_COLOR) != 0;
 }
 
 

@@ -2150,6 +2150,14 @@ SOURCE=.\3d\vegetable_instance_group.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\vegetable_light_ex.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_light_ex.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\vegetable_manager.cpp
 # End Source File
 # Begin Source File

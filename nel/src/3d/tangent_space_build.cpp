@@ -1,7 +1,7 @@
 /** \file tangent_space_build.cpp
  * A function that add tangent space information to a vertex buffer
  *
- * $Id: tangent_space_build.cpp,v 1.2 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: tangent_space_build.cpp,v 1.3 2002/09/24 14:48:01 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -78,6 +78,7 @@ static void BuildTriFromMB(const CMesh::CMeshBuild &mb, const uint index[3], NLM
 bool	BuildTangentSpace(CMesh::CMeshBuild &outMeshBuild, const CMesh::CMeshBuild &inMeshBuild)
 {
 	static const NLMISC::CUVW NullUVW(0, 0, 0); // todo add this directly in the CUVW class (for next compile ...)
+
 	/// for each face, we must use a previously computed tangent space vector if other vertex datas are similar
 	nlassert(&outMeshBuild != &inMeshBuild);
 	uint tgSpaceStage = DuplicateMBAndAddTexCoord(outMeshBuild, inMeshBuild); // format the resulting vb	
@@ -93,14 +94,69 @@ bool	BuildTangentSpace(CMesh::CMeshBuild &outMeshBuild, const CMesh::CMeshBuild 
 	{
 		for (m = 0; m < 3; ++m)
 		{
-			outMeshBuild.Faces[l].Corner[m].Uvws[tgSpaceStage] = NullUVW;
+			outMeshBuild.Faces[l].Corner[m].Uvws[tgSpaceStage] = NLMISC::CUVW(0, 0, 0);
 			VertToFace[outMeshBuild.Faces[l].Corner[m].Vertex].push_back(l);
 		}
 	}
 	
+/* TODO: debug this version
+	std::vector<NLMISC::CVector> SGradArray(outMeshBuild.Faces.size());	// SGradient for each face	
 
+	// compute sGradient for each face
+	for (k = 0; k < outMeshBuild.Faces.size(); ++k)
+	{
+		CMesh::CFace &f = outMeshBuild.Faces[k];
+		NLMISC::CTriangle tri;				
+		tri.V0 = outMeshBuild.Vertices[f.Corner[0].Vertex];
+		tri.V1 = outMeshBuild.Vertices[f.Corner[1].Vertex];
+		tri.V2 = outMeshBuild.Vertices[f.Corner[2].Vertex];
+		tri.computeGradient(f.Corner[0].Uvws[0].U, 
+						    f.Corner[1].Uvws[0].U,
+							f.Corner[2].Uvws[0].U, SGradArray[k]);
+		SGradArray[k].normalize();		
+	}
+
+
+	// for each triangle, add the S gradient contribution to any neighbour vertex for which the owning face has TexCoords that do not mirror with that face
+	for (k = 0; k < outMeshBuild.Faces.size(); ++k)
+	{
+		CMesh::CFace &f = outMeshBuild.Faces[k];
+		for (l = 0; l < 3; ++l)
+		{
+			const std::vector<uint> &neighbours = VertToFace[f.Corner[l].Vertex];
+			for (m = 0; m < neighbours.size(); ++m)
+			{
+				// other face must share smoothgroups with this one
+				if (f.SmoothGroup & outMeshBuild.Faces[neighbours[m]].SmoothGroup)
+				{				
+					// test if the other face UVs are not mirroring the current ones..
+					float dp = SGradArray[k] * SGradArray[neighbours[m]];
+					if (dp > 0.f)
+					{
+						f.Corner[l].Uvws[tgSpaceStage] += NLMISC::CUVW(SGradArray[neighbours[m]].x, SGradArray[neighbours[m]].y, SGradArray[neighbours[m]].z);
+					}
+				}
+			}
+		}
+	}
+
+	// normalize each tangent space vector
+	for (k = 0; k < outMeshBuild.Faces.size(); ++k)
+	{
+		CMesh::CFace &f = outMeshBuild.Faces[k];
+		for (l = 0; l < 3; ++l)		
+		{
+			CMesh::CCorner &c = f.Corner[l];
+			CVector tgs(c.Uvws[tgSpaceStage].U, c.Uvws[tgSpaceStage].V, c.Uvws[tgSpaceStage].W);
+			tgs = (tgs - (tgs * c.Normal) * c.Normal).normed();
+			c.Uvws[tgSpaceStage].U = tgs.x;
+			c.Uvws[tgSpaceStage].V = tgs.y;
+			c.Uvws[tgSpaceStage].W = tgs.z;
+		}
+	}
+*/
 	
-	// deals with each triangle
+	// Old tangent space version (no support for mirrored textures ..)
 	for (l = 0; l < inMeshBuild.Faces.size(); ++l)
 	{			
 
@@ -172,7 +228,7 @@ bool	BuildTangentSpace(CMesh::CMeshBuild &outMeshBuild, const CMesh::CMeshBuild 
 											 f.Corner[2].Vertex };
 					NLMISC::CTriangle tri;
 					// Build it
-					BuildTriFromMB(outMeshBuild, indices, tri);			
+					BuildTriFromMB(outMeshBuild, indices, tri);
 					// Get s coordinates for each corner
 					float s[3];
 					for (k = 0; k < 3; ++k) 
@@ -195,8 +251,7 @@ bool	BuildTangentSpace(CMesh::CMeshBuild &outMeshBuild, const CMesh::CMeshBuild 
 				curF.Corner[m].Uvws[tgSpaceStage] = *tsv; 
 			}
 		}			
-	}
-	
+	}		
 	return true;
 }
 

@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.25 2001/10/26 08:16:41 vizerie Exp $
+ * $Id: material.cpp,v 1.26 2001/11/07 17:06:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,17 +364,17 @@ void				CMaterial::enableTexAddrMode(bool enable /*= true*/)
 			{
 				_TexAddrMode[k] = (uint8) FetchTexture;
 			}			
-		}
-		else
-		{
-			_Flags &= ~IDRV_MAT_TEX_ADDR;			
-		}
+		}		
+	}
+	else
+	{
+		_Flags &= ~IDRV_MAT_TEX_ADDR;			
 	}
 }
 
 bool			    CMaterial::texAddrEnabled() const
 {
-	return _Flags & IDRV_MAT_TEX_ADDR != 0;
+	return( _Flags & IDRV_MAT_TEX_ADDR) != 0;
 }
 
 

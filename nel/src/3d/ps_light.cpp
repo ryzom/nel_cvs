@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.4 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_light.cpp,v 1.5 2003/12/08 18:28:54 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -49,12 +49,12 @@ CPSLight::CPSLight() : _Color(CRGBA::White),
 //***************************************************************************************************************
 CPSLight::~CPSLight()
 {
-	if (_Owner && _Owner->getScene())
+	if (_Owner && _Owner->getOwner())
 	{
 		// check that all lights have been deleted
 		for(uint k = 0; k < _Lights.getSize(); ++k)
 		{
-			if (_Lights[k]) _Owner->getScene()->deleteModel(_Lights[k]);			
+			if (_Lights[k]) _Owner->getOwner()->getScene()->deleteModel(_Lights[k]);			
 		}
 	}
 	else

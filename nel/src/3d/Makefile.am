@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.61 2002/01/23 13:30:46 valignat Exp $
+# $Id: Makefile.am,v 1.62 2002/01/28 14:53:18 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -169,6 +169,8 @@ libnel3d_la_SOURCES  = animatable.cpp                      \
                        particle_system.h                   \
                        particle_system_instance_user.cpp   \
                        particle_system_instance_user.h     \
+					   particle_system_manager.cpp         \
+                       particle_system_manager.h           \
                        particle_system_model.cpp           \
                        particle_system_model.h             \
                        particle_system_process.cpp         \

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.179 2003/03/31 11:54:16 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.180 2003/04/01 15:45:38 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -92,7 +92,7 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0x9;
+const uint32		CDriverGL::ReleaseVersion = 0xa;
 
 // Number of register to allocate for the EXTVertexShader extension
 const uint CDriverGL::_EVSNumConstant = 96;
@@ -2156,6 +2156,14 @@ bool CDriverGL::supportTextureShaders() const
 {
 	// fully supported by NV_TEXTURE_SHADER	
 	return _Extensions.NVTextureShader;
+}
+
+// ***************************************************************************
+bool CDriverGL::isWaterShaderSupported() const
+{
+	if (!_Extensions.EXTVertexShader && !_Extensions.NVVertexProgram) return false; // should support vertex programms
+	if (!_Extensions.NVTextureShader && !_Extensions.ATIFragmentShader && !_Extensions.ARBFragmentProgram) return false;
+	return true;
 }
 
 // ***************************************************************************

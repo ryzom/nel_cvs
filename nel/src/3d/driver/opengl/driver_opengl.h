@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.141 2003/03/31 11:54:16 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.142 2003/04/01 15:45:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -430,6 +430,8 @@ public:
 	/// \name texture addressing modes
 	// @{
 	virtual bool supportTextureShaders() const;
+
+	virtual bool isWaterShaderSupported() const;
 
 	virtual bool isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) const;
 

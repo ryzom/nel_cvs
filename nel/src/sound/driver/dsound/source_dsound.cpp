@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.21.2.3 2003/05/28 13:49:49 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.21.2.4 2003/06/02 11:24:59 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -814,6 +814,11 @@ bool CSourceDSound::play()
 		nlwarning("Couldn't lock the sound buffer for %u bytes", cursors.WriteSize);
 	}
 
+	// set the volume NOW
+	CListenerDSound* listener = CListenerDSound::instance();
+
+	updateVolume(listener->getPos());
+
 	LeaveCriticalSection(&_CriticalSection); 
 
 	return true;
@@ -1553,11 +1558,11 @@ void CSourceDSound::setMinMaxDistances( float mindist, float maxdist, bool defer
 {
 	if (_3DBuffer != 0)
 	{
-		if (_3DBuffer->SetMinDistance(mindist, deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
+		if (_3DBuffer->SetMinDistance(std::max(DS3D_DEFAULTMINDISTANCE, mindist), deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
 		{
 			nlwarning("SetMinDistance (%f) failed", mindist);
 		}
-		if (_3DBuffer->SetMaxDistance(maxdist, deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
+		if (_3DBuffer->SetMaxDistance(std::min(DS3D_DEFAULTMAXDISTANCE, maxdist), deferred ? DS3D_DEFERRED : DS3D_IMMEDIATE) != DS_OK)
 		{
 			nlwarning("SetMaxDistance (%f) failed", maxdist);
 		}

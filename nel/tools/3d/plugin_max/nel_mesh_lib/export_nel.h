@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.22 2001/08/16 15:50:00 besson Exp $
+ * $Id: export_nel.h,v 1.23 2001/08/30 10:17:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include <3d/key.h>
 #include <3d/track_keyframer.h>
 #include <3d/bone.h>
+#include <nel/3d/animation_time.h>
 #include <nel/3d/animation_time.h>
 #include <pacs/collision_mesh_build.h>
 
@@ -236,6 +237,9 @@ public:
 	static void						addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
 	static void						addBipedNodeTrack (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip,
 										std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled);
+
+	// Add a note track. It tackes the first note track of the object
+	static void							addNoteTrack(NL3D::CAnimation& animation, INode& node);
 
 	// Convert keyframe methods
 	static void						buildNelKey (NL3D::CKeyFloat& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);

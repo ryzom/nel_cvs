@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.13 2001/08/09 15:21:23 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.14 2001/08/30 10:17:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,13 +32,17 @@
 #include <3d/key.h>
 #include <3d/track.h>
 #include <3d/particle_system_model.h>
+#include <notetrck.h>
 
 #include "calc_lm.h"
+#include "export_lod.h"
 
 using namespace NLMISC;
 using namespace NL3D;
 
 
+
+static Class_ID DefNoteTrackClassID(NOTETRACK_CLASS_ID, 0);
 
 #define BOOL_CONTROL_CLASS_ID 0x984b8d27
 
@@ -109,6 +113,58 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 		// Add particle system tracks
 		addParticleSystemTracks(animation, node, sBaseName, ip);
 	}
+
+	// check for note track export (a string track used to create events)
+	int exportNoteTrack = CExportNel::getScriptAppData(&node, NEL3D_APPDATA_EXPORT_NOTE_TRACK, -1);
+
+	if (exportNoteTrack)
+	{
+		addNoteTrack(animation, node);		
+	}
+}
+
+
+
+void CExportNel::addNoteTrack(NL3D::CAnimation& animation, INode& node)
+{
+	// check for the first Note Track		
+	NoteTrack *nt = node.GetNoteTrack(0);
+
+					
+    if(nt && (nt->ClassID() == DefNoteTrackClassID))
+    {
+
+		CTrackKeyFramerConstString *st = new CTrackKeyFramerConstString;
+
+        DefNoteTrack &dnt = *(DefNoteTrack *)nt;
+        int noteCount = dnt.keys.Count();
+		float firstDate = 0, lastDate = 0;
+
+        for(int noteIndex = 0; noteIndex < noteCount; ++noteIndex)
+        {
+
+            NoteKey *note = dnt.keys[noteIndex];
+
+            if(note)
+
+            {
+				CKeyString ks;
+				if (noteIndex == 0)
+				{
+					firstDate = CExportNel::convertTime (note->time);
+				}				
+				ks.Value = std::string(note->note);
+				lastDate = CExportNel::convertTime (note->time);
+				st->addKey(ks , lastDate );
+				
+            }
+        }
+		st->unlockRange (firstDate, lastDate);
+		animation.addTrack(std::string("NoteTrack"), st);		
+	}	
+	
+	
+
 }
 
 // --------------------------------------------------

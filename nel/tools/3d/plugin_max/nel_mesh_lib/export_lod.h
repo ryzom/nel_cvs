@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.5 2001/08/16 15:50:00 besson Exp $
+ * $Id: export_lod.h,v 1.6 2001/08/30 10:17:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@
 #define NEL3D_APPDATA_ACCEL							(1423062561)
 #define NEL3D_APPDATA_INSTANCE_NAME					(1423062562)
 #define NEL3D_APPDATA_DONT_ADD_TO_SCENE				(1423062563)
+#define NEL3D_APPDATA_EXPORT_NOTE_TRACK				(1423062564)
 
 // ***************************************************************************
 

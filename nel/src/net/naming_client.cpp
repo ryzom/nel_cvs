@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.49 2002/08/22 12:09:55 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.50 2002/08/22 14:13:17 lecroart Exp $
  *
  */
 
@@ -305,6 +305,7 @@ bool CNamingClient::registerService (const std::string &name, const std::vector<
 	msgout.serial (sid);
 	_Connection->send (msgout);
 
+	TTime before = CTime::getLocalTime ();
 	// wait the answer of the naming service "RG"
 	Registered = false;
 	RegisteredSID = &sid;
@@ -313,6 +314,7 @@ bool CNamingClient::registerService (const std::string &name, const std::vector<
 		_Connection->update (-1);
 		nlSleep (1);
 	}
+	nlwarning ("********** %f to receive the message", (float)(CTime::getLocalTime ()-before)/1000.0f);
 
 	if (RegisteredSuccess)
 	{
@@ -341,6 +343,7 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const std::
 	msgout.serial (sid);
 	_Connection->send (msgout);
 
+	TTime before = CTime::getLocalTime ();
 	// wait the answer of the naming service "RGI"
 	Registered = false;
 	while (!Registered)
@@ -348,6 +351,7 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const std::
 		_Connection->update (-1);
 		nlSleep (1);
 	}
+	nlwarning ("********** %f to receive the message", (float)(CTime::getLocalTime ()-before)/1000.0f);
 
 	if (RegisteredSuccess)
 	{
@@ -409,6 +413,7 @@ uint16 CNamingClient::queryServicePort ()
 	CMessage msgout (_Connection->getSIDA(), "QP");
 	_Connection->send (msgout);
 
+	TTime before = CTime::getLocalTime ();
 	// wait the answer of the naming service "QP"
 	QueryPort = false;
 	while (!QueryPort)
@@ -416,6 +421,7 @@ uint16 CNamingClient::queryServicePort ()
 		_Connection->update (-1);
 		nlSleep (1);
 	}
+	nlwarning ("********** %f to receive the message", (float)(CTime::getLocalTime ()-before)/1000.0f);
 
 	nlinfo ("NC: Received the answer of the query port (%hu)", QueryPortPort);
 

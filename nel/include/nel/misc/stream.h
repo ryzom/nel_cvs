@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.26 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: stream.h,v 1.27 2000/11/15 10:19:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,6 +275,9 @@ public:
 	template<class T>
 	void			serialCont(T &cont) throw(EStream)
 	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::iterator __iterator;
+
 		sint32	len=0;
 		if(isReading())
 		{
@@ -282,7 +285,7 @@ public:
 			serial(len);
 			for(sint i=0;i<len;i++)
 			{
-				T::value_type	v;
+				__value_type	v;
 				serial(v);
 				cont.insert(cont.end(), v);
 			}
@@ -291,10 +294,10 @@ public:
 		{
 			len= cont.size();
 			serial(len);
-			T::iterator		it= cont.begin();
+			__iterator		it= cont.begin();
 			for(sint i=0;i<len;i++, it++)
 			{
-				serial(const_cast<T::value_type&>(*it));
+				serial(const_cast<__value_type&>(*it));
 			}
 		}
 	}
@@ -328,6 +331,9 @@ public:
 	template<class T>
 	void			serialContPtr(T &cont) throw(EStream)
 	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::iterator __iterator;
+
 		sint32	len;
 		if(isReading())
 		{
@@ -335,7 +341,7 @@ public:
 			serial(len);
 			for(sint i=0;i<len;i++)
 			{
-				T::value_type	v;
+				__value_type	v;
 				serialPtr(v);
 				cont.insert(cont.end(), v);
 			}
@@ -344,10 +350,10 @@ public:
 		{
 			len= cont.size();
 			serial(len);
-			T::iterator		it= cont.begin();
+			__iterator		it= cont.begin();
 			for(sint i=0;i<len;i++, it++)
 			{
-				serialPtr(const_cast<T::value_type&>(*it));
+				serialPtr(const_cast<__value_type&>(*it));
 			}
 		}
 	}
@@ -373,6 +379,9 @@ public:
 	template<class T>
 	void			serialContPolyPtr(T &cont) throw(EStream)
 	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::iterator __iterator;
+
 		sint32	len;
 		if(isReading())
 		{
@@ -380,7 +389,7 @@ public:
 			serial(len);
 			for(sint i=0;i<len;i++)
 			{
-				T::value_type	v;
+				__value_type	v;
 				serialPolyPtr(v);
 				cont.insert(cont.end(), v);
 			}
@@ -389,10 +398,10 @@ public:
 		{
 			len= cont.size();
 			serial(len);
-			T::iterator		it= cont.begin();
+			__iterator		it= cont.begin();
 			for(sint i=0;i<len;i++, it++)
 			{
-				serialPolyPtr(const_cast<T::value_type&>(*it));
+				serialPolyPtr(const_cast<__value_type&>(*it));
 			}
 		}
 	}
@@ -418,6 +427,10 @@ public:
 	template<class T>
 	void			serialMap(T &cont) throw(EStream)
 	{
+		typedef typename T::value_type __value_type;
+		typedef typename T::key_type __key_type;
+		typedef typename T::iterator __iterator;
+
 		sint32	len;
 		if(isReading())
 		{
@@ -425,8 +438,8 @@ public:
 			serial(len);
 			for(sint i=0;i<len;i++)
 			{
-				T::value_type	v;
-				serial( const_cast<T::key_type&>(v.first) );
+				__value_type	v;
+				serial( const_cast<__key_type&>(v.first) );
 				serial(v.second);
 				cont.insert(cont.end(), v);
 			}
@@ -435,10 +448,10 @@ public:
 		{
 			len= cont.size();
 			serial(len);
-			T::iterator		it= cont.begin();
+			__iterator		it= cont.begin();
 			for(sint i=0;i<len;i++, it++)
 			{
-				serial( const_cast<T::key_type&>((*it).first) );
+				serial( const_cast<__key_type&>((*it).first) );
 				serial((*it).second);
 			}
 		}

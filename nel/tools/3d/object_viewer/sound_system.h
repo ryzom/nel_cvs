@@ -1,7 +1,7 @@
 /** \file sound_system.h
  * This initilize the sound system
  *
- * $Id: sound_system.h,v 1.6 2002/06/28 20:01:42 hanappe Exp $
+ * $Id: sound_system.h,v 1.7 2002/07/25 13:36:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,6 @@ namespace NLMISC
 	class CMatrix;
 }
 
-
 /// this class init the sound system used by the object viewer
 class CSoundSystem
 {
@@ -88,7 +87,7 @@ public:
 	static void loadAnimation(std::string& name)		{ _AnimManager->loadAnimation(name); }
 
 	/// Start playing a sound animation. 
-	static void playAnimation(std::string& name, float lastTime, float curTime);
+	static void playAnimation(std::string& name, float lastTime, float curTime, NLSOUND::CSoundContext &context);
 
 	/// Update the sound animations. 
 	//static void updateAnimations(float lastTime, float curTime)	{ _AnimManager->update(lastTime, curTime); };

@@ -1,7 +1,7 @@
 /** \file sound_anim_dlg.cpp
  * The main dialog to edit animation sound tracks
  *
- * $Id: sound_anim_dlg.cpp,v 1.1 2002/06/18 16:04:59 hanappe Exp $
+ * $Id: sound_anim_dlg.cpp,v 1.2 2002/07/25 13:36:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,7 @@ int CSoundAnimDlg::OnCreate(LPCREATESTRUCT lpCreateStruct)
 BOOL CSoundAnimDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
+
 	return TRUE; 
 }
 

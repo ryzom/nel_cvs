@@ -551,6 +551,10 @@
 #define IDC_SOUNDANIMTRACK              1354
 #define IDC_SOUND_ANIM_SCROLLBAR        1356
 #define IDC_SOUND_ANIM_LIST             1357
+#define IDC_ARG0                        1358
+#define IDC_ARG1                        1359
+#define IDC_ARG2                        1360
+#define IDC_ARG3                        1361
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -700,7 +704,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1122
 #define _APS_NEXT_COMMAND_VALUE         32904
-#define _APS_NEXT_CONTROL_VALUE         1358
+#define _APS_NEXT_CONTROL_VALUE         1359
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

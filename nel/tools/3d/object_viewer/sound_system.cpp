@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.12 2002/07/08 14:53:54 lecroart Exp $
+ * $Id: sound_system.cpp,v 1.13 2002/07/25 13:36:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,7 +165,7 @@ void CSoundSystem::play(const string &soundName)
 	}
 }
 
-void CSoundSystem::playAnimation(string& name, float lastTime, float curTime)
+void CSoundSystem::playAnimation(string& name, float lastTime, float curTime, CSoundContext &context)
 {
 	if (_AnimManager == NULL)
 	{
@@ -176,6 +176,6 @@ void CSoundSystem::playAnimation(string& name, float lastTime, float curTime)
 
 	if (id != CSoundAnimationNoId)
 	{
-		_AnimManager->playAnimation(id, lastTime, curTime, _Zero);
+		_AnimManager->playAnimation(id, lastTime, curTime, context);
 	}
 }

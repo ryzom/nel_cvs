@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.72 2002/07/08 14:53:38 lecroart Exp $
+ * $Id: object_viewer.cpp,v 1.73 2002/07/25 13:36:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,8 +92,6 @@
 #include "sound_anim_dlg.h"
 
 
-
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -101,16 +99,19 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-static char SDrive[256];
-static char SDir[256];
-
-
-
 using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
 using namespace NLSOUND;
 using namespace NLPACS;
+
+
+
+static char SDrive[256];
+static char SDir[256];
+
+uint SkeletonUsedForSound = 0xFFFFFFFF;
+CSoundContext SoundContext;
 
 //
 //	Note!
@@ -284,6 +285,8 @@ CObjectViewer::CObjectViewer ()
 		{
 		}
 	
+		// debug, display path
+		//CPath::display();
 
 		// set the sound banks and sample banks
 		try
@@ -1370,6 +1373,7 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 						{
 							// Add the skel
 							instance = addSkel (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str());
+							SkeletonUsedForSound = instance;
 						}
 						else
 						{
@@ -2103,7 +2107,31 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 
 				if ((startTime <= currentTime) && (currentTime < endTime))
 				{
-					CSoundSystem::playAnimation(name, lastTime - startTime, currentTime - startTime);
+					// setup the sound context
+
+					DWORD tab[] = {IDC_ARG0, IDC_ARG1, IDC_ARG2, IDC_ARG3, };
+					
+					for (uint i = 0; i < 4; i++)
+					{
+						CEdit *edit = (CEdit*) _SoundAnimDlg->GetDlgItem(tab[i]);
+						nlassert(edit);
+						char str[1024];
+						edit->GetLine(0, str, 1024);
+						SoundContext.Args[i] = atoi (str);
+					}
+
+					// get the position of the skel if a skel is available
+					if (SkeletonUsedForSound != 0xFFFFFFFF)
+					{
+						const CMatrix &m = _ListInstance[SkeletonUsedForSound]->TransformShape->getMatrix();
+						SoundContext.Position = m.getPos();
+					}
+					else
+					{
+						SoundContext.Position = CVector::Null;
+					}
+
+					CSoundSystem::playAnimation(name, lastTime - startTime, currentTime - startTime, SoundContext);
 				}
 			}
 		}

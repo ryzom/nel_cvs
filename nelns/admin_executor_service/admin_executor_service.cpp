@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.37 2003/02/07 16:09:14 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.38 2003/02/14 13:54:33 lecroart Exp $
  *
  */
 
@@ -516,7 +516,7 @@ void cleanRequest ()
 							else
 								s = Services[j].AliasName;
 							s += "-"+toString(Services[j].ServiceId);
-							s += "<TIMEOUT>";
+							s += "((TIMEOUT))"; 
 							vala.clear ();
 							vala.push_back (s);
 							addRequestAnswer (Requests[i].Id, vara, vala);

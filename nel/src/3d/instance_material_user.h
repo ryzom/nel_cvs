@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.13 2003/11/06 09:29:09 besson Exp $
+ * $Id: instance_material_user.h,v 1.14 2003/11/17 14:25:31 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -261,6 +261,11 @@ public:
 	{
 		NL3D_MEM_MATERIAL_INSTANCE
 		_Material->setAlphaTestThreshold(at);
+	}
+	virtual void			setZWrite(bool active)
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		_Material->setZWrite(active);
 	}
 
 	virtual bool			getBlend() const 

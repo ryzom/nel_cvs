@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.16 2003/07/03 15:16:12 boucher Exp $
+ * $Id: sound_bank.cpp,v 1.17 2004/05/27 17:42:23 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,7 +196,7 @@ public:
 		if (s.isReading())
 		{
 			// read the first item to find the type
-			CSound::TSOUND_TYPE type;
+			CSound::TSOUND_TYPE type = CSound::SOUND_SIMPLE;
 			s.serialEnum(type);
 			// read the sound name
 //			std::string name;

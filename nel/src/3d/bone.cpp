@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.4 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: bone.cpp,v 1.5 2001/09/28 12:53:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,7 +144,10 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix)
 			CVector		trans;
 
 			// retrieve our translation
-			getPos(trans);
+			if( getTransformMode()==ITransformable::DirectMatrix )
+				getMatrix().getPos(trans);
+			else
+				getPos(trans);
 			// retrieve scale from our father.
 			parent->getScale(fatherScale);
 			// inverse this scale.

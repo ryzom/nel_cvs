@@ -1,7 +1,7 @@
 /** \file file.h
  * From file serialization implementation of IStream using binary format (look at stream.h)
  *
- * $Id: file.h,v 1.23 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: file.h,v 1.24 2003/10/14 09:31:16 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,6 +190,10 @@ public:		// Basic Usage.
 	/// Open a file for writing. false if failed. close() if a file was opened.
 	bool	open(const std::string &path, bool append=false, bool text=false);
 
+	bool	isOpen	()	const
+	{
+		return	_F!=NULL;
+	}
 	
 public:		// Advanced Usage.
 	/// Explicit close.

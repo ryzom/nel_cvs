@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.6 2001/11/16 16:48:08 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.7 2001/11/21 16:05:12 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -175,8 +175,8 @@ const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
 
 // static members
 
-uint32									CWaterShape::_XScreenGridSize = 50;
-uint32									CWaterShape::_YScreenGridSize = 50;
+uint32									CWaterShape::_XScreenGridSize = 40;
+uint32									CWaterShape::_YScreenGridSize = 40;
 uint32									CWaterShape::_XGridBorder = 4;
 uint32									CWaterShape::_YGridBorder = 4;
 uint32									CWaterShape::_MaxGridSize;

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.17 2001/11/27 14:12:48 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.18 2001/11/27 14:15:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,8 @@ void	cbDisconnection(TSockId from, void *arg)
 		const CUnifiedNetwork::CUnifiedConnection	&cnx = access.value ()[(uint16)from->appId()];
 
 		// check if we already have a connection that we didn't process already
-		for (uint i=0; i<instance->_ConnectionStack.size(); ++i)
+		uint i;
+		for (i=0; i<instance->_ConnectionStack.size(); ++i)
 		{
 			if (instance->_ConnectionStack[i].SId == cnx.ServiceId)
 			{
@@ -171,7 +172,8 @@ void	cbServiceIdentification(CMessage &msgin, TSockId from, CCallbackNetBase &ne
 	CUnifiedNetwork		*instance = CUnifiedNetwork::getInstance();
 
 	// check if we already have a connection that we didn't process already
-	for (uint i=0; i<instance->_DisconnectionStack.size(); ++i)
+	uint i;
+	for (i=0; i<instance->_DisconnectionStack.size(); ++i)
 	{
 		if (instance->_DisconnectionStack[i] == inSid)
 		{

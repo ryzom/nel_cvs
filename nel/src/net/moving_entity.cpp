@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.2 2000/10/23 14:57:08 cado Exp $
+ * $Id: moving_entity.cpp,v 1.3 2000/10/24 16:39:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 namespace NLNET {
 
 
-TEntityId IMovingEntity::_MaxId = 0;
+TEntityId IMovingEntity::_MaxId = 1; //	avoid 0
 
 
 /*
@@ -37,7 +37,7 @@ TEntityId IMovingEntity::_MaxId = 0;
  */
 IMovingEntity::IMovingEntity()
 {
-	_Id = getNewId();
+	_Id = 0; //getNewId();
 }
 
 
@@ -48,10 +48,19 @@ IMovingEntity::IMovingEntity( const NLMISC::CVector pos,
 							  const NLMISC::CVector hdg,
 							  const NLMISC::CVector vec )
 {
-	_Id = getNewId();
+	_Id = 0; //getNewId();
 	_Pos = pos;
 	_BodyHdg = hdg;
 	_Vector = vec;
+}
+
+
+/*
+ * Copy constructor
+ */
+IMovingEntity::IMovingEntity( const IMovingEntity& other )
+{
+	operator=( other );
 }
 
 

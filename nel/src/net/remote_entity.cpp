@@ -1,7 +1,7 @@
 /** \file remote_entity.cpp
  * Remote-controlled entities
  *
- * $Id: remote_entity.cpp,v 1.1 2000/10/23 14:18:51 cado Exp $
+ * $Id: remote_entity.cpp,v 1.2 2000/10/24 16:39:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,15 @@ CRemoteEntity::CRemoteEntity( const NLMISC::CVector pos,
 							  const NLMISC::CVector hdg,
 							  const NLMISC::CVector vec ) :
 	IMovingEntity( pos, hdg, vec )
+{
+}
+
+
+/*
+ * Alt. constructor with entity state
+ */
+CRemoteEntity::CRemoteEntity( const IMovingEntity& es ) :
+	IMovingEntity( es )
 {
 }
 

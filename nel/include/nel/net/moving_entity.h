@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.1 2000/10/23 14:18:51 cado Exp $
+ * $Id: moving_entity.h,v 1.2 2000/10/24 16:39:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,9 @@ public:
 				   const NLMISC::CVector hdg,
 				   const NLMISC::CVector vec );
 
+	/// Copy constructor
+	IMovingEntity( const IMovingEntity& other );
+
 	/// Update the entity state
 	void					update( TDuration deltatime ) {}
 
@@ -92,6 +95,7 @@ public:
 	/// Assignment operator
 	IMovingEntity&			operator= ( const IMovingEntity& other )
 	{
+		_Id = other._Id;
 		_Pos = other._Pos;
 		_BodyHdg = other._BodyHdg;
 		_Vector = other._Vector;
@@ -109,6 +113,25 @@ public:
 	/// Serialization
 	void					serial ( NLMISC::IStream &s );
 
+	/// Sets id
+	void					setId( TEntityId id )
+	{
+		_Id = id;
+	}
+
+	/// Returns a free identifier
+	static TEntityId		getNewId()
+	{
+		TEntityId newid = _MaxId;
+		_MaxId++;
+		return newid;
+	}
+
+	/// Returns highest id
+	static TEntityId		lastId()
+	{
+		return _MaxId;
+	}
 
 protected:
 
@@ -154,16 +177,8 @@ private:
 	/// Trajectory vector
 	NLMISC::CVector			_Vector;
 
-// Static members:
 
-	/// Returns a free identifier
-	static TEntityId		getNewId()
-	{
-		TEntityId newid = _MaxId;
-		_MaxId++;
-		return newid;
-	}
-
+	// Highest Id
 	static TEntityId		_MaxId;
 
 };

@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * <File description>
  *
- * $Id: local_area.cpp,v 1.2 2000/10/24 10:16:50 cado Exp $
+ * $Id: local_area.cpp,v 1.3 2000/10/24 16:39:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,12 +26,15 @@
 #include "nel/net/local_area.h"
 #include "nel/net/msg_socket.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/debug.h"
+#include "nel/net/remote_entity.h"
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
 #endif
 
 using namespace NLNET;
+using namespace std;
 
 
 // Pointer to the local area singleton
@@ -43,17 +46,43 @@ void NLNET::cbProcessEntityState( CMessage& msgin, TSenderId idfrom )
 {
 	IMovingEntity es;
 	msgin.serial( es );
-	CLocalArea::Instance->_Neighbors[es.id()]->changeStateTo( es );
+	nlinfo( "Entity state received, with id %u", es.id() );
+
+	// Search id in the entity map
+	CRemoteEntities::iterator ire;
+	ire = CLocalArea::Instance->_Neighbors.find( es.id() );
+	if ( ire == CLocalArea::Instance->_Neighbors.end() )
+	{
+		// Not found => create a new remote entity
+		CRemoteEntity *new_entity = new CRemoteEntity( es );
+		CLocalArea::Instance->addNeighbor( new_entity );
+		nlinfo( "New remote entity created");
+	}
+	else
+	{
+		// Change state
+		(*ire).second->changeStateTo( es );
+	}
+}
+
+
+// Callback (friend of CLocalArea)
+void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
+{
+	TEntityId id;
+	msgin.serial( id );
+	CLocalArea::Instance->User.setId( id );
 }
 
 
 TCallbackItem CbArray [] =
 {
 	{ "ES", cbProcessEntityState },
+	{ "ID", cbAssignId }
 };
 
 
-//ClientSocket( CbArray, sizeof(CbArray)/sizeof(CbArray[0]), "DRServer" );
+CMsgSocket *ClientSocket;
 
 
 namespace NLNET {
@@ -66,8 +95,25 @@ CLocalArea::CLocalArea() :
 	_Radius( 20 )
 {
 	CLocalArea::Instance = this;
+	ClientSocket = new CMsgSocket( CbArray, sizeof(CbArray)/sizeof(CbArray[0]), "DRServer" );
+	ClientSocket->setTimeout( 0 );
 }
 
+
+/*
+ * Destructor
+ */
+CLocalArea::~CLocalArea()
+{
+	delete ClientSocket;
+	for ( CRemoteEntities::iterator ire=_Neighbors.begin(); ire!=_Neighbors.end(); ++ire )
+	{
+		if ( (*ire).second != NULL ) 
+		{
+			delete (*ire).second;
+		}
+	}
+}
 
 
 /*
@@ -88,7 +134,7 @@ void CLocalArea::init()
  */
 void CLocalArea::update()
 {
-	//CMsgSocket::update();
+	CMsgSocket::update();
 
 	// Compute time difference
 #ifdef NL_OS_WINDOWS

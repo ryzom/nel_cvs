@@ -1,7 +1,7 @@
 /** \file pt_callback_item.h
  * CPtCallbackItem class
  *
- * $Id: pt_callback_item.h,v 1.4 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: pt_callback_item.h,v 1.5 2000/10/24 16:39:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,8 +21,6 @@
  * along with NEVRAX NEL; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
- */
- * Interface for CPtCallbackItem
  */
 
 #ifndef NL_PT_CALLBACK_ITEM_H

@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.2 2000/10/23 14:57:08 cado Exp $
+ * $Id: local_entity.cpp,v 1.3 2000/10/24 16:39:42 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,10 +27,11 @@
 #include "nel/net/msg_socket.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/common.h"
+#include "nel/misc/debug.h"
 
 using namespace NLMISC;
 
-//extern NLNET::CMsgSocket ClientSocket;
+extern NLNET::CMsgSocket *ClientSocket;
 
 
 namespace NLNET {
@@ -41,7 +42,8 @@ namespace NLNET {
  * Constructor
  */
 CLocalEntity::CLocalEntity() :
-	IMovingEntity()
+	IMovingEntity(),
+	_Threshold( 0.05 )
 {
 }
 
@@ -57,6 +59,7 @@ void CLocalEntity::update( TDuration deltatime )
 	// Compare the entity and its replica
 	if ( (pos()-_Replica.pos()).norm() > _Threshold )
 	{
+		nlinfo( "Pos: %f", (pos()-_Replica.pos()).norm() );
 		propagateState();
 	}
 }
@@ -89,7 +92,9 @@ void CLocalEntity::propagateState()
 	// Send
 	CMessage msgout( "ES" );
 	msgout.serial( *this );
-	//ClientSocket.send( msgout );
+	ClientSocket->send( msgout );
+	nlinfo( "Entity State sent, with id %u", id() );
+
 	// Update local replica
 	_Replica.changeStateTo( *this );
 }

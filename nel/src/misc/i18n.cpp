@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.40 2003/10/10 12:05:36 boucher Exp $
+ * $Id: i18n.cpp,v 1.41 2003/10/10 15:48:00 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -410,7 +410,7 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 		while ((pos = result.find(includeCmd, pos)) != ucstring::npos)
 		{
 			// copy the previous text
-			final.append(result.substr(lastPos, pos - lastPos));
+			final += result.substr(lastPos, pos - lastPos);
 
 			// extract the inserted file name.
 			ucstring::const_iterator first, last;
@@ -426,6 +426,15 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 					subFilename.c_str(),
 					filename.c_str());
 				ucstring inserted;
+
+				{
+					CIFile testFile;
+					if (!testFile.open(subFilename))
+					{
+						// try to open the include file relative to current file
+						subFilename = CFile::getPath(filename)+subFilename;
+					}
+				}
 				readTextFile(subFilename, inserted, forceUtf8, fileLookup, preprocess);
 
 				final += inserted;
@@ -441,9 +450,16 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 		}
 
 		// copy the remaining chars
-		final.append(result.substr(lastPos));
+		ucstring temp = final;
+		
+		for (uint i=lastPos; i<result.size(); ++i)
+		{
+			temp += result[i];
+		}
 
-		result = final;
+//		final = final + temp;
+
+		result.swap(temp);
 	}
 
 

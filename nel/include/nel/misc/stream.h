@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.59 2003/04/02 15:37:16 cado Exp $
+ * $Id: stream.h,v 1.60 2003/11/18 10:16:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -431,18 +431,38 @@ public:
 			}
 			else
 			{
-				node= (uint64)(uint)ptr;
-				serial(node);
+				ItIdMap	it;
+				it = _IdMap.find((uint64)(uint)ptr);
 
-				// Close the header
-				xmlPushEnd ();
-
-				// Test if object already written.
-				// If the Id was not yet registered (ie insert works).
-				if( _IdMap.insert( ValueIdMap(node, ptr) ).second==true )
+				// Test if object has been already written
+				if( it==_IdMap.end() )
 				{
-					// Write the object!
+					// Not yet written
+
+					// Get the next available ID
+					node = _NextSerialPtrId++;
+
+					// Serial the id
+					serial(node);
+
+					// Insert the pointer in the map with the id
+					_IdMap.insert( ValueIdMap((uint64)(uint)ptr, (void*)(uint)node) );
+
+					// Close the header
+					xmlPushEnd ();
+
+					// Write the object
 					serial(*ptr);
+				}
+				else
+				{
+					// Write only the object id
+					node = (uint64)(uint)(it->second);
+
+					serial(node);
+		
+					// Close the header
+					xmlPushEnd ();
 				}
 			}
 		}
@@ -857,6 +877,7 @@ private:
 	static	bool	_ThrowOnNewer;
 
 	// Ptr registry. We store 64 bit Id, to be compatible with futur 64+ bits pointers.
+	uint32								_NextSerialPtrId;
 	std::map<uint64, void*>				_IdMap;
 	typedef std::map<uint64, void*>::iterator	ItIdMap;
 	typedef std::map<uint64, void*>::value_type	ValueIdMap;

@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.16 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: i_xml.cpp,v 1.17 2003/11/18 10:16:30 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -103,6 +103,8 @@ void CIXml::release ()
 	_PushBegin = false;
 	_AttribPresent = false;
 	_ErrorString = "";
+	
+	resetPtrTable();
 }
 
 // ***************************************************************************

@@ -6,7 +6,7 @@
  * Pkoi? : pour optimiser la lecture/ecriture (plus de if du tout). Plus rapide pour olivier de faire des copies
  * de messages (brut) que de se taper un if dans le CMessage.
  *
- * $Id: stream_inline.h,v 1.22 2003/04/04 08:29:02 cado Exp $
+ * $Id: stream_inline.h,v 1.23 2003/11/18 10:16:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,7 @@ inline	IStream::IStream(bool inputStream)
 {
 	_InputStream= inputStream;
 	_XML = false;
+	resetPtrTable();
 }
 
 

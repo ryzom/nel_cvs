@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.27 2003/04/02 15:36:54 cado Exp $
+ * $Id: stream.cpp,v 1.28 2003/11/18 10:16:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,6 +101,7 @@ IStream::IStream( const IStream& other )
 IStream& IStream::operator=( const IStream& other )
 {
 	_InputStream = other._InputStream;
+	resetPtrTable();
 	return *this;
 }
 
@@ -198,17 +199,25 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 		{
 			// Assume that prt size is an int size
 			nlassert(sizeof(uint) == sizeof(void *));
-			node= (uint64)((uint)ptr);
 
-			// First attribute name
-			xmlSetAttrib ("id");
+			ItIdMap	it;
+			it = _IdMap.find((uint64)(uint)ptr);
 
-			serial(node);
-
-			// Test if object already written.
-			// If the Id was not yet registered (ie insert works).
-			if( _IdMap.insert( ValueIdMap(node, ptr) ).second==true )
+			// Test if object has been already written
+			if( it==_IdMap.end() )
 			{
+				// Not yet written
+
+				// Get the next available ID
+				node = _NextSerialPtrId++;
+
+				// Serial the id
+				xmlSetAttrib ("id");
+				serial(node);
+
+				// Insert the pointer in the map with the id
+				_IdMap.insert( ValueIdMap((uint64)(uint)ptr, (void*)(uint)node) );
+
 				#ifdef NL_DEBUG
 					nlassert(CClassRegistry::checkObject(ptr));
 				#endif
@@ -218,7 +227,6 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 
 				// Second attribute name
 				xmlSetAttrib ("class");
-
 				serial(className);
 
 				// Close the node header
@@ -229,7 +237,10 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 			}
 			else
 			{
-				// Close the node header
+				// Write only the object id
+				xmlSetAttrib ("id");
+				node = (uint64)(uint)(it->second);
+				serial(node);
 				xmlPushEnd ();
 			}
 		}
@@ -242,6 +253,7 @@ void			IStream::serialIStreamable(IStreamable* &ptr)
 void			IStream::resetPtrTable()
 {
 	_IdMap.clear();
+	_NextSerialPtrId = 1;		// Start at 1 because 0 is the NULL pointer
 }
 
 

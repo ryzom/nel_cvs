@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.11 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: o_xml.cpp,v 1.12 2003/11/18 10:16:30 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -110,6 +110,8 @@ void xmlGenericErrorFuncWrite (void *ctx, const char *msg, ...)
 
 bool COXml::init (IStream *stream, const char *version)
 {
+	resetPtrTable();
+
 	// Output stream ?
 	if (!stream->isReading())
 	{

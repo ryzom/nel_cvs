@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.2 2002/05/13 16:45:55 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.3 2002/05/15 16:55:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -399,6 +399,8 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TG
 			dstVector->z= a20 * vertPtr->x + a21 * vertPtr->y + a22 * vertPtr->z + matPos.z;
 			// modulate color and store.
 			((CRGBA*)(dstPtr + 12))->modulateFromColorRGBOnly(*colorPtr, globalLighting);
+			// Copy Alpha.
+			((CRGBA*)(dstPtr + 12))->A= colorPtr->A;
 		}
 	}
 	else

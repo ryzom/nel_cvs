@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.14 2002/05/14 08:51:16 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.15 2002/05/15 16:55:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,10 +34,10 @@
 namespace NL3D
 {
 
-
 class CSkeletonShape;
 class CTransformClipObs;
 class CSkeletonModelClipObs;
+class CLodCharacterManager;
 
 
 // ***************************************************************************
@@ -210,6 +210,10 @@ public:
 	 */
 	void			updateDisplayLodCharacterFlag(const CClipTrav *clipTrav);
 
+	/** Called by CTransform::setMeanColor()
+	 */
+	void			dirtLodVertexColor() {_CLodVertexColorDirty= true;}
+
 	// @}
 
 
@@ -317,6 +321,16 @@ private:
 	uint			_CLodAnimId;
 	TGlobalAnimationTime	_CLodAnimTime;
 	bool			_CLodWrapMode;
+
+	/// The precomputed color array
+	std::vector<CRGBA>	_CLodVertexColors;
+	/** dirt when a bindSkin/stickObject/detachSkeletonSon is called
+	 *	dirt when a transform mean color is changed.
+	 */
+	bool				_CLodVertexColorDirty;
+
+	/// recompute _CLodVertexColors, ignoring _CLodVertexColorDirty
+	void				computeCLodVertexColors(CLodCharacterManager *mngr);
 
 	// @}
 

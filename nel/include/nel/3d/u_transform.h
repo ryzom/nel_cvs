@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.8 2002/03/29 13:13:30 berenguier Exp $
+ * $Id: u_transform.h,v 1.9 2002/05/15 16:56:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_TRANSFORM_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/rgba.h"
 #include "nel/3d/u_instance_group.h"
 #include "nel/3d/u_transformable.h"
 
@@ -179,6 +180,23 @@ public:
 	virtual const std::string	&getLoadBalancingGroup() const =0;
 
 	// @}
+
+
+	/// name Misc
+	// @{
+
+	/** set the Mean color of the transform. The mean color can be used for many purpose, such as drawing
+	 *	objects if the textures are not loaded. It is used also for Lod Character.
+	 *	Default color is (100,100,100)
+	 */
+	virtual	void			setMeanColor(NLMISC::CRGBA color) =0;
+
+	/// see setMeanColor()
+	virtual	NLMISC::CRGBA	getMeanColor() const  =0;
+
+	// @}
+
+
 
 };
 

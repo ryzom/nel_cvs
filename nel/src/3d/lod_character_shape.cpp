@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * <File description>
  *
- * $Id: lod_character_shape.cpp,v 1.2 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: lod_character_shape.cpp,v 1.3 2002/05/15 16:55:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -321,7 +321,7 @@ void			CLodCharacterShape::startBoneColor(std::vector<NLMISC::CRGBAF>	&tmpColors
 }
 
 // ***************************************************************************
-void			CLodCharacterShape::addBoneColor(uint boneId, CRGBA	color, std::vector<NLMISC::CRGBAF> &tmpColors)
+void			CLodCharacterShape::addBoneColor(uint boneId, CRGBA	color, std::vector<NLMISC::CRGBAF> &tmpColors) const
 {
 	nlassert(boneId<_Bones.size());
 	const CBoneInfluence	&bone= _Bones[boneId];
@@ -340,7 +340,7 @@ void			CLodCharacterShape::addBoneColor(uint boneId, CRGBA	color, std::vector<NL
 }
 
 // ***************************************************************************
-void			CLodCharacterShape::endBoneColor(const std::vector<NLMISC::CRGBAF> &tmpColors, std::vector<NLMISC::CRGBA>	&dstColors)
+void			CLodCharacterShape::endBoneColor(const std::vector<NLMISC::CRGBAF> &tmpColors, std::vector<NLMISC::CRGBA>	&dstColors) const
 {
 	// The default value if vertex is not influenced at all
 	CRGBA	defaultColor(128,128,128,0);

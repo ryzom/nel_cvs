@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.53 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: mesh.cpp,v 1.54 2002/05/15 16:55:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1318,13 +1318,13 @@ void	CMeshGeom::computeBonesId (CSkeletonModel *skeleton)
 				skeleton->flagBoneAndParents(_BonesId[i], boneUsage);
 			}
 
-			// refill _BonesId with parents.
-			_BonesId.clear();
+			// fill _BonesIdExt with bones of _BonesId and their parents.
+			_BonesIdExt.clear();
 			for(i=0; i<boneUsage.size();i++)
 			{
-				// if the bone is used by the mesh, add it to BoneId.
+				// if the bone is used by the mesh, add it to BoneIdExt.
 				if(boneUsage[i])
-					_BonesId.push_back(i);
+					_BonesIdExt.push_back(i);
 			}
 
 		}
@@ -1386,14 +1386,14 @@ void	CMeshGeom::buildBoneUsageVer3 ()
 // ***************************************************************************
 void	CMeshGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 {
-	// For all Bones used.
-	for(uint i=0; i<_BonesId.size();i++)
+	// For all Bones used by this mesh.
+	for(uint i=0; i<_BonesIdExt.size();i++)
 	{
 		// increment or decrement not Forced, because CMeshGeom use getActiveBoneSkinMatrix().
 		if(increment)
-			sm->incBoneUsage(_BonesId[i], CSkeletonModel::UsageNormal);
+			sm->incBoneUsage(_BonesIdExt[i], CSkeletonModel::UsageNormal);
 		else
-			sm->decBoneUsage(_BonesId[i], CSkeletonModel::UsageNormal);
+			sm->decBoneUsage(_BonesIdExt[i], CSkeletonModel::UsageNormal);
 	}
 }
 

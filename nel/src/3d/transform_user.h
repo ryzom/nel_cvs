@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.10 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: transform_user.h,v 1.11 2002/05/15 16:55:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -171,6 +171,12 @@ public:
 	// @{
 	virtual void			setLoadBalancingGroup(const std::string &group);
 	virtual const std::string	&getLoadBalancingGroup() const;
+	// @}
+
+	/// name Misc
+	// @{
+	virtual	void			setMeanColor(NLMISC::CRGBA color);
+	virtual	NLMISC::CRGBA	getMeanColor() const;
 	// @}
 
 public:

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.17 2002/05/14 08:51:16 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.18 2002/05/15 16:55:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,9 +31,12 @@
 #include "3d/skeleton_shape.h"
 #include "3d/scene.h"
 #include "3d/lod_character_manager.h"
+#include "3d/lod_character_shape.h"
+#include "nel/misc/rgba.h"
 
 
 using namespace std;
+using namespace NLMISC;
 
 namespace NL3D
 {
@@ -76,6 +79,7 @@ CSkeletonModel::CSkeletonModel()
 	_CLodAnimId= 0;
 	_CLodAnimTime= 0;
 	_CLodWrapMode= true;
+	_CLodVertexColorDirty= true;
 
 	// The model may be rendered when it enters in LodCharacter mode. Must be rendered at Opaque Pass only.
 	setOpacity(true);
@@ -311,6 +315,9 @@ void		CSkeletonModel::bindSkin(CTransform *mi)
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	cacheTravs();
 	HrcTrav->link(this, mi);
+
+	// must recompute lod vertex color when LodCharacter used
+	dirtLodVertexColor();
 }
 // ***************************************************************************
 void		CSkeletonModel::stickObject(CTransform *mi, uint boneId)
@@ -344,6 +351,9 @@ void		CSkeletonModel::stickObjectEx(CTransform *mi, uint boneId, bool forceCLod)
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	cacheTravs();
 	HrcTrav->link(this, mi);
+
+	// must recompute lod vertex color when LodCharacter used
+	dirtLodVertexColor();
 }
 // ***************************************************************************
 void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
@@ -379,6 +389,9 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	cacheTravs();
 	HrcTrav->link(NULL, tr);
+
+	// must recompute lod vertex color when LodCharacter used
+	dirtLodVertexColor();
 }
 
 
@@ -701,18 +714,28 @@ void		CSkeletonModelRenderObs::traverse(IObs *caller)
 	sunContrib.A= 255;
 
 
+	// compute colors of the lods.
+	//=================
+	// the lod manager
+	CLodCharacterManager	*mngr= trav->Scene->getLodCharacterManager();
+
+	// If must recompute color because of change of skin color or if skin added/deleted
+	if(sm->_CLodVertexColorDirty)
+	{
+		// recompute vertex colors
+		sm->computeCLodVertexColors(mngr);
+		// set sm->_CLodVertexColorDirty to false.
+		sm->_CLodVertexColorDirty= false;
+	}
+
 	// render the Lod in the LodManager.
 	//=================
-	CLodCharacterManager	*mngr= trav->Scene->getLodCharacterManager();
 	// render must have been intialized
 	nlassert(mngr->isRendering());
 
-	// TODODO. For now, Empty colorVertex => grey lod
-	vector<CRGBA>	colorVertex;
-
 	// add the instance to the manager. 
 	if(!mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
-		hrcObs->WorldMatrix, colorVertex, sunContrib))
+		hrcObs->WorldMatrix, sm->_CLodVertexColors, sunContrib))
 	{
 		// If failed to add it because no more vertex space in the manager, retry.
 
@@ -723,7 +746,94 @@ void		CSkeletonModelRenderObs::traverse(IObs *caller)
 
 		// retry. but no-op if refail.
 		mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
-			hrcObs->WorldMatrix, colorVertex, sunContrib);
+			hrcObs->WorldMatrix, sm->_CLodVertexColors, sunContrib);
+	}
+
+}
+
+
+// ***************************************************************************
+void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
+{
+	// if shape id set.
+	if(_CLodShapeId<0)
+		return;
+	// get the lod shape,a nd check exist in the manager
+	const CLodCharacterShape	*lodShape= mngr->getShape(_CLodShapeId);
+	if(lodShape)
+	{
+		static vector<CRGBAF>	tmpColors;
+		tmpColors.clear();
+
+		// start process.
+		//-----------------
+		lodShape->startBoneColor(tmpColors);
+
+		// build an Id map, from Skeleton Ids to the lodShapes ids. (because may be differents)
+		static vector<sint>	boneMap;
+		// reset to -1 (ie not found)
+		boneMap.clear();
+		boneMap.resize(Bones.size(), -1);
+		uint i;
+		// for all skeletons bones.
+		for(i=0; i<boneMap.size(); i++)
+		{
+			boneMap[i]= lodShape->getBoneIdByName(Bones[i].getBoneName());;
+		}
+
+		// Parse all skins
+		//-----------------
+		ItTransformSet	it;
+		for(it= _Skins.begin(); it!=_Skins.end(); it++)
+		{
+			CTransform	*skin= *it;
+
+			// get color of this skin.
+			CRGBA	color= skin->getMeanColor();
+
+			// get array of bone used for this skin.
+			const vector<sint32>	*skinUsage= skin->getSkinBoneUsage();
+			// check correct skin
+			if(skinUsage)
+			{
+				// For all bones used
+				for(uint i=0; i<skinUsage->size(); i++)
+				{
+					// the id in the vector point to a bone in the skeleton. Hence use the boneMap to translate it
+					// in the lodShape ids.
+					sint	idInLod= boneMap[(*skinUsage)[i]];
+					// only if id found in the lod shape
+					if(idInLod>=0)
+						// add color to this bone.
+						lodShape->addBoneColor(idInLod, color, tmpColors);
+				}
+
+			}
+		}
+
+		// Parse all sticked objects
+		//-----------------
+		for(it= _StickedObjects.begin(); it!=_StickedObjects.end(); it++)
+		{
+			CTransform	*object= *it;
+
+			// get color of this object.
+			CRGBA	color= object->getMeanColor();
+
+			// get on which bone this object is linked.
+			// use the boneMap to translate id to lodShape id.
+			sint	idInLod= boneMap[object->_FatherBoneId];
+
+			// only if id found in the lod shape
+			if(idInLod>=0)
+				// add color to this bone.
+				lodShape->addBoneColor(idInLod, color, tmpColors);
+		}
+
+
+		// compile colors
+		//-----------------
+		lodShape->endBoneColor(tmpColors, _CLodVertexColors);
 	}
 
 }

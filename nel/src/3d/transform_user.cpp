@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.8 2002/03/29 13:13:45 berenguier Exp $
+ * $Id: transform_user.cpp,v 1.9 2002/05/15 16:55:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,17 @@ void			CTransformUser::setLoadBalancingGroup(const std::string &group)
 const std::string	&CTransformUser::getLoadBalancingGroup() const
 {
 	return _Transform->getLoadBalancingGroup();
+}
+
+// ***************************************************************************
+void			CTransformUser::setMeanColor(NLMISC::CRGBA color)
+{
+	_Transform->setMeanColor(color);
+}
+// ***************************************************************************
+NLMISC::CRGBA	CTransformUser::getMeanColor() const
+{
+	return _Transform->getMeanColor();
 }
 
 

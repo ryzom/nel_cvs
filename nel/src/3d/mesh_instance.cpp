@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.10 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.11 2002/05/15 16:55:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,5 +74,21 @@ void		CMeshInstance::setApplySkin(bool state)
 	// update the skeleton usage according to the mesh.
 	pMesh->updateSkeletonUsage(_FatherSkeletonModel, state);
 }
+
+
+// ***************************************************************************
+const std::vector<sint32>	*CMeshInstance::getSkinBoneUsage() const
+{
+	// Get a pointer on the shape
+	CMesh	*pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
+
+	// Recompute the id
+	pMesh->computeBonesId (_FatherSkeletonModel);
+
+	// get ids.
+	return &pMesh->getMeshGeom().getSkinBoneUsage();
+}
+
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.42 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: transform.cpp,v 1.43 2002/05/15 16:55:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,9 @@ CTransform::CTransform()
 	_DeleteChannelMixer = false;
 
 	_ForceCLodSticked= false;
+
+	// default MeanColor value
+	_MeanColor.set(100,100,100);
 }
 
 
@@ -410,6 +413,24 @@ const std::string &CTransform::getLoadBalancingGroup() const
 
 	// get the group name
 	return obs->LoadBalancingGroup->Name;
+}
+
+
+// ***************************************************************************
+void		CTransform::setMeanColor(CRGBA color)
+{
+	// if the color is different from prec
+	if(color!=_MeanColor)
+	{
+		// change it.
+		_MeanColor= color;
+		// if skinned or sticked to a skeleton model.
+		if(_FatherSkeletonModel)
+		{
+			// must dirt the vertex color of the lod skeleton because some object color has changed
+			_FatherSkeletonModel->dirtLodVertexColor();
+		}
+	}
 }
 
 

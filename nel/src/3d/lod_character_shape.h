@@ -1,7 +1,7 @@
 /** \file lod_character_shape.h
  * <File description>
  *
- * $Id: lod_character_shape.h,v 1.2 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: lod_character_shape.h,v 1.3 2002/05/15 16:55:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -146,14 +146,14 @@ public:
 	void			startBoneColor(std::vector<NLMISC::CRGBAF>	&tmpColors) const;
 
 	/// Add a bone color influence to tmpColors. 
-	void			addBoneColor(uint boneId, CRGBA	color, std::vector<NLMISC::CRGBAF> &tmpColors);
+	void			addBoneColor(uint boneId, CRGBA	color, std::vector<NLMISC::CRGBAF> &tmpColors) const;
 
 	/** Compile boneColor result into a CRGBA vector (resize-ed by the method), averaging with weight stored in A.
 	 *	NB: if a final vertex is not influenced by any BoneColor, then it will receive (128,128,128,0).
 	 *	Hence it will be somewhat transparent (AlphaTest is used to render lod character shapes). 
 	 *	This may be interressant to hide some parts if they are not used.
 	 */
-	void			endBoneColor(const std::vector<NLMISC::CRGBAF> &tmpColors, std::vector<NLMISC::CRGBA>	&dstColors);
+	void			endBoneColor(const std::vector<NLMISC::CRGBAF> &tmpColors, std::vector<NLMISC::CRGBA>	&dstColors) const;
 
 	// @}
 

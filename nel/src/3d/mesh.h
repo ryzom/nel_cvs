@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.23 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: mesh.h,v 1.24 2002/05/15 16:55:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -291,12 +291,6 @@ public:
 
 	void			setBlendShapes(std::vector<CBlendShape>&bs);
 
-	/// Compute skinning id
-	void			computeBonesId (CSkeletonModel *skeleton);
-
-	/// update Skeleton Usage. increment or decrement.
-	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
-
 
 	/// \name From IMeshGeom
 	// @{
@@ -360,11 +354,27 @@ public:
 
 	// @}
 
+
+	/// \name Skinning Behavior
+	// @{
+
 	/// Return true if the mesh is skinned, else return false.
 	bool isSkinned () const
 	{
 		return _Skinned;
 	}
+
+	/// Compute skinning id
+	void			computeBonesId (CSkeletonModel *skeleton);
+
+	/// update Skeleton Usage. increment or decrement. computeBonesId must has been called before.
+	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
+
+	/// return array of bones used by the skin. computeBonesId must has been called before.
+	const std::vector<sint32>	&getSkinBoneUsage() const {return _BonesId;}
+
+	// @}
+
 
 	/** render the mesh geometry with a single material. Render is said "Simple" because no special features are used:
 	 *		- mesh is rendered without VertexProgram (if it has one).
@@ -553,13 +563,15 @@ private:
 
 	/// This boolean is true if the bones id have been passed in the skeleton
 	bool						_BoneIdComputed;
-	/// true if the _BonesId have been extended to include parents (for bone Usage).
+	/// true if the _BonesIdExt have been computed (for bone Usage).
 	bool						_BoneIdExtended;
 
 	/// This array give the name of the local bones used.
 	std::vector<std::string>	_BonesName;
 	/// This array give the index in the skeleton of the local bones used. computed at first computeBoneId()
 	std::vector<sint32>			_BonesId;
+	/// Same as _BonesId but with parent of bones added. (used for bone usage)
+	std::vector<sint32>			_BonesIdExt;
 
 
 	/// \name VBufferHard mgt.

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.28 2002/04/25 15:25:55 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.29 2002/05/15 16:55:55 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,13 +84,6 @@ public:
 	 * \param params parameters of the MRM build process.
 	 */
 	void			build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*> &bsList, uint numMaxMaterial, const CMRMParameters &params= CMRMParameters());
-
-	/// Compute skinning id
-	void			computeBonesId (CSkeletonModel *skeleton);
-
-	/// update Skeleton Usage. increment or decrement.
-	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
-
 
 	/** Change MRM Distance setup.
 	 *	NB: no-op if distanceFinest<0, distanceMiddle<=distanceFinest or if distanceCoarsest<=distanceMiddle.
@@ -199,12 +192,26 @@ public:
 
 	// @}
 
+
+	/// \name Skinning Behavior
+	// @{
+
 	/// Return true if the mesh is skinned, else return false.
 	bool isSkinned () const
 	{
 		return _Skinned;
 	}
 
+	/// Compute skinning id
+	void			computeBonesId (CSkeletonModel *skeleton);
+
+	/// update Skeleton Usage. increment or decrement. computeBonesId must has been called before.
+	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
+
+	/// return array of bones used by the skin. computeBonesId must has been called before.
+	const std::vector<sint32>	&getSkinBoneUsage() const {return _BonesId;}
+
+	// @}
 
 // ************************
 private:
@@ -368,13 +375,15 @@ private:
 
 	/// This boolean is true if the bones id have been passed in the skeleton
 	bool						_BoneIdComputed;
-	/// true if the _BonesId have been extended to include parents (for bone Usage).
+	/// true if the _BonesIdExt have been computed (for bone Usage).
 	bool						_BoneIdExtended;
 
 	/// This array give the name of the local bones
 	std::vector<std::string>	_BonesName;
 	/// This array give the index in the skeleton of the local bones used. computed at first computeBoneId()
 	std::vector<sint32>			_BonesId;
+	/// Same as _BonesId but with parent of bones added. (used for bone usage)
+	std::vector<sint32>			_BonesIdExt;
 
 	/// List of Lods.
 	std::vector<CLod>			_Lods;

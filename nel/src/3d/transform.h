@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.20 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: transform.h,v 1.21 2002/05/15 16:55:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/anim_detail_trav.h"
 #include "3d/channel_mixer.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/rgba.h"
 #include "3d/light_trav.h"
 #include "3d/light_contribution.h"
 #include "3d/lighting_manager.h"
@@ -49,6 +50,8 @@ namespace	NLMISC
 
 namespace	NL3D
 {
+
+using NLMISC::CRGBA;
 
 
 using NLMISC::CVector;
@@ -269,6 +272,22 @@ public:
 
 	// @}
 
+
+	/// name Misc
+	// @{
+
+	/** set the Mean color of the transform. The mean color can be used for many purpose, such as drawing
+	 *	objects if the textures are not loaded. It is used also for Lod Character.
+	 *	Default color is (100,100,100)
+	 */
+	void				setMeanColor(CRGBA color);
+
+	/// see setMeanColor()
+	CRGBA				getMeanColor() const {return _MeanColor;}
+
+	// @}
+
+
 // ********
 private:
 	// Add our own dirty states.
@@ -315,6 +334,11 @@ protected:
 	 *	NB: _FatherSkeletonModel is valid when setApplySkin() is called
 	 */
 	virtual	void			setApplySkin(bool state) {}
+	/** Deriver must change this method if isSkinnable(). It return the list of bone (correct skeleton index)
+	 *	used by the skins (NB: without the parents of the bone).
+	 *	default is to return NULL.
+	 */
+	virtual const std::vector<sint32>	*getSkinBoneUsage() const {return NULL;}
 
 
 	// The SkeletonModel, root of us (skinning or sticked object). NULL , if normal mode.
@@ -398,6 +422,9 @@ private:
 	/// See ILogicInfo. Used for lighting.	default is NULL.
 	ILogicInfo			*_LogicInfo;
 
+
+	/// see setMeanColor()
+	CRGBA				_MeanColor;
 
 protected:
 	// shortcut to the HrcObs.

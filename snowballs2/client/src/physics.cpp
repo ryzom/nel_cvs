@@ -1,7 +1,7 @@
 /** \file physics.cpp
  * Snowballs trajectory computation
  *
- * $Id: physics.cpp,v 1.1 2001/07/20 14:36:30 legros Exp $
+ * $Id: physics.cpp,v 1.2 2001/07/23 16:34:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,22 +36,20 @@
 using namespace std;
 using namespace NLMISC;
 
-// The gravity
-float					Gravity = 0.0f;
-
-
 CVector	CTrajectory::eval(NLMISC::TTime t) const
 {
-	float	ft = (float)(t-_StartTime)/1000.0f;
-	return CVector(_StartPosition.x + _StartSpeed.x*ft,
-				   _StartPosition.y + _StartSpeed.y*ft,
-				   _StartPosition.z + _StartSpeed.z*ft - 0.5f*Gravity*ft*ft);
+	float	ft = (float)(t-_StartTime)/(float)(_StopTime-_StartTime);
+	ft = min(ft, 1.0f);
+	CVector	res = _EndPosition*ft + _StartPosition*(1.0f-ft);
+	res.z += 0.3f*_Distance*_Distance/90.0f*(float)sin(Pi*ft);
+	return res;
 }
 
 CVector	CTrajectory::evalSpeed(NLMISC::TTime t) const
 {
-	float	ft = (float)(t-_StartTime)/1000.0f;
-	return CVector(_StartSpeed.x,
-				   _StartSpeed.y,
-				   _StartSpeed.z - Gravity*ft);
+	float	ft = (float)(t-_StartTime)/(float)(_StopTime-_StartTime);
+	ft = min(ft, 1.0f);
+	CVector res = (_EndPosition-_StartPosition).normed()*_Speed;
+	res.z += 0.3f*_Distance*_Distance/90.0f*(float)Pi*(float)cos(Pi*ft);
+	return res;
 }

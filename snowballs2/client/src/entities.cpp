@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.35 2001/07/23 08:03:48 legros Exp $
+ * $Id: entities.cpp,v 1.36 2001/07/23 16:34:37 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -469,7 +469,7 @@ void stateNormal (CEntity &entity)
 	}
 
 
-	if (entity.Type == CEntity::Snowball && entity.AutoMove && pDelta.norm() < 0.1f)
+	if (entity.Type == CEntity::Snowball && entity.AutoMove && NewTime >= entity.Trajectory.getStopTime())
 	{
 /*
 		CVector	tp(1140,-833,30);
@@ -589,15 +589,10 @@ void stateNormal (CEntity &entity)
 			entity.MovePrimitive->move(pDelta, 0);
 		}
 	}
-	else if (entity.Type == CEntity::Snowball && pDeltaOri.norm()>0.1f)
+	else if (entity.Type == CEntity::Snowball)
 	{
 		// go to the server position using trajectory interpolation
 		entity.Position = entity.Trajectory.eval(NewTime);
-		CVector	direction = entity.Trajectory.evalSpeed(NewTime).normed();
-		if ((entity.ServerPosition-entity.Position)*direction <= 0.0f)
-		{
-			entity.Position = entity.ServerPosition;
-		}
 	}
 	else
 	{
@@ -809,7 +804,7 @@ void	shotSnowball(uint32 eid, const CVector &start, const CVector &target, const
 	CEntity	&snowball = (*eit).second;
 	snowball.AutoMove = 1;
 
-	snowball.Trajectory.init(start, speed, CTime::getLocalTime());
+	snowball.Trajectory.init(start, target, snowball.Speed, CTime::getLocalTime());
 }
 
 

@@ -1,7 +1,7 @@
 /** \file physics.h
  * Physics computation for particles (and thus snowballs)
  *
- * $Id: physics.h,v 1.1 2001/07/20 14:36:30 legros Exp $
+ * $Id: physics.h,v 1.2 2001/07/23 16:34:38 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,29 +34,27 @@
 #include <nel/misc/time_nl.h>
 
 //
-// External variables
-//
-
-// The gravity force value
-extern float		Gravity;
-
-
-//
 // External classes
 //
 
 class CTrajectory
 {
 	NLMISC::CVector		_StartPosition;
-	NLMISC::CVector		_StartSpeed;
+	NLMISC::CVector		_EndPosition;
+	float				_Speed;
 	NLMISC::TTime		_StartTime;
+	NLMISC::TTime		_StopTime;
+	float				_Distance;
 
 public:
-	void				init(const NLMISC::CVector &position, const NLMISC::CVector &speed, NLMISC::TTime startTime)
+	void				init(const NLMISC::CVector &position, const NLMISC::CVector &target, float speed, NLMISC::TTime startTime)
 	{
 		_StartPosition = position;
-		_StartSpeed = speed;
+		_EndPosition = target;
+		_Speed = speed;
 		_StartTime = startTime;
+		_Distance = (_EndPosition-_StartPosition).norm();
+		_StopTime = (NLMISC::TTime)(_Distance/_Speed*1000.0+_StartTime);
 	}
 
 //	void				compute(const NLMISC::CVector &position, const NLMISC::CVector &target, float speed, NLMISC::TTime startTime);
@@ -66,7 +64,7 @@ public:
 
 	NLMISC::TTime		getStartTime() const { return _StartTime; }
 	NLMISC::CVector		getStartPosition() const { return _StartPosition; }
-	NLMISC::CVector		getStartSpeed() const { return _StartSpeed; }
+	NLMISC::TTime		getStopTime() const { return _StopTime; }
 };
 
 #endif // PHYSICS_H

@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.35 2002/11/04 15:40:43 boucher Exp $
+ * $Id: mutex.cpp,v 1.36 2002/12/30 13:57:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,6 +305,15 @@ void CFairMutex::leave()
 // ***************************************************************************
 
 CFastMutex::CFastMutex ()
+{
+	_Lock = 0;
+}
+
+// ***************************************************************************
+// CFastMutexMP
+// ***************************************************************************
+
+CFastMutexMP::CFastMutexMP ()
 {
 	_Lock = 0;
 }

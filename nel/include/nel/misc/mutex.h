@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.20 2002/11/04 15:40:42 boucher Exp $
+ * $Id: mutex.h,v 1.21 2002/12/30 13:57:18 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,6 +192,79 @@ private:
 #else // NL_OS_WINDOWS
 
 #define CFastMutex CMutex
+
+#endif // NL_OS_WINDOWS
+
+
+
+
+/**
+ * Fast mutex for multiprocessor implementation (not fairly).
+ * Used for multiprocessor critical section synchronisation (no sleep).
+ * The mutex ARE NOT recursive (ie don't call enter() several times
+ * on the same mutex from the same thread without having called leave()) ;
+ * The threads ARE NOT put to sleep. They are waiting using CPU time.
+ * This mutex works but is not optimal for multithread because the thread is not put to sleep.
+ *
+ * Implementation notes:
+ *  - Implementated under WIN32
+ *  - Other OS use CMutex
+ *
+ *\code
+ CFastMutexMP m;
+ m.enter ();
+ // do critical stuffs
+ m.leave ();
+ *\endcode
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2000
+ */
+#ifdef NL_OS_WINDOWS
+class CFastMutexMP
+{
+public:
+
+	/// Constructor
+	CFastMutexMP();
+
+	__forceinline static bool atomic_swap (volatile uint32 *l)
+	{
+		uint32 result;
+		__asm 
+		{ 
+			mov eax,1
+			mov ebx,l
+
+			// Lock is implicit with xchg
+			xchg [ebx],eax
+
+			mov [result],eax
+		}
+		return result != 0;
+	}
+
+	__forceinline void enter ()
+	{
+		while (atomic_swap (&_Lock))
+		{
+		}
+	}
+
+	__forceinline void leave ()
+	{
+		_Lock = 0;
+	}
+
+	volatile uint32	_Lock;
+
+private:
+
+	void *Mutex;
+};
+#else // NL_OS_WINDOWS
+
+#define CFastMutexMP CMutex
 
 #endif // NL_OS_WINDOWS
 

@@ -1,6 +1,6 @@
 /** \file agent_string.cpp
  *
- * $Id: agent_string.cpp,v 1.3 2001/05/22 16:08:15 chafik Exp $
+ * $Id: agent_string.cpp,v 1.4 2001/12/19 11:14:42 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,6 +124,8 @@ namespace NLAIAGENT
 
 	void CIndexedVarName::releaseClass()
 	{
+		return;
+
 		if(_TableName != NULL)
 		{
 			_Map->clear();

@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.28.4.1 2004/09/20 22:29:57 saffray Exp $
+ * $Id: eid_translator.cpp,v 1.28.4.2 2004/09/23 13:24:07 weeklyserver Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -267,8 +267,6 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 	
 	nlinfo ("EIT: Register EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 	RegisteredEntities.insert (make_pair(reid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot)));
-
-//	save ();
 }
 
 void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
@@ -289,8 +287,6 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 	
 	nlinfo ("EIT: Unregister EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), (*it).second.EntityName.toString().c_str(), (*it).second.UId, (*it).second.UserName.c_str());
 	RegisteredEntities.erase (reid);
-	
-//	save ();
 }
 
 void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
@@ -302,7 +298,6 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 	reid.setDynamicId(0);
 
 	map<CEntityId, CEntityIdTranslator::CEntity>::iterator it = RegisteredEntities.find (reid);
-	bool needSave = false;
 	
 	nlinfo ("EIT: Checking EId %s EntityName '%s' UId %d UserName '%s'", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 	
@@ -323,7 +318,6 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 			if(!entityName.empty())
 			{
 				(*it).second.EntityName = entityName;
-				needSave = true;
 			}
 		}
 		if ((*it).second.UId != uid)
@@ -332,7 +326,6 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 			if (uid != 0)
 			{
 				(*it).second.UId = uid;
-				needSave = true;
 			}
 		}
 		if ((*it).second.UserName != userName)
@@ -341,14 +334,9 @@ void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &ent
 			if(!userName.empty())
 			{
 				(*it).second.UserName = userName;
-				needSave = true;
 			}
 		}
 	}
-/*	
-	if (needSave)
-		save ();
-*/
 }
 
 // this callback is call when the file is changed
@@ -430,7 +418,6 @@ void CEntityIdTranslator::load (const string &fileName, const string &invalidEnt
 
 void CEntityIdTranslator::save ()
 {
-/*
 	H_AUTO(EIdTrans_save);
 
 	if (FileName.empty())
@@ -454,7 +441,6 @@ void CEntityIdTranslator::save ()
 	{
 		nlwarning ("EIT: Can't save filename '%s' for EntityIdTranslator", FileName.c_str());
 	}
-*/
 }
 
 uint32 CEntityIdTranslator::getUId (const string &userName)

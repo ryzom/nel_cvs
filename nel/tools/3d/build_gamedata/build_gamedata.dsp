@@ -915,5 +915,41 @@ SOURCE=.\processes\veget\sh\install.sh
 SOURCE=.\processes\veget\maxscript\veget_export.ms
 # End Source File
 # End Group
+# Begin Group "Ig_light"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\processes\ig_light\0_setup.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ig_light\1_clean.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ig_light\2_export.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ig_light\3_build.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ig_light\4_install.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ig_light\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ig_light\export_build_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ig_light\sh\install.sh
+# End Source File
+# End Group
 # End Target
 # End Project

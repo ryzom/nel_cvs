@@ -51,6 +51,9 @@ map_source_directories=`cat ../../cfg/directories.cfg | grep "map_source_directo
 # Get the texture mul size
 texture_mul_size_value=`cat ../../cfg/config.cfg | grep "texture_mul_size_value" | sed -e 's/texture_mul_size_value//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Get the coarse mesh texture name
+coarse_mesh_texture_name=`cat ../../cfg/config.cfg | grep "coarse_mesh_texture_name" | sed -e 's/coarse_mesh_texture_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+
 # Copy the config file header
 cat cfg/config_header.cfg | sed -e "s/texture_mul_size_value/$texture_mul_size_value/g" > cfg/config_generated.cfg
 
@@ -97,14 +100,17 @@ $build_coarse_mesh cfg/config_generated.cfg
 
 # Log error
 echo ------- >> log.log
-echo --- Build shape : convert coarse texture to dds >> log.log
+echo --- Build shape : convert coarse texture to dds without mipmaps >> log.log
 echo ------- >> log.log
 echo ------- 
-echo --- Build shape : convert coarse texture to dds 
+echo --- Build shape : convert coarse texture to dds without mipmaps 
 echo ------- 
 
 if ( test -f shape_with_coarse_mesh/nel_coarse_texture.tga )
 then
-	# Convert the corase texture to dds
+	# Convert the coarse texture to dds
 	$tga_2_dds shape_with_coarse_mesh/nel_coarse_texture.tga -o shape_with_coarse_mesh_builded/nel_coarse_texture_builded.dds -a 5 2>> log.log
+
+	# Rename the coarse mesh texture
+	mv shape_with_coarse_mesh_builded/nel_coarse_texture_builded.dds "shape_with_coarse_mesh_builded/"$coarse_mesh_texture_name".dds"
 fi

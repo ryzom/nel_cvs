@@ -1,7 +1,7 @@
-/** \file win_displayer.h
- * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
+/** \file gtk_displayer.h
+ * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.h,v 1.7 2001/11/05 15:42:49 lecroart Exp $
+ * $Id: gtk_displayer.h,v 1.1 2001/11/05 15:42:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,46 +23,43 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_WIN_DISPLAYER_H
-#define NL_WIN_DISPLAYER_H
+#ifndef NL_GTK_DISPLAYER_H
+#define NL_GTK_DISPLAYER_H
+
+#ifdef NL_USE_GTK
 
 #include "nel/misc/types_nl.h"
-
-#ifdef NL_OS_WINDOWS
-
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
-#include <windows.h>
 
 #include "nel/misc/displayer.h"
 #include "nel/misc/reader_writer.h"
 
 #include "window_displayer.h"
 
+#include <gtk/gtk.h>
+
 namespace NLMISC {
 
 
 /**
- * this displayer displays on a win32 windows.
+ * this displayer displays on a gtk windows.
  * MT = Main Thread, DT = Display Thread
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
  */
-class CWinDisplayer : public NLMISC::CWindowDisplayer
+class CGtkDisplayer : public NLMISC::CWindowDisplayer
 {
 public:
 
-	CWinDisplayer (const char *displayerName = "") : CWindowDisplayer(displayerName)
+	CGtkDisplayer (const char *displayerName = "") : CWindowDisplayer(displayerName)
 	{
-		needSlashR = true;
+		needSlashR = false;
 	}
 
-	virtual ~CWinDisplayer ();
+	virtual ~CGtkDisplayer ();
 
 private:
 
-	// called by DT only
-	void	resizeLabels ();
 	// called by DT only
 	void	updateLabels ();
 
@@ -74,20 +71,14 @@ private:
 	void	display_main ();
 
 	// all these variables above is used only by the DT
-
-	HWND _HEdit, _HWnd, _HInputEdit;
-	HFONT _HFont;
-	HMODULE _HLibModule;
-	HWND _HClearBtn;
-	HWND _HLabel1;
-
-	friend LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	friend sint updateInterf (void *data);
+	friend gint ButtonClear(GtkWidget *Widget, GdkEventKey *Event, gpointer *Data);
 };
 
 } // NLMISC
 
-#endif // NL_OS_WINDOWS
+#endif // NL_USE_GTK
 
-#endif // NL_WIN_DISPLAYER_H
+#endif // NL_GTK_DISPLAYER_H
 
-/* End of win_displayer.h */
+/* End of gtk_displayer.h */

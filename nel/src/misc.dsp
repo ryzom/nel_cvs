@@ -351,7 +351,7 @@ SOURCE=..\include\nel\misc\vectord.h
 SOURCE=..\include\nel\misc\vectord_inline.h
 # End Source File
 # End Group
-# Begin Group "Config_file"
+# Begin Group "ConfigFile"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -480,6 +480,50 @@ SOURCE=..\include\nel\misc\pool_memory.h
 SOURCE=.\misc\Makefile.am
 # End Source File
 # End Group
+# Begin Group "Displayer"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\displayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\displayer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\gtk_displayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\gtk_displayer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\log.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\log.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\win_displayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\win_displayer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\window_displayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\window_displayer.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\misc\bit_set.cpp
@@ -546,14 +590,6 @@ SOURCE=..\include\nel\misc\debug.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\misc\displayer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\displayer.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\misc\entity_id.cpp
 # End Source File
 # Begin Source File
@@ -567,14 +603,6 @@ SOURCE=.\misc\i18n.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\i18n.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\log.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\log.h
 # End Source File
 # Begin Source File
 
@@ -687,14 +715,6 @@ SOURCE=.\misc\value_smoother.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\value_smoother.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\win_displayer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\win_displayer.h
 # End Source File
 # Begin Source File
 

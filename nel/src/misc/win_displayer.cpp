@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
- * <File description>
+ * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.8 2001/08/29 12:47:39 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.9 2001/11/05 15:42:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,8 +33,6 @@
 #include <iomanip>
 #include <signal.h>
 
-using namespace std;
-
 #include <windows.h>
 #include <windowsx.h>
 #include <winuser.h>
@@ -49,10 +47,13 @@ using namespace std;
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
 #include "nel/misc/command.h"
+#include "nel/misc/thread.h"
+
 #include "nel/misc/win_displayer.h"
 
-namespace NLMISC {
+using namespace std;
 
+namespace NLMISC {
 
 CWinDisplayer::~CWinDisplayer ()
 {
@@ -65,15 +66,10 @@ CWinDisplayer::~CWinDisplayer ()
 	}
 }
 
-static bool NeedToUpdateAll = true;
-
 LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static vector<string> History;
-	static vector<string> CommandsToExecute;
-	static uint	PosInHistory;
+	MSGFILTER *pmf;
 
-	static MSGFILTER *pmf;
 	switch (message) 
 	{
 	case WM_SIZE:
@@ -85,12 +81,18 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				int h = (lParam >> 16) & 0xFFFF;
 				SetWindowPos (cwd->_HEdit, NULL, 0, cwd->_ToolBarHeight, w, h-cwd->_ToolBarHeight-cwd->_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
 				SetWindowPos (cwd->_HInputEdit, NULL, 0, h-cwd->_InputEditHeight, w, cwd->_InputEditHeight, SWP_NOZORDER | SWP_NOACTIVATE );
-				cwd->resizeLabel ();
+				cwd->resizeLabels ();
 			}
 		}
 		break;
 	case WM_DESTROY:	PostQuitMessage (0); break;
-	case WM_CLOSE:		raise (SIGINT); break;
+	case WM_CLOSE:
+		{
+			CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
+			if (cwd != NULL)
+				cwd->_Continue = false;
+		}
+		break;
 	case WM_COMMAND:
 		{
 			if (HIWORD(wParam) == BN_CLICKED)
@@ -137,16 +139,12 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 						if (!str.empty())
 						{
-							if (NeedToUpdateAll)
 							{
-								ICommand::execute (str, *InfoLog);
-								History.push_back(str);
-								PosInHistory = History.size();
+								CSynchronized<std::vector<std::string> >::CAccessor access (&cwd->_CommandsToExecute);
+								access.value().push_back(str);
 							}
-							else
-							{
-								CommandsToExecute.push_back(str);
-							}
+							cwd->_History.push_back(str);
+							cwd->_PosInHistory = cwd->_History.size();
 						}
 					}
 				}
@@ -173,90 +171,82 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
 
-					if (PosInHistory > 0)
-						PosInHistory--;
+					if (cwd->_PosInHistory > 0)
+						cwd->_PosInHistory--;
 
-					if (!History.empty())
+					if (!cwd->_History.empty())
 					{
-						SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)History[PosInHistory].c_str());
-						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)History[PosInHistory].size(), (LPARAM)History[PosInHistory].size());
+						SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)cwd->_History[cwd->_PosInHistory].c_str());
+						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)cwd->_History[cwd->_PosInHistory].size(), (LPARAM)cwd->_History[cwd->_PosInHistory].size());
 					}
 				}
 				else if (pmf->wParam == VK_DOWN)
 				{
 					CWinDisplayer *cwd=(CWinDisplayer *)GetWindowLong (hWnd, GWL_USERDATA);
 
-					if (PosInHistory < History.size()-1)
-						PosInHistory++;
+					if (cwd->_PosInHistory < cwd->_History.size()-1)
+						cwd->_PosInHistory++;
 
-					if (!History.empty())
+					if (!cwd->_History.empty())
 					{
-						SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)History[PosInHistory].c_str());
-						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)History[PosInHistory].size(), (LPARAM)History[PosInHistory].size());
+						SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)cwd->_History[cwd->_PosInHistory].c_str());
+						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)cwd->_History[cwd->_PosInHistory].size(), (LPARAM)cwd->_History[cwd->_PosInHistory].size());
 					}
 				}
 			}
 		}
 	}
 	
-	if (NeedToUpdateAll && !CommandsToExecute.empty())
-	{
-		// must be set to flase before the for()
-		NeedToUpdateAll = false;
+	return DefWindowProc (hWnd, message, wParam, lParam);
+}
 
-		for (uint i = 0; i < CommandsToExecute.size(); i++)
+void CWinDisplayer::updateLabels ()
+{
+	bool needResize = false;
+	{
+		CSynchronized<std::vector<CLabelEntry> >::CAccessor access (&_Labels);
+		for (uint i = 0; i < access.value().size(); i++)
 		{
-			ICommand::execute (CommandsToExecute[i], *InfoLog);
-			History.push_back(CommandsToExecute[i]);
-			PosInHistory = History.size();
+			if (access.value()[i].Hwnd == NULL)
+			{
+				access.value()[i].Hwnd = CreateWindow ("STATIC", "", WS_CHILD | WS_VISIBLE | SS_SIMPLE, 0, 0, 0, 0, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
+				SendMessage ((HWND)access.value()[i].Hwnd, WM_SETFONT, (LONG) _HFont, TRUE);
+				needResize = true;
+			}
+			if (!access.value()[i].Value.empty())
+			{
+				// do this fucking tricks to be sure that windows will clear what is after the number
+				string n = access.value()[i].Value + "         ";
+
+				SendMessage ((HWND)access.value()[i].Hwnd, WM_SETTEXT, 0, (LONG) n.c_str());
+
+				access.value()[i].Value = "";
+			}
 		}
-		CommandsToExecute.clear ();
 	}
-
-   return DefWindowProc (hWnd, message, wParam, lParam);
+	if (needResize)
+		resizeLabels();
 }
 
-void CWinDisplayer::resizeLabel ()
+void CWinDisplayer::resizeLabels ()
 {
-	RECT Rect;
-	GetClientRect (_HWnd, &Rect);
-	sint delta = Rect.right / (_HLabels.size () + 1);
-
-	SetWindowPos (_HClearBtn, NULL, 0, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
-	
-	for (uint i = 0; i< _HLabels.size (); i++)
 	{
-		SetWindowPos (_HLabels[i], NULL, (i+1)*delta, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+		CSynchronized<std::vector<CLabelEntry> >::CAccessor access (&_Labels);
+
+		RECT Rect;
+		GetClientRect (_HWnd, &Rect);
+		sint delta = Rect.right / (access.value().size () + 1);
+
+		SetWindowPos (_HClearBtn, NULL, 0, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+	
+		for (uint i = 0; i< access.value().size (); i++)
+		{
+			SetWindowPos ((HWND)access.value()[i].Hwnd, NULL, (i+1)*delta, 0, delta, _ToolBarHeight, SWP_NOZORDER | SWP_NOACTIVATE );
+		}
 	}
 }
 
-uint CWinDisplayer::createLabel (const char *Name)
-{
-	HWND label = CreateWindow ("STATIC", Name, WS_CHILD | WS_VISIBLE | SS_SIMPLE, 0, 0, 0, 0, _HWnd, (HMENU) NULL, (HINSTANCE) GetWindowLong(_HWnd, GWL_HINSTANCE), NULL);
-	SendMessage (label, WM_SETFONT, (LONG) _HFont, TRUE);
-	_HLabels.push_back (label);
-	resizeLabel();
-	return (uint)label;
-}
-
-void CWinDisplayer::setLabel (uint label, const string &Name)
-{
-	// do this fucking tricks to be sure that windows will clear what is after the number
-	string n = Name + "         ";
-	SendMessage ((HWND)label, WM_SETTEXT, 0, (LONG) n.c_str());
-}
-
-void CWinDisplayer::setWindowParams (sint x, sint y, sint w, sint h)
-{
-	LONG flag = SWP_NOZORDER | SWP_NOACTIVATE;
-	
-	if (x == -1 && y == -1) flag |= SWP_NOMOVE;
-	if (w == -1 && h == -1) flag |= SWP_NOSIZE;
-
-	SetWindowPos (_HWnd, NULL, x, y, w, h, flag);
-}
-
-void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
+void CWinDisplayer::open (string windowNameEx, sint x, sint y, sint w, sint h, sint hs)
 {
 	_HistorySize = hs;
 
@@ -282,12 +272,14 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 	WndRect.right = w;
 	WndRect.bottom = h;
 	AdjustWindowRect(&WndRect,WndFlags,FALSE);
-	string wn = "Nel Service Console (compiled " __DATE__ " " __TIME__ ") ";
-	if (!wn.empty())
+	
+	string wn;
+	if (!windowNameEx.empty())
 	{
+		wn += windowNameEx;
 		wn += ": ";
-		wn += WindowNameEx;
 	}
+	wn = "Nel Service Console (compiled " __DATE__ " " __TIME__ ") ";
 
 	// create the window
 	_HWnd = CreateWindow ("NLClass", wn.c_str(), WndFlags, CW_USEDEFAULT,CW_USEDEFAULT, WndRect.right,WndRect.bottom, NULL, NULL, GetModuleHandle(NULL), NULL);
@@ -297,7 +289,14 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 	RECT rc;
 	SetRect (&rc, 0, 0, w, h);
 	AdjustWindowRectEx (&rc, GetWindowStyle (_HWnd), GetMenu (_HWnd) != NULL, GetWindowExStyle (_HWnd));
-	SetWindowPos (_HWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
+
+	LONG flag = SWP_NOZORDER | SWP_NOACTIVATE;
+	
+	if (x == -1 && y == -1) flag |= SWP_NOMOVE;
+	if (w == -1 && h == -1) flag |= SWP_NOSIZE;
+
+	SetWindowPos (_HWnd, NULL, x, y, w, h, flag);
+	SetWindowPos (_HWnd, NULL, x, y, rc.right - rc.left, rc.bottom - rc.top, flag);
 
 	ShowWindow(_HWnd,SW_SHOW);
 
@@ -335,23 +334,8 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 	SendMessage(_HInputEdit, EM_SETEVENTMASK, (WPARAM)0, (LPARAM)dwEvent);
 
 	SetFocus(_HInputEdit);
-	
-	_Thread = getThreadId ();
-	update (false);
-}
 
-void CWinDisplayer::update (bool all)
-{
-	NeedToUpdateAll = all;
-	
-	MSG	msg;
-	while (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
-	{
-		TranslateMessage(&msg);
-		DispatchMessage(&msg);
-	}
-
-	NeedToUpdateAll = false;
+	_Init = true;
 }
 
 void CWinDisplayer::clear ()
@@ -369,93 +353,85 @@ void CWinDisplayer::clear ()
 	SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
 }
 
-/** Sends the string to the logging server
- * \warning If not connected, tries to connect to the logging server each call. It can slow down your program a lot.
- */
-void CWinDisplayer::doDisplay (const NLMISC::TDisplayInfo &args, const char *message)
+void CWinDisplayer::display_main ()
 {
-	if (getThreadId() != _Thread) return;
-
-	bool needSpace = false;
-	stringstream ss;
-
-	if (args.LogType != CLog::LOG_NO)
+	while (true)
 	{
-		ss << logTypeToString(args.LogType);
-		needSpace = true;
+		//
+		// Display the bufferized string
+		//
+
+		string str;
+		{
+			CSynchronized<std::string>::CAccessor access (&_Buffer);
+			str = access.value();
+			access.value() = "";
+		}
+
+		// nothing to do
+		if (!str.empty ())
+		{
+			// store old selection
+			DWORD startSel, endSel;
+			SendMessage (_HEdit, EM_GETSEL, (LONG)&startSel, (LONG)&endSel);
+
+			// get number of line
+			sint nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
+
+			// clear half of the history line if history size is too big
+			if (_HistorySize > 0 && nLine > _HistorySize)
+			{
+				sint oldIndex1 = SendMessage (_HEdit, EM_LINEINDEX, 0, 0);
+				int nbline = _HistorySize-50;
+				if (nbline < 0) nbline = _HistorySize;
+				sint oldIndex2 = SendMessage (_HEdit, EM_LINEINDEX, nbline, 0);
+				SendMessage (_HEdit, EM_SETSEL, oldIndex1, oldIndex2);
+				SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
+			}
+
+			// get number of line
+			nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
+			
+			// get size of the last line
+			sint nIndex = SendMessage (_HEdit, EM_LINEINDEX, nLine, 0);
+
+			// select the end of the last line
+			SendMessage (_HEdit, EM_SETSEL, nIndex, nIndex);
+
+			// add the string to the edit control
+			SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) str.c_str());
+
+			// restore old selection
+			SendMessage (_HEdit, EM_SETSEL, startSel, endSel);
+		}
+
+		//
+		// Update labels
+		//
+
+		updateLabels ();
+
+		//
+		// Manage windows message
+		//
+
+		MSG	msg;
+		while (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+
+		//
+		// Wait
+		//
+
+		// If at the release time, it freezes here, it's a microsoft bug:
+		// http://support.microsoft.com/support/kb/articles/q173/2/60.asp
+		nlSleep (10);
 	}
-
-	// Write thread identifier
-	if ( args.ThreadId != 0 )
-	{
-		ss << setw(5) << args.ThreadId;
-	}
-
-	if (args.Filename != NULL)
-	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << CFile::getFilename(args.Filename);
-		needSpace = true;
-	}
-
-	if (args.Line != -1)
-	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.Line;
-		needSpace = true;
-	}
-
-	if (needSpace) { ss << " : "; needSpace = false; }
-
-	uint nbl = 1;
-
-	char *npos, *pos = const_cast<char *>(message);
-	while (npos = strchr (pos, '\n'))
-	{
-		*npos = '\0';
-		ss << pos;
-		ss << "\r\n";
-		*npos = '\n';
-		pos = npos+1;
-		nbl++;
-	}
-	ss << pos;
-
-	// store old selection
-	DWORD startSel, endSel;
-	SendMessage (_HEdit, EM_GETSEL, (LONG)&startSel, (LONG)&endSel);
-
-	// get number of line
-	sint nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
-
-	// clear half of the history line if history size is too big
-	if (_HistorySize > 0 && nLine > _HistorySize)
-	{
-		sint oldIndex1 = SendMessage (_HEdit, EM_LINEINDEX, 0, 0);
-		int nbline = _HistorySize-50;
-		if (nbline < 0) nbline = _HistorySize;
-		sint oldIndex2 = SendMessage (_HEdit, EM_LINEINDEX, nbline, 0);
-		SendMessage (_HEdit, EM_SETSEL, oldIndex1, oldIndex2);
-		SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) "");
-	}
-
-	// get number of line
-	nLine = SendMessage (_HEdit, EM_GETLINECOUNT, 0, 0) - 1;
-	
-	// get size of the last line
-	sint nIndex = SendMessage (_HEdit, EM_LINEINDEX, nLine, 0);
-
-	// select the end of the last line
-	SendMessage (_HEdit, EM_SETSEL, nIndex, nIndex);
-
-	// add the string to the edit control
-	SendMessage (_HEdit, EM_REPLACESEL, TRUE, (LONG) ss.str().c_str());
-
-	// restore old selection
-	SendMessage (_HEdit, EM_SETSEL, startSel, endSel);
-
-	update (false);
 }
+
 
 } // NLMISC
 

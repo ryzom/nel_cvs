@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.34 2001/10/29 18:35:28 lecroart Exp $
+ * $Id: service.h,v 1.35 2001/11/05 15:42:16 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,11 +36,6 @@
 #include <string>
 #include <vector>
 
-#if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
-#include <windows.h>
-#include "nel/misc/win_displayer.h"
-#endif
-
 namespace NLNET
 {
 
@@ -72,20 +67,20 @@ typedef uint8 TServiceId;
  *
  * If you want the port to be auto-assigned by the naming service, set the port to 0. 
  */
+
 #if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
+
+#include <windows.h>
 
 #define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray) \
  \
-NLMISC::CWinDisplayer __wd ("DEFAULT_WD"); \
- \
 int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
 { \
-	__wd.create (__ServiceShortName " " __ServiceLongName); \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setServiceName (__ServiceShortName, __ServiceLongName); \
 	scn->setPort (__ServicePort); \
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
-    sint retval = scn->main (lpCmdLine, &__wd); \
+    sint retval = scn->main (lpCmdLine); \
 	delete scn; \
 	return retval; \
 }
@@ -157,8 +152,8 @@ public:
 	/// want to know the return value of the application to do the appropriate things.
 	void				setStatus (sint status) { _Status = status; }
 
-	sint				main (int argc, char **argv, void *wd = NULL);
-	sint				main (char *args, void *wd = NULL);
+	sint				main (int argc, char **argv);
+	sint				main (char *args);
 
 	static void			setServiceName (const char *shortName, const char *longName) { _ShortName = shortName; _LongName = longName; }
 
@@ -233,7 +228,7 @@ protected:
 private:
 
 	/// This main is called by other main, the command line must be processing before calling this function
-	sint				main (void *wd = NULL);
+	sint				main ();
 
 	/// Select timeout value in milliseconds
 	static sint32				_UpdateTimeout;

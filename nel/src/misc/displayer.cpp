@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.25 2001/09/12 16:55:17 lecroart Exp $
+ * $Id: displayer.cpp,v 1.26 2001/11/05 15:42:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,7 +123,7 @@ void IDisplayer::display ( const TDisplayInfo& args, const char *message )
 }
 
 
-// Log format : "<LogType> <FileName> <Line>: <Msg>"
+// Log format : "<LogType> <ThreadNo> <FileName> <Line> <ProcessName> : <Msg>"
 void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 {
 	bool needSpace = false;
@@ -206,6 +206,8 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 
 		if(ss2.str().size() < maxOutString)
 		{
+			// If at the release time, it freezes here, it's a microsoft bug:
+			// http://support.microsoft.com/support/kb/articles/q173/2/60.asp
 			OutputDebugString(ss2.str().c_str());
 		}
 		else
@@ -257,7 +259,7 @@ CFileDisplayer::CFileDisplayer(const std::string& filename, bool eraseLastLog, c
 }
 
 
-// Log format: "2000/01/15 12:05:30 <LogType>: <Msg>"
+// Log format: "2000/01/15 12:05:30 <ProcessName> <LogType> <ThreadId> <Filename> <Line> : <Msg>"
 void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 {
 	bool needSpace = false;
@@ -285,7 +287,28 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 		needSpace = true;
 	}
 
-	if (needSpace) { ss << ": "; needSpace = false; }
+	// Write thread identifier
+	if ( args.ThreadId != 0 )
+	{
+		ss << setw(5) << args.ThreadId;
+		needSpace = true;
+	}
+
+	if (args.Filename != NULL)
+	{
+		if (needSpace) { ss << " "; needSpace = false; }
+		ss << CFile::getFilename(args.Filename);
+		needSpace = true;
+	}
+
+	if (args.Line != -1)
+	{
+		if (needSpace) { ss << " "; needSpace = false; }
+		ss << args.Line;
+		needSpace = true;
+	}
+	
+	if (needSpace) { ss << " : "; needSpace = false; }
 
 	ss << message;
 

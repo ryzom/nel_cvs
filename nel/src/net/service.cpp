@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.96 2001/10/25 14:59:35 lecroart Exp $
+ * $Id: service.cpp,v 1.97 2001/11/05 15:42:24 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -36,8 +36,6 @@
 #	define WINVER			0x0400
 #	include <windows.h>
 
-#	include "nel/misc/win_displayer.h"
-
 #elif defined NL_OS_UNIX
 
 #	include <unistd.h>
@@ -55,6 +53,9 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/displayer.h"
 #include "nel/misc/mutex.h"
+#include "nel/misc/window_displayer.h"
+#include "nel/misc/gtk_displayer.h"
+#include "nel/misc/win_displayer.h"
 
 #include "nel/net/naming_client.h"
 #include "nel/net/service.h"
@@ -305,7 +306,7 @@ CCallbackServer *IService::getServer()
 	return dynamic_cast<CCallbackServer*>(CNetManager::getNetBase(IService::_ShortName));
 }
 
-sint IService::main (char *args, void *wd)
+sint IService::main (char *args)
 {
 	_Args.push_back ("program name");
 
@@ -321,47 +322,94 @@ sint IService::main (char *args, void *wd)
 	}
 	while (pos2 != string::npos);
 
-	return main (wd);
+	return main ();
 }
 
-sint IService::main (int argc, char **argv, void *wd)
+sint IService::main (int argc, char **argv)
 {
 	for (sint i = 0; i < argc; i++)
 	{
 		_Args.push_back (argv[i]);
 	}
-	return main (wd);
+	return main ();
 }
 
 // The main function of the service
-sint IService::main (void *wd)
+sint IService::main ()
 {
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
+	CWindowDisplayer *wd = NULL;
 
 	try
 	{
 		createDebug ();
 
-#if defined (NL_OS_WINDOWS)
-		CWinDisplayer *cwd = (CWinDisplayer *) wd;
-		uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel, scrollLabel;
-		if (cwd != NULL)
+		//
+		// Load the config file
+		//
+
+		ConfigFile.load (_LongName + ".cfg");
+
+		try
 		{
-			DebugLog->addDisplayer (cwd);
-			InfoLog->addDisplayer (cwd);
-			WarningLog->addDisplayer (cwd);
-			ErrorLog->addDisplayer (cwd);
-			AssertLog->addDisplayer (cwd);
-			speedNetLabel = cwd->createLabel ("");
-			speedUsrLabel = cwd->createLabel ("");
-			rcvLabel = cwd->createLabel ("");
-			sndLabel = cwd->createLabel ("");
-			rcvQLabel = cwd->createLabel ("");
-			sndQLabel = cwd->createLabel ("");
-			scrollLabel = cwd->createLabel ("");
+			string disp = ConfigFile.getVar ("WindowStyle").asString ();
+#ifdef NL_USE_GTK
+			if (disp == "GTK")
+			{
+				wd = new CGtkDisplayer ("DEFAULT_WD");
+			}
+#endif // NL_USE_GTK
+
+#ifdef NL_OS_WINDOWS
+			if (disp == "WIN")
+			{
+				wd = new CWinDisplayer ("DEFAULT_WD");
+			}
+#endif // NL_OS_WINDOWS
+
+			if (wd == NULL && disp != "NONE")
+			{
+				nlwarning ("Unknown value for the WindowStyle (should be GTK, WIN or NONE), use no window displayer");
+			}
 		}
-#endif
+		catch (EUnknownVar&)
+		{
+			// no WindowStyle variable, no displayer
+		}
+
+		uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel, scrollLabel;
+		if (wd != NULL)
+		{
+			//
+			// Init window param if necessary
+			//
+
+			sint x=-1, y=-1, w=-1, h=-1;
+
+			try { x = ConfigFile.getVar("XWinParam").asInt(); } catch (EUnknownVar&) { }
+			try { y = ConfigFile.getVar("YWinParam").asInt(); } catch (EUnknownVar&) { }
+			try { w = ConfigFile.getVar("WWinParam").asInt(); } catch (EUnknownVar&) { }
+			try { h = ConfigFile.getVar("HWinParam").asInt(); } catch (EUnknownVar&) { }
+
+			if (w == -1 && h == -1)
+				wd->create (_ShortName + " " + _LongName, x, y);
+			else
+				wd->create (_ShortName + " " + _LongName, x, y, w, h);
+
+			DebugLog->addDisplayer (wd);
+			InfoLog->addDisplayer (wd);
+			WarningLog->addDisplayer (wd);
+			ErrorLog->addDisplayer (wd);
+			AssertLog->addDisplayer (wd);
+			speedNetLabel = wd->createLabel ("");
+			speedUsrLabel = wd->createLabel ("");
+			rcvLabel = wd->createLabel ("");
+			sndLabel = wd->createLabel ("");
+			rcvQLabel = wd->createLabel ("");
+			sndQLabel = wd->createLabel ("");
+			scrollLabel = wd->createLabel ("");
+		}
 
 		nlinfo ("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
 		DebugLog->addNegativeFilter ("L3NB_ASSOC:");
@@ -458,34 +506,6 @@ sint IService::main (void *wd)
 		nldebug ("SIGPIPE %s", IgnoredPipe?"Ignored":"Not Ignored");
 #endif // NL_OS_UNIX
 
-
-		//
-		// Load the config file
-		//
-
-		ConfigFile.load (_LongName + ".cfg");
-
-		//
-		// Init window param if necessary
-		//
-
-#if defined (NL_OS_WINDOWS)
-		if (cwd != NULL)
-		{
-			sint x=-1, y=-1, w=-1, h=-1;
-			try
-			{
-				x = ConfigFile.getVar("XWinParam").asInt();
-				y = ConfigFile.getVar("YWinParam").asInt();
-				w = ConfigFile.getVar("WWinParam").asInt();
-				h = ConfigFile.getVar("HWinParam").asInt();
-			}
-			catch ( EUnknownVar& )
-			{
-			}
-			cwd->setWindowParams (x, y, w, h);
-		}
-#endif
 
 		//
 		// Initialize server parameters
@@ -754,17 +774,15 @@ sint IService::main (void *wd)
 			// count the amount of time to manage internal system
 			TTime before = CTime::getLocalTime ();
 
+			if (wd != NULL)
+			{
+				// update the window displayer and quit if asked
+				if (!wd->update ())
+					ExitSignalAsked = true;
+			}
+
 			// stop the loop if the exit signal asked
 			if (ExitSignalAsked) break;
-
-#ifdef NL_OS_WINDOWS
-			if (cwd != NULL)
-			{
-				// update the window displayer
-				cwd->update ();
-			}
-#endif // NL_OS_WINDOWS
-
 	
 			CConfigFile::checkConfigFiles ();
 
@@ -797,37 +815,35 @@ sint IService::main (void *wd)
 			_NetSpeedLoop = (sint32)(CTime::getLocalTime () - before);
 			_UserSpeedLoop = (sint32)(before - bbefore);
 
-#if defined (NL_OS_WINDOWS)
-			if (cwd != NULL)
+			if (wd != NULL)
 			{
 				string str;
 				str = "NetLop: ";
 				str += toString (_NetSpeedLoop);
-				cwd->setLabel (speedNetLabel, str);
+				wd->setLabel (speedNetLabel, str);
 				str = "UsrLop: ";
 				str += toString (_UserSpeedLoop);
-				cwd->setLabel (speedUsrLabel, str);
+				wd->setLabel (speedUsrLabel, str);
 				str = "Rcv: ";
 				str += toString (CNetManager::getBytesReceived ());
-				cwd->setLabel (rcvLabel, str);
+				wd->setLabel (rcvLabel, str);
 				str = "Snd: ";
 				str += toString (CNetManager::getBytesSended ());
-				cwd->setLabel (sndLabel, str);
+				wd->setLabel (sndLabel, str);
 				str = "RcvQ: ";
 				str += toString (CNetManager::getReceiveQueueSize ());
-				cwd->setLabel (rcvQLabel, str);
+				wd->setLabel (rcvQLabel, str);
 				str = "SndQ: ";
 				str += toString (CNetManager::getSendQueueSize ());
-				cwd->setLabel (sndQLabel, str);
+				wd->setLabel (sndQLabel, str);
 
 				// display the scroll text
 				static string toto =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
 										"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
 				static int pos = 0;
-				cwd->setLabel (scrollLabel, toto.substr ((pos++)%(toto.size()/2), string::npos));
+				wd->setLabel (scrollLabel, toto.substr (pos%(toto.size()/2), 10));
+				pos++;
 			}
-#endif
-
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
 
@@ -882,7 +898,18 @@ sint IService::main (void *wd)
 
 		CNetManager::release ();
 
-		CSock::releaseNetwork();
+		CSock::releaseNetwork ();
+
+		if (wd != NULL)
+		{
+			DebugLog->addDisplayer (wd);
+			InfoLog->addDisplayer (wd);
+			WarningLog->addDisplayer (wd);
+			ErrorLog->addDisplayer (wd);
+			AssertLog->addDisplayer (wd);
+
+			delete wd;
+		}
 
 		nlinfo ("Service released succesfuly");
 	}

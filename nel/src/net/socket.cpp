@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.34 2000/12/13 10:04:40 cado Exp $
+ * $Id: socket.cpp,v 1.35 2000/12/13 14:38:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/net/socket.h"
 #include "nel/net/message.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/common.h"
 #include "nel/net/net_log.h"
 
 
@@ -65,6 +66,7 @@ CSocket::CSocket( bool reliable, bool logging ) :
 	_SenderId( 0 ),
 	_IsListening( false ),
 	_OwnerClient( NULL ),
+	_AuthCallback( NULL ),
 	_CurrentMsgNumberSend( 0 )
 {
 }
@@ -79,6 +81,7 @@ CSocket::CSocket( SOCKET sock, const CInetAddress& remoteaddr ) throw (ESocket) 
 	_SenderId( 0 ),
 	_IsListening( false ),
 	_OwnerClient( NULL ),
+	_AuthCallback( NULL ),
 	_CurrentMsgNumberSend( 0 )
 {
 }
@@ -122,11 +125,11 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 		char buf [128];
 		if ( message.typeIsNumber() )
 		{
-			sprintf( buf, "%hu", message.typeAsNumber() );
+			smprintf( buf, 128, "%hu", message.typeAsNumber() );
 		}
 		else
 		{
-			sprintf( buf, "%s", message.typeAsString().c_str() );
+			smprintf( buf, 128, "%s", message.typeAsString().c_str() );
 		}
 		nlnetoutput( localAddr().asIPString().c_str(), _CurrentMsgNumberSend-1, remoteAddr().asIPString().c_str(), buf, message.length() );
 	}

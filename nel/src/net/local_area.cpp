@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.17 2000/12/11 14:05:46 cado Exp $
+ * $Id: local_area.cpp,v 1.18 2000/12/13 14:38:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,6 +118,7 @@ void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 	msgin.serial( id );
 	CLocalArea::Instance->User.setId( id );
 	nldebug( "Local entity %s has id %u", CLocalArea::Instance->User.name().c_str(), id );
+	nlinfo( "Entering online mode" );
 
 	// Send entity state and name
 	CMessage msgout( "NAM" );
@@ -179,7 +180,7 @@ void NLNET::cbCreateNewEntity( CMessage& msgin, TSenderId idfrom )
  */
 void NLNET::cbHandleDisconnection( CMessage& msgin, TSenderId idfrom )
 {
-	nldebug( "Disconnection: local area goes off-line" );
+	nlinfo( "Disconnection: entering off-line mode" );
 	// Now ClientSocket->connected() is false
 }
 

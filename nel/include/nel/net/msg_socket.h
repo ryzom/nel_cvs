@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.26 2000/12/05 11:10:29 cado Exp $
+ * $Id: msg_socket.h,v 1.27 2000/12/13 14:36:19 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ class CMessage;
 
 
 /// List of connections
-typedef std::list<CSocket*> CConnections;
+typedef std::map<TSenderId,CSocket*> CConnections;
 
 /// List of iterators on connections
 typedef std::list<CConnections::iterator> CConnectionIterators;
@@ -141,6 +141,12 @@ public:
 		return _Connections.size();
 	}
 
+	/// Forbids to call a callback that is not the specified callback, for the specified connection
+	static void		authorizeOnly( TMsgCallback callback, TSenderId idfrom );
+
+	/// Allows to call any callback, for the specified connection
+	static void		authorizeAll( TSenderId idfrom );
+
 	///@name Statistics
 	//@{
 
@@ -211,7 +217,7 @@ public:
 protected:
 
 	/// Part of constructor contents
-	void			init( const TCallbackItem *callbackarray, TTypeNum arraysize );
+	void			init( const TCallbackItem *callbackarray, TTypeNum arraysize, bool clientmode );
 
 	/// Prepares to receive connections on a specified port
 	void			listen( CSocket *listensock, uint16 port ) throw (ESocket);
@@ -253,6 +259,9 @@ protected:
 	/// Returns an iterator to the socket pointer in the list of connections, with the specified sender id
 	static CConnections::iterator	iteratorFromId( TSenderId id );
 
+	/// Returns a pointer to a client socket or NULL if id does not correspond to a client socket
+	static CMsgSocket				*clientSocket( TSenderId id );
+
 	/// Gets new sender id
 	static TSenderId newSenderId()
 	{
@@ -286,6 +295,11 @@ private:
 	time_t						_ConnectTime;
 	uint16						_ValidityTime;
 
+	// Callbacks per client
+	const TCallbackItem			*_ClientCallbackArray;
+	TTypeNum					_ClientCbaSize;
+	CSearchSet					_ClientSearchSet;
+
 	// True if the listening socket is bound
 	static bool					_Binded;
 
@@ -312,6 +326,7 @@ private:
 	// Statistics for server mode
 	static uint32				_PrevBytesReceived;
 	static uint32				_PrevBytesSent;
+
 };
 
 }

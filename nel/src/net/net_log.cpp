@@ -1,7 +1,7 @@
 /** \file net_log.cpp
  * <File description>
  *
- * $Id: net_log.cpp,v 1.4 2000/12/13 11:23:11 lecroart Exp $
+ * $Id: net_log.cpp,v 1.5 2000/12/13 14:38:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 #include "nel/net/net_log.h"
 #include "nel/net/unitime.h"
 #include <stdio.h>
@@ -54,9 +55,10 @@ CNetLog::CNetLog() :
 void CNetLog::output( const char *srchost, uint8 msgnum,
 					  const char *desthost, const char *msgname, uint32 msgsize )
 {
-	char line [1024]; // WARNING: buffer overflow hazard !
-	sprintf( line, "@@%"NL_I64"d@%s@%hu@%s@%s@%s@%u@", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
-			 srchost, (uint16)msgnum, _LocalHostAndService->c_str(), desthost, msgname, msgsize );
+	char line [1024];
+	smprintf( line, 1024, "@@%"NL_I64"d@%s@%hu@%s@%s@%s@%u@", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
+			 srchost, (uint16)msgnum, _LocalHostAndService.c_str(), desthost, msgname, msgsize );
+
 	displayRawNL( line );
 }
 
@@ -66,8 +68,8 @@ void CNetLog::output( const char *srchost, uint8 msgnum,
  */
 void CNetLog::input( const char *srchost, uint8 msgnum, const char *desthost )
 {
-	char line [1024]; // WARNING: buffer overflow hazard !
-	sprintf( line, "##%"NL_I64"d#%s#%hu#%s#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0), srchost, msgnum, _LocalHostAndService->c_str(), desthost );
+	char line [1024];
+	smprintf( line, 1024, "##%"NL_I64"d#%s#%hu#%s#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0), srchost, msgnum, _LocalHostAndService.c_str(), desthost );
 	displayRawNL( line );
 }
 

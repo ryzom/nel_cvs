@@ -1,7 +1,7 @@
 /** \file pt_callback_item.h
  * CPtCallbackItem class
  *
- * $Id: pt_callback_item.h,v 1.6 2000/11/14 15:58:34 cado Exp $
+ * $Id: pt_callback_item.h,v 1.7 2000/12/13 14:36:19 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,17 @@
 #ifndef NL_PT_CALLBACK_ITEM_H
 #define NL_PT_CALLBACK_ITEM_H
 
-#include "nel/net/socket.h"
+#include "nel/misc/types_nl.h"
+
 
 namespace NLNET {
+
+
+class CMessage;
+
+
+/// Sender identifier
+typedef uint32 TSenderId;
 
 
 /// Callback function for message processing

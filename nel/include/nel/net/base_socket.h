@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.20 2000/12/08 13:35:38 cado Exp $
+ * $Id: base_socket.h,v 1.21 2000/12/13 14:36:19 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,6 +91,19 @@ public:
 	ESocketConnectionClosed()
 	{
 		_Reason = "Connection closed";
+		_ErrNum = 0;
+	}
+};
+
+
+/// Exception raised when an unauthorized access has been done
+class EAccessDenied : public ESocket
+{
+public:
+	/// Constructor
+	EAccessDenied( std::string s )
+	{
+		_Reason = "Access denied: " + s;
 		_ErrNum = 0;
 	}
 };

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.h,v 1.21 2000/12/07 15:18:42 cado Exp $
+ * $Id: socket.h,v 1.22 2000/12/13 14:36:19 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,15 +31,12 @@
 
 #include "nel/net/base_socket.h"
 #include "nel/net/message.h"
+#include "nel/net/pt_callback_item.h"
 #include <map>
 #include <string>
 
 namespace NLNET
 {
-
-
-/// Sender identifier
-typedef uint32 TSenderId;
 
 
 /// Map for msg name and msg type number association
@@ -149,15 +146,17 @@ protected:
 	///@name These methods are provided only to be called by CMsgSocket (friend)
 	//@{
 
-	void		setDataAvailableFlag( bool da )			{ _DataAvailable = da; }
-	void		setListening( bool l )				{ _IsListening = l; }
-	void		setSenderId( TSenderId id )			{ _SenderId = id; }
-	void		setOwnerClient( CMsgSocket *owner )	{ _OwnerClient = owner; }
+	void			setDataAvailableFlag( bool da )			{ _DataAvailable = da; }
+	void			setListening( bool l )					{ _IsListening = l; }
+	void			setSenderId( TSenderId id )				{ _SenderId = id; }
+	void			setOwnerClient( CMsgSocket *owner )		{ _OwnerClient = owner; }
+	void			setAuthorizedCallback( TMsgCallback cb ){ _AuthCallback = cb; }
 
-	bool		dataAvailableFlag() const				{ return _DataAvailable; }
-	bool		isListening() const					{ return _IsListening; }
-	TSenderId	senderId() const					{ return _SenderId;	}
-	CMsgSocket	*ownerClient() const				{ return _OwnerClient; }
+	bool			dataAvailableFlag() const				{ return _DataAvailable; }
+	bool			isListening() const						{ return _IsListening; }
+	TSenderId		senderId() const						{ return _SenderId;	}
+	CMsgSocket		*ownerClient() const					{ return _OwnerClient; }
+	TMsgCallback	authorizedCallback() const				{ return _AuthCallback; }
 
 	//@}
 
@@ -170,6 +169,7 @@ private:
 	TSenderId		_SenderId;		// the same
 	bool			_IsListening;	// the same
 	CMsgSocket		*_OwnerClient;	// the same
+	TMsgCallback	_AuthCallback;	// the same
 
 };
 

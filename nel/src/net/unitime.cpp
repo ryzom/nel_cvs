@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.13 2000/12/11 11:46:58 lecroart Exp $
+ * $Id: unitime.cpp,v 1.14 2000/12/13 14:38:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/net/msg_socket.h"
 #include "nel/net/naming_client.h"
 
+#include "nel/misc/common.h"
 #include "nel/misc/time_nl.h"
 #include "nel/net/unitime.h"
 
@@ -134,7 +135,7 @@ const char *CUniTime::getStringUniTime ()
 
 	uint  year =  (uint32) ut;	// time in years
 
-	sprintf (str, "%02d/%02d/%04d (week %d) %02d:%02d:%02d.%03d", day+1, month+1, year, week, h, m, s, ms);
+	smprintf (str, 512, "%02d/%02d/%04d (week %d) %02d:%02d:%02d.%03d", day+1, month+1, year, week, h, m, s, ms);
 	return str;
 }
 

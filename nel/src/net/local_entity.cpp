@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.14 2000/11/30 17:03:10 cado Exp $
+ * $Id: local_entity.cpp,v 1.15 2000/12/13 14:38:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -212,6 +212,10 @@ void CLocalEntity::propagateState()
 		msgout.serial( *this );
 		ClientSocket->send( msgout );
 		nlinfo( "Entity State sent, with id %u", id() );
+		if ( ! groundMode() )
+		{
+			setGroundMode( true ); // enter ground mode after sending a full entity state
+		}
 	}
 
 	// Update local replica

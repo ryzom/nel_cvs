@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.36 2000/12/07 15:18:42 cado Exp $
+ * $Id: msg_socket.cpp,v 1.37 2000/12/13 14:38:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,14 +67,14 @@ typedef int SOCKET;
 namespace NLNET
 {
 
-bool					CMsgSocket::_Binded;
+bool					CMsgSocket::_Binded = false;
 CConnections			CMsgSocket::_Connections;
 CConnectionIterators	CMsgSocket::_ConnectionsToDelete;
-TSenderId				CMsgSocket::_SenderIdNb;
+TSenderId				CMsgSocket::_SenderIdNb = 0;
 long					CMsgSocket::_TimeoutS = 0;
 long					CMsgSocket::_TimeoutM = 0;
 
-bool					CMsgSocket::_ReceiveAll;
+bool					CMsgSocket::_ReceiveAll = true;
 
 const TCallbackItem		*CMsgSocket::_CallbackArray;
 TTypeNum				CMsgSocket::_CbaSize;
@@ -91,7 +91,7 @@ uint32					CMsgSocket::_PrevBytesSent = 0;
 CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, uint16 port ) :
 	_ClientSock( NULL )
 {
-	init( callbackarray, arraysize );
+	init( callbackarray, arraysize, false );
 	CSocket *listensock = new CSocket();
 	listensock->setListening( true );
 	addNewConnection( listensock );
@@ -110,7 +110,7 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 	_ServiceName ( service )
 {
 	nldebug("Trying to connect to the service \"%s\"", service.c_str());
-	init( callbackarray, arraysize );
+	init( callbackarray, arraysize, true );
 	connectToService();
 	addNewConnection( _ClientSock );
 }
@@ -121,7 +121,7 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
  */
 CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, const CInetAddress& servaddr )
 {
-	init( callbackarray, arraysize );
+	init( callbackarray, arraysize, true );
 	_ClientSock = new CSocket();
 	_ClientSock->setOwnerClient( this );
 	_ClientSock->setListening( false );
@@ -187,21 +187,30 @@ void CMsgSocket::connectToService()
 /*
  * Part of constructor contents
  */
-void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize )
+void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize, bool clientmode )
 {
-	_Binded = false;
-	_SenderIdNb = 0;
-	_ReceiveAll = true;
 	_PrevBytesReceivedFromHost = 0;
 	_PrevBytesSentToHost = 0;
-	_CallbackArray = callbackarray;
-	_CbaSize = arraysize;
-	
 	const TCallbackItem *pt;
-	for ( pt=callbackarray; pt<callbackarray+arraysize; pt++ )
+	if ( clientmode )
 	{
-		_SearchSet.insert( CPtCallbackItem(pt) );
+		_ClientCallbackArray = callbackarray;
+		_ClientCbaSize = arraysize;
+		for ( pt=callbackarray; pt<callbackarray+arraysize; pt++ )
+		{
+			_ClientSearchSet.insert( CPtCallbackItem(pt) );
+		}
 	}
+	else
+	{
+		_CallbackArray = callbackarray;
+		_CbaSize = arraysize;
+		for ( pt=callbackarray; pt<callbackarray+arraysize; pt++ )
+		{
+			_SearchSet.insert( CPtCallbackItem(pt) );
+		}
+	}
+	
 }
 
 
@@ -213,7 +222,7 @@ CMsgSocket::~CMsgSocket()
 	CConnections::iterator its;
 	for ( its=_Connections.begin(); its!=_Connections.end(); its++ )
 	{
-		delete *its;
+		delete (*its).second;
 	}
 }
 
@@ -307,8 +316,15 @@ void CMsgSocket::send( CMessage& outmsg )
 		catch ( ESocket& )
 		{
 			CConnections::iterator ilps = _Connections.begin();
-			ilps++; // no need to test the first one which is the listening socket
-			handleConnectionClosure( find( ilps, _Connections.end(), _ClientSock ) );
+			while ( ilps != _Connections.end() )
+			{
+				if ( (*ilps).second = _ClientSock )
+				{
+					handleConnectionClosure( ilps );
+					break;
+				}
+				++ilps;
+			}
 		}
 	}
 }
@@ -320,11 +336,11 @@ void CMsgSocket::send( CMessage& outmsg )
 void CMsgSocket::send( CMessage& outmsg, TSenderId id )
 {
 	CConnections::iterator ilps = iteratorFromId( id );
-	if ( (*ilps) != NULL )
+	if ( (*ilps).second != NULL )
 	{
 		try
 		{
-			(*ilps)->send( outmsg );
+			(*ilps).second->send( outmsg );
 		}
 		catch ( ESocket& )
 		{
@@ -348,7 +364,7 @@ void CMsgSocket::sendToAll( CMessage& outmsg )
 	{
 		for ( ilps++; ilps!=_Connections.end(); ++ilps ) // not including the first one which is the listening socket
 		{
-			(*ilps)->send( outmsg );
+			(*ilps).second->send( outmsg );
 		}
 	}
 	catch ( ESocket& )
@@ -368,9 +384,9 @@ void CMsgSocket::sendToAllExceptHost( CMessage& outmsg, TSenderId excluded )
 	{
 		for ( ilps++; ilps!=_Connections.end(); ++ilps ) // not including the first one which is the listening socket
 		{
-			if ( (*ilps)->senderId() != excluded )
+			if ( (*ilps).first != excluded )
 			{
-				(*ilps)->send( outmsg );
+				(*ilps).second->send( outmsg );
 			}
 		}
 	}
@@ -401,9 +417,9 @@ void CMsgSocket::update()
 		CConnections::iterator ilps;
 		for ( ilps=_Connections.begin(); ilps!=_Connections.end(); ++ilps ) // we don't check the newly added connections because their flag dataAvailable() is false
 		{
-			if ( (*ilps)->dataAvailable() )
+			if ( (*ilps).second->dataAvailable() )
 			{
-				if ( (*ilps)->isListening() )
+				if ( (*ilps).second->isListening() )
 				{
 					// Accept connection request
 					/* // Old code
@@ -416,7 +432,7 @@ void CMsgSocket::update()
 					processReceivedMessage( msgin, sock );*/
 					// New code
 					CMessage msgoutin( "C" );
-					CSocket& sock = accept( (*ilps)->descriptor() );
+					CSocket& sock = accept( (*ilps).second->descriptor() );
 					CInetAddress addr = sock.remoteAddr();
 					msgoutin.serial( addr );
 					msgoutin.invert(); // output msg -> input msg
@@ -428,18 +444,18 @@ void CMsgSocket::update()
 					{
 						// Receive message from a connected client
 						CMessage msg( "", true );
-						(*ilps)->receive( msg );
+						(*ilps).second->receive( msg );
 /*#ifdef NL_DEBUG
 						nb_recvd++;
 						bytes_recvd += msg.length();
 #endif*/
 						if ( msgIsBinding( msg ) )
 						{
-							(*ilps)->processBindMessage( msg );
+							(*ilps).second->processBindMessage( msg );
 						}
 						else 
 						{
-							if ( ! processReceivedMessage( msg, **ilps ) )
+							if ( ! processReceivedMessage( msg, *((*ilps).second) ) )
 							{
 								if ( msg.typeIsNumber() )
 								{
@@ -452,7 +468,7 @@ void CMsgSocket::update()
 							}
 						}
 						// Reset flag
-						(*ilps)->setDataAvailableFlag( false );
+						(*ilps).second->setDataAvailableFlag( false );
 					}
 					catch ( NLMISC::EStreamOverflow& )
 					{
@@ -467,6 +483,7 @@ void CMsgSocket::update()
 					catch ( ESocket& e )
 					{
 						// Handle an error or a non-graceful connection closure (when receive() throws an exception)
+						// or a denied access
 						nlwarning( "Closing connection: %s", e.what() );
 						handleConnectionClosure( ilps );
 					}
@@ -477,7 +494,7 @@ void CMsgSocket::update()
 		CConnectionIterators::iterator iilps;
 		for ( iilps=_ConnectionsToDelete.begin(); iilps!=_ConnectionsToDelete.end(); ++iilps )
 		{
-			delete *(*iilps);
+			delete (*(*iilps)).second;
 			_Connections.erase( *iilps );
 		}
 		_ConnectionsToDelete.clear();
@@ -527,8 +544,10 @@ CSocket& CMsgSocket::accept( SOCKET listen_descr ) throw (ESocket)
  */
 void CMsgSocket::addNewConnection( CSocket *connection )
 {
-	connection->setSenderId( newSenderId() );
-	_Connections.push_back( connection );
+	TSenderId id = CMsgSocket::newSenderId();
+	connection->setSenderId( id );
+	_Connections.insert( make_pair(id,connection) );
+	//nldebug( "Id: %d - Size: %d", id, _Connections.size() );
 }
 
 
@@ -537,17 +556,17 @@ void CMsgSocket::addNewConnection( CSocket *connection )
  */
 void CMsgSocket::handleConnectionClosure( const CConnections::iterator& ilps )
 {
-	if ( (*ilps)->connected() ) // if not, connection closure has already been handled
+	if ( (*ilps).second->connected() ) // if not, connection closure has already been handled
 	{
-		(*ilps)->close();
-		(*ilps)->setDataAvailableFlag( false );
-		(*ilps)->disable();
+		(*ilps).second->close();
+		(*ilps).second->setDataAvailableFlag( false );
+		(*ilps).second->disable();
 		CMessage msg( "D" );
-		processReceivedMessage( msg, **ilps );
-		if ( (*ilps)->ownerClient() != NULL )
+		processReceivedMessage( msg, *((*ilps).second) );
+		if ( (*ilps).second->ownerClient() != NULL )
 		{
 			// If the socket is pointed by a client socket, neutralize its property _ClientSock
-			(*ilps)->ownerClient()->_ClientSock = NULL;
+			(*ilps).second->ownerClient()->_ClientSock = NULL;
 		}
 		_ConnectionsToDelete.push_back( ilps );
 	}
@@ -571,23 +590,16 @@ bool CMsgSocket::getDataAvailableStatus()
 		FD_ZERO (&readers);
 		FD_ZERO (&writers);
 
-		// Add the listening socket
-		CConnections::iterator itps = _Connections.begin();
-		FD_SET( (*itps)->descriptor(), &readers );
-		if ( (*itps)->descriptor() > descmax )
+		// Add the listening socket and the connections
+		CConnections::iterator itps;
+		for ( itps = _Connections.begin(); itps!=_Connections.end(); ++itps )
 		{
-			descmax = (*itps)->descriptor();
-		}
-
-		// Add the connections
-		for ( itps++; itps!=_Connections.end(); ++itps )
-		{
-			if ( (*itps)->connected() ) // exclude disconnected sockets that are not deleted
+			if ( (*itps).second->isListening() || (*itps).second->connected() ) // exclude disconnected sockets that are not deleted
 			{
-				FD_SET( (*itps)->descriptor(), &readers );
-				if ( (*itps)->descriptor() > descmax )
+				FD_SET( (*itps).second->descriptor(), &readers );
+				if ( (*itps).second->descriptor() > descmax )
 				{
-					descmax = (*itps)->descriptor();
+					descmax = (*itps).second->descriptor();
 				}
 			}
 		}
@@ -607,7 +619,7 @@ bool CMsgSocket::getDataAvailableStatus()
 		// Get results
 		for ( itps = _Connections.begin(); itps!=_Connections.end(); itps++ )
 		{
-			(*itps)->setDataAvailableFlag( FD_ISSET( (*itps)->descriptor(), &readers ) != 0 );
+			(*itps).second->setDataAvailableFlag( FD_ISSET( (*itps).second->descriptor(), &readers ) != 0 );
 		}
 		return true;
 	}
@@ -640,13 +652,26 @@ bool CMsgSocket::msgIsBinding( const CMessage& msg )
  */
 bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 {
+	// Choose between per client and static callback management
+	CMsgSocket *clientsocket = sock.ownerClient();
+	TTypeNum&			the_cba_size = _CbaSize;
+	const TCallbackItem	*the_callback_array = _CallbackArray;
+	CSearchSet&			the_search_set = _SearchSet;
+	if ( clientsocket != NULL )
+	{
+		the_cba_size = clientsocket->_ClientCbaSize;
+		the_callback_array = clientsocket->_CallbackArray;
+		the_search_set = clientsocket->_ClientSearchSet;
+	}
+
+	// Callback management
 	if ( msg.typeIsNumber() )
 	{
 		TTypeNum num = msg.typeAsNumber();
-		if ( num < _CbaSize )
+		if ( num < the_cba_size )
 		{
 			// Call the callback by index
-			_CallbackArray[num].Callback( msg, sock.senderId() );
+			the_callback_array[num].Callback( msg, sock.senderId() );
 		}
 		else
 		{
@@ -658,8 +683,8 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 		// Get the callback by key string
 		TMsgCallback callback;
 		string s = msg.typeAsString();
-		CSearchSet::iterator its = _SearchSet.find( CPtCallbackItem( s.c_str() ) );
-		if ( its != _SearchSet.end() )
+		CSearchSet::iterator its = the_search_set.find( CPtCallbackItem( s.c_str() ) );
+		if ( its != the_search_set.end() )
 		{
 			callback = (*its).pt()->Callback;
 		}
@@ -682,7 +707,7 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 			if ( ! (*its).bindSent() )
 			{
 				CMessage bindmsg;
-				TTypeNum num = (*its).pt() - _CallbackArray;
+				TTypeNum num = (*its).pt() - the_callback_array;
 				bindmsg.setType( "B" );
 				bindmsg.serial( s );
 				bindmsg.serial( num );
@@ -691,8 +716,25 @@ bool CMsgSocket::processReceivedMessage( CMessage& msg, CSocket& sock )
 			}
 		}
 
-		// Call the callback function
-		callback( msg, sock.senderId() );
+		// Call the callback function if the connection is authorized to
+		if ( sock.authorizedCallback() != NULL )
+		{
+			// The access is restricted: only _AccessMap[id] may be called
+			if ( sock.authorizedCallback() == callback )
+			{
+				callback( msg, sock.senderId() );
+			}
+			else
+			{
+				// Disconnect
+				throw EAccessDenied( "Client is not allowed to send this message" );
+			}
+		}
+		else
+		{
+			// Access not restricted for id
+			callback( msg, sock.senderId() );
+		}
 	}
 	return true;
 }
@@ -722,7 +764,7 @@ bool CMsgSocket::callCallbackForOthers( CMessage& msg, CSocket& sock )
  */
 CSocket *CMsgSocket::socketFromId( TSenderId id )
 {
-	return *iteratorFromId( id );
+	return (*iteratorFromId( id )).second;
 }
 
 
@@ -731,15 +773,7 @@ CSocket *CMsgSocket::socketFromId( TSenderId id )
  */
 CConnections::iterator CMsgSocket::iteratorFromId( TSenderId id )
 {
-	CConnections::iterator itps;
-	for ( itps=_Connections.begin(); itps!=_Connections.end(); itps++ )
-	{
-		if ( (*itps)->senderId() == id )
-		{
-			return itps;
-		}
-	}
-	return _Connections.end();
+	return _Connections.find( id );
 }
 
 
@@ -752,9 +786,9 @@ const CInetAddress *CMsgSocket::listenAddress()
 	CConnections::iterator ips = _Connections.begin();
 	if ( ips!=_Connections.end() )
 	{
-		if ( (*ips)->isListening() )
+		if ( (*ips).second->isListening() )
 		{
-			return &((*ips)->localAddr());
+			return &(((*ips).second)->localAddr());
 		}
 		else
 		{
@@ -842,7 +876,7 @@ uint32 CMsgSocket::bytesReceived()
 	CConnections::iterator ic;
 	for ( ic=_Connections.begin(); ic!=_Connections.end(); ++ic )
 	{
-		sum += (*ic)->bytesReceived();
+		sum += (*ic).second->bytesReceived();
 	}
 	return sum;
 }
@@ -857,7 +891,7 @@ uint32 CMsgSocket::bytesSent()
 	CConnections::iterator ic;
 	for ( ic=_Connections.begin(); ic!=_Connections.end(); ++ic )
 	{
-		sum += (*ic)->bytesReceived();
+		sum += (*ic).second->bytesReceived();
 	}
 	return sum;
 }
@@ -884,6 +918,33 @@ uint CMsgSocket::newBytesSent()
 	uint nbrecvd = b - _PrevBytesSent;
 	_PrevBytesSent = b;
 	return nbrecvd;
+}
+
+
+/*
+ * Forbids to call a callback that is not the specified callback, for the specified connection
+ */
+void CMsgSocket::authorizeOnly( TMsgCallback callback, TSenderId idfrom )
+{
+	socketFromId( idfrom )->setAuthorizedCallback( callback );
+}
+
+
+/*
+ * Allows to call any callback, for the specified connection
+ */
+void CMsgSocket::authorizeAll( TSenderId idfrom )
+{
+	socketFromId( idfrom )->setAuthorizedCallback( NULL );
+}
+
+
+/*
+ * Returns a pointer to a client socket or NULL if id does not correspond to a client socket
+ */
+CMsgSocket *CMsgSocket::clientSocket( TSenderId id )
+{
+	return socketFromId( id )->ownerClient();
 }
 
 

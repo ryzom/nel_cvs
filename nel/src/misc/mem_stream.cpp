@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.18 2002/09/10 09:25:10 cado Exp $
+ * $Id: mem_stream.cpp,v 1.18.10.1 2003/08/05 14:47:15 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ void CMemStream::serialBuffer(uint8 *buf, uint len)
 	if ( isReading() )
 	{
 		// Check that we don't read more than there is to read
-		if ( lengthS()+len > lengthR() )
+		if ( lengthS()+len > length() ) // calls virtual length (cf. sub messages)
 		{
 			throw EStreamOverflow();
 		}
@@ -138,7 +138,7 @@ void CMemStream::serialBit(bool &bit)
 		if ( isReading() )
 		{
 			// Check that we don't read more than there is to read
-			if ( lengthS()+len > lengthR() )
+			if ( lengthS()+len > length() ) // calls virtual length (cf. sub messages)
 			{
 				throw EStreamOverflow();
 			}
@@ -218,6 +218,9 @@ bool CMemStream::seek (sint32 offset, TSeekOrigin origin) throw(EStream)
 }
 */
 
+/*
+ *
+ */
 void CMemStream::resize (uint32 size)
 {
 	if (size == length()) return;
@@ -296,7 +299,7 @@ uint CMemStream::serialSeparatedBufferIn( uint8 *buf, uint len )
 
 	// Check that we don't read more than there is to read
 	if ( ( _BufPos == _Buffer.getPtr()+_Buffer.size() ) || // we are at the end
-		 ( lengthS()+len+SEP_SIZE > lengthR() ) && (_Buffer[_Buffer.size()-1] != SEPARATOR ) ) // we are before the end
+		 ( lengthS()+len+SEP_SIZE > length() ) && (_Buffer[_Buffer.size()-1] != SEPARATOR ) ) // we are before the end // calls virtual length (cf. sub messages)
 	{
 		throw EStreamOverflow();
 	}

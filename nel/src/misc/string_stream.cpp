@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
  * Class CStringStream (plain text memory streams)
  *
- * $Id: string_stream.cpp,v 1.7 2001/07/04 08:34:23 lecroart Exp $
+ * $Id: string_stream.cpp,v 1.7.12.1 2003/08/05 14:47:15 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,7 @@ uint CStringStream::serialSeparatedBufferIn( uint8 *buf, uint len )
 
 	// Check that we don't read more than there is to read
 	if ( ( _BufPos == _Buffer.end() ) || // we are at the end
-		 ( lengthS()+len+SEP_SIZE > lengthR() ) && (_Buffer[_Buffer.size()-1] != SEPARATOR ) ) // we are before the end
+		 ( lengthS()+len+SEP_SIZE > length() ) && (_Buffer[_Buffer.size()-1] != SEPARATOR ) ) // we are before the end // calls virtual length (cf. sub messages)
 	{
 		throw EStreamOverflow();
 	}

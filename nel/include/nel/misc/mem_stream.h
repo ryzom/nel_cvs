@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.30 2003/07/31 11:06:28 cado Exp $
+ * $Id: mem_stream.h,v 1.30.2.1 2003/08/05 14:47:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -374,7 +374,7 @@ public:
 		{
 			// Check that we don't read more than there is to read
 			// TODO OPTIM we can remove the check if we want to be faster (50ms->43ms for 1 million serial)
-			if ( lengthS()+sizeof(T) > lengthR() )
+			if ( lengthS()+sizeof(T) > length() ) // calls virtual length (cf. sub messages)
 				throw EStreamOverflow();
 			// Serialize in
 			val = *(T*)_BufPos;
@@ -404,7 +404,7 @@ public:
 	{
 		//nldebug( "MEMSTREAM: Reading %u-byte value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
 		// Check that we don't read more than there is to read
-		if ( lengthS()+sizeof(value) > lengthR() )
+		if ( lengthS()+sizeof(value) > length() ) // calls virtual length (cf. sub messages)
 		{
 			throw EStreamOverflow();
 		}
@@ -503,10 +503,12 @@ protected:
 		return _BufPos - _Buffer.getPtr(); // not calling getPos() because virtual and not const!
 	}
 
-	/// Returns the "read" message size (number of bytes to read)
+	/**
+	 * Returns the "read" message size (number of bytes to read)
+	 * Do not use directly, use length() instead in reading mode (which is virtual)
+	 */
 	uint32			lengthR() const
 	{
-//		return _BufPos-_Buffer.getPtr();
 		return size();
 	}
 

@@ -584,7 +584,6 @@
 #define IDC_HEIGHT                      1365
 #define IDC_BYPASS_MAX_NUM_STEPS        1366
 #define IDC_MAX_DIST_BIAS_TEXT          1367
-#define IDC_INVALID_BUILD               1367
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -686,12 +685,8 @@
 #define ID_BUTTON32852                  32852
 #define IDS_BAD_FD_VALUE                32853
 #define IDS_CAPTION_ERROR               32854
-#define IDS_VERTICES                    32855
-#define IDS_SHAPE_FILE_NOT_MESH         32856
 #define IDM_SOUND                       32857
-#define IDS_SHAPE_NOT_LOADED            32857
 #define ID_HELP_ABOUTOBJECTVIEWER       32858
-#define IDS_TOO_MUCH_VERTICES           32858
 #define IDM_LB_EXTERN_ID                32859
 #define ID_FILE_BINDSCENEANIMATION      32861
 #define IDM_SET_FRAME_DELAY             32862
@@ -760,7 +755,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1129
 #define _APS_NEXT_COMMAND_VALUE         32957
-#define _APS_NEXT_CONTROL_VALUE         1368
+#define _APS_NEXT_CONTROL_VALUE         1367
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

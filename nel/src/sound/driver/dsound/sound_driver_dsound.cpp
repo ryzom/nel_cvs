@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.2 2002/05/27 09:35:57 hanappe Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.3 2002/05/27 16:17:06 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,6 +158,8 @@ CSoundDriverDSound::CSoundDriverDSound() : ISoundDriver()
  */
 CSoundDriverDSound::~CSoundDriverDSound()
 {
+	nldebug("Destroying DirectSound driver");
+
     if (_TimerID != NULL)
     {
         timeKillEvent(_TimerID);
@@ -587,7 +589,6 @@ IBuffer *CSoundDriverDSound::createBuffer()
  */
 void CSoundDriverDSound::removeBuffer(IBuffer *buffer)
 {
-	delete buffer;
 }
 
 
@@ -617,6 +618,7 @@ ISource *CSoundDriverDSound::createSource()
     {
         if ((_Sources[i] != NULL) && _Sources[i]->isStopped())
         {
+			_Sources[i]->reset();
             return _Sources[i];
         }
     }

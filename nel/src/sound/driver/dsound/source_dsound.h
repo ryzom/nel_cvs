@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.1 2002/05/24 16:50:48 hanappe Exp $
+ * $Id: source_dsound.h,v 1.2 2002/05/27 16:17:06 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -209,6 +209,9 @@ public:
     /// Returns the buffer associated with this source. 
     IBuffer *getBuffer();
 
+	// Reset the source before reuse
+	void reset();
+
 
 
 private:
@@ -230,8 +233,6 @@ private:
 
     // The length of the crossfade, in samples
     static uint32 _XFadeSize;
-
-
 
 	// Utility function that locks the DirectSound buffer and restores it if it was lost.
 	bool lock(uint32 writePos, uint32 size, uint8* &ptr1, DWORD &bytes1, uint8* &ptr2, DWORD &bytes2);
@@ -314,6 +315,9 @@ private:
 	// field is used to keep a trace of the whereabouts of the play cursor.
 	TSourceDSoundEndState _EndState;
 
+
+	// The frequency of the source [0,10], i.e. slowed down or accelerated
+	float _Freq;
 
 
 #if NLSOUND_PROFILE

@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.2 2002/05/27 09:35:57 hanappe Exp $
+ * $Id: source_dsound.cpp,v 1.3 2002/05/27 16:17:06 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,6 +111,7 @@ CSourceDSound::CSourceDSound( uint sourcename ) : _SourceName(sourcename)
     _EndPosition = 0;
 	_EndState = NL_DSOUND_TAIL1;
 	_UserState = NL_DSOUND_STOPPED;
+	_Freq = 1.0f;
     InitializeCriticalSection(&_CriticalSection);
 }
 
@@ -120,7 +121,9 @@ CSourceDSound::CSourceDSound( uint sourcename ) : _SourceName(sourcename)
  */
 CSourceDSound::~CSourceDSound()
 {
-    if (_3DBuffer != NULL)
+	nldebug("Destroying DirectSound source");
+
+	if (_3DBuffer != NULL)
     {
         _3DBuffer->Release();
     }
@@ -130,6 +133,7 @@ CSourceDSound::~CSourceDSound()
         _SecondaryBuffer->Stop();
         _SecondaryBuffer->Release();
     }
+
 
     DeleteCriticalSection(&_CriticalSection);
 }
@@ -242,6 +246,17 @@ void CSourceDSound::init(LPDIRECTSOUND directSound)
 
 }
 
+/** 
+ *  Reset the source before reuse
+ */
+void CSourceDSound::reset()
+{
+	setPitch(1.0f);
+	setLooping(false);
+	setGain(1.0f);
+}
+
+
 /* Set the buffer that will be played (no streaming)
  * If the buffer is stereo, the source mode becomes stereo and the source relative mode is on,
  * otherwise the source is considered as a 3D source.
@@ -293,6 +308,7 @@ void CSourceDSound::play()
 			_SwapBuffer = 0;
 			_BytesWritten = 0;
 
+			setPitch(_Freq);
 			fadeIn();
 		}
 		else 
@@ -305,6 +321,7 @@ void CSourceDSound::play()
 		_UserState = NL_DSOUND_PLAYING;
 		DBGPOS(("PLAY: PLAYING"));
 
+		setPitch(_Freq);
 		fadeIn();
 	}
 
@@ -679,6 +696,8 @@ float CSourceDSound::getGain() const
  */
 void CSourceDSound::setPitch( float coeff )
 {
+	_Freq = coeff;
+
 	if ((_Buffer != 0) && (_SecondaryBuffer != 0))
 	{
 		TSampleFormat format;
@@ -836,10 +855,16 @@ void CSourceDSound::setCone( float innerAngle, float outerAngle, float outerGain
 		// Set the cone angles
 
 		// Convert from radians to degrees
-		DWORD inner = (DWORD)(Pi * innerAngle / 180.0);
-		DWORD outer = (DWORD)(Pi * outerAngle / 180.0);
+		DWORD inner = (DWORD)(180.0 * innerAngle / Pi);
+		DWORD outer = (DWORD)(180.0 * outerAngle / Pi);
+
 
 		// Sanity check: wrap the angles in the [0,360] interval
+		if (outer < inner)
+		{
+			outer = inner;
+		}
+
 		while (inner < DS3D_MINCONEANGLE) 
 		{
 			inner += 360;

@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.1 2002/05/24 16:50:48 hanappe Exp $
+ * $Id: buffer_dsound.cpp,v 1.2 2002/05/27 16:17:06 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,8 @@ CBufferDSound::CBufferDSound( uint buffername )
 
 CBufferDSound::~CBufferDSound()
 {
+	nldebug("Destroying DirectSound buffer");
+
     if (_Data != NULL)
     {
         delete[] _Data;

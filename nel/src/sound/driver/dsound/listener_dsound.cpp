@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.2 2002/05/27 09:35:57 hanappe Exp $
+ * $Id: listener_dsound.cpp,v 1.3 2002/05/27 16:17:06 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,8 @@ CListenerDSound::CListenerDSound(LPDIRECTSOUND3DLISTENER dsoundListener) //: ILi
 
 CListenerDSound::~CListenerDSound()
 {
+	nldebug("Destroying DirectSound listener");
+
     if (_Listener != NULL)
     {
         _Listener->Release();

@@ -213,6 +213,33 @@ fn buildTransitionMatrix mt transitionZone cellSize =
 	return translate copyMt ( (TransitionPos[transitionZone] * cellSize) + backupPos)
 )
 
+fn buildTransitionMatrixObj mt transitionZone cellSize =
+(
+	-- Place at the origine
+	copyMt = transMatrix (TransitionPos[transitionZone] * cellSize)
+
+	-- Center the zone
+	copyMt = translate copyMt [-cellSize/2, -cellSize/2, 0]
+
+	-- Scale ?
+	if TransitionScale[transitionZone] == true then
+	(
+		copyMt = scale copyMt [-1,1,1] true
+	)
+
+	-- Rotate
+	if TransitionRot[transitionZone] != 0 then
+	(
+		copyMt = rotateZ copyMt (90*TransitionRot[transitionZone])
+	)
+
+	-- Translation
+	copyMt = translate copyMt [cellSize/2,cellSize/2,0]
+
+	-- Compose
+	return (mt * copyMt)
+)
+
 -- Export instance groups from the current loaded zone
 fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSize = 
 (
@@ -238,7 +265,7 @@ fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSi
 			if ( ig == IgName) then
 			(
 				-- Transform the object
-				node.transform = buildTransitionMatrix node.transform transitionZone cellSize
+				node.transform = buildTransitionMatrixObj node.transform transitionZone cellSize
 			)
 
 			-- Found ?
@@ -271,7 +298,7 @@ fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSi
 			if ( ig == IgName) then
 			(
 				-- Transform the object
-				node.transform = buildTransitionMatrix node.transform transitionZone cellSize
+				node.transform = buildTransitionMatrixObj node.transform transitionZone cellSize
 			)
 
 			-- Found ?
@@ -303,7 +330,7 @@ fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSi
 			if (ig == IgName) then
 			(
 				-- Transform the object
-				node.transform = buildTransitionMatrix node.transform transitionZone cellSize
+				node.transform = buildTransitionMatrixObj node.transform transitionZone cellSize
 			)
 
 			-- Found ?
@@ -365,7 +392,7 @@ fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSi
 							selectmore node
 					)
 					-- Check export
-					-- try
+					try
 					(
 						-- Export the ig
 						instancegroup2export = $selection as array
@@ -379,10 +406,10 @@ fn exportInstanceGroupFromZone inputFile outputPath igName transitionZone cellSi
 							nlerror ("ERROR exporting ig "+ig_array[ig]+" in file "+inputFile)
 						)
 					)
-					-- catch
+					catch
 					(
 						-- Error
-					--	nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+inputFile)
+						nlerror ("ERROR fatal error exporting ig "+ig_array[ig]+" in file "+inputFile)
 					)
 				)
 				else
@@ -412,7 +439,7 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 
 -- EXPORT ZONES
 
--- try
+try
 (
 	-- Set the bank pathname
 	bank_filename = "bankFilename"
@@ -461,7 +488,7 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 						dstFileName = ligo_export_path + tokenArray[2] + "-" + tokenArray[3] + ".ligozone"
 
 						-- Error catching
-						-- try
+						try
 						(							
 							-- export ligo zone
 							if (NeLLigoExportZone $ dstFileName props false false) then
@@ -474,29 +501,29 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 							)							
 							
 						)
-						-- catch
+						catch
 						(
 							-- Error
-						--	nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 						)
 
 						-- export matching igs
-						-- try
+						try
 						(
 							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
 						)
-						-- catch
+						catch
 						(
-						-- 	nlerror("couldn't export ig for " + curFileName)
+							nlerror("couldn't export ig for " + curFileName)
 						)
 						-- export collisions
-						-- try
+						try
 						(
 							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
 						)
-						--catch
+						catch
 						(
-							-- nlerror("couldn't export collision for " + curFileName)
+							nlerror("couldn't export collision for " + curFileName)
 						)
 
 					)
@@ -644,7 +671,7 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 								-- Export the zone
 
 								-- Error catching
-								-- try
+								try
 								(
 									-- nlerror ("EXPORT "+ (getFilenameFile filename))
 									if (NeLLigoExportZone c filename props false false) then
@@ -656,29 +683,29 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 										nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile filename))
 									)
 								)
-								-- catch
+								catch
 								(
 									-- Error
-								--	nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+									nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 								)
 
 								-- export igs
-								-- try
+								try
 								(
 									exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") (lowercase (zoneBaseName)) zone cellSize
 								)
-								-- catch
+								catch
 								(
-									-- nlerror("couldn't export ig for " + curFileName)
+									nlerror("couldn't export ig for " + curFileName)
 								)
 								-- export collisions
-								-- try
+								try
 								(
 									exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
 								)
-								-- catch
+								catch
 								(
-									-- nlerror("couldn't export collision for " + curFileName)
+									nlerror("couldn't export collision for " + curFileName)
 								)
 
 								-- Delete
@@ -736,7 +763,7 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 						dstFileName = ligo_export_path + tokenArray[2] + ".ligozone"
 
 						-- Error catching
-						-- try
+						try
 						(
 							if (NeLLigoExportZone $ dstFileName props false false) then
 							(
@@ -747,30 +774,30 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 								nlerror ("ERROR Error exporting ligo zone from file "+ (getFilenameFile curFileName))
 							)
 						)
-						-- catch
+						catch
 						(
 							-- Error
-						--	nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
+							nlerror ("ERROR fatal error exporting ligo zone "+curFileName)
 						)
 
 						-- export matching igs
-						-- try
+						try
 						(
 							exportInstanceGroupFromZone curFileName (ligo_export_path + "igs\\") "" 0 cellSize
 						)
-						-- catch
+						catch
 						(
-						--	nlerror("couldn't export ig for " + curFileName)
+							nlerror("couldn't export ig for " + curFileName)
 						)
 	
 						-- export collisions
-						-- try
+						try
 						(
 							exportCollisionsFromZone (ligo_export_path + "cmb\\") curFileName
 						)
-						-- catch
+						catch
 						(
-						-- 	nlerror("couldn't export collision for " + curFileName)
+							nlerror("couldn't export collision for " + curFileName)
 						)
 
 
@@ -785,10 +812,10 @@ MaxFilesList = getFiles (ligo_root_path + "*.max")
 		)
 	)
 )
--- catch 
+catch 
 (
 	-- Error
-	-- nlerror ("ERROR fatal error exporting ligo zone in folder"+ligo_root_path)
+	nlerror ("ERROR fatal error exporting ligo zone in folder"+ligo_root_path)
 )
 
 

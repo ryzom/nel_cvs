@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.6 2000/12/08 10:34:46 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.7 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,9 +65,11 @@ public:
 	/// The visibility flag. In the root case, Herit means Show.
 	enum	TVisibility
 	{
-		Show,		// The model is shown in hte hierarchy
+		Show=0,		// The model is shown in hte hierarchy
 		Hide,		// The model is hidden in hte hierarchy
-		Herit		// The model herit the visibilty from his father
+		Herit,		// The model herit the visibilty from his father
+
+		VisibilityCount
 	};
 
 public:

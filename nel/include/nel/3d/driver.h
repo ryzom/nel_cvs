@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.55 2001/02/23 09:05:46 corvazier Exp $
+ * $Id: driver.h,v 1.56 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,8 +36,8 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/uv.h"
 #include "nel/3d/texture.h"
-#include "nel/3d/uv.h"
 
 #include <vector>
 #include <list>
@@ -122,7 +122,7 @@ protected:
 	typedef	TVBDrvInfoPtrList::iterator				ItVBDrvInfoPtrList;
 
 public:
-	enum TMessageBoxId { okId=0, yesId, noId, abortId, retryId, cancelId, ignoreId };
+	enum TMessageBoxId { okId=0, yesId, noId, abortId, retryId, cancelId, ignoreId, idCount };
 	enum TMessageBoxType { okType=0, okCancelType, yesNoType, abortRetryIgnoreType, yesNoCancelType, retryCancelType, typeCount };
 	enum TMessageBoxIcon { noIcon=0, handIcon, questionIcon, exclamationIcon, asteriskIcon, warningIcon, errorIcon, informationIcon, stopIcon, iconCount };
 
@@ -131,7 +131,7 @@ public:
 	  *
 	  * \see setPolygonMode, getPolygonMode
 	  */
-	enum TPolygonMode { Filled, Line, Point };
+	enum TPolygonMode { Filled=0, Line, Point };
 
 protected:
 	TTexDrvInfoPtrMap		_TexDrvInfos;

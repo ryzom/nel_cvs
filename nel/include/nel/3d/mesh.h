@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.7 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: mesh.h,v 1.8 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,8 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/shape.h"
 #include "nel/3d/driver.h"
-#include "nel/3d/aabbox.h"
-#include "nel/3d/uv.h"
+#include "nel/misc/aabbox.h"
+#include "nel/misc/uv.h"
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/material.h"
 #include "nel/3d/primitive_block.h"
@@ -65,7 +65,7 @@ public:
 	{
 		sint		Vertex;		/// The vertex Id.
 		CVector		Normal;
-		CUV			Uvs[IDRV_VF_MAXSTAGES];
+		NLMISC::CUV			Uvs[IDRV_VF_MAXSTAGES];
 		CRGBA		Color;
 		CRGBA		Specular;
 		float		Weights[IDRV_VF_MAXW];
@@ -119,7 +119,7 @@ public:
 	virtual void	render(IDriver *drv);
 
 	/// get the extended axis aligned bounding box of the mesh
-	const CAABBoxExt& getBoundingBox() const
+	const NLMISC::CAABBoxExt& getBoundingBox() const
 	{
 		return _BBox;
 	}
@@ -154,7 +154,7 @@ private:
 	/// The face.
 	std::vector<CRdrPass>	_RdrPass;
 	/// For clipping.
-	CAABBoxExt				_BBox;
+	NLMISC::CAABBoxExt				_BBox;
 
 
 private:

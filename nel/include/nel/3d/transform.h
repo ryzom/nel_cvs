@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.8 2001/02/12 14:20:25 corvazier Exp $
+ * $Id: transform.h,v 1.9 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,20 @@ public:
 	void		heritVisibility();
 	/// Get the local visibility state.
 	CHrcTrav::TVisibility	getVisibility() {return Visibility;}
+
+
+	/// \name Misc
+	// @{
+	/** 
+	  * Setup Matrix by the lookAt method.
+	  * 
+	  * \param eye is the coordinate of the object.
+	  * \param target is the point the object look at.
+	  * \param roll is the roll angle in radian along the object's Y axis.
+	  */
+	void		lookAt (const CVector& eye, const CVector& target, float roll=0.f);
+	// @}
+
 
 public:
 	/// \name Herited from IAnimatable

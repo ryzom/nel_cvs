@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.4 2001/02/05 10:09:35 coutelas Exp $
+ * $Id: vertex_buffer.h,v 1.5 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 namespace NLMISC 
 {
 	class CVector;
+	class CUV;
 }
 
 
@@ -45,8 +46,8 @@ using NLMISC::CRefCount;
 using NLMISC::CRefPtr;
 using NLMISC::CRGBA;
 using NLMISC::CVector;
+using NLMISC::CUV;
 
-class CUV;
 
 // --------------------------------------------------
 

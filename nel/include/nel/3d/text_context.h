@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.18 2001/02/27 15:13:38 coutelas Exp $
+ * $Id: text_context.h,v 1.19 2001/02/28 14:21:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,9 +29,6 @@
 #include "nel/3d/font_manager.h"
 #include "nel/3d/font_generator.h"
 #include "nel/3d/computed_string.h"
-#include "nel/3d/primitive_block.h"
-#include "nel/3d/material.h"
-#include "nel/3d/nelu.h"
 
 
 namespace NL3D {
@@ -46,8 +43,11 @@ namespace NL3D {
  */
 class CTextContext
 {
+	/// Driver
+	IDriver		*_Driver;
+
 	/// font manager
-	NL3D::CFontManager _FontManager;
+	NL3D::CFontManager	*_FontManager;
 	
 	/// font generator
 	NL3D::CFontGenerator * _FontGen;
@@ -91,6 +91,9 @@ public:
 	/// Constructor
 	CTextContext()
 	{
+		_Driver= NULL;
+		_FontManager= NULL;
+
 		_FontGen = NULL;
 
 		_FontSize = 12;
@@ -110,7 +113,15 @@ public:
 		_Shaded = false;
 		_ShadeExtent = 0.001f;
 	}
-	
+
+	/// set the driver.
+	void	init(IDriver *drv, CFontManager *fmg)
+	{
+		nlassert(drv && fmg);
+		_Driver= drv;
+		_FontManager= fmg;
+	}
+
 	/**
 	 * init the font generator. Must be called before any print
 	 * \param (cf CFontGenerator constructor parameters)
@@ -120,18 +131,6 @@ public:
 		_FontGen = new NL3D::CFontGenerator(fontFileName, fontExFileName);
 	}
 
-	/**
-	 * set the FontManager max memory.
-	 */
-	void	setMaxMemory(uint maxMem)
-	{
-		_FontManager.setMaxMemory(maxMem);
-	}
-
-	std::string getCacheInformation() const
-	{
-		return _FontManager.getCacheInformation();
-	}
 
 	/**
 	 * set the font color
@@ -251,7 +250,7 @@ public:
 		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
 		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
+		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr);
 		_MaxIndex++;
 		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
 		return _MaxIndex;
@@ -267,7 +266,7 @@ public:
 		nlassert(_FontGen);
 
 		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
+		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr);
 		_MaxIndex++;
 		_StringList.insert(std::make_pair(_MaxIndex,cptdstr));
 		return _MaxIndex;
@@ -297,6 +296,7 @@ public:
 	void printAt(float x, float z, uint32 i)
 	{
 		std::map<uint32,CComputedString>::iterator itstr = _StringList.find(i);
+		nlassert(itstr!= _StringList.end());
 		
 		(*itstr).second.render2D(*NL3D::CNELU::Driver,
 								x,z,
@@ -313,8 +313,16 @@ public:
 	void printAt(float x, float z, ucstring ucstr)
 	{
 		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(ucstr,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
-		cptdstr.render2D(*NL3D::CNELU::Driver,
+
+		if(_Shaded)
+		{
+			NL3D::CComputedString cptdstr1;
+			_FontManager->computeString(ucstr,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,cptdstr1);
+			cptdstr1.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+		}
+
+		_FontManager->computeString(ucstr,_FontGen,_Color,_FontSize,_Driver,cptdstr);
+		cptdstr.render2D(*_Driver,
 							x,z,
 							_HotSpot,
 							_ScaleX,_ScaleZ);
@@ -335,13 +343,13 @@ public:
 		if(_Shaded)
 		{
 			NL3D::CComputedString cptdstr1;
-			_FontManager.computeString(str,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,NL3D::CNELU::Driver,cptdstr1);
-			cptdstr1.render2D(*NL3D::CNELU::Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
+			_FontManager->computeString(str,_FontGen,NLMISC::CRGBA(0,0,0),_FontSize,_Driver,cptdstr1);
+			cptdstr1.render2D(*_Driver,x+_ShadeExtent,z-_ShadeExtent,_HotSpot,_ScaleX,_ScaleZ);
 		}
 
 		NL3D::CComputedString cptdstr2;
-		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr2);
-		cptdstr2.render2D(*NL3D::CNELU::Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
+		_FontManager->computeString(str,_FontGen,_Color,_FontSize,_Driver,cptdstr2);
+		cptdstr2.render2D(*_Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
 
 		_XBound = x + cptdstr2.StringWidth;
 	}
@@ -366,7 +374,7 @@ public:
 	 */
 	void computeString(const std::string& s, CComputedString& output)
 	{
-		_FontManager.computeString(s,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,output);
+		_FontManager->computeString(s,_FontGen,_Color,_FontSize,_Driver,output);
 	}
 
 	/**
@@ -377,7 +385,7 @@ public:
 	 */
 	void computeString(const ucstring& s, CComputedString& output)
 	{
-		_FontManager.computeString(s,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,output);
+		_FontManager->computeString(s,_FontGen,_Color,_FontSize,_Driver,output);
 	}
 
 	/**

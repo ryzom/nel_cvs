@@ -1,7 +1,7 @@
 /** \file tess_block.h
  * <File description>
  *
- * $Id: tess_block.h,v 1.1 2001/02/20 11:03:39 berenguier Exp $
+ * $Id: tess_block.h,v 1.2 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/tessellation.h"
-#include "nel/3d/aabbox.h"
-#include "nel/3d/bsphere.h"
+#include "nel/misc/aabbox.h"
+#include "nel/misc/bsphere.h"
 #include <list>
 
 
@@ -52,8 +52,8 @@ class CTessBlock
 {
 private:
 	// Clip info.
-	CAABBox		BBox;
-	CBSphere	BSphere;
+	NLMISC::CAABBox		BBox;
+	NLMISC::CBSphere	BSphere;
 	bool		Empty;			// empty bbox? (first extend).
 
 public:

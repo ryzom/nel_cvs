@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.32 2001/02/22 13:40:53 berenguier Exp $
+ * $Id: patch.h,v 1.33 2001/02/28 14:21:00 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -33,8 +33,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/3d/tessellation.h"
-#include "nel/3d/aabbox.h"
-#include "nel/3d/bsphere.h"
+#include "nel/misc/aabbox.h"
+#include "nel/misc/bsphere.h"
 #include "nel/3d/tile_element.h"
 #include "nel/3d/tile_color.h"
 #include "nel/3d/tile_lumel.h"
@@ -216,6 +216,9 @@ public:
 	 * NB: neighbor patchs must not be NULL (but according to NPatchs).
 	 */
 	void			bind(CBindInfo	Edges[4]);
+
+	/// For changing TileMaxSubdivision. force tesselation to be under tile.
+	void			forceMergeAtTileLevel();
 
 
 	/// Classify this patch as UnClipped.

@@ -1,7 +1,7 @@
 /** \file material.h
  * <File description>
  *
- * $Id: material.h,v 1.11 2001/01/23 15:39:41 berenguier Exp $
+ * $Id: material.h,v 1.12 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,9 +82,9 @@ class CMaterial : public CRefCount
 {
 public:
 
-	enum ZFunc				{ always,never,equal,notequal,less,lessequal,greater,greaterequal };
-	enum TBlend				{ one, zero, srcalpha, invsrcalpha, srccolor, invsrccolor };
-	enum TShader			{ Normal, Bump};
+	enum ZFunc				{ always=0,never,equal,notequal,less,lessequal,greater,greaterequal, zfuncCount };
+	enum TBlend				{ one=0, zero, srcalpha, invsrcalpha, srccolor, invsrccolor, blendCount };
+	enum TShader			{ Normal=0, Bump, shaderCount};
 
 	/// \name Texture Env Modes.
 	// @{

@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.9 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: camera.h,v 1.10 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_CAMERA_H
 #define NL_CAMERA_H
 
-#include "nel/3d/transform.h"
 #include "nel/3d/frustum.h"
+#include "nel/3d/transform.h"
 
 
 namespace	NL3D
@@ -84,15 +84,6 @@ public:
 	 */
 	void		setPerspective(float fov, float aspectRatio, float znear, float zfar);
 
-
-	/** 
-	  * Setup camera by the lookAt method. Yes Lionel, it's really usefull!!
-	  * 
-	  * \param eye is the coordinate of the camera.
-	  * \param target is the point the camera look at.
-	  * \param roll is the roll angle in radian along the camera's Y axis.
-	  */
-	void		lookAt (const CVector& eye, const CVector& target, float roll=0.f);
 
 
 protected:

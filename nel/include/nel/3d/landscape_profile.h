@@ -1,7 +1,7 @@
 /** \file landscape_profile.h
  * Yoyo: for landscape profile only.
  *
- * $Id: landscape_profile.h,v 1.2 2001/02/20 11:03:39 berenguier Exp $
+ * $Id: landscape_profile.h,v 1.3 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 // Yoyo: hide this if do not want to profile landscape.
 #define		NL3D_PROFILE_LAND
 // Hidden in release.
-// TODODO
+// TempYoyo
 /*#ifdef NL_RELEASE
 #undef		NL3D_PROFILE_LAND
 #endif*/

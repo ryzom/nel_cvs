@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.12 2001/01/05 18:44:40 coutelas Exp $
+ * $Id: computed_string.h,v 1.13 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,7 @@ public:
 	 */
 	enum THotSpot 
 	{
-		BottomLeft,
+		BottomLeft=0,
 		MiddleLeft, 
 		TopLeft,
 		MiddleBottom, 
@@ -82,7 +82,9 @@ public:
 		MiddleTop, 
 		BottomRight, 
 		MiddleRight,
-		TopRight
+		TopRight,
+
+		HotSpotCount
 	};
 
 	/**

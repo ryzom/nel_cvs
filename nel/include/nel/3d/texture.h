@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.23 2001/01/22 15:32:05 lecroart Exp $
+ * $Id: texture.h,v 1.24 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,13 +30,16 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/rect.h"
-#include "nel/3d/bitmap.h"
+#include "nel/misc/bitmap.h"
 #include <string>
 #include <list>
 
 
 namespace NL3D 
 {
+
+
+using NLMISC::CBitmap;
 
 
 //****************************************************************************
@@ -76,10 +79,14 @@ public:
 class ITexture : public CBitmap, public NLMISC::CRefCount, public NLMISC::IStreamable
 {
 public:
+	// Those enums MUST be the same than in UTexture!!
+
 	enum	TWrapMode
 	{
 		Repeat= 0,
-		Clamp
+		Clamp,
+
+		WrapModeCount
 	};
 
 	enum	TUploadFormat
@@ -96,7 +103,9 @@ public:
 		DXTC5,
 		Luminance,
 		Alpha,
-		AlphaLuminance
+		AlphaLuminance,
+
+		UploadFormatCount
 	};
 
 
@@ -106,7 +115,9 @@ public:
 	enum	TMagFilter
 	{
 		Nearest=0,
-		Linear
+		Linear,
+
+		MagFilterCount
 	};
 
 	/** Minifying mode.
@@ -120,6 +131,8 @@ public:
 		LinearMipMapOff,
 		LinearMipMapNearest,
 		LinearMipMapLinear,
+
+		MinFilterCount
 	};
 
 

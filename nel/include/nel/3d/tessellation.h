@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.27 2001/02/20 14:19:48 berenguier Exp $
+ * $Id: tessellation.h,v 1.28 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
-#include "nel/3d/uv.h"
-#include "nel/3d/bsphere.h"
+#include "nel/misc/uv.h"
+#include "nel/misc/bsphere.h"
 #include "nel/3d/tess_list.h"
 
 
@@ -40,6 +40,7 @@ namespace	NL3D
 using NLMISC::CVector;
 using NLMISC::CPlane;
 using NLMISC::CMatrix;
+using NLMISC::CUV;
 
 
 class	CPatch;
@@ -285,6 +286,9 @@ public:
 	bool			updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted);
 	void			updateBind();
 	void			updateBindAndSplit();
+	// Used by CPatch::forceMergeAtTileLevel(). force the merging of face (as possible).
+	void			forceMergeAtTileLevel();
+
 
 	// Used by CZone::changePatchTexture().
 	void			deleteTileUvs();
@@ -317,9 +321,9 @@ public:
 	// The tiles are not subdivided above this limit (but because of enforced splits). Default: 4 => 50cm.
 	static	sint	TileMaxSubdivision;
 	// The sphere for TileFar test.
-	static	CBSphere	TileFarSphere;
+	static	NLMISC::CBSphere	TileFarSphere;
 	// The sphere for TileNear test.
-	static	CBSphere	TileNearSphere;
+	static	NLMISC::CBSphere	TileNearSphere;
 	// The size of a 128x128 tile, in pixel. UseFull for HalfPixel Scale/Bias.
 	static	float		TilePixelSize;
 

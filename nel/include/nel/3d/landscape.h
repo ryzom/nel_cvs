@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.36 2001/02/22 13:41:25 berenguier Exp $
+ * $Id: landscape.h,v 1.37 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,10 +30,10 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/class_id.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/misc/triangle.h"
 #include "nel/3d/zone.h"
 #include "nel/3d/tile_bank.h"
 #include "nel/3d/patch_rdr_pass.h"
-#include "nel/3d/triangle.h"
 #include "nel/3d/vertex_buffer.h"
 #include "nel/3d/primitive_block.h"
 #include "nel/3d/material.h"
@@ -176,6 +176,11 @@ public:
 	float			getThreshold () const	{return _Threshold;}
 	void			setRefineMode(bool enabled) {_RefineMode= enabled;}
 	bool			getRefineMode() const {return _RefineMode;}
+	/// Set Maximum Tile subdivision. Valid values must be in [0..4]  (assert). Default is 0 (for now :) ).
+	void			setTileMaxSubdivision (uint tileDiv);
+	/// Get Maximum Tile subdivision.
+	uint 			getTileMaxSubdivision ();
+
 	// TODO: other landscape param setup (Transition etc...).
 	// Store it by landscape, and not only globally in CTessFace statics.
 	// @}
@@ -280,6 +285,8 @@ private:
 
 	// release Far render pass/reset Tile/Far render.
 	void			resetRenderFar();
+	/// For changing TileMaxSubdivision. force tesselation to be under tile.
+	void			forceMergeAtTileLevel();
 
 	// Update globals value to CTessFace
 	void updateGlobals (const CVector &refineCenter) const;
@@ -292,6 +299,7 @@ private:
 	float			_Threshold;
 	bool			_RefineMode;
 	float			_FarTransition;
+	uint			_TileMaxSubdivision;
 
 	// The temp VB for tiles and far passes.
 	CVertexBuffer	FarVB;

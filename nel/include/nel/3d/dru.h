@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.17 2001/02/23 09:05:29 corvazier Exp $
+ * $Id: dru.h,v 1.18 2001/02/28 14:21:00 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,8 +30,8 @@
 #include "nel/misc/common.h"
 #include "nel/3d/driver.h"
 #include "nel/3d/viewport.h"
-#include "nel/3d/triangle_ext.h"
-#include "nel/3d/line.h"
+#include "nel/misc/geom_ext.h"
+#include "nel/misc/line.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -132,14 +132,14 @@ public:
 	 */
 	// @{
 	/// Draw the triangles, with Vertex and 1 UV. "mat" should not be a lighted material since no normal is computed.
-	static void			drawTrianglesUnlit(const CTriangleUV	*trilist, sint ntris, CMaterial &mat, IDriver& driver);
+	static void			drawTrianglesUnlit(const NLMISC::CTriangleUV	*trilist, sint ntris, CMaterial &mat, IDriver& driver);
 	/// Draw the triangles, with Vertex and 1 UV. "mat" should not be a lighted material since no normal is computed.
-	static void			drawTrianglesUnlit(const std::vector<CTriangleUV> &trilist, CMaterial &mat, IDriver& driver);
+	static void			drawTrianglesUnlit(const std::vector<NLMISC::CTriangleUV> &trilist, CMaterial &mat, IDriver& driver);
 
 	/// Draw the Lines, with Vertex only. "mat" should not be a lighted material since no normal is computed.
-	static void			drawLinesUnlit(const CLine	*linelist, sint nlines, CMaterial &mat, IDriver& driver);
+	static void			drawLinesUnlit(const NLMISC::CLine	*linelist, sint nlines, CMaterial &mat, IDriver& driver);
 	/// Draw the Lines, with Vertex only. "mat" should not be a lighted material since no normal is computed.
-	static void			drawLinesUnlit(const std::vector<CLine> &linelist, CMaterial &mat, IDriver& driver);
+	static void			drawLinesUnlit(const std::vector<NLMISC::CLine> &linelist, CMaterial &mat, IDriver& driver);
 	/// Draw one line in 3D only, with a specific color.
 	static void			drawLine(const CVector &a, const CVector &b, CRGBA color, IDriver& driver);
 	// @}

@@ -1,7 +1,7 @@
 /** \file net_layer5/frontend_service.cpp
  * Layer 5 and IService5 example
  *
- * $Id: frontend_service.cpp,v 1.2 2002/05/22 13:23:05 lecroart Exp $
+ * $Id: frontend_service.cpp,v 1.3 2002/05/28 18:14:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,9 @@
 #include "nel/net/service.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/displayer.h"
+#include "nel/misc/command.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "nel/misc/bit_mem_stream.h"
 
 #include <deque>
 
@@ -116,6 +118,7 @@ TTime t = 0;
 
 void sendRequestVision ()
 {
+//	nlSleep (1000);
 	CMessage msgout("ASK_VISION");
 	CUnifiedNetwork::getInstance()->send("GPMS", msgout);
 	nlinfo ("ask a new vision");
@@ -235,6 +238,70 @@ public:
 	 */
 	void init()
 	{
+/*		uint32 u = 0xFFFFFFFF;
+		uint32 z = 0;
+
+		uint32 res = 0;
+		CBitMemStream bms2;
+
+		bms2.serial (u, 1);
+		bms2.serial (z, 18);
+		bms2.serial (u, 4);
+		bms2.serial (z, 3);
+
+		nlinfo ("len %d", bms2.length());
+		bms2.invert ();
+		nlinfo ("len %d", bms2.length());
+		bms2.invert ();
+		nlinfo ("len %d", bms2.length());
+*/
+/*		CBitMemStream bms;
+
+		nlinfo ("len %d", bms.length());
+
+		bms.serial (u, 1);
+		bms.serial (z, 18);
+		bms.serial (u, 4);
+		bms.serial (z, 3);
+		bms.serial (u, 30);
+		nlinfo ("len %d", bms.length());
+
+		bms.clear ();
+		nlinfo ("len %d", bms.length());
+
+		bms.serial (z, 1);
+		bms.serial (u, 18);
+		bms.serial (z, 4);
+		bms.serial (u, 3);
+		bms.serial (z, 30);
+		nlinfo ("len %d", bms.length());
+
+
+		vector<uint32> cont;
+		for(uint i=0;i<32;i++) cont.push_back(i);
+		bms.serialCont (cont);
+
+		nlinfo ("len %d", bms.length());
+
+
+		bms.invert ();
+		nlinfo ("len %d", bms.length());
+
+		while (bms.getPosInBit() != 30+3+4+18+1)
+		{
+			nlinfo ("%d", bms.getPosInBit());
+			bms.serial (res, 1);
+			nlinfo ((res==0)?"0":"1");
+		}
+		nlinfo ("%d", bms.getPosInBit());
+
+		vector<uint32> cont2;
+		bms.serialCont (cont2);
+		nlinfo ("%d", bms.getPosInBit());
+		for(uint j=0;j<cont2.size();j++) nlinfo ("const %d %d",j, cont2[j]);
+
+		nlinfo ("%d", bms.getPosInBit());
+*/
 		// Connect to the ping service
 		NLNET::CUnifiedNetwork	*instance = NLNET::CUnifiedNetwork::getInstance();
 
@@ -247,7 +314,6 @@ public:
 		instance->setServiceDownCallback("*", cbDownService, NULL);
 	}
 };
-
  
 /*
  * Declare a service with the class CFrontEndService, the names "FS" (short) and "frontend_service" (long).

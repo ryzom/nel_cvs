@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.21 2000/12/01 16:36:08 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.22 2000/12/04 10:12:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,10 +44,21 @@ namespace NL3D
 	uint CDriverGL::_Registered=0;
 
 // --------------------------------------------------
+// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
+const uint32		CDriverGL::ReleaseVersion = 0x0;
 
-__declspec(dllexport) IDriver* NL3D_createIDriverInstance(void)
+// --------------------------------------------------
+
+__declspec(dllexport) IDriver* NL3D_createIDriverInstance (void)
 {
 	return( new CDriverGL );
+}
+
+// --------------------------------------------------
+
+__declspec(dllexport) uint32 NL3D_interfaceVersion (void)
+{
+	return( IDriver::InterfaceVersion );
 }
 
 // --------------------------------------------------
@@ -86,7 +97,6 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 	return( DefWindowProc(hWnd, message, wParam, lParam) );
 }
 #endif
-
 
 // --------------------------------------------------
 CDriverGL::CDriverGL()

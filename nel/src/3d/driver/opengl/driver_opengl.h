@@ -51,6 +51,10 @@ public:
 
 class CDriverGL : public IDriver
 {
+private:
+	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
+	static const uint32		ReleaseVersion;
+
 #ifdef NL_OS_WINDOWS
 	friend static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 #endif // NL_OS_WINDOWS
@@ -120,6 +124,15 @@ public:
 
 	virtual void			setupViewport (const class CViewport& viewport);
 
+	virtual uint32			getImplementationVersion () const
+	{
+		return ReleaseVersion;
+	}
+
+	virtual const char*		getDriverInformation ()
+	{
+		return "Opengl 1.2 NeL Driver";
+	}
 };
 
 // --------------------------------------------------

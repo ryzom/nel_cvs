@@ -1,7 +1,7 @@
 /** \file scene_ut.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.4 2000/12/01 10:10:51 corvazier Exp $
+ * $Id: nelu.cpp,v 1.5 2000/12/04 10:12:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ NLMISC::CSmartPtr<CCamera>	CSceneUt::Camera;
 IDriver			*CSceneUt::Driver;
 
 
-void			CSceneUt::init3d(CScene &scene, uint w, uint h, const CViewport& viewport, uint bpp, bool windowed )
+void			CSceneUt::init3d(CScene &scene, uint w, uint h, const CViewport& viewport, uint bpp, bool windowed ) throw(EDru)
 {
 	// Init debug system
 	NLMISC::InitDebug();

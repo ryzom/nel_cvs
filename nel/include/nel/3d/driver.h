@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.25 2000/12/01 16:58:51 berenguier Exp $
+ * $Id: driver.h,v 1.26 2000/12/04 10:13:09 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -339,6 +339,10 @@ typedef std::vector<GfxMode> ModeList;
 
 class IDriver
 {
+public:
+	/// Version of the driver interface. To increment when the interface change.
+	static const uint32						InterfaceVersion;
+
 private:
 	static IDriver*							_Current;
 
@@ -409,6 +413,19 @@ public:
 	  * \param viewport is a viewport to setup as current viewport.
 	  */
 	virtual void			setupViewport (const class CViewport& viewport)=0;
+
+	/**
+	  * Get the driver version. Not the same than interface version. Incremented at each implementation change.
+	  *
+	  * \see InterfaceVersion
+	  */
+	virtual uint32			getImplementationVersion () const =0;
+
+	/**
+	  * Get driver informations.
+	  *
+	  */
+	virtual const char*		getDriverInformation ()=0;
 };
 
 // --------------------------------------------------

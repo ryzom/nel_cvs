@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.7 2000/12/01 15:16:49 corvazier Exp $
+ * $Id: dru.cpp,v 1.8 2000/12/04 10:12:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,33 +36,45 @@ namespace NL3D
 {
 
 
+typedef uint32 (*IDRV_VERSION_PROC)(void); 
 typedef IDriver* (*IDRV_CREATE_PROC)(void); 
 
 
-IDriver		*CDRU::createGlDriver()
+IDriver		*CDRU::createGlDriver() throw (EDru)
 {
 #ifdef NL_OS_WINDOWS
 
 	// WINDOWS code.
 	HINSTANCE			hInst;
 	IDRV_CREATE_PROC	createDriver;
+	IDRV_VERSION_PROC	versionDriver;
 
 	hInst=LoadLibrary("driver_opengl.dll");
 	if (!hInst)
 	{
-		nlerror("Can't load driver_opengl.dll");
+		throw EDruOpenglDriverNotFound();
 	}
 
 	createDriver=(IDRV_CREATE_PROC)GetProcAddress(hInst,"NL3D_createIDriverInstance");
 	if (!createDriver)
 	{
-		nlerror("Can't get NL3D_createIDriverInstance from driver_opengl.dll (bad dll?)");
+		throw EDruOpenglDriverCorrupted();
+	}
+
+	versionDriver=(IDRV_VERSION_PROC)GetProcAddress(hInst,"NL3D_interfaceVersion");
+	if (!versionDriver)
+	{
+		throw EDruOpenglDriverOldVersion();
+		if (versionDriver()<IDriver::InterfaceVersion)
+			throw EDruOpenglDriverOldVersion();
+		else if (versionDriver()>IDriver::InterfaceVersion)
+			throw EDruOpenglDriverUnknownVersion();
 	}
 
 	IDriver		*ret= createDriver();
 	if (!ret)
 	{
-		nlerror("Can't create IDriver Instance from driver_opengl.dll (bad dll?)");
+		throw EDruOpenglDriverCantCreateDriver();
 	}
 	return ret;
 
@@ -72,6 +84,39 @@ IDriver		*CDRU::createGlDriver()
 
 #endif // NL_OS_WINDOWS
 
+}
+
+void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& texture, IDriver& driver, CViewport viewport)
+{
+	CMatrix mtx;
+	mtx.identity();
+	driver.setupViewport (viewport);
+	driver.setupViewMatrix (mtx);
+	driver.setupModelMatrix (mtx);
+	driver.setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+
+	CMaterial mat;
+	mat.initUnlit ();
+	mat.setTexture (&texture);
+
+	CVertexBuffer vb;
+	vb.setNumVertices (4);
+	vb.setVertexFormat (IDRV_VF_XYZ|IDRV_VF_UV[0]);
+	vb.setVertexCoord (0, CVector (x, 0, y));
+	vb.setVertexCoord (1, CVector (x+width, 0, y));
+	vb.setVertexCoord (2, CVector (x+width, 0, y+height));
+	vb.setVertexCoord (3, CVector (x, 0, y+height));
+	vb.setTexCoord (0, 0, 0.f, 1.f);
+	vb.setTexCoord (1, 0, 1.f, 1.f);
+	vb.setTexCoord (2, 0, 1.f, 0.f);
+	vb.setTexCoord (3, 0, 0.f, 0.f);
+	driver.activeVertexBuffer(vb);
+
+	CPrimitiveBlock pb;
+	pb.setNumQuad (1);
+	pb.setQuad (0, 0, 1, 2, 3);
+
+	driver.render(pb, mat);
 }
 
 

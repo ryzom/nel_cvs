@@ -1,6 +1,6 @@
 /** \file test_method.cpp
  *
- * $Id: test_method.cpp,v 1.14 2002/02/20 18:08:58 lecroart Exp $
+ * $Id: test_method.cpp,v 1.15 2002/09/16 08:33:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,7 @@ namespace NLAISCRIPT
 																		new NLAIC::CIdentType(NLAIAGENT::DigitalType::IdDigitalType))),
 											CLibTest::CheckAll,
 											2,
-											new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::UInt32Type::IdUInt32Type))));
+											new CObjectUnknown(new COperandSimple(new NLAIC::CIdentType(NLAIAGENT::DDigitalType::IdDDigitalType))));
 
 	}
 
@@ -270,7 +270,7 @@ namespace NLAISCRIPT
 				NLAIAGENT::CIteratorContener iter = ((NLAIAGENT::IBaseGroupType *)p)->getIterator();
 				NLAIAGENT::DDigitalType *p1 = (NLAIAGENT::DDigitalType *)(iter ++);
 				NLAIAGENT::DDigitalType *p2 = (NLAIAGENT::DDigitalType *)(iter ++);
-				r.Result = new NLAIAGENT::UInt32Type(dRand((sint)p1->getNumber(), (sint)p2->getNumber()));
+				r.Result = new NLAIAGENT::DDigitalType((double)dRand((sint)p1->getNumber(), (sint)p2->getNumber()));
 				return r;
 			}
 /*

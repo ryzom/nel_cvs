@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.20 2003/05/22 12:51:03 berenguier Exp $
+ * $Id: render_trav.h,v 1.21 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/light_contribution.h"
 #include "3d/light.h"
 #include "3d/mesh_block_manager.h"
+#include "3d/shadow_map_manager.h"
 #include <vector>
 
 
@@ -48,6 +49,7 @@ class	IDriver;
 class	CMaterial;
 
 class	CTransform;
+class	CLandscapeModel;
 
 class	CMeshSkinManager;
 
@@ -59,6 +61,12 @@ class	CMeshSkinManager;
  */
 #define	NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT		(CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag | CVertexBuffer::TexCoord0Flag)
 #define	NL3D_MESH_SKIN_MANAGER_MAXVERTICES		10000
+
+/* Same for Shadow Generation.
+ * NB: need much less Vertices because: 1/ foolish to do more. 2/ Only position=> no UV/Normal discontinuities.
+ */
+#define	NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT		(CVertexBuffer::PositionFlag)
+#define	NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES		5000
 
 
 
@@ -112,8 +120,11 @@ public:
 	//@}
 
 
+	// setup the Driver for render
 	void			setDriver(IDriver *drv) {Driver= drv;}
 	IDriver			*getDriver() {return Driver;}
+	// Yoyo: temporary. May be used later if we decide to support a PBuffer to render texture for ShadowMap
+	IDriver			*getAuxDriver() {return Driver;}
 	void			setViewport (const CViewport& viewport) 
 	{
 		_Viewport = viewport;
@@ -162,6 +173,17 @@ public:
 	/// get the MeshSkinManager
 	CMeshSkinManager			*getMeshSkinManager() const {return _MeshSkinManager;}
 
+	/// get the CShadowMapManager
+	CShadowMapManager			&getShadowMapManager() {return _ShadowMapManager;}
+	const CShadowMapManager		&getShadowMapManager() const {return _ShadowMapManager;}
+
+	/// the MeshSkinManager for Shadow. Same Behaviour than std MeshSkinManager. NB: the Shadow MSM is inited with AuxDriver.
+	void						setShadowMeshSkinManager(CMeshSkinManager *msm);
+	CMeshSkinManager			*getShadowMeshSkinManager() const {return _ShadowMeshSkinManager;}
+
+
+	// add a landscape. Special for CLandscapeModel::traverseRender();
+	void			addRenderLandscape(CLandscapeModel *model);
 
 // ******************
 public:
@@ -281,6 +303,9 @@ public:
 
 	// @}
 
+	// ReSetup the Driver Frustum/Camera. Called internally and by ShadowMapManager only.
+	void			setupDriverCamera();
+
 private:
 	
 	// A grow only list of models to be rendered.
@@ -351,6 +376,29 @@ private:
 
 	/// The manager of skin. NULL by default.
 	CMeshSkinManager			*_MeshSkinManager;
+
+
+	/// The ShadowMap Manager.
+	CShadowMapManager			_ShadowMapManager;
+	/// The SkinManager, but For Shadow rendering
+	CMeshSkinManager			*_ShadowMeshSkinManager;
+
+
+	/** \name Special Landscape RenderList.
+	 *	The Landscape list is separated from std render List for optimisation purpose.
+	 *	See Doc in traverse() method.
+	 */
+	//@{
+	// clear the list
+	void			clearRenderLandscapeList();
+	// render the landscapes
+	void			renderLandscapes();
+
+	// A grow only list of landscapes to be rendered.
+	std::vector<CLandscapeModel*>	_LandscapeRenderList;
+
+	// @}
+
 
 };
 

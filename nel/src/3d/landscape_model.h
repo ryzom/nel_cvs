@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.10 2003/04/23 10:08:30 berenguier Exp $
+ * $Id: landscape_model.h,v 1.11 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,17 +97,24 @@ public:
 	/** Override CTransform::initModel(), to create CLandscape's VegetableManager's BlendLayer models in the scene.
 	 */
 	virtual void	initModel();
-	/// special clip()
+	/// special clip(). NB: the real landscape clip is done in traverseRender()
 	virtual void	traverseClip();
 	virtual bool	clip() {return true;}
-	/// traverseAnimDetail() do the actual clipping.
-	virtual void	traverseAnimDetail();
-	/// special traverseRender()
+	/// traverseRender()
 	virtual void	traverseRender();
-
 	/// Some prof infos
 	virtual	void	profileRender();
 
+	/// Actual Clip and Render!! See Implementation for Why this scheme
+	void			clipAndRenderLandscape();
+
+
+	/// \name ShadowMap Behavior. Receive only
+	// @{
+	virtual void		getReceiverBBox(CAABBox &bbox);
+	virtual void		receiveShadowMap(CShadowMap *shadowMap, const CVector &casterPos, const CMaterial &shadowMat);
+	virtual const CMatrix	&getReceiverRenderWorldMatrix() const {return _RenderWorldMatrix;}
+	// @}
 
 protected:
 	CLandscapeModel();
@@ -122,11 +129,15 @@ private:
 	// The current small pyramid, for faster clip.
 	CPlane					CurrentPyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE];
 
-	// The current clustered pyramid. computed in clip(), and parsed in traverseAnimDetail()
+	// The current clustered pyramid. computed in clip(), and parsed in traverseRender()
 	std::vector<CPlane>		ClusteredPyramid;
 
 	// If ClusteredPyramid is already the WorldFrustumPyramid. NB: if false, it may still be actually
 	bool					ClusteredPyramidIsFrustum;
+
+	// This is The Last WorldMatrix used to render (not identity for ZBuffer considerations).
+	CMatrix					_RenderWorldMatrix;
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.17 2003/04/23 10:09:56 berenguier Exp $
+ * $Id: tessellation.h,v 1.18 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -282,6 +282,8 @@ public:
 	CTessFarVertex	*FVBase, *FVLeft, *FVRight;
 	// NB: herit from CTessNodeList to use Prec and Next ptrs.
 
+	// Id For ShadowMap
+	sint			ShadowMapTriId;
 
 public:
 	CTessFace();

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.35 2003/07/31 16:40:11 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.36 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -496,6 +496,19 @@ void		CLandscapeUser::postfixTileVegetableDesc (const char *postfix)
 	NL3D_HAUTO_LANDSCAPE_UPDATE_LIGHTING_ALL;
 	_Landscape->Landscape.TileBank.postfixTileVegetableDesc (postfix);
 }
+
+// ***************************************************************************
+void		CLandscapeUser::enableReceiveShadowMap(bool state)
+{
+	_Landscape->enableReceiveShadowMap(state);
+}
+
+// ***************************************************************************
+bool		CLandscapeUser::canReceiveShadowMap() const
+{
+	return _Landscape->canReceiveShadowMap();
+}
+
 
 
 } // NL3D

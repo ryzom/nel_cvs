@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.47 2003/07/31 16:40:11 corvazier Exp $
+ * $Id: landscape.h,v 1.48 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@
 #include "3d/landscape_face_vector_manager.h"
 #include "3d/tess_face_priority_list.h"
 #include "nel/3d/point_light_influence.h"
+#include "3d/shadow_poly_receiver.h"
 
 #include <map>
 
@@ -65,6 +66,7 @@ class	CScene;
 class	CTextureFar;
 class	CTextureDLM;
 class	CPatchDLMContextList;
+class	CShadowMap;
 
 using NLMISC::Exception;
 using NLMISC::CTriangle;
@@ -253,6 +255,9 @@ public:
 
 	// Profile at Current landscape state (nlinfos)
 	void			profileRender();
+
+	// Get the Last refine pos setuped at refine();
+	const CVector	&getOldRefineCenter() const {return _OldRefineCenter;}
 
 	// @}
 
@@ -595,6 +600,11 @@ public:
 
 	// @}
 
+
+	/// \name Dynamic ShadowMap
+	// @{
+	void			receiveShadowMap(IDriver *drv, CShadowMap *shadowMap, const CVector &casterPos, const CMaterial &shadowMat, const CVector &pzb);
+	// @}
 
 
 // ********************************
@@ -966,6 +976,13 @@ private:
 
 	// @}
 
+
+	/// \name Dynamic ShadowMap
+	// @{
+	CShadowPolyReceiver			_ShadowPolyReceiver;
+	void						appendToShadowPolyReceiver(CTessFace *face);
+	void						removeFromShadowPolyReceiver(CTessFace *face);
+	// @}
 };
 
 

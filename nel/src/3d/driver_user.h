@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.28 2003/05/19 13:14:13 corvazier Exp $
+ * $Id: driver_user.h,v 1.29 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,8 @@ protected:
 	CShapeBankUser			_ShapeBank;
 	// There is one MeshSkinManager per driver, and for all scenes.
 	CMeshSkinManager		_MeshSkinManager;
+	// Special CMeshSkinManager for shadow generation
+	CMeshSkinManager		_ShadowMeshSkinManager;
 	// There is one AsyncTextureManager per driver, and for all scenes
 	CAsyncTextureManager	_AsyncTextureManager;
 	// There is one LodCharacterManager per driver, and for all scenes
@@ -428,6 +430,10 @@ public:
 	virtual void			enableUsedTextureMemorySum (bool enable);
 	
 	virtual uint32			getUsedTextureMemory() const;
+
+	virtual	void			startProfileVBHardLock();
+
+	virtual	void			endProfileVBHardLock(std::vector<std::string> &result);
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.132 2003/07/31 16:40:11 corvazier Exp $
+ * $Id: landscape.cpp,v 1.133 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,9 +182,9 @@ CLandscape::CLandscape() :
 	TessFarVertexAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE), 
 	TileMaterialAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE), 
 	TileFaceAllocator(NL3D_TESSRDR_ALLOC_BLOCKSIZE),
-	_Far0VB(CLandscapeVBAllocator::Far0),
-	_Far1VB(CLandscapeVBAllocator::Far1),
-	_TileVB(CLandscapeVBAllocator::Tile)
+	_Far0VB(CLandscapeVBAllocator::Far0, "LandscapeFar0VB"),
+	_Far1VB(CLandscapeVBAllocator::Far1, "LandscapeFar1VB"),
+	_TileVB(CLandscapeVBAllocator::Tile, "LandscapeTileVB")
 {
 	OwnerModel = NULL;
 
@@ -3630,6 +3630,50 @@ void			CLandscape::initTileBank()
 	TileInfos.clear();
 	TileInfos.resize(NL3D::NbTilesMax);
 	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Dynamic ShadowMaping
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CLandscape::appendToShadowPolyReceiver(CTessFace *face)
+{
+	CTriangle	tri;
+	tri.V0= face->VBase->EndPos;
+	tri.V1= face->VLeft->EndPos;
+	tri.V2= face->VRight->EndPos;
+	// Add and store id for remove
+	face->ShadowMapTriId= _ShadowPolyReceiver.addTriangle(tri);
+}
+
+// ***************************************************************************
+void			CLandscape::removeFromShadowPolyReceiver(CTessFace *face)
+{
+	if(face->ShadowMapTriId!=-1)
+	{
+		_ShadowPolyReceiver.removeTriangle(face->ShadowMapTriId);
+		// set NULL Id.
+		face->ShadowMapTriId=-1;
+	}
+}
+
+
+// ***************************************************************************
+void			CLandscape::receiveShadowMap(IDriver *drv, CShadowMap *shadowMap, const CVector &casterPos, const CMaterial &shadowMat, const CVector &pzb)
+{
+	/*  substract the PZB from all coordinates. Must add a small Height value because 
+		The rendered Triangles may be computed with VertexProgram, but _ShadowPolyReceiver 
+		does not. => there is a small float difference at the end
+		Even if same vertex is produced in theory, VertexProgram may cause 2 precision problems:
+		1/ On NVidia, even with a simple matrix mul VP, the precision result is not the same
+		2/ Our Landscape VP is not a simple matrix mul. Lot of vertex mul/add are done fpr geomorphs
+	*/
+	_ShadowPolyReceiver.render(drv, const_cast<CMaterial&>(shadowMat), shadowMap, casterPos, CVector(0,0,0.02f)-pzb);
 }
 
 

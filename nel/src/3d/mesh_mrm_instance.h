@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.13 2003/05/06 15:33:23 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.14 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,6 +91,11 @@ protected:
 	virtual	sint			renderSkinGroupGeom(float alphaMRM, uint remainingVertices, uint8 *dest);
 	virtual	void			renderSkinGroupPrimitives(uint baseVertex, std::vector<CSkinSpecularRdrPass> &specularRdrPasses, uint skinIndex);
 	virtual	void			renderSkinGroupSpecularRdrPass(uint rdrPassId);
+
+	virtual	bool			supportShadowSkinGrouping() const;
+	virtual	sint			renderShadowSkinGeom(uint remainingVertices, uint8 *vbDest);
+	virtual	void			renderShadowSkinPrimitives(CMaterial &castMat, IDriver *drv, uint baseVertex);
+
 	// @}
 
 

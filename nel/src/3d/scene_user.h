@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.43 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: scene_user.h,v 1.44 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -292,6 +292,26 @@ public:
 		virtual uint	getNumFlareContexts() const;		
 		virtual void	setFlareContext(uint context);		
 		virtual uint    getFlareContext() const;
+	// @}
+
+	/// \name ShadowMapping Options
+	// @{
+	/// return the current base ShadowMap TextureSize. Default is 64 texels.
+	virtual	uint			getShadowMapTextureSize() const;
+	/// must be a power of 2.
+	virtual	void			setShadowMapTextureSize(uint size);
+	/// return the current ShadowMap Max Depth. This is the length in the lightDir direction where the shadow can touch receivers
+	virtual	float			getShadowMapMaxDepth() const;
+	/// set the ShadowMap Extent
+	virtual	void			setShadowMapMaxDepth(float depth);
+	/// get the size of the blur (<=3 means number of fakeBlur).
+	virtual	uint			getShadowMapBlurSize() const;
+	/// set the size of the blur (<=3 means number of fakeBlur).
+	virtual	void			setShadowMapBlurSize(uint bs);
+	/// Enable Polygon Smoothing
+	virtual	void			enableShadowPolySmooth(bool enable);
+	/// get Enable Polygon Smoothing flag
+	virtual	bool			getEnableShadowPolySmooth() const;
 	// @}
 
 public:

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.94 2003/07/30 16:01:59 vizerie Exp $
+ * $Id: patch.cpp,v 1.95 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -901,6 +901,9 @@ void			CPatch::appendFaceToTileRenderList(CTessFace *face)
 		// The facelist is modified, so we must update the faceVector, if visible.
 		uint	numtb= getNumTessBlock(face);
 		dirtTessBlockFaceVector(TessBlocks[numtb]);
+
+		// Shadow: append it to the Shadow Triangles.
+		getLandscape()->appendToShadowPolyReceiver(face);
 	}
 }
 
@@ -927,6 +930,9 @@ void			CPatch::removeFaceFromTileRenderList(CTessFace *face)
 		// The facelist is modified, so we must update the faceVector, if visible.
 		uint	numtb= getNumTessBlock(face);
 		dirtTessBlockFaceVector(TessBlocks[numtb]);
+
+		// Shadow: remove it from the Shadow Triangles.
+		getLandscape()->removeFromShadowPolyReceiver(face);
 	}
 }
 

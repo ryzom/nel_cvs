@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.42 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: material.cpp,v 1.43 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ CMaterial::CMaterial()
 	_Color.set(255,255,255,255);
 	_StainedGlassWindow = false;
 	_AlphaTestThreshold= 0.5f;	
+	_TexCoordGenMode= 0;
 }
 
 // ***************************************************************************
@@ -502,6 +503,15 @@ void		CMaterial::selectTextureSet(uint index)
 	{
 		if (_Textures[k] != NULL) _Textures[k]->selectTexture(index);
 	}
+}
+
+// ***************************************************************************
+void		CMaterial::setTexCoordGenMode(uint stage, TTexCoordGenMode mode)
+{
+	if(stage>=IDRV_MAT_MAXTEXTURES)
+		return;
+	_TexCoordGenMode&= ~ (IDRV_MAT_TEX_GEN_MASK << (stage*IDRV_MAT_TEX_GEN_SHIFT));
+	_TexCoordGenMode|=   ((mode&IDRV_MAT_TEX_GEN_MASK) << (stage*IDRV_MAT_TEX_GEN_SHIFT));
 }
 
 }

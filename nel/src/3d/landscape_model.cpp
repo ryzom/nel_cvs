@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.34 2003/04/23 10:08:30 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.35 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,11 +60,11 @@ CLandscapeModel::CLandscapeModel()
 	// The model is renderable
 	CTransform::setIsRenderable(true);
 
-	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
-	CTransform::setIsForceAnimDetail(true);
-
 	// RenderFilter: We are a Landscape
 	_RenderFilterType= UScene::FilterLandscape;
+
+	// Mesh support shadow map receiving only
+	CTransform::setIsShadowMapReceiver(true);
 }
 
 
@@ -122,15 +122,33 @@ void	CLandscapeModel::traverseClip()
 
 
 // ***************************************************************************
-void	CLandscapeModel::traverseAnimDetail()
+void	CLandscapeModel::clipAndRenderLandscape()
 {
-	// Father call (usefull?)
-	CTransform::traverseAnimDetail();
+	/*
+		NB: For best Optimisation, it is important that the Clip act at same time as the Render.
+		Why? For complex GPU/CPU synchronisation.
 
-	// The real Landscape clip is done in traverseAnimDetail
+		Since the landscape is rendered at end of the opaque pass, the next clip of the next frame will arise 
+		too early (if we assume no transparent or out-scene rendering), RESULTING IN A LOCK => A CPU STALL!!
+
+		In a "landscape only" program, this is not easily avoidable. But in common programs with other 
+		opaque meshs, skinning etc... we'll have lot of CPU/GPU Work between this clip and the Landscape Render.
+		And since the clip() lock the VB, and stall, all those tasks won't be parralelized.
+
+		I have already seen such a stall (3 ms).
+
+		Therefore, all Landscape VB Lock arise at the same time=> The GPU will render the landscape while the CPU
+		will prepare render and do skinning of the next opaque frame for instance.
+	*/
+
+	// Clip
+	// ********
+
+	// The real Landscape clip is done here, after std clip
 	H_AUTO( NL3D_Landscape_Clip );
 
 	CClipTrav		&clipTrav= getOwnerScene()->getClipTrav();
+	CRenderTrav		&renderTrav= getOwnerScene()->getRenderTrav();
 
 	// Yes, this is ugly, but the clip pass is finished in render(), for clipping TessBlocks.
 	// This saves an other Landscape patch traversal, so this is faster...
@@ -148,27 +166,24 @@ void	CLandscapeModel::traverseAnimDetail()
 	// Use the Clustered pyramid for Patch, but Frustum pyramid for TessBlocks.
 	// We are sure that pyramid has normalized plane normals.
 	Landscape.clip(clipTrav.CamPos, ClusteredPyramid);
-}
 
 
-// ***************************************************************************
-void	CLandscapeModel::traverseRender()
-{
+	// Render
+	// ********
+
 	NL3D_MEM_LANDSCAPE
-
-	CRenderTrav		&renderTrav= getOwnerScene()->getRenderTrav();
 
 	// Change the landscape cetner. All Geomorphed pos (in VertexBuffer only or during VertexProgram)
 	// substract this position.
 	Landscape.setPZBModelPosition(renderTrav.CamPos);
 
-	// setup the model matrix
-	CMatrix		m;
-	m.identity();
-	// ZBuffer Precion: set the modelMatrix to the current landscape PZBModelPosition.
-	// NB: don't use renderTrav.CamPos directly because setPZBModelPosition() may modify the position
-	m.setPos(Landscape.getPZBModelPosition());
-	renderTrav.getDriver()->setupModelMatrix(m);
+	/* setup the model matrix
+		ZBuffer Precion: set the modelMatrix to the current landscape PZBModelPosition.
+		NB: don't use renderTrav.CamPos directly because setPZBModelPosition() may modify the position
+	*/
+	_RenderWorldMatrix.identity();
+	_RenderWorldMatrix.setPos(Landscape.getPZBModelPosition());
+	renderTrav.getDriver()->setupModelMatrix(_RenderWorldMatrix);
 
 
 	// Scene Time/Lighting Mgt.
@@ -213,11 +228,52 @@ void	CLandscapeModel::traverseRender()
 	H_AFTER( NL3D_Landscape_Render );
 }
 
+// ***************************************************************************
+void	CLandscapeModel::traverseRender()
+{
+	CRenderTrav		&renderTRav= getOwnerScene()->getRenderTrav();
+
+	// No-Op. But delay the clip and render to the end of Opaque Rendering. For VBLock optim
+	renderTRav.addRenderLandscape(this);
+
+	// If the landscape receive shadow, then add it.
+	if(canReceiveShadowMap())
+		renderTRav.getShadowMapManager().addShadowReceiver(this);
+}
 
 // ***************************************************************************
 void	CLandscapeModel::profileRender()
 {
 	Landscape.profileRender();
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Dynamic ShadowMaping
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CLandscapeModel::getReceiverBBox(CAABBox &bbox)
+{
+	// Build a dummy bbox around the TileNear distance.
+	bbox.setCenter(Landscape.getOldRefineCenter());
+	float	hs= Landscape.getTileNear() * 1.5f; // Enlarge a little because may have some triangles outside this dist.
+	bbox.setHalfSize(CVector(hs,hs,hs));
+}
+
+// ***************************************************************************
+void		CLandscapeModel::receiveShadowMap(CShadowMap *shadowMap, const CVector &casterPos, const CMaterial &shadowMat)
+{
+	IDriver	*drv= getOwnerScene()->getRenderTrav().getDriver();
+
+	// Setup the matrix. The same than one used for render (ie PZB included)
+	drv->setupModelMatrix(_RenderWorldMatrix);
+
+	// render.
+	Landscape.receiveShadowMap(drv, shadowMap, casterPos, shadowMat, Landscape.getPZBModelPosition());
 }
 
 

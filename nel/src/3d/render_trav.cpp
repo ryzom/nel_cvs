@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.46 2003/07/30 16:05:08 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.47 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "3d/transform.h"
 #include "nel/misc/fast_floor.h"
 #include "3d/mesh_skin_manager.h"
+#include "3d/landscape_model.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -80,6 +81,7 @@ CRenderTrav::CRenderTrav()
 	_StrongestLightTouched = true;
 
 	_MeshSkinManager= NULL;
+	_ShadowMeshSkinManager= NULL;
 
 	_LayersRenderingOrder= true;
 }
@@ -91,9 +93,7 @@ void		CRenderTrav::traverse()
 	CTravCameraScene::update();
 
 	// Bind to Driver.
-	getDriver()->setFrustum(Left, Right, Bottom, Top, Near, Far, Perspective);
-	// Use setupViewMatrixEx() for ZBuffer precision.
-	getDriver()->setupViewMatrixEx(ViewMatrix, CamPos);
+	setupDriverCamera();
 	getDriver()->setupViewport(_Viewport);
 
 	// reset the light setup, and set global ambient.
@@ -106,7 +106,25 @@ void		CRenderTrav::traverse()
 		if(Driver!=_MeshSkinManager->getDriver())
 		{
 			_MeshSkinManager->release();
-			_MeshSkinManager->init(Driver, NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT, NL3D_MESH_SKIN_MANAGER_MAXVERTICES);
+			_MeshSkinManager->init(Driver, 
+				NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT, 
+				NL3D_MESH_SKIN_MANAGER_MAXVERTICES, 
+				2, 
+				"MRMSkinVB");
+		}
+	}
+
+	// Same For Shadow ones. NB: use AuxDriver here!!!
+	if(_ShadowMeshSkinManager)
+	{
+		if(getAuxDriver()!=_ShadowMeshSkinManager->getDriver())
+		{
+			_ShadowMeshSkinManager->release();
+			_ShadowMeshSkinManager->init(getAuxDriver(), 
+				NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT, 
+				NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES,
+				2,
+				"ShadowSkinVB");
 		}
 	}
 
@@ -179,6 +197,9 @@ void		CRenderTrav::traverse()
 	//OrderOpaqueList.reset(0);
 	//OrderTransparentList.reset(0);
 
+	// Clear any landscape
+	clearRenderLandscapeList();
+
 	// Start LodCharacter Manager render.
 	CLodCharacterManager	*clodMngr= Scene->getLodCharacterManager();
 	if(clodMngr)
@@ -189,7 +210,8 @@ void		CRenderTrav::traverse()
 	OrderOpaqueList.begin();
 	while( OrderOpaqueList.get() != NULL )
 	{
-		OrderOpaqueList.get()->traverseRender();
+		CTransform	*tr= OrderOpaqueList.get();
+		tr->traverseRender();
 		OrderOpaqueList.next();
 	}
 
@@ -212,6 +234,28 @@ void		CRenderTrav::traverse()
 	*/
 	if( Scene->getCoarseMeshManager() )
 		Scene->getCoarseMeshManager()->flushRender(Driver);
+
+	/* Render ShadowMaps.
+		Important to render them at end of Opaque rendering, because alphaBlended objects must blend with opaque
+		objects shadowed.
+		Therefore, transparent objects neither can't cast or receive shadows...
+
+		NB: Split in 2 calls and interleave Landscape Rendering between the 2. WHY???
+		Because it is far more efficient for VBLock (but not for ZBuffer optim...) because in renderGenerate()
+		the ShadowMeshSkinManager do lot of VBLocks that really stall (because only 2 VBHard with swap scheme). 
+
+		Therefore the first Lock that stall will wait not only for the first MeshSkin to finish but also for the
+		preceding landscape render to finish too! => big STALL.
+	*/
+
+	// Generate ShadowMaps
+	_ShadowMapManager.renderGenerate(Scene);
+
+	// Render the Landscape
+	renderLandscapes();
+
+	// Project ShadowMaps.
+	_ShadowMapManager.renderProject(Scene);
 
 
 	// Profile this frame?
@@ -255,6 +299,15 @@ void		CRenderTrav::traverse()
 	resetLightSetup();
 
 }
+
+// ***************************************************************************
+void		CRenderTrav::setupDriverCamera()
+{
+	getDriver()->setFrustum(Left, Right, Bottom, Top, Near, Far, Perspective);
+	// Use setupViewMatrixEx() for ZBuffer precision.
+	getDriver()->setupViewMatrixEx(ViewMatrix, CamPos);
+}
+
 // ***************************************************************************
 void		CRenderTrav::clearRenderList()
 {
@@ -276,6 +329,11 @@ void		CRenderTrav::setMeshSkinManager(CMeshSkinManager *msm)
 	_MeshSkinManager= msm;
 }
 
+// ***************************************************************************
+void		CRenderTrav::setShadowMeshSkinManager(CMeshSkinManager *msm)
+{
+	_ShadowMeshSkinManager= msm;
+}
 
 // ***************************************************************************
 void		CRenderTrav::reserveRenderList(uint numModels)
@@ -982,6 +1040,35 @@ std::string		CRenderTrav::getLightVPFragment(uint numActivePointLights, uint ctS
 
 	return ret;
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+void			CRenderTrav::clearRenderLandscapeList()
+{
+	_LandscapeRenderList.clear();
+}
+
+// ***************************************************************************
+void			CRenderTrav::addRenderLandscape(CLandscapeModel *model)
+{
+	_LandscapeRenderList.push_back(model);
+}
+
+// ***************************************************************************
+void			CRenderTrav::renderLandscapes()
+{
+	// Render Each Landscapes.
+	for(uint i=0;i<_LandscapeRenderList.size();i++)
+	{
+		_LandscapeRenderList[i]->clipAndRenderLandscape();
+	}
+}
+
 
 
 }

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.63 2003/07/30 16:07:25 vizerie Exp $
+ * $Id: transform.cpp,v 1.64 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1285,6 +1285,19 @@ void			CTransform::setUserClipping(bool enable)
 bool			CTransform::getUserClipping() const
 {
 	return getStateFlag(UserClipping) != 0;
+}
+
+// ***************************************************************************
+// ***************************************************************************
+// ShadowMap
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+void			CTransform::getReceiverBBox(CAABBox &bbox)
+{
+	bbox.setCenter(CVector::Null);
+	bbox.setHalfSize(CVector::Null);
 }
 
 }

@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.37 2003/07/30 15:57:48 vizerie Exp $
+ * $Id: clip_trav.cpp,v 1.38 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -399,6 +399,92 @@ void CClipTrav::traverse()
 	}
 
 	H_AFTER( NL3D_TravClip_SkeletonClip);
+
+
+	// For All Skeletons, clip their ShadowMap possible projection against the frustum only.
+	// =========================
+	H_BEFORE( NL3D_TravClip_SkeletonShadow );
+	/*
+		Done here, because can't do in clip() in case of a skeleton in a cluster 
+		(We insert in cluster with the SkeletonModel BBox, not the SkeletonModel + Shadow BBox).
+	*/
+	// First select Skeleton ShadowMap to Render
+	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
+	{
+		CSkeletonModel	*sm= *itSkel;
+		// Is a Root Sm ?? Other Skeletons ShadowMaps are not render since the 
+		// Ancestor Skeleton render all of his sons. Additionally, no-op if this skeleton is hidden in HRC!!
+		if( sm->_AncestorSkeletonModel==NULL && sm->isHrcVisible() )
+		{
+			// if the sm cast shadow
+			if( sm->canCastShadowMap() )
+			{
+				bool	visible= false;
+				// if we are already visible, then its ok, we either don't need to test.
+				if(sm->isClipVisible())
+					visible= true;
+				else
+				{
+					// TODO_SHADOW: Select a better "Skeleton Sphere". It depends also on Sticked objects/Skeletons.
+					// Build the sphere around the skeleton that can receive shadow.
+					CBSphere	sphere;
+					// Suppose an Object sphere of 3 meter radius, centered on Skeleton Pos.
+					const	float	objectRadius= 3.f;
+					sphere.Center= sm->getWorldMatrix().getPos();
+					// Add to this spehre the max Depth extent. 
+					// NB: works because suppose that the Shadow BBox include the Skeleton Center.
+					sphere.Radius= objectRadius + Scene->getShadowMapMaxDepth();
+
+					// Clip This sphere against the Frustum.
+					visible= true;
+					for(uint i=0;i<WorldFrustumPyramid.size();i++)
+					{
+						// if SpherMax OUT return false.
+						float	d= WorldFrustumPyramid[i]*sphere.Center;
+						if(d>sphere.Radius)
+						{
+							visible= false;
+							break;
+						}
+					}
+				}
+
+				// If the ShadowMap is visible, add it to the List Of ShadowMap to Render.
+				if(visible)
+					Scene->getRenderTrav().getShadowMapManager().addShadowCaster(sm);
+			}
+		}
+	}
+
+	// Use the rendered Skeletons ShadowMap to select the Ones that will be generated this Frame.
+	Scene->getRenderTrav().getShadowMapManager().selectShadowMapsToGenerate(Scene);
+
+	/* Then for All Skeleton not visibles but that will generate their shadowMap, 
+		we must compute the LightTraversal(for ShadowLight direction) and AnimDetailTraversal (for bone 
+		animation)
+		We MUST NOT flag the skeleton as Visible, and we MUST NOT insert in LoadBalancing 
+		(since won't be rendered)
+		NB: Do nothing for Sons of the Ancestor Skeleton because:
+			1/ light do nothing with them (see std clip)
+			2/ animDetail will be called recursively (see std clip and CSkeletonModel::traverseAnimDetail())
+	*/
+	for(itSkel= Scene->getSkeletonModelListBegin(); itSkel!=Scene->getSkeletonModelListEnd(); itSkel++)
+	{
+		CSkeletonModel	*sm= *itSkel;
+		// compute its shadowMap this frame? and not visible?
+		if(sm->isRenderingShadowMap() && !sm->isClipVisible() )
+		{
+			nlassert(sm->_AncestorSkeletonModel==NULL);
+			// Add it only to the lightTrav and AnimDetailTrav
+			if( sm->isLightable() )
+				Scene->getLightTrav().addLightedModel(sm);
+			if( sm->isAnimDetailable() )
+				Scene->getAnimDetailTrav().addVisibleModel(sm);
+		}
+	}
+
+	H_AFTER( NL3D_TravClip_SkeletonShadow );
+
 }
 
 

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.41 2003/07/11 12:47:33 corvazier Exp $
+ * $Id: transform.h,v 1.42 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,8 @@
 #include "3d/animated_value.h"
 #include "3d/channel_mixer.h"
 #include "nel/misc/matrix.h"
-#include "nel/misc/rgba.h"
+#include "nel/misc/matrix.h"
+#include "nel/misc/aabbox.h"
 #include "3d/light_contribution.h"
 #include "3d/lighting_manager.h"
 #include "nel/misc/class_id.h"
@@ -54,6 +55,7 @@ using NLMISC::CRGBA;
 using NLMISC::CVector;
 using NLMISC::CPlane;
 using NLMISC::CMatrix;
+using NLMISC::CAABBox;
 
 
 class	CSkeletonModel;
@@ -61,6 +63,9 @@ class	CInstanceGroup;
 class	ILogicInfo;
 class	CLoadBalancingGroup;
 class	CSkinSpecularRdrPass;
+class	CShadowMap;
+class	CMaterial;
+class	IDriver;
 
 // ***************************************************************************
 // ClassIds.
@@ -441,6 +446,80 @@ public:
 
 	// @}
 
+
+	/** \name ShadowMapping
+	 *	NB: It is the deriver work to call CRenderTrav::getShadowMapManager().addShadowReceiver() or
+	 *	CRenderTrav::getShadowMapManager().addShadowCaster(), typically in traverseHRC() or in traverseRender()
+	 *	NB: when _AncestorSkeletonModel!=NULL, the shadowMapCaster should not be Added.
+	 */
+	// @{
+	/** By default, map shadow casting is disabled. This enabled shadow for this model. 
+	 *	Fails if the model don't support dynamic Map Shadow Casting (eg landscape)
+	 */
+	void				enableCastShadowMap(bool state) {if(modelCanCastShadowMap()) setStateFlag(IsFinalShadowMapCaster, state);}
+	/// true if the instance cast shadow. By default false
+	bool				canCastShadowMap() const {return getStateFlag(IsFinalShadowMapCaster)!=0;}
+
+	/** By default, map shadow receiving is disabled. This enabled shadow for this model. 
+	 *	Fails if the model don't support dynamic Map Shadow Receiving (eg Particle system)
+	 */
+	void				enableReceiveShadowMap(bool state) {if(modelCanReceiveShadowMap()) setStateFlag(IsFinalShadowMapReceiver, state);}
+	/// true if the instance receive shadow. By default false
+	bool				canReceiveShadowMap() const {return getStateFlag(IsFinalShadowMapReceiver)!=0;}
+
+	/// true if the model provide a method to support shadowMap generation
+	uint32				modelCanCastShadowMap() const {return getStateFlag(IsShadowMapCaster);}
+	/// true if the model provide a method to support shadowMap receiving
+	uint32				modelCanReceiveShadowMap() const {return getStateFlag(IsShadowMapReceiver);}
+
+	/** For Casters. Display the Shadow to the "Auxiliary Driver".
+	 *	This method should only write to AlphaBuffer (since RGB may be the current rendered scene!), 
+	 *	with Alpha==1 when pixel is shadowed.
+	 *	The ShadowMapManager has already cleared the AlphaBuffer to black, and has already enabled alpha write only.
+	 *	The ShadowMapManager has already setuped Viewport/Scissor as its convenience.
+	 *	The extra blurring is a work of the ShadowMapManager (which blurs multiple shadows in a same pass)
+	 *	NB: you can overwrite the current driver frustum/ViewMatrix/modelMatrix without backuping it (ShadowMapManager work)
+	 */
+	virtual	void		generateShadowMap(const CVector &lightDir) {}
+	/** get The shadow Map result for receveing. If NULL, nothing is displayed.
+	 */
+	virtual	CShadowMap	*getShadowMap() {return NULL;}
+
+	/** For receivers. get the World Instance bbox that includes the receiver.
+	 */
+	virtual void		getReceiverBBox(CAABBox &bbox);
+
+	/** For receivers. Modulate the Object with a ShadowMap. The model shoud render in the scene driver a version
+	 *	of its geometry simplified, and modulate the background with shadowColor.
+	 *	\param casterPos the world position of the caster model.
+	 *	\param shadowMat a correclty setuped material with good ShadowColor, ready to be rendered.
+	 */
+	virtual void		receiveShadowMap(CShadowMap *shadowMap, const CVector &casterPos, const CMaterial &shadowMat) {}
+
+	/** For receivers. Retrieve the WorldMatrix of the model used for IDriver::render(). By default it returns getWorldMatrix().
+	 *	The exception is the Landscape and his "ZBuffer Problem" management.
+	 */
+	virtual const CMatrix	&getReceiverRenderWorldMatrix() const {return getWorldMatrix();}
+
+	/// For ShadowMapManager. true if the model is rendering its ShadowMap this frame.
+	void				setRenderingShadowMap(bool state) {if(canCastShadowMap()) setStateFlag(IsRenderingShadowMap, state);}
+	bool				isRenderingShadowMap() const {return getStateFlag(IsRenderingShadowMap)!=0;}
+
+	/** Special For Skeleton Caster. When Skeletons cast shadows, they first compute the WorldBBox.
+	 *	The model should compute its bbox in World (best fit). 
+	 *	\return false if the model don't support it (default), or if hidden in HRC!!
+	 */
+	virtual bool		computeWorldBBoxForShadow(NLMISC::CAABBox &worldBB) {return false;}
+	/** Special For Skeleton Caster. Render into the AuxDriver the mesh, within the current 
+	 *	setuped Frustum/ViewMatrix.
+	 *	no-op by default, or if hidden in HRC!!
+	 *	\param rootSkeleton the skeleton which is currently rendering its shadowMap
+	 */
+	virtual void		renderIntoSkeletonShadowMap(CSkeletonModel *rootSkeleton, CMaterial	&castMat) {}
+
+	// @}
+
+
 // ********
 private:
 	CHrcTrav::TVisibility	Visibility;
@@ -503,6 +582,10 @@ protected:
 	/// Render a specific specular renderPass returned by renderSkinGroupPrimitives 
 	virtual	void			renderSkinGroupSpecularRdrPass(uint rdrPass) {}
 
+	/// Special Skinning For ShadowMapping
+	virtual	bool			supportShadowSkinGrouping() const {return false;}
+	virtual	sint			renderShadowSkinGeom(uint remainingVertices, uint8 *vbDest) {return 0;}
+	virtual	void			renderShadowSkinPrimitives(CMaterial &castMat, IDriver *drv, uint baseVertex) {}
 
 	// The SkeletonModel, root of us (skinning or sticked object). NULL , if normal mode.
 	CSkeletonModel	*_FatherSkeletonModel;
@@ -562,10 +645,16 @@ protected:
 	/// For CCluster only.
 	void				setIsCluster(bool val) {setStateFlag(IsCluster, val);}
 
+	/// ShadowMap
+	void				setIsShadowMapCaster(bool val) {setStateFlag(IsShadowMapCaster, val);}
+	void				setIsShadowMapReceiver(bool val) {setStateFlag(IsShadowMapReceiver, val);}
+
 	// @}
 
 	/// Test if obj must be displayed when sticked to an object displayed as a LOD (example: sword in hand of a character displayed as a LOD state)
 	bool				getShowWhenLODSticked() const { return _ForceCLodSticked; }
+
+
 private:
 	static CTransform	*creator() {return new CTransform;}
 	friend class	CSkeletonModel;
@@ -672,8 +761,15 @@ private:
 		IsTransformShape=		0x20000,	// set if the model is a transform_shape (faster than dynamic_cast)
 		IsCluster=				0x40000,	// set if the model is a cluster (faster than dynamic_cast)
 		UserClipping=			0x80000,	// set if the user provide a clip method, don't call clip() in ClipTrav
+
+		// ShadowMap
+		IsShadowMapCaster=		0x100000,	// set if the model can cast ShadowMap
+		IsFinalShadowMapCaster=	0x200000,	// set if the model can cast ShadowMap AND the user want it
+		IsShadowMapReceiver=	0x400000,	// set if the model can receive ShadowMap
+		IsFinalShadowMapReceiver= 0x800000,	// set if the model can receive ShadowMap AND the user want it
+		IsRenderingShadowMap=	0x1000000,	// temp set if the model is asked to render its shadowMap this frame.
 		
-		// NB: may continue on >=0x80000
+		// NB: may continue on >=0x2000000
 	};
 
 	/// Flags for the General State of the Transform. They are both static or dynamic flags.

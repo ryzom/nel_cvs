@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.33 2003/07/09 16:32:30 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.34 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -328,6 +328,15 @@ public:
 	IAnimCtrl		*getBoneAnimCtrl(uint boneId) const;
 	// @}
 
+
+	/// \name ShadowMap CTransform Implementation
+	// @{
+	virtual	void		generateShadowMap(const CVector &lightDir);
+	virtual	CShadowMap	*getShadowMap();
+	virtual bool		computeWorldBBoxForShadow(NLMISC::CAABBox &worldBB);
+	virtual void		renderIntoSkeletonShadowMap(CSkeletonModel *rootSkeleton, CMaterial	&castMat);
+	// @}
+
 // ***********************
 protected:
 	/// Constructor
@@ -337,7 +346,6 @@ protected:
 
 	/// Build link to traversals.
 	virtual	void	initModel();
-
 
 private:
 	static CTransform	*creator() {return new CSkeletonModel;}
@@ -492,6 +500,12 @@ private:
 	// If >0, then user may change any if this bone each frame...
 	sint			_AnimCtrlUsage;
 	// @}
+
+
+	// SkeletonModel can generate Shadow Map
+	CShadowMap			*_ShadowMap;
+	void			updateShadowMap(IDriver *driver);
+	void			renderShadowSkins(CMaterial	&castMat);
 
 };
 

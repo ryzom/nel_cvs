@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.15 2003/05/06 15:33:23 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.16 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -227,6 +227,39 @@ void	CMeshMRMInstance::initRenderFilterType()
 		else
 			_RenderFilterType= UScene::FilterMeshMRMNoVP;
 	}
+}
+
+
+// ***************************************************************************
+bool			CMeshMRMInstance::supportShadowSkinGrouping() const
+{
+	if(Shape)
+	{
+		CMeshMRM	*meshMrm= safe_cast<CMeshMRM*>((IShape*)Shape);
+		return	meshMrm->getMeshGeom().supportShadowSkinGrouping();
+	}
+	else
+		return false;
+}
+
+// ***************************************************************************
+sint			CMeshMRMInstance::renderShadowSkinGeom(uint remainingVertices, uint8 *vbDest)
+{
+	// Get a pointer on the shape
+	CMeshMRM		*pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+	// render the meshGeom
+	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
+	return meshGeom.renderShadowSkinGeom(this, remainingVertices, vbDest);
+}
+
+// ***************************************************************************
+void			CMeshMRMInstance::renderShadowSkinPrimitives(CMaterial &castMat, IDriver *drv, uint baseVertex)
+{
+	// Get a pointer on the shape
+	CMeshMRM		*pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+	// render the meshGeom
+	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
+	meshGeom.renderShadowSkinPrimitives(this, castMat, drv, baseVertex);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.106 2003/07/15 08:36:52 corvazier Exp $
+ * $Id: scene.cpp,v 1.107 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,10 @@ const	float	NL3D_QuadGridClipClusterSize= 400;
 const	uint	NL3D_QuadGridClipNumDist= 10;
 const	float	NL3D_QuadGridClipMaxDist= 1000;
 
+
+#define	NL3D_SCENE_DEFAULT_SHADOW_MAP_SIZE		64
+#define	NL3D_SCENE_DEFAULT_SHADOW_MAP_DEPTH		8.f
+#define	NL3D_SCENE_DEFAULT_SHADOW_MAP_BLUR_SIZE	2
 
 namespace NL3D
 {
@@ -166,6 +170,10 @@ CScene::CScene()
 	_UpdateModelList= NULL;
 
 	_FlareContext = 0;
+
+	_ShadowMapTextureSize= NL3D_SCENE_DEFAULT_SHADOW_MAP_SIZE;
+	_ShadowMapMaxDepth= NL3D_SCENE_DEFAULT_SHADOW_MAP_DEPTH;
+	_ShadowMapBlurSize= NL3D_SCENE_DEFAULT_SHADOW_MAP_BLUR_SIZE;;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -773,21 +781,6 @@ void					CScene::eraseSkeletonModelToList(CScene::ItSkeletonModelList	it)
 	_SkeletonModelList.erase(it);
 }
 
-// ***************************************************************************
-// ***************************************************************************
-/// Misc
-// ***************************************************************************
-// ***************************************************************************
-
-// ***************************************************************************
-void					CScene::profileNextRender()
-{
-	_NextRenderProfile= true;
-
-	// Reset All Stats.
-	BenchRes.reset();
-}
-
 
 // ***************************************************************************
 // ***************************************************************************
@@ -1010,6 +1003,56 @@ void CScene::setAutomaticAnimationSet(CAnimationSet *as)
 		}
 	}
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+/// Misc
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+void					CScene::profileNextRender()
+{
+	_NextRenderProfile= true;
+
+	// Reset All Stats.
+	BenchRes.reset();
+}
+
+
+// ***************************************************************************
+void			CScene::setShadowMapTextureSize(uint size)
+{
+	size= max(size, 2U);
+	size= raiseToNextPowerOf2(size);
+	_ShadowMapTextureSize= size;
+}
+
+// ***************************************************************************
+void			CScene::setShadowMapMaxDepth(float depth)
+{
+	_ShadowMapMaxDepth= depth;
+}
+
+// ***************************************************************************
+void			CScene::setShadowMapBlurSize(uint bs)
+{
+	_ShadowMapBlurSize= bs;
+}
+
+// ***************************************************************************
+void			CScene::enableShadowPolySmooth(bool enable)
+{
+	RenderTrav.getShadowMapManager().enableShadowPolySmooth(enable);
+}
+
+// ***************************************************************************
+bool			CScene::getEnableShadowPolySmooth() const
+{
+	return RenderTrav.getShadowMapManager().getEnableShadowPolySmooth();
+}
+
 
 
 } // NL3D

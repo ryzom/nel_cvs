@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.63 2003/07/30 16:00:46 vizerie Exp $
+ * $Id: mesh_mrm.cpp,v 1.64 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,7 @@ namespace NL3D
 
 
 H_AUTO_DECL( NL3D_MeshMRMGeom_RenderSkinned )
+H_AUTO_DECL( NL3D_MeshMRMGeom_RenderShadow )
 
 
 // ***************************************************************************
@@ -213,6 +214,7 @@ CMeshMRMGeom::CMeshMRMGeom()
 	_MeshDataId= 0;
 	_SupportMeshBlockRendering=  false;
 	_MBRCurrentLodId= 0;
+	_SupportShadowSkinGrouping= false;
 }
 
 
@@ -1690,6 +1692,8 @@ void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 5:
+		- Shadow Skinning
 	Version 4:
 		- serial SkinWeights per MRM, not per Lod
 	Version 3:
@@ -1701,7 +1705,8 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(4);
+	sint	ver= f.serialVersion(5);
+
 
 	// if >= version 3, serial boens names
 	if(ver>=3)
@@ -1766,6 +1771,14 @@ sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	if(ver >= 4)
 	{
 		f.serialCont(_SkinWeights);
+	}
+
+
+	// if >= version 5, serial Shadow Skin Information
+	if(ver>=5)
+	{
+		f.serialCont (_ShadowSkinVertices);
+		f.serialCont (_ShadowSkinTriangles);
 	}
 
 
@@ -1844,6 +1857,8 @@ void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 5:
+		- Shadow Skinning
 	Version 4:
 		- serial SkinWeights per MRM, not per Lod
 	Version 3:
@@ -1855,7 +1870,7 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(4);
+	sint	ver= f.serialVersion(5);
 	uint	i;
 
 	// if >= version 3, serial bones names
@@ -1910,6 +1925,12 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialCont(_SkinWeights);
 	}
 
+	// if >= version 5, serial Shadow Skin Information
+	if(ver>=5)
+	{
+		f.serialCont (_ShadowSkinVertices);
+		f.serialCont (_ShadowSkinTriangles);
+	}
 
 	// Serial lod offsets.
 	// ==================
@@ -2409,6 +2430,15 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 				}
 			}
 
+			// Remap Shadow Vertices.
+			for(vert=0;vert<_ShadowSkinVertices.size();vert++)
+			{
+				CShadowVertex	&v= _ShadowSkinVertices[vert];
+				// Check id
+				nlassert (v.MatrixId < remap.size());
+				v.MatrixId= remap[v.MatrixId];
+			}
+
 			// Computed
 			_BoneIdComputed = true;
 		}
@@ -2533,7 +2563,10 @@ void	CMeshMRMGeom::compileRunTime()
 
 	// Compute if can support SkinGrouping rendering
 	if(_Lods.size()==0 || !_Skinned)
+	{
 		_SupportSkinGrouping= false;
+		_SupportShadowSkinGrouping= false;
+	}
 	else
 	{
 		// The Mesh must follow those restrictions, to support group skinning
@@ -2554,6 +2587,11 @@ void	CMeshMRMGeom::compileRunTime()
 				}
 			}
 		}
+
+		// Support Shadow SkinGrouping if Shadow setuped, and if not too many vertices.
+		_SupportShadowSkinGrouping= !_ShadowSkinVertices.empty() &&
+			NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT==CVertexBuffer::PositionFlag &&
+			_ShadowSkinVertices.size() <= NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES;
 	}
 
 	// Support MeshBlockRendering only if not skinned/meshMorphed.
@@ -3266,6 +3304,104 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 		}
 	}
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CMeshMRMGeom Shadow Skin Rendering 
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void			CMeshMRMGeom::setShadowMesh(const std::vector<CShadowVertex> &shadowVertices, const std::vector<uint32> &triangles)
+{
+	_ShadowSkinVertices= shadowVertices;
+	_ShadowSkinTriangles= triangles;
+	// update flag. Support Shadow SkinGrouping if Shadow setuped, and if not too many vertices.
+	_SupportShadowSkinGrouping= !_ShadowSkinVertices.empty() &&
+		NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT==CVertexBuffer::PositionFlag &&
+		_ShadowSkinVertices.size() <= NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES;
+}
+
+// ***************************************************************************
+sint			CMeshMRMGeom::renderShadowSkinGeom(CMeshMRMInstance	*mi, uint remainingVertices, uint8 *vbDest)
+{
+	uint	numVerts= _ShadowSkinVertices.size();
+
+	if(numVerts==0)
+		return 0;
+
+	// If the Lod is too big to render in the VBufferHard
+	if(numVerts>remainingVertices)
+		// return Failure
+		return -1;
+
+	// get the skeleton model to which I am skinned
+	CSkeletonModel *skeleton;
+	skeleton = mi->getSkeletonModel();
+	// must be skinned for renderSkin()
+	nlassert(skeleton);
+
+
+	// Profiling
+	//===========
+	H_AUTO_USE( NL3D_MeshMRMGeom_RenderShadow );
+
+
+	// Skinning.
+	//===========
+
+	// skinning with normal, but no tangent space
+	applyArrayShadowSkin(&_ShadowSkinVertices[0], (CVector*)vbDest, skeleton, numVerts);
+
+
+	// How many vertices are added to the VBuffer ???
+	return numVerts;
+}
+
+// ***************************************************************************
+void			CMeshMRMGeom::renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial &castMat, IDriver *drv, uint baseVertex)
+{
+	nlassert(drv);
+
+	if(_ShadowSkinTriangles.empty())
+		return;
+
+	// Profiling
+	//===========
+	H_AUTO_USE( NL3D_MeshMRMGeom_RenderShadow );
+
+	// NB: the skeleton matrix has already been setuped by CSkeletonModel
+	// NB: the normalize flag has already been setuped by CSkeletonModel
+
+	// TODO_SHADOW: optim: Special triangle cache for shadow!
+	static	vector<uint32>		shiftedTris;
+	if(shiftedTris.size()<_ShadowSkinTriangles.size())
+	{
+		shiftedTris.resize(_ShadowSkinTriangles.size());
+	}
+	uint32	*src= &_ShadowSkinTriangles[0];
+	uint32	*dst= &shiftedTris[0];
+	for(uint n= _ShadowSkinTriangles.size();n>0;n--, src++, dst++)
+	{
+		*dst= *src + baseVertex;
+	}
+
+	// Render Triangles with cache
+	//===========
+
+	uint	numTris= _ShadowSkinTriangles.size()/3;
+
+	// This speed up 4 ms for 80K polys.
+	uint	memToCache= numTris*12;
+	memToCache= min(memToCache, 4096U);
+	CFastMem::precache(&shiftedTris[0], memToCache);
+
+	// Render with the Materials of the MeshInstance.
+	drv->renderTriangles(castMat, &shiftedTris[0], numTris);
+}
+
 
 
 } // NL3D

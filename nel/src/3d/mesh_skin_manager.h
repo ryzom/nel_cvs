@@ -1,7 +1,7 @@
 /** \file mesh_skin_manager.h
  * <File description>
  *
- * $Id: mesh_skin_manager.h,v 1.2 2002/08/30 11:59:42 berenguier Exp $
+ * $Id: mesh_skin_manager.h,v 1.3 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -56,8 +56,10 @@ public:
 
 	/** init the manager with a driver, allocate the VBHards, and setup the vertexFormat. 
 	 *	Must call each time the drive changes
+	 *	\param numVBHard the number of VBHard to create. The max you set, the lower lock you'll have.
+	 *	\param vbName base, for Lock profiling
 	 */
-	void			init(IDriver *driver, uint vertexFormat, uint maxVertices);
+	void			init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard=2, const std::string &vbName="MeshSkinVB");
 	/// release the VBHard. init() can be called after this.
 	void			release();
 
@@ -92,10 +94,10 @@ public:
 
 // ********************
 private:
-	enum	{NumVBHard= 2};
+	uint			_NumVBHard;
 
 	NLMISC::CRefPtr<IDriver>			_Driver;
-	NLMISC::CRefPtr<IVertexBufferHard>	_VBHard[NumVBHard];
+	std::vector<NLMISC::CRefPtr<IVertexBufferHard> >	_VBHard;
 	bool			_Enabled;
 	uint			_VertexFormat;
 	uint			_VertexSize;

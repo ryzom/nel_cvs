@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.14 2003/04/03 13:01:18 corvazier Exp $
+ * $Id: transform_user.cpp,v 1.15 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,5 +127,30 @@ const CMatrix	&CTransformUser::getLastWorldMatrixComputed() const
 {
 	return _Transform->getWorldMatrix();
 }
+
+// ***************************************************************************
+void			CTransformUser::enableCastShadowMap(bool state)
+{
+	_Transform->enableCastShadowMap(state);
+}
+
+// ***************************************************************************
+bool			CTransformUser::canCastShadowMap() const
+{
+	return _Transform->canCastShadowMap();
+}
+
+// ***************************************************************************
+void			CTransformUser::enableReceiveShadowMap(bool state)
+{
+	_Transform->enableReceiveShadowMap(state);
+}
+
+// ***************************************************************************
+bool			CTransformUser::canReceiveShadowMap() const
+{
+	return _Transform->canReceiveShadowMap();
+}
+
 
 } // NL3D

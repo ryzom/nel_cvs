@@ -1,7 +1,7 @@
 /** \file mesh_skin_manager.cpp
  * <File description>
  *
- * $Id: mesh_skin_manager.cpp,v 1.3 2003/03/13 13:40:58 corvazier Exp $
+ * $Id: mesh_skin_manager.cpp,v 1.4 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -40,6 +40,7 @@ CMeshSkinManager::CMeshSkinManager()
 	_VertexSize= 0;
 	_MaxVertices= 0;
 	_CurentVBHard= 0;
+	_NumVBHard= 0;
 }
 // ***************************************************************************
 CMeshSkinManager::~CMeshSkinManager()
@@ -48,11 +49,17 @@ CMeshSkinManager::~CMeshSkinManager()
 }
 
 // ***************************************************************************
-void			CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertices)
+void			CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard, const std::string &vbName)
 {
 	nlassert(driver);
 	// clean before.
 	release();
+
+	// Create VBHard placeholder
+	if(numVBHard==0)
+		return;
+	_NumVBHard= numVBHard;
+	_VBHard.resize(_NumVBHard, NULL);
 
 	// setup, => correct for possible release below
 	_Driver= driver;
@@ -67,7 +74,7 @@ void			CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertic
 		vb.setUVRouting (i, 0);
 
 	// create the VBHard, if possible
-	for(i=0;i<NumVBHard;i++)
+	for(i=0;i<_NumVBHard;i++)
 	{
 		_VBHard[i]= _Driver->createVertexBufferHard(vb.getVertexFormat(), vb.getValueTypePointer(), maxVertices, IDriver::VBHardAGP, vb.getUVRouting());
 		// if filas, release all, and quit
@@ -75,6 +82,11 @@ void			CMeshSkinManager::init(IDriver *driver, uint vertexFormat, uint maxVertic
 		{
 			release();
 			return;
+		}
+		// ok, set name for lock profiling
+		else
+		{
+			_VBHard[i]->setName(vbName + NLMISC::toString(i));
 		}
 	}
 
@@ -91,7 +103,7 @@ void			CMeshSkinManager::release()
 	// release driver/VBHard
 	if(_Driver)
 	{
-		for(uint i=0;i<NumVBHard;i++)
+		for(uint i=0;i<_NumVBHard;i++)
 		{
 			if(_VBHard[i])
 				_Driver->deleteVertexBufferHard(_VBHard[i]);
@@ -100,12 +112,15 @@ void			CMeshSkinManager::release()
 		_Driver= NULL;
 	}
 
+	_VBHard.clear();
+
 	// misc
 	_Enabled= false;
 	_VertexFormat= 0;
 	_VertexSize= 0;
 	_MaxVertices= 0;
 	_CurentVBHard= 0;
+	_NumVBHard= 0;
 }
 // ***************************************************************************
 uint8			*CMeshSkinManager::lock()
@@ -127,7 +142,7 @@ void			CMeshSkinManager::activate()
 void			CMeshSkinManager::swapVBHard()
 {
 	_CurentVBHard++;
-	_CurentVBHard= _CurentVBHard%NumVBHard;
+	_CurentVBHard= _CurentVBHard%_NumVBHard;
 }
 
 

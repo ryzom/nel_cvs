@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.43 2003/05/13 15:35:28 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.44 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -281,6 +281,44 @@ public:
 	// Is this mesh Geom has a VertexProgram bound?
 	virtual bool	hasMeshVertexProgram() const {return _MeshVertexProgram!=NULL;}
 
+	/// \name ShadowMap Skin rendering
+	// @{
+	class		CShadowVertex
+	{
+	public:
+		CVector		Vertex;
+		uint32		MatrixId;
+		void		serial(NLMISC::IStream &f)
+		{
+			(void)f.serialVersion(0);
+
+			f.serial(Vertex);
+			f.serial(MatrixId);
+		}
+
+		// operator for sort
+		bool		operator==(const CShadowVertex &v) const
+		{
+			return MatrixId==v.MatrixId && Vertex==v.Vertex;
+		}
+		bool		operator<(const CShadowVertex &v) const
+		{
+			if(MatrixId!=v.MatrixId)
+				return MatrixId<v.MatrixId;
+			else
+				return Vertex<v.Vertex;
+		}
+	};
+
+	/// Setup the ShadowMesh 
+	void			setShadowMesh(const std::vector<CShadowVertex> &shadowVertices, const std::vector<uint32> &triangles);
+
+	/// Render the ShadowSkin (SkinGroup like)
+	bool			supportShadowSkinGrouping() const {return _SupportShadowSkinGrouping;}
+	sint			renderShadowSkinGeom(CMeshMRMInstance	*mi, uint remainingVertices, uint8 *vbDest);
+	void			renderShadowSkinPrimitives(CMeshMRMInstance	*mi, CMaterial &castMat, IDriver *drv, uint baseVertex);
+
+	// @}
 
 // ************************
 private:
@@ -516,6 +554,15 @@ private:
 	sint							_MBRCurrentLodId;
 	// @}
 
+	
+	/// \name ShadowMap Skin rendering
+	// @{
+	std::vector<CShadowVertex>		_ShadowSkinVertices;
+	std::vector<uint32>				_ShadowSkinTriangles;
+	bool							_SupportShadowSkinGrouping;
+	void		applyArrayShadowSkin(CShadowVertex *src, CVector *dst, CSkeletonModel *skeleton, uint numVerts);
+	// @}
+
 private:
 	/// serial a subset of the vertices.
 	void	serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint endWedge);
@@ -614,6 +661,7 @@ public:
 	static  uint	NumCacheVertexNormal2;
 	static  uint	NumCacheVertexNormal3;
 	static  uint	NumCacheVertexNormal4;
+	static  uint	NumCacheVertexShadow;
 
 	// @}
 };

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.66 2003/03/18 10:24:44 corvazier Exp $
+ * $Id: tessellation.cpp,v 1.67 2003/08/07 08:49:13 berenguier Exp $
  *
  */
 
@@ -183,6 +183,8 @@ CTessFace::CTessFace()
 
 
 	NL3D_PROFILE_LAND_ADD(ProfNTessFace, 1);
+
+	ShadowMapTriId= -1;
 }
 
 
@@ -204,6 +206,9 @@ CTessFace::~CTessFace()
 	*/
 
 	NL3D_PROFILE_LAND_ADD(ProfNTessFace, -1);
+
+	// Ensure correclty removed from landscape ShadowMap.
+	nlassert(ShadowMapTriId== -1);
 }
 
 

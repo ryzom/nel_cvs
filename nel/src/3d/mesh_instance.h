@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.12 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.13 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/material.h"
 #include "3d/animated_material.h"
+#include "3d/vertex_buffer.h"
 
 
 namespace NL3D
@@ -48,6 +49,7 @@ const NLMISC::CClassId		MeshInstanceId=NLMISC::CClassId(0x6bfe0a34, 0x23b26dc9);
 /**
  * An instance of CMesh.
  * no special traverse, since same functionnality as CMeshBaseInstance.
+ *	NB: CMeshInstance support shadowMap casting ONLY for an easy Demo / Test. No Lod mgt, and No good shadow clip.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -83,13 +85,42 @@ protected:
 
 	// @}
 
+	/// \name Special Traverse Feature.
+	// @{
+	/** just a specialisation to maybe add the ShadowMap Caster. This is not Clip or ShadowMapCaster Loding 
+	 *	REGULAR but this is just a test...
+	 */
+	virtual void	traverseRender();
+	// @}
+
 	// called at instanciation
 	void			initRenderFilterType();
+
+	/// \name ShadowMap Behavior.
+	// @{
+	virtual	void		generateShadowMap(const CVector &lightDir);
+	virtual	CShadowMap	*getShadowMap();
+	virtual bool		computeWorldBBoxForShadow(NLMISC::CAABBox &worldBB);
+	virtual void		renderIntoSkeletonShadowMap(CSkeletonModel *rootSkeleton, CMaterial	&castMat);
+	// @}
 
 private:
 	static CTransform	*creator() {return new CMeshInstance;}
 	friend	class CMesh;
 
+	// MeshInstances can generate Shadow Map
+	CShadowMap			*_ShadowMap;
+	// A cache to store Shadow Generation Geometry
+	struct	CShadowGeom
+	{
+		/// This is a cache for the Caster Model. stores its simplified geometry for rendering in this buffer.
+		CVertexBuffer					CasterVBuffer;
+		/// A cache for the caster triangles primitives.
+		std::vector<uint32>				CasterTriangles;
+	};
+	CShadowGeom			*_ShadowGeom;
+
+	void			updateShadowMap(IDriver *driver);
 };
 
 

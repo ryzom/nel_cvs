@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.45 2003/07/15 08:36:52 corvazier Exp $
+ * $Id: scene.h,v 1.46 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -548,6 +548,27 @@ public:
 		uint    getFlareContext() const { return _FlareContext; }		
 	// @}
 
+
+	/// \name ShadowMapping Options
+	// @{
+	/// return the current base ShadowMap TextureSize. Default is 64 texels.
+	uint			getShadowMapTextureSize() const {return _ShadowMapTextureSize;}
+	/// must be a power of 2.
+	void			setShadowMapTextureSize(uint size);
+	/// return the current ShadowMap Max Depth. This is the length in the lightDir direction where the shadow can touch receivers
+	float			getShadowMapMaxDepth() const {return _ShadowMapMaxDepth;}
+	/// set the ShadowMap Extent
+	void			setShadowMapMaxDepth(float depth);
+	/// get the size of the blur (<=3 means number of fakeBlur).
+	uint			getShadowMapBlurSize() const {return _ShadowMapBlurSize;}
+	/// set the size of the blur (<=3 means number of fakeBlur).
+	void			setShadowMapBlurSize(uint bs);
+	/// Enable Polygon Smoothing
+	void			enableShadowPolySmooth(bool enable);
+	/// get Enable Polygon Smoothing flag
+	bool			getEnableShadowPolySmooth() const;
+	// @}
+
 private:
 
 	/// The camera / Viewport.
@@ -692,11 +713,17 @@ private:
 	static std::set<CModelEntry>	_RegModels;
 
 	/// Update all models. All dirty models are cleaned
-	void	updateModels();
+	void			updateModels();
 
 	// current context for rendering of flares
-	uint _FlareContext;
+	uint			_FlareContext;
+
+	// ShadowMap Options
+	uint			_ShadowMapTextureSize;
+	float			_ShadowMapMaxDepth;
+	uint			_ShadowMapBlurSize;
 };
+
 
 
 }

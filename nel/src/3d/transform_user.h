@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.21 2003/06/20 14:53:02 puzin Exp $
+ * $Id: transform_user.h,v 1.22 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -265,6 +265,14 @@ public:
 		NL3D_MEM_TRANSFORM
 		return _Transform->isTransparent();
 	}
+	// @}
+
+	/// \name ShadowMapping
+	// @{
+	virtual void			enableCastShadowMap(bool state);
+	virtual bool			canCastShadowMap() const;
+	virtual void			enableReceiveShadowMap(bool state);
+	virtual bool			canReceiveShadowMap() const;
 	// @}
 
 public:

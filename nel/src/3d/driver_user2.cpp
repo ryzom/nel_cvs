@@ -1,7 +1,7 @@
 /** \file driver_user2.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.17 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: driver_user2.cpp,v 1.18 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,8 +67,9 @@ UScene			*CDriverUser::createScene()
 	CSceneUser *pSU = new CSceneUser(this);
 	// set the shape bank
 	pSU->getScene().setShapeBank( &_ShapeBank._ShapeBank );
-	// set the MeshSkinManager
+	// set the MeshSkinManagers
 	pSU->getScene().getRenderTrav().setMeshSkinManager(&_MeshSkinManager);
+	pSU->getScene().getRenderTrav().setShadowMeshSkinManager(&_ShadowMeshSkinManager);
 	// set the AsyncTextureManager
 	pSU->getScene().setAsyncTextureManager(&_AsyncTextureManager);
 	// set the lodManager
@@ -224,6 +225,20 @@ uint32			CDriverUser::getUsedTextureMemory () const
 	NL3D_MEM_DRIVER
 	return _Driver->getUsedTextureMemory ();
 }
+
+
+// ***************************************************************************
+void			CDriverUser::startProfileVBHardLock()
+{
+	_Driver->startProfileVBHardLock();
+}
+
+// ***************************************************************************
+void			CDriverUser::endProfileVBHardLock(std::vector<std::string> &result)
+{
+	_Driver->endProfileVBHardLock(result);
+}
+
 
 
 } // NL3D

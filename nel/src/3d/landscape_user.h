@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.20 2003/03/31 12:47:47 corvazier Exp $
+ * $Id: landscape_user.h,v 1.21 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -183,6 +183,12 @@ public:
 	// @{
 	virtual	void		setDLMGlobalVegetableColor(CRGBA gvc);
 	virtual	CRGBA		getDLMGlobalVegetableColor() const;
+	// @}
+
+	/// \name ShadowMapping
+	// @{
+	virtual void			enableReceiveShadowMap(bool state);
+	virtual bool			canReceiveShadowMap() const;
 	// @}
 
 public:

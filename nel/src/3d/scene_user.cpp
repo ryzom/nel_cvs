@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.44 2003/07/16 09:06:08 puzin Exp $
+ * $Id: scene_user.cpp,v 1.45 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1011,6 +1011,55 @@ void CSceneUser::setFlareContext(uint context)
 uint CSceneUser::getFlareContext() const
 {
 	return _Scene.getFlareContext(); 
+}
+
+
+// ***************************************************************************
+uint			CSceneUser::getShadowMapTextureSize() const
+{
+	return _Scene.getShadowMapTextureSize();
+}
+
+// ***************************************************************************
+void			CSceneUser::setShadowMapTextureSize(uint size)
+{
+	_Scene.setShadowMapTextureSize(size);
+}
+
+// ***************************************************************************
+float			CSceneUser::getShadowMapMaxDepth() const
+{
+	return _Scene.getShadowMapMaxDepth();
+}
+
+// ***************************************************************************
+void			CSceneUser::setShadowMapMaxDepth(float depth)
+{
+	_Scene.setShadowMapMaxDepth(depth);
+}
+
+// ***************************************************************************
+uint			CSceneUser::getShadowMapBlurSize() const
+{
+	return _Scene.getShadowMapBlurSize();
+}
+
+// ***************************************************************************
+void			CSceneUser::setShadowMapBlurSize(uint bs)
+{
+	_Scene.setShadowMapBlurSize(bs);
+}
+
+// ***************************************************************************
+void			CSceneUser::enableShadowPolySmooth(bool enable)
+{
+	_Scene.enableShadowPolySmooth(enable);
+}
+
+// ***************************************************************************
+bool			CSceneUser::getEnableShadowPolySmooth() const
+{
+	return _Scene.getEnableShadowPolySmooth();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.21 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: material.h,v 1.22 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,6 +101,10 @@ const uint32 IDRV_MAT_USER_TEX_MAT_ALL  =   0x0FF00000;
 
 const uint32 IDRV_MAT_USER_TEX_FIRST_BIT = 20;
 
+// For TexCoordGen
+const uint32 IDRV_MAT_TEX_GEN_SHIFT  =   2;
+const uint32 IDRV_MAT_TEX_GEN_MASK  =   0x03;
+
 
 
 // ***************************************************************************
@@ -177,7 +181,7 @@ public:
 	 *		Texture/Previous/Diffuse/Constant, respectively if operator is
 	 *		InterpolateTexture/InterpolatePrevious/InterpolateDiffuse/InterpolateConstant.
 	 * EMBM : apply to both color and alpha : the current texture, whose format is DSDT, is used to offset the texture in the next stage.
-	 *  NB : for EMBM and InterpolateConstant, this must be supported by driver.
+	 *  NB : for EMBM, this must be supported by driver.
 	 */
 	enum TTexOperator		{ Replace=0, Modulate, Add, AddSigned, 
 							  InterpolateTexture, InterpolatePrevious, InterpolateDiffuse, InterpolateConstant, EMBM };
@@ -218,6 +222,13 @@ public:
 							};
 	// @}
 
+	/**	TexGen Mode.
+	 *	TexCoordGenReflect: For Cube or Spherical EnvMapping.
+	 *	TexCoordGenObjectSpace: The UVW are generated from the XYZ defined in ObjectSpace (before transformation)
+	 *	TexCoordGenEyeSpace: The UVW are generated from the XYZ defined in EyeSpace (after ModelViewMatrix transformation)
+	 *	NB: use the TextureMatrix for more control on the wanted effect (eg: shadowMap projection etc...)
+	 */
+	enum TTexCoordGenMode	{TexCoordGenReflect=0, TexCoordGenObjectSpace, TexCoordGenEyeSpace, numTexCoordGenMode};
 
 public:
 	/// \name Object.
@@ -400,8 +411,13 @@ public:
 	void					setTexEnvMode(uint stage, uint32 packed);
 	CRGBA					getTexConstantColor(uint stage);
 
+	// Enable or disable TexCoordGeneration
 	void					setTexCoordGen(uint stage, bool generate);
 	bool					getTexCoordGen(uint stage) const;
+
+	// By default the mode is TexCoordGenReflect.
+	void					setTexCoordGenMode(uint stage, TTexCoordGenMode mode);
+	TTexCoordGenMode		getTexCoordGenMode(uint stage) const {return (TTexCoordGenMode)((_TexCoordGenMode >> (stage*IDRV_MAT_TEX_GEN_SHIFT))&IDRV_MAT_TEX_GEN_MASK);}
 
 	// Enable a user texture matrix for the n-th stage. The initial matrix is set to identity.
 	void                    enableUserTexMat(uint stage, bool enabled = true);
@@ -556,6 +572,8 @@ private:
 	float					_AlphaTestThreshold;
 	uint32					_Touched;
 	bool					_StainedGlassWindow; // \todo mb : clean this flag (add a CMaterialBuil class)
+	// For each texture (8), the TexGen Mode.
+	uint16					_TexCoordGenMode;
 	struct	CUserTexMat
 	{
 		NLMISC::CMatrix		TexMat[IDRV_MAT_MAXTEXTURES];		

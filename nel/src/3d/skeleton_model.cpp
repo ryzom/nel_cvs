@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.45 2003/07/09 16:32:30 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.46 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,10 @@ CSkeletonModel::CSkeletonModel()
 	_RenderFilterType= UScene::FilterSkeleton;
 
 	_AnimCtrlUsage= 0;
+
+	// ShadowMap
+	CTransform::setIsShadowMapCaster(true);
+	_ShadowMap= NULL;
 }
 
 	
@@ -141,6 +145,11 @@ CSkeletonModel::~CSkeletonModel()
 	// Free Lod instance
 	setLodCharacterShape(-1);
 
+	// delete the shadowMap
+	if(_ShadowMap)
+	{
+		delete _ShadowMap;
+	}
 }
 
 
@@ -550,6 +559,27 @@ void	CSkeletonModel::traverseAnimDetail()
 {
 	CSkeletonShape	*skeShape= ((CSkeletonShape*)(IShape*)Shape);
 
+	/* NB: If "this" skeleton has an AncestorSkeletonModel displayed but "this" skeleton is clipped, 
+		it will be still animDetailed.
+		So its possible sticked sons will be displayed with correct WorldMatrix (if not themselves clipped).
+	*/
+
+	/*	If the Root Skeleton Model (ie me or my AncestorSM) is asked to render a ShadowMap, BUT I am
+		in CLod Form (and visible in HRC else won't be rendered in shadowMap...), then temporarly
+		Avoid CLod!! To really compute the bones for this frame only.
+	*/
+	bool	tempAvoidCLod= false;
+	CSkeletonModel		*rootSM= _AncestorSkeletonModel;
+	if(!rootSM)	rootSM= this;
+	// do the test.
+	if(rootSM->isRenderingShadowMap() && isDisplayedAsLodCharacter() && isHrcVisible() )
+	{
+		tempAvoidCLod= true;
+		// Disable it just the time of this AnimDetail
+		setDisplayLodCharacterFlag(false);
+	}
+
+
 	// Update Lod, and animate.
 	//===============
 
@@ -653,6 +683,13 @@ void	CSkeletonModel::traverseAnimDetail()
 	// traverse visible Clip models, and if skeleton, traverse Hrc sons.
 
 
+	// Restore the Initial CLod flag if needed (see above)
+	if(tempAvoidCLod)
+	{
+		setDisplayLodCharacterFlag(true);
+	}
+
+
 	// Update Animated Skins.
 	//===============
 	for(uint i=0;i<_AnimDetailSkins.size();i++)
@@ -660,7 +697,6 @@ void	CSkeletonModel::traverseAnimDetail()
 		// traverse it. NB: updateWorldMatrixFromFather() is called but no-op because isSkinned()
 		_AnimDetailSkins[i]->traverseAnimDetail();
 	}
-
 }
 
 
@@ -1595,6 +1631,278 @@ IAnimCtrl	*CSkeletonModel::getBoneAnimCtrl(uint boneId) const
 		return NULL;
 
 	return Bones[boneId]._AnimCtrl;
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// ShadowMap
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CSkeletonModel::generateShadowMap(const CVector &lightDir)
+{
+	H_AUTO( NL3D_Skeleton_GenerateShadow );
+
+	// get the driver for Texture Render
+	CScene			*scene= getOwnerScene();
+	CRenderTrav		&renderTrav= scene->getRenderTrav();
+	IDriver			*driver= renderTrav.getAuxDriver();
+
+	if(!Shape)
+		return;
+
+	// update ShadowMap data if needed.
+	// ****
+	updateShadowMap(driver);
+
+	if(!_ShadowMap)
+		return;
+
+	// compute the ProjectionMatrix.
+	// ****
+
+	// Compute the BBox in World, with bounding Box of Bones, and with BoundingBox of sticked Objects
+	CAABBox		bbWorld;
+	computeWorldBBoxForShadow(bbWorld);
+
+
+	// Here the bbox is defined in world, hence must remove the World Pos.
+	CMatrix		localPosMatrix;
+	localPosMatrix.setPos(-getWorldMatrix().getPos());
+
+	// setup cameraMatrix with BBox and Enlarge For 1 pixel
+	CMatrix		cameraMatrix;
+	_ShadowMap->buildCasterCameraMatrix(lightDir, localPosMatrix, bbWorld, cameraMatrix);
+
+
+	// Render.
+	// ****
+	// setup the orhtogonal frustum and viewMatrix to include all the object.
+	driver->setFrustum(0,1,0,1,0,1,false);
+	driver->setupViewMatrix(cameraMatrix.inverted());
+
+	// render the Skinned meshs, and also the Sticked Objects/Skeletons
+	CMaterial	&castMat= renderTrav.getShadowMapManager().getCasterShadowMaterial();
+	renderIntoSkeletonShadowMap(this, castMat);
+
+	// Infos.
+	// ****
+
+	// Compute the BackPoint: the first point to be shadowed. 
+	CVector		backPoint= bbWorld.getCenter();
+	// get the 3/4 bottom of the shape
+	backPoint.z-= bbWorld.getHalfSize().z/2;
+	// Use the 3/4 bottom of the BBox minus the light direction in XY.
+	CVector	ldir= lightDir;
+	ldir.z= 0;
+	ldir.normalize();
+	// NB: This way seems to works quite well, even if the worldBBox is changing every frame.
+	float	lenXY= (CVector(bbWorld.getHalfSize().x, bbWorld.getHalfSize().y, 0)).norm();
+	backPoint-= ldir*lenXY;
+	// localPos.
+	backPoint-= getWorldMatrix().getPos();
+
+	// Compute LocalProjectionMatrix and other infos from cameraMatrix and backPoint?
+	_ShadowMap->buildProjectionInfos(cameraMatrix, backPoint, scene);
+}
+
+// ***************************************************************************
+CShadowMap	*CSkeletonModel::getShadowMap()
+{
+	return _ShadowMap;
+}
+
+// ***************************************************************************
+void		CSkeletonModel::updateShadowMap(IDriver *driver)
+{
+	// create the shadowMap if not already done.
+	if(!_ShadowMap)
+	{
+		_ShadowMap= new CShadowMap;
+	}
+
+	// create/update texture
+	if(_ShadowMap->getTextureSize()!=getOwnerScene()->getShadowMapTextureSize())
+	{
+		_ShadowMap->initTexture(getOwnerScene()->getShadowMapTextureSize());
+	}
+}
+
+
+// ***************************************************************************
+void		CSkeletonModel::renderShadowSkins(CMaterial &castMat)
+{
+	H_AUTO( NL3D_Skin_RenderShadow );
+
+	CRenderTrav			&rdrTrav= getOwnerScene()->getRenderTrav();
+	// Render Shadow in auxiliary driver.
+	IDriver				*driver= rdrTrav.getAuxDriver();
+
+	// if the SkinManager is not possible at all, just rendered the std way
+	if( !rdrTrav.getShadowMeshSkinManager() || !rdrTrav.getShadowMeshSkinManager()->enabled() )
+	{
+		// TODO_SHADOW
+		// ABORT!!  =>  means no AGP...  avoid Mesh Shadowing (free shadowMap)? Replace with a dummy Shadow?
+		// For now, no-op...
+	}
+	else
+	{
+		uint	i;
+
+		// get the meshSkinManager
+		CMeshSkinManager	&meshSkinManager= *rdrTrav.getShadowMeshSkinManager();
+
+		// array (rarely allocated) of skins with grouping support
+		static	std::vector<CTransform*>	skinsToGroup;
+		static	std::vector<uint>			baseVertices;
+		skinsToGroup.clear();
+		baseVertices.clear();
+
+		// get the maxVertices the manager support
+		uint	maxVertices= meshSkinManager.getMaxVertices();
+		uint	vertexSize= meshSkinManager.getVertexSize();
+
+		// fill array of skins to group (suppose all support else won't be rendered)
+		for(i=0;i<_OpaqueSkins.size();i++)
+		{
+			if(_OpaqueSkins[i]->supportShadowSkinGrouping())
+				skinsToGroup.push_back(_OpaqueSkins[i]);
+		}
+		for(i=0;i<_TransparentSkins.size();i++)
+		{
+			if(_TransparentSkins[i]->supportShadowSkinGrouping())
+				skinsToGroup.push_back(_TransparentSkins[i]);
+		}
+
+		// For each skin, have an index which gives the decal of the vertices in the buffer
+		baseVertices.resize(skinsToGroup.size());
+
+		// while there is skin to render in group
+		uint	skinId= 0;
+		while(skinId<skinsToGroup.size())
+		{
+			// space left in the manager
+			uint	remainingVertices= maxVertices;
+			uint	currentBaseVertex= 0;
+
+			// First pass, fill The VB.
+			//------------
+			// lock buffer
+			uint8	*vbDest= meshSkinManager.lock();
+
+			// For all skins until the buffer is full
+			uint	startSkinId= skinId;
+			while(skinId<skinsToGroup.size())
+			{
+				// if success to fill the AGP
+				sint	numVerticesAdded= skinsToGroup[skinId]->renderShadowSkinGeom(remainingVertices, 
+					vbDest + vertexSize*currentBaseVertex );
+				// -1 means that this skin can't render because no space left for her. Then stop for this block
+				if(numVerticesAdded==-1)
+					break;
+				// Else ok, get the currentBaseVertex for this skin
+				baseVertices[skinId]= currentBaseVertex;
+				// and jump to the next place
+				currentBaseVertex+= numVerticesAdded;
+				remainingVertices-= numVerticesAdded;
+
+				// go to the next skin
+				skinId++;
+			}
+
+			// release buffer. ATI: release only vertices used.
+			meshSkinManager.unlock(currentBaseVertex);
+
+			// Second pass, render the primitives.
+			//------------
+			meshSkinManager.activate();
+
+			// Render any primitives
+			for(uint i=startSkinId;i<skinId;i++)
+			{
+				// render the skin in the current buffer
+				skinsToGroup[i]->renderShadowSkinPrimitives(castMat, driver, baseVertices[i]);
+			}
+
+			// End of this block, swap to the next buffer
+			meshSkinManager.swapVBHard();
+		}
+	}
+}
+
+
+// ***************************************************************************
+bool		CSkeletonModel::computeWorldBBoxForShadow(NLMISC::CAABBox &worldBB)
+{
+	uint	i;
+
+	// If even not visible, no-op
+	if(!isHrcVisible() || !Shape)
+		return false;
+
+	// **** Compute The BBox with Bones of the skeleton
+	// TODODO: hack here.
+	for(i=0;i<_BoneToCompute.size();i++)
+	{
+		CBone	*bone= _BoneToCompute[i].Bone;
+		if(i==0)
+			worldBB.setCenter(bone->getWorldMatrix().getPos());
+		else
+			worldBB.extend(bone->getWorldMatrix().getPos());
+	}
+	// Hack.
+	worldBB.setHalfSize(worldBB.getHalfSize()*1.5f);
+
+
+	// **** Add to this bbox the ones of the Sticked objects.
+	ItTransformSet	it;
+	for(it= _StickedObjects.begin();it!=_StickedObjects.end();it++)
+	{
+		CTransform	*stickModel= *it;
+		// Do the same for this son (NB: recurs, may be a skeleton too!!)
+		CAABBox		stickBB;
+		if(stickModel->computeWorldBBoxForShadow(stickBB))
+		{
+			// Make union of the 2
+			worldBB= CAABBox::computeAABBoxUnion(worldBB, stickBB);
+		}
+	}
+
+	// Done!
+	return true;
+}
+
+// ***************************************************************************
+void		CSkeletonModel::renderIntoSkeletonShadowMap(CSkeletonModel *rootSkeleton, CMaterial	&castMat)
+{
+	// If even not visible, no-op
+	if(!isHrcVisible() || !Shape)
+		return;
+
+	// render into aux Driver
+	IDriver			*driver= getOwnerScene()->getRenderTrav().getAuxDriver();
+
+	// **** Render the Skeleton Skins
+	// The model Matrix is special here. It must be the Skeleton World Matrix, minus The Root Skeleton pos.
+	CMatrix		localPosMatrix;
+	localPosMatrix.setRot( getWorldMatrix() );
+	// NB: if this==rootSkeleton, then the final pos will be CVector::Null
+	localPosMatrix.setPos( getWorldMatrix().getPos() - rootSkeleton->getWorldMatrix().getPos() );
+	driver->setupModelMatrix(localPosMatrix);
+
+	// render the skins.
+	renderShadowSkins(castMat);
+
+	// **** Render The Sticked Objects.
+	ItTransformSet	it;
+	for(it= _StickedObjects.begin();it!=_StickedObjects.end();it++)
+	{
+		CTransform	*stickModel= *it;
+		stickModel->renderIntoSkeletonShadowMap(rootSkeleton, castMat);
+	}
 }
 
 

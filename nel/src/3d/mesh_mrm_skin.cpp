@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.14 2003/06/05 15:42:06 boucher Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.15 2003/08/07 08:49:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -328,6 +328,42 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const CSkeletonModel *skeleton)
 
 // ***************************************************************************
 // ***************************************************************************
+// Simple skinning version with position only for shadow (but fast here!)
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CMeshMRMGeom::applyArrayShadowSkin(CShadowVertex *src, CVector *dst, CSkeletonModel *skeleton, uint numVerts)
+{
+	// For all matrix this Mesh use. (the shadow geometry cannot use other Matrix than the mesh use).
+	// NB: take the best lod since the lower lods cannot use other Matrix than the higher one.
+	static	vector<CMatrix3x4>		boneMat3x4;
+	CLod	&lod= _Lods[_Lods.size()-1];
+	computeBoneMatrixes3x4(boneMat3x4, lod.MatrixInfluences, skeleton);
+
+	// Then do the skin
+	for(;numVerts>0;)
+	{
+		// number of vertices to process for this block.
+		uint	nBlockInf= min(NumCacheVertexShadow, numVerts);
+		// next block.
+		numVerts-= nBlockInf;
+
+		// cache the data in L1 cache.
+		CFastMem::precache(src, nBlockInf * sizeof(CShadowVertex));
+
+		//  for all InfluencedVertices only.
+		for(;nBlockInf>0;nBlockInf--, src++, dst++)
+		{
+			boneMat3x4[ src->MatrixId ].mulSetPoint( src->Vertex, *dst );
+		}
+	}
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
 // Old school Template skinning: SSE or not.
 // ***************************************************************************
 // ***************************************************************************
@@ -347,6 +383,8 @@ uint	CMeshMRMGeom::NumCacheVertexNormal3= NL_BlockByteL1 / sizeof(CRawVertexNorm
 // Number of vertices per block to process with 4 matrix.
 uint	CMeshMRMGeom::NumCacheVertexNormal4= NL_BlockByteL1 / sizeof(CRawVertexNormalSkin4);
 
+// Number of vertices per block to process For ShadowMap generation
+uint	CMeshMRMGeom::NumCacheVertexShadow= NL_BlockByteL1 / sizeof(CMeshMRMGeom::CShadowVertex);
 
 // Old School template: include the same file with define switching
 #undef NL_SKIN_SSE

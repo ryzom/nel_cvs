@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.56 2001/12/18 18:32:05 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.57 2002/01/29 13:34:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -4029,8 +4029,24 @@ CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
 	_Name = std::string("Face");	
 }
 
-void CPSFace::draw(bool opaque)
+void CPSFace::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {
+	if (pass == PSToolRender) // edition mode only
+	{			
+		showTool();
+		return;
+	}
+	else
+	if (!
+		(	(pass == PSBlendRender && hasTransparentFaces())
+			|| (pass == PSSolidRender && hasOpaqueFaces())
+		)
+	   )
+	{
+		return;
+	}
+	
+
 	PARTICLES_CHECK_MEM;
 
 	nlassert(_Owner);
@@ -4079,9 +4095,7 @@ void CPSFace::draw(bool opaque)
 	{
 			
 		// rotate all precomputed basis
-
-		// TODO : mettre la bonne valeur ici !!
-		const float ellapsedTime = 0.01f;
+		
 
 		for (std::vector< CPlaneBasisPair >::iterator it = _PrecompBasis.begin(); it != _PrecompBasis.end(); ++it)
 		{

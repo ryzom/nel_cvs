@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.20 2001/12/12 10:28:08 vizerie Exp $
+ * $Id: ps_particle.h,v 1.21 2002/01/29 13:34:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -674,8 +674,8 @@ public:
 	/// return the max number of faces needed for display. This is needed for LOD balancing
 	virtual uint32 getMaxNumFaces(void) const;
 
-protected:
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);		
+protected:	
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 	void draw(bool opaque);		
 	void init(void);		
 	/** used to describe ribbons
@@ -868,7 +868,7 @@ public:
 
 
 protected:
-	virtual void	draw(bool opaque);
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);	
 	virtual void	newElement(CPSLocated *emitterLocated, uint32 emitterIndex);	
 	virtual void	deleteElement(uint32 index);
 	virtual void	resize(uint32 size);

@@ -95,7 +95,7 @@ else
 fi
 
 # Optimize lightmaps if any
-$lightmap_optimizer ./lightmap ./shape 
+$lightmap_optimizer ./lightmap ./shape ./tag
 
 # Convert lightmap in 16 bits mode if they are not 8 bits lightmap
 

@@ -279,17 +279,27 @@ void FlagVerticesMRM (CMeshMRMGeom &mg, uint InMatID, vector<bool> &verticesNeed
 int main(int nNbArg, char **ppArgs)
 {
 	
-	if (nNbArg != 3)
+	if (nNbArg != 3 && nNbArg != 4)
 	{
 		outString ("ERROR : Wrong number of arguments\n");
-		outString ("USAGE : lightmap_optimizer <path_lightmaps> <path_shapes>\n");
+		outString ("USAGE : lightmap_optimizer <path_lightmaps> <path_shapes> <path_tags>\n");
 		return -1;
 	}
 	
 	vector<string> AllShapeNames;
 	vector<CMeshBase*> AllShapes;
+	std::vector<std::string> tags;	
 	char sLMPDir[MAX_PATH];
 	char sSHPDir[MAX_PATH];
+
+	
+
+	if (!SetCurrentDirectory(ppArgs[1]))
+	{
+		outString (string("ERROR : directory ") + ppArgs[1] + " do not exists\n");
+		return -1;
+	}
+
 
 	GetCurrentDirectory (MAX_PATH, sExeDir);
 	// Get absolute directory for lightmaps
@@ -329,6 +339,24 @@ int main(int nNbArg, char **ppArgs)
 		}
 	}
 
+	if (nNbArg > 3 && ppArgs[3] && strlen(ppArgs[3]) > 0)
+	{
+		if (!SetCurrentDirectory(ppArgs[3]))
+		{
+			outString (string("ERROR : directory ") + ppArgs[3] + " do not exists\n");
+			return -1;
+		}
+		dir ("*.tag", tags, false);
+		for(uint k = 0; k < tags.size(); ++k)
+		{
+			std::string::size_type pos = tags[k].find('.');
+			if (pos != std::string::npos)
+			{
+				tags[k] = tags[k].substr(0, pos);
+			}
+		}
+	}
+
 	SetCurrentDirectory (sExeDir);
 
 	for (uint32 nNbLayer = 0; nNbLayer < 256; ++nNbLayer)
@@ -336,6 +364,7 @@ int main(int nNbArg, char **ppArgs)
 		// Get all lightmaps with same number of layer == nNbLayer
 
 		vector<string> AllLightmapNames;
+		vector<sint>   AllLightmapTags;
 		vector<NLMISC::CBitmap*> AllLightmaps;
 		sint32 i, j, k, m, n;
 		string sFilter;
@@ -355,6 +384,29 @@ int main(int nNbArg, char **ppArgs)
 				i = -1;
 			}
 		}
+	
+		AllLightmapTags.resize(AllLightmapNames.size());
+		for(uint k = 0; k < AllLightmapNames.size(); ++k)
+		{
+			AllLightmapTags[k] = -1;
+			// search for tag
+			for(uint l = 0; l < tags.size(); ++l)
+			{
+				if (AllLightmapNames[k].size() > tags[l].size())
+				{
+					std::string start = AllLightmapNames[k].substr(0, tags[l].size());
+					if (NLMISC::nlstricmp(start, tags[l]) == 0)
+					{
+						// the tag matchs
+						AllLightmapTags[k] = l;
+						break;
+					}					
+				}
+			}
+		}
+
+
+
 
 		// Check if all layer of the same lightmap has the same size
 		if (nNbLayer > 0)
@@ -458,10 +510,15 @@ int main(int nNbArg, char **ppArgs)
 
 		for (i = 0; i < (sint32)AllLightmapNames.size(); ++i)
 		{
+			outString(NLMISC::toString("%d / %d\n", (int) i, (int) AllLightmapNames.size()));
 			bool bAssigned = false;
 			for (j = 0; j < i; ++j)
-			{
+			{				
+				// Tags of both textures must match. We don't want to spread lightmap chunk in bitmap whose other part aren't used by current ig lightmaps (this wastes vram for nothing)
+				if (AllLightmapTags[i] != AllLightmapTags[j]) continue;
+
 				// Try to place the texture i into the texture j
+				// This can be done only if texture was exported from the same zone. To ensure that, check 
 				NLMISC::CBitmap *pBI = AllLightmaps[i];
 				NLMISC::CBitmap *pBJ = AllLightmaps[j];
 				sint32 x, y;

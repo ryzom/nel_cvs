@@ -975,6 +975,10 @@ SOURCE=.\3d\scene_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\scissor.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\shape_bank_user.cpp
 # End Source File
 # Begin Source File
@@ -1060,6 +1064,10 @@ SOURCE=..\include\nel\3d\height_map.h
 # Begin Source File
 
 SOURCE=..\include\nel\3d\primitive_profile.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\scissor.h
 # End Source File
 # Begin Source File
 

@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.5 2001/07/06 17:05:27 berenguier Exp $
+ * $Id: driver.h,v 1.6 2001/07/09 15:39:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,8 @@ using NLMISC::CSynchronized;
 class CMaterial;
 class CPrimitiveBlock;
 class CLight;
+class CScissor;
+class CViewport;
 
 
 //****************************************************************************
@@ -394,9 +396,9 @@ public:
 
 
 	/** Set the current Scissor.
-	  * \param viewport is a viewport to setup the current Scissor, in Window relative coordinate (0,1).
+	  * \param scissor is a scissor to setup the current Scissor, in Window relative coordinate (0,1).
 	  */
-	virtual void			setupScissor (const class CViewport& viewport)=0;
+	virtual void			setupScissor (const class CScissor& scissor)=0;
 
 
 	/**

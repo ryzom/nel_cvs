@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.11 2001/07/04 09:11:14 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.12 2001/07/09 15:39:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -234,13 +234,13 @@ void			CDriverUser::setupMatrixContext()
 	_Driver->setupModelMatrix(_CurrentMatrixContext.ModelMatrix);
 }
 // ***************************************************************************
-void			CDriverUser::setScissor(const CViewport &sc)
+void			CDriverUser::setScissor(const CScissor &sc)
 {
 	_CurrentMatrixContext.Scissor= sc;
 	setupMatrixContext();
 }
 // ***************************************************************************
-CViewport		CDriverUser::getScissor()
+CScissor		CDriverUser::getScissor()
 {
 	return _CurrentMatrixContext.Scissor;
 }

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.3 2001/07/06 17:05:27 berenguier Exp $
+ * $Id: u_driver.h,v 1.4 2001/07/09 15:39:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/viewport.h"
+#include "nel/3d/scissor.h"
 #include "nel/3d/frustum.h"
 #include "nel/misc/geom_ext.h"
 #include "nel/misc/matrix.h"
@@ -234,8 +235,8 @@ public:
 
 	/** Set the active scissor for rendering. Default to fullscreen.
 	 */
-	virtual	void			setScissor(const CViewport &)=0;
-	virtual	CViewport		getScissor()=0;
+	virtual	void			setScissor(const CScissor &)=0;
+	virtual	CScissor		getScissor()=0;
 	/** Set the active viewport for rendering. Default to fullscreen.
 	 */
 	virtual	void			setViewport(const CViewport &)=0;

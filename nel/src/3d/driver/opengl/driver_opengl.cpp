@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.108 2001/07/06 17:05:27 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.109 2001/07/09 15:39:43 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -47,6 +47,7 @@
 
 #include "driver_opengl.h"
 #include "nel/3d/viewport.h"
+#include "nel/3d/scissor.h"
 #include "3d/vertex_buffer.h"
 #include "3d/light.h"
 #include "3d/primitive_block.h"
@@ -914,14 +915,13 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 
 
 // --------------------------------------------------
-void	CDriverGL::setupScissor (const class CViewport& viewport)
+void	CDriverGL::setupScissor (const class CScissor& scissor)
 {
 	// Get viewport
-	float x;
-	float y;
-	float width;
-	float height;
-	viewport.getValues (x, y, width, height);
+	float x= scissor.X;
+	float y= scissor.Y;
+	float width= scissor.Width;
+	float height= scissor.Height;
 
 	if(x==0 && x==0 && width==1 && height==1)
 	{
@@ -935,19 +935,27 @@ void	CDriverGL::setupScissor (const class CViewport& viewport)
 			// Get window rect
 			RECT rect;
 			GetClientRect (_hWnd, &rect);
-
-			// Setup gl scissor
 			int clientWidth=rect.right-rect.left;
 			int clientHeight=rect.bottom-rect.top;
-			int ix=(int)((float)clientWidth*x);
-			clamp (ix, 0, clientWidth);
-			int iy=(int)((float)clientHeight*y);
-			clamp (iy, 0, clientHeight);
-			int iwidth=(int)((float)clientWidth*width);
-			clamp (iwidth, 0, clientWidth-ix);
-			int iheight=(int)((float)clientHeight*height);
-			clamp (iheight, 0, clientHeight-iy);
-			glScissor (ix, iy, iwidth, iheight);
+
+			// Setup gl scissor
+			int ix0=(int)floor((float)clientWidth * x + 0.5f);
+			clamp (ix0, 0, clientWidth);
+			int iy0=(int)floor((float)clientHeight* y + 0.5f);
+			clamp (iy0, 0, clientHeight);
+
+			int ix1=(int)floor((float)clientWidth * (x+width) + 0.5f );
+			clamp (ix1, 0, clientWidth);
+			int iy1=(int)floor((float)clientHeight* (y+height) + 0.5f );
+			clamp (iy1, 0, clientHeight);
+
+
+			int iwidth= ix1 - ix0;
+			clamp (iwidth, 0, clientWidth);
+			int iheight= iy1 - iy0;
+			clamp (iheight, 0, clientHeight);
+
+			glScissor (ix0, iy0, iwidth, iheight);
 			glEnable(GL_SCISSOR_TEST);
 		}
 #endif // NL_OS_WINDOWS

@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.23 2004/04/15 17:17:16 corvazier Exp $
+ * $Id: system_info.cpp,v 1.24 2004/05/03 09:25:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -865,7 +865,7 @@ bool CSystemInfo::getVideoInfo (std::string &deviceName, uint64 &driverVersion)
 								if (winXP)
 								{
 									// In Windows'XP we got service name -> not real driver name, so
-									string xpKey = string ("\\System\\CurrentControlSet\\Services\\")+value;
+									string xpKey = string ("System\\CurrentControlSet\\Services\\")+value;
 									if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, xpKey.c_str(), 0, KEY_READ, &baseKey) == ERROR_SUCCESS)
 									{
 										size = 512;
@@ -879,10 +879,10 @@ bool CSystemInfo::getVideoInfo (std::string &deviceName, uint64 &driverVersion)
 												nlwarning ("CSystemInfo::getVideoInfo : empty value ImagePath in key %s", xpKey.c_str());
 										}
 										else
-											nlwarning ("CSystemInfo::getVideoInfo : can't query ImagePath in key %s", keyName.c_str(), xpKey.c_str());
+											nlwarning ("CSystemInfo::getVideoInfo : can't query ImagePath in key %s", xpKey.c_str());
 									}
 									else
-										nlwarning ("CSystemInfo::getVideoInfo : can't open key %s", keyName.c_str(), xpKey.c_str());
+										nlwarning ("CSystemInfo::getVideoInfo : can't open key %s", xpKey.c_str());
 								}
 
 								// Version dll link

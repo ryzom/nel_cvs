@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.34 2001/09/05 15:38:34 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.35 2001/09/07 11:56:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/nelu.h"
 #include "3d/ps_util.h"
 #include "3d/ps_particle.h"
+#include "3d/particle_system_shape.h"
 #include "nel/misc/aabbox.h"
 #include "nel/misc/file.h"
 #include "nel/misc/stream.h"
@@ -495,6 +496,20 @@ const CPSLocatedBindable *CParticleSystem::getLocatedBindableByExternID(uint32 i
 	return  el->second;
 }
 
+
+
+void CParticleSystem::merge(CParticleSystemShape *pss)
+{
+	nlassert(pss);	
+	CParticleSystem *duplicate = pss->instanciatePS(*this->_Scene); // duplicate the p.s. to merge
+	// now we transfer the located of the duplicated ps to this object...
+	for (TProcessVect::iterator it = duplicate->_ProcessVect.begin(); it != duplicate->_ProcessVect.end(); ++it)
+	{
+		attach(*it);		
+	}
+	duplicate->_ProcessVect.clear();
+	delete duplicate;
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.17 2001/08/29 14:25:23 vizerie Exp $
+ * $Id: particle_system.h,v 1.18 2001/09/07 11:56:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@
 
 namespace NL3D {
 
-class CParticleSystem;
+class CParticleSystemShape;
 class CPSLocatedBindable;
 class CFontGenerator;
 class CFontManager;
@@ -94,6 +94,11 @@ public:
 			~CParticleSystem();	
 			/// serialize this particle system
 			void serial(NLMISC::IStream &f)  throw(NLMISC::EStream);
+			/** Merge this system with a system instanciated from the given shape
+			  * NB : for edition purpose, this is slow
+			  */
+			void merge(CParticleSystemShape *toMerge);
+
 			/*** duplication method NOT SUPPORTED
 			 * \param ch for private use, set to null by default
 			 */
@@ -601,10 +606,10 @@ protected:
 
 
 	/** the scene in which the particle system is inserted. This is needed because
-	 * the system may add objects to the scene (for particle that are mesh for instance)
+	 * the system may add objects to the scene (for particle that are meshs for instance)
 	 */
 
-	CScene					 *_Scene;
+	CScene											*_Scene;
 
 
 	// contains the name of the system. (VERSION >= 2 only)

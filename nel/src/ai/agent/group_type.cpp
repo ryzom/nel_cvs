@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.8 2001/01/31 14:01:09 chafik Exp $
+ * $Id: group_type.cpp,v 1.9 2001/01/31 17:24:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -748,7 +748,7 @@ namespace NLAIAGENT
 
 	void CVectorGroupType::set(int index,IObjectIA *o)
 	{
-		((IObjectIA *)_Vector[ index ])->release();
+		if((IObjectIA *)_Vector[ index ] != NULL) ((IObjectIA *)_Vector[ index ])->release();
 		_Vector[ index ] = o;
 	}
 

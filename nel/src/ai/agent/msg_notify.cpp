@@ -1,6 +1,6 @@
 /** \file msg_group.cpp
  *
- * $Id: msg_notify.cpp,v 1.2 2001/01/31 15:16:39 chafik Exp $
+ * $Id: msg_notify.cpp,v 1.3 2001/01/31 17:24:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,10 +29,11 @@ namespace NLAIAGENT
 {
 	CNotifyParentScript::CNotifyParentScript(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
-		CVectorGroupType *x = new CVectorGroupType(2);
+		CVectorGroupType *x = new CVectorGroupType(2);		
 		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);
+		setGroup(CMessageGroup::msgScriptingGroup);		
 		set(0,new DigitalType(0.0));
+		set(1,new DigitalType(0.0));
 	}
 
 	CNotifyParentScript::CNotifyParentScript(IBasicAgent *agent,NLAISCRIPT::CMessageClass *b):CMessageScript(b)
@@ -43,6 +44,7 @@ namespace NLAIAGENT
 		if(agent == NULL)
 		{
 			set(0,new DigitalType(0.0));
+			set(1,new DigitalType(0.0));
 		}
 		else
 		{

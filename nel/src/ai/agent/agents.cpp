@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.15 2001/01/31 15:42:50 chafik Exp $
+ * $Id: agents.cpp,v 1.16 2001/01/31 17:24:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -404,8 +404,7 @@ namespace NLAIAGENT
 			const INombreDefine *n = (const INombreDefine *)m.getFront();
 			if(n->getNumber() != 0.0)
 			{
-
-				
+				const CLocalAgentMail *parent = (const CLocalAgentMail *)m.get();
 			}
 			return (IMessageBase *)m.clone();			
 		}

@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.4 2002/02/19 11:08:45 legros Exp $
+ * $Id: main.cpp,v 1.5 2002/02/20 17:13:09 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ void	initMoulinette()
 		CConfigFile::CVar &cvPathes = cf.getVar("Pathes");
 		for (i=0; i<cvPathes.size(); ++i)
 		{
-			nlinfo("Using search path %s", cvPathes.asString(i).c_str());
+			nldebug("Using search path %s", cvPathes.asString(i).c_str());
 			CPath::addSearchPath(cvPathes.asString(i));
 		}
 
@@ -168,19 +168,19 @@ void	initMoulinette()
 		Bank = getString(cf, "Bank");
 		CPath::addSearchPath(BanksPath);
 
-		nlinfo("OutputRootPath=%s", OutputRootPath.c_str());
-		nlinfo("Outputdirectory=%s", OutputDirectory.c_str());
-		nlinfo("TessellationPath=%s", TessellationPath.c_str());
-		nlinfo("ReduceSurfaces=%s", ReduceSurfaces ? "true" : "false");
-		nlinfo("SmoothBorders=%s", SmoothBorders ? "true" : "false");
-		nlinfo("ComputeElevation=%s", ComputeElevation ? "true" : "false");
-		nlinfo("ComputeLevels=%s", ComputeLevels ? "true" : "false");
-		nlinfo("LinkElements=%s", LinkElements ? "true" : "false");
-		nlinfo("CutEdges=%s", CutEdges ? "true" : "false");
-		nlinfo("TessellateZones=%s", TessellateZones ? "true" : "false");
-		nlinfo("MoulineZones=%s", MoulineZones ? "true" : "false");
-		nlinfo("ProcessRetrievers=%s", ProcessRetrievers ? "true" : "false");
-		nlinfo("ZoneLookUpPath=%s", ZoneLookUpPath.c_str());
+		nldebug("OutputRootPath=%s", OutputRootPath.c_str());
+		nldebug("Outputdirectory=%s", OutputDirectory.c_str());
+		nldebug("TessellationPath=%s", TessellationPath.c_str());
+		nldebug("ReduceSurfaces=%s", ReduceSurfaces ? "true" : "false");
+		nldebug("SmoothBorders=%s", SmoothBorders ? "true" : "false");
+		nldebug("ComputeElevation=%s", ComputeElevation ? "true" : "false");
+		nldebug("ComputeLevels=%s", ComputeLevels ? "true" : "false");
+		nldebug("LinkElements=%s", LinkElements ? "true" : "false");
+		nldebug("CutEdges=%s", CutEdges ? "true" : "false");
+		nldebug("TessellateZones=%s", TessellateZones ? "true" : "false");
+		nldebug("MoulineZones=%s", MoulineZones ? "true" : "false");
+		nldebug("ProcessRetrievers=%s", ProcessRetrievers ? "true" : "false");
+		nldebug("ZoneLookUpPath=%s", ZoneLookUpPath.c_str());
 
 		if (UseZoneSquare)
 		{
@@ -199,7 +199,7 @@ void	initMoulinette()
 	}
 	catch (EConfigFile &e)
 	{
-		printf ("Problem in config file : %s\n", e.what ());
+		nlwarning("Problem in config file : %s\n", e.what ());
 	}
 
 	OutputPath = OutputRootPath+OutputDirectory;
@@ -217,23 +217,33 @@ void	moulineZones(vector<string> &zoneNames)
 	if (TessellateZones)
 	{
 		for (i=0; i<zoneNames.size(); ++i)
+		{
+			nlinfo("-------- Build .tessel for zone %s --------", zoneNames[i].c_str());
 			tessellateZone(zoneNames[i]);
+		}
 	}
 
 	if (MoulineZones)
 	{
 		for (i=0; i<zoneNames.size(); ++i)
+		{
+			nlinfo("-------- Preprocess .lr for zone %s --------", zoneNames[i].c_str());
 			moulineZone(zoneNames[i]);
+		}
 	}
 
 	if (ProcessRetrievers)
 	{
 		for (i=0; i<zoneNames.size(); ++i)
+		{
+			nlinfo("-------- Process .lr for zone %s --------", zoneNames[i].c_str());
 			processRetriever(zoneNames[i]);
+		}
 	}
 
 	if (ProcessGlobal)
 	{
+		nlinfo("-------- Process .gr and .rbank --------");
 		processGlobalRetriever();
 	}
 
@@ -246,8 +256,8 @@ void	moulineZones(vector<string> &zoneNames)
 	NLPACS::StatsSurfaces.XBBSpan.dump("X Bounding Box Span :");
 	NLPACS::StatsSurfaces.YBBSpan.dump("Y Bounding Box Span :");
 */
-	nlinfo("Total Span : %d", NLPACS::StatsSurfaces.TotalSpan);
-	nlinfo("Total SpanList : %d", NLPACS::StatsSurfaces.TotalSpanList);
+//	nlinfo("Total Span : %d", NLPACS::StatsSurfaces.TotalSpan);
+//	nlinfo("Total SpanList : %d", NLPACS::StatsSurfaces.TotalSpanList);
 //	nlinfo("Span per SpanList : %g", (double)NLPACS::StatsSurfaces.TotalSpan/(double)NLPACS::StatsSurfaces.TotalSpanList);
 }
 
@@ -330,16 +340,16 @@ int main(int argc, char **argv)
 				workHour = (totalSeconds-86400*workDay)/3600,
 				workMinute = (totalSeconds-86400*workDay-3600*workHour)/60,
 				workSecond = (totalSeconds-86400*workDay-3600*workHour-60*workMinute);
-		nlinfo("total computation time: %d days, %d hours, %d minutes and %d seconds", workDay, workHour, workMinute, workSecond);
+		nldebug("total computation time: %d days, %d hours, %d minutes and %d seconds", workDay, workHour, workMinute, workSecond);
 	}
 	catch (Exception &e)
 	{
-		fprintf (stderr,"main trapped an exception: '%s'\n", e.what ());
+		nlwarning ("main trapped an exception: '%s'\n", e.what ());
 	}
 #ifndef NL_DEBUG
 	catch (...)
 	{
-		fprintf(stderr,"main trapped an unknown exception\n");
+		nlwarning("main trapped an unknown exception\n");
 	}
 #endif // NL_DEBUG
 

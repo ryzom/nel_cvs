@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.2 2002/01/07 11:46:16 lecroart Exp $
+ * $Id: build_surf.cpp,v 1.3 2002/02/20 17:13:09 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1183,7 +1183,7 @@ void	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 
 	uint	i, j;
 	// setup the square of 9 zones...
-	nlinfo("setup zone tessellation %d %s", zoneId, getZoneNameById(zoneId).c_str());
+	nldebug("setup zone tessellation %d %s", zoneId, getZoneNameById(zoneId).c_str());
 	{
 		uint	zx = zoneId%256, zy = zoneId/256;
 		if (zx>0 && zy>0)		_Zones.push_back(CPatchRetriever(zoneId-257));
@@ -1203,8 +1203,10 @@ void	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 			string	filename = getZoneNameById(rit->ZoneId)+ZoneExt;
 			try
 			{
-				CPath::lookup(filename);
-				++rit;
+				if (CPath::lookup(filename, false, false) == "")
+					rit = _Zones.erase(rit);
+				else
+					++rit;
 			}
 			catch (EPathNotFound &)
 			{
@@ -1224,7 +1226,7 @@ void	NLPACS::CZoneTessellation::setup(uint16 zoneId, sint16 refinement, const CV
 		CZone	zone;
 		zone.serial(file);
 		file.close();
-		nlinfo("use zone %s %d", filename.c_str(), zone.getZoneId());
+		nldebug("use zone %s %d", filename.c_str(), zone.getZoneId());
 		_Landscape.addZone(zone);
 		CPatchRetriever	&retriever = _Zones[i];
 		retriever.Zone = _Landscape.getZone(_Zones[i].ZoneId);
@@ -1444,15 +1446,15 @@ void	NLPACS::CZoneTessellation::build()
 	// into surf elements
 	{
 		sint												i, j;
-		nlinfo("Compute landscape tessellation");
+		nldebug("Compute landscape tessellation");
 
 		// setup landscape for the tessellation
-		nlinfo("   - load tile bank");
+		nldebug("   - load tile bank");
 		CIFile bankFile(CPath::lookup(Bank));
 		_Landscape.TileBank.serial(bankFile);
 		bankFile.close();
 
-		nlinfo("   - tessellate landscape");
+		nldebug("   - tessellate landscape");
 		_Landscape.setThreshold(0.0f);
 		_Landscape.setTileMaxSubdivision(3);
 		_Landscape.refineAll(CVector::Null);
@@ -1461,7 +1463,7 @@ void	NLPACS::CZoneTessellation::build()
 		// get the faces
 		vector<const CTessFace *>	leaves;
 		_Landscape.getTessellationLeaves(leaves);
-		nlinfo("      - generated %d leaves", leaves.size());
+		nldebug("      - generated %d leaves", leaves.size());
 
 		// remap zone links and patch links
 		map<const CPatch *, CPatchTessellation *>			premap;
@@ -1483,7 +1485,7 @@ void	NLPACS::CZoneTessellation::build()
 		_Vertices.clear();
 		_Tessellation.resize(leaves.size());
 
-		nlinfo("   - make and remap surface elements");
+		nldebug("   - make and remap surface elements");
 
 		for (el=0; el<(sint)leaves.size(); ++el)
 		{
@@ -1542,7 +1544,7 @@ void	NLPACS::CZoneTessellation::build()
 		}
 
 		// remap links to zone and neighbor elements
-		nlinfo("   - remap surface elements links");
+		nldebug("   - remap surface elements links");
 		for (el=0; el<(sint)_Tessellation.size(); ++el)
 		{
 			CSurfElement	&element = _Tessellation[el];
@@ -1588,7 +1590,7 @@ void	NLPACS::CZoneTessellation::compile()
 	uint	zone;
 	sint	el;
 
-	nlinfo("prepare elevation selection");
+	nldebug("prepare elevation selection");
 	for (zone=0; zone<_Zones.size(); ++zone)
 	{
 		CPatchRetriever	&retriever = _Zones[zone];
@@ -1637,7 +1639,7 @@ void	NLPACS::CZoneTessellation::compile()
 	}
 
 	// compute elements features
-	nlinfo("compute elements quantas");
+	nldebug("compute elements quantas");
 	for (el=0; el<(sint)Elements.size(); ++el)
 	{
 		CSurfElement	&element = *(Elements[el]);
@@ -1647,7 +1649,7 @@ void	NLPACS::CZoneTessellation::compile()
 	// compute elements level
 	if (ComputeLevels)
 	{
-		nlinfo("compute elements levels");
+		nldebug("compute elements levels");
 		// Insert all elements into a CQuadGrid
 		CQuadGrid<CSurfElement *>	quadGrid;
 		quadGrid.create(1024, 0.5f);
@@ -1673,7 +1675,7 @@ void	NLPACS::CZoneTessellation::compile()
 		// it also smoothes a bit the surface border
 		// it seems that 3 consecutive passes are optimal to reduce
 		// nasty granularity
-		nlinfo("reduce surfaces");
+		nldebug("reduce surfaces");
 		uint	i;
 		sint	p;
 
@@ -1757,7 +1759,7 @@ void	NLPACS::CZoneTessellation::compile()
 	}
 
 	// flood fills the tessellation to get surfaces
-	nlinfo("build and flood fill surfaces");
+	nldebug("build and flood fill surfaces");
 	uint32	surfId = 0; // + (ZoneId<<16);
 	uint	totalSurf = 0;
 	sint32	extSurf = -1024;
@@ -1788,7 +1790,7 @@ void	NLPACS::CZoneTessellation::compile()
 				surf.computeHeightQuad();
 		}
 	}
-	nlinfo("%d surfaces generated", totalSurf);
+	nldebug("%d surfaces generated", totalSurf);
 }
 
 
@@ -1798,13 +1800,13 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 {
 	sint	surf;
 
-	nlinfo("generate tessellation borders");
+	nldebug("generate tessellation borders");
 	// for each surface, build its border
 	for (surf=0; surf<(sint)Surfaces.size(); ++surf)
 		Surfaces[surf].buildBorders();
 
 	// then, for each border, link the related surfaces...
-	nlinfo("smooth borders");
+	nldebug("smooth borders");
 	sint	border;
 	sint	totalBefore = 0,
 			totalAfter = 0;
@@ -1821,7 +1823,7 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 		totalBefore += before;
 		totalAfter += after;
 	}
-	nlinfo("smooth process: %d -> %d (%.1f percent reduction)", totalBefore, totalAfter, 100.0*(1.0-(double)totalAfter/(double)totalBefore));
+	nldebug("smooth process: %d -> %d (%.1f percent reduction)", totalBefore, totalAfter, 100.0*(1.0-(double)totalAfter/(double)totalBefore));
 }
 
 

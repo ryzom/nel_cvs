@@ -226,11 +226,6 @@ namespace NLAIAGENT
 			return IObjectIA::ProcessRun;
 	}
 
-/*	IObjectIA *CActorScript::run(const IMessageBase &msg)
-	{
-		return CAgentScript::run( msg );
-	}
-*/
 	const NLAIC::CIdentType &CActorScript::getType() const
 	{		
 		return IdActorScript;
@@ -509,5 +504,11 @@ namespace NLAIAGENT
 			delete _Launched.front();
 			_Launched.pop_front();
 		}
+	}
+
+	float CActorScript::priority() const
+	{
+		// Look at predecessors priorities
+		return 1.0;
 	}
 }

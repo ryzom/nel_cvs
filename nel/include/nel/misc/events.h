@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.6 2000/11/13 11:25:35 corvazier Exp $
+ * $Id: events.h,v 1.7 2000/11/13 13:38:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,17 +35,25 @@ namespace NLMISC {
 
 /*===================================================================*/
 
+class IEventEmitter;
+
 /**
- * CEvent
- * \author Stephane Coutelas
- * \author Nevrax France
+ * CEvent. System event.
  * \date 2000
  */
 class CEvent : public CClassId
 {
+public:
+	/// Emitter of the event.
+	IEventEmitter* Emitter;
 protected:
-	CEvent (const CClassId& classId) : CClassId (classId)
+	/** Constructor.
+	  * \param emitter is the emitter of the event. Can be NULL if the event is posted directly to the CEventServer.
+	  * \param classId is the classId of the event. Should be unique for each event.
+	  */
+	CEvent (IEventEmitter* emitter, const CClassId& classId) : CClassId (classId)
 	{
+		Emitter=emitter;
 	}
 };
 
@@ -206,7 +214,7 @@ enum TKey
 class CEventKeyDown : public CEvent
 {
 public:
-	CEventKeyDown (TKey key) : CEvent (EventKeyDownId)
+	CEventKeyDown (TKey key, IEventEmitter* emitter) : CEvent (emitter, EventKeyDownId)
 	{
 		Key=key;
 	}
@@ -219,7 +227,7 @@ public:
 class CEventKeyUp : public CEvent
 {
 public:
-	CEventKeyUp (TKey key) : CEvent (EventKeyUpId)
+	CEventKeyUp (TKey key, IEventEmitter* emitter) : CEvent (emitter, EventKeyUpId)
 	{
 		Key=key;
 	}
@@ -232,7 +240,7 @@ public:
 class CEventChar : public CEvent
 {
 public:
-	CEventChar (ucchar c) : CEvent (EventCharId)
+	CEventChar (ucchar c, IEventEmitter* emitter) : CEvent (emitter, EventCharId)
 	{
 		Char=c;
 	}
@@ -248,7 +256,7 @@ class CEventMouseDown : public CEvent
 public:
 	uint X,Y;
 
-	CEventMouseDown (uint x, uint y) : CEvent (EventMouseDownId)
+	CEventMouseDown (uint x, uint y, IEventEmitter* emitter) : CEvent (emitter, EventMouseDownId)
 	{
 		X = x;
 		Y = y;
@@ -265,7 +273,7 @@ class CEventMouseUp : public CEvent
 public:
 	uint X,Y;
 
-	CEventMouseUp (uint x, uint y) : CEvent (EventMouseUpId)
+	CEventMouseUp (uint x, uint y, IEventEmitter* emitter) : CEvent (emitter, EventMouseUpId)
 	{
 		X = x;
 		Y = y;
@@ -287,7 +295,7 @@ public:
 	  * Create a activate message. Notify the activation disactivation of a window.
 	  * \param activate is True if window is actived, false if it is disactived.
 	  */
-	CEventActivate (bool activate) : CEvent (EventActivateId)
+	CEventActivate (bool activate, IEventEmitter* emitter) : CEvent (emitter, EventActivateId)
 	{
 		Activate = activate;
 	}
@@ -309,7 +317,7 @@ public:
 	  * Create a activate message. Notify the activation disactivation of a window.
 	  * \param activate is True if window get the focus, false if it lost it.
 	  */
-	CEventSetFocus (bool get) : CEvent (EventSetFocusId)
+	CEventSetFocus (bool get, IEventEmitter* emitter) : CEvent (emitter, EventSetFocusId)
 	{
 		Get = get;
 	}

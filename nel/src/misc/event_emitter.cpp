@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.8 2000/11/13 13:25:15 berenguier Exp $
+ * $Id: event_emitter.cpp,v 1.9 2000/11/13 13:38:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,25 +60,25 @@ void CEventEmitterWin32::processMessage (uint32 hWnd, uint32 msg, uint32 wParam,
 	switch (msg)
 	{
 		case WM_KEYDOWN:
-			server->postEvent (new CEventKeyDown ((TKey)wParam));
+			server->postEvent (new CEventKeyDown ((TKey)wParam, this));
 			break;
 		case WM_KEYUP:
-			server->postEvent (new CEventKeyUp ((TKey)wParam));
+			server->postEvent (new CEventKeyUp ((TKey)wParam, this));
 			break;
 		case WM_CHAR:
-			server->postEvent (new CEventChar ((ucchar)wParam));
+			server->postEvent (new CEventChar ((ucchar)wParam, this));
 			break;
 		case WM_ACTIVATE:
 			if (WA_INACTIVE==LOWORD(wParam))
-				server->postEvent (new CEventActivate (false));
+				server->postEvent (new CEventActivate (false, this));
 			else
-				server->postEvent (new CEventActivate (true));
+				server->postEvent (new CEventActivate (true, this));
 			break;
 		case WM_KILLFOCUS:
-			server->postEvent (new CEventSetFocus (false));
+			server->postEvent (new CEventSetFocus (false, this));
 			break;
 		case WM_SETFOCUS:
-			server->postEvent (new CEventSetFocus (true));
+			server->postEvent (new CEventSetFocus (true, this));
 			break;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.32 2004/03/26 16:15:06 boucher Exp $
+ * $Id: win_displayer.cpp,v 1.33 2004/04/05 07:52:19 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -281,7 +281,7 @@ void CWinDisplayer::updateLabels ()
 
 				string n;
 
-				// do this fucking tricks to be sure that windows will clear what is after the number
+				// do this tricks to be sure that windows will clear what is after the number
 				if (access.value()[i].Value[0] != '@')
 					n = access.value()[i].Value + "                                                 ";
 				else

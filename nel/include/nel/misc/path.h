@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.45 2004/03/01 19:47:53 cado Exp $
+ * $Id: path.h,v 1.46 2004/04/05 07:52:18 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -152,7 +152,7 @@ public:
 	 */
 	static std::string	standardizePath (const std::string &path, bool addFinalSlash = true);
 
-	/**	Remplace / with \ for fucking dos process. Use only this function if can't do another way.
+	/**	Remplace / with \ for dos process. Use only this function if can't do another way.
 	 * For exemple, if you do a system("copy data/toto data/tata"); it'll not work because dos doesn't
 	 * understand /.
 	 * But in the majority of case, / working (it works for fopen for example)

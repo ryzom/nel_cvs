@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.71 2004/02/10 16:04:29 besson Exp $
+ * $Id: zone.cpp,v 1.72 2004/04/05 07:52:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1133,7 +1133,6 @@ void			CZone::refineAll()
 {
 	nlassert(Compiled);
 
-	// Fuck stlport....
 	if(Patchs.size()==0)
 		return;
 
@@ -1158,7 +1157,6 @@ void			CZone::averageTesselationVertices()
 {
 	nlassert(Compiled);
 
-	// Fuck stlport....
 	if(Patchs.size()==0)
 		return;
 

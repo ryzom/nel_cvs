@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.24 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: file.cpp,v 1.25 2002/08/22 12:11:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,10 @@ bool		CIFile::open(const std::string &path, bool text)
 	const uint32 READPACKETSIZE = 64 * 1024;
 	const uint32 INTERPACKETSLEEP = 5;
 	close();
+
+	// can't open empty filename
+	if(path.empty ())
+		return false;
 
 	char mode[3];
 	mode[0] = 'r';
@@ -374,6 +378,10 @@ COFile::~COFile()
 bool	COFile::open(const std::string &path, bool append, bool text)
 {
 	close();
+
+	// can't open empty filename
+	if(path.empty ())
+		return false;
 
 	char mode[3];
 	mode[0] = (append)?'a':'w';

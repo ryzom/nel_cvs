@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.11 2001/01/12 19:24:57 berenguier Exp $
+ * $Id: text_context.h,v 1.12 2001/01/15 15:18:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,6 +121,11 @@ public:
 	void	setMaxMemory(uint maxMem)
 	{
 		_FontManager.setMaxMemory(maxMem);
+	}
+
+	std::string getCacheInformation() const
+	{
+		return _FontManager.getCacheInformation();
 	}
 
 	/**

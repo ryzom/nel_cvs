@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.18 2001/01/15 15:15:46 coutelas Exp $
+ * $Id: font_manager.cpp,v 1.19 2001/01/15 15:18:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include <string>
+#include <sstream>
+
 #include "nel/3d/font_manager.h"
 #include "nel/3d/font_generator.h"
 #include "nel/3d/texture_font.h"
@@ -34,6 +37,7 @@
 
 #include "nel/misc/file.h"
 
+using namespace std;
 
 namespace NL3D {
 
@@ -91,6 +95,9 @@ NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
 		// Add to global mem size
 		_MemSize += nMemSize;
 
+		// add a char
+		_NbChar++;
+
 		// updating iterator in the map
 		_Letters.insert ( mapFontDec::value_type (desc, pairRefPtrInt(_MaterialFontList.begin(), nMemSize)));
 
@@ -112,6 +119,9 @@ NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
 
 		// Free mem
 		_MemSize -= ite->second.second;
+
+		// sub a char
+		_NbChar--;
 
 		// Erase it
 		_Letters.erase (ite);
@@ -251,7 +261,14 @@ void CFontManager::computeString (const ucstring &s,
 }
 
 
+string CFontManager::getCacheInformation() const
+{
+	stringstream ss;
 
+	ss << "MaxMemory: " << (uint) _MaxMemory << " MemSize: " << (uint) _MemSize << " NbChar: " << (uint) _NbChar;
+
+	return ss.str();
+}
 
 
 

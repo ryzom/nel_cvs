@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.11 2001/01/03 09:14:57 lecroart Exp $
+ * $Id: font_manager.h,v 1.12 2001/01/15 15:18:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,6 +77,7 @@ class CFontManager
 {
 	uint32 _MemSize;
 	uint32 _MaxMemory;
+	uint32 _NbChar;
 	mapFontDec _Letters;
 	std::list<NLMISC::CSmartPtr<CMaterial> > _MaterialFontList;
 
@@ -89,6 +90,7 @@ public:
 	{
 		_MemSize = 0;
 		_MaxMemory = 1000000;
+		_NbChar = 0;
 	}
 
 
@@ -104,7 +106,6 @@ public:
 	 * \return maximum memory
 	 */	
 	uint32 getMaxMemory() const { return _MaxMemory; }
-
 
 	/** 
 	 * manages fonts in memory using CSmartPtr
@@ -140,6 +141,13 @@ public:
 						uint32 fontSize, 
 					    IDriver *driver,
 						CComputedString &output);
+
+
+	/** 
+	 * return a string given information about the cache
+	 */	
+	std::string getCacheInformation() const;
+
 };
 
 

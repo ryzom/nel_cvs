@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.16 2003/08/27 16:16:24 distrib Exp $
+dnl $Id: acinclude.m4,v 1.17 2003/08/27 16:17:36 distrib Exp $
 dnl 
 dnl =========================================================================
 
@@ -94,7 +94,7 @@ STL_DEBUG="-D__STL_DEBUG"
 NL_DEBUG="-DNL_DEBUG"
 NL_DEBUG_FAST="-DNL_DEBUG_FAST"
 NL_RELEASE_DEBUG="-DNL_RELEASE_DEBUG"
-NL_RELEASE="-DNL_RELEASE_RELEASE"
+NL_RELEASE="-DNL_RELEASE_DEBUG"
 
 AC_ARG_WITH(debug,
     [  --with-debug[=full|medium|fast]

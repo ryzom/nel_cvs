@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.13 2000/12/19 14:24:36 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.14 2000/12/20 15:32:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -258,6 +258,41 @@ void CTileBank::xchgTileset (sint firstTileSet, sint secondTileSet)
 	CTileSet tmp=_TileSetVector[firstTileSet];
 	_TileSetVector[firstTileSet]=_TileSetVector[secondTileSet];
 	_TileSetVector[secondTileSet]=tmp;
+}
+// ***************************************************************************
+void TroncFileName (char* sDest, const char* sSrc)
+{
+	char* ptr=strrchr (sSrc, '\\');
+	if (ptr==NULL)
+		ptr=strrchr (sSrc, '/');
+	if (ptr)
+	{
+		ptr++;
+		strcpy (sDest, ptr);
+	}
+}
+// ***************************************************************************
+// Je parie que ce patch reste jusqu'à la fin du jeu. (Hulud)
+void CTileBank::makeAllPathRelative ()
+{
+	// For all tiles
+	for (sint nTile=0; nTile<(sint)_TileVector.size(); nTile++)
+	{
+		// Tronc filename
+		char sTmpFileName[512];
+
+		// Diffuse
+		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::diffuse).c_str());
+		_TileVector[nTile].setFileName (CTile::diffuse, sTmpFileName);
+
+		// Additive
+		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::additive).c_str());
+		_TileVector[nTile].setFileName (CTile::additive, sTmpFileName);
+
+		// Bump
+		TroncFileName (sTmpFileName, _TileVector[nTile].getFileName (CTile::bump).c_str());
+		_TileVector[nTile].setFileName (CTile::bump, sTmpFileName);
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.10 2000/12/19 15:17:12 corvazier Exp $
+ * $Id: tile_bank.h,v 1.11 2000/12/20 15:32:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -369,6 +369,7 @@ public:
 	sint getNumBitmap (CTile::TBitmap bitmap) const;
 	void computeXRef ();
 	void getTileXRef (int tile, int &tileSet, int &number, TTileType& type) const;
+	void makeAllPathRelative ();			// Je parie que ce patch reste jusqu'à la fin du jeu. (Hulud)
 
 	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
 private:

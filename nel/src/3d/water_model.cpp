@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.45 2004/09/23 16:15:56 vizerie Exp $
+ * $Id: water_model.cpp,v 1.46 2004/10/05 10:11:03 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -99,6 +99,7 @@ CWaterModel::CWaterModel()
 	_Prev = NULL;
 	_Next = NULL;
 	_VB = NULL;
+	_MatrixUpdateDate = 0;
 }
 
 //=======================================================================
@@ -1153,7 +1154,7 @@ void CWaterModel::setupSimpleRender(CWaterShape *shape, const NLMISC::CVector &o
 			0.f,                   0.f,                   1.f, 0.f,
 			_ColorMapMatColumn0.x * obsPos.x + _ColorMapMatColumn1.x * obsPos.y + _ColorMapMatPos.x, _ColorMapMatColumn0.y * obsPos.x + _ColorMapMatColumn1.y * obsPos.y + _ColorMapMatPos.y, 0.f, 1.f
 		};
-		texMat.set(mat);
+		texMat.set(mat);		
 		_SimpleWaterMat.enableUserTexMat(1, true);
 		_SimpleWaterMat.setUserTexMat(1, texMat);
 	}					

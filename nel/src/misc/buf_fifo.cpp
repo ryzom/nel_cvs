@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.5 2001/02/27 17:35:20 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.6 2001/03/01 17:33:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,8 +77,8 @@ void CBufFIFO::push(const std::vector<uint8> &buffer)
 	// stat code
 	if (size > _BiggestBlock) _BiggestBlock = size;
 	if (size < _SmallestBlock) _SmallestBlock = size;
-
 	_Pushed++;
+
 
 	while (!canFit (size + sizeof (uint32)))
 	{
@@ -94,8 +94,8 @@ void CBufFIFO::push(const std::vector<uint8> &buffer)
 
 	_Empty = false;
 
+	// stat code
 	TTicks after = CTime::getPerformanceTime();
-
 	_PushedTime += after - before;
 }
 
@@ -117,23 +117,25 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 
 	_Pushed++;
 
+	// resize while the buffer is enough big to accept the block
 	while (!canFit (size + sizeof (uint32)))
 	{
 		resize(_BufferSize * 2);
 	}
 
+	// store the size of the block
 	*(uint32 *)_Head = size;
 	_Head += sizeof(uint32);
 
+	// store the block itself
 	memcpy(_Head, &(buffer1[0]), buffer1.size ());
 	memcpy(_Head + buffer1.size(), &(buffer2[0]), buffer2.size ());
-
 	_Head += size;
 
 	_Empty = false;
 
+	// stat code
 	TTicks after = CTime::getPerformanceTime();
-
 	_PushedTime += after - before;
 }
 
@@ -164,8 +166,8 @@ void CBufFIFO::pop ()
 	nldebug("pop(%d)", size);
 #endif
 
-	// clear the message to be sure you don't use it anymore
 #ifdef NL_DEBUG
+	// clear the message to be sure user doesn't use it anymore
 	memset (_Tail, '-', size + sizeof (uint32));
 #endif
 
@@ -176,9 +178,9 @@ void CBufFIFO::pop ()
 	
 void CBufFIFO::front (vector<uint8> &buffer)
 {
-	uint8	*tail = _Tail;
-	
 	TTicks before = CTime::getPerformanceTime ();
+
+	uint8	*tail = _Tail;
 	
 	buffer.clear ();
 
@@ -214,8 +216,8 @@ void CBufFIFO::front (vector<uint8> &buffer)
 
 	memcpy (&(buffer[0]), tail, size);
 
+	// stat code
 	TTicks after = CTime::getPerformanceTime ();
-
 	_FrontedTime += after - before;
 }
 
@@ -232,6 +234,30 @@ void CBufFIFO::clear ()
 	_Empty = true;
 }
 
+uint32 CBufFIFO::size ()
+{
+	if (empty ())
+	{
+		return 0;
+	}
+	else if (_Head == _Tail)
+	{
+		// buffer is full
+		return _BufferSize;
+	}
+	else if (_Head > _Tail)
+	{
+		return _Head - _Tail;
+	}
+	else if (_Head < _Tail)
+	{
+		nlassert (_Rewinder != NULL);
+		return (_Rewinder - _Tail) + (_Head - _Buffer);
+	}
+	nlstop;
+	return 0;
+}
+
 void CBufFIFO::resize (uint32 size)
 {
 	TTicks before = CTime::getPerformanceTime();
@@ -245,16 +271,7 @@ void CBufFIFO::resize (uint32 size)
 
 	_Resized++;
 
-	uint32 UsedSize;
-	if (_Tail <= _Head)
-	{
-		UsedSize = _Head - _Tail;
-	}
-	else
-	{
-		nlassert (_Rewinder != NULL);
-		UsedSize = _Rewinder - _Tail + _Head - _Buffer;
-	}
+	uint32 UsedSize = CBufFIFO::size();
 
 	// creer un nouveau tableau et copie l ancien dans le nouveau.
 	if (size < _BufferSize && UsedSize < size)

@@ -1,7 +1,7 @@
 /** \file buf_fifo.h
  * Interface for CBufFIFO
  *
- * $Id: buf_fifo.h,v 1.5 2001/02/27 17:36:11 lecroart Exp $
+ * $Id: buf_fifo.h,v 1.6 2001/03/01 17:33:37 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,6 +86,9 @@ public:
 
 	/// Erase the FIFO
 	void	 clear ();
+
+	/// Returns the size of the FIFO
+	uint32	 size ();
 
 	/// display the FIFO to stdout (used to debug the FIFO)
 	void	 display ();

@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.5 2002/02/21 17:38:16 vizerie Exp $
+ * $Id: texture_mem.h,v 1.6 2002/03/14 18:19:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,11 +41,13 @@ namespace NL3D
  */
 class CTextureMem : public ITexture
 {
-	uint8		*_Data;
-	uint32		_Length;
-	bool		_Delete;
-	bool        _IsFile;
-	std::string _ShareName;
+	uint8					*_Data;
+	uint32					_Length;
+	bool					_Delete;
+	bool					_IsFile;
+	bool					_AllowDegradation; // the default is false
+	std::string				_ShareName;
+	NLMISC::CBitmap::TType	_TexType;
 
 	/// keep size for textures that aren't from a file
 	uint		_TexWidth, _TexHeight;
@@ -54,10 +56,11 @@ public:
 	/** 
 	 * Default constructor
 	 */	
-	CTextureMem() 
-	{ 
-		_Data=NULL;
-		_Delete=false;
+	CTextureMem() : _Data(NULL),
+					_Delete(false),
+					_TexType(CBitmap::RGBA),
+					_AllowDegradation(false)
+	{ 		
 	}
 
 
@@ -66,7 +69,7 @@ public:
 	 */	
 	virtual ~CTextureMem() 
 	{ 
-		if (_Data&&_Delete)
+		if (_Data && _Delete)
 			delete [] _Data;
 	}
 
@@ -74,30 +77,34 @@ public:
 	/** 
 	 * constructor
 	 * \param data Pointer of the file.
+	 * \param length length, in bytes, of the datas.
 	 * \param _delete Is true if the class must delete the pointer.
 	 * \param isFile is true if the data must be interpreted as a texture file. Otherwise, it is interpreted
 	 *        as the raw datas of the texture, so the format and size of the texture must also have been set to match
 	 *        the raw datas 
 	 * \param width used only if isFile is set to false
 	 * \param height used only if isFile is set to false
+	 * \param texType relevant only when isFile is set to false. Gives the format to expand the texture to when it is generated.
 	 */	
-	CTextureMem(uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0) 
+	CTextureMem(uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0, CBitmap::TType texType = CBitmap::RGBA) 
 	{ 
 		_Data=NULL;
-		_Delete=false;
-		_IsFile = isFile;
-		setPointer(data, length, _delete, isFile, width, height);
-		_TexWidth = width;
-		_TexHeight = height;
+		_Delete=false;		
+		setPointer(data, length, _delete, isFile, width, height, texType);		
 	}
 
 
 	/** 
-	 * Set the pointer of the mem file containing the texture
+	 * Set the pointer of the mem file containing the texture.
 	 * \param data Pointer of the file.
+	 * \param length length, in bytes, of the datas.
+	 * \param isFile is true if the data must be interpreted as a texture file. Otherwise, it is interpreted
+	 *        as the raw datas of the texture, so the format and size of the texture must also have been set to match
+	 *        the raw datas
 	 * \param _delete Is true if the class must delete the pointer.
+	 * \param texType relevant only when isFile is set to false. Gives the format to expand the texture to when it is generated.
 	 */	
-	void setPointer(uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0) 
+	void setPointer(uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0, CBitmap::TType texType = CBitmap::RGBA) 
 	{ 
 		if (_Data&&_Delete)
 			delete [] _Data;
@@ -108,12 +115,13 @@ public:
 		_IsFile = isFile;
 		_TexWidth = width;
 		_TexHeight = height;
+		_TexType = texType;
 	}
 
 
 
 	/** 
-	 * Get the Pointer of the memory file containing the texture
+	 * Get the Pointer of the memory file containing the texture.
 	 */	
 	uint8* getPointer() const { return _Data; } 
 
@@ -135,24 +143,29 @@ public:
 	 */	
 	void doGenerate();
 
-	/// inherited from ITexture
+	/// inherited from ITexture.
 	virtual bool			supportSharing() const 
 	{
 		return !_ShareName.empty();
 	}
 
-	/// inherited from ITexture
+	/// inherited from ITexture.
 	virtual std::string		getShareName() const 
 	{
 		nlassert(!_ShareName.empty());
 		return _ShareName;
 	}
 
-	/// Make this texture sharable by assigning it a share name. An empty share name means it is not sharable, which is the default
+	/// Make this texture sharable by assigning it a share name. An empty share name means it is not sharable, which is the default.
 	void setShareName(const std::string &shareName) 
 	{ 
 		_ShareName = shareName;
 	}
+
+	/// texture file may allow the driver to degrade (default is true).
+	virtual bool	allowDegradation() const { return _AllowDegradation; }
+	/// Change the degradation mode. NB: this does not touch() the ITexture... 
+	void			setAllowDegradation(bool allow);
 
 	/// Todo: serialize a mem texture.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) {nlstop;}

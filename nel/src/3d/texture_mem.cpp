@@ -1,7 +1,7 @@
 /** \file texture_mem.cpp
  * <File description>
  *
- * $Id: texture_mem.cpp,v 1.7 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_mem.cpp,v 1.8 2002/03/14 18:19:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,8 +54,8 @@ void CTextureMem::doGenerate()
 		}
 		else
 		{
-			resize(_TexWidth, _TexHeight, NLMISC::CBitmap::RGBA);			
-			std::copy(_Data, _Data + _Length, &	getPixels(0)[0]);
+			resize(_TexWidth, _TexHeight, _TexType);			
+			::memcpy(&getPixels(0)[0], _Data, _Length);
 			buildMipMaps();
 		}
 	}
@@ -79,6 +79,12 @@ ITexture *CTextureMem::Create1x1WhiteTex()
 								  );
 	tex->setShareName("#WhitePix1x1");	
 	return tex.release();
+}
+
+///===========================================================================
+void	CTextureMem::setAllowDegradation(bool allow)
+{
+	_AllowDegradation= allow;
 }
 
 

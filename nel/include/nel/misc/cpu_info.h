@@ -1,7 +1,7 @@
 /** \file cpu_info.h
  * <File description>
  *
- * $Id: cpu_info.h,v 1.2 2001/10/26 08:31:33 vizerie Exp $
+ * $Id: cpu_info.h,v 1.3 2001/12/06 17:05:27 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@ namespace NLMISC {
 
 
 /**
- * This helps to know wether cpu as some features such as mmx, sse ... 
+ * This helps to know wether cpu has some features such as mmx, sse ... 
  * \author Nicolas Vizerie
  * \author Nevrax France
  * \date 2001

@@ -1,6 +1,6 @@
 /** \file volatil_memory.h
  *
- * $Id: volatil_memory.h,v 1.5 2001/05/31 15:12:09 chafik Exp $
+ * $Id: volatil_memory.h,v 1.6 2001/06/01 14:48:32 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,6 +146,11 @@ namespace NLAIAGENT
 		IObjectIA *Front() const;
 		IObjectIA *Back() const;
 		void erase(CConstIteratorContener &);
+
+		int size()
+		{
+			return _List->size();
+		}
 
 		void addAccount(IObjectIA *);
 		void releaseAccount(IObjectIA *);

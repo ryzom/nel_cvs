@@ -1,7 +1,7 @@
 /** \file agent_operator.h
  * Includes class operator for IObjectIA objects.
  *
- * $Id: agent_operator.h,v 1.9 2001/01/24 15:35:53 chafik Exp $
+ * $Id: agent_operator.h,v 1.10 2001/06/01 14:48:32 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,8 +63,8 @@ namespace NLAIAGENT
 
 		/// \name IObjectIA base class method;
 		//@{
-		tQueue IObjetOp::isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
-		CProcessResult IObjetOp::runMethodeMember(sint32 index, IObjectIA *);
+		virtual tQueue IObjetOp::isMember(const IVarName *,const IVarName *,const IObjectIA &) const; 
+		virtual CProcessResult IObjetOp::runMethodeMember(sint32 index, IObjectIA *);
 		virtual sint32 getMethodIndexSize() const;
 		//@}
 

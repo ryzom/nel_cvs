@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.32 2001/05/22 16:08:01 chafik Exp $
+ * $Id: agent_script.h,v 1.33 2001/06/01 14:48:32 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -311,21 +311,37 @@ namespace NLAIAGENT
 		std::vector<NLAILOGIC::CGoal *>	_GoalStack;
 
 	public:
-		virtual NLAILOGIC::CFactBase &getFactBase();
-		IObjectIA::CProcessResult runGoalMsg(IBaseGroupType *);
-		IObjectIA::CProcessResult runCancelGoalMsg(IBaseGroupType *);
-		IObjectIA::CProcessResult runFactMsg(IBaseGroupType *);
-
-		std::vector<NLAILOGIC::CGoal *>	&getGoalStack()
+	*/
+		virtual const NLAILOGIC::CFactBase *getFactBase()
 		{
-			return _GoalStack;
+			return NULL;
 		}
-*/
+
+		virtual IObjectIA::CProcessResult runGoalMsg(IBaseGroupType *)
+		{
+			return IObjectIA::CProcessResult();
+		}
+
+		virtual IObjectIA::CProcessResult runCancelGoalMsg(IBaseGroupType *)
+		{
+			return IObjectIA::CProcessResult();
+		}
+
+		virtual IObjectIA::CProcessResult runFactMsg(IBaseGroupType *)
+		{
+			return IObjectIA::CProcessResult();
+		}
+
+		virtual const std::vector<NLAILOGIC::CGoal *>	*getGoalStack()
+		{
+			return NULL;
+		}
+	////////////////////////////////////////////////////////////////////////
 		const NLAISCRIPT::CAgentClass *getClass()
 		{
 			return _AgentClass;
 		}
-	////////////////////////////////////////////////////////////////////////
+
 	};
 
 	

@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.19 2002/03/06 13:45:26 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.20 2002/03/14 18:18:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,8 @@ CRenderTrav::CRenderTrav()
 	SunDiffuse= SunSpecular= CRGBA::White;
 	_SunDirection.set(0, 0.5, -0.5);
 	_SunDirection.normalize();
+
+	_StrongestLightTouched = true;
 }
 // ***************************************************************************
 IObs		*CRenderTrav::createDefaultObs() const
@@ -131,7 +133,7 @@ void		CRenderTrav::traverse()
 			{
 				rPseudoZ2 = rPseudoZ * OrderTransparentList.getSize();
 				rPseudoZ2 = OrderTransparentList.getSize() - rPseudoZ2;
-				clamp( rPseudoZ2, 0.0f, OrderTransparentList.getSize() - 1 );
+				clamp( rPseudoZ2, 0.0f, OrderTransparentList.getSize() - 1 );				
 				OrderTransparentList.insert( pTransform->getOrderingLayer(), pObs, (uint32)rPseudoZ2 );
 			}
 		}
@@ -160,9 +162,9 @@ void		CRenderTrav::traverse()
 
 	 // Render transparent materials
 	_CurrentPassOpaque = false;
-	OrderTransparentList.begin(_LayersRenderingOrder);
+	OrderTransparentList.begin(_LayersRenderingOrder);	
 	while( OrderTransparentList.get() != NULL )
-	{
+	{				
 		pBRO = OrderTransparentList.get();
 		pBRO->traverse(NULL);
 		OrderTransparentList.next();
@@ -231,7 +233,7 @@ void		CRenderTrav::resetLightSetup()
 		// Dont modify Driver lights, but setup default lighting For VertexProgram Lighting.
 		_NumLightEnabled= 1;
 		// Setup A default directionnal.
-		CVector		defDir(-0.5, 0.0, -0.85);
+		CVector		defDir(-0.5f, 0.0, -0.85f);
 		defDir.normalize();
 		CRGBA		aday= CRGBA(130,  105,  119);
 		CRGBA		dday= CRGBA(238, 225, 204);
@@ -263,12 +265,29 @@ void		CRenderTrav::resetLightSetup()
 		}
 
 
+		// setup the precise cache, and setup lights according to this cache?
+		// setup blackSun (factor==0).
+		_LastSunFactor= 0;
+		_LastSunAmbient.set(0,0,0,255);
+		CLight		light;
+		light.setupDirectional(CRGBA::Black, CRGBA::Black, CRGBA::Black, _SunDirection);
+		_DriverLight[0].setupDirectional(CRGBA::Black, CRGBA::Black, CRGBA::Black, _SunDirection);
+		Driver->setLight(0, light);
+		// setup NULL point lights (=> cache will fail), so no need to setup other lights in Driver.
+		for(i=0; i<NL3D_MAX_LIGHT_CONTRIBUTION; i++)
+		{
+			_LastPointLight[i]= NULL;
+		}
+
 		// Set the global ambientColor
 		Driver->setAmbientColor(AmbientGlobal);
+
 
 		// clear the cache.
 		_CacheLightContribution= NULL;
 		_NumLightEnabled= 0;
+
+		_StrongestLightTouched = true;
 	}
 }
 
@@ -288,6 +307,7 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 	// else, must setup the lights into driver.
 	else
 	{
+		_StrongestLightTouched = true;
 		// if the setup is !NULL
 		if(lightContribution)
 		{
@@ -439,21 +459,20 @@ void		CRenderTrav::changeLightSetup(CLightContribution	*lightContribution, bool 
 
 // ***************************************************************************
 void		CRenderTrav::beginVPLightSetup(uint ctStart, bool supportSpecular, const CMatrix &invObjectWM)
-{
-	uint	i;
-
+{	
+	uint	i;		 
 	nlassert(MaxVPLight==4);
 	_VPNumLights= min(_NumLightEnabled, (uint)MaxVPLight);
 	_VPCurrentCtStart= ctStart;
 	_VPSupportSpecular= supportSpecular;
-
+	
 	// Prepare Colors (to be multiplied by material)
 	//================
 	// Ambient. _VPCurrentCtStart+0
 	_VPFinalAmbient= AmbientGlobal;
 	for(i=0; i<_VPNumLights; i++)
 	{
-		_VPFinalAmbient+= _DriverLight[i].getAmbiant();
+		_VPFinalAmbient+= _DriverLight[i].getAmbiant();		
 	}
 	// Diffuse. _VPCurrentCtStart+1 to 4
 	for(i=0; i<_VPNumLights; i++)
@@ -464,7 +483,7 @@ void		CRenderTrav::beginVPLightSetup(uint ctStart, bool supportSpecular, const C
 	for(; i<MaxVPLight; i++)
 	{
 		_VPLightDiffuse[i]= CRGBA::Black;
-		Driver->setConstant(_VPCurrentCtStart+1+i, 1, &_VPLightDiffuse[i].R);
+		Driver->setConstant(_VPCurrentCtStart+1+i, 0.f, 0.f, 0.f, 0.f);
 	}
 	// Specular. _VPCurrentCtStart+5 to 8 (only if supportSpecular)
 	if(supportSpecular)
@@ -477,7 +496,7 @@ void		CRenderTrav::beginVPLightSetup(uint ctStart, bool supportSpecular, const C
 		for(; i<MaxVPLight; i++)
 		{
 			_VPLightSpecular[i]= CRGBA::Black;
-			Driver->setConstant(_VPCurrentCtStart+5+i, 1, &_VPLightSpecular[i].R);
+			Driver->setConstant(_VPCurrentCtStart+5+i, 0.f, 0.f, 0.f, 0.f);
 		}
 	}
 
@@ -534,34 +553,72 @@ void		CRenderTrav::beginVPLightSetup(uint ctStart, bool supportSpecular, const C
 }
 
 // ***************************************************************************
-void		CRenderTrav::changeVPLightSetupMaterial(CMaterial &mat)
+void		CRenderTrav::changeVPLightSetupMaterial(const CMaterial &mat, bool excludeStrongest)
 {
 	CRGBAF	color;
 	uint	i;
 	CRGBAF	matDiff= mat.getDiffuse();
 	CRGBAF	matSpec= mat.getSpecular();
 	float	specExp= mat.getShininess();
+	
+	uint strongestLightIndex = excludeStrongest ? getStrongestLightIndex() : _VPNumLights;
 
 	// setup Ambient + Emissive
 	color= _VPFinalAmbient * mat.getAmbient();
 	color+= mat.getEmissive();
 	Driver->setConstant(_VPCurrentCtStart+0, 1, &color.R);
+	
+
+	// is the strongest light is not excluded, its index should have been setup to _VPNumLights
 
 	// setup Diffuse.
-	for(i=0; i<_VPNumLights; i++)
+	for(i = 0; i < strongestLightIndex; ++i)
 	{
 		color= _VPLightDiffuse[i] * matDiff;
 		Driver->setConstant(_VPCurrentCtStart+1+i, 1, &color.R);
 	}
 
+	
+	if (i != _VPNumLights)
+	{
+		color= _VPLightDiffuse[i] * matDiff;
+		_StrongestLightDiffuse.set((uint8) (255.f * color.R), (uint8) (255.f * color.G), (uint8) (255.f * color.B), (uint8) (255.f * color.A));
+		// setup strongest light to black for the gouraud part
+		Driver->setConstant(_VPCurrentCtStart + 1 + i, 0.f, 0.f, 0.f, 0.f);
+		++i;
+		// setup other lights
+		for(; i < _VPNumLights; i++)
+		{
+			color= _VPLightDiffuse[i] * matDiff;
+			Driver->setConstant(_VPCurrentCtStart + 1 + i, 1, &color.R);
+		}
+	}
+
 	// setup Specular
 	if(_VPSupportSpecular)
 	{
-		for(i=0; i<_VPNumLights; i++)
+		for(i = 0; i < strongestLightIndex; ++i)
 		{
 			color= _VPLightSpecular[i] * matSpec;
 			color.A= specExp;
 			Driver->setConstant(_VPCurrentCtStart+5+i, 1, &color.R);
+		}
+
+		if (i != _VPNumLights)
+		{
+			color= _VPLightSpecular[i] * matSpec;
+			_StrongestLightSpecular.set((uint8) (255.f * color.R), (uint8) (255.f * color.G), (uint8) (255.f * color.B), (uint8) (255.f * color.A));
+
+			// setup strongest light to black (for gouraud part)
+			Driver->setConstant(_VPCurrentCtStart + 5 + i, 0.f, 0.f, 0.f, 0.f);
+			++i;
+			// setup other lights
+			for(; i < _VPNumLights; i++)
+			{
+				color= _VPLightSpecular[i] * matSpec;
+				color.A= specExp;
+				Driver->setConstant(_VPCurrentCtStart + 5 + i, 1, &color.R);
+			}
 		}
 	}
 
@@ -573,6 +630,38 @@ void		CRenderTrav::changeVPLightSetupMaterial(CMaterial &mat)
 			Driver->setConstant(_VPCurrentCtStart+10, 1, alphaCte);
 	else
 			Driver->setConstant(_VPCurrentCtStart+9, 1, alphaCte);
+}
+
+// ***************************************************************************
+sint CRenderTrav::getStrongestLightIndex() const
+{
+	if (!_StrongestLightTouched) return -1;
+	uint vpNumLights = min(_NumLightEnabled, (uint)MaxVPLight);
+	// If there is only a directionnal light, use it
+	// If there is any point light, use the nearest, or the directionnal light if it is brighter
+	if (vpNumLights == 0) return -1;
+	if (vpNumLights == 1) return 0;
+	// First point light is brightest ?
+	float lumDir = _VPLightDiffuse[0].R + _VPLightDiffuse[0].G + _VPLightDiffuse[0].B + _VPLightDiffuse[0].A
+				   + _VPLightSpecular[0].R + _VPLightSpecular[0].G + _VPLightSpecular[0].B + _VPLightSpecular[0].A;
+	float lumOmni = _VPLightDiffuse[1].R + _VPLightDiffuse[1].G + _VPLightDiffuse[1].B + _VPLightDiffuse[1].A
+				   + _VPLightSpecular[1].R + _VPLightSpecular[1].G + _VPLightSpecular[1].B + _VPLightSpecular[1].A;
+	return lumDir > lumOmni ? 0 : 1;
+}
+
+// ***************************************************************************
+void	CRenderTrav::getStrongestLightColors(NLMISC::CRGBA &diffuse, NLMISC::CRGBA &specular)
+{
+	sint strongestLightIndex = getStrongestLightIndex();
+	if (strongestLightIndex == -1)
+	{
+		diffuse = specular = NLMISC::CRGBA::Black;		
+	}
+	else
+	{
+		diffuse = _StrongestLightDiffuse;
+		specular = _StrongestLightSpecular;		
+	}
 }
 
 

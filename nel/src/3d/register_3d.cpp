@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.25 2002/02/28 12:59:51 besson Exp $
+ * $Id: register_3d.cpp,v 1.26 2002/03/14 18:15:21 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@
 #include "3d/texture_blend.h"
 #include "3d/texture_multi_file.h"
 #include "3d/meshvp_wind_tree.h"
+#include "3d/meshvp_per_pixel_light.h"
 
 
 
@@ -122,6 +123,7 @@ void	registerSerial3d()
 
 		// Shapes VPs.
 		NLMISC_REGISTER_CLASS(CMeshVPWindTree);
+		NLMISC_REGISTER_CLASS(CMeshVPPerPixelLight);
 
 
 		bInitialized=true;

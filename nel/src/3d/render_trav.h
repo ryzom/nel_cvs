@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.7 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: render_trav.h,v 1.8 2002/03/14 18:15:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,13 +177,14 @@ public:
 	 *	Also it does not handle World Matrix with non uniform scale correctly since lighting is made in ObjectSpace
 	 *	\param ctStart the program use ctes from ctStart to ctStart+NumCtes.
 	 *	\param supportSpecular asitsounds. PointLights and dirLight are localViewer
-	 *	\param invObjectWM the inverse of object matrix: lights are mul by this. Vp compute in object space.
+	 *	\param invObjectWM the inverse of object matrix: lights are mul by this. Vp compute in object space.	 
 	 */
 	void		beginVPLightSetup(uint ctStart, bool supportSpecular, const CMatrix &invObjectWM);
 
 	/** change the driver VP LightSetup constants which depends on material.
+	 *  \param excludeStrongest This remove the strongest light from the setup. The typical use is to have it computed by using perpixel lighting.
 	 */
-	void		changeVPLightSetupMaterial(CMaterial &mat);
+	void		changeVPLightSetupMaterial(const CMaterial &mat, bool excludeStrongest);
 
 
 	/** tool to get a VP fragment which compute lighting with following rules:
@@ -197,6 +198,9 @@ public:
 	 *		- R0, R1, R2, R3, R4
 	 *
 	 *	For information, constant mapping is (add ctStart):
+     *
+	 *  == Strongest light included ==
+     *
 	 *	if !supportSpecular:
 	 *		- 0:		AmbientColor.
 	 *		- 1..4:		DiffuseColor of 4 lights.
@@ -213,11 +217,31 @@ public:
 	 *		- 11:		eye position in objectSpace
 	 *		- 12..14:	light position (3 pointLihgts) in objectSpace
 	 *		TOTAL: 15 constants used.
+	 *	 
+	 *	 
 	 *
+	 *
+	 *  \param excludeStrongest This remove the strongest light from the setup. The typical use is to have it computed by using perpixel lighting. So this fraction of the vertex program must be setup elsewhere.
 	 */
 	static	std::string		getLightVPFragment(uint ctStart, bool supportSpecular, bool normalize);
 
-	// @}
+	/** This returns a reference to a driver light, by its index
+	  * \see getStrongestLightIndex
+	  */
+	const CLight  &getDriverLight(sint index) const 
+	{ 
+		nlassert(index >= 0 && index < NL3D_MAX_LIGHT_CONTRIBUTION+1);
+		return _DriverLight[index]; 
+	}
+
+	/// return an index to the current strongest settuped light (or -1 if there's none)
+	sint getStrongestLightIndex() const;
+
+	/** Get current color, diffuse and specular of the strongest light in the scene.
+	  * These values are modulated by the current material color, so these values are valid only after
+	  * changeVPLightSetupMaterial() has been called
+	  */
+	void	getStrongestLightColors(NLMISC::CRGBA &diffuse, NLMISC::CRGBA &specular);
 
 private:
 	
@@ -255,6 +279,10 @@ private:
 	// driver Lights setuped in changeLightSetup()
 	CLight						_DriverLight[NL3D_MAX_LIGHT_CONTRIBUTION+1];
 
+	// index of the strongest light (when used)
+	mutable uint				_StrongestLightIndex;
+	mutable bool				_StrongestLightTouched;
+
 	// VP Light setup Infos.
 	enum	{MaxVPLight= 4};
 	// Current ctStart setuped with beginVPLightSetup()
@@ -268,6 +296,9 @@ private:
 	// Diffuse/Spec comp of all light / 255.
 	NLMISC::CRGBAF				_VPLightDiffuse[MaxVPLight];
 	NLMISC::CRGBAF				_VPLightSpecular[MaxVPLight];
+
+	NLMISC::CRGBA				_StrongestLightDiffuse;
+	NLMISC::CRGBA				_StrongestLightSpecular;	
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.154 2002/08/28 12:11:21 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.155 2002/08/30 11:58:01 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -51,6 +51,8 @@
 #include "3d/primitive_block.h"
 #include "nel/misc/rect.h"
 #include "nel/misc/di_event_emitter.h"
+#include "driver_opengl_vertex_buffer_hard.h"
+
 
 using namespace std;
 using namespace NLMISC;
@@ -151,10 +153,10 @@ static Bool WndProc(Display *d, XEvent *e, char *arg)
 */
 #endif // NL_OS_UNIX
 
+
+// ***************************************************************************
 CDriverGL::CDriverGL()
 {	
-	_AGPVertexArrayRange.init(this);
-	_VRAMVertexArrayRange.init(this);
 	_OffScreen = false;
 
 #ifdef NL_OS_WINDOWS
@@ -194,10 +196,15 @@ CDriverGL::CDriverGL()
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;
 
+	_AGPVertexArrayRange= NULL;
+	_VRAMVertexArrayRange= NULL;
 	_CurrentVertexArrayRange= NULL;
 	_CurrentVertexBufferHard= NULL;
-	_CurrentVARPtr= NULL;
-	_CurrentVARSize= 0;
+	_NVCurrentVARPtr= NULL;
+	_NVCurrentVARSize= 0;
+	_SupportVBHard= false;
+	_SlowUnlockVBHard= false;
+	_MaxVerticesByVBHard= 0;
 
 	_AllocatedTextureMemory= 0;
 
@@ -238,8 +245,13 @@ CDriverGL::CDriverGL()
 }
 
 
-// --------------------------------------------------
+// ***************************************************************************
+CDriverGL::~CDriverGL()
+{
+	release();
+}
 
+// ***************************************************************************
 bool CDriverGL::init()
 {
 #ifdef WIN32
@@ -930,15 +942,58 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	_LastSetupGLArrayVertexProgram= false;
 
+
+	// Init VertexArrayRange according to supported extenstion.
+	_SupportVBHard= false;
+	_SlowUnlockVBHard= false;
+	_MaxVerticesByVBHard= 0;
+	// Try with NVidia ext first.
+	if(_Extensions.NVVertexArrayRange)
+	{
+		_AGPVertexArrayRange= new CVertexArrayRangeNVidia(this);
+		_VRAMVertexArrayRange= new CVertexArrayRangeNVidia(this);
+		_SupportVBHard= true;
+		_MaxVerticesByVBHard= _Extensions.NVVertexArrayRangeMaxVertex;
+	}
+	// Else, try with ATI ext
+	else if(_Extensions.ATIVertexArrayObject)
+	{
+		_AGPVertexArrayRange= new CVertexArrayRangeATI(this);
+		_VRAMVertexArrayRange= new CVertexArrayRangeATI(this);
+		_SupportVBHard= true;
+		// BAD ATI extension scheme.
+		_SlowUnlockVBHard= true;
+		// TODODO: ?????
+		_MaxVerticesByVBHard= 65535;
+	}
+
 	// Reset VertexArrayRange.
 	_CurrentVertexArrayRange= NULL;
 	_CurrentVertexBufferHard= NULL;
-	_CurrentVARPtr= NULL;
-	_CurrentVARSize= 0;
-	if(_Extensions.NVVertexArrayRange)
+	_NVCurrentVARPtr= NULL;
+	_NVCurrentVARSize= 0;
+	if(_SupportVBHard)
 	{
 		// try to allocate 16Mo by default of AGP Ram.
 		initVertexArrayRange(NL3D_DRV_VERTEXARRAY_AGP_INIT_SIZE, 0);
+
+		// If not success to allocate at least a minimum space in AGP, then disable completely VBHard feature
+		if( _AGPVertexArrayRange->sizeAllocated()==0 )
+		{
+			// reset any allocated VRAM space.
+			resetVertexArrayRange();
+
+			// delete containers
+			delete _AGPVertexArrayRange;
+			delete _VRAMVertexArrayRange;
+			_AGPVertexArrayRange= NULL;
+			_VRAMVertexArrayRange= NULL;
+
+			// disable.
+			_SupportVBHard= false;
+			_SlowUnlockVBHard= false;
+			_MaxVerticesByVBHard= 0;
+		}
 	}
 
 
@@ -1119,12 +1174,17 @@ bool CDriverGL::swapBuffers()
 
 
 	// Because of Bug with GeForce, must finishFence() for all VBHard.
-	set<CVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
+	set<IVertexBufferHardGL*>::iterator		itVBHard= _VertexBufferHardSet.Set.begin();
 	while(itVBHard != _VertexBufferHardSet.Set.end() )
 	{
-		// If needed, "flush" these VB.
-		(*itVBHard)->finishFence();
-		(*itVBHard)->GPURenderingAfterFence= false;
+		// Need only to do it for NVidia VB ones.
+		if((*itVBHard)->NVidiaVertexBufferHard)
+		{
+			CVertexBufferHardGLNVidia	*vbHardNV= static_cast<CVertexBufferHardGLNVidia*>(*itVBHard);
+			// If needed, "flush" these VB.
+			vbHardNV->finishFence();
+			vbHardNV->GPURenderingAfterFence= false;
+		}
 		itVBHard++;
 	}
 
@@ -1203,6 +1263,11 @@ bool CDriverGL::release()
 	// Reset VertexArrayRange.
 	resetVertexArrayRange();
 
+	// delete containers
+	delete _AGPVertexArrayRange;
+	delete _VRAMVertexArrayRange;
+	_AGPVertexArrayRange= NULL;
+	_VRAMVertexArrayRange= NULL;
 
 #ifdef NL_OS_WINDOWS
 	// Then delete.
@@ -1264,6 +1329,10 @@ bool CDriverGL::release()
 #endif // XF86VIDMODE
 
 #endif // NL_OS_UNIX
+
+
+	// released
+	_Initialized= false;
 
 	return true;
 }

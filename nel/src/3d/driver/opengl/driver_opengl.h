@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.126 2002/08/28 12:11:21 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.127 2002/08/30 11:58:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,6 @@
 #include "3d/material.h"
 #include "3d/shader.h"
 #include "3d/vertex_buffer.h"
-#include "3d/vertex_buffer_hard.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
@@ -90,10 +89,11 @@ using NLMISC::CVector;
 
 
 class	CDriverGL;
+class	IVertexArrayRange;
+class	IVertexBufferHardGL;
 
 
-// --------------------------------------------------
-
+// ***************************************************************************
 class CTextureDrvInfosGL : public ITextureDrvInfos
 {
 public:
@@ -121,17 +121,15 @@ public:
 };
 
 
-
-// --------------------------------------------------
-
+// ***************************************************************************
 class CVBDrvInfosGL : public IVBDrvInfos
 {
 public:
 	CVBDrvInfosGL(IDriver *drv, ItVBDrvInfoPtrList it) : IVBDrvInfos(drv, it) {}
 };
 
-// --------------------------------------------------
 
+// ***************************************************************************
 class CShaderGL : public IShader
 {
 public:
@@ -156,149 +154,7 @@ public:
 };
 
 
-// --------------------------------------------------
-
-
-/** Work only if ARRAY_RANGE_NV is enabled. else, only call to ctor/dtor/free() is valid.
- *	any call to allocateVB() will return NULL.
- */
-class CVertexArrayRange
-{
-public:
-	CVertexArrayRange()
-	{
-		_Driver= NULL;
-		_VertexArrayPtr= NULL;
-		_VertexArraySize= 0;
-	}
-
-
-	void			init(CDriverGL *drv)
-	{
-		_Driver= drv;
-	}
-
-	bool			allocated() const {return _VertexArrayPtr!=NULL;}
-
-
-	/// allocate a vertex array sapce. false if error. must free before re-allocate.
-	bool			allocate(uint32 size, IDriver::TVBHardType vbType);
-	/// free this space.
-	void			free();
-
-
-	// Those methods read/write in _Driver->_CurrentVertexArrayRange.
-	/// active this VertexArrayRange as the current vertex array range used. no-op if already setup.
-	void			enable();
-	/// disable this VertexArrayRange. _Driver->_CurrentVertexArrayRange= NULL;
-	void			disable();
-
-
-	/// Allocate a small subset of the memory. NULL if not enough mem.
-	void			*allocateVB(uint32 size);
-	/// free a VB allocated with allocateVB. No-op if NULL.
-	void			freeVB(void	*ptr);
-
-
-private:
-	CDriverGL	*_Driver;
-	void		*_VertexArrayPtr;
-	uint32		_VertexArraySize;
-
-	// Allocator.
-	NLMISC::CHeapMemory		_HeapMemory;
-
-};
-
-
-
-/// Work only if ARRAY_RANGE_NV is enabled.
-class CVertexBufferHardGL : public IVertexBufferHard
-{
-public:
-
-	CVertexBufferHardGL();
-	virtual	~CVertexBufferHardGL();
-
-	bool				init(CDriverGL *drv, uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, IDriver::TVBHardType vbType);
-
-	virtual	void		*lock();
-	virtual	void		unlock();
-
-
-	void			enable();
-	void			disable();
-
-
-	// true if a setFence() has been done, without a finishFence().
-	bool			isFenceSet() const {return _FenceSet;}
-	// if(!isFenceSet()), set the fence, else no-op
-	void			setFence();
-	// if(isFenceSet()), finish the fence, else no-op
-	void			finishFence();
-
-
-	// For Fence access.
-	bool			GPURenderingAfterFence;
-
-public:
-	// NB: do not check if format is OK. return invalid result if format is KO.
-	/*void				*getVertexCoordPointer()
-	{
-		nlassert(_VertexPtr);
-		return _VertexPtr;
-	}
-	void				*getNormalCoordPointer()
-	{
-		nlassert(_VertexPtr);
-		return (uint8*)_VertexPtr + getNormalOff();
-	}
-	void				*getTexCoordPointer(uint stageid)
-	{
-		nlassert(_VertexPtr);
-		return (uint8*)_VertexPtr + getTexCoordOff(stageid);
-	}
-	void				*getColorPointer()
-	{
-		nlassert(_VertexPtr);
-		return (uint8*)_VertexPtr + getColorOff();
-	}
-	void				*getSpecularPointer()
-	{
-		nlassert(_VertexPtr);
-		return (uint8*)_VertexPtr + getSpecularOff();
-	}
-	void				*getWeightPointer(uint wid)
-	{
-		nlassert(_VertexPtr);
-		return (uint8*)_VertexPtr + getWeightOff(wid);
-	}
-	void				*getPaletteSkinPointer()
-	{
-		nlassert(_VertexPtr);
-		return (uint8*)_VertexPtr + getPaletteSkinOff();
-	}*/
-	void				*getValueEx (uint value)
-	{
-		nlassert(_VertexPtr);
-		return (uint8*)_VertexPtr + getValueOff (value);
-	}
-
-private:
-	CDriverGL			*_Driver;
-	CVertexArrayRange	*_VertexArrayRange;
-	void				*_VertexPtr;
-
-	// The fence inserted in command stream
-	GLuint				_Fence;
-	// True if a setFence() has been done, without a finishFence().
-	bool				_FenceSet;
-
-};
-
-
-
-// --------------------------------------------------
+// ***************************************************************************
 /// Info for the last VertexBuffer setuped (iether normal or hard).
 class	CVertexBufferInfo
 {
@@ -312,13 +168,21 @@ public:
 	// NB: ptrs are invalid if VertexFormat does not support the compoennt. must test VertexFormat, not the ptr.
 	void					*ValuePtr[CVertexBuffer::NumValue];
 
+
+	// ATI Special setup ?
+	bool					ATIVBHardMode;
+	// the handle of ATI memory
+	uint					ATIVertexObjectId;
+	// This is the offset relative to the ATIVertexObjectId start mem.
+	uint					ATIValueOffset[CVertexBuffer::NumValue];
+
+
 	void		setupVertexBuffer(CVertexBuffer &vb);
-	void		setupVertexBufferHard(CVertexBufferHardGL &vb);
+	void		setupVertexBufferHard(IVertexBufferHardGL &vb);
 };
 
 
-// --------------------------------------------------
-
+// ***************************************************************************
 class CDriverGL : public IDriver
 {
 public:
@@ -337,7 +201,7 @@ public:
 	}
 
 							CDriverGL();
-	virtual					~CDriverGL() { release(); };
+	virtual					~CDriverGL();
 
 	virtual bool			init();
 
@@ -426,6 +290,8 @@ public:
 
 
 	virtual	bool			supportVertexBufferHard() const;
+
+	virtual	bool			slowUnlockVertexBufferHard() const;
 
 	virtual	uint			getMaxVerticesByVertexBufferHard() const;
 
@@ -878,26 +744,33 @@ private:
 
 	/// \name VertexBufferHard 
 	// @{
-	CPtrSet<CVertexBufferHardGL>	_VertexBufferHardSet;
-	friend class					CVertexArrayRange;
-	friend class					CVertexBufferHardGL;
-	// The CVertexArrayRange activated.
-	CVertexArrayRange				*_CurrentVertexArrayRange;
-	// The CVertexBufferHardGL activated.
-	CVertexBufferHardGL				*_CurrentVertexBufferHard;
+	CPtrSet<IVertexBufferHardGL>	_VertexBufferHardSet;
+	friend class					CVertexArrayRangeNVidia;
+	friend class					CVertexBufferHardGLNVidia;
+	friend class					CVertexArrayRangeATI;
+	friend class					CVertexBufferHardGLATI;
+	// The VertexArrayRange activated.
+	IVertexArrayRange				*_CurrentVertexArrayRange;
+	// The VertexBufferHardGL activated.
+	IVertexBufferHardGL				*_CurrentVertexBufferHard;
 	// current setup passed to nglVertexArrayRangeNV()
-	void							*_CurrentVARPtr;
-	uint32							_CurrentVARSize;
+	void							*_NVCurrentVARPtr;
+	uint32							_NVCurrentVARSize;
+
+	// Info got from ATI or NVidia extension.
+	bool							_SupportVBHard;
+	bool							_SlowUnlockVBHard;
+	uint32							_MaxVerticesByVBHard;
 
 	// The AGP VertexArrayRange.
-	CVertexArrayRange				_AGPVertexArrayRange;
+	IVertexArrayRange				*_AGPVertexArrayRange;
 	// The VRAM VertexArrayRange.
-	CVertexArrayRange				_VRAMVertexArrayRange;
+	IVertexArrayRange				*_VRAMVertexArrayRange;
 
 
 	void							resetVertexArrayRange();
 
-	void							fenceOnCurVBHardIfNeeded(CVertexBufferHardGL *newVBHard);
+	void							fenceOnCurVBHardIfNeeded(IVertexBufferHardGL *newVBHard);
 
 
 	// @}

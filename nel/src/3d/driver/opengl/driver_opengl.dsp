@@ -169,6 +169,14 @@ SOURCE=.\driver_opengl_vertex.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\driver_opengl_vertex_buffer_hard.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\driver_opengl_vertex_buffer_hard.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\driver_opengl_vertex_program.cpp
 # End Source File
 # Begin Source File

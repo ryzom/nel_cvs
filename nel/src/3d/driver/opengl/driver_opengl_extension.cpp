@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.36 2002/08/21 09:37:12 lecroart Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.37 2002/08/30 11:58:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -213,6 +213,22 @@ NEL_PFNGLSECONDARYCOLORPOINTEREXTPROC	nglSecondaryColorPointerEXT;
 // BlendColor extension
 //========================
 NEL_PFNGLBLENDCOLOREXTPROC				nglBlendColorEXT;
+
+
+// GL_ATI_vertex_array_object extension
+//========================
+NEL_PFNGLNEWOBJECTBUFFERATIPROC			nglNewObjectBufferATI;
+NEL_PFNGLISOBJECTBUFFERATIPROC			nglIsObjectBufferATI;
+NEL_PFNGLUPDATEOBJECTBUFFERATIPROC		nglUpdateObjectBufferATI;
+NEL_PFNGLGETOBJECTBUFFERFVATIPROC		nglGetObjectBufferfvATI;
+NEL_PFNGLGETOBJECTBUFFERIVATIPROC		nglGetObjectBufferivATI;
+NEL_PFNGLDELETEOBJECTBUFFERATIPROC		nglDeleteObjectBufferATI;
+NEL_PFNGLARRAYOBJECTATIPROC				nglArrayObjectATI;
+NEL_PFNGLGETARRAYOBJECTFVATIPROC		nglGetArrayObjectfvATI;
+NEL_PFNGLGETARRAYOBJECTIVATIPROC		nglGetArrayObjectivATI;
+NEL_PFNGLVARIANTARRAYOBJECTATIPROC		nglVariantArrayObjectATI;
+NEL_PFNGLGETVARIANTARRAYOBJECTFVATIPROC	nglGetVariantArrayObjectfvATI;
+NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC	nglGetVariantArrayObjectivATI;
 
 
 // Pbuffer extension
@@ -595,6 +611,31 @@ static bool	setupNVVertexArrayRange2(const char	*glext)
 }
 
 
+// *********************************
+static bool	setupATIVertexArrayObject(const char *glext)
+{
+	if(strstr(glext, "GL_ATI_vertex_array_object")==NULL)
+		return false;
+
+	if(!(nglBlendColorEXT= (NEL_PFNGLBLENDCOLOREXTPROC)nelglGetProcAddress("glBlendColorEXT"))) return false;
+	if(!(nglNewObjectBufferATI= (NEL_PFNGLNEWOBJECTBUFFERATIPROC)nelglGetProcAddress("glNewObjectBufferATI"))) return false;
+	if(!(nglIsObjectBufferATI= (NEL_PFNGLISOBJECTBUFFERATIPROC)nelglGetProcAddress("glIsObjectBufferATI"))) return false;
+	if(!(nglUpdateObjectBufferATI= (NEL_PFNGLUPDATEOBJECTBUFFERATIPROC)nelglGetProcAddress("glUpdateObjectBufferATI"))) return false;
+	if(!(nglGetObjectBufferfvATI= (NEL_PFNGLGETOBJECTBUFFERFVATIPROC)nelglGetProcAddress("glGetObjectBufferfvATI"))) return false;
+	if(!(nglGetObjectBufferivATI= (NEL_PFNGLGETOBJECTBUFFERIVATIPROC)nelglGetProcAddress("glGetObjectBufferivATI"))) return false;
+	if(!(nglDeleteObjectBufferATI= (NEL_PFNGLDELETEOBJECTBUFFERATIPROC)nelglGetProcAddress("glDeleteObjectBufferATI"))) return false;
+	if(!(nglArrayObjectATI= (NEL_PFNGLARRAYOBJECTATIPROC)nelglGetProcAddress("glArrayObjectATI"))) return false;
+	if(!(nglGetArrayObjectfvATI= (NEL_PFNGLGETARRAYOBJECTFVATIPROC)nelglGetProcAddress("glGetArrayObjectfvATI"))) return false;
+	if(!(nglGetArrayObjectivATI= (NEL_PFNGLGETARRAYOBJECTIVATIPROC)nelglGetProcAddress("glGetArrayObjectivATI"))) return false;
+	if(!(nglVariantArrayObjectATI= (NEL_PFNGLVARIANTARRAYOBJECTATIPROC)nelglGetProcAddress("glVariantArrayObjectATI"))) return false;
+	if(!(nglGetVariantArrayObjectfvATI= (NEL_PFNGLGETVARIANTARRAYOBJECTFVATIPROC)nelglGetProcAddress("glGetVariantArrayObjectfvATI"))) return false;
+	if(!(nglGetVariantArrayObjectivATI= (NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC)nelglGetProcAddress("glGetVariantArrayObjectivATI"))) return false;
+
+	return true;
+}
+
+
+
 // ***************************************************************************
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
@@ -681,10 +722,19 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// if supported
 	if(ext.NVVertexArrayRange2)
 		// VBHard swap without flush of the VAR.
-		ext.StateVARWithoutFlush= GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV;
+		ext.NVStateVARWithoutFlush= GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV;
 	else
 		// VBHard with unusefull flush of the VAR.
-		ext.StateVARWithoutFlush= GL_VERTEX_ARRAY_RANGE_NV;
+		ext.NVStateVARWithoutFlush= GL_VERTEX_ARRAY_RANGE_NV;
+
+
+	// ATI extensions
+	// -------------
+
+	// Check ATIVertexArrayObject
+	// Disable feature ???
+	if(!ext.DisableHardwareVertexArrayAGP)
+		ext.ATIVertexArrayObject= setupATIVertexArrayObject(glext);
 }
 
 

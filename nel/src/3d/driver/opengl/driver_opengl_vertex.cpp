@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.29 2002/08/21 09:37:12 lecroart Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.30 2002/08/30 11:58:02 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -28,6 +28,7 @@
 #include "stdopengl.h"
 
 #include "3d/primitive_block.h"
+#include "driver_opengl_vertex_buffer_hard.h"
 
 
 using namespace std;
@@ -330,8 +331,8 @@ void	CDriverGL::renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)
 // ***************************************************************************
 void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 {
-	// sould not be called with vertext program enabled
-	nlassert(!isVertexProgramEnabled());
+	// sould not be called with vertex program Array setuped.
+	nlassert(!_LastSetupGLArrayVertexProgram);
 
 	_DriverGLStates.clientActiveTextureARB(stage);
 	if (VB.VertexFormat & (CVertexBuffer::TexCoord0Flag<<uvId))
@@ -340,7 +341,12 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 		if (VB.Type[CVertexBuffer::TexCoord0+uvId]==CVertexBuffer::Float2)
 		{
 			_DriverGLStates.enableTexCoordArray(true);
-			glTexCoordPointer(2,GL_FLOAT,VB.VertexSize,VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
+			// Setup ATI VBHard or std ptr.
+			if(VB.ATIVBHardMode)
+				nglArrayObjectATI(GL_TEXTURE_COORD_ARRAY, 2, GL_FLOAT, VB.VertexSize, 
+					VB.ATIVertexObjectId, VB.ATIValueOffset[CVertexBuffer::TexCoord0+uvId]);
+			else
+				glTexCoordPointer(2,GL_FLOAT,VB.VertexSize,VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
 		}
 		else
 		{
@@ -355,9 +361,6 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 // ***************************************************************************
 void		CDriverGL::mapTextureStageToUV(uint stage, uint uv)
 {
-	// sould not be called with vertex program enabled
-	nlassert(!isVertexProgramEnabled());
-
 	// Just call it for last VertexBuffer setuped.
 	setupUVPtr(stage, _LastVB, uv);
 }
@@ -374,40 +377,62 @@ void		CDriverGL::mapTextureStageToUV(uint stage, uint uv)
 // ***************************************************************************
 bool			CDriverGL::supportVertexBufferHard() const
 {
-	return _Extensions.NVVertexArrayRange;
+	return _SupportVBHard;
+}
+
+
+// ***************************************************************************
+bool			CDriverGL::slowUnlockVertexBufferHard() const
+{
+	return _SlowUnlockVBHard;
 }
 
 
 // ***************************************************************************
 uint			CDriverGL::getMaxVerticesByVertexBufferHard() const
 {
-	return _Extensions.NVVertexArrayRangeMaxVertex;
+	return _MaxVerticesByVBHard;
 }
 
 
 // ***************************************************************************
 IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, IDriver::TVBHardType vbType)
 {
-	if(!_Extensions.NVVertexArrayRange)
+	// choose the VertexArrayRange of good type
+	IVertexArrayRange	*vertexArrayRange= NULL;
+	switch(vbType)
+	{
+	case IDriver::VBHardAGP: 
+		vertexArrayRange= _AGPVertexArrayRange;
+		break;
+	case IDriver::VBHardVRAM:
+		vertexArrayRange= _VRAMVertexArrayRange;
+		break;
+	};
+
+	// If this one at least created (an extension support it).
+	if( !vertexArrayRange )
 		return NULL;
 	else
 	{
 		// check max vertex
-		if(numVertices > _Extensions.NVVertexArrayRangeMaxVertex)
+		if(numVertices > _MaxVerticesByVBHard)
 			return NULL;
 
 		// Create a CVertexBufferHardGL
-		CVertexBufferHardGL		*vb;
-		vb= new CVertexBufferHardGL();
+		IVertexBufferHardGL		*vb;
+		// let the VAR create the vbhard.
+		vb= vertexArrayRange->createVBHardGL(vertexFormat, typeArray, numVertices);
 		// if fails
-		if(!vb->init(this, vertexFormat, typeArray, numVertices, vbType))
+		if(!vb)
 		{
-			// destroy this object.
-			delete vb;
 			return NULL;
 		}
 		else
+		{
+			// insert in list.
 			return _VertexBufferHardSet.insert(vb);
+		}
 	}
 }
 
@@ -429,266 +454,7 @@ void			CDriverGL::deleteVertexBufferHard(IVertexBufferHard *VB)
 	}
 
 	// Then just delete the VBuffer hard from list.
-	_VertexBufferHardSet.erase(safe_cast<CVertexBufferHardGL*>(VB));
-}
-
-
-
-// ***************************************************************************
-CVertexBufferHardGL::CVertexBufferHardGL() 
-{
-	_Driver= NULL;
-	_VertexArrayRange= NULL;
-	_VertexPtr= NULL;
-
-	GPURenderingAfterFence= false;
-	_FenceSet= false;
-}
-
-
-// ***************************************************************************
-bool	CVertexBufferHardGL::init(CDriverGL *drv, uint16 vertexFormat, const uint8 *typeArray, 
-								  uint32 numVertices, IDriver::TVBHardType vbType)
-{
-	_Driver= drv;
-	_VertexArrayRange= NULL;
-	_VertexPtr= NULL;
-
-	// Init the format of the VB.
-	IVertexBufferHard::initFormat(vertexFormat, typeArray, numVertices);
-
-	// compute size to allocate.
-	uint32	size= getVertexSize() * getNumVertices();
-
-	// choose the VertexArrayRange.
-	switch(vbType)
-	{
-	case IDriver::VBHardAGP: 
-		_VertexArrayRange= &_Driver->_AGPVertexArrayRange;
-		break;
-	case IDriver::VBHardVRAM:
-		_VertexArrayRange= &_Driver->_VRAMVertexArrayRange;
-		break;
-	default: break;
-	};
-
-	// try to allocate
-	if( _VertexArrayRange && _VertexArrayRange->allocated())
-	{
-		 _VertexPtr= _VertexArrayRange->allocateVB(size);
-	}
-
-	// If allocation fails.
-	if( !_VertexPtr )
-	{
-		// just destroy this object (no free()).
-		_VertexArrayRange= NULL;
-		return false;
-	}
-	else
-	{
-		// Ok, we can allocate the fence.
-		nglGenFencesNV(1, &_Fence);
-		return true;
-	}
-}
-
-
-// ***************************************************************************
-CVertexBufferHardGL::~CVertexBufferHardGL()
-{
-	if(_VertexArrayRange)
-	{
-		// Destroy Fence.
-		// First wait for completion.
-		finishFence();
-		// then delete.
-		nglDeleteFencesNV(1, &_Fence);
-
-		// Then free the VAR.
-		_VertexArrayRange->freeVB(_VertexPtr);
-		_VertexPtr= NULL;
-		_VertexArrayRange= NULL;
-	}
-}
-
-
-// ***************************************************************************
-void		*CVertexBufferHardGL::lock()
-{
-	// sync the 3d card with the system.
-
-	// Ensure the GPU has finished with the current VBHard.
-	finishFence();
-	// If the user lock an activated VBHard, after rendering some primitives, we must stall the CPU
-	if(GPURenderingAfterFence)
-	{
-		// Set a fence at the current position in the command stream.
-		setFence();
-		// wait for him to finish.
-		finishFence();
-		// And so the GPU render all our primitives.
-		GPURenderingAfterFence= false;
-	}
-
-
-	return _VertexPtr;
-}
-
-
-// ***************************************************************************
-void		CVertexBufferHardGL::unlock()
-{
-	// no op.
-}
-
-
-// ***************************************************************************
-void			CVertexBufferHardGL::enable()
-{
-	if(_Driver->_CurrentVertexBufferHard != this)
-	{
-		nlassert(_VertexArrayRange);
-		_VertexArrayRange->enable();
-		_Driver->_CurrentVertexBufferHard= this;
-	}
-}
-
-
-// ***************************************************************************
-void			CVertexBufferHardGL::disable()
-{
-	if(_Driver->_CurrentVertexBufferHard != NULL)
-	{
-		nlassert(_VertexArrayRange);
-		_VertexArrayRange->disable();
-		_Driver->_CurrentVertexBufferHard= NULL;
-	}
-}
-
-
-// ***************************************************************************
-void			CVertexBufferHardGL::setFence()
-{
-	if(!isFenceSet())
-	{
-		nglSetFenceNV(_Fence, GL_ALL_COMPLETED_NV);
-		_FenceSet= true;
-	}
-}
-
-// ***************************************************************************
-void			CVertexBufferHardGL::finishFence()
-{
-	if(isFenceSet())
-	{
-		// Stall CPU while the fence command is not reached in the GPU command stream.
-		nglFinishFenceNV(_Fence);
-		_FenceSet= false;
-	}
-}
-
-
-// ***************************************************************************
-bool			CVertexArrayRange::allocate(uint32 size, IDriver::TVBHardType vbType)
-{
-	nlassert(_VertexArrayPtr==NULL);
-	_VertexArraySize= size;
-
-#ifdef	NL_OS_WINDOWS
-	// try to allocate AGP or VRAM data.
-	switch(vbType)
-	{
-	case IDriver::VBHardAGP: 
-		_VertexArrayPtr= wglAllocateMemoryNV(size, 0, 0, 0.5f);
-		break;
-	case IDriver::VBHardVRAM:
-		_VertexArrayPtr= wglAllocateMemoryNV(size, 0, 0, 1.0f);
-		break;
-	};
-#endif	// NL_OS_WINDOWS
-
-
-	// init the allocator.
-	if(_VertexArrayPtr)
-	{
-		/* Init with an alignment of 8. Not sure it is usefull, but GDC01_Performance.pdf papers talks about
-		  "Data arrays must be 8-byte aligned". Don't know what "Data" is.
-		*/
-		_HeapMemory.initHeap(_VertexArrayPtr, size, 8);
-	}
-
-
-	return _VertexArrayPtr!=NULL;
-}
-
-
-// ***************************************************************************
-void			CVertexArrayRange::free()
-{
-	// release the ptr.
-	if(_VertexArrayPtr)
-	{
-		// reset the allocator.
-		_HeapMemory.reset();
-
-
-		// Free special memory.
-#ifdef	NL_OS_WINDOWS
-		wglFreeMemoryNV(_VertexArrayPtr);
-#endif	// NL_OS_WINDOWS
-
-
-		_VertexArrayPtr= NULL;
-	}
-}
-
-
-// ***************************************************************************
-void			CVertexArrayRange::enable()
-{
-	// if not already enabled.
-	if(_Driver->_CurrentVertexArrayRange!=this)
-	{
-		// Setup the ptrs only if differnets from last time (may rarely happens)
-		if( _Driver->_CurrentVARSize != _VertexArraySize || _Driver->_CurrentVARPtr != _VertexArrayPtr)
-		{
-			nglVertexArrayRangeNV(_VertexArraySize, _VertexArrayPtr);
-			_Driver->_CurrentVARSize= _VertexArraySize;
-			_Driver->_CurrentVARPtr= _VertexArrayPtr;
-		}
-		// enable VAR. NB: flush is unesufull, so don't flush if extension is OK
-		glEnableClientState(_Driver->_Extensions.StateVARWithoutFlush);
-		_Driver->_CurrentVertexArrayRange= this;
-	}
-}
-
-
-// ***************************************************************************
-void			CVertexArrayRange::disable()
-{
-	// if not already disabled.
-	if(_Driver->_CurrentVertexArrayRange!=NULL)
-	{
-		// just disable the state, don't change VAR ptr setup.
-		// NB: flush is unesufull, so don't flush if extension is OK
-		glDisableClientState(_Driver->_Extensions.StateVARWithoutFlush);
-		_Driver->_CurrentVertexArrayRange= NULL;
-	}
-}
-
-
-// ***************************************************************************
-void			*CVertexArrayRange::allocateVB(uint32 size)
-{
-	return _HeapMemory.allocate(size);
-}
-
-
-// ***************************************************************************
-void			CVertexArrayRange::freeVB(void	*ptr)
-{
-	_HeapMemory.free(ptr);
+	_VertexBufferHardSet.erase(safe_cast<IVertexBufferHardGL*>(VB));
 }
 
 
@@ -699,7 +465,7 @@ void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *iVB)
 	// NB: must duplicate changes in activeVertexBuffer()
 
 	nlassert(iVB);
-	CVertexBufferHardGL		*VB= safe_cast<CVertexBufferHardGL*>(iVB);
+	IVertexBufferHardGL		*VB= safe_cast<IVertexBufferHardGL*>(iVB);
 
 	uint32	flags;
 
@@ -793,6 +559,10 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 {
 	uint32	flags= vb.VertexFormat;
 
+	/** \todo yoyo, or nico: this code should change with ATI VertexProgram.
+	 *	For now, ATI VBHard is only coded for non-VertexProgram case.
+	 */
+
 	// If change of setup type, must disable olds.
 	//=======================
 
@@ -831,18 +601,28 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 		_LastSetupGLArrayVertexProgram= true;
 	}
 
+
 	// Setup Vertex / Normal.
 	//=======================
 
 	// Use a vertex program ?
 	if (!isVertexProgramEnabled ())
 	{
-		// Check type
+		// setup vertex ptr.
+		//-----------
 		nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
 
 		_DriverGLStates.enableVertexArray(true);
-		glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Position]);
+		// Setup ATI VBHard or std ptr.
+		if(vb.ATIVBHardMode)
+			nglArrayObjectATI(GL_VERTEX_ARRAY, 3, GL_FLOAT, vb.VertexSize, 
+				vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::Position]);
+		else
+			glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Position]);
 
+
+		// setup normal ptr.
+		//-----------
 		// Check for normal param in vertex buffer
 		if (flags & CVertexBuffer::NormalFlag)
 		{
@@ -850,15 +630,21 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 			nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
 
 			_DriverGLStates.enableNormalArray(true);
-			glNormalPointer(GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Normal]);
+			// Setup ATI VBHard or std ptr.
+			if(vb.ATIVBHardMode)
+				nglArrayObjectATI(GL_NORMAL_ARRAY, 3, GL_FLOAT, vb.VertexSize, 
+					vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::Normal]);
+			else
+				glNormalPointer(GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Normal]);
 		}
 		else
 		{
 			_DriverGLStates.enableNormalArray(false);
 		}
 
-		// Setup Color / UV.
-		//==================
+
+		// Setup Color
+		//-----------
 		// Check for color param in vertex buffer
 		if (flags & CVertexBuffer::PrimaryColorFlag)
 		{
@@ -866,12 +652,19 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 			nlassert (vb.Type[CVertexBuffer::PrimaryColor]==CVertexBuffer::UChar4);
 
 			_DriverGLStates.enableColorArray(true);
-			glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[CVertexBuffer::PrimaryColor]);
+			// Setup ATI VBHard or std ptr.
+			if(vb.ATIVBHardMode)
+				nglArrayObjectATI(GL_COLOR_ARRAY, 4, GL_UNSIGNED_BYTE, vb.VertexSize, 
+					vb.ATIVertexObjectId, vb.ATIValueOffset[CVertexBuffer::PrimaryColor]);
+			else
+				glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[CVertexBuffer::PrimaryColor]);
 		}
 		else
 			_DriverGLStates.enableColorArray(false);
 
-		// Active UVs.
+
+		// Setup Uvs
+		//-----------
 		for(sint i=0; i<inlGetNumTextStages(); i++)
 		{
 			// normal behavior: each texture has its own UV.
@@ -977,6 +770,9 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	NumVertices= vb.getNumVertices();
 	NumWeight= vb.getNumWeight();
 
+	// No VBhard.
+	ATIVBHardMode= false;
+
 	// Get value pointer
 	for (i=0; i<CVertexBuffer::NumValue; i++)
 	{
@@ -994,7 +790,7 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 
 
 // ***************************************************************************
-void		CVertexBufferInfo::setupVertexBufferHard(CVertexBufferHardGL &vb)
+void		CVertexBufferInfo::setupVertexBufferHard(IVertexBufferHardGL &vb)
 {
 	sint	i;
 	uint	flags= vb.getVertexFormat();
@@ -1003,17 +799,51 @@ void		CVertexBufferInfo::setupVertexBufferHard(CVertexBufferHardGL &vb)
 	NumVertices= vb.getNumVertices();
 	NumWeight= vb.getNumWeight();
 
-	// Get value pointer
-	for (i=0; i<CVertexBuffer::NumValue; i++)
-	{
-		// Value used ?
-		if (VertexFormat&(1<<i))
-		{
-			// Get the pointer
-			ValuePtr[i]=vb.getValueEx(i);
+	// Not ATI VBHard by default
+	ATIVBHardMode= false;
 
-			// Type of the value
-			Type[i]=vb.getValueType (i);
+	// Setup differs from ATI or NVidia VBHard.
+	if(vb.NVidiaVertexBufferHard)
+	{
+		CVertexBufferHardGLNVidia	&vbHardNV= static_cast<CVertexBufferHardGLNVidia&>(vb);
+
+		// Get value pointer
+		for (i=0; i<CVertexBuffer::NumValue; i++)
+		{
+			// Value used ?
+			if (VertexFormat&(1<<i))
+			{
+				// Get the pointer
+				ValuePtr[i]= vbHardNV.getNVidiaValueEx(i);
+
+				// Type of the value
+				Type[i]= vbHardNV.getValueType (i);
+			}
+		}
+	}
+	else
+	{
+		nlassert(vb.ATIVertexBufferHard);
+		CVertexBufferHardGLATI	&vbHardATI= static_cast<CVertexBufferHardGLATI&>(vb);
+
+		// special setup in setupGlArrays()...
+		ATIVBHardMode= true;
+
+		// store the VertexObject Id.
+		ATIVertexObjectId= vbHardATI.getATIVertexObjectId();
+
+		// Get value offset
+		for (i=0; i<CVertexBuffer::NumValue; i++)
+		{
+			// Value used ?
+			if (VertexFormat&(1<<i))
+			{
+				// Get the pointer
+				ATIValueOffset[i]= vbHardATI.getATIValueOffset(i);
+
+				// Type of the value
+				Type[i]= vbHardATI.getValueType (i);
+			}
 		}
 	}
 }
@@ -1035,8 +865,10 @@ void			CDriverGL::resetVertexArrayRange()
 	_VertexBufferHardSet.clear();
 
 	// After, Clear the 2 vertexArrayRange, if any.
-	_AGPVertexArrayRange.free();
-	_VRAMVertexArrayRange.free();
+	if(_AGPVertexArrayRange)
+		_AGPVertexArrayRange->free();
+	if(_VRAMVertexArrayRange)
+		_VRAMVertexArrayRange->free();
 }
 
 
@@ -1044,6 +876,10 @@ void			CDriverGL::resetVertexArrayRange()
 bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 {
 	if(!supportVertexBufferHard())
+		return false;
+
+	// must be supported
+	if(!_AGPVertexArrayRange || !_VRAMVertexArrayRange)
 		return false;
 
 	// First, reset any VBHard created.
@@ -1057,9 +893,9 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 		agpMem= max(agpMem, (uint)NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE);
 		while(agpMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
 		{
-			if(_AGPVertexArrayRange.allocate(agpMem, IDriver::VBHardAGP))
+			if(_AGPVertexArrayRange->allocate(agpMem, IDriver::VBHardAGP))
 			{
-				nlinfo("VAR: %.d vertices supported", _Extensions.NVVertexArrayRangeMaxVertex);
+				nlinfo("VAR: %.d vertices supported", _MaxVerticesByVBHard);
 				nlinfo("VAR: Success to allocate %.1f Mo of AGP VAR Ram", agpMem / 1000000.f);
 				break;
 			}
@@ -1072,7 +908,7 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 
 		if(agpMem< NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
 		{
-			nlinfo("VAR: %.d vertices supported", _Extensions.NVVertexArrayRangeMaxVertex);
+			nlinfo("VAR: %.d vertices supported", _MaxVerticesByVBHard);
 			nlinfo("VAR: Failed to allocate %.1f Mo of AGP VAR Ram", NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE / 1000000.f);
 			ok= false;
 		}
@@ -1086,7 +922,7 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 		vramMem= max(vramMem, (uint)NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE);
 		while(vramMem>= NL3D_DRV_VERTEXARRAY_MINIMUM_SIZE)
 		{
-			if(_VRAMVertexArrayRange.allocate(vramMem, IDriver::VBHardVRAM))
+			if(_VRAMVertexArrayRange->allocate(vramMem, IDriver::VBHardVRAM))
 				break;
 			else
 			{
@@ -1107,13 +943,20 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 
 
 // ***************************************************************************
-void				CDriverGL::fenceOnCurVBHardIfNeeded(CVertexBufferHardGL *newVBHard)
+void				CDriverGL::fenceOnCurVBHardIfNeeded(IVertexBufferHardGL *newVBHard)
 {
-	// If old VB is a VBHard, and if we do not activate the same (NB: newVBHard==NULL if not a VBHard).
-	if(_CurrentVertexBufferHard!=NULL && _CurrentVertexBufferHard!=newVBHard)
+	// If old is not a VBHard, or if not a NVidia VBHard, no-op.
+	if( _CurrentVertexBufferHard==NULL || !_CurrentVertexBufferHard->NVidiaVertexBufferHard )
+		return;
+
+	// if we do not activate the same (NB: newVBHard==NULL if not a VBHard).
+	if(_CurrentVertexBufferHard!=newVBHard)
 	{
+		// get NVidia interface
+		CVertexBufferHardGLNVidia	*vbHardNV= static_cast<CVertexBufferHardGLNVidia*>(_CurrentVertexBufferHard);
+
 		// If some render() have been done with this VB.
-		if( _CurrentVertexBufferHard->GPURenderingAfterFence )
+		if( vbHardNV->GPURenderingAfterFence )
 		{
 			// If an old fence is activated, we wait for him.
 			/* NB: performance issue: maybe a wait for nothing in some cases like this one:
@@ -1123,10 +966,10 @@ void				CDriverGL::fenceOnCurVBHardIfNeeded(CVertexBufferHardGL *newVBHard)
 
 				This is not a hard issue, if we suppose first A is finished to be rendered during render of VBHard_B.
 			*/
-			_CurrentVertexBufferHard->finishFence();
+			vbHardNV->finishFence();
 			// Since we won't work with this VB for a long time, we set a fence.
-			_CurrentVertexBufferHard->setFence();
-			_CurrentVertexBufferHard->GPURenderingAfterFence= false;
+			vbHardNV->setFence();
+			vbHardNV->GPURenderingAfterFence= false;
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.29 2002/07/02 12:35:05 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.30 2002/08/30 11:58:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,12 +89,14 @@ struct	CGlExtensions
 	// NVVertexArrayRange2. 
 	bool	NVVertexArrayRange2;
 	// equal to GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV if possible, or GL_VERTEX_ARRAY_RANGE_NV
-	uint	StateVARWithoutFlush;
+	uint	NVStateVARWithoutFlush;
 
 	// WGL ARB extensions, true if supported
 	bool	WGLARBPBuffer;
 	bool	WGLARBPixelFormat;
 
+	// ATI Extensions.
+	bool	ATIVertexArrayObject;
 
 public:
 
@@ -129,6 +131,7 @@ public:
 		WGLARBPBuffer= false;
 		WGLARBPixelFormat= false;
 		EXTBlendColor= false;
+		ATIVertexArrayObject= false;
 
 		/// \name Disable Hardware feature. False by default. setuped by IDriver
 		DisableHardwareVertexProgram= false;
@@ -334,6 +337,23 @@ extern NEL_PFNGLSECONDARYCOLORPOINTEREXTPROC	nglSecondaryColorPointerEXT;
 // BlendColor extension
 //========================
 extern NEL_PFNGLBLENDCOLOREXTPROC				nglBlendColorEXT;
+
+
+// GL_ATI_vertex_array_object extension
+//========================
+extern NEL_PFNGLNEWOBJECTBUFFERATIPROC			nglNewObjectBufferATI;
+extern NEL_PFNGLISOBJECTBUFFERATIPROC			nglIsObjectBufferATI;
+extern NEL_PFNGLUPDATEOBJECTBUFFERATIPROC		nglUpdateObjectBufferATI;
+extern NEL_PFNGLGETOBJECTBUFFERFVATIPROC		nglGetObjectBufferfvATI;
+extern NEL_PFNGLGETOBJECTBUFFERIVATIPROC		nglGetObjectBufferivATI;
+extern NEL_PFNGLDELETEOBJECTBUFFERATIPROC		nglDeleteObjectBufferATI;
+extern NEL_PFNGLARRAYOBJECTATIPROC				nglArrayObjectATI;
+extern NEL_PFNGLGETARRAYOBJECTFVATIPROC			nglGetArrayObjectfvATI;
+extern NEL_PFNGLGETARRAYOBJECTIVATIPROC			nglGetArrayObjectivATI;
+extern NEL_PFNGLVARIANTARRAYOBJECTATIPROC		nglVariantArrayObjectATI;
+extern NEL_PFNGLGETVARIANTARRAYOBJECTFVATIPROC	nglGetVariantArrayObjectfvATI;
+extern NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC	nglGetVariantArrayObjectivATI;
+
 
 
 #ifdef NL_OS_WINDOWS

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.13 2002/07/02 12:35:05 berenguier Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.14 2002/08/30 11:58:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -457,6 +457,50 @@ typedef void (APIENTRY * PFNGLSETFENCENVPROC) (GLuint fence, GLenum condition);
 #endif
 
 
+/* GL_ATI_vertex_array_object */
+#ifndef GL_ATI_vertex_array_object
+#define GL_STATIC_ATI                     0x8760
+#define GL_DYNAMIC_ATI                    0x8761
+#define GL_PRESERVE_ATI                   0x8762
+#define GL_DISCARD_ATI                    0x8763
+#define GL_OBJECT_BUFFER_SIZE_ATI         0x8764
+#define GL_OBJECT_BUFFER_USAGE_ATI        0x8765
+#define GL_ARRAY_OBJECT_BUFFER_ATI        0x8766
+#define GL_ARRAY_OBJECT_OFFSET_ATI        0x8767
+#endif
+
+#ifndef GL_ATI_vertex_array_object
+#define GL_ATI_vertex_array_object 1
+#ifdef GL_GLEXT_PROTOTYPES
+GLAPI GLuint APIENTRY glNewObjectBufferATI (GLsizei, const GLvoid *, GLenum);
+GLAPI GLboolean APIENTRY glIsObjectBufferATI (GLuint);
+GLAPI void APIENTRY glUpdateObjectBufferATI (GLuint, GLuint, GLsizei, const GLvoid *, GLenum);
+GLAPI void APIENTRY glGetObjectBufferfvATI (GLuint, GLenum, GLfloat *);
+GLAPI void APIENTRY glGetObjectBufferivATI (GLuint, GLenum, GLint *);
+GLAPI void APIENTRY glDeleteObjectBufferATI (GLuint);
+GLAPI void APIENTRY glArrayObjectATI (GLenum, GLint, GLenum, GLsizei, GLuint, GLuint);
+GLAPI void APIENTRY glGetArrayObjectfvATI (GLenum, GLenum, GLfloat *);
+GLAPI void APIENTRY glGetArrayObjectivATI (GLenum, GLenum, GLint *);
+GLAPI void APIENTRY glVariantArrayObjectATI (GLuint, GLenum, GLsizei, GLuint, GLuint);
+GLAPI void APIENTRY glGetVariantArrayObjectfvATI (GLuint, GLenum, GLfloat *);
+GLAPI void APIENTRY glGetVariantArrayObjectivATI (GLuint, GLenum, GLint *);
+#endif /* GL_GLEXT_PROTOTYPES */
+typedef GLuint (APIENTRY * PFNGLNEWOBJECTBUFFERATIPROC) (GLsizei size, const GLvoid *pointer, GLenum usage);
+typedef GLboolean (APIENTRY * PFNGLISOBJECTBUFFERATIPROC) (GLuint buffer);
+typedef void (APIENTRY * PFNGLUPDATEOBJECTBUFFERATIPROC) (GLuint buffer, GLuint offset, GLsizei size, const GLvoid *pointer, GLenum preserve);
+typedef void (APIENTRY * PFNGLGETOBJECTBUFFERFVATIPROC) (GLuint buffer, GLenum pname, GLfloat *params);
+typedef void (APIENTRY * PFNGLGETOBJECTBUFFERIVATIPROC) (GLuint buffer, GLenum pname, GLint *params);
+typedef void (APIENTRY * PFNGLDELETEOBJECTBUFFERATIPROC) (GLuint buffer);
+typedef void (APIENTRY * PFNGLARRAYOBJECTATIPROC) (GLenum array, GLint size, GLenum type, GLsizei stride, GLuint buffer, GLuint offset);
+typedef void (APIENTRY * PFNGLGETARRAYOBJECTFVATIPROC) (GLenum array, GLenum pname, GLfloat *params);
+typedef void (APIENTRY * PFNGLGETARRAYOBJECTIVATIPROC) (GLenum array, GLenum pname, GLint *params);
+typedef void (APIENTRY * PFNGLVARIANTARRAYOBJECTATIPROC) (GLuint id, GLenum type, GLsizei stride, GLuint buffer, GLuint offset);
+typedef void (APIENTRY * PFNGLGETVARIANTARRAYOBJECTFVATIPROC) (GLuint id, GLenum pname, GLfloat *params);
+typedef void (APIENTRY * PFNGLGETVARIANTARRAYOBJECTIVATIPROC) (GLuint id, GLenum pname, GLint *params);
+#endif
+
+
+
 // ***************************************************************************
 // ***************************************************************************
 // The NEL Functions Typedefs.
@@ -630,6 +674,22 @@ typedef void (APIENTRY * NEL_PFNGLSECONDARYCOLORPOINTEREXTPROC) (GLint size, GLe
 // BlendColor extension
 //========================
 typedef void (APIENTRY * NEL_PFNGLBLENDCOLOREXTPROC) (GLclampf red, GLclampf green, GLclampf blue, GLclampf alpha);
+
+
+// GL_ATI_vertex_array_object extension
+//========================
+typedef GLuint (APIENTRY * NEL_PFNGLNEWOBJECTBUFFERATIPROC) (GLsizei size, const GLvoid *pointer, GLenum usage);
+typedef GLboolean (APIENTRY * NEL_PFNGLISOBJECTBUFFERATIPROC) (GLuint buffer);
+typedef void (APIENTRY * NEL_PFNGLUPDATEOBJECTBUFFERATIPROC) (GLuint buffer, GLuint offset, GLsizei size, const GLvoid *pointer, GLenum preserve);
+typedef void (APIENTRY * NEL_PFNGLGETOBJECTBUFFERFVATIPROC) (GLuint buffer, GLenum pname, GLfloat *params);
+typedef void (APIENTRY * NEL_PFNGLGETOBJECTBUFFERIVATIPROC) (GLuint buffer, GLenum pname, GLint *params);
+typedef void (APIENTRY * NEL_PFNGLDELETEOBJECTBUFFERATIPROC) (GLuint buffer);
+typedef void (APIENTRY * NEL_PFNGLARRAYOBJECTATIPROC) (GLenum array, GLint size, GLenum type, GLsizei stride, GLuint buffer, GLuint offset);
+typedef void (APIENTRY * NEL_PFNGLGETARRAYOBJECTFVATIPROC) (GLenum array, GLenum pname, GLfloat *params);
+typedef void (APIENTRY * NEL_PFNGLGETARRAYOBJECTIVATIPROC) (GLenum array, GLenum pname, GLint *params);
+typedef void (APIENTRY * NEL_PFNGLVARIANTARRAYOBJECTATIPROC) (GLuint id, GLenum type, GLsizei stride, GLuint buffer, GLuint offset);
+typedef void (APIENTRY * NEL_PFNGLGETVARIANTARRAYOBJECTFVATIPROC) (GLuint id, GLenum pname, GLfloat *params);
+typedef void (APIENTRY * NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC) (GLuint id, GLenum pname, GLint *params);
 
 
 #ifdef __cplusplus

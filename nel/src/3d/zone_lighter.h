@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.12 2002/08/21 09:39:55 lecroart Exp $
+ * $Id: zone_lighter.h,v 1.13 2003/02/17 16:27:12 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,9 +29,12 @@
 #include "nel/misc/triangle.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/plane.h"
+#include "nel/misc/mutex.h"
 #include "nel/misc/bit_set.h"
 #include "nel/misc/pool_memory.h"
+#include "nel/misc/random.h"
 
+#include "nel/3d/frustum.h"
 #include "3d/zone.h"
 #include "3d/quad_grid.h"
 #include "3d/cube_grid.h"
@@ -46,17 +49,19 @@ namespace NL3D
 class CZone;
 class CPatchUVLocator;
 class IShape;
-class CCalcRunnable;
+class CLightRunnable;
 class CCalcLightableShapeRunnable;
 class CMeshGeom;
+class CMeshBase;
 class CMeshMRMGeom;
 class CWaterShape;
-
+class CRenderZBuffer;
 
 // The zone lighter
 class CZoneLighter
 {
-	friend class NL3D::CCalcRunnable;
+	friend class NL3D::CLightRunnable;
+	friend class NL3D::CRenderZBuffer;
 public:
 	CZoneLighter ();
 	virtual ~CZoneLighter () {}
@@ -65,23 +70,8 @@ public:
 	class CLightDesc
 	{
 	public:
-		enum TOverSampling
-		{
-			NoOverSampling=-1,
-			OverSamplingx2=0,
-			OverSamplingx8=1,
-			OverSamplingx32=2,
-			OverSamplingx128=3,
-		};
-
 		// Default Ctor
 		CLightDesc ();
-
-		// Sun direction
-		NLMISC::CVector			LightDirection;
-
-		// Oversampling
-		TOverSampling			Oversampling;
 
 		// Grid size
 		uint					GridSize;
@@ -95,23 +85,47 @@ public:
 		// Height field cell size
 		float					HeightfieldCellSize;
 
-		// Use sun contribution
+		// Render shadows
 		bool					Shadow;
 
-		// Shadow bias. Bias use to displace the shadowed position along the normal in meter
-		float					ShadowBias;
 
-		// Softshadow
-		bool					Softshadow;
+		/// \name Sun parameters
 
-		// Softshadow blur size. 0 hard shadow (fast), else size of the blur in meter
-		float					SoftshadowBlurSize;
 
-		// Size of the fallof effect of soft shadow in meter
-		float					SoftshadowFallof;
+		// Sun direction
+		NLMISC::CVector			SunDirection;
 
-		// Number of vertex in the softshadow shape
-		uint					SoftshadowShapeVertexCount;
+		// Distance of the sun
+		float					SunDistance;
+
+		// FOV of the sun in radian
+		float					SunFOV;
+
+		// Center of the landscape pointed by the sun
+		NLMISC::CVector			SunCenter;
+
+		// Sun radius, (for softshadow sampling)
+		float					SunRadius;
+
+
+		/// \name ZBuffer parameters
+
+
+		// Landscape ZBuffers size for all the landscape. There is one zbuffer like this one per softshadow sample.
+		uint					ZBufferLandscapeSize;
+
+		// Object ZBuffers size for all the landscape. This zbuffer is typically finer. There is only one zbuffer like this.
+		uint					ZBufferObjectSize;
+
+
+		/// \name Softshadows
+
+
+		// Square root of the number of soft shadow samples
+		uint					SoftShadowSamplesSqrt;
+
+		// Soft shadow jitter (0 ~ 1) to smooth softshadow aliasing when sampling number is small
+		float					SoftShadowJitter;
 
 		// Use sun contribution
 		bool					SunContribution;
@@ -149,90 +163,84 @@ public:
 	{
 		friend class CZoneLighter;
 	public:
-		// Ctors
-		CTriangle (const NLMISC::CTriangle& triangle, uint zoneId, uint patchId, float startS, float endS, float startT, float endT)
+		enum TFlags
 		{
+			Landscape = 1,
+			DoubleSided = 2,
+			ClampU = 4,
+			ClampV = 8,
+		};
+		
+		// Ctors
+		CTriangle (const NLMISC::CTriangle& triangle, bool doubleSided, const NLMISC::CBitmap *texture, bool clampU, bool clampV, float *u, float *v, uint8 alphaTestThreshold)
+		{
+			// Copy the triangle
 			Triangle=triangle;
-			ZoneId=zoneId;
-			PatchId=patchId;
-			StartS=startS;
-			EndS=endS;
-			StartT=startT;
-			EndT=endT;
+
+			// Draw it in the heightmap
+			Flags = 0;
+
+			// Double sided
+			Flags |= doubleSided ? DoubleSided : 0;
+			
+			// Texture
+			Texture = texture;
+
+			// Texture used ?
+			if (Texture)
+			{
+				// Alpha test threshold
+				AlphaTestThreshold = alphaTestThreshold;
+
+				// Flags
+				Flags |= clampU ? ClampU : 0;
+				Flags |= clampV ? ClampV : 0;
+
+				// Copy U and V
+				for (uint i=0; i<3; i++)
+				{
+					U[i] = u[i];
+					V[i] = v[i];
+				}
+			}
 		}
 
+		// Ctor for lansdcape triangles
 		CTriangle (const NLMISC::CTriangle& triangle)
 		{
+			// Copy the triangle
 			Triangle=triangle;
-			ZoneId=0xffffffff;
-			PatchId=0xffffffff;
-			StartS=0;
-			EndS=0;
-			StartT=0;
-			EndT=0;
+
+			// Draw it in the heightmap
+			Flags = Landscape;
+			
+			// Texture
+			Texture = NULL;
 		}
 
 		// The triangle
 		NLMISC::CTriangle	Triangle;
 
-		// The triangle patch info
-		uint				ZoneId;
-		uint				PatchId;
-		float				StartS;
-		float				EndS;
-		float				StartT;
-		float				EndT;
+		// Flags
+		uint8				Flags;
+		uint8				AlphaTestThreshold;
+
+		// UV
+		float				U[3];
+		float				V[3];
+
+		// Texture
+		const NLMISC::CBitmap		*Texture;
 
 		// Other info
-		const CPlane		&getPlane() const {return Plane;}
-
+		const CPlane		&getPlane() const {return _Plane;}
 	private:
-		NLMISC::CPlane		Plane;
-
-		// The clipping planes
-		CPlane				ClippingPlanes[3];
-	};
-
-	// A triangle list
-	class CTriangleList
-	{
-	public:
-		NLMISC::CTriangle				Triangle;
-		CTriangleList					*Next;
+		NLMISC::CPlane		_Plane;
 	};
 
 #define SHAPE_VERTICES_MAX 100
 #define SHAPE_MAX 500
 #define MAX_CPU_PROCESS 10
-
-	// A shape class
-	class CShape
-	{
-	public:
-		void operator= (const CShape &shape)
-		{
-			NumVertex=shape.NumVertex;
-			memcpy (Vertices, shape.Vertices, NumVertex*sizeof(CVector));
-		}
-		void scale (const CVector& center, float factor)
-		{
-			for (uint i=0; i<NumVertex; i++)
-			{
-				Vertices[i]-=center;
-				Vertices[i]*=factor;
-				Vertices[i]+=center;
-			}
-		}
-		uint				NumVertex;
-		CVector				Vertices[SHAPE_VERTICES_MAX];
-	};
-
-	// A shape class
-	class CMultiShape
-	{
-	public:
-		std::vector<CShape>	Shapes;
-	};
 
 	// A lumel
 	class CLumelDescriptor
@@ -240,13 +248,40 @@ public:
 	public:
 		CLumelDescriptor ()
 		{
-			TriangleList=NULL;
 		}
-		CTriangleList					*TriangleList;
 		NLMISC::CVector					Position;
 		NLMISC::CVector					Normal;
 		float							S;
 		float							T;
+	};
+
+	// A lumel corner
+	class CLumelCorner
+	{
+	public:
+		CLumelCorner ()
+		{
+		}
+		NLMISC::CVector					Position;
+	};
+
+	// The ZBuffer struct
+	class CZBuffer
+	{
+	public:
+		std::vector<float>						Pixels;
+		NL3D::CFrustum							WorldToZBufferFrustum;
+		NLMISC::CMatrix							WorldToZBuffer;
+		sint									LocalZBufferXMin;
+		sint									LocalZBufferXMax;
+		sint									LocalZBufferYMin;
+		sint									LocalZBufferYMax;
+		float									LocalZBufferZMin;
+		float									LocalZBufferZMax;
+		sint									LocalZBufferWidth;
+		sint									LocalZBufferHeight;
+		sint									ZBufferPixelSize;
+		NLMISC::CVector							BoundingBoxVectors[8];
 	};
 
 	// A hierachical heightfield
@@ -303,6 +338,8 @@ public:
 	// Progress callback
 	virtual void progress (const char *message, float progress) {};
 
+	// Compute shadow attenuation
+	float attenuation (const CVector &pos, const CZoneLighter::CLightDesc &description);
 
 	/// \name Static PointLights mgt.
 	//@{
@@ -315,16 +352,16 @@ public:
 private:
 	friend class CCalcLightableShapeRunnable;
 	// Add triangles from a non skinned CMeshGeom.
-	void addTriangles (const CMeshGeom &meshGeom, const NLMISC::CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
+	void addTriangles (const CMeshBase &meshBase, const CMeshGeom &meshGeom, const NLMISC::CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
 
 	// Add triangles from a non skinned CMeshMRMGeom.
-	void addTriangles (const CMeshMRMGeom &meshGeom, const CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
+	void addTriangles (const CMeshBase &meshBase, const CMeshMRMGeom &meshGeom, const CMatrix& modelMT, std::vector<CTriangle>& triangleArray);
 
 	// One process method
 	void processCalc (uint process, const CLightDesc& description);
 
 	// Build internal zone information
-	void buildZoneInformation (CLandscape &landscape, const std::vector<uint> &listZone, bool oversampling, const CLightDesc &lightDesc);
+	void buildZoneInformation (CLandscape &landscape, const std::vector<uint> &listZone, const CLightDesc &lightDesc);
 
 	// Exclude all the patch of a landscape from refine all
 	void excludeAllPatchFromRefineAll (CLandscape &landscape, std::vector<uint> &listZone, bool exclude);
@@ -342,20 +379,11 @@ private:
 
 	// Get max height
 	uint8 getMaxPhi (sint s, sint t, sint deltaS, sint deltaT, float heightPos) const;
-
-	// Ray trace a position
-	void rayTrace (const CVector& position, const CVector& normal, float s, float t, uint patchId, float &factor, CMultiShape &shape, CMultiShape &shapeTmp, uint cpu);
 		
 	// Eval a normal in the neighborhood
 	void getNormal (const NL3D::CPatch *pPatch, sint16 lumelS, sint16 lumelT, std::vector<NL3D::CPatchUVLocator> &locator, 
 					const std::vector<NL3D::CPatch::CBindInfo> &bindInfo, const std::vector<bool> &binded, std::set<uint64>& visited, 
 					float deltaS, float deltaT, uint rotation, const NL3D::CBezierPatch &bezierPatch, uint lastEdge=5);
-
-	// Raytrace a triangle
-	void rayTraceTriangle (const NLMISC::CTriangle& toOverSample, NLMISC::CVector& normal, uint order, float s, float t, float &factor, uint &tested, uint patchId);
-
-	// Raytrace a triangle
-	void testRaytrace (const CVector& position, const CVector& normal, const CPlane &plane, float s, float t, uint patchId, CMultiShape &shape, CMultiShape &shapeTmp, uint cpu);
 
 	// Tell if the edge lumel must be oversampled
 	bool isLumelOnEdgeMustBeOversample (uint patch, uint edge, sint s, sint t, const std::vector<bool> &binded, 
@@ -383,10 +411,10 @@ private:
 									const CLightDesc& description);
 
 	/// Compute the lighting for a single lightable shape
-	void lightSingleShape(CShapeInfo &lsi, CMultiShape &shape, CMultiShape &shapeTmp, const CLightDesc& description, uint cpu);
+	void lightSingleShape(CShapeInfo &lsi, const CLightDesc& description, uint cpu);
 
 	/// Compute the lighting for a water shape
-	void lightWater(CWaterShape &ws, const CMatrix &MT, CMultiShape &shape, CMultiShape &shapeTmp, const CLightDesc& description, uint cpu);
+	void lightWater(CWaterShape &ws, const CMatrix &MT, const CLightDesc& description, uint cpu);
 	
 	/** Make a quad grid of all the water shapes that where registered by calling addWaterShape()
 	  * The vector of water shapes is released then
@@ -415,14 +443,16 @@ private:
 	  */
 	static void copyTileFlags(CZone &destZone, const CZone &srcZone);
 
+	// Get texture from a material for alpha test
+	void getTexture (const CMaterial &material, NLMISC::CBitmap *&result, bool &clampU, bool &clampV, uint8 &alphaTestThreshold, bool &doubleSided);
+
 	// Give a thread a patch to compute
 	uint getAPatch (uint process);
 
 	// The quad grid
 	CQuadGrid<const CTriangle*>					_QuadGrid[MAX_CPU_PROCESS];
 	NLMISC::CMatrix								_RayBasis;
-	NLMISC::CVector								_RayAdd;
-	NLMISC::CVector								_LightDirection;
+	NLMISC::CVector								_SunDirection;
 	uint										_ZoneToLight;
 	NL3D::CLandscape							*_Landscape;
 	float										_ShadowBias;
@@ -437,22 +467,41 @@ private:
 	uint64										_CPUMask;
 	volatile uint								_ProcessExited;
 
-	// The shape
-	CShape										_Shape;
-	float										_ShapeArea;
-	float										_ShapeRadius;
-	float										_FallofDistance;
-												
+	// *** Bitmap sharing
+	std::map<std::string, NLMISC::CBitmap>			_Bitmaps;
+
+	// *** The zbuffer
+
+	// ZBuffer mutex
+	NLMISC::CFastMutexMP						_Mutex;
+
+public:
+	// Zbuffer pixels in meters
+	std::vector<CZBuffer>						_ZBufferLandscape;
+	CZBuffer									_ZBufferObject;
+
+private:
+	// ZBuffer lookup overflow
+	bool										_ZBufferOverflow;
+
+	// Random generator
+	NLMISC::CRandom								_Random;
+
 	// The heightfield
 	std::vector<float>							_HeightField;
 	sint										_HeightFieldCellCount;
 	NLMISC::CVector								_OrigineHeightField;
 	float										_HeightfieldCellSize;
 
+	class CLumelCorners
+	{
+	};
+
 	// Zone infos
 	std::vector<CPatchInfo>						_PatchInfo;
 	std::vector<CBorderVertex>					_BorderVertices;
 	std::vector<std::vector<CLumelDescriptor> > _Lumels;
+	//std::vector<std::vector<CLumelCorners> >	_LumelCorners;
 	std::vector<std::vector<CBezierPatch> >		_BezierPatch;
 	std::vector<std::vector<std::vector<CPatchUVLocator> > >	_Locator;
 	std::vector<std::vector<std::vector<CPatch::CBindInfo> > >	_BindInfo;
@@ -467,9 +516,6 @@ private:
 	uint										_GetNormalSqRadius;
 	static sint16								_GetNormalDeltaS[4];
 	static sint16								_GetNormalDeltaT[4];
-
-	// Triangle list allocator
-	NLMISC::CPoolMemory<CTriangleList>			_TriangleListAllocateur;
 
 	// Precalc
 	NLMISC::CVector								_K[256][8];
@@ -557,6 +603,10 @@ private:
 
 	TWaterShapeQuadGrid							_WaterShapeQuadGrid;
 
+	/// Some constants
+	const static sint8 CZoneLighter::TriangleIndexes[10][2][3];
+	const static sint8 CZoneLighter::VertexThanCanBeSnappedOnABorder[8][4];
+	const static sint8 CZoneLighter::VertexThanCanBeSnappedOnACorner[3][2];
 };
 
 } // NL3D

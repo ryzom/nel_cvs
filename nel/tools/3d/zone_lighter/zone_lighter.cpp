@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.26 2002/08/22 14:46:19 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.27 2003/02/17 16:27:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -265,9 +265,13 @@ static void loadIGFromContinent(NLMISC::CConfigFile &parameter, std::list<CInsta
 //=======================================================================================
 int main(int argc, char* argv[])
 {
+	// Start time
+	TTime time=CTime::getLocalTime ();
+
 	// Filter addSearchPath
 	NLMISC::createDebug();
 	InfoLog->addNegativeFilter ("adding the path");
+	WarningLog->addNegativeFilter ("continent.cfg");
 
 	// Register 3d
 	registerSerial3d ();
@@ -336,10 +340,44 @@ int main(int argc, char* argv[])
 
 				// Light direction
 				CConfigFile::CVar &sun_direction = parameter.getVar ("sun_direction");
-				lighterDesc.LightDirection.x=sun_direction.asFloat(0);
-				lighterDesc.LightDirection.y=sun_direction.asFloat(1);
-				lighterDesc.LightDirection.z=sun_direction.asFloat(2);
-				lighterDesc.LightDirection.normalize ();
+				lighterDesc.SunDirection.x=sun_direction.asFloat(0);
+				lighterDesc.SunDirection.y=sun_direction.asFloat(1);
+				lighterDesc.SunDirection.z=sun_direction.asFloat(2);
+				lighterDesc.SunDirection.normalize ();
+
+				// Light center position
+				CConfigFile::CVar &sun_center = parameter.getVar ("sun_center");
+				lighterDesc.SunCenter.x=sun_center.asFloat(0);
+				lighterDesc.SunCenter.y=sun_center.asFloat(1);
+				lighterDesc.SunCenter.z=sun_center.asFloat(2);
+
+				// Light distance
+				CConfigFile::CVar &sun_distance = parameter.getVar ("sun_distance");
+				lighterDesc.SunDistance=sun_distance.asFloat();
+
+				// Light FOV
+				CConfigFile::CVar &sun_fov = parameter.getVar ("sun_fov");
+				lighterDesc.SunFOV=sun_fov.asFloat();
+
+				// Light radius
+				CConfigFile::CVar &sun_radius = parameter.getVar ("sun_radius");
+				lighterDesc.SunRadius=sun_radius.asFloat();
+
+				// ZBuffer landscape size
+				CConfigFile::CVar &zbuffer_landscape_size = parameter.getVar ("zbuffer_landscape_size");
+				lighterDesc.ZBufferLandscapeSize=zbuffer_landscape_size.asInt();
+
+				// ZBuffer object size
+				CConfigFile::CVar &zbuffer_object_size = parameter.getVar ("zbuffer_object_size");
+				lighterDesc.ZBufferObjectSize=zbuffer_object_size.asInt();
+
+				// Soft shadow samples sqrt
+				CConfigFile::CVar &soft_shadow_samples_sqrt = parameter.getVar ("soft_shadow_samples_sqrt");
+				lighterDesc.SoftShadowSamplesSqrt=soft_shadow_samples_sqrt.asInt();
+
+				// Soft shadow jitter
+				CConfigFile::CVar &soft_shadow_jitter = parameter.getVar ("soft_shadow_jitter");
+				lighterDesc.SoftShadowJitter=soft_shadow_jitter.asFloat();
 
 				// Water rendering parameters
 				CConfigFile::CVar &water_zbias = parameter.getVar ("water_shadow_bias");
@@ -357,56 +395,9 @@ int main(int argc, char* argv[])
 				CConfigFile::CVar &sky_contribution_for_water = parameter.getVar ("sky_contribution_for_water");
 				lighterDesc.SkyContributionForWater = sky_contribution_for_water.asInt() != 0;
 
-				// Oversampling
-				CConfigFile::CVar &oversampling = parameter.getVar ("oversampling");
-				sint oversmaplingValue=oversampling.asInt();
-				switch (oversmaplingValue)
-				{
-				case 0:
-					lighterDesc.Oversampling=CZoneLighter::CLightDesc::NoOverSampling;
-					break;
-				case 2:
-					lighterDesc.Oversampling=CZoneLighter::CLightDesc::OverSamplingx2;
-					break;
-				case 8:
-					lighterDesc.Oversampling=CZoneLighter::CLightDesc::OverSamplingx8;
-					break;
-				case 32:
-					lighterDesc.Oversampling=CZoneLighter::CLightDesc::OverSamplingx32;
-					break;
-				case 128:
-					lighterDesc.Oversampling=CZoneLighter::CLightDesc::OverSamplingx128;
-					break;
-				default:
-					// Error message
-					nlwarning ("ERROR oversampling value not supported. Must be 0, 2, 8, 32 or 128. Forced to 0.\n");
-					lighterDesc.Oversampling=CZoneLighter::CLightDesc::NoOverSampling;
-					break;
-				}
-
 				// Number of CPU
 				CConfigFile::CVar &cpu_num = parameter.getVar ("cpu_num");
 				lighterDesc.NumCPU=cpu_num.asInt ();
-
-				// Shadow bias
-				CConfigFile::CVar &shadow_bias = parameter.getVar ("shadow_bias");
-				lighterDesc.ShadowBias=shadow_bias.asFloat ();
-
-				// Softshadow
-				CConfigFile::CVar &softshadow = parameter.getVar ("softshadow");
-				lighterDesc.Softshadow=softshadow.asInt ()!=0;
-
-				// Softshadow blur size
-				CConfigFile::CVar &softshadow_blur_size = parameter.getVar ("softshadow_blur_size");
-				lighterDesc.SoftshadowBlurSize=softshadow_blur_size.asFloat ();
-
-				// Softshadow fall
-				CConfigFile::CVar &softshadow_fallof = parameter.getVar ("softshadow_fallof");
-				lighterDesc.SoftshadowFallof=softshadow_fallof.asFloat ();
-
-				// Softshadow fall
-				CConfigFile::CVar &softshadow_shape_vertex_count = parameter.getVar ("softshadow_shape_vertex_count");
-				lighterDesc.SoftshadowShapeVertexCount=softshadow_shape_vertex_count.asInt ();
 
 				// Sun contribution
 				CConfigFile::CVar &sun_contribution = parameter.getVar ("sun_contribution");
@@ -679,6 +670,10 @@ int main(int argc, char* argv[])
 							if(group->getInstance(instance).DontCastShadow)
 								continue;
 
+							// PS ?
+							if (strlwr (CFile::getExtension (name)) == "ps")
+								continue;
+							
 							// Add a .shape at the end ?
 							if (name.find('.') == std::string::npos)
 								name += ".shape";
@@ -772,18 +767,11 @@ int main(int argc, char* argv[])
 					// *** Light!
 					// **********
 
-					// Start time
-					TTime time=CTime::getLocalTime ();
-
 					// Output zone
 					CZone output;
 
 					// Light the zone
 					lighter.light (*landscape, output, zone.getZoneId(), lighterDesc, vectorTriangle, listZoneId);
-
-					// Compute time
-					printf ("\rCompute time: %d ms                                                      \r", 
-						(uint)(CTime::getLocalTime ()-time));
 
 					// Save the zone
 					COFile outputFile;
@@ -808,6 +796,10 @@ int main(int argc, char* argv[])
 						// Error can't open the file
 						nlwarning ("ERROR Can't open %s for writing\n", argv[1]);
 					}
+
+					// Compute time
+					printf ("\rCompute time: %d ms                                                      \r", 
+						(uint)(CTime::getLocalTime ()-time));
 				}
 				else
 				{
@@ -828,11 +820,14 @@ int main(int argc, char* argv[])
 		}
 
 	}
-	
 
 	// Landscape is not deleted, nor the instanceGroups, for faster quit.
 	// Must disalbe BlockMemory checks (for pointLights).
 	NL3D_BlockMemoryAssertOnPurge= false;
+
+	// Compute time
+	printf ("\rCompute time: %d ms                                                      \n", 
+		(uint)(CTime::getLocalTime ()-time));
 
 	// exit.
 	return 0;

@@ -1,7 +1,7 @@
 /** \file zone_utility.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_utility.cpp,v 1.1 2002/05/13 15:44:57 valignat Exp $
+ * $Id: zone_utility.cpp,v 1.2 2003/02/17 16:27:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -280,5 +280,3 @@ uint16 createZoneId(std::string zoneName)
 	getZoneCoordByName(zoneName.c_str(), x, y);
 	return ((y-1)<<8) + x;
 }
-
-

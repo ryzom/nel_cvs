@@ -1,7 +1,7 @@
 /** \file triangle.cpp
  * <File description>
  *
- * $Id: triangle.cpp,v 1.5 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: triangle.cpp,v 1.6 2003/02/17 16:27:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,14 +85,15 @@ void	CTriangle::computeGradient(float c0, float c1, float c2, CVector &grad) con
 	tri2D.V2.y= (V2-V0)*locJ;
 	tri2D.V2.z= 0;
 
-	// Compute 2D Gradients.
-	float	dx01= tri2D.V1.x - tri2D.V0.x;
-	float	dx02= tri2D.V2.x - tri2D.V0.x;
-	float	dy01= tri2D.V1.y - tri2D.V0.y;
-	float	dy02= tri2D.V2.y - tri2D.V0.y;
-	float	dc01= c1 - c0;
-	float	dc02= c2 - c0;
+	// Compute 2 2D Gradients.
+	float	dx01= tri2D.V0.x - tri2D.V2.x;
+	float	dx02= tri2D.V1.x - tri2D.V2.x;
+	float	dy01= tri2D.V0.y - tri2D.V2.y;
+	float	dy02= tri2D.V1.y - tri2D.V2.y;
+	float	dc01= c0 - c2;
+	float	dc02= c1 - c2;
 	float	gd= dx02*dy01 - dx01*dy02;
+
 	float	OOgd;
 	if(gd!=0)
 		OOgd= 1.0f/gd;

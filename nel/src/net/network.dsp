@@ -1,24 +1,24 @@
-# Microsoft Developer Studio Project File - Name="misc" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="network" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=misc - Win32 Debug
+CFG=network - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "misc.mak".
+!MESSAGE NMAKE /f "network.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "misc.mak" CFG="misc - Win32 Debug"
+!MESSAGE NMAKE /f "network.mak" CFG="network - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "misc - Win32 Release" (based on "Win32 (x86) Static Library")
-!MESSAGE "misc - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "network - Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "network - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -28,7 +28,7 @@ CFG=misc - Win32 Debug
 CPP=cl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "misc - Win32 Release"
+!IF  "$(CFG)" == "network - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -51,7 +51,7 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
-!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+!ELSEIF  "$(CFG)" == "network - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -78,51 +78,39 @@ LIB32=link.exe -lib
 
 # Begin Target
 
-# Name "misc - Win32 Release"
-# Name "misc - Win32 Debug"
+# Name "network - Win32 Release"
+# Name "network - Win32 Debug"
 # Begin Source File
 
-SOURCE=..\..\include\nel\misc\assert.h
+SOURCE=.\inet_address.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\class_registry.cpp
+SOURCE=..\..\include\nel\network\inet_address.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\misc\class_registry.h
+SOURCE=.\message.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\displayer.cpp
+SOURCE=..\..\include\nel\network\message.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\misc\displayer.h
+SOURCE=.\service.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\file.cpp
+SOURCE=..\..\include\nel\network\service.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\misc\file.h
+SOURCE=.\socket.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\stream.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\include\nel\misc\stream.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\include\nel\misc\stream_inline.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\include\nel\misc\types_nl.h
+SOURCE=..\..\include\nel\network\socket.h
 # End Source File
 # End Target
 # End Project

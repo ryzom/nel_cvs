@@ -1,7 +1,7 @@
 /** \file automata_desc.h
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.h,v 1.2 2001/03/28 14:31:08 robert Exp $
+ * $Id: automata_desc.h,v 1.3 2001/03/30 13:30:31 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,7 +90,12 @@ public:
 
 	/// \name Derived from NLMISC::IStreamable
 	//@{
-	void serial(NLMISC::IStream &f);
+	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		f.serialMap(_States);
+		f.serialCont(_EntryStates);
+		f.serial(_AutomatName);
+	}
 	std::string getClassName();
 	//@}
 

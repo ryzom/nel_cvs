@@ -1,7 +1,7 @@
 /** \file automata_desc.cpp
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.cpp,v 1.4 2001/03/29 16:02:30 portier Exp $
+ * $Id: automata_desc.cpp,v 1.5 2001/03/30 13:30:23 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,14 +135,7 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 	void CAutomataDesc::setExploredState(sint32 stateId)
 	{
 		_ExploredState.insert(stateId);
-	}
-
-	void CAutomataDesc::serial(NLMISC::IStream &f)
-	{
-		f.serialMap(_States);
-		f.serialCont(_EntryStates);
-		f.serial(_AutomatName);
-	}
+	}	
 
 	std::string CAutomataDesc::getClassName()
 	{

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.5 2001/12/18 18:31:32 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.6 2001/12/19 15:45:05 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -580,6 +580,7 @@ void	CPSConstraintMesh::setMorphScheme(CPSAttribMaker<float> *scheme)
 {
 	delete _MorphScheme;
 	_MorphScheme = scheme;
+	_MorphScheme->resize(_Owner->getMaxSize(), _Owner->getSize());
 }
 
 //====================================================================================
@@ -961,9 +962,6 @@ void CPSConstraintMesh::clean(void)
 	{	
 		releaseShapes();		
 	}
-	_GlobalAnimationEnabled = 0;
-	_ReinitGlobalAnimTimeOnNewElement = 0;
-	_GlobalTexAnims.reset();
 }
 
 
@@ -1496,7 +1494,7 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 			// morphed case
 			
 			// first, compute the morph value for each mesh
-			float	morphValues[MeshBufSize];
+			float	morphValues[ConstraintMeshBufSize];
 			float	*currMorphValue;
 			uint	morphValueIncr;
 
@@ -1592,6 +1590,7 @@ void	CPSConstraintMesh::drawMeshs(bool opaque)
 				++posIt;
 				ptCurrSize += ptCurrSizeIncrement;
 				ptBasis += ptBasisIncrement;
+				currMorphValue += morphValueIncr;
 			}
 			while (posIt != endPosIt);
 		}		
@@ -1655,7 +1654,7 @@ void CPSConstraintMesh::resize(uint32 size)
 		_IndexInPrecompBasis.resize(size);
 	}
 	resizeColor(size);
-	if (_MorphScheme && _MorphScheme->hasMemory()) _MorphScheme->resize(size, getColorOwner()->getSize());
+	if (_MorphScheme && _MorphScheme->hasMemory()) _MorphScheme->resize(size, _Owner->getSize());
 }	
 
 //====================================================================================

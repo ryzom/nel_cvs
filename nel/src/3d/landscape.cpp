@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.74 2001/08/29 12:36:56 corvazier Exp $
+ * $Id: landscape.cpp,v 1.75 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,13 +197,13 @@ CLandscape::~CLandscape()
 void			CLandscape::init()
 {
 	// v3f/t2f
-	Far0VB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]);
+	Far0VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 
 	// v3f/t2f/c4ub
-	Far1VB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_COLOR );
+	Far1VB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
 
 	// v3f/t2f0/t2f1
-	TileVB.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] | IDRV_VF_UV[1]);
+	TileVB.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag| CVertexBuffer::TexCoord1Flag);
 
 	// Fill Far mat.
 	// Must init his BlendFunction here!!! becaus it switch between blend on/off during rendering.
@@ -550,9 +550,9 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, const st
 
 
 	// try to allocate the VertexBufferHards (if not already OK).
-	updateVertexBufferHard(driver, _Far0VBHard, Far0VB.getVertexFormat(), CTessFace::MaxFar0Index);
-	updateVertexBufferHard(driver, _Far1VBHard, Far1VB.getVertexFormat(), CTessFace::MaxFar1Index);
-	updateVertexBufferHard(driver, _TileVBHard, TileVB.getVertexFormat(), CTessFace::MaxTileIndex);
+	updateVertexBufferHard(driver, _Far0VBHard, Far0VB.getVertexFormat(), Far0VB.getValueTypePointer (), CTessFace::MaxFar0Index);
+	updateVertexBufferHard(driver, _Far1VBHard, Far1VB.getVertexFormat(), Far1VB.getValueTypePointer (), CTessFace::MaxFar1Index);
+	updateVertexBufferHard(driver, _TileVBHard, TileVB.getVertexFormat(), TileVB.getValueTypePointer (), CTessFace::MaxTileIndex);
 
 
 	// For each VertexBufferHard KO, must use conventionnal VB, so allocate it, 
@@ -2267,7 +2267,8 @@ void				CLandscape::deleteAllVertexBufferHards()
 
 
 // ***************************************************************************
-void				CLandscape::updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHard> &vbHard, uint32 format, uint32 numVertices)
+void				CLandscape::updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHard> &vbHard, uint16 format, 
+													   const uint8 *typeArray, uint32 numVertices)
 {
 	if(!drv->supportVertexBufferHard())
 		return;
@@ -2287,7 +2288,7 @@ void				CLandscape::updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHa
 		_Driver= drv;
 		// try to create new one, in AGP Ram
 		// to avoid as possible reallocations, add a little security to the number of vertices we want.
-		vbHard= _Driver->createVertexBufferHard(format, numVertices + NL3D_VBHARD_VERTEX_SECURITY, IDriver::VBHardAGP);
+		vbHard= _Driver->createVertexBufferHard(format, typeArray, numVertices + NL3D_VBHARD_VERTEX_SECURITY, IDriver::VBHardAGP);
 
 		// For Debug...
 		/*if(vbHard!=NULL)

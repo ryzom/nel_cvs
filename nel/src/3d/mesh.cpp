@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.35 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: mesh.cpp,v 1.36 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,19 +74,19 @@ bool	CMeshGeom::CCornerTmp::operator<(const CCornerTmp &c) const
 		return Vertex<c.Vertex;
 
 	// Order: normal, uvs, color0, color1, skinning.
-	if((CCornerTmp::Flags & IDRV_VF_NORMAL) && Normal!=c.Normal)
+	if((CCornerTmp::Flags & CVertexBuffer::NormalFlag) && Normal!=c.Normal)
 		return Normal<c.Normal;
-	for(i=0;i<IDRV_VF_MAXSTAGES;i++)
+	for(i=0; i<CVertexBuffer::MaxStage; i++)
 	{
-		if(CCornerTmp::Flags & IDRV_VF_UV[i] && Uvs[i]!=c.Uvs[i])
+		if((CCornerTmp::Flags & (CVertexBuffer::TexCoord0Flag<<i)) && Uvs[i]!=c.Uvs[i])
 			return Uvs[i]<c.Uvs[i];
 	}
-	if((CCornerTmp::Flags & IDRV_VF_COLOR) && Color!=c.Color)
+	if((CCornerTmp::Flags & CVertexBuffer::PrimaryColorFlag) && Color!=c.Color)
 		return Color<c.Color;
-	if((CCornerTmp::Flags & IDRV_VF_SPECULAR) && Specular!=c.Specular)
+	if((CCornerTmp::Flags & CVertexBuffer::SecondaryColorFlag) && Specular!=c.Specular)
 		return Specular<c.Specular;
 
-	if( (CCornerTmp::Flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
+	if (CCornerTmp::Flags & CVertexBuffer::PaletteSkinFlag)
 	{
 		for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)
 		{
@@ -169,16 +169,16 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	for(i=0;i<(sint)tmpFaces.size();i++)
 		tmpFaces[i]= m.Faces[i];
 
-	_Skinned= (m.VertexFlags & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN;
+	_Skinned= (m.VertexFlags & CVertexBuffer::PaletteSkinFlag)!=0;
 	// Skinning is OK only if SkinWeights are of same size as vertices.
 	_Skinned= _Skinned && (m.Vertices.size()==m.SkinWeights.size());
 
 	// If skinning is KO, remove the Skin option.
 	uint	vbFlags= m.VertexFlags;
 	if(!_Skinned)
-		vbFlags&= ~IDRV_VF_PALETTE_SKIN;
+		vbFlags&= ~CVertexBuffer::PaletteSkinFlag;
 	// Force presence of vertex.
-	vbFlags|= IDRV_VF_XYZ;
+	vbFlags|= CVertexBuffer::PositionFlag;
 
 
 	// If the mesh is not skinned, we have just 1 _MatrixBlocks.
@@ -338,7 +338,7 @@ void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
 		_Driver= drv;
 		// try to create new one, in AGP Ram
-		_VertexBufferHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getNumVertices(), IDriver::VBHardAGP);
+		_VertexBufferHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getValueTypePointer (), _VBuffer.getNumVertices(), IDriver::VBHardAGP);
 
 		// If KO, use normal VertexBuffer.
 		if(_VertexBufferHard==NULL)
@@ -914,7 +914,7 @@ CMesh::CCorner::CCorner()
 	sint	i;
 	Vertex= 0;
 	Normal= CVector::Null;
-	for(i=0;i<IDRV_VF_MAXSTAGES;i++)
+	for(i=0;i<CVertexBuffer::MaxStage;i++)
 		Uvs[i]= CUV(0,0);
 	Color.set(255,255,255,255);
 	Specular.set(0,0,0,0);
@@ -926,7 +926,7 @@ void CMesh::CCorner::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serial(Vertex);
 	f.serial(Normal);
-	for(int i=0;i<IDRV_VF_MAXSTAGES;++i) f.serial(Uvs[i]);
+	for(int i=0;i<CVertexBuffer::MaxStage;++i) f.serial(Uvs[i]);
 	f.serial(Color);
 	f.serial(Specular);
 }

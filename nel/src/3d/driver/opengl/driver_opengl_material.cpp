@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.35 2001/08/29 15:34:31 besson Exp $
+ * $Id: driver_opengl_material.cpp,v 1.36 2001/09/06 07:25:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,7 +353,7 @@ sint			CDriverGL::beginLightMapMultiPass(const CMaterial &mat)
 	// Too be sure, disable vertex coloring / lightmap.
 	glDisable(GL_LIGHTING);
 	// reset VertexColor array if necessary.
-	if (_LastVB.VertexFormat & IDRV_VF_COLOR)
+	if (_LastVB.VertexFormat & CVertexBuffer::PrimaryColorFlag)
 		glDisableClientState(GL_COLOR_ARRAY);
 
 	// Manage too if no lightmaps.
@@ -537,7 +537,7 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 	}
 
 	// pop VertexColor array if necessary.
-	if (_LastVB.VertexFormat & IDRV_VF_COLOR)
+	if (_LastVB.VertexFormat & CVertexBuffer::PrimaryColorFlag)
 		glEnableClientState(GL_COLOR_ARRAY);
 
 	// NB: for now, nothing to do with blending/lighting, since always setuped in activeMaterial().

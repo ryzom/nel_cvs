@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.22 2001/08/09 08:03:57 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.23 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,7 +167,7 @@ void CPSUtil::displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLM
 	CVector max = box.getMax()
 			,min = box.getMin() ;
 	CVertexBuffer vb ;
-	vb.setVertexFormat(IDRV_VF_XYZ) ;
+	vb.setVertexFormat(CVertexBuffer::PositionFlag) ;
 	vb.setNumVertices(8) ;
 
 	vb.setVertexCoord(0, min) ;
@@ -236,7 +236,7 @@ void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector 
 	CMatrix m = buildSchmidtBasis(v) ;
 
 	CVertexBuffer vb ;
-	vb.setVertexFormat(IDRV_VF_XYZ) ;
+	vb.setVertexFormat(CVertexBuffer::PositionFlag) ;
 	vb.setNumVertices(5) ; 
 	
 	

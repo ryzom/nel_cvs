@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.13 2001/08/30 10:07:11 corvazier Exp $
+ * $Id: driver.h,v 1.14 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "3d/shader.h"
 #include "3d/vertex_buffer.h"
 #include "3d/vertex_buffer_hard.h"
+#include "3d/vertex_program.h"
 #include "nel/misc/mutex.h"
 #include "nel/3d/primitive_profile.h"
 
@@ -156,6 +157,7 @@ protected:
 	TShaderPtrList			_Shaders;
 	TVBDrvInfoPtrList		_VBDrvInfos;
 	TPolygonMode			_PolygonMode;
+	TVtxPrgDrvInfoPtrList	_VtxPrgDrvInfos;
 
 public:
 							IDriver(void);
@@ -289,7 +291,8 @@ public:
 	 *	\param vbType kind of RAM shere the VB will be allocated.
 	 *	\return a vertexBufferHard interface. 
 	 */
-	virtual	IVertexBufferHard	*createVertexBufferHard(uint32 vertexFormat, uint32 numVertices, TVBHardType vbType) =0;
+	virtual	IVertexBufferHard	*createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, 
+														TVBHardType vbType) =0;
 
 
 	/** delete a IVertexBufferHard. NB: VertexBufferHard are automatically deleted at IDriver::release();
@@ -302,7 +305,9 @@ public:
 	 * NB: software skinning is not possible with this method. User should test supportPaletteSkinning() to know
 	 * if skinning can be done in hardware. If not, he should not use VB Hard, but standard VB.
 	 *
-	 * \see setupVertexMode
+	 * NB: please make sure you have setuped / unsetuped the current vertex program BEFORE activate the vertex buffer.
+	 *
+	 * \see setupVertexMode, activeVertexProgram
 	 */
 	virtual void			activeVertexBufferHard(IVertexBufferHard *VB)=0;
 
@@ -316,7 +321,9 @@ public:
 	 *
 	 *  Skinning is enabled only when VB has skinning, and when vertexMode has flag NL3D_VERTEX_MODE_SKINNING.
 	 *
-	 * \see setupVertexMode
+	 * NB: please make sure you have setuped / unsetuped the current vertex program BEFORE activate the vertex buffer.
+	 *
+	 * \see setupVertexMode, activeVertexProgram
 	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
 
@@ -331,11 +338,13 @@ public:
 	 *
 	 *  Skinning is enabled only when VB has skinning, and when vertexMode has flag NL3D_VERTEX_MODE_SKINNING.
 	 *
+	 * NB: please make sure you have setuped / unsetuped the current vertex program BEFORE activate the vertex buffer.
+	 *
 	 * \param VB the vertexBuffer to activate.
 	 * \param first the first vertex important for render (begin to 0). nlassert(first<=end);
 	 * \param end the last vertex important for render, +1. count==end-first. nlassert(end<=VB.getNumVertices);
 	 *
-	 * \see setupVertexMode
+	 * \see setupVertexMode, activeVertexProgram
 	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)=0;
 
@@ -590,17 +599,46 @@ public:
 		return _PolygonMode;
 	}
 
+	/// \name Vertex program interface
+	// @{
+
+	/**
+	  * Does the driver supports vertex programs ?
+	  */
+	virtual bool			isVertexProgramSupported () const =0;
+
+	/**
+	  * Activate / disactivate a vertex program
+	  *
+	  * \param program is a pointer on a vertex program. Can be NULL to disable the current vertex program.
+	  *
+	  * \return true if setup/unsetup successed, false else.
+	  */
+	virtual bool			activeVertexProgram (CVertexProgram *program) =0;
+
+	/**
+	  * Setup constant values.
+	  */
+	virtual void			setConstant (uint index, float, float, float, float) =0;
+	virtual void			setConstant (uint index, double, double, double, double) =0;
+	virtual void			setConstant (uint indexStart, const NLMISC::CVector* value) =0;
+	virtual void			setConstant (uint indexStart, const NLMISC::CVectorD* value) =0;
+
+	// @}
+
 protected:
 	friend	class	IVBDrvInfos;
 	friend	class	CTextureDrvShare;
 	friend	class	ITextureDrvInfos;
 	friend	class	IShader;
+	friend	class	IVertexProgramDrvInfos;
 
 	/// remove ptr from the lists in the driver.
 	void			removeVBDrvInfoPtr(ItVBDrvInfoPtrList  vbDrvInfoIt);
 	void			removeTextureDrvInfoPtr(ItTexDrvInfoPtrMap texDrvInfoIt);
 	void			removeTextureDrvSharePtr(ItTexDrvSharePtrList texDrvShareIt);
 	void			removeShaderPtr(ItShaderPtrList shaderIt);
+	void			removeVtxPrgDrvInfoPtr(ItVtxPrgDrvInfoPtrList vtxPrgDrvInfoIt);
 };
 
 // --------------------------------------------------

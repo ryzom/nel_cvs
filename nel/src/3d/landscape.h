@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.11 2001/08/29 12:36:56 corvazier Exp $
+ * $Id: landscape.h,v 1.12 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -444,7 +444,7 @@ private:
 	/* try to create a vertexBufferHard. NB: enlarge capacity of the VBHard as necessary.
 		After this call, the vertexBufferHard may be NULL.
 	*/
-	void				updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHard> &vbHard, uint32 format, uint32 numVertices);
+	void				updateVertexBufferHard(IDriver *drv, CRefPtr<IVertexBufferHard> &vbHard, uint16 format, const uint8 *typeArray, uint32 numVertices);
 	void				deleteVertexBufferHard(CRefPtr<IVertexBufferHard> &vbHard);
 	void				deleteAllVertexBufferHards();
 	// @}

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.19 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.20 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -304,9 +304,9 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 	uint		flags= _VBuffer.getVertexFormat();
 	sint32		vertexSize= _VBuffer.getVertexSize();
 	// because of the unrolled code for 4 first UV, must assert this.
-	nlassert(IDRV_VF_MAXSTAGES>=4);
+	nlassert(CVertexBuffer::MaxStage>=4);
 	// must have XYZ.
-	nlassert(flags & IDRV_VF_XYZ);
+	nlassert(flags & CVertexBuffer::PositionFlag);
 
 
 	// If VBuffer Hard present
@@ -328,25 +328,25 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 	sint32		normalOff;
 	sint32		colorOff;
 	sint32		specularOff;
-	sint32		uvOff[IDRV_VF_MAXSTAGES];
+	sint32		uvOff[CVertexBuffer::MaxStage];
 
 
 	// Compute offset of each component of the VB.
-	if(flags & IDRV_VF_NORMAL)
+	if(flags & CVertexBuffer::NormalFlag)
 		normalOff= _VBuffer.getNormalOff();
 	else
 		normalOff= 0;
-	if(flags & IDRV_VF_COLOR)
+	if(flags & CVertexBuffer::PrimaryColorFlag)
 		colorOff= _VBuffer.getColorOff();
 	else
 		colorOff= 0;
-	if(flags & IDRV_VF_SPECULAR)
+	if(flags & CVertexBuffer::SecondaryColorFlag)
 		specularOff= _VBuffer.getSpecularOff();
 	else
 		specularOff= 0;
-	for(i= 0; i<IDRV_VF_MAXSTAGES;i++)
+	for(i= 0; i<CVertexBuffer::MaxStage;i++)
 	{
-		if(flags & IDRV_VF_UV[i])
+		if(flags & (CVertexBuffer::TexCoord0Flag<<i))
 			uvOff[i]= _VBuffer.getTexCoordOff(i);
 		else
 			uvOff[i]= 0;
@@ -446,7 +446,7 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 
 	// Process extra UVs (maybe never, so don't bother optims :)).
 	// For all stages after 4.
-	for(i=4;i<IDRV_VF_MAXSTAGES;i++)
+	for(i=4;i<CVertexBuffer::MaxStage;i++)
 	{
 		uint			nGeoms= geoms.size();
 		CMRMWedgeGeom	*ptrGeom= &(geoms[0]);
@@ -999,7 +999,7 @@ void	CMeshMRMGeom::bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd
 	nlassert(_Skinned);
 
 	// Copy VBuffer content into Original vertices normals.
-	if(_VBuffer.getVertexFormat() & IDRV_VF_XYZ)
+	if(_VBuffer.getVertexFormat() & CVertexBuffer::PositionFlag)
 	{
 		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
 		_OriginalSkinVertices.resize(_VBuffer.getNumVertices());
@@ -1008,7 +1008,7 @@ void	CMeshMRMGeom::bkupOriginalSkinVerticesSubset(uint wedgeStart, uint wedgeEnd
 			_OriginalSkinVertices[i]= *(CVector*)_VBuffer.getVertexCoordPointer(i);
 		}
 	}
-	if(_VBuffer.getVertexFormat() & IDRV_VF_NORMAL)
+	if(_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)
 	{
 		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
 		_OriginalSkinNormals.resize(_VBuffer.getNumVertices());
@@ -1026,7 +1026,7 @@ void	CMeshMRMGeom::restoreOriginalSkinVertices()
 	nlassert(_Skinned);
 
 	// Copy VBuffer content into Original vertices normals.
-	if(_VBuffer.getVertexFormat() & IDRV_VF_XYZ)
+	if(_VBuffer.getVertexFormat() & CVertexBuffer::PositionFlag)
 	{
 		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
 		for(uint i=0; i<_VBuffer.getNumVertices();i++)
@@ -1034,7 +1034,7 @@ void	CMeshMRMGeom::restoreOriginalSkinVertices()
 			*(CVector*)_VBuffer.getVertexCoordPointer(i)= _OriginalSkinVertices[i];
 		}
 	}
-	if(_VBuffer.getVertexFormat() & IDRV_VF_NORMAL)
+	if(_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)
 	{
 		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
 		for(uint i=0; i<_VBuffer.getNumVertices();i++)
@@ -1063,11 +1063,11 @@ void	CMeshMRMGeom::restoreOriginalSkinPart(CLod &lod)
 	uint		flags= _VBuffer.getVertexFormat();
 	sint32		vertexSize= _VBuffer.getVertexSize();
 	// must have XYZ.
-	nlassert(flags & IDRV_VF_XYZ);
+	nlassert(flags & CVertexBuffer::PositionFlag);
 
 	// Compute offset of each component of the VB.
 	sint32		normalOff;
-	if(flags & IDRV_VF_NORMAL)
+	if(flags & CVertexBuffer::NormalFlag)
 		normalOff= _VBuffer.getNormalOff();
 	else
 		normalOff= 0;
@@ -1215,12 +1215,12 @@ void	CMeshMRMGeom::applySkin(CLod &lod, const std::vector<CBone> &bones)
 	uint		flags= _VBuffer.getVertexFormat();
 	sint32		vertexSize= _VBuffer.getVertexSize();
 	// must have XYZ.
-	nlassert(flags & IDRV_VF_XYZ);
+	nlassert(flags & CVertexBuffer::PositionFlag);
 
 
 	// Compute offset of each component of the VB.
 	sint32		normalOff;
-	if(flags & IDRV_VF_NORMAL)
+	if(flags & CVertexBuffer::NormalFlag)
 		normalOff= _VBuffer.getNormalOff();
 	else
 		normalOff= 0;
@@ -1480,7 +1480,7 @@ void				CMeshMRMGeom::updateVertexBufferHard(IDriver *drv, uint32 numVertices)
 		// bkup drv in a refptr. (so we know if the vbuffer hard has to be deleted).
 		_Driver= drv;
 		// try to create new one, in AGP Ram
-		_VBHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), numVertices, IDriver::VBHardAGP);
+		_VBHard= _Driver->createVertexBufferHard(_VBuffer.getVertexFormat(), _VBuffer.getValueTypePointer (), numVertices, IDriver::VBHardAGP);
 
 
 		// If KO, use normal VertexBuffer, else, Fill it with VertexBuffer.

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.13 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.14 2001/09/06 07:25:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,8 @@
 #error "I need a newer <GL/glext.h>. Please download it from http://oss.sgi.com/projects/ogl-sample/ABI/"
 #endif // GL_GLEXT_VERSION < 7
 
+#include "driver_opengl_extension_def.h"
+
 namespace	NL3D
 {
 
@@ -78,6 +80,7 @@ struct	CGlExtensions
 	bool	EXTSeparateSpecularColor;
 	bool	NVTextureEnvCombine4;
 	bool	ARBTextureCubeMap;
+	bool	NVVertexProgram;
 
 public:
 	CGlExtensions()
@@ -167,8 +170,6 @@ extern PFNGLGETCOMPRESSEDTEXIMAGEARBPROC	glGetCompressedTexImageARB;
 
 // VertexArrayRangeNV.
 //====================
-typedef void *(APIENTRY * PFNWGLALLOCATEMEMORYNVPROC) (GLsizei size, GLfloat readFrequency, GLfloat writeFrequency, GLfloat priority);
-typedef void *(APIENTRY * PFNWGLFREEMEMORYNVPROC) (void *pointer);
 extern PFNGLFLUSHVERTEXARRAYRANGENVPROC		glFlushVertexArrayRangeNV;
 extern PFNGLVERTEXARRAYRANGENVPROC			glVertexArrayRangeNV;
 extern PFNWGLALLOCATEMEMORYNVPROC			wglAllocateMemoryNV;
@@ -176,10 +177,78 @@ extern PFNWGLFREEMEMORYNVPROC				wglFreeMemoryNV;
 
 
 // VertexWeighting.
-//====================
+//==================
 extern PFNGLVERTEXWEIGHTFEXTPROC			glVertexWeightfEXT;
 extern PFNGLVERTEXWEIGHTFVEXTPROC			glVertexWeightfvEXT;
 extern PFNGLVERTEXWEIGHTPOINTEREXTPROC		glVertexWeightPointerEXT;
+
+
+// VertexProgramExtension.
+//========================
+extern PFNGLAREPROGRAMSRESIDENTNVPROC		glAreProgramsResidentNV;
+extern PFNGLBINDPROGRAMNVPROC				glBindProgramNV;
+extern PFNGLDELETEPROGRAMSNVPROC			glDeleteProgramsNV;
+extern PFNGLEXECUTEPROGRAMNVPROC			glExecuteProgramNV;
+extern PFNGLGENPROGRAMSNVPROC				glGenProgramsNV;
+extern PFNGLGETPROGRAMPARAMETERDVNVPROC		glGetProgramParameterdvNV;
+extern PFNGLGETPROGRAMPARAMETERFVNVPROC		glGetProgramParameterfvNV;
+extern PFNGLGETPROGRAMIVNVPROC				glGetProgramivNV;
+extern PFNGLGETPROGRAMSTRINGNVPROC			glGetProgramStringNV;
+extern PFNGLGETTRACKMATRIXIVNVPROC			glGetTrackMatrixivNV;
+extern PFNGLGETVERTEXATTRIBDVNVPROC			glGetVertexAttribdvNV;
+extern PFNGLGETVERTEXATTRIBFVNVPROC			glGetVertexAttribfvNV;
+extern PFNGLGETVERTEXATTRIBIVNVPROC			glGetVertexAttribivNV;
+extern PFNGLGETVERTEXATTRIBPOINTERVNVPROC	glGetVertexAttribPointervNV;
+extern PFNGLISPROGRAMNVPROC					glIsProgramNV;
+extern PFNGLLOADPROGRAMNVPROC				glLoadProgramNV;
+extern PFNGLPROGRAMPARAMETER4DNVPROC		glProgramParameter4dNV;
+extern PFNGLPROGRAMPARAMETER4DVNVPROC		glProgramParameter4dvNV;
+extern PFNGLPROGRAMPARAMETER4FNVPROC		glProgramParameter4fNV;
+extern PFNGLPROGRAMPARAMETER4FVNVPROC		glProgramParameter4fvNV;
+extern PFNGLPROGRAMPARAMETERS4DVNVPROC		glProgramParameters4dvNV;
+extern PFNGLPROGRAMPARAMETERS4FVNVPROC		glProgramParameters4fvNV;
+extern PFNGLREQUESTRESIDENTPROGRAMSNVPROC	glRequestResidentProgramsNV;
+extern PFNGLTRACKMATRIXNVPROC				glTrackMatrixNV;
+extern PFNGLVERTEXATTRIBPOINTERNVPROC		glVertexAttribPointerNV;
+extern PFNGLVERTEXATTRIB1DNVPROC			glVertexAttrib1dNV;
+extern PFNGLVERTEXATTRIB1DVNVPROC			glVertexAttrib1dvNV;
+extern PFNGLVERTEXATTRIB1FNVPROC			glVertexAttrib1fNV;
+extern PFNGLVERTEXATTRIB1FVNVPROC			glVertexAttrib1fvNV;
+extern PFNGLVERTEXATTRIB1SNVPROC			glVertexAttrib1sNV;
+extern PFNGLVERTEXATTRIB1SVNVPROC			glVertexAttrib1svNV;
+extern PFNGLVERTEXATTRIB2DNVPROC			glVertexAttrib2dNV;
+extern PFNGLVERTEXATTRIB2DVNVPROC			glVertexAttrib2dvNV;
+extern PFNGLVERTEXATTRIB2FNVPROC			glVertexAttrib2fNV;
+extern PFNGLVERTEXATTRIB2FVNVPROC			glVertexAttrib2fvNV;
+extern PFNGLVERTEXATTRIB2SNVPROC			glVertexAttrib2sNV;
+extern PFNGLVERTEXATTRIB2SVNVPROC			glVertexAttrib2svNV;
+extern PFNGLVERTEXATTRIB3DNVPROC			glVertexAttrib3dNV;
+extern PFNGLVERTEXATTRIB3DVNVPROC			glVertexAttrib3dvNV;
+extern PFNGLVERTEXATTRIB3FNVPROC			glVertexAttrib3fNV;
+extern PFNGLVERTEXATTRIB3FVNVPROC			glVertexAttrib3fvNV;
+extern PFNGLVERTEXATTRIB3SNVPROC			glVertexAttrib3sNV;
+extern PFNGLVERTEXATTRIB3SVNVPROC			glVertexAttrib3svNV;
+extern PFNGLVERTEXATTRIB4DNVPROC			glVertexAttrib4dNV;
+extern PFNGLVERTEXATTRIB4DVNVPROC			glVertexAttrib4dvNV;
+extern PFNGLVERTEXATTRIB4FNVPROC			glVertexAttrib4fNV;
+extern PFNGLVERTEXATTRIB4FVNVPROC			glVertexAttrib4fvNV;
+extern PFNGLVERTEXATTRIB4SNVPROC			glVertexAttrib4sNV;
+extern PFNGLVERTEXATTRIB4SVNVPROC			glVertexAttrib4svNV;
+extern PFNGLVERTEXATTRIB4UBVNVPROC			glVertexAttrib4ubvNV;
+extern PFNGLVERTEXATTRIBS1DVNVPROC			glVertexAttribs1dvNV;
+extern PFNGLVERTEXATTRIBS1FVNVPROC			glVertexAttribs1fvNV;
+extern PFNGLVERTEXATTRIBS1SVNVPROC			glVertexAttribs1svNV;
+extern PFNGLVERTEXATTRIBS2DVNVPROC			glVertexAttribs2dvNV;
+extern PFNGLVERTEXATTRIBS2FVNVPROC			glVertexAttribs2fvNV;
+extern PFNGLVERTEXATTRIBS2SVNVPROC			glVertexAttribs2svNV;
+extern PFNGLVERTEXATTRIBS3DVNVPROC			glVertexAttribs3dvNV;
+extern PFNGLVERTEXATTRIBS3FVNVPROC			glVertexAttribs3fvNV;
+extern PFNGLVERTEXATTRIBS3SVNVPROC			glVertexAttribs3svNV;
+extern PFNGLVERTEXATTRIBS4DVNVPROC			glVertexAttribs4dvNV;
+extern PFNGLVERTEXATTRIBS4FVNVPROC			glVertexAttribs4fvNV;
+extern PFNGLVERTEXATTRIBS4SVNVPROC			glVertexAttribs4svNV;
+extern PFNGLVERTEXATTRIBS4UBVNVPROC			glVertexAttribs4ubvNV;
+
 
 #endif
 

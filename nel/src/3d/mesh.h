@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.10 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: mesh.h,v 1.11 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ public:
 	{
 		sint32		Vertex;		/// The vertex Id.
 		CVector		Normal;
-		NLMISC::CUV	Uvs[IDRV_VF_MAXSTAGES];
+		NLMISC::CUV	Uvs[CVertexBuffer::MaxStage];
 		CRGBA		Color;
 		CRGBA		Specular;
 
@@ -398,7 +398,7 @@ private:
 		{
 			Vertex= o.Vertex;
 			Normal= o.Normal;
-			for(sint i=0;i<= IDRV_VF_MAXSTAGES;i++)
+			for(sint i=0;i<=CVertexBuffer::MaxStage;i++)
 				Uvs[i]= o.Uvs[i];
 			Color= o.Color;
 			Specular= o.Specular;
@@ -528,23 +528,23 @@ private:
 			// XYZ.
 			_VBuffer.setVertexCoord(id, vert);
 			// Normal
-			if(CCornerTmp::Flags & IDRV_VF_NORMAL)
+			if(CCornerTmp::Flags & CVertexBuffer::PositionFlag)
 				_VBuffer.setNormalCoord(id, corn->Normal);
 			// Uvs.
-			for(i=0;i<IDRV_VF_MAXSTAGES;i++)
+			for(i=0;i<CVertexBuffer::MaxStage;i++)
 			{
-				if(CCornerTmp::Flags & IDRV_VF_UV[i])
+				if(CCornerTmp::Flags & (CVertexBuffer::TexCoord0Flag<<i))
 					_VBuffer.setTexCoord(id, i, corn->Uvs[i].U, corn->Uvs[i].V);
 			}
 			// Color.
-			if(CCornerTmp::Flags & IDRV_VF_COLOR)
+			if(CCornerTmp::Flags & CVertexBuffer::PrimaryColorFlag)
 				_VBuffer.setColor(id, corn->Color);
 			// Specular.
-			if(CCornerTmp::Flags & IDRV_VF_SPECULAR)
+			if(CCornerTmp::Flags & CVertexBuffer::SecondaryColorFlag)
 				_VBuffer.setSpecular(id, corn->Specular);
 
 			// setup palette skinning.
-			if( (CCornerTmp::Flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
+			if(CCornerTmp::Flags & CVertexBuffer::PaletteSkinFlag)
 			{
 				_VBuffer.setPaletteSkin(id, corn->Palette);
 				for(i=0;i<NL3D_MESH_SKINNING_MAX_MATRIX;i++)

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.2 2001/08/23 12:32:08 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.3 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1311,6 +1311,22 @@ void CZoneLighter::addTriangles (CLandscape &landscape, vector<uint> &listZone, 
 void CZoneLighter::addTriangles (CTransformShape &transformShape, std::vector<CTriangle>& triangleArray)
 {
 	/// \todo hulud: add triangles for transform shape to compute landscape shadow
+#if 0
+	// Get the shape pointer
+	IShape *shape=transformShape.Shape;
+
+	// Cast to CMesh
+	CMesh *mesh=dynamic_cast<CMesh*>(shape);
+
+	// Is a CMesh ?
+	if (mesh)
+	{
+		// Ok, dump geometry
+		
+		// For each matrix block
+		getNbMatrixBlock() const;
+	}
+#endif // 0
 }
 
 // ***************************************************************************

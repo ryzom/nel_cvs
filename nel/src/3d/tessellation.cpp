@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.49 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.50 2001/09/06 07:25:37 corvazier Exp $
  *
  */
 
@@ -84,7 +84,7 @@ void		CFarVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	TexCoordPointer0= vb.getTexCoordPointer(0, 0);
 
 	// In Far0, we don't have Color component.
-	if(VertexFormat & IDRV_VF_COLOR)
+	if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
 	{
 		ColorOff= vb.getColorOff();
 		ColorPointer= vb.getColorPointer();
@@ -112,13 +112,13 @@ void		CFarVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *v
 
 	VertexCoordPointer= vcoord;
 
-	TexCoordOff0= vb.getTexCoordOff(0);
+	TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
 	TexCoordPointer0= (uint8*)vcoord + TexCoordOff0;
 
 	// In Far0, we don't have Color component.
-	if(VertexFormat & IDRV_VF_COLOR)
+	if(VertexFormat & CVertexBuffer::PrimaryColorFlag)
 	{
-		ColorOff= vb.getColorOff();
+		ColorOff= vb.getValueOff (CVertexBuffer::PrimaryColor);
 		ColorPointer= (uint8*)vcoord + ColorOff;
 	}
 	else
@@ -167,11 +167,11 @@ void		CNearVertexBufferInfo::setupVertexBufferHard(IVertexBufferHard &vb, void *
 	}
 
 	VertexCoordPointer= vcoord;
-	TexCoordPointer0= (uint8*)vcoord + vb.getTexCoordOff(0);
-	TexCoordPointer1= (uint8*)vcoord + vb.getTexCoordOff(1);
+	TexCoordPointer0= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord0);
+	TexCoordPointer1= (uint8*)vcoord + vb.getValueOff (CVertexBuffer::TexCoord1);
 
-	TexCoordOff0= vb.getTexCoordOff(0);
-	TexCoordOff1= vb.getTexCoordOff(1);
+	TexCoordOff0= vb.getValueOff (CVertexBuffer::TexCoord0);
+	TexCoordOff1= vb.getValueOff (CVertexBuffer::TexCoord1);
 }
 
 

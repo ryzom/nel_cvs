@@ -574,6 +574,14 @@ SOURCE=.\3d\vertex_buffer_hard.cpp
 
 SOURCE=.\3d\vertex_buffer_hard.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\vertex_program.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vertex_program.h
+# End Source File
 # End Group
 # Begin Group "Font"
 

@@ -1,7 +1,7 @@
 /** \file init_3d.cpp
  * 
  *
- * $Id: init_3d.cpp,v 1.3 2001/08/31 08:27:19 corvazier Exp $
+ * $Id: init_3d.cpp,v 1.4 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,9 @@ void init3d ()
 	// Init for windows
 #ifdef NL_OS_WINDOWS
 	// Enable FPU exceptions
-	_control87 (_EM_INVALID|_EM_DENORMAL/*|_EM_OVERFLOW*/|_EM_UNDERFLOW|_EM_INEXACT, _MCW_EM);
+
+	// Enable divid by zero and  overflow exception
+	_control87 (_EM_INVALID|_EM_DENORMAL/*|_EM_ZERODIVIDE|_EM_OVERFLOW*/|_EM_UNDERFLOW|_EM_INEXACT, _MCW_EM);
 #endif // NL_OS_WINDOWS
 }
 

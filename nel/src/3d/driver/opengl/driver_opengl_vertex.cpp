@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.9 2001/07/24 09:14:48 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.10 2001/09/06 07:25:38 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -74,14 +74,14 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 	{
 		CVBDrvInfosGL	*vbInf= static_cast<CVBDrvInfosGL*>((IVBDrvInfos*)(VB.DrvInfos));
 		// Software and Skinning: must allocate PostRender Vertices and normals.
-		if(!_PaletteSkinHard && (VB.getVertexFormat() & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN )
+		if(!_PaletteSkinHard && (VB.getVertexFormat() & CVertexBuffer::PaletteSkinFlag))
 		{
 			// Must reallocate post-rendered vertices/normals Flags.
 			vbInf->SoftSkinFlags.resize(VB.getNumVertices());
 			// Must reallocate post-rendered vertices/normals.
 			vbInf->SoftSkinVertices.resize(VB.getNumVertices());
 			// Normals onli if nomal enabled.
-			if(VB.getVertexFormat() & IDRV_VF_NORMAL)
+			if(VB.getVertexFormat() & CVertexBuffer::NormalFlag)
 				vbInf->SoftSkinNormals.resize(VB.getNumVertices());
 		}
 
@@ -121,10 +121,10 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 
 	// Skin mode.
 	// NB: this test either if palette skin is enabled, or normal skinning is enabled.
-	bool	skinning= (flags & IDRV_VF_PALETTE_SKIN)!=0;
+	bool	skinning= (flags & CVertexBuffer::PaletteSkinFlag)!=0;
 	skinning= skinning && (_VertexMode & NL3D_VERTEX_MODE_SKINNING)!=0;
 	// NB: this test if palette skin is enabled.
-	bool	paletteSkinning= skinning && (flags & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN;
+	bool	paletteSkinning= skinning && (flags & CVertexBuffer::PaletteSkinFlag) != 0;
 
 
 	// 0. Setup Matrixes.
@@ -214,7 +214,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 			_CurrentSoftSkinWeightOff= VB.getWeightOff(0);
 			_CurrentSoftSkinVectorDst= &(vbInf->SoftSkinVertices[0]);
 			// Normal ptr.
-			if(flags & IDRV_VF_NORMAL)
+			if(flags & CVertexBuffer::NormalFlag)
 			{
 				_CurrentSoftSkinNormalDst= &(vbInf->SoftSkinNormals[0]);
 				_CurrentSoftSkinNormalOff= VB.getNormalOff();
@@ -606,10 +606,13 @@ void	CDriverGL::refreshSoftwareSkinning()
 void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 {
 	glClientActiveTextureARB(GL_TEXTURE0_ARB+stage);
-	if (VB.VertexFormat & IDRV_VF_UV[uvId])
+	if (VB.VertexFormat & (CVertexBuffer::TexCoord0Flag<<uvId))
 	{
+		// Check type
+		nlassert (VB.Type[CVertexBuffer::TexCoord0+uvId]==CVertexBuffer::Float2);
+
 		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-		glTexCoordPointer(2,GL_FLOAT,VB.VertexSize,VB.TexCoordPointer[uvId]);
+		glTexCoordPointer(2,GL_FLOAT,VB.VertexSize,VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
 	}
 	else
 		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
@@ -632,7 +635,7 @@ bool			CDriverGL::supportVertexBufferHard() const
 
 
 // ***************************************************************************
-IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType)
+IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, IDriver::TVBHardType vbType)
 {
 	if(!_Extensions.NVVertexArrayRange)
 		return NULL;
@@ -646,7 +649,7 @@ IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint32 vertexFormat, uint32
 		CVertexBufferHardGL		*vb;
 		vb= new CVertexBufferHardGL();
 		// if fails
-		if(!vb->init(this, vertexFormat, numVertices, vbType))
+		if(!vb->init(this, vertexFormat, typeArray, numVertices, vbType))
 		{
 			// destroy this object.
 			delete vb;
@@ -686,15 +689,15 @@ CVertexBufferHardGL::CVertexBufferHardGL()
 
 
 // ***************************************************************************
-bool	CVertexBufferHardGL::init(CDriverGL *drv, uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType)
+bool	CVertexBufferHardGL::init(CDriverGL *drv, uint16 vertexFormat, const uint8 *typeArray, 
+								  uint32 numVertices, IDriver::TVBHardType vbType)
 {
 	_Driver= drv;
 	_VertexArrayRange= NULL;
 	_VertexPtr= NULL;
 
-
 	// Init the format of the VB.
-	IVertexBufferHard::initFormat(vertexFormat, numVertices);
+	IVertexBufferHard::initFormat(vertexFormat, typeArray, numVertices);
 
 	// compute size to allocate.
 	uint32	size= getVertexSize() * getNumVertices();
@@ -906,10 +909,10 @@ void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *iVB)
 
 	// Skin mode.
 	// NB: this test either if palette skin is enabled, or normal skinning is enabled.
-	bool	skinning= (flags & IDRV_VF_PALETTE_SKIN)!=0;
+	bool	skinning= (flags & CVertexBuffer::PaletteSkinFlag)!=0;
 	skinning= skinning && (_VertexMode & NL3D_VERTEX_MODE_SKINNING)!=0;
 	// NB: this test if palette skin is enabled.
-	bool	paletteSkinning= skinning && (flags & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN;
+	bool	paletteSkinning= skinning && (flags & CVertexBuffer::PaletteSkinFlag) != 0;
 
 
 	// If _PaletteSkinHard is not supported, disable all skinning.
@@ -1013,6 +1016,65 @@ void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *iVB)
 }
 
 
+// ***************************************************************************
+const uint		CDriverGL::NumCoordinatesType[CVertexBuffer::NumType]=
+{
+	1,	// Double1
+	1,	// Float1
+	1,	// Short1
+	2,	// Double2
+	2,	// Float2
+	2,	// Short2
+	3,	// Double3
+	3,	// Float3
+	3,	// Short3
+	4,	// Double4
+	4,	// Float4
+	4,	// Short4
+	4	// UChar4
+};
+
+
+// ***************************************************************************
+const uint		CDriverGL::GLType[CVertexBuffer::NumType]=
+{
+	GL_DOUBLE,	// Double1
+	GL_FLOAT,	// Float1
+	GL_SHORT,	// Short1
+	GL_DOUBLE,	// Double2
+	GL_FLOAT,	// Float2
+	GL_SHORT,	// Short2
+	GL_DOUBLE,	// Double3
+	GL_FLOAT,	// Float3
+	GL_SHORT,	// Short3
+	GL_DOUBLE,	// Double4
+	GL_FLOAT,	// Float4
+	GL_SHORT,	// Short4
+	GL_UNSIGNED_BYTE	// UChar4
+};
+
+
+// ***************************************************************************
+const uint		CDriverGL::GLVertexAttribIndex[CVertexBuffer::NumValue]=
+{
+	0,	// Position
+	2,	// Normal
+	8,	// TexCoord0
+	9,	// TexCoord1
+	10,	// TexCoord2
+	11,	// TexCoord3
+	12,	// TexCoord4
+	13,	// TexCoord5
+	14,	// TexCoord6
+	15,	// TexCoord7
+	3,	// PrimaryColor
+	4,	// SecondaryColor
+	1,	// Weight
+	6,	// Empty (PaletteSkin)
+	5,	// Fog
+	7,	// Empty
+};
+
 
 // ***************************************************************************
 void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool skinning, bool paletteSkinning)
@@ -1021,111 +1083,172 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 
 	// Setup Vertex / Normal.
 	//=======================
-	// if software palette skinning: setup correct Vertex/Normal array.
-	if(paletteSkinning && !_PaletteSkinHard)
+
+	// Use a vertex program ?
+	if (!isVertexProgramEnabled ())
 	{
-		/// Must check vbinfo.
-		nlassert(vbInf->SoftSkinVertices.size()==vb.NumVertices);
-
-		// Must point on computed Vertex array.
-		glEnable(GL_VERTEX_ARRAY);
-		// array is compacted.
-		glVertexPointer(3,GL_FLOAT,0,&(*vbInf->SoftSkinVertices.begin()));
-
-		// Check for normal param in vertex buffer
-		if (flags & IDRV_VF_NORMAL)
+		// Channel type is Float3 ?
+		// if software palette skinning: setup correct Vertex/Normal array.
+		if(paletteSkinning && !_PaletteSkinHard)
 		{
 			/// Must check vbinfo.
-			nlassert(vbInf->SoftSkinNormals.size()==vb.NumVertices);
+			nlassert(vbInf->SoftSkinVertices.size()==vb.NumVertices);
 
-			// Must point on computed Normal array.
-			glEnableClientState(GL_NORMAL_ARRAY);
+			// Check it is the good type
+			nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
+
+			// Must point on computed Vertex array.
+			glEnable(GL_VERTEX_ARRAY);
+
 			// array is compacted.
-			glNormalPointer(GL_FLOAT,0,&(*vbInf->SoftSkinNormals.begin()));
-		}
-		else
-			glDisableClientState(GL_NORMAL_ARRAY);
-	}
-	else
-	{
-		glEnable(GL_VERTEX_ARRAY);
-		glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.VertexCoordPointer);
+			glVertexPointer(3,GL_FLOAT,0,&(*vbInf->SoftSkinVertices.begin()));
 
-		// Check for normal param in vertex buffer
-		if (flags & IDRV_VF_NORMAL)
-		{
-			glEnableClientState(GL_NORMAL_ARRAY);
-			glNormalPointer(GL_FLOAT, vb.VertexSize, vb.NormalCoordPointer);
-		}
-		else
-			glDisableClientState(GL_NORMAL_ARRAY);
-	}
-
-
-	// Setup Vertex Weight.
-	//=======================
-	// disable vertex weight
-	bool disableVertexWeight= _Extensions.EXTVertexWeighting;
-
-	// if skinning not paletted...
-	if ( skinning && !paletteSkinning)
-	{
-		// 4 weights ?
-		if (flags & IDRV_VF_W[3])
-		{
-			// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
-		}
-		// 3 weights ?
-		else if (flags & IDRV_VF_W[2])
-		{
-			// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 3 matrices mode by hardware (Radeon, NV20).
-		}
-		// 2 weights ?
-		else
-		{
-			// Check if vertex weighting extension is available
-			if (_Extensions.EXTVertexWeighting)
+			// Check for normal param in vertex buffer
+			if (flags & CVertexBuffer::NormalFlag)
 			{
-				// Active skinning
-				glEnable (GL_VERTEX_WEIGHTING_EXT);
+				// Check type
+				nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
 
-				// Don't disable it
-				disableVertexWeight=false;
+				/// Must check vbinfo.
+				nlassert(vbInf->SoftSkinNormals.size()==vb.NumVertices);
 
-				// Setup
-				glEnableClientState(GL_VERTEX_WEIGHT_ARRAY_EXT);
-				glVertexWeightPointerEXT(1, GL_FLOAT, vb.VertexSize, vb.WeightPointer[0]);
+				// Must point on computed Normal array.
+				glEnableClientState(GL_NORMAL_ARRAY);
+		
+				// array is compacted.
+				glNormalPointer(GL_FLOAT,0,&(*vbInf->SoftSkinNormals.begin()));
 			}
 			else
 			{
-				// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 2 matrices mode by hardware (Radeon, NV20).
+				glDisableClientState(GL_NORMAL_ARRAY);
+			}
+		}
+		else
+		{
+			// Check type
+			nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
+
+			glEnable(GL_VERTEX_ARRAY);
+			glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Position]);
+
+			// Check for normal param in vertex buffer
+			if (flags & CVertexBuffer::NormalFlag)
+			{
+				// Check type
+				nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
+
+				glEnableClientState(GL_NORMAL_ARRAY);
+				glNormalPointer(GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Normal]);
+			}
+			else
+			{
+				glDisableClientState(GL_NORMAL_ARRAY);
+			}
+		}
+
+		// Setup Vertex Weight.
+		//=======================
+		// disable vertex weight
+		bool disableVertexWeight= _Extensions.EXTVertexWeighting;
+
+		// if skinning not paletted...
+		if ( skinning && !paletteSkinning)
+		{
+			// 4 weights ?
+			if (vb.NumWeight==4)
+			{
+				// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
+			}
+			// 3 weights ?
+			else if (vb.NumWeight==3)
+			{
+				// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 3 matrices mode by hardware (Radeon, NV20).
+			}
+			// 2 weights ?
+			else
+			{
+				// Check if vertex weighting extension is available
+				if (_Extensions.EXTVertexWeighting)
+				{
+					// Check type
+					nlassert (vb.Type[CVertexBuffer::Weight]==CVertexBuffer::Float1);
+
+					// Active skinning
+					glEnable (GL_VERTEX_WEIGHTING_EXT);
+
+					// Don't disable it
+					disableVertexWeight=false;
+
+					// Setup
+					glEnableClientState(GL_VERTEX_WEIGHT_ARRAY_EXT);
+					glVertexWeightPointerEXT(1, GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Weight]);
+				}
+				else
+				{
+					// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 2 matrices mode by hardware (Radeon, NV20).
+				}
+			}
+		}
+
+		// Disable vertex weight
+		if (disableVertexWeight)
+			glDisable (GL_VERTEX_WEIGHTING_EXT);
+
+
+		// Setup Color / UV.
+		//==================
+		// Check for color param in vertex buffer
+		if (flags & CVertexBuffer::PrimaryColorFlag)
+		{
+			// Check type
+			nlassert (vb.Type[CVertexBuffer::PrimaryColor]==CVertexBuffer::UChar4);
+
+			glEnableClientState(GL_COLOR_ARRAY);
+			glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[CVertexBuffer::PrimaryColor]);
+		}
+		else
+			glDisableClientState(GL_COLOR_ARRAY);
+
+		// Active UVs.
+		for(sint i=0; i<getNbTextureStages(); i++)
+		{
+			// normal behavior: each texture has its own UV.
+			setupUVPtr(i, vb, i);
+		}
+	}
+	else
+	{
+		// Setup vertex program attributes.
+		//=================================
+
+		// Extension must exist
+		nlassert (_Extensions.NVVertexProgram);
+
+		// For each value
+		for (uint value=0; value<CVertexBuffer::NumValue; value++)
+		{
+			// Flag
+			uint16 flag=1<<value;
+
+			// Type
+			CVertexBuffer::TType type=vb.Type[value];
+
+			// Index
+			uint glIndex=GLVertexAttribIndex[value];
+
+			// Not setuped value and used
+			if (flags & flag)
+			{
+				// Active this value
+				glEnableClientState (glIndex+GL_VERTEX_ATTRIB_ARRAY0_NV);
+				glVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
+			}
+			else
+			{
+				glDisableClientState (glIndex+GL_VERTEX_ATTRIB_ARRAY0_NV);
 			}
 		}
 	}
-
-	// Disable vertex weight
-	if (disableVertexWeight)
-		glDisable (GL_VERTEX_WEIGHTING_EXT);
-
-
-	// Setup Color / UV.
-	//==================
-	// Check for color param in vertex buffer
-	if (flags & IDRV_VF_COLOR)
-	{
-		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ColorPointer);
-	}
-	else
-		glDisableClientState(GL_COLOR_ARRAY);
-
-	// Active UVs.
-	for(sint i=0; i<getNbTextureStages(); i++)
-	{
-		// normal behavior: each texture has its own UV.
-		setupUVPtr(i, vb, i);
-	}
-
 }
 
 
@@ -1137,35 +1260,21 @@ void		CVertexBufferInfo::setupVertexBuffer(CVertexBuffer &vb)
 	VertexFormat= flags;
 	VertexSize= vb.getVertexSize();
 	NumVertices= vb.getNumVertices();
+	NumWeight= vb.getNumWeight();
 
-	nlassert(flags & IDRV_VF_XYZ);
-	VertexCoordPointer= vb.getVertexCoordPointer();
-
-	// Check for normal param in vertex buffer
-	if (flags & IDRV_VF_NORMAL)
-		NormalCoordPointer= vb.getNormalCoordPointer();
-
-	// Setup TexCoord.
-	for(i= 0; i<IDRV_VF_MAXSTAGES; i++)
+	// Get value pointer
+	for (i=0; i<CVertexBuffer::NumValue; i++)
 	{
-		if (flags & IDRV_VF_UV[i])
-			TexCoordPointer[i]= vb.getTexCoordPointer(0, i);
-	}
+		// Value used ?
+		if (VertexFormat&(1<<i))
+		{
+			// Get the pointer
+			ValuePtr[i]=vb.getValueEx ((CVertexBuffer::TValue)i);
 
-	// Setup Colors
-	if (flags & IDRV_VF_COLOR)
-		ColorPointer= vb.getColorPointer();
-	if (flags & IDRV_VF_SPECULAR)
-		SpecularPointer= vb.getSpecularPointer();
-
-	// Setup Skinning.
-	for(i= 0; i<IDRV_VF_MAXW; i++)
-	{
-		if (flags & IDRV_VF_W[i])
-			WeightPointer[i]= vb.getWeightPointer(0, i);
+			// Type of the value
+			Type[i]=vb.getValueType (i);
+		}
 	}
-	if ( (flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
-		PaletteSkinPointer= vb.getPaletteSkinPointer();
 }
 
 
@@ -1177,35 +1286,21 @@ void		CVertexBufferInfo::setupVertexBufferHard(CVertexBufferHardGL &vb)
 	VertexFormat= flags;
 	VertexSize= vb.getVertexSize();
 	NumVertices= vb.getNumVertices();
+	NumWeight= vb.getNumWeight();
 
-	nlassert(flags & IDRV_VF_XYZ);
-	VertexCoordPointer= vb.getVertexCoordPointer();
-
-	// Check for normal param in vertex buffer
-	if (flags & IDRV_VF_NORMAL)
-		NormalCoordPointer= vb.getNormalCoordPointer();
-
-	// Setup TexCoord.
-	for(i= 0; i<IDRV_VF_MAXSTAGES; i++)
+	// Get value pointer
+	for (i=0; i<CVertexBuffer::NumValue; i++)
 	{
-		if (flags & IDRV_VF_UV[i])
-			TexCoordPointer[i]= vb.getTexCoordPointer(i);
-	}
+		// Value used ?
+		if (VertexFormat&(1<<i))
+		{
+			// Get the pointer
+			ValuePtr[i]=vb.getValueEx(i);
 
-	// Setup Colors
-	if (flags & IDRV_VF_COLOR)
-		ColorPointer= vb.getColorPointer();
-	if (flags & IDRV_VF_SPECULAR)
-		SpecularPointer= vb.getSpecularPointer();
-
-	// Setup Skinning.
-	for(i= 0; i<IDRV_VF_MAXW; i++)
-	{
-		if (flags & IDRV_VF_W[i])
-			WeightPointer[i]= vb.getWeightPointer(i);
+			// Type of the value
+			Type[i]=vb.getValueType (i);
+		}
 	}
-	if ( (flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
-		PaletteSkinPointer= vb.getPaletteSkinPointer();
 }
 
 
@@ -1291,5 +1386,7 @@ bool			CDriverGL::initVertexArrayRange(uint agpMem, uint vramMem)
 	return ok;
 }
 
+
+// ***************************************************************************
 
 } // NL3D

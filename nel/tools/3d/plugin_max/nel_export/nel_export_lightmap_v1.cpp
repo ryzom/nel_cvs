@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * <File description>
  *
- * $Id: nel_export_lightmap_v1.cpp,v 1.2 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: nel_export_lightmap_v1.cpp,v 1.3 2001/09/06 07:25:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1167,11 +1167,11 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 			// First order face by Material and by texture surface
 			CMesh::CMeshBuild *pMB = AllMeshBuilds[nNode].first;
 			CMesh* mesh = new CMesh;
-			pMB->VertexFlags |= IDRV_VF_UV[1];
+			pMB->VertexFlags |= CVertexBuffer::TexCoord1Flag;
 			// Build the mesh with the build interface
 
 			// TEMP YOYO (DU) DE SA RACE
-			pMB->VertexFlags |= IDRV_VF_COLOR;
+			pMB->VertexFlags |= CVertexBuffer::PrimaryColorFlag;
 			CMatrix MBMatrix = getObjectToWorldMatrix( pMB );
 			for( i = 0; i < pMB->Faces.size(); ++i )			
 			{

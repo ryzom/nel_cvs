@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.6 2001/08/08 07:36:01 corvazier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.7 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NL3D
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_MASK	(NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY-1)
 #define NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY		(1<<NL3D_COARSEMESH_VERTEXBUFFER_GRANULARITY_SHIFT)
 #define NL3D_COARSEMESH_VERTEXBUFFER_RESERVE			10
-#define NL3D_COARSEMESH_VERTEX_FORMAT					(IDRV_VF_XYZ|IDRV_VF_UV[0])
+#define NL3D_COARSEMESH_VERTEX_FORMAT					(CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag)
 #define NL3D_COARSEMESH_PRIMITIVE_BLOCK_SIZE			100
 
 // ***************************************************************************

@@ -26,7 +26,7 @@ CFG=object_viewer - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
@@ -52,7 +52,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
 # ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 # SUBTRACT LINK32 /pdb:none
@@ -84,7 +84,7 @@ PreLink_Cmds=buildinc version.ver object_viewer.rc	rc /l 0x40c /fo"Release/objec
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
@@ -112,7 +112,7 @@ LINK32=xilink6.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LINK32=xilink6.exe
+LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
 # ADD LINK32 mfcs42.lib msvcrt.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll"
 
@@ -397,6 +397,14 @@ SOURCE=.\bin_op_dlg.cpp
 # Begin Source File
 
 SOURCE=.\bin_op_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\choose_lag.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\choose_lag.h
 # End Source File
 # Begin Source File
 

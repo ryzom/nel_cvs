@@ -1,7 +1,7 @@
 /** \file motion_blur.cpp
  * <File description>
  *
- * $Id: motion_blur.cpp,v 1.1 2001/08/07 15:08:53 vizerie Exp $
+ * $Id: motion_blur.cpp,v 1.2 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ void CMotionBlur::performMotionBlur(IDriver *driver, float motionBlurAmount)
 	nlassert(motionBlurAmount >= 0.f && motionBlurAmount <= 1.f) ;
 	
 	static CVertexBuffer  vb ;
-	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0] ) ;
+	vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag ) ;
 	vb.setNumVertices(4) ;
 
 	uint32 width, height ;

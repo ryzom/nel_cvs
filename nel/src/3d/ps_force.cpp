@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.17 2001/09/05 15:40:01 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.18 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -259,7 +259,7 @@ void CPSGravity::show(CAnimationTime ellapsedTime)
 	IDriver *driver = getDriver();
 	const float toolSize = 0.2f;
 
-	vb.setVertexFormat(IDRV_VF_XYZ);
+	vb.setVertexFormat(CVertexBuffer::PositionFlag);
 	vb.setNumVertices(6);
 	vb.setVertexCoord(0, -toolSize * I);
 	vb.setVertexCoord(1, toolSize * I);

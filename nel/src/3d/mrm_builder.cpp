@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.19 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: mrm_builder.cpp,v 1.20 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1436,7 +1436,7 @@ uint32			CMRMBuilder::buildMrmBaseMesh(const CMesh::CMeshBuild &mbuild, CMRMMesh
 	sint		nFaces;
 	sint		attId;
 	// build the supported VertexFormat.
-	uint32		retVbFlags= IDRV_VF_XYZ;
+	uint32		retVbFlags= CVertexBuffer::PositionFlag;
 
 
 	// reset the baseMesh.
@@ -1449,27 +1449,28 @@ uint32			CMRMBuilder::buildMrmBaseMesh(const CMesh::CMeshBuild &mbuild, CMRMMesh
 	// Compute number of attributes used by the MeshBuild.
 	// ========================
 	// Compute too 
-	if(mbuild.VertexFlags & IDRV_VF_NORMAL)
+	if(mbuild.VertexFlags & CVertexBuffer::NormalFlag)
 	{
 		baseMesh.NumAttributes++;
-		retVbFlags|= IDRV_VF_NORMAL;
+		retVbFlags|= CVertexBuffer::NormalFlag;
 	}
-	if(mbuild.VertexFlags & IDRV_VF_COLOR)
+	if(mbuild.VertexFlags & CVertexBuffer::PrimaryColorFlag)
 	{
 		baseMesh.NumAttributes++;
-		retVbFlags|= IDRV_VF_COLOR;
+		retVbFlags|= CVertexBuffer::PrimaryColorFlag;
 	}
-	if(mbuild.VertexFlags & IDRV_VF_SPECULAR)
+	if(mbuild.VertexFlags & CVertexBuffer::SecondaryColorFlag)
 	{
 		baseMesh.NumAttributes++;
-		retVbFlags|= IDRV_VF_SPECULAR;
+		retVbFlags|= CVertexBuffer::SecondaryColorFlag;
 	}
-	for(k=0; k<IDRV_VF_MAXSTAGES;k++)
+	for(k=0; k<CVertexBuffer::MaxStage;k++)
 	{
-		if(mbuild.VertexFlags & IDRV_VF_UV[k])
+		uint flag=CVertexBuffer::TexCoord0Flag<<k;
+		if(mbuild.VertexFlags & flag)
 		{
 			baseMesh.NumAttributes++;
-			retVbFlags|= IDRV_VF_UV[k];
+			retVbFlags|=flag;
 		}
 	}
 	nlassert(baseMesh.NumAttributes<=NL3D_MRM_MAX_ATTRIB);
@@ -1510,24 +1511,24 @@ uint32			CMRMBuilder::buildMrmBaseMesh(const CMesh::CMeshBuild &mbuild, CMRMMesh
 			// For all activated attributes in mbuild, find/insert the attribute in the baseMesh.
 			// NB: 2 attributes are said to be different if they have not the same value OR if they don't lie 
 			// on the same vertex. This is very important for MRM computing.
-			if(mbuild.VertexFlags & IDRV_VF_NORMAL)
+			if(mbuild.VertexFlags & CVertexBuffer::NormalFlag)
 			{
 				destCorner.Attributes[attId]= findInsertNormalInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Normal);
 				attId++;
 			}
-			if(mbuild.VertexFlags & IDRV_VF_COLOR)
+			if(mbuild.VertexFlags & CVertexBuffer::PrimaryColorFlag)
 			{
 				destCorner.Attributes[attId]= findInsertColorInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Color);
 				attId++;
 			}
-			if(mbuild.VertexFlags & IDRV_VF_SPECULAR)
+			if(mbuild.VertexFlags & CVertexBuffer::SecondaryColorFlag)
 			{
 				destCorner.Attributes[attId]= findInsertColorInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Specular);
 				attId++;
 			}
-			for(k=0; k<IDRV_VF_MAXSTAGES;k++)
+			for(k=0; k<CVertexBuffer::MaxStage;k++)
 			{
-				if(mbuild.VertexFlags & IDRV_VF_UV[k])
+				if(mbuild.VertexFlags & (CVertexBuffer::TexCoord0Flag<<k))
 				{
 					destCorner.Attributes[attId]= findInsertUvInBaseMesh(baseMesh, attId, destCorner.Vertex, srcCorner.Uvs[k]);
 					attId++;
@@ -1641,24 +1642,24 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 		attId= 0;
 
 		// For all activated attributes in mbuild, retriev the attribute from the finalMRM.
-		if(vbFlags & IDRV_VF_NORMAL)
+		if(vbFlags & CVertexBuffer::NormalFlag)
 		{
 			mbuild.VBuffer.setNormalCoord(i, wedge.Attributes[attId] );
 			attId++;
 		}
-		if(vbFlags & IDRV_VF_COLOR)
+		if(vbFlags & CVertexBuffer::PrimaryColorFlag)
 		{
 			mbuild.VBuffer.setColor(i, attToColor(wedge.Attributes[attId]) );
 			attId++;
 		}
-		if(vbFlags & IDRV_VF_SPECULAR)
+		if(vbFlags & CVertexBuffer::SecondaryColorFlag)
 		{
 			mbuild.VBuffer.setSpecular(i, attToColor(wedge.Attributes[attId]) );
 			attId++;
 		}
-		for(k=0; k<IDRV_VF_MAXSTAGES;k++)
+		for(k=0; k<CVertexBuffer::MaxStage;k++)
 		{
-			if(vbFlags & IDRV_VF_UV[k])
+			if(vbFlags & (CVertexBuffer::TexCoord0Flag<<k))
 			{
 				mbuild.VBuffer.setTexCoord(i, k, attToUv(wedge.Attributes[attId]) );
 				attId++;
@@ -1875,7 +1876,7 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParamete
 	_SkinReduction= params.SkinReduction;
 
 	// Skinning??
-	_Skinned= (mbuild.VertexFlags & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN;
+	_Skinned= (mbuild.VertexFlags & CVertexBuffer::PaletteSkinFlag)!=0;
 	// Skinning is OK only if SkinWeights are of same size as vertices.
 	_Skinned= _Skinned && ( mbuild.Vertices.size()==mbuild.SkinWeights.size() );
 	

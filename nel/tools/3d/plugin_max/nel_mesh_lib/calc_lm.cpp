@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.22 2001/09/05 07:53:34 besson Exp $
+ * $Id: calc_lm.cpp,v 1.23 2001/09/06 07:25:38 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -3188,7 +3188,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	// End of the lighting process for this node we have to export the data
 	CMesh::CMeshBuild *pMB = pZeMeshBuild;
 	CMeshBase::CMeshBaseBuild *pMBB = pZeMeshBaseBuild;
-	pMB->VertexFlags |= IDRV_VF_UV[1];
+	pMB->VertexFlags |= CVertexBuffer::TexCoord1Flag;
 	// Build the mesh with the build interface
 	for( i = 0; i < pMBB->Materials.size(); ++i )
 	if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )

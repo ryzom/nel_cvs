@@ -1,7 +1,7 @@
 /** \file deform_2d.cpp
  * <File description>
  *
- * $Id: deform_2d.cpp,v 1.1 2001/08/07 14:19:18 vizerie Exp $
+ * $Id: deform_2d.cpp,v 1.2 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -111,7 +111,7 @@ void CDeform2d::doDeform(const TPoint2DVect &surf, IDriver *drv, IPerturbUV *uvp
 	mat.texEnvOpRGB(0, CMaterial::Add); */
 	
 	static CVertexBuffer  vb;
-	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]);
+	vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	
 	
 

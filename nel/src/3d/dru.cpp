@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.32 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: dru.cpp,v 1.33 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,7 +142,7 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 	mat.setBlend(blend);
 
 	static CVertexBuffer vb;
-	vb.setVertexFormat (IDRV_VF_XYZ|IDRV_VF_UV[0]);
+	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
 	vb.setNumVertices (4);
 	vb.setVertexCoord (0, CVector (x, 0, y));
 	vb.setVertexCoord (1, CVector (x+width, 0, y));
@@ -180,7 +180,7 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	mat.setColor(col);
 
 	static CVertexBuffer vb;
-	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (2);
 	vb.setVertexCoord (0, CVector (x0, 0, y0));
 	vb.setVertexCoord (1, CVector (x1, 0, y1));
@@ -212,7 +212,7 @@ void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float
 	mat.setColor(col);
 
 	static CVertexBuffer vb;
-	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (3);
 	vb.setVertexCoord (0, CVector (x0, 0, y0));
 	vb.setVertexCoord (1, CVector (x1, 0, y1));
@@ -246,7 +246,7 @@ void	CDRU::drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	mat.setColor(col);
 	
 	static CVertexBuffer vb;
-	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (4);
 	vb.setVertexCoord (0, CVector (x0, 0, y0));
 	vb.setVertexCoord (1, CVector (x1, 0, y0));
@@ -281,7 +281,7 @@ void	CDRU::drawQuad (float xcenter, float ycenter, float radius, IDriver& driver
 	mat.setColor(col);
 	
 	static CVertexBuffer vb;
-	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (4);
 	vb.setVertexCoord (0, CVector (xcenter-radius, 0, ycenter-radius));
 	vb.setVertexCoord (1, CVector (xcenter+radius, 0, ycenter-radius));
@@ -330,7 +330,7 @@ void	CDRU::drawWiredQuad (float xcenter, float ycenter, float radius, IDriver& d
 void			CDRU::drawTrianglesUnlit(const NLMISC::CTriangleUV	*trilist, sint ntris, CMaterial &mat, IDriver& driver)
 {
 	static CVertexBuffer vb;
-	vb.setVertexFormat (IDRV_VF_XYZ | IDRV_VF_UV[0]);
+	vb.setVertexFormat (CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
 	vb.setNumVertices (ntris*3);
 
 	static	CPrimitiveBlock pb;
@@ -366,7 +366,7 @@ void			CDRU::drawTrianglesUnlit(const std::vector<NLMISC::CTriangleUV> &trilist,
 void			CDRU::drawLinesUnlit(const NLMISC::CLine	*linelist, sint nlines, CMaterial &mat, IDriver& driver)
 {
 	static CVertexBuffer vb;
-	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setVertexFormat (CVertexBuffer::PositionFlag);
 	vb.setNumVertices (nlines*2);
 
 	static	CPrimitiveBlock pb;
@@ -426,7 +426,7 @@ void			CDRU::drawQuad (float x0, float y0, float x1, float y1, CRGBA col0, CRGBA
 	mat.setBlend(true);
 	
 	static CVertexBuffer vb;
-	vb.setVertexFormat (IDRV_VF_XYZ|IDRV_VF_COLOR);
+	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::PrimaryColorFlag);
 	vb.setNumVertices (4);
 	vb.setVertexCoord (0, CVector (x0, 0, y0));
 	vb.setColor (0, col0);

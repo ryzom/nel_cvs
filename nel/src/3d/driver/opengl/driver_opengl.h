@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.82 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.83 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,7 +205,7 @@ public:
 	CVertexBufferHardGL();
 	virtual	~CVertexBufferHardGL();
 
-	bool				init(CDriverGL *drv, uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType);
+	bool				init(CDriverGL *drv, uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, IDriver::TVBHardType vbType);
 
 	virtual	void		*lock();
 	virtual	void		unlock();
@@ -218,7 +218,7 @@ public:
 
 public:
 	// NB: do not check if format is OK. return invalid result if format is KO.
-	void				*getVertexCoordPointer()
+	/*void				*getVertexCoordPointer()
 	{
 		nlassert(_VertexPtr);
 		return _VertexPtr;
@@ -252,8 +252,12 @@ public:
 	{
 		nlassert(_VertexPtr);
 		return (uint8*)_VertexPtr + getPaletteSkinOff();
+	}*/
+	void				*getValueEx (uint value)
+	{
+		nlassert(_VertexPtr);
+		return (uint8*)_VertexPtr + getValueOff (value);
 	}
-
 
 private:
 	CDriverGL			*_Driver;
@@ -269,17 +273,14 @@ private:
 class	CVertexBufferInfo
 {
 public:
-	uint32		VertexFormat;
-	uint32		VertexSize;
-	uint32		NumVertices;
+	uint16					VertexFormat;
+	uint16					VertexSize;
+	uint32					NumVertices;
+	uint32					NumWeight;	
+	CVertexBuffer::TType	Type[CVertexBuffer::NumValue];
+
 	// NB: ptrs are invalid if VertexFormat does not support the compoennt. must test VertexFormat, not the ptr.
-	void		*VertexCoordPointer;
-	void		*NormalCoordPointer;
-	void		*TexCoordPointer[IDRV_VF_MAXSTAGES];
-	void		*ColorPointer;
-	void		*SpecularPointer;
-	void		*WeightPointer[IDRV_VF_MAXW];
-	void		*PaletteSkinPointer;
+	void					*ValuePtr[CVertexBuffer::NumValue];
 
 	void		setupVertexBuffer(CVertexBuffer &vb);
 	void		setupVertexBufferHard(CVertexBufferHardGL &vb);
@@ -377,7 +378,8 @@ public:
 
 	virtual	bool			initVertexArrayRange(uint agpMem, uint vramMem);
 
-	virtual	IVertexBufferHard	*createVertexBufferHard(uint32 vertexFormat, uint32 numVertices, IDriver::TVBHardType vbType);
+	virtual	IVertexBufferHard	*createVertexBufferHard(uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices, 
+														IDriver::TVBHardType vbType);
 
 	virtual	void			deleteVertexBufferHard(IVertexBufferHard *VB);
 
@@ -473,6 +475,7 @@ public:
 
 private:
 	friend class					CTextureDrvInfosGL;
+	friend class					CVertexProgamDrvInfosGL;
 
 
 	// For fast vector/point multiplication.
@@ -714,9 +717,31 @@ private:
 	uint							computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const;
 	// @}
 
+	/// \name Vertex program interface
+	// @{
+
+	bool			isVertexProgramSupported () const;
+	bool			activeVertexProgram (CVertexProgram *program);
+	void			setConstant (uint index, float, float, float, float);
+	void			setConstant (uint index, double, double, double, double);
+	void			setConstant (uint indexStart, const NLMISC::CVector* value);
+	void			setConstant (uint indexStart, const NLMISC::CVectorD* value);
+	
+	// @}
+
+	bool			isVertexProgramEnabled () const
+	{
+		// Extension actived ?
+		GLboolean actived=glIsEnabled (GL_VERTEX_PROGRAM_NV);
+		return actived!=GL_FALSE;
+	}
 
 	bool							_ForceDXTCCompression;
 
+	// Static const
+	static const uint NumCoordinatesType[CVertexBuffer::NumType];
+	static const uint GLType[CVertexBuffer::NumType];
+	static const uint GLVertexAttribIndex[CVertexBuffer::NumValue];
 };
 
 } // NL3D

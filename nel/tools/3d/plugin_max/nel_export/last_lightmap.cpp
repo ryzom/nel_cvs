@@ -1017,11 +1017,11 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 			// First order face by Material and by texture surface
 			CMesh::CMeshBuild *pMB = AllMeshBuilds[nNode].first;
 			CMesh* mesh = new CMesh;
-			pMB->VertexFlags |= IDRV_VF_UV[1];
+			pMB->VertexFlags |= CVertexBuffer::TexCoord1Flag;
 			// Build the mesh with the build interface
 
 			// TEMP YOYO (DU) DE SA RACE
-			pMB->VertexFlags |= IDRV_VF_COLOR;
+			pMB->VertexFlags |= CVertexBuffer::PrimaryColorFlag;
 			CMatrix MBMatrix = getObjectToWorldMatrix( pMB );
 			for( i = 0; i < pMB->Faces.size(); ++i )			
 			{

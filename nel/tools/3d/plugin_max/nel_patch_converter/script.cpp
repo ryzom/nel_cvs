@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.4 2001/08/23 12:31:37 corvazier Exp $
+ * $Id: script.cpp,v 1.5 2001/09/06 07:25:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,13 @@
 
 #include "PO2RPO.h"
 #include "..\nel_patch_lib\rpo.h"
+
 #include "3d/zone.h"
+#include "3d/tile_bank.h"
+
 #include "nel/misc/file.h"
+
+#include "nel/misc/common.h"
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -76,6 +81,14 @@ def_visible_primitive( set_tile_mode,			"SetRykolTileMode");
 def_visible_primitive( get_selected_vertex,		"GetRykolSelVertex");
 def_visible_primitive( get_selected_patch,		"GetRykolSelPatch");
 def_visible_primitive( get_selected_tile,		"GetRykolSelTile");
+
+def_visible_primitive( get_tile_tile_number,	"NelGetTileTileNumber");
+def_visible_primitive( get_tile_noise_number,	"NelGetTileNoiseNumber");
+def_visible_primitive( set_tile_noise_number,	"NelSetTileNoiseNumber");
+
+def_visible_primitive( load_bank,				"NelLoadBank");
+def_visible_primitive( get_tile_set,			"NelGetTileSet");
+
 def_visible_primitive( export_zone,				"ExportRykolZone");
 
 /* permettre l'acces à auto/manual intrior edges
@@ -109,7 +122,7 @@ export_zone_cf (Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "ExportRykolZone [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -162,7 +175,7 @@ get_selected_tile_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolSeltile [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -207,7 +220,7 @@ get_selected_patch_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolSelPatch [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -252,7 +265,7 @@ get_selected_vertex_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolSelVertex [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -395,7 +408,7 @@ set_interior_mode_cf (Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "SetRykolInteriorMode [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -447,7 +460,7 @@ set_vertex_count_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolVertexCount [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -485,7 +498,7 @@ set_vector_count_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolVectorCount [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -523,7 +536,7 @@ set_vertex_pos_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "SetRykolVertexPos [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -571,7 +584,7 @@ set_vector_pos_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "SetRykolVectorPos [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -619,7 +632,7 @@ get_vertex_pos_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolVertexPos [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -661,7 +674,7 @@ get_vector_pos_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolVectorPos [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -704,7 +717,7 @@ get_edge_vect1_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolEdgesVect1 [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -746,7 +759,7 @@ get_edge_vect2_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolEdgesVect2 [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -788,7 +801,7 @@ get_edge_vert1_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolEdgesVert1 [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -831,7 +844,7 @@ get_edge_vert2_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolEdgesVert2 [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -873,7 +886,7 @@ get_sel_edge_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "SetRykolSelEdges [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -919,7 +932,7 @@ set_steps_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "SetRykolPatchSteps [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -982,7 +995,7 @@ set_tile_steps_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "SetRykoltileSteps [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -1033,8 +1046,8 @@ get_tile_count_cf(Value** arg_list, int count)
 
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
-	type_check(arg_list[0], MAXNode, "GetRykolTileCount [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	type_check(arg_list[0], MAXNode, "GetRykolTileCount [Zone] [PatchNumber]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -1092,7 +1105,7 @@ get_patch_count_cf(Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check(arg_list[0], MAXNode, "GetRykolPatchCount [Object]");
-	//type_check(arg_list[1], Int, "SetRykolPatchSteps [Object]");
+	//type_check(arg_list[1], Integer, "SetRykolPatchSteps [Object]");
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -1135,6 +1148,321 @@ get_patch_count_cf(Value** arg_list, int count)
 
 	return Integer::intern(nRet);
 }
+
+Value*
+get_tile_tile_number_cf(Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (4)
+	check_arg_count(get_tile_count, 4, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	type_check(arg_list[0], MAXNode, "NelGetTileTileNumber [Zone] [PatchNumber] [TileNumber] [Layer]");
+	type_check(arg_list[1], Integer, "NelGetTileTileNumber [Zone] [PatchNumber] [TileNumber] [Layer]");
+	type_check(arg_list[2], Integer, "NelGetTileTileNumber [Zone] [PatchNumber] [TileNumber] [Layer]");
+	type_check(arg_list[3], Integer, "NelGetTileTileNumber [Zone] [PatchNumber] [TileNumber] [Layer]");
+
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	// Get a INode pointer from the argument passed to us
+	INode *node = arg_list[0]->to_node();
+	nlassert (node);
+
+	// Get a Object pointer
+	ObjectState os=node->EvalWorldState(ip->GetTime()); 
+
+	// ok ?
+	int nRet=-1;
+
+	// Get the layer
+	uint layer=arg_list[3]->to_int()-1;
+	if (layer>=3)
+	{
+		mprintf ("Error: layer must be 1, 2, or 3\n");
+	}
+	else
+	{
+		if (os.obj)
+		{
+			// Get class id
+			Class_ID classId=os.obj->ClassID();
+			RPO *tri = (RPO *) os.obj->ConvertToType(ip->GetTime(), 
+				RYKOLPATCHOBJ_CLASS_ID);
+			if (tri)
+			{
+				// Get the patch number
+				uint nPatch=arg_list[1]->to_int()-1;
+				if (nPatch>=tri->rpatch->getUIPatchSize())
+				{
+					mprintf ("Error: patch index is invalid.\n");
+				}
+				else
+				{
+					// Number of tile in this patch
+					uint nPatchCount=(1<<(tri->rpatch->getUIPatch (nPatch).NbTilesU))*
+						(1<<(tri->rpatch->getUIPatch (nPatch).NbTilesV));
+
+					// Get the tile number
+					uint tile=arg_list[2]->to_int()-1;
+					if (tile>=nPatchCount)
+					{
+						mprintf ("Error: tile index is invalid.\n");
+					}
+					else
+					{
+						// Tile index
+						if (layer<(uint)tri->rpatch->getUIPatch (nPatch).getTileDesc (tile).getNumLayer())
+						{
+							nRet=tri->rpatch->getUIPatch (nPatch).getTileDesc (tile).getLayer (layer).Tile+1;
+						}
+						else
+						{
+							nRet=0;
+						}
+					}
+				}
+
+				// Note that the TriObject should only be deleted
+				// if the pointer to it is not equal to the object
+				// pointer that called ConvertToType()
+				if (os.obj != tri)
+					delete tri;
+			}
+		}
+	}
+
+	return Integer::intern(nRet);
+}
+
+Value*
+get_tile_noise_number_cf(Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (4)
+	check_arg_count(get_tile_count, 3, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	type_check(arg_list[0], MAXNode, "NelGetTileTileNumber [Zone] [PatchNumber] [TileNumber]");
+	type_check(arg_list[1], Integer, "NelGetTileTileNumber [Zone] [PatchNumber] [TileNumber]");
+	type_check(arg_list[2], Integer, "NelGetTileTileNumber [Zone] [PatchNumber] [TileNumber]");
+
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	// Get a INode pointer from the argument passed to us
+	INode *node = arg_list[0]->to_node();
+	nlassert (node);
+
+	// Get a Object pointer
+	ObjectState os=node->EvalWorldState(ip->GetTime()); 
+
+	// ok ?
+	int nRet=-1;
+
+	if (os.obj)
+	{
+		// Get class id
+		Class_ID classId=os.obj->ClassID();
+		RPO *tri = (RPO *) os.obj->ConvertToType(ip->GetTime(), 
+			RYKOLPATCHOBJ_CLASS_ID);
+		if (tri)
+		{
+			// Get the patch number
+			uint nPatch=arg_list[1]->to_int()-1;
+			if (nPatch>=tri->rpatch->getUIPatchSize())
+			{
+				mprintf ("Error: patch index is invalid.\n");
+			}
+			else
+			{
+				// Number of tile in this patch
+				uint nPatchCount=(1<<(tri->rpatch->getUIPatch (nPatch).NbTilesU))*
+					(1<<(tri->rpatch->getUIPatch (nPatch).NbTilesV));
+
+				// Get the tile number
+				uint tile=arg_list[2]->to_int()-1;
+				if (tile>=nPatchCount)
+				{
+					mprintf ("Error: patch index is invalid.\n");
+				}
+				else
+				{
+					// Tile index
+					nRet=tri->rpatch->getUIPatch (nPatch).getTileDesc (tile).getDisplace ()+1;
+				}
+			}
+
+			// Note that the TriObject should only be deleted
+			// if the pointer to it is not equal to the object
+			// pointer that called ConvertToType()
+			if (os.obj != tri)
+				delete tri;
+		}
+	}
+
+	return Integer::intern(nRet);
+}
+
+Value*
+set_tile_noise_number_cf(Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (4)
+	check_arg_count(get_tile_count, 4, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	type_check(arg_list[0], MAXNode, "NelGetTileNoiseNumber [Zone] [PatchNumber] [TileNumber] [noise]");
+	type_check(arg_list[1], Integer, "NelGetTileNoiseNumber [Zone] [PatchNumber] [TileNumber] [noise]");
+	type_check(arg_list[2], Integer, "NelGetTileNoiseNumber [Zone] [PatchNumber] [TileNumber] [noise]");
+	type_check(arg_list[3], Integer, "NelGetTileNoiseNumber [Zone] [PatchNumber] [TileNumber] [noise]");
+
+	// Get a good interface pointer
+	Interface *ip = MAXScript_interface;
+
+	// Get a INode pointer from the argument passed to us
+	INode *node = arg_list[0]->to_node();
+	nlassert (node);
+
+	// Get a Object pointer
+	ObjectState os=node->EvalWorldState(ip->GetTime()); 
+
+	// ok ?
+	bool bRet=false;
+
+	// Get noise number
+	uint noise=arg_list[3]->to_int()-1;
+	if (noise>=16)
+	{
+		mprintf ("Error: noise value must be 1~16\n");
+	}
+	else
+	{
+		if (os.obj)
+		{
+			// Get class id
+			Class_ID classId=os.obj->ClassID();
+			RPO *tri = (RPO *) os.obj->ConvertToType(ip->GetTime(), 
+				RYKOLPATCHOBJ_CLASS_ID);
+			if (tri)
+			{
+				// Get the patch number
+				uint nPatch=arg_list[1]->to_int()-1;
+				if (nPatch>=tri->rpatch->getUIPatchSize())
+				{
+					mprintf ("Error: patch index is invalid.\n");
+				}
+				else
+				{
+					// Number of tile in this patch
+					uint nPatchCount=(1<<(tri->rpatch->getUIPatch (nPatch).NbTilesU))*
+						(1<<(tri->rpatch->getUIPatch (nPatch).NbTilesV));
+
+					// Get the tile number
+					uint tile=arg_list[2]->to_int()-1;
+					if (tile>=nPatchCount)
+					{
+						mprintf ("Error: patch index is invalid.\n");
+					}
+					else
+					{
+						// Tile index
+						tri->rpatch->getUIPatch (nPatch).getTileDesc (tile).setDisplace (noise);
+						bRet=true;
+					}
+				}
+
+				// Note that the TriObject should only be deleted
+				// if the pointer to it is not equal to the object
+				// pointer that called ConvertToType()
+				if (os.obj != tri)
+					delete tri;
+			}
+		}
+	}
+
+	return bRet?&true_value:&false_value;
+}
+
+CTileBank scriptedBank;
+
+Value*
+load_bank_cf(Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (4)
+	check_arg_count(get_tile_count, 0, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	std::string bankName = GetBankPathName ();
+	if (bankName!="")
+	{
+		try
+		{
+			// Open a file
+			CIFile file;
+			if (file.open (bankName))
+			{
+				// Read the bank
+				file.serial (scriptedBank);
+
+				// Build xref
+				scriptedBank.computeXRef ();
+
+				// Ok
+				return &true_value;
+			}
+			else
+			{
+				mprintf ("Error: can't open bank file %s\n", bankName.c_str());
+			}
+		}
+		catch (Exception& e)
+		{
+			// Error message
+			mprintf ("Error: %s\n", e.what());
+		}
+	}
+
+	// Error
+	return &false_value;
+}
+
+Value*
+get_tile_set_cf(Value** arg_list, int count)
+{
+	// Make sure we have the correct number of arguments (4)
+	check_arg_count(get_tile_count, 1, count);
+
+	// Check to see if the arguments match up to what we expect
+	// We want to use 'TurnAllTexturesOn <object to use>'
+	type_check(arg_list[0], Integer, "NelGetTileSet [tileId]");
+
+	// ok ?
+	int nRet=-1;
+
+	// Get tile number
+	uint tile=arg_list[0]->to_int()-1;
+	if (tile>=(uint)scriptedBank.getTileCount())
+	{
+		mprintf ("Error: tile number is wrong. (1 ~ %d)\n", scriptedBank.getTileCount());
+	}
+	else
+	{
+		// Get the XRef for this bank
+		int tileSet;
+		int number;
+		CTileBank::TTileType type;
+		scriptedBank.getTileXRef (tile, tileSet, number, type);
+
+		// Return value
+		nRet=tileSet+1;
+	}
+
+	// Error
+	return Integer::intern(nRet);
+}
+
 
 /*===========================================================================*\
  |	MAXScript Plugin Initialization

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.19 2001/09/03 10:00:01 besson Exp $
+ * $Id: export_mesh.cpp,v 1.20 2001/09/06 07:25:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -600,7 +600,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	//pMesh->buildNormals();
 
 	// Put default vertex flags. xyz and normals...
-	buildMesh.VertexFlags=IDRV_VF_XYZ|IDRV_VF_NORMAL;
+	buildMesh.VertexFlags=CVertexBuffer::PositionFlag|CVertexBuffer::NormalFlag;
 
 	// Is this mesh skined ?
 	bool skined=(nodeMap!=NULL);
@@ -676,7 +676,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	if (pMesh->mapSupport (0))
 	{
 		// Add flag for color vertices
-		buildMesh.VertexFlags|=IDRV_VF_COLOR;
+		buildMesh.VertexFlags|=CVertexBuffer::PrimaryColorFlag;
 	}
 	
 	
@@ -698,7 +698,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	// Add flags to the mesh vertex format
 	for (int nChannels=0; nChannels<nMapsChannelUsed; nChannels++)
 	{
-		buildMesh.VertexFlags|=IDRV_VF_UV[nChannels];
+		buildMesh.VertexFlags|=(CVertexBuffer::TexCoord0Flag<<nChannels);
 	}
 
 
@@ -766,7 +766,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		nlassert (buildMesh.Faces[face].MaterialId<(sint)(maxBaseBuild.FirstMaterial+maxBaseBuild.NumMaterials));
 
 		//if( buildMesh.Materials[buildMesh.Faces[face].MaterialId].getShader() == CMaterial::Specular )
-		//	buildMesh.VertexFlags |= IDRV_VF_UV[1];
+		//	buildMesh.VertexFlags |= CVertexBuffer::TexCoord1Flag;
 
 		// Export the 3 corners
 		for (int corner=0; corner<3; corner++)
@@ -884,7 +884,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			// *** ************
 
 			// Export colors ?
-			if (buildMesh.VertexFlags&IDRV_VF_COLOR)
+			if (buildMesh.VertexFlags&CVertexBuffer::PrimaryColorFlag)
 			{
 				// Get a pointer on Mappingvertex for this channel. Channel 0 is the color channel.
 				TVFace *pMapVert=pMesh->mapFaces(0);
@@ -943,7 +943,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		else
 		{
 			// Active skinning
-			buildMesh.VertexFlags|=IDRV_VF_PALETTE_SKIN;
+			buildMesh.VertexFlags|=CVertexBuffer::PaletteSkinFlag;
 		}
 	}
 

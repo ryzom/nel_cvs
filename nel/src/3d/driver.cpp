@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.45 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: driver.cpp,v 1.46 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-const uint32 IDriver::InterfaceVersion = 0x28;
+const uint32 IDriver::InterfaceVersion = 0x2b;
 
 // ***************************************************************************
 IDriver::IDriver()
@@ -63,6 +63,7 @@ IDriver::~IDriver()
 	nlassert(_TexDrvShares.size()==0);
 	nlassert(_Shaders.size()==0);
 	nlassert(_VBDrvInfos.size()==0);
+	nlassert(_VtxPrgDrvInfos.size()==0);
 }
 
 
@@ -105,6 +106,14 @@ bool		IDriver::release(void)
 	{
 		// NB: at IVBDrvInfo deletion, this->_VBDrvInfos is updated (entry deleted);
 		delete *itvb;
+	}
+
+	// Release VtxPrg drv.
+	ItVtxPrgDrvInfoPtrList		itVtxPrg;
+	while( (itVtxPrg = _VtxPrgDrvInfos.begin()) != _VtxPrgDrvInfos.end() )
+	{
+		// NB: at IVertexProgramDrvInfos deletion, this->_VtxPrgDrvInfos is updated (entry deleted);
+		delete *itVtxPrg;
 	}
 
 	return true;
@@ -220,8 +229,11 @@ void			IDriver::removeShaderPtr(ItShaderPtrList shaderIt)
 {
 	_Shaders.erase(shaderIt);
 }
-
-
+// ***************************************************************************
+void			IDriver::removeVtxPrgDrvInfoPtr(ItVtxPrgDrvInfoPtrList vtxPrgDrvInfoIt)
+{
+	_VtxPrgDrvInfos.erase(vtxPrgDrvInfoIt);
+}
 
 }
 

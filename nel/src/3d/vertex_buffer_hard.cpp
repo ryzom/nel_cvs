@@ -1,7 +1,7 @@
 /** \file vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: vertex_buffer_hard.cpp,v 1.2 2001/07/05 08:33:04 berenguier Exp $
+ * $Id: vertex_buffer_hard.cpp,v 1.3 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,69 +29,62 @@
 namespace NL3D 
 {
 
+// ***************************************************************************
 
-
-void	IVertexBufferHard::initFormat(uint32 flags, uint32 numVertices)
+void	IVertexBufferHard::initFormat (uint16 vertexFormat, const uint8 *typeArray, uint32 numVertices)
 {
 	// _NbVerts.
 	_NbVerts= numVertices;
 
-	uint	i;
-	uint	offset;
-
 	// Compute format: flags / offsets, for each component.
 	_VertexSize=0;
-	offset=0;
 	_Flags=0;
-	if (flags & IDRV_VF_XYZ)
+
+	// For each values
+	for (uint value=0; value<CVertexBuffer::NumValue; value++)
 	{
-		_Flags|=IDRV_VF_XYZ;
-		_VertexSize+=3*sizeof(float);
-	}
-	if (flags & IDRV_VF_NORMAL)
-	{
-		_Flags|=IDRV_VF_NORMAL;
-		_NormalOff=_VertexSize;
-		_VertexSize+=3*sizeof(float);
-	}
-	for(i=0 ; i<IDRV_VF_MAXSTAGES ; i++)
-	{
-		if (flags & IDRV_VF_UV[i])
+		// Flag for this value
+		uint flag=1<<value;
+
+		// Value used ?
+		if (vertexFormat & flag)
 		{
-			_Flags|=IDRV_VF_UV[i];
-			_UVOff[i]=_VertexSize;
-			_VertexSize+=2*sizeof(float);
+			// Use it
+			_Flags|=flag;
+
+			// Value offset
+			_Offset[value]=_VertexSize;
+
+			// New vertex size
+			_VertexSize+=CVertexBuffer::SizeType[typeArray[value]];
+
+			// Setup the type
+			_Type[value]=typeArray[value];
 		}
-	}
-	if (flags & IDRV_VF_COLOR)
-	{
-		_Flags|=IDRV_VF_COLOR;
-		_RGBAOff=_VertexSize;
-		_VertexSize+=4*sizeof(uint8);
-	}
-	if (flags & IDRV_VF_SPECULAR)
-	{
-		_Flags|=IDRV_VF_SPECULAR;
-		_SpecularOff=_VertexSize;
-		_VertexSize+=3*sizeof(uint8);
-	}
-	for(i=0 ; i<IDRV_VF_MAXW ; i++)
-	{
-		if (flags & IDRV_VF_W[i])
-		{
-			_Flags|=IDRV_VF_W[i];
-			_WOff[i]=_VertexSize;
-			_VertexSize+=sizeof(float);			
-		}
-	}
-	if ( (flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
-	{
-		_Flags|=IDRV_VF_PALETTE_SKIN;
-		_PaletteSkinOff=_VertexSize;
-		_VertexSize+=sizeof(CPaletteSkin);
 	}
 }
 
+// ***************************************************************************
 
+uint8		IVertexBufferHard::getNumWeight () const
+{
+	// Num weight
+	switch (_Type[CVertexBuffer::Weight])
+	{
+	case CVertexBuffer::Float1:
+		return 1;
+	case CVertexBuffer::Float2:
+		return 2;
+	case CVertexBuffer::Float3:
+		return 3;
+	case CVertexBuffer::Float4:
+		return 4;
+	}
+
+	// No weight
+	return 0;
+}
+
+// ***************************************************************************
 
 } // NL3D

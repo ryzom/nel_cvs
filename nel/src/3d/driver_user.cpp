@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.13 2001/08/30 12:52:21 corvazier Exp $
+ * $Id: driver_user.cpp,v 1.14 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,10 +123,10 @@ CDriverUser::CDriverUser()
 	_WindowInit= false;
 
 	// Init of VBuffers/PBs for 2D/3D interface.
-	_VBFlat.setVertexFormat(IDRV_VF_XYZ);
-	_VBColor.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR);
-	_VBUv.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]);
-	_VBColorUv.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]);
+	_VBFlat.setVertexFormat(CVertexBuffer::PositionFlag);
+	_VBColor.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag);
+	_VBUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);
+	_VBColorUv.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
 	// max is quad.
 	_VBFlat.setNumVertices(4);
 	_VBColor.setNumVertices(4);

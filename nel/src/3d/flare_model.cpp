@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.6 2001/08/08 14:10:36 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.7 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -157,7 +157,7 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	material.setDoubleSided(true) ;
 
 	// setup vertex buffer
-	vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]) ;
+	vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag) ;
 	vb.setNumVertices(4) ;
 	vb.setTexCoord(0, 0, NLMISC::CUV(1, 0)) ;
 	vb.setTexCoord(1, 0, NLMISC::CUV(1, 1)) ;

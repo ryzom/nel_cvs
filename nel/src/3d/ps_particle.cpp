@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.38 2001/09/05 15:40:17 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.39 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -753,12 +753,12 @@ void CPSDot::updateMatAndVbForColor(void)
 {
 	if (!_UseColorScheme)
 	{
-		_Vb.setVertexFormat(IDRV_VF_XYZ);		
+		_Vb.setVertexFormat(CVertexBuffer::PositionFlag);		
 		_Mat.setColor(_Color);
 	}
 	else
 	{
-		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR);
+		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag);
 		_Mat.setColor(CRGBA::White);
 	}
 
@@ -967,12 +967,12 @@ void CPSQuad::updateMatAndVbForColor(void)
 {
 	if (!_UseColorScheme)
 	{
-		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]);		
+		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);		
 		_Mat.setColor(_Color);
 	}
 	else
 	{
-		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]);
+		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
 		_Mat.setColor(CRGBA::White);
 	}
 
@@ -1950,7 +1950,7 @@ void CPSFanLight::init(void)
 	
 void CPSFanLight::updateMatAndVbForColor(void)
 {
-	_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR);
+	_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag);
 
 	
 	if (_Owner)
@@ -1998,7 +1998,7 @@ void CPSTailDot::init(void)
 	_Mat.setZFunc(CMaterial::less);
 	_Mat.setDoubleSided(true);
 
-	_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR );	
+	_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag );	
 }
 	
 
@@ -2223,7 +2223,7 @@ void CPSTailDot::resizeVb(uint32 oldTailSize, uint32 size)
 	const uint32 oldSize = _Owner->getSize(); // number of used particles
 	
 
-	_Vb.setVertexFormat(IDRV_VF_COLOR | IDRV_VF_XYZ);
+	_Vb.setVertexFormat(CVertexBuffer::PrimaryColorFlag | CVertexBuffer::PositionFlag);
 	_Vb.setNumVertices(size * (_TailNbSeg + 1));
 
 	// fill the vertex buffer
@@ -2659,7 +2659,7 @@ void CPSRibbon::init(void)
 
 void CPSRibbon::init(CRibbonsDesc &rb)
 {
-	rb._Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR );	// no texture is the default
+	rb._Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag );	// no texture is the default
 }
 
 
@@ -3564,11 +3564,11 @@ void  CPSRibbon::setupVertexFormatNMat(CRibbonsDesc &rb)
 {
 	if (_Tex == NULL) // no texture needed
 	{
-		rb._Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR );		
+		rb._Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag );		
 	}
 	else
 	{
-		rb._Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0] );	
+		rb._Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag );	
 		_Mat.setTexture(0, _Tex);
 	}
 }
@@ -4299,12 +4299,12 @@ void CPSShockWave::updateMatAndVbForColor(void)
 {
 	if (!_UseColorScheme)
 	{
-		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_UV[0]);		
+		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag);		
 		_Mat.setColor(_Color);
 	}
 	else
 	{
-		_Vb.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]);
+		_Vb.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
 		_Mat.setColor(CRGBA::White);
 	}
 
@@ -4390,7 +4390,7 @@ static CMesh *CreateDummyShape(void)
 	CMesh::CMeshBuild mb;
 	CMeshBase::CMeshBaseBuild mbb;
 
-	mb.VertexFlags = IDRV_VF_XYZ | IDRV_VF_UV[0];
+	mb.VertexFlags = CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag;
 	mb.Vertices.push_back(CVector(-.5f, -.5f, -.5f));
 	mb.Vertices.push_back(CVector(.5f, -.5f, -.5f));
 	mb.Vertices.push_back(CVector(.5f, -.5f, .5f));
@@ -4941,12 +4941,12 @@ void CPSConstraintMesh::update(void)
 
 void CPSConstraintMesh::setupPreRotatedVb(sint vertexFlags)
 {
-	nlassert(vertexFlags & IDRV_VF_XYZ);
+	nlassert(vertexFlags & CVertexBuffer::PositionFlag);
 	// in the prerotated Vb, we only need the normal and the position...
 	if (_PrecompBasis.size())
 	{
 		// we need only the position and the normal (when present ...)
-		_PreRotatedMeshVb.setVertexFormat(vertexFlags & (IDRV_VF_NORMAL | IDRV_VF_XYZ));
+		_PreRotatedMeshVb.setVertexFormat(vertexFlags & (CVertexBuffer::NormalFlag | CVertexBuffer::PositionFlag));
 		_PreRotatedMeshVb.setNumVertices(_ModelVb->getNumVertices() * _PrecompBasis.size() );
 
 
@@ -4965,7 +4965,7 @@ void CPSConstraintMesh::setupPreRotatedVb(sint vertexFlags)
 												);
 
 				// duplicate the normal if present
-				if (vertexFlags  & IDRV_VF_NORMAL)
+				if (vertexFlags  & CVertexBuffer::NormalFlag)
 				{
 					_PreRotatedMeshVb.setNormalCoord(index
 													 , *(CVector *) ((uint8 *) _ModelVb->getNormalCoordPointer() + l * vSize)
@@ -4983,7 +4983,7 @@ void CPSConstraintMesh::setupVb(sint vertexFlags)
 {
 	PARTICLES_CHECK_MEM;
 
-	nlassert(vertexFlags & IDRV_VF_XYZ); // need the position at least
+	nlassert(vertexFlags & CVertexBuffer::PositionFlag); // need the position at least
 
 	_MeshBatchVb.setVertexFormat(vertexFlags);
 	_MeshBatchVb.setNumVertices(_ModelVb->getNumVertices() * constraintMeshBufSize );
@@ -5172,7 +5172,7 @@ void CPSConstraintMesh::draw(bool opaque)
 
 
 
-	const uint normalOff = _ModelVb->getVertexFormat() & IDRV_VF_NORMAL ? _ModelVb->getNormalOff() : 0;
+	const uint normalOff = _ModelVb->getVertexFormat() & CVertexBuffer::NormalFlag ? _ModelVb->getNormalOff() : 0;
 
 	const uint nbVerticesInSource = _ModelVb->getNumVertices();
 
@@ -5209,7 +5209,7 @@ void CPSConstraintMesh::draw(bool opaque)
 		const uint prerotatedModelSize = vpSize * _ModelVb->getNumVertices();
 
 		// offset of normals in vertices of the prerotated model
-		const uint pNormalOff = _PreRotatedMeshVb.getVertexFormat() & IDRV_VF_NORMAL ? _PreRotatedMeshVb.getNormalOff() : 0;
+		const uint pNormalOff = _PreRotatedMeshVb.getVertexFormat() & CVertexBuffer::NormalFlag ? _PreRotatedMeshVb.getNormalOff() : 0;
 
 		// TODO : mettre la bonne valeur ici !!
 		const float ellapsedTime = 0.01f;
@@ -5236,7 +5236,7 @@ void CPSConstraintMesh::draw(bool opaque)
 			k = nbVerticesInSource;
 
 			// check wether we need to rotate normals as well...
-			if (_ModelVb->getVertexFormat() & IDRV_VF_NORMAL)
+			if (_ModelVb->getVertexFormat() & CVertexBuffer::NormalFlag)
 			{
 				do
 				{
@@ -5300,7 +5300,7 @@ void CPSConstraintMesh::draw(bool opaque)
 
 				// do we need a normal ?
 
-				if (_ModelVb->getVertexFormat() & IDRV_VF_NORMAL)
+				if (_ModelVb->getVertexFormat() & CVertexBuffer::NormalFlag)
 				{
 					// offset of normals in the prerotated mesh				
 					do
@@ -5427,7 +5427,7 @@ void CPSConstraintMesh::draw(bool opaque)
 
 				// do we need a normal ?
 
-				if (_ModelVb->getVertexFormat() & IDRV_VF_NORMAL)
+				if (_ModelVb->getVertexFormat() & CVertexBuffer::NormalFlag)
 				{
 					M.identity();
 					M.setRot(ptBasis->X, ptBasis->Y, ptBasis->X ^ ptBasis->Y);

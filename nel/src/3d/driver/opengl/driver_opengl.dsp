@@ -166,6 +166,10 @@ SOURCE=.\driver_opengl_extension.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\driver_opengl_extension_def.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\driver_opengl_light.cpp
 # End Source File
 # Begin Source File
@@ -183,6 +187,10 @@ SOURCE=.\driver_opengl_texture.cpp
 # Begin Source File
 
 SOURCE=.\driver_opengl_vertex.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\driver_opengl_vertex_program.cpp
 # End Source File
 # End Target
 # End Project

@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.26 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: font_manager.cpp,v 1.27 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,7 +164,7 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 	}
 	
 	// Setting vertices format
-	output.Vertices.setVertexFormat(IDRV_VF_XYZ | IDRV_VF_COLOR | IDRV_VF_UV[0]);
+	output.Vertices.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag | CVertexBuffer::TexCoord0Flag);
 	output.Vertices.setNumVertices(4 * s.size());
 	
 	output.Primitives.resize(s.size());

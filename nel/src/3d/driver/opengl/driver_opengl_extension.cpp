@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.15 2001/07/16 08:29:28 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.16 2001/09/06 07:25:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,6 +98,74 @@ PFNWGLFREEMEMORYNVPROC				wglFreeMemoryNV;
 PFNGLVERTEXWEIGHTFEXTPROC			glVertexWeightfEXT;
 PFNGLVERTEXWEIGHTFVEXTPROC			glVertexWeightfvEXT;
 PFNGLVERTEXWEIGHTPOINTEREXTPROC		glVertexWeightPointerEXT;
+
+
+// VertexProgramExtension.
+//========================
+PFNGLAREPROGRAMSRESIDENTNVPROC		glAreProgramsResidentNV;
+PFNGLBINDPROGRAMNVPROC				glBindProgramNV;
+PFNGLDELETEPROGRAMSNVPROC			glDeleteProgramsNV;
+PFNGLEXECUTEPROGRAMNVPROC			glExecuteProgramNV;
+PFNGLGENPROGRAMSNVPROC				glGenProgramsNV;
+PFNGLGETPROGRAMPARAMETERDVNVPROC	glGetProgramParameterdvNV;
+PFNGLGETPROGRAMPARAMETERFVNVPROC	glGetProgramParameterfvNV;
+PFNGLGETPROGRAMIVNVPROC				glGetProgramivNV;
+PFNGLGETPROGRAMSTRINGNVPROC			glGetProgramStringNV;
+PFNGLGETTRACKMATRIXIVNVPROC			glGetTrackMatrixivNV;
+PFNGLGETVERTEXATTRIBDVNVPROC		glGetVertexAttribdvNV;
+PFNGLGETVERTEXATTRIBFVNVPROC		glGetVertexAttribfvNV;
+PFNGLGETVERTEXATTRIBIVNVPROC		glGetVertexAttribivNV;
+PFNGLGETVERTEXATTRIBPOINTERVNVPROC	glGetVertexAttribPointervNV;
+PFNGLISPROGRAMNVPROC				glIsProgramNV;
+PFNGLLOADPROGRAMNVPROC				glLoadProgramNV;
+PFNGLPROGRAMPARAMETER4DNVPROC		glProgramParameter4dNV;
+PFNGLPROGRAMPARAMETER4DVNVPROC		glProgramParameter4dvNV;
+PFNGLPROGRAMPARAMETER4FNVPROC		glProgramParameter4fNV;
+PFNGLPROGRAMPARAMETER4FVNVPROC		glProgramParameter4fvNV;
+PFNGLPROGRAMPARAMETERS4DVNVPROC		glProgramParameters4dvNV;
+PFNGLPROGRAMPARAMETERS4FVNVPROC		glProgramParameters4fvNV;
+PFNGLREQUESTRESIDENTPROGRAMSNVPROC	glRequestResidentProgramsNV;
+PFNGLTRACKMATRIXNVPROC				glTrackMatrixNV;
+PFNGLVERTEXATTRIBPOINTERNVPROC		glVertexAttribPointerNV;
+PFNGLVERTEXATTRIB1DNVPROC			glVertexAttrib1dNV;
+PFNGLVERTEXATTRIB1DVNVPROC			glVertexAttrib1dvNV;
+PFNGLVERTEXATTRIB1FNVPROC			glVertexAttrib1fNV;
+PFNGLVERTEXATTRIB1FVNVPROC			glVertexAttrib1fvNV;
+PFNGLVERTEXATTRIB1SNVPROC			glVertexAttrib1sNV;
+PFNGLVERTEXATTRIB1SVNVPROC			glVertexAttrib1svNV;
+PFNGLVERTEXATTRIB2DNVPROC			glVertexAttrib2dNV;
+PFNGLVERTEXATTRIB2DVNVPROC			glVertexAttrib2dvNV;
+PFNGLVERTEXATTRIB2FNVPROC			glVertexAttrib2fNV;
+PFNGLVERTEXATTRIB2FVNVPROC			glVertexAttrib2fvNV;
+PFNGLVERTEXATTRIB2SNVPROC			glVertexAttrib2sNV;
+PFNGLVERTEXATTRIB2SVNVPROC			glVertexAttrib2svNV;
+PFNGLVERTEXATTRIB3DNVPROC			glVertexAttrib3dNV;
+PFNGLVERTEXATTRIB3DVNVPROC			glVertexAttrib3dvNV;
+PFNGLVERTEXATTRIB3FNVPROC			glVertexAttrib3fNV;
+PFNGLVERTEXATTRIB3FVNVPROC			glVertexAttrib3fvNV;
+PFNGLVERTEXATTRIB3SNVPROC			glVertexAttrib3sNV;
+PFNGLVERTEXATTRIB3SVNVPROC			glVertexAttrib3svNV;
+PFNGLVERTEXATTRIB4DNVPROC			glVertexAttrib4dNV;
+PFNGLVERTEXATTRIB4DVNVPROC			glVertexAttrib4dvNV;
+PFNGLVERTEXATTRIB4FNVPROC			glVertexAttrib4fNV;
+PFNGLVERTEXATTRIB4FVNVPROC			glVertexAttrib4fvNV;
+PFNGLVERTEXATTRIB4SNVPROC			glVertexAttrib4sNV;
+PFNGLVERTEXATTRIB4SVNVPROC			glVertexAttrib4svNV;
+PFNGLVERTEXATTRIB4UBVNVPROC			glVertexAttrib4ubvNV;
+PFNGLVERTEXATTRIBS1DVNVPROC			glVertexAttribs1dvNV;
+PFNGLVERTEXATTRIBS1FVNVPROC			glVertexAttribs1fvNV;
+PFNGLVERTEXATTRIBS1SVNVPROC			glVertexAttribs1svNV;
+PFNGLVERTEXATTRIBS2DVNVPROC			glVertexAttribs2dvNV;
+PFNGLVERTEXATTRIBS2FVNVPROC			glVertexAttribs2fvNV;
+PFNGLVERTEXATTRIBS2SVNVPROC			glVertexAttribs2svNV;
+PFNGLVERTEXATTRIBS3DVNVPROC			glVertexAttribs3dvNV;
+PFNGLVERTEXATTRIBS3FVNVPROC			glVertexAttribs3fvNV;
+PFNGLVERTEXATTRIBS3SVNVPROC			glVertexAttribs3svNV;
+PFNGLVERTEXATTRIBS4DVNVPROC			glVertexAttribs4dvNV;
+PFNGLVERTEXATTRIBS4FVNVPROC			glVertexAttribs4fvNV;
+PFNGLVERTEXATTRIBS4SVNVPROC			glVertexAttribs4svNV;
+PFNGLVERTEXATTRIBS4UBVNVPROC		glVertexAttribs4ubvNV;
+
 
 #endif // NL_OS_WINDOWS
 
@@ -275,6 +343,82 @@ static bool	setupARBTextureCubeMap(const char	*glext)
 }
 
 
+// *********************************
+static bool	setupNVVertexProgram(const char	*glext)
+{
+	if(strstr(glext, "GL_NV_vertex_program")==NULL)
+		return false;
+
+#ifdef NL_OS_WINDOWS
+	if(!(glAreProgramsResidentNV= (PFNGLAREPROGRAMSRESIDENTNVPROC)wglGetProcAddress("glAreProgramsResidentNV"))) return false;
+	if(!(glBindProgramNV= (PFNGLBINDPROGRAMNVPROC)wglGetProcAddress("glBindProgramNV"))) return false;
+	if(!(glDeleteProgramsNV= (PFNGLDELETEPROGRAMSNVPROC)wglGetProcAddress("glDeleteProgramsNV"))) return false;
+	if(!(glExecuteProgramNV= (PFNGLEXECUTEPROGRAMNVPROC)wglGetProcAddress("glExecuteProgramNV"))) return false;
+	if(!(glGenProgramsNV= (PFNGLGENPROGRAMSNVPROC)wglGetProcAddress("glGenProgramsNV"))) return false;
+	if(!(glGetProgramParameterdvNV= (PFNGLGETPROGRAMPARAMETERDVNVPROC)wglGetProcAddress("glGetProgramParameterdvNV"))) return false;
+	if(!(glGetProgramParameterfvNV= (PFNGLGETPROGRAMPARAMETERFVNVPROC)wglGetProcAddress("glGetProgramParameterfvNV"))) return false;
+	if(!(glGetProgramivNV= (PFNGLGETPROGRAMIVNVPROC)wglGetProcAddress("glGetProgramivNV"))) return false;
+	if(!(glGetProgramStringNV= (PFNGLGETPROGRAMSTRINGNVPROC)wglGetProcAddress("glGetProgramStringNV"))) return false;
+	if(!(glGetTrackMatrixivNV= (PFNGLGETTRACKMATRIXIVNVPROC)wglGetProcAddress("glGetTrackMatrixivNV"))) return false;
+	if(!(glGetVertexAttribdvNV= (PFNGLGETVERTEXATTRIBDVNVPROC)wglGetProcAddress("glGetVertexAttribdvNV"))) return false;
+	if(!(glGetVertexAttribfvNV= (PFNGLGETVERTEXATTRIBFVNVPROC)wglGetProcAddress("glGetVertexAttribfvNV"))) return false;
+	if(!(glGetVertexAttribivNV= (PFNGLGETVERTEXATTRIBIVNVPROC)wglGetProcAddress("glGetVertexAttribivNV"))) return false;
+	if(!(glGetVertexAttribPointervNV= (PFNGLGETVERTEXATTRIBPOINTERVNVPROC)wglGetProcAddress("glGetVertexAttribPointervNV"))) return false;
+	if(!(glIsProgramNV= (PFNGLISPROGRAMNVPROC)wglGetProcAddress("glIsProgramNV"))) return false;
+	if(!(glLoadProgramNV= (PFNGLLOADPROGRAMNVPROC)wglGetProcAddress("glLoadProgramNV"))) return false;
+	if(!(glProgramParameter4dNV= (PFNGLPROGRAMPARAMETER4DNVPROC)wglGetProcAddress("glProgramParameter4dNV"))) return false;
+	if(!(glProgramParameter4dvNV= (PFNGLPROGRAMPARAMETER4DVNVPROC)wglGetProcAddress("glProgramParameter4dvNV"))) return false;
+	if(!(glProgramParameter4fNV= (PFNGLPROGRAMPARAMETER4FNVPROC)wglGetProcAddress("glProgramParameter4fNV"))) return false;
+	if(!(glProgramParameter4fvNV= (PFNGLPROGRAMPARAMETER4FVNVPROC)wglGetProcAddress("glProgramParameter4fvNV"))) return false;
+	if(!(glProgramParameters4dvNV= (PFNGLPROGRAMPARAMETERS4DVNVPROC)wglGetProcAddress("glProgramParameters4dvNV"))) return false;
+	if(!(glProgramParameters4fvNV= (PFNGLPROGRAMPARAMETERS4FVNVPROC)wglGetProcAddress("glProgramParameters4fvNV"))) return false;
+	if(!(glRequestResidentProgramsNV= (PFNGLREQUESTRESIDENTPROGRAMSNVPROC)wglGetProcAddress("glRequestResidentProgramsNV"))) return false;
+	if(!(glTrackMatrixNV= (PFNGLTRACKMATRIXNVPROC)wglGetProcAddress("glTrackMatrixNV"))) return false;
+	if(!(glVertexAttribPointerNV= (PFNGLVERTEXATTRIBPOINTERNVPROC)wglGetProcAddress("glVertexAttribPointerNV"))) return false;
+	if(!(glVertexAttrib1dNV= (PFNGLVERTEXATTRIB1DNVPROC)wglGetProcAddress("glVertexAttrib1dNV"))) return false;
+	if(!(glVertexAttrib1dvNV= (PFNGLVERTEXATTRIB1DVNVPROC)wglGetProcAddress("glVertexAttrib1dvNV"))) return false;
+	if(!(glVertexAttrib1fNV= (PFNGLVERTEXATTRIB1FNVPROC)wglGetProcAddress("glVertexAttrib1fNV"))) return false;
+	if(!(glVertexAttrib1fvNV= (PFNGLVERTEXATTRIB1FVNVPROC)wglGetProcAddress("glVertexAttrib1fvNV"))) return false;
+	if(!(glVertexAttrib1sNV= (PFNGLVERTEXATTRIB1SNVPROC)wglGetProcAddress("glVertexAttrib1sNV"))) return false;
+	if(!(glVertexAttrib1svNV= (PFNGLVERTEXATTRIB1SVNVPROC)wglGetProcAddress("glVertexAttrib1svNV"))) return false;
+	if(!(glVertexAttrib2dNV= (PFNGLVERTEXATTRIB2DNVPROC)wglGetProcAddress("glVertexAttrib2dNV"))) return false;
+	if(!(glVertexAttrib2dvNV= (PFNGLVERTEXATTRIB2DVNVPROC)wglGetProcAddress("glVertexAttrib2dvNV"))) return false;
+	if(!(glVertexAttrib2fNV= (PFNGLVERTEXATTRIB2FNVPROC)wglGetProcAddress("glVertexAttrib2fNV"))) return false;
+	if(!(glVertexAttrib2fvNV= (PFNGLVERTEXATTRIB2FVNVPROC)wglGetProcAddress("glVertexAttrib2fvNV"))) return false;
+	if(!(glVertexAttrib2sNV= (PFNGLVERTEXATTRIB2SNVPROC)wglGetProcAddress("glVertexAttrib2sNV"))) return false;
+	if(!(glVertexAttrib2svNV= (PFNGLVERTEXATTRIB2SVNVPROC)wglGetProcAddress("glVertexAttrib2svNV"))) return false;
+	if(!(glVertexAttrib3dNV= (PFNGLVERTEXATTRIB3DNVPROC)wglGetProcAddress("glVertexAttrib3dNV"))) return false;
+	if(!(glVertexAttrib3dvNV= (PFNGLVERTEXATTRIB3DVNVPROC)wglGetProcAddress("glVertexAttrib3dvNV"))) return false;
+	if(!(glVertexAttrib3fNV= (PFNGLVERTEXATTRIB3FNVPROC)wglGetProcAddress("glVertexAttrib3fNV"))) return false;
+	if(!(glVertexAttrib3fvNV= (PFNGLVERTEXATTRIB3FVNVPROC)wglGetProcAddress("glVertexAttrib3fvNV"))) return false;
+	if(!(glVertexAttrib3sNV= (PFNGLVERTEXATTRIB3SNVPROC)wglGetProcAddress("glVertexAttrib3sNV"))) return false;
+	if(!(glVertexAttrib3svNV= (PFNGLVERTEXATTRIB3SVNVPROC)wglGetProcAddress("glVertexAttrib3svNV"))) return false;
+	if(!(glVertexAttrib4dNV= (PFNGLVERTEXATTRIB4DNVPROC)wglGetProcAddress("glVertexAttrib4dNV"))) return false;
+	if(!(glVertexAttrib4dvNV= (PFNGLVERTEXATTRIB4DVNVPROC)wglGetProcAddress("glVertexAttrib4dvNV"))) return false;
+	if(!(glVertexAttrib4fNV= (PFNGLVERTEXATTRIB4FNVPROC)wglGetProcAddress("glVertexAttrib4fNV"))) return false;
+	if(!(glVertexAttrib4fvNV= (PFNGLVERTEXATTRIB4FVNVPROC)wglGetProcAddress("glVertexAttrib4fvNV"))) return false;
+	if(!(glVertexAttrib4sNV= (PFNGLVERTEXATTRIB4SNVPROC)wglGetProcAddress("glVertexAttrib4sNV"))) return false;
+	if(!(glVertexAttrib4svNV= (PFNGLVERTEXATTRIB4SVNVPROC)wglGetProcAddress("glVertexAttrib4svNV"))) return false;
+	if(!(glVertexAttrib4ubvNV= (PFNGLVERTEXATTRIB4UBVNVPROC)wglGetProcAddress("glVertexAttrib4ubvNV"))) return false;
+	if(!(glVertexAttribs1dvNV= (PFNGLVERTEXATTRIBS1DVNVPROC)wglGetProcAddress("glVertexAttribs1dvNV"))) return false;
+	if(!(glVertexAttribs1fvNV= (PFNGLVERTEXATTRIBS1FVNVPROC)wglGetProcAddress("glVertexAttribs1fvNV"))) return false;
+	if(!(glVertexAttribs1svNV= (PFNGLVERTEXATTRIBS1SVNVPROC)wglGetProcAddress("glVertexAttribs1svNV"))) return false;
+	if(!(glVertexAttribs2dvNV= (PFNGLVERTEXATTRIBS2DVNVPROC)wglGetProcAddress("glVertexAttribs2dvNV"))) return false;
+	if(!(glVertexAttribs2fvNV= (PFNGLVERTEXATTRIBS2FVNVPROC)wglGetProcAddress("glVertexAttribs2fvNV"))) return false;
+	if(!(glVertexAttribs2svNV= (PFNGLVERTEXATTRIBS2SVNVPROC)wglGetProcAddress("glVertexAttribs2svNV"))) return false;
+	if(!(glVertexAttribs3dvNV= (PFNGLVERTEXATTRIBS3DVNVPROC)wglGetProcAddress("glVertexAttribs3dvNV"))) return false;
+	if(!(glVertexAttribs3fvNV= (PFNGLVERTEXATTRIBS3FVNVPROC)wglGetProcAddress("glVertexAttribs3fvNV"))) return false;
+	if(!(glVertexAttribs3svNV= (PFNGLVERTEXATTRIBS3SVNVPROC)wglGetProcAddress("glVertexAttribs3svNV"))) return false;
+	if(!(glVertexAttribs4dvNV= (PFNGLVERTEXATTRIBS4DVNVPROC)wglGetProcAddress("glVertexAttribs4dvNV"))) return false;
+	if(!(glVertexAttribs4fvNV= (PFNGLVERTEXATTRIBS4FVNVPROC)wglGetProcAddress("glVertexAttribs4fvNV"))) return false;
+	if(!(glVertexAttribs4svNV= (PFNGLVERTEXATTRIBS4SVNVPROC)wglGetProcAddress("glVertexAttribs4svNV"))) return false;
+	if(!(glVertexAttribs4ubvNV= (PFNGLVERTEXATTRIBS4UBVNVPROC)wglGetProcAddress("glVertexAttribs4ubvNV"))) return false;
+
+#endif
+
+	return true;
+}
+
 
 // ***************************************************************************
 // Extension Check.
@@ -332,6 +476,9 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	// Check for cube mapping
 	ext.ARBTextureCubeMap = setupARBTextureCubeMap(glext);
+
+	// Check vertex program
+	ext.NVVertexProgram = setupNVVertexProgram(glext);
 }
 
 

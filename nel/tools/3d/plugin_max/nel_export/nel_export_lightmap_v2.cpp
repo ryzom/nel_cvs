@@ -3370,7 +3370,7 @@ bool CNelExport::calculateLM(CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode, Int
 		//CMesh::CMeshBuild *pMB = AllMeshBuilds[nNode].first;
 		CMesh::CMeshBuild *pMB = pZeMeshBuild;
 		CMesh* mesh = new CMesh;
-		pMB->VertexFlags |= IDRV_VF_UV[1];
+		pMB->VertexFlags |= CVertexBuffer::TexCoord1Flag;
 		// Build the mesh with the build interface
 
 		for( i = 0; i < pMB->Materials.size(); ++i )
@@ -3757,7 +3757,7 @@ bool CNelExport::exportScene(std::vector<INode*>& vectNode)
 			// First order face by Material and by texture surface
 			CMesh::CMeshBuild *pMB = AllMeshBuilds[nNode].first;
 			CMesh* mesh = new CMesh;
-			pMB->VertexFlags |= IDRV_VF_UV[1];
+			pMB->VertexFlags |= CVertexBuffer::TexCoord1Flag;
 			// Build the mesh with the build interface
 
 			for( i = 0; i < pMB->Materials.size(); ++i )

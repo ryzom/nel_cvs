@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.23 2004/04/05 10:05:30 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.24 2004/04/08 18:25:49 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -183,6 +183,12 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 		return false;
 	}
 
+	if (entityName.size() > 13)
+	{
+		log->displayNL("Bad entity name '%s' (more than 13 char)", entityName.toString().c_str());
+		return false;
+	}
+
 	if ( acceptBlanks )
 	{
 		// no blanks at the beginning or at the end
@@ -211,8 +217,8 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 			}
 			else
 			{
-				// accept name with alphabetic and numeric value [a-zA-Z0-9]
-				if (!isalnum (entityName[i]))
+				// accept name with alphabetic and numeric value [a-zA-Z]
+				if (!isalpha (entityName[i]))
 				{
 					log->displayNL("Bad entity name '%s' (only char and num)", entityName.toString().c_str());
 					return false;
@@ -223,8 +229,8 @@ bool CEntityIdTranslator::isValidEntityName (const ucstring &entityName,CLog *lo
 	}
 	else for (uint i = 0; i < entityName.size(); i++)
 	{
-		// only accept name with alphabetic and numeric value [a-zA-Z0-9]
-		if (!isalnum (entityName[i]))
+		// only accept name with alphabetic and numeric value [a-zA-Z]
+		if (!isalpha (entityName[i]))
 		{
 			log->displayNL("Bad entity name '%s' (only char and num)", entityName.toString().c_str());
 			return false;

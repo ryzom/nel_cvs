@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.16 2001/11/14 15:13:17 corvazier Exp $
+ * $Id: export_material.cpp,v 1.17 2001/11/14 15:43:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -678,6 +678,11 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, std::vector<CMaterialDesc>&
 			bRes=getValueByNameUsingParamBlock2 (texmap, BMTEX_CROP_H_NAME, (ParamType2)TYPE_FLOAT, &(remap3dsTexChannel[0]._CropH), time);
 			nlassert (bRes);
 		}
+
+		// check for tiling
+		if (!(texmap.GetTextureTiling() & U_WRAP)) pTextureFile->setWrapS(ITexture::Clamp);
+		if (!(texmap.GetTextureTiling() & V_WRAP)) pTextureFile->setWrapT(ITexture::Clamp);
+
 
 		// Ok, good texture
 		pTexture=pTextureFile;

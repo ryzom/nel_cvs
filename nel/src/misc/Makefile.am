@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.56 2002/08/23 12:38:33 lecroart Exp $
+# $Id: Makefile.am,v 1.57 2002/10/28 13:59:19 coutelas Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -15,6 +15,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         bitmap.cpp                         \
                         block_memory.cpp                   \
                         bsphere.cpp                        \
+			big_file.cpp			   \
                         buf_fifo.cpp                       \
                         class_id.cpp                       \
                         class_registry.cpp                 \

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.20 2002/10/10 13:32:08 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.21 2002/10/14 09:49:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,11 +85,11 @@ public:
 	void							setEmittedType(CPSLocated *et);
 
 	/** Inherited from CPSLocatedBindable
-	 *  We register to the emitted type, so, this, this will be called when it is detroyed
+	 *  We register to the emitted type, so, this, this will be called when it is destroyed
 	 */
 	virtual void					notifyTargetRemoved(CPSLocated *ptr);
 
-	/// Fet emitted type.
+	/// Get emitted type.
 	CPSLocated						*getEmittedType(void) { return _EmittedType; }
 	/// Get const ptr on emitted type
 	const CPSLocated				*getEmittedType(void) const { return _EmittedType; }
@@ -101,7 +101,7 @@ public:
 	 *  once        : emit when the emitter is created
 	 *  onBounce    : emit when the emitter bounce
 	 *  externEmit  : emitted explicitly by the system user. A 4 letter id must be used to identify this kind of emitters
-	 *                the default ID is NON
+	 *                the default ID is NONE
 	 */
 	enum TEmissionType { regular = 0, onDeath = 1,  once = 2, onBounce = 3, externEmit = 4 };
 
@@ -109,21 +109,21 @@ public:
 	  */
 	void							setEmissionType(TEmissionType freqType);
 
-	/// get the frequency type
+	/// Get the frequency type
 	TEmissionType					getEmissionType(void) const { return _EmissionType; }
 
-	/** set a constant period for emission (expressed in second)
+	/** Set a constant period for emission (expressed in second)
 	 *  any previous period scheme is discarded
 	 */
 	void							setPeriod(float period);
 
-	/// retrieve the period for emission, valid only if a period scheme is used
+	/// Retrieve the period for emission, valid only if a period scheme is used
 	float							getPeriod(void) const { return _Period; }
 
-	/// indicate whether a period scheme is used or not
+	/// Indicate whether a period scheme is used or not
 	bool							usePeriodScheme(void) { return _PeriodScheme != NULL; }
 
-	/// set a period scheme
+	/// Set a period scheme
 	void							setPeriodScheme(CPSAttribMaker<float> *scheme);
 
 	// Retrieve the period scheme, or null, if there'isnt
@@ -144,18 +144,18 @@ public:
 	/// Get the max. number of particle emission (0 means no limit and is the default). Applies with regular emitter only.
 	uint8							getMaxEmissionCount() const { return _MaxEmissionCount; }
 
-	/** set a constant number of particle to be generated at once
+	/** Set a constant number of particle to be generated at once
 	 *  any previous scheme is discarded
 	 */
 	void							setGenNb(uint32 GenNb);
 
-	/// retrieve the GenNb for emission, valid only if a GenNb scheme is used
+	/// Retrieve the GenNb for emission, valid only if a GenNb scheme is used
 	uint							getGenNb(void) const { return _GenNb; }
 
-	/// indicate whether a GenNb scheme is used or not
+	/// Indicate whether a GenNb scheme is used or not
 	bool							useGenNbScheme(void) { return _GenNbScheme != NULL; }
 
-	/// set a GenNb scheme
+	/// Set a GenNb scheme
 	void							setGenNbScheme(CPSAttribMaker<uint32> *scheme);
 
 	/// Retrieve the GenNb scheme, or null, if there'isnt
@@ -164,12 +164,12 @@ public:
 	/// Retrieve the GenNb scheme, or null, if there'isnt (const version)
 	const CPSAttribMaker<uint32>	*getGenNbScheme(void) const  { return _GenNbScheme; }
 
-	/// serialization
+	/// Serialization
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	///\name Speed vector options
 	//@{
-		/** set a factor, to add the emitter speed to the emittee creation speed. this can be < 0
+		/** Set a factor, to add the emitter speed to the emittee creation speed. this can be < 0
 		 *  The default is 0
 		 */	 
 		void							setSpeedInheritanceFactor(float fact)
@@ -177,19 +177,19 @@ public:
 			_SpeedInheritanceFactor = fact;
 		}
 
-		/// get the speed Inheritance factor 
+		/// Get the speed Inheritance factor 
 		float							getSpeedInheritanceFactor(void) const
 		{
 			return _SpeedInheritanceFactor;
 		}
 
-		/// this use the speed of the emitter create a basis (like with cameras), and express the emission speed in it
+		/// This use the speed of the emitter to create a basis (like with cameras), and express the emission speed in it
 		void							enableSpeedBasisEmission(bool enabled = true)
 		{
 			_SpeedBasisEmission  = enabled;
 		}
 
-		/** check if the speed basis emission is enabled
+		/** Check if the speed basis emission is enabled
 		 *  \see enableSpeedBasisEmission()
 		 */
 		bool							isSpeedBasisEmissionEnabled(void) const { return _SpeedBasisEmission; }
@@ -203,11 +203,11 @@ public:
 		  **/
 		void							setSpeedVectorInEmitterBasis(bool enable) { _EmitDirBasis = enable;}
 
-		/// test wether the emission direction is in the system basis
+		/// Test wether the emission direction is in the system basis
 		bool							isSpeedVectorInEmitterBasis(void) const   { return _EmitDirBasis;}
 	//@}
 	
-	/// process a single emission. For external use (in the user interface layer)
+	/// Process a single emission. For external use (in the user interface layer)
 	void							singleEmit(uint32 index, uint quantity);
 
 	/** Enable consistent emission. The default is false. This try to keep the number of emitted particle constant, by allowing
@@ -234,7 +234,7 @@ public:
 
 protected:	
 
-	/// this will call emit, and will add additionnal features (speed addition and so on)
+	/// This will call emit, and will add additionnal features (speed addition and so on)
 	void						processEmit(uint32 index, sint nbToGenerate);
 
 	/// The same as processEmit, but can also add a time delta
@@ -246,7 +246,7 @@ protected:
 													  float realEllapsedTimeRatio
 													 );
 
-	/// regular emission processing
+	/// Regular emission processing
 	void							processRegularEmission(TAnimationTime ellapsedTime);
 
 	/** Regular emission processing, with low-framrate compensation
@@ -284,10 +284,10 @@ protected:
 
 
 
-	/// a pointer on the type to be emitted
+	/// A pointer on the type to be emitted.
 	CPSLocated						*_EmittedType;
 
-	/** the phase (  0 < phase  < period of emission). This is the time ellapsed since the last emission    
+	/** The phase (  0 < phase  < period of emission). This is the time ellapsed since the last emission    
 	 */
 	TPSAttribFloat					_Phase;
 	TPSAttribUInt8					_NumEmission; // used only if MaxEmissionCount is != 0
@@ -308,7 +308,7 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/** this class helps tuning the emission strenght.
+/** This class helps tuning the emission strenght.
  *  It modulate the speed of emitted particle by a coeeficient produced by an attribute maker
  */
 
@@ -392,7 +392,7 @@ class CPSModulatedEmitter
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// emit in one direction. This can be the 0, 0, 0 vector
+/// Emit in one direction. This can be the 0, 0, 0 vector
 class CPSEmitterDirectionnal : public CPSEmitter, public CPSModulatedEmitter
 							   ,public CPSDirection
 {
@@ -403,7 +403,7 @@ public:
 	CPSEmitterDirectionnal() : _Dir(NLMISC::CVector::K)
 	{ _Name = std::string("DirectionnalEmitter"); }
 
-	/// serialisation
+	/// Serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	
@@ -429,13 +429,13 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// a radial emitter. The direction gives the normal to the plane of emission
+/// A radial emitter. The direction gives the normal to the plane of emission
 class CPSRadialEmitter : public CPSEmitterDirectionnal
 {
 	public:
 	CPSRadialEmitter()
 	{ _Name = std::string("RadialEmitter"); }
-	/// serialisation
+	/// Serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);	
 	NLMISC_DECLARE_CLASS(CPSRadialEmitter);
 	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
@@ -445,7 +445,7 @@ class CPSRadialEmitter : public CPSEmitterDirectionnal
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// emit randomly in all direction
+/// Emit randomly in all direction
 class CPSEmitterOmni : public CPSEmitter, public CPSModulatedEmitter
 {
 	
@@ -456,13 +456,13 @@ public:
 		_Name = std::string("EmitterOmni");
 	}
 
-	/// serialisation
+	/// Serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	
 	NLMISC_DECLARE_CLASS(CPSEmitterOmni);
 
 
-	/// emission of located
+	/// Emission of located
 	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 protected:
 	virtual CPSLocated *getModulatedEmitterOwner(void) { return _Owner; }
@@ -476,26 +476,26 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// emit directionnally in a rectangle (useful to produce snow, drop of water ...)
+/// Emit directionnally in a rectangle (useful to produce snow, drop of water ...)
 class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, public IPSMover
 							, public CPSDirection
 {
 	public:
 
-		// ctor
+		// Ctor
 
 		CPSEmitterRectangle() : _Dir(-NLMISC::CVector::K)
 		{
 			_Name = std::string("EmitterRectangle");
 		}
 
-		/// serialisation
+		/// Serialisation
  		virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	
 		NLMISC_DECLARE_CLASS(CPSEmitterRectangle);
 
 
-		/// emission of located
+		/// Emission of located
 
 		virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 
@@ -508,7 +508,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 	
 
-		// inherited from IPSMover
+		// Inherited from IPSMover
 		virtual bool supportUniformScaling(void) const { return true; }
 		virtual bool supportNonUniformScaling(void) const { return true; }			
 		virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m);	
@@ -523,13 +523,13 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 		
 		CPSAttrib<CPlaneBasis> _Basis;				
 
-		//  width
+		//  Width
 		TPSAttribFloat _Width;
 
 		//  Height
 		TPSAttribFloat _Height;
 
-		// direction of emission (in each plane basis)
+		// Direction of emission (in each plane basis)
 		NLMISC::CVector _Dir;
 
 		/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
@@ -552,7 +552,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/// the same as a directionnel emitter, but you can also specify the radius for emission
+/// The same as a directionnel emitter, but you can also specify the radius for emission
 class CPSEmitterConic : public CPSEmitterDirectionnal					
 {	
 public:
@@ -562,27 +562,27 @@ public:
 		_Name = std::string("EmitterConic");
 	}
 
-	/// serialisation
+	/// Serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	
 	NLMISC_DECLARE_CLASS(CPSEmitterConic);
 
 
-	/// emission of located
+	/// Emission of located
 	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 
-	/// set a new radius for emission
+	/// Set a new radius for emission
 	void setRadius(float r) { _Radius = r; }
 
-	/// get the emission radius
+	/// Get the emission radius
 	float getRadius(void) const { return _Radius; }
 
-	/// set the direction for emission
+	/// Set the direction for emission
 	virtual void setDir(const NLMISC::CVector &v);
 
 protected:	
 
-	// the radius for emission
+	// The radius for emission
 	float _Radius;
  
 };
@@ -590,24 +590,24 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// a spherical emitter
+// A spherical emitter
 class CPSSphericalEmitter : public CPSEmitter, public CPSModulatedEmitter, public IPSMover
 {
 public:
-	// ctor
+	// Ctor
 
 	CPSSphericalEmitter()
 	{
 		_Name = std::string("spherical emitter");
 	}
 
-	/// serialisation
+	/// Serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	NLMISC_DECLARE_CLASS(CPSSphericalEmitter);
 
 
-	/// emission of located
+	/// Emission of located
 
 	virtual void emit(const NLMISC::CVector &srcPos, uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed);
 
@@ -617,7 +617,7 @@ public:
 
 
 
-	// inherited from IPSMover
+	// Inherited from IPSMover
 	virtual bool supportUniformScaling(void) const { return true; }
 	virtual bool supportNonUniformScaling(void) const { return false; }			
 	virtual void setMatrix(uint32 index, const NLMISC::CMatrix &m);	

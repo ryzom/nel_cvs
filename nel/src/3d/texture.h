@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.11 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: texture.h,v 1.12 2003/11/13 09:57:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -289,6 +289,10 @@ public:
 	 * NB: a flag is maintained to see if the generated bitmap is coherent with texture description (see touch*()).
 	 * So if you do {generate(); generate();}, you only get 1 real bitmap generation...
 	 *
+	 * If, after the doGenerate, the bitmap format is compressed (DXTC) and no mipmaps have been generated, the
+	 * mipmap are disabled beacause the user probably don't want the driver to unpacks the texture, generates the mipmaps
+	 * and repacks the dxtc texture (that takes a lot of CPU time).
+	 *
 	 * \param async tells the texture if the call is made asynchronously or not.
 	 *
 	 * \see isAllInvalidated(), touch(), touched(), touchRect(), clearTouched(), _ListInvalidRect
@@ -300,6 +304,24 @@ public:
 		{
 			doGenerate(async);
 			_GoodGenerate=true;
+		}
+
+		// No mipmap in a compressed format ?
+		TType pixelFormat = getPixelFormat();
+		if ((getMipMapCount() == 1) && ((pixelFormat>=DXTC1) && (pixelFormat<=DXTC5)))
+		{
+			// No, disable mipmaps for this texture
+			switch (_MinFilter)
+			{
+			case NearestMipMapNearest:
+			case NearestMipMapLinear:
+				_MinFilter = NearestMipMapOff;
+				break;
+			case LinearMipMapNearest:
+			case LinearMipMapLinear:
+				_MinFilter = LinearMipMapOff;
+				break;
+			}
 		}
 	}
 

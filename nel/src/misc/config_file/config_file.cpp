@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.48 2003/09/01 15:15:28 lecroart Exp $
+ * $Id: config_file.cpp,v 1.49 2003/09/01 15:55:20 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -338,6 +338,8 @@ void CConfigFile::reparse (/*const char *filename, bool callingCallback*/)
 				string path = NLMISC::CPath::standardizePath (NLMISC::CFile::getPath(FileNames[0]));
 				RootConfigFilename = path + RootConfigFilename;
 			}
+
+			RootConfigFilename = NLMISC::CPath::getFullPath(RootConfigFilename, false);
 
 			if (RootConfigFilename != fn)
 			{

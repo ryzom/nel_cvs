@@ -1,7 +1,7 @@
 /** \file tga_cut.cpp
  * TGA to DDS converter
  *
- * $Id: tga_cut.cpp,v 1.2 2003/07/07 15:44:25 meyrignac Exp $
+ * $Id: tga_cut.cpp,v 1.3 2003/07/09 14:03:05 meyrignac Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -151,7 +151,43 @@ void main(int argc, char **argv)
 		cerr<<"Image not supported : "<<imageDepth<<endl;
 		exit(1);
 	}
+
+	if(!input.seek (0, NLMISC::IStream::begin))
+	{
+		cerr << "Seek to beginning failed"<<endl;
+		exit(1);
+	}
+	
+	// Reading header, 
+	// To make sure that the bitmap is TGA, we check imageType and imageDepth.
+	uint8	lengthID;
+	uint8	cMapType;
+	uint8	imageType;
+	uint16	tgaOrigin;
+	uint16	length;
+	uint8	depth;
+	uint16	xOrg;
+	uint16	yOrg;
+	uint16	width2;
+	uint16	height2;
+	uint8	imageDepth2;
+	uint8	desc;
+	
+	input.serial(lengthID);
+	input.serial(cMapType);
+	input.serial(imageType);
+	input.serial(tgaOrigin);
+	input.serial(length);
+	input.serial(depth);
+	input.serial(xOrg);
+	input.serial(yOrg);
+	input.serial(width2);
+	input.serial(height2);
+	input.serial(imageDepth2);
+	input.serial(desc);
+
 	input.close();
+
 	sint32 height = picTga.getHeight();
 	sint32 width= picTga.getWidth();
 	picTga.convertToType (CBitmap::RGBA);
@@ -188,19 +224,18 @@ void main(int argc, char **argv)
 	}
 	// Resample
 	sint xzone, yzone;
-	for (yzone = 0; yzone < height; yzone += CutSize)
+	for (yzone = int(yOrg/CutSize)*CutSize; yzone < yOrg+height; yzone += CutSize)
 	{
-		for (xzone = 0; xzone < width; xzone += CutSize)
+		for (xzone = int(xOrg/CutSize)*CutSize; xzone < xOrg+width; xzone += CutSize)
 		{
 			sint x, y;
 			for (y=0; y<CutSize; y++)
 			{
 				for (x=0; x<CutSize; x++)
 				{
-					const uint offsetSrc = ((y+yzone)*width+x+xzone)*4;
 					const uint offsetDest = (y*SaveSize+x)*4;
 					uint i;
-					if (x+xzone>= width || y+yzone>=height)
+					if (x+xzone-xOrg>= width || y+yzone-yOrg>=height || x+xzone-xOrg<0 || y+yzone-yOrg<0)
 					{
 						// black outside the bitmap
 						for (i=0; i<4; i++)
@@ -210,6 +245,7 @@ void main(int argc, char **argv)
 					}
 					else
 					{
+						const uint offsetSrc = ((y+yzone-yOrg)*width+x+xzone-xOrg)*4;
 						for (i=0; i<4; i++)
 						{
 							pixelDest[offsetDest+i] = pixelSrc[offsetSrc+i];
@@ -241,7 +277,7 @@ void main(int argc, char **argv)
 			NLMISC::COFile output;
 
 			string ZoneName;
-			if (!getZoneNameFromXY(xzone/CutSize, -yzone/CutSize, ZoneName))
+			if (!getZoneNameFromXY(xzone/CutSize, -(yzone/CutSize+1), ZoneName))
 			{
 				cerr<<"Too large image"<<endl;
 				exit(1);

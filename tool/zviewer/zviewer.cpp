@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.14 2001/10/29 09:38:36 corvazier Exp $
+ * $Id: zviewer.cpp,v 1.15 2002/01/29 09:43:41 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ using namespace NLMISC;
 using namespace NL3D;
 
 
-//#define BANK_PAH_RELATIVE
+#define BANK_PAH_RELATIVE
 
 
 /**
@@ -70,9 +70,16 @@ struct CViewerConfig
 	CVector			Heading;
 	CVector			EyesHeight;
 	CRGBA			Background;
+
+	// Landscape
+	bool			AutoLight;
+	CVector			LightDir;
 	string			ZonesPath;
 	string			BanksPath;
 	string			TilesPath;
+	bool			UseDDS;
+	bool			AllPathRelative;
+
 	string			IgPath;
 	string			ShapePath;
 	string			MapsPath;
@@ -108,9 +115,13 @@ struct CViewerConfig
 		Heading = CVector(0,1,0);
 		EyesHeight = CVector(0,0,1.8f);
 		Background = CRGBA(100,100,255);
+		AutoLight = false;
+		LightDir = CVector (1, 0, 0);
 		ZonesPath = "./";
 		BanksPath = "./";
 		TilesPath = "./";
+		UseDDS = false;
+		AllPathRelative = false;
 		IgPath = "./";
 		ShapePath = "./";
 		MapsPath = "./";
@@ -310,6 +321,8 @@ void displayZones()
 	Landscape->Landscape.setTileNear(ViewerCfg.LandscapeTileNear);
 	Landscape->Landscape.setThreshold(ViewerCfg.LandscapeThreshold);
 
+	Landscape->Landscape.enableAutomaticLighting (ViewerCfg.AutoLight);
+	Landscape->Landscape.setupAutomaticLightDir (ViewerCfg.LightDir);
 
 	// HeightField.
 	CBitmap		heightBitmap;
@@ -330,25 +343,43 @@ void displayZones()
 	CNELU::clearBuffers(CRGBA(0,0,0));
 	ViewerCfg.TextContext.printfAt(0.5f,0.5f,"Initializing TileBanks...");
 	CNELU::swapBuffers();
-	
-	CIFile bankFile (ViewerCfg.BanksPath + "/" + ViewerCfg.Bank);
-	Landscape->Landscape.TileBank.serial(bankFile);
-	bankFile.close();
+
+	try 
+	{
+		CIFile bankFile (ViewerCfg.BanksPath + "/" + ViewerCfg.Bank);
+		Landscape->Landscape.TileBank.serial(bankFile);
+	}
+	catch(Exception)
+	{
+		string tmp = string("Cant load bankfile ")+ViewerCfg.BanksPath + "/" + ViewerCfg.Bank;
+		nlerror (tmp.c_str());
+	}
 
 	if ((Landscape->Landscape.TileBank.getAbsPath ()!="")&&(ViewerCfg.TilesPath!=""))
 		Landscape->Landscape.TileBank.setAbsPath (ViewerCfg.TilesPath + "/");
-	
-#ifdef BANK_PAH_RELATIVE
-	Landscape->Landscape.TileBank.makeAllPathRelative();
-#endif
+
+	if (ViewerCfg.UseDDS)
+	{
+		Landscape->Landscape.TileBank.makeAllExtensionDDS();
+	}
+
+	if (ViewerCfg.AllPathRelative)
+		Landscape->Landscape.TileBank.makeAllPathRelative();
 
 	sint idx = ViewerCfg.Bank.find(".");
 	string farBank = ViewerCfg.Bank.substr(0,idx);
 	farBank += ".farbank";
-	
-	CIFile farbankFile(ViewerCfg.BanksPath + "/" + farBank);
-	Landscape->Landscape.TileFarBank.serial(farbankFile);
-	farbankFile.close();
+
+	try
+	{
+		CIFile farbankFile(ViewerCfg.BanksPath + "/" + farBank);
+		Landscape->Landscape.TileFarBank.serial(farbankFile);
+	}
+	catch(Exception)
+	{
+		string tmp = string("Cant load bankfile ")+ViewerCfg.BanksPath + "/" + farBank;
+		nlerror (tmp.c_str());
+	}
 	
 	if ( ! Landscape->Landscape.initTileBanks() )
 	{
@@ -714,10 +745,15 @@ void writeConfigFile(const char * configFileName)
 	fprintf(f,"EyesHeight = %f;\n", ViewerCfg.EyesHeight.z);
 	fprintf(f,"Background = { %d, %d, %d };\n", ViewerCfg.Background.R,ViewerCfg.Background.G,ViewerCfg.Background.B);
 	fprintf(f,"ZFar = %f;\n", ViewerCfg.ZFar);
+
+	fprintf(f,"AutoLight = %d;\n", ViewerCfg.AutoLight?1:0);
+	fprintf(f,"LightDir = { %f, %f, %f };\n", ViewerCfg.LightDir.x, ViewerCfg.LightDir.y, ViewerCfg.LightDir.z);
 	fprintf(f,"LandscapeTileNear = %f;\n", ViewerCfg.LandscapeTileNear);
 	fprintf(f,"LandscapeThreshold = %f;\n", ViewerCfg.LandscapeThreshold);
 	fprintf(f,"BanksPath = \"%s\";\n",ViewerCfg.BanksPath.c_str());
 	fprintf(f,"TilesPath = \"%s\";\n",ViewerCfg.TilesPath.c_str());
+	fprintf(f,"UseDDS = \"%d\";\n",ViewerCfg.UseDDS?1:0);
+	fprintf(f,"AllPathRelative = \"%d\";\n",ViewerCfg.AllPathRelative?1:0);
 	fprintf(f,"Bank = \"%s\";\n",ViewerCfg.Bank.c_str());
 	fprintf(f,"ZonesPath = \"%s\";\n",ViewerCfg.ZonesPath.c_str());
 	fprintf(f,"IgPath = \"%s\";\n",ViewerCfg.IgPath.c_str());
@@ -796,6 +832,15 @@ void initViewerConfig(const char * configFileName)
 		CConfigFile::CVar &cvZFar = cf.getVar("ZFar");
 		ViewerCfg.ZFar = cvZFar.asFloat();
 
+		CConfigFile::CVar &cvAutoLight = cf.getVar("AutoLight");
+		ViewerCfg.AutoLight = cvAutoLight.asInt() ? true : false;
+
+		CConfigFile::CVar &cvLightDir = cf.getVar("LightDir");
+		nlassert(cvLightDir.size()==3);
+		ViewerCfg.LightDir.x = cvLightDir.asFloat(0);
+		ViewerCfg.LightDir.y = cvLightDir.asFloat(1);
+		ViewerCfg.LightDir.z = cvLightDir.asFloat(2);
+
 		CConfigFile::CVar &cvLandscapeTileNear = cf.getVar("LandscapeTileNear");
 		ViewerCfg.LandscapeTileNear = cvLandscapeTileNear.asFloat();
 
@@ -807,6 +852,12 @@ void initViewerConfig(const char * configFileName)
 
 		CConfigFile::CVar &cvTilesPath = cf.getVar("TilesPath");
 		ViewerCfg.TilesPath = cvTilesPath.asString();
+
+		CConfigFile::CVar &cvUseDDS = cf.getVar("UseDDS");
+		ViewerCfg.UseDDS = cvUseDDS.asInt() ? true : false;
+
+		CConfigFile::CVar &cvAllPathRelative = cf.getVar("AllPathRelative");
+		ViewerCfg.AllPathRelative = cvAllPathRelative.asInt() ? true : false;
 
 		CConfigFile::CVar &cvBank = cf.getVar("Bank");
 		ViewerCfg.Bank = cvBank.asString();

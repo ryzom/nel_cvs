@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.4 2004/03/12 16:50:09 lecroart Exp $
+ * $Id: words_dictionary.cpp,v 1.5 2004/03/16 19:59:46 cado Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -32,6 +32,7 @@
 
 using namespace std;
 
+const string DefaultColTitle = "name";
 
 namespace NLMISC {
 
@@ -64,6 +65,7 @@ bool CWordsDictionary::init( const string& configFileName )
 		nlwarning( "WD: %s", e.what() );
 	}
 	string wordsPath, languageCode;
+	vector<string> additionalFiles, additionalFileColumnTitles;
 	bool utf8 = false;
 	if ( cfFound )
 	{
@@ -80,6 +82,24 @@ bool CWordsDictionary::init( const string& configFileName )
 		v = cf.getVarPtr( "Utf8" );
 		if ( v )
 			utf8 = (v->asInt() == 1);
+		v = cf.getVarPtr( "AdditionalFiles" );
+		if ( v )
+		{
+			for ( sint i=0; i!=v->size(); ++i )
+				additionalFiles.push_back( v->asString( i ) );
+			v = cf.getVarPtr( "AdditionalFileColumnTitles" );
+			if ( v->size() != (sint)additionalFiles.size() )
+			{
+				nlwarning( "AdditionalFiles and AdditionalFileColumnTitles have different size, ignoring second one" );
+				additionalFileColumnTitles.resize( v->size(), DefaultColTitle );
+			}
+			else
+			{
+				for ( sint i=0; i!=v->size(); ++i )
+					additionalFileColumnTitles.push_back( v->asString( i ) );
+			}
+		}
+
 	}
 	if ( languageCode.empty() )
 		languageCode = "en";
@@ -92,18 +112,35 @@ bool CWordsDictionary::init( const string& configFileName )
 	{
 		const string& filename = (*ifl);
 		string::size_type p;
-		if ( (p = filename.find( string("_words_") + languageCode + ext )) != string::npos )
+		bool isAdditionalFile = false;
+
+		// Test if filename is in additional file list
+		uint iAdditionalFile;
+		for ( iAdditionalFile=0; iAdditionalFile!=additionalFiles.size(); ++iAdditionalFile )
+		{
+			if ( (p = filename.find( additionalFiles[iAdditionalFile] )) != string::npos )
+			{
+				isAdditionalFile = true;
+				break;
+			}
+		}
+
+		// Or test if filename is a words_*.txt file
+		if ( isAdditionalFile ||
+			 ((p = filename.find( string("_words_") + languageCode + ext )) != string::npos) )
 		{
 			nldebug( "WD: Loading %s", filename.c_str() );
+			_FileList.push_back( filename );
 			string::size_type origSize = filename.size() - ext.size();
 			const string truncFilename = CFile::getFilenameWithoutExtension( filename );
-			const string wordType = truncFilename.substr( 0, p - (origSize - truncFilename.size()) );
+			const string wordType = isAdditionalFile ? "" : truncFilename.substr( 0, p - (origSize - truncFilename.size()) );
+			const string colTitle = isAdditionalFile ? additionalFileColumnTitles[iAdditionalFile] : DefaultColTitle;
 
 			// Load Unicode Excel words file
 			STRING_MANAGER::TWorksheet worksheet;
 			STRING_MANAGER::loadExcelSheet( filename, worksheet );
 			uint ck, cw;
-			if ( worksheet.findId( ck ) && worksheet.findCol( ucstring("name"), cw ) ) // => 
+			if ( worksheet.findId( ck ) && worksheet.findCol( ucstring(colTitle), cw ) ) // => 
 			{
 				for ( std::vector<STRING_MANAGER::TWorksheet::TRow>::iterator ip = worksheet.begin(); ip!=worksheet.end(); ++ip )
 				{
@@ -116,7 +153,7 @@ bool CWordsDictionary::init( const string& configFileName )
 				}
 			}
 			else
-				nlwarning( "WD: %s ID or name not found in %s", wordType.c_str(), filename.c_str() );
+				nlwarning( "WD: %s ID or %s not found in %s", wordType.c_str(), colTitle.c_str(), filename.c_str() );
 		}
 	}
 

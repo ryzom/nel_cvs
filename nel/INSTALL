@@ -75,17 +75,20 @@ Compilation
 
          - Execute `nmake clean all` followed by `nmake install`.
 
-      FreeType compilation :
+      FreeType compilation, by using GNU Make :
 
-         - You need to intall gmumake and to place it in the PATH.
+         - You need to intall GNU make and to place it in the PATH.
 
-         - Open a Dos window and go in the FreeType's src directory.
+           <URL:http://ftpsearch.lycos.com/swadv/AdvResults.asp?query=gnumake-win32>
+
+         - Open a Dos window and go in the FreeType's directory.
 
          - Execute `make setup visualc' followed by `make`.
 
-      If your are using your own IDE, you must be sure that the
-      src/psaux/psaux.c file is include in the project's files list to
-      compile.
+      FreeType compilation, by using an IDE :
+
+         - Compile every (base and optionnal) library components listed
+           at the end of the FreeType's INSTALL file.
 
       Set up Visual C++ to find the STLPort and FreeType libraries. This
       is done in the [Tools -> Options -> Directories] menu :

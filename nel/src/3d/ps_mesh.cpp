@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.38 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.39 2004/06/01 16:24:38 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/ps_located.h"
 #include "3d/particle_system.h"
 #include "3d/particle_system_shape.h"
+#include "3d/particle_system_model.h"
 #include "3d/ps_iterator.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/path.h"
@@ -173,10 +174,21 @@ void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_Shape);
 	if (f.isReading())
 	{
-		invalidate();
+		_Instances.resize(_Owner->getMaxSize());
+		for(uint k = 0; k < _Owner->getSize(); ++k)
+		{
+			_Instances.insert(NULL);
+		}
 	}
 }
 
+//====================================================================================
+void CPSMesh::setShape(const std::string &shape)
+{
+	if (shape == _Shape) return;
+	_Shape = shape;
+	removeAllInstancesFromScene();
+}
 
 //====================================================================================
 uint32 CPSMesh::getNumWantedTris() const
@@ -211,14 +223,39 @@ void CPSMesh::releaseAllRef()
 {
 	CPSParticle::releaseAllRef();
 	nlassert(_Owner && _Owner->getScene());
+	removeAllInstancesFromScene();	
+}
+
+//====================================================================================
+void CPSMesh::removeAllInstancesFromScene()
+{	
 	for(uint k = 0; k < _Instances.getSize(); ++k)
 	{
 		if (_Instances[k])
 		{
-			_Owner->getScene()->deleteInstance(_Instances[k]);
+			if (_Owner) _Owner->getScene()->deleteInstance(_Instances[k]);
 			_Instances[k] = NULL;
 		}
 	}
+}
+
+//====================================================================================
+CTransformShape *CPSMesh::createInstance()
+{
+	CScene *scene = _Owner->getScene();
+	nlassert(scene); // the setScene method of the particle system should have been called	
+	CTransformShape *instance = scene->createInstance(_Shape);
+	if (!instance)
+	{		
+		// mesh not found ...
+		IShape *is = CreateDummyMesh();
+		scene->getShapeBank()->add(DummyShapeName, is);
+		instance = scene->createInstance(DummyShapeName);
+		nlassert(instance);		
+	}
+	instance->setTransformMode(CTransform::DirectMatrix);
+	instance->hide(); // the object hasn't the right matrix yet so we hide it. It'll be shown once it is computed
+	return instance;
 }
 
 //====================================================================================
@@ -227,32 +264,10 @@ void CPSMesh::newElement(const CPSEmitterInfo &info)
 	newPlaneBasisElement(info);
 	newAngle2DElement(info);
 	newSizeElement(info);
-
 	nlassert(_Owner);
-	nlassert(_Owner->getOwner());
-
-	CScene *scene = _Owner->getScene();
-	nlassert(scene); // the setScene method of the particle system should have been called
-	//CTransformShape *instance = _Shape->createInstance(*scene);
-
-	CTransformShape *instance = scene->createInstance(_Shape);
-
-	if (!instance)
-	{
-		
-		// mesh not found ...
-		IShape *is = CreateDummyMesh();
-		scene->getShapeBank()->add(DummyShapeName, is);
-		instance = scene->createInstance(DummyShapeName);
-		nlassert(instance);
-	}
-
-
-	instance->setTransformMode(CTransform::DirectMatrix);
-
-	instance->hide(); // the object hasn't the right matrix yet so we hide it. It'll be shown once it is computed
+	nlassert(_Owner->getOwner());	
+	CTransformShape *instance = createInstance();	
 	nlassert(instance);
-
 	_Instances.insert(instance);
 }
 
@@ -263,16 +278,15 @@ void CPSMesh::deleteElement(uint32 index)
 	deleteAngle2DElement(index);
 	deletePlaneBasisElement(index);
 
-	// check wether CTransformShape have been instanciated
-	if (_Invalidated) return;
-
+	// check wether CTransformShape have been instanciated	
 	nlassert(_Owner);
-	nlassert(_Owner->getOwner());
-
+	nlassert(_Owner->getOwner());	
 	CScene *scene = _Owner->getScene();
 	nlassert(scene); // the setScene method of the particle system should have been called
-
-	scene->deleteInstance(_Instances[index]);
+	if (_Instances[index])
+	{	
+		scene->deleteInstance(_Instances[index]);
+	}
 	_Instances.remove(index);
 }
 
@@ -304,27 +318,13 @@ void CPSMesh::updatePos()
 	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose	
 
 
-	if (_Invalidated)
-	{
-		// need to rebuild all the transform shapes
-		nlassert(_Owner);
-		nlassert(_Owner->getOwner());
-
-		CScene *scene = _Owner->getScene();
-		nlassert(scene); // the setScene method of the particle system should have been called
-	
-
-		resize(_Owner->getMaxSize());
-
+	if (!_Instances[0])
+	{		
 		for (uint k = 0; k < size; ++k)
 		{
-			CTransformShape *instance = scene->createInstance(_Shape);
-			instance->setTransformMode(CTransform::DirectMatrix);
-			instance->hide();
-			_Instances.insert(instance);
-		}
-
-		_Invalidated = false;
+			nlassert(!_Instances[k]);		
+			_Instances[k] = createInstance();
+		}		
 	}
 	
 	float sizes[MeshBufSize];
@@ -404,6 +404,10 @@ void CPSMesh::updatePos()
 			mat.scale(*ptCurrSize);			
 			
 			(*instanceIt)->setMatrix(transfo * tmat * mat);			
+			if (CParticleSystem::OwnerModel)
+			{			
+				(*instanceIt)->setClusterSystem(CParticleSystem::OwnerModel->getClusterSystem());
+			}
 
 			++instanceIt;
 			++posIt;
@@ -426,6 +430,13 @@ void CPSMesh::resize(uint32 size)
 	resizeSize(size);
 	resizeAngle2D(size);
 	resizePlaneBasis(size);
+	if (size < _Instances.getSize())
+	{
+		for(uint k = size; k < _Instances.getSize(); ++k)
+		{
+			if (_Owner) _Owner->getScene()->deleteInstance(_Instances[k]);
+		}
+	}
 	_Instances.resize(size);
 }
 
@@ -435,13 +446,7 @@ CPSMesh::~CPSMesh()
 {	
 	if (_Owner && _Owner->getOwner())
 	{	
-		CScene *scene = _Owner->getScene();
-		nlassert(scene); // the setScene method of the particle system should have been called
-
-		for (TInstanceCont::iterator it = _Instances.begin(); it != _Instances.end(); ++it)
-		{
-			if (*it) scene->deleteInstance(*it);
-		}
+		removeAllInstancesFromScene();		
 	}
 	else
 	{
@@ -1842,8 +1847,7 @@ void	CPSConstraintMesh::setupRenderPasses(float date, TRdrPassSet &rdrPasses, bo
 void	CPSConstraintMesh::doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet &rdrPasses, bool opaque)
 {		
 	// render meshs : we process each rendering pass
-	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin() 
-		; rdrPassIt != rdrPasses.end(); ++rdrPassIt)
+	for (TRdrPassSet::iterator rdrPassIt = rdrPasses.begin(); rdrPassIt != rdrPasses.end(); ++rdrPassIt)
 	{	
 		CMaterial &Mat = rdrPassIt->Mat;
 		if ((opaque && Mat.getZWrite()) || (!opaque && ! Mat.getZWrite()))
@@ -1855,8 +1859,11 @@ void	CPSConstraintMesh::doRenderPasses(IDriver *driver, uint numObj, TRdrPassSet
 			/// render the primitives
 			driver->activeIndexBuffer (rdrPassIt->PbTri);
 			driver->renderTriangles(rdrPassIt->Mat, 0, rdrPassIt->PbTri.getNumIndexes()/3);
-			driver->activeIndexBuffer (rdrPassIt->PbLine);
-			driver->renderLines(rdrPassIt->Mat, 0, rdrPassIt->PbLine.getNumIndexes()/2);
+			if (rdrPassIt->PbLine.getNumIndexes() != 0)
+			{			
+				driver->activeIndexBuffer (rdrPassIt->PbLine);
+				driver->renderLines(rdrPassIt->Mat, 0, rdrPassIt->PbLine.getNumIndexes()/2);
+			}
 		}
 	}
 

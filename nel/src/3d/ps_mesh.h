@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.21 2004/05/19 10:19:55 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.22 2004/06/01 16:24:38 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -78,14 +78,14 @@ class CPSMesh : public CPSParticle,
 {
 public:
 	/// construct the system by using the given shape for mesh
-	CPSMesh(const std::string &shape = "") : _Invalidated(false)
+	CPSMesh(const std::string &shape = "")
 	{
 		_Shape = shape;
 		if (CParticleSystem::getSerializeIdentifierFlag()) _Name = std::string("Mesh");
 	}
 
 	/// set a new shape for that kind of particles
-	void setShape(const std::string &shape) { _Shape = shape; }
+	void setShape(const std::string &shape);
 
 	/// get the shape used for those particles	
 	std::string getShape(void) const { return _Shape; }
@@ -97,16 +97,6 @@ public:
 
 	NLMISC_DECLARE_CLASS(CPSMesh);
 
-
-	/** invalidate the transformShapes that were inserted in the scene, so they need to be rebuilt
-	 *  during the next rendering. This is useful for clipping, or when the system has been loaded
-	 */
-
-	void invalidate() 
-	{ 
-		_Invalidated = true; 
-		_Instances.clear();
-	}
 
 	/// return true if there are transparent faces in the object
 	virtual bool hasTransparentFaces(void);
@@ -158,9 +148,7 @@ protected:
 
 	TInstanceCont _Instances;
 
-	// this is set to true when the transformed shape have to be recerated
-
-	bool _Invalidated;
+	
 
 	virtual CPSLocated *getSizeOwner(void) { return _Owner; }
 	virtual CPSLocated *getAngle2DOwner(void) { return _Owner; }
@@ -168,6 +156,11 @@ protected:
 
 	void releaseAllRef();
 
+	// create an instance of the current shape, or a dummy mesh if not found
+	// NB : the object is hidden at start
+	CTransformShape *createInstance();
+	// remove all instance from scene and set their pointer to NULL
+	void removeAllInstancesFromScene();
 }; 
 
 

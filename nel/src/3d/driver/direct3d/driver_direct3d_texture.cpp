@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.4 2004/06/02 16:33:08 vizerie Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.5 2004/06/04 15:04:08 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -696,7 +696,7 @@ bool CDriverD3D::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded
 							}
 
 							// Next level
-							lineWidth = max((UINT)(lineWidth>>1), (UINT)(d3dtext->SrcCompressed?srcPixelSize>>1:1));
+							lineWidth = max((UINT)(lineWidth>>1), (UINT)(d3dtext->SrcCompressed?4:1));
 							blockCount = max((UINT)(blockCount>>1), 1U);
 						}
 

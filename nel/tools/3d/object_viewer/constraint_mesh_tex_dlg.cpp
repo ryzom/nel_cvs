@@ -1,7 +1,7 @@
 /** \file constraint_mesh_tex_dlg.cpp
  * A dialog for editing constraint meshs texture animation
  *
- * $Id: constraint_mesh_tex_dlg.cpp,v 1.2 2002/11/04 15:40:44 boucher Exp $
+ * $Id: constraint_mesh_tex_dlg.cpp,v 1.2.4.1 2003/06/02 11:26:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,8 +76,10 @@ void CConstraintMeshTexDlg::DoDataExchange(CDataExchange* pDX)
 void	CConstraintMeshTexDlg::createGlobalAnimationDlg(uint stage)
 {
 	RemoveDlg(_CurrDlg);
+#undef new
 	CConstraintMeshGlobalTexAnimDlg *gDlg 
 		= new CConstraintMeshGlobalTexAnimDlg(_CM, stage, this);
+#define new NL_NEW
 	RECT r;
 	GetDlgItem(IDC_CURR_STAGE)->GetWindowRect(&r);
 	ScreenToClient(&r);	

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.24 2003/04/10 09:26:24 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.24.2.1 2003/06/02 11:26:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,7 @@
 #include "constraint_mesh_tex_dlg.h"
 #include "ribbon_dlg.h"
 
+#undef new
 
 using NL3D::CPSLocatedBindable; 
 

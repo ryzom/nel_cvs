@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.cpp
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.cpp,v 1.2 2002/11/04 15:40:44 boucher Exp $
+ * $Id: collision_zone_dlg.cpp,v 1.2.4.1 2003/06/02 11:26:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,9 @@ void CCollisionZoneDlg::init(sint x, sint y, CWnd *pParent)
 	r.right += x ; r.left += x ;
 	MoveWindow(&r) ;
 
+#undef new
 	_BounceFactorDlg = new CEditableRangeFloat(std::string("BOUNCE_FACTOR"), 0.f, 1.f) ;
+#define new NL_NEW
 	pushWnd(_BounceFactorDlg) ;
 	_BounceFactorWrapper.Z = _Zone ;
 	_BounceFactorDlg->setWrapper(&_BounceFactorWrapper) ;

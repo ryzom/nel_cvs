@@ -1,7 +1,7 @@
 /** \file edit_spinner.cpp
  * a dialog to edit a spinner
  *
- * $Id: edit_spinner.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
+ * $Id: edit_spinner.cpp,v 1.4.4.1 2003/06/02 11:26:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "editable_range.h"
 #include "popup_notify.h"
 
+#undef new
 
 
 /////////////////////////////////////////////////////////////////////////////

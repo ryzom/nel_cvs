@@ -1,7 +1,7 @@
 /** \file curve_edit.cpp
  * A dialog for editing a curve
  *
- * $Id: curve_edit.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
+ * $Id: curve_edit.cpp,v 1.4.4.1 2003/06/02 11:26:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -366,7 +366,9 @@ BOOL CurveEdit::OnInitDialog()
 	
 	((CButton *) GetDlgItem(IDC_ADD_POINT))->SetCheck(1);
 
+#undef new
 	_NumSamplesDlg = new CEditableRangeUInt(std::string("FLOAT_CURVE_NB_SAMPLE"), 1, 512);
+#define new NL_NEW
 	_NumSampleWrapper.CE = this;
 	_NumSamplesDlg->setWrapper(&_NumSampleWrapper);
 	_NumSamplesDlg->init(80, 225, this);

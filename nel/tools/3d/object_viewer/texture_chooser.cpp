@@ -1,6 +1,6 @@
 /** \file texture_chooser.cpp
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.cpp,v 1.10 2002/11/04 15:40:45 boucher Exp $
+ * $Id: texture_chooser.cpp,v 1.10.4.1 2003/06/02 11:26:01 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include "3d/ps_particle_basic.h"
 
 #include "nel/misc/path.h"
+
+#undef new
 
 // size of the bitmap that is displayed
 const uint tSize = 25;

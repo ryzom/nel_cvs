@@ -8,6 +8,7 @@
 #include "3d/noise_value.h"
 
 
+#undef new
 
 
 

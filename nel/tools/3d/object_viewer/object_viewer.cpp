@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.92 2003/04/10 10:16:07 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.92.2.1 2003/06/02 11:26:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@
 #include "sound_anim_dlg.h"
 #include "light_group_factor.h"
 
+#undef new
 
 
 

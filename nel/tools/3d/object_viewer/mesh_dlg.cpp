@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.7 2003/04/07 12:44:59 vizerie Exp $
+ * $Id: mesh_dlg.cpp,v 1.7.2.1 2003/06/02 11:26:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 
 
 #include "nel/misc/path.h"
+
+#undef new
 
 ///==================================================================
 CMeshDlg::CMeshDlg(NL3D::CPSShapeParticle *sp, CParticleDlg  *particleDlg)

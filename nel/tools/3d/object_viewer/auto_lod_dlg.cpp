@@ -1,7 +1,7 @@
 /** \file auto_lod_dlg.cpp
  * A dialog to tune auto-lod options of particle systems.
  *
- * $Id: auto_lod_dlg.cpp,v 1.3 2003/04/07 12:41:11 vizerie Exp $
+ * $Id: auto_lod_dlg.cpp,v 1.3.2.1 2003/06/02 11:26:00 boucher Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -93,7 +93,9 @@ BOOL CAutoLODDlg::OnInitDialog()
 	RECT r;
 	
 	// Edit the distance at which LOD starts
+#undef new
 	CEditableRangeFloat *erf = new CEditableRangeFloat("AUTO_LOD_DIST_RATIO", 0.f, 0.99f);
+#define new NL_NEW
 	erf->enableUpperBound(1.f, true);	
 	erf->enableLowerBound(0.f, false);
 	erf->setWrapper(&_DistRatioWrapper);
@@ -103,7 +105,9 @@ BOOL CAutoLODDlg::OnInitDialog()
 	pushWnd(erf);
 
 	// For non-shared systems only : Set the LOD bias at the max distance, so that some particles are still displayed
+#undef new
 	erf = new CEditableRangeFloat("MAX_DIST_LOD_BIAS", 0.f, 1.0f);
+#define new NL_NEW
 	erf->enableUpperBound(1.f, false);	
 	erf->enableLowerBound(0.f, false);
 	erf->setWrapper(&_MaxDistLODBiasWrapper);

@@ -11,6 +11,7 @@
 #include "3d/noise_value.h"
 #include "3d/vegetable.h"
 
+#undef new
 
 /////////////////////////////////////////////////////////////////////////////
 // CVegetableApperancePage property page

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.41 2003/04/14 15:32:50 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.41.2.1 2003/06/02 11:26:01 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,7 @@
 
 
 
+#undef new
 
 
 

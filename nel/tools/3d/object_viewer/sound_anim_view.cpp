@@ -1,7 +1,7 @@
 /** \file sound_anim_view.cpp
  * Dialog for the sound animations 
  *
- * $Id: sound_anim_view.cpp,v 1.4 2002/11/04 15:40:45 boucher Exp $
+ * $Id: sound_anim_view.cpp,v 1.4.4.1 2003/06/02 11:26:01 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "nel/sound/sound_animation.h"
 #include "nel/sound/sound_anim_manager.h"
 #include "nel/sound/sound_anim_marker.h"
+
+#undef new
 
 using namespace std;
 using namespace NLMISC;

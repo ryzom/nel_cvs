@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.18 2003/03/26 10:28:30 berenguier Exp $
+ * $Id: particle_dlg.cpp,v 1.18.2.1 2003/06/02 11:26:01 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,7 @@
 
 #include "start_stop_particle_system.h"
 
+#undef new
 
 
 using namespace NL3D ;

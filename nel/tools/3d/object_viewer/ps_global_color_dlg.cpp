@@ -1,6 +1,6 @@
 /** \file ps_global_color_dlg.cpp
  * This dialog helps to tune the global color of the system depending on its distance.
- * $Id: ps_global_color_dlg.cpp,v 1.3 2002/11/04 15:40:45 boucher Exp $
+ * $Id: ps_global_color_dlg.cpp,v 1.3.4.1 2003/06/02 11:26:01 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "attrib_dlg.h"
 #include "3d/particle_system.h"
 
+#undef new
 
 /////////////////////////////////////////////////////////////////////////////
 // CPSGlobalColorDlg dialog

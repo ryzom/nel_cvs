@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.cpp
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.cpp,v 1.10 2003/03/03 13:05:37 boucher Exp $
+ * $Id: edit_ps_sound.cpp,v 1.10.2.1 2003/06/02 11:26:00 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,8 @@
 #include "pick_sound.h"
 #include "sound_system.h"
 #include "editable_range.h"
+
+#undef new
 
 using namespace std;
 

@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.5 2002/11/25 16:06:56 berenguier Exp $
+ * $Id: algo.h,v 1.6 2003/02/17 16:25:56 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -57,6 +57,13 @@ T computeBilinear(const T &v0, const T &v1, const T &v2, const T &v3, const U &s
 	T h1 = t * v2 + ((U) 1 - t) * v1;
 	return s * h1 + ((U) 1 - s) * h0;
 }
+
+// ***************************************************************************
+/** Select all points crossed by the line [(x0,y0) ; (x1,y1)] 
+ *  Not the same than brensenham
+ */
+void drawFullLine (float x0, float y0, float x1, float y1, std::vector<std::pair<sint, sint> > &result);
+
 
 // ***************************************************************************
 /**	Search the lower_bound in a sorted array of Value, in growing order (0, 1, 2....).

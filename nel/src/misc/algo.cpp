@@ -1,7 +1,7 @@
 /** \file algo.cpp
  * <File description>
  *
- * $Id: algo.cpp,v 1.3 2002/11/25 16:06:39 berenguier Exp $
+ * $Id: algo.cpp,v 1.4 2003/02/17 16:25:56 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -132,5 +132,136 @@ void		splitString(const std::string &str, const std::string &separator, std::vec
 		retList.push_back(str.substr(pos, str.size()-pos));
 }
 
+// ***************************************************************************
+
+void drawFullLine (float x0, float y0, float x1, float y1, std::vector<std::pair<sint, sint> > &result)
+{
+	result.clear ();
+	// x0 must be < x1
+	float deltaX = (float) fabs (x0-x1);
+	float deltaY = (float) fabs (y0-y1);
+	if ((deltaX == 0) && (deltaY == 0))
+		result.push_back (pair<sint, sint> ((sint)floor (x0), (sint)floor (y0)));
+	else if (deltaX > deltaY)
+	{
+		if (x0 > x1)
+		{
+			// Xchg 0 and 1
+			float temp = x0;
+			x0 = x1;
+			x1 = temp;
+			temp = y0;
+			y0 = y1;
+			y1 = temp;
+		}
+
+		float deltaX = x1 - x0;
+		const float deltaY = (y1-y0)/deltaX;
+
+		// Current integer pixel
+		sint currentX = (sint)floor (x0);
+		sint currentY = (sint)floor (y0);
+
+		while (deltaX >= 0)
+		{
+			// Next point
+			sint previousY = currentY;
+
+			// Next y0
+			if (deltaX > 1)	
+				y0 += deltaY;
+			else
+				y0 += deltaX * deltaY;
+
+			deltaX -= 1;
+
+			currentY = (sint)y0;
+			
+			// Add point
+			if (currentY<=previousY)
+			{
+				do
+				{
+					result.push_back (pair<sint, sint> (currentX, previousY));
+					previousY--;
+				}
+				while (currentY<=previousY);
+			}
+			else
+			{
+				do
+				{
+					result.push_back (pair<sint, sint> (currentX, previousY));
+					previousY++;
+				}
+				while (currentY>=previousY);
+			}
+
+			// Next X
+			currentX++;
+		}
+	}
+	else 
+	{
+		if (y0 > y1)
+		{
+			// Xchg 0 and 1
+			float temp = y0;
+			y0 = y1;
+			y1 = temp;
+			temp = x0;
+			x0 = x1;
+			x1 = temp;
+		}
+
+		float deltaY = y1 - y0;
+		const float deltaX = (x1-x0)/deltaY;
+
+		// Current integer pixel
+		sint currentY = (sint)floor (y0);
+		sint currentX = (sint)floor (x0);
+
+		while (deltaY >= 0)
+		{
+			// Next point
+			sint previousX = currentX;
+
+			// Next x0
+			if (deltaY > 1)	
+				x0 += deltaX;
+			else
+				x0 += deltaY * deltaX;
+
+			deltaY -= 1;
+
+			currentX = (sint)x0;
+			
+			// Add point
+			if (currentX<=previousX)
+			{
+				do
+				{
+					result.push_back (pair<sint, sint> (previousX, currentY));
+					previousX--;
+				}
+				while (currentX<=previousX);
+			}
+			else
+			{
+				do
+				{
+					result.push_back (pair<sint, sint> (previousX, currentY));
+					previousX++;
+				}
+				while (currentX>=previousX);
+			}
+
+			// Next Y
+			currentY++;
+		}
+	}
+}
+
+// ***************************************************************************
 
 } // NLMISC

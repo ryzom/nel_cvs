@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.6 2001/05/18 14:40:20 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.7 2001/06/05 15:36:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -333,9 +333,38 @@ void CNetManager::addCallbackArray (const std::string &serviceName, const TCallb
 }
 
 
-void CNetManager::update ()
+void CNetManager::update (sint32 timeout)
 {
 //	nldebug ("L4: update()");
+
+	sint32 quantum = 0;
+
+	if (timeout > 0)
+	{
+		uint32 nbc = 0;
+		for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
+		{
+			for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
+			{
+				if ((*itbm).second.NetBase[i]->connected())
+					nbc++;
+			}
+		}
+		if (nbc > 0)
+		{
+			// we have to give this quantum of time for each connection
+			quantum = timeout/nbc;
+			if (quantum == 0)
+			{
+				nlwarning ("Unstable network update. I don't have enough time to update each connection, the UpdateTimeout mus be greater than %d", nbc);
+				quantum = 1;
+			}
+		}
+	}
+	else
+	{
+		quantum = timeout;
+	}
 
 	for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
 	{
@@ -343,7 +372,7 @@ void CNetManager::update ()
 		{
 			// todo remettre comme avant mais il faut que olivier est fini sa modif car 
 			// si on update pas meme kan c est pas connected on est pas au courant de la deconnection
-			(*itbm).second.NetBase[i]->update ();
+			(*itbm).second.NetBase[i]->update (quantum);
 			if ((*itbm).second.NetBase[i]->connected())
 			{
 				// if connected, update
@@ -424,7 +453,5 @@ CNetManager::ItBaseMap CNetManager::find (const std::string &serviceName)
 	p = _BaseMap.insert (make_pair (serviceName, CBaseStruct (serviceName)));
 	return p.first;
 }
-
-
 
 } // NLNET

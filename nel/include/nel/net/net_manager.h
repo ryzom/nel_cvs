@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.4 2001/05/31 16:41:59 lecroart Exp $
+ * $Id: net_manager.h,v 1.5 2001/06/05 15:36:38 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:
 	static void	addCallbackArray (const std::string &serviceName, const TCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
 
 	/// Calls it evenly
-	static void	update ();
+	static void	update (sint32 timeout);
 
 	/// Sends a message to a specific serviceName
 	static void	send (const std::string &serviceName, const CMessage &buffer, TSockId hostid = 0);
@@ -139,18 +139,21 @@ public:
 	/// Returns the connection if you want to do specific calls
 	static CCallbackNetBase *getNetBase (const std::string &serviceName);
 
+	static void setUpdateTimeout (uint32 timeout);
+
 private:
 
 	typedef	std::map<std::string, CBaseStruct>	TBaseMap;
 	typedef	TBaseMap::iterator					ItBaseMap;
 
 	// Contains all the connections (client and server)
-	static	TBaseMap _BaseMap;
+	static	TBaseMap	_BaseMap;
 
 	// Finds the service or add it if not found
 	static	ItBaseMap find (const std::string &serviceName);
 
 	friend void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInetAddress &addr);
+
 
 	// It's a static class, you can't instanciate it
 	CNetManager() { }

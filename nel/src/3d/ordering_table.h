@@ -1,7 +1,7 @@
 /** \file ordering_table.h
  * Generic Ordering Table
  *
- * $Id: ordering_table.h,v 1.6 2004/03/23 10:17:07 vizerie Exp $
+ * $Id: ordering_table.h,v 1.7 2004/04/09 14:29:11 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,13 @@ public:
 
 	COrderingTable();
 	~COrderingTable();
+
+	// copy ctor. NB : Allocator is not shared from source, and bahave like when reset(0) is called.
+	COrderingTable(const COrderingTable<T> &other);
+	
+	// assignement operator. NB : Allocator is not shared from source, and bahave like when reset(0) is called.
+	COrderingTable &operator=(const COrderingTable<T> &other);
+	
 
 	/**
 	 * Initialization.
@@ -151,20 +158,16 @@ template<class T> COrderingTable<T>::COrderingTable()
 
 // ***************************************************************************
 template<class T> COrderingTable<T>::~COrderingTable()
-{
-	if( _Array != NULL )
-		delete [] _Array;
+{	
+	delete [] _Array;
 }
 
 // ***************************************************************************
-template<class T> void COrderingTable<T>::init( uint32 nNbEntries )
-{
-	if( _Array != NULL )
-	{
-		reset(0);
-		delete [] _Array;
-	}
+template<class T> void COrderingTable<T>::init( uint32 nNbEntries )	
+{	
+	delete [] _Array;	
 	_nNbElt = nNbEntries;
+	if (nNbEntries == 0) return;
 	_Array = new CNode[_nNbElt];
 	reset(0);
 }
@@ -239,6 +242,29 @@ template<class T> void COrderingTable<T>::next()
 	while( ( _SelNode != NULL )&&( _SelNode->val == NULL ) )
 		_SelNode = _SelNode->next;
 }
+
+
+// ***************************************************************************
+template <class T>
+inline COrderingTable<T>::COrderingTable(const COrderingTable<T> &other)
+{
+	_nNbElt = 0;
+	_Array = NULL;
+	_SelNode = NULL;	
+	*this = other;
+}
+
+
+// ***************************************************************************
+template <class T>
+inline COrderingTable<T> &COrderingTable<T>::operator=(const COrderingTable<T> &other)
+{
+	_Allocator = new CAllocator;	
+	init(other._nNbElt);	
+	return *this;
+}
+
+
 
 } // NL3D
 

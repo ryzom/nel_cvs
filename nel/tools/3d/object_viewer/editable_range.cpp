@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.14 2003/08/08 16:58:09 vizerie Exp $
+ * $Id: editable_range.cpp,v 1.15 2003/08/22 09:00:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,11 +219,14 @@ void CEditableRange::OnChangeValue()
 
 void CEditableRange::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
 {	
-	if (nSBCode == SB_THUMBPOSITION || nSBCode == SB_THUMBTRACK)
+	if (nSBCode == SB_THUMBPOSITION || nSBCode == SB_THUMBTRACK || nSBCode == SB_LINERIGHT || nSBCode == SB_LINELEFT)
 	{
 		UpdateData(TRUE);
-		m_SliderPos = nPos;
-		UpdateData(FALSE);
+		if (nSBCode == SB_THUMBPOSITION || nSBCode == SB_THUMBTRACK)
+		{		
+			m_SliderPos = nPos;
+			UpdateData(FALSE);
+		}
 
 		CSliderCtrl *sl = (CSliderCtrl *) GetDlgItem(IDC_SLIDER);	
 		if (

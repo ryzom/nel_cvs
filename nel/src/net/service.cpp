@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.61 2001/06/05 15:36:09 lecroart Exp $
+ * $Id: service.cpp,v 1.62 2001/06/05 15:53:29 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -634,7 +634,7 @@ sint IService::main (int argc, char **argv)
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
 
 			// now, sleep the rest of the time if needed
-			if (delta <= _UpdateTimeout)
+			if (_UpdateTimeout > 0 && delta <= _UpdateTimeout)
 				nlSleep (_UpdateTimeout - delta);
 		}
 		while (true);

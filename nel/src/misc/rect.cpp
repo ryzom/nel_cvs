@@ -1,7 +1,7 @@
 /** \file rect.cpp
  * <File description>
  *
- * $Id: rect.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: rect.cpp,v 1.4 2002/01/28 14:19:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdmisc.h"
 
 #include "nel/misc/rect.h"
+#include "nel/misc/vector_2f.h"
 
 
 namespace NLMISC {
@@ -48,6 +49,51 @@ void CRect::extend (sint32 x, sint32 y)
 	else if (y>=(Y+(sint32)Height))
 		Height=(uint32)(y-Y+1);
 }
+
+
+// *********************************************************************
+void CRect::setWH(sint32 x, sint32 y, uint32 width, uint32 height)
+{
+	X=x;
+	Y=y;
+	Width=width;
+	Height=height;
+}
+
+
+// *********************************************************************
+void CRect::set(sint32 x0, sint32 y0, sint32 x1, sint32 y1)
+{
+	if (x0 < x1)
+	{
+		X = x0;
+		Width = x1 - x0;
+	}
+	else
+	{
+		X = x1;
+		Width = y0 - y1;
+	}
+
+	if (y0 < y1)
+	{
+		Y = y0;
+		Height = y1 - y0;
+	}
+	else
+	{
+		Y = y1;
+		Height = y0 - y1;
+	}
+}
+
+// *********************************************************************
+CRect::CRect (sint32 x, sint32 y, uint32 width, uint32 height)
+{
+	setWH(x, y, width, height);
+}
+
+
 
 
 } // NLMISC

@@ -21,14 +21,20 @@ Here is the implementation point of view :
 -# The class NLNET::CMessage inherits from NLMISC::IStream.
 -# All services inherit from NLNET::IService. It provides the basic functionnalities such as registration to the Naming Service, server start-up and shutdown (see \ref new_service_howto).
 
+To use the layer 3, you need to #include "nel/net/msg_socket.h".
+
 \subsection networkusing Using the network engine
 
-Example : I want to ask the "family service" (FMLS) the age of Toto. Let's say the family service
+Example : I want to ask the "family service" (let's call it "FMLS") the age of Toto. Let's say the family service
 understands a message of type "AGEREQ" and answers back a message of type "AGE" :
 
 - How to send a synchronous request to a host, using CSocket (layer 2) ?
 
 \code
+  #include "nel/net/socket.h"
+  #include "nel/net/naming_client.h"
+  (...)
+
   uint16 validitytime;
   CSocket client;
   // Connect to the family service
@@ -52,6 +58,9 @@ understands a message of type "AGEREQ" and answers back a message of type "AGE" 
 - How to send an asynchronous request to a host, using CMsgSocket, the message handling system (layer 3) ?
 
 \code
+  #include "nel/net/msg_socket.h"
+  (...)
+
   // Callback to process the answer
   void cbProcessAge( CMessage& msgin, TSenderId idfrom )
   {
@@ -92,10 +101,10 @@ Example :
 \code
   vector<CMyClass> myvector;
   CMessage msgout ( false );
-  msgout.serial( myvector );
+  msgout.serialCont( myvector );
   client.send( msgout );
 \endcode
 This code serializes all objects contained in \e myvector. For this to work, you need to provide a method serial()
-in your class CMyClass. This is explained in NLMISC::IStream.
+in your class CMyClass. This is explained in NLMISC::IStream. For a map or a multimap, use serialMap() instead of serialCont().
 
 */

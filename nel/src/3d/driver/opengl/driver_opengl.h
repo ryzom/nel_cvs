@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.26 2000/12/20 09:29:28 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.27 2000/12/20 19:02:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,6 +177,7 @@ private:
 	Display *dpy;
 	GLXContext ctx;
 	Window win;
+	Cursor cursor;
 	NLMISC::CUnixEventEmitter	_EventEmitter;
 #endif // NL_OS_UNIX
 

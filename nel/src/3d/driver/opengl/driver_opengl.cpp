@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.39 2000/12/20 18:55:45 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.40 2000/12/20 19:02:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -600,45 +600,29 @@ void CDriverGL::showCursor(bool b)
 #ifdef NL_OS_WINDOWS
 	ShowCursor(b);
 #elif defined (NL_OS_UNIX)
-	static Cursor cursor;
 	if (b)
-	  {
+	{
 		if (cursor != None)
 		{
 			XFreeCursor(dpy, cursor);
 			cursor = None;
 		}
-
 		XUndefineCursor(dpy, win);
-	  }
+	}
 	else
-	  {
+	{
 		if (cursor == None)
 		{
 			char bm_no_data[] = { 0,0,0,0, 0,0,0,0 };
-			Pixmap pixmap_no_data = XCreateBitmapFromData(
-				dpy,
-				win,
-				bm_no_data,
-				8, 8);
-		
+			Pixmap pixmap_no_data = XCreateBitmapFromData (dpy, win, bm_no_data, 8, 8);
 			XColor black;
-			memset(&black, 0, sizeof(XColor));
+			memset(&black, 0, sizeof (XColor));
 			black.flags = DoRed | DoGreen | DoBlue;
-
-			cursor = XCreatePixmapCursor(
-				dpy,
-				pixmap_no_data,
-				pixmap_no_data,
-				&black,
-				&black,
-				0, 0);
-
+			cursor = XCreatePixmapCursor (dpy, pixmap_no_data, pixmap_no_data, &black, &black, 0, 0);
 			XFreePixmap(dpy, pixmap_no_data);
 		}
-	
 		XDefineCursor(dpy, win, cursor);
-	  }
+	}
 #endif // NL_OS_UNIX
 }
 
@@ -654,9 +638,7 @@ void CDriverGL::setMousePos(float x, float y)
 	POINT pt;
 	pt.x = (int)((float)(client.right-client.left)*x);
 	pt.y = (int)((float)(client.bottom-client.top)*(1.0f-y));
-
 	ClientToScreen (_hWnd, &pt);
-	
 	SetCursorPos(pt.x, pt.y);
 #elif defined (NL_OS_UNIX)
 	XWindowAttributes xwa;
@@ -672,9 +654,10 @@ void CDriverGL::setMousePos(float x, float y)
 bool CDriverGL::isActive()
 {
 #ifdef NL_OS_WINDOWS
-	return (IsWindow (_hWnd)!=0);
-#endif // NL_OS_WINDOWS
+	return (IsWindow(_hWnd) != 0);
+#elif defined (NL_OS_UNIX)
 	return true;
+#endif // NL_OS_UNIX
 }
 
 }

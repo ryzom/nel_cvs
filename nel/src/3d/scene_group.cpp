@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.45 2003/03/17 09:48:30 besson Exp $
+ * $Id: scene_group.cpp,v 1.46 2003/03/17 19:41:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -923,6 +923,11 @@ bool CInstanceGroup::linkToParent (CInstanceGroup *pFather)
 bool CInstanceGroup::removeFromScene (CScene& scene)
 {
 	uint32 i, j, k;
+
+	// TempYoyo
+	if(_Instances.size()<_InstancesInfos.size())
+		return false;
+
 	// Remove shapes
 	vector<CTransformShape*>::iterator it = _Instances.begin();
 	for (i = 0; i < _InstancesInfos.size(); ++i, ++it)

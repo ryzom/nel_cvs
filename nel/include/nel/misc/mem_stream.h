@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.41 2005/02/22 10:14:12 besson Exp $
+ * $Id: mem_stream.h,v 1.42 2005/03/21 15:58:24 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -823,8 +823,10 @@ inline	void		CMemStream::serial(std::string &b)
 		if(isReading())
 		{
 			serial(len);
-			if (len>1000000)
+			checkStreamSize((uint)len);
+			/*if (len>1000000)
 				throw NLMISC::EInvalidDataStream( "CMemStream/str: Trying to read a string of %u bytes", len );
+			*/
 			b.resize(len);
 		}
 		else
@@ -850,8 +852,11 @@ inline	void		CMemStream::serial(std::string &b)
 			{			
 				sint32	len=0;			
 				fastSerial(len);
+				checkStreamSize((uint)len);
+				/*
 				if (len>1000000)
 					throw NLMISC::EInvalidDataStream( "CMemStream: Trying to read a string of %u bytes", len );
+				*/
 				b.resize(len);
 				if (len > 0)
 				{				
@@ -882,8 +887,11 @@ inline	void		CMemStream::serial(ucstring &b)
 		if(isReading())
 		{
 			serial(len);
+			checkStreamSize((uint)len);
+			/*
 			if (len>1000000)
 				throw NLMISC::EInvalidDataStream( "CMemStream/str: Trying to read an ucstring of %u bytes", len );
+			*/
 			b.resize(len);
 		}
 		else
@@ -895,7 +903,7 @@ inline	void		CMemStream::serial(ucstring &b)
 		}
 		// Read/Write the string.
 		for(sint i=0;i<len;i++)
-			serialBuffer( (uint8*)&b[i], sizeof( sizeof(b[i]) ) );
+			serialBuffer( (uint8*)&b[i], sizeof(b[i]) );
 
 		char sep = SEPARATOR;
 		serialBuffer( (uint8*)&sep, 1 );

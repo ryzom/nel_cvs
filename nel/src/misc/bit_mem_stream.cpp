@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.35 2004/09/22 10:20:30 lecroart Exp $
+ * $Id: bit_mem_stream.cpp,v 1.36 2005/03/21 15:58:04 legros Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -543,7 +543,7 @@ inline	void		CBitMemStream::serial(ucstring &b)
 		}
 		// Read/Write the string.
 		for(sint i=0;i<len;i++)
-			serialBuffer( (uint8*)&b[i], sizeof( sizeof(b[i]) ) );
+			serialBuffer( (uint8*)&b[i], sizeof(b[i]) );
 
 		char sep = SEPARATOR;
 		serialBuffer( (uint8*)&sep, 1 );

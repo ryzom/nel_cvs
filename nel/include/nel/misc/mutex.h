@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.10 2001/09/12 16:54:47 lecroart Exp $
+ * $Id: mutex.h,v 1.11 2001/09/13 10:25:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,8 +188,8 @@ struct TMutexLocks
 	bool		Dead;					// True if the mutex is dead (deleted)
 	std::string	MutexName;				// Name of the mutex
 
-	NLMISC::TTime BeginEnter;
-	NLMISC::TTime EndEnter;
+	NLMISC::TTicks BeginEnter;
+	NLMISC::TTicks EndEnter;
 };
 
 /// Inits the "mutex debugging info system"

@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.18 2001/09/12 16:55:17 lecroart Exp $
+ * $Id: mutex.cpp,v 1.19 2001/09/13 10:25:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -415,7 +415,7 @@ void CFairMutex::debugBeginEnter()
 {
 	if ( (this!=ATMutex ) && (ATMutex!=NULL) )
 	{
-		TTime t = CTime::getLocalTime();
+		TTicks t = CTime::getPerformanceTime();
 
 		ATMutex->enter();
 		std::map<CMutex*,TMutexLocks>::iterator it = (*AcquireTime).find (this);
@@ -453,9 +453,10 @@ void CFairMutex::debugEndEnter()
 */
 	if ( ( this != ATMutex ) && ( ATMutex != NULL ) )
 	{
-		TTime t = CTime::getLocalTime();
+		TTicks t = CTime::getPerformanceTime();
 		ATMutex->enter();
-		(*AcquireTime)[this].TimeToEnter += (uint32)(t-(*AcquireTime)[this].BeginEnter);
+		if ((uint32)(t-(*AcquireTime)[this].BeginEnter) > (*AcquireTime)[this].TimeToEnter)
+			(*AcquireTime)[this].TimeToEnter = (uint32)(t-(*AcquireTime)[this].BeginEnter);
 		(*AcquireTime)[this].Nb += 1;
 		(*AcquireTime)[this].WaitingMutex--;
 		(*AcquireTime)[this].ThreadHavingTheMutex = getThreadId();
@@ -480,9 +481,10 @@ void CFairMutex::debugLeave()
 
 	if ( ( this != ATMutex ) && ( ATMutex != NULL ) )
 	{
-		TTime Leave = CTime::getLocalTime();
+		TTicks Leave = CTime::getPerformanceTime();
 		ATMutex->enter();
-		(*AcquireTime)[this].TimeInMutex += (uint32)(Leave-(*AcquireTime)[this].EndEnter);
+		if ((uint32)(Leave-(*AcquireTime)[this].EndEnter) > (*AcquireTime)[this].TimeInMutex)
+			(*AcquireTime)[this].TimeInMutex = (uint32)(Leave-(*AcquireTime)[this].EndEnter);
 		(*AcquireTime)[this].Nb += 1;
 		(*AcquireTime)[this].WaitingMutex = false;
 		(*AcquireTime)[this].ThreadHavingTheMutex = 0xFFFFFFFF;

@@ -1,7 +1,7 @@
 /** \file animated_morph.h
  * <File description>
  *
- * $Id: animated_morph.h,v 1.2 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: animated_morph.h,v 1.3 2004/10/18 16:12:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,7 +114,6 @@ private:
 	CMorphBase				*_MorphBase;
 
 	CAnimatedValueFloat		_Factor;
-	CTrackDefaultFloat		_DefaultFactor; 
 };
 
 

@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.26 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.27 2004/10/18 16:12:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,13 @@ CChannelMixer::CChannelMixer()
 
 // ***************************************************************************
 
+CChannelMixer::~CChannelMixer()
+{
+	resetChannels();
+}
+
+// ***************************************************************************
+
 void CChannelMixer::setAnimationSet (const CAnimationSet* animationSet)
 {
 	// Set the animationSet Pointer
@@ -85,6 +92,12 @@ static CAnimatedValueBlock	TempAnimatedValueBlock;
 // ***************************************************************************
 void CChannelMixer::evalSingleChannel(CChannel &chan, uint numActive, uint activeSlot[NumAnimationSlot])
 {	
+	// If the refPtr of the object handled has been deleted, then no-op
+	if(!chan._Object)
+	{
+		return;
+	}
+
 	// For Quat animated value only.
 	CQuat	firstQuat;
 
@@ -226,6 +239,12 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 		for(;numChans>0; numChans--, channelArrayPtr++)
 		{
 			CChannel	&chan= **channelArrayPtr;
+			
+			// If the refPtr of the object handled has been deleted, then no-op
+			if(!chan._Object)
+			{
+				continue;
+			}
 			
 			// if Current blend factor is not 0
 			if(chan._Weights[slot]!=0.0f)
@@ -380,6 +399,7 @@ sint CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 
 void CChannelMixer::resetChannels ()
 {
+	// clear
 	_Channels.clear();
 	dirtAll ();
 }
@@ -712,9 +732,13 @@ void CChannelMixer::refreshList ()
 				// Still in use?
 				if (!add)
 				{
-					// Set it's value to default and touch it's object
-					channel._Value->affect (((ITrack*)(channel._DefaultTracks))->eval(0, TempAnimatedValueBlock));
-					channel._Object->touch (channel._ValueId, channel._OwnerValueId);
+					// Ensure first the object is not deleted
+					if(channel._Object)
+					{
+						// Set it's value to default and touch it's object
+						channel._Value->affect (((ITrack*)(channel._DefaultTracks))->eval(0, TempAnimatedValueBlock));
+						channel._Object->touch (channel._ValueId, channel._OwnerValueId);
+					}
 				}
 			}
 		}

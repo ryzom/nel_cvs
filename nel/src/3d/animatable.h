@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.4 2003/12/05 13:47:58 berenguier Exp $
+ * $Id: animatable.h,v 1.5 2004/10/18 16:12:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ class CChannelMixer;
  * \author Nevrax France
  * \date 2001
  */
-class IAnimatable
+class IAnimatable : public NLMISC::CRefCount
 {
 	friend class IAnimatedValue;
 public:

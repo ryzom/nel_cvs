@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.57 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: transform.h,v 1.58 2004/10/18 16:12:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,7 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  * \author Nevrax France
  * \date 2000
  */
-class CTransform : public NLMISC::CRefCount, public ITransformable
+class CTransform : public ITransformable
 {
 public:
 	/// Call at the begining of the program, to register the model

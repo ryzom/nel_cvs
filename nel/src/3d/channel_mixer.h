@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.9 2003/11/06 14:49:12 vizerie Exp $
+ * $Id: channel_mixer.h,v 1.10 2004/10/18 16:12:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -174,8 +174,8 @@ private:
 		/// Name of the channel in the channel mixer. Must be the same than the animated value name.
 		std::string			_ChannelName;
 
-		/// A pointer on the IAnimatable object that handles the channel value.
-		IAnimatable*		_Object;
+		/// A pointer on the IAnimatable object that handles the channel value. (ref ptr to ensure Animated value access)
+		NLMISC::CRefPtr<IAnimatable>		_Object;
 
 		/// A pointer on the IAnimatedValue animated by this channel. If NULL, the channel is empty
 		IAnimatedValue*		_Value;
@@ -215,7 +215,8 @@ private:
 public:
 	/// Constructor. The default constructor resets the slots and the channels.
 	CChannelMixer();
-
+	~CChannelMixer();
+	
 	/// \name Setup the mixer
 
 	/**

@@ -1,7 +1,7 @@
 /** \file animated_morph.cpp
  * <File description>
  *
- * $Id: animated_morph.cpp,v 1.3 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animated_morph.cpp,v 1.4 2004/10/18 16:12:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,8 @@ void CMorphBase::serial(NLMISC::IStream &f)
 // ***************************************************************************
 CAnimatedMorph::CAnimatedMorph (CMorphBase*mb)
 {
+	nlassert(mb);
+
 	// IAnimatable.
 	IAnimatable::resize (AnimValueLast);
 
@@ -89,11 +91,11 @@ const char *CAnimatedMorph::getValueName (uint valueId) const
 // ***************************************************************************
 ITrack*	CAnimatedMorph::getDefaultTrack (uint valueId)
 {
-	//nlassert(_morphBase);
+	nlassert(_MorphBase);
 
 	switch(valueId)
 	{
-		case FactorValue: return &_DefaultFactor;
+		case FactorValue: return &_MorphBase->DefaultFactor;
 	};
 
 	return NULL;

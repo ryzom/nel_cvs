@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.16 2003/08/08 16:58:17 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.17 2003/08/22 09:01:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,9 @@ protected:
 	class CAttribDlgFloat			*_SizeCtrl;	// the control used for size
 	sint							_SizeCtrlX;	// x position of the control used for size
 	sint							_SizeCtrlY;	// x position of the control used for size
-
+	
+	// look at specific : pointer on windows to edit motion blur params
+	std::vector<CWnd *>				_MotionBlurWnd;
 
 
 	// Generated message map functions
@@ -116,6 +118,7 @@ protected:
 	afx_msg void OnSizeHeight();
 	afx_msg void OnNoAutoLod();
 	afx_msg void OnGlobalColorLighting();
+	afx_msg void OnAlignOnMotion();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

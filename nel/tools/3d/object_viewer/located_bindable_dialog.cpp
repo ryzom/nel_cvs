@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.26 2003/08/08 16:58:17 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.27 2003/08/22 09:01:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		m_BlendingMode.ShowWindow(SW_HIDE);
 		GetDlgItem(IDC_BLENDING_MODE_STATIC)->ShowWindow(SW_HIDE);
 	}
-
+	GetDlgItem(IDC_ALIGN_ON_MOTION)->ShowWindow(SW_HIDE);
 	if (dynamic_cast<NL3D::CPSParticle *>(_Bindable))
 	{
 		NL3D::CPSParticle *p = (NL3D::CPSParticle *) _Bindable;
@@ -205,34 +205,35 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		// if we're dealing with a face look at, motion blur can be tuned
 		if (dynamic_cast<NL3D::CPSFaceLookAt *>(_Bindable))
 		{
-
+			NL3D::CPSFaceLookAt *fla = static_cast<NL3D::CPSFaceLookAt *>(_Bindable);
 			CEditableRangeFloat *mbc = new CEditableRangeFloat(std::string("MOTION_BLUR_COEFF"), 0, 5);
 			pushWnd(mbc);
-			_MotionBlurCoeffWrapper.P = static_cast<NL3D::CPSFaceLookAt *>(_Bindable);
+			_MotionBlurWnd.push_back(mbc);
+			_MotionBlurCoeffWrapper.P = fla;
 			mbc->setWrapper(&_MotionBlurCoeffWrapper);
 			mbc->init(xPos + 140, yPos, this);
 			CStatic *s = new CStatic;			
 			pushWnd(s);
+			_MotionBlurWnd.push_back(s);
 			s->Create("Fake motion blur coeff.", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
 			s->ShowWindow(SW_SHOW);
-
-
 			mbc->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
-
 			mbc = new CEditableRangeFloat(std::string("MOTION_BLUR_THRESHOLD"), 0, 5);
 			pushWnd(mbc);
-			_MotionBlurThresholdWrapper.P = static_cast<NL3D::CPSFaceLookAt *>(_Bindable);
+			_MotionBlurWnd.push_back(mbc);
+			_MotionBlurThresholdWrapper.P = fla;
 			mbc->setWrapper(&_MotionBlurThresholdWrapper);
 			mbc->init(xPos + 140, yPos, this);
-
 			s = new CStatic;			
 			pushWnd(s);
+			_MotionBlurWnd.push_back(s);
 			s->Create("Fake motion blur threshold.", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this);
 			s->ShowWindow(SW_SHOW);
-
 			mbc->GetClientRect(&rect);
-			yPos += rect.bottom + 3;			
+			yPos += rect.bottom + 3;				
+			GetDlgItem(IDC_ALIGN_ON_MOTION)->ShowWindow(SW_SHOW);
+			((CButton *) GetDlgItem(IDC_ALIGN_ON_MOTION))->SetCheck(fla->getAlignOnMotion());
 		}
 
 		// if we're dealing with a shockwave, we add dlg for the radius cut, and the number of segments
@@ -541,6 +542,7 @@ BEGIN_MESSAGE_MAP(CLocatedBindableDialog, CDialog)
 	ON_BN_CLICKED(IDC_SIZE_HEIGHT, OnSizeHeight)
 	ON_BN_CLICKED(IDC_NO_AUTO_LOD, OnNoAutoLod)
 	ON_BN_CLICKED(ID_GLOBAL_COLOR_LIGHTING, OnGlobalColorLighting)
+	ON_BN_CLICKED(IDC_ALIGN_ON_MOTION, OnAlignOnMotion)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -659,4 +661,25 @@ void CLocatedBindableDialog::OnGlobalColorLighting()
 	NL3D::CPSParticle *p = NLMISC::safe_cast<NL3D::CPSParticle *>(_Bindable);
 	p->enableGlobalColorLighting(((CButton *) GetDlgItem(ID_GLOBAL_COLOR_LIGHTING))->GetCheck() == 1);
 	_ParticleDlg->getCurrPSModel()->touchLightableState();
+}
+
+//***********************************************************************************
+void CLocatedBindableDialog::OnAlignOnMotion() 
+{
+	bool align = ((CButton *) GetDlgItem(IDC_ALIGN_ON_MOTION))->GetCheck() != 0;
+	NL3D::CPSFaceLookAt *fla = NLMISC::safe_cast<NL3D::CPSFaceLookAt *>(_Bindable);
+	fla->setAlignOnMotion(align);
+	BOOL enable = align ? FALSE : TRUE;
+	for(uint k = 0; k < _MotionBlurWnd.size(); ++k)
+	{
+		CEditAttribDlg *ead = dynamic_cast<CEditAttribDlg *>(_MotionBlurWnd[k]);
+		if (ead)
+		{
+			ead->EnableWindow(enable); // enable window not virtual in CWnd ... 
+		}
+		else
+		{		
+			_MotionBlurWnd[k]->EnableWindow(enable);
+		}
+	}	
 }

@@ -1,7 +1,7 @@
 /** \file export_script.cpp
  * Export script utility from 3dsmax
  *
- * $Id: export_script.cpp,v 1.11 2003/07/02 15:56:55 distrib Exp $
+ * $Id: export_script.cpp,v 1.12 2004/05/14 15:00:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,8 +190,51 @@ void CExportNel::setScriptAppData (Animatable *node, uint32 id, const std::strin
 	node->AddAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id, strlen (value.c_str())+1, copy);
 }
 
+
 // ***************************************************************************
 
+NLMISC::CRGBA CExportNel::getScriptAppData (Animatable *node, uint32 id, NLMISC::CRGBA def)
+{
+	// Get the chunk
+	AppDataChunk *ap=node->GetAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id);
+	
+	// Not found ? return default
+	if (ap==NULL)
+		return def;
+	
+	// String to RGBA
+	if (((const char*)ap->data)[ap->length - 1] == 0)
+	{
+		const	char *ptr= (const char*)ap->data;
+		int r = 255, g = 255, b = 255, a = 255;	
+		sscanf (ptr, "%d %d %d %d", &r, &g, &b, &a);
+		NLMISC::clamp (r, 0, 255);
+		NLMISC::clamp (g, 0, 255);
+		NLMISC::clamp (b, 0, 255);
+		NLMISC::clamp (a, 0, 255);
+		return NLMISC::CRGBA(r,g,b,a);
+	}
+	else
+		return def;
+}
+
+// ***************************************************************************
+
+void CExportNel::setScriptAppData (Animatable *node, uint32 id, NLMISC::CRGBA val)
+{
+	// Remove data
+	node->RemoveAppDataChunk (MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id);
+	
+	// RGBA to string
+	std::string	value= NLMISC::toString("%d %d %d %d", val.R, val.G, val.B, val.A);
+
+	// Copy data
+	char *copy=(char*)malloc (strlen (value.c_str())+1);
+	strcpy (copy, value.c_str());
+	
+	// Add data
+	node->AddAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, id, strlen (value.c_str())+1, copy);
+}
 
 
 // ***************************************************************************

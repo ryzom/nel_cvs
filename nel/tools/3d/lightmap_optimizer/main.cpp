@@ -279,10 +279,10 @@ void FlagVerticesMRM (CMeshMRMGeom &mg, uint InMatID, vector<bool> &verticesNeed
 int main(int nNbArg, char **ppArgs)
 {
 	
-	if (nNbArg != 3 && nNbArg != 4)
+	if (nNbArg <3 || nNbArg >5)
 	{
 		outString ("ERROR : Wrong number of arguments\n");
-		outString ("USAGE : lightmap_optimizer <path_lightmaps> <path_shapes> <path_tags>\n");
+		outString ("USAGE : lightmap_optimizer <path_lightmaps> <path_shapes> [path_tags] [path_flag8bit]\n");
 		return -1;
 	}
 	
@@ -293,15 +293,9 @@ int main(int nNbArg, char **ppArgs)
 	char sSHPDir[MAX_PATH];
 
 	
-
-	if (!SetCurrentDirectory(ppArgs[1]))
-	{
-		outString (string("ERROR : directory ") + ppArgs[1] + " do not exists\n");
-		return -1;
-	}
-
-
 	GetCurrentDirectory (MAX_PATH, sExeDir);
+
+	
 	// Get absolute directory for lightmaps
 	if (!SetCurrentDirectory(ppArgs[1]))
 	{
@@ -341,6 +335,7 @@ int main(int nNbArg, char **ppArgs)
 
 	if (nNbArg > 3 && ppArgs[3] && strlen(ppArgs[3]) > 0)
 	{
+		SetCurrentDirectory (sExeDir);
 		if (!SetCurrentDirectory(ppArgs[3]))
 		{
 			outString (string("ERROR : directory ") + ppArgs[3] + " do not exists\n");
@@ -357,11 +352,47 @@ int main(int nNbArg, char **ppArgs)
 		}
 	}
 
-	SetCurrentDirectory (sExeDir);
 
+	// **** Parse all mesh loaded, to flag each lightmap if 8 bit or not (NB: all layers should be same mode)
+	std::set<string>	setLM8Bit;
+	for(uint i=0;i<AllShapes.size();i++)
+	{
+		CMeshBase *pMB= AllShapes[i];
+		if(!pMB)
+			continue;
+
+		uint32		nbMat= pMB->getNbMaterial();
+		for (uint32 m = 0; m < nbMat; ++m)
+		{
+			CMaterial& rMat = const_cast<CMaterial&>(pMB->getMaterial (m));
+			if (rMat.getShader() == CMaterial::LightMap)
+			{
+				// Begin with stage 0
+				uint8 stage = 0;
+				while (rMat.getLightMap(stage) != NULL)
+				{
+					ITexture *pIT = rMat.getLightMap (stage);
+					CTextureFile *pTF = dynamic_cast<CTextureFile*>(pIT);
+					if (pTF != NULL)
+					{
+						string sTexName = NLMISC::strlwr(pTF->getFileName());
+						if(pTF->getUploadFormat()==ITexture::Luminance)
+							setLM8Bit.insert(sTexName);
+					}
+					++stage;
+				}
+			}
+		}
+	}
+
+
+	// **** Parse all lightmaps, sorted by layer, and 8 or 16 bit mode
+	SetCurrentDirectory (sExeDir);
+	for (uint32 lmc8bitMode = 0; lmc8bitMode < 2; ++lmc8bitMode)
 	for (uint32 nNbLayer = 0; nNbLayer < 256; ++nNbLayer)
 	{
 		// Get all lightmaps with same number of layer == nNbLayer
+		// merge lightmaps only if they are in same mode (8bits or 16 bits)
 
 		vector<string> AllLightmapNames;
 		vector<sint>   AllLightmapTags;
@@ -369,29 +400,47 @@ int main(int nNbArg, char **ppArgs)
 		sint32 i, j, k, m, n;
 		string sFilter;
 
+		// **** Get All Lightmaps that have this number of layer, and this mode
 		sFilter = "*_" + NLMISC::toString(nNbLayer) + ".tga";
 		SetCurrentDirectory (sLMPDir);
 		dir (sFilter, AllLightmapNames, false);
+
+		// filter by layer
+		vector<string>		tmpLMs;
+		tmpLMs.reserve(AllLightmapNames.size());
 		for (i = 0; i < (sint32)AllLightmapNames.size(); ++i)
 		{
 			string sTmp2 = getBaseName (AllLightmapNames[i]);
 			sTmp2 += NLMISC::toString(nNbLayer+1) + ".tga";
-			if (fileExist(sTmp2))
-			{	// More layer than expected delete name i
-				for (j = i+1; j < (sint32)AllLightmapNames.size(); ++j)
-					AllLightmapNames[j-1] = AllLightmapNames[j];
-				AllLightmapNames.resize (AllLightmapNames.size()-1);
-				i = -1;
+			// if not More layer than expected, ok
+			if (!fileExist(sTmp2))
+			{	
+				tmpLMs.push_back(AllLightmapNames[i]);
 			}
 		}
+		AllLightmapNames= tmpLMs;
 	
+		// filter by 8bit or not mode.
+		tmpLMs.clear();
+		for (i = 0; i < (sint32)AllLightmapNames.size(); ++i)
+		{
+			bool	lm8Bit= setLM8Bit.find( NLMISC::strlwr(AllLightmapNames[i]) ) !=setLM8Bit.end();
+			// if same mode
+			if( lm8Bit == (lmc8bitMode==1) )
+			{
+				tmpLMs.push_back(AllLightmapNames[i]);
+			}
+		}
+		AllLightmapNames= tmpLMs;
+
+		
+		// **** Build tag info
 		/*
 		for(uint k = 0; k < tags.size(); ++k)
 		{
 			nlinfo("tag %d = %s", (int) k, tags[k].c_str());
 		}
 		*/
-
 		AllLightmapTags.resize(AllLightmapNames.size());
 		for(uint k = 0; k < AllLightmapNames.size(); ++k)
 		{
@@ -832,7 +881,28 @@ int main(int nNbArg, char **ppArgs)
 	}
 	
 
-	
+	// **** Additionally, output or clear a "flag file" in a dir to info if a 8bit lihgtmap or not
+	if (nNbArg >=5 && ppArgs[4] && strlen(ppArgs[4]) > 0)
+	{
+		SetCurrentDirectory (sExeDir);
+
+		// out a text file, with list of
+		FILE	*out= fopen(ppArgs[4], "wt");
+		if(!out)
+		{
+			outString(string("ERROR: cannot save ")+ppArgs[4]);
+		}
+
+		set<string>::iterator	it(setLM8Bit.begin()), end(setLM8Bit.end());
+		for(;it!=end;it++)
+		{
+			string	temp= (*it);
+			temp+= "\n";
+			fputs(temp.c_str(), out);
+		}
+
+		fclose(out);
+	}
 
 	return 0;
 }

@@ -2,7 +2,7 @@
  * This is a sub-module for calculating ligtmaps
  * This is the code of the plane wich regroup lightmap faces
  *
- * $Id: calc_lm_plane.cpp,v 1.9 2004/02/04 11:18:11 besson Exp $
+ * $Id: calc_lm_plane.cpp,v 1.10 2004/05/14 15:00:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,40 +66,77 @@ bool SLMPlane::isAllBlack (uint8 nLayerNb)
 }
 
 // -----------------------------------------------------------------------------------------------
-void SLMPlane::copyColToBitmap8 (CBitmap* pImage, uint32 nLayerNb)
+void SLMPlane::copyColToBitmap8x2 (CBitmap* pImage, uint32 nLayerNb, CRGBAF lA, CRGBAF lD)
 {
 	if( nLayerNb >= nNbLayerUsed )
 		return;
-
+	
 	if( ( pImage->getWidth() != w ) ||
 		( pImage->getHeight() != h ) )
 	{
 		pImage->resize(w,h);
 	}
+	
+	/* 
+		We want to compress the RGBA lightmap L32 into a (lA,lD,L8) lightmap, where lA and lD are constants.
 
+		lA and lD are given, so we have to compute L8.
+
+		In the standard 32 bits Lightmap shader, for a single lightmap, the final formula is:
+			O= L32*F*T
+			where:
+				O:		output
+				L32:	the lightmap (actually in 16 bits RGB)
+				F:		the lightmap factor (for light animation or activation)
+				T:		the diffuse texture
+
+		In the "8bits *2" Lightmap shader, for a single lightmap, the final formula is:
+			O= (mA+L8*mD)*F*T*2
+			where:
+				L8:		the 8 bits lightmap
+				mA:		Material Lightmap Ambient term. equal to lA/2, for convenience, and avoid too much "ambient clamping"
+				mD:		Material Lightmap Diffuse term. equal to lD.
+				*2:		the pixel shader multiplyBy2, to allow some TextureDiffuse burn.
+
+		Hence, we have to solve the simple equation for L8:
+			(lA/2+L8*lD)*2 = L32
+
+		which result into:
+
+			L8= ((L32-lA) / lD) * 0.5
+
+		We define Vector0/Vector1 operation as the projection operation:  
+			scalar= Vector0*Vector1 / sqrnorm(Vector1).
+	*/
+
+	// the dir vector lD
+	CVector		vDir(lD.R, lD.G, lD.B);
+	float		OOSqrNorm= 0;
+	if(!vDir.isNull())
+		OOSqrNorm= 1.0f / vDir.sqrnorm();
+
+	// for all pixel of the layer
 	CObjectVector<uint8> &vBitmap = pImage->getPixels();
-	float r, g, b;
 	for( uint32 i = 0; i < w*h; ++i )
 	{
-		// if we are in multiply x2 we have to set the following value to 127.0 else set to 255.0
-		// By default we are in multiply x2 in Lightmap 8 bits mode but not in 32 bits mode
+		const CRGBAF	&srcCol= col[i+w*h*nLayerNb];
+
+		// find the factor f, such that f= (L32-lA)/lD
+		float	f;
+		f= vDir * CVector(srcCol.R - lA.R, srcCol.G - lA.G, srcCol.B - lA.B);
+		f*= OOSqrNorm;
+
+		// we are in multiply x2 => compress to 8 bits from 0 to 127
 		const float fMult = 127.0f;
+		
+		f*= fMult;
+		clamp(f, 0.f, 255.0f);
+		uint8	f8= (uint8)f;
 
-		r = fMult * col[i+w*h*nLayerNb].R;
-		if (r > 255.0f) r = 255.0f;
-
-		g = fMult * col[i+w*h*nLayerNb].G;
-		if (g > 255.0) g = 255.0f;
-
-		b = fMult * col[i+w*h*nLayerNb].B;
-		if (b > 255.0) b = 255.0f;
-
-		r = 0.28f * r + 0.59f * g + 0.13f * b;
-
-		vBitmap[4*i+0] = (uint8)r;
-		vBitmap[4*i+1] = (uint8)r;
-		vBitmap[4*i+2] = (uint8)r;
-
+		vBitmap[4*i+0] = f8;
+		vBitmap[4*i+1] = f8;
+		vBitmap[4*i+2] = f8;
+		
 		if (msk[i] != 0)
 			vBitmap[4*i+3] = 255;
 		else

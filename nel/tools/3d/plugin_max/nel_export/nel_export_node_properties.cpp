@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.51 2003/08/04 15:02:25 corvazier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.52 2004/05/14 15:01:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@ using namespace NLMISC;
 
 // ***************************************************************************
 
-#define TAB_COUNT	8
+#define TAB_COUNT	9
 #define VP_COUNT	1
 // Which dialog tab is the VerytexProgram one?
 #define TAB_VP_ID	5
@@ -138,8 +138,41 @@ private:
 };
 
 // ***************************************************************************
+// An RGBA property which can represent <different values> due to multiple selection
+class CRGBAProp : public CRGBA
+{
+public:
+	// Flag which tells or not if represent different values
+	bool			DifferentValues;
+	// The color ctrl
+	IColorSwatch	*Ctrl;
 
+	CRGBAProp() : CRGBA(CRGBA::Black)
+	{
+		DifferentValues= false;
+		Ctrl= NULL;
+	}
+	CRGBAProp(CRGBA col) : CRGBA(col)
+	{
+		DifferentValues= false;
+		Ctrl= NULL;
+	}
 
+	CRGBAProp &operator=(CRGBA col)
+	{
+		((CRGBA*)this)->operator= (col);
+		return *this;
+	}
+	
+	void setDifferentValuesMode()
+	{
+		DifferentValues= true;
+		// reconizable color
+		set(255,0,128,255);
+	}
+};
+
+// ***************************************************************************
 class CLodDialogBoxParam
 {
 public:
@@ -152,6 +185,7 @@ public:
 			SubVPDlg[i] = NULL;
 		InterfaceThreshold = 0.1f;		
 		GetInterfaceNormalsFromSceneObjects = 0;
+		LMCEnabled= 0;
 	}
 
 	// Lod.
@@ -225,6 +259,15 @@ public:
 	int						LightDontCastShadowInterior;
 	int						LightDontCastShadowExterior;
 
+	// Lighting 2
+	enum	{NumLightGroup= 3};
+	// Compress this lightmapped object in 8 bit lightmap?
+	int						LMCEnabled;
+	// Compression term for 8Bits LightMap Compression
+	CRGBAProp				LMCAmbient[NumLightGroup];
+	CRGBAProp				LMCDiffuse[NumLightGroup];
+	
+	
 	// Misc
 	int						FloatingObject;
 	int						SWT;
@@ -276,14 +319,15 @@ int CALLBACK MRMDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM l
 int CALLBACK AccelDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK InstanceDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK LightmapDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
+int CALLBACK Lightmap2DialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK VegetableDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK VertexProgramDialogCallBack (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK MiscDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 int CALLBACK AnimationDialogCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
-const char				*SubText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lighting", "Vegetable", "VertexProgram", "Misc", "Animation"};
-const int				SubTab[TAB_COUNT]	= {IDD_LOD, IDD_ACCEL, IDD_INSTANCE, IDD_LIGHTMAP, IDD_VEGETABLE, IDD_VERTEX_PROGRAM, IDD_MISC, IDD_ANIM};
-DLGPROC					SubProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, InstanceDialogCallback, LightmapDialogCallback, VegetableDialogCallback, VertexProgramDialogCallBack, MiscDialogCallback, AnimationDialogCallback};
+const char				*SubText[TAB_COUNT]	= {"LOD & MRM", "Accelerator", "Instance", "Lighting", "LMC", "Vegetable", "VertexProgram", "Misc", "Animation"};
+const int				SubTab[TAB_COUNT]	= {IDD_LOD, IDD_ACCEL, IDD_INSTANCE, IDD_LIGHTMAP, IDD_LIGHTMAP2, IDD_VEGETABLE, IDD_VERTEX_PROGRAM, IDD_MISC, IDD_ANIM};
+DLGPROC					SubProc[TAB_COUNT]	= {MRMDialogCallback, AccelDialogCallback, InstanceDialogCallback, LightmapDialogCallback, Lightmap2DialogCallback, VegetableDialogCallback, VertexProgramDialogCallBack, MiscDialogCallback, AnimationDialogCallback};
 
 // VertexPrograms.
 int CALLBACK VPWindTreeCallback (HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -1087,6 +1131,225 @@ int CALLBACK LightmapDialogCallback (
 }
 
 
+// ***************************************************************************
+void	Lightmap2StateChanged (HWND hwndDlg, CLodDialogBoxParam *currentParam)
+{
+	bool enabled = (SendMessage (GetDlgItem (hwndDlg, IDC_LM_COMPRESS_8BIT), BM_GETCHECK, 0, 0)==BST_CHECKED);
+	nlctassert(CLodDialogBoxParam::NumLightGroup==3);
+	EnableWindow (GetDlgItem(hwndDlg, IDC_LM_ALWAYS_AMBIENT), enabled);
+	EnableWindow (GetDlgItem(hwndDlg, IDC_LM_DAY_AMBIENT), enabled);
+	EnableWindow (GetDlgItem(hwndDlg, IDC_LM_NIGHT_AMBIENT), enabled);
+	EnableWindow (GetDlgItem(hwndDlg, IDC_LM_ALWAYS_DIFFUSE), enabled);
+	EnableWindow (GetDlgItem(hwndDlg, IDC_LM_DAY_DIFFUSE), enabled);
+	EnableWindow (GetDlgItem(hwndDlg, IDC_LM_NIGHT_DIFFUSE), enabled);
+
+	EnableWindow (GetDlgItem(hwndDlg, IDC_LMC_AUTO_SETUP), enabled);
+	EnableWindow (GetDlgItem(hwndDlg, IDC_LMC_AUTO_SETUP_VISIBLEONLY), enabled);
+	
+	// MAX enable/disable
+	uint i;
+	for(i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+	{
+		currentParam->LMCAmbient[i].Ctrl->Enable(enabled);
+		currentParam->LMCDiffuse[i].Ctrl->Enable(enabled);
+	}
+
+	// Static Enable / Disable
+	uint	staticItems[]= {IDC_LMC_STATIC0, IDC_LMC_STATIC1, IDC_LMC_STATIC2, IDC_LMC_STATIC3, 
+		IDC_LMC_STATIC4, IDC_LMC_STATIC5, IDC_LMC_STATIC6, IDC_LMC_STATIC7, IDC_LMC_STATIC8, };
+	uint	numStaticItems= sizeof(staticItems) / sizeof(staticItems[0]);
+	for(i=0;i<numStaticItems;i++)
+	{
+		EnableWindow (GetDlgItem(hwndDlg, staticItems[i]), enabled);
+	}
+		
+}
+
+// ***************************************************************************
+void	lmcAutoSetup(CLodDialogBoxParam *currentParam, bool visibleOnly)
+{
+	uint	i;
+
+	// get all lightmap lights
+	std::vector<SLightBuild>		lights;
+	getLightmapLightBuilds(lights, theCNelExport._Ip->GetTime(), *theCNelExport._Ip, visibleOnly);
+	
+	// mean all light, by lightgroup
+	CRGBAF		sumAmbient[CLodDialogBoxParam::NumLightGroup];
+	CRGBAF		sumDiffuse[CLodDialogBoxParam::NumLightGroup];
+	uint		countAmbient[CLodDialogBoxParam::NumLightGroup];
+	uint		countDiffuse[CLodDialogBoxParam::NumLightGroup];
+	for(i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+	{
+		sumAmbient[i].set(0,0,0,0);
+		sumDiffuse[i].set(0,0,0,0);
+		countAmbient[i]= 0;
+		countDiffuse[i]= 0;
+	}
+	// stats
+	for(i=0;i<lights.size();i++)
+	{
+		SLightBuild		&light= lights[i];
+		uint			lg= light.LightGroup;
+		if(lg<CLodDialogBoxParam::NumLightGroup)
+		{
+			if( light.Type==SLightBuild::LightAmbient || light.bAmbientOnly)
+			{
+				sumAmbient[lg]+= CRGBAF(light.Ambient) * light.rMult;
+				countAmbient[lg]++;
+			}
+			else
+			{
+				sumDiffuse[lg]+= CRGBAF(light.Diffuse) * light.rMult;
+				countDiffuse[lg]++;
+			}
+		}
+	}
+
+	// mean, by type
+	for(i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+	{
+		// defaults if no lights
+		CRGBA	amb(0,0,0,0);
+		CRGBA	diff(255,255,255,255);
+		// mean the sums
+		if(countAmbient[i])
+		{
+			sumAmbient[i]/= float(countAmbient[i]);
+			amb= sumAmbient[i];
+		}
+		if(countDiffuse[i])
+		{
+			sumDiffuse[i]/= float(countDiffuse[i]);
+			diff= sumDiffuse[i];
+		}
+		
+		// change the control and value
+		currentParam->LMCAmbient[i]= amb;
+		currentParam->LMCAmbient[i].Ctrl->SetColor(RGB(amb.R, amb.G, amb.B));
+		currentParam->LMCDiffuse[i]= diff;
+		currentParam->LMCDiffuse[i].Ctrl->SetColor(RGB(diff.R, diff.G, diff.B));
+	}
+}
+
+// ***************************************************************************
+int CALLBACK Lightmap2DialogCallback (
+  HWND hwndDlg,  // handle to dialog box
+  UINT uMsg,     // message
+  WPARAM wParam, // first message parameter
+  LPARAM lParam  // second message parameter
+)
+{
+	CLodDialogBoxParam *currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+	switch (uMsg) 
+	{
+		case WM_INITDIALOG:
+		{
+			// Param pointers
+			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
+			currentParam=(CLodDialogBoxParam *)GetWindowLong(hwndDlg, GWL_USERDATA);
+
+			// retrieve the color choosing Ctrl 
+			nlctassert(CLodDialogBoxParam::NumLightGroup==3);
+			nlverify(currentParam->LMCAmbient[0].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LM_ALWAYS_AMBIENT)));
+			nlverify(currentParam->LMCAmbient[1].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LM_DAY_AMBIENT)));
+			nlverify(currentParam->LMCAmbient[2].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LM_NIGHT_AMBIENT)));
+			nlverify(currentParam->LMCDiffuse[0].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LM_ALWAYS_DIFFUSE)));
+			nlverify(currentParam->LMCDiffuse[1].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LM_DAY_DIFFUSE)));
+			nlverify(currentParam->LMCDiffuse[2].Ctrl= GetIColorSwatch(GetDlgItem(hwndDlg, IDC_LM_NIGHT_DIFFUSE)));
+			
+			// set color, and color state
+			for(uint i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+			{
+				CRGBA	a= currentParam->LMCAmbient[i];
+				CRGBA	d= currentParam->LMCDiffuse[i];
+				currentParam->LMCAmbient[i].Ctrl->SetColor(RGB(a.R, a.G, a.B));
+				currentParam->LMCDiffuse[i].Ctrl->SetColor(RGB(d.R, d.G, d.B));
+			}
+
+			// the enable button
+			SendMessage (GetDlgItem (hwndDlg, IDC_LM_COMPRESS_8BIT), BM_SETCHECK, currentParam->LMCEnabled, 0);
+			
+			// Set enable disable
+			Lightmap2StateChanged (hwndDlg, currentParam);
+		}
+		break;
+
+		case WM_COMMAND:
+			if( HIWORD(wParam) == BN_CLICKED )
+			{
+				HWND hwndButton = (HWND) lParam;
+				switch (LOWORD(wParam)) 
+				{
+					case IDCANCEL:
+						EndDialog(hwndDlg, IDCANCEL);
+					break;
+					case IDC_LM_COMPRESS_8BIT:
+						if (SendMessage (hwndButton, BM_GETCHECK, 0, 0) == BST_INDETERMINATE)
+							SendMessage (hwndButton, BM_SETCHECK, BST_UNCHECKED, 0);
+						Lightmap2StateChanged(hwndDlg, currentParam);
+					break;
+					case IDOK:
+						{
+							// get state
+							currentParam->LMCEnabled= SendMessage (GetDlgItem (hwndDlg, IDC_LM_COMPRESS_8BIT), BM_GETCHECK, 0, 0);
+
+							// get color
+							for(uint i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+							{
+								COLORREF	a= currentParam->LMCAmbient[i].Ctrl->GetColor();
+								COLORREF	d= currentParam->LMCDiffuse[i].Ctrl->GetColor();
+								currentParam->LMCAmbient[i].R= GetRValue(a);
+								currentParam->LMCAmbient[i].G= GetGValue(a);
+								currentParam->LMCAmbient[i].B= GetBValue(a);
+								currentParam->LMCDiffuse[i].R= GetRValue(d);
+								currentParam->LMCDiffuse[i].G= GetGValue(d);
+								currentParam->LMCDiffuse[i].B= GetBValue(d);
+							}
+						}
+					break;
+					case IDC_LMC_AUTO_SETUP:
+						lmcAutoSetup(currentParam, false);
+					break;
+					case IDC_LMC_AUTO_SETUP_VISIBLEONLY:
+						lmcAutoSetup(currentParam, true);
+					break;
+				}
+			}
+		break;
+
+		case CC_COLOR_CHANGE:
+			{
+				nlctassert(CLodDialogBoxParam::NumLightGroup==3);
+				CRGBAProp		*propEdited;
+				switch(LOWORD(wParam)) 
+				{
+				case IDC_LM_ALWAYS_AMBIENT:	propEdited= &currentParam->LMCAmbient[0]; break;
+				case IDC_LM_DAY_AMBIENT:	propEdited= &currentParam->LMCAmbient[1]; break;
+				case IDC_LM_NIGHT_AMBIENT:	propEdited= &currentParam->LMCAmbient[2]; break;
+				case IDC_LM_ALWAYS_DIFFUSE:	propEdited= &currentParam->LMCDiffuse[0]; break;
+				case IDC_LM_DAY_DIFFUSE:	propEdited= &currentParam->LMCDiffuse[1]; break;
+				case IDC_LM_NIGHT_DIFFUSE:	propEdited= &currentParam->LMCDiffuse[2]; break;
+				default: nlstop;
+				};
+				// no more true
+				propEdited->DifferentValues= false;
+			}
+		break;
+
+		case WM_CLOSE:
+			EndDialog(hwndDlg,1);
+		break;
+
+		case WM_DESTROY:						
+		break;
+
+		default:
+		return FALSE;
+	}
+	return TRUE;
+}
 
 
 // ***************************************************************************
@@ -2209,6 +2472,17 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.ExportBoneScaleNameExt= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_BONE_SCALE_NAME_EXT, "");
 
 
+		// LightMap2
+		param.LMCEnabled= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_ENABLED, BST_UNCHECKED);
+		// must change the Size of APPDATA size, keeping old IDs.....
+		nlctassert(CLodDialogBoxParam::NumLightGroup<NEL3D_APPDATA_EXPORT_LMC_MAX_LIGHT_GROUP);
+		for(uint i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+		{
+			param.LMCAmbient[i]= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START+i, CRGBA::Black);
+			param.LMCDiffuse[i]= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START+i, CRGBA::White);
+		}
+		
+		
 		// Something selected ?
 		std::set<INode*>::const_iterator ite=listNode.begin();
 		ite++;
@@ -2446,6 +2720,19 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ExportBoneScaleNameExt= DIFFERENT_VALUE_STRING;
 
 
+			// LightMap2
+			if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_ENABLED, BST_UNCHECKED) != param.LMCEnabled)
+				param.LMCEnabled= BST_INDETERMINATE;
+			// if not same RGBA, enter in DifferentValues mode
+			for(uint i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+			{
+				if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START+i, CRGBA::Black) != param.LMCAmbient[i])
+					param.LMCAmbient[i].setDifferentValuesMode();
+				if(CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START+i, CRGBA::White) != param.LMCDiffuse[i])
+					param.LMCDiffuse[i].setDifferentValuesMode();
+			}
+			
+			
 			// Next sel
 			ite++;
 		}
@@ -2723,6 +3010,19 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_REMANENCE_ROLLUP_RATIO, param.RemanenceRollupRatio);
 
 
+				// LightMap2
+				if(param.LMCEnabled!= BST_INDETERMINATE)
+					CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_ENABLED, param.LMCEnabled);
+				// for all lightmap compress terms
+				for(uint i=0;i<CLodDialogBoxParam::NumLightGroup;i++)
+				{
+					if(!param.LMCAmbient[i].DifferentValues)
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START+i, param.LMCAmbient[i]);
+					if(!param.LMCDiffuse[i].DifferentValues)
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START+i, param.LMCDiffuse[i]);
+				}
+				
+				
 				// Next node
 				ite++;
 			}

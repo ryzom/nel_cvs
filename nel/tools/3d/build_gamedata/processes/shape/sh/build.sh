@@ -85,80 +85,47 @@ date
 ./sh/transfert_lightmap_optimize.bat
 
 quality_flag=`cat ../../cfg/site.cfg | grep "build_quality" | grep "1"`
-if ( test "$quality_flag" )
-then
-	# We are in BEST mode
-	seo8b=`cat ../../cfg/config.cfg | grep "shape_export_opt_8bits_lightmap" | sed -e 's/shape_export_opt_8bits_lightmap//' | sed -e 's/ //g' | sed -e 's/=//g'`
-else
-	# We are in DRAFT mode
-	seo8b='false'
-fi
 
-# Optimize lightmaps if any
-$lightmap_optimizer ./lightmap ./shape ./tag
+# Optimize lightmaps if any. Additionnaly, output a file indicating which lightmaps are 8 bits
+$lightmap_optimizer ./lightmap ./shape ./tag ./list_lm_8bit.txt
 
 # Convert lightmap in 16 bits mode if they are not 8 bits lightmap
 
-if ( test $seo8b = 'false' )
-then
+echo ------- >> log.log
+echo --- Build shape : convert lightmaps in 16 or 8 bits >> log.log
+echo ------- >> log.log
+echo ------- 
+echo --- Build shape : convert lightmaps in 16 or 8 bits 
+echo ------- 
+date >> log.log
+date
 
-	echo ------- >> log.log
-	echo --- Build shape : convert lightmaps in 16 bits >> log.log
-	echo ------- >> log.log
-	echo ------- 
-	echo --- Build shape : convert lightmaps in 16 bits 
-	echo ------- 
-	date >> log.log
-	date
+for i in lightmap/*.[tT][gG][aA] ; do
 
-	for i in lightmap/*.[tT][gG][aA] ; do
+	if ( test -f $i )
+	then
+		# Destination file
+		dest=`echo $i | sed -e 's/lightmap/lightmap_16_bits/g'`
 
-		if ( test -f $i )
+		# Convert the lightmap in 16 bits mode
+		if ( ! test -e $dest ) || ( test $i -nt $dest )
 		then
-			# Destination file
-			dest=`echo $i | sed -e 's/lightmap/lightmap_16_bits/g'`
-
-			# Convert the lightmap in 16 bits mode
-			if ( ! test -e $dest ) || ( test $i -nt $dest )
+			fileTest=`echo $i | sed -e 's&lightmap/&&g'`
+			file8Bit=`cat ./list_lm_8bit.txt | grep "$fileTest"`
+			if ( test "$file8Bit" = "$fileTest" )
 			then
+				echo "export $fileTest in 8bit format"
+				$tga_2_dds $i -o $dest -a tga8 2>> log.log
+			else
+				echo "export $fileTest in 16bit format"
 				$tga_2_dds $i -o $dest -a tga16 2>> log.log
 			fi
 		fi
+	fi
 
-		# Idle
-		../../idle.bat
-	done
-
-else
-
-	echo ------- >> log.log
-	echo --- Build shape : convert lightmaps in 8 bits >> log.log
-	echo ------- >> log.log
-	echo ------- 
-	echo --- Build shape : convert lightmaps in 8 bits 
-	echo ------- 
-	date >> log.log
-	date
-
-	for i in lightmap/*.[tT][gG][aA] ; do
-
-		if ( test -f $i )
-		then
-			# Destination file
-			dest=`echo $i | sed -e 's/lightmap/lightmap_16_bits/g'`
-
-			# Convert the lightmap in 8 bits mode
-			if ( ! test -e $dest ) || ( test $i -nt $dest )
-			then
-				$tga_2_dds $i -o $dest -a tga8 2>> log.log
-			fi
-		fi
-
-		# Idle
-		../../idle.bat
-	done
-
-fi
+	# Idle
+	../../idle.bat
+done
 
 # Log error
 echo ------- >> log.log

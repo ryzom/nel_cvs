@@ -27,6 +27,7 @@
 #define IDD_VERTEX_PROGRAM              122
 #define IDD_VP_WINDTREE                 123
 #define IDD_ANIM                        124
+#define IDD_LIGHTMAP2                   126
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define ID_SAVEAS                       1001
@@ -227,14 +228,32 @@
 #define IDC_LIGHT_DONT_CAST_SHADOW_INTERIOR 1536
 #define IDC_LIGHT_DONT_CAST_SHADOW_EXTERIOR 1537
 #define IDC_8BITS_LIGHTMAP              1537
+#define IDC_LM_ALWAYS_AMBIENT           1538
+#define IDC_LM_ALWAYS_DIFFUSE           1539
+#define IDC_LM_DAY_AMBIENT              1540
+#define IDC_LM_DAY_DIFFUSE              1541
+#define IDC_LM_NIGHT_AMBIENT            1542
+#define IDC_LM_NIGHT_DIFFUSE            1543
+#define IDC_LM_COMPRESS_8BIT            1544
+#define IDC_LMC_STATIC0                 1545
+#define IDC_LMC_STATIC1                 1546
+#define IDC_LMC_STATIC2                 1547
+#define IDC_LMC_STATIC3                 1548
+#define IDC_LMC_STATIC4                 1549
+#define IDC_LMC_STATIC5                 1550
+#define IDC_LMC_STATIC6                 1551
+#define IDC_LMC_STATIC7                 1552
+#define IDC_LMC_STATIC8                 1553
+#define IDC_LMC_AUTO_SETUP              1554
+#define IDC_LMC_AUTO_SETUP_VISIBLEONLY  1555
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        126
+#define _APS_NEXT_RESOURCE_VALUE        127
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1538
+#define _APS_NEXT_CONTROL_VALUE         1555
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

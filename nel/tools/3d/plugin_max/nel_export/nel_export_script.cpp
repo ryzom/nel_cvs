@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.25 2004/04/16 09:51:58 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.26 2004/05/14 15:01:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ def_visible_primitive ( node_properties,	"NelNodeProperties" );
 def_visible_primitive ( mirror_physique, 	"NelMirrorPhysique" );
 
 char *sExportShapeErrorMsg = "NeLExportShape [Object] [Filename.shape]";
-char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel] [b8BitsLightmap]";
+char *sExportShapeExErrorMsg = "NeLExportShapeEx [Object] [Filename.shape] [bShadow] [bExportLighting] [sLightmapPath] [nLightingLimit] [fLumelSize] [nOverSampling] [bExcludeNonSelected] [bShowLumel]";
 char *sExportAnimationErrorMsg = "NelExportAnimation [node array] [Filename.anim] [bool_scene_animation]";
 char *sExportCollisionErrorMsg = "NelExportCollision [node array] [output directory]";
 char *sExportPACSPrimitivesErrorMsg = "NelExportPACSPrimitves [node array] [output filename]";
@@ -113,8 +113,8 @@ Value* export_shape_cf (Value** arg_list, int count)
 
 Value* export_shape_ex_cf (Value** arg_list, int count)
 {
-	// Make sure we have the correct number of arguments (10)
-	check_arg_count(export_shape, 12, count);
+	// Make sure we have the correct number of arguments (11)
+	check_arg_count(export_shape, 11, count);
 
 	// Check to see if the arguments match up to what we expect
 	// We want to use 'TurnAllTexturesOn <object to use>'
@@ -129,7 +129,6 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	type_check (arg_list[8], Boolean, sExportShapeExErrorMsg);
 	type_check (arg_list[9], Boolean, sExportShapeExErrorMsg);
 	type_check (arg_list[10], Boolean, sExportShapeExErrorMsg);
-	type_check (arg_list[11], Boolean, sExportShapeExErrorMsg);
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
@@ -150,8 +149,7 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	theExportSceneStruct.nOverSampling = arg_list[7]->to_int();
 	theExportSceneStruct.bExcludeNonSelected = arg_list[8]->to_bool()!=FALSE;
 	theExportSceneStruct.bShowLumel = arg_list[9]->to_bool()!=FALSE;
-	theExportSceneStruct.b8BitsLightmap = arg_list[10]->to_bool()!=FALSE;
-	theExportSceneStruct.OutputLightmapLog = arg_list[11]->to_bool()!=FALSE;
+	theExportSceneStruct.OutputLightmapLog = arg_list[10]->to_bool()!=FALSE;
 
 	theCNelExport.init (false, false, ip, false);
 

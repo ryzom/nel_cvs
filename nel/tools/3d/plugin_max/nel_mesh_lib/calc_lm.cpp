@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.54 2004/04/16 14:28:19 besson Exp $
+ * $Id: calc_lm.cpp,v 1.55 2004/05/14 15:00:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -955,7 +955,7 @@ float getUVDist( CUV& UV1, CUV& UV2 )
 }
 
 // -----------------------------------------------------------------------------------------------
-void getLightNodeList (std::vector<INode*>& vectLightNode, TimeValue tvTime, Interface& ip, INode*node=NULL )
+void getLightNodeList (std::vector<INode*>& vectLightNode, TimeValue tvTime, Interface& ip, bool visibleOnly, INode*node=NULL )
 {
 	if( node == NULL )
 		node = ip.GetRootNode();
@@ -964,23 +964,27 @@ void getLightNodeList (std::vector<INode*>& vectLightNode, TimeValue tvTime, Int
 
 	if (nelLight.canConvertFromMaxLight(node, tvTime))
 	{
-		// Yoyo: if this light is checked to lightMap export
-		int		nLMExport= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, BST_CHECKED);
-		if(nLMExport == BST_CHECKED)
-			vectLightNode.push_back (node);
+		// visible, or add hidden too?
+		if(!visibleOnly || !node->IsHidden())
+		{
+			// Yoyo: if this light is checked to lightMap export
+			int		nLMExport= CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_LIGHTMAP_LIGHT, BST_CHECKED);
+			if(nLMExport == BST_CHECKED)
+				vectLightNode.push_back (node);
+		}
 	}
 
 	// Recurse sub node
 	for (int i=0; i<node->NumberOfChildren(); i++)
-		getLightNodeList (vectLightNode, tvTime, ip, node->GetChildNode(i));
+		getLightNodeList (vectLightNode, tvTime, ip, visibleOnly, node->GetChildNode(i));
 }
 
 // -----------------------------------------------------------------------------------------------
-void getLightBuilds( vector<SLightBuild> &lights, TimeValue tvTime, Interface& ip )
+void getLightmapLightBuilds( vector<SLightBuild> &lights, TimeValue tvTime, Interface& ip, bool visibleOnly )
 {
 	vector<INode*> nodeLights;
 
-	getLightNodeList (nodeLights, tvTime, ip);
+	getLightNodeList (nodeLights, tvTime, ip, visibleOnly);
 
 	lights.resize(nodeLights.size());
 	for(uint32 i = 0; i < nodeLights.size(); ++i)
@@ -1819,14 +1823,10 @@ bool isLightCanCastShadowOnBox( SLightBuild &rSLB, CAABBox &b )
 }
 
 // -----------------------------------------------------------------------------------------------
-bool isInteractionLightMesh( SLightBuild &rSLB, CMesh::CMeshBuild &rMB, CMeshBase::CMeshBaseBuild &rMBB )
+bool isInteractionLightMesh( SLightBuild &rSLB, CAABBox &meshBox)
 {
-	CAABBox meshBox;
-
 	if (rSLB.Type == SLightBuild::LightAmbient)
 		return true;
-
-	meshBox = getMeshBBox( rMB, rMBB, true );
 
 	if (rSLB.Type == SLightBuild::LightDir)
 	{
@@ -1837,6 +1837,17 @@ bool isInteractionLightMesh( SLightBuild &rSLB, CMesh::CMeshBuild &rMB, CMeshBas
 	}
 	return isLightCanCastShadowOnBox( rSLB, meshBox );
 }
+
+// -----------------------------------------------------------------------------------------------
+bool isInteractionLightMesh( SLightBuild &rSLB, CMesh::CMeshBuild &rMB, CMeshBase::CMeshBaseBuild &rMBB )
+{
+	CAABBox		meshBox;
+	
+	meshBox = getMeshBBox( rMB, rMBB, true );
+
+	return isInteractionLightMesh(rSLB, meshBox);
+}
+
 
 // -----------------------------------------------------------------------------------------------
 // Get all lights that can cast shadows on the current mesh
@@ -1864,9 +1875,7 @@ void getLightInteract( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, 
 				++nNbGroup;
 			}
 			else
-			{ // The light name already exist or there is not enought groups
-				if( j == nNbGroup )
-					j = nNbGroup - 1;
+			{
 				vvLights[j].push_back( i );
 			}
 		}
@@ -1900,37 +1909,19 @@ bool isBoxCanCastShadowOnBoxWithLight( CAABBox &b1, CAABBox &b2, SLightBuild &l 
 }
 
 // -----------------------------------------------------------------------------------------------
-void supprLightNoInteract( vector<SLightBuild> &vLights, 
-						  vector< pair < pair < CMesh::CMeshBuild*, CMesh::CMeshBaseBuild* >, INode* > > &AllSelectedMeshes )
-{
-	uint32 i, j;
-
-	for( i = 0; i < vLights.size(); ++i )
-	{
-		bool bInteract = false;
-
-		for( j = 0; j < AllSelectedMeshes.size(); ++j )
-		if (isInteractionLightMesh( vLights[i], *AllSelectedMeshes[j].first.first, *AllSelectedMeshes[j].first.second))
-		{
-			bInteract = true;
-			break;
-		}
-		if (!bInteract)
-		{
-			// Suppress the light because it has no interaction with selected meshes
-			for( j = i; j < (vLights.size()-1); ++j )
-				vLights[j] = vLights[j+1];
-			vLights.resize(vLights.size()-1);
-			--i;
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------------------------
 void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, INode &node )
 {
 	uint32 i, j;
 
+	// temp result
+	vector<SLightBuild> result;
+	result.reserve(vLights.size());
+
+	// build the bb of the shape only one time
+	CAABBox		meshBox;
+	meshBox = getMeshBBox( *pMB, *pMBB, true );
+
+	// for all lights
 	for( i = 0; i < vLights.size(); ++i )
 	{
 		bool bInteract = false;
@@ -1941,20 +1932,19 @@ void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* p
 		}
 		else
 		{
-			if( isInteractionLightMesh( vLights[i], *pMB, *pMBB ) )
+			if( isInteractionLightMesh( vLights[i], meshBox) )
 			{
 				bInteract = true;			
 			}
 		}
-		if( !bInteract )
+		if( bInteract )
 		{
-			// Suppress the light because it has no interaction with selected meshes
-			for( j = i; j < (vLights.size()-1); ++j )
-				vLights[j] = vLights[j+1];
-			vLights.resize(vLights.size()-1);
-			--i;
+			result.push_back(vLights[i]);
 		}
 	}
+
+	// copy result
+	vLights= result;
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -2153,10 +2143,23 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 
 	uint32 i, j;
 
-	gOptions = _Options;
-
+	// **** Retrieve Shape Node properties
 	string sLumelSizeMul = CExportNel::getScriptAppData (&ZeNode, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
 	float rLumelSizeMul = (float)atof(sLumelSizeMul.c_str());
+	// 8Bits LightMap Compression
+	bool	lmcEnabled= CExportNel::getScriptAppData (&ZeNode, NEL3D_APPDATA_EXPORT_LMC_ENABLED, BST_UNCHECKED)==BST_CHECKED;
+	enum	{NumLightGroup= 3};
+	CRGBA	lmcAmbient[NumLightGroup];
+	CRGBA	lmcDiffuse[NumLightGroup];
+	for(i=0;i<NumLightGroup;i++)
+	{
+		lmcAmbient[i]= CExportNel::getScriptAppData (&ZeNode, NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START+i, CRGBA::Black);
+		lmcDiffuse[i]= CExportNel::getScriptAppData (&ZeNode, NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START+i, CRGBA::White);
+	}
+	
+	
+	// **** Read options
+	gOptions = _Options;
 
 	if (rLumelSizeMul > 0.0f)
 		gOptions.rLumelSize *= rLumelSizeMul;
@@ -2193,7 +2196,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	}
 	// Select meshes to test for raytrace
 	// Get all lights from MAX
-	getLightBuilds( AllLights, tvTime, *_Ip );
+	getLightmapLightBuilds( AllLights, tvTime, *_Ip );
 	// Get all lights L that have influence over the mesh selected
 	supprLightNoInteractOne( AllLights, pZeMeshBuild, pZeMeshBaseBuild, ZeNode );
 
@@ -2521,152 +2524,145 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		PutFaceUV1InTextureCoord( LightMap.w, LightMap.h, AllFaces.begin(), AllFaces.size() );
 		uint32 nLightMapNb = 0;
 		for (j = 0; j < LightMap.nNbLayerUsed; ++j)
-		if (!LightMap.isAllBlack((uint8)j))
 		{
-			CTextureFile *pLightMap = new CTextureFile();
-			//string sSaveName = AllMeshBuilds[nNode].second->GetName();
-			string sSaveName = ZeNode.GetName();
-			char tmp[32];
-			sSaveName += "_";
-			sprintf( tmp, "%d", nLightMapNb );
-			sSaveName += tmp;
-			sSaveName += ".tga";
-
-			// Concat name of the project with name of the file
-			sSaveName = (const char*)projectName + std::string ("_") + sSaveName;
-			sSaveName = strlwr (sSaveName);
-
-			// Remove spaces
-			uint i;
-			for (i=0; i<sSaveName.length(); i++)
+			CRGBA	lmcLayerAmbient= CRGBA::Black;
+			CRGBA	lmcLayerDiffuse= CRGBA::White;
+			if (lmcEnabled)
 			{
-				if (sSaveName[i] == ' ')
-					sSaveName[i] = '_';
-			}
-
-			pLightMap->setFileName (sSaveName);
-			sSaveName = gOptions.sExportLighting;
-			if (sSaveName[sSaveName.size()-1] != '\\') sSaveName += "\\";
-			sSaveName += pLightMap->getFileName();
-			if (_AbsolutePath)
-				pLightMap->setFileName (sSaveName);
-			// if first time Remove all lightmaps of the same name over all layers
-			if (j == 0)
-			{
-				string sBaseName = sSaveName.substr(0, 1+sSaveName.rfind('_'));
-				for (i = 0; i < 256; ++i)
-				{
-					string sLMName = sBaseName + NLMISC::toString(i) + ".tga";
-					CIFile ifi;
-					if (ifi.open(sLMName))
-					{
-						ifi.close ();
-						DeleteFile (sLMName.c_str());
-					}
-				}
-			}
-			// Convert and write
-			if (gOptions.b8BitsLightmap)
-				LightMap.copyColToBitmap8 (pLightMap, j);
-			else
-				LightMap.copyColToBitmap32 (pLightMap, j);
-
-			COFile f( sSaveName );
-			try
-			{
-				if (gOptions.b8BitsLightmap)
-				{
-					// In fact the output is 32 bits because we need the alpha channel
-					// to indicate where the lightmap parts are.
-					pLightMap->loadGrayscaleAsAlpha(false);
-					pLightMap->writeTGA (f, 32);
-				}
-				else
-				{
-					pLightMap->writeTGA (f, 32);
-				}
-			}
-			catch(Exception &e)
-			{
-				if (gOptions.FeedBack != NULL)
-				{
-					char message[512];
-					sprintf (message, "Can't write the file %s : %s", sSaveName, e.what());
-					mprintf (message);
-				}
-			}
-
-			// Add lightmap information in the lightmap log
-			if (outputLightmapLog)
-				appendLightmapLog (outputLog, sSaveName.c_str(), vvLights[j], AllLights);
-
-			if (gOptions.b8BitsLightmap)
-				pLightMap->setUploadFormat (ITexture::Luminance);
-			else
-				pLightMap->setUploadFormat (ITexture::RGB565);
-
-			pLightMap->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
-			pLightMap->setAllowDegradation (false);
-			if (gOptions.bShowLumel)
-				pLightMap->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
-
-			// If 8 bits lightmaps get the lighting factor
-			CRGBA lightingColor = CRGBA::White;
-
-			if (gOptions.b8BitsLightmap)
-			if( !vvLights.empty() && !vvLights[j].empty() )
-			{
-				// Take the first light that is not an ambiant light
-				SLightBuild &rTmpLB = AllLights[vvLights[j].operator[](0)];
-				uint32 li;
-				for (li = 0; li < vvLights[j].size(); ++li)
-				{
-					rTmpLB = AllLights[vvLights[j].operator[](li)];
-					if ((rTmpLB.bAmbientOnly == false) && (rTmpLB.Type != SLightBuild::LightAmbient))
-					{
-						lightingColor = rTmpLB.Diffuse;
-						break;
-					}
-				}
-				if (li == vvLights[j].size())
-				{
-					if (InfoLog)
-					{
-						InfoLog->display("%s LightMap %d No Light Found\n", ZeNode.GetName(), j);
-						for (uint32 zz =  0; zz < vvLights[j].size(); ++zz)
-							InfoLog->display("%s LightMap %d Light %d = %s\n", ZeNode.GetName(), j, zz, AllLights[vvLights[j].operator[](zz)].Name.c_str());
-						InfoLog->display("%s LightMap %d Color (%d,%d,%d)\n", ZeNode.GetName(), j, lightingColor.R, lightingColor.G, lightingColor.B);
-					}
-				}
-				else
-				{
-					if (InfoLog)
-						InfoLog->display("%s LightMap %d Color (%d,%d,%d) (%s)\n", ZeNode.GetName(), j, lightingColor.R, lightingColor.G, lightingColor.B, rTmpLB.Name.c_str());
-				}
-			}
-
-			// Setup all material of the object
-			for( i = firstMaterial; i < pMBB->Materials.size(); ++i )
-			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
-			{
-				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
-				
-				// If some light for this layer
+				// get the compress color term according to light group
 				if( !vvLights.empty() && !vvLights[j].empty() )
 				{
-					// Set the light factor if it is a 8 bits lightmap
-					if (gOptions.b8BitsLightmap)
+					// Take the first light that is not an ambiant light
+					SLightBuild &rTmpLB = AllLights[vvLights[j][0]];
+					if(rTmpLB.LightGroup<NumLightGroup)
 					{
-						pMBB->Materials[i].setLightMapColor ( nLightMapNb, lightingColor );
-						pMBB->Materials[i].setLightMapMulx2 (true);
+						lmcLayerAmbient= lmcAmbient[rTmpLB.LightGroup];
+						lmcLayerDiffuse= lmcDiffuse[rTmpLB.LightGroup];
 					}
-
-					addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].AnimatedLight, 
-									AllLights[vvLights[j].operator[](0)].LightGroup, 
-									(uint8)i, (uint8)nLightMapNb );
 				}
 			}
-			++nLightMapNb;
+
+			// if lightmap compression enabled, must not skip this layer if the ambient term is not black!
+			if (!LightMap.isAllBlack((uint8)j) || lmcLayerAmbient!=CRGBA::Black)
+			{
+				CTextureFile *pLightMap = new CTextureFile();
+				//string sSaveName = AllMeshBuilds[nNode].second->GetName();
+				string sSaveName = ZeNode.GetName();
+				char tmp[32];
+				sSaveName += "_";
+				sprintf( tmp, "%d", nLightMapNb );
+				sSaveName += tmp;
+				sSaveName += ".tga";
+
+				// Concat name of the project with name of the file
+				sSaveName = (const char*)projectName + std::string ("_") + sSaveName;
+				sSaveName = strlwr (sSaveName);
+
+				// Remove spaces
+				uint i;
+				for (i=0; i<sSaveName.length(); i++)
+				{
+					if (sSaveName[i] == ' ')
+						sSaveName[i] = '_';
+				}
+
+				pLightMap->setFileName (sSaveName);
+				sSaveName = gOptions.sExportLighting;
+				if (sSaveName[sSaveName.size()-1] != '\\') sSaveName += "\\";
+				sSaveName += pLightMap->getFileName();
+				if (_AbsolutePath)
+					pLightMap->setFileName (sSaveName);
+				// if first time Remove all lightmaps of the same name over all layers
+				if (j == 0)
+				{
+					string sBaseName = sSaveName.substr(0, 1+sSaveName.rfind('_'));
+					for (i = 0; i < 256; ++i)
+					{
+						string sLMName = sBaseName + NLMISC::toString(i) + ".tga";
+						CIFile ifi;
+						if (ifi.open(sLMName))
+						{
+							ifi.close ();
+							DeleteFile (sLMName.c_str());
+						}
+					}
+				}
+
+				// Convert and write
+				if (lmcEnabled)
+				{
+					// compress to 8 bits
+					LightMap.copyColToBitmap8x2 (pLightMap, j, lmcLayerAmbient, lmcLayerDiffuse);
+				}
+				else
+					// cust copy to 32 bits
+					LightMap.copyColToBitmap32 (pLightMap, j);
+
+				COFile f( sSaveName );
+				try
+				{
+					if (lmcEnabled)
+					{
+						// In fact the output is 32 bits because we need the alpha channel
+						// to indicate where the lightmap parts are.
+						pLightMap->loadGrayscaleAsAlpha(false);
+						pLightMap->writeTGA (f, 32);
+					}
+					else
+					{
+						pLightMap->writeTGA (f, 32);
+					}
+				}
+				catch(Exception &e)
+				{
+					if (gOptions.FeedBack != NULL)
+					{
+						char message[512];
+						sprintf (message, "Can't write the file %s : %s", sSaveName, e.what());
+						mprintf (message);
+					}
+				}
+
+				// Add lightmap information in the lightmap log
+				if (outputLightmapLog)
+					appendLightmapLog (outputLog, sSaveName.c_str(), vvLights[j], AllLights);
+
+				if (lmcEnabled)
+					pLightMap->setUploadFormat (ITexture::Luminance);
+				else
+					pLightMap->setUploadFormat (ITexture::RGB565);
+
+				pLightMap->setFilterMode (ITexture::Linear, ITexture::LinearMipMapOff);
+				pLightMap->setAllowDegradation (false);
+				if (gOptions.bShowLumel)
+					pLightMap->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
+
+				// Setup all material of the object
+				for( i = firstMaterial; i < pMBB->Materials.size(); ++i )
+				if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
+				{
+					pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
+					
+					// If some light for this layer
+					if( !vvLights.empty() && !vvLights[j].empty() )
+					{
+						// Set the light factor if it is a 8 bits lightmap
+						if (lmcEnabled)
+						{
+							// Divide by 2 the ambient color in the material. see compute
+							CRGBA	mA;
+							mA.modulateFromui(lmcLayerAmbient, 127);
+							pMBB->Materials[i].setLMCColors ( nLightMapNb, mA, lmcLayerDiffuse );
+							pMBB->Materials[i].setLightMapMulx2 (true);
+						}
+
+						addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].AnimatedLight, 
+										AllLights[vvLights[j].operator[](0)].LightGroup, 
+										(uint8)i, (uint8)nLightMapNb );
+					}
+				}
+				++nLightMapNb;
+			}
 		}
 		// Next mesh
 	}

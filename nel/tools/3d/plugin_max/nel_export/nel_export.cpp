@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.37 2004/04/14 12:35:29 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.38 2004/05/14 15:01:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,10 +118,6 @@ int CALLBACK OptionsDialogCallback (
 				SendMessage( GetDlgItem(hwndDlg,IDC_SHOWLUMEL), BM_SETCHECK, BST_CHECKED, 0 );
 			else
 				SendMessage( GetDlgItem(hwndDlg,IDC_SHOWLUMEL), BM_SETCHECK, BST_UNCHECKED, 0 );
-			if( theExportSceneStruct.b8BitsLightmap )
-				SendMessage( GetDlgItem(hwndDlg,IDC_8BITS_LIGHTMAP), BM_SETCHECK, BST_CHECKED, 0 );
-			else
-				SendMessage( GetDlgItem(hwndDlg,IDC_8BITS_LIGHTMAP), BM_SETCHECK, BST_UNCHECKED, 0 );
 			
 			if( theExportSceneStruct.bExportBgColor )
 				SendMessage( GetDlgItem(hwndDlg,IDC_EXPORT_BG_COLOR), BM_SETCHECK, BST_CHECKED, 0 );
@@ -200,10 +196,6 @@ int CALLBACK OptionsDialogCallback (
 						theExportSceneStruct.bShowLumel = true;
 					else
 						theExportSceneStruct.bShowLumel = false;
-					if( SendMessage( GetDlgItem(hwndDlg,IDC_8BITS_LIGHTMAP), BM_GETCHECK, 0, 0 ) == BST_CHECKED )
-						theExportSceneStruct.b8BitsLightmap = true;
-					else
-						theExportSceneStruct.b8BitsLightmap = false;
 					theExportSceneStruct.bExportBgColor = ( SendMessage( GetDlgItem(hwndDlg,IDC_EXPORT_BG_COLOR), BM_GETCHECK, 0, 0 ) == BST_CHECKED );
 
 					// SurfaceLighting

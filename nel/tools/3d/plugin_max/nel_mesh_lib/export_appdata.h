@@ -1,7 +1,7 @@
 /** \file export_appdata.h
  * Define NeL appdata for 3dsmax
  *
- * $Id: export_appdata.h,v 1.5 2003/08/04 15:02:25 corvazier Exp $
+ * $Id: export_appdata.h,v 1.6 2004/05/14 15:00:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,6 +165,16 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 #define NEL3D_APPDATA_LIGHT_DONT_CAST_SHADOW_INTERIOR		(1423062636)
 #define NEL3D_APPDATA_LIGHT_DONT_CAST_SHADOW_EXTERIOR		(1423062637)
 
+// Lightmap compression
+#define NEL3D_APPDATA_EXPORT_LMC_ENABLED			(1423062638)
+#define NEL3D_APPDATA_EXPORT_LMC_MAX_LIGHT_GROUP	16
+#define NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START		(1423062639)
+#define NEL3D_APPDATA_EXPORT_LMC_DIFFUSE_START		NEL3D_APPDATA_EXPORT_LMC_AMBIENT_START + NEL3D_APPDATA_EXPORT_LMC_MAX_LIGHT_GROUP
+// End at 1423062671.
+
+
+// Next free appData is 1423062671
+// WARNING!!!!!!!!!  : 700+ and 800+ are already used....
 
 
 // ***************************************************************************

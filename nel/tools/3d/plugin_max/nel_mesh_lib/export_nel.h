@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.70 2004/04/14 12:35:29 corvazier Exp $
+ * $Id: export_nel.h,v 1.71 2004/05/14 15:00:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,7 +143,6 @@ struct CExportNelOptions
 	sint32 nOverSampling;
 	bool bExcludeNonSelected;
 	IProgress *FeedBack;
-	bool b8BitsLightmap;			// 8 bits grayscale lightmap
 	bool bShowLumel;
 	bool bTestSurfaceLighting;
 	float SurfaceLightingCellSize;
@@ -163,7 +162,6 @@ struct CExportNelOptions
 		nOverSampling = 1;
 		bExcludeNonSelected = false;
 		FeedBack = NULL;
-		b8BitsLightmap = false;
 		bShowLumel = false;
 		bTestSurfaceLighting= true;
 		SurfaceLightingCellSize= 1.5f;
@@ -180,7 +178,10 @@ struct CExportNelOptions
 		case 6:
 			stream.serial (OutputLightmapLog);
 		case 5:
-			stream.serial (b8BitsLightmap);
+		{
+			bool	fake= false;
+			stream.serial (fake);
+		}
 		case 4:
 			stream.serial (SurfaceLightingDeltaZ);
 		case 3:
@@ -636,6 +637,12 @@ public:
 	// Set an appData integer
 	static void						setScriptAppData (Animatable *node, uint32 id, const std::string& value);
 
+	// Get an appData RGBA
+	static NLMISC::CRGBA			getScriptAppData (Animatable *node, uint32 id, NLMISC::CRGBA def);
+	
+	// Set an appData RGBA
+	static void						setScriptAppData (Animatable *node, uint32 id, NLMISC::CRGBA val);
+	
 	// Output error message
 	void							outputErrorMessage (const char *message);
 	void							outputWarningMessage (const char *message);

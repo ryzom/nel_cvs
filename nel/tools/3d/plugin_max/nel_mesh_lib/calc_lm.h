@@ -1,7 +1,7 @@
 /** \file calc_lm.h
  * LightMap Calculation settings
  *
- * $Id: calc_lm.h,v 1.7 2004/02/04 11:17:51 besson Exp $
+ * $Id: calc_lm.h,v 1.8 2004/05/14 15:00:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,6 +96,11 @@ struct SLightBuild
 };
 
 // ***********************************************************************************************
+/** retrieve all the light flagged "lightmap" in the scene
+ *	/param visibleOnly if false, all lights are retrieved, else only light not hidden are retrieved
+ */
+void getLightmapLightBuilds( std::vector<SLightBuild> &lights, TimeValue tvTime, Interface& ip, bool visibleOnly= false );
+
 
 #endif // NL_CALC_LM_H
 

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.39 2002/06/14 14:44:55 corvazier Exp $
+ * $Id: path.cpp,v 1.40 2002/06/18 08:23:50 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -399,7 +399,7 @@ bool isdirectory (dirent *de)
 {
 	nlassert (de != NULL);
 #ifdef NL_OS_WINDOWS
-	return (de->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+	return ((de->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) && ((de->dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) == 0);
 #else
 	return (de->d_type & DT_DIR) != 0;
 #endif // NL_OS_WINDOWS
@@ -409,7 +409,7 @@ bool isfile (dirent *de)
 {
 	nlassert (de != NULL);
 #ifdef NL_OS_WINDOWS
-	return (de->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+	return ((de->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) && ((de->dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) == 0);
 #else
 	return (de->d_type & DT_DIR) == 0;
 #endif // NL_OS_WINDOWS

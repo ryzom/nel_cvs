@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.23 2001/01/15 13:40:57 cado Exp $
+ * $Id: base_socket.h,v 1.24 2001/01/17 16:34:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,12 +49,12 @@ public:
 	/// Returns the reason of the exception	
 	virtual const char	*what() const
 	{
-		return _Reason.c_str();
+	  return _Reason.c_str();
 	}
 
 protected:
 
-	std::string	_Reason;
+		std::string	_Reason;
 };
 
 

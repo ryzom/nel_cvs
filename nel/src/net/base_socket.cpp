@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.35 2001/01/15 14:44:26 cado Exp $
+ * $Id: base_socket.cpp,v 1.36 2001/01/17 16:34:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,8 @@ bool CBaseSocket::_Initialized = false;
  */
 ESocket::ESocket( const char *reason, bool systemerror )
 {
-	std::stringstream ss;
+  /*it doesnt work on linux, should do something more cool
+  	std::stringstream ss;
 	ss << "Socket error: " << reason;
 	if ( systemerror )
 	{
@@ -74,6 +75,8 @@ ESocket::ESocket( const char *reason, bool systemerror )
 		ss << ") " << std::endl;
 	}
 	_Reason = ss.str();
+  */
+  _Reason = "toto2";
 }
 
 

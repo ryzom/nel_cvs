@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * <File description>
  *
- * $Id: ps_mesh.h,v 1.6 2002/01/23 09:32:57 berenguier Exp $
+ * $Id: ps_mesh.h,v 1.7 2002/01/29 13:34:18 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -119,21 +119,23 @@ public:
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for the index given
 	 *  index out of range -> nl_assert
 	 */
-	virtual void deleteElement(uint32 index) ;
+	virtual void deleteElement(uint32 index);
 
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 
-	virtual void draw(bool opaque);
+	/// in fact we don't draw the meshs, we just update their pos...
+	virtual void updatePos();
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
-	virtual void resize(uint32 size) ;	
+	virtual void resize(uint32 size);	
 
 	//CSmartPtr<IShape> _Shape;
 
@@ -352,19 +354,20 @@ protected:
 
 	/**	Generate a new element.
 	 */
-	virtual void		newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	virtual void		newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
 	
 	/** Delete an element by its index	 
 	 */
-	virtual void		deleteElement(uint32 index) ;
+	virtual void		deleteElement(uint32 index);
 
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 	/** called by the system when particles must be drawn
 	  * \param opaque true if we are dealing with the opaque pass, false for transparent faces
 	  */
-	virtual void		draw(bool opaque);
+	void		draw(bool opaque, TAnimationTime ellapsedTime);
 
 	/// draw for pre-rotated meshs
-	void				drawPreRotatedMeshs(bool opaque);
+	void				drawPreRotatedMeshs(bool opaque, TAnimationTime ellapsedTime);
 
 	/// draw for non pre-rotated meshs
 	void				drawMeshs(bool opaque);
@@ -392,7 +395,7 @@ protected:
 	bool				update(void);
 
 	/// make a vb for the prerotated mesh from a source vb
-	CVertexBuffer	    &makePrerotatedVb(const CVertexBuffer &inVB);
+	CVertexBuffer	    &makePrerotatedVb(const CVertexBuffer &inVB, TAnimationTime ellapsedTime);
 	
 	/** A rendering pass. The pb block contains several duplication of the primitives of the original mesh, in order
       * to draw sevral of them at once

@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * <File description>
  *
- * $Id: ps_mesh.cpp,v 1.12 2002/01/16 14:00:14 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.13 2002/01/29 13:34:18 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -273,7 +273,22 @@ void CPSMesh::deleteElement(uint32 index)
 }
 
 //====================================================================================
-void CPSMesh::draw(bool opaque)
+void CPSMesh::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+{
+		if (pass == PSSolidRender)			
+		{
+			updatePos();
+		}
+		else 
+		if (pass == PSToolRender) // edition mode only
+		{			
+			showTool();
+		}
+
+}
+
+//====================================================================================
+void CPSMesh::updatePos()
 {
 	PARTICLES_CHECK_MEM;
 
@@ -978,7 +993,7 @@ void CPSConstraintMesh::clean(void)
 
 
 //====================================================================================
-CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb)
+CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb, TAnimationTime ellapsedTime)
 {
 	// get a VB that has positions and eventually normals
 	CVertexBuffer &prerotatedVb = inVb.getVertexFormat() & CVertexBuffer::NormalFlag ? _PreRotatedMeshVBWithNormal : _PreRotatedMeshVB;
@@ -1000,9 +1015,7 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb)
 	}
 
 	const uint nbVerticesInSource	= inVb.getNumVertices();
-	
-	// TODO : put the right value here
-	const float ellapsedTime = 0.01f;
+		
 
 	// rotate basis
 	// and compute the set of prerotated meshs that will then duplicated (with scale and translation) to create the Vb of what must be drawn
@@ -1061,8 +1074,26 @@ CVertexBuffer &CPSConstraintMesh::makePrerotatedVb(const CVertexBuffer &inVb)
 	return prerotatedVb;
 }
 
+
 //====================================================================================
-void CPSConstraintMesh::draw(bool opaque)
+void CPSConstraintMesh::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+{
+		if (
+			(pass == PSBlendRender && hasTransparentFaces())
+			|| (pass == PSSolidRender && hasOpaqueFaces())
+			)
+		{
+			draw(pass == PSSolidRender, ellapsedTime);
+		}
+		else 
+		if (pass == PSToolRender) // edition mode only
+		{			
+			showTool();
+		}
+}
+
+//====================================================================================
+void CPSConstraintMesh::draw(bool opaque, TAnimationTime ellapsedTime)
 {
 	PARTICLES_CHECK_MEM;
 	nlassert(_Owner);	
@@ -1073,7 +1104,7 @@ void CPSConstraintMesh::draw(bool opaque)
 	_Owner->incrementNbDrawnParticles(size); // for benchmark purpose		
 	if (_PrecompBasis.size() != 0)
 	{
-		drawPreRotatedMeshs(opaque);
+		drawPreRotatedMeshs(opaque, ellapsedTime);
 	}
 	else
 	{
@@ -1212,7 +1243,7 @@ void	CPSConstraintMesh::computeColors(CVertexBuffer &outVB, const CVertexBuffer 
 }
 
 //====================================================================================
-void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
+void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque, TAnimationTime ellapsedTime)
 {	
 	// get the vb from the original mesh
 	CMesh				  &mesh	= * NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[0]);
@@ -1221,7 +1252,7 @@ void	CPSConstraintMesh::drawPreRotatedMeshs(bool opaque)
 	const CVertexBuffer   &modelVb = mesh.getVertexBuffer();
 
 	/// precompute rotation in a VB from the src mesh
-	CVertexBuffer &prerotVb  = makePrerotatedVb(modelVb);
+	CVertexBuffer &prerotVb  = makePrerotatedVb(modelVb, ellapsedTime);
 
 	
 	// number of meshs

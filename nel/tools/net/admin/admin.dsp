@@ -69,8 +69,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "__STL_DEBUG" /D "_MBCS" /D "INTERF_GTK" /FR /FD /GZ /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "__STL_DEBUG" /D "_MBCS" /D "INTERF_GTK" /FD /GZ /c
+# SUBTRACT CPP /Fr /YX
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -123,8 +123,8 @@ LINK32=link.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "WIN32" /D "_DEBUG" /D "_CONSOLE" /D "__STL_DEBUG" /D "_MBCS" /D "INTERF_GTK" /FR /FD /GZ /c
 # SUBTRACT BASE CPP /YX
-# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_CONSOLE" /D "INTERF_GTK" /D "_DEBUG" /D "WIN32" /D "_MBCS" /FR /FD /GZ /c
-# SUBTRACT CPP /YX
+# ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Ob1 /Gf /D "_CONSOLE" /D "INTERF_GTK" /D "_DEBUG" /D "WIN32" /D "_MBCS" /FD /GZ /c
+# SUBTRACT CPP /Fr /YX
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -133,7 +133,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 User32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 User32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:console /debug /machine:I386 /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 

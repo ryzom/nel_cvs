@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.131 2002/09/11 13:55:38 besson Exp $
+ * $Id: driver_opengl.h,v 1.132 2002/09/24 14:40:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,6 +69,7 @@
 #include "nel/misc/event_emitter_multi.h"
 #include "driver_opengl_states.h"
 #include "3d/texture_cube.h"
+#include "3d/vertex_program_parse.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -180,6 +181,7 @@ public:
 	void		setupVertexBuffer(CVertexBuffer &vb);
 	void		setupVertexBufferHard(IVertexBufferHardGL &vb);
 };
+
 
 
 // ***************************************************************************
@@ -419,6 +421,13 @@ public:
 	virtual void setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4]);
 	// @}
 
+	/// \name EMBM support
+	// @{
+		virtual bool supportEMBM() const;		
+		virtual bool isEMBMSupportedAtStage(uint stage) const;
+		virtual void setEMBMMatrix(const uint stage, const float mat[4]);
+	// @}
+
 	virtual bool supportPerPixelLighting(bool specular) const;
 
 
@@ -496,6 +505,12 @@ private:
 	// To know if the modelview matrix setup has been changed from last render() (any call to setupViewMatrix() / setupModelMatrix() ).
 	bool					_ModelViewMatrixDirty;
 
+	// To know if the projection matrix has been changed
+	bool					_ProjMatDirty;
+
+	// Mirror the gl projection matrix when _ProjMatDirty = false 
+	NLMISC::CMatrix			_GLProjMat;
+
 	// Ored of _LightSetupDirty and _ModelViewMatrixDirty
 	bool					_RenderSetupDirty;
 
@@ -548,12 +563,12 @@ private:
 	// Special Texture environnements.
 	enum	CTexEnvSpecial {
 		TexEnvSpecialDisabled= 0, 
-		TexEnvSpecialLightMapNV4, 
-		TexEnvSpecialSpecularStage0NV4,
-		TexEnvSpecialSpecularStage1NV4,
-		TexEnvSpecialSpecularStage1NoTextNV4,
+		TexEnvSpecialLightMap, 
+		TexEnvSpecialSpecularStage0,
+		TexEnvSpecialSpecularStage1,
+		TexEnvSpecialSpecularStage1NoText,
 		TexEnvSpecialPPLStage0,
-		TexEnvSpecialPPLStage2,
+		TexEnvSpecialPPLStage2,		
 	};
 
 	// NB: CRefPtr are not used for mem/spped optimisation. setupMaterial() and setupTexture() reset those states.
@@ -570,6 +585,8 @@ private:
 	void					resetTextureShaders();
 	// activation of texture shaders
 	bool					_NVTextureShaderEnabled;
+	// Which stages support EMBM
+	bool					_StageSupportEMBM[IDRV_MAT_MAXTEXTURES];
 
 	// Prec settings for material.
 	CDriverGLStates			_DriverGLStates;
@@ -581,6 +598,8 @@ private:
 	bool					_CurrentGlNormalize;
 
 private:	
+	// Get the proj matrix setupped in GL
+	void					refreshProjMatrixFromGL();
 
 	bool					setupVertexBuffer(CVertexBuffer& VB);
 	// Activate Texture Environnement. Do it with caching.
@@ -677,8 +696,7 @@ private:
 	void			setupSpecularPass(uint pass);
 	void			endSpecularMultiPass();
 	// @}
-
-
+		
 	/// \name Per pixel lighting
 	// @{
 	// per pixel lighting with specular
@@ -718,6 +736,12 @@ private:
 	/// setup GL arrays, with a vb info.
 	void			setupGlArrays(CVertexBufferInfo &vb);
 
+	/// Tools fct used by setupGLArrays
+	void			setupGlArraysStd(CVertexBufferInfo &vb);
+	void			setupGlArraysForNVVertexProgram(CVertexBufferInfo &vb);
+	void			setupGlArraysForEXTVertexShader(CVertexBufferInfo &vb);
+	void			toggleGlArraysForNVVertexProgram();
+	void			toggleGlArraysForEXTVertexShader();
 
 	/// Test/activate normalisation of normal.
 	void			enableGlNormalize(bool normalize)
@@ -804,8 +828,17 @@ private:
 	void			setConstant (uint index, uint num, const double *src);
 	void			setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver::TTransform transform);	
 	void			enableVertexProgramDoubleSidedColor(bool doubleSided);
+	bool		    supportVertexProgramDoubleSidedColor() const;
+
 	
 	// @}
+
+	/// \name Vertex program implementation
+	// @{
+		bool activeNVVertexProgram (CVertexProgram *program);
+		bool activeEXTVertexShader (CVertexProgram *program);		
+	//@}
+
 
 
 	/// \fallback for material shaders
@@ -825,6 +858,8 @@ private:
 	// Say if last setupGlArrays() was a VertexProgram setup.
 	bool							_LastSetupGLArrayVertexProgram;
 
+	// The last vertex program that was setupped
+	NLMISC::CRefPtr<CVertexProgram> _LastSetuppedVP;
 
 	bool							_ForceDXTCCompression;
 	/// Divisor for textureResize (power).
@@ -855,6 +890,32 @@ private:
 
 	NLMISC::CRGBA					_CurrentBlendConstantColor;
 
+	/// \name EXTVertexShader specifics.
+	// @{
+			// Variants offset used for : 
+			// Secondary color
+			// Fog Coords
+			// Skin Weight
+			// Palette Skin
+			// This mean that they must have 4 components
+			public:
+				enum EEVSVariants { EVSSecondaryColorVariant = 0, EVSFogCoordsVariant = 1, EVSSkinWeightVariant = 2, EVSPaletteSkinVariant = 3, EVSNumVariants };
+			private:
+			// Handle for standard gl arrays
+			GLuint _EVSPositionHandle;
+			GLuint _EVSNormalHandle;
+			GLuint _EVSColorHandle;			
+			GLuint _EVSTexHandle[8];
+			// Handle of the first constant c[0]. In vertex program wa have 96 constant c[0] .. c[95]
+			GLuint _EVSConstantHandle;
+			// 
+			bool   setupEXTVertexShader(const CVPParser::TProgram &program, GLuint id, uint variants[EVSNumVariants], uint16 &usedInputRegisters);
+			//			
+	// @}
+
+	// init EMBM settings (set each stage to modify the next)
+	void	initEMBM();
+
 	// Monitor color parameters backup
 #ifdef WIN32
 	bool							_NeedToRestaureGammaRamp;
@@ -862,7 +923,30 @@ private:
 #endif
 };
 
-	
+
+// ***************************************************************************
+class CVertexProgamDrvInfosGL : public IVertexProgramDrvInfos
+{
+public:
+	// The GL Id.
+	GLuint					ID;
+
+	/**  EXTVertexShader specific 
+	  *  handle of allocated variants
+	  */
+	GLuint					Variants[CDriverGL::EVSNumVariants];
+	/** EXTVertexShader specific 
+	  * Used input registers.
+	  * This allow to activate only the gl arrays that are needed by a given shader.
+	  */
+	uint16					UsedVertexComponents;
+
+
+	// The gl id is auto created here.
+	CVertexProgamDrvInfosGL (CDriverGL *drv, ItVtxPrgDrvInfoPtrList it);
+};
+
+
 } // NL3D
 
 #endif // NL_OPENGL_H

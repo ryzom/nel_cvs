@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.162 2002/09/12 16:36:04 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.163 2002/09/24 14:40:40 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -88,7 +88,7 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0x7;
+const uint32		CDriverGL::ReleaseVersion = 0x8;
 
 #ifdef NL_OS_WINDOWS
 
@@ -253,6 +253,9 @@ CDriverGL::CDriverGL()
 	_LightMapLastStageEnv.Env.SrcArg0Alpha= CMaterial::Texture;
 	_LightMapLastStageEnv.Env.OpArg0Alpha= CMaterial::SrcAlpha;
 
+	_ProjMatDirty = true;
+
+	std::fill(_StageSupportEMBM, _StageSupportEMBM + IDRV_MAT_MAXTEXTURES, false);
 
 ///	buildCausticCubeMapTex();
 
@@ -1001,9 +1004,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		_VRAMVertexArrayRange= new CVertexArrayRangeATI(this);
 		_SupportVBHard= true;
 		// BAD ATI extension scheme.
-		_SlowUnlockVBHard= true;
-		// TODODO: ?????
-		_MaxVerticesByVBHard= 65535;
+		_SlowUnlockVBHard= true;		
+		//_MaxVerticesByVBHard= 65000;
+		_MaxVerticesByVBHard= 32767;
 	}
 
 	// Reset VertexArrayRange.
@@ -1034,6 +1037,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 			_MaxVerticesByVBHard= 0;
 		}
 	}
+
+	// Init embm if present
+	//===========================================================
+	initEMBM();
 
 
 	// Activate the default texture environnments for all stages.
@@ -1094,6 +1101,41 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// check wether per pixel lighting shader is supported
 	checkForPerPixelLightingSupport();
 
+	// if EXTVertexShader is used, bind  the standard GL arrays, and allocate constant
+	if (!_Extensions.NVVertexProgram && _Extensions.EXTVertexShader)
+	{
+			_EVSPositionHandle = nglBindParameterEXT(GL_CURRENT_VERTEX_EXT);
+			_EVSNormalHandle   = nglBindParameterEXT(GL_CURRENT_NORMAL);
+			_EVSColorHandle    = nglBindParameterEXT(GL_CURRENT_COLOR);
+			if (!_EVSPositionHandle || !_EVSNormalHandle || !_EVSColorHandle)
+			{
+				nlwarning("Unable to bind input parameters for use with EXT_vertex_shader, vertex program support is disabled");
+				_Extensions.EXTVertexShader = false;
+			}
+			else
+			{			
+				// bind texture units
+				for(uint k = 0; k < 8; ++k)
+				{				
+					_EVSTexHandle[k] = nglBindTextureUnitParameterEXT(GL_TEXTURE0_ARB + k, GL_CURRENT_TEXTURE_COORDS);
+				}
+				// Other attributes are managed using variant pointers :
+				// Secondary color
+				// Fog Coords
+				// Skin Weight
+				// Skin palette
+				// This mean that they must have 4 components
+
+				// Allocate variants
+				_EVSConstantHandle = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_INVARIANT_EXT, GL_FULL_RANGE_EXT, 97);		
+
+				if (_EVSConstantHandle == 0)
+				{
+					nlwarning("Unable to allocate constants for EXT_vertex_shader, vertex program support is disabled");
+					_Extensions.EXTVertexShader = false;
+				}
+			}
+	}
 
 	return true;
 }
@@ -1862,6 +1904,21 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 	_CurrentFogColor[3]= color.A/255.0f;
 
 	glFogfv(GL_FOG_COLOR, _CurrentFogColor);
+
+	/** Special : with vertex program, using the extension EXT_vertex_shader, fog is emulated using 1 more constant to scale result to [0, 1]
+	  */
+	if (_Extensions.EXTVertexShader && !_Extensions.NVVertexProgram)
+	{
+		// register 96 is used to store fog informations
+		if (start != end)
+		{		
+			setConstant(96, 1.f / (start - end), - end / (start - end), 0, 0);
+		}
+		else
+		{
+			setConstant(96, 0.f, 0, 0, 0);
+		}
+	}
 }
 
 
@@ -1936,7 +1993,7 @@ uint32			CDriverGL::getUsedTextureMemory() const
 // ***************************************************************************
 bool CDriverGL::supportTextureShaders() const
 {
-// supported only vie NV_TEXTURE_SHADERS for now
+	// fully supported by NV_TEXTURE_SHADER	
 	return _Extensions.NVTextureShader;
 }
 
@@ -1949,8 +2006,7 @@ bool CDriverGL::isTextureAddrModeSupported(CMaterial::TTexAddressingMode mode) c
 		return true;
 	}
 	else
-	{
-		// additionnal test may be performed here (this is why there isn't just 'return _Extensions.NVTextureShader != NULL'
+	{			
 		return false;
 	}
 }
@@ -1991,15 +2047,15 @@ void CDriverGL::checkForPerPixelLightingSupport()
 	// TODO : support for EnvCombine3
 	// TODO : support for less than 3 stages
 
-	_SupportPerPixelShaderNoSpec = _Extensions.NVTextureEnvCombine4 
+	_SupportPerPixelShaderNoSpec = (_Extensions.NVTextureEnvCombine4 /* || _Extensions.ATIXTextureEnvCombine3*/)
 								   && _Extensions.ARBTextureCubeMap
 								   && _Extensions.NbTextureStages >= 3
-								   && _Extensions.NVVertexProgram;
+								   && (_Extensions.NVVertexProgram /* || _Extensions.EXTVertexShader*/);
 	
-	_SupportPerPixelShader = _Extensions.NVTextureEnvCombine4 
+	_SupportPerPixelShader = (_Extensions.NVTextureEnvCombine4 /*|| _Extensions.ATIXTextureEnvCombine3*/) 
 							 && _Extensions.ARBTextureCubeMap
 							 && _Extensions.NbTextureStages >= 2
-							 && _Extensions.NVVertexProgram;	
+							 && (_Extensions.NVVertexProgram /*|| _Extensions.EXTVertexShader*/);	
 }
 
 // ***************************************************************************
@@ -2113,6 +2169,18 @@ sint			CDriverGL::getNbTextureStages() const
 	return inlGetNumTextStages();
 }
 
+
+// ***************************************************************************
+void CDriverGL::refreshProjMatrixFromGL()
+{
+	if (!_ProjMatDirty) return;	
+	float mat[16];
+	glGetFloatv(GL_PROJECTION_MATRIX, mat);
+	_GLProjMat.set(mat);	
+	_ProjMatDirty = false;
+}
+
+
 // ***************************************************************************
 bool			CDriverGL::setMonitorColorProperties (const CMonitorColorProperties &properties)
 {
@@ -2168,6 +2236,74 @@ bool			CDriverGL::setMonitorColorProperties (const CMonitorColorProperties &prop
 	return false;
 
 #endif
+}
+
+// ***************************************************************************
+bool CDriverGL::supportEMBM() const
+{
+	// For now, supported via ATI extension
+	return _Extensions.ATIEnvMapBumpMap;
+}
+
+// ***************************************************************************
+bool CDriverGL::isEMBMSupportedAtStage(uint stage) const
+{
+	nlassert(supportEMBM());
+	nlassert(stage < IDRV_MAT_MAXTEXTURES)
+	return _StageSupportEMBM[stage];
+
+}
+
+// ***************************************************************************
+void CDriverGL::setEMBMMatrix(const uint stage,const float mat[4])
+{
+	nlassert(supportEMBM());
+	nlassert(stage < IDRV_MAT_MAXTEXTURES);
+	// 
+	if (_Extensions.ATIEnvMapBumpMap)
+	{
+		_DriverGLStates.activeTextureARB(stage);
+		nglTexBumpParameterfvATI(GL_BUMP_ROT_MATRIX_ATI, const_cast<float *>(mat));
+	}
+}
+
+// ***************************************************************************
+void CDriverGL::initEMBM()
+{
+	if (supportEMBM())
+	{	
+		std::fill(_StageSupportEMBM, _StageSupportEMBM + IDRV_MAT_MAXTEXTURES, false);
+		if (_Extensions.ATIEnvMapBumpMap)
+		{		
+			// Test which stage support EMBM
+			GLint numEMBMUnits;
+			nglGetTexBumpParameterivATI(GL_BUMP_NUM_TEX_UNITS_ATI, &numEMBMUnits);
+			std::vector<GLint> EMBMUnits(numEMBMUnits);
+			// get array of units that supports EMBM
+			nglGetTexBumpParameterivATI(GL_BUMP_TEX_UNITS_ATI, &EMBMUnits[0]);
+			uint k;
+			for(k = 0; k < (EMBMUnits.size() - 1); ++k)
+			{
+				uint stage = EMBMUnits[k] - GL_TEXTURE0_ARB;
+				if (stage < (IDRV_MAT_MAXTEXTURES - 1))
+				{
+					_StageSupportEMBM[k] = true;
+				}		
+			} 
+			// setup each stage to apply the bump map to the next stage
+			for(k = 0; k < IDRV_MAT_MAXTEXTURES - 1; ++k)
+			{
+				if (_StageSupportEMBM[k])
+				{	
+					// setup each stage so that it apply EMBM on the next stage
+					_DriverGLStates.activeTextureARB(k);
+					glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);	  
+					glTexEnvi(GL_TEXTURE_ENV, GL_BUMP_TARGET_ATI, GL_TEXTURE0_ARB + k + 1);				
+				}
+			}
+			_DriverGLStates.activeTextureARB(0);
+		}
+	}
 }
 
 } // NL3D

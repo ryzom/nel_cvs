@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.37 2002/08/30 11:58:02 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.38 2002/09/24 14:40:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -188,6 +188,43 @@ NEL_PFNGLVERTEXATTRIBS4FVNVPROC			nglVertexAttribs4fvNV;
 NEL_PFNGLVERTEXATTRIBS4SVNVPROC			nglVertexAttribs4svNV;
 NEL_PFNGLVERTEXATTRIBS4UBVNVPROC		nglVertexAttribs4ubvNV;
 
+// VertexShaderExt extension
+//==========================
+NEL_PFNGLBEGINVERTEXSHADEREXTPROC			nglBeginVertexShaderEXT;
+NEL_PFNGLENDVERTEXSHADEREXTPROC				nglEndVertexShaderEXT;
+NEL_PFNGLBINDVERTEXSHADEREXTPROC			nglBindVertexShaderEXT;
+NEL_PFNGLGENVERTEXSHADERSEXTPROC			nglGenVertexShadersEXT;
+NEL_PFNGLDELETEVERTEXSHADEREXTPROC			nglDeleteVertexShaderEXT;
+NEL_PFNGLSHADEROP1EXTPROC					nglShaderOp1EXT;
+NEL_PFNGLSHADEROP2EXTPROC					nglShaderOp2EXT;
+NEL_PFNGLSHADEROP3EXTPROC					nglShaderOp3EXT;
+NEL_PFNGLSWIZZLEEXTPROC						nglSwizzleEXT;
+NEL_PFNGLWRITEMASKEXTPROC					nglWriteMaskEXT;
+NEL_PFNGLINSERTCOMPONENTEXTPROC				nglInsertComponentEXT;
+NEL_PFNGLEXTRACTCOMPONENTEXTPROC			nglExtractComponentEXT;
+NEL_PFNGLGENSYMBOLSEXTPROC					nglGenSymbolsEXT;
+NEL_PFNGLSETINVARIANTEXTPROC				nglSetInvariantEXT;
+NEL_PFNGLSETLOCALCONSTANTEXTPROC			nglSetLocalConstantEXT;
+NEL_PFNGLVARIANTPOINTEREXTPROC				nglVariantPointerEXT;
+NEL_PFNGLENABLEVARIANTCLIENTSTATEEXTPROC	nglEnableVariantClientStateEXT;
+NEL_PFNGLDISABLEVARIANTCLIENTSTATEEXTPROC	nglDisableVariantClientStateEXT;
+NEL_PFNGLBINDLIGHTPARAMETEREXTPROC			nglBindLightParameterEXT;
+NEL_PFNGLBINDMATERIALPARAMETEREXTPROC		nglBindMaterialParameterEXT;
+NEL_PFNGLBINDTEXGENPARAMETEREXTPROC			nglBindTexGenParameterEXT;
+NEL_PFNGLBINDTEXTUREUNITPARAMETEREXTPROC	nglBindTextureUnitParameterEXT;
+NEL_PFNGLBINDPARAMETEREXTPROC				nglBindParameterEXT;
+NEL_PFNGLISVARIANTENABLEDEXTPROC			nglIsVariantEnabledEXT;
+NEL_PFNGLGETVARIANTBOOLEANVEXTPROC			nglGetVariantBooleanvEXT;
+NEL_PFNGLGETVARIANTINTEGERVEXTPROC			nglGetVariantIntegervEXT;
+NEL_PFNGLGETVARIANTFLOATVEXTPROC			nglGetVariantFloatvEXT;
+NEL_PFNGLGETVARIANTPOINTERVEXTPROC			nglGetVariantPointervEXT;
+NEL_PFNGLGETINVARIANTBOOLEANVEXTPROC		nglGetInvariantBooleanvEXT;
+NEL_PFNGLGETINVARIANTINTEGERVEXTPROC		nglGetInvariantIntegervEXT;
+NEL_PFNGLGETINVARIANTFLOATVEXTPROC			nglGetInvariantFloatvEXT;
+NEL_PFNGLGETLOCALCONSTANTBOOLEANVEXTPROC	nglGetLocalConstantBooleanvEXT;
+NEL_PFNGLGETLOCALCONSTANTINTEGERVEXTPROC	nglGetLocalConstantIntegervEXT;
+NEL_PFNGLGETLOCALCONSTANTFLOATVEXTPROC		nglGetLocalConstantFloatvEXT;
+
 
 // SecondaryColor extension
 //========================
@@ -229,6 +266,14 @@ NEL_PFNGLGETARRAYOBJECTIVATIPROC		nglGetArrayObjectivATI;
 NEL_PFNGLVARIANTARRAYOBJECTATIPROC		nglVariantArrayObjectATI;
 NEL_PFNGLGETVARIANTARRAYOBJECTFVATIPROC	nglGetVariantArrayObjectfvATI;
 NEL_PFNGLGETVARIANTARRAYOBJECTIVATIPROC	nglGetVariantArrayObjectivATI;
+
+
+// GL_ATI_envmap_bumpmap extension
+//========================
+PFNGLTEXBUMPPARAMETERIVATIPROC nglTexBumpParameterivATI;
+PFNGLTEXBUMPPARAMETERFVATIPROC nglTexBumpParameterfvATI;
+PFNGLGETTEXBUMPPARAMETERIVATIPROC nglGetTexBumpParameterivATI;
+PFNGLGETTEXBUMPPARAMETERFVATIPROC nglGetTexBumpParameterfvATI;
 
 
 // Pbuffer extension
@@ -433,6 +478,28 @@ static bool	setupNVTextureEnvCombine4(const char	*glext)
 }
 
 // *********************************
+static bool	setupATIXTextureEnvCombine3(const char	*glext)
+{
+	if(strstr(glext, "GL_ATIX_texture_env_combine3")==NULL)
+		return false;
+
+	return true;
+}
+
+// *********************************
+static bool	setupATIEnvMapBumpMap(const char	*glext)
+{
+	if(strstr(glext, "GL_ATI_envmap_bumpmap")==NULL)
+		return false;
+	if (!(nglTexBumpParameterivATI = (PFNGLTEXBUMPPARAMETERIVATIPROC) nelglGetProcAddress("glTexBumpParameterivATI"))) return false;
+	if (!(nglTexBumpParameterfvATI = (PFNGLTEXBUMPPARAMETERFVATIPROC) nelglGetProcAddress("glTexBumpParameterfvATI"))) return false;
+	if (!(nglGetTexBumpParameterivATI = (PFNGLGETTEXBUMPPARAMETERIVATIPROC) nelglGetProcAddress("glGetTexBumpParameterivATI"))) return false;
+	if (!(nglGetTexBumpParameterfvATI = (PFNGLGETTEXBUMPPARAMETERFVATIPROC) nelglGetProcAddress("glGetTexBumpParameterfvATI"))) return false;		
+
+	return true;
+}
+
+// *********************************
 static bool	setupARBTextureCubeMap(const char	*glext)
 {
 	if(strstr(glext, "GL_ARB_texture_cube_map")==NULL)
@@ -516,6 +583,71 @@ static bool	setupNVVertexProgram(const char	*glext)
 
 	return true;
 }
+
+// *********************************
+static bool	setupEXTVertexShader(const char	*glext)
+{					
+	if(strstr(glext, "GL_EXT_vertex_shader")==NULL)
+		return false;
+	if (!(nglBeginVertexShaderEXT = (NEL_PFNGLBEGINVERTEXSHADEREXTPROC)nelglGetProcAddress("glBeginVertexShaderEXT"))) return false;
+	if (!(nglEndVertexShaderEXT = (NEL_PFNGLENDVERTEXSHADEREXTPROC)nelglGetProcAddress("glEndVertexShaderEXT"))) return false;
+	if (!(nglBindVertexShaderEXT = (NEL_PFNGLBINDVERTEXSHADEREXTPROC)nelglGetProcAddress("glBindVertexShaderEXT"))) return false;
+	if (!(nglGenVertexShadersEXT = (NEL_PFNGLGENVERTEXSHADERSEXTPROC)nelglGetProcAddress("glGenVertexShadersEXT"))) return false;
+	if (!(nglDeleteVertexShaderEXT = (NEL_PFNGLDELETEVERTEXSHADEREXTPROC)nelglGetProcAddress("glDeleteVertexShaderEXT"))) return false;
+	if (!(nglShaderOp1EXT = (NEL_PFNGLSHADEROP1EXTPROC)nelglGetProcAddress("glShaderOp1EXT"))) return false;
+	if (!(nglShaderOp2EXT = (NEL_PFNGLSHADEROP2EXTPROC)nelglGetProcAddress("glShaderOp2EXT"))) return false;
+	if (!(nglShaderOp3EXT = (NEL_PFNGLSHADEROP3EXTPROC)nelglGetProcAddress("glShaderOp3EXT"))) return false;
+	if (!(nglSwizzleEXT = (NEL_PFNGLSWIZZLEEXTPROC)nelglGetProcAddress("glSwizzleEXT"))) return false;
+	if (!(nglWriteMaskEXT = (NEL_PFNGLWRITEMASKEXTPROC)nelglGetProcAddress("glWriteMaskEXT"))) return false;
+	if (!(nglInsertComponentEXT = (NEL_PFNGLINSERTCOMPONENTEXTPROC)nelglGetProcAddress("glInsertComponentEXT"))) return false;
+	if (!(nglExtractComponentEXT = (NEL_PFNGLEXTRACTCOMPONENTEXTPROC)nelglGetProcAddress("glExtractComponentEXT"))) return false;
+	if (!(nglGenSymbolsEXT = (NEL_PFNGLGENSYMBOLSEXTPROC)nelglGetProcAddress("glGenSymbolsEXT"))) return false;
+	if (!(nglSetInvariantEXT = (NEL_PFNGLSETINVARIANTEXTPROC)nelglGetProcAddress("glSetInvariantEXT"))) return false;
+	if (!(nglSetLocalConstantEXT = (NEL_PFNGLSETLOCALCONSTANTEXTPROC)nelglGetProcAddress("glSetLocalConstantEXT"))) return false;
+	if (!(nglVariantPointerEXT = (NEL_PFNGLVARIANTPOINTEREXTPROC)nelglGetProcAddress("glVariantPointerEXT"))) return false;
+	if (!(nglEnableVariantClientStateEXT = (NEL_PFNGLENABLEVARIANTCLIENTSTATEEXTPROC)nelglGetProcAddress("glEnableVariantClientStateEXT"))) return false;
+	if (!(nglDisableVariantClientStateEXT = (NEL_PFNGLDISABLEVARIANTCLIENTSTATEEXTPROC)nelglGetProcAddress("glDisableVariantClientStateEXT"))) return false;
+	if (!(nglBindLightParameterEXT = (NEL_PFNGLBINDLIGHTPARAMETEREXTPROC)nelglGetProcAddress("glBindLightParameterEXT"))) return false;
+	if (!(nglBindMaterialParameterEXT = (NEL_PFNGLBINDMATERIALPARAMETEREXTPROC)nelglGetProcAddress("glBindMaterialParameterEXT"))) return false;
+	if (!(nglBindTexGenParameterEXT = (NEL_PFNGLBINDTEXGENPARAMETEREXTPROC)nelglGetProcAddress("glBindTexGenParameterEXT"))) return false;
+	if (!(nglBindTextureUnitParameterEXT = (NEL_PFNGLBINDTEXTUREUNITPARAMETEREXTPROC)nelglGetProcAddress("glBindTextureUnitParameterEXT"))) return false;
+	if (!(nglBindParameterEXT = (NEL_PFNGLBINDPARAMETEREXTPROC)nelglGetProcAddress("glBindParameterEXT"))) return false;
+	if (!(nglIsVariantEnabledEXT = (NEL_PFNGLISVARIANTENABLEDEXTPROC)nelglGetProcAddress("glIsVariantEnabledEXT"))) return false;
+	if (!(nglGetVariantBooleanvEXT = (NEL_PFNGLGETVARIANTBOOLEANVEXTPROC)nelglGetProcAddress("glGetVariantBooleanvEXT"))) return false;
+	if (!(nglGetVariantIntegervEXT = (NEL_PFNGLGETVARIANTINTEGERVEXTPROC)nelglGetProcAddress("glGetVariantIntegervEXT"))) return false;
+	if (!(nglGetVariantFloatvEXT = (NEL_PFNGLGETVARIANTFLOATVEXTPROC)nelglGetProcAddress("glGetVariantFloatvEXT"))) return false;
+	if (!(nglGetVariantPointervEXT = (NEL_PFNGLGETVARIANTPOINTERVEXTPROC)nelglGetProcAddress("glGetVariantPointervEXT"))) return false;
+	if (!(nglGetInvariantBooleanvEXT = (NEL_PFNGLGETINVARIANTBOOLEANVEXTPROC)nelglGetProcAddress("glGetInvariantBooleanvEXT"))) return false;
+	if (!(nglGetInvariantIntegervEXT = (NEL_PFNGLGETINVARIANTINTEGERVEXTPROC)nelglGetProcAddress("glGetInvariantIntegervEXT"))) return false;
+	if (!(nglGetInvariantFloatvEXT = (NEL_PFNGLGETINVARIANTFLOATVEXTPROC)nelglGetProcAddress("glGetInvariantFloatvEXT"))) return false;
+	if (!(nglGetLocalConstantBooleanvEXT = (NEL_PFNGLGETLOCALCONSTANTBOOLEANVEXTPROC)nelglGetProcAddress("glGetLocalConstantBooleanvEXT"))) return false;
+	if (!(nglGetLocalConstantIntegervEXT = (NEL_PFNGLGETLOCALCONSTANTINTEGERVEXTPROC)nelglGetProcAddress("glGetLocalConstantIntegervEXT"))) return false;
+	if (!(nglGetLocalConstantFloatvEXT = (NEL_PFNGLGETLOCALCONSTANTFLOATVEXTPROC)nelglGetProcAddress("glGetLocalConstantFloatvEXT"))) return false;
+
+	// we require at least 128 instructions, 15 local register (r0, r1,..,r11) + 3 temporary vector for swizzle emulation + 1 vector for indexing temp + 3 temporary scalar for LOGG, EXPP and LIT emulation,  1 address register
+	// we require 11 variants (4 textures + position + normal + primary color + secondary color + weight + palette skin + fog)
+	// we also require 2 local constants (0 and 1)
+	// 96 invariants (c[0], c[1] ..) + 1 invariants for fog emulation (fog coordinate must range from 0 to 1 with EXT_VERTEX_shader)
+	GLint numVSInst;
+	glGetIntegerv(GL_MAX_OPTIMIZED_VERTEX_SHADER_INSTRUCTIONS_EXT, &numVSInst);
+	if (numVSInst < 128) return false;
+	//
+	GLint numVSLocals;
+	glGetIntegerv(GL_MAX_VERTEX_SHADER_LOCALS_EXT, &numVSLocals);
+	if (numVSLocals < 4 * (12 + 4) + 1 + 3) return false;	
+	//
+	GLint numVSLocalConstants;
+	glGetIntegerv(GL_MAX_VERTEX_SHADER_LOCAL_CONSTANTS_EXT, &numVSLocalConstants);
+	if (numVSLocalConstants < 2) return false;	
+	//
+	GLint numVSInvariants;
+	glGetIntegerv(GL_MAX_OPTIMIZED_VERTEX_SHADER_INVARIANTS_EXT, &numVSInvariants);
+	if (numVSInvariants < 96 + 1) return false;
+	//	
+	return true;
+	
+}
+
 
 
 // *********************************
@@ -693,6 +825,7 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	// Check NVTextureEnvCombine4.
 	ext.NVTextureEnvCombine4= setupNVTextureEnvCombine4(glext);
+	
 
 	// Check for cube mapping
 	ext.ARBTextureCubeMap = setupARBTextureCubeMap(glext);
@@ -700,7 +833,12 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// Check vertex program
 	// Disable feature ???
 	if(!ext.DisableHardwareVertexProgram)
+	{	
 		ext.NVVertexProgram = setupNVVertexProgram(glext);
+		ext.EXTVertexShader = setupEXTVertexShader(glext);
+	}
+
+
 
 	// Check texture shaders
 	// Disable feature ???
@@ -735,6 +873,10 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// Disable feature ???
 	if(!ext.DisableHardwareVertexArrayAGP)
 		ext.ATIVertexArrayObject= setupATIVertexArrayObject(glext);
+	// Check ATIXTextureEnvCombine3.
+	ext.ATIXTextureEnvCombine3= setupATIXTextureEnvCombine3(glext);
+	// Check ATIEnvMapBumpMap
+	ext.ATIEnvMapBumpMap = setupATIEnvMapBumpMap(glext);
 }
 
 

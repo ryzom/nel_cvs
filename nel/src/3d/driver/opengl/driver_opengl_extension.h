@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.30 2002/08/30 11:58:02 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.31 2002/09/24 14:40:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,7 @@ struct	CGlExtensions
 	bool	NVTextureEnvCombine4;
 	bool	ARBTextureCubeMap;
 	bool	NVVertexProgram;
+	bool    EXTVertexShader;
 	bool	NVTextureShader;
 	// true if NVVertexProgram and if we know that VP is emulated
 	bool	NVVertexProgramEmulated;
@@ -96,7 +97,9 @@ struct	CGlExtensions
 	bool	WGLARBPixelFormat;
 
 	// ATI Extensions.
-	bool	ATIVertexArrayObject;
+	bool	ATIVertexArrayObject;	
+	bool	ATIXTextureEnvCombine3;
+	bool    ATIEnvMapBumpMap;
 
 public:
 
@@ -123,6 +126,7 @@ public:
 		EXTVertexWeighting= false;
 		EXTSeparateSpecularColor= false;
 		NVTextureEnvCombine4= false;
+		ATIXTextureEnvCombine3= false;
 		ARBTextureCubeMap= false;
 		NVTextureShader= false;
 		NVVertexProgram= false;
@@ -132,6 +136,7 @@ public:
 		WGLARBPixelFormat= false;
 		EXTBlendColor= false;
 		ATIVertexArrayObject= false;
+		ATIEnvMapBumpMap = false;
 
 		/// \name Disable Hardware feature. False by default. setuped by IDriver
 		DisableHardwareVertexProgram= false;
@@ -311,6 +316,51 @@ extern NEL_PFNGLVERTEXATTRIBS4DVNVPROC			nglVertexAttribs4dvNV;
 extern NEL_PFNGLVERTEXATTRIBS4FVNVPROC			nglVertexAttribs4fvNV;
 extern NEL_PFNGLVERTEXATTRIBS4SVNVPROC			nglVertexAttribs4svNV;
 extern NEL_PFNGLVERTEXATTRIBS4UBVNVPROC			nglVertexAttribs4ubvNV;
+
+// VertexShaderExtension.
+//========================
+extern NEL_PFNGLBEGINVERTEXSHADEREXTPROC		 nglBeginVertexShaderEXT;
+extern NEL_PFNGLENDVERTEXSHADEREXTPROC			 nglEndVertexShaderEXT;
+extern NEL_PFNGLBINDVERTEXSHADEREXTPROC			 nglBindVertexShaderEXT;
+extern NEL_PFNGLGENVERTEXSHADERSEXTPROC			 nglGenVertexShadersEXT;
+extern NEL_PFNGLDELETEVERTEXSHADEREXTPROC		 nglDeleteVertexShaderEXT;
+extern NEL_PFNGLSHADEROP1EXTPROC				 nglShaderOp1EXT;
+extern NEL_PFNGLSHADEROP2EXTPROC				 nglShaderOp2EXT;
+extern NEL_PFNGLSHADEROP3EXTPROC				 nglShaderOp3EXT;
+extern NEL_PFNGLSWIZZLEEXTPROC					 nglSwizzleEXT;
+extern NEL_PFNGLWRITEMASKEXTPROC				 nglWriteMaskEXT;
+extern NEL_PFNGLINSERTCOMPONENTEXTPROC			 nglInsertComponentEXT;
+extern NEL_PFNGLEXTRACTCOMPONENTEXTPROC			 nglExtractComponentEXT;
+extern NEL_PFNGLGENSYMBOLSEXTPROC				 nglGenSymbolsEXT;
+extern NEL_PFNGLSETINVARIANTEXTPROC				 nglSetInvariantEXT;
+extern NEL_PFNGLSETLOCALCONSTANTEXTPROC			 nglSetLocalConstantEXT;
+extern NEL_PFNGLVARIANTPOINTEREXTPROC			 nglVariantPointerEXT;
+extern NEL_PFNGLENABLEVARIANTCLIENTSTATEEXTPROC  nglEnableVariantClientStateEXT;
+extern NEL_PFNGLDISABLEVARIANTCLIENTSTATEEXTPROC nglDisableVariantClientStateEXT;
+extern NEL_PFNGLBINDLIGHTPARAMETEREXTPROC		 nglBindLightParameterEXT;
+extern NEL_PFNGLBINDMATERIALPARAMETEREXTPROC	 nglBindMaterialParameterEXT;
+extern NEL_PFNGLBINDTEXGENPARAMETEREXTPROC		 nglBindTexGenParameterEXT;
+extern NEL_PFNGLBINDTEXTUREUNITPARAMETEREXTPROC  nglBindTextureUnitParameterEXT;
+extern NEL_PFNGLBINDPARAMETEREXTPROC			 nglBindParameterEXT;
+extern NEL_PFNGLISVARIANTENABLEDEXTPROC			 nglIsVariantEnabledEXT;
+extern NEL_PFNGLGETVARIANTBOOLEANVEXTPROC		 nglGetVariantBooleanvEXT;
+extern NEL_PFNGLGETVARIANTINTEGERVEXTPROC		 nglGetVariantIntegervEXT;
+extern NEL_PFNGLGETVARIANTFLOATVEXTPROC			 nglGetVariantFloatvEXT;
+extern NEL_PFNGLGETVARIANTPOINTERVEXTPROC		 nglGetVariantPointervEXT;
+extern NEL_PFNGLGETINVARIANTBOOLEANVEXTPROC		 nglGetInvariantBooleanvEXT;
+extern NEL_PFNGLGETINVARIANTINTEGERVEXTPROC		 nglGetInvariantIntegervEXT;
+extern NEL_PFNGLGETINVARIANTFLOATVEXTPROC		 nglGetInvariantFloatvEXT;
+extern NEL_PFNGLGETLOCALCONSTANTBOOLEANVEXTPROC  nglGetLocalConstantBooleanvEXT;
+extern NEL_PFNGLGETLOCALCONSTANTINTEGERVEXTPROC  nglGetLocalConstantIntegervEXT;
+extern NEL_PFNGLGETLOCALCONSTANTFLOATVEXTPROC    nglGetLocalConstantFloatvEXT;
+
+
+// ATI_envmap_bumpmap extension
+
+extern  PFNGLTEXBUMPPARAMETERIVATIPROC nglTexBumpParameterivATI;
+extern  PFNGLTEXBUMPPARAMETERFVATIPROC nglTexBumpParameterfvATI;
+extern  PFNGLGETTEXBUMPPARAMETERIVATIPROC nglGetTexBumpParameterivATI;
+extern  PFNGLGETTEXBUMPPARAMETERFVATIPROC nglGetTexBumpParameterfvATI;
 
 
 // SecondaryColor extension

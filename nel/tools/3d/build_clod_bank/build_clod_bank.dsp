@@ -142,5 +142,9 @@ SOURCE=.\build_clod_bank.cpp
 
 SOURCE=.\config_example.cfg
 # End Source File
+# Begin Source File
+
+SOURCE=.\path_config_example.cfg
+# End Source File
 # End Target
 # End Project

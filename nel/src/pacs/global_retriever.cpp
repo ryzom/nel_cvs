@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.68 2002/12/18 15:06:45 legros Exp $
+ * $Id: global_retriever.cpp,v 1.69 2003/01/06 10:46:17 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,6 +118,9 @@ void	NLPACS::CGlobalRetriever::serial(NLMISC::IStream &f)
 
 	f.serialCont(_Instances);
 	f.serial(_BBox);
+
+	if (f.isReading())
+		initAll(false);
 }
 
 //

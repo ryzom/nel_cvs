@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.17 2001/07/02 11:40:32 berenguier Exp $
+ * $Id: mrm_builder.cpp,v 1.18 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1853,9 +1853,9 @@ void			CMRMBuilder::buildMeshBuildMrm(const CMRMMeshFinal &finalMRM, CMeshMRMGeo
 
 
 // ***************************************************************************
-void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh)
+void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh, 
+								uint numMaxMaterial)
 {
-	uint32	nbMats= mbuild.Materials.size();
 	// Temp data.
 	CMRMMesh					baseMesh;
 	std::vector<CMRMMeshGeom>	lodMeshs;
@@ -1895,8 +1895,7 @@ void	CMRMBuilder::compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParamete
 	buildFinalMRM(lodMeshs, finalMRM);
 
 	// From this finalMRM, build output: a CMeshBuildMRM.
-	buildMeshBuildMrm(finalMRM, mrmMesh, vbFlags, nbMats);
-
+	buildMeshBuildMrm(finalMRM, mrmMesh, vbFlags, numMaxMaterial);
 
 	// Copy degradation control params.
 	mrmMesh.DistanceFinest= params.DistanceFinest;

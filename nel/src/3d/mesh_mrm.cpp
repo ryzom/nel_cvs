@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.13 2001/06/29 09:48:57 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.14 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ CMeshMRMGeom::CMeshMRMGeom()
 
 
 // ***************************************************************************
-void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
+void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRMParameters &params)
 {
 
 	// Empty geometry?
@@ -86,7 +86,7 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
 		_BBox.setSize(CVector::Null);
 		return;
 	}
-	nlassert(m.Materials.size()>0);
+	nlassert(numMaxMaterial>0);
 
 
 	/// 0. First, make bbox.
@@ -101,7 +101,7 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
 	CMRMBuilder			mrmBuilder;
 	CMeshBuildMRM		meshBuildMRM;
 
-	mrmBuilder.compileMRM(m, params, meshBuildMRM);
+	mrmBuilder.compileMRM(m, params, meshBuildMRM, numMaxMaterial);
 
 	// Then just copy result!
 	//================================================
@@ -1203,16 +1203,16 @@ CMeshMRM::CMeshMRM()
 {
 }
 // ***************************************************************************
-void			CMeshMRM::build(CMesh::CMeshBuild &m, const CMRMParameters &params)
+void			CMeshMRM::build (CMeshBase::CMeshBaseBuild &mBase, CMesh::CMeshBuild &m, const CMRMParameters &params)
 {
 	/// copy MeshBase info: materials ....
-	CMeshBase::buildMeshBase(m);
+	CMeshBase::buildMeshBase (mBase);
 
 	// Then build the geom.
-	_MeshMRMGeom.build(m, params);
+	_MeshMRMGeom.build (m, mBase.Materials.size(), params);
 }
 // ***************************************************************************
-void			CMeshMRM::build(CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom)
+void			CMeshMRM::build (CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom)
 {
 	/// copy MeshBase info: materials ....
 	CMeshBase::buildMeshBase(m);

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.1 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh_multi_lod.h,v 1.2 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 
+#include "3d/mesh.h"
 #include "3d/mesh_base.h"
 #include "3d/mesh_geom.h"
+#include "3d/mrm_parameters.h"
 
 namespace NL3D 
 {
@@ -55,24 +57,12 @@ public:
 	/// Class used to build a multi lod mesh
 	class CMeshMultiLodBuild
 	{
+	public:
+
 		/// A slot of mesh for the build
 		class CBuildSlot
 		{
-			/** 
-			  * Lod type
-			  * 
-			  * One and only one of the following type can be specified:
-			  *		* Lod:			this load is a simple mesh.
-			  *     * MRMLod:		this lod is a MRM load.
-			  *		* CoarseLod:	this lod is a coarse mesh.
-			  */
-			enum
-			{
-				Lod			=	0,
-				MRMLod		=	1,
-				CoarseLod	=	2,
-			};
-
+		public:
 			/** 
 			  * Flags for the build of a slot
 			  * 
@@ -81,24 +71,22 @@ public:
 			  */
 			enum
 			{
-				BlendIn		=	0x08,
-				BlendOff	=	0x10,
+				BlendIn		=	0x01,
+				BlendOut	=	0x02,
+				CoarseMesh	=	0x04,
 			};
 
-			/// A mesh base build to describe the mesh
-			//CMeshBase::CMeshBaseBuild	BaseMesh;
+			/// A mesh base build to describe the mesh. Can't be NULL.
+			IMeshGeom			*MeshGeom;
 
-			/// Distance after which this lod is displayed
-			float	DistMin;
+			/// Distance before which this lod is displayed
+			float				DistMax;
 
 			/// Length of the blend used to show this mesh
-			float	BlendLength;
-
-			/// Type of lod. See types description.
-			uint8 Type;
+			float				BlendLength;
 
 			/// Flags for the build. See flags description.
-			uint8 Flags;
+			uint8				Flags;
 		};
 
 		/// The mesh base build structure
@@ -145,25 +133,51 @@ private:
 		CoarseMeshLoaded	=	0x08,
 	};
 	
-	/// This is a slot of the mesh base list
+	/** 
+	  * This is a slot of the mesh base list
+	  * 
+	  * A LOD "currentLOD" is displayed between distances:  
+	  *
+	  *    [previousLOD->DistMax - currentLOD->BlendLength   ;   currentLOD->DistMax]
+	  */
 	class CMeshSlot
 	{
 	public:
+		~CMeshSlot ();
+
 		/// The mesh base. Can be NULL if the geom mesh has not been loaded.
 		IMeshGeom	*MeshGeom;
 
-		/// Dist min to show this mesh
-		float		DistMin;
+		/// Dist max to show this mesh
+		float		DistMax;
+
+		/// Polygon count at the begining of the slot interval
+		float		BeginPolygonCount;
+
+		/// Polygon count at the end of the slot interval
+		float		EndPolygonCount;
+
+		/// Length of the blend used to show this mesh
+		float		StartBlendPolygonCount;
 
 		/// Length of the blend used to show this mesh
 		float		BlendLength;
 
-		/// Blend On/Off
+		/// Blend On/Off, misc flags
 		uint8		Flags;
+
+		/// Serial
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	};
 
 	/// Vector of meshes
 	std::vector<CMeshSlot>		_MeshVector;
+
+	/// Clear the mesh
+	void	clear ();
+
+	/// Render a slot
+	void	render (uint slot, IDriver *drv, CTransformShape *trans, float numPoylgons, float alpha);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.6 2001/06/26 08:00:46 besson Exp $
+ * $Id: export_mesh.cpp,v 1.7 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,10 +33,12 @@
 using namespace NLMISC;
 using namespace NL3D;
 
+// ***************************************************************************
 
-CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath)
+CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, CMesh::CMeshBaseBuild*& baseBuild)
 {
 	CMesh::CMeshBuild *pMeshBuild = new CMesh::CMeshBuild();
+	baseBuild = new CMeshBase::CMeshBaseBuild();
 
 	// Get a pointer on the object's node
     Object *obj = node.EvalWorldState(tvTime).obj;
@@ -57,12 +59,12 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 			if (obj != tri) 
 				deleteIt = true;
 
-			// Array of name for the material
-			std::vector<std::string> materialNames;
+			// Description of materials
+			CMaxMeshBaseBuild maxBaseBuild;
 
 			// Fill the build interface of CMesh
-
-			buildMeshInterface(*tri, *pMeshBuild, materialNames, node, tvTime, NULL, bAbsPath);
+			buildBaseMeshInterface (*baseBuild, maxBaseBuild, node, tvTime, bAbsPath);
+			buildMeshInterface (*tri, *pMeshBuild, maxBaseBuild, node, tvTime, NULL, bAbsPath);
 
 			// Delete the triObject if we should...
 			if (deleteIt)
@@ -74,8 +76,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 	return pMeshBuild;
 }
 
-
-
+// ***************************************************************************
 
 // Export a mesh
 IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, 
@@ -110,25 +111,28 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 				deleteIt = true;
 
 			// Array of name for the material
-			std::vector<std::string> materialNames;
+			CMaxMeshBaseBuild maxBaseBuild;
 
 			// Fill the build interface of CMesh
+			CMeshBase::CMeshBaseBuild buildBaseMesh;
 			CMesh::CMeshBuild buildMesh;
-			buildMeshInterface (*tri, buildMesh, materialNames, node, time, skeletonShape, absolutePath);
+
+			buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, absolutePath);
+			buildMeshInterface (*tri, buildMesh, maxBaseBuild, node, time, skeletonShape, absolutePath);
 
 			if( hasLightMap( node, time ) && opt.bExportLighting )
-				calculateLM(&buildMesh, node, ip, time, absolutePath, opt);
+				calculateLM(&buildMesh, &buildBaseMesh, node, ip, time, absolutePath, opt);
 			// Make a CMesh object
 			CMesh* mesh=new CMesh;
 
 			// Build the mesh with the build interface
-			mesh->build (buildMesh);
+			mesh->build (buildBaseMesh, buildMesh);
 
 			// *** TMP : force material to be animatable
 			// TODO: check if material are animated
-			for (uint i=0; i<buildMesh.Materials.size(); i++)
+			for (uint i=0; i<buildBaseMesh.Materials.size(); i++)
 			{
-				mesh->setAnimatedMaterial (i, materialNames[i]);
+				mesh->setAnimatedMaterial (i, maxBaseBuild.MaterialNames[i]);
 			}
 
 			// Return this pointer
@@ -147,6 +151,8 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time,
 	// Return the shape pointer or NULL if an error occured.
 	return retShape;
 }
+
+// ***************************************************************************
 
 // Get the normal of a face for a given corner in localSpace
 Point3 CExportNel::getLocalNormal (int face, int corner, Mesh& mesh)
@@ -198,15 +204,60 @@ Point3 CExportNel::getLocalNormal (int face, int corner, Mesh& mesh)
 	return mesh.getFaceNormal (face);
 }
 
+// ***************************************************************************
+
+// Build a base mesh interface
+void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildMesh, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
+										 TimeValue time, bool absolutePath)
+{
+	buildMesh.bCastShadows = (node.CastShadows() != 0);
+	buildMesh.bRcvShadows  = (node.RcvShadows() != 0);
+
+	// *** ****************
+	// *** Export materials
+	// *** ****************
+
+	// Reset the material array of the buildMesh because it will be rebuild by the exporter
+	buildMesh.Materials.clear();
+
+	// Build materials in NeL format and get the number of materials exported in NeL format
+	maxBaseBuild.NumMaterials=buildMaterials (buildMesh.Materials, maxBaseBuild, node, time, absolutePath);
+
+	// Some check. should have one rempa vertMap channel table by material
+	nlassert (maxBaseBuild.RemapChannel.size()==maxBaseBuild.NumMaterials);
+
+	// *** *****************************
+	// *** Export default transformation
+	// *** *****************************
+
+	// Get the node matrix
+	Matrix3 localTM;
+	getLocalMatrix (localTM, node, time);
+
+	// Get the translation, rotation, scale of the node
+	CVector pos, scale;
+	CQuat rot;
+	decompMatrix (scale, rot, pos, localTM);
+
+	// Set the default values
+	buildMesh.DefaultScale=scale;
+	buildMesh.DefaultRotQuat=rot;
+	buildMesh.DefaultRotEuler=CVector (0,0,0);
+	buildMesh.DefaultPivot=CVector (0,0,0);
+	buildMesh.DefaultPos=pos;
+
+	// Ok, done.
+}
+
+// ***************************************************************************
+
 // Build a mesh interface
-void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, std::vector<std::string>& materialNames, INode& node, TimeValue time, 
-									 const CSkeletonShape* skeletonShape, bool absolutePath)
+void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, 
+									 const NL3D::CSkeletonShape* skeletonShape, bool absolutePath)
 {
 	// Get a pointer on the 3dsmax mesh
 	Mesh *pMesh=&tri.mesh;
 
-	buildMesh.bCastShadows = (node.CastShadows() != 0);
-	buildMesh.bRcvShadows  = (node.RcvShadows() != 0);
 	// Build normals.
 	// * "buildRenderNormals()" smooth faces that are not in the same material but at least in the same smoothing group.
 	// * "buildNormals()" smooth faces that are in the same material and at least in the same smoothing group.
@@ -297,31 +348,18 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	}
 	
 	
-	// *** ****************
-	// *** Export materials
-	// *** ****************
-
-	// Reset the material array of the buildMesh because it will be rebuild by the exporter
-	buildMesh.Materials.clear();
-
-	// Remap table. For each material, for a Nel Uv channel gives the channel number in Max and the UV transform matrix.
-	std::vector<std::vector<CMaterialDesc> > pRemapChannel;
-
-	// Build materials in NeL format and get the number of materials exported in NeL format
-
-	int nNumMaterials=buildMaterials (buildMesh.Materials, pRemapChannel, materialNames, node, time, absolutePath);
-
-	// Some check. should have one rempa vertMap channel table by material
-	nlassert ((sint)pRemapChannel.size()==nNumMaterials);
+	// *** ***************************
+	// *** Build remap uv channel data
+	// *** ***************************
 
 	// Get the max number of UVs channel used in the materials
 	int nMapsChannelUsed=0;
-	for (int nMat=0; nMat<(sint)pRemapChannel.size(); nMat++)
+	for (int nMat=0; nMat<(sint)maxBaseBuild.RemapChannel.size(); nMat++)
 	{
 		// Greater than previous ?
-		if ((sint)pRemapChannel[nMat].size()>nMapsChannelUsed)
+		if ((sint)maxBaseBuild.RemapChannel[nMat].size()>nMapsChannelUsed)
 		{
-			nMapsChannelUsed=pRemapChannel[nMat].size();
+			nMapsChannelUsed=maxBaseBuild.RemapChannel[nMat].size();
 		}
 	}
 
@@ -379,8 +417,8 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 
 		// Trunc the ID cause max take MatID%MatCount as final matID.
 		// So MatId can be > than the number of material at this mod.
-		if (nNumMaterials>0)
-			nMaterialID%=nNumMaterials;
+		if (maxBaseBuild.NumMaterials>0)
+			nMaterialID%=maxBaseBuild.NumMaterials;
 		else
 			nMaterialID=0;
 
@@ -389,7 +427,7 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 
 		// Check the matId is valid
 		nlassert (buildMesh.Faces[face].MaterialId>=0);
-		nlassert (buildMesh.Faces[face].MaterialId<nNumMaterials);
+		nlassert (buildMesh.Faces[face].MaterialId<(sint)maxBaseBuild.NumMaterials);
 
 		//if( buildMesh.Materials[buildMesh.Faces[face].MaterialId].getShader() == CMaterial::Specular )
 		//	buildMesh.VertexFlags |= IDRV_VF_UV[1];
@@ -435,27 +473,27 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			// *** **********
 
 			// Num of channels used in this material
-			int nNumChannelUsed=pRemapChannel[nMaterialID].size();
+			int nNumChannelUsed=maxBaseBuild.RemapChannel[nMaterialID].size();
 
 			// For each mapping channels used by this material
 			for (int uv=0; uv<nNumChannelUsed; uv++)
 			{
 				// Corresponding max channel
-				int nMaxChan=pRemapChannel[nMaterialID][uv]._IndexInMaxMaterial;
+				int nMaxChan=maxBaseBuild.RemapChannel[nMaterialID][uv]._IndexInMaxMaterial;
 
 				if( ! pMesh->mapSupport(nMaxChan) )
 				{
-					nMaxChan = pRemapChannel[nMaterialID][uv]._IndexInMaxMaterialAlternative;
+					nMaxChan = maxBaseBuild.RemapChannel[nMaterialID][uv]._IndexInMaxMaterialAlternative;
 				}
 
 				// UVs matrix
-				Matrix3 &uvMatrix=pRemapChannel[nMaterialID][uv]._UVMatrix;
+				const Matrix3 &uvMatrix=maxBaseBuild.RemapChannel[nMaterialID][uv]._UVMatrix;
 
 				// Crop values
-				float fCropU=pRemapChannel[nMaterialID][uv]._CropU;
-				float fCropV=pRemapChannel[nMaterialID][uv]._CropV;
-				float fCropW=pRemapChannel[nMaterialID][uv]._CropW;
-				float fCropH=pRemapChannel[nMaterialID][uv]._CropH;
+				float fCropU=maxBaseBuild.RemapChannel[nMaterialID][uv]._CropU;
+				float fCropV=maxBaseBuild.RemapChannel[nMaterialID][uv]._CropV;
+				float fCropW=maxBaseBuild.RemapChannel[nMaterialID][uv]._CropW;
+				float fCropH=maxBaseBuild.RemapChannel[nMaterialID][uv]._CropH;
 
 				// Check kind of channel and if channel is supported
 				if ((nMaxChan>=0)&&(nMaxChan<MAX_MESHMAPS)&&pMesh->mapSupport(nMaxChan))
@@ -566,26 +604,9 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 		}
 	}
 
-	// *** *****************************
-	// *** Export default transformation
-	// *** *****************************
-
-	// Get the node matrix
-	Matrix3 localTM;
-	getLocalMatrix (localTM, node, time);
-
-	// Get the translation, rotation, scale of the node
-	CVector pos, scale;
-	CQuat rot;
-	decompMatrix (scale, rot, pos, localTM);
-
-	// Set the default values
-	buildMesh.DefaultScale=scale;
-	buildMesh.DefaultRotQuat=rot;
-	buildMesh.DefaultRotEuler=CVector (0,0,0);
-	buildMesh.DefaultPivot=CVector (0,0,0);
-	buildMesh.DefaultPos=pos;
-
 	// Ok, done.
 }
+
+// ***************************************************************************
+
 

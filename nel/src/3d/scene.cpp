@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.37 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: scene.cpp,v 1.38 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/mesh_instance.h"
 #include "3d/mesh_mrm_instance.h"
+#include "3d/mesh_multi_lod_instance.h"
 #include "3d/shape_bank.h"
 #include "3d/skeleton_model.h"
 #include "3d/particle_system_model.h"
@@ -67,6 +68,7 @@ void	CScene::registerBasics()
 	CTransformShape::registerBasic();
 	CSkeletonModel::registerBasic();
 	CParticleSystemModel::registerBasic() ;
+	CMeshMultiLodInstance::registerBasic();
 }
 
 	

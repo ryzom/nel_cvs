@@ -207,6 +207,14 @@ SOURCE=.\3d\mesh_mrm_instance.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\mesh_multi_lod_instance.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_multi_lod_instance.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\particle_system_model.cpp
 # End Source File
 # Begin Source File
@@ -521,10 +529,6 @@ SOURCE=.\3d\ptr_set.h
 
 SOURCE=.\3d\quad_grid.h
 # End Source File
-# Begin Source File
-
-SOURCE=.\3d\quad_tree.h
-# End Source File
 # End Group
 # Begin Group "Tiles"
 
@@ -580,6 +584,14 @@ SOURCE=.\3d\mesh_mrm.cpp
 # Begin Source File
 
 SOURCE=.\3d\mesh_mrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_multi_lod.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\mesh_multi_lod.h
 # End Source File
 # Begin Source File
 
@@ -1283,6 +1295,14 @@ SOURCE=.\3d\async_file_manager.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\coarse_mesh_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\coarse_mesh_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\event_mouse_listener.cpp
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -1299,23 +1319,6 @@ SOURCE=.\3d\event_mouse_listener.cpp
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\mesh_multi_lod.cpp
-
-!IF  "$(CFG)" == "3d - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\mesh_multi_lod.h
 # End Source File
 # Begin Source File
 

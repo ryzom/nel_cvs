@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.8 2001/06/26 10:17:03 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.9 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,6 +96,7 @@ CMeshBase::CMeshBaseBuild::CMeshBaseBuild()
 }
 
 // ***************************************************************************
+#if 0
 void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
@@ -118,6 +119,7 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 
 	f.serialCont( Materials );
 }
+#endif
 
 
 // ***************************************************************************

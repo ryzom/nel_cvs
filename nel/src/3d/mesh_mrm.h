@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.10 2001/06/29 14:27:40 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.11 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,7 @@ public:
 	 * this is much slower than CMeshGeom::build(), because it computes the MRM.
 	 * \param params parameters of the MRM build process.
 	 */
-	void			build(CMesh::CMeshBuild &m, const CMRMParameters &params= CMRMParameters());
+	void			build(CMesh::CMeshBuild &m, uint numMaxMaterial, const CMRMParameters &params= CMRMParameters());
 
 
 	/// \name From IMeshGeom
@@ -406,7 +406,7 @@ public:
 	 * this is much slower than CMesh::build(), because it computes the MRM.
 	 * \param params parameters of the MRM build process.
 	 */
-	void			build(CMesh::CMeshBuild &m, const CMRMParameters &params= CMRMParameters());
+	void			build (CMeshBase::CMeshBaseBuild &mBase, CMesh::CMeshBuild &m, const CMRMParameters &params= CMRMParameters());
 
 
 	/** Build a mesh, replacing old. build from a CMeshBaseBuild (materials info) and a previously builded CMeshMRMGeom.
@@ -414,7 +414,7 @@ public:
 	 *	this is much slower than CMesh::build(), because it computes the MRM.
 	 * \param params parameters of the MRM build process.
 	 */
-	void			build(CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom);
+	void			build (CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom);
 
 
 	/// \name From IShape

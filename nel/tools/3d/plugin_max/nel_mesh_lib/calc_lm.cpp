@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.8 2001/07/02 16:30:58 besson Exp $
+ * $Id: calc_lm.cpp,v 1.9 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/misc/file.h"
 #include "nel/misc/triangle.h"
 #include "nel/misc/bsphere.h"
-#include "3d/quad_tree.h"
+#include "nel/3d/quad_tree.h"
 #include "3d/scene_group.h"
 #include "3d/skeleton_shape.h"
 #include "3d/texture_file.h"
@@ -754,6 +754,7 @@ struct SCubeGridCell
 {
 	CMesh::CFace* pF;
 	CMesh::CMeshBuild* pMB;
+	CMeshBase::CMeshBaseBuild* pMBB;
 };
 
 // ***********************************************************************************************
@@ -981,6 +982,7 @@ public :
 struct SWorldRT
 {
 	vector<CMesh::CMeshBuild *> vMB;
+	vector<CMeshBase::CMeshBaseBuild *> vMBB;
 	vector<INode *>				vINode;
 	
 	vector<SCubeGrid> cgAccel; // One cube grid by light
@@ -1001,7 +1003,7 @@ CExportNelOptions gOptions;
 
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-void SortFaceByTextureName(vector<CMesh::CFace*> &AllFaces, CMesh::CMeshBuild *pMB)
+void SortFaceByTextureName(vector<CMesh::CFace*> &AllFaces, CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB)
 {
 	int i, j;
 	int nNbFace = AllFaces.size();
@@ -1009,12 +1011,12 @@ void SortFaceByTextureName(vector<CMesh::CFace*> &AllFaces, CMesh::CMeshBuild *p
 	for( i = 0; i < nNbFace-1; ++i )
 	for( j = i+1; j < nNbFace; ++j )
 	{
-		ITexture *pT = pMB->Materials[AllFaces[i]->MaterialId].getTexture(0);
+		ITexture *pT = pMBB->Materials[AllFaces[i]->MaterialId].getTexture(0);
 		CTextureFile *pTF = dynamic_cast<CTextureFile *>(pT);
 		string namei = "Default";
 		if( pTF != NULL )
 			namei = pTF->getFileName();
-		pT = pMB->Materials[AllFaces[j]->MaterialId].getTexture(0);
+		pT = pMBB->Materials[AllFaces[j]->MaterialId].getTexture(0);
 		pTF = dynamic_cast<CTextureFile *>(pT);
 		string namej = "Default";
 		if( pTF != NULL )
@@ -1030,11 +1032,12 @@ void SortFaceByTextureName(vector<CMesh::CFace*> &AllFaces, CMesh::CMeshBuild *p
 
 // -----------------------------------------------------------------------------------------------
 // TextureNames is an array which indicates the number of faces that follows which have the same texture name
-void ComputeAreaOfTextureName(vector<sint32> &TextureNames, vector<CMesh::CFace*> &AllFaces, CMesh::CMeshBuild *pMB)
+void ComputeAreaOfTextureName(vector<sint32> &TextureNames, vector<CMesh::CFace*> &AllFaces, CMesh::CMeshBuild *pMB, 
+							  CMeshBase::CMeshBaseBuild *pMBB)
 {
 	int i, nNbFace = AllFaces.size();
 	TextureNames.resize(nNbFace);
-	ITexture *pT = pMB->Materials[AllFaces[0]->MaterialId].getTexture(0);
+	ITexture *pT = pMBB->Materials[AllFaces[0]->MaterialId].getTexture(0);
 	CTextureFile *pTF = dynamic_cast<CTextureFile *>(pT);
 	string CurrentName = "Default";
 	sint32 lastface = 0, nNbTexName = 0;
@@ -1042,7 +1045,7 @@ void ComputeAreaOfTextureName(vector<sint32> &TextureNames, vector<CMesh::CFace*
 		CurrentName = pTF->getFileName();
 	for( i = 0; i < nNbFace; ++i )
 	{
-		ITexture *pT = pMB->Materials[AllFaces[i]->MaterialId].getTexture(0);
+		ITexture *pT = pMBB->Materials[AllFaces[i]->MaterialId].getTexture(0);
 		CTextureFile *pTF = dynamic_cast<CTextureFile *>(pT);
 		string namei = "Default";
 		if( pTF != NULL )
@@ -1059,7 +1062,7 @@ void ComputeAreaOfTextureName(vector<sint32> &TextureNames, vector<CMesh::CFace*
 	TextureNames.resize( nNbTexName );
 }
 
-void ClearFaceWithNoLM( CMesh::CMeshBuild *pMB, vector<CMesh::CFace*> &ZeFaces )
+void ClearFaceWithNoLM( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, vector<CMesh::CFace*> &ZeFaces )
 {
 	sint32 i;
 	vector<CMesh::CFace*>::iterator ItParseI = ZeFaces.begin();
@@ -1068,7 +1071,7 @@ void ClearFaceWithNoLM( CMesh::CMeshBuild *pMB, vector<CMesh::CFace*> &ZeFaces )
 	for( i = 0; i < nNbFace; ++i )
 	{
 		CMesh::CFace *pF = *ItParseI;
-		if( pMB->Materials[pF->MaterialId].getShader() != CMaterial::TShader::LightMap )
+		if( pMBB->Materials[pF->MaterialId].getShader() != CMaterial::TShader::LightMap )
 		{
 			ItParseI = ZeFaces.erase( ItParseI );
 			nNbFace--;
@@ -1585,24 +1588,24 @@ void MapFace( CMesh::CFace *pFace, vector<CVector> &Vertices, float rRatio )
 }
 
 // -----------------------------------------------------------------------------------------------
-CMatrix getObjectToWorldMatrix( CMesh::CMeshBuild *pMB )
+CMatrix getObjectToWorldMatrix( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB )
 {
 	CMatrix m1, m2, m3, m4, m5;
 	m1.identity();
-	m1.setPos( pMB->DefaultPivot );
+	m1.setPos( pMBB->DefaultPivot );
 	m1.invert();
 
 	m2.identity();
-	m2.scale( pMB->DefaultScale );
+	m2.scale( pMBB->DefaultScale );
 
 	m3.identity();
-	m3.setRot( pMB->DefaultRotQuat );
+	m3.setRot( pMBB->DefaultRotQuat );
 
 	m4.identity();
-	m4.setPos( pMB->DefaultPivot );
+	m4.setPos( pMBB->DefaultPivot );
 
 	m5.identity();
-	m5.setPos( pMB->DefaultPos );
+	m5.setPos( pMBB->DefaultPos );
 
 	m1 = m5*m4*m3*m2*m1;
 	
@@ -2167,7 +2170,7 @@ CRGBAF TestRay( CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 n
 
 		if( t.intersect( vLightPos, vVertexPos, hit, plane ) )
 		{
-			if( cell.pMB->Materials[cell.pF->MaterialId].getBlend() )
+			if( cell.pMBB->Materials[cell.pF->MaterialId].getBlend() )
 			{ // This is a transparent face we have to look in the texture
 				/*
 				ITexture *pT = cell.pMB->Materials[cell.pF->MaterialId].getTexture(0);
@@ -2196,11 +2199,11 @@ CRGBAF TestRay( CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 n
 					retValue *= 1.0f - (cPixMap.A * cell.pMB->Materials[cell.pF->MaterialId].getOpacity()/255.0f);
 				}
 				*/
-				ITexture *pT = cell.pMB->Materials[cell.pF->MaterialId].getTexture(0);
+				ITexture *pT = cell.pMBB->Materials[cell.pF->MaterialId].getTexture(0);
 				CRGBAF cPixMap;
 				if( pT == NULL )
 				{
-					retValue *= 1.0f - (cell.pMB->Materials[cell.pF->MaterialId].getOpacity()/255.0f);
+					retValue *= 1.0f - (cell.pMBB->Materials[cell.pF->MaterialId].getOpacity()/255.0f);
 					cPixMap = CRGBAF(1.0f, 1.0f, 1.0f, 0.0f);
 				}
 				else
@@ -2222,11 +2225,11 @@ CRGBAF TestRay( CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 n
 					cPixMap = pT->getColor( u,v );
 					cPixMap /= 255.0f;
 				}
-				cPixMap.A *= cell.pMB->Materials[cell.pF->MaterialId].getOpacity()/255.0f;
-				cPixMap.R *= cell.pMB->Materials[cell.pF->MaterialId].getDiffuse().R/255.0f;
-				cPixMap.G *= cell.pMB->Materials[cell.pF->MaterialId].getDiffuse().G/255.0f;
-				cPixMap.B *= cell.pMB->Materials[cell.pF->MaterialId].getDiffuse().B/255.0f;
-				if (cell.pMB->Materials[cell.pF->MaterialId].getStainedGlassWindow())
+				cPixMap.A *= cell.pMBB->Materials[cell.pF->MaterialId].getOpacity()/255.0f;
+				cPixMap.R *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().R/255.0f;
+				cPixMap.G *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().G/255.0f;
+				cPixMap.B *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().B/255.0f;
+				if (cell.pMBB->Materials[cell.pF->MaterialId].getStainedGlassWindow())
 				{
 					retValue = (1.0f - cPixMap.A)*(	retValue*(1.0f-cPixMap.A) + 
 													retValue*cPixMap*cPixMap.A );
@@ -2475,7 +2478,7 @@ bool segmentIntersectBSphere( CVector &p1, CVector &p2, CBSphere &bs )
 
 
 // -----------------------------------------------------------------------------------------------
-void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVertices, 
+void FirstLight( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, SLMPlane &Plane, vector<CVector> &vVertices, 
 				CMatrix& ToWorldMat, vector<sint32> &vLights, vector<SLightBuild> &AllLights,
 				uint32 nLayerNb, SWorldRT &wrt )
 {
@@ -2497,8 +2500,8 @@ void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVert
 	{
 		pF = *ItFace;
 
-		bool doubleSided = pMB->Materials[pF->MaterialId].detDoubleSided();
-		CRGBA matDiff = pMB->Materials[pF->MaterialId].getDiffuse();
+		bool doubleSided = pMBB->Materials[pF->MaterialId].detDoubleSided();
+		CRGBA matDiff = pMBB->Materials[pF->MaterialId].getDiffuse();
 		
 		// Select bounding square of the triangle
 		for( j = 0; j < 3; ++j )
@@ -2531,7 +2534,7 @@ void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVert
 				CVector p = g.getInterpolatedVertex( j+0.5, k+0.5);
 				CVector n = g.getInterpolatedNormal( j+0.5, k+0.5);
 				CRGBAF vl = g.getInterpolatedColor( j+0.5, k+0.5);
-				CRGBAF col = LightAVertex( p, p, n, vLights, AllLights, wrt, doubleSided, pMB->bRcvShadows );
+				CRGBAF col = LightAVertex( p, p, n, vLights, AllLights, wrt, doubleSided, pMBB->bRcvShadows );
 				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].R = col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
 				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].G = col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
 				Plane.col[j-Plane.x + (k-Plane.y)*Plane.w].p[nLayerNb].B = col.B*(vl.B/255.0f)*(matDiff.B/255.0f);
@@ -2546,7 +2549,8 @@ void FirstLight( CMesh::CMeshBuild* pMB, SLMPlane &Plane, vector<CVector> &vVert
 }
 
 // -----------------------------------------------------------------------------------------------
-void SecondLight( CMesh::CMeshBuild *pMB, vector<SLMPlane*>::iterator ItPlanes, uint32 nNbPlanes,
+void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, 
+				 vector<SLMPlane*>::iterator ItPlanes, uint32 nNbPlanes,
 					vector<CVector> &vVertices, CMatrix& ToWorldMat, 
 					vector<sint32> &vLights, vector<SLightBuild> &AllLights,
 					uint32 nLayerNb, SWorldRT &wrt)
@@ -2569,8 +2573,8 @@ void SecondLight( CMesh::CMeshBuild *pMB, vector<SLMPlane*>::iterator ItPlanes, 
 		{
 			CMesh::CFace *pF1 = *ItParseI;
 			double rMinU = 1000000.0, rMaxU = -1000000.0, rMinV = 1000000.0, rMaxV = -1000000.0;
-			bool doubleSided = pMB->Materials[pF1->MaterialId].detDoubleSided();
-			CRGBA matDiff = pMB->Materials[pF1->MaterialId].getDiffuse();
+			bool doubleSided = pMBB->Materials[pF1->MaterialId].detDoubleSided();
+			CRGBA matDiff = pMBB->Materials[pF1->MaterialId].getDiffuse();
 
 			// Select bounding square of the triangle
 			for( j = 0; j < 3; ++j )
@@ -2665,7 +2669,7 @@ void SecondLight( CMesh::CMeshBuild *pMB, vector<SLMPlane*>::iterator ItPlanes, 
 										CVector in = g.getInterpolatedNormal( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);
 										CRGBAF vl = g.getInterpolatedColor( j+0.5, k+0.5);
 										CVector rv = g.getInterpolatedVertexInFace( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5, pF1 );
-										CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMB->bRcvShadows );
+										CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMBB->bRcvShadows );
 										//float f = 1.0f;
 										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].R += col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
 										pPlane2->col[nAbsX-pPlane2->x + (nAbsY-pPlane2->y)*pPlane2->w].p[nLayerNb].G += col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
@@ -2688,7 +2692,7 @@ void SecondLight( CMesh::CMeshBuild *pMB, vector<SLMPlane*>::iterator ItPlanes, 
 						CVector in = g.getInterpolatedNormal( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5);
 						CRGBAF vl = g.getInterpolatedColor( j+0.5, k+0.5);
 						CVector rv = g.getInterpolatedVertexInFace( ((double)nAbsX)+0.5, ((double)nAbsY)+0.5, pF1 );
-						CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMB->bRcvShadows );
+						CRGBAF col = LightAVertex( rv, iv, in, vLights, AllLights, wrt, doubleSided, pMBB->bRcvShadows );
 						//float f = 1.0f;
 						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].R += col.R*(vl.R/255.0f)*(matDiff.R/255.0f);
 						pPlane1->col[nAbsX-pPlane1->x + (nAbsY-pPlane1->y)*pPlane1->w].p[nLayerNb].G += col.G*(vl.G/255.0f)*(matDiff.G/255.0f);
@@ -2761,12 +2765,12 @@ bool isAllFaceMapped( vector<CMesh::CFace*>::iterator ItFace, sint32 nNbFaces )
 }
 
 // -----------------------------------------------------------------------------------------------
-CAABBox getMeshBBox( CMesh::CMeshBuild& rMB, bool bNeedToTransform )
+CAABBox getMeshBBox( CMesh::CMeshBuild& rMB, CMeshBase::CMeshBaseBuild &rMBB, bool bNeedToTransform )
 {
 	CAABBox meshBox;
 	if( bNeedToTransform )
 	{
-		CMatrix MBMatrix = getObjectToWorldMatrix( &rMB );
+		CMatrix MBMatrix = getObjectToWorldMatrix( &rMB, &rMBB );
 
 		for( uint32 j = 0; j < rMB.Vertices.size(); ++j )
 			if( j == 0 )
@@ -2829,30 +2833,30 @@ bool isLightCanCastShadowOnBox( SLightBuild &rSLB, CAABBox &b )
 }
 
 // -----------------------------------------------------------------------------------------------
-bool isInteractionLightMesh( SLightBuild &rSLB, CMesh::CMeshBuild &rMB )
+bool isInteractionLightMesh( SLightBuild &rSLB, CMesh::CMeshBuild &rMB, CMeshBase::CMeshBaseBuild &rMBB )
 {
 	CAABBox meshBox;
 
 	if( rSLB.Type == SLightBuild::LightAmbient )
 		return true;
-	meshBox = getMeshBBox( rMB, true );
+	meshBox = getMeshBBox( rMB, rMBB, true );
 	return isLightCanCastShadowOnBox( rSLB, meshBox );
 }
 
 // -----------------------------------------------------------------------------------------------
-bool isInteractionLightMeshWithoutAmbient( SLightBuild &rSLB, CMesh::CMeshBuild &rMB )
+bool isInteractionLightMeshWithoutAmbient( SLightBuild &rSLB, CMesh::CMeshBuild &rMB, CMeshBase::CMeshBaseBuild &rMBB )
 {
 	CAABBox meshBox;
 
 	if( rSLB.Type == SLightBuild::LightAmbient )
 		return false;
-	meshBox = getMeshBBox( rMB, true );
+	meshBox = getMeshBBox( rMB, rMBB, true );
 	return isLightCanCastShadowOnBox( rSLB, meshBox );
 }
 
 // -----------------------------------------------------------------------------------------------
 // Get all lights that can cast shadows on the current mesh
-void getLightInteract( CMesh::CMeshBuild* pMB, vector<SLightBuild> &AllLights, vector< vector<sint32> >&vvLights )
+void getLightInteract( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, vector<SLightBuild> &AllLights, vector< vector<sint32> >&vvLights )
 {
 	uint32 nNbGroup = 0;
 	vector<sint32> vlbTmp;
@@ -2860,7 +2864,7 @@ void getLightInteract( CMesh::CMeshBuild* pMB, vector<SLightBuild> &AllLights, v
 
 	for( i = 0; i < AllLights.size(); ++i )
 	{
-		if( isInteractionLightMesh( AllLights[i], *pMB ) )
+		if( isInteractionLightMesh( AllLights[i], *pMB, *pMBB ) )
 		{
 			// Is the light name already exist
 			for( j = 0; j < nNbGroup; ++j )
@@ -2884,8 +2888,8 @@ void getLightInteract( CMesh::CMeshBuild* pMB, vector<SLightBuild> &AllLights, v
 }
 
 // -----------------------------------------------------------------------------------------------
-void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< INode* > &INodes, 
-						Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath )
+void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< CMeshBase::CMeshBaseBuild* > &MeshesBase,
+						vector< INode* > &INodes, Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath )
 {
 	// Get time
 	TimeValue tvTime = ip.GetTime();
@@ -2901,12 +2905,13 @@ void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< INode* >
 		if (CExportNel::isMesh (*pNode, tvTime))
 		{
 			CMesh::CMeshBuild *pMB;
-			pMB = CExportNel::createMeshBuild( *pNode, tvTime, bAbsPath );
+			CMeshBase::CMeshBaseBuild *pMBB;
+			pMB = CExportNel::createMeshBuild ( *pNode, tvTime, bAbsPath, pMBB);
 			// If the mesh has no interaction with one of the light selected we do not need it
 			bool bInteract = false;
-			if( pMB->bCastShadows )
+			if( pMBB->bCastShadows )
 			for( uint32 i = 0; i < AllLights.size(); ++i )
-			if( isInteractionLightMeshWithoutAmbient( AllLights[i], *pMB ) )
+			if( isInteractionLightMeshWithoutAmbient( AllLights[i], *pMB, *pMBB ) )
 			{
 				bInteract = true;
 				break;
@@ -2914,16 +2919,20 @@ void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< INode* >
 			if( bInteract )
 			{
 				Meshes.push_back( pMB );
+				MeshesBase.push_back( pMBB );
 				INodes.push_back( pNode );
 			}
 			else
+			{
 				delete pMB; // No interaction so delete the mesh
+				delete pMBB; // No interaction so delete the mesh
+			}
 		}
 	}
 }
 
 // -----------------------------------------------------------------------------------------------
-void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< INode* > &INodes,
+void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< CMeshBase::CMeshBaseBuild* > &BaseMeshes, vector< INode* > &INodes,
 					   Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath,
 					   INode* pNode = NULL )
 {
@@ -2937,12 +2946,13 @@ void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< INode* > &
 	if( CExportNel::isMesh( *pNode, tvTime ) )
 	{
 		CMesh::CMeshBuild *pMB;
-		pMB = CExportNel::createMeshBuild( *pNode, tvTime, bAbsPath );
+		CMeshBase::CMeshBaseBuild *pMBB;
+		pMB = CExportNel::createMeshBuild( *pNode, tvTime, bAbsPath, pMBB);
 		// If the mesh has no interaction with one of the light selected we do not need it
 		bool bInteract = false;
-		if( pMB->bCastShadows )
+		if( pMBB->bCastShadows )
 		for( uint32 i = 0; i < AllLights.size(); ++i )
-		if( isInteractionLightMeshWithoutAmbient( AllLights[i], *pMB ) )
+		if( isInteractionLightMeshWithoutAmbient( AllLights[i], *pMB,*pMBB ) )
 		{
 			bInteract = true;
 			break;
@@ -2950,14 +2960,18 @@ void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< INode* > &
 		if( bInteract )
 		{
 			Meshes.push_back( pMB );
+			BaseMeshes.push_back( pMBB );
 			INodes.push_back( pNode );
 		}
 		else
+		{
 			delete pMB; // No interaction so delete the mesh
+			delete pMBB; // No interaction so delete the mesh
+		}
 	}
 
 	for( sint32 i = 0; i < pNode->NumberOfChildren(); ++i )
-		GetAllNodeInScene( Meshes, INodes, ip, AllLights, bAbsPath, pNode->GetChildNode(i) );
+		GetAllNodeInScene( Meshes, BaseMeshes, INodes, ip, AllLights, bAbsPath, pNode->GetChildNode(i) );
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -2967,14 +2981,14 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 
 	// Get all the nodes in the scene
 	if( gOptions.bExcludeNonSelected )
-		GetAllSelectedNode( wrt.vMB, wrt.vINode, ip, AllLights, absPath );
+		GetAllSelectedNode( wrt.vMB, wrt.vMBB, wrt.vINode, ip, AllLights, absPath );
 	else
-		GetAllNodeInScene( wrt.vMB, wrt.vINode, ip, AllLights, absPath );
+		GetAllNodeInScene( wrt.vMB, wrt.vMBB, wrt.vINode, ip, AllLights, absPath );
 
 	// Transform the meshbuilds vertices and normals to have world coordinates
 	for( i = 0; i < wrt.vMB.size(); ++i )
 	{
-		CMatrix MBMatrix = getObjectToWorldMatrix( wrt.vMB[i] );
+		CMatrix MBMatrix = getObjectToWorldMatrix( wrt.vMB[i], wrt.vMBB[i] );
 		// Update vertices
 		for( j = 0; j < wrt.vMB[i]->Vertices.size(); ++j )
 			wrt.vMB[i]->Vertices[j] = MBMatrix * wrt.vMB[i]->Vertices[j];
@@ -3010,6 +3024,7 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 					SCubeGridCell cell;
 					cell.pF = &(wrt.vMB[j]->Faces[k]);
 					cell.pMB = wrt.vMB[j];
+					cell.pMBB = wrt.vMBB[j];
 					CTriangle tri = CTriangle( 
 						cell.pMB->Vertices[cell.pF->Corner[0].Vertex] - AllLights[i].Position,
 						cell.pMB->Vertices[cell.pF->Corner[1].Vertex] - AllLights[i].Position,
@@ -3059,7 +3074,7 @@ bool isBoxCanCastShadowOnBoxWithLight( CAABBox &b1, CAABBox &b2, SLightBuild &l 
 
 // -----------------------------------------------------------------------------------------------
 void supprLightNoInteract( vector<SLightBuild> &vLights, 
-						  vector< pair < CMesh::CMeshBuild*,INode* > > &AllSelectedMeshes )
+						  vector< pair < pair < CMesh::CMeshBuild*, CMesh::CMeshBaseBuild* >, INode* > > &AllSelectedMeshes )
 {
 	uint32 i, j;
 
@@ -3068,7 +3083,7 @@ void supprLightNoInteract( vector<SLightBuild> &vLights,
 		bool bInteract = false;
 
 		for( j = 0; j < AllSelectedMeshes.size(); ++j )
-		if( isInteractionLightMesh( vLights[i], *AllSelectedMeshes[j].first ) )
+		if( isInteractionLightMesh( vLights[i], *AllSelectedMeshes[j].first.first, *AllSelectedMeshes[j].first.second ) )
 		{
 			bInteract = true;
 			break;
@@ -3085,7 +3100,7 @@ void supprLightNoInteract( vector<SLightBuild> &vLights,
 }
 
 // -----------------------------------------------------------------------------------------------
-void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* pMB, INode &node )
+void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, INode &node )
 {
 	uint32 i, j;
 
@@ -3098,7 +3113,7 @@ void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* p
 			bInteract = false;
 		}
 		else
-			if( isInteractionLightMesh( vLights[i], *pMB ) )
+			if( isInteractionLightMesh( vLights[i], *pMB, *pMBB ) )
 			{
 				bInteract = true;			
 			}
@@ -3115,18 +3130,18 @@ void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* p
 
 // -----------------------------------------------------------------------------------------------
 // Add information for ont mesh to reference all the lights that interact with him
-void AddLightInfo( CMesh::CMeshBuild *pMB, string &LightName, uint8 nMatNb, uint8 nStageNb )
+void AddLightInfo( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, string &LightName, uint8 nMatNb, uint8 nStageNb )
 {
 	CMesh::CMatStage ms;
 	ms.nMatNb = nMatNb;
 	ms.nStageNb = nStageNb;
 	CMesh::CLightInfoMapList listTemp;
 	//list< pair< uint8, uint8 > > listTemp;
-	CMesh::TLightInfoMap::iterator itMap = pMB->LightInfoMap.find( LightName );
-	if( itMap == pMB->LightInfoMap.end() )
+	CMesh::TLightInfoMap::iterator itMap = pMBB->LightInfoMap.find( LightName );
+	if( itMap == pMBB->LightInfoMap.end() )
 	{
 		listTemp.push_back(	ms );
-		pMB->LightInfoMap.insert( pair< string, CMesh::CLightInfoMapList >(LightName, listTemp) );
+		pMBB->LightInfoMap.insert( pair< string, CMesh::CLightInfoMapList >(LightName, listTemp) );
 	}
 	else
 	{
@@ -3172,7 +3187,7 @@ void CExportNel::deleteLM(INode& ZeNode, CExportNelOptions& opt)
 
 // absolutePath tell this code to put the name of the lightmap in absolute or relative path
 // this is very usefull for viewer inside MAX
-bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode, 
+bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild, INode& ZeNode, 
 							Interface& ip, TimeValue tvTime, bool absolutePath,
 							CExportNelOptions &structExport )
 {
@@ -3188,7 +3203,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 	getLightBuilds( AllLights, tvTime, ip );
 	// Get all lights L that have influence over the mesh selected
 	// supprLightNoInteract( AllLights, AllMeshBuilds );
-	supprLightNoInteractOne( AllLights, pZeMeshBuild, ZeNode );
+	supprLightNoInteractOne( AllLights, pZeMeshBuild, pZeMeshBaseBuild, ZeNode );
 	// Get all meshes that are influenced by the lights L			
 	buildWorldRT( WorldRT, AllLights, ip, absolutePath );
 
@@ -3196,8 +3211,9 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 	{
 		// First order face by Material and by texture surface
 		CMesh::CMeshBuild *pMB = pZeMeshBuild;
+		CMeshBase::CMeshBaseBuild *pMBB = pZeMeshBaseBuild;
 		vector<CMesh::CFace*> AllFaces;
-		CMatrix MBMatrix = getObjectToWorldMatrix( pMB );
+		CMatrix MBMatrix = getObjectToWorldMatrix( pMB, pMBB );
 		vector<CVector> AllVertices; // All vertices in world space
 		vector<sint32> FaceGroupByMat; // Number of faces with the same properties
 		uint32 nNbFace = pMB->Faces.size(), nNbVertex = pMB->Vertices.size();
@@ -3207,7 +3223,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 		vector< vector<sint32> > vvLights;
 
 		// Select Lights interacting with the node
-		getLightInteract( pMB, AllLights, vvLights );
+		getLightInteract( pMB, pMBB, AllLights, vvLights );
 
 		AllPlanes.clear();
 		// Make Geometry like we want			
@@ -3224,7 +3240,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 		MBMatrix.transpose();
 
 		// Bubble sort pointer to the faces (Material sorting)
-		ClearFaceWithNoLM( pMB, AllFaces );
+		ClearFaceWithNoLM( pMB, pMBB, AllFaces );
 		if( AllFaces.size() == 0 )
 			return false;
 		SortFaceByMaterialId( FaceGroupByMat, AllFaces.begin(), AllFaces.size() );
@@ -3286,12 +3302,12 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
 					{					
 						// Light the LightMap for the plane (interior only)
-						FirstLight( pMB, *AllPlanes[AllPlanesPrevSize+nPlaneNb], 
+						FirstLight( pMB, pMBB, *AllPlanes[AllPlanesPrevSize+nPlaneNb], 
 									AllVertices, MBMatrix, vvLights[nLight], AllLights,
 									nLight, WorldRT );
 					}
 					// Make extoriors
-					SecondLight( pMB, AllPlanes.begin()+AllPlanesPrevSize, FaceGroupByPlane.size(),
+					SecondLight( pMB, pMBB, AllPlanes.begin()+AllPlanesPrevSize, FaceGroupByPlane.size(),
 								AllVertices, MBMatrix, vvLights[nLight], AllLights,
 								nLight, WorldRT );
 				}
@@ -3303,10 +3319,10 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 					for( nLight = 0; nLight < vvLights.size(); ++nLight )
 					{
 						for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
-							FirstLight( pMB, *AllPlanes[AllPlanesPrevSize+nPlaneNb], 
+							FirstLight( pMB, pMBB, *AllPlanes[AllPlanesPrevSize+nPlaneNb], 
 										AllVertices, MBMatrix, vvLights[nLight], AllLights,
 										nLight, WorldRT );
-						SecondLight( pMB, AllPlanes.begin()+AllPlanesPrevSize, FaceGroupByPlane.size(),
+						SecondLight( pMB, pMBB, AllPlanes.begin()+AllPlanesPrevSize, FaceGroupByPlane.size(),
 									AllVertices, MBMatrix, vvLights[nLight],  AllLights,
 									nLight, WorldRT );
 					}						
@@ -3364,12 +3380,12 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 			COFile f( sSaveName );
 			pLightMap->writeTGA( f, 32 );	
 
-			for( i = 0; i < pMB->Materials.size(); ++i )
-			if( pMB->Materials[i].getShader() == CMaterial::TShader::LightMap )
+			for( i = 0; i < pMBB->Materials.size(); ++i )
+			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
-				pMB->Materials[i].setLightMap( nLightMapNb, pLightMap );
+				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
 				//AllMeshBuilds[nNode].first->Materials[i].setLighting( false );
-				AddLightInfo( pMB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );
+				AddLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );
 				//////int a = pMB->LightInfoMap.size();
 			}
 			++nLightMapNb;
@@ -3379,17 +3395,21 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode,
 
 	// End of the lighting process for this node we have to export the data
 	CMesh::CMeshBuild *pMB = pZeMeshBuild;
+	CMeshBase::CMeshBaseBuild *pMBB = pZeMeshBaseBuild;
 	pMB->VertexFlags |= IDRV_VF_UV[1];
 	// Build the mesh with the build interface
 
-	for( i = 0; i < pMB->Materials.size(); ++i )
+	for( i = 0; i < pMBB->Materials.size(); ++i )
 	{
-		pMB->Materials[i].setLighting( false );
-		pMB->Materials[i].setColor( CRGBA(255,255,255,255) );
+		pMBB->Materials[i].setLighting( false );
+		pMBB->Materials[i].setColor( CRGBA(255,255,255,255) );
 	}
 
 	for( i = 0; i < WorldRT.vMB.size(); ++i )
+	{
 		delete WorldRT.vMB[i];
+		delete WorldRT.vMBB[i];
+	}
 
 	return true;	
 }

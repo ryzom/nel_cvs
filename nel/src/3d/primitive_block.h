@@ -1,7 +1,7 @@
 /** \file primitive_block.h
  * <File description>
  *
- * $Id: primitive_block.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: primitive_block.h,v 1.3 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ private:
 	uint32				_LineCapacity;
 	std::vector<uint32>	_Line;
 
-	/// \todo Hulud: support for strips and fans
+	/// \todo hulud: support for strips and fans
 	// Strip/Fans
 	uint32				_StripIdx;
 	uint32*				_Strip;

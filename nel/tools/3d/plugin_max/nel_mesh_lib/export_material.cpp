@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.9 2001/07/02 16:30:58 besson Exp $
+ * $Id: export_material.cpp,v 1.10 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,12 +46,12 @@ using namespace std;
 #define NEL_MTL_B 0x222b9eb9
 
 // Build an array of NeL material corresponding with max material at this node. Return the number of material exported.
-// Fill an array to remap the 3ds vertexMap channels for each materials. remap3dsTexChannel.size() must be == to materials.size(). 
-// remap3dsTexChannel[mat].size() is the final count of NeL vertexMap channels used for the material n° mat.
-// For each NeL channel of a material, copy the 3ds channel remap3dsTexChannel[nelChannel]._IndexInMaxMaterial using the transformation matrix
-// remap3dsTexChannel[nelChannel]._UVMatrix.
-int CExportNel::buildMaterials (std::vector<CMaterial>& materials, std::vector<std::vector<CMaterialDesc> >& remap3dsTexChannel, 
-								std::vector<std::string>& materialNames, INode& node, TimeValue time, bool absolutePath)
+// Fill an array to remap the 3ds vertexMap channels for each materials. maxBaseBuild.RemapChannel.size() must be == to materials.size(). 
+// maxBaseBuild.RemapChannel[mat].size() is the final count of NeL vertexMap channels used for the material n° mat.
+// For each NeL channel of a material, copy the 3ds channel maxBaseBuild.RemapChannel[nelChannel]._IndexInMaxMaterial using the transformation matrix
+// maxBaseBuild.RemapChannel[nelChannel]._UVMatrix.
+int CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
+								TimeValue time, bool absolutePath)
 {
 	// Material count
 	int nMaterialCount=0;
@@ -72,7 +72,7 @@ int CExportNel::buildMaterials (std::vector<CMaterial>& materials, std::vector<s
 			materials.resize (nMaterialCount);
 
 			// Resize the vertMap remap table
-			remap3dsTexChannel.resize (nMaterialCount);
+			maxBaseBuild.RemapChannel.resize (nMaterialCount);
 
 			// Export all the sub materials
 			for (int nSub=0; nSub<nMaterialCount; nSub++)
@@ -84,7 +84,7 @@ int CExportNel::buildMaterials (std::vector<CMaterial>& materials, std::vector<s
 				nlassert (pSub);
 
 				// Export it
-				materialNames.push_back (buildAMaterial (materials[nSub], remap3dsTexChannel[nSub], *pSub, time, absolutePath));
+				maxBaseBuild.MaterialNames.push_back (buildAMaterial (materials[nSub], maxBaseBuild.RemapChannel[nSub], *pSub, time, absolutePath));
 			}
 		}
 		// Else export only this material, so, count is 1
@@ -97,10 +97,10 @@ int CExportNel::buildMaterials (std::vector<CMaterial>& materials, std::vector<s
 			materials.resize (1);
 
 			// Resize the vertMap remap table
-			remap3dsTexChannel.resize (1);
+			maxBaseBuild.RemapChannel.resize (1);
 
 			// Export the main material
-			materialNames.push_back (buildAMaterial (materials[0], remap3dsTexChannel[0], *pNodeMat, time, absolutePath));
+			maxBaseBuild.MaterialNames.push_back (buildAMaterial (materials[0], maxBaseBuild.RemapChannel[0], *pNodeMat, time, absolutePath));
 		}
 	}
 
@@ -112,13 +112,13 @@ int CExportNel::buildMaterials (std::vector<CMaterial>& materials, std::vector<s
 		nMaterialCount=1;
 
 		// Resize the vertMap remap table
-		remap3dsTexChannel.resize (1);
+		maxBaseBuild.RemapChannel.resize (1);
 
 		// Init the first material
 		materials[0].initLighted();
 
 		// Export the main material
-		materialNames.push_back ("Default");
+		maxBaseBuild.MaterialNames.push_back ("Default");
 	}
 
 	// Return the count of material
@@ -165,7 +165,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 
 	int bStainedGlassWindow = 0;
 	CExportNel::getValueByNameUsingParamBlock2 (mtl, "bStainedGlassWindow", (ParamType2)TYPE_BOOL, &bStainedGlassWindow, tvTime);
-	material.setStainedGlassWindow( bStainedGlassWindow );
+	material.setStainedGlassWindow( bStainedGlassWindow!=0 );
 
 	// By default set blend to false
 	material.setBlend (false);
@@ -237,7 +237,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 													CTextureCube::negative_y, CTextureCube::positive_y	};
 			vector<string> names;
 			CExportNel::getValueByNameUsingParamBlock2 (mtl, "bitmapName", (ParamType2)TYPE_STRING_TAB, &names, tvTime);
-			for( int i = 0; i< names.size(); ++i )
+			for( int i = 0; i< (int)names.size(); ++i )
 			{
 				CTextureFile *pT = new CTextureFile;
 				pT->setFileName(names[i]);
@@ -384,7 +384,7 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 		CExportNel::getValueByNameUsingParamBlock2 (mtl, "twoSided", (ParamType2)TYPE_BOOL, &bDoubleSided, tvTime);
 
 		//material.setDoubleSided (stdmat->GetTwoSided()!=FALSE);
-		material.setDoubleSided ((bool)bDoubleSided);
+		material.setDoubleSided ( bDoubleSided!=0 );
 	}
 
 	if( ! bLightMap )

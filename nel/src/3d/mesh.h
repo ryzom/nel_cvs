@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.5 2001/06/29 14:27:40 berenguier Exp $
+ * $Id: mesh.h,v 1.6 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,7 @@ public:
 
 
 	/// A mesh information.
-	struct	CMeshBuild : public CMeshBase::CMeshBaseBuild
+	struct	CMeshBuild
 	{
 		/** the IDRV_VF* flags which tells what vertices data are used. See IDriver::setVertexFormat() for 
 		 * more information. NB: IDRV_VF_XYZ is always considered to true.
@@ -141,7 +141,7 @@ public:
 		std::vector<CFace>		Faces;
 
 		// Serialization
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+		//void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 	};
 	//@}
@@ -157,7 +157,7 @@ public:
 
 
 	/// Build a mesh, replacing old. WARNING: This has a side effect of deleting AnimatedMaterials.
-	void			build(CMeshBuild &mbuild);
+	void			build(CMeshBase::CMeshBaseBuild &mbase, CMeshBuild &mbuild);
 
 
 	/// Build a mesh from material info, and a builded MeshGeom. WARNING: This has a side effect of deleting AnimatedMaterials.
@@ -245,7 +245,7 @@ public:
 	CMeshGeom();
 
 	/// Build a meshGeom
-	void			build(CMesh::CMeshBuild &mbuild);
+	void			build(CMesh::CMeshBuild &mbuild, uint numMaxMaterial);
 
 
 	/// \name From IMeshGeom

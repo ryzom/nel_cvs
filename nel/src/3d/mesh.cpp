@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.27 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: mesh.cpp,v 1.28 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ CMeshGeom::CMeshGeom()
 
 
 // ***************************************************************************
-void	CMeshGeom::build(CMesh::CMeshBuild &m)
+void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 {
 	sint	i;
 
@@ -131,7 +131,7 @@ void	CMeshGeom::build(CMesh::CMeshBuild &m)
 		_BBox.setSize(CVector::Null);
 		return;
 	}
-	nlassert(m.Materials.size()>0);
+	nlassert(numMaxMaterial>0);
 
 
 	/// 0. First, make bbox.
@@ -214,8 +214,9 @@ void	CMeshGeom::build(CMesh::CMeshBuild &m)
 	for(mb= 0;mb<_MatrixBlocks.size();mb++)
 	{
 		// Build RdrPass ids.
-		_MatrixBlocks[mb].RdrPass.resize(m.Materials.size());
-		// \todo yoyo: TODO_OPTIMIZE: it should be interesting to sort the materials, depending on their attributes. But must change next loop too...
+		_MatrixBlocks[mb].RdrPass.resize (numMaxMaterial);
+
+		/// \todo yoyo: TODO_OPTIMIZE: it should be interesting to sort the materials, depending on their attributes. But must change next loop too...
 		for(i=0;i<(sint)_MatrixBlocks[mb].RdrPass.size(); i++)
 		{
 			_MatrixBlocks[mb].RdrPass[i].MaterialId= i;
@@ -719,7 +720,7 @@ float	CMeshGeom::getNumTriangles (float distance)
 			triCount+=pass.PBlock.getNumTriangles ();
 		}
 	}
-	return triCount;
+	return (float)triCount;
 }
 
 
@@ -774,6 +775,7 @@ void CMesh::CSkinWeight::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 // ***************************************************************************
+/* Serialization is not used.
 void CMesh::CMeshBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	sint	ver= f.serialVersion(0);
@@ -787,7 +789,7 @@ void CMesh::CMeshBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialCont( SkinWeights );
 	f.serialCont( Faces );
 
-}
+}*/
 
 
 // ***************************************************************************
@@ -836,13 +838,13 @@ CMesh	&CMesh::operator=(const CMesh &mesh)
 
 
 // ***************************************************************************
-void	CMesh::build(CMeshBuild &m)
+void	CMesh::build (CMeshBase::CMeshBaseBuild &mbase, CMeshBuild &m)
 {
 	/// copy MeshBase info: materials ....
-	CMeshBase::buildMeshBase(m);
+	CMeshBase::buildMeshBase (mbase);
 
 	// build the geometry.
-	_MeshGeom->build(m);
+	_MeshGeom->build (m, mbase.Materials.size());
 }
 
 

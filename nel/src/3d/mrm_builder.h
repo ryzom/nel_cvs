@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.5 2001/06/26 10:12:03 berenguier Exp $
+ * $Id: mrm_builder.h,v 1.6 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,8 @@ public:
 	 *	\param params the parameters of MRM process.
 	 *	\param mrmMesh the result MRM mesh.
 	 */
-	void	compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh);
+	void	compileMRM(const CMesh::CMeshBuild &mbuild, const CMRMParameters &params, CMeshMRMGeom::CMeshBuildMRM &mrmMesh,
+						uint numMaxMaterial);
 
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.4 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh_base.h,v 1.5 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,8 +96,8 @@ public:
 
 		CMeshBaseBuild();
 
-		// Serialization
-		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+		// Serialization is not used
+		//void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	};
 	//@}
 

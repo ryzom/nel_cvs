@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.8 2001/06/22 12:45:42 besson Exp $
+ * $Id: export_nel.h,v 1.9 2001/07/03 08:33:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #define NEL_LIGHT_CLASS_ID_A	0x36e3181f
 #define NEL_LIGHT_CLASS_ID_B	0x3ac24049
 
+// ***************************************************************************
 
 enum TNelValueType
 {
@@ -56,10 +57,14 @@ enum TNelValueType
 	typeMatrix,
 };
 
+// ***************************************************************************
+
 enum TNelScriptValueType
 {
 	scriptFloat,
 };
+
+// ***************************************************************************
 
 namespace NL3D
 {
@@ -68,7 +73,8 @@ namespace NL3D
 	class CSkeletonShape;
 };
 
-// -----------------------------------------------
+// ***************************************************************************
+
 struct CExportNelOptions
 {
 	bool bShadow;
@@ -102,10 +108,12 @@ struct CExportNelOptions
 		stream.serial( bExcludeNonSelected );
 	}
 };
-// -----------------------------------------------
 
+// ***************************************************************************
 
 class CExportDesc;
+
+// ***************************************************************************
 
 /**
  * 3dsmax to NeL export interface for other things that landscape.
@@ -149,7 +157,7 @@ public:
 	  * 
 	  * This method does not care of the skeletonShape
 	  */
-	static NL3D::CMesh::CMeshBuild*	createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath);
+	static NL3D::CMesh::CMeshBuild*	createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, NL3D::CMesh::CMeshBaseBuild*& baseBuild);
 
 	/**
 	  * Return true if it is a mesh.
@@ -163,7 +171,9 @@ public:
 	  */
 	static bool						hasLightMap (INode& node, TimeValue time);
 	static void						deleteLM (INode& node, CExportNelOptions& structExport);
-	static bool						calculateLM (NL3D::CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode, 
+	static bool						calculateLM (NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
+												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
+												INode& ZeNode, 
 												Interface& ip, TimeValue tvTime, bool absolutePath,
 												CExportNelOptions& structExport);
 
@@ -315,32 +325,6 @@ public:
 
 private:
 
-	// *********************
-	// *** Ëxport mesh
-	// *********************
-
-	// Get 3ds UVs channel used by a texmap and make a good index channel
-	// Can return an interger in [0; MAX_MESHMAPS-1] or on of the following value: UVGEN_MISSING, UVGEN_OBJXYZ or UVGEN_WORLDXYZ
-	static int						getVertMapChannel (Texmap& texmap, Matrix3& channelMatrix);
-
-	// Build a CLight
-	static bool						buildLight (GenLight &maxLight, NL3D::CLight& nelLight, INode& node, TimeValue time);
-
-	/**
-	  * Build a NeL mesh interface
-	  *
-	  * if skeletonShape is NULL, no skinning is exported.
-	  */
-	static void						buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, std::vector<std::string>& materialNames, 
-														INode& node, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath);
-
-	// Get the normal of a face for a given corner in localSpace
-	static Point3					getLocalNormal (int face, int corner, Mesh& mesh);
-
-	// *********************
-	// *** Ëxport material
-	// *********************
-
 	// A class that describe how build a NeL material with a max one
 	class CMaterialDesc
 	{
@@ -375,9 +359,56 @@ private:
 		float		_CropH;
 	};
 
+	// Max base build structure
+	class CMaxMeshBaseBuild
+	{
+	public:
+		// Num of materials
+		uint										NumMaterials;
+		
+		// Remap UV channel
+		std::vector<std::vector<CMaterialDesc> >	RemapChannel;
+
+		// Material names
+		std::vector<std::string>					MaterialNames;
+	};
+
+	// *********************
+	// *** Ëxport mesh
+	// *********************
+
+	// Get 3ds UVs channel used by a texmap and make a good index channel
+	// Can return an interger in [0; MAX_MESHMAPS-1] or on of the following value: UVGEN_MISSING, UVGEN_OBJXYZ or UVGEN_WORLDXYZ
+	static int						getVertMapChannel (Texmap& texmap, Matrix3& channelMatrix);
+
+	// Build a CLight
+	static bool						buildLight (GenLight &maxLight, NL3D::CLight& nelLight, INode& node, TimeValue time);
+
+	/**
+	  * Build a NeL base mesh interface
+	  *
+	  * if skeletonShape is NULL, no skinning is exported.
+	  */
+	static void						buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildMesh, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
+															TimeValue time, bool absolutePath);
+
+	/**
+	  * Build a NeL mesh interface
+	  *
+	  * if skeletonShape is NULL, no skinning is exported.
+	  */
+	static void						buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const CMaxMeshBaseBuild& maxBaseBuild,
+														INode& node, TimeValue time, const NL3D::CSkeletonShape* skeletonShape, bool absolutePath);
+
+	// Get the normal of a face for a given corner in localSpace
+	static Point3					getLocalNormal (int face, int corner, Mesh& mesh);
+
+	// *********************
+	// *** Ëxport material
+	// *********************
+
 	// Build an array of NeL material corresponding with max material at this node. Return the number of material exported.
-	static int						buildMaterials (std::vector<NL3D::CMaterial>& Materials, std::vector<std::vector<CMaterialDesc> >& 
-													remap3dsTexChannel,	std::vector<std::string>& materialNames, INode& node, 
+	static int						buildMaterials (std::vector<NL3D::CMaterial>& Materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
 													TimeValue time, bool absolutePath);
 
 	// Build a NeL material corresponding with a max material.

@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.36 2003/01/03 16:52:01 lecroart Exp $
+ * $Id: dru.cpp,v 1.37 2003/02/06 09:11:50 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -146,6 +146,7 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 	mat.initUnlit ();
 	mat.setTexture (0, &texture);
 	mat.setBlend(blend);
+	mat.setZFunc(CMaterial::always);
 
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::TexCoord0Flag);
@@ -184,6 +185,7 @@ void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	mat.setDstBlend(CMaterial::invsrcalpha);
 	mat.setBlend(true);
 	mat.setColor(col);
+	mat.setZFunc (CMaterial::always);
 
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
@@ -216,6 +218,7 @@ void	CDRU::drawTriangle (float x0, float y0, float x1, float y1, float x2, float
 	mat.setDstBlend(CMaterial::invsrcalpha);
 	mat.setBlend(true);
 	mat.setColor(col);
+	mat.setZFunc (CMaterial::always);
 
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
@@ -250,6 +253,7 @@ void	CDRU::drawQuad (float x0, float y0, float x1, float y1, IDriver& driver, CR
 	mat.setDstBlend(CMaterial::invsrcalpha);
 	mat.setBlend(true);
 	mat.setColor(col);
+	mat.setZFunc (CMaterial::always);
 	
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
@@ -285,6 +289,7 @@ void	CDRU::drawQuad (float xcenter, float ycenter, float radius, IDriver& driver
 	mat.setDstBlend(CMaterial::invsrcalpha);
 	mat.setBlend(true);
 	mat.setColor(col);
+	mat.setZFunc (CMaterial::always);
 	
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag);
@@ -430,6 +435,7 @@ void			CDRU::drawQuad (float x0, float y0, float x1, float y1, CRGBA col0, CRGBA
 	mat.setSrcBlend(CMaterial::srcalpha);
 	mat.setDstBlend(CMaterial::invsrcalpha);
 	mat.setBlend(true);
+	mat.setZFunc (CMaterial::always);
 	
 	static CVertexBuffer vb;
 	vb.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::PrimaryColorFlag);

@@ -1,7 +1,7 @@
 /** \file retrievable_surface.cpp
  *
  *
- * $Id: retrievable_surface.cpp,v 1.11 2003/01/15 10:42:38 legros Exp $
+ * $Id: retrievable_surface.cpp,v 1.12 2003/03/24 16:40:05 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ float			NLPACS::Models[NumCreatureModels][NumModelCharacteristics] =
 float			NLPACS::Models[NumMaxCreatureModels][NumModelCharacteristics] =
 {
 	{ 0.5f, 1.0f, -1.0f },
-	{ 4.0f, 8.0f, +0.707f },
+	{ 4.0f, 8.0f, +0.5f },
 	{ 0.0f, 0.0f, -1.0f },
 	{ 0.0f, 0.0f, -1.0f },
 };

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.8 2004/09/07 15:24:46 vizerie Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.9 2004/09/17 15:08:17 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -67,8 +67,9 @@ bool CDriverD3D::renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines)
 			activePass (pass);
 
 			nlassert(_VertexStreamStride == _VertexDeclStride );
-			_DeviceInterface->DrawIndexedPrimitive (D3DPT_LINELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
+			HRESULT r = _DeviceInterface->DrawIndexedPrimitive (D3DPT_LINELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
 				firstIndex+_IndexBufferOffset, nlines);
+			nlassert(r == D3D_OK);
 		}
 		endMultiPass ();
 	}
@@ -97,16 +98,18 @@ bool CDriverD3D::renderTriangles(CMaterial& mat, uint32 firstIndex, uint32 ntris
 
 	if (_VertexBufferCache.VertexBuffer && _IndexBufferCache.IndexBuffer)
 	{
-		uint pass;
+		uint pass;		
 		beginMultiPass ();
 		for (pass=0; pass<_CurrentShaderPassCount; pass++)
 		{
 			// Active the pass
+
 			activePass (pass);
 
-			nlassert(_VertexStreamStride == _VertexDeclStride );
-			_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
+			nlassert(_VertexStreamStride == _VertexDeclStride );			
+			HRESULT r = _DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
 				firstIndex+_IndexBufferOffset, ntris);
+			nlassert(r == D3D_OK);
 		}
 		endMultiPass ();
 	}
@@ -129,14 +132,15 @@ bool CDriverD3D::renderSimpleTriangles(uint32 firstIndex, uint32 ntris)
 	// Update matrix and Light if needed
 	updateRenderVariablesInternal();
 	nlassert(_VertexStreamStride == _VertexDeclStride );
-	_DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
+	HRESULT r = _DeviceInterface->DrawIndexedPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset, 0, _VertexBufferSize, 
 		firstIndex+_IndexBufferOffset, ntris);
+	nlassert(r == D3D_OK);
 
 	// Stats
 	_PrimitiveProfileIn.NTriangles += ntris;
 	_PrimitiveProfileOut.NTriangles += ntris;
 
-	return true;
+	return true;	
 }
 
 // ***************************************************************************
@@ -157,7 +161,8 @@ bool CDriverD3D::renderRawPoints(CMaterial& mat, uint32 firstIndex, uint32 numPo
 			// Active the pass
 			activePass (pass);
 			nlassert(_VertexStreamStride == _VertexDeclStride );
-			_DeviceInterface->DrawPrimitive (D3DPT_POINTLIST, _VertexBufferOffset+firstIndex, numPoints);
+			HRESULT r = _DeviceInterface->DrawPrimitive (D3DPT_POINTLIST, _VertexBufferOffset+firstIndex, numPoints);
+			nlassert(r == D3D_OK);
 		}
 		endMultiPass ();
 	}
@@ -187,7 +192,8 @@ bool CDriverD3D::renderRawLines(CMaterial& mat, uint32 firstIndex, uint32 numLin
 			// Active the pass
 			activePass (pass);
 			nlassert(_VertexStreamStride == _VertexDeclStride );
-			_DeviceInterface->DrawPrimitive (D3DPT_LINELIST, _VertexBufferOffset+firstIndex, numLines);
+			HRESULT r = _DeviceInterface->DrawPrimitive (D3DPT_LINELIST, _VertexBufferOffset+firstIndex, numLines);
+			nlassert(r == D3D_OK);
 		}
 		endMultiPass ();
 	}
@@ -217,7 +223,8 @@ bool CDriverD3D::renderRawTriangles(CMaterial& mat, uint32 firstIndex, uint32 nu
 			// Active the pass
 			activePass (pass);
 			nlassert(_VertexStreamStride == _VertexDeclStride );
-			_DeviceInterface->DrawPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset+ 3 * firstIndex, numTris);
+			HRESULT r = _DeviceInterface->DrawPrimitive (D3DPT_TRIANGLELIST, _VertexBufferOffset+ 3 * firstIndex, numTris);
+			nlassert(r == D3D_OK);
 		}
 		endMultiPass ();
 	}

@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.37 2004/02/16 17:43:07 saffray Exp $
+ * $Id: entity_id.h,v 1.38 2004/02/18 19:24:48 brigand Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,7 +108,7 @@ public:
 	/// Generator of entity ids
 	static CEntityId			getNewEntityId( uint8 type )
 	{
-		nlassert( _NextEntityId != Unknown ); // type may be Unknown, so isUnknownId() would return true
+		nlassert(_NextEntityId != Unknown ); // type may be Unknown, so isUnknownId() would return true
 		NLMISC::CEntityId id = _NextEntityId++;
 		id.setType( type );
 		return id;
@@ -298,6 +298,10 @@ public:
 		return (Id == a.DetailedId.Id && DetailedId.CreatorId == a.DetailedId.CreatorId && DetailedId.Type == a.DetailedId.Type);
 		*/
 	}
+	bool operator != (const CEntityId &a) const
+	{
+		return !((*this) == a);
+	}
 
 	bool operator < (const CEntityId &a) const
 //	virtual bool operator < (const CEntityId &a) const
@@ -394,8 +398,12 @@ public:
 
 	// ---------------------------------------------------------------------------------
 	// other methods...
+	uint64 asUint64()const 
+	{
+		return FullId;
+	}
 
-	operator uint64 () const
+/*	operator uint64 () const
 	{
 		return FullId;
 		/*
@@ -409,7 +417,7 @@ public:
 
 		return p;
 		*/
-	}
+//	}
 
 	// ---------------------------------------------------------------------------------
 	// loading, saving, serialising...
@@ -553,6 +561,19 @@ public:
 
 //	friend std::stringstream &operator << (std::stringstream &__os, const CEntityId &__t);
 };	
+
+/**
+ * a generic hasher for entities
+ */
+class CEidHash
+{
+public:
+	size_t	operator () ( const NLMISC::CEntityId & id ) const 
+	{ 		
+		return (uint32)id.getShortId(); 
+	}
+};
+
 
 /*inline std::stringstream &operator << (std::stringstream &__os, const CEntityId &__t)
 {

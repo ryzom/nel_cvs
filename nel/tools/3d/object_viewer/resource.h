@@ -176,6 +176,7 @@
 #define IDC_MAP_SIZE                    1070
 #define IDC_COMBO_DIST_TYPE             1070
 #define IDC_MAIN_OP                     1070
+#define IDC_CURRENT_STAGE               1070
 #define IDC_START_PICTURE               1071
 #define IDD_SET_VALUE                   1071
 #define IDC_ALTERNATE_OP                1071
@@ -193,7 +194,8 @@
 #define IDB_SOUND_FREQ                  1078
 #define IDD_ABOUT                       1079
 #define IDC_PUT_SCHEME                  1079
-#define IDD_LB_EXTERN_IB                1080
+#define IDD_LB_EXTERN_ID                1080
+#define IDD_LB_EXTERN_ID                1080
 #define IDC_ATTR_BITMAP                 1081
 #define IDD_PICK_SOUND                  1081
 #define IDC_CONSTANT_VALUE_POS          1082
@@ -235,10 +237,14 @@
 #define IDC_REMOVE_TEXTURE              1105
 #define IDC_EDIT_MULTITEXTURING         1106
 #define IDD_CONSTRAINT_MESH_DLG         1106
+#define IDD_CONSTRAINT_MESH_TEX_DLG     1107
 #define IDC_USE_SPEED_BASIS             1108
 #define IDC_ADD_TARGET                  1109
+#define IDD_CONSTRAINT_MESH_GLOBAL_TEX_ANIM_DLG 1109
 #define IDC_REMOVE_TARGET               1110
+#define IDD_EDIT_MORPH_MESH             1110
 #define IDC_TARGET                      1111
+#define IDB_MORPH_SCHEME                1111
 #define IDC_ENABLE_X                    1112
 #define IDC_ENABLE_Y                    1113
 #define IDC_XPOS                        1113
@@ -311,6 +317,7 @@
 #define IDC_RENAME_POOL                 1172
 #define IDC_BUTTON_VEGETABLE_REMOVE     1172
 #define IDC_BUTTON_VEGETABLE_APPERANCE_ALL 1172
+#define IDC_CHANGE                      1172
 #define IDC_CONVERT_SPEED_VECTOR_FROM_EMITTER_BASIS 1173
 #define IDC_GO_DOWN                     1173
 #define IDC_BUTTON_VEGETABLE_GETOTHER   1173
@@ -444,6 +451,40 @@
 #define IDC_FORCE_STAGE_2_MODULATION    1297
 #define IDC_FORCE_STAGE_3_MODULATION    1298
 #define IDC_FORCE_VERTEX_COLOR_LIGHTING 1299
+#define IDC_U_SPEED_TEXT                1300
+#define IDC_V_SPEED_TEXT                1301
+#define IDC_U_ACCEL_TEXT                1302
+#define IDC_V_ACCEL_TEXT                1303
+#define IDC_U_SPEED                     1304
+#define IDC_CURR_STAGE                  1305
+#define IDC_V_SPEED                     1305
+#define IDC_TEX_ANIM_TYPE_TEXT          1306
+#define IDC_U_ACCEL                     1306
+#define IDC_TEX_ANIM_TYPE               1307
+#define IDC_V_ACCEL                     1307
+#define IDC_U_SCALE_SPEED_TEXT          1308
+#define IDC_REINIT_WHEN_NEW_ELEMENT_IS_CREATED 1308
+#define IDC_V_SCALE_SPEED_TEXT          1309
+#define IDC_ENABLE_MORPHING             1309
+#define IDC_U_SCALE_ACCEL_TEXT          1310
+#define IDC_EDIT_MORPH                  1310
+#define IDC_V_SCALE_ACCEL_TEXT          1311
+#define IDC_MORPH_FRAME                 1311
+#define IDC_U_SCALE_SPEED               1312
+#define IDC_MESHS                       1312
+#define IDC_V_SCALE_SPEED               1313
+#define IDC_ADD                         1313
+#define IDC_U_SCALE_ACCEL               1314
+#define IDC_MORPH_SCHEME                1314
+#define IDC_V_SCALE_ACCEL               1315
+#define IDC_U_SCALE_START_TEXT          1316
+#define IDC_V_SCALE_START_TEXT          1317
+#define IDC_U_SCALE_START               1318
+#define IDC_V_SCALE_START               1319
+#define IDC_WROT_SPEED_TEXT             1320
+#define IDC_WROT_ACCEL_TEXT             1321
+#define IDC_WROT_SPEED                  1322
+#define IDC_WROT_ACCEL                  1323
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -563,9 +604,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1107
+#define _APS_NEXT_RESOURCE_VALUE        1112
 #define _APS_NEXT_COMMAND_VALUE         32873
-#define _APS_NEXT_CONTROL_VALUE         1300
+#define _APS_NEXT_CONTROL_VALUE         1315
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

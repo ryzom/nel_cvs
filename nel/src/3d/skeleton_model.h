@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.24 2002/08/09 14:56:58 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.25 2002/08/12 14:27:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -193,9 +193,10 @@ public:
 	 *	for all used bones, extend the bbox with their pos
 	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton is not skinned/sticked
 	 *	at all, bbox is not modified.
+	 * \param forceCompute force evalution even if not skinned
 	 *	\return true if the bbox is computed, false otherwise.
 	 */
-	bool		computeCurrentBBox(NLMISC::CAABBox &bbox);
+	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompute = false);
 
 	// @}
 

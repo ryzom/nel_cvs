@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.13 2002/08/05 15:29:11 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.14 2002/08/12 14:27:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@
 
 namespace NL3D {
 
+class UPlayList;
 
 // ***************************************************************************
 /**
@@ -131,7 +132,7 @@ public:
 	/// \name Misc
 	// @{
 	virtual	bool		computeRenderedBBox(NLMISC::CAABBox &bbox);
-	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0);
+	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0, bool forceCompute = false);
 	// @}
 
 public:

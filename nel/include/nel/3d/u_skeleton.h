@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.11 2002/08/05 15:30:22 berenguier Exp $
+ * $Id: u_skeleton.h,v 1.12 2002/08/12 14:26:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,9 +194,10 @@ public:
 	 *	\param bbox return the bbox of the skinned skeleton, local to the skeleton. If the skeleton is not skinned/sticked
 	 *	at all, bbox is not modified.
 	 *	\param playList set NULL if no one, else this playList will be played at the time playTime
+	 *  \param forceCompute force evaluation of bbox even if not skinned
 	 *	\return true if the bbox is computed, false otherwise.
 	 */
-	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0) =0;
+	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0, bool forceCompute = false) =0;
 
 	// @}
 

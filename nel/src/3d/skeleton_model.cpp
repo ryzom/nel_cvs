@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.31 2002/08/09 14:56:57 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.32 2002/08/12 14:27:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1319,15 +1319,17 @@ bool			CSkeletonModel::computeRenderedBBox(NLMISC::CAABBox &bbox)
 
 
 // ***************************************************************************
-bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox)
+bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox, bool forceCompute /* = false*/)
 {
 	// animate all bones channels (detail only channels). don't bother cur lod state.
 	CChannelMixer	*chanmix= getChannelMixer();
-	// Force detail evaluation.
-	chanmix->resetEvalDetailDate();
-	chanmix->eval(true, 0);
-	chanmix->resetEvalDetailDate();
-
+	if (chanmix)
+	{	
+		// Force detail evaluation.
+		chanmix->resetEvalDetailDate();
+		chanmix->eval(true, 0);
+		chanmix->resetEvalDetailDate();
+	}
 	// compute all skeleton bones
 	computeAllBones(CMatrix::Identity);
 
@@ -1342,7 +1344,7 @@ bool			CSkeletonModel::computeCurrentBBox(NLMISC::CAABBox &bbox)
 	for(i=0;i<Bones.size();i++)
 	{
 		// Is the bone used ?? (whatever bone lod, or CLod state)
-		uint8	mustCompute= _BoneUsage[i].Usage | _BoneUsage[i].ForcedUsage | _BoneUsage[i].CLodForcedUsage;
+		uint8	mustCompute = forceCompute ? 1 : _BoneUsage[i].Usage | _BoneUsage[i].ForcedUsage | _BoneUsage[i].CLodForcedUsage;
 
 		// If the bone is used.
 		if(mustCompute)

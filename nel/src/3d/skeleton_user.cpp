@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.12 2002/08/05 15:29:11 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.13 2002/08/12 14:27:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -243,7 +243,7 @@ bool		CSkeletonUser::computeRenderedBBox(NLMISC::CAABBox &bbox)
 	return _Skeleton->computeRenderedBBox(bbox);
 }
 // ***************************************************************************
-bool		CSkeletonUser::computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime)
+bool		CSkeletonUser::computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime, bool forceCompute /* = false */)
 {
 	NL3D_HAUTO_UI_SKELETON;
 
@@ -253,7 +253,7 @@ bool		CSkeletonUser::computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playLi
 		plUser->evalPlayList(playTime);
 	}
 
-	return _Skeleton->computeCurrentBBox(bbox);
+	return _Skeleton->computeCurrentBBox(bbox, forceCompute);
 }
 
 

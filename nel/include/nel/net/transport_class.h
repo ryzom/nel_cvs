@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.5 2002/03/14 13:50:20 lecroart Exp $
+ * $Id: transport_class.h,v 1.6 2002/03/20 17:26:58 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -152,7 +152,7 @@ public:
 		case PropUInt64: case PropSInt64: nlassert(sizeof(T) == sizeof (uint64)); break;
 		case PropFloat: nlassert(sizeof(T) == sizeof (float)); break;
 		case PropDouble: nlassert(sizeof(T) == sizeof (double)); break;
-		case PropString: nlassert(sizeof(T) == sizeof (string)); break;
+		case PropString: nlassert(sizeof(T) == sizeof (std::string)); break;
 		case PropEntityId: nlassert(sizeof(T) == sizeof (CEntityId)); break;
 		default: nlerror ("property %s have unknown type %d", name.c_str(), type);
 		}

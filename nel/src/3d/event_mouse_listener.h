@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: event_mouse_listener.h,v 1.2 2001/06/25 13:43:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,6 +153,28 @@ public:
 		_EnableModelMatrixEdition = enable ;
 	}
 	  
+	enum TAxis { xAxis = 0, yAxis = 1, zAxis = 2 } ;
+
+	/// set the current axe of rotation for the model matrix
+	void setModelMatrixRotationAxis(TAxis axis) { _CurrentModelRotationAxis = axis ;}
+
+	/// get the current axe of rotation for the model matrix
+	TAxis getModelMatrixRotationAxis(void) const  { return _CurrentModelRotationAxis ;}
+
+	
+
+	/** enable / disable an axe for translation (model matrix)
+	  * \param axis the axis to enable / diable
+	  * \param enabled true if the trnaslation is permitted on that axis
+	  */
+	void enableModelTranslationAxis(TAxis axis, bool enabled) ;
+
+	/** check wether translation on the given axis is permitted
+	  * \param axis the axis to check
+	  * \return true if translation is permitted
+	  */
+	bool isModelTranslationEnabled(TAxis axis) ;
+
 
 	/** 
 	  * Set the speed for first person mode. Default 10.f;
@@ -211,6 +233,13 @@ private:
 	/// Internal use
 	virtual void operator ()(const NLMISC::CEvent& event);
 
+
+
+	TAxis                _CurrentModelRotationAxis ;
+	bool                _XModelTranslateEnabled ;
+	bool                _YModelTranslateEnabled ;
+	bool                _ZModelTranslateEnabled ;
+
 	CMatrix				_Matrix;
 	CMatrix				_ModelMatrix ;
 	bool				_EnableModelMatrixEdition  ;
@@ -226,6 +255,12 @@ private:
 	uint64				_LastTime;
 	TMouseMode			_MouseMode;
 	NLMISC::CEventListenerAsync	_AsyncListener;
+
+
+	/** remove composant of translations that are not permitted
+	  * \see enableModelTranslationAxis()
+	  */
+	void truncateVect(CVector &v) ;
 }; // NL3D
 
 }

@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.10 2001/06/19 15:59:21 vizerie Exp $
+ * $Id: event_mouse_listener.cpp,v 1.11 2001/06/25 13:43:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,10 @@ namespace NL3D
 {
 
 
-CEvent3dMouseListener::CEvent3dMouseListener()
+CEvent3dMouseListener::CEvent3dMouseListener() :  _CurrentModelRotationAxis(zAxis)
+										          ,_XModelTranslateEnabled(true)
+												  ,_YModelTranslateEnabled(true)
+												  ,_ZModelTranslateEnabled(true)
 {
 	_Matrix.identity();
 	_ModelMatrix.identity() ;
@@ -48,6 +51,38 @@ CEvent3dMouseListener::CEvent3dMouseListener()
 	_LastTime=CTime::getLocalTime ();
 }
 
+
+
+void CEvent3dMouseListener::enableModelTranslationAxis(TAxis axis, bool enabled)
+{
+	switch (axis)
+	{
+		case xAxis: _XModelTranslateEnabled = enabled ; break ;
+		case yAxis: _YModelTranslateEnabled = enabled ; break ;
+		case zAxis: _ZModelTranslateEnabled = enabled ; break ;
+	}
+}
+
+bool CEvent3dMouseListener::isModelTranslationEnabled(TAxis axis)
+{
+	switch (axis)
+	{
+		case xAxis: return _XModelTranslateEnabled ; break ;
+		case yAxis: return _YModelTranslateEnabled ; break ;
+		case zAxis: return _ZModelTranslateEnabled ; break ;
+		default: return false ; break ;
+	}	
+}
+
+
+void CEvent3dMouseListener::truncateVect(CVector &v)
+{
+	if (!_XModelTranslateEnabled) v.x = 0.f ;	
+	if (!_YModelTranslateEnabled) v.y = 0.f ;	
+	if (!_ZModelTranslateEnabled) v.z = 0.f ;	
+}
+
+
 void CEvent3dMouseListener::operator ()(const CEvent& event)
 {
 	CEventMouse* mouseEvent=(CEventMouse*)&event;
@@ -57,6 +92,7 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 		bool bTranslateXY=false;
 		bool bTranslateZ=false;
 		bool bZoom=false;
+		
 
 		// Rotate Axis
 		CVector axis;
@@ -133,13 +169,21 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			else
 			{
 				CVector pos = _ModelMatrix.getPos() ;
-				NLMISC::CQuat r(CAngleAxis(_ModelMatrix.getK(), (float) Pi*2.f*(_X-mouseEvent->X))) ;
-			//	NLMISC::CQuat rJ(CAngleAxis(_ModelMatrix.getJ(), (float) Pi*2.f*(_Y-mouseEvent->Y))) ;
+				NLMISC::CQuat r ;
+				switch (_CurrentModelRotationAxis)
+				{
+					case xAxis : r = CQuat(CAngleAxis(_ModelMatrix.getI(), (float) Pi*2.f*(_X-mouseEvent->X))) ; break ;
+					case yAxis : r = CQuat(CAngleAxis(_ModelMatrix.getJ(), (float) Pi*2.f*(_X-mouseEvent->X))) ; break ;
+					case zAxis : r = CQuat(CAngleAxis(_ModelMatrix.getK(), (float) Pi*2.f*(_X-mouseEvent->X))) ; break ;
+				} ;
 
-				_ModelMatrix.setPos(CVector::Null) ;
-				_ModelMatrix.rotate(r) ;				
-
+			
+				CMatrix rm ;
+				rm.rotate(r) ;
+				
+				_ModelMatrix = rm * _ModelMatrix ;
 				_ModelMatrix.setPos(pos) ;
+
 				_ModelMatrix.normalize (CMatrix::XYZ);
 			}
 		}
@@ -179,7 +223,9 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 				}
 				else
 				{
-					_ModelMatrix.setPos(_ModelMatrix.getPos()-worldPoint1+worldPoint2);
+					CVector dir =  - worldPoint1 + worldPoint2 ;
+					truncateVect(dir) ;
+					_ModelMatrix.setPos(_ModelMatrix.getPos()+dir);
 				}
 			}
 			else if (bTranslateZ)
@@ -191,7 +237,9 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 				}
 				else
 				{
-					_ModelMatrix.setPos(_ModelMatrix.getPos()+_Matrix.getK()*(vect.x+vect.y+vect.z));
+					CVector dir = _Matrix.getK()*(vect.x+vect.y+vect.z) ;
+					truncateVect(dir) ;
+					_ModelMatrix.setPos(_ModelMatrix.getPos()+dir);
 				}
 			}
 			else if (bZoom)
@@ -243,7 +291,9 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 		}
 		else
 		{
-			_ModelMatrix.setPos(_ModelMatrix.getPos()+direc*(mouseEvent->Direction?0.1f:-0.1f));
+			CVector dir = direc*(mouseEvent->Direction?0.1f:-0.1f) ;
+			truncateVect(dir) ;
+			_ModelMatrix.setPos(_ModelMatrix.getPos() + dir);
 		}
 	}
 }

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.50 2004/04/27 12:19:03 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.51 2004/06/08 08:56:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1992,7 +1992,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 			}
 
 			PixelFormat = RGBA;
-			delete scanline;
+			delete []scanline;
 		};
 		break;
 		
@@ -2025,7 +2025,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 			}
 
 			PixelFormat = _LoadGrayscaleAsAlpha?Alpha:Luminance;
-			delete scanline;
+			delete []scanline;
 		};
 		break;
 
@@ -2276,7 +2276,7 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 			f.serial(scanline[i]);
 		}		
 	}
-	delete scanline;
+	delete []scanline;
 	return true;
 }
 

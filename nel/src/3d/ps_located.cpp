@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.31 2001/09/06 10:14:14 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.32 2001/09/12 13:19:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -538,6 +538,7 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		else
 		{
 			f.serial(_InitialMass);
+			nlassert(_InitialMass > 0);
 			_MassScheme = NULL;
 		}
 	}
@@ -562,7 +563,8 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		else
 		{
 			f.serial(bFalse);
-			f.serial(_InitialMass);
+			nlassert(_InitialMass > 0);
+			f.serial(_InitialMass);			
 		}
 	}
 

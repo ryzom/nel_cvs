@@ -1,7 +1,7 @@
 /** \file rpo.cpp
  * <File description>
  *
- * $Id: rpo.cpp,v 1.1 2001/04/26 16:37:32 corvazier Exp $
+ * $Id: rpo.cpp,v 1.2 2004/11/02 16:17:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,9 +78,8 @@ enum { pb_spin };
 
 IObjParam *RPO::ip			= NULL;
 
-BOOL RPO::attachMat=FALSE;
-BOOL RPO::condenseMat=FALSE;
-
+BOOL PatchObject::attachMat = FALSE;
+BOOL PatchObject::condenseMat = FALSE;
 
 static RPOClassDesc RPODesc;
 

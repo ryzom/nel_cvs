@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.8 2001/03/21 17:59:27 puzin Exp $
+ * $Id: driver_user.cpp,v 1.9 2001/04/19 12:49:28 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -177,6 +177,7 @@ void			CDriverUser::setDisplay(const CMode &mode)
 
 	// Matrix Context (2D).
 	_CurrentMatrixContext.Viewport.initFullScreen();
+	_CurrentMatrixContext.Scissor.initFullScreen();
 	setMatrixMode2D11();
 
 	// 2D Material.
@@ -220,11 +221,23 @@ void			CDriverUser::release()
 // ***************************************************************************
 void			CDriverUser::setupMatrixContext()
 {
+	_Driver->setupScissor(_CurrentMatrixContext.Scissor);
 	_Driver->setupViewport(_CurrentMatrixContext.Viewport);
 	CFrustum	&f= _CurrentMatrixContext.Frustum;
 	_Driver->setFrustum(f.Left, f.Right, f.Bottom, f.Top, f.Near, f.Far, f.Perspective);
 	_Driver->setupViewMatrix(_CurrentMatrixContext.ViewMatrix);
 	_Driver->setupModelMatrix(_CurrentMatrixContext.ModelMatrix);
+}
+// ***************************************************************************
+void			CDriverUser::setScissor(const CViewport &sc)
+{
+	_CurrentMatrixContext.Scissor= sc;
+	setupMatrixContext();
+}
+// ***************************************************************************
+CViewport		CDriverUser::getScissor()
+{
+	return _CurrentMatrixContext.Scissor;
 }
 // ***************************************************************************
 void			CDriverUser::setViewport(const CViewport &vp)

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.5 2001/04/18 10:39:55 besson Exp $
+ * $Id: driver_user.h,v 1.6 2001/04/19 12:49:28 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,7 @@ class CDriverUser : public UDriver
 protected:
 	struct	CMatrixContext
 	{
+		CViewport	Scissor;		// Init to fullscreen.
 		CViewport	Viewport;		// Init to fullscreen.
 		CFrustum	Frustum;
 		CMatrix		ViewMatrix;
@@ -250,6 +251,10 @@ public:
 	 */
 	// @{
 
+	/** Set the active scissor for rendering. Default to fullscreen.
+	 */
+	virtual	void			setScissor(const CViewport &);
+	virtual	CViewport		getScissor();
 	/** Set the active viewport for rendering. Default to fullscreen.
 	 */
 	virtual	void			setViewport(const CViewport &);

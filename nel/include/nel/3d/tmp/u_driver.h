@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.9 2001/04/18 10:39:55 besson Exp $
+ * $Id: u_driver.h,v 1.10 2001/04/19 12:49:28 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -245,6 +245,10 @@ public:
 	 */
 	// @{
 
+	/** Set the active scissor for rendering. Default to fullscreen.
+	 */
+	virtual	void			setScissor(const CViewport &)=0;
+	virtual	CViewport		getScissor()=0;
 	/** Set the active viewport for rendering. Default to fullscreen.
 	 */
 	virtual	void			setViewport(const CViewport &)=0;

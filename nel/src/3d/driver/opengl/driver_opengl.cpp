@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.93 2001/04/13 10:13:12 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.94 2001/04/19 12:49:28 puzin Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1314,6 +1314,50 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 	}
 #endif // NL_OS_WINDOWS
 }
+
+
+
+// --------------------------------------------------
+void	CDriverGL::setupScissor (const class CViewport& viewport)
+{
+	// Get viewport
+	float x;
+	float y;
+	float width;
+	float height;
+	viewport.getValues (x, y, width, height);
+
+	if(x==0 && x==0 && width==1 && height==1)
+	{
+		glDisable(GL_SCISSOR_TEST);
+	}
+	else
+	{
+#ifdef NL_OS_WINDOWS
+		if (_hWnd)
+		{
+			// Get window rect
+			RECT rect;
+			GetClientRect (_hWnd, &rect);
+
+			// Setup gl scissor
+			int clientWidth=rect.right-rect.left;
+			int clientHeight=rect.bottom-rect.top;
+			int ix=(int)((float)clientWidth*x);
+			clamp (ix, 0, clientWidth);
+			int iy=(int)((float)clientHeight*y);
+			clamp (iy, 0, clientHeight);
+			int iwidth=(int)((float)clientWidth*width);
+			clamp (iwidth, 0, clientWidth-ix);
+			int iheight=(int)((float)clientHeight*height);
+			clamp (iheight, 0, clientHeight-iy);
+			glScissor (ix, iy, iwidth, iheight);
+			glEnable(GL_SCISSOR_TEST);
+		}
+#endif // NL_OS_WINDOWS
+	}
+}
+
 
 
 // --------------------------------------------------

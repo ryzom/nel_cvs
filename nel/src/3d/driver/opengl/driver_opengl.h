@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.60 2001/04/13 09:50:05 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.61 2001/04/19 12:49:28 puzin Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -204,6 +204,8 @@ public:
 	virtual bool			release();
 
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
+
+	virtual void			setupScissor (const class CViewport& viewport);
 
 	virtual void			setupViewport (const class CViewport& viewport);
 

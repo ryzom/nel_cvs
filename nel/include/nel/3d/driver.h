@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.62 2001/04/12 13:52:58 berenguier Exp $
+ * $Id: driver.h,v 1.63 2001/04/19 12:49:28 puzin Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -313,6 +313,13 @@ public:
 	  * \param viewport is a viewport to setup as current viewport.
 	  */
 	virtual void			setupViewport (const class CViewport& viewport)=0;
+
+
+	/** Set the current Scissor.
+	  * \param viewport is a viewport to setup the current Scissor, in Window relative coordinate (0,1).
+	  */
+	virtual void			setupScissor (const class CViewport& viewport)=0;
+
 
 	/**
 	  * Get the driver version. Not the same than interface version. Incremented at each implementation change.

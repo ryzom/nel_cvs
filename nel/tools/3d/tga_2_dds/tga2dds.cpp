@@ -1,7 +1,7 @@
 /** \file tga2dds.cpp
  * TGA to DDS converter
  *
- * $Id: tga2dds.cpp,v 1.4 2001/03/19 09:14:39 corvazier Exp $
+ * $Id: tga2dds.cpp,v 1.5 2001/04/18 09:17:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/misc/bitmap.h"
 #include "nel/misc/file.h"
 #include "nel/misc/debug.h"
+#include <math.h>
 
 #include "s3_intrf.h"
 #include "ddraw.h"
@@ -494,7 +495,9 @@ void main(int argc, char **argv)
 	
 		for(uint32 i = 0; i<width*height; i++)
 		{
-			if(pRGBASrc2[i].A==0) 
+			// If no UserColor, must take same RGB, and keep same Alpha from src1 !!! So texture can have both alpha
+			// userColor and other alpha usage.
+			if(pRGBASrc2[i].A==255) 
 			{
 				RGBADest.push_back(pRGBASrc[i].R);
 				RGBADest.push_back(pRGBASrc[i].G);
@@ -503,7 +506,8 @@ void main(int argc, char **argv)
 			}
 			else
 			{
-				uint8 F = (uint8) ((float)pRGBASrc[i].R*0.3 + (float)pRGBASrc[i].G*0.56 + (float)pRGBASrc[i].B*0.14);
+				// Old code.
+				/*uint8 F = (uint8) ((float)pRGBASrc[i].R*0.3 + (float)pRGBASrc[i].G*0.56 + (float)pRGBASrc[i].B*0.14);
 				uint8 Frgb;
 				if((F*pRGBASrc2[i].A/255)==255)
 					Frgb = 0;
@@ -512,7 +516,50 @@ void main(int argc, char **argv)
 				RGBADest.push_back(Frgb*pRGBASrc[i].R/255);
 				RGBADest.push_back(Frgb*pRGBASrc[i].G/255);
 				RGBADest.push_back(Frgb*pRGBASrc[i].B/255);
-				RGBADest.push_back(F*pRGBASrc[i].A/255);
+				RGBADest.push_back(F*pRGBASrc[i].A/255);*/
+
+				// New code: use new restrictions from IDriver.
+				float	Rt, Gt, Bt, At;
+				float	Lt;
+				float	Rtm, Gtm, Btm, Atm;
+
+				// read 0-1 RGB pixel.
+				Rt= (float)pRGBASrc[i].R/255;
+				Gt= (float)pRGBASrc[i].G/255;
+				Bt= (float)pRGBASrc[i].B/255;
+				Lt= Rt*0.3f + Gt*0.56f + Bt*0.14f;
+
+				// take Alpha from userColor src.
+				At= (float)pRGBASrc2[i].A/255;
+				Atm= 1-Lt*(1-At);
+
+				// If normal case.
+				if(Atm>0)
+				{
+					Rtm= Rt*At / Atm;
+					Gtm= Gt*At / Atm;
+					Btm= Bt*At / Atm;
+				}
+				// Else special case: At==0, and Lt==1.
+				else
+				{
+					Rtm= Gtm= Btm= 0;
+				}
+
+				// copy to buffer.
+				sint	r,g,b,a;
+				r= (sint)floor(Rtm*255+0.5f);
+				g= (sint)floor(Gtm*255+0.5f);
+				b= (sint)floor(Btm*255+0.5f);
+				a= (sint)floor(Atm*255+0.5f);
+				clamp(r, 0,255);
+				clamp(g, 0,255);
+				clamp(b, 0,255);
+				clamp(a, 0,255);
+				RGBADest.push_back(r);
+				RGBADest.push_back(g);
+				RGBADest.push_back(b);
+				RGBADest.push_back(a);
 			}
 		}
 	}

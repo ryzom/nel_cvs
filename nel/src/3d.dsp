@@ -836,6 +836,14 @@ SOURCE=.\3d\texture_blank.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\texture_blend.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_blend.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\texture_bump.cpp
 # End Source File
 # Begin Source File
@@ -1708,7 +1716,7 @@ SOURCE=.\3d\quad_grid_clip_manager.cpp
 SOURCE=.\3d\quad_grid_clip_manager.h
 # End Source File
 # End Group
-# Begin Group "water"
+# Begin Group "Water"
 
 # PROP Default_Filter ""
 # Begin Source File

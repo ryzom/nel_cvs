@@ -33,9 +33,9 @@
 
 /* Includes */
 
-#ifndef __GNUC__
+#ifdef NL_OS_WINDOWS
 #pragma warning (disable : 4786)
-#endif // __GNUC__
+#endif // NL_OS_WINDOWS
 
 #include <stdio.h>
 #include <vector>
@@ -52,8 +52,17 @@ using namespace NLMISC;
 
 #define YYPARSE_PARAM pvararray
 
+// WARNING!!!! DEBUG_PRINTF are commented using // so IT MUST HAVE NO INSTRUCTION AFTER A DEBUG_PRINTF OR THEY LL BE COMMENTED
+
 //#define DEBUG_PRINTF	InfoLog->displayRaw
+#ifdef __GNUC__
+#define DEBUG_PRINTF(format, args...)
+#else // __GNUC__
 #define DEBUG_PRINTF	// InfoLog->displayRaw
+#endif // __GNUC__
+
+//#define DEBUG_PRINT(a)	InfoLog->displayRaw(a)
+#define DEBUG_PRINT(a)
 
 /* Types */
 
@@ -96,7 +105,7 @@ void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val);
 int yyerror (const char *);
 
 
-#line 71 "cf_gramatical.yxx"
+#line 80 "cf_gramatical.yxx"
 typedef union	{
 			cf_value Val;
 		} YYSTYPE;
@@ -169,9 +178,9 @@ static const short yyrhs[] = {    -1,
 
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
-    90,    90,    90,    93,    94,    97,   150,   197,   198,   201,
-   202,   202,   203,   206,   207,   208,   211,   212,   213,   216,
-   217,   218,   219,   220,   221,   222,   225
+    99,    99,    99,   102,   103,   106,   159,   206,   207,   210,
+   211,   211,   212,   215,   216,   217,   220,   221,   222,   225,
+   226,   227,   228,   229,   230,   231,   234
 };
 #endif
 
@@ -785,29 +794,29 @@ yyreduce:
   switch (yyn) {
 
 case 1:
-#line 90 "cf_gramatical.yxx"
+#line 99 "cf_gramatical.yxx"
 { cf_CurrentLine = 1; cf_Ignore = false; ;
     break;}
 case 3:
-#line 90 "cf_gramatical.yxx"
+#line 99 "cf_gramatical.yxx"
 { ;
     break;}
 case 4:
-#line 93 "cf_gramatical.yxx"
+#line 102 "cf_gramatical.yxx"
 { ;
     break;}
 case 5:
-#line 94 "cf_gramatical.yxx"
+#line 103 "cf_gramatical.yxx"
 { ;
     break;}
 case 6:
-#line 98 "cf_gramatical.yxx"
+#line 107 "cf_gramatical.yxx"
 {
-				DEBUG_PRINTF("                                   (VARIABLE=");
+				DEBUG_PRINT("                                   (VARIABLE=");
 				cf_print (yyvsp[-3].Val);
-				DEBUG_PRINTF("), (VALUE=");
+				DEBUG_PRINT("), (VALUE=");
 				cf_print (yyvsp[-1].Val);
-				DEBUG_PRINTF(")\n");
+				DEBUG_PRINT(")\n");
 				int i;
 				// on recherche l'existence de la variable
 				for(i = 0; i < (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size()); i++)
@@ -854,13 +863,13 @@ case 6:
 			;
     break;}
 case 7:
-#line 151 "cf_gramatical.yxx"
+#line 160 "cf_gramatical.yxx"
 {
-				DEBUG_PRINTF("                                   (VARIABLE+=");
+				DEBUG_PRINT("                                   (VARIABLE+=");
 				cf_print (yyvsp[-3].Val);
-				DEBUG_PRINTF("), (VALUE=");
+				DEBUG_PRINT("), (VALUE=");
 				cf_print (yyvsp[-1].Val);
-				DEBUG_PRINTF(")\n");
+				DEBUG_PRINT(")\n");
 				int i;
 				// on recherche l'existence de la variable
 				for(i = 0; i < (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size()); i++)
@@ -901,81 +910,81 @@ case 7:
 			;
     break;}
 case 8:
-#line 197 "cf_gramatical.yxx"
-{ yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = false; DEBUG_PRINTF("false\n"); ;
+#line 206 "cf_gramatical.yxx"
+{ yyval.Val = yyvsp[0].Val; cf_CurrentVar.Comp = false; DEBUG_PRINT("false\n"); ;
     break;}
 case 9:
-#line 198 "cf_gramatical.yxx"
-{ yyval.Val = yyvsp[-1].Val; cf_CurrentVar.Comp = true; DEBUG_PRINTF("true\n"); ;
+#line 207 "cf_gramatical.yxx"
+{ yyval.Val = yyvsp[-1].Val; cf_CurrentVar.Comp = true; DEBUG_PRINT("true\n"); ;
     break;}
 case 10:
-#line 201 "cf_gramatical.yxx"
+#line 210 "cf_gramatical.yxx"
 { yyval.Val =  yyvsp[0].Val; cf_CurrentVar.Type = yyvsp[0].Val.Type; cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 11:
-#line 202 "cf_gramatical.yxx"
+#line 211 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Type = yyvsp[0].Val.Type; cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 13:
-#line 203 "cf_gramatical.yxx"
+#line 212 "cf_gramatical.yxx"
 { ;
     break;}
 case 14:
-#line 206 "cf_gramatical.yxx"
+#line 215 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 15:
-#line 207 "cf_gramatical.yxx"
+#line 216 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_PLUS); ;
     break;}
 case 16:
-#line 208 "cf_gramatical.yxx"
+#line 217 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MINUS); ;
     break;}
 case 17:
-#line 211 "cf_gramatical.yxx"
+#line 220 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 18:
-#line 212 "cf_gramatical.yxx"
+#line 221 "cf_gramatical.yxx"
 { yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MULT); ;
     break;}
 case 19:
-#line 213 "cf_gramatical.yxx"
+#line 222 "cf_gramatical.yxx"
 { yyval.Val = cf_op (yyvsp[-2].Val, yyvsp[0].Val, OP_DIVIDE); ;
     break;}
 case 20:
-#line 216 "cf_gramatical.yxx"
+#line 225 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 21:
-#line 217 "cf_gramatical.yxx"
+#line 226 "cf_gramatical.yxx"
 { cf_value v; v.Type=NLMISC::CConfigFile::CVar::T_INT; /* just to avoid a warning, I affect 'v' with a dummy value */ yyval.Val = cf_op(yyvsp[0].Val,v,OP_NEG); ;
     break;}
 case 22:
-#line 218 "cf_gramatical.yxx"
+#line 227 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[-1].Val; ;
     break;}
 case 23:
-#line 219 "cf_gramatical.yxx"
+#line 228 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 24:
-#line 220 "cf_gramatical.yxx"
+#line 229 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 25:
-#line 221 "cf_gramatical.yxx"
+#line 230 "cf_gramatical.yxx"
 { yyval.Val = yylval.Val; ;
     break;}
 case 26:
-#line 222 "cf_gramatical.yxx"
+#line 231 "cf_gramatical.yxx"
 { yyval.Val = yyvsp[0].Val; ;
     break;}
 case 27:
-#line 226 "cf_gramatical.yxx"
+#line 235 "cf_gramatical.yxx"
 {
-				DEBUG_PRINTF("yacc: cont\n");
+				DEBUG_PRINT("yacc: cont\n");
 				bool ok=false;
 				int i;
 				for(i = 0; i < (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size()); i++)
@@ -996,13 +1005,13 @@ case 27:
 					case NLMISC::CConfigFile::CVar::T_INT: Var.Int = (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].IntValues[0]; break;
 					case NLMISC::CConfigFile::CVar::T_REAL: Var.Real = (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].RealValues[0]; break;
 					case NLMISC::CConfigFile::CVar::T_STRING: strcpy (Var.String, (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].StrValues[0].c_str()); break;
-					default: DEBUG_PRINTF("*** CAN T DO THAT!!!\n"); break;
+					default: DEBUG_PRINT("*** CAN T DO THAT!!!\n"); break;
 					}
 					yyval.Val = Var;
 				}
 				else
 				{
-					DEBUG_PRINTF("var existe pas\n");
+					DEBUG_PRINT("var existe pas\n");
 				}
 			;
     break;}
@@ -1228,7 +1237,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 258 "cf_gramatical.yxx"
+#line 267 "cf_gramatical.yxx"
 
 
 /* compute the good operation with a, b and op */
@@ -1236,9 +1245,9 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 {
 	DEBUG_PRINTF("[OP:%d; ", op);
 	cf_print(a);
-	DEBUG_PRINTF("; ");
+	DEBUG_PRINT("; ");
 	cf_print(b);
-	DEBUG_PRINTF("; ");
+	DEBUG_PRINT("; ");
 
 	switch (op)
 	{
@@ -1250,7 +1259,8 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			{
 			case NLMISC::CConfigFile::CVar::T_INT:		a.Int *= b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Int *= (int)b.Real; break;
-			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: int*str\n"); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINT("ERROR: int*str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_REAL:
@@ -1258,17 +1268,20 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			{
 			case NLMISC::CConfigFile::CVar::T_INT:		a.Real *= (double)b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Real *= b.Real; break;
-			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: real*str\n"); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINT("ERROR: real*str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_STRING:
 			switch (b.Type)
 			{
-			case NLMISC::CConfigFile::CVar::T_INT:		DEBUG_PRINTF("ERROR: str*int\n");  break;
-			case NLMISC::CConfigFile::CVar::T_REAL:	DEBUG_PRINTF("ERROR: str*real\n");  break;
-			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: str*str\n");  break;
+			case NLMISC::CConfigFile::CVar::T_INT:		DEBUG_PRINT("ERROR: str*int\n");  break;
+			case NLMISC::CConfigFile::CVar::T_REAL:	DEBUG_PRINT("ERROR: str*real\n");  break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINT("ERROR: str*str\n");  break;
+			default: break;
 			}
 			break;
+		default: break;
 		}
 		break;
 	case OP_DIVIDE:																//  //////////////////////
@@ -1279,7 +1292,8 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			{
 			case NLMISC::CConfigFile::CVar::T_INT:		a.Int /= b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Int /= (int)b.Real; break;
-			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: int/str\n"); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINT("ERROR: int/str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_REAL:
@@ -1287,17 +1301,20 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			{
 			case NLMISC::CConfigFile::CVar::T_INT:		a.Real /= (double)b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Real /= b.Real; break;
-			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: real/str\n"); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINT("ERROR: real/str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_STRING:
 			switch (b.Type)
 			{
-			case NLMISC::CConfigFile::CVar::T_INT:		DEBUG_PRINTF("ERROR: str/int\n"); break;
-			case NLMISC::CConfigFile::CVar::T_REAL:	DEBUG_PRINTF("ERROR: str/real\n"); break;
-			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: str/str\n"); break;
+			case NLMISC::CConfigFile::CVar::T_INT:		DEBUG_PRINT("ERROR: str/int\n"); break;
+			case NLMISC::CConfigFile::CVar::T_REAL:	DEBUG_PRINT("ERROR: str/real\n"); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINT("ERROR: str/str\n"); break;
+			 default: break;
 			}
 			break;
+		default: break;
 		}
 		break;
 	case OP_PLUS:																//  ++++++++++++++++++++++++
@@ -1309,6 +1326,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:	a.Int += b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Int += (int)b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	a.Int += atoi(b.String); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_REAL:
@@ -1317,6 +1335,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:	a.Real += (double)b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Real += b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	a.Real += atof (b.String); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_STRING:
@@ -1325,8 +1344,10 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:	{ char str2[60]; NLMISC::smprintf(str2, 60, "%d", b.Int); strcat(a.String, str2); break; }
 			case NLMISC::CConfigFile::CVar::T_REAL:	{ char str2[60]; NLMISC::smprintf(str2, 60, "%f", b.Real); strcat(a.String, str2); break; }
 			case NLMISC::CConfigFile::CVar::T_STRING:	strcat (a.String, b.String); break;
+			default: break;
 			}
 			break;
+		default: break;
 		}
 		break;
 	case OP_MINUS:																//  -------------------------
@@ -1337,7 +1358,8 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			{
 			case NLMISC::CConfigFile::CVar::T_INT:	a.Int -= b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Int -= (int)b.Real; break;
-			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: int-str\n"); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINT("ERROR: int-str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_REAL:
@@ -1345,17 +1367,20 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			{
 			case NLMISC::CConfigFile::CVar::T_INT:	a.Real -= (double)b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Real -= b.Real; break;
-			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: real-str\n"); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINT("ERROR: real-str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_STRING:
 			switch (b.Type)
 			{
-			case NLMISC::CConfigFile::CVar::T_INT:	DEBUG_PRINTF("ERROR: str-int\n"); break;
-			case NLMISC::CConfigFile::CVar::T_REAL:	DEBUG_PRINTF("ERROR: str-real\n"); break;
-			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: str-str\n"); break;
+			case NLMISC::CConfigFile::CVar::T_INT:	DEBUG_PRINT("ERROR: str-int\n"); break;
+			case NLMISC::CConfigFile::CVar::T_REAL:	DEBUG_PRINT("ERROR: str-real\n"); break;
+			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINT("ERROR: str-str\n"); break;
+			default: break;
 			}
 			break;
+		default: break;
 		}
 		break;
 	case OP_NEG:																// neg
@@ -1363,12 +1388,13 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 		{
 		case NLMISC::CConfigFile::CVar::T_INT:		a.Int = -a.Int; break;
 		case NLMISC::CConfigFile::CVar::T_REAL:		a.Real = -a.Real; break;
-		case NLMISC::CConfigFile::CVar::T_STRING:		DEBUG_PRINTF("ERROR: -str\n"); break;
+		case NLMISC::CConfigFile::CVar::T_STRING:		DEBUG_PRINT("ERROR: -str\n"); break;
+		default: break;
 		}
 		break;
 	}
 	cf_print(a);
-	DEBUG_PRINTF("]\n");
+	DEBUG_PRINT("]\n");
 	return a;
 }
 
@@ -1377,22 +1403,31 @@ void cf_print (cf_value Val)
 {
 	switch (Val.Type)
 	{
-	case NLMISC::CConfigFile::CVar::T_INT: DEBUG_PRINTF("'%d'", Val.Int); break;
-	case NLMISC::CConfigFile::CVar::T_REAL: DEBUG_PRINTF("`%f`", Val.Real); break;
-	case NLMISC::CConfigFile::CVar::T_STRING: DEBUG_PRINTF("\"%s\"", Val.String); break;
+	case NLMISC::CConfigFile::CVar::T_INT:
+		DEBUG_PRINTF("'%d'", Val.Int);
+		break;
+	case NLMISC::CConfigFile::CVar::T_REAL:
+		DEBUG_PRINTF("`%f`", Val.Real);
+		break;
+	case NLMISC::CConfigFile::CVar::T_STRING:
+		DEBUG_PRINTF("\"%s\"", Val.String);
+		break;
+	default: break;
 	}
 }
 
 /* put a value into a var */
 void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val)
 {
-	DEBUG_PRINTF("push %d ", Val.Type); cf_print(Val);
+	DEBUG_PRINTF("push %d ", Val.Type);
+	cf_print(Val);
 	Var.Type = Val.Type;
 	switch (Val.Type)
 	{
 	case NLMISC::CConfigFile::CVar::T_INT: Var.IntValues.push_back (Val.Int); break;
 	case NLMISC::CConfigFile::CVar::T_REAL: Var.RealValues.push_back (Val.Real); break;
 	case NLMISC::CConfigFile::CVar::T_STRING: Var.StrValues.push_back(Val.String); break;
+	default: break;
 	}
 }
 

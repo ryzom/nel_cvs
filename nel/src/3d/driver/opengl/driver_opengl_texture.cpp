@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.40 2001/10/26 08:28:35 vizerie Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.41 2001/10/29 16:09:01 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -500,6 +500,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 								void	*ptr= &(*tex.getPixels(i).begin());
 								uint	w= tex.getWidth(i);
 								uint	h= tex.getHeight(i);
+								glGetError();
 								glTexImage2D(GL_TEXTURE_2D,i,glfmt, w, h, 0,glSrcFmt,GL_UNSIGNED_BYTE, ptr );								
 								nlassert(glGetError() == GL_NO_ERROR);
 								// profiling: count TextureMemory usage.

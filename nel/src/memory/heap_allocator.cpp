@@ -1,7 +1,7 @@
 /** \file memory/heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.16 2005/01/31 13:52:39 lecroart Exp $
+ * $Id: heap_allocator.cpp,v 1.17 2005/02/21 17:02:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,8 @@ CHeapAllocator::CHeapAllocator (uint mainBlockSize, uint blockCount, TBlockAlloc
 	_FreeTreeRoot = &_NullNode.FreeNode;
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 	_AlwaysCheck = false;
+	_LogFile = NULL;
+	_LogFileBlockSize = 0;
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 	_NullNode.FreeNode.Left = &_NullNode.FreeNode;
@@ -119,6 +121,13 @@ CHeapAllocator::CHeapAllocator (uint mainBlockSize, uint blockCount, TBlockAlloc
 
 CHeapAllocator::~CHeapAllocator ()
 {
+
+	// Free the log file
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	if (_LogFile)
+		debugEndAllocationLog ();
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+
 	// Release all memory used
 	releaseMemory ();
 }
@@ -524,7 +533,8 @@ void CHeapAllocator::mergeNode (CNodeBegin *node)
 	internalAssert (isNodeFree (previous));
 
 	// New size
-	setNodeSize (previous, getNodeSize (previous) + getNodeSize (node) + sizeof (CNodeBegin) + NL_HEAP_NODE_END_SIZE);
+	uint newSize = getNodeSize (previous) + getNodeSize (node) + sizeof (CNodeBegin) + NL_HEAP_NODE_END_SIZE;
+	setNodeSize (previous, newSize);
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 	// Set end pointers
@@ -545,12 +555,8 @@ void CHeapAllocator::mergeNode (CNodeBegin *node)
 	setNodeLast (previous, isNodeLast (node));
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-
-	// todo align
-
-	// Clear the node informations
-	memset (((uint8*)node + getNodeSize (node) + sizeof (CNodeBegin)), DeletedMemory, NL_HEAP_NODE_END_SIZE);
-	memset (node, DeletedMemory, sizeof (CNodeBegin));
+	// Clear the footer of the previous node and the header of the current node (including the free node)
+	memset ((uint8*)node-sizeof (CNodeEnd), DeletedMemory, sizeof (CFreeNode)+sizeof (CNodeBegin)+sizeof (CNodeEnd));
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 }
 
@@ -602,7 +608,7 @@ void CHeapAllocator::initEmptyBlock (CMainBlock& mainBlock)
 	endNode->EndMarkers[CNodeEnd::MarkerSize-1] = 0;
 
 	// Unallocated memory
-	memset ((uint8*)node + sizeof(CNodeBegin), UnallocatedMemory, getNodeSize (node) );
+	memset ((uint8*)node + sizeof(CNodeBegin), DeletedMemory, getNodeSize (node) );
 
 	// No source file
 	memset (node->Category, 0, CategoryStringLength);
@@ -642,8 +648,6 @@ const char * CHeapAllocator::getCategory (void *block)
 
 // *********************************************************
 
-/* trap debug static uint32 n3dDrvTotal = 0; */
-
 #ifdef NL_HEAP_ALLOCATION_NDEBUG
 void *CHeapAllocator::allocate (uint size)
 #else // NL_HEAP_ALLOCATION_NDEBUG
@@ -659,7 +663,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 		// * Attempt to allocate 0 byte
 		// ********
 #ifdef NL_HEAP_STOP_ALLOCATE_0
-		NL_ALLOC_STOP;
+		NL_ALLOC_STOP(NULL);
 #endif // NL_HEAP_STOP_ALLOCATE_0
 
 		// C++ standards : an allocation of zero bytes should return a unique non-null pointer
@@ -667,6 +671,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 	}
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
+
 	// If category is NULL
 	if (category == NULL)
 	{
@@ -683,19 +688,11 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 		}
 	}
 
-	/* trap debug if (strcmp(category,"3dIns") == 0)
-	{
-		n3dDrvTotal += size;
-		uint dbg= 0;
-		dbg++;
-	}
-	*/
-
 	// Checks ?
 	if (_AlwaysCheck)
 	{
 		// Check heap integrity
-		internalCheckHeap (true);
+		internalCheckHeap (true, 0);
 	}
 
 	// Check breakpoints
@@ -706,9 +703,11 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 		// ********
 		// * Breakpoints allocation
 		// ********
-		NL_ALLOC_STOP;
+		NL_ALLOC_STOP(NULL);
 	}*/
 #endif // NL_HEAP_ALLOCATION_NDEBUG
+
+	void *finalPtr = NULL;
 
 	// Small or largs block ?
 #ifdef NL_HEAP_NO_SMALL_BLOCK_OPTIMIZATION
@@ -778,7 +777,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 				endNode->EndMarkers[CNodeEnd::MarkerSize-1] = 0;
 
 				// Unallocated memory
-				memset ((uint8*)node + sizeof(CNodeBegin), UnallocatedMemory, getNodeSize (node) );
+				memset ((uint8*)node + sizeof(CNodeBegin), DeletedMemory, getNodeSize (node) );
 
 				// No source file
 				memset (node->Category, 0, CategoryStringLength);
@@ -813,7 +812,13 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG		
 		// Check the node CRC
-		checkNode (node, evalMagicNumber (node));
+		debugCheckNode (node, evalMagicNumber (node));
+
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NL_NO_DELETED_MEMORY_CONTENT_CHECK
+		checkFreeBlockContent ((uint8*)node + sizeof(CNodeBegin), getNodeSize (node), true);
+#endif // NL_NO_DELETED_MEMORY_CONTENT_CHECK
+#endif // NL_HEAP_ALLOCATION_NDEBUG
 
 		// Set node free for checks
 		setNodeUsed (node);
@@ -844,7 +849,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 		leaveCriticalSectionSB ();
 
 		// Return the user pointer
-		return (void*)((uint)node + sizeof (CNodeBegin));
+		finalPtr = (void*)((uint)node + sizeof (CNodeBegin));
 	}
 	else
 	{
@@ -937,11 +942,18 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 			// Check the node CRC
-			checkNode (node, evalMagicNumber (node));
+			debugCheckNode (node, evalMagicNumber (node));
+
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 			// Split the node
 			CNodeBegin *rest = splitNode (node, size);
+
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+#ifndef NL_NO_DELETED_MEMORY_CONTENT_CHECK
+			checkFreeBlockContent ((uint8*)node + sizeof(CNodeBegin) + sizeof(CFreeNode), getNodeSize (node) - sizeof(CFreeNode), true);
+#endif // NL_NO_DELETED_MEMORY_CONTENT_CHECK
+#endif // NL_HEAP_ALLOCATION_NDEBUG
 
 			// Fill informations for the first part of the node
 
@@ -999,7 +1011,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 			leaveCriticalSectionLB ();
 
 			// Return the user pointer
-			return (void*)((uint)node + sizeof (CNodeBegin));
+			finalPtr = (void*)((uint)node + sizeof (CNodeBegin));
 		}
 		else
 		{
@@ -1008,22 +1020,22 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 			// ********
 			// * Attempt to allocate more than 1 Go
 			// ********
-			NL_ALLOC_STOP;
+			NL_ALLOC_STOP(NULL);
 
 			outOfMemory();
 			return NULL;
 		}
 	}
-	/*else
+
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	if (finalPtr && _LogFile)
 	{
-		// ********
-		// * STOP *
-		// ********
-		// * Attempt to allocate 0 bytes
-		// ********
-		// NL_ALLOC_STOP;
-		return NULL;
-	}*/
+		uint32 smallSize = (size<=LastSmallBlock)?NL_ALIGN_SIZE_FOR_SMALLBLOCK (size):size;
+		if (smallSize == _LogFileBlockSize)
+			debugLog (finalPtr, category);
+	}
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+	return finalPtr;
 }
 
 // *********************************************************
@@ -1039,7 +1051,7 @@ void CHeapAllocator::free (void *ptr)
 		// * Attempt to delete a NULL pointer
 		// ********
 #ifdef NL_HEAP_STOP_NULL_FREE
-		NL_ALLOC_STOP;
+		NL_ALLOC_STOP(NULL);
 #endif // NL_HEAP_STOP_NULL_FREE
 		// C++ standards : deletion of a null pointer should quietly do nothing.
 	}
@@ -1051,25 +1063,18 @@ void CHeapAllocator::free (void *ptr)
 		if (_AlwaysCheck)
 		{
 			// Check heap integrity
-			internalCheckHeap (true);
+			internalCheckHeap (true, 0);
 		}
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 		
 		// Get the node pointer
 		CNodeBegin *node = (CNodeBegin*) ((uint)ptr - sizeof (CNodeBegin));
 
-		/* trap debug if (strcmp(getCategory(ptr),"3dIns") == 0)
-		{
-			n3dDrvTotal -= getNodeSize(node);
-			uint dbg= 0;
-			dbg++;
-		} */
-
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 		// Check the node CRC
 		enterCriticalSectionSB ();
 		enterCriticalSectionLB ();
-		checkNode (node, evalMagicNumber (node));
+		debugCheckNode (node, evalMagicNumber (node));
 		leaveCriticalSectionLB ();
 		leaveCriticalSectionSB ();
 #endif // NL_HEAP_ALLOCATION_NDEBUG
@@ -1089,14 +1094,9 @@ void CHeapAllocator::free (void *ptr)
 			// Check the node has not been deleted
 			if (isNodeFree (node))
 			{
-				// ********
-				// * STOP *
-				// ********
-				// * Attempt to delete a pointer already deleted
-				// ********
-				// * (*node):	the already deleted node
-				// ********
-				NL_ALLOC_STOP;
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+				debugStopNodeAlreadyFree (node);
+#endif // NL_HEAP_ALLOCATION_NDEBUG
 			}
 			else
 			{
@@ -1144,7 +1144,7 @@ void CHeapAllocator::free (void *ptr)
 				// ********
 				// * (*node):	the already deleted node
 				// ********
-				NL_ALLOC_STOP;
+				NL_ALLOC_STOP(node);
 			}
 			else
 			{
@@ -1152,7 +1152,7 @@ void CHeapAllocator::free (void *ptr)
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 				// Uninitialised memory
-				memset ((uint8*)node + sizeof(CNodeBegin), DeletedMemory, size );
+				memset ((uint8*)node + sizeof(CNodeBegin) + sizeof(CFreeNode), DeletedMemory, size - sizeof(CFreeNode));
 
 				// Set end pointers
 				node->EndMagicNumber = (uint32*)((uint8*)node + size + sizeof (CNodeBegin));
@@ -1174,7 +1174,7 @@ void CHeapAllocator::free (void *ptr)
 				{
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 					// Check the previous node
-					checkNode (previous, evalMagicNumber (previous));
+					debugCheckNode (previous, evalMagicNumber (previous));
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 					// Is it free ?
@@ -1200,7 +1200,7 @@ void CHeapAllocator::free (void *ptr)
 				{
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 					// Check the next node
-					checkNode (next, evalMagicNumber (next));
+					debugCheckNode (next, evalMagicNumber (next));
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 					// Is it free ?
@@ -1266,7 +1266,7 @@ uint CHeapAllocator::getAllocatedMemory () const
 		{
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 			// Check node
-			checkNode (current, evalMagicNumber (current));
+			debugCheckNode (current, evalMagicNumber (current));
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 			// Node allocated ? Don't sum small blocks..
@@ -1805,7 +1805,7 @@ uint CHeapAllocator::getFreeMemory () const
 		{
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 			// Check node
-			checkNode (current, evalMagicNumber (current));
+			debugCheckNode (current, evalMagicNumber (current));
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 			// Node allocated ?
@@ -2054,7 +2054,7 @@ void CHeapAllocator::debugReportMemoryLeak ()
 		while (current)
 		{
 			// Check node
-			checkNode (current, evalMagicNumber (current));
+			debugCheckNode (current, evalMagicNumber (current));
 
 			// Node allocated ?
 			if (isNodeUsed (current) && ( (current->Category == NULL) || (current->Category[0] != '_')) )
@@ -2100,7 +2100,7 @@ void CHeapAllocator::debugReportMemoryLeak ()
 			// Get the node
 			const CNodeBegin *current = getSmallBlock (currentSB, block);
 			// Check node
-			checkNode (current, evalMagicNumber (current));
+			debugCheckNode (current, evalMagicNumber (current));
 
 			// Node allocated ?
 			if (isNodeUsed (current) && ( (current->Category == NULL) || (current->Category[0] != '_')) )
@@ -2168,7 +2168,16 @@ void CHeapAllocator::debugReportMemoryLeak ()
 
 bool CHeapAllocator::checkHeap (bool stopOnError) const
 {
-	bool res = internalCheckHeap (stopOnError);
+	bool res = internalCheckHeap (stopOnError, 0);
+
+	return res;
+}
+
+// *********************************************************
+
+bool CHeapAllocator::checkHeapBySize (bool stopOnError, uint blockSize) const
+{
+	bool res = internalCheckHeap (stopOnError, blockSize);
 
 	return res;
 }
@@ -2190,65 +2199,92 @@ void CHeapAllocator::freeBlock (uint8 *block)
 
 // *********************************************************
 
-bool CHeapAllocator::internalCheckHeap (bool stopOnError) const
+bool CHeapAllocator::internalCheckHeap (bool stopOnError, uint32 blockSize) const
 {
 	enterCriticalSection ();
 
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	// Flush the log file
+	if (_LogFile)
+		fflush ((FILE*)_LogFile);
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+
 	// For each small blocks
-	CSmallBlockPool	*pool = (CSmallBlockPool*)_SmallBlockPool;
-	while (pool)
+	if (blockSize == 0 || blockSize <= LastSmallBlock)
 	{
-		// For each small block
-		uint smallBlock;
-		CNodeBegin	*previous = NULL;
-		for (smallBlock=0; smallBlock<SmallBlockPoolSize; smallBlock++)
+		CSmallBlockPool	*pool = (CSmallBlockPool*)_SmallBlockPool;
+		while (pool)
 		{
-			// Get the small block
-			CNodeBegin	*node = getSmallBlock (pool, smallBlock);
-			CNodeBegin	*next = (smallBlock+1<SmallBlockPoolSize) ? getSmallBlock (pool, smallBlock+1) : NULL;
+			if (blockSize == 0 || pool->Size == blockSize)
+			{
+				// For each small block
+				uint smallBlock;
+				CNodeBegin	*previous = NULL;
+				for (smallBlock=0; smallBlock<SmallBlockPoolSize; smallBlock++)
+				{
+					// Get the small block
+					CNodeBegin	*node = getSmallBlock (pool, smallBlock);
+					CNodeBegin	*next = (smallBlock+1<SmallBlockPoolSize) ? getSmallBlock (pool, smallBlock+1) : NULL;
 
-			// Check node
-			checkNodeSB (pool, previous, node, next, stopOnError);
+					// Check node
+					checkNodeSB (pool, previous, node, next, stopOnError);
 
-			previous = node;
+					previous = node;
+				}
+			}
+
+			// Next pool
+			pool = pool->Next;
 		}
-
-		// Next pool
-		pool = pool->Next;
 	}
 	
 	// For each main block
-	CMainBlock *currentBlock = _MainBlockList;
-	while (currentBlock)
+	if (blockSize == 0 || blockSize > LastSmallBlock)
 	{
-		// Get the nodes
-		const CNodeBegin *previous = NULL;
-		const CNodeBegin *current = getFirstNode (currentBlock);
-		internalAssert (current);	// Should have at least one block in the main block
-		const CNodeBegin *next;
-		
-		// For each node
-		while (current)
+		CMainBlock *currentBlock = _MainBlockList;
+		while (currentBlock)
 		{
-			// Get next
-			next = getNextNode (current);
+			// Get the nodes
+			const CNodeBegin *previous = NULL;
+			const CNodeBegin *current = getFirstNode (currentBlock);
+			internalAssert (current);	// Should have at least one block in the main block
+			const CNodeBegin *next;
+			
+			// For each node
+			while (current)
+			{
+				// Get next
+				next = getNextNode (current);
 
-			// Return Error ?
-			if (!checkNodeLB (currentBlock, previous, current, next, stopOnError))
-				return false;
+				if (blockSize == 0 || getNodeSize (current) == blockSize)
+				{
+					// Return Error ?
+					if (!checkNodeLB (currentBlock, previous, current, next, stopOnError))
+					{
+						leaveCriticalSection ();
+						return false;
+					}
+				}
 
-			// Next
-			previous = current;
-			current = next;
+				// Next
+				previous = current;
+				current = next;
+			}
+
+			// Next block
+			currentBlock = currentBlock->Next;
 		}
-
-		// Next block
-		currentBlock = currentBlock->Next;
 	}
 
 	// Check free tree
-	if (!checkFreeNode (_FreeTreeRoot, stopOnError, true))
-		return false;
+	if (blockSize == 0)
+	{
+		if (!checkFreeNode (_FreeTreeRoot, stopOnError, true))
+		{
+			leaveCriticalSection ();
+			return false;
+		}
+	}
 
 	leaveCriticalSection ();
 
@@ -2330,7 +2366,7 @@ void CHeapAllocator::debugPopCategoryString ()
 #pragma optimize( "", off )
 #endif // NL_OS_WINDOWS
 
-void CHeapAllocator::checkNode (const CNodeBegin *node, uint32 crc) const
+void CHeapAllocator::debugCheckNode (const CNodeBegin *node, uint32 crc) const
 {
 	// Check the bottom CRC of the node 
 	if (crc != *(node->EndMagicNumber))
@@ -2342,7 +2378,7 @@ void CHeapAllocator::checkNode (const CNodeBegin *node, uint32 crc) const
 		// ********
 		// * (*node) Check for more informations
 		// ********
-		NL_ALLOC_STOP;
+		NL_ALLOC_STOP(node);
 	}
 
 	// Check the node is hold by this heap
@@ -2355,8 +2391,22 @@ void CHeapAllocator::checkNode (const CNodeBegin *node, uint32 crc) const
 		// ********
 		// * (*node) Check for more informations
 		// ********
-		NL_ALLOC_STOP;
+		NL_ALLOC_STOP(node);
 	}
+}
+
+// *********************************************************
+
+void CHeapAllocator::debugStopNodeAlreadyFree (const CNodeBegin *node)
+{
+	// ********
+	// * STOP *
+	// ********
+	// * Attempt to delete a pointer already deleted
+	// ********
+	// * (*corruptedNode):	the already deleted node
+	// ********
+	NL_ALLOC_STOP(node);
 }
 
 #ifdef NL_OS_WINDOWS
@@ -2500,6 +2550,411 @@ void CHeapAllocator::setOutOfMemoryHook (void (*outOfMemoryCallback)())
 {
 	_OutOfMemoryCallback = outOfMemoryCallback;
 }
+
+// *********************************************************
+// Integrity checks
+// *********************************************************
+
+bool CHeapAllocator::checkFreeBlockContent (const uint8 *ptr, uint sizeToCheck, bool stopOnError)
+{
+	const uint8 pattern = *ptr;
+	bool error = pattern != CHeapAllocator::DeletedMemory;
+	
+	// Continue checking ?
+	if (!error)
+	{
+		const uint32 pattern32 = pattern | (pattern<<8) | (pattern<<16) | (pattern<<24);
+		uint sizeToCheck32 = sizeToCheck >> 2;
+		sizeToCheck -= sizeToCheck32 << 2;
+		while (sizeToCheck32--)
+		{
+			if (*(uint32*)ptr != pattern32)
+			{
+				error = true;
+				break;
+			}
+			ptr+=4;
+		}
+		if (!error)
+		{
+			while (sizeToCheck--)
+			{
+				if (*ptr != pattern)
+				{
+					error = true;
+					break;
+				}
+				ptr++;
+			}
+		}
+	}
+	
+	if (error)
+	{
+		// Stop on error ?
+		if (stopOnError)
+		{
+			// ********
+			// * STOP *
+			// ********
+			// * The garbage pattern is corrupted : it means that a freed memory block as been modified.
+			// * Maybe this free memory block is still referenced by a pointer.
+			// ********
+			// * (*current):	current node
+			// ********
+			NL_ALLOC_STOP(ptr);
+		}
+		return false;
+	}
+	return true;
+}
+
+// *********************************************************
+
+bool CHeapAllocator::checkNodeSB (const CSmallBlockPool *mainBlock, const CNodeBegin *previous, const CNodeBegin *current, const CNodeBegin *next, bool stopOnError) const
+{
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	// Get the theorical CRC check
+	uint32 crc = evalMagicNumber (current);
+
+	// Compare the magic number
+	if (*(current->EndMagicNumber) != crc)
+	{
+		// Stop on error ?
+		if (stopOnError)
+		{
+			// ********
+			// * STOP *
+			// ********
+			// * The bottom CRC32 of the current node is wrong: Check if a node has overflowed. Node by top and bottom,
+			// * the next by the top and the previous by the bottom.
+			// * overflow or the next node by the top.
+			// ********
+			// * (*previous):	previous node
+			// * (*current):	current node
+			// * (*next):		next node
+			// ********
+			NL_ALLOC_STOP(current);
+		}
+
+		// CRC is wrong
+		return false;
+	}
+
+#ifndef NL_NO_DELETED_MEMORY_CONTENT_CHECK
+
+	// If the block is free, check if it is filled with 0xba, 0xbc, or 0xbd pattern
+	if (isNodeFree (current))
+	{
+		// The CFreeNode is check with the CRC, skip it
+		uint sizeToCheck = getNodeSize (current);
+		if (sizeToCheck)
+		{
+			uint8 *ptr = (uint8*)current + sizeof(CNodeBegin);
+			if (!checkFreeBlockContent (ptr, sizeToCheck, stopOnError))
+				return false;
+		}
+	}
+
+#endif // NL_NO_DELETED_MEMORY_CONTENT_CHECK
+
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+
+	// *** Release node control
+
+	// Check node
+	if	(
+			( (uint)current < ((uint)mainBlock) + sizeof (CSmallBlockPool)) ||
+			( (uint)current + getNodeSize (current) + sizeof(CNodeBegin) + NL_HEAP_NODE_END_SIZE >
+				((uint)mainBlock) + sizeof (CSmallBlockPool) + SmallBlockPoolSize * (sizeof(CNodeBegin)+ mainBlock->Size  + NL_HEAP_NODE_END_SIZE) )
+		)
+	{
+		// Stop on error ?
+		if (stopOnError)
+		{
+			// ********
+			// * STOP *
+			// ********
+			// * The size value is corrupted: Check if the current node has
+			// * overflow by the top or the previous node by the bottom.
+			// ********
+			// * (*previous):	previous node
+			// * (*current):	current node
+			// * (*next):		next node
+			// ********
+			NL_ALLOC_STOP(current);
+		}
+
+		// Node size is corrupted
+		return false;
+	}
+
+	// Ok
+	return true;
+}
+
+// *********************************************************
+
+bool CHeapAllocator::checkNodeLB (const CMainBlock *mainBlock, const CNodeBegin *previous, const CNodeBegin *current, const CNodeBegin *next, bool stopOnError) const
+{
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	// Get the theorical CRC check
+	uint32 crc = evalMagicNumber (current);
+
+	// Compare the magic number
+	if (*(current->EndMagicNumber) != crc)
+	{
+		// Stop on error ?
+		if (stopOnError)
+		{
+			// ********
+			// * STOP *
+			// ********
+			// * The bottom CRC32 of the current node is wrong: Check if a node has overflowed. Node by top and bottom,
+			// * the next by the top and the previous by the bottom.
+			// * overflow or the next node by the top.
+			// ********
+			// * (*previous):	previous node
+			// * (*current):	current node
+			// * (*next):		next node
+			// ********
+			NL_ALLOC_STOP(current);
+		}
+
+		// CRC is wrong
+		return false;
+	}
+
+#ifndef NL_NO_DELETED_MEMORY_CONTENT_CHECK
+
+	// If the block is free, check if it is filled with 0xba, 0xbc, or 0xbd pattern
+	if (isNodeFree (current))
+	{
+		// The CFreeNode is check with the CRC, skip it
+		uint sizeToCheck = getNodeSize (current) - sizeof(CFreeNode);
+		if (sizeToCheck)
+		{
+			uint8 *ptr = (uint8*)current + sizeof(CFreeNode) + sizeof(CNodeBegin);
+			if (!checkFreeBlockContent (ptr, sizeToCheck, stopOnError))
+				return false;
+		}
+	}
+
+#endif // NL_NO_DELETED_MEMORY_CONTENT_CHECK
+
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+
+	// *** Release node control
+
+	// Check node
+	if	(
+			( (uint)current < (uint)mainBlock->Ptr ) ||
+			( (uint)current + getNodeSize (current) + sizeof(CNodeBegin) + NL_HEAP_NODE_END_SIZE > 
+				(uint)mainBlock->Ptr + mainBlock->Size )
+		)
+	{
+		// Stop on error ?
+		if (stopOnError)
+		{
+			// ********
+			// * STOP *
+			// ********
+			// * The size value is corrupted: Check if the current node has
+			// * overflow by the top or the previous node by the bottom.
+			// ********
+			// * (*previous):	previous node
+			// * (*current):	current node
+			// * (*next):		next node
+			// ********
+			NL_ALLOC_STOP(current);
+		}
+
+		// Node size is corrupted
+		return false;
+	}
+
+	// Check Previous node pointer
+	if ( !(current->Previous == NULL || 
+		( ((uint)current->Previous <= (uint)current - sizeof (CNodeBegin) - NL_HEAP_NODE_END_SIZE) && 
+		((uint)current->Previous >= (uint)mainBlock->Ptr) )
+		) )
+	{
+		// Stop on error ?
+		if (stopOnError)
+		{
+			// ********
+			// * STOP *
+			// ********
+			// * The previous value is corrupted: Check if the current node has
+			// * overflow by the top or the previous node by the bottom.
+			// ********
+			// * (*previous):	previous node
+			// * (*current):	current node
+			// * (*next):		next node
+			// ********
+			NL_ALLOC_STOP(current);
+		}
+
+		// Node flag is corrupted
+		return false;
+	}
+
+	// Check FreeNode node pointer
+	if (isNodeFree (current))
+	{
+		// Get only this free node
+		const CFreeNode *freeNode = getFreeNode (current);
+		checkFreeNode (freeNode, stopOnError, false);
+	}
+
+	// Ok
+	return true;
+}
+
+// *********************************************************
+
+bool CHeapAllocator::checkFreeNode (const CFreeNode *current, bool stopOnError, bool recurse) const
+{
+	// Not NULL ?
+	if (current != &_NullNode.FreeNode)
+	{
+		// Get the node
+		const CNodeBegin *node = getNode (current);
+
+		// 1st rule: Node must be free
+		if ( !isNodeFree(node) )
+		{
+			// Stop on error ?
+			if (stopOnError)
+			{
+				// ********
+				// * STOP *
+				// ********
+				// * Node should be free : Free tree is corrupted.
+				// ********
+				NL_ALLOC_STOP(current);
+			}
+
+			// Node Color is corrupted
+			return false;
+		}
+		
+		// 2nd rule: Node must be sorted 
+		if	( 
+				( current->Left != &_NullNode.FreeNode && getNodeSize (getNode (current->Left)) > getNodeSize (node) ) ||
+				( current->Right != &_NullNode.FreeNode && getNodeSize (getNode (current->Right)) < getNodeSize (node) )
+			)
+		{
+			// Stop on error ?
+			if (stopOnError)
+			{
+				// ********
+				// * STOP *
+				// ********
+				// * Node order is corrupted: Free tree is corrupted.
+				// ********
+				NL_ALLOC_STOP(current);
+			}
+
+			// Node Data is corrupted
+			return false;
+		}
+		
+		// 3rd rule: if red, must have two black nodes
+		bool leftBlack = (current->Left == &_NullNode.FreeNode) || isNodeBlack(current->Left);
+		bool rightBlack = (current->Right == &_NullNode.FreeNode) || isNodeBlack(current->Right);
+		if ( !leftBlack && !rightBlack && isNodeRed (getFreeNode (node)) )
+		{
+			// Stop on error ?
+			if (stopOnError)
+			{
+				// ********
+				// * STOP *
+				// ********
+				// * Color is corrupted: Free tree is corrupted.
+				// ********
+				NL_ALLOC_STOP(current);
+			}
+
+			// Node Color is corrupted
+			return false;
+		}
+
+		// If Parent NULL, must be the root
+		if ( ( (current->Parent == NULL) && (_FreeTreeRoot != current) ) || ( (current->Parent != NULL) && (_FreeTreeRoot == current) ) )
+		{
+			// Stop on error ?
+			if (stopOnError)
+			{
+				// ********
+				// * STOP *
+				// ********
+				// * Parent pointer corrupted: Free tree is corrupted.
+				// ********
+				NL_ALLOC_STOP(current);
+			}
+
+			// Node Parent is corrupted
+			return false;
+		}
+
+		// Recuse childern
+		if (recurse)
+		{
+			if (!checkFreeNode (current->Left, stopOnError, recurse))
+				return false;
+			if (!checkFreeNode (current->Right, stopOnError, recurse))
+				return false;
+		}
+	}
+
+	// Ok
+	return true;
+}
+
+// *********************************************************
+
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+
+bool CHeapAllocator::debugStartAllocationLog (const char *filename, uint blockSize)
+{
+	// Release previous log file
+	if (_LogFile)
+		debugEndAllocationLog ();
+	internalAssert (_LogFile == NULL);
+
+	_LogFile = fopen (filename, "wb");
+	_LogFileBlockSize = blockSize;
+	if (_LogFile)
+		fwrite (&_LogFileBlockSize, 1, sizeof (_LogFileBlockSize), (FILE*)_LogFile);
+	return _LogFile != NULL;
+}
+
+// *********************************************************
+
+bool CHeapAllocator::debugEndAllocationLog ()
+{
+	if (_LogFile)
+	{
+		FILE *tmp = (FILE*)_LogFile;
+		_LogFile = NULL;
+		return fclose (tmp) == 0;
+	}
+	else
+		return false;
+}
+
+// *********************************************************
+
+void CHeapAllocator::debugLog (const void *begin, const char *context)
+{
+	internalAssert (_LogFile);
+	FILE *fp = (FILE*)_LogFile;
+	fwrite (&begin, 1, 4, fp);
+	fwrite (context, 1, strlen (context)+1, fp);
+}
+
+#endif // NL_HEAP_ALLOCATION_NDEBUG
 
 // *********************************************************
 

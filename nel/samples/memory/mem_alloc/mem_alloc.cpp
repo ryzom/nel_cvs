@@ -29,7 +29,10 @@ using namespace std;
 //#define TEST_NEL_ALLOCATORS_SMALL	// Test the NeL allocator only small blocks
 #define TEST_NEL_MULTI_THREAD		// Test multi thread
 //#define TEST_MEMORY_ALLOCATOR		// Test memory allocator
+//#define TEST_DELETED_MEMORY_MODIFICATION_LB	// Test the deleted memory integrity checks large blocks
+//#define TEST_DELETED_MEMORY_MODIFICATION_SB	// Test the deleted memory integrity checks small blocks
 //#define BENCH_ALLOCATORS			// Bench the differents allocators
+#define LOG_ALLOCATION true				// Log allocations
 // Define this to get verbose informations
 #define VERBOSE 
 //#define VERBOSE2 
@@ -431,8 +434,8 @@ public:
 				VOutput2 ("(%d) Free  : %d\tTotal : %d\tBlock count : %d\tBlock index : %d\n", threadId, size, allocatedMemory, allocations.size (), blockId);
 			}
 
-			// Check memory
-			if (_CheckMemory)
+			// Check memory 1 / 256 times
+			if (_CheckMemory && (count & 0xff) == 0)
 			{
 				// Check heap integrity
 				if (allocator.checkMemory (true))
@@ -486,6 +489,12 @@ void alloc (int toto)
 int main(int argc, char* argv[])
 {
 	NL_ALLOC_CONTEXT (Main);
+
+#ifdef LOG_ALLOCATION
+	StartAllocationLog ("alloc.memlog");
+#endif // LOG_ALLOCATION
+
+
 #ifdef TEST_NEL_ALLOCATORS
 	CRandomAllocBench test ("Test", 1, 10000, 10000000, 1000000, 10, true);
 
@@ -526,6 +535,42 @@ int main(int argc, char* argv[])
 	bench.bench (stlAlloc);
 #endif // BENCH_ALLOCATORS
 
+#ifdef TEST_DELETED_MEMORY_MODIFICATION_LB
+
+	{
+		// *** Large block
+		uint8 *mallocAlloc = new uint8[8000];
+		delete (mallocAlloc);
+
+		NLMEMORY::CheckHeap (true);
+		
+		// Modify the memory now
+		mallocAlloc[100] = 0;
+
+		// MUST STOP !
+		NLMEMORY::CheckHeap (true);
+	}
+
+#endif // TEST_DELETED_MEMORY_MODIFICATION_LB
+
+#ifdef TEST_DELETED_MEMORY_MODIFICATION_SB
+
+	{
+		// *** Small block
+		uint8 *mallocAlloc = new uint8[8];
+		delete (mallocAlloc);
+
+		NLMEMORY::CheckHeap (true);
+		
+		// Modify the memory now
+		mallocAlloc[8] = 0;
+
+		// MUST STOP !
+		NLMEMORY::CheckHeap (true);
+	}
+
+#endif // TEST_DELETED_MEMORY_MODIFICATION_SB
+
 #ifdef TEST_MEMORY_ALLOCATOR
 
 	// Should not call NeL allocator
@@ -542,7 +587,7 @@ int main(int argc, char* argv[])
 	multimap<int, int> multimapAlloc;
 
 	int	*mallocAlloc = (int*)malloc (sizeof(int)*1000);
-	
+
 	// Should call NeL allocator
 
 	{

@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.8 2004/01/15 17:37:36 lecroart Exp $
+ * $Id: memory_manager.cpp,v 1.9 2005/02/21 17:02:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,6 +119,28 @@ MEMORY_API unsigned int GetAllocatedMemoryByCategory (const char *category)
 
 // *********************************************************
 
+MEMORY_API bool StartAllocationLog (const char *filename, uint blockSize)
+{
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	return GlobalHeapAllocator->debugStartAllocationLog (filename, blockSize);
+#else // NL_HEAP_ALLOCATION_NDEBUG
+	return false;
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+}
+
+// *********************************************************
+
+MEMORY_API bool EndAllocationLog ()
+{
+#ifndef NL_HEAP_ALLOCATION_NDEBUG
+	return GlobalHeapAllocator->debugEndAllocationLog ();
+#else // NL_HEAP_ALLOCATION_NDEBUG
+	return false;
+#endif // NL_HEAP_ALLOCATION_NDEBUG
+}
+
+// *********************************************************
+
 MEMORY_API float GetFragmentationRatio ()
 {
 	return GlobalHeapAllocator->getFragmentationRatio ();
@@ -150,6 +172,13 @@ MEMORY_API unsigned int GetAllocatedSystemMemoryHook ()
 MEMORY_API bool CheckHeap (bool stopOnError)
 {
 	return GlobalHeapAllocator->checkHeap (stopOnError);
+}
+
+// *********************************************************
+
+MEMORY_API bool			CheckHeapBySize (bool stopOnError, uint blockSize)
+{
+	return GlobalHeapAllocator->checkHeapBySize (stopOnError, blockSize);
 }
 
 // *********************************************************

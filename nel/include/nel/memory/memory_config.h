@@ -1,7 +1,7 @@
 /** \file memory_config.h
  * Memory manager configuraition
  *
- * $Id: memory_config.h,v 1.7 2004/05/13 09:19:47 corvazier Exp $
+ * $Id: memory_config.h,v 1.8 2005/02/21 17:02:23 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -43,6 +43,11 @@
 
 // Define this to disable the define new used to track memory leak
 //#define NL_NO_DEFINE_NEW
+
+/* Define this to not test the content of a deleted/free block during block checking.
+ * This check is useful to see if someone has modified a deleted block.
+ * This define as no effect if NL_HEAP_ALLOCATION_NDEBUG is defined. */
+//#define NL_NO_DELETED_MEMORY_CONTENT_CHECK
 
 #endif // NL_MEMORY_CONFIG_H
 

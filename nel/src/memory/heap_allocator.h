@@ -1,7 +1,7 @@
 /** \file memory/heap_allocator.h
  * A Heap allocator
  *
- * $Id: heap_allocator.h,v 1.6 2004/11/15 10:25:00 lecroart Exp $
+ * $Id: heap_allocator.h,v 1.7 2005/02/21 17:02:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,6 +140,7 @@ public:
 
 	// Heap control
 	bool					checkHeap (bool stopOnError) const;
+	bool					checkHeapBySize (bool stopOnError, uint blockSize) const;
 
 	uint					getAllocatedMemory () const;
 
@@ -189,6 +190,11 @@ public:
 	// Heap debug
 	void					debugReportMemoryLeak ();
 
+	// Log memory allocations
+	bool					debugStartAllocationLog (const char *filename, uint blockSize);
+	bool					debugEndAllocationLog ();
+	void					debugLog (const void *begin, const char *context);
+
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 	/// \name Overridable
@@ -211,7 +217,6 @@ private:
 		CategoryStringLength	=	8,
 		BeginNodeMarkers		=	'<',
 		EndNodeMarkers			=	'>',
-		UnallocatedMemory		=	0xba,
 		UninitializedMemory		=	0xbc,
 		DeletedMemory			=	0xbd,
 		NameLength				=	32
@@ -398,13 +403,16 @@ private:
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 	// Checks
+	static bool			checkFreeBlockContent (const uint8 *ptr, uint sizeToCheck, bool stopOnError);
 	bool				checkFreeNode (const CFreeNode *current, bool stopOnError, bool recurse) const;
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	void				checkNode (const CNodeBegin *current, uint32 crc) const;
+	void				debugCheckNode (const CNodeBegin *current, uint32 crc) const;
+	static void			debugStopNodeAlreadyFree (const CNodeBegin *current);
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
-	// Performe full integrity check of the heap, free list and smallblock. Call it outside critical sections.
-	bool				internalCheckHeap (bool stopOnError) const;
+	/* Performe full integrity check of the heap, free list and smallblock. Call it outside critical sections.
+	 * If blockSize is not 0, performs the check only on block of size blockSize */
+	bool				internalCheckHeap (bool stopOnError, uint32 blockSize) const;
 
 	// Synchronisation
 	void				enterCriticalSection () const;
@@ -427,6 +435,8 @@ private:
 	TOutOfMemoryMode			_OutOfMemoryMode;
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 	bool						_AlwaysCheck;
+	void						*_LogFile;
+	uint32						_LogFileBlockSize;
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 	// List of main block.

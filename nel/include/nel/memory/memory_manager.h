@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.19 2003/11/17 10:43:55 besson Exp $
+ * $Id: memory_manager.h,v 1.20 2005/02/21 17:02:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,10 @@
 	  
 	// Check the heap
 	bool		CheckHeap (bool stopOnError);
+	  
+	// Check block by size
+	// Works only with nel memory allocator with debug features activated
+	bool		CheckHeapBySize (bool stopOnError, unsigned int blockSize);
 
 	// Make a statistic report
 	// Works only with nel memory allocator with debug features activated
@@ -106,6 +110,21 @@
 	// Set a out of memory callback
 	// Works only with nel memory allocator
 	void		SetOutOfMemoryHook(void (*outOfMemoryCallback)());
+
+	 * Start/End the memory allocation loging
+	 * Works only with nel memory allocator with debug features activated
+	 * blockSize is the size of the block to log
+	 *
+	 * Log format : 
+	 * 4 bytes : uint32 size of the logged blocks.
+	 * n bytes : log entries
+	 *
+	 * Log entry format :
+	 * 4 bytes : start address of the bloc data
+	 * \0 terminated string : context where the bloc has been allocated
+	 *
+	bool		StartAllocationLog (const char *filename, uint blockSize);
+	bool		EndAllocationLog ();
 */
 
 // Memory debug for windows
@@ -215,7 +234,10 @@ inline unsigned int GetFreeMemory () { return 0;}
 inline unsigned int GetTotalMemoryUsed () { return 0;}
 inline unsigned int GetDebugInfoSize () { return 0;}
 inline unsigned int GetAllocatedMemoryByCategory (const char *category) { return 0;}
+inline bool			StartAllocationLog (const char *category, unsigned int blockSize) { return false;}
+inline bool			EndAllocationLog () { return false;}
 inline unsigned int GetBlockSize (void *pointer) { return 0;}
+inline bool			CheckHeapBySize (bool stopOnError, unsigned int blockSize) { return true; }
 inline const char * GetCategory (void *pointer) { return 0; }
 inline float		GetFragmentationRatio () { return 0.0f;}
 inline unsigned int GetAllocatedSystemMemoryByAllocator () { return 0;}
@@ -287,11 +309,14 @@ MEMORY_API unsigned int GetAllocatedSystemMemoryByAllocator ();
 MEMORY_API unsigned int GetAllocatedSystemMemory ();
 MEMORY_API unsigned int GetAllocatedSystemMemoryHook ();
 MEMORY_API bool			CheckHeap (bool stopOnError);
+MEMORY_API bool			CheckHeapBySize (bool stopOnError, unsigned int blockSize);
 MEMORY_API bool			StatisticsReport (const char *filename, bool memoryDump);
 MEMORY_API void			ReportMemoryLeak ();
 MEMORY_API void			AlwaysCheckMemory(bool alwaysCheck);
 MEMORY_API bool			IsAlwaysCheckMemory();
 MEMORY_API void			SetOutOfMemoryHook (void (*outOfMemoryCallback)());
+MEMORY_API bool			StartAllocationLog (const char *category, unsigned int blockSize);
+MEMORY_API bool			EndAllocationLog ();
 
  /* Allocation context
  */

@@ -1,7 +1,7 @@
 /** \file di_mouse.cpp
  * <File description>
  *
- * $Id: di_mouse_device.cpp,v 1.4 2003/02/27 17:36:42 corvazier Exp $
+ * $Id: di_mouse_device.cpp,v 1.5 2003/04/28 12:34:07 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -157,6 +157,7 @@ CDIMouse *CDIMouse::createMouseDevice(IDirectInput8 *di8, HWND hwnd, CDIEventEmi
 	mouse->_Mouse->SetDataFormat(&c_dfDIMouse2);	
 	mouse->setBufferSize(64);
 	mouse->_WE = we;
+	mouse->setDoubleClickDelay(::GetDoubleClickTime());
 	
 	/** we want an absolute mouse mode, so that, if the event buffer get full, we can retrieve the right position
 	  */

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.19 2001/08/08 11:54:48 besson Exp $
+ * $Id: export_nel.h,v 1.20 2001/08/09 08:09:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,7 @@ namespace NL3D
 {
 	class CAnimation;
 	class ITrack;
+	class CTrackKeyFramerConstBool;
 	class CSkeletonShape;
 	class CMRMParameters;
 	class IMeshGeom;
@@ -214,6 +215,10 @@ public:
 	static NL3D::ITrack*			buildATrack (NL3D::CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, 
 												Interface *ip, std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled);
 
+	// Build a Nel bool track from a On/Off max Controller (doesn't work with buildATRack, which require a keyframer interface
+	// , which isn't provided by an on / off controller)
+	static NL3D::CTrackKeyFramerConstBool*			buildOnOffTrack(Control& c);
+
 	// Add tracks for particle systems
 	static void						addParticleSystemTracks(NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip) ;
 
@@ -226,25 +231,26 @@ public:
 										std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled);
 
 	// Convert keyframe methods
-	static void						buildNelKey (NL3D::CKeyFloat& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyInt& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyBool& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyVector& nelKey, ILinPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyRGBA& nelKey, ILinPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyQuat& nelKey, ILinRotKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyVector& nelKey, ILinScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
+	static void						buildNelKey (NL3D::CKeyFloat& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyInt& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyBool& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyVector& nelKey, ILinPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyRGBA& nelKey, ILinPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyQuat& nelKey, ILinRotKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyVector& nelKey, ILinScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
 
-	static void						buildNelKey (NL3D::CKeyBezierFloat& nelKey, IBezFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyBool& nelKey, IBezFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyBezierQuat& nelKey, IBezQuatKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
+	static void						buildNelKey (NL3D::CKeyBezierFloat& nelKey, IBezFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyBool& nelKey, IBezFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyBezierQuat& nelKey, IBezQuatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
 
-	static void						buildNelKey (NL3D::CKeyTCBFloat& nelKey, ITCBFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyBool& nelKey, ITCBFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyTCBQuat& nelKey, ITCBRotKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
-	static void						buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc);
+	static void						buildNelKey (NL3D::CKeyTCBFloat& nelKey, ITCBFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyBool& nelKey, ITCBFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyTCBQuat& nelKey, ITCBRotKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);
+	static void						buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c);	
+
 
 	// Create the transform matrix tracks
 	static void						createBipedKeyFramer (NL3D::ITrack *&nelRot, NL3D::ITrack *&nelPos, bool isRot, bool isPos, 

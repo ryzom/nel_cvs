@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.11 2001/07/12 16:23:56 vizerie Exp $
+ * $Id: export_anim.cpp,v 1.12 2001/08/09 08:09:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,10 @@
 
 using namespace NLMISC;
 using namespace NL3D;
+
+
+
+#define BOOL_CONTROL_CLASS_ID 0x984b8d27
 
 // --------------------------------------------------
 
@@ -132,6 +136,13 @@ void CExportNel::addParticleSystemTracks(CAnimation& animation, INode& node, con
 				animation.addTrack (name.c_str(), pTrack);
 			}
 		}	
+	}
+
+	Control *ctrl = getControlerByName(node, "PSTrigger");
+	if (ctrl)
+	{
+		ITrack *pTrack = buildOnOffTrack(*ctrl);
+		animation.addTrack(parentName+std::string("PSTrigger"), pTrack);
 	}
 }
 
@@ -520,28 +531,28 @@ void CExportNel::addTexTracks (CAnimation& animation, Texmap& tex, const char* p
 // --------------------------------------------------
 
 // Build nel keys
-void CExportNel::buildNelKey (CKeyFloat& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (CKeyFloat& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value=maxKey.val;
 }
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (CKeyInt& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (CKeyInt& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value=(sint32)maxKey.val;
 }
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (CKeyBool& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (CKeyBool& nelKey, ILinFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value=fabs(maxKey.val)<=FLOAT_EPSILON;
 }
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyVector& nelKey, ILinPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyVector& nelKey, ILinPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value.x=maxKey.val.x;
 	nelKey.Value.y=maxKey.val.y;
@@ -559,7 +570,7 @@ void CExportNel::buildNelKey (NL3D::CKeyVector& nelKey, ILinPoint3Key& maxKey, f
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyRGBA& nelKey, ILinPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyRGBA& nelKey, ILinPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value.R=(uint8)maxKey.val.x;
 	nelKey.Value.G=(uint8)maxKey.val.y;
@@ -577,7 +588,7 @@ void CExportNel::buildNelKey (NL3D::CKeyRGBA& nelKey, ILinPoint3Key& maxKey, flo
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyQuat& nelKey, ILinRotKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyQuat& nelKey, ILinRotKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value.w=-maxKey.val.w;
 	nelKey.Value.x=maxKey.val.x;
@@ -587,7 +598,7 @@ void CExportNel::buildNelKey (NL3D::CKeyQuat& nelKey, ILinRotKey& maxKey, float 
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyVector& nelKey, ILinScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyVector& nelKey, ILinScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	// Build a matrix with the quat
 	Matrix3 mt;
@@ -604,7 +615,7 @@ void CExportNel::buildNelKey (NL3D::CKeyVector& nelKey, ILinScaleKey& maxKey, fl
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyBezierFloat& nelKey, IBezFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyBezierFloat& nelKey, IBezFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value=maxKey.val;
 	nelKey.InTan=maxKey.intan;
@@ -619,14 +630,14 @@ void CExportNel::buildNelKey (NL3D::CKeyBezierFloat& nelKey, IBezFloatKey& maxKe
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyBool& nelKey, IBezFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyBool& nelKey, IBezFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value=fabs(maxKey.val)<=FLOAT_EPSILON;
 }
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value.x=maxKey.val.x;
 	nelKey.Value.y=maxKey.val.y;
@@ -656,7 +667,7 @@ void CExportNel::buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezPoint3Key& max
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyBezierQuat& nelKey, IBezQuatKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyBezierQuat& nelKey, IBezQuatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value.w=-maxKey.val.w;
 	nelKey.Value.x=maxKey.val.x;
@@ -666,7 +677,7 @@ void CExportNel::buildNelKey (NL3D::CKeyBezierQuat& nelKey, IBezQuatKey& maxKey,
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	// Build a matrix with the quat
 	Matrix3 mt;
@@ -695,7 +706,7 @@ void CExportNel::buildNelKey (NL3D::CKeyBezierVector& nelKey, IBezScaleKey& maxK
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyTCBFloat& nelKey, ITCBFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyTCBFloat& nelKey, ITCBFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value=maxKey.val;
 	nelKey.Tension=maxKey.tens;
@@ -707,14 +718,14 @@ void CExportNel::buildNelKey (NL3D::CKeyTCBFloat& nelKey, ITCBFloatKey& maxKey, 
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyBool& nelKey, ITCBFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyBool& nelKey, ITCBFloatKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value=fabs(maxKey.val)<=FLOAT_EPSILON;
 }
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBPoint3Key& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value.x=maxKey.val.x;
 	nelKey.Value.y=maxKey.val.y;
@@ -737,7 +748,7 @@ void CExportNel::buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBPoint3Key& maxKey
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyTCBQuat& nelKey, ITCBRotKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyTCBQuat& nelKey, ITCBRotKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	nelKey.Value.Angle=-maxKey.val.angle;
 	nelKey.Value.Axis.x=maxKey.val.axis.x;
@@ -752,7 +763,7 @@ void CExportNel::buildNelKey (NL3D::CKeyTCBQuat& nelKey, ITCBRotKey& maxKey, flo
 
 // --------------------------------------------------
 
-void CExportNel::buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc)
+void CExportNel::buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBScaleKey& maxKey, float ticksPerSecond, const CExportDesc& desc, Control& c)
 {
 	// Build a matrix with the quat
 	Matrix3 mt;
@@ -772,12 +783,78 @@ void CExportNel::buildNelKey (NL3D::CKeyTCBVector& nelKey, ITCBScaleKey& maxKey,
 	nelKey.EaseFrom=maxKey.easeOut;
 }
 
+//--------------------------------------------------------
+
+
+// Build a Nel bool track from a On/Off max Controller (doesn't work with buildATRack, which require a keyframer interface
+// , which isn't provided by an on / off controller)
+ NL3D::CTrackKeyFramerConstBool*			CExportNel::buildOnOffTrack(Control& c)
+ {
+	// make sure this is the controler we want
+//	nlassert(c.ClassID() == Class_ID(BOOL_CONTROL_CLASS_ID, 0));	
+	float value = 0.f;
+	
+	CTrackKeyFramerConstBool *track = new CTrackKeyFramerConstBool;
+
+	// ** Get the range of the controler
+	Interval range=c.GetTimeRange (TIMERANGE_ALL);
+
+	// ** Get the out of range type
+	int oRT=c.GetORT (ORT_AFTER);
+
+	// Set the range
+	if ((!(FOREVER==range))&&(!(NEVER==range)))
+		track->unlockRange (CExportNel::convertTime (range.Start()), CExportNel::convertTime (range.End()));
+
+	// Set the out of range type
+	switch (oRT)
+	{
+	case ORT_LOOP:
+		track->setLoopMode(true);
+		break;
+	case ORT_CONSTANT:
+	case ORT_CYCLE:
+	default:
+		track->setLoopMode(false);
+		break;
+	}
+
+	// Enum the keys
+	int numKeys = c.NumKeys();
+	float firstKey;
+	float lastKey;
+	for (int i=0; i<numKeys; i++) 
+	{		
+		// First key ?
+		if (i==0)
+			firstKey = convertTime (c.GetKeyTime(i));
+
+		// Last key ?
+		lastKey = convertTime (c.GetKeyTime(i));
+
+		// Allocate the key
+		CKey<bool> nelKey;		
+		c.GetValue(c.GetKeyTime(i), &value, range, CTRL_ABSOLUTE);
+		nelKey.Value = value > 0.f;
+		track->addKey(nelKey, convertTime (c.GetKeyTime(i)));		
+	}
+
+	// Invalid interval ? Take the interval of the keyfarmer
+	if ((FOREVER==range)||(NEVER==range))
+		track->unlockRange (firstKey, lastKey);
+
+	
+	return track;
+ }
+
+
+
 // --------------------------------------------------
 
 // Create a keyframer
 template<class TTracker, class TKey, class TMaxKey>
 ITrack* createKeyFramer (IKeyControl *ikeys, TTracker*, TKey*, TMaxKey*, float ticksPerSecond, const Interval& range, int oRT, 
-						 const CExportDesc& desc)
+						 const CExportDesc& desc, Control &c)
 {
 	// Allocate the tracker
 	TTracker *pLinTrack=new TTracker;
@@ -820,7 +897,7 @@ ITrack* createKeyFramer (IKeyControl *ikeys, TTracker*, TKey*, TMaxKey*, float t
 		TKey nelKey;
 
 		// Build the key
-		CExportNel::buildNelKey (nelKey, key, ticksPerSecond, desc);
+		CExportNel::buildNelKey (nelKey, key, ticksPerSecond, desc, c);
 
 		// Add the good key
 		pLinTrack->addKey (nelKey, CExportNel::convertTime (key.time));
@@ -1135,43 +1212,43 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 				// For float
 				if (type==typeFloat)
 					pTrack=createKeyFramer<CTrackKeyFramerLinearFloat, CKeyFloat, ILinFloatKey> (ikeys,
-						(CTrackKeyFramerLinearFloat*)NULL, (CKeyFloat*)NULL, (ILinFloatKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerLinearFloat*)NULL, (CKeyFloat*)NULL, (ILinFloatKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 
 				// For int
 				if (type==typeInt)
 					pTrack=createKeyFramer<CTrackKeyFramerLinearInt, CKeyInt, ILinFloatKey> (ikeys,
-						(CTrackKeyFramerLinearInt*)NULL, (CKeyInt*)NULL, (ILinFloatKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerLinearInt*)NULL, (CKeyInt*)NULL, (ILinFloatKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 
 				// For bool
 				if (type==typeBoolean)
 					pTrack=createKeyFramer<CTrackKeyFramerConstBool, CKeyBool, ILinFloatKey> (ikeys,
-						(CTrackKeyFramerConstBool*)NULL, (CKeyBool*)NULL, (ILinFloatKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerConstBool*)NULL, (CKeyBool*)NULL, (ILinFloatKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if (c.ClassID()==Class_ID(LININTERP_POSITION_CLASS_ID,0))
 			{
 				// For vector
 				if ((type==typePos)||(type==typeScale))
 					pTrack=createKeyFramer<CTrackKeyFramerLinearVector, CKeyVector, ILinPoint3Key> (ikeys,
-						(CTrackKeyFramerLinearVector*)NULL, (CKeyVector*)NULL, (ILinPoint3Key*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerLinearVector*)NULL, (CKeyVector*)NULL, (ILinPoint3Key*)NULL, ticksPerSecond, range, oRT, desc, c);
 
 				// For color
 				if (type==typeColor)
 					pTrack=createKeyFramer<CTrackKeyFramerLinearRGBA, CKeyRGBA, ILinPoint3Key> (ikeys,
-						(CTrackKeyFramerLinearRGBA*)NULL, (CKeyRGBA*)NULL, (ILinPoint3Key*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerLinearRGBA*)NULL, (CKeyRGBA*)NULL, (ILinPoint3Key*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if (c.ClassID()==Class_ID(LININTERP_ROTATION_CLASS_ID,0))
 			{
 				// For quaternion
 				if (type==typeRotation)
 					pTrack=createKeyFramer<CTrackKeyFramerLinearQuat, CKeyQuat, ILinRotKey> (ikeys,
-						(CTrackKeyFramerLinearQuat*)NULL, (CKeyQuat*)NULL, (ILinRotKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerLinearQuat*)NULL, (CKeyQuat*)NULL, (ILinRotKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if (c.ClassID()==Class_ID(LININTERP_SCALE_CLASS_ID,0))
 			{
 				// For scale
 				if ((type==typePos)||(type==typeScale))
 					pTrack=createKeyFramer<CTrackKeyFramerLinearVector, CKeyVector, ILinScaleKey> (ikeys,
-						(CTrackKeyFramerLinearVector*)NULL, (CKeyVector*)NULL, (ILinScaleKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerLinearVector*)NULL, (CKeyVector*)NULL, (ILinScaleKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 
 			// ** Bezier
@@ -1181,17 +1258,17 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 				// For float
 				if (type==typeFloat)
 					pTrack=createKeyFramer<CTrackKeyFramerBezierFloat, CKeyBezierFloat, IBezFloatKey> (ikeys,
-						(CTrackKeyFramerBezierFloat*)NULL, (CKeyBezierFloat*)NULL, (IBezFloatKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerBezierFloat*)NULL, (CKeyBezierFloat*)NULL, (IBezFloatKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 
 				// For int
 				if (type==typeInt)
 					pTrack=createKeyFramer<CTrackKeyFramerBezierInt, CKeyBezierFloat, IBezFloatKey> (ikeys,
-						(CTrackKeyFramerBezierInt*)NULL, (CKeyBezierFloat*)NULL, (IBezFloatKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerBezierInt*)NULL, (CKeyBezierFloat*)NULL, (IBezFloatKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 
 				// For bool
 				if (type==typeBoolean)
 					pTrack=createKeyFramer<CTrackKeyFramerConstBool, CKeyBool, IBezFloatKey> (ikeys,
-						(CTrackKeyFramerConstBool*)NULL, (CKeyBool*)NULL, (IBezFloatKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerConstBool*)NULL, (CKeyBool*)NULL, (IBezFloatKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if ((c.ClassID()==Class_ID(HYBRIDINTERP_POSITION_CLASS_ID,0))||
 				(c.ClassID()==Class_ID(HYBRIDINTERP_POINT3_CLASS_ID,0)))
@@ -1199,26 +1276,26 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 				// For vector
 				if ((type==typePos)||(type==typeScale))
 					pTrack=createKeyFramer<CTrackKeyFramerBezierVector, CKeyBezierVector, IBezPoint3Key> (ikeys,
-						(CTrackKeyFramerBezierVector*)NULL, (CKeyBezierVector*)NULL, (IBezPoint3Key*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerBezierVector*)NULL, (CKeyBezierVector*)NULL, (IBezPoint3Key*)NULL, ticksPerSecond, range, oRT, desc, c);
 
 				// For color
 				if (type==typeColor)
 					pTrack=createKeyFramer<CTrackKeyFramerBezierRGBA, CKeyBezierVector, IBezPoint3Key> (ikeys,
-						(CTrackKeyFramerBezierRGBA*)NULL, (CKeyBezierVector*)NULL, (IBezPoint3Key*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerBezierRGBA*)NULL, (CKeyBezierVector*)NULL, (IBezPoint3Key*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if (c.ClassID()==Class_ID(HYBRIDINTERP_ROTATION_CLASS_ID,0))
 			{
 				// For quaternion
 				if (type==typeRotation)
 					pTrack=createKeyFramer<CTrackKeyFramerBezierQuat, CKeyBezierQuat, IBezQuatKey> (ikeys,
-						(CTrackKeyFramerBezierQuat*)NULL, (CKeyBezierQuat*)NULL, (IBezQuatKey *)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerBezierQuat*)NULL, (CKeyBezierQuat*)NULL, (IBezQuatKey *)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if (c.ClassID()==Class_ID(HYBRIDINTERP_SCALE_CLASS_ID,0))
 			{
 				// For scale
 				if ((type==typePos)||(type==typeScale))
 					pTrack=createKeyFramer<CTrackKeyFramerBezierVector, CKeyBezierVector, IBezScaleKey> (ikeys,
-						(CTrackKeyFramerBezierVector*)NULL, (CKeyBezierVector*)NULL, (IBezScaleKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerBezierVector*)NULL, (CKeyBezierVector*)NULL, (IBezScaleKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if (c.ClassID()==Class_ID(HYBRIDINTERP_COLOR_CLASS_ID,0))
 			{
@@ -1231,17 +1308,17 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 				// For float
 				if (type==typeFloat)
 					pTrack=createKeyFramer<CTrackKeyFramerTCBFloat, CKeyTCBFloat, ITCBFloatKey> (ikeys,
-						(CTrackKeyFramerTCBFloat*)NULL, (CKeyTCBFloat*)NULL, (ITCBFloatKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerTCBFloat*)NULL, (CKeyTCBFloat*)NULL, (ITCBFloatKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 
 				// For int
 				if (type==typeInt)
 					pTrack=createKeyFramer<CTrackKeyFramerTCBInt, CKeyTCBFloat, ITCBFloatKey> (ikeys,
-						(CTrackKeyFramerTCBInt*)NULL, (CKeyTCBFloat*)NULL, (ITCBFloatKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerTCBInt*)NULL, (CKeyTCBFloat*)NULL, (ITCBFloatKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 
 				// For bool
 				if (type==typeBoolean)
 					pTrack=createKeyFramer<CTrackKeyFramerConstBool, CKeyBool, ITCBFloatKey> (ikeys,
-						(CTrackKeyFramerConstBool*)NULL, (CKeyBool*)NULL, (ITCBFloatKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerConstBool*)NULL, (CKeyBool*)NULL, (ITCBFloatKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if ((c.ClassID()==Class_ID(TCBINTERP_POSITION_CLASS_ID,0))||
 				(c.ClassID()==Class_ID(TCBINTERP_POINT3_CLASS_ID,0)))
@@ -1249,27 +1326,27 @@ ITrack* CExportNel::buildATrack (CAnimation& animation, Control& c, TNelValueTyp
 				// For vector
 				if ((type==typePos)||(type==typeScale))
 					pTrack=createKeyFramer<CTrackKeyFramerTCBVector, CKeyTCBVector, ITCBPoint3Key> (ikeys,
-						(CTrackKeyFramerTCBVector*)NULL, (CKeyTCBVector*)NULL, (ITCBPoint3Key*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerTCBVector*)NULL, (CKeyTCBVector*)NULL, (ITCBPoint3Key*)NULL, ticksPerSecond, range, oRT, desc, c);
 
 				// For color
 				if (type==typeColor)
 					pTrack=createKeyFramer<CTrackKeyFramerTCBRGBA, CKeyTCBVector, ITCBPoint3Key> (ikeys,
-						(CTrackKeyFramerTCBRGBA*)NULL, (CKeyTCBVector*)NULL, (ITCBPoint3Key*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerTCBRGBA*)NULL, (CKeyTCBVector*)NULL, (ITCBPoint3Key*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if (c.ClassID()==Class_ID(TCBINTERP_ROTATION_CLASS_ID,0))
 			{
 				// For quaternion
 				if (type==typeRotation)
 					pTrack=createKeyFramer<CTrackKeyFramerTCBQuat, CKeyTCBQuat, ITCBRotKey> (ikeys,
-						(CTrackKeyFramerTCBQuat*)NULL, (CKeyTCBQuat*)NULL, (ITCBRotKey*)NULL, ticksPerSecond, range, oRT, desc);
+						(CTrackKeyFramerTCBQuat*)NULL, (CKeyTCBQuat*)NULL, (ITCBRotKey*)NULL, ticksPerSecond, range, oRT, desc, c);
 			}
 			if (c.ClassID()==Class_ID(TCBINTERP_SCALE_CLASS_ID,0))
 			{
 				// For scale
 				if ((type==typePos)||(type==typeScale))
 					pTrack=createKeyFramer<CTrackKeyFramerTCBVector, CKeyTCBVector, ITCBScaleKey> (ikeys,
-						(CTrackKeyFramerTCBVector*)NULL, (CKeyTCBVector*)NULL, (ITCBScaleKey*)NULL, ticksPerSecond, range, oRT, desc);
-			}
+						(CTrackKeyFramerTCBVector*)NULL, (CKeyTCBVector*)NULL, (ITCBScaleKey*)NULL, ticksPerSecond, range, oRT, desc, c);
+			}			
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file cloud_scape_user.h
  * 
  *
- * $Id: cloud_scape_user.h,v 1.1 2002/10/25 16:22:48 besson Exp $
+ * $Id: cloud_scape_user.h,v 1.2 2002/12/06 14:32:59 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -64,3 +64,4 @@ public:
 
 
 } // NL3D
+

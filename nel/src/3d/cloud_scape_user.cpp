@@ -1,7 +1,7 @@
 /** \file water_user.cpp
  * implementation of the user interface for water
  *
- * $Id: cloud_scape_user.cpp,v 1.1 2002/10/25 16:22:48 besson Exp $
+ * $Id: cloud_scape_user.cpp,v 1.2 2002/12/06 14:32:59 coutelas Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -104,3 +104,4 @@ void CCloudScapeUser::setDebugQuad (bool b)
 }
 
 } // NL3D
+

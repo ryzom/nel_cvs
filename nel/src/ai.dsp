@@ -723,6 +723,10 @@ SOURCE=.\ai\logic\goal.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\logic\goal_path.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\goal_stack.cpp
 # End Source File
 # Begin Source File
@@ -815,6 +819,10 @@ SOURCE=..\include\nel\ai\logic\goal.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\logic\goal_path.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\agent\goal_stack.h
 # End Source File
 # Begin Source File
@@ -863,34 +871,6 @@ SOURCE=..\include\nel\ai\logic\varset.h
 # End Source File
 # End Group
 # End Group
-# Begin Group "pyserver"
-
-# PROP Default_Filter ""
-# Begin Group "py_cpp"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\ai\pyserver\pylib.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ai\pyserver\pythonmethode.cpp
-# End Source File
-# End Group
-# Begin Group "py_h"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=..\include\nel\ai\pyserver\pylib.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\ai\pyserver\pythonsupport.h
-# End Source File
-# End Group
-# End Group
 # Begin Group "script"
 
 # PROP Default_Filter ""
@@ -936,6 +916,10 @@ SOURCE=.\ai\script\context_debug.cpp
 # Begin Source File
 
 SOURCE=.\ai\script\factor_type.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\script\goal_path_class.cpp
 # End Source File
 # Begin Source File
 
@@ -1103,6 +1087,10 @@ SOURCE=..\include\nel\ai\script\context_debug.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\ai\script\goal_path_class.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\script\init.h
 # End Source File
 # Begin Source File
@@ -1237,6 +1225,34 @@ SOURCE=.\ai\script\lex_yacc\grammar.yacc
 
 SOURCE=.\ai\script\lex_yacc\lexicon.lex
 # End Source File
+# End Group
+# Begin Group "pyserver"
+
+# PROP Default_Filter ""
+# Begin Group "py_cpp"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\ai\pyserver\pylib.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\pyserver\pythonmethode.cpp
+# End Source File
+# End Group
+# Begin Group "py_h"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=..\include\nel\ai\pyserver\pylib.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\pyserver\pythonsupport.h
+# End Source File
+# End Group
 # End Group
 # End Group
 # Begin Group "exception"

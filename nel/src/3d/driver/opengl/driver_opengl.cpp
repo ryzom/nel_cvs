@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.160 2002/09/11 12:07:40 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.161 2002/09/11 13:55:38 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -104,6 +104,19 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 
 static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if(message == WM_SIZE)
+	{
+		RECT rect;
+		if (driver != NULL)
+		{
+			GetClientRect (driver->_hWnd, &rect);
+
+			// Setup gl viewport
+			driver->_WindowWidth = rect.right-rect.left;
+			driver->_WindowHeight = rect.bottom-rect.top;
+		}
+	}
+
 	if (driver->_EventEmitter.getNumEmitters() > 0)
 	{
 		CWinEventEmitter *we = NLMISC::safe_cast<CWinEventEmitter *>(driver->_EventEmitter.getEmitter(0));
@@ -353,6 +366,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// Init pointers
 	_PBuffer = NULL;
 	_hWnd = NULL;
+	_WindowWidth = _WindowHeight = 0;
 	_hRC = NULL;
 	_hDC = NULL;
 	
@@ -388,6 +402,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		// resize the window
 		RECT rc;
 		SetRect (&rc, 0, 0, mode.Width, mode.Height);
+		_WindowWidth = mode.Width;
+		_WindowHeight = mode.Height;
 		AdjustWindowRectEx (&rc, GetWindowStyle (_hWnd), GetMenu (_hWnd) != NULL, GetWindowExStyle (_hWnd));
 		SetWindowPos (_hWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
 
@@ -1435,13 +1451,9 @@ void CDriverGL::setupViewport (const class CViewport& viewport)
 #ifdef NL_OS_WINDOWS
 	if (_hWnd == NULL) return;
 
-	// Get window rect
-	RECT rect;
-	GetClientRect (_hWnd, &rect);
-
 	// Setup gl viewport
-	int clientWidth=rect.right-rect.left;
-	int clientHeight=rect.bottom-rect.top;
+	int clientWidth = _WindowWidth;
+	int clientHeight = _WindowHeight;
 
 #else // NL_OS_WINDOWS
 
@@ -1497,10 +1509,8 @@ void	CDriverGL::setupScissor (const class CScissor& scissor)
 		if (_hWnd)
 		{
 			// Get window rect
-			RECT rect;
-			GetClientRect (_hWnd, &rect);
-			int clientWidth=rect.right-rect.left;
-			int clientHeight=rect.bottom-rect.top;
+			int clientWidth = _WindowWidth;
+			int clientHeight = _WindowHeight;
 
 			// Setup gl scissor
 			int ix0=(int)floor((float)clientWidth * x + 0.5f);
@@ -1571,11 +1581,9 @@ void CDriverGL::setMousePos(float x, float y)
 	if (_hWnd)
 	{
 		// NeL window coordinate to MSWindows coordinates
-		RECT client;
-		GetClientRect (_hWnd, &client);
 		POINT pt;
-		pt.x = (int)((float)(client.right-client.left)*x);
-		pt.y = (int)((float)(client.bottom-client.top)*(1.0f-y));
+		pt.x = (int)((float)(_WindowWidth)*x);
+		pt.y = (int)((float)(_WindowHeight)*(1.0f-y));
 		ClientToScreen (_hWnd, &pt);
 		SetCursorPos(pt.x, pt.y);
 	}
@@ -1605,10 +1613,8 @@ void CDriverGL::getWindowSize(uint32 &width, uint32 &height)
 	{
 		if (_hWnd)
 		{
-			RECT client;
-			GetClientRect (_hWnd, &client);
-			width = (uint32)(client.right-client.left);
-			height = (uint32)(client.bottom-client.top);
+			width = (uint32)(_WindowWidth);
+			height = (uint32)(_WindowHeight);
 		}
 	}
 #elif defined (NL_OS_UNIX)

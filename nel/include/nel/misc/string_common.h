@@ -1,7 +1,7 @@
 /** \file misc/string_common.h
  * common algorithms on string like toString() and fromString()
  *
- * $Id: string_common.h,v 1.5 2004/03/19 18:47:47 lecroart Exp $
+ * $Id: string_common.h,v 1.6 2004/04/27 18:10:34 fleury Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -195,6 +195,8 @@ inline std::string toString(const float &val) { return toString("%f", val); }
 inline std::string toString(const double &val) { return toString("%lf", val); }
 inline std::string toString(const bool &val) { return toString("%u", val?1:0); }
 inline std::string toString(const std::string &val) { return val; }
+// stl vectors of bool use bit reference and not real bools, so define the operator for bit reference
+inline std::string toString(const std::_Bit_reference &val) { return toString( bool(val)); }
 #ifdef NL_COMP_VC6
 inline std::string toString(const uint &val) { return toString("%u", val); }
 inline std::string toString(const sint &val) { return toString("%d", val); }
@@ -212,6 +214,8 @@ inline void fromString(const std::string &str, float &val) { sscanf(str.c_str(),
 inline void fromString(const std::string &str, double &val) { sscanf(str.c_str(), "%lf", &val); }
 inline void fromString(const std::string &str, bool &val) { uint32 v; fromString(str, v); val = (v==1); }
 inline void fromString(const std::string &str, std::string &val) { val = str; }
+// stl vectors of bool use bit reference and not real bools, so define the operator for bit reference
+inline void fromString(const std::string &str, std::_Bit_reference &val) { uint32 v; fromString(str, v); val = (v==1); }
 #ifdef NL_COMP_VC6
 inline void fromString(const std::string &str, uint &val) { sscanf(str.c_str(), "%u", &val); }
 inline void fromString(const std::string &str, sint &val) { sscanf(str.c_str(), "%d", &val); }

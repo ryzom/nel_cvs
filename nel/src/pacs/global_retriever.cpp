@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.35 2001/07/09 09:15:47 legros Exp $
+ * $Id: global_retriever.cpp,v 1.36 2001/07/09 09:37:46 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,10 +40,10 @@
 
 
 #include "nel/misc/time_nl.h"
-extern NLMISC::TTicks	AStarTicks;
-extern NLMISC::TTicks	PathTicks;
-extern NLMISC::TTicks	ChainTicks;
-extern NLMISC::TTicks	SurfTicks;
+NLMISC::TTicks			AStarTicks;
+NLMISC::TTicks			PathTicks;
+NLMISC::TTicks			ChainTicks;
+NLMISC::TTicks			SurfTicks;
 NLMISC::TTicks			ThisAStarTicks;
 NLMISC::TTicks			ThisPathTicks;
 NLMISC::TTicks			ThisChainTicks;

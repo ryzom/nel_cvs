@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvInfos and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.30 2000/12/04 17:08:04 berenguier Exp $
+ * $Id: driver.h,v 1.31 2000/12/05 16:10:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -462,7 +462,7 @@ public:
 
 	virtual void showCursor(bool b) = 0;
 
-	virtual void setMousePos(uint32 x, uint32 y) = 0;
+	virtual void setMousePos(float x, float y) = 0;
 
 };
 

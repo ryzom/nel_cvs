@@ -111,6 +111,14 @@ LIB32=link.exe -lib
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\3d\anim_detail_trav.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\anim_detail_trav.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\clip_trav.cpp
 # End Source File
 # Begin Source File
@@ -620,6 +628,14 @@ SOURCE=.\3d\key.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\key.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\play_list_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\play_list_manager.h
 # End Source File
 # Begin Source File
 

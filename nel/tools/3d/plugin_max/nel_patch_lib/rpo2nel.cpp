@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.24 2003/07/01 15:27:12 distrib Exp $
+ * $Id: rpo2nel.cpp,v 1.25 2003/07/02 15:35:12 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,16 +30,21 @@
 
 // For MAX_RELEASE
 #include <plugapi.h>
-
 // For mprintf
-#include <maxscrpt.h>
+#ifdef NL_NEW
+	#undef new 
+	#include <maxscrpt.h>
+	#define new NL_NEW
+#else
+	#include <maxscrpt.h>
+#endif
 
 using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
 
-// ***************************************************************************
 
+// ***************************************************************************
 static int getCommonEdge(PatchMesh* pPM, int edge, Patch& patch2)
 {
 	for(int e=0 ; e<4 ; e++)
@@ -768,3 +773,4 @@ void RPatchMesh::importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId)
 }
 
 // ***************************************************************************
+

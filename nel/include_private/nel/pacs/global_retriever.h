@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.8 2001/06/06 09:34:03 corvazier Exp $
+ * $Id: global_retriever.h,v 1.9 2001/06/06 09:42:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,6 +158,9 @@ public:
 
 	/// Converts a global position object into a 'human-readable' CVector (double instead.)
 	NLMISC::CVectorD				getDoubleGlobalPosition(const CGlobalPosition &global) const;
+
+	/// Make a raytrace test. For the time, always return false.
+	bool							testRaytrace (const CVectorD &v0, const CVectorD &v1);
 
 	//@}
 

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.20 2001/06/06 09:34:03 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.21 2001/06/06 09:42:43 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1307,6 +1307,16 @@ float			NLPACS::CGlobalRetriever::getMeanHeight(const CGlobalPosition &pos)
 		return meanHeight;
 	}
 }
+
+// ***************************************************************************
+
+bool NLPACS::CGlobalRetriever::testRaytrace (const CVectorD &v0, const CVectorD &v1)
+{
+	// TODO: implement raytrace
+	return false;
+}
+
+// ***************************************************************************
 
 
 // end of CGlobalRetriever methods implementation

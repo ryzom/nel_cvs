@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.1 2001/02/28 14:01:33 berenguier Exp $
+ * $Id: u_instance.h,v 1.1 2001/02/28 16:19:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_U_INSTANCE_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/u_transform.h"
+#include "nel/3d/tmp/u_transform.h"
 
 
 namespace NL3D

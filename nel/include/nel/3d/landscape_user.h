@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.1 2001/02/28 14:42:29 berenguier Exp $
+ * $Id: landscape_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_LANDSCAPE_USER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/u_landscape.h"
+#include "nel/3d/tmp/u_landscape.h"
 #include "nel/3d/landscape_model.h"
 #include "nel/3d/zone_manager.h"
 #include "nel/3d/scene.h"

@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.1 2001/02/28 14:42:29 berenguier Exp $
+ * $Id: transform_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_TRANSFORM_USER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/u_transform.h"
+#include "nel/3d/tmp/u_transform.h"
 #include "nel/3d/transform.h"
 #include "nel/3d/scene.h"
 

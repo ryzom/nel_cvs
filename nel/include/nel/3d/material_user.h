@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.1 2001/02/28 14:42:29 berenguier Exp $
+ * $Id: material_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_MATERIAL_USER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/u_material.h"
+#include "nel/3d/tmp/u_material.h"
 #include "nel/3d/material.h"
 #include "nel/3d/texture_user.h"
 

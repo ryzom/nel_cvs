@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.1 2001/02/28 14:43:18 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.2 2001/02/28 16:19:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,14 +24,14 @@
  */
 
 #include "nel/3d/driver_user.h"
-#include "nel/3d/u_driver.h"
+#include "nel/3d/tmp/u_driver.h"
 #include "nel/3d/dru.h"
 #include "nel/3d/scene.h"
 #include "nel/3d/text_context_user.h"
 #include "nel/3d/texture_user.h"
 #include "nel/3d/material_user.h"
 #include "nel/3d/scene_user.h"
-#include "nel/3d/u_camera.h"
+#include "nel/3d/tmp/u_camera.h"
 
 
 using namespace NLMISC;

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.1 2001/02/28 14:42:29 berenguier Exp $
+ * $Id: driver_user.h,v 1.2 2001/02/28 16:19:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_DRIVER_USER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/u_driver.h"
+#include "nel/3d/tmp/u_driver.h"
 #include "nel/3d/driver.h"
 #include "nel/3d/register_3d.h"
 #include "nel/3d/vertex_buffer.h"

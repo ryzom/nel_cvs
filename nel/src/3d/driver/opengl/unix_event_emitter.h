@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.h
  * <File description>
  *
- * $Id: unix_event_emitter.h,v 1.2 2001/02/08 10:02:29 lecroart Exp $
+ * $Id: unix_event_emitter.h,v 1.3 2002/02/07 18:08:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,6 @@
 
 #ifdef NL_OS_UNIX
 
-#define	GL_GLEXT_PROTOTYPES
 
 #include <GL/gl.h>
 #include <GL/glx.h>

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.108 2002/01/18 10:08:12 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.109 2002/02/07 18:08:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,8 @@
 
 #else // NL_OS_UNIX
 
-#define	GL_GLEXT_PROTOTYPES
+#define GLX_GLXEXT_PROTOTYPES
+
 #include <GL/glx.h>
 
 #ifdef XF86VIDMODE

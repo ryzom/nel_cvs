@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.5 2001/12/13 18:03:26 valignat Exp $
+ * $Id: unix_event_emitter.cpp,v 1.6 2002/02/07 18:08:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,6 @@
 
 #include <X11/keysym.h>
 
-#define	GL_GLEXT_PROTOTYPES
 
 #include <GL/gl.h>
 #include <GL/glx.h>

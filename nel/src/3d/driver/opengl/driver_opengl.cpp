@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.134 2002/01/18 10:08:12 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.135 2002/02/07 18:08:50 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -37,7 +37,6 @@
 
 #else // NL_OS_UNIX
 
-#define	GL_GLEXT_PROTOTYPES
 #include <GL/glx.h>
 
 #endif // NL_OS_UNIX

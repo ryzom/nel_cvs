@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.20 2002/01/23 14:27:22 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.21 2002/02/28 15:17:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -304,7 +304,7 @@ void CBufFIFO::resize (uint32 size)
 	uint8 *NewBuffer = new uint8[size];
 	if (NewBuffer == NULL)
 	{
-		nlerror("Not enough memory to resize the FIFO");
+		nlerror("Not enough memory to resize the FIFO to %u bytes", size);
 	}
 	memset (NewBuffer, '-', size);
 

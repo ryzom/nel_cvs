@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.14 2002/01/15 13:36:33 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.15 2002/03/14 09:49:04 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,7 +184,7 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					if (cwd->_PosInHistory < cwd->_History.size()-1)
 						cwd->_PosInHistory++;
 
-					if (!cwd->_History.empty())
+					if (!cwd->_History.empty() && cwd->_PosInHistory < cwd->_History.size())
 					{
 						SendMessage (cwd->_HInputEdit, WM_SETTEXT, (WPARAM)0, (LPARAM)cwd->_History[cwd->_PosInHistory].c_str());
 						SendMessage (cwd->_HInputEdit, EM_SETSEL, (WPARAM)cwd->_History[cwd->_PosInHistory].size(), (LPARAM)cwd->_History[cwd->_PosInHistory].size());

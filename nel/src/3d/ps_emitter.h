@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.9 2001/07/17 15:54:08 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.10 2001/08/06 10:03:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,34 +38,9 @@ namespace NL3D {
 
 
 /**
- * this struct is used for describing the frequency of emission 
- */
- 
-/*struct CPSFrequency
-{
-	// the frequency for emission.
-	enum TFreqType { regular = 0, onDeath = 1,  once = 2, onBounce = 3 } _FreqType ;
-	// the period of emission (fill that when needed)
-	float _Period ;	
-	// the number of located to generate each time an emission occurs
-	uint32 _GenNb ;
-
-	/// ctor an emitter that emit one particle each frame
-	CPSFrequency() : _FreqType(regular), _Period(0.0f), _GenNb(1)
-	{
-	}
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
-} ;*/
-
-
-
-
-
-
-/**
- * base class for all emitters in a particle system
- * Derivers should at least define the emit method which is called each time an emission is needed
- * Not sharable.
+ * Base class for all emitters in a particle system.
+ * Derivers should at least define the emit method which is called each time an emission is needed.
+ * Emitter are not sharable between system, and in the same system.
  * 
  * \author Nicolas Vizerie
  * \author Nevrax France
@@ -75,106 +50,108 @@ class CPSEmitter : public CPSLocatedBindable
 {
 public:
 
-	/// Constructor
-	CPSEmitter();
+	/// \name Object
+	//@{
+		/// Constructor
+		CPSEmitter();
+
+		// dtor
+		virtual ~CPSEmitter() ;
+	//@}
+
+	/// Return this bindable type
+	uint32							getType(void) const { return PSEmitter ; }
 
 
-	// dtor
-	virtual ~CPSEmitter() ;
+	/// Return priority for forces
+	virtual uint32					getPriority(void) const { return 500 ; }
 
-	/// return this bindable type
-	uint32 getType(void) const { return PSEmitter ; }
-
-
-	/// return priority for forces
-	virtual uint32 getPriority(void) const { return 500 ; }
-
-	/// return true if this located bindable derived class holds alive emitters
-	virtual bool hasEmitters(void) { nlassert(_Owner) ; return _Owner->getSize() != 0 ; }
-	
+	/// Return true if this located bindable derived class holds alive emitters
+	virtual bool					hasEmitters(void) { nlassert(_Owner) ; return _Owner->getSize() != 0 ; }
+		
 	/**
 	* Process the emissions.
 	* The standard behaviuour will call "emit" each time is needed.
 	* So you don't need to redefine this most of the time
 	*
 	*/
-	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
+	virtual void					step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
 	
 
-	/// display the emitter in edition mode
-	virtual void showTool(void)  ;
+	/// Display the emitter in edition mode
+	virtual void					showTool(void)  ;
 
-	/// set thetype of located to be emitted. THIS MUST BE CALLED
-	void setEmittedType(CPSLocated *et) ;
+	/// Set the type of located to be emitted. The default is NULL which mean that no emission will occur
+	void							setEmittedType(CPSLocated *et) ;
 
 	/** Inherited from CPSLocatedBindable
-	 * we register to the emitted type, so, this, this will be called when it is detroyed
+	 *  We register to the emitted type, so, this, this will be called when it is detroyed
 	 */
-	virtual void notifyTargetRemoved(CPSLocated *ptr)  ;
+	virtual void					notifyTargetRemoved(CPSLocated *ptr)  ;
 
-	/// get emitted type
-	CPSLocated *getEmittedType(void) { return _EmittedType ; }
-	/// get const ptr on emitted type
-	const CPSLocated *getEmittedType(void) const { return _EmittedType ; }
-
-
+	/// Fet emitted type.
+	CPSLocated						*getEmittedType(void) { return _EmittedType ; }
+	/// Get const ptr on emitted type
+	const CPSLocated				*getEmittedType(void) const { return _EmittedType ; }
 
 
-	/** the type of emission emission.
-	 *  regular means use Period, and generation number
-	 *  onDeath : when the particle is destroyed
-	 *  once : when the particle is created
-	 *  onBounce : when the particle bounce
+
+
+	/** The type of emission.
+	 *  regular     : means use Period, and generation number
+	 *  onDeath     : emit when the particle is destroyed
+	 *  once        : emit when the particle is created
+	 *  onBounce    : emit when the particle bounce
 	 */
 	enum TEmissionType { regular = 0, onDeath = 1,  once = 2, onBounce = 3 } ;
 
 	/// set the frequency type
-	void setEmissionType(TEmissionType freqType) { _EmissionType = freqType ; }
+	void							setEmissionType(TEmissionType freqType) { _EmissionType = freqType ; }
 
 	/// get the frequency type
-	TEmissionType getEmissionType(void) const { return _EmissionType ; }
+	TEmissionType					getEmissionType(void) const { return _EmissionType ; }
 
 
 	/** set a constant period for emission (expressed in second)
 	 *  any previous period scheme is discarded
 	 */
-	void setPeriod(float period) ;
+	void							setPeriod(float period) ;
 
 	/// retrieve the period for emission, valid only if a period scheme is used
-	float getPeriod(void) const { return _Period ; }
+	float							getPeriod(void) const { return _Period ; }
 
 	/// indicate whether a period scheme is used or not
-	bool usePeriodScheme(void) { return _PeriodScheme != NULL ; }
+	bool							usePeriodScheme(void) { return _PeriodScheme != NULL ; }
 
 	/// set a period scheme
-	void setPeriodScheme(CPSAttribMaker<float> *scheme) ;
+	void							setPeriodScheme(CPSAttribMaker<float> *scheme) ;
 
 	// Retrieve the period scheme, or null, if there'isnt
-	CPSAttribMaker<float> *getPeriodScheme(void) { return _PeriodScheme ; }
+	CPSAttribMaker<float>			*getPeriodScheme(void) { return _PeriodScheme ; }
 
 	// Retrieve the period scheme, or null, if there'isnt (const version)
-	const CPSAttribMaker<float> *getPeriodScheme(void) const  { return _PeriodScheme ; }
+	const CPSAttribMaker<float>		*getPeriodScheme(void) const  { return _PeriodScheme ; }
 
 
 	/** set a constant number of particle to be generated at once
 	 *  any previous scheme is discarded
 	 */
-	void setGenNb(uint32 GenNb) ;
+	void							setGenNb(uint32 GenNb) ;
 
 	/// retrieve the GenNb for emission, valid only if a GenNb scheme is used
-	uint getGenNb(void) const { return _GenNb ; }
+	uint							getGenNb(void) const { return _GenNb ; }
 
 	/// indicate whether a GenNb scheme is used or not
-	bool useGenNbScheme(void) { return _GenNbScheme != NULL ; }
+	bool							useGenNbScheme(void) { return _GenNbScheme != NULL ; }
 
 	/// set a GenNb scheme
-	void setGenNbScheme(CPSAttribMaker<uint32> *scheme) ;
+	void							setGenNbScheme(CPSAttribMaker<uint32> *scheme) ;
 
 	/// Retrieve the GenNb scheme, or null, if there'isnt
-	CPSAttribMaker<uint32> *getGenNbScheme(void) { return _GenNbScheme ; }
+	CPSAttribMaker<uint32>			*getGenNbScheme(void) { return _GenNbScheme ; }
 
 	/// Retrieve the GenNb scheme, or null, if there'isnt (const version)
-	const CPSAttribMaker<uint32> *getGenNbScheme(void) const  { return _GenNbScheme ; }
+	const CPSAttribMaker<uint32>	*getGenNbScheme(void) const  { return _GenNbScheme ; }
 
 	/// serialization
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
@@ -183,19 +160,19 @@ public:
 	/** set a factor, to add the emitter speed to the emittee creation speed. this can be < 0
 	 *  The default is 0
 	 */	 
-	void setSpeedInheritanceFactor(float fact)
+	void							setSpeedInheritanceFactor(float fact)
 	{
 		_SpeedInheritanceFactor = fact ;
 	}
 
 	/// get the speed Inheritance factor 
-	float getSpeedInheritanceFactor(void) const
+	float							getSpeedInheritanceFactor(void) const
 	{
 		return _SpeedInheritanceFactor ;
 	}
 
 	/// this use the speed of the emitter create a basis (like with cameras), and express the emission speed in it
-	void enableSpeedBasisEmission(bool enabled = true)
+	void							enableSpeedBasisEmission(bool enabled = true)
 	{
 		_SpeedBasisEmission  = enabled ;
 	}
@@ -203,13 +180,13 @@ public:
 	/** check if the speed basis emission is enabled
 	 *  \see enableSpeedBasisEmission()
 	 */
-	bool isSpeedBasisEmissionEnabled(void) const { return _SpeedBasisEmission ; }
+	bool							isSpeedBasisEmissionEnabled(void) const { return _SpeedBasisEmission ; }
 	
 
 protected:
 
 	/// this will call emit, and will add additionnal features (speed addition and so on)
-	inline void processEmit(uint32 index, sint nbToGenerate) ;
+	inline void						processEmit(uint32 index, sint nbToGenerate) ;
 
 
 	/** This method is called each time one (and only one) located must be emitted.
@@ -218,44 +195,40 @@ protected:
 	 *  \param pos the resulting pos of the particle, expressed in the emitter basis
 	 *  \param speed the reulting speed of the emitter, expressed in the emitter basis
 	 */
-	virtual void emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) = 0 ;
-
-	/// a pointer on the type to be emitted
-	CPSLocated *_EmittedType ;
-
-	/** the phase (  0 < phase  < period of emission)
-     *  its usage depends on the freq member
-	 */
-	TPSAttribFloat _Phase ; 
-
-
-	float _SpeedInheritanceFactor ;
-
-	bool _SpeedBasisEmission ;
+	virtual void					emit(uint32 index, NLMISC::CVector &pos, NLMISC::CVector &speed) = 0 ;
 
 	/**	Generate a new element for this bindable. They are generated according to the propertie of the class		 
 	 */
-	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
+	virtual void					newElement(CPSLocated *emitterLocated, uint32 emitterIndex) ;
 	
 	/** Delete an element given its index
 	 *  Attributes of the located that hold this bindable are still accessible for of the index given
 	 *  index out of range -> nl_assert
 	 */
-	virtual void deleteElement(uint32 index) ;
+	virtual void					deleteElement(uint32 index) ;
 
 	/** Resize the bindable attributes containers. DERIVERS SHOULD CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
 	 */
-	virtual void resize(uint32 size) ;
+	virtual void					resize(uint32 size) ;
+
+	virtual void					bounceOccured(uint32 index) ;	
 
 
-	virtual void bounceOccured(uint32 index) ;	
+	/// a pointer on the type to be emitted
+	CPSLocated						*_EmittedType ;
 
-	TEmissionType _EmissionType ;
+	/** the phase (  0 < phase  < period of emission). This is the time ellapsed since the last emission    
+	 */
+	TPSAttribFloat					_Phase ; 
+
+	float							_SpeedInheritanceFactor ;
+	bool							_SpeedBasisEmission ;
+	TEmissionType					_EmissionType ;
 	float _Period ;
-	CPSAttribMaker<float> *_PeriodScheme ;			
+	CPSAttribMaker<float>			*_PeriodScheme ;			
 	uint32 _GenNb ;
-	CPSAttribMaker<uint32> *_GenNbScheme ;	
+	CPSAttribMaker<uint32>			*_GenNbScheme ;	
 
 
 

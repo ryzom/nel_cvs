@@ -31,7 +31,7 @@
 	using namespace NLAIFUZZY;
 
 	CLocWordNumRef::tMapRef *CLocWordNumRef::_LocRefence = new CLocWordNumRef::tMapRef;
-	CIndexVariant<uint64,maxIndex>	CNumericIndex::_I = CIndexVariant<uint64,maxIndex,maxResolutionNumer>((uint64)0);
+	CIndexVariant<uint64,maxIndex,maxResolutionNumer>	CNumericIndex::_I = CIndexVariant<uint64,maxIndex,maxResolutionNumer>((uint64)0);
 	CIndexVariant<uint64,maxIndex,maxResolutionNumer> CNumericIndex::LocalServerID = CIndexVariant<uint64,maxIndex,maxResolutionNumer>((uint64)0);
 	sint CNumericIndex::ShiftLocalServerMask = 16;
 

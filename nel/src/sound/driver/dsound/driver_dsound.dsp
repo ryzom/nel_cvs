@@ -67,7 +67,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 nlsound_lowlevel_d.lib kernel32.lib winspool.lib comdlg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib nlmisc_d.lib eax.lib eaxguid.lib user32.lib gdi32.lib advapi32.lib dsound.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_d.dll"
+# ADD LINK32 nlsound_lowlevel_d.lib kernel32.lib winspool.lib comdlg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib nlmisc_d.lib eax.lib eaxguid.lib user32.lib gdi32.lib advapi32.lib dsound.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_d.dll" /pdbtype:sept
 
 !ELSEIF  "$(CFG)" == "driver_dsound - Win32 ReleaseDebug"
 
@@ -86,7 +86,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 nlsound_lowlevel_rd.lib kernel32.lib winspool.lib comdlg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib nlmisc_rd.lib eax.lib eaxguid.lib user32.lib gdi32.lib advapi32.lib dsound.lib /nologo /dll /debug /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_rd.dll"
+# ADD LINK32 nlsound_lowlevel_rd.lib kernel32.lib winspool.lib comdlg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib nlmisc_rd.lib eax.lib eaxguid.lib user32.lib gdi32.lib advapi32.lib dsound.lib /nologo /dll /debug /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_rd.dll" /pdbtype:sept
 # SUBTRACT LINK32 /incremental:yes
 
 !ELSEIF  "$(CFG)" == "driver_dsound - Win32 DebugFast"
@@ -106,7 +106,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /machine:IX86
-# ADD LINK32 nlsound_lowlevel_df.lib kernel32.lib winspool.lib comdlg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib nlmisc_df.lib eax.lib eaxguid.lib user32.lib gdi32.lib advapi32.lib dsound.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_df.dll"
+# ADD LINK32 nlsound_lowlevel_df.lib kernel32.lib winspool.lib comdlg32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib nlmisc_df.lib eax.lib eaxguid.lib user32.lib gdi32.lib advapi32.lib dsound.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../../lib/nel_drv_dsound_win_df.dll" /pdbtype:sept
 
 !ENDIF 
 

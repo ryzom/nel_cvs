@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.41 2002/06/24 10:23:49 lecroart Exp $
+ * $Id: path.cpp,v 1.42 2002/06/28 19:38:28 hanappe Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -484,7 +484,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 				continue;
 			}
 
-			string stdName = standardizePath(path + fn);
+			string stdName = standardizePath(standardizePath(path) + fn);
 			if (recurse)
 			{
 				NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): need to recurse into '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());

@@ -1,7 +1,7 @@
 /** \file mold_elt_define.cpp
  * Georges system files
  *
- * $Id: mold_elt_define.cpp,v 1.1 2002/02/14 10:40:39 corvazier Exp $
+ * $Id: mold_elt_define.cpp,v 1.2 2002/02/21 16:54:42 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "stdgeorges.h"
-#include "nel/georges/loader.h"
+#include "nel/georges/georges_loader.h"
 #include "nel/georges/mold_elt_define.h"
 #include "nel/georges/form_body_elt_struct.h"
 

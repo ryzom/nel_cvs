@@ -1,7 +1,7 @@
 /** \file mold_loader.cpp
  * Georges system files
  *
- * $Id: mold_loader.cpp,v 1.1 2002/02/14 10:40:40 corvazier Exp $
+ * $Id: mold_loader.cpp,v 1.2 2002/02/21 16:54:42 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/georges/mold_elt_type.h"
 #include "nel/georges/mold_elt_define_list.h"
 #include "nel/georges/mold_elt_type_list.h"
-#include "nel/georges/loader.h"
+#include "nel/georges/georges_loader.h"
 
 namespace NLGEORGES
 {

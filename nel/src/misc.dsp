@@ -166,6 +166,10 @@ SOURCE=..\include\nel\misc\assert.h
 # End Source File
 # Begin Source File
 
+SOURCE=R:\code\nel\include\nel\misc\smart_ptr.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\displayer.cpp
 # End Source File
 # Begin Source File

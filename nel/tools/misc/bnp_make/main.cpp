@@ -24,7 +24,7 @@ struct BNPHeader
 	// Append the header to the big file
 	bool append (const string &filename)
 	{
-		FILE *f = fopen(filename.c_str(), "ab");
+		FILE *f = fopen (filename.c_str(), "ab");
 		if (f == NULL) return false;
 
 		uint32 nNbFile = Files.size();
@@ -41,7 +41,45 @@ struct BNPHeader
 
 		fclose (f);
 		return true;
+	}
 
+	// Read the header from a big file
+	bool read (const string &filename)
+	{
+		FILE *f = fopen (filename.c_str(), "rb");
+		if (f == NULL) return false;
+
+		fseek (f, 0, SEEK_END);
+		uint32 nFileSize = ftell (f);
+		fseek (f, nFileSize-sizeof(uint32), SEEK_SET);
+		uint32 nOffsetFromBegining;
+		fread (&nOffsetFromBegining, sizeof(uint32), 1, f);
+		if (fseek (f, nOffsetFromBegining, SEEK_SET) != 0)
+			return false;
+		
+		uint32 nNbFile;
+		if (fread (&nNbFile, sizeof(uint32), 1, f) != 1)
+			return false;
+		for (uint32 i = 0; i < nNbFile; ++i)
+		{
+			uint8 nStringSize;
+			char sName[256];
+			if (fread (&nStringSize, 1, 1, f) != 1)
+				return false;
+			if (fread (sName, 1, nStringSize, f) != nStringSize)
+				return false;
+			sName[nStringSize] = 0;
+			BNPFile tmpBNPFile;
+			tmpBNPFile.Name = sName;
+			if (fread (&tmpBNPFile.Size, sizeof(uint32), 1, f) != 1)
+				return false;
+			if (fread (&tmpBNPFile.Pos, sizeof(uint32), 1, f) != 1)
+				return false;
+			Files.push_back (tmpBNPFile);
+		}
+
+		fclose (f);
+		return true;
 	}
 };
 
@@ -100,6 +138,32 @@ void packSubRecurse ()
 }
 
 // ---------------------------------------------------------------------------
+void unpack (const string &dirName)
+{
+	FILE *bnp = fopen (gDestBNPFile.c_str(), "rb");
+	FILE *out;
+	if (bnp == NULL)
+		return;
+
+	for (uint32 i = 0; i < gBNPHeader.Files.size(); ++i)
+	{
+		BNPFile &rBNPFile = gBNPHeader.Files[i];
+		string filename = dirName + "\\" + rBNPFile.Name;
+		out = fopen (filename.c_str(), "wb");
+		if (out != NULL)
+		{
+			fseek (bnp, rBNPFile.Pos, SEEK_SET);
+			uint8 *ptr = new uint8[rBNPFile.Size];
+			fread (ptr, rBNPFile.Size, 1, bnp);
+			fwrite (ptr, rBNPFile.Size, 1, out);
+			fclose (out);
+			delete ptr;
+		}
+	}
+	fclose (bnp);
+}
+
+// ---------------------------------------------------------------------------
 void usage()
 {
 	printf ("USAGE : \n");
@@ -136,7 +200,40 @@ int main (int nNbArg, char **ppArgs)
 	if ((strcmp(ppArgs[1], "/u") == 0) || (strcmp(ppArgs[1], "/U") == 0) ||
 		(strcmp(ppArgs[1], "-u") == 0) || (strcmp(ppArgs[1], "-U") == 0))
 	{
+		int i;
+		string path;
+		gDestBNPFile = ppArgs[2];
+		if ((gDestBNPFile.rfind('\\') != string::npos) || (gDestBNPFile.rfind('/') != string::npos))
+		{
+			int pos = gDestBNPFile.rfind('\\');
+			if (pos == string::npos)
+				pos = gDestBNPFile.rfind('/');
+			for (i = 0; i <= pos; ++i)
+				path += gDestBNPFile[i];
+			string wholeName = gDestBNPFile;
+			gDestBNPFile = "";
+			for (; i < (int)wholeName.size(); ++i)
+				gDestBNPFile += wholeName[i];
+			char sCurDir[MAX_PATH];
+			chdir (path.c_str());
+			getcwd (sCurDir, MAX_PATH);
+			path = sCurDir;
+		}
+		if (stricmp (gDestBNPFile.c_str()+gDestBNPFile.size()-4, ".bnp") != 0)
+		{
+			gDestBNPFile += ".bnp";
+		}
+		string dirName;
+		for (i = 0; i < (int)(gDestBNPFile.size()-4); ++i)
+			dirName += gDestBNPFile[i];
 		// Unpack a bnp file
+		if (!gBNPHeader.read (gDestBNPFile))
+			return -1;
+
+		mkdir (dirName.c_str());
+
+		unpack (dirName);
+
 		return 1;
 	}
 

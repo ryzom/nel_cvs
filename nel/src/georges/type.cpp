@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.9 2002/09/05 14:12:12 corvazier Exp $
+ * $Id: type.cpp,v 1.10 2002/09/06 14:48:03 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/i_xml.h"
 #include "nel/misc/eval_num_expr.h"
+#include "nel/misc/path.h"
 #include "nel/georges/u_type.h"
 
 #include "georges/form.h"
@@ -342,8 +343,8 @@ public:
 			if (strcmp (value, "$filename") == 0)
 			{
 				// Get the filename
-				const string &filename = Form->getFilename ();
-
+				const string filename = CFile::getFilenameWithoutExtension (Form->getFilename ());
+		
 				// While the filename as a number
 				sint i;
 				for (i=filename.size ()-1; i>=0; i--)

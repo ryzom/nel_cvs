@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.23 2003/05/19 13:08:17 berenguier Exp $
+ * $Id: scene_group.h,v 1.24 2003/05/26 09:01:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,6 +117,12 @@ public:
 		 *	If 0xFF => take Ambient of the sun.
 		 */
 		uint8	LocalAmbientId;
+		/** if true (false by default), the instance don't cast shadow, but ONLY FOR ig_lighter.exe (ig_lighter_lib) 
+		 *	(zone_lighter and zone_ig_lighter ignore it).
+		 *	This is a special trick for the "Matis Serre" where the exterior mesh cast shadow in the interior, but
+		 *	is not visible in the interior in realTime because of cluster clipping.... omg :(
+		 */
+		bool	DontCastShadowForIgLighter;
 
 
 		/// Constructor
@@ -326,7 +332,7 @@ public:
 	void			setPointLightFactor(const CScene &scene);
 
 	/// See CIGSurfaceLight::getStaticLightSetup()
-	bool			getStaticLightSetup(const std::string &retrieverIdentifier, sint surfaceId, const CVector &localPos,
+	bool			getStaticLightSetup(uint retrieverIdentifier, sint surfaceId, const CVector &localPos,
 		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 	{
 		return _IGSurfaceLight.getStaticLightSetup(retrieverIdentifier, surfaceId, localPos,

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.24 2004/09/02 16:55:17 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.25 2004/09/03 09:03:40 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1012,7 +1012,7 @@ private:
 	{
 		H_AUTO_D3D(CDriverD3D_setRenderState);
 		#ifdef NL_DEBUG
-			nlassert (_DeviceInterface);B
+			nlassert (_DeviceInterface);
 			nlassert (renderState<MaxRenderState);
 		#endif
 		// Ref on the state

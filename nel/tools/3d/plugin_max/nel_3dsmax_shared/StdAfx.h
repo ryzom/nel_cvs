@@ -1,7 +1,7 @@
 /** \file stdafx.h
  *
  *
- * $Id: StdAfx.h,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: StdAfx.h,v 1.2 2002/08/08 11:01:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,13 +39,17 @@
 // Insert your headers here
 #define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
 
-#include <windows.h>
-
 #include <max.h>
 #include <iparamb2.h>
 #include <istdplug.h>
 #include <iparamm2.h>
 #include <utilapi.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 // TODO: reference additional headers your program requires here
 

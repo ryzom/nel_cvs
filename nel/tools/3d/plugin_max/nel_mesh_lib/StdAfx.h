@@ -1,7 +1,7 @@
 /** \file stdafx.h
  * <File description>
  *
- * $Id: StdAfx.h,v 1.3 2001/07/18 12:21:51 vizerie Exp $
+ * $Id: StdAfx.h,v 1.4 2002/08/08 11:01:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,12 @@
 // Character Studio SDK include
 #include <bipexp.h>
 #include <phyexp.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 #include <string>
 #include <vector>

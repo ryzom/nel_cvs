@@ -1,7 +1,7 @@
 /** \file po2rpo.h
  * <File description>
  *
- * $Id: PO2RPO.h,v 1.2 2001/08/10 07:54:44 corvazier Exp $
+ * $Id: PO2RPO.h,v 1.3 2002/08/08 11:01:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,12 @@
 #include "iparamm2.h"
 
 #include "meshadj.h"
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 
 #define PO2RPO_CLASS_ID Class_ID(0x43bb65e6, 0x68935530)
 

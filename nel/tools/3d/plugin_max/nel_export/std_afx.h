@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.3 2002/01/03 13:12:56 corvazier Exp $
+ * $Id: std_afx.h,v 1.4 2002/08/08 11:01:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,3 +45,9 @@
 #include <stdmat.h>
 #include <definsfn.h>
 #include <animtbl.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif

@@ -4,3 +4,9 @@
 #include "decomp.h"
 #include "buildver.h"
 #include <iparamb2.h>
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif

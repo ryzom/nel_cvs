@@ -1,7 +1,7 @@
 /** \file tile_utility.cpp
  * <File description>
  *
- * $Id: tile_utility.cpp,v 1.4 2001/08/10 08:40:25 corvazier Exp $
+ * $Id: tile_utility.cpp,v 1.5 2002/08/08 11:02:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,12 @@
 #include <max.h>
 #include <stdmat.h>
 #include "tile_utility.h"
+#ifdef min
+#undef min
+#endif
+#ifdef max
+#undef max
+#endif
 #include <3d/tile_bank.h>
 #include <nel/misc/file.h>
 #include "../nel_patch_lib/rpo.h"

@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "logic_editor"=..\logic_editor\logic_editor.dsp - Package Owner=<4>
+Project: "logic_editor_dll"=..\logic_editor_dll\logic_editor_dll.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -25,6 +25,9 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name logic_editor
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name logic_editor_dll
     End Project Dependency
 }}}
 

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.38 2003/03/20 17:54:27 lecroart Exp $
+ * $Id: bitmap.cpp,v 1.39 2003/04/16 10:29:52 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -995,10 +995,20 @@ bool CBitmap::decompressDXT1(bool alpha)
 			uncompress(color0,c[0]);
 			uncompress(color1,c[1]);	
 			
-			c[0].A= 0;
-			c[1].A= 0;
-			c[2].A= 0;
-			c[3].A= 0;
+			if (alpha)
+			{			
+				c[0].A= 0;
+				c[1].A= 0;
+				c[2].A= 0;
+				c[3].A= 0;
+			}
+			else
+			{
+				c[0].A= 255;
+				c[1].A= 255;
+				c[2].A= 255;
+				c[3].A= 255;
+			}
 			
 			if(color0>color1)
 			{

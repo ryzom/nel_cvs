@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.24 2002/09/10 09:24:49 cado Exp $
+ * $Id: mem_stream.h,v 1.25 2002/10/07 09:28:55 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -665,20 +665,7 @@ inline	void		CMemStream::serial(bool &b)
 	}
 	else
 	{
-#ifdef NL_LITTLE_ENDIAN
-		if(isReading())
-		{
-			b = (*(uint8*)_BufPos) == 1;
-			_BufPos += sizeof(uint8);
-		}
-		else
-		{
-			*(uint8*)_BufPos = b;
-			_BufPos += sizeof(uint8);
-		}
-#else // NL_LITTLE_ENDIAN
-		IStream::serial( b );
-#endif // NL_LITTLE_ENDIAN
+		fastSerial (b);
 	}
 }
 

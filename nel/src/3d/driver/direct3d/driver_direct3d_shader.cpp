@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.13 2004/12/09 09:38:40 lecroart Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.14 2004/12/15 18:08:05 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -747,8 +747,15 @@ public:
 	}
 	virtual void apply(class CDriverD3D &drv)
 	{
-		nlassert(Texture);
-		drv.setTexture(Stage, Texture);
+		nlassert(Texture);		
+		if (TexRef)
+		{
+			drv.setTexture(Stage, TexRef);
+		}
+		else
+		{
+			drv.setTexture(Stage, Texture);
+		}		
 	}	
 };
 //

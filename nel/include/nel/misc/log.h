@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.34 2003/11/18 13:45:36 lecroart Exp $
+ * $Id: log.h,v 1.35 2004/09/22 17:12:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,20 +59,20 @@ public:
 	// Debug information
 	struct TDisplayInfo
 	{
-		TDisplayInfo() : Date(0), LogType(CLog::LOG_NO), ThreadId(0), Filename(NULL), Line(-1) {}
+		TDisplayInfo() : Date(0), LogType(CLog::LOG_NO), ThreadId(0), FileName(NULL), Line(-1), FuncName(NULL) {}
 		
 		time_t				Date;
-		TLogType		LogType;
+		TLogType			LogType;
 		std::string			ProcessName;
 		uint				ThreadId;
-		const char			*Filename;
+		const char			*FileName;
 		sint				Line;
+		const char			*FuncName;
 
 		std::string			CallstackAndLog;	// contains the callstack and a log with not filter of N last line (only in error/assert log type)
 	};
 
-
-	CLog(TLogType logType = LOG_NO);
+	CLog (TLogType logType = LOG_NO);
 
 	/// Add a new displayer in the log. You have to create the displayer, remove it and delete it when you have finish with it.
 	/// For example, in a 3dDisplayer, you can add the displayer when you want, and the displayer displays the string if the 3d
@@ -89,10 +89,10 @@ public:
 	void removeDisplayer (const char *displayerName);
 
 	/// Returns true if the specified displayer is attached to the log object
-	bool attached(IDisplayer *displayer) const;
+	bool attached (IDisplayer *displayer) const;
 	
 	/// Returns true if no displayer is attached
-	bool noDisplayer() const { return _Displayers.empty() && _BypassFilterDisplayers.empty(); }
+	bool noDisplayer () const { return _Displayers.empty() && _BypassFilterDisplayers.empty(); }
 
 
 	/// Set the name of the process
@@ -102,7 +102,7 @@ public:
 	static void setDefaultProcessName ();
 
 	/// If !noDisplayer(), sets line and file parameters, and enters the mutex. If !noDisplayer(), don't forget to call display...() after, to release the mutex.
-	void setPosition (sint line, char *fileName);
+	void setPosition (sint line, char *fileName, char *funcName = NULL);
 
 
 #ifdef NL_OS_WINDOWS
@@ -200,27 +200,28 @@ protected:
 	/// Returns true if the string must be logged, according to the current filter
 	bool passFilter( const char *filter );
 
-	TLogType                          _LogType;
-	static std::string		          *_ProcessName;
+	TLogType							 _LogType;
+	static std::string					*_ProcessName;
 
-	sint                              _Line;
-	char                             *_FileName;
+	char								*_FileName;
+	sint								 _Line;
+	char								*_FuncName;
 
-	typedef std::list<IDisplayer *> CDisplayers;
+	typedef std::list<IDisplayer *>		 CDisplayers;
 
-	CDisplayers                       _Displayers;
+	CDisplayers							 _Displayers;
 
-	CDisplayers                       _BypassFilterDisplayers;	// these displayers always log info (by pass filter system)
+	CDisplayers							 _BypassFilterDisplayers;	// these displayers always log info (by pass filter system)
 
-	CMutex							  _Mutex;
+	CMutex								 _Mutex;
 
-	uint32							  _PosSet;
+	uint32								 _PosSet;
 
 	/// "Discard" filter
-	std::list<std::string>			  _NegativeFilter;
+	std::list<std::string>				 _NegativeFilter;
 
 	/// "Crop" filter
-	std::list<std::string>			  _PositiveFilter;
+	std::list<std::string>				 _PositiveFilter;
 
 	/// Display a string in decorated form to all attached displayers.
 	void displayString (const char *str);
@@ -228,9 +229,8 @@ protected:
 	/// Display a Raw string to all attached displayers.
 	void displayRawString (const char *str);
 
-	std::string							TempString;
-	TDisplayInfo						TempArgs;
-
+	std::string							 TempString;
+	TDisplayInfo						 TempArgs;
 
 };
 

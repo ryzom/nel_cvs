@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.13 2004/06/14 15:04:41 cado Exp $
+ * $Id: mem_displayer.cpp,v 1.14 2004/09/22 17:12:30 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -326,7 +326,7 @@ void CMemDisplayer::setParam (uint32 maxStrings)
 }
 
 
-// Log format: "2000/01/15 12:05:30 <ProcessName> <LogType> <ThreadId> <Filename> <Line> : <Msg>"
+// Log format: "2000/01/15 12:05:30 <ProcessName> <LogType> <ThreadId> <FileName> <Line> : <Msg>"
 void CMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message )
 {
 //	stringstream	ss;
@@ -369,10 +369,10 @@ void CMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 		needSpace = true;
 	}
 
-	if (args.Filename != NULL)
+	if (args.FileName != NULL)
 	{
 		if (needSpace) { str += " "; needSpace = false; }
-		str += CFile::getFilename(args.Filename);
+		str += CFile::getFilename(args.FileName);
 		needSpace = true;
 	}
 

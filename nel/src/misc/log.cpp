@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.56 2003/11/18 13:46:15 lecroart Exp $
+ * $Id: log.cpp,v 1.57 2004/09/22 17:12:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ namespace NLMISC
 
 string *CLog::_ProcessName = NULL;
 
-CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL), _Mutex("LOG"+toString((uint)logType)), _PosSet(false)
+CLog::CLog( TLogType logType) : _LogType (logType), _FileName(NULL), _Line(-1), _FuncName(NULL), _Mutex("LOG"+toString((uint)logType)), _PosSet(false)
 {
 }
 
@@ -86,14 +86,15 @@ void CLog::setProcessName (const std::string &processName)
 	*_ProcessName = processName;
 }
 
-void CLog::setPosition (sint line, char *filename)
+void CLog::setPosition (sint line, char *fileName, char *funcName)
 {
 	if ( !noDisplayer() )
 	{
 		_Mutex.enter();
 		_PosSet++;
+		_FileName = fileName;
 	    _Line = line;
-		_FileName = filename;
+		_FuncName = funcName;
 	}
 }
 
@@ -106,6 +107,7 @@ void CLog::unsetPosition()
 	{
 		_FileName = NULL;
 		_Line = -1;
+		_FuncName = NULL;
 		_PosSet--;
 		_Mutex.leave(); // needs setPosition() to have been called
 	}
@@ -254,8 +256,9 @@ void CLog::displayString (const char *str)
 			TempArgs.LogType = _LogType;
 			TempArgs.ProcessName = *_ProcessName;
 			TempArgs.ThreadId = getThreadId();
-			TempArgs.Filename = _FileName;
+			TempArgs.FileName = _FileName;
 			TempArgs.Line = _Line;
+			TempArgs.FuncName = _FuncName;
 			TempArgs.CallstackAndLog = "";
 
 			TempString = str;
@@ -274,8 +277,9 @@ void CLog::displayString (const char *str)
 			localargs.LogType = _LogType;
 			localargs.ProcessName = *_ProcessName;
 			localargs.ThreadId = getThreadId();
-			localargs.Filename = _FileName;
+			localargs.FileName = _FileName;
 			localargs.Line = _Line;
+			localargs.FuncName = _FuncName;
 			localargs.CallstackAndLog = "";
 
 			disp = str;
@@ -374,7 +378,7 @@ void CLog::displayRawString (const char *str)
 			localargs.LogType = CLog::LOG_NO;
 			localargs.ProcessName = "";
 			localargs.ThreadId = 0;
-			localargs.Filename = NULL;
+			localargs.FileName = NULL;
 			localargs.Line = -1;
 			localargs.CallstackAndLog = "";
 
@@ -394,7 +398,7 @@ void CLog::displayRawString (const char *str)
 			localargs.LogType = CLog::LOG_NO;
 			localargs.ProcessName = "";
 			localargs.ThreadId = 0;
-			localargs.Filename = NULL;
+			localargs.FileName = NULL;
 			localargs.Line = -1;
 			localargs.CallstackAndLog = "";
 

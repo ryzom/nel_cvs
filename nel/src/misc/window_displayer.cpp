@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.15 2003/12/29 13:36:25 lecroart Exp $
+ * $Id: window_displayer.cpp,v 1.16 2004/09/22 17:12:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,10 +153,10 @@ void CWindowDisplayer::doDisplay (const NLMISC::CLog::TDisplayInfo &args, const 
 		needSpace = true;
 	}
 
-	if (args.Filename != NULL)
+	if (args.FileName != NULL)
 	{
 		if (needSpace) { str += " "; needSpace = false; }
-		str += NLMISC::toString("%20s", CFile::getFilename(args.Filename).c_str());
+		str += NLMISC::toString("%20s", CFile::getFilename(args.FileName).c_str());
 		needSpace = true;
 	}
 
@@ -165,6 +165,13 @@ void CWindowDisplayer::doDisplay (const NLMISC::CLog::TDisplayInfo &args, const 
 		if (needSpace) { str += " "; needSpace = false; }
 		str += NLMISC::toString("%4u", args.Line);
 		//ss << setw(4) << args.Line;
+		needSpace = true;
+	}
+
+	if (args.FuncName != NULL)
+	{
+		if (needSpace) { str += " "; needSpace = false; }
+		str += NLMISC::toString("%20s", args.FuncName);
 		needSpace = true;
 	}
 

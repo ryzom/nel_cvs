@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.71 2004/09/21 09:12:47 lecroart Exp $
+ * $Id: debug.h,v 1.72 2004/09/22 17:12:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,10 @@ typedef std::string (*TCrashCallback)();
 void setCrashCallback(TCrashCallback crashCallback);
 
 
+// This very amazing macro __FUNCTION__ doesn't exist on VC6, map it to NULL
+#ifndef __FUNCTION__
+#	define __FUNCTION__ NULL
+#endif // __FUNCTION__
 
 
 // Macros
@@ -102,7 +106,7 @@ void setCrashCallback(TCrashCallback crashCallback);
 #		define nldebug 0&&
 #	endif
 #else // NL_RELEASE
-#	define nldebug NLMISC::createDebug (), NLMISC::DebugLog->setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog->displayNL
+#	define nldebug NLMISC::createDebug(), NLMISC::DebugLog->setPosition( __LINE__, __FILE__, __FUNCTION__ ), NLMISC::DebugLog->displayNL
 #endif // NL_RELEASE
 
 /**
@@ -116,7 +120,7 @@ void setCrashCallback(TCrashCallback crashCallback);
 #		define nlinfo 0&&
 #	endif
 #else // NL_RELEASE
-#	define nlinfo NLMISC::createDebug (), NLMISC::InfoLog->setPosition( __LINE__, __FILE__ ), NLMISC::InfoLog->displayNL
+#	define nlinfo NLMISC::createDebug(), NLMISC::InfoLog->setPosition( __LINE__, __FILE__, __FUNCTION__ ), NLMISC::InfoLog->displayNL
 #endif // NL_RELEASE
 
 /**
@@ -144,7 +148,7 @@ void setCrashCallback(TCrashCallback crashCallback);
 #		define nlwarning 0&&
 #	endif
 #else // NL_RELEASE
-#	define nlwarning NLMISC::createDebug (), NLMISC::WarningLog->setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog->displayNL
+#	define nlwarning NLMISC::createDebug(), NLMISC::WarningLog->setPosition( __LINE__, __FILE__, __FUNCTION__ ), NLMISC::WarningLog->displayNL
 #endif // NL_RELEASE
 
 /**
@@ -163,7 +167,7 @@ void setCrashCallback(TCrashCallback crashCallback);
 	}
  *\endcode
  */
-#define nlerror NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
+#define nlerror NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__, __FUNCTION__ ), NLMISC::nlFatalError
 
 
 /**
@@ -171,7 +175,7 @@ void setCrashCallback(TCrashCallback crashCallback);
  * Same as nlerror but it doesn't generate any exceptions. It's used only in very specific case, for example, when you
  * call a nlerror in a catch block (look the service.cpp)
  */
-#define nlerrornoex NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__ ), NLMISC::nlError
+#define nlerrornoex NLMISC::createDebug (), NLMISC::ErrorLog->setPosition( __LINE__, __FILE__, __FUNCTION__ ), NLMISC::nlError
 
 
 /**
@@ -307,7 +311,7 @@ if(false)
 { \
 	if (!(exp)) { \
 		NLMISC::createDebug (); \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC_BREAKPOINT; \
 	} \
@@ -319,7 +323,7 @@ if(false)
 { \
 	if (!(exp)) { \
 		NLMISC::createDebug (); \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
 		NLMISC_BREAKPOINT; \
@@ -342,7 +346,7 @@ if(false)
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
 		else if(!NLMISC::NoAssert) \
 			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
@@ -363,7 +367,7 @@ if(false)
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
 		else if(!NLMISC::NoAssert) \
 			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
@@ -383,7 +387,7 @@ if(false)
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
 		else if(!NLMISC::NoAssert) \
 			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
@@ -404,7 +408,7 @@ if(false)
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
 		else \
 			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
@@ -424,7 +428,7 @@ if(false)
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
 		else \
 			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->displayNL ("\"%s\" ", #exp); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
@@ -443,7 +447,7 @@ if(false)
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
 		else \
 			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog->displayRawNL str; \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
@@ -467,7 +471,7 @@ if(false)
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
 		else if(!NLMISC::NoAssert) \
 			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->displayNL ("STOP"); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
@@ -488,7 +492,7 @@ if(false)
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
 		else if(!NLMISC::NoAssert) \
 			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->displayNL ("STOP"); \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \
@@ -509,7 +513,7 @@ if(false)
 			NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime = ignoreNextTime; \
 		else if(!NLMISC::NoAssert) \
 			NLMISC::DebugNeedAssert = true; \
-		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
+		NLMISC::AssertLog->setPosition (__LINE__, __FILE__, __FUNCTION__); \
 		NLMISC::AssertLog->display ("STOP "); \
 		NLMISC::AssertLog->displayRawNL str; \
 		if (NLMISC::DefaultMsgBoxDisplayer) \

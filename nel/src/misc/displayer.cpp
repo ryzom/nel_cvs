@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.61 2004/05/14 09:18:55 corvazier Exp $
+ * $Id: displayer.cpp,v 1.62 2004/09/22 17:12:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,12 +166,12 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 		needSpace = true;
 	}
 
-	if (args.Filename != NULL)
+	if (args.FileName != NULL)
 	{
 		//if (needSpace) { ss << " "; needSpace = false; }
 		if (needSpace) { str += " "; needSpace = false; }
-		//ss << CFile::getFilename(args.Filename);
-		str += CFile::getFilename(args.Filename);
+		//ss << CFile::getFilename(args.FileName);
+		str += CFile::getFilename(args.FileName);
 		needSpace = true;
 	}
 
@@ -184,6 +184,15 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 		needSpace = true;
 	}
 	
+	if (args.FuncName != NULL)
+	{
+		//if (needSpace) { ss << " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
+		//ss << args.Function;
+		str += args.FuncName;
+		needSpace = true;
+	}
+
 	if (!args.ProcessName.empty())
 	{
 		//if (needSpace) { ss << " "; needSpace = false; }
@@ -236,7 +245,7 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 		string str2;
 		needSpace = false;
 
-		if (args.Filename != NULL) str2 += args.Filename;
+		if (args.FileName != NULL) str2 += args.FileName;
 
 		if (args.Line != -1)
 		{
@@ -245,6 +254,8 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 		}
 
 		if (needSpace) { str2 += " : "; needSpace = false; }
+
+		if (args.FuncName != NULL) str2 += string(args.FuncName) + " ";
 
 		if (args.LogType != CLog::LOG_NO)
 		{
@@ -388,7 +399,7 @@ void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
 	}
 }
 
-// Log format: "2000/01/15 12:05:30 <ProcessName> <LogType> <ThreadId> <Filename> <Line> : <Msg>"
+// Log format: "2000/01/15 12:05:30 <ProcessName> <LogType> <ThreadId> <FileName> <Line> : <Msg>"
 void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message )
 {
 	bool needSpace = false;
@@ -426,10 +437,10 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 		needSpace = true;
 	}
 
-	if (args.Filename != NULL && !_Raw)
+	if (args.FileName != NULL && !_Raw)
 	{
 		if (needSpace) { str += " "; needSpace = false; }
-		str += CFile::getFilename(args.Filename);
+		str += CFile::getFilename(args.FileName);
 		needSpace = true;
 	}
 
@@ -440,6 +451,13 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 		needSpace = true;
 	}
 	
+	if (args.FuncName != NULL && !_Raw)
+	{
+		if (needSpace) { str += " "; needSpace = false; }
+		str += args.FuncName;
+		needSpace = true;
+	}
+
 	if (needSpace) { str += " : "; needSpace = false; }
 
 	str += message;
@@ -521,11 +539,11 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 		needSpace = true;
 	}
 	
-	if (args.Filename != NULL)
+	if (args.FileName != NULL)
 	{
 		//if (needSpace) { ss << " "; needSpace = false; }
 		if (needSpace) { str += " "; needSpace = false; }
-		str += CFile::getFilename(args.Filename);
+		str += CFile::getFilename(args.FileName);
 		needSpace = true;
 	}
 
@@ -534,6 +552,14 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 		//if (needSpace) { ss << " "; needSpace = false; }
 		if (needSpace) { str += " "; needSpace = false; }
 		str += NLMISC::toString(args.Line);
+		needSpace = true;
+	}
+
+	if (args.FuncName != NULL)
+	{
+		//if (needSpace) { ss << " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
+		str += args.FuncName;
 		needSpace = true;
 	}
 
@@ -568,10 +594,10 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 		needSpace = true;
 	}
 	
-	if (args.Filename != NULL)
+	if (args.FileName != NULL)
 	{
 		if (needSpace) { str2 += " "; needSpace = false; }
-		str2 += CFile::getFilename(args.Filename);
+		str2 += CFile::getFilename(args.FileName);
 		needSpace = true;
 	}
 
@@ -579,6 +605,13 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 	{
 		if (needSpace) { str2 += " "; needSpace = false; }
 		str2 += NLMISC::toString(args.Line);
+		needSpace = true;
+	}
+
+	if (args.FuncName != NULL)
+	{
+		if (needSpace) { str2 += " "; needSpace = false; }
+		str2 += args.FuncName;
 		needSpace = true;
 	}
 
@@ -604,11 +637,12 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 		body += toString(LogTypeToString[2][args.LogType]) + "\n";
 		body += "ProcName: " + args.ProcessName + "\n";
 		body += "Date: " + string(dateToHumanString(args.Date)) + "\n";
-		if(args.Filename == NULL)
+		if(args.FileName == NULL)
 			body += "File: <Unknown>\n";
 		else
-			body += "File: " + string(args.Filename) + "\n";
+			body += "File: " + string(args.FileName) + "\n";
 		body += "Line: " + toString(args.Line) + "\n";
+		body += "FuncName: " + string(args.FuncName) + "\n";
 		body += "Reason: " + toString(message);
 
 		body += args.CallstackAndLog;
@@ -635,7 +669,7 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 			}
 		}
 
-		subject += procname + " NeL " + toString(LogTypeToString[0][args.LogType]) + " " + string(args.Filename) + " " + toString(args.Line);
+		subject += procname + " NeL " + toString(LogTypeToString[0][args.LogType]) + " " + string(args.FileName) + " " + toString(args.Line) + " " + string(args.FuncName);
 
 		// Check the envvar NEL_IGNORE_ASSERT
 		if (getenv ("NEL_IGNORE_ASSERT") == NULL)

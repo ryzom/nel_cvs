@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.12 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: particle_system_shape.h,v 1.13 2001/09/07 11:57:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,6 +133,7 @@ protected:
 	friend class CParticleSystemModel; 
 	friend class CParticleSystemDetailObs;
 	friend class CParticleSystemClipObs;
+	friend class CParticleSystem;
 
 	/** Instanciate a particle system from this shape.
 	  * A particle system may need to call this when a system is back in the frustum

@@ -31,6 +31,12 @@ static char THIS_FILE[] = __FILE__;
 #define CONE_R 30
 
 
+uint XCenter;
+uint YCenter;
+uint Radius;
+
+
+
 //----------------------------------------------------------
 // Name: ConvertLinearSliderPosToLogScale()
 // Desc: Converts a linear slider position to a quasi logrithmic scale
@@ -136,6 +142,15 @@ BOOL CSoundPage::OnInitDialog()
 		AfxMessageBox( s );
 		_AudioMixer = NULL;
 	}
+
+	// Cone drawing: make it work with normal and big fonts (depending on system settings)
+	CRect parentrect, sliderrect;
+	this->GetWindowRect( &parentrect );
+	GetDlgItem( IDC_SliderOuterAngle )->GetWindowRect( &sliderrect );
+	XCenter = sliderrect.right - parentrect.left + 15 + CONE_R;
+	YCenter = sliderrect.top - parentrect.top + 10;
+	Radius = CONE_R;
+	
 	waitcursor.Restore();
 
 	((CSliderCtrl*)GetDlgItem( IDC_SliderGain ))->SetRange( 0, 40 );
@@ -260,12 +275,12 @@ void		CSoundPage::getPropertiesFromSound()
 		m_InnerAngleDeg = (uint)radToDeg( _CurrentSound->getConeInnerAngle() );
 		m_OuterAngleDeg = (uint)radToDeg( _CurrentSound->getConeOuterAngle() );
 		m_OuterGain = _CurrentSound->getConeOuterGain();
-		((CSliderCtrl*)GetDlgItem( IDC_SliderMinDist ))->SetPos( (int)m_MinDist );
-		((CSliderCtrl*)GetDlgItem( IDC_SliderMaxDist ))->SetPos( (int)m_MaxDist );
-		((CSliderCtrl*)GetDlgItem( IDC_SliderInnerAngle ))->SetPos( m_InnerAngleDeg );
-		((CSliderCtrl*)GetDlgItem( IDC_SliderOuterAngle ))->SetPos( m_OuterAngleDeg );
-		((CSliderCtrl*)GetDlgItem( IDC_SliderOuterGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_OuterGain*100.0f ) );
 	}
+	((CSliderCtrl*)GetDlgItem( IDC_SliderMinDist ))->SetPos( (int)m_MinDist );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderMaxDist ))->SetPos( (int)m_MaxDist );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderInnerAngle ))->SetPos( m_InnerAngleDeg );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderOuterAngle ))->SetPos( m_OuterAngleDeg );
+	((CSliderCtrl*)GetDlgItem( IDC_SliderOuterGain ))->SetPos( ConvertLogScaleToLinearSliderPosTo( m_OuterGain*100.0f ) );
 	UpdateData( false );
 
 	Invalidate();
@@ -316,6 +331,7 @@ void CSoundPage::OnPos3D()
 	GetDlgItem( IDC_SliderOuterAngle )->EnableWindow( m_Pos3D );
 	GetDlgItem( IDC_SliderOuterGain )->EnableWindow( m_Pos3D );
 	GetDlgItem( IDC_ButtonTestOuterGain )->EnableWindow( m_Pos3D );
+
 	DrawCones();
 }
 
@@ -566,10 +582,7 @@ void CSoundPage::DrawCones()
 		GetDlgItem( IDC_BadCone )->SetWindowText( "" );
 	}
 
-	uint xcenter = CONE_X;
-	uint ycenter = CONE_Y;
-	uint radius = CONE_R;
-	CRect rect( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1 );
+	CRect rect( XCenter-Radius, YCenter-Radius, XCenter+Radius+1, YCenter+Radius+1 );
 	InvalidateRect( &rect, true );
 }
 
@@ -687,14 +700,11 @@ void CSoundPage::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting
 
-	uint xcenter = CONE_X;
-	uint ycenter = CONE_Y;
-	uint radius = CONE_R;
 	float innerangle = degToRad((float)m_InnerAngleDeg);
 	float outerangle = degToRad((float)m_OuterAngleDeg);
 
 	/*// Erase background (done by InvalidateRect())
-	CRect rect( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1 );
+	CRect rect( XCenter-Radius, YCenter-Radius, XCenter+Radius+1, YCenter+Radius+1 );
 	CBrush brush;
 	brush.CreateSolidBrush( GetSysColor( COLOR_BTNFACE ) );
 	dc.FillRect( &rect, &brush );*/
@@ -710,8 +720,8 @@ void CSoundPage::OnPaint()
 			outercolor = GetSysColor( COLOR_BTNFACE );
 		}
 
-		uint dx = (uint)(radius*sin(outerangle/2.0f));
-		uint y = ycenter-(uint)(radius*cos(outerangle/2.0f));
+		uint dx = (uint)(Radius*sin(outerangle/2.0f));
+		uint y = YCenter-(uint)(Radius*cos(outerangle/2.0f));
 
 		// Outside
 		CPen outpen( PS_SOLID, 1, outercolor );
@@ -719,7 +729,7 @@ void CSoundPage::OnPaint()
 		outbrush.CreateSolidBrush( outercolor );
 		dc.SelectObject( &outpen );
 		dc.SelectObject( &outbrush );
-		dc.Pie( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1,	xcenter-dx, y, xcenter+dx, y );
+		dc.Pie( XCenter-Radius, YCenter-Radius, XCenter+Radius+1, YCenter+Radius+1,	XCenter-dx, y, XCenter+dx, y );
 
 		// Transition
 		if ( (dx != 0) || (outerangle > 3.14) )
@@ -729,11 +739,11 @@ void CSoundPage::OnPaint()
 			tbrush.CreateSolidBrush( tcolor );
 			dc.SelectObject( &tpen );
 			dc.SelectObject( &tbrush );
-			dc.Pie( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1,	xcenter+dx, y, xcenter-dx, y );
+			dc.Pie( XCenter-Radius, YCenter-Radius, XCenter+Radius+1, YCenter+Radius+1,	XCenter+dx, y, XCenter-dx, y );
 		}
 
-		dx = (uint)(radius*sin(innerangle/2.0f));
-		y = ycenter-(uint)(radius*cos(innerangle/2.0f));
+		dx = (uint)(Radius*sin(innerangle/2.0f));
+		y = YCenter-(uint)(Radius*cos(innerangle/2.0f));
 
 		// Inner
 		if ( (dx != 0) || (innerangle > 3.14) )
@@ -743,7 +753,7 @@ void CSoundPage::OnPaint()
 			inbrush.CreateSolidBrush( innercolor );
 			dc.SelectObject( &inpen );
 			dc.SelectObject( &inbrush );
-			dc.Pie( xcenter-radius, ycenter-radius, xcenter+radius+1, ycenter+radius+1,	xcenter+dx, y, xcenter-dx, y );
+			dc.Pie( XCenter-Radius, YCenter-Radius, XCenter+Radius+1, YCenter+Radius+1,	XCenter+dx, y, XCenter-dx, y );
 		}
 	}
 }

@@ -55,45 +55,45 @@ FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        " Sound Properties ",IDC_SoundGroup,5,0,210,220
     LTEXT           "Filename",IDC_Filename,10,17,29,8
-    EDITTEXT        IDC_EditFilename,70,15,85,12,ES_AUTOHSCROLL | WS_GROUP
+    EDITTEXT        IDC_EditFilename,75,15,80,12,ES_AUTOHSCROLL | WS_GROUP
     PUSHBUTTON      "...",IDC_ChooseFile,160,15,15,12,WS_GROUP
     LTEXT           "Gain",IDC_Gain,10,37,15,8
-    EDITTEXT        IDC_EditGain,70,35,40,12,ES_AUTOHSCROLL | WS_GROUP
+    EDITTEXT        IDC_EditGain,75,35,40,12,ES_AUTOHSCROLL | WS_GROUP
     CONTROL         "Ext. 3D Properties",IDC_Pos3D,"Button",BS_AUTOCHECKBOX | 
-                    BS_LEFTTEXT | WS_GROUP | WS_TABSTOP,10,57,67,10
-    GROUPBOX        " 3D Properties ",IDC_Pos3DGroup,10,75,195,120,WS_GROUP
+                    BS_LEFTTEXT | WS_GROUP | WS_TABSTOP,10,57,74,10
+    GROUPBOX        " 3D Properties ",IDC_Pos3DGroup,10,75,200,120,WS_GROUP
     DEFPUSHBUTTON   "Apply",IDC_Apply,10,200,50,14,WS_GROUP
     PUSHBUTTON      "Cancel",IDC_Cancel,65,200,50,14,WS_GROUP
-    LTEXT           "Min dist.",IDC_MinDist,15,90,25,8
-    LTEXT           "Max dist.",IDC_MaxDist,15,105,27,8
-    EDITTEXT        IDC_EditMaxDist,70,105,40,12,ES_AUTOHSCROLL
-    LTEXT           "Cone Inner Angle",IDC_ConeInnerAngle,15,120,52,8
-    EDITTEXT        IDC_EditInnerAngle,70,120,40,12,ES_AUTOHSCROLL
-    LTEXT           "Cone Outer Angle",IDC_ConeOuterAngle,15,135,54,8
-    EDITTEXT        IDC_EditOuterAngle,70,135,40,12,ES_AUTOHSCROLL
-    LTEXT           "Cone Outer Gain",IDC_ConeOuterGain,15,150,50,8
-    EDITTEXT        IDC_EditOuterGain,70,150,40,12,ES_AUTOHSCROLL
-    EDITTEXT        IDC_EditMinDist,70,90,40,12,ES_AUTOHSCROLL
+    LTEXT           "Min dist.",IDC_MinDist,15,90,60,8
+    LTEXT           "Max dist.",IDC_MaxDist,15,105,60,8
+    EDITTEXT        IDC_EditMaxDist,75,105,40,12,ES_AUTOHSCROLL
+    LTEXT           "Cone Inner Angle",IDC_ConeInnerAngle,15,120,55,8
+    EDITTEXT        IDC_EditInnerAngle,75,120,40,12,ES_AUTOHSCROLL
+    LTEXT           "Cone Outer Angle",IDC_ConeOuterAngle,15,135,60,8
+    EDITTEXT        IDC_EditOuterAngle,75,135,40,12,ES_AUTOHSCROLL
+    LTEXT           "Cone Outer Gain",IDC_ConeOuterGain,15,150,60,8
+    EDITTEXT        IDC_EditOuterGain,75,150,40,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EditMinDist,75,90,40,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Remove",IDC_Remove,160,200,50,14
     PUSHBUTTON      "Play",IDC_PlaySound,160,35,50,14
     CONTROL         "Play Looped",IDC_Looped,"Button",BS_AUTOCHECKBOX | 
                     BS_PUSHLIKE | WS_TABSTOP,160,55,50,15
-    CTEXT           "",IDC_Stereo,180,15,28,12,SS_CENTERIMAGE | SS_SUNKEN
-    CTEXT           "",IDC_BadCone,145,110,50,8
+    CTEXT           "",IDC_Stereo,180,15,30,12,SS_CENTERIMAGE | SS_SUNKEN
+    CTEXT           "",IDC_BadCone,145,110,60,8
     CONTROL         "Slider1",IDC_SliderInnerAngle,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,110,120,30,12
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,120,30,12
     CONTROL         "Slider1",IDC_SliderOuterAngle,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,110,135,30,12
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,135,30,12
     CONTROL         "Slider1",IDC_SliderOuterGain,"msctls_trackbar32",
-                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,110,150,30,12
+                    TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,115,150,30,12
     CONTROL         "Slider1",IDC_SliderMinDist,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,110,90,30,12
+                    TBS_NOTICKS | WS_TABSTOP,115,90,30,12
     CONTROL         "Slider1",IDC_SliderMaxDist,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,110,105,30,12
+                    TBS_NOTICKS | WS_TABSTOP,115,105,30,12
     PUSHBUTTON      "Help",IDC_ButtonHelp,15,171,50,14
     CONTROL         "Slider1",IDC_SliderGain,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,110,35,30,12
-    PUSHBUTTON      "Play Outside",IDC_ButtonTestOuterGain,150,170,50,14
+                    TBS_NOTICKS | WS_TABSTOP,115,35,30,12
+    PUSHBUTTON      "Play Outside",IDC_ButtonTestOuterGain,155,170,50,14
 END
 
 

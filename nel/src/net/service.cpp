@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.90 2001/10/05 14:52:41 lecroart Exp $
+ * $Id: service.cpp,v 1.91 2001/10/16 09:25:13 legros Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -92,7 +92,7 @@ static sint ExitSignalAsked = 0;
 static CStdDisplayer sd;
 
 // services stat
-static sint32 NetSpeedLoop, UserSpeedLoop;
+static sint32 _NetSpeedLoop, _UserSpeedLoop;
 
 string IService::_ShortName = "";
 string IService::_LongName = "";
@@ -239,8 +239,8 @@ void IService::getCustomParams()
 */
 }
 
-CLog commandLog;
-CNetDisplayer commandDisplayer(false);
+CLog _commandLog;
+CNetDisplayer _commandDisplayer(false);
 
 void AESConnection (const string &serviceName, TSockId from, void *arg)
 {
@@ -263,14 +263,14 @@ void AESConnection (const string &serviceName, TSockId from, void *arg)
 
 	// add the displayer to the standard logger
 	CCallbackClient *client = dynamic_cast<CCallbackClient *>(CNetManager::getNetBase("AES"));
-	commandDisplayer.setLogServer (client);
-	commandLog.addDisplayer (&commandDisplayer);
+	_commandDisplayer.setLogServer (client);
+	_commandLog.addDisplayer (&_commandDisplayer);
 }
 
 
 void AESDisconnection (const string &serviceName, TSockId from, void *arg)
 {
-	commandLog.removeDisplayer (&commandDisplayer);
+	_commandLog.removeDisplayer (&_commandDisplayer);
 }
 
 static void cbExecCommand (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
@@ -278,7 +278,7 @@ static void cbExecCommand (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 	string command;
 	msgin.serial (command);
 
-	ICommand::execute (command, commandLog);
+	ICommand::execute (command, _commandLog);
 }
 
 // if we receive the stop service, we try to exit now
@@ -625,7 +625,7 @@ sint IService::main (void *wd)
 			//
 			// Get the universal time (useful for debugging)
 			//
-
+/*
 			// Don't call the sync if it's the Time Service or the Naming Service
 			if ( IService::_ShortName != "TS" )
 			{
@@ -636,7 +636,7 @@ sint IService::main (void *wd)
 				CUniTime::syncUniTimeFromService ( _RecordingState );
 				resyncEvenly = true;
 			}
-
+*/
 			//
 			// Talk with the NS to get the port if necessary and register the service
 			//
@@ -753,12 +753,12 @@ sint IService::main (void *wd)
 			
 			// TEMP: always sleep one millisecond for multitasking
 //			nlSleep (1);
-
+/*
 			// resync the clock every hours
 			if (resyncEvenly)
 			{
 				static TTime LastSyncTime = CTime::getLocalTime ();
-
+*/
 				//---------------------------------------
 				// To simulate Ctrl-C in the debugger... Exit after 1 min !
 				/*if (CTime::getLocalTime () - LastSyncTime > 60 * 1000 )
@@ -766,26 +766,26 @@ sint IService::main (void *wd)
 					ExitSignalAsked = 1;
 				}*/
 				//---------------------------------------
-
+/*
 				if (CTime::getLocalTime () - LastSyncTime > 60*60*1000)
 				{
 					CUniTime::syncUniTimeFromService ( _RecordingState );
 					LastSyncTime = CTime::getLocalTime ();
 				}
 			}
-
-			NetSpeedLoop = (sint32)(CTime::getLocalTime () - before);
-			UserSpeedLoop = (sint32)(before - bbefore);
+*/
+			_NetSpeedLoop = (sint32)(CTime::getLocalTime () - before);
+			_UserSpeedLoop = (sint32)(before - bbefore);
 
 #if defined (NL_OS_WINDOWS)
 			if (cwd != NULL)
 			{
 				string str;
 				str = "NetLop: ";
-				str += toString (NetSpeedLoop);
+				str += toString (_NetSpeedLoop);
 				cwd->setLabel (speedNetLabel, str);
 				str = "UsrLop: ";
-				str += toString (UserSpeedLoop);
+				str += toString (_UserSpeedLoop);
 				cwd->setLabel (speedUsrLabel, str);
 				str = "Rcv: ";
 				str += toString (CNetManager::getBytesReceived ());
@@ -899,34 +899,34 @@ sint IService::main (void *wd)
 // Commands and Variables for controling all services
 //
 
-NLMISC_VARIABLE(sint32, NetSpeedLoop, "duration of the last network loop (in ms)");
-NLMISC_VARIABLE(sint32, UserSpeedLoop, "duration of the last user loop (in ms)");
+NLMISC_VARIABLE(sint32, _NetSpeedLoop, "duration of the last network loop (in ms)");
+NLMISC_VARIABLE(sint32, _UserSpeedLoop, "duration of the last user loop (in ms)");
 
-NLMISC_DYNVARIABLE(uint64, ReceivedBytes, "total of bytes received by this service")
+NLMISC_DYNVARIABLE(uint64, _ReceivedBytes, "total of bytes received by this service")
 {
 	// we can only read the value
 	if (get) *pointer = CNetManager::getBytesReceived ();
 }
 
-NLMISC_DYNVARIABLE(uint64, SendedBytes, "total of bytes sended by this service")
+NLMISC_DYNVARIABLE(uint64, _SendedBytes, "total of bytes sended by this service")
 {
 	// we can only read the value
 	if (get) *pointer = CNetManager::getBytesSended ();
 }
 
-NLMISC_DYNVARIABLE(uint64, ReceivedQueueSize, "current size in bytes of the received queue size")
+NLMISC_DYNVARIABLE(uint64, _ReceivedQueueSize, "current size in bytes of the received queue size")
 {
 	// we can only read the value
 	if (get) *pointer = CNetManager::getReceiveQueueSize ();
 }
 
-NLMISC_DYNVARIABLE(uint64, SendedQueueSize, "current size in bytes of the sended queue size")
+NLMISC_DYNVARIABLE(uint64, _SendedQueueSize, "current size in bytes of the sended queue size")
 {
 	// we can only read the value
 	if (get) *pointer = CNetManager::getSendQueueSize ();
 }
 
-NLMISC_COMMAND (quit, "exit the service", "")
+NLMISC_COMMAND (_quit, "exit the service", "")
 {
 	if(args.size() != 0) return false;
 
@@ -935,7 +935,7 @@ NLMISC_COMMAND (quit, "exit the service", "")
 	return true;
 }
 
-NLMISC_COMMAND (brutal_quit, "exit the service brutally", "")
+NLMISC_COMMAND (_brutal_quit, "exit the service brutally", "")
 {
 	if(args.size() != 0) return false;
 
@@ -946,7 +946,7 @@ NLMISC_COMMAND (brutal_quit, "exit the service brutally", "")
 
 
 #ifdef MUTEX_DEBUG
-NLMISC_COMMAND (mutex, "display mutex values", "")
+NLMISC_COMMAND (_mutex, "display mutex values", "")
 {
 	if(args.size() != 0) return false;
 
@@ -966,7 +966,7 @@ NLMISC_COMMAND (mutex, "display mutex values", "")
 #endif // MUTEX_DEBUG
 
 
-NLMISC_COMMAND(nofilter, "disable all filters on Nel loggers", "")
+NLMISC_COMMAND(_nofilter, "disable all filters on Nel loggers", "")
 {
 	if(args.size() != 0) return false;
 
@@ -980,7 +980,7 @@ NLMISC_COMMAND(nofilter, "disable all filters on Nel loggers", "")
 }
 
 
-NLMISC_COMMAND(addposfilter_debug, "add a positive filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(_addposfilter_debug, "add a positive filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	
@@ -990,7 +990,7 @@ NLMISC_COMMAND(addposfilter_debug, "add a positive filter on DebugLog", "<filter
 }
 
 
-NLMISC_COMMAND(addnegfilter_debug, "add a negative filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(_addnegfilter_debug, "add a negative filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	
@@ -1000,7 +1000,7 @@ NLMISC_COMMAND(addnegfilter_debug, "add a negative filter on DebugLog", "<filter
 }
 
 
-NLMISC_COMMAND(removefilter_debug, "remove a filter on DebugLog", "<filterstr>")
+NLMISC_COMMAND(_removefilter_debug, "remove a filter on DebugLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	
@@ -1009,7 +1009,7 @@ NLMISC_COMMAND(removefilter_debug, "remove a filter on DebugLog", "<filterstr>")
 	return true;
 }
 
-NLMISC_COMMAND(addposfilter_info, "add a positive filter on InfoLog", "<filterstr>")
+NLMISC_COMMAND(_addposfilter_info, "add a positive filter on InfoLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	
@@ -1019,7 +1019,7 @@ NLMISC_COMMAND(addposfilter_info, "add a positive filter on InfoLog", "<filterst
 }
 
 
-NLMISC_COMMAND(addnegfilter_info, "add a negative filter on InfoLog", "<filterstr>")
+NLMISC_COMMAND(_addnegfilter_info, "add a negative filter on InfoLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	
@@ -1029,7 +1029,7 @@ NLMISC_COMMAND(addnegfilter_info, "add a negative filter on InfoLog", "<filterst
 }
 
 
-NLMISC_COMMAND(removefilter_info, "remove a filter on InfoLog", "<filterstr>")
+NLMISC_COMMAND(_removefilter_info, "remove a filter on InfoLog", "<filterstr>")
 {
 	if(args.size() != 1) return false;
 	
@@ -1037,7 +1037,5 @@ NLMISC_COMMAND(removefilter_info, "remove a filter on InfoLog", "<filterstr>")
 
 	return true;
 }
-
-
 
 } //NLNET

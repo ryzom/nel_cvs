@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.19 2003/01/07 17:09:55 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.20 2003/06/30 09:49:27 lecroart Exp $
  *
  */
 
@@ -388,8 +388,11 @@ static void cbWSClientConnected (CMessage &msgin, const std::string &serviceName
 	msgin.serial (Id);
 	msgin.serial (con);	// con=1 means a client is connected on the shard, 0 means a client disconnected
 
-	nlinfo ("Received a validation that a client is really on the frontend");
-
+	if(con)
+		nlinfo ("Received a validation that a client is connected on the frontend");
+	else
+		nlinfo ("Received a validation that a client is disconnected on the frontend");
+	
 	string query = "select * from user where UId="+toString(Id);
 	sint ret = mysql_query (DatabaseConnection, query.c_str ());
 	if (ret != 0)

@@ -12,7 +12,7 @@
 
 	// $reason contains the reason why the check failed or success
 	// return true if the check is ok
-	function checkUserValidity ($login, $password, $clientApplication, &$id, &$reason)
+	function checkUserValidity ($login, $password, $clientApplication, &$id, &$reason, &$priv)
 	{
 		global $DBHost, $DBUserName, $DBPassword, $DBName, $AcceptUnknownUser;
 
@@ -38,6 +38,7 @@
 					$reason = "Login '".$login."' was created because it was not found in database";
 					$row = mysql_fetch_row ($result);
 					$id = $row[0];
+					$priv = $row[5];
 
 					// add the default permission
 					$query = "INSERT INTO permission (UId) VALUES ('$id')";
@@ -96,6 +97,7 @@
 					else
 					{
 						$id = $row[0];
+						$priv = $row[5];
 						$res = true;
 					}
 				}
@@ -110,12 +112,12 @@
 		return $res;
 	}
 
-	function logged($login, $password, $clientApplication, &$id, $add)
+	function logged($login, $password, $clientApplication, &$id, $add, &$priv)
 	{
 		if (isset($login) && isset($password) && isset($clientApplication))
 		{
 			// mean that the user just enterer the login and password
-			if (checkUserValidity($login, $password, $clientApplication, $id, $reason))
+			if (checkUserValidity($login, $password, $clientApplication, $id, $reason, $priv))
 			{
 				if ($add)
 				{
@@ -299,7 +301,7 @@
 		$add = true;
 	}
 
-	if(!logged($login, $password, $clientApplication, $id, $add))
+	if(!logged($login, $password, $clientApplication, $id, $add, $priv))
 	{
 		loginForm();
 	}
@@ -320,7 +322,7 @@
 		{
 			// user selected a shard, try to add the user to the shard
 
-			if (askClientConnection($shardid, $id, $login, $res))
+			if (askClientConnection($shardid, $id, $login, $priv, $res))
 			{
 				echo "<h1>Access validated</h1>Please wait while launching the application...<br>\n";
 				echo $res."<br>\n";

@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.6 2002/12/24 10:50:05 lecroart Exp $
+ * $Id: connection_web.cpp,v 1.7 2003/06/30 09:49:27 lecroart Exp $
  *
  */
 
@@ -119,12 +119,21 @@ void cbAskClientConnection (CMemStream &msgin, TSockId host)
 {
 	uint32 shardId;
 	uint32 userId;
-	string userName;
+	string userName, userPriv;
 	msgin.serial (shardId);
 	msgin.serial (userId);
 	msgin.serial (userName);
 
-	nlinfo ("Web wants to add userid %d to the shardid %d, send request to the shard", userId, shardId);
+	try
+	{
+		msgin.serial (userPriv);
+	}
+	catch (Exception &e)
+	{
+		nlwarning ("Web didn't give me the user privilege for user '%s', set to empty", userName.c_str());
+	}
+
+	nlinfo ("Web wants to add userid %d (name '%s' priv '%s') to the shardid %d, send request to the shard", userId, userName.c_str(), userPriv.c_str(), shardId);
 
 	uint32 i;
 	for (i = 0; i < Shards.size (); i++)
@@ -137,7 +146,7 @@ void cbAskClientConnection (CMemStream &msgin, TSockId host)
 			// send message to the welcome service to see if it s ok and know the front end ip
 			CMessage msgout ("CS");
 			msgout.serial (Cookie);
-			msgout.serial (userName);
+			msgout.serial (userName, userPriv);
 			//WSServer->send (msgout, Shards[i].SockId);
 			CUnifiedNetwork::getInstance ()->send (Shards[i].SId, msgout);
 			beep (1000, 1, 100, 100);

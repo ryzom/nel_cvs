@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.1 2002/11/05 16:48:25 corvazier Exp $
+ * $Id: memory_manager.h,v 1.2 2002/11/05 17:10:36 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,6 @@
 #define NL_ALLOC_CONTEXT(str) ((void)0);
 
 #else // NL_USE_DEFAULT_MEMORY_MANAGER
-#error
 // *********************************************************
 
 namespace NLMEMORY

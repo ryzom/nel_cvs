@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.13 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.14 2002/05/14 08:51:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -340,15 +340,18 @@ private:
  * \author Nevrax France
  * \date 2000
  */
-class	CSkeletonModelClipObs : public CTransformClipObs
+class	CSkeletonModelClipObs : public CTransformShapeClipObs
 {
 public:
 
 	/** this do :
-	 *  - call CTransformClipObs::traverse()
+	 *  - call CTransformShapeClipObs::traverse()
 	 *  - If needed flag _DisplayedAsLodCharacter as true, and add renderObs in this case
 	 */
 	virtual	void	traverse(IObs *caller);
+
+	/// Leave clip() method as CTransformShape one, but the skeleton model is not renderable.
+	virtual	bool	isRenderable() const {return false;}
 
 
 public:

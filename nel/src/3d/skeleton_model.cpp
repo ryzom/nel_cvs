@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.16 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.17 2002/05/14 08:51:16 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -638,15 +638,22 @@ void		CSkeletonModel::updateDisplayLodCharacterFlag(const CClipTrav *clipTrav)
 // ***************************************************************************
 void		CSkeletonModelClipObs::traverse(IObs *caller)
 {
+	// get model and trav
+	CClipTrav		*clipTrav= (CClipTrav*)Trav;
+	CSkeletonModel	*sm= (CSkeletonModel*)Model;
+
+
+	// Copied from CTransformClipObs::traverse(). Must do it now, to avoid 2 addRenderObs() below.
+	// This is possible if the skeleton clip obs is traversed twice because of clusters.
+	if ((Date == clipTrav->CurrentDate) && Visible)
+		return;
+
 	// call base clip method
-	CTransformClipObs::traverse(caller);
+	CTransformShapeClipObs::traverse(caller);
+
 
 	// update the _DisplayedAsLodCharacter flag
 	//=================
-
-	// get model.
-	CClipTrav		*clipTrav= (CClipTrav*)Trav;
-	CSkeletonModel	*sm= (CSkeletonModel*)Model;
 
 	// do it if not already done
 	sm->updateDisplayLodCharacterFlag(clipTrav);

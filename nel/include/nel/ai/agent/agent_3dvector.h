@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
  * <File description>
  *
- * $Id: agent_3dvector.h,v 1.2 2001/03/27 08:21:42 chafik Exp $
+ * $Id: agent_3dvector.h,v 1.3 2001/03/27 10:19:33 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,6 +93,11 @@ namespace NLAIAGENT
 		virtual bool isTrue() const
 		{
 			return true;
+		}
+
+		const NLMISC::CVector &getValueRef() const
+		{
+			return _Value;
 		}
 
 		NLMISC::CVector getValue() const

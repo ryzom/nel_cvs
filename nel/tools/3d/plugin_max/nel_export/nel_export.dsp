@@ -188,36 +188,12 @@ SOURCE=.\nel_export_filetools.cpp
 # Begin Source File
 
 SOURCE=.\nel_export_lightmap_v1.cpp
-
-!IF  "$(CFG)" == "nel_export - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "nel_export - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "nel_export - Win32 Hybrid"
-
-!ELSEIF  "$(CFG)" == "nel_export - Win32 ReleaseDebug"
-
 # PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
 SOURCE=.\nel_export_lightmap_v2.cpp
-
-!IF  "$(CFG)" == "nel_export - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "nel_export - Win32 Debug"
-
-!ELSEIF  "$(CFG)" == "nel_export - Win32 Hybrid"
-
-!ELSEIF  "$(CFG)" == "nel_export - Win32 ReleaseDebug"
-
 # PROP Exclude_From_Build 1
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

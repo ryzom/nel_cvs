@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.5 2001/04/30 16:58:31 corvazier Exp $
+ * $Id: animation_set_dlg.cpp,v 1.6 2001/07/20 09:19:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,17 +231,14 @@ void CAnimationSetDlg::loadSkeleton (const char* fileName)
 		char name[256];
 		_splitpath (fileName, NULL, NULL, name, NULL);
 
-		// Make an animation
-		CAnimation *anim=new CAnimation;
-
-		// Add an animation
-		uint id=_ObjView->_AnimationSet.addSkeletonWeight (name);
-
 		// Get the skeleton pointer
-		CSkeletonWeight* skel=_ObjView->_AnimationSet.getSkeletonWeight (id);
+		CSkeletonWeight* skel=new CSkeletonWeight;
 
 		// Serial it
 		skel->serial (file);
+
+		// Add an animation
+		_ObjView->_AnimationSet.addSkeletonWeight (name, skel);
 
 		// Add the filename in the list
 		_ListSkeleton.push_back (fileName);
@@ -257,7 +254,7 @@ void CAnimationSetDlg::loadSkeleton (const char* fileName)
 		for (uint n=0; n<numNode; n++)
 		{
 			char percent[512];
-			sprintf (percent, "%s (%f%%)", skel->getNodeName (n).c_str(), skel->getNodeWeight(n));
+			sprintf (percent, "%s (%f%%)", skel->getNodeName (n).c_str(), skel->getNodeWeight(n)*100);
 			// Add this string
 			SkelTree.InsertItem (percent, item);
 		}

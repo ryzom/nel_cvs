@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.20 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.21 2001/07/20 09:19:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -450,9 +450,6 @@ void CObjectViewer::go ()
 		// Reset camera aspect ratio
 		initCamera ();
 
-		// Pump message from the server
-		CNELU::EventServer.pump();
-
 		if (!_MainFrame->MoveElement)
 		{
 			// New matrix from camera
@@ -464,6 +461,9 @@ void CObjectViewer::go ()
 			// for now we apply a transform on the selected object in the particle system			
 			_ParticleDlg->moveElement(_MouseListener.getModelMatrix()) ;		
 		}
+
+		// Pump message from the server
+		CNELU::EventServer.pump();
 
 		// Pump others message for the windows
 		MSG	msg;

@@ -76,6 +76,7 @@ BOOL CNeLLauncherDlg::OnInitDialog()
 	createDebug();
 	DebugLog->addDisplayer(&NLFileDisplayer);
 	InfoLog->addDisplayer(&NLFileDisplayer);
+	WarningLog->addDisplayer(&NLFileDisplayer);
 	ErrorLog->addDisplayer(&NLFileDisplayer);
 	AssertLog->addDisplayer(&NLFileDisplayer);
 	
@@ -463,6 +464,7 @@ void CNeLLauncherDlg::OnCancel()
 	createDebug();
 	DebugLog->removeDisplayer(&NLFileDisplayer);
 	InfoLog->removeDisplayer(&NLFileDisplayer);
+	WarningLog->removeDisplayer(&NLFileDisplayer);
 	ErrorLog->removeDisplayer(&NLFileDisplayer);
 	AssertLog->removeDisplayer(&NLFileDisplayer);
 

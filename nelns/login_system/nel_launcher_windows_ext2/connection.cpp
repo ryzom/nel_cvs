@@ -1,6 +1,6 @@
 /** \file connexion.h
  *
- * $Id: connection.cpp,v 1.1 2004/01/06 15:54:58 lecroart Exp $
+ * $Id: connection.cpp,v 1.2 2004/01/07 11:10:48 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -175,6 +175,7 @@ string checkLogin(const string &login, const string &password, const string &cli
 		if(lines.size() != nbs+1)
 		{
 			nlwarning("bad shard lines number %d != %d", lines.size(), nbs+1);
+			nlwarning("'%s'", res.c_str());
 			return "bad lines numbers";
 		}
 
@@ -185,6 +186,7 @@ string checkLogin(const string &login, const string &password, const string &cli
 			if(res.size() != 7)
 			{
 				nlwarning("bad | numbers %d != %d", res.size(), 7);
+				nlwarning("'%s'", lines[i].c_str());
 				return "bad pipe numbers";
 			}
 			Shards.push_back(CShard(res[0], atoi(res[1].c_str())>0, atoi(res[2].c_str()), res[3], atoi(res[4].c_str()), res[5], res[6]));

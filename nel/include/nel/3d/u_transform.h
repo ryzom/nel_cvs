@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.15 2002/11/14 17:38:31 vizerie Exp $
+ * $Id: u_transform.h,v 1.16 2003/02/06 09:05:03 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@ using NLMISC::CMatrix;
 using NLMISC::CQuat;
 
 class	ILogicInfo;
+class	CCluster;
 
 // ***************************************************************************
 /**
@@ -160,6 +161,9 @@ public:
 
 	/// Return true if the object was rendered during the last Scene->rendere(). return false else (ie clipped)
 	virtual bool			getLastClippedState() const = 0;
+
+	/// Fill a list of cluster that contain this tranform. This is valid after the clip traversal
+	virtual void			getLastParentClusters(std::vector<CCluster*> &clusters) const = 0;
 
 	/** get the last world matrix computed in last render().
 	 *	NB: this WM is computed in last render() only if the object was not clipped. So use it wisely.

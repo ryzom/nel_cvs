@@ -4,8 +4,6 @@
 
 namespace NLAIAGENT
 {
-
-
 	/// Default constructor
 	CActor::CActor() : IAgent(NULL)
 	{

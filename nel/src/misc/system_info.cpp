@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.17 2003/03/06 10:00:29 lecroart Exp $
+ * $Id: system_info.cpp,v 1.18 2003/03/20 15:40:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,6 +224,40 @@ string CSystemInfo::getProc ()
 #endif
 
 	return ProcString;
+}
+
+uint32 CSystemInfo::getProcFrequency ()
+{
+	uint32 freq = 0;
+
+#ifdef NL_OS_WINDOWS
+
+	LONG result;
+	char value[1024];
+	DWORD valueSize;
+	HKEY hKey;
+
+	result = ::RegOpenKeyEx (HKEY_LOCAL_MACHINE, "Hardware\\Description\\System\\CentralProcessor\\0", 0, KEY_QUERY_VALUE, &hKey);
+	if (result == ERROR_SUCCESS)
+	{
+		// get processor frequence
+		result = ::RegQueryValueEx (hKey, _T("~MHz"), NULL, NULL, (LPBYTE)&value, &valueSize);
+		if (result == ERROR_SUCCESS)
+		{
+			freq = *(int *)value;
+		}
+	}
+
+	// Make sure to close the reg key
+
+	RegCloseKey (hKey);
+
+#elif defined NL_OS_UNIX
+
+
+#endif
+
+	return freq;
 }
 
 static bool DetectMMX()

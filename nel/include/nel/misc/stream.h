@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.56 2002/08/21 09:36:01 lecroart Exp $
+ * $Id: stream.h,v 1.57 2003/03/20 15:40:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -776,12 +776,12 @@ public:
 	  *
 	  * \return true if the comment is added, return false if no node is opened.
 	  */
-	bool xmlComment ()
+	bool xmlComment (const char *comment)
 	{
 		// XML Mode ?
 		if (_XML)
 		{
-			return xmlCommentInternal ();
+			return xmlCommentInternal (comment);
 		}
 
 		// Return ok
@@ -813,7 +813,7 @@ protected:
 	virtual bool		xmlBreakLineInternal () { return true; };
 
 	/// xmlComment implementation
-	virtual	bool		xmlCommentInternal () { return true; };
+	virtual	bool		xmlCommentInternal (const char *comment) { return true; };
 
 	/** 
 	 * for Deriver: reset the PtrTable in the stream.

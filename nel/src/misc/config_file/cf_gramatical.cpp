@@ -81,6 +81,8 @@ struct cf_value
 
 extern bool cf_Ignore;
 
+extern bool LoadRoot;
+
 extern FILE *yyin;
 
 /* Variables */
@@ -1425,6 +1427,7 @@ void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val)
 	DEBUG_PRINTF("push type %d in var name '%s' type %d with value : ", Val.Type, Var.Name.c_str(), Var.Type);
 	cf_print(Val);
 	DEBUG_PRINTF("\n");
+	Var.Root = LoadRoot;
 	if (Var.Type == NLMISC::CConfigFile::CVar::T_UNKNOWN || Var.Type == Val.Type)
 	{
 		if (Var.Type == NLMISC::CConfigFile::CVar::T_UNKNOWN)

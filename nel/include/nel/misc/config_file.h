@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.32 2002/11/04 16:42:37 lecroart Exp $
+ * $Id: config_file.h,v 1.33 2003/03/20 15:40:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,7 @@ public:
 	{
 	public:
 
-		CVar () : Type(T_UNKNOWN) {}
+		CVar () : Type(T_UNKNOWN), Root(false) {}
 
 		/// \name Access to the variable content.
 		//@{
@@ -187,6 +187,7 @@ public:
 
 		std::string					Name;
 		TVarType					Type;
+		bool						Root;		// true if this var comes from the root document. false else.
 		bool						Comp;
 		std::vector<int>			IntValues;
 		std::vector<double>			RealValues;
@@ -205,6 +206,15 @@ public:
 	/// Get a variable pointer with the variable name, without throwing exception. Return NULL if not found.
 	CVar *getVarPtr (const std::string &varName);
 
+	/// Get the variable count.
+	uint	getNumVar () const;
+
+	/// Get a variable.
+	CVar	*getVar (uint varId);
+
+	/// Add a variable. If the variable already exit, return it.
+	CVar	*insertVar (const std::string &varName, const CVar &varToCopy);
+
 	/// Return true if the variable exists, false otherwise
 	bool exists (const std::string &varName);
 
@@ -213,6 +223,9 @@ public:
 
 	/// save the config file
 	void save () const;
+
+	/// Clear
+	void clear();
 
 	/// Returns true if the file has been loaded
 	bool loaded();

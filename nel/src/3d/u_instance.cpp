@@ -1,7 +1,7 @@
 /** \file u_instance.cpp
  * Interface for instance objects.
  *
- * $Id: u_instance.cpp,v 1.2 2004/05/12 12:51:49 corvazier Exp $
+ * $Id: u_instance.cpp,v 1.3 2004/06/21 09:42:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -119,72 +119,96 @@ void		UInstance::enableAsyncTextureMode(bool enable)
 {
 	NL3D_MEM_INSTANCE
 	CTransformShape	*object = getObjectPtr();
-	nlassert(object->isMeshBaseInstance());
-	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
-	mbi->enableAsyncTextureMode(enable) ;
+	if(object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		mbi->enableAsyncTextureMode(enable) ;
+	}
 }
 // ***************************************************************************
 bool		UInstance::getAsyncTextureMode() const 
 {
 	NL3D_MEM_INSTANCE
 	CTransformShape	*object = getObjectPtr();
-	nlassert(object->isMeshBaseInstance());
-	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
-	return mbi->getAsyncTextureMode() ;
+	if(object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		return mbi->getAsyncTextureMode() ;
+	}
+	else 
+		return false;
 }
 // ***************************************************************************
 void		UInstance::startAsyncTextureLoading() 
 {
 	NL3D_MEM_INSTANCE
 	CTransformShape	*object = getObjectPtr();
-	nlassert(object->isMeshBaseInstance());
-	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
-	mbi->startAsyncTextureLoading(getPos());
+	if(object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		mbi->startAsyncTextureLoading(getPos());
+	}
 }
 // ***************************************************************************
 bool		UInstance::isAsyncTextureReady() 
 {
 	NL3D_MEM_INSTANCE
 	CTransformShape	*object = getObjectPtr();
-	nlassert(object->isMeshBaseInstance());
-	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
-	return mbi->isAsyncTextureReady();
+	if(object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		return mbi->isAsyncTextureReady();
+	}
+	else
+		return true;
 }
 // ***************************************************************************
 void		UInstance::setAsyncTextureDistance(float dist)
 {
 	NL3D_MEM_INSTANCE
 	CTransformShape	*object = getObjectPtr();
-	nlassert(object->isMeshBaseInstance());
-	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
-	mbi->setAsyncTextureDistance(dist);
+	if(object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		mbi->setAsyncTextureDistance(dist);
+	}
 }
 // ***************************************************************************
 float		UInstance::getAsyncTextureDistance() const
 {
 	NL3D_MEM_INSTANCE
 	CTransformShape	*object = getObjectPtr();
-	nlassert(object->isMeshBaseInstance());
-	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
-	return mbi->getAsyncTextureDistance();
+	if(object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		return mbi->getAsyncTextureDistance();
+	}
+	else
+		return 0.f;
 }
 // ***************************************************************************
 void		UInstance::setAsyncTextureDirty(bool flag)
 {
 	NL3D_MEM_INSTANCE
 	CTransformShape	*object = getObjectPtr();
-	nlassert(object->isMeshBaseInstance());
-	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
-	mbi->setAsyncTextureDirty(flag);
+	if(object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		mbi->setAsyncTextureDirty(flag);
+	}
 }
 // ***************************************************************************
 bool		UInstance::isAsyncTextureDirty() const
 {
 	NL3D_MEM_INSTANCE
 	CTransformShape	*object = getObjectPtr();
-	nlassert(object->isMeshBaseInstance());
-	CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
-	return mbi->isAsyncTextureDirty();
+	if(object->isMeshBaseInstance())
+	{
+		CMeshBaseInstance *mbi  = static_cast<CMeshBaseInstance *>(object);
+		return mbi->isAsyncTextureDirty();
+	}
+	else
+		return false;
 }
 
 // ***************************************************************************

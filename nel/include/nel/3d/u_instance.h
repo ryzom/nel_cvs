@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * Interface for instance objects.
  *
- * $Id: u_instance.h,v 1.17 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_instance.h,v 1.18 2004/06/21 09:43:20 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,7 +125,9 @@ public:
 
 
 	/// \name Async Texture Loading
-	/// All those methods assert if the instance is not a CMeshBaseInstance.
+	/** All those methods no-op or return 0/false if the instance is not a CMeshBaseInstance.
+	 *	isAsyncTextyreReady() return true if the instance is not a CMeshBaseInstance.
+	 */
 	// @{
 	/** if true, the instance is said in "AsyncTextureMode". Ie user must fill AsyncTextures field with name of the
 	 *	textures to load. At each startAsyncTextureLoading(), the system start to load async them.

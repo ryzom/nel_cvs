@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.82 2004/11/30 17:31:48 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.83 2004/12/13 17:50:43 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2288,7 +2288,7 @@ void CAudioMixerUser::debugLogEvent(const char *reason)
 
 
 // ***************************************************************************
-bool	CAudioMixerUser::playMusic(const std::string &fileName, uint xFadeTime, bool async, bool loop)
+bool	CAudioMixerUser::playMusicChannel(TMusicChannel chan, const std::string &fileName, uint xFadeTime, bool async, bool loop)
 {
 	if(getSoundDriver())
 	{
@@ -2307,14 +2307,14 @@ bool	CAudioMixerUser::playMusic(const std::string &fileName, uint xFadeTime, boo
 				{
 					// then play async this bnp file (with offset/size)
 					string	bnpName= pathName.substr(0, pathName.find('@'));
-					state= getSoundDriver()->playMusicAsync(CPath::lookup(bnpName, false), xFadeTime, fileOffset, fileSize, loop);
+					state= getSoundDriver()->playMusicAsync(chan, CPath::lookup(bnpName, false), xFadeTime, fileOffset, fileSize, loop);
 				}
 			}
 			// else standard file
 			else
 			{
 				// play it async
-				state= getSoundDriver()->playMusicAsync(pathName, xFadeTime, 0, 0, loop);
+				state= getSoundDriver()->playMusicAsync(chan, pathName, xFadeTime, 0, 0, loop);
 			}
 		}
 		else
@@ -2323,7 +2323,7 @@ bool	CAudioMixerUser::playMusic(const std::string &fileName, uint xFadeTime, boo
 			if(fileIn.open(pathName))
 			{
 				// fileIn handled and owned by the sound driver
-				state= getSoundDriver()->playMusic(fileIn, xFadeTime, loop);
+				state= getSoundDriver()->playMusic(chan, fileIn, xFadeTime, loop);
 			}
 		}
 
@@ -2338,31 +2338,37 @@ bool	CAudioMixerUser::playMusic(const std::string &fileName, uint xFadeTime, boo
 }
 
 // ***************************************************************************
+bool	CAudioMixerUser::playMusic(const std::string &fileName, uint xFadeTime, bool async, bool loop)
+{
+	return playMusicChannel(GeneralMusicChannel, fileName, xFadeTime, async, loop);
+}
+	
+// ***************************************************************************
 void	CAudioMixerUser::stopMusic(uint xFadeTime)
 {
 	if(getSoundDriver())
-		getSoundDriver()->stopMusic(xFadeTime);
+		getSoundDriver()->stopMusic(GeneralMusicChannel, xFadeTime);
 }
 
 // ***************************************************************************
 void	CAudioMixerUser::pauseMusic()
 {
 	if(getSoundDriver())
-		getSoundDriver()->pauseMusic();
+		getSoundDriver()->pauseMusic(GeneralMusicChannel);
 }
 
 // ***************************************************************************
 void	CAudioMixerUser::resumeMusic()
 {
 	if(getSoundDriver())
-		getSoundDriver()->resumeMusic();
+		getSoundDriver()->resumeMusic(GeneralMusicChannel);
 }
 
 // ***************************************************************************
 bool	CAudioMixerUser::isMusicEnded()
 {
 	if(getSoundDriver())
-		return getSoundDriver()->isMusicEnded();
+		return getSoundDriver()->isMusicEnded(GeneralMusicChannel);
 	return false;
 }
 
@@ -2370,14 +2376,14 @@ bool	CAudioMixerUser::isMusicEnded()
 void	CAudioMixerUser::setMusicVolume(float gain)
 {
 	if(getSoundDriver())
-		getSoundDriver()->setMusicVolume(gain);
+		getSoundDriver()->setMusicVolume(GeneralMusicChannel, gain);
 }
 
 // ***************************************************************************
 float	CAudioMixerUser::getMusicLength()
 {
 	if(getSoundDriver())
-		getSoundDriver()->getMusicLength();
+		getSoundDriver()->getMusicLength(GeneralMusicChannel);
 	return 0;
 }
 
@@ -2398,6 +2404,35 @@ void	CAudioMixerUser::enableBackgroundMusicTimeConstraint(bool enable)
 {
 	getBackgroundMusicManager()->enableTimeConstraint(enable);
 }
+
+// ***************************************************************************
+bool	CAudioMixerUser::playEventMusic(const std::string &fileName, uint xFadeTime, bool async, bool loop)
+{
+	return playMusicChannel(EventMusicChannel, fileName, xFadeTime, async, loop);
+}
+
+// ***************************************************************************
+void	CAudioMixerUser::stopEventMusic(uint xFadeTime)
+{
+	if(getSoundDriver())
+		getSoundDriver()->stopMusic(EventMusicChannel, xFadeTime);
+}
+
+// ***************************************************************************
+void	CAudioMixerUser::setEventMusicVolume(float gain)
+{
+	if(getSoundDriver())
+		getSoundDriver()->setMusicVolume(EventMusicChannel, gain);
+}
+
+// ***************************************************************************
+bool	CAudioMixerUser::isEventMusicEnded()
+{
+	if(getSoundDriver())
+		return getSoundDriver()->isMusicEnded(EventMusicChannel);
+	return false;
+}
+
 
 } // NLSOUND
 

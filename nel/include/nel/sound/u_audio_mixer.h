@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.43 2004/11/30 17:32:05 berenguier Exp $
+ * $Id: u_audio_mixer.h,v 1.44 2004/12/13 17:50:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -383,6 +383,19 @@ public:
 	/** set to false to avoid TimeBeforeCanReplay and MinimumPlaytime behaviour
 	 */
 	virtual void	enableBackgroundMusicTimeConstraint(bool enable) =0;
+	/** Play some music in the event channel (at same time than general channel)
+	 *	NB: it is user responsability to lower/pause the geneic music channel if he don't want 2 music at same time
+	 */
+	virtual bool	playEventMusic(const std::string &fileName, uint xFadeTime= 0, bool async= true, bool loop=true) =0;
+	/** Stop any event music
+	 */
+	virtual void	stopEventMusic(uint xFadeTime= 0) =0;
+	/** Change the volume of event music channel
+	 */
+	virtual void	setEventMusicVolume(float gain) =0;
+	/** true if the event music is ended
+	 */
+	virtual bool	isEventMusicEnded() =0;
 	//@}
 
 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.55 2004/11/30 17:31:48 berenguier Exp $
+ * $Id: audio_mixer_user.h,v 1.56 2004/12/13 17:50:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -338,6 +338,21 @@ public:
 	virtual void	enableBackgroundMusic(bool enable);
 	virtual void	enableBackgroundMusicTimeConstraint(bool enable);
 	CMusicSoundManager *getBackgroundMusicManager() const {return _BackgroundMusicManager;}
+	// Event music
+	virtual bool	playEventMusic(const std::string &fileName, uint xFadeTime= 0, bool async= true, bool loop=true);
+	virtual void	stopEventMusic(uint xFadeTime= 0);
+	virtual void	setEventMusicVolume(float gain);
+	virtual bool	isEventMusicEnded();
+
+
+private:
+	enum	TMusicChannel
+	{
+		GeneralMusicChannel= 0,
+		EventMusicChannel= 1
+	};
+	bool	playMusicChannel(TMusicChannel chan, const std::string &fileName, uint xFadeTime, bool async, bool loop);
+	
 
 public:
 	/// Interface for registering object in the mixer update.

@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.35 2004/11/03 17:26:06 berenguier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.36 2004/12/13 17:51:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1060,13 +1060,13 @@ void	CSoundDriverDSound::displayBench(CLog *log)
 
 
 // ***************************************************************************
-bool	CSoundDriverDSound::playMusic(NLMISC::CIFile &file, uint xFadeTime, bool loop)
+bool	CSoundDriverDSound::playMusic(uint channel, NLMISC::CIFile &file, uint xFadeTime, bool loop)
 {
 	// unsupported
 	return false;
 }
 
-bool	CSoundDriverDSound::playMusicAsync(const std::string &path, uint xFadeTime, uint fileOffset, uint fileSize, bool loop)
+bool	CSoundDriverDSound::playMusicAsync(uint channel, const std::string &path, uint xFadeTime, uint fileOffset, uint fileSize, bool loop)
 {
 	// unsupported
 	return false;
@@ -1077,34 +1077,34 @@ bool	CSoundDriverDSound::getSongTitle(const std::string &filename, std::string &
 	return false;
 }
 
-void	CSoundDriverDSound::stopMusic(uint xFadeTime)
+void	CSoundDriverDSound::stopMusic(uint channel, uint xFadeTime)
 {
 	// unsupported
 }
 
-void	CSoundDriverDSound::pauseMusic()
+void	CSoundDriverDSound::pauseMusic(uint channel)
 {
 	// unsupported
 }
 
-void	CSoundDriverDSound::resumeMusic()
+void	CSoundDriverDSound::resumeMusic(uint channel)
 {
 	// unsupported
 }
 
-bool	CSoundDriverDSound::isMusicEnded()
+bool	CSoundDriverDSound::isMusicEnded(uint channel)
 {
 	// unsupported
 	return false;
 }
 
-float	CSoundDriverDSound::getMusicLength()
+float	CSoundDriverDSound::getMusicLength(uint channel)
 {
 	// unsupoorted
 	return 0.f;
 }
 
-void	CSoundDriverDSound::setMusicVolume(float gain)
+void	CSoundDriverDSound::setMusicVolume(uint channel, float gain)
 {
 	// unsupported
 }

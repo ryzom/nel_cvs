@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.26 2004/11/03 17:25:45 berenguier Exp $
+ * $Id: sound_driver.h,v 1.27 2004/12/13 17:51:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,15 +162,16 @@ public:
 	 *	FMOD: The File is loaded synchronously in memory, but decompressed by FMod in a thread
 	 *	Hence if the mp3 fileSize is 5 Mb, it will take only 5 Mb in memory (not the decompressed 40 Mb size)
 	 *	NB: if an old music was played, it is first stop with stopMusic()
+	 *	\param channel up to 2 channels are available for now 0 and 1 (any other value will fail), so that 2 music can be played concurently
 	 *	\param CIFile opened file (must use a CIFile if for instance you want to load from a BNP, and CBigFile is static....)
 	 *	\param xFadeTime if not 0 the old music played is not stoped imediatly but a cross-fade of xFadeTime (in ms) is made between the 2.
 	 */
-	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime= 0, bool loop=true) =0;
+	virtual bool	playMusic(uint channel, NLMISC::CIFile &file, uint xFadeTime, bool loop) =0;
 
 	/** Play some music asynchronously (.mp3 etc...) (implemented in fmod only)
 	 *	FMOD: the file is load asynchronously
 	 *	NB: if an old music was played, it is first stop with stopMusic()
-	 *	\param path full file path (no CPath::lookup is done since static)
+	 *	\param channel up to 2 channels are available for now 0 and 1 (any other value will fail), so that 2 music can be played concurently	 *	\param path full file path (no CPath::lookup is done since static)
 	 *	\param xFadeTime if not 0 the old music played is not stoped imediatly but a cross-fade of xFadeTime (in ms) is made between the 2.
 	 *	\param fileOffset and fileSize: if not 0, use it to load a .mp3 that reside in a BNP. 
 	 *		the offset and size have to be retrieved with CBigFile methods. 
@@ -181,20 +182,23 @@ public:
 	 *		Notice that you must give the full path of the bnp (eg: "C:/test/mydata.bnp") in path.
 	 *	\param loop must be true to play the music in loop. 
 	 */
-	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0, bool loop=true) =0;
+	virtual bool	playMusicAsync(uint channel, const std::string &path, uint xFadeTime, uint fileOffset, uint fileSize, bool loop) =0;
 	
 	/** Stop the music previously loaded and played (the Memory is also freed)
+	 *	\param channel up to 2 channels are available for now 0 and 1 (any other value will fail), so that 2 music can be played concurently
 	 *	\param xFadeTime if not 0 the old music played is not stoped but faded out of xFadeTime (in ms)
 	 */
-	virtual void	stopMusic(uint xFadeTime= 0) =0;
+	virtual void	stopMusic(uint channel, uint xFadeTime) =0;
 	
 	/** Pause the music previously loaded and played (the Memory is not freed)
+	 *	\param channel up to 2 channels are available for now 0 and 1 (any other value will fail), so that 2 music can be played concurently
 	 */
-	virtual void	pauseMusic() =0;
+	virtual void	pauseMusic(uint channel) =0;
 	
 	/** Resume the music previously paused
+	 *	\param channel up to 2 channels are available for now 0 and 1 (any other value will fail), so that 2 music can be played concurently
 	 */
-	virtual void	resumeMusic() =0;
+	virtual void	resumeMusic(uint channel) =0;
 
 	/** Get the song title. Returns false if the song is not found or the function is not implemented. 
 	 * If the song as no name, result is filled with the filename.
@@ -202,17 +206,21 @@ public:
 	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0) =0;
 
 	/** Return true if a song is finished.
+	 *	NB: in case of cross fading, the channel is considered "ended" if all fading are done
+	 *	\param channel up to 2 channels are available for now 0 and 1 (any other value will fail), so that 2 music can be played concurently
 	 */
-	virtual bool	isMusicEnded() =0;
+	virtual bool	isMusicEnded(uint channel) =0;
 	
 	/** Return the total length (in second) of the music currently played
+	 *	\param channel up to 2 channels are available for now 0 and 1 (any other value will fail), so that 2 music can be played concurently
 	 */
-	virtual float	getMusicLength() =0;
+	virtual float	getMusicLength(uint channel) =0;
 	
 	/** Set the music volume (if any music played). (volume value inside [0 , 1]) (default: 1)
 	 *	NB: the volume of music is NOT affected by IListener::setGain()
+	 *	\param channel up to 2 channels are available for now 0 and 1 (any other value will fail), so that 2 music can be played concurently
 	 */
-	virtual void	setMusicVolume(float gain) =0;
+	virtual void	setMusicVolume(uint channel, float gain) =0;
 
 	/// Destructor
 	virtual	~ISoundDriver() {}

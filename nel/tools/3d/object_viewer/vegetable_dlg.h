@@ -79,6 +79,9 @@ public:
 protected:
 	CObjectViewer				*_ObjView;
 
+	// Name to save.
+	std::string					_LastVegetSetName;
+
 	// A desc of vegetable to edit.
 	struct	CVegetableDesc
 	{

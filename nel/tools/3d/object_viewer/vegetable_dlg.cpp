@@ -35,6 +35,8 @@ CVegetableDlg::CVegetableDlg(CObjectViewer *viewer, CWnd* pParent /*=NULL*/)
 {
 	nlassert(viewer);
 
+	_LastVegetSetName= "*.vegetset";
+
 	//{{AFX_DATA_INIT(CVegetableDlg)
 	//}}AFX_DATA_INIT
 }
@@ -342,6 +344,8 @@ bool		CVegetableDlg::loadVegetableSet(NL3D::CTileVegetableDesc &vegetSet, const 
 			{
 				// read the vegetable
 				f.serial(vegetSet);
+				// bkup fileName.
+				_LastVegetSetName= (const char*)fd.GetFileName();
 			}
 			catch(NLMISC::EStream &)
 			{
@@ -631,7 +635,9 @@ void CVegetableDlg::OnButtonVegetableSaveDesc()
 	{
 		NL3D::CVegetable	&veget= *_Vegetables[id].Vegetable;
 
-		CFileDialog fd(FALSE, "vegetdesc", "*.vegetdesc", 0, NULL, this) ;
+		std::string		fileName= _Vegetables[id].VegetableName + ".vegetdesc";
+
+		CFileDialog fd(FALSE, "vegetdesc", fileName.c_str(), OFN_OVERWRITEPROMPT, "VegetDescFiles (*.vegetdesc)|*.vegetdesc|All Files (*.*)|*.*||", this) ;
 		fd.m_ofn.lpstrTitle= "Save Vegetable Descriptor";
 		if (fd.DoModal() == IDOK)
 		{
@@ -702,7 +708,7 @@ void CVegetableDlg::OnButtonVegetableSaveSet()
 	buildVegetableSet(vegetSet);
 
 	// Then try to save it.
-	CFileDialog fd(FALSE, "vegetset", "*.vegetset", 0, NULL, this) ;
+	CFileDialog fd(FALSE, "vegetset", _LastVegetSetName.c_str(), OFN_OVERWRITEPROMPT, "VegetSetFiles (*.vegetset)|*.vegetset|All Files (*.*)|*.*||", this) ;
 	fd.m_ofn.lpstrTitle= "Save Vegetable Set";
 	if (fd.DoModal() == IDOK)
 	{

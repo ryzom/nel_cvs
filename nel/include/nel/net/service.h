@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.16 2001/01/24 17:02:26 cado Exp $
+ * $Id: service.h,v 1.17 2001/01/29 17:47:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,9 @@ namespace NLNET
 
 
 class CMsgSocket;
+
+
+typedef uint8 TServiceId;
 
 
 /**
@@ -109,6 +112,9 @@ public:
 		return IService::_Name;
 	};
 
+	/// Returns the service identifier
+	NLNET::TServiceId	serviceId() const						{ return _SId; }
+
 	/// Returns the status
 	sint				getStatus () { return _Status; }
 
@@ -152,12 +158,17 @@ protected:
 	/// Process command line arguments for port and timeout
 	void getCustomParams();
 
+	/// Sets the service identifier
+	void				setServiceId( NLNET::TServiceId sid )	{ _SId = sid; }
+
 	/// Singleton
 	static IService				*Instance;
 
 private:
 
-	sint	_Status;
+	TServiceId					_SId;
+
+	sint						_Status;
 };
 
 }; // NLNET

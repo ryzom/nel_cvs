@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.41 2001/01/29 16:24:17 lecroart Exp $
+ * $Id: service.cpp,v 1.42 2001/01/29 17:47:55 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -319,7 +319,7 @@ sint IService::main (int argc, char **argv)
 				
 						// Register service
 						nlassert( _Server->listenAddress() != NULL );
-						CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) );
+						setServiceId( CNamingClient::registerService( IService::_Name, *(_Server->listenAddress()) ) );
 						CNamingClient::close();
 						registered = true;
 					}

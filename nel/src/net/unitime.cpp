@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.17 2001/01/04 14:37:24 lecroart Exp $
+ * $Id: unitime.cpp,v 1.18 2001/01/29 17:47:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ TTime CUniTime::getUniTime ()
 	return getLocalTime () - (_SyncLocalTime - _SyncUniTime);
 }
 
-void CUniTime::syncUniTimeFromService (CInetAddress *addr)
+void CUniTime::syncUniTimeFromService (const CInetAddress *addr)
 {
 	uint16 validitytime;
 	CSocket server;

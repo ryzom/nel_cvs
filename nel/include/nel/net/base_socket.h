@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.h,v 1.24 2001/01/17 16:34:36 lecroart Exp $
+ * $Id: base_socket.h,v 1.25 2001/01/29 17:47:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ public:
 
 protected:
 
-		std::string	_Reason;
+	std::string	_Reason;
 };
 
 
@@ -84,6 +84,16 @@ class EAccessDenied : public ESocket
 public:
 	/// Constructor
 	EAccessDenied( std::string s ): ESocket( (std::string("Access denied: ")+s).c_str(), false )
+	{}
+};
+
+
+/// Exception raised when a the NS does not find the service looked-up
+class EServiceNotFound : public ESocket
+{
+public:
+	/// Constructor
+	EServiceNotFound( std::string s ): ESocket( (std::string("Service not found: ")+s).c_str(), false )
 	{}
 };
 

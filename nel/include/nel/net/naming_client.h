@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.13 2000/11/27 13:03:59 cado Exp $
+ * $Id: naming_client.h,v 1.14 2001/01/29 17:47:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/net/inet_address.h"
 #include "nel/misc/config_file.h"
+#include "nel/net/service.h"
 
 #include <string>
 #include <map> // only one address per service
@@ -40,7 +41,7 @@ class CSocket;
 
 
 /// Type of map of registered services
-typedef std::map<std::string,CInetAddress> CRegServices;
+typedef std::map<TServiceId,std::string> CRegServices;
 
 
 /**
@@ -95,11 +96,21 @@ public:
 	 */
 	static uint16		queryServicePort( const std::string& name, const CInetAddress& addr );
 
-	/// Register a service within the naming service
-	static void			registerService( const std::string& name, const CInetAddress& addr );
+	/** Register a service within the naming service.
+	 * Returns the service identifier assigned by the NS (or 0 if it failed)
+	 */
+	static TServiceId	registerService( const std::string& name, const CInetAddress& addr );
 
-	/// Unregister a service from the naming service
-	static void			unregisterService( const std::string& name, const CInetAddress& addr );
+	/** Register a service within the naming service, using a specified service identifier.
+	 * Returns false if the service identifier is unavailable i.e. the registration failed.
+	 */
+	static bool			registerServiceWithSId( const std::string& name, const CInetAddress& addr, TServiceId sid );
+
+	// Unregister a service from the naming service, by name & address (*deprecated*)
+	//static void		unregisterService( const std::string& name, const CInetAddress& addr );
+
+	/// Unregister a service from the naming service, service identifier
+	static void			unregisterService( TServiceId sid );
 
 	/** Returns true and the address of the specified service if it is found, otherwise returns false
 	 * \param name [in] Name of the service to find
@@ -110,6 +121,9 @@ public:
 	 */
 	static bool			lookup( const std::string& name, CInetAddress& addr, uint16& validitytime );
 
+	/// Same as lookup(const string&, CInetAddress&, uint16&)
+	static bool			lookup( TServiceId sid, CInetAddress& addr, uint16& validitytime );
+
 	/** Tells the Naming Service the specified address does not respond for the specified service,
 	 * and returns true and another address for the service if available, otherwise returns false
 	 * \param name [in] Name of the service to find
@@ -119,6 +133,9 @@ public:
 	 * \return True if all worked fine
 	 */
 	static bool			lookupAlternate( const std::string& name, CInetAddress& addr, uint16& validitytime );
+
+	/// Same as lookupAlternate(const string&, CInetAddress&, uint16&)
+	static bool			lookupAlternate( TServiceId sid, CInetAddress& addr, uint16& validitytime );
 
 	/** Obtains a socket connected to a server providing the service \e name.
 	 * In case of failure, the method throws EServiceNotFound
@@ -163,6 +180,10 @@ protected:
 
 	/// Performs a socket disconnection
 	static void			doClose();
+
+	/// Helper function for lookup() and loopupAlternate()
+	static bool			doReceiveLookupAnswer( const std::string& name, NLNET::CInetAddress& addr, uint16& validitytime );
+
 
 private:
 	

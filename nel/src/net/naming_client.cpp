@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.18 2001/01/08 17:20:20 cado Exp $
+ * $Id: naming_client.cpp,v 1.19 2001/01/29 17:47:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,12 @@
 #include "nel/net/naming_client.h"
 #include "nel/net/socket.h"
 #include "nel/misc/debug.h"
+#include <sstream>
 
 
+using namespace std;
 using namespace NLMISC;
+
 
 namespace NLNET {
 
@@ -62,8 +65,23 @@ const sint16 LK_CBINDEX = 0;
 const sint16 LA_CBINDEX = 1;
 const sint16 RG_CBINDEX = 2;
 const sint16 UN_CBINDEX = 3;
+
 const sint16 QP_CBINDEX = 4;
+
+const sint16 LKI_CBINDEX = 5;
+const sint16 LAI_CBINDEX = 6;
+const sint16 RGI_CBINDEX = 7;
+const sint16 UNI_CBINDEX = 8;
 //@}
+
+
+/// Returns the string corresponding to a service identifier
+string sIdToString( TServiceId sid )
+{
+	stringstream ss;
+	ss << sid;
+	return ss.str();
+}
 
 
 /*
@@ -84,8 +102,8 @@ void CNamingClient::finalize()
 	while ( ! _RegisteredServices.empty() )
 	{
 		CRegServices::iterator irs = _RegisteredServices.begin();
-		std::pair<std::string,CInetAddress> p = (*irs); // we duplicate it because we don't want to pass a reference, into unregisterService, to things that it will suppress
-		unregisterService( p.first, p.second );
+		TServiceId sid = (*irs).first;
+		unregisterService( sid );
 	}
 
 	if ( _ConfigFile != NULL )
@@ -237,10 +255,10 @@ uint16 CNamingClient::queryServicePort( const std::string& name, const CInetAddr
 }
 
 
-/*
- * Register a service within the naming service
+/* Register a service within the naming service.
+ * Returns the service identifier assigned by the NS (or 0 if it failed)
  */
-void CNamingClient::registerService( const std::string& name, const CInetAddress& addr )
+TServiceId CNamingClient::registerService( const std::string& name, const CInetAddress& addr )
 {
 	CNamingClient::openT();
 	CMessage msgout( "" ); //"RG" );
@@ -249,17 +267,58 @@ void CNamingClient::registerService( const std::string& name, const CInetAddress
 	msgout.serial( const_cast<CInetAddress&>(addr) );
 	CNamingClient::_ClientSock->send( msgout );
 
-	_RegisteredServices.insert( std::make_pair(name,addr) );
+	CMessage msgin( "", true );
+	CNamingClient::_ClientSock->receive( msgin );
+	TServiceId sid;
+	msgin.serial( sid );
+
+	_RegisteredServices.insert( std::make_pair(sid,name) );
 
 	CNamingClient::closeT();
-	nldebug( "Registered service %s at %s", name.c_str(), addr.asString().c_str() );
+	nldebug( "Registered service %s-%hu at %s", name.c_str(), (uint16)sid, addr.asString().c_str() );
+
+	return sid;
+}
+
+
+/* Register a service within the naming service, using a specified service identifier.
+ * Returns false if the service identifier is unavailable i.e. the registration failed.
+ */
+bool CNamingClient::registerServiceWithSId( const std::string& name, const CInetAddress& addr, TServiceId sid )
+{
+	CNamingClient::openT();
+	CMessage msgout( "" ); //"RGI" );
+	msgout.setType( RGI_CBINDEX );
+	msgout.serial( const_cast<std::string&>(name) );
+	msgout.serial( const_cast<CInetAddress&>(addr) );
+	msgout.serial( sid );
+	CNamingClient::_ClientSock->send( msgout );
+
+	CMessage msgin( "", true );
+	CNamingClient::_ClientSock->receive( msgin );
+	bool ok;
+	msgin.serial( ok );
+
+	CNamingClient::closeT();
+
+	if ( ok )
+	{
+		_RegisteredServices.insert( std::make_pair(sid,name) );
+		nldebug( "Registered service %s-%hu at %s", name.c_str(), (uint16)sid, addr.asString().c_str() );
+		return true;
+	}
+	else
+	{
+		nldebug( "Cannot register service %s-%hu: service identifier unavailable", name.c_str(), (uint16)sid );
+		return false;
+	}
 }
 
 
 /*
- * Unregister a service from the naming service
+ * Unregister a service from the naming service, by name & address (*deprecated*)
  */
-void CNamingClient::unregisterService( const std::string& name, const CInetAddress& addr )
+/*void CNamingClient::unregisterService( const std::string& name, const CInetAddress& addr )
 {
 	CNamingClient::openT();
 	CMessage msgout( "" ); //"UN" );
@@ -272,24 +331,32 @@ void CNamingClient::unregisterService( const std::string& name, const CInetAddre
 
 	CNamingClient::closeT();
 	nldebug( "Unregistered service %s", name.c_str() );
-}
-
+}*/
 
 
 /*
- * Returns true and the address of the specified service if it is found, otherwise returns false
+ * Unregister a service from the naming service, by name & service identifier
  */
-bool CNamingClient::lookup( const std::string& name, CInetAddress& addr, uint16& validitytime )
+void CNamingClient::unregisterService( TServiceId sid )
 {
 	CNamingClient::openT();
-
-	// Send request
-	nldebug( "Looking-up for service %s...", name.c_str() );
-	CMessage msgout( "" ); // "LK" );
-	msgout.setType( LK_CBINDEX );
-	msgout.serial( const_cast<std::string&>(name) );
+	CMessage msgout( "" ); //"UNI" );
+	msgout.setType( UNI_CBINDEX );
+	msgout.serial( sid );
 	CNamingClient::_ClientSock->send( msgout );
 
+	nldebug( "Unregistering service %s-%hu", _RegisteredServices[sid].c_str(), sid );
+	_RegisteredServices.erase( sid );
+
+	CNamingClient::closeT();
+}
+
+
+/*
+ * Helper function for lookup() and loopupAlternate()
+ */
+bool CNamingClient::doReceiveLookupAnswer( const std::string& name, CInetAddress& addr, uint16& validitytime )
+{
 	// Wait for answer (warning: it can receive a bad answer if another request has been done before and not processed)
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
@@ -307,6 +374,42 @@ bool CNamingClient::lookup( const std::string& name, CInetAddress& addr, uint16&
 		CNamingClient::closeT();
 		return true;
 	}
+}
+
+
+/*
+ * Returns true and the address of the specified service if it is found, otherwise returns false
+ */
+bool CNamingClient::lookup( const std::string& name, CInetAddress& addr, uint16& validitytime )
+{
+	CNamingClient::openT();
+
+	// Send request
+	nldebug( "Looking-up for service %s...", name.c_str() );
+	CMessage msgout( "" ); // "LK" );
+	msgout.setType( LK_CBINDEX );
+	msgout.serial( const_cast<std::string&>(name) );
+	CNamingClient::_ClientSock->send( msgout );
+
+	return doReceiveLookupAnswer( name, addr, validitytime );
+}
+
+
+/*
+ * Same as lookup(const string&, CInetAddress&, uint16&)
+ */
+bool CNamingClient::lookup( TServiceId sid, CInetAddress& addr, uint16& validitytime )
+{
+	CNamingClient::openT();
+
+	// Send request
+	nldebug( "Looking-up for service %hu...", (uint16)sid );
+	CMessage msgout( "" ); // "LKI" );
+	msgout.setType( LKI_CBINDEX );
+	msgout.serial( sid );
+	CNamingClient::_ClientSock->send( msgout );
+
+	return doReceiveLookupAnswer( sIdToString(sid), addr, validitytime );
 }
 
 
@@ -325,23 +428,26 @@ bool CNamingClient::lookupAlternate( const std::string& name, CInetAddress& addr
 	msgout.serial( addr );
 	CNamingClient::_ClientSock->send( msgout );
 
-	// Wait for answer (warning: it can receive a bad answer if another request has been done before and not processed)
-	CMessage msgin( "", true );
-	CNamingClient::_ClientSock->receive( msgin );
-	msgin.serial( validitytime );
-	if ( validitytime == 0 )
-	{
-		nldebug( "Service %s not found", name.c_str() );
-		CNamingClient::closeT();
-		return false;
-	}
-	else
-	{
-		msgin.serial( addr );
-		nldebug( "Service %s is at %s", name.c_str(), addr.asString().c_str() );
-		CNamingClient::closeT();
-		return true;
-	}
+	return doReceiveLookupAnswer( name, addr, validitytime );
+}
+
+
+/*
+ * Same as lookupAlternate(const string&, CInetAddress&, uint16&)
+ */
+bool CNamingClient::lookupAlternate( TServiceId sid, CInetAddress& addr, uint16& validitytime )
+{
+	CNamingClient::openT();
+
+	// Send request
+	nldebug( "Looking-up again for service %hu...", (uint16)sid );
+	CMessage msgout( "" ); // "LAI" );
+	msgout.setType( LAI_CBINDEX );
+	msgout.serial( sid );
+	msgout.serial( addr );
+	CNamingClient::_ClientSock->send( msgout );
+
+	return doReceiveLookupAnswer( sIdToString(sid), addr, validitytime );
 }
 
 

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.53 2001/01/26 13:33:37 cado Exp $
+ * $Id: msg_socket.cpp,v 1.54 2001/01/29 17:47:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,9 +92,6 @@ CMsgSocket::CMsgSocket( const TCallbackItem *callbackarray, TTypeNum arraysize, 
 }
 
 
-const char *service_not_found_cstr = "Service not found";
-
-
 /* Constructs a client object, that connects to a service. The address of the server provider
  * the service is retrieved using a Naming Service.
  */
@@ -165,14 +162,14 @@ void CMsgSocket::connectToService()
 				delete _ClientSock;
 				if ( ! CNamingClient::lookupAlternate( _ServiceName, servaddr, _ValidityTime ) )
 				{
-					throw ESocket( service_not_found_cstr, false );
+					throw EServiceNotFound( _ServiceName );
 				}
 			}
 		}
 	}
 	else
 	{
-		throw ESocket( service_not_found_cstr, false );
+		throw EServiceNotFound( _ServiceName );
 	}
 }
 

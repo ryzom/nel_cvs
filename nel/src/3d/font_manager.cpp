@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.19 2001/01/15 15:18:40 lecroart Exp $
+ * $Id: font_manager.cpp,v 1.20 2001/01/29 17:47:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,7 +139,7 @@ NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
  * This function compute a basic_string
  *
  */
-template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::basic_string<T, std::char_traits<T>, std::allocator<T> > &s,
+template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::basic_string<T, std::char_traits<T>, std::allocator<T>> &s,
 				CFontGenerator *fontGen,
 				const NLMISC::CRGBA &color,
 				uint32 fontSize,

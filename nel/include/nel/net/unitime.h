@@ -1,7 +1,7 @@
 /** \file unitime.h
  * CUniTime class
  *
- * $Id: unitime.h,v 1.6 2001/01/04 14:37:24 lecroart Exp $
+ * $Id: unitime.h,v 1.7 2001/01/29 17:47:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,7 @@ public:
 	/** You need to call this function before calling getUniTime or an assert will occured.
 	 * This function will connect to the time service and synchronize your computer.
 	 */
-	static void				syncUniTimeFromService (CInetAddress *addr=NULL);
+	static void				syncUniTimeFromService (const CInetAddress *addr=NULL);
 
 
 

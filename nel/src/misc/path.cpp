@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.49 2002/07/16 14:47:25 lecroart Exp $
+ * $Id: path.cpp,v 1.50 2002/07/25 13:34:32 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -223,13 +223,15 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 		
 		// try with the remapping
 		for (uint j = 0; j < inst->_Extensions.size(); j++)
-		if (CFile::getExtension (filename) == inst->_Extensions[j].second)
 		{
-			string rs = inst->_AlternativePaths[i] + CFile::getFilenameWithoutExtension (filename) + "." + inst->_Extensions[j].first;
-			if ( CFile::fileExists(rs) )
+			if (strlwr(CFile::getExtension (filename)) == inst->_Extensions[j].second)
 			{
-				NL_DISPLAY_PATH("CPath::lookup(%s): found in the alternative directory: '%s'", filename.c_str(), rs.c_str());
-				return rs;
+				string rs = inst->_AlternativePaths[i] + CFile::getFilenameWithoutExtension (filename) + "." + inst->_Extensions[j].first;
+				if ( CFile::fileExists(rs) )
+				{
+					NL_DISPLAY_PATH("CPath::lookup(%s): found in the alternative directory: '%s'", filename.c_str(), rs.c_str());
+					return rs;
+				}
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.50.2.2 2003/05/06 12:00:31 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.50.2.3 2003/05/28 13:42:36 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,6 +65,8 @@
 
 
 
+
+
 using namespace NLMISC;
 
 using namespace std;
@@ -107,6 +109,7 @@ const char *getPriorityStr( TSoundPriority p )
 
 UAudioMixer	*UAudioMixer::createAudioMixer()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	return new CAudioMixerUser();
 }
 
@@ -205,6 +208,7 @@ void CAudioMixerUser::initClusteredSound(NL3D::UScene *uscene, float minGain, fl
 
 void CAudioMixerUser::initClusteredSound(NL3D::CScene *scene, float minGain, float maxDistance, float portalInterpolate = 20.0f)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	if (_ClusteredSound == 0)
 		_ClusteredSound = new CClusteredSound;
 
@@ -356,6 +360,7 @@ void CAudioMixerUser::setSamplePath(const std::string& path)
 
 void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgressCallback *progressCallBack)
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	nldebug( "AM: Init..." );
 
 	_profile(( "AM: ---------------------------------------------------------------" ));
@@ -408,6 +413,8 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 	}
 	catch ( ESoundDriver & )
 	{
+		delete _Tracks[i];
+		_Tracks[i] = 0;
 		// If the source generation failed, keep only the generated number of sources
 		_NbTracks = i;
 	}
@@ -538,11 +545,13 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 				setBackgroundFilterFades(fades);
 				setBackgroundFlags(flags);
 			}
+
+			NLGEORGES::UFormLoader::releaseLoader(formLoader);
 		}
 	}
 	catch(...)
 	{
-		delete formLoader;
+		NLGEORGES::UFormLoader::releaseLoader(formLoader);
 	}
 
 	// init the user var bindings
@@ -551,6 +560,7 @@ void				CAudioMixerUser::init(uint maxTrack, bool useEax, bool useADPCM, IProgre
 
 void	CAudioMixerUser::buildSampleBankList()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 	uint i;
 	// regenerate the sample banks list
 	const std::string &sp = _SamplePath;
@@ -647,6 +657,7 @@ void	CAudioMixerUser::buildSampleBankList()
 
 //			hdrAdpcm.addSample(CFile::getFilename(sampleList[j]), freq, nbSample, );
 				hdr.addSample(CFile::getFilename(sampleList[j]), freq, nbSample, mono16Buffers[j].size()*2, adpcmBuffers[j].size());
+				delete [] data;
 			}
 
 			// write the sample bank
@@ -1501,6 +1512,7 @@ void				CAudioMixerUser::addSource( CSourceCommon *source )
 
 USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb, void *userParam, NL3D::CCluster *cluster, CSoundContext *context )
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 #if NL_PROFILE_MIXER
 	TTicks start = CTime::getPerformanceTime();
 #endif
@@ -1676,6 +1688,7 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 
 uint32			CAudioMixerUser::loadSampleBank(bool async, const std::string &name, std::vector<std::string> *notfoundfiles )
 {
+	NL_ALLOC_CONTEXT(NLSOUND_UAudioMixer);
 //	nlassert( filename != NULL );
 
 //	string path = _SamplePath;

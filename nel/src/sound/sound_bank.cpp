@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.14 2003/03/24 18:09:53 corvazier Exp $
+ * $Id: sound_bank.cpp,v 1.14.2.1 2003/05/28 13:47:32 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 
 #include "nel/georges/load_form.h"
 
+
 using namespace std;
 using namespace NLMISC;
 using namespace NLGEORGES;
@@ -52,6 +53,7 @@ CSoundBank		*CSoundBank::_Instance;
 
 CSoundBank	*CSoundBank::instance()
 {
+	NL_ALLOC_CONTEXT(NLSOUND_CSoundBank);
 	if (_Instance == 0)
 		_Instance = new CSoundBank();
 	return _Instance;
@@ -190,6 +192,7 @@ public:
 	// load/save the values using the serial system (called by GEORGE::loadForm)
 	void serial (NLMISC::IStream &s)
 	{
+		NL_ALLOC_CONTEXT(NLSOUND_CSoundSerializer);
 		if (s.isReading())
 		{
 			// read the first item to find the type
@@ -266,8 +269,6 @@ public:
 	static uint getVersion () { return 3; }
 };
 
-// this structure is fill by the loadForm() function and will contain all you need
-std::map<std::string, CSoundSerializer> Container;
 
 /** Load all the sound samples.
  *
@@ -275,6 +276,8 @@ std::map<std::string, CSoundSerializer> Container;
  */
 void				CSoundBank::load()
 {
+	// this structure is fill by the loadForm() function and will contain all you need
+	std::map<std::string, CSoundSerializer> Container;
 	nlassert(!_Loaded);
 	// Just call the GEORGE::loadFrom method to read all available sounds
 	::loadForm("sound", CAudioMixerUser::instance()->getPackedSheetPath()+"sounds.packed_sheets", Container, CAudioMixerUser::instance()->getPackedSheetUpdate(), false);
@@ -287,6 +290,8 @@ void				CSoundBank::load()
 		if (first->second.Sound != 0)
 			addSound(first->second.Sound);
 	}
+
+	Container.clear();
 }
 
 
@@ -296,7 +301,19 @@ void				CSoundBank::load()
 void				CSoundBank::unload()
 {
 	nlassert(_Loaded);
-	vector<CSound*> vec;
+
+	TSoundTable::iterator first(_Sounds.begin()), last(_Sounds.end());
+	for (; first != last; ++first)
+	{
+		delete first->second;
+	}
+
+	_Sounds.clear();
+	_Loaded = false;
+
+/*	vector<CSound*> vec;
+
+
 	TSoundTable::iterator map_iter;
 
 	for (map_iter = _Sounds.begin(); map_iter != _Sounds.end(); ++map_iter)
@@ -316,6 +333,7 @@ void				CSoundBank::unload()
 	}
 
 	_Loaded = false;
+*/
 }
 
 /*

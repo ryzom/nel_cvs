@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.23 2000/12/01 10:06:37 cado Exp $
+ * $Id: base_socket.cpp,v 1.24 2000/12/01 10:48:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,8 +114,8 @@ CBaseSocket::CBaseSocket( bool reliable, bool logging ) :
 
 #ifndef NL_OS_WINDOWS
 	// Set Reuse Address On (does not work on Win98 and is useless on Win2000)
-	bool value = true;
-	if ( setsockopt( _Sock, SOL_SOCKET, SO_REUSEADDR, (char*)&value, sizeof(value) ) != 0 )
+	int value = true;
+	if ( setsockopt( _Sock, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value) ) == SOCKET_ERROR )
 	{
 		throw ESocket( "ReuseAddr failed. ", ERROR_NUM );
 	}

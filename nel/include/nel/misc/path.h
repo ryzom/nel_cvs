@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.12 2001/12/20 17:42:49 besson Exp $
+ * $Id: path.h,v 1.13 2002/01/28 16:15:46 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,11 +26,12 @@
 #ifndef NL_PATH_H
 #define NL_PATH_H
 
+#include "nel/misc/types_nl.h"
+
 #include <map>
 #include <string>
 #include <vector>
 
-#include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
 
 namespace NLMISC {

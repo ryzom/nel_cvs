@@ -1,7 +1,7 @@
 /** \file cloud.cpp
  * cloud implementation
  *
- * $Id: cloud.cpp,v 1.3 2002/10/30 13:39:16 vizerie Exp $
+ * $Id: cloud.cpp,v 1.4 2002/11/04 14:08:58 coutelas Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -734,9 +734,9 @@ void CCloud::dispBill (CCamera *pCam)
 		else
 			mTmp->setColor(CRGBA(255,0,0,255));
 
-		_Driver->setPolygonMode(IDriver::TPolygonMode::Line);
+		_Driver->setPolygonMode(IDriver::Line);
 		_Driver->renderQuads (*mTmp, 0, 1);
-		_Driver->setPolygonMode(IDriver::TPolygonMode::Filled);
+		_Driver->setPolygonMode(IDriver::Filled);
 	}
 
 }
@@ -760,3 +760,4 @@ void CCloud::setMode2D ()
 }
 
 } // namespace NL3D
+

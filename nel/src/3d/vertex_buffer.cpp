@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.8 2000/12/11 15:52:33 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.9 2000/12/12 10:04:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -332,6 +332,23 @@ void CVertexBuffer::setTexCoord(uint idx, uint8 stage, float u, float v)
 
 // --------------------------------------------------
 
+void	CVertexBuffer::setTexCoord(uint idx, uint8 stage, const CUV &uv)
+{
+	uint8*	ptr;
+	CUV*	ptruv;
+
+	nlassert(stage<IDRV_VF_MAXSTAGES);
+	nlassert(_Flags & IDRV_VF_UV[stage]);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_UVOff[stage];
+	ptruv=(CUV*)ptr;
+	*ptruv=uv;
+}
+
+
+// --------------------------------------------------
+
 void CVertexBuffer::setWeight(uint idx, uint8 wgt, float w)
 {
 	uint8*	ptr;
@@ -347,6 +364,73 @@ void CVertexBuffer::setWeight(uint idx, uint8 wgt, float w)
 }
 
 
-// --------------------------------------------------
+//****************************************************************************
+void		CVertexBuffer::serial(NLMISC::IStream &f)
+{
+	sint	ver= f.serialVersion(0);
+
+	// Serial VBuffers format/size.
+	//=============================
+	f.serial(_Flags);
+	f.serial(_NbVerts);
+	if(f.isReading())
+	{
+		reserve(0);
+		setVertexFormat(_Flags);
+		setNumVertices(_NbVerts);
+	}
+	// All other infos (but _Verts) are computed by setVertexFormat() and setNumVertices().
+
+
+	// Serial VBuffers components.
+	//============================
+	sint	i;
+	for(sint id=0;id<(sint)_NbVerts;id++)
+	{
+		// XYZ.
+		if(_Flags & IDRV_VF_XYZ)
+		{
+			CVector		&vert= *(CVector*)getVertexCoordPointer(id);
+			f.serial(vert);
+		}
+		// Normal
+		if(_Flags & IDRV_VF_NORMAL)
+		{
+			CVector		&norm= *(CVector*)getNormalCoordPointer(id);
+			f.serial(norm);
+		}
+		// Uvs.
+		for(i=0;i<IDRV_VF_MAXSTAGES;i++)
+		{
+			if(_Flags & IDRV_VF_UV[i])
+			{
+				CUV		&uv= *(CUV*)getTexCoordPointer(id, i);
+				f.serial(uv);
+			}
+		}
+		// Color.
+		if(_Flags & IDRV_VF_COLOR)
+		{
+			CRGBA		&col= *(CRGBA*)getColorPointer(id);
+			f.serial(col);
+		}
+		// Specular.
+		if(_Flags & IDRV_VF_SPECULAR)
+		{
+			CRGBA		&col= *(CRGBA*)getSpecularPointer(id);
+			f.serial(col);
+		}
+		// Weights
+		for(i=0;i<IDRV_VF_MAXW;i++)
+		{
+			if(_Flags & IDRV_VF_W[i])
+			{
+				float	&w= *(float*)getWeightPointer(id, i);
+				f.serial(w);
+			}
+		}
+	}
+}
+
 
 }

@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.35 2000/12/11 15:50:44 berenguier Exp $
+ * $Id: driver.h,v 1.36 2000/12/12 10:04:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,9 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/stream.h"
 #include "nel/3d/texture.h"
+#include "nel/3d/uv.h"
 
 #include <vector>
 #include <list>
@@ -70,14 +72,12 @@ const uint32 IDRV_MAT_MAXTEXTURES	=	4;
 
 const uint32 IDRV_TOUCHED_BLENDFUNC	=	0x00000001;
 const uint32 IDRV_TOUCHED_BLEND		=	0x00000002;
-const uint32 IDRV_TOUCHED_OPACITY	=	0x00000004;
-const uint32 IDRV_TOUCHED_SHADER	=	0x00000008;
-const uint32 IDRV_TOUCHED_ZFUNC		=	0x00000010;
-const uint32 IDRV_TOUCHED_ZBIAS		=	0x00000020;
-const uint32 IDRV_TOUCHED_COLOR		=	0x00000040;
-const uint32 IDRV_TOUCHED_LIGHTING	=	0x00000080;
-const uint32 IDRV_TOUCHED_DEFMAT	=	0x00000100;
-const uint32 IDRV_TOUCHED_ALPHA		=	0x00000200;
+const uint32 IDRV_TOUCHED_SHADER	=	0x00000004;
+const uint32 IDRV_TOUCHED_ZFUNC		=	0x00000008;
+const uint32 IDRV_TOUCHED_ZBIAS		=	0x00000010;
+const uint32 IDRV_TOUCHED_COLOR		=	0x00000020;
+const uint32 IDRV_TOUCHED_LIGHTING	=	0x00000040;
+const uint32 IDRV_TOUCHED_DEFMAT	=	0x00000080;
 
 // Start texture touch at 0x10000.
 const uint32 IDRV_TOUCHED_TEX[IDRV_MAT_MAXTEXTURES]		=
@@ -105,14 +105,12 @@ public:
 private:
 
 	TShader					_ShaderType;
-	float					_Opacity;
 	uint32					_Flags;
 	TBlend					_SrcBlend,_DstBlend;
 	ZFunc					_ZFunction;
 	float					_ZBias;
 	CRGBA					_Color;
 	CRGBA					_Emissive,_Ambient,_Diffuse,_Specular;
-	float					_Alpha;
 	uint32					_Touched;
 
 	CSmartPtr<ITexture>		_Textures[IDRV_MAT_MAXTEXTURES];
@@ -141,8 +139,6 @@ public:
 
 	void					setShader(TShader val);
 
-	void					setOpacity(float val);
-
 	TBlend					getSrcBlend(void) { return(_SrcBlend); }
 	void					setSrcBlend(TBlend val);
 
@@ -168,7 +164,6 @@ public:
 											CRGBA diffuse=CRGBA(0,0,0), 
 											CRGBA specular=CRGBA(0,0,0) );
 
-	void					setAlpha(float val);
 
 	/** Init the material as unlit. normal shader, no lighting ....
 	 * Default to: normal shader, no lighting, color to White(1,1,1,1), no texture, ZBias=0, ZFunc= lessequal, no blend.
@@ -180,6 +175,9 @@ public:
 	 * All other states are undefined (such as blend function, since blend is disabled).
 	 */
 	void					initLighted();
+
+
+	void		serial(NLMISC::IStream &f);
 };
 
 // --------------------------------------------------
@@ -251,6 +249,7 @@ public:
 	void					setVertexCoord(uint idx, const CVector &v);
 	void					setNormalCoord(uint idx, const CVector &v);
 	void					setTexCoord(uint idx, uint8 stage, float u, float v);
+	void					setTexCoord(uint idx, uint8 stage, const CUV &uv);
 	void					setColor(uint idx, CRGBA rgba);
 	void					setSpecular(uint idx, CRGBA rgba);
 	void					setWeight(uint idx, uint8 wgt, float w);
@@ -262,6 +261,9 @@ public:
 	void*					getColorPointer(uint idx=0);
 	void*					getSpecularPointer(uint idx=0);
 	void*					getWeightPointer(uint idx=0, uint8 wgt=0);
+
+
+	void		serial(NLMISC::IStream &f);
 };
 
 // --------------------------------------------------
@@ -369,6 +371,9 @@ public:
 	 * Return the Quad buffer
 	 */
 	uint32*	getQuadPointer(void);
+
+
+	void		serial(NLMISC::IStream &f);
 };
 
 // --------------------------------------------------

@@ -88,7 +88,7 @@ LIB32=xilink6.exe -lib
 # PROP Intermediate_Dir "ReleaseDebug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /FR /YX /FD /c
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -453,6 +453,14 @@ SOURCE=.\3d\nelu.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\nelu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\register_3d.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\register_3d.h
 # End Source File
 # Begin Source File
 

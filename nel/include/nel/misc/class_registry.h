@@ -1,7 +1,7 @@
 /** \file class_registry.cpp
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.h,v 1.5 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: class_registry.h,v 1.6 2000/12/12 10:05:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,10 @@
 #define NL_CLASS_REGISTRY_H
 
 #include	"nel/misc/types_nl.h"
+#include	<typeinfo>
 #include	<string>
 #include	<set>
+
 
 namespace	NLMISC
 {
@@ -108,7 +110,7 @@ private:
 /// Usefull Macros.
 #define	NLMISC_DECLARE_CLASS(_class_)					\
 	virtual std::string	getClassName() {return #_class_;}		\
-	static	IClassable	*creator() {return new _class_;}
+	static	NLMISC::IClassable	*creator() {return new _class_;}
 #define	NLMISC_REGISTER_CLASS(_class_) NLMISC::CClassRegistry::registerClass(#_class_, _class_::creator, typeid(_class_).name());
 
 

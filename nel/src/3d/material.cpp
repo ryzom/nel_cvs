@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.8 2000/12/04 16:58:43 berenguier Exp $
+ * $Id: material.cpp,v 1.9 2000/12/12 10:04:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,9 +58,9 @@ void			CMaterial::initLighted()
 CMaterial		&CMaterial::operator=(const CMaterial &mat)
 {
 	_ShaderType= mat._ShaderType;
-	_Opacity= mat._Opacity;
 	_Flags= mat._Flags;
-	_SrcBlend,_DstBlend= mat._SrcBlend,_DstBlend;
+	_SrcBlend= mat._SrcBlend;
+	_DstBlend= mat._DstBlend;
 	_ZFunction= mat._ZFunction;
 	_ZBias= mat._ZBias;
 	_Color= mat._Color;
@@ -68,7 +68,6 @@ CMaterial		&CMaterial::operator=(const CMaterial &mat)
 	_Ambient= mat._Ambient;
 	_Diffuse= mat._Diffuse;
 	_Specular= mat._Specular;
-	_Alpha= mat._Alpha;
 
 	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
 		_Textures[i]= mat._Textures[i];
@@ -87,6 +86,44 @@ CMaterial::~CMaterial()
 {
 	// Must kill the drv mirror of this material.
 	pShader.kill();
+}
+
+
+// ***************************************************************************
+void		CMaterial::serial(NLMISC::IStream &f)
+{
+	sint	ver= f.serialVersion(0);
+	// For the version 0:
+	nlassert(IDRV_MAT_MAXTEXTURES==4);
+
+	f.serialEnum(_ShaderType);
+	f.serial(_Flags);
+	f.serialEnum(_SrcBlend);
+	f.serialEnum(_DstBlend);
+	f.serialEnum(_ZFunction);
+	f.serial(_ZBias);
+	f.serial(_Color);
+	f.serial(_Emissive, _Ambient, _Diffuse, _Specular);
+
+	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+	{
+		ITexture*	text;
+		if(f.isReading())
+		{
+			f.serialPolyPtr(text);
+			_Textures[i]= text;
+		}
+		else
+		{
+			text= _Textures[i];
+			f.serialPolyPtr(text);
+		}
+	}
+
+	if(f.isReading())
+		// All states of material are modified.
+		_Touched= IDRV_TOUCHED_ALL;
+
 }
 
 

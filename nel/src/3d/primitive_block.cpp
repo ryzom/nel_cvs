@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.6 2000/12/11 15:52:33 berenguier Exp $
+ * $Id: primitive_block.cpp,v 1.7 2000/12/12 10:04:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,6 +181,23 @@ void CPrimitiveBlock::addQuad(uint32 vidx0, uint32 vidx1, uint32 vidx2, uint32 v
 	setQuad(getNumQuad()-1, vidx0, vidx1, vidx2, vidx3);
 }
 
+
+
+/*---------------------------------------------------------------------------*\
+							serial()
+\*---------------------------------------------------------------------------*/
+void		CPrimitiveBlock::serial(NLMISC::IStream &f)
+{
+	sint	ver= f.serialVersion(0);
+
+	f.serial(_NbLines, _LineCapacity);
+	f.serialCont(_Line);
+	f.serial(_NbTris, _TriCapacity);
+	f.serialCont(_Tri);
+	f.serial(_NbQuads, _QuadCapacity);
+	f.serialCont(_Quad);
+
+}
 
 
 }

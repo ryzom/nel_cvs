@@ -2,7 +2,7 @@
  * 
  * 
  *
- * $Id: driver_material_inline.h,v 1.6 2000/12/04 16:58:20 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.7 2000/12/12 10:04:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,12 +59,6 @@ inline void CMaterial::setShader(TShader val)
 {
 	_ShaderType=val;
 	_Touched|=IDRV_TOUCHED_SHADER;
-}
-
-inline void CMaterial::setOpacity(float val)
-{
-	_Opacity=val;
-	_Touched|=IDRV_TOUCHED_OPACITY;
 }
 
 inline void CMaterial::setSrcBlend(TBlend val)
@@ -141,11 +135,6 @@ inline void CMaterial::setLighting(	bool active, bool DefMat,
 	_Touched|=IDRV_TOUCHED_LIGHTING;
 }
 
-inline void CMaterial::setAlpha(float val)
-{
-	_Alpha=val;
-	_Touched|=IDRV_TOUCHED_ALPHA;
-}
 
 // --------------------------------------------------
 

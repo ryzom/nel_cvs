@@ -1,7 +1,7 @@
 /** \file uv.h
  * <File description>
  *
- * $Id: uv.h,v 1.1 2000/12/11 15:50:20 berenguier Exp $
+ * $Id: uv.h,v 1.2 2000/12/12 10:04:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_UV_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/stream.h"
 
 
 namespace NL3D 
@@ -72,6 +73,7 @@ public:
 	bool	operator==(const CUV &c) const {return (U==c.U) && (V==c.V);}
 	bool	operator!=(const CUV &c) const {return !(*this==c);}
 
+	void	serial(NLMISC::IStream &f)	{f.serial(U,V);}
 };
 
 
@@ -116,6 +118,7 @@ public:
 	bool	operator==(const CUVW &c) const {return (U==c.U) && (V==c.V) && (W==c.W);}
 	bool	operator!=(const CUVW &c) const {return !(*this==c);}
 
+	void	serial(NLMISC::IStream &f)	{f.serial(U,V,W);}
 };
 
 

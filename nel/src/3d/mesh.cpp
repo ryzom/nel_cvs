@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.1 2000/12/11 15:52:33 berenguier Exp $
+ * $Id: mesh.cpp,v 1.2 2000/12/12 10:04:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,6 @@ CMesh::CCorner::CCorner()
 }
 
 
-// TODODODOD: serial+ serial material, VB, et PB.
 
 
 
@@ -214,6 +213,17 @@ void	CMesh::render(IDriver *drv)
 	{
 		drv->render(_RdrPass[i].PBlock, _RdrPass[i].Material);
 	}
+}
+
+
+// ***************************************************************************
+void	CMesh::serial(NLMISC::IStream &f)
+{
+	sint	ver= f.serialVersion(0);
+
+	f.serial(_VBuffer);
+	f.serialCont(_RdrPass);
+	f.serial(_BBox);
 }
 
 

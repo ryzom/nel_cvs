@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.1 2000/12/11 15:50:34 berenguier Exp $
+ * $Id: mesh.h,v 1.2 2000/12/12 10:04:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,8 @@ public:
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv);
 
+	/// serial this mesh.
+	void			serial(NLMISC::IStream &f);
 
 
 // ************************
@@ -124,6 +126,15 @@ private:
 	public:
 		CMaterial			Material;
 		CPrimitiveBlock		PBlock;
+
+		// Serialize a rdrpass.
+		void	serial(NLMISC::IStream &f)
+		{
+			sint	ver= f.serialVersion(0);
+
+			f.serial(Material);
+			f.serial(PBlock);
+		}
 	};
 
 private:

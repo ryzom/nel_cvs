@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.12 2000/12/08 10:32:31 berenguier Exp $
+ * $Id: texture.h,v 1.13 2000/12/12 10:04:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
+#include "nel/misc/stream.h"
 #include "nel/3d/bitmap.h"
 #include "nel/3d/font_generator.h"
 #include <string>
@@ -66,7 +67,7 @@ public:
  * \author Nevrax France
  * \date 2000
  */
-class ITexture : public CBitmap, public NLMISC::CRefCount
+class ITexture : public CBitmap, public NLMISC::CRefCount, public NLMISC::IStreamable
 {
 private:
 	bool	_Releasable;
@@ -203,11 +204,29 @@ public:
 
 
 	/** 
+	 * sharing system.
+	 * \author Lionel Berenguier
+	 * \date 2000
+	 */	
+	virtual bool			supportSharing() const {return true;}
+	virtual std::string		getShareName() const {return getFileName();}
+
+
+	/** 
 	 * Generate the texture
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
 	void generate();
+
+	/// Save the texture file name.
+	virtual void	serial(NLMISC::IStream &f)
+	{
+		f.serial(_FileName);
+		if(f.isReading())
+			_Touched= true;
+	}
+	NLMISC_DECLARE_CLASS(CTextureFile);
 
 };
 
@@ -309,6 +328,11 @@ public:
 	 */	
 	void generate();
 
+
+	/// Todo: serialize a mem texture.
+	virtual void	serial(NLMISC::IStream &f) {nlstop;}
+	NLMISC_DECLARE_CLASS(CTextureMem);
+
 };
 
 
@@ -338,6 +362,22 @@ class CTextureFont : public ITexture
 	CFontGenerator *_FontGen;
 public:
 
+	/** Default constructor
+	 * 
+	 */	
+	CTextureFont() 
+	{ 
+		// Default char. This ctor is usefull for polymorphic serialisation only.
+		Char = ' ';
+		_Size = 10;
+		_CharWidth = 0;
+		_CharHeight = 0;
+		_FontGen = NULL;
+		_Width = 0;
+		_Height = 0;
+	}
+
+	
 	/** Default constructor
 	 * 
 	 */	
@@ -393,6 +433,12 @@ public:
 	sint32 Left;
 	/// Advance to the next caracter
 	sint32 AdvX;
+
+
+	/// Todo: serialize a font texture.
+	virtual void	serial(NLMISC::IStream &f) {nlstop;}
+	NLMISC_DECLARE_CLASS(CTextureFont);
+
 };
 
 

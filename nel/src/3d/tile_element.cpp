@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * <File description>
  *
- * $Id: tile_element.cpp,v 1.4 2000/12/06 10:17:31 berenguier Exp $
+ * $Id: tile_element.cpp,v 1.5 2000/12/12 10:04:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NL3D
 void	CTileElement::setTileOrient(sint i, uint8 orient)
 {
 	nlassert(i>=0 && i<=2);
-	nlassert(orient>=0 && orient<=3);
+	nlassert(orient<=3);
 	sint	where= NL_TILE_ELM_SIZE_ROTATE*i+NL_TILE_ELM_OFFSET_ROTATE;
 	Flags&= ~(NL_TILE_ELM_MASK_ROTATE<<where);
 	Flags|= orient<<where;
@@ -51,7 +51,7 @@ uint8	CTileElement::getTileOrient(sint i) const
 
 void	CTileElement::setTile256Info(bool is256x256, uint8 uvOff)
 {
-	nlassert(uvOff>=0 && uvOff<=3);
+	nlassert(uvOff<=3);
 	sint	where= NL_TILE_ELM_OFFSET_UVINFO;
 	sint	info= uvOff+(is256x256?4:0);
 	Flags&= ~(NL_TILE_ELM_MASK_UVINFO<<where);

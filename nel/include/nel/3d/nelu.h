@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.8 2000/12/06 14:32:24 berenguier Exp $
+ * $Id: nelu.h,v 1.9 2000/12/12 10:04:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,7 +106,8 @@ public:
 
 public:
 
-	/** Init all NELU
+	/** Init the registry, and init all NELU
+	 * - NL3D::registerSerial3d().
 	 * - initDriver();
 	 * - initScene();
 	 * - initEventServer();

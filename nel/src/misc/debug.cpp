@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.39 2001/07/11 12:14:25 lecroart Exp $
+ * $Id: debug.cpp,v 1.40 2001/09/10 16:09:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,14 +103,17 @@ void initDebug2 ()
 
 #ifdef NL_DEBUG
 		DebugLog->addDisplayer (sd);
+#endif // NL_DEBUG
 		AssertLog->addDisplayer (sd);
 
 #if LOG_IN_FILE
-		DebugLog->addDisplayer (fd);
-		AssertLog->addDisplayer (fd);
-#endif // LOG_IN_FILE
 
+#ifdef NL_DEBUG
+		DebugLog->addDisplayer (fd);
 #endif // NL_DEBUG
+		AssertLog->addDisplayer (fd);
+
+#endif // LOG_IN_FILE
 
 #ifdef NL_RELEASE
 		ErrorLog->addDisplayer (mbd);

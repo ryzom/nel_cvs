@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.13 2001/03/28 10:31:09 berenguier Exp $
+ * $Id: transform.h,v 1.14 2001/04/03 07:56:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,7 +113,7 @@ private:
 	static	CTrackDefaultVector		DefaultPos;
 	static	CTrackDefaultVector		DefaultPivot;
 	static	CTrackDefaultVector		DefaultRotEuler;
-	static	CTrackDefaultQuat			DefaultRotQuat;
+	static	CTrackDefaultQuat		DefaultRotQuat;
 	static	CTrackDefaultVector		DefaultScale;
 
 	void	foulTransform()

@@ -9,7 +9,7 @@
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
 ' when Scripting.FileSystemObject cannot be instanciated
-' $Id: nevrax_macros_98.dsm,v 1.8 2000/11/14 13:17:34 cado Exp $
+' $Id: nevrax_macros_98.dsm,v 1.9 2000/12/01 14:53:30 corvazier Exp $
 '------------------------------------------------------------------------------
 
 
@@ -25,7 +25,7 @@ Sub NevraxInsertFileHeader( filename, productname )
 		"/** \file " + filename + vbLf + _
 		" * <File description>" + vbLf + _
 		" *" + vbLf + _
-		" * $Id: nevrax_macros_98.dsm,v 1.8 2000/11/14 13:17:34 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros_98.dsm,v 1.9 2000/12/01 14:53:30 corvazier Exp $" + vbLf + _
 		" */" + vbLf + vbLf
 	ActiveDocument.Selection = _
 		"/* Copyright, 2000 Nevrax Ltd." + vbLf + _
@@ -295,7 +295,7 @@ Sub NevraxToggleHCPP()
 	
 	' ** Build the alternative filename
 	NewFilename = ""
-	if InStr(ActFilename,"nel")<>0 then
+	if InStr(ActFilename,"nel\")<>0 then
 		if Ext = ".h" then
 			NewFilename = "R:\code\nel\src\"
 		else

@@ -1,7 +1,7 @@
 /** \file block_memory.h
  * Block memory allocation
  *
- * $Id: block_memory.h,v 1.2 2001/12/27 14:24:03 berenguier Exp $
+ * $Id: block_memory.h,v 1.3 2002/02/06 16:52:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,11 @@
 
 namespace NLMISC 
 {
+
+
+// ***************************************************************************
+/// See CBlockMemory::Purge
+extern	bool		NL3D_BlockMemoryAssertOnPurge;	// =true.
 
 
 // ***************************************************************************
@@ -161,10 +166,13 @@ public:
 
 	/** delete all blocks, freeing all memory. It is an error to purge() or delete a CBlockMemory, while elements
 	 * still remains!! You must free your elements with free().
+	 *	NB: you can disable this assert if you set NL3D_BlockMemoryAssertOnPurge to false
+	 *	(good to quit a program quickly without uninitialize).
 	 */
 	void	purge ()
 	{
-		nlassert(_NAllocatedElts==0);
+		if(NL3D_BlockMemoryAssertOnPurge)
+			nlassert(_NAllocatedElts==0);
 
 		while(_Blocks.begin()!=_Blocks.end())
 		{

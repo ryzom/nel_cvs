@@ -1,7 +1,7 @@
 /** \file block_memory.cpp
  * <File description>
  *
- * $Id: block_memory.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: block_memory.cpp,v 1.3 2002/02/06 16:52:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,9 @@
 
 namespace NLMISC 
 {
+
+
+bool		NL3D_BlockMemoryAssertOnPurge= true;
 
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.10 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: nelu.h,v 1.11 2001/01/11 15:29:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/3d/dru.h"
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
+#include "nel/misc/rgba.h"
 
 
 namespace NL3D 
@@ -123,6 +124,13 @@ public:
 	 * - releaseDriver().
 	 */
 	static void		release();
+
+
+	/// Shortcut to clear ZBuffer and color buffer of CNELU::Driver.
+	static void		clearBuffers(NLMISC::CRGBA col= NLMISC::CRGBA(0,0,0,0));
+	/// Shortcut to swapBuffers of CNELU::Driver.
+	static void		swapBuffers();
+
 
 
 public:

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.28 2001/01/11 13:55:23 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.29 2001/01/11 15:29:28 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -94,7 +94,7 @@ CTileRenderPtrs::CTileRenderPtrs()
 sint		CTessFace::CurrentDate=0;
 uint32		CTessFace::CurrentRenderDate=0;
 CVector		CTessFace::RefineCenter= CVector::Null;
-float		CTessFace::RefineThreshold= 0.005f;
+float		CTessFace::RefineThreshold= 0.001f;
 float		CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
 
 float		CTessFace::ChildrenStartComputeLimit= 1.9f;

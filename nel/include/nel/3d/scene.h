@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.13 2001/01/11 08:55:55 coutelas Exp $
+ * $Id: scene.h,v 1.14 2001/01/11 15:29:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,10 +148,6 @@ public:
 	 * you know that NONE of your models have moved (a good example is a shoot of the scene from different cameras).
 	 */
 	void			render(bool	doHrcPass=true);
-	/// Clear all the buffer of the RenderTrav current driver window .
-	void			clearBuffers(NLMISC::CRGBA col= NLMISC::CRGBA(0,0,0,0));
-	/// Swap the buffer of the RenderTrav current driver window .
-	void			swapBuffers();
 	//@}
 
 

@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.12 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: nelu.cpp,v 1.13 2001/01/11 15:29:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,6 +148,18 @@ void			CNELU::screenshot()
 		btm.writeTGA (fs,24,true);
 		nlinfo("Screenshot '%s' saved", filename.c_str());
 	}
+}
+
+
+void			CNELU::clearBuffers(CRGBA col)
+{
+	CNELU::Driver->clear2D(col);
+	CNELU::Driver->clearZBuffer();
+}
+
+void			CNELU::swapBuffers()
+{
+	CNELU::Driver->swapBuffers();
 }
 
 

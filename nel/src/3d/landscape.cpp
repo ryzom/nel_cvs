@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.31 2001/01/11 13:55:23 berenguier Exp $
+ * $Id: landscape.cpp,v 1.32 2001/01/11 15:29:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,6 +102,7 @@ CLandscape::CLandscape()
 	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
 
 	_TileDistNear=100.f;
+	_Threshold= 0.001f;
 	_RefineMode=true;
 	_NFreeLightMaps= 0;
 }
@@ -226,6 +227,10 @@ void			CLandscape::updateGlobals (const CVector &refineCenter) const
 	CTessFace::TileDistNearSqr = sqr(CTessFace::TileDistNear);
 	CTessFace::TileDistFarSqr = sqr(CTessFace::TileDistFar);
 	CTessFace::OOTileDistDeltaSqr = 1.0f / (CTessFace::TileDistFarSqr - CTessFace::TileDistNearSqr);
+
+	// RefineThreshold.
+	CTessFace::RefineThreshold= _Threshold;
+	CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
 
 	// Refine Center*.
 	CTessFace::RefineCenter= refineCenter;

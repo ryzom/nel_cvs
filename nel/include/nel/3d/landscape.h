@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.26 2001/01/11 13:54:04 berenguier Exp $
+ * $Id: landscape.h,v 1.27 2001/01/11 15:29:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,6 +134,10 @@ public:
 	void			setTileNear (float tileNear)	{_TileDistNear=tileNear;}
 	/// Get tile near distance.
 	float			getTileNear () const	{return _TileDistNear;}
+	/// Set threshold for subdivsion quality. The lower is threshold, the more the landscape is subdivided. Default: 0.001.
+	void			setThreshold (float thre)	{_Threshold= thre;}
+	/// Get threshold.
+	float			getThreshold () const	{return _Threshold;}
 	void			setRefineMode(bool enabled) {_RefineMode= enabled;}
 	bool			getRefineMode() const {return _RefineMode;}
 	// TODO: other landscape param setup (Transition etc...).
@@ -222,6 +226,7 @@ private:
 
 	// Parameters.
 	float			_TileDistNear;
+	float			_Threshold;
 	bool			_RefineMode;
 
 	// The temp VB for tiles and far passes.

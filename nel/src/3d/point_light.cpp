@@ -1,7 +1,7 @@
 /** \file point_light.cpp
  * <File description>
  *
- * $Id: point_light.cpp,v 1.4 2002/02/28 12:59:50 besson Exp $
+ * $Id: point_light.cpp,v 1.4.12.1 2003/08/18 17:30:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,6 +85,41 @@ CPointLight::CPointLight() : _LightedModels(&_LightedModelListMemory)
 		_OOCosSpotAngleDelta= spotCOOD;
 		_SpotExponent= spotEXP;
 	}
+}
+
+
+// ***************************************************************************
+CPointLight::CPointLight(const CPointLight &o) : _LightedModels(&_LightedModelListMemory)
+{
+	// copy (no need to init)
+	operator=(o);
+}
+
+// ***************************************************************************
+CPointLight &CPointLight::operator=(const CPointLight &o)
+{
+	/// copy all but _LightedModels !!
+	_Type= o._Type;
+	_Position= o._Position;
+	_Ambient= o._Ambient;
+	_Diffuse= o._Diffuse;
+	_Specular= o._Specular;
+
+	_AttenuationBegin= o._AttenuationBegin;
+	_AttenuationEnd= o._AttenuationEnd;
+	_OODeltaAttenuation= o._OODeltaAttenuation;
+	_ConstantAttenuation= o._ConstantAttenuation;
+	_LinearAttenuation= o._LinearAttenuation;
+	_QuadraticAttenuation= o._QuadraticAttenuation;
+
+	_SpotDirection= o._SpotDirection;
+	_SpotAngleBegin= o._SpotAngleBegin;
+	_SpotAngleEnd= o._SpotAngleEnd;
+	_CosSpotAngleEnd= o._CosSpotAngleEnd;
+	_OOCosSpotAngleDelta= o._OOCosSpotAngleDelta;
+	_SpotExponent= o._SpotExponent;
+
+	return *this;
 }
 
 

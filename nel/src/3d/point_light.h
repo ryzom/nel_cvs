@@ -1,7 +1,7 @@
 /** \file point_light.h
  * <File description>
  *
- * $Id: point_light.h,v 1.3 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: point_light.h,v 1.3.12.1 2003/08/18 17:30:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,6 +97,10 @@ public:
 	CPointLight();
 	/// call resetLightModels.
 	~CPointLight();
+	/// do not copy _LightedModels.
+	CPointLight(const CPointLight &o);
+	/// do not copy _LightedModels.
+	CPointLight &operator=(const CPointLight &o);
 
 
 	/// \name Light setup

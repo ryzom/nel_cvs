@@ -147,6 +147,10 @@ LINK32=link.exe
 # Name "admin_executor_service - Win32 DebugFast"
 # Begin Source File
 
+SOURCE=.\admin_executor_service.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\admin_executor_service.cpp
 # End Source File
 # End Target

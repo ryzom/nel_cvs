@@ -1,7 +1,7 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.7 2000/12/11 15:53:42 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.8 2000/12/15 15:32:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,7 +111,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 				GLint	texfmt=GL_RGBA8;
 				tex.convertToType(CBitmap::RGBA);
 				tex.buildMipMaps();
-				for(sint i=0;i<tex.getMipMapCount();i++)
+				for(sint i=0;i<(sint)tex.getMipMapCount();i++)
 				{
 					void	*ptr= &(*tex.getPixels(i).begin());
 					glTexImage2D(GL_TEXTURE_2D,i,GL_RGBA8,tex.getWidth(i),tex.getHeight(i),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );

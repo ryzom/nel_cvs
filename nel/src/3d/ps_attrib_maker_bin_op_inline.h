@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.h
  * implementation of binary operator in particle systems
  *
- * $Id: ps_attrib_maker_bin_op_inline.h,v 1.2 2001/12/13 13:25:10 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op_inline.h,v 1.3 2002/02/15 17:01:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -227,7 +227,16 @@ void MakePrivate(uint8 * dest, const T *src1, const T *src2, uint32 stride, uint
 
 //=================================================================================================================
 template <class T>
-inline void   *CPSAttribMakerBinOp<T>::makePrivate		  (T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy /* = false */) const
+inline void   *CPSAttribMakerBinOp<T>::makePrivate(T *buf1,
+												   T *buf2,
+												   CPSLocated *loc,
+												   uint32 startIndex,
+												   void *tab,
+												   uint32 stride,
+												   uint32 numAttrib,
+												   bool allowNoCopy /* = false */,
+												   uint32 srcStep /* = (1 << 16)*/
+												  ) const
 {
 	uint8 *dest = (uint8 *) tab;
 	uint leftToDo = numAttrib, toProcess;
@@ -235,22 +244,21 @@ inline void   *CPSAttribMakerBinOp<T>::makePrivate		  (T *buf1, T *buf2, CPSLoca
 	switch (_Op)
 	{
 		case CPSBinOp::selectArg1:
-			return _Arg[0]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy);
+			return _Arg[0]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep);
 		break;
 		case CPSBinOp::selectArg2:
-			return _Arg[1]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy);
+			return _Arg[1]->make(loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep);
 		break;		
 	}
+
+
 
 	while (leftToDo)
 	{
 		toProcess = leftToDo > PSBinOpBufSize ? PSBinOpBufSize : leftToDo;
-		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true);
-		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true);
-
-		MakePrivate(dest, src1, src2, stride, toProcess, _Op);
-		
-
+		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true, srcStep);
+		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true, srcStep);
+		MakePrivate(dest, src1, src2, stride, toProcess, _Op);		
 		leftToDo -= toProcess;
 	}
 
@@ -259,7 +267,14 @@ inline void   *CPSAttribMakerBinOp<T>::makePrivate		  (T *buf1, T *buf2, CPSLoca
 
 //=================================================================================================================
 template <class T>
-void   *CPSAttribMakerBinOp<T>::make	  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy /* = false */) const
+void   *CPSAttribMakerBinOp<T>::make	  (CPSLocated *loc,
+										   uint32 startIndex,
+										   void *tab,
+										   uint32 stride,
+										   uint32 numAttrib,
+										   bool allowNoCopy /* = false */,
+										   uint32 srcStep /* = (1 << 16)*/
+										  ) const
 {
 	/** init the tab used for computations. we use a trick to avoid ctor calls,
 	  * but they may be used for some types in the future , so a specilization
@@ -267,7 +282,7 @@ void   *CPSAttribMakerBinOp<T>::make	  (CPSLocated *loc, uint32 startIndex, void
 	  */
 	uint8 tab1[PSBinOpBufSize * sizeof(T)];
 	uint8 tab2[PSBinOpBufSize * sizeof(T)];
-	return makePrivate((T *) &tab1[0], (T *) &tab2[0], loc, startIndex, tab, stride, numAttrib, allowNoCopy);
+	return makePrivate((T *) &tab1[0], (T *) &tab2[0], loc, startIndex, tab, stride, numAttrib, allowNoCopy, srcStep);
 }
 
 
@@ -324,7 +339,15 @@ void Make4Private(uint8 * dest, const T *src1, const T *src2, uint32 stride, uin
 
 //=================================================================================================================
 template <class T>
-inline void    CPSAttribMakerBinOp<T>::make4Private	  (T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
+inline void    CPSAttribMakerBinOp<T>::make4Private(T *buf1,
+												    T *buf2,
+													CPSLocated *loc,
+													uint32 startIndex,
+													void *tab,
+													uint32 stride,
+													uint32 numAttrib,
+													uint32 srcStep /* = (1 << 16)*/
+												   ) const
 {	
 	uint8 *dest = (uint8 *) tab;
 	uint leftToDo = numAttrib, toProcess;
@@ -332,11 +355,11 @@ inline void    CPSAttribMakerBinOp<T>::make4Private	  (T *buf1, T *buf2, CPSLoca
 	switch (_Op)
 	{
 		case CPSBinOp::selectArg1:
-			_Arg[0]->make4(loc, startIndex, tab, stride, numAttrib);
+			_Arg[0]->make4(loc, startIndex, tab, stride, numAttrib, srcStep);
 			return;
 		break;
 		case CPSBinOp::selectArg2:
-			_Arg[1]->make4(loc, startIndex, tab, stride, numAttrib);
+			_Arg[1]->make4(loc, startIndex, tab, stride, numAttrib, srcStep);
 			return;
 		break;		
 	}
@@ -344,13 +367,10 @@ inline void    CPSAttribMakerBinOp<T>::make4Private	  (T *buf1, T *buf2, CPSLoca
 	while (leftToDo)
 	{
 		toProcess = leftToDo > PSBinOpBufSize ? PSBinOpBufSize : leftToDo;
-		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true);
-		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true);
+		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true, srcStep);
+		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true, srcStep);
 		
-		
-
 		Make4Private(dest, src1, src2, stride, toProcess, _Op);
-		
 		leftToDo -= toProcess;
 	}
 }
@@ -358,7 +378,13 @@ inline void    CPSAttribMakerBinOp<T>::make4Private	  (T *buf1, T *buf2, CPSLoca
 
 //=================================================================================================================
 template <class T>
-void    CPSAttribMakerBinOp<T>::make4	  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
+void    CPSAttribMakerBinOp<T>::make4	  (CPSLocated *loc,
+										   uint32 startIndex,
+										   void *tab,
+										   uint32 stride,
+										   uint32 numAttrib,
+										   uint32  srcStep /*= (1 << 16) */										   
+										  ) const
 
 {
 	/** init the tab used for computations. we use a trick to avoid ctor calls,
@@ -367,7 +393,7 @@ void    CPSAttribMakerBinOp<T>::make4	  (CPSLocated *loc, uint32 startIndex, voi
 	  */
 	uint8 tab1[PSBinOpBufSize * sizeof(T)];
 	uint8 tab2[PSBinOpBufSize * sizeof(T)];
-	make4Private((T *) &tab1[0], (T *) &tab2[0], loc, startIndex, tab, stride, numAttrib);
+	make4Private((T *) &tab1[0], (T *) &tab2[0], loc, startIndex, tab, stride, numAttrib, srcStep);
 }
 
 
@@ -376,7 +402,15 @@ void MakeNPrivate(uint8 * dest, const NLMISC::CRGBA *src1, const NLMISC::CRGBA *
 
 // for private use
 template <class T>
-void MakeNPrivate(uint8 * dest, const T *src1, const T *src2, uint32 stride, uint32 numAttrib, CPSBinOp::BinOp op, uint nbReplicate)
+void MakeNPrivate(uint8 * dest,
+				  const T *src1,
+				  const T *src2,
+				  uint32 stride,
+				  uint32 numAttrib,
+				  CPSBinOp::BinOp op,
+				  uint nbReplicate,
+				  uint32 srcStep = (1 << 16)
+				 )
 {
 	uint k;
 	uint8 *destEnd = dest + ((stride * nbReplicate) * numAttrib);
@@ -433,7 +467,16 @@ void MakeNPrivate(uint8 * dest, const T *src1, const T *src2, uint32 stride, uin
 
 //=================================================================================================================
 template <class T>
-inline void	CPSAttribMakerBinOp<T>::makeNPrivate	  (T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
+inline void	CPSAttribMakerBinOp<T>::makeNPrivate(T *buf1,
+												 T *buf2,
+												 CPSLocated *loc,
+												 uint32 startIndex,
+												 void *tab,
+												 uint32 stride,
+												 uint32 numAttrib,
+												 uint32 nbReplicate,
+												 uint32 srcStep /*= (1 << 16)*/												 
+												) const
 {		
 	uint8 *dest = (uint8 *) tab;
 	uint leftToDo = numAttrib, toProcess;
@@ -441,30 +484,36 @@ inline void	CPSAttribMakerBinOp<T>::makeNPrivate	  (T *buf1, T *buf2, CPSLocated
 	switch (_Op)
 	{
 		case CPSBinOp::selectArg1:
-			_Arg[0]->makeN(loc, startIndex, tab, stride, numAttrib, nbReplicate);
+			_Arg[0]->makeN(loc, startIndex, tab, stride, numAttrib, nbReplicate, srcStep);
 			return;
 		break;
 		case CPSBinOp::selectArg2:
-			_Arg[1]->makeN(loc, startIndex, tab, stride, numAttrib, nbReplicate);
+			_Arg[1]->makeN(loc, startIndex, tab, stride, numAttrib, nbReplicate, srcStep);
 			return;
 		break;		
 	}
-
+	
 	while (leftToDo)
 	{
 		toProcess = leftToDo > PSBinOpBufSize ? PSBinOpBufSize : leftToDo;
-		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true);
-		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true);
+		T *src1 = (T *) _Arg[0]->make(loc, startIndex + (numAttrib - leftToDo), &buf1[0], sizeof(T), toProcess, true, srcStep);
+		T *src2 = (T *) _Arg[1]->make(loc, startIndex + (numAttrib - leftToDo), &buf2[0], sizeof(T), toProcess, true, srcStep);
 		
 		MakeNPrivate(dest, src1, src2, stride, toProcess, _Op, nbReplicate);
-
 		leftToDo -= toProcess;
 	}
 }
 
 //=================================================================================================================
 template <class T>
-void    CPSAttribMakerBinOp<T>::makeN	  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
+void    CPSAttribMakerBinOp<T>::makeN(CPSLocated *loc,
+									  uint32 startIndex,
+									  void *tab,
+									  uint32 stride,
+									  uint32 numAttrib,
+									  uint32 nbReplicate,
+									  uint32 /* srcStep = (1 << 16)*/
+									 ) const
 
 {
 	/** init the tab used for computations. we use a trick to avoid ctor calls,
@@ -518,6 +567,7 @@ void    CPSAttribMakerBinOp<T>::newElement	  (CPSLocated *emitterLocated, uint32
 template <class T>
 void	CPSAttribMakerBinOp<T>::resize		  (uint32 capacity, uint32 nbPresentElements)
 {
+	nlassert(capacity < (1 << 16));
 	_MaxSize = capacity;
 	_Size = nbPresentElements;
 	if (_Arg[0]->hasMemory())	_Arg[0]->resize(capacity, nbPresentElements);

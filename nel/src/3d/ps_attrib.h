@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.9 2001/12/19 15:44:03 vizerie Exp $
+ * $Id: ps_attrib.h,v 1.10 2002/02/15 17:01:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,7 +112,7 @@ public:
 	}
 	void resize(uint size)
 	{
-		
+		nlassert(size < (1 << 16));
 		if (size < _Size)
 		{
 			for (iterator it = _Tab + size, endIt = _Tab + _Size; it != endIt; ++it)
@@ -360,6 +360,7 @@ void CPSAttrib<T>::resizeNFill(uint32 nbInstances)
 template <typename T> 
 void CPSAttrib<T>::resize(uint32 nbInstances)
 {	
+	nlassert(nbInstances < (1 << 16));
 	_Tab.reserve(nbInstances);
 	_MaxSize = nbInstances;
 }

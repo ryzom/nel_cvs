@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.h
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.h,v 1.6 2001/12/06 16:48:44 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op.h,v 1.7 2002/02/15 17:01:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,9 +84,32 @@ public:
 	/// \name inherited from CPSAttribMaker
 	//@{
 		virtual T		get			  (CPSLocated *loc, uint32 index); 
-		virtual void   *make		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const;	
-		virtual void    make4		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const;	
-		virtual void	makeN		  (CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const;	
+		virtual void   *make		  (CPSLocated *loc,
+									   uint32 startIndex,
+									   void *tab,
+									   uint32 stride,
+									   uint32 numAttrib,
+									   bool allowNoCopy = false,
+									   uint32 srcStep = (1 << 16)
+									  ) const;
+		
+		virtual void    make4		  (CPSLocated *loc,
+									   uint32 startIndex,
+									   void *tab,
+									   uint32 stride,
+									   uint32 numAttrib,
+									   uint32 srcStep = (1 << 16)
+									  ) const;	
+
+		virtual void	makeN		  (CPSLocated *loc,
+									   uint32 startIndex,
+									   void *tab,
+									   uint32 stride,
+									   uint32 numAttrib,
+									   uint32 nbReplicate,
+									   uint32 srcStep = (1 << 16)
+									  ) const;	
+
 		virtual void    serial		  (NLMISC::IStream &f) throw(NLMISC::EStream);			
 		virtual void    deleteElement (uint32 index);	
 		virtual void    newElement	  (CPSLocated *emitterLocated, uint32 emitterIndex);	
@@ -148,9 +171,38 @@ public:
 	//@}
 
 protected:
-	void   *makePrivate	(T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const;	
-	void    make4Private	(T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const;
-	void	makeNPrivate  (T *buf1, T *buf2, CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const;	
+	void   *makePrivate	(T *buf1,
+						 T *buf2,
+						 CPSLocated *loc,
+						 uint32 startIndex,
+						 void *tab,
+						 uint32 stride,
+						 uint32 numAttrib,
+						 bool allowNoCopy = false,
+						 uint32 srcStep = (1 << 16)
+						) const;
+	
+	void    make4Private	(T *buf1,
+							 T *buf2,
+							 CPSLocated *loc,
+							 uint32 startIndex,
+							 void *tab,
+							 uint32 stride,
+							 uint32 numAttrib,
+							 uint32 srcStep = (1 << 16)
+							) const;
+
+	void	makeNPrivate  (T *buf1,
+						   T *buf2,
+						   CPSLocated *loc,
+						   uint32 startIndex,
+						   void *tab,
+						   uint32 stride,
+						   uint32 numAttrib,
+						   uint32 nbReplicate,
+						   uint32 srcStep = (1 << 16)
+						  ) const;
+	
 	CPSBinOp::BinOp   _Op; // the operator being used
 	CPSAttribMaker<T> *_Arg[2]; // the arguments for the binary operator		
 	void clean(void);	

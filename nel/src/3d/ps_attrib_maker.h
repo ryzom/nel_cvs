@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.9 2001/09/12 13:19:07 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.10 2002/02/15 17:01:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,13 +146,18 @@ public:
 
 	/// \name Production of attribute
 	//@{
-		/// compute one value of the attribute for the given index
+		/// compute one value of the attribute from the given located at the given index
 		virtual T get(CPSLocated *loc, uint32 index) = 0 ;
+
+		/** Direct lookup of the result value from a float input (if it makes sense). This bypass what was set with setInput
+		  * The input must be in [0, 1[
+		  */
+		virtual T get(float input) { nlassert(0); return T(); /* not supported by default */ }
 
 
 		/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes.
 		 *  \param loc the 'located' that hold the 'located bindable' that need an attribute to be filled
-		 *  \param startIndex usually 0, it gives the index of the first element in the located
+		 *  \param startIndex usually 0, it gives the index of the first element in the located (is it multiplied by the step)
 		 *  \param tab where the data will be written
 		 *  \param stride the stride, in byte, between each value to write
 		 *  \param numAttrib the number of attributes to compute
@@ -160,21 +165,42 @@ public:
 		 *         the return parameter is then le location of the datas. this may be tab (if recomputation where needed), or another value 
 		 *         for this to work, the stride must most of the time be sizeof(T). This is intended to be used with derivers of CPSAttribMaker
 		 *         that store values that do not depend on the input. The make method then just copy the data, we is sometime useless
+		 *  \param srcStep A fixed-point 16:16 value that gives the step for the source iterator		 
 		 *  \return where the data have been copied, this is always tab, unless allowNoCopy is set to true, in which case this may be different
 		 *                                         
 		 */
 
-		  virtual void *make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const = 0 ;
+		  virtual void *make(CPSLocated *loc,
+							 uint32 startIndex,
+							 void *tab,
+							 uint32 stride,
+							 uint32 numAttrib,
+							 bool   allowNoCopy = false,
+							 uint32 srcStep = (1 << 16)
+							) const = 0 ;
 
 		/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like
 		 *  \see make()
 		 */
-		  virtual void make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const = 0 ;
+		  virtual void make4(CPSLocated *loc,
+							 uint32 startIndex,
+							 void *tab,
+							 uint32 stride,
+							 uint32 numAttrib,
+							 uint32 srcStep = (1 << 16)
+							) const = 0 ;
 
 		/** The same as make4, but with n replication instead of 4	 
 		 *  \see make4
 		 */
-		 virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const = 0 ;
+		 virtual void makeN(CPSLocated *loc,
+						    uint32 startIndex,
+							void *tab,
+							uint32 stride,
+							uint32 numAttrib,
+							uint32 nbReplicate,
+							uint32 srcStep = (1 << 16)
+						   ) const = 0 ;
 	//@}
 
 	

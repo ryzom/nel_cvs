@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.32 2004/09/08 12:47:41 legros Exp $
+ * $Id: login_service.cpp,v 1.33 2004/09/10 15:02:18 legros Exp $
  *
  */
 
@@ -399,6 +399,7 @@ CMySQLResult&	CMySQLResult::operator = (MYSQL_RES* res)
 	if (_Result != NULL)
 		mysql_free_result(_Result);
 	_Result = res;
+	return *this;
 }
 
 

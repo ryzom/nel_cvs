@@ -1,7 +1,7 @@
 /** \file texture_multi_file.h
  * This texture helps to manage texture sets : it identify as one texture in a group of several other textures.
  *
- * $Id: texture_multi_file.h,v 1.1 2002/02/04 10:39:24 vizerie Exp $
+ * $Id: texture_multi_file.h,v 1.2 2002/06/11 14:24:48 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -58,8 +58,8 @@ public:
 	 * \param index index of the texture
 	 */	
 	void setFileName(uint index, const char *);
-
-
+	//
+	uint getNumFileName() const { return _FileNames.size(); }
 	/** 
 	 * get the name of the file containing the texture for the given index
 	 * \return name of the file	 

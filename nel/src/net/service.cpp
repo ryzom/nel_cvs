@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.69 2001/06/15 09:59:14 lecroart Exp $
+ * $Id: service.cpp,v 1.70 2001/06/15 14:15:37 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -313,7 +313,7 @@ sint IService::main (int argc, char **argv, void *wd)
 		}
 #endif
 
-		nlinfo("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName);
+		nlinfo ("Starting Service '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
 		DebugLog->addNegativeFilter ("L3NB_ASSOC:");
 		DebugLog->addNegativeFilter ("L3NB_CB:");
 
@@ -632,8 +632,10 @@ sint IService::main (int argc, char **argv, void *wd)
 			// stop the loop if the exit signal asked
 			if (ExitSignalAsked) break;
 
+#ifdef NL_OS_WINDOWS
 			// update the window displayer
 			((CWinDisplayer *)wd)->update ();
+#endif // NL_OS_WINDOWS
 
 			// count the amount of time to manage internal system
 			TTime before = CTime::getLocalTime ();

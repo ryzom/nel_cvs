@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.51 2005/02/22 10:14:12 besson Exp $
+ * $Id: path.h,v 1.52 2005/03/01 09:14:57 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -225,7 +225,11 @@ public:
 	static void memoryUncompress();
 
 	static bool isMemoryCompressed()	{ return getInstance()->_MemoryCompressed; }
-
+	
+	/** Get the ms windows directory (in standardized way with end slash), or returns an empty string on other os
+          */
+        static std::string getWindowsDirectory();
+          
 private:
 
 	static CPath *getInstance ();

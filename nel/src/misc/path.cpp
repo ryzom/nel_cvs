@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.113 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: path.cpp,v 1.114 2005/03/01 09:14:57 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -373,6 +373,7 @@ void CPath::loadRemappedFiles (const std::string &file)
 	}
 }
 
+
 // ***************************************************************************
 string CPath::lookup (const string &filename, bool throwException, bool displayWarning, bool lookupInLocalDirectory)
 {
@@ -424,7 +425,8 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 		}
 	}
 	else // NOT memory compressed
-	{
+	{				
+
 		map<string, CFileEntry>::iterator it = inst->_Files.find (str);
 		// If found in the map, returns it
 		if (it != inst->_Files.end())
@@ -444,12 +446,12 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 	// Try to find in the alternative directories
 	for (uint i = 0; i < inst->_AlternativePaths.size(); i++)
 	{
-		string s = inst->_AlternativePaths[i] + filename;
+		string s = inst->_AlternativePaths[i] + filename;		
 		if ( CFile::fileExists(s) )
 		{
 			NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the alternative directory: '%s'", filename.c_str(), s.c_str());
 			return s;
-		}
+		}		
 		
 		// try with the remapping
 		for (uint j = 0; j < inst->_Extensions.size(); j++)
@@ -1386,6 +1388,22 @@ void CPath::memoryUncompress()
 	inst->_MemoryCompressed = false;
 }
 
+std::string CPath::getWindowsDirectory()
+{
+#ifndef NL_OS_WINDOWS
+	nlwarning("not a ms windows platform");
+	return "";
+#else
+	char winDir[MAX_PATH];
+	UINT numChar = ::GetWindowsDirectory(winDir, MAX_PATH);
+	if (numChar > MAX_PATH || numChar == 0)
+	{
+		nlwarning("Couldn't retrieve windows directory");
+		return "";	
+	}
+	return CPath::standardizePath(winDir);
+#endif
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1963,3 +1981,4 @@ void CFile::getTemporaryOutputFilename (const std::string &originalFilename, std
 }
 
 } // NLMISC
+

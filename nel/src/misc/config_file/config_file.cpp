@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.53 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: config_file.cpp,v 1.54 2003/10/21 15:23:53 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -696,7 +696,7 @@ void CConfigFile::checkConfigFiles ()
 			}
 			catch (EConfigFile &e)
 			{
-				nlwarning ("CF: Exception will re-reading modified config file '%s': %s", e.what ());
+				nlwarning ("CF: Exception will re-reading modified config file '%s': %s", (*it)->FileNames[i], e.what ());
 			}
 		}
 	}

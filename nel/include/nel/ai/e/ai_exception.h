@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.12 2001/10/24 16:37:16 chafik Exp $
+ * $Id: ai_exception.h,v 1.13 2001/10/25 11:59:30 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -238,6 +238,12 @@ namespace NLAIE
 		{
 			_Text = new char [strlen(e._Text) + 1];
 			strcpy(_Text,e._Text);
+		}
+
+		CExceptionUnReference(char *text)
+		{
+			_Text = new char [strlen(text) + 1];
+			strcpy(_Text,text);
 		}
 		
 		CExceptionUnReference(const char *text)

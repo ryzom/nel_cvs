@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: login_service.cpp,v 1.13 2002/03/04 10:24:54 lecroart Exp $
+ * $Id: login_service.cpp,v 1.14 2002/03/04 15:33:15 lecroart Exp $
  *
  */
 
@@ -48,10 +48,17 @@
 #include "connection_client.h"
 #include "connection_ws.h"
 
-
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
+
+/* PlayerDatabaseName must contains an account per line separated by space or tab, each line should look like that: (without "")
+ * "1 10 login password priv"
+ * first param is 1 or 0. If 0, the account is disable, 1 is enable.
+ * second param is the unic user id
+ * login is the login, password is the passord...
+ * priv is the privilege for a account. Some shard could need priviliege to have access on it. priv look like ":BETA:" for example
+ */
 
 //
 // Variables
@@ -76,9 +83,7 @@ vector<CShard>	Shards;
 
 IService *ServiceInstance = NULL;
 
-// config file name that load and save the universal time
-const char		*PlayerDatabaseName = "login_service_database.cfg";
-CConfigFile		*PlayerDatabase = NULL;
+const char		*PlayerDatabaseName = "login_service.udb";
 
 //
 // Functions
@@ -238,57 +243,80 @@ void readPlayerDatabase ()
 	for (i = 0; i < (sint)Users.size (); i++)
 		Users[i].Loaded = false;
 
-	const CConfigFile::CVar &v = PlayerDatabase->getVar ("Users");
-
-	if (v.size()%4 != 0)
+	FILE *fp = fopen (PlayerDatabaseName, "rt");
+	if (fp == NULL)
 	{
-		nlerror ("Old player database, now, each player must have 4 entries");
+		nlwarning ("Can't read the user data base (%s)", PlayerDatabaseName);
 	}
-
-	for (i = 0; i < v.size(); i+=4)
+	else
 	{
-		for (k = 0; k < (sint)Users.size (); k++)
+		vector<string> userStr;
+		while (!feof (fp))
 		{
-			if (Users[k].Login == v.asString(i))
+			char activated[1024];
+			char uid[1024];
+			char login[1024];
+			char password[1024];
+			char perm[1024];
+			if (fscanf (fp, "%s %s %s %s %s", activated, uid, login, password, perm) != 5)
 			{
-				nldebug("Update user '%s' from '%s' '%d' '%s' to '%s' '%s' '%s'", Users[k].Login.c_str(), Users[k].Password.c_str(), Users[k].Id, Users[k].ShardPrivilege.c_str(), v.asString(i+1).c_str(), v.asString(i+2).c_str(), v.asString(i+3).c_str());
-				Users[k].Loaded = true;
-				Users[k].Password = v.asString(i+1);
-				Users[k].Id = atoi(v.asString(i+2).c_str());
-				Users[k].ShardPrivilege = v.asString(i+3);
-				if (Users[k].Id >= CUser::NextUserId) CUser::NextUserId = Users[k].Id + 1;
+				nlwarning ("bad user data base format should be: uid login pass perm");
 				break;
 			}
+			userStr.push_back (activated);
+			userStr.push_back (uid);
+			userStr.push_back (login);
+			userStr.push_back (password);
+			userStr.push_back (perm);
 		}
-		if (k == (sint)Users.size())
-		{
-			// new user
-			nldebug("New user '%s' '%s' '%s' '%s'", v.asString(i).c_str(), v.asString(i+1).c_str(), v.asString(i+2).c_str(), v.asString(i+3).c_str());
-			Users.push_back (CUser(v.asString(i), v.asString(i+1), atoi(v.asString(i+2).c_str()), v.asString(i+3)));
-		}
-	}
+		fclose (fp);
 
-	// delete not loaded user
-	for (vector<CUser>::iterator uit = Users.begin(); uit < Users.end(); )
-	{
-		if (!(*uit).Loaded)
+		for (uint i = 0; i < userStr.size(); i+=5)
 		{
-			nldebug("Deleting user '%s' '%s' '%d'", (*uit).Login.c_str(), (*uit).Password.c_str(), (*uit).Id);
-			uit = Users.erase (uit);
+			for (k = 0; k < (sint)Users.size (); k++)
+			{
+				if (Users[k].Login == userStr[i+1])
+				{
+					nldebug("Update user '%d' from '%s' '%s' '%s' to '%s' '%s' '%s'", Users[k].Id, Users[k].Login.c_str(), Users[k].Password.c_str(), Users[k].ShardPrivilege.c_str(), userStr[i+1].c_str(), userStr[i+2].c_str(), userStr[i+3].c_str());
+					Users[k].Loaded = true;
+					Users[k].Active = atoi(userStr[i].c_str()) == 1;
+					Users[k].Id = atoi(userStr[i+1].c_str());
+					Users[k].Password = userStr[i+3];
+					Users[k].ShardPrivilege = userStr[i+4];
+					if (Users[k].Id >= CUser::NextUserId) CUser::NextUserId = Users[k].Id + 1;
+					break;
+				}
+			}
+			if (k == (sint)Users.size())
+			{
+				// new user
+				nldebug("New user '%s' '%s' '%s' '%s'", userStr[i+1].c_str(), userStr[i+2].c_str(), userStr[i+3].c_str(), userStr[i+4].c_str());
+				Users.push_back (CUser(atoi(userStr[i].c_str()) == 1, atoi(userStr[i+1].c_str()), userStr[i+2], userStr[i+3], userStr[i+4]));
+			}
 		}
-		else
+
+		// delete not loaded user
+		for (vector<CUser>::iterator uit = Users.begin(); uit < Users.end(); )
 		{
-			uit++;
+			if (!(*uit).Loaded)
+			{
+				nldebug("Deleting user '%d' '%s'", (*uit).Id, (*uit).Login.c_str());
+				uit = Users.erase (uit);
+			}
+			else
+			{
+				uit++;
+			}
 		}
+		
+		nlinfo ("%d users in the database, next user id is %d", Users.size (), CUser::NextUserId);
 	}
-	
-	nlinfo ("%d users in the database, next user id is %d", Users.size (), CUser::NextUserId);
 
 	// load shards
 	for (i = 0; i < (sint)Shards.size (); i++)
 		Shards[i].Loaded = false;
 
-	const CConfigFile::CVar &v2 = PlayerDatabase->getVar ("Shards");
+	const CConfigFile::CVar &v2 = IService::Instance->ConfigFile.getVar ("Shards");
 	for (i = 0; i < v2.size(); i+=2)
 	{
 		try
@@ -310,7 +338,7 @@ void readPlayerDatabase ()
 				Shards.push_back (CShard(v2.asString(i), v2.asString(i+1)));
 			}
 		}
-		catch(ESocket)
+		catch(ESocket &)
 		{
 			nlwarning("Couldn't resolve the address '%s', remove it from the config file", v2.asString(i).c_str());
 		}
@@ -341,34 +369,20 @@ void writePlayerDatabase ()
 	nlinfo("Writing the player database...");
 
 	FILE *fp = fopen (PlayerDatabaseName, "wt");
-	if (fp != NULL)
+	if (fp == NULL)
 	{
-		sint i;
-
-		fprintf (fp, "Users = {\n");
-		for (i = 0; i < (sint) Users.size (); i++)
-		{
-			fprintf (fp, " \"%s\",\"%s\",\"%d\",\"%s\",\n", Users[i].Login.c_str(), Users[i].Password.c_str(), Users[i].Id, Users[i].ShardPrivilege.c_str());
-		}
-		fprintf (fp, "};\n");
-
-		nlinfo ("%d users saved", Users.size ());
-
-
-		fprintf (fp, "\nShards = {\n");
-		for (i = 0; i < (sint) Shards.size (); i++)
-		{
-			fprintf (fp, " \"%s\", \"%s\",\n", removePort(Shards[i].WSAddr).c_str (), Shards[i].Name.c_str ());
-		}
-		fprintf (fp, "};\n");
-
-		nlinfo ("%d shards saved", Shards.size ());
-
-		fclose (fp);
-
-		if (PlayerDatabase != NULL)
-			PlayerDatabase->setLastModifiedNow ();
+		nlwarning ("Can't write the user data base! (%s)", PlayerDatabaseName);
+		return;
 	}
+
+	for (sint i = 0; i < (sint) Users.size (); i++)
+	{
+		fprintf (fp, "%d %6d %-20s %-20s %-20s\n", Users[i].Active?1:0, Users[i].Id, Users[i].Login.c_str(), Users[i].Password.c_str(), Users[i].ShardPrivilege.c_str());
+	}
+
+	fclose (fp);
+
+	nlinfo ("%d users saved", Users.size ());
 }
 
 
@@ -425,19 +439,6 @@ public:
 
 		beep ();
 
-		FILE *fp = fopen (PlayerDatabaseName, "rt");
-		if (fp == NULL)
-		{
-			// the file not exist, create it and init the universal time to 0
-			nlwarning("'%s' not found, create it", PlayerDatabaseName);
-			writePlayerDatabase ();
-		}
-		else fclose (fp);
-
-		// load config file
-		PlayerDatabase = new CConfigFile;
-		PlayerDatabase->load (PlayerDatabaseName);
-		PlayerDatabase->setCallback (readPlayerDatabase);
 		readPlayerDatabase ();
 
 		Output.addDisplayer (&Fd);
@@ -469,13 +470,6 @@ public:
 		ConfigFile.setCallback ("CryptPassword", cbVar);
 		cbVar (ConfigFile.getVar ("CryptPassword"));
 
-/*
-		try { ServerVersion = ConfigFile.getVar("ServerVersion").asInt(); } catch (Exception &) { }
-
-		try { AcceptNewUser = ConfigFile.getVar("AcceptNewUser").asInt() == 1; } catch (Exception &) { }
-		try { AcceptExternalShard = ConfigFile.getVar("AcceptExternalShard").asInt() == 1; } catch (Exception &) { }
-		try { CryptPassword = ConfigFile.getVar("CryptPassword").asInt() == 1; } catch (Exception &) { }
-*/
 		Init = true;
 		
 		Output.displayNL ("Login Service initialised");
@@ -484,10 +478,9 @@ public:
 	/// release the service, save the universal time
 	void release ()
 	{
-		if (PlayerDatabase != NULL && Init)
+		if (Init)
 		{
 			writePlayerDatabase ();
-			delete PlayerDatabase;
 		}
 
 		Output.displayNL ("Login Service released");
@@ -495,7 +488,7 @@ public:
 };
 
 
-/// Naming Service
+// Service instanciation
 NLNET_SERVICE_MAIN (CLoginService, "LS", "login_service", 49999, EmptyCallbackArray);
 
 
@@ -517,7 +510,6 @@ NLMISC_DYNVARIABLE(uint32, online_users_nb, "number of connected users")
 		*pointer = nbusers;
 	}
 }
-
 
 
 //

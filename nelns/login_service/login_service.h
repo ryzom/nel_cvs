@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.8 2002/03/04 10:24:54 lecroart Exp $
+ * $Id: login_service.h,v 1.9 2002/03/04 15:33:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,11 +86,13 @@ struct CUser
 
 	TSockId			ShardId;		// connection to the WS where the user is
 	
-	std::string		ShardPrivilege;	// something like "RYZOM:SNOWBALL" or empty string that say for each player who can go where
+	std::string		ShardPrivilege;	// something like ":RYZOM:SNOWBALL:", or "::" for no priv, that say for each player who can go where
 
-	CUser (string login) : Login(login), State(Offline), SockId(NULL), ShardId(NULL), Loaded(false) { }
-	CUser (string login, string password) : Login(login), Password(password), Id(NextUserId++), State(Offline), SockId(NULL), ShardId(NULL), Loaded(true) { }
-	CUser (string login, string password, uint32 id, string shardPrivilege) : ShardPrivilege(shardPrivilege), Login(login), Password(password), Id(id), State(Offline), SockId(NULL), ShardId(NULL), Loaded(true)
+	bool			Active;			// true if the user is ok to use
+
+	CUser (string login) : Active(false), Login(login), State(Offline), SockId(NULL), ShardId(NULL), Loaded(false), ShardPrivilege("::") { }
+	CUser (string login, string password) : Active(true), Login(login), Password(password), Id(NextUserId++), State(Offline), SockId(NULL), ShardId(NULL), Loaded(true), ShardPrivilege("::") { }
+	CUser (bool act, uint32 id, string login, string password, string shardPrivilege) : Active(act), ShardPrivilege(shardPrivilege), Login(login), Password(password), Id(id), State(Offline), SockId(NULL), ShardId(NULL), Loaded(true)
 	{
 		if (id >= CUser::NextUserId)
 			CUser::NextUserId = id + 1;

@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_client.cpp,v 1.9 2002/03/04 10:24:54 lecroart Exp $
+ * $Id: connection_client.cpp,v 1.10 2002/03/04 15:33:15 lecroart Exp $
  *
  */
 
@@ -159,13 +159,13 @@ bool stringIsStandard(const string &str)
 
 bool havePrivilege (string userPriv, string shardPriv)
 {
-	if (userPriv.empty())
+	if (userPriv == "::")
 	{
-		return shardPriv.empty();
+		return shardPriv == "::";
 	}
 	else
 	{
-		if (shardPriv.empty())
+		if (shardPriv == "::")
 			return true;
 		else
 			return userPriv.find (shardPriv) != string::npos;
@@ -268,7 +268,14 @@ static void cbClientVerifyLoginPassword (CMessage &msgin, TSockId from, CCallbac
 		}
 		else
 		{
-			if (!checkPassword (Password, Users[userPos].Password))
+			// check id the account is active
+
+			if (!Users[userPos].Active)
+			{
+				reason = "Your account was disactivated";
+				Output.displayNL ("---: %3d Your account was disactivated", userToLog(userPos));
+			}
+			else if (!checkPassword (Password, Users[userPos].Password))
 			{
 				// error reason
 				reason = "Bad password";

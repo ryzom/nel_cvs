@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.1 2001/10/16 09:23:04 legros Exp $
+ * $Id: unified_network.cpp,v 1.2 2001/10/29 18:33:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -649,6 +649,10 @@ CUnifiedNetwork	*CUnifiedNetwork::getInstance ()
 	return _Instance;
 }
 
+bool CUnifiedNetwork::isUsed ()
+{
+	return (_Instance != NULL);
+}
 
 } // NLNET
 

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.2 2001/10/25 12:15:47 cado Exp $
+ * $Id: unified_network.h,v 1.3 2001/10/29 18:35:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,10 @@ public:
 	/** Returns the singleton instance of the CNetManager class.
 	 */
 	static CUnifiedNetwork *getInstance ();
+
+	/** Returns true if the application called getInstance(). This function is used to know if the user is using layer 4 or layer 5
+	 */
+	static bool isUsed ();
 
 	/** Creates the connection to the Naming Service.
 	 * If the connection failed, ESocketConnectionFailed exception is generated.

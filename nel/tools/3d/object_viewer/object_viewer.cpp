@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.28 2001/08/24 16:57:33 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.29 2001/08/27 10:46:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -514,7 +514,7 @@ void CObjectViewer::go ()
 			DispatchMessage(&msg);
 		}
 		
-		CSoundSystem::setListenerMatrix(_MouseListener.getViewMatrix().inverted());
+		CSoundSystem::setListenerMatrix(_MouseListener.getViewMatrix());
 		CSoundSystem::poll();
 
 	}

@@ -55,6 +55,11 @@ echo "LigoBankDir = \"$dir_ligobricks/zoneligos\";" >> land_exporter.cfg
 name_bank=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
 echo "TileBankFile = $name_bank" >> land_exporter.cfg
 
+# ColorMapFile
+
+cmf=`cat ../../cfg/config.cfg | grep "ligo_export_colormap" | sed -e 's/ligo_export_colormap//' | sed -e 's/ //g' | sed -e 's/=//g'`
+echo "ColorMapFile = \"$dir_database/$dir_ligosrc/$cmf\";" >> land_exporter.cfg
+
 # HeightMapFile1 is the grayscale .tga file (127 is 0, 0 is -127*ZFactor and 255 is +128*ZFactor)
 
 hmf1=`cat ../../cfg/config.cfg | grep "ligo_export_heightmap1" | sed -e 's/ligo_export_heightmap1//' | sed -e 's/ //g' | sed -e 's/=//g'`

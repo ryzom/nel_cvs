@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.15 2002/05/13 15:44:58 valignat Exp $
+ * $Id: zone_welder.cpp,v 1.16 2002/07/04 12:13:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -242,7 +242,7 @@ void weldZones(const char *center)
 			}
 			else
 			{
-				nlwarning ("WARNING File not found: %s\n", ss.c_str());
+				// nlwarning ("WARNING File not found: %s\n", ss.c_str());
 				adjZonesName[i]="empty";
 			}
 		}

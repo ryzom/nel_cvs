@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.7 2001/03/13 17:11:00 corvazier Exp $
+ * $Id: track.cpp,v 1.8 2001/03/14 10:37:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ CTrackKeyFramerBezierRGBA ttoto9;
 
 CTrackKeyFramerLinearFloat	lattoto10;
 CTrackKeyFramerLinearVector	lattoto11;
-CTrackKeyFramerLinearQuat	lattoto12;
+//CTrackKeyFramerLinearQuat	lattoto12;
 CTrackKeyFramerLinearInt	lattoto13;
 CTrackKeyFramerLinearRGBA	lattoto14;
 
@@ -78,7 +78,7 @@ CTrackDefaultRGBA ttoto16;
 
 
 // ***************************************************************************
-void CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>::evalKey (	
+/*void CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>::evalKey (	
 			const CKeyQuat* previous, const CKeyQuat* next, 
 			CAnimationTime datePrevious, CAnimationTime dateNext, 
 			CAnimationTime date )
@@ -99,7 +99,7 @@ void CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>::evalKey (
 			if (next)
 				_Value.Value=next->Value;
 	}
-}
+}*/
 
 
 // ***************************************************************************
@@ -154,6 +154,5 @@ void CTrackKeyFramerLinear<CKeyInt, sint32>::evalKey (
 				_Value.Value=next->Value;
 	}
 }
-
 
 } // NL3D

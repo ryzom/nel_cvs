@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.9 2001/03/13 17:11:00 corvazier Exp $
+ * $Id: track.h,v 1.10 2001/03/14 10:37:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -495,7 +495,7 @@ private:
  * \author Nevrax France
  * \date 2001
  */
-class CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat> : public ITrackKeyFramer<CKeyQuat>
+/*class CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat> : public ITrackKeyFramer<CKeyQuat>
 {
 public:
 
@@ -512,7 +512,7 @@ public:
 
 private:
 	CAnimatedValueBlendable<NLMISC::CQuat>	_Value;
-};
+};*/
 
 
 // ***************************************************************************
@@ -672,11 +672,11 @@ class CTrackKeyFramerLinearVector : public CTrackKeyFramerLinear<CKeyVector, NLM
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearVector);
 };
-class CTrackKeyFramerLinearQuat : public CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>
+/*class CTrackKeyFramerLinearQuat : public CTrackKeyFramerLinear<CKeyQuat, NLMISC::CQuat>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearQuat);
-};
+};*/
 class CTrackKeyFramerLinearInt : public CTrackKeyFramerLinear<CKeyInt, sint32>
 {
 public:

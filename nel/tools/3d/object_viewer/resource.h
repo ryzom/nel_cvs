@@ -132,7 +132,9 @@
 #define IDR_MOVE_ELEMENT                1055
 #define IDR_LOCATED_INSTANCE_MENU       1056
 #define IDC_LIFE_MIN_VALUE              1057
+#define IDD_TEXTURE_ANIM                1057
 #define IDC_LIFE_MAX_VALUE              1058
+#define IDB_ANIM_SEQUENCE               1058
 #define IDC_PARTICLE_NUMBER_POS         1059
 #define IDC_MASS_MIN_VALUE              1061
 #define IDC_MASS_MAX_VALUE              1062
@@ -203,6 +205,9 @@
 #define IDC_CUSTOM_DIRECTION            1132
 #define IDC_VECT_K                      1134
 #define IDC_VECT_MINUS_K                1135
+#define IDC_ENABLE_TEXTURE_ANIM         1139
+#define IDC_CHOOSE_TEXTURES             1140
+#define IDC_NO_SAMPLES                  1141
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -246,9 +251,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1057
+#define _APS_NEXT_RESOURCE_VALUE        1059
 #define _APS_NEXT_COMMAND_VALUE         32816
-#define _APS_NEXT_CONTROL_VALUE         1135
+#define _APS_NEXT_CONTROL_VALUE         1142
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

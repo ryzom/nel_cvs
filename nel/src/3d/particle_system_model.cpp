@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.65 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: particle_system_model.cpp,v 1.66 2004/05/11 16:19:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,6 +138,11 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 
 	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
 	CTransform::setIsForceAnimDetail(true);
+
+	for(uint k = 0; k < MaxPSUserParam; ++k)
+	{
+		_UserParam[k].Value = 0.f;
+	}
 
 	// RenderFilter: We are a Landscape
 	_RenderFilterType= UScene::FilterPS;	

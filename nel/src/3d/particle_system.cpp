@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.79 2004/04/01 17:12:31 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.80 2004/05/11 16:19:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1701,15 +1701,16 @@ void CParticleSystem::setSystemDate(float date)
 ///=======================================================================================
 void CParticleSystem::registerSoundServer(UPSSoundServer *soundServer)
 {
-	if (!_SoundServer)
+	if (soundServer == _SoundServer) return;	
+	if (_SoundServer)
 	{
 		CParticleSystemManager::stopSoundForAllManagers();
 	}
-	else
-	{
+	_SoundServer = soundServer;
+	if (_SoundServer)
+	{	
 		CParticleSystemManager::reactivateSoundForAllManagers();
 	}
-	_SoundServer = soundServer;
 }
 
 ///=======================================================================================

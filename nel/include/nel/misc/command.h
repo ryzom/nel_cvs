@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.29 2004/03/18 19:24:56 boucher Exp $
+ * $Id: command.h,v 1.30 2004/07/12 13:51:29 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ namespace NLMISC {
  *
  * Example:
  * \code
-	// I want to create a function that compute the square of the parameter and display the result
+	// I want to create a function that computes the square of the parameter and display the result
 	NLMISC_COMMAND(square,"display the square of the parameter","<value>")
 	{
 		// check args, if there s not the right number of parameter, return bad
@@ -70,19 +70,24 @@ namespace NLMISC {
  * Please use the same casing than for the function (first letter in lower case and after each word first letter in upper case)
  * ie: myFunction, step, orderByName, lookAtThis
  *
+ * System extended by Sadge July 2004
+ *  - NLMISC_CATEGORISED_COMMAND now takes a 4th 'category' parameter which is used by 'help' system to organise cmmands
+ *  - All default commands added by NeL are categorised as "nel"
+ *  - All commands created using the NLMISC_COMMAND macro are are categorised as "commands"
  *
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2001
  */
-#define NLMISC_COMMAND(__name,__help,__args) \
-struct __name##Class: public NLMISC::ICommand \
+#define NLMISC_COMMAND(__name,__help,__args) NLMISC_CATEGORISED_COMMAND(commands,__name,__help,__args)
+#define NLMISC_CATEGORISED_COMMAND(__category,__name,__help,__args) \
+struct __category##_##__name##Class: public NLMISC::ICommand \
 { \
-	__name##Class() : NLMISC::ICommand(#__name,__help,__args) { } \
+	__category##_##__name##Class() : NLMISC::ICommand(#__category,#__name,__help,__args) { } \
 	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human); \
 }; \
-__name##Class __name##Instance; \
-bool __name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
+__category##_##__name##Class __category##_##__name##Instance; \
+bool __category##_##__name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)
 
 /** Helper to declare a command as friend of a class.
  *	Usefull when you want to declare debug command that access private class method or data.
@@ -100,7 +105,7 @@ class ICommand
 public:
 
 	/// Constructor
-	ICommand(const char *commandName, const char *commandHelp, const char *commandArgs);
+	ICommand(const char *categoryName, const char *commandName, const char *commandHelp, const char *commandArgs);
 
 	virtual ~ICommand();
 
@@ -108,6 +113,7 @@ public:
 	// human means that we want the value in a human readable if possible
 	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human = true) = 0;
 
+	std::string CategoryName;
 	std::string HelpString;
 	std::string CommandArgs;
 	
@@ -118,9 +124,11 @@ public:
 	// static members
 
 	typedef std::map<std::string, ICommand *> TCommand;
+	typedef std::set<std::string> TCategorySet;
 
-	static TCommand *Commands;
-	static bool		 CommandsInit;
+	static TCategorySet	*Categories;
+	static TCommand		*Commands;
+	static bool			CommandsInit;
 
 	/// Executes the command and display output to the log
 	/// \param quiet true if you don't want to display the "executing the command ..."

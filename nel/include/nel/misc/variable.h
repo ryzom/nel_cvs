@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.16 2004/07/09 09:45:52 lecroart Exp $
+ * $Id: variable.h,v 1.17 2004/07/12 13:51:29 miller Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -61,8 +61,9 @@ namespace NLMISC {
  * \author Nevrax France
  * \date 2001
  */
-#define NLMISC_VARIABLE(__type,__var,__help) \
-NLMISC::CVariablePtr<__type> __var##Instance(#__var, __help " (" #__type ")", &__var)
+#define NLMISC_VARIABLE(__type,__var,__help) NLMISC_CATEGORISED_VARIABLE(variables,__type,__var,__help)
+#define NLMISC_CATEGORISED_VARIABLE(__category,__type,__var,__help) \
+NLMISC::CVariablePtr<__type> __var##Instance(#__category,#__var, __help " (" #__type ")", &__var)
 
 
 
@@ -96,11 +97,12 @@ NLMISC::CVariablePtr<__type> __var##Instance(#__var, __help " (" #__type ")", &_
  * \author Nevrax France
  * \date 2001
  */
-#define NLMISC_DYNVARIABLE(__type,__name,__help) \
+#define NLMISC_DYNVARIABLE(__type,__name,__help) NLMISC_CATEGORISED_DYNVARIABLE(variables,__type,__name,__help)
+#define NLMISC_CATEGORISED_DYNVARIABLE(__category,__type,__name,__help) \
 class __name##Class : public NLMISC::IVariable \
 { \
 public: \
-	__name##Class () : IVariable(#__name, __help) { } \
+	__name##Class () : IVariable(#__category, #__name, __help) { } \
 	 \
 	virtual void fromString(const std::string &val, bool human=false) \
 	{ \
@@ -135,8 +137,8 @@ class IVariable : public ICommand
 {
 public:
 
-	IVariable(const char *commandName, const char *commandHelp, const char *commandArgs = "[<value>]", bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
-		ICommand(commandName, commandHelp, commandArgs), _UseConfigFile(useConfigFile), ChangeCallback(cc)
+	IVariable(const char *categoryName, const char *commandName, const char *commandHelp, const char *commandArgs = "[<value>]", bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
+		ICommand(categoryName,commandName, commandHelp, commandArgs), _UseConfigFile(useConfigFile), ChangeCallback(cc)
 	{
 		Type = Variable;
 	}
@@ -188,8 +190,8 @@ class CVariablePtr : public IVariable
 {
 public:
 
-	CVariablePtr (const char *commandName, const char *commandHelp, T *valueptr, bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
-		IVariable (commandName, commandHelp, "[<value>]", useConfigFile, cc), _ValuePtr(valueptr)
+	CVariablePtr (const char *categoryName, const char *commandName, const char *commandHelp, T *valueptr, bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
+		IVariable (categoryName, commandName, commandHelp, "[<value>]", useConfigFile, cc), _ValuePtr(valueptr)
 	{
 	}
 
@@ -220,14 +222,14 @@ class CVariable : public IVariable
 	{
 public:
 
-	CVariable ( const char *commandName,
-				const char *commandHelp,
-				const T &defaultValue,
-				uint nbMeanValue = 0,
-				bool useConfigFile = false,
-				void (*cc)(IVariable &var)=NULL,
-				bool executeCallbackForDefaultValue=false ) :
-		IVariable (commandName, commandHelp, "[<value>|stat|mean|min|max]", useConfigFile, cc), _Mean(nbMeanValue), _First(true)
+	CVariable (	const char *categoryName, 
+				const char *commandName, 
+				const char *commandHelp, 
+				const T &defaultValue, 
+				uint nbMeanValue = 0, 
+				bool useConfigFile = false, 
+				void (*cc)(IVariable &var)=NULL) :
+		IVariable (categoryName, commandName, commandHelp, "[<value>|stat|mean|min|max]", useConfigFile, cc), _Mean(nbMeanValue), _First(true)
 	{
 		set (defaultValue, executeCallbackForDefaultValue);
 	}
@@ -387,8 +389,8 @@ template<> class CVariable<std::string> : public IVariable
 {
 public:
 	
-	CVariable (const char *commandName, const char *commandHelp, const std::string &defaultValue, uint nbMeanValue = 0, bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
-		IVariable (commandName, commandHelp, "[<value>]", useConfigFile, cc)
+	CVariable (const char *categoryName, const char *commandName, const char *commandHelp, const std::string &defaultValue, uint nbMeanValue = 0, bool useConfigFile = false, void (*cc)(IVariable &var)=NULL) :
+		IVariable (categoryName, commandName, commandHelp, "[<value>]", useConfigFile, cc)
 	{
 		set (defaultValue, false);
 	}
@@ -472,9 +474,6 @@ private:
 
 	std::string _Value;
 };
-
-
-
 
 
 

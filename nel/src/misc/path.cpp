@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.62 2002/11/12 15:57:28 berenguier Exp $
+ * $Id: path.cpp,v 1.63 2002/11/12 17:23:38 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,6 +37,10 @@
 #	include <sys/types.h>
 #	include <sys/stat.h>
 #	include <direct.h>
+#	include <io.h>
+#	include <fcntl.h>
+#	include <sys/types.h>
+#	include <sys/stat.h>
 #else
 #   include <sys/types.h>
 #   include <sys/stat.h>
@@ -1037,12 +1041,31 @@ string CFile::findNewFile (const string &filename)
 // \warning doesn't work with big file
 uint32	CFile::getFileSize (const std::string &filename)
 {
-	FILE *fp = fopen (filename.c_str(), "rb");
+/*	FILE *fp = fopen (filename.c_str(), "rb");
 	if (fp == NULL) return 0;
 	fseek (fp, 0, SEEK_END);
 	uint32 size = ftell (fp);
 	fclose (fp);
+	return size;*/
+
+/*	const char *s = filename.c_str();
+	int h = _open (s, _O_RDONLY | _O_BINARY);
+	_lseek (h, 0, SEEK_END);
+	uint32 size = _tell (h);
+	_close (h);
 	return size;
+*/
+
+#if defined (NL_OS_WINDOWS)
+	struct _stat buf;
+	int result = _stat (filename.c_str (), &buf);
+#elif defined (NL_OS_UNIX)
+	struct stat buf;
+	int result = stat (filename.c_str (), &buf);
+#endif
+	if (result != 0) return 0;
+	else return buf.st_size;
+	
 }
 
 uint32	CFile::getFileModificationDate(const std::string &filename)

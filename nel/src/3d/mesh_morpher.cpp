@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * <File description>
  *
- * $Id: mesh_morpher.cpp,v 1.7 2003/12/10 12:47:33 berenguier Exp $
+ * $Id: mesh_morpher.cpp,v 1.8 2004/01/06 15:13:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -151,7 +151,9 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 		CBlendShape &rBS = BlendShapes[i];
 		float rFactor = pBSFactor->operator[](i).getFactor()/100.0f;
 
-		if (rFactor > 0.0f)
+		// todo hulud check it works
+		// if (rFactor > 0.0f)
+		if (rFactor != 0.0f)
 		for (j = 0; j < rBS.VertRefs.size(); ++j)
 		{
 			uint32 vp = rBS.VertRefs[j];

@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.18 2002/06/27 15:05:01 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.19 2002/07/08 12:59:49 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -330,8 +330,12 @@ void CWaterShape::flushTextures (IDriver &driver)
 	for (uint k = 0; k < 2; ++k)
 	{
 		if (_BumpMap[k] != NULL)
-			_BumpMap[k]->generate();
+			driver.setupTexture(*_BumpMap[k]);
+		if (_EnvMap[k] != NULL)
+			driver.setupTexture(*_EnvMap[k]);		
 	}
+	if (_ColorMap != NULL)
+		driver.setupTexture(*_ColorMap);
 }
 
 //============================================

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.15 2000/12/13 14:38:36 cado Exp $
+ * $Id: common.h,v 1.16 2000/12/14 11:01:20 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,15 +47,20 @@ namespace	NLMISC
 
 
 // Smart snprintf =============================================================================
-inline void smprintf( char *buffer, size_t count, const char *format, ... )
+inline sint smprintf( char *buffer, size_t count, const char *format, ... )
 {
+	sint ret;
+
 	va_list args;
 	va_start( args, format );
-	if ( vsnprintf( buffer, count, format, args ) == -1 )
+	ret = vsnprintf( buffer, count, format, args );
+	if ( ret == -1 )
 	{
 		buffer[count-1] = '\0';
 	}
 	va_end( args );
+
+	return( ret );
 }
 
 

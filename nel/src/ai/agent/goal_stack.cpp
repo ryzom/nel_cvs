@@ -55,7 +55,7 @@ namespace NLAILOGIC
 		{
 			if (  (*it_g)->priority() > 0 )
 			{		
-				if ( i < _MaxGoals && !(*it_g)->isExclusive() )		// Exclusive operators
+				if ( i < _MaxGoals || !(*it_g)->isExclusive() )		// Exclusive operators
 				{
 					_Goals[i]->select();
 					i++;

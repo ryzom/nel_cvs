@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.16 2001/12/06 16:52:07 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.17 2001/12/11 10:34:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,8 @@ void	CLandscapeModel::registerBasic()
 // ***************************************************************************
 void	CLandscapeModel::initModel()
 {
+	CTransformModel::initModel();
+
 	// After creating the landscape (and so the VegetableManager in the ctor).
 	// we must init correclty the VegetableManager.
 	Landscape.createVegetableBlendLayersModels(safe_cast<CScene*>(_OwnerMot));

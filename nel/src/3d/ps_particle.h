@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.7 2001/07/12 15:43:18 vizerie Exp $
+ * $Id: ps_particle.h,v 1.8 2001/07/17 15:52:22 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,6 +71,9 @@ public:
 
 	/// return priority
 	virtual uint32 getPriority(void) const { return 1000 ; }
+
+	/// return true if this located bindable derived class holds alive particles
+	virtual bool hasParticles(void) const { nlassert(_Owner) ; return _Owner->getSize() != 0 ; }
 	
 	/**
 	* process one pass for the particles. The default behaviour shows the particles
@@ -1057,6 +1060,11 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 				, public CPSTailParticle, public CPSMaterial
 {
 		public:
+
+
+		virtual bool hasParticles(void) const 
+		{ nlassert(_Owner) ; return _Owner->getSize() || _NbDyingRibbons ; }
+
 		/// process one pass for the particle	
 		
 		virtual void draw(bool opaque) ;

@@ -1,7 +1,7 @@
 /** \file progress_callback.h
  * Progess callback interface
  *
- * $Id: progress_callback.h,v 1.1 2002/12/06 12:41:25 corvazier Exp $
+ * $Id: progress_callback.h,v 1.2 2002/12/11 13:47:25 coutelas Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -43,6 +43,7 @@ class IProgressCallback
 public:
 
 	IProgressCallback ();
+	virtual ~IProgressCallback () {}
 
 	/**
 	  * Call back

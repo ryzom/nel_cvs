@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.16 2003/07/03 15:16:43 boucher Exp $
+ * $Id: sound_driver.cpp,v 1.16.8.1 2004/09/09 14:01:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,48 @@ namespace NLSOUND
 {
 
 
+/** DLL NAME selection for standard driver
+ */
+#ifdef NL_OS_WINDOWS
+	
+#if _MSC_VER >= 1300	// visual .NET, use different dll name
+	// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
+#ifdef NL_DEBUG_FAST
+#define NLSOUND_DLL_NAME "nldriver_openal_df.dll"
+#elif defined (NL_DEBUG)
+#define NLSOUND_DLL_NAME "nldriver_openal_d.dll"
+#elif defined (NL_RELEASE_DEBUG)
+#define NLSOUND_DLL_NAME "nldriver_openal_rd.dll"
+#elif defined (NL_RELEASE)
+#define NLSOUND_DLL_NAME "nldriver_openal_r.dll"
+#else
+#error "Unknown dll name"
+#endif
+	
+#else
+	
+	// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
+#ifdef NL_DEBUG_FAST
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_df.dll"
+#elif defined (NL_DEBUG)
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_d.dll"
+#elif defined (NL_RELEASE_DEBUG)
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_rd.dll"
+#elif defined (NL_RELEASE)
+#define NLSOUND_DLL_NAME "nel_drv_dsound_win_r.dll"
+#else
+#error "Unknown dll name"
+#endif
+	
+#endif 
+	
+#elif defined (NL_OS_UNIX)
+#define NLSOUND_DLL_NAME "libnel_drv_openal.so"
+#else
+#error "Unknown system"
+#endif
+	
+
 // Interface version
 const uint32 ISoundDriver::InterfaceVersion = 0x08;
 
@@ -58,69 +100,94 @@ const char *IDRV_VERSION_PROC_NAME = "NLSOUND_interfaceVersion";
 /*
  * The static method which builds the sound driver instance
  */
-ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *stringMapper)
+ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *stringMapper, TDriver driverType)
 {
 	ISDRV_CREATE_PROC	createSoundDriver = NULL;
 	ISDRV_VERSION_PROC	versionDriver = NULL;
 
+	// dll selected
+	std::string	dllName;
+	
+	
 #ifdef NL_OS_WINDOWS
 
 	// WINDOWS code.
 	HINSTANCE			hInst;
 
-	hInst = LoadLibrary(NLSOUND_DLL_NAME);
-
+	// Chooose the DLL
+	if(driverType==DriverFMod)
+	{
+		#ifdef NL_DEBUG_FAST
+		dllName= "nel_drv_fmod_win_df.dll";
+		#elif defined (NL_DEBUG)
+		dllName= "nel_drv_fmod_win_d.dll";
+		#elif defined (NL_RELEASE_DEBUG)
+		dllName= "nel_drv_fmod_win_rd.dll";
+		#elif defined (NL_RELEASE)
+		dllName= "nel_drv_fmod_win_r.dll";
+		#else
+		#error "Unknown dll name"
+		#endif
+	}
+	else
+	{
+		dllName= NLSOUND_DLL_NAME;
+	}
+	
+	// Load it
+	hInst = LoadLibrary(dllName.c_str());
 	if (!hInst)
 	{
-		throw ESoundDriverNotFound();
+		throw ESoundDriverNotFound(dllName);
 	}
 
 	char buffer[1024], *ptr;
-	SearchPath (NULL, NLSOUND_DLL_NAME, NULL, 1023, buffer, &ptr);
-	nlinfo ("Using the library '"NLSOUND_DLL_NAME"' that is in the directory: '%s'", buffer);
+	SearchPath (NULL, dllName.c_str(), NULL, 1023, buffer, &ptr);
+	nlinfo ("Using the library '%s' that is in the directory: '%s'", dllName.c_str(), buffer);
 
 	createSoundDriver = (ISDRV_CREATE_PROC) GetProcAddress (hInst, IDRV_CREATE_PROC_NAME);
 	if (createSoundDriver == NULL)
 	{
 		nlinfo( "Error: %u", GetLastError() );
-		throw ESoundDriverCorrupted();
+		throw ESoundDriverCorrupted(dllName);
 	}
 
 	versionDriver = (ISDRV_VERSION_PROC) GetProcAddress (hInst, IDRV_VERSION_PROC_NAME);
 	if (versionDriver != NULL)
 	{
 		if (versionDriver()<ISoundDriver::InterfaceVersion)
-			throw ESoundDriverOldVersion();
+			throw ESoundDriverOldVersion(dllName);
 		else if (versionDriver()>ISoundDriver::InterfaceVersion)
-			throw ESoundDriverUnknownVersion();
+			throw ESoundDriverUnknownVersion(dllName);
 	}
 
 #elif defined (NL_OS_UNIX)
 
 	// Unix code
-	void *handle = dlopen(NLSOUND_DLL_NAME, RTLD_NOW);
+	dllName= NLSOUND_DLL_NAME;
+	void *handle = dlopen(dllName.c_str(), RTLD_NOW);
 
 	if (handle == NULL)
 	{
-		nlwarning ("when loading dynamic library '%s': %s", NLSOUND_DLL_NAME, dlerror());
-		throw ESoundDriverNotFound();
+		nlwarning ("when loading dynamic library '%s': %s", dllName.c_str(), dlerror());
+		throw ESoundDriverNotFound(dllName);
 	}
 
 	/* Not ANSI. Might produce a warning */
 	createSoundDriver = (ISDRV_CREATE_PROC) dlsym (handle, IDRV_CREATE_PROC_NAME);
 	if (createSoundDriver == NULL)
 	{
-		nlwarning ("when getting function in dynamic library '%s': %s", NLSOUND_DLL_NAME, dlerror());
-		throw ESoundDriverCorrupted();
+		nlwarning ("when getting function in dynamic library '%s': %s", dllName.c_str(), dlerror());
+		throw ESoundDriverCorrupted(dllName);
 	}
 
 	versionDriver = (ISDRV_VERSION_PROC) dlsym (handle, IDRV_VERSION_PROC_NAME);
 	if (versionDriver != NULL)
 	{
 		if (versionDriver()<ISoundDriver::InterfaceVersion)
-			throw ESoundDriverOldVersion();
+			throw ESoundDriverOldVersion(dllName);
 		else if (versionDriver()>ISoundDriver::InterfaceVersion)
-			throw ESoundDriverUnknownVersion();
+			throw ESoundDriverUnknownVersion(dllName);
 	}
 
 #else // NL_OS_UNIX
@@ -130,8 +197,14 @@ ISoundDriver	*ISoundDriver::createDriver(bool useEax, IStringMapperProvider *str
 	ISoundDriver *ret = createSoundDriver(useEax, stringMapper);
 	if ( ret == NULL )
 	{
-		throw ESoundDriverCantCreateDriver();
+		throw ESoundDriverCantCreateDriver(dllName);
 	}
+	else
+	{
+		// Fill the DLL name
+		ret->_DllName= dllName;
+	}
+
 	return ret;
 }
 

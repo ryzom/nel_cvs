@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.19 2004/05/10 14:43:09 corvazier Exp $
+ * $Id: sound_driver.h,v 1.19.4.1 2004/09/09 14:01:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,50 +46,17 @@ class ISource;
 #ifdef NL_OS_WINDOWS
 #define EAX_AVAILABLE	1
 #endif
-/** Configuration to compile with manual or API (directx or open AL) rolloff factor.
- *	Set it to 1 for manual rolloff, 0 for API rolloff.
-*/
-#define MANUAL_ROLLOFF	0
 
-
-#ifdef NL_OS_WINDOWS
-
-#if _MSC_VER >= 1300	// visual .NET, use different dll name
-// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
-#ifdef NL_DEBUG_FAST
-#define NLSOUND_DLL_NAME "nldriver_openal_df.dll"
-#elif defined (NL_DEBUG)
-#define NLSOUND_DLL_NAME "nldriver_openal_d.dll"
-#elif defined (NL_RELEASE_DEBUG)
-#define NLSOUND_DLL_NAME "nldriver_openal_rd.dll"
-#elif defined (NL_RELEASE)
-#define NLSOUND_DLL_NAME "nldriver_openal_r.dll"
-#else
-#error "Unknown dll name"
-#endif
-
-#else
-
-// must test it first, because NL_DEBUG_FAST and NL_DEBUG are declared at same time.
-#ifdef NL_DEBUG_FAST
-#define NLSOUND_DLL_NAME "nel_drv_dsound_win_df.dll"
-#elif defined (NL_DEBUG)
-#define NLSOUND_DLL_NAME "nel_drv_dsound_win_d.dll"
-#elif defined (NL_RELEASE_DEBUG)
-#define NLSOUND_DLL_NAME "nel_drv_dsound_win_rd.dll"
-#elif defined (NL_RELEASE)
-#define NLSOUND_DLL_NAME "nel_drv_dsound_win_r.dll"
-#else
-#error "Unknown dll name"
-#endif
-
-#endif 
-
-#elif defined (NL_OS_UNIX)
-#define NLSOUND_DLL_NAME "libnel_drv_openal.so"
-#else
-#error "Unknown system"
-#endif
+/** 
+ *	Configuration to compile with manual or API (directx or open AL) rolloff factor.
+ *	0 => API (directx or open AL) rollOff control. 
+ *		ISource::setAlpha() has no impact. 
+ *		IListener::setRollOffFactor() works
+ *	1 => Manual rollOff control
+ *		ISource::setAlpha() change the shape of attenuation 
+ *		IListener::setRollOffFactor() has no impact
+ */
+#define MANUAL_ROLLOFF	1
 
 
 /*
@@ -115,6 +82,15 @@ enum TSampleFormat { Mono8, Mono16ADPCM, Mono16, Stereo8, Stereo16 };
 class ISoundDriver
 {
 public:
+
+	/// Driver Creation Choice
+	enum	TDriver
+	{
+		DriverAuto= 0,
+		DriverFMod,
+
+		NumDrivers
+	};
 
 	/** The interface must be implemented and provided to the driver
 	 *	in order to have a coherent string mapping.
@@ -142,8 +118,10 @@ public:
 	 * You can request support for EAX. If EAX is requested and if there is enougth hardware
 	 * buffer replay, then only hardware buffer are created when calling createBuffer.
 	 * If the number of available hardware buffer is less than 10, then EAX is ignored.
+	 *
+	 *	\param driverType set DriverFMod if you want to use FMod driver (nel_drv_fmod_win_??.dll)
 	 */
-	static	ISoundDriver	*createDriver(bool useEax, IStringMapperProvider *stringMapper);
+	static	ISoundDriver	*createDriver(bool useEax, IStringMapperProvider *stringMapper, TDriver driverType= DriverAuto);
 
 	/// Create a sound buffer
 	virtual	IBuffer			*createBuffer() = 0;
@@ -157,10 +135,10 @@ public:
 	/// Create a source
 	virtual	ISource			*createSource() = 0;
 
-	/// Temp
-//	virtual bool			loadWavFile( IBuffer *destbuffer, const char *filename ) = 0;
+	/// Read a WAV data in a buffer (format supported: Mono16, Mono8, Stereo16, Stereo8)
 	virtual bool			readWavBuffer( IBuffer *destbuffer, const std::string &name, uint8 *wavData, uint dataSize) = 0;
 
+	/// FMod driver Note: ADPCM format are converted and stored internally in Mono16 format (hence IBuffer::getFormat() return Mono16)
 	virtual bool			readRawBuffer( IBuffer *destbuffer, const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency) = 0;
 
 	/// Commit all the changes made to 3D settings of listener and sources
@@ -175,6 +153,8 @@ public:
 	virtual void	endBench() =0;
 	virtual void	displayBench(NLMISC::CLog *log) =0;
 
+	// Filled at createDriver()
+	const std::string		&getDllName() const {return _DllName;}
 
 	/// Destructor
 	virtual	~ISoundDriver() {}
@@ -189,6 +169,9 @@ protected:
 
 	/// Remove a source (should be called by the friend destructor of the source class)
 	virtual void			removeSource( ISource *source ) = 0;
+
+private:
+	std::string				_DllName;
 };
 
 
@@ -200,6 +183,7 @@ class ESoundDriver : public NLMISC::Exception
 public:
 	ESoundDriver() : NLMISC::Exception( "Sound driver error" ) {}
 	ESoundDriver( const char *reason ) : NLMISC::Exception( reason ) {}
+	ESoundDriver( const std::string &reason ) : NLMISC::Exception( reason.c_str() ) {}
 };
 
 
@@ -209,7 +193,7 @@ public:
 class ESoundDriverNotFound : public ESoundDriver
 {
 public:
-	ESoundDriverNotFound() : ESoundDriver( NLSOUND_DLL_NAME " or third-party library not found" ) {}
+	ESoundDriverNotFound(const std::string &dllName) : ESoundDriver( dllName + " or third-party library not found" ) {}
 };
 
 
@@ -219,7 +203,7 @@ public:
 class ESoundDriverCorrupted : public ESoundDriver
 {
 public:
-	ESoundDriverCorrupted() : ESoundDriver( "Can't get NLSOUND_createISoundDriverInstance from " NLSOUND_DLL_NAME " (Bad dll?)" ) {}
+	ESoundDriverCorrupted(const std::string &dllName) : ESoundDriver( std::string("Can't get NLSOUND_createISoundDriverInstance from ") + dllName + " (Bad dll?)" ) {}
 };
 
 
@@ -229,7 +213,7 @@ public:
 class ESoundDriverOldVersion : public ESoundDriver
 {
 public:
-	ESoundDriverOldVersion() : ESoundDriver( NLSOUND_DLL_NAME " is a too old version. Ask for a more recent file" ) {}
+	ESoundDriverOldVersion(const std::string &dllName) : ESoundDriver( dllName + " is a too old version. Ask for a more recent file" ) {}
 };
 
 
@@ -239,7 +223,7 @@ public:
 class ESoundDriverUnknownVersion : public ESoundDriver
 {
 public:
-	ESoundDriverUnknownVersion() : ESoundDriver( NLSOUND_DLL_NAME " is more recent than the application" ) {}
+	ESoundDriverUnknownVersion(const std::string &dllName) : ESoundDriver( dllName + " is more recent than the application" ) {}
 };
 
 
@@ -249,7 +233,7 @@ public:
 class ESoundDriverCantCreateDriver : public ESoundDriver
 {
 public:
-	ESoundDriverCantCreateDriver() : ESoundDriver( NLSOUND_DLL_NAME " can't create driver" ) {}
+	ESoundDriverCantCreateDriver(const std::string &dllName) : ESoundDriver( dllName + " can't create driver" ) {}
 };
 
   

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.33 2004/05/10 14:43:31 corvazier Exp $
+ * $Id: u_audio_mixer.h,v 1.33.4.1 2004/09/09 14:03:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,7 +83,16 @@ class UAudioMixer
 {
 public:
 
-
+	/// Driver Creation Choice
+	enum	TDriver
+	{
+		DriverAuto= 0,
+		DriverFMod,
+			
+		NumDrivers
+	};
+	
+	
 	/** Structure that contain the background flags.*/
 	struct TBackgroundFlags
 	{
@@ -148,7 +157,7 @@ public:
 	 * autoLoadSample is used for tools like george or object viewer where you don't bother to
 	 * specifie each sample bank to load, you just want to ear the sound.
 	 */
-	virtual void		init(uint maxTrack = 32, bool useEax = true, bool useADPCM = true, NLMISC::IProgressCallback *progressCallBack = NULL, bool autoLoadSample = false) = 0;
+	virtual void		init(uint maxTrack = 32, bool useEax = true, bool useADPCM = true, NLMISC::IProgressCallback *progressCallBack = NULL, bool autoLoadSample = false, TDriver driverType= DriverAuto) = 0;
 
 	/** Initialisation of the clustered sound system.
 	  */

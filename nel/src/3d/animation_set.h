@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.6 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animation_set.h,v 1.7 2004/06/17 08:18:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,7 +72,7 @@ public:
 
 	/** Get a channel Name by its Id.
 	  */
-	const std::string &getChannelName(uint channelId)
+	const std::string &getChannelName(uint channelId) const
 	{
 		nlassert(channelId<_ChannelName.size());
 		return _ChannelName[channelId];

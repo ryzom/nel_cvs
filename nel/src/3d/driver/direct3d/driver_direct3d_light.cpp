@@ -1,7 +1,7 @@
 /** \file driver_direct3d_light.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_light.cpp,v 1.5 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d_light.cpp,v 1.6 2004/09/02 16:56:17 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -87,45 +87,52 @@ void CDriverD3D::enableLight (uint8 index, bool enable)
 	_LightMapDynamicLightDirty= true;
 }
 
+static const float sqrtFLT_MAX = (float) sqrtf(FLT_MAX);
 
 // ***************************************************************************
 void CDriverD3D::setLightInternal (uint8 index, const CLight &light)
 {
 	H_AUTO_D3D(CDriverD3D_setLightInternal);
-	nlassert (_DeviceInterface);
+	nlassert (_DeviceInterface);	
 	if (index<MaxLight)
 	{
 		// Ref on the state
-		D3DLIGHT9 &lightRef = _LightCache[index].Light;
-
+		D3DLIGHT9 &lightRef = _LightCache[index].Light;		
 		lightRef.Type = RemapLightTypeNeL2D3D[light.getMode ()];
-		NL_D3DCOLORVALUE_RGBA (lightRef.Diffuse, light.getDiffuse());
-		NL_D3DCOLORVALUE_RGBA (lightRef.Specular, light.getSpecular());
-		NL_D3DCOLORVALUE_RGBA (lightRef.Ambient, light.getAmbiant());
+		NL_D3DCOLORVALUE_RGBA(lightRef.Diffuse, light.getDiffuse());
+		NL_D3DCOLORVALUE_RGBA(lightRef.Specular, light.getSpecular());
+		NL_D3DCOLORVALUE_RGBA(lightRef.Ambient, light.getAmbiant());
 		CVector vect = light.getPosition();
 		NL_D3DVECTOR_VECTOR (lightRef.Position, vect);
 		vect = light.getDirection();
 		NL_D3DVECTOR_VECTOR (lightRef.Direction, vect);
-		lightRef.Range = (float)sqrt(FLT_MAX);
+		lightRef.Range = sqrtFLT_MAX;
 		lightRef.Falloff = 1;
 		lightRef.Attenuation0 = light.getConstantAttenuation();
 		lightRef.Attenuation1 = light.getLinearAttenuation();
 		lightRef.Attenuation2 = light.getQuadraticAttenuation();
-		lightRef.Phi = light.getCutoff();
-		
-		float divid=light.getExponent();
-		if (divid==0.f)
-			divid=0.0001f;
-		float hotSpotAngle = (float)acos(exp(log (0.9)/divid));
-		lightRef.Theta = hotSpotAngle;
+		if (lightRef.Type == D3DLIGHT_SPOT)
+		{			
+			lightRef.Phi = light.getCutoff();			
+			float divid=light.getExponent();
+			if (divid==0.f)
+				divid=0.0001f;
+			float hotSpotAngle = (float)acos(exp(log (0.9)/divid));
+			lightRef.Theta = hotSpotAngle;
+		}
+		else
+		{
+			lightRef.Phi = (float) NLMISC::Pi * 0.5f;
+			lightRef.Theta = (float) NLMISC::Pi * 0.25f;
+		}
 
 		// Settings touched
 		_LightCache[index].SettingsTouched = true;
 
 		// Touch only if enabled
 		if (_LightCache[index].Enabled)
-			touchRenderVariable (&_LightCache[index]);
-	}
+			touchRenderVariable (&_LightCache[index]);		
+	}	
 }
 
 // ***************************************************************************

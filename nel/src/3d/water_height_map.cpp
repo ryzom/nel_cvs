@@ -12,8 +12,9 @@ namespace NL3D
 
 CWaterHeightMap::CWaterHeightMap() : _X(0), _Y(0), _Size(0),
 									 _CurrMap(0), Date(-1),
-									 _Damping(0.97f), _FilterWeight(4), _UnitSize(0.2f)
-{
+									 _Damping(0.97f), _FilterWeight(4), _UnitSize(0.6f),
+									 _WaveIntensity(0), _WavePeriod(0)
+{		
 }
 
 void		CWaterHeightMap::setSize(uint size)
@@ -330,6 +331,11 @@ void	CWaterHeightMap::filterNStoreGradient()
 
 void CWaterHeightMap::swapBuffers(void)
 {
+	// generate automatic waves
+	if (_WaveIntensity != 0)
+	{
+		perturbate(_X + rand() % _Size, _Y + rand() % _Size, 3, _WaveIntensity);
+	}
 	_CurrMap ^= 1;
 }
 
@@ -452,6 +458,14 @@ do
 	curr += sizex2;
 }
 while (curr != endLeft);
+}
+
+
+void	CWaterHeightMap::setWaves(float intensity, float period)
+{
+	_WaveIntensity = intensity;
+	_WavePeriod    = 0;
+
 }
 
 

@@ -11,6 +11,10 @@
 namespace NL3D
 {
 
+
+class CWaterPoolManager;
+
+
 /**
   * This class is a portion of water, it encodes its height, and simulates its propagation.
   * It contains datas about the eight around the user position
@@ -29,8 +33,7 @@ namespace NL3D
 class CWaterHeightMap
 {
 public:
-	// ctor
-	CWaterHeightMap();
+	
 	/** Set this quad dimension. It is given as a power of 2
 	  * This also reset the eightField values
 	  */
@@ -79,6 +82,19 @@ public:
 	/// swap the height maps. It must be called once propagation and filtering have been performed
 	void					swapBuffers(void);
 
+	/** Tells this height map to automatically generate waves. They are generated as perturbation on the border
+	  * of the field
+	  * \param   intensity The intensity of the waves. 0 disable waves
+	  * \period  the time ellapsed between each waves
+	  */
+	void					setWaves(float intensity, float period);
+
+	/// get the intensity of waves
+	float					getWaveIntensity() const { return _WaveIntensity; }
+
+	/// get the period of waves
+	float					getWavePeriod() const { return _WavePeriod; }
+
 	/// damping
 	void  setDamping(float damping) { _Damping = damping; }
 	float getDamping() const { return _Damping; }
@@ -96,9 +112,16 @@ public:
 
 	sint64					Date;
 private:
+	friend class CWaterPoolManager;
+	// ctor
+	CWaterHeightMap();
+
 	float					   _Damping;
 	float					   _FilterWeight;
 	float					   _UnitSize;
+	float					   _WaveIntensity;
+	float					   _WavePeriod;
+
 
 	uint					   _X, _Y;	
 	typedef std::vector<float>				TFloatVect;

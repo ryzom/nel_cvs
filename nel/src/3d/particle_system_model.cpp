@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.55 2003/08/08 16:55:09 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.56 2003/08/18 14:31:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 											   _Invalidated(false),
 											   _InsertedInVisibleList(false),
 											   _InClusterAndVisible(false),
+											   _EmitterActive(true),
 											   _BypassGlobalUserParam(0),
 											   _AnimType(CParticleSystem::AnimVisible)
 {
@@ -190,11 +191,14 @@ void CParticleSystemModel::reallocRsc()
 	{		
 		touch((uint)CParticleSystemModel::PSParam0 + k, OwnerBit);
 	}
+	//
+	if (!_EmitterActive) _ParticleSystem->activateEmitters(false);
 }
 
 ///=====================================================================================
 void CParticleSystemModel::releasePSPointer()
-{
+{	
+	nlassert(_ParticleSystem != NULL);
 	if (_ParticleSystem.getNbRef() == 1)
 	{	
 		// Backup user params (in animated value) so that they will be restored when the system is recreated
@@ -204,13 +208,23 @@ void CParticleSystemModel::releasePSPointer()
 		}
 	}
 	//
+	nlassert(_Scene);
+	_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);
+	if (_ParticleSystem->getAnimType() == CParticleSystem::AnimAlways)
+	{			
+		if (_AnimatedModelHandle.Valid)
+		{					
+			_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);			
+		}
+	}
+	//
 	_ParticleSystem = NULL; // one less ref with the smart ptr 
 }
 
 ///=====================================================================================
-bool CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos)
+void CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos)
 {
-	if (_EditionMode) return false;
+	if (_EditionMode) return;
 	/** Here we test wether the system has not gone out of scope.
 	  * Why do we test this here addtionnaly to the clip traversal ?
 	  * Simply because the clip traversal is not called if the cluster it is inserted in is not parsed.
@@ -233,55 +247,36 @@ bool CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFr
 	const float dist2 = v * v;
 	
 	if (dist2 > shape->_MaxViewDist * shape->_MaxViewDist) // too far ?
-	{
-		if (_AnimatedModelHandle.Valid)
-		{
-			_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
-			_AnimatedModelHandle.Valid = false;
-		}		
+	{				
 		releasePSPointer();
 		if (shape->_DestroyModelWhenOutOfRange)
 		{			
 			_Invalidated = true;
 		}		
-		return true;		
+		return;
 	}
 
 	/// frustum test
 	if (shape->_DestroyWhenOutOfFrustum)
 	{
 		if (checkAgainstPyramid(worldFrustumPyramid) == false)
-		{
-			if (_AnimatedModelHandle.Valid)
-			{
-				_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
-				_AnimatedModelHandle.Valid = false;
-			}
-
+		{			
 			if (shape->_DestroyModelWhenOutOfRange)
 			{							
 				_Invalidated = true;
 			}
 			releasePSPointer();
-			return true;
+			return;
 		}
 	}
 
-	return false;
+	return;
 }		
 
 ///=====================================================================================
 void CParticleSystemModel::releaseRsc()
 {
-	if (!_ParticleSystem) return;
-
-	if (_AnimatedModelHandle.Valid)
-	{
-		_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
-		_AnimatedModelHandle.Valid = false;
-	}	
-	nlassert(_Scene);
-	_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);
+	if (!_ParticleSystem) return;	
 	releasePSPointer();
 }
 
@@ -289,18 +284,9 @@ void CParticleSystemModel::releaseRsc()
 void CParticleSystemModel::releaseRscAndInvalidate()
 {
 
-	if (!_ParticleSystem) return;
-
-	if (_AnimatedModelHandle.Valid)
-	{
-		_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
-		_AnimatedModelHandle.Valid = false;
-	}	
+	if (!_ParticleSystem) return;		
 	releasePSPointer();
-	_Invalidated = true;
-
-	nlassert(_Scene);
-	_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);
+	_Invalidated = true;	
 
 	static std::vector<IPSModelObserver *> copyVect;
 	copyVect.resize(_Observers.size());
@@ -484,44 +470,12 @@ void	CParticleSystemModel::traverseAnimDetail()
 		ps->_LastUpdateDate = clipTrav.CurrentDate;
 		if (animate)
 		{
-			const CMatrix		&mat= getWorldMatrix();	 
-			ps->setSysMat(mat);
-			ps->setViewMat(clipTrav.ViewMatrix);
-			updateOpacityInfos();
-			updateLightingInfos();
-
-			//ps->setSysMat(getWorldMatrix());
-			nlassert(ps->getScene());	
-
-
-			// setup the number of faces we allow
-			ps->setNumTris((uint) getNumTrianglesAfterLoadBalancing());
-
-
-			// set the global user param that are bypassed
-			nlctassert(MaxPSUserParam < 8); // there should be less than 8 parameters because of mask stored in a byte
-			ps->_BypassGlobalUserParam = _BypassGlobalUserParam;
-
-			// setup system user parameters for parameters that have been touched
-			for (uint k = 0; k < MaxPSUserParam; ++k)
+			if (ps->getAnimType() != CParticleSystem::AnimAlways) // if the animation is always perfomred, 
+																  // then animation is done by the particle system manager
+																  // just before the render trav
 			{
-				if (isTouched((uint)CParticleSystemModel::PSParam0 + k))
-				{
-					ps->setUserParam(k, _UserParam[k].Value);
-					clearFlag((uint)CParticleSystemModel::PSParam0 + k);
-				}
-			}
-
-			if (ps->getAnimType() != CParticleSystem::AnimAlways) // if the animation is always perfomed, then its done by the particle system manager
-			{
-				if (isAutoGetEllapsedTimeEnabled())
-				{
-					setEllapsedTime(ps->getScene()->getEllapsedTime() * getEllapsedTimeRatio());
-				}
-				TAnimationTime delay = getEllapsedTime();
-				// animate particles				
-				ps->step(CParticleSystem::Anim, delay);					
-			}
+				doAnimate();
+			}			
 		}
 	}		
 	
@@ -533,6 +487,47 @@ void	CParticleSystemModel::traverseAnimDetail()
 	}
 }
 
+///=====================================================================================
+void	CParticleSystemModel::doAnimate()
+{
+	nlassert(!_Invalidated);
+	CParticleSystem		*ps = getPS();
+	CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();
+	const CMatrix		&mat= getWorldMatrix();	 
+	ps->setSysMat(mat);
+	ps->setViewMat(clipTrav.ViewMatrix);
+	updateOpacityInfos();
+	updateLightingInfos();
+
+	//ps->setSysMat(getWorldMatrix());
+	nlassert(ps->getScene());	
+
+
+	// setup the number of faces we allow
+	ps->setNumTris((uint) getNumTrianglesAfterLoadBalancing());
+
+
+	// set the global user param that are bypassed
+	nlctassert(MaxPSUserParam < 8); // there should be less than 8 parameters because of mask stored in a byte
+	ps->_BypassGlobalUserParam = _BypassGlobalUserParam;
+
+	// setup system user parameters for parameters that have been touched
+	for (uint k = 0; k < MaxPSUserParam; ++k)
+	{
+		if (isTouched((uint)CParticleSystemModel::PSParam0 + k))
+		{
+			ps->setUserParam(k, _UserParam[k].Value);
+			clearFlag((uint)CParticleSystemModel::PSParam0 + k);
+		}
+	}	
+	if (isAutoGetEllapsedTimeEnabled())
+	{
+		setEllapsedTime(ps->getScene()->getEllapsedTime() * getEllapsedTimeRatio());
+	}
+	TAnimationTime delay = getEllapsedTime();
+	// animate particles				
+	ps->step(CParticleSystem::Anim, delay);						
+}
 
 
 //////////////////////////////////////////////
@@ -875,6 +870,29 @@ void CParticleSystemModel::enableDisplayTools(bool enable /*=true*/)
 void CParticleSystemModel::invalidateAutoAnimatedHandle()
 {
 	_AnimatedModelHandle.Valid  = false;
+}
+
+//===================================================================
+void CParticleSystemModel::activateEmitters(bool active)
+{
+	if (active == _EmitterActive) return;
+	_EmitterActive = active;
+	if (_ParticleSystem) _ParticleSystem->activateEmitters(active);
+}
+
+//===================================================================
+bool CParticleSystemModel::hasActiveEmitters() const
+{
+	#ifdef NL_DEBUG
+		if (_ParticleSystem)
+		{
+			if (_ParticleSystem->hasEmittersTemplates())
+			{			
+				nlassert(_ParticleSystem->hasActiveEmitters() == _EmitterActive);
+			}
+		}
+	#endif
+	return _EmitterActive;
 }
 
 

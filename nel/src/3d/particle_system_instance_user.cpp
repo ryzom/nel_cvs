@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.23 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.24 2003/08/18 14:31:42 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -317,27 +317,17 @@ bool CParticleSystemInstanceUser::setActive(uint32 anId, bool active)
 
 
 //===================================================================
-bool CParticleSystemInstanceUser::activateEmitters(bool active)
+void CParticleSystemInstanceUser::activateEmitters(bool active)
 {	
-	NL3D_MEM_PS_INSTANCE
-	if (!isSystemPresent()) return false;
-	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
-	for(uint k = 0; k < ps->getNbProcess(); ++k)
-	{
-		if (ps->getProcess(k)->isLocated())
-		{
-			CPSLocated *loc = static_cast<CPSLocated *>(ps->getProcess(k));
-			if (loc)
-			{
-				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
-				{
-					if (loc->getBoundObject(l)->getType() == PSEmitter)	
-						loc->getBoundObject(l)->setActive(active);
-				}
-			}
-		}
-	}
-	return true;
+	NL3D_MEM_PS_INSTANCE	
+	(NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->activateEmitters(active);
+}
+
+//===================================================================
+bool CParticleSystemInstanceUser::hasActiveEmitters() const
+{
+	NL3D_MEM_PS_INSTANCE	
+	return (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->hasActiveEmitters();
 }
 
 //===================================================================
@@ -484,3 +474,24 @@ bool CParticleSystemInstanceUser::isGlobalUserParamValueBypassed(uint userParamI
 }
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

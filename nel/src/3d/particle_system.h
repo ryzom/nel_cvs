@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.36 2003/08/08 16:55:09 vizerie Exp $
+ * $Id: particle_system.h,v 1.37 2003/08/18 14:31:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -809,18 +809,21 @@ public:
 		  */
 		enum TPresetBehaviour
 		{
-			EnvironmentFX = 0,
+			EnvironmentFX = 0,    // environment FX, not animated when not visible, persistent.
 			RunningEnvironmentFX, /* an environment fx that should 
 								   * run when in parsed cluster : cascade for example,
 								   * so that it doesn't start when the player first see
 								   * it
 								   */
-			SpellFX,       
-			LoopingSpellFX,
-			MinorFX,
-			UserBehaviour,
-			MovingLoopingFX,
-			SpawnedEnvironmentFX,
+			SpellFX,              // always animated, not persistent, garanteed to match the good frame even if framerate is low
+			LoopingSpellFX,       // alway animated, persistent until emitter are stopped
+			MinorFX,              // animated when visible, discarded when not visible 
+			UserBehaviour,        
+			MovingLoopingFX,       // persistent, moving fx
+			SpawnedEnvironmentFX,  // environment fx, not animated when not visible, not persistent
+			GroundFX,			   /** usually fx of foot steps (dust clouds etc.). Always animated, persistents, duration of fxs is garanteed, 
+									 * but not velocity of particle if framerate is too choppy (usually ok because particle stay in place with those fxs)
+									 */
 			PresetLast
 		};
 
@@ -899,7 +902,14 @@ public:
 			  * The default is true
 			  */
 				void enableEmitThreshold(bool enabled = true) { _EmitThreshold = enabled; }
-				bool isEmitThresholdEnabled() const { return _EmitThreshold; }
+				bool isEmitThresholdEnabled() const { return _EmitThreshold; }				
+					
+			// activate // deactivate all emitters in the system
+			void activateEmitters(bool active);			
+			// test is there are active emitters in the system
+			bool hasActiveEmitters() const;
+			// test if there are emitters in the system (not actual instances of , but emitter, but derivers of CPSEmitter bound to the system)
+			bool hasEmittersTemplates() const;
 		// @}
 
 	

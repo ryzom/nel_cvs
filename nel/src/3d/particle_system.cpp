@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.62 2003/08/08 16:55:09 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.63 2003/08/18 14:31:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1016,6 +1016,14 @@ void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 			setBypassMaxNumIntegrationSteps(false);
 			_KeepEllapsedTimeForLifeUpdate = false;
 		break;
+		case GroundFX:
+			setDestroyModelWhenOutOfRange(false);
+			setDestroyCondition(none);
+			destroyWhenOutOfFrustum(false);
+			setAnimType(AnimAlways);
+			setBypassMaxNumIntegrationSteps(false);
+			_KeepEllapsedTimeForLifeUpdate = true;
+		break;		
 		default: break;
 	}
 	_PresetBehaviour = behaviour;
@@ -1300,6 +1308,72 @@ void CParticleSystem::registerSoundServer(UPSSoundServer *soundServer)
 		CParticleSystemManager::reactivateSoundForAllManagers();
 	}
 	_SoundServer = soundServer;
+}
+
+///=======================================================================================
+void CParticleSystem::activateEmitters(bool active)
+{
+	for(uint k = 0; k < getNbProcess(); ++k)
+	{	
+		if (getProcess(k)->isLocated())
+		{
+			CPSLocated *loc = static_cast<CPSLocated *>(getProcess(k));
+			if (loc)
+			{
+				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+				{
+					if (loc->getBoundObject(l)->getType() == PSEmitter)	
+						loc->getBoundObject(l)->setActive(active);
+				}
+			}
+		}
+	}
+}
+
+///=======================================================================================
+bool CParticleSystem::hasActiveEmitters() const
+{
+	for(uint k = 0; k < getNbProcess(); ++k)
+	{	
+		if (getProcess(k)->isLocated())
+		{
+			const CPSLocated *loc = static_cast<const CPSLocated *>(getProcess(k));
+			if (loc)
+			{
+				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+				{
+					if (loc->getBoundObject(l)->getType() == PSEmitter)	
+					{
+						if (loc->getBoundObject(l)->isActive()) return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
+}
+
+///=======================================================================================
+bool CParticleSystem::hasEmittersTemplates() const
+{
+	for(uint k = 0; k < getNbProcess(); ++k)
+	{	
+		if (getProcess(k)->isLocated())
+		{
+			const CPSLocated *loc = static_cast<const CPSLocated *>(getProcess(k));
+			if (loc)
+			{
+				for(uint l = 0; l < loc->getNbBoundObjects(); ++l)
+				{
+					if (loc->getBoundObject(l)->getType() == PSEmitter)	
+					{
+						return true;
+					}
+				}
+			}
+		}
+	}
+	return false;
 }
 
 

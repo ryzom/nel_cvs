@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.33 2003/06/30 15:30:47 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.34 2003/08/18 14:31:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -257,6 +257,11 @@ public:
 	virtual void	traverseRender();
 	// @}
 
+	// activate / deactivate all emitters
+	void	activateEmitters(bool active);
+	// test if there are active emitters in the system
+	bool    hasActiveEmitters() const;
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -267,12 +272,8 @@ private:
 
 	/// Called when the resource (attached system) for this system must be reallocated
 	void reallocRsc();
-	/** Called by the particle system manager to see wether this model resources must be release
-	  * If this is the case, this releases the resource and return true.
-	  * IMPORTANT: the handle of the model in the p.s manager is automatically removed
-	  * when this returns true
-	  */
-	bool refreshRscDeletion(const std::vector<CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos);
+	/// Called by the particle system manager to release this model resources (if it is too far for example)	
+	void refreshRscDeletion(const std::vector<CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos);
 	// Release the resources (attached system) of this model, but doesn't make it invalid.
 	void releaseRsc();
 	// Mark this system model as invalid, delete the attached system, and calls his observers
@@ -300,16 +301,14 @@ private:
 		}
 	}
 	bool checkDestroyCondition(CParticleSystem *ps);
-
+	// perform actual animation of the particles
+	void	doAnimate();	
 
 private:		
 	CParticleSystemManager::TModelHandle    _ModelHandle; /** a handle to say when the resources
 															* of the model (_ParticleSystem) are deleted
 															*/
-
-	CParticleSystemManager::TModelHandle    _AnimatedModelHandle; // handle for permanenlty animated models
-															
-	bool									_AutoGetEllapsedTime;		
+	CParticleSystemManager::TModelHandle    _AnimatedModelHandle; // handle for permanenlty animated models																
 	NLMISC::CSmartPtr<CParticleSystem>		_ParticleSystem;
 	CScene							  	   *_Scene;
 	TAnimationTime						    _EllapsedTime;
@@ -319,13 +318,16 @@ private:
 	CParticleSystem::TAnimType				_AnimType;
 
 	///\todo nico : may optimize this with a bitfield...
-	bool									_ToolDisplayEnabled;		
-	bool									_TransparencyStateTouched;
-	bool									_LightableStateTouched;
-	bool									_EditionMode;
-	bool									_Invalidated; /// if false, system should be recreated
-	bool									_InsertedInVisibleList;
-	bool									_InClusterAndVisible;
+	bool									_AutoGetEllapsedTime        : 1;		
+	bool									_ToolDisplayEnabled         : 1;
+	bool									_TransparencyStateTouched   : 1;
+	bool									_LightableStateTouched      : 1;
+	bool									_EditionMode                : 1;
+	bool									_Invalidated 				: 1;  /// if false, system should be recreated
+	bool									_InsertedInVisibleList      : 1;
+	bool									_InClusterAndVisible        : 1;
+	bool                                    _EmitterActive			    : 1;
+
 	std::vector<IPSModelObserver *>			_Observers;		
 	CAnimatedValueBool						_TriggerAnimatedValue;
 	/// user params of the system
@@ -346,3 +348,24 @@ private:
 #endif // NL_PARTICLE_SYSTEM_MODEL_H
 
 /* End of particle_system_model.h */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.20 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: particle_system_instance_user.h,v 1.21 2003/08/18 14:31:42 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -104,7 +104,8 @@ public:
 		virtual uint32		getID(uint index) const;		
 		virtual bool		getIDs(std::vector<uint32> &dest) const;
 		virtual bool		setActive(uint32 id, bool active);
-		virtual bool		activateEmitters(bool active);		
+		virtual void		activateEmitters(bool active);		
+		virtual bool		hasActiveEmitters() const;
 	// @}
 
 	// \name inherited from  CParticleSystemModel::IPSModelObserver

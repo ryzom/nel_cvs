@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.11 2003/08/13 12:17:32 berenguier Exp $
+ * $Id: particle_system_manager.cpp,v 1.12 2003/08/18 14:31:42 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -70,23 +70,18 @@ void	CParticleSystemManager::refreshModels(const std::vector<NLMISC::CPlane>	&wo
 
 	if (_NumModels == 0) return;
 	const uint toProcess = std::min(_NumModels, (uint) NumProcessToRefresh);	
-
+	TModelList::iterator nextIt;
 	for (uint k = 0; k < toProcess; ++k)
 	{
 		if (_CurrListIterator == _ModelList.end())
 		{
 			_CurrListIterator = _ModelList.begin();
 		}
-		
-		if ((*_CurrListIterator)->refreshRscDeletion(worldFrustumPyramid, viewerPos)) // check if the resources of the model must be released (which also release them)
-		{						
-			_CurrListIterator = _ModelList.erase(_CurrListIterator);			
-			-- _NumModels;
-		}
-		else
-		{
-			++ _CurrListIterator;
-		}		
+		nextIt = _CurrListIterator;
+		++ nextIt;
+		(*_CurrListIterator)->refreshRscDeletion(worldFrustumPyramid, viewerPos);
+		_CurrListIterator = nextIt;
+		if (_NumModels == 0) break;		
 	}
 
 	#ifdef NL_DEBUG
@@ -129,6 +124,7 @@ void		CParticleSystemManager::removeSystemModel(TModelHandle &handle)
 
 	_ModelList.erase(handle.Iter);
 	--_NumModels;
+	handle.Valid = false;
 	#ifdef NL_DEBUG
 		nlassert(_NumModels == _ModelList.size());
 	#endif
@@ -165,7 +161,7 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 	{
 		CParticleSystemModel &psm = *(*it);
 		CParticleSystem		 *ps  = psm.getPS();
-		TModelList::iterator nextIt= it;
+		TModelList::iterator nextIt = it;
 		nextIt++;
 		if (ps)
 		{
@@ -176,14 +172,7 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 				it = _PermanentlyAnimatedModelList.erase(it);
 				continue;
 			}
-			if (psm.isAutoGetEllapsedTimeEnabled())
-			{
-				psm.setEllapsedTime(ps->getScene()->getEllapsedTime() * psm.getEllapsedTimeRatio());
-			}
-			TAnimationTime delay = psm.getEllapsedTime();
-			// animate particles
-			ps->step(CParticleSystem::Anim, delay);	
-
+			psm.doAnimate();
 			if (!psm.getEditionMode())
 			{			
 				// test deletion condition (no more particle, no more particle and emitters)
@@ -193,8 +182,7 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 				}				
 			}
 		}
-
-		it= nextIt;
+		it = nextIt;
 	}
 }
 

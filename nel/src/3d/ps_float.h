@@ -1,7 +1,7 @@
 /** \file ps_size.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.6 2001/09/13 14:26:19 vizerie Exp $
+ * $Id: ps_float.h,v 1.7 2001/09/14 17:37:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,27 +100,54 @@ public:
 };
 
 /// this functor produce float based on a hermite curb
-class CPSFloatLagrangeFunctor
+class CPSFloatCurveFunctor
 {
 	public:
-		/// ctor. The default is a cst function whose value is 1
-		CPSFloatLagrangeFunctor();
+		struct CCtrlPoint
+		{
+			CCtrlPoint() {}
+			CCtrlPoint(float date, float value) : Date(date), Value(value) { nlassert(Date >= 0 && Date <= 1); }
+			float Date;
+			float Value;
+			void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+			{
+				f.serial(Date, Value);
+			}
+		};
+		
+		/// ctor. The default is a cst function whose value is .5
+		CPSFloatCurveFunctor();
 
-		/** set a control point. The first and last controls point dates must be 0 and 1
+		/** Add a control point. There is a sorted insertion based on the date
 		  * \param index renge from 0 to 3
 		  */
-		void							setControlPoint(uint index, float date, float value);
+		void							addControlPoint(const CCtrlPoint &ctrlPoint);
+
+		/// retrieve the number of control points
+		uint							getNumCtrlPoints(void) const { return _CtrlPoints.size(); }			
 
 		/** get a control point.
 		  * \return a <date, value> std::pair
 		  */
-		const std::pair<float, float>  &getControlPoint(uint index) const;
+		const CCtrlPoint				&getControlPoint(uint index) const;
+
+		/// modify the given ctrl point
+		void							setCtrlPoint(uint index, const CCtrlPoint &ctrlPoint);
+
+		///remove the ctrl point at the given index
+		void							removeCtrlPoint(uint index);
 
 		/// set the number of samples used with this curb
 		void							setNumSamples(uint32 numSamples);
 
 		/// get the numer of samples used with this curb
-		uint32							getNumSamples(void) const;
+		uint32							getNumSamples(void) const { return _NumSamples; }
+
+		/// Enable / diable smoothing. This cause to use hermite / linear curves.
+		void							enableSmoothing(bool enable = true);
+
+		/// test wether smoothing is enabled
+		bool							hasSmoothing(void) const			{ return _Smoothing;}
 
 		/** This return a sampled value from the hermite curb. The more steps there are, the more accurate it is
 		  * You can also get an 'exact value'.
@@ -141,31 +168,32 @@ class CPSFloatLagrangeFunctor
 		/// serialization
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
-	protected:
+	protected:		
+		/// get the tangent (slope in our case) for the key at the given position
+		float getSlope(uint index) const ;
+		/// sort the ctrl points in increasing order
+		void						sortPoints(void);	
 		/// update the value tab
-		void							updateTab(void);
-
-		/// coeff of the interpolator poly must be recalculated
-		void							touchCoeffs(void) const { _CoeffsTouched = true; }
-
-		// recompute the polynom coefficients
-		void							updateCoeffs(void) const;
-
-		std::pair<float, float>		_CtrlPoints[4];
+		void						updateTab(void);	
+		std::vector<CCtrlPoint>		_CtrlPoints;
 		uint32						_NumSamples;
-		std::vector<float>			_Tab;
-		mutable bool				_CoeffsTouched;
-		/// the polynom used for interpolation
-		mutable NLMISC::CVectorH	_Coeffs;
+		std::vector<float>			_Tab; // sampled version of the curve		
+		bool						_Smoothing;
 };
 
 
-class CPSFloatLagrange : public CPSAttribMakerT<float, CPSFloatLagrangeFunctor>
+inline bool operator<(const CPSFloatCurveFunctor::CCtrlPoint &lhs, const CPSFloatCurveFunctor::CCtrlPoint &rhs)
+{
+	return lhs.Date < rhs.Date;
+}
+
+
+class CPSFloatCurve : public CPSAttribMakerT<float, CPSFloatCurveFunctor>
 {
 public:
-	CPSFloatLagrange() : CPSAttribMakerT<float, CPSFloatLagrangeFunctor>(1) {}
-	NLMISC_DECLARE_CLASS(CPSFloatLagrange);
-	CPSAttribMakerBase *clone() const { return new CPSFloatLagrange(*this); }
+	CPSFloatCurve() : CPSAttribMakerT<float, CPSFloatCurveFunctor>(1) {}
+	NLMISC_DECLARE_CLASS(CPSFloatCurve);
+	CPSAttribMakerBase *clone() const { return new CPSFloatCurve(*this); }
 };
 
 

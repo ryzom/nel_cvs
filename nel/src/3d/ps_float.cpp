@@ -1,7 +1,7 @@
 /** \file ps_size.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.7 2001/09/13 14:26:19 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.8 2001/09/14 17:37:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 #include "3d/ps_float.h"
-
+#include <3d/fast_floor.h>
 
 namespace NL3D {
 
@@ -47,109 +47,144 @@ CPSFloatGradient::CPSFloatGradient(const float *floatTab, uint32 nbValues, uint3
 
 
 ////////////////////////////////////////////
-// CPSFloatBezierFunctor implementation   //
+// CPSFloatBezierCurve implementation     //
 ////////////////////////////////////////////
 
-CPSFloatLagrangeFunctor::CPSFloatLagrangeFunctor() : _CoeffsTouched(true)
+
+		
+
+CPSFloatCurveFunctor::CPSFloatCurveFunctor() : _Smoothing(true), _NumSamples(128)
 {
-	_CtrlPoints[0] = std::make_pair(0, 0.5f);
-	_CtrlPoints[1] = std::make_pair(0.25, 0.5f);
-	_CtrlPoints[2] = std::make_pair(0.50, 0.5f);
-	_CtrlPoints[3] = std::make_pair(0.75, 0.5f);
+	_CtrlPoints.push_back(CCtrlPoint(0, 0.5f));
+	_CtrlPoints.push_back(CCtrlPoint(1, 0.5f));
+	updateTab();	
+}
+
+void CPSFloatCurveFunctor::sortPoints(void)
+{
+	std::sort(_CtrlPoints.begin(), _CtrlPoints.end());
+}
+
+void CPSFloatCurveFunctor::addControlPoint(const CCtrlPoint &ctrlPoint)
+{
+	_CtrlPoints.push_back(ctrlPoint);
+	sortPoints();
 	updateTab();
 }
 
-void CPSFloatLagrangeFunctor::setControlPoint(uint index, float date, float value)
-{
-	nlassert(index < 4 && date >= 0.f && date <= 1.f)
-	nlassert(index == 0 ? date == 0.f : true); // first index date must be zero
-	nlassert(index == 3 ? date == 1.f : true); // last  index date must be one
-	_CtrlPoints[index] = std::make_pair(date, value);
-	touchCoeffs();
-	updateTab();
-}
 
-
-const std::pair<float, float> & CPSFloatLagrangeFunctor::getControlPoint(uint index) const
+const CPSFloatCurveFunctor::CCtrlPoint &CPSFloatCurveFunctor::getControlPoint(uint index) const
 {
-	nlassert(index < 4);
 	return _CtrlPoints[index];
 }
-
-
-void CPSFloatLagrangeFunctor::setNumSamples(uint32 numSamples)
+		
+void CPSFloatCurveFunctor::setCtrlPoint(uint index, const CCtrlPoint &ctrlPoint)
 {
-	nlassert(numSamples != 0);
+	nlassert(ctrlPoint.Date >= 0 && ctrlPoint.Date <= 1);
+	_CtrlPoints[index] = ctrlPoint;
+	sortPoints();
+	updateTab();
+}
+
+
+void CPSFloatCurveFunctor::removeCtrlPoint(uint index)
+{
+	nlassert(_CtrlPoints.size() > 1);
+	_CtrlPoints.erase(_CtrlPoints.begin() + index);
+	updateTab();
+}
+
+
+void CPSFloatCurveFunctor::setNumSamples(uint32 numSamples)
+{
+	nlassert(numSamples > 0);
 	_NumSamples = numSamples;
 	updateTab();
 }
 
 
-uint32 CPSFloatLagrangeFunctor::getNumSamples(void) const
-{
-	return _NumSamples;
-}
-
-
-float CPSFloatLagrangeFunctor::getValue(float date) const
+float CPSFloatCurveFunctor::getValue(float date) const
 {
 	nlassert(date >= 0 && date <= 1);
-	updateCoeffs();
-	const float date2 = date * date;
-	return _Coeffs.x * date * date2 + _Coeffs.y * date2 + _Coeffs.z * date + _Coeffs.w;
-	return 0;
+	// find a key that has a higher value
+	std::vector<CCtrlPoint>::const_iterator it = _CtrlPoints.begin();
+	while ( it != _CtrlPoints.end() && it->Date <= date ) ++it;
+
+	if (it == _CtrlPoints.begin()) return _CtrlPoints[0].Value;
+	if (it == _CtrlPoints.end()) return _CtrlPoints[_CtrlPoints.size() - 1].Value;
+	std::vector<CCtrlPoint>::const_iterator precIt = it - 1;
+	if (precIt->Date == it->Date) return 0.5f * (precIt->Value + it->Value);
+	const float lambda = (date - precIt->Date) / (it->Date - precIt->Date);
+	if (!_Smoothing) // linear interpolation
+	{		
+		return lambda * it->Value + (1.f - lambda) * precIt->Value;
+	}
+	else // hermite interpolation
+	{
+		uint index = precIt - _CtrlPoints.begin();
+		float t1 = getSlope(index), t2 = getSlope(index + 1);
+		const float lambda2 = NLMISC::sqr(lambda);
+		const float lambda3 = lambda2 * lambda;
+		const float h1 = 2 * lambda3 - 3 * lambda2 + 1; 
+		const float h2 = - 2 * lambda3 + 3 * lambda2; 
+		const float h3 = lambda3 - 2 * lambda2 + lambda; 
+		const float h4 = lambda3 - lambda2; 
+
+		return h1 * precIt->Value + h2 * it->Value + h3 * t1 + h4 * t2;
+	}
 }
 
 
-void CPSFloatLagrangeFunctor::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void CPSFloatCurveFunctor::updateTab(void)
+{
+	float step  = 1.f / _NumSamples;
+	float d = 0.f;
+	_Tab.resize(_NumSamples);
+	for (uint k = 0; k < _NumSamples; ++k)
+	{
+		_Tab[k] = getValue(d);
+		d += step;
+	}
+}
+
+
+void CPSFloatCurveFunctor::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1);
-	for (uint k = 0; k < 4; ++k)
-	{
-		f.serial(_CtrlPoints[k].first, _CtrlPoints[k].second);
-		nlassert(_CtrlPoints[k].first >= 0 && _CtrlPoints[k].first >= 1);
-	}
-	if (f.isReading())
-	{
-		touchCoeffs();
-		updateTab();
-	}
+	f.serial(_NumSamples, _Smoothing);
+	f.serialCont(_CtrlPoints);
 }
 
-void CPSFloatLagrangeFunctor::updateTab(void)
-{
-	nlassert(_NumSamples != 0);
-	_Tab.resize(_NumSamples);
-	float dateStep = 1.f / _NumSamples;
-	float currDate = 0;
-	for (uint k = 0; k < _NumSamples; ++k, currDate += dateStep)
+float CPSFloatCurveFunctor::getSlope(uint index) const
+{	
+	// tangent for first point
+	if (index == 0)
 	{
-		_Tab[k] = getValue(currDate);
+		return _CtrlPoints[1].Date != _CtrlPoints[0].Date ? (_CtrlPoints[1].Value - _CtrlPoints[0].Value) 
+															/* / (_CtrlPoints[1].Date - _CtrlPoints[0].Date)*/
+														  : 1e6f;
 	}
-}
 
-
-void CPSFloatLagrangeFunctor::updateCoeffs(void) const
-{
-	if (!_CoeffsTouched) return;
-	float mat[4][4];
-	for (uint k = 0; k < 4; ++k)
+	// tangent for last point
+	if (index == _CtrlPoints.size() - 1)
 	{
-		mat[k][0] = _CtrlPoints[k].first * _CtrlPoints[k].first * _CtrlPoints[k].first; 
-		mat[k][1] = _CtrlPoints[k].first * _CtrlPoints[k].first;
-		mat[k][2] = _CtrlPoints[k].first;
-		mat[k][3] = 1;
+		return _CtrlPoints[index].Date != _CtrlPoints[index - 1].Date ? (_CtrlPoints[index].Value - _CtrlPoints[index - 1].Value) 
+																	/*	/ (_CtrlPoints[index].Date - _CtrlPoints[index - 1].Date)*/
+																	  : 1e6f;
 	}
-	NLMISC::CMatrix m;
-	m.set(&mat[0][0]);
-	m.invert();
-	_Coeffs = m * NLMISC::CVectorH(_CtrlPoints[0].second, _CtrlPoints[1].second, _CtrlPoints[2].second, _CtrlPoints[3].second);
-	_CoeffsTouched = false;
+
+	// tangent for other points
+	return _CtrlPoints[index + 1].Date != _CtrlPoints[index - 1].Date ? (_CtrlPoints[index + 1].Value - _CtrlPoints[index - 1].Value) / 2 
+																	/*	/ (_CtrlPoints[index + 1].Date - _CtrlPoints[index - 1].Date)*/
+																	  : 1e6f;	
 }
 
 
-
-
+void CPSFloatCurveFunctor::enableSmoothing(bool enable /* = true*/)
+{ 
+	_Smoothing = enable;
+	updateTab();
+}
 
 
 } // NL3D

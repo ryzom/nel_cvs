@@ -1,84 +1,84 @@
-dnl =========================================================================
-dnl
-dnl Macros used by Nevrax in configure.in files.
-dnl
-dnl $Id: acinclude.m4,v 1.17 2003/08/27 16:17:36 distrib Exp $
-dnl 
-dnl =========================================================================
+# =========================================================================
+#
+# Macros used by Nevrax in configure.in files.
+#
+# $Id: acinclude.m4,v 1.18 2004/01/15 17:42:13 lecroart Exp $
+# 
+# =========================================================================
 
-dnl =========================================================================
-dnl WARNING: The original version of this file is placed in the $CVSROOT/code
-dnl          directory.
-dnl          There is links in the $CVSROOT/code sub-directories to that file
-dnl          (ex: $CVSROOT/code/nel), so be careful of the consequences of
-dnl          any modification of that file.
-dnl =========================================================================
+# =========================================================================
+# WARNING: The original version of this file is placed in the $CVSROOT/code
+#          directory.
+#          There is links in the $CVSROOT/code sub-directories to that file
+#          (ex: $CVSROOT/code/nel), so be careful of the consequences of
+#          any modification of that file.
+# =========================================================================
 
-dnl =========================================================================
-dnl Macros available in that file.
-dnl
-dnl
-dnl AM_NEL_DEBUG
-dnl
-dnl    Option:      none.
-dnl    Description: manage the different debug and the release mode by setting
-dnl                 correctly the CFLAGS and CXXFLAGS variables.
-dnl
-dnl
-dnl AM_PATH_NEL
-dnl
-dnl    Option:      none.
-dnl    Description: check the instalation of the NeL library and set the
-dnl                 CXXFLAGS and LIBS variables to use it.
-dnl
-dnl
-dnl AM_PATH_STLPORT
-dnl
-dnl    Option:      none.
-dnl    Description: check the instalation of the STLPort library and set the
-dnl                 CXXFLAGS and LIBS variables to use it.
-dnl
-dnl
-dnl AM_PATH_OPENGL
-dnl
-dnl    Option:      "yes" if the use of the OpenGL library is mandatory.
-dnl    Description: check the instalation of the OpenGL library and set the
-dnl                 OPENGL_CFLAGS and OPENGL_LIBS variables to use it.
-dnl
-dnl
-dnl AM_PATH_FREETYPE
-dnl
-dnl    Option:      "yes" if the use of the Freetype library is mandatory.
-dnl    Description: check the instalation of the OpenGL library and set the
-dnl                 FREETYPE_CFLAGS and FREETYPE_LIBS variables to use it.
-dnl
-dnl
-dnl AM_PATH_XF86VIDMODE
-dnl
-dnl    Option:      none.
-dnl    Description: check the instalation of the OpenGL library and set the
-dnl                 XF86VIDMODE_CFLAGS and XF86VIDMODE_LIBS variables to use it.
-dnl
-dnl
-dnl AM_PATH_OPENAL
-dnl
-dnl    Option:      "yes" if the use of the OpenAL library is mandatory.
-dnl    Description: check the instalation of the OpenGL library and set the
-dnl                 OPENAL_CFLAGS and OPENAL_LIBS variables to use it.
-dnl
-dnl
-dnl AM_PATH_PYTHON
-dnl
-dnl    Option:      "yes" if the use of the Python library is mandatory.
-dnl    Description: check the instalation of the OpenGL library and set the
-dnl                 PYTHON_CFLAGS and PYTHON_LIBS variables to use it.
-dnl
-dnl AM_PATH_CCACHE
-dnl
-dnl    Option:      none.
-dnl    Description: check the instalation of the Ccache utility.
-dnl
-dnl =========================================================================
+# =========================================================================
+# Macros available in that file.
+#
+#
+# AM_NEL_DEBUG
+#
+#    Option:      none.
+#    Description: manage the different debug and the release mode by setting
+#                 correctly the CFLAGS and CXXFLAGS variables.
+#
+#
+# AM_PATH_NEL
+#
+#    Option:      none.
+#    Description: check the instalation of the NeL library and set the
+#                 CXXFLAGS and LIBS variables to use it.
+#
+#
+# AM_PATH_STLPORT
+#
+#    Option:      none.
+#    Description: check the instalation of the STLPort library and set the
+#                 CXXFLAGS and LIBS variables to use it.
+#
+#
+# AM_PATH_OPENGL
+#
+#    Option:      "yes" if the use of the OpenGL library is mandatory.
+#    Description: check the instalation of the OpenGL library and set the
+#                 OPENGL_CFLAGS and OPENGL_LIBS variables to use it.
+#
+#
+# AM_PATH_FREETYPE
+#
+#    Option:      "yes" if the use of the Freetype library is mandatory.
+#    Description: check the instalation of the OpenGL library and set the
+#                 FREETYPE_CFLAGS and FREETYPE_LIBS variables to use it.
+#
+#
+# AM_PATH_XF86VIDMODE
+#
+#    Option:      none.
+#    Description: check the instalation of the OpenGL library and set the
+#                 XF86VIDMODE_CFLAGS and XF86VIDMODE_LIBS variables to use it.
+#
+#
+# AM_PATH_OPENAL
+#
+#    Option:      "yes" if the use of the OpenAL library is mandatory.
+#    Description: check the instalation of the OpenGL library and set the
+#                 OPENAL_CFLAGS and OPENAL_LIBS variables to use it.
+#
+#
+# AM_PATH_PYTHON
+#
+#    Option:      "yes" if the use of the Python library is mandatory.
+#    Description: check the instalation of the OpenGL library and set the
+#                 PYTHON_CFLAGS and PYTHON_LIBS variables to use it.
+#
+# AM_PATH_CCACHE
+#
+#    Option:      none.
+#    Description: check the instalation of the Ccache utility.
+#
+# =========================================================================
 
 
 # =========================================================================
@@ -108,8 +108,8 @@ AC_ARG_WITH(debug,
     [with_debug=$withval],
     [with_debug=no])
 
-dnl Build optimized or debug version ?
-dnl First check for gcc and g++
+# Build optimized or debug version ?
+# First check for gcc and g++
 if test "$ac_cv_prog_gcc" = "yes"
 then
     DEBUG_CFLAGS="-g"
@@ -136,31 +136,31 @@ fi
 
 if test "$with_debug" = "yes" -o "$with_debug" = "medium"
 then
-    dnl Medium debug. Inline optimization
+    # Medium debug. Inline optimization
     CFLAGS="$DEBUG_CFLAGS $OPTIMIZE_INLINE_CFLAGS $NL_DEBUG $NL_DEBUG_FAST $CFLAGS"
     CXXFLAGS="$DEBUG_CXXFLAGS $OPTIMIZE_INLINE_CXXFLAGS $NL_DEBUG $NL_DEBUG_FAST $CXXFLAGS"
 else
     if test "$with_debug" = "full"
     then
-        dnl Full debug. Very slow in some cases
+        # Full debug. Very slow in some cases
         CFLAGS="$DEBUG_CFLAGS $NL_DEBUG $STL_DEBUG $CFLAGS"
         CXXFLAGS="$DEBUG_CXXFLAGS $NL_DEBUG $STL_DEBUG $CXXFLAGS"
     else
         if test "$with_debug" = "fast"
         then
-            dnl Fast debug.
+            # Fast debug.
             CFLAGS="$DEBUG_CFLAGS $DEBUG_OPTIMIZE_CC $OPTIMIZE_INLINE_CFLAGS $NL_DEBUG $CFLAGS"
             CXXFLAGS="$DEBUG_CXXFLAGS $DEBUG_OPTIMIZE_CXX $OPTIMIZE_INLINE_CXXFLAGS $NL_DEBUG $CXXFLAGS"
         else
-            dnl Optimized version. No debug
+            # Optimized version. No debug
             CFLAGS="$OPTIMIZE_CFLAGS $NL_RELEASE_DEBUG $CFLAGS"
             CXXFLAGS="$OPTIMIZE_CXXFLAGS $NL_RELEASE_DEBUG $CXXFLAGS"
         fi
     fi
 fi
 
-dnl AC_MSG_RESULT([CFLAGS = $CFLAGS])
-dnl AC_MSG_RESULT([CXXGLAGS = $CXXFLAGS])
+# AC_MSG_RESULT([CFLAGS = $CFLAGS])
+# AC_MSG_RESULT([CXXGLAGS = $CXXFLAGS])
 
 ])
 
@@ -258,14 +258,14 @@ nelsound_is_mandatory="$5"
 nelai_is_mandatory="$6"
 nelgeorges_is_mandatory="$7"
 
-dnl Check for nel-config
+# Check for nel-config
 AC_PATH_PROG(NEL_CONFIG, nel-config, no)
 
-dnl 
-dnl Configure options (--with-nel*) have precendence 
-dnl over nel-config only set variables if they are not 
-dnl specified
-dnl
+# 
+# Configure options (--with-nel*) have precendence 
+# over nel-config only set variables if they are not 
+# specified
+#
 if test "$NEL_CONFIG" != "no"
 then
     if test -z "$with_nel" -a -z "$with_nel_include"
@@ -279,15 +279,15 @@ then
     fi
 fi
 
-dnl
-dnl Set nel_libraries and nel_includes according to
-dnl user specification (--with-nel*) if any. 
-dnl --with-nel-include and --with-nel-lib have precendence
-dnl over --with-nel
-dnl
+#
+# Set nel_libraries and nel_includes according to
+# user specification (--with-nel*) if any. 
+# --with-nel-include and --with-nel-lib have precendence
+# over --with-nel
+#
 if test "$with_nel" = "no"
 then
-    dnl The user explicitly disabled the use of the NeL
+    # The user explicitly disabled the use of the NeL
     AC_MSG_ERROR([NeL is mandatory: do not specify --without-nel])
 else
     if test "$with_nel" -a "$with_nel" != "yes"
@@ -307,9 +307,9 @@ then
     nel_libraries="$with_nel_lib"
 fi
 
-dnl
-dnl Set compilation variables 
-dnl
+#
+# Set compilation variables 
+#
 if test "$nel_includes"
 then
     CXXFLAGS="$CXXFLAGS -I$nel_includes"
@@ -320,10 +320,10 @@ then
     LDFLAGS="-L$nel_libraries $LDFLAGS"
 fi
 
-dnl
-dnl Collect headers information and bark if missing and
-dnl mandatory
-dnl
+#
+# Collect headers information and bark if missing and
+# mandatory
+#
 
 MY_NEL_HEADER_CHK([NeL Misc], [nel/misc/types_nl.h], [NL_TYPES_H], $nelmisc_is_mandatory)
 MY_NEL_HEADER_CHK([NeL Network], [nel/net/sock.h], [NL_SOCK_H], $nelnet_is_mandatory)
@@ -333,10 +333,10 @@ MY_NEL_HEADER_CHK([NeL Sound], [nel/sound/u_source.h], [NL_U_SOURCE_H], $nelsoun
 MY_NEL_HEADER_CHK([NeL AI], [nel/ai/nl_ai.h], [_IA_NEL_H], $nelai_is_mandatory)
 MY_NEL_HEADER_CHK([NeL Georges], [nel/georges/common.h], [NLGEORGES_COMMON_H], $nelgeorges_is_mandatory)
 
-dnl
-dnl Collect libraries information and bark if missing and
-dnl mandatory
-dnl
+#
+# Collect libraries information and bark if missing and
+# mandatory
+#
 
 MY_NEL_LIB_CHK([NeL Misc], [nelmisc], $nelmisc_is_mandatory)
 MY_NEL_LIB_CHK([NeL Network], [nelnet], $nelnet_is_mandatory)
@@ -378,7 +378,7 @@ fi
 
 if test "$with_stlport" = no
 then
-    dnl The user explicitly disabled the use of the STLPorts
+    # The user explicitly disabled the use of the STLPorts
     AC_MSG_ERROR([STLPort is mandatory: do not specify --without-stlport])
 else
     stlport_includes="/usr/include/stlport"
@@ -404,19 +404,19 @@ then
     stlport_libraries="$with_stlport_lib"
 fi
 
-dnl Check for the 'pthread' library. SLTPort needs it.
+# Check for the 'pthread' library. SLTPort needs it.
 AC_CHECK_LIB(pthread, main, , [AC_MSG_ERROR([cannot find the pthread library.])])
 
 AC_LANG_SAVE
 AC_LANG_CPLUSPLUS
 
-dnl Put STLPorts includes in CXXFLAGS
+# Put STLPorts includes in CXXFLAGS
 if test "$stlport_includes"
 then
     CXXFLAGS="$CXXFLAGS -I$stlport_includes"
 fi
 
-dnl Put STLPorts libraries directory in LIBS
+# Put STLPorts libraries directory in LIBS
 if test "$stlport_libraries"
 then
     LIBS="-L$stlport_libraries $LIBS"
@@ -424,7 +424,7 @@ else
     stlport_libraries='default'
 fi
 
-dnl Test the headers
+# Test the headers
 
 AC_CHECK_HEADER(algorithm,
     have_stlport_headers="yes",
@@ -510,20 +510,20 @@ then
     opengl_libraries="$with_opengl_lib"
 fi
 
-dnl Set OPENGL_CFLAGS
+# Set OPENGL_CFLAGS
 if test "$opengl_includes"
 then
     OPENGL_CFLAGS="-I$opengl_includes"
 fi
 
-dnl Set OPENGL_LIBS
+# Set OPENGL_LIBS
 if test "$opengl_libraries"
 then
     OPENGL_LIBS="-L$opengl_libraries"
 fi
 OPENGL_LIBS="$OPENGL_LIBS -l$opengl_lib"
 
-dnl Test the headers
+# Test the headers
 _CPPFLAGS="$CPPFLAGS"
 
 CPPFLAGS="$CXXFLAGS $OPENGL_CFLAGS"
@@ -548,7 +548,7 @@ else
     AC_MSG_RESULT(no)
 fi
 
-dnl Checking the GLEXT version >= 7
+# Checking the GLEXT version >= 7
 AC_MSG_CHECKING(for <GL/glext.h> and GLEXT version >= 7)
 
 AC_EGREP_CPP( yo_glext_version,
@@ -568,7 +568,7 @@ else
     AC_MSG_RESULT([no, <GL/glext.h> can be downloaded from http://oss.sgi.com/projects/ogl-sample/ABI/])
 fi
     
-dnl Test the libraries
+# Test the libraries
 AC_MSG_CHECKING(for OpenGL libraries)
 
 CPPFLAGS="$CXXFLAGS $OPENGL_LIBS"
@@ -668,7 +668,7 @@ then
     FREETYPE_CFLAGS="-I$freetype_includes"
 fi
 
-dnl Checking the FreeType 2 instalation
+# Checking the FreeType 2 instalation
 _CPPFLAGS="$CPPFLAGS"
 CPPFLAGS=" $FREETYPE_CFLAGS $CXXFLAGS"
 
@@ -689,7 +689,7 @@ else
     AC_MSG_RESULT(no)
 fi
     
-dnl Test the libraries
+# Test the libraries
 AC_MSG_CHECKING(for FreeType libraries)
         
 if test $freetype_libraries
@@ -750,7 +750,7 @@ xf86vidmode_lib="Xxf86vm"
 
 if test "$with_xf86vidmode_lib" = no
 then
-    dnl The user explicitly disabled the use of XF86VidMode
+    # The user explicitly disabled the use of XF86VidMode
     have_xf86vidmode="disabled"
     AC_MSG_RESULT(disabled)
 else
@@ -763,7 +763,7 @@ else
 fi
 
 if test -z "$have_xf86vidmode"
-dnl -a "$with_xf86vidmode_lib"
+# -a "$with_xf86vidmode_lib"
 then
     if test "$xf86vidmode_libraries"
     then
@@ -812,7 +812,7 @@ AC_DEFUN(AM_PATH_OPENAL,
 
 AC_REQUIRE_CPP()
 
-dnl Get from the user option the path to the OpenAL files location
+# Get from the user option the path to the OpenAL files location
 AC_ARG_WITH( openal,
     [  --with-openal=<path>   path to the OpenAL install files directory.
                           e.g. /usr/local])
@@ -846,13 +846,13 @@ then
 fi
 
 
-dnl Set OPENAL_CFLAGS
+# Set OPENAL_CFLAGS
 if test "$openal_includes"
 then
     OPENAL_CFLAGS="-I$openal_includes"
 fi
 
-dnl Set OPENAL_LIBS
+# Set OPENAL_LIBS
 if test "$openal_libraries"
 then
     OPENAL_LIBS="-L$openal_libraries"
@@ -883,7 +883,7 @@ else
     AC_MSG_RESULT(no)
 fi
 
-dnl Test the libraries
+# Test the libraries
 AC_MSG_CHECKING(for OpenAL libraries)
 
 CPPFLAGS="$CXXFLAGS $OPENAL_LIBS"
@@ -936,7 +936,7 @@ is_mandatory="$2"
 
 AC_REQUIRE_CPP()
 
-dnl Get from the user option the path to the Python files location
+# Get from the user option the path to the Python files location
 AC_ARG_WITH( python,
     [  --with-python=<path>    path to the Python prefix installation directory.
                           e.g. /usr/local],
@@ -994,7 +994,7 @@ else
     _CPPFLAGS="$CPPFLAGS"
     CPPFLAGS="$CXXFLAGS ${PYTHON_CFLAGS}"
 
-    dnl Test the headers
+    # Test the headers
     AC_MSG_CHECKING(for Python headers)
 
     AC_EGREP_CPP( yo_python,
@@ -1011,7 +1011,7 @@ else
         AC_MSG_RESULT(no)
     fi
 
-    dnl Test the libraries
+    # Test the libraries
     AC_MSG_CHECKING(for Python libraries)
 
     CPPFLAGS="$CXXFLAGS $PYTHON_CFLAGS"
@@ -1076,13 +1076,13 @@ fi
 # =========================================================================
 # AM_PATH_MYSQL : MySQL library
 
-dnl AM_PATH_MYSQL([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
-dnl Test for MYSQL, and define MYSQL_CFLAGS and MYSQL_LIBS
-dnl
+# AM_PATH_MYSQL([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND]]])
+# Test for MYSQL, and define MYSQL_CFLAGS and MYSQL_LIBS
+#
 AC_DEFUN(AM_PATH_MYSQL,
-[dnl 
-dnl Get the cflags and libraries from the mysql_config script
-dnl
+[# 
+# Get the cflags and libraries from the mysql_config script
+#
 AC_ARG_WITH(mysql-prefix,[  --with-mysql-prefix=PFX   Prefix where MYSQL is installed (optional)],
             mysql_prefix="$withval", mysql_prefix="")
 AC_ARG_WITH(mysql-exec-prefix,[  --with-mysql-exec-prefix=PFX Exec prefix where MYSQL is installed (optional)],
@@ -1125,10 +1125,10 @@ AC_ARG_ENABLE(mysqltest, [  --disable-mysqltest       Do not try to compile and 
       ac_save_LIBS="$LIBS"
       CFLAGS="$CFLAGS $MYSQL_CFLAGS"
       LIBS="$LIBS $MYSQL_LIBS"
-dnl
-dnl Now check if the installed MYSQL is sufficiently new. (Also sanity
-dnl checks the results of mysql_config to some extent
-dnl
+#
+# Now check if the installed MYSQL is sufficiently new. (Also sanity
+# checks the results of mysql_config to some extent
+#
       rm -f conf.mysqltest
       AC_TRY_RUN([
 #include <stdio.h>
@@ -1244,6 +1244,6 @@ int main(int argc, char *argv[])
   rm -f conf.mysqltest
 ])
 
-dnl =========================================================================
-dnl End of file
+# =========================================================================
+# End of file
 

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.7 2004/03/08 13:58:48 cado Exp $
+ * $Id: sstring.h,v 1.8 2004/03/17 10:30:48 cado Exp $
  */
 
 
@@ -502,7 +502,7 @@ public:
 		return result;
 	}
 
-	/// Find index at which a sub-string starts (case not sensitive) - if sub-string not found then returns string::npos
+	/// Find index at which a sub-string starts (case sensitive) - if sub-string not found then returns string::npos
 	unsigned find(const char *toFind,unsigned startLocation=0) const
 	{
 		const char *constStr = c_str();
@@ -517,6 +517,29 @@ public:
 			// string compare toFind against (*this)+i ...
 			for (j=0;toFind[j];++j)
 				if ((i+j>=size()) || (*this)[i+j]!=toFind[j])
+					break;
+			// if strings were identical then we're done
+			if (toFind[j]==0)
+				return i;
+		}
+		return std::string::npos;
+	}
+
+	/// Find index at which a sub-string starts (case NOT sensitive) - if sub-string not found then returns string::npos
+	unsigned findNS(const char *toFind,unsigned startLocation=0) const
+	{
+		const char *constStr = c_str();
+
+		// just bypass the problems that can cause a crash...
+		if (toFind==NULL || *toFind==0 || startLocation>=size())
+			return std::string::npos;
+
+		unsigned i,j;
+		for (i=startLocation;i<size();++i)
+		{
+			// string compare toFind against (*this)+i ...
+			for (j=0;toFind[j];++j)
+				if ((i+j>=size()) || tolower(constStr[i+j])!=tolower(toFind[j]))
 					break;
 			// if strings were identical then we're done
 			if (toFind[j]==0)

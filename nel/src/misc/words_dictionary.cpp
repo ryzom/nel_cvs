@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.5 2004/03/16 19:59:46 cado Exp $
+ * $Id: words_dictionary.cpp,v 1.6 2004/03/17 10:30:48 cado Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -202,7 +202,7 @@ void CWordsDictionary::lookup( const CSString& inputStr, CVectorSString& resultV
 	{
 		const CSString& key = *ivs;
 		string::size_type p;
-		if ( (p = key.find( searchStr.c_str() )) != string::npos )
+		if ( (p = key.findNS( searchStr.c_str() )) != string::npos )
 		{
 			if ( ((!findAtBeginning) || (p==0)) && ((!findAtEnd) || (p==key.size()-searchStr.size())) )
 				resultVec.push_back( makeResult( key, _Words[ivs-_Keys.begin()] ) );
@@ -212,7 +212,7 @@ void CWordsDictionary::lookup( const CSString& inputStr, CVectorSString& resultV
 	{
 		const CSString& word = *ivs;
 		string::size_type p;
-		if ( (p = word.find( searchStr.c_str() )) != string::npos )
+		if ( (p = word.findNS( searchStr.c_str() )) != string::npos )
 		{
 			if ( ((!findAtBeginning) || (p==0)) && ((!findAtEnd) || (p==word.size()-searchStr.size())) )
 				resultVec.push_back( makeResult( _Keys[ivs-_Words.begin()], word ) );

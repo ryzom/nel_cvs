@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.23 2002/04/23 14:38:12 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.24 2002/04/24 16:32:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -329,6 +329,11 @@ void		CLandscapeUser::setDLMGlobalVegetableColor(CRGBA gvc)
 CRGBA		CLandscapeUser::getDLMGlobalVegetableColor() const
 {
 	return _Landscape->Landscape.getDLMGlobalVegetableColor();
+}
+//****************************************************************************
+void		CLandscapeUser::updateLightingAll()
+{
+	_Landscape->Landscape.updateLightingAll();
 }
 
 

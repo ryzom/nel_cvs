@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.113 2002/04/23 14:38:12 berenguier Exp $
+ * $Id: landscape.cpp,v 1.114 2002/04/24 16:32:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3177,6 +3177,36 @@ void			CLandscape::updateLighting(double time)
 	}
 
 }
+
+
+// ***************************************************************************
+void			CLandscape::updateLightingAll()
+{
+	// Do it for near and far in 2 distinct ways.
+	//================
+	updateLightingTextureFar(1);
+	updateLightingTextureNear(1);
+
+
+	// update lighting for vegetables
+	//================
+
+	// Must lock buffers for update Lighting of vegetables.
+	updateGlobalsAndLockBuffers (CVector::Null);
+
+	// Because updateLighting() may use OptFastFloor..
+	OptFastFloorBegin();
+
+	// update ALL lighting for vegetables
+	_VegetableManager->updateLightingAll();
+
+	// Stop fastFloor optim.
+	OptFastFloorEnd();
+
+	// Must realase VB Buffers
+	unlockBuffers();
+}
+
 
 // ***************************************************************************
 void			CLandscape::setUpdateLightingFrequency(float freq)

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.15 2002/04/23 14:38:13 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.16 2002/04/24 16:32:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -258,6 +258,11 @@ public:
 	 */
 	void		setUpdateLightingFrequency(float freq);
 
+	/** like updateLighting(), but update ALL vegetable
+	 *	You MUST enclose calls to updateLighting() with lockBuffers() / unlockBuffers().
+	 */
+	void		updateLightingAll();
+
 	// @}
 
 
@@ -412,6 +417,9 @@ private:
 	/// Current instance to render in the first ig to update: rdrpass/instanceId.
 	uint					_ULCurrentIgRdrPass;
 	uint					_ULCurrentIgInstance;
+
+	/// update lighting according to _ULNVerticesToUpdate
+	void		doUpdateLighting();
 
 	/** update part of the RootIg, according to _ULNVerticesToUpdate (while > 0)
 	 *	if all Ig is updated, return true and _ULCurrentIgRdrPass and _ULCurrentIgInstance is updated.

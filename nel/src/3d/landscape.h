@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.38 2002/04/23 14:38:12 berenguier Exp $
+ * $Id: landscape.h,v 1.39 2002/04/24 16:32:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -519,7 +519,7 @@ public:
 	/// \name UpdateLighting management
 	// @{
 
-	/** update the lighting of Igs, within a certain amount of time.
+	/** update the lighting of patch, within a certain amount of time.
 	 *	called by CLandscapeModel
 	 */
 	void			updateLighting(double time);
@@ -529,6 +529,12 @@ public:
 	 *	If you set 0, no update will be done at all (this is the default setup!!).
 	 */
 	void			setUpdateLightingFrequency(float freq);
+
+	/** update the lighting of ALL patch (slow method). NB: work even if UpdateLightingFrequency==0
+	 *	Additionaly, vegetables are also ALL updated.
+	 */
+	void			updateLightingAll();
+
 
 	// @}
 

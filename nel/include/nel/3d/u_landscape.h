@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.15 2002/04/23 14:38:35 berenguier Exp $
+ * $Id: u_landscape.h,v 1.16 2002/04/24 16:32:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,6 +122,13 @@ public:
 	 *	If you set 0, no update will be done at all (this is the default setup!!).
 	 */
 	virtual	void	setUpdateLightingFrequency(float freq) =0;
+
+	/** update the lighting of ALL patch (slow method). NB: work even if UpdateLightingFrequency==0
+	 *	Additionaly, vegetables are also ALL updated. WARNING!! If Scene Lighting is enabled (usual case),
+	 *	vegetable lighting setup take last Sun setup at UScene::render(). Hence, you should force the new lighting
+	 *	setup with ULandscape::setupVegetableLighting(), before calling updateLightingAll().
+	 */
+	virtual	void	updateLightingAll() =0;
 
 
 	/** Set additive Lighting. Disabled by default.

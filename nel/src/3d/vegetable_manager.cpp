@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.21 2002/04/23 14:38:13 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.22 2002/04/24 16:32:07 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2283,7 +2283,25 @@ void		CVegetableManager::updateLighting()
 	// maximize, so at max, it computes all Igs, just one time.
 	_ULNVerticesToUpdate= min(_ULNVerticesToUpdate, (float)_ULNTotalVertices);
 
+	// go.
+	doUpdateLighting();
+}
 
+
+// ***************************************************************************
+void		CVegetableManager::updateLightingAll()
+{
+	// maximize, so at max, it computes all Igs
+	_ULNVerticesToUpdate= _ULNTotalVertices;
+
+	// go.
+	doUpdateLighting();
+}
+
+
+// ***************************************************************************
+void		CVegetableManager::doUpdateLighting()
+{
 	// while there is still some vertices to update.
 	while(_ULNVerticesToUpdate > 0 && _ULRootIg)
 	{

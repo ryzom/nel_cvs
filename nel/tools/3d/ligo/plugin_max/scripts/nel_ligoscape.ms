@@ -1185,10 +1185,20 @@ group "Projects management"
 	(
 		if (MaterialProject.selected != undefined) then
 		(
-			fileName = ligo_root_path + ligo_material_prefix + (substring MaterialProject.selected 5 100) + ".max"
+			matName = substring MaterialProject.selected 5 100
+			fileName = ligo_root_path + ligo_material_prefix + matName + ".max"
 			if queryBox ("Do you want to delete "+fileName+" ?") beep:no then
 			(
 				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the .ligomat file associated
+				filename = ligo_root_path + ligo_material_path + matName + ligo_material_ext
+				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the .zone file associated
+				filename = ligo_root_path + ligo_material_path + matName + nel_zone_ext
+				deleteFile filename
+				print ("deleting "+filename)
 				refresh_project_list ()
 				refresh_list
 			)
@@ -1672,10 +1682,23 @@ group "Projects management"
 	(
 		if (TransitionProject.selected != undefined) then
 		(
-			fileName = ligo_root_path + ligo_transition_prefix + (substring TransitionProject.selected 5 100) + ".max"
+			transName = substring TransitionProject.selected 5 100
+			fileName = ligo_root_path + ligo_transition_prefix + transName + ".max"
 			if queryBox ("Do you want to delete "+fileName+" ?") beep:no then
 			(
 				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the .ligotrans associated
+				fileName = ligo_root_path + ligo_transition_path + transName + ligo_transition_ext
+				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the 9 .zone files
+				for i = 0 to 8 do
+				(
+					fileName = ligo_root_path + ligo_transition_path + transName + "-" + (i as string) + nel_zone_ext
+					deleteFile filename
+					print ("deleting "+filename)
+				)
 				refresh_project_list ()
 				refresh_list
 			)
@@ -2061,13 +2084,27 @@ group "Projects management"
 		if (ZoneProject.selected != undefined) then
 		(
 			if (MaterialDDL.selected == "-- ALL --") then
-				fileName = substring ZoneProject.selected 5 100
+				zoneNameTmp = (substring ZoneProject.selected 5 100)
 			else
-				fileName = MaterialDDL.selected + "-" + (substring ZoneProject.selected 5 100)
-			fileName = ligo_root_path + ligo_zonematerial_prefix + fileName + ".max"
+				zoneNameTmp = MaterialDDL.selected + "-" + (substring ZoneProject.selected 5 100)
+			fileName = ligo_root_path + ligo_zonematerial_prefix + zoneNameTmp + ".max"
 			if queryBox ("Do you want to delete "+fileName+" ?") beep:no then
 			(
 				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the exported file .tga
+				fileName = ligo_export_path + "zoneBitmaps\\" + zoneNameTmp + ".tga"
+				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the exported file .zone
+				fileName = ligo_export_path + "zones\\" + zoneNameTmp + ".zone"
+				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the exported file .ligozone
+				fileName = ligo_export_path + "zoneLigos\\" + zoneNameTmp + ".ligozone"
+				deleteFile filename
+				print ("deleting "+filename)
+
 				refresh_project_list ()
 				refresh_zone_list MaterialDDL.selected
 			)
@@ -2502,13 +2539,30 @@ group "Projects management"
 		if (ZoneProject.selected != undefined) then
 		(
 			if (TransitionDDL.selected == "-- ALL --") then
-				fileName = substring ZoneProject.selected 5 100
+				transZoneTmp = (substring ZoneProject.selected 5 100)
 			else
-				fileName = TransitionDDL.selected + "-" + (substring ZoneProject.selected 5 100)
-			fileName = ligo_root_path + ligo_zonetransition_prefix + fileName + ".max"
+				transZoneTmp = TransitionDDL.selected + "-" + (substring ZoneProject.selected 5 100)
+			fileName = ligo_root_path + ligo_zonetransition_prefix + transZoneTmp + ".max"
 			if queryBox ("Do you want to delete "+fileName+" ?") beep:no then
 			(
 				deleteFile filename
+				print ("deleting "+filename)
+				-- delete the 9 .tga, .zone and .ligozone files
+				for i = 0 to 8 do
+				(
+					-- delete exported file associated : .tga
+					fileName = ligo_export_path + "zoneBitmaps\\" + transZoneTmp + "-" + (i as string) +  ".tga"
+					deleteFile filename
+					print ("deleting "+filename)
+
+					fileName = ligo_export_path + "zones\\" + transZoneTmp + "-" + (i as string) + ".zone"
+					deleteFile filename
+					print ("deleting "+filename)
+
+					fileName = ligo_export_path + "zoneLigos\\" + transZoneTmp + "-" + (i as string) + ".ligozone"
+					deleteFile filename
+					print ("deleting "+filename)
+				)
 				refresh_project_list ()
 				refresh_list TransitionDDL.selected
 			)

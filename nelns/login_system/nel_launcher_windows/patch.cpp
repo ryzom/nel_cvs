@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.6 2003/02/13 18:26:09 lecroart Exp $
+ * $Id: patch.cpp,v 1.7 2003/02/13 18:27:15 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@ using namespace NLMISC;
 
 HINTERNET RootInternet = NULL;
 
-static const string DirFilename = "dir.gz";
+static const string DirFilename = "dir.ngz";
 
 struct CEntry
 {
@@ -238,9 +238,9 @@ private:
 				nlinfo ("Get the file from '%s' to '%s'", string(DisplayedServerRootPath+needToGetFilesList[i].Filename).c_str(), path.c_str());
 
 				// get the new file
-				downloadFile (ServerRootPath+needToGetFilesList[i].Filename+".gz", path+".gz");
+				downloadFile (ServerRootPath+needToGetFilesList[i].Filename+".ngz", path+".ngz");
 				// decompress it
-				decompressFile (path+".gz", needToGetFilesList[i].Date);
+				decompressFile (path+".ngz", needToGetFilesList[i].Date);
 
 				// special case
 				if (needToGetFilesList[i].Filename == "patch_execute.bat")

@@ -7,7 +7,7 @@
 		$fp = fopen ($filename, "rb");
 		if (!$fp) return false;
 
-		$gz = gzopen ("$filename.gz", "wb9");
+		$gz = gzopen ("$filename.ngz", "wb9");
 		if (!$gz) { fclose ($fp); return false; }
 		
 		while (!feof($fp))
@@ -41,7 +41,7 @@
 		$path = $RootPatchInternalAccess."/".$shard_version;
 	}
 	
-	$dir = "dir.gz";
+	$dir = "dir.ngz";
 
 	$d = dir($path);
 	echo "<h1>Making patch in '$path' directory</h1>\n";
@@ -64,15 +64,15 @@
 		gzwrite ($zp, "FILESLIST\n");
 		while (false !== ($entry = $d->read()))
 		{
-			// only add file that are not .gz
-			if (is_file("$path/$entry") && substr("$entry", -3) != ".gz")
+			// only add file that are not .ngz
+			if (is_file("$path/$entry") && substr("$entry", -3) != ".ngz")
 			{
 				// if the gz associated doesn't exist or too old, create it
-				if (!file_exists("$path/$entry.gz") || filemtime ("$path/$entry.gz") < filemtime ("$path/$entry"))
+				if (!file_exists("$path/$entry.ngz") || filemtime ("$path/$entry.ngz") < filemtime ("$path/$entry"))
 				{
 					if (compressFile ("$path/$entry"))
 					{
-						echo "<tr><td><font color=green>OK</font></td><td>Compressed '$entry' into .gz</td></tr>\n";
+						echo "<tr><td><font color=green>OK</font></td><td>Compressed '$entry' into .ngz</td></tr>\n";
 						$tline++;
 					}
 					else

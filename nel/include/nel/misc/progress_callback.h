@@ -1,7 +1,7 @@
 /** \file progress_callback.h
  * Progess callback interface
  *
- * $Id: progress_callback.h,v 1.2 2002/12/11 13:47:25 coutelas Exp $
+ * $Id: progress_callback.h,v 1.3 2002/12/17 11:20:41 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -66,6 +66,12 @@ public:
 	  * Get croped value
 	  */
 	float getCropedValue (float value) const;
+
+public:
+	
+	/// Display string
+	std::string		DisplayString;
+
 private:
 
 	class CCropedValues

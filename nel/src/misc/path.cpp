@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.66 2002/12/16 16:39:12 lecroart Exp $
+ * $Id: path.cpp,v 1.67 2002/12/17 11:20:41 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -355,6 +355,16 @@ std::string CPath::getCurrentPath ()
 	return _getcwd(buffer, 10000);
 #else
 	return getcwd(buffer, 10000);
+#endif
+}
+
+bool CPath::setCurrentPath (const char *newDir)
+{
+#ifdef NL_OS_WINDOWS
+	return _chdir(newDir) == 0;
+#else
+	// todo : check this compiles under linux. Thanks (Hulud)
+	return chdir(newDir) == 0;
 #endif
 }
 
@@ -1271,6 +1281,52 @@ bool CFile::createDirectory(const std::string &filename)
 	// Set full permissions....
 	return mkdir(filename.c_str(), 0xFFFF)==0;
 #endif
+}
+
+bool CPath::makePathRelative (const char *basePath, std::string &relativePath)
+{
+	// Standard path with final slash
+	string tmp = standardizePath (basePath, true);
+	string src = standardizePath (relativePath, true);
+	string prefix;
+
+	while (1)
+	{
+		// Compare with relativePath
+		if (strncmp (tmp.c_str (), src.c_str (), tmp.length ()) == 0)
+		{
+			// Troncate
+			uint size = tmp.length ();
+
+			// Same path ?
+			if (size == src.length ())
+			{
+				relativePath = ".";
+				return true;
+			}
+
+			relativePath = prefix+relativePath.substr (size, relativePath.length () - size);
+			return true;
+		}
+
+		// Too small ?
+		if (tmp.length ()<2)
+			break;
+
+		// Remove last directory
+		uint lastPos = tmp.rfind ('/', tmp.length ()-2);
+		uint previousPos = tmp.find ('/');
+		if ((lastPos == previousPos) || (lastPos == string::npos))
+			break;
+
+		// Troncate
+		tmp = tmp.substr (0, lastPos+1);
+
+		// New prefix
+		prefix += "../";
+	}
+	
+	return false;
 }
 
 bool CFile::setRWAccess(const std::string &filename)

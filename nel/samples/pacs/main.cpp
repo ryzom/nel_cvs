@@ -1,7 +1,7 @@
 /** \file pacs/main.cpp
  * Pacs sample using user interface.
  *
- * $Id: main.cpp,v 1.2 2002/02/20 18:07:14 lecroart Exp $
+ * $Id: main.cpp,v 1.3 2002/12/17 11:20:41 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,7 +142,7 @@ int main ()
 		CPath::addSearchPath ("shapes");
 		
 		// Create a driver
-		UDriver	*pDriver=UDriver::createDriver();
+		UDriver	*pDriver=UDriver::createDriver(0);
 
 		// Setup text context
 		pDriver->setDisplay (UDriver::CMode(640, 480, 0));

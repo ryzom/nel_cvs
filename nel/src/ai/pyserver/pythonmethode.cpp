@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.11 2001/04/09 13:03:20 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.12 2001/06/05 14:20:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ namespace NLAIPYSERVER
 		sint32 Text;
 
 		if(!PyArg_ParseTuple(Arg,"i",&Text)) return NULL;
-		printf("%0x",Text);
+		NLAIC::Out("%0x",Text);
 		return Py_BuildValue("i",true);
 	}
 

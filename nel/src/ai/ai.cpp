@@ -106,7 +106,7 @@ namespace NLAILINK
 			
 			vsprintf(temp, str, argument);		
 			strcpy(LaseErrorCodeOrdreInterprete,temp);			
-			printf("%s",LaseErrorCodeOrdreInterprete);			
+			NLAIC::Out("%s",LaseErrorCodeOrdreInterprete);			
 				
 		}
 		virtual const std::string InPut()

@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.8 2001/05/22 16:08:15 chafik Exp $
+ * $Id: ident_type.cpp,v 1.9 2001/06/05 14:20:03 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -21,6 +21,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include <stdio.h>
 #include <iostream.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -32,7 +34,8 @@
 #include "nel/ai/c/registry_type.h"
 
 namespace NLAIC
-{	
+{
+	//freopen( "file.txt", "w", stdout ); 
 	char *stringBuild(const char *str, ...)
 	{		
 		char	temp[64*1024];
@@ -45,6 +48,17 @@ namespace NLAIC
 		return s;
 	}	
 
+	void Out(const char *str,...)
+	{		
+		char	temp[64*1024];
+		va_list argument;
+		va_start (argument, str);
+		
+		vsprintf(temp, str, argument);
+		fprintf(stderr,temp);
+		fflush(stderr);
+	}
+
 	std::string stringGetBuild(const char *str, ...)
 	{
 
@@ -53,6 +67,7 @@ namespace NLAIC
 		va_start (argument, str);
 		
 		vsprintf(temp, str, argument);			
+
 		return std::string(temp);
 
 	}

@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.17 2001/06/05 07:54:58 chafik Exp $
+ * $Id: abstract_interface.h,v 1.18 2001/06/05 14:19:49 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,9 @@ namespace NLAIC //Gen pour general.
 	char *stringBuild(const char *str, ...);	
 
 	///this method give an char pointer hows it contents a string define by a const char* same as printf. It use for initialise string objects.
-	std::string stringGetBuild(const char *str, ...);	
+	std::string stringGetBuild(const char *str, ...);
+
+	void Out(const char *, ...);
 
 	/**
 	IPointerGestion define a reference for an objects. It use for manager objects. 

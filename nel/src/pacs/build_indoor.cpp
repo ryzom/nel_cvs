@@ -1,7 +1,7 @@
 /** \file build_indoor.cpp
  * 
  *
- * $Id: build_indoor.cpp,v 1.1 2002/03/01 10:44:33 legros Exp $
+ * $Id: build_indoor.cpp,v 1.2 2002/03/01 13:04:51 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -613,7 +613,7 @@ void	linkExteriorToInterior(CLocalRetriever &lr)
 
 
 //
-void	computeRetriever(CCollisionMeshBuild &cmb, CLocalRetriever &lr, CVector &translation, bool useCmbTrivialTranslation)
+bool	computeRetriever(CCollisionMeshBuild &cmb, CLocalRetriever &lr, CVector &translation, string &error, bool useCmbTrivialTranslation)
 {
 	// set the retriever
 	lr.setType(CLocalRetriever::Interior);
@@ -637,9 +637,10 @@ void	computeRetriever(CCollisionMeshBuild &cmb, CLocalRetriever &lr, CVector &tr
 	{
 		nlwarning("Edge issues reported !!");
 		uint	i;
+		error = "";
 		for (i=0; i<errors.size(); ++i)
-			nlwarning("%s", errors[i].c_str());
-		nlerror("Can't continue.");
+			error += errors[i]+"\n";
+		return false;
 	}
 	
 	// translate the meshbuild to the local axis
@@ -698,6 +699,8 @@ void	computeRetriever(CCollisionMeshBuild &cmb, CLocalRetriever &lr, CVector &tr
 	bbox.setHalfSize(bboxhs);
 
 	lr.setBBox(bbox);
+
+	return true;
 }
 
 } // NLPACS

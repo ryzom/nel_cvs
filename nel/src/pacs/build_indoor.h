@@ -1,7 +1,7 @@
 /** \file build_indoor.h
  * 
  *
- * $Id: build_indoor.h,v 1.1 2002/03/01 10:44:33 legros Exp $
+ * $Id: build_indoor.h,v 1.2 2002/03/01 13:04:51 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,11 +40,12 @@ class CCollisionMeshBuild;
 class CLocalRetriever;
 
 
-// Computation functions
-void	computeRetriever(CCollisionMeshBuild &cmb,
-						 CLocalRetriever &lr,
-						 NLMISC::CVector &translation,
-						 bool useCmbTrivialTranslation = true);
+/// Computation functions, returns false if false
+bool	computeRetriever(CCollisionMeshBuild	&cmb,
+						 CLocalRetriever		&lr,
+						 NLMISC::CVector		&translation,
+						 std::string			&error,
+						 bool					useCmbTrivialTranslation = true);
 }
 
 #endif // NL_BUILD_INDOOR_H

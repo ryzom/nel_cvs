@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.11 2004/09/01 16:51:20 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.12 2004/09/07 11:56:57 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -66,7 +66,19 @@ bool parseHashFromComment(const ucstring &comments, uint64 &hashValue)
 }
 
 
+uint32 countLine(const ucstring &text, const ucstring::const_iterator upTo)
+{
+	uint32 ret = 1;
+	ucstring::const_iterator first(text.begin());
 
+	for (; first != upTo; ++first)
+	{
+		if (*first == '\n')
+			ret++;
+	}
+
+	return ret;
+}
 
 bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos, bool forceRehash, ucchar openMark, ucchar closeMark, bool specialCase)
 {
@@ -135,7 +147,11 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 
 		if (!CI18N::parseLabel(first, last, si.Identifier))
 		{
-			nlwarning("DT: Fatal : Invalid label will reading %s after %s\n", filename.c_str(), lastLabel.c_str());
+			uint32 line = countLine(text, first);
+			nlwarning("DT: Fatal : In '%s', line %u: Invalid label after '%s'\n", 
+				filename.c_str(), 
+				line, 
+				lastLabel.c_str());
 			return false;
 		}
 		lastLabel = si.Identifier;
@@ -144,7 +160,11 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 
 		if (!CI18N::parseMarkedString(openMark, closeMark, first, last, si.Text))
 		{
-			nlwarning("DT: Fatal : Invalid text value reading %s for label %s\n", filename.c_str(), lastLabel.c_str());
+			uint32 line = countLine(text, first);
+			nlwarning("DT: Fatal : In '%s', line %u: Invalid text value for label %s\n", 
+				filename.c_str(), 
+				line,
+				lastLabel.c_str());
 			return false;
 		}
 
@@ -154,7 +174,11 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 
 			if (!CI18N::parseMarkedString(openMark, closeMark, first, last, si.Text2))
 			{
-				nlwarning("DT: Fatal : Invalid text2 value reading %s for label %s\n", filename.c_str(), lastLabel.c_str());
+				uint32 line = countLine(text, first);
+				nlwarning("DT: Fatal: In '%s' line %u: Invalid text2 value label %s\n", 
+					filename.c_str(), 
+					line,
+					lastLabel.c_str());
 				return false;
 			}
 
@@ -169,7 +193,7 @@ bool loadStringFile(const std::string filename, vector<TStringInfo> &stringInfos
 		else
 		{
 //			nldebug("Comment = [%s]", si.Comments.toString().c_str());
-//			nldebug("Retreiving hash for %s as %s", si.Identifier.c_str(), CI18N::hashToString(si.HashValue).c_str());
+//			nldebug("Retrieving hash for %s as %s", si.Identifier.c_str(), CI18N::hashToString(si.HashValue).c_str());
 		}
 		stringInfos.push_back(si);
 	}
@@ -302,7 +326,11 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 		}
 		if (!CI18N::parseLabel(first, last, phrase.Identifier))
 		{
-			nlwarning("DT: Error parsing phrase identifier after %s\n", lastRead.c_str());
+			uint32 line = countLine(doc, first);
+			nlwarning("DT: In '%s' line %u: Error parsing phrase identifier after %s\n", 
+				filename.c_str(),
+				line,
+				lastRead.c_str());
 			return false;
 		}
 //		nldebug("DT: parsing phrase '%s'", phrase.Identifier.c_str());
@@ -310,13 +338,21 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 		CI18N::skipWhiteSpace(first, last, &phrase.Comments);
 		if (!CI18N::parseMarkedString('(', ')', first, last, phrase.Parameters))
 		{
-			nlwarning("DT: Error parsing parameter list for phrase %s\n", phrase.Identifier.c_str());
+			uint32 line = countLine(doc, first);
+			nlwarning("DT: in '%s', line %u: Error parsing parameter list for phrase %s\n", 
+				filename.c_str(),
+				line,
+				phrase.Identifier.c_str());
 			return false;
 		}
 		CI18N::skipWhiteSpace(first, last, &phrase.Comments);
 		if (first == last || *first != '{')
 		{
-			nlwarning("DT: Error parsing block opening '{' in phase %s\n", phrase.Identifier.c_str());
+			uint32 line = countLine(doc, first);
+			nlwarning("DT: In '%s', line %u: Error parsing block opening '{' in phase %s\n", 
+				filename.c_str(),
+				line,
+				phrase.Identifier.c_str());
 			return false;
 		}
 		++first;
@@ -340,13 +376,18 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			if (*first == '}')
 				break;
 
-			// skip the conditionnal expression
+			// skip the conditional expression
 			ucstring cond;
 			while (first != last && *first == '(')
 			{
 				if (!CI18N::parseMarkedString('(', ')', first, last, cond))
 				{
-					nlwarning("DT: Error parsing conditionnal expression in phrase %s, clause %u\n", phrase.Identifier.c_str(), phrase.Clauses.size()+1);
+					uint32 line = countLine(doc, first);
+					nlwarning("DT: In '%s' line %u: Error parsing conditional expression in phrase %s, clause %u\n", 
+						filename.c_str(),
+						line,
+						phrase.Identifier.c_str(), 
+						phrase.Clauses.size()+1);
 					return false;
 				}
 				clause.Conditions += "(" + cond + ") ";
@@ -354,7 +395,9 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			}
 			if (first == last)
 			{
-				nlwarning("DT: Found end of file in non closed block for phrase %s\n", phrase.Identifier.c_str());
+				nlwarning("DT: in '%s': Found end of file in non closed block for phrase %s\n", 
+					filename.c_str(),
+					phrase.Identifier.c_str());
 				return false;
 			}
 			// read the idnetifier (if any)
@@ -369,7 +412,10 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 			}
 			else
 			{
-				nlwarning("DT: Error reading text for clause %u (%s) in  phrase %s\n", 
+				uint32 line = countLine(doc, first);
+				nlwarning("DT: in '%s' line %u: Error reading text for clause %u (%s) in  phrase %s\n", 
+					filename.c_str(),
+					line,
 					phrase.Clauses.size()+1, 
 					clause.Identifier.c_str(), 
 					phrase.Identifier.c_str());
@@ -382,7 +428,11 @@ bool readPhraseFile(const std::string &filename, vector<TPhrase> &phrases, bool 
 		CI18N::skipWhiteSpace(first, last);
 		if (first == last || *first != '}')
 		{
-			nlwarning("DT: Missing block clogin tag '}' in phrase %s\n", phrase.Identifier.c_str());
+			uint32 line = countLine(doc, first);
+			nlwarning("DT: in '%s' line %u: Missing block closing tag '}' in phrase %s\n", 
+				filename.c_str(),
+				line,
+				phrase.Identifier.c_str());
 			return false;
 		}
 		++first;

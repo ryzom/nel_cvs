@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.75 2002/08/06 15:03:39 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.76 2002/08/08 15:34:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1009,6 +1009,26 @@ void CObjectViewer::go ()
 			}
 		}
 		
+		// Test Window Keys
+		if (CNELU::AsyncListener.isKeyPushed(Key1))
+			_MainFrame->OnWindowAnimation();
+		if (CNELU::AsyncListener.isKeyPushed(Key2))
+			_MainFrame->OnWindowAnimationset();
+		if (CNELU::AsyncListener.isKeyPushed(Key3))
+			_MainFrame->OnWindowMixersslots();
+		if (CNELU::AsyncListener.isKeyPushed(Key4))
+			_MainFrame->OnWindowParticles();
+		if (CNELU::AsyncListener.isKeyPushed(Key5))
+			_MainFrame->OnWindowDayNight();
+		if (CNELU::AsyncListener.isKeyPushed(Key6))
+			_MainFrame->OnWindowWaterPool();
+		if (CNELU::AsyncListener.isKeyPushed(Key7))
+			_MainFrame->OnWindowVegetable();
+		if (CNELU::AsyncListener.isKeyPushed(Key8))
+			_MainFrame->OnWindowGlobalwind();
+		if (CNELU::AsyncListener.isKeyPushed(Key9))
+			_MainFrame->OnWindowSoundAnim();
+
 		// Calc FPS
 		static sint64 lastTime=NLMISC::CTime::getPerformanceTime ();
 		sint64 newTime=NLMISC::CTime::getPerformanceTime ();

@@ -2253,15 +2253,15 @@ BEGIN
     END
     POPUP "&Window"
     BEGIN
-        MENUITEM "&Animation",                  ID_WINDOW_ANIMATION
-        MENUITEM "Animation &set",              ID_WINDOW_ANIMATIONSET
-        MENUITEM "&Mixer slots",                ID_WINDOW_MIXERSSLOTS
-        MENUITEM "&Particles",                  ID_WINDOW_PARTICLES
-        MENUITEM "Day/Night",                   ID_WINDOW_DAYNIGHT
-        MENUITEM "Water pool editor",           ID_WINDOW_WATER_POOL
-        MENUITEM "Vegetable",                   ID_WINDOW_VEGETABLE
-        MENUITEM "Global Wind",                 ID_WINDOW_GLOBALWIND
-        MENUITEM "S&ound",                      ID_WINDOW_ANIMSOUND
+        MENUITEM "Animation               (&1)", ID_WINDOW_ANIMATION
+        MENUITEM "Animation set         (&2)",  ID_WINDOW_ANIMATIONSET
+        MENUITEM "Mixer slots              (&3)", ID_WINDOW_MIXERSSLOTS
+        MENUITEM "Particles                  (&4)", ID_WINDOW_PARTICLES
+        MENUITEM "Day/Night               (&5)", ID_WINDOW_DAYNIGHT
+        MENUITEM "Water pool editor   (&6)",    ID_WINDOW_WATER_POOL
+        MENUITEM "Vegetable               (&7)", ID_WINDOW_VEGETABLE
+        MENUITEM "Global Wind            (&8)", ID_WINDOW_GLOBALWIND
+        MENUITEM "Sound                     (&9)", ID_WINDOW_ANIMSOUND
     END
     POPUP "&Help"
     BEGIN

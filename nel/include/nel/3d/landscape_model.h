@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.2 2000/11/10 09:57:34 berenguier Exp $
+ * $Id: landscape_model.h,v 1.3 2000/12/06 14:32:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/transform.h"
 #include "nel/3d/render_trav.h"
+#include "nel/3d/landscape.h"
 
 
 namespace NL3D 
@@ -54,14 +55,17 @@ public:
 	static	void	registerBasic();
 
 public:
-	CLandscape		*Landscape;
+	CLandscape		Landscape;
 
-public:
+
+protected:
 	CLandscapeModel()
 	{
-		Landscape= NULL;
+		Landscape.init();
 	}
+	virtual ~CLandscapeModel() {}
 
+private:
 	static IModel	*creator() {return new CLandscapeModel;}
 };
 

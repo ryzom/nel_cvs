@@ -1,7 +1,7 @@
 /** \file camera.h
  * 
  *
- * $Id: camera.h,v 1.6 2000/12/01 10:07:26 corvazier Exp $
+ * $Id: camera.h,v 1.7 2000/12/06 14:32:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_CAMERA_H
 
 #include "nel/3d/transform.h"
+#include "nel/3d/frustum.h"
 
 
 namespace	NL3D
@@ -61,9 +62,10 @@ public:
 
 public:
 
-	/// Constructor
-	CCamera();
-
+	/// Set the frustum of the camera.
+	void		setFrustum(const CFrustum &f) {_Frustum= f;}
+	/// Get the frustum of the camera.
+	CFrustum	getFrustum() const {return _Frustum;}
 	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	void		setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true);
 	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
@@ -74,6 +76,14 @@ public:
 	bool		isOrtho() const;
 	/// Is a perspective camera?
 	bool		isPerspective() const;
+	/** Setup a perspective camera, giving a fov in radians.
+	 * \param fov the horizontal angle of view, in radians. (Pi/2 as example)
+	 * \param aspectRatio the ratio horizontal/vertical (1.33 as example).
+	 * \param znear the front clipping plane distance.
+	 * \param zfar the back clipping plane distance.
+	 */
+	void		setPerspective(float fov, float aspectRatio, float znear, float zfar);
+
 
 	/** 
 	  * Setup camera by the lookAt method. Yes Lionel, it's really usefull!!
@@ -84,18 +94,19 @@ public:
 	  */
 	void		lookAt (const CVector& eye, const CVector& target, float roll=0.f);
 
-	/** Setup a perspective camera, giving a fov in radians.
-	 * \param fov the horizontal angle of view, in radians. (Pi/2 as example)
-	 * \param aspectRatio the ratio horizontal/vertical (1.33 as example).
-	 * \param znear the front clipping plane distance.
-	 * \param zfar the back clipping plane distance.
-	 */
-	void		setPerspective(float fov, float aspectRatio, float znear, float zfar);
 
 protected:
+	/// Constructor
+	CCamera();
+	/// Destructor
+	virtual ~CCamera() {}
+
 	// NB: znear and zfar are be >0 (if perspective).
-	float			Left, Right, Bottom, Top, Near, Far;
-	bool			Perspective;
+	CFrustum	_Frustum;
+
+private:
+	static IModel	*creator() {return new CCamera;}
+
 };
 
 

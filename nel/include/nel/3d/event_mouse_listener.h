@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.1 2000/12/01 10:34:16 corvazier Exp $
+ * $Id: event_mouse_listener.h,v 1.2 2000/12/06 14:32:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,10 +30,15 @@
 #include "nel/misc/event_listener.h"
 #include "nel/misc/matrix.h"
 #include "nel/3d/viewport.h"
+#include "nel/3d/frustum.h"
 
 
 namespace NL3D 
 {
+
+
+using NLMISC::CVector;
+using NLMISC::CMatrix;
 
 
 /**
@@ -102,10 +107,11 @@ public:
 
 	/** 
 	  * Set the view matrix and the frustrum with a camera.
-	  * \param camera is the camera use to copy view matrix and frustrum.
+	  * \param camMat the camera matrix.
+	  * \param camFrust the camera frutum.
 	  * \see setViewMatrix() setFrustrum()
 	  */
-	void setWithCamera  (const class CCamera& camera);
+	void setWithCamera  (const CMatrix &camMat, const CFrustum &camFrust);
 
 	/** 
 	  * Set the viewport in use in the window. By default, the viewport is fullwindow.
@@ -122,7 +128,7 @@ public:
 	  * of the selected object. The hotspot is not modified by mouse events.
 	  * \see getViewMatrix()
 	  */
-	void setHotSpot (const NLMISC::CVector& hotSpot)
+	void setHotSpot (const CVector& hotSpot)
 	{
 		_HotSpot=hotSpot;
 	}
@@ -163,8 +169,8 @@ private:
 	/// Internal use
 	virtual void operator ()(const NLMISC::CEvent& event);
 
-	NLMISC::CMatrix		_ViewMatrix;
-	NLMISC::CVector		_HotSpot;
+	CMatrix		_ViewMatrix;
+	CVector		_HotSpot;
 	NL3D::CViewport		_Viewport;
 	float		_Top;
 	float		_Bottom;

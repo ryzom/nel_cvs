@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.4 2000/12/06 12:50:30 corvazier Exp $
+ * $Id: mot.h,v 1.5 2000/12/06 14:32:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,26 +159,10 @@ class	ITrav;
 class	CMOT
 {
 public:
-	/// \name Traversals  Registration .
-	//@{
-	/**
-	 * Register a traversal and add it to the scene.
-	 * This is done by CSene object, and not globally. Hence, we can have different scene, which doesn't support the
-	 * same traversals. Undefined result are excepted if you put two or more traversals of the same type in a scene.
-	 * \param v the traversal to be added. CMOT will never delete it (so the user should do). v->getId() must be the 
-	 * Unique ID of this traversal class.
-	 */
-	void	addTrav(ITrav *v);
-	/**
-	 * Get a traversal via its class id.
-	 * \param idTrav the Trav Unique Id.
-	 * \return the traversal. NULL, if not found.
-	 */
-	ITrav	*getTrav(const NLMISC::CClassId &idTrav) const;
-	/// Delete all the traversals of the MOT.
-	void	deleteAllTraversals();
-	//@}
-
+	// Ctor.
+	CMOT();
+	// Dtor.
+	~CMOT();
 
 	/// \name Models / Observers registration.
 	//@{
@@ -202,8 +186,30 @@ public:
 
 
 public:
+	/// \name Traversals  Registration .
+	//@{
 	/**
-	 * Create a model according to his id.
+	 * Register a traversal and add it to the scene.
+	 * This is done by CSene object, and not globally. Hence, we can have different scene, which doesn't support the
+	 * same traversals. Undefined result are excepted if you put two or more traversals of the same type in a scene.
+	 * \param v the traversal to be added. CMOT will never delete it (so the user should do). v->getId() must be the 
+	 * Unique ID of this traversal class.
+	 */
+	void	addTrav(ITrav *v);
+	/**
+	 * Get a traversal via its class id.
+	 * \param idTrav the Trav Unique Id.
+	 * \return the traversal. NULL, if not found.
+	 */
+	ITrav	*getTrav(const NLMISC::CClassId &idTrav) const;
+	//@}
+
+	
+public:
+	/// \name Model mgt.
+	//@{
+	/**
+	 * Create a model according to his type id.
 	 * Model must has been previously registered via registerModel(). This function create all necessary observers, according 
 	 * to the traversals registered with addTrav(), and registerObs(). If a model has no osberver specified for a given 
 	 * traversal Trav, then the father's one will be created. If no ancestor has defined an observer for this traversal, then
@@ -212,13 +218,32 @@ public:
 	 * Then, this function attach those observers to the model.
 	 *
 	 * Then, This function attach this model to the Root of all traversals (if not NULL).
-	 * 
+	 *
+	 * Model are deleted with the CMOT::deleteModel() or with CMOT::release() which delete all models ans traversals.
+	 * NB: Since CMOT own the model, model MUST NOT be used with SmartPtrs (but CRefPtr always work...).
 	 * \param idModel the Unique Id of the Model
 	 * \return a valid model of the required type. NULL, if not found.
+	 * \see deleteModel()
 	 */
-	IModel	*createModel(const NLMISC::CClassId &idModel) const;
+	IModel	*createModel(const NLMISC::CClassId &idModel);
+
+	/** Delete a model via his pointer.
+	 * The model is automatically unlinked from all other model in all traversals, and his observers are 
+	 * automatically destroyed.
+	 *
+	 * Once a model is deleted, all pointer to him should have been deleted.
+	 */
+	void	deleteModel(IModel *model);
+	//@}
 
 
+	/** release all the models and all the traversals created/registred.
+	 * Remind that Models are deleted, but not Traversals, since CMOT do not own traversals.
+	 */
+	void	release();
+
+
+// ******************
 private:
 	struct	CModelEntry
 	{
@@ -255,8 +280,9 @@ private:
 
 private:
 	std::vector<CTravEntry>			Traversals;
-	static std::set<CModelEntry>	Models;
-	static std::set<CObsEntry>		Observers;
+	std::set<IModel*>				Models;
+	static std::set<CModelEntry>	RegModels;
+	static std::set<CObsEntry>		RegObservers;
 
 private:
 	// Create an observer, obeying the hierachy/observer system explained in createModel().
@@ -394,18 +420,23 @@ class	IModel : public NLMISC::CRefCount
 protected:
 	/**
 	 * Init a model.
-	 * The client must create a Model only with CMOT::createModel().
+	 * The user must create a Model only with CMOT::createModel().
 	 * This is required since, CMOT::createModel() create observers for his traversals and link them to this created model.
 	 *
-	 * The deriver should do a \c Touch.resize(Last), to ensure he resize the BitSet correctly.
+	 * The deriver \b should do a \c Touch.resize(Last), to ensure he resize the BitSet correctly.
+	 * The dervier \b should keep/declare ctor and dtor protected, to avoid user error (new and delete).
 	 */
 	IModel();
 
-
-public:
-	/// Destrutor. Model's observers are deleted automatically.
+	/** Destrutor. Model's observers are deleted automatically.
+	 * The user must delete a Model only with CMOT::deleteModel(). This ensure that model validity is correct during the 
+	 * life of CMOT.
+	 *
+	 * The dervier \b should keep/declare ctor and dtor protected, to avoid user error (new and delete).
+	 */
 	virtual	~IModel();
 
+public:
 	
 	/// \name Notification system
 	//@{

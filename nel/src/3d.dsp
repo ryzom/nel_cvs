@@ -304,6 +304,14 @@ SOURCE=.\3d\bsphere.cpp
 
 SOURCE=..\include\nel\3d\bsphere.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\3d\frustum.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\frustum.h
+# End Source File
 # End Group
 # Begin Group "Font"
 
@@ -404,19 +412,19 @@ SOURCE=..\include\nel\3d\mot.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\scene.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\3d\scene.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\nelu.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\3d\nelu.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\scene.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\scene.h
 # End Source File
 # End Target
 # End Project

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.10 2000/12/06 12:51:35 corvazier Exp $
+ * $Id: scene.cpp,v 1.11 2000/12/06 14:32:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,13 +70,11 @@ CScene::CScene()
 // ***************************************************************************
 void	CScene::release()
 {
-	delete Root;
-	// TODO: delete the ligthgroup root.
+	// First, delete models and un-register traversals.
+	CMOT::release();
 
+	// Unlink the rendertrav.
 	RenderTraversals.clear();
-
-	// Remove all the traversals of CMOT.
-	CMOT::deleteAllTraversals();
 
 	// Delete only the 4 default Traversals (owned by CScene), and the 4 default Root.
 	delete	HrcTrav;
@@ -89,6 +87,7 @@ void	CScene::release()
 	LightTrav= NULL;
 	RenderTrav= NULL;
 	Root= NULL;
+	CurrentCamera= NULL;
 }
 // ***************************************************************************
 CScene::~CScene()
@@ -185,12 +184,6 @@ void	CScene::swapBuffers()
 	getDriver()->swapBuffers();
 }
 
-
-// ***************************************************************************
-void	CScene::setCam(const CSmartPtr<CCamera>	&cam)
-{
-	CurrentCamera= cam;
-}
 
 // ***************************************************************************
 void	CScene::setDriver(IDriver *drv)

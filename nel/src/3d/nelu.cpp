@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.9 2000/12/06 12:51:24 corvazier Exp $
+ * $Id: nelu.cpp,v 1.10 2000/12/06 14:32:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ const float		CNELU::DefLzFar=1000.0f;
 
 IDriver				*CNELU::Driver=NULL;
 CScene				CNELU::Scene;
-CSmartPtr<CCamera>	CNELU::Camera;
+CRefPtr<CCamera>	CNELU::Camera;
 CEventServer		CNELU::EventServer;
 CEventListenerAsync	CNELU::AsyncListener;
 
@@ -79,7 +79,7 @@ void			CNELU::initScene(CViewport viewport)
 
 	// Create/link a camera.
 	CNELU::Camera= (CCamera*)Scene.createModel(NL3D::CameraId);
-	CNELU::Scene.CurrentCamera= CNELU::Camera;
+	CNELU::Scene.setCam(CNELU::Camera);
 	CNELU::Camera->setFrustum(DefLx, DefLy, DefLzNear, DefLzFar);
 }
 
@@ -106,7 +106,6 @@ void			CNELU::releaseScene()
 
 	// "Release" the Scene.
 	CNELU::Scene.setDriver(NULL);
-
 	CNELU::Scene.release();
 }
 

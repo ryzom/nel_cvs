@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.5 2000/11/30 17:53:37 berenguier Exp $
+ * $Id: transform.h,v 1.6 2000/12/06 14:32:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,11 +66,7 @@ public:
 	/// Call at the begining of the program, to register the model, and the basic observers.
 	static	void	registerBasic();
 
-
 public:
-
-	/// Constructor
-	CTransform();
 
 
 	/// \name Direct Matrix operations.
@@ -111,6 +107,11 @@ private:
 	}
 
 protected:
+	/// Constructor
+	CTransform();
+	/// Destructor
+	virtual ~CTransform() {}
+
 	/// Implement the clean method.
 	virtual void	clean()
 	{
@@ -120,6 +121,7 @@ protected:
 	}
 
 private:
+	static IModel	*creator() {return new CTransform;}
 	friend class	CTransformHrcObs;
 	friend class	CTransformClipObs;
 

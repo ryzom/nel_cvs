@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.2 2000/12/05 10:39:59 corvazier Exp $
+ * $Id: event_mouse_listener.cpp,v 1.3 2000/12/06 14:32:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,8 @@
 
 using namespace NLMISC;
 
-namespace NL3D {
+namespace NL3D 
+{
 
 
 CEvent3dMouseListener::CEvent3dMouseListener()
@@ -45,11 +46,14 @@ CEvent3dMouseListener::CEvent3dMouseListener()
 	_MouseMode=nelStyle;
 }
 
-void CEvent3dMouseListener::setWithCamera  (const CCamera& camera)
+void CEvent3dMouseListener::setWithCamera  (const CMatrix &camMat, const CFrustum &camFrust)
 {
-	float dummy;
-	_ViewMatrix=camera.getMatrix ();
-	camera.getFrustum (_Left, _Right, _Bottom, _Top, _Depth, dummy);
+	_ViewMatrix= camMat;
+	_Left= camFrust.Left;
+	_Right = camFrust.Left;
+	_Bottom= camFrust.Bottom;
+	_Top= camFrust.Top;
+	_Depth= camFrust.Near;
 }
 
 void CEvent3dMouseListener::operator ()(const CEvent& event)
@@ -127,16 +131,17 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 			plane.make (_ViewMatrix.getJ(), _HotSpot);
 
 			// Make a temp camera
-			CCamera camera;
-			camera.setMatrix (_ViewMatrix);
-			camera.setFrustum (_Left, _Right, _Bottom, _Top, _Depth, _Depth+10.f);
+			CMatrix		camMatrix;
+			CFrustum	camFrust;
+			camMatrix= _ViewMatrix;
+			camFrust.init (_Left, _Right, _Bottom, _Top, _Depth, _Depth+10.f);
 
 			// Get ray from mouse point
 			CVector worldPoint1, worldPoint2;
 			CVector pos, dir;
-			_Viewport.getRayWithPoint (_X, _Y, pos, dir, camera);
+			_Viewport.getRayWithPoint (_X, _Y, pos, dir, camMatrix, camFrust);
 			worldPoint1=plane.intersect (pos, pos+dir);
-			_Viewport.getRayWithPoint (mouseEvent->X, mouseEvent->Y, pos, dir, camera);
+			_Viewport.getRayWithPoint (mouseEvent->X, mouseEvent->Y, pos, dir, camMatrix, camFrust);
 			worldPoint2=plane.intersect (pos, pos+dir);
 
 			// Move the camera

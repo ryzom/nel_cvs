@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.13 2000/12/04 16:58:20 berenguier Exp $
+ * $Id: landscape.h,v 1.14 2000/12/06 14:32:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,7 @@ public:
 
 
 	/** Add a zone which should be builded (or loaded), but not compiled. CLandscape compile it.
+	 * The contents of newZone are copied into the landscape.
 	 * \param newZone the new zone.
 	 * \return true if OK, false otherwise. As example, Fail if newZone is already connected.
 	 */

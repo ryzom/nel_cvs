@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.2 2000/11/10 09:58:04 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.3 2000/12/06 14:32:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,13 +49,10 @@ bool	CLandscapeClipObs::clip(IBaseClipObs *caller, bool &renderable)
 	renderable= true;
 	
 	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
-	if(landModel->Landscape)
-	{
-		CClipTrav		*trav= (CClipTrav*)Trav;
-		vector<CPlane>	&pyramid= trav->WorldPyramid;
-		// We are sure that pyramid has normalized plane normals.
-		landModel->Landscape->clip(trav->CamPos, pyramid);
-	}
+	CClipTrav		*trav= (CClipTrav*)Trav;
+	vector<CPlane>	&pyramid= trav->WorldPyramid;
+	// We are sure that pyramid has normalized plane normals.
+	landModel->Landscape.clip(trav->CamPos, pyramid);
 
 	// Well, always visible....
 	return true;
@@ -65,19 +62,17 @@ bool	CLandscapeClipObs::clip(IBaseClipObs *caller, bool &renderable)
 void	CLandscapeRenderObs::traverse(IObs *caller)
 {
 	CLandscapeModel		*landModel= (CLandscapeModel*)Model;
-	if(landModel->Landscape)
-	{
-		CRenderTrav		*trav= (CRenderTrav*)Trav;
 
-		CMatrix		m;
-		m.identity();
-		trav->getDriver()->setupModelMatrix(m);
+	CRenderTrav		*trav= (CRenderTrav*)Trav;
 
-		// First, refine.
-		landModel->Landscape->refine(trav->CamPos);
-		// then render.
-		landModel->Landscape->render(trav->getDriver(), trav->CamPos);
-	}
+	CMatrix		m;
+	m.identity();
+	trav->getDriver()->setupModelMatrix(m);
+
+	// First, refine.
+	landModel->Landscape.refine(trav->CamPos);
+	// then render.
+	landModel->Landscape.render(trav->getDriver(), trav->CamPos);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.7 2000/12/06 12:51:13 corvazier Exp $
+ * $Id: mot.cpp,v 1.8 2000/12/06 14:32:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,15 +38,14 @@ namespace	NL3D
 
 // ***************************************************************************
 // ***************************************************************************
-// CMOT.
+// CMOT static.
 // ***************************************************************************
 // ***************************************************************************
 
 
 // ***************************************************************************
-set<CMOT::CModelEntry>	CMOT::Models;
-set<CMOT::CObsEntry>		CMOT::Observers;
-
+set<CMOT::CModelEntry>		CMOT::RegModels;
+set<CMOT::CObsEntry>		CMOT::RegObservers;
 
 // ***************************************************************************
 void	CMOT::registerModel(const CClassId &idModel, const CClassId &idModelBase, IModel* (*creator)())
@@ -61,8 +60,8 @@ void	CMOT::registerModel(const CClassId &idModel, const CClassId &idModelBase, I
 	e.Creator= creator;
 
 	// Insert/replace e.
-	Models.erase(e);
-	Models.insert(e);
+	RegModels.erase(e);
+	RegModels.insert(e);
 }
 // ***************************************************************************
 void	CMOT::registerObs(const CClassId &idTrav, const CClassId &idModel, IObs* (*creator)())
@@ -77,9 +76,28 @@ void	CMOT::registerObs(const CClassId &idTrav, const CClassId &idModel, IObs* (*
 	e.Creator= creator;
 
 	// Insert/replace e.
-	Observers.erase(e);
-	Observers.insert(e);
+	RegObservers.erase(e);
+	RegObservers.insert(e);
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// CMOT.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CMOT::CMOT()
+{
+}
+// ***************************************************************************
+CMOT::~CMOT()
+{
+	release();
+}
+
 // ***************************************************************************
 void	CMOT::addTrav(ITrav *v)
 {
@@ -107,23 +125,33 @@ ITrav	*CMOT::getTrav(const CClassId &idTrav) const
 	return NULL;
 }
 // ***************************************************************************
-void	CMOT::deleteAllTraversals()
+void	CMOT::release()
 {
+	// First, release all the models.
+	set<IModel*>::iterator	it;
+	it= Models.begin();
+	while( it!=Models.end())
+	{
+		deleteModel(*it);
+		it= Models.begin();
+	}
+
+	// Then release the traversals ptrs.
 	Traversals.clear();
 }
 
 
 // ***************************************************************************
-IModel	*CMOT::createModel(const CClassId &idModel) const
+IModel	*CMOT::createModel(const CClassId &idModel)
 {
 	nlassert(idModel!=CClassId::Null);
 
 	CModelEntry	e;
 	e.ModelId= idModel;
 	set<CModelEntry>::iterator	itModel;
-	itModel= Models.find(e);
+	itModel= RegModels.find(e);
 
-	if(itModel==Models.end())
+	if(itModel==RegModels.end())
 		return NULL;
 	else
 	{
@@ -154,10 +182,25 @@ IModel	*CMOT::createModel(const CClassId &idModel) const
 			o->init();
 		}
 
+		// Insert the model into the list.
+		Models.insert(m);
 
 		return m;
 	}
 }
+// ***************************************************************************
+void	CMOT::deleteModel(IModel *model)
+{
+	if(model==NULL)
+		return;
+	set<IModel*>::iterator	it= Models.find(model);
+	if(it!=Models.end())
+	{
+		delete *it;
+		Models.erase(it);
+	}
+}
+
 // ***************************************************************************
 IObs	*CMOT::createObs(const ITrav *trav, const CClassId &idModel) const
 {
@@ -175,17 +218,17 @@ IObs	*CMOT::createObs(const ITrav *trav, const CClassId &idModel) const
 	e.TravId= idTrav;
 	e.ModelId= idModel;
 	std::set<CObsEntry>::iterator	it;
-	it= Observers.find(e);
+	it= RegObservers.find(e);
 
-	if(it==Observers.end())
+	if(it==RegObservers.end())
 	{
 		// Try the father of the model.
 		CModelEntry	e;
 		e.ModelId= idModel;
 		set<CModelEntry>::iterator	it;
-		it= Models.find(e);
+		it= RegModels.find(e);
 
-		nlassert(it!=Models.end());
+		nlassert(it!=RegModels.end());
 
 		return createObs(trav, (*it).BaseModelId);
 	}

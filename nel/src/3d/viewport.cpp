@@ -1,7 +1,7 @@
 /** \file viewport.cpp
  * <File description>
  *
- * $Id: viewport.cpp,v 1.1 2000/12/01 10:34:30 corvazier Exp $
+ * $Id: viewport.cpp,v 1.2 2000/12/06 14:32:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,14 +71,13 @@ void CViewport::init16_9 ()
 }
 
 
-void CViewport::getRayWithPoint (float x, float y, CVector& pos, CVector& dir, const CCamera& camera) const
+void CViewport::getRayWithPoint (float x, float y, CVector& pos, CVector& dir, const CMatrix& camMatrix, const CFrustum& camFrust) const
 {
 	float xVP=(x-_X)/_Width;
 	float yVP=(y-_Y)/_Height;
 
 	// Pos of the ray
-	CMatrix matrixView;
-	pos=camera.getMatrix ().getPos();
+	pos= camMatrix.getPos();
 
 	// Get camera frustrum
 	float left;
@@ -87,7 +86,7 @@ void CViewport::getRayWithPoint (float x, float y, CVector& pos, CVector& dir, c
 	float top;
 	float znear;
 	float zfar;
-	camera.getFrustum (left, right, bottom, top, znear, zfar);
+	camFrust.getValues (left, right, bottom, top, znear, zfar);
 
 	// Get a local direction
 	dir.x=left+(right-left)*xVP;
@@ -95,7 +94,7 @@ void CViewport::getRayWithPoint (float x, float y, CVector& pos, CVector& dir, c
 	dir.z=bottom+(top-bottom)*yVP;
 
 	// Get a world direction
-	CMatrix mat=camera.getMatrix();
+	CMatrix mat=camMatrix;
 	mat.setPos (CVector (0,0,0));
 	dir=mat*dir;
 }

@@ -1,7 +1,7 @@
 /** \file viewport.h
  * <File description>
  *
- * $Id: viewport.h,v 1.1 2000/12/01 10:34:16 corvazier Exp $
+ * $Id: viewport.h,v 1.2 2000/12/06 14:32:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,14 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/matrix.h"
+#include "nel/3d/frustum.h"
 
 namespace NL3D {
+
+
+using NLMISC::CVector;
+using NLMISC::CMatrix;
 
 
 /**
@@ -67,9 +73,10 @@ public:
 	  * \param y is the y coordinate in the window coordinate system of the 2d point.
 	  * \param pos gets the position of a 3d point on the ray. It is also the position of the camera
 	  * \param dir gets the direction of the ray. The direction is the same than the camera one. It is NOT normalized.
-	  * \param camera is the camera in use in this viewport.
+	  * \param camMatrix is the matrix of the camera in use in this viewport.
+	  * \param camFrust is the frustum of the camera in use in this viewport.
 	  */
-	void getRayWithPoint (float x, float y, NLMISC::CVector& pos, NLMISC::CVector& dir, const class CCamera& camera) const;
+	void getRayWithPoint (float x, float y, CVector& pos, CVector& dir, const CMatrix& camMatrix, const CFrustum& camFrust) const;
 
 	/** Get the viewport values
 	  * 

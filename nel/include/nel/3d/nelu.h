@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.7 2000/12/04 14:29:48 berenguier Exp $
+ * $Id: nelu.h,v 1.8 2000/12/06 14:32:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,7 @@ public:
 public:
 	static IDriver				*Driver;
 	static CScene				Scene;
-	static CSmartPtr<CCamera>	Camera;
+	static CRefPtr<CCamera>		Camera;
 	static NLMISC::CEventServer			EventServer;
 	static NLMISC::CEventListenerAsync	AsyncListener;
 

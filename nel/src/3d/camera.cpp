@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.5 2000/12/01 10:07:16 corvazier Exp $
+ * $Id: camera.cpp,v 1.6 2000/12/06 14:32:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,10 +31,9 @@ namespace	NL3D
 
 
 // ***************************************************************************
-static	IModel	*creatorCamera() {return new CCamera;}
 void	CCamera::registerBasic()
 {
-	CMOT::registerModel(CameraId, TransformId, creatorCamera);
+	CMOT::registerModel(CameraId, TransformId, CCamera::creator);
 }
 
 
@@ -46,46 +45,37 @@ CCamera::CCamera()
 // ***************************************************************************
 void		CCamera::setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective)
 {
-	Left= left;
-	Right= right;
-	Bottom=	bottom;
-	Top= top;
-	Near= znear;
-	Far= zfar;
-	Perspective= perspective;
+	_Frustum.init( left, right,bottom, top, znear, zfar, perspective);
 }
 // ***************************************************************************
 void		CCamera::setFrustum(float width, float height, float znear, float zfar, bool perspective)
 {
-	setFrustum(-width/2, width/2, -height/2, height/2, znear, zfar, perspective);
+	_Frustum.init(width, height, znear, zfar, perspective);
 }
 // ***************************************************************************
 void		CCamera::setPerspective(float fov, float aspectRatio, float znear, float zfar)
 {
-	float	w,h;
-	w= 2*znear*(float)tan(fov/2);
-	h= w/aspectRatio;
-	setFrustum(w,h,znear,zfar,true);
+	_Frustum.initPerspective(fov, aspectRatio, znear, zfar);
 }
 // ***************************************************************************
 void		CCamera::getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const
 {
-	left= Left;
-	right= Right;
-	bottom=	Bottom;
-	top= Top;
-	znear= Near;
-	zfar= Far;
+	left= _Frustum.Left;
+	right= _Frustum.Right;
+	bottom=	_Frustum.Bottom;
+	top= _Frustum.Top;
+	znear= _Frustum.Near;
+	zfar= _Frustum.Far;
 }
 // ***************************************************************************
 bool		CCamera::isOrtho() const
 {
-	return !Perspective;
+	return !_Frustum.Perspective;
 }
 // ***************************************************************************
 bool		CCamera::isPerspective() const
 {
-	return Perspective;
+	return _Frustum.Perspective;
 }
 // ***************************************************************************
 void		CCamera::lookAt (const CVector& eye, const CVector& target, float roll)

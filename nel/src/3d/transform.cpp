@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.5 2000/11/30 17:53:43 berenguier Exp $
+ * $Id: transform.cpp,v 1.6 2000/12/06 14:32:39 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,13 +30,12 @@ namespace	NL3D
 {
 
 // ***************************************************************************
-static	IModel	*creatorTransform() {return new CTransform;}
 static	IObs	*creatorHrcObs() {return new CTransformHrcObs;}
 static	IObs	*creatorClipObs() {return new CTransformClipObs;}
 
 void	CTransform::registerBasic()
 {
-	CMOT::registerModel(TransformId, 0, creatorTransform);
+	CMOT::registerModel(TransformId, 0, CTransform::creator);
 	CMOT::registerObs(HrcTravId, TransformId, creatorHrcObs);
 	CMOT::registerObs(ClipTravId, TransformId, creatorClipObs);
 }

@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.7 2000/12/05 17:26:31 berenguier Exp $
+ * $Id: scene.h,v 1.8 2000/12/06 14:32:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,10 +88,9 @@ class	IDriver;
  */
 class CScene : public CMOT
 {
-public:
-	/// The camera (SmartPtr-ed !!).
-	NLMISC::CSmartPtr<CCamera>	CurrentCamera;
 private:
+	/// The camera / Viewport.
+	NLMISC::CRefPtr<CCamera>	CurrentCamera;
 	CViewport					_Viewport;
 
 	/// \name The 4 default traversals, created / linked by CScene::initDefaultTraversals().
@@ -152,8 +151,9 @@ public:
 	void	swapBuffers();
 
 
-	/// Set the current camera (smartptr-ed!!).
-	void	setCam(const NLMISC::CSmartPtr<CCamera>	&cam);
+	/// Set/Get the current camera/Viewport.
+	void	setCam(CCamera *cam) {CurrentCamera= cam;}
+	CCamera *getCam() {return CurrentCamera;}
 	void	setViewport(const class CViewport& viewport)
 	{
 		_Viewport=viewport;
@@ -163,7 +163,7 @@ public:
 		return _Viewport;
 	}
 
-	/// Release all relative to the scene...
+	/// Release all relative to the scene (Models, traversals...)...
 	void	release();
 
 

@@ -219,7 +219,7 @@ group "Other Nodes"
 		if (IgName.text != "") and (BuildingFilenamePath != "") and (VillageFilenamePath != "") then
 		(
 			-- Reset max file
-			resetMAXFile ()
+			resetMAXFile #noprompt
 
 			-- Load the building
 
@@ -337,6 +337,10 @@ group "Other Nodes"
 				tempFile = getdir #scene + "\\nel_xref_building_temp.max"
 				ProgressText.text  = "Save temp file"
 				Progress.value = 50
+
+				-- Unhide all
+				max unfreeze all
+				max unhide all
 
 				if saveMaxFile tempFile == true then
 				(

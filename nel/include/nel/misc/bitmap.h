@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.12 2002/03/06 08:34:59 besson Exp $
+ * $Id: bitmap.h,v 1.13 2002/06/24 14:02:38 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,7 +181,7 @@ private :
 	 * \param color a 16bits integer
 	 * \param r a CRGBA
 	 */
-	void uncompress(uint16 color, NLMISC::CRGBA &);
+	static void uncompress(uint16 color, NLMISC::CRGBA &);
 
 
 	/** 
@@ -202,7 +202,22 @@ private :
 	 * Quadratic interpolator
 	 * \return the interpolation in (x,y) of the values (xy**)
 	 */
-	float getColorInterp (float x, float y, float xy00, float xy01, float xy10, float xy11);
+	float getColorInterp (float x, float y, float xy00, float xy01, float xy10, float xy11) const;
+
+	
+	/// name  DXTC single texel read
+	//@{
+		static CRGBA getDXTCColorFromBlock(const uint8 *block, sint x, sint y);
+		CRGBA getDXTC1Texel(sint x, sint y, uint32 numMipMap) const;
+		CRGBA getDXTC3Texel(sint x, sint y, uint32 numMipMap) const;
+		CRGBA getDXTC5Texel(sint x, sint y, uint32 numMipMap) const;
+	//@}
+
+
+	CRGBA CBitmap::getRGBAPixel(sint x, sint y, uint32 numMipMap /*=0*/) const;
+
+
+
 
 public:
 
@@ -446,9 +461,14 @@ public:
 	 * The mipmaps must be built. If not just return the bilinear at the given point.
 	 * The input x and y must be clamped between 0 and 1
 	 */
-	CRGBAF getColor (float x,float y);
+	CRGBAF getColor (float x,float y) const;
 
 
+	/** Get the pixel at the given coorrdinate.
+	  * Works in RGBA and DXTC modes.
+	  * Outside of the bitmap it returns Black (or if mipmap is not found)
+	  */
+	CRGBA  getPixelColor(sint x, sint y, uint32 numMipMap = 0) const;
 	/**
 	 * Horizontal flip (all the columns are flipped)
 	 */

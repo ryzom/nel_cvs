@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.23 2002/05/28 14:27:44 hanappe Exp $
+ * $Id: bitmap.cpp,v 1.24 2002/06/24 14:02:45 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2297,7 +2297,7 @@ bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 }
 
 // Private :
-float CBitmap::getColorInterp (float x, float y, float colorInXY00, float colorInXY10, float colorInXY01, float colorInXY11)
+float CBitmap::getColorInterp (float x, float y, float colorInXY00, float colorInXY10, float colorInXY01, float colorInXY11) const
 {
 	float res =	colorInXY00*(1.0f-x)*(1.0f-y) +
 				colorInXY10*(     x)*(1.0f-y) +
@@ -2308,7 +2308,7 @@ float CBitmap::getColorInterp (float x, float y, float colorInXY00, float colorI
 }
 
 // Public:
-CRGBAF CBitmap::getColor (float x, float y)
+CRGBAF CBitmap::getColor (float x, float y) const
 {
 	if (x < 0.0f) x = 0.0f;
 	if (x > 1.0f) x = 1.0f;
@@ -2318,7 +2318,9 @@ CRGBAF CBitmap::getColor (float x, float y)
 	sint32 nWidth = getWidth(0);
 	sint32 nHeight = getHeight(0);
 
-	std::vector<uint8> &rBitmap = getPixels(0);
+	if (nWidth == 0 || nHeight == 0) return CRGBAF(0, 0, 0, 0);
+
+	const std::vector<uint8> &rBitmap = getPixels(0);
 	sint32 nX[4], nY[4];
 
 	x *= nWidth-1;
@@ -2353,45 +2355,62 @@ CRGBAF CBitmap::getColor (float x, float y)
 	x = x - (float)nX[0]; 
 	y = y - (float)nY[0];
 
-	// RGBA
-	// ****
-	if (this->PixelFormat == RGBA)
+	switch (this->PixelFormat)
 	{
-		CRGBAF finalVal;
-		CRGBA val[4];
+		case RGBA:
+		case DXTC1:
+		case DXTC1Alpha:
+		case DXTC3:
+		case DXTC5:
+		{									
+			CRGBAF finalVal;
+			CRGBA val[4];
 
-		for (i = 0; i < 4; ++i)
-		{
-			val[i] = CRGBA (rBitmap[(nX[i]+nY[i]*nWidth)*4+0],
-							rBitmap[(nX[i]+nY[i]*nWidth)*4+1],
-							rBitmap[(nX[i]+nY[i]*nWidth)*4+2],
-							rBitmap[(nX[i]+nY[i]*nWidth)*4+3]);
+			if (this->PixelFormat == RGBA)
+			{
+				for (i = 0; i < 4; ++i)
+				{
+					val[i] = CRGBA (rBitmap[(nX[i]+nY[i]*nWidth)*4+0],
+									rBitmap[(nX[i]+nY[i]*nWidth)*4+1],
+									rBitmap[(nX[i]+nY[i]*nWidth)*4+2],
+									rBitmap[(nX[i]+nY[i]*nWidth)*4+3]);
+				}
+			}
+			else
+			{
+				// slower version : get from DXT
+				for (i = 0; i < 4; ++i)
+				{
+					val[i] = getPixelColor(nX[i], nY[i]);
+				}
+			}
+
+			finalVal.R = getColorInterp (x, y, val[0].R, val[1].R, val[2].R, val[3].R);
+			finalVal.G = getColorInterp (x, y, val[0].G, val[1].G, val[2].G, val[3].G);
+			finalVal.B = getColorInterp (x, y, val[0].B, val[1].B, val[2].B, val[3].B);
+			finalVal.A = getColorInterp (x, y, val[0].A, val[1].A, val[2].A, val[3].A);
+
+			return finalVal;			
 		}
+		break;
+		case Alpha:
+		case Luminance:
+		{
+			
+			float finalVal;
+			float val[4];
 
-		finalVal.R = getColorInterp (x, y, val[0].R, val[1].R, val[2].R, val[3].R);
-		finalVal.G = getColorInterp (x, y, val[0].G, val[1].G, val[2].G, val[3].G);
-		finalVal.B = getColorInterp (x, y, val[0].B, val[1].B, val[2].B, val[3].B);
-		finalVal.A = getColorInterp (x, y, val[0].A, val[1].A, val[2].A, val[3].A);
+			for (i = 0; i < 4; ++i)
+				val[i] = rBitmap[(nX[i]+nY[i]*nWidth)];
 
-		return finalVal;
-	}
+			finalVal = getColorInterp (x, y, val[0], val[1], val[2], val[3]);
 
-	// Alpha or Luminance
-	// ******************
-	if ((this->PixelFormat == Alpha) || (this->PixelFormat == Luminance))
-	{
-		float finalVal;
-		float val[4];
-
-		for (i = 0; i < 4; ++i)
-			val[i] = rBitmap[(nX[i]+nY[i]*nWidth)];
-
-		finalVal = getColorInterp (x, y, val[0], val[1], val[2], val[3]);
-
-		if (this->PixelFormat == Alpha)
-			return CRGBAF (255.0f, 255.0f, 255.0f, finalVal);
-		else // Luminance
-			return CRGBAF (finalVal, finalVal, finalVal, 255.0f);
+			if (this->PixelFormat == Alpha)
+				return CRGBAF (255.0f, 255.0f, 255.0f, finalVal);
+			else // Luminance
+				return CRGBAF (finalVal, finalVal, finalVal, 255.0f);
+		}
+		break;
 	}
 
 	return CRGBAF (0.0f, 0.0f, 0.0f, 0.0f);
@@ -2636,69 +2655,246 @@ void	CBitmap::rot90CCW()
 
 void CBitmap::blend(const CBitmap &Bm0, const CBitmap &Bm1, uint16 factor)
 {
-nlassert(factor <= 256);
+	nlassert(factor <= 256);
 
-nlassert(Bm0._Width != 0 && Bm0._Height != 0
-		 && Bm1._Width != 0 && Bm1._Height != 0);
+	nlassert(Bm0._Width != 0 && Bm0._Height != 0
+			 && Bm1._Width != 0 && Bm1._Height != 0);
 
-nlassert(Bm0._Width  == Bm1._Width);	// the bitmap should have the same size
-nlassert(Bm0._Height == Bm1._Height);
+	nlassert(Bm0._Width  == Bm1._Width);	// the bitmap should have the same size
+	nlassert(Bm0._Height == Bm1._Height);
 
-const CBitmap *nBm0, *nBm1; // pointer to the bitmap that is used for blending, or to a copy is a conversion wa required
+	const CBitmap *nBm0, *nBm1; // pointer to the bitmap that is used for blending, or to a copy is a conversion wa required
 
-static CBitmap cp0, cp1; // these bitmap are copies of Bm1 and Bm0 if a conversion was needed
+	static CBitmap cp0, cp1; // these bitmap are copies of Bm1 and Bm0 if a conversion was needed
 
-if (Bm0.PixelFormat != RGBA)
-{
-	cp0 = Bm0;
-	cp0.convertToRGBA();
-	nBm0 = &cp0;
+	if (Bm0.PixelFormat != RGBA)
+	{
+		cp0 = Bm0;
+		cp0.convertToRGBA();
+		nBm0 = &cp0;
+	}
+	else
+	{
+		nBm0 = &Bm0;
+	}
+
+
+	if (Bm1.PixelFormat != RGBA)
+	{
+		cp1 = Bm1;
+		cp1.convertToRGBA();
+		nBm1 = &cp1;
+	}
+	else
+	{
+		nBm1 = &Bm1;
+	}
+
+	this->resize(Bm0._Width, Bm0._Height, RGBA);
+
+	const  uint numPix = _Width * _Height; // 4 component per pixels
+
+
+	const uint8 *src0		= &(nBm0->_Data[0][0]);
+	const uint8 *src1		= &(nBm1->_Data[0][0]);
+	uint8 *dest				= &(this->_Data[0][0]);
+	uint8 *endPix			= dest + (numPix << 2);
+
+
+	uint blendFact    = (uint) factor;
+	uint invblendFact = 256 - blendFact;
+
+	do
+	{
+		/// blend 4 component at each pass
+		*dest = (uint8) (((blendFact * *src1)		+ (invblendFact * *src0)) >> 8);
+		*(dest + 1) = (uint8) (((blendFact * *(src1 + 1)) + (invblendFact * *(src0 + 1))) >> 8);
+		*(dest + 2) = (uint8) (((blendFact * *(src1 + 2)) + (invblendFact * *(src0 + 2))) >> 8);
+		*(dest + 3)  = (uint8) (((blendFact * *(src1 + 3)) + (invblendFact * *(src0 + 3))) >> 8);
+
+		src0 = src0 + 4;
+		src1 = src1 + 4;
+		dest = dest + 4;	
+	}
+	while (dest != endPix);
 }
-else
+
+
+
+//-----------------------------------------------
+CRGBA CBitmap::getRGBAPixel(sint x, sint y, uint32 numMipMap /*=0*/) const
 {
-	nBm0 = &Bm0;
+	uint w = getWidth(numMipMap);
+	uint h = getHeight(numMipMap);
+	if (w == 0 || (uint) x >= w || (uint) y >= h) return CRGBA::Black; // include negative cases
+	const uint8 *pix = &getPixels(numMipMap)[(x + y * w) << 2];
+	return CRGBA(pix[0], pix[1], pix[2], pix[3]);
+}
+
+//-----------------------------------------------
+CRGBA CBitmap::getDXTCColorFromBlock(const uint8 *block, sint x, sint y)
+{
+	uint16  col0;
+	uint16  col1;
+	memcpy(&col0, block, sizeof(uint16));
+	memcpy(&col1, block + 2, sizeof(uint16));
+	uint	colIndex = (block[4 + (y & 3)] >> ((x & 3) << 1)) & 3;
+	CRGBA   result, c0, c1;
+	if (col0 > col1)
+	{	
+		switch(colIndex)
+		{
+			case 0:
+				uncompress(col0, result);				
+			break;
+			case 1:
+				uncompress(col1, result);
+			break;
+			case 2:
+				uncompress(col0, c0);
+				uncompress(col1, c1);
+				result.blendFromui(c0, c1, 85);
+			break;
+			case 3:
+				uncompress(col0, c0);
+				uncompress(col1, c1);
+				result.blendFromui(c0, c1, 171);
+			break;
+		}
+		result.A = 255;
+	}
+	else
+	{
+		switch(colIndex)
+		{
+			case 0:
+				uncompress(col0, result);
+				result.A = 255;
+			break;
+			case 1:
+				uncompress(col1, result);
+				result.A = 255;
+			break;
+			case 2:
+				uncompress(col0, c0);
+				uncompress(col1, c1);
+				result.blendFromui(c0, c1, 128);
+				result.A = 255;
+			break;
+			case 3:
+				result.set(0, 0, 0, 0);				
+			break;
+		}
+	}	
+	return result;
+}
+
+//-----------------------------------------------
+CRGBA CBitmap::getDXTC1Texel(sint x, sint y, uint32 numMipMap) const
+{
+	uint w = getWidth(numMipMap);
+	uint h = getHeight(numMipMap);
+	if (w == 0 || h == 0 || (uint) x >= w || (uint) y >= h) return CRGBA::Black; // include negative cases	
+	uint numRowBlocks   = std::max((w + 3) >> 2, 1u);
+	const uint8 *pix    = &getPixels(numMipMap)[0];
+	const uint8 *block  = pix + ((y >> 2) * (numRowBlocks << 3) + ((x >> 2) << 3));	
+	return getDXTCColorFromBlock(block, x, y);
 }
 
 
-if (Bm1.PixelFormat != RGBA)
+//-----------------------------------------------
+CRGBA CBitmap::getDXTC3Texel(sint x, sint y, uint32 numMipMap) const
 {
-	cp1 = Bm1;
-	cp1.convertToRGBA();
-	nBm1 = &cp1;
+	uint w = getWidth(numMipMap);
+	uint h = getHeight(numMipMap);
+	if (w == 0 || h == 0 || (uint) x >= w || (uint) y >= h) return CRGBA::Black; // include negative cases	
+	uint numRowBlocks   = std::max((w + 3) >> 2, 1u);
+	const uint8 *pix    = &getPixels(numMipMap)[0];
+	const uint8 *block  = pix + ((y >> 2) * (numRowBlocks << 4) + ((x >> 2) << 4));	
+	CRGBA result = getDXTCColorFromBlock(block + 8, x, y);
+	// get alpha part
+	uint8 alphaByte = block[((y & 3) << 1) + ((x & 2) >> 1)];
+	result.A = (x & 1) ?  (alphaByte & 0xf0) : (alphaByte << 4);
+	return result;
 }
-else
+
+//-----------------------------------------------
+CRGBA CBitmap::getDXTC5Texel(sint x, sint y, uint32 numMipMap) const
 {
-	nBm1 = &Bm1;
+	uint w = getWidth(numMipMap);
+	uint h = getHeight(numMipMap);
+	if (w == 0 || h == 0 || (uint) x >= w || (uint) y >= h) return CRGBA::Black; // include negative cases	
+	uint numRowBlocks   = std::max((w + 3) >> 2, 1u);
+	const uint8 *pix    = &getPixels(numMipMap)[0];
+	const uint8 *block  = pix + ((y >> 2) * (numRowBlocks << 4) + ((x >> 2) << 4));	
+	CRGBA result = getDXTCColorFromBlock(block + 8, x, y);
+	// get alpha part
+	uint8 alpha0 = block[0];
+	uint8 alpha1 = block[1];
+	
+	uint alphaIndex;
+	uint tripletIndex = (x & 3) + ((y & 3) << 2);
+	if (tripletIndex < 8)
+	{
+		alphaIndex = (((uint32 &) block[2]) >> (tripletIndex * 3)) & 7;
+	}
+	else
+	{
+		alphaIndex = (((uint32 &) block[5]) >> ((tripletIndex - 8) * 3)) & 7; // we can read a dword there because there are color datas following he alpha datas
+	}
+
+	if (alpha0 > alpha1)
+	{
+		switch (alphaIndex)
+		{
+			case 0: result.A = alpha0; break;
+			case 1: result.A = alpha1; break;
+			case 2: result.A = (uint8) ((6 * (uint) alpha0 + (uint) alpha1) / 7); break;
+			case 3: result.A = (uint8) ((5 * (uint) alpha0 + 2 * (uint) alpha1) / 7); break;
+			case 4: result.A = (uint8) ((4 * (uint) alpha0 + 3 * (uint) alpha1) / 7); break;
+			case 5: result.A = (uint8) ((3 * (uint) alpha0 + 4 * (uint) alpha1) / 7); break;
+			case 6: result.A = (uint8) ((2 * (uint) alpha0 + 5 * (uint) alpha1) / 7); break;
+			case 7: result.A = (uint8) (((uint) alpha0 + (uint) 6 * alpha1) / 7); break;
+		}
+	}
+	else
+	{
+		switch (alphaIndex)
+		{
+			case 0: result.A = alpha0; break;
+			case 1: result.A = alpha1; break;
+			case 2: result.A = (uint8) ((4 * (uint) alpha0 + (uint) alpha1) / 5); break;
+			case 3: result.A = (uint8) ((3 * (uint) alpha0 + 2 * (uint) alpha1) / 5); break;
+			case 4: result.A = (uint8) ((2 * (uint) alpha0 + 3 * (uint) alpha1) / 5); break;
+			case 5: result.A = (uint8) (((uint) alpha0 + 4 * (uint) alpha1) / 5); break;
+			case 6: result.A = 0;	break;
+			case 7: result.A = 255; break;
+		}
+	}
+	return result;	
 }
 
-this->resize(Bm0._Width, Bm0._Height, RGBA);
 
-const  uint numPix = _Width * _Height; // 4 component per pixels
-
-
-const uint8 *src0		= &(nBm0->_Data[0][0]);
-const uint8 *src1		= &(nBm1->_Data[0][0]);
-uint8 *dest				= &(this->_Data[0][0]);
-uint8 *endPix			= dest + (numPix << 2);
-
-
-uint blendFact    = (uint) factor;
-uint invblendFact = 256 - blendFact;
-
-do
+//-----------------------------------------------
+CRGBA CBitmap::getPixelColor(sint x, sint y, uint32 numMipMap /*=0*/) const
 {
-	/// blend 4 component at each pass
-	*dest = (uint8) (((blendFact * *src1)		+ (invblendFact * *src0)) >> 8);
-	*(dest + 1) = (uint8) (((blendFact * *(src1 + 1)) + (invblendFact * *(src0 + 1))) >> 8);
-	*(dest + 2) = (uint8) (((blendFact * *(src1 + 2)) + (invblendFact * *(src0 + 2))) >> 8);
-	*(dest + 3)  = (uint8) (((blendFact * *(src1 + 3)) + (invblendFact * *(src0 + 3))) >> 8);
-
-	src0 = src0 + 4;
-	src1 = src1 + 4;
-	dest = dest + 4;	
-}
-while (dest != endPix);
-
+	
+	switch (PixelFormat)
+	{
+		case RGBA:	
+			return getRGBAPixel(x, y, numMipMap);		
+		case DXTC1:
+		case DXTC1Alpha: 
+			return getDXTC1Texel(x, y, numMipMap);
+		case DXTC3:
+			return getDXTC3Texel(x, y, numMipMap);
+		case DXTC5:
+			return getDXTC5Texel(x, y, numMipMap);
+		default:
+			nlstop;
+		break;
+	}
+	return CRGBA::Black;
 }
 
 

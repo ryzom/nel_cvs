@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.26 2003/03/06 10:59:35 lecroart Exp $
+ * $Id: login_server.cpp,v 1.27 2003/03/20 16:19:43 lecroart Exp $
  *
  */
 
@@ -418,7 +418,7 @@ NLMISC_DYNVARIABLE(string, LSListenAddress, "the listen address sended to the cl
 	{
 		if ((*pointer).find (":") == string::npos)
 		{
-			log.displayNL ("You must set the address + port (ie: \"itsalive.nevrax.org:38000\")");
+			nlwarning ("You must set the address + port (ie: \"itsalive.nevrax.org:38000\")");
 			return;
 		}
 		else if ((*pointer).empty())
@@ -429,7 +429,7 @@ NLMISC_DYNVARIABLE(string, LSListenAddress, "the listen address sended to the cl
 		{
 			ListenAddr = *pointer;
 		}
-		log.displayNL ("Listen Address trapped '%s'", ListenAddr.c_str());
+		nlinfo ("Listen Address trapped '%s'", ListenAddr.c_str());
 	}
 }
 

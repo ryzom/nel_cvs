@@ -1,7 +1,7 @@
 /** \file move_listener.cpp
  * <File description>
  *
- * $Id: move_listener.cpp,v 1.1 2001/01/22 08:54:05 coutelas Exp $
+ * $Id: move_listener.cpp,v 1.2 2001/01/23 15:10:54 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,8 @@ CMoveListener::CMoveListener()
 
 	_CurrentTime = 0;
 	_LastTime = 0;
+
+	_EyesHeight = 1.80f;
 }
 
 
@@ -167,6 +169,7 @@ void CMoveListener::changeViewMatrix()
 	
 	// Transform view matrix
 	_ViewMatrix.identity();
+	_ViewMatrix.translate(CVector(0,0,_EyesHeight));
 	_ViewMatrix.translate(_Pos);
 	_ViewMatrix.rotateZ(_RotZ);
 	_ViewMatrix.rotateX(_RotX);

@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.2 2001/01/23 09:08:26 coutelas Exp $
+ * $Id: zviewer.cpp,v 1.3 2001/01/23 15:10:54 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -379,7 +379,7 @@ void displayZones()
 	
 	MoveListener.init(&CNELU::Scene, ViewerCfg.Width, ViewerCfg.Height, *CNELU::Camera);
 	MoveListener.addToServer(CNELU::EventServer);
-	MoveListener.setCameraPos( ViewerCfg.Position );	
+	MoveListener.setPos( ViewerCfg.Position );	
 
 	CNELU::Camera->setPerspective (float(80.0*Pi/180.0), 1.33f, 0.1f, 1000.0f);
 	
@@ -423,17 +423,12 @@ void displayZones()
 		if(MoveListener.getMode()==CMoveListener::WALK)
 		{
 			CVector pos = MoveListener.getPos();
-
-			if(oldpos!=pos)
-			{
-				CollisionManager.testMove( oldpos, pos );
-			}
-			CollisionManager.snapToGround( pos );
-			MoveListener.setCameraPos( pos + ViewerCfg.EyesHeight );
+			CollisionManager.snapToGround( pos , 1000.0f );
+			MoveListener.setPos( pos );
 		}
 		CollisionManager.setCenter(MoveListener.getPos()); 
 
-		
+				
 		// Change move mode
 		if(CNELU::AsyncListener.isKeyPushed(KeySPACE))
 		{
@@ -449,15 +444,20 @@ void displayZones()
 
 
 		// Change eyes height
+		float eh = MoveListener.getEyesHeight();
 		if(CNELU::AsyncListener.isKeyPushed(KeyADD))
 		{
 			ViewerCfg.EyesHeight.z += 0.1f;
+			eh += 0.1f;
 		}
 		if(CNELU::AsyncListener.isKeyPushed(KeySUBTRACT))
 		{
 			ViewerCfg.EyesHeight.z -= 0.1f;
+			eh -= 0.1f;
 		}
 		if(ViewerCfg.EyesHeight.z<0.1f) ViewerCfg.EyesHeight.z = 0.1f;
+		if(eh<0.1f) eh = 0.1f;
+		MoveListener.setEyesHeight(eh);
 
 
 		// Change TileNear

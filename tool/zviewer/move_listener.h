@@ -1,7 +1,7 @@
 /** \file move_listener.h
  * <File description>
  *
- * $Id: move_listener.h,v 1.1 2001/01/22 08:54:05 coutelas Exp $
+ * $Id: move_listener.h,v 1.2 2001/01/23 15:10:54 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,9 @@ private:
 	/// current position
 	CVector _Pos;
 
+	/// eyes height
+	float _EyesHeight;
+
 	///current rotation z angle
 	float _RotZ;
 
@@ -187,7 +190,10 @@ public:
 	  */
 	void removeFromServer (NLMISC::CEventServer& server);
 
-	void setCameraPos(const CVector v) { _Pos = v; }
+	void setEyesHeight(float eh) { _EyesHeight = eh; }
+	float getEyesHeight() const { return _EyesHeight; }
+
+	void setPos(CVector pos) { _Pos = pos; }
 	CVector getPos() const { return _Pos; }
 
 	float getRotX() const { return _RotX; }

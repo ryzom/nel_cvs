@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.39 2001/01/19 12:10:11 coutelas Exp $
+ * $Id: base_socket.cpp,v 1.40 2001/02/15 14:17:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,11 +86,27 @@ ESocket::ESocket( const char *reason, bool systemerror )
 		char str[128];
 		smprintf(str,128,"%d", ERROR_NUM);
 		_Reason += str;
+		switch( ERROR_NUM )
+		{
+		case WSAEMFILE		 /*10024*/: _Reason += ": Too many open sockets"; break;
+		case WSAEMSGSIZE	 /*10040*/: _Reason += ": Message too long"; break;
+		case WSAEADDRINUSE   /*10048*/: _Reason += ": Address already in use"; break;
+		case WSAENETDOWN	 /*10050*/: _Reason += ": Network is down"; break;
+		case WSAENETUNREACH  /*10051*/: _Reason += ": Network is unreachable"; break;
+		case WSAECONNRESET   /*10054*/: _Reason += ": Connection reset by peer"; break;
+		case WSAENOBUFS		 /*10055*/: _Reason += ": No buffer space available; please close applications or reboot"; break;
+		case WSAESHUTDOWN	 /*10058*/: _Reason += ": Cannot send/receive after socket shutdown"; break;
+		case WSAETIMEDOUT	 /*10060*/: _Reason += ": Connection timed-out"; break;
+		case WSAECONNREFUSED /*10061*/:	_Reason += ": Connection refused, the server may be offline"; break;
+		case WSAEHOSTUNREACH /*10065*/: _Reason += ": Remote host is unreachable"; break;
+		case WSANOTINITIALISED /*093*/: _Reason += ": Windows Sockets not initialized"; break;
+		default: break;
+		}
+
 #ifdef NL_OS_UNIX
-		_Reason += ": ";
-		_Reason += ERROR_MSG;
+		_Reason += ": " + ERROR_MSG;
 #endif
-		_Reason += ")";
+		_Reason = ")";
 	}
 }
 

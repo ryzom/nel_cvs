@@ -859,6 +859,14 @@ SOURCE=.\3d\water_shape.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\3d\cube_map_builder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\cube_map_builder.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\texture_blank.cpp
 # End Source File
 # Begin Source File
@@ -920,6 +928,14 @@ SOURCE=.\3d\texture_mem.cpp
 # Begin Source File
 
 SOURCE=.\3d\texture_mem.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_multi_file.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_multi_file.h
 # End Source File
 # End Group
 # Begin Group "Mrm"

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: class_id.cpp,v 1.1 2000/10/02 12:56:01 berenguier Exp $
+ * $Id: class_id.cpp,v 1.2 2000/10/09 15:11:10 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -22,7 +22,7 @@ namespace	NLMISC
 {
 
 	
-const	CClassId	Null(0);
+const	CClassId	CClassId::Null(0);
 
 
 }

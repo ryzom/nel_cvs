@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.5 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: form_elm.h,v 1.6 2002/05/28 14:06:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,10 +45,11 @@ class CFormElm : public UFormElm
 {
 	friend CForm;
 	friend CType;
+	friend CFormDfn;
 public:
 
 	// Contructor
-	CFormElm (CForm *form, CFormElm *parentNode, CFormDfn *parentDfn, uint parentIndex);
+	CFormElm (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
 
 	// Destructor
 	virtual ~CFormElm ();
@@ -122,16 +123,52 @@ public:
 
 	// ** Internal node access
 
-	// Search for a node by name
-	bool	getNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, 
+	// Create for a node by name. If the node already exist, return it
+	bool	createNodeByName (const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
-										const CFormElm **node, UFormDfn::TEntryType &type, 
-										bool &array) const;
+										CFormElm **node, UFormDfn::TEntryType &type, 
+										bool &array, bool &created);
 
-	static bool	getIternalNodeByName (const char *name, const CFormDfn **parentDfn, uint &lastElement, 
+	/**
+	  * Delete a node by name. If the node already exist, return it
+	  *Delete its parent if not used 
+	  */
+	bool	deleteNodeByName (const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
 										const CFormDfn **nodeDfn, const CType **nodeType, 
-										const CFormElm **node, UFormDfn::TEntryType &type, 
+										CFormElm **node, UFormDfn::TEntryType &type, 
 										bool &array);
+
+	// Search for a node by name
+	bool	getNodeByName (const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
+										const CFormDfn **nodeDfn, const CType **nodeType, 
+										CFormElm **node, UFormDfn::TEntryType &type, 
+										bool &array) const;
+protected:
+	
+	// Action to perform
+	enum TNodeAction
+	{
+		Return,
+		Create,
+		Delete,
+	};
+
+	/**
+	  * Is createNode == Create, you must provide a valid *node pointer.
+	  * Is createNode == Create, (*node)->Form must be == to the form argument.
+	  * Is createNode == Return, form argument is not used, can be undefined.
+	  */
+	static bool	getIternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, 
+										const CFormDfn **nodeDfn, const CType **nodeType, 
+										CFormElm **node, UFormDfn::TEntryType &type, 
+										bool &array, TNodeAction action, bool &created);
+
+	/**
+	  * Unlink a child
+	  */
+	virtual void unlink (CFormElm *child);
+
+public:
 
 	// Get next token, return NULL if last token
 	static const char* tokenize (const char *name, std::string &str, uint &errorIndex, uint &code);
@@ -148,7 +185,7 @@ protected:
 	CFormElm			*ParentNode;
 
 	// The parent DFN of this node
-	CFormDfn			*ParentDfn;
+	const CFormDfn		*ParentDfn;
 
 	// The index in the parent DFN for this node
 	uint				ParentIndex;
@@ -166,12 +203,15 @@ private:
 
 /**
   * Define a structure of elements
+  *
+  * This structure has pointers on named sub structures in Elements.
+  * If a sub structure is empty, its pointer is NULL.
   */
 class CFormElmStruct : public CFormElm
 {
 public:
 	// Default constructor
-	CFormElmStruct (CForm *form, CFormElm *parentNode, CFormDfn *parentDfn, uint parentIndex);
+	CFormElmStruct (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
 	~CFormElmStruct ();
 
 	// Clear sub elements
@@ -198,7 +238,7 @@ public:
 
 
 	// Build form a DFN
-	void				build (CFormDfn *dfn);
+	void				build (const CFormDfn *dfn);
 
 	// From UFormElm
 	bool				isStruct () const;
@@ -211,9 +251,10 @@ public:
 	bool				isUsed (const CForm *form) const;
 	xmlNodePtr			write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
 	bool				setParent (CFormElm *parent);
+	void				unlink (CFormElm *child);
 
 	// Call by CFormLoader
-	void				read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, CForm *form);
+	void				read (xmlNodePtr node, CFormLoader &loader, const CFormDfn *dfn, CForm *form);
 
 	// Sub Elements
 	std::vector<CFormElmStructElm>		Elements;
@@ -226,7 +267,7 @@ class CFormElmVirtualStruct : public CFormElmStruct
 {
 public:
 
-	CFormElmVirtualStruct (CForm *form, CFormElm *parentNode, CFormDfn *parentDfn, uint parentIndex);
+	CFormElmVirtualStruct (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
 
 	// The Dfn filename used by this struct
 	std::string			DfnFilename;
@@ -236,6 +277,7 @@ public:
 
 	// From CFormElm
 	bool				isUsed (const CForm *form) const;
+	bool				setParent (CFormElm *parent);
 	xmlNodePtr			write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
 
 	// Call by CFormLoader
@@ -249,7 +291,7 @@ class CFormElmArray : public CFormElm
 {
 public:
 	// Default constructor
-	CFormElmArray (CForm *form, CFormDfn *formDfn, CType *type, CFormElm *parentNode, CFormDfn *parentDfn, uint parentIndex);
+	CFormElmArray (CForm *form, const CFormDfn *formDfn, const CType *type, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
 	~CFormElmArray ();
 	void clean ();
 
@@ -257,7 +299,7 @@ public:
 	NLMISC::CSmartPtr<CFormDfn>	FormDfn;
 
 	// Pointer on the type (the smart pointer in hold by CFormDfn)
-	CType						*Type;
+	const CType			*Type;
 
 	// From UFormElm
 	bool				isArray () const;
@@ -278,6 +320,8 @@ public:
 	// From CFormElm
 	xmlNodePtr			write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
 	bool				setParent (CFormElm *parent);
+	void				unlink (CFormElm *child);
+	bool				isUsed (const CForm *form) const;
 
 	// Call by CFormLoader
 
@@ -298,20 +342,20 @@ class CFormElmAtom : public CFormElm
 	friend CType;
 public:
 	// Default constructor
-	CFormElmAtom (CForm *form, CFormElm *parentNode, CFormDfn *parentDfn, uint parentIndex);
+	CFormElmAtom (CForm *form, CFormElm *parentNode, const CFormDfn *parentDfn, uint parentIndex);
 
 	// Pointer on the parent element
 	CFormElmAtom				*Parent;
 
 	// Pointer on the type (the smart pointer in hold by CFormDfn)
-	CType						*Type;
+	const CType					*Type;
 
 	// From CFormElm
 	xmlNodePtr					write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;
 	bool						setParent (CFormElm *parent);
 
 	// Call by CFormLoader
-	void						read (xmlNodePtr node, CFormLoader &loader, CType *type, CForm *form);
+	void						read (xmlNodePtr node, CFormLoader &loader, const CType *type, CForm *form);
 
 	// From UFormElm
 	bool						isAtom () const;

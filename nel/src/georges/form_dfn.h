@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.5 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: form_dfn.h,v 1.6 2002/05/28 14:06:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 		class CType					*getTypePtr ();
 
 		// Get the type
-		const CType				*getTypePtr () const;
+		const CType					*getTypePtr () const;
 
 		// Get the dfn
 		CFormDfn					*getDfnPtr ();

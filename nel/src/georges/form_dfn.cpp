@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.5 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.6 2002/05/28 14:06:57 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -555,11 +555,12 @@ bool CFormDfn::getNodeByName (const UFormElm **result, const char *name, UFormEl
 	uint lastElement = 0xffffffff;
 	const CFormDfn *nodeDfn = this;
 	const CType *nodeType = NULL;
-	const CFormElm *node = NULL;
+	CFormElm *node = NULL;
 	UFormDfn::TEntryType type = UFormDfn::EntryDfn;
 	bool array = false;
+	bool created;
 
-	if (CFormElm::getIternalNodeByName (name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array))
+	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created))
 	{
 		if (type == UFormDfn::EntryDfn)
 		{
@@ -604,11 +605,12 @@ bool CFormDfn::getValueByName (std::string &result, const char *name, bool evalu
 	uint lastElement = 0xffffffff;
 	const CFormDfn *nodeDfn = this;
 	const CType *nodeType = NULL;
-	const CFormElm *node = NULL;
+	CFormElm *node = NULL;
 	UFormDfn::TEntryType type = UFormDfn::EntryDfn;
 	bool array = false;
+	bool created;
 
-	if (CFormElm::getIternalNodeByName (name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array))
+	if (CFormElm::getIternalNodeByName (NULL, name, &parentDfn, lastElement, &nodeDfn, &nodeType, &node, type, array, CFormElm::Return, created))
 	{
 		if (type == UFormDfn::EntryType)
 		{

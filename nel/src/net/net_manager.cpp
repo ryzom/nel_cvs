@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.11 2001/06/21 12:33:26 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.12 2001/06/27 08:24:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ static void nmNewDisconnection (TSockId from, void *arg)
 	if (basest->DisconnectionCallback != NULL)
 		basest->DisconnectionCallback (basest->Name, from, basest->DisconnectionCbArg);
 
-	// todo kan c est un group qui se deco, il faut manager le bordel
+	/// \todo ace: when a group is disconnected, we have to handle the problem
 
 	// on a client, we have to clear the associations
 	if (basest->Type != CBaseStruct::Server)
@@ -377,8 +377,7 @@ void CNetManager::update (sint32 timeout)
 	{
 		for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
 		{
-			// todo remettre comme avant mais il faut que olivier est fini sa modif car 
-			// si on update pas meme kan c est pas connected on est pas au courant de la deconnection
+			/// \todo ace: update() only when connected () but cado must fix the problem before because if we don't update when we are not connected, we don't receive the disconnection
 			(*itbm).second.NetBase[i]->update (quantum);
 			if ((*itbm).second.NetBase[i]->connected())
 			{
@@ -462,6 +461,58 @@ CNetManager::ItBaseMap CNetManager::find (const std::string &serviceName)
 	pair<ItBaseMap, bool> p;
 	p = _BaseMap.insert (make_pair (serviceName, CBaseStruct (serviceName)));
 	return p.first;
+}
+
+uint64 CNetManager::getBytesSended ()
+{
+	uint64 sended = 0;
+	for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
+	{
+		for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
+		{
+			sended += (*itbm).second.NetBase[i]->getBytesSended ();
+		}
+	}
+	return sended;
+}
+
+uint64 CNetManager::getBytesReceived ()
+{
+	uint64 received = 0;
+	for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
+	{
+		for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
+		{
+			received += (*itbm).second.NetBase[i]->getBytesReceived ();
+		}
+	}
+	return received;
+}
+
+uint64 CNetManager::getSendQueueSize ()
+{
+	uint64 val = 0;
+	for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
+	{
+		for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
+		{
+			val += (*itbm).second.NetBase[i]->getSendQueueSize ();
+		}
+	}
+	return val;
+}
+
+uint64 CNetManager::getReceiveQueueSize ()
+{
+	uint64 val = 0;
+	for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
+	{
+		for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
+		{
+			val += (*itbm).second.NetBase[i]->getReceiveQueueSize ();
+		}
+	}
+	return val;
 }
 
 } // NLNET

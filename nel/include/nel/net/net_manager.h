@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.8 2001/06/18 09:06:31 cado Exp $
+ * $Id: net_manager.h,v 1.9 2001/06/27 08:24:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,6 +147,12 @@ public:
 	static void setUpdateTimeout (uint32 timeout);
 
 	static void createConnection(CBaseStruct &Base, const CInetAddress &Addr, const std::string& name);
+
+	static uint64 getBytesSended ();
+	static uint64 getBytesReceived ();
+
+	static uint64 getReceiveQueueSize ();
+	static uint64 getSendQueueSize ();
 
 private:
 

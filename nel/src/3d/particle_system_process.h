@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.3 2001/07/24 08:43:40 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.4 2001/08/06 10:21:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,52 +61,63 @@ enum TPSProcessPass { PSCollision, PSMotion, PSSolidRender, PSBlendRender, PSToo
 class CParticleSystemProcess : public NLMISC::IStreamable
 {
 	public:
+	
+		/// \name Object
+		/// @{
+			/// ctor
+			CParticleSystemProcess() : _Owner(NULL), _SystemBasisEnabled(false) {}
+			
+			/// dtor
+			virtual ~CParticleSystemProcess()  {}
+
+			/** Serialize this object.
+			* Everything is saved, except for the fontManager and the fontGenerator.
+			* They must be set again if the PSToolRender pass is used.
+			*/
+			virtual void			serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;					
+		/// @}
+
+		
 		/**
 		* execute this process, telling how much time ellapsed 
 		*/
-		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) = 0 ;
-
-		/// ctor
-		CParticleSystemProcess() : _Owner(NULL), _SystemBasisEnabled(false) {}
-		
-		/// dtor
-		virtual ~CParticleSystemProcess()  {}
+		virtual void			step(TPSProcessPass pass, CAnimationTime ellapsedTime) = 0 ;
 
 
-
-
-		/** Compute the aabbox of this located, (expressed in world basis
+		/** Compute the aabbox of this process, (expressed in world basis).
 		*  \return true if there is any aabbox
 		*  \param aabbox a ref to the result box
 		*/
+		virtual bool			computeBBox(NLMISC::CAABBox &aabbox) const = 0 ;
 
-		virtual bool computeBBox(NLMISC::CAABBox &aabbox) const = 0 ;
+		/// Set the process owner. Called by the particle system during attachment.
+		void					setOwner(CParticleSystem *ps) { _Owner = ps ; }
 
-		/// set the process owner. Called by the particle system during attachment
-		void setOwner(CParticleSystem *ps) { _Owner = ps ; }
-
-		/// retrieve the particle system that owns this process
-		CParticleSystem *getOwner(void) { return _Owner ; }
+		/// Retrieve the particle system that owns this process
+		CParticleSystem			*getOwner(void) { return _Owner ; }
 
 		/// retrieve the particle system that owns this process (const version)
-		const CParticleSystem *getOwner(void) const { return _Owner ; }
+		const CParticleSystem	*getOwner(void) const { return _Owner ; }
 
-		/// Shortcut to get a font generator if one was set (edition mode)
-		CFontGenerator *getFontGenerator(void) ;
+		/// \name Useful methods for edition
+		//@{
+			/// Shortcut to get a font generator if one was set (edition mode)
+			CFontGenerator			*getFontGenerator(void) ;
 
-		/// Shortcut to get a font generator if one was set, const version  (edition mode)
-		const CFontGenerator *getFontGenerator(void) const ;
+			/// Shortcut to get a font generator if one was set, const version  (edition mode)
+			const CFontGenerator	*getFontGenerator(void) const ;
 
-		/// Shortcut to get a font Manager if one was set (edition mode)
-		CFontManager *getFontManager(void) ;
+			/// Shortcut to get a font Manager if one was set (edition mode)
+			CFontManager			*getFontManager(void) ;
 
-		/// Shortcut to get a font Manager if one was set, const version  (edition mode)
-		const CFontManager *getFontManager(void) const ;
+			/// Shortcut to get a font Manager if one was set, const version  (edition mode)
+			const CFontManager		*getFontManager(void) const ;
+		//@}
 
 		/**	
-		* return true if the process is in the particle system basis, false if it's in the world basis
+		* Return true if the process is in the particle system basis, false if it's in the world basis
 		*/
-		bool isInSystemBasis(void) const 
+		bool					isInSystemBasis(void) const 
 		{ 
 			return _SystemBasisEnabled ; 
 		}
@@ -116,24 +127,17 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		 *  \param sysBasis truer if particles are in the system basis
 		 */
 
-		void setSystemBasis(bool sysBasis = true) { _SystemBasisEnabled = sysBasis ; }
-
-		/** serialize the whole system
-		* Everything is saved, except for the fontManager and the fontGenerator
-		* They must be set again if the edition pass, that show forces and zone, is used
-		*/
-		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;		
-			
-
+		void					setSystemBasis(bool sysBasis = true) { _SystemBasisEnabled = sysBasis ; }
+	
 		/// tells wether there are alive entities / particles in the system
-		virtual bool hasParticles(void) const { return false ; }
+		virtual bool			hasParticles(void) const { return false ; }
 
 		/// tells wether there are alive emitters / particles in the system
-		virtual bool hasEmitters(void) const { return false ; }
+		virtual bool			hasEmitters(void) const { return false ; }
 
 
 		/// max number of faces wanted by this process (for load balancing)
-		virtual uint querryMaxWantedNumFaces(void) = 0 ;
+		virtual uint			querryMaxWantedNumFaces(void) = 0 ;
 	
 		
 	protected:

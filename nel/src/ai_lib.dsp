@@ -1022,10 +1022,6 @@ SOURCE=..\include\nel\ai\script\context_debug.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\ai\script\gd_agent_class.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\include\nel\ai\script\init.h
 # End Source File
 # Begin Source File

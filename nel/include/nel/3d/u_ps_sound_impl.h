@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.13 2004/02/11 14:08:13 vizerie Exp $
+ * $Id: u_ps_sound_impl.h,v 1.14 2004/04/30 16:42:08 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -211,29 +211,6 @@ inline void SpawnedSourceEndedCallback(NLSOUND::USource *source, void *userParam
 	nlassert(((CPSSoundInstanceImpl *) userParam)->_Source == source);
 	((CPSSoundInstanceImpl *) userParam)->_Source = NULL;
 }
-
-
-
-void CPSSoundInstanceImpl::release(void)
-{	
-	if (!_Spawned) // remove this source from the audio mixer if it hasn't been spawned
-	{
-		if (_SoundServImpl->getAudioMixer())
-		{			
-//			_SoundServImpl->getAudioMixer()->removeSource(_Source);
-			delete _Source;
-		}
-	}
-	else
-	{
-		if (_Source) // tells this spawned source not to notify us when it ends
-		{
-			_Source->unregisterSpawnCallBack();
-		}
-	}
-	delete this;
-}
-
 
 
 

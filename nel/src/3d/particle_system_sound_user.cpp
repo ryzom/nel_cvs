@@ -1,7 +1,7 @@
 /** \file particle_system_sound_user.cpp
  * <File description>
  *
- * $Id: particle_system_sound_user.cpp,v 1.4 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: particle_system_sound_user.cpp,v 1.5 2004/04/30 16:42:44 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 //#include "nel/3d/u_particle_system_sound.h" we don't include this to avoid a link with NLSOUND
 #include "3d/particle_system.h"
 #include "nel/3d/u_ps_sound_interface.h"
+#include "nel/3d/u_ps_sound_impl.h"
 
 #define NL3D_MEM_PS_SOUND							NL_ALLOC_CONTEXT( 3dPSSnd )
 
@@ -41,6 +42,44 @@ void assignSoundServerToPS(UPSSoundServer *soundServer)
 	NL3D_MEM_PS_SOUND
 	CParticleSystem::registerSoundServer(soundServer);
 } // NL3D
+
+
+/// init the particle system sound with the given AudioMixer
+void UParticleSystemSound::setPSSound(NLSOUND::UAudioMixer *audioMixer)
+{
+	static CPSSoundServImpl soundServer;
+	soundServer.init(audioMixer);
+	if (audioMixer)
+	{		
+		assignSoundServerToPS(&soundServer);
+	}
+	else
+	{
+		assignSoundServerToPS(NULL);
+	}
+}	
+	
+
+void CPSSoundInstanceImpl::release(void)
+{	
+	if (!_Spawned) // remove this source from the audio mixer if it hasn't been spawned
+	{
+		if (_SoundServImpl->getAudioMixer())
+		{			
+			//			_SoundServImpl->getAudioMixer()->removeSource(_Source);
+			delete _Source;
+		}
+	}
+	else
+	{
+		if (_Source) // tells this spawned source not to notify us when it ends
+		{
+			_Source->unregisterSpawnCallBack();
+		}
+	}
+	delete this;
+}
+
 
 
 }

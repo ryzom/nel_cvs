@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.27 2002/11/12 17:22:32 lecroart Exp $
+ * $Id: common.cpp,v 1.28 2002/11/15 18:06:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -568,7 +568,7 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 		LocalFree(lpMsgBuf);
 	}
 
-#elif defined(NL_OS_LINUX)
+#elif defined(NL_OS_UNIX)
 
 	int status = vfork ();
 	if (status == -1)

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.46 2004/09/17 15:23:05 vizerie Exp $
+ * $Id: driver_user.h,v 1.47 2004/10/19 12:47:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,6 +172,8 @@ public:
 	virtual	void			clearBuffers(CRGBA col= CRGBA(255,255,255,255));
 	/// This swap the back and front buffer (ALL the buffer :) ).
 	virtual	void			swapBuffers();
+	virtual void            finish();	
+	virtual void            flush();
 
 	virtual void			setSwapVBLInterval(uint interval);
 	virtual uint			getSwapVBLInterval();

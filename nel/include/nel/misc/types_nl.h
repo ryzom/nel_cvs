@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.12 2000/11/09 16:17:03 coutelas Exp $
+ * $Id: types_nl.h,v 1.13 2000/11/13 14:30:47 lecroart Exp $
  *
  * \todo ace: create the ucstring type (unicode string type based on a STL basic_string?)
  *
@@ -38,7 +38,6 @@
 #ifndef NL_TYPES_H
 #define NL_TYPES_H
 
-
 #include	<exception>
 
 // Operating systems definition
@@ -63,6 +62,14 @@
 #  pragma warning (disable : 4786)			// STL: too long indentifier
 #  pragma warning (disable : 4290)			// throw() not implemented warning
 #endif // NL_OS_WINDOWS
+
+
+// Check the STLPort presence
+
+#ifndef __SGI_STL_PORT
+#  error "You need STLPort to compile this project (www.stlport.org)"
+#endif // __SGI_STL_PORT
+
 
 // Standard types
 

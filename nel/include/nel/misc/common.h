@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.11 2000/11/10 11:18:51 lecroart Exp $
+ * $Id: common.h,v 1.12 2000/11/13 14:30:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,29 +54,6 @@ template<class T>	inline T sqr(const T &v)
 
 // ============================================================================================
 const	double	Pi= 3.1415926535897932384626433832795;
-
-/* il faut trouver comment detecter stlport...
-#ifdef NL_OS_WINDOWS
-namespace std
-{
-#ifdef min
-#undef min
-#endif // min
-template <class _Tp>
-inline const _Tp& min(const _Tp& __a, const _Tp& __b) {
-  return __b < __a ? __b : __a;
-}
-
-#ifdef max
-#undef max
-#endif // max
-template <class _Tp>
-inline const _Tp& max(const _Tp& __a, const _Tp& __b) {
-  return  __a < __b ? __b : __a;
-}
-}
-#endif // NL_OS_WINDOWS
-*/
 
 // ============================================================================================
 // Force v to be inside the interval [min,max]

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.35 2001/01/05 15:31:15 lecroart Exp $
+ * $Id: service.cpp,v 1.36 2001/01/05 15:34:53 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -231,19 +231,19 @@ sint IService::main (int argc, char **argv)
 		if (sigemptyset (&SigList) == -1)
 		{
 			perror("sigemptyset()");
-			IgnorePipe = false;
+			IgnoredPipe = false;
 		}
 
 		if (sigaddset (&SigList, SIGPIPE) == -1)
 		{
 			perror("sigaddset()");
-			IgnorePipe = false;
+			IgnoredPipe = false;
 		}
 
 		if (sigprocmask (SIG_BLOCK, &SigList, NULL) == -1)
 		{
 			perror("sigprocmask()");
-			IgnorePipe = false;
+			IgnoredPipe = false;
 		}
 		nldebug ("SIGPIPE %s", IgnoredPipe?"Ignored":"Not Ignored");
 #endif // NL_OS_UNIX
@@ -318,7 +318,7 @@ sint IService::main (int argc, char **argv)
 				{
 #ifdef NL_OS_WINDOWS
 					Sleep( 5000 ); // wait 5 seconds
-#elif define NL_OS_UNIX
+#elif defined NL_OS_UNIX
 					sleep( 5 ); // wait 5 seconds
 #endif
 				}

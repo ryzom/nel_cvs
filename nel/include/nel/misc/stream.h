@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.23 2000/10/19 12:55:41 corvazier Exp $
+ * $Id: stream.h,v 1.24 2000/10/19 15:21:22 corvazier Exp $
  *
  * This File handles IStream 
  */
@@ -67,6 +67,10 @@ struct ENewerStream : public EStream
 struct EInvalidDataStream : public EStream
 {
 	virtual const char	*what() const throw() {return "Invalid data format";}
+};
+struct ESeekNotSupported : public EStream
+{
+	virtual const char	*what() const throw() {return "Seek fonctionnality not supported.";}
 };
 
 
@@ -549,6 +553,42 @@ public:
 		}
 	}
 
+	/// Seek fonctionnality
+
+	/** 
+	 * Parameters for seek().
+	 * begin seek from the begining of the stream.
+	 * current seek from the current location of the stream pointer.
+	 * end seek from the end of the stream.
+	 */
+	enum TSeekOrigin { begin, current, end };
+
+	/** 
+	 * Moves the stream pointer to a specified location.
+	 * 
+	 * NB: If the stream doesn't support the seek fonctionnality, it throw ESeekNotSupported.
+	 * Default implementation: 
+	 * { throw ESeekNotSupported; }
+	 * \param offset is the wanted offset from the origin.
+	 * \param origin is the origin of the seek
+	 * \return true if seek sucessfull.
+	 * \see ESeekNotSupported SeekOrigin getPos
+	 */
+	virtual bool		seek (sint64 offset, TSeekOrigin origin) throw(EStream);
+
+
+	/** 
+	 * Get the location of the stream pointer.
+	 * 
+	 * NB: If the stream doesn't support the seek fonctionnality, it throw ESeekNotSupported.
+	 * Default implementation: 
+	 * { throw ESeekNotSupported; }
+	 * \param offset is the wanted offset from the origin.
+	 * \param origin is the origin of the seek
+	 * \return the new offset regarding from the origin.
+	 * \see ESeekNotSupported SeekOrigin seek
+	 */
+	virtual sint64		getPos () throw(EStream);
 
 protected:
 

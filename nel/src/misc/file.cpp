@@ -8,13 +8,14 @@
  */
 
 /*
- * $Id: file.cpp,v 1.7 2000/10/18 12:36:55 corvazier Exp $
+ * $Id: file.cpp,v 1.8 2000/10/19 15:21:14 corvazier Exp $
  *
  * Standard File Input/Output.
  */
 
 
 #include "nel/misc/file.h"
+#include "nel/misc/debug.h"
 using namespace std;
 
 #include <stdio.h>
@@ -65,8 +66,6 @@ void	CIFile::flush()
 		fflush(_F);
 	}
 }
-
-
 // ======================================================================================================
 void		CIFile::serialBuffer(uint8 *buf, uint len) throw(EReadError)
 {
@@ -82,6 +81,59 @@ void		CIFile::serialBit(bool &bit) throw(EReadError)
 	uint8	v=bit;
 	serialBuffer(&v, 1);
 	bit=(v!=0);
+}
+// ======================================================================================================
+bool		CIFile::seek (sint64 offset, IStream::TSeekOrigin origin) throw(EStream)
+{
+	if (_F)
+	{
+		int origin_c;
+		switch (origin)
+		{
+		case IStream::begin:
+			origin_c=SEEK_SET;
+			break;
+		case IStream::current:
+			origin_c=SEEK_CUR;
+			break;
+		case IStream::end:
+			origin_c=SEEK_END;
+			break;
+		default:
+			nlassert (0);		// no!
+		}
+
+		// Warning big file..
+		while (offset>0x7fffffff)
+		{
+			if (fseek (_F, 0x7fffffff, origin_c)!=0)
+				return false;
+			offset-=0x7fffffff;
+		}
+		while (offset<(sint32)0xffffffff80000000)
+		{
+			if (fseek (_F, (sint32)0x80000000, origin_c)!=0)
+				return false;
+			offset-=(sint32)0xffffffff80000000;
+		}
+		if (fseek (_F, (sint32)offset, origin_c)!=0)
+			return false;
+		return true;
+	}
+	return false;
+}
+// ======================================================================================================
+sint64		CIFile::getpos () throw(EStream)
+{
+	if (_F)
+	{
+		fpos_t pos ;
+		if (fgetpos( _F, &pos)==0)
+		{
+			return pos;
+		}
+	}
+	return 0;
 }
 
 
@@ -148,6 +200,59 @@ void		COFile::serialBit(bool &bit) throw(EStream)
 	// Simple for now.
 	uint8	v=bit;
 	serialBuffer(&v, 1);
+}
+// ======================================================================================================
+bool		COFile::seek (sint64 offset, IStream::TSeekOrigin origin) throw(EStream)
+{
+	if (_F)
+	{
+		int origin_c;
+		switch (origin)
+		{
+		case IStream::begin:
+			origin_c=SEEK_SET;
+			break;
+		case IStream::current:
+			origin_c=SEEK_CUR;
+			break;
+		case IStream::end:
+			origin_c=SEEK_END;
+			break;
+		default:
+			nlassert (0);		// no!
+		}
+
+		// Warning big file..
+		while (offset>0x7fffffff)
+		{
+			if (fseek (_F, 0x7fffffff, origin_c)!=0)
+				return false;
+			offset-=0x7fffffff;
+		}
+		while (offset<(sint32)0xffffffff80000000)
+		{
+			if (fseek (_F, (sint32)0x80000000, origin_c)!=0)
+				return false;
+			offset-=(sint32)0xffffffff80000000;
+		}
+		if (fseek (_F, (sint32)offset, origin_c)!=0)
+			return false;
+		return true;
+	}
+	return false;
+}
+// ======================================================================================================
+sint64		COFile::getpos () throw(EStream)
+{
+	if (_F)
+	{
+		fpos_t pos ;
+		if (fgetpos( _F, &pos)==0)
+		{
+			return pos;
+		}
+	}
+	return 0;
 }
 
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.cpp,v 1.8 2000/10/09 14:53:44 lecroart Exp $
+ * $Id: stream.cpp,v 1.9 2000/10/19 15:21:09 corvazier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -253,6 +253,17 @@ void			IStream::serialCont(vector<bool> &cont) throw(EStream)
 		serialBuffer( (uint8*)&(*vec.begin()) ,  lb);
 	}
 
+}
+// ======================================================================================================
+bool			IStream::seek (sint64 offset, TSeekOrigin origin) throw(EStream)
+{
+	throw ESeekNotSupported();
+	return false;
+}
+// ======================================================================================================
+sint64			IStream::getPos () throw(EStream)
+{
+	throw ESeekNotSupported();
 }
 
 

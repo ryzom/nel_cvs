@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: file.h,v 1.4 2000/10/12 13:55:34 lecroart Exp $
+ * $Id: file.h,v 1.5 2000/10/19 15:21:22 corvazier Exp $
  *
  * Standard File Input/Output.
  */
@@ -71,6 +71,10 @@ public:		// Advanced Usage.
 	void	close();
 	/// flush the file.
 	void	flush();
+	/// Seek the file
+	bool	seek (sint64 offset, IStream::TSeekOrigin origin) throw(EStream);
+	/// Gt the location of the file pointer
+	sint64	getpos () throw(EStream);
 
 protected:
 	virtual void		serialBuffer(uint8 *buf, uint len)throw(EReadError);
@@ -104,6 +108,10 @@ public:		// Advanced Usage.
 	void	close();
 	/// flush the file.
 	void	flush();
+	/// Seek the file
+	bool	seek (sint64 offset, IStream::TSeekOrigin origin) throw(EStream);
+	/// Gt the location of the file pointer
+	sint64	getpos () throw(EStream);
 
 	// very useful to serialize string in text mode (without the size)
 	virtual void		serialBuffer(uint8 *buf, uint len) throw(EWriteError);

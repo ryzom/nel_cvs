@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.4 2002/06/07 09:16:53 puzin Exp $
+ * $Id: sheet_id.cpp,v 1.5 2002/06/10 10:12:38 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -105,7 +105,8 @@ void CSheetId::init()
 			{
 				// find the file extension part of the given file name
 				const char *ptr1=(*itStr).second.c_str();
-				for(const char *ptr2=ptr1;*ptr1;ptr1++)
+				const char *ptr2=ptr1;
+				for(;*ptr1;ptr1++)
 					if(*ptr1=='.')
 						ptr2=ptr1;
 				_FileExtensions[type]=ptr2;

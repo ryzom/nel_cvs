@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.2 2000/11/23 11:51:35 valignat Exp $
+# $Id: Makefile.am,v 1.3 2000/11/24 17:17:23 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -18,4 +18,9 @@ libnelmisc_la_SOURCES = bit_set.cpp class_id.cpp class_registry.cpp \
 libnelmisc_la_LIBADD  = config_file/libconfig.la
 
 
+all-local:
+	cp -f ./.libs/* $(top_srcdir)/lib
+
+
 # End of Makefile.am
+

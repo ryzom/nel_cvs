@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.14 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: scene_user.h,v 1.15 2001/08/31 14:39:15 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,8 @@ public:
 		_Scene.initGlobalnstanceGroup();
 		// Init coarse mesh manager
 		_Scene.initCoarseMeshManager ();
+		// init QuadGridClipManager
+		_Scene.initQuadGridClipManager ();
 
 		// Create default camera, and active!!
 		setCam(createCamera());

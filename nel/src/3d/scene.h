@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.11 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: scene.h,v 1.12 2001/08/31 14:39:15 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,8 @@ public:
 	void			initGlobalnstanceGroup();
 	/// Create coarse meshes manager.
 	void			initCoarseMeshManager ();
+	/// init QuadGridClipManager
+	void			initQuadGridClipManager ();
 	/// Set the driver to render Traversal.
 	void			setDriver(IDriver *drv);
 	/// Get the driver of render Traversal.

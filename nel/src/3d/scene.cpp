@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.49 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: scene.cpp,v 1.50 2001/08/31 14:39:15 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,14 +125,6 @@ CScene::CScene()
 
 	// \todo yoyo: init NULL ligthgroup root.
 
-
-	// Init clip features.
-	// setup maxDists clip.
-	vector<float>	maxDists;
-	for(uint i=0; i<NL3D_SCENE_QUADGRID_CLIP_NUM_MAXDIST; i++)
-		maxDists.push_back(NL3D_QuadGridClipManagerMaxDist[i]);
-	// init _QuadGridClipManager.
-	_QuadGridClipManager.init(this, NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE, maxDists, NL3D_QuadGridClipManagerRadiusMax);
 }
 // ***************************************************************************
 void	CScene::release()
@@ -264,6 +256,20 @@ void	CScene::initGlobalnstanceGroup ()
 	// init the ClipTrav->RootCluster.
 	pClipTrav->RootCluster = _GlobalInstanceGroup->_ClusterInstances[0];
 }
+
+
+// ***************************************************************************
+void	CScene::initQuadGridClipManager ()
+{
+	// Init clip features.
+	// setup maxDists clip.
+	vector<float>	maxDists;
+	for(uint i=0; i<NL3D_SCENE_QUADGRID_CLIP_NUM_MAXDIST; i++)
+		maxDists.push_back(NL3D_QuadGridClipManagerMaxDist[i]);
+	// init _QuadGridClipManager.
+	_QuadGridClipManager.init(this, NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE, maxDists, NL3D_QuadGridClipManagerRadiusMax);
+}
+
 
 // ***************************************************************************
 void	CScene::addTrav(ITrav *v)

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.11 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: instance_group_user.cpp,v 1.12 2001/08/31 14:39:15 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,9 +146,14 @@ void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
 	// Fill in the map accelerating search of instance by names
 	for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
 	{
-		CInstanceUser *pIU = new CInstanceUser (&scene,_InstanceGroup._Instances[i]);
-		string stmp = _InstanceGroup.getInstanceName (i);
-		_Instances.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
+		CInstanceUser *pIU = NULL;
+		string stmp;
+		if (scene,_InstanceGroup._Instances[i] != NULL)
+		{
+			pIU = new CInstanceUser (&scene,_InstanceGroup._Instances[i]);
+			stmp = _InstanceGroup.getInstanceName (i);
+			_Instances.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
+		}
 	}		
 }
 

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.17 2001/08/23 14:29:55 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.18 2001/08/31 14:39:15 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -295,7 +295,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 			if (obj != tri) 
 				deleteIt = true;
 
-			/// \toto hulud: here, check if it is another kind of shape than mesh, multi lod mesh or mrm mesh. 
+			/// \todo hulud: here, check if it is another kind of shape than mesh, multi lod mesh or mrm mesh. 
 			{
 				// Mesh base ?
 				CMeshBase *meshBase;

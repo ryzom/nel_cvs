@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.21 2003/07/03 15:15:17 boucher Exp $
+ * $Id: sheet_id.cpp,v 1.22 2003/07/30 16:06:29 vizerie Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -103,7 +103,8 @@ void CSheetId::loadSheetId ()
 {
 	// Open the sheet id to sheet file name association
 	CIFile file;
-	if(file.open(CPath::lookup("sheet_id.bin", false, false)))
+	std::string path = CPath::lookup("sheet_id.bin", false, false);
+	if(!path.empty() && file.open(path))
 	{
 		// clear entries
 		_FileExtensions.clear ();

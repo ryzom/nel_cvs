@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.113 2002/03/28 17:46:17 lecroart Exp $
+ * $Id: service.cpp,v 1.114 2002/04/09 12:21:49 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -39,6 +39,7 @@
 #	define _WIN32_WINDOWS	0x0410
 #	define WINVER			0x0400
 #	include <windows.h>
+#	include <direct.h>
 
 #elif defined NL_OS_UNIX
 
@@ -385,6 +386,17 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 	try
 	{
+		// get the path where to run the service if any in the command line
+		if (haveArg('A'))
+		{
+			_RunningPath = CPath::standardizePath(getArg('A'));
+#ifdef NL_OS_WINDOWS
+			_chdir (_RunningPath.c_str());
+#else
+			chdir (_RunningPath.c_str());
+#endif
+		}
+
 		//
 		// init parameters
 		//
@@ -490,6 +502,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		}
 
 		nlinfo ("Starting Service %d '%s' using NeL ("__DATE__" "__TIME__")", isService5()?5:4, _ShortName.c_str());
+		nlinfo ("Service running directory: '%s'", IService::getInstance()->_RunningPath.c_str());
 
 		//
 		// Display command line arguments
@@ -1273,6 +1286,7 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 
 	log.displayNL ("Service %d '%s' '%s' '%s' using NeL ("__DATE__" "__TIME__")", IService::getInstance()->isService5()?5:4, IService::getInstance()->_ShortName.c_str(), IService::getInstance()->_LongName.c_str(), IService::getInstance()->_AliasName.c_str());
 	log.displayNL ("Service listening port: %d", IService::getInstance()->_Port);
+	log.displayNL ("Service running directory: '%s'", IService::getInstance()->_RunningPath.c_str());
 	log.displayNL ("Service log directory: '%s'", IService::getInstance()->_LogDir.c_str());
 	log.displayNL ("Service config directory: '%s' config filename: '%s.cfg'", IService::getInstance()->_ConfigDir.c_str(), IService::getInstance()->_LongName.c_str());
 	log.displayNL ("Service id: %d", IService::getInstance()->_SId);
@@ -1290,7 +1304,7 @@ NLMISC_COMMAND (serviceInfo, "display information about this service", "")
 #else
 	string mode = "???";
 #endif
-	log.displayNL ("NeL is compiled in %s mode", mode);
+	log.displayNL ("NeL is compiled in %s mode", mode.c_str());
 
 	return true;
 }

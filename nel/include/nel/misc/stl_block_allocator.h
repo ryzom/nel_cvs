@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.h
  * <File description>
  *
- * $Id: stl_block_allocator.h,v 1.5 2002/02/07 17:31:25 berenguier Exp $
+ * $Id: stl_block_allocator.h,v 1.6 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,7 +141,7 @@ public:
 		}
 		// else use std malloc
 		else
-			return (T*)malloc(n*sizeof(T));
+			return (T*)new uint8[n*sizeof(T)];
 	}
 
 	void	deallocate(void *p, size_type n)
@@ -153,7 +153,7 @@ public:
 			_BlockMemory->free((T*)p);
 		// else use std free
 		else
-			free(p);
+			delete [] ((uint8*)p);
 	}
 
 

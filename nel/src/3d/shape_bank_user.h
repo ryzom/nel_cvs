@@ -1,7 +1,7 @@
 /** \file shape_bank_user.h
  * Implementation of the user interface managing shape bank.
  *
- * $Id: shape_bank_user.h,v 1.2 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: shape_bank_user.h,v 1.3 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include "nel/3d/u_shape_bank.h"
 #include "3d/shape_bank.h"
 
+#define NL3D_MEM_SHAPE_BANK					NL_ALLOC_CONTEXT( 3dShpBk )
+
 namespace NL3D 
 {
 
@@ -43,7 +45,10 @@ namespace NL3D
 class CShapeBankUser : public UShapeBank
 {
 public:
-	virtual ~CShapeBankUser() {}
+	virtual ~CShapeBankUser() 
+	{
+		NL3D_MEM_SHAPE_BANK
+	}
 
 	void addShapeCache(const std::string &shapeCacheName);
 	void removeShapeCache(const std::string &shapeCacheName);

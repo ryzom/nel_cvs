@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.17 2002/10/25 15:52:11 berenguier Exp $
+ * $Id: driver_user.h,v 1.18 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,7 @@
 #include "3d/mesh_skin_manager.h"
 #include "3d/async_texture_manager.h"
 
+#define NL3D_MEM_DRIVER						NL_ALLOC_CONTEXT( 3dDrv )
 
 namespace NL3D 
 {
@@ -389,6 +390,7 @@ public:
 	/// 
 	virtual	UShapeBank*		getShapeBank()
 	{
+		NL3D_MEM_DRIVER
 		return &_ShapeBank;
 	}
 	// @}
@@ -430,10 +432,12 @@ public:
 	// @{
 	IDriver		*getDriver()
 	{
+		NL3D_MEM_DRIVER
 		return _Driver;
 	}
 	void		restoreMatrixContext()
 	{
+		NL3D_MEM_DRIVER
 		setupMatrixContext();
 	}
 	// @}

@@ -1,7 +1,7 @@
 /** \file visual_collision_manager_user.h
  * UVisualCollisionManager implementation.
  *
- * $Id: visual_collision_manager_user.h,v 1.2 2002/06/25 09:45:03 corvazier Exp $
+ * $Id: visual_collision_manager_user.h,v 1.3 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/visual_collision_entity_user.h"
 #include "3d/ptr_set.h"
 
+#define NL3D_MEM_VISUAL_COLLISION						NL_ALLOC_CONTEXT( 3dVsCol )
 
 namespace NL3D {
 
@@ -48,26 +49,33 @@ class CVisualCollisionManagerUser : public UVisualCollisionManager
 public:
 
 	/// Constructor
-	CVisualCollisionManagerUser() {}
+	CVisualCollisionManagerUser() 
+	{
+		NL3D_MEM_VISUAL_COLLISION
+	}
 
 
 	virtual void					setLandscape(ULandscape *landscape)
 	{
+		NL3D_MEM_VISUAL_COLLISION
 		_Manager.setLandscape(&(dynamic_cast<CLandscapeUser*>(landscape)->getLandscape()->Landscape));
 	}
 
 	virtual UVisualCollisionEntity	*createEntity()
 	{
+		NL3D_MEM_VISUAL_COLLISION
 		return _Entities.insert(new CVisualCollisionEntityUser(&_Manager));
 	}
 
 	virtual void					deleteEntity(UVisualCollisionEntity	*entity)
 	{
+		NL3D_MEM_VISUAL_COLLISION
 		_Entities.erase(dynamic_cast<CVisualCollisionEntityUser*>(entity));
 	}
 
 	virtual void					setSunContributionPower (float power, float maxThreshold)
 	{
+		NL3D_MEM_VISUAL_COLLISION
 		_Manager.setSunContributionPower (power, maxThreshold);
 	}
 

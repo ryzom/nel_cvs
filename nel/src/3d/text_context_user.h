@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.8 2002/09/11 13:51:26 besson Exp $
+ * $Id: text_context_user.h,v 1.9 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/text_context.h"
 #include "3d/driver_user.h"
 
+#define NL3D_MEM_TEXT_CONTEXT						NL_ALLOC_CONTEXT( 3dTxtCx )
 
 namespace NL3D
 {
@@ -55,6 +56,7 @@ public:
 	/// Constructor
 	CTextContextUser(const std::string fontFileName, const std::string fontExFileName, CDriverUser *drv, CFontManager *fmg)
 	{
+		NL3D_MEM_TEXT_CONTEXT
 		nlassert(drv);
 		_DriverUser= drv;
 
@@ -65,7 +67,10 @@ public:
 		_TextContext.init(_Driver, fmg);
 		_TextContext.setFontGenerator(fontFileName, fontExFileName);
 	}
-	virtual ~CTextContextUser() {}
+	virtual ~CTextContextUser() 
+	{
+		NL3D_MEM_TEXT_CONTEXT
+	}
 
 
 	/// \name Text look.

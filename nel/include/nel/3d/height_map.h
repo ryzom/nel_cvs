@@ -1,7 +1,7 @@
 /** \file height_map.h
  * <File description>
  *
- * $Id: height_map.h,v 1.3 2001/06/15 16:24:41 corvazier Exp $
+ * $Id: height_map.h,v 1.4 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/bitmap.h"
 #include <vector>
 
+#define NL3D_MEM_HMAP						NL_ALLOC_CONTEXT( 3dHMap )
 
 namespace NL3D
 {
@@ -58,6 +59,7 @@ public:
 	/// Constructor
 	CHeightMap()
 	{
+		NL3D_MEM_HMAP
 		SizeX= SizeY= 160;
 		OriginX= OriginY= 0;
 		MaxZ= 100;

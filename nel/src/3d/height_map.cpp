@@ -1,7 +1,7 @@
 /** \file height_map.cpp
  * <File description>
  *
- * $Id: height_map.cpp,v 1.4 2002/02/28 12:59:49 besson Exp $
+ * $Id: height_map.cpp,v 1.5 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NL3D
 // ***************************************************************************
 void			CHeightMap::resize(uint w, uint h)
 {
+	NL3D_MEM_HMAP
 	_Width= w;
 	_Height= h;
 	Heights.resize(w*h);
@@ -47,6 +48,7 @@ void			CHeightMap::resize(uint w, uint h)
 // ***************************************************************************
 void			CHeightMap::buildFromBitmap(const NLMISC::CBitmap &bitmap0)
 {
+	NL3D_MEM_HMAP
 	// copy bitmap.
 	CBitmap		bitmap= bitmap0;
 	// convert to luminance.
@@ -75,6 +77,7 @@ void			CHeightMap::buildFromBitmap(const NLMISC::CBitmap &bitmap0)
 // ***************************************************************************
 float			CHeightMap::getZ(uint x, uint y) const
 {
+	NL3D_MEM_HMAP
 	nlassert(x<_Width && y<_Height);
 	return Heights[y*_Width+x]*MaxZ/255;
 }

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.17 2002/10/25 15:58:59 berenguier Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.18 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NL3D {
 CParticleSystemInstanceUser::CParticleSystemInstanceUser(CScene *scene, IModel *model) 
 								: CTransformUser(scene, model), _Invalidated(false)
 {
+	NL3D_MEM_PS_INSTANCE			
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	psm->registerPSModelObserver(this);
 }
@@ -45,6 +46,7 @@ CParticleSystemInstanceUser::CParticleSystemInstanceUser(CScene *scene, IModel *
 //===================================================================
 void				CParticleSystemInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
 {
+	NL3D_MEM_PS_INSTANCE			
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	psm->getAABBox(bbox);
 }
@@ -52,6 +54,7 @@ void				CParticleSystemInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
 //===================================================================
 CParticleSystemInstanceUser::~CParticleSystemInstanceUser()
 {	
+	NL3D_MEM_PS_INSTANCE			
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	psm->removePSModelObserver(this);		
 }
@@ -59,6 +62,7 @@ CParticleSystemInstanceUser::~CParticleSystemInstanceUser()
 //===================================================================
 bool		CParticleSystemInstanceUser::isSystemPresent(void) const
 {
+	NL3D_MEM_PS_INSTANCE			
 	if (_Invalidated) return false; // the system is not even valid
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	return psm->getPS() != NULL;
@@ -67,6 +71,7 @@ bool		CParticleSystemInstanceUser::isSystemPresent(void) const
 //===================================================================
 bool		CParticleSystemInstanceUser::getSystemBBox(NLMISC::CAABBox &bbox)
 {
+	NL3D_MEM_PS_INSTANCE			
 	if (_Invalidated) return false;
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	if (!psm->getPS()) return false;
@@ -77,6 +82,7 @@ bool		CParticleSystemInstanceUser::getSystemBBox(NLMISC::CAABBox &bbox)
 //===================================================================
 void		CParticleSystemInstanceUser::setUserParam(uint index, float value)
 {	
+	NL3D_MEM_PS_INSTANCE			
 	nlassert(index < MaxPSUserParam); // invalid parameter index
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	// psm->getPS()->setUserParam(index, value);
@@ -88,10 +94,11 @@ void		CParticleSystemInstanceUser::setUserParam(uint index, float value)
 //===================================================================
 float		CParticleSystemInstanceUser::getUserParam(uint index) const
 {
-	//nlassert(isSystemPresent()); // user : you forgot to check wether the system was present with isPresent() !!
-	nlassert(index < MaxPSUserParam); // invalid parameter index
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
-	//return psm->getPS()->getUserParam(index);
+	NL3D_MEM_PS_INSTANCE			
+	//nlassert(isSystemPresent())      ; // user : you forgot to check wether the system was present with isPresent() !!
+	nlassert(index < MaxPSUserParam) ; // invalid parameter index
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
+	//return psm->getPS()->getUserParam(index) ;
 	IAnimatedValue *av = psm->getValue(CParticleSystemModel::PSParam0 + index);
 	return NLMISC::safe_cast<CAnimatedValueFloat *>(av)->Value;
 }
@@ -99,12 +106,14 @@ float		CParticleSystemInstanceUser::getUserParam(uint index) const
 //===================================================================
 bool		CParticleSystemInstanceUser::isValid(void) const
 {
+	NL3D_MEM_PS_INSTANCE			
 	return !_Invalidated;
 }
 
 //===================================================================
 void		CParticleSystemInstanceUser::registerPSObserver(IPSObserver *observer)
 {
+	NL3D_MEM_PS_INSTANCE			
 	nlassert(!isPSObserver(observer));
 	_Observers.push_back(observer);
 }
@@ -112,6 +121,7 @@ void		CParticleSystemInstanceUser::registerPSObserver(IPSObserver *observer)
 //===================================================================
 bool		CParticleSystemInstanceUser::isPSObserver(IPSObserver *observer)
 {
+	NL3D_MEM_PS_INSTANCE			
 	return std::find(_Observers.begin(), _Observers.end(), observer) != _Observers.end();
 }
 
@@ -119,6 +129,7 @@ bool		CParticleSystemInstanceUser::isPSObserver(IPSObserver *observer)
 //===================================================================
 void		CParticleSystemInstanceUser::removePSObserver(IPSObserver *observer)
 {
+	NL3D_MEM_PS_INSTANCE			
 	nlassert(isPSObserver(observer));
 	_Observers.erase(std::find(_Observers.begin(), _Observers.end(), observer));
 }
@@ -127,6 +138,7 @@ void		CParticleSystemInstanceUser::removePSObserver(IPSObserver *observer)
 //===================================================================
 void		CParticleSystemInstanceUser::invalidPS(CParticleSystemModel *psm)
 {
+	NL3D_MEM_PS_INSTANCE			
 	// the instance pointer is invalid now
 	_Invalidated = true;
 	std::vector<IPSObserver *> obserCopy(_Observers.begin(), _Observers.end());
@@ -139,12 +151,14 @@ void		CParticleSystemInstanceUser::invalidPS(CParticleSystemModel *psm)
 //===================================================================
 uint				CParticleSystemInstanceUser::getNumMaterials() const
 {
+	NL3D_MEM_PS_INSTANCE			
 	return 0;
 }
 
 //===================================================================
 UInstanceMaterial	&CParticleSystemInstanceUser::getMaterial(uint materialId)
 {
+	NL3D_MEM_PS_INSTANCE			
 	nlassert(0); // no material for a particle system
 
 	// return dummy object
@@ -155,6 +169,7 @@ UInstanceMaterial	&CParticleSystemInstanceUser::getMaterial(uint materialId)
 //===================================================================
 static inline uint32 IDToLittleEndian(uint32 input)
 {
+	NL3D_MEM_PS_INSTANCE			
 	#ifdef NL_LITTLE_ENDIAN
 		return input;
 	#else
@@ -168,6 +183,7 @@ static inline uint32 IDToLittleEndian(uint32 input)
 //===================================================================
 bool	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
 {
+	NL3D_MEM_PS_INSTANCE			
 	const uint32 id = IDToLittleEndian(anId);
 	nlassert(isSystemPresent());
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
@@ -195,6 +211,7 @@ bool	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
 //===================================================================
 bool CParticleSystemInstanceUser::removeByID(uint32 anId)
 {
+	NL3D_MEM_PS_INSTANCE			
 	const uint32 id = IDToLittleEndian(anId);
 	if (!isSystemPresent()) return false;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
@@ -217,6 +234,7 @@ bool CParticleSystemInstanceUser::removeByID(uint32 anId)
 //===================================================================
 void		CParticleSystemInstanceUser::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
 {
+	NL3D_MEM_PS_INSTANCE			
 	// no-op.
 }
 
@@ -224,6 +242,7 @@ void		CParticleSystemInstanceUser::changeMRMDistanceSetup(float distanceFinest, 
 //===================================================================
 uint CParticleSystemInstanceUser::getNumID() const
 {
+	NL3D_MEM_PS_INSTANCE			
 	if (!isSystemPresent()) return 0;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	return ps->getNumID();
@@ -232,6 +251,7 @@ uint CParticleSystemInstanceUser::getNumID() const
 //===================================================================
 uint32 CParticleSystemInstanceUser::getID(uint index) const
 {
+	NL3D_MEM_PS_INSTANCE			
 	if (!isSystemPresent()) return 0;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	return ps->getID(index);
@@ -240,6 +260,7 @@ uint32 CParticleSystemInstanceUser::getID(uint index) const
 //===================================================================
 bool CParticleSystemInstanceUser::getIDs(std::vector<uint32> &dest) const
 {
+	NL3D_MEM_PS_INSTANCE			
 	if (!isSystemPresent()) return false;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	ps->getIDs(dest);
@@ -250,6 +271,7 @@ bool CParticleSystemInstanceUser::getIDs(std::vector<uint32> &dest) const
 //===================================================================
 void		CParticleSystemInstanceUser::setShapeDistMax(float distMax)
 {
+	NL3D_MEM_PS_INSTANCE			
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	if(psm && psm->Shape)
 	{
@@ -260,6 +282,7 @@ void		CParticleSystemInstanceUser::setShapeDistMax(float distMax)
 //===================================================================
 float		CParticleSystemInstanceUser::getShapeDistMax() const
 {
+	NL3D_MEM_PS_INSTANCE			
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	if(psm && psm->Shape)
 	{

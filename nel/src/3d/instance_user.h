@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.12 2002/10/25 15:52:48 berenguier Exp $
+ * $Id: instance_user.h,v 1.13 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/instance_material_user.h"
 
+#define NL3D_MEM_INSTANCE						NL_ALLOC_CONTEXT( 3dInst )
 
 namespace NL3D {
 
@@ -64,6 +65,7 @@ public:
 	CInstanceUser(CScene *scene, IModel *trans);
 	virtual	~CInstanceUser()
 	{
+		NL3D_MEM_INSTANCE
 		// deleted in CTransformUser.
 		_Instance= NULL;
 		// user mats are auto deleted.
@@ -80,10 +82,12 @@ public:
 	// @{
 	virtual	uint		getNumMaterials() const
 	{
+		NL3D_MEM_INSTANCE
 		return _Materials.size();
 	}
 	virtual	UInstanceMaterial		&getMaterial(uint materialId)
 	{
+		NL3D_MEM_INSTANCE
 		if(materialId>=_Materials.size())
 			nlerror("getMaterial(): bad materialId");
 		return dynamic_cast<UInstanceMaterial&>(_Materials[materialId]);
@@ -91,6 +95,7 @@ public:
 
 	virtual void selectTextureSet(uint id)
 	{
+		NL3D_MEM_INSTANCE
 		CMeshBaseInstance *mbi  = NLMISC::safe_cast<CMeshBaseInstance *>(_Instance);
 		mbi->selectTextureSet(id);
 	}
@@ -102,10 +107,26 @@ public:
 	virtual float		getShapeDistMax() const;
 
 		
-	virtual bool		canStartStop() { return _Instance->canStartStop(); }	
-	virtual void		start() { _Instance->start(); }	
-	virtual void		stop()  { _Instance->stop(); }	
-	virtual bool		isStarted() const { return _Instance->isStarted(); }	
+	virtual bool		canStartStop() 
+	{ 
+		NL3D_MEM_INSTANCE
+		return _Instance->canStartStop(); 
+	}	
+	virtual void		start() 
+	{ 
+		NL3D_MEM_INSTANCE
+		_Instance->start(); 
+	}	
+	virtual void		stop()  
+	{ 
+		NL3D_MEM_INSTANCE
+		_Instance->stop(); 
+	}	
+	virtual bool		isStarted() const 
+	{ 
+		NL3D_MEM_INSTANCE
+		return _Instance->isStarted(); 
+	}	
 
 	/// \name Async Texture Loading
 	// @{

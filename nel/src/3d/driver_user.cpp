@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.24 2002/10/25 15:52:11 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.25 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,7 +58,6 @@ H_AUTO_DECL( NL3D_Render_DriverDrawELT )
 #define	NL3D_HAUTO_SWAP_DRIVER				H_AUTO_USE( NL3D_Render_DriverSwapBuffer )
 #define	NL3D_HAUTO_DRAW_DRIVER				H_AUTO_USE( NL3D_Render_DriverDrawELT )
 
-
 // ***************************************************************************
 // ***************************************************************************
 // UDriver implementation (gcc link bug force to not put them in .h).
@@ -69,21 +68,25 @@ H_AUTO_DECL( NL3D_Render_DriverDrawELT )
 // ***************************************************************************
 UDriver::UDriver()
 {
+	NL3D_MEM_DRIVER
 }
 // ***************************************************************************
 UDriver::~UDriver()
 {
+	NL3D_MEM_DRIVER
 }
 
 
 // ***************************************************************************
 void					UDriver::setMatrixMode2D11()
 {
+	NL3D_MEM_DRIVER
 	setMatrixMode2D(CFrustum(0.0f,1.0f,0.0f,1.0f,-1.0f,1.0f,false));
 }
 // ***************************************************************************
 void					UDriver::setMatrixMode2D43()
 {
+	NL3D_MEM_DRIVER
 	setMatrixMode2D(CFrustum(0.0f,4.0f/3.0f,0.0f,1.0f,-1.0f,1.0f,false));
 }
 
@@ -91,6 +94,7 @@ void					UDriver::setMatrixMode2D43()
 // ***************************************************************************
 UDriver					*UDriver::createDriver()
 {
+	NL3D_MEM_DRIVER
 	return new CDriverUser;
 }
 
@@ -109,6 +113,8 @@ bool	CDriverUser::_StaticInit= false;
 // ***************************************************************************
 CDriverUser::CDriverUser()
 {
+	NL3D_MEM_DRIVER
+
 	// The enum of IDriver and UDriver MUST be the same!!!
 	nlassert((uint)IDriver::idCount == (uint)UDriver::idCount);
 	nlassert((uint)IDriver::typeCount == (uint)UDriver::typeCount);
@@ -156,6 +162,7 @@ CDriverUser::CDriverUser()
 // ***************************************************************************
 CDriverUser::~CDriverUser()
 {
+	NL3D_MEM_DRIVER
 	release();
 
 	delete _Driver;
@@ -166,6 +173,7 @@ CDriverUser::~CDriverUser()
 UDriver::TModeList		CDriverUser::enumModes()
 {
 	NL3D_HAUTO_UI_DRIVER;
+	NL3D_MEM_DRIVER
 
 	ModeList	dlist;
 	TModeList	retlist;
@@ -182,18 +190,21 @@ UDriver::TModeList		CDriverUser::enumModes()
 // ***************************************************************************
 void			CDriverUser::disableHardwareVertexProgram()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->disableHardwareVertexProgram();
 }
 void			CDriverUser::disableHardwareVertexArrayAGP()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->disableHardwareVertexArrayAGP();
 }
 void			CDriverUser::disableHardwareTextureShader()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->disableHardwareTextureShader();
@@ -202,6 +213,7 @@ void			CDriverUser::disableHardwareTextureShader()
 // ***************************************************************************
 void			CDriverUser::setDisplay(const CMode &mode) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	// window init.
@@ -231,6 +243,7 @@ void			CDriverUser::setDisplay(const CMode &mode)
 // ***************************************************************************
 void			CDriverUser::release() 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	if(!_WindowInit)
@@ -259,6 +272,7 @@ void			CDriverUser::release()
 // ***************************************************************************
 bool			CDriverUser::activate(void)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->activate();
@@ -267,6 +281,7 @@ bool			CDriverUser::activate(void)
 // ***************************************************************************
 bool			CDriverUser::isActive()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->isActive();
@@ -284,6 +299,8 @@ bool			CDriverUser::isActive()
 // ***************************************************************************
 void			CDriverUser::setupMatrixContext()
 {
+	NL3D_MEM_DRIVER
+
 	_Driver->setupScissor(_CurrentMatrixContext.Scissor);
 	_Driver->setupViewport(_CurrentMatrixContext.Viewport);
 	CFrustum	&f= _CurrentMatrixContext.Frustum;
@@ -294,6 +311,7 @@ void			CDriverUser::setupMatrixContext()
 // ***************************************************************************
 void			CDriverUser::setScissor(const CScissor &sc)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_CurrentMatrixContext.Scissor= sc;
@@ -302,6 +320,7 @@ void			CDriverUser::setScissor(const CScissor &sc)
 // ***************************************************************************
 CScissor		CDriverUser::getScissor()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _CurrentMatrixContext.Scissor;
@@ -309,6 +328,7 @@ CScissor		CDriverUser::getScissor()
 // ***************************************************************************
 void			CDriverUser::setViewport(const CViewport &vp)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_CurrentMatrixContext.Viewport= vp;
@@ -317,6 +337,7 @@ void			CDriverUser::setViewport(const CViewport &vp)
 // ***************************************************************************
 CViewport		CDriverUser::getViewport()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _CurrentMatrixContext.Viewport;
@@ -324,6 +345,7 @@ CViewport		CDriverUser::getViewport()
 // ***************************************************************************
 void			CDriverUser::setFrustum(const CFrustum &frust) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_CurrentMatrixContext.Frustum= frust;
@@ -332,6 +354,7 @@ void			CDriverUser::setFrustum(const CFrustum &frust)
 // ***************************************************************************
 CFrustum		CDriverUser::getFrustum() 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _CurrentMatrixContext.Frustum;
@@ -339,6 +362,7 @@ CFrustum		CDriverUser::getFrustum()
 // ***************************************************************************
 void			CDriverUser::setViewMatrix(const CMatrix &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_CurrentMatrixContext.ViewMatrix= mat;
@@ -347,6 +371,7 @@ void			CDriverUser::setViewMatrix(const CMatrix &mat)
 // ***************************************************************************
 CMatrix			CDriverUser::getViewMatrix() 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _CurrentMatrixContext.ViewMatrix;
@@ -354,6 +379,7 @@ CMatrix			CDriverUser::getViewMatrix()
 // ***************************************************************************
 void			CDriverUser::setModelMatrix(const CMatrix &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_CurrentMatrixContext.ModelMatrix= mat;
@@ -362,6 +388,7 @@ void			CDriverUser::setModelMatrix(const CMatrix &mat)
 // ***************************************************************************
 CMatrix			CDriverUser::getModelMatrix() 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _CurrentMatrixContext.ModelMatrix;
@@ -372,6 +399,7 @@ CMatrix			CDriverUser::getModelMatrix()
 // ***************************************************************************
 void			CDriverUser::setMatrixMode2D(const CFrustum &frust) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_CurrentMatrixContext.Frustum= frust;
@@ -389,6 +417,7 @@ void			CDriverUser::setMatrixMode2D(const CFrustum &frust)
 // ***************************************************************************
 void			CDriverUser::setMatrixMode3D(UCamera &camera) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	// Retrieve the matrix and frustum from the camera.
@@ -410,6 +439,7 @@ void			CDriverUser::setMatrixMode3D(UCamera &camera)
 // ***************************************************************************
 void			CDriverUser::drawLine(const NLMISC::CLine &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBFlat;
@@ -424,6 +454,7 @@ void			CDriverUser::drawLine(const NLMISC::CLine &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawLine(const NLMISC::CLineColor &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColor;
@@ -440,6 +471,7 @@ void			CDriverUser::drawLine(const NLMISC::CLineColor &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawLine(const NLMISC::CLineUV &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBUv;
@@ -456,6 +488,7 @@ void			CDriverUser::drawLine(const NLMISC::CLineUV &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawLine(const NLMISC::CLineColorUV &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColorUv;
@@ -477,6 +510,7 @@ void			CDriverUser::drawLine(const NLMISC::CLineColorUV &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawTriangle(const NLMISC::CTriangle &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBFlat;
@@ -492,6 +526,7 @@ void			CDriverUser::drawTriangle(const NLMISC::CTriangle &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawTriangle(const NLMISC::CTriangleColor &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColor;
@@ -510,6 +545,7 @@ void			CDriverUser::drawTriangle(const NLMISC::CTriangleColor &shp, UMaterial &m
 // ***************************************************************************
 void			CDriverUser::drawTriangle(const NLMISC::CTriangleUV &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBUv;
@@ -528,6 +564,7 @@ void			CDriverUser::drawTriangle(const NLMISC::CTriangleUV &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawTriangle(const NLMISC::CTriangleColorUV &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColorUv;
@@ -552,6 +589,7 @@ void			CDriverUser::drawTriangle(const NLMISC::CTriangleColorUV &shp, UMaterial 
 // ***************************************************************************
 void			CDriverUser::drawQuad(const NLMISC::CQuad &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBFlat;
@@ -568,6 +606,7 @@ void			CDriverUser::drawQuad(const NLMISC::CQuad &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawQuad(const NLMISC::CQuadColor &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColor;
@@ -588,6 +627,7 @@ void			CDriverUser::drawQuad(const NLMISC::CQuadColor &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawQuad(const NLMISC::CQuadUV &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBUv;
@@ -608,6 +648,7 @@ void			CDriverUser::drawQuad(const NLMISC::CQuadUV &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawQuad(const NLMISC::CQuadColorUV &shp, UMaterial &mat) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb= _VBColorUv;
@@ -632,6 +673,8 @@ void			CDriverUser::drawQuad(const NLMISC::CQuadColorUV &shp, UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV> &q, UMaterial &mat)
 {
+	NL3D_MEM_DRIVER
+
 	const CQuadColorUV *qptr = &(q[0]);
 	drawQuads(qptr , q.size(), mat);
 }
@@ -639,6 +682,7 @@ void			CDriverUser::drawQuads(const std::vector<NLMISC::CQuadColorUV> &q, UMater
 // ***************************************************************************
 void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads, UMaterial &mat)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	CVertexBuffer		&vb = _VBQuadsColUv;
@@ -677,6 +721,7 @@ void			CDriverUser::drawQuads(const NLMISC::CQuadColorUV *quads, uint32 nbQuads,
 // ***************************************************************************
 void			CDriverUser::drawBitmap (float x, float y, float width, float height, class UTexture& texture, bool blend, CRGBA col) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	_MatText.setTexture(&texture);
@@ -702,6 +747,7 @@ void			CDriverUser::drawBitmap (float x, float y, float width, float height, cla
 // ***************************************************************************
 void			CDriverUser::drawLine (float x0, float y0, float x1, float y1, CRGBA col) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	_MatFlat.setColor(col);
@@ -716,6 +762,7 @@ void			CDriverUser::drawLine (float x0, float y0, float x1, float y1, CRGBA col)
 // ***************************************************************************
 void			CDriverUser::drawTriangle (float x0, float y0, float x1, float y1, float x2, float y2, CRGBA col) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	_MatFlat.setColor(col);
@@ -731,6 +778,7 @@ void			CDriverUser::drawTriangle (float x0, float y0, float x1, float y1, float 
 // ***************************************************************************
 void			CDriverUser::drawQuad (float x0, float y0, float x1, float y1, CRGBA col) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_DRAW_DRIVER;
 
 	_MatFlat.setColor(col);
@@ -747,11 +795,15 @@ void			CDriverUser::drawQuad (float x0, float y0, float x1, float y1, CRGBA col)
 // ***************************************************************************
 void			CDriverUser::drawQuad (float xcenter, float ycenter, float radius, CRGBA col) 
 {
+	NL3D_MEM_DRIVER
+
 	drawQuad(xcenter-radius, ycenter-radius, xcenter+radius, ycenter+radius, col);
 }
 // ***************************************************************************
 void			CDriverUser::drawWiredQuad (float x0, float y0, float x1, float y1, CRGBA col) 
 {
+	NL3D_MEM_DRIVER
+
 	// v-left
 	drawLine(x0,y0,x0,y1,col);	
 	// v-right
@@ -764,6 +816,8 @@ void			CDriverUser::drawWiredQuad (float x0, float y0, float x1, float y1, CRGBA
 // ***************************************************************************
 void			CDriverUser::drawWiredQuad (float xcenter, float ycenter, float radius, CRGBA col) 
 {
+	NL3D_MEM_DRIVER
+
 	drawWiredQuad(xcenter-radius, ycenter-radius, xcenter+radius, ycenter+radius, col);
 }
 
@@ -778,6 +832,8 @@ void			CDriverUser::drawWiredQuad (float xcenter, float ycenter, float radius, C
 // ***************************************************************************
 UDriver::TMessageBoxId	CDriverUser::systemMessageBox (const char* message, const char* title, TMessageBoxType type, TMessageBoxIcon icon)
 {
+	NL3D_MEM_DRIVER
+
 	IDriver::TMessageBoxId		dret;
 	IDriver::TMessageBoxType	dtype= (IDriver::TMessageBoxType)(uint32)type;
 	IDriver::TMessageBoxIcon	dicon= (IDriver::TMessageBoxIcon)(uint32)icon;
@@ -790,6 +846,8 @@ UDriver::TMessageBoxId	CDriverUser::systemMessageBox (const char* message, const
 // ***************************************************************************
 CMaterial		&CDriverUser::convMat(UMaterial &mat)
 {
+	NL3D_MEM_DRIVER
+
 	CMaterialUser	*pmat= (CMaterialUser*)&mat;
 	return pmat->_Material;
 }
@@ -798,6 +856,7 @@ CMaterial		&CDriverUser::convMat(UMaterial &mat)
 // ***************************************************************************
 void			CDriverUser::clearRGBABuffer(CRGBA col)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_CLEAR_DRIVER;
 
 	_Driver->clear2D(col);
@@ -805,6 +864,7 @@ void			CDriverUser::clearRGBABuffer(CRGBA col)
 // ***************************************************************************
 void			CDriverUser::clearZBuffer()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_CLEAR_DRIVER;
 
 	_Driver->clearZBuffer();
@@ -812,6 +872,7 @@ void			CDriverUser::clearZBuffer()
 // ***************************************************************************
 void			CDriverUser::clearBuffers(CRGBA col)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_CLEAR_DRIVER;
 
 	_Driver->clear2D(col);
@@ -820,6 +881,7 @@ void			CDriverUser::clearBuffers(CRGBA col)
 // ***************************************************************************
 void			CDriverUser::swapBuffers()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_SWAP_DRIVER;
 
 	_Driver->swapBuffers();
@@ -829,6 +891,7 @@ void			CDriverUser::swapBuffers()
 // ***************************************************************************
 bool			CDriverUser::fogEnabled()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->fogEnabled();
@@ -836,6 +899,7 @@ bool			CDriverUser::fogEnabled()
 // ***************************************************************************
 void			CDriverUser::enableFog(bool enable)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->enableFog(enable);
@@ -843,6 +907,7 @@ void			CDriverUser::enableFog(bool enable)
 // ***************************************************************************
 void			CDriverUser::setupFog(float start, float end, CRGBA color)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->setupFog(start, end, color);
@@ -852,6 +917,7 @@ void			CDriverUser::setupFog(float start, float end, CRGBA color)
 // ***************************************************************************
 void			CDriverUser::setLight (uint8 num, const ULight& light)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	CLightUser	*plight= (CLightUser*)&light;
@@ -860,6 +926,7 @@ void			CDriverUser::setLight (uint8 num, const ULight& light)
 // ***************************************************************************
 void			CDriverUser::enableLight (uint8 num, bool enable)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->enableLight (num, enable);
@@ -867,6 +934,7 @@ void			CDriverUser::enableLight (uint8 num, bool enable)
 // ***************************************************************************
 void			CDriverUser::setAmbientColor (CRGBA color)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->setAmbientColor (color);
@@ -876,6 +944,7 @@ void			CDriverUser::setAmbientColor (CRGBA color)
 // ***************************************************************************
 void			CDriverUser::setPolygonMode (TPolygonMode mode)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	IDriver::TPolygonMode	dmode=IDriver::Filled;
@@ -890,6 +959,7 @@ void			CDriverUser::setPolygonMode (TPolygonMode mode)
 }
 U3dMouseListener*	CDriverUser::create3dMouseListener ()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	// Alloc the listener
@@ -902,6 +972,7 @@ U3dMouseListener*	CDriverUser::create3dMouseListener ()
 }
 void CDriverUser::delete3dMouseListener (U3dMouseListener *listener)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	// Unregister
@@ -911,6 +982,7 @@ void CDriverUser::delete3dMouseListener (U3dMouseListener *listener)
 }
 UDriver::TPolygonMode 	CDriverUser::getPolygonMode () 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	IDriver::TPolygonMode	dmode;
@@ -928,18 +1000,21 @@ UDriver::TPolygonMode 	CDriverUser::getPolygonMode ()
 }
 void			CDriverUser::forceDXTCCompression(bool dxtcComp)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->forceDXTCCompression(dxtcComp);
 }
 void			CDriverUser::forceTextureResize(uint divisor)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->forceTextureResize(divisor);
 }
 bool			CDriverUser::setMonitorColorProperties (const CMonitorColorProperties &properties)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->setMonitorColorProperties (properties);
@@ -955,60 +1030,70 @@ bool			CDriverUser::setMonitorColorProperties (const CMonitorColorProperties &pr
 
 uint32			CDriverUser::getImplementationVersion () const
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->getImplementationVersion ();
 }
 const char*		CDriverUser::getDriverInformation ()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->getDriverInformation();
 }
 const char*		CDriverUser::getVideocardInformation ()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->getVideocardInformation ();
 }
 sint			CDriverUser::getNbTextureStages()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->getNbTextureStages();
 }
 void			CDriverUser::getWindowSize (uint32 &width, uint32 &height)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->getWindowSize (width, height);
 }
 void			CDriverUser::getBuffer (CBitmap &bitmap) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->getBuffer (bitmap) ;
 }
 void			CDriverUser::getZBuffer (std::vector<float>  &zbuffer) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->getZBuffer (zbuffer) ;
 }
 void			CDriverUser::getBufferPart (CBitmap &bitmap, NLMISC::CRect &rect) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->getBufferPart (bitmap, rect) ;
 }
 void			CDriverUser::getZBufferPart (std::vector<float>  &zbuffer, NLMISC::CRect &rect) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->getZBufferPart (zbuffer, rect) ;
 }
 bool			CDriverUser::fillBuffer (CBitmap &bitmap)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->fillBuffer(bitmap);
@@ -1023,36 +1108,42 @@ bool			CDriverUser::fillBuffer (CBitmap &bitmap)
 
 NLMISC::IMouseDevice			*CDriverUser::enableLowLevelMouse(bool enable)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->enableLowLevelMouse(enable);
 }
 NLMISC::IKeyboardDevice			*CDriverUser::enableLowLevelKeyboard(bool enable) 
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->enableLowLevelKeyboard(enable);
 }
 NLMISC::IInputDeviceManager		*CDriverUser::getLowLevelInputDeviceManager()
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	return _Driver->getLowLevelInputDeviceManager();
 }
 void			CDriverUser::showCursor (bool b)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->showCursor(b);
 }
 void			CDriverUser::setMousePos (float x, float y)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->setMousePos (x, y);
 }
 void			CDriverUser::setCapture (bool b)
 {
+	NL3D_MEM_DRIVER
 	NL3D_HAUTO_UI_DRIVER;
 
 	_Driver->setCapture (b);

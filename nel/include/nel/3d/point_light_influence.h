@@ -1,7 +1,7 @@
 /** \file point_light_influence.h
  * <File description>
  *
- * $Id: point_light_influence.h,v 1.2 2002/02/11 16:53:51 berenguier Exp $
+ * $Id: point_light_influence.h,v 1.3 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #define NL_POINT_LIGHT_INFLUENCE_H
 
 #include "nel/misc/types_nl.h"
-
 
 namespace NL3D {
 

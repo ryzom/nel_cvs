@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * <File description>
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.3 2002/09/24 14:41:19 vizerie Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.4 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -561,7 +561,7 @@ CVertexBufferHardGLATI::~CVertexBufferHardGLATI()
 
 	if(_RAMMirrorVertexPtr)
 	{
-		free(_RAMMirrorVertexPtr);
+		delete [] ((uint8*)_RAMMirrorVertexPtr);
 		_RAMMirrorVertexPtr= NULL;
 		_RAMMirrorVertexSize= 0;
 	}
@@ -579,7 +579,7 @@ bool		CVertexBufferHardGLATI::createRAMMirror(uint memSize)
 		_RAMMirrorVertexSize= 0;
 	}
 	// create
-	_RAMMirrorVertexPtr= malloc(memSize);
+	_RAMMirrorVertexPtr = (void*)new uint8[memSize];
 	if(_RAMMirrorVertexPtr)
 	{
 		_RAMMirrorVertexSize= memSize;

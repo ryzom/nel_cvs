@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.cpp
  * <File description>
  *
- * $Id: play_list_manager_user.cpp,v 1.5 2002/06/28 16:46:23 berenguier Exp $
+ * $Id: play_list_manager_user.cpp,v 1.6 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NL3D
 // ***************************************************************************
 UPlayList	*CPlayListManagerUser::createPlayList(UAnimationSet	*animSet)
 {
+	NL3D_MEM_PLAYLIST_MANAGER
 	if(!animSet)
 		nlerror("createPlayList(): animSet==NULL");
 	
@@ -52,6 +53,7 @@ UPlayList	*CPlayListManagerUser::createPlayList(UAnimationSet	*animSet)
 // ***************************************************************************
 void		CPlayListManagerUser::deletePlayList(UPlayList *playList)
 {
+	NL3D_MEM_PLAYLIST_MANAGER
 	CPlayListUser	*pl= safe_cast<CPlayListUser*>(playList);
 
 	_PlayListManager.removePlaylist(&pl->_PlayList);
@@ -62,6 +64,7 @@ void		CPlayListManagerUser::deletePlayList(UPlayList *playList)
 // ***************************************************************************
 void		CPlayListManagerUser::animate(TGlobalAnimationTime	time)
 {
+	NL3D_MEM_PLAYLIST_MANAGER
 	H_AUTO( NL3D_Render_PlayListMgr_Animate );
 
 	_PlayListManager.animate(time);

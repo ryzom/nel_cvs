@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.11 2002/09/10 13:36:58 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.12 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -133,7 +133,7 @@ public:
 			void	*newData;
 
 			// Alloc for alignement.
-			newAllocData= malloc(n * sizeof(CMatrix3x4SSE) + NL3D_SSE_ALIGNEMENT-1);
+			newAllocData= new uint8 [n * sizeof(CMatrix3x4SSE) + NL3D_SSE_ALIGNEMENT-1];
 			if(newAllocData==NULL)
 				throw Exception("SSE Allocation Failed");
 
@@ -145,7 +145,7 @@ public:
 
 			// release old.
 			if(_AllocData)
-				free(_AllocData);
+				delete [] ((uint8*)_AllocData);
 
 			// change ptrs and capacity.
 			_Data= newData;

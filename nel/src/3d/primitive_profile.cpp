@@ -1,7 +1,7 @@
 /** \file primitive_profile.cpp
  * Primitive counter.
  *
- * $Id: primitive_profile.cpp,v 1.2 2002/02/28 12:59:50 besson Exp $
+ * $Id: primitive_profile.cpp,v 1.3 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@ namespace NL3D
 // ***************************************************************************
 void	CPrimitiveProfile::reset()
 {
+	NL3D_MEM_PRIMITIVE_PROFILE
 	NPoints= 0;
 	NLines= 0;
 	NTriangles= 0;

@@ -1,7 +1,7 @@
 /** \file instance_material_user.cpp
  * <File description>
  *
- * $Id: instance_material_user.cpp,v 1.4 2002/10/10 13:03:28 berenguier Exp $
+ * $Id: instance_material_user.cpp,v 1.5 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NL3D
 // ***************************************************************************
 bool				CInstanceMaterialUser::isTextureFile(uint stage) const
 {
+	NL3D_MEM_MATERIAL_INSTANCE
 	if (stage >= IDRV_MAT_MAXTEXTURES)
 	{
 		nlwarning("UInstanceMaterialUser::isTextureFile : invalid stage");
@@ -48,6 +49,7 @@ bool				CInstanceMaterialUser::isTextureFile(uint stage) const
 // ***************************************************************************
 std::string			CInstanceMaterialUser::getTextureFileName(uint stage) const
 {		
+	NL3D_MEM_MATERIAL_INSTANCE
 	if (stage >= IDRV_MAT_MAXTEXTURES)
 	{
 		nlwarning("UInstanceMaterialUser::getTextureFileName : invalid stage");
@@ -71,6 +73,7 @@ std::string			CInstanceMaterialUser::getTextureFileName(uint stage) const
 // ***************************************************************************
 void				CInstanceMaterialUser::setTextureFileName(const std::string &fileName, uint stage)
 {
+	NL3D_MEM_MATERIAL_INSTANCE
 	if (stage >= IDRV_MAT_MAXTEXTURES)
 	{
 		nlwarning("UInstanceMaterialUser::setTextureFileName : invalid stage");

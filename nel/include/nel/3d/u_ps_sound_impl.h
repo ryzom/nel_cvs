@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.7 2002/07/03 10:32:03 vizerie Exp $
+ * $Id: u_ps_sound_impl.h,v 1.8 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@
 // WARNING : this file is not intended to be directly included by the client. 
 // It is just used to avoid a dependencie between NL3D and NLSOUND
 
-
+#define NL3D_MEM_PS_SOUND							NL_ALLOC_CONTEXT( 3dPSSnd )
 
 namespace NL3D 
 {
@@ -58,12 +58,14 @@ public:
 	  */
 	CPSSoundInstanceImpl() 
 		: _Source(NULL), _SoundServImpl(NULL), _Spawned(false)
-	{			
+	{
+		NL3D_MEM_PS_SOUND
 	}
 
 	/// init this sound instance parameters
 	void init(NLSOUND::USource *source, CPSSoundServImpl *soundServImp, bool spawned)
 	{
+		NL3D_MEM_PS_SOUND
 		nlassert(source);
 		_Source = source;		
 		_Spawned    = spawned;
@@ -77,6 +79,7 @@ public:
 						   , float pitch
 						  )
 	{
+		NL3D_MEM_PS_SOUND
 		if (!_Source) return;		
 		if (gain < 0) gain = 0;
 		if (gain > 1) gain = 1;
@@ -91,6 +94,7 @@ public:
 	/// start to play the sound
 	virtual void play(void)
 	{
+		NL3D_MEM_PS_SOUND
 		if (!_Source) return;
 		_Source->play();
 	}
@@ -98,6 +102,7 @@ public:
 
 	virtual bool isPlaying(void) const
 	{
+		NL3D_MEM_PS_SOUND
 		if (!_Source) return false;
 		return _Source->isPlaying();
 	}
@@ -105,6 +110,7 @@ public:
 	/// stop the sound
 	virtual void stop(void)
 	{
+		NL3D_MEM_PS_SOUND
 		if (!_Source) return;
 		_Source->stop();
 	}

@@ -1,7 +1,7 @@
 /** \file shape_bank_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: shape_bank_user.cpp,v 1.3 2002/02/28 12:59:51 besson Exp $
+ * $Id: shape_bank_user.cpp,v 1.4 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NL3D
 
 void CShapeBankUser::addShapeCache(const std::string &shapeCacheName)
 {
+	NL3D_MEM_SHAPE_BANK
 	_ShapeBank.addShapeCache( shapeCacheName );
 }
 
@@ -44,6 +45,7 @@ void CShapeBankUser::addShapeCache(const std::string &shapeCacheName)
 
 void CShapeBankUser::removeShapeCache(const std::string &shapeCacheName)
 {
+	NL3D_MEM_SHAPE_BANK
 	_ShapeBank.removeShapeCache( shapeCacheName );
 }
 
@@ -51,6 +53,7 @@ void CShapeBankUser::removeShapeCache(const std::string &shapeCacheName)
 
 void CShapeBankUser::reset()
 {
+	NL3D_MEM_SHAPE_BANK
 	_ShapeBank.reset();
 }
 
@@ -58,6 +61,7 @@ void CShapeBankUser::reset()
 
 void CShapeBankUser::setShapeCacheSize(const std::string &shapeCacheName, sint32 maxSize)
 {
+	NL3D_MEM_SHAPE_BANK
 	_ShapeBank.setShapeCacheSize( shapeCacheName, maxSize );
 }
 
@@ -65,6 +69,7 @@ void CShapeBankUser::setShapeCacheSize(const std::string &shapeCacheName, sint32
 
 void CShapeBankUser::linkShapeToShapeCache(const std::string &shapeName, const std::string &shapeCacheName)
 {
+	NL3D_MEM_SHAPE_BANK
 	_ShapeBank.linkShapeToShapeCache( shapeName, shapeCacheName );
 }
 

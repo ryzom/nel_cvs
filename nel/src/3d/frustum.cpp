@@ -1,7 +1,7 @@
 /** \file frustum.cpp
  * <File description>
  *
- * $Id: frustum.cpp,v 1.9 2002/02/28 12:59:49 besson Exp $
+ * $Id: frustum.cpp,v 1.10 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NL3D
 
 void			CFrustum::init(float left, float right, float bottom, float top, float znear, float zfar, bool perspective)
 {
+	NL3D_MEM_FRUSTRUM
 	Left= left;
 	Right= right;
 	Bottom=	bottom;
@@ -49,10 +50,12 @@ void			CFrustum::init(float left, float right, float bottom, float top, float zn
 
 void			CFrustum::init(float width, float height, float znear, float zfar, bool perspective)
 {
+	NL3D_MEM_FRUSTRUM
 	init(-width/2, width/2, -height/2, height/2, znear, zfar, perspective);
 }
 void			CFrustum::initPerspective(float fov, float aspectRatio, float znear, float zfar)
 {
+	NL3D_MEM_FRUSTRUM
 	float	w,h;
 	w= 2*znear*(float)tan(fov/2);
 	h= w/aspectRatio;
@@ -60,6 +63,7 @@ void			CFrustum::initPerspective(float fov, float aspectRatio, float znear, floa
 }
 void			CFrustum::getValues(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const
 {
+	NL3D_MEM_FRUSTRUM
 	left= Left;
 	right= Right;
 	bottom=	Bottom;
@@ -72,6 +76,7 @@ void			CFrustum::getValues(float &left, float &right, float &bottom, float &top,
 // ***************************************************************************
 CVector			CFrustum::project(const CVector &vec) const
 {
+	NL3D_MEM_FRUSTRUM
 	CVector		ret;
 	float		decalX, decalY;
 	float		w, h;
@@ -118,6 +123,7 @@ CVector			CFrustum::project(const CVector &vec) const
 // ***************************************************************************
 CVector			CFrustum::unProject(const CVector &vec) const
 {
+	NL3D_MEM_FRUSTRUM
 	CVector		ret;
 	float		decalX, decalY;
 	float		w, h;

@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.h
  * <File description>
  *
- * $Id: play_list_manager_user.h,v 1.4 2002/06/10 16:00:53 berenguier Exp $
+ * $Id: play_list_manager_user.h,v 1.5 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "3d/animation_set_user.h"
 #include "3d/ptr_set.h"
 
+#define NL3D_MEM_PLAYLIST_MANAGER						NL_ALLOC_CONTEXT( 3dPLMng )
 
 namespace NL3D 
 {
@@ -57,6 +58,7 @@ public:
 	/// Constructor
 	CPlayListManagerUser()
 	{
+		NL3D_MEM_PLAYLIST_MANAGER
 	}
 
 

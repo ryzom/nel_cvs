@@ -1,7 +1,7 @@
 /** \file transformable_user.h
  * <File description>
  *
- * $Id: transformable_user.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: transformable_user.h,v 1.2 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/u_transformable.h"
 #include "3d/transformable.h"
 
+#define NL3D_MEM_TRANSFORMABLE						NL_ALLOC_CONTEXT( 3dTrabl )
 
 namespace NL3D
 {
@@ -56,6 +57,7 @@ public:
 	/// Give a ITransformable. CTransformableUser DO NOT OWNS IT!
 	CTransformableUser(ITransformable *trans)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		nlassert(trans);
 		_Transformable= trans;
 
@@ -64,6 +66,7 @@ public:
 	}
 	virtual	~CTransformableUser()
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable= NULL;
 	}
 	// @}
@@ -72,10 +75,12 @@ public:
 	// @{
 	virtual	void			setMatrix(const CMatrix &mat)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->setMatrix(mat);
 	}
 	virtual	const CMatrix	&getMatrix() const	
 	{
+		NL3D_MEM_TRANSFORMABLE
 		return _Transformable->getMatrix();
 	}
 	// @}
@@ -86,22 +91,27 @@ public:
 
 	virtual	void			setTransformMode(TTransformMode mode, CMatrix::TRotOrder ro= CMatrix::ZXY)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->setTransformMode((ITransformable::TTransformMode)(uint)mode, ro);
 	}
 	virtual	void			setPos(const CVector &pos)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->setPos(pos);
 	}
 	virtual	void			setRotEuler(const CVector &rot)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->setRotEuler(rot);
 	}
 	virtual	void			setRotQuat(const CQuat &quat)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->setRotQuat(quat);
 	}
 	virtual	void			setRotQuat(const CVector &jdir)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		CMatrix	mat;
 		mat.setRot(CVector::I, jdir, CVector::K);
 		mat.normalize(CMatrix::YZX);
@@ -109,6 +119,7 @@ public:
 	}
 	virtual	void			setRotQuat(const CVector &jdir, const CVector &vup)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		CMatrix	mat;
 		mat.setRot(CVector::I, jdir, vup);
 		mat.normalize(CMatrix::YZX);
@@ -120,57 +131,70 @@ public:
 	}
 	virtual	void			setPivot(const CVector &pivot)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->setPivot(pivot);
 	}
 
 	virtual	TTransformMode		getTransformMode()
 	{
+		NL3D_MEM_TRANSFORMABLE
 		return (TTransformMode)(uint)_Transformable->getTransformMode();
 	}
 	virtual	CMatrix::TRotOrder	getRotOrder()
 	{
+		NL3D_MEM_TRANSFORMABLE
 		return _Transformable->getRotOrder();
 	}
 
 	virtual	void			getPos(CVector &pos)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->getPos(pos);
 	}
 	virtual	void			getRotEuler(CVector &rot)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->getRotEuler(rot);
 	}
 	virtual	void			getRotQuat(CQuat &quat)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->getRotQuat(quat);
 	}
 	virtual	void			getScale(CVector &scale)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->getScale(scale);
 	}
 	virtual	void			getPivot(CVector &pivot)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->getPivot(pivot);
 	}
 
 	virtual	CVector			getPos()
 	{
+		NL3D_MEM_TRANSFORMABLE
 		return _Transformable->getPos();
 	}
 	virtual	CVector			getRotEuler()
 	{
+		NL3D_MEM_TRANSFORMABLE
 		return _Transformable->getRotEuler();
 	}
 	virtual	CQuat			getRotQuat()
 	{
+		NL3D_MEM_TRANSFORMABLE
 		return _Transformable->getRotQuat();
 	}
 	virtual	CVector			getScale()
 	{
+		NL3D_MEM_TRANSFORMABLE
 		return _Transformable->getScale();
 	}
 	virtual	CVector			getPivot()
 	{
+		NL3D_MEM_TRANSFORMABLE
 		return _Transformable->getPivot();
 	}
 
@@ -181,6 +205,7 @@ public:
 	// @{
 	virtual	void			lookAt (const CVector& eye, const CVector& target, float roll=0.f)
 	{
+		NL3D_MEM_TRANSFORMABLE
 		_Transformable->lookAt(eye, target, roll);
 	}
 	// @}

@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.14 2002/08/12 14:27:48 vizerie Exp $
+ * $Id: skeleton_user.h,v 1.15 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/mesh_base_instance.h"
 #include "3d/bone_user.h"
 
+#define NL3D_MEM_SKELETON						NL_ALLOC_CONTEXT( 3dSkl )
 
 namespace NL3D {
 
@@ -65,6 +66,7 @@ public:
 	CSkeletonUser(CScene *scene, IModel *model) : 
 	  CTransformUser(scene, model)
 	{
+		NL3D_MEM_SKELETON
 		_Skeleton= NLMISC::safe_cast<CSkeletonModel*>(_Transform);
 
 		// create user bones.
@@ -77,6 +79,7 @@ public:
 	}
 	virtual	~CSkeletonUser()
 	{
+		NL3D_MEM_SKELETON
 		// deleted in CTransformUser.
 		_Skeleton= NULL;
 		// user bones are auto deleted.
@@ -140,6 +143,7 @@ public:
 	// @{
 	CSkeletonModel		*getSkeleton()
 	{
+		NL3D_MEM_SKELETON
 		return _Skeleton;
 	}
 	// @}

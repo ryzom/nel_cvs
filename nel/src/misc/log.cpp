@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.46 2002/10/18 15:18:47 lecroart Exp $
+ * $Id: log.cpp,v 1.47 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -348,13 +348,13 @@ void CLog::displayRawString (const char *str)
 	{
 		if (TempString.empty())
 		{
-			time (&TempArgs.Date);
-			TempArgs.LogType = _LogType;
-			TempArgs.ProcessName = _ProcessName;
-			TempArgs.ThreadId = getThreadId();
-			TempArgs.Filename = _FileName;
-			TempArgs.Line = _Line;
-			TempArgs.CallstackAndLog = "";
+			localargs.Date = 0;
+			localargs.LogType = CLog::LOG_NO;
+			localargs.ProcessName = "";
+			localargs.ThreadId = 0;
+			localargs.Filename = NULL;
+			localargs.Line = -1;
+			localargs.CallstackAndLog = "";
 
 			TempString = str;
 		}
@@ -368,12 +368,12 @@ void CLog::displayRawString (const char *str)
 	{
 		if (TempString.empty())
 		{
-			time (&localargs.Date);
-			localargs.LogType = _LogType;
-			localargs.ProcessName = _ProcessName;
-			localargs.ThreadId = getThreadId();
-			localargs.Filename = _FileName;
-			localargs.Line = _Line;
+			localargs.Date = 0;
+			localargs.LogType = CLog::LOG_NO;
+			localargs.ProcessName = "";
+			localargs.ThreadId = 0;
+			localargs.Filename = NULL;
+			localargs.Line = -1;
 			localargs.CallstackAndLog = "";
 
 			disp = str;

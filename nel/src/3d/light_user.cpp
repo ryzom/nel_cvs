@@ -1,7 +1,7 @@
 /** \file light_user.cpp
  * <File description>
  *
- * $Id: light_user.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
+ * $Id: light_user.cpp,v 1.3 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@ namespace NL3D
 
 ULight *ULight::createLight ()
 {
+	NL3D_MEM_LIGHT
 	// return the new light
 	return new CLightUser;
 }

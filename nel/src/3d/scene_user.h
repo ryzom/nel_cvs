@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.33 2002/10/25 16:22:48 besson Exp $
+ * $Id: scene_user.h,v 1.34 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include "3d/animation_set_user.h"
 #include "3d/play_list_manager_user.h"
 
+#define NL3D_MEM_SCENE						NL_ALLOC_CONTEXT( 3dScene )
 
 namespace NL3D {
 
@@ -101,6 +102,7 @@ public:
 	// @{
 	CSceneUser(CDriverUser *drv)
 	{
+		NL3D_MEM_SCENE
 		nlassert(drv);
 		_DriverUser= drv;
 		_CurrentCamera = NULL;
@@ -125,6 +127,7 @@ public:
 	}
 	virtual	~CSceneUser()
 	{
+		NL3D_MEM_SCENE
 		_VisualCollisionManagers.clear();
 		_Transforms.clear();
 		_Landscapes.clear();
@@ -305,6 +308,7 @@ public:
 	// @{
 	CScene		&getScene()
 	{
+		NL3D_MEM_SCENE
 		return _Scene;
 	}
 	// @}

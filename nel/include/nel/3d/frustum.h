@@ -1,7 +1,7 @@
 /** \file frustum.h
  * <File description>
  *
- * $Id: frustum.h,v 1.5 2001/06/15 16:24:41 corvazier Exp $
+ * $Id: frustum.h,v 1.6 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 
+#define NL3D_MEM_FRUSTRUM						NL_ALLOC_CONTEXT( 3dFrtrm )
 
 namespace NL3D
 {
@@ -52,10 +53,14 @@ public:
 
 
 	/// Un-initialized frustum.
-	CFrustum() {}
+	CFrustum() 
+	{
+		NL3D_MEM_FRUSTRUM
+	}
 	/// ctor.
 	CFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true)
 	{
+		NL3D_MEM_FRUSTRUM
 		init( left,  right,  bottom,  top,  znear,  zfar, perspective);
 	}
 

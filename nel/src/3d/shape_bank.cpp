@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.14 2002/05/13 07:49:26 besson Exp $
+ * $Id: shape_bank.cpp,v 1.15 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,12 +126,17 @@ void CShapeBank::release(IShape* pShp)
 }
 
 // ***************************************************************************
+
 void CShapeBank::processWaitingShapes ()
 {
 	uint32 nTotalUploaded = 0;
 	TWaitingShapesMap::iterator wsmmIt = WaitingShapes.begin();
 	while( wsmmIt != WaitingShapes.end() )
 	{
+		// Backup next iterator
+		TWaitingShapesMap::iterator wsmmItNext = wsmmIt;
+		wsmmItNext++;
+
 		const string &shapeName = wsmmIt->first;
 		CWaitingShape &rWS = wsmmIt->second;
 		IShape *pShp = rWS.ShapePtr; // Take care this value is shared between thread so copy it in a local variable first
@@ -259,13 +264,7 @@ void CShapeBank::processWaitingShapes ()
 						if (!bFound)
 							*bSignal = true;
 					}
-					TWaitingShapesMap::iterator delIt = wsmmIt;
-					++wsmmIt;
-					WaitingShapes.erase (delIt);
-				}
-				else
-				{
-					++wsmmIt;
+					WaitingShapes.erase (wsmmIt);
 				}
 			break;
 
@@ -274,11 +273,7 @@ void CShapeBank::processWaitingShapes ()
 			break;
 		}
 
-		// The increment is done in the AsyncLoad_Delete and error processes
-		if ((rWS.State != AsyncLoad_Delete) && (rWS.State != AsyncLoad_Error))
-		{
-			++wsmmIt;
-		}
+		wsmmIt = wsmmItNext;
 	}
 }
 

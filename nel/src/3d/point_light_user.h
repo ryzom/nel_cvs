@@ -1,7 +1,7 @@
 /** \file point_light_user.h
  * <File description>
  *
- * $Id: point_light_user.h,v 1.2 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: point_light_user.h,v 1.3 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/u_point_light.h"
 #include "3d/transform_user.h"
 
+#define NL3D_MEM_POINTLIGHT						NL_ALLOC_CONTEXT( 3dPtLgt )
 
 namespace NL3D 
 {
@@ -59,6 +60,7 @@ public:
 	CPointLightUser(CScene *scene, IModel *trans);
 	virtual	~CPointLightUser()
 	{
+		NL3D_MEM_POINTLIGHT
 		// deleted in CTransformUser.
 		_PointLightModel= NULL;
 	}

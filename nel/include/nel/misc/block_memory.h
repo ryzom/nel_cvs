@@ -1,7 +1,7 @@
 /** \file block_memory.h
  * Block memory allocation
  *
- * $Id: block_memory.h,v 1.3 2002/02/06 16:52:08 berenguier Exp $
+ * $Id: block_memory.h,v 1.4 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,7 +117,9 @@ public:
 		
 		// construct the allocated element.
 		if( __ctor_dtor__ )
+#undef new
 			new (ret) T;
+#define new NL_NEW
 
 
 		// some simple Check.
@@ -248,7 +250,7 @@ private:
 #endif
 
 		// allocate.
-		block.Data= ::malloc(_BlockSize * nodeSize);
+		block.Data = (void*)new uint8 [_BlockSize * nodeSize];
 
 		// by default, all elements are not allocated, build the list of free elements.
 		void	*ptr= block.Data;
@@ -291,7 +293,7 @@ private:
 	}
 	void		releaseBlock(CBlock &block)
 	{
-		::free(block.Data);
+		delete [] ((uint8*)block.Data);
 	}
 
 };

@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.20 2002/08/09 09:31:13 berenguier Exp $
+ * $Id: instance_group_user.h,v 1.21 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/3d/u_instance_group.h"
 #include "3d/scene_group.h"
 
+#define NL3D_MEM_IG						NL_ALLOC_CONTEXT( 3dIg )
 
 namespace NLMISC
 {
@@ -125,7 +126,11 @@ private:
 
 public:
 	// Debug purpose only.
-	CInstanceGroup	&getInternalIG() {return _InstanceGroup;}
+	CInstanceGroup	&getInternalIG() 
+	{
+		NL3D_MEM_IG
+		return _InstanceGroup;
+	}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.16 2002/07/23 17:09:59 corvazier Exp $
+ * $Id: animation.cpp,v 1.17 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,7 @@ H_AUTO_DECL( NL3D_UI_Animation )
 
 CAnimation::CAnimation() : _BeginTimeTouched(true), _EndTimeTouched(true), _AnimLoopTouched(true)
 {	
+	NL3D_MEM_ANIMATION
 	_MinEndTime = -FLT_MAX;
 }
 
@@ -51,6 +52,7 @@ CAnimation::CAnimation() : _BeginTimeTouched(true), _EndTimeTouched(true), _Anim
 
 CAnimation::~CAnimation ()
 {
+	NL3D_MEM_ANIMATION
 	// Delete all the pointers in the array
 	for (uint i=0; i<_TrackVector.size(); i++)
 		// Delete
@@ -61,6 +63,7 @@ CAnimation::~CAnimation ()
 
 void CAnimation::addTrack (const std::string& name, ITrack* pChannel)
 {
+	NL3D_MEM_ANIMATION
 	// Add an entry in the map
 	_IdByName.insert (TMapStringUInt::value_type (name, (uint32)_TrackVector.size()));
 
@@ -76,6 +79,7 @@ void CAnimation::addTrack (const std::string& name, ITrack* pChannel)
 
 void CAnimation::serial (NLMISC::IStream& f)
 {
+	NL3D_MEM_ANIMATION
 	// Serial a header
 	f.serialCheck ((uint32)'_LEN');
 	f.serialCheck ((uint32)'MINA');
@@ -103,6 +107,7 @@ void CAnimation::serial (NLMISC::IStream& f)
 
 void CAnimation::getTrackNames (std::set<std::string>& setString) const
 {
+	NL3D_MEM_ANIMATION
 	// For each track name
 	TMapStringUInt::const_iterator ite=_IdByName.begin();
 	while (ite!=_IdByName.end())
@@ -119,6 +124,7 @@ void CAnimation::getTrackNames (std::set<std::string>& setString) const
 
 TAnimationTime CAnimation::getBeginTime () const
 {
+	NL3D_MEM_ANIMATION
 	NL3D_HAUTO_UI_ANIMATION;
 
 	if (_BeginTimeTouched)
@@ -150,6 +156,7 @@ TAnimationTime CAnimation::getBeginTime () const
 
 TAnimationTime CAnimation::getEndTime () const
 {
+	NL3D_MEM_ANIMATION
 	NL3D_HAUTO_UI_ANIMATION;
 
 	if (_EndTimeTouched)
@@ -184,6 +191,7 @@ TAnimationTime CAnimation::getEndTime () const
 // ***************************************************************************
 bool			CAnimation::allTrackLoop() const
 {
+	NL3D_MEM_ANIMATION
 	NL3D_HAUTO_UI_ANIMATION;
 
 	if(_AnimLoopTouched)
@@ -213,6 +221,7 @@ bool			CAnimation::allTrackLoop() const
 
 UTrack* CAnimation::getTrackByName (const char* name)
 {
+	NL3D_MEM_ANIMATION
 	NL3D_HAUTO_UI_ANIMATION;
 
 	// Get track id
@@ -231,6 +240,7 @@ UTrack* CAnimation::getTrackByName (const char* name)
 
 void CAnimation::releaseTrack (UTrack* track)
 {
+	NL3D_MEM_ANIMATION
 	NL3D_HAUTO_UI_ANIMATION;
 
 	// Nothing to do
@@ -240,6 +250,7 @@ void CAnimation::releaseTrack (UTrack* track)
 
 void CAnimation::setMinEndTime (TAnimationTime minEndTime)
 {
+	NL3D_MEM_ANIMATION
 	_MinEndTime = minEndTime;
 }
 
@@ -247,6 +258,7 @@ void CAnimation::setMinEndTime (TAnimationTime minEndTime)
 
 UAnimation* UAnimation::createAnimation (const char* sPath)
 {
+	NL3D_MEM_ANIMATION
 	NL3D_HAUTO_UI_ANIMATION;
 
 	// Allocate an animation
@@ -273,6 +285,7 @@ UAnimation* UAnimation::createAnimation (const char* sPath)
 
 void UAnimation::releaseAnimation (UAnimation* animation)
 {
+	NL3D_MEM_ANIMATION
 	NL3D_HAUTO_UI_ANIMATION;
 
 	// Cast the pointer

@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.13 2002/10/25 15:52:48 berenguier Exp $
+ * $Id: instance_user.cpp,v 1.14 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@ namespace NL3D
 CInstanceUser::CInstanceUser(CScene *scene, IModel *trans) : 
   CTransformUser(scene, trans)
 {
+	NL3D_MEM_INSTANCE
 	_Instance= safe_cast<CTransformShape*>(_Transform);
 	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(_Instance);
 
@@ -60,12 +61,14 @@ CInstanceUser::CInstanceUser(CScene *scene, IModel *trans) :
 // ***************************************************************************
 void				CInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
 {
+	NL3D_MEM_INSTANCE
 	_Instance->getAABBox(bbox);
 }
 
 // ***************************************************************************
 void CInstanceUser::setBlendShapeFactor (const std::string &blendShapeName, float factor, bool dynamic)
 {
+	NL3D_MEM_INSTANCE
 	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(_Instance);
 
 	if (mi)
@@ -78,6 +81,7 @@ void CInstanceUser::setBlendShapeFactor (const std::string &blendShapeName, floa
 // ***************************************************************************
 void		CInstanceUser::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
 {
+	NL3D_MEM_INSTANCE
 	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(_Instance);
 
 	// Just for CMeshBaseInstance.
@@ -91,6 +95,7 @@ void		CInstanceUser::changeMRMDistanceSetup(float distanceFinest, float distance
 // ***************************************************************************
 void		CInstanceUser::setShapeDistMax(float distMax)
 {
+	NL3D_MEM_INSTANCE
 	if(_Instance && _Instance->Shape)
 	{
 		_Instance->Shape->setDistMax(distMax);
@@ -100,6 +105,7 @@ void		CInstanceUser::setShapeDistMax(float distMax)
 // ***************************************************************************
 float		CInstanceUser::getShapeDistMax() const
 {
+	NL3D_MEM_INSTANCE
 	if(_Instance && _Instance->Shape)
 	{
 		return _Instance->Shape->getDistMax();

@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.8 2002/08/05 15:29:11 berenguier Exp $
+ * $Id: play_list_user.h,v 1.9 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/animation_playlist.h"
 #include "3d/transform_user.h"
 
+#define NL3D_MEM_PLAYLIST						NL_ALLOC_CONTEXT( 3dPL )
 
 namespace NL3D 
 {
@@ -62,6 +63,7 @@ public:
 	/// Constructor
 	CPlayListUser(NLMISC::CSmartPtr<CAnimationSet>		animationSet)
 	{
+		NL3D_MEM_PLAYLIST
 		nlassert(animationSet!=NULL);
 		_AnimationSet= animationSet;
 

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.25 2002/06/28 16:52:10 berenguier Exp $
+ * $Id: instance_group_user.cpp,v 1.26 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,7 @@ namespace NL3D
 
 UInstanceGroup	*UInstanceGroup::createInstanceGroup (const std::string &instanceGroup)
 {
+	NL3D_MEM_IG
 	// Create the instance group
 	CInstanceGroupUser *user=new CInstanceGroupUser;
 
@@ -63,6 +64,7 @@ UInstanceGroup	*UInstanceGroup::createInstanceGroup (const std::string &instance
 
 void UInstanceGroup::createInstanceGroupAsync (const std::string &instanceGroup, UInstanceGroup	**pIG)
 {
+	NL3D_MEM_IG
 	CAsyncFileManager::getInstance().loadIGUser (instanceGroup, pIG);
 }
 
@@ -70,6 +72,7 @@ void UInstanceGroup::createInstanceGroupAsync (const std::string &instanceGroup,
 
 void UInstanceGroup::stopCreateInstanceGroupAsync (UInstanceGroup **ppIG)
 {
+	NL3D_MEM_IG
 	// Theorically should stop the async file manager but the async file manager can only be stopped
 	// between tasks (a file reading) so that is no sense to do anything here
 	while (*ppIG == NULL)
@@ -85,12 +88,14 @@ void UInstanceGroup::stopCreateInstanceGroupAsync (UInstanceGroup **ppIG)
 // ***************************************************************************
 CInstanceGroupUser::CInstanceGroupUser()
 {
+	NL3D_MEM_IG
 	_AddToSceneState = StateNotAdded;
 }
 
 // ***************************************************************************
 bool CInstanceGroupUser::init (const std::string &instanceGroup)
 {
+	NL3D_MEM_IG
 	// Create a file
 	CIFile file;
 	std::string path = CPath::lookup (instanceGroup, false);
@@ -124,6 +129,7 @@ bool CInstanceGroupUser::init (const std::string &instanceGroup)
 // ***************************************************************************
 void CInstanceGroupUser::setTransformNameCallback (ITransformName *pTN)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setTransformNameCallback (pTN);
 }
 
@@ -131,6 +137,7 @@ void CInstanceGroupUser::setTransformNameCallback (ITransformName *pTN)
 // ***************************************************************************
 void CInstanceGroupUser::setAddRemoveInstanceCallback(IAddRemoveInstance *callback)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setAddRemoveInstanceCallback(callback);
 }
 
@@ -138,6 +145,7 @@ void CInstanceGroupUser::setAddRemoveInstanceCallback(IAddRemoveInstance *callba
 // ***************************************************************************
 void CInstanceGroupUser::setIGAddBeginCallback(IIGAddBegin *callback)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setIGAddBeginCallback(callback);
 }
 
@@ -146,6 +154,7 @@ void CInstanceGroupUser::setIGAddBeginCallback(IIGAddBegin *callback)
 // ***************************************************************************
 void CInstanceGroupUser::addToScene (class UScene& scene, UDriver *driver)
 {
+	NL3D_MEM_IG
 	// Get driver pointer
 	IDriver *cDriver= driver ? NLMISC::safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
 
@@ -156,6 +165,7 @@ void CInstanceGroupUser::addToScene (class UScene& scene, UDriver *driver)
 // ***************************************************************************
 void CInstanceGroupUser::getInstanceMatrix(uint instanceNb,NLMISC::CMatrix &dest) const
 {
+	NL3D_MEM_IG
 	_InstanceGroup.getInstanceMatrix(instanceNb, dest);	
 }
 
@@ -163,6 +173,7 @@ void CInstanceGroupUser::getInstanceMatrix(uint instanceNb,NLMISC::CMatrix &dest
 // ***************************************************************************
 void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.addToScene (scene, driver);
 	// Fill in the map accelerating search of instance by names
 	for( uint32 i = 0; i < _InstanceGroup._Instances.size(); ++i)
@@ -181,6 +192,7 @@ void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
 // ***************************************************************************
 void CInstanceGroupUser::addToSceneAsync (class UScene& scene, UDriver *driver)
 {
+	NL3D_MEM_IG
 	IDriver *cDriver= driver ? NLMISC::safe_cast<CDriverUser*>(driver)->getDriver() : NULL;
 	// Add to the scene
 	_InstanceGroup.addToSceneAsync (((CSceneUser*)&scene)->getScene(), cDriver);
@@ -192,12 +204,14 @@ void CInstanceGroupUser::addToSceneAsync (class UScene& scene, UDriver *driver)
 // ***************************************************************************
 void CInstanceGroupUser::stopAddToSceneAsync ()
 {
+	NL3D_MEM_IG
 	_InstanceGroup.stopAddToSceneAsync ();
 }
 
 // ***************************************************************************
 UInstanceGroup::TState CInstanceGroupUser::getAddToSceneState ()
 {
+	NL3D_MEM_IG
 	UInstanceGroup::TState newState = (UInstanceGroup::TState)_InstanceGroup.getAddToSceneState ();
 	if ((_AddToSceneState == StateAdding) && (newState == StateAdded))
 	{
@@ -221,6 +235,7 @@ UInstanceGroup::TState CInstanceGroupUser::getAddToSceneState ()
 // ***************************************************************************
 void CInstanceGroupUser::removeFromScene (class UScene& scene)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.removeFromScene (((CSceneUser*)&scene)->getScene());
 	// Remove all instance in the map
 	map<string,CInstanceUser*>::iterator it = _Instances.begin();
@@ -235,6 +250,7 @@ void CInstanceGroupUser::removeFromScene (class UScene& scene)
 // ***************************************************************************
 uint CInstanceGroupUser::getNumInstance () const
 {
+	NL3D_MEM_IG
 	return _InstanceGroup.getNumInstance ();
 }
 
@@ -242,6 +258,7 @@ uint CInstanceGroupUser::getNumInstance () const
 
 const std::string& CInstanceGroupUser::getShapeName (uint instanceNb) const
 {
+	NL3D_MEM_IG
 	// Check args
 	if (instanceNb>=_InstanceGroup.getNumInstance ())
 		nlerror("getShapeName*(): bad instance Id");
@@ -252,6 +269,7 @@ const std::string& CInstanceGroupUser::getShapeName (uint instanceNb) const
 // ***************************************************************************
 const std::string& CInstanceGroupUser::getInstanceName (uint instanceNb) const
 {
+	NL3D_MEM_IG
 	// Check args
 	if (instanceNb>=_InstanceGroup.getNumInstance ())
 		nlerror("getInstanceName*(): bad instance Id");
@@ -262,6 +280,7 @@ const std::string& CInstanceGroupUser::getInstanceName (uint instanceNb) const
 // ***************************************************************************
 const NLMISC::CVector& CInstanceGroupUser::getInstancePos (uint instanceNb) const
 {
+	NL3D_MEM_IG
 	// Check args
 	if (instanceNb>=_InstanceGroup.getNumInstance ())
 		nlerror("getInstancePos*(): bad instance Id");
@@ -272,6 +291,7 @@ const NLMISC::CVector& CInstanceGroupUser::getInstancePos (uint instanceNb) cons
 // ***************************************************************************
 const NLMISC::CQuat& CInstanceGroupUser::getInstanceRot (uint instanceNb) const
 {
+	NL3D_MEM_IG
 	// Check args
 	if (instanceNb>=_InstanceGroup.getNumInstance ())
 		nlerror("getInstanceRot*(): bad instance Id");
@@ -282,6 +302,7 @@ const NLMISC::CQuat& CInstanceGroupUser::getInstanceRot (uint instanceNb) const
 // ***************************************************************************
 const NLMISC::CVector& CInstanceGroupUser::getInstanceScale (uint instanceNb) const
 {
+	NL3D_MEM_IG
 	// Check args
 	if (instanceNb>=_InstanceGroup.getNumInstance ())
 		nlerror("getInstanceScale*(): bad instance Id");
@@ -294,6 +315,7 @@ const NLMISC::CVector& CInstanceGroupUser::getInstanceScale (uint instanceNb) co
 // ***************************************************************************
 UInstance *CInstanceGroupUser::getByName (std::string &name)
 {
+	NL3D_MEM_IG
 	map<string,CInstanceUser*>::iterator it = _Instances.find (name);
 	if (it != _Instances.end())
 		return it->second;
@@ -305,6 +327,7 @@ UInstance *CInstanceGroupUser::getByName (std::string &name)
 
 const UInstance *CInstanceGroupUser::getByName (std::string &name) const
 {
+	NL3D_MEM_IG
 	map<string,CInstanceUser*>::const_iterator it = _Instances.find (name);
 	if (it != _Instances.end())
 		return it->second;
@@ -316,12 +339,14 @@ const UInstance *CInstanceGroupUser::getByName (std::string &name) const
 
 void CInstanceGroupUser::setLightFactor (const std::string &LightName, CRGBA nFactor)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setLightFactor (LightName, nFactor);
 }
 
 // ***************************************************************************
 void CInstanceGroupUser::setBlendShapeFactor (const std::string &bsName, float rFactor)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setBlendShapeFactor (bsName, rFactor);
 }
 
@@ -329,18 +354,21 @@ void CInstanceGroupUser::setBlendShapeFactor (const std::string &bsName, float r
 
 void CInstanceGroupUser::createRoot (UScene &scene)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.createRoot (((CSceneUser*)&scene)->getScene());
 }
 
 // ***************************************************************************
 void CInstanceGroupUser::setClusterSystem (UInstanceGroup *pClusterSystem)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setClusterSystem (&((CInstanceGroupUser*)pClusterSystem)->_InstanceGroup);
 }
 
 // ***************************************************************************
 bool CInstanceGroupUser::linkToParentCluster(UInstanceGroup *father)
 {
+	NL3D_MEM_IG
 	if (father)
 		return _InstanceGroup.linkToParent(&(NLMISC::safe_cast<CInstanceGroupUser *>(father)->_InstanceGroup));
 	else
@@ -353,42 +381,49 @@ bool CInstanceGroupUser::linkToParentCluster(UInstanceGroup *father)
 // ***************************************************************************
 void CInstanceGroupUser::getDynamicPortals (std::vector<std::string> &names)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.getDynamicPortals (names);
 }
 
 // ***************************************************************************
 void CInstanceGroupUser::setDynamicPortal (std::string& name, bool opened)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setDynamicPortal (name, opened);
 }
 
 // ***************************************************************************
 bool CInstanceGroupUser::getDynamicPortal (std::string& name)
 {
+	NL3D_MEM_IG
 	return _InstanceGroup.getDynamicPortal (name);
 }
 
 // ***************************************************************************
 void CInstanceGroupUser::setPos (const NLMISC::CVector &pos)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setPos (pos);
 }
 
 // ***************************************************************************
 void CInstanceGroupUser::setRotQuat (const NLMISC::CQuat &q)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setRotQuat (q);
 }
 
 // ***************************************************************************
 CVector CInstanceGroupUser::getPos ()
 {
+	NL3D_MEM_IG
 	return _InstanceGroup.getPos ();
 }
 
 // ***************************************************************************
 CQuat CInstanceGroupUser::getRotQuat ()
 {
+	NL3D_MEM_IG
 	return _InstanceGroup.getRotQuat();
 }
 
@@ -396,12 +431,14 @@ CQuat CInstanceGroupUser::getRotQuat ()
 // ***************************************************************************
 void			CInstanceGroupUser::freezeHRC()
 {
+	NL3D_MEM_IG
 	_InstanceGroup.freezeHRC();
 }
 
 // ***************************************************************************
 void			CInstanceGroupUser::unfreezeHRC()
 {
+	NL3D_MEM_IG
 	_InstanceGroup.unfreezeHRC();
 }
 
@@ -409,6 +446,7 @@ void			CInstanceGroupUser::unfreezeHRC()
 // ***************************************************************************
 void			CInstanceGroupUser::setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor)
 {
+	NL3D_MEM_IG
 	_InstanceGroup.setPointLightFactor(lightGroupName, nFactor);
 }
 
@@ -417,6 +455,7 @@ bool			CInstanceGroupUser::getStaticLightSetup(
 		const std::string &retrieverIdentifier, sint surfaceId, const NLMISC::CVector &localPos, 
 		std::vector<CPointLightInfluence> &pointLightList, uint8 &sunContribution, NLMISC::CRGBA &localAmbient)
 {
+	NL3D_MEM_IG
 	return _InstanceGroup.getStaticLightSetup(retrieverIdentifier, surfaceId, localPos, pointLightList, 
 		sunContribution, localAmbient);
 }

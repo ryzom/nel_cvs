@@ -1,7 +1,7 @@
 /** \file viewport.cpp
  * <File description>
  *
- * $Id: viewport.cpp,v 1.6 2002/02/28 12:59:52 besson Exp $
+ * $Id: viewport.cpp,v 1.7 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,12 +36,14 @@ namespace NL3D
 
 CViewport::CViewport()
 {
+	NL3D_MEM_VIEWPORT
 	initFullScreen ();
 }
 
 
 void CViewport::init (float x, float y, float width, float height)
 {
+	NL3D_MEM_VIEWPORT
 	// Simply copy
 	_X=x;
 	clamp (_X, 0.f, 1.f);
@@ -56,6 +58,7 @@ void CViewport::init (float x, float y, float width, float height)
 
 void CViewport::initFullScreen ()
 {
+	NL3D_MEM_VIEWPORT
 	// Very easy
 	_X=0.f;
 	_Y=0.f;
@@ -66,6 +69,7 @@ void CViewport::initFullScreen ()
 
 void CViewport::init16_9 ()
 {
+	NL3D_MEM_VIEWPORT
 	// Very easy
 	_X=0.f;
 	_Y=(1.f-0.75f)/2;
@@ -76,6 +80,7 @@ void CViewport::init16_9 ()
 
 void CViewport::getRayWithPoint (float x, float y, CVector& pos, CVector& dir, const CMatrix& camMatrix, const CFrustum& camFrust) const
 {
+	NL3D_MEM_VIEWPORT
 	float xVP=(x-_X)/_Width;
 	float yVP=(y-_Y)/_Height;
 

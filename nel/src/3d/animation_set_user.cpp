@@ -1,7 +1,7 @@
 /** \file animation_set_user.cpp
  * <File description>
  *
- * $Id: animation_set_user.cpp,v 1.5 2002/02/28 12:59:49 besson Exp $
+ * $Id: animation_set_user.cpp,v 1.6 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,8 @@ namespace NL3D
 
 UAnimation *CAnimationSetUser::getAnimation (uint animationId)
 {
+	NL3D_MEM_ANIMATION_SET
+
 	return _AnimationSet->getAnimation (animationId);
 }
 
@@ -42,6 +44,8 @@ UAnimation *CAnimationSetUser::getAnimation (uint animationId)
 
 const CAnimationSet* CAnimationSetUser::getAnimationSet () const
 {
+	NL3D_MEM_ANIMATION_SET
+
 	return _AnimationSet;
 }
 

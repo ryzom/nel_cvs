@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.16 2002/08/07 15:23:31 berenguier Exp $
+ * $Id: landscape_user.h,v 1.17 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/zone_manager.h"
 #include "3d/scene.h"
 
+#define NL3D_MEM_LANDSCAPE						NL_ALLOC_CONTEXT( 3dLand )
 
 namespace NL3D
 {
@@ -60,12 +61,14 @@ public:
 	// @{
 	CLandscapeUser(CScene *scene)
 	{
+		NL3D_MEM_LANDSCAPE
 		nlassert(scene);
 		_Scene= scene;
 		_Landscape= (CLandscapeModel*)_Scene->createModel(LandscapeModelId);
 	}
 	virtual	~CLandscapeUser()
 	{
+		NL3D_MEM_LANDSCAPE
 		_Scene->deleteModel(_Landscape);
 		_Landscape= NULL;
 	}
@@ -139,10 +142,12 @@ public:
 
 	virtual	void		show()
 	{
+		NL3D_MEM_LANDSCAPE
 		_Landscape->show();
 	}
 	virtual	void		hide()
 	{
+		NL3D_MEM_LANDSCAPE
 		_Landscape->hide();
 	}
 
@@ -179,6 +184,7 @@ public:
 	// @{
 	CLandscapeModel		*getLandscape()
 	{
+		NL3D_MEM_LANDSCAPE
 		return _Landscape;
 	}
 	// @}

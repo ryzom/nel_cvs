@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.9 2002/10/10 13:03:28 berenguier Exp $
+ * $Id: instance_material_user.h,v 1.10 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/texture_file.h"
 #include "3d/texture_multi_file.h"
 
+#define NL3D_MEM_MATERIAL_INSTANCE						NL_ALLOC_CONTEXT( 3dMatI )
 
 namespace NL3D
 {
@@ -55,6 +56,7 @@ public:
 	/// Constructor
 	CInstanceMaterialUser(CMeshBaseInstance	*mbi, CMaterial *mat, CAsyncTextureBlock *asyncTextBlock)
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		nlassert(mat && mbi && asyncTextBlock);
 		_MBI= mbi;
 		_Material= mat;
@@ -63,6 +65,7 @@ public:
 	/// dtor
 	virtual	~CInstanceMaterialUser()
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 	}
 
 
@@ -71,10 +74,12 @@ public:
 	// @{
 	virtual	bool				isLighted() const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		return _Material->isLighted();
 	}
 	virtual	bool				isUserColor() const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		return _Material->getShader()==CMaterial::UserColor;
 	}
 	// @}
@@ -85,51 +90,63 @@ public:
 
 	virtual	void				setEmissive( CRGBA emissive=CRGBA(0,0,0) )
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		_Material->setEmissive(emissive);
 	}
 	virtual	void				setAmbient( CRGBA ambient=CRGBA(0,0,0) )
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		_Material->setAmbient( ambient);
 	}
 	virtual	void				setDiffuse( CRGBA diffuse=CRGBA(0,0,0) )
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		_Material->setDiffuse( diffuse);
 	}
 	virtual	void				setOpacity( uint8	opa )
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		_Material->setOpacity( opa );
 	}
 	virtual	void				setSpecular( CRGBA specular=CRGBA(0,0,0) )
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		_Material->setSpecular( specular);
 	}
 	virtual	void				setShininess( float shininess )
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		_Material->setShininess( shininess );
 	}
 
 	virtual	CRGBA				getEmissive() const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		return _Material->getEmissive();
 	}
 	virtual	CRGBA				getAmbient() const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		return _Material->getAmbient();
 	}
 	virtual	CRGBA				getDiffuse() const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		return _Material->getDiffuse();
 	}
 	virtual	uint8				getOpacity() const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		return _Material->getOpacity();
 	}
 	virtual	CRGBA				getSpecular() const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		return _Material->getSpecular();
 	}
 	virtual	float				getShininess() const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		return _Material->getShininess();
 	}
 
@@ -140,10 +157,12 @@ public:
 	// @{
 	virtual	void				setColor(CRGBA rgba) 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		_Material->setColor(rgba) ;
 	}
 	virtual	CRGBA				getColor(void) const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		return _Material->getColor();
 	}
 	// @}
@@ -153,11 +172,13 @@ public:
 	// @{
 	virtual	void				setUserColor(CRGBA userColor)
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		if(isUserColor())
 			_Material->setUserColor(userColor);
 	}
 	virtual	CRGBA				getUserColor() const 
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		if(isUserColor())
 			return _Material->getUserColor();
 		else
@@ -169,6 +190,7 @@ public:
 	// @{
 	virtual void				setConstantColor(uint stage, NLMISC::CRGBA color)
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		if (stage >= IDRV_MAT_MAXTEXTURES)
 		{
 			nlwarning("UInstanceMaterialUser::setConstantColor : invalid stage");
@@ -178,6 +200,7 @@ public:
 	}
 	virtual NLMISC::CRGBA		getConstantColor(uint stage) const
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		if (stage >= IDRV_MAT_MAXTEXTURES)
 		{
 			nlwarning("UInstanceMaterialUser::getConstantColor : invalid stage");
@@ -195,9 +218,9 @@ public:
 	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0);
 	// @}
 
-
 	virtual sint				getLastTextureStage() const
 	{
+		NL3D_MEM_MATERIAL_INSTANCE
 		sint lastStage = -1;
 		for(uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 		{
@@ -218,7 +241,11 @@ private:
 public:
 
 	// Internal Use only.
-	CMaterial	*getMaterial() const {return _Material;}
+	CMaterial	*getMaterial() const 
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		return _Material;
+	}
 
 };
 

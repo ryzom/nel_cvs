@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.14 2002/08/05 15:29:11 berenguier Exp $
+ * $Id: transform_user.h,v 1.15 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/scene.h"
 #include "3d/transformable_user.h"
 
+#define NL3D_MEM_TRANSFORM						NL_ALLOC_CONTEXT( 3dTrans )
 
 namespace NL3D 
 {
@@ -63,6 +64,7 @@ public:
 	/// Give a Scene Instance. CTransformUser owns it, and will delete it.
 	CTransformUser(CScene *scene, IModel *trans) : CTransformableUser( static_cast<ITransformable*>((CTransform*)trans) )
 	{
+		NL3D_MEM_TRANSFORM
 		nlassert(scene && trans);
 		_Scene= scene;
 		// NB: _Transform is "same" pointer as ITransformable, but correclty casted.
@@ -73,6 +75,7 @@ public:
 	}
 	virtual	~CTransformUser()
 	{
+		NL3D_MEM_TRANSFORM
 		if (_Transform)
 		{
 			// Must test if _Transform is a CTransfromShape. If yes, must call deleteInstance().
@@ -92,6 +95,7 @@ public:
 	/// unlink this from oldparent, and make this be a son of newFather.
 	virtual	void			parent(UTransform *newFather)
 	{
+		NL3D_MEM_TRANSFORM
 		nlassert(_Transform) ; // object invalid now ...
 		if(newFather)
 		{
@@ -118,24 +122,28 @@ public:
 	/// Hide the object and his sons.
 	virtual	void			hide()
 	{
+		NL3D_MEM_TRANSFORM
 		nlassert(_Transform) ; // object invalid now ...
 		_Transform->hide();
 	}
 	/// Show the objet and his sons.
 	virtual	void			show()
 	{
+		NL3D_MEM_TRANSFORM
 		nlassert(_Transform) ; // object invalid now ...
 		_Transform->show();
 	}
 	/// herit the visibility from his father. (default behavior).
 	virtual	void			heritVisibility()
 	{
+		NL3D_MEM_TRANSFORM
 		nlassert(_Transform) ; // object invalid now ...
 		_Transform->heritVisibility();
 	}
 	/// Get the local visibility state.
 	virtual	TVisibility		getVisibility()
 	{
+		NL3D_MEM_TRANSFORM
 		nlassert(_Transform) ; // object invalid now ...
 		return (UTransform::TVisibility)(uint32)_Transform->getVisibility();
 	}
@@ -149,23 +157,47 @@ public:
 	virtual	void			unfreezeHRC();
 	// @}
 
-	virtual void  setOrderingLayer(uint layer) { _Transform->setOrderingLayer(layer); }
+	virtual void  setOrderingLayer(uint layer) 
+	{ 
+		NL3D_MEM_TRANSFORM
+		_Transform->setOrderingLayer(layer); 
+	}
 
 	/// Get the ordering layer
-	virtual uint getOrderingLayer() const { return _Transform->getOrderingLayer(); }
+	virtual uint getOrderingLayer() const 
+	{ 
+		NL3D_MEM_TRANSFORM
+		return _Transform->getOrderingLayer(); 
+	}
 
 
 	/// name Lighting Behavior.
 	// @{
-	virtual	void			setUserLightable(bool enable) {_Transform->setUserLightable(enable);}
-	virtual	bool			getUserLightable() const  {return  _Transform->getUserLightable();}
+	virtual	void			setUserLightable(bool enable) 
+	{
+		NL3D_MEM_TRANSFORM
+		_Transform->setUserLightable(enable);
+	}
+	virtual	bool			getUserLightable() const  
+	{
+		NL3D_MEM_TRANSFORM
+		return  _Transform->getUserLightable();
+	}
 	// @}
 
 
-	virtual void			setLogicInfo(ILogicInfo *logicInfo) {_Transform->setLogicInfo(logicInfo);}
+	virtual void			setLogicInfo(ILogicInfo *logicInfo) 
+	{
+		NL3D_MEM_TRANSFORM
+		_Transform->setLogicInfo(logicInfo);
+	}
 
 
-	virtual bool	getLastClippedState() const {return _Transform->getLastClippedState();}
+	virtual bool	getLastClippedState() const 
+	{
+		NL3D_MEM_TRANSFORM
+		return _Transform->getLastClippedState();
+	}
 
 	virtual	const CMatrix	&getLastWorldMatrixComputed() const;
 
@@ -186,10 +218,12 @@ public:
 	// @{
 	CScene		*getScene()
 	{
+		NL3D_MEM_TRANSFORM
 		return _Scene;
 	}
 	CTransform	*getTransform()
 	{
+		NL3D_MEM_TRANSFORM
 		return _Transform;
 	}
 

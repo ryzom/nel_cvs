@@ -1,7 +1,7 @@
 /** \file bone_user.h
  * <File description>
  *
- * $Id: bone_user.h,v 1.2 2001/08/01 15:44:27 berenguier Exp $
+ * $Id: bone_user.h,v 1.3 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/bone.h"
 #include "3d/transformable_user.h"
 
+#define NL3D_MEM_BONES						NL_ALLOC_CONTEXT( 3dBones )
 
 namespace NL3D {
 
@@ -54,10 +55,12 @@ public:
 	CBoneUser(CBone *bone) : CTransformableUser( static_cast<ITransformable*>(bone) )
 	{
 		// do nothing.
+		NL3D_MEM_BONES
 	}
 	virtual	~CBoneUser()
 	{
 		// do nothing.
+		NL3D_MEM_BONES
 	}
 	// @}
 
@@ -66,6 +69,8 @@ public:
 
 	virtual	const CMatrix	&getLastWorldMatrixComputed() const
 	{
+		NL3D_MEM_BONES
+
 		return static_cast<CBone*>(_Transformable)->getWorldMatrix();
 	}
 

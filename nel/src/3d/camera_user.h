@@ -1,7 +1,7 @@
 /** \file camera_user.h
  * <File description>
  *
- * $Id: camera_user.h,v 1.3 2002/06/28 16:52:10 berenguier Exp $
+ * $Id: camera_user.h,v 1.4 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "3d/transform_user.h"
 #include "3d/camera.h"
 
+#define NL3D_MEM_CAMERA					NL_ALLOC_CONTEXT( 3dCam )
 
 namespace NL3D
 {
@@ -58,6 +59,7 @@ public:
 	CCameraUser(CScene *scene) : 
 	  CTransformUser(scene, scene->createModel(CameraId) )
 	{
+		  NL3D_MEM_CAMERA
 		_Camera= NLMISC::safe_cast<CCamera*>(_Transform);
 
 		// Default perspective.
@@ -65,6 +67,7 @@ public:
 	}
 	virtual	~CCameraUser()
 	{
+		NL3D_MEM_CAMERA
 		// deleted in CTransformUser.
 		_Camera= NULL;
 	}
@@ -75,34 +78,42 @@ public:
 	// @{
 	virtual	void		setFrustum(const CFrustum &f)
 	{
+		NL3D_MEM_CAMERA
 		_Camera->setFrustum(f);
 	}
 	virtual	const CFrustum&	getFrustum() const 
 	{
+		NL3D_MEM_CAMERA
 		return _Camera->getFrustum();
 	}
 	virtual	void		setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective= true)
 	{
+		NL3D_MEM_CAMERA
 		_Camera->setFrustum(left, right, bottom, top, znear, zfar, perspective);
 	}
 	virtual	void		setFrustum(float width, float height, float znear, float zfar, bool perspective= true)
 	{
+		NL3D_MEM_CAMERA
 		_Camera->setFrustum(width, height, znear, zfar, perspective);
 	}
 	virtual	void		getFrustum(float &left, float &right, float &bottom, float &top, float &znear, float &zfar) const 
 	{
+		NL3D_MEM_CAMERA
 		_Camera->getFrustum(left, right, bottom, top, znear, zfar);
 	}
 	virtual	bool		isOrtho() const 
 	{
+		NL3D_MEM_CAMERA
 		return _Camera->isOrtho();
 	}
 	virtual	bool		isPerspective() const 
 	{
+		NL3D_MEM_CAMERA
 		return _Camera->isPerspective();
 	}
 	virtual	void		setPerspective(float fov, float aspectRatio, float znear, float zfar) 
 	{
+		NL3D_MEM_CAMERA
 		_Camera->setPerspective(fov, aspectRatio, znear, zfar);
 	}
 	// @}
@@ -113,6 +124,7 @@ public:
 	// @{
 	CCamera		*getCamera()
 	{
+		NL3D_MEM_CAMERA
 		return _Camera;
 	}
 	// @}

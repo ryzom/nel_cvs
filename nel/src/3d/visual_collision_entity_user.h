@@ -1,7 +1,7 @@
 /** \file visual_collision_entity_user.h
  * UVisualCollisionEntity implementation.
  *
- * $Id: visual_collision_entity_user.h,v 1.9 2002/07/23 12:20:31 corvazier Exp $
+ * $Id: visual_collision_entity_user.h,v 1.10 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/visual_collision_entity.h"
 #include "3d/visual_collision_manager.h"
 
+#define NL3D_MEM_ENTITY_USER						NL_ALLOC_CONTEXT( 3dEnty )
 
 namespace NL3D 
 {
@@ -49,12 +50,14 @@ public:
 	/// Constructor. create entity.
 	CVisualCollisionEntityUser(CVisualCollisionManager *manager)
 	{
+		NL3D_MEM_ENTITY_USER
 		_Manager= manager;
 		_Entity= _Manager->createEntity();
 	}
 	/// dtor, delete the entity.
 	~CVisualCollisionEntityUser()
 	{
+		NL3D_MEM_ENTITY_USER
 		_Manager->deleteEntity(_Entity);
 	}
 

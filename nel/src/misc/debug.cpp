@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.65 2002/09/10 13:55:26 corvazier Exp $
+ * $Id: debug.cpp,v 1.66 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -773,6 +773,8 @@ void getCallStackAndLog (string &result, sint skipNFirst)
 
 void createDebug (const char *logPath, bool logInFile)
 {
+	NL_ALLOC_CONTEXT (_Debug)
+	
 	static bool alreadyCreate = false;
 	if (!alreadyCreate)
 	{

@@ -1,7 +1,7 @@
 /** \file landscape_face_vector_manager.cpp
  * <File description>
  *
- * $Id: landscape_face_vector_manager.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
+ * $Id: landscape_face_vector_manager.cpp,v 1.3 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,7 @@ CLandscapeFaceVector &CLandscapeFaceVector::operator=(const CLandscapeFaceVector
 // ***************************************************************************
 CLandscapeFaceVector::~CLandscapeFaceVector()
 {
-	free(TriPtr);
+	delete [] (TriPtr);
 }
 
 
@@ -112,7 +112,7 @@ CLandscapeFaceVector	*CLandscapeFaceVectorManager::createFaceVector(uint numTri)
 		_Blocks[blockId]->_BlockId= -1;
 		uint	numTriMax= 1<<blockId;
 		// allocate the index buffer.
-		_Blocks[blockId]->TriPtr= (uint32*)malloc(numTriMax*3* sizeof(uint32));
+		_Blocks[blockId]->TriPtr = new uint32[numTriMax*3];
 	}
 
 	// Pop a FaceVector from the free list.

@@ -1,7 +1,7 @@
 /** \file primitive_profile.h
  * Primitive counter.
  *
- * $Id: primitive_profile.h,v 1.1 2001/07/06 17:05:27 berenguier Exp $
+ * $Id: primitive_profile.h,v 1.2 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 
+#define NL3D_MEM_PRIMITIVE_PROFILE						NL_ALLOC_CONTEXT( 3dPrmPf )
 
 namespace NL3D {
 
@@ -51,6 +52,7 @@ public:
 
 	CPrimitiveProfile()
 	{
+		NL3D_MEM_PRIMITIVE_PROFILE
 		reset();
 	}
 

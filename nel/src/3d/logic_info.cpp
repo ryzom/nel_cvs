@@ -1,7 +1,7 @@
 /** \file logic_info.cpp
  * <File description>
  *
- * $Id: logic_info.cpp,v 1.2 2002/02/28 12:59:49 besson Exp $
+ * $Id: logic_info.cpp,v 1.3 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,9 +33,11 @@ namespace NL3D {
 
 ILogicInfo::ILogicInfo()
 {
+	NL3D_MEM_LOGIC
 }
 ILogicInfo::~ILogicInfo()
 {
+	NL3D_MEM_LOGIC
 }
 
 

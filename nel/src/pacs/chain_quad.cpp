@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.13 2002/08/21 09:41:34 lecroart Exp $
+ * $Id: chain_quad.cpp,v 1.14 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ CChainQuad::CChainQuad()
 // ***************************************************************************
 CChainQuad::~CChainQuad()
 {
-	free(_QuadData);
+	delete [] _QuadData;
 	_QuadData= NULL;
 	_QuadDataLen= 0;
 }
@@ -64,10 +64,10 @@ CChainQuad	&CChainQuad::operator=(const CChainQuad &o)
 {
 	// Alloc good quaddata.
 	_QuadDataLen= o._QuadDataLen;
-	free(_QuadData);
+	delete [] _QuadData;
 	if(_QuadDataLen>0)
 	{
-		_QuadData= (uint8*)malloc(_QuadDataLen);
+		_QuadData= (uint8*)new uint8[_QuadDataLen];
 		// copy contents.
 		memcpy(_QuadData, o._QuadData, _QuadDataLen);
 	}
@@ -126,7 +126,7 @@ void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 
 	// first, clear any pr-build.
 	contReset(_Quad);
-	free(_QuadData);
+	delete [] _QuadData;
 	_QuadData= NULL;
 	_QuadDataLen= 0;
 
@@ -221,7 +221,7 @@ void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 	}
 
 	// allocate.
-	_QuadData= (uint8*)malloc(memSize);
+	_QuadData= (uint8*)new uint8[memSize];
 	_QuadDataLen= memSize;
 
 
@@ -486,9 +486,9 @@ void		CChainQuad::serial(NLMISC::IStream &f)
 	// serial _QuadData.
 	if(f.isReading())
 	{
-		free(_QuadData);
+		delete [] _QuadData;
 		if(_QuadDataLen>0)
-			_QuadData= (uint8*)malloc(_QuadDataLen);
+			_QuadData= (uint8*)new uint8[_QuadDataLen];
 		else
 			_QuadData= NULL;
 	}

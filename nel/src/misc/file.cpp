@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.26 2002/10/10 12:43:05 berenguier Exp $
+ * $Id: file.cpp,v 1.27 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -210,8 +210,11 @@ void		CIFile::close()
 {
 	if (_CacheFileOnOpen)
 	{
-		delete _Cache;
-		_Cache = NULL;
+		if (_Cache)
+		{
+			delete _Cache;
+			_Cache = NULL;
+		}
 	}
 	else
 	{

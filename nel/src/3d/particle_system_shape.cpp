@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.36 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: particle_system_shape.cpp,v 1.37 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,7 @@ using NLMISC::CIFile;
 
 
 // private usage : macro to check the memory integrity
-#if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
+#if defined(NL_DEBUG) && defined(NL_OS_WINDOWS) && defined (NL_USE_DEFAULT_MEMORY_MANAGER)
 	#ifndef _CRTDBG_MAP_ALLOC
 	#include <crtdbg.h>
 	#endif

@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.45 2002/10/24 14:43:37 coutelas Exp $
+ * $Id: common.h,v 1.46 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,7 +173,9 @@ template<class T>	inline T maxof(const T& a,  const T& b,  const T& c,  const T&
 template<class T>	inline void contReset (T& a)
 {
 	a.~T();
+#undef new
 	new (&a) T;
+#define new NL_NEW
 }
 
 /** Return the value maximized to the next power of 2 of v.

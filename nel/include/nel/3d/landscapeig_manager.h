@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.h
  * <File description>
  *
- * $Id: landscapeig_manager.h,v 1.6 2002/06/06 12:05:30 vizerie Exp $
+ * $Id: landscapeig_manager.h,v 1.7 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include <map>
 #include <string>
 
+#define NL3D_MEM_LANDSCAPE_IG						NL_ALLOC_CONTEXT( 3dLdIg )
 
 namespace NL3D 
 {

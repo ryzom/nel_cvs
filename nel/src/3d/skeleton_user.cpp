@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.13 2002/08/12 14:27:48 vizerie Exp $
+ * $Id: skeleton_user.cpp,v 1.14 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ H_AUTO_DECL( NL3D_UI_Skeleton )
 // ***************************************************************************
 uint		CSkeletonUser::getNumBoneComputed() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	return _Skeleton->getNumBoneComputed();
@@ -49,6 +50,7 @@ uint		CSkeletonUser::getNumBoneComputed() const
 // ***************************************************************************
 void		CSkeletonUser::setInterpolationDistance(float dist)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	_Skeleton->setInterpolationDistance(dist);
@@ -57,6 +59,7 @@ void		CSkeletonUser::setInterpolationDistance(float dist)
 // ***************************************************************************
 float		CSkeletonUser::getInterpolationDistance() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	return _Skeleton->getInterpolationDistance();
@@ -66,6 +69,7 @@ float		CSkeletonUser::getInterpolationDistance() const
 // ***************************************************************************
 void		CSkeletonUser::setShapeDistMax(float distMax)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	if(_Skeleton && _Skeleton->Shape)
@@ -77,6 +81,7 @@ void		CSkeletonUser::setShapeDistMax(float distMax)
 // ***************************************************************************
 float		CSkeletonUser::getShapeDistMax() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	if(_Skeleton && _Skeleton->Shape)
@@ -91,6 +96,7 @@ float		CSkeletonUser::getShapeDistMax() const
 // ***************************************************************************
 bool		CSkeletonUser::bindSkin(UInstance *mi)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	if(mi==NULL)
@@ -111,6 +117,7 @@ bool		CSkeletonUser::bindSkin(UInstance *mi)
 // ***************************************************************************
 void		CSkeletonUser::stickObject(UTransform *mi, uint boneId)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	if(mi==NULL)
@@ -122,6 +129,7 @@ void		CSkeletonUser::stickObject(UTransform *mi, uint boneId)
 // ***************************************************************************
 void		CSkeletonUser::stickObjectEx(UTransform *mi, uint boneId, bool forceCLod)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	if(mi==NULL)
@@ -133,6 +141,7 @@ void		CSkeletonUser::stickObjectEx(UTransform *mi, uint boneId, bool forceCLod)
 // ***************************************************************************
 void		CSkeletonUser::detachSkeletonSon(UTransform *mi)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	if(mi==NULL)
@@ -145,12 +154,14 @@ void		CSkeletonUser::detachSkeletonSon(UTransform *mi)
 // ***************************************************************************
 uint		CSkeletonUser::getNumBones() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	return _Bones.size();
 }
 UBone		&CSkeletonUser::getBone(uint boneId)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	if(boneId>=_Bones.size())
@@ -159,12 +170,14 @@ UBone		&CSkeletonUser::getBone(uint boneId)
 }
 sint		CSkeletonUser::getBoneIdByName(const std::string &boneName) const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	return _Skeleton->getBoneIdByName(boneName);
 }
 bool		CSkeletonUser::isBoneComputed(uint boneId) const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	return _Skeleton->isBoneComputed(boneId);
@@ -173,56 +186,67 @@ bool		CSkeletonUser::isBoneComputed(uint boneId) const
 // ***************************************************************************
 void		CSkeletonUser::setLodCharacterShape(sint shapeId)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	_Skeleton->setLodCharacterShape(shapeId);
 }
 sint		CSkeletonUser::getLodCharacterShape() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	return _Skeleton->getLodCharacterShape();
 }
 void		CSkeletonUser::setLodCharacterAnimId(uint animId)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	_Skeleton->setLodCharacterAnimId(animId);
 }
 uint		CSkeletonUser::getLodCharacterAnimId() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	return _Skeleton->getLodCharacterAnimId();
 }
 void		CSkeletonUser::setLodCharacterAnimTime(TGlobalAnimationTime time)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	_Skeleton->setLodCharacterAnimTime(time);
 }
 TGlobalAnimationTime	CSkeletonUser::getLodCharacterAnimTime() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	return _Skeleton->getLodCharacterAnimTime();
 }
 bool		CSkeletonUser::isDisplayedAsLodCharacter() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	return _Skeleton->isDisplayedAsLodCharacter();
 }
 void		CSkeletonUser::setLodCharacterDistance(float dist)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	_Skeleton->setLodCharacterDistance(dist);
 }
 float		CSkeletonUser::getLodCharacterDistance() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	return _Skeleton->getLodCharacterDistance();
 }
 void		CSkeletonUser::setLodCharacterWrapMode(bool wrapMode)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	_Skeleton->setLodCharacterWrapMode(wrapMode);
 }
 bool		CSkeletonUser::getLodCharacterWrapMode() const
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	return _Skeleton->getLodCharacterWrapMode();
 }
@@ -231,6 +255,7 @@ bool		CSkeletonUser::getLodCharacterWrapMode() const
 // ***************************************************************************
 void		CSkeletonUser::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	_Skeleton->changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
 }
@@ -239,12 +264,14 @@ void		CSkeletonUser::changeMRMDistanceSetup(float distanceFinest, float distance
 // ***************************************************************************
 bool		CSkeletonUser::computeRenderedBBox(NLMISC::CAABBox &bbox)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 	return _Skeleton->computeRenderedBBox(bbox);
 }
 // ***************************************************************************
 bool		CSkeletonUser::computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime, bool forceCompute /* = false */)
 {
+	NL3D_MEM_SKELETON
 	NL3D_HAUTO_UI_SKELETON;
 
 	if(playList!=NULL)

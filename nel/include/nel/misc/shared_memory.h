@@ -1,7 +1,7 @@
 /** \file shared_memory.h
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.h,v 1.4 2002/08/09 09:39:27 cado Exp $
+ * $Id: shared_memory.h,v 1.5 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -73,6 +73,7 @@ public:
 	//CSharedMemory();
 
 	/** Create a shared memory segment and get access to it. The id must not be used.
+	 * The id 0x3a732235 is used by the NeL memory manager.
 	 * \return Access address of the segment of the choosen size
 	 */
 	static void *		createSharedMemory( TSharedMemId sharedMemId, uint32 size );

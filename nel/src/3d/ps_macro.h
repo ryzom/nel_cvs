@@ -1,7 +1,7 @@
 /** \file ps_macro.h
  * Some macros used by the particle systems for rendering.
  *
- * $Id: ps_macro.h,v 1.3 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_macro.h,v 1.4 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@
 
 // this macro check the memory integrity (windows platform for now). It may be useful after violent vb access
 #if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
-	#include <crtdbg.h>
+	// #include <crtdbg.h>
 	#define PARTICLES_CHECK_MEM
 //  nlassert(_CrtCheckMemory());    
 #else

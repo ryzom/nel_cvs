@@ -1,7 +1,7 @@
 /** \file landscapeig_manager.cpp
  * <File description>
  *
- * $Id: landscapeig_manager.cpp,v 1.10 2002/06/25 15:35:34 corvazier Exp $
+ * $Id: landscapeig_manager.cpp,v 1.11 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,6 +48,7 @@ namespace NL3D
 // ***************************************************************************
 CLandscapeIGManager::CInstanceGroupElement::CInstanceGroupElement(UInstanceGroup *ig, const char *fileName)
 {
+	NL3D_MEM_LANDSCAPE_IG
 	Ig = ig;
 	AddedToScene = false;
 	if (fileName != NULL)
@@ -57,6 +58,7 @@ CLandscapeIGManager::CInstanceGroupElement::CInstanceGroupElement(UInstanceGroup
 // ***************************************************************************
 void	CLandscapeIGManager::CInstanceGroupElement::release()
 {
+	NL3D_MEM_LANDSCAPE_IG
 	delete Ig;
 	Ig= NULL;
 }
@@ -65,11 +67,13 @@ void	CLandscapeIGManager::CInstanceGroupElement::release()
 // ***************************************************************************
 CLandscapeIGManager::CLandscapeIGManager()
 {
+	NL3D_MEM_LANDSCAPE_IG
 	_Scene=NULL;
 }
 // ***************************************************************************
 CLandscapeIGManager::~CLandscapeIGManager()
 {
+	NL3D_MEM_LANDSCAPE_IG
 	// reset should have been called.
 	if(_Scene!=NULL)
 		throw Exception("CLandscapeIGManager not reseted");
@@ -77,6 +81,7 @@ CLandscapeIGManager::~CLandscapeIGManager()
 // ***************************************************************************
 void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 {
+	NL3D_MEM_LANDSCAPE_IG
 	nlassert(scene);
 	_Scene= scene;
 
@@ -135,6 +140,7 @@ void	CLandscapeIGManager::initIG(UScene *scene, const std::string &igDesc)
 // ***************************************************************************
 UInstanceGroup *CLandscapeIGManager::loadZoneIG(const std::string &name)
 {
+	NL3D_MEM_LANDSCAPE_IG
 	if(name=="") 
 		return NULL;
 
@@ -165,6 +171,7 @@ UInstanceGroup *CLandscapeIGManager::loadZoneIG(const std::string &name)
 // ***************************************************************************
 void	CLandscapeIGManager::loadArrayZoneIG(const std::vector<std::string> &names, std::vector<UInstanceGroup *> *dest /*= NULL*/)
 {
+	NL3D_MEM_LANDSCAPE_IG
 	if (dest)
 	{
 		dest->clear();
@@ -183,6 +190,7 @@ void	CLandscapeIGManager::loadArrayZoneIG(const std::vector<std::string> &names,
 // ***************************************************************************
 void	CLandscapeIGManager::unloadArrayZoneIG(const std::vector<std::string> &names)
 {
+	NL3D_MEM_LANDSCAPE_IG
 	for(uint i=0; i<names.size(); i++)
 	{
 		unloadZoneIG(names[i]);
@@ -192,6 +200,7 @@ void	CLandscapeIGManager::unloadArrayZoneIG(const std::vector<std::string> &name
 // ***************************************************************************
 void	CLandscapeIGManager::unloadZoneIG(const std::string &name)
 {
+	NL3D_MEM_LANDSCAPE_IG
 	if(name=="")
 		return;
 
@@ -215,6 +224,7 @@ void	CLandscapeIGManager::unloadZoneIG(const std::string &name)
 // ***************************************************************************
 bool	CLandscapeIGManager::isIGAddedToScene(const std::string &name) const
 {
+	NL3D_MEM_LANDSCAPE_IG
 	if(name=="")
 		return false;
 
@@ -232,6 +242,7 @@ bool	CLandscapeIGManager::isIGAddedToScene(const std::string &name) const
 // ***************************************************************************
 UInstanceGroup	*CLandscapeIGManager::getIG(const std::string &name) const
 {
+	NL3D_MEM_LANDSCAPE_IG
 	if(name=="")
 		return NULL;
 
@@ -250,6 +261,7 @@ UInstanceGroup	*CLandscapeIGManager::getIG(const std::string &name) const
 // ***************************************************************************
 std::string		CLandscapeIGManager::translateName(const std::string &name) const
 {
+	NL3D_MEM_LANDSCAPE_IG
 	std::string		ret;
 	ret= name + ".ig";
 	strupr(ret);
@@ -261,6 +273,7 @@ std::string		CLandscapeIGManager::translateName(const std::string &name) const
 // ***************************************************************************
 void	CLandscapeIGManager::reset()
 {
+	NL3D_MEM_LANDSCAPE_IG
 	while( _ZoneInstanceGroupMap.begin() != _ZoneInstanceGroupMap.end() )
 	{
 		string	name= _ZoneInstanceGroupMap.begin()->first;
@@ -279,6 +292,7 @@ void	CLandscapeIGManager::reset()
 // ***************************************************************************
 void	CLandscapeIGManager::reloadAllIgs()
 {
+	NL3D_MEM_LANDSCAPE_IG
 	vector<std::string>		bkupIgFileNameList;
 	vector<bool>			bkupIgAddedToScene;
 
@@ -321,6 +335,7 @@ void	CLandscapeIGManager::reloadAllIgs()
 // ***************************************************************************
 void CLandscapeIGManager::getAllIG(std::vector<UInstanceGroup *> &dest) const
 {	
+	NL3D_MEM_LANDSCAPE_IG
 	dest.clear();
 	dest.reserve(_ZoneInstanceGroupMap.size());
 	// add the instances
@@ -333,7 +348,8 @@ void CLandscapeIGManager::getAllIG(std::vector<UInstanceGroup *> &dest) const
 // ***************************************************************************
 void CLandscapeIGManager::getAllIGWithNames(std::vector<std::pair<UInstanceGroup *, std::string> > &dest) const
 {
-		dest.clear();
+	NL3D_MEM_LANDSCAPE_IG
+	dest.clear();
 	dest.reserve(_ZoneInstanceGroupMap.size());
 	// add the instances
 	for(TZoneInstanceGroupMap::const_iterator it = _ZoneInstanceGroupMap.begin(); it != _ZoneInstanceGroupMap.end(); ++it)

@@ -1,7 +1,7 @@
 /** \file point_light_user.cpp
  * <File description>
  *
- * $Id: point_light_user.cpp,v 1.3 2002/02/28 12:59:50 besson Exp $
+ * $Id: point_light_user.cpp,v 1.4 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ namespace NL3D
 CPointLightUser::CPointLightUser(CScene *scene, IModel *trans) : 
   CTransformUser(scene, trans)
 {
+	NL3D_MEM_POINTLIGHT
 	_PointLightModel= safe_cast<CPointLightModel*>(_Transform);
 }
 
@@ -48,46 +49,56 @@ CPointLightUser::CPointLightUser(CScene *scene, IModel *trans) :
 // ***************************************************************************
 void			CPointLightUser::setAmbient (NLMISC::CRGBA ambient)
 {
+	NL3D_MEM_POINTLIGHT
 	_PointLightModel->PointLight.setAmbient(ambient);
 }
 void			CPointLightUser::setDiffuse (NLMISC::CRGBA diffuse)
 {
+	NL3D_MEM_POINTLIGHT
 	_PointLightModel->PointLight.setDiffuse (diffuse);
 }
 void			CPointLightUser::setSpecular (NLMISC::CRGBA specular)
 {
+	NL3D_MEM_POINTLIGHT
 	_PointLightModel->PointLight.setSpecular (specular);
 }
 void			CPointLightUser::setColor (NLMISC::CRGBA color)
 {
+	NL3D_MEM_POINTLIGHT
 	_PointLightModel->PointLight.setColor (color);
 }
 
 // ***************************************************************************
 NLMISC::CRGBA	CPointLightUser::getAmbient () const 
 {
+	NL3D_MEM_POINTLIGHT
 	return _PointLightModel->PointLight.getAmbient();
 }
 NLMISC::CRGBA	CPointLightUser::getDiffuse () const 
 {
+	NL3D_MEM_POINTLIGHT
 	return _PointLightModel->PointLight.getDiffuse ();
 }
 NLMISC::CRGBA	CPointLightUser::getSpecular () const 
 {
+	NL3D_MEM_POINTLIGHT
 	return _PointLightModel->PointLight.getSpecular();
 }
 
 // ***************************************************************************
 void			CPointLightUser::setupAttenuation(float attenuationBegin, float attenuationEnd)
 {
+	NL3D_MEM_POINTLIGHT
 	_PointLightModel->PointLight.setupAttenuation(attenuationBegin, attenuationEnd);
 }
 float			CPointLightUser::getAttenuationBegin() const
 {
+	NL3D_MEM_POINTLIGHT
 	return _PointLightModel->PointLight.getAttenuationBegin();
 }
 float			CPointLightUser::getAttenuationEnd() const
 {
+	NL3D_MEM_POINTLIGHT
 	return _PointLightModel->PointLight.getAttenuationEnd();
 }
 
@@ -95,6 +106,7 @@ float			CPointLightUser::getAttenuationEnd() const
 // ***************************************************************************
 void			CPointLightUser::enableSpotlight(bool enable) 
 {
+	NL3D_MEM_POINTLIGHT
 	if(enable)
 		_PointLightModel->PointLight.setType(CPointLight::SpotLight);
 	else
@@ -102,28 +114,34 @@ void			CPointLightUser::enableSpotlight(bool enable)
 }
 bool			CPointLightUser::isSpotlight() const 
 {
+	NL3D_MEM_POINTLIGHT
 	return _PointLightModel->PointLight.getType() == CPointLight::SpotLight;
 }
 void			CPointLightUser::setupSpotAngle(float spotAngleBegin, float spotAngleEnd) 
 {
+	NL3D_MEM_POINTLIGHT
 	_PointLightModel->PointLight.setupSpotAngle(spotAngleBegin, spotAngleEnd);
 }
 float			CPointLightUser::getSpotAngleBegin() const 
 {
+	NL3D_MEM_POINTLIGHT
 	return _PointLightModel->PointLight.getSpotAngleBegin();
 }
 float			CPointLightUser::getSpotAngleEnd() const 
 {
+	NL3D_MEM_POINTLIGHT
 	return _PointLightModel->PointLight.getSpotAngleEnd();
 }
 
 // ***************************************************************************
 void			CPointLightUser::setDeltaPosToSkeletonWhenOutOfFrustum(const CVector &deltaPos) 
 {
+	NL3D_MEM_POINTLIGHT
 	_PointLightModel->setDeltaPosToSkeletonWhenOutOfFrustum(deltaPos) ;
 }
 const CVector	&CPointLightUser::getDeltaPosToSkeletonWhenOutOfFrustum() const 
 {
+	NL3D_MEM_POINTLIGHT
 	return _PointLightModel->getDeltaPosToSkeletonWhenOutOfFrustum() ;
 }
 

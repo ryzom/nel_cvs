@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.6 2002/10/02 15:25:31 berenguier Exp $
+ * $Id: material_user.h,v 1.7 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/material.h"
 #include "3d/texture_user.h"
 
+#define NL3D_MEM_MATERIAL						NL_ALLOC_CONTEXT( 3dMat )
 
 namespace NL3D 
 {
@@ -58,6 +59,7 @@ public:
 	// @{
 	CMaterialUser()
 	{
+		NL3D_MEM_MATERIAL
 		_Material.initUnlit();
 		// Enum assertion. User have access only to 6 first blend modes. Other are internals.
 		nlassert((uint)UMaterial::blendCount==(uint)CMaterial::blendConstantColor);
@@ -66,6 +68,7 @@ public:
 	}
 	virtual ~CMaterialUser()
 	{
+		NL3D_MEM_MATERIAL
 	}
 	// @}
 
@@ -73,6 +76,7 @@ public:
 	// @{
 	virtual void 			setTexture(UTexture* ptex) 
 	{
+		NL3D_MEM_MATERIAL
 		CTextureUser	*text= dynamic_cast<CTextureUser*>(ptex);
 		if (text != NULL)
 		{
@@ -87,11 +91,13 @@ public:
 
 	virtual bool			texturePresent() 
 	{
+		NL3D_MEM_MATERIAL
 		return _Material.texturePresent(0);
 	}
 
 	virtual void			selectTextureSet(uint id)
 	{
+		NL3D_MEM_MATERIAL
 		_Material.selectTextureSet(id);
 	}
 
@@ -102,31 +108,38 @@ public:
 	// @{
 	virtual void			setBlend(bool active) 
 	{
+		NL3D_MEM_MATERIAL
 		_Material.setBlend(active);
 	}
 	virtual void			setBlendFunc(TBlend src, TBlend dst) 
 	{
+		NL3D_MEM_MATERIAL
 		_Material.setBlendFunc((CMaterial::TBlend)(uint32)src, (CMaterial::TBlend)(uint32)dst);
 	}
 	virtual void			setSrcBlend(TBlend val) 
 	{
+		NL3D_MEM_MATERIAL
 		_Material.setSrcBlend((CMaterial::TBlend)(uint32)val);
 	}
 	virtual void			setDstBlend(TBlend val) 
 	{
+		NL3D_MEM_MATERIAL
 		_Material.setDstBlend((CMaterial::TBlend)(uint32)val);
 	}
 
 	virtual bool			getBlend() const 
 	{
+		NL3D_MEM_MATERIAL
 		return _Material.getBlend();
 	}
 	virtual TBlend			getSrcBlend(void)  const 
 	{
+		NL3D_MEM_MATERIAL
 		return (UMaterial::TBlend)(uint32)_Material.getSrcBlend();
 	}
 	virtual TBlend			getDstBlend(void)  const 
 	{
+		NL3D_MEM_MATERIAL
 		return (UMaterial::TBlend)(uint32)_Material.getDstBlend();
 	}
 	// @}
@@ -136,10 +149,12 @@ public:
 	// @{
 	virtual void			setZFunc(ZFunc val) 
 	{
+		NL3D_MEM_MATERIAL
 		_Material.setZFunc((CMaterial::ZFunc)(uint32) val);
 	}
 	virtual void			setZWrite(bool active) 
 	{
+		NL3D_MEM_MATERIAL
 		_Material.setZWrite(active);
 	}
 	virtual void			setZBias(float val) 
@@ -149,14 +164,17 @@ public:
 
 	virtual ZFunc			getZFunc(void)  const  
 	{
+		NL3D_MEM_MATERIAL
 		return (UMaterial::ZFunc)(uint32)_Material.getZFunc();
 	}
 	virtual bool			getZWrite(void)  const 
 	{
+		NL3D_MEM_MATERIAL
 		return _Material.getZWrite();
 	}
 	virtual float			getZBias(void)  const  
 	{
+		NL3D_MEM_MATERIAL
 		return _Material.getZBias();
 	}
 	// @}
@@ -167,11 +185,13 @@ public:
 	/// The Color is used only if lighting is disabled. Also, color is replaced by per vertex color (if any).
 	virtual void			setColor(CRGBA rgba) 
 	{
+		NL3D_MEM_MATERIAL
 		_Material.setColor(rgba);
 	}
 
 	virtual CRGBA			getColor(void) const 
 	{
+		NL3D_MEM_MATERIAL
 		return _Material.getColor();
 	}
 	// @}
@@ -180,10 +200,12 @@ public:
 	// @{
 		virtual void			setDoubleSided(bool doubleSided = true)
 		{
+			NL3D_MEM_MATERIAL
 			_Material.setDoubleSided(doubleSided);
 		}
 		virtual bool			getDoubleSided() const
 		{
+			NL3D_MEM_MATERIAL
 			return _Material.getDoubleSided();
 		}
 	// @}
@@ -196,6 +218,7 @@ public:
 	 */
 	virtual void			initUnlit()
 	{
+		NL3D_MEM_MATERIAL
 		_Material.initUnlit();
 	}
 	// @}
@@ -205,7 +228,11 @@ public:
 public:
 
 	// Internal Use only.
-	CMaterial	&getMaterial() {return _Material;}
+	CMaterial	&getMaterial() 
+	{
+		NL3D_MEM_MATERIAL
+		return _Material;
+	}
 
 };
 

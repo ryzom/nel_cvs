@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.15 2002/08/22 15:02:50 corvazier Exp $
+ * $Id: edge_quad.cpp,v 1.16 2002/10/28 17:32:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,10 +63,10 @@ CEdgeQuad	&CEdgeQuad::operator=(const CEdgeQuad &o)
 {
 	// Alloc good quaddata.
 	_QuadDataLen= o._QuadDataLen;
-	free(_QuadData);
+	delete [] _QuadData;
 	if(_QuadDataLen>0)
 	{
-		_QuadData= (uint8*)malloc(_QuadDataLen);
+		_QuadData= (uint8*)new uint8[_QuadDataLen];
 		// copy contents.
 		memcpy(_QuadData, o._QuadData, _QuadDataLen);
 	}
@@ -99,7 +99,7 @@ CEdgeQuad	&CEdgeQuad::operator=(const CEdgeQuad &o)
 // ***************************************************************************
 void	CEdgeQuad::clear()
 {
-	free(_QuadData);
+	delete [] _QuadData;
 	_QuadData= NULL;
 	_QuadDataLen= 0;
 
@@ -139,7 +139,7 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 
 	// first, clear any pr-build.
 	contReset(_Quad);
-	free(_QuadData);
+	delete [] _QuadData;
 	_QuadData= NULL;
 	_QuadDataLen= 0;
 
@@ -368,7 +368,7 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 	}
 
 	// allocate.
-	_QuadData= (uint8*)malloc(memSize);
+	_QuadData= (uint8*)new uint8[memSize];
 	_QuadDataLen= memSize;
 
 
@@ -581,9 +581,9 @@ void		CEdgeQuad::serial(NLMISC::IStream &f)
 	// serial _QuadData.
 	if(f.isReading())
 	{
-		free(_QuadData);
+		delete [] _QuadData;
 		if(_QuadDataLen>0)
-			_QuadData= (uint8*)malloc(_QuadDataLen);
+			_QuadData= (uint8*)new uint8[_QuadDataLen];
 		else
 			_QuadData= NULL;
 	}

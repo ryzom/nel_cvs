@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.18 2002/10/22 13:09:44 cado Exp $
+ * $Id: mutex.h,v 1.19 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,98 @@ private:
 #endif
 
 };
+
+/**
+ * Fast mutex implementation (not fairly)
+ * The mutex ARE NOT recursive (ie don't call enter() several times
+ * on the same mutex from the same thread without having called leave()) ;
+ * The threads ARE NOT woken-up in the same order as they were put to sleep.
+ * The threads ARE NOT woken-up using signals but using Sleep().
+ * This mutex works but is not optimal for multiprocessors because if the mutex is locked,
+ * next enter will be sleeped without waiting a little.
+ *
+ * Implementation notes:
+ *  - Implementated under WIN32
+ *  - Other OS use CMutex
+ *
+ *\code
+ CFastMutex m;
+ m.enter ();
+ // do critical stuffs
+ m.leave ();
+ *\endcode
+ * \author Cyril 'Hulud' Corvazier
+ * \author Nevrax France
+ * \date 2000
+ */
+#ifdef NL_OS_WINDOWS
+class CFastMutex
+{
+public:
+
+	/// Constructor
+	CFastMutex();
+
+	__forceinline static bool atomic_swap (volatile uint32 *l)
+	{
+		uint32 result;
+		__asm 
+		{ 
+			mov eax,1
+			mov ebx,l
+
+			// Lock is implicit with xchg
+			xchg [ebx],eax
+
+			mov [result],eax
+		}
+		return result != 0;
+	}
+
+	__forceinline void enter ()
+	{
+		if (atomic_swap (&_Lock))
+		{
+			// First test
+			uint i;
+			for (i = 0 ;; ++i)
+			{
+				uint wait_time = i + 6;
+
+				// Increment wait time with a log function
+				if (wait_time > 27) 
+					wait_time = 27;
+
+				// Sleep
+				if (wait_time <= 20) 
+					wait_time = 0;
+				else
+					wait_time = 1 << (wait_time - 20);
+
+				if (!atomic_swap (&_Lock))
+					break;
+
+				Sleep (wait_time);
+			}
+		}
+	}
+
+	__forceinline void leave ()
+	{
+		_Lock = 0;
+	}
+
+	volatile uint32	_Lock;
+
+private:
+
+	void *Mutex;
+};
+#else // NL_OS_WINDOWS
+
+#define CFastMutex CMutex
+
+#endif // NL_OS_WINDOWS
 
 
 

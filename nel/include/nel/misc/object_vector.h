@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.2 2002/02/06 16:51:35 berenguier Exp $
+ * $Id: object_vector.h,v 1.3 2002/10/28 17:32:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -328,21 +328,6 @@ private:
 		}
 	}
 
-
-	// For all elements in the range, construct.
-	void	construct(uint32 i0, uint32 i1)
-	{
-		// don't do it if elements don't need it.
-		if(!EnableObjectBehavior)
-			return;
-		// for all elements
-		for(uint i=i0;i<i1;i++)
-		{
-			// call ctor.
-			new (_Ptr+i) T;
-		}
-	}
-
 	// For all elements in the range, destruct.
 	void	destruct(uint32 i0, uint32 i1)
 	{
@@ -354,6 +339,24 @@ private:
 		{
 			// call dtor.
 			_Ptr[i].~T();
+		}
+	}
+
+	// For all elements in the range, construct.
+	void	construct(uint32 i0, uint32 i1)
+	{
+		// don't do it if elements don't need it.
+		if(!EnableObjectBehavior)
+			return;
+		// for all elements
+		for(uint i=i0;i<i1;i++)
+		{
+// Must do a placement new
+#undef new
+			// call ctor.
+			new (_Ptr+i) T;
+// Must do a placement new
+#define new NL_NEW
 		}
 	}
 

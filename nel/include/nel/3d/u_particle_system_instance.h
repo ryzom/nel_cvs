@@ -1,7 +1,7 @@
 /** \file u_particle_system_instance.h
  * <File description>
  *
- * $Id: u_particle_system_instance.h,v 1.9 2003/08/18 14:30:35 vizerie Exp $
+ * $Id: u_particle_system_instance.h,v 1.10 2003/11/06 14:55:28 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -81,8 +81,13 @@ public:
 	
 	/// \name System parameters
 	//@{
-
+		/** Set the user color of the system. This color will be used to modulate the color of the whole system
+		  * NB : even if the system is not instanciated, this will be taken in account the next time it is , so no need to call isSystemPresent() before calling that method.
+		  */
+		virtual void			setUserColor(NLMISC::CRGBA userColor) = 0;
+		virtual NLMISC::CRGBA	getUserColor() const = 0;
 		/** Set a user param of the system. Each user param must be >= 0 and <= 1		  
+		  * NB : even if the system is not instanciated, this will be taken in account the next time it is, so no need to call isSystemPresent() before calling that method.
 		  * \param index the index of the user param to modify. For now it ranges from 0 to 3
 		  * \value the new value of the parameter
 		  * \see isSystemPresent()

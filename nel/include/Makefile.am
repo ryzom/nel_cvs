@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.10 2001/03/26 09:17:22 valignat Exp $
+# $Id: Makefile.am,v 1.11 2001/03/30 09:12:58 valignat Exp $
 #
 
 install-exec-local:
@@ -17,6 +17,7 @@ install-exec-local:
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/nimat
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/pyserver
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/script
+	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/tools
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/db
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/python
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/sys
@@ -35,6 +36,7 @@ install-exec-local:
 	$(INSTALL_DATA) -m a=r `echo nel/ai/nimat/*.h`    $(includedir)/nel/ai/nimat
 	$(INSTALL_DATA) -m a=r `echo nel/ai/pyserver/*.h` $(includedir)/nel/ai/pyserver
 	$(INSTALL_DATA) -m a=r `echo nel/ai/script/*.h`   $(includedir)/nel/ai/script
+	$(INSTALL_DATA) -m a=r `echo nel/ai/tools/*.h`    $(includedir)/nel/ai/tools
 
 
 uninstall-local:
@@ -59,6 +61,7 @@ dist-hook:
 	       $(distdir)/nel/ai/nimat/CVS      \
 	       $(distdir)/nel/ai/pyserver/CVS   \
 	       $(distdir)/nel/ai/script/CVS     \
+	       $(distdir)/nel/ai/tools/CVS      \
 	       $(distdir)/nel/db/CVS            \
 	       $(distdir)/nel/python/CVS        \
 	       $(distdir)/nel/sys/CVS

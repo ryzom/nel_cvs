@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.15 2004/02/12 16:27:36 lecroart Exp $
+ * $Id: admin.cpp,v 1.16 2004/02/13 09:44:13 distrib Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,9 @@
 
 #include <time.h>
 
-#include <windows.h>
+#ifdef NL_OS_WINDOWS
+#   include <windows.h>
+#endif
 
 #include "nel/net/service.h"
 #include "nel/net/admin.h"

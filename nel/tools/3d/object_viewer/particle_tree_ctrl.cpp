@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.23 2001/09/07 12:05:59 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.24 2001/09/12 13:34:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -903,9 +903,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			{
 				NL3D::CParticleSystem *ps = nt->PS;			
 				while (ps->getNbProcess())
-				{
-					ps->remove(ps->getProcess(0));
+				{					
 					DeleteItem(TVI_ROOT);
+					ps->remove(ps->getProcess(0));
+					_ParticleDlg->StartStopDlg->reset();
 					buildTreeFromPS(nt->PS, nt->PSModel);
 					_ParticleDlg->MainFrame->OnResetCamera();			
 				}

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_vertex.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_render.cpp,v 1.12 2004/10/19 12:45:44 vizerie Exp $
+ * $Id: driver_direct3d_render.cpp,v 1.13 2004/10/25 16:24:25 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -383,9 +383,7 @@ void CDriverD3D::setDebugMaterial()
 }
 
 
-
 // ***************************************************************************
-
 bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQuads)
 {
 	H_AUTO_D3D(CDriverD3D_renderRawQuads)
@@ -393,31 +391,8 @@ bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQua
 	else
 	if (_VertexBufferCache.VertexBuffer)
 	{
-
 		// Num of indexes needed
-		const uint numQuadsNeeded = numQuads*6;
-
-		//static volatile bool enableAGPIndex = false;
-
-		bool wantAGPIndex = false;
-		/*
-		if (_VertexBufferCache.Usage & D3DUSAGE_DYNAMIC)
-		{
-			wantAGPIndex = true;
-		}
-		else if (_VertexBufferCache.PrefferedMemory == CVertexBuffer::AGPVolatile && !_DisableHardwareVertexArrayAGP)
-		{
-			if (_VolatileVertexBufferAGP[_CurrentRenderPass&1].Location == CVertexBuffer::AGPResident) // did manage to alocate volatile index buffer in agp ?
-			{
-				wantAGPIndex = true;
-			}
-		}
-
-		if (!enableAGPIndex)
-		{
-			wantAGPIndex = false;
-		}
-		*/
+		const uint numQuadsNeeded = numQuads*6;		
 		nlassert(numQuads < MAX_NUM_QUADS); // this limitation should suffice for now
 		{		
 			if (_MaxVertexIndex <= 0xffff)
@@ -427,24 +402,20 @@ bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQua
 				_CurrIndexBufferFormat = CIndexBuffer::Indices16; // must set the format because we don't call activeIndexBuffer				
 			}
 			else
-			{
-				CIndexBuffer &quadIB = wantAGPIndex ? _QuadIndexesAGP : _QuadIndexes; 
+			{				
 				const uint IB_RESIZE_STRIDE = 6 * 256;
 				nlctassert(IB_RESIZE_STRIDE % 6 == 0);
 				// Need to resize the quad indexes array ?				
-				if (quadIB.getNumIndexes() < numQuadsNeeded)
+				if (_QuadIndexes.getNumIndexes() < numQuadsNeeded)
 				{
 					// Resize it
 					uint32 numIndexResize = IB_RESIZE_STRIDE * ((numQuadsNeeded + (IB_RESIZE_STRIDE - 1)) / IB_RESIZE_STRIDE);
-					quadIB.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
-					quadIB.setNumIndexes(numIndexResize); // snap to nearest size
-					quadIB.setPreferredMemory (wantAGPIndex ? CIndexBuffer::AGPPreferred : CIndexBuffer::RAMPreferred, wantAGPIndex);
-					//quadIB.setPreferredMemory (wantAGPIndex ? CIndexBuffer::StaticPreferred : CIndexBuffer::RAMPreferred, wantAGPIndex);
-
+					_QuadIndexes.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+					_QuadIndexes.setNumIndexes(numIndexResize); // snap to nearest size
 					// Fill the index buffer in VRAM
 					CIndexBufferReadWrite iba;
-					quadIB.lock (iba);
-					if (quadIB.getFormat() == CIndexBuffer::Indices32)
+					_QuadIndexes.lock (iba);
+					if (_QuadIndexes.getFormat() == CIndexBuffer::Indices32)
 					{
 						fillQuadIndexes ((uint32 *) iba.getPtr(), 0, numIndexResize);
 					}
@@ -453,7 +424,7 @@ bool CDriverD3D::renderRawQuads(CMaterial& mat, uint32 startIndex, uint32 numQua
 						fillQuadIndexes ((uint16 *) iba.getPtr(), 0, numIndexResize);
 					}
 				}
-				activeIndexBuffer (quadIB);				
+				activeIndexBuffer (_QuadIndexes);				
 			}
 			// Setup material
 			if ( !setupMaterial(mat) )

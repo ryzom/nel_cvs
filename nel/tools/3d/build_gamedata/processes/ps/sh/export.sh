@@ -14,7 +14,7 @@ echo --- Export ps >> log.log
 echo ------- >> log.log
 echo ------- 
 echo --- Export ps 
-.log
+echo ------- 
 
 # For each ps directory
 for i in $ps_source_directories ; do

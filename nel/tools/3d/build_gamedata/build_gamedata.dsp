@@ -108,6 +108,14 @@ SOURCE=.\processes\skel\sh\export.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\skel\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\skel\export_build_data.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\skel\sh\install.sh
 # End Source File
 # Begin Source File
@@ -145,6 +153,14 @@ SOURCE=.\processes\swt\4_install.bat
 # Begin Source File
 
 SOURCE=.\processes\swt\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\swt\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\swt\export_build_data.bat
 # End Source File
 # Begin Source File
 
@@ -192,6 +208,14 @@ SOURCE=.\processes\shape\sh\export.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\shape\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\shape\export_build_data.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\shape\sh\install.sh
 # End Source File
 # Begin Source File
@@ -232,6 +256,14 @@ SOURCE=.\processes\map\sh\export.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\map\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\map\export_build_data.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\map\sh\install.sh
 # End Source File
 # Begin Source File
@@ -269,6 +301,14 @@ SOURCE=.\processes\zone\sh\build.sh
 # Begin Source File
 
 SOURCE=.\processes\zone\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\zone\export_build_data.bat
 # End Source File
 # Begin Source File
 
@@ -316,6 +356,14 @@ SOURCE=.\processes\smallbank\sh\export.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\smallbank\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\smallbank\export_build_data.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\smallbank\sh\install.sh
 # End Source File
 # Begin Source File
@@ -349,6 +397,14 @@ SOURCE=.\processes\farbank\4_install.bat
 # Begin Source File
 
 SOURCE=.\processes\farbank\sh\build.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\farbank\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\farbank\export_build_data.bat
 # End Source File
 # Begin Source File
 
@@ -392,6 +448,14 @@ SOURCE=.\processes\anim\sh\export.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\anim\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\anim\export_build_data.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\anim\sh\install.sh
 # End Source File
 # Begin Source File
@@ -428,6 +492,14 @@ SOURCE=.\processes\ps\sh\export.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\ps\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ps\export_build_data.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\ps\sh\install.sh
 # End Source File
 # Begin Source File
@@ -461,6 +533,14 @@ SOURCE=.\processes\ig\4_install.bat
 # Begin Source File
 
 SOURCE=.\processes\ig\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ig\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\ig\export_build_data.bat
 # End Source File
 # Begin Source File
 
@@ -508,6 +588,14 @@ SOURCE=.\processes\tiles\sh\export.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\tiles\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\tiles\export_build_data.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\tiles\sh\install.sh
 # End Source File
 # Begin Source File
@@ -541,6 +629,14 @@ SOURCE=.\processes\displace\4_install.bat
 # Begin Source File
 
 SOURCE=.\processes\displace\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\displace\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\displace\export_build_data.bat
 # End Source File
 # Begin Source File
 
@@ -580,6 +676,14 @@ SOURCE=.\processes\interface\sh\export.sh
 # End Source File
 # Begin Source File
 
+SOURCE=.\processes\interface\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\processes\interface\export_build_data.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\processes\interface\sh\install.sh
 # End Source File
 # Begin Source File
@@ -616,14 +720,6 @@ SOURCE=.\sh\build.sh
 # End Source File
 # Begin Source File
 
-SOURCE=.\build_all_data.bat
-# End Source File
-# Begin Source File
-
-SOURCE=.\build_data.bat
-# End Source File
-# Begin Source File
-
 SOURCE=.\sh\clean.sh
 # End Source File
 # Begin Source File
@@ -645,6 +741,14 @@ SOURCE=.\sh\client_setup.sh
 # Begin Source File
 
 SOURCE=.\sh\export.sh
+# End Source File
+# Begin Source File
+
+SOURCE=.\export_build_all_data.bat
+# End Source File
+# Begin Source File
+
+SOURCE=.\export_build_data.bat
 # End Source File
 # Begin Source File
 

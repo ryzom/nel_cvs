@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.24 2002/07/24 16:04:59 chafik Exp $
+ * $Id: form_elm.cpp,v 1.25 2002/08/21 13:34:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2072,6 +2072,13 @@ void CFormElmVirtualStruct::read (xmlNodePtr node, CFormLoader &loader, CForm *f
 
 		// Load the dfn
 		FormDfn = loader.loadFormDfn (DfnFilename.c_str (), false);
+		if (!FormDfn)
+		{
+			// Make an error message
+			char tmp[512];
+			smprintf (tmp, 512, "Can't find DFN filename %s.", DfnFilename.c_str ());				
+			throw EXmlParsingError (tmp);
+		}
 	}
 	else
 	{

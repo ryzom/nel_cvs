@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.18 2004/01/16 19:38:28 legros Exp $
+ * $Id: build_surf.cpp,v 1.19 2004/01/22 14:57:07 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -184,6 +184,26 @@ static CAABBox	getSnappedBBox(CVector v0, CVector v1, CVector v2, const CAABBox 
 	box.extend(v2);
 
 	return box;
+}
+
+static float	alg2dArea(const CVector &v0, const CVector &v1, const CVector &v2)
+{
+	float	ux = v1.x-v0.x,
+			uy = v1.y-v0.y,
+			vx = v2.x-v0.x,
+			vy = v2.y-v0.y;
+
+	return ux*vy - uy*vx;
+}
+
+static double	alg2dArea(const CVectorD &v0, const CVectorD &v1, const CVectorD &v2)
+{
+	double	ux = v1.x-v0.x,
+			uy = v1.y-v0.y,
+			vx = v2.x-v0.x,
+			vy = v2.y-v0.y;
+
+	return ux*vy - uy*vx;
 }
 
 template<class A>
@@ -381,6 +401,9 @@ void	NLPACS::CComputableSurfaceBorder::smooth(float val)
 
 	uint						before, after;
 
+	bool						allowMoveLeft = (Left != -1);
+	bool						allowMoveRight = (Right != -1);
+
 	// filtering passes
 	uint	numPass = 3;
 	for (; numPass>0; --numPass)
@@ -389,8 +412,22 @@ void	NLPACS::CComputableSurfaceBorder::smooth(float val)
 		for (i=1; i<Vertices.size()-1; ++i)
 		{
 			CVector	newVert = (Vertices[i]*2.0+previous+Vertices[i+1])/4.0f;
-			previous = Vertices[i];
-			Vertices[i] = newVert;
+
+			if (!allowMoveLeft || !allowMoveRight)
+			{
+				float	area1 = alg2dArea(previous, Vertices[i], Vertices[i+1]);
+				float	area2 = alg2dArea(previous, newVert, Vertices[i+1]);
+
+				previous = Vertices[i];
+
+				if ((!allowMoveLeft && area2 > area1) || (!allowMoveRight && area2 < area1))
+					Vertices[i] = newVert;
+			}
+			else
+			{
+				previous = Vertices[i];
+				Vertices[i] = newVert;
+			}
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.2 2001/10/29 18:33:29 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.3 2001/11/12 10:21:21 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,11 @@ void	cbDisconnection(TSockId from, void *arg)
 			// call it
 			TUnifiedNetCallback	cb = (*it).second.first;
 			cb(cnx.ServiceName, cnx.ServiceId, (*it).second.second);
+		}
+
+		if (instance->_DownUniCallback.first != NULL)
+		{
+			instance->_DownUniCallback.first(cnx.ServiceName, cnx.ServiceId, instance->_DownUniCallback.second);
 		}
 
 		// adds the connection to the disconnection stack
@@ -288,6 +293,11 @@ void	CUnifiedNetwork::addService(const string &name, const CInetAddress &addr, b
 	{
 		TUnifiedNetCallback	cb = (*itcb).second.first;
 		cb(name, sid, (*itcb).second.second);
+	}
+
+	if (_UpUniCallback.first != NULL)
+	{
+		_UpUniCallback.first(name, sid, _UpUniCallback.second);
 	}
 }
 
@@ -518,6 +528,12 @@ void	CUnifiedNetwork::addCallbackArray (const TUnifiedCallbackItem *callbackarra
 
 void	CUnifiedNetwork::setServiceUpCallback (const string &serviceName, TUnifiedNetCallback cb, void *arg)
 {
+	if (serviceName == "*")
+	{
+		_UpUniCallback = make_pair(cb, arg);
+		return;
+	}
+
 	TNameMappedCallback::iterator	it = _UpCallbacks.find(serviceName);
 	if (it == _UpCallbacks.end())
 	{
@@ -533,6 +549,12 @@ void	CUnifiedNetwork::setServiceUpCallback (const string &serviceName, TUnifiedN
 
 void	CUnifiedNetwork::setServiceDownCallback (const string &serviceName, TUnifiedNetCallback cb, void *arg)
 {
+	if (serviceName == "*")
+	{
+		_DownUniCallback = make_pair(cb, arg);
+		return;
+	}
+
 	TNameMappedCallback::iterator	it = _DownCallbacks.find(serviceName);
 	if (it == _DownCallbacks.end())
 	{

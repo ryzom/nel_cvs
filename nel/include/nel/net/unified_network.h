@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5
  *
- * $Id: unified_network.h,v 1.3 2001/10/29 18:35:01 lecroart Exp $
+ * $Id: unified_network.h,v 1.4 2001/11/12 10:21:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -241,7 +241,9 @@ private:
 
 	/// Map of the up/down service callbacks
 	TNameMappedCallback											_UpCallbacks;
+	TCallbackArgItem											_UpUniCallback;
 	TNameMappedCallback											_DownCallbacks;
+	TCallbackArgItem											_DownUniCallback;
 
 	/// Recording state
 	CCallbackNetBase::TRecordingState							_RecordingState;
@@ -273,7 +275,13 @@ private:
 
 
 	//
-	CUnifiedNetwork() : _ExtSId(256), _LastRetry(0) { }
+	CUnifiedNetwork() : _ExtSId(256), _LastRetry(0)
+	{
+		_UpUniCallback.first = NULL;
+		_UpUniCallback.second = NULL;
+		_DownUniCallback.first = NULL;
+		_DownUniCallback.second = NULL;
+	}
 	~CUnifiedNetwork() { }
 
 	//

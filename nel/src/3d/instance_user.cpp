@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.10 2002/03/29 17:05:50 berenguier Exp $
+ * $Id: instance_user.cpp,v 1.11 2002/04/26 15:05:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ void		CInstanceUser::setShapeDistMax(float distMax)
 }
 
 // ***************************************************************************
-float		CInstanceUser::getShapeDistMax(float distMax) const
+float		CInstanceUser::getShapeDistMax() const
 {
 	if(_Instance && _Instance->Shape)
 	{

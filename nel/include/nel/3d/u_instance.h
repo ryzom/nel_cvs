@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.6 2002/03/29 17:05:59 berenguier Exp $
+ * $Id: u_instance.h,v 1.7 2002/04/26 15:05:10 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,7 +108,7 @@ public:
 	virtual void		setShapeDistMax(float distMax) =0;
 
 	/// see setShapeDistMax()
-	virtual float		getShapeDistMax(float distMax) const =0;
+	virtual float		getShapeDistMax() const =0;
 
 };
 

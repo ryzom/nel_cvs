@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.5 2002/03/29 17:05:50 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.6 2002/04/26 15:05:00 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ void		CSkeletonUser::setShapeDistMax(float distMax)
 }
 
 // ***************************************************************************
-float		CSkeletonUser::getShapeDistMax(float distMax) const
+float		CSkeletonUser::getShapeDistMax() const
 {
 	if(_Skeleton && _Skeleton->Shape)
 	{

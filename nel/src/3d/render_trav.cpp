@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.29 2002/06/28 14:21:29 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.30 2002/06/28 15:10:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,8 +180,8 @@ void		CRenderTrav::traverse()
 	// =============================
 
 	// TempYoyo
-	//OrderOpaqueList.reset();
-	//OrderTransparentList.reset();
+	//OrderOpaqueList.reset(0);
+	//OrderTransparentList.reset(0);
 
 	// Start LodCharacter Manager render.
 	Scene->getLodCharacterManager()->beginRender(getDriver(), CamPos);

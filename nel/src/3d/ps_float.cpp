@@ -1,7 +1,7 @@
 /** \file ps_float.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.19 2004/03/04 14:29:31 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.20 2004/03/11 17:26:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,6 +104,7 @@ void CPSFloatCurveFunctor::setNumSamples(uint32 numSamples)
 ///=======================================================================================
 float CPSFloatCurveFunctor::getValue(float date) const
 {
+	if (_CtrlPoints.empty()) return 0.f;
 	NLMISC::clamp(date, 0, 1);	
 	// find a key that has a higher value
 	CPSVector<CCtrlPoint>::V::const_iterator it = _CtrlPoints.begin();

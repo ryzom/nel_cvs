@@ -2,6 +2,8 @@
 
 set -x
 
+WANT_AUTOMAKE="1.6"
+
 aclocal \
 && libtoolize --force \
 && autoheader \

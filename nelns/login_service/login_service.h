@@ -1,7 +1,7 @@
 /** \file login_service.h
  * <File description>
  *
- * $Id: login_service.h,v 1.19 2004/09/16 10:10:30 lecroart Exp $
+ * $Id: login_service.h,v 1.20 2004/12/13 10:42:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,11 @@
 
 #ifndef NL_LOGIN_SERVICE_H
 #define NL_LOGIN_SERVICE_H
+
+// we have to include windows.h because mysql.h uses it but not include it
+#ifdef NL_OS_WINDOWS
+#include <windows.h>
+#endif
 
 #include <mysql.h>
 

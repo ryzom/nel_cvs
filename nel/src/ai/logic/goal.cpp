@@ -208,6 +208,8 @@ namespace NLAILOGIC
 	const char *dbg_class_name = (const char *) getType();
 #endif
 		static NLAIAGENT::CStringVarName constructor_name("Constructor");
+		static NLAIAGENT::CStringVarName mode_once_name("SetModeOnce");
+		static NLAIAGENT::CStringVarName mode_repeat_name("SetModeRepeat");
 		NLAIAGENT::tQueue r;
 		if(className == NULL)
 		{
@@ -216,6 +218,19 @@ namespace NLAILOGIC
 				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( CGoal::IdGoal ) );					
 				r.push( NLAIAGENT::CIdMethod( 0 + IObjetOp::getMethodIndexSize(), 0.0, NULL, c) );					
 			}
+
+			if( (*funcName) == mode_once_name )
+			{					
+				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( CGoal::IdGoal ) );					
+				r.push( NLAIAGENT::CIdMethod( 1 + IObjetOp::getMethodIndexSize(), 0.0, NULL, c) );					
+			}
+
+			if( (*funcName) == mode_repeat_name )
+			{					
+				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( CGoal::IdGoal ) );					
+				r.push( NLAIAGENT::CIdMethod( 2 + IObjetOp::getMethodIndexSize(), 0.0, NULL, c) );					
+			}
+
 		}
 
 		if ( r.empty() )
@@ -237,29 +252,37 @@ namespace NLAILOGIC
 
 		switch(index - IObjetOp::getMethodIndexSize())
 		{
-		case 0:
-			{					
+			case 0:
+				{					
 
-				NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->getFront();
-				param->popFront();
+					NLAIAGENT::CStringType *name = (NLAIAGENT::CStringType *) param->getFront();
+					param->popFront();
 #ifdef NL_DEBUG
 				const char *dbg_name = name->getStr().getString();
 #endif
-				// If the constructor() function is explicitely called and the object has already been initialised
-				if ( _Name )
-					_Name->release();
-				_Args.clear();
+					// If the constructor() function is explicitely called and the object has already been initialised
+					if ( _Name )
+						_Name->release();
+					_Args.clear();
 
-				_Name = (NLAIAGENT::IVarName *) name->getStr().clone();
-				std::list<const NLAIAGENT::IObjectIA *> args;
-				while ( param->size() )
-				{
-					_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront() );
-					param->popFront();
+					_Name = (NLAIAGENT::IVarName *) name->getStr().clone();
+					std::list<const NLAIAGENT::IObjectIA *> args;
+					while ( param->size() )
+					{
+						_Args.push_back( (NLAIAGENT::IObjectIA *) param->getFront() );
+						param->popFront();
+					}
+					return IObjectIA::CProcessResult();		
 				}
-				return IObjectIA::CProcessResult();		
-			}
-			break;
+				break;
+			
+			case 1:
+				_Mode = achieveOnce;
+				break;
+
+			case 2:
+				_Mode = achieveForever;
+				break;
 		}
 
 		return IObjectIA::CProcessResult();
@@ -267,7 +290,7 @@ namespace NLAILOGIC
 
 	sint32 CGoal::getMethodIndexSize() const
 	{
-		return IBaseBoolType::getMethodIndexSize() + 1;
+		return IBaseBoolType::getMethodIndexSize() + 3;
 	}
 	//@}
 

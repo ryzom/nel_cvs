@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.6 2001/07/19 12:49:26 cado Exp $
+ * $Id: source_user.cpp,v 1.7 2001/07/23 10:08:02 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,8 +88,11 @@ void					CSourceUser::setSound( TSoundId id )
 			nlassert( ! isPlaying() );
 			_Track->DrvSource->setStaticBuffer( _Sound->getBuffer() );
 			_Track->DrvSource->setGain( _Gain );
-			_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );
-			_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
+			if ( ! _Sound->getBuffer()->isStereo() )
+			{
+				_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );
+				_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
+			}
 		}
 	}
 }
@@ -308,17 +311,16 @@ void					CSourceUser::copyToTrack()
 	_Track->DrvSource->setStaticBuffer( _Sound->getBuffer() );
 
 	_Track->DrvSource->setPos( _Position );
-	_Track->DrvSource->setVelocity( _Velocity );
-	_Track->DrvSource->setDirection( _Direction );
-	_Track->DrvSource->setGain( _Gain );
-	_Track->DrvSource->setSourceRelativeMode( _RelativeMode );
-	_Track->DrvSource->setLooping( _Looping );
-
 	if ( ! _Sound->getBuffer()->isStereo() )
 	{
 		_Track->DrvSource->setMinMaxDistances( _Sound->getMinDistance(), _Sound->getMaxDistance() );
 		_Track->DrvSource->setCone( _Sound->getConeInnerAngle(), _Sound->getConeOuterAngle(), _Sound->getConeOuterGain() );
+		_Track->DrvSource->setVelocity( _Velocity );
+		_Track->DrvSource->setDirection( _Direction );
 	}
+	_Track->DrvSource->setGain( _Gain );
+	_Track->DrvSource->setSourceRelativeMode( _RelativeMode );
+	_Track->DrvSource->setLooping( _Looping );
 }
 
 

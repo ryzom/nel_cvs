@@ -23,6 +23,7 @@
 // Georges
 #include "nel/georges/u_form.h"
 #include "nel/georges/u_form_elm.h"
+#include "nel/georges/u_form_dfn.h"
 #include "nel/georges/u_form_loader.h"
 #include "nel/georges/load_form.h"
 
@@ -407,7 +408,59 @@ void	loadSheetPath()
 	inputSheetPathLoaded = true;
 }
 
-void	convertCsvFile(const string &file)
+
+/*
+ *
+ */
+void fillFromDFN( NLGEORGES::UFormLoader *formLoader, set<string>& dfnFields, NLGEORGES::UFormDfn *formDfn, const string& rootName, const string& dfnFilename )
+{
+	uint i;
+	for ( i=0; i!=formDfn->getNumEntry(); ++i )
+	{
+		string entryName, rootBase;
+		formDfn->getEntryName( i, entryName );
+		rootBase = rootName.empty() ? "" : (rootName+".");
+
+		NLGEORGES::UFormDfn::TEntryType entryType;
+		bool array;
+		formDfn->getEntryType( i, entryType, array );
+		switch ( entryType )
+		{
+			case NLGEORGES::UFormDfn::EntryVirtualDfn:
+			{
+				CSmartPtr<NLGEORGES::UFormDfn> subFormDfn = formLoader->loadFormDfn( (entryName + ".dfn").c_str() );
+				if ( ! subFormDfn )
+					nlwarning( "Can't load virtual DFN %s", entryName.c_str() );
+				else
+					fillFromDFN( formLoader, dfnFields, subFormDfn, rootBase + entryName, entryName + ".dfn" );
+				break;
+			}
+			case NLGEORGES::UFormDfn::EntryDfn:
+			{
+				NLGEORGES::UFormDfn *subFormDfn;
+				if ( formDfn->getEntryDfn( i, &subFormDfn) )
+				{
+					string filename;
+					formDfn->getEntryFilename( i, filename );
+					fillFromDFN( formLoader, dfnFields, subFormDfn, rootBase + entryName, filename ); // recurse
+				}
+				break;
+			}
+			case NLGEORGES::UFormDfn::EntryType:
+			{
+				dfnFields.insert( rootBase + entryName );
+				//nlinfo( "DFN entry: %s (in %s)", (rootBase + entryName).c_str(), dfnFilename.c_str() );
+				break;
+			}
+		}
+	}
+}
+
+
+/*
+ * CSV -> Georges
+ */
+void	convertCsvFile( const string &file, bool generate, const string& sheetType )
 {
 	char			lineBuffer[2048];
 	FILE			*s;
@@ -423,14 +476,97 @@ void	convertCsvFile(const string &file)
 
 	loadSheetPath();
 
-	NLGEORGES::UFormLoader				*formLoader = NLGEORGES::UFormLoader::createLoader ();
+	NLGEORGES::UFormLoader *formLoader = NLGEORGES::UFormLoader::createLoader ();
 	NLMISC::CSmartPtr<NLGEORGES::UForm> form;
+	NLMISC::CSmartPtr<NLGEORGES::UFormDfn> formDfn;
 
 
 	fgets(lineBuffer, 2048, s);
 	explode(lineBuffer, SEPARATOR, fields);
 
-	nldebug("Updating modifications (only modified fields are updated)");
+	vector<bool> activeFields( fields.size(), true );
+
+	// Load DFN
+	formDfn = formLoader->loadFormDfn( (sheetType + ".dfn").c_str() );
+	if ( ! formDfn )
+		nlerror( "Can't find DFN for %s", sheetType.c_str() );
+	set<string> dfnFields;
+	fillFromDFN( formLoader, dfnFields, formDfn, "", sheetType );
+
+	// Display missing fields and check fields against DFN
+	uint i;
+	for ( i=1; i!=fields.size(); ++i )
+	{
+		if ( fields[i].empty() )
+		{
+			nlinfo( "Skipping field #%u (empty)", i );
+			activeFields[i] = false;
+		}
+		else
+		{
+			set<string>::iterator ist = dfnFields.find( fields[i] );
+			if ( ist == dfnFields.end() )
+			{
+				nlinfo( "Skipping field #%u (%s, not found in %s DFN)", i, fields[i].c_str(), sheetType.c_str() );
+				activeFields[i] = false;
+			}
+		}
+	}
+	for ( i=1; i!=fields.size(); ++i )
+	{
+		if ( activeFields[i] )
+			nlinfo( "Selected field: %s", fields[i].c_str() );
+	}
+
+	uint dirmapLetterIndex = ~0;
+	vector<string> dirmapDirs;
+
+	if ( generate )
+	{
+		// Get the directory mapping
+		try
+		{
+			CConfigFile dirmapcfg;
+			dirmapcfg.load( sheetType + "_dirmap.cfg" );
+			CConfigFile::CVar letterIndex1 = dirmapcfg.getVar( "LetterIndex" );
+			if ( letterIndex1.asInt() > 0 )
+			{
+				dirmapLetterIndex = letterIndex1.asInt() - 1;
+
+				CConfigFile::CVar dirs = dirmapcfg.getVar( "Directories" );
+				for ( sint idm=0; idm!=dirs.size(); ++idm )
+				{
+					dirmapDirs.push_back( dirs.asString( idm ) );
+					nlinfo( "Directory: %s", dirmapDirs.back() );
+					if ( ! CFile::isExists( dirmapDirs.back() ) )
+					{
+						CFile::createDirectory( dirmapDirs.back() );
+					}
+					else
+					{
+						if ( ! CFile::isDirectory( dirmapDirs.back() ) )
+						{
+							nlwarning( "Already existing but not a directory!" );
+						}
+					}
+				}
+
+				nlinfo( "Mapping letter #%u of sheet name to directory", dirmapLetterIndex + 1 );
+			}
+			
+		}
+		catch ( EConfigFile& e )
+		{
+			nlwarning( "Problem in directory mapping: %s", e.what() );
+		}
+		
+
+		nlinfo( "Press a key to generate *.%s", sheetType.c_str() );
+		getch();
+
+	}
+	else
+		nlinfo("Updating modifications (only modified fields are updated)");
 
 	while (!feof(s))
 	{
@@ -440,16 +576,71 @@ void	convertCsvFile(const string &file)
 		if (args.size() < 1)
 			continue;
 
-		string			&filebase = args[0];
-		map<string, string>::iterator	it = inputSheetPathContent.find(filebase);
-		if (it == inputSheetPathContent.end())
+		string& filebase = args[0];
+
+		// Skip empty lines
+		if ( filebase.empty() || (filebase == string(".")+sheetType) )
 			continue;
 
-		string			filename = (*it).second;
-		form = formLoader->loadForm (filename.c_str());
+		string filename, dirbase;
 
-		if (form == NULL)
-			continue;
+		if ( generate )
+		{
+			// Load template sheet
+			filename = strlwr( filebase );
+			form = formLoader->loadForm( (string("_empty.") + sheetType).c_str() );
+			if (form == NULL)
+			{
+				nlerror( "Can't load sheet _empty.sheet" );
+			}
+
+			// Deduce directory from sheet name
+			if ( dirmapLetterIndex != ~0 )
+			{
+				if ( dirmapLetterIndex < filebase.size() )
+				{
+					char c = filebase[dirmapLetterIndex];
+					vector<string>::const_iterator idm;
+					for ( idm=dirmapDirs.begin(); idm!=dirmapDirs.end(); ++idm )
+					{
+						if ( (! (*idm).empty()) && ((*idm)[0] == c) )
+						{
+							dirbase = (*idm) + "/";
+							break;
+						}
+					}
+					if ( idm==dirmapDirs.end() )
+					{
+						nlinfo( "Directory mapping not found for %s", filebase.c_str() );
+						dirbase = ""; // put into root
+					}
+				}
+				else
+				{
+					nlerror( "Can't map directory with letter #%u, greater than size of %s", dirmapLetterIndex, filebase.c_str() );
+				}
+			}
+		}
+		else
+		{
+			// Locate sheet (skip if not found)
+			map<string, string>::iterator	it = inputSheetPathContent.find(filebase);
+			if (it == inputSheetPathContent.end())
+			{
+				if ( ! filebase.empty() )
+					nlwarning( "Sheet %s not found", filebase.c_str( )); 
+				continue;
+			}
+
+			// Load sheet (skip if failed)
+			filename = (*it).second;
+			form = formLoader->loadForm( filename.c_str() );
+			if (form == NULL)
+			{
+				nlwarning( "Can't load sheet %s", filename.c_str() );
+				continue;
+			}
+		}
 
 		bool	displayed = false;
 		uint	i;
@@ -457,6 +648,10 @@ void	convertCsvFile(const string &file)
 		{
 			const string	&var = fields[i];
 			string			&val = args[i];
+
+			// Skip column with inactive field (empty or not in DFN)
+			if ( ! activeFields[i] )
+				continue;
 
 			if (val[0] == '"')
 				val.erase(0, 1);
@@ -470,22 +665,29 @@ void	convertCsvFile(const string &file)
 				val == "ERR")
 				continue;
 
-			string	test;
-			if (form->getRootNode().getValueByName(test, var.c_str()) &&
-				test == val)
-				continue;
+			if ( ! generate )
+			{
+				string	test;
+				if (form->getRootNode().getValueByName(test, var.c_str()) &&
+					test == val)
+					continue;
+			}
 
 			form->getRootNode().setValueByName(val.c_str(), var.c_str());
 
-			if (!displayed)
-				nldebug("in %s:", filename.c_str());
-			displayed = true;
-			nldebug("%s = %s", var.c_str(), val.c_str());
+			if ( ! generate )
+			{
+				if (!displayed)
+					nldebug("in %s:", filename.c_str());
+				displayed = true;
+				nldebug("%s = %s", var.c_str(), val.c_str());
+			}
 		}
 
-		if (displayed)
+		// Write sheet
+		if ( generate || displayed )
 		{
-			COFile	output(filename);
+			COFile	output( dirbase + filename );
 			form->write(output, true);
 		}
 	}
@@ -497,7 +699,8 @@ void	convertCsvFile(const string &file)
 void	usage(char *argv0, FILE *out)
 {
 	fprintf(out, "\n");
-	fprintf(out, "Syntax: %s [-p <sheet path>] [-s <field_separator>] [<script file name> | <csv file name>]", argv0);
+	fprintf(out, "Syntax: %s [-p <sheet path>] [-s <field_separator>] [-g <sheet type>] [<script file name> | <csv file name>]", argv0);
+	fprintf(out, "(-g = generate sheet files, needs template sheet _empty.<sheet type> and <sheet type>_dirmap.cfg in the current folder");
 	fprintf(out, "\n");
 	fprintf(out, "Script commands:\n");
 	fprintf(out, "\tDFNPATH\t\t<search path for george dfn files>\n");
@@ -512,6 +715,12 @@ void	usage(char *argv0, FILE *out)
 
 int main(int argc, char* argv[])
 {
+	NLMISC::createDebug();
+	NLMISC::WarningLog->addNegativeFilter( "CPath::insertFileInMap" );
+
+	bool generate = false;
+	string sheetType;
+
 	// parse command line
 	uint	i;
 	for (i=1; (sint)i<argc; i++)
@@ -539,7 +748,18 @@ int main(int argc, char* argv[])
 					usage(argv[0], stderr);
 					exit(0);
 				}
-				SEPARATOR = arg;
+				SEPARATOR = argv[i];
+				break;
+			case 'g':
+				++i;
+				if ((sint)i == argc)
+				{
+					fprintf(stderr, "Missing <sheetType> after -g option\n");
+					usage(argv[0], stderr);
+					exit(0);
+				}
+				generate = true;
+				sheetType = string(argv[i]);
 				break;
 			default:
 				fprintf(stderr, "Unrecognized option '%c'\n", arg[1]);
@@ -572,7 +792,7 @@ int main(int argc, char* argv[])
 		executeScriptFile(inputScriptFiles[i].c_str());
 
 	for (i=0; i<inputCsvFiles.size(); ++i)
-		convertCsvFile(inputCsvFiles[i]);
+		convertCsvFile(inputCsvFiles[i], generate, sheetType);
 
 	fprintf(stderr,"\nDone.\n");
 	getch();

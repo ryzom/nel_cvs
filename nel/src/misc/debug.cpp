@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.62 2002/08/27 10:02:27 lecroart Exp $
+ * $Id: debug.cpp,v 1.63 2002/09/02 09:57:21 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,8 @@
 #	define getcwd(_a, _b) (_getcwd(_a,_b))
 #elif defined NL_OS_UNIX
 #	include <unistd.h>
+#	include <stdio.h>
+#	include <stdlib.h>
 #	define IsDebuggerPresent() false
 #endif
 
@@ -104,6 +106,11 @@ void nlFatalError (const char *format, ...)
 
 	if (NLMISC::DebugNeedAssert)
 		NLMISC_BREAKPOINT;
+
+#ifndef NL_OS_WINDOWS
+	exit(EXIT_FAILURE);
+#endif
+
 }
 
 void nlError (const char *format, ...)
@@ -117,6 +124,10 @@ void nlError (const char *format, ...)
 
 	if (NLMISC::DebugNeedAssert)
 		NLMISC_BREAKPOINT;
+
+#ifndef NL_OS_WINDOWS
+	exit(EXIT_FAILURE);
+#endif
 }
 
 // the default behavior is to display all in standard output and to a file named "log.log";

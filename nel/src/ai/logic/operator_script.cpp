@@ -161,7 +161,7 @@ namespace NLAIAGENT
 		{
 			if ( _IsActivated == false)
 			{
-				// Registers with the goal and gets the args
+				// Registers to the goal and gets the args
 				_CurrentGoal = activated_goals.front();
 				_CurrentGoal->addSuccessor( (IBasicAgent *) this );
 				linkGoalArgs( _CurrentGoal );

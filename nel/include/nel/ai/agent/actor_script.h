@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.19 2001/06/19 14:35:03 portier Exp $
+ * $Id: actor_script.h,v 1.20 2001/06/25 09:22:35 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,8 @@ namespace NLAIAGENT
 				fid_onUnActivate,
 				fid_switch,
 				fid_launch,
+				fid_success,
+				fid_failure,
 				fid_last
 			};
 
@@ -86,6 +88,11 @@ namespace NLAIAGENT
 			**/
 			virtual void switchActor(std::vector<CComponentHandle *> &, bool stay_active = false);
 
+		public:
+			static NLAISCRIPT::COperandSimpleListOr *ParamIdSuccessMsg;
+			static NLAISCRIPT::CParam *ParamSuccessMsg;
+			static NLAISCRIPT::COperandSimpleListOr *ParamIdFailureMsg;
+			static NLAISCRIPT::CParam *ParamFailureMsg;
 
 		public:
 			// Builds and actor with its father
@@ -156,6 +163,10 @@ namespace NLAIAGENT
 
 			virtual void setTopLevel(CAgentScript *);
 			const CAgentScript *getTopLevel() const;
+
+		public:
+			static void initClass();
+			static void releaseClass();
 	};
 }
 #endif

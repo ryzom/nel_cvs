@@ -1,6 +1,6 @@
 /** \file object.cpp
  *
- * $Id: interpret_object.cpp,v 1.9 2001/05/22 16:08:16 chafik Exp $
+ * $Id: interpret_object.cpp,v 1.10 2001/06/25 09:22:17 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,6 @@ namespace NLAISCRIPT
 	{
 		return _Name;
 	}
-
 
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////

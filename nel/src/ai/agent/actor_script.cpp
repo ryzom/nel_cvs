@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.60 2002/06/21 16:01:28 robert Exp $
+ * $Id: actor_script.cpp,v 1.61 2002/08/08 08:57:42 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,7 +117,6 @@ namespace NLAIAGENT
 	/// Activates the actor
 	void CActorScript::activate()
 	{
-
 		if ( !_IsActivated )
 		{
 			CAgentScript *father = (CAgentScript *) getParent();
@@ -211,6 +210,15 @@ namespace NLAIAGENT
 			launched->pause();
 			it_l++;
 		}
+	
+		int i;
+		for ( i = 0; i < _NbComponents; i++ )
+		{
+			if ( _Components[i]->getType() && NLAIC::CTypeOfObject::tActor )
+			{
+				( (CActorScript *) _Components[i] )->pause();
+			}
+		}
 	}
 
 	void CActorScript::onPause()
@@ -253,6 +261,16 @@ namespace NLAIAGENT
 			launched->restart();
 			it_l++;
 		}
+
+		int i;
+		for ( i = 0; i < _NbComponents; i++ )
+		{
+			if ( _Components[i]->getType() && NLAIC::CTypeOfObject::tActor )
+			{
+				( (CActorScript *) _Components[i] )->restart();
+			}
+		}
+
 	}
 
 	void CActorScript::onRestart()

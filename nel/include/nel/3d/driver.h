@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.4 2000/11/02 14:02:48 berenguier Exp $
+ * $Id: driver.h,v 1.5 2000/11/06 14:54:47 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,10 @@ const uint32 IDRV_TOUCHED_COLOR		=	0x00000040;
 const uint32 IDRV_TOUCHED_LIGHTING	=	0x00000080;
 const uint32 IDRV_TOUCHED_DEFMAT	=	0x00000100;
 const uint32 IDRV_TOUCHED_ALPHA		=	0x00000200;
+const uint32 IDRV_TOUCHED_TEX0		=	0x00000400;
+const uint32 IDRV_TOUCHED_TEX1		=	0x00000800;
+const uint32 IDRV_TOUCHED_TEX2		=	0x00001000;
+const uint32 IDRV_TOUCHED_TEX3		=	0x00002000;
 
 const uint32	IDRV_MAT_HIDE		= 0x00000001;
 const uint32	IDRV_MAT_TSP		= 0x00000002;
@@ -133,11 +137,47 @@ private:
 	float					_Alpha;
 	uint32					_Touched;
 
+	CSmartPtr<CTexture>		pTex[4];
+
 public:
 
 	CRefPtr<IShader>		pShader;
 
-	CSmartPtr<CTexture>		pTex[4];
+	uint32					getTouched(void) { return(_Touched); }
+
+	void					clearTouched(void) { _Touched=0; }
+
+	bool					texturePresent(uint8 n)
+	{
+		if (pTex[n])
+		{
+			return(true);
+		}
+		return(false);
+	}
+
+	CTexture&				getTexture(uint8 n)
+	{
+		return(*pTex[n]);
+	}
+
+	void 					setTexture(CTexture* ptex, uint8 n=0)
+	{
+		pTex[n]=ptex;
+		switch(n)
+		{
+		case 0:
+			_Touched|=IDRV_TOUCHED_TEX0;
+		case 1:
+			_Touched|=IDRV_TOUCHED_TEX1;
+		case 2:
+			_Touched|=IDRV_TOUCHED_TEX2;
+		case 3:
+			_Touched|=IDRV_TOUCHED_TEX3;
+		default:
+			break;
+		}
+	}
 
 	void					setShader(TShader val)
 	{
@@ -332,6 +372,7 @@ class IDriver
 friend class ITextureDrvInfos;
 private:
 	std::list< CRefPtr<ITextureDrvInfos> >	_pTexDrvInfos;
+	static IDriver*							_Current;
 public:
 							IDriver(void) { };
 	virtual					~IDriver(void) 
@@ -351,6 +392,10 @@ public:
 	// first param is the associated window. 
 	// Must be a HWND for Windows (WIN32).
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode)=0;
+
+	virtual bool			activate(void)=0;
+
+	virtual bool			processMessages(void)=0;
 
 	virtual bool			clear2D(CRGBA& rgba)=0;
 

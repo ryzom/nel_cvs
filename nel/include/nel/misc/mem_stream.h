@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.28 2003/07/09 15:16:04 cado Exp $
+ * $Id: mem_stream.h,v 1.29 2003/07/10 15:04:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -201,7 +201,8 @@ public:
 		_BufPos = _Buffer.getPtr();
 	}
 
-	/** Returns the length (size) of the message, in bytes.
+	/**
+	 * Returns the length (size) of the message, in bytes.
 	 * If isReading(), it is the number of bytes that can be read,
 	 * otherwise it is the number of bytes that have been written.
 	 */
@@ -251,7 +252,13 @@ public:
 		return _Buffer;
 	}
 */
-	// When you fill the buffer externaly (using bufferAsVector) you have to reset the BufPos calling this method
+
+	/**
+	 * When you fill the buffer externaly (using bufferAsVector) you have to reset the BufPos calling this method
+	 *
+	 * If you are using the stream only in output mode, you can use this method as a faster version
+	 * of clear() *if you don't serialize pointers*.
+	 */
 	void resetBufPos() { _BufPos = _Buffer.getPtr(); }
 
 	/**
@@ -376,7 +383,7 @@ public:
 	}
 
 	template <class T>
-	void			fastWrite( T& value )
+	void			fastWrite( const T& value )
 	{
 		//nldebug( "MEMSTREAM: Writing %u-byte value in %p at pos %u", sizeof(value), this, _BufPos - _Buffer.getPtr() );
 		increaseBufferIfNecessary (sizeof(T));
@@ -495,14 +502,12 @@ protected:
 		return size();
 	}
 
-	CObjectVector<uint8, false> _Buffer;
-	uint8 *_BufPos;
+	CObjectVector<uint8, false>	_Buffer;
+	uint8						*_BufPos;
 	
-	//CVector8		_Buffer;
-	//It8				_BufPos;
-	bool			_StringMode;
+	bool						_StringMode;
 
-	uint32			_DefaultCapacity;
+	uint32						_DefaultCapacity;
 };
 
 // Input

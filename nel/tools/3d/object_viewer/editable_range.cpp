@@ -1,7 +1,7 @@
 /** \file  editable_range.cpp
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.cpp,v 1.8 2001/11/22 17:16:35 berenguier Exp $
+ * $Id: editable_range.cpp,v 1.9 2001/11/26 11:03:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,12 @@ CEditableRange::CEditableRange(const std::string &id)
 
 }
 
+
+void CEditableRange::update()
+{
+	updateRange();
+	updateValueFromReader();
+}
 
 BOOL CEditableRange::EnableWindow( BOOL bEnable)
 {

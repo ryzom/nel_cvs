@@ -1,7 +1,7 @@
 /** \file editable_range.h
  * a dialog that help to choose a numeric value of any types. 
  *
- * $Id: editable_range.h,v 1.9 2001/11/22 17:16:35 berenguier Exp $
+ * $Id: editable_range.h,v 1.10 2001/11/26 11:03:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@ public:
 	// init the dialog at the given position
 	public:
 
-		virtual void init(uint32 x, uint32 y, CWnd *pParent);
+	virtual void init(uint32 x, uint32 y, CWnd *pParent);
 
 	BOOL EnableWindow( BOOL bEnable = TRUE );
 
@@ -98,6 +98,9 @@ public:
 	
 	// validate the lower an upper bound of a range from their string representation
 	virtual bool editableRangeValueValidator(const CString &lo, const CString &up) = 0;
+
+	// update the dialog display
+	void update();
 
 // Implementation
 protected:
@@ -218,7 +221,7 @@ protected:
 	
 		CRangeSelector rs(lowerBound, upperBound, this);
 
-		if (rs.DoModal())
+		if (rs.DoModal() == IDOK)
 		{
 			string2value(rs.getLowerBound(), _Range.first);
 			string2value(rs.getUpperBound(), _Range.second);				

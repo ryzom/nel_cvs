@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.32 2001/09/12 13:19:36 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.33 2001/09/14 14:54:48 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -793,8 +793,9 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 			// there are 2 integration steps : with and without collisions
 
 			if (!_CollisionInfo) // no collisionner are used
-			{		
-				IntegrateSpeed(_Size * 3, &_Pos[0].x, &_Speed[0].x, ellapsedTime);
+			{	
+				if (_Size != 0)
+					IntegrateSpeed(_Size * 3, &_Pos[0].x, &_Speed[0].x, ellapsedTime);
 			}
 			else
 			{

@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.27 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: mrm_builder.cpp,v 1.28 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1185,9 +1185,13 @@ void	CMRMBuilder::buildAllLods(const CMRMMesh &baseMesh, std::vector<CMRMMeshGeo
 	nBaseFaces=nFaces/divisor;
 	nBaseFaces=max(nBaseFaces,4);
 
-	// must have at least 2 LOD.
-	nlassert(nWantedLods>1);
+	// must have at least 2 LOD to be really intersting. But the rest of the process work too with only one Lod!!
+	nlassert(nWantedLods>=1);
 	lodMeshs.resize(nWantedLods);
+
+	// If only one lod asked, must init some Tmp Global values (like NumAttributes)
+	if(nWantedLods==1)
+		init(baseMesh);
 
 	// must fill all LODs, from end to start. do not proces last lod since it will be the coarsest mesh.
 	for(i=nWantedLods-1;i>0;i--)

@@ -1,7 +1,7 @@
 /** \file async_texture_manager.h
  * <File description>
  *
- * $Id: async_texture_manager.h,v 1.2 2002/10/25 16:13:10 berenguier Exp $
+ * $Id: async_texture_manager.h,v 1.3 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/texture_file.h"
 #include "3d/hls_texture_manager.h"
 #include <vector>
+#include "nel/misc/bitmap.h"
 
 
 namespace NL3D 
@@ -43,6 +44,8 @@ class	CMeshBaseInstance;
 // ***************************************************************************
 /**
  * Async Loader of textures and Texture Load Balancer.
+ *	Additionaly, store in RAM for each texture load a very low, DXTC1 compressed version of the texture.
+ *	Used for some Lod systems.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
@@ -92,6 +95,13 @@ public:
 
 	/// tells if a texture is loaded in the driver (ie ready to use)
 	bool			isTextureUpLoaded(uint id) const;
+
+	/** get the RAM LowDef version of a texture. Used For CLodCharacters
+	 *	return NULL if bad Id or if the texture is still not loaded.
+	 *	The bitmap returned has no mipmaps and should be in DXTC1 (not guaranteed).
+	 */
+	const NLMISC::CBitmap	*getCoarseBitmap(uint id) const;
+
 
 	/** update the manager. New loaded texture are uploaded. Instances are updated to know if all their 
 	 *	pending textures have been uploaded.
@@ -163,8 +173,6 @@ private:
 	class	CTextureEntry : public CTextureBase
 	{
 	public:
-		CTextureEntry();
-
 		// The it in the map.
 		ItTextureEntryMap					ItMap;
 		// true if async loading has ended
@@ -189,6 +197,14 @@ private:
 
 		// The High Def Lod.
 		CTextureLod							HDLod;
+
+		// The Coarse Bitmap stored in RAM for CLod
+		NLMISC::CBitmap						CoarseBitmap;
+
+	public:
+		CTextureEntry();
+
+		void		createCoarseBitmap();
 	};
 
 

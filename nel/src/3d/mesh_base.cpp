@@ -1,7 +1,7 @@
 /** \file mesh_base.cpp
  * <File description>
  *
- * $Id: mesh_base.cpp,v 1.23 2002/10/10 12:59:00 berenguier Exp $
+ * $Id: mesh_base.cpp,v 1.24 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "3d/mesh_base.h"
 #include "3d/mesh_base_instance.h"
-#include "3d/mesh_base_instance.h"
+#include "3d/lod_character_texture.h"
 
 
 
@@ -50,6 +50,16 @@ CMeshBase::CMeshBase()
 	_DefaultLMFactor.setValue(CRGBA(255,255,255,255));
 
 	_AutoAnim = false;
+
+	_LodCharacterTexture= NULL;
+}
+
+
+// ***************************************************************************
+CMeshBase::~CMeshBase()
+{
+	// free if exist
+	resetLodCharacterTexture();
 }
 
 
@@ -136,6 +146,8 @@ void	CMeshBase::CMeshBaseBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream
 void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 7:
+		- _LodCharacterTexture
 	Version 6:
 		- _DistMax
 	Version 5:
@@ -152,7 +164,7 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- 1st version.
 	*/
-	sint ver = f.serialVersion(6);
+	sint ver = f.serialVersion(7);
 
 	if (ver >= 2)
 	{
@@ -191,6 +203,10 @@ void	CMeshBase::serialMeshBase(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if(ver >= 6)
 		f.serial(_DistMax);
+
+	if(ver >= 7)
+		f.serialPtr(_LodCharacterTexture);
+
 }
 
 
@@ -345,6 +361,27 @@ void	CMeshBase::computeIsLightable()
 bool	CMeshBase::useLightingLocalAttenuation () const
 {
 	return _UseLightingLocalAttenuation;
+}
+
+
+// ***************************************************************************
+void	CMeshBase::resetLodCharacterTexture()
+{
+	if(_LodCharacterTexture)
+	{
+		delete _LodCharacterTexture;
+		_LodCharacterTexture= NULL;
+	}
+}
+
+// ***************************************************************************
+void	CMeshBase::setupLodCharacterTexture(CLodCharacterTexture &lodText)
+{
+	// delete old
+	resetLodCharacterTexture();
+	// seutp new
+	_LodCharacterTexture= new CLodCharacterTexture;
+	*_LodCharacterTexture= lodText;
 }
 
 

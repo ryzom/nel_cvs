@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.35 2002/10/30 16:18:04 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.36 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,8 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/aabbox.h"
 #include "3d/mesh_skin_manager.h"
+#include "3d/mesh_base_instance.h"
+#include "3d/async_texture_manager.h"
 
 
 
@@ -87,10 +89,6 @@ CSkeletonModel::CSkeletonModel()
 
 	_SkinToRenderDirty= false;
 
-	_CLodShapeId= -1;
-	_CLodAnimId= 0;
-	_CLodAnimTime= 0;
-	_CLodWrapMode= true;
 	_CLodVertexColorDirty= true;
 
 	// Inform the transform that I am a skeleton
@@ -133,6 +131,9 @@ CSkeletonModel::~CSkeletonModel()
 	{
 		detachSkeletonSon(*_StickedObjects.begin());
 	}
+
+	// Free Lod instance
+	setLodCharacterShape(-1);
 
 }
 
@@ -700,25 +701,135 @@ void		CSkeletonModel::setLodCharacterDistance(float dist)
 // ***************************************************************************
 void		CSkeletonModel::setLodCharacterShape(sint shapeId)
 {
-	_CLodShapeId= shapeId;
+	// get a ptr on the scene which owns us, and so on the lodManager.
+	CScene					*scene= static_cast<CScene*>(_OwnerMot);
+	CLodCharacterManager	*mngr= scene->getLodCharacterManager();
+
+	// if mngr not setuped, noop (lod not possible).
+	if(!mngr)
+		return;
+
+	// If a shape was setup, free the instance
+	if(_CLodInstance.ShapeId>=0)
+	{
+		mngr->releaseInstance(_CLodInstance);
+		_CLodInstance.ShapeId= -1;
+	}
+
+	// assign
+	_CLodInstance.ShapeId= shapeId;
+
+	// if a real shape is setuped, alloc an instance
+	if(_CLodInstance.ShapeId>=0)
+	{
+		mngr->initInstance(_CLodInstance);
+	}
 }
+
+
+// ***************************************************************************
+void		CSkeletonModel::computeLodTexture()
+{
+	// is lod setuped
+	if(_CLodInstance.ShapeId<0)
+		return;
+
+	// get a ptr on the scene which owns us, and so on the lodManager.
+	CScene					*scene= static_cast<CScene*>(_OwnerMot);
+	CLodCharacterManager	*mngr= scene->getLodCharacterManager();
+	// mngr must be setuped since shape Id is >-1
+	nlassert(mngr);
+	/* Get the asyncTextureManager. This is a Hack. We use the AsyncTextureManager to store very low version of Textures
+		(kept in DXTC1 format for minimum memory overhead).
+		HENCE Lod Texture can work only with Async Textured instances!!
+	*/
+	CAsyncTextureManager	*asyncMngr= scene->getAsyncTextureManager();
+	// if not setuped, cancel
+	if(!asyncMngr)
+		return;
+
+
+	// **** start process. If cannot (TextureId==no more texture space), just quit.
+	if(!mngr->startTextureCompute(_CLodInstance))
+		return;
+	uint maxNumBmpToReset= 0;
+
+	// **** For all skins which have a LodTexture setuped
+	ItTransformSet	it= _Skins.begin();
+	for(;it!=_Skins.end();it++)
+	{
+		// the skin should be a meshBaseInstance setuped to asyncTexturing
+		CMeshBaseInstance	*mbi= dynamic_cast<CMeshBaseInstance*>(*it);
+		if(mbi && mbi->getAsyncTextureMode() && mbi->Shape)
+		{
+			CMeshBase	*mb= (CMeshBase*)(IShape*)(mbi->Shape);
+			// get the LodTexture info of this shape.
+			const CLodCharacterTexture	*lodText= mb->getLodCharacterTexture();
+			// if setuped
+			if(lodText)
+			{
+				// Ok, compute influence of this instance on the Lod.
+
+				// ---- Build all bmps of the instance with help of the asyncTextureManager
+				uint	numMats= mbi->Materials.size();
+				// 256 materials possibles for the lod Manager
+				numMats= min(numMats, 256U);
+				// for endTexturecompute
+				maxNumBmpToReset= max(maxNumBmpToReset, numMats);
+				// process each materials
+				for(uint i=0;i<numMats;i++)
+				{
+					// get the manager bitmap to write to
+					CLodCharacterTmpBitmap	&dstBmp= mngr->getTmpBitmap(i);
+
+					// if the material stage 0 is not textured, or has not a valid async id, build the bitmap with a color.
+					sint			asyncTextId= mbi->getAsyncTextureId(i,0);
+					const CBitmap	*coarseBitmap= NULL;
+					if(asyncTextId!=-1)
+					{
+						// get it from async manager
+						coarseBitmap= asyncMngr->getCoarseBitmap(asyncTextId);
+					}
+
+					// So if we have no bmp here, build with material color, else build a texture
+					if(!coarseBitmap)
+					{
+						dstBmp.build(mbi->Materials[i].getDiffuse());
+					}
+					else
+					{
+						dstBmp.build(*coarseBitmap);
+					}
+				}
+
+				// ---- add the lodTextureInfo to the current texture computed
+				mngr->addTextureCompute(_CLodInstance, *lodText);
+			}
+		}
+	}
+
+	// **** compile the process
+	mngr->endTextureCompute(_CLodInstance, maxNumBmpToReset);
+
+}
+
 
 // ***************************************************************************
 void		CSkeletonModel::setLodCharacterAnimId(uint animId)
 {
-	_CLodAnimId= animId;
+	_CLodInstance.AnimId= animId;
 }
 
 // ***************************************************************************
 void		CSkeletonModel::setLodCharacterAnimTime(TGlobalAnimationTime time)
 {
-	_CLodAnimTime= time;
+	_CLodInstance.AnimTime= time;
 }
 
 // ***************************************************************************
 void		CSkeletonModel::setLodCharacterWrapMode(bool wrapMode)
 {
-	_CLodWrapMode= wrapMode;
+	_CLodInstance.WrapMode= wrapMode;
 }
 
 
@@ -734,7 +845,7 @@ void		CSkeletonModel::updateDisplayLodCharacterFlag(const CClipTrav *clipTrav)
 		_DisplayedAsLodCharacter= false;
 
 		// if enabled
-		if(_LodCharacterDistance!=0 && _CLodShapeId>=0)
+		if(_LodCharacterDistance!=0 && _CLodInstance.ShapeId>=0)
 		{
 			CVector		globalPos;
 
@@ -808,10 +919,10 @@ void		CSkeletonModelRenderObs::traverse(IObs *caller)
 void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
 {
 	// if shape id set.
-	if(_CLodShapeId<0)
+	if(_CLodInstance.ShapeId<0)
 		return;
 	// get the lod shape,a nd check exist in the manager
-	const CLodCharacterShape	*lodShape= mngr->getShape(_CLodShapeId);
+	const CLodCharacterShape	*lodShape= mngr->getShape(_CLodInstance.ShapeId);
 	if(lodShape)
 	{
 		static vector<CRGBAF>	tmpColors;
@@ -885,7 +996,7 @@ void			CSkeletonModel::computeCLodVertexColors(CLodCharacterManager *mngr)
 
 		// compile colors
 		//-----------------
-		lodShape->endBoneColor(tmpColors, _CLodVertexColors);
+		lodShape->endBoneColor(tmpColors, _CLodInstance.VertexColors);
 	}
 
 }
@@ -1026,6 +1137,10 @@ void			CSkeletonModelRenderObs::renderCLod()
 	CSkeletonModel		*sm= (CSkeletonModel*)Model;
 	IDriver				*drv= trav->getDriver();
 	CScene				*scene= trav->Scene;
+	// the lod manager. no op if not here
+	CLodCharacterManager	*mngr= trav->Scene->getLodCharacterManager();
+	if(!mngr)
+		return;
 
 	// Get global lighting on the instance. Suppose SunAmbient only.
 	//=================
@@ -1040,19 +1155,40 @@ void			CSkeletonModelRenderObs::renderCLod()
 	else
 		lightContrib= &hrcObs->_AncestorSkeletonModel->getSkeletonLightContribution();
 
-	// compute his sun contribution result
-	CRGBA	sunContrib= scene->getSunDiffuse();
-	// simulate/average diffuse lighting over the mesh by dividing diffuse by 2.
-	sunContrib.modulateFromuiRGBOnly(sunContrib, lightContrib->SunContribution/2 );
-	// Add Ambient
-	sunContrib.addRGBOnly(sunContrib, scene->getSunAmbient());
-	sunContrib.A= 255;
+	// compute his main light contribution result. Try first with sun
+	CRGBA	mainAmbient= scene->getSunAmbient();
+	CRGBA	mainDiffuse= scene->getSunDiffuse();
+	// modulate sun contribution
+	mainDiffuse.modulateFromuiRGBOnly(mainDiffuse, lightContrib->SunContribution );
+	CVector	mainLightDir= scene->getSunDirection();
+
+
+	/* During night, and in the buildings, it may be better to use one of the other Points lights
+		Test only with the first pointLight, for faster compute, even if It may fail in some cases.
+	*/
+	CPointLight	*mainPL= lightContrib->PointLight[0];
+	if(mainPL)
+	{
+		CRGBA	plDiffuse;
+		// get the diffuse of the pointLight, attenuated from distance and importance.
+		plDiffuse.modulateFromuiRGBOnly(mainPL->getDiffuse(), lightContrib->AttFactor[0]);
+		// compare the 2 diffuse
+		uint	d0= mainDiffuse.R + mainDiffuse.G + mainDiffuse.B;
+		uint	d1= plDiffuse.R + plDiffuse.G + plDiffuse.B;
+		// if the pointLight is lighter, take it.
+		if(d1>d0)
+		{
+			// leave ambient, but take diffuse and pointLight fake Direction
+			mainDiffuse= plDiffuse;
+			mainLightDir= hrcObs->WorldMatrix.getPos() - mainPL->getPosition();
+			mainLightDir.normalize();
+		}
+	}
 
 
 	// compute colors of the lods.
 	//=================
-	// the lod manager
-	CLodCharacterManager	*mngr= trav->Scene->getLodCharacterManager();
+	// NB: even if texturing is sufficient, still important for AlphaTest.
 
 	// If must recompute color because of change of skin color or if skin added/deleted
 	if(sm->_CLodVertexColorDirty)
@@ -1068,9 +1204,10 @@ void			CSkeletonModelRenderObs::renderCLod()
 	// render must have been intialized
 	nlassert(mngr->isRendering());
 
+
 	// add the instance to the manager. 
-	if(!mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
-		hrcObs->WorldMatrix, sm->_CLodVertexColors, sunContrib))
+	if(!mngr->addRenderCharacterKey(sm->_CLodInstance, hrcObs->WorldMatrix, 
+		mainAmbient, mainDiffuse, mainLightDir) )
 	{
 		// If failed to add it because no more vertex space in the manager, retry.
 
@@ -1080,8 +1217,8 @@ void			CSkeletonModelRenderObs::renderCLod()
 		mngr->beginRender(drv, trav->CamPos);
 
 		// retry. but no-op if refail.
-		mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
-			hrcObs->WorldMatrix, sm->_CLodVertexColors, sunContrib);
+		mngr->addRenderCharacterKey(sm->_CLodInstance, hrcObs->WorldMatrix, 
+			mainAmbient, mainDiffuse, mainLightDir);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.30 2002/10/10 12:59:00 berenguier Exp $
+ * $Id: transform.h,v 1.31 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,7 +305,7 @@ public:
 
 	/** set the Mean color of the transform. The mean color can be used for many purpose, such as drawing
 	 *	objects if the textures are not loaded. It is used also for Lod Character.
-	 *	Default color is (80,80,80)
+	 *	Default color is (255,255,255)
 	 */
 	void				setMeanColor(CRGBA color);
 

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.33 2002/10/25 16:00:14 berenguier Exp $
+ * $Id: scene.h,v 1.34 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -325,11 +325,10 @@ public:
 	/// see setCoarseMeshLightingUpdate()
 	uint8					getCoarseMeshLightingUpdate() const {return _CoarseMeshLightingUpdate;}
 
-	/// Get the LodCharacterManager. Never NULL.
-	CLodCharacterManager	*getLodCharacterManager () const
-	{
-		return _LodCharacterManager;
-	}
+	/// Get the LodCharacterManager. NULL if user did not set it. (done in DriverUser)
+	CLodCharacterManager	*getLodCharacterManager () const	{return _LodCharacterManager;}
+	/// set the LodCharacterManager
+	void					setLodCharacterManager(CLodCharacterManager	*m) {_LodCharacterManager= m;}
 
 	//@}
 
@@ -521,7 +520,7 @@ private:
 	//@{
 	CRefPtr<CCoarseMeshManager>	_StaticCoarseMeshManager;
 	CRefPtr<CCoarseMeshManager>	_DynamicCoarseMeshManager;
-	// CLodCharacterManager is not a model. created at ctor.
+	// CLodCharacterManager is not a model. setuped by user
 	CLodCharacterManager		*_LodCharacterManager;
 	//@}
 

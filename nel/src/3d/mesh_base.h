@@ -1,7 +1,7 @@
 /** \file mesh_base.h
  * <File description>
  *
- * $Id: mesh_base.h,v 1.12 2002/06/24 17:13:08 vizerie Exp $
+ * $Id: mesh_base.h,v 1.13 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NL3D {
 
 
 class	CMeshBaseInstance;
-
+class	CLodCharacterTexture;
 
 // ***************************************************************************
 /**
@@ -111,6 +111,7 @@ public:
 public:
 	/// Constructor
 	CMeshBase();
+	~CMeshBase();
 
 	/// \name animated material mgt. do it after CMesh::build(), or CMeshMRM::build()
 	// @{
@@ -177,6 +178,17 @@ public:
 	// @}
 
 
+	/// \name LodCharacterTexture
+	// @{
+	/// reset the lod texture info. see CSkeletonModel Lod system.
+	void						resetLodCharacterTexture();
+	/// setup the lod texture info. see CSkeletonModel Lod system
+	void						setupLodCharacterTexture(CLodCharacterTexture &lodText);
+	/// get the lod texture info. see CSkeletonModel Lod system. NULL per default. NB: serialised
+	const CLodCharacterTexture	*getLodCharacterTexture() const {return _LodCharacterTexture;}
+	// @}
+
+
 // ************************
 protected:
 	/// The Materials.
@@ -219,6 +231,9 @@ protected:
 	void	instanciateMeshBase(CMeshBaseInstance *mi, CScene *ownerScene);
 
 private:
+
+	/// The Texture Lod info for this mesh. NB: NULL by default.
+	CLodCharacterTexture		*_LodCharacterTexture;
 
 	/// compute _Lightable.
 	void	computeIsLightable();

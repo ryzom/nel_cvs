@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.25 2002/08/12 14:27:48 vizerie Exp $
+ * $Id: skeleton_model.h,v 1.26 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/transform_shape.h"
 #include "3d/bone.h"
 #include "3d/mrm_level_detail.h"
+#include "3d/lod_character_instance.h"
 
 namespace NLMISC
 {
@@ -207,17 +208,17 @@ public:
 	/// Change the Character Lod shape Id. set -1 if want to disable the feature (default)
 	void			setLodCharacterShape(sint shapeId);
 	/// see setLodCharacterShape
-	sint			getLodCharacterShape() const {return _CLodShapeId;}
+	sint			getLodCharacterShape() const {return _CLodInstance.ShapeId;}
 
 	/// Change/get the Character Lod anim setup.
 	void			setLodCharacterAnimId(uint animId);
-	uint			getLodCharacterAnimId() const {return _CLodAnimId;}
+	uint			getLodCharacterAnimId() const {return _CLodInstance.AnimId;}
 	void			setLodCharacterAnimTime(TGlobalAnimationTime time);
-	TGlobalAnimationTime	getLodCharacterAnimTime() const {return _CLodAnimTime;}
+	TGlobalAnimationTime	getLodCharacterAnimTime() const {return _CLodInstance.AnimTime;}
 
 	/// tells if the animation must loop or clamp.
 	void			setLodCharacterWrapMode(bool wrapMode);
-	bool			getLodCharacterWrapMode() const {return _CLodWrapMode;}
+	bool			getLodCharacterWrapMode() const {return _CLodInstance.WrapMode;}
 
 
 	/** True if the skeleton model and his skins are to be displayed with a CLodCharacterShape, instead of the std way
@@ -241,6 +242,13 @@ public:
 	/** Called by CTransform::setMeanColor()
 	 */
 	void			dirtLodVertexColor() {_CLodVertexColorDirty= true;}
+
+	/** Call it when you want the system to recompute the Lod texture
+	 *	NB: Lod texturing is possible only in conjunction with AsyncTextureManager. Hence, instances skinned
+	 *	to the skeleton should be in AsyncTextureMode.
+	 *	For best result, you should wait that each of these instances are isAsyncTextureReady() (texture loaded)
+	 */
+	void			computeLodTexture();
 
 	// @}
 
@@ -390,26 +398,21 @@ private:
 	/** True if the skeleton model and his skins have to be displayed with a CLodCharacterShape, instead of the std way
 	 *	This state is modified early during the HRC Traversal. Because Clip traversal need this result.
 	 */
-	bool			_DisplayedAsLodCharacter;
+	bool					_DisplayedAsLodCharacter;
 
 	/// see setLodCharacterDistance
-	float			_LodCharacterDistance;
+	float					_LodCharacterDistance;
 
 	/// The last date _DisplayedAsLodCharacter has been computed
-	sint64			_DisplayLodCharacterDate;
+	sint64					_DisplayLodCharacterDate;
 
-	/// The LodCharacter Shape/Anim setup
-	sint			_CLodShapeId;	// -1 if disabled
-	uint			_CLodAnimId;
-	TGlobalAnimationTime	_CLodAnimTime;
-	bool			_CLodWrapMode;
+	/// The Lod instance. -1 by default
+	CLodCharacterInstance	_CLodInstance;
 
-	/// The precomputed color array
-	std::vector<CRGBA>	_CLodVertexColors;
 	/** dirt when a bindSkin/stickObject/detachSkeletonSon is called
 	 *	dirt when a transform mean color is changed.
 	 */
-	bool				_CLodVertexColorDirty;
+	bool					_CLodVertexColorDirty;
 
 	/// recompute _CLodVertexColors, ignoring _CLodVertexColorDirty
 	void				computeCLodVertexColors(CLodCharacterManager *mngr);

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.37 2002/09/10 13:36:58 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.38 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,6 +167,11 @@ public:
 	/// get the vertex buffer used by the mrm mesh. NB: this VB store all Vertices used by All LODs.
 	const CVertexBuffer &getVertexBuffer() const { return _VBufferFinal ; }
 
+	/// get the skinWeights used by the mrm mesh. NB: same size of the vertexBuffer. empty if !isSkinned()
+	const std::vector<CMesh::CSkinWeight>	&getSkinWeights() const {return _SkinWeights;}
+
+	/// get the bone names of the meshMRM.
+	const std::vector<std::string>			&getBonesName() const {return _BonesName;}
 
 	/** get the number of LOD.
 	 */
@@ -196,6 +201,13 @@ public:
 	uint32 getRdrPassMaterial(uint lodId, uint renderingPassIndex) const
 	{
 		return _Lods[lodId].RdrPass[renderingPassIndex].MaterialId ;
+	}
+
+
+	/// Advanced. get the geomorphs for a special lod.
+	const std::vector<CMRMWedgeGeom>	&getGeomorphs(uint lodId) const
+	{
+		return _Lods[lodId].Geomorphs;
 	}
 
 	// @}

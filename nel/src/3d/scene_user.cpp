@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.29 2002/10/29 17:17:28 corvazier Exp $
+ * $Id: scene_user.cpp,v 1.30 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -464,6 +464,9 @@ void				CSceneUser::resetCLodManager()
 	NL3D_MEM_LOD
 	NL3D_HAUTO_UI_SCENE;
 
+	// DriverUser always setup the lod manager
+	nlassert(_Scene.getLodCharacterManager());
+
 	_Scene.getLodCharacterManager()->reset();
 }
 
@@ -472,6 +475,9 @@ uint32				CSceneUser::loadCLodShapeBank(const std::string &fileName)
 {
 	NL3D_MEM_LOD
 	NL3D_HAUTO_LOAD_LOD;
+
+	// DriverUser always setup the lod manager
+	nlassert(_Scene.getLodCharacterManager());
 
 	// Open the file
 	CIFile	file(CPath::lookup(fileName));
@@ -498,6 +504,9 @@ void				CSceneUser::deleteCLodShapeBank(uint32 bankId)
 	NL3D_MEM_LOD
 	NL3D_HAUTO_LOAD_LOD;
 
+	// DriverUser always setup the lod manager
+	nlassert(_Scene.getLodCharacterManager());
+
 	// delete the bank
 	_Scene.getLodCharacterManager()->deleteShapeBank(bankId);
 
@@ -511,6 +520,9 @@ sint32				CSceneUser::getCLodShapeIdByName(const std::string &name) const
 	NL3D_MEM_LOD
 	NL3D_HAUTO_UI_SCENE;
 
+	// DriverUser always setup the lod manager
+	nlassert(_Scene.getLodCharacterManager());
+
 	return _Scene.getLodCharacterManager()->getShapeIdByName(name);
 }
 
@@ -519,6 +531,9 @@ sint32				CSceneUser::getCLodAnimIdByName(uint32 shapeId, const std::string &nam
 {
 	NL3D_MEM_LOD
 	NL3D_HAUTO_UI_SCENE;
+
+	// DriverUser always setup the lod manager
+	nlassert(_Scene.getLodCharacterManager());
 
 	const CLodCharacterShape	*shape= _Scene.getLodCharacterManager()->getShape(shapeId);
 	if(shape)

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.h
  * <File description>
  *
- * $Id: lod_character_manager.h,v 1.2 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: lod_character_manager.h,v 1.3 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,14 +29,17 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/object_vector.h"
 #include "3d/vertex_buffer.h"
 #include "3d/vertex_buffer_hard.h"
 #include "3d/material.h"
+#include "3d/texture_blank.h"
 
 
 namespace NLMISC
 {
 class	CMatrix;
+class	CBitmap;
 }
 
 
@@ -46,15 +49,56 @@ namespace NL3D
 
 using NLMISC::CRGBA;
 using NLMISC::CMatrix;
+using NLMISC::CUV;
 
 class	IDriver;
 class	CLodCharacterShapeBank;
 class	CLodCharacterShape;
+class	CLodCharacterInstance;
+class	CLodCharacterTexture;
 
 
 // ***************************************************************************
 /**
- * A Manger used to display CLodCharacter instances.
+ * This bitmap is builded in the Instance texturing build process of CLodCharacterManager
+ */
+class CLodCharacterTmpBitmap
+{
+public:
+	CLodCharacterTmpBitmap();
+
+	// free memory. 1*1 pixel with black stored
+	void			reset();
+	/** build from a bitmap (NB: converted internally). Should be not so big (eg:64*64).
+	 *	Width and height must be <=256
+	 */
+	void			build(const NLMISC::CBitmap &bmp);
+	// build from a single color (for untextured materials)
+	void			build(CRGBA col);
+
+	// get a pixel from this bitmap.
+	CRGBA			getPixel(uint8 U, uint8 V)
+	{
+		U>>= _UShift;
+		V>>= _VShift;
+		return _Bitmap[(V<<_WidthPower) + U];
+	}
+
+// **************
+private:
+	// The pixels.
+	NLMISC::CObjectVector<CRGBA>	_Bitmap;
+	// The powerOf2 of the width
+	uint							_WidthPower;
+	// The shift to apply from uint8 to fit in widht/height texture.
+	uint							_UShift, _VShift;
+
+};
+
+
+// ***************************************************************************
+/**
+ * A Manager used to display CLodCharacter instances.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
@@ -130,20 +174,19 @@ public:
 
 	/** Add an instance to the render list.
 	 *	nlassert if not isRendering()
-	 *	\param shapeId is the id of the lod character shape to use. No-Op if not found.
-	 *	\param animId is the anim to use for this shape. No-Op if not found.
-	 *	\param time is the time of animation
-	 *	\param wrapMode if true, the anim loop, else just clamp
+	 *	initInstance() must have been called before (nlassert)
+	 *	\param instance the lod instance information (with precomputed color/Uvs)
 	 *	\param worldMatrix is the world matrix, used to display the mesh
-	 *	\param colorVertex is an array of color, must be same size of the shape number vertices, else the
-	 *	whole mesh is supposed to be gray. see CLodCharacterShape::startBoneColor() for how to build this array
-	 *	\param globalLighting is used to simulate the lighting on the lod. this color is modulated with colorVertex
+	 *	\param ambient is the ambient used to simulate the lighting on the lod.
+	 *	\param diffuse is the diffuse used to simulate the lighting on the lod.
+	 *	\param lightDir is the diffuse used to simulate the lighting on the lod (should be the bigger light influence)
+	 *		Don't need to be normalized (must do it internally)
 	 *	\return false if the key can't be added to this pass BECAUSE OF TOO MANY VERTICES reason. If the shapeId or animId
 	 *	are bad id, it return true!! You may call endRender(), then restart a block. Or you may just stop the process 
 	 *	if you want.
 	 */
-	bool			addRenderCharacterKey(uint shapeId, uint animId, TGlobalAnimationTime time, bool wrapMode, 
-		const CMatrix &worldMatrix, const std::vector<CRGBA> &colorVertex, CRGBA globalLighting);
+	bool			addRenderCharacterKey(CLodCharacterInstance &instance, const CMatrix &worldMatrix, 
+		CRGBA ambient, CRGBA diffuse, const CVector &lightDir);
 
 	/**	compile the rendering process, effectively rendering into driver the lods.
 	 *	nlassert if not isRendering().
@@ -153,6 +196,34 @@ public:
 
 	/// tells if we are beetween a beginRender() and a endRender() 
 	bool			isRendering() const {return _Rendering;}
+
+	/** Setup a correction matrix for Lighting. Normals are multiplied with this matrix before lighting.
+	 *	This is important in Ryzom because models (and so Lods) are building with eye looking in Y<0.
+	 *	But they are animated with eye looking in X>0.
+	 *	The default setup is hence a matrix wich do a RotZ+=90.
+	 *	\see addRenderCharacterKey
+	 */
+	void			setupNormalCorrectionMatrix(const CMatrix &normalMatrix);
+
+	// @}
+
+
+	/// \name Instance texturing.
+	// @{
+
+	/// Init the instance texturing with this manager. A texture space is reserved (if possible), and UVs are generated.
+	void			initInstance(CLodCharacterInstance &instance);
+	/// Release a lod instance. Free texture space.
+	void			releaseInstance(CLodCharacterInstance &instance);
+
+	/// reset the textureSpace. Instance must have been inited (nlassert). return false if no more texture space available
+	bool					startTextureCompute(CLodCharacterInstance &instance);
+	/// get a tmp bitmap for a special slot. caller can fill RGBA texture for the associated material Id in it.
+	CLodCharacterTmpBitmap	&getTmpBitmap(uint8 id) {return _TmpBitmaps[id];}
+	/// add a texture from an instance. Texture Lookup are made in _TmpBitmaps
+	void					addTextureCompute(CLodCharacterInstance &instance, const CLodCharacterTexture &lodTexture);
+	/// end and compile. reset/free memory of _TmpBitmaps up to numBmpToReset.
+	void					endTextureCompute(CLodCharacterInstance &instance, uint numBmpToReset);
 
 	// @}
 
@@ -179,6 +250,7 @@ private:
 
 	CVector							_ManagerMatrixPos;
 
+	// The material.
 	CMaterial						_Material;
 
 	uint							_CurrentVertexId;
@@ -194,9 +266,28 @@ private:
 	// list of triangles
 	uint							_CurrentTriId;
 	std::vector<uint32>				_Triangles;
-
 	
+	// The inverse of the normal correction matrix.
+	CMatrix							_LightCorrectionMatrix;
+
 	void			deleteVertexBuffer();
+
+	// @}
+
+
+	/// \name Instance texturing.
+	// @{
+
+	// The Lod texture block. Can have 256 Lods in it.
+	CSmartPtr<CTextureBlank>		_BigTexture;
+	// Free texture space Ids;
+	std::vector<uint>				_FreeIds;
+
+	// The TMP Textures for build.
+	CLodCharacterTmpBitmap			_TmpBitmaps[256];
+
+	// return NULL if can't.
+	CRGBA			*getTextureInstance(CLodCharacterInstance &instance);
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.16 2002/10/29 17:17:28 corvazier Exp $
+ * $Id: skeleton_user.h,v 1.17 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,6 +129,7 @@ public:
 	virtual float		getLodCharacterDistance() const;
 	virtual void		setLodCharacterWrapMode(bool wrapMode);
 	virtual bool		getLodCharacterWrapMode() const;
+	virtual void		computeLodTexture();
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.4 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.5 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -747,6 +747,15 @@ void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSki
 	nInf= rawSkinLod.Vertices4.size();
 	if(nInf>0)
 		applyArrayRawSkinNormal4(&rawSkinLod.Vertices4[0], destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
+
+
+	// TestYoyo
+	/*extern	uint TESTYOYO_NumSkinVertices;
+	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices1.size();
+	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices2.size();
+	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices3.size();
+	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices4.size();*/
+
 }
 
 

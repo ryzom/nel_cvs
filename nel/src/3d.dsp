@@ -2505,6 +2505,14 @@ SOURCE=.\3d\lod_character_builder.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\lod_character_instance.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_instance.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\lod_character_manager.cpp
 # End Source File
 # Begin Source File
@@ -2526,6 +2534,14 @@ SOURCE=.\3d\lod_character_shape_bank.cpp
 # Begin Source File
 
 SOURCE=.\3d\lod_character_shape_bank.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_texture.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\lod_character_texture.h
 # End Source File
 # End Group
 # Begin Group "CloudScape"

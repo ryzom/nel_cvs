@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.14 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: skeleton_user.cpp,v 1.15 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -281,6 +281,14 @@ bool		CSkeletonUser::computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playLi
 	}
 
 	return _Skeleton->computeCurrentBBox(bbox, forceCompute);
+}
+// ***************************************************************************
+void		CSkeletonUser::computeLodTexture()
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+
+	_Skeleton->computeLodTexture();
 }
 
 

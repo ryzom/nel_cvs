@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.19 2002/10/29 14:40:00 berenguier Exp $
+ * $Id: mesh_base_instance.h,v 1.20 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ public:
 
 	/** For Aynsc Texture Loading. This has the same size as Materials.
 	 *	User can fill here the name of the texture he want to async load.
-	 *	WARNING: once AsyncTextureMode is set, Materials, Texture fields should not be modified, else
+	 *	WARNING: once AsyncTextureMode is set, Material's Texture fields should not be modified, else
 	 *	undefined results
 	 */
 	std::vector<CAsyncTextureBlock>	AsyncTextures;
@@ -193,6 +193,13 @@ public:
 	void			setAsyncTextureDirty(bool flag) {_AsyncTextureDirty= flag;}
 	/// see dirtAsyncTextureState()
 	bool			isAsyncTextureDirty() const {return _AsyncTextureDirty;}
+
+	/** Get an AynscTextureId. ret -1 if not found, or not a textureFile.
+	 *	NB: the id returned is the one in _CurrentAsyncTexture it the valid ones (thoses loaded or being loaded)
+	 *	Can be used for some (non deleting) request to the AsyncTextureManager
+	 */
+	sint			getAsyncTextureId(uint matId, uint stage) const;
+
 	// @}
 
 

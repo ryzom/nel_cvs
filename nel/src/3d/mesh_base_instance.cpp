@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.cpp
  * <File description>
  *
- * $Id: mesh_base_instance.cpp,v 1.16 2002/10/29 14:40:00 berenguier Exp $
+ * $Id: mesh_base_instance.cpp,v 1.17 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -506,6 +506,17 @@ bool			CMeshBaseInstance::isAsyncTextureReady()
 	}
 	else
 		return false;
+}
+
+
+// ***************************************************************************
+sint			CMeshBaseInstance::getAsyncTextureId(uint matId, uint stage) const
+{
+	if(matId>=_CurrentAsyncTextures.size())
+		return -1;
+	if(!_CurrentAsyncTextures[matId].isTextureFile(stage))
+		return -1;
+	return _CurrentAsyncTextures[matId].TextIds[stage];
 }
 
 

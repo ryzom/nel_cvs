@@ -1,7 +1,7 @@
 /** \file export_lod_character.cpp
  * Export from 3dsmax a NeL lod character
  *
- * $Id: export_lod_character.cpp,v 1.2 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: export_lod_character.cpp,v 1.3 2002/11/08 18:43:37 berenguier Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "../nel_export/nel_export.h"
 
 #include <3d/lod_character_shape.h>
+#include <3d/mrm_parameters.h>
+#include <3d/mesh_mrm.h>
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -89,25 +91,80 @@ bool  CExportNel::buildLodCharacter (NL3D::CLodCharacterShapeBuild& lodBuild, IN
 				CMesh::CMeshBuild buildMesh;
 				buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, nodeMap);
 
-				// Build the lodBuild with the meshBuild
-				// The mesh must have skinning.
-				if( buildMesh.Vertices.size() == buildMesh.SkinWeights.size() )
-				{
-					// build vertices and skinWeights
-					lodBuild.Vertices= buildMesh.Vertices;
-					lodBuild.SkinWeights= buildMesh.SkinWeights;
 
-					// build triangles.
-					lodBuild.TriangleIndices.resize(buildMesh.Faces.size() * 3);
-					for(uint i=0;i<buildMesh.Faces.size();i++)
+				/* Build a mesh. (duplicate UV/normals)
+					Use a CMeshMRM for an historic reason: simpler because don't use "matrix blocks".
+				*/
+				CMRMParameters		mrmParams;
+				CMeshMRM			meshMRM;
+				// To avoid heavy MRM compute, ask for only one lod (=> no poly reduction)
+				mrmParams.Divisor= 1;
+				mrmParams.NLods= 1;
+				meshMRM.build (buildBaseMesh, buildMesh, std::vector<CMesh::CMeshBuild*>(), mrmParams);
+				const CMeshMRMGeom	&meshMRMGeom= meshMRM.getMeshGeom();
+				nlassert(meshMRMGeom.getNbLod()==1);
+
+				// Build the lodBuild with the mesh
+				const CVertexBuffer &VB= meshMRMGeom.getVertexBuffer();
+				uint32	format= VB.getVertexFormat();
+				uint	numVerts= VB.getNumVertices();
+
+				// The mesh must have at least skinning.
+				if( (format & CVertexBuffer::PositionFlag) && meshMRMGeom.isSkinned() )
+				{
+					uint		i;
+
+					// build vertices and skinWeights
+					lodBuild.Vertices.resize(numVerts);
+					for(i=0;i<numVerts;i++)
+						lodBuild.Vertices[i]= *(CVector*)VB.getVertexCoordPointer(i);
+					// copy skinWeights
+					lodBuild.SkinWeights= meshMRMGeom.getSkinWeights();
+					nlassert(lodBuild.SkinWeights.size() == numVerts);
+
+					// build UVs and normals
+					lodBuild.UVs.clear();
+					lodBuild.Normals.clear();
+					lodBuild.UVs.resize(numVerts, CUV(0,0));
+					lodBuild.Normals.resize(numVerts, CVector::K);
+					if( format & CVertexBuffer::TexCoord0Flag )
 					{
-						lodBuild.TriangleIndices[i*3+0]= buildMesh.Faces[i].Corner[0].Vertex;
-						lodBuild.TriangleIndices[i*3+1]= buildMesh.Faces[i].Corner[1].Vertex;
-						lodBuild.TriangleIndices[i*3+2]= buildMesh.Faces[i].Corner[2].Vertex;
+						for(i=0;i<numVerts;i++)
+							lodBuild.UVs[i]= *(CUV*)VB.getTexCoordPointer(i);
+					}
+					if( format & CVertexBuffer::NormalFlag )
+					{
+						for(i=0;i<numVerts;i++)
+							lodBuild.Normals[i]= *(CVector*)VB.getNormalCoordPointer(i);
 					}
 
+					// build triangles.
+					std::vector<bool>	triangleSelection;
+					lodBuild.TriangleIndices.resize(buildMesh.Faces.size() * 3);
+					triangleSelection.resize(buildMesh.Faces.size(), false);
+					uint	dstTriIdx= 0;
+					for(i=0;i<meshMRMGeom.getNbRdrPass(0);i++)
+					{
+						const CPrimitiveBlock &pb= meshMRMGeom.getRdrPassPrimitiveBlock(0, i);
+						nlassert(dstTriIdx+pb.getNumTri()*3 <= lodBuild.TriangleIndices.size());
+						// copy the index block
+						memcpy(&lodBuild.TriangleIndices[dstTriIdx], pb.getTriPointer(), pb.getNumTri()*3*sizeof(uint32));
+						// if the material of this pass is the 0th material, flag tris for TextureInfo selection
+						if(meshMRMGeom.getRdrPassMaterial(0,i)==0)
+						{
+							for(uint tri= dstTriIdx/3; tri<dstTriIdx/3+pb.getNumTri(); tri++)
+								triangleSelection[tri]= true;
+						}
+						// next
+						dstTriIdx+= pb.getNumTri()*3;
+					}
+					nlassert(dstTriIdx == lodBuild.TriangleIndices.size());
+
 					// build boneNames
-					lodBuild.BonesNames= buildMesh.BonesNames;
+					lodBuild.BonesNames= meshMRMGeom.getBonesName();
+
+					// End: compile texturing information
+					lodBuild.compile(triangleSelection);
 
 					// Ok!!
 					res= true;

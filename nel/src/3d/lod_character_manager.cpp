@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.6 2002/08/30 11:59:42 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.7 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,7 +29,11 @@
 #include "3d/lod_character_manager.h"
 #include "3d/lod_character_shape.h"
 #include "3d/lod_character_shape_bank.h"
+#include "3d/lod_character_instance.h"
 #include "nel/misc/hierarchical_timer.h"
+#include "3d/fast_floor.h"
+#include "3d/lod_character_texture.h"
+#include "nel/misc/file.h"
 
 
 using	namespace std;
@@ -43,8 +47,21 @@ H_AUTO_DECL ( NL3D_CharacterLod_Render )
 
 
 // ***************************************************************************
-#define	NL3D_CLOD_VERTEX_FORMAT	(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag)
-#define	NL3D_CLOD_VERTEX_SIZE	16
+// Dest is without Normal because precomputed
+#define	NL3D_CLOD_VERTEX_FORMAT	(CVertexBuffer::PositionFlag | CVertexBuffer::TexCoord0Flag | CVertexBuffer::PrimaryColorFlag)
+#define	NL3D_CLOD_VERTEX_SIZE	24
+#define	NL3D_CLOD_UV_OFF		12
+#define	NL3D_CLOD_COLOR_OFF		20
+
+// size (in block) of the big texture.
+#define	NL3D_CLOD_TEXT_NLOD_WIDTH	16
+#define	NL3D_CLOD_TEXT_NLOD_HEIGHT	16
+#define	NL3D_CLOD_TEXT_NUM_IDS		NL3D_CLOD_TEXT_NLOD_WIDTH*NL3D_CLOD_TEXT_NLOD_HEIGHT
+#define	NL3D_CLOD_BIGTEXT_WIDTH		NL3D_CLOD_TEXT_NLOD_WIDTH*NL3D_CLOD_TEXT_WIDTH
+#define	NL3D_CLOD_BIGTEXT_HEIGHT	NL3D_CLOD_TEXT_NLOD_HEIGHT*NL3D_CLOD_TEXT_HEIGHT
+
+// Default texture color. Alpha must be 255
+#define	NL3D_CLOD_DEFAULT_TEXCOLOR	CRGBA(255,255,255,255)
 
 
 // ***************************************************************************
@@ -57,11 +74,39 @@ CLodCharacterManager::CLodCharacterManager()
 	// Setup the format of render
 	_VBuffer.setVertexFormat(NL3D_CLOD_VERTEX_FORMAT);
 
+	// NB: addRenderCharacterKey() loop hardCoded for Vertex+UV+Normal+Color only.
+	nlassert( NL3D_CLOD_UV_OFF == _VBuffer.getTexCoordOff());
+	nlassert( NL3D_CLOD_COLOR_OFF == _VBuffer.getColorOff());
+
+	// setup the texture.
+	_BigTexture= new CTextureBlank;
+	// The texture always reside in memory... This take 1Mo of RAM. (16*32*16*32 * 4)
+	// NB: this is simplier like that, and this is not a problem, since only 1 or 2 Mo are allocated :o)
+	_BigTexture->setReleasable(false);
+	// create the bitmap.
+	_BigTexture->resize(NL3D_CLOD_BIGTEXT_WIDTH, NL3D_CLOD_BIGTEXT_HEIGHT, CBitmap::RGBA);
+	// Format of texture, 16 bits and no mipmaps.
+	_BigTexture->setUploadFormat(ITexture::RGB565);
+	_BigTexture->setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
+	_BigTexture->setWrapS(ITexture::Clamp);
+	_BigTexture->setWrapT(ITexture::Clamp);
+
+	// Alloc free Ids
+	_FreeIds.resize(NL3D_CLOD_TEXT_NUM_IDS);
+	for(uint i=0;i<_FreeIds.size();i++)
+	{
+		_FreeIds[i]= i;
+	}
 
 	// setup the material
 	_Material.initUnlit();
 	_Material.setAlphaTest(true);
 	_Material.setDoubleSided(true);
+	_Material.setTexture(0, _BigTexture);
+
+	// setup for lighting, Default for Ryzom setup
+	_LightCorrectionMatrix.rotateZ((float)Pi/2);
+	_LightCorrectionMatrix.invert();
 }
 
 
@@ -305,6 +350,9 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 		_VertexData= (uint8*)_VBuffer.getVertexCoordPointer();
 		_VertexSize= _VBuffer.getVertexSize();
 	}
+	// NB: addRenderCharacterKey() loop hardCoded for Vertex+UV+Normal+Color only.
+	nlassert( _VertexSize == NL3D_CLOD_VERTEX_SIZE );	// Vector + Normal + UV + RGBA
+
 
 	// Alloc a minimum of primitives (2*vertices), to avoid as possible reallocation in addRenderCharacterKey
 	if(_Triangles.size()<_MaxNumVertices * 2)
@@ -317,9 +365,24 @@ void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &manager
 	_Rendering= true;
 }
 
+
 // ***************************************************************************
-bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TGlobalAnimationTime time, bool wrapMode, 
-	const CMatrix &worldMatrix, const std::vector<CRGBA> &colorVertex, CRGBA globalLighting)
+static inline CRGBA	computeLodLighting(const CVector &lightObjectSpace, const CVector &normalPtr, CRGBA ambient, CRGBA diffuse)
+{
+	// \todo yoyo: TODO_OPTIMIZE
+	float	f= lightObjectSpace * normalPtr;
+	f= max(0.f,f);
+	sint	f8= OptFastFloor(f*255);
+	CRGBA	lightRes;
+	lightRes.modulateFromuiRGBOnly(diffuse, f8);
+	lightRes.addRGBOnly(lightRes, ambient);
+	return lightRes;
+}
+
+
+// ***************************************************************************
+bool			CLodCharacterManager::addRenderCharacterKey(CLodCharacterInstance &instance, const CMatrix &worldMatrix, 
+	CRGBA ambient, CRGBA diffuse, const CVector &lightDir)
 {
 	H_AUTO_USE ( NL3D_CharacterLod_Render )
 
@@ -334,14 +397,21 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TG
 	//=============
 
 	// get the shape
-	const CLodCharacterShape	*clod= getShape(shapeId);
+	const CLodCharacterShape	*clod= getShape(instance.ShapeId);
 	// if not found quit, return true
 	if(!clod)
 		return true;
 
+	// get UV/Normal array. NULL => error
+	const CVector	*normalPtr= clod->getNormals();
+	// get UV of the instance
+	const CUV		*uvPtr= instance.getUVs();
+	// uvPtr is NULL means that initInstance() has not been called!!
+	nlassert(normalPtr && uvPtr);
+
 	// get the anim key
 	const CLodCharacterShape::CVector3s		*vertPtr;
-	vertPtr= clod->getAnimKey(animId, time, wrapMode, unPackScaleFactor);
+	vertPtr= clod->getAnimKey(instance.AnimId, instance.AnimTime, instance.WrapMode, unPackScaleFactor);
 	// if not found quit, return true
 	if(!vertPtr)
 		return true;
@@ -356,16 +426,9 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TG
 	if(_CurrentVertexId+numVertices > _MaxNumVertices)
 		return false;
 
-	// vertify colors.
-	bool	vertexColor= colorVertex.size() == numVertices;
-	// if error, take gray as global color.
-	CRGBA	globalColor;
-	if(!vertexColor)
-	{
-		globalColor.set(128,128,128,255);
-		// pre compute / modualte with instance lighting
-		globalColor.modulateFromColorRGBOnly(globalColor, globalLighting);
-	}
+	// verify colors.
+	bool	vertexColor= instance.VertexColors.size() == numVertices;
+	// if error, take white as global color.
 
 
 	// Transform and Add vertices.
@@ -378,8 +441,21 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TG
 	// Get rotation line vectors
 	float	a00= worldMatrix.get()[0]; float	a01= worldMatrix.get()[4]; float	a02= worldMatrix.get()[8]; 
 	float	a10= worldMatrix.get()[1]; float	a11= worldMatrix.get()[5]; float	a12= worldMatrix.get()[9]; 
-	float	a20= worldMatrix.get()[2]; float	a21= worldMatrix.get()[6]; float	a22= worldMatrix.get()[10]; 
-	// multiply with scale factor
+	float	a20= worldMatrix.get()[2]; float	a21= worldMatrix.get()[6]; float	a22= worldMatrix.get()[10];
+
+	// get the light in object space.
+	CVector		lightObjectSpace;
+	// Multiply light dir with transpose of worldMatrix. This may be not exact (not uniform scale) but sufficient.
+	lightObjectSpace.x= a00 * lightDir.x + a10 * lightDir.y + a20 * lightDir.z;
+	lightObjectSpace.y= a01 * lightDir.x + a11 * lightDir.y + a21 * lightDir.z;
+	lightObjectSpace.z= a02 * lightDir.x + a12 * lightDir.y + a22 * lightDir.z;
+	// animation User correction
+	lightObjectSpace= _LightCorrectionMatrix.mulVector(lightObjectSpace);
+	// normalize, and neg for Dot Product.
+	lightObjectSpace.normalize();
+	lightObjectSpace= -lightObjectSpace;
+
+	// multiply matrix with scale factor for Pos.
 	a00*= unPackScaleFactor.x; a01*= unPackScaleFactor.y; a02*= unPackScaleFactor.z; 
 	a10*= unPackScaleFactor.x; a11*= unPackScaleFactor.y; a12*= unPackScaleFactor.z; 
 	a20*= unPackScaleFactor.x; a21*= unPackScaleFactor.y; a22*= unPackScaleFactor.z; 
@@ -389,16 +465,12 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TG
 	uint8	*dstPtr;
 	dstPtr= _VertexData + _CurrentVertexId * _VertexSize;
 
-	// NB: loop hardCoded for Vertex+Color only.
-	nlassert( NL3D_CLOD_VERTEX_FORMAT == (CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag) );
-	nlassert( _VertexSize == NL3D_CLOD_VERTEX_SIZE);	// Vector + RGBA
-
 	// 2 modes, with or without per vertexColor
 	if(vertexColor)
 	{
 		// get color array
-		const CRGBA		*colorPtr= &colorVertex[0];
-		for(;numVertices>0;numVertices--, vertPtr++, colorPtr++, dstPtr+= NL3D_CLOD_VERTEX_SIZE)
+		const CRGBA		*colorPtr= &instance.VertexColors[0];
+		for(;numVertices>0;numVertices--)
 		{
 			// NB: order is important for AGP filling optimisation
 			// transform vertex, and store.
@@ -406,15 +478,27 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TG
 			dstVector->x= a00 * vertPtr->x + a01 * vertPtr->y + a02 * vertPtr->z + matPos.x;
 			dstVector->y= a10 * vertPtr->x + a11 * vertPtr->y + a12 * vertPtr->z + matPos.y;
 			dstVector->z= a20 * vertPtr->x + a21 * vertPtr->y + a22 * vertPtr->z + matPos.z;
+			// Copy UV
+			*(CUV*)(dstPtr + NL3D_CLOD_UV_OFF)= *uvPtr;
+
+			// Compute Lighting.
+			CRGBA	lightRes= computeLodLighting(lightObjectSpace, *normalPtr, ambient, diffuse);
 			// modulate color and store.
-			((CRGBA*)(dstPtr + 12))->modulateFromColorRGBOnly(*colorPtr, globalLighting);
+			((CRGBA*)(dstPtr + NL3D_CLOD_COLOR_OFF))->modulateFromColorRGBOnly(*colorPtr, lightRes);
 			// Copy Alpha.
-			((CRGBA*)(dstPtr + 12))->A= colorPtr->A;
+			((CRGBA*)(dstPtr + NL3D_CLOD_COLOR_OFF))->A= colorPtr->A;
+
+			// next
+			vertPtr++;
+			uvPtr++;
+			normalPtr++;
+			colorPtr++;
+			dstPtr+= NL3D_CLOD_VERTEX_SIZE;
 		}
 	}
 	else
 	{
-		for(;numVertices>0;numVertices--, vertPtr++, dstPtr+= NL3D_CLOD_VERTEX_SIZE)
+		for(;numVertices>0;numVertices--)
 		{
 			// NB: order is important for AGP filling optimisation
 			// transform vertex, and store.
@@ -422,8 +506,20 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TG
 			dstVector->x= a00 * vertPtr->x + a01 * vertPtr->y + a02 * vertPtr->z + matPos.x;
 			dstVector->y= a10 * vertPtr->x + a11 * vertPtr->y + a12 * vertPtr->z + matPos.y;
 			dstVector->z= a20 * vertPtr->x + a21 * vertPtr->y + a22 * vertPtr->z + matPos.z;
+			// Copy UV
+			*(CUV*)(dstPtr + NL3D_CLOD_UV_OFF)= *uvPtr;
+
+			// Compute Lighting.
+			CRGBA	lightRes= computeLodLighting(lightObjectSpace, *normalPtr, ambient, diffuse);
+			lightRes.A= 255;
 			// store global color
-			*(CRGBA*)(dstPtr + 12)= globalColor;
+			*(CRGBA*)(dstPtr + NL3D_CLOD_COLOR_OFF)= lightRes;
+
+			// next
+			vertPtr++;
+			uvPtr++;
+			normalPtr++;
+			dstPtr+= NL3D_CLOD_VERTEX_SIZE;
 		}
 	}
 
@@ -498,6 +594,263 @@ void			CLodCharacterManager::endRender()
 
 	// Ok, end rendering
 	_Rendering= false;
+}
+
+// ***************************************************************************
+void			CLodCharacterManager::setupNormalCorrectionMatrix(const CMatrix &normalMatrix)
+{
+	_LightCorrectionMatrix= normalMatrix;
+	_LightCorrectionMatrix.setPos(CVector::Null);
+	_LightCorrectionMatrix.invert();
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Texturing.
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+CLodCharacterTmpBitmap::CLodCharacterTmpBitmap()
+{
+	reset();
+}
+
+// ***************************************************************************
+void			CLodCharacterTmpBitmap::reset()
+{
+	// setup a 1*1 bitmap
+	_Bitmap.resize(1);
+	_Bitmap[0]= CRGBA::Black;
+	_WidthPower=0;
+	_UShift= 8;
+	_VShift= 8;
+}
+
+// ***************************************************************************
+void			CLodCharacterTmpBitmap::build(const NLMISC::CBitmap &bmpIn)
+{
+	uint	width= bmpIn.getWidth();
+	uint	height= bmpIn.getHeight();
+	nlassert(width>0 && width<=256);
+	nlassert(height>0 && height<=256);
+
+	// resize bitmap.
+	_Bitmap.resize(width*height);
+	_WidthPower= getPowerOf2(width);
+	// compute shift
+	_UShift= 8-getPowerOf2(width);
+	_VShift= 8-getPowerOf2(height);
+
+	// convert the bitmap.
+	CBitmap		bmp= bmpIn;
+	bmp.convertToType(CBitmap::RGBA);
+	CRGBA	*src= (CRGBA*)&bmp.getPixels()[0];
+	CRGBA	*dst= _Bitmap.getPtr();
+	for(sint nPix= width*height;nPix>0;nPix--, src++, dst++)
+	{
+		*dst= *src;
+	}
+}
+
+// ***************************************************************************
+void			CLodCharacterTmpBitmap::build(CRGBA col)
+{
+	// setup a 1*1 bitmap and set it with col
+	reset();
+	_Bitmap[0]= col;
+}
+
+
+// ***************************************************************************
+void			CLodCharacterManager::initInstance(CLodCharacterInstance &instance)
+{
+	// first release in (maybe) other manager.
+	if(instance._Owner)
+		instance._Owner->releaseInstance(instance);
+
+	// get the shape
+	const CLodCharacterShape	*clod= getShape(instance.ShapeId);
+	// if not found quit
+	if(!clod)
+		return;
+	// get Uvs.
+	const CUV	*uvSrc= clod->getUVs();
+	nlassert(uvSrc);
+
+
+	// Ok, init header
+	instance._Owner= this;
+	instance._UVs.resize(clod->getNumVertices());
+
+	// allocate an id. If cannot, then fill Uvs with 0 => filled with Black. (see endTextureCompute() why).
+	if(_FreeIds.empty())
+	{
+		// set a "Not enough memory" id
+		instance._TextureId= NL3D_CLOD_TEXT_NUM_IDS;
+		CUV		uv(0,0);
+		fill(instance._UVs.begin(), instance._UVs.end(), uv);
+	}
+	// else OK, can instanciate the Uvs.
+	else
+	{
+		// get the id.
+		instance._TextureId= _FreeIds.back();
+		_FreeIds.pop_back();
+		// get the x/y.
+		uint	xId= instance._TextureId % NL3D_CLOD_TEXT_NLOD_WIDTH;
+		uint	yId= instance._TextureId / NL3D_CLOD_TEXT_NLOD_WIDTH;
+		// compute the scale/bias to apply to Uvs.
+		float	scaleU= 1.0f / NL3D_CLOD_TEXT_NLOD_WIDTH;
+		float	scaleV= 1.0f / NL3D_CLOD_TEXT_NLOD_HEIGHT;
+		float	biasU= (float)xId / NL3D_CLOD_TEXT_NLOD_WIDTH;
+		float	biasV= (float)yId / NL3D_CLOD_TEXT_NLOD_HEIGHT;
+		// apply it to each UVs.
+		CUV		*uvDst= &instance._UVs[0];
+		for(uint i=0; i<instance._UVs.size();i++)
+		{
+			uvDst[i].U= biasU + uvSrc[i].U*scaleU;
+			uvDst[i].V= biasV + uvSrc[i].V*scaleV;
+		}
+	}
+}
+
+// ***************************************************************************
+void			CLodCharacterManager::releaseInstance(CLodCharacterInstance &instance)
+{
+	if(instance._Owner==NULL)
+		return;
+	nlassert(this==instance._Owner);
+
+	// if the id is not a "Not enough memory" id, release it.
+	if(instance._TextureId>=0 && instance._TextureId<NL3D_CLOD_TEXT_NUM_IDS)
+		_FreeIds.push_back(instance._TextureId);
+
+	// reset the instance
+	instance._Owner= NULL;
+	instance._TextureId= -1;
+	contReset(instance._UVs);
+}
+
+
+// ***************************************************************************
+CRGBA			*CLodCharacterManager::getTextureInstance(CLodCharacterInstance &instance)
+{
+	nlassert(instance._Owner==this);
+	nlassert(instance._TextureId!=-1);
+	// if the texture id is a "not enough memory", quit.
+	if(instance._TextureId==NL3D_CLOD_TEXT_NUM_IDS)
+		return NULL;
+
+	// get the x/y.
+	uint	xId= instance._TextureId % NL3D_CLOD_TEXT_NLOD_WIDTH;
+	uint	yId= instance._TextureId / NL3D_CLOD_TEXT_NLOD_WIDTH;
+
+	// get the ptr on the correct pixel.
+	CRGBA	*pix= (CRGBA*)&_BigTexture->getPixels(0)[0];
+	return pix + yId*NL3D_CLOD_TEXT_HEIGHT*NL3D_CLOD_BIGTEXT_WIDTH + xId*NL3D_CLOD_TEXT_WIDTH;
+}
+
+
+// ***************************************************************************
+bool			CLodCharacterManager::startTextureCompute(CLodCharacterInstance &instance)
+{
+	CRGBA	*dst= getTextureInstance(instance);
+	if(!dst)
+		return false;
+
+	// erase the texture with 0,0,0,255. Alpha is actually the min "Quality" part of the CTUVQ.
+	CRGBA	col= NL3D_CLOD_DEFAULT_TEXCOLOR;
+	for(uint y=0;y<NL3D_CLOD_TEXT_HEIGHT;y++)
+	{
+		// erase the line
+		for(uint x=0;x<NL3D_CLOD_TEXT_WIDTH;x++)
+			dst[x]= col;
+		// Next line
+		dst+= NL3D_CLOD_BIGTEXT_WIDTH;
+	}
+
+	return true;
+}
+
+// ***************************************************************************
+void			CLodCharacterManager::addTextureCompute(CLodCharacterInstance &instance, const CLodCharacterTexture &lodTexture)
+{
+	CRGBA	*dst= getTextureInstance(instance);
+	if(!dst)
+		return;
+
+	// get lookup ptr.
+	nlassert(lodTexture.Texture.size()==NL3D_CLOD_TEXT_SIZE);
+	const CLodCharacterTexture::CTUVQ		*lookUpPtr= &lodTexture.Texture[0];
+
+	// apply the lodTexture, taking only better quality (ie nearer 0)
+	for(uint y=0;y<NL3D_CLOD_TEXT_HEIGHT;y++)
+	{
+		// erase the line
+		for(uint x=0;x<NL3D_CLOD_TEXT_WIDTH;x++)
+		{
+			CLodCharacterTexture::CTUVQ		lut= *lookUpPtr;
+			// if this quality is better than the one stored
+			if(lut.Q<dst[x].A)
+			{
+				// get what texture to read, and read the pixel.
+				CRGBA	col= _TmpBitmaps[lut.T].getPixel(lut.U, lut.V);
+				// set quality.
+				col.A= lut.Q;
+				// set in dest
+				dst[x]= col;
+			}
+
+			// next lookup
+			lookUpPtr++;
+		}
+		// Next line
+		dst+= NL3D_CLOD_BIGTEXT_WIDTH;
+	}
+}
+
+// ***************************************************************************
+void			CLodCharacterManager::endTextureCompute(CLodCharacterInstance &instance, uint numBmpToReset)
+{
+	CRGBA	*dst= getTextureInstance(instance);
+	if(!dst)
+		return;
+
+	// reset All Alpha values to 255 => no AlphaTest problems
+	for(uint y=0;y<NL3D_CLOD_TEXT_HEIGHT;y++)
+	{
+		// erase the line
+		for(uint x=0;x<NL3D_CLOD_TEXT_WIDTH;x++)
+		{
+			dst[x].A= 255;
+		}
+		// Next line
+		dst+= NL3D_CLOD_BIGTEXT_WIDTH;
+	}
+
+	// If the id == 0 then must reset the 0,0 Pixel to black. for the "Not Enough memory" case in initInstance().
+	if(instance._TextureId==0)
+		*(CRGBA*)&_BigTexture->getPixels(0)[0]= NL3D_CLOD_DEFAULT_TEXCOLOR;
+
+	// get the x/y.
+	uint	xId= instance._TextureId % NL3D_CLOD_TEXT_NLOD_WIDTH;
+	uint	yId= instance._TextureId / NL3D_CLOD_TEXT_NLOD_WIDTH;
+	// touch the texture for Driver update.
+	_BigTexture->touchRect(
+		CRect(xId*NL3D_CLOD_TEXT_WIDTH, yId*NL3D_CLOD_TEXT_HEIGHT, NL3D_CLOD_TEXT_WIDTH, NL3D_CLOD_TEXT_HEIGHT) );
+
+	// reset tmpBitmaps / free memory.
+	for(uint i=0; i<numBmpToReset; i++)
+	{
+		_TmpBitmaps[i].reset();
+	}
+
+	// TestYoyo
+	/*NLMISC::COFile	f("tam.tga");
+	_BigTexture->writeTGA(f,32);*/
 }
 
 

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.18 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: driver_user.h,v 1.19 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include "3d/light_user.h"
 #include "3d/mesh_skin_manager.h"
 #include "3d/async_texture_manager.h"
+#include "3d/lod_character_manager.h"
 
 #define NL3D_MEM_DRIVER						NL_ALLOC_CONTEXT( 3dDrv )
 
@@ -92,6 +93,8 @@ protected:
 	CMeshSkinManager		_MeshSkinManager;
 	// There is one AsyncTextureManager per driver, and for all scenes
 	CAsyncTextureManager	_AsyncTextureManager;
+	// There is one LodCharacterManager per driver, and for all scenes
+	CLodCharacterManager	_LodCharacterManager;
 
 	// For 2D/3D Interface.
 	CVertexBuffer			_VBFlat;

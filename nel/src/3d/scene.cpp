@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.87 2002/10/29 17:17:28 corvazier Exp $
+ * $Id: scene.cpp,v 1.88 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,8 +152,8 @@ CScene::CScene()
 	// Default as Sithikt wants.
 	_GlobalWindPower= 0.2f;
 
-	// Create here the Lod Manager.
-	_LodCharacterManager= new CLodCharacterManager;
+	// global manager (created in CDriverUser)
+	_LodCharacterManager= NULL;
 	_AsyncTextureManager= NULL;
 
 	_NumRender = 0;
@@ -227,16 +227,13 @@ void	CScene::release()
 	CurrentCamera= NULL;
 
 	// reset the _LodCharacterManager
-	_LodCharacterManager->reset();
+	if(_LodCharacterManager)
+		_LodCharacterManager->reset();
 }
 // ***************************************************************************
 CScene::~CScene()
 {
 	release();
-
-	// delete the character manager
-	delete _LodCharacterManager;
-	_LodCharacterManager= NULL;
 }
 // ***************************************************************************
 void	CScene::initDefaultTravs()

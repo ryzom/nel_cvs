@@ -1,7 +1,7 @@
 /** \file lod_character_shape.h
  * <File description>
  *
- * $Id: lod_character_shape.h,v 1.3 2002/05/15 16:55:55 berenguier Exp $
+ * $Id: lod_character_shape.h,v 1.4 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -46,11 +46,44 @@ namespace NL3D
 class CLodCharacterShapeBuild
 {
 public:
+	class	CPixelInfo
+	{
+	public:
+		// The associated Pos/Normal of this pixel.
+		CVector		Pos;
+		CVector		Normal;
+
+		// An id for an empty pixel.
+		static const CPixelInfo		EmptyPixel;
+
+	public:
+		CPixelInfo() {}
+		CPixelInfo(const CVector &pos, const CVector &normal) : Pos(pos), Normal(normal) {}
+		bool		operator==(const CPixelInfo &o) const
+		{
+			return Pos==o.Pos && Normal==o.Normal;
+		}
+
+		void		serial(NLMISC::IStream &f)
+		{
+			f.serial(Pos, Normal);
+		}
+	};
+
+public:
+	CLodCharacterShapeBuild();
+
 	// The Vertices of the shapes
 	std::vector<CVector>			Vertices;
 
 	// Palette Skinning Vertices array (same size as Vertices).
 	std::vector<CMesh::CSkinWeight>	SkinWeights;
+
+	// UVs (same size as Vertices).
+	std::vector<CUV>				UVs;
+
+	// Normals (same size as Vertices).
+	std::vector<CVector>			Normals;
 
 	// Bones name. Each matrix id used in SkinWeights must have a corresponding string in the bone name array.
 	std::vector<std::string>		BonesNames;
@@ -59,7 +92,29 @@ public:
 	std::vector<uint32>				TriangleIndices;
 
 
-	void	serial(NLMISC::IStream &f);
+public:
+
+	/** compile the lod: compute Texture Information. 
+	 *	\param triangleSelection. If not same size as triangles, not used. Else texture info is filled only with 
+	 *	triangles whose their triangleSelection[triId]==true
+	 *	\param textureOverSample is rounded to the best square (4,9,...). Prefer a srq(oddVal): 1,9,25,49 etc...
+	 *	NB: overSamples are not averaged, but the nearest sample to the texel center is taken.
+	 */
+	void				compile(const std::vector<bool> &triangleSelection, uint textureOverSample=25);
+
+	/// serial
+	void				serial(NLMISC::IStream &f);
+
+	/// get TextureInfo 
+	const CPixelInfo	*getTextureInfoPtr();
+	uint				getTextureInfoWidth() const {return _Width;}
+	uint				getTextureInfoHeight() const {return _Height;}
+
+// ****************
+private:
+	// For each pixel of the texture (32*32), give what vertex/normal use it.
+	std::vector<CPixelInfo>		_TextureInfo;
+	uint32						_Width, _Height;
 
 };
 
@@ -67,6 +122,7 @@ public:
 // ***************************************************************************
 /**
  * A very Small Shape with anims encoded as Key Meshes. Used for Lod of skinned meshes
+ *	NB: normals are not skinned (for anim size consideration).
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
@@ -138,6 +194,13 @@ public:
 
 	/// get a ptr to the triangles indices
 	const uint32	*getTriangleArray() const;
+
+	/// get a ptr on the UVs.
+	const CUV		*getUVs() const;
+
+	/// get a ptr to the triangles indices
+	const CVector	*getNormals() const;
+
 
 	/// \name Vertex per Bone coloring
 	// @{
@@ -219,23 +282,26 @@ private:
 	typedef	TStrIdMap::const_iterator		CstItStrIdMap;
 
 private:
-	std::string			_Name;
-	uint32				_NumVertices;
-	uint32				_NumTriangles;
+	std::string				_Name;
+	uint32					_NumVertices;
+	uint32					_NumTriangles;
+	// UVs and Normals
+	std::vector<CUV>		_UVs;
+	std::vector<CVector>	_Normals;
 	/// List of bones and vertices they influence
 	std::vector<CBoneInfluence>		_Bones;
 
 	// The map of bone.
-	TStrIdMap			_BoneMap;
+	TStrIdMap				_BoneMap;
 
 	/// numTriangles * 3.
-	std::vector<uint32>	_TriangleIndices;
+	std::vector<uint32>		_TriangleIndices;
 
 	/// List of animation.
-	std::vector<CAnim>	_Anims;
+	std::vector<CAnim>		_Anims;
 
 	// The map of animation.
-	TStrIdMap			_AnimMap;
+	TStrIdMap				_AnimMap;
 
 };
 

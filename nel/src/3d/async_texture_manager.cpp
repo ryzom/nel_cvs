@@ -1,7 +1,7 @@
 /** \file async_texture_manager.cpp
  * <File description>
  *
- * $Id: async_texture_manager.cpp,v 1.4 2002/11/04 15:40:43 boucher Exp $
+ * $Id: async_texture_manager.cpp,v 1.5 2002/11/08 18:41:58 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -52,6 +52,22 @@ CAsyncTextureManager::CTextureEntry::CTextureEntry()
 	HLSManagerTextId= -1;
 	BaseSize= 0;
 	TotalTextureSizeAsked= 0;
+}
+
+
+// ***************************************************************************
+void		CAsyncTextureManager::CTextureEntry::createCoarseBitmap()
+{
+	// the texture must exist.
+	nlassert(Texture);
+	nlassert(Texture->getSize()>0);
+
+	// copy the bitmap.
+	CoarseBitmap= *Texture;
+	// remove all mipmaps, and convert to DXTC1 (if possible, ie if was DXTC5 or DXTC3 as example)
+	CoarseBitmap.releaseMipMaps();
+	// TODODO: consersion to DXTC1
+	CoarseBitmap.convertToType(CBitmap::DXTC1);
 }
 
 
@@ -312,6 +328,25 @@ bool			CAsyncTextureManager::isTextureUpLoaded(uint id) const
 	return _TextureEntries[id]->UpLoaded;
 }
 
+
+// ***************************************************************************
+const NLMISC::CBitmap	*CAsyncTextureManager::getCoarseBitmap(uint id) const
+{
+	if(id>=_TextureEntries.size())
+		return NULL;
+	CTextureEntry	*textEntry= _TextureEntries[id];
+	if(!textEntry)
+		return NULL;
+
+	// if the textEntry not uploaded, return NULL
+	if(!textEntry->UpLoaded)
+		return NULL;
+
+	// ok return the CoarseBitmap
+	return &textEntry->CoarseBitmap;
+}
+
+
 // ***************************************************************************
 void			CAsyncTextureManager::update(IDriver *pDriver)
 {
@@ -346,6 +381,9 @@ void			CAsyncTextureManager::update(IDriver *pDriver)
 				{
 					textEntry->Instances[i]->_AsyncTextureToLoadRefCount--;
 				}
+
+				// Create the coarse bitmap with the text (NB: still in memory here)
+				textEntry->createCoarseBitmap();
 
 				// If CanHaveLOD, create now the lods entries.
 				if(textEntry->CanHaveLOD)

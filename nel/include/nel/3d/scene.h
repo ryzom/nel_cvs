@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.8 2000/12/06 14:32:24 berenguier Exp $
+ * $Id: scene.h,v 1.9 2000/12/08 10:37:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 
 #include "nel/3d/mot.h"
+#include "nel/3d/camera.h"
 #include "nel/3d/trav_scene.h"
 #include "nel/3d/viewport.h"
 #include "nel/misc/rgba.h"
@@ -46,7 +47,6 @@ class	CDefaultClipObs;
 class	CDefaultLightObs;
 class	CDefaultRenderObs;
 class	CTransform;
-class	CCamera;
 class	IDriver;
 
 
@@ -81,6 +81,18 @@ class	IDriver;
  *             |  /
  *             |/
  *              -------> X
+ *
+ * \b Shape \b System:\n
+ * The scene has an instance Managagement:
+ *		- IShape  design the object that is instancied (a mesh as example).
+ *		- ITransformShape is the instance, which smart_point to a IShape.
+ *		- user create instance of a shape with CScene::createInstance(string shapeName);
+ *			This create/load auto the shape if needed, and then create the instance, with help of IShape::createInstance().
+ *		- user can add manually shape with addShape(), or remove them with delShape().
+ *		- user can add an IShapeServer to the scene. When a CScene::createInstance() is done, if he do not find the shape, 
+ *			he try to load it by testing every ShapeServer the scene has (until OK)...
+ *
+ * By default, the scene has a CShapeServerFile, which search the shape on the disk, given a path env and his name.
  *
  * \author Lionel Berenguier
  * \author Nevrax France

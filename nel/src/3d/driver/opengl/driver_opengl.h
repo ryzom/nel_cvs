@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.39 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: driver_opengl.h,v 1.40 2001/01/11 13:57:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,7 +224,7 @@ private:
 	bool					activateTexture(uint stage, ITexture *tex);
 	void					activateTexEnvMode(uint stage, const CMaterial::CTexEnv  &env);
 	void					activateTexEnvColor(uint stage, const CMaterial::CTexEnv  &env);
-
+	sint					getNbTextureStages() {return _Extensions.NbTextureStages;}
 
 };
 

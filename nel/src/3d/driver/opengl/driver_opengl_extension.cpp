@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.1 2001/01/08 18:21:03 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.2 2001/01/11 13:57:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,8 +208,11 @@ static bool	setupNVVertexArrayRange(const char	*glext)
 void	registerGlExtensions(CGlExtensions &ext)
 {
 	const char	*glext= (const char*)glGetString(GL_EXTENSIONS);
+	GLint	ntext;
 
 	ext.ARBMultiTexture= setupARBMultiTexture(glext);
+	glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &ntext);
+	ext.NbTextureStages= ntext;
 	ext.EXTTextureEnvCombine= setupEXTTextureEnvCombine(glext);
 
 	ext.ARBTextureCompression= setupARBTextureCompression(glext);

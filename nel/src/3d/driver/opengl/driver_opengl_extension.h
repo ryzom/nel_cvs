@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.3 2001/01/09 16:06:54 corvazier Exp $
+ * $Id: driver_opengl_extension.h,v 1.4 2001/01/11 13:57:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,7 @@ struct	CGlExtensions
 {
 	// Required Extensions.
 	bool	ARBMultiTexture;
+	sint	NbTextureStages;
 	bool	EXTTextureEnvCombine;
 
 	// Optionnal Extensions.
@@ -75,6 +76,7 @@ public:
 	{
 		// Fill all false by default.
 		ARBMultiTexture= false;
+		NbTextureStages= 1;
 		EXTTextureEnvCombine= false;
 		ARBTextureCompression= false;
 		NVVertexArrayRange= false;

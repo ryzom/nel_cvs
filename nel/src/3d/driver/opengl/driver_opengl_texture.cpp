@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! Also, like the TexEnvMode style,
  * a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.14 2001/01/08 18:20:47 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.15 2001/01/11 13:57:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,6 +227,12 @@ bool CDriverGL::setupTexture(ITexture& tex)
 		{
 			CTextureDrvInfosGL*	gltext;
 			gltext= getTextureGl(tex);
+
+			// Must backup the previous binded texture in the current ARB stage.
+			GLint		backupBind;
+			glGetIntegerv(GL_TEXTURE_BINDING_2D, &backupBind);
+
+			// Bind this texture, for reload...
 			glBindTexture(GL_TEXTURE_2D, gltext->ID);
 			glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 
@@ -351,6 +357,10 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT));
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
 			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+
+
+			// MUST restore the previous binded texture!!!
+			glBindTexture(GL_TEXTURE_2D, backupBind);
 		}
 
 

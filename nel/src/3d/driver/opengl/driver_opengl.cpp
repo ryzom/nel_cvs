@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.51 2001/01/11 13:53:29 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.52 2001/01/11 13:56:47 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -369,6 +369,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		throw EBadDisplay("Missing Required GL extension: GL_ARB_multitexture");
 	if(!_Extensions.EXTTextureEnvCombine)
 		throw EBadDisplay("Missing Required GL extension: GL_EXT_texture_env_combine");
+	if(getNbTextureStages()<2)
+		throw EBadDisplay("Missing Required GL feature: at least 2 texture untis.");
 
 	// Init OpenGL/Driver defaults.
 	//=============================
@@ -394,7 +396,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	// Activate the default texture environnments for all stages.
 	//===========================================================
-	for(sint stage=0;stage<IDRV_MAT_MAXTEXTURES; stage++)
+	for(sint stage=0;stage<getNbTextureStages(); stage++)
 	{
 		// init no texture.
 		_CurrentTexture[stage]= NULL;
@@ -493,7 +495,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 
 	// Active UVs.
-	for(sint i=0; i<IDRV_VF_MAXSTAGES; i++)
+	for(sint i=0; i<getNbTextureStages(); i++)
 	{
 		glClientActiveTextureARB(GL_TEXTURE0_ARB+i);
 		if (flags & IDRV_VF_UV[i])

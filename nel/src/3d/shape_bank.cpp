@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.3 2001/04/18 10:40:22 besson Exp $
+ * $Id: shape_bank.cpp,v 1.4 2001/04/19 08:40:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -227,7 +227,7 @@ void CShapeBank::reset()
 	{
 		CShapeCache *pShpCache = getShapeCachePtrFromShapeCacheName( scmIt->first );
 		if( pShpCache == NULL )
-			nlstop // Should never happen
+			nlstop; // Should never happen
 		pShpCache->MaxSize = 0;
 		checkShapeCache( pShpCache );
 

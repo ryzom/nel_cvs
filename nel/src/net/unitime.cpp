@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.3 2000/11/21 10:57:50 cado Exp $
+ * $Id: unitime.cpp,v 1.4 2000/11/21 17:59:01 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,9 +22,6 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-
-#include <windows.h>
-#include <time.h>
 
 #include "nel/misc/debug.h"
 #include "nel/net/msg_socket.h"

@@ -48,9 +48,6 @@ Package=<4>
     Project_Dep_Name net
     End Project Dependency
     Begin Project Dependency
-    Project_Dep_Name 3d
-    End Project Dependency
-    Begin Project Dependency
     Project_Dep_Name driver_opengl
     End Project Dependency
 }}}

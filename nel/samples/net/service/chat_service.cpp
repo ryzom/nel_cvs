@@ -1,7 +1,7 @@
 /** \file service/chat_service.cpp
  * example of the IService class
  *
- * $Id: chat_service.cpp,v 1.1 2002/04/17 08:08:32 lecroart Exp $
+ * $Id: chat_service.cpp,v 1.2 2003/01/21 17:44:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,10 +25,15 @@
 
 #include <string>
 
+#include "nel/misc/common.h"
+#include "nel/misc/path.h"
+#include "nel/misc/heap_allocator.h"
+
 // contains the service base class
 #include "nel/net/service.h"
 
 using namespace std;
+using namespace NLMISC;
 using namespace NLNET;
 
 // a service is a process, a program. the goal is to automatically use
@@ -55,12 +60,16 @@ class CChatService : public IService
 {
 public:
 
+//	FILE *fp;
+
 	void init ()
 	{
 		// this function is called after all standard service initialization.
 		// put here your code that inits your application.
 
 		nlinfo ("init() was called");
+
+//		fp = fopen (NLMISC::CFile::findNewFile("stat.csv").c_str(), "wt");
 	}
 
 	bool update ()
@@ -69,8 +78,28 @@ public:
 		// to continue or return false if you want to exit the service.
 		// the loop is called evenly (by default, at least one time per second).
 
-		nlinfo ("update() was called");
+//		nlinfo ("update() was called");
 
+//////debug to test log flood for memory leak
+
+		DebugLog->addNegativeFilter("flood");
+		InfoLog->addNegativeFilter("flood");
+		WarningLog->addNegativeFilter("flood");
+		
+		static uint32 val = 0;
+		for(uint i = 0; i < 10; i++)
+		{
+			nldebug ("debg flood %d", val++);
+			nlinfo ("info flood %d", val++);
+			nlwarning ("warn flood %d", val++);
+//			nldebug ("debg flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
+//			nlinfo ("info flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
+//			nlwarning ("warn flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
+		}
+
+/////////
+//		fprintf (fp, "%d;%d;%d\n", CHeapAllocator::getAllocatedSystemMemory (), UserSpeedLoop, NetSpeedLoop);
+//		fflush (fp);
 		return true;
 	}
 
@@ -78,6 +107,8 @@ public:
 	{
 		// this function is called before all standard service release code.
 		// put here your code that releases your application.
+
+//		fclose (fp);
 
 		nlinfo ("release() was called");
 	}

@@ -1,7 +1,7 @@
 /** \file udp/client.cpp
  * todo
  *
- * $Id: client.cpp,v 1.2 2002/11/29 10:15:38 lecroart Exp $
+ * $Id: client.cpp,v 1.3 2003/01/21 17:44:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,7 @@
  */
 
 // comment this define if  you don't want 3d output
-#define USE_3D
+//#define USE_3D
 
 
 //

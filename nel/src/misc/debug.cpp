@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.21 2000/12/05 11:10:29 cado Exp $
+ * $Id: debug.cpp,v 1.22 2000/12/08 09:38:55 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,64 +30,6 @@
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
 #endif
-
-/**
- * \page log_howto How to log information ?
- * \author Olivier Cado
- *
- * This document explains how to log some information (into the screen, into a file or to a logging server), e.g. in order to debug your code.
- * You need to include the following header files : "nel/misc/debug.h" "nel/misc/log.h".
- *
- * \subsection init_log Initialization
- * In the initialization of your service, attach some displayers to the global NLMISC::CLog objects
- * \e ErrorLog, \e WarningLog, \e InfoLog, \e DebugLog and \e AssertLog.
- * NLMISC::CStdDisplayer is for the screen (and VC++ debug window). It is attached by default to all of the five logger objects mentionned above.
- * NLMISC::CFileDisplayer is for a file.
- * NLMISC::CMsgBoxDisplayer is for a message box.
- * NLNET::CNetDisplayer is for a logging server (see CLogService in the server documentation)
- *
- * Example :
- * \code
- * NLNET::CNetDisplayer nd; // the address of the Logging Server is automatically retrieved using the Naming Service
- * if ( nd.connected() ) // this line is optional: here we don't want the displayer to attempt other connections if the first one failed
- * {
- *     NLMISC::DebugLog.addDisplayer( &nd );
- * }
- * \endcode
- *
- * \subsection use_log Logging information
- * In your code, use the macros :  \e nlerror, \e nlwarning, \e nlinfo, \e nldebug with a variable number of arguments.
- * You have to include the header "nel/misc/debug.h".
- *
- * Example :
- * \code
- * nldebug( "Toto is %d years old", age );
- * if ( age < 0 )
- * {
- *     nlerror( "Invalid age for toto : %d", age );
- *     return -1;
- * }
- * \endcode
- *
- * - How to log a string without repeating the header ?
- *
- * The macros nldebug() and nlerror() call some methods of NLMISC::CLog, including displayNL().
- * It prints a string with an information header.
- * If you don't want to print the header, use the others methods of NLMISC::CLog.
- *
- * Example :
- * \code
- * NLMISC::DebugLog.displayNL ( "Dump of Values :" );
- * for ( int j=0; j!=height; ++j )
- * {
- *     for ( int i=0; i!=width; ++i )
- *     {
- *         NLMISC::DebugLog.displayRaw( "%d ", Values[j][i] );
- *     }
- *     NLMISC::DebugLog.displayRawNL( ": line %d", j );
- * }
- * \endcode
- */
 
 #include <stdarg.h>
 #include <stdio.h>

@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.5 2000/11/21 17:04:32 berenguier Exp $
+ * $Id: dru.cpp,v 1.6 2000/12/01 14:33:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,6 +23,9 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/types_nl.h"
+
+#ifdef NL_OS_WINDOWS
 
 #include <windows.h>
 #include "nel/3d/dru.h"
@@ -65,3 +68,5 @@ IDriver		*CDRU::createGlDriver()
 
 
 } // NL3D
+
+#endif // NL_OS_WINDOWS

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.28 2002/06/13 08:45:05 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.29 2002/07/02 12:35:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,10 @@ struct	CGlExtensions
 	bool	NVVertexProgramEmulated;
 	bool	EXTSecondaryColor;
 	bool	EXTBlendColor;
+	// NVVertexArrayRange2. 
+	bool	NVVertexArrayRange2;
+	// equal to GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV if possible, or GL_VERTEX_ARRAY_RANGE_NV
+	uint	StateVARWithoutFlush;
 
 	// WGL ARB extensions, true if supported
 	bool	WGLARBPBuffer;

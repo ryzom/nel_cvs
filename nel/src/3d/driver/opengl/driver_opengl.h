@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.120 2002/06/20 09:45:04 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.121 2002/07/02 12:35:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -864,6 +864,9 @@ private:
 	CVertexArrayRange				*_CurrentVertexArrayRange;
 	// The CVertexBufferHardGL activated.
 	CVertexBufferHardGL				*_CurrentVertexBufferHard;
+	// current setup passed to nglVertexArrayRangeNV()
+	void							*_CurrentVARPtr;
+	uint32							_CurrentVARSize;
 
 	// The AGP VertexArrayRange.
 	CVertexArrayRange				_AGPVertexArrayRange;

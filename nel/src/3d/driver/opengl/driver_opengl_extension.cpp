@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.34 2002/06/13 08:45:05 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.35 2002/07/02 12:35:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -585,6 +585,16 @@ static bool	setupEXTBlendColor(const char	*glext)
 }
 
 
+// *********************************
+static bool	setupNVVertexArrayRange2(const char	*glext)
+{
+	if(strstr(glext, "GL_NV_vertex_array_range2")==NULL)
+		return false;
+
+	return true;
+}
+
+
 // ***************************************************************************
 // Extension Check.
 void	registerGlExtensions(CGlExtensions &ext)
@@ -665,6 +675,16 @@ void	registerGlExtensions(CGlExtensions &ext)
 
 	// Check EXTBlendColor
 	ext.EXTBlendColor= setupEXTBlendColor(glext);
+
+	// Check NVVertexArrayRange2
+	ext.NVVertexArrayRange2= setupNVVertexArrayRange2(glext);
+	// if supported
+	if(ext.NVVertexArrayRange2)
+		// VBHard swap without flush of the VAR.
+		ext.StateVARWithoutFlush= GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV;
+	else
+		// VBHard with unusefull flush of the VAR.
+		ext.StateVARWithoutFlush= GL_VERTEX_ARRAY_RANGE_NV;
 }
 
 

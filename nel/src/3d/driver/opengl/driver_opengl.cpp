@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.144 2002/06/20 09:45:04 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.145 2002/07/02 12:35:05 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -190,6 +190,8 @@ CDriverGL::CDriverGL()
 
 	_CurrentVertexArrayRange= NULL;
 	_CurrentVertexBufferHard= NULL;
+	_CurrentVARPtr= NULL;
+	_CurrentVARSize= 0;
 
 	_AllocatedTextureMemory= 0;
 
@@ -867,6 +869,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// Reset VertexArrayRange.
 	_CurrentVertexArrayRange= NULL;
 	_CurrentVertexBufferHard= NULL;
+	_CurrentVARPtr= NULL;
+	_CurrentVARSize= 0;
 	if(_Extensions.NVVertexArrayRange)
 	{
 		// try to allocate 16Mo by default of AGP Ram.
@@ -1042,8 +1046,9 @@ bool CDriverGL::swapBuffers()
 	// Reset VertexArrayRange.
 	if(_CurrentVertexBufferHard)
 	{
-		// Then, we'll wait for this VBHard to finish before this frame (in the finishFence() below).
-		_CurrentVertexBufferHard->setFence();
+		// Then, we'll wait for this VBHard to finish before this frame. Even if some rendering done
+		_CurrentVertexBufferHard->lock();
+		_CurrentVertexBufferHard->unlock();
 		// and we disable it.
 		_CurrentVertexBufferHard->disable();
 	}

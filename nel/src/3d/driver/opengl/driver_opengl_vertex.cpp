@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.26 2002/06/20 09:45:04 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.27 2002/07/02 12:35:05 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -417,12 +417,16 @@ IVertexBufferHard	*CDriverGL::createVertexBufferHard(uint16 vertexFormat, const 
 // ***************************************************************************
 void			CDriverGL::deleteVertexBufferHard(IVertexBufferHard *VB)
 {
-	// If one _CurrentVertexBufferHard enabled, first disable it.
-	// This is very important (disable() flush the vertex data), because after deletion, the space is free. 
+	// If one _CurrentVertexBufferHard enabled, first End its drawning, and disable it.
+	// This is very important, because after deletion, the space is free. 
 	// If the GPU has not finisehd his drawing, and if any allocation occurs on this free space, and if 
 	// the user locks to fill this space (feww!) Then some data crash may results....
 	if(_CurrentVertexBufferHard)
 	{
+		// Must ensure it has ended any drawing
+		_CurrentVertexBufferHard->lock();
+		_CurrentVertexBufferHard->unlock();
+		// disable the VBHard.
 		_CurrentVertexBufferHard->disable();
 	}
 
@@ -647,8 +651,15 @@ void			CVertexArrayRange::enable()
 	// if not already enabled.
 	if(_Driver->_CurrentVertexArrayRange!=this)
 	{
-		nglVertexArrayRangeNV(_VertexArraySize, _VertexArrayPtr);
-		glEnableClientState(GL_VERTEX_ARRAY_RANGE_NV);
+		// Setup the ptrs only if differnets from last time (may rarely happens)
+		if( _Driver->_CurrentVARSize != _VertexArraySize || _Driver->_CurrentVARPtr != _VertexArrayPtr)
+		{
+			nglVertexArrayRangeNV(_VertexArraySize, _VertexArrayPtr);
+			_Driver->_CurrentVARSize= _VertexArraySize;
+			_Driver->_CurrentVARPtr= _VertexArrayPtr;
+		}
+		// enable VAR. NB: flush is unesufull, so don't flush if extension is OK
+		glEnableClientState(_Driver->_Extensions.StateVARWithoutFlush);
 		_Driver->_CurrentVertexArrayRange= this;
 	}
 }
@@ -660,8 +671,9 @@ void			CVertexArrayRange::disable()
 	// if not already disabled.
 	if(_Driver->_CurrentVertexArrayRange!=NULL)
 	{
-		glDisableClientState(GL_VERTEX_ARRAY_RANGE_NV);
-		nglVertexArrayRangeNV(0, 0);
+		// just disable the state, don't change VAR ptr setup.
+		// NB: flush is unesufull, so don't flush if extension is OK
+		glDisableClientState(_Driver->_Extensions.StateVARWithoutFlush);
 		_Driver->_CurrentVertexArrayRange= NULL;
 	}
 }
@@ -1011,6 +1023,10 @@ void			CDriverGL::resetVertexArrayRange()
 {
 	if(_CurrentVertexBufferHard)
 	{
+		// Must ensure it has ended any drawing
+		_CurrentVertexBufferHard->lock();
+		_CurrentVertexBufferHard->unlock();
+		// disable it
 		_CurrentVertexBufferHard->disable();
 	}
 	// Clear any VertexBufferHard created.

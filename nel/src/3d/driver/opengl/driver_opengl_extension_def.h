@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension_def.h
  * External OpenGL extension definition.
  *
- * $Id: driver_opengl_extension_def.h,v 1.12 2002/06/13 08:45:05 berenguier Exp $
+ * $Id: driver_opengl_extension_def.h,v 1.13 2002/07/02 12:35:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -449,6 +449,12 @@ typedef void (APIENTRY * PFNGLSETFENCENVPROC) (GLuint fence, GLenum condition);
 #define GL_TEXTURE_DT_SIZE_NV             0x871E
 #define GL_TEXTURE_MAG_SIZE_NV            0x871F
 
+
+/* NV_vertex_array_range2 */
+#ifndef GL_NV_vertex_array_range2
+#define GL_NV_vertex_array_range2			1
+#define GL_VERTEX_ARRAY_RANGE_WITHOUT_FLUSH_NV 0x8533
+#endif
 
 
 // ***************************************************************************

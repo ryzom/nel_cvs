@@ -1,7 +1,7 @@
 /** \file lod_character_builder.cpp
  * <File description>
  *
- * $Id: lod_character_builder.cpp,v 1.1 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: lod_character_builder.cpp,v 1.2 2002/05/13 16:45:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -115,9 +115,10 @@ void			CLodCharacterBuilder::setShape(const std::string &name, CSkeletonShape *s
 
 
 // ***************************************************************************
-void			CLodCharacterBuilder::addAnim(const char *animName, const CAnimation &animation, float frameRate)
+void			CLodCharacterBuilder::addAnim(const char *animName, CAnimation *animation, float frameRate)
 {
 	nlassert(frameRate>0);
+	nlassert(animation);
 
 	/*	Create a Scene, a skeletonModel, an animation set, and a channel mixer to play the animation
 		NB: no render is made and no driver is created. The scene is just here for correct creation of the skeleton
@@ -129,9 +130,9 @@ void			CLodCharacterBuilder::addAnim(const char *animName, const CAnimation &ani
 
 	// create an animationSet, and a channelMixer.
 	//--------------
-	// build an animation set with the only one animation.
+	// build an animation set with the only one animation. This animation will be deleted with the animationSet
 	CAnimationSet	*tmpAnimationSet= new CAnimationSet;
-	tmpAnimationSet->addAnimation(animName, new CAnimation(animation));
+	tmpAnimationSet->addAnimation(animName, animation);
 	tmpAnimationSet->build();
 	// Build a channelMixer.
 	CChannelMixer	*tmpChannelMixer= new CChannelMixer;
@@ -153,8 +154,7 @@ void			CLodCharacterBuilder::addAnim(const char *animName, const CAnimation &ani
 	//--------------
 	CLodCharacterShape::CAnimBuild	dstAnim;
 	dstAnim.Name= animName;
-	dstAnim.AnimLength= animation.getEndTime();
-	dstAnim.AnimLoop= animation.allTrackLoop();
+	dstAnim.AnimLength= animation->getEndTime();
 	dstAnim.NumKeys= (uint)ceil(dstAnim.AnimLength * frameRate);
 	dstAnim.NumKeys= max(1U, dstAnim.NumKeys);
 	// resize array.

@@ -1,7 +1,7 @@
 /** \file lod_character_shape.cpp
  * <File description>
  *
- * $Id: lod_character_shape.cpp,v 1.1 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: lod_character_shape.cpp,v 1.2 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -138,10 +138,9 @@ bool			CLodCharacterShape::addAnim(const CAnimBuild &animBuild)
 	// build basics of the animation
 	CAnim	dstAnim;
 	dstAnim.Name= animBuild.Name;
-	nlassert(dstAnim.AnimLength>0);
 	dstAnim.AnimLength= animBuild.AnimLength;
+	nlassert(dstAnim.AnimLength>0);
 	dstAnim.OOAnimLength= 1.0f / animBuild.AnimLength;
-	dstAnim.AnimLoop= animBuild.AnimLoop;
 	dstAnim.NumKeys= animBuild.NumKeys;
 	// verify size of the array
 	nlassert(dstAnim.NumKeys>0);
@@ -206,7 +205,6 @@ void			CLodCharacterShape::CAnim::serial(NLMISC::IStream &f)
 	f.serial(NumKeys);
 	f.serial(AnimLength);
 	f.serial(OOAnimLength);
-	f.serial(AnimLoop);
 	f.serial(UnPackScaleFactor);
 	f.serialCont(Keys);
 }
@@ -274,8 +272,10 @@ const uint32	*CLodCharacterShape::getTriangleArray() const
 }
 
 // ***************************************************************************
-const CLodCharacterShape::CVector3s	*CLodCharacterShape::getAnimKey(uint animId, float time, CVector &unPackScaleFactor) const
+const CLodCharacterShape::CVector3s	*CLodCharacterShape::getAnimKey(uint animId, TGlobalAnimationTime time, bool wrapMode, CVector &unPackScaleFactor) const
 {
+	float	localTime;
+
 	if(animId>=_Anims.size())
 		return NULL;
 
@@ -286,14 +286,16 @@ const CLodCharacterShape::CVector3s	*CLodCharacterShape::getAnimKey(uint animId,
 	unPackScaleFactor= anim.UnPackScaleFactor;
 
 	// Loop mgt.
-	if(anim.AnimLoop)
-		time= (float)fmod(time, anim.AnimLength);
+	if(wrapMode)
+		localTime= (float)fmod(time, anim.AnimLength);
+	else
+		localTime= (float)time;
 
 	// Clamp to the range.
-	clamp(time, 0, anim.AnimLength);
+	clamp(localTime, 0, anim.AnimLength);
 
 	// get the key.
-	sint	keyId= (sint)floor(time*anim.NumKeys);
+	sint	keyId= (sint)floor( (localTime/anim.AnimLength) * anim.NumKeys );
 	clamp(keyId, 0, sint(anim.NumKeys-1));
 
 	// return the key.

@@ -1,7 +1,7 @@
 /** \file lod_character_builder.h
  * <File description>
  *
- * $Id: lod_character_builder.h,v 1.1 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: lod_character_builder.h,v 1.2 2002/05/13 16:45:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -65,12 +65,11 @@ public:
 	void			setShape(const std::string &name, CSkeletonShape *skeletonShape, CLodCharacterShapeBuild *lodBuild);
 
 	/** add an animation to the process
-	 *	NB: the process assume that when all tracks of the animation loop, then the entire animation loop. Else it doesn't.
 	 *	\param animName is the name of the animation, used as a key to receover animations in the CLodCharacterShape built
-	 *	\param animation is the animation to bake/over sample.
+	 *	\param animation is the animation to bake/over sample. NB: the animation is deleted at the end of addAnim
 	 *	\param frameRate is the desired overSampling rate. eg: 20 frame per second.
 	 */
-	void			addAnim(const char *animName, const CAnimation &animation, float frameRate);
+	void			addAnim(const char *animName, CAnimation *animation, float frameRate);
 
 	/// return the lod shape in its current state.
 	const CLodCharacterShape	&getLodShape() const {return _LodCharacterShape;}

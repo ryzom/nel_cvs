@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.6 2002/04/26 15:05:00 berenguier Exp $
+ * $Id: skeleton_user.cpp,v 1.7 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,72 @@ float		CSkeletonUser::getShapeDistMax() const
 	}
 	else
 		return -1;
+}
+
+
+// ***************************************************************************
+void		CSkeletonUser::stickObject(UTransform *mi, uint boneId)
+{
+	if(mi==NULL)
+		nlerror("USkeleton::stickObject(): mi is NULL");
+	CTransform		*trans= (dynamic_cast<CTransformUser*>(mi))->getTransform();
+	_Skeleton->stickObject(trans, boneId);
+}
+
+// ***************************************************************************
+void		CSkeletonUser::stickObjectEx(UTransform *mi, uint boneId, bool forceCLod)
+{
+	if(mi==NULL)
+		nlerror("USkeleton::stickObject(): mi is NULL");
+	CTransform		*trans= (dynamic_cast<CTransformUser*>(mi))->getTransform();
+	_Skeleton->stickObjectEx(trans, boneId, forceCLod);
+}
+
+
+// ***************************************************************************
+void		CSkeletonUser::setLodCharacterShape(sint shapeId)
+{
+	_Skeleton->setLodCharacterShape(shapeId);
+}
+sint		CSkeletonUser::getLodCharacterShape() const
+{
+	return _Skeleton->getLodCharacterShape();
+}
+void		CSkeletonUser::setLodCharacterAnimId(uint animId)
+{
+	_Skeleton->setLodCharacterAnimId(animId);
+}
+uint		CSkeletonUser::getLodCharacterAnimId() const
+{
+	return _Skeleton->getLodCharacterAnimId();
+}
+void		CSkeletonUser::setLodCharacterAnimTime(TGlobalAnimationTime time)
+{
+	_Skeleton->setLodCharacterAnimTime(time);
+}
+TGlobalAnimationTime	CSkeletonUser::getLodCharacterAnimTime() const
+{
+	return _Skeleton->getLodCharacterAnimTime();
+}
+bool		CSkeletonUser::isDisplayedAsLodCharacter() const
+{
+	return _Skeleton->isDisplayedAsLodCharacter();
+}
+void		CSkeletonUser::setLodCharacterDistance(float dist)
+{
+	_Skeleton->setLodCharacterDistance(dist);
+}
+float		CSkeletonUser::getLodCharacterDistance() const
+{
+	return _Skeleton->getLodCharacterDistance();
+}
+void		CSkeletonUser::setLodCharacterWrapMode(bool wrapMode)
+{
+	_Skeleton->setLodCharacterWrapMode(wrapMode);
+}
+bool		CSkeletonUser::getLodCharacterWrapMode() const
+{
+	return _Skeleton->getLodCharacterWrapMode();
 }
 
 

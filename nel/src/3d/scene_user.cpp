@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.16 2002/04/30 09:48:02 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.17 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,9 @@
 #include "3d/coarse_mesh_manager.h"
 #include "3d/point_light_user.h"
 #include "3d/point_light_model.h"
+#include "3d/lod_character_manager.h"
+#include "3d/lod_character_shape.h"
+#include "3d/lod_character_shape_bank.h"
 
 using namespace NLMISC;
 
@@ -304,6 +307,61 @@ void CSceneUser::updateWaitingIG()
 			}			
 		}
 	}
+}
+
+
+// ***************************************************************************
+void				CSceneUser::resetCLodManager()
+{
+	_Scene.getLodCharacterManager()->reset();
+}
+
+// ***************************************************************************
+uint32				CSceneUser::loadCLodShapeBank(const std::string &fileName)
+{
+	// Open the file
+	CIFile	file(CPath::lookup(fileName));
+
+	// create the shape bank
+	uint32	bankId= _Scene.getLodCharacterManager()->createShapeBank();
+
+	// get the bank
+	CLodCharacterShapeBank	*bank= _Scene.getLodCharacterManager()->getShapeBank(bankId);
+	nlassert(bank);
+
+	// read the bank.
+	file.serial(*bank);
+
+	// recompile the shape Map.
+	_Scene.getLodCharacterManager()->compile();
+
+	return bankId;
+}
+
+// ***************************************************************************
+void				CSceneUser::deleteCLodShapeBank(uint32 bankId)
+{
+	// delete the bank
+	_Scene.getLodCharacterManager()->deleteShapeBank(bankId);
+
+	// recompile the shape Map.
+	_Scene.getLodCharacterManager()->compile();
+}
+
+// ***************************************************************************
+sint32				CSceneUser::getCLodShapeIdByName(const std::string &name) const
+{
+	return _Scene.getLodCharacterManager()->getShapeIdByName(name);
+}
+
+// ***************************************************************************
+sint32				CSceneUser::getCLodAnimIdByName(uint32 shapeId, const std::string &name) const
+{
+	const CLodCharacterShape	*shape= _Scene.getLodCharacterManager()->getShape(shapeId);
+	if(shape)
+		return shape->getAnimIdByName(name);
+	else
+		return -1;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.12 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.13 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,6 +176,22 @@ public:
 	/// \name CLod / Character Lod
 	// @{
 
+	/// Change the Character Lod shape Id. set -1 if want to disable the feature (default)
+	void			setLodCharacterShape(sint shapeId);
+	/// see setLodCharacterShape
+	sint			getLodCharacterShape() const {return _CLodShapeId;}
+
+	/// Change/get the Character Lod anim setup.
+	void			setLodCharacterAnimId(uint animId);
+	uint			getLodCharacterAnimId() const {return _CLodAnimId;}
+	void			setLodCharacterAnimTime(TGlobalAnimationTime time);
+	TGlobalAnimationTime	getLodCharacterAnimTime() const {return _CLodAnimTime;}
+
+	/// tells if the animation must loop or clamp.
+	void			setLodCharacterWrapMode(bool wrapMode);
+	bool			getLodCharacterWrapMode() const {return _CLodWrapMode;}
+
+
 	/** True if the skeleton model and his skins are to be displayed with a CLodCharacterShape, instead of the std way
 	 *	This state is modified early during the HRC Traversal. Because Clip traversal need this result.
 	 */
@@ -210,6 +226,7 @@ private:
 	friend	class CSkeletonShape;
 	friend	class CSkeletonModelClipObs;
 	friend	class CSkeletonModelAnimDetailObs;
+	friend	class CSkeletonModelRenderObs;
 	friend	class CTransformClipObs;
 
 
@@ -281,6 +298,9 @@ private:
 	/// \name CLod / Character Lod
 	// @{
 
+	// return the contribution of lights (for Character Lod render).
+	const CLightContribution	&getSkeletonLightContribution() {return _LightContribution;}
+
 	/** True if the skeleton model and his skins have to be displayed with a CLodCharacterShape, instead of the std way
 	 *	This state is modified early during the HRC Traversal. Because Clip traversal need this result.
 	 */
@@ -291,6 +311,12 @@ private:
 
 	/// The last date _DisplayedAsLodCharacter has been computed
 	sint64			_DisplayLodCharacterDate;
+
+	/// The LodCharacter Shape/Anim setup
+	sint			_CLodShapeId;	// -1 if disabled
+	uint			_CLodAnimId;
+	TGlobalAnimationTime	_CLodAnimTime;
+	bool			_CLodWrapMode;
 
 	// @}
 
@@ -320,7 +346,7 @@ public:
 
 	/** this do :
 	 *  - call CTransformClipObs::traverse()
-	 *  - If needed flag _DisplayedAsLodCharacter as true
+	 *  - If needed flag _DisplayedAsLodCharacter as true, and add renderObs in this case
 	 */
 	virtual	void	traverse(IObs *caller);
 
@@ -354,6 +380,32 @@ public:
 
 public:
 	static IObs	*creator() {return new CSkeletonModelAnimDetailObs;}
+};
+
+
+// ***************************************************************************
+/**
+ * This observer:
+ * - leave the notification system to DO NOTHING.
+ * - extend the traverse method.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CSkeletonModelRenderObs : public CTransformShapeRenderObs
+{
+public:
+ 
+	/** this should be called only if in CLodCaharacter state. In this case, it replaces CTransformShapeRenderObs:
+	 *  - update instance Lighting
+	 *  - render the lod.
+	 */
+	virtual	void	traverse(IObs *caller);
+
+
+public:
+	static IObs	*creator() {return new CSkeletonModelRenderObs;}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file lod_character_manager.h
  * <File description>
  *
- * $Id: lod_character_manager.h,v 1.1 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: lod_character_manager.h,v 1.2 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -109,13 +109,16 @@ public:
 	/// \name render process
 	// @{
 
-	/// set the max number of vertices the manager can render in one time. Default is 3000 vertices.
+	/** set the max number of vertices the manager can render in one time. Default is 3000 vertices.
+	 *	nlassert if isRendering()
+	 */
 	void			setMaxVertex(uint32 maxVertex);
 
 	/// see setMaxVertex()
 	uint32			getMaxVertex() const {return _MaxNumVertices;}
 
 	/** Start the rendering process, freeing VBuffer.
+	 *	nlassert if isRendering()
 	 *	NB: VBhard is locked here, so you must call endRender to unlock him (even if 0 meshes are rendered)
 	 *
 	 *	\param managerPos is to help ZBuffer Precision (see IDriver::setupViewMatrixEx). This vector is removed from 
@@ -123,12 +126,14 @@ public:
 	 *	Hence, whatever value you give, the result will be the same. But if you give a value near the camera position,
 	 *	ZBuffer precision will be enhanced.
 	 */
-	void			initRender(IDriver *driver, const CVector &managerPos);
+	void			beginRender(IDriver *driver, const CVector &managerPos);
 
 	/** Add an instance to the render list.
+	 *	nlassert if not isRendering()
 	 *	\param shapeId is the id of the lod character shape to use. No-Op if not found.
 	 *	\param animId is the anim to use for this shape. No-Op if not found.
 	 *	\param time is the time of animation
+	 *	\param wrapMode if true, the anim loop, else just clamp
 	 *	\param worldMatrix is the world matrix, used to display the mesh
 	 *	\param colorVertex is an array of color, must be same size of the shape number vertices, else the
 	 *	whole mesh is supposed to be gray. see CLodCharacterShape::startBoneColor() for how to build this array
@@ -137,13 +142,17 @@ public:
 	 *	are bad id, it return true!! You may call endRender(), then restart a block. Or you may just stop the process 
 	 *	if you want.
 	 */
-	bool			addRenderCharacterKey(uint shapeId, uint animId, float time, const CMatrix &worldMatrix, 
-		const std::vector<CRGBA> &colorVertex, CRGBA globalLighting);
+	bool			addRenderCharacterKey(uint shapeId, uint animId, TGlobalAnimationTime time, bool wrapMode, 
+		const CMatrix &worldMatrix, const std::vector<CRGBA> &colorVertex, CRGBA globalLighting);
 
-	/**	compile the rendering process, effectively rendering into driver the lods
-	 *	the VBHard is unlocked here.
+	/**	compile the rendering process, effectively rendering into driver the lods.
+	 *	nlassert if not isRendering().
+	 *	The VBHard is unlocked here.
 	 */
 	void			endRender();
+
+	/// tells if we are beetween a beginRender() and a endRender() 
+	bool			isRendering() const {return _Rendering;}
 
 	// @}
 
@@ -180,6 +189,7 @@ private:
 	bool							_VBHardOk;
 	uint8							*_VertexData;
 	uint							_VertexSize;
+	bool							_Rendering;
 
 	// list of triangles
 	uint							_CurrentTriId;

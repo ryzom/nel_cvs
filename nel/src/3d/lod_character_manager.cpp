@@ -1,7 +1,7 @@
 /** \file lod_character_manager.cpp
  * <File description>
  *
- * $Id: lod_character_manager.cpp,v 1.1 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: lod_character_manager.cpp,v 1.2 2002/05/13 16:45:55 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -48,6 +48,7 @@ CLodCharacterManager::CLodCharacterManager()
 {
 	_Driver= NULL;
 	_MaxNumVertices= 3000;
+	_Rendering= false;
 
 	// Setup the format of render
 	_VBuffer.setVertexFormat(NL3D_CLOD_VERTEX_FORMAT);
@@ -56,7 +57,6 @@ CLodCharacterManager::CLodCharacterManager()
 	// setup the material
 	_Material.initUnlit();
 	_Material.setAlphaTest(true);
-
 }
 
 
@@ -214,6 +214,8 @@ bool			CLodCharacterManager::compile()
 // ***************************************************************************
 void			CLodCharacterManager::setMaxVertex(uint32 maxVertex)
 {
+	// we must not be beewteen beginRender() and endRender()
+	nlassert(!isRendering());
 	_MaxNumVertices= maxVertex;
 }
 
@@ -240,8 +242,11 @@ void			CLodCharacterManager::deleteVertexBuffer()
 
 
 // ***************************************************************************
-void			CLodCharacterManager::initRender(IDriver *driver, const CVector &managerPos)
+void			CLodCharacterManager::beginRender(IDriver *driver, const CVector &managerPos)
 {
+	// we must not be beewteen beginRender() and endRender()
+	nlassert(!isRendering());
+
 	// Reset render
 	//=================
 	_CurrentVertexId=0;
@@ -300,13 +305,18 @@ void			CLodCharacterManager::initRender(IDriver *driver, const CVector &managerP
 
 	// Local manager matrix
 	_ManagerMatrixPos= managerPos;
+
+	// Ok, start rendering
+	_Rendering= true;
 }
 
 // ***************************************************************************
-bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, float time, const CMatrix &worldMatrix, 
-	const std::vector<CRGBA> &colorVertex, CRGBA globalLighting)
+bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, TGlobalAnimationTime time, bool wrapMode, 
+	const CMatrix &worldMatrix, const std::vector<CRGBA> &colorVertex, CRGBA globalLighting)
 {
 	nlassert(_Driver);
+	// we must be beewteen beginRender() and endRender()
+	nlassert(isRendering());
 
 	CVector		unPackScaleFactor;
 	uint		numVertices;
@@ -322,7 +332,7 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, fl
 
 	// get the anim key
 	const CLodCharacterShape::CVector3s		*vertPtr;
-	vertPtr= clod->getAnimKey(animId, time, unPackScaleFactor);
+	vertPtr= clod->getAnimKey(animId, time, wrapMode, unPackScaleFactor);
 	// if not found quit, return true
 	if(!vertPtr)
 		return true;
@@ -406,9 +416,6 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, fl
 		}
 	}
 
-	// Inc Vertex count.
-	_CurrentVertexId+= numVertices;
-
 
 	// Add Primitives.
 	//=============
@@ -422,11 +429,22 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, fl
 		_Triangles.resize(_CurrentTriId+numTriIdxs);
 	}
 
-	// copy tris.
-	memcpy(&_Triangles[_CurrentTriId], clod->getTriangleArray(), numTriIdxs * sizeof(uint32));
+	// reindex and copy tris
+	const uint32	*srcIdx= clod->getTriangleArray();
+	uint32			*dstIdx= &_Triangles[_CurrentTriId];
+	for(;numTriIdxs>0;numTriIdxs--, srcIdx++, dstIdx++)
+	{
+		*dstIdx= *srcIdx + _CurrentVertexId;
+	}
 
+
+	// Next
+	//=============
+
+	// Inc Vertex count.
+	_CurrentVertexId+= clod->getNumVertices();
 	// Inc Prim count.
-	_CurrentTriId+= numTriIdxs;
+	_CurrentTriId+= clod->getNumTriangles() * 3;
 
 
 	// key added
@@ -437,6 +455,8 @@ bool			CLodCharacterManager::addRenderCharacterKey(uint shapeId, uint animId, fl
 void			CLodCharacterManager::endRender()
 {
 	nlassert(_Driver);
+	// we must be beewteen beginRender() and endRender()
+	nlassert(isRendering());
 
 	// UnLock Buffer.
 	if(_VBHard)
@@ -462,6 +482,8 @@ void			CLodCharacterManager::endRender()
 		_Driver->renderTriangles(_Material, &_Triangles[0], _CurrentTriId/3);
 	}
 
+	// Ok, end rendering
+	_Rendering= false;
 }
 
 

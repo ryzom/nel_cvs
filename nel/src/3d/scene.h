@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.25 2002/05/13 07:49:26 besson Exp $
+ * $Id: scene.h,v 1.26 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,7 @@ class	CShapeBank;
 class	CCoarseMeshManager;
 class	CInstanceGroup;
 class	CSkipModel;
+class	CLodCharacterManager;
 
 
 // ***************************************************************************
@@ -161,7 +162,9 @@ public:
 	void			addTrav(ITrav *v);
 	
 
-	/// Release all relative to the scene (Models, traversals...)... Destroy the Basic traversals too.
+	/** Release all relative to the scene (Models, traversals...)... Destroy the Basic traversals too.
+	 *	The Lod Character Manager is reset() ed, but not deleted (at dtor only).
+	 */
 	virtual void			release();
 	//@}
 
@@ -312,6 +315,12 @@ public:
 
 	/// see setCoarseMeshLightingUpdate()
 	uint8					getCoarseMeshLightingUpdate() const {return _CoarseMeshLightingUpdate;}
+
+	/// Get the LodCharacterManager. Never NULL.
+	CLodCharacterManager	*getLodCharacterManager () const
+	{
+		return _LodCharacterManager;
+	}
 
 	//@}
 
@@ -492,6 +501,8 @@ private:
 	//@{
 	CRefPtr<CCoarseMeshManager>	_StaticCoarseMeshManager;
 	CRefPtr<CCoarseMeshManager>	_DynamicCoarseMeshManager;
+	// CLodCharacterManager is not a model. created at ctor.
+	CLodCharacterManager		*_LodCharacterManager;
 	//@}
 
 	/// \name Clip features

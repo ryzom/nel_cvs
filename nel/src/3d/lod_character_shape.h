@@ -1,7 +1,7 @@
 /** \file lod_character_shape.h
  * <File description>
  *
- * $Id: lod_character_shape.h,v 1.1 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: lod_character_shape.h,v 1.2 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -84,8 +84,6 @@ public:
 		uint			NumKeys;
 		/// The effective time of the animation
 		float			AnimLength;
-		/// Anim Loop?
-		bool			AnimLoop;
 
 		/// List of Keys * NumVertices
 		std::vector<CVector>	Keys;
@@ -160,11 +158,11 @@ public:
 	// @}
 
 	/** get a ptr to the vertices of the key according to animId and time.
-	 *	Key is selected according to the AnimLoop state.
+	 *	NB: the anim Loop if wrapMode is true
 	 *	\param unPackScaleFactor return value is the scale factor which to multiply
 	 *	\return NULL if animId is not valid
 	 */
-	const CVector3s	*getAnimKey(uint animId, float time, CVector &unPackScaleFactor) const;
+	const CVector3s	*getAnimKey(uint animId, TGlobalAnimationTime time, bool wrapMode, CVector &unPackScaleFactor) const;
 
 
 // *******************************
@@ -180,8 +178,6 @@ private:
 		/// The effective time of the animation
 		float			AnimLength;
 		float			OOAnimLength;
-		/// Anim Loop?
-		bool			AnimLoop;
 		/// The Scale factor to be multiplied to transform CVector3s to CVector
 		CVector			UnPackScaleFactor;
 

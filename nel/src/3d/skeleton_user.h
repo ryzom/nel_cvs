@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.5 2002/04/26 15:05:00 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.6 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,13 +96,8 @@ public:
 			nlerror("USkeleton::bindSkin(): mi is not a MeshInstance or MeshMRMInstance");
 		_Skeleton->bindSkin(meshi);
 	}
-	virtual	void		stickObject(UTransform *mi, uint boneId)
-	{
-		if(mi==NULL)
-			nlerror("USkeleton::stickObject(): mi is NULL");
-		CTransform		*trans= (dynamic_cast<CTransformUser*>(mi))->getTransform();
-		_Skeleton->stickObject(trans, boneId);
-	}
+	virtual	void		stickObject(UTransform *mi, uint boneId);
+	virtual	void		stickObjectEx(UTransform *mi, uint boneId, bool forceCLod);
 	virtual	void		detachSkeletonSon(UTransform *mi)
 	{
 		if(mi==NULL)
@@ -139,6 +134,22 @@ public:
 	virtual	float		getInterpolationDistance() const;
 	virtual void		setShapeDistMax(float distMax);
 	virtual float		getShapeDistMax() const;
+	// @}
+
+
+	/// \name CLod / Character Lod
+	// @{
+	virtual void		setLodCharacterShape(sint shapeId);
+	virtual sint		getLodCharacterShape() const;
+	virtual void		setLodCharacterAnimId(uint animId);
+	virtual uint		getLodCharacterAnimId() const;
+	virtual void		setLodCharacterAnimTime(TGlobalAnimationTime	time);
+	virtual TGlobalAnimationTime	getLodCharacterAnimTime() const;
+	virtual bool		isDisplayedAsLodCharacter() const;
+	virtual void		setLodCharacterDistance(float dist);
+	virtual float		getLodCharacterDistance() const;
+	virtual void		setLodCharacterWrapMode(bool wrapMode);
+	virtual bool		getLodCharacterWrapMode() const;
 	// @}
 
 

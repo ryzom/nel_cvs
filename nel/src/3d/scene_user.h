@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.26 2002/05/07 16:03:26 vizerie Exp $
+ * $Id: scene_user.h,v 1.27 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -491,6 +491,15 @@ public:
 
 	//@}
 
+
+	/// \name CLod / Character Lod mgt
+	//@{
+	virtual void				resetCLodManager();
+	virtual uint32				loadCLodShapeBank(const std::string &fileName);
+	virtual void				deleteCLodShapeBank(uint32 bankId);
+	virtual sint32				getCLodShapeIdByName(const std::string &name) const;
+	virtual sint32				getCLodAnimIdByName(uint32 shapeId, const std::string &name) const;
+	//@}
 
 public:
 	/// \name Accessor for CSceneUser.

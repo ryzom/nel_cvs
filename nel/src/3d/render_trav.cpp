@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.22 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.23 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "3d/skeleton_model.h"
 #include "3d/scene.h"
 #include "3d/coarse_mesh_manager.h"
+#include "3d/lod_character_manager.h"
 
 #include "3d/transform.h"
 
@@ -152,6 +153,10 @@ void		CRenderTrav::traverse()
 		Root->traverse(NULL);
 
 	// Then traverse the render list.
+
+	// Start LodCharacter Manager render.
+	Scene->getLodCharacterManager()->beginRender(getDriver(), CamPos);
+
 	// Render the opaque materials
 	_CurrentPassOpaque = true;
 	OrderOpaqueList.begin();
@@ -163,6 +168,8 @@ void		CRenderTrav::traverse()
 		OrderOpaqueList.next();
 	}
 
+	// End LodCharacter Manager render.
+	Scene->getLodCharacterManager()->endRender();
 
 	/* Render Scene CoarseMeshManager. 
 		Important to render them at end of Opaque rendering, because coarses instances are created/removed during

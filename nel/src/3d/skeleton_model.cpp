@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.15 2002/05/07 08:15:58 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.16 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
 #include "3d/skeleton_shape.h"
+#include "3d/scene.h"
+#include "3d/lod_character_manager.h"
 
 
 using namespace std;
@@ -43,6 +45,7 @@ void		CSkeletonModel::registerBasic()
 	CMOT::registerModel(SkeletonModelId, TransformShapeId, CSkeletonModel::creator);
 	CMOT::registerObs(AnimDetailTravId, SkeletonModelId, CSkeletonModelAnimDetailObs::creator);
 	CMOT::registerObs(ClipTravId, SkeletonModelId, CSkeletonModelClipObs::creator);
+	CMOT::registerObs(RenderTravId, SkeletonModelId, CSkeletonModelRenderObs::creator);
 }
 
 
@@ -68,6 +71,15 @@ CSkeletonModel::CSkeletonModel()
 	_DisplayedAsLodCharacter= false;
 	_LodCharacterDistance= 0;
 	_DisplayLodCharacterDate= -1;
+
+	_CLodShapeId= -1;
+	_CLodAnimId= 0;
+	_CLodAnimTime= 0;
+	_CLodWrapMode= true;
+
+	// The model may be rendered when it enters in LodCharacter mode. Must be rendered at Opaque Pass only.
+	setOpacity(true);
+	setTransparency(false);
 }
 
 	
@@ -555,6 +567,30 @@ void		CSkeletonModel::setLodCharacterDistance(float dist)
 	_LodCharacterDistance= max(dist, 0.f);
 }
 
+// ***************************************************************************
+void		CSkeletonModel::setLodCharacterShape(sint shapeId)
+{
+	_CLodShapeId= shapeId;
+}
+
+// ***************************************************************************
+void		CSkeletonModel::setLodCharacterAnimId(uint animId)
+{
+	_CLodAnimId= animId;
+}
+
+// ***************************************************************************
+void		CSkeletonModel::setLodCharacterAnimTime(TGlobalAnimationTime time)
+{
+	_CLodAnimTime= time;
+}
+
+// ***************************************************************************
+void		CSkeletonModel::setLodCharacterWrapMode(bool wrapMode)
+{
+	_CLodWrapMode= wrapMode;
+}
+
 
 // ***************************************************************************
 void		CSkeletonModel::updateDisplayLodCharacterFlag(const CClipTrav *clipTrav)
@@ -568,7 +604,7 @@ void		CSkeletonModel::updateDisplayLodCharacterFlag(const CClipTrav *clipTrav)
 		_DisplayedAsLodCharacter= false;
 
 		// if enabled
-		if(_LodCharacterDistance!=0)
+		if(_LodCharacterDistance!=0 && _CLodShapeId>=0)
 		{
 			CVector		globalPos;
 
@@ -615,8 +651,75 @@ void		CSkeletonModelClipObs::traverse(IObs *caller)
 	// do it if not already done
 	sm->updateDisplayLodCharacterFlag(clipTrav);
 
+	// The model must be rendered if Visible and if isDisplayedAsLodCharacter
+	if(Visible && sm->isDisplayedAsLodCharacter())
+	{
+		clipTrav->RenderTrav->addRenderObs(RenderObs);
+	}
+
 }
 
+
+// ***************************************************************************
+void		CSkeletonModelRenderObs::traverse(IObs *caller)
+{
+	CRenderTrav			*trav= (CRenderTrav*)Trav;
+	CSkeletonModel		*sm= (CSkeletonModel*)Model;
+	IDriver				*drv= trav->getDriver();
+	CScene				*scene= trav->Scene;
+
+	// Must be used only for CLod display
+	nlassert(sm->isDisplayedAsLodCharacter());
+
+
+	// Get global lighting on the instance. Suppose SunAmbient only.
+	//=================
+	const CLightContribution	*lightContrib;
+	// Get HrcObs.
+	CTransformHrcObs	*hrcObs= (CTransformHrcObs*)HrcObs;
+
+	// the std case is to take my model lightContribution
+	if(hrcObs->_AncestorSkeletonModel==NULL)
+		lightContrib= &sm->getSkeletonLightContribution();
+	// but if skinned/sticked (directly or not) to a skeleton, take its.
+	else
+		lightContrib= &hrcObs->_AncestorSkeletonModel->getSkeletonLightContribution();
+
+	// compute his sun contribution result
+	CRGBA	sunContrib= scene->getSunDiffuse();
+	// simulate/average diffuse lighting over the mesh by dividing diffuse by 2.
+	sunContrib.modulateFromuiRGBOnly(sunContrib, lightContrib->SunContribution/2 );
+	// Add Ambient
+	sunContrib.addRGBOnly(sunContrib, scene->getSunAmbient());
+	sunContrib.A= 255;
+
+
+	// render the Lod in the LodManager.
+	//=================
+	CLodCharacterManager	*mngr= trav->Scene->getLodCharacterManager();
+	// render must have been intialized
+	nlassert(mngr->isRendering());
+
+	// TODODO. For now, Empty colorVertex => grey lod
+	vector<CRGBA>	colorVertex;
+
+	// add the instance to the manager. 
+	if(!mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
+		hrcObs->WorldMatrix, colorVertex, sunContrib))
+	{
+		// If failed to add it because no more vertex space in the manager, retry.
+
+		// close vertexBlock, compile render
+		mngr->endRender();
+		// and restart.
+		mngr->beginRender(drv, trav->CamPos);
+
+		// retry. but no-op if refail.
+		mngr->addRenderCharacterKey(sm->_CLodShapeId, sm->_CLodAnimId, sm->_CLodAnimTime, sm->_CLodWrapMode, 
+			hrcObs->WorldMatrix, colorVertex, sunContrib);
+	}
+
+}
 
 
 } // NL3D

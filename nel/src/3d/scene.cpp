@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.75 2002/05/13 07:49:26 besson Exp $
+ * $Id: scene.cpp,v 1.76 2002/05/13 16:45:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@
 #include "3d/root_model.h"
 #include "3d/point_light_model.h"
 #include "3d/animation.h"
+#include "3d/lod_character_manager.h"
 
 #include <memory>
 
@@ -145,6 +146,9 @@ CScene::CScene()
 	_GlobalWindDirection.set(1,0,0);
 	// Default as Sithikt wants.
 	_GlobalWindPower= 0.2f;
+
+	// Create here the Lod Manager.
+	_LodCharacterManager= new CLodCharacterManager;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -213,11 +217,18 @@ void	CScene::release()
 	SonsOfAncestorSkeletonModelGroup= NULL;
 	LightModelRoot= NULL;
 	CurrentCamera= NULL;
+
+	// reset the _LodCharacterManager
+	_LodCharacterManager->reset();
 }
 // ***************************************************************************
 CScene::~CScene()
 {
 	release();
+
+	// delete the character manager
+	delete _LodCharacterManager;
+	_LodCharacterManager= NULL;
 }
 // ***************************************************************************
 void	CScene::initDefaultTravs()

@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera interface between the game and NeL
  *
- * $Id: camera.cpp,v 1.17 2001/07/27 09:05:34 lecroart Exp $
+ * $Id: camera.cpp,v 1.18 2001/08/14 13:45:55 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,7 +122,6 @@ void	initCamera()
 	LogoScene->setViewport (v);
 
 	Logo = LogoScene->createInstance("nel_logo.shape");
-	Logo->setMatrix(CMatrix::Identity);
 	Logo->setPos (0.0f, 3.0f, 0.0f);
 }
 
@@ -161,8 +160,8 @@ void	update3dLogo ()
 
 	static float angle=0.0;
 	angle+=0.05f;
-	Logo->setRotEuler (0.0f,0.0f,angle);
 	Logo->setTransformMode (UTransformable::RotEuler);
+	Logo->setRotEuler (0.0f,0.0f,angle);
 	LogoScene->animate (float(NewTime)/1000);
 	LogoScene->render ();
 }

@@ -37,6 +37,8 @@ date
 
 database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
+# Reduce bitmap size factor
+reduce_bitmap_factor=`cat ../../cfg/config.cfg | grep "reduce_bitmap_factor" | sed -e 's/reduce_bitmap_factor//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 panoply_file_list=`cat ../../cfg/config.cfg | grep "panoply_file_list" | sed -e 's/panoply_file_list//' | sed -e 's/ //g' | sed -e 's/=//g'`
 if test "$panoply_file_list" ; then
@@ -71,7 +73,7 @@ for i in tga/*.[tT][gG][aA] ; do
 		fi
 
 		# Convert
-		$tga_2_dds $i -o $dest -m 2>> log.log
+		$tga_2_dds $i -o $dest -m -r$reduce_bitmap_factor 2>> log.log
 	fi
 
 	# Idle
@@ -94,7 +96,7 @@ for i in panoply/*.[tT][gG][aA] ; do
 		fi
 
 		# Convert
-		$tga_2_dds $i -o $dest -m 2>> log.log
+		$tga_2_dds $i -o $dest -m -r$reduce_bitmap_factor 2>> log.log
 	fi
 
 	# Idle

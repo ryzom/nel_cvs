@@ -1,7 +1,7 @@
 /** \file tga2dds.cpp
  * TGA to DDS converter
  *
- * $Id: tga2dds.cpp,v 1.9 2002/10/25 16:17:57 berenguier Exp $
+ * $Id: tga2dds.cpp,v 1.10 2003/01/17 14:17:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,14 +209,16 @@ void writeInstructions()
 	cout<<"syntax : tga2dds <input.tga> [-o <output.dds>] [-a <algo>] [-m]"<<endl;
 	cout<<endl;
 	cout<<"with"<<endl;
-	cout<<"algo : 1  for DXTC1 (no alpha)"<<endl;
-	cout<<"       1A for DXTC1 with alpha"<<endl;
-	cout<<"       3  for DXTC3"<<endl;
-	cout<<"       5  for DXTC5"<<endl;
-	cout<<"       tga16  for TGA 16 bits"<<endl;
-	cout<<"-m   : Create MipMap"<<endl;
+	cout<<"algo      : 1  for DXTC1 (no alpha)"<<endl;
+	cout<<"            1A for DXTC1 with alpha"<<endl;
+	cout<<"            3  for DXTC3"<<endl;
+	cout<<"            5  for DXTC5"<<endl;
+	cout<<"            tga16  for TGA 16 bits"<<endl;
+	cout<<"-m        : Create MipMap"<<endl;
+	cout<<"-rFACTOR  : Reduce the bitmap size before compressing"<<endl;
+	cout<<"            FACTOR is 0, 1, 2, 3, 4, 5, 6, 7 or 8"<<endl;
 	cout<<endl;
-	cout<<"default : DXTC1 if Tga 24b, DXTC5 if Tga 32b."<<endl;
+	cout<<"default   : DXTC1 if Tga 24b, DXTC5 if Tga 32b."<<endl;
 	cout<<endl;
 	cout<<"/? for this help"<<endl;
 	cout<<endl; 
@@ -235,8 +237,9 @@ std::string getOutputFileName(std::string inputFileName)
 
 // ***************************************************************************
 string		OptOutputFileName;
-uint8		OptAlgo= NOT_DEFINED;
-bool		OptMipMap= false;
+uint8		OptAlgo = NOT_DEFINED;
+bool		OptMipMap = false;
+uint		Reduce = 0;
 bool	parseOptions(int argc, char **argv)
 {
 	for(sint i=2;i<argc;i++)
@@ -275,6 +278,25 @@ bool	parseOptions(int argc, char **argv)
 		{
 			OptMipMap= true;
 		}
+		// Reduce size of the bitmap
+		else if(!strcmp(argv[i], "-r0"))
+			Reduce = 0;
+		else if(!strcmp(argv[i], "-r1"))
+			Reduce = 1;
+		else if(!strcmp(argv[i], "-r2"))
+			Reduce = 2;
+		else if(!strcmp(argv[i], "-r3"))
+			Reduce = 3;
+		else if(!strcmp(argv[i], "-r4"))
+			Reduce = 4;
+		else if(!strcmp(argv[i], "-r5"))
+			Reduce = 5;
+		else if(!strcmp(argv[i], "-r6"))
+			Reduce = 6;
+		else if(!strcmp(argv[i], "-r7"))
+			Reduce = 7;
+		else if(!strcmp(argv[i], "-r8"))
+			Reduce = 8;
 		// What is this option?
 		else
 		{
@@ -285,12 +307,46 @@ bool	parseOptions(int argc, char **argv)
 	return true;
 }
 
+// ***************************************************************************
+void dividSize (CBitmap &bitmap)
+{
+	// Must be RGBA
+	nlassert (bitmap.getPixelFormat () == CBitmap::RGBA);
+
+	// Copy the bitmap
+	CBitmap temp = bitmap;
+
+	// Resize the destination
+	const uint width = temp.getWidth ();
+	const uint height = temp.getHeight ();
+	const uint newWidth = temp.getWidth ()/2;
+	const uint newHeight = temp.getHeight ()/2;
+	bitmap.resize (newWidth, newHeight, CBitmap::RGBA);
+
+	// Pointers
+	uint8 *pixelSrc = &(temp.getPixels ()[0]);
+	uint8 *pixelDest = &(bitmap.getPixels ()[0]);
+
+	// Resample
+	uint x, y;
+	for (y=0; y<newHeight; y++)
+	for (x=0; x<newWidth; x++)
+	{
+		const uint offsetSrc = ((y*2)*width+x*2)*4;
+		const uint offsetDest = (y*newWidth+x)*4;
+		uint i;
+		for (i=0; i<4; i++)
+		{
+			pixelDest[offsetDest+i] = ((uint)pixelSrc[offsetSrc+i] + (uint)pixelSrc[offsetSrc+4+i] + 
+				(uint)pixelSrc[offsetSrc+4*width+i] + (uint)pixelSrc[offsetSrc+4*width+4+i])>>2;
+		}
+	}
+}
 
 // ***************************************************************************
 void main(int argc, char **argv)
 {
 	uint8 algo;
-
 	
 	// Parse Command Line.
 	//====================
@@ -523,7 +579,14 @@ void main(int argc, char **argv)
 	// Copy to the dest bitmap.
 	picSrc.resize(width, height, CBitmap::RGBA);
 	picSrc.getPixels(0)= RGBADest;
-	
+
+	// Resize the destination bitmap ?
+	while (Reduce != 0)
+	{
+		dividSize (picSrc);
+		Reduce--;
+	}
+
 	// 16 bits tga ?
 	if (algo==TGA16)
 	{

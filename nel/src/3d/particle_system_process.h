@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.6 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: particle_system_process.h,v 1.7 2002/02/15 17:00:19 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,9 +80,10 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 
 		
 		/**
-		* execute this process, telling how much time ellapsed 
+		* execute this process, telling how much time ellapsed must be used for motion, and the real time ellapsed
+		* (for lifetime managment)
 		*/
-		virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime) = 0 ;
+		virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt) = 0 ;
 
 
 		/** Compute the aabbox of this process, (expressed in world basis).

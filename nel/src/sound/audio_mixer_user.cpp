@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.14 2001/09/04 11:15:50 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.15 2001/09/04 13:45:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -356,7 +356,7 @@ void				CAudioMixerUser::update()
 			TSpawnEndCallback cb = (*ipOld)->getSpawnEndCallback();
 			if ( cb != NULL )
 			{
-				cb( *ipOld );
+				cb( *ipOld, (*ipOld)->getCallbackUserParam());
 			}
 			removeSource( ipOld, true );
 		}
@@ -444,7 +444,7 @@ TSoundId			CAudioMixerUser::getSoundId( const char *name )
  * pass a callback function that will be called (if not NULL) just before deleting the spawned
  * source.
  */
-USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb )
+USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb, void *userParam )
 {
 	if ( id == NULL )
 	{
@@ -453,7 +453,7 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 	}
 
 	// Create source
-	CSourceUser *source = new CSourceUser( id, spawn, cb );
+	CSourceUser *source = new CSourceUser( id, spawn, cb, userParam );
 	_Sources.insert( source );
 
 	// Link the position to the listener position if it'a stereo source
@@ -475,9 +475,9 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 /*
  * Add a logical sound source (returns NULL if name not found). To remove a source, just delete it.
  */
-USource				*CAudioMixerUser::createSource( const char *name, bool spawn, TSpawnEndCallback cb )
+USource				*CAudioMixerUser::createSource( const char *name, bool spawn, TSpawnEndCallback cb, void *userParam )
 {
-	return createSource( getSoundId( name ), spawn, cb );
+	return createSource( getSoundId( name ), spawn, cb, userParam );
 }
 
 

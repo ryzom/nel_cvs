@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.13 2001/09/04 11:15:50 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.14 2001/09/04 13:45:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,9 +111,9 @@ public:
 	 * pass a callback function that will be called (if not NULL) just before deleting the spawned
 	 * source.
 	 */
-	virtual USource				*createSource( const char *name, bool spawn=false, TSpawnEndCallback cb=NULL );
+	virtual USource				*createSource( const char *name, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL );
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
-	virtual USource				*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL );
+	virtual USource				*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL );
 	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
 	 * when deleting the audio mixer object
 	 */

@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.8 2001/09/04 11:15:29 cado Exp $
+ * $Id: u_source.h,v 1.9 2001/09/04 13:46:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ typedef CSound* TSoundId;
 enum TSoundPriority { HighPri, MidPri, LowPri };
 
 /// Type of callbacks called before a spawned source is deleted
-typedef void (*TSpawnEndCallback) (USource *);
+typedef void (*TSpawnEndCallback) (USource *, void *);
 
 
 /**
@@ -94,6 +94,8 @@ public:
 	virtual void					stop() = 0;
 	/// Get playing state. Return false even if the source has stopped on its own.
 	virtual bool					isPlaying() = 0;
+	/// Tells this source not to call its callbacks when it ends. This is valid for spawned sources only.
+	virtual	void					unregisterSpawnCallBack() = 0;
 	//@}
 
 	

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.14 2001/09/04 11:15:50 cado Exp $
+ * $Id: source_user.cpp,v 1.15 2001/09/04 13:45:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,11 +41,11 @@ namespace NLSOUND {
 /*
  * Constructor
  */
-CSourceUser::CSourceUser( TSoundId id, bool spawn, TSpawnEndCallback cb ) :
+CSourceUser::CSourceUser( TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam ) :
 	_Priority(MidPri), _Playing(false),
 	_Position(CVector::Null), _Velocity(CVector::Null), _Direction(CVector::Null),
 	_Gain(1.0f), _Pitch(1.0f), _RelativeMode(false), _Looping(false),
-	_Track(NULL), _3DPosition(NULL), _PlayStart(0), _Spawn(spawn), _SpawnEndCb(cb)
+	_Track(NULL), _3DPosition(NULL), _PlayStart(0), _Spawn(spawn), _SpawnEndCb(cb), _CbUserParam(cbUserParam)
 {
 	setSound( id );
 }

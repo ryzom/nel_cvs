@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.10 2001/09/04 11:15:50 cado Exp $
+ * $Id: source_user.h,v 1.11 2001/09/04 13:45:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ class CSourceUser : public USource, public IPlayable
 public:
 
 	/// Constructor
-	CSourceUser( TSoundId id=NULL, bool spawn=false, TSpawnEndCallback cb=NULL );
+	CSourceUser( TSoundId id=NULL, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL );
 	/// Destructor
 	virtual ~CSourceUser();
 
@@ -85,6 +85,8 @@ public:
 	virtual void					stop();
 	/// Get playing state. Return false even if the source has stopped on its own.
 	virtual bool					isPlaying();
+	/// Tells this source not to call its callbacks when it ends. This is valid for spawned sources only.
+	virtual	void					unregisterSpawnCallBack()					{ _SpawnEndCb = NULL; }
 	//@}
 
 
@@ -152,7 +154,8 @@ public:
 	bool							isSpawn() const								{ return _Spawn; }
 	/// Return the spawn end callback
 	TSpawnEndCallback				getSpawnEndCallback() const					{ return _SpawnEndCb; }
-
+	/// return the user param for the user callback
+	void							*getCallbackUserParam(void) const			{ return _CbUserParam; }
 
 	// From IPlayable
 
@@ -198,6 +201,7 @@ private:
 	// Spawn state
 	const bool						_Spawn;
 	TSpawnEndCallback				_SpawnEndCb;
+	void							*_CbUserParam;
 };
 
 

@@ -1,0 +1,270 @@
+/** \file ps_dot.cpp
+ * Dot particles
+ *
+ * $Id: ps_dot.cpp,v 1.1 2002/02/15 17:03:29 vizerie Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#include "3d/ps_dot.h"
+#include "3d/ps_macro.h"
+#include "3d/ps_iterator.h"
+#include "3d/driver.h"
+#include "3d/particle_system.h"
+
+
+namespace NL3D 
+{
+
+static const uint dotBufSize = 1024; // size used for point particles batching
+
+
+///////////////////////////
+// CPSDot implementation //
+///////////////////////////
+
+/// static members
+CVertexBuffer CPSDot::_DotVb;
+CVertexBuffer CPSDot::_DotVbColor;
+
+
+///===================================================================
+template <class T>
+inline void DrawDot(T it,
+					CVertexBuffer &vb,
+					const CPSAttribMaker<NLMISC::CRGBA> *colorScheme,
+					uint leftToDo,
+					CPSLocated *owner,
+					CMaterial &mat,
+					IDriver *driver,
+					uint32 srcStep
+				   )
+{	
+	nlassert(leftToDo != 0);
+	const uint total = leftToDo;
+	T itEnd;
+	do
+	{		
+		uint toProcess = leftToDo < dotBufSize ? leftToDo : dotBufSize;
+
+		if (colorScheme)
+		{
+			// compute the colors
+			colorScheme->make(owner,
+							  total - leftToDo,
+							  vb.getColorPointer(),
+							  vb.getVertexSize(),
+							  toProcess,
+							  false,
+							  srcStep
+							 );
+
+			itEnd = it + toProcess;			
+			uint8    *currPos = (uint8 *) vb.getVertexCoordPointer();	
+			uint32 stride = vb.getVertexSize();
+			do
+			{
+				CHECK_VERTEX_BUFFER(vb, currPos);
+				*((CVector *) currPos) =  *it;	
+				++it ;
+				currPos += stride;
+			}
+			while (it != itEnd);
+		}
+		else if (srcStep == (1 << 16)) // make sure we haven't got auto-lod and that the step is 1.0
+		{
+			// there's no color information in the buffer, so we can copy it directly
+			::memcpy(vb.getVertexCoordPointer(), &(*it), sizeof(NLMISC::CVector) * toProcess);
+			it += toProcess;
+		}
+		else
+		{
+			itEnd = it + toProcess;			
+			uint8    *currPos = (uint8 *) vb.getVertexCoordPointer();				
+			do
+			{
+				CHECK_VERTEX_BUFFER(vb, currPos);
+				*((CVector *) currPos) =  *it;				
+				++it ;
+				currPos += sizeof(float[3]);
+			}
+			while (it != itEnd);
+		}
+				
+		driver->renderPoints(mat, toProcess);
+
+		leftToDo -= toProcess;
+	}
+	while (leftToDo);
+}
+
+
+///===================================================================
+void CPSDot::draw(bool opaque)
+{	
+	PARTICLES_CHECK_MEM;	
+	if (!_Owner->getSize()) return;	
+
+	uint32 step;
+	uint   numToProcess;
+	computeSrcStep(step, numToProcess);	
+	if (!numToProcess) return;
+
+	_Owner->incrementNbDrawnParticles(numToProcess); // for benchmark purpose		
+	setupDriverModelMatrix();	
+	IDriver *driver = getDriver();
+	CVertexBuffer &vb = _ColorScheme ? _DotVbColor : _DotVb;
+	driver->activeVertexBuffer(vb);
+
+
+	/// update the material if the global color of the system is variable
+	CParticleSystem &ps = *(_Owner->getOwner());
+	if (!_ColorScheme)
+	{
+		if (ps.getColorAttenuationScheme() == NULL)
+		{
+			_Mat.setColor(_Color);
+		}
+		else
+		{
+			/// not supported
+
+			/* NLMISC::CRGBA col;
+			col.modulateFromColor(ps.getGlobalColor(), _Color);
+			_Mat.setColor(col); */
+		}
+	}
+	else
+	{			
+		_Mat.setColor(ps.getGlobalColor());				
+	}
+	//////
+
+
+
+	// Use the right drawing routine (auto-lod and non auto-lod)
+	if (step == (1 << 16))
+	{
+		DrawDot(_Owner->getPos().begin(),
+				vb,
+				_ColorScheme,			    
+				numToProcess,
+			    _Owner,
+				_Mat,
+				driver,
+				step
+			   );
+	}
+	else
+	{		
+		DrawDot(TIteratorVectStep1616(_Owner->getPos().begin(), 0, step),
+				vb,
+				_ColorScheme,			    
+				numToProcess,
+			    _Owner,
+				_Mat,
+				driver,
+				step
+			   );
+	}
+	
+	PARTICLES_CHECK_MEM;
+}
+
+
+///===================================================================
+/// init the vertex buffers
+void CPSDot::initVertexBuffers()
+{
+	_DotVb.setVertexFormat(CVertexBuffer::PositionFlag);
+	_DotVbColor.setVertexFormat(CVertexBuffer::PositionFlag | CVertexBuffer::PrimaryColorFlag);
+	_DotVb.setNumVertices(dotBufSize);
+	_DotVbColor.setNumVertices(dotBufSize);
+}
+
+///===================================================================
+void CPSDot::init(void)
+{		
+	_Mat.setLighting(false);	
+	_Mat.setZFunc(CMaterial::less);
+	
+	updateMatAndVbForColor();
+}
+
+///===================================================================
+uint32 CPSDot::getMaxNumFaces(void) const
+{
+	nlassert(_Owner);
+	return _Owner->getMaxSize();
+}
+
+///===================================================================
+void CPSDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
+{
+	newColorElement(emitterLocated, emitterIndex);
+}
+
+///===================================================================
+void CPSDot::deleteElement(uint32 index)
+{
+	deleteColorElement(index);
+}
+
+///===================================================================
+void CPSDot::updateMatAndVbForColor(void)
+{	
+}
+
+///===================================================================
+bool CPSDot::hasTransparentFaces(void)
+{
+	return getBlendingMode() != CPSMaterial::alphaTest ;
+}
+
+///===================================================================
+bool CPSDot::hasOpaqueFaces(void)
+{
+	return !hasTransparentFaces();
+}
+
+///===================================================================
+void CPSDot::resize(uint32 size)
+{	
+	nlassert(size < (1 << 16));
+	resizeColor(size);
+}
+
+///===================================================================
+void CPSDot::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+{
+	
+	f.serialVersion(1);	
+
+
+	CPSParticle::serial(f);
+	CPSColoredParticle::serialColorScheme(f);
+	serialMaterial(f);
+	if (f.isReading())
+	{
+		init();		
+	}
+}
+
+} // NL3D

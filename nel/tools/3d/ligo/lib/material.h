@@ -1,7 +1,7 @@
 /** \file material.h
  * A ligoscape material
  *
- * $Id: material.h,v 1.1 2001/10/29 09:35:15 corvazier Exp $
+ * $Id: material.h,v 1.2 2001/11/05 11:09:41 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_MATERIAL_H
-#define NL_MATERIAL_H
+#ifndef NL_MATERIAL_LIGO_H
+#define NL_MATERIAL_LIGO_H
 
 #include "nel/misc/types_nl.h"
 #include "zone_template.h"
@@ -66,6 +66,6 @@ private:
 
 }
 
-#endif // NL_MATERIAL_H
+#endif // NL_MATERIAL_LIGO_H
 
 /* End of material.h */

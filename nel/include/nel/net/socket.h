@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.h,v 1.17 2000/11/10 10:06:24 cado Exp $
+ * $Id: socket.h,v 1.18 2000/11/10 16:58:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -150,12 +150,12 @@ protected:
 	///@name These methods are provided only to be called by CMsgSocket (friend)
 	//@{
 
-	void		setDataAvailable( bool da )			{ _DataAvailable = da; }
+	void		setDataAvailableFlag( bool da )			{ _DataAvailable = da; }
 	void		setListening( bool l )				{ _IsListening = l; }
 	void		setSenderId( TSenderId id )			{ _SenderId = id; }
 	void		setOwnerClient( CMsgSocket *owner )	{ _OwnerClient = owner; }
 
-	bool		dataAvailable() const				{ return _DataAvailable; }
+	bool		dataAvailableFlag() const				{ return _DataAvailable; }
 	bool		isListening() const					{ return _IsListening; }
 	TSenderId	senderId() const					{ return _SenderId;	}
 	CMsgSocket	*ownerClient() const				{ return _OwnerClient; }

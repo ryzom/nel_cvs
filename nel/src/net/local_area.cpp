@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.6 2000/11/10 10:06:24 cado Exp $
+ * $Id: local_area.cpp,v 1.7 2000/11/10 16:58:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,10 +29,8 @@
 #include "nel/misc/debug.h"
 #include "nel/net/remote_entity.h"
 
-#ifdef NL_OS_WINDOWS
-#include <windows.h>
-#endif
 
+using namespace NLMISC;
 using namespace NLNET;
 using namespace std;
 
@@ -200,11 +198,7 @@ CLocalArea::~CLocalArea()
  */
 void CLocalArea::init()
 {
-#ifdef NL_OS_WINDOWS
-	_PreviousTime = timeGetTime();
-#else
-	nlerror( "Not implemented" );
-#endif
+	_PreviousTime = CTime::getLocalTime();
 }
 
 
@@ -219,13 +213,9 @@ void CLocalArea::update()
 	}
 
 	// Compute time difference
-#ifdef NL_OS_WINDOWS
-	uint32 actualtime = timeGetTime(); // TODO: test resolution settings with timeBeginPeriod()
-	TDuration deltatime = (TDuration)(actualtime - _PreviousTime) / 1000.0;
+	TTime actualtime = CTime::getLocalTime(); // TODO: test resolution settings with timeBeginPeriod()
+	TDuration deltatime = (TDuration)(sint64)(actualtime - _PreviousTime) / 1000.0;
 	_PreviousTime = actualtime;
-#else
-	nlerror( "Not implemented" );
-#endif
 
 	// Update all entities
 	User.update( deltatime );

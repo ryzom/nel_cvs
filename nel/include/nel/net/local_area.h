@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.6 2000/11/10 10:06:24 cado Exp $
+ * $Id: local_area.h,v 1.7 2000/11/10 16:58:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/net/local_entity.h"
 #include "nel/net/remote_entity.h"
 #include "nel/net/socket.h"
+#include "nel/misc/time_nl.h"
 #include <map>
 
 
@@ -100,9 +101,7 @@ private:
 	TPosUnit		_Radius;
 	CRemoteEntities	_Neighbors;
 
-#ifdef NL_OS_WINDOWS
-	uint32			_PreviousTime;
-#endif
+	NLMISC::TTime	_PreviousTime;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file unitime.h
  * CUniTime class
  *
- * $Id: unitime.h,v 1.1 2000/11/08 15:54:35 lecroart Exp $
+ * $Id: unitime.h,v 1.2 2000/11/10 16:58:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,23 +43,23 @@ class CUniTime : public NLMISC::CTime
 public:
 
 	/// Return the time in millisecond. This time is the same on all computers at the \b same moment.
-	static uint64	getUniTime ();
+	static NLMISC::TTime	getUniTime ();
 
 	/** You need to call this function before calling getUniTime or an assert will occured.
 	 * This function will connect to the time service and synchronize your computer.
 	 */
-	static void		syncUniTimeFromService ();
+	static void				syncUniTimeFromService ();
 
 	/// \internal used by the time service to set the universal time the first time
-	static void		setUniTime (uint64 uTime, uint64 lTime) { Sync = true; _SyncUniTime = uTime; _SyncLocalTime = lTime; }
+	static void				setUniTime (NLMISC::TTime uTime, NLMISC::TTime lTime) { Sync = true; _SyncUniTime = uTime; _SyncLocalTime = lTime; }
 	/// \internal
-	static void		setUniTime (uint64 uTime) { setUniTime (uTime, getLocalTime ()); }
+	static void				setUniTime (NLMISC::TTime uTime) { setUniTime (uTime, getLocalTime ()); }
 
-	static bool		Sync;				// true if the synchronization occured
+	static bool				Sync;				// true if the synchronization occured
 private:
 
-	static uint64	_SyncUniTime;		// time in millisecond when the universal time received
-	static uint64	_SyncLocalTime;		// time in millisecond when the syncro with universal time occured
+	static NLMISC::TTime	_SyncUniTime;		// time in millisecond when the universal time received
+	static NLMISC::TTime	_SyncLocalTime;		// time in millisecond when the syncro with universal time occured
 };
 
 } // NLNET

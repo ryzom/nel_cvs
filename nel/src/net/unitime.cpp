@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.1 2000/11/08 15:54:35 lecroart Exp $
+ * $Id: unitime.cpp,v 1.2 2000/11/10 16:58:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,16 +33,17 @@
 #include "nel/misc/time_nl.h"
 #include "nel/net/unitime.h"
 
+using namespace NLMISC;
 using namespace std;
 
 namespace NLNET
 {
 
-uint64 CUniTime::_SyncUniTime = 0;
-uint64 CUniTime::_SyncLocalTime = 0;
+TTime CUniTime::_SyncUniTime = 0;
+TTime CUniTime::_SyncLocalTime = 0;
 bool CUniTime::Sync = false;
 
-uint64 CUniTime::getUniTime ()
+TTime CUniTime::getUniTime ()
 {
 	if (!Sync)
 	{
@@ -62,7 +63,7 @@ void CUniTime::syncUniTimeFromService ()
 		server.connect( servaddr );
 
 		sint attempt = 0;
-		uint64 bestdelta = 0;
+		TTime bestdelta = 0;
 		while (attempt < 10)
 		{
 			CMessage msgout( "" );
@@ -72,13 +73,13 @@ void CUniTime::syncUniTimeFromService ()
 			server.send( msgout );
 
 			// before time
-			uint64 before = CTime::getLocalTime ();
+			TTime before = CTime::getLocalTime ();
 
 			// receive the answer
 			CMessage msgin( "", true );
 			server.receive ( msgin );
 
-			uint64 after = CTime::getLocalTime (), delta = after - before;
+			TTime after = CTime::getLocalTime (), delta = after - before;
 
 			nldebug ("*****  delta: %I64dms (best is %I64dms)", delta, bestdelta);
 
@@ -86,7 +87,7 @@ void CUniTime::syncUniTimeFromService ()
 			{
 				bestdelta = delta;
 
-				uint64 time;
+				TTime time;
 				msgin.serial (time);
 				CUniTime::setUniTime (time, (before+after)/2);
 

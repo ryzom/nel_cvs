@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.1 2000/11/08 15:54:35 lecroart Exp $
+ * $Id: time_nl.cpp,v 1.2 2000/11/10 16:58:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@
 namespace NLMISC
 {
 
-uint64 CTime::getLocalTime ()
+TTime CTime::getLocalTime ()
 {
 #ifdef NL_OS_WINDOWS
 	return timeGetTime ();

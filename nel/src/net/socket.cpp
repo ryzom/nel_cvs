@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.22 2000/11/10 10:06:24 cado Exp $
+ * $Id: socket.cpp,v 1.23 2000/11/10 16:58:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,7 +121,7 @@ void CSocket::send( CMessage& message ) throw(ESocket)
  */
 bool CSocket::dataAvailable() throw (ESocket)
 {
-	if ( dataAvailable() ) // true if a CMsgSocket object has just tested positively the socket
+	if ( dataAvailableFlag() ) // true if a CMsgSocket object has just tested positively the socket
 	{
 		return true;
 	}

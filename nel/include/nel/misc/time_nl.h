@@ -1,7 +1,7 @@
 /** \file time_nl.h
  * CTime class
  *
- * $Id: time_nl.h,v 1.1 2000/11/08 15:54:35 lecroart Exp $
+ * $Id: time_nl.h,v 1.2 2000/11/10 16:58:34 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,10 @@
 namespace NLMISC
 {
 
+/// Time type
+typedef uint64 TTime;
+
+
 /**
  * This class provide a independant local time system.
  * \author Vianney Lecroart
@@ -44,8 +48,9 @@ public:
 	/** get the time in millisecond. It's a \b local time, it means that the value
 	 * is \b different on 2 differents computers. Use the CUniTime to get a universal
 	 * time that is the same on all computers.
+	 * \warning On Windows, the value is on 32 bits only.
 	 */
-	static uint64	getLocalTime ();
+	static TTime	getLocalTime ();
 };
 
 } // NLMISC

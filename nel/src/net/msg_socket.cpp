@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.23 2000/11/10 10:06:24 cado Exp $
+ * $Id: msg_socket.cpp,v 1.24 2000/11/10 16:58:35 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -427,7 +427,7 @@ void CMsgSocket::update()
 							}
 						}
 						// Reset flag
-						(*ilps)->setDataAvailable( false );
+						(*ilps)->setDataAvailableFlag( false );
 					}
 					catch ( ESocket& )
 					{
@@ -501,7 +501,7 @@ void CMsgSocket::handleConnectionClosure( const CConnections::iterator& ilps )
 	if ( (*ilps)->connected() ) // if not, connection closure has already been handled
 	{
 		(*ilps)->close();
-		(*ilps)->setDataAvailable( false );
+		(*ilps)->setDataAvailableFlag( false );
 		(*ilps)->disable();
 		CMessage msg( "D" );
 		processReceivedMessage( msg, **ilps );
@@ -568,7 +568,7 @@ bool CMsgSocket::getDataAvailableStatus()
 		// Get results
 		for ( itps = _Connections.begin(); itps!=_Connections.end(); itps++ )
 		{
-			(*itps)->setDataAvailable( FD_ISSET( (*itps)->descriptor(), &readers ) != 0 );
+			(*itps)->setDataAvailableFlag( FD_ISSET( (*itps)->descriptor(), &readers ) != 0 );
 		}
 		return true;
 	}

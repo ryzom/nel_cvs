@@ -1,7 +1,7 @@
 /** \file texture_multi_file.cpp
  * <File description>
  *
- * $Id: texture_multi_file.cpp,v 1.3 2002/05/13 07:49:26 besson Exp $
+ * $Id: texture_multi_file.cpp,v 1.4 2002/05/16 12:28:04 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -58,6 +58,11 @@ void CTextureMultiFile::setFileName(uint index, const char *fileName)
 ///===========================================================	
 void CTextureMultiFile::doGenerate()
 {
+	if (_FileNames.empty())
+	{
+		makeDummy();
+		return;
+	}
 	uint usedTexture = _CurrSelectedTexture >= _FileNames.size() ? 0 : _CurrSelectedTexture;
 	
 	if (_FileNames[usedTexture].empty())

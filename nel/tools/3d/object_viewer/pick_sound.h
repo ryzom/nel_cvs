@@ -46,6 +46,7 @@ protected:
 	//{{AFX_MSG(CPickSound)
 	virtual BOOL OnInitDialog();
 	afx_msg void OnSelchange();
+	afx_msg void OnPlaySound();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -4,6 +4,7 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "pick_sound.h"
+#include "sound_system.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,6 +37,8 @@ void CPickSound::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CPickSound, CDialog)
 	//{{AFX_MSG_MAP(CPickSound)
 	ON_LBN_SELCHANGE(IDC_LIST1, OnSelchange)
+	ON_BN_CLICKED(IDC_BUTTON1, OnPlaySound)
+	ON_BN_CLICKED(IDC_PLAY_SOUND, OnPlaySound)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -66,4 +69,13 @@ void CPickSound::OnSelchange()
 	m_NameList.GetText(m_NameList.GetCurSel(), str);
 	_CurrName = str; 
 	
+}
+
+void CPickSound::OnPlaySound() 
+{
+	int curSel = m_NameList.GetCurSel();
+	if (curSel == LB_ERR) return;
+	CString sName;
+	m_NameList.GetText(curSel, sName);
+	CSoundSystem::play(std::string( (LPCTSTR) sName));	
 }

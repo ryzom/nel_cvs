@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.13 2001/03/06 18:16:59 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.14 2001/04/03 13:02:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,8 @@ CVertexBuffer::CVertexBuffer()
 	_Flags=0;
 	_Capacity=0;
 	_NbVerts=0;
+
+	_Touch= 0;
 }
 
 
@@ -68,6 +70,7 @@ CVertexBuffer	&CVertexBuffer::operator=(const CVertexBuffer &vb)
 	_NormalOff= vb._NormalOff;
 	_RGBAOff= vb._RGBAOff;
 	_SpecularOff= vb._SpecularOff;
+	_PaletteSkinOff= vb._PaletteSkinOff;
 
 	sint i;
 	for(i=0;i<IDRV_VF_MAXW;i++)
@@ -87,6 +90,8 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 {
 	uint	i;
 	uint	offset;
+
+	_Touch|= IDRV_VF_TOUCHED_VERTEX_FORMAT;
 
 	_VertexSize=0;
 	offset=0;
@@ -132,6 +137,13 @@ bool CVertexBuffer::setVertexFormat(uint32 flags)
 			_VertexSize+=2*sizeof(float);
 		}
 	}
+	if ( (flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN)
+	{
+		_Flags|=IDRV_VF_PALETTE_SKIN;
+		_PaletteSkinOff=_VertexSize;
+		_VertexSize+=sizeof(CPaletteSkin);
+	}
+
 	return(true);
 }
 
@@ -149,7 +161,11 @@ void CVertexBuffer::setNumVertices(uint32 n)
 	{
 		reserve(n);
 	}
-	_NbVerts=n;
+	if(_NbVerts != n)
+	{
+		_Touch|= IDRV_VF_TOUCHED_NUM_VERTICES;
+		_NbVerts=n;
+	}
 }
 
 // --------------------------------------------------
@@ -232,6 +248,21 @@ void* CVertexBuffer::getWeightPointer(uint idx, uint8 wgt)
 	ptr+=_WOff[wgt];
 
 	return ptr;
+}
+
+
+void* CVertexBuffer::getPaletteSkinPointer(uint idx)
+{
+	uint8*	ptr;
+
+	if ( (_Flags & IDRV_VF_PALETTE_SKIN) != IDRV_VF_PALETTE_SKIN )
+	{
+		return(NULL);
+	}
+	ptr=&(*_Verts.begin());
+	ptr+=_PaletteSkinOff;
+	ptr+=idx*_VertexSize;
+	return((void*)ptr);
 }
 
 
@@ -356,11 +387,32 @@ void CVertexBuffer::setWeight(uint idx, uint8 wgt, float w)
 	*ptrf=w;
 }
 
+// --------------------------------------------------
+
+void	CVertexBuffer::setPaletteSkin(uint idx, CPaletteSkin ps)
+{
+	uint8*	ptr;
+	CPaletteSkin	*pPalSkin;
+
+	nlassert((_Flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN);
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_PaletteSkinOff;
+	pPalSkin= (CPaletteSkin*)ptr;
+	*pPalSkin= ps;
+}
+
 
 //****************************************************************************
 void		CVertexBuffer::serial(NLMISC::IStream &f)
 {
-	sint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- PaletteSkin version.
+	Version 0:
+		- base verison.
+	*/
+	sint	ver= f.serialVersion(1);
 
 	// Serial VBuffers format/size.
 	//=============================
@@ -422,8 +474,22 @@ void		CVertexBuffer::serial(NLMISC::IStream &f)
 				f.serial(w);
 			}
 		}
+		// CPaletteSkin (version 1+ only).
+		if(ver>=1 && (_Flags & IDRV_VF_PALETTE_SKIN) == IDRV_VF_PALETTE_SKIN )
+		{
+			CPaletteSkin	&ps= *(CPaletteSkin*)getPaletteSkinPointer(id);
+			f.serial(ps);
+		}
+
 	}
 }
+
+// CPaletteSkin serial (no version chek).
+void	CPaletteSkin::serial(NLMISC::IStream &f)
+{
+	f.serial(MatrixId[0], MatrixId[1], MatrixId[2], MatrixId[3]);
+}
+
 
 
 }

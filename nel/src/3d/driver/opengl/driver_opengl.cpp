@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.80 2001/04/03 07:54:51 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.81 2001/04/03 13:02:56 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -147,6 +147,17 @@ CDriverGL::CDriverGL()
 	_Initialized = false;
 
 	_FogEnabled= false;
+
+
+	_MatrixSetupDirty= false;
+	_ModelViewMatrixDirty.resize(MaxModelMatrix);
+	_ModelViewMatrixDirty.clearAll();
+	_ModelViewMatrixDirtyPaletteSkin.resize(MaxModelMatrix);
+	_ModelViewMatrixDirtyPaletteSkin.clearAll();
+	
+
+	_PaletteSkinHard= false;
+	_CurrentNormalize= false;
 }
 
 
@@ -413,6 +424,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 #endif // NL_OS_WINDOWS
 
 
+	// Driver caps.
+	//=============
+
 	// Retrieve the extensions for the current context.
 	NL3D::registerGlExtensions(_Extensions);
 	// Check required extensions!!
@@ -426,6 +440,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	{
 		nlwarning("Missing Important GL extension: GL_EXT_texture_env_combine => All envcombine are setup to GL_MODULATE!!!");
 	}
+
+	// skinning in hard??
+	// TODO_HARDWARE_SKINNIG:
+	_PaletteSkinHard= false;
 
 
 	// Init OpenGL/Driver defaults.
@@ -449,6 +467,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_TEXTURE_2D);
 	glDepthFunc(GL_LEQUAL);
+	glDisable(GL_NORMALIZE);
+
+	_CurrentNormalize= false;
+
 
 	// Activate the default texture environnments for all stages.
 	//===========================================================
@@ -514,7 +536,35 @@ bool CDriverGL::clearZBuffer(float zval)
 
 bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 {
-	// Do not create any drv infos for now...
+	// 1. Retrieve/Create driver shader.
+	//==================================
+	if (!VB.DrvInfos)
+	{
+		VB.DrvInfos=new CVBDrvInfosGL;
+		// insert into driver list. (so it is deleted when driver is deleted).
+		_VBDrvInfos.push_back(VB.DrvInfos);
+	}
+	CVBDrvInfosGL	*vbInf= static_cast<CVBDrvInfosGL*>((IVBDrvInfos*)(VB.DrvInfos));
+
+	// 2. If necessary, do modifications.
+	//==================================
+	if( VB.getTouchFlags()!=0 )
+	{
+		// Software and Skinning: must allocate PostRender Vertices and normals.
+		if(!_PaletteSkinHard && (VB.getVertexFormat() & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN )
+		{
+			// Must reallocate post-rendered vertices/normals.
+			vbInf->SoftSkinVertices.resize(VB.getNumVertices());
+			// Normals onli if nomal enabled.
+			if(VB.getVertexFormat() & IDRV_VF_NORMAL)
+				vbInf->SoftSkinNormals.resize(VB.getNumVertices());
+		}
+
+		// OK!
+		VB.resetTouchFlags();
+	}
+
+
 	return true;
 }
 
@@ -528,16 +578,167 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	if (VB.getNumVertices()==0)
 		return true;
 
-	glEnable(GL_VERTEX_ARRAY);
-	glVertexPointer(3,GL_FLOAT,VB.getVertexSize(),VB.getVertexCoordPointer());
-
+	// Get VB flags, to setup matrixes and arrays.
 	flags=VB.getVertexFormat();
+	// Get VB drv infos.
+	CVBDrvInfosGL	*vbInf= static_cast<CVBDrvInfosGL*>((IVBDrvInfos*)(VB.DrvInfos));
 
-	// disble vertex weight
+
+	// Skin mode.
+	// NB: this test either if palette skin is enabled, or normal skinning is enabled.
+	bool	skinning= (flags & IDRV_VF_PALETTE_SKIN)!=0;
+	// NB: this test if palette skin is enabled.
+	bool	paletteSkinning= (flags & IDRV_VF_PALETTE_SKIN)==IDRV_VF_PALETTE_SKIN;
+
+
+	// 0. Setup Matrixes.
+	//===================
+	// Just to inform render*() that Matrix mode is OK.
+	_MatrixSetupDirty= false;
+
+
+	// No Skinning at all??. 
+	//==============
+	if ( !skinning )
+	{
+		if(_ModelViewMatrixDirty[0])
+		{
+			_ModelViewMatrixDirty.clear(0);
+			// By default, the first model matrix is active
+			glLoadMatrixf( _ModelViewMatrix[0].get() );
+		}
+	}
+	// Palette Skinning??
+	//==============
+	else if ( paletteSkinning )
+	{
+		if(_PaletteSkinHard)
+		{
+			// TODO_HARDWARE_SKINNIG: setup vertex program.
+			// NB: must test _ModelViewMatrixDirtyPaletteSkin...
+		}
+		else
+		{
+			// setup identity
+			glLoadMatrixf(CMatrix::Identity.get());
+			
+			// NB: software: no need to test Model View Matrixes flags (_ModelViewMatrixDirtyPaletteSkin).
+
+			// compute skinning on vertices.
+			computeSoftwareVertexSkinning((uint8*)VB.getVertexCoordPointer(), VB.getPaletteSkinOff(), VB.getWeightOff(0), 
+				VB.getVertexSize(), &(*vbInf->SoftSkinVertices.begin()), VB.getNumVertices());
+			// compute skinning on normals (if any).
+			if(flags & IDRV_VF_NORMAL)
+			{
+				computeSoftwareNormalSkinning((uint8*)VB.getVertexCoordPointer(), VB.getNormalOff(), VB.getPaletteSkinOff(), VB.getWeightOff(0), 
+					VB.getVertexSize(), &(*vbInf->SoftSkinNormals.begin()), VB.getNumVertices());
+			}
+		}
+	}
+	// Non Paletted skinning.
+	//==============
+	else
+	{
+		// TODO_SOFTWARE_SKINNIG: We must make the skinning by software. (maybe one day :) ).
+		// TODO_HARDWARE_SKINNIG: we must make the skinning by hardware (Radeon, NV20 vertexprogram).
+
+		// For now, even if weight number is better than 2, do the skinning in EXTVertexWeighting 2 matrix (if possible)
+
+		// Choose an extension to setup a second matrix
+		if (_Extensions.EXTVertexWeighting)
+		{
+			if(_ModelViewMatrixDirty[0])
+			{
+				_ModelViewMatrixDirty.clear(0);
+				// By default, the first model matrix is active
+				glLoadMatrixf( _ModelViewMatrix[0].get() );
+			}
+
+			if(_ModelViewMatrixDirty[1])
+			{
+				_ModelViewMatrixDirty.clear(1);
+				// Active the second model matrix
+				glMatrixMode(GL_MODELVIEW1_EXT);
+				// Set it
+				glLoadMatrixf( _ModelViewMatrix[1].get() );
+				// Active first model matrix
+				glMatrixMode(GL_MODELVIEW);
+			}
+		}
+		// else nothing!!!
+	}
+
+
+
+	// 1. Special Normalize.
+	//======================
+	// NB: must enable GL_NORMALIZE when skinning is enabled or when ModelView has scale.
+	if(skinning || _ModelViewMatrix[0].hasScalePart())
+	{
+		if(!_CurrentNormalize)
+		{
+			_CurrentNormalize= true;
+			glEnable(GL_NORMALIZE);
+		}
+	}
+	else
+	{
+		if(_CurrentNormalize)
+		{
+			_CurrentNormalize= false;
+			glDisable(GL_NORMALIZE);
+		}
+	}
+
+
+
+	// 2. Setup Arrays.
+	//===================
+
+
+	// Setup Vertex / Normal.
+	//=======================
+	// if software palette skinning: setup correct Vertex/Normal array.
+	if(paletteSkinning && !_PaletteSkinHard)
+	{
+		// Must point on computed Vertex/Normal array.
+		glEnable(GL_VERTEX_ARRAY);
+		// array is compacted.
+		glVertexPointer(3,GL_FLOAT,0,&(*vbInf->SoftSkinVertices.begin()));
+
+		// Check for normal param in vertex buffer
+		if (flags & IDRV_VF_NORMAL)
+		{
+			glEnableClientState(GL_NORMAL_ARRAY);
+			// array is compacted.
+			glNormalPointer(GL_FLOAT,0,&(*vbInf->SoftSkinNormals.begin()));
+		}
+		else
+			glDisableClientState(GL_NORMAL_ARRAY);
+	}
+	else
+	{
+		glEnable(GL_VERTEX_ARRAY);
+		glVertexPointer(3,GL_FLOAT,VB.getVertexSize(),VB.getVertexCoordPointer());
+
+		// Check for normal param in vertex buffer
+		if (flags & IDRV_VF_NORMAL)
+		{
+			glEnableClientState(GL_NORMAL_ARRAY);
+			glNormalPointer(GL_FLOAT,VB.getVertexSize(),VB.getNormalCoordPointer());
+		}
+		else
+			glDisableClientState(GL_NORMAL_ARRAY);
+	}
+
+
+	// Setup Vertex Weight.
+	//=======================
+	// disable vertex weight
 	bool disableVertexWeight=_Extensions.EXTVertexWeighting;
 
-	// Check for some weight param in vertex buffer
-	if (flags & (IDRV_VF_W[0]|IDRV_VF_W[1]|IDRV_VF_W[2]|IDRV_VF_W[3]))
+	// if skinning not paletted...
+	if ( skinning && !paletteSkinning)
 	{
 		// 4 weights ?
 		if (flags & IDRV_VF_W[3])
@@ -579,6 +780,9 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	if (disableVertexWeight)
 		glDisable (GL_VERTEX_WEIGHTING_EXT);
 
+
+	// Setup Color / UV.
+	//==================
 	// Check for color param in vertex buffer
 	if (flags & IDRV_VF_COLOR)
 	{
@@ -587,15 +791,6 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 	}
 	else
 		glDisableClientState(GL_COLOR_ARRAY);
-
-	// Check for normal param in vertex buffer
-	if (flags & IDRV_VF_NORMAL)
-	{
-		glEnableClientState(GL_NORMAL_ARRAY);
-		glNormalPointer(GL_FLOAT,VB.getVertexSize(),VB.getNormalCoordPointer());
-	}
-	else
-		glDisableClientState(GL_NORMAL_ARRAY);
 
 	// Active UVs.
 	for(sint i=0; i<getNbTextureStages(); i++)
@@ -610,6 +805,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	}
 
+
 	return true;
 }
 
@@ -617,6 +813,9 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 
 bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 {
+	// Check user code :)
+	nlassert(!_MatrixSetupDirty);
+
 	if ( !setupMaterial(Mat) )
 		return false;
 	
@@ -634,6 +833,9 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 // --------------------------------------------------
 void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 {
+	// Check user code :)
+	nlassert(!_MatrixSetupDirty);
+
 	if ( !setupMaterial(Mat) )
 		return;
 	if(ntris!=0)
@@ -688,6 +890,14 @@ uint CDriverGL::getNumMatrix()
 	else
 		return 1;
 }
+
+// --------------------------------------------------
+
+bool	CDriverGL::supportPaletteSkinning()
+{
+	return _PaletteSkinHard;
+}
+
 
 // --------------------------------------------------
 
@@ -1045,6 +1255,92 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 	col[3]= color.A/255.0f;
 
 	glFogfv(GL_FOG_COLOR, col);
+}
+
+
+// ***************************************************************************
+void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, uint paletteSkinOff, uint weightOff, uint srcStride, CVector *pDst, uint size)
+{
+	CMatrix		*pMat;
+
+	// TODO_OPTIMIZE: SSE verion...
+
+	for(;size>0;size--)
+	{
+		CVector			*srcVec= (CVector*)pSrc;
+		CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + paletteSkinOff);
+		float			*srcWgt= (float*)(pSrc + weightOff);
+
+		// checks indices.
+		nlassert(srcPal->MatrixId[0]<IDriver::MaxModelMatrix);
+		nlassert(srcPal->MatrixId[1]<IDriver::MaxModelMatrix);
+		nlassert(srcPal->MatrixId[2]<IDriver::MaxModelMatrix);
+		nlassert(srcPal->MatrixId[3]<IDriver::MaxModelMatrix);
+
+
+		// Sum influences.
+		pDst->set(0,0,0);
+
+		// 0th matrix influence.
+		pMat= _ModelViewMatrix + srcPal->MatrixId[0];
+		*pDst+= pMat->mulPoint(*srcVec) * srcWgt[0];
+		// 1th matrix influence.
+		pMat= _ModelViewMatrix + srcPal->MatrixId[1];
+		*pDst+= pMat->mulPoint(*srcVec) * srcWgt[1];
+		// 2th matrix influence.
+		pMat= _ModelViewMatrix + srcPal->MatrixId[2];
+		*pDst+= pMat->mulPoint(*srcVec) * srcWgt[2];
+		// 3th matrix influence.
+		pMat= _ModelViewMatrix + srcPal->MatrixId[3];
+		*pDst+= pMat->mulPoint(*srcVec) * srcWgt[3];
+
+		// Next vertex.
+		pSrc+= srcStride;
+		pDst++;
+	}
+}
+
+
+// ***************************************************************************
+void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, uint normalOff, uint paletteSkinOff, uint weightOff, uint srcStride, CVector *pDst, uint size)
+{
+	CMatrix		*pMat;
+
+	// TODO_OPTIMIZE: SSE verion...
+
+	for(;size>0;size--)
+	{
+		CVector			*srcNormal= (CVector*)(pSrc + normalOff);
+		CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + paletteSkinOff);
+		float			*srcWgt= (float*)(pSrc + weightOff);
+
+		// checks indices.
+		nlassert(srcPal->MatrixId[0]<IDriver::MaxModelMatrix);
+		nlassert(srcPal->MatrixId[1]<IDriver::MaxModelMatrix);
+		nlassert(srcPal->MatrixId[2]<IDriver::MaxModelMatrix);
+		nlassert(srcPal->MatrixId[3]<IDriver::MaxModelMatrix);
+
+		
+		// Sum influences.
+		pDst->set(0,0,0);
+
+		// 0th matrix influence.
+		pMat= _ModelViewMatrix + srcPal->MatrixId[0];
+		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[0];
+		// 1th matrix influence.
+		pMat= _ModelViewMatrix + srcPal->MatrixId[1];
+		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[1];
+		// 2th matrix influence.
+		pMat= _ModelViewMatrix + srcPal->MatrixId[2];
+		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[2];
+		// 3th matrix influence.
+		pMat= _ModelViewMatrix + srcPal->MatrixId[3];
+		*pDst+= pMat->mulVector(*srcNormal) * srcWgt[3];
+
+		// Next vertex.
+		pSrc+= srcStride;
+		pDst++;
+	}
 }
 
 

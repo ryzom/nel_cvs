@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.4 2001/03/06 18:16:59 corvazier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.5 2001/04/03 13:02:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,8 @@ void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 	// Optimize it...
 	changeBasis*= mtx;
 	_ViewMtx=changeBasis;
+
+	_MatrixSetupDirty= true;
 }
 
 CMatrix CDriverGL::getViewMatrix(void) const
@@ -75,37 +77,18 @@ CMatrix CDriverGL::getViewMatrix(void) const
 void CDriverGL::setupModelMatrix(const CMatrix& mtx, uint8 n)
 {
 	// Check args
-	nlassert ((n==0)||(n==1));		// Only support for 1 or 2 matrices.
+	nlassert (n<IDriver::MaxModelMatrix);
 
-	// Put the matrix in the opengl world
-	CMatrix tmp;
-	tmp=_ViewMtx*mtx;
 
-	if (n==0)
-	{
-		// By default, the first model matrix is active
-		glLoadMatrixf( tmp.get() );
-	}
-	else	// n>0
-	{
-		// Choose an extension to setup a second matrix
-		if (_Extensions.EXTVertexWeighting)
-		{
-			// Active the second model matrix
-			glMatrixMode(GL_MODELVIEW1_EXT);
+	// Dirt flags.
+	_MatrixSetupDirty= true;
+	// because we don't know for which (skin/normal/paletteSkin) mode this will be used, we must set the 2 flags.
+	_ModelViewMatrixDirty.set(n);
+	_ModelViewMatrixDirtyPaletteSkin.set(n);
 
-			// Set it
-			glLoadMatrixf( tmp.get() );
 
-			// Active first model matrix
-			glMatrixMode(GL_MODELVIEW);
-		}
-		else
-		{
-			// TODO_SOFTWARE_SKINNIG: We must make the skinning by software.
-			// TODO_HARDWARE_SKINNIG: we must make the skinning by hardware (Radeon, NV20).
-		}
-	}
+	// Put the matrix in the opengl world, and store it.
+	_ModelViewMatrix[n]= _ViewMtx*mtx;
 }
 
 } // NL3D

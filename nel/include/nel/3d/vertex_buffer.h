@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.5 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: vertex_buffer.h,v 1.6 2001/04/03 13:02:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,8 +62,21 @@ public:
 	virtual ~IVBDrvInfos() {};
 };
 
-// --------------------------------------------------
 
+// ***************************************************************************
+/** Describe index for palette skinning.
+ * Id must be in range [0, IDriver::MaxModelMatrix [
+ */
+struct	CPaletteSkin
+{
+	uint8	MatrixId[4];
+
+	void	serial(NLMISC::IStream &f);
+};
+
+
+// ***************************************************************************
+// Vertex Format
 const uint32	IDRV_VF_MAXW		=	4;
 const uint32	IDRV_VF_MAXSTAGES	=	8;
 const uint32	IDRV_VF_XYZ			=	0x00000001;
@@ -72,6 +85,12 @@ const uint32	IDRV_VF_NORMAL		=	0x00000020;
 const uint32	IDRV_VF_COLOR		=	0x00000040;
 const uint32	IDRV_VF_SPECULAR	=	0x00000080;
 const uint32	IDRV_VF_UV[IDRV_VF_MAXSTAGES]	= { 0x00000100,0x00000200,0x00000400,0x00000800,0x00001000,0x00002000,0x00004000,0x00008000 };
+const uint32	IDRV_VF_PALETTE_SKIN=  0x00010000 | IDRV_VF_W[0] | IDRV_VF_W[1] | IDRV_VF_W[2] | IDRV_VF_W[3];
+
+// Touch Flags.
+const uint32	IDRV_VF_TOUCHED_VERTEX_FORMAT	=	0x00000001;
+const uint32	IDRV_VF_TOUCHED_NUM_VERTICES	=	0x00000002;
+
 
 /**
  * <Class description>
@@ -96,11 +115,17 @@ private:
 	uint					_RGBAOff;
 	uint					_SpecularOff;
 	uint					_UVOff[IDRV_VF_MAXSTAGES];
+	uint					_PaletteSkinOff;
+
+	uint					_Touch;
 
 public:
-	// Private. For Driver only.
+	// \name Private. For Driver only.
+	// @{
 	CRefPtr<IVBDrvInfos>	DrvInfos;
-
+	uint					getTouchFlags() const {return _Touch;}
+	void					resetTouchFlags() {_Touch= 0;}
+	// @}
 
 public:
 	CVertexBuffer(void);
@@ -135,6 +160,7 @@ public:
 	void					setColor(uint idx, CRGBA rgba);
 	void					setSpecular(uint idx, CRGBA rgba);
 	void					setWeight(uint idx, uint8 wgt, float w);
+	void					setPaletteSkin(uint idx, CPaletteSkin ps);
 
 
 	// It is an error (assert) to query a vertex offset of a vertex component not setuped in setVertexFormat().
@@ -143,7 +169,9 @@ public:
 	sint					getTexCoordOff(uint8 stage=0) const  {nlassert(_Flags & IDRV_VF_UV[stage]); return _UVOff[stage];}
   	sint					getColorOff() const {nlassert(_Flags & IDRV_VF_COLOR); return _RGBAOff;}
 	sint					getSpecularOff() const {nlassert(_Flags & IDRV_VF_SPECULAR); return _SpecularOff;}
+	/// NB: it is ensured that   WeightOff(i)==WeightOff(0)+i*sizeof(float).
 	sint					getWeightOff(sint wgt) const {nlassert(_Flags & IDRV_VF_W[wgt]); return _WOff[wgt];}
+	sint					getPaletteSkinOff() const {nlassert(_Flags & IDRV_VF_PALETTE_SKIN); return _PaletteSkinOff;}
 
 
 	void*					getVertexCoordPointer(uint idx=0);
@@ -152,6 +180,7 @@ public:
 	void*					getColorPointer(uint idx=0);
 	void*					getSpecularPointer(uint idx=0);
 	void*					getWeightPointer(uint idx=0, uint8 wgt=0);
+	void*					getPaletteSkinPointer(uint idx=0);
 
 
 	void		serial(NLMISC::IStream &f);

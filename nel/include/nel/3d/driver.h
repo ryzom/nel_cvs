@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.57 2001/03/06 18:24:22 corvazier Exp $
+ * $Id: driver.h,v 1.58 2001/04/03 13:02:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,6 +133,15 @@ public:
 	  */
 	enum TPolygonMode { Filled=0, Line, Point };
 
+
+	/**
+	  * Driver Max matrix count.
+	  *
+	  * \see setupModelMatrix()
+	  */
+	enum TMatrixCount { MaxModelMatrix= 16 };
+
+
 protected:
 	TTexDrvInfoPtrMap		_TexDrvInfos;
 	TTexDrvSharePtrList		_TexDrvShares;
@@ -175,19 +184,35 @@ public:
 	// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective=true)=0;
 
+	/** setup the view matrix (inverse of camera matrix).
+	 *
+	 * NB: you must setupViewMatrix() BEFORE setupModelMatrix(), or else undefined results.
+	 */
 	virtual void			setupViewMatrix(const CMatrix& mtx)=0;
 
+	/** setup a model matrix. IDdriver::MaxModelMatrix (16) can be setuped.
+	 * The 0th model matrix is the principal one. Others are only usefull fro skinning (see CVertexBuffer).
+	 *
+	 * NB: you must setupModelMatrix() AFTER setupViewMatrix(), or else undefined results.
+	 */
 	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0)=0;
 
 	virtual CMatrix			getViewMatrix(void)const=0;
 
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
 
+	/** render a block of primitive with previously setuped VertexBuffer / Matrixes.
+	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
+	 */
 	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat)=0;
 
-	// Usefull for landscape....
+	/** render a list of triangles with previously setuped VertexBuffer / Matrixes.
+	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
+	 * NB: this is usefull for landscape....
+	 */
 	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)=0;
 
+	/// Swap the back and front buffers.
 	virtual bool			swapBuffers(void)=0;
 
 	/**
@@ -196,9 +221,19 @@ public:
 	  * If the user uses a model with a greater count of matrices than the hardware can support,
 	  * the skinning will be made in software.
 	  *
-	  * For the time, driver opengl supports 2 matrices in hardware on Geforce.
+	  * For the time, driver opengl supports 2 matrices in hardware on Geforce, and implement nothing in software.
+	  * (Use paletted skinning instead)
 	  */
 	virtual uint			getNumMatrix()=0;
+
+	/**
+	  * Returns true if the hardware support PaletteSkinning.
+	  * NeL will support 4 matrices by vertices, and up to IDriver::MaxModelMatrix (16) model matrixes.
+	  * If the user uses PaletteSkinning while the hardware does not support it, 
+	  * the skinning will be made in software.
+	  */
+	virtual bool			supportPaletteSkinning()=0;
+
 
 	/// \name Fog support.
 	// @{

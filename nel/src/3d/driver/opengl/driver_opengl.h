@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.51 2001/03/06 18:24:22 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.52 2001/04/03 13:02:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,10 +47,12 @@
 #include "nel/3d/driver.h"
 #include "nel/3d/material.h"
 #include "nel/3d/shader.h"
+#include "nel/3d/vertex_buffer.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/event_emitter.h"
+#include "nel/misc/bit_set.h"
 
 #ifdef NL_OS_WINDOWS
 #include "nel/misc/win_event_emitter.h"
@@ -85,6 +87,19 @@ public:
 	~CTextureDrvInfosGL();
 };
 
+
+
+// --------------------------------------------------
+
+class CVBDrvInfosGL : public IVBDrvInfos
+{
+public:
+	// Software Skinning: post-rendered vertices/normales.
+	std::vector<CVector>	SoftSkinVertices;
+	std::vector<CVector>	SoftSkinNormals;
+
+	CVBDrvInfosGL() {}
+};
 
 // --------------------------------------------------
 
@@ -167,6 +182,8 @@ public:
 
 	virtual uint			getNumMatrix();
 
+	virtual bool			supportPaletteSkinning();
+
 	virtual bool			release();
 
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
@@ -244,11 +261,29 @@ private:
 
 	bool					_Initialized;
 
+	/// \name Driver Caps.
+	// @{
 	// OpenGL extensions Extensions.
 	CGlExtensions			_Extensions;
+	// Say if palette skinning can be done in Hardware
+	bool					_PaletteSkinHard;
+	// @}
 
-	// Current View matrix.
+
+	// To know if matrix setup has been changed from last activeVertexBuffer() (any call to setupViewMatrix() / setupModelMatrix()).
+	bool					_MatrixSetupDirty;
+	// for each model matrix, a flag to know if setuped.
+	NLMISC::CBitSet			_ModelViewMatrixDirty;
+	// same flag, but for palette Skinning (because they don't share same setup).
+	NLMISC::CBitSet			_ModelViewMatrixDirtyPaletteSkin;
+
+
+	// Current (OpenGL basis) View matrix.
 	CMatrix					_ViewMtx;
+
+	// Current computed (OpenGL basis) ModelView matrix.
+	CMatrix					_ModelViewMatrix[MaxModelMatrix];
+
 
 	// Fog.
 	bool					_FogEnabled;
@@ -257,6 +292,7 @@ private:
 	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
 	CMaterial*				_CurrentMaterial;
 	CMaterial::CTexEnv		_CurrentTexEnv[IDRV_MAT_MAXTEXTURES];
+	bool					_CurrentNormalize;
 
 private:
 	bool					setupVertexBuffer(CVertexBuffer& VB);
@@ -270,6 +306,12 @@ private:
 
 	// Clip the wanted rectangle with window. return true if rect is not NULL.
 	bool					clipRect(NLMISC::CRect &rect);
+
+
+	// software skinning.
+	void			computeSoftwareVertexSkinning(uint8 *pSrc, uint paletteSkinOff, uint weightOff, uint srcStride, CVector *pVertexDst, uint size);
+	void			computeSoftwareNormalSkinning(uint8 *pSrc, uint normalOff, uint paletteSkinOff, uint weightOff, uint srcStride, CVector *pNormalDst, uint size);
+
 };
 
 } // NL3D

@@ -77,12 +77,18 @@ echo "ZoneRegionFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> land_expor
 
 # rename *.zonel *.zone
 
-dir_current=`pwd`
 cd output
-list_zonel=`ls -1 *.zonel`
-for filename in $list_zonel ; do
-	new_filename=`echo $filename|sed -e 's/zonel/zone/g'`
-	mv $filename $new_filename
-	echo "renaming $filename $new_filename"
-done
-cd $dir_current
+../sh/renametozone.bat
+cd ..
+
+# script is just too slow to do renaming...
+
+#dir_current=`pwd`
+#cd output
+#list_zonel=`ls -1 *.zonel`
+#for filename in $list_zonel ; do
+#	new_filename=`echo $filename|sed -e 's/zonel/zone/g'`
+#	mv $filename $new_filename
+#	echo "renaming $filename $new_filename"
+#done
+#cd $dir_current

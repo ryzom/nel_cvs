@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.4 2000/12/04 10:13:09 corvazier Exp $
+ * $Id: dru.h,v 1.5 2000/12/05 16:50:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,11 @@ class	CDRU
 {
 public:
 	
+	/// Draw a bitmap 2D. Warning: this is slow...
 	static void			drawBitmap (float x, float y, float width, float height, class ITexture& texture, IDriver& driver, CViewport viewport=CViewport());
+
+	/// Draw a line in 2D. Warning: this is slow...
+	static void			drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col= CRGBA(255,255,255,255), CViewport viewport=CViewport());
 
 	/// Portable Function which create a GL Driver (using gl dll...).
 	static IDriver		*createGlDriver() throw(EDru);

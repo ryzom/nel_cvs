@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.3 2000/11/17 14:57:33 coutelas Exp $
+ * $Id: primitive_block.cpp,v 1.4 2000/12/05 16:51:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,44 @@
 namespace NL3D
 {
 
+
+
+// --------------------------------------------------
+
+uint32* CPrimitiveBlock::getLinePointer(void)
+{
+	if(_Line.begin()==_Line.end())
+		return NULL;
+	else
+		return(&(*_Line.begin()));
+}
+
+
+void				CPrimitiveBlock::reserveLine(uint32 n)
+{
+	_Line.resize(n*3);
+	_LineCapacity= n;
+}
+void				CPrimitiveBlock::setNumLine(uint32 n)
+{
+	if(_LineCapacity<n)
+	{
+		reserveLine(n);
+	}
+	_NbLines= n;
+}
+void				CPrimitiveBlock::setLine(uint lineIdx, uint32 vidx0, uint32 vidx1)
+{
+	uint32*	ptr;
+
+	ptr=(uint32*)(&_Line[lineIdx*2]);
+	*ptr=vidx0;
+	ptr++;
+	*ptr=vidx1;
+}
+
+
+	
 // --------------------------------------------------
 
 
@@ -38,8 +76,6 @@ uint32* CPrimitiveBlock::getTriPointer(void)
 	else
 		return(&(*_Tri.begin()));
 }
-
-// --------------------------------------------------
 
 
 void				CPrimitiveBlock::reserveTri(uint32 n)
@@ -66,8 +102,6 @@ void				CPrimitiveBlock::setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 
 	ptr++;
 	*ptr=vidx2;
 }
-
-
 
 
 

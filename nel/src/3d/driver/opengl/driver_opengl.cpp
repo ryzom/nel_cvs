@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.26 2000/12/05 16:11:12 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.27 2000/12/05 16:51:11 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -356,6 +356,9 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 		glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
 	if(PB.getNumQuad()!=0)
 		glDrawElements(GL_QUADS,4*PB.getNumQuad(),GL_UNSIGNED_INT,PB.getQuadPointer());
+	if(PB.getNumLine()!=0)
+		glDrawElements(GL_LINES,2*PB.getNumLine(),GL_UNSIGNED_INT,PB.getLinePointer());
+
 	return(true);
 }
 

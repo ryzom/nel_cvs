@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.9 2000/12/05 10:39:45 corvazier Exp $
+ * $Id: dru.cpp,v 1.10 2000/12/05 16:51:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,34 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 	CPrimitiveBlock pb;
 	pb.setNumQuad (1);
 	pb.setQuad (0, 0, 1, 2, 3);
+
+	driver.render(pb, mat);
+}
+
+
+void	CDRU::drawLine (float x0, float y0, float x1, float y1, IDriver& driver, CRGBA col, CViewport viewport)
+{
+	CMatrix mtx;
+	mtx.identity();
+	driver.setupViewport (viewport);
+	driver.setupViewMatrix (mtx);
+	driver.setupModelMatrix (mtx);
+	driver.setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
+
+	CMaterial mat;
+	mat.initUnlit ();
+	mat.setColor(col);
+
+	CVertexBuffer vb;
+	vb.setVertexFormat (IDRV_VF_XYZ);
+	vb.setNumVertices (2);
+	vb.setVertexCoord (0, CVector (x0, 0, y0));
+	vb.setVertexCoord (1, CVector (x1, 0, y1));
+	driver.activeVertexBuffer(vb);
+
+	CPrimitiveBlock pb;
+	pb.setNumLine (1);
+	pb.setLine (0, 0, 1);
 
 	driver.render(pb, mat);
 }

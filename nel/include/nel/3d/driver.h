@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvInfos and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.31 2000/12/05 16:10:45 lecroart Exp $
+ * $Id: driver.h,v 1.32 2000/12/05 16:50:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -275,6 +275,11 @@ private:
 	uint32				_QuadCapacity;
 	std::vector<uint32>	_Quad;
 
+	// Lines
+	uint32				_NbLines;
+	uint32				_LineCapacity;
+	std::vector<uint32>	_Line;
+
 	// Strip/Fans (todo later).
 	uint32				_StripIdx;
 	uint32*				_Strip;
@@ -285,6 +290,24 @@ public:
 						~CPrimitiveBlock(void) {}; 
 	
 	
+	// Lines. A line is 2 uint32.
+	
+	/// reserve space for nLines Line. You are allowed to write your Line indices on this space.
+	void				reserveLine(uint32 n);
+	/// Return the number of Line reserved.
+	uint32				capacityLine() {return _LineCapacity;}
+	/// Set the number of active Line. It enlarge Line capacity, if needed.
+	void				setNumLine(uint32 n);
+	/// Get the number of active Lineangles.
+	uint32				getNumLine(void) {return _NbLines;}
+
+	/// Build a Lineangle.
+	void				setLine(uint lineIdx, uint32 vidx0, uint32 vidx1);
+
+	uint32*				getLinePointer(void);
+
+
+
 	// Triangles. A triangle is 3 uint32.
 	
 	/// reserve space for nTris triangles. You are allowed to write your triangles indices on this space.
@@ -300,6 +323,7 @@ public:
 	void				setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2);
 
 	uint32*				getTriPointer(void);
+
 
 
 	// Quads (a quad is 4 uint32)

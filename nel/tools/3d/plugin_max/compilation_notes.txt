@@ -2,7 +2,7 @@
 * NeL plug-ins for 3DSMAX 3.1 compilation notes
 ************************************************
 
-* $Id: compilation_notes.txt,v 1.4 2001/08/06 08:07:43 corvazier Exp $
+* $Id: compilation_notes.txt,v 1.5 2001/08/06 08:22:30 corvazier Exp $
 
 ** DISTRIBUTION NOTES **
 
@@ -13,11 +13,13 @@ breach of the Gnu GPL.
 In English than means that you shouldn't distribute the plug-ins as binaries.
 You are, of course, free to distribute the source code.
 
+THIS PLUGIN HAVE BEEN TESTED ON 3DSMAX3.1 WITH CHARACTER STUDIO 3.
+
 ** VISUAL CONFIGURATION **
 
 This projects have been compiled with MS Visual c++ 6.
 
-You must have the 3dsmax 3.1 SDK installed.
+You must have the 3dsmax 3.1 SDK installed (by default, it is not).
 You must have the Character Studio 3 SDK installed.
 
 You must configure your compiler and add the following pathes:
@@ -26,6 +28,8 @@ You must configure your compiler and add the following pathes:
 /MAXSDK/include			to the include search path
 /MAXSDK/include/maxscrpt	to the include search path
 /CHARACTER_STUDIO_SDK		to the include search path
+
+The maxsdk is "c:\3dsmax3_1\maxsdk" on a standard installation.
 
 Put the 3dsmax sdk include directories before the Visual studio ones
 because there is some conflicts between them.
@@ -72,5 +76,11 @@ Thoses dll must go in the 3dsmax root directory. (ex: c:/3dsmax3_1)
 * nel_swt.ms
 
 Thoses scripts must go in the startup script dirctory. (ex: c:/3dsmax3_1/scripts/startup)
+
+** FUTURE WORKS **
+
+* We will add a macro define to remove the need of character studio to complile the plugins
+* Support for 3dsmax 4. If you compile succefully the plugin under the 4 version, write
+  to us.
 
 ** HAVE SOME FUN **

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.8 2004/05/28 15:49:47 vizerie Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.9 2004/06/02 16:33:59 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1254,7 +1254,18 @@ IDirect3DPixelShader9	*CDriverD3D::buildPixelShader (const CNormalShaderDesc &no
 	{
 		// Stage used ?
 		if (normalShaderDesc.StageUsed[i])
+		{			
+			#ifdef NL_DEBUG
+				CMaterial::CTexEnv texEnv;
+				texEnv.EnvPacked = normalShaderDesc.TexEnvMode[i];
+				nlassert(texEnv.Env.OpRGB != CMaterial::EMBM); // Pixel shader equivalent for EMBM not supported
+																				   // For now this is not a problem because
+																				   // buildPixelShader is used when the shader uses per stage color 
+																				   // (which is not always supported by the fixed pixel pipe),
+																				   // and currently all our shaders with EMBM don't use that feature. 
+			#endif
 			shaderText += "tex t"+toString (i)+";\n";
+		}
 	}
 	
 	// For each state, color operations

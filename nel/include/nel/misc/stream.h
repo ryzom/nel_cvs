@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.43 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: stream.h,v 1.44 2001/07/09 17:17:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -567,9 +567,8 @@ private:
 		{
 			for(sint i=0;i<len;i++)
 			{
-				__value_type	v;
-				serial(v);
-				cont.insert(cont.end(), v);
+				__iterator it = cont.insert(cont.end());
+				serial(const_cast<__value_type&>(*it));
 			}
 		}
 		else
@@ -846,10 +845,9 @@ private:
 			serial(len);
 			for(sint i=0;i<len;i++)
 			{
-				__value_type	v;
-				serial( const_cast<__key_type&>(v.first) );
-				serial(v.second);
-				cont.insert(cont.end(), v);
+				__iterator it = cont.insert(cont.end(), __value_type());
+				serial( const_cast<__key_type&>(it->first) );
+				serial(it->second);
 			}
 		}
 		else

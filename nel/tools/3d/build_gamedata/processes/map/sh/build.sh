@@ -101,7 +101,7 @@ for i in panoply/*.[tT][gG][aA] ; do
 done
 
 # Put old panoply in cache
+rm -r cache/* 2>> log.log
 rmdir cache 2>> log.log
-mkdir cache 2>> log.log
-mv panoply/* cache 2>> log.log
+mv panoply cache 2>> log.log
 mkdir panoply 2>> log.log

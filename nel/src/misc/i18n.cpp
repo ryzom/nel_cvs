@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.28 2003/03/05 15:15:41 boucher Exp $
+ * $Id: i18n.cpp,v 1.29 2003/03/06 11:08:40 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -245,14 +245,26 @@ void CI18N::setPath (const char* str)
 }
 */
 
-void CI18N::load (uint32 lid)
+void CI18N::load (const std::string &languageCode)
 {
-	nlassert (lid < _NbLanguages);
+//	nlassert (lid < _NbLanguages);
 //	nlassert (_LanguagesNamesLoaded);
 
-	std::string fileName  = _LanguageCodes[lid] + ".uxt";
+	for (uint i=0; i<_NbLanguages; ++i)
+	{
+		if (_LanguageCodes[i] == languageCode)
+			break;
+	}
 
-	_SelectedLanguage = lid;
+	if (i == _NbLanguages)
+	{
+		nlwarning("Unknow language code : %s, defaulting to %s", _LanguageCodes[0].c_str());
+		i = 0;
+	}
+
+	std::string fileName  = _LanguageCodes[i] + ".uxt";
+
+	_SelectedLanguage = i;
 
 	if (_StrMapLoaded)	_StrMap.clear ();
 	else				_StrMapLoaded = true;
@@ -446,7 +458,11 @@ const ucstring &CI18N::get (const std::string &label)
 
 	nlwarning("The string %s did not exist in language %s", label.c_str(), _LanguageCodes[_SelectedLanguage].c_str());
 
-	return _NotTranslatedValue;
+	static ucstring	badString;
+
+	badString = ucstring(std::string("<NotExist:")+label+">");
+
+	return badString;
 }
 /*
 const ucstring &CI18N::get (const char *str)

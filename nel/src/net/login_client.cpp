@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.cpp,v 1.6 2001/06/21 09:00:44 cado Exp $
+ * $Id: login_client.cpp,v 1.7 2001/07/02 11:44:18 lecroart Exp $
  *
  */
 
@@ -159,7 +159,8 @@ string CLoginClient::authenticate (const string &loginServiceAddr, const string 
 		_CallbackClient->update ();
 	}
 
-	if (!_CallbackClient->connected())
+	// have we received the answer?
+	if (!VerifyLoginPassword)
 	{
 		delete _CallbackClient;
 		_CallbackClient = NULL;
@@ -218,7 +219,8 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx
 		_CallbackClient->update ();
 	}
 
-	if (!_CallbackClient->connected())
+	// have we received the answer?
+	if (!ShardChooseShard)
 	{
 		delete _CallbackClient;
 		_CallbackClient = NULL;
@@ -263,7 +265,8 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx
 			cnx.update ();
 		}
 		
-		if (!cnx.connected()) return "FES disconnect me";
+		// have we received the answer?
+		if (!ShardValidate) return "FES disconnect me";
 	}
 	catch (ESocket &e)
 	{

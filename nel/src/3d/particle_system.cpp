@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.8 2001/05/09 14:33:35 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.9 2001/05/09 14:56:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -162,7 +162,7 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	}
 }
 
-void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	uint32 size ;
 	f.serialCheck((uint32) 'PSYS') ;

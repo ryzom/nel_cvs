@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.5 2001/05/09 14:31:02 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.6 2001/05/09 14:56:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

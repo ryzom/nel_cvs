@@ -657,6 +657,14 @@ SOURCE=..\include\nel\misc\window_displayer.h
 # End Group
 # Begin Source File
 
+SOURCE=.\misc\algo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\algo.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\bit_set.cpp
 # End Source File
 # Begin Source File

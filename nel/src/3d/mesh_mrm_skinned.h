@@ -1,9 +1,9 @@
 /** \file mesh_mrm_skinned.h
  * Optimised shape for skinned object with MRM, 1 UV coordinates, 1 to 4 skinning weight and 256 matrices
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
- * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
+ * Tangent space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.h,v 1.1 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: mesh_mrm_skinned.h,v 1.2 2003/12/22 13:01:05 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -483,7 +483,7 @@ public:
 			NLMISC::contReset (_PackedBuffer);
 		}
 
-		// Acces it
+		// Access it
 		const CPackedVertex	*getPackedVertices() const
 		{
 			if (_PackedBuffer.empty())
@@ -492,7 +492,7 @@ public:
 				return &(_PackedBuffer[0]);
 		}
 
-		// Acces it
+		// Access it
 		CPackedVertex	*getPackedVertices()
 		{
 			if (_PackedBuffer.empty())

@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.4 2001/11/21 16:01:32 vizerie Exp $
+ * $Id: texture_bump.cpp,v 1.5 2001/12/06 16:53:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,9 +30,9 @@ namespace NL3D {
 
 
 /// create a DsDt texture from a height map (red component of a rgba bitmap)
-static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest)
+static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest, bool absolute)
 {	
-	#define GET_HGT(x, y) ((sint) (src[(uint) (x) % width + ((uint) (y) % height) * width] & 0x00ff00) >> 8)
+	#define GET_HGT(x, y) ((sint) ((src[(uint) (x) % width + ((uint) (y) % height) * width] & 0x00ff00) >> 8))
 	sint x, y;	
 	for (x = 0; x < width; ++x)
 	{
@@ -41,8 +41,17 @@ static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest)
 			sint off = x + y * width;
 			sint16 ds = (sint16) (GET_HGT(x + 1, y) - GET_HGT(x - 1, y));
 			sint16 dt = (sint16) (GET_HGT(x, y + 1) - GET_HGT(x, y - 1));
-			*(sint8 *) &dest[off] = (sint8) (ds + 127);
-			((sint8 *) &dest[off])[1] = (sint8) (dt + 127);
+
+			if (!absolute)
+			{
+				*(sint8 *) &dest[off] = (sint8) (ds - 127);
+				((sint8 *) &dest[off])[1] = (sint8) (dt - 127);
+			}
+			else
+			{
+				*(sint8 *) &dest[off] = (sint8) abs(ds);
+				((sint8 *) &dest[off])[1] = (sint8) abs(dt);
+			}
 		}
 	}
 }
@@ -53,7 +62,7 @@ static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest)
 /*
  * Constructor
  */
-CTextureBump::CTextureBump() : _DisableSharing(false)
+CTextureBump::CTextureBump() : _DisableSharing(false), _UseAbsoluteOffsets(false)
 {
 	// mipmapping not supported for now, disable it
 	ITexture::setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
@@ -76,7 +85,7 @@ void CTextureBump::setHeightMap(ITexture *heightMap)
 
 void CTextureBump::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(0);
+	sint ver = f.serialVersion(1);
 	ITexture::serial(f);
 	ITexture *tex = NULL;	
 	if (f.isReading())
@@ -91,12 +100,20 @@ void CTextureBump::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialPolyPtr(tex);
 	}
 	f.serial(_DisableSharing);
+	if (ver > 0)
+	{
+		f.serial(_UseAbsoluteOffsets);
+	}
 }
 
 
 void CTextureBump::doGenerate()
 {	
-	nlassert(_HeightMap);
+	if (!_HeightMap)
+	{
+		makeDummy();
+		return;
+	}
 	// generate the height map
 	_HeightMap->generate();
 	if (!_HeightMap->convertToType(CBitmap::RGBA))
@@ -109,7 +126,7 @@ void CTextureBump::doGenerate()
 	uint height = _HeightMap->getHeight();
 	CBitmap::resize(_HeightMap->getWidth(), _HeightMap->getHeight(), CBitmap::DsDt);	
 	// build the DsDt map
-	BuildDsDt((uint32 *) &(_HeightMap->getPixels()[0]), width, height, (uint16 *) &(getPixels()[0]));
+	BuildDsDt((uint32 *) &(_HeightMap->getPixels()[0]), width, height, (uint16 *) &(getPixels()[0]), _UseAbsoluteOffsets);
 	if (_HeightMap->getReleasable())
 	{
 		_HeightMap->release();

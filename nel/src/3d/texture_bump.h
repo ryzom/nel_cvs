@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * <File description>
  *
- * $Id: texture_bump.h,v 1.3 2001/11/21 16:01:32 vizerie Exp $
+ * $Id: texture_bump.h,v 1.4 2001/12/06 16:53:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -63,6 +63,12 @@ public:
 	void					enableSharing(bool enabled = true) { _DisableSharing = !enabled; }
 
 	bool					isSharingEnabled() const { return !_DisableSharing; }
+
+	/// absolute offsets are taken from the gradient of the height map
+	void					setAbsoluteOffsets(bool use = true) { _UseAbsoluteOffsets = true; }
+	bool					getAbsoluteOffsets() const { return _UseAbsoluteOffsets; }
+
+
 	
 protected:
 	// inherited from ITexture. Generate this bumpmap pixels
@@ -71,6 +77,7 @@ protected:
 	virtual void release();	
 	NLMISC::CSmartPtr<ITexture> _HeightMap;
 	bool						_DisableSharing;
+	bool						_UseAbsoluteOffsets;
 private:
 	/// we don't allow for mipmap for bump so we redefine this to prevent the user from doing this on the base class Itexture
 	virtual         void setFilterMode(TMagFilter magf, TMinFilter minf);

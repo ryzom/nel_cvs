@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.11 2001/07/05 08:25:58 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.12 2001/10/22 10:35:49 lecroart Exp $
  *
  */
 
@@ -30,6 +30,7 @@
 #include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_WINDOWS
+#include <windows.h>
 #include <direct.h>
 #else
 #include <unistd.h>
@@ -148,8 +149,12 @@ public:
 			chdir(ServicePath.c_str());
 		}
 
+#ifdef NL_OS_WINDOWS
+		WinExec (ServiceCommand.c_str(), SW_MINIMIZE/*SW_SHOWNORMAL*/);
+#else
 		system (ServiceCommand.c_str());
-		
+#endif
+
 		if (!ServicePath.empty())
 			chdir(oldpath);
 

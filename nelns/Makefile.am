@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.4 2001/06/18 14:04:46 valignat Exp $
+# $Id: Makefile.am,v 1.5 2001/10/22 10:35:49 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in configure config.guess missing \
@@ -7,9 +7,7 @@ MAINTAINERCLEANFILES = Makefile.in configure config.guess missing \
                        install-sh mkinstalldirs
 
 SUBDIRS              = login_service          \
-                       log_service            \
                        naming_service         \
-                       time_service           \
                        admin_executor_service \
                        admin_service          \
                        welcome_service

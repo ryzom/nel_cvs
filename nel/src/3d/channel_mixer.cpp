@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.5 2001/03/16 16:05:12 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.6 2001/03/19 09:33:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,8 +57,8 @@ void CChannelMixer::setAnimationSet (const CAnimationSet* animationSet)
 	// Set the animationSet Pointer
 	_AnimationSet=animationSet;
 
-	// Resize the channel array this the count of tracks
-	_Channels.resize (_AnimationSet->getNumChannelId ());
+	// clear the channels.
+	resetChannels();
 }
 
 // ***************************************************************************
@@ -76,6 +76,12 @@ void CChannelMixer::eval ()
 	// Setup an array of animation that are not empty and stay
 	uint numActive=0;
 	uint activeSlot[NumAnimationSlot];
+
+	if(_Dirt)
+	{
+		refreshList();
+		cleanAll();
+	}
 
 	// Setup it up
 	for (uint s=0; s<NumAnimationSlot; s++)
@@ -159,7 +165,7 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 	if (iDInAnimationSet!=CAnimationSet::NotFound)
 	{
 		// The channel entry
-		CChannel &entry=_Channels[iDInAnimationSet];
+		CChannel	entry;
 
 		// Set the channel name
 		entry._ChannelName=channelName;
@@ -176,6 +182,16 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 		// Set the value ID in the object
 		entry._ValueId=valueId;
 
+		// All weights default to 1. All Tracks default to defaultTrack.
+		for(sint s=0;s<NumAnimationSlot;s++)
+		{
+			entry._Weights[s]= 1.0f;
+			entry._Tracks[s]= entry._DefaultTracks;
+		}
+
+		// add (if not already done) the entry in the map.
+		_Channels[iDInAnimationSet]= entry;
+
 		// Dirt all the slots
 		dirtAll ();
 	}
@@ -185,13 +201,7 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 
 void CChannelMixer::resetChannels ()
 {
-	// Size of the array
-	uint size=_Channels.size();
-
-	// For each channel entry
-	for (uint c=0; c<size; c++)
-		// Empty the channel
-		_Channels[c].empty();
+	_Channels.clear();
 }
 
 // ***************************************************************************
@@ -290,8 +300,9 @@ void CChannelMixer::applySkeletonWeight (uint slot, uint skeleton, bool invert)
 				// Get the weight of the channel for this node
 				float weight=pSkeleton->getNodeWeight (n);
 
-				// Set the weight of this channel for this slot
-				_Channels[channelId]._Weights[slot]=invert?1.f-weight:weight;
+				// Set the weight of this channel for this slot (only if channel setuped!!)
+				if(_Channels.find(channelId)!=_Channels.end())
+					_Channels[channelId]._Weights[slot]=invert?1.f-weight:weight;
 			}
 		}
 	}
@@ -311,13 +322,13 @@ void CChannelMixer::resetSkeletonWeight (uint slot)
 		_SlotArray[slot]._SkeletonWeight=NULL;
 		_SlotArray[slot]._InvertedSkeletonWeight=false;
 
-		// Check alot arg
-		uint channelCount=_Channels.size();
-
 		// For each channels
-		for (uint c=0; c<channelCount; c++)
+		map<uint, CChannel>::iterator		itChannel;
+		for(itChannel= _Channels.begin(); itChannel!=_Channels.end();itChannel++)
+		{
 			// Reset
-			_Channels[c]._Weights[slot]=1.f;
+			(*itChannel).second._Weights[slot]=1.f;
+		}
 	}
 }
 
@@ -385,12 +396,12 @@ void CChannelMixer::refreshList ()
 	// Last channel pointer
 	CChannel **lastPointer=&_FirstChannel;
 
-	// Get num of channels
-	uint numChannel=_Channels.size();
-
 	// Now scan each channel
-	for (uint c=0; c<numChannel; c++)
+	map<uint, CChannel>::iterator		itChannel;
+	for(itChannel= _Channels.begin(); itChannel!=_Channels.end();itChannel++)
 	{
+		CChannel	&channel= (*itChannel).second;
+
 		// Add this channel to the list if true
 		bool add=false;
 
@@ -398,13 +409,13 @@ void CChannelMixer::refreshList ()
 		for (s=0; s<numAdd; s++)
 		{
 			// Find the index of the channel track in the animation set
-			uint iDTrack=_SlotArray[addSlot[s]]._Animation->getIdTrackByName (_Channels[c]._ChannelName);
+			uint iDTrack=_SlotArray[addSlot[s]]._Animation->getIdTrackByName (channel._ChannelName);
 
 			// If this track exist
 			if (iDTrack!=CAnimation::NotFound)
 			{
 				// Set the track
-				_Channels[c]._Tracks[addSlot[s]]=_SlotArray[addSlot[s]]._Animation->getTrack (iDTrack);
+				channel._Tracks[addSlot[s]]=_SlotArray[addSlot[s]]._Animation->getTrack (iDTrack);
 
 				// Add this channel to the list
 				add=true;
@@ -412,7 +423,7 @@ void CChannelMixer::refreshList ()
 			else
 			{
 				// Set the default track
-				_Channels[c]._Tracks[addSlot[s]]=_Channels[c]._DefaultTracks;
+				channel._Tracks[addSlot[s]]=channel._DefaultTracks;
 			}
 		}
 
@@ -420,7 +431,7 @@ void CChannelMixer::refreshList ()
 		if (!add)
 		{
 			// Was it in the list ?
-			if (_Channels[c]._InTheList)
+			if (channel._InTheList)
 			{
 				// Check if this channel is still in use
 
@@ -428,7 +439,7 @@ void CChannelMixer::refreshList ()
 				for (s=0; s<numStay; s++)
 				{
 					// Use anything interesting ?
-					if (_Channels[c]._Tracks[staySlot[s]]!=_Channels[c]._DefaultTracks)
+					if (channel._Tracks[staySlot[s]]!=channel._DefaultTracks)
 					{
 						// Ok, add it to the list
 						add=true;
@@ -444,13 +455,18 @@ void CChannelMixer::refreshList ()
 		if (add)
 		{
 			// It is in the list
-			_Channels[c]._InTheList=true;
+			channel._InTheList=true;
 
 			// Set the last pointer value
-			*lastPointer=&_Channels[c];
+			*lastPointer=&channel;
 
 			// Change last pointer
-			lastPointer=&_Channels[c]._Next;
+			lastPointer=&channel._Next;
+		}
+		else
+		{
+			// It is not in the list
+			channel._InTheList=false;
 		}
 	}
 

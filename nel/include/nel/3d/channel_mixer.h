@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.5 2001/03/16 16:05:12 corvazier Exp $
+ * $Id: channel_mixer.h,v 1.6 2001/03/19 09:33:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,6 @@
 #include "nel/3d/animation_time.h"
 #include "nel/3d/animation_set.h"
 #include <map>
-#include <vector>
 
 namespace NL3D 
 {
@@ -145,27 +144,10 @@ private:
 		/// Default ctor
 		CChannel ()
 		{
-			// Set it empty
-			empty ();
-
 			// not in the list
 			_InTheList=false;
 		}
 	private:
-		/// Empty a channel
-		void empty ()
-		{
-			// Set the value pointer to NULL
-			_Value=NULL;
-		}
-
-		/// Is a channel empty ?
-		bool isEmpty ()
-		{
-			// If the value pointer is not NULL, not empty
-			return _Value!=NULL;
-		}
-
 		/// True if this channel is in the list
 		bool				_InTheList;
 
@@ -300,6 +282,8 @@ public:
 	  *
 	  * This weight will be used to eval the animation set in this slot.
 	  * Each slot can have different weight. Calling this method won't dirt the mixer.
+	  *
+	  * NB: this function works only for existing channels. any channels added after will have a 1.0f weight for this slot.
 	  * 
 	  * \param slot is the slot number to change the weight.
 	  * \param weight is the new weight to use in the slot. No range for this weight. If the weight == 0.f, 
@@ -375,8 +359,8 @@ private:
 	// The animation set
 	const CAnimationSet*			_AnimationSet;
 
-	// The vector of IChannel infos.
-	std::vector<CChannel>			_Channels;
+	// The set of CChannel infos. Only channels added by addChannel are present.
+	std::map<uint, CChannel>		_Channels;
 
 	// The first channel. If NULL, no channel to animate.
 	CChannel*						_FirstChannel;

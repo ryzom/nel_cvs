@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.h
  * A sound event marer on a sound track
  *
- * $Id: sound_anim_marker.h,v 1.4 2003/01/08 15:45:14 boucher Exp $
+ * $Id: sound_anim_marker.h,v 1.5 2003/03/03 13:04:02 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #ifndef NL_SOUND_ANIM_MARKER_H
 #define NL_SOUND_ANIM_MARKER_H
 
+#include "nel/misc/string_mapper.h"
+
 
 namespace NLMISC
 {
@@ -35,7 +37,7 @@ namespace NLMISC
 namespace NLSOUND {
 
 
-typedef std::set<std::string> TMarkerSoundSet;
+typedef std::set<NLMISC::TStringId> TMarkerSoundSet;
 
 class UAudioMixer;
 
@@ -54,13 +56,13 @@ public:
 	virtual float			getTime()	const			{ return _Time; }
 
 	/** Add a new sound in the set of to-be-played sounds for this marker */
-	virtual void			addSound(std::string& soundName);
+	virtual void			addSound(const NLMISC::TStringId &soundName);
 
 	/** Remove a sound */
-	virtual void			removeSound(std::string& soundName);
+	virtual void			removeSound(const NLMISC::TStringId &soundName);
 
 	/** Return the set of sounds of this marker */
-	virtual void			getSounds(std::vector<const char*>& sounds);
+	virtual void			getSounds(std::vector<NLMISC::TStringId> &sounds);
 
 	/** Play all the sounds of this marker */
 	virtual void			play(UAudioMixer* mixer, NL3D::CCluster *cluster, CSoundContext &context);

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * 
  *
- * $Id: main.cpp,v 1.8 2003/03/31 12:55:36 legros Exp $
+ * $Id: main.cpp,v 1.9 2003/07/01 12:15:44 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -282,6 +282,13 @@ void createRetriever(vector<CVector> &translation)
 
 
 			computeRetriever(cmb, lr, translation[i], true);
+/*
+			// TEMP
+			uint	tt;
+			for (tt=0; tt<lr.getSurfaces().size(); ++tt)
+				lr.dumpSurface(tt);
+			//
+*/
 			
 			// Compute an identifier name
 			string indentifier = meshName;

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.58 2002/06/17 12:54:46 berenguier Exp $
+ * $Id: mesh.cpp,v 1.59 2002/06/17 13:08:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -727,13 +727,13 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 				}
 			}
 		}
+	}
 
-		// End VertexProgram effect
-		if(useMeshVP)
-		{
-			// Apply it.
-			_MeshVertexProgram->end(drv);
-		}
+	// End VertexProgram effect
+	if(useMeshVP)
+	{
+		// Apply it.
+		_MeshVertexProgram->end(drv);
 	}
 
 	// disable driver skinning.

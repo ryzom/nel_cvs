@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.9 2001/03/29 09:50:40 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.10 2001/03/29 09:54:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,6 +138,7 @@ void CAnimationSet::serial (NLMISC::IStream& f)
 	f.serialCont (_SkeletonWeightName);
 	f.serialMap (_ChannelIdByName);
 	f.serialMap (_AnimationIdByName);
+	f.serialMap (_SkeletonWeightIdByName);
 }
 
 // ***************************************************************************

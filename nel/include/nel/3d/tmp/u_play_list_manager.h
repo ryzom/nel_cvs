@@ -1,7 +1,7 @@
 /** \file u_play_list_manager.h
  * <File description>
  *
- * $Id: u_play_list_manager.h,v 1.1 2001/03/28 15:18:54 berenguier Exp $
+ * $Id: u_play_list_manager.h,v 1.2 2001/03/29 09:54:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,16 +58,16 @@ public:
 
 	/** Create a playlist, instance of an animation set. nlerror if(animSet==NULL).
 	 */
-	virtual	UPlayList	*createPlayList(UAnimationSet	*animSet);
-	/** Delete a playlist. no-op if playList==NULL or playList not in List.
+	virtual	UPlayList	*createPlayList(UAnimationSet	*animSet) =0;
+	/** Delete a playlist. nlerror if not found. no-op if playList==NULL.
 	 */
-	virtual	void		deletePlayList(UPlayList *playList);
+	virtual	void		deletePlayList(UPlayList *playList) =0;
 
 
 	/** Animate all the playlist. Only the globals channels are animated.
 	 * NB: all AnimationTime are in second.
 	 */
-	virtual	void		animate(CAnimationTime	time);
+	virtual	void		animate(CAnimationTime	time) =0;
 
 };
 

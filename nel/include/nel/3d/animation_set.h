@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.10 2001/03/19 13:19:44 corvazier Exp $
+ * $Id: animation_set.h,v 1.11 2001/03/29 09:54:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/3d/animation.h"
 #include "nel/3d/skeleton_weight.h"
+#include "nel/misc/smart_ptr.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -50,7 +51,7 @@ namespace NL3D {
  * \author Nevrax France
  * \date 2001
  */
-class CAnimationSet
+	class CAnimationSet : public NLMISC::CRefCount
 {
 public:
 
@@ -127,6 +128,19 @@ public:
 	uint getNumSkeletonWeight () const
 	{
 		return _SkeletonWeight.size();
+	}
+
+	/**
+	  * Get a skeleton weight ID by name. If no skeleton weight is found, method returns NotFound.
+	  */
+	uint getSkeletonWeightIdByName (const std::string& name) const
+	{
+		// Look for an id with this name
+		std::map <std::string, uint32>::const_iterator ite=_SkeletonWeightIdByName.find (name);
+		if (ite!=_SkeletonWeightIdByName.end ())
+			return ite->second;
+		else
+			return NotFound;
 	}
 
 	/**

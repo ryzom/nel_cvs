@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.3 2001/03/21 17:59:27 puzin Exp $
+ * $Id: driver_user2.cpp,v 1.4 2001/03/29 09:54:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,9 +37,13 @@
 #include "nel/3d/texture_user.h"
 #include "nel/3d/material_user.h"
 #include "nel/3d/tmp/u_camera.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
 
 
+using namespace std;
 using namespace NLMISC;
+
 
 namespace NL3D 
 {
@@ -62,6 +66,33 @@ UScene			*CDriverUser::createScene()
 void			CDriverUser::deleteScene(UScene	*scene) 
 {
 	_Scenes.erase((CSceneUser*)scene, "deleteScene(): Bad scene ptr");
+}
+
+
+
+// ***************************************************************************
+UAnimationSet			*CDriverUser::createAnimationSet(const std::string &animationSetFile) 
+{
+	NLMISC::CIFile	f;
+	// throw exception if not found.
+	string	path= CPath::lookup(animationSetFile);
+	f.open(path);
+	return _AnimationSets.insert(new CAnimationSetUser(f));
+}
+// ***************************************************************************
+void			CDriverUser::deleteAnimationSet(UAnimationSet	*animationSet) 
+{
+	_AnimationSets.erase((CAnimationSetUser*)animationSet, "deleteAnimationSet(): Bad AnimationSet ptr");
+}
+// ***************************************************************************
+UPlayListManager			*CDriverUser::createPlayListManager() 
+{
+	return _PlayListManagers.insert(new CPlayListManagerUser());
+}
+// ***************************************************************************
+void			CDriverUser::deletePlayListManager(UPlayListManager	*playListManager) 
+{
+	_PlayListManagers.erase((CPlayListManagerUser*)playListManager, "deletePlayListManager(): Bad PlayListManager ptr");
 }
 
 

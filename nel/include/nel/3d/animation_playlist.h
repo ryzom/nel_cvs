@@ -1,7 +1,7 @@
 /** \file animation_playlist.h
  * <File description>
  *
- * $Id: animation_playlist.h,v 1.3 2001/03/20 15:30:12 corvazier Exp $
+ * $Id: animation_playlist.h,v 1.4 2001/03/29 09:54:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,8 @@ public:
 		
 		/// Disable the animation.
 		Disable,
+
+		WrapModeCount
 	};
 
 	/// Constructor

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.3 2001/03/27 10:29:55 berenguier Exp $
+ * $Id: driver_user.h,v 1.4 2001/03/29 09:54:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,6 +34,8 @@
 #include "nel/3d/primitive_block.h"
 #include "nel/3d/font_manager.h"
 #include "nel/3d/material_user.h"
+#include "nel/3d/animation_set_user.h"
+#include "nel/3d/play_list_manager_user.h"
 #include "nel/3d/ptr_set.h"
 
 
@@ -75,10 +77,14 @@ protected:
 	typedef	CPtrSet<CMaterialUser>		TMaterialSet;
 	typedef	CPtrSet<CTextContextUser>	TTextContextSet;
 	typedef	CPtrSet<CSceneUser>			TSceneSet;
+	typedef	CPtrSet<CAnimationSetUser>		TAnimationSetSet;
+	typedef	CPtrSet<CPlayListManagerUser>	TPlayListManagerSet;
 	TTextureSet			_Textures;
 	TMaterialSet		_Materials;
 	TTextContextSet		_TextContexts;
 	TSceneSet			_Scenes;
+	TAnimationSetSet	_AnimationSets;
+	TPlayListManagerSet	_PlayListManagers;
 
 
 	// For 2D/3D Interface.
@@ -190,6 +196,20 @@ public:
 	/// Delete a scene.
 	virtual	void			deleteScene(UScene	*scene) ;
 	// @}
+
+
+	/// \name Animation gestion.
+	// @{
+	/// Create a new AnimationSet, load it from a file. Use CPath to search the animation set. exception EPathNotFound if not found.
+	virtual	UAnimationSet	*createAnimationSet(const std::string &animationSetFile) ;
+	/// Delete a AnimationSet.
+	virtual	void			deleteAnimationSet(UAnimationSet *animationSet) ;
+	/// Create a new PlayListManager.
+	virtual	UPlayListManager	*createPlayListManager() ;
+	/// Delete a PlayListManager.
+	virtual	void				deletePlayListManager(UPlayListManager *playListManager) ;
+	// @}
+
 
 
 	/// \name Components gestion for Interface 2D/3D.

@@ -687,6 +687,14 @@ SOURCE=..\include\nel\3d\transformable.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\3d\animation_set_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\animation_set_user.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\camera_user.cpp
 # End Source File
 # Begin Source File
@@ -732,6 +740,22 @@ SOURCE=.\3d\material_user.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\material_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\play_list_manager_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\play_list_manager_user.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\play_list_user.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\play_list_user.h
 # End Source File
 # Begin Source File
 

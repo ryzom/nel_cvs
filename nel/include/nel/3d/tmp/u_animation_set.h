@@ -1,7 +1,7 @@
 /** \file u_animation_set.h
  * <File description>
  *
- * $Id: u_animation_set.h,v 1.1 2001/03/28 15:18:54 berenguier Exp $
+ * $Id: u_animation_set.h,v 1.2 2001/03/29 09:54:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_ANIMATION_SET_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/3d/tmp/animation_time.h"
 
 
 namespace NL3D
@@ -61,31 +62,31 @@ public:
 	/**
 	  * Get animations count.
 	  */
-	uint getNumAnimation () const =0;
+	virtual	uint getNumAnimation () const =0;
 
 	/**
 	  * Get a animation ID by name. If no animation is found, method returns NotFound.
 	  */
-	uint getAnimationIdByName (const std::string& name) const  =0;
+	virtual	uint getAnimationIdByName (const std::string& name) const  =0;
 
 	/**
 	  * Get animation name.
 	  */
-	const std::string& getAnimationName (uint animationId) const =0;
+	virtual	const std::string& getAnimationName (uint animationId) const =0;
 
 	/**
 	  * Get begin time of an animation
 	  *
 	  * \return the begin time.
 	  */
-	CAnimationTime getAnimationBeginTime (uint animationId) const;
+	virtual	CAnimationTime getAnimationBeginTime (uint animationId) const=0;
 
 	/**
 	  * Get end time of an animation
 	  *
 	  * \return the end time.
 	  */
-	CAnimationTime getAnimationEndTime (uint animationId) const;
+	virtual	CAnimationTime getAnimationEndTime (uint animationId) const=0;
 
 	// @}
 
@@ -95,17 +96,17 @@ public:
 	/**
 	  * Get skeleton weight count.
 	  */
-	uint getNumSkeletonWeight () const =0;
+	virtual	uint getNumSkeletonWeight () const =0;
 
 	/**
 	  * Get a SkeletonWeight ID by name. If no SkeletonWeight is found, method returns NotFound.
 	  */
-	uint getSkeletonWeightIdByName (const std::string& name) const =0;
+	virtual	uint getSkeletonWeightIdByName (const std::string& name) const =0;
 
 	/**
 	  * Get skeleton template name.
 	  */
-	const std::string& getSkeletonWeightName (uint skeletonId) const =0;
+	virtual	const std::string& getSkeletonWeightName (uint skeletonId) const =0;
 	// @}
 
 

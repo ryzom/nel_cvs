@@ -1,7 +1,7 @@
 /** \file u_play_list.h
  * <File description>
  *
- * $Id: u_play_list.h,v 1.1 2001/03/28 15:18:54 berenguier Exp $
+ * $Id: u_play_list.h,v 1.2 2001/03/29 09:54:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,6 +70,8 @@ public:
 		
 		/// Disable the animation.
 		Disable,
+
+		WrapModeCount
 	};
 
 

@@ -3,6 +3,7 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="3d"
+	ProjectGUID="{88CA6D0E-5F23-478F-8334-0427817FFB18}"
 	SccProjectName=""
 	SccLocalPath="">
 	<Platforms>
@@ -10753,6 +10754,42 @@
 		</File>
 		<File
 			RelativePath="3d\async_file_manager_3d.h">
+		</File>
+		<File
+			RelativePath="3d\debug_vb.cpp">
+			<FileConfiguration
+				Name="DebugFast|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="ReleaseDebug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="2"
+					PreprocessorDefinitions=""/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Debug|Win32">
+				<Tool
+					Name="VCCLCompilerTool"
+					Optimization="0"
+					PreprocessorDefinitions=""
+					BasicRuntimeChecks="3"/>
+			</FileConfiguration>
+		</File>
+		<File
+			RelativePath="3d\debug_vb.h">
 		</File>
 		<File
 			RelativePath="3d\event_mouse_listener.cpp">

@@ -1,7 +1,7 @@
 /** \file agent_input.h
  * An interface giving a direct value from an agent component or telling when the value changed.
  *
- * $Id: agent_input.h,v 1.1 2001/03/06 14:09:29 robert Exp $
+ * $Id: agent_input.h,v 1.2 2001/03/15 18:35:23 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,8 +59,8 @@ public:
 	/// Remove an obj to the list of IconnectIA interested by the value change.
 	void releaseInputConnexion(IConnectIA* obj);
 
-	/// Return the value managed by this IAgentInput.
-	virtual const IObjectIA* getValue();
+	/// Return the value managed by this IAgentInput. Must be Reimplemented.
+	virtual const IObjectIA* getValue() {return NULL;}
 
 	/// \name IObjectIA member method. 
 	//@{

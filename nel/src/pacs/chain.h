@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.7 2001/08/29 12:49:09 legros Exp $
+ * $Id: chain.h,v 1.8 2001/09/12 10:07:05 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,7 +194,10 @@ public:
 	///
 	void								traverse(sint from, sint to, bool forward, std::vector<CVector2s> &path) const;
 
+	///
+	float								distance(const NLMISC::CVector &position) const;
 
+	///
 	void								serial(NLMISC::IStream &f);
 };
 

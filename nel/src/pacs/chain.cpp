@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.17 2001/08/23 13:40:04 legros Exp $
+ * $Id: chain.cpp,v 1.18 2001/09/12 10:07:05 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,6 +115,49 @@ void	NLPACS::COrderedChain::traverse(sint from, sint to, bool forward, vector<NL
 			path.push_back(_Vertices[i]);
 	}
 }
+
+//
+float	NLPACS::COrderedChain::distance(const CVector &position) const
+{
+	float		minDist = 1.0e10f;
+	uint		i;
+	CVector2f	pos = CVector2f(position);
+
+	for (i=0; i+1<_Vertices.size(); ++i)
+	{
+		CVector2f	a = _Vertices[i].unpack(),
+					b = _Vertices[i+1].unpack();
+
+		CVector2f	d = (b-a);
+		float		len = d.norm();
+		d /= len;
+		CVector2f	n = CVector2f(d.y, -d.x);
+
+		float		l = (pos-a)*d;
+		float		dist;
+
+		if (l < 0.0f)
+		{
+			dist = (pos-a).norm();
+		}
+		else if (l > len)
+		{
+			dist = (pos-b).norm();
+		}
+		else
+		{
+			dist = (float)fabs((pos-a)*n);
+		}
+
+		if (dist < minDist)
+		{
+			minDist = dist;
+		}
+	}
+
+	return minDist;
+}
+
 
 // serialises the ordered chain
 void	NLPACS::COrderedChain::serial(IStream &f)

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.15 2001/09/06 08:54:27 legros Exp $
+ * $Id: local_retriever.h,v 1.16 2001/09/12 10:07:05 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -348,6 +348,11 @@ public:
 	/// Returns the identifier of the retriever.
 	void								setIdentifier(const std::string &id) { _Id = id; }
 
+
+	/// Returns the chain quad
+	CChainQuad							&getChainQuad() { return _ChainQuad; }
+
+
 	/// Inits the face grid
 	void								initFaceGrid();
 
@@ -402,7 +407,7 @@ protected:
 	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable, CCollisionSurfaceTemp &cst) const;
 
 	/// Snaps on the ground
-	void								snapToInteriorGround(ULocalPosition &position) const;
+	void								snapToInteriorGround(ULocalPosition &position, bool &snapped) const;
 
 	///
 	float								getHeight(const ULocalPosition &position) const;
@@ -432,6 +437,8 @@ public:
 
 public:
 	void								dumpSurface(uint surf, const NLMISC::CVector &vect = NLMISC::CVector::Null) const;
+
+	float								distanceToBorder(const ULocalPosition &pos) const;
 };
 
 }; // NLPACS

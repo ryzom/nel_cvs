@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.15 2001/09/06 08:54:27 legros Exp $
+ * $Id: global_retriever.h,v 1.16 2001/09/12 10:07:05 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -254,6 +254,12 @@ public:
 
 	/// Checks the retriever for errors.
 	void							check() const;
+
+	///
+	float							distanceToBorder(const UGlobalPosition &pos) const;
+	///
+	void							getBorders(const UGlobalPosition &pos, std::vector<NLMISC::CLine> &edges);
+
 
 	/// Serialises the global retriever.
 	void							serial(NLMISC::IStream &f);

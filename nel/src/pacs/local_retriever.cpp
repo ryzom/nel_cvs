@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.31 2001/09/06 08:54:27 legros Exp $
+ * $Id: local_retriever.cpp,v 1.32 2001/09/12 10:07:05 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -260,6 +260,33 @@ void	NLPACS::CLocalRetriever::dumpSurface(uint surf, const CVector &vect) const
 		nlinfo("%s", buffer);
 	}
 }
+
+
+float	NLPACS::CLocalRetriever::distanceToBorder(const ULocalPosition &pos) const
+{
+	const CRetrievableSurface	&surf = _Surfaces[pos.Surface];
+	uint						i, j;
+	float						minDist = 1.0e10f, dist;
+
+	for (i=0; i<surf._Chains.size(); ++i)
+	{
+		const CChain	&chain = _Chains[surf._Chains[i].Chain];
+		for (j=0; j<chain.getSubChains().size(); ++j)
+		{
+			dist = _OrderedChains[chain.getSubChain(j)].distance(pos.Estimation);
+			if (dist < minDist)
+			{
+				minDist = dist;
+			}
+		}
+	}
+
+	return minDist;
+}
+
+
+
+
 
 sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 											uint8 mat, uint8 charact, uint8 level,
@@ -895,7 +922,7 @@ void	NLPACS::CLocalRetriever::initFaceGrid()
 	_FaceGrid.create(fgb);
 }
 
-void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &position) const
+void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &position, bool &snapped) const
 {
 	// first preselect faces around the (x, y) position (CQuadGrid ?)
 	vector<uint32>	selection;
@@ -908,6 +935,7 @@ void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &posit
 	float	bestDist = 1.0e10f;
 	CVector	best;
 	vector<uint32>::iterator	it;
+	snapped = false;
 	for (it=selection.begin(); it!=selection.end(); ++it)
 	{
 		const CInteriorFace	&f = _InteriorFaces[*it];
@@ -952,7 +980,10 @@ void	NLPACS::CLocalRetriever::snapToInteriorGround(NLPACS::ULocalPosition &posit
 
 	// and computes the real position on this face
 	if (bestDist < 50.0f)
+	{
+		snapped = true;
 		position.Estimation = best;
+	}
 }
 
 float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position) const

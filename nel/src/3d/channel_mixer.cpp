@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.19 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.20 2002/04/12 16:18:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -356,6 +356,15 @@ void CChannelMixer::setSlotAnimation (uint slot, uint animation)
 		_Dirt=true;
 	}
 }
+
+// ***************************************************************************
+
+const CAnimation	*CChannelMixer::getSlotAnimation(uint slot) const
+{
+	nlassert(slot < NumAnimationSlot);
+	return _SlotArray[slot]._Animation;
+}
+
 
 // ***************************************************************************
 

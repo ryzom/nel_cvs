@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.4 2002/03/20 11:17:25 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.5 2002/04/12 16:18:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -307,6 +307,9 @@ public:
 	  * \see CAnimationSet, CAnimation
 	  */
 	void setSlotAnimation (uint slot, uint animation);
+
+	/// Get the animation used by a given slot
+	const CAnimation	*getSlotAnimation(uint slot) const;
 
 	/** 
 	  * Set time of a slot.

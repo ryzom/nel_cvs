@@ -78,7 +78,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=xilink6.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib opengl32.lib /nologo /dll /debug /machine:I386 /out:"r:/code/nel/driver_opengl.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib opengl32.lib /nologo /dll /debug /machine:I386 /out:"../../../../lib/driver_opengl.dll" /pdbtype:sept
 
 !ENDIF 
 
@@ -88,23 +88,23 @@ LINK32=xilink6.exe
 # Name "driver_opengl - Win32 Debug"
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\driver\driver_opengl\driver_opengl.cpp
+SOURCE=.\driver_opengl.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\driver\driver_opengl\driver_opengl.def
+SOURCE=.\driver_opengl.def
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\driver\driver_opengl\driver_opengl.h
+SOURCE=.\driver_opengl.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\driver\driver_opengl\driver_opengl_material.cpp
+SOURCE=.\driver_opengl_material.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\src\3d\driver\driver_opengl\driver_opengl_matrix.cpp
+SOURCE=.\driver_opengl_matrix.cpp
 # End Source File
 # End Target
 # End Project

@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.16 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: config_file.h,v 1.17 2001/02/16 14:53:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,7 +226,7 @@ private:
 
 	static uint32	_Timeout;
 
-	static std::vector<CConfigFile *> _ConfigFiles;
+	static std::vector<CConfigFile *> *_ConfigFiles;
 };
 
 struct EConfigFile : public Exception

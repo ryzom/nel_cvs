@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
  * <File description>
  *
- * $Id: string_stream.cpp,v 1.3 2001/05/28 12:45:06 chafik Exp $
+ * $Id: string_stream.cpp,v 1.4 2001/06/18 09:00:04 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,8 +43,8 @@ uint CStringStream::serialSeparatedBufferIn( uint8 *buf, uint len )
 	nlassert( isReading() );
 
 	// Check that we don't read more than there is to read
-	if ( ( lengthS()+len+SEP_SIZE > lengthR() ) &&
-		 (_Buffer[_Buffer.size()-1] != SEPARATOR ) )
+	if ( ( _BufPos == _Buffer.end() ) || // we are at the end
+		 ( lengthS()+len+SEP_SIZE > lengthR() ) && (_Buffer[_Buffer.size()-1] != SEPARATOR ) ) // we are before the end
 	{
 		throw EStreamOverflow();
 	}
@@ -94,6 +94,21 @@ void CStringStream::serialSeparatedBufferOut( uint8 *buf, uint len )
 	sprintf( number_as_cstring, format, src ); \
 	serialSeparatedBufferOut( (uint8*)&number_as_cstring, strlen(number_as_cstring) );
 
+/*
+ * \todo NLMISC::CStringStream: Use strtoul() functions instead of atoi(), to handle conversion errors
+ */
+
+
+
+/*
+ * atoihex
+ */
+inline int atoihex( const char* ident )
+{
+	int number;
+	sscanf( ident, "%x", &number );
+	return number;
+}
 
 
 // ======================================================================================================
@@ -322,7 +337,7 @@ void		CStringStream::serial(ucstring &b)
 
 
 // Specialisation of serialCont() for vector<bool>
-void CStringStream::serialCont(std::vector<bool> &cont)
+void	CStringStream::serialCont(std::vector<bool> &cont)
 {
 	sint32	len=0;
 	if(isReading())
@@ -350,6 +365,22 @@ void CStringStream::serialCont(std::vector<bool> &cont)
 			bool b = *it;
 			serial( b );
 		}
+	}
+}
+
+
+/*
+ * Serialisation in hexadecimal
+ */
+void	CStringStream::serialHex(uint32 &b)
+{
+	if ( isReading() )
+	{
+		readnumber( b, uint32, 10, atoihex ); // 4294967295
+	}
+	else
+	{
+		writenumber( b, "%x", 10 );
 	}
 }
 

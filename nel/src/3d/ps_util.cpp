@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.17 2001/06/25 16:09:02 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.18 2001/07/04 12:27:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,9 +103,14 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSEmitterDirectionnal) ;
 		NLMISC_REGISTER_CLASS(CPSEmitterRectangle) ;
 		NLMISC_REGISTER_CLASS(CPSEmitterConic) ;
+		NLMISC_REGISTER_CLASS(CPSSphericalEmitter) ;
+		NLMISC_REGISTER_CLASS(CPSDirectionnalForce) ; 
 		NLMISC_REGISTER_CLASS(CPSGravity) ; 
+		NLMISC_REGISTER_CLASS(CPSBrownianForce) ;
+		NLMISC_REGISTER_CLASS(CPSCentralGravity) ; 
 		NLMISC_REGISTER_CLASS(CPSFluidFriction) ;
 		NLMISC_REGISTER_CLASS(CPSTurbul) ;
+		NLMISC_REGISTER_CLASS(CPSCylindricVortex) ;
 		NLMISC_REGISTER_CLASS(CPSLocated) ; 
 		NLMISC_REGISTER_CLASS(CPSDot) ;
 		NLMISC_REGISTER_CLASS(CPSFaceLookAt) ;
@@ -115,13 +120,17 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSZoneRectangle) ;
 		NLMISC_REGISTER_CLASS(CPSZoneCylinder) ;
 		NLMISC_REGISTER_CLASS(CPSColorBlender) ;
+		NLMISC_REGISTER_CLASS(CPSColorMemory) ;
 		NLMISC_REGISTER_CLASS(CPSColorBlenderExact) ;
 		NLMISC_REGISTER_CLASS(CPSColorGradient) ;
 		NLMISC_REGISTER_CLASS(CPSFloatBlender) ;		
 		NLMISC_REGISTER_CLASS(CPSFloatGradient) ;
+		NLMISC_REGISTER_CLASS(CPSFloatMemory) ;
 		NLMISC_REGISTER_CLASS(CPSIntBlender) ;		
+		NLMISC_REGISTER_CLASS(CPSIntMemory) ;		
 		NLMISC_REGISTER_CLASS(CPSIntGradient) ;
 		NLMISC_REGISTER_CLASS(CPSUIntBlender) ;		
+		NLMISC_REGISTER_CLASS(CPSUIntMemory) ;		
 		NLMISC_REGISTER_CLASS(CPSUIntGradient) ;
 		NLMISC_REGISTER_CLASS(CPSSpring) ;
 		NLMISC_REGISTER_CLASS(CPSFanLight) ;
@@ -134,6 +143,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CParticleSystemShape) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisBlender) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisGradient) ;
+		NLMISC_REGISTER_CLASS(CPSPlaneBasisMemory) ;
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisFollowSpeed) ;
 
 		// while we are here, we perform some important inits
@@ -201,11 +211,11 @@ void CPSUtil::displayBBox(IDriver *driver, const NLMISC::CAABBox &box)
 
 
 
-void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm)
+void CPSUtil::displayArrow(IDriver *driver, const CVector &start, const CVector &v, float size, CRGBA col1, CRGBA col2)
 {
-	CMaterial material  ;
 
-	driver->setupModelMatrix(modelMat) ;
+	const float coneSize = size * 0.1f ;
+
 	uint32 vTab[] = { 1, 2, 4,
 						  4, 2, 3,
 						  1, 2, 0,
@@ -213,78 +223,55 @@ void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMIS
 						  3, 4, 0,
 						  4, 1, 0 } ;
 
-	const float coneSize = size * 0.1f ;
+	CVector end = start + size * v ;
+	CDRU::drawLine(start, end, col1, *driver) ;
+	CMatrix m = buildSchmidtBasis(v) ;
 
-	material.setColor(CRGBA(127, 127, 127)) ;
+	CVertexBuffer vb ;
+	vb.setVertexFormat(IDRV_VF_XYZ) ;
+	vb.setNumVertices(5) ; 
+	
+	
+
+	vb.setVertexCoord(0, end + m * CVector(0, 0, 3.0f * coneSize) ) ;
+	vb.setVertexCoord(1, end + m * CVector(-coneSize, -coneSize, 0) ) ;
+	vb.setVertexCoord(2, end + m * CVector(coneSize, -coneSize, 0) ) ;
+	vb.setVertexCoord(3, end + m * CVector(coneSize, coneSize, 0) ) ;
+	vb.setVertexCoord(4, end + m * CVector(-coneSize, coneSize, 0) ) ;
+
+	CMaterial material  ;
+
+	material.setColor(col2) ;
 	material.setLighting(false) ;
 	material.setBlendFunc(CMaterial::one, CMaterial::one) ;
 	material.setZWrite(false) ;
 	material.setBlend(true) ;
+	material.setDoubleSided(true) ;
 
-	
-	CVertexBuffer vb ;
-	vb.setVertexFormat(IDRV_VF_XYZ) ;
-	vb.setNumVertices(5) ;  // 4 for the basis, 5 for the cone for each axis
-	
-
-
-	vb.setVertexCoord(0, m * CVector::Null ) ;
-	vb.setVertexCoord(1, m * (size * CVector::I) ) ;
-	vb.setVertexCoord(2, m * (size * CVector::J) ) ;
-	vb.setVertexCoord(3, m * (size * CVector::K) ) ;
-
-	CPrimitiveBlock pb ;
-	pb.reserveLine(3) ;
-	pb.addLine(0, 1) ;
-	pb.addLine(0, 2) ;
-	pb.addLine(0, 3) ;
-
-
-	driver->activeVertexBuffer(vb, 0, 4) ;
-	driver->render(pb, material) ;
-	
-
-
-	material.setColor(CRGBA(0, 0, 200)) ;
-	
-	// draw the x cone
-	
-	vb.setVertexCoord(0, m * CVector(size + 3.0f * coneSize, 0, 0) ) ;
-	vb.setVertexCoord(1, m * CVector(size, -coneSize, coneSize) ) ;
-	vb.setVertexCoord(2, m * CVector(size, coneSize, coneSize) ) ;
-	vb.setVertexCoord(3, m * CVector(size, coneSize, -coneSize) ) ;
-	vb.setVertexCoord(4, m * CVector(size, -coneSize, -coneSize) ) ;
-
-	driver->renderTriangles(material, vTab, 6) ;
-
-	// draw the z cone
-	
-	vb.setVertexCoord(0, m * CVector(0, 0, size + 3.0f * coneSize) ) ;
-	vb.setVertexCoord(1, m * CVector(-coneSize, -coneSize, size) ) ;
-	vb.setVertexCoord(2, m * CVector(coneSize, -coneSize, size) ) ;
-	vb.setVertexCoord(3, m * CVector(coneSize, coneSize, size) ) ;
-	vb.setVertexCoord(4, m * CVector(-coneSize, coneSize, size) ) ;
-
-	driver->renderTriangles(material,  vTab, 6) ;
-
-	// draw the y cone
-
-	vb.setVertexCoord(0, m * CVector(0, size + 3.0f * coneSize, 0) ) ;
-	vb.setVertexCoord(1, m * CVector(-coneSize, size, -coneSize) ) ;
-	vb.setVertexCoord(2, m * CVector(coneSize, size, -coneSize) ) ;
-	vb.setVertexCoord(3, m * CVector(coneSize, size, coneSize) ) ;
-	vb.setVertexCoord(4, m * CVector(-coneSize, size ,coneSize) ) ;
-
+	driver->activeVertexBuffer(vb, 0, 5) ;
 	driver->renderTriangles(material,  vTab, 6) ;
 
 
+}
+
+void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm)
+{
+	CMaterial material  ;
+
+	driver->setupModelMatrix(modelMat) ;
+	
+
+
+	displayArrow(driver, m.getPos(), m.getI(), size, CRGBA(127, 127, 127), CRGBA(0, 0, 80)) ;
+	displayArrow(driver, m.getPos(), m.getJ(), size, CRGBA(127, 127, 127), CRGBA(0, 0, 80)) ;
+	displayArrow(driver, m.getPos(), m.getK(), size, CRGBA(127, 127, 127), CRGBA(200, 0, 80)) ;
+
+	
 	// draw the letters
 
 	CPSUtil::print(driver, std::string("x"), fg, fm, modelMat * m * CVector(1.4f * size, 0, 0), 15.0f * size) ;
 	CPSUtil::print(driver, std::string("y"), fg, fm, modelMat * m * CVector(0, 1.4f  * size, 0), 15.0f * size) ;
 	CPSUtil::print(driver, std::string("z"), fg, fm, modelMat * m * CVector(0, 0, 1.4f  * size), 15.0f * size) ;
-
-
 
 } ;
 

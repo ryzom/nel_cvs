@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.2 2001/06/25 13:38:13 vizerie Exp $
+ * $Id: ps_util.h,v 1.3 2001/07/04 12:27:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,18 @@ struct CPSUtil
 	/// display a basis using the given matrix. The model matrix must be restored after this call
 	static void displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm) ;
 
+
+	/** display an arrow (the same that is used with displayBasis)
+	  *  The user must setup the model matrix himself
+	  * \param driver the driver used for rendering
+	  * \param start start point of the arrow
+	  * \param v  direction of the arrow 
+	  * \param size size of the arrow (will be drawn as size * v)
+	  * \param col1 color of the arrow start
+	  * \param col2 color of the arrow end
+	  */
+
+	static void displayArrow(IDriver *driver, const CVector &start, const CVector &v, float size, CRGBA col1, CRGBA col2) ;
 
 	/// display a string at the given position. The model matrix must be restored after this call
 	static void print(IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size) ;

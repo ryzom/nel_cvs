@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.11 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_located.h,v 1.12 2001/10/02 16:37:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -483,11 +483,10 @@ public:
 	/// make the particle older of the given amount. Should not be called directly, as it is called by the system during its step method
 	void updateLife(CAnimationTime ellapsedTime);
 
-	/** Compute the trajectory of the given located. A additionnal matrix can be applied.
+	/** Compute the trajectory of the given located.
 	  * NB : only works with object that have parametric trajectories
 	  */
-	void integrateSingle(float startDate, float deltaT, uint numStep,
-						 const NLMISC::CMatrix &mat,
+	void integrateSingle(float startDate, float deltaT, uint numStep,						 
 						 uint32 indexInLocated,
 						 NLMISC::CVector *destPos,						
 						uint posStride = sizeof(NLMISC::CVector));

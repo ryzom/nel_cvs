@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.35 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.36 2001/10/02 16:37:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@
 #include "3d/ps_located.h"
 #include "3d/ps_particle.h"
 #include "3d/ps_force.h"
+#include "3d/ps_misc.h"
 
 #include "nel/misc/line.h"
 #include "nel/misc/cpu_info.h"
@@ -77,11 +78,10 @@ void CPSLocated::notifyMotionTypeChanged(void)
 	}
 }
 
-void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,
-								const NLMISC::CMatrix &mat,
+void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,								
 								uint32 indexInLocated,
 								NLMISC::CVector *destPos,						
-								uint posStride /*= sizeof(NLMISC::CVector)*/)
+								uint stride /*= sizeof(NLMISC::CVector)*/)
 {
 	nlassert(supportParametricMotion() && _ParametricMotion);
 	if (_IntegrableForces.size() != 0)
@@ -90,13 +90,36 @@ void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,
 		for (TForceVect::iterator it = _IntegrableForces.begin(); it != _IntegrableForces.end(); ++it)
 		{
 			nlassert((*it)->isIntegrable());
-			(*it)->integrateSingle(startDate, deltaT, numStep, mat, this, indexInLocated, destPos, accumulate, posStride);
+			(*it)->integrateSingle(startDate, deltaT, numStep, this, indexInLocated, destPos, accumulate, stride);
 			accumulate = true;
 		}
 	}
 	else // no forces applied, just deduce position from date, initial pos and speed
 	{
-		nlassert(0); // TODO
+			#ifdef NL_DEBUG
+				NLMISC::CVector *endPos = (NLMISC::CVector *) ( (uint8 *) destPos + stride * numStep);
+			#endif
+			const CPSLocated::CParametricInfo &pi = _PInfo[indexInLocated];
+			destPos = FillBufUsingSubdiv(pi.Pos, pi.Date, startDate, deltaT, numStep, destPos, stride);
+			if (numStep != 0)
+			{			
+				float currDate = startDate - pi.Date;
+				const NLMISC::CVector &speed = pi.Speed;
+				const NLMISC::CVector &pos   = pi.Pos;
+				nlassert(currDate >= 0);
+				do
+				{
+					#ifdef NL_DEBUGNL_DEBUG
+						nlassert(destPos < endPos);
+					#endif					
+					destPos->x = pi.Pos.x + currDate * pi.Speed.x;
+					destPos->y = pi.Pos.y + currDate * pi.Speed.y;
+					destPos->z = pi.Pos.z + currDate * pi.Speed.z;
+					currDate += deltaT;
+					destPos = (NLMISC::CVector *) ( (uint8 *) destPos + stride);
+				}
+				while (--numStep);
+			}	
 	}
 }
 

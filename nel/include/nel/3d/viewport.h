@@ -1,7 +1,7 @@
 /** \file viewport.h
  * <File description>
  *
- * $Id: viewport.h,v 1.7 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: viewport.h,v 1.8 2003/04/16 13:31:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,6 +98,12 @@ public:
 		width=_Width;
 		height=_Height;
 	}
+
+	float getX() const { return _X; }	
+	float getY() const { return _Y; }	
+	float getWidth() const { return _Width; }	
+	float getHeight() const { return _Height; }	
+
 
 private:
 	float	_X;

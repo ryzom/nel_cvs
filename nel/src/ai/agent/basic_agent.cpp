@@ -1,6 +1,6 @@
 /** \file basic_agent.cpp
  *
- * $Id: basic_agent.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: basic_agent.cpp,v 1.5 2001/01/12 11:49:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,12 +38,12 @@ namespace NLAIAGENT
 		}
 	}
 
-	IAgentComposite::IAgentComposite(IBasicAgent *parent): IBasicAgent(parent != NULL ? (const IWordNumRef *)*parent:NULL)
+	IAgentComposite::IAgentComposite(IBasicAgent *parent): IBasicAgent(parent != NULL ? (const IWordNumRef *) *parent:NULL)
 	{
 		if(parent) parent->addChild(this);
 	}
 
-	IAgentComposite::IAgentComposite(IBasicAgent *parent,IMailBox	*m): IBasicAgent(parent != NULL ? (const IWordNumRef *)*parent:NULL,m)
+	IAgentComposite::IAgentComposite(IBasicAgent *parent,IMailBox	*m): IBasicAgent(parent != NULL ? (const IWordNumRef *) *parent:NULL,m)
 	{
 		if(parent) parent->addChild(this);
 	}

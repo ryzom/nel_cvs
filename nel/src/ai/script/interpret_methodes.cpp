@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.6 2001/01/10 11:55:26 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.7 2001/01/12 11:52:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -284,7 +284,13 @@ namespace NLAISCRIPT
 
 	CMethodeName::CMethodeName(const CMethodeName &c)
 	{
+		_MethodeName = (NLAIAGENT::IVarName *) c._MethodeName->clone();
+
+		if ( c._TypeOfMethode )
+			_TypeOfMethode = (NLAISCRIPT::IOpType *) c._TypeOfMethode->clone();
+
 		_MethodeName = (NLAIAGENT::IVarName *)c._MethodeName->clone();
+
 		_Code = c._Code;
 		_Code->incRef();
 	}
@@ -399,6 +405,4 @@ namespace NLAISCRIPT
 	{
 		return IdMethodeName;
 	}
-
 }
-

@@ -1,6 +1,6 @@
 /** \file msg_contenair.cpp
  *
- * $Id: msg_container.cpp,v 1.5 2001/01/12 09:52:55 chafik Exp $
+ * $Id: msg_container.cpp,v 1.6 2001/01/12 11:49:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,14 @@ namespace NLAIAGENT
 			}
 			index++;
 		}
+
+		std::list<const IBasicMessageGroup *>::iterator it_grp = _MsgIndex.begin();
+		while ( it_grp != _MsgIndex.end() )
+		{
+			delete *it_grp;
+			it_grp++;
+		}
+		
 	}
 
 	const NLAIC::IBasicType *CVectorMsgContainer::clone() const
@@ -99,17 +107,14 @@ namespace NLAIAGENT
 		return IdVectorMsgContainer;
 	}
 
-	// Ajout et classement dans les listes d'un message selon son groupe
+	// Adds a message to its index group
 	void CVectorMsgContainer::addMessage(IMessageBase *msg)
 	{
-		
-		//msg->incRef();
-		
 		sint32 index = findIndex( msg->getGroup() );
 		if ( index < 0 )
 		{
 			index = _MsgIndex.size();
-			_MsgIndex.push_back( (IBasicMessageGroup *)msg->getGroup().clone() );
+			_MsgIndex.push_back( new CMessageGroup( msg->getGroup().getId() )  );
 			_Messages.push_back( std::list<const IMessageBase *>() );
 		}
 #ifdef NL_DEBUG
@@ -207,8 +212,20 @@ namespace NLAIAGENT
 	void CVectorMsgContainer::save(NLMISC::IStream &os)
 	{
 
+		// Sauvegarde de l'index des groupes
+		sint32 size = _MsgIndex.size();
+		os.serial( size );
+		std::list<const IBasicMessageGroup *>::const_iterator it_grp = _MsgIndex.begin();
+		while ( it_grp != _MsgIndex.end() )
+		{
+			os .serial( (NLAIC::CIdentType &) (*it_grp)->getType() );
+			((IBasicMessageGroup *)(*it_grp))->save( os );
+			it_grp++;
+		}
+
+
 		// Sauvegarde des messages
-		sint32 size = _Size;
+		size = _Size;
 		os.serial( size );
 		std::list<const IMessageBase *>::const_iterator it_msg;
 		
@@ -229,23 +246,23 @@ namespace NLAIAGENT
 			}
 		}
 
-		// Sauvegarde de l'index des groupes
-		size = _MsgIndex.size();
-		os.serial( size );
-		std::list<const IBasicMessageGroup *>::const_iterator it_grp = _MsgIndex.begin();
-		while ( it_grp != _MsgIndex.end() )
-		{
-			os .serial( (NLAIC::CIdentType &) (*it_grp)->getType() );
-			((IBasicMessageGroup *)(*it_grp))->save( os );
-			it_grp++;
-		}
 	}
 
 	void CVectorMsgContainer::load(NLMISC::IStream &is)
 	{
-		
 		sint32 i;
 		NLAIC::CIdentTypeAlloc id;
+
+		// Chargement de l'index des groupes
+		sint32 nb_grps;
+		is.serial( nb_grps );
+		while ( nb_grps-- )
+		{
+			is.serial( id );
+			IBasicMessageGroup *tmp_grp = (IBasicMessageGroup *) id.allocClass();						
+			tmp_grp->load( is );
+			_MsgIndex.push_back( tmp_grp );
+		}
 
 		// Chargement des messages
 		is.serial( i );
@@ -260,15 +277,5 @@ namespace NLAIAGENT
 			}
 		}
 
-		// Chargement de l'index des groupes
-		sint32 nb_grps;
-		is.serial( nb_grps );
-		while ( nb_grps-- )
-		{
-			is.serial( id );
-			IBasicMessageGroup *tmp_grp = (IBasicMessageGroup *) id.allocClass();						
-			tmp_grp->load( is );
-			_MsgIndex.push_back( tmp_grp );
-		}
 	}
 }

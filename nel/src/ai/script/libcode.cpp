@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: libcode.cpp,v 1.6 2001/01/12 11:52:02 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/script/interpret_object_message.h"
 #include "nel/ai/script/interpret_object_manager.h"
+#include "nel/ai/script/interpret_actor.h"
 #include "nel/ai/script/libcode.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/object_unknown.h"
@@ -174,6 +175,10 @@ namespace NLAISCRIPT
 		NLAIC::CSelfClassCFactory &f = (NLAIC::CSelfClassCFactory&)*((CAgentClass::IdAgentClass).getFactory());
 		f = NLAISCRIPT::CAgentClass(CAgentClass::IdAgentClass);
 		((CAgentClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CAgentClass::IdAgentClass));
+
+		NLAIC::CSelfClassCFactory &fc = (NLAIC::CSelfClassCFactory&)*((CActorClass::IdActorClass).getFactory());
+		fc = NLAISCRIPT::CActorClass(CActorClass::IdActorClass);
+		((CActorClass *)fc.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CActorClass::IdActorClass));
 
 		NLAIC::CSelfClassCFactory &fi = (NLAIC::CSelfClassCFactory&)*((CMessageClass::IdMessageClass).getFactory());
 		fi = CMessageClass(CMessageClass::IdMessageClass);

@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
  * Sevral define name method manipulation.
  *
- * $Id: agent_method_def.h,v 1.2 2001/01/10 10:09:45 chafik Exp $
+ * $Id: agent_method_def.h,v 1.3 2001/01/12 11:54:27 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #define NL_AGENT_METHOD_DEF_H
 
 
-
 ///define the send method name
 #define _SEND_ "Send"
 ///define the getChild method name
@@ -39,5 +38,14 @@
 #define _DESTRUCTOR_	"Destructor"
 #define _RUN_			"Run"
 #define _SEND_			"Send"
-
+#define _OPPLUS_		"operator+"
+#define _OPMOINS_		"operator-"
+#define _OPMUL_			"operator*"
+#define _OPEQ_			"operator=="
+#define _OPLESS_		"operator!"
+#define _OPINFEQ_		"operator<="
+#define _OPSUPEQ_		"operator>="
+#define _OPDIFF_		"operator!="
+#define _ADDSUBSET_		"addSubset"
+#define _UNFUZIFY_		"unfuzify"
 #endif

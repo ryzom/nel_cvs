@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.7 2001/01/12 09:52:55 chafik Exp $
+ * $Id: agent_script.cpp,v 1.8 2001/01/12 11:49:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,11 +50,30 @@ namespace NLAIAGENT
 
 		_NbComponents = a._NbComponents;
 		_Components = new IObjectIA *[ _NbComponents ];
+		sint32 nb_scripted = 0;
 		for ( int i = 0; i < _NbComponents; i++ )
+		{
 			_Components[i] = (IObjectIA *)a._Components[i]->clone();		
 
+			if(((const NLAIC::CTypeOfObject &)_Components[i]->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+			{
+				incRef();
+				((CAgentScript *)_Components[i])->setParent( (const IWordNumRef *) *this);
+				( (CScriptMailBox *) ((CAgentScript *)_Components[i])->getLocalMailBox() )->setIndex(nb_scripted);
+				nb_scripted++;
+			}
+		}
+
 		if(	a._ScriptMail) 
+		{
 			_ScriptMail = (IMailBox *)a._ScriptMail->clone();
+			_ScriptMail->setParent( (const IWordNumRef *) *this );
+		}
+		else 
+		{
+			_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
+			_ScriptMail->incRef();
+		}
 		
 		_AgentManager = a._AgentManager;
 		if(_AgentManager) _AgentManager->incRef();
@@ -73,7 +92,7 @@ namespace NLAIAGENT
 		_Components = NULL;
 		_NbComponents = 0;		
 		_AgentManager = manager;
-		_ScriptMail = new CSimpleLocalMailBox((const IWordNumRef *)*this);
+		_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
 		_ScriptMail->incRef();
 	}
 
@@ -91,21 +110,25 @@ namespace NLAIAGENT
 		_Components = new IObjectIA *[ _NbComponents ];
 		std::list<IObjectIA *>::iterator it_c = components.begin();
 		int id_c = 0;
+		sint32 nb_scripted = 0;
 		_AgentManager = manager;
 		while ( it_c != components.end() )
 		{
 			IObjectIA *o = (IObjectIA *)*it_c;
 			_Components[id_c] = o;
-			it_c++;
-			id_c++;
 
-			/*if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+			if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
 				incRef();
-				((CAgentScript *)o)->setAgentManager(this);
-			}*/
+				((CAgentScript *)o)->setParent( (const IWordNumRef *) *this);
+				( (CScriptMailBox *) ((CAgentScript *)_Components[id_c])->getLocalMailBox() )->setIndex( nb_scripted );
+				nb_scripted++;
+			}
+
+			it_c++;
+			id_c++;
 		}		
-		_ScriptMail = new CSimpleLocalMailBox((const IWordNumRef *)*this);
+		_ScriptMail = new CScriptMailBox((const IWordNumRef *) *this);
 		_ScriptMail->incRef();
 	}	
 
@@ -120,7 +143,9 @@ namespace NLAIAGENT
 		delete[] _Components;
 		
 		if(_AgentManager != NULL) _AgentManager->release();
-		_ScriptMail->release();
+		
+		if ( _ScriptMail != NULL )
+			_ScriptMail->release();
 	}
 
 	void CAgentScript::setAgentManager(IAgentManager *manager)
@@ -136,6 +161,11 @@ namespace NLAIAGENT
 			}
 		}
 			
+	}
+
+	sint32 CAgentScript::getChildMessageIndex(const IMessageBase *msg, sint32 child_index )
+	{
+		return _AgentClass->getChildMessageIndex( msg, child_index );
 	}
 
 	void CAgentScript::setStaticMember(sint32 index,IObjectIA *op)
@@ -415,10 +445,14 @@ namespace NLAIAGENT
 	{
 		setState(processBuzzy,NULL);
 
-		runChildren();
+#ifdef _DEBUG
+		const char *dbg_class_name = (const char *) getType();
+		const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
+#endif
 
 		_ScriptMail->run();
 		getMail()->run();
+		runChildren();
 
 		if(_AgentClass->getRunMethod() >= 0) 
 		{

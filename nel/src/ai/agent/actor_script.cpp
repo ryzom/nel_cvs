@@ -134,7 +134,8 @@ namespace NLAIAGENT
 
 	void CActorScript::processMessages()
 	{
-		CAgentScript::processMessages();
+		if ( _IsActivated )
+			CAgentScript::processMessages();
 	}
 
 	const IObjectIA::CProcessResult &CActorScript::run()

@@ -1,6 +1,6 @@
 /** \file agent_operator.cpp
  *
- * $Id: agent_operator.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: agent_operator.cpp,v 1.5 2001/01/12 11:49:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
 
 #include "nel/ai/agent/agentexport.h"
 #include "nel/ai/agent/agent_operator.h"
+#include "nel/ai/agent/agent_method_def.h"
 
 namespace NLAIAGENT
 {
@@ -39,39 +40,35 @@ namespace NLAIAGENT
 
 		if(className != NULL) 
 		{
-			if ( *name == CStringVarName("operator+") )
+			if ( *name == CStringVarName(_OPPLUS_) )
 			{
 				result.push( CIdMethod(NLAIC::CTypeOfOperator::opAdd,0.0,NULL,NULL) );
 			}
-			if ( *name == CStringVarName("operator-") )
+			if ( *name == CStringVarName(_OPMOINS_) )
 			{
 				result.push( CIdMethod(NLAIC::CTypeOfOperator::opSub,0.0,NULL,NULL) );
 			}
-			if ( *name == CStringVarName("operator*") )
+			if ( *name == CStringVarName(_OPMUL_) )
 			{
 				result.push( CIdMethod(NLAIC::CTypeOfOperator::opMul,0.0,NULL,NULL) );
 			}
-			if ( *name == CStringVarName("operator==") )
+			if ( *name == CStringVarName(_OPEQ_) )
 			{
 				result.push( CIdMethod(NLAIC::CTypeOfOperator::opDiv,0.0,NULL,NULL) );
 			}
-			if ( *name == CStringVarName("operator!") )
+			if ( *name == CStringVarName(_OPLESS_) )
 			{
 				result.push( CIdMethod(NLAIC::CTypeOfOperator::opNeg,0.0,NULL,NULL) );
 			}
-			if ( *name == CStringVarName("operator==") )
-			{
-				result.push( CIdMethod(NLAIC::CTypeOfOperator::opEq,0.0,NULL,NULL) );
-			}
-			if ( *name == CStringVarName("operator<=") )
+			if ( *name == CStringVarName(_OPINFEQ_) )
 			{
 				result.push( CIdMethod(NLAIC::CTypeOfOperator::opInfEq,0.0,NULL,NULL) );
 			}
-			if ( *name == CStringVarName("operator>=") )
+			if ( *name == CStringVarName(_OPSUPEQ_) )
 			{
 				result.push( CIdMethod(NLAIC::CTypeOfOperator::opSupEq,0.0,NULL,NULL) );
 			}
-			if ( *name == CStringVarName("operator!=") )
+			if ( *name == CStringVarName(_OPDIFF_) )
 			{
 				result.push( CIdMethod(NLAIC::CTypeOfOperator::opDiff,0.0,NULL,NULL) );
 			}

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
+ * $Id: agents.cpp,v 1.4 2001/01/12 11:49:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,13 +161,13 @@ namespace NLAIAGENT
 
 	IBasicAgent::IBasicAgent(const IWordNumRef *parent): IConnectIA(parent)
 	{
-		_Mail = new tMailBoxLettre((const IWordNumRef *)*this);
+		_Mail = new tMailBoxLettre((const IWordNumRef *) *this);
 		_Mail->incRef();			
 	}		
 
 	IBasicAgent::IBasicAgent(const IWordNumRef *parent,IMailBox	*m): IConnectIA(parent),_Mail(m)
 	{			
-		_Mail->setParent((const IWordNumRef *)*this);
+		_Mail->setParent((const IWordNumRef *) *this);
 	}		
 
 	IBasicAgent::~IBasicAgent()

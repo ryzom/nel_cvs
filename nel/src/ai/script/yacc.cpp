@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.5 2001/01/12 09:52:56 chafik Exp $
+ * $Id: yacc.cpp,v 1.6 2001/01/12 11:52:20 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -543,6 +543,8 @@ namespace NLAISCRIPT
 		
 		cleanMethodConstraint();
 		cleanTypeConstraint();			
+		IClassInterpret *c = (IClassInterpret *)_SelfClass.get();
+		((CAgentClass *)c)->buildChildsMessageMap();
 		return true;
 	}
 
@@ -572,7 +574,7 @@ namespace NLAISCRIPT
 			x->incRef();
 			p.push(x);						
 			
-			if((isRun && _Param.back()->size() > 1)  || (isSend && _Param.back()->size() != 1))
+			if( ( isRun && _Param.back()->size() > 1 )  || ( isSend && _Param.back()->size() != 1 ))
 			{
 				char txt[1024*8];
 				sprintf(txt,"method %s have more than 1 parametre",_MethodName.back().getString());

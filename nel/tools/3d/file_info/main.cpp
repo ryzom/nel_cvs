@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.8 2003/07/23 16:34:45 corvazier Exp $
+ * $Id: main.cpp,v 1.9 2003/08/06 08:50:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,7 +186,11 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 				for(k = 0; k < zoneInfo.PointLights.size(); ++k)
 				{
 					const CPointLightNamed &pl = zoneInfo.PointLights[k];
-					fprintf(logStream, "    light group = %d, anim = \"%s\" x = %.1f, y = %.1f, z = %.1f\n", pl.LightGroup, pl.AnimatedLight.c_str(), pl.getPosition().x, pl.getPosition().y, pl.getPosition().z);
+					CRGBA diffuse = pl.getDiffuse();
+					CRGBA defaultDiffuse = pl.getDefaultDiffuse ();
+					fprintf(logStream, "    light group = %d, anim = \"%s\" x=%.1f, y=%.1f, z=%.1f, r=%d, g=%d, b=%d, dr=%d, dg=%d, db=%d\n", pl.LightGroup, 
+						pl.AnimatedLight.c_str(), pl.getPosition().x, pl.getPosition().y, pl.getPosition().z, 
+						diffuse.R, diffuse.G, diffuse.B, defaultDiffuse.R, defaultDiffuse.G, defaultDiffuse.B);
 				}
 			}
 		}
@@ -219,7 +223,11 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 				for(k = 0; k < ig.getNumPointLights(); ++k)
 				{
 					const CPointLightNamed &pl = ig.getPointLightNamed(k);
-					fprintf(logStream, "    Light %3d: Light group = %d, anim = \"%s\" x = %.1f, y = %.1f, z = %.1f\n", k, pl.LightGroup, pl.AnimatedLight.c_str(), pl.getPosition().x + gpos.x, pl.getPosition().y + gpos.y, pl.getPosition().z + gpos.z);
+					CRGBA diffuse = pl.getDiffuse();
+					CRGBA defaultDiffuse = pl.getDefaultDiffuse ();
+					fprintf(logStream, "    Light %3d: Light group = %d, anim = \"%s\" x=%.1f, y=%.1f, z=%.1f, r=%d, g=%d, b=%d, dr=%d, dg=%d, db=%d\n", k, pl.LightGroup, 
+						pl.AnimatedLight.c_str(), pl.getPosition().x + gpos.x, pl.getPosition().y + gpos.y, pl.getPosition().z + gpos.z,
+						diffuse.R, diffuse.G, diffuse.B, defaultDiffuse.R, defaultDiffuse.G, defaultDiffuse.B);
 				}
 			}
 			if (veil)
@@ -374,6 +382,115 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 			// release
 			delete shapeStream.getShapePointer();
 			shapeStream.setShapePointer(NULL);
+		}
+		else if(strstr(fileName, ".anim"))
+		{
+			// read the shape.
+			CIFile	file(fileName);
+			CAnimation	anim;
+			file.serial(anim);
+
+			// Enum the tracks
+			std::set<std::string> tracks;
+			anim.getTrackNames (tracks);
+			std::set<std::string>::iterator ite = tracks.begin();
+			while (ite != tracks.end())
+			{
+				// Track name
+				fprintf(logStream, "Track name=%s", ite->c_str());
+
+				uint trackId = anim.getIdTrackByName (*ite);
+				ITrack *track = anim.getTrack (trackId);
+				if (track)
+				{
+					fprintf(logStream, " type=%s", typeid(*track).name());
+
+					UTrackKeyframer *keyFramer = dynamic_cast<UTrackKeyframer*> (track);
+					if (keyFramer)
+					{
+						TAnimationTime begin = track->getBeginTime ();
+						TAnimationTime end = track->getEndTime ();
+						std::vector<TAnimationTime> keys;
+						keyFramer->getKeysInRange(begin, end, keys);
+						if (!keys.empty())
+						{
+							float fvalue;
+							sint32 ivalue;
+							CRGBA cvalue;
+							CVector vvalue;
+							CQuat qvalue;
+							string svalue;
+							bool bvalue;
+							uint i;
+							if (track->interpolate (begin, fvalue))
+							{
+								fprintf(logStream, " floats\n");
+								for (i=0; i<keys.size(); i++)
+								{
+									if (track->interpolate (keys[i], fvalue))
+										fprintf(logStream, "\tKey %d : time=%f, value=%f\n", i, keys[i], fvalue);
+								}
+							}
+							else if (track->interpolate (begin, ivalue))
+							{
+								fprintf(logStream, " integers\n");
+								for (i=0; i<keys.size(); i++)
+								{
+									if (track->interpolate (keys[i], ivalue))
+										fprintf(logStream, "\tKey %d : time=%f, value=%d\n", i, keys[i], ivalue);
+								}
+							}
+							else if (track->interpolate (begin, cvalue))
+							{
+								fprintf(logStream, " color\n");
+								for (i=0; i<keys.size(); i++)
+								{
+									if (track->interpolate (keys[i], cvalue))
+										fprintf(logStream, "\tKey %d : time=%f, r=%d, g=%d, b=%d, a=%d\n", i, keys[i], cvalue.R, cvalue.G, cvalue.B, cvalue.A);
+								}
+							}
+							else if (track->interpolate (begin, vvalue))
+							{
+								fprintf(logStream, " vector\n");
+								for (i=0; i<keys.size(); i++)
+								{
+									if (track->interpolate (keys[i], vvalue))
+										fprintf(logStream, "\tKey %d : time=%f, x=%f, y=%f, z=%f\n", i, keys[i], vvalue.x, vvalue.y, vvalue.z);
+								}
+							}
+							else if (track->interpolate (begin, qvalue))
+							{
+								fprintf(logStream, " quaternion\n");
+								for (i=0; i<keys.size(); i++)
+								{
+									if (track->interpolate (keys[i], qvalue))
+										fprintf(logStream, "\tKey %d : time=%f, x=%f, y=%f, z=%f, w=%f\n", i, keys[i], qvalue.x, qvalue.y, qvalue.z, qvalue.w);
+								}
+							}
+							else if (track->interpolate (begin, svalue))
+							{
+								fprintf(logStream, " string\n");
+								for (i=0; i<keys.size(); i++)
+								{
+									if (track->interpolate (keys[i], svalue))
+										fprintf(logStream, "\tKey %d : time=%f, value=%s\n", i, keys[i], svalue.c_str());
+								}
+							}
+							else if (track->interpolate (begin, bvalue))
+							{
+								fprintf(logStream, " bool\n");
+								for (i=0; i<keys.size(); i++)
+								{
+									if (track->interpolate (keys[i], bvalue))
+										fprintf(logStream, "\tKey %d : time=%f, value=%s\n", i, keys[i], bvalue?"true":"false");
+								}
+							}
+						}
+					}
+				}
+
+				ite++;
+			}
 		}
 		else
 		{

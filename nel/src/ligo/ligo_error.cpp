@@ -1,7 +1,7 @@
 /** \file ligo_error.cpp
  * Error handling implementation
  *
- * $Id: ligo_error.cpp,v 1.4 2002/03/28 15:19:24 corvazier Exp $
+ * $Id: ligo_error.cpp,v 1.5 2002/04/10 12:45:30 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -101,6 +101,8 @@ const char* CLigoError::_StringError[CLigoError::ErrorCount]=
 	"Some vertices are not the same",	// NotSameVertex
 	"No corner found",					// NoCornerFound
 	"A edge has two times the same corner",	// TwoCornerVertices
+	"A corner is missing in this edge", // CornerIsMissing
+	"A boundary vertex is used by multiple edges", // VertexAlreadyUsed
 	"Unkown error",						// UnknownError
 };
 

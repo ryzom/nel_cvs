@@ -1,7 +1,7 @@
 /** \file zone_template.cpp
  * Ligo zone template implementation
  *
- * $Id: zone_template.cpp,v 1.4 2002/03/28 15:19:24 corvazier Exp $
+ * $Id: zone_template.cpp,v 1.5 2002/04/10 12:45:30 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -178,9 +178,31 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 				// Keep this edge ?
 				if (keep)
 				{
-					// Add to the map
-					edgePair.insert (map<uint, uint>::value_type(theEdge.first, theEdge.second));
-					edgePairReverse.insert (map<uint, uint>::value_type(theEdge.second, theEdge.first));
+					// Already inserted ?
+					bool first = edgePair.find (theEdge.first) != edgePair.end();
+					bool second = edgePairReverse.find (theEdge.second) != edgePairReverse.end();
+
+					// First already inserted
+					if (first || second)
+					{
+						// Error, two times the same vertex
+						errors.MainError = CLigoError::VertexAlreadyUsed;
+						
+						if (first)
+							errors.pushVertexError (CLigoError::VertexAlreadyUsed, theEdge.first, 0);
+
+						if (second)
+							errors.pushVertexError (CLigoError::VertexAlreadyUsed, theEdge.second, 0);
+
+						return false;
+					}
+
+					if ((!first) && (!second))
+					{
+						// Add to the map
+						edgePair.insert (map<uint, uint>::value_type(theEdge.first, theEdge.second));
+						edgePairReverse.insert (map<uint, uint>::value_type(theEdge.second, theEdge.first));
+					}
 				}
 			}
 		}
@@ -469,6 +491,17 @@ bool CZoneTemplate::build (const std::vector<NLMISC::CVector> &vertices, const s
 						errors.MainError = CLigoError::TwoCornerVertices;
 						errors.pushVertexError (CLigoError::TwoCornerVertices, edge[0], 0);
 						errors.pushVertexError (CLigoError::TwoCornerVertices, edge[edge.size()-1], 0);
+
+						return false;
+					}
+
+					// Same point ?
+					if ((abs(startX-endX)>1) || (abs(startY-endY)>1))
+					{
+						// Error, two times the same vertex
+						errors.MainError = CLigoError::CornerIsMissing;
+						errors.pushVertexError (CLigoError::CornerIsMissing, edge[0], 0);
+						errors.pushVertexError (CLigoError::CornerIsMissing, edge[edge.size()-1], 0);
 
 						return false;
 					}

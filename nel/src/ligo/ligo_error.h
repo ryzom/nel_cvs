@@ -1,7 +1,7 @@
 /** \file ligo_error.h
  * Error handling interface
  *
- * $Id: ligo_error.h,v 1.4 2002/03/28 15:19:24 corvazier Exp $
+ * $Id: ligo_error.h,v 1.5 2002/04/10 12:45:30 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -86,6 +86,12 @@ public:
 
 		/// Two corner vertices
 		TwoCornerVertices,
+
+		/// Corner is missing
+		CornerIsMissing,
+
+		/// Boundary vertex used by multiple edge
+		VertexAlreadyUsed,
 
 		/// Unkown error
 		UnknownError,

@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.2 2001/07/04 13:10:16 cado Exp $
+ * $Id: sound_driver_al.cpp,v 1.3 2001/07/10 16:49:08 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -393,7 +393,7 @@ void			CSoundDriverAL::applyRolloffFactor( float f )
 
 
 /*
- * Temp
+ * Helper for loadWavFile()
  */
 TSampleFormat ALtoNLSoundFormat( ALenum alformat )
 {
@@ -406,16 +406,26 @@ TSampleFormat ALtoNLSoundFormat( ALenum alformat )
 	default : nlstop; return Mono8;
 	}
 }
-void			CSoundDriverAL::loadWavFile( IBuffer *destbuffer, char *filename )
+
+
+/*
+ * Temp
+ */
+bool			CSoundDriverAL::loadWavFile( IBuffer *destbuffer, char *filename )
 {
 	ALsizei size,freq;
 	ALenum format;
 	ALvoid *data;
 	ALboolean loop;
 	alutLoadWAVFile( filename, &format, &data, &size, &freq, &loop ); // last arg in some al.h
+	if ( data == NULL )
+	{
+		return false;
+	}
 	destbuffer->setFormat( ALtoNLSoundFormat(format), freq );
 	destbuffer->fillBuffer( data, size );
 	alutUnloadWAV(format,data,size,freq);
+	return true;
 }
 
 

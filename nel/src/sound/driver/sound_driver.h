@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.2 2001/07/04 13:08:17 cado Exp $
+ * $Id: sound_driver.h,v 1.3 2001/07/10 16:48:41 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,7 +89,7 @@ public:
 	virtual	ISource			*createSource() = 0;
 
 	/// Temp
-	virtual void			loadWavFile( IBuffer *destbuffer, char *filename ) = 0;
+	virtual bool			loadWavFile( IBuffer *destbuffer, char *filename ) = 0;
 
 	// Does not create a sound loader
 
@@ -109,7 +109,7 @@ protected:
 };
 
 
-/*
+/**
  * Sound driver exceptions
  */
 class ESoundDriver : public NLMISC::Exception
@@ -120,7 +120,7 @@ public:
 };
 
 
-/*
+/**
  * ESoundDriverNotFound
  */
 class ESoundDriverNotFound : public ESoundDriver
@@ -130,7 +130,7 @@ public:
 };
 
 
-/*
+/**
  * ESoundDriverCorrupted
  */
 class ESoundDriverCorrupted : public ESoundDriver
@@ -140,7 +140,7 @@ public:
 };
 
 
-/*
+/**
  * ESoundDriverOldVersion
  */
 class ESoundDriverOldVersion : public ESoundDriver
@@ -150,7 +150,7 @@ public:
 };
 
 
-/*
+/**
  * ESoundDriverUnknownVersion
  */
 class ESoundDriverUnknownVersion : public ESoundDriver
@@ -160,7 +160,7 @@ public:
 };
 
 
-/*
+/**
  * ESoundDriverCantCreateDriver
  */
 class ESoundDriverCantCreateDriver : public ESoundDriver
@@ -170,7 +170,7 @@ public:
 };
 
   
-/*
+/**
  * ESoundDriverGenBuf
  */
 class ESoundDriverGenBuf : public ESoundDriver
@@ -180,7 +180,7 @@ public:
 };
 
 
-/*
+/**
  * ESoundDriverGenBuf
  */
 class ESoundDriverGenSrc : public ESoundDriver
@@ -190,7 +190,7 @@ public:
 };
 
   
-/*
+/**
  * ESoundDriverNotSupp
  */
 class ESoundDriverNotSupp : public ESoundDriver

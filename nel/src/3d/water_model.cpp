@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.41 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: water_model.cpp,v 1.42 2004/04/09 14:19:13 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -926,16 +926,16 @@ void CWaterModel::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, c
 	float date  = 0.001f * (NLMISC::CTime::getLocalTime() & 0xffffff); // must keep some precision.
 	// set bumpmaps pos
 	cst[9  - cstOffset].set(fmodf(obsPos.x * shape->_HeightMapScale[0].x, 1.f) + fmodf(date * shape->_HeightMapSpeed[0].x, 1.f), fmodf(shape->_HeightMapScale[0].y * obsPos.y, 1.f) + fmodf(date * shape->_HeightMapSpeed[0].y, 1.f), 0.f, 1.f); // bump map 0 offset
-	cst[10  - cstOffset].set(shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 1); // bump map 0 scale
-	cst[11  - cstOffset].set(fmodf(shape->_HeightMapScale[1].x * obsPos.x, 1.f) + fmodf(date * shape->_HeightMapSpeed[1].x, 1.f), fmodf(shape->_HeightMapScale[1].y * obsPos.y, 1.f) + fmodf(date * shape->_HeightMapSpeed[1].y, 1.f), 0.f, 0.f); // bump map 1 offset
-	cst[12  - cstOffset].set(shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 1); // bump map 1 scale
+	cst[10  - cstOffset].set(shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 0); // bump map 0 scale
+	cst[11  - cstOffset].set(fmodf(shape->_HeightMapScale[1].x * obsPos.x, 1.f) + fmodf(date * shape->_HeightMapSpeed[1].x, 1.f), fmodf(shape->_HeightMapScale[1].y * obsPos.y, 1.f) + fmodf(date * shape->_HeightMapSpeed[1].y, 1.f), 0.f, 1.f); // bump map 1 offset
+	cst[12  - cstOffset].set(shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 0); // bump map 1 scale
 
 			
 	
 
 	cst[4  - cstOffset].set(1.f, 1.f, 1.f, 1.f); // use with min man, and to get the 1 constant		
 	cst[7  - cstOffset].set(0, 0, obsPos.z - zHeight, 1.f);
-	cst[8  - cstOffset].set(0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
+	cst[8  - cstOffset].set(0.5f, 0.5f, 0.f, 1.f); // used to scale reflected ray into the envmap
 
 
 	

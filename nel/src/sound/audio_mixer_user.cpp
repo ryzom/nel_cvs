@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.11 2001/08/24 16:55:53 vizerie Exp $
+ * $Id: audio_mixer_user.cpp,v 1.12 2001/08/29 17:13:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,7 +155,18 @@ void				CAudioMixerUser::init( uint32 balance_period )
 	nldebug( "AM: Init..." );
 	
 	// Init sound driver
-	_SoundDriver = ISoundDriver::createDriver();
+	try
+	{
+		_SoundDriver = ISoundDriver::createDriver();
+	}
+	catch(...)
+	{
+		delete this;
+		_Instance = NULL;
+		throw;
+	}
+
+
 	CSound::init( _SoundDriver );
 
 	// Init registrable classes

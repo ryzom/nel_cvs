@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.13 2004/01/13 12:52:58 berenguier Exp $
+ * $Id: attrib_dlg.h,v 1.14 2004/06/17 08:18:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include "3d/ps_attrib_maker.h"
 #include "editable_range.h"
 #include "popup_notify.h"
-
+#include "particle_workspace.h"
 
 namespace NL3D
 {
@@ -61,7 +61,7 @@ public:
 	  * \param : valueID : an unique id for this dialog
 	  * \param : enableConstantValue when false, only a scheme is available
 	  */
-	CAttribDlg(const std::string &valueID, bool enableConstantValue = true);   // standard constructor
+	CAttribDlg(const std::string &valueID, CParticleWorkspace::CNode *ownerNode, bool enableConstantValue = true);   // standard constructor
 	CAttribDlg::~CAttribDlg();
 	
 
@@ -206,34 +206,26 @@ protected:
 
 	// the dialog used to tune the nb cycles param (when available)
 	CEditableRangeFloat *_NbCyclesDlg;	
-
 	// this is equal to true when memory schemes are not permitted
 	bool _DisableMemoryScheme;
-
 	/// true to enable 'nb cycles' control
 	bool _NbCycleEnabled;
-
 	// wrapper to tune the number of cycles
 	struct CNbCyclesWrapper : public IPSWrapperFloat
 	{
 			CAttribDlg *Dlg;
 			float get(void) const { return Dlg->getSchemeNbCycles(); }
 			void set(const float &v) { Dlg->setSchemeNbCycles(v); }
-	} _NbCyclesWrapper;
-
-	
+	} _NbCyclesWrapper;	
 	// true when created, it is set to false once a constant, or scheme dialog has bee shown
-
 	bool _FirstDrawing;
-
-
 	// the dialog used to tune a constant value
 	CEditAttribDlg *_CstValueDlg;
 
 	// the current dialog for scheme edition
 	CWnd		   *_SchemeEditionDlg;
-
 	std::string		_ValueID;
+	CParticleWorkspace::CNode *_Node;
 
 	// Generated message map functions
 	//{{AFX_MSG(CAttribDlg)
@@ -264,15 +256,13 @@ protected:
 template <typename T> class CAttribDlgT : public CAttribDlg
 {	
 public:
-
-	CAttribDlgT(const std::string &valueID) : CAttribDlg(valueID), _Wrapper(NULL)
-											, _SchemeWrapper(NULL)
+	CAttribDlgT(const std::string &valueID, CParticleWorkspace::CNode *node) : CAttribDlg(valueID, node),
+																			   _Wrapper(NULL),
+																			   _SchemeWrapper(NULL)																			   
 	{
-	}
-		
-
-	void setWrapper(IPSWrapper<T> *wrapper) { nlassert(wrapper); _Wrapper = wrapper; }
-	void setSchemeWrapper(IPSSchemeWrapper<T> *schemeWrapper) { nlassert(schemeWrapper); _SchemeWrapper = schemeWrapper; }
+	}		
+	void setWrapper(IPSWrapper<T> *wrapper) { nlassert(wrapper); _Wrapper = wrapper; _Wrapper->OwnerNode = _Node; }
+	void setSchemeWrapper(IPSSchemeWrapper<T> *schemeWrapper) { nlassert(schemeWrapper); _SchemeWrapper = schemeWrapper; _SchemeWrapper->OwnerNode = _Node; }
 	
 	// inherited from CAttribDlg
 	virtual uint getNumScheme(void) const = 0;	
@@ -283,7 +273,7 @@ public:
 
 	virtual void resetCstValue(void) 
 	{ 
-		_Wrapper->set(_Wrapper->get()); // reuse current color 
+		_Wrapper->setAndUpdateModifiedFlag(_Wrapper->get()); // reuse current color 
 	}
 
 	virtual bool hasSchemeCustomInput(void) const { return _SchemeWrapper->getScheme()->hasCustomInput(); }
@@ -302,27 +292,21 @@ public:
 	virtual NL3D::CPSAttribMakerBase *getCurrentSchemePtr(void) const { return _SchemeWrapper->getScheme(); }
 	virtual void setCurrentSchemePtr(NL3D::CPSAttribMakerBase *s) 
 	{ 
-		_SchemeWrapper->setScheme(NLMISC::safe_cast<NL3D::CPSAttribMaker<T> *>(s));
+		_SchemeWrapper->setSchemeAndUpdateModifiedFlag(NLMISC::safe_cast<NL3D::CPSAttribMaker<T> *>(s));
 	}
 
 
 protected:
-
-
 	virtual bool useScheme(void) const
 	{
 		nlassert(_SchemeWrapper);
 		return(_SchemeWrapper->getScheme() != NULL);
 	}
-
-
 public:
 	// wrapper to set/get a constant float
 	IPSWrapper<T> *_Wrapper;
-
 	// wrapper to set/get a scheme
-	IPSSchemeWrapper<T> *_SchemeWrapper	;
-
+	IPSSchemeWrapper<T> *_SchemeWrapper	;	
 };
 
 /** an attribute editor specialized for float values
@@ -336,7 +320,7 @@ public:
 	 *  \param minValue : the min value for the editable range dlg(for constant value)
 	 *  \param maxValue : the min value for the editable range dlg (for constant value)
 	 */
-	CAttribDlgFloat(const std::string &valueID, float minValue = 0, float maxValue = 10);
+	CAttribDlgFloat(const std::string &valueID, CParticleWorkspace::CNode *node, float minValue = 0, float maxValue = 10);
 
 	
 	// inherited from CAttribDlg
@@ -368,7 +352,7 @@ public:
 	 *  \param minValue : the min value for the editable range dlg(for constant value)
 	 *  \param maxValue : the min value for the editable range dlg (for constant value)
 	 */
-	CAttribDlgUInt(const std::string &valueID, uint32 minValue = 0, uint32 maxValue = 10);
+	CAttribDlgUInt(const std::string &valueID, CParticleWorkspace::CNode *node, uint32 minValue = 0, uint32 maxValue = 10);
 
 	
 	// inherited from CAttribDlg
@@ -401,7 +385,7 @@ public:
 	 *  \param minValue : the min value for the editable range dlg(for constant value)
 	 *  \param maxValue : the min value for the editable range dlg (for constant value)
 	 */
-	CAttribDlgInt(const std::string &valueID, sint32 minValue = 0, sint32 maxValue = 10);
+	CAttribDlgInt(const std::string &valueID, CParticleWorkspace::CNode *node, sint32 minValue = 0, sint32 maxValue = 10);
 
 	
 	// inherited from CAttribDlg
@@ -433,7 +417,7 @@ public:
 	/** ctor
 	 *  \param valueID an unique id for the constant value editable range dialog
 	 */
-	CAttribDlgRGBA(const std::string &valueID);
+	CAttribDlgRGBA(const std::string &valueID, CParticleWorkspace::CNode *node);
 
 	
 	// inherited from CAttribDlg
@@ -462,7 +446,7 @@ public:
 	/** ctor
 	 *  \param valueID an unique id for the constant value editable range dialog
 	 */
-	CAttribDlgPlaneBasis(const std::string &valueID);
+	CAttribDlgPlaneBasis(const std::string &valueID, CParticleWorkspace::CNode *node);
 
 	
 	// inherited from CAttribDlg

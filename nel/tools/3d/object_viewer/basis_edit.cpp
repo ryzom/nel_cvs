@@ -1,7 +1,7 @@
 /** \file basis_edit.cpp
  * a dialog to edit the orientation of a basis
  *
- * $Id: basis_edit.cpp,v 1.5 2002/11/04 15:40:44 boucher Exp $
+ * $Id: basis_edit.cpp,v 1.6 2004/06/17 08:18:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -339,7 +339,7 @@ void CBasisEdit::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		NL3D::CPlaneBasis pb;
 		pb.X = mat.getI();
 		pb.Y = mat.getJ();
-		_Wrapper->set(pb);
+		_Wrapper->setAndUpdateModifiedFlag(pb);
 		Invalidate();
 	}		
 	CDialog::OnHScroll(nSBCode, nPos, pScrollBar);

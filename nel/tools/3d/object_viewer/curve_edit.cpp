@@ -1,7 +1,7 @@
 /** \file curve_edit.cpp
  * A dialog for editing a curve
  *
- * $Id: curve_edit.cpp,v 1.6 2003/07/30 16:42:56 vizerie Exp $
+ * $Id: curve_edit.cpp,v 1.7 2004/06/17 08:14:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,10 +37,16 @@ static const uint CtrlPointSize = 3;
 
 
 
-CurveEdit::CurveEdit(NL3D::CPSFloatCurveFunctor *curve, IPopupNotify *pn, CWnd* pParent /*=NULL*/)
-	: CDialog(CurveEdit::IDD, pParent), _PN(pn),
-	  Curve(curve), _State(Create),
-	  _X(10), _Y(10), _Width(350), _Height(200),
+CurveEdit::CurveEdit(NL3D::CPSFloatCurveFunctor *curve, CParticleWorkspace::CNode *ownerNode, IPopupNotify *pn, CWnd* pParent /*=NULL*/)
+	: CDialog(CurveEdit::IDD, pParent), 
+	  _Node(ownerNode),
+	  _PN(pn),
+	  Curve(curve),
+	  _State(Create),
+	  _X(10),
+	  _Y(10),
+	  _Width(350),
+	  _Height(200),
 	  _SelectedCtrlPoint(-1),
 	  _NumSamplesDlg(NULL)
 
@@ -50,7 +56,7 @@ CurveEdit::CurveEdit(NL3D::CPSFloatCurveFunctor *curve, IPopupNotify *pn, CWnd* 
 	m_DisplayInterpolation = FALSE;
 	m_SmoothingOn = FALSE;
 	//}}AFX_DATA_INIT
-	scaleMinMax();
+	scaleMinMax();	
 }
 
 CurveEdit::~CurveEdit()
@@ -143,8 +149,6 @@ void CurveEdit::OnLButtonUp(UINT nFlags, CPoint point)
 			_State = Create;
 		break;
 	}
-
-
 	CDialog::OnLButtonUp(nFlags, point);
 }
 
@@ -161,7 +165,7 @@ void CurveEdit::OnLButtonDown(UINT nFlags, CPoint point)
 		{
 			Curve->addControlPoint(coordsFromScreen(point.x, point.y));
 			_State = Created;
-			Invalidate();
+			invalidate();
 		}
 		case Remove:
 		{
@@ -169,7 +173,7 @@ void CurveEdit::OnLButtonDown(UINT nFlags, CPoint point)
 			Curve->removeCtrlPoint(_SelectedCtrlPoint);
 			_State= Removing;
 			_SelectedCtrlPoint = -1;
-			Invalidate();
+			invalidate();
 		}
 		break;
 	}
@@ -367,7 +371,7 @@ BOOL CurveEdit::OnInitDialog()
 	
 	((CButton *) GetDlgItem(IDC_ADD_POINT))->SetCheck(1);
 	
-	_NumSamplesDlg = new CEditableRangeUInt(std::string("FLOAT_CURVE_NB_SAMPLE"), 1, 512);
+	_NumSamplesDlg = new CEditableRangeUInt(std::string("FLOAT_CURVE_NB_SAMPLE"), _Node, 1, 512);
 	_NumSampleWrapper.CE = this;
 	_NumSamplesDlg->setWrapper(&_NumSampleWrapper);
 	_NumSamplesDlg->init(80, 225, this);
@@ -421,7 +425,7 @@ void CurveEdit::OnSmoothingOn()
 	UpdateData();
 	nlassert(Curve);
 	Curve->enableSmoothing(m_SmoothingOn ? true : false /* perf; warning */);
-	Invalidate();
+	invalidate();
 }
 
 
@@ -430,7 +434,7 @@ void CurveEdit::OnLastEqualFirst()
 	CCtrlPoint pt = Curve->getControlPoint(0);
 	pt.Date = Curve->getControlPoint(Curve->getNumCtrlPoints() - 1).Date;
 	Curve->setCtrlPoint(Curve->getNumCtrlPoints() - 1, pt);
-	Invalidate();	
+	invalidate();	
 }
 
 void CurveEdit::OnCenterCurve() 
@@ -444,7 +448,7 @@ void CurveEdit::OnFirstEqualLast()
 	CCtrlPoint pt = Curve->getControlPoint(Curve->getNumCtrlPoints() - 1);
 	pt.Date = Curve->getControlPoint(0).Date;
 	Curve->setCtrlPoint(0, pt);
-	Invalidate();	
+	invalidate();	
 }
 
 void CurveEdit::OnDestroy() 
@@ -463,4 +467,13 @@ void CurveEdit::OnClose()
 {
 	CDialog::OnClose();	
 	_PN->childPopupClosed(this);
+}
+
+void CurveEdit::invalidate()
+{
+	if (_Node)
+	{
+		_Node->setModified(true);
+	}
+	Invalidate();
 }

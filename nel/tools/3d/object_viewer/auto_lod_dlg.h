@@ -1,7 +1,7 @@
 /** \file auto_lod_dlg.h
  * A dialog to tune auto-lod options of particle systems.
  *
- * $Id: auto_lod_dlg.h,v 1.2 2003/04/07 12:41:11 vizerie Exp $
+ * $Id: auto_lod_dlg.h,v 1.3 2004/06/17 08:18:01 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "ps_wrapper.h"
 #include "dialog_stack.h"
 #include "3d/particle_system.h"
+#include "particle_workspace.h"
 
 namespace NL3D
 {
@@ -44,7 +45,7 @@ class CAutoLODDlg : public CDialog, public CDialogStack
 {
 // Construction
 public:
-	CAutoLODDlg(NL3D::CParticleSystem *ps, IPopupNotify *pn, CWnd* pParent = NULL);   // standard constructor
+	CAutoLODDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CParticleSystem *ps, IPopupNotify *pn, CWnd* pParent = NULL);   // standard constructor
 
 	void init(CWnd *pParent);
 // Dialog Data
@@ -63,8 +64,9 @@ public:
 
 // Implementation
 protected:
-	NL3D::CParticleSystem *_PS;
-	IPopupNotify		  *_PN;	
+	CParticleWorkspace::CNode *_Node;
+	NL3D::CParticleSystem	  *_PS;
+	IPopupNotify		      *_PN;	
 	
 
 

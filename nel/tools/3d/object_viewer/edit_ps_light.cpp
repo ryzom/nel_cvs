@@ -12,9 +12,11 @@
 
 
 //***************************************************************************************
-CEditPSLight::CEditPSLight(NL3D::CPSLight *light) :	_ColorDlg(NULL),
-													_AttenStartDlg(NULL),
-													_AttenEndDlg(NULL)
+CEditPSLight::CEditPSLight(CParticleWorkspace::CNode *ownerNode, NL3D::CPSLight *light) 
+						  :	_Node(ownerNode),
+							_ColorDlg(NULL),
+							_AttenStartDlg(NULL),
+							_AttenEndDlg(NULL)
 {
 	//{{AFX_DATA_INIT(CEditPSLight)
 		// NOTE: the ClassWizard will add member initialization here
@@ -62,7 +64,7 @@ void CEditPSLight::init(CWnd* pParent /*=NULL*/)
 	RECT r;
 	HBITMAP bmh;
 	//
-	_ColorDlg = new CAttribDlgRGBA("LIGHT_COLOR");
+	_ColorDlg = new CAttribDlgRGBA("LIGHT_COLOR", _Node);
 	_ColorWrapper.L = _Light;
 	_ColorDlg->setWrapper(&_ColorWrapper);	
 	_ColorDlg->setSchemeWrapper(&_ColorWrapper);
@@ -71,7 +73,7 @@ void CEditPSLight::init(CWnd* pParent /*=NULL*/)
 	bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_PARTICLE_COLOR));
 	_ColorDlg->init(bmh, r.left, r.top, this);
 	//
-	_AttenStartDlg = new CAttribDlgFloat("LIGHT_ATTEN_START", 0.01f, 5.f);
+	_AttenStartDlg = new CAttribDlgFloat("LIGHT_ATTEN_START", _Node, 0.01f, 5.f);
 	_AttenStartDlg->enableLowerBound(0.01f, true);
 	_AttenStartWrapper.L = _Light;	
 	_AttenStartDlg->setWrapper(&_AttenStartWrapper);	
@@ -81,7 +83,7 @@ void CEditPSLight::init(CWnd* pParent /*=NULL*/)
 	bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_LIGHT_ATTEN_START));
 	_AttenStartDlg->init(bmh, r.left, r.top, this);
 	//
-	_AttenEndDlg = new CAttribDlgFloat("LIGHT_ATTEN_END", 0.01f, 5.f);
+	_AttenEndDlg = new CAttribDlgFloat("LIGHT_ATTEN_END", _Node, 0.01f, 5.f);
 	_AttenEndDlg->enableLowerBound(0.01f, true);
 	_AttenEndWrapper.L = _Light;
 	_AttenEndDlg->setWrapper(&_AttenEndWrapper);	

@@ -1,7 +1,7 @@
 /** \file edit_spinner.cpp
  * a dialog to edit a spinner
  *
- * $Id: edit_spinner.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
+ * $Id: edit_spinner.cpp,v 1.5 2004/06/17 08:13:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,9 +36,13 @@
 // CEditSpinner dialog
 
 
-CEditSpinner::CEditSpinner(NL3D::CPSBasisSpinner *sf, CWnd *pParent, IPopupNotify *pn)
-	: CDialog(CEditSpinner::IDD, pParent), _DirDlg(NULL), _NbSamplesDlg(NULL)
-	  , _Spinner(sf), _PN(pn)
+CEditSpinner::CEditSpinner(NL3D::CPSBasisSpinner *sf, CParticleWorkspace::CNode *ownerNode, CWnd *pParent, IPopupNotify *pn)
+	: CDialog(CEditSpinner::IDD, pParent),
+	  _Node(ownerNode),
+	  _DirDlg(NULL), 
+	  _NbSamplesDlg(NULL),
+	  _Spinner(sf),
+	  _PN(pn)
 {
 	//{{AFX_DATA_INIT(CEditSpinner)
 		// NOTE: the ClassWizard will add member initialization here
@@ -83,9 +87,10 @@ BOOL CEditSpinner::OnInitDialog()
 
 	_DirDlg = new CDirectionAttr(std::string("SPINNER DIR"));
 	_DirDlg->setWrapper(&_AxisWrapper);
+	_AxisWrapper.OwnerNode = _Node;
 	_DirDlg->init(10, 10, this);
 
-	_NbSamplesDlg = new CEditableRangeUInt("SPINNER NB SAMPLES", 1, 512);
+	_NbSamplesDlg = new CEditableRangeUInt("SPINNER NB SAMPLES", _Node, 1, 512);
 	_NbSamplesDlg->enableLowerBound(0, true); // 0 not allowed
 	_NbSamplesDlg->setWrapper(&_NbSampleWrapper);
 	_NbSamplesDlg->init(60, 50, this);

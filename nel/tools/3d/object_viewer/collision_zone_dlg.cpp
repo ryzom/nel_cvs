@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.cpp
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.cpp,v 1.3 2003/08/22 09:00:08 vizerie Exp $
+ * $Id: collision_zone_dlg.cpp,v 1.4 2004/06/17 08:15:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@
 // CCollisionZoneDlg dialog
 
 // standard constructor
-CCollisionZoneDlg::CCollisionZoneDlg(NL3D::CPSZone *zone, CParticleDlg *particleDlg)
+CCollisionZoneDlg::CCollisionZoneDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSZone *zone, CParticleDlg *particleDlg)
 	: _Zone(zone), _ParticleDlg(particleDlg)
 {
 	nlassert(particleDlg);
@@ -53,7 +53,7 @@ void CCollisionZoneDlg::init(sint x, sint y, CWnd *pParent)
 	r.right += x; r.left += x;
 	MoveWindow(&r);
 
-	_BounceFactorDlg = new CEditableRangeFloat(std::string("BOUNCE_FACTOR"), 0.f, 1.f);
+	_BounceFactorDlg = new CEditableRangeFloat(std::string("BOUNCE_FACTOR"), _Node, 0.f, 1.f);
 	pushWnd(_BounceFactorDlg);
 	_BounceFactorWrapper.Z = _Zone;
 	_BounceFactorDlg->setWrapper(&_BounceFactorWrapper);
@@ -95,5 +95,5 @@ void CCollisionZoneDlg::OnSelchangeCollisionBehaviour()
 	UpdateData();
 	_Zone->setCollisionBehaviour( (NL3D::CPSZone::TCollisionBehaviour) m_CollisionBehaviour.GetCurSel());
 	_BounceFactorDlg->EnableWindow(_Zone->getCollisionBehaviour() == NL3D::CPSZone::bounce ? TRUE : FALSE);	
-	_ParticleDlg->StartStopDlg->resetAutoCount();
+	_ParticleDlg->StartStopDlg->resetAutoCount(_Node);
 }

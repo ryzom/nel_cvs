@@ -1,7 +1,7 @@
 /** \file curve_edit.h
  * A dialog for editing a curve
  *
- * $Id: curve_edit.h,v 1.4 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: curve_edit.h,v 1.5 2004/06/17 08:14:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,13 +35,14 @@
 #include "ps_wrapper.h"
 #include "popup_notify.h"
 #include "editable_range.h"
+#include "particle_workspace.h"
 
 
 class CurveEdit : public CDialog
 {
 public:
 	// ctor
-	CurveEdit(NL3D::CPSFloatCurveFunctor *curve, IPopupNotify *pn, CWnd* pParent = NULL);
+	CurveEdit(NL3D::CPSFloatCurveFunctor *curve, CParticleWorkspace::CNode *ownerNode, IPopupNotify *pn, CWnd* pParent = NULL);
 	// dtor
 	~CurveEdit();
 
@@ -117,6 +118,7 @@ protected:
 			  Remove, Removing }		_State;	
 	float								_Scale, _Origin;
 	CEditableRangeUInt					*_NumSamplesDlg;
+	CParticleWorkspace::CNode			*_Node;
 	
 	struct CNumSampleWrapper : public IPSWrapper<uint32>
 	{
@@ -131,6 +133,8 @@ protected:
 			CE->Invalidate();
 		}
 	}	_NumSampleWrapper;
+
+	void invalidate();
 
 	IPopupNotify *_PN; // this should be notified when this window is destroyed
 	

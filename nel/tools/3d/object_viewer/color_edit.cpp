@@ -1,7 +1,7 @@
 /** \file color_edit.cpp
  * a dialog to edit a color (or call the windows color dialog)
  *
- * $Id: color_edit.cpp,v 1.7 2002/11/04 15:40:44 boucher Exp $
+ * $Id: color_edit.cpp,v 1.8 2004/06/17 08:15:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,10 +154,8 @@ void CColorEdit::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 		}	
 		
 		m_Color.setColor(col);
-		_Wrapper->set(col);
-
+		_Wrapper->setAndUpdateModifiedFlag(col);
 		updateEdits();
-
 		UpdateData(FALSE);
 		CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
 	}	
@@ -183,7 +181,7 @@ void CColorEdit::OnBrowseColor()
 		col.R = (uint8) (cc.rgbResult & 0xff);
 		col.G = (uint8) ((cc.rgbResult & 0xff00) >> 8);
 		col.B = (uint8) ((cc.rgbResult & 0xff0000) >> 16);
-		_Wrapper->set(col);
+		_Wrapper->setAndUpdateModifiedFlag(col);
 		updateColorFromReader();
 	}
 }
@@ -196,7 +194,7 @@ void CColorEdit::editExValueChanged(CEditEx *ctrl)
 		uint value = std::min((uint) 255, m_BlueEditCtrl.getUInt());			
 		NLMISC::CRGBA oldVal = _Wrapper->get();
 		oldVal.B = (uint8) value;
-		_Wrapper->set(oldVal);
+		_Wrapper->setAndUpdateModifiedFlag(oldVal);
 		updateColorFromReader();
 		return;
 	}
@@ -206,7 +204,7 @@ void CColorEdit::editExValueChanged(CEditEx *ctrl)
 		uint value = std::min((uint) 255, m_AlphaEditCtrl.getUInt());			
 		NLMISC::CRGBA oldVal = _Wrapper->get();
 		oldVal.A = (uint8) value;
-		_Wrapper->set(oldVal);
+		_Wrapper->setAndUpdateModifiedFlag(oldVal);
 		updateColorFromReader();
 		return;
 	}
@@ -216,7 +214,7 @@ void CColorEdit::editExValueChanged(CEditEx *ctrl)
 		uint value = std::min((uint) 255, m_GreenEditCtrl.getUInt());			
 		NLMISC::CRGBA oldVal = _Wrapper->get();
 		oldVal.G = (uint8) value;
-		_Wrapper->set(oldVal);
+		_Wrapper->setAndUpdateModifiedFlag(oldVal);
 		updateColorFromReader();
 		return;
 	}
@@ -226,7 +224,7 @@ void CColorEdit::editExValueChanged(CEditEx *ctrl)
 		uint value = std::min((uint) 255, m_RedEditCtrl.getUInt());			
 		NLMISC::CRGBA oldVal = _Wrapper->get();
 		oldVal.R = (uint8) value;
-		_Wrapper->set(oldVal);
+		_Wrapper->setAndUpdateModifiedFlag(oldVal);
 		updateColorFromReader();
 		return;
 	}

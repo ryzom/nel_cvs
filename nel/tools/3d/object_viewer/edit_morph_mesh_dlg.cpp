@@ -17,8 +17,12 @@ using NL3D::CPSConstraintMesh;
 // CEditMorphMeshDlg dialog
 
 
-CEditMorphMeshDlg::CEditMorphMeshDlg(NL3D::CPSConstraintMesh *cm, CWnd* pParent, CParticleDlg  *particleDlg, IPopupNotify *pn /*= NULL*/)
-	: _PN(pn), _CM(cm), CDialog(CEditMorphMeshDlg::IDD, pParent), _ParticleDlg(particleDlg)
+CEditMorphMeshDlg::CEditMorphMeshDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSConstraintMesh *cm, CWnd* pParent, CParticleDlg  *particleDlg, IPopupNotify *pn /*= NULL*/)
+									: _Node(ownerNode),
+									  _PN(pn),
+									  _CM(cm),
+									  CDialog(CEditMorphMeshDlg::IDD, pParent),
+									  _ParticleDlg(particleDlg)
 {
 	nlassert(cm);
 	//{{AFX_DATA_INIT(CEditMorphMeshDlg)
@@ -91,6 +95,16 @@ bool CEditMorphMeshDlg::getShapeNameFromDlg(std::string &name)
 }
 
 //====================================================================
+void CEditMorphMeshDlg::touchPSState()
+{
+	if (_Node && _Node->getPSModel())
+	{	
+		_Node->getPSModel()->touchTransparencyState();
+		_Node->getPSModel()->touchLightableState();
+	}
+}
+
+//====================================================================
 void CEditMorphMeshDlg::OnAdd() 
 {
 	std::string shapeName;
@@ -107,8 +121,7 @@ void CEditMorphMeshDlg::OnAdd()
 		m_MeshList.AddString(getShapeDescStr(index, numVerts[index]).c_str());
 		GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);
 	}
-	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
-	_ParticleDlg->getCurrPSModel()->touchLightableState();
+	touchPSState();
 	updateValidFlag();
 }
 
@@ -125,9 +138,8 @@ void CEditMorphMeshDlg::OnRemove()
 	if (_CM->getNumShapes() == 2)
 	{
 		GetDlgItem(IDC_REMOVE)->EnableWindow(FALSE);
-	}
-	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
-	_ParticleDlg->getCurrPSModel()->touchLightableState();
+	}	
+	touchPSState();
 	updateMeshList();
 	updateValidFlag();
 }
@@ -145,8 +157,7 @@ void CEditMorphMeshDlg::OnInsert()
 		shapeNames.insert(shapeNames.begin() + selItem, shapeName);
 		_CM->setShapes(&shapeNames[0], shapeNames.size());		
 		GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);
-		_ParticleDlg->getCurrPSModel()->touchTransparencyState();
-		_ParticleDlg->getCurrPSModel()->touchLightableState();
+		touchPSState();
 		updateMeshList();
 		m_MeshList.SetCurSel(selItem);
 	}
@@ -195,8 +206,7 @@ void CEditMorphMeshDlg::OnChange()
 		sint selItem = m_MeshList.GetCurSel();
 		_CM->setShape(selItem, shapeName);	
 		updateMeshList();
-		_ParticleDlg->getCurrPSModel()->touchTransparencyState();
-		_ParticleDlg->getCurrPSModel()->touchLightableState();
+		touchPSState();
 	}
 	updateValidFlag();
 }
@@ -254,7 +264,7 @@ BOOL CEditMorphMeshDlg::OnInitDialog()
 
 	/// create the morph scheme edition dialog
 	RECT r;
-	CAttribDlgFloat *mvd = new CAttribDlgFloat("MORPH_VALUE");
+	CAttribDlgFloat *mvd = new CAttribDlgFloat("MORPH_VALUE", _Node);
 	_MorphSchemeWrapper.CM = _CM;
 	mvd->setWrapper(&_MorphSchemeWrapper);	
 	mvd->setSchemeWrapper(&_MorphSchemeWrapper);

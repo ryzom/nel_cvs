@@ -1,7 +1,7 @@
 /** \file collision_zone_dlg.h
  * a dialog to edit collision zone properties in a particle system
  *
- * $Id: collision_zone_dlg.h,v 1.5 2003/08/22 09:00:08 vizerie Exp $
+ * $Id: collision_zone_dlg.h,v 1.6 2004/06/17 08:15:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,8 +37,10 @@ namespace NL3D
 #include "ps_wrapper.h"
 #include "dialog_stack.h"
 #include "editable_range.h"
-
+#include "particle_workspace.h"
+//
 #include "3d/ps_zone.h"
+
 
 class CParticleDlg;
 
@@ -49,7 +51,7 @@ class CCollisionZoneDlg : public CDialog, public CDialogStack
 {
 // Construction
 public:
-	CCollisionZoneDlg(NL3D::CPSZone *zone, CParticleDlg *particleDlg) ;   // standard constructor
+	CCollisionZoneDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSZone *zone, CParticleDlg *particleDlg) ;   // standard constructor
 
 	void init(sint x, sint y, CWnd *pParent) ;
 // Dialog Data
@@ -68,14 +70,12 @@ public:
 
 // Implementation
 protected:
-	CParticleDlg *_ParticleDlg;
-
+	CParticleWorkspace::CNode *_Node;
+	CParticleDlg              *_ParticleDlg;
 	// the collision zone being edited
-	NL3D::CPSZone *_Zone ;
-
+	NL3D::CPSZone             *_Zone ;
 	// edition of the bounce factor
-	CEditableRangeFloat *_BounceFactorDlg ;
-
+	CEditableRangeFloat       *_BounceFactorDlg ;
 	// Generated message map functions
 	//{{AFX_MSG(CCollisionZoneDlg)
 	afx_msg void OnSelchangeCollisionBehaviour();

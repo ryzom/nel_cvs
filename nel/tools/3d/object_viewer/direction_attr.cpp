@@ -2,7 +2,7 @@
  * a dialog to choose a direction (normalized vector). It gives several choices, or allow 
  * to call a more complete dialog (CDirectionEdit)
  *
- * $Id: direction_attr.cpp,v 1.6 2003/07/01 14:08:27 vizerie Exp $
+ * $Id: direction_attr.cpp,v 1.7 2004/06/17 08:14:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,38 +96,38 @@ END_MESSAGE_MAP()
 void CDirectionAttr::OnVectI() 
 {
 	nlassert(_Wrapper);	
-	_Wrapper->set(NLMISC::CVector::I);
+	_Wrapper->setAndUpdateModifiedFlag(NLMISC::CVector::I);
 }
 
 //=======================================================================================
 void CDirectionAttr::OnVectJ() 
 {
 	nlassert(_Wrapper);	
-	_Wrapper->set(NLMISC::CVector::J);
+	_Wrapper->setAndUpdateModifiedFlag(NLMISC::CVector::J);
 }
 
 //=======================================================================================
 void CDirectionAttr::OnVectK() 
 {
-	_Wrapper->set(NLMISC::CVector::K);
+	_Wrapper->setAndUpdateModifiedFlag(NLMISC::CVector::K);
 }
 
 //=======================================================================================
 void CDirectionAttr::OnVectMinusI() 
 {
-	_Wrapper->set( - NLMISC::CVector::I);	
+	_Wrapper->setAndUpdateModifiedFlag( - NLMISC::CVector::I);	
 }
 
 //=======================================================================================
 void CDirectionAttr::OnVectMinusJ() 
 {
-	_Wrapper->set(- NLMISC::CVector::J);
+	_Wrapper->setAndUpdateModifiedFlag(- NLMISC::CVector::J);
 }
 
 //=======================================================================================
 void CDirectionAttr::OnVectMinusK() 
 {
-	_Wrapper->set(- NLMISC::CVector::K);	
+	_Wrapper->setAndUpdateModifiedFlag(- NLMISC::CVector::K);	
 }	
 
 //=======================================================================================

@@ -13,8 +13,8 @@
 // CEditFollowPath dialog
 
 
-CEditFollowPath::CEditFollowPath(NL3D::CPSPlaneBasisFollowSpeed *pbfs, CWnd* pParent, IPopupNotify *pn)
-	: CDialog(CEditFollowPath::IDD, pParent), _PN(pn)
+CEditFollowPath::CEditFollowPath(NL3D::CPSPlaneBasisFollowSpeed *pbfs, CParticleWorkspace::CNode *ownerNode, CWnd* pParent, IPopupNotify *pn)
+	: CDialog(CEditFollowPath::IDD, pParent), _Node(ownerNode), _PN(pn)
 {
 	nlassert(pbfs);
 	_FollowPath = pbfs;
@@ -69,4 +69,5 @@ void CEditFollowPath::OnSelchangeProjectionMode()
 	nlassert(_FollowPath);
 	int index= ((CComboBox *) GetDlgItem(IDC_PROJECTION_MODE))->GetCurSel();
 	_FollowPath->setProjectionPlane((NL3D::CPSPlaneBasisFollowSpeed::TProjectionPlane) index);	
+	if (_Node) _Node->setModified(true);
 }

@@ -1,7 +1,7 @@
 /** \file direction_edit.cpp
  * a dialog to choose a direction (normalized vector).
  *
- * $Id: direction_edit.cpp,v 1.4 2002/11/04 15:40:44 boucher Exp $
+ * $Id: direction_edit.cpp,v 1.5 2004/06/17 08:14:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,7 +187,7 @@ void CDirectionEdit::selectNewVect(const CPoint &point)
 	}
 
 	v.normalize();
-	_Wrapper->set(v);
+	_Wrapper->setAndUpdateModifiedFlag(v);
 
 	Invalidate();
 

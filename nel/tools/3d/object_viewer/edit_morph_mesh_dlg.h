@@ -12,7 +12,7 @@ namespace NL3D
 
 #include "ps_wrapper.h"
 #include "dialog_stack.h"
-
+#include "particle_workspace.h"
 
 struct IPopupNotify;
 class  CParticleDlg;
@@ -23,7 +23,7 @@ class CEditMorphMeshDlg : public CDialog, public CDialogStack
 {
 // Construction
 public:
-	CEditMorphMeshDlg(NL3D::CPSConstraintMesh *cm, CWnd* pParent, CParticleDlg  *particleDlg, IPopupNotify *pn = NULL);   // standard constructor
+	CEditMorphMeshDlg(CParticleWorkspace::CNode *ownerNode, NL3D::CPSConstraintMesh *cm, CWnd* pParent, CParticleDlg  *particleDlg, IPopupNotify *pn = NULL);   // standard constructor
 
 	
 
@@ -47,9 +47,10 @@ public:
 	
 
 protected:
-	NL3D::CPSConstraintMesh *_CM; // the constraint mesh being edited
-	IPopupNotify			*_PN; // a window to notify when this dialog is destroyed
-	CParticleDlg			*_ParticleDlg;
+	CParticleWorkspace::CNode *_Node;
+	NL3D::CPSConstraintMesh   *_CM; // the constraint mesh being edited
+	IPopupNotify			  *_PN; // a window to notify when this dialog is destroyed
+	CParticleDlg			  *_ParticleDlg;
 
 	/// open a file dialog to get the mesh name
 	bool getShapeNameFromDlg(std::string &name);
@@ -85,6 +86,7 @@ protected:
 		virtual scheme_type *getScheme(void) const;
 		virtual void setScheme(scheme_type *s);
 	} _MorphSchemeWrapper;
+	void touchPSState();
 };
 
 //{{AFX_INSERT_LOCATION}}

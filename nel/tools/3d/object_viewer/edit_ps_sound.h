@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.h
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.h,v 1.7 2004/01/13 12:52:58 berenguier Exp $
+ * $Id: edit_ps_sound.h,v 1.8 2004/06/17 08:13:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include "ps_wrapper.h"
 #include "3d/ps_sound.h"
 #include "editable_range.h"
+#include "particle_workspace.h"
 
 namespace NLSOUND
 {
@@ -62,7 +63,7 @@ class CEditPSSound : public CDialog
 {
 // Construction
 public:
-	CEditPSSound(NL3D::CPSSound *sound);   // standard constructor
+	CEditPSSound(CParticleWorkspace::CNode *ownerNode, NL3D::CPSSound *sound);   // standard constructor
 
 	~CEditPSSound();
 
@@ -88,11 +89,11 @@ public:
 
 // Implementation
 protected:
-	NL3D::CPSSound         *_Sound;				// the sound being edited	
-	CAttribDlgFloat        *_GainDlg;			// dlg to tune sounds gain
-	CAttribDlgFloat		   *_PitchDlg;			// dlg to tune sounds pitch
-	CEditableRangeFloat    *_PercentDlg;		// dialog to tune the percent of sound emissions
-
+	NL3D::CPSSound            *_Sound;				// the sound being edited	
+	CAttribDlgFloat           *_GainDlg;			// dlg to tune sounds gain
+	CAttribDlgFloat		      *_PitchDlg;			// dlg to tune sounds pitch
+	CEditableRangeFloat		  *_PercentDlg;		    // dlg to tune the percent of sound emissions
+	CParticleWorkspace::CNode *_Node;
 
 	// Generated message map functions
 	//{{AFX_MSG(CEditPSSound)
@@ -139,7 +140,7 @@ protected:
 		void  set(const float &v) { S->setEmissionPercent(v); }	
 	} _EmissionPercentWrapper;
 
-
+	void updateModifiedFlag() { if (_Node) _Node->setModified(true); }
 };
 
 //{{AFX_INSERT_LOCATION}}

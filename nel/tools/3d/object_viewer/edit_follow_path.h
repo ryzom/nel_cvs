@@ -1,6 +1,6 @@
 /** \file edit_follow_path.h
  *
- * $Id: edit_follow_path.h,v 1.1 2003/07/01 14:06:58 vizerie Exp $
+ * $Id: edit_follow_path.h,v 1.2 2004/06/17 08:14:13 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -32,6 +32,7 @@
 // edit_follow_path.h : header file
 //
 
+#include "particle_workspace.h"
 
 struct IPopupNotify;
 
@@ -51,7 +52,7 @@ class CEditFollowPath : public CDialog
 {
 // Construction
 public:
-	CEditFollowPath(NL3D::CPSPlaneBasisFollowSpeed *pbfs, CWnd* pParent, IPopupNotify *pn);   // standard constructor
+	CEditFollowPath(NL3D::CPSPlaneBasisFollowSpeed *pbfs, CParticleWorkspace::CNode *ownerNode, CWnd* pParent, IPopupNotify *pn);   // standard constructor
 
 	/// init this dialog
 	void init(CWnd *pParent);
@@ -73,6 +74,7 @@ public:
 protected:
 	NL3D::CPSPlaneBasisFollowSpeed *_FollowPath;
 	IPopupNotify				   *_PN;
+	CParticleWorkspace::CNode	   *_Node;
 	// Generated message map functions
 	//{{AFX_MSG(CEditFollowPath)
 	virtual BOOL OnInitDialog();

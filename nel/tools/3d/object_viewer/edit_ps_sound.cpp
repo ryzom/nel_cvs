@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.cpp
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.cpp,v 1.11 2004/01/13 12:52:58 berenguier Exp $
+ * $Id: edit_ps_sound.cpp,v 1.12 2004/06/17 08:13:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,8 +59,12 @@ void releasePSSoundSystem(void)
 
 
 
-CEditPSSound::CEditPSSound(NL3D::CPSSound *sound) : _Sound(sound), _GainDlg(NULL)
-												   , _PitchDlg(NULL), _PercentDlg(NULL)
+CEditPSSound::CEditPSSound(CParticleWorkspace::CNode *ownerNode, NL3D::CPSSound *sound) 
+                          : _Node(ownerNode),
+						    _Sound(sound), 
+							_GainDlg(NULL),
+							_PitchDlg(NULL),
+							_PercentDlg(NULL)
 {
 	nlassert(sound);
 }
@@ -94,7 +98,7 @@ void CEditPSSound::init(CWnd* pParent /*= NULL*/)
 	
 	nlassert(_Sound);
 
-	_PercentDlg = new CEditableRangeFloat(std::string("SOUND_EMISSION_PERCENT"), 0, 1);
+	_PercentDlg = new CEditableRangeFloat(std::string("SOUND_EMISSION_PERCENT"), _Node, 0, 1);
 	_EmissionPercentWrapper.S = _Sound;
 	_PercentDlg->setWrapper(&_EmissionPercentWrapper);
 	_PercentDlg->init(posX + 95, posY, this);
@@ -102,7 +106,7 @@ void CEditPSSound::init(CWnd* pParent /*= NULL*/)
 	posY += 35;
 
 	_GainWrapper.S = _Sound;
-	_GainDlg = new CAttribDlgFloat(std::string("SOUND VOLUME"), 0, 1);
+	_GainDlg = new CAttribDlgFloat(std::string("SOUND VOLUME"), _Node, 0, 1);
 	_GainDlg->setWrapper(&_GainWrapper);
 	_GainDlg->setSchemeWrapper(&_GainWrapper);	
 	HBITMAP bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_SOUND_VOLUME));
@@ -112,7 +116,7 @@ void CEditPSSound::init(CWnd* pParent /*= NULL*/)
 
 
 	_PitchWrapper.S = _Sound;
-	_PitchDlg = new CAttribDlgFloat(std::string("SOUND PITCH"), 0.001f, 5);
+	_PitchDlg = new CAttribDlgFloat(std::string("SOUND PITCH"), _Node, 0.001f, 5);
 	_PitchDlg->setWrapper(&_PitchWrapper);
 	_PitchDlg->setSchemeWrapper(&_PitchWrapper);	
 	bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_SOUND_FREQ));
@@ -177,6 +181,7 @@ void CEditPSSound::OnBrowseSound()
 	{
 		m_SoundName = NLMISC::CStringMapper::unmap(ps.getName()).c_str();
 		_Sound->setSoundName(ps.getName());
+		updateModifiedFlag();
 		UpdateData(FALSE);
 	}
 }
@@ -198,12 +203,14 @@ void CEditPSSound::OnChangeSoundName()
 	nlassert(_Sound);
 	UpdateData();
 	_Sound->setSoundName( NLMISC::CStringMapper::map((LPCTSTR) m_SoundName) );	
+	 updateModifiedFlag();
 }
 
 void CEditPSSound::OnSpawn() 
 {
 	UpdateData(TRUE);
 	_Sound->setSpawn(m_Spawn ? true : false /* to avoid VCC warning*/);	
+	 updateModifiedFlag();
 }
 
 // play the currently selected sound
@@ -215,7 +222,8 @@ void CEditPSSound::OnPlaySound()
 void CEditPSSound::OnMute() 
 {
 	UpdateData(TRUE);
-	_Sound->setMute(m_Mute ? true : false /* to avoid VCC warning*/);	
+	_Sound->setMute(m_Mute ? true : false /* to avoid VCC warning*/);
+	updateModifiedFlag();
 }
 
 void CEditPSSound::OnKeepOriginalPitch() 
@@ -230,4 +238,5 @@ void CEditPSSound::OnKeepOriginalPitch()
 		_PitchDlg->closeEditWindow();		
 	}
 	_PitchDlg->EnableWindow(!m_KeepOriginalPitch);
+	updateModifiedFlag();
 }

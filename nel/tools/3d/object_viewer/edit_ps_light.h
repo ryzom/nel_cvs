@@ -6,9 +6,10 @@
 #endif // _MSC_VER > 1000
 // edit_ps_light.h : header file
 //
-
-#include "ps_wrapper.h"
 #include "3d/ps_light.h"
+//
+#include "ps_wrapper.h"
+#include "particle_workspace.h"
 
 
 
@@ -26,7 +27,7 @@ class CEditPSLight : public CDialog
 {
 // Construction
 public:
-	CEditPSLight(NL3D::CPSLight *light);   // standard constructor
+	CEditPSLight(CParticleWorkspace::CNode *ownerNode, NL3D::CPSLight *light);   // standard constructor
 	~CEditPSLight();
 
 	void init(CWnd* pParent = NULL);
@@ -46,10 +47,11 @@ public:
 
 // Implementation
 protected:
-	NL3D::CPSLight		*_Light;
-	CAttribDlgRGBA      *_ColorDlg;			
-	CAttribDlgFloat     *_AttenStartDlg;	
-	CAttribDlgFloat		*_AttenEndDlg;
+	CParticleWorkspace::CNode *_Node;
+	NL3D::CPSLight			  *_Light;
+	CAttribDlgRGBA            *_ColorDlg;			
+	CAttribDlgFloat           *_AttenStartDlg;	
+	CAttribDlgFloat		      *_AttenEndDlg;
 	// Generated message map functions
 	//{{AFX_MSG(CEditPSLight)
 		// NOTE: the ClassWizard will add member functions here

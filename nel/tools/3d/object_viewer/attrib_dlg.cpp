@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
- * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
+ * class for a dialog box that help to edit an attrib value : it helps setting a constant/non-constant value
  *
- * $Id: attrib_dlg.cpp,v 1.27 2004/03/11 17:25:38 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.28 2004/06/17 08:18:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,8 +75,8 @@ static void NbCyclesWriter(float value, void *lParam) { ((CAttribDlg *) lParam)-
 ///////////////////////////////////////////
 
 
-/**  T is the type to be edited (color, float, etc..)
- *   , even if it is unused
+/**  T is the type to be edited (color, float, etc..),
+ *   even if it is unused
  */
 
 template <typename T> 
@@ -85,17 +85,17 @@ class CValueBlenderDlgClientT : public IValueBlenderDlgClient
 	public:
 		std::string Id; // the Id of each of the dialog (it will be followed by %1 or %2)
 						 // must be filled by the user
-
 		// the scheme being used. Must be set by the user
 		NL3D::CPSValueBlendFuncBase<T> *SchemeFunc;
 
 	protected:
-		virtual CEditAttribDlg *createDialog(uint index)
+		virtual CEditAttribDlg *createDialog(uint index, CParticleWorkspace::CNode *ownerNode)
 		{
 			std::string id = Id;
 			if (index == 0) id += "%1"; else id += "%2";
 			_ValueInfos[index].ValueIndex = index;
 			_ValueInfos[index].SchemeFunc = SchemeFunc;
+			_ValueInfos[index].OwnerNode = ownerNode;
 			return newDialog(id, &_ValueInfos[index]);									
 		}
 
@@ -106,7 +106,7 @@ class CValueBlenderDlgClientT : public IValueBlenderDlgClient
 		// inherited from IPSWrapper<T>
 		struct COneValueInfo : public IPSWrapper<T>
 		{
-			// valuet 0 or 1 being edited
+			// value 0 or 1 being edited
 			uint ValueIndex;
 			// the scheme being edited
 			NL3D::CPSValueBlendFuncBase<T> *SchemeFunc;
@@ -173,8 +173,9 @@ public:
 	 * \param index the index of the value in the dialog
 	 * \grad the dlg that called this method (deriver can ask a redraw then)
 	 */
-	virtual CEditAttribDlg *createDialog(uint index, CValueGradientDlg *grad)
-	{								
+	virtual CEditAttribDlg *createDialog(uint index, CValueGradientDlg *grad, CParticleWorkspace::CNode *ownerNode)
+	{					
+		OwnerNode = ownerNode;
 		_CurrentEditedIndex = index;
 		return newDialog(Id, this);
 	}
@@ -245,8 +246,9 @@ protected:
 
 
 //*************************************************************************************************************
-CAttribDlg::CAttribDlg(const std::string &valueID, bool enableConstantValue /* = true*/)
+CAttribDlg::CAttribDlg(const std::string &valueID, CParticleWorkspace::CNode *ownerNode, bool enableConstantValue /* = true*/)
 	 : _CstValueDlg(NULL),
+	   _Node(ownerNode),
 	   _FirstDrawing(true),
 	   _EnableConstantValue(enableConstantValue),
 	   _DisableMemoryScheme(false),
@@ -288,7 +290,7 @@ BOOL CAttribDlg::EnableWindow( BOOL bEnable)
 	if (useScheme())
 	{
 		m_Scheme.EnableWindow(bEnable);
-		m_SchemeInput.EnableWindow(bEnable);
+		m_SchemeInput.EnableWindow(hasSchemeCustomInput() ? bEnable : FALSE);
 		m_EditScheme.EnableWindow(bEnable);
 		m_GetScheme.EnableWindow(bEnable);
 		m_PutScheme.EnableWindow(bEnable);
@@ -352,7 +354,7 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 
 	if (_NbCycleEnabled)
 	{
-		_NbCyclesDlg = new CEditableRangeFloat(_ValueID + "%%NB_CYCLE_INFO", 0.1f, 10.1f);
+		_NbCyclesDlg = new CEditableRangeFloat(_ValueID + "%%NB_CYCLE_INFO", _Node, 0.1f, 10.1f);
 		_NbCyclesDlg->init(r.left - ro.left, r.top - ro.top, this);
 	}
 
@@ -433,6 +435,7 @@ void CAttribDlg::cstValueUpdate()
 		_NbCyclesDlg->EnableWindow(FALSE);
 		_NbCyclesDlg->emptyDialog();
 	}
+	GetDlgItem(IDC_INPUT_MULTIPLIER_TXT)->EnableWindow(FALSE);
 	m_EditScheme.EnableWindow(FALSE);
 	m_PutScheme.EnableWindow(FALSE);
 	m_GetScheme.EnableWindow(FALSE);
@@ -464,17 +467,13 @@ void CAttribDlg::cstValueUpdate()
 //*************************************************************************************************************
 void CAttribDlg::schemeValueUpdate()
 {
-	if (!_FirstDrawing && useScheme()) return;		
+	//if (!_FirstDrawing && useScheme()) return;		
 	if (_CstValueDlg)
 	{
 		_CstValueDlg->DestroyWindow();
 		delete _CstValueDlg;
 		_CstValueDlg = NULL;
-	}
-	if (_NbCyclesDlg)
-	{
-		_NbCyclesDlg->EnableWindow(TRUE);
-	}
+	}	
 	m_EditScheme.EnableWindow(TRUE);
 	m_GetScheme.EnableWindow(TRUE);
 	m_PutScheme.EnableWindow(TRUE);
@@ -499,21 +498,33 @@ void CAttribDlg::schemeValueUpdate()
 		m_SchemeInput.EnableWindow();
 		m_SchemeInput.SetCurSel((uint) getSchemeInput().InputType);
 		inputValueUpdate();
+		if (_NbCyclesDlg)
+		{
+			_NbCyclesDlg->EnableWindow(TRUE);
+		}
+		m_ClampCtrl.EnableWindow(isClampingSupported());
+		GetDlgItem(IDC_INPUT_MULTIPLIER_TXT)->EnableWindow(isClampingSupported());
 	}
 	else
 	{
 		m_SchemeInput.EnableWindow(FALSE);
 		m_SchemeInput.SetCurSel(0);
+		if (_NbCyclesDlg)
+		{
+			_NbCyclesDlg->EnableWindow(FALSE);
+		}
+		m_ClampCtrl.EnableWindow(FALSE);
+		GetDlgItem(IDC_INPUT_MULTIPLIER_TXT)->EnableWindow(FALSE);
 	}	
 
 	if (_NbCyclesDlg)
-	{
+	{	
+		_NbCyclesWrapper.OwnerNode = _Node;
 		_NbCyclesDlg->setWrapper(&_NbCyclesWrapper);
 		_NbCyclesWrapper.Dlg = this;	
 		_NbCyclesDlg->updateRange();
 		_NbCyclesDlg->updateValueFromReader();
-	}
-	m_ClampCtrl.EnableWindow(isClampingSupported());
+	}	
 	if (isClampingSupported())
 	{
 		m_Clamp = isSchemeClamped();
@@ -542,6 +553,7 @@ void CAttribDlg::OnSelchangeScheme()
 {
 	UpdateData();
 	setCurrentScheme(m_Scheme.GetCurSel());	
+	schemeValueUpdate();
 }
 
 //*************************************************************************************************************
@@ -658,7 +670,7 @@ END_MESSAGE_MAP()
 		public:
 			CEditAttribDlg *newDialog(const std::string &id, IPSWrapperFloat *wrapper) 
 			{ 
-				CEditableRangeFloat *erf = new CEditableRangeFloat(id, MinRange, MaxRange);
+				CEditableRangeFloat *erf = new CEditableRangeFloat(id, wrapper->OwnerNode, MinRange, MaxRange);				
 				erf->setWrapper(wrapper);
 				BoundChecker.duplicateBoundChecker(*erf);
 				return erf;
@@ -685,7 +697,7 @@ END_MESSAGE_MAP()
 		}
 		CEditAttribDlg *newDialog(const std::string &id, IPSWrapperFloat *wrapper) 
 		{ 
-			CEditableRangeFloat *erf = new CEditableRangeFloat(id, MinRange, MaxRange);
+			CEditableRangeFloat *erf = new CEditableRangeFloat(id, wrapper->OwnerNode, MinRange, MaxRange);
 			erf->setWrapper(wrapper);
 			BoundChecker.duplicateBoundChecker(*erf);
 			return erf;
@@ -697,8 +709,8 @@ END_MESSAGE_MAP()
 
 
 	//*************************************************************************************************************
-	CAttribDlgFloat::CAttribDlgFloat(const std::string &valueID, float minRange, float maxRange)
-				:  CAttribDlgT<float>(valueID), _MinRange(minRange), _MaxRange(maxRange)			  
+	CAttribDlgFloat::CAttribDlgFloat(const std::string &valueID, CParticleWorkspace::CNode *node, float minRange, float maxRange)
+				:  CAttribDlgT<float>(valueID, node), _MinRange(minRange), _MaxRange(maxRange)
 	{
 		_CstValueId = valueID;			
 	}
@@ -706,7 +718,7 @@ END_MESSAGE_MAP()
 	//*************************************************************************************************************
 	CEditAttribDlg *CAttribDlgFloat::createConstantValueDlg()
 	{
-		CEditableRangeFloat *erf = new CEditableRangeFloat(_CstValueId, _MinRange, _MaxRange);
+		CEditableRangeFloat *erf = new CEditableRangeFloat(_CstValueId, _Node, _MinRange, _MaxRange);
 		erf->setWrapper(_Wrapper);		
 		duplicateBoundChecker(*erf);
 		return erf;
@@ -739,7 +751,7 @@ END_MESSAGE_MAP()
 			myInterface->MaxRange = _MaxRange;
 			myInterface->Id = _CstValueId+ std::string("%%FLOAT_BLENDER");
 			myInterface->SchemeFunc = & ((NL3D::CPSValueBlenderSample<float, 64> *) scheme)->_F;			
-			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this);
+			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this, _Node);
 			vb->init(this);
 			return vb;
 					
@@ -751,7 +763,7 @@ END_MESSAGE_MAP()
 			wrapper->MinRange = _MinRange;
 			wrapper->MaxRange = _MaxRange;
 			wrapper->Scheme = &(((NL3D::CPSFloatGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, _Node, true, this, this);
 			wrapper->GradDlg = gd;
 			wrapper->DefaultValue = 0.f;
 			wrapper->Id = _CstValueId+ std::string("%%FLOAT GRADIENT");			
@@ -760,7 +772,7 @@ END_MESSAGE_MAP()
 		}
 		if (dynamic_cast<NL3D::CPSFloatMemory *>(scheme)) 
 		{
-			CAttribDlgFloat *adf = new CAttribDlgFloat(_CstValueId, _MinRange, _MaxRange);
+			CAttribDlgFloat *adf = new CAttribDlgFloat(_CstValueId, _Node, _MinRange, _MaxRange);
 			this->duplicateBoundChecker(*adf);
 			CValueFromEmitterDlgT<float> *vfe = new CValueFromEmitterDlgT<float>( (NL3D::CPSFloatMemory *)(scheme),
 																				  adf,
@@ -775,7 +787,7 @@ END_MESSAGE_MAP()
 			CAttribDlgFloat *ad[2] = { NULL, NULL};
 			for (uint k = 0; k <2; ++k)
 			{
-				ad[k] = new CAttribDlgFloat(_CstValueId, _MinRange, _MaxRange);
+				ad[k] = new CAttribDlgFloat(_CstValueId, _Node, _MinRange, _MaxRange);
 				this->duplicateBoundChecker(*ad[k]);
 			}
 			CBinOpDlgT<float> *bod = new CBinOpDlgT<float>( (NL3D::CPSFloatBinOp *)(scheme),
@@ -788,7 +800,7 @@ END_MESSAGE_MAP()
 
 		if (dynamic_cast<NL3D::CPSFloatCurve *>(scheme)) 
 		{
-			CurveEdit *ce = new CurveEdit(&(dynamic_cast<NL3D::CPSFloatCurve *>(scheme)->_F), this, this);
+			CurveEdit *ce = new CurveEdit(&(dynamic_cast<NL3D::CPSFloatCurve *>(scheme)->_F), _Node, this, this);
 			ce->init(this);
 			return ce;			
 		}
@@ -855,7 +867,7 @@ END_MESSAGE_MAP()
 
 		if (scheme)
 		{
-			_SchemeWrapper->setScheme(scheme);
+			_SchemeWrapper->setSchemeAndUpdateModifiedFlag(scheme);
 		}
 	}
 
@@ -870,7 +882,7 @@ END_MESSAGE_MAP()
 		public:
 			CEditAttribDlg *newDialog(const std::string &id, IPSWrapperUInt *wrapper) 
 			{ 
-				CEditableRangeUInt *eru = new CEditableRangeUInt(id, MinRange, MaxRange);
+				CEditableRangeUInt *eru = new CEditableRangeUInt(id, wrapper->OwnerNode, MinRange, MaxRange);
 				eru->setWrapper(wrapper);
 				BoundChecker.duplicateBoundChecker(*eru);
 				return eru;
@@ -898,7 +910,7 @@ END_MESSAGE_MAP()
 		}
 		CEditAttribDlg *newDialog(const std::string &id, IPSWrapperUInt *wrapper) 
 		{ 
-			CEditableRangeUInt *eru = new CEditableRangeUInt(id, MinRange, MaxRange);
+			CEditableRangeUInt *eru = new CEditableRangeUInt(id, wrapper->OwnerNode, MinRange, MaxRange);
 			eru->setWrapper(wrapper);
 			BoundChecker.duplicateBoundChecker(*eru);
 			return eru;
@@ -909,8 +921,8 @@ END_MESSAGE_MAP()
 
 
 	//*************************************************************************************************************
-	CAttribDlgUInt::CAttribDlgUInt(const std::string &valueID, uint32 minRange, uint32 maxRange)
-				:  CAttribDlgT<uint32>(valueID), _MinRange(minRange), _MaxRange(maxRange)			  
+	CAttribDlgUInt::CAttribDlgUInt(const std::string &valueID, CParticleWorkspace::CNode *node, uint32 minRange, uint32 maxRange)
+				:  CAttribDlgT<uint32>(valueID, node), _MinRange(minRange), _MaxRange(maxRange)			  
 	{
 		_CstValueId = valueID;			
 	}
@@ -918,7 +930,7 @@ END_MESSAGE_MAP()
 	//*************************************************************************************************************
 	CEditAttribDlg *CAttribDlgUInt::createConstantValueDlg()
 	{
-		CEditableRangeUInt *erf = new CEditableRangeUInt(_CstValueId, _MinRange, _MaxRange);
+		CEditableRangeUInt *erf = new CEditableRangeUInt(_CstValueId, _Node, _MinRange, _MaxRange);
 		erf->setWrapper(_Wrapper);
 		duplicateBoundChecker(*erf);
 		return erf;
@@ -953,7 +965,7 @@ END_MESSAGE_MAP()
 			myInterface->Id = _CstValueId+ std::string("%%UINT_BLENDER");
 			myInterface->SchemeFunc = & ((NL3D::CPSValueBlenderSample<uint32, 64> *) scheme)->_F;
 			
-			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this);
+			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this, _Node);
 			vb->init(this);
 			return vb;
 		}
@@ -964,7 +976,7 @@ END_MESSAGE_MAP()
 			wrapper->MinRange = _MinRange;
 			wrapper->MaxRange = _MaxRange;
 			wrapper->Scheme = &(((NL3D::CPSUIntGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, _Node, true, this, this);
 			wrapper->GradDlg = gd;
 			wrapper->DefaultValue = 0;
 			wrapper->Id = _CstValueId+ std::string("%%UINT GRADIENT");
@@ -974,7 +986,7 @@ END_MESSAGE_MAP()
 		if (dynamic_cast<const NL3D::CPSUIntMemory *>(scheme)) 
 		{
 
-			CAttribDlgUInt *adu = new CAttribDlgUInt(_CstValueId, _MinRange, _MaxRange);
+			CAttribDlgUInt *adu = new CAttribDlgUInt(_CstValueId, _Node, _MinRange, _MaxRange);
 			this->duplicateBoundChecker(*adu);
 			CValueFromEmitterDlgT<uint32> *vfe = new CValueFromEmitterDlgT<uint32>( (NL3D::CPSUIntMemory *)(scheme),
 																					adu,
@@ -988,7 +1000,7 @@ END_MESSAGE_MAP()
 			CAttribDlgUInt *ad[2] = { NULL, NULL};
 			for (uint k = 0; k <2; ++k)
 			{
-				ad[k] = new CAttribDlgUInt(_CstValueId, _MinRange, _MaxRange);
+				ad[k] = new CAttribDlgUInt(_CstValueId, _Node, _MinRange, _MaxRange);
 				this->duplicateBoundChecker(*ad[k]);
 			}
 			CBinOpDlgT<uint32> *bod = new CBinOpDlgT<uint32>( (NL3D::CPSUIntBinOp *)(scheme),
@@ -1044,7 +1056,7 @@ END_MESSAGE_MAP()
 
 		if (scheme)
 		{
-			_SchemeWrapper->setScheme(scheme);
+			_SchemeWrapper->setSchemeAndUpdateModifiedFlag(scheme);
 		}
 	}
 
@@ -1058,7 +1070,7 @@ END_MESSAGE_MAP()
 		public:
 			CEditAttribDlg *newDialog(const std::string &id, IPSWrapper<sint32> *wrapper) 
 			{ 
-				CEditableRangeInt *eri = new CEditableRangeInt(id, MinRange, MaxRange);
+				CEditableRangeInt *eri = new CEditableRangeInt(id, wrapper->OwnerNode, MinRange, MaxRange);
 				eri->setWrapper(wrapper);
 				BoundChecker.duplicateBoundChecker(*eri);
 				return eri;
@@ -1087,7 +1099,7 @@ END_MESSAGE_MAP()
 		}
 		CEditAttribDlg *newDialog(const std::string &id, IPSWrapper<sint32> *wrapper) 
 		{ 
-			CEditableRangeInt *eri = new CEditableRangeInt(id, MinRange, MaxRange);
+			CEditableRangeInt *eri = new CEditableRangeInt(id, wrapper->OwnerNode, MinRange, MaxRange);
 			eri->setWrapper(wrapper);
 			BoundChecker.duplicateBoundChecker(*eri);
 			return eri;
@@ -1098,8 +1110,8 @@ END_MESSAGE_MAP()
 
 
 	//*************************************************************************************************************
-	CAttribDlgInt::CAttribDlgInt(const std::string &valueID, sint32 minRange, sint32 maxRange)
-				:  CAttribDlgT<sint32>(valueID), _MinRange(minRange), _MaxRange(maxRange)			  
+	CAttribDlgInt::CAttribDlgInt(const std::string &valueID, CParticleWorkspace::CNode *node, sint32 minRange, sint32 maxRange)
+				:  CAttribDlgT<sint32>(valueID, node), _MinRange(minRange), _MaxRange(maxRange)			  
 	{
 		_CstValueId = valueID;		
 	}
@@ -1107,7 +1119,7 @@ END_MESSAGE_MAP()
 	//*************************************************************************************************************
 	CEditAttribDlg *CAttribDlgInt::createConstantValueDlg()
 	{
-		CEditableRangeInt *erf = new CEditableRangeInt(_CstValueId, _MinRange, _MaxRange);
+		CEditableRangeInt *erf = new CEditableRangeInt(_CstValueId, _Node, _MinRange, _MaxRange);
 		erf->setWrapper(_Wrapper);
 		duplicateBoundChecker(*erf);
 		return erf;
@@ -1142,7 +1154,7 @@ END_MESSAGE_MAP()
 			myInterface->Id = _CstValueId+ std::string("%%INT_BLENDER");
 			myInterface->SchemeFunc = & ((NL3D::CPSValueBlenderSample<sint32, 64> *) scheme)->_F;
 			
-			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this);
+			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this, _Node);
 			vb->init(this);
 			return vb;
 		}
@@ -1153,7 +1165,7 @@ END_MESSAGE_MAP()
 			wrapper->MinRange = _MinRange;
 			wrapper->MaxRange = _MaxRange;
 			wrapper->Scheme = &(((NL3D::CPSIntGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);		
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, _Node, true, this, this);		
 			wrapper->GradDlg = gd;
 			wrapper->DefaultValue = 0;
 			wrapper->Id = _CstValueId+ std::string("%%INT GRADIENT");
@@ -1162,7 +1174,7 @@ END_MESSAGE_MAP()
 		}
 		if (dynamic_cast<const NL3D::CPSIntMemory *>(scheme)) 
 		{
-			CAttribDlgInt *adi = new CAttribDlgInt(_CstValueId, _MinRange, _MaxRange);
+			CAttribDlgInt *adi = new CAttribDlgInt(_CstValueId, _Node, _MinRange, _MaxRange);
 			this->duplicateBoundChecker(*adi);
 			CValueFromEmitterDlgT<sint32> *vfe = new CValueFromEmitterDlgT<sint32>((NL3D::CPSIntMemory *) _SchemeWrapper->getScheme(),
 																			adi, 
@@ -1181,7 +1193,7 @@ END_MESSAGE_MAP()
 			CAttribDlgInt *ad[2] = { NULL, NULL};
 			for (uint k = 0; k <2; ++k)
 			{
-				ad[k] = new CAttribDlgInt(_CstValueId, _MinRange, _MaxRange);
+				ad[k] = new CAttribDlgInt(_CstValueId, _Node, _MinRange, _MaxRange);
 				this->duplicateBoundChecker(*ad[k]);
 			}
 			CBinOpDlgT<sint32> *bod = new CBinOpDlgT<sint32>( (NL3D::CPSIntBinOp *)(scheme),
@@ -1238,7 +1250,7 @@ END_MESSAGE_MAP()
 
 		if (scheme)
 		{
-			_SchemeWrapper->setScheme(scheme);
+			_SchemeWrapper->setSchemeAndUpdateModifiedFlag(scheme);
 		}
 	}
 
@@ -1308,7 +1320,7 @@ END_MESSAGE_MAP()
 	////////////////////////////
 
 	//*************************************************************************************************************
-	CAttribDlgRGBA::CAttribDlgRGBA(const std::string &valueID)  : CAttribDlgT<CRGBA>(valueID)
+	CAttribDlgRGBA::CAttribDlgRGBA(const std::string &valueID, CParticleWorkspace::CNode *node)  : CAttribDlgT<CRGBA>(valueID, node)
 	{
 	}
 
@@ -1337,7 +1349,7 @@ END_MESSAGE_MAP()
 			CRGBABlenderDlgClient *myInterface = new CRGBABlenderDlgClient;
 			myInterface->Id = std::string("RGBA_BLENDER");
 			myInterface->SchemeFunc = & ((NL3D::CPSValueBlenderSample<CRGBA, 64> *) scheme)->_F;			
-			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this);
+			CValueBlenderDlg *vb = new CValueBlenderDlg(myInterface, true, this, this, _Node);
 			vb->init(this);
 			return vb;
 		}
@@ -1345,7 +1357,7 @@ END_MESSAGE_MAP()
 		{
 			CColorGradientDlgWrapper *wrapper = new CColorGradientDlgWrapper;
 			wrapper->Scheme = &(((NL3D::CPSColorGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);		
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, _Node, true, this, this);		
 			wrapper->GradDlg = gd;
 			wrapper->DefaultValue = CRGBA::White;
 			wrapper->Id = std::string("RGBA_GRADIENT");
@@ -1359,7 +1371,7 @@ END_MESSAGE_MAP()
 
 		if (dynamic_cast<const NL3D::CPSColorMemory *>(scheme)) 
 		{
-			CAttribDlgRGBA *ad = new CAttribDlgRGBA(_CstValueId);			
+			CAttribDlgRGBA *ad = new CAttribDlgRGBA(_CstValueId, _Node);			
 			CValueFromEmitterDlgT<CRGBA> *vfe = new CValueFromEmitterDlgT<CRGBA>( (NL3D::CPSColorMemory *)(scheme),
 																					ad,
 																					this,
@@ -1373,7 +1385,7 @@ END_MESSAGE_MAP()
 			CAttribDlgRGBA *ad[2] = { NULL, NULL};
 			for (uint k = 0; k <2; ++k)
 			{
-				ad[k] = new CAttribDlgRGBA(_CstValueId);				
+				ad[k] = new CAttribDlgRGBA(_CstValueId, _Node);	
 			}
 			CBinOpDlgT<CRGBA> *bod = new CBinOpDlgT<CRGBA>( (NL3D::CPSColorBinOp *)(scheme),
 															(CAttribDlgT<CRGBA> **) ad,
@@ -1418,7 +1430,7 @@ END_MESSAGE_MAP()
 
 		if (scheme)
 		{
-			_SchemeWrapper->setScheme(scheme);
+			_SchemeWrapper->setSchemeAndUpdateModifiedFlag(scheme);
 		}
 	}
 
@@ -1485,7 +1497,7 @@ END_MESSAGE_MAP()
 	};
 	
 	//*************************************************************************************************************
-	CAttribDlgPlaneBasis::CAttribDlgPlaneBasis(const std::string &valueID)  : CAttribDlgT<NL3D::CPlaneBasis>(valueID)
+	CAttribDlgPlaneBasis::CAttribDlgPlaneBasis(const std::string &valueID, CParticleWorkspace::CNode *node)  : CAttribDlgT<NL3D::CPlaneBasis>(valueID, node)
 	{
 	}
 
@@ -1509,7 +1521,7 @@ END_MESSAGE_MAP()
 		{
 			CPlaneBasisGradientDlgWrapper *wrapper = new CPlaneBasisGradientDlgWrapper;
 			wrapper->Scheme = &(((NL3D::CPSPlaneBasisGradient *) (_SchemeWrapper->getScheme()) )->_F);
-			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, true, this, this);		
+			CValueGradientDlg *gd = new CValueGradientDlg(wrapper, _Node, true, this, this);		
 			wrapper->GradDlg = gd;
 			wrapper->DefaultValue = NL3D::CPlaneBasis(NLMISC::CVector::K);
 			wrapper->Id = std::string("PLANE_BASIS_GRADIENT");
@@ -1519,14 +1531,14 @@ END_MESSAGE_MAP()
 
 		if (dynamic_cast<NL3D::CPSPlaneBasisFollowSpeed *>(scheme)) 
 		{
-			CEditFollowPath *efp = new CEditFollowPath((NL3D::CPSPlaneBasisFollowSpeed *) scheme, this, this);
+			CEditFollowPath *efp = new CEditFollowPath((NL3D::CPSPlaneBasisFollowSpeed *) scheme, _Node, this, this);
 			efp->init(this);
 			return efp;
 		}
 
 		if (dynamic_cast<NL3D::CPSPlaneBasisMemory *>(scheme)) 
 		{
-			CAttribDlgPlaneBasis *ad = new CAttribDlgPlaneBasis(_CstValueId);			
+			CAttribDlgPlaneBasis *ad = new CAttribDlgPlaneBasis(_CstValueId, _Node);			
 			CValueFromEmitterDlgT<NL3D::CPlaneBasis> *vfe = new CValueFromEmitterDlgT<NL3D::CPlaneBasis>
 															( (NL3D::CPSPlaneBasisMemory *)(scheme),
 															  ad,
@@ -1541,7 +1553,7 @@ END_MESSAGE_MAP()
 			CAttribDlgPlaneBasis *ad[2] = { NULL, NULL};
 			for (uint k = 0; k <2; ++k)
 			{
-				ad[k] = new CAttribDlgPlaneBasis(_CstValueId);				
+				ad[k] = new CAttribDlgPlaneBasis(_CstValueId, _Node);				
 			}
 			CBinOpDlgT<NL3D::CPlaneBasis> *bod = new CBinOpDlgT<NL3D::CPlaneBasis>( (NL3D::CPSPlaneBasisBinOp *)(scheme),
 																					(CAttribDlgT<NL3D::CPlaneBasis> **) ad,
@@ -1553,7 +1565,7 @@ END_MESSAGE_MAP()
 		
 		if (dynamic_cast<NL3D::CPSBasisSpinner *>(scheme)) 
 		{
-			CEditSpinner *es = new CEditSpinner(static_cast<NL3D::CPSBasisSpinner *>(scheme), this, this);
+			CEditSpinner *es = new CEditSpinner(static_cast<NL3D::CPSBasisSpinner *>(scheme), _Node, this, this);
 			es->init(this);
 			return es;
 		}
@@ -1582,6 +1594,10 @@ END_MESSAGE_MAP()
 			case 3:	
 				scheme = new NL3D::CPSPlaneBasisMemory;
 				((NL3D::CPSAttribMakerMemory<NL3D::CPlaneBasis> *) scheme)->setScheme(new NL3D::CPSPlaneBasisFollowSpeed);
+				if (_Node)
+				{
+					_Node->setModified(true);
+				}
 			break;
 			case 4 :
 				scheme = new NL3D::CPSPlaneBasisBinOp;
@@ -1594,7 +1610,7 @@ END_MESSAGE_MAP()
 
 		if (scheme)
 		{
-			_SchemeWrapper->setScheme(scheme);
+			_SchemeWrapper->setSchemeAndUpdateModifiedFlag(scheme);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file edit_spinner.h
  * a dialog to edit a spinner
  *
- * $Id: edit_spinner.h,v 1.3 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: edit_spinner.h,v 1.4 2004/06/17 08:13:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@ struct IPopupNotify;
 #include "ps_wrapper.h"
 #include "3d/ps_plane_basis_maker.h"
 #include "editable_range.h"
+#include "particle_workspace.h"
 
 class CDirectionAttr;
 
@@ -43,7 +44,7 @@ class CEditSpinner : public CDialog
 {
 // Construction
 public:
-	CEditSpinner(NL3D::CPSBasisSpinner *sf, CWnd *pParent, IPopupNotify *pn);
+	CEditSpinner(NL3D::CPSBasisSpinner *sf, CParticleWorkspace::CNode *ownerNode, CWnd *pParent, IPopupNotify *pn);
 
 	// dtor
 	~CEditSpinner();
@@ -71,6 +72,7 @@ protected:
 	CDirectionAttr			  *_DirDlg;
 	CEditableRangeUInt		  *_NbSamplesDlg;
 	IPopupNotify			  *_PN;
+	CParticleWorkspace::CNode *_Node;
 
 	// Generated message map functions
 	//{{AFX_MSG(CEditSpinner)

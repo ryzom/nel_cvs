@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.8 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: background_sound_manager.h,v 1.9 2003/08/21 09:27:11 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -272,9 +272,11 @@ private:
 		float				Gain;
 		/// The distance beween listener and source.
 		float				Distance;
+		/// flag if inside a sound zone
+		bool				Inside;
 		/// Constructor.
-		TSoundStatus(TSoundData &sd, NLMISC::CVector position, float gain, float distance)
-			: SoundData(sd), Position(position), Gain(gain), Distance(distance)
+		TSoundStatus(TSoundData &sd, NLMISC::CVector position, float gain, float distance, bool inside)
+			: SoundData(sd), Position(position), Gain(gain), Distance(distance), Inside(inside)
 		{}
 	};
 	//@}

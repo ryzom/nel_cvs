@@ -67,7 +67,6 @@ LIB32=link.exe -lib
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /Gi /GR /GX /Zi /Od /Gf /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /FD /GZ /Zm200 /c
-# SUBTRACT CPP /Gy /Fr /YX
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -1564,117 +1563,59 @@ SOURCE=.\3d\Makefile.am
 # Begin Group "particles"
 
 # PROP Default_Filter ""
+# Begin Group "particles render"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\3d\particle_system.cpp
+SOURCE=.\3d\ps_dot.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+# ADD CPP /FAs
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+# ADD CPP /FAs
+
+!ELSEIF  "$(CFG)" == "3d - Win32 DebugFast"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\particle_system.h
+SOURCE=.\3d\ps_dot.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\particle_system_manager.cpp
+SOURCE=.\3d\ps_face.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\particle_system_manager.h
+SOURCE=.\3d\ps_face.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\particle_system_process.cpp
+SOURCE=.\3d\ps_face_look_at.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\particle_system_process.h
+SOURCE=.\3d\ps_face_look_at.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\ps_attrib.h
+SOURCE=.\3d\ps_fan_light.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\ps_attrib_maker.h
+SOURCE=.\3d\ps_fan_light.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\ps_attrib_maker_bin_op.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_attrib_maker_bin_op.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_attrib_maker_bin_op_inline.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_attrib_maker_helper.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_attrib_maker_template.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_color.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_color.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_direction.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_edit.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_emitter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_emitter.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_float.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_float.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_force.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_force.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_int.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_int.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_located.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_located.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_lod.h
+SOURCE=.\3d\ps_macro.h
 # End Source File
 # Begin Source File
 
@@ -1683,10 +1624,6 @@ SOURCE=.\3d\ps_mesh.cpp
 # Begin Source File
 
 SOURCE=.\3d\ps_mesh.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\ps_misc.h
 # End Source File
 # Begin Source File
 
@@ -1727,6 +1664,122 @@ SOURCE=.\3d\ps_particle_basic.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\ps_quad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_quad.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_register_particles.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_ribbon.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_ribbon.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_ribbon_base.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_ribbon_base.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_ribbon_look_at.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_ribbon_look_at.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_shockwave.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_shockwave.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_tail_dot.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_tail_dot.h
+# End Source File
+# End Group
+# Begin Group "attribs"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\ps_attrib.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_attrib_maker.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_attrib_maker_bin_op.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_attrib_maker_bin_op.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_attrib_maker_bin_op_inline.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_attrib_maker_helper.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_attrib_maker_iterators.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_attrib_maker_template.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_color.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_color.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_direction.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_float.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_float.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_int.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_int.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\ps_plane_basis.h
 # End Source File
 # Begin Source File
@@ -1739,19 +1792,47 @@ SOURCE=.\3d\ps_plane_basis_maker.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\ps_sound.cpp
+SOURCE=.\3d\ps_register_attribs.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\ps_sound.h
+SOURCE=.\3d\ps_register_color_attribs.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\ps_util.cpp
+SOURCE=.\3d\ps_register_float_attribs.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\ps_util.h
+SOURCE=.\3d\ps_register_int_attribs.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_register_plane_basis_attribs.h
+# End Source File
+# End Group
+# Begin Group "forces"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\ps_force.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_force.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_register_forces.cpp
+# End Source File
+# End Group
+# Begin Group "zones"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\ps_register_zones.cpp
 # End Source File
 # Begin Source File
 
@@ -1760,6 +1841,91 @@ SOURCE=.\3d\ps_zone.cpp
 # Begin Source File
 
 SOURCE=.\3d\ps_zone.h
+# End Source File
+# End Group
+# Begin Group "emitters"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\ps_emitter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_emitter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_register_emitters.cpp
+# End Source File
+# End Group
+# Begin Group "sound"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\ps_sound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_sound.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\3d\particle_system.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\particle_system.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\particle_system_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\particle_system_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\particle_system_process.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\particle_system_process.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_edit.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_iterator.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_located.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_located.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_lod.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_misc.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_util.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_util.h
 # End Source File
 # End Group
 # Begin Group "2d"

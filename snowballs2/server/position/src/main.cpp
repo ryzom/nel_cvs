@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Position Service.
  *
- * $Id: main.cpp,v 1.5 2001/07/25 12:36:47 lecroart Exp $
+ * $Id: main.cpp,v 1.6 2001/07/27 10:13:53 valignat Exp $
  */
 
 /*
@@ -47,11 +47,17 @@ using namespace NLNET;
 using namespace std;
 
 
+#define PLAYER_RADIUS      1.0f
+#define SNOWBALL_RADIUS    0.1f
+#define START_SNOW_ID      2000000000
+#define THROW_ANIM_OFFSET  1000
+
+
 // Define information used for all connected players to the shard.
 struct _player
 {
-	_player(uint32 Id, string Name, uint8 Race, CVector Position) :
-		id(Id), name(Name), race(Race), position(Position) { }
+	_player( uint32 Id, string Name, uint8 Race, CVector Position ) :
+		id( Id ), name( Name ), race( Race ), position( Position ) { }
 	uint32  id;
 	string  name;
 	uint8   race;
@@ -63,7 +69,15 @@ typedef map<uint32, _player> _pmap;
 _pmap playerList;
 
 // Define informations used for the snowballs management
-typedef CTrajectory _snowball;
+struct _snowball
+{
+	_snowball( uint32 Id, uint32 Owner, CTrajectory Traj, float ExplosionRadius ) :
+		id( Id ), owner( Owner ), traj( Traj ), explosionRadius( ExplosionRadius ) { }
+	uint32      id;
+	uint32      owner;
+	CTrajectory traj;
+	float       explosionRadius;
+};
 
 // List of all the games snowballs
 list<_snowball> snoList;
@@ -221,7 +235,11 @@ void cbRemoveEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	 */
 	CNetManager::send( "POS", msgout, 0 );
 
-	nlinfo( "Send back REMOVE_ENTITY line." );
+	// Remove player form the player list.
+	playerList.erase( id );	
+
+	nlinfo( "Send back REMOVE_ENTITY line. %d players left ...",
+			playerList.size() );
 }
 
 
@@ -238,33 +256,39 @@ void cbRemoveEntity ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
  ****************************************************************************/
 void cbSnowball ( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 {
-	uint32  id;
+	static uint32 snowballId = START_SNOW_ID;
+
+	uint32  id,
+			playerId;
 	CVector start,
 			target;
-	float   speed;
-	TTime   startTime;
+	float   speed,
+			explosionRadius;
 
 	// Extract the incomming message content from the Frontend and print it
-	msgin.serial( id );
+	msgin.serial( playerId );
 	msgin.serial( start );
 	msgin.serial( target );
 	msgin.serial( speed );
-	msgin.serial( startTime );
+	msgin.serial( explosionRadius );
 	nlinfo( "Received SNOWBALL line." );
 
 	// Store new snowballs informations
-	_snowball snowball;
-	snowball.init( start, target, speed, startTime );
+	CTrajectory traj;
+	traj.init( start, target, speed, CTime::getLocalTime() + THROW_ANIM_OFFSET );
+	_snowball snowball = _snowball( snowballId, playerId, traj, explosionRadius );
 	snoList.push_front( snowball );
-	
 
 	// Prepare to send back the message.
 	CMessage msgout( CNetManager::getSIDA( "POS" ), "SNOWBALL" );
-	msgout.serial( id );
+	msgout.serial( snowballId );
+	msgout.serial( playerId );
 	msgout.serial( start );
 	msgout.serial( target );
 	msgout.serial( speed );
-	msgout.serial( startTime );
+	msgout.serial( explosionRadius );
+
+	snowballId++;
 
 	/*
 	 * Send the message to all the connected Frontend. If we decide to send
@@ -291,6 +315,28 @@ TCallbackItem CallbackArray[] =
 
 
 /****************************************************************************
+ * Function:   SendHITMsg
+ *             Send HIT message to all clients
+ * 
+ * Arguments:
+ *             - snowball:  snowball id
+ *             - victim:    player touched by the snowball
+ *             - direct:    define if the hit is direct or by the explosion
+ *                          area
+ ****************************************************************************/
+void SendHITMsg ( uint32 snowball, uint32 victim, bool direct )
+{
+	CMessage msgout( CNetManager::getSIDA( "POS" ), "HIT" );
+
+	msgout.serial( snowball );
+	msgout.serial( victim );
+	msgout.serial( direct );
+
+	CNetManager::send( "POS", msgout, 0 );
+}
+
+
+/****************************************************************************
  * CPositionService
  ****************************************************************************/
 class CPositionService : public IService
@@ -305,24 +351,85 @@ public:
 	// Update fonction, called at every frames
 	bool update()
 	{
+		//_snowball snowball;
+		CVector   snoPos;
+		float     distance;
+		bool      removeSnowball;
+
+		// Get the Current time
 		TTime currentTime = CTime::getLocalTime();
 		list<_snowball>::iterator ItSnowball;
+
+		// Check collision of snowballs with players
 		ItSnowball = snoList.begin();
 		while (  ItSnowball != snoList.end() )
 		{
+			removeSnowball = false;
+
 			list<_snowball>::iterator ItSb = ItSnowball++;
-			// Removed outdated snowballs
-			if ( (*ItSb).getStopTime() < currentTime )
+			_snowball snowball = (*ItSb);
+
+			// Test collision (direct and explosion with players)
+			_pmap::iterator ItPlayer;
+			for (ItPlayer = playerList.begin(); ItPlayer != playerList.end(); ++ItPlayer)
 			{
-				snoList.erase( ItSb );
-				nlinfo( "Removed outdated SNOWBALL.");
+				_player player = (*ItPlayer).second;
+
+				/*
+				 * Snowballs can't touch the guy which throw it, Like that
+				 * players could not kill them self (intentionally or not :-)
+				 */
+				if ( player.id == snowball.owner )
+				{
+					continue;
+				}
+
+				// Get the current snowball position
+				snoPos = snowball.traj.eval( currentTime );
+
+				// Test direct collision with players
+				distance = (player.position - snoPos).norm();
+				if ( distance < ( PLAYER_RADIUS + SNOWBALL_RADIUS ) )
+				{
+					nlinfo( "HIT on player %u by player %u.",
+							player.id, snowball.owner );
+
+					// Send HIT message
+					SendHITMsg( snowball.id, player.id, true );
+
+					// Flag the snowball to be removed from the list
+					removeSnowball = true;
+				}
+
+				// Snowballs touch his stop Position
+				if ( snowball.traj.getStopTime() < currentTime )
+				{
+					// Test for explosion victims
+					distance = (player.position - snoPos).norm();
+					if ( distance < ( PLAYER_RADIUS + snowball.explosionRadius ) )
+					{
+						nlinfo( "Explosion hit on player %u by player %u.",
+								player.id, snowball.owner );
+
+						// Send HIT message
+						SendHITMsg( snowball.id, player.id, false );
+					}
+
+					// Flag the snowball to be removed from the list
+					removeSnowball = true;
+				}
 			}
 
-			// ?????????????????????????????????????????????????????????????
-			// ?????????????????????????????????????????????????????????????
-			// ?????????????????????????????????????????????????????????????
-			// ?????????????????????????????????????????????????????????????
+
+			// Removed if flaged snowball
+			if ( removeSnowball == true )
+			{
+				snoList.erase( ItSb );
+				nlinfo( "Removed outdated SNOWBALL id %u.", snowball.id );
+			}
+
 		}
+
 		return true;
 	}
 

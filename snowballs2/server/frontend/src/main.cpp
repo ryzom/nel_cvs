@@ -1,7 +1,7 @@
 /*
  * This file contain the Snowballs Frontend Service.
  *
- * $Id: main.cpp,v 1.5 2001/07/25 12:36:47 lecroart Exp $
+ * $Id: main.cpp,v 1.6 2001/07/27 10:13:53 valignat Exp $
  */
 
 /*
@@ -334,26 +334,29 @@ void cbRemoveService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb
  ****************************************************************************/
 void cbSnowballService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
 {
-	uint32  id;
+	uint32  id,
+			playerId;
 	CVector start,
 			target;
-	float   speed;
-	TTime   startTime;
+	float   speed,
+			explosionRadius;
 
 	// Input: process the reply of the position service
 	msgin.serial( id );
+	msgin.serial( playerId );
 	msgin.serial( start );
 	msgin.serial( target );
 	msgin.serial( speed );
-	msgin.serial( startTime );
+	msgin.serial( explosionRadius );
 
 	// Output: send the reply to the client
 	CMessage msgout( CNetManager::getSIDA( "FS" ), "SNOWBALL" );
 	msgout.serial( id );
+	msgout.serial( playerId );
 	msgout.serial( start );
 	msgout.serial( target );
 	msgout.serial( speed );
-	msgout.serial( startTime );
+	msgout.serial( explosionRadius );
 
 	// Send the message to all connected clients
 	CNetManager::send( "FS", msgout, 0 );
@@ -370,26 +373,26 @@ void cbSnowballService ( CMessage& msgin, TSockId from, CCallbackNetBase& server
  ****************************************************************************/
 void cbSnowballClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientcb )
 {
-	uint32  id;
+	uint32  playerId;
 	CVector start,
 			target;
-	float   speed;
-	TTime   startTime;
+	float   speed,
+			explosionRadius;
 
 	// Input from the client is stored.
-	msgin.serial( id );
+	msgin.serial( playerId );
 	msgin.serial( start );
 	msgin.serial( target );
 	msgin.serial( speed );
-	msgin.serial( startTime );
+	msgin.serial( explosionRadius );
 
 	// Prepare the message to send to the Position service
 	CMessage msgout( CNetManager::getSIDA( "POS" ), "SNOWBALL" );
-	msgout.serial( id );
+	msgout.serial( playerId );
 	msgout.serial( start );
 	msgout.serial( target );
 	msgout.serial( speed );
-	msgout.serial( startTime );
+	msgout.serial( explosionRadius );
 
 	/*
 	 * The incomming message from the client is sent to the Position service
@@ -398,6 +401,36 @@ void cbSnowballClient ( CMessage& msgin, TSockId from, CCallbackNetBase& clientc
 	CNetManager::send( "POS", msgout );
 
 	nlinfo( "Received SNOWBALL from the client");
+}
+
+
+/****************************************************************************
+ * cdHitService
+ *
+ * Receive an HIT messages from the Position Service to send it to all
+ * the clients.
+ ****************************************************************************/
+void cbHitService ( CMessage& msgin, TSockId from, CCallbackNetBase& servercb )
+{
+	uint32  snowballId,
+			victimId;
+	bool    direct;
+
+	// Input: process the reply of the position service
+	msgin.serial( snowballId );
+	msgin.serial( victimId );
+	msgin.serial( direct );
+
+	// Output: send the reply to the client
+	CMessage msgout( CNetManager::getSIDA( "FS" ), "HIT" );
+	msgout.serial( snowballId );
+	msgout.serial( victimId );
+	msgout.serial( direct );
+
+	// Send the message to all connected clients
+	CNetManager::send( "FS", msgout, 0 );
+
+	nlinfo( "Sent HIT message to all the connected clients");
 }
 
 
@@ -440,7 +473,8 @@ TCallbackItem PosCallbackArray[] =
 	{ "ADD_ENTITY",    cbAddService      },
 	{ "ENTITY_POS",    cbPosService      },
 	{ "REMOVE_ENTITY", cbRemoveService   },
-	{ "SNOWBALL",      cbSnowballService }
+	{ "SNOWBALL",      cbSnowballService },
+	{ "HIT",           cbHitService }
 };
 
 
@@ -535,18 +569,17 @@ void onDisconnectClient (const std::string &serviceName, TSockId from, void *arg
 {
 	uint32 id;
 
-
 	uint64 i = from->appId();
 	_player *p = (_player *)(uint)i;
 	id = p->id;
-
-	// remove the player from the local player list
-	localPlayers.erase(id);
 
 	nlinfo ("A client with uniq Id %u has disconnected", id );
 
 	// tell the login system that this client is disconnected
 	CLoginServer::clientDisconnected ( id );
+
+	// remove the player from the local player list
+	localPlayers.erase( id );
 
 	// Output: send the REMOVE_ENTITY to the position manager.
 	CMessage msgout( CNetManager::getSIDA( "POS" ), "REMOVE_ENTITY" );

@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.7 2001/09/14 07:40:33 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.8 2001/11/07 17:18:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,17 @@ Matrix3 CExportNel::viewMatrix2CameraMatrix (const Matrix3& viewMatrix)
 	// return the computed matrix
 	return mat;
 }
+
+
+// --------------------------------------------------
+// ConvertMatrix a 3dsmax vector in NeL matrix
+void CExportNel::convertVector (CVector& nelVector, const Point3& maxVector)
+{
+	nelVector.x = maxVector.x;	
+	nelVector.y = maxVector.y;	
+	nelVector.z = maxVector.z;	
+}
+
 
 // --------------------------------------------------
 

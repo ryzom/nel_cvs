@@ -1,7 +1,7 @@
 /** \file animation_set.h
  * class CAnimationSet
  *
- * $Id: animation_set.h,v 1.8 2001/03/13 17:05:27 corvazier Exp $
+ * $Id: animation_set.h,v 1.9 2001/03/16 16:04:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/animation.h"
+#include "nel/3d/skeleton_weight.h"
 #include <map>
 #include <string>
 #include <vector>
@@ -54,6 +55,8 @@ class CAnimationSet
 public:
 
 	enum { NotFound=0xffffffff };
+
+	~CAnimationSet ();
 
 	/**
 	  * Get channel ID count. This number is the count of different track name in the animation set.
@@ -91,7 +94,7 @@ public:
 	  */
 	const CAnimation* getAnimation (uint animationId) const
 	{
-		return &_Animation[animationId];
+		return _Animation[animationId];
 	}
 
 	/**
@@ -99,15 +102,46 @@ public:
 	  */
 	CAnimation* getAnimation (uint animationId)
 	{
-		return &_Animation[animationId];
+		return _Animation[animationId];
 	}
 
 	/**
-	  * Add an animation empty to the set.
+	  * Get a read only skeleton weight pointer.
+	  */
+	const CSkeletonWeight* getSkeletonWeight (uint skeletonId) const
+	{
+		return &_SkeletonWeight[skeletonId];
+	}
+
+	/**
+	  * Get a writable skeleton weight pointer.
+	  */
+	CSkeletonWeight* getSkeletonWeight (uint skeletonId)
+	{
+		return &_SkeletonWeight[skeletonId];
+	}
+
+	/**
+	  * Add an animation to the set. The pointer of the animation must be allocated with new.
+	  * It is then handled by the animation set.
 	  *
+	  * \param name is the name of the animation.
+	  * \param animation is the animation pointer.
 	  * \return the id of the new animation.
 	  */
-	uint addAnimation (const char* name);
+	uint addAnimation (const char* name, CAnimation* animation);
+
+	/**
+	  * Add an empty skeleton weight to the set.
+	  *
+	  * \return the id of the new skeleton.
+	  */
+	uint addSkeletonWeight (const char* name);
+
+	/**
+	  * Reset the animation set.
+	  */
+	void reset ();
 
 	/**
 	  * Final build of the animation set.
@@ -125,9 +159,11 @@ public:
 	void serial (NLMISC::IStream& f) throw (NLMISC::EStream);
 
 private:
-	std::vector <CAnimation>		_Animation;
+	std::vector <CAnimation*>		_Animation;
+	std::vector <CSkeletonWeight>	_SkeletonWeight;
 	std::map <std::string, uint32>	_ChannelIdByName;
 	std::map <std::string, uint32>	_AnimationIdByName;
+	std::map <std::string, uint32>	_SkeletonWeightIdByName;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file animation_set.cpp
  * <File description>
  *
- * $Id: animation_set.cpp,v 1.6 2001/03/13 17:05:27 corvazier Exp $
+ * $Id: animation_set.cpp,v 1.7 2001/03/16 16:04:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,15 @@ namespace NL3D
 
 // ***************************************************************************
 
+CAnimationSet::~CAnimationSet ()
+{
+	// Erase all animations.
+	for (uint a=0; a<_Animation.size(); a++)
+		delete _Animation[a];
+}
+
+// ***************************************************************************
+
 uint CAnimationSet::getNumChannelId () const
 {
 	return _ChannelIdByName.size ();
@@ -39,17 +48,41 @@ uint CAnimationSet::getNumChannelId () const
 
 // ***************************************************************************
 
-uint CAnimationSet::addAnimation (const char* name)
+uint CAnimationSet::addAnimation (const char* name, CAnimation* animation)
 {
 	// Add an animation
-	_Animation.resize (_Animation.size()+1);
-	_Animation[_Animation.size()-1].setName (name);
+	_Animation.push_back (animation);
 
 	// Add an entry name / animation
 	_AnimationIdByName.insert (std::map <std::string, uint32>::value_type (name, _Animation.size()-1));
 
 	// Return animation id
 	return _Animation.size()-1;
+}
+
+// ***************************************************************************
+
+uint CAnimationSet::addSkeletonWeight (const char* name)
+{
+	// Add an animation
+	_SkeletonWeight.resize (_SkeletonWeight.size()+1);
+
+	// Add an entry name / animation
+	_SkeletonWeightIdByName.insert (std::map <std::string, uint32>::value_type (name, _SkeletonWeight.size()-1));
+
+	// Return animation id
+	return _SkeletonWeight.size()-1;
+}
+
+// ***************************************************************************
+
+void CAnimationSet::reset ()
+{
+	_Animation.clear();
+	_SkeletonWeight.clear();
+	_ChannelIdByName.clear();
+	_AnimationIdByName.clear();
+	_SkeletonWeightIdByName.clear();
 }
 
 // ***************************************************************************
@@ -87,15 +120,16 @@ void CAnimationSet::build ()
 void CAnimationSet::serial (NLMISC::IStream& f) throw (NLMISC::EStream)
 {
 	// Serial an header
-	f.serialCheck ((uint32)"_LEN");
-	f.serialCheck ((uint32)"MINA");
-	f.serialCheck ((uint32)"TES_");
+	f.serialCheck ((uint32)'_LEN');
+	f.serialCheck ((uint32)'MINA');
+	f.serialCheck ((uint32)'TES_');
 
 	// Serial a version
 	sint version=f.serialVersion (0);
 
 	// Serial the class
-	f.serialCont (_Animation);
+	f.serialContPtr (_Animation);
+	f.serialCont (_SkeletonWeight);
 	f.serialMap (_ChannelIdByName);
 	f.serialMap (_AnimationIdByName);
 }

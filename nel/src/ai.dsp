@@ -8,12 +8,12 @@ CFG=ai_lib - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "ai_lib.mak".
+!MESSAGE NMAKE /f "ai.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "ai_lib.mak" CFG="ai_lib - Win32 DebugFast"
+!MESSAGE NMAKE /f "ai.mak" CFG="ai_lib - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -52,7 +52,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\lib\nlai_lib.lib"
+# ADD LIB32 /nologo /out:"..\lib\nlai.lib"
 
 !ELSEIF  "$(CFG)" == "ai_lib - Win32 Debug"
 
@@ -63,8 +63,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "\bin\Debug"
-# PROP Intermediate_Dir "\bin\Debug"
+# PROP Output_Dir "Debug"
+# PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GR /GX /ZI /Od /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /YX /FD /GZ /c
@@ -75,7 +75,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
+# ADD LIB32 /nologo /out:"..\lib\nlai_debug.lib"
 
 !ELSEIF  "$(CFG)" == "ai_lib - Win32 ReleaseDebug"
 
@@ -98,7 +98,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
-# ADD LIB32 /nologo /out:"..\lib\nlai_lib_rd.lib"
+# ADD LIB32 /nologo /out:"..\lib\nlai_rd.lib"
 
 !ELSEIF  "$(CFG)" == "ai_lib - Win32 DebugFast"
 
@@ -121,7 +121,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\lib\nlai_lib_debug.lib"
-# ADD LIB32 /nologo /out:"..\lib\nlai_lib_debug_fast.lib"
+# ADD LIB32 /nologo /out:"..\lib\nlai_debug_fast.lib"
 
 !ELSEIF  "$(CFG)" == "ai_lib - Win32 ReleaseProfile"
 
@@ -144,7 +144,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"..\lib\nlai_lib.lib"
-# ADD LIB32 /nologo /out:"..\lib\nlai_lib.lib"
+# ADD LIB32 /nologo /out:"..\lib\nlai_profile.lib"
 
 !ENDIF 
 

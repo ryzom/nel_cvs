@@ -1,7 +1,7 @@
 /** \file tile_far_bank.cpp
  * <File description>
  *
- * $Id: tile_far_bank.cpp,v 1.1 2000/12/19 14:24:45 corvazier Exp $
+ * $Id: tile_far_bank.cpp,v 1.2 2000/12/19 15:20:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,7 +24,6 @@
  */
 
 #include "nel/3d/tile_far_bank.h"
-#include "nel/misc/stream.h"
 
 using namespace NLMISC;
 
@@ -44,10 +43,6 @@ void CTileFarBank::CTileFar::serial(IStream &f) throw(NLMISC::EStream)
 {
 	// Serial version
 	sint streamver = f.serialVersion(_Version);
-
-	// Serial size
-	f.serial (_Width);
-	f.serial (_Height);
 
 	// Serial pixels
 	f.serialCont (_Pixels);

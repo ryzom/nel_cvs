@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.14 2001/12/27 10:19:17 lecroart Exp $
+ * $Id: texture_font.cpp,v 1.15 2001/12/31 15:39:11 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,8 +111,7 @@ CTextureFont::CTextureFont()
 		for(uint32 j = 0; j < Letters[i].size(); ++j)
 		{
 			SLetterInfo &rLetter = Letters[i][j];
-
-			rLetter.Char = 0xff;
+			rLetter.Char = 0xffff;
 			rLetter.FontGenerator = NULL;
 
 			// The less recently used infos

@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.5 2001/08/02 13:48:44 cado Exp $
+ * $Id: u_source.h,v 1.6 2001/08/27 08:51:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,11 +49,19 @@ enum TSoundPriority { HighPri, MidPri, LowPri };
 
 
 /**
- * Game interface for sound sources (stereo or 3D sound instances)
+ * Game interface for sound sources (stereo or 3D sound instances).
  *
  * The mode is 3D if the sound buffer (specified by its Sound Id) is mono,
  * otherwise it is stereo.
  *
+ * For arguments as 3D vectors, use the NeL vector coordinate system:
+ * \verbatim
+ *     (top)
+ *       z    
+ *       |  y (front)
+ *       | /
+ *       -----x (right)
+ * \endverbatim
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

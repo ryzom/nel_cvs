@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.7 2001/08/02 13:47:05 cado Exp $
+ * $Id: source_al.h,v 1.8 2001/08/27 08:50:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,9 @@ namespace NLSOUND {
  * The EAX extensions are not available on all sound cards, and currently not at
  * all on Linux.
  *
+ * For arguments as 3D vectors, use the NeL vector coordinate system
+ * (not OpenAL/OpenGL's one).
+ * 
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

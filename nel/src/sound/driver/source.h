@@ -1,7 +1,7 @@
 /** \file source.h
  * ISource: sound source interface
  *
- * $Id: source.h,v 1.5 2001/08/02 13:47:05 cado Exp $
+ * $Id: source.h,v 1.6 2001/08/27 08:50:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,9 +40,15 @@ class ILoader;
 /**
  * Sound source interface (implemented in sound driver dynamic library)
  *
- * - If the buffer is mono, the source is played in 3D mode. The coordinate
- * system is the same as OpenGl's : X points right, Y points up and Z points
- * toward the viewer/camera.
+ * - If the buffer is mono, the source is played in 3D mode. For arguments
+ * as 3D vectors, use the NeL vector coordinate system:
+ * \verbatim
+ *     (top)
+ *       z    
+ *       |  y (front)
+ *       | /
+ *       -----x (right)
+ * \endverbatim
  * 
  * - If the buffer is stereo, the source is played in stereo mode.
  *

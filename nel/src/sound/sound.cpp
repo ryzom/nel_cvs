@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.7 2001/08/24 12:44:03 cado Exp $
+ * $Id: sound.cpp,v 1.8 2001/08/27 08:50:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -184,10 +184,7 @@ void				CSound::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 			throw EOlderStream();
 		}
 	}
-	else
-	{
-		CSound::_InputIgnorePitch = false; // warning: not multithread-compliant : do not serialize in different threads !
-	}
+	// CSound::_InputIgnorePitch is reset to false at the end of load()
 
 	s.serial( nb );
 }
@@ -228,6 +225,7 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<st
 				nlwarning( "AM: %s", e.what() );
 			}
 		}
+		CSound::_InputIgnorePitch = false; // warning: not multithread-compliant : do not serialize in different threads !
 		return nb - notfound;
 	}
 	else

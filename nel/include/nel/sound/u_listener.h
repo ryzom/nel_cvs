@@ -1,7 +1,7 @@
 /** \file u_listener.h
  * UListener: game interface for listener control
  *
- * $Id: u_listener.h,v 1.4 2001/07/31 12:52:02 cado Exp $
+ * $Id: u_listener.h,v 1.5 2001/08/27 08:51:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,16 @@ namespace NLSOUND {
 
 
 /**
- * Game interface for listener control
+ * Game interface for listener control.
+ *
+ * For arguments as 3D vectors, use the NeL vector coordinate system:
+ * \verbatim
+ *     (top)
+ *       z    
+ *       |  y (front)
+ *       | /
+ *       -----x (right)
+ * \endverbatim
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -59,7 +68,7 @@ public:
 	virtual void			setVelocity( const NLMISC::CVector& vel ) = 0;
 	/// Get the velocity vector
 	virtual void			getVelocity( NLMISC::CVector& vel ) const = 0;
-	/// Set the orientation vectors (3D mode only, ignored in stereo mode) (default: (0,0,-1), (0,1,0))
+	/// Set the orientation vectors (3D mode only, ignored in stereo mode) (default: (0,1,0), (0,0,1))
 	virtual void			setOrientation( const NLMISC::CVector& front, const NLMISC::CVector& up ) = 0;
 	/// Get the orientation vectors
 	virtual void			getOrientation( NLMISC::CVector& front, NLMISC::CVector& up ) const = 0;

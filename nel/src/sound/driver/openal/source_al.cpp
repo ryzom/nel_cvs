@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.9 2001/08/02 13:47:05 cado Exp $
+ * $Id: source_al.cpp,v 1.10 2001/08/27 08:50:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -198,7 +198,8 @@ void					CSourceAL::update()
  */
 void					CSourceAL::setPos( const NLMISC::CVector& pos )
 {
-	alSource3f( _SourceName, AL_POSITION, pos.x, pos.y, pos.z );
+	// Coordinate system: conversion from NeL to OpenAL/GL:
+	alSource3f( _SourceName, AL_POSITION, pos.x, pos.z, -pos.y );
 	TestALError();
 }
 
@@ -211,7 +212,8 @@ void					CSourceAL::getPos( NLMISC::CVector& pos ) const
 	ALfloat v[3];
 	alGetSourcefv( _SourceName, AL_POSITION, v );
 	TestALError();
-	pos.set( v[0], v[1], v[2] );
+	// Coordsys conversion
+	pos.set( v[0], -v[2], v[1] );
 }
 
 
@@ -220,7 +222,8 @@ void					CSourceAL::getPos( NLMISC::CVector& pos ) const
  */
 void					CSourceAL::setVelocity( const NLMISC::CVector& vel )
 {
-	alSource3f( _SourceName, AL_VELOCITY, vel.x, vel.y, vel.z );
+	// Coordsys conversion
+	alSource3f( _SourceName, AL_VELOCITY, vel.x, vel.z, -vel.y );
 	TestALError();
 }
 
@@ -233,7 +236,8 @@ void					CSourceAL::getVelocity( NLMISC::CVector& vel ) const
 	ALfloat v[3];
 	alGetSourcefv( _SourceName, AL_VELOCITY, v );
 	TestALError();
-	vel.set( v[0], v[1], v[2] );
+	// Coordsys conversion
+	vel.set( v[0], -v[2], v[1] );
 }
 
 
@@ -242,7 +246,8 @@ void					CSourceAL::getVelocity( NLMISC::CVector& vel ) const
  */
 void					CSourceAL::setDirection( const NLMISC::CVector& dir )
 {
-	alSource3f( _SourceName, AL_DIRECTION, dir.x, dir.y, dir.z );
+	// Coordsys conversion
+	alSource3f( _SourceName, AL_DIRECTION, dir.x, dir.z, -dir.y );
 	TestALError();
 }
 
@@ -255,7 +260,8 @@ void					CSourceAL::getDirection( NLMISC::CVector& dir ) const
 	ALfloat v[3];
 	alGetSourcefv( _SourceName, AL_DIRECTION, v );
 	TestALError();
-	dir.set( v[0], v[1], v[2] );
+	// Coordsys conversion
+	dir.set( v[0], -v[2], v[1] );
 }
 
 

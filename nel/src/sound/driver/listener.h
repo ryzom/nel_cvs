@@ -1,7 +1,7 @@
 /** \file listener.h
  * IListener: sound listener interface
  *
- * $Id: listener.h,v 1.3 2001/07/17 14:21:00 cado Exp $
+ * $Id: listener.h,v 1.4 2001/08/27 08:50:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,8 +43,14 @@ namespace NLSOUND {
 /**
  * Sound listener interface (implemented in sound driver dynamic library)
  *
- * The coordinate system is the same as OpenGl's : X points right,
- * Y points up and Z points toward the viewer/camera.
+ * For arguments as 3D vectors, use the NeL vector coordinate system:
+ * \verbatim
+ *     (top)
+ *       z    
+ *       |  y (front)
+ *       | /
+ *       -----x (right)
+ * \endverbatim
  *
  * The listener is a singleton.
  *

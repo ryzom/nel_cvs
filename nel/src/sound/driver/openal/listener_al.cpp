@@ -1,7 +1,7 @@
 /** \file listener_al.cpp
  * OpenAL sound listener
  *
- * $Id: listener_al.cpp,v 1.6 2001/07/25 08:40:58 cado Exp $
+ * $Id: listener_al.cpp,v 1.7 2001/08/27 08:50:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,8 +59,9 @@ CListenerAL::CListenerAL() : IListener()
  */
 void					CListenerAL::setPos( const NLMISC::CVector& pos )
 {
-	alListener3f( AL_POSITION, pos.x, pos.y, pos.z );
-	nlassert( alGetError() == AL_NO_ERROR );
+	// Coordinate system: conversion from NeL to OpenAL/GL:
+	alListener3f( AL_POSITION, pos.x, pos.z, -pos.y );
+	TestALError();
 }
 
 
@@ -71,14 +72,19 @@ void					CListenerAL::getPos( NLMISC::CVector& pos ) const
 {
 // Currently, the OpenAL headers are different between Windows and Linux versions !
 // alGetListener3f() is part of the spec, though.
+
 #ifdef NL_OS_WINDOWS
-	alGetListener3f( AL_POSITION, &pos.x, &pos.y, &pos.z );
+	// Coordsys conversion
+	float glposz;
+	alGetListener3f( AL_POSITION, &pos.x, &pos.z, &glposz );
+	pos.y = -glposz;
 #else
 	float posarray [3];
 	alGetListenerfv( AL_POSITION, posarray );
-	pos.set( posarray[0], posarray[1], posarray[2] );
+	// Coordsys conversion
+	pos.set( posarray[0], -posarray[2], posarray[1] );
 #endif
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -87,8 +93,9 @@ void					CListenerAL::getPos( NLMISC::CVector& pos ) const
  */
 void					CListenerAL::setVelocity( const NLMISC::CVector& vel )
 {
-	alListener3f( AL_VELOCITY, vel.x, vel.y, vel.z );
-	nlassert( alGetError() == AL_NO_ERROR );
+	// Coordsys conversion
+	alListener3f( AL_VELOCITY, vel.x, vel.z, -vel.y );
+	TestALError();
 }
 
 
@@ -98,13 +105,17 @@ void					CListenerAL::setVelocity( const NLMISC::CVector& vel )
 void				 	CListenerAL::getVelocity( NLMISC::CVector& vel ) const
 {
 #ifdef NL_OS_WINDOWS
-	alGetListener3f( AL_VELOCITY, &vel.x, &vel.y, &vel.z );
+	// Coordsys conversion
+	float glposz;
+	alGetListener3f( AL_VELOCITY, &vel.x, &vel.z, &glposz );
+	vel.y = - glposz;
 #else
 	float velarray [3];
 	alGetListenerfv( AL_VELOCITY, velarray );
-	vel.set( velarray[0], velarray[1], velarray[2] );
+	// Coordsys conversion
+	vel.set( velarray[0], -velarray[2], velarray[1] );
 #endif
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -115,14 +126,15 @@ void					CListenerAL::setOrientation( const NLMISC::CVector& front, const NLMISC
 {
 	// Forward then up
 	ALfloat v[6];
+	// Coordsys conversion
 	v[0] = front.x;
-	v[1] = front.y;
-	v[2] = front.z;
+	v[1] = front.z;
+	v[2] = -front.y;
 	v[3] = up.x;
-	v[4] = up.y;
-	v[5] = up.z;
+	v[4] = up.z;
+	v[5] = -up.y;
 	alListenerfv( AL_ORIENTATION, v );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -134,9 +146,10 @@ void					CListenerAL::getOrientation( NLMISC::CVector& front, NLMISC::CVector& u
 	// Forward then up
 	ALfloat v[6];
 	alGetListenerfv( AL_ORIENTATION, v );
-	nlassert( alGetError() == AL_NO_ERROR );
-	front.set( v[0], v[1], v[2] );
-	up.set( v[3], v[4], v[5] );
+	TestALError();
+	// Coordsys conversion
+	front.set( v[0], -v[2], v[1] );
+	up.set( v[3], -v[5], v[4] );
 }
 
 
@@ -149,7 +162,7 @@ void					CListenerAL::getOrientation( NLMISC::CVector& front, NLMISC::CVector& u
 void					CListenerAL::setGain( float gain )
 {
 	alListenerf( AL_GAIN, gain );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 
@@ -164,7 +177,7 @@ float					CListenerAL::getGain() const
 #else
 	alGetListenerfv( AL_GAIN, &gain );
 #endif
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 	return gain;
 }
 
@@ -175,7 +188,7 @@ float					CListenerAL::getGain() const
 void					CListenerAL::setDopplerFactor( float f )
 {
 	alDopplerFactor( f );
-	nlassert( alGetError() == AL_NO_ERROR );
+	TestALError();
 }
 
 

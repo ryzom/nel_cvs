@@ -1,7 +1,7 @@
 /** \file listener_al.h
  * OpenAL sound listener
  *
- * $Id: listener_al.h,v 1.3 2001/07/17 14:19:59 cado Exp $
+ * $Id: listener_al.h,v 1.4 2001/08/27 08:50:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,11 @@ namespace NLSOUND {
 
 
 /**
- * OpenAL sound listener
+ * OpenAL sound listener.
+ *
+ * For arguments as 3D vectors, use the NeL vector coordinate system
+ * (not OpenAL/OpenGL's one).
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -61,7 +65,7 @@ public:
 	virtual void			setVelocity( const NLMISC::CVector& vel );
 	/// Get the velocity vector
 	virtual void			getVelocity( NLMISC::CVector& vel ) const;
-	/// Set the orientation vectors (3D mode only) (default: (0,1,0), (0,0,-1))
+	/// Set the orientation vectors (3D mode only) (default: (0,1,0), (0,0,1))
 	virtual void			setOrientation( const NLMISC::CVector& front, const NLMISC::CVector& up );
 	/// Get the orientation vectors
 	virtual void			getOrientation( NLMISC::CVector& front, NLMISC::CVector& up ) const;

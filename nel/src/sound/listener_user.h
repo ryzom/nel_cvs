@@ -1,7 +1,7 @@
 /** \file listener_user.h
  * UListenerUser: implementation of UListener
  *
- * $Id: listener_user.h,v 1.5 2001/07/31 12:50:33 cado Exp $
+ * $Id: listener_user.h,v 1.6 2001/08/27 08:50:56 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ public:
 	virtual void	setVelocity( const NLMISC::CVector& vel )	{ _DrvListener->setVelocity( vel ); }
 	/// Get the velocity vector
 	virtual void	getVelocity( NLMISC::CVector& vel ) const	{ _DrvListener->getVelocity( vel ); }
-	/// Set the orientation vectors (3D mode only, ignored in stereo mode) (default: (0,0,-1), (0,1,0) )
+	/// Set the orientation vectors (3D mode only, ignored in stereo mode) (default: (0,1,0), (0,0,1) )
 	virtual void	setOrientation( const NLMISC::CVector& front,
 									const NLMISC::CVector& up )	{ _DrvListener->setOrientation( front, up ); }
 	/// Get the orientation vectors

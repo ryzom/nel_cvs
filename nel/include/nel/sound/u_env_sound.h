@@ -1,7 +1,7 @@
 /** \file u_env_sound.h
  * UEnvSound: Game interface for localized environment sounds
  *
- * $Id: u_env_sound.h,v 1.5 2001/07/20 16:08:43 cado Exp $
+ * $Id: u_env_sound.h,v 1.6 2001/08/27 08:51:12 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,6 +44,14 @@ class USource;
  * bounds and they must be totally included in the area of their
  * parent envsound.
  *
+ * For arguments as 3D vectors, use the NeL vector coordinate system:
+ * \verbatim
+ *     (top)
+ *       z    
+ *       |  y (front)
+ *       | /
+ *       -----x (right)
+ * \endverbatim
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

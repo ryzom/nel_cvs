@@ -135,7 +135,7 @@ BOOL CSoundPage::OnInitDialog()
 	try
 	{
 		_AudioMixer->init();
-		//_AudioMixer->getListener()->setPos( CVector(0.0f,0.0f,-0.0001f) );
+		//_AudioMixer->getListener()->setPos( CVector(0.0f,0.0001f,0.0f) );
 	}
 	catch( Exception& e )
 	{
@@ -479,11 +479,13 @@ void CSoundPage::Play( bool outsidecone )
 			_Source->setLooping( m_Looped!=0 );
 			if ( outsidecone )
 			{
-				_Source->setPos( CVector(0.0f,0.0f,-0.1f) );
-				_Source->setDirection( CVector(0.0f,0.0f,-1.0f) ); // directional
+				// The listener is just behind the source
+				_Source->setPos( CVector(0.0f,0.1f,0.0f) );
+				_Source->setDirection( CVector(0.0f,1.0f,0.0f) ); // directional
 			}
 			else
 			{
+				// The listener is at the source pos
 				_Source->setPos( CVector(0.0f,0.0f,0.0f) );
 				_Source->setDirection( CVector(0.0f,0.0f,0.0f) ); // non-directional
 			}

@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.61 2004/01/14 09:10:19 boucher Exp $
+ * $Id: stream.h,v 1.62 2004/02/19 09:47:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include	<list>
 #include	<set>
 #include	<map>
+#include	<hash_map>
 
 namespace	NLMISC
 {
@@ -216,6 +217,8 @@ public:
 	/// Is this stream a Read/Input stream?
 	bool			isReading() const;
 
+	// is it a xml stream ?
+	bool			isXML() const { return _XML; }	
 
 	/**
 	 * Template Object serialisation.
@@ -884,9 +887,9 @@ private:
 
 	// Ptr registry. We store 64 bit Id, to be compatible with futur 64+ bits pointers.
 	uint32								_NextSerialPtrId;
-	std::map<uint64, void*>				_IdMap;
-	typedef std::map<uint64, void*>::iterator	ItIdMap;
-	typedef std::map<uint64, void*>::value_type	ValueIdMap;
+	std::hash_map<uint64, void*>		_IdMap;
+	typedef std::hash_map<uint64, void*>::iterator	ItIdMap;
+	typedef std::hash_map<uint64, void*>::value_type	ValueIdMap;
 
 	// Ptr serialisation.
 	void			serialIStreamable(IStreamable* &ptr) ;

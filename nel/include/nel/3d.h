@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: 3d.h,v 1.1 2000/09/12 08:29:35 lecroart Exp $
+ * $Id: 3d.h,v 1.2 2000/09/15 09:34:50 lecroart Exp $
  *
  * Main 3d header that include all 3d files
  */
@@ -18,6 +18,6 @@
 
 
 
-#endif // NL_PYTHON_H
+#endif // NL_3D_H
 
 /* End of 3d.h */

@@ -1,4 +1,4 @@
-/* network.h
+/* net.h
  *
  * Copyright (C) 2000 Nevrax. All rights reserved.
  *
@@ -8,16 +8,16 @@
  */
 
 /*
- * $Id: network.h,v 1.1 2000/09/12 08:29:35 lecroart Exp $
+ * $Id: net.h,v 1.1 2000/09/15 09:34:50 lecroart Exp $
  *
- * Main network header that include all network files
+ * Main net header that include all net files
  */
 
-#ifndef NL_NETWONL_H
-#define NL_NETWONL_H
+#ifndef NL_NET_H
+#define NL_NET_H
 
 
 
-#endif // NL_NETWONL_H
+#endif // NL_NET_H
 
-/* End of network.h */
+/* End of net.h */

@@ -1,4 +1,4 @@
-/* ai.h
+/* db.h
  *
  * Copyright (C) 2000 Nevrax. All rights reserved.
  *
@@ -8,16 +8,16 @@
  */
 
 /*
- * $Id: ai.h,v 1.2 2000/09/15 09:34:50 lecroart Exp $
+ * $Id: db.h,v 1.1 2000/09/15 09:34:50 lecroart Exp $
  *
- * Main ai header that include all ai files
+ * Main db header that include all db files
  */
 
-#ifndef NL_AI_H
-#define NL_AI_H
+#ifndef NL_DB_H
+#define NL_DB_H
 
 
 
-#endif // NL_AI_H
+#endif // NL_DB_H
 
-/* End of ai.h */
+/* End of db.h */

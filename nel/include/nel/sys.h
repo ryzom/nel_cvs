@@ -1,4 +1,4 @@
-/* database.h
+/* sys.h
  *
  * Copyright (C) 2000 Nevrax. All rights reserved.
  *
@@ -8,16 +8,14 @@
  */
 
 /*
- * $Id: database.h,v 1.1 2000/09/12 08:29:35 lecroart Exp $
+ * $Id: sys.h,v 1.1 2000/09/15 09:34:50 lecroart Exp $
  *
- * Main database header that include all database files
+ * Main sys header that include all sys files
  */
 
-#ifndef NL_DATABASE_H
-#define NL_DATABASE_H
+#ifndef NL_SYS_H
+#define NL_SYS_H
 
+#endif // NL_SYS_H
 
-
-#endif // NL_DATABASE_H
-
-/* End of database.h */
+/* End of sys.h */

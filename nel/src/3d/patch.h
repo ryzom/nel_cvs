@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.17 2001/11/05 16:26:45 berenguier Exp $
+ * $Id: patch.h,v 1.18 2001/11/21 13:57:32 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -667,7 +667,10 @@ public:
 	// @{
 
 	/// Delete any vegetable Ig still existing in this patch.
-	void		deleteAllVegetableIgs(CVegetableManager	*vegetableManager);
+	void		deleteAllVegetableIgs();
+
+	/// Recreate any vegetable block (as possible) in this patch. (usefull for edition)
+	void		recreateAllVegetableIgs();
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.5 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: vegetable.h,v 1.6 2001/11/21 13:57:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,6 +79,8 @@ public:
 
 	/// \name Density Angle Factor
 	// @{
+	enum	TAngleType	{AngleGround=0, AngleCeiling, AngleWall};
+
 	/** set an Angle setup such that max density is when normal== K, and 0 density is when normalAngle= cosAngleMin.
 	 *	\param cosAngleMinLimit should be a cosinus angle between -1 and 1.
 	 */
@@ -94,8 +96,9 @@ public:
 	 */
 	void	setAngleWall(float cosAngleMin, float cosAngleMax);
 
-	float	getCosAngleMin() const {return _CosAngleMin;}
-	float	getCosAngleMax() const {return _CosAngleMax;}
+	float		getCosAngleMin() const {return _CosAngleMin;}
+	float		getCosAngleMax() const {return _CosAngleMax;}
+	TAngleType	getAngleType() const {return _AngleType;}
 
 	// @}
 
@@ -148,6 +151,8 @@ private:
 	 *	f(CosAngleMiddle)==1, and f(CosAngleMin)==f(CosAngleMax)== 0
 	 */
 	float				_CosAngleMin, _CosAngleMax, _CosAngleMiddle, _OOCosAngleDist;
+	/// angle type setuped with setAngleMin etc...
+	TAngleType			_AngleType;
 
 
 	/// the manager

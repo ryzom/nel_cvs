@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.72 2001/11/14 15:16:58 corvazier Exp $
+ * $Id: patch.cpp,v 1.73 2001/11/21 13:57:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -621,7 +621,7 @@ void			CPatch::clearTessBlocks()
 		CVegetableManager	*vegetableManager= getLandscape()->_VegetableManager;
 
 		// delete still existing vegetable Igs.
-		deleteAllVegetableIgs(vegetableManager);
+		deleteAllVegetableIgs();
 
 		// delete ClipBlocks.
 		for(i=0; i<VegetableClipBlocks.size(); i++)

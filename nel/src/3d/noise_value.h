@@ -1,7 +1,7 @@
 /** \file noise_value.h
  * <File description>
  *
- * $Id: noise_value.h,v 1.2 2001/11/05 16:26:44 berenguier Exp $
+ * $Id: noise_value.h,v 1.3 2001/11/21 13:57:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,29 +81,6 @@ private:
 
 // ***************************************************************************
 /**
- * a gradient of color
- * \author Lionel Berenguier
- * \author Nevrax France
- * \date 2001
- */
-class	CColorGradient
-{
-public:
-	NLMISC::CRGBAF		Col0, Col1;
-
-	CColorGradient() {}
-	CColorGradient(NLMISC::CRGBAF col0, NLMISC::CRGBAF col1) : Col0(col0), Col1(col1) {}
-
-public:
-	/// factor==0 => Col0, factor==1 => Col1. no clamp.
-	void	interpolate(float factor, NLMISC::CRGBAF &result) const;
-
-	void	serial(NLMISC::IStream &f);
-};
-
-
-// ***************************************************************************
-/**
  * A noisy color generator
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -114,12 +91,12 @@ class	CNoiseColorGradient
 public:
 	/// Abs and Rand should be 0 and 1 here. If not, some colors may not be generated...
 	CNoiseValue					NoiseValue;
-	std::vector<CColorGradient>	Gradients;
+	std::vector<NLMISC::CRGBAF>	Gradients;
 
 
 public:
 	/** Use NoiseValue to compute a PerlinNoise E [0..1], and peek in Gradients, with linear interpolation.
-	 *	result unmodified if no gradients.
+	 *	result unmodified if no colors. If only one color, copied into result.
 	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
 	 */
 	void	eval(const CVector &posInWorld, NLMISC::CRGBAF &result) const;

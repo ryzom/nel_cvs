@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.23 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: landscape.h,v 1.24 2001/11/21 13:57:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -382,6 +382,7 @@ public:
 	// @{
 
 	/** enable the vegetable management in landscape. Valid only if VertexShader is OK.
+	 *	if true, register TileBank vegetables Shape to manager.
 	 */
 	void		enableVegetable(bool enable);
 

@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.5 2001/11/09 14:21:31 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.6 2001/11/21 13:57:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,7 +168,29 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 
 
 // ***************************************************************************
-void	CPatch::deleteAllVegetableIgs(CVegetableManager	*vegetableManager)
+void	CPatch::recreateAllVegetableIgs()
+{
+	// For all TessBlocks, try to release their VegetableBlock
+	for(uint numtb=0; numtb<TessBlocks.size(); numtb++)
+	{
+		// if the vegetableBlock is deleted, and if there is at least one Material in the tessBlock, and if possible
+		if( TessBlocks[numtb].VegetableBlock==NULL && TessBlocks[numtb].TileMaterialRefCount>0
+			&& getLandscape()->isVegetableActive())
+		{
+			// compute tessBlock coordinate
+			uint tbWidth= OrderS>>1;
+			uint ts= numtb&(tbWidth-1);
+			uint tt= numtb/tbWidth;
+			// crate the vegetable with tilecooridante (ie tessBlock coord *2);
+			createVegetableBlock(numtb, ts*2, tt*2);
+		}
+	}
+
+}
+
+
+// ***************************************************************************
+void	CPatch::deleteAllVegetableIgs()
 {
 	// For all TessBlocks, try to release their VegetableBlock
 	for(uint i=0; i<TessBlocks.size(); i++)

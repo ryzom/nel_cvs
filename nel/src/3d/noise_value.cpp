@@ -1,7 +1,7 @@
 /** \file noise_value.cpp
  * <File description>
  *
- * $Id: noise_value.cpp,v 1.2 2001/11/05 16:26:44 berenguier Exp $
+ * $Id: noise_value.cpp,v 1.3 2001/11/21 13:57:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -299,41 +299,31 @@ void	CNoiseValue::serial(IStream &f)
 
 
 // ***************************************************************************
-void	CColorGradient::interpolate(float factor, CRGBAF &result) const
-{
-	result= Col0*(1-factor) + Col1*factor;
-}
-
-// ***************************************************************************
-void	CColorGradient::serial(IStream &f)
-{
-	sint	ver= f.serialVersion(0);
-	f.serial(Col0);
-	f.serial(Col1);
-}
-
-// ***************************************************************************
-// ***************************************************************************
-// ***************************************************************************
-
-
-// ***************************************************************************
 void	CNoiseColorGradient::eval(const CVector &posInWorld, CRGBAF &result) const
 {
 	// test if not null grads.
 	uint	nGrads= Gradients.size();
 	if(nGrads==0)
 		return;
-	// eval noise
-	float	f= NoiseValue.eval(posInWorld) * nGrads;
-	// look up in table of gradients.
-	uint	id= OptFastFloor(f);
-	clamp(id, 0U, nGrads-1);
-	// fractionnal part.
-	f= f-id;
-	clamp(f, 0, 1);
-	// interpolate the gradient.
-	Gradients[id].interpolate(f, result);
+	// if only one color, easy
+	if(nGrads==1)
+	{
+		result= Gradients[0];
+	}
+	else
+	{
+		// eval noise
+		float	f= NoiseValue.eval(posInWorld) * (nGrads-1);
+		clamp(f, 0.f, (float)(nGrads-1));
+		// look up in table of gradients.
+		uint	id= OptFastFloor(f);
+		clamp(id, 0U, nGrads-2);
+		// fractionnal part.
+		f= f-id;
+		clamp(f, 0, 1);
+		// interpolate the gradient.
+		result= Gradients[id]*(1-f) + Gradients[id+1]*f;
+	}
 }
 
 // ***************************************************************************

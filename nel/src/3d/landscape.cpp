@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.92 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: landscape.cpp,v 1.93 2001/11/21 13:57:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2609,7 +2609,29 @@ void		CLandscape::enableVegetable(bool enable)
 			{
 				// delete vegetable Igs of this patch
 				CPatch	*pa= ((*it).second)->getPatch(i);
-				pa->deleteAllVegetableIgs(_VegetableManager);
+				pa->deleteAllVegetableIgs();
+			}
+
+		}
+	}
+	// if true
+	else
+	{
+		//  reload all Shapes (actually load only new shapes)
+		TileBank.initTileVegetableDescs(_VegetableManager);
+
+		// And recreate vegetable igs.
+		// Landscape always create ClipBlokcs, but IGs/addInstances() are created only if isVegetableActive().
+		// For all zones.
+		for(ItZoneMap it= Zones.begin();it!=Zones.end();it++)
+		{
+			// for all patch.
+			sint	N= (*it).second->getNumPatchs();
+			for(sint i=0;i<N;i++)
+			{
+				// recreate vegetable Igs of this patch
+				CPatch	*pa= ((*it).second)->getPatch(i);
+				pa->recreateAllVegetableIgs();
 			}
 
 		}

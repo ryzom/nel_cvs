@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.6 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.7 2001/11/21 13:57:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,36 +71,48 @@ CVegetable::CVegetable()
 // ***************************************************************************
 void	CVegetable::setAngleGround(float cosAngleMin)
 {
+	_AngleType= AngleGround;
+
 	_CosAngleMin= cosAngleMin;
 	// We must be at densityFactor==1, when cosAngle==1, keeping the same formula.
 	_CosAngleMax= 1 + (1-cosAngleMin);
 
 	// precalc
 	_CosAngleMiddle= (_CosAngleMin + _CosAngleMax)/2;
-	_OOCosAngleDist= 1.0f / (_CosAngleMax - _CosAngleMiddle);
+	_OOCosAngleDist= _CosAngleMax - _CosAngleMiddle;
+	if(_OOCosAngleDist)
+		_OOCosAngleDist= 1.0f / _OOCosAngleDist;
 }
 
 // ***************************************************************************
 void	CVegetable::setAngleCeiling(float cosAngleMax)
 {
+	_AngleType= AngleCeiling;
+
 	_CosAngleMax= cosAngleMax;
 	// We must be at densityFactor==1, when cosAngle==-1, keeping the same formula.
 	_CosAngleMin= -1 - (cosAngleMax-(-1));
 	
 	// precalc
 	_CosAngleMiddle= (_CosAngleMin + _CosAngleMax)/2;
-	_OOCosAngleDist= 1.0f / (_CosAngleMax - _CosAngleMiddle);
+	_OOCosAngleDist= _CosAngleMax - _CosAngleMiddle;
+	if(_OOCosAngleDist)
+		_OOCosAngleDist= 1.0f / _OOCosAngleDist;
 }
 
 // ***************************************************************************
 void	CVegetable::setAngleWall(float cosAngleMin, float cosAngleMax)
 {
+	_AngleType= AngleWall;
+
 	_CosAngleMin= cosAngleMin;
 	_CosAngleMax= cosAngleMax;
 
 	// precalc
 	_CosAngleMiddle= (_CosAngleMin + _CosAngleMax)/2;
-	_OOCosAngleDist= 1.0f / (_CosAngleMax - _CosAngleMiddle);
+	_OOCosAngleDist= _CosAngleMax - _CosAngleMiddle;
+	if(_OOCosAngleDist)
+		_OOCosAngleDist= 1.0f / _OOCosAngleDist;
 }
 
 
@@ -340,6 +352,7 @@ void	CVegetable::serial(NLMISC::IStream &f)
 	f.serial(Density);
 	f.serial(MaxDensity);
 	f.serial(_CosAngleMin, _CosAngleMax, _CosAngleMiddle, _OOCosAngleDist);
+	f.serialEnum(_AngleType);
 	f.serial(Sxy, Sz);
 	f.serial(Rx, Ry, Rz);
 	f.serial(BendFactor);

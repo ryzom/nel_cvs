@@ -1,7 +1,7 @@
 /** \file logic_state.cpp
  * 
  *
- * $Id: logic_state.cpp,v 1.3 2002/07/26 09:52:24 coutelas Exp $
+ * $Id: logic_state.cpp,v 1.4 2002/08/28 09:27:12 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -437,3 +437,4 @@ void CLogicState::read (xmlNodePtr node)
 
 
 } // NLLOGIC
+

@@ -1,6 +1,6 @@
 /** \file opcode_call_lib_method.cpp
  *
- * $Id: opcode_call_lib_method.cpp,v 1.7 2001/06/14 10:23:18 chafik Exp $
+ * $Id: opcode_call_lib_method.cpp,v 1.8 2001/07/27 13:42:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -258,6 +258,11 @@ namespace NLAISCRIPT
 
 #ifdef NL_DEBUG
 		int db_size = context.Param.size();
+		static sint kkkkk = 0;
+		
+		const char *txtDbg = (const char *)obj->getType();
+
+		kkkkk ++;
 #endif
 		
 		std::list<sint32>::iterator it = _I.begin();
@@ -265,6 +270,7 @@ namespace NLAISCRIPT
 		{
 			 obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 		}
+
 
 		NLAIAGENT::IObjectIA::CProcessResult r;
 

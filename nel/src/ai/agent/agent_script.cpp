@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.79 2001/07/26 13:17:00 chafik Exp $
+ * $Id: agent_script.cpp,v 1.80 2001/07/27 13:42:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -334,7 +334,12 @@ namespace NLAIAGENT
 		if(_Components != NULL)
 		{
 			for ( int i = 0; i < _NbComponents; i++ )
+			{
+#ifdef NL_DEBUG
+				const IObjectIA *o = _Components[i];
+#endif
 				_Components[i]->release();
+			}
 			delete[] _Components;
 		}
 	}
@@ -369,7 +374,7 @@ namespace NLAIAGENT
 		IObjectIA *old_comp = _Components[ index ];
 		_Components[ index ] = op;
 		//op->incRef();
-		old_comp->release();
+		if(op != old_comp) old_comp->release();
 
 
 

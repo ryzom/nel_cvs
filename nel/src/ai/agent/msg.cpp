@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.11 2001/07/26 13:17:01 chafik Exp $
+ * $Id: msg.cpp,v 1.12 2001/07/27 13:42:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,9 +36,10 @@ namespace NLAIAGENT
 	const static sint32 _TXchgReceiverIsSender = 2;
 	const static sint32 _TContinuation = 3;	
 	const static sint32 _TSetContinuation = 4;
-	const static sint32 _TInitProtocol = 5;	
-	const static sint32 _TProtcetSender = 6;	
-	const static sint32 _MLastM = 7;
+	const static sint32 _TSetSender = 5;
+	const static sint32 _TInitProtocol = 6;	
+	const static sint32 _TProtcetSender = 7;	
+	const static sint32 _MLastM = 8;
 
 	IMessageBase::CMethodCall IMessageBase::_Method[] = 
 	{
@@ -48,7 +49,8 @@ namespace NLAIAGENT
 		IMessageBase::CMethodCall(_SETCONTINUATION_,_TSetContinuation),
 		IMessageBase::CMethodCall("XChangeReceiverSender",_TXchgReceiverIsSender),
 		IMessageBase::CMethodCall("ProtcetSender",_TProtcetSender),
-		IMessageBase::CMethodCall("InitProtocol",_TInitProtocol)
+		IMessageBase::CMethodCall("InitProtocol",_TInitProtocol),
+		IMessageBase::CMethodCall("SetSender",_TSetSender)
 		
 	};
 
@@ -335,6 +337,13 @@ namespace NLAIAGENT
 					IObjectIA *o = (IObjectIA *)((IBaseGroupType *)p)->get();
 					//o->incRef();
 					setContinuation(o);
+					return IObjectIA::CProcessResult();
+				}
+
+			case _TSetSender:
+				{
+					CLocalAgentMail *o = (CLocalAgentMail *)((IBaseGroupType *)p)->get();					
+					setSender((IObjectIA *)o->getHost());
 					return IObjectIA::CProcessResult();
 				}
 

@@ -468,6 +468,7 @@ namespace NLAIAGENT
 		while ( it_arg != g->getArgs().end() )
 		{
 			setStaticMember( *it_pos, *it_arg );
+			(*it_arg)->incRef();
 			it_arg++;
 			it_pos++;
 		}

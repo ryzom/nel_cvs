@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.24 2001/07/26 13:17:01 chafik Exp $
+ * $Id: yacc.cpp,v 1.25 2001/07/27 13:42:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,8 +35,7 @@ namespace NLAISCRIPT
 {		
 	void CCompilateur::interrogationEnd()
 	{		
-		_VarState -= (sint32)_VarState  - _VarState.popMark();
-		_LastBloc1.back()->addCode((new CFreeAlloc));
+		_VarState -= (sint32)_VarState  - _VarState.popMark();		
 		if (_Debug)
 		{
 			_LastBloc1.back()->addCode((new CFreeAllocDebug));

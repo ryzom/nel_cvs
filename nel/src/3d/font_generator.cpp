@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.5 2000/12/08 13:45:36 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.6 2000/12/11 15:11:03 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 
 #include <freetype/freetype.h>
 
-#undef FTERRORS_H
+#undef __FTERRORS_H__
 #define FT_ERRORDEF( e, v, s )  { e, s },
 #define FT_ERROR_START_LIST  {
 #define FT_ERROR_END_LIST    { 0, 0 } };
@@ -35,7 +35,7 @@ const struct
 {
 int          err_code;
 const char*  err_msg;
-} ft_errors[] =
+} ft_errors[] = 
 
 #include <freetype/fterrors.h>
 

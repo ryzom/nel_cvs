@@ -1,4 +1,4 @@
-' nevrax_macros.dsm
+' nevrax_macros_98.dsm
 '
 ' Copyright (C) 2000 Nevrax. All rights reserved.
 '
@@ -8,7 +8,8 @@
 '
 '------------------------------------------------------------------------------
 ' FILE DESCRIPTION: Nevrax Visual Studio macro file
-' $Id: nevrax_macros.dsm,v 1.3 2000/09/13 16:38:13 cado Exp $
+' when Scripting.FileSystemObject cannot be instanciated
+' $Id: nevrax_macros_98.dsm,v 1.1 2000/09/13 16:40:26 cado Exp $
 '------------------------------------------------------------------------------
 
 
@@ -30,7 +31,7 @@ Sub NevraxInsertFileHeader( filename )
 		" * document (""Copyright"") included with this distribution." + vbLf + _
 		" */" + vbLf + vbLf + _
 		"/*" + vbLf + _
-		" * $Id: nevrax_macros.dsm,v 1.3 2000/09/13 16:38:13 cado Exp $" + vbLf + _
+		" * $Id: nevrax_macros_98.dsm,v 1.1 2000/09/13 16:40:26 cado Exp $" + vbLf + _
 		" *" + vbLf + _
 		" * <Replace this by a description of the file>" + vbLf + _
 		" */" + vbLf
@@ -127,28 +128,28 @@ Sub NevraxNewClass()
 	end if
 
 	' ** Check for file existence
-	dim fso
-	set fso = CreateObject("Scripting.FileSystemObject")
+	'dim fso
+	'set fso = CreateObject("Scripting.FileSystemObject")
 	FinalCPPdir = SrcDirectory + CurrentDirectoryDir
 	FinalHdir = IncDirectory + CurrentDirectoryDir
-	if not fso.FolderExists( FinalHdir ) then
-		MsgBox "Erreur : le répertoire " + FinalHdir + " n'existe pas !", vbExclamation
-		Exit Sub
-	end if
-	if not fso.FolderExists( FinalCPPdir ) then
-		MsgBox "Erreur : le répertoire " + FinalCPPdir + " n'existe pas !", vbExclamation
-		Exit Sub
-	end if
+	'if not fso.FolderExists( FinalHdir ) then
+	'	MsgBox "Erreur : le répertoire " + FinalHdir + " n'existe pas !", vbExclamation
+	'	Exit Sub
+	'end if
+	'if not fso.FolderExists( FinalCPPdir ) then
+	'	MsgBox "Erreur : le répertoire " + FinalCPPdir + " n'existe pas !", vbExclamation
+	'	Exit Sub
+	'end if
 	FinalCPPfilename = FinalCPPdir + CppFilename
 	FinalHfilename = FinalHdir + HFilename
-	if fso.FileExists( FinalHfilename ) then
-		MsgBox "Erreur : le fichier " + FinalHfilename + " existe déjà !", vbExclamation
-		Exit Sub
-	end if
-	if fso.FileExists( FinalCPPfilename ) then
-		MsgBox "Erreur : le fichier " + FinalCPPfilename + " existe déjà !", vbExclamation
-		Exit Sub
-	end if
+	'if fso.FileExists( FinalHfilename ) then
+	'	MsgBox "Erreur : le fichier " + FinalHfilename + " existe déjà !", vbExclamation
+	'	Exit Sub
+	'end if
+	'if fso.FileExists( FinalCPPfilename ) then
+	'	MsgBox "Erreur : le fichier " + FinalCPPfilename + " existe déjà !", vbExclamation
+	'	Exit Sub
+	'end if
 
 	' ** Programmer's name
 	if CurrentProgrammerName = "" then

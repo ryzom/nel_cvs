@@ -1,9 +1,20 @@
 Mode d'emploi des macros Nevrax
 02/08/00 cado@nevrax.com
-$Id: nevrax_macros_howto.txt,v 1.3 2000/09/13 16:19:13 cado Exp $
+$Id: nevrax_macros_howto.txt,v 1.4 2000/09/13 16:38:13 cado Exp $
 ----------
 
-1. Nouveautés du 07/09/2000
+1. Note du 13/09/2000
+---------------------
+
+Dans ce document, remplacez nevrax_macros.dsm par
+nevrax_macros_98.dsm si la macro NevraxNewClass de
+nevrax_macros.dsm génère une erreur en instanciant
+un objet ActiveX Automation "FileSystemObject".
+Ce problème a été constaté sous Windows 98, pas
+sous Windows 2000.
+
+
+2. Nouveautés du 07/09/2000
 ---------------------------
 
 - La macro NevraxNewClass vous demande et mémorise votre nom, pour
@@ -15,7 +26,7 @@ bien, et vous informe quand le fichier .h de l'éventuelle classe de
 base n'existe pas.
 
 
-2. Installation
+3. Installation
 ---------------
 
 a. Dans Visual Studio, menu Tools, Macros,

@@ -1,7 +1,7 @@
 /** \file words_dictionary.h
  * Words dictionary>
  *
- * $Id: words_dictionary.h,v 1.3 2004/03/15 16:34:33 cado Exp $
+ * $Id: words_dictionary.h,v 1.4 2004/08/18 17:42:35 cado Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -50,9 +50,11 @@ public:
 
 	/** Load the config file and the related words files. Return false in case of failure.
 	 * Config file variables:
-	 * - WordsPath: where to find *_words_<languageCode>.txt
+	 * - WordsPath: where to find <filter>_words_<languageCode>.txt
 	 * - LanguageCode: language code (ex: en for English)
 	 * - Utf8: results are in UTF8, otherwise in ANSI string
+	 * - Filter: "*" for all files (default) or a name (ex: "item").
+	 * - AdditionalFiles/AdditionalFileColumnTitles
 	 */
 	bool			init( const std::string& configFileName="words_dic.cfg" );
 

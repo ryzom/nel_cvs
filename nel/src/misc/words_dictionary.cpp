@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.8 2004/03/23 14:55:49 cado Exp $
+ * $Id: words_dictionary.cpp,v 1.9 2004/08/18 17:42:35 cado Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -46,9 +46,11 @@ CWordsDictionary::CWordsDictionary()
 
 /* Load the config file and the related words files. Return false in case of failure.
  * Config file variables:
- * - WordsPath: where to find *_words_<languageCode>.txt
+ * - WordsPath: where to find <filter>_words_<languageCode>.txt
  * - LanguageCode: language code (ex: en for English)
  * - Utf8: results are in UTF8, otherwise in ANSI string
+ * - Filter: "*" for all files (default) or a name (ex: "item").
+ * - AdditionalFiles/AdditionalFileColumnTitles
  */
 bool CWordsDictionary::init( const string& configFileName )
 {
@@ -64,9 +66,9 @@ bool CWordsDictionary::init( const string& configFileName )
 	{
 		nlwarning( "WD: %s", e.what() );
 	}
-	string wordsPath, languageCode;
+	string wordsPath, languageCode, filter = "*";
 	vector<string> additionalFiles, additionalFileColumnTitles;
-	bool utf8 = false;
+	bool filterAll = true, utf8 = false;
 	if ( cfFound )
 	{
 		CConfigFile::CVar *v = cf.getVarPtr( "WordsPath" );
@@ -82,6 +84,12 @@ bool CWordsDictionary::init( const string& configFileName )
 		v = cf.getVarPtr( "Utf8" );
 		if ( v )
 			utf8 = (v->asInt() == 1);
+		v = cf.getVarPtr( "Filter" );
+		if ( v )
+		{
+			filter = v->asString();
+			filterAll = (filter == "*");
+		}
 		v = cf.getVarPtr( "AdditionalFiles" );
 		if ( v )
 		{
@@ -126,9 +134,15 @@ bool CWordsDictionary::init( const string& configFileName )
 		}
 
 		// Or test if filename is a words_*.txt file
+		string pattern = string("_words_") + languageCode + ext;
 		if ( isAdditionalFile ||
-			 ((p = filename.find( string("_words_") + languageCode + ext )) != string::npos) )
+			 ((p = filename.find( pattern )) != string::npos) )
 		{
+			// Skip if a filter is specified and does not match the current file
+			if ( (!filterAll) && (filename.find( filter+pattern ) == string::npos) )
+				continue;
+
+			// Load file
 			nldebug( "WD: Loading %s", filename.c_str() );
 			_FileList.push_back( filename );
 			string::size_type origSize = filename.size() - ext.size();
@@ -161,7 +175,7 @@ bool CWordsDictionary::init( const string& configFileName )
 	{
 		if ( wordsPath.empty() )
 			nlwarning( "WD: WordsPath missing in config file %s", configFileName.c_str() );
-		nlwarning( "WD: *_words_%s.txt not found", languageCode.c_str() );
+		nlwarning( "WD: %s_words_%s.txt not found", filter.c_str(), languageCode.c_str() );
 		return false;
 	}
 	else

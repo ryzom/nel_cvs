@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.15 2003/07/03 09:58:25 distrib Exp $
+ * $Id: memory_manager.h,v 1.16 2003/07/10 09:01:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -311,14 +311,14 @@ extern "C"
 // New operators
 // *********************************************************
 
+#ifndef NL_USE_DEFAULT_MEMORY_MANAGER
+
 inline void* operator new(size_t size, const char *filename, int line)
 {
 	return NLMEMORY::MemoryAllocateDebug (size, filename, line, 0);
 }
 
 // *********************************************************
-
-#ifdef WIN32
 
 inline void* operator new(size_t size)
 {
@@ -353,7 +353,7 @@ inline void operator delete[](void* p, const char *filename, int line)
 	NLMEMORY::MemoryDeallocate (p);
 }
 
-#endif
+#endif // NL_USE_DEFAULT_MEMORY_MANAGER
 
 // *********************************************************
 // Macros
@@ -363,13 +363,9 @@ inline void operator delete[](void* p, const char *filename, int line)
  * Doesn't work with placement new. To do a placement new, undef new, make your placement new, and redefine new with the macro NL_NEW */
 
 
-#ifdef WIN32
-	#ifndef NL_NO_DEFINE_NEW
-		#define NL_NEW new(__FILE__, __LINE__)
-		#define new NL_NEW
-	#else // NL_NO_DEFINE_NEW
-		#define NL_NEW new
-	#endif // NL_NO_DEFINE_NEW
+#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
+	#define NL_NEW new(__FILE__, __LINE__)
+	#define new NL_NEW
 #else
 	#define NL_NEW new
 #endif

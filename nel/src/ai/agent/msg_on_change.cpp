@@ -1,6 +1,6 @@
 /** \file msg_on_change.cpp
  *
- * $Id: msg_on_change.cpp,v 1.5 2002/06/06 09:12:14 chafik Exp $
+ * $Id: msg_on_change.cpp,v 1.6 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,22 +34,19 @@ namespace NLAIAGENT
 	{
 		CGroupType *x = new CGroupType();		
 		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);
 	}
 
 	COnChangeMsg::COnChangeMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
 		CGroupType *x = new CGroupType();		
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);		
+		setMessageGroup(x);		
 	}
 
 	COnChangeMsg::COnChangeMsg(IBasicAgent *agent):
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::COnChangeMsgClass::IdOnChangeMsgClass.getFactory()->getClass())
 	{		
 		CGroupType *x = new CGroupType();		
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);
+		setMessageGroup(x);		
  	}
 
 	COnChangeMsg::COnChangeMsg(const COnChangeMsg &m): CMessageScript(m)

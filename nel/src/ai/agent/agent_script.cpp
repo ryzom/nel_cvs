@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.136 2002/11/07 09:19:44 portier Exp $
+ * $Id: agent_script.cpp,v 1.137 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,11 +111,17 @@ namespace NLAIAGENT
 		msgStr += std::string("From Message : Define MsgInitCompoment\n{");
 		msgStr += std::string("Component:\n");				
 		msgStr += std::string("End\n}\n");
+
+		msgStr += std::string("From Message : Define MsgDebugString\n{");
+		msgStr += std::string("Component:\n");
+		msgStr += std::string("End\n}\n");
+
 		
 		NLAILINK::buildScript(msgStr,scriptName);
 
 		static NLAIC::CIdentType idMsgTellComponentType ("MsgTellComponent");
 		static NLAIC::CIdentType idMsgInitComponentType ("MsgInitCompoment");
+		static NLAIC::CIdentType idMsgDebugString ("MsgDebugString");
 
 		msgType = new NLAISCRIPT::COperandSimpleListOr(3,	
 														new NLAIC::CIdentType(CMessageList::IdMessage),
@@ -150,6 +156,9 @@ namespace NLAIAGENT
 		
 		NLAISCRIPT::COperandSimple *idMsgTellComponent = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(idMsgTellComponentType));
 		NLAISCRIPT::CParam *ParamTellComponentMsg = new NLAISCRIPT::CParam(1,idMsgTellComponent);
+
+		NLAISCRIPT::COperandSimple *idOpMsgDebugString = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(idMsgDebugString));
+		NLAISCRIPT::CParam *ParamMsgDebugString = new NLAISCRIPT::CParam(1,idOpMsgDebugString);
 
 		CAgentScript::ParamIdGetValueMsg = new NLAISCRIPT::COperandSimpleListOr(2,
 																  new NLAIC::CIdentType(NLAIAGENT::CGetValueMsg::IdGetValueMsg),
@@ -193,6 +202,21 @@ namespace NLAIAGENT
 																						CAgentScript::CheckAll,
 																						1,
 																						new NLAISCRIPT::CObjectUnknown(idMsgTellComponent));
+
+		idOpMsgDebugString->incRef();
+		StaticMethod[CAgentScript::TRunAskDebugString] = new CAgentScript::CMethodCall(	_RUNASK_, 
+																						CAgentScript::TRunAskDebugString, ParamMsgDebugString,
+																						CAgentScript::CheckAll,
+																						1,
+																						new NLAISCRIPT::CObjectUnknown(idOpMsgDebugString));
+
+		/*idOpMsgDebugString->incRef();
+		ParamMsgDebugString->incRef();
+		StaticMethod[CAgentScript::TRunAskDebugString] = new CAgentScript::CMethodCall(	_RUNTEL_, 
+																						CAgentScript::TRunTellComponent, ParamMsgDebugString,
+																						CAgentScript::CheckAll,
+																						1,
+																						new NLAISCRIPT::CObjectUnknown(idOpMsgDebugString));*/
 
 		ParamTellComponentMsg->incRef();
 		idMsgTellComponent->incRef();
@@ -784,7 +808,7 @@ namespace NLAIAGENT
 		return r;
 	}
 
-	IObjectIA::CProcessResult CAgentScript::addDynamicAgent(CStringType &name, IBasicAgent *agent)
+	IObjectIA::CProcessResult CAgentScript::addDynamicAgent(const CStringType &name, IBasicAgent *agent)
 	{
 #ifdef NL_DEBUG
 		std::string dbg_name;
@@ -892,6 +916,36 @@ namespace NLAIAGENT
 		//this->incRef();
 		m->setSender(this);
 		IObjectIA::CProcessResult r;
+		r.Result = m;
+		return r;
+	}
+
+	IObjectIA::CProcessResult CAgentScript::runAskDebugString(IBaseGroupType *g)
+	{
+
+#ifdef NL_DEBUG
+		const char *text = (const char *)getType();
+		const char *textP = (const char *)getParent()->getType();
+#endif
+		static NLAIC::CIdentType idMsgDebugString ("MsgDebugString");
+
+		NLAIAGENT::IMessageBase &mOriginal = (NLAIAGENT::IMessageBase &)*g->get();
+
+		IMessageBase *m = (IMessageBase *)idMsgDebugString.allocClass();
+		m->setPerformatif(IMessageBase::PTell);		
+		m->setSender(this);
+
+		std::string str;
+		getDebugString(str);
+
+		m->push(new CStringType(str));
+
+		if(mOriginal.getSender() != NULL)
+								((IObjectIA *)mOriginal.getSender())->sendMessage((IObjectIA *)m);
+
+		IObjectIA::CProcessResult r;
+
+		//m->incRef();
 		r.Result = m;
 		return r;
 	}
@@ -1748,6 +1802,11 @@ namespace NLAIAGENT
 				return runTellParentNotify((IBaseGroupType *)o);
 			}
 
+		case TRunAskDebugString:
+			{
+				return runAskDebugString((IBaseGroupType *)o);
+			}
+
 		case TRunAskComponent:
 		case TRunTellComponent:
 			{				
@@ -1884,6 +1943,11 @@ namespace NLAIAGENT
 		case TRunTellParentNotify:
 			{				
 				return runTellParentNotify((IBaseGroupType *)o);
+			}
+
+		case TRunAskDebugString:
+			{
+				return runAskDebugString((IBaseGroupType *)o);
 			}
 
 		case TRunAskComponent:

@@ -1,7 +1,7 @@
 /** \file msg.h
  * class message.
  *
- * $Id: msg.h,v 1.19 2002/02/20 18:04:49 lecroart Exp $
+ * $Id: msg.h,v 1.20 2003/01/13 16:59:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,13 +90,7 @@ namespace NLAIAGENT
 		bool _ReceiverIsVolatile;
 		///This adresse is when receiver have to inform something at a third agent.
 		IObjectIA *_Continuation;
-		bool _ContinuationIsVolatile;
-		///Message is arranged by group.
-		IBasicMessageGroup *_MsgGroup;
-		/*
-		///This is the list whos containe the message.
-		IBaseGroupType *_Message;
-		*/
+		bool _ContinuationIsVolatile;		
 		///This reserved variable represent the offset of the Run(MSG) if the message come from script.
 		sint32 _ReservedMethodIndexVar;
 		///if the message come from script then this reserved variable represent the offset of the base class which the Run(MSG) is.
@@ -129,19 +123,6 @@ namespace NLAIAGENT
 		IMessageBase(const IMessageBase &m);
 
 		virtual ~IMessageBase();		
-				
-		const IBasicMessageGroup &getGroup() const
-		{
-			if(_MsgGroup == NULL) throw NLAIE::CExceptionUnReference(std::string("_MsgGroup in the iMessage class is not corectly inistializ"));
-			return *_MsgGroup;
-		}
-
-		///Set the IBasicMessageGroup whiche define the group of the message.
-		void setGroup(IBasicMessageGroup &grp)
-		{			
-			if(_MsgGroup != NULL) _MsgGroup->release();
-			_MsgGroup = (IBasicMessageGroup *)grp.clone();
-		}
 
 		void setPerformatif(TPerformatif p)
 		{

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.55 2002/11/15 09:21:07 chafik Exp $
+ * $Id: agents.cpp,v 1.56 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,9 +63,7 @@ namespace NLAIAGENT
 		{
 			sint i = (sint)_AgentList.size();
 			throw;
-		}
-
-	nlinfo (" Kill 0x0%0x", this);
+		}	
 
 #endif
 		sint n = _SizeChild ;

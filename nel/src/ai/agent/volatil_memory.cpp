@@ -1,6 +1,6 @@
 /** \file volatil_memory.cpp
  *
- * $Id: volatil_memory.cpp,v 1.6 2002/11/15 09:21:07 chafik Exp $
+ * $Id: volatil_memory.cpp,v 1.7 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -171,8 +171,7 @@ namespace NLAIAGENT
 		while(i != _Connecter.end())
 		{
 			IMessageBase *msg = new COnChangeMsg;
-			NLAIAGENT::CMessageGroup group(1);
-			msg->setGroup(group);
+			NLAIAGENT::CMessageGroup group(1);			
 			msg->setSender(this);
 			msg->setReceiver(*i);
 			o->incRef();

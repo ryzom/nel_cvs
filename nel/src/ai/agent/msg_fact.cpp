@@ -1,6 +1,6 @@
 /** \file msg_fact.cpp
  *
- * $Id: msg_fact.cpp,v 1.4 2001/06/19 16:50:08 chafik Exp $
+ * $Id: msg_fact.cpp,v 1.5 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,8 +41,7 @@ namespace NLAIAGENT
 	CFactMsg::CFactMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
 		CVectorGroupType *x = new CVectorGroupType(1);		
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);		
+		setMessageGroup(x);		
 		set(0, new NLAILOGIC::CFact());
 	}
 
@@ -50,8 +49,7 @@ namespace NLAIAGENT
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CFactMsgClass::IdFactMsgClass.getFactory()->getClass())
 	{		
 		CVectorGroupType *x = new CVectorGroupType(1);
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);
+		setMessageGroup(x);		
 		set(0, new NLAILOGIC::CFact());
  	}
 

@@ -1,6 +1,6 @@
 /** \file msg_getvalue.cpp
  *
- * $Id: msg_getvalue.cpp,v 1.1 2001/12/05 10:13:53 portier Exp $
+ * $Id: msg_getvalue.cpp,v 1.2 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,8 +43,7 @@ namespace NLAIAGENT
 	CGetValueMsg::CGetValueMsg(NLAISCRIPT::CMessageClass *b) : CMessageScript(b)
 	{		
 		CVectorGroupType *x = new CVectorGroupType(1);		
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);		
+		setMessageGroup(x);		
 		set(0, new DigitalType(0) );
 	}
 
@@ -52,8 +51,7 @@ namespace NLAIAGENT
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CGetValueMsgClass::IdGetValueMsgClass.getFactory()->getClass())
 	{		
 		CVectorGroupType *x = new CVectorGroupType(1);
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);
+		setMessageGroup(x);		
 		set(0, new DigitalType(0) );
  	}
 

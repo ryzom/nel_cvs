@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.21 2002/07/23 15:37:47 chafik Exp $
+ * $Id: message_script.cpp,v 1.22 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,8 +62,7 @@ namespace NLAIAGENT
 			it_c++;					
 			i ++;
 		}
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);
+		setMessageGroup(x);		
 	}	
 
 	CMessageScript::~CMessageScript()

@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.17 2001/12/04 12:53:08 chafik Exp $
+ * $Id: main_agent_script.h,v 1.18 2003/01/13 16:59:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,8 +40,8 @@ namespace NLAIAGENT
 	class NLAISCRIPT::CStackPointer;
 
 	/**	
-	This class is the main agent, this main agent is a reception centre for all agent in a serveur. Wen agent is in it, he can access to an script
-	context to execute script code.
+	This class is the main agent, this main agent is a reception central for all agent in a server. Wen agent is in it, he can access to an script
+	context to execute script code and send to distant agent.
 
 	* \author Chafik sameh	 	
 	* \author Nevrax France
@@ -60,7 +60,15 @@ namespace NLAIAGENT
 		}
 
 
+		/**
+		Send to a distant agent, the distant agent are refered here by a CAgentNumber.
+		*/
+
 		virtual	IObjectIA::CProcessResult sendMessage(const CAgentNumber &,IObjectIA *) = 0;
+
+		/**
+		Send to a component in a distant agent, the distant agent are refered here by a CAgentNumber. the componenet are refered by the IVarName string name.
+		*/
 		virtual	IObjectIA::CProcessResult sendMessage(const CAgentNumber &,const IVarName &,IObjectIA *) = 0;
 		
 
@@ -105,6 +113,7 @@ namespace NLAIAGENT
 		virtual IMessageBase *runExec(const IMessageBase &);
 
 		virtual IObjectIA::CProcessResult addDynamicAgent(IBaseGroupType *g);
+		virtual IObjectIA::CProcessResult addDynamicAgent(const CStringType &, IBasicAgent *);
 
 		virtual const NLAIC::IBasicType *clone() const;
 		virtual const NLAIC::IBasicType *newInstance() const;

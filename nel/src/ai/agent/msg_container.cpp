@@ -1,6 +1,6 @@
 /** \file msg_container.cpp
  *
- * $Id: msg_container.cpp,v 1.9 2002/02/20 18:08:37 lecroart Exp $
+ * $Id: msg_container.cpp,v 1.10 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,7 +108,7 @@ namespace NLAIAGENT
 	// Adds a message to its index group
 	void CVectorMsgContainer::addMessage(IMessageBase *msg)
 	{
-		sint32 index = findIndex( msg->getGroup() );
+		/*sint32 index = findIndex( msg->getGroup() );
 		if ( index < 0 )
 		{
 			index = _MsgIndex.size();
@@ -125,7 +125,7 @@ namespace NLAIAGENT
 		dbg = _Messages[ index ].size();
 #endif
 
-		_Size++;
+		_Size++;*/
 	}
 
 	const IMessageBase *CVectorMsgContainer::getMessage()

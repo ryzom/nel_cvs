@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.60 2002/09/30 13:10:15 chafik Exp $
+ * $Id: agent_script.h,v 1.61 2003/01/13 16:59:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,6 +81,7 @@ namespace NLAIAGENT
 			TRunAskComponent, ///transmit Message to an compoment.
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
 			TRunTellParentNotify, ///the offest of the runTellParentNotify method.			
+			TRunAskDebugString, ///Process msg debug string, that is to have a string that represente the agent statue at a time.
 			TSetStatic,	/// Method to assign a new value to a static component
 			TGetValue,	/// Processes the "Ask(GetValueMsg)" msg to obtain a public value of the agent
 			TSetValue,	/// Processes the "Tell(SetValueMsg)" msg to connect to the value of a distant object.
@@ -98,7 +99,7 @@ namespace NLAIAGENT
 			DoNotCheck
 		};
 
-		///Structure to define the name, id and argument type of hard coded mathod.
+		///Structure to define the name, id and argument type of hard coded method.
 		struct CMethodCall
 		{			
 
@@ -162,18 +163,12 @@ namespace NLAIAGENT
 		IObjectIA **_Components;
 		void createComponents(std::list<IObjectIA *> &);
 
-
 		///Nomber of static compoment.
 		int _NbComponents;
-		///Vector for store agent operator.
-//		std::vector<NLAILOGIC::IBaseOperator *> _Operators;
+
 		///The manager where the agent is run this manager have the agent script context.
-		IAgentManager *_AgentManager;		
-		/**
-		This is a mail box for script send message. Note that if message have a run message for prossing message, this message is achieve in this mail box, 
-		else he is achive in the base class mail box.
-		*/
-		//IMailBox	*_ScriptMail;
+		IAgentManager *_AgentManager;
+		
 		///Map for store agent added in the dynamic child container.
 		tsetDefNameAgent _DynamicAgentName;
 
@@ -189,28 +184,38 @@ namespace NLAIAGENT
 		static const NLAIC::CIdentType IdAgentScript;
 
 	public:
+
 		///Construct with copy constructor.
 		CAgentScript(const CAgentScript &);
+
 		///Build with an knowning manager.
 		CAgentScript(IAgentManager *);
-		///Build with an knowning manager and a list of static compoment.
+
+		///Build with an knowning manager and a list of static compoment. Generally this contructor is called by the script.
 		CAgentScript(IAgentManager *, IBasicAgent *, std::list<IObjectIA *> &, NLAISCRIPT::CAgentClass *);
 
 		virtual ~CAgentScript();
 		
-		/// \name CAgentScript member methods. 
+		///\name CAgentScript member methods. 
 		//@{
+
 		///Method for adding operator.
 		virtual void addOperator(NLAILOGIC::IBaseOperator *);
+
 		///Removing operator from th agent.
 		virtual void remOperator(NLAILOGIC::IBaseOperator *p);
+
 		/**
 		Add an agent to the dynamic agent child.
 		Method have an IBaseGroupType argument, this argument must store an CStringType first and an IObjectIA pointer memory next.
-		The CStringType is the name of the agent. The IObjectIA pointer memory is the agent.
+		The CStringType is the name of the agent. The IObjectIA pointer memory is the agent. Not that in generally this method is called by the script
 		*/
 		virtual IObjectIA::CProcessResult addDynamicAgent(NLAIAGENT::IBaseGroupType *g);
-		virtual IObjectIA::CProcessResult addDynamicAgent(CStringType &, IBasicAgent *);
+
+		/**
+		that is a surchage of the method member virtual IObjectIA::CProcessResult addDynamicAgent(NLAIAGENT::IBaseGroupType *g);
+		*/
+		virtual IObjectIA::CProcessResult addDynamicAgent(const CStringType &, IBasicAgent *);
 
 		/**
 		Get agent from the dynamic agent child.
@@ -251,6 +256,12 @@ namespace NLAIAGENT
 		This function process the message CNotifyParentScript for the runTell.
 		*/
 		virtual IObjectIA::CProcessResult runTellParentNotify(IBaseGroupType *);
+
+		/**
+		This function process the message ask debug string for the runTell.
+		*/
+		virtual IObjectIA::CProcessResult runAskDebugString(IBaseGroupType *);
+		
 
 		///get the closure correspondent of the method indexed by index in the base class inheritance.
 		NLAISCRIPT::IOpCode *getMethode(sint32 inheritance,sint32 index); 
@@ -367,42 +378,44 @@ namespace NLAIAGENT
 		static void releaseAgentScript();
 
 
-	////////////////////////////////////////////////////////////////////////
-	// Temp, to be transfered in CGDAgentScript (Goal Driven Agent)
-/*
-	protected:
-//		NLAILOGIC::CFactBase			_FactBase;
-		std::vector<NLAILOGIC::CGoal *>	_GoalStack;
+	
+		///Logic method to perform a automatic logic fact and goal.
+		//@{
 
-	public:
-	*/
+		///Get the fact base of the agent, if not exist it return NULL.
 		virtual const NLAILOGIC::CFactBase *getFactBase()
 		{
 			return NULL;
 		}
 
+		///Run all goal message, it call by message manager when a goal message is occure.
 		virtual IObjectIA::CProcessResult runGoalMsg(IBaseGroupType *)
 		{
 			return IObjectIA::CProcessResult();
 		}
 
+		///Cancel a goal, it call by message manager when a cancel goal message is occure.
 		virtual IObjectIA::CProcessResult runCancelGoalMsg(IBaseGroupType *)
 		{
 			return IObjectIA::CProcessResult();
 		}
 
+		///Add a fact on the fact base, it occur when a fact message hapend.
 		virtual IObjectIA::CProcessResult runFactMsg(IBaseGroupType *)
 		{
 			return IObjectIA::CProcessResult();
 		}
 
+		///remove a goal, it hapend when it neaded by user, when the priorty is down or when the goal is satisfay.
 		virtual void removeGoal( NLAILOGIC::CGoal *)
 		{
 		}
 
+		///Set the top level agent of this one.
 		virtual void setTopLevel(NLAIAGENT::CAgentScript *)
 		{
 		}
+		//@}
 
 	////////////////////////////////////////////////////////////////////////
 		const NLAISCRIPT::CAgentClass *getClass() const

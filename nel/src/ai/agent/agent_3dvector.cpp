@@ -1,7 +1,7 @@
 /** \file agent_3dvector.cpp
  * This file contain a class to manage a 3DVector in the script.
  *
- * $Id: agent_3dvector.cpp,v 1.6 2001/12/05 09:54:38 chafik Exp $
+ * $Id: agent_3dvector.cpp,v 1.7 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -381,15 +381,7 @@ namespace NLAIAGENT
 	const NLAIC::CIdentType &VectorType::getType() const
 	{		
 		return IdVectorType;
-	}
+	}	
 
 }// Enf of the namespace "NLAIAGENT" //
-
-using namespace NLAIAGENT;
-const NLAIC::CIdentType VectorType::IdVectorType("Vector3D",NLAIC::CSelfClassFactory(VectorType(0, 0, 0)), 
-															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
-															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
-															NLAIC::CTypeOfOperator::opSub | 
-															NLAIC::CTypeOfOperator::opEq | 
-															NLAIC::CTypeOfOperator::opDiff));
 

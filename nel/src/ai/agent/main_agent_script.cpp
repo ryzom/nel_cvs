@@ -1,6 +1,6 @@
 /** \file main_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.31 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: main_agent_script.cpp,v 1.32 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,21 +95,20 @@ namespace NLAIAGENT
 
 	IMessageBase *CMainAgentScript::runExec(const IMessageBase &m)
 	{
-		if(m.getGroup().getId() == 1)
-		{			
-			_CodeContext->Self = this;
+		
+		_CodeContext->Self = this;
 
-			CConstIteratorContener i = m.getConstIterator();
-			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)i++;						
-			NLAISCRIPT::CStackPointer stack;
-			NLAISCRIPT::CStackPointer heap;
-			_CodeContext->InputOutput->incRef();
-			NLAISCRIPT::CCodeContext codeContext(stack,heap,NULL,this,_CodeContext->InputOutput);
-			codeContext.Code = o;
-			(void)o->run(codeContext);
-			heap -= (int)heap;
-			stack -= (int)stack;
-		}
+		CConstIteratorContener i = m.getConstIterator();
+		NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)i++;						
+		NLAISCRIPT::CStackPointer stack;
+		NLAISCRIPT::CStackPointer heap;
+		_CodeContext->InputOutput->incRef();
+		NLAISCRIPT::CCodeContext codeContext(stack,heap,NULL,this,_CodeContext->InputOutput);
+		codeContext.Code = o;
+		(void)o->run(codeContext);
+		heap -= (int)heap;
+		stack -= (int)stack;
+		
 		return NULL;
 	}	
 
@@ -159,6 +158,18 @@ namespace NLAIAGENT
 		if(haveActivity() && getState().ResultState == processIdle) runActivity();
 		
 		return getState();
+	}
+
+	IObjectIA::CProcessResult CMainAgentScript::addDynamicAgent(const CStringType &s, IBasicAgent *a)
+	{
+		uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+		const NLAIC::CTypeOfObject &t = a->getType();
+		if((t.getValue() & b) == b)
+		{
+			((CAgentScript *)a)->setAgentManager(this);
+		}
+		
+		return CAgentScript::addDynamicAgent(s, a);		
 	}
 
 	IObjectIA::CProcessResult CMainAgentScript::addDynamicAgent(IBaseGroupType *g)

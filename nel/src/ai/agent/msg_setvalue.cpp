@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_setvalue.cpp,v 1.4 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: msg_setvalue.cpp,v 1.5 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,15 +36,13 @@ namespace NLAIAGENT
 	{
 		/*CVectorGroupType *x = new CVectorGroupType(1);		
 		setMessageGroup(x);*/
-		setGroup(CMessageGroup::msgScriptingGroup);		
 		//set(0, new DigitalType(0) );
 	}
 
 	CSetValueMsg::CSetValueMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
 		/*CVectorGroupType *x = new CVectorGroupType(1);		
-		setMessageGroup(x);*/
-		setGroup(CMessageGroup::msgScriptingGroup);		
+		setMessageGroup(x);*/		
 		//set(0, new DigitalType(0) );
 	}
 
@@ -52,8 +50,7 @@ namespace NLAIAGENT
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CSetValueMsgClass::IdSetValueMsgClass.getFactory()->getClass())
 	{		
 		/*CVectorGroupType *x = new CVectorGroupType(1);		
-		setMessageGroup(x);*/
-		setGroup(CMessageGroup::msgScriptingGroup);		
+		setMessageGroup(x);*/		
 		//set(0, new DigitalType(0) );
  	}
 

@@ -41,10 +41,18 @@
 #include "nel/ai/script/param_container.h"
 #include "nel/ai/logic/goal_path.h"
 #include "nel/ai/script/goal_path_class.h"
-
+#include "nel/ai/agent/agent_3dvector.h"
 	using namespace NLAIAGENT;
 	using namespace NLAILOGIC;
 	using namespace NLAIFUZZY;
+
+	const NLAIC::CIdentType VectorType::IdVectorType("Vector3D",NLAIC::CSelfClassFactory(VectorType(0, 0, 0)), 
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
+															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+															NLAIC::CTypeOfOperator::opSub | 
+															NLAIC::CTypeOfOperator::opEq | 
+															NLAIC::CTypeOfOperator::opDiff));
+
 
 	NLMISC::CSynchronized<CLocWordNumRef::tMapRef> CLocWordNumRef::_LocRefence("CLocWordNumRef::_LocRefence");// = new CLocWordNumRef::tMapRef;
 	CAgentNumber CNumericIndex::_I = CAgentNumber();	

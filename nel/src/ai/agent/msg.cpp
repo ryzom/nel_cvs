@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.22 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: msg.cpp,v 1.23 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ namespace NLAIAGENT
 	IntegerType IMessageBase::IdTell = IntegerType(IMessageBase::PTell);
 	IntegerType IMessageBase::IdKill = IntegerType(IMessageBase::PKill);*/
 
-	IMessageBase::IMessageBase():IListBasicManager(),_Sender(NULL),_MsgGroup(NULL)
+	IMessageBase::IMessageBase():IListBasicManager(),_Sender(NULL)
 	{
 		_ReservedMethodIndexVar = -1;
 		_ReservedHeritanceIndexVar = 0;
@@ -93,7 +93,7 @@ namespace NLAIAGENT
 		_ReceiverIsVolatile = false;		
 		_ContinuationIsVolatile = false;
 	}
-	IMessageBase::IMessageBase(IObjectIA *sender,IBaseGroupType *g):IListBasicManager(g),_Sender(sender),_MsgGroup(NULL)
+	IMessageBase::IMessageBase(IObjectIA *sender,IBaseGroupType *g):IListBasicManager(g),_Sender(sender)
 	{
 		_ReservedMethodIndexVar = -1;
 		_ReservedHeritanceIndexVar = 0;
@@ -109,7 +109,7 @@ namespace NLAIAGENT
 	}
 
 	IMessageBase::IMessageBase(IObjectIA *sender, IBasicMessageGroup &msg_group,IBaseGroupType *g):
-							IListBasicManager(g),_Sender(sender),_MsgGroup((IBasicMessageGroup *)msg_group.clone())
+							IListBasicManager(g),_Sender(sender)
 	{
 		_ReservedMethodIndexVar = -1;
 		_ReservedHeritanceIndexVar = 0;
@@ -135,10 +135,6 @@ namespace NLAIAGENT
 		_Continuation = m._Continuation;
 		_ContinuationIsVolatile = m._ContinuationIsVolatile;
 		if(_ContinuationIsVolatile && _Continuation != NULL) _Continuation->incRef();
-
-		if(m._MsgGroup) _MsgGroup = (IBasicMessageGroup *)m._MsgGroup->clone();
-		else _MsgGroup = NULL;
-		//_Message = (IBaseGroupType *)m._Message->clone();			
 		_ReservedMethodIndexVar = m._ReservedMethodIndexVar;
 		_ReservedHeritanceIndexVar = m._ReservedHeritanceIndexVar;			
 		_Performatif = m._Performatif;
@@ -148,8 +144,7 @@ namespace NLAIAGENT
 	}
 
 	IMessageBase::~IMessageBase()
-	{
-		if(_MsgGroup != NULL) _MsgGroup->release();
+	{		
 		if(_SenderIsVolatile && _Sender != NULL) _Sender->release();
 		if(_ReceiverIsVolatile && _Receiver != NULL) _Receiver->release();
 	    if(_ContinuationIsVolatile && _Continuation != NULL) _Continuation->release();
@@ -164,8 +159,7 @@ namespace NLAIAGENT
 		_Receiver = b._Receiver;
 		if(_ReceiverIsVolatile && _Receiver != NULL) _Receiver->incRef();
 		_Continuation = b._Continuation;
-		if(_ContinuationIsVolatile && _Continuation != NULL) _Continuation->incRef();
-		setGroup((IBasicMessageGroup &)b.getGroup());
+		if(_ContinuationIsVolatile && _Continuation != NULL) _Continuation->incRef();		
 		*_List = *b._List;
 		return *this;
 	}
@@ -194,7 +188,7 @@ namespace NLAIAGENT
 	bool IMessageBase::isEqual(const IBasicObjectIA &a) const
 	{
 		IMessageBase &b = (IMessageBase &)a;						
-		return _Sender->isEqual((const IBasicAgent &)b) && getGroup() == b.getGroup() && IListBasicManager::isEqual(a);
+		return _Sender->isEqual((const IBasicAgent &)b) && IListBasicManager::isEqual(a);
 	}	
 
 	void IMessageBase::save(NLMISC::IStream &os)
@@ -237,10 +231,7 @@ namespace NLAIAGENT
 		{
 			bool t = false;
 			os.serial(t);
-		}
-		os.serial( (NLAIC::CIdentType &) _MsgGroup->getType() );
-		os.serial( *_MsgGroup );		
-
+		}		
 		sint32 i = _Performatif;
 		os.serial(i);
 		os.serial(_comeFromC_PLUS);
@@ -319,12 +310,7 @@ namespace NLAIAGENT
 			//if(_Continuation) _Continuation->release();
 			_Continuation = NULL;
 		}
-
-		NLAIC::CIdentTypeAlloc id;
-		is.serial( id );
-		if(_MsgGroup) delete _MsgGroup;
-		_MsgGroup = (IBasicMessageGroup *)id.allocClass();
-		is.serial( (IBasicMessageGroup &)*_MsgGroup );				
+		
 		sint32 i = _Performatif;
 		is.serial(i);
 		_Performatif = (TPerformatif)i;
@@ -337,11 +323,8 @@ namespace NLAIAGENT
 		if(_Sender != NULL) _Sender->getDebugString(a);	
 		else a = "NULL";
 		std::string b;
-		IListBasicManager::getDebugString(b);
-		std::string g;
-		if(_MsgGroup != NULL) _MsgGroup->getDebugString(g);
-		else g = "_MsgGroup = NULL";
-		t += NLAIC::stringGetBuild("IMessageBase<%d>:\n_sender:'%s' _MsgGroup:'%s' Message:'%s' dispatch:%d",this,a.c_str(),g.c_str(),b.c_str(),_Dispatch);
+		IListBasicManager::getDebugString(b);		
+		t += NLAIC::stringGetBuild("IMessageBase<%d>:\n_sender:'%s' Message:'%s' dispatch:%d",this,a.c_str(),b.c_str(),_Dispatch);
 	}
 	
 

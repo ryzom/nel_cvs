@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.11 2001/06/18 13:57:43 chafik Exp $
+ * $Id: msg_goal.cpp,v 1.12 2003/01/13 16:58:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,6 @@ namespace NLAIAGENT
 	{		
 		CVectorGroupType *x = new CVectorGroupType(1);		
 		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);		
 		set(0, new NLAILOGIC::CGoal());
 	}
 
@@ -50,8 +49,7 @@ namespace NLAIAGENT
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CGoalMsgClass::IdGoalMsgClass.getFactory()->getClass())
 	{		
 		CVectorGroupType *x = new CVectorGroupType(1);
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);
+		setMessageGroup(x);		
 		set(0, new NLAILOGIC::CGoal());
  	}
 
@@ -149,8 +147,7 @@ namespace NLAIAGENT
 	CCancelGoalMsg::CCancelGoalMsg(NLAISCRIPT::CMessageClass *b):CMessageScript(b)
 	{		
 		CVectorGroupType *x = new CVectorGroupType(1);		
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);		
+		setMessageGroup(x);		
 		set(0, new NLAILOGIC::CGoal());
 	}
 
@@ -158,8 +155,7 @@ namespace NLAIAGENT
 			CMessageScript((NLAISCRIPT::CMessageClass *)NLAISCRIPT::CCancelGoalMsgClass::IdCancelGoalMsgClass.getFactory()->getClass())
 	{		
 		CVectorGroupType *x = new CVectorGroupType(1);
-		setMessageGroup(x);
-		setGroup(CMessageGroup::msgScriptingGroup);
+		setMessageGroup(x);		
 		set(0, new NLAILOGIC::CGoal());
  	}
 

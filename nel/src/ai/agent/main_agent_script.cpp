@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.19 2001/05/29 15:18:43 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.20 2001/05/29 16:16:13 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,7 @@ namespace NLAIAGENT
 		{			
 			_CodeContext->Self = this;
 
-			CConstIteratorContener i = m.getIterator();
+			CConstIteratorContener i = m.getConstIterator();
 			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)i++;						
 			NLAISCRIPT::CStackPointer stack;
 			NLAISCRIPT::CStackPointer heap;

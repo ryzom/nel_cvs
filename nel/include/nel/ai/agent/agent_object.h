@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.13 2001/05/29 15:18:29 chafik Exp $
+ * $Id: agent_object.h,v 1.14 2001/05/29 16:12:00 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -562,7 +562,7 @@ namespace NLAIAGENT
 		virtual void cpy(const IObjectIA &o) = 0;
 		///Get an iterator to parse the list.
 		virtual CIteratorContener getIterator() = 0;
-		virtual CConstIteratorContener getIterator() const = 0;
+		virtual CConstIteratorContener getConstIterator() const = 0;
 
 		///Pop the back IObjectIA and return it.
 		virtual const IObjectIA *pop() = 0;
@@ -637,7 +637,7 @@ namespace NLAIAGENT
 			return CIteratorContener(new CListIterator(_List));
 		}
 
-		virtual CConstIteratorContener getIterator() const
+		virtual CConstIteratorContener getConstIterator() const
 		{
 			return CConstIteratorContener((IBasicIterator *)(new CConstListIterator(_List)));
 		}
@@ -727,7 +727,7 @@ namespace NLAIAGENT
 			return CIteratorContener(new CVectorIterator(_Vector));
 		}
 
-		virtual CConstIteratorContener getIterator() const
+		virtual CConstIteratorContener getConstIterator() const
 		{
 			return CConstIteratorContener((IBasicIterator *)(new CConstVectorIterator(_Vector)));
 		}

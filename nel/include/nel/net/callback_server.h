@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.16 2004/05/07 12:56:21 cado Exp $
+ * $Id: callback_server.h,v 1.16.14.1 2004/12/22 18:49:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,8 +51,8 @@ public:
 	/// Sends a message to the specified host
 	void	send (const CMessage &buffer, TSockId hostid, bool log = true);
 
-	/// Force to send all data pending in the send queue.
-	bool	flush (TSockId destid) { checkThreadId (); nlassert( destid != InvalidSockId ); return CBufServer::flush(destid); }
+	/// Force to send all data pending in the send queue. See comment in CCallbackNetBase.
+	bool	flush (TSockId destid, uint *nbBytesRemaining=NULL) { checkThreadId (); nlassert( destid != InvalidSockId ); return CBufServer::flush(destid, nbBytesRemaining); }
 
 	/// Updates the network (call this method evenly)
 	void	update (sint32 timeout=0);

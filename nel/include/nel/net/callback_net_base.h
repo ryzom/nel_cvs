@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.26 2004/05/07 12:56:21 cado Exp $
+ * $Id: callback_net_base.h,v 1.26.14.1 2004/12/22 18:49:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,8 +98,11 @@ public:
 	/** Force to send all data pending in the send queue.
 	 * On a client, the hostid isn't used and must be InvalidSockId
 	 * On a server, you must provide a hostid.
+	 * If you provide a non-null pointer for nbBytesRemaining, the value will be filled*
+	 * will the number of bytes that still remain in the sending queue after the
+	 * non-blocking flush attempt.
 	 */
-	virtual bool	flush (TSockId hostid = InvalidSockId) = 0;
+	virtual bool	flush (TSockId hostid = InvalidSockId, uint *nbBytesRemaining=NULL) = 0;
 	
 	/**	Appends callback array with the specified array. You can add callback only *after* adding the server or the client.
 	 * \param arraysize is the number of callback items.

@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.30 2004/05/07 12:56:21 cado Exp $
+ * $Id: callback_client.cpp,v 1.30.14.1 2004/12/22 18:49:44 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,7 +109,7 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
  * Recorded : NO
  * Replayed : NO
  */
-bool CCallbackClient::flush (TSockId hostid) 
+bool CCallbackClient::flush (TSockId hostid, uint *nbBytesRemaining) 
 {
 	nlassert (hostid == InvalidSockId);	// should always be InvalidSockId on client
 	checkThreadId ();
@@ -120,7 +120,7 @@ bool CCallbackClient::flush (TSockId hostid)
 #endif
 
 		// Flush sending (nothing to do in replay mode)
-		return CBufClient::flush();
+		return CBufClient::flush( nbBytesRemaining );
 		
 #ifdef USE_MESSAGE_RECORDER
 	}

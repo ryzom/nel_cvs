@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.11 2004/11/15 10:24:28 lecroart Exp $
+ * $Id: buf_client.h,v 1.11.6.1 2004/12/22 18:49:43 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,7 +107,9 @@ public:
 	void	connect( const CInetAddress& addr );
 		
 	/** Disconnects the remote host and empties the receive queue.
-	 * Before that, flushes pending data to send unless quick is true.
+	 * Before that, tries to flush pending data to send unless quick is true.
+	 * In case of network congestion, the entire pending data may not be flushed.
+	 * If this is a problem, call flush() multiple times until it returns 0 before calling disconnect().
 	 * The disconnection callback will *not* be called.
 	 * Do not call if the socket is not connected.
 	 */
@@ -163,11 +165,13 @@ public:
 	 */
 	void	setSizeFlushTrigger( sint32 size ) { _BufSock->setSizeFlushTrigger( size ); }
 
-	/** Force to send all data pending in the send queue.
+	/** Force to send data pending in the send queue now. If all the data could not be sent immediately,
+	 * the returned nbBytesRemaining value is non-zero.
+	 * \param nbBytesRemaining If the pointer is not NULL, the method sets the number of bytes still pending after the flush attempt.
 	 * \returns False if an error has occured (e.g. the remote host is disconnected).
 	 * To retrieve the reason of the error, call CSock::getLastError() and/or CSock::errorString()
 	 */
-	bool	flush() { return _BufSock->flush(); }
+	bool	flush( uint *nbBytesRemaining=NULL ) { return _BufSock->flush( nbBytesRemaining ); }
 
 
 	

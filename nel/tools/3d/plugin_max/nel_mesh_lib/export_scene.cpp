@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.7 2001/08/28 15:59:02 besson Exp $
+ * $Id: export_scene.cpp,v 1.8 2001/08/29 14:41:29 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -406,6 +406,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 				}
 				
 				// debug purpose : to remove
+				if (vClusters.size() > 0)
 				if (aIGArray[nNumIG].Clusters.size() == 0)
 				{
 					char tam[256];

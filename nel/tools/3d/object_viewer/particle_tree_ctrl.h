@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.9 2001/09/07 12:05:59 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.10 2002/04/25 08:30:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,8 +36,11 @@
 
 #include "3d/ps_particle.h"
 #include "3d/ps_edit.h"
+#include "3d/ps_located.h"
+
 
 #include <algorithm>
+#include <memory>
 
 class CParticleDlg ;
 
@@ -77,28 +80,23 @@ public:
 
 
 	/// build a portion of the tree using the given particle system
-	void buildTreeFromPS(NL3D::CParticleSystem *ps, NL3D::CParticleSystemModel *psm) ;
-
+	void					buildTreeFromPS(NL3D::CParticleSystem *ps, NL3D::CParticleSystemModel *psm) ;
+	/// Add a node from the given lcoated
+	void					createNodeFromLocated(NL3D::CPSLocated *loc, HTREEITEM rootHandle);
+	/// Add a node from the given located bindable
+	void					createNodeFromLocatedBindable(NL3D::CPSLocatedBindable *lb, HTREEITEM rootHandle);
 	// rebuild the located instance in the tree (after loading for example)
-	void rebuildLocatedInstance(void) ;
-
-
-	  
+	void					rebuildLocatedInstance(void) ;	  
 	/// suppress located instance item, so that they don't have higher index than the new size
-	void suppressLocatedInstanceNbItem(uint32 newSize) ;
-
-	
-
-
-	void init(void) ;
-	// Generated message map functions
-
+	void					suppressLocatedInstanceNbItem(uint32 newSize) ;
+	//
+	void					init(void) ;
 	// move the current element by using the given matrix
-	void moveElement(const NLMISC::CMatrix &mat) ;
-
+	void					moveElement(const NLMISC::CMatrix &mat) ;
 	// get the matrix of the current element being selected, or identity if there's none
-	NLMISC::CMatrix getElementMatrix(void) const ;
-
+	NLMISC::CMatrix			getElementMatrix(void) const ;
+	// reset the list of node in the tree (but don't delete the tree)
+	void					reset();
 
 protected:
 	//{{AFX_MSG(CParticleTreeCtrl)
@@ -156,7 +154,7 @@ public:
 
 	} ;
 
-protected:
+private:
 	// instanciate a located in the given system , and return its nodetype and htreeitem
 	std::pair<CNodeType *, HTREEITEM> CParticleTreeCtrl::createLocated(NL3D::CParticleSystem *ps, HTREEITEM headItem);
 
@@ -164,6 +162,10 @@ protected:
 	NL3D::CParticleSystem *_LastClickedPS ;
 	// node that we allocated
 	std::vector<CNodeType *> _NodeTypes ;
+
+	std::auto_ptr<NL3D::CPSLocated>			_LocatedCopy;
+	std::auto_ptr<NL3D::CPSLocatedBindable> _LocatedBindableCopy;
+
 
 	DECLARE_MESSAGE_MAP()
 };

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.46 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.47 2003/04/10 09:22:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,8 @@ namespace NL3D {
 
 static const uint  EMITTER_BUFF_SIZE = 512;			   // number of emitter to be processed at once
 static const float EMIT_PERIOD_THRESHOLD = 1.f / 75.f; // assuming the same behaviour than with a 75 hz rendering
+bool CPSEmitter::_BypassEmitOnDeath = false;
+
 
 //////////////////////
 // STATIC FUNCTIONS //
@@ -1810,8 +1812,11 @@ void CPSEmitter::deleteElement(uint32 index)
 
 	if (_EmissionType == CPSEmitter::onDeath && _EmittedType)
 	{
-		const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, index) : _GenNb;		
-		processEmit(index, nbToGenerate);		
+		if (!_BypassEmitOnDeath)
+		{		
+			const uint32 nbToGenerate = _GenNbScheme ? _GenNbScheme->get(_Owner, index) : _GenNb;		
+			processEmit(index, nbToGenerate);
+		}
 	}		
 
 	if (_PeriodScheme && _PeriodScheme->hasMemory()) _PeriodScheme->deleteElement(index);

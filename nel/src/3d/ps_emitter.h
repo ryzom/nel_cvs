@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.22 2003/04/07 12:34:45 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.23 2003/04/10 09:22:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -236,6 +236,10 @@ public:
 	void					 setBypassAutoLOD(bool bypass) { _BypassAutoLOD = bypass; }
 	bool					 getBypassAutoLOD() const {	return _BypassAutoLOD; }
 
+	/** For edition only : avoid that a call to CPSLocated::deleteElement() causes emitters flagged with 'emitOnDeath' to emit
+	  */
+	static void					 setBypassEmitOnDeath(bool bypass) { _BypassEmitOnDeath = bypass; }	
+
 protected:	
 
 	/// This will call emit, and will add additionnal features (speed addition and so on)
@@ -311,6 +315,7 @@ protected:
 	bool							_EmitDirBasis; // true when emission direction is in the emitter basis
 	bool							_ConsistentEmission; 
 	bool							_BypassAutoLOD;
+	static bool						_BypassEmitOnDeath; // for edition only
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

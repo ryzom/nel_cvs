@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.5 2002/02/15 17:39:37 vizerie Exp $
+ * $Id: zone_dependencies.cpp,v 1.6 2002/02/19 13:38:46 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,12 +123,22 @@ int main (int argc, char* argv[])
 			lightDirection.set (sun_direction.asFloat(0), sun_direction.asFloat(1), sun_direction.asFloat(2));
 			lightDirection.normalize();
 
+
+			// Get the search pathes
+			CConfigFile::CVar &search_pathes = properties.getVar ("search_pathes");
+			uint path;
+			for (path = 0; path < (uint)search_pathes.size(); path++)
+			{
+				// Add to search path
+				CPath::addSearchPath (search_pathes.asString(path));
+			}
+/*
 			CConfigFile::CVar &ig_path = properties.getVar ("ig_path");
 			NLMISC::CPath::addSearchPath(ig_path.asString(), true, true);
 
 			CConfigFile::CVar &shapes_path = properties.getVar ("shapes_path");
 			NLMISC::CPath::addSearchPath(shapes_path.asString(), true, true);
-
+*/
 			CConfigFile::CVar &compute_dependencies_with_igs = properties.getVar ("compute_dependencies_with_igs");
 			bool computeDependenciesWithIgs = compute_dependencies_with_igs.asInt() != 0;			
 
@@ -438,7 +448,7 @@ int main (int argc, char* argv[])
 static bool computeIGBBox(const char *zoneName, NLMISC::CAABBox &result, TShapeMap &shapeMap)
 {
 	std::string igFileName = zoneName + std::string(".ig");
-	std::string pathName = CPath::lookup(igFileName);
+	std::string pathName = CPath::lookup(igFileName, false, false);
 
 	if (pathName.empty())
 	{

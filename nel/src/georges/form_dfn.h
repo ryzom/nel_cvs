@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.16 2003/08/27 16:16:25 distrib Exp $
+ * $Id: form_dfn.h,v 1.17 2003/10/13 08:35:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,13 +173,13 @@ public:
 	void							write (xmlDocPtr root, const char *filename, bool georges4CVS);
 
 	// Count parent DFN
-	uint							countParentDfn (uint32 round=0xffffffff) const;
+	uint							countParentDfn (uint32 round=0) const;
 
 	// Get parent DFN
-	void							getParentDfn (std::vector<CFormDfn*> &array, uint32 round=0xffffffff);
+	void							getParentDfn (std::vector<CFormDfn*> &array, uint32 round=0);
 
 	// Get parent DFN
-	void							getParentDfn (std::vector<const CFormDfn*> &array, uint32 round=0xffffffff) const;
+	void							getParentDfn (std::vector<const CFormDfn*> &array, uint32 round=0) const;
 
 	// Get num parent
 	uint							getNumParent () const;

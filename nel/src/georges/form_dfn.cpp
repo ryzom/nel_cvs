@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.19 2003/08/27 16:16:25 distrib Exp $
+ * $Id: form_dfn.cpp,v 1.20 2003/10/13 08:35:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -336,24 +336,19 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const
 
 uint CFormDfn::countParentDfn (uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = CFormElm::LastRound++;
-
 	// Checkout recurcive calls
-	if (Round == round)
+	if (round > NLGEORGES_MAX_RECURSION)
 	{
 		// Turn around..
 		warning (false, "countParentDfn", "Recurcive call on the same DFN, look for loop inheritances.");
 		return 0;
 	}
-	else
-		Round = round;
 
 	uint count = 0;
 	uint i;
 	for (i=0; i<Parents.size (); i++)
 	{
-		count += Parents[i].Parent->countParentDfn (round);
+		count += Parents[i].Parent->countParentDfn (round+1);
 	}
 	return count+1;
 }
@@ -362,24 +357,19 @@ uint CFormDfn::countParentDfn (uint32 round) const
 
 void CFormDfn::getParentDfn (std::vector<CFormDfn*> &array, uint32 round)
 {
-	if (round == 0xffffffff)
-		round = CFormElm::LastRound++;
-
 	// Checkout recurcive calls
-	if (Round == round)
+	if (round > NLGEORGES_MAX_RECURSION)
 	{
 		// Turn around..
 		warning (false, "getParentDfn", "Recurcive call on the same DFN, look for loop inheritances.");
 		return;
 	}
-	else
-		Round = round;
 
 	//uint count = 0;
 	uint i;
 	for (i=0; i<Parents.size (); i++)
 	{
-		Parents[i].Parent->getParentDfn (array, round);
+		Parents[i].Parent->getParentDfn (array, round+1);
 	}
 	array.push_back (this);
 }
@@ -388,24 +378,19 @@ void CFormDfn::getParentDfn (std::vector<CFormDfn*> &array, uint32 round)
 
 void CFormDfn::getParentDfn (std::vector<const CFormDfn*> &array, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = CFormElm::LastRound++;
-
 	// Checkout recurcive calls
-	if (Round == round)
+	if (round > NLGEORGES_MAX_RECURSION)
 	{
 		// Turn around..
 		warning (false, "getParentDfn", "Recurcive call on the same DFN, look for loop inheritances.");
 		return;
 	}
-	else
-		Round = round;
 
 	//uint count = 0;
 	uint i;
 	for (i=0; i<Parents.size (); i++)
 	{
-		Parents[i].Parent->getParentDfn (array, round);
+		Parents[i].Parent->getParentDfn (array, round+1);
 	}
 	array.push_back (this);
 }

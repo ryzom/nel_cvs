@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.21 2003/08/27 16:16:25 distrib Exp $
+ * $Id: type.cpp,v 1.22 2003/10/13 08:35:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -402,7 +402,7 @@ public:
 				bool parentVDfnArray;
 				UFormDfn::TEntryType type;
 				// Search for the node
-				if (((const CFormElm&)Form->getRootNode ()).getNodeByName (value, &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array, parentVDfnArray, false, round))
+				if (((const CFormElm&)Form->getRootNode ()).getNodeByName (value, &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array, parentVDfnArray, false, round+1))
 				{
 					// End, return the current index
 					if (type == UFormDfn::EntryType)
@@ -413,7 +413,7 @@ public:
 						// Evale
 						nlassert (nodeType);
 						string res;
-						if (nodeType->getValue (res, Form, atom, *parentDfn, parentIndex, UFormElm::Eval, NULL, round, value))
+						if (nodeType->getValue (res, Form, atom, *parentDfn, parentIndex, UFormElm::Eval, NULL, round+1, value))
 						{
 							// Request exist ?
 							if (requestExist)
@@ -439,7 +439,7 @@ public:
 				}
 			}
 		}
-		return CEvalNumExpr::evalValue (value, result, round);
+		return CEvalNumExpr::evalValue (value, result, round+1);
 	}
 
 	// The working form
@@ -547,6 +547,13 @@ void buildError (char *msg, uint offset)
 
 bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *node, const CFormDfn &parentDfn, uint parentIndex, UFormElm::TEval evaluate, uint32 *where, uint32 round, const char *formName) const
 {
+	if (round > NLGEORGES_MAX_RECURSION)
+	{
+		// Turn around..
+		warning2 (false, "getDefinition", "Recurcive call on the same DFN, look for loop inheritances.");
+		return false;
+	}
+
 	// Node exist ?
 	if (node && !node->Value.empty())
 	{
@@ -615,7 +622,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 			double value;
 			CMyEvalNumExpr expr (form,this);
 			int offset;
-			CEvalNumExpr::TReturnState error = expr.evalExpression (result.c_str (), value, &offset, round);
+			CEvalNumExpr::TReturnState error = expr.evalExpression (result.c_str (), value, &offset, round+1);
 			if (error == CEvalNumExpr::NoError)
 			{
 				// To string
@@ -673,7 +680,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 						double value;
 						CMyEvalNumExpr expr (form,this);
 						int offsetExpr;
-						CEvalNumExpr::TReturnState error = expr.evalExpression (valueName.c_str (), value, &offsetExpr, round);
+						CEvalNumExpr::TReturnState error = expr.evalExpression (valueName.c_str (), value, &offsetExpr, round+1);
 						if (error == CEvalNumExpr::NoError)
 						{
 							// To string
@@ -724,7 +731,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 						UFormDfn::TEntryType type;
 
 						// Search for the node
-						if (((const CFormElm&)form->getRootNode ()).getNodeByName (valueName.c_str (), &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array, parentVDfnArray, false, round))
+						if (((const CFormElm&)form->getRootNode ()).getNodeByName (valueName.c_str (), &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array, parentVDfnArray, false, round+1))
 						{
 							// End, return the current index
 							if (type == UFormDfn::EntryType)
@@ -735,7 +742,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 								// Evale
 								nlassert (nodeType);
 								string result2;
-								if (nodeType->getValue (result2, form, atom, *parentDfn, parentIndex, UFormElm::Eval, NULL, round, valueName.c_str ()))
+								if (nodeType->getValue (result2, form, atom, *parentDfn, parentIndex, UFormElm::Eval, NULL, round+1, valueName.c_str ()))
 								{
 									dest += result2;
 								}

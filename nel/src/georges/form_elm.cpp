@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.41 2003/09/22 14:59:03 cado Exp $
+ * $Id: form_elm.cpp,v 1.42 2003/10/13 08:35:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,8 +39,6 @@ using namespace std;
 
 namespace NLGEORGES
 {	
-
-uint32 CFormElm::LastRound = 0;
 
 // ***************************************************************************
 // class CFormElm
@@ -361,9 +359,6 @@ CForm *CFormElm::getForm () const
 
 bool CFormElm::getNodeByName (UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round)
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	const UFormElm *resultConst = NULL;
 	if (((const UFormElm*)this)->getNodeByName (&resultConst, name, where, verbose, round))
 	{
@@ -377,9 +372,6 @@ bool CFormElm::getNodeByName (UFormElm **result, const char *name, TWhereIsNode 
 
 bool CFormElm::getNodeByName (const UFormElm **result, const char *name, TWhereIsNode *where, bool verbose, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// The parent Dfn
 	const CFormDfn *parentDfn;
 	const CFormDfn *nodeDfn;
@@ -413,9 +405,6 @@ bool CFormElm::getNodeByName (const UFormElm **result, const char *name, TWhereI
 
 bool CFormElm::getValueByName (string& result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// The parent Dfn
 	const CFormDfn *parentDfn;
 	const CFormDfn *nodeDfn;
@@ -459,9 +448,6 @@ bool CFormElm::getValueByName (string& result, const char *name, TEval evaluate,
 
 bool CFormElm::getValueByName (sint8 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -476,9 +462,6 @@ bool CFormElm::getValueByName (sint8 &result,	const char *name, TEval evaluate, 
 
 bool CFormElm::getValueByName (uint8 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -493,9 +476,6 @@ bool CFormElm::getValueByName (uint8 &result,	const char *name, TEval evaluate, 
 
 bool CFormElm::getValueByName (sint16 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -510,9 +490,6 @@ bool CFormElm::getValueByName (sint16 &result,	const char *name, TEval evaluate,
 
 bool CFormElm::getValueByName (uint16 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -527,9 +504,6 @@ bool CFormElm::getValueByName (uint16 &result,	const char *name, TEval evaluate,
 
 bool CFormElm::getValueByName (sint32 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -544,9 +518,6 @@ bool CFormElm::getValueByName (sint32 &result,	const char *name, TEval evaluate,
 
 bool CFormElm::getValueByName (uint32 &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -561,9 +532,6 @@ bool CFormElm::getValueByName (uint32 &result,	const char *name, TEval evaluate,
 
 bool CFormElm::getValueByName (float &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -578,9 +546,6 @@ bool CFormElm::getValueByName (float &result,	const char *name, TEval evaluate, 
 
 bool CFormElm::getValueByName (double &result, const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -595,9 +560,6 @@ bool CFormElm::getValueByName (double &result, const char *name, TEval evaluate,
 
 bool CFormElm::getValueByName (bool &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -612,9 +574,6 @@ bool CFormElm::getValueByName (bool &result,	const char *name, TEval evaluate, T
 
 bool CFormElm::getValueByName (NLMISC::CRGBA &result,	const char *name, TEval evaluate, TWhereIsValue *where, uint32 round) const
 {
-	if (round == 0xffffffff)
-		round = LastRound++;
-
 	// Get the string value
 	string value;
 	if (getValueByName (value, name, evaluate, where, round))
@@ -645,7 +604,7 @@ bool CFormElm::createNodeByName (const char *name, const CFormDfn **parentDfn, u
 	*nodeType = NULL;
 	*node = this;
 	bool parentVDfnArray;
-	return getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, true, LastRound++);
+	return getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, true, NLGEORGES_FIRST_ROUND);
 }
 
 // ***************************************************************************
@@ -662,7 +621,7 @@ bool CFormElm::deleteNodeByName (const char *name, const CFormDfn **parentDfn, u
 	*node = this;
 	bool created;
 	bool parentVDfnArray;
-	return getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Delete, created, parentVDfnArray, true, LastRound++);
+	return getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Delete, created, parentVDfnArray, true, NLGEORGES_FIRST_ROUND);
 }
 
 // ***************************************************************************
@@ -696,7 +655,7 @@ bool CFormElm::arrayInsertNodeByName (const char *name, const CFormDfn **parentD
 	*node = (CFormElm*)this;
 	bool created;
 	bool parentVDfnArray;
-	if (getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, verbose, LastRound++))
+	if (getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, verbose, NLGEORGES_FIRST_ROUND))
 	{
 		// Must be in the same form
 		nlassert ((*node) && ((*node)->Form == Form));
@@ -770,7 +729,7 @@ bool CFormElm::arrayDeleteNodeByName (const char *name, const CFormDfn **parentD
 	*node = (CFormElm*)this;
 	bool created;
 	bool parentVDfnArray;
-	if (getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, verbose, LastRound++))
+	if (getIternalNodeByName (Form, name, parentDfn, indexDfn, nodeDfn, nodeType, node, type, array, Create, created, parentVDfnArray, verbose, NLGEORGES_FIRST_ROUND))
 	{
 		// Must be in the same form
 		nlassert ((*node) && ((*node)->Form == Form));
@@ -951,7 +910,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 
 									// Get the virtual node by name
 									UFormElm *uelm;
-									if (parentPtr->getRootNode ().getNodeByName (&uelm, formName.c_str (), NULL, verbose, round) && uelm)
+									if (parentPtr->getRootNode ().getNodeByName (&uelm, formName.c_str (), NULL, verbose, round+1) && uelm)
 									{
 										// Value node ?
 										if (uelm->isVirtualStruct ())
@@ -1442,7 +1401,7 @@ exit:;
 			bool arrayParent;
 			bool createdParent;
 			bool parentVDfnArray;
-			if (getIternalNodeByName (parentPtr, formName.c_str (), &parentDfnParent, indexDfnParent, &nodeDfnParent, &nodeTypeParent, &nodeParent, typeParent, arrayParent, action, createdParent, parentVDfnArray, false, LastRound))
+			if (getIternalNodeByName (parentPtr, formName.c_str (), &parentDfnParent, indexDfnParent, &nodeDfnParent, &nodeTypeParent, &nodeParent, typeParent, arrayParent, action, createdParent, parentVDfnArray, false, round+1))
 			{
 				// Node found ?
 				if (nodeParent)
@@ -1497,7 +1456,7 @@ exit:;
 	// Recurce warning !
 	if (*node)
 	{
-		if ((*node)->Round == round)
+		if (round > NLGEORGES_MAX_RECURSION)
 		{
 			// Turn around..
 			string formName;
@@ -1505,8 +1464,6 @@ exit:;
 			warning (false, formName.c_str (), form->getFilename ().c_str(), "getIternalNodeByName", "Recurcive call on the same node (%s), look for loop references or inheritances.", name);
 			return false;
 		}
-		else
-			(*node)->Round = round;
 	}
 
 	if (verbose && errorAppend)
@@ -2382,7 +2339,7 @@ bool CFormElmArray::getArrayValue (std::string &result, uint arrayIndex, TEval e
 {
 	if (Type)
 	{
-		return (Type->getValue (result, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL));
+		return (Type->getValue (result, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL));
 	}
 	else
 	{
@@ -2399,7 +2356,7 @@ bool CFormElmArray::getArrayValue (sint8 &result, uint arrayIndex, TEval evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2419,7 +2376,7 @@ bool CFormElmArray::getArrayValue (uint8 &result, uint arrayIndex, TEval evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2439,7 +2396,7 @@ bool CFormElmArray::getArrayValue (sint16 &result, uint arrayIndex, TEval evalua
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2459,7 +2416,7 @@ bool CFormElmArray::getArrayValue (uint16 &result, uint arrayIndex, TEval evalua
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2479,7 +2436,7 @@ bool CFormElmArray::getArrayValue (sint32 &result, uint arrayIndex, TEval evalua
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2499,7 +2456,7 @@ bool CFormElmArray::getArrayValue (uint32 &result, uint arrayIndex, TEval evalua
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2519,7 +2476,7 @@ bool CFormElmArray::getArrayValue (float &result, uint arrayIndex, TEval evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2539,7 +2496,7 @@ bool CFormElmArray::getArrayValue (double &result, uint arrayIndex, TEval evalua
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2559,7 +2516,7 @@ bool CFormElmArray::getArrayValue (bool &result, uint arrayIndex, TEval evaluate
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2579,7 +2536,7 @@ bool CFormElmArray::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, TEval
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, NLGEORGES_FIRST_ROUND, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2854,7 +2811,7 @@ bool CFormElmAtom::getValue (string &result, TEval evaluate) const
 	nlassert (Type);
 
 	// Evale
-	return Type->getValue (result, Form, this, *ParentDfn, ParentIndex, evaluate, NULL, LastRound++, "");
+	return Type->getValue (result, Form, this, *ParentDfn, ParentIndex, evaluate, NULL, NLGEORGES_FIRST_ROUND, "");
 }
 
 // ***************************************************************************

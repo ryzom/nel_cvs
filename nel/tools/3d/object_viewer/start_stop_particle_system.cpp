@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.cpp,v 1.21 2004/03/23 10:14:33 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.22 2004/05/26 18:27:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -565,10 +565,12 @@ void CStartStopParticleSystem::go()
 		{
 			if (_LastSceneAnimFrame > _AnimationDLG->CurrentFrame) // did animation restart ?
 			{			
+
 				// restart system
 				_SystemInitialPos.restoreSystem();
 				_SystemInitialPos.copySystemInitialPos(ps);
 				ps->setSystemDate(0.f);			
+				_ParticleDlg->getCurrPS()->reactivateSound();
 			}
 			_LastSceneAnimFrame = _AnimationDLG->CurrentFrame;
 		}

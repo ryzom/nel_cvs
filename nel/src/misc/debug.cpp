@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.92 2004/05/12 12:51:50 corvazier Exp $
+ * $Id: debug.cpp,v 1.93 2004/05/14 09:18:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,8 @@
 
 #include <stdarg.h>
 #include <iostream>
+
+#define FINAL_VERSION
 
 using namespace std;
  
@@ -1030,7 +1032,11 @@ void createDebug (const char *logPath, bool logInFile)
 //				fn += "/";
 			}
 			fn += "log.log";
+#ifdef FINAL_VERSION
+			fd = new CFileDisplayer (fn, true, "DEFAULT_FD");
+#else // FINAL_VERSION
 			fd = new CFileDisplayer (fn, false, "DEFAULT_FD");
+#endif // FINAL_VERSION
 		}
 #endif // LOG_IN_FILE
 		DefaultMemDisplayer = new CMemDisplayer ("DEFAULT_MD");

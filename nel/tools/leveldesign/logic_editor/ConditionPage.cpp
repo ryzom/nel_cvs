@@ -9,6 +9,7 @@
 #include "MainFrm.h"
 #include "ChildFrm.h"
 #include "logic_editorDoc.h"
+#include "EditorFormView.h"
 
 
 
@@ -261,7 +262,34 @@ void CConditionPage::OnSelchangeComboNodeType()
 
 
 
+//--------------------------------------------------------
+//	addCondition
+//
+//--------------------------------------------------------
+void CConditionPage::addCondition( CLogic_editorDoc *pDoc, CCondition * condition )
+{
+	// check if a condition with the same name already exist
+	CCondition *pCondition;
+	if (pDoc->m_conditions.Lookup( condition->m_sName, (void*&)pCondition))
+	{
+		AfxMessageBox("A condition with this name already exist...");
+		return;
+	}
+	
+	// add the condition
+	pDoc->m_conditions.SetAt( condition->m_sName, condition );
 
+	// update Views
+	pDoc->UpdateAllViews( (CView*)this->GetParent() );	
+
+} // addCondition //
+
+
+
+//--------------------------------------------------------
+//	OnButtonAddCondition
+//
+//--------------------------------------------------------
 void CConditionPage::OnButtonAddCondition() 
 {
 	UpdateData();
@@ -277,26 +305,21 @@ void CConditionPage::OnButtonAddCondition()
 	// Get the active MDI child window.
 	CChildFrame *pChild = (CChildFrame *) pFrame->GetActiveFrame();
 
+	// get the document
 	CLogic_editorDoc *pDoc = static_cast<CLogic_editorDoc *> (pChild->GetActiveDocument());
 	ASSERT_VALID(pDoc);	
-
-	// check if a condition with the same name already exist
-	CCondition *pCondition;
-	if (pDoc->m_conditions.Lookup( m_sConditionName, (void*&)pCondition))
-	{
-		AfxMessageBox("A condition with this name already exist...");
-		return;
-	}
-
-	pCondition = new CCondition();
+	
+	// create condition
+	CCondition * pCondition = new CCondition();
 	pCondition->m_sName = m_sConditionName;
 
-	
-	pDoc->m_conditions.SetAt( m_sConditionName, pCondition );
+	// add the condition
+	addCondition( pDoc, pCondition );
 
-	// update Views
-	pDoc->UpdateAllViews( (CView*)this->GetParent() );	
-}
+} // OnButtonAddCondition //
+
+
+
 
 void CConditionPage::OnButtonAddNode() 
 {
@@ -353,12 +376,47 @@ void CConditionPage::OnButtonAddNode()
 }
 
 
+
+//---------------------------------------------------------
+//	OnSetActive
+//
+//---------------------------------------------------------
 BOOL CConditionPage::OnSetActive() 
 {
-	Update();
+	// get the child frame
+	CMainFrame *pFrame = (CMainFrame*)AfxGetApp()->m_pMainWnd;
+	CChildFrame *pChild = (CChildFrame *) pFrame->MDIGetActive();
+
+	// get the form view
+	CEditorFormView *pFormView = static_cast<CEditorFormView *> ( pChild->m_wndSplitter.GetPane(0,1) );
+	ASSERT_VALID(pFormView);	
 	
+	// get the document
+	CLogic_editorDoc * pDoc = (CLogic_editorDoc*)pFormView->GetDocument();
+
+	/*
+	if( pDoc->InitConditionPage )
+	{
+		// init the conditions
+		POSITION pos;
+		CString eltName;
+		for( pos = pDoc->m_conditions.GetStartPosition(); pos != NULL; )
+		{
+			CCondition * pCondition = new CCondition();
+			pDoc->m_conditions.GetNextAssoc( pos, eltName, (void*&)pCondition );
+			addCondition( pDoc, pCondition );
+		}
+	}
+	pDoc->InitConditionPage = FALSE;
+*/
+	
+	Update();
+		
 	return CPropertyPage::OnSetActive();
-}
+
+} // OnSetActive //
+
+
 
 void CConditionPage::OnButtonCondApply() 
 {

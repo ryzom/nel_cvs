@@ -12,6 +12,11 @@
 #include "NumEdit.h"
 #include "Condition.h"
 
+
+
+class CLogic_editorDoc;
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CConditionPage dialog
 
@@ -28,7 +33,7 @@ public:
 
 	BOOL checkNodeValidity();
 
-
+	void addCondition( CLogic_editorDoc *pDoc, CCondition * condition );
 
 // Dialog Data
 	//{{AFX_DATA(CConditionPage)

@@ -1,7 +1,7 @@
 /** \file zone_tgt_smoother.cpp
  * <File description>
  *
- * $Id: zone_tgt_smoother.cpp,v 1.8 2002/02/28 12:59:52 besson Exp $
+ * $Id: zone_tgt_smoother.cpp,v 1.9 2003/09/18 16:14:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -254,11 +254,18 @@ void		CZoneTgtSmoother::makeVerticesCoplanar(std::vector<CZoneInfo>  &zones)
 			sint	tgtNum[2]=  {(itPatch->IdVert*2+8-1)%8, itPatch->IdVert*2 };
 			sint	t0= tgtNum[0];
 			sint	t1= tgtNum[1];
-			pa.Patch.Tangents[t0]= tangents[itPatch->Tangents[0]].Tangent;
-			pa.Patch.Tangents[t1]= tangents[itPatch->Tangents[1]].Tangent;
+			sint	smoothEdge0= pa.getSmoothFlag (t0/2) == false;
+			sint	smoothEdge1= pa.getSmoothFlag (t1/2) == false;
+
+			// Smooth this edge ?
+			if (smoothEdge0)
+				pa.Patch.Tangents[t0]= tangents[itPatch->Tangents[0]].Tangent;
+			if (smoothEdge1)
+				pa.Patch.Tangents[t1]= tangents[itPatch->Tangents[1]].Tangent;
 
 			// Setup the coplanared interior. just the sum of 2 vector tangents.
-			pa.Patch.Interiors[itPatch->IdVert]= pa.Patch.Tangents[t0] + pa.Patch.Tangents[t1] - vertexValue;
+			if (smoothEdge0&&smoothEdge1)
+				pa.Patch.Interiors[itPatch->IdVert]= pa.Patch.Tangents[t0] + pa.Patch.Tangents[t1] - vertexValue;
 		}
 
 

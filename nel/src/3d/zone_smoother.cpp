@@ -1,7 +1,7 @@
 /** \file zone_smoother.cpp
  * <File description>
  *
- * $Id: zone_smoother.cpp,v 1.3 2002/02/28 12:59:52 besson Exp $
+ * $Id: zone_smoother.cpp,v 1.4 2003/09/18 16:14:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,45 +96,48 @@ void			CZoneSmoother::smoothTangents(CZoneInfo zones[5], float angleThreshold, b
 		// For all edges.
 		for(j=0;j<4;j++)
 		{
-			CPatchInfo::CBindInfo	&bd= pat0.BindEdges[j];
-			// If normal bind (1/1), we can do the smooth.
-			if(bd.NPatchs==1)
+			if (pat0.getSmoothFlag (i) == false)
 			{
-				// Retrieve the good neighbor zone.
-				TZoneInfoMap::iterator	itZone= _Zones.find(bd.ZoneId);
-				// If zone here.
-				if(itZone!=_Zones.end())
+				CPatchInfo::CBindInfo	&bd= pat0.BindEdges[j];
+				// If normal bind (1/1), we can do the smooth.
+				if(bd.NPatchs==1)
 				{
-					CZoneInfo	&zi= itZone->second;
-					CPatchInfo	&pat1= (*zi.Patchs)[bd.Next[0]];
-					// Here, we have the 2 patchs, and we must smooth 2 tangents.
-					CVector		tgtRes;
-					sint		edge0= j;
-					sint		edge1= bd.Edge[0];
-
-					// Make a draw to understand (see Bezier patchs conventions).
-					// The key is: Patchs are always CCW, so must smooth the patchs one front of the other.
-
-					// a. First tangent.
-					//==================
-					if(smoothTangent(pat0.Patch.Tangents[edge0*2], pat0.Patch.Interiors[edge0], 
-						pat1.Patch.Interiors[(edge1+1)%4], tgtRes))
+					// Retrieve the good neighbor zone.
+					TZoneInfoMap::iterator	itZone= _Zones.find(bd.ZoneId);
+					// If zone here.
+					if(itZone!=_Zones.end())
 					{
-						// Set the result on the 2 patchs.
-						pat0.Patch.Tangents[edge0*2]= tgtRes;
-						pat1.Patch.Tangents[edge1*2+1]= tgtRes;
-					}
+						CZoneInfo	&zi= itZone->second;
+						CPatchInfo	&pat1= (*zi.Patchs)[bd.Next[0]];
+						// Here, we have the 2 patchs, and we must smooth 2 tangents.
+						CVector		tgtRes;
+						sint		edge0= j;
+						sint		edge1= bd.Edge[0];
 
-					// b. Second tangent.
-					//==================
-					if(smoothTangent(pat0.Patch.Tangents[edge0*2+1], pat0.Patch.Interiors[(edge0+1)%4], 
-						pat1.Patch.Interiors[edge1], tgtRes))
-					{
-						// Set the result on the 2 patchs.
-						pat0.Patch.Tangents[edge0*2+1]= tgtRes;
-						pat1.Patch.Tangents[edge1*2]= tgtRes;
-					}
+						// Make a draw to understand (see Bezier patchs conventions).
+						// The key is: Patchs are always CCW, so must smooth the patchs one front of the other.
 
+						// a. First tangent.
+						//==================
+						if(smoothTangent(pat0.Patch.Tangents[edge0*2], pat0.Patch.Interiors[edge0], 
+							pat1.Patch.Interiors[(edge1+1)%4], tgtRes))
+						{
+							// Set the result on the 2 patchs.
+							pat0.Patch.Tangents[edge0*2]= tgtRes;
+							pat1.Patch.Tangents[edge1*2+1]= tgtRes;
+						}
+
+						// b. Second tangent.
+						//==================
+						if(smoothTangent(pat0.Patch.Tangents[edge0*2+1], pat0.Patch.Interiors[(edge0+1)%4], 
+							pat1.Patch.Interiors[edge1], tgtRes))
+						{
+							// Set the result on the 2 patchs.
+							pat0.Patch.Tangents[edge0*2+1]= tgtRes;
+							pat1.Patch.Tangents[edge1*2]= tgtRes;
+						}
+
+					}
 				}
 			}
 		}

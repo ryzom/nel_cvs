@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
- * <File description>
+ * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.5 2001/06/19 16:05:24 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.6 2001/06/25 13:26:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,9 +35,12 @@
 #include "3d/ps_emitter.h"
 #include "3d/ps_zone.h"
 
+
 #include "texture_chooser.h"
 #include "attrib_dlg.h"
 #include "precomputed_rotations_dlg.h"
+#include "tail_particle_dlg.h"
+#include "mesh_dlg.h"
 
 
 using NL3D::CPSLocatedBindable ; 
@@ -65,14 +68,6 @@ CLocatedBindableDialog::CLocatedBindableDialog(NL3D::CPSLocatedBindable *bindabl
 }
 
 
-CLocatedBindableDialog::~CLocatedBindableDialog()
-{
-	for (std::vector<CDialog *>::iterator it = _SubDialogs.begin() ; it != _SubDialogs.end() ; ++it)
-	{
-		delete *it ;
-	}
-}
-
 void CLocatedBindableDialog::init(CWnd* pParent)
 {
 	Create(IDD_LOCATED_BINDABLE, pParent) ;
@@ -92,7 +87,7 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 		{
 			
 			CAttribDlgRGBA *ad = new CAttribDlgRGBA("PARTICLE_COLOR") ;
-			_SubDialogs.push_back(ad) ;
+			pushWnd(ad) ;
 
 			_ColorWrapper.S = dynamic_cast<NL3D::CPSColoredParticle *>(_Bindable) ;		
 			ad->setWrapper(&_ColorWrapper) ;			
@@ -109,7 +104,7 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 		{
 			
 			CAttribDlgFloat *ad = new CAttribDlgFloat("PARTICLE_SIZE", 0.f, 10.f) ;
-			_SubDialogs.push_back(ad) ;
+			pushWnd(ad) ;
 
 			_SizeWrapper.S = dynamic_cast<NL3D::CPSSizedParticle *>(_Bindable) ;
 			ad->setWrapper(&_SizeWrapper) ;
@@ -127,7 +122,7 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 		{
 			
 			CAttribDlgFloat *ad = new CAttribDlgFloat("PARTICLE_ANGLE2D", 0.f, 256.f) ;
-			_SubDialogs.push_back(ad) ;
+			pushWnd(ad) ;
 
 			_Angle2DWrapper.S = dynamic_cast<NL3D::CPSRotated2DParticle *>(_Bindable) ;
 			ad->setWrapper(&_Angle2DWrapper) ;						
@@ -143,7 +138,7 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 		if (dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable))
 		{
 			CTextureChooser *tc = new CTextureChooser ;
-			_SubDialogs.push_back(tc) ;
+			pushWnd(tc) ;
 			_TextureWrapper.P = dynamic_cast<NL3D::CPSTexturedParticle *>(_Bindable) ;
 			tc->setWrapper(&_TextureWrapper) ;
 			tc->init(xPos, yPos, this) ;
@@ -157,7 +152,7 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 		if (dynamic_cast<NL3D::CPSRotated3DPlaneParticle *>(_Bindable))
 		{
 			pb = new CAttribDlgPlaneBasis("PARTICLE_PLANE_BASIS") ;
-			_SubDialogs.push_back(pb) ;
+			pushWnd(pb) ;
 			_PlaneBasisWrapper.S = dynamic_cast<NL3D::CPSRotated3DPlaneParticle *>(_Bindable) ;
 			pb->setWrapper(&_PlaneBasisWrapper) ;
 			pb->setSchemeWrapper(&_PlaneBasisWrapper) ;
@@ -173,11 +168,156 @@ void CLocatedBindableDialog::init(CWnd* pParent)
 		{
 			CPrecomputedRotationsDlg *pr = new CPrecomputedRotationsDlg(dynamic_cast<NL3D::CPSHintParticleRotateTheSame *>(_Bindable)
 																		, pb) ;
-			_SubDialogs.push_back(pr) ;
+			pushWnd(pr) ;
 			pr->init(this, xPos, yPos) ;
 			pr->GetClientRect(&rect) ;
 			yPos += rect.bottom + 3 ;
 		}
+
+		// if we're dealing with a face look at, motion blur can be tuned
+		if (dynamic_cast<NL3D::CPSFaceLookAt *>(_Bindable))
+		{
+
+			CEditableRangeFloat *mbc = new CEditableRangeFloat(std::string("MOTION_BLUR_COEFF"), 0, 5) ;
+			pushWnd(mbc) ;
+			_MotionBlurCoeffWrapper.P = dynamic_cast<NL3D::CPSFaceLookAt *>(_Bindable) ;
+			mbc->setWrapper(&_MotionBlurCoeffWrapper) ;
+			mbc->init(xPos + 140, yPos, this) ;
+			CStatic *s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Fake motion blur coeff.", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+
+
+			mbc->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+			mbc = new CEditableRangeFloat(std::string("MOTION_BLUR_THRESHOLD"), 0, 5) ;
+			pushWnd(mbc) ;
+			_MotionBlurThresholdWrapper.P = dynamic_cast<NL3D::CPSFaceLookAt *>(_Bindable) ;
+			mbc->setWrapper(&_MotionBlurThresholdWrapper) ;
+			mbc->init(xPos + 140, yPos, this) ;
+
+			s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Fake motion blur threshold.", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+
+			mbc->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+
+			
+		}
+
+		// if we're dealing with a shockwave, we add dlg for the radius cut, and the number of segments
+		if (dynamic_cast<NL3D::CPSShockWave *>(_Bindable))
+		{
+
+			CEditableRangeFloat *rc = new CEditableRangeFloat(std::string("RADIUS CUT"), 0, 1) ;
+			pushWnd(rc) ;
+			_RadiusCutWrapper.S = dynamic_cast<NL3D::CPSShockWave *>(_Bindable) ;
+			rc->setWrapper(&_RadiusCutWrapper) ;
+			rc->init(xPos + 140, yPos, this) ;
+			CStatic *s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Radius cut.", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+
+
+			rc->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+			CEditableRangeUInt *snbs = new CEditableRangeUInt(std::string("SHOCK WAVE NB SEG"), 3, 24) ;
+			pushWnd(snbs) ;
+			_ShockWaveNbSegWrapper.S = dynamic_cast<NL3D::CPSShockWave *>(_Bindable) ;
+			snbs->enableLowerBound(3, false) ;
+			snbs->setWrapper(&_ShockWaveNbSegWrapper) ;
+			snbs->init(xPos + 140, yPos, this) ;
+
+			s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Nb segs", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+
+			snbs->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+			
+		}
+
+		// fanlight
+
+		if (dynamic_cast<NL3D::CPSFanLight *>(_Bindable))
+		{
+			CEditableRangeUInt *nbf = new CEditableRangeUInt(std::string("NB_FANS"), 3, 127) ;
+			pushWnd(nbf) ;
+			nbf->enableUpperBound(128, true) ;
+			_FanLightWrapper.P = dynamic_cast<NL3D::CPSFanLight *>(_Bindable) ;
+			nbf->setWrapper(&_FanLightWrapper) ;
+			nbf->init(xPos + 140, yPos, this) ;
+			CStatic *s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Nb fan lights :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+
+			nbf->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+			CEditableRangeFloat *nbfp = new CEditableRangeFloat(std::string("FAN_LIGHT_PHASE"), 0, 4.f) ;
+			pushWnd(nbfp) ;			
+			_FanLightPhaseWrapper.P = dynamic_cast<NL3D::CPSFanLight *>(_Bindable) ;
+			nbfp->setWrapper(&_FanLightPhaseWrapper) ;
+			nbfp->init(xPos + 140, yPos, this) ;
+			s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Fan light speed :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;
+
+			nbf->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+		}
+
+
+		// tail particle
+		if (dynamic_cast<NL3D::CPSTailParticle *>(_Bindable))
+		{
+			CEditableRangeUInt *nbs = new CEditableRangeUInt(std::string("TAIL_NB_SEGS"), 1, 255) ;
+			pushWnd(nbs) ;
+			if (dynamic_cast<NL3D::CPSTailDot *>(_Bindable))
+			{
+				nbs->enableUpperBound(256, true) ;
+			}
+			nbs->enableLowerBound(0, true) ;
+			_TailParticleWrapper.P = dynamic_cast<NL3D::CPSTailParticle *>(_Bindable) ;
+			nbs->setWrapper(&_TailParticleWrapper) ;
+			nbs->init(xPos + 140, yPos, this) ;
+			CStatic *s = new CStatic ;			
+			pushWnd(s) ;
+			s->Create("Nb segs :", SS_LEFT, CRect(xPos, yPos, xPos + 139, yPos + 32), this) ;
+			s->ShowWindow(SW_SHOW) ;	
+			
+			nbs->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+
+			CTailParticleDlg *tpd = new CTailParticleDlg(dynamic_cast<NL3D::CPSTailParticle *>(_Bindable)) ;
+			tpd->init(this, xPos, yPos) ;
+				
+			tpd->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+		}
+
+
+		// shape particle
+
+		if (dynamic_cast<NL3D::CPSShapeParticle *>(_Bindable))
+		{
+			CMeshDlg *md = new CMeshDlg(dynamic_cast<NL3D::CPSShapeParticle *>(_Bindable)) ;
+			md->init(this, xPos, yPos) ;
+			md->GetClientRect(&rect) ;
+			yPos += rect.bottom + 3 ;
+		}
+
 	}	
 }
 

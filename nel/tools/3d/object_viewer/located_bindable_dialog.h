@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.h
- * <File description>
+ * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.h,v 1.5 2001/06/19 16:05:24 vizerie Exp $
+ * $Id: located_bindable_dialog.h,v 1.6 2001/06/25 13:26:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,8 @@ namespace NL3D
 #include "3d/ps_plane_basis.h"
 
 
+#include "dialog_stack.h"
+
 using NLMISC::CRGBA ;
 
 // located_bindable_dialog.h : header file
@@ -54,16 +56,13 @@ using NLMISC::CRGBA ;
 /////////////////////////////////////////////////////////////////////////////
 // CLocatedBindableDialog dialog
 
-class CLocatedBindableDialog : public CDialog
+class CLocatedBindableDialog : public CDialog, CDialogStack
 {
 // Construction
 public:
 	// create this dialog to edit the given bindable
 	CLocatedBindableDialog(NL3D::CPSLocatedBindable *bindable);   // standard constructor
 
-
-	// dtor
-	~CLocatedBindableDialog() ;
 
 	// init the dialog as a child of the given wnd
 	void init(CWnd* pParent = NULL) ;
@@ -89,8 +88,7 @@ protected:
 
 	NL3D::CPSLocatedBindable *_Bindable ;
 
-	// list of the dialogs that we instanciated
-	std::vector<CDialog *> _SubDialogs ;
+
 
 	// Generated message map functions
 	//{{AFX_MSG(CLocatedBindableDialog)
@@ -162,6 +160,71 @@ protected:
 				NL3D::ITexture *get(void)  { return P->getTexture() ; }
 				void set(NL3D::ITexture *t) { P->setTexture(t) ; }
 			} _TextureWrapper ;
+
+		///////////////////////
+		// motion blur coeff //
+		///////////////////////
+
+			struct tagMotionBlurCoeffWrapper : public IPSWrapperFloat
+			{
+				NL3D::CPSFaceLookAt *P ;
+			   float get(void) const { return P->getMotionBlurCoeff() ; }
+			   void set(const float &v) { P->setMotionBlurCoeff(v) ; }
+			}  _MotionBlurCoeffWrapper ;
+
+			struct tagMotionBlurThresholdWrapper : public IPSWrapperFloat
+			{
+				NL3D::CPSFaceLookAt *P ;
+			   float get(void) const { return P->getMotionBlurThreshold() ; }
+			   void set(const float &v) { P->setMotionBlurThreshold(v) ; }
+			}  _MotionBlurThresholdWrapper ;
+
+		///////////////
+		// fanlight  //
+		///////////////
+			struct tagFanLightWrapper : public IPSWrapperUInt
+			{
+				NL3D::CPSFanLight *P ;
+			  uint32 get(void) const { return P->getNbFans() ; }
+			   void set(const uint32 &v) { P->setNbFans(v) ; }
+			}  _FanLightWrapper ;
+			struct tagFanLightPhase : public IPSWrapperFloat
+			{
+				NL3D::CPSFanLight *P ;
+				float get(void) const { return P->getPhaseSpeed() ; }
+			    void set(const float &v) { P->setPhaseSpeed(v) ; }
+			}  _FanLightPhaseWrapper ;
+
+		///////////////////////
+		// ribbon / tail dot //
+		///////////////////////
+			
+			struct tagTailParticleWrapper : public IPSWrapperUInt
+			{
+				NL3D::CPSTailParticle *P ;
+			    uint32 get(void) const { return P->getTailNbSeg() ; }
+			    void set(const uint32 &v) { P->setTailNbSeg(v) ; }
+			}  _TailParticleWrapper ;
+		
+		/////////////////////////////
+		//		shockwave          //
+		/////////////////////////////
+	
+			struct tagRadiusCutWrapper : public IPSWrapperFloat
+			{
+			   NL3D::CPSShockWave *S ;
+			   float get(void) const { return S->getRadiusCut() ; }
+			   void set(const float &v) { S->setRadiusCut(v) ; }
+			} _RadiusCutWrapper ;
+
+			struct tagShockWaveNbSegWrapper : public IPSWrapperUInt
+			{
+			   NL3D::CPSShockWave *S ;
+			   uint32 get(void) const { return S->getNbSegs() ; }
+			   void set(const uint32 &v) { S->setNbSegs(v) ; }
+			} _ShockWaveNbSegWrapper ;
+
+
 
 
 

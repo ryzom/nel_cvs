@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.9 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: smart_ptr.h,v 1.10 2000/11/15 11:08:07 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,8 @@ public:
     CRefCount() { crefs = 0; pinfo=&NullPtrInfo; }
 	/// operator= must NOT copy crefs/pinfo!!
 	CRefCount &operator=(const CRefCount &) {return *this;}
+	/// copy cons must NOT copy crefs/pinfo!!
+	CRefCount(const CRefCount &) {crefs = 0; pinfo=&NullPtrInfo;}
 };
 
 
@@ -174,7 +176,7 @@ public:
 	/// Attach a ptr to a SmartPtr.
     CSmartPtr(T* p) { Ptr=p; if(Ptr) Ptr->crefs++; SMART_TRACE("ctor(T*)"); }
 	/// Copy constructor.
-    CSmartPtr(CSmartPtr &copy) { Ptr=copy.Ptr; if(Ptr) Ptr->crefs++; SMART_TRACE("ctor(Copy)"); }
+    CSmartPtr(const CSmartPtr &copy) { Ptr=copy.Ptr; if(Ptr) Ptr->crefs++; SMART_TRACE("ctor(Copy)"); }
 	/// Release the SmartPtr.
     ~CSmartPtr();
 
@@ -189,7 +191,7 @@ public:
 	/// operator=. Giving a NULL pointer is a valid operation.
     CSmartPtr& operator=(T* p);
 	/// operator=. Giving a NULL pointer is a valid operation.
-    CSmartPtr& operator=(CSmartPtr<T> &p);
+    CSmartPtr& operator=(const CSmartPtr &p);
 
 	// No need to do any operator==. Leave the work to cast  operator T*(void).
 };
@@ -321,7 +323,7 @@ SMART_INLINE CSmartPtr<T>& CSmartPtr<T>::operator=(T* p)
 	return *this;
 }
 template<class T>    
-SMART_INLINE CSmartPtr<T>& CSmartPtr<T>::operator=(CSmartPtr<T> &p)
+SMART_INLINE CSmartPtr<T>& CSmartPtr<T>::operator=(const CSmartPtr &p)
 {
 	return operator=(p.Ptr);
 }

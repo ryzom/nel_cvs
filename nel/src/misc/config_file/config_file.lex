@@ -14,6 +14,10 @@ using namespace std;
 
 #define YY_NEVER_INTERACTIVE 1
 
+#ifdef WIN32
+#define read _read
+#endif
+
 /* Types */
 
 enum cf_type { T_INT, T_STRING, T_REAL };

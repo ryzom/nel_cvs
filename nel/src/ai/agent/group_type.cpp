@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.26 2002/03/12 11:29:21 chafik Exp $
+ * $Id: group_type.cpp,v 1.27 2002/03/12 13:45:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,20 +55,7 @@ namespace NLAIAGENT
 		IBaseGroupType::CMethodCall("Get",_Get),
 		IBaseGroupType::CMethodCall("Set",_Set),
 		IBaseGroupType::CMethodCall("Size",_Size)
-	};
-
-	virtual IObjetOp *IBaseGroupType::operator + (const IObjetOp &a)  const
-	{
-		IObjetOp *o = (IObjetOp *)clone();
-		*o += a;
-		return o;
-	}
-	virtual IObjetOp *IBaseGroupType::operator - (const IObjetOp &a)  const
-	{
-		IObjetOp *o = (IObjetOp *)clone();
-		*o -= a;
-		return o;
-	}
+	};	
       
 	IBaseGroupType::IBaseGroupType()
 	{
@@ -76,6 +63,30 @@ namespace NLAIAGENT
 
 	IBaseGroupType::~IBaseGroupType()
 	{
+	}
+
+	IObjetOp &IBaseGroupType::operator += (const IObjetOp &a)
+	{
+		cpy(a);
+		return *this;
+	}
+
+	IObjetOp &IBaseGroupType::operator -= (const IObjetOp &a)
+	{
+		erase(a);
+		return *this;
+	}
+
+	IObjetOp &IBaseGroupType::operator += (IObjetOp *a)
+	{
+		push(a);
+		return *this;
+	}
+
+	IObjetOp &IBaseGroupType::operator -= (IObjetOp *a)
+	{
+		erase(a);
+		return *this;
 	}
 
 	sint32 IBaseGroupType::getMethodIndexSize() const
@@ -248,17 +259,66 @@ namespace NLAIAGENT
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-	IObjetOp &CGroupType::operator += (const IObjetOp &a)
+	IObjetOp *CGroupType::operator + (IObjetOp *a)
 	{
-		cpy(a);
-		return *this;
+		CGroupType *o = new CGroupType();
+		tListType::const_iterator i = _List.begin();
+		while(i != _List.end())
+		{
+			o->_List.push_back(*i);
+			((IObjetOp*)(*i))->incRef();
+			i ++;
+		}
+		
+		*o += a;
+		a->incRef();
+		return o;
+	}
+	IObjetOp *CGroupType::operator - (IObjetOp *a)
+	{
+		CGroupType *o = new CGroupType();
+		tListType::const_iterator i = _List.begin();
+		while(i != _List.end())
+		{
+			o->_List.push_back(*i);
+			((IObjetOp*)(*i))->incRef();
+			i ++;
+		}
+
+		*o -= a;
+		a->release();
+		return o;
 	}
 
-	IObjetOp &CGroupType::operator -= (const IObjetOp &a)
+	IObjetOp *CGroupType::operator + (const IObjetOp &a)
 	{
-		erase(a);
-		return *this;
+		CGroupType *o = new CGroupType();
+		tListType::const_iterator i = _List.begin();
+		while(i != _List.end())
+		{
+			o->_List.push_back(*i);
+			((IObjetOp*)(*i))->incRef();
+			i ++;
+		}
+		
+		*o += a;
+		return o;
 	}
+	IObjetOp *CGroupType::operator - (const IObjetOp &a)
+	{
+		CGroupType *o = new CGroupType();
+		tListType::const_iterator i = _List.begin();
+		while(i != _List.end())
+		{
+			o->_List.push_back(*i);
+			((IObjetOp*)(*i))->incRef();
+			i ++;
+		}
+
+		*o -= a;
+		return o;
+	}
+	
 
 	IObjetOp *CGroupType::operator ! () const
 	{		
@@ -614,17 +674,67 @@ namespace NLAIAGENT
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	IObjetOp &CVectorGroupType::operator += (const IObjetOp &a)
+	IObjetOp *CVectorGroupType::operator + (IObjetOp *a)
 	{
-		cpy(a);
-		return *this;
+		CVectorGroupType *o = new CVectorGroupType();
+		tVectorType::const_iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			o->_Vector.push_back(*i);
+			((IObjetOp*)(*i))->incRef();
+			i ++;
+		}
+		
+		*o += a;
+		a->incRef();
+		return o;
+	}
+	IObjetOp *CVectorGroupType::operator - (IObjetOp *a)
+	{
+		CVectorGroupType *o = new CVectorGroupType();
+		tVectorType::const_iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			o->_Vector.push_back(*i);
+			((IObjetOp*)(*i))->incRef();
+			i ++;
+		}
+		
+		*o -= a;		
+		a->release();
+		return o;
 	}
 
-	IObjetOp &CVectorGroupType::operator -= (const IObjetOp &a)
+	IObjetOp *CVectorGroupType::operator + (const IObjetOp &a)
 	{
-		erase(a);
-		return *this;
+		CVectorGroupType *o = new CVectorGroupType();
+		tVectorType::const_iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			o->_Vector.push_back(*i);
+			((IObjetOp*)(*i))->incRef();
+			i ++;
+		}
+		
+		*o += a;
+		
+		return o;
 	}
+	IObjetOp *CVectorGroupType::operator - (const IObjetOp &a)
+	{
+		CVectorGroupType *o = new CVectorGroupType();
+		tVectorType::const_iterator i = _Vector.begin();
+		while(i != _Vector.end())
+		{
+			o->_Vector.push_back(*i);
+			((IObjetOp*)(*i))->incRef();
+			i ++;
+		}
+		
+		*o -= a;		
+		return o;
+	}
+	
 
 	IObjetOp *CVectorGroupType::operator ! () const
 	{		

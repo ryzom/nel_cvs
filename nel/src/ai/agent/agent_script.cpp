@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.106 2002/03/12 11:29:21 chafik Exp $
+ * $Id: agent_script.cpp,v 1.107 2002/03/12 13:45:28 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -222,7 +222,7 @@ namespace NLAIAGENT
 		StaticMethod[CAgentScript::TGetName] = new CAgentScript::CMethodCall(	_GETNAME_, 
 																			CAgentScript::TGetName, 
 																			NULL,CAgentScript::CheckCount,
-																			1,
+																			0,
 																			new NLAISCRIPT::CObjectUnknown(
 																			new NLAISCRIPT::COperandSimple(
 																			new NLAIC::CIdentType(CStringType::IdStringType))));
@@ -1420,8 +1420,24 @@ namespace NLAIAGENT
 				return a;
 			}
 		case TGetName:
-			{				
-				return getDynamicName((IBaseGroupType *)o);
+			{		
+				IObjectIA::CProcessResult r;
+				const CAgentScript *p = (CAgentScript *)getParent();
+				tsetDefNameAgent::iterator i = p->_DynamicAgentName.begin();
+
+				while(i != p->_DynamicAgentName.end())
+				{
+					CKeyAgent key = *i;
+					if( this == *key.Itr )
+					{
+						CStringType *s = new CStringType(key.Name);
+						r.Result = s;
+						return r;
+					}
+					i ++;
+				}
+				r.Result = new CStringType(CStringVarName("Unknown"));
+				return r;
 			}
 
 		case TRemoveChild:
@@ -1511,8 +1527,24 @@ namespace NLAIAGENT
 				return a;
 			}
 		case TGetName:
-			{				
-				return getDynamicName((IBaseGroupType *)o);
+			{
+				IObjectIA::CProcessResult r;
+				const CAgentScript *p = (CAgentScript *)getParent();
+				tsetDefNameAgent::iterator i = p->_DynamicAgentName.begin();
+
+				while(i != p->_DynamicAgentName.end())
+				{
+					CKeyAgent key = *i;
+					if( this == *key.Itr )
+					{
+						CStringType *s = new CStringType(key.Name);
+						r.Result = s;
+						return r;
+					}
+					i ++;
+				}
+				r.Result = new CStringType(CStringVarName("Unknown"));
+				return r;
 			}
 
 		case TRunAskParentNotify:

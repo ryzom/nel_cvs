@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.19 2002/03/12 11:29:06 chafik Exp $
+ * $Id: agent_object.h,v 1.20 2002/03/12 13:45:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,10 @@ namespace NLAIAGENT
 	public:
 		static const NLAIC::CIdentType IdStringType;
 	public:
+		CStringType(const std::string &str): _Str(new CStringVarName(str.c_str()))
+		{
+		}
+
 		CStringType(const IVarName &str): _Str((IVarName *)str.clone())
 		{			
 		}
@@ -549,10 +553,11 @@ namespace NLAIAGENT
 		
 		///\name Some IObjetOp method definition.
 		//@{
-		virtual IObjetOp &operator += (const IObjetOp &a) = 0;
-		virtual IObjetOp &operator -= (const IObjetOp &a) = 0;
-		virtual IObjetOp *operator + (const IObjetOp &a)  const;		
-		virtual IObjetOp *operator - (const IObjetOp &a)  const;		
+		virtual IObjetOp &operator += (IObjetOp *a);
+		virtual IObjetOp &operator -= (IObjetOp *a);
+		virtual IObjetOp &operator += (const IObjetOp &a);
+		virtual IObjetOp &operator -= (const IObjetOp &a);
+
 		virtual IObjetOp *operator ! () const = 0;
 		virtual bool isTrue() const;
 		//@}
@@ -644,9 +649,12 @@ namespace NLAIAGENT
 
 		virtual const CProcessResult &run();
 
-		virtual IObjetOp &operator += (const IObjetOp &a);
-		virtual IObjetOp &operator -= (const IObjetOp &a);
 		virtual IObjectIA &operator = (const IObjectIA &a);
+		virtual IObjetOp *operator + (const IObjetOp &a);
+		virtual IObjetOp *operator - (const IObjetOp &a);
+
+		virtual IObjetOp *operator + (IObjetOp *a);
+		virtual IObjetOp *operator - (IObjetOp *a);		
 
 		virtual const IObjectIA *operator[] (sint32) const;
 
@@ -728,9 +736,13 @@ namespace NLAIAGENT
 		virtual void getDebugString(std::string &text) const;
 
 		virtual const CProcessResult &run();
+		
+		virtual IObjetOp *operator + (const IObjetOp &a) ;
+		virtual IObjetOp *operator - (const IObjetOp &a) ;
 
-		virtual IObjetOp &operator += (const IObjetOp &a);
-		virtual IObjetOp &operator -= (const IObjetOp &a);
+		virtual IObjetOp *operator + (IObjetOp *a);
+		virtual IObjetOp *operator - (IObjetOp *a);		
+
 		virtual IObjectIA &operator = (const IObjectIA &a);
 
 		virtual const IObjectIA *operator[] (sint32) const;

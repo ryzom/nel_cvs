@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.104 2002/03/07 11:09:03 portier Exp $
+ * $Id: agent_script.cpp,v 1.105 2002/03/11 13:59:34 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -373,7 +373,10 @@ namespace NLAIAGENT
 			}		
 		}
 		else
+		{
 			_Components =NULL;
+			_AgentManager = manager;
+		}
 	}	
 
 	CAgentScript::~CAgentScript()
@@ -811,20 +814,22 @@ namespace NLAIAGENT
 		NLAIAGENT::IMessageBase &msg_result = (NLAIAGENT::IMessageBase &)*g->get();
 		msg_result.incRef();
 
-		CStringType *comp_name = (CStringType *) msg_result[ (sint32) 0 ];
-		IObjectIA *comp_val = (IObjectIA *) msg_result[ (sint32) 1 ];
-		
-		sint32 index = _AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
-		if ( index != -1 )
+		while ( msg_result.size() )
 		{
-			// Sets the component to the new value
-			setStaticMember( index, comp_val );		
+			CStringType *comp_name = (CStringType *) msg_result[ (sint32) 0 ];
+			IObjectIA *comp_val = (IObjectIA *) msg_result[ (sint32) 1 ];
+			
+			sint32 index = _AgentClass->getInheritedStaticMemberIndex(  comp_name->getStr()  );
+			if ( index != -1 )
+			{
+				// Sets the component to the new value
+				setStaticMember( index, comp_val );		
+			}
+			else
+			{
+				// Component not foud: return error msg?
+			}
 		}
-		else
-		{
-			// Component not foud: return error msg
-		}
-
 		IObjectIA::CProcessResult r;
 		msg_result.incRef();
 		r.Result = &msg_result;
@@ -1229,8 +1234,10 @@ namespace NLAIAGENT
 	void CAgentScript::processMessages()
 	{
 		IObjectIA *c = NULL;
-		if( _AgentManager != NULL) c = (IObjectIA *)_AgentManager->getAgentContext();
-		else c = NULL;
+		if( _AgentManager != NULL) 
+			c = (IObjectIA *)_AgentManager->getAgentContext();
+		else 
+			c = NULL;
 
 		IMailBox *mail = getMail();
 

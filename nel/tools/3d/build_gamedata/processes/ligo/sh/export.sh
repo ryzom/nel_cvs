@@ -24,7 +24,7 @@ dir_gamedata=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 
 dir_gamedata_maxscript=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the bank filename
-bank_filename=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'  | sed -e 's/"//g' | sed -e 's/;//g' | sed -e 's&/&//&g'`
+bank_filename=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'  | sed -e 's/"//g' | sed -e 's/;//g'`
 
 # Copy the bank file
 cp $bank_filename smallbank/ligo.smallbank

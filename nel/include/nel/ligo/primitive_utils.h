@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.3 2004/06/03 08:43:51 boucher Exp $
+ * $Id: primitive_utils.h,v 1.4 2004/06/11 12:19:40 boucher Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -379,6 +379,16 @@ void filterPrimitiveChilds(IPrimitive *parent, Pred &predicate, TPrimitiveSet &r
 	}
 }
 
+
+/** Build a string that reprensent the path to a node 
+ *	Note that the reverse operation does not garantie to
+ *	return a unique node because there is no name 
+ *	uniqueness constrains in the primitive system.
+ */
+std::string buildPrimPath(IPrimitive *prim);
+
+/** Return a set of primitive that match a given path*/
+void selectPrimByPath(IPrimitive *rootNode, const std::string &path, TPrimitiveSet &result);
 
 } // namespace NLLIGO
 

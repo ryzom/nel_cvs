@@ -1,7 +1,7 @@
 /** \file primitive_block_pacs.cpp
  * Block of PACS primitives
  *
- * $Id: primitive_block_pacs.cpp,v 1.5 2003/05/20 15:50:44 corvazier Exp $
+ * $Id: primitive_block_pacs.cpp,v 1.6 2003/05/20 15:52:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,6 +81,10 @@ void CPrimitiveDesc::serial (NLMISC::IStream &s)
 	if (ver>=1)
 	{
 		s.xmlSerial (UserData, "USER_DATA");
+	}
+	else
+	{
+		UserData = 0;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.10 2001/03/07 16:10:27 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.11 2001/03/07 16:19:22 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -292,20 +292,23 @@ void CBufFIFO::resize (uint32 size)
 
 	// copy the old buffer to the new one
 	// if _Tail == _Head => empty fifo, don't copy anything
-	if (_Tail < _Head)
+	if (!empty())
 	{
-		memcpy (NewBuffer, _Buffer, UsedSize);
-	}
-	else if (_Tail > _Head)
-	{
-		nlassert (_Rewinder != NULL);
+		if (_Tail < _Head)
+		{
+			memcpy (NewBuffer, _Buffer, UsedSize);
+		}
+		else if (_Tail >= _Head)
+		{
+			nlassert (_Rewinder != NULL);
 
-		uint size1 = _Rewinder - _Tail;
-		memcpy (NewBuffer, _Tail, size1);
-		uint size2 = _Head - _Buffer;
-		memcpy (NewBuffer + size1, _Buffer, size2);
+			uint size1 = _Rewinder - _Tail;
+			memcpy (NewBuffer, _Tail, size1);
+			uint size2 = _Head - _Buffer;
+			memcpy (NewBuffer + size1, _Buffer, size2);
 
-		nlassert (size1+size2==UsedSize);
+			nlassert (size1+size2==UsedSize);
+		}
 	}
 
 	// resync the circular pointer

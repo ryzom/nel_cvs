@@ -740,7 +740,8 @@ fn export_and_check_and_debug_zone checkOnly debug displayMB =
 				filename = ligo_root_path+ligo_material_path+matname+ligo_material_ext
 
 				-- Don't check flag ?
-				if (getAppData $ ligo_use_boundingbox) != "0" then
+				ligo_use_boundingbox_data = getAppData $ ligo_use_boundingbox
+				if (ligo_use_boundingbox_data != undefined) and (ligo_use_boundingbox_data == "0") then
 					dontCheck = true
 				else
 					dontCheck = false

@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.14 2002/09/16 08:19:26 berenguier Exp $
+ * $Id: export_collision.cpp,v 1.15 2002/12/09 13:35:35 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -360,7 +360,7 @@ bool	CExportNel::createCollisionMeshBuildList(std::vector<INode *> &nodes, TimeV
 				;
 			if (j == igs.size())
 			{
-				igs.push_back();
+				igs.push_back (std::pair<std::string, std::vector<INode *> >());
 				igs[j].first = ig;
 			}
 

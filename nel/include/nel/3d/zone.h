@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.10 2000/12/01 11:14:58 corvazier Exp $
+ * $Id: zone.h,v 1.11 2000/12/01 17:01:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,7 +318,7 @@ private:
 	TBaseVerticesVec	BaseVertices;
 	// The list of border vertices.
 	std::vector<CBorderVertex>	BorderVertices;
-	// NB: No problem on corners, since zones are compile()-ed with knowledge of neihbors.
+	// NB: No problem on corners, since zones are compile()-ed with knowledge of neighbors.
 
 	// The patchs.
 	std::vector<CPatch>			Patchs;

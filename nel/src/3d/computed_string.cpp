@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.8 2000/12/21 16:58:42 berenguier Exp $
+ * $Id: computed_string.cpp,v 1.9 2001/01/02 15:29:44 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,24 +103,6 @@ void CComputedString::render2D (IDriver& driver,
 	for(uint32 i=0; i<Primitives.size(); i++)
 	{
 		driver.render(Primitives[i], *Materials[i]);
-	}
-}
-
-
-/*------------------------------------------------------------------*\
-							render3D()
-\*------------------------------------------------------------------*/
-void CComputedString::render3D (CVector pos)
-{
-	CMatrix matrix;
-	matrix.translate(pos);
-	CNELU::Driver->setupModelMatrix(matrix);
-	CNELU::Driver->activeVertexBuffer(Vertices);
-	
-	// rendering each primitives 
-	for(uint32 i=0; i<Primitives.size(); i++)
-	{
-		CNELU::Driver->render(Primitives[i], *Materials[i]);
 	}
 }
 

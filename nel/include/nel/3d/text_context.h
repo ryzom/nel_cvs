@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.5 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: text_context.h,v 1.6 2001/01/02 15:30:08 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -276,7 +276,6 @@ public:
 	 * print a string of the list
 	 * (rq : it leaves the string in the stack)
 	 */
-	//@{
 	void printAt(float x, float z, uint32 i)
 	{
 		nlassert(i<_StringList.size());
@@ -286,19 +285,11 @@ public:
 								_HotSpot,
 								_ScaleX,_ScaleZ);
 	}
-	void printAt(float x, float y, float z, uint32 i)
-	{
-		nlassert(i<_StringList.size());
-
-		_StringList[i].render3D(CVector(x,y,z));
-	}
-	//@}
 
 	/**
 	 *	printAt
 	 * compute and print a ucstring at the location
 	 */
-	//@{
 	void printAt(float x, float z, ucstring ucstr)
 	{
 		NL3D::CComputedString cptdstr;
@@ -308,19 +299,11 @@ public:
 							_HotSpot,
 							_ScaleX,_ScaleZ);
 	}
-	void printAt(float x, float y, float z, ucstring ucstr)
-	{
-		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(ucstr,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
-		cptdstr.render3D(CVector(x,y,z));
-	}
-	//@}
-
+	
 	/**
 	 *	printfAt
 	 * compute and print a string at the location
 	 */
-	//@{
 	void printfAt(float x, float z, const char * format, ...)
 	{
 		nlassert(_FontGen);
@@ -335,22 +318,7 @@ public:
 		_FontManager.computeString(str,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
 		cptdstr.render2D(*NL3D::CNELU::Driver,x,z,_HotSpot,_ScaleX,_ScaleZ);
 	}
-	void printfAt(float x, float y, float z, const char * format, ...)
-	{
-		nlassert(_FontGen);
-
-		char str[1024];
-		va_list args;
-		va_start(args, format);
-		vsprintf(str, format, args);
-		va_end(args);
-
-		NL3D::CComputedString cptdstr;
-		_FontManager.computeString(str,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
-		cptdstr.render3D(CVector(x,y,z));
-	}
-	//@}
-
+	
 	/**
 	 *	getStringListSize
 	 * \return the size of the string list
@@ -379,6 +347,29 @@ public:
 		nlassert(i<_StringList.size());
 		return _StringList[i];
 	}
+
+	/**
+	 * Compute a string as primitive blocks using the
+	 * font manager's method computeString
+	 * \param a string
+	 * \param the computed string
+	 */
+	void computeString(const std::string& s, CComputedString& output)
+	{
+		_FontManager.computeString(s,_FontGen,_Color,_FontSize,_DispDesc,output);
+	}
+
+	/**
+	 * Compute a ucstring as primitive blocks using the
+	 * font manager's method computeString
+	 * \param an ucstring
+	 * \param the computed string
+	 */
+	void computeString(const ucstring& s, CComputedString& output)
+	{
+		_FontManager.computeString(s,_FontGen,_Color,_FontSize,_DispDesc,output);
+	}
+
 
 	/// destructor
 	~CTextContext()

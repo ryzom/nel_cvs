@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.9 2000/12/21 16:58:32 berenguier Exp $
+ * $Id: font_manager.h,v 1.10 2001/01/02 15:30:08 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,7 +133,7 @@ public:
 						CComputedString& output);
 
 	/** 
-	 * Same as computeString but works with an unicode string (ucstring)
+	 * Same as computeString but works with a unicode string (ucstring)
 	 */
 	void computeString (const ucstring &s,
 						CFontGenerator *fontGen, 

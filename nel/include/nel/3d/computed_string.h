@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.9 2001/01/02 14:23:13 lecroart Exp $
+ * $Id: computed_string.h,v 1.10 2001/01/02 15:30:08 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,15 +131,13 @@ public:
 	 * \param hotspot position of string origine
 	 * \param transformation matrix
 	 */	
-	//@{
 	void render2D (IDriver& driver, 
 					float x, float z,
 					THotSpot hotspot = BottomLeft,
 					float scaleX = 1, float scaleZ = 1,
 					float rotateY = 0);
 
-	void render3D (CVector pos);
-	//@}
+	
 
 };
 

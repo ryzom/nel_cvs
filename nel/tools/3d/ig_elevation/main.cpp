@@ -1,6 +1,6 @@
 /** \file main.cpp
  *
- * $Id: main.cpp,v 1.7 2002/07/08 10:06:34 corvazier Exp $
+ * $Id: main.cpp,v 1.8 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -242,6 +242,7 @@ static float  getHeightMapZ(float x, float y, const CZoneLimits &zl, const SExpo
 	{
 		color = heightMap1->getColor (	(x - options.CellSize * zl._ZoneMinX) / (options.CellSize * SizeX), 
 										1.0f - ((y - options.CellSize * zl._ZoneMinY) / (options.CellSize * SizeY)));
+		color *= 255.f;
 		deltaZ = color.A;
 		deltaZ = deltaZ - 127.0f; // Median intensity is 127
 		deltaZ *= options.ZFactor1;
@@ -251,6 +252,7 @@ static float  getHeightMapZ(float x, float y, const CZoneLimits &zl, const SExpo
 	{
 		color = heightMap2->getColor (	(x - options.CellSize * zl._ZoneMinX) / (options.CellSize * SizeX), 
 										1.0f - ((y - options.CellSize * zl._ZoneMinY) / (options.CellSize * SizeY)));
+		color *= 255.f;
 		deltaZ2 = color.A;
 		deltaZ2 = deltaZ2 - 127.0f; // Median intensity is 127
 		deltaZ2 *= options.ZFactor2;

@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.35 2003/01/22 18:27:40 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.36 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2483,6 +2483,7 @@ CRGBAF CBitmap::getColor (float x, float y) const
 			finalVal.G = getColorInterp (x, y, val[0].G, val[1].G, val[2].G, val[3].G);
 			finalVal.B = getColorInterp (x, y, val[0].B, val[1].B, val[2].B, val[3].B);
 			finalVal.A = getColorInterp (x, y, val[0].A, val[1].A, val[2].A, val[3].A);
+			finalVal /= 255.f;
 
 			return finalVal;			
 		}
@@ -2498,11 +2499,12 @@ CRGBAF CBitmap::getColor (float x, float y) const
 				val[i] = rBitmap[(nX[i]+nY[i]*nWidth)];
 
 			finalVal = getColorInterp (x, y, val[0], val[1], val[2], val[3]);
+			finalVal /= 255.f;
 
 			if (this->PixelFormat == Alpha)
-				return CRGBAF (255.0f, 255.0f, 255.0f, finalVal);
+				return CRGBAF (1.f, 1.f, 1.f, finalVal);
 			else // Luminance
-				return CRGBAF (finalVal, finalVal, finalVal, 255.0f);
+				return CRGBAF (finalVal, finalVal, finalVal, 1.f);
 		}
 		break;
 		default: break;

@@ -286,6 +286,7 @@ void CPaintColor::paintAVertex (int mesh, int patch, int s, int t, const CVector
 
 			// Read the pixel
 			CRGBAF colorF = _BrushBitmap.getColor (bitmapX, bitmapY);
+			colorF *= 255.f;
 			CRGBA color;
 			color.R = (uint8)colorF.R;
 			color.G = (uint8)colorF.G;

@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.6 2002/08/27 14:36:25 corvazier Exp $
+ * $Id: calc_lm_rt.cpp,v 1.7 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -324,7 +324,6 @@ void CRTWorld::testCell (CRGBAF &retValue, SGridCell &cell, CVector &vLightPos, 
 				if( pT->getWidth() == 0 )
 					((CTextureFile*)pT)->generate();
 				cPixMap = pT->getColor( u,v );
-				cPixMap /= 255.0f;
 			}
 			cPixMap.A *= cell.pMBB->Materials[cell.pF->MaterialId].getOpacity()/255.0f;
 			cPixMap.R *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().R/255.0f;

@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.16 2002/11/14 17:36:12 vizerie Exp $
+ * $Id: transform_user.h,v 1.17 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,21 +52,27 @@ class CTransformUser : virtual public UTransform, public CTransformableUser
 {
 protected:
 	// The Scene.
-	CScene				*_Scene;
+	CScene				*_Scene;	// Can be NULL if deleteIt is false.
 	// The object.
 	CTransform			*_Transform;
 	UInstanceGroup		*_pIG;
+
+	// Must delete the transform shape ?, if false, scene can be NULL.
+	bool				_DeleteIt;
 public:
 
 
 	/// \name Object
 	// @{
-	/// Give a Scene Instance. CTransformUser owns it, and will delete it.
-	CTransformUser(CScene *scene, IModel *trans) : CTransformableUser( static_cast<ITransformable*>((CTransform*)trans) )
+	/** Give a Scene Instance. CTransformUser owns it, and will delete it.
+	  * \param deleteIt is true if the CTransformUser must delete the transform shape in the destructor, else false.
+	  */
+	CTransformUser(CScene *scene, IModel *trans, bool deleteIt) : CTransformableUser( static_cast<ITransformable*>((CTransform*)trans) )
 	{
 		NL3D_MEM_TRANSFORM
-		nlassert(scene && trans);
+		nlassert(trans);
 		_Scene= scene;
+		_DeleteIt = deleteIt;
 		// NB: _Transform is "same" pointer as ITransformable, but correclty casted.
 		_Transform= NLMISC::safe_cast<CTransform*>(trans);
 		_pIG = NULL;
@@ -76,8 +82,11 @@ public:
 	virtual	~CTransformUser()
 	{
 		NL3D_MEM_TRANSFORM
-		if (_Transform)
+		if (_Transform && _DeleteIt)
 		{
+			// Scene must not be NULL if _DeleteIt == true
+			nlassert (_Scene);
+
 			// Must test if _Transform is a CTransfromShape. If yes, must call deleteInstance().
 			CTransformShape	*pTrShp= dynamic_cast<CTransformShape*>(_Transform);
 			if(pTrShp)

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.43 2002/08/27 14:36:24 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.44 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1393,10 +1393,10 @@ CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n,
 					y = ((y / tanf( rLight.rFallof ))+1.0f)/2.0f;
 					
 					CRGBAF col = rLight.ProjBitmap.getColor(x, y);
-					lightDiffCol.R *= col.R/255.0f;
-					lightDiffCol.G *= col.G/255.0f;
-					lightDiffCol.B *= col.B/255.0f;
-					lightDiffCol.A *= col.A/255.0f;
+					lightDiffCol.R *= col.R;
+					lightDiffCol.G *= col.G;
+					lightDiffCol.B *= col.B;
+					lightDiffCol.A *= col.A;
 				}
 			}
 			break;

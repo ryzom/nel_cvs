@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.22 2002/11/18 17:54:16 vizerie Exp $
+ * $Id: instance_group_user.h,v 1.23 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,8 @@ private:
 	TState getAddToSceneState ();
 	void stopAddToSceneAsync ();
 
+	virtual const UInstance	*getInstance (uint instanceNb) const;
+	virtual UInstance		*getInstance (uint instanceNb);
 	virtual void			setDistMax(uint instance, float dist);	
 	virtual float			getDistMax(uint instance) const;	
 	virtual void		    setCoarseMeshDist(uint instance, float dist);

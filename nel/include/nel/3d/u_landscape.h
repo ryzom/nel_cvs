@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * <File description>
  *
- * $Id: u_landscape.h,v 1.18 2002/12/06 12:41:25 corvazier Exp $
+ * $Id: u_landscape.h,v 1.19 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,7 +72,13 @@ public:
 	/// Set the zonePath from where zones are loaded.
 	virtual	void	setZonePath(const std::string &zonePath) =0;
 	/// Load the tile banks:  the ".bank" and the  ".farbank".
-	virtual	void	loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile, NLMISC::IProgressCallback &progress) =0;
+	virtual	void	loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile) =0;
+	/// Flush the tiles
+	virtual void	flushTiles (NLMISC::IProgressCallback &progress) =0;
+	/// Postfix tile filename
+	virtual void	postfixTileFilename (const char *postfix) =0;
+	/// Postfix vegetable filename
+	virtual void	postfixTileVegetableDesc (const char *postfix) =0;
 	/// Load all Zones around a position. This is a blocking call.
 	virtual	void	loadAllZonesAround(const CVector &pos, float radius) =0;
 	/** Load all Zones around a position. This is a blocking call.

@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.21 2002/11/18 17:54:39 vizerie Exp $
+ * $Id: u_instance_group.h,v 1.22 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -200,6 +200,22 @@ public:
 	 * \return the scale of the instance.
 	 */
 	virtual const NLMISC::CVector& getInstanceScale (uint instanceNb) const=0;
+
+	/**
+	 * Return an instance of the group. This instance must be destroyed by the user using delete ().
+	 * Destructor of this instance will not delete remove the object from the scene.
+	 *
+	 * \param instanceNb is the number of the instance.
+	 */
+	virtual const UInstance	*getInstance (uint instanceNb) const=0;
+
+	/**
+	 * Return an instance of the group. This instance must be destroyed by the user using delete ()
+	 * Destructor of this instance will not delete remove the object from the scene.
+	 *
+	 * \param instanceNb is the number of the instance.
+	 */
+	virtual UInstance	*getInstance (uint instanceNb) =0;
 
 	/**
 	 * Return the instance at a given position

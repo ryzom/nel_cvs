@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.20 2002/11/14 17:32:10 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.21 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NL3D {
 
 //===================================================================
 CParticleSystemInstanceUser::CParticleSystemInstanceUser(CScene *scene, IModel *model) 
-								: CTransformUser(scene, model), _Invalidated(false)
+								: CTransformUser(scene, model, true), _Invalidated(false)
 {
 	NL3D_MEM_PS_INSTANCE			
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);

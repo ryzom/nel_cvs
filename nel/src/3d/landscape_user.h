@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.18 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: landscape_user.h,v 1.19 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,13 @@ public:
 	/// Set the zonePath from where zones are loaded.
 	virtual	void	setZonePath(const std::string &zonePath);
 	/// Load the tile banks:  the ".bank" and the  ".farbank".
-	virtual	void	loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile, NLMISC::IProgressCallback &progress);
+	virtual	void	loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile);
+	/// Flush the tiles
+	virtual void	flushTiles (NLMISC::IProgressCallback &progress);
+	/// Postfix tile filename
+	virtual void	postfixTileFilename (const char *postfix);
+	/// Postfix vegetable filename
+	virtual void	postfixTileVegetableDesc (const char *postfix);
 	/// Load all Zones around a position. Call at init only!! (no zone must exist before). This is a blocking call.
 	virtual	void	loadAllZonesAround(const CVector &pos, float radius);
 	virtual	void	loadAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded);

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.28 2002/11/18 17:54:16 vizerie Exp $
+ * $Id: instance_group_user.cpp,v 1.29 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -183,7 +183,7 @@ void CInstanceGroupUser::addToScene (class CScene& scene, IDriver *driver)
 		string stmp;
 		if (_InstanceGroup._Instances[i] != NULL)
 		{
-			pIU = new CInstanceUser (&scene, _InstanceGroup._Instances[i]);
+			pIU = new CInstanceUser (&scene, _InstanceGroup._Instances[i], true);
 			stmp = _InstanceGroup.getInstanceName (i);
 			_Instances.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
 		}
@@ -223,7 +223,7 @@ UInstanceGroup::TState CInstanceGroupUser::getAddToSceneState ()
 			string stmp;
 			if (_InstanceGroup._Instances[i] != NULL)
 			{
-				pIU = new CInstanceUser (&((CSceneUser*)_AddToSceneTempScene)->getScene(), _InstanceGroup._Instances[i]);
+				pIU = new CInstanceUser (&((CSceneUser*)_AddToSceneTempScene)->getScene(), _InstanceGroup._Instances[i], true);
 				stmp = _InstanceGroup.getInstanceName (i);
 				_Instances.insert (map<string,CInstanceUser*>::value_type(stmp, pIU));
 			}
@@ -514,6 +514,22 @@ bool			CInstanceGroupUser::getStaticLightSetup(
 		else return -1.f;
 	}		
 	else return -1.f;
+}
+
+// ***************************************************************************
+const UInstance	*CInstanceGroupUser::getInstance (uint instanceNb) const
+{
+	return new CInstanceUser (NULL, _InstanceGroup.getTransformShape(instanceNb), false);
+}
+
+// ***************************************************************************
+UInstance	*CInstanceGroupUser::getInstance (uint instanceNb)
+{
+	CTransformShape *transformShape = _InstanceGroup.getTransformShape(instanceNb);
+	if (transformShape)
+		return new CInstanceUser (NULL, transformShape, false);
+	else
+		return NULL;
 }
 
 

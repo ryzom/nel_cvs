@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.16 2002/11/18 17:54:06 vizerie Exp $
+ * $Id: instance_user.cpp,v 1.17 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,8 +38,8 @@ namespace NL3D
 
 
 // ***************************************************************************
-CInstanceUser::CInstanceUser(CScene *scene, IModel *trans) : 
-  CTransformUser(scene, trans)
+CInstanceUser::CInstanceUser(CScene *scene, IModel *trans, bool deleteIt) : 
+  CTransformUser(scene, trans, deleteIt)
 {
 	NL3D_MEM_INSTANCE
 	_Instance= safe_cast<CTransformShape*>(_Transform);
@@ -120,8 +120,9 @@ float		CInstanceUser::getShapeDistMax() const
 void		CInstanceUser::selectTextureSet(uint id)
 {
 	NL3D_MEM_INSTANCE
-	CMeshBaseInstance *mbi  = NLMISC::safe_cast<CMeshBaseInstance *>(_Instance);
-	mbi->selectTextureSet(id);
+	CMeshBaseInstance *mbi  = dynamic_cast<CMeshBaseInstance *>(_Instance);
+	if (mbi)
+		mbi->selectTextureSet(id);
 }
 
 

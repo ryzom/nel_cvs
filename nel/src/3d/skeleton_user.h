@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.17 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: skeleton_user.h,v 1.18 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 	// @{
 	/// This model should have been created with Scene::createInstance().
 	CSkeletonUser(CScene *scene, IModel *model) : 
-	  CTransformUser(scene, model)
+	  CTransformUser(scene, model, true)
 	{
 		NL3D_MEM_SKELETON
 		_Skeleton= NLMISC::safe_cast<CSkeletonModel*>(_Transform);

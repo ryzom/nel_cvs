@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.31 2002/12/06 12:41:26 corvazier Exp $
+ * $Id: landscape_user.cpp,v 1.32 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ void	CLandscapeUser::setZonePath(const std::string &zonePath)
 	_ZoneManager.setZonePath(zonePath);
 }
 //****************************************************************************
-void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile, NLMISC::IProgressCallback &progress)
+void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::string &farBankFile)
 {
 	NL3D_MEM_LANDSCAPE
 	NL3D_HAUTO_LOAD_LANDSCAPE;
@@ -69,19 +69,24 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	// No absolute path
 	_Landscape->Landscape.TileBank.setAbsPath ("");
 
+	CIFile farbankFile(CPath::lookup(farBankFile));
+	_Landscape->Landscape.TileFarBank.serial(farbankFile);
+	bankFile.close();
+	farbankFile.close();
+}
+
+//****************************************************************************
+
+void	CLandscapeUser::flushTiles (NLMISC::IProgressCallback &progress)
+{
 	// After loading the TileBank, and before initTileBanks(), must load the vegetables descritpor
 	_Landscape->Landscape.TileBank.loadTileVegetableDescs();
 
-	CIFile farbankFile(CPath::lookup(farBankFile));
-	_Landscape->Landscape.TileFarBank.serial(farbankFile);
 	if ( ! _Landscape->Landscape.initTileBanks() )
 	{
 		nlwarning( "You need to recompute bank.farbank for the far textures" );
 	}
-	bankFile.close();
-	farbankFile.close();
-
-
+	
 	// Count tiles
 	uint tileCount = 0;
 	sint	ts;
@@ -127,8 +132,8 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	}
 }
 
-
 //****************************************************************************
+
 void	CLandscapeUser::loadAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded)
 {
 	NL3D_MEM_LANDSCAPE
@@ -479,7 +484,20 @@ void		CLandscapeUser::updateLightingAll()
 	NL3D_HAUTO_LANDSCAPE_UPDATE_LIGHTING_ALL;
 	_Landscape->Landscape.updateLightingAll();
 }
-
+//****************************************************************************
+void		CLandscapeUser::postfixTileFilename (const char *postfix)
+{
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_LANDSCAPE_UPDATE_LIGHTING_ALL;
+	_Landscape->Landscape.TileBank.postfixTileFilename (postfix);
+}
+//****************************************************************************
+void		CLandscapeUser::postfixTileVegetableDesc (const char *postfix)
+{
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_LANDSCAPE_UPDATE_LIGHTING_ALL;
+	_Landscape->Landscape.TileBank.postfixTileVegetableDesc (postfix);
+}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file operation.cpp
  * <File description>
  *
- * $Id: operation.cpp,v 1.5 2002/06/27 16:58:09 chafik Exp $
+ * $Id: operation.cpp,v 1.6 2002/08/02 09:57:02 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -273,12 +273,6 @@ namespace NLAIAGENT
 			{
 				IObjetOp *obj = (NLAIAGENT::IObjetOp *)param->get();
 				setValue(obj);
-
-#ifdef NL_DEBUG
-	std::string dbug;
-	obj->getDebugString(dbug);
-	nlinfo ("%s", dbug);
-#endif
 				obj->incRef();
 			}
 			return r;

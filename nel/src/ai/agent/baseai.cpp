@@ -1,6 +1,6 @@
 /** \file baseai.cpp
  *
- * $Id: baseai.cpp,v 1.37 2002/06/17 14:17:44 chafik Exp $
+ * $Id: baseai.cpp,v 1.38 2002/08/02 09:57:02 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -555,7 +555,7 @@ namespace NLAIAGENT
 	void IConnectIA::connect(IConnectIA *b)
 	{
 		b->addInConnectedList(this);
-		addInConnectionList(b);		
+		addInConnectionList(b);
 	}
 
 	void IConnectIA::removeConnection(IConnectIA *Agent)
@@ -571,12 +571,16 @@ namespace NLAIAGENT
 
 	void IConnectIA::addInConnectionList(const IConnectIA *a)
 	{
-		_Connection.push_front(a);
+		_Connection.insert(a);
 	}
 
 	void IConnectIA::removeInConnectionList(IConnectIA *a)
 	{
-		tListiBasicItr i = _Connection.begin();
+
+		tListiBasicItr i = _Connection.find(a);
+		if(i != _Connection.end())
+							_Connection.erase(i);
+		/*tListiBasicItr i = _Connection.begin();
 		while(i != _Connection.end())
 		{				
 			if(*i == a)
@@ -585,17 +589,20 @@ namespace NLAIAGENT
 				return;
 			}
 			i++;
-		}
+		}*/
 	}
 
 	void IConnectIA::addInConnectedList(const IConnectIA *a)
 	{
-		_Connected.push_front(a);
+		_Connected.insert(a);
 	}
 
 	void IConnectIA::removeInConnectedList(const IConnectIA *a)
 	{
-		tListiBasicItr i = _Connected.begin();
+		tListiBasicItr i = _Connected.find(a);
+		if(i != _Connected.end())
+						_Connected.erase(i);
+		/*tListiBasicItr i = _Connected.begin();
 		while(i != _Connected.end())
 		{			
 			const IConnectIA *o = *i;
@@ -605,7 +612,7 @@ namespace NLAIAGENT
 				return;
 			}
 			i++;
-		}
+		}*/
 	}
 
 	void IConnectIA::Kill()
@@ -616,26 +623,29 @@ namespace NLAIAGENT
 			parent->onKill( this );
 		}
 
-		while(_Connection.size())
+		tListiBasicCstItr it = _Connection.begin();
+
+		while(it != _Connection.end())
 		{				
-			IConnectIA *a = (IConnectIA *)_Connection.front();
-			_Connection.pop_front();
+			IConnectIA *a = (IConnectIA *)*it ++;			
 			if(a != NULL)
 			{
 				a->removeInConnectedList(this);
 			}
 		}
+		_Connection.clear();
 
-		while(_Connected.size())
+		it = _Connected.begin();
+		while(it != _Connected.end())
 		{				
-			IConnectIA *a = (IConnectIA *)_Connected.front();
-			_Connected.pop_front();
+			IConnectIA *a = (IConnectIA *)*it ++;			
 			if(a != NULL)
 			{
 				a->removeInConnectionList(this);
 				a->onKill(this);				
 			}
 		}
+		_Connected.clear();
 	}
 
 	void IConnectIA::onKill(IConnectIA *a)

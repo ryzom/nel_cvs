@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.184 2003/08/21 15:15:14 lecroart Exp $
+ * $Id: service.cpp,v 1.185 2003/08/26 14:52:22 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -153,275 +153,6 @@ static bool Bench = false;
 // Callback managing
 //
 
-bool isCommand (const string &str)
-{
-	if (str.empty())
-		return false;
-	
-	return isupper(str[0]) == 0;
-}
-
-// this callback is used to create a view for the admin system
-void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<string>, vector<string> > > &answer)
-{
-	string str;
-	CLog logDisplayVars;
-	CLightMemDisplayer mdDisplayVars;
-	logDisplayVars.addDisplayer (&mdDisplayVars);
-	mdDisplayVars.setParam (1024);
-
-	CVarPath varpath(rawvarpath);
-
-	if (varpath.empty())
-		return;
-
-	if (varpath.isFinal())
-	{
-		vector<string> vara, vala;
-
-		// add default row
-		vara.push_back ("service");
-		vala.push_back (IService::getInstance ()->getServiceUnifiedName());
-		
-		for (uint j = 0; j < varpath.Destination.size (); j++)
-		{
-			string cmd = varpath.Destination[j].first;
-
-			// replace = with space to execute the command
-			uint eqpos = cmd.find("=");
-			if (eqpos != string::npos)
-			{
-				cmd[eqpos] = ' ';
-				vara.push_back(cmd.substr(0, eqpos));
-			}
-			else
-				vara.push_back(cmd);
-			
-			mdDisplayVars.clear ();
-			ICommand::execute(cmd, logDisplayVars, !isCommand(cmd));
-			const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
-
-			if (isCommand(cmd))
-			{
-				// we want the log of the command
-				if (j == 0)
-				{
-					vara.clear ();
-					vara.push_back ("__log");
-					vala.clear ();
-				}
-				
-				vala.push_back ("----- Result from "+IService::getInstance()->getServiceUnifiedName()+" of command '"+cmd+"'\n");
-				for (uint k = 0; k < strs.size(); k++)
-				{
-					vala.push_back (strs[k]);
-				}
-			}
-			else
-			{
-
-				if (strs.size()>0)
-				{
-					str = strs[0].substr(0,strs[0].size()-1);
-					// replace all spaces into udnerscore because space is a reserved char
-					for (uint i = 0; i < str.size(); i++) if (str[i] == ' ') str[i] = '_';
-					
-				/*
-					uint32 pos = strs[0].find("=");
-					if(pos != string::npos && pos + 2 < strs[0].size())
-					{
-						uint32 pos2 = string::npos;
-						if(strs[0][strs[0].size()-1] == '\n')
-							pos2 = strs[0].size() - pos - 2 - 1;
-						
-						str = strs[0].substr (pos+2, pos2);
-						
-						// replace all spaces into udnerscore because space is a reserved char
-						for (uint i = 0; i < str.size(); i++) if (str[i] == ' ') str[i] = '_';
-					}
-					else
-					{
-						str = "???";
-					}*/
-				}
-				else
-				{
-					str = "???";
-				}
-				vala.push_back (str);
-				nlinfo ("ADMIN: Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
-			}
-			mdDisplayVars.unlockStrings();
-		}
-
-		answer.push_back (make_pair(vara, vala));
-	}
-	else
-	{
-		// there s an entity in the varpath, manage this case
-
-		vector<string> *vara, *vala;
-		
-		// varpath.Destination		contains the entity number
-		// subvarpath.Destination	contains the command name
-		
-		for (uint i = 0; i < varpath.Destination.size (); i++)
-		{
-			CVarPath subvarpath(varpath.Destination[i].second);
-			
-			for (uint j = 0; j < subvarpath.Destination.size (); j++)
-			{
-				// set the variable name
-				string cmd = subvarpath.Destination[j].first;
-
-				/*if (isCommand(cmd))
-				{
-					// it's a command with parameter, do it
-					mdDisplayVars.clear ();
-					cmd += " " + subvarpath.Destination[j].second;
-					ICommand::execute(cmd, logDisplayVars, true);
-					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
-					
-					answer.push_back (make_pair(vector<string>(), vector<string>()));
-					
-					vara = &(answer[answer.size()-1].first);
-					vala = &(answer[answer.size()-1].second);
-
-					// we want the log of the command
-					vara->clear ();
-					vara->push_back ("__log");
-					
-					vala->push_back ("----- Result from command: "+cmd);
-					for (uint k = 0; k < strs.size(); k++)
-					{
-						vala->push_back (strs[k]);
-					}
-				}
-				else*/
-				{
-					// replace = with space to execute the command
-					uint eqpos = cmd.find("=");
-					if (eqpos != string::npos)
-					{
-						cmd[eqpos] = ' ';
-						// add the entity
-						cmd.insert(eqpos, " "+varpath.Destination[i].first);
-					}
-					else
-					{
-						// add the entity
-						cmd += " "+varpath.Destination[i].first;
-					}
-					
-					mdDisplayVars.clear ();
-					ICommand::execute(cmd, logDisplayVars, true);
-					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
-					for (uint k = 0; k < strs.size(); k++)
-					{
-						const string &str = strs[k];
-
-						uint32 pos = str.find(" ");
-						if(pos == string::npos)
-							continue;
-						
-						string entity = str.substr(0, pos);
-						string value = str.substr(pos+1, str.size()-pos-2);
-						for (uint u = 0; u < value.size(); u++) if (value[u] == ' ') value[u] = '_';
-						
-						// look in the array if we already have something about this entity
-
-						uint y;
-						for (y = 0; y < answer.size(); y++)
-						{
-							if (answer[y].second[1] == entity)
-							{
-								// ok we found it, just push_back new stuff
-								vara = &(answer[y].first);
-								vala = &(answer[y].second);
-								break;
-							}
-						}
-						if (y == answer.size ())
-						{
-							answer.push_back (make_pair(vector<string>(), vector<string>()));
-
-							vara = &(answer[answer.size()-1].first);
-							vala = &(answer[answer.size()-1].second);
-							
-							// don't add service if we want an entity
-	// todo when we work on entity, we don't need service name and server so we should remove them and collapse all var for the same entity
-							vara->push_back ("service");
-							string name = IService::getInstance ()->getServiceUnifiedName();
-							vala->push_back (name);
-							
-							// add default row
-							vara->push_back ("entity");
-							vala->push_back (entity);
-						}
-
-						vara->push_back (cmd.substr(0, cmd.find(" ")));
-						vala->push_back (value);
-						
-						nlinfo ("ADMIN: Add to result view for entity '%s', '%s' = '%s'", varpath.Destination[i].first.c_str(), subvarpath.Destination[j].first.c_str(), str.c_str());
-					}
-					mdDisplayVars.unlockStrings();
-				}
-			}
-		}
-	}
-}
-
-void servcbGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
-{
-	uint32 rid;
-	string rawvarpath;
-
-	msgin.serial (rid);
-	msgin.serial (rawvarpath);
-
-	vector<pair<vector<string>, vector<string> > > answer;
-
-	serviceGetView (rid, rawvarpath, answer);
-
-	CMessage msgout("VIEW");
-	msgout.serial(rid);
-	
-	for (uint i = 0; i < answer.size(); i++)
-	{
-		msgout.serialCont (answer[i].first);
-		msgout.serialCont (answer[i].second);
-	}
-	
-	CUnifiedNetwork::getInstance ()->send (sid, msgout);
-	nlinfo ("ADMIN: Sent result view to service '%s-%hu'", serviceName.c_str(), sid);
-}
-
-void AESConnection (const string &serviceName, uint16 sid, void *arg)
-{
-	// established a connection to the AES, identify myself
-
-	//
-	// Sends the identification message with the name of the service and all commands available on this service
-	//
-
-	CMessage msgout ("SID");
-	uint32 pid = getpid ();
-	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_LongName, pid);
-	ICommand::serialCommands (msgout);
-	CUnifiedNetwork::getInstance()->send("AES", msgout);
-
-	if (IService::getInstance()->_Initialized)
-	{
-		CMessage msgout2 ("SR");
-		CUnifiedNetwork::getInstance()->send("AES", msgout2);
-	}
-}
-
-
-static void AESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
-{
-}
-
 
 static void cbExecCommand (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
@@ -446,7 +177,6 @@ static TUnifiedCallbackItem AESCallbackArray[] =
 {
 	{ "STOPS", cbStopService },
 	{ "EXEC_COMMAND", cbExecCommand },
-	{ "GET_VIEW", servcbGetView },
 };
 
 //
@@ -533,7 +263,9 @@ IService::IService() :
 	_SId(0),
 	_Status(0),
 	_Initialized(false),
-	_ResetMeasures(false)
+	_ResetMeasures(false),
+	_CallbackArray (0),
+	_CallbackArraySize (0)
 {
 	// Singleton
 	nlassert( _Instance == NULL );
@@ -1171,13 +903,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			_DontUseAES = false;
 		}
 
-		if (!_DontUseAES)
-		{
-			CUnifiedNetwork::getInstance()->setServiceUpCallback ("AES", AESConnection, NULL);
-			CUnifiedNetwork::getInstance()->setServiceDownCallback ("AES", AESDisconnection, NULL);
-			CUnifiedNetwork::getInstance()->addService ("AES", CInetAddress("localhost:49997"));
-		}
-		CUnifiedNetwork::getInstance()->addCallbackArray (AESCallbackArray, sizeof(AESCallbackArray)/sizeof(AESCallbackArray[0]));
+		initAdmin (_DontUseAES);
 		
 
 		//
@@ -1254,8 +980,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 		//
 
 		CUnifiedNetwork::getInstance()->connect();
-
-		initAdmin ();
 
 		//
 		// Say to the AES that the service is ready
@@ -1939,31 +1663,6 @@ NLMISC_DYNVARIABLE(string, State, "Set this value to 0 to shutdown the service a
 		}
 	}
 }
-
-
-NLMISC_COMMAND (getView, "send a view and receive an array as result", "<varpath>")
-{
-	if(args.size() != 1) return false;
-	
-	vector<pair<vector<string>, vector<string> > > answer;
-	serviceGetView (0, args[0], answer);
-
-	log.displayNL("have %d answer", answer.size());
-	for (uint i = 0; i < answer.size(); i++)
-	{
-		log.displayNL("  have %d value", answer[i].first.size());
-
-		nlassert (answer[i].first.size() == answer[i].second.size());
-
-		for (uint j = 0; j < answer[i].first.size(); j++)
-		{
-			log.displayNL("    %s -> %s", answer[i].first[j].c_str(), answer[i].second[j].c_str());
-		}
-	}
-
-	return true;
-}
-
 
 
 } //NLNET

@@ -1,7 +1,7 @@
 /** \file admin.h
  * manage services admin
  *
- * $Id: admin.h,v 1.1 2003/03/20 16:19:10 lecroart Exp $
+ * $Id: admin.h,v 1.2 2003/08/26 14:52:22 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -26,12 +26,21 @@
 #ifndef NL_ADMIN_H
 #define NL_ADMIN_H
 
+
+//
+// Inlcudes
+//
+
 #include <string>
 #include <vector>
 
 
 namespace NLNET {
 
+
+//
+// Structures
+//
 
 struct CAlarm
 {
@@ -44,9 +53,6 @@ struct CAlarm
 	bool Activated;			// true if the limit is exceeded (mail is send everytimes the actived bool change from false to true)
 };
 
-extern std::vector<CAlarm> Alarms;
-	
-
 struct CGraphUpdate
 {
 	CGraphUpdate (const std::string &n, sint u) : Name(n), Update(u), LastUpdate(0) { }
@@ -57,12 +63,32 @@ struct CGraphUpdate
 	uint32	LastUpdate;		// in second
 };
 
-extern std::vector<CGraphUpdate> GraphUpdates;
+typedef void (*TRemoteClientCallback) (uint32 rid, const std::string &cmd, const std::string &entityNames);
 
-void initAdmin ();
+
+//
+// Externals
+//
+
+extern std::vector<CGraphUpdate> GraphUpdates;
+extern std::vector<CAlarm> Alarms;
+
+
+//
+// Functions
+//
+
+void initAdmin (bool dontUseAES);
+
 void updateAdmin ();
 
 void setInformations (const std::vector<std::string> &alarms, const std::vector<std::string> &graphupdate);
+
+void serviceGetView (uint32 rid, const std::string &rawvarpath, std::vector<std::pair<std::vector<std::string>, std::vector<std::string> > > &answer, bool async=false);
+
+void setRemoteClientCallback (TRemoteClientCallback cb);
+
+void addRequestAnswer (uint32 rid, const std::vector<std::string> &variables, const std::vector<std::string> &values);
 
 } // NLNET
 

@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.24 2003/06/11 15:45:31 lecroart Exp $
+ * $Id: command.h,v 1.25 2003/08/26 14:52:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,16 @@ public:
 
 	/// returns true if the command exists
 	static bool exists (std::string &commandName);
+
+	/// if the string begin with an upper case, it s a variable, otherwise, it s a command
+	static bool isCommand (const std::string &str)
+	{
+		if (str.empty())
+			return false;
+		
+		return isupper(str[0]) == 0;
+	}
+	
 
 protected:
 

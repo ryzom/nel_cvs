@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.33 2003/08/21 16:54:08 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.34 2003/08/26 14:52:50 lecroart Exp $
  *
  */
 
@@ -1126,7 +1126,7 @@ void rejectAES(uint16 sid, const string &res)
 }
 
 // i'm connected to a new admin executor service
-void cbAESConnection /*(const string &serviceName, TSockId from, void *arg)*/(const std::string &serviceName, uint16 sid, void *arg)
+static void cbNewAESConnection (const std::string &serviceName, uint16 sid, void *arg)
 {
 	TSockId from;
 	CCallbackNetBase *cnb = CUnifiedNetwork::getInstance ()->getNetBase (sid, from);
@@ -1190,7 +1190,7 @@ void cbAESConnection /*(const string &serviceName, TSockId from, void *arg)*/(co
 */}
 
 // i'm disconnected to an admin executor service
-void cbAESDisconnection /*(const string &serviceName, TSockId from, void *arg)*/(const std::string &serviceName, uint16 sid, void *arg)
+static void cbNewAESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
 {
 	TSockId from;
 	CCallbackNetBase *cnb = CUnifiedNetwork::getInstance ()->getNetBase (sid, from);
@@ -1844,8 +1844,8 @@ public:
 
 //		CNetManager::setConnectionCallback ("AS", clientConnection, NULL);
 
-		CUnifiedNetwork::getInstance ()->setServiceUpCallback ("AES", cbAESConnection);
-		CUnifiedNetwork::getInstance ()->setServiceDownCallback ("AES", cbAESDisconnection);
+		CUnifiedNetwork::getInstance ()->setServiceUpCallback ("AES", cbNewAESConnection);
+		CUnifiedNetwork::getInstance ()->setServiceDownCallback ("AES", cbNewAESDisconnection);
 
 		varRequestTimeout (ConfigFile.getVar ("RequestTimeout"));
 		ConfigFile.setCallback("RequestTimeout", &varRequestTimeout);

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.64 2003/07/22 16:25:58 coutelas Exp $
+ * $Id: service.h,v 1.65 2003/08/26 14:52:22 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -383,7 +383,7 @@ private:
 	//@}
 
 	friend void serviceGetView (uint32 rid, const std::string &rawvarpath, std::vector<std::string> &vara, std::vector<std::string> &vala);
-	friend void AESConnection (const std::string &serviceName, uint16 sid, void *arg);
+	friend void cbAESConnection (const std::string &serviceName, uint16 sid, void *arg);
 	friend struct serviceInfoClass;
 	friend struct getWinDisplayerInfoClass;
 	friend class RunningDirectoryClass;

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.52 2003/08/12 16:13:15 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.53 2003/08/26 14:52:50 lecroart Exp $
  *
  */
 
@@ -80,12 +80,6 @@ using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
-
-//
-namespace NLNET
-{
-	void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<string>, vector<string> > > &answer);
-}
 
 //
 // Structures
@@ -537,7 +531,7 @@ void subRequestWaitingNb (uint32 rid)
 	nlwarning ("subRequestWaitingNb: can't find the rid %d", rid);
 }
 
-void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<string> > >&answer)
+void aesAddRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<string> > >&answer)
 {
 	for (uint i = 0 ; i < Requests.size (); i++)
 	{
@@ -561,7 +555,7 @@ void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<str
 }
 
 
-void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
+void aesAddRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
 {
 	if (!variables.empty() && variables[0] == "__log")
 	{	nlassert (variables.size() == 1); }
@@ -657,7 +651,7 @@ void cleanRequest ()
 							s += "((TIMEOUT))"; 
 							vala.clear ();
 							vala.push_back (s);
-							addRequestAnswer (Requests[i].Id, vara, vala);
+							aesAddRequestAnswer (Requests[i].Id, vara, vala);
 							break;
 						}
 					}
@@ -883,7 +877,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 				
 				serviceGetView (rid, varpath.Destination[i].second, answer);
 				
-				addRequestAnswer (rid, answer);
+				aesAddRequestAnswer (rid, answer);
 				nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 			}
 			else if (service == "#")
@@ -931,7 +925,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 							vala.push_back (val);
 						}
 
-						addRequestAnswer (rid, vara, vala);
+						aesAddRequestAnswer (rid, vara, vala);
 						nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), RegisteredServices[j].c_str());
 					}
 					else
@@ -972,7 +966,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 				vector<pair<vector<string>, vector<string> > > answer;
 				
 				serviceGetView (rid, varpath.Destination[i].second, answer);
-				addRequestAnswer (rid, answer);
+				aesAddRequestAnswer (rid, answer);
 				nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), "AES");
 			}
 			else
@@ -985,7 +979,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 					vector<pair<vector<string>, vector<string> > > answer;
 					
 					serviceGetView (rid, varpath.Destination[i].second, answer);
-					addRequestAnswer (rid, answer);
+					aesAddRequestAnswer (rid, answer);
 					nlinfo ("Sent and received view '%s' to my service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 				}
 				else
@@ -1059,7 +1053,7 @@ void addRequest (uint32 rid, const string &rawvarpath, uint16 sid)
 								vala.push_back (val);
 							}
 							
-							addRequestAnswer (rid, vara, vala);
+							aesAddRequestAnswer (rid, vara, vala);
 							nlinfo ("Sent and received view '%s' to offline service '%s'", varpath.Destination[i].second.c_str(), service.c_str());
 						}
 					}
@@ -1374,7 +1368,7 @@ static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 		}
 		answer.push_back (make_pair(vara,vala));
 	}
-	addRequestAnswer (rid, answer);
+	aesAddRequestAnswer (rid, answer);
 	
 	// remove the waiting request
 	for (uint i = 0; i < (*sit).WaitingRequestId.size();)

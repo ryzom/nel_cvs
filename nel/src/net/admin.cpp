@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * manage services admin
  *
- * $Id: admin.cpp,v 1.8 2003/06/30 09:35:01 lecroart Exp $
+ * $Id: admin.cpp,v 1.9 2003/08/26 14:52:22 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,6 +23,11 @@
  * MA 02111-1307, USA.
  */
 
+
+//
+// Inlcudes
+//
+
 #include "stdnet.h"
 
 #include <time.h>
@@ -31,6 +36,11 @@
 #include "nel/net/admin.h"
 #include "nel/net/varpath.h"
 
+
+//
+// Namspaces
+//
+
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
@@ -38,9 +48,34 @@ using namespace NLNET;
 
 namespace NLNET {
 
+
+//
+// Structures
+//
+
+struct CRequest
+{
+	CRequest (uint32 id, uint16 sid) : Id(id), NbWaiting(0), NbReceived(0), SId(sid)
+	{
+		nldebug ("++ NbWaiting %d NbReceived %d", NbWaiting, NbReceived);
+		Time = CTime::getSecondsSince1970 ();
+	}
+	
+	uint32			Id;
+	uint			NbWaiting;
+	uint32			NbReceived;
+	uint16			SId;
+	uint32			Time;	// when the request was ask
+	
+	vector<pair<vector<string>, vector<string> > > Answers;
+};
+	
+
 //
 // Variables
 //
+
+TRemoteClientCallback RemoteClientCallback = 0;
 
 vector<CAlarm> Alarms;
 
@@ -48,6 +83,11 @@ vector<CGraphUpdate> GraphUpdates;
 
 // check alarms every 5 seconds
 const uint32 AlarmCheckDelay = 5;
+
+vector<CRequest> Requests;
+
+uint32 RequestTimeout = 4;	// in second
+
 
 //
 // Callbacks
@@ -65,14 +105,472 @@ static void cbInformations (CMessage &msgin, const std::string &serviceName, uin
 	setInformations (alarms, graphupdate);
 }	
 
+static void cbServGetView (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	uint32 rid;
+	string rawvarpath;
+
+	msgin.serial (rid);
+	msgin.serial (rawvarpath);
+
+	Requests.push_back (CRequest(rid, sid));
+
+	vector<pair<vector<string>, vector<string> > > answer;
+	// just send the view in async mode, don't retrieve the answer
+	serviceGetView (rid, rawvarpath, answer, true);
+	nlassert (answer.empty());
+
+/*
+	CMessage msgout("VIEW");
+	msgout.serial(rid);
+	
+	for (uint i = 0; i < answer.size(); i++)
+	{
+		msgout.serialCont (answer[i].first);
+		msgout.serialCont (answer[i].second);
+	}
+	
+	CUnifiedNetwork::getInstance ()->send (sid, msgout);
+	nlinfo ("ADMIN: Sent result view to service '%s-%hu'", serviceName.c_str(), sid);
+*/
+
+}
+
+static void cbAESConnection (const string &serviceName, uint16 sid, void *arg)
+{
+	// established a connection to the AES, identify myself
+
+	//
+	// Sends the identification message with the name of the service and all commands available on this service
+	//
+
+	CMessage msgout ("SID");
+	uint32 pid = getpid ();
+	msgout.serial (IService::getInstance()->_AliasName, IService::getInstance()->_LongName, pid);
+	ICommand::serialCommands (msgout);
+	CUnifiedNetwork::getInstance()->send("AES", msgout);
+
+	if (IService::getInstance()->_Initialized)
+	{
+		CMessage msgout2 ("SR");
+		CUnifiedNetwork::getInstance()->send("AES", msgout2);
+	}
+}
+
+
+static void cbAESDisconnection (const std::string &serviceName, uint16 sid, void *arg)
+{
+}
+
 static TUnifiedCallbackItem CallbackArray[] =
 {
-	{ "INFORMATIONS", cbInformations },
+	{ "INFORMATIONS",	cbInformations },
+	{ "GET_VIEW",		cbServGetView },
 };
 
 
 //
 // Functions
+//
+
+void setRemoteClientCallback (TRemoteClientCallback cb)
+{
+	RemoteClientCallback = cb;
+}
+
+//
+// Request functions
+//
+
+static void addRequestWaitingNb (uint32 rid)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid)
+		{
+			Requests[i].NbWaiting++;
+			nldebug ("++ i %d rid %d NbWaiting+ %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			// if we add a waiting, reset the timer
+			Requests[i].Time = CTime::getSecondsSince1970 ();
+			return;
+		}
+	}
+	nlwarning ("addRequestWaitingNb: can't find the rid %d", rid);
+}
+
+static void subRequestWaitingNb (uint32 rid)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid)
+		{
+			Requests[i].NbWaiting--;
+			nldebug ("++ i %d rid %d NbWaiting- %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			return;
+		}
+	}
+	nlwarning ("subRequestWaitingNb: can't find the rid %d", rid);
+}
+/*
+void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<string> > >&answer)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid)
+		{
+			for (uint t = 0; t < answer.size(); t++)
+			{
+				if (!answer[t].first.empty() && answer[t].first[0] == "__log")
+				{	nlassert (answer[t].first.size() == 1); }
+				else
+				{	nlassert (answer[t].first.size() == answer[t].second.size()); }
+				Requests[i].Answers.push_back (make_pair(answer[t].first, answer[t].second));
+			}
+			Requests[i].NbReceived++;
+			nldebug ("++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			return;
+		}
+	}
+	// we received an unknown request, forget it
+	nlwarning ("Receive an answer for unknown request %d", rid);
+}
+*/
+
+void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector<string> &values)
+{
+	if (!variables.empty() && variables[0] == "__log")
+	{	nlassert (variables.size() == 1); }
+	else
+	{	nlassert (variables.size() == values.size()); }
+
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid)
+		{
+			Requests[i].Answers.push_back (make_pair(variables, values));
+
+			Requests[i].NbReceived++;
+			nldebug ("++ i %d rid %d NbWaiting %d NbReceived+ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			
+			return;
+		}
+	}
+	// we received an unknown request, forget it
+	nlwarning ("Receive an answer for unknown request %d", rid);
+}
+
+static bool emptyRequest (uint32 rid)
+{
+	for (uint i = 0 ; i < Requests.size (); i++)
+	{
+		if (Requests[i].Id == rid && Requests[i].NbWaiting != 0)
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+static void cleanRequest ()
+{
+	uint32 currentTime = CTime::getSecondsSince1970 ();
+
+	for (uint i = 0 ; i < Requests.size ();)
+	{
+		// timeout
+		if (currentTime >= Requests[i].Time+RequestTimeout)
+		{
+			nlwarning ("**** i %d rid %d -> Requests[i].NbWaiting (%d) != Requests[i].NbReceived (%d)", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			Requests[i].NbWaiting = Requests[i].NbReceived;
+		}
+
+		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
+		{
+			// the request is over, send to the php
+
+			CMessage msgout("VIEW");
+			msgout.serial (Requests[i].Id);
+
+			for (uint j = 0; j < Requests[i].Answers.size (); j++)
+			{
+				msgout.serialCont (Requests[i].Answers[j].first);
+				msgout.serialCont (Requests[i].Answers[j].second);
+			}
+
+			if (Requests[i].SId == 0)
+			{
+				nlinfo ("Receive an answer for the fake request %d with %d answers", Requests[i].Id, Requests[i].Answers.size ());
+				for (uint j = 0; j < Requests[i].Answers.size (); j++)
+				{
+					uint k;
+					for (k = 0; k < Requests[i].Answers[j].first.size(); k++)
+					{
+						InfoLog->displayRaw ("%-10s", Requests[i].Answers[j].first[k].c_str());
+					}
+					InfoLog->displayRawNL("");
+					for (k = 0; k < Requests[i].Answers[j].second.size(); k++)
+					{
+						InfoLog->displayRaw ("%-10s", Requests[i].Answers[j].second[k].c_str());
+					}
+					InfoLog->displayRawNL("");
+					InfoLog->displayRawNL("-------------------------");
+				}	
+			}
+			else
+			{
+				nlinfo ("ADMIN: The request is over, send the result to AES");
+				CUnifiedNetwork::getInstance ()->send (Requests[i].SId, msgout);
+			}
+
+			// set to 0 to erase it
+			Requests[i].NbWaiting = 0;
+			nldebug ("++ i %d rid %d NbWaiting0 %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+		}
+
+		if (Requests[i].NbWaiting == 0)
+		{
+			Requests.erase (Requests.begin ()+i);
+		}
+		else
+		{
+			i++;
+		}
+	}
+}
+
+// all remote command start with rc or RC
+bool isRemoteCommand(string &str)
+{
+	if (str.size()<2) return false;
+	return tolower(str[0]) == 'r' && tolower(str[1]) == 'c';
+}
+
+
+// this callback is used to create a view for the admin system
+void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<string>, vector<string> > > &answer, bool async)
+{
+	string str;
+	CLog logDisplayVars;
+	CLightMemDisplayer mdDisplayVars;
+	logDisplayVars.addDisplayer (&mdDisplayVars);
+	mdDisplayVars.setParam (1024);
+
+	CVarPath varpath(rawvarpath);
+
+	if (varpath.empty())
+		return;
+
+	if (varpath.isFinal())
+	{
+		vector<string> vara, vala;
+
+		// add default row
+		vara.push_back ("service");
+		vala.push_back (IService::getInstance ()->getServiceUnifiedName());
+		
+		for (uint j = 0; j < varpath.Destination.size (); j++)
+		{
+			string cmd = varpath.Destination[j].first;
+
+			// replace = with space to execute the command
+			uint eqpos = cmd.find("=");
+			if (eqpos != string::npos)
+			{
+				cmd[eqpos] = ' ';
+				vara.push_back(cmd.substr(0, eqpos));
+			}
+			else
+				vara.push_back(cmd);
+			
+			mdDisplayVars.clear ();
+			ICommand::execute(cmd, logDisplayVars, !ICommand::isCommand(cmd));
+			const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
+
+			if (ICommand::isCommand(cmd))
+			{
+				// we want the log of the command
+				if (j == 0)
+				{
+					vara.clear ();
+					vara.push_back ("__log");
+					vala.clear ();
+				}
+				
+				vala.push_back ("----- Result from "+IService::getInstance()->getServiceUnifiedName()+" of command '"+cmd+"'\n");
+				for (uint k = 0; k < strs.size(); k++)
+				{
+					vala.push_back (strs[k]);
+				}
+			}
+			else
+			{
+
+				if (strs.size()>0)
+				{
+					str = strs[0].substr(0,strs[0].size()-1);
+					// replace all spaces into udnerscore because space is a reserved char
+					for (uint i = 0; i < str.size(); i++) if (str[i] == ' ') str[i] = '_';
+					
+				/*
+					uint32 pos = strs[0].find("=");
+					if(pos != string::npos && pos + 2 < strs[0].size())
+					{
+						uint32 pos2 = string::npos;
+						if(strs[0][strs[0].size()-1] == '\n')
+							pos2 = strs[0].size() - pos - 2 - 1;
+						
+						str = strs[0].substr (pos+2, pos2);
+						
+						// replace all spaces into udnerscore because space is a reserved char
+						for (uint i = 0; i < str.size(); i++) if (str[i] == ' ') str[i] = '_';
+					}
+					else
+					{
+						str = "???";
+					}*/
+				}
+				else
+				{
+					str = "???";
+				}
+				vala.push_back (str);
+				nlinfo ("ADMIN: Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
+			}
+			mdDisplayVars.unlockStrings();
+		}
+
+		if (!async)
+			answer.push_back (make_pair(vara, vala));
+		else
+		{
+			addRequestWaitingNb (rid);
+			addRequestAnswer (rid, vara, vala);
+		}
+	}
+	else
+	{
+		// there s an entity in the varpath, manage this case
+
+		vector<string> *vara, *vala;
+		
+		// varpath.Destination		contains the entity number
+		// subvarpath.Destination	contains the command name
+		
+		for (uint i = 0; i < varpath.Destination.size (); i++)
+		{
+			CVarPath subvarpath(varpath.Destination[i].second);
+			
+			for (uint j = 0; j < subvarpath.Destination.size (); j++)
+			{
+				// set the variable name
+				string cmd = subvarpath.Destination[j].first;
+
+				if (isRemoteCommand(cmd))
+				{
+					if (async && RemoteClientCallback != 0)
+					{
+						// ok we have to send the request to another side, just send and wait
+						addRequestWaitingNb (rid);
+						RemoteClientCallback (rid, cmd, varpath.Destination[i].first);
+					}
+				}
+				else
+				{
+					// replace = with space to execute the command
+					uint eqpos = cmd.find("=");
+					if (eqpos != string::npos)
+					{
+						cmd[eqpos] = ' ';
+						// add the entity
+						cmd.insert(eqpos, " "+varpath.Destination[i].first);
+					}
+					else
+					{
+						// add the entity
+						cmd += " "+varpath.Destination[i].first;
+					}
+					
+					mdDisplayVars.clear ();
+					ICommand::execute(cmd, logDisplayVars, true);
+					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
+					for (uint k = 0; k < strs.size(); k++)
+					{
+						const string &str = strs[k];
+
+						uint32 pos = str.find(" ");
+						if(pos == string::npos)
+							continue;
+						
+						string entity = str.substr(0, pos);
+						string value = str.substr(pos+1, str.size()-pos-2);
+						for (uint u = 0; u < value.size(); u++) if (value[u] == ' ') value[u] = '_';
+						
+						// look in the array if we already have something about this entity
+
+						if (!async)
+						{
+							uint y;
+							for (y = 0; y < answer.size(); y++)
+							{
+								if (answer[y].second[1] == entity)
+								{
+									// ok we found it, just push_back new stuff
+									vara = &(answer[y].first);
+									vala = &(answer[y].second);
+									break;
+								}
+							}
+							if (y == answer.size ())
+							{
+								answer.push_back (make_pair(vector<string>(), vector<string>()));
+
+								vara = &(answer[answer.size()-1].first);
+								vala = &(answer[answer.size()-1].second);
+								
+								// don't add service if we want an entity
+		// todo when we work on entity, we don't need service name and server so we should remove them and collapse all var for the same entity
+								vara->push_back ("service");
+								string name = IService::getInstance ()->getServiceUnifiedName();
+								vala->push_back (name);
+								
+								// add default row
+								vara->push_back ("entity");
+								vala->push_back (entity);
+							}
+
+								vara->push_back (cmd.substr(0, cmd.find(" ")));
+								vala->push_back (value);
+						}
+						else
+						{
+							addRequestWaitingNb (rid);
+
+							vector<string> vara, vala;
+							vara.push_back ("service");
+							string name = IService::getInstance ()->getServiceUnifiedName();
+							vala.push_back (name);
+
+							// add default row
+							vara.push_back ("entity");
+							vala.push_back (entity);
+
+							vara.push_back (cmd.substr(0, cmd.find(" ")));
+							vala.push_back (value);
+	
+							addRequestAnswer (rid, vara, vala);
+						}
+						nlinfo ("ADMIN: Add to result view for entity '%s', '%s' = '%s'", varpath.Destination[i].first.c_str(), subvarpath.Destination[j].first.c_str(), str.c_str());
+					}
+					mdDisplayVars.unlockStrings();
+				}
+			}
+		}
+	}
+}
+
+
+//
+// Alarms functions
 //
 
 void sendAdminEmail (char *format, ...)
@@ -99,8 +597,14 @@ void sendAdminEmail (char *format, ...)
 	nlinfo ("ADMIN: Forwarded email to AS with '%s'", str.c_str());
 }
 
-void initAdmin ()
+void initAdmin (bool dontUseAES)
 {
+	if (!dontUseAES)
+	{
+		CUnifiedNetwork::getInstance()->setServiceUpCallback ("AES", cbAESConnection, NULL);
+		CUnifiedNetwork::getInstance()->setServiceDownCallback ("AES", cbAESDisconnection, NULL);
+		CUnifiedNetwork::getInstance()->addService ("AES", CInetAddress("localhost:49997"));
+	}
 	CUnifiedNetwork::getInstance()->addCallbackArray (CallbackArray, sizeof(CallbackArray)/sizeof(CallbackArray[0]));
 }
 
@@ -113,6 +617,14 @@ void updateAdmin()
 	logDisplayVars.addDisplayer (&mdDisplayVars);
 	
 	uint32 CurrentTime = CTime::getSecondsSince1970();
+
+
+	//
+	// check admin requests
+	//
+
+	cleanRequest ();
+
 
 	//
 	// Check graph updates
@@ -341,5 +853,27 @@ NLMISC_COMMAND (displayInformations, "displays all admin informations", "")
 	return true;
 }
 
+NLMISC_COMMAND (getView, "send a view and receive an array as result", "<varpath>")
+{
+	if(args.size() != 1) return false;
+	
+	vector<pair<vector<string>, vector<string> > > answer;
+	serviceGetView (0, args[0], answer);
+	
+	log.displayNL("have %d answer", answer.size());
+	for (uint i = 0; i < answer.size(); i++)
+	{
+		log.displayNL("  have %d value", answer[i].first.size());
+		
+		nlassert (answer[i].first.size() == answer[i].second.size());
+		
+		for (uint j = 0; j < answer[i].first.size(); j++)
+		{
+			log.displayNL("    %s -> %s", answer[i].first[j].c_str(), answer[i].second[j].c_str());
+		}
+	}
+	
+	return true;
+}
 
 } // NLNET

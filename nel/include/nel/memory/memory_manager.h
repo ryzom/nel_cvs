@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.4 2002/12/17 10:37:03 coutelas Exp $
+ * $Id: memory_manager.h,v 1.5 2002/12/17 10:46:16 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,17 @@
 
 #undef MEMORY_API
 #ifdef MEMORY_EXPORTS
-#define MEMORY_API __declspec(dllexport)
+ #ifdef NL_OS_WINDOWS
+  #define MEMORY_API __declspec(dllexport)
+ #else NL_OS_WINDOWS
+  #define MEMORY_API
+ #endif // NL_OS_WINDOWS
 #else
-#define MEMORY_API __declspec(dllimport)
+ #ifdef NL_OS_WINDOWS
+  #define MEMORY_API __declspec(dllimport)
+ #else NL_OS_WINDOWS
+  #define MEMORY_API
+ #endif // NL_OS_WINDOWS
 #endif
 
 #ifdef __cplusplus
@@ -109,20 +117,20 @@
 namespace NLMEMORY
 {
 
-//inline MEMORY_API void*		MemoryAllocate (unsigned int size);
-//inline MEMORY_API void*		MemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
-//inline MEMORY_API void			MemoryDeallocate (void *p);
-inline MEMORY_API unsigned int GetAllocatedMemory () { return 0;}
-inline MEMORY_API unsigned int GetFreeMemory () { return 0;}
-inline MEMORY_API unsigned int GetTotalMemoryUsed () { return 0;}
-inline MEMORY_API unsigned int GetDebugInfoSize () { return 0;}
-inline MEMORY_API unsigned int GetAllocatedMemoryByCategory (const char *category) { return 0;}
-inline MEMORY_API unsigned int GetBlockSize (void *pointer) { return 0;}
-inline MEMORY_API float		GetFragmentationRatio () { return 0.0f;}
-inline MEMORY_API unsigned int GetAllocatedSystemMemoryByAllocator () { return 0;}
-inline MEMORY_API unsigned int GetAllocatedSystemMemory () { return 0;}
-inline MEMORY_API bool			CheckHeap (bool stopOnError) { return true;}
-inline MEMORY_API bool StatisticsReport (const char *filename, bool memoryDump) { return true; }
+//inline void*		MemoryAllocate (unsigned int size);
+//inline void*		MemoryAllocateDebug (unsigned int size, const char *filename, unsigned int line, const char *category);
+//inline void			MemoryDeallocate (void *p);
+inline unsigned int GetAllocatedMemory () { return 0;}
+inline unsigned int GetFreeMemory () { return 0;}
+inline unsigned int GetTotalMemoryUsed () { return 0;}
+inline unsigned int GetDebugInfoSize () { return 0;}
+inline unsigned int GetAllocatedMemoryByCategory (const char *category) { return 0;}
+inline unsigned int GetBlockSize (void *pointer) { return 0;}
+inline float		GetFragmentationRatio () { return 0.0f;}
+inline unsigned int GetAllocatedSystemMemoryByAllocator () { return 0;}
+inline unsigned int GetAllocatedSystemMemory () { return 0;}
+inline bool			CheckHeap (bool stopOnError) { return true;}
+inline bool StatisticsReport (const char *filename, bool memoryDump) { return true; }
 
 }
 

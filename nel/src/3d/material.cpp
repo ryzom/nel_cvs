@@ -1,7 +1,7 @@
 /** \file material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.4 2000/11/06 17:38:01 berenguier Exp $
+ * $Id: material.cpp,v 1.5 2000/11/08 09:45:06 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,7 @@ bool CTexture::fillData(const void* data)
 
 	ptr=&(*_Data.begin());
 	memcpy(ptr,data,_Width*_Height*sizeof(CRGBA));
+	_Touched=true;
 	return(true);
 }
 
@@ -71,6 +72,7 @@ bool CTexture::fillData(const vector<CRGBA>& data)
 		return(false);
 	}
 	_Data=data;
+	_Touched=true;
 	return(true);
 }
 

@@ -1,7 +1,7 @@
 /** \file texture_blend.h
  * A helper texture class to blend between 2 others textures.
  *
- * $Id: texture_blend.h,v 1.1 2001/11/07 10:39:52 vizerie Exp $
+ * $Id: texture_blend.h,v 1.2 2002/01/28 14:39:20 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D {
  * (for example, with a texture that blend between day / night, and that is shared by several object). The default is
  * to have sharing enabled. 
  * NB : sharing is only supported if the 2 blending textures support sharing
- * IMPORTANT: you should setup the all your blend texture after changing the blend factor to avoid previous texture
+ * IMPORTANT: you should setup all your blend texture after changing the blend factor to avoid previous texture
  * to be left in VRAM
  * \author Nicolas Vizerie
  * \author Nevrax France

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.52 2003/04/14 15:28:39 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.52.2.1 2003/05/07 11:59:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -406,6 +406,7 @@ void	CParticleSystemModel::traverseAnimDetail()
 {    
 	CTransformShape::traverseAnimDetail();	
 	CParticleSystem *ps = getPS();
+	if (!_WorldVis) return;
 	if (_Invalidated) return;
 	if (getVisibility() == CHrcTrav::Hide) return;
 	
@@ -555,6 +556,7 @@ void	CParticleSystemModel::traverseClip()
 		for(uint i=0;i<numClipChildren;i++)
 			clipGetChild(i)->traverseClip();
 
+		if (!_WorldVis) return;
 		if (_Invalidated) return;		
 		CClipTrav			&clipTrav= getOwnerScene()->getClipTrav();
 		

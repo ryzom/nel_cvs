@@ -1,7 +1,7 @@
 /** \file animation_playlist.cpp
  * <File description>
  *
- * $Id: animation_playlist.cpp,v 1.8 2001/09/18 14:35:18 corvazier Exp $
+ * $Id: animation_playlist.cpp,v 1.9 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,14 +94,14 @@ uint CAnimationPlaylist::getSkeletonWeight (uint8 slot, bool &inverted) const
 
 // ***************************************************************************
 
-void CAnimationPlaylist::setTimeOrigin (uint8 slot, double timeOrigin)
+void CAnimationPlaylist::setTimeOrigin (uint8 slot, TGlobalAnimationTime timeOrigin)
 {
 	_TimeOrigin[slot]=timeOrigin;
 }
 
 // ***************************************************************************
 
-double CAnimationPlaylist::getTimeOrigin (uint8 slot) const
+TGlobalAnimationTime CAnimationPlaylist::getTimeOrigin (uint8 slot) const
 {
 	return _TimeOrigin[slot];
 }
@@ -122,7 +122,7 @@ float CAnimationPlaylist::getSpeedFactor (uint8 slot) const
 
 // ***************************************************************************
 
-void CAnimationPlaylist::setStartWeight (uint8 slot, float startWeight, double time)
+void CAnimationPlaylist::setStartWeight (uint8 slot, float startWeight, TGlobalAnimationTime time)
 {
 	_StartWeight[slot]=startWeight;
 	_StartWeightTime[slot]=time;
@@ -130,7 +130,7 @@ void CAnimationPlaylist::setStartWeight (uint8 slot, float startWeight, double t
 
 // ***************************************************************************
 
-float CAnimationPlaylist::getStartWeight (uint8 slot, double& time) const
+float CAnimationPlaylist::getStartWeight (uint8 slot, TGlobalAnimationTime& time) const
 {
 	time=_StartWeightTime[slot];
 	return _StartWeight[slot];
@@ -138,7 +138,7 @@ float CAnimationPlaylist::getStartWeight (uint8 slot, double& time) const
 
 // ***************************************************************************
 
-void CAnimationPlaylist::setEndWeight (uint8 slot, float endWeight, double time)
+void CAnimationPlaylist::setEndWeight (uint8 slot, float endWeight, TGlobalAnimationTime time)
 {
 	_EndWeight[slot]=endWeight;
 	_EndWeightTime[slot]=time;
@@ -146,7 +146,7 @@ void CAnimationPlaylist::setEndWeight (uint8 slot, float endWeight, double time)
 
 // ***************************************************************************
 
-float CAnimationPlaylist::getEndWeight (uint8 slot, double& time) const
+float CAnimationPlaylist::getEndWeight (uint8 slot, TGlobalAnimationTime& time) const
 {
 	time=_EndWeightTime[slot];
 	return _EndWeight[slot];
@@ -168,7 +168,7 @@ float CAnimationPlaylist::getWeightSmoothness (uint8 slot) const
 
 // ***************************************************************************
 
-void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, double time) const
+void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, TGlobalAnimationTime time) const
 {
 	// For each slot
 	for (uint8 s=0; s<CChannelMixer::NumAnimationSlot; s++)
@@ -187,7 +187,7 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, double time) const
 			if (_Animations[s]!=empty)
 			{
 				// Get the local time
-				CAnimationTime wrappedTime = getLocalTime (s, time, *animSet);
+				TAnimationTime wrappedTime = getLocalTime (s, time, *animSet);
 
 				// Get the animation
 				const CAnimation *pAnimation=animSet->getAnimation (_Animations[s]);
@@ -238,7 +238,7 @@ void CAnimationPlaylist::setupMixer (CChannelMixer& mixer, double time) const
 
 // ***************************************************************************
 
-float CAnimationPlaylist::getWeightValue (double startWeightTime, double endWeightTime, double time, float startWeight, float endWeight, float smoothness)
+float CAnimationPlaylist::getWeightValue (TGlobalAnimationTime startWeightTime, TGlobalAnimationTime endWeightTime, TGlobalAnimationTime time, float startWeight, float endWeight, float smoothness)
 {
 	// Clamp left
 	if (time<=startWeightTime)
@@ -250,7 +250,7 @@ float CAnimationPlaylist::getWeightValue (double startWeightTime, double endWeig
 	// *** Interpolate
 	
 	// Linear value
-	double linear=startWeight+(endWeight-startWeight)*(time-startWeightTime)/(endWeightTime-startWeightTime);
+	TGlobalAnimationTime linear=startWeight+(endWeight-startWeight)*(time-startWeightTime)/(endWeightTime-startWeightTime);
 
 	// Linear ?
 	if (smoothness<0.0001f)
@@ -308,7 +308,7 @@ void CAnimationPlaylist::serial (NLMISC::IStream& f)
 
 // ***************************************************************************
 
-CAnimationTime CAnimationPlaylist::getLocalTime (uint8 slot, double globalTime, const CAnimationSet& animSet) const
+TAnimationTime CAnimationPlaylist::getLocalTime (uint8 slot, TGlobalAnimationTime globalTime, const CAnimationSet& animSet) const
 {
 	// Get the animation
 	const CAnimation *pAnimation=animSet.getAnimation (_Animations[slot]);
@@ -317,7 +317,7 @@ CAnimationTime CAnimationPlaylist::getLocalTime (uint8 slot, double globalTime, 
 	if (pAnimation)
 	{
 		// Compute the non-wrapped time
-		CAnimationTime wrappedTime=pAnimation->getBeginTime ()+(CAnimationTime)((globalTime-_TimeOrigin[slot])*_SpeedFactor[slot]);
+		TAnimationTime wrappedTime=pAnimation->getBeginTime ()+(TAnimationTime)((globalTime-_TimeOrigin[slot])*_SpeedFactor[slot]);
 
 		// Wrap mode
 		switch (_WrapMode[slot])
@@ -341,12 +341,12 @@ CAnimationTime CAnimationPlaylist::getLocalTime (uint8 slot, double globalTime, 
 		return wrappedTime;
 	}
 
-	return (CAnimationTime)globalTime;
+	return (TAnimationTime)globalTime;
 }
 
 // ***************************************************************************
 
-float CAnimationPlaylist::getLocalWeight (uint8 slot, double globalTime) const
+float CAnimationPlaylist::getLocalWeight (uint8 slot, TGlobalAnimationTime globalTime) const
 {
 	return getWeightValue (_StartWeightTime[slot], _EndWeightTime[slot], globalTime, _StartWeight[slot], _EndWeight[slot], _Smoothness[slot]);
 }

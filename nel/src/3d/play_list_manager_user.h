@@ -1,7 +1,7 @@
 /** \file play_list_manager_user.h
  * <File description>
  *
- * $Id: play_list_manager_user.h,v 1.2 2001/09/05 11:45:28 corvazier Exp $
+ * $Id: play_list_manager_user.h,v 1.3 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,7 +90,7 @@ public:
 	/** Animate all the playlist. Only the globals channels are animated.
 	 * NB: all AnimationTime are in second.
 	 */
-	virtual	void		animate(double	time)
+	virtual	void		animate(TGlobalAnimationTime	time)
 	{
 		_PlayListManager.animate(time);
 	}

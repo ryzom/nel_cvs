@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.17 2001/10/03 15:49:44 vizerie Exp $
+ * $Id: ps_particle.h,v 1.18 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -429,7 +429,7 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 	public:
 
 		/// process one pass for the particle			
-		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime);		
+		virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);		
 
 		/// draw (but don't animate) particles
 		virtual void draw(bool opaque);
@@ -550,7 +550,7 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 		{ nlassert(_Owner); return _Owner->getSize() || _NbDyingRibbons; }
 
 		/// process one pass for the particle			
-		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime);		
+		virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);		
 
 
 		// draw (but doesn't animate) the ribbons

@@ -1,7 +1,7 @@
 /** \file u_animation.h
  * User interface to access animations fonctionnalities
  *
- * $Id: u_animation.h,v 1.3 2001/07/20 14:16:15 corvazier Exp $
+ * $Id: u_animation.h,v 1.4 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,14 +95,14 @@ public:
 	  *
 	  * \return the begin time.
 	  */
-	virtual CAnimationTime	getBeginTime () const =0;
+	virtual TAnimationTime	getBeginTime () const =0;
 
 	/**
 	  * Get end time of the animation.
 	  *
 	  * \return the end time.
 	  */
-	virtual CAnimationTime	getEndTime () const =0;
+	virtual TAnimationTime	getEndTime () const =0;
 };
 
 

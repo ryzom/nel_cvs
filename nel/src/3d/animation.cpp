@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.10 2001/08/15 11:58:21 vizerie Exp $
+ * $Id: animation.cpp,v 1.11 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,7 +93,7 @@ void CAnimation::getTrackNames (std::set<std::string>& setString) const
 
 // ***************************************************************************
 
-CAnimationTime CAnimation::getBeginTime () const
+TAnimationTime CAnimation::getBeginTime () const
 {
 	// Track count
 	uint trackCount=_TrackVector.size();
@@ -103,7 +103,7 @@ CAnimationTime CAnimation::getBeginTime () const
 		return 0.f;
 
 	// Look for the lowest
-	CAnimationTime lowest=_TrackVector[0]->getBeginTime ();
+	TAnimationTime lowest=_TrackVector[0]->getBeginTime ();
 
 	// Scan all keys
 	for (uint t=1; t<trackCount; t++)
@@ -117,7 +117,7 @@ CAnimationTime CAnimation::getBeginTime () const
 
 // ***************************************************************************
 
-CAnimationTime CAnimation::getEndTime () const
+TAnimationTime CAnimation::getEndTime () const
 {
 	// Track count
 	uint trackCount=_TrackVector.size();
@@ -127,7 +127,7 @@ CAnimationTime CAnimation::getEndTime () const
 		return 0.f;
 
 	// Look for the lowest
-	CAnimationTime highest=_TrackVector[0]->getEndTime ();
+	TAnimationTime highest=_TrackVector[0]->getEndTime ();
 
 	// Scan tracks keys
 	for (uint t=1; t<trackCount; t++)

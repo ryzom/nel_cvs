@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.51 2001/10/03 15:49:44 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.52 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2191,7 +2191,7 @@ void CPSTailDot::init(void)
 	
 
 
-void CPSTailDot::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void CPSTailDot::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {
 	if (
 			(pass == PSBlendRender && hasTransparentFaces())
@@ -3200,7 +3200,7 @@ void CPSRibbon::render(CRibbonsDesc &rb, const uint32 size)
 
 
 
-void CPSRibbon::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void CPSRibbon::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {	
 	if (pass == PSMotion)
 	{

@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.17 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.18 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ void CPSZone::releaseTargetRsc(CPSLocated *target)
 
 
 
-void CPSZone::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void CPSZone::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {
 	// for zone, the PSCollision pass and the PSToolRenderPass are processed
 	switch(pass)
@@ -112,14 +112,14 @@ CMatrix CPSZonePlane::buildBasis(uint32 index) const
 
 /// this compute a new speed vector, so that the located will reach the correct position at the next speed integration
 /// this create the illusion of collision
-/*void CPSZone::bounce(uint32 locatedIndex, const CVector &bouncePoint, const CVector &surfNormal, float elasticity, CAnimationTime ellapsedTime)
+/*void CPSZone::bounce(uint32 locatedIndex, const CVector &bouncePoint, const CVector &surfNormal, float elasticity, TAnimationTime ellapsedTime)
 {
 	CVector &speed = _Owner->getSpeed()[locatedIndex];
 	const CVector &pos   = _Owner->getPos()[locatedIndex];
 	CVector &bounceVect = elasticity  * (speed - 2.0f * (speed * surfNormal) * surfNormal); // speed vector after collision
 	// now check where the located will be after integration
 	CVector d = bouncePoint - pos;
-	CAnimationTime collideDelay = speed.norm() / d.norm();
+	TAnimationTime collideDelay = speed.norm() / d.norm();
 	CVector finalPos = bouncePoint + (ellapsedTime - collideDelay) * bounceVect;
 	// now, we must have pos + ellapsedTime * newSpeed = finalPos 
 	// newSpeed = alpha * (finalPos - pos)
@@ -129,7 +129,7 @@ CMatrix CPSZonePlane::buildBasis(uint32 index) const
 }*/
 
 
-void CPSZonePlane::show(CAnimationTime)
+void CPSZonePlane::show(TAnimationTime)
 {
 	const float planeSize = 2.0f;
 	setupDriverModelMatrix();
@@ -203,7 +203,7 @@ void CPSZonePlane::deleteElement(uint32 index)
 
 
 
-void CPSZonePlane::performMotion(CAnimationTime ellapsedTime)
+void CPSZonePlane::performMotion(TAnimationTime ellapsedTime)
 {
 	// for each target, we must check wether they are going through the plane
 	// if so they must bounce
@@ -321,7 +321,7 @@ void CPSZonePlane::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 
-void CPSZoneSphere::performMotion(CAnimationTime ellapsedTime)
+void CPSZoneSphere::performMotion(TAnimationTime ellapsedTime)
 {
 	// for each target, we must check wether they are going through the plane
 	// if so they must bounce
@@ -441,7 +441,7 @@ void CPSZoneSphere::performMotion(CAnimationTime ellapsedTime)
 
 
 
-void CPSZoneSphere::show(CAnimationTime ellapsedTime)
+void CPSZoneSphere::show(TAnimationTime ellapsedTime)
 {
 	
 	CPSLocated *loc;
@@ -525,7 +525,7 @@ void CPSZoneSphere::deleteElement(uint32 index)
 // CPSZoneDisc implementation //
 ////////////////////////////////
 
-void CPSZoneDisc::performMotion(CAnimationTime ellapsedTime)
+void CPSZoneDisc::performMotion(TAnimationTime ellapsedTime)
 {
 	// for each target, we must check wether they are going through the disc
 	// if so they must bounce
@@ -615,7 +615,7 @@ void CPSZoneDisc::performMotion(CAnimationTime ellapsedTime)
 	}	
 }
 
-void CPSZoneDisc::show(CAnimationTime ellapsedTime)
+void CPSZoneDisc::show(TAnimationTime ellapsedTime)
 {
 	TPSAttribRadiusPair::const_iterator radiusIt = _Radius.begin();
 	TPSAttribVector::const_iterator posIt = _Owner->getPos().begin(), endPosIt = _Owner->getPos().end()
@@ -723,7 +723,7 @@ void CPSZoneDisc::deleteElement(uint32 index)
 
 
 /*
-void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
+void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
 {
 	TPSAttribVector::const_iterator dimIt = _Dim.begin();
 	CPSAttrib<CPlaneBasis>::const_iterator basisIt = _Basis.begin();
@@ -934,7 +934,7 @@ void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
 
 
 
-void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
+void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
 {
 	TPSAttribVector::const_iterator dimIt;
 	CPSAttrib<CPlaneBasis>::const_iterator basisIt;
@@ -1147,7 +1147,7 @@ void CPSZoneCylinder::performMotion(CAnimationTime ellapsedTime)
 	}
 }
 
-void CPSZoneCylinder::show(CAnimationTime ellapsedTime)
+void CPSZoneCylinder::show(TAnimationTime ellapsedTime)
 {
 	TPSAttribVector::const_iterator dimIt = _Dim.begin()
 									,posIt = _Owner->getPos().begin()
@@ -1261,7 +1261,7 @@ void CPSZoneCylinder::deleteElement(uint32 index)
 
 
 
-void CPSZoneRectangle::performMotion(CAnimationTime ellapsedTime)
+void CPSZoneRectangle::performMotion(TAnimationTime ellapsedTime)
 {
 
 	// for each target, we must check wether they are going through the rectangle
@@ -1354,7 +1354,7 @@ void CPSZoneRectangle::performMotion(CAnimationTime ellapsedTime)
 }
 
 
-void CPSZoneRectangle::show(CAnimationTime ellapsedTime)
+void CPSZoneRectangle::show(TAnimationTime ellapsedTime)
 {
 	nlassert(_Owner);
 	const uint size = _Owner->getSize();

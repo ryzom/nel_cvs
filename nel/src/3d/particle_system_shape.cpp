@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.25 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.26 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,7 +212,7 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 	/// has the systme been triggered yet ?
 	if (!ps) return;
 	
-	CAnimationTime delay = psm->getEllapsedTime();
+	TAnimationTime delay = psm->getEllapsedTime();
 	nlassert(ps->getScene());	
 
 

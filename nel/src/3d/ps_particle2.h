@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle2.h,v 1.1 2001/09/26 17:45:09 vizerie Exp $
+ * $Id: ps_particle2.h,v 1.2 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,9 +68,9 @@ public:
 		/// get the number of segments used with this particle
 		uint32				getTailNbSeg(void) const { return _NbSegs; }
 		/// set how many seconds need a seg to be traversed. Long times will create lonegr ribbons. Default is 0.02
-		void				setSegDuration(CAnimationTime ellapsedTime);
+		void				setSegDuration(TAnimationTime ellapsedTime);
 		/// set how many seconds need a seg to be traversed. Long times will create lonegr ribbons.
-		CAnimationTime		getSegDuration(void) const;
+		TAnimationTime		getSegDuration(void) const;
 	///@}
 
 	///\name Behaviour
@@ -102,7 +102,7 @@ public:
 	///@}
 
 	/// inherited from CPSParticle
-	virtual void			step(TPSProcessPass pass, CAnimationTime ellapsedTime);
+	virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 
 	/// return true if there are transparent faces in the object
 	virtual bool hasTransparentFaces(void);
@@ -114,7 +114,7 @@ public:
 
 protected:
 	uint32									_NbSegs;
-	CAnimationTime							_SegDuration;
+	TAnimationTime							_SegDuration;
 	bool									_Parametric; // if this is set to true, then the owner has activated parametric motion, 
 														 // so we don't need to memorize previous position
 
@@ -123,7 +123,7 @@ protected:
 	struct CRibbons 
 	{		
 		TPointVect					    _Pts;		// several arrays of vectors packed in a single one. Contains previous pos for each ribbons
-		std::vector<CAnimationTime>		_Times;     // ellapsed time for each ribbon		
+		std::vector<TAnimationTime>		_Times;     // ellapsed time for each ribbon		
 		void reset(void) 
 		{ 
 			NLMISC::contReset(_Pts);
@@ -165,7 +165,7 @@ protected:
 	/// resize ribbons
 	void							resizeRibbons(CRibbons &r, uint32 size);
 	/// performs alive ribbons motion
-	void							performMotion(CAnimationTime ellapsedTime);
+	void							performMotion(TAnimationTime ellapsedTime);
 	/** Perform motion of one ribbon portion by decaling of the given amount.
 	  * \param alpha The amount to move one point toward the next in the list.
 	  * \param ribbonIndex The index of the ribbon that is being modified.

@@ -1,7 +1,7 @@
 /** \file ps_force.cpp
  * <File description>
  *
- * $Id: ps_force.cpp,v 1.22 2001/10/03 15:48:50 vizerie Exp $
+ * $Id: ps_force.cpp,v 1.23 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ void CPSForce::registerToTargets(void)
 }
 
 
-void CPSForce::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void CPSForce::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {
 	switch(pass)
 	{
@@ -244,7 +244,7 @@ void CPSForceIntensityHelper::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 ////////////////////////////////////////
 
 
-void CPSDirectionnalForce::performDynamic(CAnimationTime ellapsedTime)
+void CPSDirectionnalForce::performDynamic(TAnimationTime ellapsedTime)
 {
 	// perform the operation on each target
 
@@ -285,7 +285,7 @@ void CPSDirectionnalForce::performDynamic(CAnimationTime ellapsedTime)
 }
 
 
-void CPSDirectionnalForce::show(CAnimationTime ellapsedTime)
+void CPSDirectionnalForce::show(TAnimationTime ellapsedTime)
 {
 	CPSLocated *loc;
 	uint32 index;
@@ -313,7 +313,7 @@ void CPSDirectionnalForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 ////////////////////////////
 
 
-void CPSGravity::performDynamic(CAnimationTime ellapsedTime)
+void CPSGravity::performDynamic(TAnimationTime ellapsedTime)
 {	
 	
 	// perform the operation on each target
@@ -354,7 +354,7 @@ void CPSGravity::performDynamic(CAnimationTime ellapsedTime)
 		}
 	}
 }
-void CPSGravity::show(CAnimationTime ellapsedTime) 
+void CPSGravity::show(TAnimationTime ellapsedTime) 
 {	
 	CVector I = computeI();
 	CVector K = CVector(0,0,1);	    
@@ -630,7 +630,7 @@ void CPSGravity::setIntensityScheme(CPSAttribMaker<float> *scheme)
 /////////////////////////////////////////
 
 
-void CPSCentralGravity::performDynamic(CAnimationTime ellapsedTime)
+void CPSCentralGravity::performDynamic(TAnimationTime ellapsedTime)
 {
 	// for each central gravity, and each target, we check if they are in the same basis
 	// if not, we need to transform the central gravity attachment pos into the target basis
@@ -672,7 +672,7 @@ void CPSCentralGravity::performDynamic(CAnimationTime ellapsedTime)
 }
 
 
-void CPSCentralGravity::show(CAnimationTime ellapsedTime)
+void CPSCentralGravity::show(TAnimationTime ellapsedTime)
 {
 	CVector I = CVector::I;
 	CVector J = CVector::J;
@@ -705,7 +705,7 @@ void CPSCentralGravity::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 
-void CPSSpring::performDynamic(CAnimationTime ellapsedTime)
+void CPSSpring::performDynamic(TAnimationTime ellapsedTime)
 {
 	// for each spring, and each target, we check if they are in the same basis
 	// if not, we need to transform the spring attachment pos into the target basis
@@ -746,7 +746,7 @@ void CPSSpring::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 
-void CPSSpring::show(CAnimationTime ellapsedTime)
+void CPSSpring::show(TAnimationTime ellapsedTime)
 {
 	CVector I = CVector::I;
 	CVector J = CVector::J;
@@ -772,7 +772,7 @@ void CPSSpring::show(CAnimationTime ellapsedTime)
 //  CPSCylindricVortex implementation  //
 /////////////////////////////////////////
 
-void CPSCylindricVortex::performDynamic(CAnimationTime ellapsedTime)
+void CPSCylindricVortex::performDynamic(TAnimationTime ellapsedTime)
 {
 		uint32 size = _Owner->getSize();
 		
@@ -848,7 +848,7 @@ void CPSCylindricVortex::performDynamic(CAnimationTime ellapsedTime)
 }
 
 
-void CPSCylindricVortex::show(CAnimationTime ellapsedTime)
+void CPSCylindricVortex::show(TAnimationTime ellapsedTime)
 {
 	
 	CPSLocated *loc;
@@ -928,7 +928,7 @@ void CPSMagneticForce::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	CPSDirectionnalForce::serial(f);
 }
 
-void CPSMagneticForce::performDynamic(CAnimationTime ellapsedTime)
+void CPSMagneticForce::performDynamic(TAnimationTime ellapsedTime)
 {	
 	// perform the operation on each target
 	for (uint32 k = 0; k < _Owner->getSize(); ++k)

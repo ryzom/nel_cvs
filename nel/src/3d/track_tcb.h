@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: track_tcb.h,v 1.2 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -198,7 +198,7 @@ protected:
  * \date 2001
  */
 template<class CKeyT, class T>
-class CTrackKeyFramerTCB : public ITrackKeyFramer<CKeyT>, private CTCBTools<CKeyT, T, std::map<CAnimationTime, CKeyT> >
+class CTrackKeyFramerTCB : public ITrackKeyFramer<CKeyT>, private CTCBTools<CKeyT, T, std::map<TAnimationTime, CKeyT> >
 {
 public:
 
@@ -220,8 +220,8 @@ protected:
 
 	/// evalKey (runtime).
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
+							TAnimationTime datePrevious, TAnimationTime dateNext,
+							TAnimationTime date )
 	{
 		if(previous && next)
 		{
@@ -383,7 +383,7 @@ private:
  * \date 2001
  */
 class CTrackKeyFramerTCB<CKeyTCBQuat, NLMISC::CAngleAxis> : public ITrackKeyFramer<CKeyTCBQuat>, 
-	private CTCBTools<CKeyTCBQuat, NLMISC::CAngleAxis, std::map<CAnimationTime, CKeyTCBQuat> >
+	private CTCBTools<CKeyTCBQuat, NLMISC::CAngleAxis, std::map<TAnimationTime, CKeyTCBQuat> >
 {
 public:
 
@@ -398,8 +398,8 @@ public:
 
 	/// evalKey (runtime).
 	virtual void evalKey (	const CKeyTCBQuat* previous, const CKeyTCBQuat* next, 
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
+							TAnimationTime datePrevious, TAnimationTime dateNext,
+							TAnimationTime date )
 	{
 		if(previous && next)
 		{

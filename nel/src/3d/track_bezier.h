@@ -1,7 +1,7 @@
 /** \file track_bezier.h
  * ITrack Bezier implementation
  *
- * $Id: track_bezier.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: track_bezier.h,v 1.2 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,8 +66,8 @@ protected:
 
 	/// evalKey (runtime).
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
+							TAnimationTime datePrevious, TAnimationTime dateNext,
+							TAnimationTime date )
 	{
 		if(previous && next && !previous->Step)
 		{
@@ -145,8 +145,8 @@ protected:
 
 	/// evalKey (runtime).
 	virtual void evalKey (	const CKeyBezierQuat* previous, const CKeyBezierQuat* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
+							TAnimationTime datePrevious, TAnimationTime dateNext,
+							TAnimationTime date )
 	{
 		if(previous && next)
 		{

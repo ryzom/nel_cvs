@@ -100,7 +100,7 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	}
 
 
-	NL3D::CAnimationTime t;
+	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
 	_PS->getAccurateIntegrationParams(t, max, csd);
@@ -233,7 +233,7 @@ void CParticleSystemEdit::OnAccurateIntegration()
 void CParticleSystemEdit::OnEnableSlowDown() 
 {
 	UpdateData();
-	NL3D::CAnimationTime t;
+	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
 	_PS->getAccurateIntegrationParams(t, max, csd);
@@ -327,7 +327,7 @@ void CParticleSystemEdit::OnChangeApplyAfterDelay()
 
 float CTimeThresholdWrapper::get(void) const
 {
-	NL3D::CAnimationTime t;
+	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
 	PS->getAccurateIntegrationParams(t, max, csd);
@@ -335,7 +335,7 @@ float CTimeThresholdWrapper::get(void) const
 }
 void CTimeThresholdWrapper::set(const float &tt)
 {
-	NL3D::CAnimationTime t;
+	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
 	PS->getAccurateIntegrationParams(t, max, csd);
@@ -344,7 +344,7 @@ void CTimeThresholdWrapper::set(const float &tt)
 
 uint32 CMaxNbIntegrationWrapper::get(void) const
 {
-	NL3D::CAnimationTime t;
+	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
 	PS->getAccurateIntegrationParams(t, max, csd);
@@ -352,7 +352,7 @@ uint32 CMaxNbIntegrationWrapper::get(void) const
 }
 void CMaxNbIntegrationWrapper::set(const uint32 &nmax)
 {
-	NL3D::CAnimationTime t;
+	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
 	PS->getAccurateIntegrationParams(t, max, csd);

@@ -1,7 +1,7 @@
 /** \file flare_shape.h
  * <File description>
  *
- * $Id: flare_shape.h,v 1.8 2001/10/26 08:32:15 vizerie Exp $
+ * $Id: flare_shape.h,v 1.9 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -171,7 +171,7 @@ public:
 	}
 
 	/// set the persistence of this shape, in second (the time it takes to fade from white to black)
-	void						setPersistence(CAnimationTime persistence) 
+	void						setPersistence(TAnimationTime persistence) 
 	{ 	
 		_Persistence = persistence; 
 	}
@@ -179,7 +179,7 @@ public:
 	/** get the persistence of this shape
 	  * \see setPersistence
 	  */
-	CAnimationTime				getPersistence(void) const 
+	TAnimationTime				getPersistence(void) const 
 	{ 
 		return _Persistence; 
 	}
@@ -272,7 +272,7 @@ protected:
 	NLMISC::CRGBA				_DazzleColor;
 	float						_Size[MaxFlareNum];
 	float						_Pos[MaxFlareNum];
-	CAnimationTime				_Persistence;
+	TAnimationTime				_Persistence;
 	float						_Spacing;
 	bool					    _Attenuable;
 	float					    _AttenuationRange;

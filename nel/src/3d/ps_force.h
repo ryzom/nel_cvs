@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.10 2001/10/03 15:48:50 vizerie Exp $
+ * $Id: ps_force.h,v 1.11 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,14 +69,14 @@ public:
 	/**
 	 * process one pass for the force 
 	 */
-	virtual void		step(TPSProcessPass pass, CAnimationTime ellapsedTime);
+	virtual void		step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 
 	
 	/// Compute the force on the targets
-	virtual void		performDynamic(CAnimationTime ellapsedTime) = 0;
+	virtual void		performDynamic(TAnimationTime ellapsedTime) = 0;
 
 	/// Show the force (edition mode)
-	virtual void		show(CAnimationTime ellapsedTime)  = 0;
+	virtual void		show(TAnimationTime ellapsedTime)  = 0;
 
 	/// Serial the force definition. MUST be called by deriver during their serialisation
 	virtual void		 serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -237,7 +237,7 @@ protected:
  *  param1 = a const reference to the position of the particle
  *  param2 = a reference to the position, that must be updated
  *  param3 =  a float giving the inverse of the mass
- *  param4 = the ellapsed time, in second (has the CAnimationTime type).
+ *  param4 = the ellapsed time, in second (has the TAnimationTime type).
  *  Example of use :
  *  class MyForceFunctor
  *  {
@@ -280,7 +280,7 @@ template <class T> class CIsotropicForceT : public CPSForce
 public: 
 
 	/// Compute the force on the targets
-	virtual void performDynamic(CAnimationTime ellapsedTime);
+	virtual void performDynamic(TAnimationTime ellapsedTime);
 
 
 	/// serialization
@@ -296,7 +296,7 @@ public:
 	 *  TODO later
 	 */
 
-	 void show(CAnimationTime ellapsedTime)  {}
+	 void show(TAnimationTime ellapsedTime)  {}
 
 
 	 /// setup the functor object. The default does nothing
@@ -322,7 +322,7 @@ protected:
 //////////////////////////////////////////////////////////////////////
 
 
-template <class T> void CIsotropicForceT<T>::performDynamic(CAnimationTime ellapsedTime)
+template <class T> void CIsotropicForceT<T>::performDynamic(TAnimationTime ellapsedTime)
 {
 	for (uint32 k = 0; k < _Owner->getSize(); ++k)
 	{	
@@ -351,10 +351,10 @@ class CPSDirectionnalForce : public CPSForceIntensityHelper, public CPSDirection
 {
 	public:
 	/// Compute the force on the targets
-	virtual void performDynamic(CAnimationTime ellapsedTime);
+	virtual void performDynamic(TAnimationTime ellapsedTime);
 
 	/// Show the force (edition mode)
-	virtual void show(CAnimationTime ellapsedTime);
+	virtual void show(TAnimationTime ellapsedTime);
 
 	
 
@@ -392,10 +392,10 @@ class CPSGravity : public CPSForceIntensityHelper
 {
 public:
 	/// Compute the force on the targets
-	virtual void performDynamic(CAnimationTime ellapsedTime);
+	virtual void performDynamic(TAnimationTime ellapsedTime);
 
 	/// Show the force (edition mode)
-	virtual void show(CAnimationTime ellapsedTime);
+	virtual void show(TAnimationTime ellapsedTime);
 
 	
 
@@ -438,10 +438,10 @@ class CPSCentralGravity : public CPSForceIntensityHelper
 {
 public:
 	/// Compute the force on the targets
-	virtual void performDynamic(CAnimationTime ellapsedTime);
+	virtual void performDynamic(TAnimationTime ellapsedTime);
 
 	/// Show the force (edition mode)
-	virtual void show(CAnimationTime ellapsedTime);
+	virtual void show(TAnimationTime ellapsedTime);
 
 	
 
@@ -477,10 +477,10 @@ public:
 
 
 	/// Compute the force on the targets
-	virtual void performDynamic(CAnimationTime ellapsedTime);
+	virtual void performDynamic(TAnimationTime ellapsedTime);
 
 	/// Show the force (edition mode)
-	virtual void show(CAnimationTime ellapsedTime);
+	virtual void show(TAnimationTime ellapsedTime);
 
 
 	NLMISC_DECLARE_CLASS(CPSSpring); 
@@ -500,7 +500,7 @@ public:
 	#ifdef NL_OS_WINDOWS
 		__forceinline
 	#endif
-	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
+	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , TAnimationTime ellapsedTime)
 	 {
 		speed -= (ellapsedTime * _K * invMass * speed);
 	 }
@@ -577,7 +577,7 @@ public:
 	#ifdef NL_OS_WINDOWS
 		__forceinline
 	#endif
-	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
+	 void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , TAnimationTime ellapsedTime)
 	 {
 		static double divRand = (2.f / RAND_MAX);
 		NLMISC::CVector dir( (float) (rand() * divRand - 1), (float) (rand() * divRand - 1) , (float) (rand() * divRand - 1) );
@@ -647,7 +647,7 @@ struct CPSTurbulForceFunc
 	#ifdef NL_OS_WINDOWS
 		__forceinline
 	#endif
-	void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , CAnimationTime ellapsedTime)
+	void operator() (const NLMISC::CVector &pos, NLMISC::CVector &speed, float invMass , TAnimationTime ellapsedTime)
 	{
 		nlassert(0);
 
@@ -739,10 +739,10 @@ class CPSCylindricVortex : public CPSForceIntensityHelper, public IPSMover
 {
 public:
 	/// Compute the force on the targets
-	virtual void performDynamic(CAnimationTime ellapsedTime);
+	virtual void performDynamic(TAnimationTime ellapsedTime);
 
 	/// Show the force (edition mode)
-	virtual void show(CAnimationTime ellapsedTime);
+	virtual void show(TAnimationTime ellapsedTime);
 
 	
 	CPSCylindricVortex(float intensity = 1.f) : _RadialViscosity(.1f), _TangentialViscosity(.1f) 
@@ -816,7 +816,7 @@ class CPSMagneticForce : public CPSDirectionnalForce
 	{ 
 		_Name = std::string("MagneticForce");	
 	}
-	virtual void performDynamic(CAnimationTime ellapsedTime);
+	virtual void performDynamic(TAnimationTime ellapsedTime);
 	/// serialization
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CPSMagneticForce); 

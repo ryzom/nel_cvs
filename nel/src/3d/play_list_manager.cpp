@@ -1,7 +1,7 @@
 /** \file play_list_manager.cpp
  * <File description>
  *
- * $Id: play_list_manager.cpp,v 1.4 2001/09/05 11:45:28 corvazier Exp $
+ * $Id: play_list_manager.cpp,v 1.5 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ void	CPlayListManager::removePlaylist(CAnimationPlaylist* plist)
 
 
 // ***************************************************************************
-void	CPlayListManager::animate(double time)
+void	CPlayListManager::animate(TGlobalAnimationTime time)
 {
 	TPlayListList::iterator		it;
 

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.30 2001/10/04 12:18:49 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.31 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -253,7 +253,7 @@ void CPSEmitter::singleEmit(uint32 index, uint quantity)
 	processEmit(index, quantity * nbToGenerate);
 }
 
-void CPSEmitter::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void CPSEmitter::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {
 if (pass == PSToolRender)
 {

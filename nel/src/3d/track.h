@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.2 2001/07/03 09:46:22 corvazier Exp $
+ * $Id: track.h,v 1.3 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ public:
 	  * The result is internaly stored to simplify access at the polymorphic values.
 	  * To get the value, call ITrack::getValue().
 	  */
-	virtual void eval (const CAnimationTime& date)=0;
+	virtual void eval (const TAnimationTime& date)=0;
 
 	/**
 	  * Get the track current value.
@@ -81,13 +81,13 @@ public:
 	/// \name From UTrack
 	// @{
 
-	virtual bool interpolate (CAnimationTime time, float& res);
-	virtual bool interpolate (CAnimationTime time, sint32& res);
-	virtual bool interpolate (CAnimationTime time, NLMISC::CRGBA& res);
-	virtual bool interpolate (CAnimationTime time, NLMISC::CVector& res);
-	virtual bool interpolate (CAnimationTime time, NLMISC::CQuat& res);
-	virtual bool interpolate (CAnimationTime time, std::string& res);
-	virtual bool interpolate (CAnimationTime time, bool& res);
+	virtual bool interpolate (TAnimationTime time, float& res);
+	virtual bool interpolate (TAnimationTime time, sint32& res);
+	virtual bool interpolate (TAnimationTime time, NLMISC::CRGBA& res);
+	virtual bool interpolate (TAnimationTime time, NLMISC::CVector& res);
+	virtual bool interpolate (TAnimationTime time, NLMISC::CQuat& res);
+	virtual bool interpolate (TAnimationTime time, std::string& res);
+	virtual bool interpolate (TAnimationTime time, bool& res);
 
 	// @}
 };
@@ -107,13 +107,13 @@ class ITrackDefault : public ITrack
 {
 public:
 	/// From ITrack. Does nothing, no interpolation.
-	virtual void eval (const CAnimationTime& date) 
+	virtual void eval (const TAnimationTime& date) 
 	{}
-	CAnimationTime getBeginTime () const
+	TAnimationTime getBeginTime () const
 	{
 		return 0.f;
 	}
-	CAnimationTime getEndTime () const
+	TAnimationTime getEndTime () const
 	{
 		return 0.f;
 	}

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.47 2001/11/12 18:13:32 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.48 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1558,11 +1558,11 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 					if (soundTrackKF)
 					{
 						// Sound keys
-						std::vector<CAnimationTime> result;
+						std::vector<TAnimationTime> result;
 
 						// Get local begin and endTime
-						CAnimationTime localLastTime = _SlotDlg->Playlist.getLocalTime (slot, lastTime, _AnimationSet);
-						CAnimationTime localCurrentTime = _SlotDlg->Playlist.getLocalTime (slot, currentTime, _AnimationSet);
+						TAnimationTime localLastTime = _SlotDlg->Playlist.getLocalTime (slot, lastTime, _AnimationSet);
+						TAnimationTime localCurrentTime = _SlotDlg->Playlist.getLocalTime (slot, currentTime, _AnimationSet);
 
 						// Good interval
 						if (localLastTime<=localCurrentTime)
@@ -1573,8 +1573,8 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 						else
 						{
 							// Get begin and last time
-							CAnimationTime beginTime=track->getBeginTime ();
-							CAnimationTime endTime=track->getEndTime ();
+							TAnimationTime beginTime=track->getBeginTime ();
+							TAnimationTime endTime=track->getEndTime ();
 
 							// Time must have been clamped
 							nlassert (localCurrentTime<=endTime);
@@ -1591,7 +1591,7 @@ void CObjectViewer::evalSoundTrack (float lastTime, float currentTime)
 						NLSOUND::UAudioMixer *audioMixer = CSoundSystem::getAudioMixer ();
 						if( audioMixer )
 						{	
-							vector<CAnimationTime>::iterator itResult;
+							vector<TAnimationTime>::iterator itResult;
 							for( itResult = result.begin(); itResult != result.end(); ++itResult ) 
 							{
 								string soundName;

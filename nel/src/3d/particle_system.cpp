@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.37 2001/10/04 12:52:30 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.38 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,7 +173,7 @@ bool CParticleSystem::hasParticles(void) const
 
 
 
-void CParticleSystem::stepLocated(TPSProcessPass pass, CAnimationTime et)
+void CParticleSystem::stepLocated(TPSProcessPass pass, TAnimationTime et)
 {
 	if (pass == PSSolidRender || pass == PSBlendRender || pass == PSToolRender)
 	{
@@ -191,7 +191,7 @@ void CParticleSystem::stepLocated(TPSProcessPass pass, CAnimationTime et)
 	}
 }
 
-void CParticleSystem::step(TPass pass, CAnimationTime ellapsedTime)
+void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 {		
 	switch (pass)
 	{
@@ -210,7 +210,7 @@ void CParticleSystem::step(TPass pass, CAnimationTime ellapsedTime)
 		{
 		
 			_BBoxTouched = true;
-			CAnimationTime et = ellapsedTime;
+			TAnimationTime et = ellapsedTime;
 			uint nbPass = 1;
 			if (_AccurateIntegration)
 			{

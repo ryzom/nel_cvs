@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.2 2001/08/01 09:38:25 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.3 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,7 @@ private:
 		bool				_InvertedSkeletonWeight;
 
 		/// Time to use to eval the animation.
-		CAnimationTime		_Time;
+		TAnimationTime		_Time;
 
 		/**
 		  * Global weight to apply to the animation of this slot.
@@ -301,9 +301,9 @@ public:
 	  * 
 	  * \param slot is the slot number to change the time. Must be >= 0 and < NumAnimationSlot.
 	  * \param time is the new time to use in the slot.
-	  * \see CAnimationTime
+	  * \see TAnimationTime
 	  */
-	void setSlotTime (uint slot, CAnimationTime time)
+	void setSlotTime (uint slot, TAnimationTime time)
 	{
 		// Check alot arg
 		nlassert (slot<NumAnimationSlot);

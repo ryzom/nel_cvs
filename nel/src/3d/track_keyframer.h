@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.8 2001/11/05 09:30:31 corvazier Exp $
+ * $Id: track_keyframer.h,v 1.9 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ class ITrackKeyFramer : public ITrack, public UTrackKeyframer
 {
 public:
 	// Some types
-	typedef std::map <CAnimationTime, CKeyT>	TMapTimeCKey;
+	typedef std::map <TAnimationTime, CKeyT>	TMapTimeCKey;
 
 
 	/// ctor.
@@ -87,7 +87,7 @@ public:
 	  * \param key is the key value to add in the keyframer.
 	  * \param time is the time of the key to add in the keyframer.
 	  */
-	void addKey (const CKeyT &key, CAnimationTime time)
+	void addKey (const CKeyT &key, TAnimationTime time)
 	{
 		// Insert the key in the map
 		_MapKey.insert (TMapTimeCKey::value_type (time, key));
@@ -97,7 +97,7 @@ public:
 	}
 
 	/// set an explicit animation range. (see getBeginTime() / setEndTime() ).
-	void	unlockRange(CAnimationTime begin, CAnimationTime end)
+	void	unlockRange(TAnimationTime begin, TAnimationTime end)
 	{
 		_RangeLock= false;
 		_RangeBegin= begin;
@@ -117,7 +117,7 @@ public:
 
 
 	/// rangeDelta is (length of effective Range) - (length of LastKey-FirstKey). NB: if RangeLock, rangeDelta==0.
-	CAnimationTime	getRangeDelta() const
+	TAnimationTime	getRangeDelta() const
 	{
 		// update track.
 		testAndClean();
@@ -134,13 +134,13 @@ public:
 
 
 	/// From ITrack. 
-	virtual void eval (const CAnimationTime& inDate)
+	virtual void eval (const TAnimationTime& inDate)
 	{
 		float	date= inDate;
 		const CKeyT *previous=NULL;
 		const CKeyT *next=NULL;
-		CAnimationTime datePrevious;
-		CAnimationTime dateNext;
+		TAnimationTime datePrevious;
+		TAnimationTime dateNext;
 
 		// must precalc ??
 		testAndClean();
@@ -221,14 +221,14 @@ public:
 	}
 
 
-	virtual CAnimationTime getBeginTime () const
+	virtual TAnimationTime getBeginTime () const
 	{
 		// must precalc ??
 		testAndClean();
 
 		return _RangeBegin;
 	}
-	virtual CAnimationTime getEndTime () const
+	virtual TAnimationTime getEndTime () const
 	{
 		// must precalc ??
 		testAndClean();
@@ -254,7 +254,7 @@ public:
 	/** From UTrackKeyframer, retrieve the keys that are in the given range [t1, t2] of the track
 	  * \param result a vector that will be cleared, and filled with the date ofthe keys
 	  */
-	void getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result);
+	void getKeysInRange(TAnimationTime t1, TAnimationTime t2, std::vector<TAnimationTime> &result);
 
 
 private:
@@ -378,8 +378,8 @@ protected:
 	  * \param next is the i+1 key in the keyframe. NULL if no key.
 	  */
 	virtual void evalKey   (const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext, 
-							CAnimationTime date ) =0;
+							TAnimationTime datePrevious, TAnimationTime dateNext, 
+							TAnimationTime date ) =0;
 
 };
 
@@ -443,8 +443,8 @@ public:
 	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
+							TAnimationTime datePrevious, TAnimationTime dateNext,
+							TAnimationTime date )
 	{
 		// Const key.
 		if (previous)
@@ -480,8 +480,8 @@ public:
 	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
+							TAnimationTime datePrevious, TAnimationTime dateNext,
+							TAnimationTime date )
 	{
 		// Const key.
 		if (previous)
@@ -524,8 +524,8 @@ public:
 	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyT* previous, const CKeyT* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
+							TAnimationTime datePrevious, TAnimationTime dateNext,
+							TAnimationTime date )
 	{
 		if(previous && next)
 		{
@@ -574,8 +574,8 @@ public:
 	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyQuat* previous, const CKeyQuat* next, 
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
+							TAnimationTime datePrevious, TAnimationTime dateNext,
+							TAnimationTime date )
 	{
 		if(previous && next)
 		{
@@ -620,8 +620,8 @@ public:
 	
 	/// From ITrackKeyFramer
 	virtual void evalKey (	const CKeyRGBA* previous, const CKeyRGBA* next,
-							CAnimationTime datePrevious, CAnimationTime dateNext,
-							CAnimationTime date )
+							TAnimationTime datePrevious, TAnimationTime dateNext,
+							TAnimationTime date )
 	{
 		if(previous && next)
 		{

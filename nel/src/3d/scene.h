@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.13 2001/09/10 15:26:51 corvazier Exp $
+ * $Id: scene.h,v 1.14 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,7 +221,7 @@ public:
 	//@{
 	void	loadLightmapAutoAnim (const std::string &);
 	void	setAutoAnim (CAnimation *pAnim);
-	void	animate (double atTime);
+	void	animate (TGlobalAnimationTime atTime);
 	// TODO:
 	// TurnOff/TurnOn
 	// Animate
@@ -232,10 +232,10 @@ public:
 
 
 	/// get the current time of the scene, in second. It start from 0 (at the firt call of animate)
-	double getCurrentTime(void) const { return _CurrentTime ; }
+	TGlobalAnimationTime getCurrentTime(void) const { return _CurrentTime ; }
 
 	/// get the ellapsed time (in second) between the last 2 calls of animate.
-	CAnimationTime getEllapsedTime(void) const { return _EllapsedTime ; }
+	TAnimationTime getEllapsedTime(void) const { return _EllapsedTime ; }
 
 
 
@@ -285,16 +285,16 @@ private:
 	CViewport		_Viewport;
 
 	// the current time
-	double  _CurrentTime ;
+	TGlobalAnimationTime  _CurrentTime ;
 	
 	// the real time
-	double  _RealTime ;
+	TGlobalAnimationTime  _RealTime ;
 
 	// true when its the first call of animate
 	bool _FirstAnimateCall ;
 
 	// the ellapsed time
-	CAnimationTime  _EllapsedTime ;
+	TAnimationTime  _EllapsedTime ;
 
 
 	/// \name The 5 default traversals, created / linked by CScene::initDefaultTraversals().

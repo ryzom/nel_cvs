@@ -1,7 +1,7 @@
 /** \file animation_playlist.h
  * <File description>
  *
- * $Id: animation_playlist.h,v 1.3 2001/09/18 14:35:19 corvazier Exp $
+ * $Id: animation_playlist.h,v 1.4 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,7 +113,7 @@ public:
 	  * \param slot is the id of the slot to set.
 	  * \param timeOrigin time origin to use in the slot.
 	  */
-	void setTimeOrigin (uint8 slot, double timeOrigin);
+	void setTimeOrigin (uint8 slot, TGlobalAnimationTime timeOrigin);
 
 	/**
 	  * Get animation time origin, ie, the time in the playlist for which slot time is the startTime of the slot animation.
@@ -122,7 +122,7 @@ public:
 	  * \param slot is the id to get the slot.
 	  * \return time origin used in the slot.
 	  */
-	double getTimeOrigin (uint8 slot) const;
+	TGlobalAnimationTime getTimeOrigin (uint8 slot) const;
 
 	/**
 	  * Set animation speed factor.
@@ -150,7 +150,7 @@ public:
 	  * \param startWeight is the factor to use in this slot.
 	  * \param time is the playlist time for which the start weight is set. Default is 0.f.
 	  */
-	void setStartWeight (uint8 slot, float startWeight, double time);
+	void setStartWeight (uint8 slot, float startWeight, TGlobalAnimationTime time);
 
 	/**
 	  * Get animation start weight.
@@ -160,7 +160,7 @@ public:
 	  * \param time will get the playlist time for which the start weight is set. Default is 0.f.
 	  * \return the start weight used in the slot.
 	  */
-	float getStartWeight (uint8 slot, double& time) const;
+	float getStartWeight (uint8 slot, TGlobalAnimationTime& time) const;
 
 	/**
 	  * Set animation end weight. This is the weight for this animation use at the end of the animation slot.
@@ -170,7 +170,7 @@ public:
 	  * \param time is the playlist time for which the start weight is set. Default is 1.f.
 	  * \param endWeight is the factor to use in this slot.
 	  */
-	void setEndWeight (uint8 slot, float endWeight, double time);
+	void setEndWeight (uint8 slot, float endWeight, TGlobalAnimationTime time);
 
 	/**
 	  * Get animation end weight.
@@ -180,7 +180,7 @@ public:
 	  * \param time will get the playlist time for which the start weight is set. Default is 0.f.
 	  * \return the end weight used in the slot.
 	  */
-	float getEndWeight (uint8 slot, double& time) const;
+	float getEndWeight (uint8 slot, TGlobalAnimationTime& time) const;
 
 	/**
 	  * Set weight smoothness. 
@@ -213,7 +213,7 @@ public:
 	  * * the skeleton weight id.
 	  * * the weight interpolated with the start and end values. The weight value are clamped before and after the animation.
 	  */
-	void setupMixer (CChannelMixer& mixer, double time) const;
+	void setupMixer (CChannelMixer& mixer, TGlobalAnimationTime time) const;
 
 	/**
 	  * Static interpolation method of blend value
@@ -225,7 +225,7 @@ public:
 	  * \param endBlend is the blend value at end.
 	  * \param smoothness is the smoothnes value. (Must be between 0 and 1)
 	  */
-	static float getWeightValue (double startWeightTime, double endWeightTime, double time, float startWeight, float endWeight, float smoothness);
+	static float getWeightValue (TGlobalAnimationTime startWeightTime, TGlobalAnimationTime endWeightTime, TGlobalAnimationTime time, float startWeight, float endWeight, float smoothness);
 
 	/**
 	  * Set the wrap mode to use in the play list.
@@ -251,7 +251,7 @@ public:
 	  *
 	  * \return the local time in the slot. If no animation are set in the slot, globalTime is returned.
 	  */
-	CAnimationTime getLocalTime (uint8 slot, double globalTime, const CAnimationSet& animSet) const;
+	TAnimationTime getLocalTime (uint8 slot, TGlobalAnimationTime globalTime, const CAnimationSet& animSet) const;
 
 	/**
 	  * Compute weight of a slot at a given global playlist time
@@ -261,7 +261,7 @@ public:
 	  *
 	  * \return the weight of the slot for the given time.
 	  */
-	float getLocalWeight (uint8 slot, double globalTime) const;
+	float getLocalWeight (uint8 slot, TGlobalAnimationTime globalTime) const;
 
 	/**
 	  * Serial
@@ -280,7 +280,7 @@ private:
 	bool				_InvertWeight[CChannelMixer::NumAnimationSlot];
 
 	// Time origin in slot
-	double				_TimeOrigin[CChannelMixer::NumAnimationSlot];
+	TGlobalAnimationTime	_TimeOrigin[CChannelMixer::NumAnimationSlot];
 
 	// Speed factor in slot
 	float				_SpeedFactor[CChannelMixer::NumAnimationSlot];
@@ -289,13 +289,13 @@ private:
 	float				_StartWeight[CChannelMixer::NumAnimationSlot];
 
 	// Start weight time
-	double				_StartWeightTime[CChannelMixer::NumAnimationSlot];
+	TGlobalAnimationTime	_StartWeightTime[CChannelMixer::NumAnimationSlot];
 
 	// End weight
 	float				_EndWeight[CChannelMixer::NumAnimationSlot];
 
 	// End weight time
-	double				_EndWeightTime[CChannelMixer::NumAnimationSlot];
+	TGlobalAnimationTime	_EndWeightTime[CChannelMixer::NumAnimationSlot];
 
 	// Smoothness of the 
 	float				_Smoothness[CChannelMixer::NumAnimationSlot];

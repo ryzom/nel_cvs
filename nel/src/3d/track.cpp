@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.15 2001/07/03 09:46:22 corvazier Exp $
+ * $Id: track.cpp,v 1.16 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,7 @@ CTrackDefaultBool ttoto15;
 
 // ***************************************************************************
 
-bool ITrack::interpolate (CAnimationTime time, float& res)
+bool ITrack::interpolate (TAnimationTime time, float& res)
 {
 	// Evaluate it 
 	eval (time);
@@ -69,7 +69,7 @@ bool ITrack::interpolate (CAnimationTime time, float& res)
 
 // ***************************************************************************
 
-bool ITrack::interpolate (CAnimationTime time, sint32& res)
+bool ITrack::interpolate (TAnimationTime time, sint32& res)
 {
 	// Evaluate it 
 	eval (time);
@@ -91,7 +91,7 @@ bool ITrack::interpolate (CAnimationTime time, sint32& res)
 
 // ***************************************************************************
 
-bool ITrack::interpolate (CAnimationTime time, CRGBA& res)
+bool ITrack::interpolate (TAnimationTime time, CRGBA& res)
 {
 	// Evaluate it 
 	eval (time);
@@ -113,7 +113,7 @@ bool ITrack::interpolate (CAnimationTime time, CRGBA& res)
 
 // ***************************************************************************
 
-bool ITrack::interpolate (CAnimationTime time, CVector& res)
+bool ITrack::interpolate (TAnimationTime time, CVector& res)
 {
 	// Evaluate it 
 	eval (time);
@@ -135,7 +135,7 @@ bool ITrack::interpolate (CAnimationTime time, CVector& res)
 
 // ***************************************************************************
 
-bool ITrack::interpolate (CAnimationTime time, CQuat& res)
+bool ITrack::interpolate (TAnimationTime time, CQuat& res)
 {
 	// Evaluate it 
 	eval (time);
@@ -157,7 +157,7 @@ bool ITrack::interpolate (CAnimationTime time, CQuat& res)
 
 // ***************************************************************************
 
-bool ITrack::interpolate (CAnimationTime time, std::string& res)
+bool ITrack::interpolate (TAnimationTime time, std::string& res)
 {
 	// Evaluate it 
 	eval (time);
@@ -179,7 +179,7 @@ bool ITrack::interpolate (CAnimationTime time, std::string& res)
 
 // ***************************************************************************
 
-bool ITrack::interpolate (CAnimationTime time, bool& res)
+bool ITrack::interpolate (TAnimationTime time, bool& res)
 {
 	// Evaluate it 
 	eval (time);

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.12 2001/09/12 13:19:07 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.13 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,7 +110,7 @@ public:
 	#ifdef NL_OS_WINDOWS
 		__forceinline
 	#endif
-	T operator()(CAnimationTime time) const
+	T operator()(TAnimationTime time) const
 	{
 
 		return PSValueBlend(_StartValue, _EndValue, time);	// a cast to T is necessary, because 
@@ -192,7 +192,7 @@ public:
 	#ifdef NL_OS_WINDOWS
 			__forceinline
 	#endif
-	T operator()(CAnimationTime time) const
+	T operator()(TAnimationTime time) const
 	{
 
 		return _Values[OptFastFloor(time * n)];	
@@ -287,7 +287,7 @@ public:
 	#ifdef NL_OS_WINDOWS
 		__forceinline
 	#endif
-	T operator()(CAnimationTime time) const
+	T operator()(TAnimationTime time) const
 	{		
 		return _Tab[OptFastFloor(time * _NbValues)];
 	}

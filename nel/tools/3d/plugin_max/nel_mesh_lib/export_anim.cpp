@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.23 2001/11/12 18:12:07 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.24 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1472,7 +1472,7 @@ void CExportNel::createBipedKeyFramer (ITrack *&nelRot, ITrack *&nelPos, bool is
 
 // --------------------------------------------------
 
-NL3D::CAnimationTime	CExportNel::convertTime (TimeValue time)
+NL3D::TAnimationTime	CExportNel::convertTime (TimeValue time)
 {
 	return (float)time/((float)GetTicksPerFrame()*(float)GetFrameRate());
 }

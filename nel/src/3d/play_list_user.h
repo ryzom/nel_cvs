@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.5 2001/09/18 14:35:19 corvazier Exp $
+ * $Id: play_list_user.h,v 1.6 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -111,12 +111,12 @@ public:
 
 	/// \name Animation Time Setup.
 	// @{
-	virtual	void setTimeOrigin (uint8 slot, double timeOrigin)
+	virtual	void setTimeOrigin (uint8 slot, TGlobalAnimationTime timeOrigin)
 	{
 		_PlayList.setTimeOrigin (slot, timeOrigin);
 	}
 
-	virtual	double getTimeOrigin (uint8 slot) const
+	virtual	TGlobalAnimationTime getTimeOrigin (uint8 slot) const
 	{
 		return _PlayList.getTimeOrigin (slot);
 	}
@@ -146,22 +146,22 @@ public:
 
 	/// \name Animation Weight Setup.
 	// @{
-	virtual	void setStartWeight (uint8 slot, float startWeight, double time)
+	virtual	void setStartWeight (uint8 slot, float startWeight, TGlobalAnimationTime time)
 	{
 		_PlayList.setStartWeight (slot, startWeight, time);
 	}
 
-	virtual	float getStartWeight (uint8 slot, double& time) const
+	virtual	float getStartWeight (uint8 slot, TGlobalAnimationTime& time) const
 	{
 		return _PlayList.getStartWeight(slot, time);
 	}
 
-	virtual	void setEndWeight (uint8 slot, float endWeight, double time)
+	virtual	void setEndWeight (uint8 slot, float endWeight, TGlobalAnimationTime time)
 	{
 		_PlayList.setEndWeight (slot, endWeight, time);
 	}
 
-	virtual	float getEndWeight (uint8 slot, double& time) const
+	virtual	float getEndWeight (uint8 slot, TGlobalAnimationTime& time) const
 	{
 		return _PlayList.getEndWeight (slot, time);
 	}
@@ -182,9 +182,9 @@ public:
 		_PlayList.setEndWeight (slot, weight, 0);
 	}
 
-	virtual CAnimationTime getLocalTime (uint8 slot, double globalTime, const UAnimationSet& animSet) const;
+	virtual TAnimationTime getLocalTime (uint8 slot, TGlobalAnimationTime globalTime, const UAnimationSet& animSet) const;
 
-	virtual float getLocalWeight (uint8 slot, double globalTime) const;
+	virtual float getLocalWeight (uint8 slot, TGlobalAnimationTime globalTime) const;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.7 2001/09/14 17:36:30 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.8 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ uint32			CPSSound::getType(void) const
 	return PSSound; 
 }
 
-void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {
 	if (pass != PSMotion) return;
 	const uint32 size = _Owner->getSize();	

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.24 2001/11/07 17:07:50 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.25 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -276,7 +276,7 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 		{
 			psm->setEllapsedTime(ps->getScene()->getEllapsedTime());
 		}
-		CAnimationTime delay = psm->getEllapsedTime();
+		TAnimationTime delay = psm->getEllapsedTime();
 
 		psm->updateOpacityInfos();
 

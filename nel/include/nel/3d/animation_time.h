@@ -1,7 +1,7 @@
 /** \file animation_time.h
  * <File description>
  *
- * $Id: animation_time.h,v 1.4 2001/06/15 16:24:41 corvazier Exp $
+ * $Id: animation_time.h,v 1.5 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,8 @@ namespace NL3D
  * \date 2001
  */
 typedef float CAnimationTime;
+typedef float TAnimationTime;
+typedef double TGlobalAnimationTime;
 
 
 } // NL3D

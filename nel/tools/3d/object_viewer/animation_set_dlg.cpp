@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.8 2001/10/16 14:57:07 corvazier Exp $
+ * $Id: animation_set_dlg.cpp,v 1.9 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -239,7 +239,7 @@ void CAnimationSetDlg::addAnimation (NL3D::CAnimation* anim, const char* name)
 		if (keyTrack)
 		{
 			// Get number of keys
-			std::vector<CAnimationTime> keys;
+			std::vector<TAnimationTime> keys;
 			keyTrack->getKeysInRange (track->getBeginTime ()-1, track->getEndTime ()+1, keys);
 
 			// Print track info

@@ -1,7 +1,7 @@
 /** \file track_keyframer.cpp
  * <File description>
  *
- * $Id: track_keyframer.cpp,v 1.3 2001/08/31 08:07:43 vizerie Exp $
+ * $Id: track_keyframer.cpp,v 1.4 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@ namespace NL3D
 {
 
 template <class T>
-void ITrackKeyFramer<T>::getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result)
+void ITrackKeyFramer<T>::getKeysInRange(TAnimationTime t1, TAnimationTime t2, std::vector<TAnimationTime> &result)
 {
 	nlassert(t1 <= t2);
 	TMapTimeCKey::const_iterator it = _MapKey.lower_bound(t1)

@@ -1,7 +1,7 @@
 /** \file u_play_list.h
  * <File description>
  *
- * $Id: u_play_list.h,v 1.6 2001/09/18 14:35:18 corvazier Exp $
+ * $Id: u_play_list.h,v 1.7 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,7 +139,7 @@ public:
 	  * \param slot is the id of the slot to set.
 	  * \param timeOrigin time origin to use in the slot.
 	  */
-	virtual	void setTimeOrigin (uint8 slot, double timeOrigin)=0;
+	virtual	void setTimeOrigin (uint8 slot, TGlobalAnimationTime timeOrigin)=0;
 
 	/**
 	  * Get animation time origin, ie, the time in the playlist for which slot time is the startTime of the slot animation.
@@ -148,7 +148,7 @@ public:
 	  * \param slot is the id to get the slot.
 	  * \return time origin used in the slot.
 	  */
-	virtual	double getTimeOrigin (uint8 slot) const=0;
+	virtual	TGlobalAnimationTime getTimeOrigin (uint8 slot) const=0;
 
 	/**
 	  * Set animation speed factor.
@@ -197,7 +197,7 @@ public:
 	  * \param startWeight is the factor to use in this slot.
 	  * \param time is the playlist time for which the start weight is set. Default is 0.f.
 	  */
-	virtual	void setStartWeight (uint8 slot, float startWeight, double time)=0;
+	virtual	void setStartWeight (uint8 slot, float startWeight, TGlobalAnimationTime time)=0;
 
 	/**
 	  * Get animation start weight.
@@ -207,7 +207,7 @@ public:
 	  * \param time will get the playlist time for which the start weight is set. Default is 0.f.
 	  * \return the start weight used in the slot.
 	  */
-	virtual	float getStartWeight (uint8 slot, double& time) const=0;
+	virtual	float getStartWeight (uint8 slot, TGlobalAnimationTime& time) const=0;
 
 	/**
 	  * Set animation end weight. This is the weight for this animation use at the end of the animation slot.
@@ -217,7 +217,7 @@ public:
 	  * \param time is the playlist time for which the start weight is set. Default is 1.f.
 	  * \param endWeight is the factor to use in this slot.
 	  */
-	virtual	void setEndWeight (uint8 slot, float endWeight, double time)=0;
+	virtual	void setEndWeight (uint8 slot, float endWeight, TGlobalAnimationTime time)=0;
 
 	/**
 	  * Get animation end weight.
@@ -227,7 +227,7 @@ public:
 	  * \param time will get the playlist time for which the start weight is set. Default is 0.f.
 	  * \return the end weight used in the slot.
 	  */
-	virtual	float getEndWeight (uint8 slot, double& time) const=0;
+	virtual	float getEndWeight (uint8 slot, TGlobalAnimationTime& time) const=0;
 
 	/**
 	  * Set weight smoothness. 
@@ -270,7 +270,7 @@ public:
 	  *
 	  * \return the local time in the slot. If no animation are set in the slot, globalTime is returned.
 	  */
-	virtual CAnimationTime getLocalTime (uint8 slot, double globalTime, const UAnimationSet& animSet) const=0;
+	virtual TAnimationTime getLocalTime (uint8 slot, TGlobalAnimationTime globalTime, const UAnimationSet& animSet) const=0;
 
 	/**
 	  * Compute weight of a slot at a given global playlist time
@@ -280,7 +280,7 @@ public:
 	  *
 	  * \return the weight of the slot for the given time.
 	  */
-	virtual float getLocalWeight (uint8 slot, double globalTime) const=0;
+	virtual float getLocalWeight (uint8 slot, TGlobalAnimationTime globalTime) const=0;
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.55 2001/10/26 08:19:46 vizerie Exp $
+ * $Id: scene.cpp,v 1.56 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -561,7 +561,7 @@ void CScene::loadLightmapAutoAnim( const std::string &filename )
 	}
 }
 
-void CScene::animate( double atTime )
+void CScene::animate( TGlobalAnimationTime atTime )
 {
 	if (_FirstAnimateCall)
 	{

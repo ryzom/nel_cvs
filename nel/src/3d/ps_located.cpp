@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.37 2001/10/03 15:49:29 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.38 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,7 +126,7 @@ void CPSLocated::integrateSingle(float startDate, float deltaT, uint numStep,
 	}
 }
 
-void CPSLocated::performParametricMotion(CAnimationTime date, CAnimationTime ellapsedTime)
+void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime)
 {
 	if (!_Size) return;	
 	nlassert(supportParametricMotion() && _ParametricMotion);
@@ -307,7 +307,7 @@ void CPSLocated::incrementNbDrawnParticles(uint num)
 	CParticleSystem::NbParticlesDrawn += num; // for benchmark purpose	
 }
 
-void CPSLocated::setInitialLife(CAnimationTime lifeTime)
+void CPSLocated::setInitialLife(TAnimationTime lifeTime)
 {
 	_LastForever = false;
 	_InitialLife = lifeTime;
@@ -982,7 +982,7 @@ static void IntegrateSpeed(uint count, float *src1, const float *src2 ,float ell
 }
 
 
-void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void CPSLocated::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {
 	if (!_Size) return;	
 
@@ -1101,7 +1101,7 @@ void CPSLocated::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	}
 }
 
-void CPSLocated::updateLife(CAnimationTime ellapsedTime)
+void CPSLocated::updateLife(TAnimationTime ellapsedTime)
 {
 	if (! _LastForever)
 	{

@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.3 2001/07/20 14:16:15 corvazier Exp $
+ * $Id: animation.h,v 1.4 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,8 +128,8 @@ public:
 
 	virtual UTrack*		getTrackByName (const char* name);
 	virtual void		releaseTrack (UTrack* track);
-	virtual CAnimationTime	getBeginTime () const;
-	virtual CAnimationTime	getEndTime () const;
+	virtual TAnimationTime	getBeginTime () const;
+	virtual TAnimationTime	getEndTime () const;
 
 
 	// @}

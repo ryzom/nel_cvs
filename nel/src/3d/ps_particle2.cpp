@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle2.cpp,v 1.3 2001/10/03 09:12:44 vizerie Exp $
+ * $Id: ps_particle2.cpp,v 1.4 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,7 +117,7 @@ void CPSRibbonLookAt::setTailNbSeg(uint32 nbSegs)
 	reinitFromOwner();
 }
 		
-void CPSRibbonLookAt::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+void CPSRibbonLookAt::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 {		
 	if (pass == PSPostdynamic) // performs motion by using the speed obtained after forces integration
 	{		
@@ -224,7 +224,7 @@ static inline void BuildHermiteVector(const NLMISC::CVector P0,
 }
 
 	
-void CPSRibbonLookAt::performMotion(CAnimationTime ellapsedTime)
+void CPSRibbonLookAt::performMotion(TAnimationTime ellapsedTime)
 {
 	if (ellapsedTime == 0) return;
 	nlassert(_Owner);
@@ -273,7 +273,7 @@ void CPSRibbonLookAt::performMotion(CAnimationTime ellapsedTime)
 		TPSAttribVector::const_iterator speedIt = _Owner->getSpeed().begin();
 		uint numStep = (uint) (ellapsedTime / _SegDuration);
 		uint numStepInc;
-		const CAnimationTime fracTime = ellapsedTime - numStep * _SegDuration;
+		const TAnimationTime fracTime = ellapsedTime - numStep * _SegDuration;
 		// use hermite interpolation to create intermediate values
 		NLMISC::CVector T0, T1, P0, P1;
 
@@ -714,12 +714,12 @@ void CPSRibbonLookAt::reinitFromOwner(void)
 	}
 }
 
-void CPSRibbonLookAt::setSegDuration(CAnimationTime ellapsedTime)
+void CPSRibbonLookAt::setSegDuration(TAnimationTime ellapsedTime)
 {
 	_SegDuration = ellapsedTime;
 }
 
-CAnimationTime	CPSRibbonLookAt::getSegDuration(void) const
+TAnimationTime	CPSRibbonLookAt::getSegDuration(void) const
 {
 	return _SegDuration;
 }

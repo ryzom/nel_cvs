@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.13 2001/10/03 15:49:29 vizerie Exp $
+ * $Id: ps_located.h,v 1.14 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -229,7 +229,7 @@ public:
 	 *  Any previous call to setLastForever() is discarded
 	 *  Any previous scheme for lifetime is dicarded	 
 	 */
-	void setInitialLife(CAnimationTime lifeTime);
+	void setInitialLife(TAnimationTime lifeTime);
 
 	/** Set a scheme (allocated by new, released by that object) that generate the duration of locateds.
 	 *  Such a scheme can't own its memory.
@@ -239,7 +239,7 @@ public:
 	void setLifeScheme(CPSAttribMaker<float> *scheme);
 
 	/// get the life of created particles (valid if they have a limited life time)
-	CAnimationTime getInitialLife(void) const { return _InitialLife; }
+	TAnimationTime getInitialLife(void) const { return _InitialLife; }
 
 	/// get the life scheme of created particle, null if none (valid if they have a limited life time)
 	CPSAttribMaker<float> *getLifeScheme(void) { return _LifeScheme; }
@@ -258,7 +258,7 @@ public:
 	void setMassScheme(CPSAttribMaker<float> *scheme);
 
 	/// get the mass of created particle
-	CAnimationTime getInitialMass(void) const { return _InitialMass; }
+	TAnimationTime getInitialMass(void) const { return _InitialMass; }
 
 	/// get the scheme that compute mass of created particles, null if none
 	CPSAttribMaker<float> *getMassScheme(void) { return _MassScheme; }
@@ -302,7 +302,7 @@ public:
 	/**
 	* process the system
 	*/
-	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime);
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 
 
 
@@ -478,10 +478,10 @@ public:
 	bool		 isParametricMotionEnabled(void) const { return _ParametricMotion;}
 
 	/// inherited from CParticlesystemProcess perform parametric motion for this located to reach the given date
-	virtual void performParametricMotion(CAnimationTime date, CAnimationTime ellapsedTime);
+	virtual void performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime);
 
 	/// make the particle older of the given amount. Should not be called directly, as it is called by the system during its step method
-	void updateLife(CAnimationTime ellapsedTime);
+	void updateLife(TAnimationTime ellapsedTime);
 
 	/** Compute the trajectory of the given located.
 	  * NB : only works with object that have parametric trajectories
@@ -569,7 +569,7 @@ protected:
 		}
 		NLMISC::CVector	Pos;   // the inital pos of emission
 		NLMISC::CVector	Speed; // the inital direction of emission
-		CAnimationTime  Date;  // the initial date of emission
+		TAnimationTime  Date;  // the initial date of emission
 	};
 
 	/// WARNING : private use by forces only
@@ -775,7 +775,7 @@ public:
 
 
 	/// process one pass for this bindable
-	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) = 0;
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime) = 0;
 
 
 	/** can be used by located bindable that have located as targets (emitter, collision zone, forces)

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.18 2001/09/26 17:03:05 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.19 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,13 +147,13 @@ class CParticleSystemModel : public CTransformShape
 			}
 
 			/// set the ellapsed time (in second) used for animation. 		  
-			void						setEllapsedTime(CAnimationTime ellapsedTime) 
+			void						setEllapsedTime(TAnimationTime ellapsedTime) 
 			{ 
 				_EllapsedTime = ellapsedTime; 
 			}
 			
 			/// get the ellapsed time used for animation
-			CAnimationTime				getEllapsedTime(void) const 
+			TAnimationTime				getEllapsedTime(void) const 
 			{ 
 				return _EllapsedTime; 
 			}
@@ -258,7 +258,7 @@ class CParticleSystemModel : public CTransformShape
 		bool									_AutoGetEllapsedTime;		
 		CParticleSystem						   *_ParticleSystem;
 		CScene							  	   *_Scene;
-		CAnimationTime						    _EllapsedTime;
+		TAnimationTime						    _EllapsedTime;
 		bool									_ToolDisplayEnabled;		
 		bool									_TransparencyStateTouched;
 		bool									_EditionMode;

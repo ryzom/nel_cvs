@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.31 2001/11/22 08:49:23 corvazier Exp $
+ * $Id: export_nel.h,v 1.32 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -293,7 +293,7 @@ public:
 														std::set<TimeValue>* previousKeysSampled);
 
 	// convert to nel time value
-	static NL3D::CAnimationTime		convertTime (TimeValue time);
+	static NL3D::TAnimationTime		convertTime (TimeValue time);
 
 	// ************************************
 	// *** Export skeleton and skinning

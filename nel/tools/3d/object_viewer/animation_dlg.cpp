@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * implementation file
  *
- * $Id: animation_dlg.cpp,v 1.8 2001/11/05 09:30:14 corvazier Exp $
+ * $Id: animation_dlg.cpp,v 1.9 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -385,13 +385,13 @@ void CAnimationDlg::updateBar ()
 	UpdateData (FALSE);
 }
 
-NL3D::CAnimationTime CAnimationDlg::getTime ()
+NL3D::TAnimationTime CAnimationDlg::getTime ()
 {
 	// Return current time in second
 	return CurrentFrame/Speed;
 }
 
-NL3D::CAnimationTime CAnimationDlg::getLastTime ()
+NL3D::TAnimationTime CAnimationDlg::getLastTime ()
 {
 	// Return current time in second
 	return LastFrame/Speed;

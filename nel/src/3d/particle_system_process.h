@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.5 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.6 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,7 +82,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		/**
 		* execute this process, telling how much time ellapsed 
 		*/
-		virtual void			step(TPSProcessPass pass, CAnimationTime ellapsedTime) = 0 ;
+		virtual void			step(TPSProcessPass pass, TAnimationTime ellapsedTime) = 0 ;
 
 
 		/** Compute the aabbox of this process, (expressed in world basis).
@@ -145,7 +145,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		virtual bool		 isParametricMotionEnabled(void) const { return false;}
 
 		/// perform parametric motion if enabled
-			virtual void performParametricMotion(CAnimationTime date, CAnimationTime ellapsedTime) { nlassert(0);}
+			virtual void performParametricMotion(TAnimationTime date, TAnimationTime ellapsedTime) { nlassert(0);}
 			
 	protected:
 		CParticleSystem *_Owner ;

@@ -1,7 +1,7 @@
 /** \file u_track.h
  * User interface to access tracks fonctionnalities
  *
- * $Id: u_track.h,v 1.4 2001/08/30 10:14:46 vizerie Exp $
+ * $Id: u_track.h,v 1.5 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,12 +60,12 @@ public:
 	/**
 	  * Get the begin time of the track
 	  */
-	virtual CAnimationTime getBeginTime () const=0;
+	virtual TAnimationTime getBeginTime () const=0;
 
 	/**
 	  * Get the end time of the track
 	  */
-	virtual CAnimationTime getEndTime () const=0;
+	virtual TAnimationTime getEndTime () const=0;
 
 	// @}
 
@@ -83,7 +83,7 @@ public:
 	  * \param res is the reference on the value to get the result.
 	  * \return true if interplation is successful. false if the type asked is wrong.
 	  */
-	virtual bool interpolate (CAnimationTime time, float& res) =0;
+	virtual bool interpolate (TAnimationTime time, float& res) =0;
 
 	/**
 	  * Interplation an integer value. You should be sure that the track you use to interpolate
@@ -96,7 +96,7 @@ public:
 	  * \param res is the reference on the value to get the result.
 	  * \return true if interplation is successful. false if the type asked is wrong.
 	  */
-	virtual bool interpolate (CAnimationTime time, sint32& res) =0;
+	virtual bool interpolate (TAnimationTime time, sint32& res) =0;
 
 	/**
 	  * Interplation a CRGBA value. You should be sure that the track you use to interpolate
@@ -109,7 +109,7 @@ public:
 	  * \param res is the reference on the value to get the result.
 	  * \return true if interplation is successful. false if the type asked is wrong.
 	  */
-	virtual bool interpolate (CAnimationTime time, NLMISC::CRGBA& res) =0;
+	virtual bool interpolate (TAnimationTime time, NLMISC::CRGBA& res) =0;
 
 	/**
 	  * Interplation a CVector value. You should be sure that the track you use to interpolate
@@ -122,7 +122,7 @@ public:
 	  * \param res is the reference on the value to get the result.
 	  * \return true if interplation is successful. false if the type asked is wrong.
 	  */
-	virtual bool interpolate (CAnimationTime time, NLMISC::CVector& res) =0;
+	virtual bool interpolate (TAnimationTime time, NLMISC::CVector& res) =0;
 
 	/**
 	  * Interplation a CQuat value. You should be sure that the track you use to interpolate
@@ -135,7 +135,7 @@ public:
 	  * \param res is the reference on the value to get the result.
 	  * \return true if interplation is successful. false if the type asked is wrong.
 	  */
-	virtual bool interpolate (CAnimationTime time, NLMISC::CQuat& res) =0;
+	virtual bool interpolate (TAnimationTime time, NLMISC::CQuat& res) =0;
 
 	/**
 	  * Interplation a string value. You should be sure that the track you use to interpolate
@@ -148,7 +148,7 @@ public:
 	  * \param res is the reference on the value to get the result.
 	  * \return true if interplation is successful. false if the type asked is wrong.
 	  */
-	virtual bool interpolate (CAnimationTime time, std::string& res) =0;
+	virtual bool interpolate (TAnimationTime time, std::string& res) =0;
 
 	/**
 	  * Interplation a bool value. You should be sure that the track you use to interpolate
@@ -161,7 +161,7 @@ public:
 	  * \param res is the reference on the value to get the result.
 	  * \return true if interplation is successful. false if the type asked is wrong.
 	  */
-	virtual bool interpolate (CAnimationTime time, bool& res) =0;
+	virtual bool interpolate (TAnimationTime time, bool& res) =0;
 
 	// @}
 };
@@ -176,7 +176,7 @@ public:
 	/** Retrieve the keys that are in the given range ]t1, t2] of the track. They can then be evaluated
 	  * \param result a vector that will be cleared, and filled with the date ofthe keys
 	  */
-	virtual void getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result)=0;	
+	virtual void getKeysInRange(TAnimationTime t1, TAnimationTime t2, std::vector<TAnimationTime> &result)=0;	
 };
 
 

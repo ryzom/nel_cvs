@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * <File description>
  *
- * $Id: ps_particle_basic.h,v 1.1 2001/09/26 17:45:09 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.2 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 	/**
 	* process one pass for the particles. The default behaviour shows the particles
 	*/
-	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime)
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime)
 	{
 		if (
 			(pass == PSBlendRender && hasTransparentFaces())

@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * <File description>
  *
- * $Id: ps_sound.h,v 1.5 2001/09/04 13:42:39 vizerie Exp $
+ * $Id: ps_sound.h,v 1.6 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ public:
 	/**
 	* process one pass for the sound. This is usually done during the motion pass
 	*/
-	virtual void					step(TPSProcessPass pass, CAnimationTime ellapsedTime);
+	virtual void					step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 	
 	/// set the name of the sound
 	void							setSoundName(const std::string &soundName)

@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.13 2001/10/04 12:18:49 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.14 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,7 +75,7 @@ public:
 	* So you don't need to redefine this most of the time
 	*
 	*/
-	virtual void					step(TPSProcessPass pass, CAnimationTime ellapsedTime);
+	virtual void					step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 	
 
 	/// Display the emitter in edition mode

@@ -1,7 +1,7 @@
 /** \file ps_size.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.7 2001/09/14 17:37:05 vizerie Exp $
+ * $Id: ps_float.h,v 1.8 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,7 +157,7 @@ class CPSFloatCurveFunctor
 		#ifdef NL_OS_WINDOWS
 			__forceinline
 		#endif
-		float operator()(CAnimationTime time) const
+		float operator()(TAnimationTime time) const
 		{
 			return _Tab[OptFastFloor(time * _NumSamples)];
 		}

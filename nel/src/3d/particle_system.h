@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.19 2001/09/26 17:43:01 vizerie Exp $
+ * $Id: particle_system.h,v 1.20 2001/11/22 15:34:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,7 +172,7 @@ public:
 		* \param pass the pass to be executed
 		* \see setDriver
 		*/
-		virtual void step(TPass pass, CAnimationTime ellapsedTime);
+		virtual void step(TPass pass, TAnimationTime ellapsedTime);
 		//@}
 
 		
@@ -231,7 +231,7 @@ public:
 		//@{
 
 		/// get the time ellapsed since the system was created.
-		CAnimationTime getSystemDate(void) const { return _SystemDate; }
+		TAnimationTime getSystemDate(void) const { return _SystemDate; }
 
 		/** Get the date of the system (the number of time it has been drawn in fact)
 		 *  This may be used to skip frames in an animation for example.
@@ -350,7 +350,7 @@ public:
 		  * \param canSlowDown : Allow the system to slow down in speed but to keep accuracy in its movement.
 		  *  It is useful for critical situations where the framerate is very low. The default is true.
 		  */
-		void setAccurateIntegrationParams(CAnimationTime threshold, uint32 maxNbIntegrations, bool canSlowDown)
+		void setAccurateIntegrationParams(TAnimationTime threshold, uint32 maxNbIntegrations, bool canSlowDown)
 		{
 			_TimeThreshold = threshold;
 			_MaxNbIntegrations = maxNbIntegrations;
@@ -360,7 +360,7 @@ public:
 		/** get the parameters used for integration.
 		  * \see setAccurateIntegrationParams()
 		  */
-		void getAccurateIntegrationParams(CAnimationTime &threshold, uint32 &maxNbIntegrations, bool &canSlowDown)
+		void getAccurateIntegrationParams(TAnimationTime &threshold, uint32 &maxNbIntegrations, bool &canSlowDown)
 		{
 			threshold = _TimeThreshold ;
 			maxNbIntegrations = _MaxNbIntegrations;
@@ -491,10 +491,10 @@ public:
 		  * \see hasParticles()
 		  * \see getDelayBeforeDeathConditionTest()
 		  */
-		void setDelayBeforeDeathConditionTest(CAnimationTime delay) { _DelayBeforeDieTest  = delay; }
+		void setDelayBeforeDeathConditionTest(TAnimationTime delay) { _DelayBeforeDieTest  = delay; }
 
 		/// get the a delay before to apply the death condition test	  
-		CAnimationTime		getDelayBeforeDeathConditionTest(void) const { return _DelayBeforeDieTest; }
+		TAnimationTime		getDelayBeforeDeathConditionTest(void) const { return _DelayBeforeDieTest; }
 
 		/** tells the model holding this system that he become invalid when its out of the view frustum.	  
 		  * This is only an indication flag and must be checked by third party (a model holding it for example)
@@ -571,7 +571,7 @@ public:
 
 protected:
 	/// process a pass on the bound located
-	void					stepLocated(TPSProcessPass pass, CAnimationTime et);
+	void					stepLocated(TPSProcessPass pass, TAnimationTime et);
 
 	/// when set to true, the system will compute his BBox every time computeBBox is called
 	bool					 _ComputeBBox;
@@ -619,8 +619,8 @@ protected:
 
 
 	bool										_AccurateIntegration;	
-	CAnimationTime								_TimeThreshold;
-	CAnimationTime								_SystemDate;
+	TAnimationTime								_TimeThreshold;
+	TAnimationTime								_SystemDate;
 	uint32										_MaxNbIntegrations;
 	bool										_CanSlowDown;
 
@@ -634,7 +634,7 @@ protected:
 	bool										_Touch;
 
 	TDieCondition								_DieCondition;
-	CAnimationTime								_DelayBeforeDieTest;
+	TAnimationTime								_DelayBeforeDieTest;
 	bool										_DestroyModelWhenOutOfRange;
 	bool										_DestroyWhenOutOfFrustum;	
 	bool										_PerformMotionWhenOutOfFrustum;

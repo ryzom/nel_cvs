@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.8 2001/09/26 17:44:42 vizerie Exp $
+ * $Id: ps_zone.h,v 1.9 2001/11/22 15:34:14 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,14 +78,14 @@ public:
 	 * Process one pass for the zone
 	 * The default behaviour call performMotion or show depending on the pass being processed
 	 */
-	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime);
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
 
 	
 	/// This is usually called by the step method for the pass dedicated to zone
-	virtual void performMotion(CAnimationTime ellapsedTime) = 0;
+	virtual void performMotion(TAnimationTime ellapsedTime) = 0;
 
 	/// Show the zone (edition mode).
-	virtual void show(CAnimationTime ellapsedTime) = 0;
+	virtual void show(TAnimationTime ellapsedTime) = 0;
 		
 
 	/// Add a new type of located for this zone to apply on. nlassert if already present	
@@ -148,8 +148,8 @@ protected:
 class CPSZonePlane : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(CAnimationTime ellapsedTime);
-		virtual void show(CAnimationTime ellapsedTime);
+		virtual void performMotion(TAnimationTime ellapsedTime);
+		virtual void show(TAnimationTime ellapsedTime);
 	
 
 		NLMISC_DECLARE_CLASS(CPSZonePlane);
@@ -199,8 +199,8 @@ typedef CPSAttrib<CRadiusPair> TPSAttribRadiusPair;
 class CPSZoneSphere : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(CAnimationTime ellapsedTime);
-		virtual void show(CAnimationTime ellapsedTime);
+		virtual void performMotion(TAnimationTime ellapsedTime);
+		virtual void show(TAnimationTime ellapsedTime);
 	
 
 		NLMISC_DECLARE_CLASS(CPSZoneSphere);
@@ -243,8 +243,8 @@ class CPSZoneSphere : public CPSZone, public IPSMover
 class CPSZoneDisc : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(CAnimationTime ellapsedTime);
-		virtual void show(CAnimationTime ellapsedTime);
+		virtual void performMotion(TAnimationTime ellapsedTime);
+		virtual void show(TAnimationTime ellapsedTime);
 	
 		CPSZoneDisc()
 		{
@@ -290,8 +290,8 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 class CPSZoneCylinder : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(CAnimationTime ellapsedTime);
-		virtual void show(CAnimationTime ellapsedTime);
+		virtual void performMotion(TAnimationTime ellapsedTime);
+		virtual void show(TAnimationTime ellapsedTime);
 	
 		CPSZoneCylinder()
 		{
@@ -342,8 +342,8 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 class CPSZoneRectangle : public CPSZone, public IPSMover
 {
 	public:
-		virtual void performMotion(CAnimationTime ellapsedTime);
-		virtual void show(CAnimationTime ellapsedTime);
+		virtual void performMotion(TAnimationTime ellapsedTime);
+		virtual void show(TAnimationTime ellapsedTime);
 	
 		CPSZoneRectangle()
 		{

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.38 2002/04/18 16:48:13 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.39 2002/04/23 13:57:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1099,7 +1099,14 @@ void	CPSEmitter::updateMaxCountVect()
 	{
 		nlassert(_Owner);
 		_NumEmission.resize(_Owner->getMaxSize());
-		std::fill(_NumEmission.begin(), _NumEmission.begin() + _Owner->getSize(), 0);
+		while (_NumEmission.getSize() != 0) 
+		{		
+			_NumEmission.remove(0);
+		}
+		while (_NumEmission.getSize() != _Owner->getSize())
+		{
+			_NumEmission.insert(0);
+		}		
 	}
 }
 

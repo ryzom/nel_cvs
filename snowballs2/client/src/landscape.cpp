@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.17 2002/07/10 15:25:25 lecroart Exp $
+ * $Id: landscape.cpp,v 1.18 2003/04/02 18:50:21 ledorze Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include <deque>
 #include <vector>
 
+#include "nel/misc/variable.h"
 #include "nel/misc/command.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/path.h"

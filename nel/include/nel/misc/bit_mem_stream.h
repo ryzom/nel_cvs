@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.18 2003/01/24 17:52:49 coutelas Exp $
+ * $Id: bit_mem_stream.h,v 1.19 2003/02/24 10:31:49 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -31,6 +31,86 @@
 
 
 namespace NLMISC {
+
+
+/* In debugging stage, should be defined. In stable stage, undefine it!
+ * Works along with the verboseAllTraffic command
+ */
+#define LOG_ALL_TRAFFIC
+
+
+#ifdef LOG_ALL_TRAFFIC
+
+#define serialAndLog1( v ) \
+	_serialAndLog( #v, v );
+
+#define serialAndLog2( v, s ) \
+	_serialAndLog( #v, v, s );
+
+#define serialBitAndLog( v ) \
+	_serialBitAndLog( #v, v );
+
+#define	serialAdaptAndLog( argstr, b, type ) \
+	uint32 ub=0; \
+	if ( isReading() ) \
+	{ \
+		_serialAndLog( argstr, ub, sizeof(type)*8 ); \
+		b = (type)ub; \
+	} \
+	else \
+	{ \
+		ub = (uint32)b; \
+		_serialAndLog( argstr, ub, sizeof(type)*8 ); \
+	}
+
+#ifdef NL_LITTLE_ENDIAN
+
+#define	serialAdapt64AndLog( argstr, b ) \
+	_serialAndLog( argstr, *((uint32*)(&b)), 32 ); \
+	_serialAndLog( argstr, *((uint32*)(&b)+1), 32 );
+
+#else
+
+#define	serialAdapt64AndLog( argstr, b ) \
+	serialAndLog( argstr, *((uint32*)(&b)+1), 32); \
+	serialAndLog( argstr, *((uint32*)(&b)), 32);
+
+#endif
+
+
+#else
+	
+#define serialAndLog1 serial
+#define serialAndLog2 serial
+
+#endif
+
+#define	serialAdapt( b, type ) \
+	uint32 ub=0; \
+	if ( isReading() ) \
+	{ \
+		serial( ub, sizeof(type)*8 ); \
+		b = (type)ub; \
+	} \
+	else \
+	{ \
+		ub = (uint32)b; \
+		serial( ub, sizeof(type)*8 ); \
+	}
+
+#ifdef NL_LITTLE_ENDIAN
+
+#define	serialAdapt64( b ) \
+	serial( *((uint32*)(&b)), 32); \
+	serial( *((uint32*)(&b)+1), 32);
+
+#else
+
+#define	serialAdapt64( b ) \
+	serial( *((uint32*)(&b)+1), 32); \
+	serial( *((uint32*)(&b)), 32);
+
+#endif
 
 
 class CBitSet;
@@ -133,6 +213,12 @@ public:
 
 	/// Serialize one bit
 	virtual void	serialBit( bool& bit );
+
+#ifdef LOG_ALL_TRAFFIC
+	void			_serialAndLog( const char *argstr, uint32& value, uint nbits );
+	void			_serialAndLog( const char *argstr, uint64& value, uint nbits );
+	void			_serialBitAndLog( const char *argstr, bool& bit );
+#endif
 
 	/** Serialize only the nbits lower bits of value (nbits range: [1..32])
 	 * When using this method, always leave resetvalue to true.
@@ -237,19 +323,6 @@ public:
 	//@{
 
 
-#define	serialAdapt( b, type ) \
-	uint32 ub=0; \
-	if ( isReading() ) \
-	{ \
-		serial( ub, sizeof(type)*8 ); \
-		b = (type)ub; \
-	} \
-	else \
-	{ \
-		ub = (uint32)b; \
-		serial( ub, sizeof(type)*8 ); \
-	}
-
 /*
 #define	serialAdapt64( b, type ) \
 	uint32 ubl=0, ubh=0; \
@@ -268,20 +341,23 @@ public:
 	}
 */
 
-#ifdef NL_LITTLE_ENDIAN
-
-#define	serialAdapt64( b ) \
-	serial( *((uint32*)(&b)), 32); \
-	serial( *((uint32*)(&b)+1), 32);
-
-#else
-
-#define	serialAdapt64( b ) \
-	serial( *((uint32*)(&b)+1), 32); \
-	serial( *((uint32*)(&b)), 32);
-
+#ifdef LOG_ALL_TRAFFIC
+	void			_serialAndLog(const char *argstr, uint8 &b) { serialAdaptAndLog( argstr, b, uint8 ); }
+	void			_serialAndLog(const char *argstr, sint8 &b) { serialAdaptAndLog( argstr, b, sint8 ); }
+	void			_serialAndLog(const char *argstr, uint16 &b) { serialAdaptAndLog( argstr, b, uint16 ); }
+	void			_serialAndLog(const char *argstr, sint16 &b) { serialAdaptAndLog( argstr, b, sint16 ); }
+	void			_serialAndLog(const char *argstr, uint32 &b) { serialAdaptAndLog( argstr, b, uint32 ); }
+	void			_serialAndLog(const char *argstr, sint32 &b) { serialAdaptAndLog( argstr, b, sint32 ); }
+	void			_serialAndLog(const char *argstr, uint64 &b) { serialAdapt64AndLog( argstr, b ); }
+	void			_serialAndLog(const char *argstr, sint64 &b) { serialAdapt64AndLog( argstr, b ); }
+	void			_serialAndLog(const char *argstr, float &b);
+	void			_serialAndLog(const char *argstr, double &b) { serialAdapt64AndLog( argstr, b ); }
+	void			_serialAndLog(const char *argstr, bool &b) { _serialBitAndLog( argstr, b ); }
+#ifndef NL_OS_CYGWIN
+	virtual void	_serialAndLog(const char *argstr, char &b) { serialAdaptAndLog( argstr, b, char ); }
 #endif
-	
+#endif
+
 	virtual void	serial(uint8 &b) { serialAdapt( b, uint8 ); }
 	virtual void	serial(sint8 &b) { serialAdapt( b, sint8 ); }
 	virtual void	serial(uint16 &b) { serialAdapt( b, uint16 ); }
@@ -296,11 +372,12 @@ public:
 #ifndef NL_OS_CYGWIN
 	virtual void	serial(char &b) { serialAdapt( b, char ); }
 #endif
+
 	virtual void	serial(std::string &b);
 	virtual void	serial(ucstring &b);
 
 	virtual void	serial(CBitMemStream &b);
-	
+
 	//@}
 
 	/// Specialisation of serialCont() for vector<uint8>

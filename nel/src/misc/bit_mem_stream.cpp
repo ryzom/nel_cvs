@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.25 2003/01/24 17:52:49 coutelas Exp $
+ * $Id: bit_mem_stream.cpp,v 1.26 2003/02/24 10:31:27 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,10 +28,18 @@
 #include "nel/misc/bit_mem_stream.h"
 #include "nel/misc/bit_set.h"
 
+#ifdef LOG_ALL_TRAFFIC
+#include "nel/misc/command.h"
+#endif
+
 using namespace std;
 
 
 namespace NLMISC {
+
+#ifdef LOG_ALL_TRAFFIC
+bool VerboseAllTraffic = false;
+#endif
 
 
 /*
@@ -139,6 +147,52 @@ void CBitMemStream::serialBit( bool& bit )
 	s2 += "^";
 	nlinfo( "%s beginpos=%u", s2.c_str(), beginpos );
 }*/
+
+
+#ifdef LOG_ALL_TRAFFIC
+
+void	CBitMemStream::_serialAndLog( const char *argstr, uint32& value, uint nbits )
+{
+	sint32 bitpos = getPosInBit();
+	serial( value, nbits );
+	if ( VerboseAllTraffic )
+		nldebug( "TRAFFIC/%p/%s: %s: %u bits at bitpos %d (%u)", this, isReading()?"I":"O", argstr, nbits, bitpos, value );
+}
+
+void	CBitMemStream::_serialAndLog( const char *argstr, uint64& value, uint nbits )
+{
+	sint32 bitpos = getPosInBit();
+	serial( value, nbits );
+	if ( VerboseAllTraffic )
+		nldebug( "TRAFFIC/%p/%s: %s: %u bits at bitpos %d (%u)", this, isReading()?"I":"O", argstr, nbits, bitpos, value );
+}
+
+void	CBitMemStream::_serialBitAndLog( const char *argstr, bool& bit )
+{
+	sint32 bitpos = getPosInBit();
+	serialBit( bit );
+	if ( VerboseAllTraffic )
+		nldebug( "TRAFFIC/%p/%s: %s: 1 bit at bitpos %d (%hu)", this, isReading()?"I":"O", argstr, bitpos, (uint16)bit );
+}
+
+NLMISC_COMMAND( verboseAllTraffic, "Verbose the all-traffic logs", "" )
+{
+	if(args.size()>1)
+		return false;
+
+	if(args.size()==1)
+	{
+		if(args[0]==string("on")||args[0]==string("ON")||args[0]==string("true")||args[0]==string("TRUE")||args[0]==string("1"))
+			VerboseAllTraffic=true;
+		else if(args[0]==string("off")||args[0]==string("OFF")||args[0]==string("false")||args[0]==string("FALSE")||args[0]==string("0"))
+			VerboseAllTraffic=false;
+	}
+
+	nlinfo("verboseAllTraffic is %s",VerboseAllTraffic?"ON":"OFF");
+	return true;
+}
+
+#endif
 
 
 /*
@@ -259,6 +313,10 @@ void	CBitMemStream::serial( uint32& value, uint nbits, bool resetvalue )
  */
 void	CBitMemStream::reserveBits( uint nbits )
 {
+#ifdef LOG_ALL_TRAFFIC
+	if ( VerboseAllTraffic )
+		nldebug( "TRAFFIC/%p/%s: Reserving %u bits at bitpos %d", this, isReading()?"I":"O", nbits, getPosInBit() );	
+#endif
 	uint32 v = 0;
 	while ( nbits > 32 )
 	{
@@ -388,6 +446,10 @@ void	CBitMemStream::readBits( NLMISC::CBitSet& bitfield )
 	uint len = bitfield.size();
 	if ( len != 0 )
 	{
+#ifdef LOG_ALL_TRAFFIC
+		if ( VerboseAllTraffic )
+			nldebug( "TRAFFIC/%p/%s: Reading %u bits bitfield at bitpos %d", this, isReading()?"I":"O", len, getPosInBit() );
+#endif
 		uint i = 0;
 		uint32 v;
 		while ( len > 32 )
@@ -427,6 +489,10 @@ void	CBitMemStream::serial(float &b)
  */
 void	CBitMemStream::serial(std::string &b) 
 {
+#ifdef LOG_ALL_TRAFFIC
+	sint32 bitpos = getPosInBit();
+#endif
+
 	uint32 len=0;
 
 	// Serialize length
@@ -451,6 +517,11 @@ void	CBitMemStream::serial(std::string &b)
 	{
 		serialBuffer( (uint8*)(&*b.begin()), len );
 	}
+
+#ifdef LOG_ALL_TRAFFIC
+	if ( VerboseAllTraffic )
+		nldebug( "TRAFFIC/%p/%s: String (size 32+%u*8 bits) at bitpos %d", this, isReading()?"I":"O", len, bitpos );
+#endif
 }
 
 
@@ -459,6 +530,10 @@ void	CBitMemStream::serial(std::string &b)
  */
 inline	void		CBitMemStream::serial(ucstring &b) 
 {
+#ifdef LOG_ALL_TRAFFIC
+	sint32 bitpos = getPosInBit();
+#endif
+
 	if ( _StringMode )
 	{
 		sint32	len=0;
@@ -484,6 +559,12 @@ inline	void		CBitMemStream::serial(ucstring &b)
 	{
 		IStream::serial( b );
 	}
+
+#ifdef LOG_ALL_TRAFFIC
+	if ( VerboseAllTraffic )
+		nldebug( "TRAFFIC/%p/%s: Ucstring at bitpos %d", this, isReading()?"I":"O", bitpos );
+#endif
+
 }
 
 
@@ -492,6 +573,10 @@ inline	void		CBitMemStream::serial(ucstring &b)
  */
 void	CBitMemStream::serial(CBitMemStream &b)
 {
+#ifdef LOG_ALL_TRAFFIC
+	sint32 bitpos = getPosInBit();
+#endif
+
 	uint32 len=0;
 
 	// Serialize length
@@ -517,6 +602,10 @@ void	CBitMemStream::serial(CBitMemStream &b)
 		serialBuffer( (uint8*) b.buffer (), len );
 	}
 
+#ifdef LOG_ALL_TRAFFIC
+	if ( VerboseAllTraffic )
+		nldebug( "TRAFFIC/%p/%s: Sub-bitmemstring (size 32+%u*8 bits) at bitpos %d", this, isReading()?"I":"O", len, bitpos );
+#endif
 }
 
 /*
@@ -524,6 +613,10 @@ void	CBitMemStream::serial(CBitMemStream &b)
  */
 void CBitMemStream::serialCont(std::vector<bool> &cont)
 {
+#ifdef LOG_ALL_TRAFFIC
+	sint32 bitpos = getPosInBit();
+#endif
+
 	sint32	len=0;
 	if(isReading())
 	{
@@ -556,6 +649,12 @@ void CBitMemStream::serialCont(std::vector<bool> &cont)
 			serialBit( b );
 		}
 	}
+
+#ifdef LOG_ALL_TRAFFIC
+	if ( VerboseAllTraffic )
+		nldebug( "TRAFFIC/%p/%s: Container (header: 32 bits) at bitpos %d", this, isReading()?"I":"O", bitpos );
+#endif
+
 }
 
 

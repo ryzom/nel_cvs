@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_ws.cpp,v 1.6 2002/03/04 10:24:54 lecroart Exp $
+ * $Id: connection_ws.cpp,v 1.7 2002/03/11 10:42:49 lecroart Exp $
  *
  */
 
@@ -362,7 +362,7 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 			nlwarning ("user connected shard isn't in the shard list");
 		
 		nldebug ("Id %d is connected on the shard", Id);
-		Output.displayNL ("###: %3d User connected to the shard", Id);
+		Output.displayNL ("###: %3d User connected to the shard (%s)", Id, Shards[ShardPos].Name.c_str());
 
 		nbPlayer++;
 		if (nbPlayer > recordNbPlayer)
@@ -384,7 +384,7 @@ static void cbWSClientConnected (CMessage &msgin, TSockId from, CCallbackNetBase
 			nlwarning ("user disconnected shard isn't in the shard list");
 		
 		nldebug ("Id %d is disconnected from the shard", Id);
-		Output.displayNL ("###: %3d User disconnected from the shard", Id);
+		Output.displayNL ("###: %3d User disconnected from the shard (%s)", Id, Shards[ShardPos].Name.c_str());
 
 		nbPlayer--;
 	}

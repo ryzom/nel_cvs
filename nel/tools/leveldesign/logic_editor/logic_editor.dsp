@@ -129,7 +129,7 @@ PostBuild_Cmds=copy ..\master\logic_editor_df.dll ..\logic_editor_exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "NL_RELEASE_DEBUG" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -556,6 +556,8 @@ SOURCE=.\logic_editor.def
 
 !ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
 
+# PROP Exclude_From_Build 1
+
 !ENDIF 
 
 # End Source File
@@ -576,6 +578,27 @@ SOURCE=R:\code\nel\tools\leveldesign\logic_editor\logic_editor_df.def
 !ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
 
 # PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\logic_editor_rd.def
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
 
 !ENDIF 
 

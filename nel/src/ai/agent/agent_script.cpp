@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.94 2001/12/05 09:59:20 portier Exp $
+ * $Id: agent_script.cpp,v 1.95 2001/12/10 16:13:57 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,6 @@ namespace NLAIAGENT
 	CAgentScript::CMethodCall **CAgentScript::StaticMethod = NULL;
 	NLAISCRIPT::COperandSimpleListOr *CAgentScript::ParamIdGetValueMsg = NULL;
 	NLAISCRIPT::CParam *CAgentScript::ParamGetValueMsg = NULL;
-
 
 	void CAgentScript::initAgentScript()
 	{
@@ -234,7 +233,7 @@ namespace NLAIAGENT
 
 		StaticMethod[CAgentScript::TGetValue] = new CAgentScript::CMethodCall(	_RUNASK_, 
 																				CAgentScript::TGetValue, ParamGetValueMsg,
-																				CAgentScript::CheckCount,
+																				CAgentScript::CheckAll,
 																				1,
 																				new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid)) ;
 

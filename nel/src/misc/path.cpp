@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.52 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: path.cpp,v 1.53 2002/08/27 08:32:30 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -430,13 +430,21 @@ dirent *readdir (DIR *dir)
 
 #endif // NL_OS_WINDOWS
 
+#ifndef NL_OS_WINDOWS
+string PathUsedIngetPathContent;
+#endif
+
 bool isdirectory (dirent *de)
 {
 	nlassert (de != NULL);
 #ifdef NL_OS_WINDOWS
 	return ((de->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0) && ((de->dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) == 0);
 #else
-	return (de->d_type & DT_DIR) != 0;
+	// we can't use "de->d_type & DT_DIR" because it s always NULL on libc2.1
+	//return (de->d_type & DT_DIR) != 0;
+
+	return CFile::isDirectory (PathUsedIngetPathContent + de->d_name);
+
 #endif // NL_OS_WINDOWS
 }
 
@@ -446,7 +454,11 @@ bool isfile (dirent *de)
 #ifdef NL_OS_WINDOWS
 	return ((de->dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0) && ((de->dwFileAttributes & FILE_ATTRIBUTE_SYSTEM) == 0);
 #else
-	return (de->d_type & DT_DIR) == 0;
+	// we can't use "de->d_type & DT_DIR" because it s always NULL on libc2.1
+	//return (de->d_type & DT_DIR) == 0;
+
+	return !CFile::isDirectory (PathUsedIngetPathContent + de->d_name);
+
 #endif // NL_OS_WINDOWS
 }
 
@@ -462,6 +474,10 @@ string getname (dirent *de)
 
 void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result)
 {			
+#ifndef NL_OS_WINDOWS
+	PathUsedIngetPathContent = CPath::standardizePath (path);
+#endif
+	
 	DIR *dir = opendir (path.c_str());
 
 	if (dir == NULL)
@@ -542,6 +558,10 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 	{		
 		getPathContent (recursPath[i], recurse, wantDir, wantFile, result);
 	}
+
+#ifndef NL_OS_WINDOWS
+	PathUsedIngetPathContent = "";
+#endif
 }
 
 void CPath::removeAllAlternativeSearchPath ()

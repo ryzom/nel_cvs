@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.17 2001/03/27 15:32:28 berenguier Exp $
+ * $Id: track.h,v 1.18 2001/03/27 17:35:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,7 +89,6 @@ public:
 	  */
 	virtual CAnimationTime getEndTime () const=0;
 };
-
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file track_bezier.h
  * ITrack Bezier implementation
  *
- * $Id: track_bezier.h,v 1.2 2001/03/27 09:13:12 berenguier Exp $
+ * $Id: track_bezier.h,v 1.3 2001/03/27 17:35:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,8 +24,8 @@
  */
 
 
-#ifndef NL_TRACK_H
-#error "internal file included from track.h"
+#ifndef NL_TRACK_KEYFRAMER_H
+#error "internal file included from track_keyframer.h"
 #endif
 
 

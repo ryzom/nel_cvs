@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.14 2003/03/03 12:58:09 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.15 2003/03/03 13:45:29 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -648,7 +648,7 @@ void CALLBACK CSoundDriverDSound::TimerCallback(UINT uID, UINT uMsg, DWORD dwUse
 void CSoundDriverDSound::update()
 {
 #if NLSOUND_PROFILE
-    TTicks now = CTime::getPerformanceTime();
+    TTicks tnow = CTime::getPerformanceTime();
 #endif
 
 	NLMISC::TTime now = NLMISC::CTime::getLocalTime();
@@ -678,7 +678,7 @@ void CSoundDriverDSound::update()
 	}
 
 #if NLSOUND_PROFILE
-    _TotalUpdateTime += 1000.0 * CTime::ticksToSecond(CTime::getPerformanceTime() - now);
+    _TotalUpdateTime += 1000.0 * CTime::ticksToSecond(CTime::getPerformanceTime() - tnow);
 	_UpdateCount++;
 #endif
 }

@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.18 2003/03/03 12:58:09 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.19 2003/03/03 13:45:29 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -950,7 +950,7 @@ void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
 // ******************************************************************
 void CSourceDSound::updateVolume( const NLMISC::CVector& listener )
 {
-#if MANUAL_ROLLOFF = 1
+#if MANUAL_ROLLOFF == 1
 	_SecondaryBuffer->SetVolume(_Volume);
 	return;
 #endif
@@ -1496,7 +1496,7 @@ bool CSourceDSound::fill()
 		_NextWritePos  -= _SecondaryBufferSize;
 	}
  
-	DBGPOS(("[%p] FILL: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", this, playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, Bytes1 + Bytes2));
+	DBGPOS(("[%p] FILL: P=%d, W=%d, NW=%d, SZ=%d, BW=%d, S=%d, B=%d", this, playPos, writePos, _NextWritePos, _BufferSize, _BytesWritten, _SilenceWritten, bytes1 + bytes2));
 
 
 #if NLSOUND_PROFILE

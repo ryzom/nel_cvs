@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.55 2001/02/05 16:27:04 cado Exp $
+ * $Id: msg_socket.cpp,v 1.56 2001/02/23 10:05:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -953,22 +953,17 @@ const TCallbackItem *CMsgSocket::callbackItem( const CMsgSocket *clientsocket, T
  */
 const CInetAddress *CMsgSocket::listenAddress()
 {
-	CConnections::iterator ips = _Connections.begin();
-	if ( ips!=_Connections.end() )
+	// Search for listening socket
+	CConnections::iterator ips;
+	for ( ips=_Connections.begin(); ips!=_Connections.end(); ++ips )
 	{
 		if ( (*ips).second->isListening() )
 		{
 			return &(((*ips).second)->localAddr());
 		}
-		else
-		{
-			return NULL;
-		}
 	}
-	else
-	{
-		return NULL;
-	}
+	// Not found
+	return NULL;
 }
 
 

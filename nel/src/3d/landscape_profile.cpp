@@ -1,7 +1,7 @@
 /** \file landscape_profile.cpp
  * <File description>
  *
- * $Id: landscape_profile.cpp,v 1.6 2003/04/14 09:35:01 berenguier Exp $
+ * $Id: landscape_profile.cpp,v 1.7 2003/04/15 09:29:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,5 +50,8 @@ sint		ProfNSplitsPass;
 sint		ProfNTileSetupMaterial= 0;
 sint		ProfNFar0SetupMaterial= 0;
 sint		ProfNFar1SetupMaterial= 0;
+// Patch render
+sint		ProfNPatchRdrFar0=0;
+sint		ProfNPatchRdrFar1=0;
 
 } // NL3D

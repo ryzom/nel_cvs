@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.14 2002/08/26 13:01:42 berenguier Exp $
+ * $Id: patch_render.cpp,v 1.15 2003/04/15 09:29:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -525,6 +525,8 @@ static	inline	void	renderFaceVector(CLandscapeFaceVector *fv)
 // ***************************************************************************
 void			CPatch::renderFar0()
 {
+	NL3D_PROFILE_LAND_ADD(ProfNPatchRdrFar0, 1);
+
 	// Must be visible, and must be called only if the RdrPass is enabled.
 	nlassert(!RenderClipped && Pass0.PatchRdrPass);
 
@@ -576,6 +578,8 @@ void			CPatch::renderFar0()
 // ***************************************************************************
 void			CPatch::renderFar1()
 {
+	NL3D_PROFILE_LAND_ADD(ProfNPatchRdrFar1, 1);
+
 	// Must be visible, and must be called only if the RdrPass is enabled.
 	nlassert(!RenderClipped && Pass1.PatchRdrPass);
 

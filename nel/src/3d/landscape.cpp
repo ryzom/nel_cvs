@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.126 2003/04/14 09:33:07 berenguier Exp $
+ * $Id: landscape.cpp,v 1.127 2003/04/15 09:29:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -961,6 +961,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	// Yoyo: profile.
 	NL3D_PROFILE_LAND_SET(ProfNRdrFar0, 0);
 	NL3D_PROFILE_LAND_SET(ProfNRdrFar1, 0);
+	NL3D_PROFILE_LAND_SET(ProfNPatchRdrFar0, 0);
+	NL3D_PROFILE_LAND_SET(ProfNPatchRdrFar1, 0);
 	for(i=0;i<NL3D_MAX_TILE_PASS;i++)
 	{
 		NL3D_PROFILE_LAND_SET(ProfNRdrTile[i], 0);
@@ -1413,7 +1415,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 
 	// Yoyo: profile
 	NL3D_PROFILE_LAND_SET(ProfNFar0SetupMaterial, driver->profileSetupedMaterials() );
-	H_BEFORE( NL3D_Landscape_Render_Far0 );
+	H_BEFORE( NL3D_Landscape_Render_DLM );
 
 	// First, update Dynamic Lighting for Far, ie multiply Dynamic Lightmap with TextureFar, and upload to texture.
 	// ==================
@@ -1433,6 +1435,8 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 		dlmCtxPtr= (CPatchDLMContext*)dlmCtxPtr->Next;
 	}
 
+	H_AFTER( NL3D_Landscape_Render_DLM );
+	H_BEFORE( NL3D_Landscape_Render_Far0 );
 
 	// Active VB.
 	// ==================

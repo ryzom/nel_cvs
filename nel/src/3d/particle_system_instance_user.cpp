@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.11 2002/06/03 08:50:11 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.12 2002/06/04 13:45:40 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -152,7 +152,7 @@ bool	CParticleSystemInstanceUser::emit(uint32 anId, uint quantity)
 	nlassert(isSystemPresent());
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	uint numLb  = ps->getNumLocatedBindableByExternID(id);
-	return false; // INVALID ID !!
+	if (numLb == 0) return false; // INVALID ID !!
 	for (uint k = 0; k < numLb; ++k)
 	{
 		CPSLocatedBindable *lb = ps->getLocatedBindableByExternID(id, k);		
@@ -176,7 +176,7 @@ bool CParticleSystemInstanceUser::removeByID(uint32 anId)
 	if (!isSystemPresent()) return false;
 	CParticleSystem *ps = (NLMISC::safe_cast<CParticleSystemModel *>(_Transform))->getPS();
 	uint numLb  = ps->getNumLocatedBindableByExternID(id);
-	return false; // INVALID ID !!
+	if (numLb == 0) return false; // INVALID ID !!
 	for (uint k = 0; k < numLb; ++k)
 	{
 		CPSLocatedBindable *lb = ps->getLocatedBindableByExternID(id, k);

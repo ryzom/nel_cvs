@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.26 2002/03/29 14:19:55 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.27 2002/04/04 08:22:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -290,6 +290,7 @@ private:
 		void		optimizeTriangleOrder();
 	};
 
+	friend class	CLod;
 
 	/** A mesh information. NB: private. unlike CMesh::CMeshBuild, do not herit from CMeshBase::CMeshBuild, because
 	 * computed internally with CMRMBuilder, and only geometry is of interest.

@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.11 2003/02/14 14:14:43 lecroart Exp $
+ * $Id: polygon.h,v 1.12 2004/02/19 09:50:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,6 +163,9 @@ public:
 	  * Otherwise, all points from x = xmin (included)  to x = xmax (included) are valids.
 	  */
 	void		computeBorders(TRasterVect &borders, sint &minimumY);
+
+	// The same as compute borders, but pixel are seen as surfaces and not as point, so any pixel that is touched by the poly will be selected
+	void		computeBordersLarge(TRasterVect &borders, sint &minimumY);
 
 	/// Test wether this polygon intersect another convex polygon. Currently not optimized.
 	bool        intersect(const CPolygon2D &other) const;

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.6 2002/11/28 16:41:45 corvazier Exp $
+ * $Id: primitive.cpp,v 1.7 2002/11/29 15:06:22 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ xmlNodePtr GetFirstChildNode (xmlNodePtr xmlNode, const char *filename, const ch
 {
 	// Call the CIXml version
 	xmlNodePtr result;
-	if (result = CIXml::getFirstChildNode (xmlNode, childName))
+	if ((result = CIXml::getFirstChildNode (xmlNode, childName)))
 	{
 		return result;
 	}
@@ -530,7 +530,7 @@ bool CPrimPath::read (xmlNodePtr xmlNode, const char *filename, uint version)
 			if (!ReadVector (VPoints.back (), filename, ptNode))
 				return false;
 		}
-		while (ptNode = CIXml::getNextChildNode (ptNode, "PT"));
+		while ((ptNode = CIXml::getNextChildNode (ptNode, "PT")));
 	}
 
 	return IPrimitive::read (xmlNode, filename, version);
@@ -593,7 +593,7 @@ bool CPrimZone::read (xmlNodePtr xmlNode, const char *filename, uint version)
 			if (!ReadVector (VPoints.back (), filename, ptNode))
 				return false;
 		}
-		while (ptNode = CIXml::getNextChildNode (ptNode, "PT"));
+		while ((ptNode = CIXml::getNextChildNode (ptNode, "PT")));
 	}
 
 	return IPrimitive::read (xmlNode, filename, version);
@@ -1457,7 +1457,7 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version)
 								GetContentString (content, filename, stringNode);
 								propertyStringArray->StringArray.push_back (content);
 							}
-							while (stringNode = CIXml::getNextChildNode (stringNode, "STRING"));
+							while ((stringNode = CIXml::getNextChildNode (stringNode, "STRING")));
 						}
 					}
 					else if (type == "color")
@@ -1822,7 +1822,8 @@ void CPrimitives::convertPrimitive (const IPrimitive *prim, bool hidden)
 {
 	// Look for the group
 	uint numChildren = RootNode.getNumChildren ();
-	for (uint j=0; j<numChildren; j++)
+	uint j;
+	for (j=0; j<numChildren; j++)
 	{
 		IPrimitive *child;
 		nlverify (RootNode.getChild (child, j));
@@ -1892,3 +1893,4 @@ void CPrimitives::convert (const CPrimRegion &region)
 
 
 } // namespace NLLIGO
+

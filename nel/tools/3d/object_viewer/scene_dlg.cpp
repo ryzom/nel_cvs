@@ -114,8 +114,8 @@ void CSceneDlg::OnClearScene()
 	ObjView->_ListTransformShape.clear ();
 
 	// Remove all shape
-	for (i=0; i<ObjView->_ListShape.size(); i++)
-		CNELU::Scene.delShape (ObjView->_ListShape[i]);
+	/*for (i=0; i<ObjView->_ListShape.size(); i++)
+		CNELU::ShapeBank->release (ObjView->_ListShape[i]);*/
 
 	// Erase the channel mixer
 	ObjView->_ChannelMixer.resetChannels ();

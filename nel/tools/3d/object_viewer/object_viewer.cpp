@@ -548,7 +548,7 @@ CTransformShape	*CObjectViewer::addShape (IShape* pShape, const char* name, cons
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	// Store the shape pointer
-	CNELU::Scene.addShape (name, CSmartPtr<IShape> (pShape));
+	CNELU::ShapeBank->add (name, CSmartPtr<IShape> (pShape));
 
 	// Store the name of the shape
 	_ListShape.push_back (name);

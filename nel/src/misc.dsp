@@ -173,166 +173,6 @@ SOURCE=..\include\nel\misc\stream.h
 SOURCE=..\include\nel\misc\stream_inline.h
 # End Source File
 # End Group
-# Begin Group "Math"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\misc\aabbox.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\aabbox.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\bsphere.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\bsphere.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\fast_floor.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\fast_floor.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\geom_ext.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\geom_ext.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\line.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\line.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\matrix.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\matrix.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\noise_value.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\noise_value.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\plane.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\plane.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\plane_inline.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\polygon.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\polygon.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\quat.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\quat.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\rect.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\rect.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\triangle.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\triangle.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\uv.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\uv.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\vector.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\vector.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\vector_2d.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\vector_2d.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\vector_2f.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\vector_2f.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\vector_h.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\vector_h.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\vector_inline.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\vectord.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\vectord.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\vectord_inline.h
-# End Source File
-# End Group
 # Begin Group "ConfigFile"
 
 # PROP Default_Filter ""
@@ -521,6 +361,22 @@ SOURCE=..\include\nel\misc\block_memory.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\buf_fifo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\buf_fifo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\fast_mem.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\fast_mem.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\heap_allocator.cpp
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -645,117 +501,16 @@ SOURCE=.\misc\window_displayer.cpp
 SOURCE=..\include\nel\misc\window_displayer.h
 # End Source File
 # End Group
+# Begin Group "Strings"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\misc\algo.cpp
+SOURCE=.\misc\diff_tool.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\misc\algo.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\async_file_manager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\async_file_manager.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\bit_set.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\bit_set.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\bitmap.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\bitmap.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\buf_fifo.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\buf_fifo.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\class_id.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\class_id.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\command.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\command.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\common.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\common.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\debug.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\debug.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\eid_translator.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\eid_translator.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\entity_id.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\entity_id.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\eval_num_expr.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\eval_num_expr.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\fast_mem.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\fast_mem.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\hierarchical_timer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\hierarchical_timer.h
+SOURCE=..\include\nel\misc\diff_tool.h
 # End Source File
 # Begin Source File
 
@@ -767,124 +522,7 @@ SOURCE=..\include\nel\misc\i18n.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\misc\mutex.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\mutex.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\p_thread.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\p_thread.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\path.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\path.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\progress_callback.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\progress_callback.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\quad.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\quad.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\random.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\random.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\reader_writer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\reader_writer.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\report.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\report.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\rgba.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\rgba.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\sha1.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\sha1.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\sheet_id.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\sheet_id.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\smart_ptr.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\smart_ptr.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\smart_ptr_inline.h
-# End Source File
-# Begin Source File
-
 SOURCE=..\include\nel\misc\sstring.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\stdmisc.cpp
-# ADD CPP /Yc"stdmisc.h"
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\stdmisc.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\stop_watch.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\stop_watch.h
 # End Source File
 # Begin Source File
 
@@ -908,11 +546,35 @@ SOURCE=..\include\nel\misc\string_mapper.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\misc\system_info.cpp
+SOURCE=..\include\nel\misc\ucstring.h
+# End Source File
+# End Group
+# Begin Group "Threads"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\mutex.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\misc\system_info.h
+SOURCE=..\include\nel\misc\mutex.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\p_thread.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\p_thread.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\reader_writer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\reader_writer.h
 # End Source File
 # Begin Source File
 
@@ -928,19 +590,247 @@ SOURCE=..\include\nel\misc\thread.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\win_thread.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\win_thread.h
+# End Source File
+# End Group
+# Begin Group "Time"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\hierarchical_timer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\hierarchical_timer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\stop_watch.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\stop_watch.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\time_nl.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\misc\time_nl.h
 # End Source File
+# End Group
+# Begin Group "Files"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\include\nel\misc\types_nl.h
+SOURCE=.\misc\async_file_manager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\misc\ucstring.h
+SOURCE=..\include\nel\misc\async_file_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\path.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\path.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\sha1.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\sha1.h
+# End Source File
+# End Group
+# Begin Group "Identifiers"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\eid_translator.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\eid_translator.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\entity_id.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\entity_id.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\sheet_id.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\sheet_id.h
+# End Source File
+# End Group
+# Begin Group "Math and 3d"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\aabbox.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\aabbox.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\bitmap.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\bitmap.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\bsphere.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\bsphere.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\eval_num_expr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\eval_num_expr.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\fast_floor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\fast_floor.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\geom_ext.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\geom_ext.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\line.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\line.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\matrix.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\matrix.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\noise_value.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\noise_value.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\plane.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\plane.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\plane_inline.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\polygon.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\polygon.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\quad.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\quad.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\quat.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\quat.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\random.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\random.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\rect.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\rect.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\rgba.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\rgba.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\triangle.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\triangle.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\uv.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\uv.h
 # End Source File
 # Begin Source File
 
@@ -952,19 +842,169 @@ SOURCE=..\include\nel\misc\value_smoother.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\vector.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vector.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\vector_2d.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vector_2d.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\vector_2f.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vector_2f.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\vector_h.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vector_h.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vector_inline.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\vectord.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vectord.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vectord_inline.h
+# End Source File
+# End Group
+# Begin Group "Admin and info"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\command.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\command.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\progress_callback.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\progress_callback.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\report.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\report.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\system_info.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\system_info.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\variable.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\misc\variable.h
 # End Source File
+# End Group
+# Begin Group "C++ extensions"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\misc\win_thread.cpp
+SOURCE=.\misc\bit_set.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=..\include\nel\misc\win_thread.h
+SOURCE=..\include\nel\misc\bit_set.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\class_id.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\class_id.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\smart_ptr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\smart_ptr.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\smart_ptr_inline.h
+# End Source File
+# End Group
+# Begin Group "Misc"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\misc\algo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\algo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\common.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\common.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\debug.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\debug.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\stdmisc.cpp
+# ADD CPP /Yc"stdmisc.h"
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\stdmisc.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=..\include\nel\misc\types_nl.h
 # End Source File
 # End Target
 # End Project

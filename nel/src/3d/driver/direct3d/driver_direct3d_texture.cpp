@@ -1,7 +1,7 @@
 /** \file driver_direct3d_texture.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_texture.cpp,v 1.10 2004/08/09 14:35:08 vizerie Exp $
+ * $Id: driver_direct3d_texture.cpp,v 1.11 2004/08/19 16:29:36 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -72,6 +72,11 @@ CTextureDrvInfosD3D::~CTextureDrvInfosD3D()
 	H_AUTO_D3D(CTextureDrvInfosD3D_CTextureDrvInfosD3DDtor)	
 	if (Texture)
 	{
+		// If a texture is in the cache state -> set to null (texture no more used)
+		for (uint32 i = 0; i < CDriverD3D::MaxTexture; ++i)
+			if (_Driver->_TexturePtrStateCache[i].Texture == Texture)
+				_Driver->setTexture(i, (LPDIRECT3DBASETEXTURE9)NULL);
+
 		Texture->Release();
 		Texture = NULL;
 		Texture2d = NULL;

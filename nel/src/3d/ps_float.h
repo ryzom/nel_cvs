@@ -1,7 +1,7 @@
 /** \file ps_size.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_float.h,v 1.2 2001/07/04 12:32:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,7 +72,17 @@ public:
 	static float _DefaultGradient[] ;
 	
 	// F is serialized by base classes...	
+} ;
 
+/** this memorize float by applying some function on the emitter. For a particle's attribute, each particle has its
+  * own value memorized
+  *  You MUST called setScheme (from CPSAttribMakerMemory) to tell how the value will be generted
+  */
+class CPSFloatMemory : public CPSAttribMakerMemory<float>
+{
+public:
+	CPSFloatMemory() { setDefaultValue(0.f) ; }
+	NLMISC_DECLARE_CLASS(CPSFloatMemory) ;
 } ;
 
 

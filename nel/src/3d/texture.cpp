@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.12 2000/12/15 18:20:22 berenguier Exp $
+ * $Id: texture.cpp,v 1.13 2000/12/22 13:24:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,8 @@ ITexture &ITexture::operator=(const ITexture &tex)
 	// set touched=true. _Releasable is copied.
 	_Touched= true;
 	_Releasable= tex._Releasable;
+	_WrapS= tex._WrapS;
+	_WrapT= tex._WrapT;
 	return *this;
 }
 

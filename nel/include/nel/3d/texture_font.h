@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.1 2000/12/15 18:19:42 berenguier Exp $
+ * $Id: texture_font.h,v 1.2 2000/12/22 13:24:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,6 +71,8 @@ public:
 		_FontGen = NULL;
 		_Width = 0;
 		_Height = 0;
+		setWrapS(ITexture::Clamp);
+		setWrapT(ITexture::Clamp);
 	}
 
 	

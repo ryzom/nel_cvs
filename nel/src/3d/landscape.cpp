@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.25 2000/12/18 11:06:13 berenguier Exp $
+ * $Id: landscape.cpp,v 1.26 2000/12/22 13:24:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,7 @@ void			CLandscape::init(bool bumpTiles)
 	FarMaterial.initUnlit();
 	FarMaterial.setSrcBlend(CMaterial::srcalpha);
 	FarMaterial.setDstBlend(CMaterial::invsrcalpha);
-	FarRdrPass.TextureDiffuse= new CTextureFile("maps/slash.tga");
+	FarRdrPass.TextureDiffuse= new CTextureFile("white.tga");
 
 	// Init material for tile.
 	TileMaterial.initUnlit();
@@ -408,6 +408,8 @@ ITexture		*CLandscape::findTileTexture(const std::string &textName)
 	if(!text)
 	{
 		TileTextureMap[textName]= text= new CTextureFile(textName);
+		text->setWrapS(ITexture::Clamp);
+		text->setWrapT(ITexture::Clamp);
 	}
 	return text;
 }

@@ -210,6 +210,20 @@ CStringEx CGeorgesApp::GetRootDirectory() const
 
 void CGeorgesApp::SaveAllDocument()
 {
+	if( !_MultiDocTemplate )
+		return;
+	POSITION pos = _MultiDocTemplate->GetFirstDocPosition();
+	if( !pos )
+		return;
+	CDocument* pdoc = _MultiDocTemplate->GetNextDoc(pos);
+	while( pdoc )
+	{
+		CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( pdoc );
+		pgdoc->DoFileSave();
+		if( !pos )
+			return;
+		pdoc = _MultiDocTemplate->GetNextDoc(pos);
+	}
 }
 
 void CGeorgesApp::CloseAllDocument()
@@ -218,18 +232,19 @@ void CGeorgesApp::CloseAllDocument()
 
 void CGeorgesApp::UpdateAllDocument()
 {
+	if( !_MultiDocTemplate )
+		return;
 	POSITION pos = _MultiDocTemplate->GetFirstDocPosition();
-	if( pos )
+	if( !pos )
+		return;
+	CDocument* pdoc = _MultiDocTemplate->GetNextDoc(pos);
+	while( pdoc )
 	{
-		CDocument* pdoc = _MultiDocTemplate->GetNextDoc(pos);
-		while( pdoc )
-		{
-			CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( pdoc );
-			pgdoc->UpdateDocument();
-			if( !pos )
-				break;
-			pdoc = _MultiDocTemplate->GetNextDoc(pos);
-		}
+		CGeorgesDoc* pgdoc = dynamic_cast< CGeorgesDoc* >( pdoc );
+		pgdoc->UpdateDocument();
+		if( !pos )
+			return;
+		pdoc = _MultiDocTemplate->GetNextDoc(pos);
 	}
 }
 

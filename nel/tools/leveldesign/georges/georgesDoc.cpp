@@ -109,14 +109,7 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 {
 	CGeorgesApp* papp = dynamic_cast< CGeorgesApp* >( AfxGetApp() );
 
-#if 1
-
-	papp->SetRootDirectory( sxrootdirectory );
-	papp->SetWorkDirectory( sxworkdirectory );
-	item.Save( CStringEx( lpszPathName ) );		
-	SetModifiedFlag( FALSE );
-
-#else
+#if 0
 
 	std::vector< std::pair< CStringEx, CStringEx > > lpsx;
 	std::vector< std::pair< CStringEx, CStringEx > > lpsx2;
@@ -182,11 +175,19 @@ BOOL CGeorgesDoc::OnSaveDocument(LPCTSTR lpszPathName)
 	papp->GetLoader()->MakeTyp( "U:/dfn/patat_name.typ", "string", "PATAT", "true", "", "", "PatatFrite", &lpsx, &lpsx2 );
 */
 	std::vector< CStringEx > lsx;
-	lsx.push_back( "hPatateFrite" );
-	lsx.push_back( "hPatatePuree" );
-	lsx.push_back( "hPatateVapeur" );
+	lsx.push_back( "fPatateFrite" );
+	lsx.push_back( "fPatatePuree" );
+	lsx.push_back( "fPatateVapeur" );
+	lsx.push_back( "fPatateSautee" );
 	papp->GetLoader()->SetTypPredef( "U:/dfn/patat_name.typ", lsx );
 	papp->UpdateAllDocument();
+#else
+
+	papp->SetRootDirectory( sxrootdirectory );
+	papp->SetWorkDirectory( sxworkdirectory );
+	item.Save( CStringEx( lpszPathName ) );		
+	SetModifiedFlag( FALSE );
+
 
 
 #endif
@@ -240,10 +241,9 @@ void CGeorgesDoc::DeleteContents()
 
 void CGeorgesDoc::UpdateDocument() 
 {
-	item.Update();
+	bool b = item.Update();
+	SetModifiedFlag( IsModified() || b );
 	UpdateAllViews( 0 );
-//	int a = 10;
-
 }
 
 /////////////////////////////////////////////////////////////////////:

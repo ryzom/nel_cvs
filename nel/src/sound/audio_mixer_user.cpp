@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.39 2003/02/06 09:17:54 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.40 2003/02/06 15:35:51 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -334,6 +334,7 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 	}
 	catch(...)
 	{
+		// TODO : is this logic to auto destruct this object in case of failing to create the driver ?
 		delete this;
 		_Instance = NULL;
 		throw;

@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.1 2003/03/06 09:59:56 lecroart Exp $
+ * $Id: variable.h,v 1.2 2003/03/20 16:19:59 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/command.h"
+#include "nel/misc/value_smoother.h"
 
 
 namespace NLMISC {
@@ -61,7 +62,7 @@ namespace NLMISC {
  * \date 2001
  */
 #define NLMISC_VARIABLE(__type,__var,__help) \
-NLMISC::CVariable<__type> __var##Instance(#__var, __help " (" #__type ")", &__var)
+NLMISC::CVariablePtr<__type> __var##Instance(#__var, __help " (" #__type ")", &__var)
 
 
 
@@ -96,31 +97,32 @@ NLMISC::CVariable<__type> __var##Instance(#__var, __help " (" #__type ")", &__va
  * \date 2001
  */
 #define NLMISC_DYNVARIABLE(__type,__name,__help) \
-class __name##Class : public NLMISC::ICommand \
+class __name##Class : public NLMISC::IVariable \
 { \
 public: \
-	__name##Class () : NLMISC::ICommand(#__name, __help " (" #__type ")", "[<value>]") { Type = Variable; } \
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log) \
+	__name##Class () : IVariable(#__name, __help) { } \
+	 \
+	virtual void fromString(const std::string &val) \
 	{ \
-		if (args.size() == 1) \
-		{ \
-			std::stringstream ls (args[0]); \
-			__type p2; \
-			ls >> p2; \
-			pointer (&p2, false, log); \
-		} \
+		std::stringstream ss (val); \
 		__type p; \
-		pointer (&p, true, log); \
-		std::stringstream ls; \
-		ls << "Variable " << _CommandName << " = " << p; \
-		log.displayNL(ls.str().c_str()); \
-		return (args.size() <= 1); \
+		ss >> p; \
+		pointer (&p, false); \
 	} \
- \
-	void pointer(__type *pointer, bool get, NLMISC::CLog &log); \
+	 \
+	virtual std::string toString() const \
+	{ \
+		__type p; \
+		pointer (&p, true); \
+		std::stringstream ss; \
+		ss << p; \
+		return ss.str(); \
+	} \
+	\
+	void pointer(__type *pointer, bool get) const; \
 }; \
 __name##Class __name##Instance; \
-void __name##Class::pointer(__type *pointer, bool get, NLMISC::CLog &log)
+void __name##Class::pointer(__type *pointer, bool get) const
 
 
 /**
@@ -130,12 +132,50 @@ void __name##Class::pointer(__type *pointer, bool get, NLMISC::CLog &log)
  * \author Nevrax France
  * \date 2001
  */
-template <class T>
+/*template <class T>
 class CVariable : public ICommand
 {
 public:
-	CVariable (const char *commandName, const char *commandHelp, T *pointer) : NLMISC::ICommand(commandName, commandHelp, "[<value>]"), _Pointer(pointer) {	Type = Variable; }
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log)
+	CVariable (const char *commandName, const char *commandHelp, uint nbMeanValue = 0, bool useConfigFile = false) :
+	  NLMISC::ICommand(commandName, commandHelp, "[<value>|stat]"),
+	  _Mean(nbMeanValue), UseConfigFile(useConfigFile)
+	{
+		Type = Variable;
+	}
+	  
+	void set(const T &val)
+	{
+		_Value = val;
+		_Mean.addValue(val);
+	}
+
+	const T &get() const
+	{
+		return _Value;
+	}
+
+	string getStat() const
+	{
+		std::stringstream s;
+		s << _CommandName << "=" << _Value;
+		if (_Mean.getNumFrame()>0)
+		{
+			s << " Mean=" << _Mean.getSmoothValue();
+			s << " LastValues=";
+			for (uint i = 0; i < _Mean.getNumFrame(); i++)
+			{
+				s << _Mean.getLastFrames()[i];
+				if (i < _Mean.getNumFrame()-1)
+					s << ",";
+			}
+		}
+		return s.str();
+	}
+
+	bool UseConfigFile;
+
+	  CVariable (const char *commandName, const char *commandHelp, T *pointer) : NLMISC::ICommand(commandName, commandHelp, "[<value>]"), _Pointer(pointer) {	Type = Variable; }
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet)
 	{
 		if (args.size() == 1)
 		{
@@ -149,12 +189,192 @@ public:
 		}
 		return (args.size() <= 1);
 	}
+
 private:
 	T *_Pointer;
 
 	// some stat about the variable
 
 };
+*/
+
+//
+//
+//
+//
+//
+//
+//
+
+class IVariable : public ICommand
+{
+public:
+
+	IVariable(const char *commandName, const char *commandHelp, const char *commandArgs = "[<value>]", bool useConfigFile = false) :
+		ICommand(commandName, commandHelp, commandArgs), _UseConfigFile(useConfigFile)
+	{
+		Type = Variable;
+	}
+		  
+	virtual void fromString(const std::string &val) = 0;
+	
+	virtual std::string toString() const = 0;
+
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet)
+	{
+		if (args.size() > 1)
+			return false;
+		
+		if (args.size() == 1)
+		{
+			// set the value
+			fromString (args[0]);
+		}
+		
+		// display the value
+		if (quiet)
+		{
+			log.displayNL(toString().c_str());
+		}
+		else
+		{
+			log.displayNL("Variable %s = %s", _CommandName.c_str(), toString().c_str());
+		}
+		return true;
+	}
+	
+
+private:
+
+	bool _UseConfigFile;
+};
+
+
+
+
+template <class T>
+class CVariablePtr : public IVariable
+{
+public:
+
+	CVariablePtr (const char *commandName, const char *commandHelp, T *valueptr, bool useConfigFile = false) :
+		IVariable(commandName, commandHelp, "[<value>]", useConfigFile), _ValuePtr(valueptr)
+	{
+	}
+	  
+	virtual void fromString(const std::string &val)
+	{
+		std::stringstream ss (val);
+		ss >> *_ValuePtr;
+	}
+	
+	virtual std::string toString() const
+	{
+		std::stringstream ss;
+		ss << *_ValuePtr;
+		return ss.str();
+	}
+		
+private:
+
+	T *_ValuePtr;
+};
+
+
+template <class T>
+class CVariable : public IVariable
+{
+public:
+
+	CVariable(const char *commandName, const char *commandHelp, uint nbMeanValue = 0, bool useConfigFile = false) :
+		IVariable(commandName, commandHelp, "[<value>|stat]", useConfigFile), _Mean(nbMeanValue)
+	{
+	}
+
+	virtual void fromString(const std::string &val)
+	{
+		std::stringstream ss (val);
+		ss >> _Value;
+		_Mean.addValue(val);
+	}
+	
+	virtual std::string toString() const
+	{
+		std::stringstream ss;
+		ss << _Value;
+		return ss.str();
+	}
+	
+	void set(const T &val)
+	{
+		_Value = val;
+		_Mean.addValue(val);
+	}
+	
+	const T &get() const
+	{
+		return _Value;
+	}
+
+	std::string getStat() const
+	{
+		std::stringstream s;
+		s << _CommandName << "=" << _Value;
+		if (_Mean.getNumFrame()>0)
+		{
+			s << " Mean=" << _Mean.getSmoothValue();
+			s << " LastValues=";
+			for (uint i = 0; i < _Mean.getNumFrame(); i++)
+			{
+				s << _Mean.getLastFrames()[i];
+				if (i < _Mean.getNumFrame()-1)
+					s << ",";
+			}
+		}
+		return s.str();
+	}
+	
+	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet)
+	{
+		if (args.size() > 1)
+			return false;
+		
+		if (args.size() == 1)
+		{
+			if (args[0] == "stat")
+			{
+				// display the stat value
+				log.displayNL(getStat().c_str());
+				return true;
+			}
+			else
+			{
+				// set the value
+				fromString (args[0]);
+			}
+		}
+
+		// display the value
+		if (quiet)
+		{
+			log.displayNL(toString().c_str());
+		}
+		else
+		{
+			log.displayNL("Variable %s = %s", _CommandName.c_str(), toString().c_str());
+		}
+		return true;
+	}
+	
+private:
+
+	T _Value;
+	CValueSmootherTemplate<T> _Mean;
+};
+
+
+
+
 
 
 } // NLMISC

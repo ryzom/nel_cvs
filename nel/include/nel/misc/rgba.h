@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.17 2001/11/07 10:31:07 berenguier Exp $
+ * $Id: rgba.h,v 1.18 2001/12/06 16:47:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,6 +196,18 @@ public:
 		a= c0.A + c1.A;	clamp(a, 0U, 255U);	A= (uint8)a;
 	}
 
+	/**
+	 *	Compute c0 - c1, and store in this
+	 */
+	void	sub(const CRGBA &c0, const CRGBA &c1)
+	{
+		sint	r,g,b,a;
+		r= c0.R - c1.R;	clamp(r, 0, 255);	R= (uint8)r;
+		g= c0.G - c1.G;	clamp(g, 0, 255);	G= (uint8)g;
+		b= c0.B - c1.B;	clamp(b, 0, 255);	B= (uint8)b;
+		a= c0.A - c1.A;	clamp(a, 0, 255);	A= (uint8)a;
+	}
+
 
 	/// \name RGBOnly methods. Same f() as their homonym, but don't modify A component.
 	// @{
@@ -247,6 +259,39 @@ public:
 	}
 
 	// @}
+
+	///\name Color group manipulation
+	//@{
+		/** Add a group of colors with saturation, using mmx instructions when present.
+		  * \params dest The destination color buffer, encoded as CRGBA's.
+		  * \params src1 The first source color buffer, encoded as CRGBA's.
+		  * \params src2 The second source color buffer, encoded as CRGBA's.
+		  * \params numColors The number of colors to compute
+		  * \params Stride between each source color.
+		  * \params Stride between each destination color.
+		  * \params Dup the number of time the result must be duplicated in the destination.
+		  */
+		static void addColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint numColors, uint srcStride = sizeof(CRGBA), uint destStride = sizeof(CRGBA), uint dup = 1);
+
+		/** Modulate a group of colors with saturation, using mmx instructions when present.
+		  * \params dest The destination color buffer, encoded as CRGBA's.
+		  * \params src1 The first source color buffer, encoded as CRGBA's.
+		  * \params src2 The second source color buffer, encoded as CRGBA's.
+		  * \params numColors The number of colors to compute
+		  * \params Stride between each color.  It is the same for sources and destination.
+		  */
+		static void modulateColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint numColors, uint srcStride = sizeof(CRGBA), uint destStride = sizeof(CRGBA), uint dup = 1);
+
+		/** Subtract a group of colors with saturation (src1 - src2), using mmx instructions when present.
+		  * \params dest The destination color buffer, encoded as CRGBA's.
+		  * \params src1 The first source color buffer, encoded as CRGBA's.
+		  * \params src2 The second source color buffer, encoded as CRGBA's.
+		  * \params numColors The number of colors to compute
+		  * \params Stride between each color.  It is the same for sources and destination.
+		  */
+		static void subtractColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint numColors, uint srcStride = sizeof(CRGBA), uint destStride = sizeof(CRGBA), uint dup = 1);
+	//@}
+
 
 
 	/// Red componant.
@@ -569,7 +614,7 @@ public:
 	 * \param a Alpha componant.
 	 */
 	void set(float r, float g, float b, float a);
-
+	
 	/// Red componant.
 	float	R;
 	/// Green componant.

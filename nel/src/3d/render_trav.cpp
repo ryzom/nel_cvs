@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * TODO: File description
  *
- * $Id: render_trav.cpp,v 1.60.10.3 2005/01/20 13:42:44 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.60.10.4 2005/01/20 13:58:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1299,7 +1299,7 @@ void CRenderTrav::debugWaterModelMemory(const char *tag, bool dumpList)
 			for(uint i=0;i<_DebugWaterModelList.size();i++)
 			{
 				CWaterModelDump		&bkup= _DebugWaterModelList[i];
-				nlwarning("Array%02d: Ptr:%x. List:%x/%x", i, (uint32)bkup.Address, (uint32)bkup.ClippedPolyBegin, (uint32)bkup.ClippedPolyEnd);
+				nlwarning("List%02d: Ptr:%x. Array:%x/%x", i, (uint32)bkup.Address, (uint32)bkup.ClippedPolyBegin, (uint32)bkup.ClippedPolyEnd);
 			}
 
 			// crash (assert not stop for clearness)

@@ -1,7 +1,7 @@
 /** \file track_sampled_quat.h
  * <File description>
  *
- * $Id: track_sampled_quat.h,v 1.2 2002/05/30 14:37:22 berenguier Exp $
+ * $Id: track_sampled_quat.h,v 1.3 2002/06/06 08:47:16 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/object_vector.h"
 #include "nel/misc/quat.h"
-#include "3d/track.h"
+#include "3d/track_sampled_common.h"
 
 
 namespace NL3D 
@@ -43,20 +43,20 @@ namespace NL3D
 // ***************************************************************************
 /**
  * This track is supposed to be Lighter in memory than CTrackKeyFramerTCBQuat, and also is maybe faster.
- *	The track is an oversampled version of CTrackKeyFramerTCBQuat, to 30 fps for example,
- *	but each key is 7 bytes in memory, instead of 96.
+ *	The track is an oversampled version of CTrackKeyFramerTCBQuat (or any quat interpolator), to 30 fps for example,
+ *	but each key is 9 bytes in memory, instead of 96.
  *	Only linear interpolation is performed (use CQuat::slerp) between 2 keys. And Keys are precomputed
  *	to be correctly on the same quaternion hemisphere from the preceding to the next.
  *
- *	7 bytes per key is achieved by encoding this way:
+ *	9 bytes per key is achieved by encoding this way:
  *		1 byte for the length/key time, measured in samples, and not in second (hence we can skip at max 255 keys).
- *		6 byte for a light normalized quaternion: x,y,z are stored, and w is deduced from them.
+ *		8 byte for a light normalized quaternion: x,y,z,w are stored in 16 bits.
  *
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
  */
-class CTrackSampledQuat : public ITrack
+class CTrackSampledQuat : public CTrackSampledCommon
 {
 public:
 
@@ -69,9 +69,6 @@ public:
 	// @{
 	virtual void					eval (const TAnimationTime& date);
 	virtual const IAnimatedValue&	getValue () const;
-	virtual bool					getLoopMode() const;
-	virtual TAnimationTime			getBeginTime () const;
-	virtual TAnimationTime			getEndTime () const;
 	virtual void					serial(NLMISC::IStream &f);
 	// @}
 
@@ -85,10 +82,6 @@ public:
 	 */
 	void	build(const std::vector<uint16> &timeList, const std::vector<CQuat> &keyList, 
 		float beginTime, float endTime);
-
-	/// Change the loop mode. true default
-	void	setLoopMode(bool mode);
-
 
 // **********************
 protected:
@@ -134,39 +127,6 @@ protected:
 protected:
 	CAnimatedValueQuat		_Value;
 
-	// Param of animation
-	bool					_LoopMode;
-	float					_BeginTime;
-	float					_EndTime; 
-	float					_TotalRange;
-	float					_OOTotalRange;
-	// The frame Time == (_EndTime-_BeginTime)/NumKeys
-	float					_DeltaTime;
-	float					_OODeltaTime;
-
-	// Typically, there is only one TimeBlock, for anim < 8.5 seconds (256/30 fps == 8.5 second).
-	class	CTimeBlock
-	{
-	public:
-		// Value to add to the key in the array to have real frame value.
-		uint16									TimeOffset;
-		// Value to add to the index to have Key index in _Keys.
-		uint32									KeyOffset;
-
-		// Key Time. Separated for optimal memory packing, and better cache use at dichotomy search
-		NLMISC::CObjectVector<uint8, false>		Times;
-
-		// For dicho comp
-		bool		operator<=(const CTimeBlock &tb) const
-		{
-			return TimeOffset <= tb.TimeOffset;
-		}
-
-		void		serial(NLMISC::IStream &f);
-	};
-
-	// Time Values
-	NLMISC::CObjectVector<CTimeBlock>			_TimeBlocks;
 	// Key Values
 	NLMISC::CObjectVector<CQuatPack, false>		_Keys;
 };

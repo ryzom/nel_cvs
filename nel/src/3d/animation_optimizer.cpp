@@ -1,7 +1,7 @@
 /** \file animation_optimizer.cpp
  * <File description>
  *
- * $Id: animation_optimizer.cpp,v 1.1 2002/05/30 14:24:50 berenguier Exp $
+ * $Id: animation_optimizer.cpp,v 1.2 2002/06/06 08:47:16 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,10 +27,12 @@
 
 #include "3d/animation_optimizer.h"
 #include "nel/misc/mem_stream.h"
+#include "nel/misc/vectord.h"
 #include "3d/track.h"
 #include "3d/track_keyframer.h"
 #include "3d/animation.h"
 #include "3d/track_sampled_quat.h"
+#include "3d/track_sampled_vector.h"
 
 
 using	namespace NLMISC;
@@ -47,6 +49,8 @@ CAnimationOptimizer::CAnimationOptimizer()
 	_SampleFrameRate= 30;
 	_QuaternionThresholdLowPrec= 1.0 - 0.0001;
 	_QuaternionThresholdHighPrec= 1.0 - 0.000001;
+	_VectorThresholdLowPrec= 0.001;
+	_VectorThresholdHighPrec= 0.0001;
 }
 
 
@@ -57,6 +61,16 @@ void		CAnimationOptimizer::setQuaternionThreshold(double lowPrecThre, double hig
 	nlassert(highPrecThre>=0);
 	_QuaternionThresholdLowPrec= 1.0 - lowPrecThre;
 	_QuaternionThresholdHighPrec= 1.0 - highPrecThre;
+}
+
+
+// ***************************************************************************
+void		CAnimationOptimizer::setVectorThreshold(double lowPrecThre, double highPrecThre)
+{
+	nlassert(lowPrecThre>=0);
+	nlassert(highPrecThre>=0);
+	_VectorThresholdLowPrec= lowPrecThre;
+	_VectorThresholdHighPrec= highPrecThre;
 }
 
 
@@ -91,9 +105,15 @@ void		CAnimationOptimizer::optimize(const CAnimation &animIn, CAnimation &animOu
 		{
 			// choose the threshold according to precision wanted
 			if( isLowPrecisionTrack(trackName) )
+			{
 				_QuaternionThreshold= _QuaternionThresholdLowPrec;
+				_VectorThreshold= _VectorThresholdLowPrec;
+			}
 			else
+			{
 				_QuaternionThreshold= _QuaternionThresholdHighPrec;
+				_VectorThreshold= _VectorThresholdHighPrec;
+			}
 
 			// optimize it.
 			newTrack= optimizeTrack(track);
@@ -140,6 +160,12 @@ bool		CAnimationOptimizer::isTrackOptimisable(const ITrack	*trackIn)
 		dynamic_cast<const CTrackKeyFramerLinearQuat*>(trackIn) )
 		return true;
 
+	// If the track is a Linear, Bezier or a TCB track, suppose we can optimize it. Constant may not be interressant....
+	if(	dynamic_cast<const CTrackKeyFramerTCBVector*>(trackIn) || 
+		dynamic_cast<const CTrackKeyFramerBezierVector*>(trackIn) ||
+		dynamic_cast<const CTrackKeyFramerLinearVector*>(trackIn) )
+		return true;
+
 	return false;
 }
 
@@ -147,9 +173,6 @@ bool		CAnimationOptimizer::isTrackOptimisable(const ITrack	*trackIn)
 // ***************************************************************************
 ITrack		*CAnimationOptimizer::optimizeTrack(const ITrack	*trackIn)
 {
-	// Must be a quaternion track for now.
-	nlassert( dynamic_cast<const CAnimatedValueQuat *>(&trackIn->getValue()) );
-
 	// Get track param.
 	float beginTime= trackIn->getBeginTime();
 	float endTime= trackIn->getEndTime();
@@ -160,39 +183,94 @@ ITrack		*CAnimationOptimizer::optimizeTrack(const ITrack	*trackIn)
 	numSamples= max(1U, numSamples);
 	nlassert(numSamples<65535);
 
-	// sample the animation. Store result in _TimeList/_KeyList
-	sampleQuatTrack(trackIn, beginTime, endTime, numSamples);
 
-	// check if the sampled track can be reduced to a TrackDefaultQuat. Test _KeyList.
-	if( testConstantQuatTrack() )
+	// Optimize Quaternion track??
+	//================
+	if( dynamic_cast<const CAnimatedValueQuat *>(&trackIn->getValue()) )
 	{
-		// create a default Track Quat.
-		CTrackDefaultQuat	*trackDefault= new CTrackDefaultQuat;
-		// setup the uniform value.
-		trackDefault->setValue(_KeyList[0]);
+		// sample the animation. Store result in _TimeList/_QuatKeyList
+		sampleQuatTrack(trackIn, beginTime, endTime, numSamples);
 
-		// return the result.
-		return trackDefault;
+		// check if the sampled track can be reduced to a TrackDefaultQuat. Test _QuatKeyList.
+		if( testConstantQuatTrack() )
+		{
+			// create a default Track Quat.
+			CTrackDefaultQuat	*trackDefault= new CTrackDefaultQuat;
+			// setup the uniform value.
+			trackDefault->setValue(_QuatKeyList[0]);
+
+			// return the result.
+			return trackDefault;
+		}
+		// else optimize the sampled animation, and build.
+		else
+		{
+			// optimize.
+			optimizeQuatTrack();
+
+			// Create a sampled quaternion track
+			CTrackSampledQuat	*trackSQ= new CTrackSampledQuat;
+
+			// Copy loop from track.
+			trackSQ->setLoopMode(trackIn->getLoopMode());
+
+			// Build it.
+			trackSQ->build(_TimeList, _QuatKeyList, beginTime, endTime);
+
+			// return result.
+			return trackSQ;
+		}
 	}
-	// else optimize the sampled animation, and build.
+	// Optimize Position track??
+	//================
+	else if( dynamic_cast<const CAnimatedValueVector *>(&trackIn->getValue()) )
+	{
+		// sample the animation. Store result in _TimeList/_VectorKeyList
+		sampleVectorTrack(trackIn, beginTime, endTime, numSamples);
+
+		// check if the sampled track can be reduced to a TrackDefaultVector. Test _VectorKeyList.
+		if( testConstantVectorTrack() )
+		{
+			// create a default Track Vector.
+			CTrackDefaultVector	*trackDefault= new CTrackDefaultVector;
+			// setup the uniform value.
+			trackDefault->setValue(_VectorKeyList[0]);
+
+			// return the result.
+			return trackDefault;
+		}
+		// else optimize the sampled animation, and build.
+		else
+		{
+			// optimize.
+			optimizeVectorTrack();
+
+			// Create a sampled Vector track
+			CTrackSampledVector	*trackSV= new CTrackSampledVector;
+
+			// Copy loop from track.
+			trackSV->setLoopMode(trackIn->getLoopMode());
+
+			// Build it.
+			trackSV->build(_TimeList, _VectorKeyList, beginTime, endTime);
+
+			// return result.
+			return trackSV;
+		}
+	}
 	else
 	{
-		// optimize.
-		optimizeQuatTrack();
-
-		// Create a sampled quaternion track
-		CTrackSampledQuat	*trackSQ= new CTrackSampledQuat;
-
-		// Copy loop from track.
-		trackSQ->setLoopMode(trackIn->getLoopMode());
-
-		// Build it.
-		trackSQ->build(_TimeList, _KeyList, beginTime, endTime);
-
-		// return result.
-		return trackSQ;
+		// Must be a quaternion track or vector track for now.
+		nlstop;
 	}
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Quaternion optimisation
+// ***************************************************************************
+// ***************************************************************************
 
 
 // ***************************************************************************
@@ -200,7 +278,7 @@ void		CAnimationOptimizer::sampleQuatTrack(const ITrack *trackIn, float beginTim
 {
 	// resize tmp samples
 	_TimeList.resize(numSamples);
-	_KeyList.resize(numSamples);
+	_QuatKeyList.resize(numSamples);
 
 	// Sample the animation.
 	float	t= beginTime;
@@ -224,12 +302,12 @@ void		CAnimationOptimizer::sampleQuatTrack(const ITrack *trackIn, float beginTim
 		// force on same hemisphere according to precedent frame.
 		if(i>0)
 		{
-			quat.makeClosest(_KeyList[i-1]);
+			quat.makeClosest(_QuatKeyList[i-1]);
 		}
 
 		// store time and key.
 		_TimeList[i]= i;
-		_KeyList[i]= quat;
+		_QuatKeyList[i]= quat;
 	}
 
 }
@@ -237,15 +315,15 @@ void		CAnimationOptimizer::sampleQuatTrack(const ITrack *trackIn, float beginTim
 // ***************************************************************************
 bool		CAnimationOptimizer::testConstantQuatTrack()
 {
-	uint	numSamples= _KeyList.size();
+	uint	numSamples= _QuatKeyList.size();
 	nlassert(numSamples>0);
 
 	// Get the first sample as the reference quaternion, and test others from this one.
-	CQuat	quatRef= _KeyList[0];
+	CQuat	quatRef= _QuatKeyList[0];
 	for(uint i=0;i<numSamples;i++)
 	{
 		// All values must be nearly equal to the reference quaternion.
-		if(!nearlySameQuaternion(quatRef, _KeyList[i]))
+		if(!nearlySameQuaternion(quatRef, _QuatKeyList[i]))
 			return false;
 	}
 
@@ -257,7 +335,7 @@ bool		CAnimationOptimizer::testConstantQuatTrack()
 // ***************************************************************************
 void		CAnimationOptimizer::optimizeQuatTrack()
 {
-	uint	numSamples= _KeyList.size();
+	uint	numSamples= _QuatKeyList.size();
 	nlassert(numSamples>0);
 
 	// <=2 key? => no opt possible..
@@ -272,15 +350,15 @@ void		CAnimationOptimizer::optimizeQuatTrack()
 
 	// Add the first key.
 	optTimeList.push_back(_TimeList[0]);
-	optKeyList.push_back(_KeyList[0]);
+	optKeyList.push_back(_QuatKeyList[0]);
 	double	timeRef= _TimeList[0];
-	CQuatD	quatRef= _KeyList[0];
+	CQuatD	quatRef= _QuatKeyList[0];
 
 	// For all keys, but the first and the last, test if can remove them.
 	for(uint i=1; i<numSamples-1; i++)
 	{
-		CQuatD	quatCur= _KeyList[i];
-		CQuatD	quatNext= _KeyList[i+1];
+		CQuatD	quatCur= _QuatKeyList[i];
+		CQuatD	quatNext= _QuatKeyList[i+1];
 		double	timeCur= _TimeList[i];
 		double	timeNext= _TimeList[i+1];
 
@@ -320,19 +398,19 @@ void		CAnimationOptimizer::optimizeQuatTrack()
 		if(mustAdd)
 		{
 			optTimeList.push_back(_TimeList[i]);
-			optKeyList.push_back(_KeyList[i]);
+			optKeyList.push_back(_QuatKeyList[i]);
 			timeRef= _TimeList[i];
-			quatRef= _KeyList[i];
+			quatRef= _QuatKeyList[i];
 		}
 	}
 
 	// Add the last key.
 	optTimeList.push_back(_TimeList[numSamples-1]);
-	optKeyList.push_back(_KeyList[numSamples-1]);
+	optKeyList.push_back(_QuatKeyList[numSamples-1]);
 
 	// copy the optimized track to the main one.
 	_TimeList= optTimeList;
-	_KeyList= optKeyList;
+	_QuatKeyList= optKeyList;
 }
 
 
@@ -353,6 +431,163 @@ bool		CAnimationOptimizer::nearlySameQuaternion(const CQuatD &quat0, const CQuat
 	// compare "angle threshold"
 	return (quatDif.w >= _QuaternionThreshold);
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// Vector optimisation
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+void		CAnimationOptimizer::sampleVectorTrack(const ITrack *trackIn, float beginTime, float endTime, uint numSamples)
+{
+	// resize tmp samples
+	_TimeList.resize(numSamples);
+	_VectorKeyList.resize(numSamples);
+
+	// Sample the animation.
+	float	t= beginTime;
+	float	dt= 0;
+	if(numSamples>1)
+		dt= (endTime-beginTime)/(numSamples-1);
+	for(uint i=0;i<numSamples; i++, t+=dt)
+	{
+		CVector	vector;
+
+		// make exact endTime match (avoid precision problem)
+		if(i==numSamples-1)
+			t= endTime;
+
+		// evaluate the track
+		const_cast<ITrack*>(trackIn)->interpolate(t, vector);
+
+		// store time and key.
+		_TimeList[i]= i;
+		_VectorKeyList[i]= vector;
+	}
+
+}
+
+// ***************************************************************************
+bool		CAnimationOptimizer::testConstantVectorTrack()
+{
+	uint	numSamples= _VectorKeyList.size();
+	nlassert(numSamples>0);
+
+	// Get the first sample as the reference Vectorer, and test others from this one.
+	CVector	vectorRef= _VectorKeyList[0];
+	for(uint i=0;i<numSamples;i++)
+	{
+		// All values must be nearly equal to the reference vector.
+		if(!nearlySameVector(vectorRef, _VectorKeyList[i]))
+			return false;
+	}
+
+	// ok.
+	return true;
+}
+
+
+// ***************************************************************************
+void		CAnimationOptimizer::optimizeVectorTrack()
+{
+	uint	numSamples= _VectorKeyList.size();
+	nlassert(numSamples>0);
+
+	// <=2 key? => no opt possible..
+	if(numSamples<=2)
+		return;
+
+	// prepare dest opt
+	std::vector<uint16>		optTimeList;
+	std::vector<CVector>	optKeyList;
+	optTimeList.reserve(numSamples);
+	optKeyList.reserve(numSamples);
+
+	// Add the first key.
+	optTimeList.push_back(_TimeList[0]);
+	optKeyList.push_back(_VectorKeyList[0]);
+	double		timeRef= _TimeList[0];
+	CVectorD	vectorRef= _VectorKeyList[0];
+
+	// For all keys, but the first and the last, test if can remove them.
+	for(uint i=1; i<numSamples-1; i++)
+	{
+		CVectorD	vectorCur= _VectorKeyList[i];
+		CVectorD	vectorNext= _VectorKeyList[i+1];
+		double	timeCur= _TimeList[i];
+		double	timeNext= _TimeList[i+1];
+
+		// must add the key?
+		bool	mustAdd= false;
+
+		// If the Delta time are too big, abort (CTrackSampledVector limitation)
+		if(timeNext-timeRef>255)
+		{
+			mustAdd= true;
+		}
+		// else, test interpolation
+		else
+		{
+			// If the 3 Vectors are nearly equals, it is ok (avoid interpolation)
+			if( nearlySameVector(vectorRef, vectorCur) && nearlySameVector(vectorRef, vectorNext) )
+				mustAdd= false;
+			else
+			{
+				// interpolate.
+				CVectorD	vectorInterpolated;
+				double	t= (timeCur-timeRef)/(timeNext/timeRef);
+				vectorInterpolated= vectorRef*(1-t) + vectorNext*t;
+
+				// test if cur and interpolate are equal.
+				if( !nearlySameVector(vectorCur, vectorInterpolated) )
+					mustAdd= true;
+			}
+		}
+
+		// If must add the key to the optimized track.
+		if(mustAdd)
+		{
+			optTimeList.push_back(_TimeList[i]);
+			optKeyList.push_back(_VectorKeyList[i]);
+			timeRef= _TimeList[i];
+			vectorRef= _VectorKeyList[i];
+		}
+	}
+
+	// Add the last key.
+	optTimeList.push_back(_TimeList[numSamples-1]);
+	optKeyList.push_back(_VectorKeyList[numSamples-1]);
+
+	// copy the optimized track to the main one.
+	_TimeList= optTimeList;
+	_VectorKeyList= optKeyList;
+}
+
+
+// ***************************************************************************
+bool		CAnimationOptimizer::nearlySameVector(const CVectorD &v0, const CVectorD &v1)
+{
+	// true if exactly same
+	if(v0==v1)
+		return true;
+
+	// Else compute the dif, use double for better precision
+	CVectorD	vDif;
+	vDif= v1-v0;
+
+	// compare norm
+	return (vDif.norm() <= _VectorThreshold);
+}
+
+
+// ***************************************************************************
+// ***************************************************************************
+// LowPrecisionTrack
+// ***************************************************************************
+// ***************************************************************************
 
 
 // ***************************************************************************

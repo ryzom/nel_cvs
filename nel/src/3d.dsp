@@ -1219,11 +1219,27 @@ SOURCE=.\3d\track_keyframer.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\track_sampled_common.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\track_sampled_common.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\track_sampled_quat.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\3d\track_sampled_quat.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\track_sampled_vector.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\track_sampled_vector.h
 # End Source File
 # Begin Source File
 

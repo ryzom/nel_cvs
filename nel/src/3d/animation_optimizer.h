@@ -1,7 +1,7 @@
 /** \file animation_optimizer.h
  * <File description>
  *
- * $Id: animation_optimizer.h,v 1.1 2002/05/30 14:24:50 berenguier Exp $
+ * $Id: animation_optimizer.h,v 1.2 2002/06/06 08:47:16 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/quat.h"
+#include "nel/misc/vectord.h"
 
 
 namespace NL3D 
@@ -35,6 +36,8 @@ namespace NL3D
 
 using	NLMISC::CQuat;
 using	NLMISC::CQuatD;
+using	NLMISC::CVector;
+using	NLMISC::CVectorD;
 
 class	CAnimation;
 class	ITrack;
@@ -42,7 +45,8 @@ class	ITrack;
 // ***************************************************************************
 /**
  * Purpose of this class is to optimize for memory and speed a CAnimation.
- *	For now, only Quaternion tracks are optimized. They are transformed to CTrackSampledQuat or CTrackDefaultQuat.
+ *	Quaternion tracks are optimized. They are transformed to CTrackSampledQuat or CTrackDefaultQuat.
+ *	Vector tracks are optimized. They are transformed to CTrackSampledVector or CTrackDefaultVector.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
@@ -64,6 +68,15 @@ public:
 	 *	addLowPrecisionTrack() to drive low precision tracks.
 	 */
 	void		setQuaternionThreshold(double lowPrecThre, double highPrecThre);
+
+	/** Same principle as for setQuaternionThreshold(), but for vector tracks (positions/scale).
+	 *	Default is 0.001 and 0.0001. Above this value, 2 vectors are said different.
+	 *	NB: comparing 2 vectors is made by geting the norm of the difference
+	 *
+	 *	Give 2 value, one For Low precision and High precision. Default setup use high precision. Use
+	 *	addLowPrecisionTrack() to drive low precision tracks.
+	 */
+	void		setVectorThreshold(double lowPrecThre, double highPrecThre);
 
 	/** see setQuaternionThreshold(). Any track which contains this name will be considered as a 
 	 *	Low precision track. Default setup is empty, so all track are "high precision" track.
@@ -94,13 +107,20 @@ private:
 	double		_QuaternionThresholdLowPrec;
 	double		_QuaternionThresholdHighPrec;
 	double		_QuaternionThreshold;
+	double		_VectorThresholdLowPrec;
+	double		_VectorThresholdHighPrec;
+	double		_VectorThreshold;
+
 
 	// see addLowPrecisionTrack
 	std::vector<std::string>	_LowPrecTrackKeyName;
 
 	// For Sampling of Quaternion Tracks.
 	std::vector<uint16>		_TimeList;
-	std::vector<CQuat>		_KeyList;
+	std::vector<CQuat>		_QuatKeyList;
+
+	// For Sampling of Vector Tracks.
+	std::vector<CVector>	_VectorKeyList;
 
 private:
 
@@ -115,6 +135,7 @@ private:
 
 	// see addLowPrecisionTrack()
 	bool		isLowPrecisionTrack(const std::string &trackName);
+
 
 	/// Quaternion optimisation.
 	// @{
@@ -138,6 +159,29 @@ private:
 	 *	NB: test if quat1==quat0 or quat1==-quat0 of course.
 	 */
 	bool		nearlySameQuaternion(const CQuatD &quat0, const CQuatD &quat1);
+
+	// @}
+
+
+	/// Vector optimisation.
+	// @{
+
+	/** sample the track from beginTime to endTime, sample to numSamples, such that 
+	 *	key[0].Time==beginTime and key[numSamples-1].Time==endTime.
+	 */
+	void		sampleVectorTrack(const ITrack *trackIn, float beginTime, float endTime, uint numSamples);
+
+	/** Test if the current track is constant (ie always same Vector value)
+	 */
+	bool		testConstantVectorTrack();
+
+	/** optimze the current track
+	 */
+	void		optimizeVectorTrack();
+
+	/** return true if suppose same vector.
+	 */
+	bool		nearlySameVector(const CVectorD &v0, const CVectorD &v1);
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file register_3d.cpp
  * <File description>
  *
- * $Id: register_3d.cpp,v 1.27 2002/05/30 14:24:50 berenguier Exp $
+ * $Id: register_3d.cpp,v 1.28 2002/06/06 08:47:16 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,7 @@
 #include "3d/meshvp_wind_tree.h"
 #include "3d/meshvp_per_pixel_light.h"
 #include "3d/track_sampled_quat.h"
+#include "3d/track_sampled_vector.h"
 
 
 
@@ -106,6 +107,7 @@ void	registerSerial3d()
 		NLMISC_REGISTER_CLASS(CTrackDefaultBool);
 		NLMISC_REGISTER_CLASS(CTrackDefaultRGBA);
 		NLMISC_REGISTER_CLASS(CTrackSampledQuat);
+		NLMISC_REGISTER_CLASS(CTrackSampledVector);
 		
 		// Particle system
 		CPSUtil::registerSerialParticleSystem();		

@@ -11,20 +11,19 @@ MAKE         = make
 
 # The flags for the C++ compiler
 CXXFLAGS     = -g -pipe -D_REENTRANT -D_GNU_SOURCE \
-				-I$(HOME)/cvs/code/nel/include \
-				-I$(HOME)/installs/STLport-4.0/stlport \
-				-I/usr/local/include \
-				-I/usr/local/include/freetype2
+				-I$(HOME)/install/debug/include \
+				-I/usr/include/stlport \
+				-I/usr/local/include
 
 # The flags for the linker
-LDFLAGS      = -L$(HOME)/build/debug/nel/lib \
-				-L/home/installs/STLport-4.0/lib \
+LDFLAGS      = -L$(HOME)/install/debug/lib \
+				-L/usr/lib \
 				-L/usr/local/lib \
-				-lnelmisc \
 				-lnelnet \
-				-lstlport_gcc \
+				-lnelmisc \
+				-lstlport \
 				-lpthread \
-				-lfreetype
+				-lefence
 
 #############################################################################
 # The bit that changes each time we cut paste and hack this file :o)

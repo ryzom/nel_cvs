@@ -1,7 +1,7 @@
 /** \file service/chat_service.cpp
  * example of the IService class
  *
- * $Id: chat_service.cpp,v 1.2 2003/01/21 17:44:49 lecroart Exp $
+ * $Id: chat_service.cpp,v 1.3 2003/02/07 17:35:23 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,16 +82,23 @@ public:
 
 //////debug to test log flood for memory leak
 
-		DebugLog->addNegativeFilter("flood");
-		InfoLog->addNegativeFilter("flood");
-		WarningLog->addNegativeFilter("flood");
-		
+//		DebugLog->addNegativeFilter("flood");
+//		InfoLog->addNegativeFilter("flood");
+//		WarningLog->addNegativeFilter("flood");
+
+	  string s;
+
+	  uint v = (uint)frand(80);
+	  for (uint i = 0; i < v; i++)
+	    {
+	      s+='a'+rand()%26;
+	    }
 		static uint32 val = 0;
 		for(uint i = 0; i < 10; i++)
 		{
-			nldebug ("debg flood %d", val++);
-			nlinfo ("info flood %d", val++);
-			nlwarning ("warn flood %d", val++);
+			nldebug ("debg flood %d %s", val++, s.c_str());
+			nlinfo ("info flood %d %s", val++, s.c_str());
+			nlwarning ("warn flood %d %s", val++, s.c_str());
 //			nldebug ("debg flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
 //			nlinfo ("info flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);
 //			nlwarning ("warn flood %10d %s %d %d", val++, bytesToHumanReadable(CHeapAllocator::getAllocatedSystemMemory ()).c_str(), UserSpeedLoop, NetSpeedLoop);

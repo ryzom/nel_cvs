@@ -1,7 +1,7 @@
 /** \file shared_memory.h
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.h,v 1.5 2002/10/28 17:32:12 corvazier Exp $
+ * $Id: shared_memory.h,v 1.6 2003/02/24 10:32:00 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -90,7 +90,7 @@ public:
 	static bool			closeSharedMemory( void * accessAddress );
 
   /**
-   * Destroy a shared memory segment (must be call by the process that created the segment,
+   * Destroy a shared memory segment (must be called by the process that created the segment,
    * not by the accessors).
    *
    * "Rescue feature": set "force" to true if a segment was created and left out of

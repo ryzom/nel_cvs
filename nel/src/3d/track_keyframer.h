@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.13 2003/02/03 15:54:35 coutelas Exp $
+ * $Id: track_keyframer.h,v 1.14 2003/02/19 17:37:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -713,6 +713,14 @@ class CTrackKeyFramerLinearFloat : public CTrackKeyFramerLinear<CKeyFloat, float
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerLinearFloat);
+
+	virtual	bool	addLinearFloatKey(const UKeyLinearFloat &key)
+	{
+		CKeyFloat	k;
+		k.Value= key.Value;
+		addKey(k, key.Time);
+		return true;
+	}	
 };
 class CTrackKeyFramerLinearVector : public CTrackKeyFramerLinear<CKeyVector, CVector>
 {
@@ -741,6 +749,20 @@ class CTrackKeyFramerTCBFloat : public CTrackKeyFramerTCB<CKeyTCBFloat, float>
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerTCBFloat);
+
+	virtual	bool	addTCBFloatKey(const UKeyTCBFloat &key)
+	{
+		CKeyTCBFloat	k;
+		k.Value= key.Value;
+		k.Bias= key.Bias;
+		k.Continuity= key.Continuity;
+		k.Tension= key.Tension;
+		k.EaseFrom= key.EaseFrom;
+		k.EaseTo= key.EaseTo;
+		addKey(k, key.Time);
+
+		return true;
+	}	
 };
 class CTrackKeyFramerTCBVector : public CTrackKeyFramerTCB<CKeyTCBVector, CVector>
 {
@@ -769,6 +791,17 @@ class CTrackKeyFramerBezierFloat : public CTrackKeyFramerBezier<CKeyBezierFloat,
 {
 public:
 	NLMISC_DECLARE_CLASS (CTrackKeyFramerBezierFloat);
+
+	virtual	bool	addBezierFloatKey(const UKeyBezierFloat &key)
+	{
+		CKeyBezierFloat	k;
+		k.Value= key.Value;
+		k.InTan= key.TanIn;
+		k.OutTan= key.TanOut;
+		k.Step= key.Step;
+		addKey(k, key.Time);
+		return true;
+	}	
 };
 class CTrackKeyFramerBezierVector : public CTrackKeyFramerBezier<CKeyBezierVector, CVector>
 {

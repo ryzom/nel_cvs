@@ -1,7 +1,7 @@
 /** \file track_keyframer.cpp
  * <File description>
  *
- * $Id: track_keyframer.cpp,v 1.7 2003/02/03 16:51:33 coutelas Exp $
+ * $Id: track_keyframer.cpp,v 1.8 2003/02/19 17:37:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,20 @@ CTrackKeyFramerConstInt		attoto13;
 CTrackKeyFramerConstRGBA	attoto16;
 CTrackKeyFramerConstString	attoto14;
 CTrackKeyFramerConstBool	attoto15;
+
+
+UTrackKeyframer	*UTrackKeyframer::createLinearFloatTrack()
+{
+	return new CTrackKeyFramerLinearFloat;
+}
+UTrackKeyframer	*UTrackKeyframer::createBezierFloatTrack()
+{
+	return new CTrackKeyFramerBezierFloat;
+}
+UTrackKeyframer	*UTrackKeyframer::createTCBFloatTrack()
+{
+	return new CTrackKeyFramerTCBFloat;
+}
 
 
 } // NL3D

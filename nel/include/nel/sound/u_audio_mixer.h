@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.24 2003/03/24 17:09:25 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.25 2003/04/09 15:51:26 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,7 +141,7 @@ public:
 	 * If the total of available harware track is less than 10, then EAX is automaticaly 
 	 * deactivated.
 	 */
-	virtual void		init(bool useEax = true, NLMISC::IProgressCallback *progressCallBack = NULL) = 0;
+	virtual void		init(int maxTrack = 32, bool useEax = true, NLMISC::IProgressCallback *progressCallBack = NULL) = 0;
 
 	/** Initialisation of the clustered sound system.
 	  */

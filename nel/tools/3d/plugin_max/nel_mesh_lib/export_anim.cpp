@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.10 2001/07/11 08:28:04 besson Exp $
+ * $Id: export_anim.cpp,v 1.11 2001/07/12 16:23:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include <3d/animated_material.h>
 #include <3d/key.h>
 #include <3d/track.h>
+#include <3d/particle_system_model.h>
 
 #include "calc_lm.h"
 
@@ -74,7 +75,7 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 	{
 		// Export biped skeleton animation
 		addBipedNodeTracks (animation, node, sBaseName, ip);
-	}
+	}	
 	else
 	{
 		// Add node tracks
@@ -100,8 +101,40 @@ void CExportNel::addAnimation (CAnimation& animation, INode& node, const char* s
 
 		// Add light tracks
 		addLightTracks (animation, node, sBaseName, ip);
+
+		// Add particle system tracks
+		addParticleSystemTracks(animation, node, sBaseName, ip);
 	}
 }
+
+// --------------------------------------------------
+void CExportNel::addParticleSystemTracks(CAnimation& animation, INode& node, const char* parentName, Interface *ip)
+{	
+	Class_ID  clid = node.GetObjectRef()->ClassID() ;
+	/// is this a particle system ?
+	if (clid.PartA() != NEL_PARTICLE_SYSTEM_CLASS_ID)
+		return ;
+
+	// Export desc
+	CExportDesc desc;
+	const char *paramName[] = { "PSParam0", "PSParam1", "PSParam2", "PSParam3" } ;
+	
+
+	for (uint k = 0 ; k < 4 ; ++k)
+	{
+		Control *ctrl = getControlerByName(node, paramName[k]) ;
+		if (ctrl)
+		{
+			ITrack *pTrack=buildATrack (animation, *ctrl, typeFloat, node, desc, ip, NULL, NULL);
+			if (pTrack)
+			{
+				std::string name=parentName+std::string (NL3D::CParticleSystemModel::getPSParamName((uint) NL3D::CParticleSystemModel::PSParam0 + k));
+				animation.addTrack (name.c_str(), pTrack);
+			}
+		}	
+	}
+}
+
 
 // --------------------------------------------------
 

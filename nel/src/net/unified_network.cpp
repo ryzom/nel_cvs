@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5, base
  *
- * $Id: unified_network.cpp,v 1.3 2001/11/12 10:21:21 legros Exp $
+ * $Id: unified_network.cpp,v 1.4 2001/11/13 10:53:46 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,7 @@ void	cbDisconnection(TSockId from, void *arg)
 			cb(cnx.ServiceName, cnx.ServiceId, (*it).second.second);
 		}
 
+		// call the generic callback
 		if (instance->_DownUniCallback.first != NULL)
 		{
 			instance->_DownUniCallback.first(cnx.ServiceName, cnx.ServiceId, instance->_DownUniCallback.second);
@@ -413,6 +414,11 @@ void	CUnifiedNetwork::updateConnectionTable()
 			// call it
 			TUnifiedNetCallback	cb = (*it).second.first;
 			cb(cnx.ServiceName, cnx.ServiceId, (*it).second.second);
+		}
+
+		if (_UpUniCallback.first != NULL)
+		{
+			_UpUniCallback.first(cnx.ServiceName, cnx.ServiceId, _UpUniCallback.second);
 		}
 	}
 }

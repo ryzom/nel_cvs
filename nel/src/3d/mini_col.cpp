@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.7 2001/01/03 15:25:34 berenguier Exp $
+ * $Id: mini_col.cpp,v 1.8 2001/01/08 16:21:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,6 +185,10 @@ void			CMiniCol::setCenter(const CVector& center)
 	{
 		CZoneIdent	&zone= const_cast<CZoneIdent&>(*itZone);
 
+		// Tests must be done in 2D...
+		BMin.Center.z= zone.Sphere.Center.z;
+		BMax.Center.z= zone.Sphere.Center.z;
+
 		// Must test first if the zone is IN the area.
 		//=============================================
 		bool	zoneIn= false;
@@ -203,6 +207,11 @@ void			CMiniCol::setCenter(const CVector& center)
 			for(sint i=0;i<(sint)zone.Patchs.size();i++)
 			{
 				CPatchIdent	&pa= zone.Patchs[i];
+
+				// Tests must be done in 2D...
+				BMin.Center.z= pa.Sphere.Center.z;
+				BMax.Center.z= pa.Sphere.Center.z;
+
 				if(pa.Inserted)
 				{
 					// Reject the patch, if entirely OUT the max radius.

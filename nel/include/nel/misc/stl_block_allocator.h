@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.h
  * <File description>
  *
- * $Id: stl_block_allocator.h,v 1.4 2002/02/07 16:45:10 berenguier Exp $
+ * $Id: stl_block_allocator.h,v 1.5 2002/02/07 17:31:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,8 @@ namespace NLMISC {
  * \author Nevrax France
  * \date 2001
  */
+#ifdef NL_OS_WINDOWS
+
 template<class T>
 class CSTLBlockAllocator
 {
@@ -179,6 +181,55 @@ private:
 	CBlockMemory<T, false>		*_BlockMemory;
 
 };
+
+
+#else // NL_OS_WINDOWS
+
+/// \todo yoyo: make it work under linux. For now, use std allocator instead...
+
+# if !defined (__STL_USE_SGI_ALLOCATORS)
+template<class T>
+class CSTLBlockAllocator : public  std::allocator< T >
+{
+public:
+
+	/// Constructor. Must gives a blockMemory to ctor. NB: must gives a CBlockMemory<T, false> !!!
+	CSTLBlockAllocator(CBlockMemory<T, false> *bm)
+	{
+	}
+	/// copy ctor
+	CSTLBlockAllocator(const CSTLBlockAllocator<T> &other) : std::allocator<T>(other)
+	{
+	}
+	/// dtor
+	~CSTLBlockAllocator()
+	{
+	}
+
+};
+# else	// !defined (__STL_USE_SGI_ALLOCATORS)
+class CSTLBlockAllocator : public  __sgi_alloc
+{
+public:
+
+	/// Constructor. Must gives a blockMemory to ctor. NB: must gives a CBlockMemory<T, false> !!!
+	CSTLBlockAllocator(CBlockMemory<T, false> *bm)
+	{
+	}
+	/// copy ctor
+	CSTLBlockAllocator(const CSTLBlockAllocator<T> &other) : __sgi_alloc(other)
+	{
+	}
+	/// dtor
+	~CSTLBlockAllocator()
+	{
+	}
+
+};
+# endif	// !defined (__STL_USE_SGI_ALLOCATORS)
+
+
+#endif // NL_OS_WINDOWS
 
 
 

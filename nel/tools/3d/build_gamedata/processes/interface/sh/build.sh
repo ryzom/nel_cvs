@@ -2,7 +2,7 @@
 rm log.log 2> /dev/null
 
 
-# *** Export interface tile (.tga)
+# *** Build interface
 
 # Get the database directory
 database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
@@ -15,10 +15,10 @@ interface_source_dxtc_directories=`cat ../../cfg/directories.cfg | grep "interfa
 
 # Log error
 echo ------- > log.log
-echo --- Export interface >> log.log
+echo --- Build interface >> log.log
 echo ------- >> log.log
 echo ------- 
-echo --- Export interface 
+echo --- Build interface 
 echo ------- 
 date >> log.log
 date
@@ -45,7 +45,7 @@ done
 
 # build all files in tga_tmp into one tga. Let the OpenGL compress it at runTime (better result for some important cases)
 ../../bin/build_interface tga/texture_interfaces_dxtc.tga tga_tmp
-# TEMP ../../bin/tga2dds tga_tmp/texture_interfaces_dxtc.tga -o tga/texture_interfaces_dxtc.dds -a 5
+# DO NOT COMPRESS ../../bin/tga2dds tga_tmp/texture_interfaces_dxtc.tga -o tga/texture_interfaces_dxtc.dds -a 5
 
 # Idle
 ../../idle.bat

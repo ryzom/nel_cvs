@@ -20,5 +20,5 @@ date >> log.log
 date
 
 cp -u -p -R tga/. $client_directory/$interface_install_directory  2>> log.log
-cp -u -p -R shape/. $client_directory/$interface_install_directory  2>> log.log
+cp -u -p -R 3d/. $client_directory/$interface_install_directory  2>> log.log
 

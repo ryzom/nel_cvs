@@ -55,8 +55,9 @@ done
 # For each interface 3d directory
 for i in $interface_3d_directories; do
 	# Copy
-	cp -u -p $database_directory/$i/*.[tT][gG][aA] tga 2>> log.log
-	cp -u -p $database_directory/$i/*.[sS][hH][aA][pP][eE] shape 2>> log.log
+	cp -u -p $database_directory/$i/*.[tT][gG][aA] 3d 2>> log.log
+	cp -u -p $database_directory/$i/*.[sS][hH][aA][pP][eE] 3d 2>> log.log
+	cp -u -p $database_directory/$i/*.[iI][gG] 3d 2>> log.log
 
 	# Idle
 	../../idle.bat

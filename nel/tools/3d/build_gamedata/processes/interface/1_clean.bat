@@ -2,4 +2,4 @@
 
 del tga\*.* /Q
 del tga_tmp\*.* /Q
-del shape\*.* /Q
+del 3d\*.* /Q

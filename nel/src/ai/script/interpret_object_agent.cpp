@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.34 2001/06/29 08:16:33 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.35 2001/09/07 08:06:32 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1070,6 +1070,31 @@ namespace NLAISCRIPT
 
 		component->StaticValue = obj;
 	}
+
+	void CAgentClass::updateStaticMember(sint32 index, NLAIAGENT::IObjectIA *obj)
+	{
+#ifdef NL_DEBUG
+		std::string buf;
+		obj->getDebugString(buf);
+#endif
+		sint32 nb_components = 0;
+		std::vector<const CAgentClass *>::const_iterator it_bc = _VTable.begin();
+		while ( it_bc != _VTable.end() && nb_components <= index )
+		{
+			nb_components = nb_components + (*it_bc)->getStaticMemberSize();
+			it_bc++;
+		}
+		it_bc--;
+		CComponent *component = (*it_bc)->getComponent( index - ( nb_components - (*it_bc)->getStaticMemberSize() ) );
+#ifdef NL_DEBUG
+		std::string buf2, buf3;
+		component->RegisterName->getDebugString(buf2);
+		component->ObjectName->getDebugString(buf3);
+#endif
+
+		(*component->StaticValue) = *obj;
+	}
+
 
 	NLAIAGENT::IObjectIA *CAgentClass::getStaticComponentValue(std::string &c_name)
 	{

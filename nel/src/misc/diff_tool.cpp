@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.4 2003/12/08 13:19:11 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.5 2004/01/15 17:39:41 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -719,16 +719,16 @@ bool readExcelSheet(const ucstring &str, TWorksheet &worksheet, bool checkUnique
 				bool error = false;
 				set<ucstring>	unik;
 				set<ucstring>::iterator it;
-				for (uint i=0; i<worksheet.size(); ++i)
+				for (uint j=0; j<worksheet.size(); ++j)
 				{
-					it = unik.find(worksheet.getData(i, nameCol)); 
+					it = unik.find(worksheet.getData(j, nameCol)); 
 					if (it != unik.end())
 					{
-						nlwarning("DT: loadStringFile : identifier '%s' exist twice", worksheet.getData(i, nameCol).toString().c_str() );
+						nlwarning("DT: loadStringFile : identifier '%s' exist twice", worksheet.getData(j, nameCol).toString().c_str() );
 						error = true;
 					}
 					else
-						unik.insert(worksheet.getData(i, nameCol));
+						unik.insert(worksheet.getData(j, nameCol));
 				}
 				if (error)
 					return false;

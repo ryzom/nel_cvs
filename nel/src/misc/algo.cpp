@@ -1,7 +1,7 @@
 /** \file algo.cpp
  * <File description>
  *
- * $Id: algo.cpp,v 1.7 2003/09/16 15:08:15 lecroart Exp $
+ * $Id: algo.cpp,v 1.8 2004/01/15 17:39:40 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -143,11 +143,11 @@ void drawFullLine (float x0, float y0, float x1, float y1, std::vector<std::pair
 {
 	result.clear ();
 	// x0 must be < x1
-	float deltaX = (float) fabs (x0-x1);
-	float deltaY = (float) fabs (y0-y1);
-	if ((deltaX == 0) && (deltaY == 0))
+	float dx = (float) fabs (x0-x1);
+	float dy = (float) fabs (y0-y1);
+	if ((dx == 0) && (dy == 0))
 		result.push_back (pair<sint, sint> ((sint)floor (x0), (sint)floor (y0)));
-	else if (deltaX > deltaY)
+	else if (dx > dy)
 	{
 		if (x0 > x1)
 		{

@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.19 2003/10/24 18:03:39 brigand Exp $
+ * $Id: eid_translator.cpp,v 1.20 2004/01/15 17:39:41 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -693,12 +693,12 @@ NLMISC_COMMAND(playerInfo,"Get informations about a player or all players in CEn
 		{
 			ucstring entityName;
 			sint8 entitySlot;
-			uint32 uid;
+			uint32 uid2;
 			string userName;
 			bool online;
-			CEntityIdTranslator::getInstance()->getEntityIdInfo (res[i], entityName, entitySlot, uid, userName, online);
+			CEntityIdTranslator::getInstance()->getEntityIdInfo (res[i], entityName, entitySlot, uid2, userName, online);
 
-			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", uid, userName.c_str(), res[i].toString().c_str(), entityName.toString().c_str(), (sint16)entitySlot, (online?"Online":"Offline"));
+			log.displayNL("UId %d UserName '%s' EId %s EntityName '%s' EntitySlot %hd %s", uid2, userName.c_str(), res[i].toString().c_str(), entityName.toString().c_str(), (sint16)entitySlot, (online?"Online":"Offline"));
 		}
 
 		return true;

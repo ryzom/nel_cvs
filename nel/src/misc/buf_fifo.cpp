@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.26 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.27 2004/01/15 17:39:40 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ CBufFIFO::~CBufFIFO()
 	}
 }
 
-void	 CBufFIFO::push (const uint8 *buffer, uint32 size)
+void	 CBufFIFO::push (const uint8 *buffer, uint32 s)
 {
 	// if the buffer is more than 1 meg, there s surely a problem, no?
 //	nlassert( buffer.size() < 1000000 ); // size check in debug mode
@@ -75,27 +75,27 @@ void	 CBufFIFO::push (const uint8 *buffer, uint32 size)
 #endif
 
 #if DEBUG_FIFO
-	nldebug("%p push(%d)", this, size);
+	nldebug("%p push(%d)", this, s);
 #endif
 
-	nlassert(size > 0 && size < pow(2, sizeof(TFifoSize)*8));
+	nlassert(s > 0 && s < pow(2, sizeof(TFifoSize)*8));
 
 	// stat code
-	if (size > _BiggestBlock) _BiggestBlock = size;
-	if (size < _SmallestBlock) _SmallestBlock = size;
+	if (s > _BiggestBlock) _BiggestBlock = s;
+	if (s < _SmallestBlock) _SmallestBlock = s;
 	_Pushed++;
 
-	while (!canFit (size + sizeof (TFifoSize)))
+	while (!canFit (s + sizeof (TFifoSize)))
 	{
 		resize(_BufferSize * 2);
 	}
 
-	*(TFifoSize *)_Head = size;
+	*(TFifoSize *)_Head = s;
 	_Head += sizeof(TFifoSize);
 
-	CFastMem::memcpy(_Head, buffer, size);
+	CFastMem::memcpy(_Head, buffer, s);
 
-	_Head += size;
+	_Head += s;
 
 	_Empty = false;
 
@@ -116,10 +116,10 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 	TTicks before = CTime::getPerformanceTime();
 #endif
 
-	TFifoSize size = buffer1.size() + buffer2.size ();
+	TFifoSize s = buffer1.size() + buffer2.size();
 
 #if DEBUG_FIFO
-	nldebug("%p push2(%d)", this, size);
+	nldebug("%p push2(%d)", this, s);
 #endif
 
 	nlassert((buffer1.size() + buffer2.size ()) > 0 && (buffer1.size() + buffer2.size ()) < pow(2, sizeof(TFifoSize)*8));
@@ -132,25 +132,25 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 
 
 	// stat code
-	if (size > _BiggestBlock) _BiggestBlock = size;
-	if (size < _SmallestBlock) _SmallestBlock = size;
+	if (s > _BiggestBlock) _BiggestBlock = s;
+	if (s < _SmallestBlock) _SmallestBlock = s;
 
 	_Pushed++;
 
 	// resize while the buffer is enough big to accept the block
-	while (!canFit (size + sizeof (TFifoSize)))
+	while (!canFit (s + sizeof (TFifoSize)))
 	{
 		resize(_BufferSize * 2);
 	}
 
 	// store the size of the block
-	*(TFifoSize *)_Head = size;
+	*(TFifoSize *)_Head = s;
 	_Head += sizeof(TFifoSize);
 
 	// store the block itself
-	CFastMem::memcpy(_Head, &(buffer1[0]), buffer1.size ());
-	CFastMem::memcpy(_Head + buffer1.size(), &(buffer2[0]), buffer2.size ());
-	_Head += size;
+	CFastMem::memcpy(_Head, &(buffer1[0]), buffer1.size());
+	CFastMem::memcpy(_Head + buffer1.size(), &(buffer2[0]), buffer2.size());
+	_Head += s;
 
 	_Empty = false;
 
@@ -184,18 +184,18 @@ void CBufFIFO::pop ()
 		_Rewinder = NULL;
 	}
 
-	TFifoSize size = *(TFifoSize *)_Tail;
+	TFifoSize s = *(TFifoSize *)_Tail;
 
 #if DEBUG_FIFO
-	nldebug("%p pop(%d)", this, size);
+	nldebug("%p pop(%d)", this, s);
 #endif
 
 #ifdef NL_DEBUG
 	// clear the message to be sure user doesn't use it anymore
-	memset (_Tail, '-', size + sizeof (TFifoSize));
+	memset (_Tail, '-', s + sizeof (TFifoSize));
 #endif
 
-	_Tail += size + sizeof (TFifoSize);
+	_Tail += s + sizeof (TFifoSize);
 
 	if (_Tail == _Head) _Empty = true;
 
@@ -224,28 +224,28 @@ uint8 CBufFIFO::frontLast ()
 		tail = _Buffer;
 	}
 
-	TFifoSize size = *(TFifoSize *)tail;
+	TFifoSize s = *(TFifoSize *)tail;
 
 #if DEBUG_FIFO
-	nldebug("%p frontLast() returns %d ", this, size, *(tail+sizeof(TFifoSize)+size-1));
+	nldebug("%p frontLast() returns %d ", this, s, *(tail+sizeof(TFifoSize)+size-1));
 #endif
 
-	return *(tail+sizeof(TFifoSize)+size-1);
+	return *(tail+sizeof(TFifoSize)+s-1);
 }
 
 
 void CBufFIFO::front (vector<uint8> &buffer)
 {
 	uint8 *tmpbuffer;
-	uint32 size;
+	uint32 s;
 
 	buffer.clear ();
 
-	front (tmpbuffer, size);
+	front (tmpbuffer, s);
 	
-	buffer.resize (size);
+	buffer.resize (s);
 
-	CFastMem::memcpy (&(buffer[0]), tmpbuffer, size);
+	CFastMem::memcpy (&(buffer[0]), tmpbuffer, s);
 
 /*	TTicks before = CTime::getPerformanceTime ();
 
@@ -296,13 +296,13 @@ void CBufFIFO::front (vector<uint8> &buffer)
 void CBufFIFO::front (NLMISC::CMemStream &buffer)
 {
 	uint8 *tmpbuffer;
-	uint32 size;
+	uint32 s;
 
 	buffer.clear ();
 
-	front (tmpbuffer, size);
+	front (tmpbuffer, s);
 
-	buffer.fill (tmpbuffer, size);
+	buffer.fill (tmpbuffer, s);
 	
 	/*
 	TTicks before = CTime::getPerformanceTime ();
@@ -351,7 +351,7 @@ void CBufFIFO::front (NLMISC::CMemStream &buffer)
 #endif*/
 }
 
-void CBufFIFO::front (uint8 *&buffer, uint32 &size)
+void CBufFIFO::front (uint8 *&buffer, uint32 &s)
 {
 #if STAT_FIFO
 	TTicks before = CTime::getPerformanceTime ();
@@ -377,10 +377,10 @@ void CBufFIFO::front (uint8 *&buffer, uint32 &size)
 		tail = _Buffer;
 	}
 
-	size = *(TFifoSize *)tail;
+	s = *(TFifoSize *)tail;
 
 #if DEBUG_FIFO
-	nldebug("%p front(%d)", this, size);
+	nldebug("%p front(%d)", this, s);
 #endif
 
 	tail += sizeof (TFifoSize);
@@ -434,45 +434,45 @@ uint32 CBufFIFO::size ()
 	return 0;
 }
 
-void CBufFIFO::resize (uint32 size)
+void CBufFIFO::resize (uint32 s)
 {
 #if STAT_FIFO
 	TTicks before = CTime::getPerformanceTime();
 #endif
 
-	if (size == 0) size = 100;
+	if (s == 0) s = 100;
 
 #if DEBUG_FIFO
-	nldebug("%p resize(%d)", this, size);
+	nldebug("%p resize(%d)", this, s);
 #endif
 
-	if (size > _BiggestBuffer) _BiggestBuffer = size;
-	if (size < _SmallestBuffer) _SmallestBuffer = size;
+	if (s > _BiggestBuffer) _BiggestBuffer = s;
+	if (s < _SmallestBuffer) _SmallestBuffer = s;
 
 	_Resized++;
 
 	uint32 UsedSize = CBufFIFO::size();
 
 	// creer un nouveau tableau et copie l ancien dans le nouveau.
-	if (size < _BufferSize && UsedSize > size)
+	if (s < _BufferSize && UsedSize > s)
 	{
 		// probleme, on a pas assez de place pour caser les datas => on fait pas
 		nlwarning("BF: Can't resize the FIFO because there's not enough room in the new wanted buffer (%d bytes needed at least)", UsedSize);
 		return;
 	}
 
-	uint8 *NewBuffer = new uint8[size];
+	uint8 *NewBuffer = new uint8[s];
 	if (NewBuffer == NULL)
 	{
-		nlerror("Not enough memory to resize the FIFO to %u bytes", size);
+		nlerror("Not enough memory to resize the FIFO to %u bytes", s);
 	}
 #ifdef NL_DEBUG
 	// clear the message to be sure user doesn't use it anymore
-	memset (NewBuffer, '-', size);
+	memset (NewBuffer, '-', s);
 #endif
 
 #if DEBUG_FIFO
-	nldebug("%p new %d bytes", this, size);
+	nldebug("%p new %d bytes", this, s);
 #endif
 
 	// copy the old buffer to the new one
@@ -513,7 +513,7 @@ void CBufFIFO::resize (uint32 size)
 
 	// affect new buffer
 	_Buffer = NewBuffer;
-	_BufferSize = size;
+	_BufferSize = s;
 
 #if STAT_FIFO
 	TTicks after = CTime::getPerformanceTime();
@@ -539,8 +539,8 @@ void CBufFIFO::displayStats (CLog *log)
 
 void CBufFIFO::display ()
 {
-	int size = 64;
-	int gran = size/30;
+	int s = 64;
+	int gran = s/30;
 
 	char str[1024];
 
@@ -591,7 +591,7 @@ void CBufFIFO::display ()
 		}
 	}
 
-	for (; i < size; i+= gran)
+	for (; i < s; i+= gran)
 	{
 		strncat (str, " ", 1024);
 	}
@@ -603,14 +603,14 @@ void CBufFIFO::display ()
 	DebugLog->display (str);
 }
 
-bool CBufFIFO::canFit (uint32 size)
+bool CBufFIFO::canFit (uint32 s)
 {
 	if (_Tail == _Head)
 	{
 		if (empty())
 		{
 			// is the buffer large enough?
-			if (_BufferSize >= size)
+			if (_BufferSize >= s)
 			{
 				// reset the pointer
 #if DEBUG_FIFO
@@ -639,7 +639,7 @@ bool CBufFIFO::canFit (uint32 size)
 	}
 	else if (_Tail < _Head)
 	{
-		if (_Buffer + _BufferSize - _Head >= (sint32) size)
+		if (_Buffer + _BufferSize - _Head >= (sint32) s)
 		{
 			// can fit after _Head
 #if DEBUG_FIFO
@@ -647,7 +647,7 @@ bool CBufFIFO::canFit (uint32 size)
 #endif
 			return true;
 		}
-		else if (_Tail - _Buffer >= (sint32) size)
+		else if (_Tail - _Buffer >= (sint32) s)
 		{
 			// can fit at the beginning
 #if DEBUG_FIFO
@@ -671,7 +671,7 @@ bool CBufFIFO::canFit (uint32 size)
 	}
 	else // the last case is : if (_Tail > _Head)
 	{
-		if (_Tail - _Head >= (sint32) size)
+		if (_Tail - _Head >= (sint32) s)
 		{
 #if DEBUG_FIFO
 			nldebug("%p fit t>h", this);

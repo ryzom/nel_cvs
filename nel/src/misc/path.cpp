@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.97 2003/12/29 17:32:49 lecroart Exp $
+ * $Id: path.cpp,v 1.98 2004/01/15 17:39:41 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1087,8 +1087,8 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 			fread (&nStringSize, 1, 1, Handle);
 			fread (FileName, 1, nStringSize, Handle);
 			FileName[nStringSize] = 0;
-			uint32 nFileSize;
-			fread (&nFileSize, sizeof(uint32), 1, Handle);
+			uint32 nFileSize2;
+			fread (&nFileSize2, sizeof(uint32), 1, Handle);
 			uint32 nFilePos;
 			fread (&nFilePos, sizeof(uint32), 1, Handle);
 			string sTmp = strlwr(string(FileName));
@@ -1166,11 +1166,11 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 					return;
 			}
 			// if the path is the same, don't warn
-			string path = inst->SSMpath.get((*it).second.idPath);
+			string path2 = inst->SSMpath.get((*it).second.idPath);
 			string sPathOnly = filepath.substr(0,filepath.rfind('@')+1);
-			if (path == sPathOnly)
+			if (path2 == sPathOnly)
 				return;
-			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), path.c_str());
+			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), path2.c_str());
 		}
 	}
 	else

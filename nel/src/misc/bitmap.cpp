@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.44 2003/11/26 11:13:37 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.45 2004/01/15 17:39:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1943,12 +1943,12 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 						{
 							uint16 toto = (uint16)scanline[k++];
 							toto |= scanline[k++]<<8;
-							uint r = toto>>10;
-							uint g = (toto>>5)&0x1f;
-							uint b = toto&0x1f;
-							_Data[0][(height-y-1)*width*4 + 4*i] = (r<<3) | (r>>2);
-							_Data[0][(height-y-1)*width*4 + 4*i + 1] = (g<<3) | (g>>2);
-							_Data[0][(height-y-1)*width*4 + 4*i + 2] = (b<<3) | (b>>2);
+							uint _r = toto>>10;
+							uint _g = (toto>>5)&0x1f;
+							uint _b = toto&0x1f;
+							_Data[0][(height-y-1)*width*4 + 4*i] = (_r<<3) | (_r>>2);
+							_Data[0][(height-y-1)*width*4 + 4*i + 1] = (_g<<3) | (_g>>2);
+							_Data[0][(height-y-1)*width*4 + 4*i + 2] = (_b<<3) | (_b>>2);
 							_Data[0][(height-y-1)*width*4 + 4*i + 3] = 255;
 						}
 						else
@@ -1968,12 +1968,12 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 						{
 							uint16 toto = (uint16)scanline[k++];
 							toto |= scanline[k++]<<8;
-							int r = toto>>10;
-							int g = toto&(0x3e0)>>5;
-							int b = toto&0x1f;
-							_Data[0][y*width*4 + 4*i] = (r<<3) | (r>>2);
-							_Data[0][y*width*4 + 4*i + 1] = (g<<3) | (g>>2);
-							_Data[0][y*width*4 + 4*i + 2] = (b<<3) | (b>>2);
+							int _r = toto>>10;
+							int _g = toto&(0x3e0)>>5;
+							int _b = toto&0x1f;
+							_Data[0][y*width*4 + 4*i] = (_r<<3) | (_r>>2);
+							_Data[0][y*width*4 + 4*i + 1] = (_g<<3) | (_g>>2);
+							_Data[0][y*width*4 + 4*i + 2] = (_b<<3) | (_b>>2);
 							_Data[0][y*width*4 + 4*i + 3] = 255;
 						}
 						else

@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.13 2003/11/21 11:01:17 corvazier Exp $
+ * $Id: big_file.cpp,v 1.14 2004/01/15 17:39:40 lecroart Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -137,8 +137,8 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 			return false;
 
 		FileName[nStringSize] = 0;
-		uint32 nFileSize;
-		if (fread (&nFileSize, sizeof(uint32), 1, handle.File) != 1)
+		uint32 nFileSize2;
+		if (fread (&nFileSize2, sizeof(uint32), 1, handle.File) != 1)
 			return false;
 
 		uint32 nFilePos;
@@ -147,7 +147,7 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 
 		BNPFile bnpfTmp;
 		bnpfTmp.Pos = nFilePos;
-		bnpfTmp.Size = nFileSize;
+		bnpfTmp.Size = nFileSize2;
 		tempMap.insert (make_pair(strlwr(string(FileName)), bnpfTmp));
 	}
 

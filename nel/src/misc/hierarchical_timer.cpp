@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.35 2004/01/09 17:19:32 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.36 2004/01/15 17:39:41 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -430,11 +430,11 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 		if (alignPaths)
 		{
 			uint maxSize = 0;
-			std::string nodePath;
+			std::string np;
 			for(TNodeStatPtrVect::iterator it = nodeStatsPtrs.begin(); it != nodeStatsPtrs.end(); ++it)
 			{
-				(*it)->Node->getPath(nodePath);
-				maxSize = std::max(maxSize, (uint)nodePath.size());
+				(*it)->Node->getPath(np);
+				maxSize = std::max(maxSize, (uint)np.size());
 			}
 			format = "HTIMER: %-" + NLMISC::toString(maxSize) +"s %s";
 		}

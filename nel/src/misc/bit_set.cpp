@@ -1,7 +1,7 @@
 /** \file bit_set.cpp
  * CBitSet class
  *
- * $Id: bit_set.cpp,v 1.13 2003/07/01 10:14:38 cado Exp $
+ * $Id: bit_set.cpp,v 1.14 2004/01/15 17:39:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,11 +116,11 @@ void	CBitSet::resizeNoReset(uint numBits, bool value)
 }
 void	CBitSet::setAll()
 {
-	const uint size = Array.size();
-	fill_n(Array.begin(), size, ~((uint)0));
+	const uint s = Array.size();
+	fill_n(Array.begin(), s, ~((uint)0));
 
-	if (size)
-		Array[size-1]&= MaskLast;
+	if (s)
+		Array[s-1]&= MaskLast;
 }
 void	CBitSet::clearAll()
 {

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.21 2001/04/23 09:24:35 lecroart Exp $
+ * $Id: config_file.cpp,v 1.22 2001/05/10 08:42:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -395,7 +395,7 @@ uint32 CConfigFile::getLastModified ()
 #if defined (NL_OS_WINDOWS)
 	struct _stat buf;
 	int result = _stat (_FileName.c_str (), &buf);
-#else defined (NL_OS_UNIX)
+#elif defined (NL_OS_UNIX)
 	struct stat buf;
 	int result = stat (_FileName.c_str (), &buf);
 #endif

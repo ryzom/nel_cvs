@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.25 2002/05/21 16:41:31 lecroart Exp $
+ * $Id: stream.cpp,v 1.26 2003/04/02 14:46:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdmisc.h"
 
 #include "nel/misc/stream.h"
+#include "nel/misc/mem_stream.h"
 
 using namespace std;
 
@@ -414,6 +415,32 @@ string			IStream::getStreamName() const
 void			IStream::setXMLMode (bool on)
 {
 	_XML = on;
+}
+
+
+/*
+ * Serial memstream, bitmemstream...
+ */
+void	IStream::serial( CMemStream &b )
+{
+	uint32 len=0;
+
+	// Serialize length
+	if ( isReading() )
+	{
+		// fill b with data from this
+		serial (len);
+		serialBuffer (b.bufferToFill (len), len);
+		b.resetBufPos ();
+	}
+	else
+	{
+		// fill this with data from b
+		len = b.length();
+
+		serial( len );
+		serialBuffer( (uint8*) b.buffer (), len );
+	}
 }
 
 

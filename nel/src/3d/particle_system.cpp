@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.73 2003/12/08 17:29:08 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.74 2003/12/10 11:29:34 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1152,10 +1152,11 @@ void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
 			_KeepEllapsedTimeForLifeUpdate = false;
 		break;
 		case LoopingSpellFX:
-			setDestroyModelWhenOutOfRange(true);
+			setDestroyModelWhenOutOfRange(false);
 			setDestroyCondition(noMoreParticles);
 			destroyWhenOutOfFrustum(false);
-			setAnimType(AnimInCluster); // TODO : AnimAlways could be better
+			// setAnimType(AnimInCluster); // TODO : AnimAlways could be better ?
+			setAnimType(AnimVisible);
 			setBypassMaxNumIntegrationSteps(false);
 			_KeepEllapsedTimeForLifeUpdate = false;
 		break;

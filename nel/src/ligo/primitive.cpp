@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.28 2004/06/03 08:43:08 boucher Exp $
+ * $Id: primitive.cpp,v 1.29 2004/06/09 10:24:04 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1675,6 +1675,11 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version, C
 		while ((childNode = CIXml::getNextChildNode (childNode, "CHILD")));
 	}
 
+#ifdef NLLIGO_DEBUG
+	// store debug data
+	getPropertyByName("class", _DebugClassName);
+	getPropertyByName("name", _DebugPrimitiveName);
+#endif
 	// Done
 	return true;
 }

@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.3 2001/03/19 15:38:18 berenguier Exp $
+ * $Id: transformable.h,v 1.4 2001/03/21 11:14:03 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ public:
 
 
 	/// Get the matrix, compute her if necessary (work in all modes).
-	const CMatrix	&getMatrix() {updateMatrix(); return _LocalMatrix;}
+	const CMatrix	&getMatrix() const {updateMatrix(); return _LocalMatrix;}
 
 	/// Tells if the matrix needs to be computed, either if data are modified, or if father is modified (if unheritScale enabled).
 	bool			needCompute() const;
@@ -298,10 +298,10 @@ private:
 	bool	testTransformFlags() const;
 
 	// clear transfrom fglas.
-	void	clearTransformFlags();
+	void	clearTransformFlags() const;
 
 	// compute the matrix.
-	void	updateMatrix();
+	void	updateMatrix() const;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.3 2001/03/19 14:07:32 berenguier Exp $
+ * $Id: transformable.cpp,v 1.4 2001/03/21 11:14:15 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -114,14 +114,16 @@ bool	ITransformable::testTransformFlags() const
 
 
 // ***************************************************************************
-void	ITransformable::clearTransformFlags()
+void	ITransformable::clearTransformFlags() const
 {
+	ITransformable	*self= const_cast<ITransformable*>(this);
+
 	// clear my falgs.
-	clearFlag(PosValue); 
-	clearFlag(RotEulerValue); 
-	clearFlag(RotQuatValue); 
-	clearFlag(ScaleValue);
-	clearFlag(PivotValue);
+	self->clearFlag(PosValue);
+	self->clearFlag(RotEulerValue); 
+	self->clearFlag(RotQuatValue); 
+	self->clearFlag(ScaleValue);
+	self->clearFlag(PivotValue);
 }
 
 // ***************************************************************************
@@ -137,7 +139,7 @@ bool	ITransformable::needCompute() const
 
 
 // ***************************************************************************
-void	ITransformable::updateMatrix()
+void	ITransformable::updateMatrix() const
 {
 	// should we update?
 	if(_Mode!=DirectMatrix && needCompute())

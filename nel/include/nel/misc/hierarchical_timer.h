@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.8 2002/05/29 13:32:23 cado Exp $
+ * $Id: hierarchical_timer.h,v 1.9 2002/05/29 17:30:57 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 
 #include <algorithm>
 
-#define ALLOW_TIMING_MEASURES
+//#define ALLOW_TIMING_MEASURES
 
 
 #ifdef ALLOW_TIMING_MEASURES
@@ -74,9 +74,13 @@ namespace NLMISC
 #endif
 
 
-// Read the time stamp counter (intel architecture only for now..)
+/** Read the time stamp counter. Supports only intel architectures for now  
+  */ 
+#ifdef NL_CPU_INTEL
+
 inline uint64 rdtsc()
 {
+
 	uint64 ticks;
 #	ifndef NL_OS_WINDOWS		
 		__asm__ volatile(".byte 0x0f, 0x31" : "=a" (ticks.low), "=d" (ticks.high));				
@@ -85,11 +89,14 @@ inline uint64 rdtsc()
 		__asm	mov		DWORD PTR [ticks], eax
 		__asm	mov		DWORD PTR [ticks + 4], edx		
 #	endif
-	return ticks;
+	return ticks;	
 }
+
+#endif	
 
 
 /**  A simple clock to measure ticks.
+  *  \warning On intel platform, processor cycles are counted, on other platforms, CTime::getPerformanceTime is used instead.
   *  
   * \sa CStopWatch
   * \author Nicolas Vizerie
@@ -112,7 +119,11 @@ public:
 			nlassert(!_Started);
 			_Started = true;
 #		endif
+#		ifdef NL_CPU_INTEL
 		_StartTick = rdtsc();
+#		else
+		_StartTick = CTime::getPerformanceTime();
+#		endif
 	}
 	// end measure
 	void stop()
@@ -121,7 +132,12 @@ public:
 			nlassert(_Started);
 			_Started = false;
 #		endif
+#		ifdef NL_CPU_INTEL
 		_NumTicks = rdtsc() - _StartTick;
+#		else
+		_NumTicks = CTime::getPerformanceTime() - _StartTick;
+#		endif
+		
 	}	
 	// get measure
 	uint64	getNumTicks() const
@@ -223,9 +239,15 @@ public:
 	  */
 	static void		displayHierarchical(bool displayEx = true, uint labelNumChar = 32, uint indentationStep = 2);
 
-
 	/// Clears stats, and reinits all timer structure
 	static void		clear();		
+
+	/** Gives an evalutation of the processor frequency, in hertz
+	  * \warning Supports only intel architectures for now. 
+	  */
+#ifdef NL_CPU_INTEL
+	static uint64   getProcessorFrequency();
+#endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
@@ -242,6 +264,7 @@ private:
 		TNodeVect				Sons;
 		CHTimer					*Owner;	   // the hierarchical timer this node is associated with		
 		uint64					TotalTime; // the total time spent in that node, including sons
+		uint64					TotalTimeWithoutSons; // the local time spent in that node
 		TTimeVect				Measures;  // All time measures. Used only when standard deviation is wanted
 		uint64					MinTime;   // the minimum time spent in that node
 		uint64					MaxTime;   // the maximum time spent in that node
@@ -263,11 +286,12 @@ private:
 		// reset this node measures
 		void	reset()
 		{
-			TotalTime	  = 0;
-			MaxTime		  = 0;
-			MinTime		  = (uint64) -1;
-			NumVisits	  = 0;
-			SonsPreambule = 0;
+			TotalTimeWithoutSons = 0;
+			TotalTime			 = 0;
+			MaxTime				 = 0;
+			MinTime				 = (uint64) -1;
+			NumVisits			 = 0;
+			SonsPreambule	     = 0;
 			NLMISC::contReset(Measures);
 		}
 		// Display this node path
@@ -275,7 +299,7 @@ private:
 		// Get this node path
 		void    getPath(std::string &dest) const;
 		// Get the time spent in this node without its sons time
-		uint64	getTimeWithoutSons() const;
+		uint64	getSonsTime() const;
 	};
 
 	/** Some statistics
@@ -419,11 +443,14 @@ inline void	CHTimer::before()
 inline void	CHTimer::after(bool displayAfter /*= false*/)
 {
 	if (!_Benching) return;
-	_PreambuleClock.start();
-	//	
 	_CurrNode->Clock.stop();		
-	uint64 numTicks = _CurrNode->Clock.getNumTicks() - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
+	_PreambuleClock.start();
+	//		
+	uint64 numTicks = _CurrNode->Clock.getNumTicks()  - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
 	_CurrNode->TotalTime += numTicks;
+	uint64 sonsTime = _CurrNode->getSonsTime();
+	nlassert(sonsTime <= numTicks);
+	_CurrNode->TotalTimeWithoutSons += numTicks - sonsTime;
 	_CurrNode->MinTime = std::min(_CurrNode->MinTime, numTicks);
 	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, numTicks);
 	if (displayAfter)

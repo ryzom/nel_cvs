@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.4 2002/05/28 15:04:06 vizerie Exp $
+ * $Id: hierarchical_timer.cpp,v 1.5 2002/05/29 17:31:14 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -123,14 +123,14 @@ void CHTimer::CNode::releaseSons()
 }
 
 //=================================================================
-uint64 CHTimer::CNode::getTimeWithoutSons() const
+uint64 CHTimer::CNode::getSonsTime() const
 {
 	uint64 sonsTime = 0;
 	for(uint k = 0; k < Sons.size(); ++k)
 	{
 		sonsTime += Sons[k]->TotalTime;
 	}
-	return TotalTime - sonsTime;
+	return sonsTime;
 }
 
 //=================================================================
@@ -191,6 +191,48 @@ void CHTimer::walkTreeToCurrent()
 	}
 }
 
+#ifdef	NL_CPU_INTEL
+//=================================================================
+uint64 CHTimer::getProcessorFrequency()
+{
+	static uint64 freq;
+	static bool freqComputed = false;	
+	if (freqComputed) return freq;
+
+	TTicks bestNumTicks   = 0;
+	uint64 bestNumCycles;
+	uint64 numCycles;
+	const uint numSamples = 5;
+	const uint numLoops   = 50000000;
+	
+	volatile uint k; // prevent optimisation for the loop
+	volatile dummy = 0;
+	for(uint l = 0; l < numSamples; ++l)
+	{	
+		TTicks startTick = NLMISC::CTime::getPerformanceTime();
+		uint64 startCycle = rdtsc();
+		uint dummy = 0;
+		for(k = 0; k < numLoops; ++k)
+		{		
+			++ dummy;
+		}		
+		numCycles = rdtsc() - startCycle;
+		TTicks numTicks = NLMISC::CTime::getPerformanceTime() - startTick;
+		if (numTicks > bestNumTicks)
+		{		
+			bestNumTicks  = numTicks;
+			bestNumCycles = numCycles;
+		}
+	}
+	freqComputed = true;
+	freq = (uint64) ((double) bestNumCycles * 1 / CTime::ticksToSecond(bestNumTicks));
+	return freq;
+	nlassert(0);
+	return 0;
+}
+#endif
+
+
 //=================================================================
 void	CHTimer::startBench(bool wantStandardDeviation /*= false*/)
 {
@@ -199,7 +241,12 @@ void	CHTimer::startBench(bool wantStandardDeviation /*= false*/)
 	_Benching = true;
 	_BenchStartedOnce = true;
 	_RootNode.Owner = &_RootTimer;
-	_MsPerTick = NLMISC::CTime::ticksToSecond(1) * 0.001;
+#	ifdef NL_CPU_INTEL
+		double freq = (double) getProcessorFrequency();
+		_MsPerTick = 1000 / (double) freq;
+#	else
+		_MsPerTick = ticksToSecond(1000);
+#	endif
 	CSimpleClock::init();
 	_RootNode.Owner = &_RootTimer;
 	_WantStandardDeviation = wantStandardDeviation;
@@ -209,21 +256,24 @@ void	CHTimer::startBench(bool wantStandardDeviation /*= false*/)
 //=================================================================
 void	CHTimer::endBench()
 {
-	_RootTimer.after();
 	nlassert(_Benching);
-	nlassert(_CurrNode == &_RootNode);
-	_Benching = false;	
+	if (_CurrNode == &_RootNode)
+	{
+		_RootTimer.after();
+	}
+	else
+	{
+		nlwarning("FEHTIMER> Stopping the bench inside a benched functions !");
+	}
+	_Benching = false;
 }
 
 //=================================================================
 void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, bool displayEx)
 {	
-	nlassert(_BenchStartedOnce); // should have done at least one bench
-	bool wasBenching = _Benching;
-	if (_Benching)
-	{
-		endBench();
-	}
+	CSimpleClock	benchClock;
+	benchClock.start();
+	nlassert(_BenchStartedOnce); // should have done at least one bench	
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
 	TNodeMap nodeMap;
 	TNodeVect nodeLeft;	
@@ -286,22 +336,18 @@ void	CHTimer::display(TSortCriterion criterion, bool displayInline /*= true*/, b
 			NLMISC::smprintf(out, 2048, format.c_str(), (*statIt)->Timer->_Name, statsInline.c_str());
 			nlinfo(out);					
 		}
-	}
-	if (wasBenching)
-	{
-		startBench();
-	}
+	}	
+	benchClock.stop();
+	_CurrNode->SonsPreambule += benchClock.getNumTicks();
 }
 
 //================================================================================================
 void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInline, bool alignPaths, bool displayEx)
 {	
+	CSimpleClock	benchClock;
+	benchClock.start();
 	nlassert(_BenchStartedOnce); // should have done at least one bench	
-	bool wasBenching = _Benching;
-	if (_Benching)
-	{
-		endBench();
-	}
+	bool wasBenching = _Benching;	
 	//
 	typedef std::vector<CNodeStat>   TNodeStatVect;
 	typedef std::vector<CNodeStat *> TNodeStatPtrVect;
@@ -380,22 +426,18 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 			NLMISC::smprintf(out, 2048, format.c_str(), nodePath.c_str(), statsInline.c_str());
 			nlinfo(out);
 		}
-	}	
-	if (wasBenching)
-	{
-		startBench();
 	}
+	benchClock.stop();
+	_CurrNode->SonsPreambule += benchClock.getNumTicks();
 }
 
 //=================================================================
 /*static*/ void CHTimer::displayHierarchical(bool displayEx /*=true*/,uint labelNumChar /*=32*/, uint indentationStep /*= 2*/)
 {
+	CSimpleClock	benchClock;
+	benchClock.start();
 	nlassert(_BenchStartedOnce); // should have done at least one bench
-	bool wasBenching = _Benching;
-	if (_Benching)
-	{
-		endBench();
-	}
+	bool wasBenching = _Benching;	
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
 	TNodeMap nodeMap;
 	TNodeVect nodeLeft;	
@@ -450,11 +492,9 @@ void		CHTimer::displayByExecutionPath(TSortCriterion criterion, bool displayInli
 			displayStat = true;
 			++ depth;
 		}
-	}
-	if (wasBenching)
-	{
-		startBench();
-	}
+	}	
+	benchClock.stop();
+	_CurrNode->SonsPreambule += benchClock.getNumTicks();
 }
 
 //=================================================================
@@ -481,10 +521,14 @@ void CHTimer::CStats::buildFromNodes(CNode **nodes, uint numNodes, double msPerT
 	for(k = 0; k < numNodes; ++k)
 	{		
 		TotalTime += nodes[k]->TotalTime * msPerTick;
-		TotalTimeWithoutSons += nodes[k]->getTimeWithoutSons() * msPerTick;
+		TotalTimeWithoutSons += nodes[k]->TotalTimeWithoutSons * msPerTick;
 		NumVisits += nodes[k]->NumVisits;
 		minTime = std::min(minTime, nodes[k]->MinTime);
 		maxTime = std::max(maxTime, nodes[k]->MaxTime);				
+	}
+	if (minTime == (uint64) -1) 
+	{
+		minTime = 0;
 	}
 	MinTime  = minTime * msPerTick;
 	MaxTime  = maxTime * msPerTick;

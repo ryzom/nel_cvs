@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.11 2001/01/18 17:53:51 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.12 2001/01/24 10:01:16 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@ namespace NLAISCRIPT
 			_Param[i] = (IOpType *)p._Param[i]->clone();//new NLAIC::CIdentType(*p._Param[i]);
 		}
 	}
+
 	CParam::CParam(int count, ...)
 	{
 		va_list marker;
@@ -50,6 +51,7 @@ namespace NLAISCRIPT
 			_Param.push_back(o);
 		}
 	}
+
 	bool CParam::operator == (const CParam &p) const
 	{
 		sint32 l;
@@ -356,9 +358,9 @@ namespace NLAISCRIPT
 		_Code = c;
 	}
 
-	IOpCode &CMethodeName::getCode()
+	IOpCode *CMethodeName::getCode()
 	{
-		return *_Code;
+		return _Code;
 	}
 
 	void CMethodeName::setTypeOfMethode(IOpType *id)

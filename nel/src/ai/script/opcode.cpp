@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.8 2001/01/23 16:39:32 chafik Exp $
+ * $Id: opcode.cpp,v 1.9 2001/01/24 10:01:16 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -472,6 +472,5 @@ namespace NLAISCRIPT
 		is.serial( id );
 		_DebugAttrib =  (NLAIAGENT::IBaseGroupType *)id.allocClass();
 		_DebugAttrib->load(is);
-	}
-	
+	}	
 }

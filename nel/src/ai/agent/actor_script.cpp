@@ -13,7 +13,8 @@ namespace NLAIAGENT
 	CActorScript::CActorScript(const CActorScript &a) : CAgentScript(a)
 	{
 		_IsActivated = a._IsActivated;
-		_OnActivateIndex = -1;
+		_OnActivateIndex = a._OnActivateIndex;
+		_OnUnActivateIndex = a._OnUnActivateIndex;
 	}
 
 	CActorScript::CActorScript(IAgentManager *manager, 
@@ -23,11 +24,16 @@ namespace NLAIAGENT
 	: CAgentScript(manager, father, components, actor_class )
 	{	
 		_IsActivated = false;
+		_OnActivateIndex = -1;
+		_OnUnActivateIndex = -1;
+
 	}	
 
 	CActorScript::CActorScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
 	{
 		_IsActivated = false;
+		_OnActivateIndex = -1;
+		_OnUnActivateIndex = -1;
 	}
 
 	CActorScript::~CActorScript()
@@ -49,27 +55,13 @@ namespace NLAIAGENT
 
 			if (  father && ( ( CAgentScript *)father)->getClass()->isClassInheritedFrom( CStringVarName("Fsm") ) != -1 )
 			{
-				tQueue r;
-
-				// Looks for the function to call at the activation of the state
-				r = _AgentClass->isMember( NULL, &CStringVarName("OnEnterState"), NLAISCRIPT::CParam() );
-				if ( !r.empty() )
-				{	
-					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
-					context->Self = this;
-					runMethodeMember(r.top().Index,context);
-				}
-/*
-				r = _AgentClass->isMember( NULL, &CStringVarName("OnExitState"), NLAISCRIPT::CParam() )
-				if ( r = _AgentClass->isMember( CStringVarName("OnExitState", NULL ) )
-				{	
-					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
-					context->Self = this;
-					runMethodMember(r.top().Index,context);
-				}*/
-
 				( (CFsmScript *)father)->activate( this );
 			}
+
+			// Looks for the function to call at the activation of the state
+			tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnEnterState"), NLAISCRIPT::CParam() );
+			if ( !r.empty() )
+				_OnActivateIndex = r.top().Index;
 
 			onActivate();
 			_IsActivated = true;
@@ -87,6 +79,18 @@ namespace NLAIAGENT
 				( (CFsmScript *)father)->unactivate( this );
 			}
 
+			tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnExitState"), NLAISCRIPT::CParam() );
+			if ( !r.empty() )
+			{	
+				_OnUnActivateIndex = r.top().Index;
+				if ( getAgentManager() != NULL )
+				{
+					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+					context->Self = this;
+					runMethodeMember( _OnUnActivateIndex ,context);
+					_OnActivateIndex = -1;
+				}
+			}
 			onUnActivate();
 			_IsActivated = false;
 		}
@@ -197,6 +201,17 @@ namespace NLAIAGENT
 	{
 		if ( _IsActivated )
 		{
+			if ( _OnActivateIndex != -1 )
+			{
+				if ( getAgentManager() != NULL )
+				{
+					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+					context->Self = this;
+					runMethodeMember( _OnActivateIndex ,context);
+					_OnActivateIndex = -1;
+				}
+			}
+
 			return CAgentScript::run();
 		}
 		else

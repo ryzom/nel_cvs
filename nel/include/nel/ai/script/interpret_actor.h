@@ -8,6 +8,7 @@ namespace NLAISCRIPT
 	{
 	public:
 		static const NLAIC::CIdentType IdActorClass;
+
 	public:
 		CActorClass(const NLAIAGENT::IVarName &);
 		CActorClass(const NLAIC::CIdentType &);

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.40 2001/03/28 12:15:14 portier Exp $
+ * $Id: agent_script.cpp,v 1.41 2001/03/29 16:02:29 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,6 +157,7 @@ namespace NLAIAGENT
 																				new NLAISCRIPT::CObjectUnknown(new 
 																				NLAISCRIPT::COperandSimple(
 																				new NLAIC::CIdentType(CVectorGroupManager::IdVectorGroupManager))));
+
 		StaticMethod[CAgentScript::TAddChildTag] = new CAgentScript::CMethodCall(	_ADDCHILD_, 
 																						CAgentScript::TAddChildTag, 
 																						NULL,CAgentScript::CheckCount,
@@ -533,6 +534,11 @@ namespace NLAIAGENT
 		m->setSender(this);
 		m->setPerformatif(IMessageBase::PTell);
 		((IObjectIA *)o)->sendMessage(m);
+
+		if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
+		{
+			((CAgentScript *)o)->setAgentManager(this);
+		}
 
 		_DynamicAgentName.insert(CKeyAgent(s,addChild(o)));
 		

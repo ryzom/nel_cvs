@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.11 2001/02/28 09:42:02 portier Exp $
+ * $Id: actor_script.h,v 1.12 2001/03/29 16:02:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,8 +61,11 @@ namespace NLAIAGENT
 			};
 
 			bool _IsActivated;
+			bool _OnActivate;
+
 			sint32	_OnActivateIndex;
 			sint32	_OnUnActivateIndex;
+
 			std::vector<CComponentHandle *> _Actors;
 			
 			/** Transfers activity to another actor.

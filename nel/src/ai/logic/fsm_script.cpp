@@ -36,6 +36,13 @@ namespace NLAIAGENT
 
 	CFsmScript::CFsmScript(const CFsmScript &a) : CAgentScript(a)
 	{
+/*		std::vector<IBasicAgent *>::const_iterator it_c = a._ActiveChilds.begin();
+		while ( it_c != a._ActiveChilds.end() )
+		{
+			_ActiveChilds.push_back( (IBasicAgent *) (*it_c)->clone() );
+			it_c++;
+		}
+		*/
 	}
 
 	CFsmScript::CFsmScript(IAgentManager *manager, 
@@ -225,12 +232,12 @@ namespace NLAIAGENT
 
 	void CFsmScript::activate(IBasicAgent *child)
 	{
-		_ActiveChilds.push_back(child);
+//		_ActiveChilds.push_back(child);
 	}
 
 	void CFsmScript::unactivate(IBasicAgent *child)
 	{
-		std::vector<IBasicAgent *>::iterator it_c = _ActiveChilds.begin();
+/*		std::vector<IBasicAgent *>::iterator it_c = _ActiveChilds.begin();
 		while ( it_c != _ActiveChilds.end() )
 		{
 			if ( child == *it_c )
@@ -240,6 +247,7 @@ namespace NLAIAGENT
 			}
 			it_c++;
 		}
+		*/
 	}
 
 	void CFsmScript::runChildren()
@@ -247,16 +255,19 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG	
 	const char *classBase = (const char *)getType();
 #endif
-		std::vector<IBasicAgent *>::iterator it_c = _ActiveChilds.begin();
+/*		std::vector<IBasicAgent *>::iterator it_c = _ActiveChilds.begin();
 		while ( it_c != _ActiveChilds.end() )
 		{
+			IBasicAgent *child = *it_c;
 			(*it_c)->run();
 			it_c++;
 		}
+		*/
 
 		// Activation des fils
-//		IAgent::runChildren();
+		CAgentScript::runChildren();
 	}
+
 
 	void CFsmScript::onSuccess( IObjectIA *)
 	{

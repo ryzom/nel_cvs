@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.18 2001/03/14 13:19:34 chafik Exp $
+ * $Id: yacc.cpp,v 1.19 2001/03/29 16:02:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -584,6 +584,7 @@ namespace NLAISCRIPT
 		}
 		return true;
 	}
+
 
 	void CCompilateur::initParam()
 	{

@@ -1,7 +1,7 @@
 /** \file win_displayer.h
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.h,v 1.15 2005/02/22 10:14:12 besson Exp $
+ * $Id: win_displayer.h,v 1.16 2005/04/04 14:51:47 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,10 @@ public:
 	}
 
 	virtual ~CWinDisplayer ();
+
+#ifdef NL_OS_WINDOWS
+	HWND getHWnd () const { return _HWnd; }
+#endif // NL_OS_WINDOWS
 
 private:
 

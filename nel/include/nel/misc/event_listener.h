@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * events listener
  *
- * $Id: event_listener.h,v 1.5 2000/11/17 15:18:08 coutelas Exp $
+ * $Id: event_listener.h,v 1.6 2000/12/01 10:08:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,7 +91,6 @@ private:
 	 * Call back of the listener.
 	 * \param event is the event send to the listener
 	 */
-	/// Internal use
 	virtual void operator ()(const CEvent& event);
 	CBitSet _KeyArray;
 };
@@ -103,3 +102,4 @@ private:
 #endif // NL_EVENT_LISTENER_H
 
 /* End of event_listener.h */
+

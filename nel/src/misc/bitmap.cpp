@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.10 2001/08/28 09:36:10 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.11 2001/08/28 13:08:30 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1390,6 +1390,7 @@ void CBitmap::releaseMipMaps()
 \*-------------------------------------------------------------------*/
 void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 {
+	nlassert(PixelFormat == RGBA);
 	bool needRebuild = false;
 
 	// Deleting mipmaps
@@ -1749,7 +1750,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 				throw EAllocationFailure();
 			}
 
-			for(y=0; y<_Height ;y++)
+			for(y=0; y<_Height;y++)
 			{
 				// Serial buffer: more efficient way to load.
 				f.serialBuffer (scanline, slsize);
@@ -1818,7 +1819,7 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 				throw EAllocationFailure();
 			}
 
-			for(y=0; y<_Height ;y++)
+			for(y=0; y<_Height;y++)
 			{
 				// Serial buffer: more efficient way to load.
 				f.serialBuffer (scanline, slsize);
@@ -2094,121 +2095,127 @@ void CBitmap::rotateCCW()
 bool CBitmap::blit(const CBitmap *src, sint32 x, sint32 y)
 {
 	
-	nlassert(this->PixelFormat == src->PixelFormat) ;
+	nlassert(this->PixelFormat == src->PixelFormat);
 	if (this->PixelFormat != src->PixelFormat)
 	{
-		return false ;
+		return false;
 	}
 
 
 	// check for dxtc use
 
-	const bool useDXTC   =  PixelFormat == DXTC1 || PixelFormat == DXTC1Alpha || PixelFormat == DXTC3 || PixelFormat ==	DXTC5 ;
+	const bool useDXTC   =  PixelFormat == DXTC1 || PixelFormat == DXTC1Alpha || PixelFormat == DXTC3 || PixelFormat ==	DXTC5;
 
 	// number of bits for a 4x4 pix block
-	const uint dxtcNumBits  =  PixelFormat == DXTC1 || PixelFormat == DXTC1Alpha ? 16 : 64;
+	const uint dxtcNumBits  =  PixelFormat == DXTC1 || PixelFormat == DXTC1Alpha ? 64 : 128;
 	
 
 	if (useDXTC)
 	{
 		// blit pos must be multiple of 4
 
-		nlassert(! (x & ~3  || y & ~3) ) ;
-		if (x & ~3  || y & ~3) return false ;
+		nlassert(! (x & 3 || y & 3) );
+		if (x & 3 || y & 3) return false;
 
 	}
 
-	nlassert(PixelFormat != DonTKnow) ;
+	nlassert(PixelFormat != DonTKnow);
 
 	// the width to copy
-	sint width = src->_Width ;
+	sint width = src->_Width;
 	// the height to copy
-	sint height = src->_Height ;
+	sint height = src->_Height;
 
-	uint destStartX, destStartY ;
-	uint srcStartX, srcStartY ;
+	uint destStartX, destStartY;
+	uint srcStartX, srcStartY;
 
 
 	// clip against left
 	if (x < 0)
 	{
-		width += x ;
-		if (width <= 0) return true ;
-		destStartX = 0 ;
-		srcStartX = -x ;
+		width += x;
+		if (width <= 0) return true;
+		destStartX = 0;
+		srcStartX = -x;
 	}
 	else
 	{
-		destStartX = x ;
-		srcStartX = 0 ;
+		destStartX = x;
+		srcStartX = 0;
 	}
 
 	// clip against top
 	if (y < 0)
 	{
-		height += y ;
-		if (height <= 0) return true ;
-		srcStartY = -y ;
-		destStartY = 0 ;
+		height += y;
+		if (height <= 0) return true;
+		srcStartY = -y;
+		destStartY = 0;
 	}
 	else
 	{
-		destStartY = y ;
-		srcStartY = 0 ;
+		destStartY = y;
+		srcStartY = 0;
 	}
 
 	// clip against right
 	if ((destStartX + width - 1) >= _Width)
 	{
-		width = _Width - destStartX ;
-		if (width <= 0) return true ;
+		width = _Width - destStartX;
+		if (width <= 0) return true;
 	}
 
 	// clip against bottom
 	if ((destStartY + height - 1) >= _Height)
 	{
-		height = _Height - destStartY ;
-		if (width <= 0) return true ;
+		height = _Height - destStartY;
+		if (width <= 0) return true;
 	}
 
 
 	// divide all distance by 4 when using DXTC
 	if (useDXTC)
 	{
-		destStartX <<= 2 ;
-		destStartY <<= 2 ;
-		srcStartX <<= 2 ;
-		srcStartY <<= 2 ;
-		width <<= 2 ;
-		height <<= 2 ;
+		destStartX >>= 2;
+		destStartY >>= 2;
+		srcStartX >>= 2;
+		srcStartY >>= 2;
+		width >>= 2;
+		height >>= 2;
 	}
 	
 
 	// bytes per pixs is for either one pixel or 16 (a 4x4 block in DXTC)
-	const uint bytePerPixs = ( useDXTC ? dxtcNumBits : bitPerPixels[PixelFormat] ) >> 3 /* divide by 8 to get the number of bytes */ ;
+	const uint bytePerPixs = ( useDXTC ? dxtcNumBits : bitPerPixels[PixelFormat] ) >> 3 /* divide by 8 to get the number of bytes */;
+
+
+	const uint destRealWidth = useDXTC ? (_Width >> 2) : _Width;
+	const uint srcRealWidth = useDXTC ? (src->_Width >> 2) : src->_Width;
+	
 
 	// size to go to the next line in the destination
-	const uint destStride = _Width * bytePerPixs ;
+	const uint destStride = destRealWidth * bytePerPixs;
 
 	// size to go to the next line in the source
-	const uint srcStride = src->_Width * bytePerPixs ;
+	const uint srcStride = srcRealWidth * bytePerPixs;
 	
 	// lenght in bytes of a line to copy
-	const uint lineLenght = width * bytePerPixs ;
+	const uint lineLenght = width * bytePerPixs;
 
 
-	uint8  *destPos = &(_Data[0][0]) + destStride * destStartY + bytePerPixs * destStartX ;
-	const uint8 *srcPos = &(src->_Data[0][0]) + srcStride * srcStartY + bytePerPixs * srcStartX ;
+	uint8  *destPos = &(_Data[0][0]) + destStride * destStartY + bytePerPixs * destStartX;
+	const uint8 *srcPos = &(src->_Data[0][0]) + srcStride * srcStartY + bytePerPixs * srcStartX;
 
 	// copy each hline
-	for (sint k = 0 ; k < height ; ++k)
+	for (sint k = 0; k < height; ++k)
 	{
-		::memcpy(destPos, srcPos, lineLenght) ;
-		destPos += destStride ;
-		srcPos += srcStride ;
+		::memcpy(destPos, srcPos, lineLenght);
+		destPos += destStride;
+		srcPos += srcStride;
 	}
 
-	return true ;
+	
+	return true;
 }
 
 CRGBAF CBitmap::getColor(float x,float y)

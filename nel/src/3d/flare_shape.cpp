@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.8 2002/04/03 12:26:13 vizerie Exp $
+ * $Id: flare_shape.cpp,v 1.9 2002/05/14 13:03:27 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(_FirstFlareKeepSize);
 	for (uint k = 0; k < MaxFlareNum; ++k)
 	{
-		ITexture *tex = (ITexture *) _Tex;
+		ITexture *tex = _Tex[k];
 		f.serialPolyPtr(tex);
 		if (f.isReading())
 		{

@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.6 2001/06/26 09:21:29 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.7 2001/06/26 11:59:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,7 +121,7 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 	
 	#ifdef NL_DEBUG
 
-	_CrtSetDbgFlag (_CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF) ;
+//	_CrtSetDbgFlag (_CRTDBG_CHECK_ALWAYS_DF | _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF) ;
 	#endif
 
 }

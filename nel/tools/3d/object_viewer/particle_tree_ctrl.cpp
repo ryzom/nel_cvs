@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.9 2001/06/26 09:19:25 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.10 2001/06/26 11:59:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,7 +176,7 @@ void CParticleTreeCtrl::suppressLocatedInstanceNbItem(uint32 newSize)
 
 void CParticleTreeCtrl::buildTreeFromPS(CParticleSystem *ps, CParticleSystemModel *psm)
 {
-	_CrtCheckMemory() ;
+
 	// for now, there's only one root ...
 			
 	CNodeType *nt = new CNodeType(ps, psm) ;
@@ -225,7 +225,7 @@ void CParticleTreeCtrl::buildTreeFromPS(CParticleSystem *ps, CParticleSystemMode
 			lastBoundObject = InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT , lb->getName().c_str() , lb->getType(), lb->getType(), 0, 0, (LPARAM) nt, lastLocatedChild, TVI_LAST) ;
 		}
 	}
-	_CrtCheckMemory() ;
+
 }
 
 
@@ -252,7 +252,7 @@ void CParticleTreeCtrl::init(void)
 
 void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult) 
 {
-	_CrtCheckMemory() ;
+
 	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;
 	
 	
@@ -278,7 +278,7 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 				_LastClickedPS->setCurrentEditedElement(NULL) ;
 			}
 
-			_CrtCheckMemory() ;
+
 			return ;
 		}
 		break ;
@@ -309,7 +309,7 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 				_LastClickedPS->setCurrentEditedElement(NULL) ;
 			}
 
-			_CrtCheckMemory() ;
+
 
 			return ;
 		}
@@ -345,7 +345,7 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 		break ;
 	}
 	
-	_CrtCheckMemory() ;
+
 	
 }
 
@@ -353,7 +353,7 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CParticleTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point) 
 {
-	_CrtCheckMemory() ;
+
 	if (_LastClickedPS)
 	{
 		_LastClickedPS->setCurrentEditedElement(NULL) ;
@@ -413,12 +413,12 @@ void CParticleTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 	}
 	
 
-	_CrtCheckMemory() ;
+
 }
 
 BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) 
 {
-	_CrtCheckMemory() ;
+
 	if (nCode != 0) return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 	CPSLocatedBindable *toCreate = NULL ;
 				
@@ -527,7 +527,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			// , as they won't need to be restored when the stop button will be pressed
 			_ParticleDlg->StartStopDlg->removeLocated(loc) ;
 
-			_CrtCheckMemory() ;
+
 
 			return TRUE ;
 			
@@ -559,7 +559,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			_ParticleDlg->setRightPane(NULL) ;
 			DeleteItem(GetSelectedItem()) ;			
 			
-			_CrtCheckMemory() ;
+
 			
 			return TRUE ;			
 		}
@@ -571,9 +571,9 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			nt->Loc->deleteElement(nt->LocatedInstanceIndex) ;			
 			_ParticleDlg->setRightPane(NULL) ;			
 			suppressLocatedInstanceNbItem(0) ;
-			rebuildLocatedInstance() ;
-			Invalidate() ;
+			rebuildLocatedInstance() ;			
 		}
+		break; 
 
 		// instanciate an element
 		case ID_INSTANCIATE_LOCATED:
@@ -631,7 +631,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		break ;
 		case ID_MENU_LOAD_PS:
 		{
-			_CrtCheckMemory() ;
+
 				
 				_ParticleDlg->StartStopDlg->stop() ;
 				CFileDialog fd(TRUE, ".ps", "*.ps", 0, NULL, this) ;
@@ -649,7 +649,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					
 					NL3D::CNELU::Scene.deleteInstance(nt->PSModel) ;					
 				
-					_CrtCheckMemory() ;
+
 					try
 					{
 						nt->PSModel = dynamic_cast<CParticleSystemModel *>(NL3D::CNELU::Scene.createInstance(std::string((LPCTSTR) fd.GetFileName()))) ;
@@ -673,7 +673,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					}
 
 					_LastClickedPS = NULL ;
-					_CrtCheckMemory() ;
+
 				}
 
 		}
@@ -779,7 +779,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 
 
-	_CrtCheckMemory() ;
+
 
 
 

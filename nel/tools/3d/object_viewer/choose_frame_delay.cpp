@@ -4,6 +4,8 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "choose_frame_delay.h"
+#include "particle_dlg.h"
+#include "3d/particle_system.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CChooseFrameDelay dialog
@@ -11,7 +13,7 @@
 
 //*****************************************************************************************************
 CChooseFrameDelay::CChooseFrameDelay(CObjectViewer *objectViewer, CWnd* pParent)
-	: CDialog(CChooseFrameDelay::IDD, pParent)
+	: CDialog(CChooseFrameDelay::IDD, pParent), _LockToPS(false)
 {
 	nlassert(objectViewer);
 	_CFDWrapper.OV = objectViewer;
@@ -21,12 +23,29 @@ CChooseFrameDelay::CChooseFrameDelay(CObjectViewer *objectViewer, CWnd* pParent)
 	_ER->enableLowerBound(0, false);
 	_ER->enableUpperBound(10000, false);	
 	_ER->setWrapper(&_CFDWrapper);
+	//	
+	objectViewer->registerMainLoopCallBack(this);
 }
 
 CChooseFrameDelay::~CChooseFrameDelay()
 {
+	CObjectViewer *ov = _CFDWrapper.OV;
+	ov->removeMainLoopCallBack(this);
 	_ER->DestroyWindow();
 	delete _ER;	
+}
+
+//*****************************************************************************************************
+void CChooseFrameDelay::lockToPS(bool lock)
+{
+	if (lock == _LockToPS) return;
+	_ER->EnableWindow(!lock);
+	_LockToPS = lock;
+	if (!lock)
+	{
+		_CFDWrapper.set(0);
+		_ER->update();
+	}
 }
 
 //*****************************************************************************************************
@@ -47,7 +66,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CChooseFrameDelay message handlers
 
-
+//*****************************************************************************************************
 BOOL CChooseFrameDelay::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
@@ -62,8 +81,30 @@ BOOL CChooseFrameDelay::OnInitDialog()
 uint32 CChooseFrameDelay::CCFDWrapper::get(void) const { return OV->getFrameDelay(); }
 void   CChooseFrameDelay::CCFDWrapper::set(const uint32 &value) { OV->setFrameDelay(value); }
 
+//*****************************************************************************************************
 void CChooseFrameDelay::OnDestroy() 
 {
 	setRegisterWindowState (this, REGKEY_CHOOSE_FRAME_DELAY_DLG);
 	CDialog::OnDestroy();		
+}
+
+//*****************************************************************************************************
+void CChooseFrameDelay::go()
+{
+	if (_LockToPS)
+	{
+		// get integration step from ps
+		CObjectViewer *ov = _CFDWrapper.OV;
+		NL3D::CParticleSystem *ps = ov->getParticleDialog()->getCurrPS();
+		uint integrationTime = (uint) (1000.f * ps->getTimeTheshold());
+		if (!ps->getBypassMaxNumIntegrationSteps())
+		{
+			integrationTime *= ps->getMaxNbIntegrations();
+		}
+		if (integrationTime != _CFDWrapper.get())
+		{
+			_CFDWrapper.set(integrationTime);
+			_ER->update();
+		}		
+	}
 }

@@ -9,19 +9,26 @@
 
 
 #include "editable_range.h"
+#include "object_viewer.h"
 
 
-class CObjectViewer;
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CChooseLag dialog
 
-class CChooseFrameDelay : public CDialog
+class CChooseFrameDelay : public CDialog, public CObjectViewer::IMainLoopCallBack
 {
 // Construction
 public:
 	CChooseFrameDelay(CObjectViewer *objectViewer, CWnd* pParent);   // standard constructor
 	~CChooseFrameDelay();
+
+
+	// Lock frame delay to current particle system
+	void lockToPS(bool lock);
+	bool isLockedToPS() const { return _LockToPS; }
+
 
 // Dialog Data
 	//{{AFX_DATA(CChooseLag)
@@ -38,6 +45,7 @@ public:
 
 // Implementation
 protected:	
+	bool				_LockToPS;
 	CEditableRangeUInt  *_ER;
 	// Generated message map functions
 	//{{AFX_MSG(CChooseFrameDelay)	
@@ -53,6 +61,8 @@ protected:
 		uint32 get(void) const;
 		virtual void set(const uint32 &value);
 	} _CFDWrapper;
+	// From CObjectViewer::IMainLoopCallBack
+	virtual void go();
 };
 
 //{{AFX_INSERT_LOCATION}}

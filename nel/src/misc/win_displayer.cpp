@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.27 2002/11/12 17:24:01 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.28 2002/12/16 16:39:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -354,15 +354,15 @@ void CWinDisplayer::setTitleBar (const string &titleBar)
 
 void CWinDisplayer::open (string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww)
 {
-	_HistorySize = hs;
-
 	if (w == -1)
 		w = 700;
 	if (h == -1)
 		h = 300;
 	if (hs = -1)
-		hs = 10000;
+		hs = 1000;
 
+	_HistorySize = hs;
+	
 	WNDCLASS wc;
 	memset (&wc,0,sizeof(wc));
 	wc.style			= CS_HREDRAW | CS_VREDRAW ;//| CS_DBLCLKS;

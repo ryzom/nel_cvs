@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.42 2003/06/13 13:59:07 vizerie Exp $
+ * $Id: scene_user.cpp,v 1.43 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -699,13 +699,13 @@ UInstance		*CSceneUser::createInstance(const std::string &shapeName)
 }
 
 
-void CSceneUser::createInstanceAsync(const std::string &shapeName, UInstance**ppInstance, const NLMISC::CVector &position)
+void CSceneUser::createInstanceAsync(const std::string &shapeName, UInstance**ppInstance, const NLMISC::CVector &position, uint selectedTexture)
 {
 	NL3D_MEM_INSTANCE
 	NL3D_HAUTO_CREATE_INSTANCE;
 
 	_WaitingInstances[ppInstance] = NULL;
-	_Scene.createInstanceAsync(shapeName,&_WaitingInstances[ppInstance], position);
+	_Scene.createInstanceAsync(shapeName,&_WaitingInstances[ppInstance], position, selectedTexture);
 //		CTransform	*model= _Scene.createInstance(shapeName);
 	// If not found, return NULL.
 //		if(model==NULL)

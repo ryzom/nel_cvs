@@ -1,7 +1,7 @@
 /** \file texture_near.h
  * <File description>
  *
- * $Id: texture_near.h,v 1.3 2002/04/03 17:00:40 berenguier Exp $
+ * $Id: texture_near.h,v 1.4 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ public:
 	CTextureNear(sint size);
 
 	/// Since texture is always in memory...
-	void			doGenerate()
+	void			doGenerate(bool async)
 	{
 		// Do nothing. texture still in memory... :o)
 	}

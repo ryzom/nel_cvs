@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager_3d.cpp,v 1.3 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.4 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,9 +78,9 @@ void CAsyncFileManager3D::terminate ()
 
 // ***************************************************************************
 	
-void CAsyncFileManager3D::loadMesh(const std::string& meshName, IShape **ppShp, IDriver *pDriver, const CVector &position)
+void CAsyncFileManager3D::loadMesh(const std::string& meshName, IShape **ppShp, IDriver *pDriver, const CVector &position, uint textureSlot)
 {
-	CAsyncFileManager::getInstance().addLoadTask(new CMeshLoad(meshName, ppShp, pDriver, position));
+	CAsyncFileManager::getInstance().addLoadTask(new CMeshLoad(meshName, ppShp, pDriver, position, textureSlot));
 }
 
 // ***************************************************************************
@@ -215,12 +215,13 @@ void CAsyncFileManager3D::cancelSignal (bool *pSgn)
 // MeshLoad
 // ***************************************************************************
 
-CAsyncFileManager3D::CMeshLoad::CMeshLoad(const std::string& sMeshName, IShape** ppShp, IDriver *pDriver, const CVector &position)
+CAsyncFileManager3D::CMeshLoad::CMeshLoad(const std::string& sMeshName, IShape** ppShp, IDriver *pDriver, const CVector &position, uint selectedTexture)
 {
 	_pDriver = pDriver;
 	MeshName = sMeshName;
 	_ppShp = ppShp;
 	Position = position;
+	_SelectedTexture = selectedTexture;
 }
 
 // ***************************************************************************
@@ -285,25 +286,27 @@ void CAsyncFileManager3D::CMeshLoad::run()
 			if (rMat.texturePresent(j))
 			{
 				pText = rMat.getTexture (j);
-				// For all texture that are texture file we have to load them
-				CTextureFile *pTextFile = dynamic_cast<CTextureFile*>(pText);
+
 				// Does this texture is a texture file ?
-				if(pTextFile != NULL)
-				// Yes -> Does the texture is already present in the driver ?
-				if( ! _pDriver->isTextureExist(*pTextFile) )
+				if ((pText != NULL) && (pText->supportSharing()))
 				{
-					// No -> So we have perhaps to load it
-					TAlreadyPresentTextureSet::iterator aptmIt = AlreadyPresentTextureSet.find (pTextFile->getFileName());
-					// Is the texture already loaded ?
-					if(aptmIt == AlreadyPresentTextureSet.end())
+					// Set texture slot
+					pText->selectTexture(_SelectedTexture);
+
+					// Yes -> Does the texture is already present in the driver ?
+					if( ! _pDriver->isTextureExist(*pText) )
 					{
-						// Texture not already present
-						// add it
-						AlreadyPresentTextureSet.insert (pTextFile->getFileName());
-						// And load it (to RAM only (upload in VRAM is done in the shape bank))
-						pTextFile->setAsyncLoading (true);
-						pTextFile->generate();
-						pTextFile->setAsyncLoading (false);
+						// No -> So we have perhaps to load it
+						TAlreadyPresentTextureSet::iterator aptmIt = AlreadyPresentTextureSet.find (pText->getShareName());
+						// Is the texture already loaded ?
+						if(aptmIt == AlreadyPresentTextureSet.end())
+						{
+							// Texture not already present
+							// add it
+							AlreadyPresentTextureSet.insert (pText->getShareName());
+							// And load it (to RAM only (upload in VRAM is done in the shape bank))
+							pText->generate(true);
+						}
 					}
 				}
 			}
@@ -314,24 +317,23 @@ void CAsyncFileManager3D::CMeshLoad::run()
 				j = 0; pText = rMat.getLightMap (j);
 				while (pText != NULL)
 				{
-					CTextureFile *pTextFile = dynamic_cast<CTextureFile*>(pText);
 					// Does this texture is a texture file ?
-					if(pTextFile != NULL)
-					// Yes -> Does the texture is already present in the driver ?
-					if (!_pDriver->isTextureExist(*pTextFile))
+					if ((pText != NULL) && (pText->supportSharing()))
 					{
-						// No -> So we have perhaps to load it
-						TAlreadyPresentTextureSet::iterator aptmIt = AlreadyPresentTextureSet.find (pTextFile->getFileName());
-						// Is the texture already loaded ?
-						if(aptmIt == AlreadyPresentTextureSet.end())
+						// Yes -> Does the texture is already present in the driver ?
+						if (!_pDriver->isTextureExist(*pText))
 						{
-							// Texture not already present -> add it and load it to RAM
-							AlreadyPresentTextureSet.insert (pTextFile->getFileName());
-							pTextFile->setAsyncLoading (true);
-							pTextFile->generate();
-							pTextFile->setAsyncLoading (false);
-						}
-					}				
+							// No -> So we have perhaps to load it
+							TAlreadyPresentTextureSet::iterator aptmIt = AlreadyPresentTextureSet.find (pText->getShareName());
+							// Is the texture already loaded ?
+							if(aptmIt == AlreadyPresentTextureSet.end())
+							{
+								// Texture not already present -> add it and load it to RAM
+								AlreadyPresentTextureSet.insert (pText->getShareName());
+								pText->generate(true);
+							}
+						}				
+					}
 					++j; pText = rMat.getLightMap (j);
 				}
 			}
@@ -454,9 +456,7 @@ void CAsyncFileManager3D::CIGLoadUser::getName (std::string &result) const
 void	CAsyncFileManager3D::CTextureLoad::run()
 {
 	// Load the texture.
-	TextureFile->setAsyncLoading (true);
-	TextureFile->generate();
-	TextureFile->setAsyncLoading (false);
+	TextureFile->generate(true);
 	// Ok
 	*Signal= true;
 

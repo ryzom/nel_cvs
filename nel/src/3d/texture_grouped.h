@@ -1,7 +1,7 @@
 /** \file texture_grouped.h
  * <File description>
  *
- * $Id: texture_grouped.h,v 1.6 2002/11/20 11:13:02 vizerie Exp $
+ * $Id: texture_grouped.h,v 1.7 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:
 	/** 
 	 * Generate the texture.	 
 	 */	
-	void doGenerate();
+	void doGenerate(bool async = false);
 
 	/// serialization
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);

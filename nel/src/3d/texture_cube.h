@@ -1,7 +1,7 @@
 /** \file texture_cube.h
  * Cube mapping (6 maps around the object)
  *
- * $Id: texture_cube.h,v 1.5 2002/06/24 17:11:13 vizerie Exp $
+ * $Id: texture_cube.h,v 1.6 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ public:
 	/** 
 	 * Generate the texture, looking in CPath if necessary.
 	 */	
-	void doGenerate();
+	void doGenerate(bool async = false);
 
 	virtual void release();
 	/// Does this texture is a cube texture

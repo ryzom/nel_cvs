@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.20 2003/04/25 13:44:37 berenguier Exp $
+ * $Id: texture_font.cpp,v 1.21 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,7 +231,7 @@ void CTextureFont::rebuildLetter (sint cat, sint x, sint y)
 }
 
 // ---------------------------------------------------------------------------
-void CTextureFont::doGenerate()
+void CTextureFont::doGenerate(bool async)
 {
 	// Rectangle invalidate ?
 	if (_ListInvalidRect.begin()!=_ListInvalidRect.end())

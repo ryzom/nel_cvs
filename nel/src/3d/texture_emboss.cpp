@@ -1,6 +1,6 @@
 /** \file texture_emboss.cpp
  *
- * $Id: texture_emboss.cpp,v 1.1 2003/04/01 15:35:00 vizerie Exp $
+ * $Id: texture_emboss.cpp,v 1.2 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -98,7 +98,7 @@ void CTextureEmboss::release()
 }
 
 //***********************************************************************************************************
-void CTextureEmboss::doGenerate()
+void CTextureEmboss::doGenerate(bool async)
 {
 	if (!_HeightMap)
 	{

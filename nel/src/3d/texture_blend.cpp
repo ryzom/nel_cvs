@@ -1,7 +1,7 @@
 /** \file texture_blend.cpp
  * A helper texture class to blend between 2 others textures.
  *
- * $Id: texture_blend.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_blend.cpp,v 1.3 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -99,7 +99,7 @@ void CTextureBlend::setBlendTexture(uint index, ITexture *tex)
 
 
 //************************************************************************
-void CTextureBlend::doGenerate()
+void CTextureBlend::doGenerate(bool async)
 {
 	if (!_BlendTex[0] || !_BlendTex[1])
 	{

@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * <File description>
  *
- * $Id: async_file_manager_3d.h,v 1.4 2003/06/03 13:05:02 corvazier Exp $
+ * $Id: async_file_manager_3d.h,v 1.5 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ public:
 	static CAsyncFileManager3D &getInstance (); // Must be called instead of constructing the object
 	static void terminate (); // release singleton
 
-	void loadMesh (const std::string &sMeshName, IShape **ppShp, IDriver *pDriver, const NLMISC::CVector &position);
+	void loadMesh (const std::string &sMeshName, IShape **ppShp, IDriver *pDriver, const NLMISC::CVector &position, uint textureSlot);
 	bool cancelLoadMesh (const std::string& sMeshName);
 
 	void loadIG (const std::string &igName, CInstanceGroup **ppIG);
@@ -91,10 +91,11 @@ private:
 	{
 		IShape **_ppShp;
 		IDriver *_pDriver;
+		uint	_SelectedTexture;
 	public:
 		std::string MeshName;
 	public:
-		CMeshLoad (const std::string &meshName, IShape **ppShp, IDriver *pDriver, const CVector &position);
+		CMeshLoad (const std::string &meshName, IShape **ppShp, IDriver *pDriver, const CVector &position, uint selectedTexture);
 		void run (void);
 		void getName (std::string &result) const;
 	};

@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.38 2003/06/13 13:59:59 vizerie Exp $
+ * $Id: u_scene.h,v 1.39 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,7 +136,7 @@ public:
 	/** Same as createInstance but the instance is loaded asynchronously.
 	 * You must poll to know if the instance if created by calling render()
 	 */
-	virtual	void			createInstanceAsync(const std::string &shapeName,UInstance**ppInstance, const NLMISC::CVector &position)=0;
+	virtual	void			createInstanceAsync(const std::string &shapeName,UInstance**ppInstance, const NLMISC::CVector &position, uint selectedTexture)=0;
 	/** Delete an instance via his pointer.
 	 */
 	virtual	void			deleteInstance(UInstance *inst)=0;

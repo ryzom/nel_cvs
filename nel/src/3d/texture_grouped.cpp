@@ -1,7 +1,7 @@
 /** \file texture_grouped.cpp
  * <File description>
  *
- * $Id: texture_grouped.cpp,v 1.11 2002/05/28 16:57:01 vizerie Exp $
+ * $Id: texture_grouped.cpp,v 1.12 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -192,7 +192,7 @@ void CTextureGrouped::setTextures(CSmartPtr<ITexture> *textureTab, uint nbTex)
 }
 
 ///=====================================================================================================
-void CTextureGrouped::doGenerate()
+void CTextureGrouped::doGenerate(bool async)
 {
 	nlassert(_NbTex == _Textures.size());
 	if (_NbTex == 0)

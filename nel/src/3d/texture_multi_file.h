@@ -1,7 +1,7 @@
 /** \file texture_multi_file.h
  * This texture helps to manage texture sets : it identify as one texture in a group of several other textures.
  *
- * $Id: texture_multi_file.h,v 1.3 2002/06/24 17:11:13 vizerie Exp $
+ * $Id: texture_multi_file.h,v 1.4 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 
 
 	/// Generate the current selected texture, looking in CPath if necessary.	
-	virtual void			doGenerate();
+	virtual void			doGenerate(bool async = false);
 	/// Serial this object
 	virtual void			serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CTextureMultiFile);

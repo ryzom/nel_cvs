@@ -1,7 +1,7 @@
 /** \file texture_file.h
  * <File description>
  *
- * $Id: texture_file.h,v 1.9 2002/11/13 17:53:21 berenguier Exp $
+ * $Id: texture_file.h,v 1.10 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	CTextureFile() { _AllowDegradation=true; _AsyncLoading=false; _SupportSharing= true; _MipMapSkipAtLoad=0; }
+	CTextureFile() { _AllowDegradation=true; _SupportSharing= true; _MipMapSkipAtLoad=0; }
 
 	// copy ctor
 	CTextureFile(const CTextureFile &other);
@@ -66,7 +66,7 @@ public:
 	CTextureFile(const std::string &s) 
 	{ 
 		touch(); _FileName = s; 
-		_AllowDegradation=true; _AsyncLoading=false; 
+		_AllowDegradation=true;
 		_SupportSharing= true; _MipMapSkipAtLoad=0;
 	} 
 
@@ -112,10 +112,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	void doGenerate();
-
-	/// Async loadingg system
-	void setAsyncLoading (bool isAsync);
+	void doGenerate(bool async = false);
 
 	/// Save the texture file name.
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -134,7 +131,6 @@ public:
 private:
 	std::string _FileName;
 	bool		_AllowDegradation;	// Default is true.
-	bool		_AsyncLoading;		// Default is false.
 	bool		_SupportSharing;	// Default is true.
 	uint8		_MipMapSkipAtLoad;	// Default is 0.
 private:

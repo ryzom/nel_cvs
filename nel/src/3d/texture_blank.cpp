@@ -1,7 +1,7 @@
 /** \file texture_blank.cpp
  * <File description>
  *
- * $Id: texture_blank.cpp,v 1.2 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_blank.cpp,v 1.3 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 
 namespace NL3D {
 
-void CTextureBlank::doGenerate()
+void CTextureBlank::doGenerate(bool async)
 {	
 }
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.102 2003/06/13 13:59:07 vizerie Exp $
+ * $Id: scene.cpp,v 1.103 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -472,7 +472,7 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 
 // ***************************************************************************
 
-void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pInstance, const NLMISC::CVector &position)
+void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pInstance, const NLMISC::CVector &position, uint selectedTexture)
 {
 	// We must attach a bank to the scene (a ShapeBank handle the shape caches and 
 	// the creation/deletion of the instances)
@@ -484,7 +484,7 @@ void CScene::createInstanceAsync(const string &shapeName, CTransformShape **pIns
 	if (_ShapeBank->isPresent( shapeName ) != CShapeBank::Present)
 	{
 		// Load it from file asynchronously
-		_ShapeBank->loadAsync( strlwr(shapeName), getDriver(), position );
+		_ShapeBank->loadAsync( strlwr(shapeName), getDriver(), position, NULL, selectedTexture);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.42 2003/06/13 13:59:07 vizerie Exp $
+ * $Id: scene_user.h,v 1.43 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,7 +140,7 @@ public:
 	virtual	void			deleteCamera(UCamera *cam);
 
 	virtual	UInstance		*createInstance(const std::string &shapeName);
-	virtual	void			createInstanceAsync(const std::string &shapeName, UInstance**ppInstance, const NLMISC::CVector &position);
+	virtual	void			createInstanceAsync(const std::string &shapeName, UInstance**ppInstance, const NLMISC::CVector &position, uint selectedTexture);
 	virtual	void			deleteInstance(UInstance *inst);
 
 	virtual	void createInstanceGroupAndAddToSceneAsync (const std::string &instanceGroup, UInstanceGroup **pIG, const NLMISC::CVector &offset, 

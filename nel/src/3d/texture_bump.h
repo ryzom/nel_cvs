@@ -1,7 +1,7 @@
 /** \file texture_bump.h
  * <File description>
  *
- * $Id: texture_bump.h,v 1.7 2003/04/29 08:50:39 vizerie Exp $
+ * $Id: texture_bump.h,v 1.8 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -99,7 +99,7 @@ public:
 	
 protected:
 	// inherited from ITexture. Generate this bumpmap pixels
-	virtual void doGenerate();	
+	virtual void doGenerate(bool async = false);	
 	NLMISC::CSmartPtr<ITexture>  _HeightMap;
 	float						 *_NormalizationFactor;
 	bool						 _DisableSharing;

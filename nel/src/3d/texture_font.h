@@ -1,7 +1,7 @@
 /** \file texture_font.h
  * <File description>
  *
- * $Id: texture_font.h,v 1.7 2001/12/27 10:19:17 lecroart Exp $
+ * $Id: texture_font.h,v 1.8 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ public:
 	virtual ~CTextureFont();
 
 	// Generate the texture
-	void doGenerate ();
+	void doGenerate (bool async = false);
 
 	// This function manage the cache if the letter wanted does not exist
 	SLetterInfo* getLetterInfo (SLetterKey& k);

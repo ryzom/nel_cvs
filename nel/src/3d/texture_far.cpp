@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.24 2003/06/16 16:23:40 lecroart Exp $
+ * $Id: texture_far.cpp,v 1.25 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,7 +417,7 @@ bool	CTextureFar::endPatchULTouch() const
 
 // ***************************************************************************
 // Generate the texture. See ITexture::doGenerate().
-void CTextureFar::doGenerate ()
+void CTextureFar::doGenerate (bool async)
 {
 	// Resize. But don't need to fill with 0!!
 	CBitmap::resize (NL_FAR_TEXTURE_EDGE_SIZE, NL_FAR_TEXTURE_EDGE_SIZE, RGBA, false);

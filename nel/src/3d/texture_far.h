@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.7 2003/04/25 13:44:37 berenguier Exp $
+ * $Id: texture_far.h,v 1.8 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,7 +120,7 @@ public:
 	 *
 	 *  \see ITexture::doGenerate()
 	 */
-	virtual void				doGenerate();
+	virtual void				doGenerate(bool async = false);
 
 	/**
 	 *	Touch a patch (call touchRect()) and iterate to next .

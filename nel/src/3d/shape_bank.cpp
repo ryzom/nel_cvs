@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.21 2003/06/19 15:23:37 corvazier Exp $
+ * $Id: shape_bank.cpp,v 1.22 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -434,7 +434,7 @@ void CShapeBank::load (const string &shapeNameNotLwr)
 
 // ***************************************************************************
 
-void CShapeBank::loadAsync (const std::string &shapeNameNotLwr, IDriver *pDriver, const CVector &position, bool *bSignal)
+void CShapeBank::loadAsync (const std::string &shapeNameNotLwr, IDriver *pDriver, const CVector &position, bool *bSignal, uint selectedTexture)
 {
 	string	shapeName= strlwr(shapeNameNotLwr);
 
@@ -451,7 +451,7 @@ void CShapeBank::loadAsync (const std::string &shapeNameNotLwr, IDriver *pDriver
 		return; // Do not load 2 shapes with the same names
 	}
 	wsmmIt = WaitingShapes.insert (TWaitingShapesMap::value_type(shapeName, CWaitingShape(bSignal))).first;
-	CAsyncFileManager3D::getInstance().loadMesh (shapeName, &(wsmmIt->second.ShapePtr), pDriver, position);
+	CAsyncFileManager3D::getInstance().loadMesh (shapeName, &(wsmmIt->second.ShapePtr), pDriver, position, selectedTexture);
 }
 
 // ***************************************************************************

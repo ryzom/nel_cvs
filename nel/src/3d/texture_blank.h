@@ -1,7 +1,7 @@
 /** \file texture_blank.h
  * <File description>
  *
- * $Id: texture_blank.h,v 1.2 2002/02/21 17:37:17 vizerie Exp $
+ * $Id: texture_blank.h,v 1.3 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ NLMISC_DECLARE_CLASS(CTextureBlank);
 protected:
 
 	/// inherited from ITexture. Does nothing ...
-	void doGenerate() ;		
+	void doGenerate(bool async) ;		
 };
 
 

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.42 2003/06/13 13:59:07 vizerie Exp $
+ * $Id: scene.h,v 1.43 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -233,7 +233,7 @@ public:
 	/** Create an instance, if the shape is not present, load the shape asynchronously. The instance is really
 	 * created when we process it in the rendering.
 	 */
-	void			createInstanceAsync(const std::string &shapeName, CTransformShape **pInstance, const NLMISC::CVector &position);
+	void			createInstanceAsync(const std::string &shapeName, CTransformShape **pInstance, const NLMISC::CVector &position, uint selectedTexture);
 
 	/** Delete an instance via his pointer. An instance is an entity which reference a shape.
 	 */

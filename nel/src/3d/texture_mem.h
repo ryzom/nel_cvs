@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.8 2002/10/25 16:22:02 besson Exp $
+ * $Id: texture_mem.h,v 1.9 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,7 +142,7 @@ public:
 	/** 
 	 * Generate the texture
 	 */	
-	void doGenerate();
+	void doGenerate(bool async = false);
 
 	/// inherited from ITexture.
 	virtual bool			supportSharing() const 

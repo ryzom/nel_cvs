@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.129 2003/04/25 13:44:37 berenguier Exp $
+ * $Id: landscape.cpp,v 1.130 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,7 +113,7 @@ public:
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
-	virtual void doGenerate()
+	virtual void doGenerate(bool async)
 	{
 		// Resize
 		resize (16, 16);

@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.10 2003/04/29 08:50:39 vizerie Exp $
+ * $Id: texture_bump.cpp,v 1.11 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -274,7 +274,7 @@ void CTextureBump::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 ///==============================================================================================
-void CTextureBump::doGenerate()
+void CTextureBump::doGenerate(bool async)
 {	
 	if (!_HeightMap)
 	{

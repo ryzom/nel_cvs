@@ -1,7 +1,7 @@
 /** \file texture_dlm.h
  * <File description>
  *
- * $Id: texture_dlm.h,v 1.5 2002/04/23 14:38:13 berenguier Exp $
+ * $Id: texture_dlm.h,v 1.6 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -82,7 +82,7 @@ public:
 	CTextureDLM(uint width, uint height);
 
 	/// Since texture is always in memory...
-	void			doGenerate()
+	void			doGenerate(bool async = false)
 	{
 		// Do nothing. texture still in memory... :o)
 	}

@@ -1,7 +1,7 @@
 /** \file texture_mem.cpp
  * <File description>
  *
- * $Id: texture_mem.cpp,v 1.8 2002/03/14 18:19:25 vizerie Exp $
+ * $Id: texture_mem.cpp,v 1.9 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NL3D
 /*------------------------------------------------------------------*\
 							doGenerate()
 \*------------------------------------------------------------------*/
-void CTextureMem::doGenerate()
+void CTextureMem::doGenerate(bool async)
 {	
 	if (_Data)
 	{

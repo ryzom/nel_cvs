@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.10 2003/03/31 10:29:59 vizerie Exp $
+ * $Id: texture.h,v 1.11 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -289,14 +289,16 @@ public:
 	 * NB: a flag is maintained to see if the generated bitmap is coherent with texture description (see touch*()).
 	 * So if you do {generate(); generate();}, you only get 1 real bitmap generation...
 	 *
+	 * \param async tells the texture if the call is made asynchronously or not.
+	 *
 	 * \see isAllInvalidated(), touch(), touched(), touchRect(), clearTouched(), _ListInvalidRect
 	 * \see getReleasable(), setReleasable()
 	 */	
-	void generate()
+	void generate(bool async = false)
 	{
 		if(!_GoodGenerate)
 		{
-			doGenerate();
+			doGenerate(async);
 			_GoodGenerate=true;
 		}
 	}
@@ -383,7 +385,7 @@ protected:
 	 * \see isAllInvalidated(), touch(), touched(), touchRect(), clearTouched(), _ListInvalidRect, generate()
 	 * \see getReleasable(), setReleasable()
 	 */	
-	virtual void doGenerate() = 0;
+	virtual void doGenerate(bool async = false) = 0;
 
 
 private:

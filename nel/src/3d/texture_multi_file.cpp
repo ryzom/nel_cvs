@@ -1,7 +1,7 @@
 /** \file texture_multi_file.cpp
  * <File description>
  *
- * $Id: texture_multi_file.cpp,v 1.6 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: texture_multi_file.cpp,v 1.7 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -74,7 +74,7 @@ sint CTextureMultiFile::getTexIndex(uint index) const
 
 
 ///===========================================================	
-void CTextureMultiFile::doGenerate()
+void CTextureMultiFile::doGenerate(bool async)
 {
 	sint usedTexture = getTexIndex(_CurrSelectedTexture);
 	if (usedTexture == -1)
@@ -83,7 +83,7 @@ void CTextureMultiFile::doGenerate()
 	}
 	else
 	{	
-		CTextureFile::buildBitmapFromFile(*this, _FileNames[usedTexture], false);	
+		CTextureFile::buildBitmapFromFile(*this, _FileNames[usedTexture], async);
 	}
 }
 

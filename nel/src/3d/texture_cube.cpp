@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.11 2002/10/15 08:29:04 coutelas Exp $
+ * $Id: texture_cube.cpp,v 1.12 2003/06/19 16:42:55 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ string CTextureCube::getShareName() const
 }
 
 // ***************************************************************************
-void CTextureCube::doGenerate()
+void CTextureCube::doGenerate(bool async)
 {
 	uint i;
 	ITexture *pRefTex = NULL;

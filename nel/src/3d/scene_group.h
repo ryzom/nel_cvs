@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.10 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: scene_group.h,v 1.11 2002/04/16 16:22:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,28 +127,34 @@ public:
 	/// \todo remove all of these methods. For the moment DO NOT USE THEM !!!
 
 	/// Get number of instance in this group
-	uint getNumInstance () const;
+	uint					getNumInstance () const;
 
 	/// Get the name of the mesh referenced
-	const std::string& getShapeName (uint instanceNb) const;
+	const std::string&		getShapeName (uint instanceNb) const;
 
 	/// Get the instance name
-	const std::string& getInstanceName (uint instanceNb) const;
+	const std::string&		getInstanceName (uint instanceNb) const;
 
 	/// Get an instance position
-	const NLMISC::CVector& getInstancePos (uint instanceNb) const;
+	const NLMISC::CVector&	getInstancePos (uint instanceNb) const;
 
 	/// Get an instance rotation
-	const NLMISC::CQuat& getInstanceRot (uint instanceNb) const;
+	const NLMISC::CQuat&	getInstanceRot (uint instanceNb) const;
 
 	// Get an instance scale
-	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;
+	const NLMISC::CVector&	getInstanceScale (uint instanceNb) const;
 
 	// Get the instance father (-1 if this is a root)
-	const sint32 getInstanceParent (uint instanceNb) const;
+	const sint32			getInstanceParent (uint instanceNb) const;
 
 	// Get a const ref on the instance
-	const CInstance		&getInstance(uint instanceNb) const;
+	const CInstance			&getInstance(uint instanceNb) const;
+
+	// Get a mutable ref on the instance
+	CInstance				&getInstance(uint instanceNb);
+	
+	// Get the ig global pos
+	const NLMISC::CVector &getGlobalPos() const { return _GlobalPos; }
 
 
 	/**
@@ -161,7 +167,7 @@ public:
 	/** Build the group
 	 *	Build with an empty list of light
 	 */
-	void build (CVector &vGlobalPos, const TInstanceArray& array, 
+	void build (const CVector &vGlobalPos, const TInstanceArray& array, 
 				const std::vector<CCluster>& Portals, 
 				const std::vector<CPortal>& Clusters);
 
@@ -169,7 +175,7 @@ public:
 	 *	Build also the list of light. NB: sort by LightGroupName the array.
 	 *	Give also a ptr on a retrieverGridMap to build surfaces (if not NULL).
 	 */
-	void build (CVector &vGlobalPos, const TInstanceArray& array, 
+	void build (const CVector &vGlobalPos, const TInstanceArray& array, 
 				const std::vector<CCluster>& Portals, 
 				const std::vector<CPortal>& Clusters,
 				const std::vector<CPointLightNamed> &pointLightList,
@@ -213,6 +219,7 @@ public:
 	/// Set the lightmap factor for the whole instance group
 	void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor);
 
+	
 
 	/**
 	 * BlendShape part
@@ -276,6 +283,15 @@ public:
 	/// get the list of light. NB: the array is sorted by LightGroupName.
 	const std::vector<CPointLightNamed> &getPointLightList() const {return _PointLightArray.getPointLights();}
 
+	/// Get the number of point lights
+	uint								 getNumPointLights() const { return _PointLightArray.getPointLights().size(); }
+
+	/// Get a mutable ref on a point light named
+	CPointLightNamed					&getPointLightNamed(uint index) 
+	{ 
+		return _PointLightArray.getPointLights()[index]; 
+	} 
+
 	/// set the Light factor for all pointLights "lightGroupName".
 	void			setPointLightFactor(const std::string &lightGroupName, NLMISC::CRGBA nFactor);
 
@@ -290,6 +306,7 @@ public:
 	/// Setuped at export, tells if the ig is touched by the sun. true by default.
 	void			enableRealTimeSunContribution(bool enable);
 	bool			getRealTimeSunContribution() const {return _RealTimeSunContribution;}
+	
 
 	// @}
 

@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.25 2002/03/01 14:06:59 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.26 2002/04/16 16:22:07 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -190,6 +190,12 @@ const CInstanceGroup::CInstance		&CInstanceGroup::getInstance(uint instanceNb) c
 }
 
 // ***************************************************************************
+CInstanceGroup::CInstance		&CInstanceGroup::getInstance(uint instanceNb)
+{
+	return _InstancesInfos[instanceNb];
+}
+
+// ***************************************************************************
 CInstanceGroup::CInstanceGroup()
 {
 	_IGSurfaceLight.setOwner(this);
@@ -205,7 +211,7 @@ CInstanceGroup::~CInstanceGroup()
 }
 
 // ***************************************************************************
-void CInstanceGroup::build (CVector &vGlobalPos, const TInstanceArray& array, 
+void CInstanceGroup::build (const CVector &vGlobalPos, const TInstanceArray& array, 
 							const std::vector<CCluster>& Clusters, 
 							const std::vector<CPortal>& Portals,
 							const std::vector<CPointLightNamed> &pointLightList,
@@ -281,7 +287,7 @@ void CInstanceGroup::build (CVector &vGlobalPos, const TInstanceArray& array,
 
 
 // ***************************************************************************
-void CInstanceGroup::build (CVector &vGlobalPos, const TInstanceArray& array, 
+void CInstanceGroup::build (const CVector &vGlobalPos, const TInstanceArray& array, 
 							const std::vector<CCluster>& Clusters, 
 							const std::vector<CPortal>& Portals)
 {

@@ -1,7 +1,7 @@
 /** \file di_keyboard_device.h
  * <File description>
  *
- * $Id: di_keyboard_device.h,v 1.1 2002/03/28 10:30:15 vizerie Exp $
+ * $Id: di_keyboard_device.h,v 1.2 2002/04/10 12:38:11 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -33,6 +33,9 @@
 #include "nel/misc/input_device_server.h"
 #include "nel/misc/keyboard_device.h"
 #include "nel/misc/di_event_emitter.h"
+#include "nel/misc/bit_set.h"
+
+
 
 
 
@@ -48,6 +51,7 @@ struct EDirectInputNoKeyboard : public EDirectInput
 };
 
 
+struct CKeyConv;
 
 /**
  * Direct Input implementation of a keyboard.
@@ -77,45 +81,84 @@ public:
 	//@}
 
 	///\name From IInputDevice
-	//@{		
+	//@{
 		virtual bool		setBufferSize(uint size);		
 		virtual uint		getBufferSize() const;
 	//@}
 
-	///\name Keyboard params, from IKeyboardDevice
-	//@{				
-		virtual bool			needLocale() const { return true; }
-		virtual void			setLocale(TKey conversion[NumKeys]) { _LocaleConvTab = conversion; }
-		virtual	TKey			*getLocale() const { return _LocaleConvTab; }
-	//@}
+	///\name From IInputDevice
+	//@{		
+		uint getKeyRepeatDelay() const { return _RepeatDelay; }	
+		void setKeyRepeatDelay(uint delay) { nlassert(delay > 0); _RepeatDelay = delay; }	
+		uint getKeyRepeatPeriod() const { return _RepeatPeriod; }
+		void setKeyRepeatPeriod(uint period) { nlassert(period > 0); _RepeatPeriod = period; }
+		void disableRepetition(const TKey *keyTab, uint numKey);	
+		uint getNumDisabledRepetition() const;	
+		void getDisabledRepetitions(TKey *destTab) const;
+	//@}	
 
 	TMouseButton	buildKeyboardFlags() const;
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
-	LPDIRECTINPUTDEVICE8		_Keyboard;		
+	//
+	bool						_CapsLockToggle; // true if caps lock off is triggered by caps lock, false if it toggled by shift
+	uint						_RepeatDelay; // the delay before a key is repeated (in ms)
+	uint						_RepeatPeriod; // The period for key repetitions (in ms)
+	//
+	LPDIRECTINPUTDEVICE8		_Keyboard;
 	uint						_KeyboardBufferSize;	
-	bool						_KeyState[NumKeys];	
-	TKey				*_LocaleConvTab;
-	CWinEventEmitter	*_WE;
+	// virtual code state
+	uint8						_VKKeyState[NumKeys];
+	// tells for which keys repetition is disabled
+	CBitSet						_RepetitionDisabled;
+	// The date at which the last key pressed has been pressed (not using 64 bits since note handled by Direct Input)
+	uint32						_FirstPressDate;
+	// The last date at which key repetition occured (not using 64 bits since note handled by Direct Input)
+	uint32						_LastEmitDate;
+	// The system date at which the last polling occured (not using 64 bits since note handled by Direct Input)
+	uint32						_PollTime;
+	uint						_LastDIKeyPressed;
+	CWinEventEmitter			*_WE;
+	HWND						_hWnd;
+	HKL							_KBLayout;	
 	//
 	CDIEventEmitter				*_DIEventEmitter;
-	static TKey	DIKeyToNelKeyTab[NumKeys];
+	//
+	static const CKeyConv *DIKeyToNelKeyTab[NumKeys];
 private:
 	/// ctor
-	CDIKeyboard(CWinEventEmitter	*we);	
-	/** Convert a Direct Input Key to a NeL Key.
-	  * The result is then converted through the locale tab if one has been set
+	CDIKeyboard(CWinEventEmitter	*we, HWND hwnd);
+	/** Convert a direct input scancode to a virtual key. Note that DirectInput scancodes do not always match system scan codes. 
+	  * Repeatable has a meaning only for extended keys
 	  */
-	TKey			DIKeyToNelKey(uint diKey);
+	TKey			DIKeyToNelKey(uint diKey, bool &extKey, bool &repeatable);
+	/** This update virtual key state table.
+	  * \param keyValue contains the value to send to a EventKeyDown or EventKeyUp message.
+	  * \param charValue contains the value that must be used for Unicode conversion (which generate EventChar messages)
+	  */
+	void			updateVKKeyState(uint diKey, bool pressed, TKey &keyValue, TKey &charValue);
+	// Use the given virtual key code and the current keyb state to produce Unicode 
+	void			sendUnicode(TKey vkey, uint dikey, CEventServer *server, bool pressed);
+	// Build a TKeyButton value from the state of shift, ctrl and alt
 	TKeyButton		buildKeyButtonsFlags() const;
-	void			keyTriggered(bool pressed, uint key, CEventServer *server);
+	// Update the state of this object and send the appropriate message when a direct / input key has been pressed / released
+	void			keyTriggered(bool pressed, uint key, CEventServer *server, uint32 date);
+	// The same as buildKeyButtonsFlags(), but the return is a TMouseButtonValue (with no mouse value setupped)
 	TMouseButton	buildKeyboardButtonFlags() const;	
+	// setup the state of the Ctrl, Alt and Shift key from the state in the _VKKeyState buffer
+	void			updateCtrlAltShiftValues();
+	/// Repeat the current key, and create events	  
+	void			repeatKey(uint32 currentDate, CEventServer *server);
+	/// Build a date by using an event time stamp, or generate one if NULL
+	uint32			buildDateFromEvent(const IInputDeviceEvent *deviceEvent);	
+
 	///\name From IInputDevice
 	//@{
 		virtual void		poll(CInputDeviceServer *dev);	
-		virtual void		submit(IInputDeviceEvent *deviceEvent, CEventServer *server);		
-	//@}
+		virtual void		submit(IInputDeviceEvent *deviceEvent, CEventServer *server);
+		virtual void		transitionOccured(CEventServer *server, const IInputDeviceEvent *nextMessage);
+	//@}	
 };
 
 
@@ -127,3 +170,4 @@ private:
 #endif // NL_DI_KEYBOARD_H
 
 /* End of di_keyboard.h */
+	

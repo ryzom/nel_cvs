@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.9 2002/07/10 16:41:56 lecroart Exp $
+ * $Id: sheet_id.cpp,v 1.10 2002/07/10 16:52:08 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -21,6 +21,10 @@
  * along with NEVRAX NEL; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
+ */
+
+/* This class is case unsensitive. It means that you can call build() and
+ * buildIdVector() with string with anycase, it'll work.
  */
 
 #include "stdmisc.h"
@@ -71,7 +75,7 @@ bool CSheetId::build(const std::string& sheetName)
 {
 	nlassert(_Initialised);
 
-	map<string,uint32>::const_iterator itId = _SheetNameToId.find( sheetName );
+	map<string,uint32>::const_iterator itId = _SheetNameToId.find( strlwr(sheetName) );
 	if( itId != _SheetNameToId.end() )
 	{
 		_Id.Id = (*itId).second;
@@ -108,7 +112,7 @@ void CSheetId::loadSheetId ()
 		for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
 		{
 			// add entry to the inverse map
-			_SheetNameToId.insert( make_pair((*itStr).second,(*itStr).first) );
+			_SheetNameToId.insert( make_pair(strlwr((*itStr).second),(*itStr).first) );
 
 			// work out the type value for this entry in the map
 			TSheetId sheetId;

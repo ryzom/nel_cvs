@@ -1,6 +1,6 @@
 /** \file checkversion.cpp
  *
- * $Id: checkversion.cpp,v 1.1 2001/04/26 16:37:31 corvazier Exp $
+ * $Id: checkversion.cpp,v 1.2 2001/07/18 14:48:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,9 +78,9 @@ BOOL CheckPluginVersion (const char* sServerPluginFileName)
 	if (nComp==-1)
 	{
 		// pas bonne version
-		char sMsg[256];
+		/*char sMsg[256];
 		sprintf (sMsg, "Votre plugin est plus récent que celui sur la base: %s", sNetworkPath);
-		MessageBox (NULL, sMsg, "Version du plugin", MB_OK|MB_ICONEXCLAMATION);
+		MessageBox (NULL, sMsg, "Version du plugin", MB_OK|MB_ICONEXCLAMATION);*/
 		return TRUE;
 	}
 #endif // NL_DEBUG

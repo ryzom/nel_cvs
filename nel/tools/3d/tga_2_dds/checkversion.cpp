@@ -60,9 +60,9 @@ BOOL CheckPluginVersion (const char* sServerPluginFileName)
 	if (nComp==-1)
 	{
 		// pas bonne version
-		char sMsg[256];
+		/*char sMsg[256];
 		sprintf (sMsg, "Votre plugin est plus récent que celui sur la base: %s", sNetworkPath);
-		MessageBox (NULL, sMsg, "Version du plugin", MB_OK|MB_ICONEXCLAMATION);
+		MessageBox (NULL, sMsg, "Version du plugin", MB_OK|MB_ICONEXCLAMATION);*/
 		return TRUE;
 	}
 	return TRUE;

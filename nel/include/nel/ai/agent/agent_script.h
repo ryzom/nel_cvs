@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.37 2001/07/06 12:31:28 chafik Exp $
+ * $Id: agent_script.h,v 1.38 2001/07/09 09:14:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,8 +65,7 @@ namespace NLAIAGENT
 	public:		
 
 		///This enum define ident for hard coded method that we have to import its under the script.
-		enum  TMethodNumDef {
-			TRunTellCompoment, ///transmit Message to an compoment.
+		enum  TMethodNumDef {			
 			TSend, ///Index of the send method
 			TSendComponent, ///Index of the send with continuation method.
 			TGetChildTag, ///Index of the getChild method
@@ -75,6 +74,7 @@ namespace NLAIAGENT
 			TFather, ///Get the father of the agent.
 			TSelf, ///Get The self pointer.
 			TGetName, ///Get the name of the agent in the manager child list.
+			TRunTellCompoment, ///transmit Message to an compoment.
 			TRunAskParentNotify, ///the offest of the runAskParentNotify method.
 			TRunTellParentNotify, ///the offest of the runTellParentNotify method.			
 			/////////////////////////////////////////////////////////////////////

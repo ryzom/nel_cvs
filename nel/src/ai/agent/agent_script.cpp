@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.74 2001/07/06 12:27:46 chafik Exp $
+ * $Id: agent_script.cpp,v 1.75 2001/07/09 09:14:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,9 +117,9 @@ namespace NLAIAGENT
 																new NLAIC::CIdentType(CNotifyParentScript::IdNotifyParentScript));
 
 		ParamRunParentNotify = new NLAISCRIPT::CParam(1,IdMsgNotifyParent);
-
-		NLAISCRIPT::CParam *ParamTellCompoment = new NLAISCRIPT::CParam(1,IdMsgNotifyParent);
+		
 		NLAISCRIPT::COperandSimple *idMsgTellCompoment = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(idMsgTellCompomentType));
+		NLAISCRIPT::CParam *ParamTellCompoment = new NLAISCRIPT::CParam(1,idMsgTellCompoment);
 
 
 

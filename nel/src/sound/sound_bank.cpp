@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.14 2003/03/24 18:09:53 corvazier Exp $
+ * $Id: sound_bank.cpp,v 1.15 2003/06/05 15:46:34 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -266,8 +266,6 @@ public:
 	static uint getVersion () { return 3; }
 };
 
-// this structure is fill by the loadForm() function and will contain all you need
-std::map<std::string, CSoundSerializer> Container;
 
 /** Load all the sound samples.
  *
@@ -275,6 +273,9 @@ std::map<std::string, CSoundSerializer> Container;
  */
 void				CSoundBank::load()
 {
+	// this structure is fill by the loadForm() function and will contain all you need
+	std::map<std::string, CSoundSerializer> Container;
+
 	nlassert(!_Loaded);
 	// Just call the GEORGE::loadFrom method to read all available sounds
 	::loadForm("sound", CAudioMixerUser::instance()->getPackedSheetPath()+"sounds.packed_sheets", Container, CAudioMixerUser::instance()->getPackedSheetUpdate(), false);
@@ -287,6 +288,8 @@ void				CSoundBank::load()
 		if (first->second.Sound != 0)
 			addSound(first->second.Sound);
 	}
+
+	Container.clear();
 }
 
 
@@ -297,7 +300,17 @@ void				CSoundBank::unload()
 {
 	nlassert(_Loaded);
 	vector<CSound*> vec;
-	TSoundTable::iterator map_iter;
+
+	TSoundTable::iterator first(_Sounds.begin()), last(_Sounds.end());
+	for (; first != last; ++first)
+	{
+		delete first->second;
+	}
+
+	_Sounds.clear();
+	_Loaded = false;
+
+/*	TSoundTable::iterator map_iter;
 
 	for (map_iter = _Sounds.begin(); map_iter != _Sounds.end(); ++map_iter)
 	{
@@ -316,6 +329,7 @@ void				CSoundBank::unload()
 	}
 
 	_Loaded = false;
+*/
 }
 
 /*

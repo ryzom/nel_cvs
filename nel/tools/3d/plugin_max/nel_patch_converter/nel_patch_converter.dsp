@@ -159,8 +159,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /I "C:\3dsmax3_1\Maxsdk\include ..\RPO" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "__STL_DEBUG" /FD /c
 # SUBTRACT BASE CPP /Fr /YX /Yc /Yu
-# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /I "C:\3dsmax3_1\Maxsdk\include ..\RPO" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "NL_DEBUG_FAST" /Fr /FD /c
-# SUBTRACT CPP /YX /Yc /Yu
+# ADD CPP /nologo /G6 /MDd /W3 /Gm /GR /GX /Zi /Od /Ob1 /I "C:\3dsmax3_1\Maxsdk\include ..\RPO" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "NL_DEBUG_FAST" /Fr /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG"

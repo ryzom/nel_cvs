@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.96 2003/12/29 16:28:29 lecroart Exp $
+ * $Id: path.cpp,v 1.97 2003/12/29 17:32:49 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -293,7 +293,6 @@ static void removeAllUnusedChar(string &str)
 void CPath::loadRemappedFiles (const std::string &file)
 {
 	NL_ALLOC_CONTEXT (MiPath);
-	CPath *inst = CPath::getInstance();
 	string fullName = lookup(file, false, true, true);
 	CIFile f;
 	f.setCacheFileOnOpen (true);

@@ -1,7 +1,7 @@
 /** \file main_dlg.cpp
  * <File description>
  *
- * $Id: main_dlg.cpp,v 1.6 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: main_dlg.cpp,v 1.7 2001/09/05 15:41:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -180,7 +180,7 @@ void CMainDlg::setSlot ()
 		// Set others values
 		Slots[id].Offset=(int)(Playlist.getTimeOrigin (id)*Main->getFrameRate());
 		Slots[id].SpeedFactor=Playlist.getSpeedFactor (id);
-		float time;
+		double time;
 		Slots[id].StartBlend=Playlist.getStartWeight (id, time);
 		Slots[id].StartTime=(int)(time*Main->getFrameRate());
 		Slots[id].EndBlend=Playlist.getEndWeight (id, time);

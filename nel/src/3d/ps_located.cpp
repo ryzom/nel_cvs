@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.24 2001/07/24 15:16:00 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.25 2001/07/25 13:05:17 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,7 +134,7 @@ CScene *CPSLocated::getScene(void)
 
 void CPSLocated::incrementNbDrawnParticles(uint num)
 {
-	CParticleSystem::_NbParticlesDrawn += num ; // for benchmark purpose	
+	CParticleSystem::NbParticlesDrawn += num ; // for benchmark purpose	
 }
 
 void CPSLocated::setInitialLife(CAnimationTime lifeTime)

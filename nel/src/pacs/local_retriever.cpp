@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.68 2004/02/09 10:38:22 legros Exp $
+ * $Id: local_retriever.cpp,v 1.69 2004/06/29 17:16:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -515,7 +515,7 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 					}
 				}
 
-				if ((bestChain == -1 || best > 3.0e-2f)&& loopCloseDistance > 3.0e-2f)
+				if ((bestChain == -1 || best > 4.0e-2f)&& loopCloseDistance > 4.0e-2f)
 				{
 					nlwarning("in NLPACS::CLocalRetriever::computeTips()");
 
@@ -2126,4 +2126,118 @@ void	NLPACS::CLocalRetriever::replaceChain(uint32 chainId, const std::vector<NLP
 			}
 		}
 	}
+}
+
+
+
+
+/*
+ * Check surface integrity
+ */
+bool	NLPACS::CLocalRetriever::checkSurfacesIntegrity(NLMISC::CVector translation, bool verbose) const
+{
+	bool	success = true;
+	uint	surf;
+
+	for (surf=0; surf<_Surfaces.size(); ++surf)
+	{
+		if (!checkSurfaceIntegrity(surf, translation, verbose))
+		{
+			success = false;
+			if (verbose)
+			{
+				dumpSurface(surf, translation);
+			}
+		}
+
+	}
+
+	return success;
+}
+
+
+/**
+ * Check surface integrity
+ */
+bool	NLPACS::CLocalRetriever::checkSurfaceIntegrity(uint surf, NLMISC::CVector translation, bool verbose) const
+{
+	if (surf >= _Surfaces.size())
+		return false;
+
+	const CRetrievableSurface&	surface = _Surfaces[surf];
+
+	uint	nloops = surface.getLoops().size();
+
+	std::vector<std::pair<CVector2s, CVector2s> >	edges;
+
+	uint	iloop;
+	uint	i, j, k;
+	for (iloop=0; iloop<nloops; ++iloop)
+	{
+		const CRetrievableSurface::TLoop&	loop = surface.getLoop(iloop);
+
+		for (i=0; i<loop.size(); ++i)
+		{
+			// loop[i] is the index in the surface list of chains
+			// so surface._Chains[loop[i]].Chain is really the chain id !!!
+			const CChain&	chain = _Chains[ surface._Chains[loop[i]].Chain ];
+			for (j=0; j<chain.getSubChains().size(); ++j)
+			{
+				const COrderedChain&	ochain = _OrderedChains[chain.getSubChain(j)];
+
+				for (k=0; k+1<ochain.getVertices().size(); ++k)
+				{
+					edges.push_back(make_pair<CVector2s, CVector2s>(ochain[k], ochain[k+1]));
+				}
+			}
+		}
+	}
+
+	bool	success = true;
+
+	for (i=0; i+1<edges.size(); ++i)
+	{
+		for (j=i+1; j<edges.size(); ++j)
+		{
+			CVector2s	a0 = edges[i].first,
+						a1 = edges[i].second;
+			CVector2s	b0 = edges[j].first,
+						b1 = edges[j].second;
+
+			double		a, b;
+			bool		inters = CVector2s::intersect(a0, a1, b0, b1, &a, &b);
+
+			if (!inters)
+				continue;
+
+			double		da = (a1-a0).norm();
+			double		db = (b1-b0).norm();
+
+			bool		tipa = (fabs(a)*da < 4.0e-2 || fabs(1.0-a)*da < 4.0e-2);
+			bool		tipb = (fabs(b)*db < 4.0e-2 || fabs(1.0-b)*db < 4.0e-2);
+
+			if (tipa && tipb)
+				continue;
+
+			CVector2s		ip = a0 + (a1-a0)*(float)a;
+			CVector			p = ip.unpack3f() - translation;
+			nlwarning("Surface %d has issue at position (%f,%f)", surf, p.x, p.y);
+			if (verbose)
+			{
+				NLMISC::CVector	v;
+				v = a0.unpack3f() - translation;
+				nlwarning("  -- a0: (%f,%f)", v.x, v.y);
+				v = a1.unpack3f() - translation;
+				nlwarning("  -- a1: (%f,%f)", v.x, v.y);
+				v = b0.unpack3f() - translation;
+				nlwarning("  -- b0: (%f,%f)", v.x, v.y);
+				v = b1.unpack3f() - translation;
+				nlwarning("  -- b1: (%f,%f)", v.x, v.y);
+			}
+
+			success = false;
+		}
+	}
+
+	return success;
 }

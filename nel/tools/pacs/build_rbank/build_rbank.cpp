@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.18 2004/06/21 15:33:06 legros Exp $
+ * $Id: build_rbank.cpp,v 1.19 2004/06/29 17:16:00 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,6 +209,11 @@ void processAllPasses(string &zoneName)
 			retriever.setType(NLPACS::CLocalRetriever::Landscape);
 
 			// and save it...
+
+			if (!retriever.checkSurfacesIntegrity(translation))
+			{
+				nlwarning("retriever '%s' has a surface issue (self covering surface...)", zoneName.c_str());
+			}
 
 			COFile	outputRetriever;
 			name = changeExt(zoneName, string("lr"));

@@ -1,7 +1,7 @@
 /** \file vector_2s.h
  * <File description>
  *
- * $Id: vector_2s.h,v 1.6 2001/08/21 09:50:41 legros Exp $
+ * $Id: vector_2s.h,v 1.7 2004/06/29 17:16:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,10 +113,10 @@ public:		// Methods.
 
 	/// @name Base Maths.
 	//@{
-	CVector2s	&operator+=(const CVector2s &v)		{x=safeCastSint16((sint64)v.x+(sint64)x); y=safeCastSint16((sint64)v.y+(sint64)y); return *this;}
-	CVector2s	&operator-=(const CVector2s &v)		{x=safeCastSint16((sint64)v.x-(sint64)x); y=safeCastSint16((sint64)v.y-(sint64)y); return *this;}
-	CVector2s	operator+(const CVector2s &v) const	{return CVector2s(safeCastSint16((sint64)v.x+(sint64)x), safeCastSint16((sint64)v.y+(sint64)y));}
-	CVector2s	operator-(const CVector2s &v) const	{return CVector2s(safeCastSint16((sint64)v.x-(sint64)x), safeCastSint16((sint64)v.y-(sint64)y));}
+	CVector2s	&operator+=(const CVector2s &v)		{ *this = *this+v; return *this; }
+	CVector2s	&operator-=(const CVector2s &v)		{ *this = *this-v; return *this; }
+	CVector2s	operator+(const CVector2s &v) const	{return CVector2s(safeCastSint16((sint64)x+(sint64)v.x), safeCastSint16((sint64)y+(sint64)v.y));}
+	CVector2s	operator-(const CVector2s &v) const	{return CVector2s(safeCastSint16((sint64)x-(sint64)v.x), safeCastSint16((sint64)y-(sint64)v.y));}
 	CVector2s	operator-() const					{return CVector2s(safeCastSint16(-(sint64)x), safeCastSint16(-(sint64)y));}
 
 	CVector2s	&operator*=(float f)				{ x = safeCastSint16(f*x); y = safeCastSint16(f*y); return *this; }
@@ -175,6 +175,9 @@ public:		// Methods.
 	void				pack(const NLMISC::CVector2f &v)	{ x = pack(v.x); y = pack(v.y); }
 	NLMISC::CVector2f	unpack() const						{ return NLMISC::CVector2f(unpack(x), unpack(y)); }
 	NLMISC::CVector		unpack3f(float hintz=0.0f) const	{ return NLMISC::CVector(unpack(x), unpack(y), hintz); }
+
+	/// Test if 2 segments intersects
+	static bool			intersect(const CVector2s& a0, const CVector2s& a1, const CVector2s& b0, const CVector2s& b1, double* pa = NULL, double* pb = NULL);
 };
 
 } // NLPACS

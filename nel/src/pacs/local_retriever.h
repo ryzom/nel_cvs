@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.28 2003/08/27 09:25:39 legros Exp $
+ * $Id: local_retriever.h,v 1.29 2004/06/29 17:16:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -550,6 +550,16 @@ public:
 	 * \param transBase the vector we use to translate local position of edge.
 	 */
 	void			testCollision(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector2f &transBase) const;
+
+	/**
+	 * Check all surfaces integrity
+	 */
+	bool								checkSurfacesIntegrity(NLMISC::CVector translation = NLMISC::CVector::Null, bool verbose = false) const;
+
+	/**
+	 * Check surface integrity
+	 */
+	bool								checkSurfaceIntegrity(uint surf, NLMISC::CVector translation = NLMISC::CVector::Null, bool verbose = false) const;
 
 	// @}
 

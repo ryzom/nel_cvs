@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.25 2004/06/22 09:17:53 legros Exp $
+ * $Id: build_surf.cpp,v 1.26 2004/06/29 17:16:00 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -623,6 +623,8 @@ void	NLPACS::CComputableSurface::buildBorders(CZoneTessellation *zoneTessel)
 			if ((Elements[elem]->EdgeLinks[edge] == NULL || Elements[elem]->EdgeLinks[edge]->SurfaceId != SurfaceId) &&
 				!Elements[elem]->EdgeFlag[edge])
 			{
+				BorderIds.push_back(BorderKeeper->size());
+
 				BorderKeeper->resize(BorderKeeper->size()+1);
 				CComputableSurfaceBorder	&border = BorderKeeper->back();
 
@@ -679,6 +681,75 @@ void	NLPACS::CComputableSurface::buildBorders(CZoneTessellation *zoneTessel)
 	}
 }
 
+bool	intersect(const CVectorD& a0, const CVectorD& a1, const CVectorD& b0, const CVectorD& b1, double& pa, double& pb)
+{
+	double		ax = +(a1.x-a0.x);
+	double		ay = +(a1.y-a0.y);
+	double		bx = +(b1.x-b0.x);
+	double		by = +(b1.y-b0.y);
+	double		cx = +(b0.x-a0.x);
+	double		cy = +(b0.y-a0.y);
+
+	double		d = -ax*by + ay*bx;
+
+	if (d == 0.0)
+		return false;
+
+	double		a = (bx*cy - by*cx) / d;
+	double		b = (ax*cy - ay*cx) / d;
+
+	pa = a;
+	pb = b;
+
+	return d != 0.0 && a >= 0.0 && a <= 1.0 && b >= 0.0 && b <= 1.0;
+}
+
+// Check Surface Consistency
+bool	NLPACS::CComputableSurface::checkConsistency()
+{
+	bool	success = true;
+
+	std::vector<std::pair<NLMISC::CVectorD, NLMISC::CVectorD> >	edges;
+
+	uint	i, j;
+	for (i=0; i<BorderIds.size(); ++i)
+	{
+		CComputableSurfaceBorder&	border = (*BorderKeeper)[BorderIds[i]];
+		
+		for (j=0; j+1<border.Vertices.size(); ++j)
+			edges.push_back(std::make_pair<NLMISC::CVectorD, NLMISC::CVectorD>(border.Vertices[j], border.Vertices[j+1]));
+	}
+
+	for (i=0; i+1<edges.size(); ++i)
+	{
+		for (j=i+1; j<edges.size(); ++j)
+		{
+			CVectorD	a0 = edges[i].first,
+						a1 = edges[i].second;
+			CVectorD	b0 = edges[j].first,
+						b1 = edges[j].second;
+
+			double		a, b;
+			bool		inters = intersect(a0, a1, b0, b1, a, b);
+
+			if (!inters)
+				continue;
+
+			double		da = (a1-a0).norm();
+			double		db = (b1-b0).norm();
+
+			bool		tipa = (fabs(a)*da < 4.0e-2 || fabs(1.0-a)*da < 4.0e-2);
+			bool		tipb = (fabs(b)*db < 4.0e-2 || fabs(1.0-b)*db < 4.0e-2);
+
+			if (tipa && tipb)
+				continue;
+
+			success = false;
+		}
+	}
+
+	return success;
+}
 
 
 
@@ -1189,11 +1260,22 @@ void	NLPACS::CZoneTessellation::compile()
 					if (e0.QuantHeight == e1.QuantHeight)				e.QuantHeight = e0.QuantHeight;
 					if (e1.QuantHeight == e2.QuantHeight)				e.QuantHeight = e1.QuantHeight;
 					if (e0.QuantHeight == e2.QuantHeight)				e.QuantHeight = e2.QuantHeight;
-/*
-					if (e0.WaterShape == e1.WaterShape && e0.IsValid && e1.IsValid)	e.WaterShape = e0.WaterShape;
-					if (e1.WaterShape == e2.WaterShape && e1.IsValid && e2.IsValid)	e.WaterShape = e1.WaterShape;
-					if (e0.WaterShape == e2.WaterShape && e0.IsValid && e2.IsValid)	e.WaterShape = e2.WaterShape;
-*/
+
+					if (e0.IsValid && e1.IsValid && e0.WaterShape == e1.WaterShape && e0.IsUnderWater == e1.IsUnderWater)
+					{
+						e.WaterShape = e0.WaterShape;
+						e.IsUnderWater = e0.IsUnderWater;
+					}
+					if (e1.IsValid && e2.IsValid && e1.WaterShape == e2.WaterShape && e1.IsUnderWater == e2.IsUnderWater)
+					{
+						e.WaterShape = e1.WaterShape;
+						e.IsUnderWater = e1.IsUnderWater;
+					}
+					if (e0.IsValid && e2.IsValid && e0.WaterShape == e2.WaterShape && e0.IsUnderWater == e2.IsUnderWater)
+					{
+						e.WaterShape = e2.WaterShape;
+						e.IsUnderWater = e2.IsUnderWater;
+					}
 				}
 			}
 		}
@@ -1401,6 +1483,29 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 			totalAfter = 0;
 	for (border=0; border<(sint)Borders.size(); ++border)
 	{
+		CComputableSurfaceBorder&	cborder = Borders[border];
+
+		sint	lsurf = cborder.Left;
+		sint	rsurf = cborder.Right;
+
+		if (lsurf >= 0)
+		{
+			CComputableSurface&	surf = Surfaces[lsurf];
+			if (!surf.checkConsistency())
+			{
+				nlwarning("Before smooth of border '%d', surface '%d' not consistent", border, lsurf);
+			}
+		}
+
+		if (rsurf >= 0)
+		{
+			CComputableSurface&	surf = Surfaces[rsurf];
+			if (!surf.checkConsistency())
+			{
+				nlwarning("Before smooth of border '%d', surface '%d' not consistent", border, rsurf);
+			}
+		}
+
 		float	smScale = (Borders[border].Right < 0) ? 0.2f : 1.0f;
 		uint	before = Borders[border].Vertices.size();
 		if (SmoothBorders && !Borders[border].DontSmooth)
@@ -1411,6 +1516,24 @@ void	NLPACS::CZoneTessellation::generateBorders(float smooth)
 		uint	after = Borders[border].Vertices.size();
 		totalBefore += before;
 		totalAfter += after;
+
+		if (lsurf >= 0)
+		{
+			CComputableSurface&	surf = Surfaces[lsurf];
+			if (!surf.checkConsistency())
+			{
+				nlwarning("After smooth of border '%d', surface '%d' not consistent", border, lsurf);
+			}
+		}
+
+		if (rsurf >= 0)
+		{
+			CComputableSurface&	surf = Surfaces[rsurf];
+			if (!surf.checkConsistency())
+			{
+				nlwarning("After smooth of border '%d', surface '%d' not consistent", border, rsurf);
+			}
+		}
 	}
 	if (Verbose)
 		nlinfo("smooth process: %d -> %d (%.1f percent reduction)", totalBefore, totalAfter, 100.0*(1.0-(double)totalAfter/(double)totalBefore));

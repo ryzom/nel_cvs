@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.10 2003/08/27 09:25:39 legros Exp $
+ * $Id: retrievable_surface.h,v 1.11 2004/06/29 17:16:28 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,6 +108,12 @@ public:
 		MaterialQuantasBitMask = 0x00ff0000
 	};
 
+	/**
+	 * A list of chain
+	 * WARNING: a loop is a list of index in the surface link list _Chains !!
+	 * This is not directly the ChainId
+	 * ChainId is _Chains[loop[i]].Chain !!!
+	 */
 	struct TLoop : std::vector<uint16>
 	{
 		float	Length;

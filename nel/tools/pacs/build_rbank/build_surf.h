@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.14 2004/06/21 15:33:06 legros Exp $
+ * $Id: build_surf.h,v 1.15 2004/06/29 17:16:00 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -367,6 +367,9 @@ public:
 	/// The object that stores all the borders used in the computed area
 	std::vector<CComputableSurfaceBorder>	*BorderKeeper;
 
+	/// The border in the surface, by id
+	std::vector<uint16>						BorderIds;
+
 	bool									IsUnderWater;
 	bool									ClusterHint;
 
@@ -453,6 +456,9 @@ public:
 
 	/// Builds the border of the CComputableSurface.
 	void	buildBorders(CZoneTessellation *zoneTessel);
+
+	/// Check Surface Consistency
+	bool	checkConsistency();
 
 private:
 	void	followBorder(CZoneTessellation *zoneTessel, CSurfElement *first, uint edge, uint sens, std::vector<NLMISC::CVector> &vstore, bool &loop);

@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.12 2001/10/25 12:54:44 chafik Exp $
+ * $Id: registry.cpp,v 1.13 2001/10/29 16:11:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,7 +190,7 @@ namespace NLAIC
 		}
 		catch (NLAIE::IException &err)
 		{
-			throw NLAIE::CExceptionContainer(err);
+			throw NLAIE::CExceptionContainer(err.what());
 		}
 		return NULL;
 	}

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.39 2001/10/29 15:54:35 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.40 2001/10/29 16:11:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -513,7 +513,7 @@ namespace NLAISCRIPT
 		}				
 		catch(NLAIE::IException &e)
 		{
-			throw NLAIE::CExceptionContainer(e);
+			throw NLAIE::CExceptionContainer(e.what());
 		}
 				
 		return NULL;

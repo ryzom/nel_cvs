@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.13 2001/10/24 15:52:02 chafik Exp $
+ * $Id: ident_type.cpp,v 1.14 2001/10/29 16:11:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ namespace NLAIC
 			_Ident = NULL;
 			_ObjType->release();
 			_OpSupport->release();
-			throw NLAIE::CExceptionContainer(err);
+			throw NLAIE::CExceptionContainer(err.what());
 		}		
 	}
 
@@ -142,7 +142,7 @@ namespace NLAIC
 			_Ident = NULL;
 			_ObjType = NULL;
 			_OpSupport = NULL;
-			NLAIE::CExceptionContainer e(err);
+			NLAIE::CExceptionContainer e(err.what());
 			throw e;
 		}		
 	}

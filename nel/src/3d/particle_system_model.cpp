@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.68 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.69 2004/06/01 16:26:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,7 +129,8 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 											   _BypassGlobalUserParam(0),
 											   _AnimType(CParticleSystem::AnimVisible),
 											   _UserColor(CRGBA::White),
-											   _ZBias(0.f)
+											   _ZBias(0.f),
+											   _SoundActive(true)
 {
 	setOpacity(false);
 	setTransparency(true);
@@ -285,6 +286,7 @@ void CParticleSystemModel::reallocRsc()
 	_ParticleSystem->setUserColor(_UserColor);
 	//
 	if (!_EmitterActive) _ParticleSystem->activateEmitters(false);
+	if (!_SoundActive) _ParticleSystem->stopSound();
 	//
 	if (_ZBias != 0.f) _ParticleSystem->setZBias(_ZBias);
 }
@@ -679,7 +681,7 @@ void	CParticleSystemModel::doAnimate()
 		{
 			pss->_ProcessOrder.clear(); // force to eval each frame because ps could be modified
 		}
-		ps->step(CParticleSystem::Anim, delay, *pss);
+		ps->step(CParticleSystem::Anim, delay, *pss, *this);
 	}
 }
 
@@ -1101,6 +1103,22 @@ void CParticleSystemModel::forceSetUserMatrix(const NLMISC::CMatrix &userMatrix)
 	{
 		getPS()->setUserMatrix(&_UserMatrix);
 	}
+}
+
+//===================================================================
+void CParticleSystemModel::stopSound()
+{
+	if (!_SoundActive) return;
+	if (_ParticleSystem) _ParticleSystem->stopSound();
+	_SoundActive = false;
+}
+
+//===================================================================
+void CParticleSystemModel::reactivateSound()
+{
+	if (_SoundActive) return;
+	if (_ParticleSystem) _ParticleSystem->reactivateSound();
+	_SoundActive = false;
 }
 
  

@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.42 2004/05/07 14:41:42 corvazier Exp $
+ * $Id: particle_system_model.h,v 1.43 2004/06/01 16:26:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -288,6 +288,10 @@ public:
 	// Set z-bias. Value is in world coordinates. Value remains even if ps isn't present (rsc not allocated)
 	void setZBias(float value);
 
+	// sound on / off
+	void stopSound();
+	void reactivateSound();
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 private:
@@ -352,6 +356,7 @@ private:
 	bool									_InsertedInVisibleList      : 1;
 	bool									_InClusterAndVisible        : 1;
 	bool                                    _EmitterActive			    : 1;
+	bool									_SoundActive				: 1;
 
 	std::vector<IPSModelObserver *>			_Observers;		
 	CAnimatedValueBool						_TriggerAnimatedValue;

@@ -683,6 +683,7 @@
 #define IDC_SSD_BUTTON_SAVE_SCALE       1429
 #define IDC_TDM_STATIC_MAX              1430
 #define IDC_TDM_STATIC                  1431
+#define IDC_MESH_ERROR                  1432
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -904,6 +905,7 @@
 #define ID_SHOOT_SCENE                  32911
 #define IDS_OBJECT_VIEWER               32911
 #define ID_SCENE_SETLIGHTGROUPFACTOR    32912
+#define IDS_ERROR_IN_MORPH_MESH         32912
 #define ID_SCENE_CAMERA_FIRST           32914
 #define ID_SCENE_CAMERA_0               32914
 #define ID_SCENE_CAMERA_1               32915
@@ -952,7 +954,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1149
 #define _APS_NEXT_COMMAND_VALUE         32986
-#define _APS_NEXT_CONTROL_VALUE         1432
+#define _APS_NEXT_CONTROL_VALUE         1433
 #define _APS_NEXT_SYMED_VALUE           1001
 #endif
 #endif

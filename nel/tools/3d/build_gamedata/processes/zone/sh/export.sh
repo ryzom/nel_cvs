@@ -26,7 +26,7 @@ echo -------
 echo --- Export zone 
 echo ------- 
 
-# For each directoy
+# Try to export from Max zone if any
 
 for i in $zone_source_directories ; do
 	# Copy the script
@@ -38,6 +38,11 @@ for i in $zone_source_directories ; do
 	# Concat log.log files
 	cat $max_directory/log.log >> log.log
 done
+
+# Try to copy ligo zone if any
+
+cp -u ../ligo/output/*.zone ./zone_exported
+
 
 #copy each water map before lightmapping
 for i in $zone_source_directories ; do

@@ -30,6 +30,9 @@
 using namespace NL3D;
 using namespace NLMISC;
 
+
+int getLayer (EPM_PaintTile* tile, int border, int tileSet, int rotate, std::vector<EPM_Mesh>& vectMesh);
+
 // Paint mouse proc
 
 #define MAIN_Width 800
@@ -579,6 +582,10 @@ bool EPM_PaintMouseProc::PutATile ( EPM_PaintTile* pTile, int tileSet, int curRo
 	if ((_256)&&(!pTile->validFor256 (0)))
 		return false;
 
+	// Frozen ?
+	if (vectMesh[pTile->Mesh].Node->IsFrozen())
+		return false;
+
 	// *** Clip select patch
 	// Patch number
 	int patch=pTile->tile/NUM_TILE_SEL;
@@ -841,28 +848,257 @@ zap:;
 			// Yo!
 			SetTile (backupStack[back].Mesh, backupStack[back].Tile, backupStack[back].Desc, vectMesh, land, nelPatchChg, NULL);
 		}
-/*		SetTile (pTile->Mesh, pTile->tile, backup, vectMesh, land, nelPatchChg);
-			
-		if (_256)
+
+		// Try to put a transition tile ?
+		if (!_256)
 		{
-			// get right
-			int nRot;
-			EPM_PaintTile* other=pTile->getRight256 (0, nRot);
-			nlassert (other);
-			SetTile (other->Mesh, other->tile, backupRight, vectMesh, land, nelPatchChg);
+			// 4 cases
+			// *****
+			// *0*3*
+			// *****
+			// *1*2*
+			// *****
+			tileSetIndex tileSetCases[4][4];
+			for (uint i=0; i<4; i++)
+			for (uint j=0; j<4; j++)
+			{
+				tileSetCases[i][j].TileSet = -1;
+				tileSetCases[i][j].Rotate = 0;
+			}
+			CTileSet::TFlagBorder borderEdges[4][2];
 
-			// get bottom
-			other=pTile->getBottom256 (0, nRot);
-			nlassert (other);
-			SetTile (other->Mesh, other->tile, backupBottom, vectMesh, land, nelPatchChg);
+			// For each edge
+			for (uint edge=0; edge<4; edge++)
+			{
+				// Neighbor ?
+				if (pTile->voisins[edge])
+				{
+					// Get the neighbor corner
+					tileSetIndex pVoisinCorner[4];
+					CTileSet::TFlagBorder pBorder[4][3];
+					tileDesc pVoisinIndex;
 
-			// get corner
-			other=pTile->getRightBottom256 (0, nRot);
-			nlassert (other);
-			nlassert (other==pTile->getBottomRight256 (0, nRot));
-			SetTile (other->Mesh, other->tile, backupCorner, vectMesh, land, nelPatchChg);
-		}*/
-		return false;
+					// Tile is filled ?
+					if (GetBorderDesc (pTile->voisins[edge], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg))
+					{
+						// Neighbor edge
+						int neigborEdge = (2+edge+pTile->rotate[edge])&3;
+
+						// Copy the tiles
+						tileSetCases[edge][edge] = pVoisinCorner[(neigborEdge+1)&3];
+						tileSetCases[edge][edge].Rotate -= pTile->rotate[edge];
+						tileSetCases[edge][edge].Rotate &= 3;
+						tileSetCases[edge][(edge+1)&3] = pVoisinCorner[neigborEdge];
+						tileSetCases[edge][(edge+1)&3].Rotate -= pTile->rotate[edge];
+						tileSetCases[edge][(edge+1)&3].Rotate &= 3;
+
+						// Change the rotation
+
+						// Get the transition used
+						for (uint subTile=0; subTile<2; subTile++)
+						{
+							// Tileset
+							int slot=getLayer (pTile, edge, pVoisinCorner[(neigborEdge+subTile)&3].TileSet, (pVoisinCorner[(neigborEdge+subTile)&3].Rotate - pTile->rotate[edge])&3, vectMesh);
+
+							// Should be found
+							nlassert (slot>=0);
+
+							// Get the border
+							borderEdges[edge][1-subTile] = CTileSet::getInvertBorder (pBorder[neigborEdge][slot]);
+						}
+					}
+				}
+			}
+
+			// Make the final corner descriptor
+			tileSetIndex finalCorner[4];
+			for (uint corner=0; corner<4; corner++)
+			{
+				finalCorner[corner].TileSet = -1;
+				
+				// All the same or empty ?
+				for (uint layer=0; layer<4; layer++)
+				{
+					// Compatible ?
+					if ( ( finalCorner[corner].TileSet == -1 ) 
+						|| ( tileSetCases[layer][corner].TileSet == -1 ) 
+						|| ( tileSetCases[layer][corner] == finalCorner[corner] ) )
+					{
+						// Copy the tile
+						if ( tileSetCases[layer][corner].TileSet  != -1 )
+							finalCorner[corner] = tileSetCases[layer][corner];
+					}
+					else
+					{
+						// Not compatible
+						return false;
+					}
+				}
+
+				// Empty ?
+				if (finalCorner[corner].TileSet == -1)
+				{
+					// New tileSet
+					finalCorner[corner].TileSet = tileSet;
+					finalCorner[corner].Rotate = curRotation;
+				}
+			}
+
+			// Set of index
+			std::vector<tileSetIndex> setIndex;
+
+			// Set count
+			for (uint v=0; v<4; v++)
+			{
+				// Should not be empty
+				nlassert (finalCorner[v].TileSet!=-1);
+
+				// Check for same tile with a +2 rotation
+				bool bFind=false;
+
+				for (int vv=0; vv<(int)setIndex.size(); vv++)
+				{
+					if (setIndex[vv].TileSet==finalCorner[v].TileSet)
+					{
+						tileSetIndex complet=finalCorner[v];
+						complet.Rotate=(complet.Rotate+2)&3;
+						if (setIndex[vv].Rotate==complet.Rotate)
+							return false;
+						if (finalCorner[v]==setIndex[vv])
+							bFind=true;
+					}
+				}
+				
+				// no, ok push it back.
+				if (!bFind)
+					setIndex.push_back (finalCorner[v]);
+			}
+
+			// Sort the tile set
+			std::sort (setIndex.begin(), setIndex.end());
+
+			// Check for more than 3 materials
+			if (setIndex.size()>3)
+				return false;
+
+			// Count materiaux
+			tileIndex finalIndex[3];
+			finalIndex[0].Tile=0;
+			finalIndex[1].Tile=0;
+			finalIndex[2].Tile=0;
+
+			// For each layer
+			for (int l=0; l<(int)setIndex.size(); l++)
+			{
+				if (l==0)
+				{
+					// Look for a tile without group
+					finalIndex[l].Tile=selectTile (setIndex[l].TileSet, false, false, 0, bank);
+					finalIndex[l].Rotate=(setIndex[l].Rotate&3);
+				}
+				else
+				{
+					// The 4 borders
+					CTileSet::TFlagBorder border[4];
+
+					// Corner filled or not
+					bool bFilled[4];
+					for (int c=0; c<4; c++)
+						bFilled[c]=!(finalCorner[c]<setIndex[l]);
+
+					// Fill the edge
+					for (uint e=0; e<4; e++)
+					{
+						// Two filled ?
+						if (bFilled[e] && bFilled[(e+1)&3])
+							border[e]=CTileSet::_1111;
+						else if ( (!bFilled[e]) && (!bFilled[(e+1)&3]) )
+							border[e]=CTileSet::_0000;
+						else
+						{
+							// Found
+							bool found = false;
+
+							// Get neighbor edge
+							if (pTile->voisins[e])
+							{
+								// Filled corner
+								uint filledCorner = bFilled[e]?e:(e+1)&3;
+
+								// Get the neighbor corner
+								tileSetIndex pVoisinCorner[4];
+								CTileSet::TFlagBorder pBorder[4][3];
+								tileDesc pVoisinIndex;
+
+								// Tile is filled ?
+								if (GetBorderDesc (pTile->voisins[e], pVoisinCorner, pBorder, &pVoisinIndex, bank, vectMesh, nelPatchChg))
+								{
+									// Neighbor edge
+									int neigborEdge = (2+e+pTile->rotate[e])&3;
+
+									// Get the slot
+									int slot=getLayer (pTile, e, setIndex[l].TileSet, setIndex[l].Rotate, vectMesh);
+
+									if ((slot != -1) && (pBorder[neigborEdge][slot] != CTileSet::dontcare))
+									{
+										// Invert the border
+										border[e]=CTileSet::getInvertBorder (pBorder[neigborEdge][slot]);
+
+										// Found it
+										found = true;
+									}
+								}
+							}
+
+							// Found ?
+							if ( !found )
+							{
+								// First filled ?
+								if (bFilled[e])
+									border[e]=CTileSet::_1000;
+								else
+									border[e]=CTileSet::_0001;
+							}
+						}
+					}
+
+					// Find the transitions
+					const CTileSetTransition *tileTrans = FindTransition (setIndex[l].TileSet, setIndex[l].Rotate, border, bank);
+					if (!tileTrans)
+					{
+						return false;
+					}
+					finalIndex[l].Rotate=(setIndex[l].Rotate&3);
+					finalIndex[l].Tile=tileTrans->getTile();
+				}
+			}
+			
+			// Set the border desc
+			tileDesc desc;
+			GetTile (pTile->Mesh, pTile->tile, desc, vectMesh, land);
+			switch (setIndex.size())
+			{
+			case 1:
+				desc.setTile (1, 0, desc.getDisplace (), finalIndex[0], tileIndex (false, 0,0), tileIndex (false, 0,0));
+				break;
+			case 2:
+				desc.setTile (2, 0, desc.getDisplace (), finalIndex[0], finalIndex[1], tileIndex (false, 0,0));
+				break;
+			case 3:
+				desc.setTile (3, 0, desc.getDisplace (), finalIndex[0], finalIndex[1], finalIndex[2]);
+				break;
+			default:
+				nlassert (0);		// no!
+				break;
+			}
+			SetTile (pTile->Mesh, pTile->tile, desc, vectMesh, land, nelPatchChg, NULL);
+
+		}
+		else
+		{
+			// Can't pos 256 transition tile
+			return false;
+		}
 	}
 
 	return true;
@@ -1026,6 +1262,10 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 	if (visited.find (tile)!=visited.end())
 		return true;
 
+	// Frozen ?
+	/* if (vectMesh[tile->Mesh].Node->IsFrozen())
+		return true;*/
+
 	// Big trick
 	if (pobj->TileTrick)
 		return true;
@@ -1123,7 +1363,9 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 			if (bFill)
 			{
 				int edge=(2+v+tile->rotate[v])&3;
-				if (visited.find (tile->voisins[v])!=visited.end())
+
+				// Already visited or frozen ?
+				if ((visited.find (tile->voisins[v])!=visited.end()) /*|| (vectMesh[tile->voisins[v]->Mesh].Node->IsFrozen())*/)
 				{
 					bVisited[v]=true;
 					pVoisinCorner[(edge+1)&3].Rotate-=tile->rotate[v];
@@ -1246,6 +1488,10 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 
 	if ((!bDiff)&&pIndex.getNumLayer()==1)
 		return true;
+
+	// Frozen ?
+	if (vectMesh[tile->Mesh].Node->IsFrozen())
+		return false;
 
 	// Count materiaux
 	//set<tileSetIndex> setIndex;
@@ -1440,8 +1686,9 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 						// Normal, 
 						else
 						{
-							// Voisin visited ?
-							if (tile->voisins[c]&&(visited.find (tile->voisins[c])!=visited.end()))
+							// Voisin visited or frozen ?
+							if (tile->voisins[c]&&((visited.find (tile->voisins[c])!=visited.end()) /*|| 
+								(vectMesh[tile->voisins[c]->Mesh].Node->IsFrozen())*/ ))
 							{
 								// Yes, visited. Copy the border
 								tileSetIndex pVoisinCorner[4];
@@ -1591,7 +1838,7 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 						else
 						{
 							// Voisin visited ?
-							if ((tile->voisins[c])&&(visited.find (tile->voisins[c])!=visited.end()))
+							if ((tile->voisins[c])&& ((visited.find (tile->voisins[c])!=visited.end()) /*|| (vectMesh[tile->voisins[c]->Mesh].Node->IsFrozen())*/) )
 							{
 								// Yes, visited. Copy the border
 								tileSetIndex pVoisinCorner[4];
@@ -1717,33 +1964,25 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 		return true;
 
 	bool bContinue=true;
+
 	// For each voisin
 	for (v=0; v<4; v++)
 	{
-		// Voisin already visited ?
-		if ((tile->voisins[v])&&(visited.find (tile->voisins[v])==visited.end()))
+		// Voisin not already visited and not frozen ?
+		if ((tile->voisins[v]) && (visited.find (tile->voisins[v])==visited.end()) /* && (vectMesh[tile->voisins[v]->Mesh].Node->IsFrozen()==0)*/)
 		{	
-			/*// Voisin is 256 ?
-			tileDesc voisinDesc=vectMesh[tile->voisins[v]->Mesh].RMesh->getTileDesc (tile->voisins[v]->tile);
-			bool voisin256=(voisinDesc.getCase()>0);
-
-			// don't visit the voisin if 256 and bDiff
-			if (!bDiff||!voisin256)*/
+			// ok.. not visited, border with modified corner ?
+			if (bModified[v]||bModified[(v+1)&3]||(!bSameEdge[v]))
+			if (!PropagateBorder (tile->voisins[v], (tile->rotate[v]+curRotation)&3, curTileSet, visited, bank, vectMesh, land, nelPatchChg, 
+									backupStack, false))
 			{
-				// ok.. not visited, border with modified corner ?
-				if (bModified[v]||bModified[(v+1)&3]||(!bSameEdge[v]))
-				if (!PropagateBorder (tile->voisins[v], (tile->rotate[v]+curRotation)&3, curTileSet, visited, bank, vectMesh, land, nelPatchChg, 
-										backupStack, false))
-				{
-					bContinue=false;
-					break;
-				}				
-			}
+				bContinue=false;
+				break;
+			}				
 		}
 	}
 	if (!bContinue)
 	{		
-		//SetTile (tile->Mesh, tile->tile, backup, vectMesh, land, nelPatchChg);
 		return false;
 	}
 	

@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.10 2002/02/15 17:12:01 vizerie Exp $
+ * $Id: ps_zone.h,v 1.11 2002/02/20 11:20:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ public:
 	 * Process one pass for the zone
 	 * The default behaviour call performMotion or show depending on the pass being processed
 	 */
-	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime);
+	virtual void step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt);
 
 	
 	/// This is usually called by the step method for the pass dedicated to zone

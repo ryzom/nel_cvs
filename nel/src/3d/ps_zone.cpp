@@ -1,7 +1,7 @@
 /** \file ps_zone.cpp
  * <File description>
  *
- * $Id: ps_zone.cpp,v 1.19 2002/02/15 17:12:01 vizerie Exp $
+ * $Id: ps_zone.cpp,v 1.20 2002/02/20 11:20:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/plane.h"
 
 #include <math.h>
+#include <limits>
 
 namespace NL3D {
 
@@ -85,7 +86,7 @@ void CPSZone::releaseTargetRsc(CPSLocated *target)
 
 
 
-void CPSZone::step(TPSProcessPass pass, TAnimationTime ellapsedTime)
+void CPSZone::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimationTime realEt)
 {
 	// for zone, the PSCollision pass and the PSToolRenderPass are processed
 	switch(pass)
@@ -225,7 +226,7 @@ void CPSZonePlane::performMotion(TAnimationTime ellapsedTime)
 		speedAttr = &((*it)->getSpeed());
 		// cycle through the planes
 
-		planePosEnd = _Owner->getPos().end();
+		planePosEnd = _Owner->getPos().end();		
 		for (planePosIt = _Owner->getPos().begin(), normalIt = _Normal.begin(); planePosIt != planePosEnd
 				; ++planePosIt, ++normalIt)
 		{
@@ -233,52 +234,47 @@ void CPSZonePlane::performMotion(TAnimationTime ellapsedTime)
 			// we must setup the plane in the good basis
 
 			const CMatrix &m = CPSLocated::getConversionMatrix(*it, this->_Owner);
-			const float epsilon = 10E-5f;
+			const float epsilon = 0.5f * PSCollideEpsilon;
 			
 
 			NLMISC::CPlane p;
 			p.make(m.mulVector(*normalIt), m * (*planePosIt));		
 			
 			// deals with each particle
-
-
+			
 			targetPosEnd = (*it)->getPos().end();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k)
+			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
+			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
 			{	
 				const CVector &speed = (*speedAttr)[k];
 				// check whether the located is going through the plane
-				dest = *targetPosIt + ellapsedTime *  speed;
+				dest = *targetPosIt + ellapsedTime *  speed * ciIt->TimeSliceRatio;
 
 
 				posSide = p * *targetPosIt;
 				negSide = p * dest;
-								
-				if ((posSide * negSide) < 0.0f)
+												
+				if (posSide >= - epsilon && negSide <= epsilon)
 				{
-				
-
-						if (fabsf(posSide - negSide) > epsilon)
-						{
-							alpha = posSide / (posSide - negSide);
-						}
-						else
-						{
-							alpha = 0.f;
-						}
-						startEnd = alpha * (dest - *targetPosIt);					
-						ci.dist = startEnd.norm();
-						// we translate the particle from an epsilon so that it won't get hooked to the plane
-						ci.newPos = *targetPosIt  + startEnd + PSCollideEpsilon * p.getNormal();				
-						ci.newSpeed = _BounceFactor * (speed - 2.0f * (speed * p.getNormal()) * p.getNormal());
-
-						ci.collisionZone = this;						
-						(*it)->collisionUpdate(ci, k);
-					
+					if (fabsf(posSide - negSide) > std::numeric_limits<float>::min())
+					{
+						alpha = posSide / (posSide - negSide);
+					}
+					else
+					{
+						alpha = 0.f;
+					}
+					startEnd = alpha * (dest - *targetPosIt);					
+					ci.dist = startEnd.norm();
+					// we translate the particle from an epsilon so that it won't get hooked to the plane
+					ci.newPos = *targetPosIt  + startEnd + PSCollideEpsilon * p.getNormal();				
+					ci.newSpeed = _BounceFactor * (speed - 2.0f * (speed * p.getNormal()) * p.getNormal());
+					ci.collisionZone = this;						
+					(*it)->collisionUpdate(ci, k);										
 				}
 			}
 		}
 	}
-
 }
 
 void CPSZonePlane::setMatrix(uint32 index, const CMatrix &m)
@@ -364,7 +360,8 @@ void CPSZoneSphere::performMotion(TAnimationTime ellapsedTime)
 
 
 			targetPosEnd = (*it)->getPos().end();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k)
+			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
+			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
 			{	
 				const CVector &speed = (*speedAttr)[k];
 				const CVector &pos = *targetPosIt;
@@ -378,7 +375,7 @@ void CPSZoneSphere::performMotion(TAnimationTime ellapsedTime)
 				// initial position outside the sphere ?
 				if (rOut > radiusIt->R2)
 				{
-					dest = pos + ellapsedTime *  speed;
+					dest = pos + ellapsedTime *  speed * ciIt->TimeSliceRatio;
 					rIn = (dest - center) * (dest - center);
 
 					const CVector D = dest - pos;
@@ -571,22 +568,23 @@ void CPSZoneDisc::performMotion(TAnimationTime ellapsedTime)
 			
 			// deals with each particle
 
+			const float epsilon = 0.5f * PSCollideEpsilon;
 
 			targetPosEnd = (*it)->getPos().end();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k)
+			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
+			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
 			{	
 				const CVector &speed = (*speedAttr)[k];
 				// check whether the located is going through the disc
-				dest = *targetPosIt + ellapsedTime *  speed;
+				dest = *targetPosIt + ellapsedTime *  speed * ciIt->TimeSliceRatio;
 
 
 				posSide = p * *targetPosIt;
 				negSide = p * dest;
 								
-				if ((posSide * negSide) < 0.0f)
-				{			
-						const float epsilon = 10E-5f;
-						if (fabsf(posSide - negSide) > epsilon)
+				if (posSide >= - epsilon && negSide <= epsilon)
+				{									
+						if (fabsf(posSide - negSide) > std::numeric_limits<float>::min())
 						{
 							alpha = posSide / (posSide - negSide);
 						}
@@ -988,7 +986,8 @@ void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
 
 			// deals with each particle
 			targetPosEnd = (*it)->getPos().end();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k)
+			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
+			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
 			{	
 				const CVector &speed = (*speedAttr)[k];
 				const CVector &pos = *targetPosIt;
@@ -1009,7 +1008,7 @@ void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
 					 )
 				   )
 				{
-					dest = pos + ellapsedTime *  speed;
+					dest = pos + ellapsedTime *  speed * ciIt->TimeSliceRatio;
 					destTPos = dest - center;
 					destProjectedPos = (1.f / dimIt->x) * (I * destTPos) * I + (1.f / dimIt->y)  * (J * destTPos) * J;
 
@@ -1027,7 +1026,7 @@ void CPSZoneCylinder::performMotion(TAnimationTime ellapsedTime)
 						// now, detect the closest hit point (the smallest alpha, with alpha, the percent of the move vector
 						// to reach the hit point)
 
-						const float epsilon = 10E-6f;
+						const float epsilon = 10E-3f;
 
 						float alphaTop, alphaBottom, alphaCyl;
 
@@ -1319,22 +1318,31 @@ void CPSZoneRectangle::performMotion(TAnimationTime ellapsedTime)
 			
 			// deals with each particle
 
+			const float epsilon = 0.5f * PSCollideEpsilon;
 
 			targetPosEnd = (*it)->getPos().end();
-			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k)
+			TPSAttribCollisionInfo::const_iterator ciIt = (*it)->getCollisionInfo().begin();
+			for (targetPosIt = (*it)->getPos().begin(), k = 0; targetPosIt != targetPosEnd; ++targetPosIt, ++k, ++ciIt)
 			{	
 				const CVector &pos = *targetPosIt;
 				const CVector &speed = (*speedAttr)[k];
 				// check whether the located is going through the rectangle
-				dest = pos + ellapsedTime *  speed;
+				dest = pos + ellapsedTime *  speed * ciIt->TimeSliceRatio;
 
 
 				posSide = p * pos;
 				negSide = p * dest;
 								
-				if ((posSide * negSide) < 0.0f)
+				if (posSide >= - epsilon && negSide <= epsilon)
 				{									
-						alpha = posSide / (posSide - negSide);
+						if (fabsf(posSide - negSide) > std::numeric_limits<float>::min())
+						{
+							alpha = posSide / (posSide - negSide);
+						}
+						else
+						{
+							alpha = 0.f;
+						}
 						startEnd = alpha * (dest - pos);					
 						ci.dist = startEnd.norm();
 						// we translate the particle from an epsilon so that it won't get hooked to the rectangle

@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.12 2003/04/22 16:17:37 corvazier Exp $
+ * $Id: retriever_bank.h,v 1.13 2004/10/08 13:34:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,7 +211,7 @@ public:
 	/// Diff loaded retrievers
 	void		diff(const std::set<uint> &newlr, std::set<uint> &in, std::set<uint> &out)
 	{
-		std::set<uint>::iterator	it;
+		std::set<uint>::const_iterator	it;
 
 		for (it=_LoadedRetrievers.begin(); it!=_LoadedRetrievers.end(); ++it)
 		{

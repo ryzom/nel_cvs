@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.77 2004/10/07 14:37:56 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.78 2004/10/08 13:34:30 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1891,7 +1891,7 @@ string			CAudioMixerUser::getSourcesStats() const
 	// TODO : rewrite log output
 
 	string s;
-	TSourceContainer::iterator ips;
+	TSourceContainer::const_iterator ips;
 	for ( ips=_Sources.begin(); ips!=_Sources.end(); ++ips )
 	{
 		if ( (*ips)->isPlaying() )

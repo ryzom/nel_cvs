@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.cpp
  * A sound event marker on a sound track
  *
- * $Id: sound_anim_marker.cpp,v 1.8 2003/03/03 12:58:09 boucher Exp $
+ * $Id: sound_anim_marker.cpp,v 1.9 2004/10/08 13:34:30 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,7 +76,7 @@ void CSoundAnimMarker::addSound(const NLMISC::TStringId& soundName)
 
 void CSoundAnimMarker::removeSound(const NLMISC::TStringId &soundName)
 {
-	TMarkerSoundSet::const_iterator iter = _Sounds.find(soundName);
+	TMarkerSoundSet::iterator iter = _Sounds.find(soundName);
     if (iter != _Sounds.end())
 	{
 		_Sounds.erase(iter);

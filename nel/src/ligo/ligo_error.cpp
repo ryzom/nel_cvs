@@ -1,7 +1,7 @@
 /** \file ligo_error.cpp
  * Error handling implementation
  *
- * $Id: ligo_error.cpp,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: ligo_error.cpp,v 1.2 2002/03/04 15:13:43 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -39,8 +39,23 @@ CLigoError::CLigoError()
 
 void CLigoError::pushVertexError (TError code, uint id, uint edge)
 {
-	// Add a vertex error
-	_VertexError.push_back (CVertex (code, id, edge));
+	// Check if this vertex exist in the error list
+	uint vertex;
+	for (vertex=0; vertex<_VertexError.size(); vertex++)
+	{
+		if (_VertexError[vertex].Id == id)
+		{
+			_VertexError[vertex] = CVertex (code, id, edge);
+			break;
+		}
+	}
+
+	// Not found ?
+	if (vertex == _VertexError.size())
+	{
+		// Add a vertex error
+		_VertexError.push_back (CVertex (code, id, edge));
+	}
 }
 
 // ***************************************************************************
@@ -78,6 +93,7 @@ const char* CLigoError::_StringError[CLigoError::ErrorCount]=
 	"Mulitple edge on the boundary",// MultipleEdge
 	"Vertex list invalid. One vertex should be a corner",	// VertexList
 	"The vertex has not been inserted in the edge list",	// NotInserted
+	"The vertex has been inserted in the edge list",		// Inserted
 	"Flat zone, all vertices are in the same corner",		// FlatZone
 	"The zone must have 4 edges to define a material",	// MustHave4Edges
 	"A edge of the zone is not symetrical",		// NotSymetrical

@@ -1,7 +1,7 @@
 /** \file ligo_error.h
  * Error handling interface
  *
- * $Id: ligo_error.h,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: ligo_error.h,v 1.2 2002/03/04 15:13:43 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -62,6 +62,9 @@ public:
 
 		/// The vertex has not been inserted in the edge list
 		NotInserted,
+
+		/// The vertex has been inserted in the edge list
+		Inserted,
 
 		/// Flat zone, all vertex are in the same corner
 		FlatZone,

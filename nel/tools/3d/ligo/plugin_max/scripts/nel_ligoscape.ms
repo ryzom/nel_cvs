@@ -33,7 +33,23 @@ ligo_zonetransition_prefix = "zonetransition-"
 rootpath				= (getdir #maxroot)
 title_msgbox			= "NeL Ligo tools"
 NoError					= 1
-ErrorColor				= #(color 0 255 0, color 0 0 0, color 255 0 0, color 0 0 0, color 255 0 255, color 0 0 255)
+
+-- NoError					- color 0 255 0
+-- NoEdgeVertices			- color 0 0 0
+-- OpenedEdge				- color 255 0 0
+-- MultipleEdge				- color 0 0 0
+-- VertexList				- color 255 255 0
+-- NotInserted				- color 0 0 255
+-- Inserted					- color 255 0 255
+-- FlatZone					- color 0 0 0
+-- MustHave4Edges			- color 0 0 0
+-- NotSymetrical			- color 0 255 255
+-- NotSameVerticesNumber	- color 0 0 0
+-- NotSameVertex			- color 128 0 0
+-- UnknownError				- color 255 255 255
+
+ErrorColor				= #(color 0 255 0, color 0 0 0, color 255 0 0, color 0 0 0, color 255 255 0, color 0 0 255, color 255 0 255, color 0 0 0, color 0 0 0, color 0 255 255, color 0 0 0, color 128 0 0, color 255 255 255)
+
 TransitionIds			= #( #( 1, 2 ), #( undefinded, 3 ), #( 5, 4 ), #( 6, 7, 8, 9 ) )
 EdgeType				= #( #(2, 2, -4, 4), #(4, 2, 2, -3), #(1, 3, 2, -3), #(-3, 3, 2, 2), #(1, 1, 3, -4), #(1, 4, -4, 1), #(4, 2, -4, 1), #(4, 2, -3, 1), #(3, -3, 1, 1))
 TransitionPosition		= #( [0,0,0], [1,0,0], [1,1,0], [1,2,0], [0,2,0], [0,3,0], [1,3,0], [2,3,0], [3,3,0] )
@@ -2764,6 +2780,8 @@ group "Directories"
 		EditText		LigoPath				""						width:140 align:#center
 		Label			ExportPathLabel			"Ligo Export Path"		align:#left
 		EditText		LigoExportPath			""						width:140 align:#center		
+		Label			OldZonePathPathLabel	"Old Zone Path"			align:#left
+		EditText		OldZonePath				""						width:140 align:#center		
 		Button 			SetupDirectories		"Setup directories"		width:140 align:#center
 		Button 			ExportOldZonesTga		"Export old zones TGA"	width:140 align:#center
 	)
@@ -2886,10 +2904,20 @@ group "Directories"
 		setINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoExportPath" ligo_export_path
 	)
 
+	on OldZonePath changed newPath do
+	(
+		old_zone_path = newPath
+		lastChar = old_zone_path[old_zone_path.count]
+		if (lastChar != '\') and (lastChar != '/') then
+			old_zone_path += "\\"
+		setINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoOldZonePath" old_zone_path
+	)
+
 	on options_rollout open do
 	(
 		LigoPath.text = ligo_root_path
 		LigoExportPath.text = ligo_export_path
+		OldZonePath.text = old_zone_path
 	)
 
 )
@@ -3048,6 +3076,8 @@ ligopath = getINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoP
 if ligopath != "" then ligo_root_path = ligopath
 ligopath = getINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoExportPath" 
 if ligopath != "" then ligo_export_path = ligopath
+ligopath = getINISetting ((GetDir #plugcfg)+"\\nelligo.ini") "LigoConfig" "LigoOldZonePath" 
+if ligopath != "" then old_zone_path = ligopath
 
 ligoscape_tools_floater = newRolloutFloater "NeL Ligoscape" 225 600
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.cpp,v 1.2 2000/10/04 14:34:10 cado Exp $
+ * $Id: log.cpp,v 1.3 2000/10/06 10:27:36 lecroart Exp $
  *
  * Implementation for CLog
  */
@@ -28,6 +28,7 @@
 #include <sstream>
 using namespace std;
 
+#include <string>
 
 namespace NLMISC
 {
@@ -86,11 +87,29 @@ char *getFilename( char *lfilename )
 	}
 }
 
+/*
+ * Display the string with decoration and final new line to all attached displayers
+ */
+void CLog::displayNL( const char *format, ... )
+{
+	// Build the string
+	char cstring [1024];
 
+	va_list args;
+	va_start( args, format );
+	vsprintf( cstring, format, args );
+	va_end( args );
+	strcat( cstring, "\n" );
+
+	display (cstring);
+}
+
+/*
+ * Display the string with decoration to all attached displayers
+ */
 void CLog::display( const char *format, ... )
 {
 	// Build the string
-
 	char cstring [1024];
 
 	va_list args;
@@ -112,13 +131,20 @@ void CLog::display( const char *format, ... )
 	ss << priorityStr().c_str() << " ";
 	if ( _Long )
 	{
-		ss << NLNET::CInetAddress::localHost().hostName().c_str() << " " << NLNET::IService::serviceName() << " ";
+		try
+		{
+			ss << NLNET::CInetAddress::localHost().hostName().c_str() << " " << NLNET::IService::serviceName() << " ";
+		}
+		catch (NLNET::ESocket)
+		{
+			ss << "<UnknownHost> " << NLNET::IService::serviceName() << " ";
+		}
 	}
 	if ( _File != NULL )
 	{
 		ss << getFilename(_File) << " " << _Line << " ";
 	}
-	ss << ": " << cstring << endl;
+	ss << ": " << cstring ;//<< endl;
 	string s = ss.str();
 
 	// Send to the attached displayers
@@ -132,6 +158,27 @@ void CLog::display( const char *format, ... )
 	_Line = 0;
 }
 
+
+/*
+ * Display a string (and nothing more) to all attached displayers
+ */
+void CLog::displayRawNL( const char *format, ... )
+{
+	// Build the string
+	char cstring [1024];
+	va_list args;
+	va_start( args, format );
+	vsprintf( cstring, format, args );
+	va_end( args );
+
+	strcat ( cstring, "\n" );
+
+	// Send to the attached displayers
+	for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
+	{
+		(*idi)->display( cstring );
+	}
+}
 
 /*
  * Display a string (and nothing more) to all attached displayers
@@ -162,8 +209,9 @@ string CLog::priorityStr() const
 		case LOG_INFO : return "INF";
 		case LOG_ERROR : return "ERR";
 		case LOG_STAT : return "STT";
+		case LOG_ASSERT : return "AST";
+//		default: nlstop;
 	}
-	return "";
 }
 
 

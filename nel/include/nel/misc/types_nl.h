@@ -82,7 +82,7 @@ typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
 #endif
 
-typedef	unsigned	short		wchar;
+typedef	uint16	wchar;
 
 // TODO: wstring
 

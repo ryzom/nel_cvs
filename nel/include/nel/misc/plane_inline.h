@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: plane_inline.h,v 1.2 2000/09/19 16:38:19 berenguier Exp $
+ * $Id: plane_inline.h,v 1.3 2000/10/06 10:27:36 lecroart Exp $
  *
  * class CPlane
  */
@@ -30,7 +30,7 @@ inline	CVector	CPlane::getNormal() const
 inline	float	CPlane::distance(const CVector &p) const
 {
 	CVector	v= getNormal().normed();
-	return fabs(v*p + d);
+	return (float)fabs(v*p + d);
 }
 //============================================================
 inline	float	CPlane::operator*(const CVector &p) const

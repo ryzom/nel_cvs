@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.cpp,v 1.6 2000/10/04 15:09:30 lecroart Exp $
+ * $Id: service.cpp,v 1.7 2000/10/06 10:27:37 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -16,6 +16,7 @@
 #include <stdlib.h>
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 
 #include "nel/net/service.h"
@@ -38,6 +39,9 @@ sint IService::main (int argc, char **argv)
 		}
 
 		setStatus (EXIT_SUCCESS);
+
+		NLMISC_InitDebug();
+
 
 		init ();
 		while (update())

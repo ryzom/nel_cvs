@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: vector_inline.h,v 1.3 2000/09/14 16:29:16 berenguier Exp $
+ * $Id: vector_inline.h,v 1.4 2000/10/06 10:27:36 lecroart Exp $
  *
  * CVector class inline definitions.
  */
@@ -144,21 +144,21 @@ inline	void	CVector::cartesianToSpheric(float &r, float &theta,float &phi) const
 	v= normed();
 
 	// phi E [-PI/2 et PI/2]
-	phi=asin(v.z);
+	phi=(float)asin(v.z);
 
 	// theta [-PI,PI]
-	theta=atan2(v.x,v.y);
+	theta=(float)atan2(v.x,v.y);
 }
 inline	void	CVector::sphericToCartesian(float r, float theta,float phi)
 {
-	float	ct= cos(theta);
-	float	st= sin(theta);
-	float	cp= cos(phi);
-	float	sp= sin(phi);
+	double	ct= cos(theta);
+	double	st= sin(theta);
+	double	cp= cos(phi);
+	double	sp= sin(phi);
 
-	x= r*cos(theta)*cos(phi);
-	y= r*sin(theta)*cos(phi);
-	z= r*sin(phi);
+	x=(float) (r*cos(theta)*cos(phi));
+	y=(float) (r*sin(theta)*cos(phi));
+	z=(float) (r*sin(phi));
 }
 inline	void	CVector::serial(IStream &f)
 {

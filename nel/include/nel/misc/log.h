@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.h,v 1.5 2000/10/04 15:27:53 cado Exp $
+ * $Id: log.h,v 1.6 2000/10/06 10:27:36 lecroart Exp $
  *
  * Interface for CLog
  */
@@ -29,7 +29,7 @@ namespace NLMISC
 class IDisplayer;
 
 
-typedef enum { LOG_ERROR, LOG_WARNING, LOG_INFO, LOG_DEBUG, LOG_STAT } TLogPriority;
+typedef enum { LOG_ERROR, LOG_WARNING, LOG_INFO, LOG_DEBUG, LOG_STAT, LOG_ASSERT } TLogPriority;
 
 typedef std::vector<IDisplayer *> CDisplayers;
 
@@ -69,8 +69,14 @@ public:
 		_File = file;
 	}
 
+	/// Display a string in decorated and final new line form to all attached displayers. Call setParam before.
+	void displayNL( const char *format, ... );
+
 	/// Display a string in decorated form to all attached displayers. Call setParam before.
 	void display( const char *format, ... );
+
+	/// Display a string with a final new line to all attached displayers
+	void displayRawNL( const char *format, ... );
 
 	/// Display a string (and nothing more) to all attached displayers
 	void displayRaw( const char *format, ... );

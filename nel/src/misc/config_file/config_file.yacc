@@ -94,7 +94,7 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 				DEBUG_PRINTF(")\n");
 				int i;
 				// on recherche l'existence de la variable
-				for(i = 0; i < (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size(); i++)
+				for(i = 0; i (int)(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size(); i++)
 				{
 					if ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Name == $1.String)
 					{
@@ -108,7 +108,7 @@ inst:		VARIABLE ASSIGN expression SEMICOLON
 				if (cf_CurrentVar.Comp) Var = cf_CurrentVar;
 				else cf_setVar (Var, $3);
 				Var.Name = $1.String;
-				if (i == (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size ())
+				if (i == (int)(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size ())
 				{
 					// nouvelle variable
 					DEBUG_PRINTF ("yacc: new assign var '%s'\n", $1.String);
@@ -163,7 +163,7 @@ variable:	VARIABLE
 				DEBUG_PRINTF("yacc: cont\n");
 				bool ok=false;
 				int i;
-				for(i = 0; i < (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size(); i++)
+				for(i = 0; i < (int)(*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size(); i++)
 				{
 					if ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Name == $1.String)
 					{

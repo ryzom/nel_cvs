@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: config_file.cpp,v 1.5 2000/10/05 12:30:46 lecroart Exp $
+ * $Id: config_file.cpp,v 1.6 2000/10/06 10:27:37 lecroart Exp $
  *
  * Implementation of CConfigFile.
  */
@@ -51,14 +51,14 @@ char *CConfigFile::CVar::TypeName[] = { "Integer", "String", "Float" };
 int CConfigFile::CVar::asInt (int index) const
 {
 	if (Type != T_INT) throw EBadType (Name, Type, T_INT);
-	else if (index >= IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
+	else if (index >= (int)IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
 	else return IntValues[index];
 }
 
 double CConfigFile::CVar::asDouble (int index) const
 {
 	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
-	else if (index >= RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
+	else if (index >= (int)RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
 	else return RealValues[index];
 }
 
@@ -70,7 +70,7 @@ float CConfigFile::CVar::asFloat (int index) const
 const std::string &CConfigFile::CVar::asString (int index) const
 {
 	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
-	else if (index >= StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
+	else if (index >= (int)StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
 	else return StrValues[index];
 }
 
@@ -135,7 +135,7 @@ void CConfigFile::reparse ()
 
 const CConfigFile::CVar &CConfigFile::getVar (const std::string &varName) const
 {
-	for (int i = 0; i < _Vars.size(); i++)
+	for (int i = 0; i < (int)_Vars.size(); i++)
 	{
 		if (_Vars[i].Name == varName)
 		{
@@ -150,7 +150,7 @@ void CConfigFile::print () const
 {
 	printf ("%d results:\n", _Vars.size());
 	printf ("-------------------------------------\n");
-	for(int i = 0; i < _Vars.size(); i++)
+	for(int i = 0; i < (int)_Vars.size(); i++)
 	{
 		printf ((_Vars[i].Callback==NULL)?"   ":"CB ");
 		if (_Vars[i].Comp)
@@ -160,7 +160,7 @@ void CConfigFile::print () const
 			case CConfigFile::CVar::T_INT:
 			{
 				printf("%-20s { ", _Vars[i].Name.c_str());
-				for (int it=0; it < _Vars[i].IntValues.size(); it++)
+				for (int it=0; it < (int)_Vars[i].IntValues.size(); it++)
 				{
 					printf("'%d' ", _Vars[i].IntValues[it]);
 				}
@@ -170,7 +170,7 @@ void CConfigFile::print () const
 			case CConfigFile::CVar::T_STRING:
 			{
 				printf("%-20s { ", _Vars[i].Name.c_str());
-				for (int st=0; st < _Vars[i].StrValues.size(); st++)
+				for (int st=0; st < (int)_Vars[i].StrValues.size(); st++)
 				{
 					printf("\"%s\" ", _Vars[i].StrValues[st].c_str());
 				}
@@ -180,7 +180,7 @@ void CConfigFile::print () const
 			case CConfigFile::CVar::T_REAL:
 			{
 				printf("%-20s { " , _Vars[i].Name.c_str());
-				for (int rt=0; rt < _Vars[i].RealValues.size(); rt++)
+				for (int rt=0; rt < (int)_Vars[i].RealValues.size(); rt++)
 				{
 					printf("`%f` ", _Vars[i].RealValues[rt]);
 				}

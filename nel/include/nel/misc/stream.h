@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.18 2000/10/05 10:00:20 berenguier Exp $
+ * $Id: stream.h,v 1.19 2000/10/06 10:27:36 lecroart Exp $
  *
  * This File handles IStream 
  */
@@ -174,8 +174,7 @@ public:
 	 * do this, since those type have unspecified length.
 	 */
     template<class T>
-	void			serial(T &obj) throw(EStream)
-	{ obj.serial(*this);	}
+	void			serial(T &obj) throw(EStream) { obj.serial(*this); }
 
 
 	/** \name Base type serialisation.
@@ -195,8 +194,8 @@ public:
 	void			serial(bool &b) throw(EStream);
 	void			serial(char &b) throw(EStream);
 	void			serial(std::string &b) throw(EStream);
-	void			serial(wchar &b) throw(EStream);
-	void			serial(std::wstring &b) throw(EStream);
+//	void			serial(wchar &b) throw(EStream);
+//	void			serial(std::wstring &b) throw(EStream);
 	//@}
 
 
@@ -204,15 +203,15 @@ public:
     template<class T>
 	void			serialEnum(T &em) throw(EStream)
 	{
+		sint32	i;
 		if(isReading())
 		{
-			sint32	i;
 			serial(i);
-			em= (T)i;
+			em = (T)i;
 		}
 		else
 		{
-			sint32	i= em;
+			i = em;
 			serial(i);
 		}
 	}

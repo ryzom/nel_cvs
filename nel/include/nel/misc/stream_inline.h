@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream_inline.h,v 1.9 2000/09/20 09:07:02 lecroart Exp $
+ * $Id: stream_inline.h,v 1.10 2000/10/06 10:27:36 lecroart Exp $
  *
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  */
@@ -300,6 +300,7 @@ inline	void		IStream::serial(std::string &b) throw(EStream)
 		serial(b[i]);
 }
 
+/* ACE: already defined in uint16
 // ======================================================================================================
 inline	void		IStream::serial(wchar &b) throw(EStream)
 {
@@ -315,7 +316,9 @@ inline	void		IStream::serial(wchar &b) throw(EStream)
 		serial(v);
 	}
 }
+*/
 
+/* ACE: already defined in uint16
 // ======================================================================================================
 inline	void		IStream::serial(std::wstring &b) throw(EStream)
 {
@@ -335,7 +338,7 @@ inline	void		IStream::serial(std::wstring &b) throw(EStream)
 	for(sint i=0;i<len;i++)
 		serial(b[i]);
 }
-
+*/
 
 }
 

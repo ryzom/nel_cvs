@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.cpp,v 1.7 2000/09/21 12:40:18 berenguier Exp $
+ * $Id: matrix.cpp,v 1.8 2000/10/06 10:27:36 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -691,12 +691,12 @@ void	CMatrix::fastInvert33(CMatrix &ret) const
 		double	s,S;	// important for precision.
 		// Must divide the matrix by 1/Scale 2 times, to set unit, and to have a Scale=1/Scale.
 		S=1.0/Scale33;
-		ret.Scale33=S;
+		ret.Scale33=(float)S;
 		s=S*S;
 		// The matrix is a base, so just transpose it.
-		ret.a11= a11*s; ret.a12= a21*s; ret.a13=a31*s;
-		ret.a21= a12*s; ret.a22= a22*s; ret.a23=a32*s;
-		ret.a31= a13*s; ret.a32= a23*s; ret.a33=a33*s;
+		ret.a11= (float)a11*s; ret.a12= (float)a21*s; ret.a13= (float)a31*s;
+		ret.a21= (float)a12*s; ret.a22= (float)a22*s; ret.a23= (float)a32*s;
+		ret.a31= (float)a13*s; ret.a32= (float)a23*s; ret.a33= (float)a33*s;
 	}
 	else
 	{

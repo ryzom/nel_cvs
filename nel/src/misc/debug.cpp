@@ -18,10 +18,14 @@
  */
 
 /*
- * $Id: debug.cpp,v 1.6 2000/10/05 16:38:57 cado Exp $
+ * $Id: debug.cpp,v 1.7 2000/10/06 10:27:36 lecroart Exp $
  *
  * Debug
  */
+
+#include "nel/misc/debug.h"
+#include "nel/misc/log.h"
+#include "nel/misc/displayer.h"
 
 /**
  * \page log_howto How to log information ?
@@ -69,6 +73,28 @@ CLog ErrorLog( LOG_ERROR, true );
 CLog WarningLog( LOG_WARNING, true );
 CLog InfoLog( LOG_INFO, true );
 CLog DebugLog( LOG_DEBUG, false );
-CLog StatLog( LOG_STAT, true );
+CLog AssertLog( LOG_STAT, true );
+
+CStdDisplayer sd;
+
+void NLMISC_InitDebug ()
+{
+	static int alreadyInit = false;
+
+	if (!alreadyInit)
+	{
+		ErrorLog.addDisplayer (&sd);
+		WarningLog.addDisplayer (&sd);
+		InfoLog.addDisplayer (&sd);
+		DebugLog.addDisplayer (&sd);
+		AssertLog.addDisplayer (&sd);
+		alreadyInit = true;
+	}
+	else
+	{
+		nlwarning ("RMISC_InitDebug already called");
+	}
+}
+
 
 } // NLMISC

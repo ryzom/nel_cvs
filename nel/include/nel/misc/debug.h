@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.h,v 1.2 2000/10/05 12:30:46 lecroart Exp $
+ * $Id: debug.h,v 1.3 2000/10/06 10:27:36 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -35,15 +35,26 @@ extern CLog ErrorLog;
 extern CLog WarningLog;
 extern CLog InfoLog;
 extern CLog DebugLog;
-extern CLog StatLog;
+extern CLog AssertLog;
 
 #define nlerror NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ); NLMISC::ErrorLog.display
 #define nlwarning NLMISC::WarningLog.setParam( __LINE__, __FILE__ ); NLMISC::WarningLog.display
 #define nlinfo NLMISC::InfoLog.setParam( __LINE__, __FILE__ ); NLMISC::InfoLog.display
 #define nldebug NLMISC::DebugLog.setParam( __LINE__, __FILE__ ); NLMISC::DebugLog.display
-#define rkstat NLMISC::StatLog.setParam( __LINE__, __FILE__ ); NLMISC::StatLog.display
 
-#define nlassert
+//NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); NLMISC::AssertLog.display
+
+void NLMISC_InitDebug ();
+
+
+#include <crtdbg.h>
+
+#define nlassert(f)	\
+			do \
+			{ \
+			if (!(f) && (_CrtDbgReport(_CRT_ASSERT, __FILE__, __LINE__, NULL, NULL)==1)) \
+				_CrtDbgBreak(); \
+			} while (0) \
 
 } // NLMISC
 

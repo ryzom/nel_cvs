@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: config_file.h,v 1.7 2000/10/05 12:30:46 lecroart Exp $
+ * $Id: config_file.h,v 1.8 2000/10/06 10:27:36 lecroart Exp $
  *
  * Manage a configuration files
  */
@@ -30,6 +30,7 @@
 
 #include <vector>
 #include <string>
+#include <stdio.h>
 
 namespace NLMISC
 {

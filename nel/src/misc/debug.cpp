@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.72 2003/06/30 18:46:51 lecroart Exp $
+ * $Id: debug.cpp,v 1.72.2.1 2003/07/24 12:15:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -456,6 +456,12 @@ public:
 		::ZeroMemory (&line, sizeof (line));
 		line.SizeOfStruct = sizeof(line);
 
+		// ACE: removed the next code because "SymGetLineFromAddr" is not available on windows 98
+		bool ok = false;
+		DWORD displacement = 0 ;
+		DWORD resdisp = 0;
+
+/*
 		// "Debugging Applications" John Robbins
 		// The problem is that the symbol engine finds only those source
 		// line addresses (after the first lookup) that fall exactly on
@@ -464,6 +470,7 @@ public:
 		bool ok = true;
 		DWORD displacement = 0 ;
 		DWORD resdisp;
+		
 		while (!SymGetLineFromAddr (getProcessHandle(), addr - displacement, (DWORD*)&resdisp, &line))
 		{        
 			if (100 == ++displacement)
@@ -472,6 +479,7 @@ public:
 				break;
 			}
 		}
+*/
 
 		// "Debugging Applications" John Robbins
 		// I found the line, and the source line information is correct, so

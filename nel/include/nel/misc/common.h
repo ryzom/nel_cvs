@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.76 2004/11/15 10:24:24 lecroart Exp $
+ * $Id: common.h,v 1.76.6.1 2004/12/24 13:17:38 vuarand Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -310,6 +310,9 @@ bool launchProgram (const std::string &programName, const std::string &arguments
 
 /// This function kill a program using his pid (on unix, it uses the kill() POSIX function)
 bool killProgram(uint32 pid);
+
+/// This function kill a program using his pid with abort signal (on unix, it uses the kill() POSIX function)
+bool abortProgram(uint32 pid);
 
 /** Returns a string corresponding to the class T in string format.
  * Example:

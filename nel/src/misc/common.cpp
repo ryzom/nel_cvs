@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.66 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: common.cpp,v 1.66.6.1 2004/12/24 13:17:38 vuarand Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -582,6 +582,22 @@ bool killProgram(uint32 pid)
 */
 #else
 	nlwarning("kill not implemented on this OS");
+	return false;
+#endif
+}
+
+bool abortProgram(uint32 pid)
+{
+#ifdef NL_OS_UNIX
+	int res = kill(pid, SIGABRT);
+	if(res == -1)
+	{
+		char *err = strerror (errno);
+		nlwarning("Failed to abort '%d' err %d: '%s'", pid, errno, err);
+	}
+	return res == 0;
+#else
+	nlwarning("abort not implemented on this OS");
 	return false;
 #endif
 }

@@ -1,6 +1,6 @@
 /** \file character.cpp
  *
- * $Id: character.cpp,v 1.3 2001/03/27 11:58:20 chafik Exp $
+ * $Id: character.cpp,v 1.4 2001/03/27 12:20:09 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,6 +126,13 @@ namespace NLAICHARACTER
 		return NLAIAGENT::IObjectIA::ProcessRun;
 	}
 
+	void CCharacterChild::initClass()
+	{
+		IDCharacterChild = new NLAIC::CIdentType("CharacterChild",NLAIC::CSelfClassFactory(CCharacterChild("Truc")),
+														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
+														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	}
+
 /*
 ##############################
 	CCharacterNoeud
@@ -142,6 +149,9 @@ namespace NLAICHARACTER
 			(*i)->incRef();
 			i++;
 		}
+	}
+	CCharacterNoeud::~CCharacterNoeud()
+	{
 	}
 
 	const ICharacter *CCharacterNoeud::haveCharacter(const std::string &s) const
@@ -214,5 +224,12 @@ namespace NLAICHARACTER
 			if(!((*i++)->getName() == (*j++)->getName())) return false;			
 		}
 		return CCharacterChild::isEqual(a);
+	}
+
+	void CCharacterNoeud::initClass()
+	{
+		IDCharacterNoeud = new NLAIC::CIdentType("CharacterNoeud",NLAIC::CSelfClassFactory(CCharacterChild("Truc")),
+														NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),
+														NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 	}
 }

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.27 2002/03/06 10:05:53 vizerie Exp $
+ * $Id: nel_export_view.cpp,v 1.28 2002/03/11 11:19:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -362,20 +362,20 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 						// ugly way to verify the shape is really added to the sahepBank: use a refPtr :)
 						NLMISC::CRefPtr<IShape>		prefShape= pShape;
 
-
-						// std::string nelObjectNameNoExt;
+	
+						std::string nelObjectNameNoExt;
 						// Add to the view, but don't create the instance (created in ig).						
 						if (!(nelObjectName.find(".shape") != std::string::npos || nelObjectName.find(".ps") != std::string::npos))
 						{
-							// nelObjectNameNoExt = nelObjectName + ".";
+							nelObjectNameNoExt = nelObjectName + ".";
 							nelObjectName += ".shape";							
 						}
-						/*else
+						else
 						{
 							std::string::size_type pos = nelObjectName.find(".");
 							nlassert(pos != std::string::npos);
 							nelObjectNameNoExt = std::string(nelObjectName, 0, pos + 1);
-						}*/
+						}
 						
 						// Add to the view, but don't create the instance (created in ig).
 						view->addMesh (pShape, nelObjectName.c_str(), 0xffffffff, NULL, false);
@@ -384,7 +384,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 						// If the shape is not destroyed in addMesh() (with smarPtr), then add it to the shape map.
 						if(prefShape)
 						{
-							igShapeMap.insert( std::make_pair(nelObjectName, pShape) );
+							igShapeMap.insert( std::make_pair(nelObjectNameNoExt, pShape) );
 						}
 						
 						// Add to list of node for IgExport.

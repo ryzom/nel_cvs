@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.24 2003/08/18 14:31:42 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.25 2003/11/06 14:50:25 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -79,9 +79,27 @@ bool		CParticleSystemInstanceUser::getSystemBBox(NLMISC::CAABBox &bbox)
 	return true;
 }
 
+
+//===================================================================
+void CParticleSystemInstanceUser::setUserColor(NLMISC::CRGBA userColor)
+{
+	NL3D_MEM_PS_INSTANCE
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	psm->setUserColor(userColor);
+}
+
+//===================================================================
+NLMISC::CRGBA CParticleSystemInstanceUser::getUserColor() const
+{
+	NL3D_MEM_PS_INSTANCE
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	return psm->getUserColor();
+}
+
 //===================================================================
 void		CParticleSystemInstanceUser::setUserParam(uint index, float value)
 {	
+	NL3D_MEM_PS_INSTANCE
 	if (index >= MaxPSUserParam)
 	{
 		nlwarning("invalid user param index");
@@ -97,7 +115,7 @@ void		CParticleSystemInstanceUser::setUserParam(uint index, float value)
 //===================================================================
 float		CParticleSystemInstanceUser::getUserParam(uint index) const
 {
-	NL3D_MEM_PS_INSTANCE			
+	NL3D_MEM_PS_INSTANCE
 	if (index >= MaxPSUserParam)
 	{
 		nlwarning("invalid user param index");

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.21 2003/08/18 14:31:42 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.22 2003/11/06 14:50:25 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -88,24 +88,26 @@ public:
 
 	// \name inherited from UParticleSystemInstance
 	// @{
-		virtual bool		emit(uint32 id, uint quantity);
-		virtual bool		removeByID(uint32 id);
-		virtual bool		isSystemPresent		(void) const;		
-		virtual bool		getSystemBBox(NLMISC::CAABBox &bbox);
-		virtual void		setUserParam		(uint index, float value);
-		virtual float		getUserParam		(uint index) const;
-		virtual void        bypassGlobalUserParamValue(uint userParamIndex, bool byPass = true);
-		virtual bool        isGlobalUserParamValueBypassed(uint userParamIndex) const;
-		virtual bool		isValid				(void) const;
-		virtual void		registerPSObserver	(IPSObserver *observer);
-		virtual bool		isPSObserver		(IPSObserver *observer);
-		virtual void		removePSObserver	(IPSObserver *observer);		
-		virtual uint		getNumID() const;		
-		virtual uint32		getID(uint index) const;		
-		virtual bool		getIDs(std::vector<uint32> &dest) const;
-		virtual bool		setActive(uint32 id, bool active);
-		virtual void		activateEmitters(bool active);		
-		virtual bool		hasActiveEmitters() const;
+		virtual void			setUserColor(NLMISC::CRGBA userColor);
+		virtual NLMISC::CRGBA	getUserColor() const;
+		virtual bool			emit(uint32 id, uint quantity);
+		virtual bool			removeByID(uint32 id);
+		virtual bool			isSystemPresent		(void) const;		
+		virtual bool			getSystemBBox(NLMISC::CAABBox &bbox);
+		virtual void			setUserParam(uint index, float value);
+		virtual float			getUserParam(uint index) const;
+		virtual void			bypassGlobalUserParamValue(uint userParamIndex, bool byPass = true);
+		virtual bool			isGlobalUserParamValueBypassed(uint userParamIndex) const;
+		virtual bool			isValid(void) const;
+		virtual void			registerPSObserver(IPSObserver *observer);
+		virtual bool			isPSObserver(IPSObserver *observer);
+		virtual void			removePSObserver(IPSObserver *observer);		
+		virtual uint			getNumID() const;		
+		virtual uint32			getID(uint index) const;		
+		virtual bool			getIDs(std::vector<uint32> &dest) const;
+		virtual bool			setActive(uint32 id, bool active);
+		virtual void			activateEmitters(bool active);		
+		virtual bool			hasActiveEmitters() const;
 	// @}
 
 	// \name inherited from  CParticleSystemModel::IPSModelObserver

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.5 2004/02/06 18:51:56 miller Exp $
+ * $Id: sstring.h,v 1.6 2004/02/10 17:51:13 boucher Exp $
  */
 
 
@@ -359,6 +359,11 @@ public:
 	CSString firstWordOrWords(bool truncateThis=false)
 	{
 		CSString hold=strip();
+		static const CSString emptyString;
+
+		if (hold.empty())
+			return emptyString;
+		
 		if (hold[0]!='\"')
 			return firstWord(truncateThis);
 

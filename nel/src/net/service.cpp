@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.31 2000/12/08 15:17:45 lecroart Exp $
+ * $Id: service.cpp,v 1.32 2000/12/08 17:20:27 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -229,16 +229,16 @@ sint IService::main (int argc, char **argv)
 		_Timeout = IService::_DefaultTimeout;
 		getCustomParams();
 
-		// Get the universal time (useful for debugging)
-		if (strcmp(_Name,"TS")!=0 && strcmp(_Name,"NS")!=0)
-		{
-			// don't call the sync if it's the Time Service and Naming Service
-			CUniTime::syncUniTimeFromService ();
-		}
-
 		// Register the name to the NS (except for the NS itself)
 		if ( strcmp( IService::_Name, "NS" ) != 0 )
 		{
+
+			// Get the universal time (useful for debugging)
+			if ( strcmp( IService::_Name, "TS" ) !=0 )
+			{
+				// Don't call the sync if it's the Time Service and Naming Service
+				CUniTime::syncUniTimeFromService ();
+			}
 
 			// Setup Net Log
 			CNetDisplayer *nd = new CNetDisplayer();

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.28 2000/12/08 17:20:27 cado Exp $
+ * $Id: base_socket.cpp,v 1.29 2000/12/08 17:22:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,7 +226,10 @@ void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFa
 	// Connection (when _Sock is a datagram socket, connect establishes a default destination address)
 	if ( ::connect( _Sock, (const sockaddr *)(addr.sockAddr()), sizeof(sockaddr_in) ) != 0 )
 	{
-		nldebug( "Impossible to connect socket %d to %s %s", _Sock, addr.hostName().c_str(), addr.asIPString().c_str() );
+		if ( _Logging )
+		{
+			nldebug( "Impossible to connect socket %d to %s %s", _Sock, addr.hostName().c_str(), addr.asIPString().c_str() );
+		}
 		throw ESocketConnectionFailed( ERROR_NUM );
 	}
 	if ( _Logging )

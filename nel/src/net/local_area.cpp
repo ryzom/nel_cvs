@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.15 2000/12/05 11:10:29 cado Exp $
+ * $Id: local_area.cpp,v 1.16 2000/12/08 17:20:27 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,17 +90,7 @@ void NLNET::cbProcessEntityStateInGroundMode( CMessage& msgin, TSenderId idfrom 
 	msgin.serial( es );
 	nldebug( "Entity state in ground mode received, with id %u", es.id() );
 
-	// Search id in the entity map
-	ItRemoteEntities ire;
-	if ( findEntity( es.id(), ire ) )
-	{
-		// Change state
-		(*ire).second->convergeTo( es );
-	}
-	else
-	{	// Not found => create a new remote entity
-		createRemoteEntity( es );
-	}
+	processEntityState( es );
 }
 
 
@@ -263,7 +253,6 @@ CLocalArea::~CLocalArea()
  */
 void CLocalArea::init()
 {
-	CUniTime::syncUniTimeFromService();
 	_PreviousTime = CUniTime::getUniTime();
 }
 

@@ -113,16 +113,23 @@
 #define IDC_MOVE_SPEED                  1047
 #define IDD_HINT_ROTATE_THE_SAME        1047
 #define IDC_VIEW_PARTICLE               1048
+#define IDD_TAIL_PARTICLE               1048
 #define IDC_SLIDER                      1050
 #define IDC_MOVE_ELEMENT                1050
+#define IDD_CHOOSE_MESH                 1050
 #define IDC_SELECT_RANGE                1051
+#define IDD_DIRECTION_ATTR              1051
 #define IDC_MAX_RANGE                   1052
+#define IDD_DIRECTION_EDIT              1052
 #define IDC_UPDATE_VALUE                1053
+#define IDD_ZONE                        1053
 #define IDC_VALUE                       1054
 #define IDC_LIMITED_LIFE_TIME           1054
 #define IDC_MIN_RANGE                   1055
 #define IDC_CHECK2                      1055
 #define IDC_SYSTEM_BASIS                1055
+#define IDC_TAIL_PERSIST_AFTER_DEATH    1055
+#define IDR_MOVE_ELEMENT                1055
 #define IDC_LIFE_MIN_VALUE              1057
 #define IDC_LIFE_MAX_VALUE              1058
 #define IDC_PARTICLE_NUMBER_POS         1059
@@ -134,6 +141,8 @@
 #define IDC_COMBO1                      1070
 #define IDC_USE_SCHEME                  1070
 #define IDC_TYPE_OF_EMISSION            1070
+#define IDC_TAIL_SHAPE                  1070
+#define IDC_COLLISION_BEHAVIOUR         1070
 #define IDC_START_PICTURE               1071
 #define IDC_STOP_PICTURE                1072
 #define IDC_SCHEME                      1073
@@ -179,9 +188,20 @@
 #define IDC_ROT_SPEED_MIN               1123
 #define IDC_UPDATE_MIN_ROT_SPEED        1124
 #define IDC_ROT_SPEED_MAX               1125
+#define IDC_TAIL_FADE                   1125
 #define IDC_UPDATE_MAX_ROT_SPEED        1126
+#define IDC_TAIL_IN_SYSTEM_BASIS        1126
+#define IDC_BROWSE_SHAPE                1126
 #define IDC_NB_MODELS                   1127
+#define IDC_SHAPE_NAME                  1127
 #define IDC_UPDATE_NB_MODELS            1128
+#define IDC_VECT_I                      1128
+#define IDC_VECT_MINUS_I                1129
+#define IDC_VECT_J                      1130
+#define IDC_VECT_MINUS_J                1131
+#define IDC_CUSTOM_DIRECTION            1132
+#define IDC_VECT_K                      1134
+#define IDC_VECT_MINUS_K                1135
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -214,14 +234,20 @@
 #define ID_INSTANCIATE_LOCATED          32807
 #define ID_MENU_SAVE_PS                 32808
 #define ID_MENU_LOAD_PS                 32809
+#define ID_ENABLE_ELEMENT_XROTATE       32810
+#define ID_ENABLE_ELEMENT_YROTATE       32811
+#define ID_ENABLE_ELEMENT_ZROTATE       32812
+#define IDM_SHOCKWAVE                   32813
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1048
-#define _APS_NEXT_COMMAND_VALUE         32810
-#define _APS_NEXT_CONTROL_VALUE         1121
+
+#define _APS_NEXT_RESOURCE_VALUE        1056
+#define _APS_NEXT_COMMAND_VALUE         32814
+#define _APS_NEXT_CONTROL_VALUE         1135
+
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

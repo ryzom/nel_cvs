@@ -383,27 +383,34 @@ using  namespace NLAIFUZZY;
 
 	OperatorCond		:	SingleOpCond 
 							{
+#ifdef NL_DEBUG
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
+#endif
 							}
 						|	SingleOpCond 
 							{
+#ifdef NL_DEBUG
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
+#endif
 							}
 							OperatorCond
 							{
+#ifdef NL_DEBUG
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
+#endif
 							}
 
 						;
 
 	SingleOpCond		:	BooleanCond
 							{
+#ifdef NL_DEBUG
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
+#endif
 							}
 							POINT_VI
 						|	FuzzyCond
 							{
-
 								if ( classIsAnOperator() )
 								{
 
@@ -432,7 +439,17 @@ using  namespace NLAIFUZZY;
 									_LastLogicParams.pop_back();
 								}
 							}
-						|	ACCOL_G DuCode
+						|	ACCOL_G
+							{
+								clean();
+								_LastBloc = new IBlock(_Debug);
+								_Heap -= (sint32)_Heap;
+								CVarPStack::_LocalTableRef = &_Heap[0];
+								_VarState.clear();								
+								_VarState.pushMark();
+								if(!_InLineParse) _LastBloc->addCode((new CMarkAlloc));
+							}
+							DuCode
 							{
 								if(_LastBloc != NULL && !_LastBloc->isCodeMonted())
 								{
@@ -779,7 +796,27 @@ using  namespace NLAIFUZZY;
 						|	RetourDeFonction 
 							POINT_VI
 							{
+								if(!_InLineParse)
+								{
+									
+									IOpCode *x;				
+									int i;
+									for(i = 0; i < _VarState.markSize(); i++)
+									{
+										if (_Debug)
+										{
+											x = new CFreeAllocDebug();
+										}
+										else
+										{
+											x = new CFreeAlloc();
+										}
+										_LastBloc->addCode(x);										
+									}
+								}								
 								_LastBloc->addCode((new CHaltOpCode));
+
+
 							}
 						;
 

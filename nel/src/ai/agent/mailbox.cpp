@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.24 2001/08/30 08:30:19 chafik Exp $
+ * $Id: mailbox.cpp,v 1.25 2001/08/30 17:11:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,8 +94,7 @@ namespace NLAIAGENT
 	
 	void CSimpleLocalMailBox::popMessage()
 	{
-		IMessageBase *msg = (IMessageBase *)_ListMessage.back();
-		msg->release();
+		((IMessageBase *)_ListMessage.back())->release();		
 		_ListMessage.pop_back();
 	}
 
@@ -293,7 +292,7 @@ namespace NLAIAGENT
 	void CLocalMailBox::popMessage()
 	{	
 
-		IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
+		/*IMessageBase *msg = (IMessageBase *)_ListMessageIn.back();
 		_ListMessageIn.pop_back();
 		if(msg->getDispatch())
 		{
@@ -302,7 +301,9 @@ namespace NLAIAGENT
 		else
 		{			
 			msg->release();
-		}
+		}*/
+		((IMessageBase *)_ListMessageIn.back())->release();
+		_ListMessageIn.pop_back();
 	}
 
 	sint32 CLocalMailBox::getMessageCount() const
@@ -474,57 +475,13 @@ namespace NLAIAGENT
 
 	const IObjectIA::CProcessResult &CLocalMailBox::run()
 	{		
-/*#ifdef NL_DEBUG
-		std::string s;
-		std::string connection,connected;
-		((NLAIAGENT::IObjectIA *)this)->getDebugString(s);
 
-		std::list<const NLAIAGENT::IConnectIA *>::const_iterator iter = IConnectIA::_Connection.begin();
-		while(iter != IConnectIA::_Connection.end())
+		/*while(_ListSharedMessage.begin() != _ListSharedMessage.end())
 		{
-			const NLAIAGENT::IObjectIA *o = *iter ++;
-			std::string c;
-			char txt[200];
-			sprintf(txt,"0x0%4x",o);
-			o->getDebugString(c);
-			connection += "<";
-			connection += txt;
-			connection += ">:";
-			connection += c;
-			connection += " ";
-			c = std::string("");
-			connection += "\n";
-		}
-
-		iter = IConnectIA::_Connected.begin();
-		while(iter != IConnectIA::_Connected.end())
-		{
-			const NLAIAGENT::IObjectIA *o = *iter ++;
-			std::string c;
-			char txt[200];
-			sprintf(txt,"0x0%4x",o);
-			o->getDebugString(c);
-			connected += "<";
-			connected += txt;
-			connected += ">:";
-			connected += c;
-			connected += " ";
-			c = std::string("");
-			connected += "\n\t";
-		}
-
-		nlinfo("MEMORY: mail: 0x0%4x, is  <%s> %s\n",this, (const char *)getType(),s.c_str());
-		nlinfo("\tconnection:\n %s", connection.c_str());
-		nlinfo("\tconnected:\n %s", connected.c_str());		
-		
-#endif*/
-		while(_ListSharedMessage.begin() != _ListSharedMessage.end())
-		{
-			IMessageBase *b = (IMessageBase *)_ListSharedMessage.back();
-			b->release();
+			_ListSharedMessage.back()->release();			
 			_ListSharedMessage.pop_back();
 		}
-		/*tListMailBoxIter j;
+		tListMailBoxIter j;
 		fillMailBox();*/
 		return getState();
 	}

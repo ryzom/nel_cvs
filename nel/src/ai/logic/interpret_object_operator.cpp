@@ -8,8 +8,18 @@
 #include "nel/ai/logic/varset.h"
 #include "nel/ai/script/codage.h"
 
+	
+#ifdef NL_DEBUG 
+#ifdef NL_OS_WINDOWS
+#include "windows.h"
+#endif
+#endif
+
 namespace NLAISCRIPT
 {
+#ifdef NL_DEBUG 
+	extern bool NL_AI_DEBUG_SERVER;
+#endif
 	COperatorClass::COperatorClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
 	{
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());		
@@ -724,6 +734,7 @@ namespace NLAISCRIPT
 				else ip =0;
 				context.Code = (NLAISCRIPT::CCodeBrancheRun *)&op;		
 				*context.Code = 0;
+
 
 				r = ((NLAISCRIPT::ICodeBranche *)opPtr)->run(context);
 

@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.16 2001/06/14 14:45:02 portier Exp $
+ * $Id: codage.h,v 1.17 2001/08/30 17:11:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,11 @@ namespace NLAISCRIPT
 			return i;
 		}
 
+		virtual int markSize()
+		{
+			return _Marque.size();
+		}
+
 		///Get the last mark.
 		virtual int mark()
 		{
@@ -117,7 +122,7 @@ namespace NLAISCRIPT
 		///Reinitializ the stack manager
 		void clear()
 		{
-			_Sp = 0;
+			_Sp = 0;			
 			_Marque.clear();
 		}
 

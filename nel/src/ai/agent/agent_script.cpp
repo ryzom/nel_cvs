@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.83 2001/08/30 17:11:00 portier Exp $
+ * $Id: agent_script.cpp,v 1.84 2001/08/30 17:11:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -898,11 +898,15 @@ namespace NLAIAGENT
 	const char *classBase = (const char *)getType();
 #endif
 		// Activation des agents de la partie statique
-		for ( int i = 0; i < _NbComponents; i++ )
-		{
+		int i = 0;
+
+		IObjectIA **com = _Components;
+		for ( i = 0; i < _NbComponents; i++ ) 
+					(*com ++)->run();
+		/*{
 			IObjectIA *o = _Components[i];
 			o->run();
-		}
+		}*/
 
 		// Activation des fils
 		IAgent::runChildren();
@@ -1075,9 +1079,10 @@ namespace NLAIAGENT
 
 		IMailBox *mail = getMail();
 		const IMailBox::tListMessage &l = mail->getMesseageListe();
+
 		while(l.begin() != l.end())
 		{
-			IMessageBase &msg = (IMessageBase &)getMail()->getMessage();
+			IMessageBase &msg = (IMessageBase &)mail->getMessage();
 #ifdef NL_DEBUG
 		const char *dbg_msg = (const char *) msg.getType();		
 #endif

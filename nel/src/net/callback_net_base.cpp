@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 4, base
  *
- * $Id: callback_net_base.cpp,v 1.4 2001/02/23 15:44:30 cado Exp $
+ * $Id: callback_net_base.cpp,v 1.5 2001/03/15 15:08:50 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,10 @@ CCallbackNetBase::CCallbackNetBase() :
 	addCallbackArray( DisconnectionCallbackArray, sizeof(DisconnectionCallbackArray)/sizeof(TCallbackItem) );
 }
 
+void	CCallbackNetBase::setTimeout( uint32 ms )
+{
+	_MsgSocket->setTimeout(ms);
+}
 
 /*
  *	Append callback array with the specified array

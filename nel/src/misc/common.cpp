@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.29 2002/11/15 18:20:16 lecroart Exp $
+ * $Id: common.cpp,v 1.30 2002/11/15 18:21:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #elif defined NL_OS_UNIX
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 #endif
 
 #include "nel/misc/command.h"

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.44 2004/03/25 16:59:32 berenguier Exp $
+ * $Id: audio_mixer_user.h,v 1.45 2004/04/30 17:10:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -384,7 +384,7 @@ private:
 	typedef std::hash_set<IMixerUpdate*, THashPtr<IMixerUpdate*> >						TMixerUpdateContainer;
 	typedef std::hash_map<IBuffer*, std::vector<class CSound*>, THashPtr<IBuffer*> >	TBufferToSourceContainer;
 //	typedef std::multimap<NLMISC::TTime, IMixerEvent*>									TTimedEventContainer;
-	typedef std::multimap<NLMISC::TTime, NLMISC::CDbgPtr<IMixerEvent> >									TTimedEventContainer;
+	typedef std::multimap<NLMISC::TTime, NLMISC::CDbgPtr<IMixerEvent> >					TTimedEventContainer;
 	typedef std::multimap<IMixerEvent*, TTimedEventContainer::iterator>					TEventContainer;
 
 	/// Identify the parameter controled by user var.
@@ -425,7 +425,7 @@ protected:
 	/// List of event ordered by event ptr with there respective multimap iterator.
 	TEventContainer									_Events;
 	/// List of update for the event list.
-	std::vector<std::pair<NLMISC::TTime, IMixerEvent*> >	_EventListUpdate;
+	std::list<std::pair<NLMISC::TTime, IMixerEvent*> >	_EventListUpdate;
 	/// Returns nb available tracks (or NULL)
 	void						getFreeTracks( uint nb, CTrack **tracks );
 	/// Fill a vector of position and mute flag for all playing sound source.
@@ -488,6 +488,9 @@ private:
 	/// Assoc between buffer and source. Used when buffers are unloaded.
 	TBufferToSourceContainer	_BufferToSources;
 
+	// For debug purpose only (not called)
+	void		debugLogEvent(const char *reason);
+	
 public: 
 	struct TSampleBankHeader
 	{

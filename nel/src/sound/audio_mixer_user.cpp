@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.65 2004/04/05 18:09:46 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.66 2004/04/30 17:10:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1317,41 +1317,29 @@ void				CAudioMixerUser::update()
 	// send the event.
 	{
 		H_AUTO(NLSOUND_AudioMixerUpdateSendEvent)
-		// 1st, update the event list
+
+		// **** 1st, update the event list
 		{
-			std::vector<std::pair<NLMISC::TTime, IMixerEvent*> >::iterator first(_EventListUpdate.begin()), last(_EventListUpdate.end());
+			std::list<std::pair<NLMISC::TTime, IMixerEvent*> >::iterator first(_EventListUpdate.begin()), last(_EventListUpdate.end());
 			for (; first != last; ++first)
 			{
-				if (first->first != 0)
-				{
-					// add an event
-//					nldebug ("Add event %p", first->second);
-//					TTimedEventContainer::iterator it(_EventList.insert(*first));
-					TTimedEventContainer::iterator it(_EventList.insert(make_pair(first->first, NLMISC::CDbgPtr<IMixerEvent>(first->second))));
-					_Events.insert(make_pair(first->second, it));
-				}
-				else
-				{
-					// remove the events
-					pair<TEventContainer::iterator, TEventContainer::iterator> range = _Events.equal_range(first->second);
-					TEventContainer::iterator first2(range.first), last2(range.second);
-					for (; first2 != last2; ++first2)
-					{
-						// remove the event
-						nldebug("Remove event %p", first2->second->second.ptr());
-						_EventList.erase(first2->second->first);
-					}
-					_Events.erase(range.first, range.second);
-				}
+				// add an event
+//				nldebug ("Add event %p", first->second);
+				TTimedEventContainer::iterator it(_EventList.insert(make_pair(first->first, NLMISC::CDbgPtr<IMixerEvent>(first->second))));
+				_Events.insert(make_pair(first->second, it));
 			}
 
 			_EventListUpdate.clear();
 		}
-		// 2nd, call the events
+
+		// **** 2nd, call the events
 		TTime now = NLMISC::CTime::getLocalTime();
 		while (!_EventList.empty() && _EventList.begin()->first <= now)
 		{
-			CAudioMixerUser::IMixerEvent	*CurrentEvent = _EventList.begin()->second;
+			// get the event
+			CAudioMixerUser::IMixerEvent	*currentEvent = _EventList.begin()->second;
+
+			// remove the right entry in the _Events multimap.
 			TEventContainer::iterator it(_Events.lower_bound(_EventList.begin()->second));
 			while (it->first == _EventList.begin()->second.ptr())
 			{
@@ -1362,18 +1350,20 @@ void				CAudioMixerUser::update()
 				}
 				it++;
 			}
+
+			// remove from the _EventList
 			_EventList.erase(_EventList.begin());
+
 			// now, run the event
-			if (CurrentEvent != NULL)
-			{
-	//			nldebug("Sending Event %p", _EventList.begin()->second);
-				CurrentEvent->onEvent();
-			}
+//			nldebug("Sending Event %p", _EventList.begin()->second);
+			nlassert(currentEvent);
+			currentEvent->onEvent();
 
 #if defined(NL_DEBUG) || defined(NL_DEBUG_FAST)
-			CurrentEvent = 0;
+			currentEvent = 0;
 #endif
 		}
+
 	}
 
 	// update the background sound
@@ -2067,22 +2057,35 @@ void CAudioMixerUser::unregisterUpdate(CAudioMixerUser::IMixerUpdate *pmixerUpda
 void CAudioMixerUser::addEvent( CAudioMixerUser::IMixerEvent *pmixerEvent, const NLMISC::TTime &date)
 {
 	nlassert(pmixerEvent != 0);
-//	nldebug("Adding event %p", pmixerEvent);
+	//	nldebug("Adding event %p", pmixerEvent);
 	_EventListUpdate.push_back(make_pair(date, pmixerEvent));
 }
+
 /// Remove any event programmed for this object.
 void CAudioMixerUser::removeEvents( CAudioMixerUser::IMixerEvent *pmixerEvent)
 {
 	nlassert(pmixerEvent != 0);
-//	nldebug("Removing event %p", pmixerEvent);
-	// store the pointer for future removal.
-	_EventListUpdate.push_back(make_pair(0, pmixerEvent));
-	// clear the pointer to avoid calling on somethink deleted
+	//	nldebug("Removing event %p", pmixerEvent);
+
+	// we have to remove from the _EventListUpdate, in the case a IMixerEvent is 
+	// added/removed during the same frame!!!
+	// Slow O(N) but _EventListUpdate should be small, cause cleared each frame and not so 
+	// many events are added/removed.
+	std::list<std::pair<NLMISC::TTime, IMixerEvent*> >::iterator	itUp;
+	for(itUp=_EventListUpdate.begin(); itUp!=_EventListUpdate.end();)
+	{
+		if(itUp->second == pmixerEvent)
+			itUp= _EventListUpdate.erase(itUp);
+		else
+			itUp++;
+	}
+
+	// remove from the both _EventList and _Events multimap
 	pair<TEventContainer::iterator, TEventContainer::iterator> range = _Events.equal_range(pmixerEvent);
 	TEventContainer::iterator first(range.first), last(range.second);
 	for (; first != last; ++first)
 	{
-		first->second->second = 0;
+		_EventList.erase(first->second);
 	}
 	_Events.erase(range.first, range.second);
 }
@@ -2214,6 +2217,31 @@ void		CAudioMixerUser::changeMaxTrack(uint maxTrack)
 
 	// Modified
 	_NbTracks = maxTrack;
+}
+
+// ***************************************************************************
+// insert calls of this where you want to debug events
+void CAudioMixerUser::debugLogEvent(const char *reason)
+{
+	nlinfo("****** EVENTLOG: end of %s", reason);
+	nlinfo("****** _EventListUpdate: %d", _EventListUpdate.size());
+	std::list<std::pair<NLMISC::TTime, IMixerEvent*> >::const_iterator	itUp;
+	for(itUp=_EventListUpdate.begin();itUp!=_EventListUpdate.end();itUp++)
+	{
+		nlinfo("\t: %d - %x", (uint32)itUp->first, itUp->second);
+	}
+	nlinfo("****** _EventList: %d", _EventList.size());
+	TTimedEventContainer::const_iterator	it;
+	for(it=_EventList.begin();it!=_EventList.end();it++)
+	{
+		nlinfo("\t: %d - %x", (uint32)it->first, it->second.ptr());
+	}
+	nlinfo("****** _Events: %d", _Events.size());
+	TEventContainer::const_iterator			itEv;
+	for(itEv=_Events.begin();itEv!=_Events.end();itEv++)
+	{
+		nlinfo("\t: %x - (%d,%x)", itEv->first, (uint32)itEv->second->first, itEv->second->second.ptr());
+	}
 }
 
 

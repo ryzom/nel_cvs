@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.27 2001/05/25 14:28:45 berenguier Exp $
+ * $Id: common.h,v 1.28 2001/05/28 12:40:31 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ namespace	NLMISC
  * The maximum size allowed for C string (zero terminated string) buffer.
  * This value is used when we have to create a standard C string buffer and we don't know exactly the final size of the string.
  */
-const int MaxCStringSize = 65536;
+const int MaxCStringSize = 1024*64;
 
 
 /** Pi constant in double format.
@@ -346,6 +346,126 @@ template<class T> std::string toString (const T &t)
 	return ss.str();
 }
 
+inline sint64 atoiInt64(const char *ident,sint64 base = 10)
+{
+	uint64 k = 0;
+
+	while(*ident != 0)
+	{
+		switch(*(ident++))
+		{
+		case '0':
+			k +=0;
+			break;
+		case '1':
+			k +=1;
+			break;
+		case '2':
+			k +=2;
+			break;
+		case '3':
+			k +=3;
+			break;
+		case '4':
+			k +=4;
+			break;
+		case '5':
+			k +=5;
+			break;
+		case '6':
+			k +=6;
+			break;
+		case '7':
+			k +=7;
+			break;
+		case '8':
+			k +=8;
+			break;
+		case '9':
+			k +=9;
+			break;
+		case 'a':
+			k +=10;
+			break;
+		case 'b':
+			k +=11;
+			break;
+		case 'c':
+			k +=12;
+			break;
+		case 'd':
+			k +=13;
+			break;
+		case 'e':
+			k +=14;
+			break;
+		case 'f':
+			k +=15;
+			break;
+
+		case 'A':
+			k +=10;
+			break;
+		case 'B':
+			k +=11;
+			break;
+		case 'C':
+			k +=12;
+			break;
+		case 'D':
+			k +=13;
+			break;
+		case 'E':
+			k +=14;
+			break;
+		case 'F':
+			k +=15;
+			break;
+
+		case 0:
+			return k;
+			break;
+		}
+		if(*ident != 0) k *= base;
+	}
+
+	return k;
+}
+
+
+inline void itoaInt64(sint64 numbre,char *str,sint64 base = 10) 
+{									
+	str[0] = 0;
+	char b[256];
+	if(!numbre)
+	{
+		str[0] = '0';
+		str[1] = 0;
+	}
+	memset(b,0,255);
+	memset(b,'0',64);
+	sint n;
+	uint64 x = numbre;
+	char baseTable[] = "0123456789abcdefghijklmnopqrstuvwyz";
+	for(n = 0; n < 64; n ++)
+	{
+		sint num = (sint)(x % base);
+		b[64 - n] = baseTable[num];
+		if(!x) 
+		{
+			int k;
+			int j = 0;
+			for(k = 64 - n + 1; k <= 64; k++) 	
+			{
+				str[j ++] = b[k];
+			}
+			str[j] = 0;
+			break;
+		}
+		x /= base;
+	}
+		
+}
 
 
 }	// NLMISC

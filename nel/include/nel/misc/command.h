@@ -1,7 +1,7 @@
 /** \file command.h
  * <File description>
  *
- * $Id: command.h,v 1.4 2001/02/14 17:49:05 lecroart Exp $
+ * $Id: command.h,v 1.5 2001/05/28 12:40:31 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -411,7 +411,6 @@ operator<<(std::basic_ostream<_CharT, _Traits>& __os, const sint64& __z)
 }
 
 #endif // NL_OS_WINDOWS
-
 
 } // NLMISC
 

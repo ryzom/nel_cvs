@@ -1,7 +1,7 @@
 /** \file string_stream.cpp
  * <File description>
  *
- * $Id: string_stream.cpp,v 1.2 2001/05/24 14:18:31 cado Exp $
+ * $Id: string_stream.cpp,v 1.3 2001/05/28 12:45:06 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,93 +94,6 @@ void CStringStream::serialSeparatedBufferOut( uint8 *buf, uint len )
 	sprintf( number_as_cstring, format, src ); \
 	serialSeparatedBufferOut( (uint8*)&number_as_cstring, strlen(number_as_cstring) );
 
-
-// Sameh's atoiInt64
-inline sint64 atoiInt64(const char *ident,sint64 base = 10)
-{
-	uint64 k = 0;
-
-	while(*ident != 0)
-	{
-		switch(*(ident++))
-		{
-		case '0':
-			k +=0;
-			break;
-		case '1':
-			k +=1;
-			break;
-		case '2':
-			k +=2;
-			break;
-		case '3':
-			k +=3;
-			break;
-		case '4':
-			k +=4;
-			break;
-		case '5':
-			k +=5;
-			break;
-		case '6':
-			k +=6;
-			break;
-		case '7':
-			k +=7;
-			break;
-		case '8':
-			k +=8;
-			break;
-		case '9':
-			k +=9;
-			break;
-		case 'a':
-			k +=10;
-			break;
-		case 'b':
-			k +=11;
-			break;
-		case 'c':
-			k +=12;
-			break;
-		case 'd':
-			k +=13;
-			break;
-		case 'e':
-			k +=14;
-			break;
-		case 'f':
-			k +=15;
-			break;
-
-		case 'A':
-			k +=10;
-			break;
-		case 'B':
-			k +=11;
-			break;
-		case 'C':
-			k +=12;
-			break;
-		case 'D':
-			k +=13;
-			break;
-		case 'E':
-			k +=14;
-			break;
-		case 'F':
-			k +=15;
-			break;
-
-		case 0:
-			return k;
-			break;
-		}
-		if(*ident != 0) k *= base;
-	}
-
-	return k;
-}
 
 
 // ======================================================================================================

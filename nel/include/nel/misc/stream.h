@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.54 2002/07/30 22:32:12 fleury Exp $
+ * $Id: stream.h,v 1.55 2002/07/31 00:30:32 fleury Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1304,10 +1304,6 @@ private:
 		// Close the node
 		xmlPop ();
 	}
-
-	// Mode XML
-	bool	_XML;
-};
 
 
 	/**

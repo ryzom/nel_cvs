@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.41 2000/12/18 13:44:46 cado Exp $
+ * $Id: msg_socket.cpp,v 1.42 2000/12/19 13:29:04 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,6 +219,8 @@ void CMsgSocket::init( const TCallbackItem *callbackarray, TTypeNum arraysize, b
  */
 void CMsgSocket::addClientCallbackArray( const TCallbackItem *callbackarray, TTypeNum arraysize )
 {
+	//nldebug( "_ClientCbaSize=%d arraysize=%d", _ClientCbaSize, arraysize );
+
 	// Allocate a new array
 	TCallbackItem *oldClientCallbackArray = _ClientCallbackArray;
 	TTypeNum oldClientCbaSize = _ClientCbaSize;
@@ -226,17 +228,21 @@ void CMsgSocket::addClientCallbackArray( const TCallbackItem *callbackarray, TTy
 	_ClientCallbackArray = new TCallbackItem [_ClientCbaSize];
 
 	// Copy contents
-	memcpy( _ClientCallbackArray, oldClientCallbackArray, oldClientCbaSize );
-	memcpy( _ClientCallbackArray+oldClientCbaSize, callbackarray, arraysize );
-	/*TTypeNum i;
+	/*memcpy( _ClientCallbackArray, oldClientCallbackArray, oldClientCbaSize*sizeof(TCallbackItem) );
+	memcpy( _ClientCallbackArray+oldClientCbaSize*sizeof(TCallbackItem), callbackarray, arraysize*sizeof(TCallbackItem) );*/
+	TTypeNum i;
+	//nldebug( "From oldClientCallbackArray:" );
 	for ( i=0; i!=oldClientCbaSize; i++ )
 	{
+		//nldebug( "Callback %d: %s", i, oldClientCallbackArray[i].Key );
 		_ClientCallbackArray[i] = oldClientCallbackArray[i];
 	}
+	//nldebug( "From callbackarray:" );
 	for ( i=oldClientCbaSize; i!=_ClientCbaSize; i++ )
 	{
+		//nldebug( "Callback %d: %s", i, callbackarray[i-oldClientCbaSize].Key );
 		_ClientCallbackArray[i] = callbackarray[i-oldClientCbaSize];
-	}*/
+	}
 
 	// Delete previous array if not static
 	if ( _Allocated )
@@ -250,6 +256,7 @@ void CMsgSocket::addClientCallbackArray( const TCallbackItem *callbackarray, TTy
 	const TCallbackItem *pt;
 	for ( pt=_ClientCallbackArray; pt!=_ClientCallbackArray+_ClientCbaSize; pt++ )
 	{
+		//nldebug( "Callback: %s", pt->Key );
 		if ( ! _ClientSearchSet.insert( CPtCallbackItem(pt) ).second )
 		{
 			throw EDuplicateMsgName( pt->Key );

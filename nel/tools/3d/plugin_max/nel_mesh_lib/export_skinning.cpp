@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.2 2001/06/11 07:31:13 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.3 2001/06/12 12:49:16 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -682,9 +682,6 @@ INode* CExportNel::getSkeletonRootBone (INode& node)
 	{
 		// Get the skin modifier
 		skin=getModifier (&node, PHYSIQUE_CLASS_ID);
-
-		// Should be not NULL
-		nlassert (skin);
 
 		// Found it ?
 		if (skin)

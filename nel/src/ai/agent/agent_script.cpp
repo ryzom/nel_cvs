@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.14 2001/01/19 11:11:45 chafik Exp $
+ * $Id: agent_script.cpp,v 1.15 2001/01/19 14:34:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -783,7 +783,13 @@ namespace NLAIAGENT
 				
 			}
 		}
-		if(index == CAgentScript::TLastM) return IAgent::isMember(className,methodName,param);
+		tQueue r;
+		if(index == CAgentScript::TLastM)
+		{
+			r = IAgent::isMember(className,methodName,param);
+			if(!r.size() && _AgentClass != NULL) return _AgentClass->isMember(className,methodName,param);
+			
+		}
 		return tQueue();
 	}
 

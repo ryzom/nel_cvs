@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.8 2001/01/17 10:42:55 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.9 2001/01/19 14:34:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,28 +84,19 @@ namespace NLAIAGENT
 		return x;
 	}
 
-	IObjectIA *CMainAgentScript::run(const IMessageBase &m) ///throw throw Exc::CExceptionNotImplemented;
+	IMessageBase *CMainAgentScript::runExec(const IMessageBase &m)
 	{
-		//Super crados.		
 		if(m.getGroup().getId() == 1)
-		{
-			/*NLAIC::IIO *io = _CodeContext->InputOutput;
-			_CodeContext->release();
-			_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
-			_CodeContext->incRef();*/
-
+		{			
 			_CodeContext->Self = this;
 
 			CIteratorContener i = m.getIterator();
 			NLAISCRIPT::CCodeBrancheRun *o = (NLAISCRIPT::CCodeBrancheRun *)i++;			
 			_CodeContext->Code = o;			
-//			IObjectIA::CProcessResult r = o->run(*this);
-			IObjectIA::CProcessResult r = o->run(*_CodeContext);
-			//_CodeContext->init();
-			//o->init();
+			IObjectIA::CProcessResult r = o->run(*_CodeContext);			
 		}
 		return NULL;
-	}
+	}	
 
 	void CMainAgentScript::processMessages()
 	{

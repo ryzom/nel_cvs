@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.6 2001/01/18 15:04:57 portier Exp $
+ * $Id: agents.cpp,v 1.7 2001/01/19 14:34:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,7 +109,7 @@ namespace NLAIAGENT
 		while(getMail()->getMessageCount())
 		{
 			const IMessageBase &msg = getMail()->getMessage();				
-			run( msg );
+			IObjectIA *o = IBasicAgent::run( msg );
 			getMail()->popMessage();
 		}
 	}
@@ -127,10 +127,10 @@ namespace NLAIAGENT
 		return getState();  
 	}
 
-	IObjectIA *IAgent::run(const IMessageBase &msg)
+	/*IObjectIA *IAgent::run(const IMessageBase &msg)
 	{
 		return NULL;
-	}
+	}*/
 
 
 	/*void IAgent::run(const IMessageBase *msg)
@@ -222,7 +222,60 @@ namespace NLAIAGENT
 	void IBasicAgent::removeMsgGroup(IBasicMessageGroup &grp)
 	{
 		getMail()->removeGroup( grp );
-	}		
+	}
+
+	IObjectIA *IBasicAgent::run(const IMessageBase &msg)
+	{
+		IMessageBase *returnMsg = NULL;
+		switch(msg.getPerformatif())
+		{
+		case IMessageBase::PUndefine:
+			{
+				char text[2048*8];
+				sprintf(text,"Function IObjectIA *IBasicAgent::run(const IMessageBase &msg) proccess an IMessageBase::PUndefine performatif");
+				throw NLAIE::CExceptionNotImplemented(text);
+			}
+			break;		
+		case IMessageBase::PExec:
+			returnMsg = runExec(msg);
+			if(msg.getContinuation() != NULL) 
+			{
+				returnMsg->incRef();
+				((IObjectIA *)msg.getContinuation())->sendMessage(returnMsg);
+			}				
+			break;
+		case IMessageBase::PAchieve:
+			returnMsg = runAchieve(msg);
+			if(msg.getContinuation() != NULL)
+			{
+				returnMsg->incRef();
+				((IObjectIA *)msg.getContinuation())->sendMessage(returnMsg);
+			}
+			break;
+		case IMessageBase::PAsk:
+			returnMsg = runAsk(msg);
+			returnMsg->setPerformatif(IMessageBase::PTell);
+			returnMsg->incRef();			
+			((IObjectIA *)msg.getSender())->sendMessage(returnMsg);
+			if(msg.getContinuation() != NULL)
+			{					
+				returnMsg->incRef();
+				((IObjectIA *)msg.getContinuation())->sendMessage(returnMsg);				
+			}			
+			break;
+		case IMessageBase::PTell:
+			returnMsg = runTell(msg);			
+			break;
+		case IMessageBase::PBreak:
+			returnMsg = runBreak(msg);
+			break;
+		case IMessageBase::PKill:
+			returnMsg = runKill(msg);
+			break;
+		}
+		if(returnMsg) returnMsg->release();
+		return NULL;
+	}
 	
 
 	const static sint32 _GetMailer = 0;

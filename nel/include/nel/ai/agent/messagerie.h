@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: messagerie.h,v 1.10 2001/01/19 11:11:56 chafik Exp $
+ * $Id: messagerie.h,v 1.11 2001/01/19 14:34:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,7 +166,7 @@ namespace NLAIAGENT
 			_Performatif = p;
 		}
 
-		const TPerformatif &getPerformatif()
+		const TPerformatif &getPerformatif() const
 		{
 			return _Performatif;
 		}

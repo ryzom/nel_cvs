@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: main_agent_script.h,v 1.6 2001/01/19 14:34:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,6 +71,8 @@ namespace NLAIAGENT
 			return IdMainAgentScript;
 		}
 
+		virtual IMessageBase *runExec(const IMessageBase &);
+
 		virtual IObjectIA::CProcessResult addDynamicAgent(IBaseGroupType *g);
 
 		virtual const NLAIC::IBasicType *clone() const;
@@ -78,7 +80,7 @@ namespace NLAIAGENT
 
 		virtual	void CMainAgentScript::processMessages();
 		virtual	IObjectIA::CProcessResult sendMessage(IObjectIA *);
-		virtual IObjectIA *run(const IMessageBase &); ///throw throw Exc::CExceptionNotImplemented;		
+		//virtual IObjectIA *run(const IMessageBase &); ///throw throw Exc::CExceptionNotImplemented;		
 		virtual const IObjectIA::CProcessResult &run();
 	};	
 }

@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.7 2001/01/11 17:02:18 chafik Exp $
+ * $Id: agent.h,v 1.8 2001/01/19 14:34:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,17 +70,77 @@ namespace NLAIAGENT
 		IBasicAgent(const IBasicAgent &a);
 
 		/**
-		Run message is the message processing.
-
-		Exception: throw (NLAIE::CExceptionNotImplemented)
+		Run message is the message processing.		
 		*/
-		virtual IObjectIA *run(const IMessageBase &)
+		virtual IObjectIA *run(const IMessageBase &m);		
+
+
+		/**
+		RunExec is to processing reltative to PExec Performatif. its call from the IObjectIA *run(const IMessageBase &m) method.
+		*/
+		virtual IMessageBase *runExec(const IMessageBase &)
 		{
 			char text[2048*8];
-			sprintf(text,"Function <IObjectIA *run(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			sprintf(text,"Function <const IMessageBase *runExec(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
 			throw NLAIE::CExceptionNotImplemented(text);
-			return this;	
+			return NULL;
 		}
+
+		/**
+		runAchieve ist to processing reltative to PAchieve Performatif. its call from the IObjectIA *run(const IMessageBase &m) method.
+		*/
+		virtual IMessageBase *runAchieve(const IMessageBase &)
+		{
+			char text[2048*8];
+			sprintf(text,"Function <const IMessageBase *runAchieve(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
+
+		/**
+		runAsk is to processing reltative to PAsk Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
+		*/
+		virtual IMessageBase *runAsk(const IMessageBase &)
+		{
+			char text[2048*8];
+			sprintf(text,"Function <const IMessageBase *runAsk(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
+
+		/**
+		runTell is to processing reltative to PTell Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
+		*/
+		virtual IMessageBase *runTell(const IMessageBase &)
+		{
+			char text[2048*8];
+			sprintf(text,"Function <const IMessageBase *runTell(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
+
+		/**
+		runBreak is to processing reltative to PBreak Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
+		*/
+		virtual IMessageBase *runBreak(const IMessageBase &)
+		{
+			char text[2048*8];
+			sprintf(text,"Function <const IMessageBase *runBreak(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
+
+		/**
+		runKill is to processing reltative to PKill Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
+		*/
+		virtual IMessageBase *runKill(const IMessageBase &)
+		{
+			char text[2048*8];
+			sprintf(text,"Function <const IMessageBase *runKill(const IMessageBase &)> note implementaited for the '%s' interface",(const char *)getType());
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
+		
 
 	public:
 		///Contruct agent with an parent.
@@ -206,8 +266,7 @@ namespace NLAIAGENT
 		
 		/// \name Some IBasicAgent method.
 		//@{
-		virtual void runChildren();		// Activates the child agents
-		virtual IObjectIA *run(const IMessageBase &);
+		virtual void runChildren();		// Activates the child agents		
 		//@}
 	
 	public:		

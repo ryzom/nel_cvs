@@ -166,10 +166,10 @@ namespace NLAIAGENT
 		*/
 	}
 
-	IObjectIA *CActor::run(const IMessageBase &msg)
+	/*IObjectIA *CActor::run(const IMessageBase &msg)
 	{
 		return IAgent::run( msg );
-	}
+	}*/
 
 	const NLAIC::CIdentType &CActor::getType() const
 	{		

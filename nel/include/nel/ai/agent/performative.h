@@ -1,7 +1,7 @@
 /** \file performative.h
  *	
  *
- * $Id: performative.h,v 1.1 2001/01/19 12:50:18 chafik Exp $
+ * $Id: performative.h,v 1.2 2001/01/19 14:34:46 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,10 @@ namespace NLAIAGENT
 		virtual const char *getName() const = 0;		
 	};	
 
+	/**
+	When an agent want an ather 
+		
+	*/
 	class CPExec: public IPerformative
 	{
 	public:

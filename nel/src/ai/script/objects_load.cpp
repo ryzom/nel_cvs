@@ -1,6 +1,6 @@
 /** \file objects_load.cpp
  *
- * $Id: objects_load.cpp,v 1.5 2001/01/10 10:10:08 chafik Exp $
+ * $Id: objects_load.cpp,v 1.6 2001/01/19 14:34:54 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,12 +57,12 @@ namespace NLAISCRIPT
 
 	const NLAIAGENT::IBaseGroupType *CLoadStackObject::getParam(CCodeContext &context) const
 	{
-		return (const NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack - 1];		
+		return (NLAIAGENT::IBaseGroupType *)context.Stack[(int)context.Stack];
 	}
 
 	const NLAIAGENT::IObjectIA *CLoadStackObject::getObject(CCodeContext &context) const
 	{
-		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Stack;
+		NLAIAGENT::IObjectIA *a = (NLAIAGENT::IObjectIA *)context.Stack[(int)context.Stack - 1];
 		std::list<sint32>::const_iterator i = _I.begin();
 		int j;
 		while(i != _I.end())

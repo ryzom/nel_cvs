@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.30 2001/09/04 16:15:22 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.31 2001/09/06 10:14:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -342,7 +342,7 @@ void CPSLocated::unregisterDtorObserver(CPSLocatedBindable *anObserver)
  * new element generation
  */
 
-sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated *emitter, uint32 indexInEmitter)
+sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocated *emitter, uint32 indexInEmitter, bool basisConversionForSpeed)
 {	
 	if (_UpdateLock)
 	{
@@ -370,7 +370,10 @@ sint32 CPSLocated::newElement(const CVector &pos, const CVector &speed, CPSLocat
 
 	creationIndex  =_Pos.insert(convMat * pos);
 	nlassert(creationIndex != -1); // all attributs must contains the same number of elements
-	_Speed.insert(convMat.mulVector(speed));
+	
+	_Speed.insert(basisConversionForSpeed ? convMat.mulVector(speed) : speed);
+	
+
 			
 	_InvMass.insert(1.f / ((_MassScheme && emitter) ? _MassScheme->get(emitter, indexInEmitter) : _InitialMass ) );
 	_Time.insert(0.0f);	

@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.26 2001/09/05 15:39:39 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.27 2001/09/06 10:14:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,7 @@ const uint emitterBuffSize = 512;
 
 CPSEmitter::CPSEmitter() : _EmissionType(regular), _Period(0), _EmittedType(NULL)
 							   , _PeriodScheme(NULL), _GenNb(1), _GenNbScheme(NULL), _SpeedInheritanceFactor(0.f)
-							   , _SpeedBasisEmission(false) 
+							   , _SpeedBasisEmission(false), _EmitDirBasis(true)
 {
 }
 
@@ -60,6 +60,70 @@ CPSEmitter::~CPSEmitter()
 		_EmittedType->unregisterDtorObserver(this);
 	}
 }
+
+
+
+inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
+{
+	if (!_EmittedType) return;
+
+	static NLMISC::CVector speed, pos;
+	
+	if (!_SpeedBasisEmission)
+	{
+		if (_SpeedInheritanceFactor == 0.f)
+		{		
+			if (_EmitDirBasis)
+			{
+				while (nbToGenerate > 0)
+				{
+					nbToGenerate --;
+					emit(index, pos, speed);
+					_EmittedType->newElement(pos, speed, this->_Owner, index);
+				}
+			}
+			else
+			{
+				while (nbToGenerate > 0)
+				{
+					nbToGenerate --;
+					emit(index, pos, speed);
+					_EmittedType->newElement(pos, speed, this->_Owner, index, false);
+				}
+			}
+		}
+		else
+		{
+			while (nbToGenerate --)
+			{
+				emit(index, pos, speed);
+				_EmittedType->newElement(pos, speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner);
+			}
+		}
+	}
+	else
+	{
+		NLMISC::CMatrix m = CPSUtil::buildSchmidtBasis(_Owner->getSpeed()[index]);
+		if (_SpeedInheritanceFactor == 0.f)
+		{		
+			while (nbToGenerate > 0)
+			{
+				nbToGenerate --;
+				emit(index, pos, speed);
+				_EmittedType->newElement(pos, m * speed, this->_Owner, index);
+			}
+		}
+		else
+		{
+			while (nbToGenerate --)
+			{
+				emit(index, pos, speed);
+				_EmittedType->newElement(pos, m * speed + _SpeedInheritanceFactor * _Owner->getSpeed()[index], this->_Owner, index);
+			}
+		}
+	}
+}
+
 
 
 
@@ -329,7 +393,7 @@ void CPSEmitter::bounceOccured(uint32 index)
 void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 
-	f.serialVersion(1);	
+	sint ver = f.serialVersion(2);	
 	CPSLocatedBindable::serial(f);
 	
 	f.serialPolyPtr(_EmittedType);
@@ -407,7 +471,10 @@ void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		}
 	}
 
-
+	if (ver > 1)
+	{
+		f.serial(_EmitDirBasis);
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.9 2001/08/16 17:11:24 vizerie Exp $
+ * $Id: ps_located.h,v 1.10 2001/09/06 10:14:14 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -178,10 +178,11 @@ public:
 	* Index is only valid after creation. Any processing pass on the system will make it invalid.
 	* It can be used with any attribute modification method of located and located bindable
 	* \param indexInEmitter The index of the emitter (in the emitterLocated object)
+	* \param basisConversionForSpeed : if false, the speed vector is taken as if even if emitter and emittee basis are differents.
 	*/
 
 	sint32 newElement(const NLMISC::CVector &pos = NLMISC::CVector::Null					
-		, const NLMISC::CVector &speed = NLMISC::CVector::Null, CPSLocated *emitterLocated = NULL, uint32 indexInEmitter = 0);					
+		, const NLMISC::CVector &speed = NLMISC::CVector::Null, CPSLocated *emitterLocated = NULL, uint32 indexInEmitter = 0, bool basisConversionForSpeed = true);
 
 
 	/**

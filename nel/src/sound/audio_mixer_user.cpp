@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.6 2001/07/20 16:08:33 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.7 2001/07/23 15:46:25 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,7 @@ UAudioMixer	*UAudioMixer::createAudioMixer()
  * Constructor
  */
 CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL), _NbTracks(0), _CurEnvEffect(NULL),
-	_BalancePeriod(0), _ListenPosition(CVector::Null), _Leaving(false)
+	_BalancePeriod(0), _ListenPosition(CVector::Null), _Leaving(false), _EnvSounds(NULL)
 {
 	if ( _Instance == NULL )
 	{
@@ -93,8 +93,11 @@ CAudioMixerUser::~CAudioMixerUser()
 	}
 
 	// Env. sounds tree
-	_EnvSounds->stop();
-	delete _EnvSounds;
+	if ( _EnvSounds != NULL )
+	{
+		_EnvSounds->stop();
+		delete _EnvSounds;
+	}
 
 	// Remaining sources (should have been removed and deleted by the user !)
 	set<CSourceUser*>::iterator ipsrc;
@@ -298,7 +301,10 @@ void				CAudioMixerUser::applyListenerMove( const NLMISC::CVector& listenerpos )
 	computeEnvEffect( listenerpos );
 
 	// Environment sounds
-	_EnvSounds->recompute();
+	if ( _EnvSounds != NULL )
+	{
+		_EnvSounds->recompute();
+	}
 }
 
 
@@ -311,7 +317,10 @@ void				CAudioMixerUser::applyListenerMove( const NLMISC::CVector& listenerpos )
 void				CAudioMixerUser::update()
 {
 	// Update envsounds
-	_EnvSounds->update();
+	if ( _EnvSounds != NULL )
+	{
+		_EnvSounds->update();
+	}
 
 	// Balance sources
 	if ( _BalancePeriod != 0 )

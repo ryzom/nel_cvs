@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: class_registry.h,v 1.3 2000/09/12 17:17:57 berenguier Exp $
+ * $Id: class_registry.h,v 1.4 2000/10/23 14:04:07 corvazier Exp $
  *
  * This File handles CClassRegistry.
  */
@@ -16,11 +16,9 @@
 #ifndef NL_CLASS_REGISTRY_H
 #define NL_CLASS_REGISTRY_H
 
-
 #include	"nel/misc/types_nl.h"
 #include	<string>
 #include	<set>
-
 
 namespace	NLMISC
 {

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.24 2000/10/19 15:21:22 corvazier Exp $
+ * $Id: stream.h,v 1.25 2000/10/23 14:04:12 corvazier Exp $
  *
  * This File handles IStream 
  */
@@ -16,14 +16,12 @@
 #ifndef NL_STREAM_H
 #define NL_STREAM_H
 
-
 #include	"nel/misc/types_nl.h"
 #include	"nel/misc/class_registry.h"
 #include	<utility>
 #include	<string>
 #include	<map>
 #include	<vector>
-
 
 namespace	NLMISC
 {

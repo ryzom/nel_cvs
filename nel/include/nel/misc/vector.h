@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: vector.h,v 1.3 2000/09/14 16:29:16 berenguier Exp $
+ * $Id: vector.h,v 1.4 2000/10/23 14:04:12 corvazier Exp $
  *
  * CVector class
  */
@@ -16,13 +16,14 @@
 #ifndef NL_VECTOR_H
 #define NL_VECTOR_H
 
-#include	<math.h>
-#include	"nel/misc/stream.h"
-
+#include "nel/misc/types_nl.h"
+#include <math.h>
+#include "nel/misc/stream.h"
 
 namespace	NLMISC
 {
 
+class IStream;
 
 // ======================================================================================================
 /**

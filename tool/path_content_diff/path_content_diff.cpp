@@ -1,7 +1,7 @@
 /** \file path_content.cpp
  *	list the path content with details on each files
  *
- * $Id: path_content_diff.cpp,v 1.5 2003/02/20 17:22:12 coutelas Exp $
+ * $Id: path_content_diff.cpp,v 1.6 2003/03/06 15:27:37 coutelas Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -119,6 +119,7 @@ int main( int argc, char ** argv )
 
 // display (debug)
 	map<string,CHashKey>::iterator itSHA;
+	/*
 	for( itSHA = refSHAMap.begin(); itSHA != refSHAMap.end(); ++itSHA )
 	{
 		nlinfo("(ref) %s : %s",(*itSHA).first.c_str(),(*itSHA).second.toString().c_str());
@@ -127,6 +128,7 @@ int main( int argc, char ** argv )
 	{
 		nlinfo("(new) %s : %s",(*itSHA).first.c_str(),(*itSHA).second.toString().c_str());
 	}
+	*/
 //
 
 	uint32 LastDisplay = 0, curFile = 0;
@@ -158,7 +160,7 @@ int main( int argc, char ** argv )
 		if( refFileName.empty() )
 		{
 			keepIt = true;
-			nlinfo ("NEW FILE    : %s", newFileName.c_str());
+			nlinfo ("new file : %s",newFileNameShort.c_str());
 		}
 		else
 		{
@@ -177,7 +179,10 @@ int main( int argc, char ** argv )
 			}
 
 			if( !(refSHA==newSHA) )
+			{
 				keepIt = true;
+				nlinfo("file : %s , key : %s(%s), size : %d(%d)",newFileNameShort.c_str(), newSHA.toString().c_str(),refSHA.toString().c_str(),CFile::getFileSize(newFileName),CFile::getFileSize(refFileName));
+			}
 			
 			/*
 			uint32 refModificationDate = CFile::getFileModificationDate( refFileName );

@@ -1,7 +1,7 @@
 /** \file identtype.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.22 2002/02/20 18:04:49 lecroart Exp $
+ * $Id: identtype.h,v 1.23 2002/02/26 10:01:31 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,22 +45,21 @@ namespace NLAIAGENT
 #endif
 
 	struct CAgentNumber: public NLMISC::CEntityId
-	{
-		static const uint8 AgentType;
+	{		
+		///All agents id'S numbers have the 8th bit reserved on NLMISC::CEntityId::Type byte
+		static const uint8 AgentTypeBit;
 		static const CAgentNumber Unknow;
 
 		CAgentNumber()
 		{
-			Type = CAgentNumber::AgentType;
+			Type = CAgentNumber::AgentTypeBit;
 		}
-		CAgentNumber(uint64 id,uint8 creator,uint8 dyn):NLMISC::CEntityId(id,creator,dyn)
-		{
-			Type = CAgentNumber::AgentType;
+		CAgentNumber(uint64 id,uint8 creator,uint8 dyn):NLMISC::CEntityId(AgentTypeBit,id,creator,dyn)
+		{			
 		}
 
-		CAgentNumber(uint64 id, uint8 t,uint8 creator,uint8 dyn):NLMISC::CEntityId(id,creator,dyn)
-		{
-			Type = t;
+		CAgentNumber(uint64 id, uint8 t,uint8 creator,uint8 dyn):NLMISC::CEntityId(t,id,creator,dyn)
+		{		
 		}
 
 		CAgentNumber(uint64 p):NLMISC::CEntityId(p)
@@ -77,6 +76,11 @@ namespace NLAIAGENT
 
 		CAgentNumber(const char *id):NLMISC::CEntityId(id)
 		{
+		}
+
+		bool isAgentId() const
+		{
+			return (getType() & AgentTypeBit) != 0;
 		}
 
 	};

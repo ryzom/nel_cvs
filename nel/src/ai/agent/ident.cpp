@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.17 2002/01/03 15:06:14 chafik Exp $
+ * $Id: ident.cpp,v 1.18 2002/02/26 10:01:47 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 
 namespace NLAIAGENT
 {	
-	const uint8 CAgentNumber::AgentType = 0xff;
-	const CAgentNumber CAgentNumber::Unknow(0,0,CAgentNumber::ServerId,CAgentNumber::ServerId);
+	const uint8 CAgentNumber::AgentTypeBit = 1<<7;
+	const CAgentNumber CAgentNumber::Unknow(0,CAgentNumber::ServerId,CAgentNumber::ServerId);
 
 	uint64 atoiInt64(const char *ident)
 	{

@@ -61,6 +61,12 @@ namespace NLAILOGIC
 		int i;		
 		for ( i = 0; i < (int) _Args.size(); i++ )
 			_Args[i]->release();
+		
+		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
+		while ( it_s != _Successors.end() )
+		{			
+			(*it_s ++)->release();			
+		}
 	}
 
 	void CGoal::failure()
@@ -90,9 +96,12 @@ namespace NLAILOGIC
 			case achieveForever:
 				break;
 		}
+		nlinfo("operatorSuccess: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),op,(const char *)op->getType());
 		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
 		while ( it_s != _Successors.end() )
-		{
+		{			
+			nlinfo("\t0x%0x",*it_s);
+			nlinfo("\t\t%s", (const char *)(*it_s)->getType());
 			if ( (**it_s) == *op )
 			{
 				(*it_s)->release();
@@ -196,12 +205,12 @@ namespace NLAILOGIC
 
 	bool CGoal::isEqual(const CGoal &a) const
 	{
-		return false; //( a._Value == _Value );
+		return false;
 	}
 
 	bool CGoal::isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 	{
-		return false;//( ((CGoal &)a)._Value == _Value );
+		return false;
 	}
 
 	const std::vector<NLAIAGENT::IObjectIA *> &CGoal::getArgs()
@@ -323,7 +332,8 @@ namespace NLAILOGIC
 	//@}
 
 	void CGoal::addSuccessor(NLAIAGENT::IBasicAgent *s)
-	{
+	{		
+		nlinfo("addSuccessor: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),s,(const char *)s->getType());
 		_Successors.push_back(s);
 		s->incRef();
 	}

@@ -1,7 +1,7 @@
 /** \file texture_mem.cpp
  * <File description>
  *
- * $Id: texture_mem.cpp,v 1.3 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture_mem.cpp,v 1.4 2001/10/26 08:21:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,12 +39,22 @@ namespace NL3D
 							doGenerate()
 \*------------------------------------------------------------------*/
 void CTextureMem::doGenerate()
-{
-	NLMISC::CMemStream m (true);
+{	
 	if (_Data)
 	{
-		m.fill (_Data, _Length);
-		load (m);
+		if (_IsFile)
+		{
+			NLMISC::CMemStream m (true);
+			m.fill (_Data, _Length);
+			load (m);
+		}
+		else
+		{
+			releaseMipMaps();
+			getPixels(0).resize(_Length);
+			std::copy(_Data, _Data + _Length, &	getPixels(0)[0]);
+			buildMipMaps();		
+		}
 	}
 	else
 	{

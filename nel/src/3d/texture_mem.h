@@ -1,7 +1,7 @@
 /** \file texture_mem.h
  * <File description>
  *
- * $Id: texture_mem.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: texture_mem.h,v 1.2 2001/10/26 08:21:33 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ class CTextureMem : public ITexture
 	uint8		*_Data;
 	uint32		_Length;
 	bool		_Delete;
-
+	bool        _IsFile;
 public:
 
 	/** 
@@ -70,11 +70,15 @@ public:
 	 * constructor
 	 * \param data Pointer of the file.
 	 * \param _delete Is true if the class must delete the pointer.
+	 * \param isFile is true if the data must be interpreted as a texture file. Otherwise, it is interpreted
+	 *        as the raw datas of the texture, so the format and size of the texture must also have been set to match
+	 *        the raw datas 
 	 */	
-	CTextureMem(uint8 *data, uint32 lenght, bool _delete) 
+	CTextureMem(uint8 *data, uint32 lenght, bool _delete, bool isFile = true) 
 	{ 
 		_Data=NULL;
 		_Delete=false;
+		_IsFile = isFile;
 		setPointer(data, lenght, _delete); 
 	}
 
@@ -84,7 +88,7 @@ public:
 	 * \param data Pointer of the file.
 	 * \param _delete Is true if the class must delete the pointer.
 	 */	
-	void setPointer(uint8 *data, uint32 length, bool _delete) 
+	void setPointer(uint8 *data, uint32 length, bool _delete, bool isFile = true) 
 	{ 
 		if (_Data&&_Delete)
 			delete [] _Data;
@@ -92,6 +96,7 @@ public:
 		_Data=data;
 		_Length=length;
 		_Delete=_delete;
+		_IsFile = isFile;
 	}
 
 

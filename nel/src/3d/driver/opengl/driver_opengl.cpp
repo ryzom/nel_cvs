@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.76 2001/02/28 16:24:23 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.77 2001/03/05 11:13:48 coutelas Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -160,7 +160,7 @@ bool CDriverGL::init()
 	if (!_Registered)
 	{
 		memset(&wc,0,sizeof(wc));
-		wc.style			= CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
+		wc.style			= CS_HREDRAW | CS_VREDRAW ;//| CS_DBLCLKS;
 		wc.lpfnWndProc		= (WNDPROC)WndProc;
 		wc.cbClsExtra		= 0;
 		wc.cbWndExtra		= 0;

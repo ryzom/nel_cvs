@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.89 2001/10/04 13:40:58 portier Exp $
+ * $Id: agent_script.cpp,v 1.90 2001/10/30 15:34:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -20,7 +20,8 @@
  * along with NEVRAX NEL; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
- */
+ */ 
+
 #include "nel/ai/nl_ai.h"
 #include "nel/ai/agent/agent_script.h"
 #include "nel/ai/agent/agent_manager.h"

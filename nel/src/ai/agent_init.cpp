@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.11 2001/10/29 16:54:44 chafik Exp $
+ * $Id: agent_init.cpp,v 1.12 2001/10/30 15:34:44 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,7 +53,6 @@
 #include "nel/ai/agent/msg_debug.h"
 #include "nel/ai/agent/msg_action.h"
 #include "nel/ai/agent/msg_on_change.h"
-#include "nel/ai/agent/gd_agent_script.h"
 #include "nel/ai/character/character.h"
 
 using namespace NLAIAGENT;

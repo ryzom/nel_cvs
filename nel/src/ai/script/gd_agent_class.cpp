@@ -1,6 +1,6 @@
 /** \file gd_agent_class.cpp
  *
- * $Id: gd_agent_class.cpp,v 1.2 2001/03/02 17:26:50 portier Exp $
+ * $Id: gd_agent_class.cpp,v 1.3 2001/10/30 15:34:44 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,9 +23,6 @@
  */
 #include "nel/ai/c/registry_class.h"
 #include "nel/ai/script/lexsupport.h"
-#include "nel/ai/agent/gd_agent_script.h"
-
-#include "nel/ai/script/gd_agent_class.h"
 
 namespace NLAISCRIPT
 {

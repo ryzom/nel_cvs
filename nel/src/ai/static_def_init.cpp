@@ -32,7 +32,6 @@
 #include "nel/ai/agent/msg_debug.h"
 #include "nel/ai/agent/msg_action.h"
 #include "nel/ai/agent/msg_on_change.h"
-#include "nel/ai/agent/gd_agent_script.h"
 
 	using namespace NLAIAGENT;
 	using namespace NLAILOGIC;

@@ -21,13 +21,12 @@ namespace NLAILOGIC
 
 	CGoalStack::~CGoalStack()
 	{
-/*		std::vector<CGoal *>::iterator it_g = _Goals.begin();
+		std::vector<CGoal *>::iterator it_g = _Goals.begin();
 		while ( it_g != _Goals.end() )
 		{
 			(*it_g)->cancel();
 			it_g++;
 		}
-		*/
 	}
 
 	NLAIAGENT::IObjectIA::CProcessResult CGoalStack::runActivity()

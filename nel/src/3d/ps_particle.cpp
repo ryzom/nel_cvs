@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.33 2001/08/15 12:07:43 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.34 2001/08/16 17:11:50 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -673,21 +673,24 @@ void CPSMaterial::setBlendingMode(CPSMaterial::TBlendingMode mode)
 			_Mat.setBlend(true);
 			_Mat.setBlendFunc(CMaterial::one, CMaterial::one);
 			_Mat.setZWrite(false);
+			_Mat.setAlphaTest(false);
 		break;
 		case modulate:
 			_Mat.setBlend(true);
 			_Mat.setBlendFunc(CMaterial::zero, CMaterial::srccolor);
 			_Mat.setZWrite(false);
+			_Mat.setAlphaTest(false);
 		break;
 		case alphaBlend:
 			_Mat.setBlend(true);
 			_Mat.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha);
 			_Mat.setZWrite(false);
+			_Mat.setAlphaTest(false);
 		break;
 		case alphaTest:
 			_Mat.setBlend(false);
 			_Mat.setZWrite(true);
-			///\TODO add alpha test here
+			_Mat.setAlphaTest(true);
 		break;
 	}
 }
@@ -2079,7 +2082,8 @@ void CPSTailDot::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 					CHECK_VERTEX_BUFFER(_Vb, currVertex + colorOff);
 					CHECK_VERTEX_BUFFER(_Vb, currVertex + vSize + colorOff);
 					// get the color of the next vertex and modulate
-					((CRGBA *) (currVertex + colorOff))->modulateFromui(*(CRGBA *) (currVertex + vSize + colorOff), ratio);
+					((CRGBA *) (currVertex + colorOff))->modulateFromui(*(CRGBA *) (currVertex + vSize + colorOff), ratio);					
+
 					// copy the next vertex pos
 					CHECK_VERTEX_BUFFER(_Vb, currVertex);
 					*(CVector *) currVertex = *(CVector *) (currVertex + vSize);
@@ -2715,7 +2719,11 @@ void CPSRibbon::decalRibbons(CRibbonsDesc &rb, const uint32 size)
 					const CVector &vNext = *(CVector *) (currVertex + sSize);				
 
 					// rescale the point
-					v = *posIt + *ratioIt * (vNext - *posIt);
+					//v = *posIt + *ratioIt * (vNext - *posIt);
+
+					v.x = posIt->x + *ratioIt * (vNext.x - posIt->x);
+					v.y = posIt->y + *ratioIt * (vNext.y - posIt->y);
+					v.z = posIt->z + *ratioIt * (vNext.z - posIt->z);
 
 					// points next vertex in current slice
 					currVertex += vSize;

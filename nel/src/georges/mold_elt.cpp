@@ -1,7 +1,7 @@
 /** \file mold_elt.cpp
  * Georges system files
  *
- * $Id: mold_elt.cpp,v 1.1 2002/02/14 10:40:39 corvazier Exp $
+ * $Id: mold_elt.cpp,v 1.2 2002/03/04 12:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,8 @@ void CMoldElt::Load( const CStringEx _sxfullname, const CStringEx _sxdate )
 
 CStringEx CMoldElt::GetEltName( const unsigned int _index ) const
 {
-	return( CStringEx() );
+  CStringEx object;
+	return( object );
 }
 
 CMoldElt* CMoldElt::GetEltPtr( const unsigned int _index ) const

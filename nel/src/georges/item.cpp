@@ -1,7 +1,7 @@
 /** \file item.cpp
  * Georges system files
  *
- * $Id: item.cpp,v 1.2 2002/02/21 16:54:42 besson Exp $
+ * $Id: item.cpp,v 1.3 2002/03/04 12:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -277,7 +277,10 @@ CStringEx CItem::GetName( const unsigned int _index ) const
 
 	CItemElt* pie = GetElt( _index );
 	if( !pie )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( pie->GetName() );
 }
 
@@ -285,7 +288,10 @@ CStringEx CItem::GetCurrentResult( const unsigned int _index ) const
 {
 	CItemElt* pie = GetElt( _index );
 	if( !pie )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( pie->GetCurrentResult() );
 }
 
@@ -293,7 +299,10 @@ CStringEx CItem::GetCurrentValue( const unsigned int _index ) const
 {
 	CItemElt* pie = GetElt( _index );
 	if( !pie )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( pie->GetCurrentValue() );
 }
 
@@ -319,7 +328,10 @@ CStringEx CItem::GetFormula( const unsigned int _index ) const
 {
 	CItemElt* pie = GetElt( _index );
 	if( !pie )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( pie->GetFormula() );
 }
 
@@ -378,7 +390,10 @@ void CItem::GetListPredef( const unsigned int _index, std::vector< CStringEx >& 
 CStringEx CItem::GetParent( const unsigned int _index ) const
 {
 	if( _index >= vsxparents.size() )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( vsxparents[_index].second );
 }
 
@@ -392,7 +407,10 @@ void CItem::SetParent( const unsigned int _index, const CStringEx _sx )
 CStringEx CItem::GetActivity( const unsigned int _index ) const
 {
 	if( _index >= vsxparents.size() )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( vsxparents[_index].first );
 }
 

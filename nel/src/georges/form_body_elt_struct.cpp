@@ -1,7 +1,7 @@
 /** \file form_body_elt_struct.cpp
  * Georges system files
  *
- * $Id: form_body_elt_struct.cpp,v 1.1 2002/02/14 10:40:39 corvazier Exp $
+ * $Id: form_body_elt_struct.cpp,v 1.2 2002/03/04 12:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,8 @@ void CFormBodyEltStruct::serial( NLMISC::IStream& s)
 
 std::vector< CFormBodyElt* >::iterator CFormBodyEltStruct::Find( const CStringEx _sxname ) 
 {
-	for( std::vector< CFormBodyElt* >::iterator it = vpbodyelt.begin(); it != vpbodyelt.end(); ++it )
+  std::vector< CFormBodyElt* >::iterator it;
+	for( it = vpbodyelt.begin(); it != vpbodyelt.end(); ++it )
 		if( (*it)->GetName() == _sxname )
 			return it;
 	return it;
@@ -79,7 +80,8 @@ std::vector< CFormBodyElt* >::iterator CFormBodyEltStruct::Find( const CStringEx
 
 std::vector< CFormBodyElt* >::const_iterator CFormBodyEltStruct::Find( const CStringEx _sxname ) const 
 {
-	for( std::vector< CFormBodyElt* >::const_iterator it = vpbodyelt.begin(); it != vpbodyelt.end(); ++it )
+  std::vector< CFormBodyElt* >::const_iterator it;
+	for( it = vpbodyelt.begin(); it != vpbodyelt.end(); ++it )
 		if( (*it)->GetName() == _sxname )
 			return it;
 	return it;
@@ -191,7 +193,10 @@ CStringEx CFormBodyEltStruct::GetComment() const
 {
 	std::vector< CFormBodyElt* >::const_iterator it =  Find( SXCOMMENT );
 	if( it == vpbodyelt.end() )
-		return( CStringEx() );									
+	  {
+	    CStringEx object;
+		return( object );
+	  }							
 	const CFormBodyEltAtom* pfbea = dynamic_cast< CFormBodyEltAtom* >( *it );      
 	nlassert( pfbea );
 	return pfbea->GetValue();
@@ -206,13 +211,22 @@ CStringEx CFormBodyEltStruct::GetParent( unsigned int _index ) const
 {
 	std::vector< CFormBodyElt* >::const_iterator it =  Find( SXPARENTS );
 	if( it == vpbodyelt.end() )
-		return( CStringEx() );									
+	  {
+	    CStringEx object;
+		return( object );
+	  }									
 	const CFormBodyEltList* pfbel = dynamic_cast< CFormBodyEltList* >( *it );      
 	if( !pfbel )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }									
 	const CFormBodyEltStruct* pfbes = dynamic_cast< CFormBodyEltStruct* >( pfbel->GetElt( _index ) );      
 	if( !pfbes )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }									
 /*
 
 	const CFormBodyEltAtom* pfbea = dynamic_cast< CFormBodyEltAtom* >( pfbes->GetElt( "Activity" ) );      
@@ -225,7 +239,10 @@ CStringEx CFormBodyEltStruct::GetParent( unsigned int _index ) const
 		const CFormBodyEltAtom* pfbea = dynamic_cast< CFormBodyEltAtom* >( pfbes->GetElt( "Filename" ) );      
 //	pfbea = dynamic_cast< CFormBodyEltAtom* >( pfbes->GetElt( "Filename" ) );
 	if( !pfbea )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+	    return( object );
+	  }
 	return pfbea->GetValue();
 
 }
@@ -234,16 +251,28 @@ CStringEx CFormBodyEltStruct::GetActivity( unsigned int _index ) const
 {
 	std::vector< CFormBodyElt* >::const_iterator it =  Find( SXPARENTS );
 	if( it == vpbodyelt.end() )
-		return( CStringEx() );									
+	  {
+	    CStringEx object;
+		return( object );
+	  }									
 	const CFormBodyEltList* pfbel = dynamic_cast< CFormBodyEltList* >( *it );      
 	if( !pfbel )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }									
 	const CFormBodyEltStruct* pfbes = dynamic_cast< CFormBodyEltStruct* >( pfbel->GetElt( _index ) );      
 	if( !pfbes )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }									
 	const CFormBodyEltAtom* pfbea = dynamic_cast< CFormBodyEltAtom* >( pfbes->GetElt( "Activity" ) );      
 	if( !pfbea )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }									
 /*
 	CStringEx sxactivity = pfbea->GetValue();
 	if( sxactivity != "true" )

@@ -1,7 +1,7 @@
 /** \file string_ex.cpp
  * Georges system files
  *
- * $Id: string_ex.cpp,v 1.1 2002/02/14 10:40:40 corvazier Exp $
+ * $Id: string_ex.cpp,v 1.2 2002/03/04 12:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,8 @@ void	CStringEx::trim_left( )
 {
 	if( empty() )
 		return;
-	for( iterator it = begin(); (it != end())&&( (*it==' ')||(*it=='\t')||(*it=='\n') ); ++it );
+	iterator it;
+	for( it = begin(); (it != end())&&( (*it==' ')||(*it=='\t')||(*it=='\n') ); ++it );
 	erase( begin(), it );
 }
 
@@ -85,7 +86,8 @@ void	CStringEx::trim_left( const char _c )
 {
 	if( empty() )
 		return;
-	for( iterator it = begin(); (it != end())&&( *it == _c ); ++it );
+	iterator it;
+	for( it = begin(); (it != end())&&( *it == _c ); ++it );
 	erase( begin(), it );
 }
 
@@ -253,28 +255,40 @@ CStringEx CStringEx::get_trim( const char _c ) const
 CStringEx	CStringEx::get_mid( const int nFirst ) const
 {
 	if( !size() )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( get_right( size()-nFirst ) );
 }
 
 CStringEx	CStringEx::get_mid( const int nFirst, const int nCount ) const
 {
 	if( !size() )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( substr( nFirst, nCount ) );
 }
 
 CStringEx	CStringEx::get_left( const int nCount ) const
 {
 	if( !size() )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( substr( 0, nCount ) );
 }
 
 CStringEx	CStringEx::get_right( const int nCount ) const
 {
 	if( !size() )
-		return( CStringEx() );
+	  {
+	    CStringEx object;
+		return( object );
+	  }
 	return( substr( size()-nCount, nCount ) );
 }
 

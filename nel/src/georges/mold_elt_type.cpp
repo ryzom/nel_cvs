@@ -1,7 +1,7 @@
 /** \file mold_elt_type.cpp
  * Georges system files
  *
- * $Id: mold_elt_type.cpp,v 1.3 2002/02/27 08:28:07 besson Exp $
+ * $Id: mold_elt_type.cpp,v 1.4 2002/03/04 12:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -122,7 +122,10 @@ CStringEx CMoldEltType::Format( const CStringEx _sxvalue ) const
 	CStringEx sx = GetPredefSubstitute( _sxvalue );
 	if( sx.empty() )
 		if( benum )
-			return( CStringEx() );
+		  {
+		    CStringEx object;
+			return( object );
+		  }
 		else
 			return( ptu->Format( _sxvalue ) );
 	return( GetPredefDesignation( sx ) ); 
@@ -159,7 +162,8 @@ CStringEx CMoldEltType::GetPredefSubstitute( const CStringEx _sxdesignation ) co
 		for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = vpredef.begin(); it != vpredef.end(); ++it )
 			if( it->first == _sxdesignation )
 				return( it->second );
-	return( CStringEx() );
+	CStringEx object;
+	return( object );
 }
 
 CStringEx CMoldEltType::GetPredefDesignation( const CStringEx _sxsubstitute ) const
@@ -167,14 +171,16 @@ CStringEx CMoldEltType::GetPredefDesignation( const CStringEx _sxsubstitute ) co
 	for( std::vector< std::pair< CStringEx, CStringEx > >::const_iterator it = vpredef.begin(); it != vpredef.end(); ++it )
 		if( it->second == _sxsubstitute )
 			return( it->first );
-	return( CStringEx() );
+	CStringEx object;
+	return( object );
 }
 
 CStringEx CMoldEltType::GetPredefDesignation( const unsigned int _index ) const
 {
 	if( _index < vpredef.size() )
 		return( vpredef[_index].first );
-	return( CStringEx() );
+	CStringEx object;
+	return( object );
 }
 
 CMoldElt* CMoldEltType::GetMold()

@@ -1,7 +1,7 @@
 /** \file type_unit_int_unsigned.h
  * Georges system files
  *
- * $Id: type_unit_int_unsigned.h,v 1.1 2002/02/14 10:39:35 corvazier Exp $
+ * $Id: type_unit_int_unsigned.h,v 1.2 2002/03/04 12:52:05 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,9 +34,9 @@ namespace NLGEORGES
 class CTypeUnitIntUnsigned : public CTypeUnit  
 {
 protected:
-	unsigned __int64	ilowlimit;
-	unsigned __int64	ihighlimit;
-	unsigned __int64	idefaultvalue;
+	uint64	ilowlimit;
+	uint64	ihighlimit;
+	uint64	idefaultvalue;
 
 public:
 	CTypeUnitIntUnsigned( const CStringEx _sxll, const CStringEx _sxhl, const CStringEx _sxdv, const CStringEx _sxf );

@@ -1,7 +1,7 @@
 /** \file item_elt.cpp
  * Georges system files
  *
- * $Id: item_elt.cpp,v 1.2 2002/02/20 15:26:06 besson Exp $
+ * $Id: item_elt.cpp,v 1.3 2002/03/04 12:53:29 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,7 +94,8 @@ CStringEx CItemElt::GetParent() const
 
 CStringEx CItemElt::GetFormula() const
 {
-	return( CStringEx() );
+  CStringEx object;
+	return( object );
 }
 
 CStringEx CItemElt::GetParentResult() const

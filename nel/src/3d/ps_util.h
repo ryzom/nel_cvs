@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * TODO: File description
  *
- * $Id: ps_util.h,v 1.11 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_util.h,v 1.12 2005/03/01 09:12:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,19 +57,17 @@ namespace NL3D
 struct CPSUtil
 {
 public:
-	/// register the classes of the system mus be called when serializing
-
+	/// Register the classes of the system. Must be called when serializing.
 	static void registerSerialParticleSystem(void);
 
-	/// this draw a bounding box		
-
+	/// Draw a bounding box.
 	static void displayBBox(NL3D::IDriver *driver, const NLMISC::CAABBox &box, NLMISC::CRGBA col = NLMISC::CRGBA::White);
 
-	/// draw a sphere
+	/// Draw a sphere
 	static void displaySphere(NL3D::IDriver &driver, float radius, const NLMISC::CVector &center, uint nbSubdiv = 4, NLMISC::CRGBA color = NLMISC::CRGBA::White);
 
 
-	/** draw a disc (not filled)
+	/** Draw a disc (not filled)
 	 *  \param mat : a matrix, whose K vector is normal to the plane containing the disc
 	 */
 	static void displayDisc(NL3D::IDriver &driver, float radius, const NLMISC::CVector &center, const NLMISC::CMatrix &mat, uint nbSubdiv = 32, NLMISC::CRGBA color = NLMISC::CRGBA::White);

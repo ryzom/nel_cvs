@@ -1,7 +1,7 @@
 /** \file zone_bank.h
  * Zone Bank
  *
- * $Id: zone_bank.h,v 1.4 2001/11/14 15:16:00 corvazier Exp $
+ * $Id: zone_bank.h,v 1.5 2001/11/16 11:00:38 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -53,7 +53,7 @@ class CZoneBankElement
 	// In this list the category type and value must be unique and 2 categories MUST
 	// appears : "Zone" (The zone name) and "Size" (*x* (ex:4x4 3x1 etc...))
 	// Some categories used in WorldEditor : "Material", "Transition"
-	uint32					_SizeX, _SizeY;
+	uint8					_SizeX, _SizeY;
 	std::vector<bool>		_Mask;
 
 	static std::string		_NoCatTypeFound; // = STRING_NO_CAT_TYPE
@@ -68,8 +68,8 @@ public:
 	void addCategory (const std::string &CatType, const std::string &CatValue);
 	const std::string &getName ();
 	const std::string &getSize ();
-	uint32 getSizeX () { return _SizeX; }
-	uint32 getSizeY () { return _SizeY; }
+	uint8 getSizeX () { return _SizeX; }
+	uint8 getSizeY () { return _SizeY; }
 	const std::vector<bool> &getMask () { return _Mask; }
 
 	/// Return the CatValue or STRING_NO_CAT_TYPE if no category of that type found

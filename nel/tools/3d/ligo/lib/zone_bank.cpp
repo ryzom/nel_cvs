@@ -1,7 +1,7 @@
 /** \file zone_bank.cpp
  * Zone Bank
  *
- * $Id: zone_bank.cpp,v 1.4 2001/11/14 15:16:00 corvazier Exp $
+ * $Id: zone_bank.cpp,v 1.5 2001/11/16 11:00:38 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -146,7 +146,7 @@ void CZoneBank::debugSaveInit (CZoneBankElement &zbeTmp, const string &fileName)
 		output.init (&fileOut);
 		zbeTmp.serial (output);
 	}
-	catch (Exception& e)
+	catch (Exception& /*e*/)
 	{
 	}
 
@@ -235,9 +235,153 @@ void CZoneBank::debugInit() // \ todo trap remove this
 	zbeTmp._Mask.clear ();
 	_ElementsMap.clear ();
 
+	zbeTmp.addCategory ("Zone", "Zone008");
+	zbeTmp.addCategory ("Size", "2x2");
+	zbeTmp.addCategory ("Material", "prairie");
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone008.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "Zone009");
+	zbeTmp.addCategory ("Size", "2x2");
+	zbeTmp.addCategory ("Material", "prairie");
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone009.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "Zone010");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("Material", "prairie");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\Zone010.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "WT0");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
+	zbeTmp.addCategory ("TransType", "Flat");
+	zbeTmp.addCategory ("TransNum", "0");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\WT0.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "WT1");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
+	zbeTmp.addCategory ("TransType", "Flat");
+	zbeTmp.addCategory ("TransNum", "1");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\WT1.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "WT2");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
+	zbeTmp.addCategory ("TransType", "Flat");
+	zbeTmp.addCategory ("TransNum", "2");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\WT2.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "WT3");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
+	zbeTmp.addCategory ("TransType", "CornerA");
+	zbeTmp.addCategory ("TransNum", "3");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\WT3.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "WT4");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
+	zbeTmp.addCategory ("TransType", "CornerA");
+	zbeTmp.addCategory ("TransNum", "4");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\WT4.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "WT5");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
+	zbeTmp.addCategory ("TransType", "CornerA");
+	zbeTmp.addCategory ("TransNum", "5");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\WT5.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "WT6");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
+	zbeTmp.addCategory ("TransType", "CornerB");
+	zbeTmp.addCategory ("TransNum", "6");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\WT6.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "WT7");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
+	zbeTmp.addCategory ("TransType", "CornerB");
+	zbeTmp.addCategory ("TransNum", "7");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\WT7.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
+	zbeTmp.addCategory ("Zone", "WT8");
+	zbeTmp.addCategory ("Size", "1x1");
+	zbeTmp.addCategory ("TransName", "grozFleur-prairie");
+	zbeTmp.addCategory ("TransType", "CornerB");
+	zbeTmp.addCategory ("TransNum", "8");
+	zbeTmp._Mask.push_back (true);
+	_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(), zbeTmp));
+	debugSaveInit (zbeTmp, "ZoneLigos\\WT8.ligozone");
+	zbeTmp._CategoriesMap.clear ();
+	zbeTmp._Mask.clear ();
+	_ElementsMap.clear ();
+
 	zbeTmp.addCategory ("Zone", "ZT0");
 	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
 	zbeTmp.addCategory ("TransType", "Flat");
 	zbeTmp.addCategory ("TransNum", "0");
 	zbeTmp._Mask.push_back (true);
@@ -249,7 +393,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 
 	zbeTmp.addCategory ("Zone", "ZT1");
 	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
 	zbeTmp.addCategory ("TransType", "Flat");
 	zbeTmp.addCategory ("TransNum", "1");
 	zbeTmp._Mask.push_back (true);
@@ -261,7 +405,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 
 	zbeTmp.addCategory ("Zone", "ZT2");
 	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
 	zbeTmp.addCategory ("TransType", "Flat");
 	zbeTmp.addCategory ("TransNum", "2");
 	zbeTmp._Mask.push_back (true);
@@ -273,7 +417,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 
 	zbeTmp.addCategory ("Zone", "ZT3");
 	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
 	zbeTmp.addCategory ("TransType", "CornerA");
 	zbeTmp.addCategory ("TransNum", "3");
 	zbeTmp._Mask.push_back (true);
@@ -285,7 +429,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 
 	zbeTmp.addCategory ("Zone", "ZT4");
 	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
 	zbeTmp.addCategory ("TransType", "CornerA");
 	zbeTmp.addCategory ("TransNum", "4");
 	zbeTmp._Mask.push_back (true);
@@ -297,7 +441,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 
 	zbeTmp.addCategory ("Zone", "ZT5");
 	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
 	zbeTmp.addCategory ("TransType", "CornerA");
 	zbeTmp.addCategory ("TransNum", "5");
 	zbeTmp._Mask.push_back (true);
@@ -309,7 +453,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 
 	zbeTmp.addCategory ("Zone", "ZT6");
 	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
 	zbeTmp.addCategory ("TransType", "CornerB");
 	zbeTmp.addCategory ("TransNum", "6");
 	zbeTmp._Mask.push_back (true);
@@ -321,7 +465,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 
 	zbeTmp.addCategory ("Zone", "ZT7");
 	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
 	zbeTmp.addCategory ("TransType", "CornerB");
 	zbeTmp.addCategory ("TransNum", "7");
 	zbeTmp._Mask.push_back (true);
@@ -333,7 +477,7 @@ void CZoneBank::debugInit() // \ todo trap remove this
 
 	zbeTmp.addCategory ("Zone", "ZT8");
 	zbeTmp.addCategory ("Size", "1x1");
-	zbeTmp.addCategory ("TransName", "titFleur_grozFleur");
+	zbeTmp.addCategory ("TransName", "titFleur-grozFleur");
 	zbeTmp.addCategory ("TransType", "CornerB");
 	zbeTmp.addCategory ("TransNum", "8");
 	zbeTmp._Mask.push_back (true);
@@ -358,7 +502,7 @@ void CZoneBank::addElement (const std::string &elementName)
 		zbeTmp.serial (input);
 		_ElementsMap.insert (pair<string,CZoneBankElement>(zbeTmp.getName(),zbeTmp));
 	}
-	catch (Exception& e)
+	catch (Exception& /*e*/)
 	{
 	}
 }

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.2 2001/01/11 14:25:34 valignat Exp $
+# $Id: Makefile.am,v 1.3 2001/01/12 09:41:38 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -16,8 +16,6 @@ libnelai_la_LIBADD   = agent/libagent.la \
                        logic/liblogic.la \
                        pyserver/libpyserver.la \
                        script/libscript.la
-
-#                       link/liblink.la \
 
 # End of Makefile.am
 

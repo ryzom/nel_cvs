@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.2 2001/01/11 09:50:50 valignat Exp $
+# $Id: Makefile.am,v 1.3 2001/01/12 09:41:38 valignat Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -15,8 +15,8 @@ libscript_la_SOURCES    = codage.cpp code_branche_run_debug.cpp \
                           interpret_methodes.cpp interpret_object.cpp \
                           interpret_object_agent.cpp \
                           interpret_object_manager.cpp \
-                          interpret_object_message.cpp \
-                          lexlang.cpp lexsupport.cpp libcode.cpp module.cpp \
+                          interpret_object_message.cpp lexlang.cpp \
+                          lexsupport.cpp libcode.cpp module.cpp \
                           objects_load.cpp opcode.cpp \
                           opcode_call_lib_method.cpp opcode_call_method.cpp \
                           opcode_ldb.cpp opcode_lpt.cpp opcode_register.cpp \

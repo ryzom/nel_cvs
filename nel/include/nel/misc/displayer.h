@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Little easy displayers implementation
  *
- * $Id: displayer.h,v 1.5 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: displayer.h,v 1.6 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include <string>
 
+#include "nel/misc/log.h"
+
 namespace NLMISC
 {
 
@@ -49,7 +51,23 @@ public:
 	virtual ~IDisplayer() {}
 
 	/// Display the string where it does.
-	virtual void display (const std::string& str) = 0;
+	virtual void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message) = 0;
+
+protected:
+
+	static const char *logTypeToString (CLog::TLogType logType, bool longFormat = false);
+
+	/// Convert the current date to human string
+	static const char *IDisplayer::dateToHumanString ();
+
+	/// Convert date to "2000/01/14 10:05:17" string
+	static const char *dateToHumanString (time_t date);
+
+	/// Convert date to "784551148" string (time in second from 1975)
+	static const char *dateToComputerString (time_t date);
+
+	// Return the header string with date (for the first line of the log)
+	static const char *HeaderString ();
 };
 
 
@@ -65,11 +83,8 @@ class CStdDisplayer : virtual public IDisplayer
 {
 public:
 
-	/// Constructor
-	CStdDisplayer() {}
-
 	/// Display the string to stdout and OutputDebugString on Windows
-	virtual void display (const std::string& str);
+	virtual void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
 };
 
 
@@ -85,13 +100,15 @@ class CFileDisplayer : virtual public IDisplayer
 public:
 
 	/// Constructor
-	CFileDisplayer(const std::string& fileName) { _FileName = fileName; }
+	CFileDisplayer(const std::string& fileName, bool eraseLastLog = false);
 
 	/// Put the string into the file.
-	virtual void display (const std::string& str);
+    virtual void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
 
 private:
 	std::string _FileName;
+
+	bool		_NeedHeader;
 };
 
 /**
@@ -109,7 +126,7 @@ public:
 	CMsgBoxDisplayer() {}
 
 	/// Put the string into the file.
-	virtual void display (const std::string& str);
+    virtual void display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
 };
 
 

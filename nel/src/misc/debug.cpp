@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.26 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: debug.cpp,v 1.27 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,11 +39,11 @@
 
 namespace NLMISC {
 
-CLog ErrorLog( LOG_ERROR, true );
-CLog WarningLog( LOG_WARNING, true );
-CLog InfoLog( LOG_INFO, true );
-CLog DebugLog( LOG_DEBUG, false );
-CLog AssertLog( LOG_ASSERT, true );
+CLog ErrorLog (CLog::LOG_ERROR);
+CLog WarningLog (CLog::LOG_WARNING);
+CLog InfoLog (CLog::LOG_INFO);
+CLog DebugLog (CLog::LOG_DEBUG);
+CLog AssertLog (CLog::LOG_ASSERT);
 
 CStdDisplayer sd;
 
@@ -51,7 +51,7 @@ CStdDisplayer sd;
 void nlFatalError (const char *format, ...)
 {
 	char *str;
-	NLMISC_CONVERT_VARGS (str, format);
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
 	NLMISC::ErrorLog.displayNL (str);
 
@@ -65,7 +65,7 @@ void nlFatalError (const char *format, ...)
 void nlError (const char *format, ...)
 {
 	char *str;
-	NLMISC_CONVERT_VARGS (str, format);
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
 	NLMISC::ErrorLog.displayNL (str);
 
@@ -74,13 +74,12 @@ void nlError (const char *format, ...)
 #endif
 }
 
-void InitDebug ()
+void initDebug ()
 {
-	static int alreadyInit = false;
+	static bool alreadyInit = false;
 
 	if (!alreadyInit)
 	{
-		InfoLog.setLongInfo(false);
 #ifdef NL_DEBUG
 		ErrorLog.addDisplayer (&sd);
 		WarningLog.addDisplayer (&sd);
@@ -92,7 +91,7 @@ void InitDebug ()
 	}
 	else
 	{
-		nlwarning ("RMISC_InitDebug already called");
+		nlwarning ("NLMISC::initDebug() already called");
 	}
 }
 

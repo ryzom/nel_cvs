@@ -39,7 +39,7 @@
  if ( age < 0 )
  {
      nlerror( "Invalid age for toto : %d", age );
-     return -1;
+     // the program counter will never be here because nlerror throw an exception to exit
  }
  \endcode
 

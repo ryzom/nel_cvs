@@ -1,7 +1,7 @@
 /** \file nelu.cpp
  * <File description>
  *
- * $Id: nelu.cpp,v 1.14 2001/01/12 10:14:19 lecroart Exp $
+ * $Id: nelu.cpp,v 1.15 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,7 +143,7 @@ void			CNELU::screenshot()
 	{
 		CBitmap btm;
 		CNELU::Driver->getBuffer(btm);
-		string filename = CPath::findNewFile ("screenshot.tga");
+		string filename = CFile::findNewFile ("screenshot.tga");
 		COFile fs(filename);
 		btm.writeTGA (fs,24,true);
 		nlinfo("Screenshot '%s' saved", filename.c_str());

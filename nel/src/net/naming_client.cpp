@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.19 2001/01/29 17:47:55 cado Exp $
+ * $Id: naming_client.cpp,v 1.20 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -207,7 +207,7 @@ void CNamingClient::doOpen()
 			CNamingClient::NamingServiceAddress.setPort( CNamingClient::NamingServiceDefPort );
 		}
 		//_ConfigFile->setCallback( cbNamingServiceAddrChanged );
-		nldebug( "Naming Service is at %s", CNamingClient::NamingServiceAddress.asString().c_str() );
+//		nldebug( "Naming Service is at %s", CNamingClient::NamingServiceAddress.asString().c_str() );
 	}
 	nldebug("Trying to connect to the Naming Service");
 	CNamingClient::_ClientSock = new CSocket();

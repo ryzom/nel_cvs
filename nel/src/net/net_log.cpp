@@ -1,7 +1,7 @@
 /** \file net_log.cpp
  * <File description>
  *
- * $Id: net_log.cpp,v 1.7 2001/01/17 10:16:03 lecroart Exp $
+ * $Id: net_log.cpp,v 1.8 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,11 +55,14 @@ CNetLog::CNetLog() :
 void CNetLog::output( const char *srchost, uint8 msgnum,
 					  const char *desthost, const char *msgname, uint32 msgsize )
 {
-	char line [1024];
+/*OLD	char line [1024];
 	smprintf( line, 1024, "@@%"NL_I64"d@%s@%hu@%s@%s@%s@%u@", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
-		srchost, (uint16)msgnum, (_LocalHostAndService==NULL)?"":_LocalHostAndService->c_str(), desthost, msgname, msgsize );
+		srchost, (uint16)msgnum, _ProcessName.c_str(), desthost, msgname, msgsize );
 
 	displayRawNL( line );
+	*/
+	displayRawNL( "@@%"NL_I64"d@%s@%hu@%s@%s@%s@%u@", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
+		srchost, (uint16)msgnum, _ProcessName.c_str(), desthost, msgname, msgsize );
 }
 
 
@@ -68,10 +71,13 @@ void CNetLog::output( const char *srchost, uint8 msgnum,
  */
 void CNetLog::input( const char *srchost, uint8 msgnum, const char *desthost )
 {
-	char line [1024];
+/*OLD	char line [1024];
 	smprintf( line, 1024, "##%"NL_I64"d#%s#%hu#%s#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
-			  srchost, msgnum, (_LocalHostAndService==NULL)?"":_LocalHostAndService->c_str(), desthost );
+			  srchost, msgnum, _ProcessName.c_str(), desthost );
 	displayRawNL( line );
+*/
+	displayRawNL( "##%"NL_I64"d#%s#%hu#%s#%s#", (CUniTime::Sync?CUniTime::getUniTime():(TTime)0),
+		  srchost, msgnum, _ProcessName.c_str(), desthost );
 }
 
 

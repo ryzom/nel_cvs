@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.6 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: path.cpp,v 1.7 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,25 +47,6 @@ namespace NLMISC {
 CStringVector CPath::_SearchPaths;
 
 
-/*
- * fileExists. Warning: this test will also tell that the file does not
- * exist if you don't have the rights to read it (Unix).
- */
-bool fileExists( const string& filename )
-{
-	/*FILE *f;
-	if ( (f = fopen( filename.c_str(), "r" )) == NULL )
-	{
-		return false;
-	}
-	else
-	{
-		fclose( f );
-		return true;
-	}*/
-	return ! ! fstream( filename.c_str(), ios::in ); // = ! fstream(...).fail()
-}
-
 
 /*
  * Adds a search path
@@ -95,7 +76,7 @@ void CPath::addSearchPath( const string& path )
  */
 string CPath::lookup( const string& filename )
 {
-	if ( fileExists(filename) )
+	if ( CFile::fileExists(filename) )
 	{
 		NL_DISPLAY_PATH(filename);
 		return filename;
@@ -105,7 +86,7 @@ string CPath::lookup( const string& filename )
 	for ( isv=CPath::_SearchPaths.begin(); isv!=CPath::_SearchPaths.end(); ++isv )
 	{
 		s = *isv + filename;
-		if ( fileExists(s) )
+		if ( CFile::fileExists(s) )
 		{
 			NL_DISPLAY_PATH(s);
 			return s;
@@ -115,16 +96,65 @@ string CPath::lookup( const string& filename )
 	return "";
 }
 
-string CPath::findNewFile (const string &path)
-{
-	string start="", end="";
-	char *dotpos = strrchr (path.c_str(), '.');
-	if (dotpos == NULL) return path;
-	uint pos= dotpos-path.c_str();
+//********************************* CFile
 
-	uint i;
-	for (i=0; i<pos; i++) start += path[i];
-	for (i=0; i<path.size()-pos; i++) end += path[pos+i];
+int CFile::getLastSeparator (const std::string &filename)
+{
+	int pos = filename.find_last_of ('/');
+	if (pos == string::npos)
+	{
+		pos = filename.find_last_of ('\\');
+	}
+	return pos;
+}
+
+std::string CFile::getFilename (const std::string &filename)
+{
+	int pos = CFile::getLastSeparator(filename);
+	if (pos != string::npos)
+		return filename.substr (pos + 1);
+	else
+		return "";
+}
+
+std::string CFile::getPath (const std::string &filename)
+{
+	int pos = CFile::getLastSeparator(filename);
+	if (pos != string::npos)
+		return filename.substr (0, pos + 1);
+	else
+		return "";
+}
+
+bool CFile::isDirectory (const std::string &filename)
+{
+	return (CFile::getLastSeparator(filename) == string::npos);
+}
+
+
+bool CFile::fileExists (const string& filename)
+{
+	/*FILE *f;
+	if ( (f = fopen( filename.c_str(), "r" )) == NULL )
+	{
+		return false;
+	}
+	else
+	{
+		fclose( f );
+		return true;
+	}*/
+	return ! ! fstream( filename.c_str(), ios::in ); // = ! fstream(...).fail()
+}
+
+string CFile::findNewFile (const string &filename)
+{
+	int pos = filename.find_last_of ('.');
+	if (pos == string::npos)
+		return filename;
+	
+	string start = filename.substr (0, pos);
+	string end = filename.substr (pos);
 
 	uint num = 0;
 	char numchar[4];
@@ -135,7 +165,7 @@ string CPath::findNewFile (const string &path)
 		smprintf(numchar,4,"%03d",num++);
 		npath += numchar;
 		npath += end;
-		if (!fileExists(npath)) return npath;
+		if (!CFile::fileExists(npath)) break;
 	}
 	while (num<999);
 	return npath;

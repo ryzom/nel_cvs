@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.17 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: common.h,v 1.18 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,21 +70,23 @@ const double Pi = 3.1415926535897932384626433832795;
 	void MyFunction(const char *format, ...)
 	{
 		string str;
-		NLMISC_CONVERT_VARGS (str, format);
+		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 		// str contains the result of the conversion
 	}
  *\endcode
  *
- * param dest \c string or \c char* that contains the result of the convertion
- * param format of the string, it must be the last argument before the \c '...'
+ * \param _dest \c string or \c char* that contains the result of the convertion
+ * \param _format format of the string, it must be the last argument before the \c '...'
+ * \param _size size of the buffer that will contain the C string
  */
-#define NLMISC_CONVERT_VARGS(_dest,_format) \
-char _cstring[NLMISC::MaxCStringSize]; \
+#define NLMISC_CONVERT_VARGS(_dest,_format,_size) \
+char _cstring[_size]; \
 va_list _args; \
 va_start (_args, _format); \
-if (vsnprintf (_cstring, NLMISC::MaxCStringSize, _format, _args) == -1) \
+int res = vsnprintf (_cstring, _size-1, _format, _args); \
+if (res == -1 || res == _size-1) \
 { \
-	_cstring[NLMISC::MaxCStringSize-1] = '\0'; \
+	_cstring[_size-1] = '\0'; \
 } \
 va_end (_args); \
 _dest = _cstring
@@ -293,7 +295,7 @@ protected:
 public:
 	Exception() : _Reason("Unknown Exception") { }
 	Exception(const std::string &reason) : _Reason(reason) { }
-	Exception(const char *format, ...) { NLMISC_CONVERT_VARGS (_Reason, format); }
+	Exception(const char *format, ...) { NLMISC_CONVERT_VARGS (_Reason, format, NLMISC::MaxCStringSize); }
 	virtual const char	*what() const throw() { return _Reason.c_str(); }
 };
 

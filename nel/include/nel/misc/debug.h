@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.22 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: debug.h,v 1.23 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,13 +45,14 @@ extern CLog AssertLog;
 
 // Functions
 
-/// never use this function (internal use only)
+/// Never use this function (internal use only)
 void nlFatalError (const char *format, ...);
 
-/// never use this function but call the nlerror macro
+/// Never use this function but call the nlerror macro
 void nlError (const char *format, ...);
 
-void InitDebug ();
+/// Add standard displayer in all log in debug mode
+void initDebug ();
 
 // Macros
 
@@ -71,7 +72,7 @@ void InitDebug ();
  */
 //#ifdef NL_DEBUG
 #define nldebug \
-NLMISC::DebugLog.setParam( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
+NLMISC::DebugLog.setPosition( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
 //#else
 //#define nldebug //
 //#endif
@@ -81,7 +82,7 @@ NLMISC::DebugLog.setParam( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
  * Same as nldebug but it will be display in debug and in release mode.
  */
 #define nlinfo \
-/*NLMISC::InfoLog.setParam( __LINE__, __FILE__ ),*/ NLMISC::InfoLog.displayNL
+/*NLMISC::InfoLog.setPosition( __LINE__, __FILE__ ),*/ NLMISC::InfoLog.displayNL
 
 /**
  * \def nlwarning(exp)
@@ -101,7 +102,7 @@ NLMISC::DebugLog.setParam( __LINE__, __FILE__ ), NLMISC::DebugLog.displayNL
  *\endcode
  */
 #define nlwarning \
-NLMISC::WarningLog.setParam( __LINE__, __FILE__ ), NLMISC::WarningLog.displayNL
+NLMISC::WarningLog.setPosition( __LINE__, __FILE__ ), NLMISC::WarningLog.displayNL
 
 /**
  * \def nlerror(exp)
@@ -120,7 +121,7 @@ NLMISC::WarningLog.setParam( __LINE__, __FILE__ ), NLMISC::WarningLog.displayNL
  *\endcode
  */
 #define nlerror \
-NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
+NLMISC::ErrorLog.setPosition( __LINE__, __FILE__ ), NLMISC::nlFatalError
 
 
 /**
@@ -235,7 +236,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 #define nlassert(exp) \
 { \
 	if (!(exp)) { \
-		NLMISC::AssertLog.setParam (__LINE__, __FILE__); \
+		NLMISC::AssertLog.setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
 		BEAKPOINT \
 	} \
@@ -246,7 +247,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways && !(exp)) { \
 		ignoreAlways=true; \
-		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog.setPosition( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
 		BEAKPOINT \
 	} \
@@ -256,7 +257,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 { \
 	if (!(exp)) \
 	{ \
-		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog.setPosition( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog.displayRawNL str; \
 		BEAKPOINT \
@@ -266,7 +267,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 #define nlverify(exp) \
 { \
 	if (!(exp)) { \
-		NLMISC::AssertLog.setParam (__LINE__, __FILE__); \
+		NLMISC::AssertLog.setPosition (__LINE__, __FILE__); \
 		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
 		BEAKPOINT \
 	} \
@@ -277,7 +278,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways && !(exp)) { \
 		ignoreAlways=true; \
-		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog.setPosition ( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.displayNL ("\"%s\" ", #exp); \
 		BEAKPOINT \
 	} \
@@ -287,7 +288,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 { \
 	if (!(exp)) \
 	{ \
-		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog.setPosition ( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.display ("\"%s\" ", #exp); \
 		NLMISC::AssertLog.displayRawNL str; \
 		BEAKPOINT \
@@ -296,7 +297,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 
 #define nlstop \
 { \
-	NLMISC::AssertLog.setParam (__LINE__, __FILE__); \
+	NLMISC::AssertLog.setPosition (__LINE__, __FILE__); \
 	NLMISC::AssertLog.displayNL ("STOP "); \
 	BEAKPOINT \
 }
@@ -306,7 +307,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 	static bool ignoreAlways = false; \
 	if (!ignoreAlways) { \
 		ignoreAlways=true; \
-		NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
+		NLMISC::AssertLog.setPosition ( __LINE__, __FILE__ ); \
 		NLMISC::AssertLog.displayNL ("STOP "); \
 		BEAKPOINT \
 	} \
@@ -314,7 +315,7 @@ NLMISC::ErrorLog.setParam( __LINE__, __FILE__ ), NLMISC::nlFatalError
 
 #define nlstopex(str) \
 { \
-	NLMISC::AssertLog.setParam( __LINE__, __FILE__ ); \
+	NLMISC::AssertLog.setPosition ( __LINE__, __FILE__ ); \
 	NLMISC::AssertLog.display ("STOP "); \
 	NLMISC::AssertLog.displayRawNL str; \
 	BEAKPOINT \
@@ -349,7 +350,7 @@ struct EFatalError : public Exception
 };
 
 
-// undef default assert to force people to use \c nlassert
+// undef default assert to force people to use nlassert() instead of asser()
 #ifdef assert
 #undef assert
 #endif

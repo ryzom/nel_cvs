@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.43 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: service.cpp,v 1.44 2001/02/05 16:11:37 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -75,7 +75,7 @@ const uint32 IService::_DefaultTimeout = 1000;
 IService	 *IService::Instance = NULL;
 
 
-/* "Constants" */
+// Constants
 
 static const sint Signal[] = {
   SIGABRT, SIGFPE, SIGILL, SIGINT, SIGSEGV, SIGTERM
@@ -86,39 +86,39 @@ static const char *SignalName[]=
   "SIGABRT", "SIGFPE", "SIGILL", "SIGINT", "SIGSEGV", "SIGTERM"
 };
 
-/* Variables */
+// Variables
 
 static sint ExitSignalAsked = 0;
 static CStdDisplayer sd;
 
-/* Prototypes */
+// Prototypes
 
-static void SigHandler (int Sig);
+static void sigHandler (int Sig);
 
-/* Functions */
+// Functions
 
-void InitSignal()
+void initSignal()
 {
 
 #ifdef NL_DEBUG
 	// in debug mode, we only trap the SIGINT signal
-	signal(Signal[3], SigHandler);
+	signal(Signal[3], sigHandler);
 	nldebug("Signal : %s (%d) trapped", SignalName[3], Signal[3]);
 #else
 	// in release, redirect all signals
 	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
 	{
-		signal(Signal[i], SigHandler);
+		signal(Signal[i], sigHandler);
 		nldebug("Signal %s (%d) trapped", SignalName[i], Signal[i]);
 	}
 #endif
 }
 
 // This function is called when a signal comes
-static void SigHandler(int Sig)
+static void sigHandler(int Sig)
 {
 	// redirect the signal for the next time
-	signal(Sig, SigHandler);
+	signal(Sig, sigHandler);
 
 	// find the signal
 	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
@@ -195,10 +195,12 @@ sint IService::main (int argc, char **argv)
 		// Initialize debug stuffs, create displayers for nl* functions
 		//
 
-		InitDebug();
+		initDebug();
+#ifdef NL_RELEASE
 		ErrorLog.addDisplayer (&sd);
 		WarningLog.addDisplayer (&sd);
 		InfoLog.addDisplayer (&sd);
+#endif // NL_RELEASE
 
 		//
 		// Parse argc argv into easy to use format
@@ -230,7 +232,10 @@ sint IService::main (int argc, char **argv)
 		}
 
 		// Set the localhost name and service name to the logger
-		CLog::setLocalHostAndService ( localhost, _Name );
+		string processName = localhost;
+		processName += '/';
+		processName += _Name;
+		CLog::setProcessName (processName);
 
 		//
 		// Redirect signal if needed (in release mode only)
@@ -238,7 +243,7 @@ sint IService::main (int argc, char **argv)
 
 #ifdef NL_OS_WINDOWS
 #ifdef NL_RELEASE
-		InitSignal();
+		initSignal();
 #else
 		// don't install signal is the application is started in debug mode
 		if (IsDebuggerPresent ())
@@ -248,11 +253,11 @@ sint IService::main (int argc, char **argv)
 		else
 		{
 			nlinfo("Running without the debugger, redirect SIGINT signal");
-			InitSignal();
+			initSignal();
 		}
 #endif
 #else // NL_OS_UNIX
-		InitSignal();
+		initSignal();
 #endif
 
 		//

@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.16 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: text_context.h,v 1.17 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,7 +248,7 @@ public:
 		nlassert(_FontGen);
 
 		char *str;
-		NLMISC_CONVERT_VARGS (str, format);
+		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
 		NL3D::CComputedString cptdstr;
 		_FontManager.computeString(str,_FontGen,_Color,_FontSize,NL3D::CNELU::Driver,cptdstr);
@@ -329,7 +329,7 @@ public:
 		nlassert(_FontGen);
 
 		char *str;
-		NLMISC_CONVERT_VARGS (str, format);
+		NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
 
 		if(_Shaded)
 		{

@@ -1,7 +1,7 @@
 /** \file path.h
  * CPath
  *
- * $Id: path.h,v 1.3 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: path.h,v 1.4 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,15 +65,51 @@ public:
 	 */
 	static std::string	lookup( const std::string& filename );
 
-	/** return a new filename that doesn't exists, used for screenshot filename for example
-	* example: findNewFile("foobar.tga");
-	* will try foobar001.tga, if the file exists, try foobar002.tga and so on until it finds an unexistant file
-	*/
-	static std::string	findNewFile (const std::string &path);
-
 private:
 
 	static CStringVector	_SearchPaths;
+};
+
+
+struct CFile
+{
+	/**
+	 * Retrieve the associated file name.
+	 * An empty string is returned if the path is invalid
+	 */
+	static std::string getFilename (const std::string &filename);
+
+	/**
+	 * Retrieve the associated file path with the trailing slash.
+	 * Returns an empty string if the path is invalid
+	 */
+	static std::string getPath (const std::string &filename);
+
+	/**
+	 * Just to know if it is a directory.
+	 * _FileName empty and path not !!!
+	 */
+	static bool isDirectory (const std::string &filename);
+
+	/**
+	 * Return true if the file exists.
+	 * Warning: this test will also tell that the file does not
+	 * exist if you don't have the rights to read it (Unix).
+	 */
+	static bool fileExists (const std::string &filename);
+
+	/**
+	 * Return a new filename that doesn't exists. It's used for screenshot filename for example.
+	 * example: findNewFile("foobar.tga");
+	 * will try foobar001.tga, if the file exists, try foobar002.tga and so on until it finds an unexistant file.
+	 */
+	static std::string findNewFile (const std::string &filename);
+
+	/**
+	 * Return the position between [begin,end[ of the last separator between path and filename ('/' or '\').
+	 * If there's no separator, it returns string::npos.
+	 */
+	static int getLastSeparator (const std::string &filename);
 };
 
 

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.22 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: log.cpp,v 1.23 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,8 +49,181 @@ using namespace std;
 namespace NLMISC
 {
 
-string *CLog::_LocalHostAndService = NULL;
+string CLog::_ProcessName = "";
 
+CLog::CLog( TLogType logType) : _LogType (logType), _Line(-1), _FileName(NULL)
+{
+}
+
+void CLog::setProcessName (const std::string &processName)
+{
+	_ProcessName = processName;
+}
+
+void CLog::setPosition (sint line, char *filename)
+{
+    _Line = line;
+	_FileName = filename;
+}
+
+void CLog::addDisplayer (IDisplayer *displayer)
+{
+	if (displayer == NULL)
+	{
+		nlwarning ("Trying to add a NULL displayer");
+		return;
+	}
+
+	CDisplayers::iterator idi = std::find (_Displayers.begin (), _Displayers.end (), displayer);
+	if (idi == _Displayers.end ())
+	{
+		_Displayers.push_back (displayer);
+	}
+	else
+	{
+		nlwarning ("Couldn't add the displayer, it was already added");
+	}
+}
+
+void CLog::removeDisplayer (IDisplayer *displayer)
+{
+	if (displayer == NULL)
+	{
+		nlwarning ("Trying to remove a NULL displayer");
+		return;
+	}
+
+	CDisplayers::iterator idi = std::find (_Displayers.begin (), _Displayers.end (), displayer);
+	if (idi == _Displayers.end ())
+	{
+		nlwarning ("Couldn't remove the displayer, it isn't in the list");
+	}
+	else
+	{
+		_Displayers.erase (idi);
+	}
+}
+
+
+/*
+ * Returns true if the specified displayer is attached to the log object
+ */
+bool CLog::attached(IDisplayer *displayer) const 
+{
+	return (find( _Displayers.begin(), _Displayers.end(), displayer ) != _Displayers.end());
+}
+
+
+/*
+ * Display the string with decoration and final new line to all attached displayers
+ */
+void CLog::displayNL (const char *format, ...)
+{
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	if (strlen(str)<NLMISC::MaxCStringSize-1)
+		strcat (str, "\n");
+	else
+		str[NLMISC::MaxCStringSize-2] = '\n';
+
+	display (str);
+}
+
+/*
+ * Display the string with decoration to all attached displayers
+ */
+void CLog::display (const char *format, ...)
+{
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	time_t date;
+	time (&date);
+
+	// Send to the attached displayers
+	for (CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
+	{
+		(*idi)->display (date, _LogType, _ProcessName, _FileName, _Line, str);
+	}
+
+	setPosition (-1, NULL);	
+
+/*
+	char cstime[25];
+	strftime( cstime, 25, "%y/%m/%d %H:%M:%S", localtime( &t ) );
+
+	stringstream ss;
+	if ( _Long )
+	{
+		ss << cstime << " ";
+	}
+	ss << priorityStr().c_str();
+	if ( _Long && _LocalHostAndService != NULL && _LocalHostAndService->size() != 0)
+	{
+		ss << " " << _LocalHostAndService->c_str();
+	}
+	if ( _File != NULL )
+	{
+		ss << " " << getFilename(_File) << " " << _Line;
+	}
+	ss << ": " << str ;//<< endl;
+
+	// Send to the attached displayers
+	for ( CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
+	{
+		(*idi)->display (t, _LogType, _ProcessName, _FileName, _Line, str);
+	}
+
+	_File = NULL;
+	_Line = 0;
+*/}
+
+
+/*
+ * Display a string (and nothing more) to all attached displayers
+ */
+void CLog::displayRawNL( const char *format, ... )
+{
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	if (strlen(str)<NLMISC::MaxCStringSize-1)
+		strcat (str, "\n");
+	else
+		str[NLMISC::MaxCStringSize-2] = '\n';
+
+	displayRaw(str);
+}
+
+/*
+ * Display a string (and nothing more) to all attached displayers
+ */
+void CLog::displayRaw( const char *format, ... )
+{
+	char *str;
+	NLMISC_CONVERT_VARGS (str, format, NLMISC::MaxCStringSize);
+
+	// Send to the attached displayers
+	for ( CDisplayers::iterator idi=_Displayers.begin(); idi<_Displayers.end(); idi++ )
+	{
+		(*idi)->display (0, LOG_NO, "", NULL, -1, str);
+	}
+}
+
+
+
+
+
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+#if 0
+string *CLog::_LocalHostAndService = NULL;
 
 /*
  * Sets the local host name, with has to be determined outside
@@ -87,7 +260,7 @@ void CLog::addDisplayer (IDisplayer *displayer)
 {
 	if (displayer == NULL) return;
 
-	std::vector<IDisplayer *>::iterator idi = std::find (_Displayers.begin (), _Displayers.end (), displayer);
+	CDisplayers::iterator idi = std::find (_Displayers.begin (), _Displayers.end (), displayer);
 	if (idi == _Displayers.end ())
 	{
 		_Displayers.push_back (displayer);
@@ -98,7 +271,7 @@ void CLog::removeDisplayer (IDisplayer *displayer)
 {
 	if (displayer == NULL) return;
 
-	std::vector<IDisplayer *>::iterator idi = std::find (_Displayers.begin (), _Displayers.end (), displayer);
+	CDisplayers::iterator idi = std::find (_Displayers.begin (), _Displayers.end (), displayer);
 	if (idi == _Displayers.end ())
 	{
 		/// Displayer not found
@@ -242,7 +415,7 @@ string CLog::priorityStr() const
 	default: nlstop; return "<Unknown>";
 	}
 }
-
+#endif
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.14 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.15 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,14 +23,21 @@
  * MA 02111-1307, USA.
  */
 
+#include <sstream>
+
+#include "nel/misc/debug.h"
+#include "nel/misc/common.h"
+#include "nel/misc/log.h"
+
 #include "nel/net/net_displayer.h"
 #include "nel/net/message.h"
 #include "nel/net/naming_client.h"
-#include "nel/misc/debug.h"
-#include "nel/misc/common.h"
+
 
 #include <string>
 
+using namespace std;
+using namespace NLMISC;
 
 namespace NLNET {
 
@@ -95,17 +102,47 @@ CNetDisplayer::~CNetDisplayer()
 
 /*
  * Sends the string to the logging server
+ *
+ * Log format: "2000/01/15 12:05:30 <LogType> <ProcessName>: <Msg>"
  */
-void CNetDisplayer::display( const std::string& str )
+void CNetDisplayer::display (time_t date, CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message)
 {
 	try {
 		if ( ! _Server.connected() )
 		{
 			findAndConnect();
 		}
+
+		bool needSpace = false;
+		stringstream ss;
+
+		if (date != 0)
+		{
+			ss << dateToHumanString(date);
+			needSpace = true;
+		}
+
+		if (logType != CLog::LOG_NO)
+		{
+			if (needSpace) { ss << " "; needSpace = false; }
+			ss << logTypeToString(logType);
+			needSpace = true;
+		}
+
+		if (!processName.empty())
+		{
+			if (needSpace) { ss << " "; needSpace = false; }
+			ss << processName;
+			needSpace = true;
+		}
+		
+		if (needSpace) { ss << ": "; needSpace = false; }
+
+		ss << message;
+		
 		CMessage msg( "", false );
 		msg.setType( LOG_CBINDEX ); // we don't listen for incoming replies, therefore we must not use a type as string. 0 is the default action for CLogService : "LOG"
-		msg.serial( const_cast<std::string&>(str) );
+		msg.serial( const_cast<std::string&>(ss.str()) );
 		_Server.send( msg );
 	}
 	catch( NLMISC::Exception& )

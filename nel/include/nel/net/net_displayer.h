@@ -1,7 +1,7 @@
 /** \file net_displayer.h
  * CNetDisplayer class
  *
- * $Id: net_displayer.h,v 1.11 2000/12/11 11:46:58 lecroart Exp $
+ * $Id: net_displayer.h,v 1.12 2001/02/05 16:11:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_NET_DISPLAYER_H
 #define NL_NET_DISPLAYER_H
 
+#include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
 #include "nel/net/socket.h"
 
@@ -65,7 +66,7 @@ public:
 	/** Sends the string to the logging server
 	 * \warning If not connected, tries to connect to the logging server each call. It can slow down your program a lot.
 	 */
-	virtual void display (const std::string& str);
+	virtual void display (time_t date, NLMISC::CLog::TLogType logType, const std::string &processName, const char *fileName, sint line, const char *message);
 
 protected:
 

@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * Sound interface between the game and NeL
  *
- * $Id: sound.cpp,v 1.2 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: sound.cpp,v 1.3 2003/02/24 13:04:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,6 @@
 #include <nel/misc/vector.h>
 
 #include <nel/sound/u_audio_mixer.h>
-#include <nel/sound/u_env_sound.h>
 #include <nel/sound/u_listener.h>
 #include <nel/sound/u_source.h>
 

@@ -183,6 +183,14 @@ SOURCE=.\3d\coarse_mesh_manager.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\flare_model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\flare_model.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\landscape_model.cpp
 # End Source File
 # Begin Source File
@@ -599,6 +607,14 @@ SOURCE=.\3d\tile_far_bank.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\3d\flare_shape.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\flare_shape.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\mesh.cpp
 # End Source File
 # Begin Source File
@@ -659,7 +675,7 @@ SOURCE=R:\code\nel\src\3d\shape_bank.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\include\nel\3d\shape_bank.h
+SOURCE=R:\code\nel\src\3d\shape_bank.h
 # End Source File
 # Begin Source File
 
@@ -1214,7 +1230,7 @@ SOURCE=..\include\nel\3d\viewport.h
 SOURCE=.\3d\Makefile.am
 # End Source File
 # End Group
-# Begin Group "Sfx"
+# Begin Group "Fx"
 
 # PROP Default_Filter ""
 # Begin Source File
@@ -1416,6 +1432,14 @@ SOURCE=.\3d\event_mouse_listener.cpp
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.h
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\fast_floor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=R:\code\nel\src\3d\fast_floor.h
 # End Source File
 # Begin Source File
 

@@ -1834,6 +1834,14 @@ SOURCE=.\3d\vegetable_manager.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\vegetable_quadrant.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_quadrant.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\vegetable_shape.cpp
 # End Source File
 # Begin Source File
@@ -1842,11 +1850,39 @@ SOURCE=.\3d\vegetable_shape.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\vegetable_sort_block.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\vegetable_sort_block.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\vegetablevb_allocator.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\3d\vegetablevb_allocator.h
+# End Source File
+# End Group
+# Begin Group "Util"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\fast_floor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\fast_floor.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\radix_sort.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\radix_sort.h
 # End Source File
 # End Group
 # Begin Source File
@@ -1872,14 +1908,6 @@ SOURCE=.\3d\event_mouse_listener.cpp
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\fast_floor.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\fast_floor.h
 # End Source File
 # Begin Source File
 

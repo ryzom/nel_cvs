@@ -1,7 +1,7 @@
 /** \file vegetable_shape.h
  * <File description>
  *
- * $Id: vegetable_shape.h,v 1.4 2001/11/27 15:34:37 berenguier Exp $
+ * $Id: vegetable_shape.h,v 1.5 2001/11/30 13:17:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,10 @@ public:
 	bool				PreComputeLighting;
 	/// If this shape must be 2Sided
 	bool				DoubleSided;
+	/** If this shape must be AlphaBlended (and hence ZSorted). 
+	 *	NB: valid ONLY if (!Lighted || PreComputeLighting) && DoubleSided.
+	 */
+	bool				AlphaBlend;
 	/// The maximum BendWeight to apply.
 	float				MaxBendWeight;
 	/// The BendCenter mode
@@ -79,6 +83,7 @@ public:
 		Lighted= false;
 		DoubleSided= false;
 		PreComputeLighting= false;
+		AlphaBlend= false;
 		MaxBendWeight= 0;
 		BendCenterMode= BendCenterNull;
 	}
@@ -118,6 +123,7 @@ public:
 	bool					Lighted;
 	bool					DoubleSided;
 	bool					PreComputeLighting;
+	bool					AlphaBlend;
 	CVegetableShapeBuild::TBendCenterMode			BendCenterMode;
 	/** VertexBuffer of this Shape, ready to be transformed and copied into vegetable manager
 	 *	Format is Pos/Normal/Tex0/Tex1 (no Normal if !Lighted). where Tex1.U==BendWeigth 

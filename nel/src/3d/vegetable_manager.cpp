@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.5 2001/11/27 15:34:37 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.6 2001/11/30 13:17:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,9 @@
 #include "3d/driver.h"
 #include "3d/texture_file.h"
 #include "3d/fast_floor.h"
+#include "3d/vegetable_quadrant.h"
+#include "3d/dru.h"
+#include "3d/radix_sort.h"
 
 
 using namespace std;
@@ -39,12 +42,14 @@ namespace NL3D
 
 
 #define	NL3D_VEGETABLE_CLIP_BLOCK_BLOCKSIZE			16
+#define	NL3D_VEGETABLE_SORT_BLOCK_BLOCKSIZE			64
 #define	NL3D_VEGETABLE_INSTANCE_GROUP_BLOCKSIZE		128
 
 
 // ***************************************************************************
 CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVbHardLighted) : 
 	_ClipBlockMemory(NL3D_VEGETABLE_CLIP_BLOCK_BLOCKSIZE),
+	_SortBlockMemory(NL3D_VEGETABLE_SORT_BLOCK_BLOCKSIZE),
 	_InstanceGroupMemory(NL3D_VEGETABLE_INSTANCE_GROUP_BLOCKSIZE)
 {
 	uint	i;
@@ -66,6 +71,7 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	// setup the material. Unlit (doesn't matter, lighting in VP) Alpha Test.
 	_VegetableMaterial.initUnlit();
 	_VegetableMaterial.setAlphaTest(true);
+	_VegetableMaterial.setBlendFunc(CMaterial::srcalpha, CMaterial::invsrcalpha);
 
 	// default light.
 	_DirectionalLight= (CVector(0,1, -1)).normed();
@@ -113,6 +119,8 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 			return _VBSoftAllocator[CVegetableVBAllocator::VBTypeUnlit];
 		if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED)
 			return _VBSoftAllocator[CVegetableVBAllocator::VBTypeUnlit];
+		if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
+			return _VBSoftAllocator[CVegetableVBAllocator::VBTypeUnlit];
 	}
 	// If hard VB
 	else
@@ -124,6 +132,8 @@ CVegetableVBAllocator	&CVegetableManager::getVBAllocatorForRdrPassAndVBHardMode(
 		if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT)
 			return _VBHardAllocator[CVegetableVBAllocator::VBTypeUnlit];
 		if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED)
+			return _VBHardAllocator[CVegetableVBAllocator::VBTypeUnlit];
+		if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
 			return _VBHardAllocator[CVegetableVBAllocator::VBTypeUnlit];
 	}
 
@@ -499,6 +509,10 @@ void					CVegetableManager::initVertexProgram(uint vpType)
 		vpgram+= string(NL3D_UnlitStartVegetableProgram);
 		vpgram+= string(NL3D_UnlitMiddle2SidedVegetableProgram);
 		break;
+	case NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT:		
+		vpgram+= string(NL3D_UnlitStartVegetableProgram);
+		vpgram+= string(NL3D_UnlitMiddle2SidedVegetableProgram);
+		break;
 	}
 
 	// common end of VP
@@ -536,8 +550,8 @@ void						CVegetableManager::deleteClipBlock(CVegetableClipBlock *clipBlock)
 	if(!clipBlock)
 		return;
 
-	// verify no more IGs in this clipblock
-	nlassert(clipBlock->_InstanceGroupList.size() == 0);
+	// verify no more sortBlocks in this clipblock
+	nlassert(clipBlock->_SortBlockList.size() == 0);
 
 	// unlink from _EmptyClipBlockList, because _InstanceGroupList.size() == 0 ...
 	_EmptyClipBlockList.remove(clipBlock);
@@ -546,17 +560,57 @@ void						CVegetableManager::deleteClipBlock(CVegetableClipBlock *clipBlock)
 	_ClipBlockMemory.free(clipBlock);
 }
 
+
 // ***************************************************************************
-CVegetableInstanceGroup		*CVegetableManager::createIg(CVegetableClipBlock *clipBlock)
+CVegetableSortBlock			*CVegetableManager::createSortBlock(CVegetableClipBlock *clipBlock, const CVector &center, float radius)
 {
 	nlassert(clipBlock);
+
+	// create a clipblock
+	CVegetableSortBlock	*ret;
+	ret= _SortBlockMemory.allocate();
+	ret->_Owner= clipBlock;
+	ret->_Center= center;
+	ret->_Radius= radius;
+
+	// append to list.
+	clipBlock->_SortBlockList.append(ret);
+
+	return ret;
+}
+
+// ***************************************************************************
+void						CVegetableManager::deleteSortBlock(CVegetableSortBlock *sortBlock)
+{
+	if(!sortBlock)
+		return;
+
+	// verify no more IGs in this sortblock
+	nlassert(sortBlock->_InstanceGroupList.size() == 0);
+
+	// unlink from clipBlock
+	sortBlock->_Owner->_SortBlockList.remove(sortBlock);
+
+	// delete
+	_SortBlockMemory.free(sortBlock);
+}
+
+
+// ***************************************************************************
+CVegetableInstanceGroup		*CVegetableManager::createIg(CVegetableSortBlock *sortBlock)
+{
+	nlassert(sortBlock);
+	CVegetableClipBlock		*clipBlock= sortBlock->_Owner;
+	
 
 	// create an IG
 	CVegetableInstanceGroup	*ret;
 	ret= _InstanceGroupMemory.allocate();
+	ret->_SortOwner= sortBlock;
+	ret->_ClipOwner= clipBlock;
 
 	// if the clipBlock is empty, change list, because won't be no more.
-	if(clipBlock->_InstanceGroupList.size()==0)
+	if(clipBlock->_NumIgs==0)
 	{
 		// remove from empty list
 		_EmptyClipBlockList.remove(clipBlock);
@@ -564,9 +618,14 @@ CVegetableInstanceGroup		*CVegetableManager::createIg(CVegetableClipBlock *clipB
 		_ClipBlockList.append(clipBlock);
 	}
 
-	// link ig to clipBlock.
-	ret->_Owner= clipBlock;
-	clipBlock->_InstanceGroupList.append(ret);
+	// inc the number of igs appended to the clipBlock.
+	clipBlock->_NumIgs++;
+
+	// link ig to sortBlock.
+	sortBlock->_InstanceGroupList.append(ret);
+
+	// Special Init: The ZSort rdrPass must start with the same HardMode than SortBlock.
+	ret->_RdrPass[NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT].HardMode= sortBlock->ZSortHardMode;
 
 	return ret;
 }
@@ -596,15 +655,18 @@ void						CVegetableManager::deleteIg(CVegetableInstanceGroup *ig)
 		vegetRdrPass.Vertices.clear();
 	}
 
+	CVegetableClipBlock		*clipBlock= ig->_ClipOwner;
+	CVegetableSortBlock		*sortBlock= ig->_SortOwner;
 
-	// unlink from clipBlock, and delete.
-	CVegetableClipBlock		*clipBlock= ig->_Owner;
-	clipBlock->_InstanceGroupList.remove(ig);
+	// unlink from sortBlock, and delete.
+	sortBlock->_InstanceGroupList.remove(ig);
 	_InstanceGroupMemory.free(ig);
 
 
+	// decRef the clipBlock
+	clipBlock->_NumIgs--;
 	// if the clipBlock is now empty, change list
-	if(clipBlock->_InstanceGroupList.size()==0)
+	if(clipBlock->_NumIgs==0)
 	{
 		// remove from normal list
 		_ClipBlockList.remove(clipBlock);
@@ -649,6 +711,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	//--------------------
 	bool	instanceLighted= shape->Lighted;
 	bool	instanceDoubleSided= shape->DoubleSided;
+	bool	instanceZSort= shape->AlphaBlend;
 	bool	destLighted= instanceLighted && !shape->PreComputeLighting;
 	bool	precomputeLighting= instanceLighted && shape->PreComputeLighting;
 
@@ -665,39 +728,18 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	else
 	{
 		if(instanceDoubleSided)
-			rdrPass= NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED;
+		{
+			if(instanceZSort)
+				rdrPass= NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT;
+			else
+				rdrPass= NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED;
+		}
 		else
 			rdrPass= NL3D_VEGETABLE_RDRPASS_UNLIT;
 	}
 
 	// veget rdrPass
 	CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
-
-	// get correct allocator
-	CVegetableVBAllocator	*allocator;
-	// if still in Sfot mode, keep it.
-	if(!vegetRdrPass.HardMode)
-	{
-		// get the soft allocator.
-		allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 0);
-	}
-	else
-	{
-		// Get VB allocator Hard for this rdrPass
-		allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 1);
-		// Test if the instance don't add too many vertices for this VBHard
-		if(allocator->exceedMaxVertexInBufferHard(shape->VB.getNumVertices()))
-		{
-			// if exceed, then must pass ALL the IG in software mode. vertices/faces are correclty updated.
-			swapIgRdrPassHardMode(ig, rdrPass);
-			// now, we can use the software only Allocator to append our instance
-			allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 0);
-		}
-	}
-
-
-	// get correct dstVB
-	const CVertexBuffer	&dstVBInfo= allocator->getSoftwareVertexBuffer();
 
 	// color.
 	CRGBA		primaryRGBA= diffuseColor;
@@ -714,6 +756,57 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	}
 
 
+	// Get allocator, and manage VBhard overriding.
+	//--------------------
+	CVegetableVBAllocator	*allocator;
+	// if still in Sfot mode, keep it.
+	if(!vegetRdrPass.HardMode)
+	{
+		// get the soft allocator.
+		allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 0);
+	}
+	else
+	{
+		// Get VB allocator Hard for this rdrPass
+		allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 1);
+		// Test if the instance don't add too many vertices for this VBHard
+		if(allocator->exceedMaxVertexInBufferHard(shape->VB.getNumVertices()))
+		{
+			// if exceed, then must pass ALL the IG in software mode. vertices/faces are correclty updated.
+			// special: if rdrPass is the ZSort one, 
+			if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
+			{
+				nlassert(ig->_SortOwner->ZSortHardMode);
+
+				// must do it on ALL igs of the sortBlock, for less VBuffer mode switching.
+				CVegetableInstanceGroup		*pIg= ig->_SortOwner->_InstanceGroupList.begin();
+				while(pIg)
+				{
+					// let's pass them in software mode.
+					swapIgRdrPassHardMode(pIg, rdrPass);
+					// next
+					pIg= (CVegetableInstanceGroup*)pIg->Next;
+				}
+
+				// Then all The sortBlock is in SoftMode.
+				ig->_SortOwner->ZSortHardMode= false;
+			}
+			else
+			{
+				// just do it on this Ig (can mix hardMode in a SortBlock for normal rdrPass)
+				swapIgRdrPassHardMode(ig, rdrPass);
+			}
+
+			// now, we can use the software only Allocator to append our instance
+			allocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 0);
+		}
+	}
+
+
+	// get correct dstVB
+	const CVertexBuffer	&dstVBInfo= allocator->getSoftwareVertexBuffer();
+
+
 	// Transform vertices to a vegetable instance, and enlarge clipBlock
 	//--------------------
 	// compute matrix to multiply normals, ie (M-1)t
@@ -728,7 +821,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 
 	// At least, the bbox of the clipBlock must include the center of the shape.
-	ig->_Owner->extendSphere(instancePos);
+	ig->_ClipOwner->extendSphere(instancePos);
 
 
 	// Vertex Info.
@@ -755,6 +848,14 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	// Usefull For !destLighted only.
 	CVector		deltaPos;
 	float		deltaPosNorm;
+
+
+	// UseFull for ZSORT rdrPass, the worldVertices.
+	static	vector<CVector>		worldVertices;
+	if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
+	{
+		worldVertices.resize(numVertices);
+	}
 
 
 	// For all vertices of shape, transform and store manager indices in temp shape.
@@ -803,7 +904,13 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		// Enlarge the clipBlock of the IG.
 		// Since small shape, enlarge with each vertices. simpler and maybe faster.
 		// TODO_VEGET: bend and clipping ...
-		ig->_Owner->extendBBoxOnly(instancePos + relPos);
+		ig->_ClipOwner->extendBBoxOnly(instancePos + relPos);
+
+		// prepare for ZSort
+		if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
+		{
+			worldVertices[i]= instancePos + relPos;
+		}
 
 
 		// Color-ligthing.
@@ -883,7 +990,55 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 
 	// must recompute the sphere according to the bbox.
-	ig->_Owner->updateSphere();
+	ig->_ClipOwner->updateSphere();
+
+
+	// If ZSort, compute Triangle Centers and Orders for quadrant
+	//--------------------
+	if(rdrPass==NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
+	{
+		uint	numTris= shape->TriangleIndices.size()/3;
+
+		// static to avoid reallocation
+		static	vector<CVector>		triangleCenters;
+		triangleCenters.resize(numTris);
+
+		// compute triangle centers
+		for(uint i=0; i<numTris; i++)
+		{
+			// get index in shape.
+			uint	v0= shape->TriangleIndices[i*3+0];
+			uint	v1= shape->TriangleIndices[i*3+1];
+			uint	v2= shape->TriangleIndices[i*3+2];
+
+			// get world coord.
+			const CVector	&vert0= worldVertices[v0];
+			const CVector	&vert1= worldVertices[v1];
+			const CVector	&vert2= worldVertices[v2];
+
+			// compute center
+			triangleCenters[i]= (vert0 + vert1 + vert2) / 3;
+			// relative to center of the sortBlock (for more precision, especially for radixSort)
+			triangleCenters[i]-= ig->_SortOwner->_Center;
+		}
+
+		// compute distance for each quadrant.
+		for(uint quadId=0; quadId<NL3D_VEGETABLE_NUM_QUADRANT; quadId++)
+		{
+			const CVector		&quadDir= CVegetableQuadrant::Dirs[quadId];
+
+			// resize the array.
+			uint	offTri= ig->TriangleQuadrantOrders[quadId].size();
+			ig->TriangleQuadrantOrders[quadId].resize(offTri + numTris);
+
+			// For all tris.
+			for(uint i=0; i<numTris; i++)
+			{
+				// compute the distance with orientation of the quadrant. (DotProduct)
+				ig->TriangleQuadrantOrders[quadId][offTri + i]= triangleCenters[i] * quadDir;
+			}
+		}
+	}
 
 
 	// Append list of indices and list of triangles to the IG
@@ -985,7 +1140,8 @@ bool			CVegetableManager::doubleSidedRdrPass(uint rdrPass)
 {
 	nlassert(rdrPass<NL3D_VEGETABLE_NRDRPASS);
 	return (rdrPass == NL3D_VEGETABLE_RDRPASS_LIGHTED_2SIDED) || 
-		(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED);
+		(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED) ||
+		(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT);
 }
 
 // ***************************************************************************
@@ -1004,7 +1160,12 @@ void			CVegetableManager::updateDriver(IDriver *driver)
 void			CVegetableManager::loadTexture(const string &texName)
 {
 	// setup a CTextureFile (smartPtr-ized).
-	loadTexture(new CTextureFile(texName));
+	ITexture	*tex= new CTextureFile(texName);
+	loadTexture(tex);
+	// setup good params.
+	tex->setFilterMode(ITexture::Linear, ITexture::LinearMipMapLinear);
+	tex->setWrapS(ITexture::Clamp);
+	tex->setWrapT(ITexture::Clamp);
 }
 
 // ***************************************************************************
@@ -1045,9 +1206,31 @@ void			CVegetableManager::unlockBuffers()
 
 
 // ***************************************************************************
-void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *driver)
+class	CSortVSB
+{
+public:
+	CVegetableSortBlock			*Sb;
+
+	CSortVSB() : Sb(NULL) {}
+	CSortVSB(CVegetableSortBlock *sb) : Sb(sb) {}
+
+
+	// for sort()
+	bool	operator<(const CSortVSB &o) const
+	{
+		return Sb->_SortKey>o.Sb->_SortKey;
+	}
+
+};
+
+
+// ***************************************************************************
+void			CVegetableManager::render(const CVector &viewCenter, const CVector &frontVector, const std::vector<CPlane> &pyramid, IDriver *driver)
 {
 	CVegetableClipBlock		*rootToRender= NULL;
+
+	// get normalized front vector.
+	CVector		frontVectorNormed= frontVector.normed();
 
 	// For Speed debug only.
 	/*extern	bool	YOYO_ATTest;
@@ -1079,7 +1262,7 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 		return;
 
 
-	// Render
+	// Prepare Render
 	//--------------------
 
 
@@ -1171,6 +1354,15 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 	}
 
 
+	// Render !ZSORT pass
+	//--------------------
+
+	// setup material (may have change because of ZSORT / alphaBlend pass)
+	_VegetableMaterial.setBlend(false);
+	_VegetableMaterial.setZWrite(true);
+	_VegetableMaterial.setAlphaTestThreshold(0.5f);
+
+
 	/*
 		Prefer sort with Soft / Hard first.
 		Also, Prefer do VBsoft last, for better GPU //ism with Landscape.
@@ -1181,6 +1373,10 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 		// For all renderPass.
 		for(sint rdrPass=0; rdrPass < NL3D_VEGETABLE_NRDRPASS; rdrPass++)
 		{
+			// skip ZSORT rdrPass, done after.
+			if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
+				continue;
+
 			// which allocator?
 			CVegetableVBAllocator	&vbAllocator= getVBAllocatorForRdrPassAndVBHardMode(rdrPass, vbHardMode);
 
@@ -1192,10 +1388,7 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 				// set the 2Sided flag in the material
 				_VegetableMaterial.setDoubleSided( doubleSided );
 				// must enable VP DoubleSided coloring
-				if(doubleSided)
-					driver->enableVertexProgramDoubleSidedColor(true);
-				else
-					driver->enableVertexProgramDoubleSidedColor(false);
+				driver->enableVertexProgramDoubleSidedColor(doubleSided);
 
 
 				// Activate the unique material.
@@ -1212,26 +1405,34 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 				ptrClipBlock= rootToRender;
 				while(ptrClipBlock)
 				{
-					// For all igs of the clipBlock
-					CVegetableInstanceGroup		*ptrIg= ptrClipBlock->_InstanceGroupList.begin();
-					while(ptrIg)
+					// For all sortBlock of the clipBlock
+					CVegetableSortBlock	*ptrSortBlock= ptrClipBlock->_SortBlockList.begin();
+					while(ptrSortBlock)
 					{
-						// rdrPass
-						CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ptrIg->_RdrPass[rdrPass];
-
-						// if this rdrPass is in same HardMode as we process now.
-						if( (vegetRdrPass.HardMode && vbHardMode==1) || (!vegetRdrPass.HardMode && vbHardMode==0) )
+						// For all igs of the sortBlock
+						CVegetableInstanceGroup		*ptrIg= ptrSortBlock->_InstanceGroupList.begin();
+						while(ptrIg)
 						{
-							// Ok, Render the faces.
-							if(vegetRdrPass.NTriangles)
+							// rdrPass
+							CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ptrIg->_RdrPass[rdrPass];
+
+							// if this rdrPass is in same HardMode as we process now.
+							if( (vegetRdrPass.HardMode && vbHardMode==1) || (!vegetRdrPass.HardMode && vbHardMode==0) )
 							{
-								driver->renderSimpleTriangles(&vegetRdrPass.TriangleIndices[0], 
-									vegetRdrPass.NTriangles);
+								// Ok, Render the faces.
+								if(vegetRdrPass.NTriangles)
+								{
+									driver->renderSimpleTriangles(&vegetRdrPass.TriangleIndices[0], 
+										vegetRdrPass.NTriangles);
+								}
 							}
+
+							// next ig.
+							ptrIg= (CVegetableInstanceGroup*)ptrIg->Next;
 						}
 
-						// next ig.
-						ptrIg= (CVegetableInstanceGroup*)ptrIg->Next;
+						// next sortBlock
+						ptrSortBlock= (CVegetableSortBlock	*)(ptrSortBlock->Next);
 					}
 
 					// next clipBlock to render 
@@ -1243,6 +1444,155 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 
 	}
 
+	// Render ZSort pass.
+	//--------------------
+
+	// Debug Quadrants.
+	/*static vector<CVector>		p0DebugLines;
+	static vector<CVector>		p1DebugLines;
+	p0DebugLines.clear();
+	p1DebugLines.clear();*/
+
+	// If some vertices in arrays for ZSort rdrPass
+	if( getVBAllocatorForRdrPassAndVBHardMode(NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT, 0).getNumUserVerticesAllocated()>0 ||
+		getVBAllocatorForRdrPassAndVBHardMode(NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT, 1).getNumUserVerticesAllocated()>0 )
+	{
+		uint	rdrPass= NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT;
+
+		// setup material for this rdrPass.
+		//-------------
+		bool	doubleSided= doubleSidedRdrPass(rdrPass);
+		// set the 2Sided flag in the material
+		_VegetableMaterial.setDoubleSided( doubleSided );
+		// must enable VP DoubleSided coloring
+		driver->enableVertexProgramDoubleSidedColor(doubleSided);
+
+		// setup and Activate the unique material.
+		_VegetableMaterial.setBlend(true);
+		_VegetableMaterial.setZWrite(false);
+		// leave AlphaTest but still kick low alpha values (for fillRate performance)
+		_VegetableMaterial.setAlphaTestThreshold(0.1f);
+		driver->setupMaterial(_VegetableMaterial);
+
+
+		// activate Vertex program first.
+		//nlinfo("\nSTARTVP\n%s\nENDVP\n", _VertexProgram[rdrPass]->getProgram().c_str());
+		nlverify(driver->activeVertexProgram(_VertexProgram[rdrPass]));
+
+
+		// sort
+		//-------------
+		// Array for sorting. (static to avoid reallocation)
+		static	vector<CSortVSB>		sortVegetSbs;
+		sortVegetSbs.clear();
+
+		// For all visibles clipBlock
+		ptrClipBlock= rootToRender;
+		while(ptrClipBlock)
+		{
+			// For all sortBlock, prepare to sort them
+			CVegetableSortBlock	*ptrSortBlock= ptrClipBlock->_SortBlockList.begin();
+			while(ptrSortBlock)
+			{
+				// if the sortBlock has some sorted faces to render
+				if(ptrSortBlock->SortedTriangleIndices[0].size() != 0)
+				{
+					// Compute Distance to Viewer.
+					/* NB: compute radial distance (with norm()) instead of linear distance 
+						(DotProduct with front vector) get less "ZSort poping".
+					*/
+					CVector		dirToSb= ptrSortBlock->_Center - viewCenter;
+					float		distToViewer= dirToSb.norm();
+					// SortKey change if the center is behind the camera.
+					if(dirToSb * frontVectorNormed<0)
+					{
+						ptrSortBlock->_SortKey= - distToViewer;
+					}
+					else
+					{
+						ptrSortBlock->_SortKey= distToViewer;
+					}
+
+					// Choose the quadrant for this sortBlock
+					sint		bestDirIdx= 0;
+					float		bestDirVal= -FLT_MAX;
+					// If too near, must take the frontVector as key, to get better sort.
+					// use ptrSortBlock->_SortKey to get correct negative values.
+					if(ptrSortBlock->_SortKey < ptrSortBlock->_Radius)
+					{
+						dirToSb= frontVectorNormed;
+					}
+
+					// NB: no need to normalize dirToSb, because need only to sort with DP
+					// choose the good list of triangles according to quadrant.
+					for(uint dirIdx=0; dirIdx<NL3D_VEGETABLE_NUM_QUADRANT; dirIdx++)
+					{
+						float	dirVal= CVegetableQuadrant::Dirs[dirIdx] * dirToSb;
+						if(dirVal>bestDirVal)
+						{
+							bestDirVal= dirVal;
+							bestDirIdx= dirIdx;
+						}
+					}
+
+					// set the result.
+					ptrSortBlock->_QuadrantId= bestDirIdx;
+
+					// insert in list to sort.
+					sortVegetSbs.push_back(CSortVSB(ptrSortBlock));
+
+					// Debug Quadrants
+					/*p0DebugLines.push_back(ptrSortBlock->_Center);
+					p1DebugLines.push_back(ptrSortBlock->_Center + CVegetableQuadrant::Dirs[bestDirIdx]);*/
+				}
+
+				// next sortBlock
+				ptrSortBlock= (CVegetableSortBlock	*)(ptrSortBlock->Next);
+			}
+
+			// next clipBlock to render 
+			ptrClipBlock= ptrClipBlock->_RenderNext;
+		}
+
+		// sort!
+		// QSort.
+		sort(sortVegetSbs.begin(), sortVegetSbs.end());
+
+
+		// render
+		//-------------
+
+		// first time, activate the hard VB.
+		bool	precVBHardMode= true;
+		CVegetableVBAllocator	*vbAllocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, 1);
+		vbAllocator->activate();
+
+		// render from back to front
+		for(uint i=0; i<sortVegetSbs.size();i++)
+		{
+			CVegetableSortBlock	*ptrSortBlock= sortVegetSbs[i].Sb;
+
+			// change of VertexBuffer (soft / hard) if needed.
+			if(ptrSortBlock->ZSortHardMode != precVBHardMode)
+			{
+				// setup new VB for hardMode.
+				CVegetableVBAllocator	*vbAllocator= &getVBAllocatorForRdrPassAndVBHardMode(rdrPass, ptrSortBlock->ZSortHardMode);
+				vbAllocator->activate();
+				// prec.
+				precVBHardMode= ptrSortBlock->ZSortHardMode;
+			}
+
+			// render him. we are sure that size > 0, because tested before.
+			driver->renderSimpleTriangles(&ptrSortBlock->SortedTriangleIndices[ptrSortBlock->_QuadrantId][0], 
+				ptrSortBlock->_NTriangles);
+		}
+		
+	}
+
+
+	// Quit
+	//--------------------
+
 	// disable VertexProgram.
 	driver->activeVertexProgram(NULL);
 
@@ -1252,6 +1602,14 @@ void			CVegetableManager::render(const std::vector<CPlane> &pyramid, IDriver *dr
 
 	// restore Fog.
 	driver->enableFog(bkupFog);
+
+
+	// Debug Quadrants
+	/*for(uint l=0; l<p0DebugLines.size();l++)
+	{
+		CVector	dv= CVector::K;
+		CDRU::drawLine(p0DebugLines[l]+dv, p1DebugLines[l]+dv, CRGBA(255,0,0), *driver);
+	}*/
 
 }
 

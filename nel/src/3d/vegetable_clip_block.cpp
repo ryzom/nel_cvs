@@ -1,7 +1,7 @@
 /** \file vegetable_clip_block.cpp
  * <File description>
  *
- * $Id: vegetable_clip_block.cpp,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetable_clip_block.cpp,v 1.2 2001/11/30 13:17:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@ CVegetableClipBlock::CVegetableClipBlock()
 {
 	_Empty= true;
 	_RenderNext= NULL;
+	_NumIgs= 0;
 }
 
 

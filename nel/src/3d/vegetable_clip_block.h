@@ -1,7 +1,7 @@
 /** \file vegetable_clip_block.h
  * <File description>
  *
- * $Id: vegetable_clip_block.h,v 1.1 2001/10/31 10:19:40 berenguier Exp $
+ * $Id: vegetable_clip_block.h,v 1.2 2001/11/30 13:17:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/aabbox.h"
 #include "nel/misc/bsphere.h"
 #include "3d/tess_list.h"
-#include "3d/vegetable_instance_group.h"
+#include "3d/vegetable_sort_block.h"
 
 
 namespace NL3D 
@@ -43,7 +43,7 @@ using NLMISC::CPlane;
 
 // ***************************************************************************
 /**
- *	A block of vegetable instance groups which are clipped in frustum together
+ *	A block of vegetable instance groups (via sortBlocks) which are clipped in frustum together
  *	Internal to VegetableManager. Just an Handle for public.
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -82,8 +82,11 @@ private:
 
 private:
 
-	// List of Igs.
-	CTessList<CVegetableInstanceGroup>		_InstanceGroupList;
+	// List of SortBlocks.
+	CTessList<CVegetableSortBlock>		_SortBlockList;
+
+	// The number of instanceGroups created in this clipBlock.
+	uint					_NumIgs;
 
 	// RenderList
 	CVegetableClipBlock		*_RenderNext;

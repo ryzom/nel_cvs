@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.4 2001/11/27 15:34:37 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.5 2001/11/30 13:17:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/block_memory.h"
 #include "nel/misc/vector_2f.h"
 #include "3d/vegetable_clip_block.h"
+#include "3d/vegetable_sort_block.h"
 #include "3d/vegetable_instance_group.h"
 #include "3d/vegetable_shape.h"
 #include "3d/vegetablevb_allocator.h"
@@ -76,21 +77,38 @@ public:
 	/// \name instance management
 	// @{
 
-	/// Create a clipBlock where instance group (ig) will be created.
+	/// Create a clipBlock where SortBlock will be created.
 	CVegetableClipBlock			*createClipBlock();
-	/// delete such a clipBlock. all ig must be deleted before.
+	/// delete such a clipBlock. all sortBlocks and so all ig must be deleted before.
 	void						deleteClipBlock(CVegetableClipBlock *clipBlock);
 
-	/** create an instance group in a clipBlock, where instances will be created.
-	 *	Instances will be frustum-clipped by the clipBlock.
+	/** Create a SortBlock in a clipBlock where instance group (ig) will be created.
+	 *	\param center you must give an approximate center for the sortBlock (for sorting)
+	 *	\param radius you must give an approximate radius for the sortBlock (for the system to know when you are IN
+	 *	the sortBlock, and then to sort in a better way)
 	 */
-	CVegetableInstanceGroup		*createIg(CVegetableClipBlock *clipBlock);
-	/// delete such an ig.
+	CVegetableSortBlock			*createSortBlock(CVegetableClipBlock *clipBlock, const CVector &center, float radius);
+	/// delete such a SortBlock. all ig must be deleted before.
+	void						deleteSortBlock(CVegetableSortBlock *sortBlock);
+
+	/** create an instance group in a sortBlock, where instances will be created.
+	 *	Instances will be frustum-clipped by the clipBlock, and sorted (for the ZSort rdrPass only) by sortBlock.
+	 */
+	CVegetableInstanceGroup		*createIg(CVegetableSortBlock *sortBlock);
+	/** delete such an ig.
+	 *	After doing this, you must call igSortBlockOwner->updateSortBlock()
+	 *	If the sortBlock has many Igs, you can do it after deleting all your igs.
+	 */
 	void						deleteIg(CVegetableInstanceGroup *ig);
 
 	/** add an instance to an ig, enlarging the associated clipBlock
 	 *	If the shape is not lighted, then only diffuseColor is used, to setup color per vertex.
 	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
+	 *
+	 *	Also, buffer must be locked.
+	 *
+	 *	After adding a bunch of instances to an Ig, you must call igSortBlockOwner->updateSortBlock()
+	 *	If the sortBlock has many Igs, you can do it after updating all your igs.
 	 */
 	void						addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
@@ -124,7 +142,7 @@ public:
 	/** render the manager into a driver, with current viewMatrix/frustum/fog  setuped
 	 *	Buffers should be unlocked. 
 	 */
-	void			render(const std::vector<CPlane> &pyramid, IDriver *driver);
+	void			render(const CVector &viewCenter, const CVector &frontVector, const std::vector<CPlane> &pyramid, IDriver *driver);
 
 	// @}
 
@@ -153,6 +171,7 @@ public:
 // *********************
 private:
 	NLMISC::CBlockMemory<CVegetableClipBlock>		_ClipBlockMemory;
+	NLMISC::CBlockMemory<CVegetableSortBlock>		_SortBlockMemory;
 	NLMISC::CBlockMemory<CVegetableInstanceGroup>	_InstanceGroupMemory;
 
 	// List of ClipBlock not empty. tested for clipping

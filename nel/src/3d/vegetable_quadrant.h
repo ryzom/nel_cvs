@@ -1,7 +1,7 @@
-/** \file vegetable_instance_group.cpp
+/** \file vegetable_quadrant.h
  * <File description>
  *
- * $Id: vegetable_instance_group.cpp,v 1.4 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: vegetable_quadrant.h,v 1.1 2001/11/30 13:17:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,21 +23,43 @@
  * MA 02111-1307, USA.
  */
 
-#include "3d/vegetable_instance_group.h"
+#ifndef NL_VEGETABLE_QUADRANT_H
+#define NL_VEGETABLE_QUADRANT_H
+
+#include "nel/misc/types_nl.h"
+#include "nel/misc/vector.h"
+#include "3d/vegetable_def.h"
 
 
 namespace NL3D 
 {
 
 
+using NLMISC::CVector;
+
+
 // ***************************************************************************
-CVegetableInstanceGroup::CVegetableInstanceGroup()
+/**
+ * Static Quadrant direction for Vegetable ZSort rdrPass.
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CVegetableQuadrant
 {
-	_ClipOwner= NULL;
-	_SortOwner= NULL;
-}
+public:
 
+	/// Constructor
+	CVegetableQuadrant();
 
+	// Directions of quadrants
+	static CVector		Dirs[NL3D_VEGETABLE_NUM_QUADRANT];
+};
 
 
 } // NL3D
+
+
+#endif // NL_VEGETABLE_QUADRANT_H
+
+/* End of vegetable_quadrant.h */

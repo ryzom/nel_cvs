@@ -1,7 +1,7 @@
-/** \file vegetable_instance_group.cpp
+/** \file radix_sort.cpp
  * <File description>
  *
- * $Id: vegetable_instance_group.cpp,v 1.4 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: radix_sort.cpp,v 1.1 2001/11/30 13:17:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,21 +23,26 @@
  * MA 02111-1307, USA.
  */
 
-#include "3d/vegetable_instance_group.h"
+#include "3d/radix_sort.h"
 
 
-namespace NL3D 
+namespace NL3D {
+
+
+// To test compiling.
+/*struct	Pipo
 {
+	uint32	a;
+	uint32	getRadixKey() const {return a;}
+};
 
 
-// ***************************************************************************
-CVegetableInstanceGroup::CVegetableInstanceGroup()
+CRadixSort<Pipo>		PipoSort;
+
+static void	pipo()
 {
-	_ClipOwner= NULL;
-	_SortOwner= NULL;
-}
-
-
+	PipoSort.sort(NULL, NULL, 30);
+}*/
 
 
 } // NL3D

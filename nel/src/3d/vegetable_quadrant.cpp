@@ -1,7 +1,7 @@
-/** \file vegetable_instance_group.cpp
+/** \file vegetable_quadrant.cpp
  * <File description>
  *
- * $Id: vegetable_instance_group.cpp,v 1.4 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: vegetable_quadrant.cpp,v 1.1 2001/11/30 13:17:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,21 +23,35 @@
  * MA 02111-1307, USA.
  */
 
-#include "3d/vegetable_instance_group.h"
+#include "3d/vegetable_quadrant.h"
+#include "nel/misc/matrix.h"
 
+
+using namespace NLMISC;
 
 namespace NL3D 
 {
 
 
-// ***************************************************************************
-CVegetableInstanceGroup::CVegetableInstanceGroup()
+/*
+ * Constructor, just used to init quadrants.
+ */
+CVegetableQuadrant::CVegetableQuadrant()
 {
-	_ClipOwner= NULL;
-	_SortOwner= NULL;
+	for(uint i=0;i<NL3D_VEGETABLE_NUM_QUADRANT;i++)
+	{
+		CMatrix	mat;
+		mat.rotateZ(2*(float)Pi * i / NL3D_VEGETABLE_NUM_QUADRANT);
+		Dirs[i]= mat.getJ();
+	}
 }
 
 
+// Quadrants.
+CVector		CVegetableQuadrant::Dirs[NL3D_VEGETABLE_NUM_QUADRANT];
+
+// The variable to init the quadrants.
+static	CVegetableQuadrant		InitVegetableQuadrant;
 
 
 } // NL3D

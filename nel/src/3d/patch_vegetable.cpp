@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.6 2001/11/21 13:57:32 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.7 2001/11/30 13:17:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,10 +40,6 @@ using namespace NLMISC;
 
 namespace NL3D 
 {
-
-
-// Suppose a constant size for a tile of 2m*2m.
-#define	NL3D_PATCH_TILE_AREA	4
 
 
 // ***************************************************************************
@@ -226,7 +222,7 @@ void		CPatch::createVegetableBlock(uint numTb, uint ts, uint tt)
 	CBezierPatch	*bpatch= unpackIntoCache();
 	CVector		center= bpatch->eval( (float)(tbs*2+1)/OrderS, (float)(tbt*2+1)/OrderT );
 	// Lower-Left tile is (tbs*2, tbt*2)
-	vegetBlock->init(center, VegetableClipBlocks[cbt *cbWidth + cbs], this, tbs*2, tbt*2, getLandscape()->_VegetableBlockList);
+	vegetBlock->init(center, getLandscape()->_VegetableManager, VegetableClipBlocks[cbt *cbWidth + cbs], this, tbs*2, tbt*2, getLandscape()->_VegetableBlockList);
 
 	// set in the tessBlock
 	TessBlocks[numTb].VegetableBlock= vegetBlock;

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.94 2001/11/22 17:13:59 berenguier Exp $
+ * $Id: landscape.cpp,v 1.95 2001/11/30 13:17:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -774,7 +774,7 @@ static inline void	drawPassTriArray(CMaterial &mat)
 
 
 // ***************************************************************************
-void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE], bool doTileAddPass)
+void			CLandscape::render(const CVector &refineCenter, const CVector &frontVector, const CPlane	pyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE], bool doTileAddPass)
 {
 	IDriver *driver= _Driver;
 	nlassert(driver);
@@ -1259,7 +1259,7 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 		{
 			vegetablePyramid[i]= pyramid[i];
 		}
-		_VegetableManager->render(vegetablePyramid, driver);
+		_VegetableManager->render(refineCenter, frontVector, vegetablePyramid, driver);
 	}
 
 	// compute number of triangles rendered with vegetable manager.

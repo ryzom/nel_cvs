@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * <File description>
  *
- * $Id: vegetable_shape.cpp,v 1.4 2001/11/27 15:34:37 berenguier Exp $
+ * $Id: vegetable_shape.cpp,v 1.5 2001/11/30 13:17:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,7 @@ CVegetableShape::CVegetableShape()
 	Lighted= false;
 	DoubleSided= false;
 	PreComputeLighting= false;
+	AlphaBlend= false;
 }
 
 // ***************************************************************************
@@ -64,6 +65,9 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 
 	// PreComputeLighting.
 	PreComputeLighting= Lighted && vbuild.PreComputeLighting;
+
+	// AlphaBlend: valid only for 2Sided and Unlit (or similar PreComputeLighting) mode
+	AlphaBlend= vbuild.AlphaBlend && DoubleSided && (!Lighted || PreComputeLighting);
 
 	// BendCenterMode
 	BendCenterMode= vbuild.BendCenterMode;
@@ -184,6 +188,7 @@ void		CVegetableShape::serial(NLMISC::IStream &f)
 	f.serial(Lighted);
 	f.serial(DoubleSided);
 	f.serial(PreComputeLighting);
+	f.serial(AlphaBlend);
 	f.serialEnum(BendCenterMode);
 	f.serial(VB);
 	f.serialCont(TriangleIndices);

@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.5 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: landscape_def.h,v 1.6 2001/11/30 13:17:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,12 @@ class	IDriver;
 #define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_LIGHTED		15000
 #define	NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_MAX	\
 	(max(NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_UNLIT, NL3D_LANDSCAPE_VEGETABLE_MAX_AGP_VERTEX_LIGHTED))
+
+// For Landscape Vegetable
+// Suppose a constant size for a tile of 2m*2m.
+#define	NL3D_PATCH_TILE_AREA	4.f
+// Suppose a constant size for a tile of 2m*2m. approx radius is 1m.
+#define	NL3D_PATCH_TILE_RADIUS	1.f
 
 
 // ***************************************************************************

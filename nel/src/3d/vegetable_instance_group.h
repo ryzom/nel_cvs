@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.3 2001/11/27 15:34:37 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.4 2001/11/30 13:17:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,10 +62,13 @@ public:
 private:
 	friend class	CVegetableManager;
 	friend class	CVegetableClipBlock;
+	friend class	CVegetableSortBlock;
 
 
 	// Who owns us.
-	CVegetableClipBlock		*_Owner;
+	CVegetableClipBlock		*_ClipOwner;
+	CVegetableSortBlock		*_SortOwner;
+
 
 	struct	CVegetableRdrPass
 	{
@@ -88,8 +91,12 @@ private:
 	};
 
 
-	// For now, there is only 4 render pass: Lighted and Unlit combined with 2Sided or not
+	// For now, there is only 5 render pass: Lighted and Unlit combined with 2Sided or not + the ZSort one.
 	CVegetableRdrPass			_RdrPass[NL3D_VEGETABLE_NRDRPASS];
+
+	// list of triangles order, for quadrant ZSorting. only for NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT rdrpass.
+	// this is why this don't appear in CVegetableRdrPass
+	std::vector<float>			TriangleQuadrantOrders[NL3D_VEGETABLE_NUM_QUADRANT];
 
 };
 

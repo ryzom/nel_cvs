@@ -1,7 +1,7 @@
 /** \file landscape_vegetable_block.cpp
  * <File description>
  *
- * $Id: landscape_vegetable_block.cpp,v 1.2 2001/11/12 14:00:07 berenguier Exp $
+ * $Id: landscape_vegetable_block.cpp,v 1.3 2001/11/30 13:17:53 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,17 +71,21 @@ CLandscapeVegetableBlock::CLandscapeVegetableBlock()
 	_VegetableClipBlock= NULL;
 	_CurDistType= NL3D_VEGETABLE_BLOCK_NUMDIST;
 
-	for(uint i=0;i<NL3D_VEGETABLE_BLOCK_NUMDIST;i++)
+	for(uint j=0;j<NL3D_TESSBLOCK_TILESIZE;j++)
 	{
-		_VegetableIG[i]= NULL;
+		_VegetableSortBlock[j]= NULL;
+		for(uint i=0;i<NL3D_VEGETABLE_BLOCK_NUMDIST;i++)
+		{
+			_VegetableIG[j][i]= NULL;
+		}
 	}
 }
 
 
 
 // ***************************************************************************
-void			CLandscapeVegetableBlock::init(const CVector &center, CVegetableClipBlock *vegetableClipBlock, CPatch *patch, uint ts, uint tt,
-	CTessList<CLandscapeVegetableBlock> &vblist)
+void			CLandscapeVegetableBlock::init(const CVector &center, CVegetableManager *vegetManager, 
+	CVegetableClipBlock *vegetableClipBlock, CPatch *patch, uint ts, uint tt, CTessList<CLandscapeVegetableBlock> &vblist)
 {
 	nlassert(patch);
 	_Center= center;
@@ -89,6 +93,25 @@ void			CLandscapeVegetableBlock::init(const CVector &center, CVegetableClipBlock
 	_Patch= patch;
 	_Ts= ts;
 	_Tt= tt;
+
+	// Create the Vegetable SortBlocks
+	sint	tms,tmt;
+	// for all tiles
+	nlassert(NL3D_TESSBLOCK_TILESIZE==4);
+	for(tmt= _Tt; tmt<_Tt+2; tmt++)
+	{
+		for(tms= _Ts; tms<_Ts+2; tms++)
+		{
+			// compute approximate center of the tile.
+			float	s= (tms + 0.5f) / _Patch->getOrderS();
+			float	t= (tmt + 0.5f) / _Patch->getOrderT();
+			CBezierPatch	*bpatch= _Patch->unpackIntoCache();
+			CVector	center= bpatch->eval(s, t);
+
+			// create the sortBlock. NB: very approximate SortBlock radius....
+			_VegetableSortBlock[(tmt-_Tt)*2 + (tms-_Ts)]= vegetManager->createSortBlock(_VegetableClipBlock, center, NL3D_PATCH_TILE_RADIUS);
+		}
+	}
 
 	// append to list.
 	vblist.append(this);
@@ -98,13 +121,24 @@ void			CLandscapeVegetableBlock::init(const CVector &center, CVegetableClipBlock
 // ***************************************************************************
 void			CLandscapeVegetableBlock::release(CVegetableManager *vegeManager, CTessList<CLandscapeVegetableBlock> &vblist)
 {
-	// release all Igs.
-	for(uint i=0;i<NL3D_VEGETABLE_BLOCK_NUMDIST;i++)
+	// release all Igs, and all Sbs.
+	for(uint j=0;j<NL3D_TESSBLOCK_TILESIZE;j++)
 	{
-		if(_VegetableIG[i])
+		// release IGs first.
+		for(uint i=0;i<NL3D_VEGETABLE_BLOCK_NUMDIST;i++)
 		{
-			vegeManager->deleteIg(_VegetableIG[i]);
-			_VegetableIG[i]= NULL;
+			if(_VegetableIG[j][i])
+			{
+				vegeManager->deleteIg(_VegetableIG[j][i]);
+				_VegetableIG[j][i]= NULL;
+			}
+		}
+
+		// release SB
+		if(_VegetableSortBlock[j])
+		{
+			vegeManager->deleteSortBlock(_VegetableSortBlock[j]);
+			_VegetableSortBlock[j]= NULL;
 		}
 	}
 
@@ -142,14 +176,21 @@ void			CLandscapeVegetableBlock::update(const CVector &viewCenter, CVegetableMan
 		// Erase or create IGs.
 		if(newDistType>_CurDistType)
 		{
-			// Erase no more needed Igs.
-			for(uint i=_CurDistType; i<newDistType; i++)
+			// For all tiles
+			for(uint j=0;j<NL3D_TESSBLOCK_TILESIZE;j++)
 			{
-				if(_VegetableIG[i])
+				// Erase no more needed Igs.
+				for(uint i=_CurDistType; i<newDistType; i++)
 				{
-					vegeManager->deleteIg(_VegetableIG[i]);
-					_VegetableIG[i]= NULL;
+					if(_VegetableIG[j][i])
+					{
+						vegeManager->deleteIg(_VegetableIG[j][i]);
+						_VegetableIG[j][i]= NULL;
+					}
 				}
+
+				// update the sort block for this tile
+				_VegetableSortBlock[j]->updateSortBlock(*vegeManager);
 			}
 		}
 		else
@@ -158,10 +199,17 @@ void			CLandscapeVegetableBlock::update(const CVector &viewCenter, CVegetableMan
 			CLandscapeVegetableBlockCreateContext	ctx;
 			ctx.init(_Patch, _Ts, _Tt);
 
-			// create new Igs.
+			// create new Igs, for all tiles
 			for(uint i=newDistType; i<_CurDistType; i++)
 			{
 				createVegetableIGForDistType(i, vegeManager, ctx);
+			}
+
+			// For all tiles
+			for(uint j=0;j<NL3D_TESSBLOCK_TILESIZE;j++)
+			{
+				// update the sort block for this tile
+				_VegetableSortBlock[j]->updateSortBlock(*vegeManager);
 			}
 		}
 
@@ -177,14 +225,13 @@ void			CLandscapeVegetableBlock::update(const CVector &viewCenter, CVegetableMan
 void			CLandscapeVegetableBlock::createVegetableIGForDistType(uint i, CVegetableManager *vegeManager,
 	CLandscapeVegetableBlockCreateContext &vbCreateCtx)
 {
-	// create the instance group
-	CVegetableInstanceGroup		*vegetIg= vegeManager->createIg(_VegetableClipBlock);
+	// check
+	nlassert(NL3D_TESSBLOCK_TILESIZE==4);
+	nlassert(_VegetableIG[0][i]==NULL);
+	nlassert(_VegetableIG[1][i]==NULL);
+	nlassert(_VegetableIG[2][i]==NULL);
+	nlassert(_VegetableIG[3][i]==NULL);
 
-	// set
-	nlassert(_VegetableIG[i]==NULL);
-	_VegetableIG[i]= vegetIg;
-
-	// Add instance in this instance group.
 	// Create vegetables instances per tile_material.
 	sint	tms,tmt;
 	// for all tiles
@@ -193,8 +240,16 @@ void			CLandscapeVegetableBlock::createVegetableIGForDistType(uint i, CVegetable
 	{
 		for(tms= _Ts; tms<_Ts+2; tms++)
 		{
+			uint	tileId= tms-_Ts + (tmt-_Tt)*2;
+
+			// create the instance group in the good sortBlock
+			CVegetableInstanceGroup		*vegetIg= vegeManager->createIg(_VegetableSortBlock[tileId]);
+			_VegetableIG[tileId][i]= vegetIg;
+
 			// generate 
 			_Patch->generateTileVegetable(vegetIg, i, tms, tmt, vbCreateCtx);
+
+			// NB: vegtable SortBlock is updated in update() after
 		}
 	}
 

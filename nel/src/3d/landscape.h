@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.25 2001/11/22 17:13:59 berenguier Exp $
+ * $Id: landscape.h,v 1.26 2001/11/30 13:17:53 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,8 +224,10 @@ public:
 	/** Render the landscape. 
 	 *	A more precise clip is made on TessBlocks. pyramid should be the same as one passed to clip().
 	 *	For optimisation, this pyramid should contains only the Left/Right and Top/Bottom clip planes, in this order.
+	 *	\param refineCenter should be the position of the camera
+	 *	\param frontVector should be the J vector of the camera
 	 */
-	void			render(const CVector &refineCenter, const CPlane pyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE], bool doTileAddPass=false);
+	void			render(const CVector &refineCenter, const CVector &frontVector, const CPlane pyramid[NL3D_TESSBLOCK_NUM_CLIP_PLANE], bool doTileAddPass=false);
 
 	/// Refine/Geomorph ALL the tesselation of the landscape, from the view point refineCenter. Even if !RefineMode.
 	void			refineAll(const CVector &refineCenter);

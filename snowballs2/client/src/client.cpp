@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.48 2001/10/29 18:54:45 lecroart Exp $
+ * $Id: client.cpp,v 1.49 2001/11/06 17:57:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -177,6 +177,8 @@ int main(int argc, char **argv)
 	Driver->showCursor(false);
 	Driver->setCapture(true);
 	Driver->setMousePos(0.5f, 0.5f);
+
+	CLoginClient::setInformations (Driver->getVideocardInformation ());
 
 	// Create a Text context for later text rendering
 	TextContext = Driver->createTextContext (CPath::lookup(ConfigFile.getVar("FontName").asString ()));
@@ -540,11 +542,15 @@ void displayLoadingState (char *state)
 	TextContext->setHotSpot (UTextContext::MiddleMiddle);
 
 	TextContext->setFontSize (40);
-	TextContext->printAt (0.5f, 0.5f, ucstring("Welcome to Snowballs 1 !"));
+	TextContext->printAt (0.5f, 0.5f, ucstring("Welcome to Snowballs !"));
 	
 	TextContext->setFontSize (30);
 	TextContext->printAt (0.5f, 0.2f, ucstring(state));
 	
+	TextContext->setHotSpot (UTextContext::BottomRight);
+	TextContext->setFontSize (15);
+	TextContext->printAt (0.99f, 0.01f, ucstring("(compiled " __DATE__ " " __TIME__ ")"));
+
 	Driver->swapBuffers ();
 }
 

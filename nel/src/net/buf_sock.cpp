@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.15 2001/08/30 17:07:36 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.16 2001/09/12 16:55:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,7 +41,7 @@ using namespace std;
 namespace NLNET {
 
 
-NLMISC::CMutex nettrace_mutex;
+NLMISC::CMutex nettrace_mutex("nettrace_mutex");
 
 
 /*

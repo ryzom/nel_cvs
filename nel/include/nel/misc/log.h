@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.24 2001/07/11 12:14:25 lecroart Exp $
+ * $Id: log.h,v 1.25 2001/09/12 16:54:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,7 @@ public:
 
 	/// Returns true if the specified displayer is attached to the log object
 	bool attached(IDisplayer *displayer) const;
-
+	
 	/// Returns true if no displayer is attached
 	bool noDisplayer() const { return _Displayers.empty(); }
 

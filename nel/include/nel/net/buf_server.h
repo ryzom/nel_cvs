@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.9 2001/07/10 08:22:23 portier Exp $
+ * $Id: buf_server.h,v 1.10 2001/09/12 16:54:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -393,7 +393,7 @@ class CServerReceiveTask : public NLMISC::IRunnable, public CServerTask
 public:
 
 	/// Constructor
-	CServerReceiveTask( CBufServer *server ) : CServerTask(), _Server(server) {}
+	CServerReceiveTask( CBufServer *server ) : CServerTask(), _Server(server), _Connections("CServerReceiveTask::_Connections"), _RemoveSet("CServerReceiveTask::_RemoveSet") {}
 
 	/// Run
 	virtual void run();

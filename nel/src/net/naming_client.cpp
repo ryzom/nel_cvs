@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.36 2001/06/27 08:31:20 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.37 2001/09/12 16:55:23 lecroart Exp $
  *
  */
 
@@ -47,7 +47,7 @@ static TBroadcastCallback _UnregistrationBroadcastCallback = NULL;
 uint	CNamingClient::_ThreadId = 0xFFFFFFFF;
 
 std::list<CNamingClient::CServiceEntry>	CNamingClient::RegisteredServices;
-NLMISC::CMutex CNamingClient::RegisteredServicesMutex;
+NLMISC::CMutex CNamingClient::RegisteredServicesMutex("CNamingClient::RegisteredServicesMutex");
 
 void CNamingClient::setRegistrationBroadcastCallback (TBroadcastCallback cb)
 {

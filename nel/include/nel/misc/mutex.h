@@ -1,8 +1,8 @@
 /** \file mutex.h
  * OS independant class for the mutex management with Windows and Posix implementation
- * Classes CMutex, CSynchronized (using mutex) and CFairlySynchronized (using semaphore)
+ * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.9 2001/09/10 13:40:38 cado Exp $
+ * $Id: mutex.h,v 1.10 2001/09/12 16:54:47 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #define NL_MUTEX_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/time_nl.h"
 #include <map>
 
 #ifdef NL_OS_UNIX
@@ -35,21 +36,23 @@
 #include <semaphore.h>
 #endif
 
-#undef MUTEX_DEBUG
+#define MUTEX_DEBUG
 
 
 namespace NLMISC {
 
+// By default, all mutex use the CFairMutex class to avoid freeze problem.
+#define CMutex CFairMutex
 
 /**
- * Classic mutex implementation
+ * Classic mutex implementation (not fairly)
  * Don't assume the mutex are recursive (ie don't call enter() several times
  * on the same mutex from the same thread without having called leave()) ;
  * and don't assume either the threads are woken-up in the same order as they
  * were put to sleep !
  *
  *\code
- CMutex m;
+ CUnfairMutex m;
  m.enter ();
  // do critical stuffs
  m.leave ();
@@ -58,15 +61,15 @@ namespace NLMISC {
  * \author Nevrax France
  * \date 2000
  */
-class CMutex
+class CUnfairMutex
 {
 public:
 
 	/// Constructor
-	CMutex();
+	CUnfairMutex(const std::string &name);
 
 	/// Destructor
-	~CMutex();
+	~CUnfairMutex();
 
 	void enter ();
 	void leave ();
@@ -74,16 +77,97 @@ public:
 private:
 
 #ifdef NL_OS_WINDOWS
-
 	void *Mutex;
-
 #elif defined NL_OS_UNIX
-
 	pthread_mutex_t mutex;
-
-#endif // NL_OS_WINDOWS
+#else
+#	error "No unfair mutex implementation for this OS"
+#endif
 
 };
+
+
+#ifdef NL_OS_WINDOWS
+/**
+ * Trick to avoid including <windows.h> !
+ * winbase.h: typedef RTL_CRITICAL_SECTION CRITICAL_SECTION;
+ * The original RTL_CRITICAL_SECTION is in winnt.h.
+ */
+struct TNelRtlCriticalSection {
+	void	*DebugInfo;
+	long	 LockCount;
+	long	 RecursionCount;
+	void	*OwningThread;        // from the thread's ClientId->UniqueThread
+	void	*LockSemaphore;
+	uint32	 SpinCount;
+};
+#endif // NL_OS_WINDOWS
+
+
+/**
+ * Kind of "fair" mutex (implemented by semaphore on Unix, critical section on Windows)
+ *
+ *\code
+ CUnfairMutex m;
+ m.enter ();
+ // do critical stuffs
+ m.leave ();
+ *\endcode
+ * \author Olivier Cado
+ * \author Nevrax France
+ * \date 2000
+ *
+ *\code
+ CFairMutex m;
+ m.enter ();
+ // do critical stuffs
+ m.leave ();
+ *\endcode
+ * \author Olivier Cado
+ * \author Nevrax France
+ * \date 2001
+ */
+class CFairMutex
+{
+public:
+
+	/// Constructor
+	CFairMutex();
+	CFairMutex(const std::string &name);
+
+	/// Destructor
+	~CFairMutex();
+
+	void enter ();
+	void leave ();
+
+	std::string Name;
+
+private:
+
+#ifdef NL_OS_WINDOWS
+	TNelRtlCriticalSection	_Cs;
+#elif defined NL_OS_UNIX
+	volatile sem_t			_Sem;
+#else
+#	error "No fair mutex implementation for this OS"
+#endif
+
+
+#ifdef MUTEX_DEBUG
+	// debug stuffs
+	void debugCreateMutex();
+	void debugBeginEnter();
+	void debugEndEnter();
+	void debugLeave();
+	void debugDeleteMutex();
+#endif // MUTEX_DEBUG
+
+};
+
+
+
+
 
 
 /*
@@ -93,12 +177,19 @@ private:
 
 struct TMutexLocks
 {
-	TMutexLocks( bool locked=false, uint32 m=0 ) : Time(0), Nb(0), Locked(locked), MutexNum(m) {}
+	TMutexLocks(uint32 m=0) : TimeToEnter(0), TimeInMutex(0), Nb(0), WaitingMutex(0), MutexNum(m), ThreadHavingTheMutex(0xFFFFFFFF), Dead(false) {}
 	
-	uint32	Time;     // cumulated time blocking on enter
-	uint32	Nb;       // number of calls of enter
-	bool	Locked;   // thread is still locked
-    uint32  MutexNum; // identifying a mutex
+	uint32		TimeToEnter;			// cumulated time blocking on enter
+	uint32		TimeInMutex;			// cumulated time between enter and leave
+	uint32		Nb;						// number of calls of enter
+	uint32		WaitingMutex;			// number of thread that waiting this mutex
+    sint32		MutexNum;				// identifying a mutex
+	uint		ThreadHavingTheMutex;	// thread id of the thread that is in this mutex (0xFFFFFFFF if no thread)
+	bool		Dead;					// True if the mutex is dead (deleted)
+	std::string	MutexName;				// Name of the mutex
+
+	NLMISC::TTime BeginEnter;
+	NLMISC::TTime EndEnter;
 };
 
 /// Inits the "mutex debugging info system"
@@ -116,74 +207,22 @@ extern uint32 NbMutexes;
 
 
 
-
-#ifdef NL_OS_WINDOWS
-
-/**
- * Trick to avoid including <windows.h> !
- * winbase.h: typedef RTL_CRITICAL_SECTION CRITICAL_SECTION;
- * The original RTL_CRITICAL_SECTION is in winnt.h.
- */
-struct TNelRtlCriticalSection {
-    void *DebugInfo;
-    long LockCount;
-    long RecursionCount;
-    void *OwningThread;        // from the thread's ClientId->UniqueThread
-    void *LockSemaphore;
-    unsigned long SpinCount;
-};
-
-#endif
-
-
-/**
- * Kind of "fair" mutex (implemented by semaphore on Unix, critical section on Windows)
- */
-class CCriticalSection
-{
-public:
-
-	/// Constructor
-	CCriticalSection();
-
-	/// Destructor
-	~CCriticalSection();
-
-	void enter ();
-	void leave ();
-
-private:
-
-#ifdef NL_OS_WINDOWS
-
-	/// Windows critical section
-	TNelRtlCriticalSection	_Cs;
-
-#elif defined NL_OS_UNIX
-
-	/// Unix semaphore
-	volatile sem_t			_Sem;
-
-#endif // NL_OS_WINDOWS
-
-};
-
-
-
+// By default, all synchronization use the CFairSynchronized class to avoid freeze problem.
+#define CSynchronized CFairSynchronized
 
 /**
  * This class ensure that the Value is accessed by only one thread. First you have to create a CSynchronized class with you type.
  * Then, if a thread want to modify or do anything on it, you create a CAccessor in a \b sub \b scope. You can modify the value
- * of the CSynchronized using the value() function \b until the end of the scope. So you have to put the smaller scope as you can.
+ * of the CUnfairSynchronized using the value() function \b until the end of the scope. So you have to put the smaller scope as you can.
  *
- * Internally, this class uses a CMutex object (see CMutex for programming considerations).
+ * Internally, this class uses a CUnfairMutex object (see CUnfairMutex for programming considerations).
  *
  *\code
  // the value that you want to be thread safe.
- CSynchronized<int> val;
+ CUnfairSynchronized<int> val;
  { // create a new scope for the access
    // get an access to the value
-   CSynchronized<int>::CAccessor acces(&val);
+   CUnfairSynchronized<int>::CAccessor acces(&val);
    // now, you have a thread safe access until the end of the scope, so you can do whatever you want. for example, change the value
    acces.value () = 10;
  } // end of the access
@@ -193,20 +232,22 @@ private:
  * \date 2000
  */
 template <class T>
-class CMutexSynchronized
+class CUnfairSynchronized
 {
 public:
+
+	CUnfairSynchronized (const std::string &name) : _Mutex(name) { }
 
 	/**
 	 * This class give you a thread safe access to the CSynchronized Value. Look at the example in the CSynchronized.
 	 */
 	class CAccessor
 	{
-		CMutexSynchronized<T> *Synchronized;
+		CUnfairSynchronized<T> *Synchronized;
 	public:
 
 		/// get the mutex or wait
-		CAccessor(CMutexSynchronized<T> *cs)
+		CAccessor(CUnfairSynchronized<T> *cs)
 		{
 			Synchronized = cs;
 			const_cast<CMutex&>(Synchronized->_Mutex).enter();
@@ -227,48 +268,50 @@ public:
 
 private:
 
-	friend class CMutexSynchronized::CAccessor;
+	friend class CUnfairSynchronized::CAccessor;
 
 	/// The mutex of the synchronized value.
-	volatile CMutex		_Mutex;
+	volatile CUnfairMutex	_Mutex;
 
 	/// The synchronized value.
-	volatile T			_Value;
+	volatile T				_Value;
 };
 
 
 /**
- * This class is similar to CMutexSynchronized, but it ensures that the threads
+ * This class is similar to CUnfairSynchronized, but it ensures that the threads
  * are woken-up in the same order as they were put to sleep.
- * Internally, it uses a CCriticalSection object instead of a CMutex object.
+ * Internally, it uses a CFairMutex object instead of a CUnfairMutex object.
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
  */
 template <class T>
-class CFairlySynchronized
+class CFairSynchronized
 {
 public:
 
+	CFairSynchronized (const std::string &name) : _Cs(name) { }
+
 	/**
-	 * This class give you a thread safe access to the CFairlySynchronized Value. Look at the example in CSynchronized.
+	 * This class give you a thread safe access to the CFairSynchronized Value. Look at the example in CSynchronized.
 	 */
 	class CAccessor
 	{
-		CFairlySynchronized<T> *Synchronized;
+		CFairSynchronized<T> *Synchronized;
 	public:
 
 		/// get the mutex or wait
-		CAccessor(CFairlySynchronized<T> *cs)
+		CAccessor(CFairSynchronized<T> *cs)
 		{
 			Synchronized = cs;
-			const_cast<CCriticalSection&>(Synchronized->_Cs).enter();
+			const_cast<CFairMutex&>(Synchronized->_Cs).enter();
 		}
 
 		/// release the mutex
 		~CAccessor()
 		{
-			const_cast<CCriticalSection&>(Synchronized->_Cs).leave();
+			const_cast<CFairMutex&>(Synchronized->_Cs).leave();
 		}
 
 		/// access to the Value
@@ -280,20 +323,14 @@ public:
 
 private:
 
-	friend class CFairlySynchronized::CAccessor;
+	friend class CFairSynchronized::CAccessor;
 
 	/// The mutex of the synchronized value.
-	volatile CCriticalSection	_Cs;
+	volatile CFairMutex	_Cs;
 
 	/// The synchronized value.
-	volatile T					_Value;
+	volatile T			_Value;
 };
-
-
-// Shortcut
-#define CSynchronized CFairlySynchronized
-
-
 
 } // NLMISC
 

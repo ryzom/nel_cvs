@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.19 2001/09/05 08:54:46 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.20 2001/09/12 16:55:23 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,8 @@ CBufServer::CBufServer( TThreadStategy strategy,
 	_ReplayMode( replaymode ),
 	_ListenTask( NULL ),
 	_ListenThread( NULL ),
-	_NbConnections (0)
+	_NbConnections (0),
+	_ThreadPool("CBufServer::_ThreadPool")
 {
 	nlnettrace( "CBufServer::CBufServer" );
 	if ( ! _ReplayMode )
@@ -881,7 +882,7 @@ void CServerReceiveTask::run()
 
 #ifdef NL_OS_WINDOWS
 		tv.tv_sec = 0; // short time because the newly added connections can't be added to the select fd_set
-		tv.tv_usec = 500000; // NEW: set to 500ms because otherwise new connections handling are too slow
+		tv.tv_usec = 10000; // NEW: set to 500ms because otherwise new connections handling are too slow
 #elif defined NL_OS_UNIX
 		// POLL7
 		tv.tv_sec = 3600;		// 1 hour (=> 1 select every 3.6 second for 1000 connections)

@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.24 2001/07/31 12:56:42 portier Exp $
+ * $Id: displayer.cpp,v 1.25 2001/09/12 16:55:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,7 @@ const char *IDisplayer::HeaderString ()
 
 IDisplayer::IDisplayer(const char *displayerName)
 {
-	_Mutex = new CMutex;
+	_Mutex = new CMutex (string(displayerName)+"DISP");
 	DisplayerName = displayerName;
 }
 

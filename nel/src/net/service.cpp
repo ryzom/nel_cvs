@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.81 2001/09/10 13:44:36 cado Exp $
+ * $Id: service.cpp,v 1.82 2001/09/12 16:55:23 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -54,6 +54,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/displayer.h"
+#include "nel/misc/mutex.h"
 
 #include "nel/net/naming_client.h"
 #include "nel/net/service.h"
@@ -939,6 +940,27 @@ NLMISC_COMMAND (brutal_quit, "exit the service brutally", "")
 
 	return true;
 }
+
+
+#ifdef MUTEX_DEBUG
+NLMISC_COMMAND (mutex, "display mutex values", "")
+{
+	if(args.size() != 0) return false;
+
+	map<CFairMutex*,TMutexLocks>	acquiretimes = getNewAcquireTimes();
+
+	map<CFairMutex*,TMutexLocks>::iterator im;
+	for ( im=acquiretimes.begin(); im!=acquiretimes.end(); ++im )
+	{
+		nlinfo( "%d %p %s: %u %u, called %u times th(%d, %d wait)%s", (*im).second.MutexNum, (*im).first, (*im).second.MutexName.c_str(),
+			(*im).second.TimeToEnter, (*im).second.TimeInMutex,
+			(*im).second.Nb, (*im).second.ThreadHavingTheMutex, (*im).second.WaitingMutex,
+			(*im).second.Dead?" DEAD":"");
+	}
+
+	return true;
+}
+#endif // MUTEX_DEBUG
 
 
 

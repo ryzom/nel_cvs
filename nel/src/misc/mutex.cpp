@@ -1,7 +1,7 @@
 /** \file mutex.cpp
- * Class CMutex
+ * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.17 2001/09/10 13:42:50 cado Exp $
+ * $Id: mutex.cpp,v 1.18 2001/09/12 16:55:17 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ namespace NLMISC {
 /*
  * Windows version
  */
-CMutex::CMutex()
+CUnfairMutex::CUnfairMutex(const std::string &name)
 {
 	// Create a mutex with no initial owner.
 	Mutex = (void *) CreateMutex (NULL, FALSE, NULL);
@@ -68,7 +68,7 @@ CMutex::CMutex()
 /*
  * Windows version
  */
-CMutex::~CMutex()
+CUnfairMutex::~CUnfairMutex()
 {
 	CloseHandle( Mutex );
 }
@@ -77,7 +77,7 @@ CMutex::~CMutex()
 /*
  * Windows version
  */
-void CMutex::enter()
+void CUnfairMutex::enter()
 {
 #ifdef NL_DEBUG
 	DWORD timeout;
@@ -107,7 +107,7 @@ void CMutex::enter()
 /*
  * Windows version
  */
-void CMutex::leave()
+void CUnfairMutex::leave()
 {
 	if (ReleaseMutex(Mutex) == 0)
 	{
@@ -119,8 +119,32 @@ void CMutex::leave()
 /*
  * Windows version
  */
-CCriticalSection::CCriticalSection()
+CFairMutex::CFairMutex()
 {
+	Name = "unset mutex name";
+
+	debugCreateMutex();
+
+	// Check that the CRITICAL_SECTION structure has not changed
+	nlassert( sizeof(TNelRtlCriticalSection)==sizeof(CRITICAL_SECTION) );
+
+#if (_WIN32_WINNT >= 0x0500)
+	DWORD dwSpinCount = 0x80000000; // set high-order bit to use preallocation
+	if ( ! InitializeCriticalSectionAndSpinCount( &_Cs, dwSpinCount ) )
+	{
+		nlerror( "Error entering critical section" );
+	}
+#else
+	InitializeCriticalSection( (CRITICAL_SECTION*)&_Cs );
+#endif
+}
+
+CFairMutex::CFairMutex(const string &name)
+{
+	Name = name;
+
+	debugCreateMutex();
+
 	// Check that the CRITICAL_SECTION structure has not changed
 	nlassert( sizeof(TNelRtlCriticalSection)==sizeof(CRITICAL_SECTION) );
 
@@ -140,27 +164,32 @@ CCriticalSection::CCriticalSection()
 /*
  * Windows version
  */
-CCriticalSection::~CCriticalSection()
+CFairMutex::~CFairMutex()
 {
 	DeleteCriticalSection( (CRITICAL_SECTION*)&_Cs );
+
+	debugDeleteMutex();
 }
 
 
 /*
  * Windows version
  */
-void CCriticalSection::enter()
+void CFairMutex::enter()
 {
+	debugBeginEnter();
 	EnterCriticalSection( (CRITICAL_SECTION*)&_Cs );
+	debugEndEnter();
 }
 
 
 /*
  * Windows version
  */
-void CCriticalSection::leave()
+void CFairMutex::leave()
 {
 	LeaveCriticalSection( (CRITICAL_SECTION*)&_Cs );
+	debugLeave();
 }
 
 
@@ -196,7 +225,7 @@ namespace NLMISC {
 /*
  * Unix version
  */
-CMutex::CMutex()
+CUnfairMutex::CUnfairMutex()
 {
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init( &attr );
@@ -210,7 +239,7 @@ CMutex::CMutex()
 /*
  * Unix version
  */
-CMutex::~CMutex()
+CUnfairMutex::~CUnfairMutex()
 {
 	pthread_mutex_destroy( &mutex );
 }
@@ -219,7 +248,7 @@ CMutex::~CMutex()
 /*
  * Unix version
  */
-void CMutex::enter()
+void CUnfairMutex::enter()
 {
 	//cout << getpid() << ": Locking " << &mutex << endl;
 	if ( pthread_mutex_lock( &mutex ) != 0 )
@@ -237,7 +266,7 @@ void CMutex::enter()
 /*
  * Unix version
  */
-void CMutex::leave()
+void CUnfairMutex::leave()
 {
 	//int errcode;
 	//cout << getpid() << ": Unlocking " << &mutex << endl;
@@ -263,7 +292,7 @@ void CMutex::leave()
 /*
  * Unix version
  */
-CCriticalSection::CCriticalSection()
+CFairMutex::CFairMutex()
 {
 	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }
@@ -272,7 +301,7 @@ CCriticalSection::CCriticalSection()
 /*
  * Unix version
  */
-CCriticalSection::~CCriticalSection()
+CFairMutex::~CFairMutex()
 {
 	sem_destroy( const_cast<sem_t*>(&_Sem) ); // needs that no thread is waiting on the semaphore
 }
@@ -281,7 +310,7 @@ CCriticalSection::~CCriticalSection()
 /*
  * Unix version
  */
-void CCriticalSection::enter()
+void CFairMutex::enter()
 {
 	sem_wait( const_cast<sem_t*>(&_Sem) );
 }
@@ -290,7 +319,7 @@ void CCriticalSection::enter()
 /*
  * Unix version
  */
-void CCriticalSection::leave()
+void CFairMutex::leave()
 {
 	sem_post( const_cast<sem_t*>(&_Sem) );
 }
@@ -310,9 +339,9 @@ void CCriticalSection::leave()
 	
 #ifdef MUTEX_DEBUG
 
-map<CMutex*,TMutexLocks>	*AcquireTime = NULL;
+map<CFairMutex*,TMutexLocks>	*AcquireTime = NULL;
 uint32						NbMutexes = 0;
-CMutex						*ATMutex = NULL;
+CFairMutex						*ATMutex = NULL;
 bool						InitAT = true;
 
 
@@ -321,15 +350,15 @@ void initAcquireTimeMap()
 {
 	if ( InitAT )
 	{
-		ATMutex = new CMutex();
-		AcquireTime = new map<CMutex*,TMutexLocks>;
+		ATMutex = new CFairMutex("ATMutex");
+		AcquireTime = new map<CFairMutex*,TMutexLocks>;
 		InitAT = false;
 	}
 }
 
 
 /// Gets the debugging info for all mutexes (call it evenly, e.g. once per second)
-map<CMutex*,TMutexLocks>	getNewAcquireTimes()
+map<CFairMutex*,TMutexLocks>	getNewAcquireTimes()
 {
 	map<CMutex*,TMutexLocks>	m;
 	ATMutex->enter();
@@ -338,53 +367,79 @@ map<CMutex*,TMutexLocks>	getNewAcquireTimes()
 	m = *AcquireTime;
 
 	// Reset map
-	map<CMutex*,TMutexLocks>::iterator im;
+/*	map<CMutex*,TMutexLocks>::iterator im;
 	for ( im=AcquireTime->begin(); im!=AcquireTime->end(); ++im )
 	{
 		(*im).second.Time = 0;
 		(*im).second.Nb = 0;
 		(*im).second.Locked = false;
 	}
-
+*/
 	ATMutex->leave();
 	return m;
 }
 
 
-void debugCreateMutex()
+////////////////////////
+////////////////////////
+
+void CFairMutex::debugCreateMutex()
 {
-	if ( ! InitAT )
+/*	if ( ! InitAT )
 	{
 		ATMutex->enter();
-		AcquireTime->insert( make_pair( this, TMutexLocks(false,NbMutexes) ) );
+		AcquireTime->insert( make_pair( this, TMutexLocks(NbMutexes) ) );
 		NbMutexes++;
 		ATMutex->leave();
 		char dbgstr [256];
-		smprintf( dbgstr, 256, "MUTEX: Creating mutex %p (number %u)\n", this, NbMutexes-1 );
+		smprintf( dbgstr, 256, "MUTEX: Creating mutex %p %s (number %u)\n", this, Name.c_str(), NbMutexes-1 );
 #ifdef NL_OS_WINDOWS
 		if ( IsDebuggerPresent() )
 			OutputDebugString( dbgstr );
 #endif
 		cout << dbgstr << endl;
 	}
-}
+*/}
 
-
-void debugBeginEnter()
+void CFairMutex::debugDeleteMutex()
 {
-	TTime before;
-	
-	if ( ( this != ATMutex ) && ( ATMutex != NULL ) )
+	if ( (this!=ATMutex ) && (ATMutex!=NULL) )
 	{
 		ATMutex->enter();
-		(*AcquireTime)[this].Locked = true;
+		(*AcquireTime)[this].Dead = true;
 		ATMutex->leave();
-		before = CTime::getLocalTime();
+	}
+}
+
+void CFairMutex::debugBeginEnter()
+{
+	if ( (this!=ATMutex ) && (ATMutex!=NULL) )
+	{
+		TTime t = CTime::getLocalTime();
+
+		ATMutex->enter();
+		std::map<CMutex*,TMutexLocks>::iterator it = (*AcquireTime).find (this);
+		if (it == (*AcquireTime).end())
+		{
+			AcquireTime->insert( make_pair( this, TMutexLocks(NbMutexes++) ) );
+			char dbgstr [256];
+			smprintf( dbgstr, 256, "MUTEX: Creating mutex %p %s (number %u)\n", this, Name.c_str(), NbMutexes-1 );
+#ifdef NL_OS_WINDOWS
+			if ( IsDebuggerPresent() ) OutputDebugString( dbgstr );
+#endif
+			cout << dbgstr << endl;
+
+			it = (*AcquireTime).find (this);
+			(*it).second.MutexName = Name;
+		}
+		(*it).second.WaitingMutex++;
+		(*it).second.BeginEnter = t;
+		ATMutex->leave();
 	}
 }
 
 
-void debugEndEnter()
+void CFairMutex::debugEndEnter()
 {
 //	printf("1");
 /*	char str[1024];
@@ -398,17 +453,19 @@ void debugEndEnter()
 */
 	if ( ( this != ATMutex ) && ( ATMutex != NULL ) )
 	{
-		TTime diff = CTime::getLocalTime()-before;
+		TTime t = CTime::getLocalTime();
 		ATMutex->enter();
-		(*AcquireTime)[this].Time += (uint32)diff;
+		(*AcquireTime)[this].TimeToEnter += (uint32)(t-(*AcquireTime)[this].BeginEnter);
 		(*AcquireTime)[this].Nb += 1;
-		(*AcquireTime)[this].Locked = false;
+		(*AcquireTime)[this].WaitingMutex--;
+		(*AcquireTime)[this].ThreadHavingTheMutex = getThreadId();
+		(*AcquireTime)[this].EndEnter = t;
 		ATMutex->leave();
 	}
 }
 
 
-void debugLeave()
+void CFairMutex::debugLeave()
 {
 //	printf( "0" );
 /*	char str[1024];
@@ -420,9 +477,20 @@ void debugLeave()
 		entered = false;
 	}
 */
+
+	if ( ( this != ATMutex ) && ( ATMutex != NULL ) )
+	{
+		TTime Leave = CTime::getLocalTime();
+		ATMutex->enter();
+		(*AcquireTime)[this].TimeInMutex += (uint32)(Leave-(*AcquireTime)[this].EndEnter);
+		(*AcquireTime)[this].Nb += 1;
+		(*AcquireTime)[this].WaitingMutex = false;
+		(*AcquireTime)[this].ThreadHavingTheMutex = 0xFFFFFFFF;
+		ATMutex->leave();
+	}
+
 }
 
 #endif // MUTEX_DEBUG
-
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.8 2001/05/18 16:50:40 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.9 2001/06/12 15:44:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -316,7 +316,7 @@ void doUnregisterService( const CInetAddress& addr, CSIdMap::iterator isidm, con
 */
 
 /*
- * Helper function for cbLookupSId and cbLookupAlternateSId.
+ * Helper function for cbLookupSId and cbLookupAlternateSId.			*********** OUT OF DATE ***************
  * Returns NULL if service not found
  */
 /*CInetAddressRef *doLookupServiceBySId( TServiceId sid )
@@ -334,6 +334,8 @@ void doUnregisterService( const CInetAddress& addr, CSIdMap::iterator isidm, con
 */
 void doLookup (const string &sname, TServiceId sid, TSockId from, CCallbackNetBase &netbase, bool sendAll, bool useSId)
 {
+	nlstop;
+
 	string name;
 
 	if (useSId)
@@ -371,7 +373,7 @@ void doLookup (const string &sname, TServiceId sid, TSockId from, CCallbackNetBa
 }
 
 /**
- * Callback for service look-up.
+ * Callback for service look-up.			*********** OUT OF DATE ***************
  *
  * Message expected : LK
  * - Name of service to find (string)
@@ -384,6 +386,8 @@ void doLookup (const string &sname, TServiceId sid, TSockId from, CCallbackNetBa
  */
 static void cbLookup (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
+	nlstop;
+
 	string name;
 	msgin.serial (name);
 	
@@ -419,7 +423,7 @@ static void cbLookup (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 */}
 
 /**
- * Callback for alternate service look-up when a service is not responding
+ * Callback for alternate service look-up when a service is not responding			*********** OUT OF DATE ***************
  *
  * Message expected : LA
  * - Name of service (string)
@@ -431,6 +435,8 @@ static void cbLookup (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
  */
 static void cbLookupAlternate (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
+	nlstop;
+
 	string name;
 	CInetAddress addr;
 	msgin.serial (name);
@@ -471,7 +477,7 @@ static void cbLookupAlternate (CMessage& msgin, TSockId from, CCallbackNetBase &
 */}
 
 /**
- * Callback for service look-up for all corresponding to a name.
+ * Callback for service look-up for all corresponding to a name.			*********** OUT OF DATE ***************
  *
  * Message expected : LKA
  * - Name of service to find (string)
@@ -481,6 +487,8 @@ static void cbLookupAlternate (CMessage& msgin, TSockId from, CCallbackNetBase &
  */
 static void cbLookupAll (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
+	nlstop;
+
 	// Receive name
 	string name;
 	msgin.serial (name);
@@ -490,7 +498,7 @@ static void cbLookupAll (CMessage& msgin, TSockId from, CCallbackNetBase &netbas
 }
 
 /**
- * Callback for service look-up by identifier
+ * Callback for service look-up by identifier				*********** OUT OF DATE ***************
  *
  * Message expected : LKI
  * - Identifier of service to find (TServiceId)
@@ -503,6 +511,8 @@ static void cbLookupAll (CMessage& msgin, TSockId from, CCallbackNetBase &netbas
  */
 static void cbLookupSId (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
+	nlstop;
+
 	// Receive id
 	TServiceId sid;
 	msgin.serial (sid);
@@ -808,7 +818,8 @@ bool doRegister (const string &name, const CInetAddress &addr, TServiceId sid, T
 			// tell to everybody that this service is registered
 
 			CMessage msgout ("RGB");
-			//uint16 vt = CNamingService::ValidTime;
+			uint8 s = 1;
+			msgout.serial (s);
 			msgout.serial (const_cast<string &>(name));
 			msgout.serial (sid);
 			msgout.serial (const_cast<CInetAddress &>(addr));
@@ -1165,7 +1176,30 @@ static void cbDisconnect (const string &serviceName, TSockId from, void *arg)
 		nlinfo( "Unregistering a disconnected service..." );
 		doUnregisterService( addr, SIdMap.end(), "" );
 	}
-*/}
+*/
+}
+
+/*
+ * a service is connected, send him all services infos
+ */
+static void cbConnect (const string &serviceName, TSockId from, void *arg)
+{
+	CMessage msgout ("RGB");
+
+	uint8 s = RegisteredServices.size ();
+	msgout.serial (s);
+
+	for (list<CServiceEntry>::iterator it = RegisteredServices.begin(); it != RegisteredServices.end (); it++)
+	{
+		msgout.serial ((*it).Name);
+		msgout.serial ((*it).SId);
+		msgout.serial ((*it).Addr);
+	}
+	CNetManager::send ("NS", msgout, from);
+
+	nlinfo ("Sending all services available to the new client");
+	displayRegisteredServices (*CNetManager::getNetBase(serviceName));
+}
 
 
 /** Callback Array
@@ -1176,19 +1210,19 @@ static void cbDisconnect (const string &serviceName, TSockId from, void *arg)
  */
 TCallbackItem CallbackArray[] =
 {
-	{ "LK", cbLookup },
-	{ "LA", cbLookupAlternate },
+//	{ "LK", cbLookup },				// now the client have a cache so it haven't to ask to the naming_service
+//	{ "LA", cbLookupAlternate },	/// \todo the client doesn't say anymore that a service doesn't work
 	{ "RG", cbRegister },
 //	{ "UN", cbUnregister },
 
 	{ "QP", cbQueryPort },
 
-	{ "LKI", cbLookupSId },
+//	{ "LKI", cbLookupSId },
 //	{ "LAI", cbLookupAlternateSId },
 //	{ "RGI", cbRegisterWithSId },	// done by RG now
 	{ "UNI", cbUnregisterSId },
 
-	{ "LKA", cbLookupAll },
+//	{ "LKA", cbLookupAll },
 //	{ "LKS", cbLookupAllServices },
 };
 
@@ -1197,6 +1231,9 @@ void CNamingService::init()
 {
 	// we don't try to associate message from client
 	CNetManager::getNetBase ("NS")->ignoreAllUnknownId (true);
+
+	// add the callback in case of disconnection
+	CNetManager::setConnectionCallback ("NS", cbConnect, NULL);
 	
 	// add the callback in case of disconnection
 	CNetManager::setDisconnectionCallback ("NS", cbDisconnect, NULL);

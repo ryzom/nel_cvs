@@ -18,12 +18,10 @@
  */
 
 /*
- * $Id: config_file.h,v 1.6 2000/10/04 16:20:17 lecroart Exp $
+ * $Id: config_file.h,v 1.7 2000/10/05 12:30:46 lecroart Exp $
  *
  * Manage a configuration files
  */
-
-/// \todo mettre des rkshit et doc les callbacks
 
 #ifndef NL_CONFIG_FILE_H
 #define NL_CONFIG_FILE_H
@@ -45,8 +43,13 @@ namespace NLMISC
  *\code
  * try
  * {
+ * 	CConfigFile cf;
+ *
  * 	// Load and parse "test.txt" file
- * 	CConfigFile cf ("test.txt");
+ *  cf.parse ("test.txt");
+ *
+ *	// Attach a callback to the var1 variable. When the var1 will changed, this cvar1cb function will be called
+ *	cf.setCallback ("var1", var1cb);
  * 
  *	// Get the foo variable (suppose it's a string variable)
  *	CConfigFile::CVar &foo = cf.getVar ("foo");
@@ -125,13 +128,13 @@ public:
 		/// \name Access to the variable content.
 		//@{
 		/// Get the content of the variable as an integer
-		int			 asInt		(int index=0);
-		/// Get the content of the variable as a double
-		double		 asDouble	(int index=0);
+		int					 asInt		(int index=0) const;
+		/// Get	the content of the variable as a double
+		double				 asDouble	(int index=0) const;
 		/// Get the content of the variable as a float
-		float		 asFloat	(int index=0);
+		float				 asFloat	(int index=0) const;
 		/// Get the content of the variable as a STL string
-		std::string	&asString	(int index=0);
+		const std::string	&asString	(int index=0) const;
 		//@}
 
 		bool		operator==	(const CVar& var) const;
@@ -140,7 +143,7 @@ public:
 		// Get the size of the variable. It's the number of element of the array or 1 if it's not an array.
 		int			 size ();
 
-		/// \name Internal use only.
+		/// \name Internal use
 		//@{
 		static char *TypeName[];
 
@@ -160,22 +163,26 @@ public:
 	virtual ~CConfigFile ();
 
 	/// Get a variable with the variable name
-	CVar &getVar (const std::string varName);
+	const CVar &getVar (const std::string &varName) const;
 
 	/// load and parse the file
-	void parse (const std::string fileName);
+	void parse (const std::string &fileName);
 
 	/// reload and reparse the file
 	void reparse ();
 
-	/// display all variables
-	void print ();
+	/// display all variables with nlinfo (debug use)
+	void print () const;
 
 	/// set a callback function that is called when the config file is modified
 	void setCallback (void (*cb)());
 
 	/// set a callback function to a variable, it will be called when this variable is modified
-	void setCallback (const std::string VarName, void (*cb)(CConfigFile::CVar &var));
+	void setCallback (const std::string &VarName, void (*cb)(CConfigFile::CVar &var));
+
+	/// set the time between 2 file checking (default value is 1 second)
+	/// \param timeout time in millisecond, if timeout=0, the check will be made each "frame"
+	static void CConfigFile::setTimeout (uint32 timeout);
 
 	/// Internal use only
 	static void checkConfigFiles ();
@@ -196,6 +203,8 @@ private:
 	/// Internal use only
 	uint32	_LastModified;
 
+	static uint32	_Timeout;
+
 	static std::vector<CConfigFile *> _ConfigFiles;
 };
 
@@ -209,7 +218,7 @@ struct EBadType : public EConfigFile
 	int VarType;
 	int WantedType;
 	std::string VarName;
-	EBadType (std::string varName, int varType, int wantedType) : VarName(varName), VarType (varType), WantedType (wantedType) {}
+	EBadType (const std::string &varName, int varType, int wantedType) : VarName(varName), VarType (varType), WantedType (wantedType) {}
 	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Bad variable type, variable \"%s\" is a %s and not a %s", VarName.c_str (), CConfigFile::CVar::TypeName[VarType], CConfigFile::CVar::TypeName[WantedType]); return str; }
 };
 
@@ -218,14 +227,14 @@ struct EBadSize : public EConfigFile
 	int VarSize;
 	int VarIndex;
 	std::string VarName;
-	EBadSize (std::string varName, int varSize, int varIndex) : VarName(varName), VarSize (varSize), VarIndex (varIndex) {}
+	EBadSize (const std::string &varName, int varSize, int varIndex) : VarName(varName), VarSize (varSize), VarIndex (varIndex) {}
 	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Trying to access to the index %d but the variable \"%s\" size is %d", VarIndex, VarName.c_str (), VarSize); return str; }
 };
 
 struct EUnknownVar : public EConfigFile
 {
 	std::string VarName;
-	EUnknownVar (std::string varName) : VarName(varName) {}
+	EUnknownVar (const std::string &varName) : VarName(varName) {}
 	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Unknown variable \"%s\"", VarName.c_str ()); return str; }
 };
 
@@ -233,14 +242,14 @@ struct EParseError : public EConfigFile
 {
 	std::string FileName;
 	int CurrentLine;
-	EParseError (std::string fileName, int currentLine) : FileName(fileName), CurrentLine (currentLine) {}
+	EParseError (const std::string &fileName, int currentLine) : FileName(fileName), CurrentLine (currentLine) {}
 	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "Parse error on the \"%s\" file, line %d", FileName.c_str (), CurrentLine); return str; }
 };
 
 struct EFileNotFound : public EConfigFile
 {
 	std::string FileName;
-	EFileNotFound (std::string fileName, int currentLine) : FileName(fileName) {}
+	EFileNotFound (const std::string &fileName, int currentLine) : FileName(fileName) {}
 	virtual const char	*what () const throw () { static char str[1024]; sprintf (str, "File \"%s\" not found", FileName.c_str ()); return str; }
 };
 

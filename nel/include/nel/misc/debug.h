@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: debug.h,v 1.1 2000/10/04 15:03:28 cado Exp $
+ * $Id: debug.h,v 1.2 2000/10/05 12:30:46 lecroart Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -43,9 +43,9 @@ extern CLog StatLog;
 #define nldebug NLMISC::DebugLog.setParam( __LINE__, __FILE__ ); NLMISC::DebugLog.display
 #define rkstat NLMISC::StatLog.setParam( __LINE__, __FILE__ ); NLMISC::StatLog.display
 
+#define nlassert
+
 } // NLMISC
-
-
 
 
 #endif // NL_DEBUG_H

@@ -18,12 +18,10 @@
  */
 
 /*
- * $Id: config_file.cpp,v 1.4 2000/10/04 16:20:17 lecroart Exp $
+ * $Id: config_file.cpp,v 1.5 2000/10/05 12:30:46 lecroart Exp $
  *
  * Implementation of CConfigFile.
  */
-
-/// \todo: docs
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
@@ -37,6 +35,7 @@
 #include <sys/stat.h>
 
 #include "nel/misc/config_file.h"
+#include "nel/misc/debug.h"
 
 using namespace std;
 
@@ -49,26 +48,26 @@ namespace NLMISC
 
 char *CConfigFile::CVar::TypeName[] = { "Integer", "String", "Float" };
 
-int CConfigFile::CVar::asInt (int index)
+int CConfigFile::CVar::asInt (int index) const
 {
 	if (Type != T_INT) throw EBadType (Name, Type, T_INT);
 	else if (index >= IntValues.size () || index < 0) throw EBadSize (Name, IntValues.size (), index);
 	else return IntValues[index];
 }
 
-double CConfigFile::CVar::asDouble (int index)
+double CConfigFile::CVar::asDouble (int index) const
 {
 	if (Type != T_REAL) throw EBadType (Name, Type, T_REAL);
 	else if (index >= RealValues.size () || index < 0) throw EBadSize (Name, RealValues.size (), index);
 	else return RealValues[index];
 }
 
-float CConfigFile::CVar::asFloat (int index)
+float CConfigFile::CVar::asFloat (int index) const
 {
 	return (float) asDouble (index);
 }
 
-std::string &CConfigFile::CVar::asString (int index)
+const std::string &CConfigFile::CVar::asString (int index) const
 {
 	if (Type != T_STRING) throw EBadType (Name, Type, T_STRING);
 	else if (index >= StrValues.size () || index < 0) throw EBadSize (Name, StrValues.size (), index);
@@ -114,7 +113,7 @@ CConfigFile::~CConfigFile ()
 	}
 }
 
-void CConfigFile::parse (const string fileName)
+void CConfigFile::parse (const string &fileName)
 {
 	_FileName = fileName;
 	CConfigFile::_ConfigFiles.push_back (this);
@@ -134,7 +133,7 @@ void CConfigFile::reparse ()
 }
 
 
-CConfigFile::CVar &CConfigFile::getVar (const std::string varName)
+const CConfigFile::CVar &CConfigFile::getVar (const std::string &varName) const
 {
 	for (int i = 0; i < _Vars.size(); i++)
 	{
@@ -147,7 +146,7 @@ CConfigFile::CVar &CConfigFile::getVar (const std::string varName)
 	throw EUnknownVar (varName);
 }
 
-void CConfigFile::print ()
+void CConfigFile::print () const
 {
 	printf ("%d results:\n", _Vars.size());
 	printf ("-------------------------------------\n");
@@ -210,11 +209,15 @@ void CConfigFile::print ()
 
 void CConfigFile::setCallback (void (*cb)())
 {
+	if (cb == NULL) return;
+
 	_Callback = cb;
 }
 
-void CConfigFile::setCallback (const string VarName, void (*cb)(CConfigFile::CVar &var))
+void CConfigFile::setCallback (const string &VarName, void (*cb)(CConfigFile::CVar &var))
 {
+	if (cb == NULL) return;
+
 	for (vector<CVar>::iterator it = _Vars.begin (); it != _Vars.end (); it++)
 	{
 		if (VarName == (*it).Name)
@@ -235,6 +238,7 @@ void CConfigFile::setCallback (const string VarName, void (*cb)(CConfigFile::CVa
 
 
 vector<CConfigFile *> CConfigFile::_ConfigFiles;
+uint32	CConfigFile::_Timeout = 1000;
 
 uint32 CConfigFile::getLastModified ()
 {
@@ -254,7 +258,7 @@ void CConfigFile::checkConfigFiles ()
 {
 	static clock_t LastCheckClock = clock ();
 	
-	if ((float)(clock () - LastCheckClock)/(float)CLOCKS_PER_SEC < 1.0f) return;
+	if (_Timeout > 0 && (float)(clock () - LastCheckClock)/(float)CLOCKS_PER_SEC < (float)_Timeout) return;
 
 	LastCheckClock = clock ();
 
@@ -269,11 +273,16 @@ void CConfigFile::checkConfigFiles ()
 			}
 			catch (EConfigFile &ee)
 			{
-				nlwarning(ee.what ());
+				nlwarning (ee.what ());
 			}
 		}
 	}
 }
 
+void CConfigFile::setTimeout (uint32 timeout)
+{
+	nlassert (timeout>=0);
+	_Timeout = timeout;
+}
 
 } // NLMISC

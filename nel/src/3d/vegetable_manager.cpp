@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.31 2003/02/19 14:46:29 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.32 2003/04/02 15:07:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -597,12 +597,12 @@ const char* NL3D_CommonEndVegetableProgram=
 const char* NL3D_SimpleStartVegetableProgram=
 "!!VP1.0																				\n\
 	# compute in Projection space														\n\
-	MOV	R5, v[0];	\n\
-	ADD	R5.xyz, R5, v[10];	\n\
+	MAD	R5, v[0], c[8].yyyx, c[8].xxxy;													\n\
+	ADD	R5.xyz, R5, v[10];																\n\
 	# make local to camera pos															\n\
 	ADD R5, R5, -c[10];																	\n\
-	MOV o[COL0], c[8].yyyy;	\n\
-	MOV o[BFC0], c[8].xxyy;	\n\
+	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
+	MOV o[BFC0].xyz, v[4];			# bfc0.RGBA= bcf color								\n\
 ";
 
 

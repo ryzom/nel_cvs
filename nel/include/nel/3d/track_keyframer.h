@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.1 2001/03/27 15:32:28 berenguier Exp $
+ * $Id: track_keyframer.h,v 1.2 2001/03/29 09:47:56 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/3d/key.h"
 #include <map>
 #include <memory>
+#include "nel/misc/matrix.h"
 
 
 namespace NL3D
@@ -189,13 +190,11 @@ public:
 		}
 
 
-		// Previous
-		ite--;
-
 		// First previous ?
-		if (ite!=_MapKey.end())
+		if ((!_MapKey.empty())&&(ite!=_MapKey.begin()))
 		{
 			// Previous
+			ite--;
 			previous= &(ite->second);
 			datePrevious=ite->first;
 		}

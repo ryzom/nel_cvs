@@ -1,7 +1,7 @@
 /** \file track_bezier.h
  * ITrack Bezier implementation
  *
- * $Id: track_bezier.h,v 1.3 2001/03/27 17:35:44 corvazier Exp $
+ * $Id: track_bezier.h,v 1.4 2001/03/29 09:47:56 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ protected:
 							CAnimationTime datePrevious, CAnimationTime dateNext,
 							CAnimationTime date )
 	{
-		if(previous && next)
+		if(previous && next && !previous->Step)
 		{
 			// lerp from previous to cur.
 			date-= datePrevious;
@@ -183,12 +183,13 @@ protected:
 		TMapTimeCKey::iterator	itPrev;
 
 		it= _MapKey.begin();				// first key.
-		itNext= it; itNext++;				// second key.
+		itNext= it;	itNext++;				// second key.
 		itPrev= _MapKey.end();				// end key.
 
 		// Compute all keys.
 		for(;it!=_MapKey.end();)
 		{
+
 			CKeyBezierQuat	&key= it->second;
 			CQuat	&cur= key.Value;
 
@@ -220,7 +221,9 @@ protected:
 			// Next key!!
 			itPrev= it;
 			it++;
-			itNext++;
+
+			if(itNext!= _MapKey.end())
+				itNext++;
 		}
 
 	}

@@ -1,7 +1,7 @@
 /** \file key.h
  * class CKey
  *
- * $Id: key.h,v 1.6 2001/03/26 14:54:28 berenguier Exp $
+ * $Id: key.h,v 1.7 2001/03/29 09:47:56 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -148,6 +148,7 @@ public:
 		f.serial (Value);
 		f.serial (InTan);
 		f.serial (OutTan);
+		f.serial (Step);
 	};
 
 	/// \name Tangents.
@@ -163,6 +164,7 @@ public:
 	// @{
 	T		InTan;
 	T		OutTan;
+	bool	Step;
 	// @}
 };
 

@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.3 2001/03/27 15:32:28 berenguier Exp $
+ * $Id: track_tcb.h,v 1.4 2001/03/29 09:47:56 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #ifndef NL_TRACK_H
 #error "internal file included from track.h"
 #endif
-
 
 // ***************************************************************************
 // ***************************************************************************
@@ -70,8 +69,8 @@ protected:
 			CKeyT	&key= it->second;
 			if(next!=mapKey.end())
 			{
-				float	e0= it->second.EaseTo;
-				float	e1= next->second.EaseFrom;
+				float	e0= it->second.EaseFrom;
+				float	e1= next->second.EaseTo;
 				float	s =  e0 + e1;
 				
 				// "normalize".
@@ -442,6 +441,14 @@ public:
 		for (it= _MapKey.begin();it!=_MapKey.end();)
 		{
 			CKeyTCBQuat		&key= it->second;
+
+			if(it!= _MapKey.begin())
+			{
+				NLMISC::CMatrix		mat;
+				mat.setRot(itPrev->second.Quat);
+				mat.invert();
+				key.Value.Axis= mat*key.Value.Axis;
+			}
 
 			key.Value.Axis.normalize();
 			// make angle positive.

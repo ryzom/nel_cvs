@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.10 2001/06/27 08:35:13 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.11 2001/07/05 08:25:58 lecroart Exp $
  *
  */
 
@@ -182,7 +182,11 @@ void executeCommand (string command, bool background)
 	nlinfo ("end executing: %s", command.c_str());
 */
 
+#ifdef NL_OS_WINDOWS
 	command += " >NUL:";
+#else
+	command += " >/dev/null";
+#endif
 	if (background)
 	{
 		IThread *thread = IThread::create (new CExecuteCommandThread (command));
@@ -379,7 +383,11 @@ static void cbStartService (CMessage& msgin, TSockId from, CCallbackNetBase &net
 	command += " -n";
 	command += serviceAlias.c_str();
 
+#ifdef NL_OS_WINDOWS
 	command += " >NUL:";
+#else
+	command += " >/dev/null";
+#endif
 
 	IThread *thread = IThread::create (new CExecuteServiceThread (serviceAlias, command, path));
 	thread->start ();

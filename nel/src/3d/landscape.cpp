@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.80 2001/09/18 08:33:43 berenguier Exp $
+ * $Id: landscape.cpp,v 1.81 2001/09/26 16:01:29 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -928,13 +928,6 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 				// that don't affect the operator< of this class
 				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
 
-				// Setup material.
-				// Setup Diffuse texture of the tile.
-				TileMaterial.setTexture(0, pass.TextureDiffuse);
-				// If transition tile, must enable the alpha for this pass.
-				if(alphaStage)
-					TileMaterial.setTexture(1, pass.TextureAlpha);
-
 				// Add triangles to array
 				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);
 				while(tileToRdr)
@@ -943,6 +936,25 @@ void			CLandscape::render(const CVector &refineCenter, const CPlane	pyramid[NL3D
 					tileToRdr->TileMaterial->renderTile(passOrder);
 					tileToRdr= (CRdrTileId*)tileToRdr->getNext();
 				}
+
+				// Pass not empty ?
+				if(CPatch::PassNTri>0)
+				{
+					// Setup material.
+					// Setup Diffuse texture of the tile.
+					TileMaterial.setTexture(0, pass.TextureDiffuse);
+					
+					// If transition tile, must enable the alpha for this pass.
+					if(alphaStage)
+					{
+						if (pass.TextureAlpha==NULL)
+							int oto=0;
+						else
+							int toto1=0;
+						TileMaterial.setTexture(1, pass.TextureAlpha);
+					}
+				}
+
 				// Render triangles.
 				drawPassTriArray(TileMaterial);
 			}

@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.9 2002/04/26 15:05:00 berenguier Exp $
+ * $Id: instance_user.h,v 1.10 2002/07/03 09:06:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,12 @@ public:
 	virtual void		changeMRMDistanceSetup(float distanceFinest, float distanceMiddle, float distanceCoarsest);
 	virtual void		setShapeDistMax(float distMax);
 	virtual float		getShapeDistMax() const;
+
+		
+	virtual bool		canStartStop() { return _Instance->canStartStop(); }	
+	virtual void		start() { _Instance->start(); }	
+	virtual void		stop()  { _Instance->stop(); }	
+	virtual bool		isStarted() const { return _Instance->isStarted(); }	
 
 };
 

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.11 2002/06/03 08:50:11 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.12 2002/07/03 09:06:57 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -43,9 +43,9 @@ namespace NL3D {
  * \author Nevrax France
  * \date 2001
  */
-class CParticleSystemInstanceUser : virtual public UParticleSystemInstance
-								  , virtual public CTransformUser
-								  , public CParticleSystemModel::IPSModelObserver
+class CParticleSystemInstanceUser : virtual public UParticleSystemInstance,
+								    virtual public CTransformUser,
+								    public CParticleSystemModel::IPSModelObserver
 {
 public:	
 	// \name Object
@@ -59,8 +59,12 @@ public:
 	// @{						
 		virtual	uint				getNumMaterials() const;	
 		virtual	UInstanceMaterial	&getMaterial(uint materialId);
-		virtual void selectTextureSet(uint id) { nlassert(0); /* not supported for particle systems */ }
-		virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const;
+		virtual void				selectTextureSet(uint id) { nlassert(0); /* not supported for particle systems */ }
+		virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const;		
+		virtual bool				canStartStop() { return false; }
+		virtual void				start() {}
+		virtual void				stop()  {}	
+		virtual bool				isStarted() const { return true; }
 	// @}
 
 	// \name inherited from UParticleSystemInstance

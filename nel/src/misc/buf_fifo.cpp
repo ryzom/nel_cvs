@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.21 2002/02/28 15:17:06 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.22 2002/04/09 12:26:49 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -117,6 +117,13 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 #endif
 
 	nlassert((buffer1.size() + buffer2.size ()) > 0 && (buffer1.size() + buffer2.size ()) < pow(2, sizeof(TFifoSize)*8));
+
+	// avoid too big fifo
+	if (this->size() > 10000000)
+	{
+		throw Exception ("CBufFIFO::push(): stack full (more than 10mb)");
+	}
+
 
 	// stat code
 	if (size > _BiggestBlock) _BiggestBlock = size;

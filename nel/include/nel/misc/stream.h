@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.21 2000/10/19 10:05:21 berenguier Exp $
+ * $Id: stream.h,v 1.22 2000/10/19 12:47:03 corvazier Exp $
  *
  * This File handles IStream 
  */
@@ -63,6 +63,10 @@ struct EOlderStream : public EStream
 struct ENewerStream : public EStream
 {
 	virtual const char	*what() const throw() {return "The version in stream is newer than the class";}
+};
+struct EInvalidDataStream : public EStream
+{
+	virtual const char	*what() const throw() {return "Invalid data format";}
 };
 
 
@@ -517,6 +521,33 @@ public:
 	 * \see setVersionException() getVersionException()
 	 */
 	uint			serialVersion(uint currentVersion) throw(EStream);
+
+
+	/** 
+	 * Serialize a check value.
+	 * An object can stream a check value to check integrity or format of filed or streamed data.
+	 * Just call serial check with a const value. Write will serial the value. Read will 
+	 * check the value is the same. If it is not, it will throw EInvalidDataStream exception.
+	 *
+	 * NB: The type of the value must implement an operator == and must be serializable.
+	 * \param value the value used to the check.
+	 * \see EInvalidDataStream
+	 */
+	template<class T>
+	void			serialCheck(const T& value) throw(EStream)
+	{
+		if (isReading()) 
+		{ 
+			T read; 
+			serial (read); 
+			if (read!=value) 
+				throw EInvalidDataStream(); 
+		} 
+		else 
+		{ 
+			serial (const_cast<T&>(value)); 
+		}
+	}
 
 
 protected:

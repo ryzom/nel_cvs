@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.15 2001/02/05 16:27:04 cado Exp $
+ * $Id: naming_client.h,v 1.16 2001/02/15 16:20:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,9 +53,10 @@ typedef std::map<TServiceId,std::string> CRegServices;
  * Thus, if an exception is raised within the scope, finalize() will be called automatically.
  *
  * By default, "transaction mode" is on, i.e. you don't need to call open() and close(), they
- * are called each time you call lookup(), queryServicePort(), registerService(), and unregisterService().
+ * are called each time you call lookup(), queryServicePort() and similar methods.
  * If you plan to call several times these methods in a block, call open() at the beginning of the block
- * and close() at the end.
+ * and close() at the end. For registration/unregistration purpose, do not use transaction mode,
+ * call open() at the beginning and close() at the end of the program (it's done in IService::main())
  *
  * The naming service (NS) address is read in a config file called ("ns.cfg" at the moment).
  * If no such file is provided, the default values are used (see NamingServiceDefHost
@@ -85,7 +86,8 @@ public:
 	static void			close();
 
 	/** \name Requests to the Naming Service. 
-	 * \brief If TransactionMode is true, these method perform open() and close() themselves.
+	 * If TransactionMode is true, these method perform open() and close() themselves.
+	 * Do not use transaction mode for (un)registering a service, but only for look-ups !
 	 */
 	//@{
 
@@ -124,12 +126,6 @@ public:
 	/// Same as lookup(const string&, CInetAddress&, uint16&)
 	static bool			lookup( TServiceId sid, CInetAddress& addr, uint16& validitytime );
 
-	/**
-	 * Returns all services corresponding to the specified name.
-	 * Ex: lookupAll( "AS", addresses );
-	 */
-	static void			lookupAll( const std::string& name, std::vector<CInetAddress>& addresses );
-
 	/** Tells the Naming Service the specified address does not respond for the specified service,
 	 * and returns true and another address for the service if available, otherwise returns false
 	 * \param name [in] Name of the service to find
@@ -152,6 +148,18 @@ public:
 	 * \return True if all worked fine
 	 */
 	static bool			lookupAndConnect( const std::string& name, CSocket& sock, uint16& validitytime );
+
+	/**
+	 * Returns all services corresponding to the specified name.
+	 * Ex: lookupAll( "AS", addresses );
+	 */
+	static void			lookupAll( const std::string& name, std::vector<CInetAddress>& addresses );
+
+	/**
+	 * Returns all services corresponding to the specified name with service id as key
+	 * Ex: lookupAll( "AS", addressmap );
+	 */
+	static void			lookupAllServices( const std::string& name, std::map<TServiceId,CInetAddress>& addressmap );
 
 	//@}
 

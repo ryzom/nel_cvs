@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.15 2002/08/22 12:10:04 lecroart Exp $
+ * $Id: net_manager.h,v 1.16 2002/09/16 14:58:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,9 +101,9 @@ public:
 	 * If servicePort is 0, it will be dynamically determinated by the Naming Service.
 	 * If sid id 0, the service id will be dynamically determinated by the Naming Service.
 	 */
-	static void	addServer (const std::string &serviceName, uint16 servicePort = 0);
+	static void	addServer (const std::string &serviceName, uint16 servicePort = 0, bool external = false);
 
-	static void	addServer (const std::string &serviceName, uint16 servicePort, NLNET::TServiceId &sid);
+	static void	addServer (const std::string &serviceName, uint16 servicePort, NLNET::TServiceId &sid, bool external = false);
 
 	/// Creates a connection to a specific IP and associate it this a "fake" serviceName (to enable you to send data for example)
 	static void	addClient (const std::string &serviceName, const std::string &addr, bool autoRetry = true);

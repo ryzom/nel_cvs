@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.24 2002/08/23 07:57:41 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.25 2002/09/16 14:58:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,13 +188,13 @@ void CNetManager::release ()
 	_BaseMap.clear ();
 }
 
-void CNetManager::addServer (const std::string &serviceName, uint16 servicePort)
+void CNetManager::addServer (const std::string &serviceName, uint16 servicePort, bool external)
 {
 	TServiceId sid = 0;
-	addServer (serviceName, servicePort, sid);
+	addServer (serviceName, servicePort, sid, external);
 }
 
-void CNetManager::addServer (const std::string &serviceName, uint16 servicePort, TServiceId &sid)
+void CNetManager::addServer (const std::string &serviceName, uint16 servicePort, TServiceId &sid, bool external)
 {
 	nldebug ("HNETL4: Adding server '%s' in CNetManager", serviceName.c_str ());
 	ItBaseMap itbm = find (serviceName);
@@ -222,7 +222,7 @@ void CNetManager::addServer (const std::string &serviceName, uint16 servicePort,
 
 	// register the server to the naming service if we are connected to Naming Service
 
-	if (CNamingClient::connected ())
+	if (CNamingClient::connected () && !external)
 	{
 		//CInetAddress addr = CInetAddress::localHost ();
 		//addr.setPort (servicePort);

@@ -1,7 +1,7 @@
 /** \file line.cpp
  * <File description>
  *
- * $Id: line.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: line.cpp,v 1.3 2002/04/23 16:25:36 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,11 +26,25 @@
 #include "stdmisc.h"
 
 #include "nel/misc/line.h"
-
+#include <limits>
 
 namespace NLMISC 
 {
 
+void CLine::project(const CVector &inV,CVector &outV)
+{
+	CVector seg = V1 - V0;	
+	float n = seg.sqrnorm();
+	if (n == 0.f)
+	{
+		outV = V0;
+	}
+	else
+	{
+		float dp = (inV - V0) * seg;
+		outV = V0 + (dp /  n) * seg;
+	}
+}
 
 
 

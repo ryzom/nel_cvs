@@ -1,7 +1,7 @@
 /** \file line.h
  * A simple couple of vertex.
  *
- * $Id: line.h,v 1.1 2001/02/28 14:31:21 berenguier Exp $
+ * $Id: line.h,v 1.2 2002/04/23 16:23:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,8 +48,13 @@ public:
 	CVector		V0, V1;
 
 public:
-	/// Constructor
+	/// default ctor
 	CLine() {}
+	// ctor from 2 points
+	CLine(const CVector &v0, const CVector &v1) : V0(v0), V1(v1)
+	{}
+	/// Project a vector on this line
+	void project(const CVector &inV, CVector &outV);
 
 };
 

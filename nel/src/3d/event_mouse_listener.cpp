@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: event_mouse_listener.cpp,v 1.8 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: event_mouse_listener.cpp,v 1.9 2001/06/18 16:34:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,55 +87,63 @@ void CEvent3dMouseListener::operator ()(const CEvent& event)
 
 		if (bRotate)
 		{
-			// First in the hotSpot
-			CMatrix comeFromHotSpot=_Matrix;
-			comeFromHotSpot.setPos (axis);
-
-			// Then turn along the Z axis with X mouse
-			CMatrix turnZ;
-			turnZ.identity();
-			turnZ.rotateZ ((float)Pi*2.f*(_X-mouseEvent->X));
-
-			// Then turn along the X axis with Y mouse
-			CMatrix turnX;
-			turnX.identity();
-			turnX.rotateX ((float)Pi*2.f*(mouseEvent->Y-_Y));
-
-			// Then come back from hotspot
-			CMatrix goToHotSpot=comeFromHotSpot;
-			goToHotSpot.invert();
-
-			// Make the matrix
-			CMatrix negPivot, Pivot;
-			negPivot.identity();
-			negPivot.setPos (-axis);
-			Pivot.identity();
-			Pivot.setPos (axis);
-
-			// Make this transformation \\//
-			//_Matrix=Pivot*turnZ*negPivot*comeFromHotSpot*turnX*goToHotSpot*_Matrix;
-			Pivot*=turnZ;
-			Pivot*=negPivot;
-			Pivot*=comeFromHotSpot;
-			Pivot*=turnX;
-			Pivot*=goToHotSpot;
-
-			if (! _EnableModelMatrixEdition)
+			if (!_EnableModelMatrixEdition) // view rotation
 			{
+				// First in the hotSpot
+				CMatrix comeFromHotSpot=_Matrix;
+				comeFromHotSpot.setPos (axis);
+
+				// Then turn along the Z axis with X mouse
+				CMatrix turnZ;
+				turnZ.identity();
+				turnZ.rotateZ ((float)Pi*2.f*(_X-mouseEvent->X));
+
+				// Then turn along the X axis with Y mouse
+				CMatrix turnX;
+				turnX.identity();
+				turnX.rotateX ((float)Pi*2.f*(mouseEvent->Y-_Y));
+
+				// Then come back from hotspot
+				CMatrix goToHotSpot=comeFromHotSpot;
+				goToHotSpot.invert();
+
+				// Make the matrix
+				CMatrix negPivot, Pivot;
+				negPivot.identity();
+				negPivot.setPos (-axis);
+				Pivot.identity();
+				Pivot.setPos (axis);
+
+				// Make this transformation \\//
+				//_Matrix=Pivot*turnZ*negPivot*comeFromHotSpot*turnX*goToHotSpot*_Matrix;
+				Pivot*=turnZ;
+				Pivot*=negPivot;
+				Pivot*=comeFromHotSpot;
+				Pivot*=turnX;
+				Pivot*=goToHotSpot;
+
+				
 				Pivot*=_Matrix;
 				_Matrix=Pivot;
+							
+				// Normalize, too much transformation could give an ugly matrix..
+				_Matrix.normalize (CMatrix::XYZ);
 			}
-			else
+			else // model rotation. 
 			{
-				Pivot*=_ModelMatrix;
-				_ModelMatrix=Pivot;
+
+
+
+
+
+
+
+
+
+
 			}
-
-			
-
-			// Normalize, too much transformation could give an ugly matrix..
-			_Matrix.normalize (CMatrix::XYZ);
 		}
+
 
 		if (bTranslateXY||bTranslateZ||bZoom)
 		{
@@ -316,7 +324,7 @@ const NLMISC::CMatrix& CEvent3dMouseListener::getViewMatrix ()
 			dir=_Matrix.mulVector (dir);
 
 			// New position
-			_ModelMatrix.setPos (_ModelMatrix.getPos ()+dir);
+			_Matrix.setPos (_Matrix.getPos ()+dir);
 		}
 	}
 

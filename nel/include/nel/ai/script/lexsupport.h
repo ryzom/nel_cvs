@@ -1,7 +1,7 @@
 /** \file lexsupport.h
  * Method and class for lex&yacc support.
  *
- * $Id: lexsupport.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: lexsupport.h,v 1.5 2001/01/12 13:28:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 #ifndef NL_LEX_SUPPORT_H
 #define NL_LEX_SUPPORT_H
+
+#include "nel/misc/types_nl.h"
 
 #ifndef PARSER_NO_REDEF_YYTABLE_H_
 	#include "nel/ai/script/ytable.h"

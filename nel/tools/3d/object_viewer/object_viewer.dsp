@@ -755,6 +755,14 @@ SOURCE=.\range_selector.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ribbon_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ribbon_dlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\scheme_bank_dlg.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file thread.h
  * thread interface
  *
- * $Id: thread.h,v 1.11 2001/02/13 18:25:57 corvazier Exp $
+ * $Id: thread.h,v 1.12 2001/02/14 10:57:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,11 +96,17 @@ public:
 	// In the calling program, wait until the specified thread has existed (use with caution under win98)
 	virtual void wait()=0;
 
-	// Sleep the thread
-	virtual void sleep(sint ms = 0) =0;
+	// Sleep the thread (may be rounded to lower 1000 ms on Unix!)
+	virtual void sleep(sint ms = 0)=0;
+
+	/// Return a pointer to the runnable object
+	virtual IRunnable *getRunnable()=0;
 };
 
 
+/*
+ * Thread exception
+ */
 struct EThread : public Exception
 {
 	EThread (const char* message) : Exception (message) {};

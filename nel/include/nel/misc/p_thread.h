@@ -1,7 +1,7 @@
 /** \file p_thread.h
  * <File description>
  *
- * $Id: p_thread.h,v 1.1 2001/02/13 17:41:20 cado Exp $
+ * $Id: p_thread.h,v 1.2 2001/02/14 10:57:57 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,8 +56,12 @@ public:
 	virtual void wait();
 	virtual void sleep(sint ms = 0) 
 	{ 
-#error TODO
-		sleep( ms/1000 ); // TO CHANGE
+		sleep( ms/1000 );
+	}
+
+	virtual IRunnable *getRunnable()
+	{
+		return Runnable;
 	}
 
 	/// Internal use

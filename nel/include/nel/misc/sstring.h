@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.8 2004/03/17 10:30:48 cado Exp $
+ * $Id: sstring.h,v 1.9 2004/04/28 18:50:44 boucher Exp $
  */
 
 
@@ -667,7 +667,7 @@ public:
 	/// Serial
 	void serial( NLMISC::IStream& s )
 	{
-		s.serial( reinterpret_cast<std::string&>( *this ) );
+		s.serial( static_cast<std::string&>( *this ) );
 	}
 };
 

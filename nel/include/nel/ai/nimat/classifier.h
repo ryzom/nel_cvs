@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.13 2003/03/18 12:44:37 robert Exp $
+ * $Id: classifier.h,v 1.14 2003/06/17 12:15:27 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include <set>
 #include "nel/misc/debug.h"
 #include "nel/misc/string_conversion.h"
-#include "sensors_motivations_actions_def.h"
+#include "nel/ai/nimat/sensors_motivations_actions_def.h"
 
 namespace NLAINIMAT
 {
@@ -42,7 +42,8 @@ enum TBehaviorTerminate
 {
 	BehaviorTerminate_Success,
 	BehaviorTerminate_Failure,
-	BehaviorTerminate_Interupt,
+	BehaviorTerminate_Interupt, //***G*** Heu... pour le moment une action n'est pas prévenue
+								//quand elle est intérompue et à priori ne s'intérompt pas elle même
 	BehaviorTerminate_Unknown
 };
 static const NLMISC::CStringConversion<TBehaviorTerminate>::CPair stringTableBehaviorTerminate [] =
@@ -167,6 +168,8 @@ private :
 		CClassifier();
 		virtual ~CClassifier();
 
+		bool isActivable() const;
+
 	public :
 		std::list<CClassifierConditionCell*>	ConditionWithTarget;
 		std::list<CClassifierConditionCell*>	ConditionWithoutTarget;
@@ -174,9 +177,28 @@ private :
 		TAction 								Behavior;
 	};
 
+	typedef	std::map<sint16, CClassifier*>::iterator  TitClassifiers;
+
 private :
-	TSensorMap						_sensors;			// The sensors are the inputs of the classifier system.
-	std::map<sint16, CClassifier*>	_classifiers;		// The classifiers are the rules of the classifier system.
+	// Functions used in selectBehavior
+	void	updateNoTargetSensors(const CCSPerception* psensorMap);
+	void	updateTargetSensors(const CCSPerception* psensorMap, TTargetId target);
+	void	RAZTargetSensors();
+	void	RAZNoTargetSensors();
+	double	computeMaxPriorityDoingTheSameAction(const CCSPerception* psensorMap,
+												 sint16 lastClassifierNumber, 
+												 TTargetId lastTarget, 
+												 double lastSelectionMaxPriority,
+												 std::multimap<double, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
+	double	computeHigherPriority(const CCSPerception* psensorMap,
+								  double maxPriorityDoingTheSameAction,
+								  std::multimap<double, std::pair<TitClassifiers, TTargetId> > &mapActivableCS);
+	std::multimap<double, std::pair<TitClassifiers, TTargetId> >::iterator 	roulletteWheelVariation(std::multimap<double, std::pair<TitClassifiers, TTargetId> > &mapActivableCS,
+																									std::multimap<double, std::pair<TitClassifiers, TTargetId> >::iterator itMapActivableCS);
+		
+private :
+	TSensorMap						_Sensors;			// The sensors are the inputs of the classifier system.
+	std::map<sint16, CClassifier*>	_Classifiers;		// The classifiers are the rules of the classifier system.
 	sint16							_ClassifierNumber;	// Number of classifiers
 
 public :
@@ -198,9 +220,15 @@ public :
 	/**
 	  * Select a behavior according to the values in the sensorMap.
 	  * \param sensorMap is a map whose key is the sensor name and value the sensor value.
-	  * \return is the number of the selected classifier, and the Id of the target.
+	  * \param lastClassifierNumber is the number of the last classifier selected. Also used as a return value.
+	  * \param lastTarget is the ID of the last target associated with the last classifier. Also used as a return value.
+	  * \param lastSelectionMaxPriority is the Priority given to the last selected classifier
+	  *									(witch is the max of all the last activable classifier priority). Also used as a return value.
 	  */
-	std::pair<sint16, TTargetId> selectBehavior(const CCSPerception* psensorMap);
+	void selectBehavior(const CCSPerception* psensorMap, 
+						sint16		&lastClassifierNumber, 
+						TTargetId	&lastTarget,
+						double		&lastSelectionMaxPriority);
 
 	/**
 	  * Give the action part of a given Classifier.
@@ -222,6 +250,7 @@ public :
 class CActionClassifiers
 {
 public :
+	CActionClassifiers();
 	CActionClassifiers(TAction name);
 	virtual ~CActionClassifiers();
 

@@ -1,7 +1,7 @@
 /** \file sensors_motivations_actions_def.cpp
  * Sensors, motivations and actions list of enums.
  *
- * $Id: sensors_motivations_actions_def.cpp,v 1.1 2003/03/10 14:17:39 robert Exp $
+ * $Id: sensors_motivations_actions_def.cpp,v 1.2 2003/06/17 12:15:48 robert Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

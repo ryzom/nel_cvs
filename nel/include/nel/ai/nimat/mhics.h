@@ -1,7 +1,7 @@
 /** \file mhics.h
  * The MHiCS architecture. (Modular Hierarchical Classifiers System)
  *
- * $Id: mhics.h,v 1.1 2003/03/18 12:44:37 robert Exp $
+ * $Id: mhics.h,v 1.2 2003/06/17 12:15:27 robert Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include <set>
 #include "nel/misc/debug.h"
 #include "nel/misc/string_conversion.h"
-#include "classifier.h"
+#include "nel/ai/nimat/classifier.h"
 
 namespace NLAINIMAT
 {
@@ -121,10 +121,21 @@ public :
 	  * Select a behavior according to the values in the sensorMap.
 	  * \param motivationName is the name of the CS that must be activated
 	  * \param sensorMap is a map whose key is the sensor name and value the sensor value.
-	  * \return is the number of the the selected classifier.
-	  */
-	std::pair<sint16, TTargetId> selectBehavior(TMotivation motivationName, const CCSPerception* psensorMap);
-	std::pair<sint16, TTargetId> selectBehavior(TAction motivationName, const CCSPerception* psensorMap, TTargetId target);
+	  * \param lastClassifierNumber is the number of the last classifier selected. Also used as a return value.
+	  * \param lastTarget is the ID of the last target associated with the last classifier. Also used as a return value.
+	  * \param lastSelectionMaxPriority is the Priority given to the last selected classifier
+	  *									(witch is the max of all the last activable classifier priority). Also used as a return value.
+	*/
+	void selectBehavior(TMotivation motivationName,
+						const CCSPerception* psensorMap,
+						sint16		&lastClassifierNumber,
+						TTargetId	&target,
+						double		&lastSelectionMaxPriority);
+	void selectBehavior(TAction VirtualActionName,
+						const CCSPerception* psensorMap,
+						sint16		&lastClassifierNumber,
+						TTargetId	&target,
+						double		&lastSelectionMaxPriority);
 
 	/**
 	  * Give the action part of a given Classifier.
@@ -140,6 +151,9 @@ public :
 
 	/// Chaine de debug
 	void getDebugString(std::string &t) const;
+
+	/// Load classifiers from a file. Return false if thereis a probleme
+	bool loadClassifierFromFile(std::string fileName);
 	
 private :
 	std::map<TMotivation, CClassifierSystem>	_MotivationClassifierSystems;		// <motivationName, classeur> CS by motivation name.
@@ -171,7 +185,13 @@ public :
 	void setMotivationValue(TMotivation motivationName, double value);
 
 	/// Retourne la valeur d'une motiation
-	double	getMotivationValue(TMotivation motivationName) const ;
+	double	getMotivationValue(TMotivation motivationName) const;
+
+	/// Retourne l'intensité de motivation reçu par un action virtuel
+	double getMotivationIntensity(TAction virtualAction) const;
+
+	/// Retourne l'intensité d'exécution d'une action
+	double getExecutionIntensity(TAction action) const;
 
 	/// Return the Behavior that must be active
 	std::pair<TAction, TTargetId> selectBehavior();
@@ -193,6 +213,8 @@ private :
 	{
 	public :
 		sint16				ClassifierNumber;		// Number of the last classifier actived by this motivation
+		TTargetId			TargetId;				// Id of the laste TaretID selected by this motivation
+		double				LastSelectionMaxPriority;//LastSelectionMaxPriority is the Priority given to the last selected classifier
 		CMotivationEnergy	MotivationIntensity;
 		uint16				dbgNumberOfActivations;	// For debug purpose
 	public :
@@ -200,6 +222,8 @@ private :
 		{
 			ClassifierNumber		= -1;
 			dbgNumberOfActivations	= 0;
+			TargetId = 0; //NullTargetId;
+			LastSelectionMaxPriority = 0;
 		}
 	};
 

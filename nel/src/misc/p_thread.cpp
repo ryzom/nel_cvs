@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
  * class CPThread (Posix threads)
  *
- * $Id: p_thread.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: p_thread.cpp,v 1.7 2002/02/27 10:45:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,6 +118,26 @@ void CPThread::wait ()
 		}
 		_Started = false;
 	}
+}
+
+
+/*
+ * getProcessCPUMask
+ */
+uint64 CPThread::getProcessCPUMask()
+{
+	/// \todo: handle processor selection under posix thread
+	return 1;
+}
+
+
+/*
+ * setCPUMask
+ */
+bool CPThread::setCPUMask(uint64 cpuMask)
+{
+	/// \todo: handle processor selection under posix thread
+	return true;
 }
 
 

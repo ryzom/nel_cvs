@@ -1,7 +1,7 @@
 /** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.15 2002/02/20 18:05:44 lecroart Exp $
+ * $Id: thread.h,v 1.16 2002/02/27 10:45:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,6 +98,12 @@ public:
 
 	/// Return a pointer to the runnable object
 	virtual IRunnable *getRunnable()=0;
+
+	// Return process CPU mask. This method can be call anytime, even if the thread is not started.
+	virtual uint64 getProcessCPUMask()=0;
+
+	// Set the CPU mask for this thread. Thread must have been started before.
+	virtual bool setCPUMask(uint64 cpuMask)=0;
 };
 
 

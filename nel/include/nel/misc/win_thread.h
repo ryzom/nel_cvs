@@ -1,7 +1,7 @@
 /** \file win_thread.h
  * Windows implementation of CThread class (look at thread.h)
  *
- * $Id: win_thread.h,v 1.6 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: win_thread.h,v 1.7 2002/02/27 10:45:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,8 @@ public:
 	virtual void start();
 	virtual void terminate();
 	virtual void wait();
+	virtual uint64	getProcessCPUMask();
+	virtual bool setCPUMask(uint64 cpuMask);
 
 	virtual IRunnable *getRunnable()
 	{

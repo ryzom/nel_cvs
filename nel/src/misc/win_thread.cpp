@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: win_thread.cpp,v 1.7 2002/02/27 10:45:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,6 +87,30 @@ void CWinThread::wait ()
 	WaitForSingleObject(ThreadHandle, INFINITE);
 	CloseHandle(ThreadHandle);
 	ThreadHandle = NULL;
+}
+
+uint64 CWinThread::getProcessCPUMask()
+{
+	// Ask the system for number of processor available for this process
+	DWORD processAffinityMask;
+	DWORD systemAffinityMask;
+	if (GetProcessAffinityMask(GetCurrentProcess(), &processAffinityMask, &systemAffinityMask))
+	{
+		// Return the CPU mask
+		return (uint64)processAffinityMask;
+	}
+	else
+		return 1;
+}
+
+bool CWinThread::setCPUMask(uint64 cpuMask)
+{
+	// Thread must exist
+	if (ThreadHandle == NULL)
+		return false;
+
+	// Ask the system for number of processor available for this process
+	return SetThreadAffinityMask ((HANDLE)ThreadHandle, (DWORD)cpuMask) != 0;
 }
 
 

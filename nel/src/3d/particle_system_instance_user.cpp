@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.2 2001/07/25 13:15:05 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.3 2001/07/25 14:25:24 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -83,7 +83,7 @@ bool		CParticleSystemInstanceUser::isValid(void) const
 
 void		CParticleSystemInstanceUser::registerPSObserver(IPSObserver *observer)
 {
-	nlassert(!isPSObserver(obesrver)) ;
+	nlassert(!isPSObserver(observer)) ;
 	_Observers.push_back(observer) ;
 }
 

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.8 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: landscape_user.cpp,v 1.9 2001/10/09 13:57:38 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,8 @@ void	CLandscapeUser::loadBankFiles(const std::string &tileBankFile, const std::s
 	_Landscape->Landscape.TileBank.makeAllPathRelative();
 	// Use DDS!!!
 	_Landscape->Landscape.TileBank.makeAllExtensionDDS();
+	// No absolute path
+	_Landscape->Landscape.TileBank.setAbsPath ("");
 
 	CIFile farbankFile(CPath::lookup(farBankFile));
 	_Landscape->Landscape.TileFarBank.serial(farbankFile);

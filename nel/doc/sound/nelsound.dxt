@@ -4,7 +4,7 @@
 
 \author Olivier Cado
 
-\date Updated July 17, 2001
+\date Updated July 19, 2001
 
 \section sndoverview Overview
 
@@ -94,18 +94,34 @@ As a conclusion, all the game developer has to do at the very least is to:
 - Move the sources (other players, bots, objects...) (class USource)
 - Possibly move the envsounds (class UEnvSound)
 
-\subsection Files
+\subsection sndfiles Files
 
 The environment sounds parameters, such as their 3D area, and the
 environmental effects parameters are created using an editor. It is
 likely that it will be a 3DSMax plug-in.
 
 The sounds used for sources have parameters as well, for example their
-cone angles. An editor will be provided, at the convenience of a sound
-designer.
+cone angles. An editor is provided, at the convenience of a sound
+designer. It can be found in /code/nel/tools/sounds.
+
+\section sndcompile Compiling the NeL OpenAL Sound Driver
+
+(Windows example)
+
+Include paths needed:
+- OpenAL base platform dir (C:\NETSHARE\OPENAL\WIN)
+- OpenAL include dir (C:\NETSHARE\OPENAL\WIN\AL)
+- EAX include dir (C:\NETSHARE\CREATIVE LABS\EAX 2.0 EXTENSIONS SDK\INCLUDE)
+
+Library paths needed:
+- OpenAL .lib location (C:\Netshare\openal\win\openal32\release)
+- OpenAL UT .lib location (C:\Netshare\openal\win\alut\release)
+- EAX .lib location (C:\NETSHARE\CREATIVE LABS\EAX 2.0 EXTENSIONS SDK\LIBS)
+
+At runtime, the user needs openal32.dll and eax.dll
+(usually in the system directory)
 
 \section sndlater Later enhancements
-
 
 In the future, the sound will not be loaded staticly anymore. A streaming
 feature is technically feasable.

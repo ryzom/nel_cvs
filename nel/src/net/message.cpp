@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.22 2003/07/09 15:17:08 cado Exp $
+ * $Id: message.cpp,v 1.23 2003/09/01 12:05:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ const char *LockedSubMessageError = "a sub message is forbidden";
  */
 CMessage::CMessage (NLMISC::CStringIdArray &sida, const std::string &name, bool inputStream, TStreamFormat streamformat, uint32 defaultCapacity) :
 	NLMISC::CMemStream (inputStream, false, defaultCapacity),
-	_TypeSet (false), _SIDA (&sida), _HeaderSize(0xFFFFFFFF), _SubMessagePosR(0), _LengthR(0)
+	TypeHasAnId(false), TypeHasAName(false), _SIDA (&sida), _SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
 {
 	init( name, streamformat );
 }
@@ -60,7 +60,7 @@ CMessage::CMessage (NLMISC::CStringIdArray &sida, const std::string &name, bool 
  */
 CMessage::CMessage (const std::string &name, bool inputStream, TStreamFormat streamformat, uint32 defaultCapacity) :
 	NLMISC::CMemStream (inputStream, false, defaultCapacity),
-	_TypeSet (false), _SIDA (NULL), _HeaderSize(0xFFFFFFFF), _SubMessagePosR(0), _LengthR(0)
+	TypeHasAnId(false), TypeHasAName(false), _SIDA (NULL), _SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
 {
 	init( name, streamformat );
 }
@@ -90,7 +90,7 @@ void CMessage::init( const std::string &name, TStreamFormat streamformat )
  */
 CMessage::CMessage (NLMISC::CMemStream &memstr) :
 	NLMISC::CMemStream( memstr ),
-	_TypeSet(false), _HeaderSize(0xFFFFFFFF), _SubMessagePosR(0), _LengthR(0)
+	TypeHasAnId(false), TypeHasAName(false), _SIDA (NULL), _SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
 {
 	sint32 pos = getPos();
 	bool reading = isReading();

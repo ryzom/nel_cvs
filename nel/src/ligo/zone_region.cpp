@@ -1,7 +1,7 @@
 /** \file zone_region.cpp
  * <File description>
  *
- * $Id: zone_region.cpp,v 1.4 2002/11/29 14:49:15 corvazier Exp $
+ * $Id: zone_region.cpp,v 1.5 2003/09/01 12:05:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

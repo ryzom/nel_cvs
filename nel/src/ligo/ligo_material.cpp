@@ -1,7 +1,7 @@
 /** \file ligo/material.cpp
  * A ligoscape material
  *
- * $Id: ligo_material.cpp,v 1.1 2002/02/28 08:14:36 besson Exp $
+ * $Id: ligo_material.cpp,v 1.2 2003/09/01 12:05:57 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

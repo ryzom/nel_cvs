@@ -1,7 +1,7 @@
 /** \file zone_edge.cpp
  * A ZoneEdge descriptor
  *
- * $Id: zone_edge.cpp,v 1.2 2003/08/01 13:11:23 corvazier Exp $
+ * $Id: zone_edge.cpp,v 1.3 2003/09/01 12:05:57 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

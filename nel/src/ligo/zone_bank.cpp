@@ -1,7 +1,7 @@
 /** \file zone_bank.cpp
  * Zone Bank
  *
- * $Id: zone_bank.cpp,v 1.1 2002/02/14 11:16:43 besson Exp $
+ * $Id: zone_bank.cpp,v 1.2 2003/09/01 12:05:57 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.

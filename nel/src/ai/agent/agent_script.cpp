@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.105 2002/03/11 13:59:34 portier Exp $
+ * $Id: agent_script.cpp,v 1.106 2002/03/12 11:29:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,7 +196,7 @@ namespace NLAIAGENT
 
 		StaticMethod[CAgentScript::TAddChildTag] = new CAgentScript::CMethodCall(	_ADDCHILD_, 
 																						CAgentScript::TAddChildTag, 
-																						NULL,CAgentScript::CheckCount,
+																						NULL,CAgentScript::DoNotCheck,
 																						2,
 																						new NLAISCRIPT::CObjectUnknown(
 																						new NLAISCRIPT::COperandSimple(
@@ -644,27 +644,37 @@ namespace NLAIAGENT
 	{
 		CIteratorContener i = g->getIterator();
 		CStringType &s = (CStringType &)*i++;
-		IBasicAgent *o = (IBasicAgent *)i++;
+		IBasicAgent *a = (IBasicAgent *)i++;
+		IBasicAgent *o = a;
+		sint n = 1;
+		if(!i.isInEnd())
+		{
+			n = (sint)((NLAIAGENT::INombreDefine *)i++)->getNumber();
+		}
 
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
-		
-		o->setParent( (const IWordNumRef *) *this );
-		CNotifyParentScript *m = new CNotifyParentScript(this);
-		//this->incRef();
-		m->setSender(this);
-		m->setPerformatif(IMessageBase::PTell);
-		((IObjectIA *)o)->sendMessage(m);
 
-		uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
-		const NLAIC::CTypeOfObject &t = o->getType();
-
-		if((t.getValue() & b) == b)
+		while(n --)
 		{
-			((CAgentScript *)o)->setAgentManager(this);
-		}
+			o->setParent( (const IWordNumRef *) *this );
+			CNotifyParentScript *m = new CNotifyParentScript(this);
+			//this->incRef();
+			m->setSender(this);
+			m->setPerformatif(IMessageBase::PTell);
+			((IObjectIA *)o)->sendMessage(m);
 
-		_DynamicAgentName.insert(CKeyAgent(s,addChild(o)));
+			uint b = NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tAgent;
+			const NLAIC::CTypeOfObject &t = o->getType();
+
+			if((t.getValue() & b) == b)
+			{
+				((CAgentScript *)o)->setAgentManager(this);
+			}
+
+			_DynamicAgentName.insert(CKeyAgent(s,addChild(o)));
+			if(n) o = (IBasicAgent *)a->clone();
+		}
 		
 		r.Result = NULL;
 

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.25 2001/12/11 09:27:05 chafik Exp $
+ * $Id: group_type.cpp,v 1.26 2002/03/12 11:29:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,6 +56,19 @@ namespace NLAIAGENT
 		IBaseGroupType::CMethodCall("Set",_Set),
 		IBaseGroupType::CMethodCall("Size",_Size)
 	};
+
+	virtual IObjetOp *IBaseGroupType::operator + (const IObjetOp &a)  const
+	{
+		IObjetOp *o = (IObjetOp *)clone();
+		*o += a;
+		return o;
+	}
+	virtual IObjetOp *IBaseGroupType::operator - (const IObjetOp &a)  const
+	{
+		IObjetOp *o = (IObjetOp *)clone();
+		*o -= a;
+		return o;
+	}
       
 	IBaseGroupType::IBaseGroupType()
 	{

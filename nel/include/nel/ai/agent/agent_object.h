@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.18 2001/10/12 16:00:50 chafik Exp $
+ * $Id: agent_object.h,v 1.19 2002/03/12 11:29:06 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -551,18 +551,8 @@ namespace NLAIAGENT
 		//@{
 		virtual IObjetOp &operator += (const IObjetOp &a) = 0;
 		virtual IObjetOp &operator -= (const IObjetOp &a) = 0;
-		virtual IObjetOp *operator + (const IObjetOp &a)  const
-		{
-			IObjetOp *o = (IObjetOp *)clone();			
-			*o += a;
-			return o;
-		}
-		virtual IObjetOp *operator - (const IObjetOp &a)  const
-		{
-			IObjetOp *o = (IObjetOp *)clone();
-			*o -= a;
-			return o;
-		}
+		virtual IObjetOp *operator + (const IObjetOp &a)  const;		
+		virtual IObjetOp *operator - (const IObjetOp &a)  const;		
 		virtual IObjetOp *operator ! () const = 0;
 		virtual bool isTrue() const;
 		//@}

@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.12 2002/01/03 15:06:14 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.13 2002/03/12 11:29:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,7 +57,7 @@ namespace NLAIAGENT
 
 	void CProxyAgentMail::releaseClass()
 	{
-		sint i;		
+		sint i;
 		for(i = 0; i < CProxyAgentMail::TLastM; i ++)
 		{
 			delete CProxyAgentMail::StaticMethod[i];

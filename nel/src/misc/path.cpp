@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.8 2001/02/07 13:54:16 lecroart Exp $
+ * $Id: path.cpp,v 1.9 2001/03/07 13:02:51 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,8 @@ void CPath::addSearchPath( const string& path )
  */
 string CPath::lookup( const string& filename )
 {
+	if(filename.empty())
+		throw EPathNotFound( filename );
 	if ( CFile::fileExists(filename) )
 	{
 		NL_DISPLAY_PATH(filename);

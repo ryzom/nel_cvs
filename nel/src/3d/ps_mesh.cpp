@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.21 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_mesh.cpp,v 1.22 2003/03/17 16:52:55 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -933,7 +933,7 @@ bool CPSConstraintMesh::hasOpaqueFaces(void)
 
 //====================================================================================
 void CPSConstraintMesh::setShape(const std::string &meshFileName)
-{	
+{		
 	_MeshShapeFileName.resize(1);	
 	_MeshShapeFileName[0] = meshFileName;
 	_Touched = 1;
@@ -943,6 +943,10 @@ void CPSConstraintMesh::setShape(const std::string &meshFileName)
 //===========================================================================
 std::string			CPSConstraintMesh::getShape(void) const
 {
+	if (_Touched) 
+	{	
+		const_cast<CPSConstraintMesh *>(this)->update();
+	}
 	nlassert(_MeshShapeFileName.size() == 1);
 	return _MeshShapeFileName[0];
 }
@@ -958,12 +962,20 @@ void		CPSConstraintMesh::setShapes(const std::string *shapesNames, uint numShape
 //====================================================================================
 uint	    CPSConstraintMesh::getNumShapes() const
 {
+	if (_Touched)
+	{	
+		const_cast<CPSConstraintMesh *>(this)->update();
+	}
 	return _MeshShapeFileName.size();
 }
 
 //====================================================================================
 void	CPSConstraintMesh::getShapesNames(std::string *shapesNames) const
 {
+	if (_Touched) 
+	{	
+		const_cast<CPSConstraintMesh *>(this)->update();
+	}
 	std::copy(_MeshShapeFileName.begin(), _MeshShapeFileName.end(), shapesNames);
 }
 
@@ -981,6 +993,10 @@ void		CPSConstraintMesh::setShape(uint index, const std::string &shapeName)
 //====================================================================================
 const std::string          &CPSConstraintMesh::getShape(uint index) const
 {
+	if (_Touched) 
+	{	
+		const_cast<CPSConstraintMesh *>(this)->update();
+	}
 	nlassert(index < _MeshShapeFileName.size());
 	return _MeshShapeFileName[index];
 }

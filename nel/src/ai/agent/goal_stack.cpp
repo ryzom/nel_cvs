@@ -28,8 +28,34 @@ namespace NLAILOGIC
 
 	NLAIAGENT::IObjectIA::CProcessResult CGoalStack::runActivity()
 	{
-		std::sort(_Goals.begin(), _Goals.end(), greater());
+		if ( _Goals.size() > 1)
+		{
+			CGoal *old_top = _Goals.front();
 
+			std::sort(_Goals.begin(), _Goals.end(), greater());
+
+
+			CGoal *new_top = _Goals.front();
+
+#ifdef NL_DEBUG
+			std::string dbg_stack;
+			for (int i = 0; i < (int) _Goals.size(); i++ )
+			{
+				std::string tmp;
+				 _Goals[i]->getDebugString( tmp );
+				dbg_stack += tmp;
+			}
+			const char *dbg_str = dbg_stack.c_str();
+#endif
+
+
+			new_top->select();
+			
+			if ( ! ( (*old_top) == (*new_top) ) )
+			{
+				old_top->unSelect();
+			}
+		}
 		return NLAIAGENT::IObjectIA::CProcessResult();
 	}
 
@@ -120,5 +146,10 @@ namespace NLAILOGIC
 	{
 		// TODO:
 		return false;
+	}
+
+	const std::vector<CGoal *> &CGoalStack::getStack()
+	{
+		return _Goals;
 	}
 } // NLAILOGIC

@@ -45,7 +45,7 @@ using  namespace NLAIFUZZY;
 %token	NEW 
 
 // Operator tokens
-%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS UPDATEEVERY
+%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS UPDATEEVERY PRIORITY
 
 // Logic tokens
 %token	LOGICVAR RULE IA_ASSERT OR AND
@@ -227,6 +227,7 @@ using  namespace NLAIFUZZY;
 						|	PostCondition 
 						|	Goal
 						|	UpdateCycles
+						|	Priority
 						;	
 
 	
@@ -259,13 +260,6 @@ using  namespace NLAIFUZZY;
 								if ( classIsAnOperator() )
 								{
 									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
-/*									while ( _LastAsserts.size() )
-									{
-										op_class->addFirstOrderCond( _LastAsserts.back(), _LastLogicParams.back() );
-										_LastAsserts.pop_back();
-										_LastLogicParams.pop_back();
-									}
-*/
 									while ( _LastCodeBranche.size() )
 									{
 										op_class->addCodeCond( _LastCodeBranche.front() );
@@ -296,9 +290,6 @@ using  namespace NLAIFUZZY;
 								{
 									// Builds a FactPattern
 
-//							_LastAsserts.push_back( new NLAIAGENT::CStringVarName( LastyyText[1] ) );
-//							_LastLogicParams.push_back( std::list<const NLAIAGENT::IVarName *>() );
-
 									// Adds it as goal to the operator class
 									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
 									op_class->setGoal( _LastAsserts.back(), _LastLogicParams.back() );
@@ -306,26 +297,8 @@ using  namespace NLAIFUZZY;
 										_LastLogicParams.pop_back();
 								}
 							}
-/*							IDENT
-							{
-								if ( _Goal ) 
-								{
-									_Goal->release();
-									_Goal = NULL;
-								}
-								
-								if ( classIsAnOperator() )
-								{
-									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
-									NLAIAGENT::CStringVarName goal_name( LastyyText[1] );
-									op_class->setGoal( (NLAIAGENT::CStringVarName &) goal_name );
-								}
-							}
-//							POINT_VI
-//							END
-*/
-						POINT_VI
-						;
+							POINT_VI
+							;
 
 	UpdateCycles			:	UPDATEEVERY POINT_DEUX NOMBRE	
 								{
@@ -349,6 +322,32 @@ using  namespace NLAIFUZZY;
 								}
 								POINT_VI
 							;
+
+	Priority				:	PRIORITY POINT_DEUX NOMBRE	
+								{
+									if ( classIsAnOperator() )
+									{
+										double priority = (double) LastyyNum;
+										COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+										op_class->setPriority( priority );
+										if(_LastFact.Value != NULL) 
+										{
+											_LastFact.Value->release();
+											_LastFact.Value = NULL;
+										}
+
+										if(_FlotingExpressionType != NULL)
+										{
+											_FlotingExpressionType->release();
+											_FlotingExpressionType = NULL;
+										}
+									}	
+								}
+								POINT_VI
+							;
+
+
+
 
 	PostCondition		:	POSTCONDITION POINT_DEUX 
 							{

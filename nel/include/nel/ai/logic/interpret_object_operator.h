@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.16 2001/07/06 08:23:22 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.17 2001/07/12 08:40:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,8 @@ namespace NLAISCRIPT
 		std::vector<sint32>							_StepsMode;			// Infos about synchro for the steps of the operator
 
 		sint32										_UpdateCycles;		// Number of cycles before checking preconditions
+
+		double										_Priority;
 
 	public:
 		static const NLAIC::CIdentType IdOperatorClass;
@@ -235,6 +237,16 @@ public:
 		sint32 getUpdateEvery()
 		{
 			return _UpdateCycles;
+		}
+
+		void setPriority(double p)
+		{
+			_Priority = p;
+		}
+
+		double getPriority()
+		{
+			return _Priority;
 		}
 	};
 }

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal_stack.h,v 1.1 2001/07/04 08:58:58 portier Exp $
+ * $Id: goal_stack.h,v 1.2 2001/07/12 08:40:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NLAILOGIC
 			struct greater : public std::binary_function<CGoal *, CGoal *, bool> {
 			    bool operator()(const CGoal *x, const CGoal *y) const
 				{
-					return x->priority() < y->priority();
+					return x->priority() > y->priority();
 				}
 			};
 
@@ -57,6 +57,8 @@ namespace NLAILOGIC
 			virtual void addGoal(CGoal *);
 			virtual void removeGoal(CGoal *);
 			virtual CGoal *getTopGoal();
+
+			virtual const std::vector<CGoal *> &getStack();
 
 			virtual CGoal *operator[](sint32);
 			virtual void getDebugString(std::string &) const;

@@ -17,15 +17,19 @@ namespace NLAISCRIPT
 		_Goal = NULL;
 		_Comment = NULL;
 		_FactBase = new NLAILOGIC::CFactBase();
+		_UpdateCycles = 0;
+		_Priority = 1;
 	}
 	
 	COperatorClass::COperatorClass(const NLAIC::CIdentType &id): CAgentClass(id)
 	{
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
-		_Goal = NULL;
+		_Goal = NULL; 
 		_Comment = NULL;
 		_FactBase = new NLAILOGIC::CFactBase();
+		_UpdateCycles = 0;
+		_Priority = 1;
 	}
 
 	COperatorClass::COperatorClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
@@ -35,6 +39,8 @@ namespace NLAISCRIPT
 		_Goal = NULL;
 		_Comment = NULL;
 		_FactBase = new NLAILOGIC::CFactBase();
+		_UpdateCycles = 0;
+		_Priority = 1;
 	}
 
 	COperatorClass::COperatorClass(const COperatorClass &c) : CAgentClass( c )
@@ -58,7 +64,8 @@ namespace NLAISCRIPT
 			_FactBase = (NLAILOGIC::CFactBase *) c._FactBase->clone();
 		else
 			_FactBase = new NLAILOGIC::CFactBase();
-
+		_UpdateCycles = c._UpdateCycles;
+		_Priority = c._Priority;
 	}	
 
 	COperatorClass::COperatorClass()
@@ -68,6 +75,8 @@ namespace NLAISCRIPT
 		_Goal = NULL;
 		_Comment = NULL;
 		_FactBase = new NLAILOGIC::CFactBase();
+		_UpdateCycles = 0;
+		_Priority = 1;
 	}
 
 	COperatorClass::~COperatorClass()

@@ -10,6 +10,7 @@ namespace NLAILOGIC
 		_Name = NULL;
 		_Sender = NULL;
 		_Receiver = NULL;
+		_Selected = false;
 	}
 		
 	CGoal::CGoal(const NLAIAGENT::IVarName &name, TTypeOfGoal mode) : IBaseBoolType()
@@ -18,6 +19,7 @@ namespace NLAILOGIC
 		_Sender = NULL;
 		_Receiver = NULL;
 		_Mode = mode;
+		_Selected = false;
 	}
 
 	CGoal::CGoal(const NLAIAGENT::IVarName &name, std::list<const NLAIAGENT::IObjectIA *> &args, TTypeOfGoal mode)
@@ -31,6 +33,7 @@ namespace NLAILOGIC
 		_Sender = NULL;
 		_Receiver = NULL;
 		_Mode = mode;
+		_Selected = false;
 	}
 
 	CGoal::CGoal(const CGoal &c) : IBaseBoolType()
@@ -45,6 +48,8 @@ namespace NLAILOGIC
 
 		for ( int i = 0; i < (int) c._Args.size(); i++ )
 			_Args.push_back( (NLAIAGENT::IObjectIA *) c._Args[i]->clone() );
+
+		_Selected = c._Selected;
 	}
 
 	CGoal::~CGoal()
@@ -342,7 +347,16 @@ namespace NLAILOGIC
 
 	float CGoal::priority() const
 	{
-		return 1.0;
+		float pri = 256;
+		for ( int i = 0; i < (int) _Successors.size(); i++ )
+		{
+			float suc_pri = ( (NLAIAGENT::COperatorScript *)_Successors[i] )->priority();
+			if ( suc_pri < pri )
+			{
+				pri = suc_pri;
+			}
+		}
+		return pri;
 	}
 /*
 	void CGoal::setTopLevel(NLAIAGENT::CAgentScript *tl)

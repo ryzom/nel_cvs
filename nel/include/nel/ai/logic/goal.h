@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.17 2001/06/26 15:42:37 portier Exp $
+ * $Id: goal.h,v 1.18 2001/07/12 08:40:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,6 +50,8 @@ namespace NLAILOGIC
 			std::vector<NLAIAGENT::IBasicAgent *>	_Successors;
 
 			TTypeOfGoal	_Mode;
+
+			bool _Selected;
 
 			NLAIAGENT::IBasicAgent *_Sender;
 			NLAIAGENT::IBasicAgent *_Receiver;
@@ -118,6 +120,22 @@ namespace NLAILOGIC
 			{
 				_Mode = mode;
 			}
+
+			virtual void select()
+			{
+				_Selected = true;
+			}
+
+			virtual void unSelect()
+			{
+				_Selected = false;
+			}
+
+			bool isSelected()
+			{
+				return _Selected;
+			}
+
 	};
 }
 

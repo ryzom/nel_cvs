@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.39 2001/07/09 13:52:54 chafik Exp $
+ * $Id: agent_script.h,v 1.40 2001/07/12 08:40:45 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -343,11 +343,6 @@ namespace NLAIAGENT
 			return IObjectIA::CProcessResult();
 		}
 
-		virtual const std::vector<NLAILOGIC::CGoal *>	*getGoalStack()
-		{
-			return NULL;
-		}
-
 		virtual void removeGoal( NLAILOGIC::CGoal *)
 		{
 		}
@@ -360,6 +355,16 @@ namespace NLAIAGENT
 		const NLAISCRIPT::CAgentClass *getClass()
 		{
 			return _AgentClass;
+		}
+
+		virtual NLAILOGIC::CGoal *getTopGoal()
+		{
+			return NULL;
+		}
+
+		virtual const std::vector<NLAILOGIC::CGoal *> *getGoalStack()
+		{
+			return NULL;
 		}
 
 	};

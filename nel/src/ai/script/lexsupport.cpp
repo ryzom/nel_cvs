@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.17 2001/07/06 08:24:01 portier Exp $
+ * $Id: lexsupport.cpp,v 1.18 2001/07/12 08:41:06 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,7 @@ namespace NLAISCRIPT
 		DicoDeNom.insert(Arbre::value_type("Steps",STEPS) );
 		DicoDeNom.insert(Arbre::value_type("Comment",COMMENT) );
 		DicoDeNom.insert(Arbre::value_type("UpdateEvery", UPDATEEVERY) );
+		DicoDeNom.insert(Arbre::value_type("Priority", PRIORITY) );
 
 		DicoDeNom.insert(Arbre::value_type("Return",RETURN) );
 		DicoDeNom.insert(Arbre::value_type("MessageCollector",COLLECTOR) );

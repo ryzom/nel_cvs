@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.45 2002/08/22 12:09:55 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.46 2002/08/22 14:13:06 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -607,7 +607,7 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 			nlwarning ("HNETL5: can't connect to %s (sid %u) now (%s) '%s'", name.c_str(), sid, e.what (), addr[i].asString ().c_str());
 			connectSuccess = false;
 
-			allstuffs += "+lconnect failed "+name+"-"+toString(sid)+"\n";
+			allstuffs += "+lconnect failed "+name+"-"+toString((uint16)sid)+"\n";
 			test.displayNL ("+lconnect failed %s-%hu", name.c_str (), (uint16)sid);
 		}
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.15 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.16 2003/11/28 15:07:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/misc/bsphere.h"
 #include "nel/misc/fast_mem.h"
 #include "nel/misc/system_info.h"
+#include "nel/misc/hierarchical_timer.h"
 #include "3d/mesh_mrm.h"
 #include "3d/mrm_builder.h"
 #include "3d/mrm_parameters.h"
@@ -59,6 +60,7 @@ namespace NL3D
 #define	NL3D_SSE_ALIGNEMENT		16
 /**
  *	A CMatrix3x4SSE array correctly aligned
+ *	NB: SSE is no more used (no speed gain, some memory problem), but keep it for possible future usage.
  */
 class	CMatrix3x4SSEArray
 {
@@ -386,10 +388,11 @@ uint	CMeshMRMGeom::NumCacheVertexNormal4= NL_BlockByteL1 / sizeof(CRawVertexNorm
 // Number of vertices per block to process For ShadowMap generation
 uint	CMeshMRMGeom::NumCacheVertexShadow= NL_BlockByteL1 / sizeof(CMeshMRMGeom::CShadowVertex);
 
-// Old School template: include the same file with define switching
-#undef NL_SKIN_SSE
-#include "mesh_mrm_skin_template.cpp"
-#define NL_SKIN_SSE
+
+/* Old School template: include the same file with define switching, 
+	Was used before to reuse same code for and without SSE.
+	Unuseful now because SSE removed, but keep it for possible future work on it.
+*/
 #include "mesh_mrm_skin_template.cpp"
 
 

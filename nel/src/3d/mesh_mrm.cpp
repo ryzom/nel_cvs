@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.67 2003/11/21 16:19:55 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.68 2003/11/28 15:07:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1227,35 +1227,16 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	}
 	else
 	{
-		// Use SSE when possible
-		if( CSystemInfo::hasSSE() )
+		// apply skin for this Lod only.
+		if (!useTangentSpace)
 		{
-			// apply skin for this Lod only.
-			if (!useTangentSpace)
-			{
-				// skinning with normal, but no tangent space
-				applySkinWithNormalSSE (lod, skeleton);
-			}
-			else
-			{
-				// Tangent space stored in the last texture coordinate
-				applySkinWithTangentSpaceSSE(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
-			}
+			// skinning with normal, but no tangent space
+			applySkinWithNormal (lod, skeleton);
 		}
-		// Standard FPU skinning
 		else
 		{
-			// apply skin for this Lod only.
-			if (!useTangentSpace)
-			{
-				// skinning with normal, but no tangent space
-				applySkinWithNormal (lod, skeleton);
-			}
-			else
-			{
-				// Tangent space stored in the last texture coordinate
-				applySkinWithTangentSpace(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
-			}
+			// Tangent space stored in the last texture coordinate
+			applySkinWithTangentSpace(lod, skeleton, _VBufferFinal.getNumTexCoordUsed() - 1);
 		}
 	}
 
@@ -1411,20 +1392,12 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 	//--------
 	if(mi->_RawSkinCache)
 	{
+		H_AUTO( NL3D_RawSkinning );
+		
 		// RawSkin do all the job in optimized way: Skinning, copy to VBHard and Geomorph.
 
-		// Use SSE when possible
-		if( CSystemInfo::hasSSE() )
-		{
-			// skinning with normal, but no tangent space
-			applyRawSkinWithNormalSSE(lod, *(mi->_RawSkinCache), skeleton, vbDest, alphaLod);
-		}
-		// Standard FPU skinning
-		else
-		{
-			// skinning with normal, but no tangent space
-			applyRawSkinWithNormal (lod, *(mi->_RawSkinCache), skeleton, vbDest, alphaLod);
-		}
+		// skinning with normal, but no tangent space
+		applyRawSkinWithNormal (lod, *(mi->_RawSkinCache), skeleton, vbDest, alphaLod);
 
 		// Vertices are packed in RawSkin mode (ie no holes due to MRM!)
 		return	mi->_RawSkinCache->Geomorphs.size() + 
@@ -1435,18 +1408,10 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 	//--------
 	else
 	{
-		// Use SSE when possible
-		if( CSystemInfo::hasSSE() )
-		{
-			// skinning with normal, but no tangent space
-			applySkinWithNormalSSE (lod, skeleton);
-		}
-		// Standard FPU skinning
-		else
-		{
-			// skinning with normal, but no tangent space
-			applySkinWithNormal (lod, skeleton);
-		}
+		H_AUTO( NL3D_StdSkinning );
+	
+		// skinning with normal, but no tangent space
+		applySkinWithNormal (lod, skeleton);
 
 		// endSkin.
 		//--------

@@ -1,7 +1,7 @@
 /** \file matrix_3x4.h
  *	For fast vector/point multiplication.
  *
- * $Id: matrix_3x4.h,v 1.2 2002/09/09 12:27:02 berenguier Exp $
+ * $Id: matrix_3x4.h,v 1.3 2003/11/28 15:07:48 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NL3D
 
 // ***************************************************************************
 /**
- *	For fast vector/point multiplication.
+ *	For fast vector/point multiplication. Special usage for Skinning.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
@@ -127,12 +127,10 @@ public:
 // ***************************************************************************
 #ifdef NL_OS_WINDOWS
 
-// \todo yoyo: re-enable SSE when Pentium4 SlowDonw bug removed.
-#define NL_DisableSSESkin
-//#define NL_DebugSSENoSkin
 
-
-// For fast vector/point multiplication.
+/** For fast vector/point multiplication. Special usage for Skinning.
+ *	NB: SSE is no more used (no speed gain, some memory problem), but keep it for possible future usage.
+ */ 
 class	CMatrix3x4SSE
 {
 public:
@@ -150,14 +148,13 @@ public:
 		a21= m[1]; a22= m[5]; a23= m[9] ; a24= m[13]; 
 		a31= m[2]; a32= m[6]; a33= m[10]; a34= m[14]; 
 		// not used.
-		//a41= 0   ; a42= 0   ; a43= 0    ; a44= 1; 
+		a41= 0   ; a42= 0   ; a43= 0    ; a44= 1; 
 	}
 
 
 	// mulSetvector. NB: in should be different as v!! (else don't work).
 	void	mulSetVector(const CVector &vin, CVector &vout)
 	{
-	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		eax, vin
@@ -186,18 +183,10 @@ public:
 			movhlps	xmm0, xmm0
 			movss	[edi]vout.z, xmm0
 		}
-	#elif !defined (NL_DebugSSENoSkin)
-		vout.x= (a11*vin.x + a12*vin.y + a13*vin.z);
-		vout.y= (a21*vin.x + a22*vin.y + a23*vin.z);
-		vout.z= (a31*vin.x + a32*vin.y + a33*vin.z);
-	#else
-		vout= vin;
-	#endif
 	}
 	// mulSetpoint. NB: in should be different as v!! (else don't work).
 	void	mulSetPoint(const CVector &vin, CVector &vout)
 	{
-	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		eax, vin
@@ -228,20 +217,12 @@ public:
 			movhlps	xmm0, xmm0
 			movss	[edi]vout.z, xmm0
 		}
-	#elif !defined (NL_DebugSSENoSkin)
-		vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
-		vout.y= (a21*vin.x + a22*vin.y + a23*vin.z + a24);
-		vout.z= (a31*vin.x + a32*vin.y + a33*vin.z + a34);
-	#else
-		vout= vin;
-	#endif
 	}
 
 
 	// mulSetvector. NB: vin should be different as v!! (else don't work).
 	void	mulSetVector(const CVector &vin, float scale, CVector &vout)
 	{
-	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		eax, vin
@@ -276,18 +257,10 @@ public:
 			// store it in xmm4 for future use.
 			movaps	xmm4, xmm0
 		}
-	#elif !defined (NL_DebugSSENoSkin)
-		vout.x= (a11*vin.x + a12*vin.y + a13*vin.z) * scale;
-		vout.y= (a21*vin.x + a22*vin.y + a23*vin.z) * scale;
-		vout.z= (a31*vin.x + a32*vin.y + a33*vin.z) * scale;
-	#else
-		vout= vin;
-	#endif
 	}
 	// mulSetpoint. NB: vin should be different as v!! (else don't work).
 	void	mulSetPoint(const CVector &vin, float scale, CVector &vout)
 	{
-	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		eax, vin
@@ -324,20 +297,12 @@ public:
 			// store it in xmm4 for future use.
 			movaps	xmm4, xmm0
 		}
-	#elif !defined (NL_DebugSSENoSkin)
-		vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14) * scale;
-		vout.y= (a21*vin.x + a22*vin.y + a23*vin.z + a24) * scale;
-		vout.z= (a31*vin.x + a32*vin.y + a33*vin.z + a34) * scale;
-	#else
-		vout= vin;
-	#endif
 	}
 
 
 	// mulAddvector. NB: vin should be different as v!! (else don't work).
 	void	mulAddVector(const CVector &vin, float scale, CVector &vout)
 	{
-	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		ebx, this
@@ -374,18 +339,10 @@ public:
 			movhlps	xmm0, xmm0
 			movss	[edi]vout.z, xmm0
 		}
-	#elif !defined (NL_DebugSSENoSkin)
-		vout.x+= (a11*vin.x + a12*vin.y + a13*vin.z) * scale;
-		vout.y+= (a21*vin.x + a22*vin.y + a23*vin.z) * scale;
-		vout.z+= (a31*vin.x + a32*vin.y + a33*vin.z) * scale;
-	#else
-		vout= vin;
-	#endif
 	}
 	// mulAddpoint. NB: vin should be different as v!! (else don't work).
 	void	mulAddPoint(const CVector &vin, float scale, CVector &vout)
 	{
-	#ifndef NL_DisableSSESkin
 		__asm
 		{
 			mov		ebx, this
@@ -424,13 +381,6 @@ public:
 			movhlps	xmm0, xmm0
 			movss	[edi]vout.z, xmm0
 		}
-	#elif !defined (NL_DebugSSENoSkin)
-		vout.x+= (a11*vin.x + a12*vin.y + a13*vin.z + a14) * scale;
-		vout.y+= (a21*vin.x + a22*vin.y + a23*vin.z + a24) * scale;
-		vout.z+= (a31*vin.x + a32*vin.y + a33*vin.z + a34) * scale;
-	#else
-		vout= vin;
-	#endif
 	}
 
 };

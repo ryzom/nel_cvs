@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.7 2003/05/16 12:08:20 berenguier Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.8 2003/11/28 15:07:48 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,11 +24,6 @@
  */
 
 
-/*
-Old School template: file is included 2 times, with NL_SKIN_SSE defined or not.
-
-*/
-
 
 // ***************************************************************************
 // ***************************************************************************
@@ -38,15 +33,9 @@ Old School template: file is included 2 times, with NL_SKIN_SSE defined or not.
 
 
 // ***************************************************************************
-#ifdef NL_SKIN_SSE
-static void	applyArraySkinNormalT(uint numMatrixes, uint32 *infPtr, CMesh::CSkinWeight *srcSkinPtr, 
-	CVector *srcVertexPtr, CVector *srcNormalPtr, uint normalOff,
-	uint8 *destVertexPtr, CMatrix3x4SSEArray &boneMat3x4, uint vertexSize, uint nInf)
-#else
 static void	applyArraySkinNormalT(uint numMatrixes, uint32 *infPtr, CMesh::CSkinWeight *srcSkinPtr, 
 	CVector *srcVertexPtr, CVector *srcNormalPtr, uint normalOff,
 	uint8 *destVertexPtr, vector<CMatrix3x4> &boneMat3x4, uint vertexSize, uint nInf)
-#endif
 {
 	/* Prefetch all vertex/normal before, it is to be faster.
 	*/
@@ -181,15 +170,9 @@ static void	applyArraySkinNormalT(uint numMatrixes, uint32 *infPtr, CMesh::CSkin
 
 
 // ***************************************************************************
-#ifdef NL_SKIN_SSE
-static void	applyArraySkinTangentSpaceT(uint numMatrixes, uint32 *infPtr, CMesh::CSkinWeight *srcSkinPtr, 
-	CVector *srcVertexPtr, CVector *srcNormalPtr, CVector *tgSpacePtr, uint normalOff, uint tgSpaceOff,
-	uint8 *destVertexPtr, CMatrix3x4SSEArray &boneMat3x4, uint vertexSize, uint nInf)
-#else
 static void	applyArraySkinTangentSpaceT(uint numMatrixes, uint32 *infPtr, CMesh::CSkinWeight *srcSkinPtr, 
 	CVector *srcVertexPtr, CVector *srcNormalPtr, CVector *tgSpacePtr, uint normalOff, uint tgSpaceOff,
 	uint8 *destVertexPtr, vector<CMatrix3x4> &boneMat3x4, uint vertexSize, uint nInf)
-#endif
 {
 	/* Prefetch all vertex/normal/tgSpace before, it is faster.
 	*/
@@ -359,21 +342,8 @@ static void	applyArraySkinTangentSpaceT(uint numMatrixes, uint32 *infPtr, CMesh:
 // ***************************************************************************
 
 
-#ifdef NL_SKIN_SSE
-#undef	NL_SKIN_MATRIX_ARRAY
-#define	NL_SKIN_MATRIX_ARRAY	CMatrix3x4SSEArray
-#else
-#undef	NL_SKIN_MATRIX_ARRAY
-#define	NL_SKIN_MATRIX_ARRAY	vector<CMatrix3x4>
-#endif
-
-
 // ***************************************************************************
-#ifdef NL_SKIN_SSE
-void	CMeshMRMGeom::applySkinWithNormalSSE(CLod &lod, const CSkeletonModel *skeleton)
-#else
 void	CMeshMRMGeom::applySkinWithNormal(CLod &lod, const CSkeletonModel *skeleton)
-#endif
 {
 	nlassert(_Skinned);
 	if(_SkinWeights.size()==0)
@@ -408,7 +378,7 @@ void	CMeshMRMGeom::applySkinWithNormal(CLod &lod, const CSkeletonModel *skeleton
 	// Compute usefull Matrix for this lod.
 	//===========================
 	// Those arrays map the array of bones in skeleton.
-	static	NL_SKIN_MATRIX_ARRAY			boneMat3x4;
+	static	vector<CMatrix3x4>			boneMat3x4;
 	computeBoneMatrixes3x4(boneMat3x4, lod.MatrixInfluences, skeleton);
 
 
@@ -423,6 +393,10 @@ void	CMeshMRMGeom::applySkinWithNormal(CLod &lod, const CSkeletonModel *skeleton
 			continue;
 		uint32		*infPtr= &(lod.InfluencedVertices[i][0]);
 
+		// TestYoyo
+		/*extern	uint TESTYOYO_NumStdSkinVertices;
+		TESTYOYO_NumStdSkinVertices+= nInf;*/
+		
 		// apply the skin to the vertices
 		applyArraySkinNormalT(i, infPtr, srcSkinPtr, srcVertexPtr, srcNormalPtr, 
 			normalOff, destVertexPtr, 
@@ -432,13 +406,8 @@ void	CMeshMRMGeom::applySkinWithNormal(CLod &lod, const CSkeletonModel *skeleton
 
 
 // ***************************************************************************
-#ifdef NL_SKIN_SSE
-void	CMeshMRMGeom::applySkinWithTangentSpaceSSE(CLod &lod, const CSkeletonModel *skeleton, 
-	uint tangentSpaceTexCoord)
-#else
 void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *skeleton, 
 	uint tangentSpaceTexCoord)
-#endif
 {
 	nlassert(_Skinned);
 	if(_SkinWeights.size()==0)
@@ -479,7 +448,7 @@ void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *sk
 	// Compute usefull Matrix for this lod.
 	//===========================
 	// Those arrays map the array of bones in skeleton.
-	static	NL_SKIN_MATRIX_ARRAY			boneMat3x4;
+	static	vector<CMatrix3x4>			boneMat3x4;
 	computeBoneMatrixes3x4(boneMat3x4, lod.MatrixInfluences, skeleton);
 
 
@@ -515,31 +484,47 @@ void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *sk
 #define	NL3D_RAWSKIN_VERTEX_SIZE	32
 
 
+/* Speed Feature test.
+	Don't use precaching for now, cause its seems to be slower on some configs (P4-2.4Ghz), 
+	but maybe faster on other (P3-800)
+	On a P4-2.4Ghz, for 40000 vertices skinned, both no precaching and asm 
+	saves 27% of execution time in the applyRawSkinNormal*() loop (ie 1 ms)
+*/
+#ifdef NL_OS_WINDOWS
+//#define	NL3D_RAWSKIN_PRECACHE
+#define	NL3D_RAWSKIN_ASM
+#endif
+
+
 // ***************************************************************************
-#ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
-	CMatrix3x4SSE *boneMat3x4, uint nInf)
-#else
 void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
 	CMatrix3x4 *boneMat3x4, uint nInf)
-#endif
 {
+	// must write contigously in AGP, and ASM is hardcoded...
+	nlctassert(NL3D_RAWSKIN_NORMAL_OFF==12);
+	nlctassert(NL3D_RAWSKIN_UV_OFF==24);
+	
+	/*extern	uint TESTYOYO_NumRawSkinVertices1;
+	TESTYOYO_NumRawSkinVertices1+= nInf;
+	H_AUTO( TestYoyo_RawSkin1 );*/
+
+#ifdef	NL3D_RAWSKIN_PRECACHE
 	for(;nInf>0;)
 	{
 		// number of vertices to process for this block.
 		uint	nBlockInf= min(NumCacheVertexNormal1, nInf);
 		// next block.
 		nInf-= nBlockInf;
-
-	#ifdef NL_SKIN_SSE
+		
 		// cache the data in L1 cache.
-		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin1));
-	#else
-		// slower precache but still usefull
-		if( CSystemInfo::hasMMX() )
-			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin1));
-	#endif
+		CFastMem::precache(src, nBlockInf * sizeof(CRawVertexNormalSkin1));
+#else
+	{
+		uint	nBlockInf= nInf;
+#endif
 
+
+#ifndef NL3D_RAWSKIN_ASM
 		//  for all InfluencedVertices only.
 		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
 		{
@@ -554,23 +539,158 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *
 			// UV copy.
 			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
 		}
+#else
+		// ASM harcoded for 36
+		nlctassert(sizeof(CRawVertexNormalSkin1)==36);
+
+		/*  116 cycles / loop typical
+			58 cycles / loop in theory (no memory problem)
+		*/
+		__asm
+		{
+			mov		ecx, nBlockInf
+			mov		esi, src
+			mov		edi, destVertexPtr
+			mov		edx, boneMat3x4
+		theLoop:
+			// Vertex.
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *(CVector*)(destVertexPtr) );
+
+			// eax= matrix
+			mov		eax, [esi]src.MatrixId				// uop: 0/1
+			lea		eax, [eax*2+eax]
+			shl		eax, 4
+			add		eax, edx							// uop: 1/0
+
+			// load x y z
+			fld		[esi]src.Vertex.x					// uop: 0/1
+			fld		[esi]src.Vertex.y					// uop: 0/1
+			fld		[esi]src.Vertex.z					// uop: 0/1
+			// vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
+			fld		[eax]CMatrix3x4.a11				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			fld		[eax]CMatrix3x4.a12				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fld		[eax]CMatrix3x4.a13				// uop: 0/1
+			fmul	st, st(2)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fld		[eax]CMatrix3x4.a14				// uop: 0/1
+			faddp	st(1), st							// uop: 1/0 (3)
+			fstp	dword ptr[edi]						// uop: 0/0/1/1
+			// vout.y= (a21*vin.x + a22*vin.y + a23*vin.z + a24);
+			fld		[eax]CMatrix3x4.a21
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a22
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a23
+			fmul	st, st(2)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a24
+			faddp	st(1), st
+			fstp	dword ptr[edi+4]
+			// vout.z= (a31*vin.x + a32*vin.y + a33*vin.z + a34);
+			fld		[eax]CMatrix3x4.a31
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a32
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a33
+			fmul	st, st(2)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a34
+			faddp	st(1), st
+			fstp	dword ptr[edi+8]
+			// free x y z
+			fstp	st									// uop: 1/0
+			fstp	st									// uop: 1/0
+			fstp	st									// uop: 1/0
+			
+
+			// Normal
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
+
+			// load x y z
+			fld		[esi]src.Normal.x
+			fld		[esi]src.Normal.y
+			fld		[esi]src.Normal.z
+			// vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
+			fld		[eax]CMatrix3x4.a11				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			fld		[eax]CMatrix3x4.a12				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fld		[eax]CMatrix3x4.a13				// uop: 0/1
+			fmul	st, st(2)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fstp	dword ptr[edi+12]					// uop: 0/0/1/1
+			// vout.y= (a21*vin.x + a22*vin.y + a23*vin.z + a24);
+			fld		[eax]CMatrix3x4.a21
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a22
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a23
+			fmul	st, st(2)
+			faddp	st(1), st
+			fstp	dword ptr[edi+16]
+			// vout.z= (a31*vin.x + a32*vin.y + a33*vin.z + a34);
+			fld		[eax]CMatrix3x4.a31
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a32
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a33
+			fmul	st, st(2)
+			faddp	st(1), st
+			fstp	dword ptr[edi+20]
+			// free x y z
+			fstp	st
+			fstp	st
+			fstp	st
+
+
+			// UV copy.
+			// **** *(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
+			mov		eax, [esi]src.UV.U					// uop: 0/1
+			mov		dword ptr[edi+24], eax				// uop: 0/0/1/1
+			mov		eax, [esi]src.UV.V					// uop: 0/1
+			mov		dword ptr[edi+28], eax				// uop: 0/0/1/1
+			
+			
+			// **** next
+			add		esi, 36								// uop: 1/0
+			add		edi, NL3D_RAWSKIN_VERTEX_SIZE		// uop: 1/0
+			dec		ecx									// uop: 1/0
+			jnz		theLoop								// uop: 1/1 (p1)
+
+			mov		nBlockInf, ecx
+			mov		src, esi
+			mov		destVertexPtr, edi
+		}
+#endif
 	}
 
 
 }
 
 // ***************************************************************************
-#ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
-	CMatrix3x4SSE *boneMat3x4, uint nInf)
-#else
 void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
 	CMatrix3x4 *boneMat3x4, uint nInf)
-#endif
 {
+	// must write contigously in AGP, and ASM is hardcoded...
+	nlctassert(NL3D_RAWSKIN_NORMAL_OFF==12);
+	nlctassert(NL3D_RAWSKIN_UV_OFF==24);
+
+	/*extern	uint TESTYOYO_NumRawSkinVertices2;
+	TESTYOYO_NumRawSkinVertices2+= nInf;
+	H_AUTO( TestYoyo_RawSkin2 );*/
+	
 	// Since VertexPtr may be a AGP Ram, MUST NOT read into it! (mulAdd*() do it!)
 	CVector	tmpVert;
 
+#ifdef	NL3D_RAWSKIN_PRECACHE
 	for(;nInf>0;)
 	{
 		// number of vertices to process for this block.
@@ -578,15 +698,15 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *
 		// next block.
 		nInf-= nBlockInf;
 
-	#ifdef NL_SKIN_SSE
 		// cache the data in L1 cache.
-		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin2));
-	#else
-		// slower precache but still usefull
-		if( CSystemInfo::hasMMX() )
-			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin2));
-	#endif
+		CFastMem::precache(src, nBlockInf * sizeof(CRawVertexNormalSkin2));
+#else
+	{
+		uint	nBlockInf= nInf;
+#endif
 
+
+#ifndef NL3D_RAWSKIN_ASM
 		//  for all InfluencedVertices only.
 		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
 		{
@@ -601,22 +721,279 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *
 			// UV copy.
 			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
 		}
+#else
+		// ASM harcoded for 48
+		nlctassert(sizeof(CRawVertexNormalSkin2)==48);
+		
+		/*  154 cycles / loop typical
+			124 cycles / loop in theory (no memory problem)
+		*/
+		__asm
+		{
+			mov		ecx, nBlockInf
+			mov		esi, src
+			mov		edi, destVertexPtr
+			mov		edx, boneMat3x4
+		theLoop:
+			// Vertex.
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *(CVector*)(destVertexPtr) );
+
+			// eax= matrix0
+			mov		eax, [esi+0]src.MatrixId			// uop: 0/1
+			lea		eax, [eax*2+eax]
+			shl		eax, 4
+			add		eax, edx							// uop: 1/0
+			// ebx= matrix1
+			mov		ebx, [esi+4]src.MatrixId			// uop: 0/1
+			lea		ebx, [ebx*2+ebx]
+			shl		ebx, 4
+			add		ebx, edx							// uop: 1/0
+				
+			// load x y z
+			fld		[esi]src.Vertex.x					// uop: 0/1
+			fld		[esi]src.Vertex.y					// uop: 0/1
+			fld		[esi]src.Vertex.z					// uop: 0/1
+
+			// **** vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
+			// 1st Matrix
+			fld		[eax]CMatrix3x4.a11				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			fld		[eax]CMatrix3x4.a12				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fld		[eax]CMatrix3x4.a13				// uop: 0/1
+			fmul	st, st(2)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fld		[eax]CMatrix3x4.a14				// uop: 0/1
+			faddp	st(1), st							// uop: 1/0 (3)
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a11
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a12
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a13
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a14
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+
+			// store
+			fstp	dword ptr[edi]						// uop: 0/0/1/1
+
+			// **** vout.y= (a21*vin.x + a22*vin.y + a23*vin.z + a24);
+			fld		[eax]CMatrix3x4.a21
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a22
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a23
+			fmul	st, st(2)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a24
+			faddp	st(1), st
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a21
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a22
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a23
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a24
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+
+			// store
+			fstp	dword ptr[edi+4]
+
+			// **** vout.z= (a31*vin.x + a32*vin.y + a33*vin.z + a34);
+			fld		[eax]CMatrix3x4.a31
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a32
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a33
+			fmul	st, st(2)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a34
+			faddp	st(1), st
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a31
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a32
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a33
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a34
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+
+			// store
+			fstp	dword ptr[edi+8]
+
+			// free x y z
+			fstp	st									// uop: 1/0
+			fstp	st									// uop: 1/0
+			fstp	st									// uop: 1/0
+			
+
+			// Normal
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
+
+			// load x y z
+			fld		[esi]src.Normal.x
+			fld		[esi]src.Normal.y
+			fld		[esi]src.Normal.z
+
+			// **** vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
+			fld		[eax]CMatrix3x4.a11				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			fld		[eax]CMatrix3x4.a12				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fld		[eax]CMatrix3x4.a13				// uop: 0/1
+			fmul	st, st(2)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a11
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a12
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a13
+			fmul	st, st(3)
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+
+			// store
+			fstp	dword ptr[edi+12]					// uop: 0/0/1/1
+
+			// **** vout.y= (a21*vin.x + a22*vin.y + a23*vin.z + a24);
+			fld		[eax]CMatrix3x4.a21
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a22
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a23
+			fmul	st, st(2)
+			faddp	st(1), st
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a21
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a22
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a23
+			fmul	st, st(3)
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+
+			// store
+			fstp	dword ptr[edi+16]
+
+			// **** vout.z= (a31*vin.x + a32*vin.y + a33*vin.z + a34);
+			fld		[eax]CMatrix3x4.a31
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a32
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a33
+			fmul	st, st(2)
+			faddp	st(1), st
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a31
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a32
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a33
+			fmul	st, st(3)
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+
+			// store
+			fstp	dword ptr[edi+20]
+
+			// free x y z
+			fstp	st
+			fstp	st
+			fstp	st
+
+
+			// UV copy.
+			// **** *(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
+			mov		eax, [esi]src.UV.U					// uop: 0/1
+			mov		dword ptr[edi+24], eax				// uop: 0/0/1/1
+			mov		eax, [esi]src.UV.V					// uop: 0/1
+			mov		dword ptr[edi+28], eax				// uop: 0/0/1/1
+			
+			
+			// **** next
+			add		esi, 48								// uop: 1/0
+			add		edi, NL3D_RAWSKIN_VERTEX_SIZE		// uop: 1/0
+			dec		ecx									// uop: 1/0
+			jnz		theLoop								// uop: 1/1 (p1)
+
+			mov		nBlockInf, ecx
+			mov		src, esi
+			mov		destVertexPtr, edi
+		}
+#endif
 	}
 
 }
 
 // ***************************************************************************
-#ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *destVertexPtr, 
-	CMatrix3x4SSE *boneMat3x4, uint nInf)
-#else
 void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *destVertexPtr, 
 	CMatrix3x4 *boneMat3x4, uint nInf)
-#endif
 {
+	// must write contigously in AGP, and ASM is hardcoded...
+	nlctassert(NL3D_RAWSKIN_NORMAL_OFF==12);
+	nlctassert(NL3D_RAWSKIN_UV_OFF==24);
+
+	/*extern	uint TESTYOYO_NumRawSkinVertices3;
+	TESTYOYO_NumRawSkinVertices3+= nInf;
+	H_AUTO( TestYoyo_RawSkin3 );*/
+	
 	// Since VertexPtr may be a AGP Ram, MUST NOT read into it! (mulAdd*() do it!)
 	CVector	tmpVert;
 
+#ifdef	NL3D_RAWSKIN_PRECACHE
 	for(;nInf>0;)
 	{
 		// number of vertices to process for this block.
@@ -624,15 +1001,15 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *
 		// next block.
 		nInf-= nBlockInf;
 
-	#ifdef NL_SKIN_SSE
 		// cache the data in L1 cache.
-		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin3));
-	#else
-		// slower precache but still usefull
-		if( CSystemInfo::hasMMX() )
-			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin3));
-	#endif
+		CFastMem::precache(src, nBlockInf * sizeof(CRawVertexNormalSkin3));
+#else
+	{
+		uint	nBlockInf= nInf;
+#endif
 
+
+#ifndef NL3D_RAWSKIN_ASM
 		//  for all InfluencedVertices only.
 		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
 		{
@@ -649,21 +1026,368 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *
 			// UV copy.
 			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
 		}
+#else
+		// ASM harcoded for 56
+		nlctassert(sizeof(CRawVertexNormalSkin3)==56);
+		
+		
+		/*  226 cycles / loop typical
+			192 cycles / loop in theory (no memory problem)
+			148 optimal
+		*/
+		__asm
+		{
+			mov		ecx, nBlockInf
+			mov		esi, src
+			mov		edi, destVertexPtr
+		theLoop:
+			// Vertex.
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *(CVector*)(destVertexPtr) );
+
+			// eax= matrix0
+			mov		eax, [esi+0]src.MatrixId			// uop: 0/1
+			lea		eax, [eax*2+eax]
+			shl		eax, 4
+			add		eax, boneMat3x4						// uop: 1/0
+			// ebx= matrix1
+			mov		ebx, [esi+4]src.MatrixId			// uop: 0/1
+			lea		ebx, [ebx*2+ebx]
+			shl		ebx, 4
+			add		ebx, boneMat3x4						// uop: 1/0
+			// edx= matrix2
+			mov		edx, [esi+8]src.MatrixId			// uop: 0/1
+			lea		edx, [edx*2+edx]
+			shl		edx, 4
+			add		edx, boneMat3x4						// uop: 1/0
+			
+			// load x y z
+			fld		[esi]src.Vertex.x					// uop: 0/1
+			fld		[esi]src.Vertex.y					// uop: 0/1
+			fld		[esi]src.Vertex.z					// uop: 0/1
+
+			// **** vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
+			// 1st Matrix
+			fld		[eax]CMatrix3x4.a11				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			fld		[eax]CMatrix3x4.a12				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fld		[eax]CMatrix3x4.a13				// uop: 0/1
+			fmul	st, st(2)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fld		[eax]CMatrix3x4.a14				// uop: 0/1
+			faddp	st(1), st							// uop: 1/0 (3)
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a11
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a12
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a13
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a14
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+			
+			// 3rd matrix
+			fld		[edx]CMatrix3x4.a11
+			fmul	st, st(4)
+			fld		[edx]CMatrix3x4.a12
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[edx]CMatrix3x4.a13
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[edx]CMatrix3x4.a14
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+8]src.Weights
+			faddp	st(1), st
+			
+			// store
+			fstp	dword ptr[edi]						// uop: 0/0/1/1
+
+			// **** vout.y= (a21*vin.x + a22*vin.y + a23*vin.z + a24);
+			fld		[eax]CMatrix3x4.a21
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a22
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a23
+			fmul	st, st(2)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a24
+			faddp	st(1), st
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a21
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a22
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a23
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a24
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+			
+			// 3rd matrix
+			fld		[edx]CMatrix3x4.a21
+			fmul	st, st(4)
+			fld		[edx]CMatrix3x4.a22
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[edx]CMatrix3x4.a23
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[edx]CMatrix3x4.a24
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+8]src.Weights
+			faddp	st(1), st
+			
+			// store
+			fstp	dword ptr[edi+4]
+
+			// **** vout.z= (a31*vin.x + a32*vin.y + a33*vin.z + a34);
+			fld		[eax]CMatrix3x4.a31
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a32
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a33
+			fmul	st, st(2)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a34
+			faddp	st(1), st
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a31
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a32
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a33
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a34
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+			
+			// 3rd matrix
+			fld		[edx]CMatrix3x4.a31
+			fmul	st, st(4)
+			fld		[edx]CMatrix3x4.a32
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[edx]CMatrix3x4.a33
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[edx]CMatrix3x4.a34
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+8]src.Weights
+			faddp	st(1), st
+			
+			// store
+			fstp	dword ptr[edi+8]
+
+			// free x y z
+			fstp	st									// uop: 1/0
+			fstp	st									// uop: 1/0
+			fstp	st									// uop: 1/0
+			
+
+			// Normal
+			// **** boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
+
+			// load x y z
+			fld		[esi]src.Normal.x
+			fld		[esi]src.Normal.y
+			fld		[esi]src.Normal.z
+			// **** vout.x= (a11*vin.x + a12*vin.y + a13*vin.z + a14);
+			fld		[eax]CMatrix3x4.a11				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			fld		[eax]CMatrix3x4.a12				// uop: 0/1
+			fmul	st, st(3)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			fld		[eax]CMatrix3x4.a13				// uop: 0/1
+			fmul	st, st(2)							// uop: 1/0 (5)
+			faddp	st(1), st							// uop: 1/0 (3)
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a11
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a12
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a13
+			fmul	st, st(3)
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+
+			// 3rd matrix
+			fld		[edx]CMatrix3x4.a11
+			fmul	st, st(4)
+			fld		[edx]CMatrix3x4.a12
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[edx]CMatrix3x4.a13
+			fmul	st, st(3)
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+8]src.Weights
+			faddp	st(1), st
+
+			// store
+			fstp	dword ptr[edi+12]					// uop: 0/0/1/1
+
+			// **** vout.y= (a21*vin.x + a22*vin.y + a23*vin.z + a24);
+			fld		[eax]CMatrix3x4.a21
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a22
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a23
+			fmul	st, st(2)
+			faddp	st(1), st
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a21
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a22
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a23
+			fmul	st, st(3)
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+
+			// 3rd matrix
+			fld		[edx]CMatrix3x4.a21
+			fmul	st, st(4)
+			fld		[edx]CMatrix3x4.a22
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[edx]CMatrix3x4.a23
+			fmul	st, st(3)
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+8]src.Weights
+			faddp	st(1), st
+
+			// store
+			fstp	dword ptr[edi+16]
+
+			// **** vout.z= (a31*vin.x + a32*vin.y + a33*vin.z + a34);
+			fld		[eax]CMatrix3x4.a31
+			fmul	st, st(3)
+			fld		[eax]CMatrix3x4.a32
+			fmul	st, st(3)
+			faddp	st(1), st
+			fld		[eax]CMatrix3x4.a33
+			fmul	st, st(2)
+			faddp	st(1), st
+			// mul by scale
+			fmul	[esi+0]src.Weights
+
+			// 2nd matrix
+			fld		[ebx]CMatrix3x4.a31
+			fmul	st, st(4)
+			fld		[ebx]CMatrix3x4.a32
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[ebx]CMatrix3x4.a33
+			fmul	st, st(3)
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+4]src.Weights
+			faddp	st(1), st
+
+			// 3rd matrix
+			fld		[edx]CMatrix3x4.a31
+			fmul	st, st(4)
+			fld		[edx]CMatrix3x4.a32
+			fmul	st, st(4)
+			faddp	st(1), st
+			fld		[edx]CMatrix3x4.a33
+			fmul	st, st(3)
+			faddp	st(1), st
+			// mul by scale, and append
+			fmul	[esi+8]src.Weights
+			faddp	st(1), st
+
+			// store
+			fstp	dword ptr[edi+20]
+
+			// free x y z
+			fstp	st
+			fstp	st
+			fstp	st
+
+
+			// UV copy.
+			// **** *(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
+			mov		eax, [esi]src.UV.U					// uop: 0/1
+			mov		dword ptr[edi+24], eax				// uop: 0/0/1/1
+			mov		eax, [esi]src.UV.V					// uop: 0/1
+			mov		dword ptr[edi+28], eax				// uop: 0/0/1/1
+			
+			
+			// **** next
+			add		esi, 56								// uop: 1/0
+			add		edi, NL3D_RAWSKIN_VERTEX_SIZE		// uop: 1/0
+			dec		ecx									// uop: 1/0
+			jnz		theLoop								// uop: 1/1 (p1)
+
+			mov		nBlockInf, ecx
+			mov		src, esi
+			mov		destVertexPtr, edi
+		}
+#endif
+
 	}
 }
 
 // ***************************************************************************
-#ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
-	CMatrix3x4SSE *boneMat3x4, uint nInf)
-#else
 void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
 	CMatrix3x4 *boneMat3x4, uint nInf)
-#endif
 {
+	// must write contigously in AGP, and ASM is hardcoded...
+	nlctassert(NL3D_RAWSKIN_NORMAL_OFF==12);
+	nlctassert(NL3D_RAWSKIN_UV_OFF==24);
+
+	/*extern	uint TESTYOYO_NumRawSkinVertices4;
+	TESTYOYO_NumRawSkinVertices4+= nInf;
+	H_AUTO( TestYoyo_RawSkin4 );*/
+	
 	// Since VertexPtr may be a AGP Ram, MUST NOT read into it! (mulAdd*() do it!)
 	CVector	tmpVert;
 
+#ifdef	NL3D_RAWSKIN_PRECACHE
 	for(;nInf>0;)
 	{
 		// number of vertices to process for this block.
@@ -671,14 +1395,12 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *
 		// next block.
 		nInf-= nBlockInf;
 
-	#ifdef NL_SKIN_SSE
 		// cache the data in L1 cache.
-		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin4));
-	#else
-		// slower precache but still usefull
-		if( CSystemInfo::hasMMX() )
-			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin4));
-	#endif
+		CFastMem::precache(src, nBlockInf * sizeof(CRawVertexNormalSkin4));
+#else
+	{
+		uint	nBlockInf= nInf;
+#endif
 
 		//  for all InfluencedVertices only.
 		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
@@ -698,16 +1420,14 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *
 			// UV copy.
 			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
 		}
+
+		// NB: ASM not done for 4 vertices, cause very rare and negligeable ...
 	}
 }
 
 
 // ***************************************************************************
-#ifdef NL_SKIN_SSE
-void	CMeshMRMGeom::applyRawSkinWithNormalSSE(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton, uint8 *vbHard, float alphaLod)
-#else
 void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton, uint8 *vbHard, float alphaLod)
-#endif
 {
 	nlassert(_Skinned);
 	if(_SkinWeights.size()==0)
@@ -730,16 +1450,16 @@ void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSki
 	// Compute usefull Matrix for this lod.
 	//===========================
 	// Those arrays map the array of bones in skeleton.
-	static	NL_SKIN_MATRIX_ARRAY			boneMat3x4;
+	static	vector<CMatrix3x4>			boneMat3x4;
 	computeBoneMatrixes3x4(boneMat3x4, lod.MatrixInfluences, skeleton);
 
 
 	// TestYoyo
-	/*extern	uint TESTYOYO_NumSkinVertices;
-	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices1.size();
-	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices2.size();
-	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices3.size();
-	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices4.size();*/
+	/*extern	uint TESTYOYO_NumRawSkinVertices;
+	TESTYOYO_NumRawSkinVertices+= rawSkinLod.Vertices1.size();
+	TESTYOYO_NumRawSkinVertices+= rawSkinLod.Vertices2.size();
+	TESTYOYO_NumRawSkinVertices+= rawSkinLod.Vertices3.size();
+	TESTYOYO_NumRawSkinVertices+= rawSkinLod.Vertices4.size();*/
 
 
 	uint	nInf;
@@ -789,13 +1509,8 @@ void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSki
 		// Skin geomorphs.
 		uint8	*vbHardStart= vbHard + rawSkinLod.Geomorphs.size()*NL3D_RAWSKIN_VERTEX_SIZE;
 
-		// copy
-		#ifdef NL_SKIN_SSE
-			CFastMem::memcpySSE(vbHardStart, &tempSkin[0], tempVbSize);
-		#else
-			memcpy(vbHardStart, &tempSkin[0], tempVbSize);
-		#endif
-
+		// fast copy
+		CFastMem::memcpy(vbHardStart, &tempSkin[0], tempVbSize);
 
 		// Geomorphs directly into AGP Ram
 		//===========================

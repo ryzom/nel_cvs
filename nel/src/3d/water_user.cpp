@@ -1,7 +1,7 @@
 /** \file water_user.cpp
  * implementation of the user interface for water
  *
- * $Id: water_user.cpp,v 1.5 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: water_user.cpp,v 1.6 2004/02/20 14:36:05 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -51,6 +51,12 @@ void	UWaterHeightMapManager::setBlendFactor(UDriver *drv, float value)
 	NL3D_MEM_WATER
 	NLMISC::clamp(value, 0.f, 1.f);
 	GetWaterPoolManager().setBlendFactor(NLMISC::safe_cast<CDriverUser *>(drv)->getDriver(), value);
+}
+
+//===========================================================================
+void UWaterHeightMapManager::releaseBlendTextures()
+{
+	GetWaterPoolManager().releaseBlendTextures();
 }
 
 //===========================================================================

@@ -1,7 +1,7 @@
 /** \file water_pool_manager.cpp
  * <File description>
  *
- * $Id: water_pool_manager.cpp,v 1.9 2003/09/25 12:13:12 corvazier Exp $
+ * $Id: water_pool_manager.cpp,v 1.10 2004/02/20 14:37:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -149,7 +149,6 @@ void CWaterPoolManager::unRegisterWaterShape(CWaterShape *shape)
 }
 
 //===============================================================================================
-
 void CWaterPoolManager::setBlendFactor(IDriver *drv, float factor)
 {
 	nlassert(factor >= 0 && factor <= 1);
@@ -161,7 +160,26 @@ void CWaterPoolManager::setBlendFactor(IDriver *drv, float factor)
 			tb = dynamic_cast<CTextureBlend *>((*it)->getEnvMap(k));
 			if (tb && tb->setBlendFactor((uint16) (256.f * factor)))
 			{
+				tb->setReleasable(false);
 				drv->setupTexture(*tb);
+			}
+		}
+	}
+}
+
+//===============================================================================================
+void CWaterPoolManager::releaseBlendTextures()
+{
+	for (TWaterShapeVect::iterator it = _WaterShapes.begin(); it != _WaterShapes.end(); ++it)
+	{
+		CTextureBlend *tb;
+		for (uint k = 0; k < 2; ++k)
+		{
+			tb = dynamic_cast<CTextureBlend *>((*it)->getEnvMap(k));
+			if (tb)
+			{
+				tb->setReleasable(true);
+				tb->release();				
 			}
 		}
 	}

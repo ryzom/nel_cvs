@@ -1,7 +1,7 @@
 /** \file water_pool_manager.h
  * <File description>
  *
- * $Id: water_pool_manager.h,v 1.6 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: water_pool_manager.h,v 1.7 2004/02/20 14:37:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -92,9 +92,16 @@ public:
 	~CWaterPoolManager() { reset(); }
 
 	/** Set a blend factor for all pool (more precisely, all models based on a water shape) that have a blend texture for their envmap (to have cycle between night and day for example)
+	  * NB : once this is called, textures are not released from memory because subsequent blends are expected to happend
+	  *      when transition has finished, one should call releaseBlendTexture to eventually release textures from system memory
 	  * \param factor The blend factor which range from 0 to 1
 	  */
 	void setBlendFactor(IDriver *drv, float factor);
+	/** release blend textures from memory
+	  * \see setblendFactor
+	  */
+	void releaseBlendTextures();
+
 
 	/// serial the pools data's
 	void serial(NLMISC::IStream &f)  throw(NLMISC::EStream);

@@ -1,7 +1,7 @@
 /** \file u_water.h
  * User interface for water manipulation
  *
- * $Id: u_water.h,v 1.2 2002/06/27 15:42:36 vizerie Exp $
+ * $Id: u_water.h,v 1.3 2004/02/20 14:39:11 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -85,8 +85,13 @@ public:
 
 	/** Blend factor for water surfaces that use CTextureBlend (day / night mgt for example)
 	  * The blend factor if clamped to [0, 1]
+	  * NB : when transition has finished, one should call releaseBlendTexture to eventually release textures from system memory
 	  */
-	static void		setBlendFactor(UDriver *driver, float value);	
+	static void		setBlendFactor(UDriver *driver, float value);		  
+	/** release blend textures from memory	  
+	  */
+	static void		releaseBlendTextures();
+
 };
 
 /// Interface to water height maps

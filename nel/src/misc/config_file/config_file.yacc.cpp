@@ -518,7 +518,7 @@ yyparse(YYPARSE_PARAM_ARG)
   YYSTYPE yyval;		/*  the variable used to return		*/
 				/*  semantic values from the action	*/
 				/*  routines				*/
-
+	yyval.Val.Int = 0;
   int yylen;
 
 #if YYDEBUG != 0

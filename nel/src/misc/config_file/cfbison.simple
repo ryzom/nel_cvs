@@ -285,7 +285,8 @@ yyparse(YYPARSE_PARAM_ARG)
   YYSTYPE yyval;		/*  the variable used to return		*/
 				/*  semantic values from the action	*/
 				/*  routines				*/
-
+ // ace: big fake for VC7 because it checks if yyval is init or not
+  yyval.Val.Int = 0;
   int yylen;
 
 #if YYDEBUG != 0

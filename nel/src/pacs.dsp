@@ -219,6 +219,10 @@ SOURCE=..\include_private\nel\pacs\retrievable_surface.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\pacs\retriever_bank.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\include_private\nel\pacs\retriever_bank.h
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.16 2001/06/07 12:14:51 legros Exp $
+ * $Id: local_retriever.cpp,v 1.17 2001/06/08 15:04:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -224,7 +224,7 @@ void	NLPACS::CLocalRetriever::dumpSurface(uint surf) const
 		for (j=0; j<chain.getSubChains().size(); ++j)
 		{
 			const COrderedChain3f	&ochain = _FullOrderedChains[chain.getSubChain(j)];
-			nlinfo("     subchain %d[%d]: forward=%d", j, chain.getSubChain(j), ochain.isForward());
+			nlinfo("     subchain %d[%d]: fwd=%d parent=%d idx=%d", j, chain.getSubChain(j), ochain.isForward(), ochain.getParentId(), ochain.getIndexInParent());
 			for (k=0; k<ochain.getVertices().size(); ++k)
 				nlinfo("       v[%d]=(%.3f,%.3f,%.3f)", k, ochain.getVertices()[k].x, ochain.getVertices()[k].y, ochain.getVertices()[k].z);
 		}
@@ -918,9 +918,9 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 		}
 	}
 
-	path.push_back(CVector2s(A.Estimation));
-
 	dumpSurface(surfaceId);
+
+	path.push_back(CVector2s(A.Estimation));
 
 	for (i=0; i<intersections.size(); )
 	{
@@ -949,15 +949,24 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 			enterLoopIndex = enterChain.getRightLoopIndex();
 
 		float			forwardLength = (exitChain.getLength()+enterChain.getLength())*0.5f;
-		for (j=(exitLoopIndex+1)%loop.size(); j!=enterLoopIndex; j=(j+1)%loop.size())
-			forwardLength += _Chains[_OrderedChains[surface._Chains[loop[j]].Chain].getParentId()].getLength();
 
-		bool	forward = (forwardLength <= loop.Length-forwardLength);
 		sint	loopIndex = exitLoopIndex;
 		uint	thisChainId = exitChainId;
 		bool	thisChainForward = (enterChain.getLeft() == surfaceId);
 		uint	thisOChainId = intersections[i].OChain;
 		sint	thisOChainIndex = _OrderedChains[thisOChainId].getIndexInParent();
+		bool	forward;
+
+		if (exitChainId != enterChainId)
+		{
+			for (j=(exitLoopIndex+1)%loop.size(); j!=enterLoopIndex; j=(j+1)%loop.size())
+				forwardLength += _Chains[surface._Chains[loop[j]].Chain].getLength();
+			forward = (forwardLength <= loop.Length-forwardLength);
+		}
+		else
+		{
+			forward = (_OrderedChains[intersections[i].OChain].getIndexInParent() < _OrderedChains[intersections[i+1].OChain].getIndexInParent());
+		}
 
 		path.push_back(CVector2s(A.Estimation+intersections[i].Position*(B.Estimation-A.Estimation)));
 
@@ -966,6 +975,9 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 			sint	from = (thisOChainId == intersections[i].OChain) ? intersections[i].Edge : -1,
 					to = (thisOChainId == intersections[i+1].OChain) ? intersections[i+1].Edge : -1;
 			bool	oforward = thisChainForward ^ forward ^ _OrderedChains[thisOChainId].isForward();
+
+			if (from != -1 && to != -1)
+				oforward = (intersections[i].Edge < intersections[i+1].Edge);
 
 			_OrderedChains[thisOChainId].traverse(from, to, oforward, path);
 
@@ -991,15 +1003,18 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 
 				thisChainId = surface._Chains[loop[loopIndex]].Chain;
 				thisChainForward = (_Chains[thisChainId].getLeft() == surfaceId);
-				thisOChainIndex = (thisChainForward) ? 0 : _Chains[thisChainId]._SubChains.size()-1;
+				thisOChainIndex = (thisChainForward && forward || !thisChainForward && !forward) ? 
+					0 : _Chains[thisChainId]._SubChains.size()-1;
 			}
 
-			thisChainId = _Chains[thisChainId]._SubChains[thisOChainIndex];
+			thisOChainId = _Chains[thisChainId]._SubChains[thisOChainIndex];
 		}
 
 		path.push_back(CVector2s(A.Estimation+intersections[i+1].Position*(B.Estimation-A.Estimation)));
 		i += 2;
 	}
+
+	path.push_back(CVector2s(B.Estimation));
 }
 
 

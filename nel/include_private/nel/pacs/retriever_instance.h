@@ -1,7 +1,7 @@
 /** \file retriever_instance.h
  * 
  *
- * $Id: retriever_instance.h,v 1.4 2001/06/07 12:14:33 legros Exp $
+ * $Id: retriever_instance.h,v 1.5 2001/06/08 15:04:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,7 @@ protected:
 	{
 		sint32	InstanceId;
 		uint16	NodeId;
+		uint16	ThroughChain;
 
 		bool	operator == (const CAStarNodeAccess &node) { return InstanceId == node.InstanceId && NodeId == node.NodeId; }
 		bool	operator != (const CAStarNodeAccess &node) { return InstanceId != node.InstanceId || NodeId != node.NodeId; }

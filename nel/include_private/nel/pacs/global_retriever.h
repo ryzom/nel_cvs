@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.11 2001/06/07 12:14:33 legros Exp $
+ * $Id: global_retriever.h,v 1.12 2001/06/08 15:04:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,8 @@
 
 #include "nel/pacs/local_retriever.h"
 #include "nel/pacs/retriever_instance.h"
+#include "nel/pacs/vector_2s.h"
+
 #include "nel/pacs/u_global_retriever.h"
 
 
@@ -86,26 +88,35 @@ public:
 		void							serial(NLMISC::IStream &f) { f.serial(InstanceId, LocalPosition); }
 	};
 
+private:
+//	typedef	std::pair<CGlobalPosition, CGlobalPosition>	TLocalPathTips;
+	struct CLocalPathTips
+	{
+		sint32							InstanceId;
+		CLocalRetriever::CLocalPosition	Start;
+		CLocalRetriever::CLocalPosition	End;
+	};
+
 protected:
 
 	/// The CRetrieverBank where the commmon retrievers are stored.
-	const CRetrieverBank			*_RetrieverBank;
+	const CRetrieverBank					*_RetrieverBank;
 
 	/** 
 	 * The instance grid that composes the global retriever.
 	 * Please note that the grid is rows/lines ordered the way of an excel sheet, e.g.
 	 * one row right means increasing x coordinate, and one line down means decreasing y coordinate.
 	 */
-	std::vector<CRetrieverInstance>	_Instances;
+	mutable std::vector<CRetrieverInstance>	_Instances;
 
 	/// The width of the grid of instances.
-	uint16							_Width;
+	uint16									_Width;
 
 	/// The height of the grid of instances.
-	uint16							_Height;
+	uint16									_Height;
 
 	/// The axis aligned bounding box of the global retriever.
-	NLMISC::CAABBox					_BBox;
+	NLMISC::CAABBox							_BBox;
 
 public:
 	/**
@@ -325,17 +336,22 @@ public:
 	// @}
 
 
-	/// \name  A* part.
+	/// \name  Pathfinding part.
 	// @{
 
 	/// Finds an A* path from a given global position to another.
-	// TO DO: secure search to avoid crashes...
-	void							findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::list<CRetrieverInstance::CAStarNodeAccess> &path);
+	// TODO: secure search to avoid crashes...
+	// TODO: add surface criteria
+	void							findAStarPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::vector<CRetrieverInstance::CAStarNodeAccess> &path);
+
+	/// Finds a path from a given global position to another
+	// TODO: include path width
+	void							findPath(const CGlobalPosition &begin, const CGlobalPosition &end, std::vector<CVector2s> &waypoints);
 
 	// @}
 
 private:
-	/// \name  A* part.
+	/// \name  Pathfinding part.
 	// @{
 
 	/// Gets the CAStarNodeInfo referred by its access.

@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.25 2001/06/08 13:42:45 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.26 2001/06/08 15:04:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -177,18 +177,43 @@ NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint x, uint 
 NLPACS::CGlobalRetriever::CGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector &estimated) const
 {
 	const CRetrieverInstance	&instance = getInstance(estimated);
-	CLocalRetriever::CLocalPosition	localPosition = instance.retrievePosition(estimated, _RetrieverBank->getRetriever(instance.getRetrieverId()));
-	return CGlobalPosition(instance.getInstanceId(), localPosition);
+	if (instance.getRetrieverId() >= 0)
+	{
+		// if there is an actual instance at this position, retrieve the position
+		CLocalRetriever::CLocalPosition	localPosition = instance.retrievePosition(estimated, _RetrieverBank->getRetriever(instance.getRetrieverId()));
+		return CGlobalPosition(instance.getInstanceId(), localPosition);
+	}
+	else
+	{
+		// if there is no instance there, return a blank position
+		return CGlobalPosition(instance.getInstanceId(), CLocalRetriever::CLocalPosition(-1, estimated));
+	}
 }
 
 CVector		NLPACS::CGlobalRetriever::getGlobalPosition(const NLPACS::CGlobalRetriever::CGlobalPosition &global) const
 {
-	return _Instances[global.InstanceId].getGlobalPosition(global.LocalPosition.Estimation);
+	if (global.InstanceId >= 0)
+	{
+		return _Instances[global.InstanceId].getGlobalPosition(global.LocalPosition.Estimation);
+	}
+	else
+	{
+		// it should be an error here
+		return CVector::Null;
+	}
 }
 
 CVectorD	NLPACS::CGlobalRetriever::getDoubleGlobalPosition(const NLPACS::CGlobalRetriever::CGlobalPosition &global) const
 {
-	return _Instances[global.InstanceId].getDoubleGlobalPosition(global.LocalPosition.Estimation);
+	if (global.InstanceId >= 0)
+	{
+		return _Instances[global.InstanceId].getDoubleGlobalPosition(global.LocalPosition.Estimation);
+	}
+	else
+	{
+		// it should be an error here
+		return CVectorD::Null;
+	}
 }
 
 //
@@ -206,9 +231,10 @@ CVector		NLPACS::CGlobalRetriever::getInstanceCenter(uint x, uint y) const
 
 void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CGlobalPosition &begin,
 													const NLPACS::CGlobalRetriever::CGlobalPosition &end,
-													list<CRetrieverInstance::CAStarNodeAccess> &path)
+													vector<NLPACS::CRetrieverInstance::CAStarNodeAccess> &path)
 {
 	// open and close lists
+	// TODO: Use a smart allocator to avoid huge alloc/free and memory fragmentation
 	// open is a priority queue (implemented as a stl multimap)
 	multimap<float, CRetrieverInstance::CAStarNodeAccess>	open;
 	// close is a simple stl vector
@@ -230,6 +256,7 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 	CRetrieverInstance::CAStarNodeAccess					node = beginNode;
 	beginInfo.Parent.InstanceId = -1;
 	beginInfo.Parent.NodeId = 0;
+	beginInfo.Parent.ThroughChain = 0;
 	beginInfo.Cost = 0;
 	beginInfo.F = (endInfo.Position-beginInfo.Position).norm();
 
@@ -262,14 +289,26 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 			// found a path
 			nlinfo("found a path");
 			CRetrieverInstance::CAStarNodeAccess			pathNode = node;
+			uint											numNodes = 0;
 			while (pathNode.InstanceId != -1)
 			{
-				path.push_front(pathNode);
+				++numNodes;
 				CRetrieverInstance							&instance = _Instances[pathNode.InstanceId];
 				CRetrieverInstance::CAStarNodeInfo			&pathInfo = instance._NodesInformation[pathNode.NodeId];
 				nlinfo("pathNode = (InstanceId=%d, NodeId=%d)", pathNode.InstanceId, pathNode.NodeId);
 				pathNode = pathInfo.Parent;
 			}
+
+			path.resize(numNodes);
+			pathNode = node;
+			while (pathNode.InstanceId != -1)
+			{
+				path[--numNodes] = pathNode;
+				CRetrieverInstance							&instance = _Instances[pathNode.InstanceId];
+				CRetrieverInstance::CAStarNodeInfo			&pathInfo = instance._NodesInformation[pathNode.NodeId];
+				pathNode = pathInfo.Parent;
+			}
+
 			nlinfo("open.size()=%d", open.size());
 			nlinfo("close.size()=%d", close.size());
 			return;
@@ -355,12 +394,70 @@ void		NLPACS::CGlobalRetriever::findAStarPath(const NLPACS::CGlobalRetriever::CG
 				close.erase(closeIt);
 
 			nextInfo.Parent = node;
+			nextInfo.Parent.ThroughChain = i;
 			nextInfo.Cost = nextCost;
 			nextInfo.F = nextF;
 
 			open.insert(make_pair(nextInfo.F, nextNode));
 		}
 		close.push_back(node);
+	}
+}
+
+
+
+void	NLPACS::CGlobalRetriever::findPath(const NLPACS::CGlobalRetriever::CGlobalPosition &begin, 
+										   const NLPACS::CGlobalRetriever::CGlobalPosition &end, 
+										   vector<NLPACS::CVector2s> &waypoints)
+{
+	vector<CRetrieverInstance::CAStarNodeAccess>	path;
+	vector<CLocalPathTips>							surfInfos;
+
+	findAStarPath(begin, end, path);
+
+	surfInfos.reserve(path.size());
+
+	uint	i, j;
+	for (i=0; i<path.size(); ++i)
+	{
+		CLocalPathTips	surf;
+		surf.InstanceId = path[i].InstanceId;
+
+		// computes start point
+		if (i == 0)
+		{
+			// if it is the first point, just copy the begin
+			surf.Start = begin.LocalPosition;
+		}
+		else
+		{
+			// else, take the previous value and convert it in the current instance axis
+			// TODO: avoid this if the instances are the same
+			CVector	prev = _Instances[surfInfos[i-1].InstanceId].getGlobalPosition(surfInfos[i-1].End.Estimation);
+			CVector	current = _Instances[surf.InstanceId].getLocalPosition(prev);
+			surf.End.Surface = path[i].NodeId;
+			surf.End.Estimation = current;
+		}
+
+		// computes end point
+		if (i == path.size()-1)
+		{
+			surf.End = end.LocalPosition;
+		}
+		else
+		{
+			// get to the middle of the chain
+			// first get the chain between the 2 surfaces
+			const CLocalRetriever	&retriever = _RetrieverBank->getRetriever(_Instances[surf.InstanceId].getRetrieverId());
+			const CChain			&chain = retriever.getChain(path[i].ThroughChain);
+			float					cumulLength = 0.0f, midLength=chain.getLength()*0.5f;
+			for (j=0; j<chain.getSubChains().size() && cumulLength<=midLength; ++j)
+				cumulLength += retriever.getOrderedChain(chain.getSubChain(j)).getLength();
+			--j;
+			const COrderedChain		&ochain = retriever.getOrderedChain(chain.getSubChain(j));
+			surf.End.Surface = path[i].NodeId;
+			surf.End.Estimation = ochain[ochain.getVertices().size()/2].unpack3f();
+		}
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.11 2001/06/07 08:23:47 legros Exp $
+ * $Id: chain.cpp,v 1.12 2001/06/08 15:04:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,7 +89,7 @@ void	NLPACS::COrderedChain::translate(const CVector &translation)
 }
 
 //
-void	NLPACS::COrderedChain::traverse(sint from, sint to, bool forward, vector<NLPACS::CVector2s> path) const
+void	NLPACS::COrderedChain::traverse(sint from, sint to, bool forward, vector<NLPACS::CVector2s> &path) const
 {
 	sint	i;
 	if (forward)
@@ -103,9 +103,9 @@ void	NLPACS::COrderedChain::traverse(sint from, sint to, bool forward, vector<NL
 	else
 	{
 		if (from < 0)	from = _Vertices.size()-2;
-		if (to < 0)		to = 0;
+		if (to < 0)		to = -1;
 
-		for (i=from; i>=to; --i)
+		for (i=from; i>to; --i)
 			path.push_back(_Vertices[i]);
 	}
 }

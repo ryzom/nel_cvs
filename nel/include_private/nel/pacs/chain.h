@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.5 2001/06/07 08:23:36 legros Exp $
+ * $Id: chain.h,v 1.6 2001/06/08 15:04:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,10 +134,15 @@ public:
 	uint16								getIndexInParent() const { return _IndexInParent; }
 
 	///
+	float								getLength() const { return _Length; }
+
+	///
 	const CVector2s						&operator[] (uint n) const { return _Vertices[n]; }
 
+	///
 	void								translate(const NLMISC::CVector &translation);
 
+	///
 	void								pack(const COrderedChain3f &chain)
 	{
 		uint	i;
@@ -145,11 +150,13 @@ public:
 		_Vertices.resize(vertices.size());
 		_Forward = chain.isForward();
 		_ParentId = chain.getParentId();
+		_IndexInParent = chain.getIndexInParent();
 		for (i=0; i<vertices.size(); ++i)
 			_Vertices[i] = CVector2s(vertices[i]);
 	}
 
-	void								traverse(sint from, sint to, bool forward, std::vector<CVector2s> path) const;
+	///
+	void								traverse(sint from, sint to, bool forward, std::vector<CVector2s> &path) const;
 
 
 	void								serial(NLMISC::IStream &f);

@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.h,v 1.3 2001/06/13 10:21:33 lecroart Exp $
+ * $Id: login_client.h,v 1.4 2001/06/13 14:34:45 lecroart Exp $
  * 
  */
 
@@ -45,11 +45,10 @@ class IDisplayer;
  * \code
 	CLoginClient::connect ("itsalive.nevrax.org:49999");
 	string res = CLoginClient::authenticate ("login", "password");
-	if (!res.empty ())
-	{
-		nlerror ("Authentification failed: %s", res.c_str());
-	}
-	CLoginClient::connectToShard (0, Connection);
+	if (!res.empty ()) nlerror ("Authentification failed: %s", res.c_str());
+
+	string res2 = CLoginClient::connectToShard (0, Connection);
+	if (!res2.empty ()) nlerror ("Connection failed: %s", res2.c_str());
  * \endcode
  * \author Vianney Lecroart
  * \author Nevrax France

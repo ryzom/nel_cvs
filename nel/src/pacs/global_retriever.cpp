@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.73 2003/03/13 15:02:05 corvazier Exp $
+ * $Id: global_retriever.cpp,v 1.74 2003/03/24 16:39:49 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1050,7 +1050,7 @@ const NLPACS::CRetrievableSurface	*NLPACS::CGlobalRetriever::getSurfaceById(cons
 	{
 		sint32	locRetId= this->getInstance(surfId.RetrieverInstanceId).getRetrieverId();
 		const CLocalRetriever		&retr = _RetrieverBank->getRetriever(locRetId);
-		if (!retr.isLoaded())
+		if (!retr.isLoaded() || surfId.SurfaceId >= (sint)retr.getSurfaces().size())
 			return NULL;
 		const CRetrievableSurface	&surf= retr.getSurface(surfId.SurfaceId);
 		return &surf;
@@ -1471,8 +1471,16 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 					continue;
 				}
 
-				const CRetrievableSurface	&surf= _RetrieverBank->getRetriever(locRetId).getSurface(currentSurface.SurfaceId);
-				isWall= !(surf.isFloor() || surf.isCeiling());
+				const CLocalRetriever		&retr = _RetrieverBank->getRetriever(locRetId);
+				if (currentSurface.SurfaceId < (sint)retr.getSurfaces().size())
+				{
+					const CRetrievableSurface	&surf= _RetrieverBank->getRetriever(locRetId).getSurface(currentSurface.SurfaceId);
+					isWall= !(surf.isFloor() || surf.isCeiling());
+				}
+				else
+				{
+					isWall = true;
+				}
 			}
 
 			// If we touch a wall, this is the end of search.
@@ -1552,6 +1560,19 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 	for(i=0; i<(sint)cst.CollisionChains.size(); i++)
 	{
 		CCollisionChain		&colChain= cst.CollisionChains[i];
+
+		if (colChain.ExteriorEdge)
+		{
+			sint32	cmp = (colChain.LeftSurface.RetrieverInstanceId<<16) + colChain.ChainId;
+
+			uint	j;
+			for (j=0; j<checkedExtEdges.size() && (checkedExtEdges[j].first != cmp); ++j)
+				;
+			// if already crossed this edge, abort
+			// this a door that is crossing a surface frontier
+			if (j < checkedExtEdges.size())
+				continue;
+		}
 
 		// test all edges of this chain, and insert if necessary.
 		//========================

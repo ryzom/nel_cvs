@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.25 2003/03/13 15:02:05 corvazier Exp $
+ * $Id: global_retriever.h,v 1.26 2003/03/24 16:39:49 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -281,7 +281,12 @@ public:
 		if (pos.InstanceId < 0 || pos.InstanceId >= (sint)_Instances.size())
 			return false;
 
-		const CLocalRetriever		&retriever = getRetriever(_Instances[pos.InstanceId].getRetrieverId());
+		const CRetrieverInstance	&instance = _Instances[pos.InstanceId];
+
+		if (!instance.getBBox().include(pos.LocalPosition.Estimation + instance.getOrigin()))
+			return false;
+
+		const CLocalRetriever		&retriever = getRetriever(instance.getRetrieverId());
 		return retriever.testPosition(pos.LocalPosition, _InternalCST);
 	}
 

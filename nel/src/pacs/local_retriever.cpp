@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.55 2003/03/13 15:02:05 corvazier Exp $
+ * $Id: local_retriever.cpp,v 1.56 2003/03/24 16:39:49 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1053,6 +1053,9 @@ bool	NLPACS::CLocalRetriever::testPosition(NLPACS::ULocalPosition &local, CColli
 		nlwarning("PACS: can't test inexistant surface %d", local.Surface);
 		return false;
 	}
+
+	if (fabs(local.Estimation.x) >= 256.0 || fabs(local.Estimation.y) >= 256.0)
+		return false;
 
 	retrievePosition(local.Estimation, cst);
 

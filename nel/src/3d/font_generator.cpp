@@ -1,7 +1,7 @@
 /** \file font_generator.cpp
  * CFontGenerator class
  *
- * $Id: font_generator.cpp,v 1.11 2001/02/07 15:33:42 lecroart Exp $
+ * $Id: font_generator.cpp,v 1.12 2001/05/31 13:37:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,7 @@ const char *CFontGenerator::getFT2Error(FT_Error fte)
 }
 
 
-
+ 
 /*
  * Constructor
  */

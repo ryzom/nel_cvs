@@ -1,7 +1,7 @@
 /** \file hrc_trav.cpp
  * <File description>
  *
- * $Id: hrc_trav.cpp,v 1.5 2001/08/24 16:37:15 berenguier Exp $
+ * $Id: hrc_trav.cpp,v 1.6 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #include "3d/hrc_trav.h"
 #include "3d/skip_model.h"
+#include "3d/clip_trav.h"
+#include "3d/anim_detail_trav.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -45,6 +47,17 @@ IObs				*CHrcTrav::createDefaultObs() const
 void				CHrcTrav::setSkipModelRoot(CSkipModel *m)
 {
 	SkipModelRoot= m;
+}
+
+
+// ***************************************************************************
+void IBaseHrcObs::init()
+{
+	IObs::init();
+
+	ClipObs= safe_cast<IBaseClipObs*> (getObs(ClipTravId));
+	AnimDetailObs= safe_cast<IBaseAnimDetailObs*> (getObs(AnimDetailTravId));
+
 }
 
 

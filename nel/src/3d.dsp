@@ -267,6 +267,14 @@ SOURCE=.\3d\particle_system_model.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\root_model.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\root_model.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\skeleton_model.cpp
 # End Source File
 # Begin Source File

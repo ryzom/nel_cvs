@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.17 2001/09/21 13:39:24 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.18 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/camera.h"
 #include "3d/quad_grid_clip_cluster.h"
 #include "3d/quad_grid_clip_manager.h"
+#include "3d/root_model.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -268,6 +269,13 @@ void CClipTrav::traverse()
 	{
 		unlink (NULL, vCluster[i]);
 	}
+
+
+	// At the end of the clip traverse, must update clip for Objects which have a skeleton ancestor
+	// =========================
+	// those are linked to the SonsOfAncestorSkeletonModelGroup, so traverse it now.
+	if (SonsOfAncestorSkeletonModelGroup)
+		SonsOfAncestorSkeletonModelGroup->getObs(ClipTravId)->traverse(NULL);
 }
 
 
@@ -310,6 +318,13 @@ void CClipTrav::unregisterCluster (CCluster* pCluster)
 		}
 		++itAcc;
 	}
+}
+
+
+// ***************************************************************************
+void CClipTrav::setSonsOfAncestorSkeletonModelGroup(CRootModel *m)
+{
+	SonsOfAncestorSkeletonModelGroup= m;
 }
 
 

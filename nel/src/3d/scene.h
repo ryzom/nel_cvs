@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.14 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: scene.h,v 1.15 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -310,6 +310,9 @@ private:
 	// The root models (will be deleted by CScene).
 	CTransform		*Root;
 	CSkipModel		*SkipModelRoot;
+	// This model is used to clip any model which has a Skeleton ancestor
+	CRootModel		*SonsOfAncestorSkeletonModelGroup;
+
 
 	// The Ligths automatic movements
 	CAnimationSet	_LightmapAnimations;

@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.27 2001/09/18 08:33:43 berenguier Exp $
+ * $Id: transform.cpp,v 1.28 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "3d/transform.h"
 #include "3d/skeleton_model.h"
 #include "3d/skip_model.h"
+#include "3d/scene.h"
+#include "3d/root_model.h"
 
 
 using namespace NLMISC;
@@ -50,6 +52,7 @@ void	CTransform::registerBasic()
 CTransform::CTransform()
 {
 	_HrcObs= NULL;
+	_ClipObs= NULL;
 
 	TouchObs.resize(Last);
 
@@ -68,6 +71,17 @@ CTransform::CTransform()
 
 	_QuadGridClipManagerEnabled= false;
 }
+
+
+// ***************************************************************************
+void	CTransform::initModel()
+{
+	IModel::initModel();
+
+	_HrcObs= (CTransformHrcObs*)getObs(HrcTravId);
+	_ClipObs= (CTransformClipObs*)getObs(ClipTravId);
+}
+
 
 // ***************************************************************************
 CTransform::~CTransform()
@@ -161,10 +175,35 @@ void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::str
 
 
 // ***************************************************************************
-void			CTransform::updateWorldMatrixFromSkeleton(const CMatrix &parentWM)
+void			CTransform::updateWorldMatrixFromFather()
 {
-	// Compute the HRC WorldMatrix.
-	_HrcObs->WorldMatrix= parentWM*_HrcObs->LocalMatrix;
+	// If I am not skinned
+	if(!isSkinned())
+	{
+		// Compute the HRC WorldMatrix.
+		// if I am not sticked.
+		if(!_FatherSkeletonModel)
+		{
+			// get the normal father worldMatrix in Hrc.
+			CTransform	*fatherTransform= dynamic_cast<CTransform*>(_HrcObs->Trav->getFirstParent(this));
+			// if exist
+			if(fatherTransform)
+			{
+				const CMatrix &parentWM= fatherTransform->_HrcObs->WorldMatrix;
+				// combine worldMatrix
+				_HrcObs->WorldMatrix= parentWM * _HrcObs->LocalMatrix;
+			}
+			else
+				_HrcObs->WorldMatrix= _HrcObs->LocalMatrix;
+		}
+		else
+		{
+			// get the worldMatrix of the bone if I am sticked.
+			const CMatrix &parentWM= _FatherSkeletonModel->Bones[_FatherBoneId].getWorldMatrix();
+			// combine worldMatrix
+			_HrcObs->WorldMatrix= parentWM * _HrcObs->LocalMatrix;
+		}
+	}
 }
 
 
@@ -278,14 +317,6 @@ void		CTransform::update()
 
 
 // ***************************************************************************
-void	CTransformHrcObs::init()
-{
-	CTransform	*transform= (CTransform*)Model;
-	transform->_HrcObs= this;
-}
-
-
-// ***************************************************************************
 void	CTransformHrcObs::update()
 {
 	IBaseHrcObs::update();
@@ -310,6 +341,7 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 {
 	const	CMatrix		*pFatherWM;
 	bool				visFather;
+	CTransform			*transModel= (CTransform*)Model;
 
 
 	// If not root case, link to caller.
@@ -326,6 +358,15 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 
 		if (hrcTransCaller && !hrcTransCaller->Frozen && !hrcTransCaller->DontUnfreezeChildren)
 			Frozen= false;
+
+		// if caller is a CTransformHrcObs, may herit his _AncestorSkeletonModel
+		// if caller is ! a CTransformHrcObs, final result undefined.
+		if (hrcTransCaller && hrcTransCaller->_AncestorSkeletonModel)
+			// If my father has an _AncestorSkeletonModel, get it.
+			_AncestorSkeletonModel= hrcTransCaller->_AncestorSkeletonModel;
+		else
+			// else I have an ancestor skel model if I am sticked/binded directly to a skeleton model.
+			_AncestorSkeletonModel= transModel->_FatherSkeletonModel;
 	}
 	// else, default!!
 	else
@@ -333,14 +374,17 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 		pFatherWM= &(CMatrix::Identity);
 		visFather= true;
 
+		// at the root of the hierarchy, we have no parent, hence no FatherSkeletonModel nor _AncestorSkeletonModel.
+		_AncestorSkeletonModel= NULL;
+
 		// NB: Root is Frozen by essence :), so don't modify the frozen state here.
 	}
 
 	// Combine matrix
 	if(LocalDate>WorldDate || (caller && caller->WorldDate>WorldDate) )
 	{
-		// Must recompute the world matrix.  ONLY IF I AM NOT SKINNED/STICKED TO A SKELETON!
-		if( ((CTransform*)Model)->_FatherSkeletonModel==NULL)
+		// Must recompute the world matrix.  ONLY IF I AM NOT SKINNED/STICKED TO A SKELETON in the hierarchy!
+		if( _AncestorSkeletonModel==NULL)
 		{
 			WorldMatrix=  *pFatherWM * LocalMatrix;
 			WorldDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
@@ -358,7 +402,58 @@ void	CTransformHrcObs::updateWorld(IBaseHrcObs *caller)
 		case CHrcTrav::Hide: WorldVis= false; break;
 		case CHrcTrav::Show: WorldVis= true; break;
 	}
+
+
+	// If I have an ancestor Skeleton Model, I must be binded in ClipTrav to the SonsOfAncestorSkeletonModelGroup
+	updateClipTravForAncestorSkeleton();
+
 }
+
+
+// ***************************************************************************
+void	CTransformHrcObs::updateClipTravForAncestorSkeleton()
+{
+	CTransform			*transModel= (CTransform*)Model;
+	CClipTrav			*clipTrav= (CClipTrav*)transModel->_ClipObs->Trav;
+
+	// If I have an ancestor Skeleton Model, I must be binded in ClipTrav to the SonsOfAncestorSkeletonModelGroup
+	if(_AncestorSkeletonModel && !ClipLinkedInSonsOfAncestorSkeletonModelGroup)
+	{
+		// ClipTrav is a graph, so must unlink from ALL olds models.
+		IModel	*father= clipTrav->getFirstParent(transModel);
+		while(father)
+		{
+			clipTrav->unlink(father, transModel);
+			father= clipTrav->getFirstParent(transModel);
+		}
+
+		// And link to SonsOfAncestorSkeletonModelGroup.
+		clipTrav->link(clipTrav->SonsOfAncestorSkeletonModelGroup, transModel);
+
+		// update the flag.
+		ClipLinkedInSonsOfAncestorSkeletonModelGroup= true;
+	}
+
+
+	// else I must be binded to the standard Root.
+	if(!_AncestorSkeletonModel && ClipLinkedInSonsOfAncestorSkeletonModelGroup)
+	{
+		// verify first I am really still linked to the SonsOfAncestorSkeletonModelGroup.
+		// This test is important, because link may have changed for any reason (portals, clipManager....).
+		if( clipTrav->getNumParents(transModel) == 1 &&
+			clipTrav->getFirstParent(transModel)==clipTrav->SonsOfAncestorSkeletonModelGroup )
+		{
+			// yes, unlink from it.
+			clipTrav->unlink(clipTrav->SonsOfAncestorSkeletonModelGroup, transModel);
+			// and now, link to std root.
+			clipTrav->link(clipTrav->getRoot(), transModel);
+		}
+
+		// update the flag
+		ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
+	}
+}
+
 
 // ***************************************************************************
 void	CTransformHrcObs::traverse(IObs *caller)
@@ -394,10 +489,11 @@ void	CTransformClipObs::traverse(IObs *caller)
 		}
 		else
 		{
-			// If linked to a SkeletonModel, don't clip, and use skeleton model clip result.
-			// This works because we are sons of the SkeletonModel in the Clip traversal...
-			if( ((CTransform*)Model)->_FatherSkeletonModel!=NULL )
-				Visible= callerClipObs->Visible;
+			// If linked to a SkeletonModel anywhere in the hierarchy, don't clip, and use skeleton model clip result.
+			// This works because we are sons of a special node which is not in the clip traversal, and
+			// which is traversed at end of the traversal.
+			if( ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel!=NULL )
+				Visible= ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel->isClipVisible();
 			// else, clip.
 			else
 				Visible= clip(callerClipObs);
@@ -425,11 +521,22 @@ void	CTransformClipObs::traverse(IObs *caller)
 // ***************************************************************************
 void	CTransformAnimDetailObs::traverse(IObs *caller)
 {
+	CTransform		*transModel= static_cast<CTransform*>(Model);
+
 	// AnimDetail behavior: animate only if not clipped.
 	// NB: no need to test because of VisibilityList use.
 
+	// First, test if I must update my HrcObs worldMatrix because of the ancestorSkeleton scheme
+	// If I have an ancestore Skeleton model
+	if(transModel->_HrcObs->_AncestorSkeletonModel)
+	{
+		// then must first update my worldMatrix.
+		transModel->updateWorldMatrixFromFather();
+	}
+
+
 	// test if the refptr is NULL or not (RefPtr).
-	CChannelMixer	*chanmix= static_cast<CTransform*>(Model)->_ChannelMixer;
+	CChannelMixer	*chanmix= transModel->_ChannelMixer;
 	if(chanmix)
 	{
 		// eval detail!!

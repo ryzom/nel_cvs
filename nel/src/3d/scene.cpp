@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.58 2001/12/03 16:34:39 berenguier Exp $
+ * $Id: scene.cpp,v 1.59 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@
 #include "3d/quad_grid_clip_cluster.h"
 #include "3d/water_model.h"
 #include "3d/vegetable_blend_layer_model.h"
+#include "3d/root_model.h"
 
 
 #include "nel/misc/file.h"
@@ -97,6 +98,7 @@ void	CScene::registerBasics()
 	CWaterModel::registerBasic();
 	CWaveMakerModel::registerBasic();
 	CVegetableBlendLayerModel::registerBasic();
+	CRootModel::registerBasic();
 }
 
 	
@@ -121,6 +123,7 @@ CScene::CScene()
 
 	Root= NULL;
 	SkipModelRoot= NULL;
+	SonsOfAncestorSkeletonModelGroup= NULL;
 
 	_CurrentTime = 0 ;
 	_EllapsedTime = 0 ;
@@ -183,6 +186,7 @@ void	CScene::release()
 	_ShapeBank = NULL;
 	Root= NULL;
 	SkipModelRoot= NULL;
+	SonsOfAncestorSkeletonModelGroup= NULL;
 	CurrentCamera= NULL;
 }
 // ***************************************************************************
@@ -233,6 +237,17 @@ void	CScene::initDefaultRoots()
 	SkipModelRoot= static_cast<CSkipModel*>(createModel(SkipModelId));
 	// Inform the HrcTrav of this model.
 	HrcTrav->setSkipModelRoot(SkipModelRoot);
+
+
+	// Create a SonsOfAncestorSkeletonModelGroup, for models which have a skeleton ancestor
+	SonsOfAncestorSkeletonModelGroup= static_cast<CRootModel*>(createModel(RootModelId));
+	// must unlink it from all traversals, because special, only used in CClipTrav::traverse()
+	HrcTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
+	ClipTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
+	AnimDetailTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
+	LoadBalancingTrav->unlink(NULL, SonsOfAncestorSkeletonModelGroup);
+	// inform the clipTrav of this model.
+	ClipTrav->setSonsOfAncestorSkeletonModelGroup(SonsOfAncestorSkeletonModelGroup);
 }
 
 // ***************************************************************************

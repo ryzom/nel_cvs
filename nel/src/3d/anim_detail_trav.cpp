@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.4 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.5 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,8 @@
 #include "3d/anim_detail_trav.h"
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
+#include "3d/transform.h"
+#include "3d/skeleton_model.h"
 
 
 namespace NL3D 
@@ -49,8 +51,55 @@ void				CAnimDetailTrav::traverse()
 	uint	nObs= _ClipTrav->numVisibleObs();
 	for(uint i=0; i<nObs; i++)
 	{
-		IBaseClipObs	*clipObs= _ClipTrav->getVisibleObs(i);
-		clipObs->AnimDetailObs->traverse(NULL);
+		IBaseClipObs		*clipObs= _ClipTrav->getVisibleObs(i);
+		// If this object is a transform and if it has an ancestorSkeletonModel
+		CTransformHrcObs*	hrcObs= dynamic_cast<CTransformHrcObs*>(clipObs->HrcObs);
+		if(hrcObs && hrcObs->_AncestorSkeletonModel)
+		{
+			// then just skip it! because it will be parsed hierarchically by the first 
+			// skeletonModel whith hrcObs->_AncestorSkeletonModel==NULL. (only if this one is visible)
+			continue;
+		}
+		else
+		{
+			// If this is a skeleton model, and because hrcObs->_AncestorSkeletonModel==NULL,
+			// then it means that it is the Root of a hierarchy of transform that have 
+			// hrcObs->_AncestorSkeletonModel!=NULL.
+			CSkeletonModelAnimDetailObs*	skelObs= dynamic_cast<CSkeletonModelAnimDetailObs*>(clipObs->AnimDetailObs);
+			if(skelObs)
+			{
+				// Then I must update hierarchically me and the sons (according to HRC hierarchy graph) of this model.
+				traverseHrcRecurs(skelObs);
+			}
+			else
+			{
+				// else, just traverse AnimDetail, an do nothing for Hrc sons
+				clipObs->AnimDetailObs->traverse(NULL);
+			}
+		}
+	}
+}
+
+
+// ***************************************************************************
+void	CAnimDetailTrav::traverseHrcRecurs(IBaseAnimDetailObs *adObs)
+{
+	// first, just doIt me
+	adObs->traverse(NULL);
+
+
+	// then doIt my sons in Hrc.
+	// get the  hrc observer.
+	IBaseHrcObs		*hrcObs= adObs->HrcObs;
+	// for all sons in hrc.
+	IBaseHrcObs		*sonHrcObs= static_cast<IBaseHrcObs*>(hrcObs->getFirstChild());
+	while( sonHrcObs )
+	{
+		// get the animDetailObs, and traverse it, recursively
+		traverseHrcRecurs(sonHrcObs->AnimDetailObs);
+
+		// brother in HRC
+		sonHrcObs= static_cast<IBaseHrcObs*>(hrcObs->getNextChild());
 	}
 }
 

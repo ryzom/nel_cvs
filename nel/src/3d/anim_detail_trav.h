@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.h
  * <File description>
  *
- * $Id: anim_detail_trav.h,v 1.3 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: anim_detail_trav.h,v 1.4 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,9 @@ public:
 
 private:
 	CClipTrav	*_ClipTrav;
+
+	/// traverse the observer recusrively, followin Hrc hierarchy
+	void				traverseHrcRecurs(IBaseAnimDetailObs *adObs);
 };
 
 

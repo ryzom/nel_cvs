@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.8 2001/09/18 08:33:43 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.9 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,7 +24,6 @@
  */
 
 #include "3d/skeleton_model.h"
-#include "3d/mesh_base_instance.h"
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
 #include "3d/skeleton_shape.h"
@@ -70,7 +69,7 @@ CSkeletonModel::~CSkeletonModel()
 	// detach skeleton sons from sticked objects.
 	while(_StickedObjects.begin()!=_StickedObjects.end())
 	{
-		detachSkeletonSon(_StickedObjects.begin()->Transform);
+		detachSkeletonSon(*_StickedObjects.begin());
 	}
 
 }
@@ -78,9 +77,10 @@ CSkeletonModel::~CSkeletonModel()
 
 
 // ***************************************************************************
-void		CSkeletonModel::bindSkin(CMeshBaseInstance *mi)
+void		CSkeletonModel::bindSkin(CTransform *mi)
 {
 	nlassert(mi);
+	nlassert(mi->isSkinnable());
 
 	// try to detach this object from me first.
 	detachSkeletonSon(mi);
@@ -88,24 +88,13 @@ void		CSkeletonModel::bindSkin(CMeshBaseInstance *mi)
 	// Then Add me.
 	_Skins.insert(mi);
 
-	// advert meshinstance it is skinned.
+	// advert skin transform it is skinned.
 	mi->_FatherSkeletonModel= this;
-	mi->_ApplySkinOk= true;
+	mi->setApplySkin(true);
 
-	// link correctly Hrc and Clip.
+	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	cacheTravs();
 	HrcTrav->link(this, mi);
-
-	// ClipTrav is no more a Tree (it is a graph now), so must unlink from ALL olds models.
-	IModel	*father= ClipTrav->getFirstParent(mi);
-	while(father)
-	{
-		ClipTrav->unlink(father, mi);
-		father= ClipTrav->getFirstParent(mi);
-	}
-	// And link to me.
-	ClipTrav->link(this, mi);
-
 }
 // ***************************************************************************
 void		CSkeletonModel::stickObject(CTransform *mi, uint boneId)
@@ -116,29 +105,15 @@ void		CSkeletonModel::stickObject(CTransform *mi, uint boneId)
 	detachSkeletonSon(mi);
 
 	// Then Add me.
-	// insert node into list.
-	CStickObject	node;
-	node.Transform= mi;
-	node.BoneId= boneId;
-	_StickedObjects.insert(node);
+	_StickedObjects.insert(mi);
 
 	// advert transform of its sticked state.
 	mi->_FatherSkeletonModel= this;
+	mi->_FatherBoneId= boneId;
 
-	// link correctly Hrc and Clip.
+	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	cacheTravs();
 	HrcTrav->link(this, mi);
-
-	// ClipTrav is no more a Tree (it is a graph now), so must unlink from ALL olds models.
-	IModel	*father= ClipTrav->getFirstParent(mi);
-	while(father)
-	{
-		ClipTrav->unlink(father, mi);
-		father= ClipTrav->getFirstParent(mi);
-	}
-	// And link to me.
-	ClipTrav->link(this, mi);
-
 }
 // ***************************************************************************
 void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
@@ -146,28 +121,20 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	nlassert(tr);
 
 	// try to erase from StickObject.
-	CStickObject	node;
-	node.Transform= tr;
-	_StickedObjects.erase(node);
+	_StickedObjects.erase(tr);
 	// try to erase from Skins.
-	_Skins.erase((CMeshBaseInstance*)tr);
+	_Skins.erase(tr);
 
 	// advert transform it is no more sticked/skinned.
 	tr->_FatherSkeletonModel= NULL;
 
 	// If it is a skin, advert him the skinning is no more OK.
-	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(tr);
-	if(mi)
-		mi->_ApplySkinOk= false;
+	if(tr->isSkinnable())
+		tr->setApplySkin(false);
 
-	// link correctly Hrc and Clip: link to Roots!
+	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	cacheTravs();
 	HrcTrav->link(NULL, tr);
-
-	// ClipTrav is no more a Tree (it is a graph now), so must unlink form old.
-	ClipTrav->unlink(this, tr);
-	ClipTrav->link(NULL, tr);
-
 }
 
 
@@ -175,10 +142,8 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 void		CSkeletonModel::cacheTravs()
 {
 	IObs			*HrcObs= getObs(NL3D::HrcTravId);
-	IObs			*ClipObs= getObs(NL3D::ClipTravId);
 
 	HrcTrav= (CHrcTrav*)HrcObs->Trav;
-	ClipTrav= (CClipTrav*)ClipObs->Trav;
 }
 
 
@@ -223,14 +188,9 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 		sm->IAnimatable::clearFlag(CSkeletonModel::OwnerBit);
 	}
 
-	// Sticked Objects: must update their WorldMatrix.
-	CSkeletonModel::ItStickObjectSet	it;
-	for(it=sm->_StickedObjects.begin(); it!=sm->_StickedObjects.end(); it++)
-	{
-		CBone	&bone= sm->Bones[it->BoneId];
-		it->Transform->updateWorldMatrixFromSkeleton(bone.getWorldMatrix());
-	}
-
+	// Sticked Objects: 
+	// they will update their WorldMatrix after, because of the AnimDetail traverse scheme:
+	// traverse visible ClipObs, and if skeleton, traverse Hrc sons.
 }
 
 

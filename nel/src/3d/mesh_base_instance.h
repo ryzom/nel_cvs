@@ -1,7 +1,7 @@
 /** \file mesh_base_instance.h
  * <File description>
  *
- * $Id: mesh_base_instance.h,v 1.6 2001/10/10 15:38:09 besson Exp $
+ * $Id: mesh_base_instance.h,v 1.7 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ class CMesh;
 class CMeshMRM;
 class CMeshBaseInstanceAnimDetailObs;
 class CAnimatedLightmap;
-class CSkeletonModel;
+
 
 // ***************************************************************************
 // ClassIds.
@@ -138,11 +138,21 @@ protected:
 	/// Destructor
 	virtual ~CMeshBaseInstance() {}
 
+
+	/// \name Skinning Behavior.
+	// @{
+	/// I can be skinned
+	virtual	bool			isSkinnable() const {return true;}
+	/// Am I skinned ??
+	virtual	bool			isSkinned() const {return _ApplySkinOk;}
+	/// change my state.
+	virtual	void			setApplySkin(bool state) {_ApplySkinOk= state;}
+	// @}
+
 private:
 	static IModel	*creator() {return new CMeshBaseInstance;}
 	friend	class CMeshBase;
 	friend	class CMeshBaseInstanceAnimDetailObs;
-	friend	class CSkeletonModel;
 
 
 	/** The list of animated materials, instanciated from the mesh.

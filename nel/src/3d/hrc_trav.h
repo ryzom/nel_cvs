@@ -1,7 +1,7 @@
 /** \file hrc_trav.h
  * <File description>
  *
- * $Id: hrc_trav.h,v 1.3 2001/08/24 16:37:15 berenguier Exp $
+ * $Id: hrc_trav.h,v 1.4 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,8 @@ using NLMISC::CMatrix;
 
 class	IBaseHrcObs;
 class	CSkipModel;
-
+class	IBaseClipObs;
+class	IBaseAnimDetailObs;
 
 // ***************************************************************************
 // ClassIds.
@@ -142,6 +143,11 @@ public:
 class IBaseHrcObs : public IObs
 {
 public:
+	/// Some Shortcut to observers.
+	IBaseClipObs		*ClipObs;
+	IBaseAnimDetailObs	*AnimDetailObs;
+
+public:
 
 
 	/// \name IN variables.
@@ -169,6 +175,8 @@ public:
 		LocalVis= CHrcTrav::Herit; LocalMatrix.identity(); LocalDate=0;
 		WorldVis= true; WorldMatrix.identity(); WorldDate=0;
 	}
+	/// Build shortcut to observers.
+	virtual	void	init();
 
 	
 	/// \name The base doit method.

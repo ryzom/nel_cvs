@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.9 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: transform.h,v 1.10 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,9 +186,26 @@ protected:
 	/// Implement the update method.
 	virtual void	update();
 
+	/// Implement the initModel method.
+	virtual void	initModel();
+
+	/// \name Skinning Behavior.
+	// @{
+
+	/// Deriver must change this method if the model can be skinned.
+	virtual	bool			isSkinnable() const {return false;}
+	/// Deriver must change this method to konw when the model is skinned.
+	virtual	bool			isSkinned() const {return false;}
+	/// Deriver must change this method if isSkinnable(). called by CSkeletonModel::bindSkin()
+	virtual	void			setApplySkin(bool state) {}
+
 
 	// The SkeletonModel, root of us (skinning or sticked object). NULL , if normal mode.
 	CSkeletonModel	*_FatherSkeletonModel;
+	// If sticked object, id of the bone in the _FatherSkeletonModel.
+	uint			_FatherBoneId;
+
+	// @}
 
 
 private:
@@ -199,8 +216,12 @@ private:
 	friend class	CSkeletonModel;
 	friend class	CSkeletonModelAnimDetailObs;
 
-	// For Skeleton Object Stick.
-	void			updateWorldMatrixFromSkeleton(const CMatrix &parentWM);
+	/** For Skeleton Object Stick.
+	 *	update the wolrd matrix. no-op if skinned.
+	 *	use standard father WorldMatrix if !_FatherSkeletonModel else get the correct boneId 
+	 *	WorldMatrix from _FatherSkeletonModel
+	 */
+	void			updateWorldMatrixFromFather();
 
 
 	// For anim detail.
@@ -224,6 +245,8 @@ private:
 
 	// shortcut to the HrcObs.
 	CTransformHrcObs	*_HrcObs;
+	// shortcut to the ClipObs.
+	CTransformClipObs	*_ClipObs;
 };
 
 
@@ -245,10 +268,9 @@ public:
 	{
 		Frozen = false;
 		DontUnfreezeChildren = false;
+		_AncestorSkeletonModel= NULL;
+		ClipLinkedInSonsOfAncestorSkeletonModelGroup= false;
 	}
-
-	// some init: copy a shortcut of me in the model.
-	virtual	void	init();
 
 	virtual	void	update();
 
@@ -271,6 +293,13 @@ public:
 	bool	Frozen;
 	bool	DontUnfreezeChildren; // Usefull when cluster system move to not test instance again
 
+	bool	ClipLinkedInSonsOfAncestorSkeletonModelGroup;
+	// !NULL if any skeleton is an ancestor in hierarchy. Updated at each Hrc traversal!!
+	CSkeletonModel	*_AncestorSkeletonModel;
+
+private:
+	// according to _AncestorSkeletonModel, link clipTrav.
+	void	updateClipTravForAncestorSkeleton();
 };
 
 

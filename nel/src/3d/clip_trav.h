@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.6 2001/09/14 09:44:25 berenguier Exp $
+ * $Id: clip_trav.h,v 1.7 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ class	CCluster;
 class	CInstanceGroup;
 class	CCamera;
 class	CQuadGridClipManager;
+class	CRootModel;
 
 
 // ***************************************************************************
@@ -123,6 +124,9 @@ public:
 	void				addVisibleObs(IBaseClipObs *obs) {_VisibleList.push_back(obs);}
 	//@}
 
+
+	void				setSonsOfAncestorSkeletonModelGroup(CRootModel *m);
+
 public:
 
 	/** \name FOR OBSERVERS ONLY.  (Read only)
@@ -150,6 +154,10 @@ public:
 	 *	they are sure to be visible.
 	 */
 	bool				ForceNoFrustumClip;
+
+
+	// For skeleton stickObject.
+	CRootModel		*SonsOfAncestorSkeletonModelGroup;
 
 private:
 	std::vector<IBaseClipObs*>	_VisibleList;

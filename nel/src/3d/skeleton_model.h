@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.5 2001/08/23 10:13:14 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.6 2001/12/11 16:40:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NL3D
 
 
 class CSkeletonShape;
-class CMeshBaseInstance;
+class CTransformClipObs;
 
 
 // ***************************************************************************
@@ -85,20 +85,21 @@ public:
 
 	/// \name Skin operation.
 	// @{
-	/** bind a MeshInstance skin to the skeleton. NB: ~CTransform() calls detachSkeletonSon().
+	/** bind a skin to the skeleton. NB: ~CTransform() calls detachSkeletonSon().
+	 * NB: nlassert(mi->isSkinnable());
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
-	 * NB: mi is made son of skeleton model in Traversals Hrc and Clip.
+	 * NB: mi is made son of skeleton model in Traversals Hrc, and change are made at render() for ClipTrav.
 	 */
-	void		bindSkin(CMeshBaseInstance *mi);
+	void		bindSkin(CTransform *mi);
 	/** parent a CTransform to a bone of the skeleton. NB: ~CTransform() calls detachSkeletonSon().
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
-	 * NB: mi is made son of skeleton model in Traversals Hrc and Clip.
+	 * NB: mi is made son of skeleton model in Traversals Hrc, and change are made at render() for ClipTrav.
 	 */
 	void		stickObject(CTransform *mi, uint boneId);
 	/** unparent a CTransform from a bone of the skeleton, or unbind a skin. No-op if not here.
-	 * NB: mi is made son of Root in Traversals Hrc and Clip.
+	 * NB: mi is made son of Root in Traversals Hrc, and change are made at render() for ClipTrav.
 	 */
 	void		detachSkeletonSon(CTransform *mi);
 	// @}
@@ -110,6 +111,7 @@ public:
 	sint32		getBoneIdByName(const std::string &name) const;
 	// @}
 
+
 // ***********************
 protected:
 	/// Constructor
@@ -117,7 +119,6 @@ protected:
 	{
 		IAnimatable::resize(AnimValueLast);
 		HrcTrav= NULL;
-		ClipTrav= NULL;
 	}
 	/// Destructor
 	virtual ~CSkeletonModel();
@@ -127,36 +128,28 @@ private:
 	static IModel	*creator() {return new CSkeletonModel;}
 	friend	class CSkeletonShape;
 	friend	class CSkeletonModelAnimDetailObs;
+	friend	class CTransformClipObs;
 
 
-	class	CStickObject
+	/// tells if the skeleton has been clipped in the clip traversal.
+	bool	isClipVisible() const
 	{
-	public:
-		CTransform		*Transform;
-		uint			BoneId;
+		return _ClipObs->Visible;
+	}
 
-		bool	operator<(const CStickObject &o) const
-		{
-			return Transform<o.Transform;
-		}
-	};
-
+	/// skins/sticked objects
+	typedef	std::set<CTransform*>		TTransformSet;
+	typedef	TTransformSet::iterator		ItTransformSet;
 	/// The skins.
-	typedef	std::set<CMeshBaseInstance*>	TMeshInstanceSet;
-	typedef	TMeshInstanceSet::iterator		ItMeshInstanceSet;
-	TMeshInstanceSet			_Skins;
+	TTransformSet				_Skins;
 	/// The StickedObjects.
-	typedef	std::set<CStickObject>		TStickObjectSet;
-	typedef	TStickObjectSet::iterator	ItStickObjectSet;
-	TStickObjectSet				_StickedObjects;
+	TTransformSet				_StickedObjects;
 
 
-	// The Hrc and Clip traversals of the Scene which owns this Skeleton.
+	// The Hrc traversal of the Scene which owns this Skeleton.
 	CHrcTrav		*HrcTrav;
-	CClipTrav		*ClipTrav;
 	// test if HrcTrav!=NULL, else get from observers (done only one time).
 	void			cacheTravs();
-
 };
 
 

@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.5 2000/11/13 10:02:17 corvazier Exp $
+ * $Id: event_listener.cpp,v 1.6 2000/11/13 13:25:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ void CEventListenerAsync::addToServer (CEventServer& server)
 {
 	server.addListener (EventKeyUpId, this);
 	server.addListener (EventKeyDownId, this);
-	server.addListener (EventActivateId, this);
+	server.addListener (EventSetFocusId, this);
 }
 // ***************************************************************************
 void CEventListenerAsync::removeFromServer (CEventServer& server)
@@ -83,10 +83,10 @@ void CEventListenerAsync::operator ()(const CEvent& event)
 		_KeyArray.clear (pEvent->Key);
 	}
 	// Activate false ?
-	if (event==EventActivateId)
+	if (event==EventSetFocusId)
 	{
-		CEventActivate *pEvent=(CEventActivate*)&event;
-		if (!pEvent->Activate)
+		CEventSetFocus *pEvent=(CEventSetFocus *)&event;
+		if (!pEvent->Get)
 		{
 			// Disactive all keys
 			_KeyArray.clearAll ();

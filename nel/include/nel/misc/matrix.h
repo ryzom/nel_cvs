@@ -1,7 +1,7 @@
 /** \file matrix.h
  * <description>
  *
- * $Id: matrix.h,v 1.5 2000/10/24 15:24:33 lecroart Exp $
+ * $Id: matrix.h,v 1.6 2000/11/13 13:25:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -242,11 +242,11 @@ public:
 
 	/// \ Vector Operations.
 	//@{
-	/// Multiplie a normal. ie v.w=0 so the Translation component doesn't affect result. Projection doesn't affect result.
+	/// Multiply a normal. ie v.w=0 so the Translation component doesn't affect result. Projection doesn't affect result.
 	CVector		mulVector(const CVector &v) const;
-	/// Multiplie a point. ie v.w=1 so the Translation component do affect result. Projection doesn't affect result.
+	/// Multiply a point. ie v.w=1 so the Translation component do affect result. Projection doesn't affect result.
 	CVector		mulPoint(const CVector &v) const;
-	/// Multiplie a point. \sa mulPoint
+	/// Multiply a point. \sa mulPoint
 	CVector		operator*(const CVector &v) const
 	{
 		return mulPoint(v);

@@ -1,7 +1,7 @@
 /** \file event_server.cpp
  * <File description>
  *
- * $Id: event_server.cpp,v 1.5 2000/11/13 11:24:44 corvazier Exp $
+ * $Id: event_server.cpp,v 1.6 2000/11/13 13:25:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,7 +78,7 @@ void CEventServer::pump()
 bool CEventServer::pumpEvent(CEvent* event)
 {
 	// taking id
-	uint64 id = (uint64) event;
+	uint64 id = (uint64) *event;
 
 	// looking for the first occurence of id
 	mapListener::iterator it = _Listeners.find(id);

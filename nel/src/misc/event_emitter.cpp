@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.7 2000/11/13 11:24:44 corvazier Exp $
+ * $Id: event_emitter.cpp,v 1.8 2000/11/13 13:25:15 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,19 +36,19 @@ namespace NLMISC {
 
 void CEventEmitterWin32::submitEvents(CEventServer & server)
 {
+	// Dispatch sended messages
+	_InternalServer.setServer (&server);
+	_InternalServer.pump ();
+
 	MSG	msg;
 	while ( PeekMessage(&msg,NULL,0,0,PM_REMOVE) )
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 
-		// Dispatch sended messages
-		_InternalServer.setServer (&server);
-		_InternalServer.pump ();
-
 		if (msg.hwnd==(HWND)_HWnd)
 		{
-			processMessage ((uint32)msg.hwnd, msg.message, msg.wParam, msg.lParam, &server);
+			//processMessage ((uint32)msg.hwnd, msg.message, msg.wParam, msg.lParam, &server);
 		}
 	}
 }

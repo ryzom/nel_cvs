@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.36 2002/02/28 12:59:50 besson Exp $
+ * $Id: ps_emitter.cpp,v 1.37 2002/04/15 12:32:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,8 +71,7 @@ CPSEmitter::~CPSEmitter()
 
 ///==========================================================================
 inline void CPSEmitter::processEmit(uint32 index, sint nbToGenerate)
-{
-	if (!_EmittedType) return;
+{	
 	static NLMISC::CVector speed, pos;
 	
 	if (!_SpeedBasisEmission)
@@ -206,8 +205,7 @@ inline void CPSEmitter::processEmitConsistent(const NLMISC::CVector &emitterPos,
 											  TAnimationTime ellapsedTime,
 											  float realEllapsedTimeRatio
 											 )
-{	
-	if (!_EmittedType) return;
+{		
 	static NLMISC::CVector speed, pos; /// speed and pos of emittee
 	sint emittedIndex;
 	if (!_SpeedBasisEmission)
@@ -875,7 +873,7 @@ void CPSEmitter::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 		showTool();
 		return;
 	}
-	if (pass != PSEmit) return;
+	if (pass != PSEmit || !_EmittedType) return;
 	const uint32 size = _Owner->getSize();
 	if (!size) return;
 

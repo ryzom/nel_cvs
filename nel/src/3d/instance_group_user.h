@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.27 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: instance_group_user.h,v 1.28 2004/03/23 10:21:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,8 +94,8 @@ private:
 	const NLMISC::CVector& getInstancePos (uint instanceNb) const;
 	const NLMISC::CQuat& getInstanceRot (uint instanceNb) const;
 	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;
-	UInstance *getByName (std::string& name);
-	const UInstance *getByName (std::string& name) const;
+	UInstance *getByName (const std::string& name);
+	const UInstance *getByName (const std::string& name) const;
 
 	void setBlendShapeFactor (const std::string &bsName, float rFactor);
 

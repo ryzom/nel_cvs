@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.34 2004/03/12 16:27:51 berenguier Exp $
+ * $Id: instance_group_user.cpp,v 1.35 2004/03/23 10:21:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -328,7 +328,7 @@ const NLMISC::CVector& CInstanceGroupUser::getInstanceScale (uint instanceNb) co
 
 
 // ***************************************************************************
-UInstance *CInstanceGroupUser::getByName (std::string &name)
+UInstance *CInstanceGroupUser::getByName (const std::string &name)
 {
 	NL3D_MEM_IG
 	map<string,CInstanceUser*>::iterator it = _InstanceMap.find (name);
@@ -340,7 +340,7 @@ UInstance *CInstanceGroupUser::getByName (std::string &name)
 
 // ***************************************************************************
 
-const UInstance *CInstanceGroupUser::getByName (std::string &name) const
+const UInstance *CInstanceGroupUser::getByName (const std::string &name) const
 {
 	NL3D_MEM_IG
 	map<string,CInstanceUser*>::const_iterator it = _InstanceMap.find (name);

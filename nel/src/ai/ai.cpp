@@ -165,8 +165,8 @@ namespace NLAILINK
 		NLAISCRIPT::CCompilateur *comp = new NLAISCRIPT::CCompilateur(Interface, scriptSrc.c_str(), scriptSrc.size(), sourceCode);
 		NLAIAGENT::IObjectIA::CProcessResult r = comp->Compile();		
 #ifdef NL_DEBUG
-		if(r.ResultState == NLAIAGENT::processError)
-				throw;
+		if ( r.ResultState == NLAIAGENT::processError )
+			throw;
 #endif
 		sourceCode->release();
 		delete comp;

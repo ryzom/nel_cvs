@@ -1,7 +1,7 @@
 /** \file shared_memory.cpp
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.cpp,v 1.4 2003/03/06 09:27:26 cado Exp $
+ * $Id: shared_memory.cpp,v 1.5 2003/06/03 10:04:14 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -63,6 +63,9 @@ void			*CSharedMemory::createSharedMemory( TSharedMemId sharedMemId, uint32 size
 		nlwarning( "SHDMEM: Cannot create file mapping: error %u, mapFile %p", GetLastError(), hMapFile );
 		return NULL;
 	}
+	//else
+	//	nldebug( "SHDMEM: Creating smid %s --> mapFile %p", sharedMemId, hMapFile );
+	
 
 	// Map the file into memory address space
 	void *accessAddress = MapViewOfFile( hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0 );
@@ -102,6 +105,7 @@ void			*CSharedMemory::accessSharedMemory( TSharedMemId sharedMemId )
 	HANDLE hMapFile = OpenFileMapping( FILE_MAP_ALL_ACCESS, false, sharedMemId );
 	if ( hMapFile == NULL )
 		return NULL;
+	//nldebug( "SHDMEM: Opening smid %s --> mapFile %p", sharedMemId, hMapFile );
 
 	// Map the file into memory address space
 	void *accessAddress = MapViewOfFile( hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 0 );
@@ -133,17 +137,24 @@ bool			CSharedMemory::closeSharedMemory( void *accessAddress )
 {
 #ifdef NL_OS_WINDOWS
 
+	bool result = true;
+
 	// Unmap the file from memory address space
 	if ( UnmapViewOfFile( accessAddress ) == 0 )
-		return false;
+	{
+		nlwarning( "SHDMEM: UnmapViewOfFile failed" );
+		result = false;
+	}
 
 	// Close the corresponding handle
 	map<void*,HANDLE>::iterator im = AccessAddressesToHandles.find( accessAddress );
 	if ( im != AccessAddressesToHandles.end() )
 	{
-		CloseHandle( (*im).second );
+		//nldebug( "SHDMEM: CloseHandle mapFile %u", (*im).second );
+		if ( ! CloseHandle( (*im).second ) )
+			nlwarning( "SHDMEM: CloseHandle failed: error %u, mapFile %u", GetLastError(), (*im).second );
 		AccessAddressesToHandles.erase( im );
-		return true;
+		return result;
 	}
 	else
 	{

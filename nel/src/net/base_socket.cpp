@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.43 2001/02/16 16:58:47 cado Exp $
+ * $Id: base_socket.cpp,v 1.44 2001/02/19 09:07:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,7 @@
 #define ERROR_NUM errno
 #define ERROR_MSG strerror(errno)
 typedef int SOCKET;
+#include <string>
 
 #endif
 
@@ -105,7 +106,7 @@ ESocket::ESocket( const char *reason, bool systemerror )
 		}
 
 #elif defined NL_OS_UNIX
-		_Reason += ": " + string(ERROR_MSG);
+		_Reason += ": " + std::string(ERROR_MSG);
 #endif
 		_Reason += ")";
 	}

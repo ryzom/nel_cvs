@@ -64,6 +64,9 @@ protected:
 	afx_msg void OnChange();
 	virtual BOOL OnInitDialog();
 	afx_msg void OnClose();
+	afx_msg void OnInsert();
+	afx_msg void OnUp();
+	afx_msg void OnDown();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

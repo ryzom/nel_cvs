@@ -46,6 +46,9 @@ BEGIN_MESSAGE_MAP(CEditMorphMeshDlg, CDialog)
 	ON_BN_CLICKED(IDC_REMOVE, OnRemove)
 	ON_BN_CLICKED(IDC_CHANGE, OnChange)
 	ON_WM_CLOSE()
+	ON_BN_CLICKED(IDC_INSERT, OnInsert)
+	ON_BN_CLICKED(IDC_UP, OnUp)
+	ON_BN_CLICKED(IDC_DOWN, OnDown)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -119,6 +122,55 @@ void CEditMorphMeshDlg::OnRemove()
 	}
 	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
 	updateMeshList();
+}
+
+//====================================================================
+void CEditMorphMeshDlg::OnInsert() 
+{
+	std::string shapeName;
+	if (getShapeNameFromDlg(shapeName))
+	{	
+		sint selItem = m_MeshList.GetCurSel();
+		std::vector<std::string> shapeNames;
+		shapeNames.resize(_CM->getNumShapes());
+		_CM->getShapesNames(&shapeNames[0]);
+		shapeNames.insert(shapeNames.begin() + selItem, shapeName);
+		_CM->setShapes(&shapeNames[0], shapeNames.size());		
+		GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);
+		_ParticleDlg->getCurrPSModel()->touchTransparencyState();
+		updateMeshList();
+		m_MeshList.SetCurSel(selItem);
+	}	
+}
+
+//====================================================================
+void CEditMorphMeshDlg::OnUp() 
+{		
+	sint selItem = m_MeshList.GetCurSel();
+	if (selItem == 0) return;
+	std::vector<std::string> shapeNames;
+	shapeNames.resize(_CM->getNumShapes());
+	_CM->getShapesNames(&shapeNames[0]);
+	std::swap(shapeNames[selItem - 1], shapeNames[selItem]);
+	_CM->setShapes(&shapeNames[0], shapeNames.size());		
+	GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);		
+	updateMeshList();
+	m_MeshList.SetCurSel(selItem - 1);	
+}
+
+//====================================================================
+void CEditMorphMeshDlg::OnDown() 
+{
+	sint selItem = m_MeshList.GetCurSel();
+	if (selItem == (sint) (_CM->getNumShapes() - 1)) return;
+	std::vector<std::string> shapeNames;
+	shapeNames.resize(_CM->getNumShapes());
+	_CM->getShapesNames(&shapeNames[0]);
+	std::swap(shapeNames[selItem + 1], shapeNames[selItem]);
+	_CM->setShapes(&shapeNames[0], shapeNames.size());		
+	GetDlgItem(IDC_REMOVE)->EnableWindow(TRUE);		
+	updateMeshList();
+	m_MeshList.SetCurSel(selItem + 1);	
 }
 
 //====================================================================
@@ -202,10 +254,10 @@ BOOL CEditMorphMeshDlg::OnInitDialog()
 }
 
 
-
-
+//====================================================================
 void CEditMorphMeshDlg::OnClose() 
 {
 	CDialog::OnClose();
 	if (_PN) _PN->childPopupClosed(this);	
 }
+

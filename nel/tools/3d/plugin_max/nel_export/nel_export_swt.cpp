@@ -1,7 +1,7 @@
 /** \file nel_export_swt.cpp
  * <File description>
  *
- * $Id: nel_export_swt.cpp,v 1.5 2002/02/26 17:30:23 corvazier Exp $
+ * $Id: nel_export_swt.cpp,v 1.6 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 using namespace NL3D;
 using namespace NLMISC;
 
-bool CNelExport::exportSWT(const char *sPath, std::vector<INode*>& vectNode, Interface& ip)
+bool CNelExport::exportSWT(const char *sPath, std::vector<INode*>& vectNode)
 {
 	float rPosValue;
 	float rRotValue;

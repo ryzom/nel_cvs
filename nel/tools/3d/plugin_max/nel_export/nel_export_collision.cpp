@@ -1,7 +1,7 @@
 /** \file nel_export_collision.cpp
  * 
  *
- * $Id: nel_export_collision.cpp,v 1.4 2002/03/26 10:11:43 corvazier Exp $
+ * $Id: nel_export_collision.cpp,v 1.5 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,11 +39,11 @@ using namespace NLPACS;
 
 // --------------------------------------------------
 
-bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes, Interface& ip, TimeValue time, CExportNelOptions &opt)
+bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes, TimeValue time, CExportNelOptions &opt)
 {
 	// get list of CMB froms nodes.
 	std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> >	meshBuildList;
-	if(!CExportNel::createCollisionMeshBuildList(nodes, ip, time, meshBuildList))
+	if(!_ExportNel->createCollisionMeshBuildList(nodes, time, meshBuildList))
 		return false;
 
 	// Result to return
@@ -114,7 +114,7 @@ bool CNelExport::exportCollision (const char *sPath, std::vector<INode *> &nodes
 }
 
 /*
-bool CNelExport::exportCollision (const char *sPath, INode& node, Interface& ip, TimeValue time, CExportNelOptions &opt)
+bool CNelExport::exportCollision (const char *sPath, INode& node, Interface& _Ip, TimeValue time, CExportNelOptions &opt)
 {
 	// Result to return
 	bool bRet=false;
@@ -156,11 +156,11 @@ bool CNelExport::exportCollision (const char *sPath, INode& node, Interface& ip,
 */
 // --------------------------------------------------
 
-bool CNelExport::exportPACSPrimitives (const char *sPath, std::vector<INode *> &nodes, Interface& ip, TimeValue time)
+bool CNelExport::exportPACSPrimitives (const char *sPath, std::vector<INode *> &nodes, TimeValue time)
 {
 	// Build the primitive block
 	NLPACS::CPrimitiveBlock primitiveBlock;
-	if (CExportNel::buildPrimitiveBlock (ip, time, nodes, primitiveBlock))
+	if (_ExportNel->buildPrimitiveBlock (time, nodes, primitiveBlock))
 	{
 		// Open the file
 		COFile file;

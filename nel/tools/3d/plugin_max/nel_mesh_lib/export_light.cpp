@@ -1,7 +1,7 @@
 /** \file export_light.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_light.cpp,v 1.4 2001/12/18 11:23:59 corvazier Exp $
+ * $Id: export_light.cpp,v 1.5 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,13 +168,13 @@ bool CExportNel::buildLight (GenLight &maxLight, NL3D::CLight& nelLight, INode& 
 
 // ***************************************************************************
 // Get the ambient value
-CRGBA CExportNel::getAmbientColor (Interface& ip, TimeValue time)
+CRGBA CExportNel::getAmbientColor (TimeValue time)
 {
 	// validuty
 	Interval valid=NEVER;
 
 	// Get max color
-	Point3 color=255.f*ip.GetAmbient (time, valid);
+	Point3 color=255.f*_Ip->GetAmbient (time, valid);
 	clamp (color.x, 0.f, 255.f);
 	clamp (color.y, 0.f, 255.f);
 	clamp (color.z, 0.f, 255.f);
@@ -185,13 +185,13 @@ CRGBA CExportNel::getAmbientColor (Interface& ip, TimeValue time)
 
 // ***************************************************************************
 // Get the ambient value
-CRGBA CExportNel::getBackGroundColor (Interface& ip, TimeValue time)
+CRGBA CExportNel::getBackGroundColor (TimeValue time)
 {
 	// validuty
 	Interval valid=NEVER;
 
 	// Get max color
-	Point3 color=255.f*ip.GetBackGround(time, valid);
+	Point3 color=255.f*_Ip->GetBackGround(time, valid);
 	clamp (color.x, 0.f, 255.f);
 	clamp (color.y, 0.f, 255.f);
 	clamp (color.z, 0.f, 255.f);
@@ -202,11 +202,11 @@ CRGBA CExportNel::getBackGroundColor (Interface& ip, TimeValue time)
 
 // ***************************************************************************
 
-void CExportNel::getLights (std::vector<CLight>& vectLight, TimeValue time, Interface& ip, INode* node)
+void CExportNel::getLights (std::vector<CLight>& vectLight, TimeValue time, INode* node)
 {
 	// Get the root node
 	if (node==NULL)
-		node=ip.GetRootNode();
+		node=_Ip->GetRootNode();
 
 	// Get a pointer on the object's node
     Object *obj = node->EvalWorldState(time).obj;
@@ -252,7 +252,7 @@ void CExportNel::getLights (std::vector<CLight>& vectLight, TimeValue time, Inte
 
 	// Recurse sub node
 	for (int i=0; i<node->NumberOfChildren(); i++)
-		getLights (vectLight, time, ip, node->GetChildNode(i));
+		getLights (vectLight, time, node->GetChildNode(i));
 }
 
 // ***************************************************************************

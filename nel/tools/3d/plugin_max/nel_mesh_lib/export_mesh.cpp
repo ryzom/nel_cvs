@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.36 2002/03/14 18:23:37 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.37 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include "export_nel.h"
 #include "export_lod.h"
+#include "export_radial_normal.h"
 
 #include "../nel_export/std_afx.h"
 #include "../nel_export/nel_export.h"
@@ -70,8 +71,7 @@ void buildNeLMatrix (CMatrix& tm, const CVector& scale, const CQuat& rot, const 
 // ***************************************************************************
 
 
-CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, 
-												CMesh::CMeshBaseBuild*& baseBuild, const CMatrix &masterNodeMat)
+CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, CMesh::CMeshBaseBuild*& baseBuild, const CMatrix &masterNodeMat)
 {
 	CMesh::CMeshBuild *pMeshBuild = new CMesh::CMeshBuild();
 	baseBuild = new CMeshBase::CMeshBaseBuild();
@@ -110,8 +110,8 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 			getLocalMatrix (nodeMatrixMax, node, tvTime);
 			convertMatrix (nodeMatrix, nodeMatrixMax);
 
-			buildBaseMeshInterface (*baseBuild, maxBaseBuild, node, tvTime, bAbsPath, nodeMatrix);
-			buildMeshInterface (*tri, *pMeshBuild, *baseBuild, maxBaseBuild, node, tvTime, NULL, bAbsPath, CMatrix::Identity, masterNodeMat);
+			buildBaseMeshInterface (*baseBuild, maxBaseBuild, node, tvTime, nodeMatrix);
+			buildMeshInterface (*tri, *pMeshBuild, *baseBuild, maxBaseBuild, node, tvTime, NULL, CMatrix::Identity, masterNodeMat);
 
 			// Delete the triObject if we should...
 			if (deleteIt)
@@ -126,8 +126,7 @@ CMesh::CMeshBuild*	CExportNel::createMeshBuild(INode& node, TimeValue tvTime, bo
 // ***************************************************************************
 
 // Export a mesh
-IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, 
-								bool absolutePath, CExportNelOptions &opt, bool view, bool errorInDialog)
+IShape* CExportNel::buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, CExportNelOptions &opt)
 {
 	
 	// Here, we must check what kind of node we can build with this mesh.
@@ -190,7 +189,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 
 		if (clid.PartA() == NEL_WAVE_MAKER_CLASS_ID_A)
 		{
-			return buildWaveMakerShape(node, time, absolutePath);
+			return buildWaveMakerShape(node, time);
 		}
 
 		// is the object a flare ?
@@ -267,7 +266,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 					// retrieve the texture name
 					std::string fileName;
 					CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2) TYPE_STRING, &fileName, 0);
-					if (absolutePath)
+					if (_AbsolutePath)
 					{
 						fs->setTexture(k, new NL3D::CTextureFile(fileName.c_str()));
 					}
@@ -318,7 +317,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 			/// \todo hulud: here, check if it is another kind of shape than mesh, multi lod mesh or mrm mesh. 
 			if (hasWaterMaterial(node, time)) // is this a water shape ?
 			{
-				retShape = buildWaterShape(node, time, absolutePath);
+				retShape = buildWaterShape(node, time);
 			}
 			else			
 			{
@@ -346,8 +345,8 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 					bool isTransparent;
 					bool isOpaque;
 					multiLodBuild.LodMeshes.resize (1);
-					multiLodBuild.LodMeshes[0].MeshGeom=buildMeshGeom (node, ip, time, nodeMap, absolutePath, opt, multiLodBuild.BaseMesh, 
-						listMaterialName, isTransparent, isOpaque, nodeMatrix, view);
+					multiLodBuild.LodMeshes[0].MeshGeom=buildMeshGeom (node, time, nodeMap, opt, multiLodBuild.BaseMesh, 
+						listMaterialName, isTransparent, isOpaque, nodeMatrix);
 					multiLodBuild.LodMeshes[0].DistMax=getScriptAppData (&node, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
 					multiLodBuild.LodMeshes[0].BlendLength=getScriptAppData (&node, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
 					multiLodBuild.LodMeshes[0].Flags=0;
@@ -355,7 +354,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendIn;
 					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_BLEND_OUT, NEL3D_APPDATA_LOD_BLEND_OUT_DEFAULT))
 						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendOut;
-					if ((getScriptAppData (&node, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT)) && (!view))
+					if ((getScriptAppData (&node, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT)) && (!_View))
 						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::CoarseMesh;
 					if (isTransparent)
 						multiLodBuild.LodMeshes[0].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::IsTransparent;
@@ -381,7 +380,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 						std::string nodeName=getScriptAppData (&node, NEL3D_APPDATA_LOD_NAME+lod, "");
 
 						// Get the node
-						INode *lodNode=ip.GetINodeByName(nodeName.c_str());
+						INode *lodNode=_Ip->GetINodeByName(nodeName.c_str());
 						if (lodNode)
 						{
 							// Index of the lod in the build structure
@@ -409,8 +408,8 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 							}
 
 							// Fill the structure
-							multiLodBuild.LodMeshes[index].MeshGeom=buildMeshGeom (*lodNode, ip, time, nodeMap, absolutePath, opt, multiLodBuild.BaseMesh, 
-								listMaterialName, isTransparent, isOpaque, parentMatrix, view);
+							multiLodBuild.LodMeshes[index].MeshGeom=buildMeshGeom (*lodNode, time, nodeMap, opt, multiLodBuild.BaseMesh, 
+								listMaterialName, isTransparent, isOpaque, parentMatrix);
 							multiLodBuild.LodMeshes[index].DistMax=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_DIST_MAX, NEL3D_APPDATA_LOD_DIST_MAX_DEFAULT);
 							multiLodBuild.LodMeshes[index].BlendLength=getScriptAppData (lodNode, NEL3D_APPDATA_LOD_BLEND_LENGTH, NEL3D_APPDATA_LOD_BLEND_LENGTH_DEFAULT);
 							multiLodBuild.LodMeshes[index].Flags=0;
@@ -418,7 +417,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendIn;
 							if (getScriptAppData (lodNode, NEL3D_APPDATA_LOD_BLEND_OUT, NEL3D_APPDATA_LOD_BLEND_OUT_DEFAULT))
 								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::BlendOut;
-							if ((getScriptAppData (lodNode, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT)) && (!view))
+							if ((getScriptAppData (lodNode, NEL3D_APPDATA_LOD_COARSE_MESH, NEL3D_APPDATA_LOD_COARSE_MESH_DEFAULT)) && (!_View))
 								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::CoarseMesh;
 							if (isTransparent)
 								multiLodBuild.LodMeshes[index].Flags|=CMeshMultiLod::CMeshMultiLodBuild::CBuildSlot::IsTransparent;
@@ -458,13 +457,13 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 
 					// Fill the build interface of CMesh
 					CMeshBase::CMeshBaseBuild buildBaseMesh;
-					buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, absolutePath, nodeMatrix);
+					buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, nodeMatrix);
 
 					CMesh::CMeshBuild buildMesh;
-					buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, nodeMap, absolutePath);
+					buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, nodeMap);
 
 					if( hasLightMap( node, time ) && opt.bExportLighting )
-						calculateLM(&buildMesh, &buildBaseMesh, node, ip, time, absolutePath, opt, maxBaseBuild.FirstMaterial);
+						calculateLM(&buildMesh, &buildBaseMesh, node, time, opt, maxBaseBuild.FirstMaterial);
 
 					// MRM mesh ?
 					if (getScriptAppData (&node, NEL3D_APPDATA_LOD_MRM, 0))
@@ -496,7 +495,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 
 						// Must be done after the build to update vertex links
 						// Pass to buildMeshMorph if the original mesh is skinned or not
-						buildMeshMorph (buildMesh, node, time, nodeMap!=NULL, errorInDialog, ip);
+						buildMeshMorph (buildMesh, node, time, nodeMap!=NULL);
 						mesh->setBlendShapes (buildMesh.BlendShapes);
 
 						// Return this pointer
@@ -587,7 +586,7 @@ Point3 CExportNel::getLocalNormal (int face, int corner, Mesh& mesh)
 
 // Build a base mesh interface
 void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildMesh, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
-										 TimeValue time, bool absolutePath, const CMatrix& nodeBasis)
+										 TimeValue time, const CMatrix& nodeBasis)
 {
 	buildMesh.bCastShadows = (node.CastShadows() != 0);
 	buildMesh.bRcvShadows  = (node.RcvShadows() != 0);
@@ -610,7 +609,7 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 	// *** ****************
 
 	// Build materials in NeL format and get the number of materials exported in NeL format
-	buildMaterials (buildMesh.Materials, maxBaseBuild, node, time, absolutePath);
+	buildMaterials (buildMesh.Materials, maxBaseBuild, node, time);
 
 	// Special: Add VertexColor If WindTree
 	// What Vertexprogram is used??
@@ -670,7 +669,7 @@ void CExportNel::buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildM
 
 // Build a mesh interface
 void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMesh, const NL3D::CMeshBase::CMeshBaseBuild& buildBaseMesh, 
-									 const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, const TInodePtrInt* nodeMap, bool absolutePath, 
+									 const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, const TInodePtrInt* nodeMap, 
 									 const CMatrix& newBasis, const CMatrix& finalSpace)
 {
 	// Get a pointer on the 3dsmax mesh
@@ -803,13 +802,19 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 	// Resize the vertex table
 	buildMesh.Faces.resize (nNumFaces);
 
+	// Get the smoothing groups flag that use a radial vertices
+	CRadialVertices radialVertices;
+	radialVertices.init (&node, pMesh, time, *_Ip, *this);
+
 	// Export vertex
 	for (int face=0; face<nNumFaces; face++)
 	{
 		// Max face pointer
 		Face *pFace=&pMesh->faces[face];
 
-
+		// Does it use a radial normal ?
+		bool useRadialNormal = radialVertices.isUsingRadialNormals (face);
+		
 		// *** ******************
 		// *** Export material ID
 		// *** ******************
@@ -855,9 +860,18 @@ void CExportNel::buildMeshInterface (TriObject &tri, CMesh::CMeshBuild& buildMes
 			// Vertex index
 			pCorner->Vertex=pFace->v[corner];
 
-			// Normal value in local
-			Point3 vNormal=getLocalNormal (face, corner, *pMesh);
-
+			// Does this face use radial normal ?
+			Point3 vNormal;
+			if (useRadialNormal)
+			{
+				// Get the local normal
+				vNormal = radialVertices.getLocalNormal (pCorner->Vertex, face);
+			}
+			else
+			{
+				// Normal value in local
+				vNormal = getLocalNormal (face, corner, *pMesh);
+			}
 
 			// *** *************
 			// *** Export normal
@@ -1181,7 +1195,7 @@ void CExportNel::getBSMeshBuild (std::vector<CMesh::CMeshBuild*> &bsList, INode 
 		CMatrix finalSpace = CMatrix::Identity;
 		if (skined)
 			convertMatrix(finalSpace, node.GetNodeTM(time));
-		bsList[j] = createMeshBuild (*pNode, time, true, pMBB, finalSpace);
+		bsList[j] = createMeshBuild (*pNode, time, pMBB, finalSpace);
 		++j;
 	}
 }
@@ -1225,11 +1239,10 @@ void CExportNel::buildMRMParameters (Animatable& node, CMRMParameters& params)
 
 // ***************************************************************************
 
-IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time, 
-								const TInodePtrInt *nodeMap, bool absolutePath,
+IMeshGeom *CExportNel::buildMeshGeom (INode& node, TimeValue time, const TInodePtrInt *nodeMap, 
 								CExportNelOptions &opt, CMeshBase::CMeshBaseBuild &buildBaseMesh, 
 								std::vector<std::string>& listMaterialName,
-								bool& isTransparent, bool& isOpaque, const CMatrix& parentMatrix, bool view)
+								bool& isTransparent, bool& isOpaque, const CMatrix& parentMatrix)
 {
 	// Here, we must check what kind of node we can build with this mesh.
 	// For the time, just Triobj is supported.
@@ -1263,7 +1276,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 				deleteIt = true;
 
 			// Coarse mesh ?
-			bool coarseMesh=(getScriptAppData (&node, NEL3D_APPDATA_LOD_COARSE_MESH, 0)!=0) && (!view);
+			bool coarseMesh=(getScriptAppData (&node, NEL3D_APPDATA_LOD_COARSE_MESH, 0)!=0) && (!_View);
 
 			// No skeleton shape
 			if (coarseMesh)
@@ -1273,7 +1286,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 			CMaxMeshBaseBuild maxBaseBuild;
 
 			// Append material to the base
-			buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, absolutePath, parentMatrix);
+			buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, parentMatrix);
 
 			// Get the node matrix
 			Matrix3 nodeMatrixMax;
@@ -1287,7 +1300,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 
 			// Fill the build interface of CMesh
 			CMesh::CMeshBuild buildMesh;
-			buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, nodeMap, absolutePath, nodeToParentMatrix);
+			buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, nodeMap, nodeToParentMatrix);
 
 			// Append material names
 			isTransparent=false;
@@ -1305,7 +1318,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 			}
 
 			if( hasLightMap( node, time ) && opt.bExportLighting )
-				calculateLM(&buildMesh, &buildBaseMesh, node, ip, time, absolutePath, opt, maxBaseBuild.FirstMaterial);
+				calculateLM(&buildMesh, &buildBaseMesh, node, time, opt, maxBaseBuild.FirstMaterial);
 
 			// MRM mesh ?
 			if (getScriptAppData (&node, NEL3D_APPDATA_LOD_MRM, 0) && (!coarseMesh) )
@@ -1364,7 +1377,7 @@ IMeshGeom *CExportNel::buildMeshGeom (INode& node, Interface& ip, TimeValue time
 }
 
 // ***************************************************************************
-void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time, bool skined, bool errorInDialog, Interface& ip)
+void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time, bool skined)
 {
 	
 	Modifier *pMorphMod = getModifier (&node, MAX_MORPHER_CLASS_ID);
@@ -1410,14 +1423,14 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 		CMatrix finalSpace = CMatrix::Identity;
 		if (skined)
 			convertMatrix(finalSpace, node.GetNodeTM(time));
-		CMesh::CMeshBuild *pMB = createMeshBuild (*pNode, time, true, pMBB, finalSpace);
+		CMesh::CMeshBuild *pMB = createMeshBuild (*pNode, time, pMBB, finalSpace);
 
 		// Same number of faces and vertices ?
 		if (vertexCount != pMB->Vertices.size())
 		{
 			char message[512];
 			smprintf (message, 512, "The morph target \"%s\" in slot %d has not the same vertex count than the original object \"%s\".", pNode->GetName(), i+1, node.GetName());
-			outputErrorMessage (&ip, message, "NeL Export", errorInDialog);
+			outputErrorMessage (message);
 			continue;
 		}
 
@@ -1426,7 +1439,7 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 		{
 			char message[512];
 			smprintf (message, 512, "The morph target \"%s\" in slot %d has not the same polygon count than the original object \"%s\".", pNode->GetName(), i+1, node.GetName());
-			outputErrorMessage (&ip, message, "NeL Export", errorInDialog);
+			outputErrorMessage (message);
 			continue;
 		}
 
@@ -1569,7 +1582,7 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 
 
 // ***************************************************************************
-NL3D::IShape				*CExportNel::buildWaveMakerShape(INode& node, TimeValue time, bool absolutePath)
+NL3D::IShape				*CExportNel::buildWaveMakerShape(INode& node, TimeValue time)
 {
 	NL3D::CWaveMakerShape *wms = new CWaveMakerShape;
 	float  radius = 3;
@@ -1601,7 +1614,7 @@ NL3D::IShape				*CExportNel::buildWaveMakerShape(INode& node, TimeValue time, bo
 }
 
 // ***************************************************************************
-NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool absolutePath)
+NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 {
 	// must have a water material
 	nlassert(hasWaterMaterial(node, time));
@@ -1778,8 +1791,8 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 		// List of channels used by this texture (we don't use it though)
 		CMaterialDesc _3dsTexChannel;
 					
-		NLMISC::CSmartPtr<ITexture> bumpMap		 = buildATexture (*maxBumpMap, _3dsTexChannel, time, absolutePath);
-		NLMISC::CSmartPtr<ITexture> displaceMap  = buildATexture (*maxDisplaceMap, _3dsTexChannel, time, absolutePath);
+		NLMISC::CSmartPtr<ITexture> bumpMap		 = buildATexture (*maxBumpMap, _3dsTexChannel, time);
+		NLMISC::CSmartPtr<ITexture> displaceMap  = buildATexture (*maxDisplaceMap, _3dsTexChannel, time);
 		if (bumpMap->supportSharing() && displaceMap->supportSharing())
 		{
 			if (bumpMap->getShareName() == displaceMap->getShareName())
@@ -1792,7 +1805,7 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 		NLMISC::CSmartPtr<ITexture> colorMap = NULL;
 		if (maxDiffuseMap)
 		{
-			colorMap = buildATexture (*maxDiffuseMap, _3dsTexChannel, time, absolutePath);
+			colorMap = buildATexture (*maxDiffuseMap, _3dsTexChannel, time);
 		}
 		NLMISC::CSmartPtr<ITexture> envMap				= NULL;
 		NLMISC::CSmartPtr<ITexture> envMapUnderWater	= NULL;
@@ -1804,13 +1817,13 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 		{
 			if (!maxEnvMap2)
 			{
-				envMap = buildATexture (*maxEnvMap, _3dsTexChannel, time, absolutePath);
+				envMap = buildATexture (*maxEnvMap, _3dsTexChannel, time);
 			}
 			else
 			{
 				NLMISC::CSmartPtr<ITexture> tex0, tex1;
-				tex0	 = buildATexture (*maxEnvMap, _3dsTexChannel, time, absolutePath);
-				tex1	 = buildATexture (*maxEnvMap2, _3dsTexChannel, time, absolutePath);
+				tex0	 = buildATexture (*maxEnvMap, _3dsTexChannel, time);
+				tex1	 = buildATexture (*maxEnvMap2, _3dsTexChannel, time);
 				envMap = new CTextureBlend;
 				(static_cast<CTextureBlend *>((ITexture *) envMap))->setBlendTexture(0, tex0);
 				(static_cast<CTextureBlend *>((ITexture *) envMap))->setBlendTexture(1, tex1);
@@ -1821,13 +1834,13 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 		{
 			if (!maxEnvMapUnderWater2)
 			{
-				envMapUnderWater = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time, absolutePath);
+				envMapUnderWater = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time);
 			}
 			else
 			{
 				NLMISC::CSmartPtr<ITexture> tex0, tex1;
-				tex0	 = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time, absolutePath);
-				tex1	 = buildATexture (*maxEnvMapUnderWater2, _3dsTexChannel, time, absolutePath);
+				tex0	 = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time);
+				tex1	 = buildATexture (*maxEnvMapUnderWater2, _3dsTexChannel, time);
 				envMapUnderWater = new CTextureBlend;
 				(static_cast<CTextureBlend *>((ITexture *) envMapUnderWater))->setBlendTexture(0, tex0);
 				(static_cast<CTextureBlend *>((ITexture *) envMapUnderWater))->setBlendTexture(1, tex1);

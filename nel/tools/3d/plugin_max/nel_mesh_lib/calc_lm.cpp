@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.36 2002/03/14 18:22:55 vizerie Exp $
+ * $Id: calc_lm.cpp,v 1.37 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2088,8 +2088,7 @@ void sans_majuscule_au_debut_LinkToObjectAround (CMesh::CMeshBuild *pMB, CMeshBa
 // absolutePath tell this code to put the name of the lightmap in absolute or relative path
 // this is very usefull for viewer inside MAX
 bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild, INode& ZeNode, 
-							Interface& ip, TimeValue tvTime, bool absolutePath,
-							CExportNelOptions &structExport, uint firstMaterial )
+							TimeValue tvTime, CExportNelOptions &structExport, uint firstMaterial )
 {
 	uint32 i, j;
 
@@ -2116,7 +2115,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	}
 
 
-	CRTWorld WorldRT; // The static world for raytrace
+	CRTWorld WorldRT (_ErrorInDialog, _View, _AbsolutePath, _Ip, _ErrorTitle, this); // The static world for raytrace
 	vector<SLightBuild> AllLights;
 
 	CMatrix mtmp = getObjectToWorldMatrix (pZeMeshBuild, pZeMeshBaseBuild);
@@ -2133,14 +2132,14 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	}
 	// Select meshes to test for raytrace
 	// Get all lights from MAX
-	getLightBuilds( AllLights, tvTime, ip );
+	getLightBuilds( AllLights, tvTime, *_Ip );
 	// Get all lights L that have influence over the mesh selected
 	supprLightNoInteractOne( AllLights, pZeMeshBuild, pZeMeshBaseBuild, ZeNode );
 
 	// Get all the lod child nodes and the node for which this node is a lod
 	std::set<INode*>	lodListToExclude;
-	addChildLodNode (lodListToExclude, ip);
-	addParentLodNode (ZeNode, lodListToExclude, ip);
+	addChildLodNode (lodListToExclude);
+	addParentLodNode (ZeNode, lodListToExclude);
 
 	// Remove from exclude the node
 	lodListToExclude.erase (&ZeNode);
@@ -2151,7 +2150,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 
 	// Get all meshes that are influenced by the lights L
 	//buildWorldRT( WorldRT, AllLights, ip, true );
-	WorldRT.build (ip, AllLights, -vGlobalPos, gOptions.bExcludeNonSelected, lodListToExclude, lodListToInclude);
+	WorldRT.build (AllLights, -vGlobalPos, gOptions.bExcludeNonSelected, lodListToExclude, lodListToInclude);
 
 	//for( nNode=0; nNode < nNbMesh; ++nNode )
 	{
@@ -2403,7 +2402,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			
 			// Get the name of the max project
 			char projectName[512];
-			_splitpath (ip.GetCurFileName(), NULL, NULL, projectName, NULL);
+			_splitpath (_Ip->GetCurFileName(), NULL, NULL, projectName, NULL);
 
 			// Concat name of the project with name of the file
 			sSaveName = (const char*)projectName + std::string ("_") + sSaveName;
@@ -2421,7 +2420,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			sSaveName = gOptions.sExportLighting;
 			if( sSaveName[sSaveName.size()-1] != '\\' ) sSaveName += "\\";
 			sSaveName += pLightMap->getFileName();
-			if( absolutePath )
+			if( _AbsolutePath )
 				pLightMap->setFileName( sSaveName );
 			LightMap.copyColToBitmap32( pLightMap, j );
 			COFile f( sSaveName );

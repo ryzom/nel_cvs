@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * <File description>
  *
- * $Id: nel_export_scene.cpp,v 1.8 2002/03/04 14:54:09 corvazier Exp $
+ * $Id: nel_export_scene.cpp,v 1.9 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,10 +50,10 @@ using namespace NLMISC;
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------------------
-bool CNelExport::exportInstanceGroup(string filename, vector<INode*>& vectNode, Interface& ip )
+bool CNelExport::exportInstanceGroup(string filename, vector<INode*>& vectNode)
 {
 	vector<INode*> resultInstanceNode;
-	CInstanceGroup *pIG = CExportNel::buildInstanceGroup (vectNode, resultInstanceNode, ip.GetTime());
+	CInstanceGroup *pIG = _ExportNel->buildInstanceGroup (vectNode, resultInstanceNode, _Ip->GetTime());
 
 	if (pIG != NULL)
 	{

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.32 2002/03/15 10:57:51 vizerie Exp $
+ * $Id: nel_export_view.cpp,v 1.33 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,9 +83,9 @@ class	CMaxInstanceLighter : public NL3D::CInstanceLighter
 public:
 	CProgressBar	ProgressBar;
 
-	void	initMaxLighter(Interface& ip)
+	void	initMaxLighter(Interface& _Ip)
 	{
-		ProgressBar.initProgressBar (100, ip);
+		ProgressBar.initProgressBar (100, _Ip);
 	}
 	void	closeMaxLighter()
 	{
@@ -102,7 +102,7 @@ public:
 
 // -----------------------------------------------------------------------------------------------
 
-void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt)
+void CNelExport::viewMesh (TimeValue time, CExportNelOptions &opt)
 {
 	// Register classes
 	// done in dllentry registerSerial3d ();
@@ -133,7 +133,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		view->initUI ();
 
 		// Get node count
-		int nNumSelNode=ip.GetSelNodeCount();
+		int nNumSelNode=_Ip->GetSelNodeCount();
 		int nNbMesh=0;
 		// Create an animation for the models
 		CAnimation *autoAnim=new CAnimation;
@@ -146,7 +146,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		for (nNode=0; nNode<nNumSelNode; nNode++)
 		{
 			// Get the node
-			INode* pNode=ip.GetSelNode (nNode);
+			INode* pNode=_Ip->GetSelNode (nNode);
 
 			// It is a zone ?
 			if (RPO::isZone (*pNode, time))
@@ -181,7 +181,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 							iteSkeleton=skeletonMap.find (skeletonRoot);
 
 							// Add tracks
-							//CExportNel::addBoneTracks (*anim[skeletonRoot], *skeletonRoot, "", &ip, true, true);
+							//CExportNel::addBoneTracks (*anim[skeletonRoot], *skeletonRoot, "", &_Ip, true, true);
 						}
 						
 						// Add the bind pos for the skin
@@ -198,7 +198,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		for (nNode=0; nNode<nNumSelNode; nNode++)
 		{
 			// Get the node
-			INode* pNode=ip.GetSelNode (nNode);
+			INode* pNode=_Ip->GetSelNode (nNode);
 
 			// It is a zone ?
 			if (RPO::isZone (*pNode, time))
@@ -236,14 +236,14 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 							TInodePtrInt mapId;
 
 							// Build the skeleton based on the bind pos information
-							CExportNel::buildSkeletonShape (*skelShape, *skeletonRoot, &(iteSkeleton->second), mapId, time, true);
+							_ExportNel->buildSkeletonShape (*skelShape, *skeletonRoot, &(iteSkeleton->second), mapId, time);
 
 							// Add the shape in the view
 							uint instance = view->addSkel (skelShape, skeletonRoot->GetName());
 
 							// Add tracks
 							CAnimation *anim=new CAnimation;
-							CExportNel::addAnimation (*anim, *skeletonRoot, "", &ip, true, true);
+							_ExportNel->addAnimation (*anim, *skeletonRoot, "", true);
 
 							// Set the single animation
 							view->setSingleAnimation (anim, "3dsmax current animation", instance);
@@ -260,12 +260,12 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		for (nNode=0; nNode<nNumSelNode; nNode++)
 		{
 			// Get the node
-			INode* pNode=ip.GetSelNode (nNode);
+			INode* pNode=_Ip->GetSelNode (nNode);
 
 			// Is it a automatic light ? if yes add tracks from nel_light (color controller)
 			int bAnimated = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_LM_ANIMATED, 0);
 			if (bAnimated)
-				CExportNel::addAnimation( *autoAnim, *pNode, "", &ip, true, true);
+				_ExportNel->addAnimation( *autoAnim, *pNode, "", true);
 		}
 		view->setAutoAnimation (autoAnim);
 
@@ -285,7 +285,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 		// Build Mesh Shapes.
 		CProgressBar ProgBar;
-		ProgBar.initProgressBar (nNbMesh, ip);
+		ProgBar.initProgressBar (nNbMesh, *_Ip);
 		opt.FeedBack = &ProgBar;
 		nNbMesh = 0;
 
@@ -297,7 +297,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		for (nNode=0; nNode<nNumSelNode; nNode++)
 		{
 			// Get the node
-			INode* pNode=ip.GetSelNode (nNode);
+			INode* pNode=_Ip->GetSelNode (nNode);
 
 			string sTmp = "Object Name: ";
 			sTmp += pNode->GetName();
@@ -339,7 +339,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 						// Export the shape
 						IShape *pShape;
-						pShape=CExportNel::buildShape (*pNode, ip, time, &iteSkelShape->second.MapId, true, opt, true, true);
+						pShape=_ExportNel->buildShape (*pNode, time, &iteSkelShape->second.MapId, opt);
 
 						// Build succesful ?
 						if (pShape)
@@ -349,7 +349,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 							// Add tracks
 							CAnimation *anim=new CAnimation;
-							CExportNel::addAnimation (*anim, *pNode, "", &ip, true, true);
+							_ExportNel->addAnimation (*anim, *pNode, "", true);
 
 							// Set the single animation
 							view->setSingleAnimation (anim, "3dsmax current animation", instance);
@@ -364,7 +364,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				{
 					// Export the shape
 					IShape *pShape = NULL;
-					pShape=CExportNel::buildShape (*pNode, ip, time, NULL, true, opt, true, true);
+					pShape=_ExportNel->buildShape (*pNode, time, NULL, opt);
 
 					// Export successful ?
 					if (pShape)
@@ -406,7 +406,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 					// Add tracks
 					igAnim.insert (TIGAnimation::value_type (pNode, new CAnimation));
-					CExportNel::addAnimation (*igAnim[pNode], *pNode, "", &ip, true, true);
+					_ExportNel->addAnimation (*igAnim[pNode], *pNode, "", true);
 				}
 			}
 
@@ -420,7 +420,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		{
 			// List all nodes in scene.
 			vector<INode*>	nodeList;
-			CExportNel::getObjectNodes(nodeList, time, ip);
+			_ExportNel->getObjectNodes(nodeList, time);
 			
 			// For all of them.
 			for(uint i=0;i<nodeList.size();i++)
@@ -476,7 +476,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		vector<INode*> resultInstanceNode;
 
 		// Build the ig (with pointLights)
-		NL3D::CInstanceGroup	*ig= CExportNel::buildInstanceGroup(igVectNode, resultInstanceNode, time);
+		NL3D::CInstanceGroup	*ig= _ExportNel->buildInstanceGroup(igVectNode, resultInstanceNode, time);
 		if(ig)
 		{
 			// If ExportLighting
@@ -486,7 +486,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				NL3D::CInstanceGroup	*igOut= new NL3D::CInstanceGroup;
 				// Init the lighter.
 				CMaxInstanceLighter		maxInstanceLighter;
-				maxInstanceLighter.initMaxLighter(ip);
+				maxInstanceLighter.initMaxLighter(*_Ip);
 
 				// Setup LightDesc Ig.
 				CInstanceLighter::CLightDesc	lightDesc;
@@ -514,8 +514,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 					slInfo.ColIdentifierPrefix= "col_";
 					slInfo.ColIdentifierSuffix= "_";
 					// Build RetrieverBank and GlobalRetriever from collisions in scene
-					CExportNel::computeCollisionRetrieverFromScene(ip, time, 
-						slInfo.RetrieverBank, slInfo.GlobalRetriever, 
+					_ExportNel->computeCollisionRetrieverFromScene(time, slInfo.RetrieverBank, slInfo.GlobalRetriever, 
 						slInfo.ColIdentifierPrefix.c_str(), slInfo.ColIdentifierSuffix.c_str(), slInfo.IgFileName);
 				}
 
@@ -563,13 +562,13 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 		// Setup background color
 		if (opt.bExportBgColor)
-			view->setBackGroundColor(CExportNel::getBackGroundColor(ip, time));
+			view->setBackGroundColor(_ExportNel->getBackGroundColor(time));
 
 		// ExportLighting?
 		if ( opt.bExportLighting )
 		{
 			// Take the ambient of the scene as the ambient of the sun.
-			CRGBA	sunAmb= CExportNel::getAmbientColor (ip, time);
+			CRGBA	sunAmb= _ExportNel->getAmbientColor (time);
 
 			// Disable Global ambient light
 			view->setAmbientColor (CRGBA::Black);
@@ -583,11 +582,11 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		else
 		{
 			// Setup ambient light
-			view->setAmbientColor (CExportNel::getAmbientColor (ip, time));
+			view->setAmbientColor (_ExportNel->getAmbientColor (time));
 
 			// Build light vector
 			std::vector<CLight> vectLight;
-			CExportNel::getLights (vectLight, time, ip);
+			_ExportNel->getLights (vectLight, time);
 
 			// Light in the scene ?
 			if (!vectLight.empty())

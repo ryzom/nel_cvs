@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.30 2002/03/14 18:23:29 vizerie Exp $
+ * $Id: export_material.cpp,v 1.31 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,7 +168,7 @@ IMeshVertexProgram           *CExportNel::buildMeshMaterialShaderVP(NL3D::CMater
 // maxBaseBuild.AlphaVertexChannel[mat] will be the channel to use to get the alpha if the material use per vertex alpha.
 // This method append the node material to the vector passed.
 void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
-								TimeValue time, bool absolutePath)
+								TimeValue time)
 {
 	// Material count
 	maxBaseBuild.FirstMaterial=materials.size();
@@ -202,7 +202,7 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 				nlassert (pSub);
 
 				// Export it
-				buildAMaterial (materials[maxBaseBuild.FirstMaterial+nSub], maxBaseBuild.MaterialInfo[nSub], *pSub, time, absolutePath);
+				buildAMaterial (materials[maxBaseBuild.FirstMaterial+nSub], maxBaseBuild.MaterialInfo[nSub], *pSub, time);
 
 				// Need vertex color ?
 				maxBaseBuild.NeedVertexColor |= maxBaseBuild.MaterialInfo[nSub].AlphaVertex | maxBaseBuild.MaterialInfo[nSub].ColorVertex;
@@ -224,7 +224,7 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 			maxBaseBuild.MaterialInfo.resize (1);
 
 			// Export the main material
-			buildAMaterial (materials[maxBaseBuild.FirstMaterial], maxBaseBuild.MaterialInfo[0], *pNodeMat, time, absolutePath);
+			buildAMaterial (materials[maxBaseBuild.FirstMaterial], maxBaseBuild.MaterialInfo[0], *pNodeMat, time);
 
 			// Need vertex color ?
 			maxBaseBuild.NeedVertexColor |= maxBaseBuild.MaterialInfo[0].AlphaVertex | maxBaseBuild.MaterialInfo[0].ColorVertex;
@@ -259,7 +259,7 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 }
 
 // Build a NeL material corresponding with a max material.
-void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& materialInfo, Mtl& mtl, TimeValue time, bool absolutePath)
+void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& materialInfo, Mtl& mtl, TimeValue time)
 {
 	// It is a NeL material ?
 	if (isClassIdCompatible (mtl, Class_ID(NEL_MTL_A,NEL_MTL_B)))
@@ -510,7 +510,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 					// Ok export the texture in NeL format
 					CMaterialDesc materialDesc;
-					pTexture=buildATexture (*pTexmap, materialDesc, time, absolutePath, (i==1) && (iShaderType==SHADER_SPECULAR) );
+					pTexture=buildATexture (*pTexmap, materialDesc, time, (i==1) && (iShaderType==SHADER_SPECULAR) );
 
 					// Get the gen texture coord flag
 					char texGenName[100];
@@ -739,7 +739,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 				CMaterialDesc _3dsTexChannel;
 				
 				// Ok export the texture in NeL format
-				pTexture=buildATexture (*pDifTexmap, _3dsTexChannel, time, absolutePath);
+				pTexture=buildATexture (*pDifTexmap, _3dsTexChannel, time);
 
 				// For this shader, only need a texture channel.
 				materialInfo.RemapChannel.resize (1);
@@ -820,7 +820,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 					char sFileName[512];
 					strcpy(sFileName, names[i].c_str());
-					if (!absolutePath)
+					if (!_AbsolutePath)
 					{
 						// Decompose bitmap file name
 						char sName[256];
@@ -851,7 +851,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 					if (isClassIdCompatible(*pSubMap, Class_ID (BMTEX_CLASS_ID,0)))
 					{					
 						CMaterialDesc _3dsTexChannel;
-						pTexture = buildATexture (*pSubMap, _3dsTexChannel, time, absolutePath);
+						pTexture = buildATexture (*pSubMap, _3dsTexChannel, time);
 						pTextureCube->setTexture((CTextureCube::TFace)i, pTexture);
 					}
 				}
@@ -864,7 +864,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 				CMaterialDesc _3dsTexChannel;
 				
 				// Ok export the texture in NeL format
-				pTexture = buildATexture (*pSpeTexmap, _3dsTexChannel, time, absolutePath);
+				pTexture = buildATexture (*pSpeTexmap, _3dsTexChannel, time);
 				pTextureCube->setTexture(CTextureCube::positive_x, pTexture);
 			}
 			// Add the texture if it exist
@@ -1078,14 +1078,14 @@ int CExportNel::getVertMapChannel (Texmap& texmap, Matrix3& channelMatrix, TimeV
 }
 	
 // get the absolute or relative path from a texture filename
-static std::string 	ConvertTexFileName(const char *src, bool absolutePath)
+static std::string 	ConvertTexFileName(const char *src, bool _AbsolutePath)
 {
 	// File name, maxlen 256 under windows
 	char sFileName[512];
 	strcpy (sFileName, src);
 
 	// Let absolute path ?
-	if (!absolutePath)
+	if (!_AbsolutePath)
 	{
 		// Decompose bitmap file name
 		char sName[256];
@@ -1101,7 +1101,7 @@ static std::string 	ConvertTexFileName(const char *src, bool absolutePath)
 // Build a NeL texture corresponding with a max Texmap.
 // Fill an array with the 3ds vertexMap used by this texture. 
 // Texture file uses only 1 channel.
-ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexChannel, TimeValue time, bool absolutePath, bool forceCubic)
+ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexChannel, TimeValue time, bool forceCubic)
 {
 	/// TODO: support other texmap than Bitmap
 	// By default, not build
@@ -1181,7 +1181,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 			if (l == 1 && !fileName[0].empty())
 			{
 				srcTex = new CTextureFile;
-				static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(fileName[0].c_str(), absolutePath));
+				static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(fileName[0].c_str(), _AbsolutePath));
 			}
 			else
 			{
@@ -1191,7 +1191,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 					if (!fileName[k].empty())
 					{
 						/// set the name of the texture after converting it
-						static_cast<CTextureMultiFile *>(srcTex)->setFileName(k, ConvertTexFileName(fileName[k].c_str(), absolutePath).c_str());
+						static_cast<CTextureMultiFile *>(srcTex)->setFileName(k, ConvertTexFileName(fileName[k].c_str(), _AbsolutePath).c_str());
 					}
 				}
 			}
@@ -1199,7 +1199,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 		else // standard texture
 		{
 			srcTex = new CTextureFile;
-			static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(pBitmap->GetMapName(), absolutePath));
+			static_cast<CTextureFile *>(srcTex)->setFileName (ConvertTexFileName(pBitmap->GetMapName(), _AbsolutePath));
 		}
 
 		// 2 °) Use this texture 'as it', or duplicate it to create the faces of a cube map
@@ -1264,7 +1264,7 @@ ITexture* CExportNel::buildATexture (Texmap& texmap, CMaterialDesc &remap3dsTexC
 			CTextureFile *pT = new CTextureFile;
 			
 			// Set the file name
-			pT->setFileName(ConvertTexFileName(names[i].c_str(), absolutePath));
+			pT->setFileName(ConvertTexFileName(names[i].c_str(), _AbsolutePath));
 
 			// Set the texture
 			pTextureCube->setTexture(tfNewOrder[i], pT);

@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.14 2002/02/26 17:30:23 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.15 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ using namespace NLMISC;
 
 // --------------------------------------------------
 
-bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, TimeValue time, CExportNelOptions &opt, bool errorInDialog)
+bool CNelExport::exportMesh (const char *sPath, INode& node, TimeValue time, CExportNelOptions &opt)
 {
 	// Result to return
 	bool bRet=false;
@@ -72,7 +72,7 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, Time
 				CExportNel::addSkeletonBindPos (node, boneBindPos);
 
 				// Build the skeleton based on the bind pos information
-				CExportNel::buildSkeletonShape (*skeletonShape, *skeletonRoot, &boneBindPos, mapId, time, false);
+				_ExportNel->buildSkeletonShape (*skeletonShape, *skeletonRoot, &boneBindPos, mapId, time);
 
 				// Set the pointer to not NULL
 				mapIdPtr=&mapId;
@@ -84,7 +84,7 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, Time
 		}
 
 		// Export in mesh format
-		IShape*	pShape=CExportNel::buildShape (node, ip, time, mapIdPtr, false, opt, false, errorInDialog);
+		IShape*	pShape=_ExportNel->buildShape (node, time, mapIdPtr, opt);
 
 		// Conversion success ?
 		if (pShape)
@@ -118,13 +118,13 @@ bool CNelExport::exportMesh (const char *sPath, INode& node, Interface& ip, Time
 
 // --------------------------------------------------
 
-bool CNelExport::exportVegetable (const char *sPath, INode& node, Interface& ip, TimeValue time, bool errorInDialog)
+bool CNelExport::exportVegetable (const char *sPath, INode& node, TimeValue time)
 {
 	bool bRet=false;
 
 	// Build a vegetable
 	NL3D::CVegetableShape vegetable;
-	if (CExportNel::buildVegetableShape (vegetable, node, time, &ip, false, errorInDialog))
+	if (_ExportNel->buildVegetableShape (vegetable, node, time))
 	{
 		// Open a file
 		COFile file;
@@ -142,7 +142,7 @@ bool CNelExport::exportVegetable (const char *sPath, INode& node, Interface& ip,
 			{
 				// Message box
 				const char *message = e.what();
-				CExportNel::outputErrorMessage (&ip, "Error during vegetable serialisation", "NeL Export", errorInDialog);
+				_ExportNel->outputErrorMessage ("Error during vegetable serialisation");
 			}
 		}
 	}
@@ -151,7 +151,7 @@ bool CNelExport::exportVegetable (const char *sPath, INode& node, Interface& ip,
 
 // --------------------------------------------------
 
-bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, Interface& ip, TimeValue time, bool scene)
+bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, TimeValue time, bool scene)
 {
 	// Result to return
 	bool bRet=false;
@@ -178,10 +178,10 @@ bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, I
 		}	
 
 		// Is a root ?
-		bool root = vectNode[n]->GetParentNode () == ip.GetRootNode();
+		bool root = vectNode[n]->GetParentNode () == _Ip->GetRootNode();
 
 		// Add animation
-		CExportNel::addAnimation (animFile, *vectNode[n], nodeName.c_str(), &ip, root, false);
+		_ExportNel->addAnimation (animFile, *vectNode[n], nodeName.c_str(), root);
 	}
 
 	if (vectNode.size())
@@ -213,7 +213,7 @@ bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, I
 
 // --------------------------------------------------
 
-bool CNelExport::exportSkeleton	(const char *sPath, INode* pNode, Interface& ip, TimeValue time)
+bool CNelExport::exportSkeleton	(const char *sPath, INode* pNode, TimeValue time)
 {
 	// Result to return
 	bool bRet=false;
@@ -221,7 +221,7 @@ bool CNelExport::exportSkeleton	(const char *sPath, INode* pNode, Interface& ip,
 	// Build the skeleton format
 	CSkeletonShape *skeletonShape=new CSkeletonShape();
 	TInodePtrInt mapId;
-	CExportNel::buildSkeletonShape (*skeletonShape, *pNode, NULL, mapId, time, false);
+	_ExportNel->buildSkeletonShape (*skeletonShape, *pNode, NULL, mapId, time);
 
 	// Open a file
 	COFile file;

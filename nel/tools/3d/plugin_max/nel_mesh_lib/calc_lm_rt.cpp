@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.4 2002/03/14 18:23:13 vizerie Exp $
+ * $Id: calc_lm_rt.cpp,v 1.5 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,8 +37,14 @@ using namespace NLMISC;
 // ***********************************************************************************************
 
 // -----------------------------------------------------------------------------------------------
-CRTWorld::CRTWorld()
+CRTWorld::CRTWorld (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle, CExportNel *export)
 {
+	_Ip = ip;
+	_AbsolutePath = absolutePath;
+	_View = view;
+	_ErrorInDialog = errorInDialog;
+	_ErrorTitle = errorTitle;
+	_Export = export;
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -58,7 +64,7 @@ CRTWorld::~CRTWorld()
 }
 
 // -----------------------------------------------------------------------------------------------
-void CRTWorld::build (Interface &ip, vector<SLightBuild> &AllLights, CVector &trans, bool bExcludeNonSelected, const set<INode*> &excludeNode, const set<INode*> &includeNode)
+void CRTWorld::build (vector<SLightBuild> &AllLights, CVector &trans, bool bExcludeNonSelected, const set<INode*> &excludeNode, const set<INode*> &includeNode)
 {
 	uint32 i, j, k;
 	TTicks ttTemp = CTime::getPerformanceTime();
@@ -66,9 +72,9 @@ void CRTWorld::build (Interface &ip, vector<SLightBuild> &AllLights, CVector &tr
 	GlobalTrans = trans;
 	// Get all the nodes in the scene
 	if( bExcludeNonSelected )
-		getAllSelectedNode (vMB, vMBB, vINode, ip, AllLights, excludeNode, includeNode);
+		getAllSelectedNode (vMB, vMBB, vINode, AllLights, excludeNode, includeNode);
 	else
-		getAllNodeInScene (vMB, vMBB, vINode, ip, AllLights, excludeNode);
+		getAllNodeInScene (vMB, vMBB, vINode, AllLights, excludeNode);
 
 	// Transform the meshbuilds vertices and normals to have world coordinates
 	for( i = 0; i < vMB.size(); ++i )
@@ -350,9 +356,12 @@ void CRTWorld::addNode (INode *pNode, vector< CMesh::CMeshBuild* > &Meshes,  vec
 	if (! RPO::isZone (*pNode, tvTime) )
 	if (CExportNel::isMesh (*pNode, tvTime))
 	{
+		// Nel export
+		CExportNel exportNel (_ErrorInDialog, _View, true, _Ip, _ErrorTitle);
+
 		CMesh::CMeshBuild *pMB;
 		CMeshBase::CMeshBaseBuild *pMBB;
-		pMB = CExportNel::createMeshBuild ( *pNode, tvTime, true, pMBB);
+		pMB = exportNel.createMeshBuild ( *pNode, tvTime, pMBB);
 		// If the mesh has no interaction with one of the light selected we do not need it
 		bool bInteract = false;
 		if( pMBB->bCastShadows )
@@ -388,18 +397,18 @@ void CRTWorld::addNode (INode *pNode, vector< CMesh::CMeshBuild* > &Meshes,  vec
 void CRTWorld::getAllSelectedNode	(vector< CMesh::CMeshBuild* > &Meshes,  
 									vector< CMeshBase::CMeshBaseBuild* > &MeshesBase,
 									vector< INode* > &INodes,
-									Interface& ip, vector<SLightBuild> &AllLights, const set<INode*> &excludeNode, const set<INode*> &includeNode)
+									vector<SLightBuild> &AllLights, const set<INode*> &excludeNode, const set<INode*> &includeNode)
 {
 	// Get time
-	TimeValue tvTime = ip.GetTime();
+	TimeValue tvTime = _Ip->GetTime();
 
 	// Get node count
-	int nNumSelNode = ip.GetSelNodeCount();
+	int nNumSelNode = _Ip->GetSelNodeCount();
 	// Save all selected objects
 	for (int nNode=0; nNode<nNumSelNode; nNode++)
 	{
 		// Get the node 
-		INode* pNode = ip.GetSelNode (nNode);
+		INode* pNode = _Ip->GetSelNode (nNode);
 
 		// Already in the include list ?
 		if (includeNode.find (pNode) == includeNode.end())
@@ -425,20 +434,20 @@ void CRTWorld::getAllSelectedNode	(vector< CMesh::CMeshBuild* > &Meshes,
 void CRTWorld::getAllNodeInScene	(vector< CMesh::CMeshBuild* > &Meshes, 
 									vector< CMeshBase::CMeshBaseBuild* > &BaseMeshes,
 									vector< INode* > &INodes,
-									Interface& ip, vector<SLightBuild> &AllLights, const set<INode*> &excludeNode,
+									vector<SLightBuild> &AllLights, const set<INode*> &excludeNode,
 									INode* pNode)
 {
 	if( pNode == NULL )
-		pNode = ip.GetRootNode();
+		pNode = _Ip->GetRootNode();
 
 	// Get a pointer on the object's node
-	TimeValue tvTime = ip.GetTime();
+	TimeValue tvTime = _Ip->GetTime();
 
 	// Add the node
 	addNode (pNode, Meshes,  BaseMeshes, INodes, AllLights, excludeNode, tvTime);
 
 	for( sint32 i = 0; i < pNode->NumberOfChildren(); ++i )
-		getAllNodeInScene( Meshes, BaseMeshes, INodes, ip, AllLights, excludeNode, pNode->GetChildNode(i) );
+		getAllNodeInScene( Meshes, BaseMeshes, INodes, AllLights, excludeNode, pNode->GetChildNode(i) );
 }
 
 // -----------------------------------------------------------------------------------------------

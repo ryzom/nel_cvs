@@ -216,6 +216,10 @@ SOURCE=.\export_misc.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\export_radial_normal.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\export_scene.cpp
 # End Source File
 # Begin Source File
@@ -258,6 +262,10 @@ SOURCE=.\export_lod.h
 # Begin Source File
 
 SOURCE=.\export_nel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\export_radial_normal.h
 # End Source File
 # Begin Source File
 

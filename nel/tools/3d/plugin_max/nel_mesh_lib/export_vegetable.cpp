@@ -1,7 +1,7 @@
 /** \file export_vegetable.cpp
  * Export from 3dsmax a NeL vegetable mesh
  *
- * $Id: export_vegetable.cpp,v 1.2 2001/12/11 10:19:55 corvazier Exp $
+ * $Id: export_vegetable.cpp,v 1.3 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@ using namespace NL3D;
 
 // ***************************************************************************
 
-bool  CExportNel::buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INode& node, TimeValue time, Interface *ip, bool view, bool messageError)
+bool  CExportNel::buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INode& node, TimeValue time)
 {
 	// Is it a tri object ?
 	bool res = false;
@@ -70,17 +70,17 @@ bool  CExportNel::buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INo
 			getLocalMatrix (nodeMatrixMax, node, time);
 			convertMatrix (nodeMatrix, nodeMatrixMax);
 
-			buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, view, nodeMatrix);
+			buildBaseMeshInterface (buildBaseMesh, maxBaseBuild, node, time, nodeMatrix);
 
 			// Build a mesh
 			CMesh::CMeshBuild buildMesh;
-			buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, NULL, view);
+			buildMeshInterface (*tri, buildMesh, buildBaseMesh, maxBaseBuild, node, time, NULL);
 
 			// Has UV 1
 			if ((buildMesh.VertexFlags & CVertexBuffer::TexCoord0Flag) == 0)
 			{
 				// Error
-				outputErrorMessage (ip, "Can't build vegetable mesh: need UV1 coordinates", "NeL Export", messageError);
+				outputErrorMessage ("Can't build vegetable mesh: need UV1 coordinates");
 			}
 			else
 			{
@@ -92,7 +92,7 @@ bool  CExportNel::buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INo
 				if (mesh.getNbMatrixBlock () != 1)
 				{
 					// Error
-					outputErrorMessage (ip, "The object can't be skinned", "NeL Export", messageError);
+					outputErrorMessage ("The object can't be skinned");
 				}
 				else
 				{
@@ -100,7 +100,7 @@ bool  CExportNel::buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INo
 					if (mesh.getNbRdrPass (0) != 1)
 					{
 						// Error
-						outputErrorMessage (ip, "The object must have less than one material!", "NeL Export", messageError);
+						outputErrorMessage ("The object must have less than one material!");
 					}
 					else
 					{

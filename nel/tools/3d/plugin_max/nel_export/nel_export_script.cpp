@@ -1,7 +1,7 @@
 /** \file nel_export_script.cpp
  * <File description>
  *
- * $Id: nel_export_script.cpp,v 1.15 2002/03/26 15:24:48 corvazier Exp $
+ * $Id: nel_export_script.cpp,v 1.16 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,8 @@ Value* export_shape_cf (Value** arg_list, int count)
 	INode *node = arg_list[0]->to_node();
 	nlassert (node);
 
+	theCNelExport.init (false, false);
+
 	// Export path 
 	const char* sPath=arg_list[1]->to_string();
 
@@ -117,7 +119,7 @@ Value* export_shape_cf (Value** arg_list, int count)
 	
 	// Export
 	CExportNel::deleteLM( *node, opt );
-	if (CNelExport::exportMesh (sPath, *node, *ip, ip->GetTime(), opt, false))
+	if (theCNelExport.exportMesh (sPath, *node, ip->GetTime(), opt))
 		ret = &true_value;
 
 	return ret;
@@ -141,6 +143,8 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	type_check (arg_list[7], Integer, sExportShapeExErrorMsg);
 	type_check (arg_list[8], Boolean, sExportShapeExErrorMsg);
 	type_check (arg_list[9], Boolean, sExportShapeExErrorMsg);
+
+	theCNelExport.init (false, false);
 
 	// Get a INode pointer from the argument passed to us
 	INode *node = arg_list[0]->to_node();
@@ -178,7 +182,7 @@ Value* export_shape_ex_cf (Value** arg_list, int count)
 	{
 		// Export
 		CExportNel::deleteLM( *node, opt );
-		if (CNelExport::exportMesh (sPath.c_str(), *node, *ip, ip->GetTime(), opt, false))
+		if (theCNelExport.exportMesh (sPath.c_str(), *node, ip->GetTime(), opt))
 			ret = &true_value;
 	}
 	catch (Exception &e)
@@ -200,6 +204,8 @@ Value* export_skeleton_cf (Value** arg_list, int count)
 	type_check (arg_list[0], MAXNode, "NelExportSkeleton [root node] [Filename]");
 	type_check (arg_list[1], String, "NelExportSkeleton [root node] [Filename]");
 
+	theCNelExport.init (false, false);
+
 	// Get a INode pointer from the argument passed to us
 	INode *node = arg_list[0]->to_node();
 	nlassert (node);
@@ -216,7 +222,7 @@ Value* export_skeleton_cf (Value** arg_list, int count)
 	try
 	{
 		// Export
-		if (CNelExport::exportSkeleton (sPath, node, *ip, ip->GetTime()))
+		if (theCNelExport.exportSkeleton (sPath, node, ip->GetTime()))
 			ret = &true_value;
 	}
 	catch (Exception &e)
@@ -237,6 +243,8 @@ Value* export_animation_cf (Value** arg_list, int count)
 	type_check (arg_list[0], Array, sExportAnimationErrorMsg);
 	type_check (arg_list[1], String, sExportAnimationErrorMsg);
 	type_check (arg_list[2], Boolean, sExportAnimationErrorMsg);
+
+	theCNelExport.init (false, false);
 
 	// Export path 
 	const char* sPath=arg_list[1]->to_string();
@@ -269,7 +277,7 @@ Value* export_animation_cf (Value** arg_list, int count)
 			BOOL scene=arg_list[2]->to_bool();
 
 			// Export the zone
-			if (theCNelExport.exportAnim (sPath, vectNode, *MAXScript_interface, time, scene!=FALSE))
+			if (theCNelExport.exportAnim (sPath, vectNode, time, scene!=FALSE))
 			{
 				// Ok
 				ret=&true_value;
@@ -298,6 +306,8 @@ Value* export_ig_cf (Value** arg_list, int count)
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check (arg_list[0], Array, "NelExportInstanceGroup [Object array] [Filename]");
 	type_check (arg_list[1], String, "NelExportInstanceGroup [Object array] [Filename]");
+
+	theCNelExport.init (false, false);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -328,7 +338,7 @@ Value* export_ig_cf (Value** arg_list, int count)
 				Interface *ip = MAXScript_interface;
 
 				// Export
-				if (CNelExport::exportInstanceGroup (sPath, vect, *ip))
+				if (theCNelExport.exportInstanceGroup (sPath, vect))
 					ret=&true_value;
 			}
 		}
@@ -351,6 +361,8 @@ Value* export_skeleton_weight_cf (Value** arg_list, int count)
 	// We want to use 'TurnAllTexturesOn <object to use>'
 	type_check (arg_list[0], Array, "NelExportSkeletonWeight [Object array] [Filename]");
 	type_check (arg_list[1], String, "NelExportSkeletonWeight [Object array] [Filename]");
+
+	theCNelExport.init (false, false);
 
 	// Ok ?
 	Boolean *ret=&false_value;
@@ -381,7 +393,7 @@ Value* export_skeleton_weight_cf (Value** arg_list, int count)
 				Interface *ip = MAXScript_interface;
 
 				// Export
-				if (CNelExport::exportSWT (sPath, vect, *ip))
+				if (theCNelExport.exportSWT (sPath, vect))
 					ret=&true_value;
 			}
 		}
@@ -401,6 +413,8 @@ Value* view_shape_cf (Value** arg_list, int count)
 
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
+
+	theCNelExport.init (true, true);
 
 	// View
 	// For the moment load the default options for lightmap
@@ -422,7 +436,7 @@ Value* view_shape_cf (Value** arg_list, int count)
 		{
 		}
 	}
-	CNelExport::viewMesh (*ip, ip->GetTime(), opt);
+	theCNelExport.viewMesh (ip->GetTime(), opt);
 
 	return &true_value;
 }
@@ -434,6 +448,8 @@ Value* test_file_date_cf (Value** arg_list, int count)
 
 	type_check (arg_list[0], String, "NeLTestFileDate [DestFilename] [SrcFilename]");
 	type_check (arg_list[1], String, "NeLTestFileDate [DestFilename] [SrcFilename]");
+
+	theCNelExport.init (false, false);
 
 	// The 2 filenames
 	string file0 = arg_list[0]->to_string();
@@ -506,6 +522,8 @@ Value* export_vegetable_cf (Value** arg_list, int count)
 	// Message in dialog
 	bool dialogMessage = arg_list[2]->to_bool() != FALSE;
 
+	theCNelExport.init (false, dialogMessage);
+
 	// Get a good interface pointer
 	Interface *ip = MAXScript_interface;
 
@@ -513,7 +531,7 @@ Value* export_vegetable_cf (Value** arg_list, int count)
 	Boolean *ret=&false_value;
 
 	// Export
-	if (CNelExport::exportVegetable (sPath, *node, *ip, ip->GetTime(), dialogMessage))
+	if (theCNelExport.exportVegetable (sPath, *node, ip->GetTime()))
 		ret = &true_value;
 
 	return ret;
@@ -525,6 +543,8 @@ Value* reload_texture_cf (Value** arg_list, int count)
 	check_arg_count(reload_texture, 1, count);
 	char *message = "NelReloadTexture [BitmapTex]";
 	//type_check (arg_list[0], TextureMap, message);
+
+	theCNelExport.init (false, false);
 
 	// The 2 filenames
 	Texmap *texmap = arg_list[0]->to_texmap ();
@@ -555,6 +575,8 @@ Value* export_collision_cf (Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	type_check (arg_list[0], Array, sExportCollisionErrorMsg);
 	type_check (arg_list[1], String, sExportCollisionErrorMsg);
+
+	theCNelExport.init (false, false);
 
 	// Export path 
 	string sPath = arg_list[1]->to_string();
@@ -587,7 +609,7 @@ Value* export_collision_cf (Value** arg_list, int count)
 		// Warning as the export options are not used, they are not loaded!
 
 		// Export
-		if (CNelExport::exportCollision (sPath.c_str(), nodes, *MAXScript_interface, time, *(CExportNelOptions*)NULL))
+		if (theCNelExport.exportCollision (sPath.c_str(), nodes, time, *(CExportNelOptions*)NULL))
 			ret = &true_value;
 	}
 	catch (Exception &e)
@@ -605,6 +627,8 @@ Value* export_pacs_primitives_cf (Value** arg_list, int count)
 	// Check to see if the arguments match up to what we expect
 	type_check (arg_list[0], Array, sExportPACSPrimitivesErrorMsg);
 	type_check (arg_list[1], String, sExportPACSPrimitivesErrorMsg);
+
+	theCNelExport.init (false, false);
 
 	// Export path 
 	string sPath = arg_list[1]->to_string();
@@ -635,7 +659,7 @@ Value* export_pacs_primitives_cf (Value** arg_list, int count)
 	try
 	{
 		// Export
-		if (CNelExport::exportPACSPrimitives (sPath.c_str(), nodes, *MAXScript_interface, time))
+		if (theCNelExport.exportPACSPrimitives (sPath.c_str(), nodes, time))
 			ret = &true_value;
 	}
 	catch (Exception &e)

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: progress.cpp,v 1.1 2001/08/08 11:57:14 besson Exp $
+ * $Id: progress.cpp,v 1.2 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,7 +52,7 @@ int CALLBACK CalculatingDialogCallback (
 			LONG res = SetWindowLong(hwndDlg, GWL_USERDATA, (LONG)lParam);
 			pClass = (CProgressBar*)GetWindowLong (hwndDlg, GWL_USERDATA);
 
-			CenterWindow( hwndDlg, theCNelExport.ip->GetMAXHWnd() );
+			CenterWindow( hwndDlg, theCNelExport._Ip->GetMAXHWnd() );
 			ShowWindow( hwndDlg, SW_SHOWNORMAL );
 			pClass->rRatioCalculated = 0.0;
 			pClass->bCancelCalculation = false;

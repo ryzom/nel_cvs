@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.12 2002/03/26 10:11:43 corvazier Exp $
+ * $Id: nel_export.h,v 1.13 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,17 +49,18 @@ class CNelExport : public UtilityObj
 private:
 
 public:
-	HWND			hPanel;
-	IUtil			*iu;
-	Interface		*ip;
 	
 	void BeginEditParams(Interface *ip,IUtil *iu);
 	void EndEditParams(Interface *ip,IUtil *iu);
 	void Init(HWND hWnd);
 	void Destroy(HWND hWnd);
 	void DeleteThis() { }		
-	CNelExport();
-	~CNelExport();		
+
+	CNelExport ();
+
+	~CNelExport();
+
+	void init (bool view, bool errorInDialog);
 
 	HWND			hBar;
 
@@ -69,24 +70,21 @@ public:
 	bool freeExported(void);
 	void getSelectedNode (std::vector<INode*>& vectNode);
 
-	static	bool	exportZone	(const char *sName, INode& node, TimeValue time);
-	static	bool	exportMesh	(const char *sPath, INode& node, Interface& ip, TimeValue time, CExportNelOptions &opt, bool errorInDialog);
-	static	bool	exportAnim	(const char *sPath, std::vector<INode*>& vectNode, Interface& ip, TimeValue time, bool scene);
-	static	bool	exportSWT	(const char *sPath, std::vector<INode*>& vectNode, Interface& ip);
-	//static	bool	exportScene	(std::vector<INode*>& vectNode);
-	//static	bool	isMeshLM(INode& node);
-	//static	bool	exportMeshLM(const char *sPath, INode& node, Interface& ip, TimeValue time);
-	//static  bool	calculateLM(NL3D::CMesh::CMeshBuild *pZeMeshBuild, INode& ZeNode, Interface& ip, TimeValue tvTime, bool absolutePath);
-	static	bool	exportInstanceGroup	(std::string filename, std::vector<INode*>& vectNode, Interface& ip );
-	static	bool	exportSkeleton	(const char *sPath, INode* pNode, Interface& ip, TimeValue time);
+	bool	exportZone	(const char *sName, INode& node, TimeValue time);
+	bool	exportMesh	(const char *sPath, INode& node, TimeValue time, CExportNelOptions &opt);
+	bool	exportAnim	(const char *sPath, std::vector<INode*>& vectNode, TimeValue time, bool scene);
+	bool	exportSWT	(const char *sPath, std::vector<INode*>& vectNode);
 
-	static	bool	exportCollision	(const char *sPath, std::vector<INode *> &nodes, Interface& ip, TimeValue time, CExportNelOptions &opt);
+	bool	exportInstanceGroup	(std::string filename, std::vector<INode*>& vectNode);
+	bool	exportSkeleton	(const char *sPath, INode* pNode, TimeValue time);
 
-	static	bool	exportPACSPrimitives (const char *sPath, std::vector<INode *> &nodes, Interface& ip, TimeValue time);
+	bool	exportCollision	(const char *sPath, std::vector<INode *> &nodes, TimeValue time, CExportNelOptions &opt);
 
-	static	bool	exportVegetable (const char *sPath, INode& node, Interface& ip, TimeValue time, bool errorInDialog);
+	bool	exportPACSPrimitives (const char *sPath, std::vector<INode *> &nodes, TimeValue time);
 
-	static	void	viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt);
+	bool	exportVegetable (const char *sPath, INode& node, TimeValue time);
+
+	void	viewMesh (TimeValue time, CExportNelOptions &opt);
 
 	static void initOptions(); // read the CNelExportSceneStruct from disk or init it
 	static void deleteLM(INode& ZeNode); // the export scene struct MUST be initialized before calling this fn
@@ -102,6 +100,21 @@ public:
 	ULONG ProcessDir(char* Dir, const char* Mask, unsigned long flag, ULONG Fnct(char* FileName) );
 	ULONG CleanFileName(char* FileName);
 	ULONG CreateBAKFile(char* FileName);
+
+	HWND			hPanel;
+	IUtil			*iu;
+
+	// The nel export objtect
+	CExportNel		*_ExportNel;
+
+	// The interface pointer
+	Interface		*_Ip;
+
+	// View
+	bool			_View;
+
+	// View
+	bool			_ErrorInDialog;
 };
 
 class CNelExportClassDesc:public ClassDesc2 

@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.14 2002/03/21 16:10:18 berenguier Exp $
+ * $Id: export_skinning.cpp,v 1.15 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,7 @@ public:
 // ***************************************************************************
 
 void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node, mapBoneBindPos* mapBindPos, TInodePtrInt& mapId, 
-									 TimeValue time, bool view)
+									 TimeValue time)
 {
 	// Build a bone vector
 	std::vector<CBoneBase> bonesArray;
@@ -98,7 +98,7 @@ void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node,
 	std::set<std::string> nameSet;
 
 	// Parse the tree
-	buildSkeleton (bonesArray, node, mapBindPos, mapId, nameSet, time, view, idCount);
+	buildSkeleton (bonesArray, node, mapBindPos, mapId, nameSet, time, idCount);
 
 	// Then build the object
 	skeletonShape.build (bonesArray);
@@ -107,7 +107,7 @@ void CExportNel::buildSkeletonShape (CSkeletonShape& skeletonShape, INode& node,
 // ***************************************************************************
 
 void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, TInodePtrInt& mapId, 
-								std::set<std::string> &nameSet, TimeValue time, bool view, sint32& idCount, sint32 father)
+								std::set<std::string> &nameSet, TimeValue time, sint32& idCount, sint32 father)
 {
 	// **** Save the current the id
 	int id=idCount;
@@ -207,7 +207,7 @@ void CExportNel::buildSkeleton (std::vector<CBoneBase>& bonesArray, INode& node,
 
 	// **** Call on child
 	for (int children=0; children<node.NumberOfChildren(); children++)
-		buildSkeleton (bonesArray, *node.GetChildNode(children), mapBindPos, mapId, nameSet, time, view, ++idCount, id);
+		buildSkeleton (bonesArray, *node.GetChildNode(children), mapBindPos, mapId, nameSet, time, ++idCount, id);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.49 2002/03/26 10:11:44 corvazier Exp $
+ * $Id: export_nel.h,v 1.50 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,7 +238,7 @@ public:
 	typedef std::map<INode*, Matrix3> mapBoneBindPos;
 
 	/// Constructor
-	CExportNel();
+	CExportNel (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle);
 
 	// *********************
 	// *** Ëxport mesh
@@ -249,22 +249,21 @@ public:
 	  *
 	  * skeletonShape must be NULL if no bones.
 	  */
-	static NL3D::IShape*			buildShape (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, 
-												bool absolutePath, CExportNelOptions &opt, bool view, bool errorInDialog);
+	NL3D::IShape*					buildShape (INode& node, TimeValue time, const TInodePtrInt *nodeMap, 
+												CExportNelOptions &opt);
 
 	/**
 	  * Build a NeL meshBuild
 	  * 
 	  * This method does not care of the skeletonShape
 	  */
-	static NL3D::CMesh::CMeshBuild*	createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, 
-													NL3D::CMesh::CMeshBaseBuild*& baseBuild, const NLMISC::CMatrix &finalSpace = NLMISC::CMatrix::Identity);
+	NL3D::CMesh::CMeshBuild*		createMeshBuild(INode& node, TimeValue tvTime, NL3D::CMesh::CMeshBaseBuild*& baseBuild, const NLMISC::CMatrix &finalSpace = NLMISC::CMatrix::Identity);
 
 	/**
 	  * Build a NeL instance group
 	  *
 	  */
-	static NL3D::CInstanceGroup*	buildInstanceGroup(const std::vector<INode*>& vectNode, std::vector<INode*>& resultInstanceNode, TimeValue tvTime);
+	NL3D::CInstanceGroup*			buildInstanceGroup(const std::vector<INode*>& vectNode, std::vector<INode*>& resultInstanceNode, TimeValue tvTime);
 
 	/**
 	  * Return true if it is a mesh.
@@ -282,17 +281,15 @@ public:
 	  */
 	static bool						hasLightMap (INode& node, TimeValue time);
 	static void						deleteLM (INode& node, CExportNelOptions& structExport);
-	static bool						calculateLM (NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
+	bool							calculateLM (NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
 												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
 												INode& ZeNode, 
-												Interface& ip, TimeValue tvTime, bool absolutePath,
-												CExportNelOptions& structExport, uint firstMaterial);
+												TimeValue tvTime, CExportNelOptions& structExport, uint firstMaterial);
 
-	static bool						calculateLMRad(NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
+	bool							calculateLMRad(NL3D::CMesh::CMeshBuild *pZeMeshBuild, 
 												NL3D::CMeshBase::CMeshBaseBuild *pZeMeshBaseBuild,
 												INode& ZeNode, 
-												Interface& ip, TimeValue tvTime, bool absolutePath,
-												CExportNelOptions& structExport);
+												TimeValue tvTime, CExportNelOptions& structExport);
 	
 
 	// *********************
@@ -300,27 +297,27 @@ public:
 	// *********************
 
 	// Add animation track of this node into the animation object pass in parameter.
-	static void						addAnimation (NL3D::CAnimation& animation, INode& node, const char* sBaseName, Interface *ip, bool root, bool view);
+	void							addAnimation (NL3D::CAnimation& animation, INode& node, const char* sBaseName, bool root);
 
 	// Build a NeL track with a 3dsmax node and a controller.
-	static NL3D::ITrack*			buildATrack (NL3D::CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, 
-												Interface *ip, std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool bodyBiped=false);
+	NL3D::ITrack*					buildATrack (NL3D::CAnimation& animation, Control& c, TNelValueType type, Animatable& node, const CExportDesc& desc, 
+												std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool bodyBiped=false);
 
 	// Build a Nel bool track from a On/Off max Controller (doesn't work with buildATRack, which require a keyframer interface
 	// , which isn't provided by an on / off controller)
 	static NL3D::CTrackKeyFramerConstBool*			buildOnOffTrack(Control& c);
 
 	// Add tracks for particle systems
-	static void						addParticleSystemTracks(NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip) ;
+	void							addParticleSystemTracks(NL3D::CAnimation& animation, INode& node, const char* parentName) ;
 
 	// Add tracks for the bone and its children (recursive)
-	static void						addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool root, bool view);
+	void							addBoneTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, bool root);
 
 	// Add biped tracks
-	static void						addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip, bool root, bool view);
-	static void						addBipedNodeTrack (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip,
-										std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled, bool root, bool view);
-//	static void						addBipedPathTrack (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+	void							addBipedNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, bool root);
+	void							addBipedNodeTrack (NL3D::CAnimation& animation, INode& node, const char* parentName,
+										std::set<TimeValue>& previousKeys, std::set<TimeValue>& previousKeysSampled, bool root);
+//	void							addBipedPathTrack (NL3D::CAnimation& animation, INode& node, const char* parentName);
 
 
 	// Add a note track. It tackes the first note track of the object
@@ -349,9 +346,9 @@ public:
 
 
 	// Create the transform matrix tracks
-	static void						createBipedKeyFramer (NL3D::ITrack *&nelRot, NL3D::ITrack *&nelPos, bool isRot, bool isPos, 
+	void							createBipedKeyFramer (NL3D::ITrack *&nelRot, NL3D::ITrack *&nelPos, bool isRot, bool isPos, 
 														float ticksPerSecond, const Interval& range, int oRT, const CExportDesc& desc, 
-														INode& node, Interface *ip, std::set<TimeValue>* previousKeys, 
+														INode& node, std::set<TimeValue>* previousKeys, 
 														std::set<TimeValue>* previousKeysSampled);
 
 	// convert to nel time value
@@ -366,13 +363,13 @@ public:
 	 *
 	 * mapBindPos is the pointer of the map of bind pos by bone. Can be NULL if the skeleton is already in the bind pos.
 	 */
-	static void						buildSkeletonShape (NL3D::CSkeletonShape& skeletonShape, INode& node, mapBoneBindPos* mapBindPos, 
-														TInodePtrInt& mapId, TimeValue time, bool view);
+	void							buildSkeletonShape (NL3D::CSkeletonShape& skeletonShape, INode& node, mapBoneBindPos* mapBindPos, 
+														TInodePtrInt& mapId, TimeValue time);
 
 	// Build an array of CBoneBase
-	static void						buildSkeleton (std::vector<NL3D::CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, 
+	void							buildSkeleton (std::vector<NL3D::CBoneBase>& bonesArray, INode& node, mapBoneBindPos* mapBindPos, 
 														TInodePtrInt& mapId, std::set<std::string> &nameSet, 
-														TimeValue time, bool view, sint32& idCount, sint32 father=-1);
+														TimeValue time, sint32& idCount, sint32 father=-1);
 
 	/*
 	 * Add Skinning data into the build structure.
@@ -403,8 +400,8 @@ public:
 	// *** Ëxport Lod
 	// **************
 
-	static void						addChildLodNode (std::set<INode*> &lodListToExclude, Interface &ip, INode *current = NULL);
-	static void						addParentLodNode (INode &node, std::set<INode*> &lodListToExclude, Interface &ip, INode *current = NULL);
+	void							addChildLodNode (std::set<INode*> &lodListToExclude, INode *current = NULL);
+	void							addParentLodNode (INode &node, std::set<INode*> &lodListToExclude, INode *current = NULL);
 
 	// *********************
 	// *** Ëxport collision
@@ -413,14 +410,14 @@ public:
 	/** Export a CCollisionMeshBuild from a list of node.
 	 *	NB: do not check NEL3D_APPDATA_COLLISION.
 	 */
-	static NLPACS::CCollisionMeshBuild*	createCollisionMeshBuild(std::vector<INode *> &nodes, TimeValue tvTime);
+	NLPACS::CCollisionMeshBuild*	createCollisionMeshBuild(std::vector<INode *> &nodes, TimeValue tvTime);
 
 	/** Export a list of CCollisionMeshBuild from a list of node, grouped by igName. User must delete the meshBuilds.
 	 *	meshBuildList is a vector of tuple igName-Cmb
 	 *	NB: check NEL3D_APPDATA_COLLISION. if not set, the node is not exported
 	 */
-	static bool createCollisionMeshBuildList(std::vector<INode *> &nodes, Interface& ip, TimeValue time, 
-		std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> > &meshBuildList);
+	bool							createCollisionMeshBuildList(std::vector<INode *> &nodes, TimeValue time, 
+																	std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> > &meshBuildList);
 
 	/**
 	 *	Parse all the scene and build retrieverBank and globalRetriever. NULL if no collisions mesh found.
@@ -428,9 +425,9 @@ public:
 	 *	igNamePrefix=="col_" and igNameSuffix=="_", then retIgName returned is "pipo".
 	 *	If different igName may match, result is undefined (random).
 	 */
-	static void	computeCollisionRetrieverFromScene(Interface& ip, TimeValue time, 
-					NLPACS::CRetrieverBank *&retrieverBank, NLPACS::CGlobalRetriever *&globalRetriever,
-					const char *igNamePrefix, const char *igNameSuffix, std::string &retIgName);
+	void							computeCollisionRetrieverFromScene(TimeValue time, 
+																	NLPACS::CRetrieverBank *&retrieverBank, NLPACS::CGlobalRetriever *&globalRetriever,
+																	const char *igNamePrefix, const char *igNameSuffix, std::string &retIgName);
 
 	/**
 	  * Retrieve the Z rotation in radian of an object with its I matrix vector, assuming that the K matrix vector is near CVector::K
@@ -440,7 +437,7 @@ public:
 	/**
 	  * Build a primtive block with an array of inode. Return false if one of the object is not a PACS primitive object.
 	  */
-	static bool buildPrimitiveBlock (Interface& ip, TimeValue time, std::vector<INode*> objects, NLPACS::CPrimitiveBlock &primitiveBlock);
+	bool							buildPrimitiveBlock (TimeValue time, std::vector<INode*> objects, NLPACS::CPrimitiveBlock &primitiveBlock);
 
 	// *********************
 	// *** Ëxport misc
@@ -486,10 +483,10 @@ public:
 	static std::string				getNelObjectName (INode& node);
 
 	// Get lights
-	static void						getLights (std::vector<NL3D::CLight>& vectLight, TimeValue time, Interface& ip, INode* node=NULL);
+	void							getLights (std::vector<NL3D::CLight>& vectLight, TimeValue time, INode* node=NULL);
 
 	// Get All node (objects only) of a hierarchy. NULL => all the scene
-	static void						getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, Interface& ip, INode* node=NULL);
+	void							getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, INode* node=NULL);
 
 	// *** Paramblock2 access
 
@@ -509,10 +506,10 @@ public:
 	static Modifier*				getModifier (INode* pNode, Class_ID modCID);
 
 	// Get the ambient value
-	static NLMISC::CRGBA			getAmbientColor (Interface& ip, TimeValue time);
+	NLMISC::CRGBA					getAmbientColor (TimeValue time);
 
 	// Get the backgorund value
-	static NLMISC::CRGBA			getBackGroundColor (Interface& ip, TimeValue time);
+	NLMISC::CRGBA					getBackGroundColor (TimeValue time);
 
 	// Get LightGroupName, from AppData (New style), or NelLight modifier (oldStyle) if appData groupName undefined
 	static std::string				getLightGroupName (INode *node);
@@ -520,7 +517,7 @@ public:
 	// *** Script access
 
 	// Eval a scripted function
-	static bool						scriptEvaluate (Interface *ip, char *script, void *out, TNelScriptValueType type);
+	bool							scriptEvaluate (char *script, void *out, TNelScriptValueType type);
 
 	// *** Appdata access
 
@@ -543,7 +540,7 @@ public:
 	static void						setScriptAppData (Animatable *node, uint32 id, const std::string& value);
 
 	// Output error message
-	static void						outputErrorMessage (Interface *ip, const char *message, const char *title, bool dialog);
+	void							outputErrorMessage (const char *message);
 
 
 	// Get an appData VertexProgram WindTree (ensure same default values for all retrieve).
@@ -562,7 +559,7 @@ public:
 	 *
 	 * mapBindPos is the pointer of the map of bind pos by bone. Can be NULL if the skeleton is already in the bind pos.
 	 */
-	static bool						buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INode& node, TimeValue time, Interface *ip, bool view, bool messageError);
+	bool							buildVegetableShape (NL3D::CVegetableShape& skeletonShape, INode& node, TimeValue time);
 
 private:
 
@@ -679,24 +676,24 @@ private:
 	  *
 	  * if skeletonShape is NULL, no skinning is exported.
 	  */
-	static void						buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildMesh, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
-															TimeValue time, bool absolutePath, const NLMISC::CMatrix& basis);
+	void							buildBaseMeshInterface (NL3D::CMeshBase::CMeshBaseBuild& buildMesh, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
+															TimeValue time, const NLMISC::CMatrix& basis);
 
 	/**
 	  * Build a NeL mesh interface
 	  *
 	  * if skeletonShape is NULL, no skinning is exported.
 	  */
-	static void						buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const NL3D::CMeshBase::CMeshBaseBuild& buildBaseMesh, 
+	void							buildMeshInterface (TriObject &tri, NL3D::CMesh::CMeshBuild& buildMesh, const NL3D::CMeshBase::CMeshBaseBuild& buildBaseMesh, 
 														const CMaxMeshBaseBuild& maxBaseBuild, INode& node, TimeValue time, const TInodePtrInt* nodeMap, 
-														bool absolutePath, const NLMISC::CMatrix& newBasis=NLMISC::CMatrix::Identity, 
+														const NLMISC::CMatrix& newBasis=NLMISC::CMatrix::Identity, 
 														const NLMISC::CMatrix& finalSpace=NLMISC::CMatrix::Identity);
 
 
 	/**
 	  * Get all the blend shapes from a node in the meshbuild form
 	  */
-	static void						getBSMeshBuild (std::vector<NL3D::CMesh::CMeshBuild*> &bsList, INode &node, TimeValue time, bool skined);
+	void							getBSMeshBuild (std::vector<NL3D::CMesh::CMeshBuild*> &bsList, INode &node, TimeValue time, bool skined);
 	
 	/**
 	  * Build a NeL mrm parameters block
@@ -706,21 +703,21 @@ private:
 	/**
 	  * Build a mesh geom with a node
 	  */
-	static NL3D::IMeshGeom			*buildMeshGeom (INode& node, Interface& ip, TimeValue time, const TInodePtrInt *nodeMap, bool absolutePath,
+	NL3D::IMeshGeom					*buildMeshGeom (INode& node, TimeValue time, const TInodePtrInt *nodeMap,
 													CExportNelOptions &opt, NL3D::CMeshBase::CMeshBaseBuild &buildBaseMesh, std::vector<std::string>& listMaterialName,
-													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& parentMatrix, bool view);
+													bool& isTransparent, bool& isOpaque, const NLMISC::CMatrix& parentMatrix);
 	/**
 	  * Build the mesh morpher info in the mesh geom	  */
-	static void						buildMeshMorph (NL3D::CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time, bool skined, bool errorInDialog, Interface& ip);
+	void							buildMeshMorph (NL3D::CMesh::CMeshBuild& buildMesh, INode &node, TimeValue time, bool skined);
 
 	// Get the normal of a face for a given corner in localSpace
 	static Point3					getLocalNormal (int face, int corner, Mesh& mesh);
 
 	// Build a water shape. The given node must have a water materiel, an assertion is raised otherwise
-	static NL3D::IShape				*buildWaterShape(INode& node, TimeValue time, bool absolutePath);
+	NL3D::IShape					*buildWaterShape(INode& node, TimeValue time);
 
 	// build a wave maker shape
-	static NL3D::IShape				*CExportNel::buildWaveMakerShape(INode& node, TimeValue time, bool absolutePath);
+	NL3D::IShape					*CExportNel::buildWaveMakerShape(INode& node, TimeValue time);
 
 	// *********************
 	// *** Ëxport material
@@ -732,14 +729,14 @@ private:
 	static bool						hasWaterMaterial(INode& node, TimeValue time);
 
 	// Build an array of NeL material corresponding with max material at this node.
-	static void						buildMaterials (std::vector<NL3D::CMaterial>& Materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
-													TimeValue time, bool absolutePath);
+	void							buildMaterials (std::vector<NL3D::CMaterial>& Materials, CMaxMeshBaseBuild& maxBaseBuild, INode& node, 
+													TimeValue time);
 
 	// Build a NeL material corresponding with a max material.
-	static void						buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& materialInfo, Mtl& mtl, TimeValue time, bool absolutePath);
+	void							buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& materialInfo, Mtl& mtl, TimeValue time);
 
 	// Build a NeL texture corresponding with a max Texmap.
-	static NL3D::ITexture*			buildATexture (Texmap& texmap, CMaterialDesc& remap3dsTexChannel, TimeValue time, bool absolutePath, bool forceCubic=false);
+	NL3D::ITexture*					buildATexture (Texmap& texmap, CMaterialDesc& remap3dsTexChannel, TimeValue time, bool forceCubic=false);
 
 public:
 	 /** Return true if a mesh has a material whose shader requires a specific vertex shader to work (for example, per-pixel lighting).
@@ -765,43 +762,59 @@ private:
 	// *********************
 
 	// Add tracks for the node
-	static void						addNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip,
-													std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool root, bool view, 
+	void							addNodeTracks (NL3D::CAnimation& animation, INode& node, const char* parentName,
+													std::set<TimeValue>* previousKeys, std::set<TimeValue>* previousKeysSampled, bool root, 
 													bool bodyBiped=false);
 
 	// Add tracks for the node's bones 
-	static void						addBonesTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+	void							addBonesTracks (NL3D::CAnimation& animation, INode& node, const char* parentName);
 
 	// Add tracks for the light
-	static void						addLightTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+	void							addLightTracks (NL3D::CAnimation& animation, INode& node, const char* parentName);
 
 	// Add tracks for the morphing
-	static void						addMorphTracks (NL3D::CAnimation& animation, INode& node, const char* parentName, Interface *ip);
+	void							addMorphTracks (NL3D::CAnimation& animation, INode& node, const char* parentName);
 	
 	// Add tracks for the object
-	static void						addObjTracks (NL3D::CAnimation& animation, Object& obj, const char* parentName, Interface *ip);
+	void							addObjTracks (NL3D::CAnimation& animation, Object& obj, const char* parentName);
 
 	// Add tracks for the material
-	static void						addMtlTracks (NL3D::CAnimation& animation, Mtl& mtl, const char* parentName, Interface *ip);
+	void							addMtlTracks (NL3D::CAnimation& animation, Mtl& mtl, const char* parentName);
 
 	// Add tracks for the texture
-	static void						addTexTracks (NL3D::CAnimation& animation, Texmap& tex, Interface *ip, uint stage, const char* parentName);
+	void							addTexTracks (NL3D::CAnimation& animation, Texmap& tex, uint stage, const char* parentName);
 
 	// Add controller key time in the set
-	static void						addBipedKeyTime (Control& c, std::set<TimeValue>& keys, std::set<TimeValue>& keysSampled, bool subKeys, 
-													Interface *ip, const char *nodeName);
+	void							addBipedKeyTime (Control& c, std::set<TimeValue>& keys, std::set<TimeValue>& keysSampled, bool subKeys, 
+													const char *nodeName);
 	
 
 	// Get a biped key parameter using script
-	static bool						getBipedKeyInfo (Interface *ip, const char* nodeName, const char* paramName, uint key, float& res);
+	bool							getBipedKeyInfo (const char* nodeName, const char* paramName, uint key, float& res);
 
 	// Get inplace biped mode
-	static bool						getBipedInplaceMode (Interface *ip, const char* nodeName, const char* inplaceFunction, 
+	bool							getBipedInplaceMode (const char* nodeName, const char* inplaceFunction, 
 															bool &res);
 
 	// Change inplace biped mode
-	static bool						setBipedInplaceMode (Interface *ip, const char* nodeName, const char* inplaceFunction, 
+	bool							setBipedInplaceMode (const char* nodeName, const char* inplaceFunction, 
 															bool onOff);
+private:
+
+	// Pointer on the interface
+	Interface						*_Ip;
+
+	// Texture are built path absolute
+	bool							_AbsolutePath;
+
+	// Build to view the scene
+	bool							_View;
+
+	// Errors goes in dialog
+	bool							_ErrorInDialog;
+
+	// Error title
+	std::string						_ErrorTitle;
 };
 
 

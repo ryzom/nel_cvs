@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.29 2002/03/21 16:10:13 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.30 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,6 +182,9 @@ public:
 	// Collision
 	int						Collision;
 	int						CollisionExterior;
+
+	// Radial normals
+	std::string				RadialNormals[NEL3D_RADIAL_NORMAL_COUNT];
 
 
 	// Dialog
@@ -558,7 +561,7 @@ int CALLBACK MRMDialogCallback (
 							// Callback for the select node dialog
 							addSubLodNodeHitCallBack callBack;
 							listNodeCallBack=currentParam->ListNode;
-							if (theCNelExport.ip->DoHitByNameDialog(&callBack))
+							if (theCNelExport._Ip->DoHitByNameDialog(&callBack))
 							{
 								// Add the selected object in the list
 								HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
@@ -666,7 +669,7 @@ int CALLBACK MRMDialogCallback (
 					SendMessage (GetDlgItem (hwndDlg, IDC_LIST1), LB_GETTEXT, wID, (LPARAM) (LPCTSTR) name);
 
 					// Find the node
-					INode *nodeDblClk=theCNelExport.ip->GetINodeByName(name);
+					INode *nodeDblClk=theCNelExport._Ip->GetINodeByName(name);
 					if (nodeDblClk)
 					{
 						// Build a set
@@ -709,6 +712,7 @@ int CALLBACK InstanceDialogCallback (
 
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_SHAPE), currentParam->InstanceShape.c_str());
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), currentParam->InstanceName.c_str());
+
 			SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_SETCHECK, currentParam->DontAddToScene, 0);
 
 			SetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), currentParam->InstanceGroupName.c_str());
@@ -737,8 +741,10 @@ int CALLBACK InstanceDialogCallback (
 							char tmp[512];
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_SHAPE), tmp, 512);
 							currentParam->InstanceShape=tmp;
+
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_NAME), tmp, 512);
 							currentParam->InstanceName=tmp;
+							
 							currentParam->DontAddToScene=SendMessage (GetDlgItem (hwndDlg, IDC_DONT_ADD_TO_SCENE), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_EDIT_INSTANCE_GROUP_NAME), tmp, 512);
 							currentParam->InstanceGroupName=tmp;
@@ -863,7 +869,7 @@ int CALLBACK LightmapDialogCallback (
 					SendMessage (GetDlgItem (hwndDlg, IDC_LIST1), LB_GETTEXT, wID, (LPARAM) (LPCTSTR) name);
 
 					// Find the node
-					INode *nodeDblClk=theCNelExport.ip->GetINodeByName(name);
+					INode *nodeDblClk=theCNelExport._Ip->GetINodeByName(name);
 					if (nodeDblClk)
 					{
 						// Build a set
@@ -1531,6 +1537,10 @@ int CALLBACK MiscDialogCallback (
 			// SWT
 			SendMessage (GetDlgItem (hwndDlg, IDC_SWT), BM_SETCHECK, currentParam->SWT, 0);
 			SetWindowText (GetDlgItem (hwndDlg, IDC_SWT_WEIGHT), currentParam->SWTWeight.c_str());
+
+			// Radial normals
+			for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
+				SetWindowText (GetDlgItem (hwndDlg, IDC_RADIAL_NORMAL_29+smoothGroup), currentParam->RadialNormals[smoothGroup].c_str());
 		}
 		break;
 
@@ -1559,6 +1569,14 @@ int CALLBACK MiscDialogCallback (
 							currentParam->SWT = SendMessage (GetDlgItem (hwndDlg, IDC_SWT), BM_GETCHECK, 0, 0);
 							GetWindowText (GetDlgItem (hwndDlg, IDC_SWT_WEIGHT), tmp, 512);
 							currentParam->SWTWeight = tmp;
+
+							// Radial normals
+							for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
+							{
+								HWND edit = GetDlgItem (hwndDlg, IDC_RADIAL_NORMAL_29+smoothGroup);
+								GetWindowText (edit, tmp, 512);
+								currentParam->RadialNormals[smoothGroup]=tmp;
+							}
 						}
 					break;
 					case IDC_EXPORT_NOTE_TRACK:
@@ -1941,7 +1959,7 @@ int CALLBACK LodDialogCallback (
 							// Callback for the select node dialog
 							addSubLodNodeHitCallBack callBack;
 							listNodeCallBack=currentParam->ListNode;
-							if (theCNelExport.ip->DoHitByNameDialog(&callBack))
+							if (theCNelExport._Ip->DoHitByNameDialog(&callBack))
 							{
 								// Add the selected object in the list
 								HWND hwndList=GetDlgItem (hwndDlg, IDC_LIST1);
@@ -2084,7 +2102,7 @@ int CALLBACK LodDialogCallback (
 					SendMessage (GetDlgItem (hwndDlg, IDC_LIST1), LB_GETTEXT, wID, (LPARAM) (LPCTSTR) name);
 
 					// Find the node
-					INode *nodeDblClk=theCNelExport.ip->GetINodeByName(name);
+					INode *nodeDblClk=theCNelExport._Ip->GetINodeByName(name);
 					if (nodeDblClk)
 					{
 						// Build a set
@@ -2178,6 +2196,10 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 		param.LumelSizeMul=CExportNel::getScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, "1.0");
 		param.SoftShadowRadius=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_RADIUS, toString(NEL3D_APPDATA_SOFTSHADOW_RADIUS_DEFAULT));
 		param.SoftShadowConeLength=CExportNel::getScriptAppData (node, NEL3D_APPDATA_SOFTSHADOW_CONELENGTH, toString(NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT));
+
+		// Radial normals
+		for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
+			param.RadialNormals[smoothGroup] = CExportNel::getScriptAppData (node, NEL3D_APPDATA_RADIAL_NORMAL_SM+smoothGroup, "");
 
 		// Vegetable
 		param.Vegetable = CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE, BST_UNCHECKED);
@@ -2292,6 +2314,13 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED)!=param.FloatingObject)
 				param.FloatingObject = BST_INDETERMINATE;
 
+			// Radial normals
+			for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
+			{
+				if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_RADIAL_NORMAL_SM+smoothGroup, "")!=param.RadialNormals[smoothGroup])
+					param.RadialNormals[smoothGroup] = "";
+			}
+
 			// Vegetable
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_VEGETABLE, BST_UNCHECKED)!=param.Vegetable)
 				param.Vegetable = BST_INDETERMINATE;
@@ -2390,7 +2419,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 			ite++;
 		}
 
-		if (DialogBoxParam (hInstance, MAKEINTRESOURCE(IDD_NODE_PROPERTIES), ip->GetMAXHWnd(), LodDialogCallback, (long)&param)==IDOK)
+		if (DialogBoxParam (hInstance, MAKEINTRESOURCE(IDD_NODE_PROPERTIES), _Ip->GetMAXHWnd(), LodDialogCallback, (long)&param)==IDOK)
 		{
 			// Next node
 			ite=listNode.begin();
@@ -2454,6 +2483,15 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 					if (param.ExportAnimatedMaterials != BST_INDETERMINATE)
 						CExportNel::setScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATED_MATERIALS, param.ExportAnimatedMaterials);
 				}
+
+				// Radial normals
+				for (uint smoothGroup=0; smoothGroup<NEL3D_RADIAL_NORMAL_COUNT; smoothGroup++)
+				{
+					if (param.RadialNormals[smoothGroup] != "")
+						CExportNel::setScriptAppData (node, NEL3D_APPDATA_RADIAL_NORMAL_SM+smoothGroup, param.RadialNormals[smoothGroup]);
+				}
+
+				
 				if (param.LumelSizeMul != "")
 					CExportNel::setScriptAppData (node, NEL3D_APPDATA_LUMELSIZEMUL, param.LumelSizeMul);
 				if (param.SoftShadowRadius != "")

@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
- * <File description>
+ * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.24 2002/03/13 16:59:59 berenguier Exp $
+ * $Id: nel_export.cpp,v 1.25 2002/03/29 14:58:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ int CALLBACK OptionsDialogCallback (
 		case WM_INITDIALOG:
 		{
 			char tmp[1024];
-			CenterWindow( hwndDlg, theCNelExport.ip->GetMAXHWnd() );
+			CenterWindow( hwndDlg, theCNelExport._Ip->GetMAXHWnd() );
 			ShowWindow( hwndDlg, TRUE );
 			// Initialize from theExportSceneStruct
 			if( theExportSceneStruct.bExcludeNonSelected )
@@ -293,20 +293,23 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					// Load the options
 					theCNelExport.initOptions();
 
+					// Init the exporter
+					theCNelExport.init (false, true);
+
 					// Register 3d models
 					// done in dllentry registerSerial3d();
 
 					// Get time
-					TimeValue time=theCNelExport.ip->GetTime();
+					TimeValue time=theCNelExport._Ip->GetTime();
 					
 					// Get node count
-					int nNumSelNode=theCNelExport.ip->GetSelNodeCount();
+					int nNumSelNode=theCNelExport._Ip->GetSelNodeCount();
 
 					// Save all selected objects
 					for (int nNode=0; nNode<nNumSelNode; nNode++)
 					{
 						// Get the node
-						INode* pNode=theCNelExport.ip->GetSelNode (nNode);
+						INode* pNode=theCNelExport._Ip->GetSelNode (nNode);
 
 						// Name of the node
 						char sNodeMsg[256];
@@ -343,7 +346,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							if (theCNelExport.SelectFileForSave(hWnd, sNodeMsg, vegetableFilter, sSavePath))
 							{
 								// Export the mesh
-								if (!theCNelExport.exportVegetable (sSavePath, *pNode, *theCNelExport.ip, time, true))
+								if (!theCNelExport.exportVegetable (sSavePath, *pNode, time))
 								{
 									// Error message
 									char sErrorMsg[512];
@@ -368,7 +371,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 
 								CExportNel::deleteLM( *pNode, theExportSceneStruct );
 								// Export the mesh
-								if (!theCNelExport.exportMesh (sSavePath, *pNode, *theCNelExport.ip, time, theExportSceneStruct, true))
+								if (!theCNelExport.exportMesh (sSavePath, *pNode, time, theExportSceneStruct))
 								{
 									// Error message
 									char sErrorMsg[512];
@@ -390,11 +393,14 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					// Register 3d models
 					// done in dllentry registerSerial3d();
 
+					// Init the exporter
+					theCNelExport.init (false, true);
+
 					// Get time
-					TimeValue time=theCNelExport.ip->GetTime();
+					TimeValue time=theCNelExport._Ip->GetTime();
 					
 					// Get node count
-					uint nNumSelNode=theCNelExport.ip->GetSelNodeCount();
+					uint nNumSelNode=theCNelExport._Ip->GetSelNodeCount();
 
 					// Save all selected objects
 					if (nNumSelNode)
@@ -417,7 +423,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 							sSavePath))
 						{
 							// Export the zone
-							if (!theCNelExport.exportAnim (sSavePath, vectNode, *theCNelExport.ip, time, LOWORD(wParam)==ID_SAVE_SCENE_ANIM))
+							if (!theCNelExport.exportAnim (sSavePath, vectNode, time, LOWORD(wParam)==ID_SAVE_SCENE_ANIM))
 							{
 								// Error message
 								char sErrorMsg[512];
@@ -432,10 +438,13 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			case ID_SAVECOLLISION:
 				{
 					// Get time
-					TimeValue time=theCNelExport.ip->GetTime();
+					TimeValue time=theCNelExport._Ip->GetTime();
+
+					// Init the exporter
+					theCNelExport.init (false, true);
 					
 					// Get node count
-					int nNumSelNode=theCNelExport.ip->GetSelNodeCount();
+					int nNumSelNode=theCNelExport._Ip->GetSelNodeCount();
 
 					std::vector<INode *>	nodes;
 
@@ -443,7 +452,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					for (int nNode=0; nNode<nNumSelNode; nNode++)
 					{
 						// Get the node
-						INode* pNode=theCNelExport.ip->GetSelNode (nNode);
+						INode* pNode=theCNelExport._Ip->GetSelNode (nNode);
 
 						// It is a zone ?
 						if (RPO::isZone (*pNode, time))
@@ -471,7 +480,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					if (theCNelExport.SelectDir(hWnd, sNodeMsg, sSavePath))
 					{
 						// Export the mesh
-						if (!theCNelExport.exportCollision (sSavePath, nodes, *theCNelExport.ip, time, theExportSceneStruct))
+						if (!theCNelExport.exportCollision (sSavePath, nodes, time, theExportSceneStruct))
 						{
 							// Error message
 							MessageBox (hWnd, "Error during export collision", "NeL export", MB_OK|MB_ICONEXCLAMATION);
@@ -483,17 +492,24 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			// ---
 			case ID_VIEW:
 				{
-				// Get time
-				TimeValue time=theCNelExport.ip->GetTime();
-				theCNelExport.initOptions();
-				// View mesh
-				theCNelExport.viewMesh (*theCNelExport.ip, time, theExportSceneStruct);
+					// Init the exporter
+					theCNelExport.init (true, true);
+
+					// Get time
+					TimeValue time=theCNelExport._Ip->GetTime();
+					theCNelExport.initOptions();
+
+					// View mesh
+					theCNelExport.viewMesh (time, theExportSceneStruct);
 				}
 				break;
 			// ---
 			case ID_SAVESWT:
 				{
-					uint nNumSelNode = theCNelExport.ip->GetSelNodeCount();
+					// Init the exporter
+					theCNelExport.init (false, true);
+					
+					uint nNumSelNode = theCNelExport._Ip->GetSelNodeCount();
 
 					// Save all selected objects
 					if (nNumSelNode)
@@ -512,7 +528,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 						if (theCNelExport.SelectFileForSave (hWnd, sDialogMsg, SWTFilter, sSavePath))
 						{
 							// Export the swt
-							if (!theCNelExport.exportSWT (sSavePath, vectNode, *theCNelExport.ip))
+							if (!theCNelExport.exportSWT (sSavePath, vectNode))
 							{
 								// Error message
 								char sErrorMsg[512];
@@ -526,8 +542,11 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				// ---
 				case ID_OPTIONS:
 				{
+					// Init the exporter
+					theCNelExport.init (false, true);
+					
 					char sConfigFileName[512];
-					strcpy( sConfigFileName, theCNelExport.ip->GetDir(APP_PLUGCFG_DIR) );
+					strcpy( sConfigFileName, theCNelExport._Ip->GetDir(APP_PLUGCFG_DIR) );
 					strcat( sConfigFileName, "\\NelExportScene.cfg" );
 
 					theCNelExport.initOptions();
@@ -535,7 +554,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					// Do a modal dialog box to choose the scene export options
 					if( DialogBox(	hInstance,
 									MAKEINTRESOURCE(IDD_EXPORTSCENE),
-									theCNelExport.ip->GetMAXHWnd(),
+									theCNelExport._Ip->GetMAXHWnd(),
 									OptionsDialogCallback		) )
 					{
 						// Write configuration file
@@ -552,15 +571,18 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				// ---
 				case ID_NODE_PROPERTIES:
 				{
+					// Init the exporter
+					theCNelExport.init (false, true);
+					
 					// Build a seleted set
 					std::set<INode*> listNode;
 
 					// Get the sel node count
-					uint selNodeCount=theCNelExport.ip->GetSelNodeCount();
+					uint selNodeCount=theCNelExport._Ip->GetSelNodeCount();
 					for (uint i=0; i<selNodeCount; i++)
 					{
 						// insert the node
-						listNode.insert (theCNelExport.ip->GetSelNode(i));
+						listNode.insert (theCNelExport._Ip->GetSelNode(i));
 					}
 
 					// Call the dialog
@@ -571,7 +593,10 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				// ---
 				case ID_EXPORTINSTANCEGROUP:
 				{
-					uint nNumSelNode = theCNelExport.ip->GetSelNodeCount();
+					// Init the exporter
+					theCNelExport.init (false, true);
+					
+					uint nNumSelNode = theCNelExport._Ip->GetSelNodeCount();
 
 					// done in dllentry registerSerial3d();
 					// All the selected nodes are considered as a scene					
@@ -587,7 +612,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 						if (theCNelExport.SelectFileForSave (hWnd, "Save Instance group", InstanceGroupFilter, sSavePath))
 						{
 							// Export the instance group
-							if (!theCNelExport.exportInstanceGroup( sSavePath, vectNode, *theCNelExport.ip))
+							if (!theCNelExport.exportInstanceGroup( sSavePath, vectNode))
 							{
 								// Error message
 								char sErrorMsg[512];
@@ -601,7 +626,10 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 				// ---
 				case ID_SAVESKELETON:
 				{
-					uint nNumSelNode = theCNelExport.ip->GetSelNodeCount();
+					// Init the exporter
+					theCNelExport.init (false, true);
+					
+					uint nNumSelNode = theCNelExport._Ip->GetSelNodeCount();
 					if (nNumSelNode!=1)
 					{
 						// Select only the root of the skeleton
@@ -610,7 +638,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 					else
 					{
 						// Get the selected node
-						INode* pNode=theCNelExport.ip->GetSelNode (0);
+						INode* pNode=theCNelExport._Ip->GetSelNode (0);
 
 						// Save path
 						char sSavePath[256];
@@ -620,7 +648,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 						if (theCNelExport.SelectFileForSave (hWnd, "Save skeleton...", skeletonFilter, sSavePath))
 						{
 							// Export the zone
-							if (!theCNelExport.exportSkeleton (sSavePath, pNode, *theCNelExport.ip, theCNelExport.ip->GetTime()))
+							if (!theCNelExport.exportSkeleton (sSavePath, pNode, theCNelExport._Ip->GetTime()))
 							{
 								// Error message
 								char sErrorMsg[512];
@@ -637,7 +665,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 		case WM_LBUTTONDOWN:
 		case WM_LBUTTONUP:
 		case WM_MOUSEMOVE:
-			theCNelExport.ip->RollupMouseMessage(hWnd,msg,wParam,lParam); 
+			theCNelExport._Ip->RollupMouseMessage(hWnd,msg,wParam,lParam); 
 			break;
 
 		default:
@@ -656,7 +684,7 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 CNelExport::CNelExport()
 {
 	iu = NULL;
-	ip = NULL;	
+	_Ip = NULL;	
 	hPanel = NULL;
 }
 
@@ -665,20 +693,30 @@ CNelExport::~CNelExport()
 
 }
 
-void CNelExport::BeginEditParams(Interface *ip,IUtil *iu) 
+void CNelExport::BeginEditParams(Interface *_Ip,IUtil *iu) 
 {
 	this->iu = iu;
-	this->ip = ip;
-	hPanel = ip->AddRollupPage(hInstance,MAKEINTRESOURCE(IDD_PANEL),CNelExportDlgProc,GetString(IDS_PARAMS),0);
+	this->_Ip = _Ip;
+	if (_ExportNel)
+	{
+		delete (_ExportNel);
+		_ExportNel = NULL;
+	}
+	hPanel = _Ip->AddRollupPage(hInstance,MAKEINTRESOURCE(IDD_PANEL),CNelExportDlgProc,GetString(IDS_PARAMS),0);
 	hBar=GetDlgItem(hPanel,ID_BAR);
 	SendMessage(hBar,PBM_SETPOS,0,0);
 }
 	
-void CNelExport::EndEditParams(Interface *ip,IUtil *iu) 
+void CNelExport::EndEditParams(Interface *_Ip,IUtil *iu) 
 {
 	this->iu = NULL;
-	this->ip = NULL;
-	ip->DeleteRollupPage(hPanel);
+	this->_Ip = NULL;
+	if (_ExportNel)
+	{
+		delete (_ExportNel);
+		_ExportNel = NULL;
+	}
+	_Ip->DeleteRollupPage(hPanel);
 	hPanel = NULL;
 }
 
@@ -695,13 +733,13 @@ void CNelExport::Destroy(HWND hWnd)
 void CNelExport::getSelectedNode (std::vector<INode*>& vectNode)
 {
 	// Get node count
-	uint nNumSelNode=ip->GetSelNodeCount();
+	uint nNumSelNode=_Ip->GetSelNodeCount();
 
 	// Save all selected objects
 	for (uint nNode=0; nNode<nNumSelNode; nNode++)
 	{
 		// Get the node
-		vectNode.push_back (theCNelExport.ip->GetSelNode (nNode));
+		vectNode.push_back (theCNelExport._Ip->GetSelNode (nNode));
 	}
 }
 
@@ -709,7 +747,7 @@ void CNelExport::initOptions()
 {
 	// Initialization of theExportSceneStruct
 	char sConfigFileName[512];
-	strcpy( sConfigFileName, theCNelExport.ip->GetDir(APP_PLUGCFG_DIR) );
+	strcpy( sConfigFileName, theCNelExport._Ip->GetDir(APP_PLUGCFG_DIR) );
 	strcat( sConfigFileName, "\\NelExportScene.cfg" );
 	// MessageBox (hWnd, sConfigFileName, "sConfigFileName", MB_OK|MB_ICONEXCLAMATION);
 	if( theCNelExport.FileExists(sConfigFileName) )
@@ -725,8 +763,20 @@ void CNelExport::initOptions()
 		}
 		catch(...)
 		{
-			MessageBox( theCNelExport.ip->GetMAXHWnd(), "NelExportScene.cfg corrupted or old version", 
+			MessageBox( theCNelExport._Ip->GetMAXHWnd(), "NelExportScene.cfg corrupted or old version", 
 						"Error", MB_OK|MB_ICONEXCLAMATION );
 		}
 	}
+}
+
+void CNelExport::init (bool view, bool errorInDialog)
+{
+	if (_ExportNel)
+	{
+		delete (_ExportNel);
+		_ExportNel = NULL;
+	}
+	
+	// Create a new nelexport
+	_ExportNel = new CExportNel (errorInDialog, view, view, _Ip, "NeL Export");
 }

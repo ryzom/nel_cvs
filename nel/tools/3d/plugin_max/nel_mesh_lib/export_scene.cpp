@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.15 2002/03/04 16:26:09 berenguier Exp $
+ * $Id: export_scene.cpp,v 1.16 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,7 +208,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 			CMesh::CMeshBuild *pMB;
 			CMeshBase::CMeshBaseBuild *pMBB;
-			pMB = CExportNel::createMeshBuild (*pNode, tvTime, false, pMBB);
+			pMB = createMeshBuild (*pNode, tvTime, pMBB);
 
 			convertToWorldCoordinate( pMB, pMBB );
 
@@ -252,7 +252,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 			CMesh::CMeshBuild *pMB;
 			CMeshBase::CMeshBaseBuild *pMBB;
-			pMB = CExportNel::createMeshBuild (*pNode, tvTime, false, pMBB);
+			pMB = createMeshBuild (*pNode, tvTime, pMBB);
 
 			convertToWorldCoordinate( pMB, pMBB );
 
@@ -366,7 +366,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 
 				CMesh::CMeshBuild *pMB;
 				CMeshBase::CMeshBaseBuild *pMBB;
-				pMB = CExportNel::createMeshBuild (*pNode, tvTime, false, pMBB);
+				pMB = createMeshBuild (*pNode, tvTime, pMBB);
 
 				convertToWorldCoordinate( pMB, pMBB );
 

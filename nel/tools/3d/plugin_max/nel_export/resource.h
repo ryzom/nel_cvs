@@ -131,9 +131,13 @@
 #define IDC_LIGO_SYMMETRY               1079
 #define IDC_LIGO_ROTATE                 1080
 #define IDC_EXPORT_REALTIME_LIGHT       1081
+#define IDC_RADIAL_NORMAL_29            1081
 #define IDC_USE_LIGHT_LOCAL_ATTENUATION 1082
+#define IDC_RADIAL_NORMAL_30            1082
 #define IDC_EXPORT_LIGHTMAP_LIGHT       1083
+#define IDC_RADIAL_NORMAL_31            1083
 #define IDC_EXPORT_AS_SUN_LIGHT         1084
+#define IDC_RADIAL_NORMAL_32            1084
 #define IDC_COMBO_VP                    1085
 #define IDC_CHECK_VP_SPECLIGHT          1086
 #define IDC_EDIT_VPWT_FREQ_SCALE        1087

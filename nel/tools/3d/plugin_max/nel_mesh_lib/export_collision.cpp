@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.4 2002/03/26 10:11:43 corvazier Exp $
+ * $Id: export_collision.cpp,v 1.5 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,7 +263,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 
 	CVector	hs = box.getHalfSize();
 	if (hs.x > 255.0f || hs.y > 255.0f)
-		MessageBox (theCNelExport.ip->GetMAXHWnd(), 
+		MessageBox (_Ip->GetMAXHWnd(), 
 					"The bounding box of the selection exceeds 512 meters large!", 
 					"NeL export collision", MB_OK|MB_ICONEXCLAMATION);
 
@@ -274,7 +274,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 		for (i=0; i<warnings.size(); ++i)
 			message += string("\n")+warnings[i];
 
-		MessageBox (theCNelExport.ip->GetMAXHWnd(), 
+		MessageBox (_Ip->GetMAXHWnd(), 
 					(message+"\n\n(This message was copied in the clipboard)").c_str(), 
 					"NeL export collision", MB_OK|MB_ICONEXCLAMATION);
 
@@ -303,7 +303,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 		for (i=0; i<errors.size(); ++i)
 			message += string("\n")+errors[i];
 
-		MessageBox (theCNelExport.ip->GetMAXHWnd(), 
+		MessageBox (theCNelExport._Ip->GetMAXHWnd(), 
 					(message+"\n\n(This message was copied in the clipboard)").c_str(), 
 					"NeL export collision", MB_OK|MB_ICONEXCLAMATION);
 
@@ -331,7 +331,7 @@ CCollisionMeshBuild*	CExportNel::createCollisionMeshBuild(std::vector<INode *> &
 
 
 // ***************************************************************************
-bool	CExportNel::createCollisionMeshBuildList(std::vector<INode *> &nodes, Interface& ip, TimeValue time,
+bool	CExportNel::createCollisionMeshBuildList(std::vector<INode *> &nodes, TimeValue time,
 	std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> > &meshBuildList)
 {
 	nlassert(meshBuildList.size()==0);
@@ -395,7 +395,7 @@ bool	CExportNel::createCollisionMeshBuildList(std::vector<INode *> &nodes, Inter
 
 
 // ***************************************************************************
-void	CExportNel::computeCollisionRetrieverFromScene(Interface& ip, TimeValue time, 
+void	CExportNel::computeCollisionRetrieverFromScene(TimeValue time, 
 	CRetrieverBank *&retrieverBank, CGlobalRetriever *&globalRetriever,
 	const char *igNamePrefix, const char *igNameSuffix, std::string &retIgName)
 {
@@ -406,11 +406,11 @@ void	CExportNel::computeCollisionRetrieverFromScene(Interface& ip, TimeValue tim
 
 	// get list of nodes from scene
 	std::vector<INode*>	nodes;
-	getObjectNodes (nodes, time, ip);
+	getObjectNodes (nodes, time);
 
 	// build list of cmb.
 	std::vector<std::pair<std::string, NLPACS::CCollisionMeshBuild*> >	meshBuildList;
-	if( createCollisionMeshBuildList(nodes, ip, time, meshBuildList) && meshBuildList.size()>0 )
+	if( createCollisionMeshBuildList(nodes, time, meshBuildList) && meshBuildList.size()>0 )
 	{
 		// create a retriverBnak and a global retrevier.
 		retrieverBank= new CRetrieverBank;
@@ -493,7 +493,7 @@ float	CExportNel::getZRot (const NLMISC::CVector &i)
 }
 
 // ***************************************************************************
-bool	CExportNel::buildPrimitiveBlock (Interface& ip, TimeValue time, std::vector<INode*> objects, NLPACS::CPrimitiveBlock &primitiveBlock)
+bool	CExportNel::buildPrimitiveBlock (TimeValue time, std::vector<INode*> objects, NLPACS::CPrimitiveBlock &primitiveBlock)
 {
 	// Reserve some memory
 	primitiveBlock.Primitives.clear ();
@@ -510,7 +510,7 @@ bool	CExportNel::buildPrimitiveBlock (Interface& ip, TimeValue time, std::vector
 		INode *node = objects[o];
 
 		// Select the node
-		ip.SelectNode (node);
+		_Ip->SelectNode (node);
 
 		// Get a pointer on the object's node
 		//Object *obj = node->EvalWorldState(time).obj;
@@ -556,9 +556,9 @@ bool	CExportNel::buildPrimitiveBlock (Interface& ip, TimeValue time, std::vector
 				if ( (clid.PartA() == NEL_PACS_BOX_CLASS_ID_A) && (clid.PartB() == NEL_PACS_BOX_CLASS_ID_B) )
 				{
 					// For boxes
-					nlverify (scriptEvaluate (&ip, "$.box.height", &height, scriptFloat));
-					nlverify (scriptEvaluate (&ip, "$.box.width", &length[0], scriptFloat));
-					nlverify (scriptEvaluate (&ip, "$.box.length", &length[1], scriptFloat));
+					nlverify (scriptEvaluate ("$.box.height", &height, scriptFloat));
+					nlverify (scriptEvaluate ("$.box.width", &length[0], scriptFloat));
+					nlverify (scriptEvaluate ("$.box.length", &length[1], scriptFloat));
 					
 					// Get the orientation
 					orientation = getZRot (mt.getI());
@@ -566,8 +566,8 @@ bool	CExportNel::buildPrimitiveBlock (Interface& ip, TimeValue time, std::vector
 				else
 				{
 					// For cylinders
-					nlverify (scriptEvaluate (&ip, "$.cylinder.height", &height, scriptFloat));
-					nlverify (scriptEvaluate (&ip, "$.cylinder.radius", &length[0], scriptFloat));
+					nlverify (scriptEvaluate ("$.cylinder.height", &height, scriptFloat));
+					nlverify (scriptEvaluate ("$.cylinder.radius", &length[0], scriptFloat));
 					length[1] = 0;
 					orientation = 0;
 				}
@@ -616,7 +616,7 @@ bool	CExportNel::buildPrimitiveBlock (Interface& ip, TimeValue time, std::vector
 	// Failed
 	if (ok)
 	{
-		ip.ForceCompleteRedraw ();
+		_Ip->ForceCompleteRedraw ();
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.h
  * Raytrace module
  *
- * $Id: calc_lm_rt.h,v 1.3 2002/01/04 18:27:30 corvazier Exp $
+ * $Id: calc_lm_rt.h,v 1.4 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -136,10 +136,10 @@ class CRTWorld
 	NLMISC::CVector	GlobalTrans;
 public:
 
-	CRTWorld();
+	CRTWorld (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle, CExportNel *export);
 	~CRTWorld();
 	// Build meshes from lights (if a mesh interact with at least one light except ambient)
-	void build	(Interface &ip, std::vector<SLightBuild> &AllLights, NLMISC::CVector &vGlobalTrans, 
+	void build	(std::vector<SLightBuild> &AllLights, NLMISC::CVector &vGlobalTrans, 
 				bool bExcludeNonSelected, const std::set<INode*> &excludeNode, const std::set<INode*> &includeNode);
 
 	// Raytrace the vertex vVertex from light nLightNb
@@ -161,12 +161,12 @@ private:
 
 	void getAllSelectedNode (std::vector<NL3D::CMesh::CMeshBuild*> &Meshes,  
 							std::vector<NL3D::CMeshBase::CMeshBaseBuild*> &MeshesBase,
-							std::vector<INode*> &INodes, Interface& ip, std::vector<SLightBuild> &AllLights, 
+							std::vector<INode*> &INodes, std::vector<SLightBuild> &AllLights, 
 							const std::set<INode*> &excludeNode, const std::set<INode*> &includeNode);
 
 	void getAllNodeInScene	(std::vector<NL3D::CMesh::CMeshBuild*> &Meshes, 
 							std::vector<NL3D::CMeshBase::CMeshBaseBuild*> &BaseMeshes, 
-							std::vector<INode* > &INodes, Interface& ip, std::vector<SLightBuild> &AllLights, 
+							std::vector<INode* > &INodes, std::vector<SLightBuild> &AllLights, 
 							const std::set<INode*> &excludeNode, INode* pNode = NULL);
 
 	bool intersectionTriangleSphere (NLMISC::CTriangle &t, NLMISC::CBSphere &s);
@@ -176,6 +176,23 @@ private:
 
 	bool isInteractionLightMesh (SLightBuild &rSLB, NL3D::CMesh::CMeshBuild &rMB, NL3D::CMeshBase::CMeshBaseBuild &rMBB);
 
+	// Pointer on the interface
+	Interface						*_Ip;
+
+	// Texture are built path absolute
+	bool							_AbsolutePath;
+
+	// Build to view the scene
+	bool							_View;
+
+	// Errors goes in dialog
+	bool							_ErrorInDialog;
+
+	// Error title
+	std::string						_ErrorTitle;
+
+	// Pointer on Nel export object
+	CExportNel						*_Export;
 };
 
 

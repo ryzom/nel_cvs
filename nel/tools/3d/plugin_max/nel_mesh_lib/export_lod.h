@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.19 2002/03/21 16:10:18 berenguier Exp $
+ * $Id: export_lod.h,v 1.20 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,6 +135,16 @@ const uint32	NEL3D_AppDataVPWTBias[NEL3D_APPDATA_VPWT_LEVELMAX]=
 #define NEL3D_APPDATA_SOFTSHADOW_CONELENGTH_DEFAULT	15.0f
 
 #define NEL3D_APPDATA_BEND_FACTOR_DEFAULT			1.0f
+
+// ***************************************************************************
+
+#define NEL3D_RADIAL_NORMAL_COUNT					4
+#define NEL3D_RADIAL_FIRST_SM						28
+#define NEL3D_APPDATA_RADIAL_NORMAL_SM				2089254647
+#define NEL3D_APPDATA_RADIAL_NORMAL_SM_28			2089254647
+#define NEL3D_APPDATA_RADIAL_NORMAL_SM_29			2089254648
+#define NEL3D_APPDATA_RADIAL_NORMAL_SM_30			2089254649
+#define NEL3D_APPDATA_RADIAL_NORMAL_SM_31			2089254650
 
 // ***************************************************************************
 

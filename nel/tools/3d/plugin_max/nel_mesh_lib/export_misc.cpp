@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.18 2002/03/26 10:11:43 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.19 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,8 +49,13 @@ const char* CExportNel::ErrorMessage[CodeCount]=
 
 // --------------------------------------------------
 
-CExportNel::CExportNel()
+CExportNel::CExportNel (bool errorInDialog, bool view, bool absolutePath, Interface *ip, std::string errorTitle)
 {
+	_Ip = ip;
+	_AbsolutePath = absolutePath;
+	_View = view;
+	_ErrorInDialog = errorInDialog;
+	_ErrorTitle = errorTitle;
 }
 
 // --------------------------------------------------
@@ -661,16 +666,16 @@ bool CExportNel::hasLightMap (INode& node, TimeValue time)
 
 // --------------------------------------------------
 
-void CExportNel::outputErrorMessage (Interface *ip, const char *message, const char *title, bool dialog)
+void CExportNel::outputErrorMessage (const char *message)
 {
-	if (dialog)
+	if (_ErrorInDialog)
 	{
-		MessageBox (ip->GetMAXHWnd(), message, title, MB_OK|MB_ICONEXCLAMATION);
+		MessageBox (_Ip->GetMAXHWnd(), message, _ErrorTitle.c_str(), MB_OK|MB_ICONEXCLAMATION);
 	}
 	mprintf (message);
 	mprintf ("\n");
 
-	nlwarning ("Error in max file %s : ", ip->GetCurFilePath());
+	nlwarning ("Error in max file %s : ", _Ip->GetCurFilePath());
 	nlwarning (message);
 }
 
@@ -683,11 +688,11 @@ bool CExportNel::isVegetable (INode& node, TimeValue time)
 
 // --------------------------------------------------
 
-void CExportNel::addChildLodNode (std::set<INode*> &lodListToExclude, Interface &ip, INode *current)
+void CExportNel::addChildLodNode (std::set<INode*> &lodListToExclude, INode *current)
 {
 	// First node ?
 	if (current == NULL)
-		current = ip.GetRootNode();
+		current = _Ip->GetRootNode();
 
 	// Get child count
 	uint lodCount = getScriptAppData (current, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
@@ -698,7 +703,7 @@ void CExportNel::addChildLodNode (std::set<INode*> &lodListToExclude, Interface 
 		if (lodName != "")
 		{
 			// Get the lod by name
-			INode *lodNode = ip.GetINodeByName (lodName.c_str());
+			INode *lodNode = _Ip->GetINodeByName (lodName.c_str());
 			if (lodNode)
 			{
 				// Insert it in the set
@@ -709,16 +714,16 @@ void CExportNel::addChildLodNode (std::set<INode*> &lodListToExclude, Interface 
 
 	// Scan child nodes
 	for ( uint i = 0; i < (uint)current->NumberOfChildren(); ++i )
-		addChildLodNode ( lodListToExclude, ip, current->GetChildNode(i) );
+		addChildLodNode ( lodListToExclude, current->GetChildNode(i) );
 }
 
 // --------------------------------------------------
 
-void CExportNel::addParentLodNode (INode &child, std::set<INode*> &lodListToExclude, Interface &ip, INode *parent)
+void CExportNel::addParentLodNode (INode &child, std::set<INode*> &lodListToExclude, INode *parent)
 {
 	// First node ?
 	if (parent == NULL)
-		parent = ip.GetRootNode();
+		parent = _Ip->GetRootNode();
 
 	// Get its child lod 
 	uint lodCount = getScriptAppData (parent, NEL3D_APPDATA_LOD_NAME_COUNT, 0);
@@ -729,7 +734,7 @@ void CExportNel::addParentLodNode (INode &child, std::set<INode*> &lodListToExcl
 		if (lodName != "")
 		{
 			// Get the lod by name
-			INode *lodNode = ip.GetINodeByName (lodName.c_str());
+			INode *lodNode = _Ip->GetINodeByName (lodName.c_str());
 			if (lodNode == &child)
 			{
 				// Insert it in the set
@@ -741,7 +746,7 @@ void CExportNel::addParentLodNode (INode &child, std::set<INode*> &lodListToExcl
 
 	// Scan child nodes
 	for ( uint i = 0; i < (uint)parent->NumberOfChildren(); ++i )
-		addParentLodNode ( child, lodListToExclude, ip, parent->GetChildNode(i) );
+		addParentLodNode ( child, lodListToExclude, parent->GetChildNode(i) );
 }
 
 // --------------------------------------------------
@@ -759,11 +764,11 @@ void CExportNel::uvMatrix2NelUVMatrix (const Matrix3& uvMatrix, NLMISC::CMatrix 
 
 
 // --------------------------------------------------
-void CExportNel::getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, Interface& ip, INode* node)
+void CExportNel::getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, INode* node)
 {
 	// Get the root node
 	if (node==NULL)
-		node=ip.GetRootNode();
+		node=_Ip->GetRootNode();
 
 	// Get a pointer on the object's node
     Object *obj = node->EvalWorldState(time).obj;
@@ -777,7 +782,7 @@ void CExportNel::getObjectNodes (std::vector<INode*>& vectNode, TimeValue time, 
 
 	// Recurse sub node
 	for (int i=0; i<node->NumberOfChildren(); i++)
-		getObjectNodes (vectNode, time, ip, node->GetChildNode(i));
+		getObjectNodes (vectNode, time, node->GetChildNode(i));
 }
 
 

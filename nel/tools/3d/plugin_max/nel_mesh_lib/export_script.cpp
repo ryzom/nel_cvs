@@ -1,7 +1,7 @@
 /** \file export_script.cpp
  * Export script utility from 3dsmax
  *
- * $Id: export_script.cpp,v 1.5 2002/02/28 13:42:32 berenguier Exp $
+ * $Id: export_script.cpp,v 1.6 2002/03/29 14:58:34 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 // ***************************************************************************
 
-bool CExportNel::scriptEvaluate (Interface *ip, char *script, void *out, TNelScriptValueType type)
+bool CExportNel::scriptEvaluate (char *script, void *out, TNelScriptValueType type)
 {
 	BOOL result=TRUE;
 	init_thread_locals();

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.26 2001/06/07 16:17:31 lecroart Exp $
+ * $Id: service.h,v 1.27 2001/06/12 15:37:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,8 +136,11 @@ public:
 
 	static void			setPort (uint16 Port) { _DefaultPort = Port; }
 
-	/** Select timeout value in milliseconds for each update. If you set the value to 1000, the user update
-	 * function will be call every second. By default the value is 0 (read one message)
+	/** Select timeout value in milliseconds for each update. You are absolutely certain that your update()
+	 * function will not be called before this amount of time you set.
+	 * If you set the update timeout value higher than 0, all messages in queues will be process until the time greater than the timeout user update().
+	 * If you set the update timeout value to 0, all messages in queues will be process one time before calling the user update().
+	 * If you set the update timeout value to -1, only one message will be process one time before calling the user update().
 	 */
 	static void			setUpdateTimeout (sint32 timeout) { _UpdateTimeout = timeout; } 
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.65 2001/06/07 16:41:03 lecroart Exp $
+ * $Id: service.cpp,v 1.66 2001/06/12 15:37:59 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -115,12 +115,14 @@ static void initSignal()
 	nldebug("Signal : %s (%d) trapped", SignalName[3], Signal[3]);
 #else
 	// in release, redirect all signals
+/* don't redirect now because to hard to debug...
+
 	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
 	{
 		signal(Signal[i], sigHandler);
 		nldebug("Signal %s (%d) trapped", SignalName[i], Signal[i]);
 	}
-#endif
+*/#endif
 }
 
 // This function is called when a signal comes
@@ -626,7 +628,7 @@ sint IService::main (int argc, char **argv)
 			CNetManager::update (_UpdateTimeout);
 			
 			// TEMP: always sleep one millisecond for multitasking
-			nlSleep (1);
+//			nlSleep (1);
 
 			// resync the clock every hours
 			if (resyncEvenly)
@@ -644,8 +646,8 @@ sint IService::main (int argc, char **argv)
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
 
 			// now, sleep the rest of the time if needed
-			if (_UpdateTimeout > 0 && delta <= _UpdateTimeout)
-				nlSleep (_UpdateTimeout - delta);
+//			if (_UpdateTimeout > 0 && delta <= _UpdateTimeout)
+//				nlSleep (_UpdateTimeout - delta);
 		}
 		while (true);
 	}
@@ -656,7 +658,7 @@ sint IService::main (int argc, char **argv)
 		setStatus (EXIT_FAILURE);
 	}
 #ifdef NL_RELEASE
-	// in release mode, we catch everything to handle clean release.
+/*	// in release mode, we catch everything to handle clean release.
 	catch (Exception &e)
 	{
 		// Catch NeL exception to release the system cleanly
@@ -669,7 +671,7 @@ sint IService::main (int argc, char **argv)
 		setStatus (EXIT_FAILURE);
 		nlinfo ("ERROR: Unknown external exception");
 	}
-#endif
+*/#endif
 
 	try
 	{
@@ -700,7 +702,7 @@ sint IService::main (int argc, char **argv)
 		setStatus (EXIT_FAILURE);
 	}
 #ifdef NL_RELEASE
-	// in release mode, we catch everything to handle clean release.
+/*	// in release mode, we catch everything to handle clean release.
 	catch (Exception &e)
 	{
 		setStatus (EXIT_FAILURE);
@@ -712,6 +714,7 @@ sint IService::main (int argc, char **argv)
 		setStatus (EXIT_FAILURE);
 		nlinfo ("ERROR: Unknown external exception");
 	}
+*/
 #endif
 
 	nlinfo ("Service ends");

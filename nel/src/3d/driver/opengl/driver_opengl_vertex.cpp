@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.25 2002/06/19 08:43:06 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.26 2002/06/20 09:45:04 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -72,19 +72,7 @@ bool CDriverGL::setupVertexBuffer(CVertexBuffer& VB)
 	//==================================
 	if( VB.getTouchFlags()!=0 )
 	{
-		CVBDrvInfosGL	*vbInf= static_cast<CVBDrvInfosGL*>((IVBDrvInfos*)(VB.DrvInfos));
-		// Software and Skinning: must allocate PostRender Vertices and normals.
-		if(!_PaletteSkinHard && ((VB.getVertexFormat() & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag) )
-		{
-			// Must reallocate post-rendered vertices/normals Flags.
-			vbInf->SoftSkinFlags.resize(VB.getNumVertices());
-			// Must reallocate post-rendered vertices/normals.
-			vbInf->SoftSkinVertices.resize(VB.getNumVertices());
-			// Normals onli if nomal enabled.
-			if(VB.getVertexFormat() & CVertexBuffer::NormalFlag)
-				vbInf->SoftSkinNormals.resize(VB.getNumVertices());
-		}
-
+		// nop
 		// OK!
 		VB.resetTouchFlags();
 	}
@@ -104,9 +92,6 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	if (!setupVertexBuffer(VB))
 		return false;
 
-	// Just to inform render*() that Matrix mode is OK.
-	_MatrixSetupDirty= false;
-
 	if (VB.getNumVertices()==0)
 		return true;
 
@@ -117,153 +102,6 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 	flags=VB.getVertexFormat();
 	// Get VB drv infos.
 	CVBDrvInfosGL	*vbInf= static_cast<CVBDrvInfosGL*>((IVBDrvInfos*)(VB.DrvInfos));
-
-
-	// Skin mode.
-	// NB: this test either if palette skin is enabled, or normal skinning is enabled.
-	bool	skinning= ( (flags & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag);
-	skinning= skinning && (_VertexMode & NL3D_VERTEX_MODE_SKINNING)!=0;
-	// NB: this test if palette skin is enabled.
-	bool	paletteSkinning= skinning && ( (flags & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag );
-
-
-	// 0. Setup Matrixes.
-	//===================
-
-	// Check if view matrix has been modified
-	if (_ViewMatrixSetupDirty)
-		// Recompute stuff touched by the view matrix
-		cleanViewMatrix ();
-
-	// Check view matrix is good
-	nlassert (_ViewMatrixSetupDirty==false);
-
-	// General case: no software skinning.
-	_CurrentSoftSkinFlags= NULL;
-
-	// No Skinning at all??. 
-	//==============
-	if ( !skinning )
-	{
-		if(_ModelViewMatrixDirty[0])
-		{
-			_ModelViewMatrixDirty.clear(0);
-			// By default, the first model matrix is active
-			glLoadMatrixf( _ModelViewMatrix[0].get() );
-		}
-	}
-	// Palette Skinning??
-	//==============
-	else if ( paletteSkinning )
-	{
-		if(_PaletteSkinHard)
-		{
-			// \todo yoyo: TODO_HARDWARE_SKINNIG: setup vertex program.
-			// NB: must test _ModelViewMatrixDirtyPaletteSkin...
-		}
-		else
-		{
-			// setup identity
-			glLoadMatrixf(CMatrix::Identity.get());
-			
-			// in software, we must test Model View Matrixes flags (_ModelViewMatrixDirtyPaletteSkin), to
-			// compute M-1t matrices fro normals, and to compute fast matrix3x4.
-			for(sint i=0;i<IDriver::MaxModelMatrix;i++)
-			{
-				if(_ModelViewMatrixDirtyPaletteSkin[i])
-				{
-					_ModelViewMatrixDirtyPaletteSkin.clear(i);
-
-					// a. compute correct noraml matrix.
-					CMatrix		&mview= _ModelViewMatrix[i];
-					CMatrix		&mviewNormal= _ModelViewMatrixNormal[i];
-					// copy only the rot matrix.
-					mviewNormal.setRot(mview);
-					// If matrix has scale...
-					if(mviewNormal.hasScalePart())
-					{
-						// Must compute the transpose of the invert matrix. (10 times slower if not uniform scale!!)
-						mviewNormal.invert();
-						mviewNormal.transpose3x3();
-					}
-					// else, no need to do it since transpose==inverse.
-
-					// b. compute fast 3x4 matrixs.
-					_ModelViewMatrix3x4[i].set(_ModelViewMatrix[i]);
-					_ModelViewMatrixNormal3x4[i].set(_ModelViewMatrixNormal[i]);
-
-				}
-			}
-
-
-			// Compute vertices/normales.
-			// NB: in software, skinning compute is done at render, since we don't know, at activeVB(), what
-			// vertex will be used.
-
-			// reset flags, only for given vertex range.
-			// NL3D_DRV_SOFTSKIN_VNEEDCOMPUTE==3.
-			memset(&vbInf->SoftSkinFlags[first], NL3D_DRV_SOFTSKIN_VNEEDCOMPUTE, end-first);
-
-			// For render*() to know how they must skin...
-			_CurrentSoftSkinFlags= &vbInf->SoftSkinFlags[0];
-			_CurrentSoftSkinSrc= (uint8*) VB.getVertexCoordPointer();
-			_CurrentSoftSkinSrcStride= VB.getVertexSize();
-			_CurrentSoftSkinFirst= first;
-			_CurrentSoftSkinEnd= end;
-			_CurrentSoftSkinPaletteSkinOff= VB.getPaletteSkinOff();
-			_CurrentSoftSkinWeightOff= VB.getWeightOff(0);
-			_CurrentSoftSkinVectorDst= &(vbInf->SoftSkinVertices[0]);
-			// Normal ptr.
-			if(flags & CVertexBuffer::NormalFlag)
-			{
-				_CurrentSoftSkinNormalDst= &(vbInf->SoftSkinNormals[0]);
-				_CurrentSoftSkinNormalOff= VB.getNormalOff();
-			}
-			else
-			{
-				_CurrentSoftSkinNormalDst= NULL;
-			}
-		}
-	}
-	// Non Paletted skinning.
-	//==============
-	else
-	{
-		// \todo yoyo: TODO_SOFTWARE_SKINNIG: We must make the skinning by software. (maybe one day :) ).
-		// \todo yoyo: TODO_HARDWARE_SKINNIG: we must make the skinning by hardware (Radeon, NV20 vertexprogram).
-
-		// For now, even if weight number is better than 2, do the skinning in EXTVertexWeighting 2 matrix (if possible)
-
-		// Choose an extension to setup a second matrix
-		if (_Extensions.EXTVertexWeighting)
-		{
-			if(_ModelViewMatrixDirty[0])
-			{
-				_ModelViewMatrixDirty.clear(0);
-				// By default, the first model matrix is active
-				glLoadMatrixf( _ModelViewMatrix[0].get() );
-			}
-
-			if(_ModelViewMatrixDirty[1])
-			{
-				_ModelViewMatrixDirty.clear(1);
-				// Active the second model matrix
-				glMatrixMode(GL_MODELVIEW1_EXT);
-				// Set it
-				glLoadMatrixf( _ModelViewMatrix[1].get() );
-				// Active first model matrix
-				glMatrixMode(GL_MODELVIEW);
-			}
-		}
-		// else nothing!!!
-	}
-
-
-
-	// 1. Special Normalize.
-	//======================
-	// NB: must enable GL_NORMALIZE when skinning is enabled or when ModelView has scale.
-	enableGlNormalize( skinning || _ModelViewMatrix[0].hasScalePart() || _ForceNormalize );
 
 
 	// 2. Setup Arrays.
@@ -280,7 +118,7 @@ bool CDriverGL::activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)
 		_CurrentVertexBufferHard->disable();
 
 	// Setup the OpenGL arrays.
-	setupGlArrays(_LastVB, vbInf, skinning, paletteSkinning);
+	setupGlArrays(_LastVB);
 
 
 	return true;
@@ -297,63 +135,12 @@ bool		CDriverGL::activeVertexBuffer(CVertexBuffer& VB)
 // ***************************************************************************
 bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 {
-	// TODODO: clean driver with multiMatrix (erase this feature, erase skinning in driver)
-	// Check if view matrix has been modified
-	if (_ViewMatrixSetupDirty)
-		// Recompute stuff touched by the view matrix
-		cleanViewMatrix ();
+	// update matrix and Light in OpenGL if needed
+	refreshRenderSetup();
 
-	// TODODO: clean driver with multiMatrix (erase this feature, erase skinning in driver)
-	// The matrix 0 may still be dirty if we are not in vertexMode
-	if( _ModelViewMatrixDirty[0] && (_VertexMode&NL3D_VERTEX_MODE_SKINNING)==0 )
-	{
-		_ModelViewMatrixDirty.clear(0);
-		// By default, the first model matrix is active
-		glLoadMatrixf( _ModelViewMatrix[0].get() );
-		enableGlNormalize( _ModelViewMatrix[0].hasScalePart() || _ForceNormalize );
-		_MatrixSetupDirty= false;
-	}
-
-
-	// Check user code :)
-	nlassert(!_MatrixSetupDirty);
-
+	// setup material
 	if ( !setupMaterial(Mat) )
 		return false;
-
-
-	// test if VB software skinning.
-	//==============================
-	if(_CurrentSoftSkinFlags)
-	{
-		uint32	*pIndex;
-		uint	nIndex;
-
-		// This may be better to flags in 2 pass (first traverse primitives, then test vertices).
-		// Better sol for BTB..., because number of tests are divided by 6 (for triangles).
-
-		// First, for all prims, indicate which vertex we must compute.
-		// nothing if not already computed (ie 0), because 0&1==0.
-		// Lines.
-		pIndex= (uint32*)PB.getLinePointer();
-		nIndex= PB.getNumLine()*2;
-		for(;nIndex>0;nIndex--, pIndex++)
-			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
-		// Tris.
-		pIndex= (uint32*)PB.getTriPointer();
-		nIndex= PB.getNumTri()*3;
-		for(;nIndex>0;nIndex--, pIndex++)
-			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
-		// Quads.
-		pIndex= (uint32*)PB.getQuadPointer();
-		nIndex= PB.getNumQuad()*4;
-		for(;nIndex>0;nIndex--, pIndex++)
-			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
-
-
-		// Second, traverse All vertices in range, testing if we must compute those vertices.
-		refreshSoftwareSkinning();
-	}
 
 
 	// render primitives.
@@ -399,34 +186,14 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 // ***************************************************************************
 void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 {
-	// Check user code :)
-	nlassert(!_MatrixSetupDirty);
+	// update matrix and Light in OpenGL if needed
+	refreshRenderSetup();
 
+	// setup material
 	if ( !setupMaterial(Mat) )
 		return;
 
 	
-	// test if VB software skinning.
-	//==============================
-	if(_CurrentSoftSkinFlags)
-	{
-		uint32	*pIndex;
-		uint	nIndex;
-
-		// see render() for explanation.
-		// First, for all prims, indicate which vertex we must compute.
-		// nothing if not already computed (ie 0), because 0&1==0.
-		// Tris.
-		pIndex= tri;
-		nIndex= ntris*3;
-		for(;nIndex>0;nIndex--, pIndex++)
-			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
-
-		// Second, traverse All vertices in range, testing if we must compute those vertices.
-		refreshSoftwareSkinning();
-	}
-
-
 	// render primitives.
 	//==============================
 	// start multipass.
@@ -458,34 +225,14 @@ void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 // ***************************************************************************
 void	CDriverGL::renderSimpleTriangles(uint32 *tri, uint32 ntris)
 {
-	// Check user code :)
-	nlassert(!_MatrixSetupDirty);
 	nlassert(ntris>0);
+
+	// update matrix and Light in OpenGL if needed
+	refreshRenderSetup();
+
 
 	// Don't setup any material here.
 	
-	// test if VB software skinning.
-	//==============================
-	// NB: still test it...
-	if(_CurrentSoftSkinFlags)
-	{
-		uint32	*pIndex;
-		uint	nIndex;
-
-		// see render() for explanation.
-		// First, for all prims, indicate which vertex we must compute.
-		// nothing if not already computed (ie 0), because 0&1==0.
-		// Tris.
-		pIndex= tri;
-		nIndex= ntris*3;
-		for(;nIndex>0;nIndex--, pIndex++)
-			_CurrentSoftSkinFlags[*pIndex]&= NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE;
-
-		// Second, traverse All vertices in range, testing if we must compute those vertices.
-		refreshSoftwareSkinning();
-	}
-
-
 	// render primitives.
 	//==============================
 	// NO MULTIPASS HERE!!
@@ -505,9 +252,10 @@ void	CDriverGL::renderSimpleTriangles(uint32 *tri, uint32 ntris)
 // ***************************************************************************
 void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
 {
-	// Check user code :)
-	nlassert(!_MatrixSetupDirty);
+	// update matrix and Light in OpenGL if needed
+	refreshRenderSetup();
 
+	// setup material
 	if ( !setupMaterial(Mat) )
 		return;	
 
@@ -545,9 +293,10 @@ void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
 // ***************************************************************************
 void	CDriverGL::renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)
 {
-	// Check user code :)
-	nlassert(!_MatrixSetupDirty);
+	// update matrix and Light in OpenGL if needed
+	refreshRenderSetup();
 
+	// setup material
 	if ( !setupMaterial(Mat) )
 		return;	
 
@@ -577,114 +326,6 @@ void	CDriverGL::renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)
 	// We have render some prims. inform the VBHard.
 	if(_CurrentVertexBufferHard)
 		_CurrentVertexBufferHard->GPURenderingAfterFence= true;
-}
-
-
-// ***************************************************************************
-void			CDriverGL::computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pDst)
-{
-	CMatrix3x4		*pMat;
-
-	// \todo yoyo: TODO_OPTIMIZE: SSE verion...
-
-	CVector			*srcVec= (CVector*)pSrc;
-	CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + _CurrentSoftSkinPaletteSkinOff);
-	float			*srcWgt= (float*)(pSrc + _CurrentSoftSkinWeightOff);
-
-	// checks indices.
-	nlassert(srcPal->MatrixId[0]<IDriver::MaxModelMatrix);
-	nlassert(srcPal->MatrixId[1]<IDriver::MaxModelMatrix);
-	nlassert(srcPal->MatrixId[2]<IDriver::MaxModelMatrix);
-	nlassert(srcPal->MatrixId[3]<IDriver::MaxModelMatrix);
-
-
-	// Sum influences.
-	pDst->set(0,0,0);
-
-	// 0th matrix influence.
-	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[0];
-	pMat->mulAddPoint(*srcVec, srcWgt[0], *pDst);
-	// 1th matrix influence.
-	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[1];
-	pMat->mulAddPoint(*srcVec, srcWgt[1], *pDst);
-	// 2th matrix influence.
-	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[2];
-	pMat->mulAddPoint(*srcVec, srcWgt[2], *pDst);
-	// 3th matrix influence.
-	pMat= _ModelViewMatrix3x4 + srcPal->MatrixId[3];
-	pMat->mulAddPoint(*srcVec, srcWgt[3], *pDst);
-
-}
-
-
-// ***************************************************************************
-void			CDriverGL::computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pDst)
-{
-	CMatrix3x4		*pMat;
-
-	// \todo yoyo: TODO_OPTIMIZE: SSE verion...
-
-	CVector			*srcNormal= (CVector*)(pSrc + _CurrentSoftSkinNormalOff);
-	CPaletteSkin	*srcPal= (CPaletteSkin*)(pSrc + _CurrentSoftSkinPaletteSkinOff);
-	float			*srcWgt= (float*)(pSrc + _CurrentSoftSkinWeightOff);
-
-	// checks indices.
-	nlassert(srcPal->MatrixId[0]<IDriver::MaxModelMatrix);
-	nlassert(srcPal->MatrixId[1]<IDriver::MaxModelMatrix);
-	nlassert(srcPal->MatrixId[2]<IDriver::MaxModelMatrix);
-	nlassert(srcPal->MatrixId[3]<IDriver::MaxModelMatrix);
-
-	
-	// Sum influences.
-	pDst->set(0,0,0);
-
-	// 0th matrix influence.
-	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[0];
-	pMat->mulAddVector(*srcNormal, srcWgt[0], *pDst);
-	// 1th matrix influence.
-	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[1];
-	pMat->mulAddVector(*srcNormal, srcWgt[1], *pDst);
-	// 2th matrix influence.
-	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[2];
-	pMat->mulAddVector(*srcNormal, srcWgt[2], *pDst);
-	// 3th matrix influence.
-	pMat= _ModelViewMatrixNormal3x4 + srcPal->MatrixId[3];
-	pMat->mulAddVector(*srcNormal, srcWgt[3], *pDst);
-}
-
-
-// ***************************************************************************
-void	CDriverGL::refreshSoftwareSkinning()
-{
-	// traverse All vertices in range, testing if we must compute those vertices.
-	uint8		*pSrc= _CurrentSoftSkinSrc + _CurrentSoftSkinFirst*_CurrentSoftSkinSrcStride;
-	uint8		*pFlag= _CurrentSoftSkinFlags + _CurrentSoftSkinFirst;
-	CVector		*pVectorDst= _CurrentSoftSkinVectorDst + _CurrentSoftSkinFirst;
-	CVector		*pNormalDst= _CurrentSoftSkinNormalDst + _CurrentSoftSkinFirst;
-	uint		size= _CurrentSoftSkinEnd - _CurrentSoftSkinFirst;
-	for(;size>0;size--)
-	{
-		// If we must compute this vertex.
-		if(*pFlag==NL3D_DRV_SOFTSKIN_VMUSTCOMPUTE)
-		{
-			// Flag this vertex as computed.
-			*pFlag=NL3D_DRV_SOFTSKIN_VCOMPUTED;
-
-			// compute vertex part.
-			computeSoftwareVertexSkinning(pSrc, pVectorDst);
-
-			// compute normal part.
-			if(_CurrentSoftSkinNormalDst)
-			{
-				computeSoftwareNormalSkinning(pSrc, pNormalDst);
-			}
-		}
-
-		pSrc+= _CurrentSoftSkinSrcStride;
-		pFlag++;
-		pVectorDst++;
-		pNormalDst++;
-	}
 }
 
 
@@ -1049,111 +690,13 @@ void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *iVB)
 	nlassert(iVB);
 	CVertexBufferHardGL		*VB= safe_cast<CVertexBufferHardGL*>(iVB);
 
-
 	uint32	flags;
-
-	// Just to inform render*() that Matrix mode is OK.
-	_MatrixSetupDirty= false;
 
 	if (VB->getNumVertices()==0)
 		return;
 
 	// Get VB flags, to setup matrixes and arrays.
 	flags=VB->getVertexFormat();
-
-
-	// Skin mode.
-	// NB: this test either if palette skin is enabled, or normal skinning is enabled.
-	bool	skinning= ( (flags & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag);
-	skinning= skinning && (_VertexMode & NL3D_VERTEX_MODE_SKINNING)!=0;
-	// NB: this test if palette skin is enabled.
-	bool	paletteSkinning= skinning && ( (flags & CVertexBuffer::PaletteSkinFlag) == CVertexBuffer::PaletteSkinFlag );
-
-
-	// If _PaletteSkinHard is not supported, disable all skinning.
-	// No sofwarte skinning, because can't read from AGP mem.
-	if(paletteSkinning && !_PaletteSkinHard)
-	{
-		skinning= false;
-		paletteSkinning= false;
-	}
-
-
-	// 0. Setup Matrixes.
-	//===================
-
-	// Check if view matrix has been modified
-	if (_ViewMatrixSetupDirty)
-		// Recompute stuff touched by the view matrix
-		cleanViewMatrix ();
-
-	// Check view matrix is good
-	nlassert (_ViewMatrixSetupDirty==false);
-
-	// never do software skinning.
-	_CurrentSoftSkinFlags= NULL;
-
-
-	// No Skinning at all??. 
-	//==============
-	if ( !skinning )
-	{
-		if(_ModelViewMatrixDirty[0])
-		{
-			_ModelViewMatrixDirty.clear(0);
-			// By default, the first model matrix is active
-			glLoadMatrixf( _ModelViewMatrix[0].get() );
-		}
-	}
-	// Palette Skinning??
-	//==============
-	else if ( paletteSkinning )
-	{
-		if(_PaletteSkinHard)
-		{
-			// \todo yoyo: TODO_HARDWARE_SKINNIG: setup vertex program.
-			// NB: must test _ModelViewMatrixDirtyPaletteSkin...
-		}
-		// No sofwarte skinning.
-	}
-	// Non Paletted skinning.
-	//==============
-	else
-	{
-		// \todo yoyo: TODO_HARDWARE_SKINNIG: we must make the skinning by hardware (Radeon, NV20 vertexprogram).
-
-		// For now, even if weight number is better than 2, do the skinning in EXTVertexWeighting 2 matrix (if possible)
-
-		// Choose an extension to setup a second matrix
-		if (_Extensions.EXTVertexWeighting)
-		{
-			if(_ModelViewMatrixDirty[0])
-			{
-				_ModelViewMatrixDirty.clear(0);
-				// By default, the first model matrix is active
-				glLoadMatrixf( _ModelViewMatrix[0].get() );
-			}
-
-			if(_ModelViewMatrixDirty[1])
-			{
-				_ModelViewMatrixDirty.clear(1);
-				// Active the second model matrix
-				glMatrixMode(GL_MODELVIEW1_EXT);
-				// Set it
-				glLoadMatrixf( _ModelViewMatrix[1].get() );
-				// Active first model matrix
-				glMatrixMode(GL_MODELVIEW);
-			}
-		}
-		// else nothing!!!
-	}
-
-
-
-	// 1. Special Normalize.
-	//======================
-	// NB: must enable GL_NORMALIZE when skinning is enabled or when ModelView has scale.
-	enableGlNormalize( skinning || _ModelViewMatrix[0].hasScalePart() || _ForceNormalize );
 
 
 	// 2. Setup Arrays.
@@ -1169,7 +712,7 @@ void			CDriverGL::activeVertexBufferHard(IVertexBufferHard *iVB)
 	VB->enable();
 
 	// Setup the OpenGL arrays.
-	setupGlArrays(_LastVB, NULL, skinning, paletteSkinning);
+	setupGlArrays(_LastVB);
 
 }
 
@@ -1235,7 +778,7 @@ const uint		CDriverGL::GLVertexAttribIndex[CVertexBuffer::NumValue]=
 
 
 // ***************************************************************************
-void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool skinning, bool paletteSkinning)
+void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 {
 	uint32	flags= vb.VertexFormat;
 
@@ -1265,8 +808,6 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 		// Disable all standards ptrs.
 		_DriverGLStates.enableVertexArray(false);
 		_DriverGLStates.enableNormalArray(false);
-		if(_Extensions.EXTVertexWeighting)
-			_DriverGLStates.enableWeightArray(false);
 		_DriverGLStates.enableColorArray(false);
 		for(sint i=0; i<getNbTextureStages(); i++)
 		{
@@ -1285,112 +826,25 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 	// Use a vertex program ?
 	if (!isVertexProgramEnabled ())
 	{
-		// Channel type is Float3 ?
-		// if software palette skinning: setup correct Vertex/Normal array.
-		if(paletteSkinning && !_PaletteSkinHard)
+		// Check type
+		nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
+
+		_DriverGLStates.enableVertexArray(true);
+		glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Position]);
+
+		// Check for normal param in vertex buffer
+		if (flags & CVertexBuffer::NormalFlag)
 		{
-			/// Must check vbinfo.
-			nlassert(vbInf->SoftSkinVertices.size()==vb.NumVertices);
+			// Check type
+			nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
 
-			// Check it is the good type
-			nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
-
-			// Must point on computed Vertex array.
-			_DriverGLStates.enableVertexArray(true);
-
-			// array is compacted.
-			glVertexPointer(3,GL_FLOAT,0,&(*vbInf->SoftSkinVertices.begin()));
-
-			// Check for normal param in vertex buffer
-			if (flags & CVertexBuffer::NormalFlag)
-			{
-				// Check type
-				nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
-
-				/// Must check vbinfo.
-				nlassert(vbInf->SoftSkinNormals.size()==vb.NumVertices);
-
-				// Must point on computed Normal array.
-				_DriverGLStates.enableNormalArray(true);
-
-				// array is compacted.
-				glNormalPointer(GL_FLOAT,0,&(*vbInf->SoftSkinNormals.begin()));
-			}
-			else
-			{
-				_DriverGLStates.enableNormalArray(false);
-			}
+			_DriverGLStates.enableNormalArray(true);
+			glNormalPointer(GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Normal]);
 		}
 		else
 		{
-			// Check type
-			nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
-
-			_DriverGLStates.enableVertexArray(true);
-			glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Position]);
-
-			// Check for normal param in vertex buffer
-			if (flags & CVertexBuffer::NormalFlag)
-			{
-				// Check type
-				nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
-
-				_DriverGLStates.enableNormalArray(true);
-				glNormalPointer(GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Normal]);
-			}
-			else
-			{
-				_DriverGLStates.enableNormalArray(false);
-			}
+			_DriverGLStates.enableNormalArray(false);
 		}
-
-		// Setup Vertex Weight.
-		//=======================
-		// disable vertex weight
-		bool disableVertexWeight= _Extensions.EXTVertexWeighting;
-
-		// if skinning not paletted...
-		if ( skinning && !paletteSkinning)
-		{
-			// 4 weights ?
-			if (vb.NumWeight==4)
-			{
-				// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
-			}
-			// 3 weights ?
-			else if (vb.NumWeight==3)
-			{
-				// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 3 matrices mode by hardware (Radeon, NV20).
-			}
-			// 2 weights ?
-			else
-			{
-				// Check if vertex weighting extension is available
-				if (_Extensions.EXTVertexWeighting)
-				{
-					// Check type
-					nlassert (vb.Type[CVertexBuffer::Weight]==CVertexBuffer::Float1);
-
-					// Active skinning
-					glEnable (GL_VERTEX_WEIGHTING_EXT);
-
-					// Don't disable it
-					disableVertexWeight=false;
-
-					// Setup
-					_DriverGLStates.enableWeightArray(true);
-					nglVertexWeightPointerEXT(1, GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Weight]);
-				}
-				else
-				{
-					// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 2 matrices mode by hardware (Radeon, NV20).
-				}
-			}
-		}
-
-		// Disable vertex weight
-		if (disableVertexWeight)
-			_DriverGLStates.enableWeightArray(false);
 
 		// Setup Color / UV.
 		//==================

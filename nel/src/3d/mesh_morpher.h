@@ -1,7 +1,7 @@
 /** \file mesh_morpher.h
  * <File description>
  *
- * $Id: mesh_morpher.h,v 1.2 2002/03/14 18:08:04 vizerie Exp $
+ * $Id: mesh_morpher.h,v 1.3 2002/06/20 09:44:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ class CMeshMorpher
 {
 	typedef enum
 	{
-		OriginalAll,		// The vertex is the same as original into VBDst and VBHard
+		OriginalAll=0,		// The vertex is the same as original into VBDst and VBHard
 		OriginalVBDst,		// The vertex is the same as original into VBDst
 		ModifiedPosNorm,	// Vertex modified (pos, norm or pos/norm/tg space are modified, uv and col are not modified)
 		ModifiedUVCol		// Vertex modified (pos or norm can be modified, uv, col or uv/col are modified)
@@ -78,16 +78,17 @@ public:
 	CMeshMorpher();
 	// The allocation of the buffers must be managed by the caller
 	void init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBufferHard *vbDstHrd, bool hasTgSpace);
-	void initMRM (CVertexBuffer *vbOri,
+	void initSkinned (CVertexBuffer *vbOri,
 				  CVertexBuffer *vbDst,
 				  IVertexBufferHard *vbDstHrd,
+				  bool hasTgSpace,
 				  std::vector<CVector> *vVertices,
 				  std::vector<CVector> *vNormals,
 				  std::vector<CVector> *vTgSpace, /* NULL if none */
 				  bool bSkinApplied);
 
 	void update (std::vector<CAnimatedMorph> *pBSFactor);
-	void updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTangentSpace);
+	void updateSkinned (std::vector<CAnimatedMorph> *pBSFactor);
 	
 	void serial (NLMISC::IStream &f) throw(NLMISC::EStream);
 

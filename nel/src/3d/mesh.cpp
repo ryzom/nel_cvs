@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.60 2002/06/19 08:42:09 berenguier Exp $
+ * $Id: mesh.cpp,v 1.61 2002/06/20 09:44:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,7 @@
 #include "3d/fast_floor.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "3d/mesh_blender.h"
+#include "3d/matrix_3x4.h"
 
 
 using namespace std;
@@ -121,6 +122,7 @@ bool	CMeshGeom::CCornerTmp::operator<(const CCornerTmp &c) const
 CMeshGeom::CMeshGeom()
 {
 	_Skinned= false;
+	_OriginalSkinRestored= true;
 	_VertexBufferHardDirty= true;
 	_MeshMorpher = new CMeshMorpher;
 	_BoneIdComputed = false;
@@ -501,8 +503,10 @@ void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 		return;
 
 
-	// If the mesh is skinned and if the driver do not support hardware palette skinning, still use normal CVertexBuffer.
-	if(_VertexBufferHardDirty && _Skinned && !drv->supportPaletteSkinning())
+	// If the mesh is skinned, still use normal CVertexBuffer.
+	// \todo yoyo: optimize. not done now because CMesh Skinned are not so used in game, 
+	//	and CMesh skinning is far not optimized (4 matrix mul all the time)
+	if( _VertexBufferHardDirty && _Skinned )
 	{
 		// delete possible old VBHard.
 		if(_VertexBufferHard!=NULL)
@@ -568,11 +572,19 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 	CRenderTrav		*renderTrav= ownerScene->getRenderTrav();
 
 
+	// update the VBufferHard (create/delete), to maybe render in AGP memory.
+	updateVertexBufferHard (drv);
+
+
 	// get the skeleton model to which I am binded (else NULL).
 	CSkeletonModel		*skeleton;
 	skeleton= mi->getSkeletonModel();
 	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
-	bool	skinOk= _Skinned && mi->isSkinApply() && skeleton;
+	bool bMorphApplied = _MeshMorpher->BlendShapes.size() > 0;
+	bool bSkinApplied = _Skinned && mi->isSkinApply() && skeleton;
+	bool useNormal= (_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)!=0;
+	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
+
 
 	// Profiling
 	//===========
@@ -582,15 +594,48 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 	static NLMISC::CHTimer	NL3D_MeshGeom_Render_Skinned_timer( "NL3D_MeshGeom_RenderSkinned" ); 
 	// choose what to time according to skin mode.
 	NLMISC::CAutoTimer	NL3D_MeshGeom_Render_auto( 
-		skinOk? &NL3D_MeshGeom_Render_Skinned_timer : &NL3D_MeshGeom_Render_Normal_timer);
+		bSkinApplied? &NL3D_MeshGeom_Render_Skinned_timer : &NL3D_MeshGeom_Render_Normal_timer);
 #endif
 
 
-
-	// If skinning, enable driver skinning.
-	if(skinOk)
+	// Morphing
+	// ========
+	if (bMorphApplied)
 	{
-		drv->setupVertexMode(NL3D_VERTEX_MODE_SKINNING);
+		// If Skinned we must update original skin vertices and normals because skinning use it
+		// If Skinned and not bSkinApplied and _OriginalSkinRestored restoreOriginalSkinPart is
+		// not called but mush morpher write changed vertices into VBHard so its ok. The unchanged vertices
+		// are written in the preceding call to restoreOriginalSkinPart.
+		if (_Skinned)
+		{
+			_MeshMorpher->initSkinned(&_VBufferOri,
+								 &_VBuffer,
+								 _VertexBufferHard,
+								 useTangentSpace,
+								 &_OriginalSkinVertices,
+								 &_OriginalSkinNormals,
+								 useTangentSpace ? &_OriginalTGSpace : NULL,
+								 bSkinApplied );
+			_MeshMorpher->updateSkinned (mi->getBlendShapeFactors());
+		}
+		else // Not even skinned so we have to do all the stuff
+		{
+			_MeshMorpher->init(&_VBufferOri,
+								 &_VBuffer,
+								 _VertexBufferHard,
+								 useTangentSpace);
+			_MeshMorpher->update (mi->getBlendShapeFactors());
+		}
+	}
+
+
+	// Skinning
+	// ========
+
+	// If skinning, setup skeleton matrix
+	if(bSkinApplied)
+	{
+		drv->setupModelMatrix(skeleton->getWorldMatrix());
 	}
 	// else setup instance matrix
 	else
@@ -599,29 +644,53 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 	}
 
 
-	bool	useMeshVP;
-
-
-	if (skinOk)
+	// If skinning
+	bool	bkupNorm;
+	if(bSkinApplied)
 	{
-		// Disable meshVP with Skinning, because incompatible (hardware use VertexProgram too :) ).
-		useMeshVP = false;
+		// force normalisation of normals..
+		bkupNorm= drv->isForceNormalize();
+		drv->forceNormalize(true);
+
+		// apply the skinning: _VBuffer is modified.
+		applySkin(skeleton);
 	}
+	// if instance skin is invalid but mesh is skinned , we must copy vertices/normals from original vertices.
+	else if (!bSkinApplied && _Skinned)
+	{
+		// do it for this Lod only, and if cache say it is necessary.
+		if (!_OriginalSkinRestored)
+			restoreOriginalSkinVertices();
+	}
+
+
+
+	// Setup meshVertexProgram
+	//===========
+	CMatrix		invertedObjectMatrix;
+	if (bSkinApplied)
+		invertedObjectMatrix = skeleton->getWorldMatrix().inverted();
 	else
-	{
-		useMeshVP = _MeshVertexProgram != NULL ?  _MeshVertexProgram->begin(drv, ownerScene, mi, trans->getWorldMatrix().inverted(), renderTrav->CamPos) : false;
-	}
+		invertedObjectMatrix = trans->getWorldMatrix().inverted();
 
 
+	// use MeshVertexProgram effect?
+	bool	useMeshVP= _MeshVertexProgram != NULL ? _MeshVertexProgram->begin(drv, ownerScene, mi, invertedObjectMatrix, renderTrav->CamPos) : false;
+	
 
-	// update the VBufferHard (create/delete), to maybe render in AGP memory.
-	updateVertexBufferHard (drv);
-	_MeshMorpher->init (&_VBufferOri, &_VBuffer, _VertexBufferHard, _MeshVertexProgram && _MeshVertexProgram->needTangentSpace());
-	_MeshMorpher->update (mi->getBlendShapeFactors());
+	// Render the mesh.
+	//===========
+	// active VB.
+	if(_VertexBufferHard != NULL)
+		drv->activeVertexBufferHard(_VertexBufferHard);
+	else
+		drv->activeVertexBuffer(_VBuffer);
+
 
 	// Global alpha used ?
 	bool globalAlphaUsed=globalAlpha!=1;
 	uint8 globalAlphaInt=(uint8)OptFastFloor(globalAlpha*255);
+
 
 	// For all _MatrixBlocks
 	for(uint mb=0;mb<_MatrixBlocks.size();mb++)
@@ -629,50 +698,6 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 		CMatrixBlock	&mBlock= _MatrixBlocks[mb];
 		if(mBlock.RdrPass.size()==0)
 			continue;
-
-		// If skinning, Setup matrixs (else worldmatrix setuped before).
-		if(skinOk)
-		{
-			uint idMat;
-
-			// Get previous block.
-			CMatrixBlock	*mPrevBlock=NULL;
-			if(mb>0)
-				mPrevBlock= &_MatrixBlocks[mb-1];
-
-			// For all matrix of this mBlock.
-			for(idMat=0;idMat<mBlock.NumMatrix;idMat++)
-			{
-				uint	curBoneId= mBlock.MatrixId[idMat];
-
-				// If same matrix binded as previous block, no need to bind!!
-				if(mPrevBlock && idMat<mPrevBlock->NumMatrix && mPrevBlock->MatrixId[idMat]== curBoneId)
-					continue;
-
-				// Else, we must setup the matrix computed in skeleton to the driver.
-				/* Use separate multiply for precision consideration:
-					In OpenGL, The modelViewMatrix is first computed in setupModelMatrix(), and so
-					the result is nearly identity (because in camera basis).
-					If we do setupModelMatrix(skeleton->getWorldMatrix() * skeleton->getActiveBoneSkinMatrix(curBoneId)),
-					the result is worse.
-				*/
-				drv->setupModelMatrix(skeleton->getWorldMatrix(), idMat);
-				drv->multiplyModelMatrix(skeleton->getActiveBoneSkinMatrix(curBoneId), idMat);
-			}
-		}
-				
-		// if VB Hard is here, use it.
-		if(_VertexBufferHard != NULL)
-		{
-			// active VB Hard.
-			drv->activeVertexBufferHard(_VertexBufferHard);
-		}
-		else
-		{
-			// active VB. SoftwareSkinning: reset flags for skinning.
-			drv->activeVertexBuffer(_VBuffer);
-		}
-
 
 		// Global alpha ?
 		if (globalAlphaUsed)
@@ -735,12 +760,11 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 		_MeshVertexProgram->end(drv);
 	}
 
-	// disable driver skinning.
-	if(skinOk)
+	// end skin
+	if(bSkinApplied)
 	{
-		drv->setupVertexMode(NL3D_VERTEX_MODE_NORMAL);
+		drv->forceNormalize(bkupNorm);
 	}
-
 }
 
 
@@ -791,6 +815,14 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		- separate serialisation CMesh / CMeshGeom.
 	*/
 	sint ver = f.serialVersion (4);
+
+
+	// must have good original Skinned Vertex before writing.
+	if( !f.isReading() && _Skinned && !_OriginalSkinRestored )
+	{
+		restoreOriginalSkinVertices();
+	}
+
 
 	// Version 4+: Array of bone name
 	if (ver >= 4)
@@ -881,6 +913,11 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 // ***************************************************************************
 void	CMeshGeom::compileRunTime()
 {
+	// if skinned, prepare skinning
+	if(_Skinned)
+		bkupOriginalSkinVertices();
+
+	// Do precise clipping for big object??
 	_PreciseClipping= _BBox.getRadius() >= NL3D_MESH_PRECISE_CLIP_THRESHOLD;
 
 	// Support MeshBlockRendering only if not skinned/meshMorphed.
@@ -1406,6 +1443,323 @@ void	CMeshGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 			sm->incBoneUsage(_BonesIdExt[i], CSkeletonModel::UsageNormal);
 		else
 			sm->decBoneUsage(_BonesIdExt[i], CSkeletonModel::UsageNormal);
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::bkupOriginalSkinVertices()
+{
+	nlassert(_Skinned);
+
+	// reset
+	contReset(_OriginalSkinVertices);
+	contReset(_OriginalSkinNormals);
+	contReset(_OriginalTGSpace);
+
+	// get num of vertices
+	uint	numVertices= _VBuffer.getNumVertices();
+
+	// Copy VBuffer content into Original vertices normals.
+	if(_VBuffer.getVertexFormat() & CVertexBuffer::PositionFlag)
+	{
+		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
+		_OriginalSkinVertices.resize(numVertices);
+		for(uint i=0; i<numVertices;i++)
+		{
+			_OriginalSkinVertices[i]= *(CVector*)_VBuffer.getVertexCoordPointer(i);
+		}
+	}
+	if(_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)
+	{
+		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
+		_OriginalSkinNormals.resize(numVertices);
+		for(uint i=0; i<numVertices;i++)
+		{
+			_OriginalSkinNormals[i]= *(CVector*)_VBuffer.getNormalCoordPointer(i);
+		}
+	}
+
+	// is there tangent space added ?
+	if (_MeshVertexProgram && _MeshVertexProgram->needTangentSpace())
+	{
+		// yes, backup it
+		nlassert(_VBuffer.getNumTexCoordUsed() > 0);
+		uint tgSpaceStage = _VBuffer.getNumTexCoordUsed() - 1;
+		_OriginalTGSpace.resize(numVertices);
+		for(uint i=0; i<numVertices;i++)
+		{
+			_OriginalTGSpace[i]= *(CVector*)_VBuffer.getTexCoordPointer(i, tgSpaceStage);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::restoreOriginalSkinVertices()
+{
+	nlassert(_Skinned);
+
+	// get num of vertices
+	uint	numVertices= _VBuffer.getNumVertices();
+
+	// Copy VBuffer content into Original vertices normals.
+	if(_VBuffer.getVertexFormat() & CVertexBuffer::PositionFlag)
+	{
+		// copy vertices from VBuffer. (NB: unusefull geomorphed vertices are still copied, but doesn't matter).
+		for(uint i=0; i<numVertices;i++)
+		{
+			*(CVector*)_VBuffer.getVertexCoordPointer(i)= _OriginalSkinVertices[i];
+		}
+	}
+	if(_VBuffer.getVertexFormat() & CVertexBuffer::NormalFlag)
+	{
+		// copy normals from VBuffer. (NB: unusefull geomorphed normals are still copied, but doesn't matter).
+		for(uint i=0; i<numVertices;i++)
+		{
+			*(CVector*)_VBuffer.getNormalCoordPointer(i)= _OriginalSkinNormals[i];
+		}
+	}
+	if (_MeshVertexProgram && _MeshVertexProgram->needTangentSpace())
+	{
+		uint numTexCoords = _VBuffer.getNumTexCoordUsed();
+		nlassert(numTexCoords >= 2);
+		nlassert(_OriginalTGSpace.size() == numVertices);
+		// copy tangent space vectors
+		for(uint i = 0; i < numVertices; ++i)
+		{
+			*(CVector*)_VBuffer.getTexCoordPointer(i, numTexCoords - 1)= _OriginalTGSpace[i];
+		}
+	}
+
+	// cleared
+	_OriginalSkinRestored= true;
+}
+
+
+// ***************************************************************************
+// Flags for software vertex skinning.
+#define	NL3D_SOFTSKIN_VNEEDCOMPUTE	3
+#define	NL3D_SOFTSKIN_VMUSTCOMPUTE	1
+#define	NL3D_SOFTSKIN_VCOMPUTED		0
+// 3 means "vertex may need compute".
+// 1 means "Primitive say vertex must be computed".
+// 0 means "vertex is computed".
+
+
+// ***************************************************************************
+void	CMeshGeom::applySkin(CSkeletonModel *skeleton)
+{
+	// init.
+	//===================
+	if(_OriginalSkinVertices.empty())
+		return;
+
+	// Use correct skinning
+	TSkinType	skinType;
+	if( _OriginalSkinNormals.empty() )
+		skinType= SkinPosOnly;
+	else if( _OriginalTGSpace.empty() )
+		skinType= SkinWithNormal;
+	else
+		skinType= SkinWithTgSpace;
+
+	// Get VB src/dst info/ptrs.
+	uint	numVertices= _OriginalSkinVertices.size();
+	uint	dstStride= _VBuffer.getVertexSize();
+	// Get dst TgSpace.
+	uint	tgSpaceStage;
+	if( skinType>= SkinWithTgSpace)
+	{
+		nlassert(_VBuffer.getNumTexCoordUsed() > 0);
+		tgSpaceStage= _VBuffer.getNumTexCoordUsed() - 1;
+	}
+
+	// Mark all vertices flag to not computed.
+	static	vector<uint8>	skinFlags;
+	skinFlags.resize(numVertices);
+	// reset all flags
+	memset(&skinFlags[0], NL3D_SOFTSKIN_VNEEDCOMPUTE, numVertices );
+
+
+	// For all MatrixBlocks
+	//===================
+	for(uint mb= 0; mb<_MatrixBlocks.size();mb++)
+	{
+		// compute matrixes for this block.
+		static	CMatrix3x4	matrixes[IDriver::MaxModelMatrix];
+		computeSkinMatrixes(skeleton, matrixes, mb==0?NULL:&_MatrixBlocks[mb-1], _MatrixBlocks[mb]);
+
+		// check what vertex to skin for this PB.
+		flagSkinVerticesForMatrixBlock(&skinFlags[0], _MatrixBlocks[mb]);
+
+		// Get VB src/dst ptrs.
+		uint8		*pFlag= &skinFlags[0];
+		CVector		*srcVector= &_OriginalSkinVertices[0];
+		uint8		*srcPal= (uint8*)_VBuffer.getPaletteSkinPointer(0);
+		uint8		*srcWgt= (uint8*)_VBuffer.getWeightPointer(0);
+		uint8		*dstVector= (uint8*)_VBuffer.getVertexCoordPointer(0);
+		// Normal.
+		CVector		*srcNormal= NULL;
+		uint8		*dstNormal= NULL;
+		if(skinType>=SkinWithNormal)
+		{
+			srcNormal= &_OriginalSkinNormals[0];
+			dstNormal= (uint8*)_VBuffer.getNormalCoordPointer(0);
+		}
+		// TgSpace.
+		CVector		*srcTgSpace= NULL;
+		uint8		*dstTgSpace= NULL;
+		if(skinType>=SkinWithTgSpace)
+		{
+			srcTgSpace= &_OriginalTGSpace[0];
+			dstTgSpace= (uint8*)_VBuffer.getTexCoordPointer(0, tgSpaceStage);
+		}
+
+
+		// For all vertices that need to be computed.
+		uint		size= numVertices;
+		for(;size>0;size--)
+		{
+			// If we must compute this vertex.
+			if(*pFlag==NL3D_SOFTSKIN_VMUSTCOMPUTE)
+			{
+				// Flag this vertex as computed.
+				*pFlag=NL3D_SOFTSKIN_VCOMPUTED;
+
+				CPaletteSkin	*psPal= (CPaletteSkin*)srcPal;
+
+				// checks indices.
+				nlassert(psPal->MatrixId[0]<IDriver::MaxModelMatrix);
+				nlassert(psPal->MatrixId[1]<IDriver::MaxModelMatrix);
+				nlassert(psPal->MatrixId[2]<IDriver::MaxModelMatrix);
+				nlassert(psPal->MatrixId[3]<IDriver::MaxModelMatrix);
+
+				// compute vertex part.
+				computeSoftwarePointSkinning(matrixes, srcVector, psPal, (float*)srcWgt, (CVector*)dstVector);
+
+				// compute normal part.
+				if(skinType>=SkinWithNormal)
+					computeSoftwareVectorSkinning(matrixes, srcNormal, psPal, (float*)srcWgt, (CVector*)dstNormal);
+
+				// compute tg part.
+				if(skinType>=SkinWithTgSpace)
+					computeSoftwareVectorSkinning(matrixes, srcTgSpace, psPal, (float*)srcWgt, (CVector*)dstTgSpace);
+			}
+
+			// inc flags.
+			pFlag++;
+			// inc src (all whatever skin type used...)
+			srcVector++;
+			srcNormal++;
+			srcTgSpace++;
+			// inc paletteSkin and dst  (all whatever skin type used...)
+			srcPal+= dstStride;
+			srcWgt+= dstStride;
+			dstVector+= dstStride;
+			dstNormal+= dstStride;
+			dstTgSpace+= dstStride;
+		}
+	}
+
+
+	// dirt
+	_OriginalSkinRestored= false;
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::flagSkinVerticesForMatrixBlock(uint8 *skinFlags, CMatrixBlock &mb)
+{
+	for(uint i=0; i<mb.RdrPass.size(); i++)
+	{
+		CPrimitiveBlock	&PB= mb.RdrPass[i].PBlock;
+
+		uint32	*pIndex;
+		uint	nIndex;
+
+		// This may be better to flags in 2 pass (first traverse primitives, then test vertices).
+		// Better sol for BTB..., because number of tests are divided by 6 (for triangles).
+
+		// for all prims, indicate which vertex we must compute.
+		// nothing if not already computed (ie 0), because 0&1==0.
+		// Lines.
+		pIndex= (uint32*)PB.getLinePointer();
+		nIndex= PB.getNumLine()*2;
+		for(;nIndex>0;nIndex--, pIndex++)
+			skinFlags[*pIndex]&= NL3D_SOFTSKIN_VMUSTCOMPUTE;
+		// Tris.
+		pIndex= (uint32*)PB.getTriPointer();
+		nIndex= PB.getNumTri()*3;
+		for(;nIndex>0;nIndex--, pIndex++)
+			skinFlags[*pIndex]&= NL3D_SOFTSKIN_VMUSTCOMPUTE;
+		// Quads.
+		pIndex= (uint32*)PB.getQuadPointer();
+		nIndex= PB.getNumQuad()*4;
+		for(;nIndex>0;nIndex--, pIndex++)
+			skinFlags[*pIndex]&= NL3D_SOFTSKIN_VMUSTCOMPUTE;
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::computeSoftwarePointSkinning(CMatrix3x4 *matrixes, CVector *srcVec, CPaletteSkin *srcPal, float *srcWgt, CVector *pDst)
+{
+	CMatrix3x4		*pMat;
+
+	// \todo yoyo: TODO_OPTIMIZE: SSE verion...
+
+	// 0th matrix influence.
+	pMat= matrixes + srcPal->MatrixId[0];
+	pMat->mulSetPoint(*srcVec, srcWgt[0], *pDst);
+	// 1th matrix influence.
+	pMat= matrixes + srcPal->MatrixId[1];
+	pMat->mulAddPoint(*srcVec, srcWgt[1], *pDst);
+	// 2th matrix influence.
+	pMat= matrixes + srcPal->MatrixId[2];
+	pMat->mulAddPoint(*srcVec, srcWgt[2], *pDst);
+	// 3th matrix influence.
+	pMat= matrixes + srcPal->MatrixId[3];
+	pMat->mulAddPoint(*srcVec, srcWgt[3], *pDst);
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::computeSoftwareVectorSkinning(CMatrix3x4 *matrixes, CVector *srcVec, CPaletteSkin *srcPal, float *srcWgt, CVector *pDst)
+{
+	CMatrix3x4		*pMat;
+
+	// \todo yoyo: TODO_OPTIMIZE: SSE verion...
+
+	// 0th matrix influence.
+	pMat= matrixes + srcPal->MatrixId[0];
+	pMat->mulSetVector(*srcVec, srcWgt[0], *pDst);
+	// 1th matrix influence.
+	pMat= matrixes + srcPal->MatrixId[1];
+	pMat->mulAddVector(*srcVec, srcWgt[1], *pDst);
+	// 2th matrix influence.
+	pMat= matrixes + srcPal->MatrixId[2];
+	pMat->mulAddVector(*srcVec, srcWgt[2], *pDst);
+	// 3th matrix influence.
+	pMat= matrixes + srcPal->MatrixId[3];
+	pMat->mulAddVector(*srcVec, srcWgt[3], *pDst);
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::computeSkinMatrixes(CSkeletonModel *skeleton, CMatrix3x4 *matrixes, CMatrixBlock  *prevBlock, CMatrixBlock  &mBlock)
+{
+	// For all matrix of this mBlock.
+	for(uint idMat=0;idMat<mBlock.NumMatrix;idMat++)
+	{
+		uint	curBoneId= mBlock.MatrixId[idMat];
+
+		// If same matrix binded as previous block, no need to bind!!
+		if(prevBlock && idMat<prevBlock->NumMatrix && prevBlock->MatrixId[idMat]== curBoneId)
+			continue;
+
+		// Else, we must setup the matrix 
+		matrixes[idMat].set(skeleton->getActiveBoneSkinMatrix(curBoneId));
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl_light.cpp
  * OpenGL driver implementation : light
  *
- * $Id: driver_opengl_light.cpp,v 1.7 2002/02/18 13:37:49 berenguier Exp $
+ * $Id: driver_opengl_light.cpp,v 1.8 2002/06/20 09:45:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,7 +121,9 @@ void	CDriverGL::setLight (uint8 num, const CLight& light)
 			glLighti (lightNum, GL_SPOT_EXPONENT, 0);
 		}
 
-		_ViewMatrixSetupDirty=true;
+		// dirt the lightSetup and hence the render setup
+		_LightSetupDirty= true;
+		_RenderSetupDirty=true;
 	}
 }
 
@@ -161,6 +163,91 @@ void	CDriverGL::setAmbientColor (CRGBA color)
 	glLightModelfv (GL_LIGHT_MODEL_AMBIENT, array);
 }
 
+
 // ***************************************************************************
+void				CDriverGL::cleanLightSetup ()
+{
+	// Should be dirty
+	nlassert (_LightSetupDirty);
+	
+	// First light
+	bool first=true;
+
+	// For each lights
+	for (uint i=0; i<_MaxDriverLight; i++)
+	{
+		// Is this light enabled ?
+		if (_LightEnable[i])
+		{
+			// If first light
+			if (first)
+			{
+				first=false;
+
+				// Push the matrix
+				glPushMatrix ();
+
+				// Load the view matrix
+				glLoadMatrixf (_ViewMtx.get());
+			}
+
+			// Light is directionnal ?
+			if (_LightMode[i]==(uint)CLight::DirectionalLight)
+			{
+				// GL vector
+				GLfloat vectorGL[4];
+
+				// Set the GL array
+				vectorGL[0]=-_WorldLightDirection[i].x;
+				vectorGL[1]=-_WorldLightDirection[i].y;
+				vectorGL[2]=-_WorldLightDirection[i].z;
+				vectorGL[3]=0.f;
+	
+				// Set it
+				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_POSITION, vectorGL);
+			}
+
+			// Spotlight ?
+			if (_LightMode[i]==(uint)CLight::SpotLight)
+			{
+				// GL vector
+				GLfloat vectorGL[4];
+
+				// Set the GL array
+				vectorGL[0]=_WorldLightDirection[i].x;
+				vectorGL[1]=_WorldLightDirection[i].y;
+				vectorGL[2]=_WorldLightDirection[i].z;
+	
+				// Set it
+				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_SPOT_DIRECTION, vectorGL);
+			}
+
+			// Position 
+			if (_LightMode[i]!=(uint)CLight::DirectionalLight)
+			{
+				// GL vector
+				GLfloat vectorGL[4];
+
+				// Set the GL array
+				// Must Substract CameraPos, because ViewMtx may not be the exact view.
+				vectorGL[0]=_WorldLightPos[i].x - _PZBCameraPos.x;
+				vectorGL[1]=_WorldLightPos[i].y - _PZBCameraPos.y;
+				vectorGL[2]=_WorldLightPos[i].z - _PZBCameraPos.z;
+				vectorGL[3]=1.f;
+	
+				// Set it
+				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_POSITION, vectorGL);
+			}
+		}
+	}
+
+	// Pop old matrix
+	if (!first)
+		glPopMatrix ();
+
+	// Clean flag
+	_LightSetupDirty=false;
+}
+
 
 } // NL3D

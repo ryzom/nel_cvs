@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.27 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: mesh.h,v 1.28 2002/06/20 09:44:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,6 +55,7 @@ using	NLMISC::CMatrix;
 
 class CMeshGeom;
 class CSkeletonModel;
+class CMatrix3x4;
 
 // ***************************************************************************
 // Should be 4.
@@ -579,7 +580,14 @@ private:
 
 
 private:
-	/// VBuffer of the mesh (potentially modified by the mesh morpher)
+	/** Skinning: this is the list of vertices (mirror of VBuffer), at the bind Pos. 
+	 *	Potentially modified by the mesh morpher
+	 */
+	std::vector<CVector>		_OriginalSkinVertices;
+	std::vector<CVector>		_OriginalSkinNormals;
+	std::vector<CVector>		_OriginalTGSpace;
+
+	/// VBuffer of the mesh (potentially modified by the mesh morpher and skinning)
 	CVertexBuffer				_VBuffer;
 	/// The original VBuffer of the mesh used only if there are blend shapes.
 	CVertexBuffer				_VBufferOri;
@@ -587,10 +595,10 @@ private:
 	std::vector<CMatrixBlock>	_MatrixBlocks;
 	/// For clipping.
 	NLMISC::CAABBoxExt			_BBox;
-	/// Estimate if we must do a Precise clipping (ie with bboxes)
-	bool						_PreciseClipping;
 	/// This tells if the mesh is correctly skinned.
 	bool						_Skinned;
+	/// This tells if the mesh VBuffer has coorect BindPos vertices
+	bool						_OriginalSkinRestored;
 
 	/// This boolean is true if the bones id have been passed in the skeleton
 	bool						_BoneIdComputed;
@@ -625,6 +633,8 @@ private:
 	bool							_SupportMeshBlockRendering;
 	// @}
 
+	/// Estimate if we must do a Precise clipping (ie with bboxes)
+	bool						_PreciseClipping;
 
 	// The Mesh Morpher
 	CMeshMorpher	*_MeshMorpher; 
@@ -703,17 +713,40 @@ private:
 		}
 	}
 
-	// build skinning.
-	void	buildSkin(CMesh::CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces);
 
 	// optimize triangles order of all render pass.
 	void	optimizeTriangleOrder();
 
+	// Some runtime not serialized compilation
+	void	compileRunTime();
+
+
+	/// \name Skinning
+	// @{
+
+	enum	TSkinType {SkinPosOnly=0, SkinWithNormal, SkinWithTgSpace};
+	
+	// build skinning.
+	void	buildSkin(CMesh::CMeshBuild &m, std::vector<CFaceTmp>	&tmpFaces);
+
 	// Build bone Usage information for serialized mesh <= version 3.
 	void	buildBoneUsageVer3 ();
 
-	// Some runtime not serialized compilation
-	void	compileRunTime();
+	// bkup from VBuffer into _OriginalSkin*
+	void	bkupOriginalSkinVertices();
+	// restore from _OriginalSkin* to VBuffer. set _OriginalSkinRestored to true
+	void	restoreOriginalSkinVertices();
+
+	// apply Skin to all vertices from _OriginalSkin* to _VBuffer.
+	void	applySkin(CSkeletonModel *skeleton);
+
+
+	void	flagSkinVerticesForMatrixBlock(uint8 *skinFlags, CMatrixBlock &mb);
+	void	computeSkinMatrixes(CSkeletonModel *skeleton, CMatrix3x4 *matrixes, CMatrixBlock  *prevBlock, CMatrixBlock &curBlock);
+	void	computeSoftwarePointSkinning(CMatrix3x4 *matrixes, CVector *srcVector, CPaletteSkin *srcPal, float *srcWgt, CVector *dstVector);
+	void	computeSoftwareVectorSkinning(CMatrix3x4 *matrixes, CVector *srcVector, CPaletteSkin *srcPal, float *srcWgt, CVector *dstVector);
+
+	// @}
 
 };
 

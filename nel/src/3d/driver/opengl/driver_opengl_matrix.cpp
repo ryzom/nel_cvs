@@ -1,7 +1,7 @@
 /** \file driver_opengl_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.14 2002/03/18 14:46:16 berenguier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.15 2002/06/20 09:45:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,8 +66,10 @@ void CDriverGL::setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)
 	_ViewMtx.setPos(CVector::Null);
 	_PZBCameraPos= cameraPos;
 
-	_MatrixSetupDirty= true;
-	_ViewMatrixSetupDirty= true;
+	// Anything that depend on the view martix must be updated.
+	_LightSetupDirty= true;
+	_ModelViewMatrixDirty= true;
+	_RenderSetupDirty= true;
 
 	_TexMtx = _ViewMtx;
 	_TexMtx.setPos(CVector(0.0f,0.0f,0.0f));
@@ -93,8 +95,10 @@ void CDriverGL::setupViewMatrix(const CMatrix& mtx)
 	// Just set the PZBCameraPos to 0.
 	_PZBCameraPos= CVector::Null;
 
-	_MatrixSetupDirty= true;
-	_ViewMatrixSetupDirty= true;
+	// Anything that depend on the view martix must be updated.
+	_LightSetupDirty= true;
+	_ModelViewMatrixDirty= true;
+	_RenderSetupDirty= true;
 
 	_TexMtx = _ViewMtx;
 	_TexMtx.setPos(CVector(0.0f,0.0f,0.0f));
@@ -110,56 +114,62 @@ CMatrix CDriverGL::getViewMatrix(void) const
 }
 
 // ***************************************************************************
-void CDriverGL::setupModelMatrix(const CMatrix& mtx, uint8 n)
+void CDriverGL::setupModelMatrix(const CMatrix& mtx)
 {
-	// Check args
-	nlassert (n<IDriver::MaxModelMatrix);
-
 	// profiling
 	_NbSetupModelMatrixCall++;
 
 
 	// Dirt flags.
-	_MatrixSetupDirty= true;
-	// because we don't know for which (skin/normal/paletteSkin) mode this will be used, we must set the 2 flags.
-	_ModelViewMatrixDirty.set(n);
-	_ModelViewMatrixDirtyPaletteSkin.set(n);
+	_ModelViewMatrixDirty= true;
+	_RenderSetupDirty= true;
 
 
 	// Put the matrix in the opengl eye space, and store it.
 	CMatrix		mat= mtx;
 	// remove first the _PZBCameraPos
 	mat.setPos(mtx.getPos() - _PZBCameraPos);
-	_ModelViewMatrix[n]= _ViewMtx*mat;
+	_ModelViewMatrix= _ViewMtx*mat;
 }
 
 // ***************************************************************************
-void CDriverGL::multiplyModelMatrix(const CMatrix& mtx, uint8 n)
+void CDriverGL::multiplyModelMatrix(const CMatrix& mtx)
 {
-	// Check args
-	nlassert (n<IDriver::MaxModelMatrix);
-
-
 	// Dirt flags.
-	_MatrixSetupDirty= true;
-	// because we don't know for which (skin/normal/paletteSkin) mode this will be used, we must set the 2 flags.
-	_ModelViewMatrixDirty.set(n);
-	_ModelViewMatrixDirtyPaletteSkin.set(n);
+	_ModelViewMatrixDirty= true;
+	_RenderSetupDirty= true;
 
 
 	// multiply this modelMatrix with the _ModelViewMatrix.
-	_ModelViewMatrix[n]= _ModelViewMatrix[n]*mtx;
+	_ModelViewMatrix= _ModelViewMatrix*mtx;
 }
 
 
-
 // ***************************************************************************
-void	CDriverGL::CMatrix3x4::set(const CMatrix &mat)
+void CDriverGL::doRefreshRenderSetup()
 {
-	const float	*m =mat.get();
-	a11= m[0]; a12= m[4]; a13= m[8] ; a14= m[12]; 
-	a21= m[1]; a22= m[5]; a23= m[9] ; a24= m[13]; 
-	a31= m[2]; a32= m[6]; a33= m[10]; a34= m[14]; 
+	// Check if the light setup has been modified first
+	if (_LightSetupDirty)
+		// Recompute light setup
+		cleanLightSetup ();
+
+	// Check light setup is good
+	nlassert (_LightSetupDirty==false);
+
+
+	// Check if must update the modelViewMatrix
+	if( _ModelViewMatrixDirty )
+	{
+		// By default, the first model matrix is active
+		glLoadMatrixf( _ModelViewMatrix.get() );
+		// enable normalize if matrix has scale.
+		enableGlNormalize( _ModelViewMatrix.hasScalePart() || _ForceNormalize );
+		// clear.
+		_ModelViewMatrixDirty= false;
+	}
+
+	// render setup is cleaned.
+	_RenderSetupDirty= false;
 }
 
 

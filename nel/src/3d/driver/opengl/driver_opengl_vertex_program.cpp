@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.10 2002/02/20 18:07:42 lecroart Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.11 2002/06/20 09:45:04 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -275,13 +275,8 @@ void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver:
 	// Vertex program exist ?
 	if (_Extensions.NVVertexProgram)
 	{
-		// First, ensure that the ModelView matrix is ocrreclty setuped.
-		if(_ModelViewMatrixDirty[0])
-		{
-			_ModelViewMatrixDirty.clear(0);
-			// By default, the first model matrix is active
-			glLoadMatrixf( _ModelViewMatrix[0].get() );
-		}
+		// First, ensure that the render setup is correclty setuped.
+		refreshRenderSetup();
 
 		// Track the matrix
 		nglTrackMatrixNV (GL_VERTEX_PROGRAM_NV, index, GLMatrix[matrix], GLTransform[transform]);

@@ -2287,6 +2287,14 @@ SOURCE=.\3d\fast_floor.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\matrix_3x4.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\matrix_3x4.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\radix_sort.cpp
 # End Source File
 # Begin Source File

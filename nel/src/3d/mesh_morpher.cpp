@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * <File description>
  *
- * $Id: mesh_morpher.cpp,v 1.3 2002/03/14 18:08:04 vizerie Exp $
+ * $Id: mesh_morpher.cpp,v 1.4 2002/06/20 09:44:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,9 @@ CMeshMorpher::CMeshMorpher()
 	_VBDstHrd = NULL;
 
 	_Vertices = NULL;
-	_Normals = NULL;	
+	_Normals = NULL;
+	_TgSpace= NULL;
+	_SkinApplied= false;
 }
 
 // ***************************************************************************
@@ -76,17 +78,19 @@ void CMeshMorpher::init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBuff
 }
 
 // ***************************************************************************
-void CMeshMorpher::initMRM (CVertexBuffer *vbOri,
+void CMeshMorpher::initSkinned (CVertexBuffer *vbOri,
 							CVertexBuffer *vbDst,
 							IVertexBufferHard *vbDstHrd,
+							bool hasTgSpace,
 							std::vector<CVector> *vVertices,
 							std::vector<CVector> *vNormals,
 							std::vector<CVector> *vTgSpace, /* NULL if none */
-							bool bSkinApplied)
+							bool bSkinApplied	)
 {
 	_VBOri = vbOri;
 	_VBDst = vbDst;
 	_VBDstHrd = vbDstHrd;
+	_UseTgSpace = hasTgSpace;
 
 	_Vertices = vVertices;
 	_Normals = vNormals;
@@ -98,9 +102,6 @@ void CMeshMorpher::initMRM (CVertexBuffer *vbOri,
 void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 {
 	uint32 i, j;
-
-	static uint32 tmp = 0;
-	tmp++;
 
 	if (_VBOri == NULL)
 		return;
@@ -118,7 +119,7 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 	{
 		_Flags.resize (_VBOri->getNumVertices());
 		for (i = 0; i < _Flags.size(); ++i)
-			_Flags[i] = 2; // Modified to update all
+			_Flags[i] = ModifiedUVCol; // Modified to update all
 	}
 
 	nlassert(_VBOri->getVertexFormat() == _VBDst->getVertexFormat());
@@ -129,9 +130,9 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 	uint8 *pDst = (uint8*)_VBDst->getVertexCoordPointer ();
 	
 	for (i= 0; i < _Flags.size(); ++i)
-	if (_Flags[i] == 2)
+	if (_Flags[i] >= ModifiedPosNorm)
 	{
-		_Flags[i] = 1; // OriginalVBDst
+		_Flags[i] = OriginalVBDst;
 
 		for(j = 0; j < VBVertexSize; ++j)
 			pDst[j+i*VBVertexSize] = pOri[j+i*VBVertexSize];
@@ -154,6 +155,8 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 		{
 			uint32 vp = rBS.VertRefs[j];
 
+			// Modify Pos/Norm/TgSpace.
+			//------------
 			if (_VBDst->getVertexFormat() & CVertexBuffer::PositionFlag)
 			if (rBS.deltaPos.size() > 0)
 			{
@@ -168,6 +171,15 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 				*pV += rBS.deltaNorm[j] * rFactor;
 			}
 
+			if (_UseTgSpace)
+			if (rBS.deltaTgSpace.size() > 0)
+			{
+				CVector *pV = (CVector*)_VBDst->getTexCoordPointer (vp, tgSpaceStage);
+				*pV += rBS.deltaTgSpace[j] * rFactor;
+			}
+
+			// Modify UV0 / Color
+			//------------
 			if (_VBDst->getVertexFormat() & CVertexBuffer::TexCoord0Flag)
 			if (rBS.deltaUV.size() > 0)
 			{
@@ -191,14 +203,8 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 				*pRGBA = rgbf;
 			}
 
-			if (_UseTgSpace)
-			if (rBS.deltaTgSpace.size() > 0)
-			{
-				CVector *pV = (CVector*)_VBDst->getTexCoordPointer (vp, tgSpaceStage);
-				*pV += rBS.deltaTgSpace[j] * rFactor;
-			}
-
-			_Flags[vp] = 2; // Modified
+			// Modified
+			_Flags[vp] = ModifiedUVCol;
 		}
 	}
 
@@ -208,25 +214,25 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 		uint8 *pDstHrd = (uint8*)_VBDstHrd->lock();
 		for (i = 0; i < _Flags.size(); ++i)
 		{
-			if (_Flags[i] != 0) // Not OriginalAll ?
+			if (_Flags[i] != OriginalAll) // Not OriginalAll ?
 			{
 				for(j = 0; j < VBVertexSize; ++j)
 					pDstHrd[j+i*VBVertexSize] = pDst[j+i*VBVertexSize];
 			}
-			if (_Flags[i] == 1) // OriginalVBDst ?
-				_Flags[i] = 0; // So OriginalAll !
+			// if this vertex is original in the VBDst
+			if (_Flags[i] == OriginalVBDst)
+				// then it is now copied into the VBHard
+				_Flags[i] = OriginalAll;
 		}
 		_VBDstHrd->unlock();
 	}
 }
 
+
 // ***************************************************************************
-void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTangentSpace)
+void CMeshMorpher::updateSkinned (std::vector<CAnimatedMorph> *pBSFactor)
 {
 	uint32 i, j;
-
-	static uint32 tmp = 0;
-	tmp++;
 
 	if (_VBOri == NULL)
 		return;
@@ -251,7 +257,7 @@ void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTa
 
 	uint tgSpaceStage;
 	uint tgSpaceOff;
-	if (useTangentSpace || _TgSpace)
+	if (_UseTgSpace && _TgSpace)
 	{
 		tgSpaceStage = _VBDst->getNumTexCoordUsed() - 1;
 		tgSpaceOff = _VBDst->getTexCoordOff(tgSpaceStage);
@@ -263,20 +269,18 @@ void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTa
 	uint8 *pDst = (uint8*)_VBDst->getVertexCoordPointer ();
 	
 	for (i= 0; i < _Flags.size(); ++i)
-	if ((_Flags[i] == ModifiedPosNorm) || (_Flags[i] == ModifiedUVCol))
+	if (_Flags[i] >= ModifiedPosNorm)
 	{
 		for(j = 0; j < VBVertexSize; ++j)
 			pDst[j+i*VBVertexSize] = pOri[j+i*VBVertexSize];
 		
-		if (_VBDst->getVertexFormat() & CVertexBuffer::PositionFlag)
-			if (_Vertices != NULL)
-				_Vertices->operator[](i) = ((CVector*)(pOri+i*VBVertexSize))[0];
+		if (_Vertices != NULL)
+			_Vertices->operator[](i) = ((CVector*)(pOri+i*VBVertexSize))[0];
 
-		if (_VBDst->getVertexFormat() & CVertexBuffer::NormalFlag)
-			if (_Normals != NULL)
-				_Normals->operator[](i) = ((CVector*)(pOri+i*VBVertexSize))[1];
+		if (_Normals != NULL)
+			_Normals->operator[](i) = ((CVector*)(pOri+i*VBVertexSize))[1];
 
-		if (_TgSpace)
+		if (_TgSpace != NULL)
 			(*_TgSpace)[i] = * (CVector*)(pOri + i * VBVertexSize + tgSpaceOff);
 			
 		_Flags[i] = OriginalVBDst;
@@ -293,46 +297,34 @@ void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTa
 		{
 			uint32 vp = rBS.VertRefs[j];
 
+			// Modify Pos/Norm/TgSpace.
+			//------------
 			if (_Vertices != NULL)
+			if (rBS.deltaPos.size() > 0)
 			{
-				if (rBS.deltaPos.size() > 0)
-				{
-					CVector *pV = &(_Vertices->operator[](vp));
-					*pV += rBS.deltaPos[j] * rFactor;
-					_Flags[vp] = ModifiedPosNorm;
-				}
-			}
-			else
-			{
-				if (_VBDst->getVertexFormat() & CVertexBuffer::PositionFlag)
-				if (rBS.deltaPos.size() > 0)
-				{
-					CVector *pV = (CVector*)_VBDst->getVertexCoordPointer (vp);
-					*pV += rBS.deltaPos[j] * rFactor;
-					_Flags[vp] = ModifiedPosNorm;
-				}
+				CVector *pV = &(_Vertices->operator[](vp));
+				*pV += rBS.deltaPos[j] * rFactor;
+				_Flags[vp] = ModifiedPosNorm;
 			}
 
 			if (_Normals != NULL)
+			if (rBS.deltaNorm.size() > 0)
 			{
-				if (rBS.deltaNorm.size() > 0)
-				{
-					CVector *pV = &(_Normals->operator[](vp));
-					*pV += rBS.deltaNorm[j] * rFactor;
-					_Flags[vp] = ModifiedPosNorm;
-				}
-			}
-			else
-			{
-				if (_VBDst->getVertexFormat() & CVertexBuffer::NormalFlag)
-				if (rBS.deltaNorm.size() > 0)
-				{
-					CVector *pV = (CVector*)_VBDst->getNormalCoordPointer (vp);
-					*pV += rBS.deltaNorm[j] * rFactor;
-					_Flags[vp] = ModifiedPosNorm;
-				}
+				CVector *pV = &(_Normals->operator[](vp));
+				*pV += rBS.deltaNorm[j] * rFactor;
+				_Flags[vp] = ModifiedPosNorm;
 			}
 
+			if (_UseTgSpace && _TgSpace != NULL)
+			if (rBS.deltaTgSpace.size() > 0)
+			{
+				CVector *pV = &((*_TgSpace)[vp]);
+				*pV += rBS.deltaTgSpace[j] * rFactor;
+				_Flags[vp] = ModifiedPosNorm;
+			}
+
+			// Modify UV0 / Color
+			//------------
 			if (_VBDst->getVertexFormat() & CVertexBuffer::TexCoord0Flag)
 			if (rBS.deltaUV.size() > 0)
 			{
@@ -357,39 +349,19 @@ void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTa
 				*pRGBA = rgbf;
 				_Flags[vp] = ModifiedUVCol;
 			}
-
-			if (useTangentSpace)
-			{
-				if (_TgSpace != NULL)
-				{
-					if (rBS.deltaTgSpace.size() > 0)
-					{
-						CVector *pV = &((*_TgSpace)[vp]);
-						*pV += rBS.deltaTgSpace[j] * rFactor;
-						_Flags[vp] = ModifiedPosNorm;
-					}
-				}
-				else
-				{
-					if (rBS.deltaTgSpace.size() > 0)
-					{
-						CVector *pV = (CVector *) ((uint8 * ) _VBDst->getVertexCoordPointer(vp) + tgSpaceOff);
-						*pV += rBS.deltaTgSpace[j] * rFactor;
-						_Flags[vp] = ModifiedPosNorm;
-					}
-				}
-			}
 		}
 	}
 
-	// If the skin is applied we have to transfert only vertices that have modified UV or Color
-	// Because the skinning will transfert vertices Pos and Norm.
-	if (_SkinApplied) 
+	// Do some transfert to the VBHard if exist.
+	if (_VBDstHrd != NULL)
 	{
-		// Copying to hardware vertex buffer if some
-		if (_VBDstHrd != NULL)
+		// lock.
+		uint8 *pDstHrd = (uint8*)_VBDstHrd->lock();
+
+		// If the skin is applied we have to transfert only vertices that have modified UV or Color
+		// Because the skinning will transfert vertices Pos and Norm.
+		if (_SkinApplied) 
 		{
-			uint8 *pDstHrd = (uint8*)_VBDstHrd->lock();
 			for (i = 0; i < _Flags.size(); ++i)
 			{
 				if (_Flags[i] == ModifiedUVCol) // Modified UV or Color ?
@@ -400,15 +372,9 @@ void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTa
 						pDstHrd[j+i*VBVertexSize] = pDst[j+i*VBVertexSize];
 				}
 			}
-			_VBDstHrd->unlock();
 		}
-	}
-	else
-	{
-		// Copying to hardware vertex buffer if some
-		if (_VBDstHrd != NULL)
+		else
 		{
-			uint8 *pDstHrd = (uint8*)_VBDstHrd->lock();
 			for (i = 0; i < _Flags.size(); ++i)
 			{
 				if (_Flags[i] != OriginalAll) // Not OriginalAll ?
@@ -421,8 +387,10 @@ void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTa
 				if (_Flags[i] == OriginalVBDst) // OriginalVBDst ?
 					_Flags[i] = OriginalAll; // So OriginalAll !
 			}
-			_VBDstHrd->unlock();
 		}
+
+		// unlock.
+		_VBDstHrd->unlock();
 	}
 }
 

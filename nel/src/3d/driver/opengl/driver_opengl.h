@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.119 2002/06/13 08:45:05 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.120 2002/06/20 09:45:04 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,12 +127,6 @@ public:
 class CVBDrvInfosGL : public IVBDrvInfos
 {
 public:
-	// Software Skinning: post-rendered vertices/normales.
-	std::vector<CVector>	SoftSkinVertices;
-	std::vector<CVector>	SoftSkinNormals;
-	// Software Skinning: flags to know what vertex must be computed.
-	std::vector<uint8>		SoftSkinFlags;
-
 	CVBDrvInfosGL(IDriver *drv, ItVBDrvInfoPtrList it) : IVBDrvInfos(drv, it) {}
 };
 
@@ -408,17 +402,11 @@ public:
 
 	virtual void			setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos);
 
-	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0);
+	virtual void			setupModelMatrix(const CMatrix& mtx);
 
-	virtual void			multiplyModelMatrix(const CMatrix& mtx, uint8 n=0);
+	virtual void			multiplyModelMatrix(const CMatrix& mtx);
 
 	virtual CMatrix			getViewMatrix() const;
-
-	virtual	void			setupVertexMode(uint vmode)
-	{
-		_VertexMode= vmode;
-	}
-
 
 	virtual	void			forceNormalize(bool normalize)
 	{
@@ -477,10 +465,6 @@ public:
 	void					enableUsedTextureMemorySum (bool enable);
 	
 	uint32					getUsedTextureMemory() const;
-
-	virtual uint			getNumMatrix();
-
-	virtual bool			supportPaletteSkinning();
 
 	virtual bool			release();
 
@@ -578,33 +562,6 @@ private:
 	friend class					CVertexProgamDrvInfosGL;
 
 
-	// For fast vector/point multiplication.
-	struct	CMatrix3x4
-	{
-		// Order them in memory line first, for faster memory access.
-		float	a11, a12, a13, a14;
-		float	a21, a22, a23, a24;
-		float	a31, a32, a33, a34;
-
-		// Copy from a matrix.
-		void	set(const CMatrix &mat);
-		// mulAddvector. NB: in should be different as v!! (else don't work).
-		void	mulAddVector(const CVector &in, float scale, CVector &out)
-		{
-			out.x+= (a11*in.x + a12*in.y + a13*in.z) * scale;
-			out.y+= (a21*in.x + a22*in.y + a23*in.z) * scale;
-			out.z+= (a31*in.x + a32*in.y + a33*in.z) * scale;
-		}
-		// mulAddpoint. NB: in should be different as v!! (else don't work).
-		void	mulAddPoint(const CVector &in, float scale, CVector &out)
-		{
-			out.x+= (a11*in.x + a12*in.y + a13*in.z + a14) * scale;
-			out.y+= (a21*in.x + a22*in.y + a23*in.z + a24) * scale;
-			out.z+= (a31*in.x + a32*in.y + a33*in.z + a34) * scale;
-		}
-	};
-
-
 private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 	static const uint32		ReleaseVersion;
@@ -650,8 +607,6 @@ private:
 	// @{
 	// OpenGL extensions Extensions.
 	CGlExtensions			_Extensions;
-	// Say if palette skinning can be done in Hardware
-	bool					_PaletteSkinHard;	
 	// @}
 
 
@@ -661,20 +616,14 @@ private:
 	// The forceNormalize() state.
 	bool					_ForceNormalize;
 
+	// To know if light setup has been changed from last render() ( any call to setupViewMatrix() or setLight() ).
+	bool					_LightSetupDirty;
 
-	// The vertex transform mode.
-	uint					_VertexMode;
+	// To know if the modelview matrix setup has been changed from last render() (any call to setupViewMatrix() / setupModelMatrix() ).
+	bool					_ModelViewMatrixDirty;
 
-	// To know if matrix setup has been changed from last activeVertexBuffer() (any call to setupViewMatrix() / setupModelMatrix()).
-	bool					_MatrixSetupDirty;
-
-	// To know if view matrix setup has been changed from last activeVertexBuffer() (any call to setupViewMatrix()).
-	bool					_ViewMatrixSetupDirty;
-
-	// for each model matrix, a flag to know if setuped.
-	NLMISC::CBitSet			_ModelViewMatrixDirty;
-	// same flag, but for palette Skinning (because they don't share same setup).
-	NLMISC::CBitSet			_ModelViewMatrixDirtyPaletteSkin;
+	// Ored of _LightSetupDirty and _ModelViewMatrixDirty
+	bool					_RenderSetupDirty;
 
 	// Backup znear and zfar
 	float					_OODeltaZ;
@@ -691,26 +640,9 @@ private:
 
 
 	// Current computed (OpenGL basis) ModelView matrix.
-	// NB: Thoses matrix have already substracted the _PZBCameraPos
-	// Hence thoses matrix represent the Exact eye-space basis (only _ViewMtx is a bit tricky).
-	CMatrix					_ModelViewMatrix[MaxModelMatrix];
-	// For software skinning.
-	CMatrix					_ModelViewMatrixNormal[MaxModelMatrix];
-	CMatrix3x4				_ModelViewMatrix3x4[MaxModelMatrix];
-	CMatrix3x4				_ModelViewMatrixNormal3x4[MaxModelMatrix];
-
-
-	// Sofware Skinning.
-	uint8					*_CurrentSoftSkinFlags;
-	uint8					*_CurrentSoftSkinSrc;
-	uint					_CurrentSoftSkinNormalOff;
-	uint					_CurrentSoftSkinPaletteSkinOff;
-	uint					_CurrentSoftSkinWeightOff;
-	uint					_CurrentSoftSkinSrcStride;
-	uint					_CurrentSoftSkinFirst;
-	uint					_CurrentSoftSkinEnd;
-	CVector					*_CurrentSoftSkinVectorDst;
-	CVector					*_CurrentSoftSkinNormalDst;
+	// NB: This matrix have already substracted the _PZBCameraPos
+	// Hence this matrix represent the Exact eye-space basis (only _ViewMtx is a bit tricky).
+	CMatrix					_ModelViewMatrix;
 
 	// Fog.
 	bool					_FogEnabled;
@@ -806,9 +738,8 @@ private:
 	// check nv texture shader consistency
 	void			verifyNVTextureShaderConfig();
 
-	// Called by activeVertexBuffer when _ViewMatrixSetupDirty is true to clean the view matrix.
-	// set _ViewMatrixSetupDirty to false;
-	void					cleanViewMatrix ();
+	// Called by doRefreshRenderSetup(). set _LightSetupDirty to false
+	void					cleanLightSetup ();
 
 	// According to extensions, retrieve GL tex format of the texture.
 	GLint					getGlTextureFormat(ITexture& tex, bool &compressed);
@@ -816,12 +747,6 @@ private:
 
 	// Clip the wanted rectangle with window. return true if rect is not NULL.
 	bool					clipRect(NLMISC::CRect &rect);
-
-
-	// software skinning. Use _CurrentSoftSkin* global setup.
-	void			computeSoftwareVertexSkinning(uint8 *pSrc, CVector *pVertexDst);
-	void			computeSoftwareNormalSkinning(uint8 *pSrc, CVector *pNormalDst);
-	void			refreshSoftwareSkinning();
 
 
 	/// \name Material multipass.
@@ -902,7 +827,7 @@ private:
 
 
 	/// setup GL arrays, with a vb info.
-	void			setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool skinning, bool paletteSkinning);
+	void			setupGlArrays(CVertexBufferInfo &vb);
 
 
 	/// Test/activate normalisation of normal.
@@ -917,6 +842,17 @@ private:
 				glDisable(GL_NORMALIZE);
 		}
 	}
+
+	// refresh matrixes and lights.
+	void			refreshRenderSetup()
+	{
+		// check if something to change.
+		if(_RenderSetupDirty)
+		{
+			doRefreshRenderSetup();
+		}
+	}
+	void			doRefreshRenderSetup();
 
 
 	/// \name VertexBufferHard 

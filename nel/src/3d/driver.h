@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.34 2002/06/13 08:44:50 berenguier Exp $
+ * $Id: driver.h,v 1.35 2002/06/20 09:44:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,12 +111,6 @@ struct EBadDisplay : public NLMISC::Exception
 
 
 //****************************************************************************
-// Enalbe normal transformation mode.
-#define	NL3D_VERTEX_MODE_NORMAL			0
-// Use Skinning.
-#define	NL3D_VERTEX_MODE_SKINNING		1
-// NL3D_VERTEX_MODE_???  2, 4, 8 etc....
-
 typedef void (*emptyProc)(void);
 
 //****************************************************************************
@@ -144,8 +138,8 @@ public:
 
 	/**
 	  * Driver Max matrix count.
-	  *
-	  * \see setupModelMatrix()
+	  *	Kept for backward compatibility. Suppose any Hardware VertexProgram can handle only 16 matrix
+	  * 
 	  */
 	enum TMatrixCount { MaxModelMatrix= 16 };
 
@@ -266,40 +260,26 @@ public:
 	 */
 	virtual void			setupViewMatrixEx(const CMatrix& mtx, const CVector &cameraPos)=0;
 
-	/** setup a model matrix. IDdriver::MaxModelMatrix (16) can be setuped.
-	 * The 0th model matrix is the principal one. Others are only usefull fro skinning (see CVertexBuffer, and setupVertexMode).
+	/** setup the model matrix.
 	 *
 	 * NB: you must setupModelMatrix() AFTER setupViewMatrix(), or else undefined results.
-	 *
-	 * \see setupVertexMode
 	 */
-	virtual void			setupModelMatrix(const CMatrix& mtx, uint8 n=0)=0;
+	virtual void			setupModelMatrix(const CMatrix& mtx)=0;
 
-	/** multipliy a model matrix. IDdriver::MaxModelMatrix (16) can be setuped.
-	 * The 0th model matrix is the principal one. Others are only usefull fro skinning (see CVertexBuffer, and setupVertexMode).
-	 *
+	/** multipliy the model matrix.
 	 * NB: you must use multiplyModelMatrix() AFTER setupModelMatrix() (and so setupViewMatrix()) or an other multiplyModelMatrix(), 
 	 *	or else undefined results.
 	 *
 	 *	Using of multiplyModelMatrix() instead of just one setupModelMatrix() may be usefull for precision consideration.
-	 *
-	 * \see setupVertexMode
 	 */
-	virtual void			multiplyModelMatrix(const CMatrix& mtx, uint8 n=0)=0;
+	virtual void			multiplyModelMatrix(const CMatrix& mtx)=0;
 
 
 	virtual CMatrix			getViewMatrix(void)const=0;
 
 
-	/** setup the vertex transformation Mode. (or vertex program). This should be a ORed of NL3D_VMODE_*
-	 * Default is NL3D_VERTEX_MODE_NORMAL.
-	 */
-	virtual	void			setupVertexMode(uint vmode)=0;
-
-
 	/** Force input normal to be normalized by the driver. default is false.
 	 * NB: driver force the normalisation himself if:
-	 *		- current VB has hardware skinning.
 	 *		- current Model matrix has a scale.
 	 */
 	virtual	void			forceNormalize(bool normalize)=0;
@@ -359,12 +339,9 @@ public:
 
 	/** active a current VB Hard, for future render().
 	 *
-	 * NB: software skinning is not possible with this method. User should test supportPaletteSkinning() to know
-	 * if skinning can be done in hardware. If not, he should not use VB Hard, but standard VB.
-	 *
 	 * NB: please make sure you have setuped / unsetuped the current vertex program BEFORE activate the vertex buffer.
 	 *
-	 * \see setupVertexMode, activeVertexProgram
+	 * \see activeVertexProgram
 	 */
 	virtual void			activeVertexBufferHard(IVertexBufferHard *VB)=0;
 
@@ -373,27 +350,17 @@ public:
 	/** active a current VB, for future render().
 	 * This method suppose that all vertices in the VB will be used.
 	 *
-	 * NB: software skinning (if any) will be actuallay done in render*() call, only one time per vertex.
-	 * Vertex Skinning Flags are reseted in activeVertexBuffer().
-	 *
-	 *  Skinning is enabled only when VB has skinning, and when vertexMode has flag NL3D_VERTEX_MODE_SKINNING.
-	 *
 	 * NB: please make sure you have setuped / unsetuped the current vertex program BEFORE activate the vertex buffer.
 	 *
-	 * \see setupVertexMode, activeVertexProgram
+	 * \see activeVertexProgram
 	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB)=0;
 
 
 	/** active a current VB, for future render().
 	 * This method suppose that only vertices in given range will be used in future render(). 
-	 * This could be usefull for DX or OpenGL driver, but it is usefull for software skinning too.
+	 * This could be usefull for DX or OpenGL driver.
 	 * Undefined results if primitives in render() use vertices not in this range.
-	 *
-	 * NB: software skinning (if any) will be actuallay done in render*() call, only one time per vertex.
-	 * Vertex Skinning Flags are reseted in activeVertexBuffer(), but only for given range here!
-	 *
-	 *  Skinning is enabled only when VB has skinning, and when vertexMode has flag NL3D_VERTEX_MODE_SKINNING.
 	 *
 	 * NB: please make sure you have setuped / unsetuped the current vertex program BEFORE activate the vertex buffer.
 	 *
@@ -401,7 +368,7 @@ public:
 	 * \param first the first vertex important for render (begin to 0). nlassert(first<=end);
 	 * \param end the last vertex important for render, +1. count==end-first. nlassert(end<=VB.getNumVertices);
 	 *
-	 * \see setupVertexMode, activeVertexProgram
+	 * \see activeVertexProgram
 	 */
 	virtual bool			activeVertexBuffer(CVertexBuffer& VB, uint first, uint end)=0;
 
@@ -421,12 +388,10 @@ public:
 
 
 	/** render a block of primitive with previously setuped VertexBuffer / Matrixes.
-	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
 	 */
 	virtual bool			render(CPrimitiveBlock& PB, CMaterial& Mat)=0;
 
 	/** render a list of triangles with previously setuped VertexBuffer / Matrixes.
-	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
 	 * NB: this "was" usefull for landscape....
 	 */
 	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)=0;
@@ -436,8 +401,6 @@ public:
 	 * This use the last material setuped. It should be a "Normal shader" material, because no multi-pass is allowed
 	 * with this method.
 	 * Actually, it is like a straight drawTriangles() in OpenGL.
-	 * NB: softwareSkinning and normal vertices operation still works.
-	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
 	 * NB: nlassert() if ntris is 0!!!! this is unlike other render() call methods. For optimisation concern.
 	 * NB: this is usefull for landscape....
 	 */
@@ -445,13 +408,11 @@ public:
 
 
 	/** render points with previously setuped VertexBuffer / Matrixes.
-	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
 	 */
 	virtual void			renderPoints(CMaterial& Mat, uint32 numPoints)=0;
 
 	/** render quads with previously setuped VertexBuffer / Matrixes.
 	 *  Quads are stored as a sequence in the vertex buffer.
-	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
 	 */
 	virtual void			renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)=0;
 
@@ -500,25 +461,6 @@ public:
 	virtual uint32			getUsedTextureMemory() const =0;
 
 	// @}
-
-	/**
-	  * Returns the number of model matrices supported in hardware by the driver.
-	  * NeL will support from 2 to 4 matrices by vertices.
-	  * If the user uses a model with a greater count of matrices than the hardware can support,
-	  * the skinning will be made in software.
-	  *
-	  * For the time, driver opengl supports 2 matrices in hardware on Geforce, and implement nothing in software.
-	  * (Use paletted skinning instead)
-	  */
-	virtual uint			getNumMatrix()=0;
-
-	/**
-	  * Returns true if the hardware support PaletteSkinning.
-	  * NeL will support 4 matrices by vertices, and up to IDriver::MaxModelMatrix (16) model matrixes.
-	  * If the user uses PaletteSkinning while the hardware does not support it, 
-	  * the skinning will be made in software.
-	  */
-	virtual bool			supportPaletteSkinning()=0;
 
 
 	/// \name Fog support.
@@ -833,6 +775,7 @@ public:
 
 		// Does the driver support the per-pixel lighting shader ?
 		virtual bool supportPerPixelLighting(bool specular) const = 0;
+
 
 	/// \name Misc
 	// @{

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.41 2002/06/19 08:42:10 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.42 2002/06/20 09:44:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -939,26 +939,24 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 		// are written in the preceding call to restoreOriginalSkinPart.
 		if (_Skinned)
 		{
-			_MeshMorpher.initMRM(&_VBufferOriginal,
+			_MeshMorpher.initSkinned(&_VBufferOriginal,
 								 &_VBufferFinal,
 								 _VBHard,
+								 useTangentSpace,
 								 &_OriginalSkinVertices,
 								 &_OriginalSkinNormals,
 								 useTangentSpace ? &_OriginalTGSpace : NULL,
-								 bSkinApplied 
-								);
+								 bSkinApplied );
+			_MeshMorpher.updateSkinned (mi->getBlendShapeFactors());
 		}
 		else // Not even skinned so we have to do all the stuff
 		{
-			_MeshMorpher.initMRM(&_VBufferOriginal,
+			_MeshMorpher.init(&_VBufferOriginal,
 								 &_VBufferFinal,
 								 _VBHard,
-								 NULL,
-								 NULL,
-								 NULL,
-								 false);
+								 useTangentSpace);
+			_MeshMorpher.update (mi->getBlendShapeFactors());
 		}
-		_MeshMorpher.updateMRM (mi->getBlendShapeFactors(), useTangentSpace);
 	}
 
 	// Skinning.

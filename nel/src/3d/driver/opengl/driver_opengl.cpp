@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.143 2002/06/13 08:45:05 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.144 2002/06/20 09:45:04 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -180,19 +180,13 @@ CDriverGL::CDriverGL()
 	_FogEnabled= false;
 
 
-	_MatrixSetupDirty= false;
-	_ViewMatrixSetupDirty= false;
-	_ModelViewMatrixDirty.resize(MaxModelMatrix);
-	_ModelViewMatrixDirty.clearAll();
-	_ModelViewMatrixDirtyPaletteSkin.resize(MaxModelMatrix);
-	_ModelViewMatrixDirtyPaletteSkin.clearAll();
+	_LightSetupDirty= false;
+	_ModelViewMatrixDirty= false;
+	_RenderSetupDirty= false;
 	
 
-	_PaletteSkinHard= false;
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;
-
-	_VertexMode= NL3D_VERTEX_MODE_NORMAL;
 
 	_CurrentVertexArrayRange= NULL;
 	_CurrentVertexBufferHard= NULL;
@@ -829,9 +823,6 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		nlwarning("Missing Important GL extension: GL_EXT_texture_env_combine => All envcombine are setup to GL_MODULATE!!!");
 	}
 
-	// skinning in hard??
-	// \todo yoyo: TODO_HARDWARE_SKINNIG:
-	_PaletteSkinHard= false;
 
 	// init _DriverGLStates
 	_DriverGLStates.init(_Extensions.ARBTextureCubeMap);
@@ -1126,29 +1117,6 @@ bool CDriverGL::swapBuffers()
 
 	return true;
 }
-
-// --------------------------------------------------
-
-uint CDriverGL::getNumMatrix()
-{
-	// \todo yoyo: TODO_HARDWARE_SKINNIG: we must implement the 4 matrices mode by hardware (Radeon, NV20).
-	// \todo yoyo: TODO_SOFTWARE_SKINNIG: we must implement the 4 matrices mode by software.
-
-	// If GL_Wertex_weighting_EXT is available..
-	if (_Extensions.EXTVertexWeighting)
-		return 2;
-	// Else, software..
-	else
-		return 1;
-}
-
-// --------------------------------------------------
-
-bool	CDriverGL::supportPaletteSkinning()
-{
-	return _PaletteSkinHard;
-}
-
 
 // --------------------------------------------------
 
@@ -1684,93 +1652,6 @@ void			CDriverGL::setupFog(float start, float end, CRGBA color)
 	glFogfv(GL_FOG_COLOR, col);
 }
 
-
-
-// ***************************************************************************
-
-void				CDriverGL::cleanViewMatrix ()
-{
-	// Should be dirty
-	nlassert (_ViewMatrixSetupDirty);
-	
-	// First light
-	bool first=true;
-
-	// For each lights
-	for (uint i=0; i<_MaxDriverLight; i++)
-	{
-		// Is this light enabled ?
-		if (_LightEnable[i])
-		{
-			// If first light
-			if (first)
-			{
-				first=false;
-
-				// Push the matrix
-				glPushMatrix ();
-
-				// Load the view matrix
-				glLoadMatrixf (_ViewMtx.get());
-			}
-
-			// Light is directionnal ?
-			if (_LightMode[i]==(uint)CLight::DirectionalLight)
-			{
-				// GL vector
-				GLfloat vectorGL[4];
-
-				// Set the GL array
-				vectorGL[0]=-_WorldLightDirection[i].x;
-				vectorGL[1]=-_WorldLightDirection[i].y;
-				vectorGL[2]=-_WorldLightDirection[i].z;
-				vectorGL[3]=0.f;
-	
-				// Set it
-				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_POSITION, vectorGL);
-			}
-
-			// Spotlight ?
-			if (_LightMode[i]==(uint)CLight::SpotLight)
-			{
-				// GL vector
-				GLfloat vectorGL[4];
-
-				// Set the GL array
-				vectorGL[0]=_WorldLightDirection[i].x;
-				vectorGL[1]=_WorldLightDirection[i].y;
-				vectorGL[2]=_WorldLightDirection[i].z;
-	
-				// Set it
-				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_SPOT_DIRECTION, vectorGL);
-			}
-
-			// Position 
-			if (_LightMode[i]!=(uint)CLight::DirectionalLight)
-			{
-				// GL vector
-				GLfloat vectorGL[4];
-
-				// Set the GL array
-				// Must Substract CameraPos, because ViewMtx may not be the exact view.
-				vectorGL[0]=_WorldLightPos[i].x - _PZBCameraPos.x;
-				vectorGL[1]=_WorldLightPos[i].y - _PZBCameraPos.y;
-				vectorGL[2]=_WorldLightPos[i].z - _PZBCameraPos.z;
-				vectorGL[3]=1.f;
-	
-				// Set it
-				glLightfv ((GLenum)(GL_LIGHT0+i), (GLenum)GL_POSITION, vectorGL);
-			}
-		}
-	}
-
-	// Pop old matrix
-	if (!first)
-		glPopMatrix ();
-
-	// Clean flag
-	_ViewMatrixSetupDirty=false;
-}
 
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file mold_elt_type.cpp
  * Georges system files
  *
- * $Id: mold_elt_type.cpp,v 1.2 2002/02/21 16:54:42 besson Exp $
+ * $Id: mold_elt_type.cpp,v 1.3 2002/02/27 08:28:07 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,7 @@ void CMoldEltType::Load( const CStringEx _sxfullname )
 	if( pfbe )
 		sxenum = pfbe->GetValue();
 
+	ptu = NULL;
 	if( sxtype == "uint" )
 		ptu = new CTypeUnitIntUnsigned( sxll, sxhl, sxdv, sxformula );
 	else if( sxtype == "sint" )

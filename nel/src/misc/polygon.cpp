@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.3 2001/11/07 10:36:52 vizerie Exp $
+ * $Id: polygon.cpp,v 1.4 2001/11/07 17:11:37 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,35 +307,35 @@ void		CPolygon2D::getBestTriplet(uint &index0, uint &index1, uint &index2)
 
 /// ***************************************************************************************
 // scan a an edge of a poly and write it into a table
-/*
-static void scanEdge(TRasterVect &outputVect, sint topY, float x1, y1, float x2, y2, bool rightEdge = true)
+
+static void ScanEdge(CPolygon2D::TRasterVect &outputVect, sint topY, const CVector2f &v1, const CVector2f &v2, bool rightEdge = true)
 {
 	 const uint rol16 = 65536;
-	 sint ceilY1 = ceilf(y1);
+	 sint ceilY1 = (sint) ceilf(v1.y);
 	 sint height;
 	 float deltaX, deltaY;
-	 float inverseSlope;
+	 float fInverseSlope;
 	 sint  iInverseSlope, iPosX;
 
 	 // check wether this segment gives a contribution to the final poly
-	 height = (sint) (ceilf(y2) - ceilf(y2));
+	 height = (sint) (ceilf(v2.y) - ceilY1);
 	 if (height <= 0) return;
 
 	 // compute slope
-	 deltaY = y2 - y1;
-	 deltaX = x2 - x1;
-	 InverseSlope = DeltaX / DeltaY;
+	 deltaY = v2.y - v1.y;
+	 deltaX = v2.x - v1.x;
+	 fInverseSlope = deltaX / deltaY;
 
 	 
-	 TRasterVect::iterator  outputIt = outputVect.begin() + (y1 - topY);
+	 CPolygon2D::TRasterVect::iterator  outputIt = outputVect.begin() + (ceilY1 - topY);
 
 	 // slope with ints
-	 iInverseSlope = (sint) (rol16 * inverseSlope);	 
+	 iInverseSlope = (sint) (rol16 * fInverseSlope);	 
 
 	 // sub-pixel accuracy
-	 iPosX = (int) (rol16 * (x1 + InverseSlope * (ceilY1 - y1))); 
+	 iPosX = (int) (rol16 * (v1.x + fInverseSlope * (ceilY1 - v1.y))); 
 
-	  TRasterVect::endIt = outputIt + height;
+	 const CPolygon2D::TRasterVect::iterator endIt = outputIt + height;
 	 if (rightEdge)
 	 {		
 		 do
@@ -361,7 +361,7 @@ static void scanEdge(TRasterVect &outputVect, sint topY, float x1, y1, float x2,
 
 
 // This function alow to cycle forward through a vertex vector like if it was a circular list
-static inline CPolygon2D::TVec2fVect::iterator Next(const CPolygon2D::TVec2fVect::iterator &it, const CPolygon2D::TVec2fVect &cont)
+static inline CPolygon2D::TVec2fVect::const_iterator Next(const CPolygon2D::TVec2fVect::const_iterator &it, const CPolygon2D::TVec2fVect &cont)
 {
 	nlassert(cont.size() != 0);
 	if ((it + 1) == cont.end()) return cont.begin();
@@ -370,31 +370,32 @@ static inline CPolygon2D::TVec2fVect::iterator Next(const CPolygon2D::TVec2fVect
 
 
 // This function alow to cycle backward through a (non null) vertex vector like if it was a circular list
-static inline CPolygon2D::TVec2fVect::iterator Prev(const CPolygon2D::TVec2fVect::iterator &it, const CPolygon2D::TVec2fVect &cont)
+static inline CPolygon2D::TVec2fVect::const_iterator Prev(const CPolygon2D::TVec2fVect::const_iterator &it, const CPolygon2D::TVec2fVect &cont)
 {
 	nlassert(cont.size() != 0);
 	if (it == cont.begin()) return cont.end() - 1;
 	return (it - 1);
 }
 
-*/
+
 
 // *******************************************************************************
 
 void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 {
-/*	// an 'alias' to the vertices
+	// an 'alias' to the vertices
 	const TVec2fVect &V = Vertices;
 	nlassert(Vertices.size() >= 3)
-	sint leftEdgeDir;  // set to 1 when it has a counter clock wise orientation
+	bool    ccw;  // set to true when it has a counter clock wise orientation
                    
 	// compute highest and lowest pos of the poly
 	float fHighest = V[0].y;
 	float fLowest  = fHighest;
 
 	// iterators to the thighest and lowest vertex
-	TVec2fVect::iterator pLowest = V.begin(), pHighest = V.begin();
-	TVec2fVect::iterator it = V.begin(), endIt = V.end();
+	TVec2fVect::const_iterator pLowest = V.begin(), pHighest = V.begin();
+	TVec2fVect::const_iterator it = V.begin() ;
+	const TVec2fVect::const_iterator endIt = V.end();
 	do
 	{
 		if (it->y > fLowest)
@@ -408,86 +409,134 @@ void	CPolygon2D::computeBorders(TRasterVect &borders, sint &highestY)
 			fHighest = it->y;
 			pHighest = it;
 		}
+		++it;
 	}
 	while (it != endIt);
+	
 
-	highestY = fHighest;
+	sint iHighest = (sint) ceilf(fHighest) ;
+	sint iLowest  = (sint) ceilf(fLowest) ;
 
-	/// checj poly height, and discard null height
-	uint polyHeight = (uint) ceilf(fLowest) - ceilf(fHighest);
+	highestY = iHighest;
+
+
+	/// check poly height, and discard null height
+	uint polyHeight = iLowest - iHighest;
 	if (polyHeight <= 0)
 	{
 		borders.clear();
 		return;
 	}
 
-
-	sint highest = (sint) ceilf(fHighest) ;
-	sint lowest  = (sint) floorf(fLowest) ;
-
-
+	borders.resize(polyHeight);
 
 	// iterator to the first vertex that has an y different from the top vertex
-	TVec2fVect::iterator pHighestRight = pHighest; 
+	TVec2fVect::const_iterator pHighestRight = pHighest; 
 	// we seek this vertex	
 	while (Next(pHighestRight, V)->y == fHighest)
 	{
 		pHighestRight = Next(pHighestRight, V);
-	}
-	
+	}	
 
 	// iterator to the first vertex after pHighestRight, that has the same y than the highest vertex
-	TVec2fVect::iterator pHighestLeft = Next(pHighestRight, V);
+	TVec2fVect::const_iterator pHighestLeft = Next(pHighestRight, V);
 	// seek the vertex
 	while (pHighestLeft->y != fHighest)
 	{
 		pHighestLeft = Next(pHighestLeft, V);
 	}
 
-	TVec2fVect::iterator pPrevPhighestLeft = Prev(pHighestLest, V);
+	TVec2fVect::const_iterator pPrevHighestLeft = Prev(pHighestLeft, V);
   
 	// we need to get the orientation of the polygon
 	// There are 2 case : flat, and non-flat top
 
 	// check for flat top
-	if (pHighestLeft->x_left->v->info.px != phighest_right->v->info.px)
+	if (pHighestLeft->x != pHighestRight->x)
 	{
-	 // si le haut du poly est plat, regarde le cote gauche et le cote droit
-	  if (phighest_left->v->info.px > phighest_right->v->info.px)
-	  {
-		LeftEdgeDir = 1 ;  // bord gauche dans le sens de la liste
-		temp = phighest_left ;
-		phighest_left = phighest_right ;
-		phighest_right = temp ;
-	  }
-	  else
-	  {
-		LeftEdgeDir = 0 ; // bord gauche dans le sens inverse de la liste
-	  }
+		// compare right and left side
+		if (pHighestLeft->x> pHighestRight->x)
+		{
+			ccw = true;  // the list is CCW oriented
+			std::swap(pHighestLeft, pHighestRight);		
+		}
+		else
+		{
+			ccw = false; // the list is CW oriented	
+		}
 	}
 	else
 	{
-	// phighest_right = phighest_left = phighest ;
-	// le haut du poly n'est pas plat donc celui a gauche est celui qui a la plus petite pente
-	// on fait le produit vectoriel des vecteur suivant et precedent pour avoir
-	// l'orientation
-		 DeltaXN = phighest_right->next->v->info.px - phighest_right->v->info.px ;
-		 DeltaYN = phighest_right->next->v->info.py - phighest_right->v->info.py ;
-		 DeltaXP = prev_phighest_left->v->info.px - phighest_left->v->info.px ;
-		 DeltaYP = prev_phighest_left->v->info.py - phighest_left->v->info.py ;
-		 if ((DeltaXN * DeltaYP - DeltaYN * DeltaXP) < 0)
+		// The top of the poly is sharp
+		// We perform a cross product of the 2 highest vect to get its orientation		
+		// l'orientation
+
+		 const float deltaXN = Next(pHighestRight, V)->x - pHighestRight->x;
+		 const float deltaYN = Next(pHighestRight, V)->y - pHighestRight->y;
+		 const float deltaXP = pPrevHighestLeft->x - pHighestLeft->x;
+		 const float deltaYP = pPrevHighestLeft->y - pHighestLeft->y;
+		 if ((deltaXN * deltaYP - deltaYN * deltaXP) < 0)
 		 {
-		   LeftEdgeDir = 1 ;  // bord gauche orient‚ dans sens de la liste
-		   temp = phighest_left ;
-		   phighest_left = phighest_right ;
-		   phighest_right = temp ;
+			ccw = true;  // the list is CCW oriented
+			std::swap(pHighestLeft, pHighestRight);				   
 		 }
 		 else
 		 {
-		   LeftEdgeDir = 0 ;
+			ccw = false; // the list is CW oriented
 		 }
-	}	
-*/
+	}
+
+
+	// compute borders
+	TVec2fVect::const_iterator currV, nextV; // current and next vertex
+	if (!ccw) // clock wise order ?
+	{
+		currV = pHighestRight ;
+		// compute right edge from top to bottom
+		do
+		{
+			nextV = Next(currV, V);
+			ScanEdge(borders, iHighest, *currV, *nextV, true);
+            currV = nextV;            
+		}
+		while (currV != pLowest); // repeat until we reach the bottom vertex
+
+		// compute left edge from bottom to top
+		do
+		{
+   			nextV = Next(currV, V);
+			ScanEdge(borders, iHighest, *nextV, *currV, false);
+			currV = nextV;
+		}
+		while (currV != pHighestLeft);
+	}
+	else // ccw order
+	{	 
+		currV = pHighestLeft;
+		// compute left edge from top to bottom
+		do
+		{
+			nextV = Next(currV, V);
+			ScanEdge(borders, iHighest, *currV
+						   , *nextV
+						   , false
+					) ;
+			currV = nextV;
+		}
+		while (currV != pLowest) ;
+
+		// compute right edge from bottom to bottom
+		do
+		{
+			nextV = Next(currV, V);
+			ScanEdge(borders, iHighest, *nextV
+						   , *currV
+						   , true
+					);
+			currV = nextV;
+		}
+		while (currV != pHighestRight)  ;
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * <File description>
  *
- * $Id: material.h,v 1.18 2002/09/24 14:46:10 vizerie Exp $
+ * $Id: material.h,v 1.19 2002/10/14 15:52:28 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,7 +147,11 @@ public:
 	 *  - When supported by the driver, the strongest light is rendered using per pixel lighting. The last tex coordinate must be the S vector
 	 *    of the tangent space basis (oriented in the direction where the s texture coords grows). Other lights are rendered using gouraud shaing. The light setup is done in the driver.
 	 * PerPixelLighting : The same as PerPixelLighting but with no specular
-	 * Caustics: NOT IMPLEMENTED	 
+	 * Caustics: NOT IMPLEMENTED
+	 * Cloud :
+	 * - Alpha of texture in stage 0 is blended with alpha of texture in stage 1. Blend done with the alpha color of each 
+	 * stage and the whole is multiplied by the alpha in color vertex [AT0*ADiffuseCol+AT1*(1-ADiffuseCol)]*AStage
+	 * - RGB still unchanged
 	 *    
 	 */
 	enum TShader			{ Normal=0,
@@ -157,7 +161,8 @@ public:
 							  Specular,
 							  Caustics,
 							  PerPixelLighting,
-							  PerPixelLightingNoSpec,							  
+							  PerPixelLightingNoSpec,
+							  Cloud,
 							  shaderCount};
 
 	/// \name Texture Env Modes.
@@ -369,7 +374,7 @@ public:
 
 	/// \name Texture environnement. Normal shader only.
 	/** This part is valid for Normal shaders (nlassert). It maps the EXT_texture_env_combine opengl extension.
-	 * A stage is enabled iff his texture is !=NULL. By default, all stages are setup to Modulate style:
+	 * A stage is enabled if his texture is !=NULL. By default, all stages are setup to Modulate style:
 	 *  AlphaOp=RGBOp= Modulate, RGBArg0= TextureSrcColor, RGBArg1= PreviousSrcColor,
 	 *  AlphaArg0= TextureSrcAlpha, AlphaArg1= PreviousSrcAlpha.  ConstantColor default to White(255,255,255,255).
 	 *

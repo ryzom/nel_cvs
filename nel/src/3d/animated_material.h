@@ -1,7 +1,7 @@
 /** \file animated_material.h
  * <File description>
  *
- * $Id: animated_material.h,v 1.4 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: animated_material.h,v 1.5 2004/10/06 09:15:11 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,7 @@ public:
 			DefaultVTrans.setDefaultValue(0);
 			DefaultUScale.setDefaultValue(1);
 			DefaultVScale.setDefaultValue(1);
+			DefaultWRot.setDefaultValue(0);
 		}
 
 		void			serial(NLMISC::IStream &f)

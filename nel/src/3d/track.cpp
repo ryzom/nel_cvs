@@ -1,7 +1,7 @@
 /** \file track.cpp
  * <File description>
  *
- * $Id: track.cpp,v 1.1 2001/02/05 16:52:22 corvazier Exp $
+ * $Id: track.cpp,v 1.2 2001/02/06 10:24:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,17 +30,17 @@ namespace NL3D
 {
 
 // Some compilation check: force Visual to compile to template
-CTrackKeyFramerTCBFloat toto0;
-CTrackKeyFramerTCBVector toto1;
-CTrackKeyFramerTCBQuat toto2;
-CTrackKeyFramerTCBInt toto3;
+CTrackKeyFramerTCBFloat ttoto0;
+CTrackKeyFramerTCBVector ttoto1;
+CTrackKeyFramerTCBQuat ttoto2;
+CTrackKeyFramerTCBInt ttoto3;
 
-CTrackKeyFramerBezierFloat toto4;
-CTrackKeyFramerBezierVector toto5;
-CTrackKeyFramerBezierQuat toto6;
-CTrackKeyFramerBezierInt toto7;
+CTrackKeyFramerBezierFloat ttoto4;
+CTrackKeyFramerBezierVector ttoto5;
+CTrackKeyFramerBezierQuat ttoto6;
+CTrackKeyFramerBezierInt ttoto7;
 
-CTrackKeyFramerConstString toto8;
-CTrackKeyFramerConstBool toto9;
+CTrackKeyFramerConstString ttoto8;
+CTrackKeyFramerConstBool ttoto9;
 
 } // NL3D

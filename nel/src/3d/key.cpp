@@ -1,7 +1,7 @@
 /** \file key.cpp
  * <File description>
  *
- * $Id: key.cpp,v 1.1 2001/02/05 16:52:22 corvazier Exp $
+ * $Id: key.cpp,v 1.2 2001/02/06 10:24:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,18 +29,18 @@
 namespace NL3D {
 
 // Some compilation check: force Visual to compile to template
-CKeyTCBFloat toto0;
-CKeyTCBVector toto1;
-CKeyTCBQuat toto2;
-CKeyTCBInt toto3;
+CKeyTCBFloat ktoto0;
+CKeyTCBVector ktoto1;
+CKeyTCBQuat ktoto2;
+CKeyTCBInt ktoto3;
 
-CKeyBezierFloat toto4;
-CKeyBezierVector toto5;
-CKeyBezierQuat toto6;
-CKeyBezierInt toto7;
+CKeyBezierFloat ktoto4;
+CKeyBezierVector ktoto5;
+CKeyBezierQuat ktoto6;
+CKeyBezierInt ktoto7;
 
-CKeyString toto8;
-CKeyBool toto9;
+CKeyString ktoto8;
+CKeyBool ktoto9;
 
 
 } // NL3D

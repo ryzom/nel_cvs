@@ -1,7 +1,7 @@
 /** \file channel.cpp
  * <File description>
  *
- * $Id: channel.cpp,v 1.1 2001/02/05 16:52:22 corvazier Exp $
+ * $Id: channel.cpp,v 1.2 2001/02/06 10:24:08 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,12 +29,12 @@
 namespace NL3D 
 {
 
-CChannelBool toto0;
-CChannelInt toto1;
-CChannelFloat toto2;
-CChannelVector toto3;
-CChannelQuat toto4;
-CChannelString toto5;
+CChannelBool ctoto0;
+CChannelInt ctoto1;
+CChannelFloat ctoto2;
+CChannelVector ctoto3;
+CChannelQuat ctoto4;
+CChannelString ctoto5;
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.22 2001/10/04 08:54:40 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.23 2001/10/04 12:18:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -438,9 +438,12 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					}
 				}			
 
-				Visible = true; // not too far, but not in cluster
-				m->_InsertedInVisibleList = true;
-				trav->addVisibleObs(this);
+				Visible = true; // not too far, but not in cluster				
+				if (!m->_InsertedInVisibleList)
+				{
+					m->_InsertedInVisibleList = true;
+					trav->addVisibleObs(this);
+				}
 				m->_InCluster = true;
 				return;
 				

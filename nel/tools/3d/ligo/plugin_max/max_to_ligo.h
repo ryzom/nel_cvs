@@ -1,7 +1,7 @@
 /** \file max_to_ligo.h
  * Convert a 3dsmax nel patch mesh in ligo data
  *
- * $Id: max_to_ligo.h,v 1.1 2001/10/12 13:26:01 corvazier Exp $
+ * $Id: max_to_ligo.h,v 1.2 2002/11/06 12:23:26 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "nel/misc/types_nl.h"
 
 #include <max.h>
+#undef min
+#undef max
 
 namespace NLLIGO
 {

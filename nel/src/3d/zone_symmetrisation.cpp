@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.cpp
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.cpp,v 1.1 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: zone_symmetrisation.cpp,v 1.2 2002/11/06 12:23:26 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -716,10 +716,6 @@ bool CZoneSymmetrisation::propagateTileState (uint patch, uint s, uint t, const 
 
 						do
 						{
-							// To remove
-							if ( (currentNode.Patch == 0x2b) && (currentNode.S == 0xe) && (currentNode.T == 0x7))
-								int toto=0;
-
 							// Set current patch pointer
 							currentPatchPtr = &(patchInfo[currentNode.Patch]);
 

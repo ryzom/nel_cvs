@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.166 2002/10/31 09:14:49 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.167 2002/11/06 12:23:25 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -372,7 +372,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	_WindowWidth = _WindowHeight = 0;
 	_hRC = NULL;
 	_hDC = NULL;
-	
+
+	uint width = mode.Width;
+	uint height = mode.Height;
+
 	// Offscreen mode ?
 	if (_OffScreen)
 	{
@@ -383,8 +386,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		RECT	WndRect;
 		WndRect.left=0;
 		WndRect.top=0;
-		WndRect.right=mode.Width;
-		WndRect.bottom=mode.Height;
+		WndRect.right=width;
+		WndRect.bottom=height;
 		AdjustWindowRect(&WndRect,WndFlags,FALSE);
 		HWND tmpHWND = CreateWindow(	"NLClass",
 									"",
@@ -397,20 +400,19 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 									NULL);
 		if (!tmpHWND) 
 		{
-			nlwarning ("CreateWindow failed");
+			nlwarning ("CDriverGL::setDisplay: CreateWindow failed");
 			return false;
 		}
 
-
 		// resize the window
 		RECT rc;
-		SetRect (&rc, 0, 0, mode.Width, mode.Height);
-		_WindowWidth = mode.Width;
-		_WindowHeight = mode.Height;
+		SetRect (&rc, 0, 0, width, height);
+		_WindowWidth = width;
+		_WindowHeight = height;
 		AdjustWindowRectEx (&rc, GetWindowStyle (_hWnd), GetMenu (_hWnd) != NULL, GetWindowExStyle (_hWnd));
 		SetWindowPos (_hWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
 
-		// Get the temporary HDC
+		// Get the 
 		HDC tempHDC = GetDC(tmpHWND);
 
 		_Depth=GetDeviceCaps(tempHDC,BITSPIXEL);
@@ -422,6 +424,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		_pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 		_pfd.iPixelType   = PFD_TYPE_RGBA;
 		_pfd.cColorBits   = (char)_Depth;
+
 		// Choose best suited Depth Buffer.
 		if(_Depth<=16)
 		{
@@ -451,7 +454,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		HGLRC tempGLRC = wglCreateContext(tempHDC);
 		if (tempGLRC == NULL)
 		{
-			nlwarning ("CDriverGL::setDisplay: wglCreateContext failed");
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglCreateContext failed: 0x%x", error);
 			DestroyWindow (tmpHWND);
 			_PBuffer = NULL;
 			_hWnd = NULL;
@@ -463,7 +467,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		// Make the context current
 		if (!wglMakeCurrent(tempHDC,tempGLRC))
 		{
-			nlwarning ("CDriverGL::setDisplay: wglMakeCurrent failed");
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglMakeCurrent failed: 0x%x", error);
 			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
 			_PBuffer = NULL;
@@ -475,52 +480,79 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 		// Register WGL functions
 		registerWGlExtensions (_Extensions, tempHDC);
+
+		HDC hdc = wglGetCurrentDC ();
+		if (hdc == NULL)
+		{
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglGetCurrentDC failed: 0x%x", error);
+			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
+			return false;
+		}
+
+		// Get ready to query for a suitable pixel format that meets our
+		// minimum requirements.
+		int iattributes[2*20];
+		float fattributes[2*20];
+		int nfattribs = 0;
+		int niattribs = 0;
+
+		// Attribute arrays must be “0” terminated – for simplicity, first
+		// just zero-out the array then fill from left to right.
+		for ( int a = 0; a < 2*20; a++ )
+		{
+			iattributes[a] = 0;
+			fattributes[a] = 0;
+		}
 		
-		// Have some pbuffer ?
-		if ((!_Extensions.WGLARBPBuffer) || (!_Extensions.WGLARBPixelFormat))
-		{
-			nlwarning ("CDriverGL::setDisplay: Extension for off-screen rendering not supported");
-			wglDeleteContext (tempGLRC);
-			DestroyWindow (tmpHWND);
-			_PBuffer = NULL;
-			_hWnd = NULL;
-			_hRC = NULL;
-			_hDC = NULL;
-			return false;
-		}
-
-		// No window
-		_hWnd = NULL;
-		_PBuffer = NULL;
-		_DestroyWindow = false;
-		_FullScreen = false;
-
-		// Create a pixel format
-		int   iattributes[8] = 
-		{
-			WGL_DRAW_TO_PBUFFER_ARB,	true, 
-			WGL_PIXEL_TYPE_ARB,			WGL_TYPE_RGBA_ARB,
-			WGL_DEPTH_BITS_ARB,			1,
-			WGL_SUPPORT_OPENGL_ARB,		true,
-		};		
-		float fattributes[8] = { 0, 0, 0, 0, 0, 0, 0, 0 };
-		int pformat[4] = { 0, 0, 0, 0};
+		// Since we are trying to create a pbuffer, the pixel format we
+		// request (and subsequently use) must be “p-buffer capable”.
+		iattributes[2*niattribs ] = WGL_DRAW_TO_PBUFFER_ARB;
+		iattributes[2*niattribs+1] = true;
+		niattribs++;
+		
+		// We require a minimum of 24-bit depth.
+		iattributes[2*niattribs ] = WGL_DEPTH_BITS_ARB;
+		iattributes[2*niattribs+1] = 24;
+		niattribs++;
+		
+		// We require a minimum of 8-bits for each R, G, B, and A.
+		iattributes[2*niattribs ] = WGL_RED_BITS_ARB;
+		iattributes[2*niattribs+1] = 8;
+		niattribs++;
+		iattributes[2*niattribs ] = WGL_GREEN_BITS_ARB;
+		iattributes[2*niattribs+1] = 8;
+		niattribs++;
+		iattributes[2*niattribs ] = WGL_BLUE_BITS_ARB;
+		iattributes[2*niattribs+1] = 8;
+		niattribs++;
+		iattributes[2*niattribs ] = WGL_ALPHA_BITS_ARB;
+		iattributes[2*niattribs+1] = 8;
+		niattribs++;
+		
+		// Now obtain a list of pixel formats that meet these minimum
+		// requirements.
+		int pformat[20];
 		unsigned int nformats;
-		if ( !wglChoosePixelFormatARB( tempHDC, iattributes, fattributes, 4, pformat, &nformats ) )
+		if ( !wglChoosePixelFormatARB ( hdc, iattributes, fattributes,
+			20, pformat, &nformats ) )
 		{
-			nlwarning ("CDriverGL::setDisplay: wglChoosePixelFormatARB failed");
+			nlwarning ( "pbuffer creation error: Couldn't find a suitable pixel format.\n" );
 			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
-			_PBuffer = NULL;
-			_hWnd = NULL;
-			_hRC = NULL;
-			_hDC = NULL;
 			return false;
 		}
 
-		// Create pbuffer
+		/* After determining a compatible pixel format, the next step is to create a pbuffer of the
+			chosen format. Fortunately this step is fairly easy, as you merely select one of the formats
+			returned in the list in step #2 and call the function: */
 		int iattributes2[1] = {0};
-	    _PBuffer = wglCreatePbufferARB( tempHDC, pformat[0], mode.Width, mode.Height, iattributes2 );
+		// int iattributes2[] = {WGL_PBUFFER_LARGEST_ARB, 1, 0};
+		_PBuffer = wglCreatePbufferARB( hdc, pformat[0], width, height, iattributes2 );
 		if (_PBuffer == NULL)
 		{
 			DWORD error = GetLastError ();
@@ -534,11 +566,41 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 			return false;
 		}
 
-		// Get the device context
+		/* After creating a pbuffer, you may use this functions to determine the dimensions of the pbuffer actually created. */
+		if ( !wglQueryPbufferARB( _PBuffer, WGL_PBUFFER_WIDTH_ARB, (int*)&width ) )
+		{
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglQueryPbufferARB failed: 0x%x", error);
+			wglDeleteContext (tempGLRC);
+			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
+			return false;
+		}
+		if ( !wglQueryPbufferARB( _PBuffer, WGL_PBUFFER_HEIGHT_ARB, (int*)&height ) )
+		{
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglQueryPbufferARB failed: 0x%x", error);
+			wglDeleteContext (tempGLRC);
+			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
+			return false;
+		}
+		_WindowWidth = width;
+		_WindowHeight = height;
+
+		/* The next step is to create a device context for the newly created pbuffer. To do this,
+			call the the function: */
 		_hDC = wglGetPbufferDCARB( _PBuffer );
-		if ( _hDC == NULL )
+		if (_hDC == NULL)
 		{
-			nlwarning ("CDriverGL::setDisplay: wglGetPbufferDCARB failed");
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglGetPbufferDCARB failed: 0x%x", error);
 			wglDestroyPbufferARB( _PBuffer );
 			wglDeleteContext (tempGLRC);
 			DestroyWindow (tmpHWND);
@@ -549,27 +611,14 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 			return false;
 		}
 
-		// Create a gl context for the p-buffer
+
+		/* The final step of pbuffer creation is to create an OpenGL rendering context and
+			associate it with the handle for the pbuffer’s device context created in step #4. This is done as follows */
 		_hRC = wglCreateContext( _hDC );
-		if ( _hRC == NULL )
+		if (_hRC == NULL)
 		{
-			nlwarning ("CDriverGL::setDisplay: wglCreateContext failed");
-			wglReleasePbufferDCARB( _PBuffer, _hDC );
-			wglDestroyPbufferARB( _PBuffer );
-			wglDeleteContext (tempGLRC);
-			DestroyWindow (tmpHWND);
-			_PBuffer = NULL;
-			_hWnd = NULL;
-			_hRC = NULL;
-			_hDC = NULL;
-			return false;
-		}
-
-		// Make the context current
-		if (!wglMakeCurrent(_hDC,_hRC))
-		{
-			nlwarning ("CDriverGL::setDisplay: wglMakeCurrent failed");
-			wglDeleteContext (_hRC);
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglCreateContext failed: 0x%x", error);
 			wglReleasePbufferDCARB( _PBuffer, _hDC );
 			wglDestroyPbufferARB( _PBuffer );
 			wglDeleteContext (tempGLRC);
@@ -584,11 +633,34 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		// Get the depth
 		_Depth = GetDeviceCaps (_hDC, BITSPIXEL);
 
-		// Destroy temporary window
+		// Destroy the temp gl context
 		if (!wglDeleteContext (tempGLRC))
-			nlwarning ("CDriverGL::setDisplay: wglDeleteContext failed");
+		{
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglDeleteContext failed: 0x%x", error);
+		}
+
+		// Destroy the temp windows
 		if (!DestroyWindow (tmpHWND))
 			nlwarning ("CDriverGL::setDisplay: DestroyWindow failed");
+
+		/* After a pbuffer has been successfully created you can use it for off-screen rendering. To do
+			so, you’ll first need to bind the pbuffer, or more precisely, make its GL rendering context
+			the current context that will interpret all OpenGL commands and state changes. */
+		if (!wglMakeCurrent(_hDC,_hRC))
+		{
+			DWORD error = GetLastError ();
+			nlwarning ("CDriverGL::setDisplay: wglMakeCurrent failed: 0x%x", error);
+			wglDeleteContext (_hRC);
+			wglReleasePbufferDCARB( _PBuffer, _hDC );
+			wglDestroyPbufferARB( _PBuffer );
+			DestroyWindow (tmpHWND);
+			_PBuffer = NULL;
+			_hWnd = NULL;
+			_hRC = NULL;
+			_hDC = NULL;
+			return false;
+		}
  	}
 	else
 	{
@@ -622,15 +694,15 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 				devMode.dmSize= sizeof(DEVMODE);
 				devMode.dmDriverExtra= 0;
 				devMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
-				devMode.dmPelsWidth= mode.Width;
-				devMode.dmPelsHeight= mode.Height;
+				devMode.dmPelsWidth= width;
+				devMode.dmPelsHeight= height;
 				devMode.dmBitsPerPel= mode.Depth;
 				ChangeDisplaySettings(&devMode, CDS_FULLSCREEN);
 			}
 			WndRect.left=0;
 			WndRect.top=0;
-			WndRect.right=mode.Width;
-			WndRect.bottom=mode.Height;
+			WndRect.right=width;
+			WndRect.bottom=height;
 			AdjustWindowRect(&WndRect,WndFlags,FALSE);
 			_hWnd = CreateWindow(	"NLClass",
 									"",
@@ -650,7 +722,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 			// resize the window
 			RECT rc;
-			SetRect (&rc, 0, 0, mode.Width, mode.Height);
+			SetRect (&rc, 0, 0, width, height);
 			AdjustWindowRectEx (&rc, GetWindowStyle (_hWnd), GetMenu (_hWnd) != NULL, GetWindowExStyle (_hWnd));
 			SetWindowPos (_hWnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE );
 
@@ -804,7 +876,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	int attr_flags = CWOverrideRedirect | CWColormap | CWBackPixel;
 
-	win = XCreateWindow (dpy, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, mode.Width, mode.Height, 0, visual_info->depth, InputOutput, visual_info->visual, attr_flags, &attr);	
+	win = XCreateWindow (dpy, RootWindow(dpy, DefaultScreen(dpy)), 0, 0, width, height, 0, visual_info->depth, InputOutput, visual_info->visual, attr_flags, &attr);	
 
 	if(!win)
 	  {
@@ -818,13 +890,13 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	XSizeHints size_hints;
 	size_hints.x = 0;
 	size_hints.y = 0;
-	size_hints.width = mode.Width;
-	size_hints.height = mode.Height;
+	size_hints.width = width;
+	size_hints.height = height;
 	size_hints.flags = PSize | PMinSize | PMaxSize;
-	size_hints.min_width = mode.Width;
-	size_hints.min_height = mode.Height;
-	size_hints.max_width = mode.Width;
-	size_hints.max_height = mode.Height;
+	size_hints.min_width = width;
+	size_hints.min_height = height;
+	size_hints.max_width = width;
+	size_hints.max_height = height;
 
 	XTextProperty text_property;
 	char *title="NeL window";
@@ -855,7 +927,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 		// Set window to the right size, map it to the display, and raise it
 		// to the front
-		XResizeWindow(dpy,win,mode.Width,mode.Height);
+		XResizeWindow(dpy,win,width,height);
 		XMapRaised(dpy,win);
 		XRaiseWindow(dpy, win);
 
@@ -894,9 +966,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 				int mode_index = -1; // Gah, magic numbers all bad. 
 				for (int i = 0; i < nmodes; i++)
 				{
-					nldebug("Available mode - %dx%d\n",mode.Width,mode.Height);
-					if( (modes[i]->hdisplay == mode.Width) &&
-						(modes[i]->vdisplay == mode.Height))
+					nldebug("Available mode - %dx%d\n",width,height);
+					if( (modes[i]->hdisplay == width) &&
+						(modes[i]->vdisplay == height))
 					{
 						mode_index = i;
 					}
@@ -908,8 +980,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 											   DefaultScreen(dpy), 
 											   modes[mode_index]))
 					{
-						nlinfo("Switching to mode %dx%d,\n",mode.Width, 
-							   mode.Height);
+						nlinfo("Switching to mode %dx%d,\n",width, 
+							   height);
 						XF86VidModeSetViewPort(dpy,DefaultScreen(dpy),0, 0);
 						_FullScreen = true;
 					}
@@ -920,8 +992,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 					// window in the setup stage, until I work out how
 					// to get it back (recreate window? seems excessive)
 					nlerror("Couldn't find an appropriate mode %dx%d\n",
-							mode.Width,
-							mode.Height);
+							width,
+							height);
 				}
 			}
 		}
@@ -959,10 +1031,10 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	// Init OpenGL/Driver defaults.
 	//=============================
-	glViewport(0,0,mode.Width,mode.Height);
+	glViewport(0,0,width,height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0,mode.Width,mode.Height,0,-1.0f,1.0f);	
+	glOrtho(0,width,height,0,-1.0f,1.0f);	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	glDisable(GL_AUTO_NORMAL);
@@ -1381,7 +1453,7 @@ bool CDriverGL::release()
 
 #ifdef NL_OS_WINDOWS
 	// Then delete.
-	wglMakeCurrent(NULL,NULL);
+	// wglMakeCurrent(NULL,NULL);
 
 	// Off-screen rendering ?
 	if (_OffScreen)

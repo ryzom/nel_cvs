@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.18 2002/10/21 16:09:49 corvazier Exp $
+ * $Id: script.cpp,v 1.19 2002/11/06 12:23:26 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,10 +47,10 @@
 #include <nel/misc/i_xml.h>
 #include <nel/misc/config_file.h>
 
-#include "MAXScrpt.h"
-#include "3dmath.h"
 
 // Various MAX and MXS includes
+#include "MAXScrpt.h"
+#include "3dmath.h"
 #include "Numbers.h"
 #include "MAXclses.h"
 #include "Streams.h"
@@ -1984,10 +1984,10 @@ bool MakeSnapShot (NLMISC::CBitmap &snapshot, const NL3D::CTileBank &tileBank, c
 		sint oversampledHeight = heightPixel*4;
 
 		// Oversampled size should be < 2048
-		if (oversampledWidth > 512)
-			oversampledWidth = 512;
-		if (oversampledHeight > 512)
-			oversampledHeight = 512;
+		if (oversampledWidth > 2048)
+			oversampledWidth = 2048;
+		if (oversampledHeight > 2048)
+			oversampledHeight = 2048;
 		
 		// Oversampled size should be < sreen size
 		DEVMODE	devMode;

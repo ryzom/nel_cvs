@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.16 2001/04/23 17:20:02 chafik Exp $
+ * $Id: baseai.h,v 1.17 2001/06/12 09:43:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,7 @@ namespace NLAIAGENT
 		processBuzzy,	/// The agent is in the buzzy state (curently executing itself)
 		processEnd,		/// The agent has completed its execution
 		processToKill,	/// The agent has completed its execution
+		processNotComplit,/// The agent have still something to do.
 		processError	/// The agent has encountered problems during its excecution.
 	};
 
@@ -167,6 +168,12 @@ namespace NLAIAGENT
 				Result = NULL;
 			}
 
+			CProcessResult(TProcessStatement state)
+			{				
+				ResultState = state;
+				Result = NULL;
+			}
+
 			/**
 			The statement of the run result.
 			*/
@@ -180,6 +187,7 @@ namespace NLAIAGENT
 	public:
 
 		static CProcessResult ProcessRun;
+		static CProcessResult ProcessNotComplit;		
 		
 		/**
 		Define the an idle state for an agent all time in this state.
@@ -205,6 +213,7 @@ namespace NLAIAGENT
 		Define the an error state for an agent all time in this state.
 		*/
 		static TProcessStatement ProcessError;
+		
 
 	public:
 		IObjectIA();
@@ -223,6 +232,11 @@ namespace NLAIAGENT
 		Some where Run method define the process of the agen. 
 		*/
 		virtual const CProcessResult &run() = 0;		
+
+		/**
+		Some where Run method define the process of the agen.
+		*/
+		virtual const CProcessResult &runStep();
 
 		/**
 		Static member is the component that the agent is create and die with. getStaticMemberSize to get the size of the static member components

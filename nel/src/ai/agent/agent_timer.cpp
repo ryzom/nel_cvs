@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.10 2001/05/29 15:18:43 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.11 2001/06/12 09:44:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,11 +228,12 @@ namespace NLAIAGENT
 	}
 	CAgentWatchTimer::CAgentWatchTimer(const CAgentWatchTimer &t):CAgentScript(t), _Clock(t._Clock),_Call(t._Call)/*,_MSG(t._MSG)*/
 	{		
-		std::list<std::pair< IConnectIA *, IMessageBase *> >::iterator i = _Call.begin();
+		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > >::iterator i = _Call.begin();
 		while(i != _Call.end())
 		{
 			connect((*i).first);
-			(*i).second->incRef();
+			std::pair<IMessageBase *, sint32> p = ((*i).second);//->second->incRef();
+			p.first->incRef();
 			i ++;
 		}
 	}
@@ -243,15 +244,13 @@ namespace NLAIAGENT
 	{
 	}
 	CAgentWatchTimer::~CAgentWatchTimer()
-	{
-		/*
-		if(_MSG != NULL) _MSG->release();
-		*/
-		
-		std::list<std::pair< IConnectIA *, IMessageBase *> >::iterator i = _Call.begin();
+	{		
+		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > >::iterator i = _Call.begin();
 		while(i != _Call.end())
-		{				
-			(*i ++).second->release();
+		{			
+			std::pair<IMessageBase *, sint32> p = ((*i).second);
+			IMessageBase * m = p.first;
+			m->release();
 		}		
 
 	}
@@ -284,27 +283,47 @@ namespace NLAIAGENT
 
 	void CAgentWatchTimer::tellBroker()
 	{		
-		std::list<std::pair< IConnectIA *, IMessageBase *> >::iterator i = _Call.begin();
+		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > >::iterator i = _Call.begin();
 		while(i != _Call.end())
 		{
-			IMessageBase *msg = (IMessageBase *)(*i).second->clone();
-			msg->setSender(this);
+			std::pair<IMessageBase *, sint32> p = ((*i).second);//->second->incRef();
+			IMessageBase *msg = (IMessageBase *)p.first;//->clone();
+			msg->incRef();
+			/*msg->setSender(this);
 			msg->setPerformatif(IMessageBase::PTell);
+			msg->setMethodIndex(0,p.second);*/
 			(*i).first->sendMessage((IObjectIA *)msg);
 			i ++;
 		}
 	}
 
-	void CAgentWatchTimer::addAttrib(IConnectIA *c,IMessageBase *m)
+	void CAgentWatchTimer::addAttrib(IConnectIA *c,IMessageBase *msg)
 	{		
 #ifdef NL_DEBUG
-		if(c == NULL || m == NULL)
+		if(c == NULL || msg == NULL)
 		{
 			throw;
 		}
 #endif
 		connect(c);
-		_Call.push_back(std::pair< IConnectIA *, IMessageBase *>(c,m));
+		static CStringVarName sRunTell("RunTell");
+				
+
+		NLAISCRIPT::COperandSimple *t = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(msg->getType()));
+		NLAISCRIPT::CParam param(1,t);
+			
+
+		sint32 index = -1;
+		
+		tQueue r = c->isMember(NULL,&sRunTell,param);
+		if(r.size()) index = r.top().Index;
+
+		msg->setSender(this);
+		msg->setPerformatif(IMessageBase::PTell);
+		msg->setMethodIndex(0,index);
+
+		std::pair<IMessageBase *, sint32> p (msg,index);		
+		_Call.push_back(std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > (c,p));
 		
 	}
 
@@ -315,7 +334,7 @@ namespace NLAIAGENT
 
 	bool CAgentWatchTimer::detach(IConnectIA *a,bool deleteFromConnection)
 	{
-		std::list<std::pair< IConnectIA *, IMessageBase *> >::iterator i = _Call.begin();
+		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > >::iterator i = _Call.begin();
 		while(i != _Call.end())
 		{
 			if((*i).first == a)
@@ -602,6 +621,13 @@ namespace NLAIAGENT
 			tellBroker();
 		}
 		return getState();
+	}
+
+	void CAgentClockTimer::setClock(uint c)
+	{	
+		_TimeCount = c;
+		CAgentWatchTimer::setClock(/*c +*/ (uint)(rand()%c));		
+
 	}
 
 	void CAgentClockTimer::initClass()

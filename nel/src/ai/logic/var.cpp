@@ -206,7 +206,7 @@ namespace NLAILOGIC
 			_Value->getDebugString( buf );
 		else
 			buf = "<undefined>";
-		text += NLAIC::stringGetBuild("CVar<%s> = %s <%s>\n",_Name->getString(), buf.c_str() , this);
+		text += NLAIC::stringGetBuild("CVar<%s> = %s <%8x>\n",_Name->getString(), buf.c_str() , this);
 	}
 
 	bool CVar::isEqual(const CVar &a) const

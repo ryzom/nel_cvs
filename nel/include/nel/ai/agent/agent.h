@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.17 2001/05/22 16:08:01 chafik Exp $
+ * $Id: agent.h,v 1.18 2001/06/12 09:43:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -374,13 +374,17 @@ namespace NLAIAGENT
 	{	
 	public:	
 		static const NLAIC::CIdentType *IdAgent;
+
+	private:
+		std::list<IBasicAgent *>::iterator _Iter_Child;
 		
 	protected:		
 		IAgent(const IAgent &a);
 		
 		/// \name Some IBasicAgent method.
 		//@{
-		virtual void runChildren();		// Activates the child agents		
+		virtual void runChildren();		// Activates the child agents
+		virtual bool runChildrenStepByStep();		// Activates the child agents
 		//@}
 	
 	public:		
@@ -423,6 +427,7 @@ namespace NLAIAGENT
 		//@{
 		virtual void processMessages();
 		virtual const CProcessResult &run();		
+		virtual const CProcessResult &runStep();
 		//@}
 	};
 }

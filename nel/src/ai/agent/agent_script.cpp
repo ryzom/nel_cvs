@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.68 2001/06/07 15:35:21 portier Exp $
+ * $Id: agent_script.cpp,v 1.69 2001/06/12 09:44:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,11 @@
 #include "nel/ai/agent/list_manager.h"
 #include "nel/ai/logic/fact.h"
 #include "nel/ai/agent/msg_fact.h"
+
+#define PROFILE
+#ifdef PROFILE
+#include "nel/misc/time_nl.h"
+#endif
 
 
 namespace NLAIAGENT
@@ -226,6 +231,8 @@ namespace NLAIAGENT
 
 	CAgentScript::CAgentScript(const CAgentScript &a): IAgentManager(a)
 	{
+		_iComponents = 0;
+
 		_AgentClass = a._AgentClass;
 		if ( a._AgentClass )
 		{			
@@ -264,6 +271,7 @@ namespace NLAIAGENT
 	
 	CAgentScript::CAgentScript(IAgentManager *manager) : IAgentManager( NULL ), _AgentClass( NULL )
 	{
+		_iComponents = 0;
 		_Components = NULL;
 		_NbComponents = 0;		
 		_AgentManager = manager;
@@ -277,6 +285,8 @@ namespace NLAIAGENT
 	{	
 		if ( _AgentClass )
 			_AgentClass->incRef();
+
+		_iComponents = 0;
 
 		// Creates the static components array
 		_NbComponents = components.size();
@@ -747,54 +757,74 @@ namespace NLAIAGENT
 		return IObjectIA::CProcessResult();
 	}
 
+#ifdef PROFILE
+	NLMISC::TTicks TimeSend = 0;
+	NLMISC::TTicks NbSend = 0;		
+#endif
+
 	IObjectIA::CProcessResult CAgentScript::sendMessage(IObjectIA *m)
 	{
 #ifdef NL_DEBUG
 	const char *txt = (const char *)m->getType();
 	const char *classBase = (const char *)getType();
 #endif
+
+#ifdef PROFILE
+		NLMISC::TTicks time = NLMISC::CTime::getPerformanceTime();
+#endif
 		IMessageBase *msg = (IMessageBase *)m;
 		//this->incRef();
 		msg->setReceiver(this);
-		//if(msg->getMethodIndex() < 0)
-		{
-		/*	_ScriptMail->addMessage(msg);			
-		}		
-		else 
-		{*/
+		if(msg->getMethodIndex() < 0)
+		{			
 			if( ((const NLAIC::CTypeOfObject &)m->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 			{
-				char runMsg[1024];
-				strcpy(runMsg,_RUN_);
+				//char runMsg[1024];
+				//strcpy(runMsg,_RUN_);
+				static CStringVarName sRunTell("RunTell");
+				static CStringVarName sRunAchieve("RunAchieve");
+				static CStringVarName sRunAsk("RunAsk");
+				static CStringVarName sRunExec("RunExec");
+				static CStringVarName sRunBreak("RunBreak");
+				static CStringVarName sRunKill("RunKill");
+				static CStringVarName sRunError("RunError");
+
+				CStringVarName *runMsg = NULL;//sRunTell;
+
 				switch(msg->getPerformatif())
 				{
 				case IMessageBase::PExec:
-					strcat(runMsg,"Exec");
+					//strcat(runMsg,"Exec");
+					runMsg = &sRunExec;
 					break;
 				case IMessageBase::PAchieve:
-					strcat(runMsg,"Achieve");
+					//strcat(runMsg,"Achieve");
+					runMsg = &sRunAchieve;
 					break;
 				case IMessageBase::PAsk:
-					strcat(runMsg,"Ask");
+					//strcat(runMsg,"Ask");
+					runMsg = &sRunAsk;
 					break;
 				case IMessageBase::PTell:
-					strcat(runMsg,"Tell");
+					//strcat(runMsg,"Tell");
+					runMsg = &sRunTell;
 					break;
 				case IMessageBase::PBreak:
-					strcat(runMsg,"Break");
+					runMsg = &sRunBreak;
 					break;
 				case IMessageBase::PKill:
-					strcat(runMsg,"Kill");
+					runMsg = &sRunKill;
 					break;
 				case IMessageBase::PError:
-					strcat(runMsg,"Error");
+					runMsg = &sRunError;
 					break;
 				}
 
+				CStringVarName &tmp_name = *runMsg;
+
 				NLAISCRIPT::COperandSimple *t = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(m->getType()));
 				NLAISCRIPT::CParam p(1,t);
-
-				CStringVarName tmp_name = CStringVarName(runMsg);
+				
 				tQueue r = isMember(NULL,&tmp_name,p);
 				if(r.size())
 				{
@@ -806,7 +836,19 @@ namespace NLAIAGENT
 			}
 			//else return IAgent::sendMessage(msg);			
 		}
-		return IAgent::sendMessage(msg);
+
+		IObjectIA::CProcessResult r = IAgent::sendMessage(msg);
+
+#ifdef PROFILE
+		time = NLMISC::CTime::getPerformanceTime() - time;
+		//if(time)
+		{
+			TimeSend += time;
+			NbSend ++;			
+		}
+#endif
+
+		return r;
 		//return IObjectIA::CProcessResult();
 	}
 
@@ -826,6 +868,24 @@ namespace NLAIAGENT
 		IAgent::runChildren();
 	}
 
+	bool CAgentScript::runChildrenStepByStep()
+	{
+		if(_iComponents == _NbComponents)
+		{
+			if(IAgent::runChildrenStepByStep())
+			{
+				_iComponents = 0;
+				return true;				
+			}
+			else return false;			
+		}
+
+		IObjectIA *o = _Components[_iComponents ++];
+		o->run();
+
+		return false;
+	}
+
 	void CAgentScript::processMessages(IMessageBase *msg,IObjectIA *c)
 	{
 #ifdef NL_DEBUG
@@ -837,7 +897,7 @@ namespace NLAIAGENT
 		param->push(msg);
 		context.Stack ++;
 		context.Stack[(int)context.Stack] = param;
-		
+
 		int indexM = msg->getMethodIndex() - getBaseMethodCount();
 		if(indexM >= 0)
 		{
@@ -1006,6 +1066,12 @@ namespace NLAIAGENT
 		return _AgentClass != NULL && (_AgentClass->getRunMethod() >= 0);
 	}
 
+
+#ifdef PROFILE
+	NLMISC::TTicks TimeRun = 0;
+	NLMISC::TTicks NbRun = 0;		
+#endif
+
 	const IObjectIA::CProcessResult &CAgentScript::run()
 	{
 		
@@ -1013,15 +1079,36 @@ namespace NLAIAGENT
 		const char *dbg_class_name = (const char *) getType();
 		//const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
 #endif
-		
-		getMail()->run();
-		runChildren();
-		
-		processMessages();
 
-		if(haveActivity() && getState().ResultState == processIdle) runActivity();
+#ifdef PROFILE
+		NLMISC::TTicks time = NLMISC::CTime::getPerformanceTime();
+#endif
+
+		const IObjectIA::CProcessResult &r = IAgentManager::run();
+
+#ifdef PROFILE
+		time = NLMISC::CTime::getPerformanceTime() - time;
+		//if(time)
+		{
+			TimeRun = time;
+			NbRun = 1;		
+		}
+#endif
+
+		return r;
 				
-		return getState();
+	}
+
+	const IObjectIA::CProcessResult &CAgentScript::runStep()
+	{
+		
+#ifdef NL_DEBUG
+		const char *dbg_class_name = (const char *) getType();
+		//const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
+#endif
+
+		return IAgentManager::runStep();
+				
 	}
 
 	void CAgentScript::addOperator(NLAILOGIC::IBaseOperator *op)

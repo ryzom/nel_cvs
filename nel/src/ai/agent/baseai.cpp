@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.25 2001/05/15 12:55:21 chafik Exp $
+ * $Id: baseai.cpp,v 1.26 2001/06/12 09:44:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,11 +141,12 @@ namespace NLAIAGENT
 /////////////////////////////////////////////////////////////////////////////
 
 	IObjectIA::CProcessResult IObjectIA::ProcessRun = IObjectIA::CProcessResult();
+	IObjectIA::CProcessResult IObjectIA::ProcessNotComplit = IObjectIA::CProcessResult(processNotComplit);	
 	TProcessStatement IObjectIA::ProcessIdle = processIdle;
 	TProcessStatement IObjectIA::ProcessLocked = processLocked;
 	TProcessStatement IObjectIA::ProcessBuzzy = processBuzzy;
 	TProcessStatement IObjectIA::ProcessEnd = processEnd;
-	TProcessStatement IObjectIA::ProcessError = processError;
+	TProcessStatement IObjectIA::ProcessError = processError;	
 
 	IObjectIA::IObjectIA(const IObjectIA &a):IBasicObjectIA(a)
 	{			
@@ -156,15 +157,23 @@ namespace NLAIAGENT
 	}		
 
 	IObjectIA::~IObjectIA()
-	{			
+	{
 	}
-	
+
+	const IObjectIA::CProcessResult &IObjectIA::runStep()
+	{
+		char text[2048*8];
+		sprintf(text,"const CProcessResult &IObjectIA::runStep() note implementaited for the '%s' interface",(const char *)getType());
+		throw NLAIE::CExceptionNotImplemented(text);
+		return IObjectIA::ProcessNotComplit;
+	}
+
 	IObjectIA &IObjectIA::operator = (const IObjectIA &a)
 	{
 		char text[2048*8];
 		sprintf(text,"operator <IObjectIA &operator = (const IObjectIA &a)> note implementaited for the '%s' interface",(const char *)getType());
 		throw NLAIE::CExceptionNotImplemented(text);
-		return *this;	
+		return *this;
 	}
 
 

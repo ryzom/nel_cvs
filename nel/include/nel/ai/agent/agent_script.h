@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.33 2001/06/01 14:48:32 portier Exp $
+ * $Id: agent_script.h,v 1.34 2001/06/12 09:43:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,6 +157,7 @@ namespace NLAIAGENT
 	protected:
 		///The creator of this instance. This useful for find scripted method entry point.
 		NLAISCRIPT::CAgentClass *_AgentClass;
+		sint _iComponents;
 
 	public:
 		static const NLAIC::CIdentType IdAgentScript;
@@ -249,7 +250,9 @@ namespace NLAIAGENT
 		/// \name Base class member method. 
 		//@{
 
-		virtual void runChildren();				
+		virtual void runChildren();
+		virtual bool runChildrenStepByStep();
+
 		virtual void onKill(IConnectIA *A);		
 		virtual void processMessages();
 
@@ -284,6 +287,7 @@ namespace NLAIAGENT
 		CProcessResult sendMessageToDynmaicChild(const IVarName &,IObjectIA *);
 
 		virtual const IObjectIA::CProcessResult &run();
+		virtual const CProcessResult &runStep();
 		//@}
 
 		/// \name NLAIC::IBasicInterface base class method.

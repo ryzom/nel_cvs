@@ -1,6 +1,6 @@
 /** \file codage.cpp
  *
- * $Id: codage.cpp,v 1.16 2001/05/22 16:08:16 chafik Exp $
+ * $Id: codage.cpp,v 1.17 2001/06/12 09:44:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,11 @@
 #ifdef NL_OS_WINDOWS
 #include "windows.h"
 #endif
+#endif
+
+#define PROFILE
+#ifdef PROFILE
+#include "nel/misc/time_nl.h"
 #endif
 
 namespace NLAISCRIPT
@@ -122,19 +127,40 @@ namespace NLAISCRIPT
 	}
 
 
+
 #ifdef NL_DEBUG 
 	bool NL_AI_DEBUG_SERVER = 0;
 #endif
 
 
+#ifdef PROFILE
+	NLMISC::TTicks TimeCompile = 0;
+	NLMISC::TTicks NbCompile = 0;
+
+#endif
+
+
 	const NLAIAGENT::IObjectIA::CProcessResult &CCodeBrancheRun::run(CCodeContext &p)
 	{		
-		NLAIAGENT::TProcessStatement i = NLAIAGENT::processIdle;		
+		NLAIAGENT::TProcessStatement i = NLAIAGENT::processIdle;
+
+#ifdef PROFILE
+		NLMISC::TTime time = NLMISC::CTime::getPerformanceTime();
+#endif
 		
 		while(i != NLAIAGENT::processEnd)
 		{	
 			i = runOpCode(p);
 		}
+
+#ifdef PROFILE
+		time = NLMISC::CTime::getPerformanceTime() - time;
+		//if(time)
+		{
+			TimeCompile += time;
+			NbCompile ++;			
+		}
+#endif
 		_Ip = 0;
 		_RunState.ResultState = NLAIAGENT::processIdle;
 		return _RunState;
@@ -154,7 +180,7 @@ namespace NLAISCRIPT
 			OutputDebugString(chaine.c_str());
 #endif
 		}
-#endif
+#endif		
 
 		return op.runOpCode(p);
 	}

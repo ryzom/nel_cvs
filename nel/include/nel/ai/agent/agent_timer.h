@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.7 2001/05/31 13:30:14 chafik Exp $
+ * $Id: agent_timer.h,v 1.8 2001/06/12 09:43:59 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -167,7 +167,7 @@ namespace NLAIAGENT
 	protected:
 
 		int _Clock;
-		std::list<std::pair< IConnectIA *, IMessageBase *> > _Call;
+		std::list<std::pair< IConnectIA *, std::pair<IMessageBase *, sint32> > > _Call;
 		/*_Call;
 		_MSG;*/
 		
@@ -246,12 +246,7 @@ namespace NLAIAGENT
 		CAgentClockTimer(const CAgentClockTimer &);
 		virtual ~CAgentClockTimer();
 
-		virtual void setClock(uint c)
-		{	
-			CAgentWatchTimer::setClock(c);
-			_TimeCount = CAgentWatchTimer::getClock();
-
-		}
+		virtual void setClock(uint c);		
 
 		virtual uint getClock() const
 		{

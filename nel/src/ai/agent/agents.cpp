@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.33 2001/05/22 16:08:15 chafik Exp $
+ * $Id: agents.cpp,v 1.34 2001/06/12 09:44:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,15 +36,18 @@ namespace NLAIAGENT
 {
 
 	IAgent::IAgent(const IAgent &a) : IAgentComposite(a)
-	{			
+	{
+		_Iter_Child = _AgentList.begin();
 	}
 
 	IAgent::IAgent(IBasicAgent *parent): IAgentComposite(parent)
 	{			
+		_Iter_Child = _AgentList.begin();
 	}
 
 	IAgent::IAgent(IBasicAgent *parent,IMailBox *m): IAgentComposite(parent,m)
 	{			
+		_Iter_Child = _AgentList.begin();
 	}
 
 /*	const IObjectIA::CProcessResult &IAgent::run();
@@ -114,6 +117,30 @@ namespace NLAIAGENT
 		IAgentComposite::load(is);		
 	}		
 
+	bool IAgent::runChildrenStepByStep()
+	{
+		if(_Iter_Child != _AgentList.end())
+		{
+			IBasicAgent *c = *_Iter_Child;
+
+			if(c->runStep().ResultState == ProcessNotComplit.ResultState) return false;
+
+			if(c->getState().ResultState == processToKill)
+			{
+				std::list<IBasicAgent *>::iterator i_temp = _Iter_Child;
+				_Iter_Child ++;
+				removeChild(c);
+			}
+			else _Iter_Child++;
+
+			return false;
+
+		}
+
+		_Iter_Child = _AgentList.begin();		
+		return true;
+	}
+
 	void IAgent::runChildren()	// Se charge de l'activation des fils
 	{
 		std::list<IBasicAgent *>::iterator i_agl = _AgentList.begin();		
@@ -172,21 +199,20 @@ namespace NLAIAGENT
 		return getState();  
 	}
 
-	/*IObjectIA *IAgent::run(const IMessageBase &msg)
+	const IObjectIA::CProcessResult &IAgent::runStep()
 	{
-		return NULL;
-	}*/
+		if(runChildrenStepByStep())
+		{
+			getMail()->run();	// Execution de la boite aux lettres
 
+			processMessages();	// Traitement de ses propres messages
 
-	/*void IAgent::run(const IMessageBase *msg)
-	{
-		char buffer[512];
-		char buffer2[512];
-		msg->getDebugString(buffer);
-		getDebugString(buffer2);
-		TRACE("AGENT\n %s\nTRAITE MESSAGE\n%s\n", buffer2, buffer);
-
-	}*/
+			if(haveActivity() && getState().ResultState == processIdle) runActivity();
+			return getState();
+		}
+		else return IObjectIA::ProcessNotComplit;
+		
+	}	
 
 	const NLAIC::CIdentType &IAgent::getType() const
 	{		

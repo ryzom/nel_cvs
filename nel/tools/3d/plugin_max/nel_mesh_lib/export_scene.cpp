@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.37 2003/10/06 13:18:24 besson Exp $
+ * $Id: export_scene.cpp,v 1.38 2003/10/23 16:12:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -433,7 +433,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(const vector<INode*>& vectNode, v
 									NL3D::CParticleSystemShape *pss = dynamic_cast<NL3D::CParticleSystemShape *>(ss.getShapePointer());
 									if (!pss)
 									{
-										nlwarning("ERROR: Node %s shape is not a FX", CExportNel::getName(*pNode));
+										nlwarning("ERROR: Node %s shape is not a FX", CExportNel::getName(*pNode).c_str());
 									}
 									else
 									{									

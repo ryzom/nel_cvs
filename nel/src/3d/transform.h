@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.19 2002/04/12 16:22:46 vizerie Exp $
+ * $Id: transform.h,v 1.20 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -390,6 +390,9 @@ private:
 	bool			_QuadGridClipManagerEnabled;
 
 	uint8				_OrderingLayer;
+
+	// For stickObjectEx(). with forceCLod==true
+	bool				_ForceCLodSticked;
 
 
 	/// See ILogicInfo. Used for lighting.	default is NULL.

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.14 2002/05/06 09:57:12 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.15 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "3d/skeleton_shape.h"
 
 
+using namespace std;
+
 namespace NL3D
 {
 
@@ -40,6 +42,7 @@ void		CSkeletonModel::registerBasic()
 {
 	CMOT::registerModel(SkeletonModelId, TransformShapeId, CSkeletonModel::creator);
 	CMOT::registerObs(AnimDetailTravId, SkeletonModelId, CSkeletonModelAnimDetailObs::creator);
+	CMOT::registerObs(ClipTravId, SkeletonModelId, CSkeletonModelClipObs::creator);
 }
 
 
@@ -57,7 +60,17 @@ void		CSkeletonModel::registerToChannelMixer(CChannelMixer *chanMixer, const std
 
 }
 
+// ***************************************************************************
+CSkeletonModel::CSkeletonModel()
+{
+	IAnimatable::resize(AnimValueLast);
+	HrcTrav= NULL;
+	_DisplayedAsLodCharacter= false;
+	_LodCharacterDistance= 0;
+	_DisplayLodCharacterDate= -1;
+}
 
+	
 // ***************************************************************************
 CSkeletonModel::~CSkeletonModel()
 {
@@ -86,6 +99,7 @@ void		CSkeletonModel::initBoneUsages()
 	{
 		_BoneUsage[i].Usage= 0;
 		_BoneUsage[i].ForcedUsage= 0;
+		_BoneUsage[i].CLodForcedUsage= 0;
 		_BoneUsage[i].MustCompute= 0;
 		_BoneUsage[i].ValidBoneSkinMatrix= 0;
 	}
@@ -100,58 +114,50 @@ void		CSkeletonModel::initBoneUsages()
 
 
 // ***************************************************************************
-void		CSkeletonModel::incBoneUsage(uint i, bool forced)
+void		CSkeletonModel::incBoneUsage(uint i, TBoneUsageType boneUsageType)
 {
 	nlassert(i<_BoneUsage.size());
 
-	if(forced)
-	{
-		// If the bone was not used before, must update MustCompute.
-		if(_BoneUsage[i].ForcedUsage==0)
-			_BoneToComputeDirty= true;
-
-		// Inc the refCount of the bone.
-		nlassert(_BoneUsage[i].ForcedUsage<255);
-		_BoneUsage[i].ForcedUsage++;
-	}
+	// Get ptr on according refCount
+	uint8	*usagePtr;
+	if(boneUsageType == UsageNormal)
+		usagePtr= &_BoneUsage[i].Usage;
+	else if(boneUsageType == UsageForced)
+		usagePtr= &_BoneUsage[i].ForcedUsage;
 	else
-	{
-		// If the bone was not used before, must update MustCompute.
-		if(_BoneUsage[i].Usage==0)
-			_BoneToComputeDirty= true;
+		usagePtr= &_BoneUsage[i].CLodForcedUsage;
 
-		// Inc the refCount of the bone.
-		nlassert(_BoneUsage[i].Usage<255);
-		_BoneUsage[i].Usage++;
-	}
+	// If the bone was not used before, must update MustCompute.
+	if(*usagePtr==0)
+		_BoneToComputeDirty= true;
+
+	// Inc the refCount of the bone.
+	nlassert(*usagePtr<255);
+	(*usagePtr)++;
 }
 
 
 // ***************************************************************************
-void		CSkeletonModel::decBoneUsage(uint i, bool forced)
+void		CSkeletonModel::decBoneUsage(uint i, TBoneUsageType boneUsageType)
 {
 	nlassert(i<_BoneUsage.size());
 
-	if(forced)
-	{
-		// If the bone was used before (and now won't be more), must update MustCompute.
-		if(_BoneUsage[i].ForcedUsage==1)
-			_BoneToComputeDirty= true;
-
-		// Inc the refCount of the bone.
-		nlassert(_BoneUsage[i].ForcedUsage>0);
-		_BoneUsage[i].ForcedUsage--;
-	}
+	// Get ptr on according refCount
+	uint8	*usagePtr;
+	if(boneUsageType == UsageNormal)
+		usagePtr= &_BoneUsage[i].Usage;
+	else if(boneUsageType == UsageForced)
+		usagePtr= &_BoneUsage[i].ForcedUsage;
 	else
-	{
-		// If the bone was used before (and now won't be more), must update MustCompute.
-		if(_BoneUsage[i].Usage==1)
-			_BoneToComputeDirty= true;
+		usagePtr= &_BoneUsage[i].CLodForcedUsage;
 
-		// Inc the refCount of the bone.
-		nlassert(_BoneUsage[i].Usage>0);
-		_BoneUsage[i].Usage--;
-	}
+	// If the bone was used before (and now won't be more), must update MustCompute.
+	if(*usagePtr==1)
+		_BoneToComputeDirty= true;
+
+	// Inc the refCount of the bone.
+	nlassert(*usagePtr>0);
+	(*usagePtr)--;
 }
 
 
@@ -172,29 +178,29 @@ void		CSkeletonModel::flagBoneAndParents(uint32 boneId, std::vector<bool>	&boneU
 
 
 // ***************************************************************************
-void		CSkeletonModel::incForcedBoneUsageAndParents(uint i)
+void		CSkeletonModel::incForcedBoneUsageAndParents(uint i, bool forceCLod)
 {
 	// inc forced.
-	incBoneUsage(i, true);
+	incBoneUsage(i, forceCLod?UsageCLodForced:UsageForced );
 
 	// recurs to father
 	sint	fatherId= Bones[i].getFatherId();
 	// if not a root bone...
 	if(fatherId>=0)
-		incForcedBoneUsageAndParents(fatherId);
+		incForcedBoneUsageAndParents(fatherId, forceCLod);
 }
 
 // ***************************************************************************
-void		CSkeletonModel::decForcedBoneUsageAndParents(uint i)
+void		CSkeletonModel::decForcedBoneUsageAndParents(uint i, bool forceCLod)
 {
 	// dec forced
-	decBoneUsage(i, true);
+	decBoneUsage(i, forceCLod?UsageCLodForced:UsageForced);
 
 	// recurs to father
 	sint	fatherId= Bones[i].getFatherId();
 	// if not a root bone...
 	if(fatherId>=0)
-		decForcedBoneUsageAndParents(fatherId);
+		decForcedBoneUsageAndParents(fatherId, forceCLod);
 }
 
 
@@ -217,8 +223,18 @@ void		CSkeletonModel::updateBoneToCompute()
 	// For all bones
 	for(uint i=0; i<_BoneUsage.size(); i++)
 	{
-		// set MustCompute to non 0 if (Usage && Lod) || ForcedUsage;
-		_BoneUsage[i].MustCompute= (_BoneUsage[i].Usage & lod.ActiveBones[i]) | _BoneUsage[i].ForcedUsage;
+		// If we are in CLod mode
+		if(isDisplayedAsLodCharacter())
+			// don't compute the bone
+			_BoneUsage[i].MustCompute= 0;
+		else
+		{
+			// set MustCompute to non 0 if (Usage && Lod) || ForcedUsage;
+			_BoneUsage[i].MustCompute= (_BoneUsage[i].Usage & lod.ActiveBones[i]) | _BoneUsage[i].ForcedUsage;
+		}
+		// if CLodForcedUsage for the bone, it must be computed, whatever _DisplayedAsLodCharacter state
+		_BoneUsage[i].MustCompute|= _BoneUsage[i].CLodForcedUsage;
+
 		// If the bone must be computed (if !0)
 		if(_BoneUsage[i].MustCompute)
 		{
@@ -287,7 +303,17 @@ void		CSkeletonModel::bindSkin(CTransform *mi)
 // ***************************************************************************
 void		CSkeletonModel::stickObject(CTransform *mi, uint boneId)
 {
+	// by default don't force display of "mi" if the skeleton become in CLod state
+	stickObjectEx(mi, boneId, false);
+}
+// ***************************************************************************
+void		CSkeletonModel::stickObjectEx(CTransform *mi, uint boneId, bool forceCLod)
+{
 	nlassert(mi);
+
+	// if "mi" is a skeleton, forceCLod must be true, for correct animation purpose
+	if(dynamic_cast<CSkeletonModel*>(mi))
+		forceCLod= true;
 
 	// try to detach this object from me first.
 	detachSkeletonSon(mi);
@@ -295,11 +321,13 @@ void		CSkeletonModel::stickObject(CTransform *mi, uint boneId)
 	// Then Add me.
 	_StickedObjects.insert(mi);
 	// increment the refCount usage of the bone
-	incForcedBoneUsageAndParents(boneId);
+	incForcedBoneUsageAndParents(boneId, forceCLod);
 
 	// advert transform of its sticked state.
 	mi->_FatherSkeletonModel= this;
 	mi->_FatherBoneId= boneId;
+	// advert him if it is "ForceCLod" sticked
+	mi->_ForceCLodSticked= forceCLod;
 
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	cacheTravs();
@@ -322,8 +350,8 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 	// If the instance is not skinned, then it is sticked
 	if( !tr->isSkinned() )
 	{
-		// Then decrement Bone Usage RefCount.
-		decForcedBoneUsageAndParents(tr->_FatherBoneId);
+		// Then decrement Bone Usage RefCount. Decrement from CLodForcedUsage if was sticked with forceCLod==true
+		decForcedBoneUsageAndParents(tr->_FatherBoneId, tr->_ForceCLodSticked);
 	}
 	else
 	{
@@ -334,6 +362,7 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 
 	// advert transform it is no more sticked/skinned.
 	tr->_FatherSkeletonModel= NULL;
+	tr->_ForceCLodSticked= false;
 
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	cacheTravs();
@@ -479,7 +508,9 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 					sm->Bones[i].compute( &sm->Bones[fatherId], modelWorldMatrix);
 
 					// Lod interpolation on this bone ?? only if at next lod, the bone is disabled.
-					if(lodNext && lodNext->ActiveBones[i]==0 && sm->_BoneUsage[i].ForcedUsage==0)
+					// And only if it is not enabed because of a "Forced reason"
+					if(lodNext && lodNext->ActiveBones[i]==0 && 
+						sm->_BoneUsage[i].ForcedUsage==0 && sm->_BoneUsage[i].CLodForcedUsage==0)
 					{
 						// interpolate with my father matrix.
 						const CMatrix		&fatherMatrix= sm->Bones[fatherId].getBoneSkinMatrix();
@@ -516,6 +547,76 @@ void		CSkeletonModel::computeAllBones(const CMatrix &modelWorldMatrix)
 	}
 
 }
+
+
+// ***************************************************************************
+void		CSkeletonModel::setLodCharacterDistance(float dist)
+{
+	_LodCharacterDistance= max(dist, 0.f);
+}
+
+
+// ***************************************************************************
+void		CSkeletonModel::updateDisplayLodCharacterFlag(const CClipTrav *clipTrav)
+{
+	// If this compute has not been already done during this clip pass, do it.
+	if(_DisplayLodCharacterDate < clipTrav->CurrentDate)
+	{
+		bool	precFlag= _DisplayedAsLodCharacter;
+
+		// reset
+		_DisplayedAsLodCharacter= false;
+
+		// if enabled
+		if(_LodCharacterDistance!=0)
+		{
+			CVector		globalPos;
+
+			// Get object position. 
+			// If has a skeleton ancestor, take his world position instead, because ours is invalid.
+			if( _HrcObs->_AncestorSkeletonModel != NULL)
+				// take ancestor world position
+				globalPos= _HrcObs->_AncestorSkeletonModel->getWorldMatrix().getPos();
+			else
+				// take our world position
+				globalPos= _HrcObs->WorldMatrix.getPos();
+
+			// compute distance from camera.
+			float	dist= (clipTrav->CamPos - globalPos).norm();
+
+			// compare with param.
+			if(dist>_LodCharacterDistance)
+				_DisplayedAsLodCharacter= true;
+		}
+
+		// If the flag has changed since last frame, must recompute bone Usage.
+		if(precFlag != _DisplayedAsLodCharacter)
+			_BoneToComputeDirty= true;
+
+		// Ok, just do it one time per clip pass.
+		_DisplayLodCharacterDate= clipTrav->CurrentDate;
+	}
+}
+
+
+// ***************************************************************************
+void		CSkeletonModelClipObs::traverse(IObs *caller)
+{
+	// call base clip method
+	CTransformClipObs::traverse(caller);
+
+	// update the _DisplayedAsLodCharacter flag
+	//=================
+
+	// get model.
+	CClipTrav		*clipTrav= (CClipTrav*)Trav;
+	CSkeletonModel	*sm= (CSkeletonModel*)Model;
+
+	// do it if not already done
+	sm->updateDisplayLodCharacterFlag(clipTrav);
+
+}
+
 
 
 } // NL3D

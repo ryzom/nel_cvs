@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.11 2002/05/06 09:57:12 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.12 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NL3D
 
 class CSkeletonShape;
 class CTransformClipObs;
+class CSkeletonModelClipObs;
 
 
 // ***************************************************************************
@@ -99,6 +100,13 @@ public:
 	 * NB: mi is made son of skeleton model in Traversals Hrc, and change are made at render() for ClipTrav.
 	 */
 	void		stickObject(CTransform *mi, uint boneId);
+
+	/** same method as stickObject(), but if you set forceCLod as true, then this object will be visible
+	 *	even if the skeleton father is in CLod state (ie displayed with a CLodCharacterShape)
+	 *	NB: if "mi" is a skeleton model, forceCLod is considerer true, whatever the value passed in.
+	 */
+	void		stickObjectEx(CTransform *mi, uint boneId, bool forceCLod);
+
 	/** unparent a CTransform from a bone of the skeleton, or unbind a skin. No-op if not here.
 	 * NB: mi is made son of Root in Traversals Hrc, and change are made at render() for ClipTrav.
 	 */
@@ -108,10 +116,16 @@ public:
 
 	/// \name Skin/BoneUsage Accessor. Called by CMeshInstance only.
 	// @{
-	/// increment the refCount of the ith bone. set forced to false if enable Skeleton Bone degradation.
-	void		incBoneUsage(uint i, bool forced= true);
+
+	typedef enum {UsageNormal, UsageForced, UsageCLodForced} TBoneUsageType;
+
+	/** increment the refCount of the ith bone. 
+	 *	set boneUsageType to UsageNormal if enable Skeleton Bone degradation (skins)
+	 *	Forced usage are for Sticked objects
+	 */
+	void		incBoneUsage(uint i, TBoneUsageType boneUsageType);
 	/// decrement the refCount of the ith bone. set forced to the same param passed when incBoneUsage()
-	void		decBoneUsage(uint i, bool forced= true);
+	void		decBoneUsage(uint i, TBoneUsageType boneUsageType);
 
 	/** This method update boneUsage (must be of size of Bones).
 	 *	It's flag boneUsage[boneId] to true, and all parents of boneId.
@@ -159,14 +173,34 @@ public:
 	virtual bool		isLightable() const {return getUserLightable();}
 
 
+	/// \name CLod / Character Lod
+	// @{
+
+	/** True if the skeleton model and his skins are to be displayed with a CLodCharacterShape, instead of the std way
+	 *	This state is modified early during the HRC Traversal. Because Clip traversal need this result.
+	 */
+	bool			isDisplayedAsLodCharacter() const {return _DisplayedAsLodCharacter;}
+
+	/** This is the distance at which the skeleton use a CLodCharacterShape to display himself
+	 *	if 0, never display the skeleton as a CLodCharacterShape
+	 */
+	void			setLodCharacterDistance(float dist);
+
+	/// see setLodCharacterDistance. 0 if disabled
+	float			getLodCharacterDistance() const {return _LodCharacterDistance;}
+
+	/** Called by CTransformClipObs. update the flag _DisplayedAsLodCharacter.
+	 *	No-op if already done (compare clipTrav current date).
+	 */
+	void			updateDisplayLodCharacterFlag(const CClipTrav *clipTrav);
+
+	// @}
+
+
 // ***********************
 protected:
 	/// Constructor
-	CSkeletonModel()
-	{
-		IAnimatable::resize(AnimValueLast);
-		HrcTrav= NULL;
-	}
+	CSkeletonModel();
 	/// Destructor
 	virtual ~CSkeletonModel();
 
@@ -174,6 +208,7 @@ protected:
 private:
 	static IModel	*creator() {return new CSkeletonModel;}
 	friend	class CSkeletonShape;
+	friend	class CSkeletonModelClipObs;
 	friend	class CSkeletonModelAnimDetailObs;
 	friend	class CTransformClipObs;
 
@@ -202,7 +237,14 @@ private:
 		uint8			Usage;
 		/// Same as Usage, but must be animated/computed, even if Skeleton Lods say not (stickedObjects).
 		uint8			ForcedUsage;
-		/// The current state: which bones need to be computed. ie (Usage & currentLodUsage) | ForcedUsage.
+		/** Same as ForcedUsage, but must be animated/computed, even if the skeleton is in CLod state 
+		 *	ie displayed with a CLodCharacterShape. This is important for skeletons which have skeletons 
+		 *	sons sticked on them
+		 */
+		uint8			CLodForcedUsage;
+		/** The current state: which bones need to be computed. ie: 
+		 *	(CLodForcedUsage) | ( ((Usage & currentLodUsage) | ForcedUsage) & skeleton not in CLod state )
+		 */
 		uint8			MustCompute;
 		/// Myself if MustCompute==true, or the first parent with MustCompute==true.
 		uint			ValidBoneSkinMatrix;
@@ -226,9 +268,9 @@ private:
 	void		initBoneUsages();
 
 	/// increment the refCount of the ith bone and its parents. for stickObjects.
-	void		incForcedBoneUsageAndParents(uint i);
+	void		incForcedBoneUsageAndParents(uint i, bool forceCLod);
 	/// increment the refCount of the ith bone and its parents. for stickObjects.
-	void		decForcedBoneUsageAndParents(uint i);
+	void		decForcedBoneUsageAndParents(uint i, bool forceCLod);
 
 	/// According to Usage, ForedUsage and current skeleton Lod, update MustCompute and ValidBoneSkinMatrix
 	void		updateBoneToCompute();
@@ -236,10 +278,55 @@ private:
 	// @}
 
 
+	/// \name CLod / Character Lod
+	// @{
+
+	/** True if the skeleton model and his skins have to be displayed with a CLodCharacterShape, instead of the std way
+	 *	This state is modified early during the HRC Traversal. Because Clip traversal need this result.
+	 */
+	bool			_DisplayedAsLodCharacter;
+
+	/// see setLodCharacterDistance
+	float			_LodCharacterDistance;
+
+	/// The last date _DisplayedAsLodCharacter has been computed
+	sint64			_DisplayLodCharacterDate;
+
+	// @}
+
+
+
 	// The Hrc traversal of the Scene which owns this Skeleton.
 	CHrcTrav		*HrcTrav;
 	// test if HrcTrav!=NULL, else get from observers (done only one time).
 	void			cacheTravs();
+};
+
+
+// ***************************************************************************
+/**
+ * This observer:
+ * - leave the notification system to DO NOTHING.
+ * - extend the traverse method.
+ *
+ * \sa CHrcTrav CTransformHrcObs
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CSkeletonModelClipObs : public CTransformClipObs
+{
+public:
+
+	/** this do :
+	 *  - call CTransformClipObs::traverse()
+	 *  - If needed flag _DisplayedAsLodCharacter as true
+	 */
+	virtual	void	traverse(IObs *caller);
+
+
+public:
+	static IObs	*creator() {return new CSkeletonModelClipObs;}
 };
 
 

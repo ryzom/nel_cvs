@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.10 2002/04/12 12:04:58 lecroart Exp $
+ * $Id: track_keyframer.h,v 1.11 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,8 +129,8 @@ public:
 	/// set LoopMode. 2 mode only: "constant" (<=>false), and "loop" (<=> true). same mode for in and out...
 	void	setLoopMode(bool loop) {_LoopMode= loop; _Dirty= true;}
 
-	/// get LoopMode.
-	bool	getLoopMode() const {return _LoopMode;}
+	/// get LoopMode. From ITrack
+	virtual bool getLoopMode() const {return _LoopMode;}
 
 
 	/// From ITrack. 

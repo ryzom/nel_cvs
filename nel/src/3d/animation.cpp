@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * <File description>
  *
- * $Id: animation.cpp,v 1.13 2002/04/12 16:16:38 vizerie Exp $
+ * $Id: animation.cpp,v 1.14 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NL3D
 
 // ***************************************************************************
 
-CAnimation::CAnimation() : _BeginTimeTouched(true), _EndTimeTouched(true)
+CAnimation::CAnimation() : _BeginTimeTouched(true), _EndTimeTouched(true), _AnimLoopTouched(true)
 {	
 }
 
@@ -61,7 +61,7 @@ void CAnimation::addTrack (const std::string& name, ITrack* pChannel)
 	_TrackVector.push_back (pChannel);
 
 	// 
-	_BeginTimeTouched = _EndTimeTouched = true;
+	_BeginTimeTouched = _EndTimeTouched = _AnimLoopTouched= true;
 
 }
 
@@ -158,6 +158,32 @@ TAnimationTime CAnimation::getEndTime () const
 	}
 
 	return _EndTime;
+}
+
+// ***************************************************************************
+bool			CAnimation::allTrackLoop() const
+{
+	if(_AnimLoopTouched)
+	{
+		// Track count
+		uint trackCount=_TrackVector.size();
+
+		// Default is true
+		_AnimLoop= true;
+
+		// Scan tracks keys
+		for (uint t=0; t<trackCount; t++)
+		{
+			if (!_TrackVector[t]->getLoopMode())
+			{
+				_AnimLoop= false;
+				break;
+			}
+		}
+		_AnimLoopTouched = false;
+	}
+
+	return _AnimLoop;
 }
 
 // ***************************************************************************

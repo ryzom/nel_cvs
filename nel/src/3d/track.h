@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.3 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: track.h,v 1.4 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,12 @@ public:
 	  */
 	virtual const IAnimatedValue& getValue () const=0;
 
+	/**
+	  * get LoopMode. 2 mode only: "constant" (<=>false), and "loop" (<=> true). 
+	  *	NB: same mode if time < getBeginTIme() and if time > getEndTime()
+	  */
+	virtual bool getLoopMode() const=0;
+
 	/// \name From UTrack
 	// @{
 
@@ -117,6 +123,7 @@ public:
 	{
 		return 0.f;
 	}
+	virtual bool getLoopMode() const {return true;}
 };
 
 

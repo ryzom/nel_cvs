@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.34 2002/04/25 15:25:55 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.35 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2023,9 +2023,9 @@ void	CMeshMRMGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 	{
 		// increment or decrement not Forced, because CMeshGeom use getActiveBoneSkinMatrix().
 		if(increment)
-			sm->incBoneUsage(_BonesId[i], false);
+			sm->incBoneUsage(_BonesId[i], CSkeletonModel::UsageNormal);
 		else
-			sm->decBoneUsage(_BonesId[i], false);
+			sm->decBoneUsage(_BonesId[i], CSkeletonModel::UsageNormal);
 	}
 }
 

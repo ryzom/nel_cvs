@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.41 2002/04/29 08:27:15 berenguier Exp $
+ * $Id: transform.cpp,v 1.42 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,8 @@ CTransform::CTransform()
 	_LogicInfo= NULL;
 
 	_DeleteChannelMixer = false;
+
+	_ForceCLodSticked= false;
 }
 
 
@@ -602,7 +604,25 @@ void	CTransformClipObs::traverse(IObs *caller)
 		// This works because we are sons of a special node which is not in the clip traversal, and
 		// which is traversed at end of the traversal.
 		if( ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel!=NULL )
+		{
 			Visible= ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel->isClipVisible();
+			// Special test: if we are sticked to a skeletonModel, and if we are still visible, maybe we don't have to
+			if(Visible && transform->_FatherSkeletonModel)
+			{
+				// must ensure the skeleton has computed the state
+				transform->_FatherSkeletonModel->updateDisplayLodCharacterFlag(clipTrav);
+
+				// if our skeletonModel father is displayed with a Lod, maybe we are not to be displayed
+				if(transform->_FatherSkeletonModel->isDisplayedAsLodCharacter())
+				{
+					// We are visible only if we where sticked to the skeleton with forceCLod==true.
+					// This is also true if we are actually a skeletonModel
+					if(!transform->_ForceCLodSticked)
+						// otherWise we are not visible. eg: this is the case of skins and some sticked object
+						Visible= false;
+				}
+			}
+		}
 		// else, clip.
 		else
 			Visible= clip(callerClipObs);

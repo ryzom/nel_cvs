@@ -1,7 +1,7 @@
 /** \file animation.h
  * <File description>
  *
- * $Id: animation.h,v 1.5 2002/04/12 16:16:38 vizerie Exp $
+ * $Id: animation.h,v 1.6 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,7 +131,7 @@ public:
 	virtual void		releaseTrack (UTrack* track);
 	virtual TAnimationTime	getBeginTime () const;
 	virtual TAnimationTime	getEndTime () const;
-
+	virtual	bool			allTrackLoop() const;
 
 	// @}
 
@@ -154,8 +154,10 @@ private:
 	// @{
 		mutable TAnimationTime		_BeginTime;	
 		mutable TAnimationTime		_EndTime;
+		mutable bool				_AnimLoop;
 		mutable bool				_BeginTimeTouched;
 		mutable bool				_EndTimeTouched;
+		mutable bool				_AnimLoopTouched;
 	// @}
 };
 

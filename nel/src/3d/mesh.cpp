@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.52 2002/04/26 15:06:50 berenguier Exp $
+ * $Id: mesh.cpp,v 1.53 2002/05/07 08:15:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1391,9 +1391,9 @@ void	CMeshGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
 	{
 		// increment or decrement not Forced, because CMeshGeom use getActiveBoneSkinMatrix().
 		if(increment)
-			sm->incBoneUsage(_BonesId[i], false);
+			sm->incBoneUsage(_BonesId[i], CSkeletonModel::UsageNormal);
 		else
-			sm->decBoneUsage(_BonesId[i], false);
+			sm->decBoneUsage(_BonesId[i], CSkeletonModel::UsageNormal);
 	}
 }
 

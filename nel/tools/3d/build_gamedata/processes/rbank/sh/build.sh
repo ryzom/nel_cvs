@@ -325,7 +325,32 @@ done
 # Check ai_build_wmap exist
 if ( test -f $ai_build_wmap )
 then
-	# rm ai_build_wmap.cfg
+	# setup config file for ai_build_wmap
+	rm ./ai_build_wmap.cfg
+	cp cfg/ai_build_wmap.cfg ./ai_build_wmap.cfg
+
 	# generate wmap
-	# $exec_timeout $build_wmap_timout $ai_build_wmap
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsCrunch $rbank_rbank_name"
+
+	# generate sizes
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsBuildGabarit $rbank_rbank_name"
+
+	# generate cwmaps for each size
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsBuildWmap ${rbank_rbank_name}_0"
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsBuildWmap ${rbank_rbank_name}_1"
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsBuildWmap ${rbank_rbank_name}_2"
+
+	# generate bitmap for each size
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsBuildBitmap ${rbank_rbank_name}_0"
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsBuildBitmap ${rbank_rbank_name}_1"
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsBuildBitmap ${rbank_rbank_name}_2"
+
+	# clear height maps for size 1 and 2
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsClearHeightmap ${rbank_rbank_name}_1"
+	$exec_timeout $build_wmap_timeout $ai_build_wmap "pacsClearHeightmap ${rbank_rbank_name}_2"
+
+	rm output/$rbank_rbank_name.wmap
+	rm output/${rbank_rbank_name}_0.wmap
+	rm output/${rbank_rbank_name}_1.wmap
+	rm output/${rbank_rbank_name}_2.wmap
 fi

@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.13 2004/06/02 16:30:11 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.14 2004/07/21 09:11:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -843,19 +843,18 @@ void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver,
 				_MultiTexState |= (uint8) EnvBumpMapUsed;				
 			}
 			else // switch to alternate
-			{
-				if (isAlternateTexEnabled())
-				{
-					_MultiTexState |= (uint8) AlternateTextureUsed;
+			{				
+				_MultiTexState |= (uint8) AlternateTextureUsed;
+				if (isAlternateTexEnabled() && _AlternateTexture2)
+				{					
 					setupMultiTexEnv(_AlternateOp, primary, _AlternateTexture2, mat, *driver);
-					_MultiTexState &= ~(uint8) EnvBumpMapUsed;
 				}
-				else // display the texture as it
+				else
 				{
-					setupMultiTexEnv(Decal, primary, NULL, mat, *driver);
-					_MultiTexState &= ~(uint8) AlternateTextureUsed;
-					_MultiTexState &= ~(uint8) EnvBumpMapUsed;
+					mat.setTexture(0, primary);		
+					mat.texEnvOpRGB(0, CMaterial::Modulate);
 				}
+				_MultiTexState &= ~(uint8) EnvBumpMapUsed;				
 			}
 		}
 	}		

@@ -1,7 +1,7 @@
 /** \file ps_quad.cpp
  * Base quads particles.
  *
- * $Id: ps_quad.cpp,v 1.17 2004/07/16 07:29:09 vizerie Exp $
+ * $Id: ps_quad.cpp,v 1.18 2004/07/21 09:11:52 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -216,7 +216,7 @@ void CPSQuad::initVertexBuffers()
 ///==================================================================================
 /// choose the vertex buffex that we need
 CVertexBuffer &CPSQuad::getNeededVB(IDriver &drv)
-{
+{	
 	uint flags = 0;
 	if (_ColorScheme) flags |= (uint) VBCol;
 	if (_TexGroup)
@@ -233,7 +233,19 @@ CVertexBuffer &CPSQuad::getNeededVB(IDriver &drv)
 		/// check if multitexturing is enabled, and which texture are enabled and / or animated
 		if (CPSMultiTexturedParticle::isMultiTextureEnabled())
 		{
-			if (!isAlternateTextureUsed(drv))
+			if (isAlternateTextureUsed(drv) && _AlternateTexture2)
+			{								
+				if ((flags & VBTex) && (_TexScrollAlternate[0].x != 0 || _TexScrollAlternate[0].y	!= 0)) flags |= VBTexAnimated;
+				if (_AlternateOp != Decal && (_TexScrollAlternate[1].x != 0 || _TexScrollAlternate[1].y != 0)) 
+				{
+					flags |= VBTex2 | VBTex2Animated;
+				}
+				else
+				{
+					flags |= VBTex2;
+				}				
+			}
+			else
 			{
 				if ((flags & VBTex) && (_TexScroll[0].x != 0 || _TexScroll[0].y	!= 0)) flags |= VBTexAnimated;
 				if (_Texture2)
@@ -246,22 +258,7 @@ CVertexBuffer &CPSQuad::getNeededVB(IDriver &drv)
 					{
 						flags |= VBTex2;
 					}
-				}
-			}
-			else
-			{
-				if ((flags & VBTex) && (_TexScrollAlternate[0].x != 0 || _TexScrollAlternate[0].y	!= 0)) flags |= VBTexAnimated;
-				if (_AlternateTexture2)
-				{				
-					if (_AlternateOp != Decal && (_TexScrollAlternate[1].x != 0 || _TexScrollAlternate[1].y != 0)) 
-					{
-						flags |= VBTex2 | VBTex2Animated;
-					}
-					else
-					{
-						flags |= VBTex2;
-					}
-				}
+				}				
 			}
 		}
 	}
@@ -463,7 +460,7 @@ static void FillQuadCoordsLocalTime(uint8 *dest, uint stride, const NLMISC::CVec
 
 //==============================================================
 void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint32 size, uint32 srcStep, IDriver &drv)
-{
+{	
 	nlassert(_Owner);
 
 	if (!size) return;
@@ -522,7 +519,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 	const float date= (float) _Owner->getOwner()->getSystemDate();
 	
 
-	/// todo: vertex programm optimisation (& choose the vb accordingly)
+	/// todo: vertex program optimisation (& choose the vb accordingly)
 
 	if (CPSMultiTexturedParticle::isMultiTextureEnabled() && (_Tex || _TexGroup))
 	{
@@ -530,7 +527,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 		// perform tex1 animation if needed
 		if (!_TexGroup) // doesn't work with texGroup enabled
 		{
-			if (!isAlternateTextureUsed(drv))
+			if (!isAlternateTextureUsed(drv) || !isAlternateTexEnabled() || !_AlternateTexture2)
 			{
 				if (_Tex && (_TexScroll[0].x != 0 || _TexScroll[0].y != 0))
 				{
@@ -580,7 +577,7 @@ void CPSQuad::updateVbColNUVForRender(CVertexBuffer &vb, uint32 startIndex, uint
 		}
 		else
 		{
-			if (_AlternateTexture2 && (_TexScrollAlternate[1].x != 0 || _TexScrollAlternate[1].y != 0))
+			if (_AlternateTexture2 && isAlternateTexEnabled() && (_TexScrollAlternate[1].x != 0 || _TexScrollAlternate[1].y != 0))
 			{
 				// animation of texture 2 with alternate speed
 				if (!getUseLocalDateAlt())

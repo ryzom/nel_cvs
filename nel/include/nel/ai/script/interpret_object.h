@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.18 2002/01/03 15:06:00 chafik Exp $
+ * $Id: interpret_object.h,v 1.19 2002/10/04 10:12:31 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -242,7 +242,7 @@ namespace NLAISCRIPT
 			return new CExceptionHaveNoType(*this);
 		}
 
-		virtual ~CExceptionHaveNoType()
+		virtual ~CExceptionHaveNoType() throw()
 		{			
 		}
 	};

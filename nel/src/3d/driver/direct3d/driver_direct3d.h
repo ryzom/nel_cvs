@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.23 2004/08/31 09:54:42 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.24 2004/09/02 16:55:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,11 @@
 // Define this to force the use of pixel shader in the normal shaders (default is undefined)
 // #define NL_FORCE_PIXEL_SHADER_USE_FOR_NORMAL_SHADERS
 
+// Define this to enable profiling by the NV Perf HUD tool (default is undefined)
+//#define NL_D3D_USE_NV_PERF_HUD
+
+
+// Define this to enable profiling of driver functions (default is undefined).
 //#define NL_PROFILE_DRIVER_D3D
 
 #ifdef NL_PROFILE_DRIVER_D3D
@@ -82,6 +87,15 @@
 #else
 	#define H_AUTO_D3D(label)
 #endif
+
+inline operator==(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
+{
+	return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b && lhs.a == rhs.a;
+}
+inline operator!=(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
+{
+	return !(lhs == rhs);
+}
 
 // ***************************************************************************
 
@@ -163,8 +177,9 @@ public:
 	virtual uint	getTextureMemoryUsed() const {return TextureMemory;}
 };
 
-// ***************************************************************************
 
+
+// ***************************************************************************
 struct CMaterialDrvInfosD3D : public IMaterialDrvInfos
 {
 public:
@@ -179,6 +194,8 @@ public:
 	DWORD 			ColorArg0[IDRV_MAT_MAXTEXTURES];
 	DWORD 			ColorArg1[IDRV_MAT_MAXTEXTURES];
 	DWORD 			ColorArg2[IDRV_MAT_MAXTEXTURES];
+	uint			NumColorArg[IDRV_MAT_MAXTEXTURES];
+	uint			NumAlphaArg[IDRV_MAT_MAXTEXTURES];
 	D3DTEXTUREOP	AlphaOp[IDRV_MAT_MAXTEXTURES];
 	DWORD 			AlphaArg0[IDRV_MAT_MAXTEXTURES];
 	DWORD 			AlphaArg1[IDRV_MAT_MAXTEXTURES];		
@@ -196,10 +213,10 @@ public:
 	{
 		H_AUTO_D3D(CMaterialDrvInfosD3D_CMaterialDrvInfosD3D);
 		PixelShader = NULL;
-		PixelShaderUnlightedNoVertexColor = NULL;
-	}
-	void buildTexEnv (uint stage, const CMaterial::CTexEnv &env, bool textured);
-};
+		PixelShaderUnlightedNoVertexColor = NULL;				
+	}	
+	void buildTexEnv (uint stage, const CMaterial::CTexEnv &env, bool textured);		
+};	
 
 // ***************************************************************************
 
@@ -357,6 +374,7 @@ public:
 	CVertexBuffer::TLocation	Location;
 	uint						CurrentIndex;
 	uint						MaxSize;
+	bool						Locked;
 
 	/* size is in bytes */
 	void	init (CVertexBuffer::TLocation	location, uint size, uint maxSize, CDriverD3D *driver);
@@ -385,6 +403,7 @@ public:
 	// current position in bytes!
 	uint						CurrentIndex;
 	uint						MaxSize;
+	bool						Locked;
 
 	/* size is in bytes */
 	void	init (CIndexBuffer::TLocation	location, uint size, uint maxSize, CDriverD3D *driver);
@@ -471,6 +490,7 @@ public:
 	virtual uint32			getAvailableVertexVRAMMemory ();
 	virtual	sint			getNbTextureStages() const;
 	virtual	bool			supportVertexBufferHard() const;
+	virtual bool			supportVolatileVertexBuffer() const;
 	virtual	bool			supportIndexBufferHard() const;
 	// todo hulud d3d vertex buffer hard
 	virtual	bool			slowUnlockVertexBufferHard() const {return false;};
@@ -679,8 +699,8 @@ private:
 	{
 		CRenderVariable()
 		{
-			NextModified = NULL;
-			Modified = false;
+			NextModified = NULL;						
+			Modified = false;						
 		}
 
 		// Type of render state
@@ -701,9 +721,10 @@ private:
 			VertexDecl,
 			LightState,
 			RenderTargetState,
-		}				Type;
-		bool			Modified;
-		CRenderVariable	*NextModified;
+		}				Type;		
+		CRenderVariable	*NextModified;		
+		bool			Modified;		
+		virtual	void apply(CDriverD3D *driver) = 0;
 	};
 
 	// Render state
@@ -715,6 +736,7 @@ private:
 		}
 		D3DRENDERSTATETYPE	StateID;
 		DWORD				Value;
+		virtual	void apply(CDriverD3D *driver);
 	};
 
 	// Render texture state
@@ -727,6 +749,7 @@ private:
 		DWORD						StageID;
 		D3DTEXTURESTAGESTATETYPE	StateID;
 		DWORD						Value;
+		virtual	void apply(CDriverD3D *driver);
 	};
 
 	// Render texture index state
@@ -740,6 +763,7 @@ private:
 		DWORD						TexGenMode;
 		DWORD						UVChannel;
 		bool						TexGen;
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render texture
@@ -752,6 +776,7 @@ private:
 		}
 		DWORD						StageID;
 		LPDIRECT3DBASETEXTURE9		Texture;
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render texture
@@ -763,6 +788,7 @@ private:
 			VertexProgram = NULL;
 		}
 		LPDIRECT3DVERTEXSHADER9		VertexProgram;
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render texture
@@ -774,6 +800,7 @@ private:
 			PixelShader = NULL;
 		}
 		LPDIRECT3DPIXELSHADER9		PixelShader;
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Vertex buffer constants state
@@ -791,6 +818,7 @@ private:
 		}							ValueType;
 		uint						StateID;
 		DWORD						Values[4];
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Pixel shader constants state
@@ -808,6 +836,7 @@ private:
 		}							ValueType;
 		uint						StateID;
 		DWORD						Values[4];
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render sampler state
@@ -820,6 +849,7 @@ private:
 		DWORD						SamplerID;
 		D3DSAMPLERSTATETYPE			StateID;
 		DWORD						Value;
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render matrix
@@ -831,6 +861,7 @@ private:
 		}
 		D3DTRANSFORMSTATETYPE	TransformType;
 		D3DXMATRIX				Matrix;
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render vertex buffer
@@ -846,6 +877,7 @@ private:
 		UINT							Stride;
 		CVertexBuffer::TPreferredMemory	PrefferedMemory;
 		DWORD							Usage; // d3d vb usage
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render index buffer
@@ -857,6 +889,7 @@ private:
 			IndexBuffer = NULL;
 		}
 		IDirect3DIndexBuffer9			*IndexBuffer;
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render vertex decl
@@ -868,6 +901,7 @@ private:
 			Decl = NULL;
 		}
 		IDirect3DVertexDeclaration9		*Decl;
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render vertex buffer
@@ -899,6 +933,7 @@ private:
 		bool				EnabledTouched;
 		bool				Enabled;
 		D3DLIGHT9			Light;
+		virtual void apply(CDriverD3D *driver);
 	};
 
 	// Render target
@@ -916,7 +951,20 @@ private:
 		ITexture			*Texture;
 		uint8				Level;
 		uint8				CubeFace;
+		virtual void apply(CDriverD3D *driver);
 	};
+
+	// material state
+	struct CMaterialState : public CRenderVariable
+	{
+		CMaterialState()
+		{
+			Current.Power = -1.f;
+		}
+		D3DMATERIAL9 Current;		
+		virtual void apply(CDriverD3D *driver);
+	};
+
 
 	// Friends
 	friend void D3DWndProc(CDriverD3D *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
@@ -949,21 +997,24 @@ private:
 	{
 		// Modified ?
 		if (!renderVariable->Modified)
-		{
+		{			
 			// Link to modified states
-			renderVariable->NextModified = _ModifiedRenderState;
+			renderVariable->NextModified = _ModifiedRenderState;			
 			_ModifiedRenderState = renderVariable;
 			renderVariable->Modified = true;
 		}
 	}
+	
 
-	// Access render states
+
+	// Access render states	
 	inline void setRenderState (D3DRENDERSTATETYPE renderState, DWORD value)
 	{
 		H_AUTO_D3D(CDriverD3D_setRenderState);
-		nlassert (_DeviceInterface);
-		nlassert (renderState<MaxRenderState);
-
+		#ifdef NL_DEBUG
+			nlassert (_DeviceInterface);B
+			nlassert (renderState<MaxRenderState);
+		#endif
 		// Ref on the state
 		CRenderState &_renderState = _RenderStateCache[renderState];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
@@ -972,17 +1023,19 @@ private:
 		{
 			_renderState.Value = value;
 			touchRenderVariable (&_renderState);
-		}
-	}
-
+		}		
+	}	
+	
+public:
 	// Access texture states
 	inline void setTextureState (DWORD stage, D3DTEXTURESTAGESTATETYPE textureState, DWORD value)
 	{
 		H_AUTO_D3D(CDriverD3D_setTextureState);
-		nlassert (_DeviceInterface);
-		nlassert (stage<MaxTexture);
-		nlassert (textureState<MaxTextureState);
-
+		#ifdef NL_DEBUG
+			nlassert (_DeviceInterface);
+			nlassert (stage<MaxTexture);
+			nlassert (textureState<MaxTextureState);
+		#endif
 		// Ref on the state
 		CTextureState &_textureState = _TextureStateCache[stage][textureState];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
@@ -991,8 +1044,10 @@ private:
 		{
 			_textureState.Value = value;
 			touchRenderVariable (&_textureState);
-		}
+		}		
 	}
+private:
+	
 
 	// Access texture index states
 	inline void setTextureIndexMode (DWORD stage, bool texGenEnabled, DWORD value)
@@ -1012,6 +1067,7 @@ private:
 			touchRenderVariable (&_textureState);
 		}
 	}
+	
 
 	// Access texture index states
 	inline void setTextureIndexUV (DWORD stage, DWORD value)
@@ -1104,7 +1160,7 @@ private:
 			_PixelShaderCache.PixelShader = pixelShader;
 			touchRenderVariable (&_PixelShaderCache);
 		}
-	}
+	}	
 
 	// Access vertex program constant
 	inline void setVertexProgramConstant (uint index, const float *values)
@@ -1158,7 +1214,7 @@ private:
 		}
 	}
 
-	// Access vertex program constant
+	// Access pixel shader constant
 	inline void setPixelShaderConstant (uint index, const float *values)
 	{
 		H_AUTO_D3D(CDriverD3D_setPixelShaderConstant);
@@ -1182,7 +1238,7 @@ private:
 			state.ValueType = CPixelShaderConstantState::Float;
 			touchRenderVariable (&state);
 		}
-	}
+	}	
 
 	// Access vertex program constant
 	inline void setPixelShaderConstant (uint index, const int *values)
@@ -1208,7 +1264,7 @@ private:
 			state.ValueType = CPixelShaderConstantState::Int;
 			touchRenderVariable (&state);
 		}
-	}
+	}	
 
 	// Access sampler states
 	inline void setSamplerState (DWORD sampler, D3DSAMPLERSTATETYPE samplerState, DWORD value)
@@ -1359,8 +1415,23 @@ private:
 		}
 	}
 
-	// *** Inline info
+	void setMaterialState(const D3DMATERIAL9 &material)
+	{
+		H_AUTO_D3D(setMaterialState);	
+#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+		if (material.Power != _MaterialState.Current.Power ||
+			material.Ambient != _MaterialState.Current.Ambient ||
+			material.Emissive != _MaterialState.Current.Emissive ||
+			material.Specular != _MaterialState.Current.Specular)
+#endif
+		{
+			_MaterialState.Current = material;
+			touchRenderVariable(&_MaterialState);
+		}	
+	}
 
+	
+	// *** Inline info
 	sint			inlGetNumTextStages() const {return _NbNeLTextureStages;}
 
 	// Get the d3dtext mirror of an existing setuped texture.
@@ -1383,9 +1454,9 @@ private:
 
 	// *** Init helper
 
-	bool isDepthFormatOk(UINT adapter, D3DFORMAT DepthFormat, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat);
-	bool isTextureFormatOk(UINT adapter, D3DFORMAT TextureFormat, D3DFORMAT AdapterFormat);
-	bool fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFORMAT &adapterFormat, const GfxMode& mode, UINT adapater, const D3DDISPLAYMODE &adapterMode);
+	bool isDepthFormatOk(UINT adapter, D3DDEVTYPE rasterizer, D3DFORMAT DepthFormat, D3DFORMAT AdapterFormat, D3DFORMAT BackBufferFormat);
+	bool isTextureFormatOk(UINT adapter, D3DDEVTYPE rasterizer, D3DFORMAT TextureFormat, D3DFORMAT AdapterFormat);
+	bool fillPresentParameter (D3DPRESENT_PARAMETERS &parameters, D3DFORMAT &adapterFormat, const GfxMode& mode, const D3DDISPLAYMODE &adapterMode);
 
 	// *** Texture helper
 
@@ -1428,7 +1499,7 @@ private:
 		{
 			// Does the shader validated ?
 			validateShader(_CurrentShader);
-
+			
 			// Init default state value
 			uint i;
 			for (i=0; i<MaxTexture; i++)
@@ -1437,7 +1508,7 @@ private:
 				setTextureIndexMode (i, false, D3DTSS_TCI_PASSTHRU);
 				setTextureIndexUV (i, i);
 				setTextureState (i, D3DTSS_COLOROP, D3DTOP_DISABLE);
-				setTextureState (i, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+				//setTextureState (i, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 			}
 
 			CShaderDrvInfosD3D *drvInfo = static_cast<CShaderDrvInfosD3D*>((IShaderDrvInfos*)_CurrentShader->_DrvInfo);
@@ -1514,7 +1585,7 @@ private:
 
 	// Windows
 	std::string				_WindowClass;
-	HWND					_HWnd;
+	HWND					_HWnd;	
 	sint32					_WindowX;
 	sint32					_WindowY;
 	bool					_DestroyWindow;
@@ -1527,19 +1598,28 @@ private:
 
 	// Directx
 	uint32					_Adapter;
+	D3DDEVTYPE			_Rasterizer;
 	LPDIRECT3D9				_D3D;
+public:
 	IDirect3DDevice9		*_DeviceInterface;
+private:
 
 	// Events
 	NLMISC::CEventEmitterMulti	_EventEmitter; // this can contains a win emitter and eventually a direct input emitter	
 
 	// Some matrices (Local -> Model -> World -> Screen)
+public:
 	CVector					_PZBCameraPos;
+private:
 	CMatrix					_UserModelMtx;
 	CMatrix					_UserViewMtx;
+public:
 	CViewport				_Viewport;
+private:
 	D3DVIEWPORT9			_D3DViewport;
+public:
 	CScissor				_Scissor;
+private:
 	float					_OODeltaZ;	// Backup znear and zfar
 	D3DXMATRIX				_D3DSpecularWorldTex;		// World (as in NeL) to model matrix.
 	D3DXMATRIX				_D3DModelView;				// Local to world (as in D3D) matrix.
@@ -1639,6 +1719,7 @@ private:
 	std::set<CVBDrvInfosD3D*>							_VertexBufferHardSet;	
 
 	// The render variables
+public:
 	CRenderState			_RenderStateCache[MaxRenderState];
 	CTextureState			_TextureStateCache[MaxTexture][MaxTextureState];
 	CTextureIndexState		_TextureIndexStateCache[MaxTexture];
@@ -1652,6 +1733,8 @@ private:
 	CVertexDeclState		_VertexDeclCache;
 	CLightState				_LightCache[MaxLight];
 	CRenderTargetState		_RenderTarget;
+	CMaterialState			_MaterialState;
+private:
 
 	// Vertex buffer cache
 	CVBState				_VertexBufferCache;
@@ -1699,14 +1782,14 @@ private:
 	std::vector<CTextureRef>	_CurrentShaderTextures;
 
 	// The last material setuped
-	CMaterial				*_CurrentMaterial;
-	CMaterialDrvInfosD3D	*_CurrentMaterialInfo;
+	CMaterial				*_CurrentMaterial;	
+	CMaterialDrvInfosD3D	*_CurrentMaterialInfo;	
 
 	// Optim: To not test change in Materials states if just texture has changed. Very usefull for landscape.
 	uint32					_MaterialAllTextureTouchedFlag;
 
 	// The modified render variables list
-	CRenderVariable			*_ModifiedRenderState;
+	CRenderVariable			*_ModifiedRenderState;	
 
 	// Internal shaders
 	CShader					_ShaderLightmap0;
@@ -1733,6 +1816,8 @@ private:
 	CShader					_ShaderWaterNoDiffuse;	
 	CShader					_ShaderWaterDiffuse;	
 
+	uint32					_StateBlockCategory; // category of render variables to be recorded in the state block
+
 	// Backup frame buffer
 	IDirect3DSurface9		*_BackBuffer;
 
@@ -1754,6 +1839,7 @@ private:
 	//
 	bool						_ScissorTouched;
 	uint8						_CurrentUVRouting[MaxTexture];
+	bool						_MustRestoreLight;	
 public:
 	// private, for access by COcclusionQueryD3D
 	COcclusionQueryD3D			*_CurrentOcclusionQuery;
@@ -1774,19 +1860,23 @@ public:
 	void			setupLightMapDynamicLighting(bool enable);
 
 	TCullMode		_CullMode;
+	
 
 	// reset an index buffer and force it to be reallocated	
 	void deleteIndexBuffer(CIBDrvInfosD3D *ib);
+	//		
+	// apply a render variable to the device
+	//void applyRenderVariable(CRenderVariable *currentRenderState);
 public:
 	#ifdef 	NL_DEBUG
 		std::set<CVBDrvInfosD3D *> _LockedBuffers;
-	#endif
+	#endif	
 };
 
 #define NL_D3DCOLOR_RGBA(rgba) (D3DCOLOR_ARGB(rgba.A,rgba.R,rgba.G,rgba.B))
 #define D3DCOLOR_NL_RGBA(rgba) (NLMISC::CRGBA((uint8)((rgba>>16)&0xff), (uint8)((rgba>>8)&0xff), (uint8)(rgba&0xff), (uint8)((rgba>>24)&0xff)))
 #define NL_D3DCOLORVALUE_RGBA(dest,rgba) \
-	dest.a=(float)rgba.A/255.f;dest.r=(float)rgba.R/255.f;dest.g=(float)rgba.G/255.f;dest.b=(float)rgba.B/255.f;
+	dest.a=(float)rgba.A*(1.f/255.f);dest.r=(float)rgba.R*(1.f/255.f);dest.g=(float)rgba.G*(1.f/255.f);dest.b=(float)rgba.B*(1.f/255.f);
 #define NL_D3D_MATRIX(d3d_mt,nl_mt) \
 	{	const float *nl_mt_ptr = nl_mt.get(); \
 	d3d_mt._11 = nl_mt_ptr[0]; \
@@ -1852,8 +1942,30 @@ inline void copyRGBA2BGRA (uint32 *dest, const uint32 *src, uint nbPixels)
 // ***************************************************************************
 
 
+
 } // NL3D
 
 extern HINSTANCE HInstDLL;
 
 #endif // NL_DRIVER_DIRECT3D_H
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.3 2001/03/02 09:28:11 berenguier Exp $
+ * $Id: material_user.h,v 1.4 2001/03/05 09:55:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,9 @@ namespace NL3D
 {
 
 
+class	CDriverUser;
+
+
 // ***************************************************************************
 /**
  * UMaterial implementation.
@@ -47,7 +50,7 @@ class CMaterialUser : public UMaterial
 {
 protected:
 	CMaterial		_Material;
-
+	friend class	CDriverUser;
 
 public:
 

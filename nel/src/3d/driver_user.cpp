@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.3 2001/03/02 09:27:44 berenguier Exp $
+ * $Id: driver_user.cpp,v 1.4 2001/03/05 09:54:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -659,6 +659,14 @@ UDriver::TMessageBoxId	CDriverUser::systemMessageBox (const char* message, const
 	dret= _Driver->systemMessageBox (message, title, dtype, dicon);
 
 	return (UDriver::TMessageBoxId)(uint32)dret;
+}
+
+
+// ***************************************************************************
+CMaterial		&CDriverUser::convMat(UMaterial &mat)
+{
+	CMaterialUser	*pmat= (CMaterialUser*)&mat;
+	return pmat->_Material;
 }
 
 

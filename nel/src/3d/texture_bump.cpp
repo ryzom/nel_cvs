@@ -1,7 +1,7 @@
 /** \file texture_bump.cpp
  * <File description>
  *
- * $Id: texture_bump.cpp,v 1.2 2001/11/07 10:40:19 vizerie Exp $
+ * $Id: texture_bump.cpp,v 1.3 2001/11/14 15:37:01 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -41,8 +41,8 @@ static void BuildDsDt(uint32 *src, sint width, sint height, uint16 *dest)
 			sint off = x + y * width;
 			sint16 ds = (sint16) (GET_HGT(x + 1, y) - GET_HGT(x - 1, y));
 			sint16 dt = (sint16) (GET_HGT(x, y + 1) - GET_HGT(x, y - 1));
-			*(uint8 *) &dest[x + y * width] = (uint8) (ds + 127);
-			((uint8 *) &dest[x + y * width])[1] = (uint8) (dt + 127);
+			*(sint8 *) &dest[off] = (sint8) (ds + 127);
+			((sint8 *) &dest[off])[1] = (sint8) (dt + 127);
 		}
 	}
 }

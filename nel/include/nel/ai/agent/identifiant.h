@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identifiant.h,v 1.8 2001/01/12 13:01:47 portier Exp $
+ * $Id: identifiant.h,v 1.9 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -385,8 +385,8 @@ namespace NLAIAGENT
 
 	private:		
 		///The map use an CNumericIndex as a key for the internal tree.
-		typedef std::map<CNumericIndex ,CRootDico> tMapRef;
-		static tMapRef *_LocRefence;
+		typedef std::map<CNumericIndex ,CRootDico> TMapRef;
+		static TMapRef *_LocRefence;
 
 	private:
 		
@@ -404,7 +404,7 @@ namespace NLAIAGENT
 		///Construct object for an IRefrence agents objects.
 		CLocWordNumRef(const IRefrence &ref):_Stock(&ref)
 		{
-			_LocRefence->insert(tMapRef::value_type(_Id,&ref));			
+			_LocRefence->insert(TMapRef::value_type(_Id,&ref));			
 		}
 		
 		/**
@@ -416,7 +416,7 @@ namespace NLAIAGENT
 		*/
 		CLocWordNumRef(const CNumericIndex &ref) :_Id(ref),_Stock(NULL)
 		{			
-			tMapRef::iterator Itr = _LocRefence->find(_Id);
+			TMapRef::iterator Itr = _LocRefence->find(_Id);
 			if(Itr != _LocRefence->end())
 			{				
 				_Stock.setRef((*Itr).second);
@@ -436,7 +436,7 @@ namespace NLAIAGENT
 >>>>>>> 1.6
 */
 		{						
-			tMapRef::iterator itr = _LocRefence->find(_Id);
+			TMapRef::iterator itr = _LocRefence->find(_Id);
 			if(itr != _LocRefence->end())
 			{
 				_Stock.setRef((*itr).second);
@@ -488,7 +488,7 @@ namespace NLAIAGENT
 		virtual void load(NLMISC::IStream &is)
 		{			
 			_Id.load(is);
-			tMapRef::iterator Itr = _LocRefence->find(_Id);
+			TMapRef::iterator Itr = _LocRefence->find(_Id);
 			if(Itr != _LocRefence->end())
 			{
 				_Stock.setRef((*Itr).second);
@@ -524,7 +524,7 @@ namespace NLAIAGENT
 		/// Init the map.
 		static void Init()
 		{
-			if(_LocRefence == NULL) _LocRefence = new CLocWordNumRef::tMapRef;
+			if(_LocRefence == NULL) _LocRefence = new CLocWordNumRef::TMapRef;
 		}
 
 		/**

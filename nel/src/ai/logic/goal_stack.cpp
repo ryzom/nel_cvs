@@ -195,7 +195,7 @@ namespace NLAILOGIC
 		_MaxGoals = max;
 	}
 
-	NLAIAGENT::tQueue CGoalStack::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
+	NLAIAGENT::TQueue CGoalStack::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
 	{
 
 #ifdef NL_DEBUG	
@@ -207,7 +207,7 @@ namespace NLAILOGIC
 		const char *dbg_class_name = (const char *) getType();
 #endif
 		static NLAIAGENT::CStringVarName maxgoals_name("setMaxGoals");
-		NLAIAGENT::tQueue r;
+		NLAIAGENT::TQueue r;
 		if(className == NULL)
 		{
 			if( (*funcName) == maxgoals_name )

@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.11 2001/12/11 09:26:49 chafik Exp $
+ * $Id: message_script.h,v 1.12 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,7 @@ namespace NLAIAGENT
 			/// \name IObjectIA member class. 
 			//@{
 			virtual sint32 getMethodIndexSize() const;
-			virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+			virtual TQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 			virtual sint32 isClassInheritedFrom(const IVarName &) const;		
 			virtual	IObjectIA::CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 			virtual	IObjectIA::CProcessResult runMethodeMember(sint32 index,IObjectIA *);

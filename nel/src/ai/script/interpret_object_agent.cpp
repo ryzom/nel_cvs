@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.54 2002/11/05 14:07:50 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.55 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -503,9 +503,9 @@ namespace NLAISCRIPT
 		return _lastRef;
 	}
 
-	NLAIAGENT::tQueue CAgentClass::getPrivateMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
+	NLAIAGENT::TQueue CAgentClass::getPrivateMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
 	{
-		NLAIAGENT::tQueue q;
+		NLAIAGENT::TQueue q;
 		const IClassInterpret *classType = this;
 		NLAIAGENT::CIdMethod k;
 
@@ -537,7 +537,7 @@ namespace NLAISCRIPT
 		return q;
 	}
 
-	NLAIAGENT::tQueue CAgentClass::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
+	NLAIAGENT::TQueue CAgentClass::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
 	{
 
 #ifdef NL_DEBUG
@@ -546,7 +546,7 @@ namespace NLAISCRIPT
 		const char *dbg_method_name = methodName->getString();
 #endif
 
-		NLAIAGENT::tQueue q;
+		NLAIAGENT::TQueue q;
 		const IClassInterpret *classType = this;
 		NLAIAGENT::CIdMethod k;
 

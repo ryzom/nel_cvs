@@ -1,6 +1,6 @@
 /** \file agent_local_mailer.cpp
  *
- * $Id: agent_local_mailer.cpp,v 1.7 2002/01/03 15:06:14 chafik Exp $
+ * $Id: agent_local_mailer.cpp,v 1.8 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,7 @@ namespace NLAIAGENT
 		
 	}
 
-	tQueue CLocalAgentMail::isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const
+	TQueue CLocalAgentMail::isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const
 	{
 		if(_HostAgent)
 		{

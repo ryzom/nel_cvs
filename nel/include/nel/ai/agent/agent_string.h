@@ -1,7 +1,7 @@
 /** \file agent_string.h
  * class for string manipulation.
  *
- * $Id: agent_string.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
+ * $Id: agent_string.h,v 1.8 2003/01/21 11:24:25 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -307,12 +307,12 @@ namespace NLAIAGENT
 		};		
 		
 		///Definition of the static std::map.
-		typedef std::map<CStringVarName ,CNameStruc *> tMapName;
+		typedef std::map<CStringVarName ,CNameStruc *> TMapName;
 
 	private:
 
 		///Static std::map for storing string.
-		static tMapName *_Map;
+		static TMapName *_Map;
 		///Table of string, this the contents of the map.
 		static CNameStruc *_TableName;
 		/**

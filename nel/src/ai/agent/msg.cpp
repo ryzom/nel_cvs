@@ -1,6 +1,6 @@
 /** \file message.cpp
  *
- * $Id: msg.cpp,v 1.23 2003/01/13 16:58:59 chafik Exp $
+ * $Id: msg.cpp,v 1.24 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -334,11 +334,11 @@ namespace NLAIAGENT
 		return IBaseGroupType::getMethodIndexSize() + _MLastM;
 	}	
 
-	tQueue IMessageBase::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
+	TQueue IMessageBase::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
 	{			
 		if(className == NULL)
 		{
-			tQueue a;
+			TQueue a;
 			for(int i = 0; i < _MLastM; i++)
 			{
 				if( *methodName == IMessageBase::_Method[i].MethodName )

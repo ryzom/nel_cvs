@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.21 2002/07/23 15:37:47 chafik Exp $
+ * $Id: libcode.cpp,v 1.22 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,12 +40,12 @@ namespace NLAISCRIPT
 
 	NLAIC::IIO *CCallPrint::inputOutput = NULL;
 
-	NLAIAGENT::tQueue CCallPrint::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &p) const	
+	NLAIAGENT::TQueue CCallPrint::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &p) const	
 	{
 		NLAIAGENT::CStringVarName print((const char *)IdCallPrint);
 		NLAIAGENT::CStringVarName format("Format");
 		NLAIAGENT::CStringVarName constructor(_CONSTRUCTOR_);
-		NLAIAGENT::tQueue m;
+		NLAIAGENT::TQueue m;
 		//const CParam &param = (const CParam &)p;
 		CParam param;
 		

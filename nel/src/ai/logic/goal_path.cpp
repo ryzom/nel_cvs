@@ -1,6 +1,6 @@
 /** \file opcode_lpt.cpp
  *
- * $Id: goal_path.cpp,v 1.3 2002/11/07 09:19:44 portier Exp $
+ * $Id: goal_path.cpp,v 1.4 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,12 +94,12 @@ namespace NLAILOGIC
 
 
 //	sint32 getMethodIndexSize() const;
-//	virtual tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+//	virtual TQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 //	virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
 //	virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
 
 
-	NLAIAGENT::tQueue CGoalPath::getPrivateMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
+	NLAIAGENT::TQueue CGoalPath::getPrivateMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
 	{
 
 #ifdef NL_DEBUG	
@@ -112,7 +112,7 @@ namespace NLAILOGIC
 		static NLAIAGENT::CStringVarName constructor_name("Constructor");
 		static NLAIAGENT::CStringVarName add_goal_name("AddGoal");
 
-		NLAIAGENT::tQueue r;
+		NLAIAGENT::TQueue r;
 		if(className == NULL)
 		{
 			if( (*funcName) == constructor_name )

@@ -1,7 +1,7 @@
 /** \file code_branche_run_debug.h
  * A debug version of CCodeBrancheRun. It keep a trace between original source code and OpCode.
  *
- * $Id: code_branche_run_debug.h,v 1.7 2001/07/25 07:36:36 chafik Exp $
+ * $Id: code_branche_run_debug.h,v 1.8 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -18,8 +18,6 @@
 
 namespace NLAISCRIPT
 {
-//	typedef	std::list<CBagOfCode *> TListCode;
-//	typedef	std::list<CBagOfCode *>::iterator tListCodeIter;
 
 	/**
 	 * A debug version of CCodeBrancheRun. It keep a trace between original source code and OpCode.
@@ -52,7 +50,7 @@ namespace NLAISCRIPT
 		/** Constructor
 		 *	param l CBagOfCode list
 		 */
-		CCodeBrancheRunDebug(const tListCode &l);
+		CCodeBrancheRunDebug(const TListCode &l);
 
 		 /// Copy constructor
 		CCodeBrancheRunDebug(const CCodeBrancheRunDebug &l);
@@ -61,7 +59,7 @@ namespace NLAISCRIPT
 		virtual ~CCodeBrancheRunDebug();
 
 		///	Init the CCodeBrancheRunDebug from a CBagOfCode list
-		void initCode(const tListCode &l);
+		void initCode(const TListCode &l);
 
 		///	Init the CCodeBrancheRunDebug from an other CCodeBrancheRunDebug
 		void initCode(const CCodeBrancheRunDebug &l);

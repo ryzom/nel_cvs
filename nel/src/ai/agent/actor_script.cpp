@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.73 2002/10/03 16:28:16 coutelas Exp $
+ * $Id: actor_script.cpp,v 1.74 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,7 +136,7 @@ namespace NLAIAGENT
 
 			// Looks for the function to call at the activation of the state
 			static CStringVarName activate_func_name("OnActivate");
-			tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
+			TQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
 			if ( !r.empty() )
 				_OnActivateIndex = r.top().Index;
 			else
@@ -157,7 +157,7 @@ namespace NLAIAGENT
 			}
 
 			static CStringVarName unactivate_func_name("OnUnActivate");
-			tQueue r = _AgentClass->isMember( NULL, &unactivate_func_name, NLAISCRIPT::CParam() );
+			TQueue r = _AgentClass->isMember( NULL, &unactivate_func_name, NLAISCRIPT::CParam() );
 			if ( !r.empty() )
 			{	
 				_OnUnActivateIndex = r.top().Index;
@@ -197,7 +197,7 @@ namespace NLAIAGENT
 			{
 				// Looks for the function to call when the actor is paused
 				static CStringVarName activate_func_name("OnPause");
-				tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
+				TQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
 				if ( !r.empty() )
 				{
 					if ( getAgentManager() != NULL )
@@ -248,7 +248,7 @@ namespace NLAIAGENT
 			{
 				// Looks for the function to call when the actor is restarted
 				static CStringVarName activate_func_name("OnRestart");
-				tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
+				TQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
 				if ( !r.empty() )
 				{
 					if ( getAgentManager() != NULL )
@@ -771,10 +771,10 @@ namespace NLAIAGENT
 		return CAgentScript::getBaseMethodCount() + fid_last;
 	}
 
-	tQueue CActorScript::getPrivateMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
+	TQueue CActorScript::getPrivateMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{
 
-		tQueue result; 
+		TQueue result; 
 
 		static NLAIAGENT::CStringVarName activate_name("activate");
 		static NLAIAGENT::CStringVarName onactivate_name("onActivate");
@@ -966,7 +966,7 @@ namespace NLAIAGENT
 	void CActorScript::success()
 	{
 		static CStringVarName onsuccess_func_name("OnSuccess");
-		tQueue r = _AgentClass->isMember( NULL, &onsuccess_func_name, NLAISCRIPT::CParam() );
+		TQueue r = _AgentClass->isMember( NULL, &onsuccess_func_name, NLAISCRIPT::CParam() );
 		if ( !r.empty() )
 		{	
 			_OnSuccessIndex = r.top().Index;
@@ -985,7 +985,7 @@ namespace NLAIAGENT
 	void CActorScript::failure()
 	{
 		static CStringVarName onfailure_func_name("OnFailure");
-		tQueue r = _AgentClass->isMember( NULL, &onfailure_func_name, NLAISCRIPT::CParam() );
+		TQueue r = _AgentClass->isMember( NULL, &onfailure_func_name, NLAISCRIPT::CParam() );
 		if ( !r.empty() )
 		{	
 			_OnFailureIndex = r.top().Index;

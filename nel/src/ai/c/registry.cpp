@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.16 2002/10/21 09:52:59 coutelas Exp $
+ * $Id: registry.cpp,v 1.17 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NLAIC
 		delete (CIdentType *)&NameClass;
 	}
 
-	CRegistry::CRegistry(): _MapRegistry(*(new tMapRegistry))
+	CRegistry::CRegistry(): _MapRegistry(*(new TMapRegistry))
 	{
 	}
 
@@ -63,14 +63,14 @@ namespace NLAIC
 			{
 				CRegistryClass *t = new CRegistryClass( ident, FactoryClass, idx );
 				_TableRegistry[ idx ] = t;
-				_MapRegistry.insert( tMapRegistry::value_type(t->NameClass, t) );
+				_MapRegistry.insert( TMapRegistry::value_type(t->NameClass, t) );
 				return idx;
 			}
 		}*/
 
 		// Sinon met à la fin de la table
 		CRegistryClass *t = new CRegistryClass(ident, FactoryClass, _TableRegistry.size() );
-		_MapRegistry.insert( tMapRegistry::value_type(ident, t) );
+		_MapRegistry.insert( TMapRegistry::value_type(ident, t) );
 		_TableRegistry.push_back( t );		
 		return _TableRegistry.size() - 1;
 	}
@@ -96,7 +96,7 @@ namespace NLAIC
 	const sint32 CRegistry::getNumIdent(const CIdentType &ident)
 	{
 		CRegistryClass *t;
-		tMapRegistry::iterator Itr = _MapRegistry.find(ident);
+		TMapRegistry::iterator Itr = _MapRegistry.find(ident);
 		if(Itr != _MapRegistry.end()) t = (*Itr).second;
 		else 
 		{
@@ -168,7 +168,7 @@ namespace NLAIC
 	const IClassFactory *CRegistry::getFactory(const CIdentType &ident)
 	{
 		CRegistryClass *t;
-		tMapRegistry::iterator Itr = _MapRegistry.find(ident);
+		TMapRegistry::iterator Itr = _MapRegistry.find(ident);
 		if(Itr != _MapRegistry.end()) t = (*Itr).second;
 		else 
 		{			

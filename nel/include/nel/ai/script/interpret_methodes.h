@@ -1,7 +1,7 @@
 /** \file interpret_methodes.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: interpret_methodes.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
+ * $Id: interpret_methodes.h,v 1.10 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,10 +46,10 @@ namespace NLAISCRIPT
 	class CParam : public NLAIAGENT::IObjectIA
 	{
 	private:		
-		typedef std::vector<IOpType *> tParam;
+		typedef std::vector<IOpType *> TParam;
 	private:
 		///Vector that is contain a IOpType argument type.
-		tParam						_Param;
+		TParam						_Param;
 		NLAIAGENT::IBaseGroupType	*_ParamInfo;
 
 	public:

@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.17 2002/02/20 18:04:55 lecroart Exp $
+ * $Id: registry_type.h,v 1.18 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,7 +251,7 @@ namespace NLAIC
 			///The object is a nomber.
 			tNombre = 1,
 			///The object is a string.
-			tString = 2,
+			TString = 2,
 			///The object is a logic objects (fuzzy numerical or first ordrer).
 			tLogic = 4,
 			///The object is a list.

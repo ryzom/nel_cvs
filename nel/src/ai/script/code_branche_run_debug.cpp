@@ -1,6 +1,6 @@
 /** \file code_branche_run_debug.cpp
  *
- * $Id: code_branche_run_debug.cpp,v 1.24 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: code_branche_run_debug.cpp,v 1.25 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ namespace NLAISCRIPT
 		initCBRD();
 	}
 
-	CCodeBrancheRunDebug::CCodeBrancheRunDebug(const tListCode &l):
+	CCodeBrancheRunDebug::CCodeBrancheRunDebug(const TListCode &l):
 	CCodeBrancheRun(l),
 	_SourceCode(NULL)
 	{
@@ -220,12 +220,12 @@ namespace NLAISCRIPT
 		return IdCodeBrancheRunDebug;
 	}
 
-	void CCodeBrancheRunDebug::initCode(const tListCode &l)
+	void CCodeBrancheRunDebug::initCode(const TListCode &l)
 	{
 		del();
 		_Count = l.size();
 
-		tListCode::const_iterator i;		
+		TListCode::const_iterator i;		
 		_TableCode = new IOpCode * [l.size()];
 		i = l.begin();
 		sint32 k = 0;

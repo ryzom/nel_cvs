@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.34 2002/09/16 13:49:50 portier Exp $
+ * $Id: actor_script.h,v 1.35 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,7 +155,7 @@ namespace NLAIAGENT
 			// Script functions
 			virtual int getBaseMethodCount() const;
 			virtual sint32 getMethodIndexSize() const;
-			virtual tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+			virtual TQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
 			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
 

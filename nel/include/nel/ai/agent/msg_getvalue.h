@@ -1,7 +1,7 @@
 /** \file msg_getvalue.h
  * Message to ask an agent for its value
  *
- * $Id: msg_getvalue.h,v 1.2 2002/04/04 10:15:16 robert Exp $
+ * $Id: msg_getvalue.h,v 1.3 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ namespace NLAIAGENT {
 		void getDebugString(std::string &t) const;
 
 
-		virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+		virtual TQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
 		virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 

@@ -1,7 +1,7 @@
 /** \file fuzzy_script.h
  * Interpret class for the fuzzy controler
  *
- * $Id: fuzzy_script.h,v 1.5 2001/02/27 14:21:49 chafik Exp $
+ * $Id: fuzzy_script.h,v 1.6 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,7 @@ namespace NLAIFUZZY
 		public:
 
 			virtual sint32 getMethodIndexSize() const;
-			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 			virtual sint32 isClassInheritedFrom(const NLAIAGENT::IVarName &) const;		
 			virtual	IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 			virtual	IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *);

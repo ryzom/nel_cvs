@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.30 2002/06/27 16:57:39 chafik Exp $
+ * $Id: compilateur.h,v 1.31 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,7 @@ namespace NLAISCRIPT
 	{	
 	private:
 		///This define is use for define an argument of a method in the language. 
-		typedef std::pair<NLAIAGENT::IVarName *,NLAIAGENT::IObjectIA *> pairType;
+		typedef std::pair<NLAIAGENT::IVarName *,NLAIAGENT::IObjectIA *> TPairType;
 
 	private:
 		///Stream that contain source code.
@@ -153,7 +153,7 @@ namespace NLAISCRIPT
 		std::list<IOpType *>			_TypeList;
 		bool							_Error;
 		sint32							_LastRegistered;		
-		std::list<pairType>				_Attrib;
+		std::list<TPairType>				_Attrib;
 		sint32							_DecalageHeap;
 		std::list<IConstraint *>		_MethodConstraint;
 		std::list<IConstraint *>		_ConstraintType;		
@@ -195,7 +195,7 @@ namespace NLAISCRIPT
 		
 		bool   _InLineParse;
 		std::list<bool>   _FromStack;
-		tDicoStr *_Dictionary;
+		TDicoStr *_Dictionary;
 		bool isRunMsg;
 		bool haveReturn;
 

@@ -1,7 +1,7 @@
 /** \file operation.cpp
  * <File description>
  *
- * $Id: operation.cpp,v 1.7 2002/08/20 15:21:58 chafik Exp $
+ * $Id: operation.cpp,v 1.8 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,7 +246,7 @@ namespace NLAIAGENT
 		return CAgentScript::getMethodIndexSize() + CAgentOperation::TLastM;
 	}
 
-	NLAIAGENT::tQueue CAgentOperation::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	NLAIAGENT::TQueue CAgentOperation::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{
 #ifdef NL_DEBUG
 		const char *dbg_method_name = methodName->getString();
@@ -254,7 +254,7 @@ namespace NLAIAGENT
 		param.getDebugString(buffer);
 #endif
 
-		NLAIAGENT::tQueue r = NLAIAGENT::isTemplateMember(CAgentOperation::StaticMethod,CAgentOperation::TLastM, CAgentScript::getMethodIndexSize(),
+		NLAIAGENT::TQueue r = NLAIAGENT::isTemplateMember(CAgentOperation::StaticMethod,CAgentOperation::TLastM, CAgentScript::getMethodIndexSize(),
 															className, methodName, param);
 		if(r.size()) return r;
 		else return CAgentScript::isMember(className,methodName,param);

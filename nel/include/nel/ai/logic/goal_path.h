@@ -1,7 +1,7 @@
 /** \file fact.h
  *	First order logic facts
  *
- * $Id: goal_path.h,v 1.5 2002/08/27 09:12:44 portier Exp $
+ * $Id: goal_path.h,v 1.6 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ class CGoalPath : public NLAIAGENT::CActorScript
 		// Script hardcoded functions
 		virtual int getBaseMethodCount() const;
 		sint32 getMethodIndexSize() const;
-		virtual NLAIAGENT::tQueue getPrivateMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+		virtual NLAIAGENT::TQueue getPrivateMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 		virtual NLAIAGENT::IObjectIA::CProcessResult runMethodBase(int heritance, int index, NLAIAGENT::IObjectIA *);
 		virtual NLAIAGENT::IObjectIA::CProcessResult runMethodBase(int index, NLAIAGENT::IObjectIA *);
 

@@ -46,9 +46,9 @@ namespace NLAILOGIC
 	}
 
 
-	tQueue IBaseVar::isMember(const IVarName *className, const IVarName *name, const IObjectIA &param) const
+	TQueue IBaseVar::isMember(const IVarName *className, const IVarName *name, const IObjectIA &param) const
 	{
-		tQueue result = IObjetOp::isMember( className, name, param);
+		TQueue result = IObjetOp::isMember( className, name, param);
 
 		if ( result.size() )
 			return result;

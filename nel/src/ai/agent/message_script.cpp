@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.22 2003/01/13 16:58:59 chafik Exp $
+ * $Id: message_script.cpp,v 1.23 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -297,10 +297,10 @@ namespace NLAIAGENT
 		return 0;
 	}
 
-	tQueue CMessageScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	TQueue CMessageScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{	
 
-		tQueue result = IMessageBase::isMember(className, methodName, param);
+		TQueue result = IMessageBase::isMember(className, methodName, param);
 		
 		if ( result.size()  )
 		{
@@ -309,7 +309,7 @@ namespace NLAIAGENT
 
 		if( *methodName == CStringVarName("send") )
 		{
-			tQueue r;
+			TQueue r;
 			NLAISCRIPT::COperandVoid typeR;
 			NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());			
 			r.push(CIdMethod(0,0.0,NULL,t));

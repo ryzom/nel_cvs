@@ -1,6 +1,6 @@
 /** \file agent_proxy_mailer.cpp
  *
- * $Id: agent_proxy_mailer.cpp,v 1.14 2002/06/27 16:58:09 chafik Exp $
+ * $Id: agent_proxy_mailer.cpp,v 1.15 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,9 +140,9 @@ namespace NLAIAGENT
 		}
 	}
 
-	tQueue CProxyAgentMail::isMember(const IVarName *h,const IVarName *m,const IObjectIA &param) const
+	TQueue CProxyAgentMail::isMember(const IVarName *h,const IVarName *m,const IObjectIA &param) const
 	{
-		NLAIAGENT::tQueue r = isTemplateMember(CProxyAgentMail::StaticMethod,CProxyAgentMail::TLastM,getMethodIndexSize(),h,m,param);
+		NLAIAGENT::TQueue r = isTemplateMember(CProxyAgentMail::StaticMethod,CProxyAgentMail::TLastM,getMethodIndexSize(),h,m,param);
 		if(r.size()) return r;
 		else return IBasicAgent::isMember(h,m,param);
 	}

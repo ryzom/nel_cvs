@@ -1,7 +1,7 @@
 /** \file operation.h
  * <File description>
  *
- * $Id: operation.h,v 1.4 2002/11/05 14:07:28 chafik Exp $
+ * $Id: operation.h,v 1.5 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,7 +146,7 @@ namespace NLAIAGENT
 		}
 
 		virtual int getBaseMethodCount() const;
-		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+		virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 		virtual sint32 getMethodIndexSize() const;
 		virtual CProcessResult runMethodBase(int, int, IObjectIA *);
 		virtual CProcessResult runMethodBase(int, IObjectIA *);

@@ -1,6 +1,6 @@
 /** \file agent_operator.cpp
  *
- * $Id: agent_operator.cpp,v 1.8 2001/01/24 15:35:58 chafik Exp $
+ * $Id: agent_operator.cpp,v 1.9 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,9 +29,9 @@
 namespace NLAIAGENT
 {
 
-	tQueue IObjetOp::isMember(const IVarName *className, const IVarName *name, const IObjectIA &params) const
+	TQueue IObjetOp::isMember(const IVarName *className, const IVarName *name, const IObjectIA &params) const
 	{
-		tQueue result;
+		TQueue result;
 
 		result = IObjectIA::isMember( className, name, params );
 

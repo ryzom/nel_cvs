@@ -1,6 +1,6 @@
 /** \file msg_fact.cpp
  *
- * $Id: msg_fact.cpp,v 1.5 2003/01/13 16:58:59 chafik Exp $
+ * $Id: msg_fact.cpp,v 1.6 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,10 +84,10 @@ namespace NLAIAGENT
 	}
 
 
-	tQueue CFactMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
+	TQueue CFactMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
 	{
 
-		tQueue r;
+		TQueue r;
 
 		if(className == NULL)
 		{

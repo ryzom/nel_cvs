@@ -1,7 +1,7 @@
 /** \file baseai.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.28 2002/09/26 14:18:09 coutelas Exp $
+ * $Id: baseai.h,v 1.29 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,7 @@ namespace NLAIAGENT
 	};
 	
 
-	typedef std::priority_queue<CIdMethod> tQueue;
+	typedef std::priority_queue<CIdMethod> TQueue;
 
 	/** IObjectIA is the basic class for all IA surpport.
 		In this level an IObjectIA objects is a basic agent where it define all element for basic functionality. Among other things the functionality is 
@@ -290,7 +290,7 @@ namespace NLAIAGENT
 		param: is an IObjectIA where it defined the parametre of the method. 
 		lot of method use a IObjectIA vector object with an NLAIC::CIdentType as the the template argm.
 		*/
-		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+		virtual TQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 		/**
 		isClassInheritedFrom(className) allow us to known if this class have a base class with the name className.
 
@@ -335,9 +335,9 @@ namespace NLAIAGENT
 		/**
 		The method canProcessMessage(const IVarName &msgName) allow us to know if agent can preocess given by msgName.
 
-		tQueue contain the liste of method (same as a run(msg)) that coud process the msg.
+		TQueue contain the liste of method (same as a run(msg)) that coud process the msg.
 		*/
-		virtual	tQueue canProcessMessage(const IVarName &);
+		virtual	TQueue canProcessMessage(const IVarName &);
 
 		///If the result is true the object is loclal else its a representation of an object on the server. By the method return true.
 		virtual bool isLocal();
@@ -418,13 +418,13 @@ namespace NLAIAGENT
 	class IConnectIA: public IRefrence
 	{
 	private:
-		typedef std::set<const IConnectIA *> tListiBasic;
-		typedef std::set<const IConnectIA *>::iterator tListiBasicItr;
-		typedef std::set<const IConnectIA *>::const_iterator tListiBasicCstItr;
+		typedef std::set<const IConnectIA *> TListIBasic;
+		typedef std::set<const IConnectIA *>::iterator TListIBasicItr;
+		typedef std::set<const IConnectIA *>::const_iterator TListIBasicCstItr;
 
 	protected:
-		tListiBasic _Connection;
-		tListiBasic _Connected;		
+		TListIBasic _Connection;
+		TListIBasic _Connected;		
 
 	protected:
 		IConnectIA(const IConnectIA &A);

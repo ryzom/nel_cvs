@@ -1,7 +1,7 @@
 /** \file fuzzyvar.h
  *	Dexcribes a fuzzy variable with its fuzzy sets and defuzzyfication method
  *
- * $Id: fuzzyvar.h,v 1.4 2001/05/22 16:08:01 chafik Exp $
+ * $Id: fuzzyvar.h,v 1.5 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,7 @@ namespace NLAIFUZZY
 			static const NLAIC::CIdentType IdFuzzyVar;
 
 			sint32 getMethodIndexSize() const;
-			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 			virtual NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, NLAIAGENT::IObjectIA *);
 			virtual NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 

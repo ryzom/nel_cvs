@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.30 2003/01/20 16:14:59 chafik Exp $
+ * $Id: mailbox.cpp,v 1.31 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ namespace NLAIAGENT
 
 	CLocalMailBox::CLocalMailBox (const CLocalMailBox &A):IMailBox(A),_RunState(A._RunState),_Size(0)
 	{						
-		/*tListMailBox::const_reverse_iterator i = A._ListMailBox.rbegin();
+		/*TListMailBox::const_reverse_iterator i = A._ListMailBox.rbegin();
 		while(i != A._ListMailBox.rend())
 		{
 			connect(*i);
@@ -185,14 +185,14 @@ namespace NLAIAGENT
 	{				
 		eraseFromList<IMailBox *>(&_ListMailBox,(IMailBox *)a);
 
-		tListMessageIter msgItr = _ListMessageIn.begin();
+		TListMessageIter msgItr = _ListMessageIn.begin();
 		while(msgItr != _ListMessageIn.end())
 		{
 			IMessageBase *msg = (IMessageBase *)*msgItr;
 
 			if(msg->getSender() == a || msg->getContinuation() == a || msg->getReceiver() == a)
 			{
-				tListMessageIter iTmp = msgItr++;
+				TListMessageIter iTmp = msgItr++;
 				_ListMessageIn.erase(iTmp);
 				msg->release();
 				_Size --;
@@ -213,7 +213,7 @@ namespace NLAIAGENT
 		IMailBox::save(os);
 		sint32 size = _ListMailBox.size();
 		os.serial( size );
-		tListMailBoxCstIter k = _ListMailBox.begin();
+		TListMailBoxCstIter k = _ListMailBox.begin();
 		while(k != _ListMailBox.end())
 		{
 			IMailBox *mail = *k++;					
@@ -222,7 +222,7 @@ namespace NLAIAGENT
 
 		size = _ListMessageIn.size();
 		os.serial( size );
-		tListMessageIter msgItr = _ListMessageIn.begin();
+		TListMessageIter msgItr = _ListMessageIn.begin();
 		while(msgItr != _ListMessageIn.end())
 		{
 			IMessageBase *msg = (IMessageBase *)*msgItr++;

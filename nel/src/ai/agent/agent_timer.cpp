@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.31 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: agent_timer.cpp,v 1.32 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,9 +163,9 @@ namespace NLAIAGENT
 	const NLAIC::CIdentType *CLibTimerManager::IdAgentManagerTimer = NULL;
 	NLAIAGENT::CAgentScript::CMethodCall **CLibTimerManager::StaticMethod = NULL;
 
-	NLAIAGENT::tQueue CLibTimerManager::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
+	NLAIAGENT::TQueue CLibTimerManager::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
 	{
-		NLAIAGENT::tQueue r = NLAIAGENT::isTemplateMember(CLibTimerManager::StaticMethod,CLibTimerManager::TLastM,IObjectIA::getMethodIndexSize(),className,methodName,param);
+		NLAIAGENT::TQueue r = NLAIAGENT::isTemplateMember(CLibTimerManager::StaticMethod,CLibTimerManager::TLastM,IObjectIA::getMethodIndexSize(),className,methodName,param);
 		if(r.size()) return r;
 		else return IObjectIA::isMember(className,methodName,param);
 	}
@@ -323,7 +323,7 @@ namespace NLAIAGENT
 
 		sint32 index = -1;
 		
-		tQueue r = c->isMember(NULL,&sRunTell,param);
+		TQueue r = c->isMember(NULL,&sRunTell,param);
 		if(r.size()) index = r.top().Index;
 
 		msg->setSender(this);
@@ -421,9 +421,9 @@ namespace NLAIAGENT
 
 	
 
-	NLAIAGENT::tQueue CAgentWatchTimer::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
+	NLAIAGENT::TQueue CAgentWatchTimer::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
 	{
-		NLAIAGENT::tQueue r = NLAIAGENT::isTemplateMember(CAgentWatchTimer::StaticMethod,CAgentWatchTimer::TLastM,CAgentScript::getMethodIndexSize(),className,methodName,param);
+		NLAIAGENT::TQueue r = NLAIAGENT::isTemplateMember(CAgentWatchTimer::StaticMethod,CAgentWatchTimer::TLastM,CAgentScript::getMethodIndexSize(),className,methodName,param);
 		if(r.size()) return r;
 		else return CAgentScript::isMember(className,methodName,param);
 	}		
@@ -764,7 +764,7 @@ namespace NLAIAGENT
 		}
 	}
 
-	tQueue CAgentTimerHandle::isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const
+	TQueue CAgentTimerHandle::isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const
 	{
 		if(_Timer != NULL)
 		{

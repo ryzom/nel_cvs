@@ -1,7 +1,7 @@
 /** \file interpret_object_agent.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.26 2002/11/05 14:07:28 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.27 2003/01/21 11:24:25 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -155,8 +155,8 @@ namespace NLAISCRIPT
 		std::map <std::string, uint> _ComponentMap;
 		std::vector<NLAIAGENT::IObjectIA *> _StaticComponents;
 
-		typedef std::vector<CMethodType>	tVectorMethode;
-		tVectorMethode						_Methode;
+		typedef std::vector<CMethodType>	TVectorMethode;
+		TVectorMethode						_Methode;
 		std::vector<const CAgentClass  *>	_VTable;
 		std::vector<sint32 *>				_MsgIndirectTable;
 		sint32 _lastRef;		
@@ -225,8 +225,8 @@ namespace NLAISCRIPT
 		virtual CMethodeName &getBrancheCode(sint32) const;
 		virtual CMethodeName &getBrancheCode(sint32, sint32) const;
 		virtual sint32 getBrancheCodeSize() const;
-		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const;
-		virtual NLAIAGENT::tQueue getPrivateMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+		virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const;
+		virtual NLAIAGENT::TQueue getPrivateMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 		virtual sint32 getMethodIndexSize() const;		
 		virtual sint32 getRunMethod() const;
 		virtual void setRunMethod(sint32 index);

@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.22 2002/11/15 09:20:53 chafik Exp $
+ * $Id: agent.h,v 1.23 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 
 namespace NLAIAGENT
 {	
-	typedef CLocalMailBox tMailBoxLettre;
+	typedef CLocalMailBox TMailBoxLettre;
 
 	/**
 	Base class for an agent.Basicly an agent is an IConnectIA that we can communicate with it and an basic agent can assume the operation of an children.
@@ -282,7 +282,7 @@ namespace NLAIAGENT
 		/// \name Some IObjectIA method.
 		//@{
 		virtual sint32 getMethodIndexSize() const;		
-		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+		virtual TQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 		virtual	CProcessResult runMethodeMember(sint32 index,IObjectIA *);
 		//@}
@@ -332,12 +332,12 @@ namespace NLAIAGENT
 	class IAgentComposite:public IBasicAgent
 	{		
 		private:
-			typedef std::list<IBasicAgent *> tBasicList;
+			typedef std::list<IBasicAgent *> TBasicList;
 
 			void deleteListe();
 	
 		protected:		
-			tBasicList	_AgentList;
+			TBasicList	_AgentList;
 			IAgentComposite(const IAgentComposite &a);
 			sint _SizeChild;
 

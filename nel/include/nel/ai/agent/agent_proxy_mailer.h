@@ -1,7 +1,7 @@
 /** \file agent_proxy_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.17 2002/03/11 15:38:50 chafik Exp $
+ * $Id: agent_proxy_mailer.h,v 1.18 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -119,7 +119,7 @@ namespace NLAIAGENT
 			}
 		}
 
-		virtual tQueue isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const;
+		virtual TQueue isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const;
 		virtual	CProcessResult runMethodeMember(sint32 h, sint32 m, IObjectIA *p);
 		virtual	CProcessResult runMethodeMember(sint32 m,IObjectIA *p);
 		virtual sint32 getMethodIndexSize() const;

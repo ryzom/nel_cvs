@@ -1,7 +1,7 @@
 /** \file msg.h
  * class message.
  *
- * $Id: msg.h,v 1.20 2003/01/13 16:59:05 chafik Exp $
+ * $Id: msg.h,v 1.21 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -240,7 +240,7 @@ namespace NLAIAGENT
 		virtual IObjectIA &operator = (const IObjectIA &a);		
 
 		virtual sint32 getMethodIndexSize() const;
-		virtual tQueue isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const;
+		virtual TQueue isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const;
 		virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32,IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodeMember(sint32,IObjectIA *);
 		virtual bool isEqual(const IBasicObjectIA &a) const;

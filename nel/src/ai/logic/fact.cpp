@@ -185,7 +185,7 @@ namespace NLAILOGIC
 		return result;
 	}
 
-	NLAIAGENT::tQueue CFact::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
+	NLAIAGENT::TQueue CFact::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
 	{
 
 #ifdef NL_DEBUG	
@@ -196,7 +196,7 @@ namespace NLAILOGIC
 
 	const char *dbg_class_name = (const char *) getType();
 #endif
-		NLAIAGENT::tQueue r;
+		NLAIAGENT::TQueue r;
 		if(className == NULL)
 		{
 			if( (*funcName) == NLAIAGENT::CStringVarName( "Constructor" ) )

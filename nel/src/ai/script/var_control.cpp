@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.23 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: var_control.cpp,v 1.24 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -359,7 +359,7 @@ namespace NLAISCRIPT
 			}
 					
 			NLAIAGENT::IVarName *s = new NLAIAGENT::CStringVarName (LastyyText[1]);
-			_Attrib.push_back(pairType(s,i));
+			_Attrib.push_back(TPairType(s,i));
 					
 			i->incRef();
 			_Heap[(int)_Heap] = i;

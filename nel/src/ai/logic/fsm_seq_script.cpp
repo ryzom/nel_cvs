@@ -149,10 +149,10 @@ namespace NLAIAGENT
 		return CAgentScript::getBaseMethodCount();
 	}
 */	
-	tQueue CSeqFsmScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
+	TQueue CSeqFsmScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{		
 
-		tQueue result = CFsmScript::isMember( className, name, param);
+		TQueue result = CFsmScript::isMember( className, name, param);
 
 		if ( result.size() )
 			return result;

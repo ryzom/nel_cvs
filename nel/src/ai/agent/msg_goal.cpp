@@ -1,6 +1,6 @@
 /** \file msg_goal.cpp
  *
- * $Id: msg_goal.cpp,v 1.12 2003/01/13 16:58:59 chafik Exp $
+ * $Id: msg_goal.cpp,v 1.13 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,10 +84,10 @@ namespace NLAIAGENT
 	}
 
 
-	tQueue CGoalMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
+	TQueue CGoalMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
 	{
 
-		tQueue r;
+		TQueue r;
 
 		if(className == NULL)
 		{
@@ -190,10 +190,10 @@ namespace NLAIAGENT
 	}
 
 
-	tQueue CCancelGoalMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
+	TQueue CCancelGoalMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
 	{
 
-		tQueue r;
+		TQueue r;
 
 		if(className == NULL)
 		{

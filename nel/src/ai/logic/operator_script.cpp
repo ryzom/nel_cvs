@@ -111,7 +111,7 @@ namespace NLAIAGENT
 			const NLAISCRIPT::CParam p;
 			static CStringVarName debugStringF("GetDebugString");
 
-			tQueue r = isMember(NULL,&debugStringF,p);
+			TQueue r = isMember(NULL,&debugStringF,p);
 			if(r.size())
 			{
 				NLAISCRIPT::CCodeContext *c = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext()->clone();
@@ -731,14 +731,14 @@ namespace NLAIAGENT
 		return CActorScript::getBaseMethodCount() + fid_last;
 	}
 
-	tQueue COperatorScript::getPrivateMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
+	TQueue COperatorScript::getPrivateMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{		
 
 #ifdef NL_DEBUG
 		const char *dbg_func_name = name->getString();		
 #endif
 
-		tQueue result; 
+		TQueue result; 
 
 		static NLAIAGENT::CStringVarName modeachieve_name("SetModeAchieve");
 		static NLAIAGENT::CStringVarName modemaintain_name("SetModeMaintain");

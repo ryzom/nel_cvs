@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.61 2003/01/13 16:59:05 chafik Exp $
+ * $Id: agent_script.h,v 1.62 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,7 +156,7 @@ namespace NLAIAGENT
 
 	private:
 		///Type def for the map witch store the name of dynamic agent store in the agent.
-		typedef std::multiset<CKeyAgent> tsetDefNameAgent;
+		typedef std::multiset<CKeyAgent> TSetDefNameAgent;
 		
 	protected:			
 		///Table of static compoments.
@@ -170,7 +170,7 @@ namespace NLAIAGENT
 		IAgentManager *_AgentManager;
 		
 		///Map for store agent added in the dynamic child container.
-		tsetDefNameAgent _DynamicAgentName;
+		TSetDefNameAgent _DynamicAgentName;
 
 
 	protected:
@@ -328,9 +328,9 @@ namespace NLAIAGENT
 		virtual const IObjectIA *getStaticMember(sint32) const;		
 		virtual bool setStaticMember(sint32,IObjectIA *);
 
-		virtual tQueue getPrivateMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
-		virtual tQueue isMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
-		virtual tQueue isDeflautProccessMsg(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
+		virtual TQueue getPrivateMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
+		virtual TQueue isMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
+		virtual TQueue isDeflautProccessMsg(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
 		virtual sint32 isClassInheritedFrom(const NLAIAGENT::IVarName &) const;			
 
 		virtual sint32 getMethodIndexSize() const;		
@@ -440,7 +440,7 @@ namespace NLAIAGENT
 	};
 
 	
-	NLAIAGENT::tQueue isTemplateMember(	CAgentScript::CMethodCall **StaticMethod,int count,int shift,
+	NLAIAGENT::TQueue isTemplateMember(	CAgentScript::CMethodCall **StaticMethod,int count,int shift,
 												const NLAIAGENT::IVarName *className,
 												const NLAIAGENT::IVarName *methodName,
 												const NLAIAGENT::IObjectIA &param);	

@@ -2,7 +2,7 @@
 
 /** \file msg_fact.h
  *
- * $Id: msg_fact.h,v 1.3 2001/05/22 16:08:01 chafik Exp $
+ * $Id: msg_fact.h,v 1.4 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ namespace NLAIAGENT
 		void getDebugString(std::string &t) const;
 
 
-		tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+		TQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
 		IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
 		IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 

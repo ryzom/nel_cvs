@@ -1,7 +1,7 @@
 /** \file fact.h
  *	First order logic facts
  *
- * $Id: fact.h,v 1.10 2002/02/20 18:05:10 lecroart Exp $
+ * $Id: fact.h,v 1.11 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,7 @@ namespace NLAILOGIC {
 			virtual bool operator == (const NLAIAGENT::IBasicObjectIA &a) const;
 			CValueSet *asValueSet();
 
-			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p);
 			sint32 getMethodIndexSize() const;

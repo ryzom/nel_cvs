@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.19 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: interpret_methodes.cpp,v 1.20 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ namespace NLAISCRIPT
 						}
 						else
 						{
-							//NLAIC::CTypeOfObject o_t(tNombre | tString | tList | tLogic);
+							//NLAIC::CTypeOfObject o_t(tNombre | TString | tList | tLogic);
 							if(((const NLAIC::CTypeOfObject &)idD) & ((const NLAIC::CTypeOfObject &)idG))
 							{
 								return 0.0;

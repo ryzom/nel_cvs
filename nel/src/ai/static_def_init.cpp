@@ -54,14 +54,14 @@
 															NLAIC::CTypeOfOperator::opDiff));
 
 
-	NLMISC::CSynchronized<CLocWordNumRef::tMapRef> CLocWordNumRef::_LocRefence("CLocWordNumRef::_LocRefence");// = new CLocWordNumRef::tMapRef;
+	NLMISC::CSynchronized<CLocWordNumRef::TMapRef> CLocWordNumRef::_LocRefence("CLocWordNumRef::_LocRefence");// = new CLocWordNumRef::TMapRef;
 	CAgentNumber CNumericIndex::_I = CAgentNumber();	
 
 	CIndexedVarName::CNameStruc *CIndexedVarName::_TableName = NULL;
 	const sint32 CIndexedVarName::_Bank = 256;
 	sint32 CIndexedVarName::_Count = 0;
 	
-	CIndexedVarName::tMapName *CIndexedVarName::_Map = new CIndexedVarName::tMapName;
+	CIndexedVarName::TMapName *CIndexedVarName::_Map = new CIndexedVarName::TMapName;
 	std::list<CIndexedVarName::CNameStruc *> *CIndexedVarName::_Empty = new std::list<CIndexedVarName::CNameStruc *>;
 
 	CMessageGroup CMessageGroup::systemGroup(1);

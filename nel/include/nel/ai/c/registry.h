@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: registry.h,v 1.5 2002/10/15 15:03:05 portier Exp $
+ * $Id: registry.h,v 1.6 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,12 +60,12 @@ namespace NLAIC
 			~CRegistryClass();
 		};
 
-		typedef std::map<CIdentType ,CRegistryClass *,std::less<CIdentType> > tMapRegistry;
+		typedef std::map<CIdentType ,CRegistryClass *,std::less<CIdentType> > TMapRegistry;
 
 		/// Table for class factory index
 		std::vector<CRegistryClass *> _TableRegistry;
 		///Map Hows stored class factory instance
-		tMapRegistry &_MapRegistry;						
+		TMapRegistry &_MapRegistry;						
 
 	public:
 

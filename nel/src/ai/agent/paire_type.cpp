@@ -1,6 +1,6 @@
 /** \file paire_type.cpp
  *
- * $Id: paire_type.cpp,v 1.5 2002/11/15 09:21:07 chafik Exp $
+ * $Id: paire_type.cpp,v 1.6 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,9 +46,9 @@ namespace NLAIAGENT
 		return IObjetOp::getMethodIndexSize() + _LastM;
 	}
 
-	tQueue CPairType::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
+	TQueue CPairType::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
 	{
-		tQueue a;
+		TQueue a;
 		NLAISCRIPT::CParam methodParam;
 		
 		if(className == NULL)

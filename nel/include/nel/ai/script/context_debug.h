@@ -1,7 +1,7 @@
 /** \file context_debug.h
  * Debug informations in the context.
  *
- * $Id: context_debug.h,v 1.7 2001/05/22 16:08:01 chafik Exp $
+ * $Id: context_debug.h,v 1.8 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,9 +69,9 @@ namespace NLAISCRIPT
 		std::list<const CCodeBrancheRun*>		_CallStack;
 		TDebugMode								_DebugMode;
 		uint16									_StepIndex; // Index of the current StepByStep branche in the _CallStack
-		typedef std::set<uint16> uintSet;
-		typedef std::string mystring;
-		std::map<mystring, uintSet>				_BreakPointSet;
+		typedef std::set<uint16> TUintSet;
+		typedef std::string TMystring;
+		std::map<TMystring, TUintSet>				_BreakPointSet;
 		char									*_LastCommandLine;
 
 	public :

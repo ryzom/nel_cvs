@@ -1,7 +1,7 @@
 /** \file fuzzyvar.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: fuzzyvar.cpp,v 1.10 2002/08/21 13:58:34 lecroart Exp $
+ * $Id: fuzzyvar.cpp,v 1.11 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -378,9 +378,9 @@ namespace NLAIFUZZY
 	}
 
 
-	tQueue CFuzzyVar::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *name,const IObjectIA &param) const
+	TQueue CFuzzyVar::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *name,const IObjectIA &param) const
 	{
-		tQueue result;
+		TQueue result;
 
 		result = IBaseVar::isMember(className, name, param);
 

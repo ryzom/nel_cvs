@@ -176,9 +176,9 @@ namespace NLAIAGENT
 		IAgent::load(is);
 	}
 
-	tQueue CActor::isMember(const IVarName *className,const NLAIAGENT::IVarName *name,const IObjectIA &param) const
+	TQueue CActor::isMember(const IVarName *className,const NLAIAGENT::IVarName *name,const IObjectIA &param) const
 	{
-		tQueue result;
+		TQueue result;
 
 		result = IAgent::isMember( className, name, param );
 

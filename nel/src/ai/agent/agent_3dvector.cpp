@@ -1,7 +1,7 @@
 /** \file agent_3dvector.cpp
  * This file contain a class to manage a 3DVector in the script.
  *
- * $Id: agent_3dvector.cpp,v 1.7 2003/01/13 16:58:59 chafik Exp $
+ * $Id: agent_3dvector.cpp,v 1.8 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NLAIAGENT
 	/****************************************************
 	 * 
 	 */
-	tQueue IVector::isMember(const IVarName *baseClass,const IVarName *methodName,const IObjectIA &p) const
+	TQueue IVector::isMember(const IVarName *baseClass,const IVarName *methodName,const IObjectIA &p) const
 	{		
 		//Type IVarName voir agent_string.h.
 		static const CStringVarName methodX("x");
@@ -67,7 +67,7 @@ namespace NLAIAGENT
 			{
 				if(!param.size())
 				{
-					tQueue a;
+					TQueue a;
 					//Type du retour de la method x(), c'est un Float dont de type DDigitalType c'est à dire DDigitalType::IDDigitalType;
 					//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
@@ -82,7 +82,7 @@ namespace NLAIAGENT
 					xParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
 					if(param == xParam)
 					{		
-						tQueue a;
+						TQueue a;
 						//Type du retour de la method x(), c'est un void dont de type VoidType c'est à dire NLAIC::CIdentType::VoidType;
 						//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 						//la variable NLAIC::CIdentType::VoidType est un static dans la class NLAIC::CIdentType.
@@ -98,7 +98,7 @@ namespace NLAIAGENT
 			{
 				if(!param.size())
 				{
-					tQueue a;
+					TQueue a;
 					//Type du retour de la method y(), c'est un Float dont de type DDigitalType c'est à dire DDigitalType::IdDDigitalType;
 					//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));
@@ -113,7 +113,7 @@ namespace NLAIAGENT
 					xParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
 					if(param == xParam)
 					{		
-						tQueue a;
+						TQueue a;
 						//Type du retour de la method y(), c'est un void dont de type VoidType c'est à dire CIdentType::VoidType;
 						//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 						//la variable NLAIC::CIdentType::VoidType est un static dans la class NLAIC::CIdentType.
@@ -128,7 +128,7 @@ namespace NLAIAGENT
 			{
 				if(!param.size())
 				{
-					tQueue a;
+					TQueue a;
 					//Type du retour de la method x(), c'est un Float dont de type DDigitalType c'est à dire DDigitalType::IdDDigitalType;
 					//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));					
@@ -142,7 +142,7 @@ namespace NLAIAGENT
 					xParam.push(NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
 					if(param == xParam)
 					{		
-						tQueue a;
+						TQueue a;
 						//Type du retour de la method x(), c'est un void dont de type VoidType c'est à dire NLAIC::CIdentType::VoidType;
 						//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 						//la variable NLAIC::CIdentType::VoidType est un static dans la class NLAIC::CIdentType.
@@ -157,7 +157,7 @@ namespace NLAIAGENT
 			{
 				if(!param.size())
 				{
-					tQueue a;
+					TQueue a;
 					//Return a void type (no value return)
 					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));					
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 7,0.0,NULL,t));
@@ -168,7 +168,7 @@ namespace NLAIAGENT
 			{
 				if(!param.size())
 				{
-					tQueue a;
+					TQueue a;
 					//Return a digital type
 					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(DDigitalType::IdDDigitalType));					
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 8,0.0,NULL,t));
@@ -179,7 +179,7 @@ namespace NLAIAGENT
 			{
 				if(!param.size())
 				{
-					tQueue a;
+					TQueue a;
 					//Return a void type
 					NLAIAGENT::CObjectType *t = new NLAIAGENT::CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));					
 					a.push(CIdMethod(IObjetOp::getMethodIndexSize() + 9,0.0,NULL,t));
@@ -194,7 +194,7 @@ namespace NLAIAGENT
 				constructParam.push(NLAISCRIPT::COperandSimpleListOr(2,new NLAIC::CIdentType(DDigitalType::IdDDigitalType),new NLAIC::CIdentType(DDigitalType::IdDDigitalType)));
 				if(constructParam.eval(param) >= 0.0 )
 				{		
-					tQueue a;
+					TQueue a;
 					//Type du retour du constructeur , c'est un void dont de type VoidType c'est à dire CIdentType::VoidType;
 					//CObjectType est un IObjectIA qui permet d'encapsuler un NLAIC::CIdentType c'est à dire un type.
 					//la variable NLAIC::CIdentType::VoidType est un static dans la class NLAIC::CIdentType.

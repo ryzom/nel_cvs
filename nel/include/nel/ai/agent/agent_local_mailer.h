@@ -1,7 +1,7 @@
 /** \file agent_local_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_local_mailer.h,v 1.7 2002/11/15 09:20:53 chafik Exp $
+ * $Id: agent_local_mailer.h,v 1.8 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,7 +140,7 @@ namespace NLAIAGENT
 		}
 		//@}
 
-		virtual tQueue isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const;
+		virtual TQueue isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const;
 		
 		virtual sint32 isClassInheritedFrom(const IVarName &h) const
 		{
@@ -157,7 +157,7 @@ namespace NLAIAGENT
 			return _HostAgent->runMethodeMember(m,p);
 		}		
 
-		virtual	tQueue canProcessMessage(const IVarName &m)
+		virtual	TQueue canProcessMessage(const IVarName &m)
 		{
 			return _HostAgent->canProcessMessage(m);
 		}

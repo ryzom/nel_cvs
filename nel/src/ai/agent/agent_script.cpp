@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.138 2003/01/20 16:14:59 chafik Exp $
+ * $Id: agent_script.cpp,v 1.139 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -669,7 +669,7 @@ namespace NLAIAGENT
 			const NLAISCRIPT::CParam p;
 			static CStringVarName debugStringF("GetDebugString");
 
-			tQueue r = isMember(NULL,&debugStringF,p);
+			TQueue r = isMember(NULL,&debugStringF,p);
 			if(r.size())
 			{
 				NLAISCRIPT::CCodeContext *c = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext()->clone();
@@ -724,7 +724,7 @@ namespace NLAIAGENT
 
 	void CAgentScript::onKill(IConnectIA *a)
 	{		
-		tsetDefNameAgent::iterator iter = _DynamicAgentName.begin();
+		TSetDefNameAgent::iterator iter = _DynamicAgentName.begin();
 		while( iter != _DynamicAgentName.end() )
 		{			
 			if((*(*iter).Itr) == a)
@@ -842,13 +842,13 @@ namespace NLAIAGENT
 		CStringType *s = (CStringType *)g->getFront();
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
-		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
+		std::pair<TSetDefNameAgent::iterator,TSetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
 
 		if(p.first != p.second)
 		{	
 			while(p.first != p.second)
 			{
-				tsetDefNameAgent::iterator iTmp = p.first;
+				TSetDefNameAgent::iterator iTmp = p.first;
 				p.first ++;
 
 				NLAIAGENT::IBasicAgent *o = *iTmp->Itr;
@@ -867,7 +867,7 @@ namespace NLAIAGENT
 	void CAgentScript::removeDynamic(NLAIAGENT::IBasicAgent *ag)
 	{		
 		
-		tsetDefNameAgent::iterator p = _DynamicAgentName.begin();
+		TSetDefNameAgent::iterator p = _DynamicAgentName.begin();
 		
 		while(p != _DynamicAgentName.end())
 		{
@@ -886,7 +886,7 @@ namespace NLAIAGENT
 		CStringType *s = (CStringType *)g->get();
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
-		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
+		std::pair<TSetDefNameAgent::iterator,TSetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
 		
 		if(p.first != p.second)
 		{			
@@ -1157,7 +1157,7 @@ namespace NLAIAGENT
 
 		IObjectIA::CProcessResult r;
 		const IObjectIA *o = ((CLocalAgentMail *)g->get())->getHost();
-		tsetDefNameAgent::iterator i = _DynamicAgentName.begin();
+		TSetDefNameAgent::iterator i = _DynamicAgentName.begin();
 
 		while(i != _DynamicAgentName.end())
 		{
@@ -1196,7 +1196,7 @@ namespace NLAIAGENT
 
 	IObjectIA::CProcessResult CAgentScript::sendBroadCast(IObjectIA *m)
 	{
-		tsetDefNameAgent::iterator i = _DynamicAgentName.begin();
+		TSetDefNameAgent::iterator i = _DynamicAgentName.begin();
 
 		if(i != _DynamicAgentName.end()) 
 		{
@@ -1217,8 +1217,8 @@ namespace NLAIAGENT
 	
 	IObjectIA::CProcessResult CAgentScript::sendMessageToDynmaicChild(const IVarName &compName,IObjectIA *msg)
 	{
-		//tsetDefNameAgent::iterator  p = _DynamicAgentName.find(CKeyAgent(CStringType(compName)));
-		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(CStringType(compName)));
+		//TSetDefNameAgent::iterator  p = _DynamicAgentName.find(CKeyAgent(CStringType(compName)));
+		std::pair<TSetDefNameAgent::iterator,TSetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(CStringType(compName)));
 
 #ifdef NL_DEBUG
 		const char *txt = (const char *)msg->getType();
@@ -1348,7 +1348,7 @@ namespace NLAIAGENT
 				NLAISCRIPT::COperandSimple *t = new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(m->getType()));
 				NLAISCRIPT::CParam p(1,t);
 				
-				tQueue r = isMember(NULL,&tmp_name,p);
+				TQueue r = isMember(NULL,&tmp_name,p);
 				if(r.size())
 				{
 					NLAIAGENT::CIdMethod m = r.top();
@@ -1562,7 +1562,7 @@ namespace NLAIAGENT
 		IMailBox *mail = getMail();
 
 		
-		//const IMailBox::tListMessage &l = mail->getMesseageListe();
+		//const IMailBox::TListMessage &l = mail->getMesseageListe();
 		sint n = mail->getMessageCount();
 
 		while(/*l.begin() != l.end()*/n--)
@@ -1738,7 +1738,7 @@ namespace NLAIAGENT
 			{		
 				IObjectIA::CProcessResult r;
 				const CAgentScript *p = (CAgentScript *)getParent();
-				tsetDefNameAgent::iterator i = p->_DynamicAgentName.begin();
+				TSetDefNameAgent::iterator i = p->_DynamicAgentName.begin();
 
 				while(i != p->_DynamicAgentName.end())
 				{
@@ -1888,7 +1888,7 @@ namespace NLAIAGENT
 			{
 				IObjectIA::CProcessResult r;
 				const CAgentScript *p = (CAgentScript *)getParent();
-				tsetDefNameAgent::iterator i = p->_DynamicAgentName.begin();
+				TSetDefNameAgent::iterator i = p->_DynamicAgentName.begin();
 
 				while(i != p->_DynamicAgentName.end())
 				{
@@ -2225,7 +2225,7 @@ namespace NLAIAGENT
 		return r;
 	}
 
-	tQueue CAgentScript::getPrivateMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	TQueue CAgentScript::getPrivateMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{		
 
 #ifdef NL_DEBUG
@@ -2234,14 +2234,14 @@ namespace NLAIAGENT
 		return isTemplateMember(CAgentScript::StaticMethod,CAgentScript::TLastM,IAgent::getMethodIndexSize(),className,methodName,param);		
 	}
 
-	tQueue CAgentScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	TQueue CAgentScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{
 		
 
  		if(className == NULL)
 		{
 
-			tQueue r;
+			TQueue r;
 			if(_AgentClass != NULL) 
 				r = _AgentClass->getPrivateMember(className,methodName,param);			
 
@@ -2265,7 +2265,7 @@ namespace NLAIAGENT
 		else 
 		if(*className == CStringVarName("Agent"))
 		{					
-			tQueue r;
+			TQueue r;
 			r = getPrivateMember(className,methodName,param);
 			if(r.size()) 
 				return r;
@@ -2286,10 +2286,10 @@ namespace NLAIAGENT
 			}
 			
 		}
-		return tQueue();
+		return TQueue();
 	}
 
-	tQueue CAgentScript::isDeflautProccessMsg(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	TQueue CAgentScript::isDeflautProccessMsg(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{
 		const char *name = methodName->getString();
 		if(name[0] == 'R' && name[1] == 'u' && name[2] == 'n')
@@ -2300,7 +2300,7 @@ namespace NLAIAGENT
 			{
 				if(*methodName == runMsgName[i])
 				{
-					tQueue r;			
+					TQueue r;			
 					CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 					r.push(CIdMethod(TDeflautProccessMsg + IAgent::getMethodIndexSize(),0.0,NULL,c));
 					return r;
@@ -2308,7 +2308,7 @@ namespace NLAIAGENT
 			}
 		}
 
-		return tQueue();
+		return TQueue();
 	}
 
 	sint32 CAgentScript::isClassInheritedFrom(const IVarName &name) const
@@ -2321,7 +2321,7 @@ namespace NLAIAGENT
 		return _AgentClass->getInheritedStaticMemberIndex(name);
 	}
 
-	NLAIAGENT::tQueue isTemplateMember(	CAgentScript::CMethodCall **StaticMethod,int count,int shift,
+	NLAIAGENT::TQueue isTemplateMember(	CAgentScript::CMethodCall **StaticMethod,int count,int shift,
 												const NLAIAGENT::IVarName *className,
 												const NLAIAGENT::IVarName *methodName,
 												const NLAIAGENT::IObjectIA &param)
@@ -2341,7 +2341,7 @@ namespace NLAIAGENT
 						double d = ((NLAISCRIPT::CParam &)*StaticMethod[i]->ArgType).eval((NLAISCRIPT::CParam &)param);
 						if(d >= 0.0)
 						{								
-							NLAIAGENT::tQueue r;
+							NLAIAGENT::TQueue r;
 							StaticMethod[i]->ReturnValue->incRef();
 							r.push(NLAIAGENT::CIdMethod(	(shift + StaticMethod[i]->Index),
 															0.0,
@@ -2358,7 +2358,7 @@ namespace NLAIAGENT
 					{
 						if(((NLAISCRIPT::CParam &)param).size() == StaticMethod[i]->ArgCount)
 						{								
-							NLAIAGENT::tQueue r;
+							NLAIAGENT::TQueue r;
 							StaticMethod[i]->ReturnValue->incRef();
 							r.push(NLAIAGENT::CIdMethod(	(shift + StaticMethod[i]->Index),
 															0.0,
@@ -2372,7 +2372,7 @@ namespace NLAIAGENT
 
 				case CAgentScript::DoNotCheck:
 					{							
-						NLAIAGENT::tQueue r;
+						NLAIAGENT::TQueue r;
 						StaticMethod[i]->ReturnValue->incRef();
 						r.push(NLAIAGENT::CIdMethod(	(shift + StaticMethod[i]->Index),
 														0.0,
@@ -2385,7 +2385,7 @@ namespace NLAIAGENT
 				}
 			}
 		}		
-		return NLAIAGENT::tQueue();
+		return NLAIAGENT::TQueue();
 	}
 
 	void CAgentScript::createComponents(std::list<IObjectIA *> &components)

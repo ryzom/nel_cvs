@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
  * <File description>
  *
- * $Id: agent_3dvector.h,v 1.11 2002/08/21 13:58:17 lecroart Exp $
+ * $Id: agent_3dvector.h,v 1.12 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -205,7 +205,7 @@ namespace NLAIAGENT
 		}
 
 		virtual sint32 getMethodIndexSize() const;
-		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+		virtual TQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 		virtual	CProcessResult runMethodeMember(sint32 index,IObjectIA *);
 		virtual sint32 isClassInheritedFrom(const IVarName &) const;

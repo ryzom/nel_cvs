@@ -1,6 +1,6 @@
 /** \file msg_action.cpp
  *
- * $Id: msg_action.cpp,v 1.8 2003/01/13 16:58:59 chafik Exp $
+ * $Id: msg_action.cpp,v 1.9 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,10 +85,10 @@ namespace NLAIAGENT
 	}
 
 
-	tQueue CSuccessMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
+	TQueue CSuccessMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
 	{
 
-		tQueue r;
+		TQueue r;
 
 		if(className == NULL)
 		{
@@ -192,10 +192,10 @@ namespace NLAIAGENT
 	}
 
 
-	tQueue CFailureMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
+	TQueue CFailureMsg::isMember(const IVarName *className,const IVarName *funcName,const IObjectIA &params) const
 	{
 
-		tQueue r;
+		TQueue r;
 
 		if(className == NULL)
 		{

@@ -1,7 +1,7 @@
 /** \file list_manager.h
  * Sevral class for objects manipulation.
  *
- * $Id: list_manager.h,v 1.9 2001/05/30 07:33:59 chafik Exp $
+ * $Id: list_manager.h,v 1.10 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,7 +85,7 @@ namespace NLAIAGENT
 		virtual void clear();
 
 		virtual sint32 getMethodIndexSize() const;
-		virtual tQueue isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const;
+		virtual TQueue isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const;
 		virtual IObjectIA::CProcessResult runMethodeMember(sint32, sint32,IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodeMember(sint32,IObjectIA *);
 

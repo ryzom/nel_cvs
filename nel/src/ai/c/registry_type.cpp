@@ -1,6 +1,6 @@
 /** \file registry_type.cpp
  *
- * $Id: registry_type.cpp,v 1.7 2002/02/20 18:08:41 lecroart Exp $
+ * $Id: registry_type.cpp,v 1.8 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ namespace NLAIC
 		if((uint32)*this)
 		{		
 			txt[0] = 0;
-			const char *opTxt[9] =	{"tNombre","tString","tLogic","tList","tAdresse","tAgent","tExec","tObject","tAgentInterpret"};
+			const char *opTxt[9] =	{"tNombre","TString","tLogic","tList","tAdresse","tAgent","tExec","tObject","tAgentInterpret"};
 			sint32 digi = 1;	
 			sint32 last = false;
 			for(sint32 i = 0; i< 9; i ++)

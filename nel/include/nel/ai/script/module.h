@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.9 2001/05/22 16:08:01 chafik Exp $
+ * $Id: module.h,v 1.10 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 namespace NLAISCRIPT
 {
 	///this typedef define an correct std::map for store local variable in the heap.
-	typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA * > tDicoStr;
+	typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA * > TDicoStr;
 
 	/**
 	* Class IBlock.
@@ -47,15 +47,15 @@ namespace NLAISCRIPT
 
 	protected:
 		///this typedef define an correct std::map iterator for store local variable in the heap.
-		typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA *>::iterator tDicoStrIter;
+		typedef std::map<NLAISCRIPT::CStringType , NLAIAGENT::IObjectIA *>::iterator TDicoStrIter;
 		
 	private:
 		///Op-code that define the block. This object is build at the end of parse.
 		CCodeBrancheRun*			_Cbr;
 		///This list containe the bag of code.
-		tListCode					_ListCode;
+		TListCode					_ListCode;
 		///Local variable is stored here.
-		tDicoStr					*_DicoLocVar;
+		TDicoStr					*_DicoLocVar;
 		///If user want a reference to the local variable dictionary then we don't have to delete it.
 		bool						_HaveToDeleteDico;
 
@@ -67,7 +67,7 @@ namespace NLAISCRIPT
 	public:
 
 		///Construct with an active dictionarry and debug mode.
-		IBlock(bool debugMode,tDicoStr *dico)
+		IBlock(bool debugMode,TDicoStr *dico)
 		{
 			_Debug = debugMode;
 			_Cbr = NULL;
@@ -84,7 +84,7 @@ namespace NLAISCRIPT
 			_FirstOpCodeInLine = true;
 			_CurrentLine = 0;
 			_HaveToDeleteDico = true;
-			_DicoLocVar = new tDicoStr;
+			_DicoLocVar = new TDicoStr;
 		}		
 
 
@@ -98,7 +98,7 @@ namespace NLAISCRIPT
 			}
 			
 			if(_Cbr)  _Cbr->release();
-			tDicoStrIter it = _DicoLocVar->begin();
+			TDicoStrIter it = _DicoLocVar->begin();
 			while(it != _DicoLocVar->end())
 			{
 #ifdef NL_DEBUG				
@@ -114,7 +114,7 @@ namespace NLAISCRIPT
 		///Gets a pointer to a locale variable.
 		NLAIAGENT::IObjectIA *getVar(const char *Name)
 		{
-			tDicoStr::iterator Itr = _DicoLocVar->find(NLAISCRIPT::CStringType(Name));
+			TDicoStr::iterator Itr = _DicoLocVar->find(NLAISCRIPT::CStringType(Name));
 
 			if(Itr != _DicoLocVar->end())
 			{
@@ -126,7 +126,7 @@ namespace NLAISCRIPT
 
 		NLAIAGENT::IObjectIA *eraseVar(const char *Name)
 		{
-			tDicoStr::iterator Itr = _DicoLocVar->find(NLAISCRIPT::CStringType(Name));
+			TDicoStr::iterator Itr = _DicoLocVar->find(NLAISCRIPT::CStringType(Name));
 
 			if(Itr != _DicoLocVar->end())
 			{
@@ -138,7 +138,7 @@ namespace NLAISCRIPT
 		
 
 		///Locks the dictionnarry and get it.
-		tDicoStr *lockDictionarry()
+		TDicoStr *lockDictionarry()
 		{
 			_HaveToDeleteDico = false;
 			return _DicoLocVar;
@@ -148,7 +148,7 @@ namespace NLAISCRIPT
 		bool allocLocVar(const char *name, NLAIAGENT::IObjectIA *var)
 		{
 			if(getVar(name) != NULL) return false;
-			_DicoLocVar->insert(tDicoStr::value_type(NLAISCRIPT::CStringType(name),var));		
+			_DicoLocVar->insert(TDicoStr::value_type(NLAISCRIPT::CStringType(name),var));		
 			return true;
 		}
 
@@ -237,7 +237,7 @@ namespace NLAISCRIPT
 		//@}
 
 		///Get the list of code.
-		tListCode &listCode()
+		TListCode &listCode()
 		{
 			return _ListCode;
 		}

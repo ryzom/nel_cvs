@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.13 2002/11/04 15:40:43 boucher Exp $
+ * $Id: fuzzyset.cpp,v 1.14 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -267,7 +267,7 @@ namespace NLAIFUZZY
 
 
 
-	NLAIAGENT::tQueue IFuzzySet::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
+	NLAIAGENT::TQueue IFuzzySet::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
 	{
 
 #ifdef NL_DEBUG	
@@ -278,7 +278,7 @@ namespace NLAIFUZZY
 
 	const char *dbg_class_name = (const char *) getType();
 #endif
-		NLAIAGENT::tQueue r;
+		NLAIAGENT::TQueue r;
 		if(className == NULL)
 		{
 			if( (*funcName) == NLAIAGENT::CStringVarName( "Constructor" ) )

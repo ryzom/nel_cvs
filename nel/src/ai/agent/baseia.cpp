@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseia.cpp,v 1.9 2001/12/11 09:27:05 chafik Exp $
+ * $Id: baseia.cpp,v 1.10 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@ namespace NLAIAGENT
 	void IConnectIA::save(NLMISC::IStream &os)
 	{
 		IRefrence::save(os);
-		tListiBasicCstItr i = _Connection.begin();
+		TListIBasicCstItr i = _Connection.begin();
 		sint32 size = _Connection.size();
 		os.serial( size );
 		while(i != _Connection.end())
@@ -191,20 +191,20 @@ namespace NLAIAGENT
 		return false;
 	}
 
-	tQueue IObjectIA::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	TQueue IObjectIA::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{		
 		CStringVarName send(_SEND_);
 
 		if(*methodName == send)
 		{
-			tQueue r;			
+			TQueue r;			
 			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 			c->incRef();
 			r.push(CIdMethod(0,0.0,NULL,c));
 			return r;
 		}
 
-		return tQueue();
+		return TQueue();
 	}
 
 	sint32 IObjectIA::isClassInheritedFrom(const IVarName &) const
@@ -251,9 +251,9 @@ namespace NLAIAGENT
 		return CProcessResult();
 	}
 
-	tQueue IObjectIA::canProcessMessage(const IVarName &)
+	TQueue IObjectIA::canProcessMessage(const IVarName &)
 	{
-		return tQueue();
+		return TQueue();
 	}
 
 
@@ -460,7 +460,7 @@ namespace NLAIAGENT
 
 	void IConnectIA::removeInConnectionList(IConnectIA *a)
 	{
-		tListiBasicItr i = _Connection.begin();
+		TListIBasicItr i = _Connection.begin();
 		while(i != _Connection.end())
 		{				
 			if(*i == a)
@@ -479,7 +479,7 @@ namespace NLAIAGENT
 
 	void IConnectIA::removeInConnectedList(const IConnectIA *a)
 	{
-		tListiBasicItr i = _Connected.begin();
+		TListIBasicItr i = _Connected.begin();
 		while(i != _Connected.end())
 		{				
 			if(*i == a)

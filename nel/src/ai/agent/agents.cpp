@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.57 2003/01/20 16:14:59 chafik Exp $
+ * $Id: agents.cpp,v 1.58 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,7 +200,7 @@ namespace NLAIAGENT
 	void IAgent::processMessages()
 	{
 		IMailBox *mail = getMail();
-		//const IMailBox::tListMessage &l = mail->getMesseageListe();
+		//const IMailBox::TListMessage &l = mail->getMesseageListe();
 		sint n = mail->getMessageCount();
 
 		while(/*l.begin() != l.end()*/ n --)
@@ -291,7 +291,7 @@ namespace NLAIAGENT
 
 	IBasicAgent::IBasicAgent(const IWordNumRef *parent): IConnectIA(parent)
 	{
-		_Mail = new tMailBoxLettre((const IWordNumRef *) *this);
+		_Mail = new TMailBoxLettre((const IWordNumRef *) *this);
 
 	}		
 
@@ -450,11 +450,11 @@ namespace NLAIAGENT
 		return IObjectIA::getMethodIndexSize() + _LastM;
 	}	
 
-	tQueue IBasicAgent::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
+	TQueue IBasicAgent::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
 	{			
 		if(className == NULL)
 		{
-			tQueue a;
+			TQueue a;
 			for(int i = 0; i < _LastM; i++)
 			{
 				if(*methodName == IBasicAgent::_Method[i].MethodName)

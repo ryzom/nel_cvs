@@ -1,7 +1,7 @@
 /** \file fuzzyset.h
  *	Basic fuzzy sets
  *
- * $Id: fuzzyset.h,v 1.5 2001/05/22 16:08:01 chafik Exp $
+ * $Id: fuzzyset.h,v 1.6 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ namespace NLAIFUZZY {
 			virtual double agregate();
 			virtual double getValue();
 
-			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+			virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
 			virtual NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, NLAIAGENT::IObjectIA *);
 	};
 

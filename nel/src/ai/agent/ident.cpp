@@ -1,6 +1,6 @@
 /** \file ident.cpp
  *
- * $Id: ident.cpp,v 1.22 2002/06/27 16:58:09 chafik Exp $
+ * $Id: ident.cpp,v 1.23 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,8 +120,8 @@ namespace NLAIAGENT
 
 	CLocWordNumRef::~CLocWordNumRef()
 	{
-		NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
-		tMapRef::iterator Itr = a.value().find(_Id);
+		NLMISC::CSynchronized<TMapRef >::CAccessor a(&_LocRefence);
+		TMapRef::iterator Itr = a.value().find(_Id);
 		if(Itr != a.value().end())
 		{				
 			a.value().erase(Itr);
@@ -136,8 +136,8 @@ namespace NLAIAGENT
 
 	IRefrence *CLocWordNumRef::getRef(const CNumericIndex &id)
 	{
-		NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
-		tMapRef::iterator Itr = a.value().find(id);
+		NLMISC::CSynchronized<TMapRef >::CAccessor a(&_LocRefence);
+		TMapRef::iterator Itr = a.value().find(id);
 		if(Itr != a.value().end())
 		{				
 			return (*Itr).second;
@@ -151,13 +151,13 @@ namespace NLAIAGENT
 
 	void CLocWordNumRef::Init()
 	{
-		/*NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
-		a.value() = new CLocWordNumRef::tMapRef;*/
+		/*NLMISC::CSynchronized<TMapRef >::CAccessor a(&_LocRefence);
+		a.value() = new CLocWordNumRef::TMapRef;*/
 	}
 
 	void CLocWordNumRef::clear()
 	{			
-		/*NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
+		/*NLMISC::CSynchronized<TMapRef >::CAccessor a(&_LocRefence);
 		if(a.value() )
 		{
 			delete a.value();

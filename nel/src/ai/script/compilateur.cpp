@@ -1,6 +1,6 @@
 /** \file compilateur.cpp
  *
- * $Id: compilateur.cpp,v 1.22 2002/11/07 09:19:44 portier Exp $
+ * $Id: compilateur.cpp,v 1.23 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,7 @@ namespace NLAISCRIPT
 	NLAIAGENT::CIdMethod CCompilateur::findMethode(sint32 inheritance,NLAIAGENT::CStringType *baseName, const NLAIAGENT::IObjectIA *classType,const NLAIAGENT::IVarName &methodeName,const CParam &param)
 	{
 
-		NLAIAGENT::tQueue q;
+		NLAIAGENT::TQueue q;
 		if(baseName != NULL && baseName->getStr() == NLAIAGENT::CStringVarName((const char *)CAgentClass::IdAgentClass))
 		{
 			 q = classType->isMember(&baseName->getStr(),&methodeName,param);

@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.22 2002/11/15 09:20:53 chafik Exp $
+ * $Id: agent_object.h,v 1.23 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -254,7 +254,7 @@ namespace NLAIAGENT
 		}
 
 		virtual sint32 getMethodIndexSize() const;
-		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+		virtual TQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 		virtual	CProcessResult runMethodeMember(sint32 index,IObjectIA *);
 	};	
@@ -572,7 +572,7 @@ namespace NLAIAGENT
 		//@{
 		virtual sint32 getMethodIndexSize() const;
 		virtual sint32 isClassInheritedFrom(const IVarName &) const;
-		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+		virtual TQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 		virtual	CProcessResult runMethodeMember(sint32 index,IObjectIA *);
 		//@}
@@ -638,14 +638,14 @@ namespace NLAIAGENT
 		
 	public:
 		//typedef of the std::list constainer
-		typedef std::list<const IObjectIA *> tListType;
+		typedef std::list<const IObjectIA *> TListType;
 	public:				
 		///std::list for store IObjectIA object.
-		tListType _List;
+		TListType _List;
 
 	protected:
 
-		tListType &getList();
+		TListType &getList();
 
 	public:
 		CGroupType();
@@ -687,11 +687,11 @@ namespace NLAIAGENT
 		const IObjectIA *popFront();
 		const IObjectIA *getFront() const;
 		sint32 size() const;
-		tListType findList(const IObjectIA &obj) const;
-		tListType::const_iterator getBegin() const;
-		tListType::const_iterator getEnd() const;
-		tListType::iterator getBegin();
-		tListType::iterator getEnd();
+		TListType findList(const IObjectIA &obj) const;
+		TListType::const_iterator getBegin() const;
+		TListType::const_iterator getEnd() const;
+		TListType::iterator getBegin();
+		TListType::iterator getEnd();
 		const IObjectIA *find(const IObjectIA &obj) const;		
 		void eraseAll(const IObjectIA &obj); 
 		void erase(const IObjectIA *o); 
@@ -725,13 +725,13 @@ namespace NLAIAGENT
 		
 	public:
 		//typedef of the std::vector constainer
-		typedef std::vector<const IObjectIA *> tVectorType;
+		typedef std::vector<const IObjectIA *> TVectorType;
 	private:				
 		///std::vector for store IObjectIA object.
-		tVectorType _Vector;		
+		TVectorType _Vector;		
 
 	protected:
-		tVectorType &getVector();
+		TVectorType &getVector();
 
 	public:
 		///Construct a vector with n uninitialize momory unite. Programmer must initialize the vector list after. 
@@ -781,11 +781,11 @@ namespace NLAIAGENT
 		const IObjectIA *popFront();
 		const IObjectIA *getFront() const;
 		sint32 size() const;
-		tVectorType findList(const IObjectIA &obj) const;
-		tVectorType::const_iterator getBegin() const;
-		tVectorType::const_iterator getEnd() const;
-		tVectorType::iterator getBegin();
-		tVectorType::iterator getEnd();
+		TVectorType findList(const IObjectIA &obj) const;
+		TVectorType::const_iterator getBegin() const;
+		TVectorType::const_iterator getEnd() const;
+		TVectorType::iterator getBegin();
+		TVectorType::iterator getEnd();
 		const IObjectIA *find(const IObjectIA &obj) const;		
 		void eraseAll(const IObjectIA &obj); 
 		void erase(const IObjectIA *o); 
@@ -801,7 +801,7 @@ namespace NLAIAGENT
 		void clear();
 
 		virtual sint32 getMethodIndexSize() const;
-		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+		virtual TQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 		virtual	CProcessResult runMethodeMember(sint32 index,IObjectIA *);
 
@@ -815,13 +815,13 @@ namespace NLAIAGENT
 		static const NLAIC::CIdentType IdVectorGroupType;
 		
 	public:
-		typedef std::vector<const IObjectIA *> tVectorType;
+		typedef std::vector<const IObjectIA *> TVectorType;
 	private:				
 		///std::vector for store IObjectIA object.
 		std::map<IObjectIA *, IObjectIA *> _Map;
 
 	protected:
-		tVectorType &getVector();
+		TVectorType &getVector();
 
 	public:
 		///Construct a vector with n uninitialize momory unite. Programmer must initialize the vector list after. 
@@ -868,11 +868,11 @@ namespace NLAIAGENT
 		const IObjectIA *popFront();
 		const IObjectIA *getFront() const;
 		sint32 size() const;
-		tVectorType findList(const IObjectIA &obj) const;
-		tVectorType::const_iterator getBegin() const;
-		tVectorType::const_iterator getEnd() const;
-		tVectorType::iterator getBegin();
-		tVectorType::iterator getEnd();
+		TVectorType findList(const IObjectIA &obj) const;
+		TVectorType::const_iterator getBegin() const;
+		TVectorType::const_iterator getEnd() const;
+		TVectorType::iterator getBegin();
+		TVectorType::iterator getEnd();
 		const IObjectIA *find(const IObjectIA &obj) const;		
 		void eraseAll(const IObjectIA &obj); 
 		void erase(const IObjectIA *o); 
@@ -888,7 +888,7 @@ namespace NLAIAGENT
 		void clear();
 
 		virtual sint32 getMethodIndexSize() const;
-		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+		virtual TQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
 		virtual	CProcessResult runMethodeMember(sint32 index,IObjectIA *);
 

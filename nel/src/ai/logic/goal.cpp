@@ -380,7 +380,7 @@ namespace NLAILOGIC
 		}
 	}
 
-	NLAIAGENT::tQueue CGoal::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
+	NLAIAGENT::TQueue CGoal::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
 	{
 
 #ifdef NL_DEBUG	
@@ -395,7 +395,7 @@ namespace NLAILOGIC
 		static NLAIAGENT::CStringVarName mode_repeat_name("SetModeRepeat");
 		static NLAIAGENT::CStringVarName reply_to_name("ReplyTo");
 
-		NLAIAGENT::tQueue r;
+		NLAIAGENT::TQueue r;
 		if(className == NULL)
 		{
 			if( (*funcName) == constructor_name )
@@ -721,7 +721,7 @@ namespace NLAILOGIC
 		}
 	}
 
-	NLAIAGENT::tQueue CInternalGoal::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
+	NLAIAGENT::TQueue CInternalGoal::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *funcName,const NLAIAGENT::IObjectIA &params) const
 	{
 
 #ifdef NL_DEBUG	
@@ -734,7 +734,7 @@ namespace NLAILOGIC
 		static NLAIAGENT::CStringVarName constructor_name("Constructor");
 		static NLAIAGENT::CStringVarName mode_once_name("SetModeOnce");
 		static NLAIAGENT::CStringVarName mode_repeat_name("SetModeRepeat");
-		NLAIAGENT::tQueue r;
+		NLAIAGENT::TQueue r;
 		if(className == NULL)
 		{
 			if( (*funcName) == constructor_name )

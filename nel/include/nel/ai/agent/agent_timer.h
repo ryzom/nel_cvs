@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.12 2002/02/20 18:04:49 lecroart Exp $
+ * $Id: agent_timer.h,v 1.13 2003/01/21 11:24:25 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -106,7 +106,7 @@ namespace NLAIAGENT
 			return IObjectIA::getMethodIndexSize() + 0;
 		}
 		
-		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &) const;		
+		virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &) const;		
 		virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index,NLAIAGENT::IObjectIA *);
 
 		const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;}
@@ -215,7 +215,7 @@ namespace NLAIAGENT
 
 
 		virtual int getBaseMethodCount() const;
-		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+		virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 		virtual sint32 getMethodIndexSize() const;
 		virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,NLAIAGENT::IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodBase(int index,NLAIAGENT::IObjectIA *);
@@ -294,7 +294,7 @@ namespace NLAIAGENT
 		virtual IObjectIA::CProcessResult sendMessage(IObjectIA *m);
 
 		virtual sint32 getMethodIndexSize() const;		
-		virtual tQueue isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const;
+		virtual TQueue isMember(const IVarName *h,const IVarName *m,const IObjectIA &p) const;
 		virtual	CProcessResult runMethodeMember(sint32 h, sint32 m, IObjectIA *p);
 		virtual	CProcessResult runMethodeMember(sint32 m,IObjectIA *p);		
 

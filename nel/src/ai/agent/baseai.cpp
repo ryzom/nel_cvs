@@ -1,6 +1,6 @@
 /** \file baseai.cpp
  *
- * $Id: baseai.cpp,v 1.38 2002/08/02 09:57:02 chafik Exp $
+ * $Id: baseai.cpp,v 1.39 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLAIAGENT
 	void IConnectIA::save(NLMISC::IStream &os)
 	{
 		IRefrence::save(os);
-		tListiBasicCstItr i = _Connection.begin();
+		TListIBasicCstItr i = _Connection.begin();
 		sint32 size = _Connection.size();
 		os.serial( size );
 		while(i != _Connection.end())
@@ -203,7 +203,7 @@ namespace NLAIAGENT
 		return false;
 	}
 
-	tQueue IObjectIA::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	TQueue IObjectIA::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{		
 		static CStringVarName send(_SEND_);
 		static CStringVarName constructor(_CONSTRUCTOR_);
@@ -212,7 +212,7 @@ namespace NLAIAGENT
 
 		if(*methodName == send)
 		{
-			tQueue r;			
+			TQueue r;			
 			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 			r.push(CIdMethod(0,0.0,NULL,c));
 			return r;
@@ -220,7 +220,7 @@ namespace NLAIAGENT
 		else
 		if(*methodName == constructor && !((const NLAISCRIPT::CParam &)param).size())
 		{
-			tQueue r;
+			TQueue r;
 			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 			r.push(CIdMethod(1,0.0,NULL,c));
 			return r;
@@ -228,19 +228,19 @@ namespace NLAIAGENT
 		else
 		if(*methodName == run && !((const NLAISCRIPT::CParam &)param).size())
 		{
-			tQueue r;
+			TQueue r;
 			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 			r.push(CIdMethod(2,0.0,NULL,c));
 			return r;			
 		}
 		if(*methodName == statM && ((const NLAISCRIPT::CParam &)param).size())
 		{
-			tQueue r;
+			TQueue r;
 			CObjectType *c = new CObjectType(new NLAIC::CIdentType(*IAgent::IdAgent));
 			r.push(CIdMethod(3,0.0,NULL,c));
 			return r;			
 		}
-		return tQueue();
+		return TQueue();
 	}
 
 	sint32 IObjectIA::isClassInheritedFrom(const IVarName &) const
@@ -347,9 +347,9 @@ namespace NLAIAGENT
 		return CProcessResult();
 	}
 
-	tQueue IObjectIA::canProcessMessage(const IVarName &)
+	TQueue IObjectIA::canProcessMessage(const IVarName &)
 	{
-		return tQueue();
+		return TQueue();
 	}
 
 
@@ -577,10 +577,10 @@ namespace NLAIAGENT
 	void IConnectIA::removeInConnectionList(IConnectIA *a)
 	{
 
-		tListiBasicItr i = _Connection.find(a);
+		TListIBasicItr i = _Connection.find(a);
 		if(i != _Connection.end())
 							_Connection.erase(i);
-		/*tListiBasicItr i = _Connection.begin();
+		/*TListIBasicItr i = _Connection.begin();
 		while(i != _Connection.end())
 		{				
 			if(*i == a)
@@ -599,10 +599,10 @@ namespace NLAIAGENT
 
 	void IConnectIA::removeInConnectedList(const IConnectIA *a)
 	{
-		tListiBasicItr i = _Connected.find(a);
+		TListIBasicItr i = _Connected.find(a);
 		if(i != _Connected.end())
 						_Connected.erase(i);
-		/*tListiBasicItr i = _Connected.begin();
+		/*TListIBasicItr i = _Connected.begin();
 		while(i != _Connected.end())
 		{			
 			const IConnectIA *o = *i;
@@ -623,7 +623,7 @@ namespace NLAIAGENT
 			parent->onKill( this );
 		}
 
-		tListiBasicCstItr it = _Connection.begin();
+		TListIBasicCstItr it = _Connection.begin();
 
 		while(it != _Connection.end())
 		{				

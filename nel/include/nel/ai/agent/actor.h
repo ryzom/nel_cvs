@@ -1,7 +1,7 @@
 /** \file actor.h
  *	
  *
- * $Id: actor.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
+ * $Id: actor.h,v 1.7 2003/01/21 11:24:24 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ namespace NLAIAGENT
 			virtual void save(NLMISC::IStream &os);		
 			virtual void load(NLMISC::IStream &is);		
 
-			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
+			virtual TQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
 			virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;
 			//@}

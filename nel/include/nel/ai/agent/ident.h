@@ -1,7 +1,7 @@
 /** \file ident.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.21 2002/06/17 14:16:54 chafik Exp $
+ * $Id: ident.h,v 1.22 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -477,8 +477,8 @@ namespace NLAIAGENT
 	{			
 	private:		
 		///The map use an CNumericIndex as a key for the internal tree.
-		typedef std::map<CNumericIndex ,IRefrence *> tMapRef;
-		static NLMISC::CSynchronized<tMapRef> _LocRefence;
+		typedef std::map<CNumericIndex ,IRefrence *> TMapRef;
+		static NLMISC::CSynchronized<TMapRef> _LocRefence;
 
 	private:
 		
@@ -496,8 +496,8 @@ namespace NLAIAGENT
 		///Construct object for an IRefrence agents objects.
 		CLocWordNumRef(IRefrence *ref):_Stock(ref)
 		{
-			NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
-			a.value().insert(tMapRef::value_type(_Id,ref));
+			NLMISC::CSynchronized<TMapRef >::CAccessor a(&_LocRefence);
+			a.value().insert(TMapRef::value_type(_Id,ref));
 		}
 		
 		/**
@@ -509,8 +509,8 @@ namespace NLAIAGENT
 		*/
 		CLocWordNumRef(const CNumericIndex &ref) :_Id(ref),_Stock(NULL)
 		{			
-			NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
-			tMapRef::iterator Itr = a.value().find(_Id);
+			NLMISC::CSynchronized<TMapRef >::CAccessor a(&_LocRefence);
+			TMapRef::iterator Itr = a.value().find(_Id);
 			if(Itr != a.value().end())
 			{				
 				_Stock = (*Itr).second;
@@ -520,8 +520,8 @@ namespace NLAIAGENT
 
 		CLocWordNumRef(const CNumericIndex &id,IRefrence *ref) :_Id(id),_Stock(ref)
 		{
-			NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
-			tMapRef::iterator itr = a.value().find(_Id);
+			NLMISC::CSynchronized<TMapRef >::CAccessor a(&_LocRefence);
+			TMapRef::iterator itr = a.value().find(_Id);
 			if(itr != a.value().end())
 			{
 				if((*itr).second != _Stock)
@@ -534,7 +534,7 @@ namespace NLAIAGENT
 				}
 				a.value().erase(itr);
 			}
-			a.value().insert(tMapRef::value_type(_Id,_Stock));			
+			a.value().insert(TMapRef::value_type(_Id,_Stock));			
 		}
 
 		/**
@@ -543,8 +543,8 @@ namespace NLAIAGENT
 		*/
 		CLocWordNumRef(const CLocWordNumRef &l) :_Id(l._Id),_Stock(NULL)
 		{						
-			NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
-			tMapRef::iterator itr = a.value().find(_Id);
+			NLMISC::CSynchronized<TMapRef >::CAccessor a(&_LocRefence);
+			TMapRef::iterator itr = a.value().find(_Id);
 			if(itr != a.value().end())
 			{
 				_Stock = (*itr).second;
@@ -593,9 +593,9 @@ namespace NLAIAGENT
 		///Exception: throw (NLAIE::CExceptionIndexHandeledError)
 		virtual void load(NLMISC::IStream &is)
 		{			
-			NLMISC::CSynchronized<tMapRef >::CAccessor a(&_LocRefence);
+			NLMISC::CSynchronized<TMapRef >::CAccessor a(&_LocRefence);
 			_Id.load(is);
-			tMapRef::iterator Itr = a.value().find(_Id);
+			TMapRef::iterator Itr = a.value().find(_Id);
 			if(Itr != a.value().end())
 			{
 				_Stock = (*Itr).second;

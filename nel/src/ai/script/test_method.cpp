@@ -1,6 +1,6 @@
 /** \file test_method.cpp
  *
- * $Id: test_method.cpp,v 1.15 2002/09/16 08:33:26 chafik Exp $
+ * $Id: test_method.cpp,v 1.16 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -160,9 +160,9 @@ namespace NLAISCRIPT
 		else return -1;		
 	}
 
-	NLAIAGENT::tQueue CLibTest::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
+	NLAIAGENT::TQueue CLibTest::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
 	{
-		NLAIAGENT::tQueue r;
+		NLAIAGENT::TQueue r;
 		NLAIAGENT::CStringVarName check((const char *)IdLibTest);
 
 		if(className == NULL || *className == check)

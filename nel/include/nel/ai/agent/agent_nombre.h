@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.18 2002/11/15 09:20:53 chafik Exp $
+ * $Id: agent_nombre.h,v 1.19 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ namespace NLAIAGENT
 		//@{
 		virtual sint32 getMethodIndexSize() const;
 		virtual sint32 isClassInheritedFrom(const IVarName &) const;
-		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;		
+		virtual TQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;		
 		//@}
 
 

@@ -2,7 +2,7 @@
  *	
  *	Sequential states machine
  *
- * $Id: fsm_seq_script.h,v 1.2 2001/05/22 16:08:01 chafik Exp $
+ * $Id: fsm_seq_script.h,v 1.3 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,7 @@ namespace NLAIAGENT
 		
 
 	
-			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
+			virtual TQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
 //			virtual sint32 getMethodIndexSize() const;
 
 			void getFatherComponent(IVarName &);
@@ -110,7 +110,7 @@ namespace NLAIAGENT
 		/// To process Succes and Failure messages
 /*		virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
-		virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
+		virtual TQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
 		virtual sint32 getMethodIndexSize() const;
 		*/
 	};

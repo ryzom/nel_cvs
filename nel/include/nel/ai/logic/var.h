@@ -1,7 +1,7 @@
 /** \file var.h
  *	Base variable class for first order and fuzzy logic
  *
- * $Id: var.h,v 1.6 2002/02/20 18:05:11 lecroart Exp $
+ * $Id: var.h,v 1.7 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,7 +50,7 @@ namespace NLAILOGIC {
 			virtual bool unify(NLAIAGENT::IObjetOp*, bool assign = false) = 0;
 
 			// Ajout du Set dans les variables
-			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+			virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
 			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 , NLAIAGENT::IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;
 	};

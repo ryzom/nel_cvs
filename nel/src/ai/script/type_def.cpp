@@ -1,6 +1,6 @@
 /** \file type_def.cpp
  *
- * $Id: type_def.cpp,v 1.12 2002/01/30 15:39:59 chafik Exp $
+ * $Id: type_def.cpp,v 1.13 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ namespace NLAISCRIPT
 				}
 				else
 				{
-					//NLAIC::CTypeOfObject o_t(tNombre | tString | tList | tLogic);
+					//NLAIC::CTypeOfObject o_t(tNombre | TString | tList | tLogic);
 					if(((const NLAIC::CTypeOfObject &)idD) & ((const NLAIC::CTypeOfObject &)idG))
 					{
 						return 0.0;

@@ -1,6 +1,6 @@
 /** \file agent_nombre.cpp
  *
- * $Id: agent_nombre.cpp,v 1.6 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: agent_nombre.cpp,v 1.7 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,9 +39,9 @@ namespace NLAIAGENT
 		return IObjetOp::getMethodIndexSize() + TLastM;
 	}
 	
-	tQueue INombreDefine::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
+	TQueue INombreDefine::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
 	{
-		tQueue a;
+		TQueue a;
 		NLAISCRIPT::CParam methodParam;
 		
 		if(className == NULL)

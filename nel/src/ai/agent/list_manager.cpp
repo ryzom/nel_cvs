@@ -1,6 +1,6 @@
 /** \file list_manager.cpp
  *
- * $Id: list_manager.cpp,v 1.10 2001/06/14 10:23:18 chafik Exp $
+ * $Id: list_manager.cpp,v 1.11 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,7 +186,7 @@ namespace NLAIAGENT
 		return IBaseGroupType::getMethodIndexSize() + 0;
 	}
 
-	tQueue IListBasicManager::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
+	TQueue IListBasicManager::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
 	{
 		return IBaseGroupType::isMember(className,methodName,p);
 	}

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.30 2002/11/07 09:19:44 portier Exp $
+ * $Id: group_type.cpp,v 1.31 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,9 +94,9 @@ namespace NLAIAGENT
 		return IObjetOp::getMethodIndexSize() + _LastM;
 	}
 
-	tQueue IBaseGroupType::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
+	TQueue IBaseGroupType::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
 	{
-		tQueue a;
+		TQueue a;
 		NLAISCRIPT::CParam methodParam;
 		
 		if(className == NULL)
@@ -269,7 +269,7 @@ namespace NLAIAGENT
 	IObjetOp *CGroupType::operator + (IObjetOp *a)
 	{
 		CGroupType *o = new CGroupType();
-		tListType::const_iterator i = _List.begin();
+		TListType::const_iterator i = _List.begin();
 		while(i != _List.end())
 		{
 			o->_List.push_back(*i);
@@ -284,7 +284,7 @@ namespace NLAIAGENT
 	IObjetOp *CGroupType::operator - (IObjetOp *a)
 	{
 		CGroupType *o = new CGroupType();
-		tListType::const_iterator i = _List.begin();
+		TListType::const_iterator i = _List.begin();
 		while(i != _List.end())
 		{
 			o->_List.push_back(*i);
@@ -300,7 +300,7 @@ namespace NLAIAGENT
 	IObjetOp *CGroupType::operator + (const IObjetOp &a)
 	{
 		CGroupType *o = new CGroupType();
-		tListType::const_iterator i = _List.begin();
+		TListType::const_iterator i = _List.begin();
 		while(i != _List.end())
 		{
 			o->_List.push_back(*i);
@@ -314,7 +314,7 @@ namespace NLAIAGENT
 	IObjetOp *CGroupType::operator - (const IObjetOp &a)
 	{
 		CGroupType *o = new CGroupType();
-		tListType::const_iterator i = _List.begin();
+		TListType::const_iterator i = _List.begin();
 		while(i != _List.end())
 		{
 			o->_List.push_back(*i);
@@ -339,7 +339,7 @@ namespace NLAIAGENT
 		if((uint)(((const NLAIC::CTypeOfObject &)a.getType()) & NLAIC::CTypeOfObject::tList))
 		{
 			const CGroupType &g= (const CGroupType &)a;
-			tListType::const_iterator i = g._List.begin();
+			TListType::const_iterator i = g._List.begin();
 			while(i != g._List.end())
 			{
 				_List.push_back((const IObjectIA *)(*i++)->clone());
@@ -356,7 +356,7 @@ namespace NLAIAGENT
 			//TODO: throw Exc::CExceptionIndexError
 		}
 
-		tListType::const_iterator it_l = _List.begin();
+		TListType::const_iterator it_l = _List.begin();
 		for (sint32 i = 0; i < index; i++)
 			it_l++;
 
@@ -365,7 +365,7 @@ namespace NLAIAGENT
 
 	void CGroupType::set(int index,IObjectIA *o)
 	{
-		tListType::iterator it_l = _List.begin();
+		TListType::iterator it_l = _List.begin();
 		for (sint32 i = 0; i < index; i++)
 			it_l++;
 		((IObjectIA *)(*it_l))->release();
@@ -379,7 +379,7 @@ namespace NLAIAGENT
 
 	const IObjectIA::CProcessResult &CGroupType::run()
 	{
-		tListType::iterator i = _List.begin();
+		TListType::iterator i = _List.begin();
 		while(i != _List.end())
 		{
 			((IObjectIA *)(*i++))->run();
@@ -387,7 +387,7 @@ namespace NLAIAGENT
 		return IObjectIA::ProcessRun;  
 	}
 
-	CGroupType::tListType &CGroupType::getList() 
+	CGroupType::TListType &CGroupType::getList() 
 	{
 		return _List;
 	}
@@ -398,7 +398,7 @@ namespace NLAIAGENT
 
 	CGroupType::CGroupType(const CGroupType &g)
 	{
-		tListType::const_iterator i = g._List.begin();
+		TListType::const_iterator i = g._List.begin();
 		while(i != g._List.end())
 		{
 			_List.push_back((const IObjectIA *)(*i++)->clone());
@@ -466,10 +466,10 @@ namespace NLAIAGENT
 		return _List.size();
 	}
 
-	CGroupType::tListType CGroupType::findList(const IObjectIA &obj) const
+	CGroupType::TListType CGroupType::findList(const IObjectIA &obj) const
 	{
-		tListType l;			
-		tListType::const_iterator i = _List.begin();
+		TListType l;			
+		TListType::const_iterator i = _List.begin();
 		while(i != _List.end())
 		{
 			const IObjectIA *o = *i++;
@@ -479,29 +479,29 @@ namespace NLAIAGENT
 
 	}
 
-	CGroupType::tListType::const_iterator CGroupType::getBegin() const
+	CGroupType::TListType::const_iterator CGroupType::getBegin() const
 	{
 		return _List.begin();
 	}
 
-	CGroupType::tListType::const_iterator CGroupType::getEnd() const
+	CGroupType::TListType::const_iterator CGroupType::getEnd() const
 	{
 		return _List.end();
 	}		
 
-	CGroupType::tListType::iterator CGroupType::getBegin()
+	CGroupType::TListType::iterator CGroupType::getBegin()
 	{
 		return _List.begin();
 	}
 
-	CGroupType::tListType::iterator CGroupType::getEnd()
+	CGroupType::TListType::iterator CGroupType::getEnd()
 	{
 		return _List.end();
 	}		
 
 	const IObjectIA *CGroupType::find(const IObjectIA &obj) const
 	{			
-		tListType::const_iterator i = _List.begin();
+		TListType::const_iterator i = _List.begin();
 		while(i != _List.end())
 		{
 			const IObjectIA *o = *i++;
@@ -512,7 +512,7 @@ namespace NLAIAGENT
 
 	/*void CGroupType::eraseFirst(const IObjectIA &obj) 
 	{				
-		tListType::iterator i = _List.begin();
+		TListType::iterator i = _List.begin();
 		while(i != _List.end())
 		{
 			IObjectIA *o= (IObjectIA *)*i;
@@ -528,10 +528,10 @@ namespace NLAIAGENT
 
 	void CGroupType::eraseAll(const IObjectIA &obj) 
 	{			
-		tListType::iterator i = _List.begin();
+		TListType::iterator i = _List.begin();
 		while(i != _List.end())
 		{
-			tListType::iterator j = i++;
+			TListType::iterator j = i++;
 			IObjectIA *o= (IObjectIA *)*j;
 			if( *o == obj)
 			{					
@@ -544,10 +544,10 @@ namespace NLAIAGENT
 
 	void CGroupType::erase(const IObjectIA *o) 
 	{	
-		tListType::iterator i = _List.begin();
+		TListType::iterator i = _List.begin();
 		while(i != _List.end())
 		{
-			tListType::iterator j = i++;
+			TListType::iterator j = i++;
 			if( *j == o)
 			{
 				IObjectIA *o = (IObjectIA *)*j;
@@ -560,10 +560,10 @@ namespace NLAIAGENT
 
 	void CGroupType::erase(const IObjectIA &obj) 
 	{	
-		tListType::iterator i = _List.begin();
+		TListType::iterator i = _List.begin();
 		while(i != _List.end())
 		{
-			tListType::iterator j = i++;
+			TListType::iterator j = i++;
 			if( *(*j) == obj)
 			{
 				IObjectIA *o = (IObjectIA *)*j;
@@ -576,7 +576,7 @@ namespace NLAIAGENT
 
 	void CGroupType::erase(std::list<const IObjectIA *> &l) 
 	{			
-		tListType::iterator i = l.begin();
+		TListType::iterator i = l.begin();
 		while(i != l.end())
 		{
 			erase(*i++);								
@@ -588,8 +588,8 @@ namespace NLAIAGENT
 		const CGroupType &b = (const CGroupType &)a;			
 		if(size() != b.size()) return false;
 
-		tListType::const_iterator i = _List.begin();
-		tListType::const_iterator j = b._List.begin();
+		TListType::const_iterator i = _List.begin();
+		TListType::const_iterator j = b._List.begin();
 		
 		while(i != _List.end())
 		{
@@ -630,7 +630,7 @@ namespace NLAIAGENT
 
 	IObjetOp &CGroupType::neg()
 	{
-		tListType::iterator i = _List.begin();
+		TListType::iterator i = _List.begin();
 		while(i != _List.end())
 		{
 			const NLAIC::CTypeOfOperator &op = (const NLAIC::CTypeOfOperator &)(*i)->getType();
@@ -683,7 +683,7 @@ namespace NLAIAGENT
 	IObjetOp *CVectorGroupType::operator + (IObjetOp *a)
 	{
 		CVectorGroupType *o = new CVectorGroupType();
-		tVectorType::const_iterator i = _Vector.begin();
+		TVectorType::const_iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
 			o->_Vector.push_back(*i);
@@ -698,7 +698,7 @@ namespace NLAIAGENT
 	IObjetOp *CVectorGroupType::operator - (IObjetOp *a)
 	{
 		CVectorGroupType *o = new CVectorGroupType();
-		tVectorType::const_iterator i = _Vector.begin();
+		TVectorType::const_iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
 			o->_Vector.push_back(*i);
@@ -714,7 +714,7 @@ namespace NLAIAGENT
 	IObjetOp *CVectorGroupType::operator + (const IObjetOp &a)
 	{
 		CVectorGroupType *o = new CVectorGroupType();
-		tVectorType::const_iterator i = _Vector.begin();
+		TVectorType::const_iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
 			o->_Vector.push_back(*i);
@@ -729,7 +729,7 @@ namespace NLAIAGENT
 	IObjetOp *CVectorGroupType::operator - (const IObjetOp &a)
 	{
 		CVectorGroupType *o = new CVectorGroupType();
-		tVectorType::const_iterator i = _Vector.begin();
+		TVectorType::const_iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
 			o->_Vector.push_back(*i);
@@ -754,7 +754,7 @@ namespace NLAIAGENT
 		if((uint)(((const NLAIC::CTypeOfObject &)a.getType()) & NLAIC::CTypeOfObject::tList))
 		{
 			const CVectorGroupType &g= (const CVectorGroupType &)a;
-			tVectorType::const_iterator i = g._Vector.begin();
+			TVectorType::const_iterator i = g._Vector.begin();
 			while(i != g._Vector.end())
 			{
 				_Vector.push_back((const IObjectIA *)(*i++)->clone());
@@ -772,7 +772,7 @@ namespace NLAIAGENT
 
 	const IObjectIA::CProcessResult &CVectorGroupType::run()
 	{
-		tVectorType::iterator i = _Vector.begin();
+		TVectorType::iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
 			((IObjectIA *)(*i++))->run();
@@ -780,7 +780,7 @@ namespace NLAIAGENT
 		return IObjectIA::ProcessRun; 
 	}
 
-	CVectorGroupType::tVectorType &CVectorGroupType::getVector() 
+	CVectorGroupType::TVectorType &CVectorGroupType::getVector() 
 	{
 		return _Vector;
 	}
@@ -797,7 +797,7 @@ namespace NLAIAGENT
 	CVectorGroupType::CVectorGroupType(const CVectorGroupType &g)
 	{
 		_Vector = g._Vector;
-		tVectorType::const_iterator i = _Vector.begin();
+		TVectorType::const_iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
 			((IObjectIA *)(*i++))->incRef();
@@ -880,10 +880,10 @@ namespace NLAIAGENT
 		return _Vector.size();
 	}
 
-	CVectorGroupType::tVectorType CVectorGroupType::findList(const IObjectIA &obj) const
+	CVectorGroupType::TVectorType CVectorGroupType::findList(const IObjectIA &obj) const
 	{
-		tVectorType l;			
-		tVectorType::const_iterator i = _Vector.begin();
+		TVectorType l;			
+		TVectorType::const_iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
 			const IObjectIA *o = *i++;
@@ -912,29 +912,29 @@ namespace NLAIAGENT
 	}
 
 
-	CVectorGroupType::tVectorType::const_iterator CVectorGroupType::getBegin() const
+	CVectorGroupType::TVectorType::const_iterator CVectorGroupType::getBegin() const
 	{
 		return _Vector.begin();
 	}
 
-	CVectorGroupType::tVectorType::const_iterator CVectorGroupType::getEnd() const
+	CVectorGroupType::TVectorType::const_iterator CVectorGroupType::getEnd() const
 	{
 		return _Vector.end();
 	}
 
-	CVectorGroupType::tVectorType::iterator CVectorGroupType::getBegin()
+	CVectorGroupType::TVectorType::iterator CVectorGroupType::getBegin()
 	{
 		return _Vector.begin();
 	}
 
-	CVectorGroupType::tVectorType::iterator CVectorGroupType::getEnd()
+	CVectorGroupType::TVectorType::iterator CVectorGroupType::getEnd()
 	{
 		return _Vector.end();
 	}		
 
 	const IObjectIA *CVectorGroupType::find(const IObjectIA &obj) const
 	{			
-		tVectorType::const_iterator i = _Vector.begin();
+		TVectorType::const_iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
 			const IObjectIA *o = *i++;
@@ -945,10 +945,10 @@ namespace NLAIAGENT
 
 	void CVectorGroupType::eraseAll(const IObjectIA &obj) 
 	{			
-		tVectorType::iterator i = _Vector.begin();
+		TVectorType::iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
-			tVectorType::iterator j = i++;
+			TVectorType::iterator j = i++;
 			IObjectIA *o= (IObjectIA *)*j;
 			if( *o == obj)
 			{					
@@ -961,10 +961,10 @@ namespace NLAIAGENT
 
 	void CVectorGroupType::erase(const IObjectIA *o) 
 	{	
-		tVectorType::iterator i = _Vector.begin();
+		TVectorType::iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
-			tVectorType::iterator j = i++;
+			TVectorType::iterator j = i++;
 			if( *j == o)
 			{
 				IObjectIA *o = (IObjectIA *)*j;
@@ -977,10 +977,10 @@ namespace NLAIAGENT
 
 	void CVectorGroupType::erase(const IObjectIA &obj) 
 	{	
-		tVectorType::iterator i = _Vector.begin();
+		TVectorType::iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
-			tVectorType::iterator j = i++;
+			TVectorType::iterator j = i++;
 			if ( *(*j) == obj )
 			{
 				IObjectIA *o = (IObjectIA *)*j;
@@ -1005,8 +1005,8 @@ namespace NLAIAGENT
 		const CVectorGroupType &b = (const CVectorGroupType &)a;			
 		if(size() != b.size()) return false;
 
-		tVectorType::const_iterator i = _Vector.begin();
-		tVectorType::const_iterator j = _Vector.begin();
+		TVectorType::const_iterator i = _Vector.begin();
+		TVectorType::const_iterator j = _Vector.begin();
 		
 		while(i != _Vector.end())
 		{
@@ -1042,7 +1042,7 @@ namespace NLAIAGENT
 
 	IObjetOp &CVectorGroupType::neg()
 	{
-		tVectorType::iterator i = _Vector.begin();
+		TVectorType::iterator i = _Vector.begin();
 		while(i != _Vector.end())
 		{
 			const NLAIC::CTypeOfOperator &op = (const NLAIC::CTypeOfOperator &)(*i)->getType();
@@ -1083,9 +1083,9 @@ namespace NLAIAGENT
 		}
 	}
 
-	tQueue CVectorGroupType::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
+	TQueue CVectorGroupType::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &p) const
 	{
-		tQueue a;
+		TQueue a;
 		NLAISCRIPT::CParam methodParam;
 		NLAISCRIPT::CParam &param = (NLAISCRIPT::CParam &)p;
 		

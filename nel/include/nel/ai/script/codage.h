@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.21 2002/08/20 15:22:11 chafik Exp $
+ * $Id: codage.h,v 1.22 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -311,8 +311,8 @@ namespace NLAISCRIPT
 
 
 	class CCodeBrancheRun;
-	typedef	CStackPointer	tStackRef;
-	typedef	CCodeBrancheRun	tCodeRef;
+	typedef	CStackPointer	TStackRef;
+	typedef	CCodeBrancheRun	TCodeRef;
 
 	// ======================================================================================================
 	/**
@@ -332,11 +332,11 @@ namespace NLAISCRIPT
 	public:
 
 		/// Stack is the stack for computing operation same as '+', '/' ...
-		tStackRef			&Stack;
+		TStackRef			&Stack;
 		/// Heap is the stack for storage local variable
-		tStackRef			&Heap;
+		TStackRef			&Heap;
 		///Code is the code in run.
-		tCodeRef			*Code;
+		TCodeRef			*Code;
 		///Self define the this of the interpreter class objects
 		const NLAIAGENT::IObjectIA	*Self;
 		///InputOutput for the out put and in put request.
@@ -352,7 +352,7 @@ namespace NLAISCRIPT
 
 	public:
 
-		CCodeContext(tStackRef &stackMem,tStackRef &heapMem,tCodeRef *codeMem,const NLAIAGENT::IObjectIA *thisClass,NLAIC::IIO *io):
+		CCodeContext(TStackRef &stackMem,TStackRef &heapMem,TCodeRef *codeMem,const NLAIAGENT::IObjectIA *thisClass,NLAIC::IIO *io):
 		Stack(stackMem),
 		Heap(heapMem),		
 		Code(codeMem),
@@ -488,8 +488,8 @@ namespace NLAISCRIPT
 
 	};
 
-	typedef	std::list<CBagOfCode *> tListCode;
-	typedef	std::list<CBagOfCode *>::iterator tListCodeIter;
+	typedef	std::list<CBagOfCode *> TListCode;
+	typedef	std::list<CBagOfCode *>::iterator TListCodeIter;
 
 	// ======================================================================================================
 	/**
@@ -548,7 +548,7 @@ namespace NLAISCRIPT
 		}
 
 		///you can construct the class with a liste of op code.
-		CCodeBrancheRun(const tListCode &l):
+		CCodeBrancheRun(const TListCode &l):
 			_TableCode(NULL),_Ip(0),_Count(l.size())
 		{
 			initCode(l);	
@@ -571,12 +571,12 @@ namespace NLAISCRIPT
 		}
 
 		
-		void initCode(const tListCode &l)
+		void initCode(const TListCode &l)
 		{
 			del();
 			_Count = l.size();
 
-			tListCode::const_iterator i;		
+			TListCode::const_iterator i;		
 			_TableCode = new IOpCode * [l.size()];
 			i = l.begin();
 			int k = 0;

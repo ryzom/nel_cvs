@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.20 2002/08/21 13:58:33 lecroart Exp $
+ * $Id: opcode.cpp,v 1.21 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -614,7 +614,7 @@ namespace NLAISCRIPT
 
 		const NLAIAGENT::CStringType *name = (const NLAIAGENT::CStringType *)_MethodName->get();
 
-		NLAIAGENT::tQueue a = o->isMember(NULL,&name->getStr(),*_Param);
+		NLAIAGENT::TQueue a = o->isMember(NULL,&name->getStr(),*_Param);
 		
 		if(a.size())
 		{			

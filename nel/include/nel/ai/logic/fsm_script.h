@@ -2,7 +2,7 @@
  *	
  *	Instances of finite state machines
  *
- * $Id: fsm_script.h,v 1.8 2001/06/22 13:50:32 portier Exp $
+ * $Id: fsm_script.h,v 1.9 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ namespace NLAIAGENT
 //			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
 			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
 
-			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
+			virtual TQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
 			virtual sint32 getMethodIndexSize() const;
 
 			void getFatherComponent(IVarName &);

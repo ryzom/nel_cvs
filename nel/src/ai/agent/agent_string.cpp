@@ -1,6 +1,6 @@
 /** \file agent_string.cpp
  *
- * $Id: agent_string.cpp,v 1.5 2002/11/05 14:07:50 chafik Exp $
+ * $Id: agent_string.cpp,v 1.6 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NLAIAGENT
 
 		if(_Map == NULL) 
 		{
-			_Map = new CIndexedVarName::tMapName;
+			_Map = new CIndexedVarName::TMapName;
 		}
 		
 		if(_TableName != NULL)
@@ -108,7 +108,7 @@ namespace NLAIAGENT
 				if(k)
 				{									
 					_TableName[i].load(is);
-					_Map->insert(tMapName::value_type(*_TableName[i].Name, &_TableName[i]));
+					_Map->insert(TMapName::value_type(*_TableName[i].Name, &_TableName[i]));
 				}
 				else
 				{
@@ -156,7 +156,7 @@ namespace NLAIAGENT
 
 	CIndexedVarName::CIndexedVarName(const CIndexedVarName &name)
 	{		
-		tMapName::iterator i = _Map->find(*_TableName[name.getIndex()].Name);		
+		TMapName::iterator i = _Map->find(*_TableName[name.getIndex()].Name);		
 		if(i != _Map->end())
 		{
 			_Index = name.getIndex();
@@ -191,7 +191,7 @@ namespace NLAIAGENT
 	{		
 		if(_TableName && !(--_TableName[_Index].Count) )
 		{
-			tMapName::iterator i = _Map->find(*_TableName[_Index].Name);
+			TMapName::iterator i = _Map->find(*_TableName[_Index].Name);
 			if(i != _Map->end()) 
 			{
 				_Map->erase(i);
@@ -205,7 +205,7 @@ namespace NLAIAGENT
 
 	void CIndexedVarName::insert(const CStringVarName &str)
 	{		
-		tMapName::iterator i = _Map->find(str);		
+		TMapName::iterator i = _Map->find(str);		
 		if(i != _Map->end())
 		{
 			_Index = (*i).second->Index;
@@ -215,7 +215,7 @@ namespace NLAIAGENT
 		{
 			_Index = newIndex();
 			_TableName[_Index].Name = (CStringVarName *)str.clone();
-			_Map->insert(tMapName::value_type(*_TableName[_Index].Name, &_TableName[_Index]));
+			_Map->insert(TMapName::value_type(*_TableName[_Index].Name, &_TableName[_Index]));
 		}
 	}
 

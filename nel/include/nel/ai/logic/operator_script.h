@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.32 2002/09/18 09:07:08 portier Exp $
+ * $Id: operator_script.h,v 1.33 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,9 +108,9 @@ namespace NLAIAGENT
 			virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
 			virtual IObjectIA::CProcessResult runMethodBase(int index,IObjectIA *);
 
-//			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
+//			virtual TQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
 
-			tQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+			TQueue getPrivateMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 			virtual sint32 getMethodIndexSize() const;
 			virtual int getBaseMethodCount() const;
 

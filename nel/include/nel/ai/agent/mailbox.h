@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.14 2003/01/20 16:14:46 chafik Exp $
+ * $Id: mailbox.h,v 1.15 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,8 +36,8 @@ namespace NLAIAGENT
 	class IMailBox:public IConnectIA
 	{
 	public:
-		typedef std::list<const IMessageBase *> tListMessage;
-		typedef std::list<IMailBox *> tListMailBox;
+		typedef std::list<const IMessageBase *> TListMessage;
+		typedef std::list<IMailBox *> TListMailBox;
 		
 	public:
 		
@@ -69,7 +69,7 @@ namespace NLAIAGENT
 		///test if buffer is empty.
 		virtual bool isEmpty() const = 0;				
 
-		virtual const tListMessage &getMesseageListe() const = 0;		
+		virtual const TListMessage &getMesseageListe() const = 0;		
 
 	};
 
@@ -89,17 +89,17 @@ namespace NLAIAGENT
 		public:
 			static const NLAIC::CIdentType IdLocalMailBox;
 		public:			
-			typedef std::list<const IMessageBase *>::iterator tListMessageIter;
-			typedef std::list<const IMessageBase *>::const_iterator tListMessageCstIter;
+			typedef std::list<const IMessageBase *>::iterator TListMessageIter;
+			typedef std::list<const IMessageBase *>::const_iterator TListMessageCstIter;
 			
-			typedef std::list<IMailBox *>::iterator tListMailBoxIter;
-			typedef std::list<IMailBox *>::const_iterator tListMailBoxCstIter;
+			typedef std::list<IMailBox *>::iterator TListMailBoxIter;
+			typedef std::list<IMailBox *>::const_iterator TListMailBoxCstIter;
 
 		private:						
 			IObjectIA::CProcessResult	_RunState;
-			tListMessage _ListMessageIn;
-			tListMessage _ListSharedMessage;
-			tListMailBox _ListMailBox;
+			TListMessage _ListMessageIn;
+			TListMessage _ListSharedMessage;
+			TListMailBox _ListMailBox;
 			sint _Size;
 			
 		public:
@@ -131,7 +131,7 @@ namespace NLAIAGENT
 			virtual void setState(TProcessStatement state, IObjectIA *result);			
 			virtual const IObjectIA::CProcessResult &run();
 			virtual void getDebugString(std::string &t) const;
-			virtual const tListMessage &getMesseageListe() const 
+			virtual const TListMessage &getMesseageListe() const 
 			{
 				return _ListMessageIn;
 			}

@@ -1,7 +1,7 @@
 /** \file interpret_object_list.h
  * Class for define list of class interpreted.
  *
- * $Id: interpret_object_list.h,v 1.5 2001/01/08 14:39:59 valignat Exp $
+ * $Id: interpret_object_list.h,v 1.6 2003/01/21 11:24:25 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -47,7 +47,7 @@ namespace NLAISCRIPT
 		///Find the class defined by a name.
 		IClassInterpret *find(const NLAIAGENT::IVarName *name)
 		{
-			tListType::const_iterator i = getList().begin();
+			TListType::const_iterator i = getList().begin();
 			while(i != getList().end())
 			{
 				IClassInterpret *o = (IClassInterpret *)*i++;

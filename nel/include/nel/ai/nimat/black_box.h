@@ -1,7 +1,7 @@
 /** \file black_box.h
  * An interface between an agent and a C++ component.
  *
- * $Id: black_box.h,v 1.3 2001/01/30 17:41:34 robert Exp $
+ * $Id: black_box.h,v 1.4 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 namespace NLAINIMAT
 {
-	typedef std::string tString;
-	typedef std::list<tString> tCommandList;
-	typedef std::map<tString,CIdentType > tParameterList;
+	typedef std::string TString;
+	typedef std::list<TString> TCommandList;
+	typedef std::map<TString,CIdentType > TParameterList;
 	/** An interface between an agent and a C++ component.
 	 *	An IBlackBox is an interface for any component which can be use in the built of an agent.
 	 *	It's like an electronique component which can be plug in an agent.
@@ -53,25 +53,25 @@ namespace NLAINIMAT
 		 *	Return the list of Inputs for command signal.
 		 *	It's a list of the differents pins which can be triggered when receiving an incoming event.
 		 */
-		virtual tCommandList getInputList() const = 0;
+		virtual TCommandList getInputList() const = 0;
 
 		/**
 		 *	Return the list of Outputs for command signal.
 		 *	It's a list of the differents pins which allows to send an event, to triggered anoter IBlackBox.
 		 */
-		virtual tCommandList getOutputList() const = 0;
+		virtual TCommandList getOutputList() const = 0;
 
 		/**
 		 *	Return the list of parameters used by the IBlackBox.
 		 *	It's the name and type of each parameters.
 		 */
-		virtual tParameterList getParamInList() const = 0;
+		virtual TParameterList getParamInList() const = 0;
 
 		/**
 		 *	Return the list of parameters returned by the IBlackBox.
 		 *	It's the name and type of each parameters.
 		 */
-		virtual tParameterList getParamOutList() const = 0;
+		virtual TParameterList getParamOutList() const = 0;
 		//@}
 
 
@@ -80,21 +80,21 @@ namespace NLAINIMAT
 		 */
 		//@{
 		/// Fix the value of an input signal.
-		virtual void setInput(tString inputName, bool) = 0;
+		virtual void setInput(TString inputName, bool) = 0;
 
 		/// Return the value of an output signal.
-		virtual bool getOutput(tString outputName) = 0;
+		virtual bool getOutput(TString outputName) = 0;
 
 		/// Set the value of an input parameter.
-		virtual void setParamIn(tString parameterName, IObjectIA val) = 0;
+		virtual void setParamIn(TString parameterName, IObjectIA val) = 0;
 
 		/// Get the value of an output parameter.
-		virtual const IObjectIA* getParamOut(tString parameterName) = 0;
+		virtual const IObjectIA* getParamOut(TString parameterName) = 0;
 
 		/**
 		 *	Return a list of the parameters which need to be updated.
 		 */
-		virtual tParameterList getNeededParamIn () const = 0;
+		virtual TParameterList getNeededParamIn () const = 0;
 		//@}
 	};
 }

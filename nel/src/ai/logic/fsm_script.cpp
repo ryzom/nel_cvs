@@ -183,13 +183,13 @@ namespace NLAIAGENT
 	}
 
 
-	tQueue CFsmScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
+	TQueue CFsmScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{		
 #ifdef NL_DEBUG
 		const char *dbg_func_name = name->getString();
 #endif
 
-		tQueue result = CAgentScript::isMember( className, name, param);
+		TQueue result = CAgentScript::isMember( className, name, param);
 
 		static NLAIAGENT::CStringVarName run_tell("RunTell");
 		static NLAIAGENT::CStringVarName get_active("getActive");

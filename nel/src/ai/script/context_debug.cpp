@@ -1,7 +1,7 @@
 /** \file context_debug.cpp
  * Debug informations in the context.
  *
- * $Id: context_debug.cpp,v 1.7 2001/05/22 16:08:16 chafik Exp $
+ * $Id: context_debug.cpp,v 1.8 2003/01/21 11:24:39 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,7 +129,7 @@ namespace NLAISCRIPT
 
 	void CContextDebug::addBreakPoint(uint16 line, const char* fileName)
 	{
-		std::map<mystring, uintSet>::iterator itu;
+		std::map<TMystring, TUintSet>::iterator itu;
 		std::set<uint16>::iterator it;
 		if ((itu = _BreakPointSet.find(fileName)) != _BreakPointSet.end())
 		{
@@ -146,7 +146,7 @@ namespace NLAISCRIPT
 
 	void CContextDebug::eraseBreakPoint(uint16 line, const char* fileName)
 	{
-		std::map<mystring, uintSet>::iterator itu;
+		std::map<TMystring, TUintSet>::iterator itu;
 		std::set<uint16>::iterator it;
 		if ((itu = _BreakPointSet.find(fileName)) != _BreakPointSet.end())
 		{
@@ -159,7 +159,7 @@ namespace NLAISCRIPT
 
 	bool CContextDebug::getBreakPointValue(uint16 line, const char* fileName) const
 	{
-		std::map<mystring, uintSet>::const_iterator itu;
+		std::map<TMystring, TUintSet>::const_iterator itu;
 		std::set<uint16>::iterator it;
 		if (   (itu = _BreakPointSet.find(fileName)) != _BreakPointSet.end()
 			&& (it = itu->second.find(line)) != itu->second.end() )
@@ -202,7 +202,7 @@ namespace NLAISCRIPT
 
 	void CContextDebug::printActiveBeaks(NLAIC::IIO *inputOutput) const
 	{
-		std::map<mystring, uintSet>::const_iterator itu = _BreakPointSet.begin();
+		std::map<TMystring, TUintSet>::const_iterator itu = _BreakPointSet.begin();
 		std::set<uint16>::iterator it;
 		while (itu != _BreakPointSet.end())
 		{

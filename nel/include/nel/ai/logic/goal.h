@@ -1,7 +1,7 @@
 /** \file goal.h
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.24 2002/09/16 13:49:39 portier Exp $
+ * $Id: goal.h,v 1.25 2003/01/21 11:24:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,7 +166,7 @@ namespace NLAILOGIC
 			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			const NLAIC::CIdentType &getType() const;
 
-			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p);
 			sint32 getMethodIndexSize() const;
@@ -222,7 +222,7 @@ namespace NLAILOGIC
 			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			const NLAIC::CIdentType &getType() const;
 
-			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual NLAIAGENT::TQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
 			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index, NLAIAGENT::IObjectIA *p);
 			sint32 getMethodIndexSize() const;

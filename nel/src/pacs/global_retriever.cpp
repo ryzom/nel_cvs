@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.93 2004/05/26 16:08:08 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.94 2004/07/12 14:10:13 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2668,6 +2668,6 @@ void	NLPACS::CGlobalRetriever::CLrLoader::getName (std::string &result) const
 
 
 //
-NLMISC_VARIABLE(uint, PacsRetrieveVerbose, "Allow retrieve position to dump info");
+NLMISC_CATEGORISED_VARIABLE(nel, uint, PacsRetrieveVerbose, "Allow retrieve position to dump info");
 
 // end of CGlobalRetriever methods implementation

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.69 2004/06/09 14:09:08 berenguier Exp $
+ * $Id: audio_mixer_user.cpp,v 1.70 2004/07/12 14:11:10 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1974,7 +1974,7 @@ void CAudioMixerUser::setListenerPos (const NLMISC::CVector &pos)
 	_BackgroundSoundManager->setListenerPosition(pos);
 }
 
-NLMISC_COMMAND (displaySoundInfo, "Display information about the audio mixer", "")
+NLMISC_CATEGORISED_COMMAND(nel, displaySoundInfo, "Display information about the audio mixer", "")
 {
 	if(args.size() != 0) return false;
 

@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.1 2003/04/14 12:13:47 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.2 2003/04/15 08:46:35 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -27,23 +27,18 @@
 // Includes
 //
 
-#include "stdmisc.h"
+#include "stdpch.h"
 
 #include <string>
 #include <vector>
 #include <map>
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/entity_id.h"
-#include "nel/misc/file.h"
-#include "nel/misc/command.h"
+#include <nel/misc/types_nl.h>
+#include <nel/misc/entity_id.h>
+#include <nel/misc/file.h>
+#include <nel/misc/command.h>
 
-#include "nel/misc/eid_translator.h"
-
-using namespace std;
-
-namespace	NLMISC
-{
+#include "eid_translator.h"
 
 //
 // Variables
@@ -65,7 +60,7 @@ CEntityIdTranslator *CEntityIdTranslator::getInstance ()
 	return Instance;
 }
 
-void CEntityIdTranslator::getByUser (uint32 uid, vector<NLMISC::CEntityId> &res)
+void CEntityIdTranslator::getByUser (uint32 uid, std::vector<NLMISC::CEntityId> &res)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -76,7 +71,7 @@ void CEntityIdTranslator::getByUser (uint32 uid, vector<NLMISC::CEntityId> &res)
 	}
 }
 
-void CEntityIdTranslator::getByUser (const string &userName, vector<NLMISC::CEntityId> &res)
+void CEntityIdTranslator::getByUser (const std::string &userName, std::vector<NLMISC::CEntityId> &res)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -87,7 +82,7 @@ void CEntityIdTranslator::getByUser (const string &userName, vector<NLMISC::CEnt
 	}
 }
 
-ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
+std::string CEntityIdTranslator::getByEntity (const NLMISC::CEntityId &eid)
 {
 	reit it = RegisteredEntities.find (eid);
 	if (it == RegisteredEntities.end ())
@@ -100,7 +95,7 @@ ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
 	}
 }
 
-NLMISC::CEntityId CEntityIdTranslator::getByEntity (const ucstring &entityName)
+NLMISC::CEntityId CEntityIdTranslator::getByEntity (const std::string &entityName)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -112,7 +107,7 @@ NLMISC::CEntityId CEntityIdTranslator::getByEntity (const ucstring &entityName)
 	return NLMISC::CEntityId::Unknown;
 }
 
-bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
+bool CEntityIdTranslator::entityNameExists (const std::string &entityName)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -124,44 +119,52 @@ bool CEntityIdTranslator::entityNameExists (const ucstring &entityName)
 	return false;
 }
 
-void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
+void CEntityIdTranslator::registerEntity (const NLMISC::CEntityId &eid, const std::string &entityName, uint32 uid, const std::string &userName)
 {
 	reit it = RegisteredEntities.find (eid);
 
 	nlassert(it == RegisteredEntities.end ());
 
-	RegisteredEntities.insert (make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName)));
+	RegisteredEntities.insert (std::make_pair(eid, CEntityIdTranslator::CEntity(entityName, uid, userName)));
 	nlinfo ("Registered %s with %s %d %s", eid.toString().c_str(), entityName.c_str(), uid, userName.c_str());
 
 	save ();
 }
 
-void CEntityIdTranslator::load (const string &fileName)
+void CEntityIdTranslator::load (const std::string &fileName)
 {
 	nlassert (!fileName.empty());
 	nlassert (FileName.empty());
 
 	FileName = fileName;
 
-	NLMISC::CIFile ifile (FileName);
+	NLMISC::CIFile ifile;
+	if( ifile.open(FileName) )
+	{
+		ifile.serialCont (RegisteredEntities);
 
-	ifile.serialCont (RegisteredEntities);
-
-	ifile.close ();
+		ifile.close ();
+	}
 }
 
 void CEntityIdTranslator::save ()
 {
-	nlassert (!FileName.empty());
+	if (FileName.empty())
+	{
+		nlwarning ("Can't save the eid translator file");
+		return;
+	}
 
-	NLMISC::CIFile ofile (FileName);
-	
-	ofile.serialCont (RegisteredEntities);
+	NLMISC::COFile ofile;
+	if( ofile.open(FileName) )
+	{
+		ofile.serialCont (RegisteredEntities);
 
-	ofile.close ();
+		ofile.close ();
+	}
 }
 
-uint32 CEntityIdTranslator::getUId (const string &userName)
+uint32 CEntityIdTranslator::getUId (const std::string &userName)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -173,7 +176,7 @@ uint32 CEntityIdTranslator::getUId (const string &userName)
 	return 0;
 }
 
-string CEntityIdTranslator::getUserName (uint32 uid)
+std::string CEntityIdTranslator::getUserName (uint32 uid)
 {
 	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
@@ -185,7 +188,7 @@ string CEntityIdTranslator::getUserName (uint32 uid)
 	return 0;
 }
 
-void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entityName, uint32 &uid, string &userName)
+void CEntityIdTranslator::getEntityIdInfo (const NLMISC::CEntityId &eid, std::string &entityName, uint32 &uid, std::string &userName)
 {
 	reit it = RegisteredEntities.find (eid);
 	if (it == RegisteredEntities.end ())
@@ -208,9 +211,9 @@ NLMISC_COMMAND(findEIdByUser,"Find entity ids using the user name","<username>|<
 	if (args.size () != 1)
 		return false;
 
-	vector<NLMISC::CEntityId> res;
+	std::vector<NLMISC::CEntityId> res;
 
-	string userName = args[0];
+	std::string userName = args[0];
 	uint32 uid = atoi (userName.c_str());
 
 	if (uid != 0)
@@ -251,9 +254,9 @@ NLMISC_COMMAND(findEIdByEntity,"Find entity id using the entity name","<entityna
 		return false;
 	}
 
-	ucstring entityName;
+	std::string entityName;
 	uint32 uid;
-	string userName;
+	std::string userName;
 
 	CEntityIdTranslator::getInstance()->getEntityIdInfo(eid, entityName, uid, userName);
 
@@ -262,20 +265,3 @@ NLMISC_COMMAND(findEIdByEntity,"Find entity id using the entity name","<entityna
 	return true;
 }
 
-NLMISC_COMMAND(registerEId,"Only for debug","<en><uid><un>")
-{
-	if (args.size () != 3)
-		return false;
-
-	NLMISC::CEntityId eid (rand(), rand(), rand(), rand());
-	string entityName(args[0]);
-	uint32 uid = atoi(args[1].c_str());
-	string userName(args[2]);
-
-	CEntityIdTranslator::getInstance()->registerEntity (eid, entityName, uid, userName);
-
-	return true;
-}
-
-
-}

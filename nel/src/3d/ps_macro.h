@@ -1,7 +1,7 @@
 /** \file ps_macro.h
  * Some macros used by the particle systems for rendering.
  *
- * $Id: ps_macro.h,v 1.1 2002/02/15 17:07:21 vizerie Exp $
+ * $Id: ps_macro.h,v 1.2 2002/02/28 13:06:02 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #ifndef NL_PS_MACRO_H
 #define NL_PS_MACRO_H
+
+#include "nel/misc/types_nl.h"
 
 /// this macro is used to see whether a write in a vertex buffer is correct
 #ifdef NL_DEBUG

@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.7 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: portal.cpp,v 1.8 2003/01/08 15:47:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/portal.h"
+#include "nel/misc/string_mapper.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/polygon.h"
@@ -47,7 +48,35 @@ CPortal::CPortal()
 {
 	_Clusters[0] = _Clusters[1] = NULL;
 	_Opened = true;
+	_OcclusionModelId = CStringMapper::map("no occlusion");
+	_OpenOcclusionModelId = CStringMapper::map("no occlusion");
 }
+
+void CPortal::setOcclusionModel(const std::string &occlusionModel)
+{
+	_OcclusionModelId = CStringMapper::map(occlusionModel);
+}
+const std::string	&CPortal::getOcclusionModel()
+{
+	return CStringMapper::unmap(_OcclusionModelId);
+}
+uint CPortal::getOcclusionModelId()
+{
+	return _OcclusionModelId;
+}
+void CPortal::setOpenOcclusionModel(const std::string &occlusionModel)
+{
+	_OpenOcclusionModelId = CStringMapper::map(occlusionModel);
+}
+const std::string	&CPortal::getOpenOcclusionModel()
+{
+	return CStringMapper::unmap(_OpenOcclusionModelId);
+}
+uint CPortal::getOpenOcclusionModelId()
+{
+	return _OpenOcclusionModelId;
+}
+
 
 // ***************************************************************************
 bool CPortal::clipPyramid (CVector &observer, std::vector<CPlane> &pyramid)
@@ -183,12 +212,40 @@ void CPortal::getPoly(std::vector<NLMISC::CVector> &dest) const
 // ***************************************************************************
 void CPortal::serial (NLMISC::IStream& f)
 {
-	(void)f.serialVersion (0);
+	int version = f.serialVersion (1);
 
 	f.serialCont (_LocalPoly);
 	if (f.isReading())
 		_Poly = _LocalPoly;
 	f.serial (_Name);
+
+	if (version >= 1)
+	{
+		if (f.isReading())
+		{
+			std::string occName;
+			f.serial(occName);
+			if (occName.empty())
+				occName = "no occlusion";
+			_OcclusionModelId = CStringMapper::map(occName);
+
+			f.serial(occName);
+			if (occName.empty())
+				occName = "no occlusion";
+			_OpenOcclusionModelId = CStringMapper::map(occName);
+		}
+		else
+		{
+			std::string occName = CStringMapper::unmap(_OcclusionModelId);
+			if (occName == "no occlusion")
+				occName = "";
+			f.serial(occName);
+			occName = CStringMapper::unmap(_OpenOcclusionModelId);
+			if (occName == "no occlusion")
+				occName = "";
+			f.serial(occName);
+		}
+	}
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file portal.h
  * Definition of a cluster/portal visibility
  *
- * $Id: portal.h,v 1.3 2002/06/04 14:49:48 vizerie Exp $
+ * $Id: portal.h,v 1.4 2003/01/08 15:47:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,7 @@ public:
 
 	/// get this cluster poly in local coordinates
 	void getPoly (std::vector<NLMISC::CVector> &dest) const;
+	const std::vector<NLMISC::CVector> &getPoly()		{return _LocalPoly;}
 
 	/// Serial
 	void serial (NLMISC::IStream& f);
@@ -101,6 +102,16 @@ public:
 	void open (bool opened) { _Opened = opened; }
 	bool isOpened () { return _Opened; }
 
+	//\name Sound related
+	//@{
+	void				setOcclusionModel(const std::string &occlusionModel);
+	const std::string	&getOcclusionModel();
+	uint				getOcclusionModelId();
+	void				setOpenOcclusionModel(const std::string &occlusionModel);
+	const std::string	&getOpenOcclusionModel();
+	uint				getOpenOcclusionModelId();
+	//@}
+
 private:
 
 	CCluster* _Clusters[2];
@@ -110,6 +121,12 @@ private:
 
 	std::vector<NLMISC::CVector> _LocalPoly;
 	std::vector<NLMISC::CVector> _Poly;
+
+//	std::string		_OcclusionModel;
+//	std::string		_OpenOcclusionModel;
+	uint		_OcclusionModelId;
+	uint		_OpenOcclusionModelId;
+
 
 	/// Friend class
 	friend class CInstanceGroup;

@@ -1,7 +1,7 @@
 /** \file cluster.h
  * Definition of a cluster/portal visibility
  *
- * $Id: cluster.h,v 1.6 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: cluster.h,v 1.7 2003/01/08 15:47:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 	 * All the faces passed must be connected with at least one of the others
 	 * return false if the plane we want to add make the volume concave
 	 */
-	bool makeVolume (NLMISC::CVector& p1, NLMISC::CVector& p2, NLMISC::CVector& p3);
+	bool makeVolume (const NLMISC::CVector& p1, const NLMISC::CVector& p2, const NLMISC::CVector& p3);
 	
 	
 	/// Apply the given matrix to this cluster local / world volume & bbox
@@ -86,17 +86,17 @@ public:
 	/**
 	 * return true if the vertex is in the cluster volume
 	 */
-	bool isIn (NLMISC::CVector& p);
+	bool isIn (const NLMISC::CVector& p);
 
 	/**
 	 * return true if the Bounding box intersect the cluster
 	 */
-	bool isIn (NLMISC::CAABBox& b);
+	bool isIn (const NLMISC::CAABBox& b);
 
 	/**
 	 * return true if the Sphere intersect the cluster
 	 */
-	bool isIn (NLMISC::CVector& center, float size);
+	bool isIn (const NLMISC::CVector& center, float size);
 
 	NLMISC::CAABBox& getBBox() { return _BBox; }
 	
@@ -132,6 +132,14 @@ public:
 
 	bool isRoot() { return _LocalVolume.size() == 0; }
 
+	//\name Sound related.
+	//@{
+	void				setSoundGroup(const std::string &soundGroup);
+	const std::string	&getSoundGroup();
+	void				setEnvironmentFx(const std::string &environmentFx);
+	const std::string	&getEnvironmentFx();
+	uint				getEnvironmentFxId();
+	//@}
 	
 private:
 
@@ -157,6 +165,14 @@ private:
 	NLMISC::CAABBox _BBox;
 	/// All planes are oriented to the exterior of the volume
 	std::vector<NLMISC::CPlane> _Volume;
+
+	/// Sound group
+	std::string		_SoundGroup;
+	/// Environment Fx name
+///	std::string		_EnvironmentFx;
+	/// Environement Fx name Id (using CStringMapper)
+	uint			_EnvironmentFxId;
+
 private:
 	// This unlink this cluster from its sons and its parents
 	void	unlinkFromClusterTree();

@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.27 2002/11/14 12:55:01 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.28 2003/01/08 15:47:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,7 @@ IObs* CClipTrav::createDefaultObs() const
 }
 
 // ***************************************************************************
-bool CClipTrav::fullSearch (vector<CCluster*>& result, CInstanceGroup *pIG, CVector& pos)
+bool CClipTrav::fullSearch (vector<CCluster*>& result, CInstanceGroup *pIG, const CVector& pos)
 {
 	uint32 i, j;
 
@@ -103,6 +103,30 @@ bool CClipTrav::fullSearch (vector<CCluster*>& result, CInstanceGroup *pIG, CVec
 		return true;
 	return false;
 }
+
+/// Set cluster tracking on/off (ie storage of thje visible cluster during clip traversal)
+void CClipTrav::setClusterVisibilityTracking(bool track)
+{
+	_TrackClusterVisibility = track;
+}
+/// Check the activation of cluster visibility tracking.
+bool CClipTrav::getClusterVisibilityTracking()
+{
+	return _TrackClusterVisibility;
+}
+/// Add a visible cluster to the list
+void CClipTrav::addVisibleCluster(CCluster *cluster)
+{
+	_VisibleClusters.push_back(cluster);
+}
+/** Return the list of cluster visible after the clip traversal
+ *	You must activate the cluster tracking to obtain a result.
+*/
+const std::vector<CCluster*> &CClipTrav::getVisibleClusters()
+{
+	return _VisibleClusters;
+}
+
 
 // ***************************************************************************
 void CClipTrav::traverse()
@@ -180,6 +204,8 @@ void CClipTrav::traverse()
 	}
 	// Clear The visible List.
 	_VisibleList.clear();
+	// Clear the visible cluster list.
+	_VisibleClusters.clear();
 
 
 	// Found where is the camera

@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.14 2002/11/14 12:55:01 berenguier Exp $
+ * $Id: clip_trav.h,v 1.15 2003/01/08 15:47:43 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,9 +115,6 @@ public:
 	void setRenderTrav (CRenderTrav* trav);
 	void setQuadGridClipManager(CQuadGridClipManager *mgr);
 
-
-	bool fullSearch (std::vector<CCluster*>& result, CInstanceGroup *pIG, CVector& pos);
-
 	/// \name Visible List mgt. Those visible observers are updated each traverse(). Only support Transform Type obs.
 	//@{
 	// For ClipObservers only. NB: list is cleared at begining of traverse().
@@ -126,6 +123,28 @@ public:
 
 
 	void				setSonsOfAncestorSkeletonModelGroup(CRootModel *m);
+
+	/// \name Cluster system related methods.
+	//@{
+	/** Retreive a list of cluster for witch the position is inside.
+	*/
+	bool fullSearch (std::vector<CCluster*>& result, CInstanceGroup *pIG, const CVector& pos);
+
+	/// Set cluster tracking on/off (ie storage of thje visible cluster during clip traversal)
+	void setClusterVisibilityTracking(bool track);
+	/// Check the activation of cluster visibility tracking.
+	bool getClusterVisibilityTracking();
+	/// Add a visible cluster to the list
+	void addVisibleCluster(CCluster *cluster);
+	/** Return the list of cluster visible after the clip traversal
+	 *	You must activate the cluster tracking to obtain a result.
+	*/
+	const std::vector<CCluster*> &getVisibleClusters();
+
+	bool						_TrackClusterVisibility;
+	std::vector<CCluster*>		_VisibleClusters;
+	//@}
+
 
 public:
 

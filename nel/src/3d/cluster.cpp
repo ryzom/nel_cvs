@@ -1,7 +1,7 @@
 /** \file cluster.cpp
  * Implementation of a cluster
  *
- * $Id: cluster.cpp,v 1.10 2002/06/26 16:48:58 berenguier Exp $
+ * $Id: cluster.cpp,v 1.11 2003/01/08 15:47:43 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/cluster.h"
 #include "3d/portal.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/string_mapper.h"
 #include "3d/scene.h"
 #include "3d/transform_shape.h"
 #include "3d/mesh_instance.h"
@@ -49,6 +50,9 @@ CCluster::CCluster ()
 	_Obs = NULL;
 	FatherVisible = VisibleFromFather = false;
 	Father = NULL;
+
+	// map a no fx string
+	_EnvironmentFxId = CStringMapper::map("no fx");
 }
 
 
@@ -57,6 +61,30 @@ CCluster::~CCluster()
 {
 	unlinkFromClusterTree();
 }
+
+
+void CCluster::setSoundGroup(const std::string &soundGroup)
+{
+	_SoundGroup = soundGroup;
+}
+const std::string &CCluster::getSoundGroup()
+{
+	return _SoundGroup;
+}
+void CCluster::setEnvironmentFx(const std::string &environmentFx)
+{
+	_EnvironmentFxId = CStringMapper::map(environmentFx);
+}
+const std::string	&CCluster::getEnvironmentFx()
+{
+	return CStringMapper::unmap(_EnvironmentFxId);
+}
+
+uint CCluster::getEnvironmentFxId()
+{
+	return _EnvironmentFxId;
+}
+
 
 
 // ***************************************************************************
@@ -104,7 +132,7 @@ void CCluster::registerBasic ()
 }
 
 // ***************************************************************************
-bool CCluster::makeVolume (CVector& p1, CVector& p2, CVector& p3)
+bool CCluster::makeVolume (const CVector& p1, const CVector& p2, const CVector& p3)
 {
 	uint i;
 	// Check if the plane is not close to a plane that already define the cluster
@@ -143,7 +171,7 @@ bool CCluster::makeVolume (CVector& p1, CVector& p2, CVector& p3)
 }
 
 // ***************************************************************************
-bool CCluster::isIn (CVector& p)
+bool CCluster::isIn (const CVector& p)
 {
 	for (uint i = 0; i < _Volume.size(); ++i)
 		if (_Volume[i]*p > CLUSTERPRECISION)
@@ -153,7 +181,7 @@ bool CCluster::isIn (CVector& p)
 
 
 // ***************************************************************************
-bool CCluster::isIn (CAABBox& b)
+bool CCluster::isIn (const CAABBox& b)
 {
 	for (uint i = 0; i < _Volume.size(); ++i)
 	{
@@ -164,7 +192,7 @@ bool CCluster::isIn (CAABBox& b)
 }
 
 // ***************************************************************************
-bool CCluster::isIn (NLMISC::CVector& center, float size)
+bool CCluster::isIn (const NLMISC::CVector& center, float size)
 {
 	for (uint i = 0; i < _Volume.size(); ++i)
 		if (_Volume[i]*center > size)
@@ -200,7 +228,7 @@ void CCluster::unlink (CPortal* portal)
 // ***************************************************************************
 void CCluster::serial (IStream&f)
 {
-	sint version = f.serialVersion (1);
+	sint version = f.serialVersion (2);
 
 	if (version >= 1)
 		f.serial (Name);
@@ -213,6 +241,31 @@ void CCluster::serial (IStream&f)
 	{
 		_Volume = _LocalVolume;
 		_BBox = _LocalBBox;
+	}
+
+	if (version >= 2)
+	{
+		f.serial(_SoundGroup);
+
+		std::string envFxName;
+		if (f.isReading())
+		{
+			std::string envFxName;
+			f.serial(envFxName);
+			if (envFxName == "")
+				envFxName = "no fx";
+			_EnvironmentFxId = CStringMapper::map(envFxName);
+		}
+		else
+		{
+			// write the enf fx name
+			std::string envFxName = CStringMapper::unmap(_EnvironmentFxId);
+			if (envFxName == "no fx")
+				envFxName = "";
+			f.serial(envFxName);
+		}
+		
+		nldebug("Cluster %s, sound [%s]", Name.c_str(), _SoundGroup.c_str());
 	}
 }
 
@@ -336,6 +389,12 @@ void CClusterClipObs::traverse (IObs *caller)
 	// The cluster is visible because we are in it
 	// So clip the models attached (with MOT links) to the cluster
 	traverseSons();
+
+	CClipTrav *trav = static_cast<CClipTrav*>(caller->Trav);
+	if (trav->getClusterVisibilityTracking())
+	{
+		trav->addVisibleCluster(static_cast<CCluster*>(this->Model));
+	}
 
 	// And look through portals
 	CCluster *pCluster = static_cast<CCluster*>(this->Model);

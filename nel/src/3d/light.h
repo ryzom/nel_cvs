@@ -1,7 +1,7 @@
 /** \file light.h
  * CLight definition
  *
- * $Id: light.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: light.h,v 1.2 2001/10/25 08:17:57 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ namespace NL3D
  * To use this light you must initialize the MODE (setMode), the COLORS and the 3 ATTENUATION FACTORS.
  * If the mode is spotlight or pointlight, you must initialize the POSITION.
  * If the mode is spotlight or directionallight, you must initialize the DIRECTION.
- * It the mode is spotlight, you must intialize the EXPONENT and the CUTOFF.
+ * If the mode is spotlight, you must intialize the EXPONENT and the CUTOFF.
  *
  * To do so, you can use one of the three methods: setupDirectional, setupPointLight, setupSpotLight or
  * use the specifics methods.

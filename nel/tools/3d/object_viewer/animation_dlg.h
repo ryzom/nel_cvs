@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * <File description>
  *
- * $Id: animation_dlg.h,v 1.5 2001/06/19 08:14:31 corvazier Exp $
+ * $Id: animation_dlg.h,v 1.6 2001/07/24 09:07:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ class CAnimationDlg : public CDialog
 {
 // Construction
 public:
-	CAnimationDlg(class CObjectViewer* main, CWnd* pParent = NULL);   // standard constructor
+	CAnimationDlg(class CObjectViewer * main, CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CAnimationDlg)

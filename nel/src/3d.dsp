@@ -1494,6 +1494,14 @@ SOURCE=.\3d\particle_system.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\particle_system_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\particle_system_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\particle_system_process.cpp
 # End Source File
 # Begin Source File

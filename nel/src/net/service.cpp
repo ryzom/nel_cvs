@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.137 2002/07/25 13:34:48 lecroart Exp $
+ * $Id: service.cpp,v 1.138 2002/07/29 17:15:08 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -906,6 +906,25 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 
 		//
+		// Add default pathes
+		//
+
+		if ((var = ConfigFile.getVarPtr ("Paths")) != NULL)
+		{
+			for (sint i = 0; i < var->size(); i++)
+			{
+				CPath::addSearchPath (var->asString(i), true, false);
+			}
+		}
+
+		// if we can, try to setup where to write files
+		if ((var = ConfigFile.getVarPtr ("WriteFilesDirectory")) != NULL)
+		{
+			WriteFilesDirectory = CPath::standardizePath(var->asString());
+		}
+
+
+		//
 		// Call the user service init
 		//
 
@@ -967,19 +986,6 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 				// send the ready message (service init finished)
 				CMessage msgout (CNetManager::getSIDA ("AES"), "SR");
 				CNetManager::send ("AES", msgout);
-			}
-		}
-
-
-		//
-		// Add default pathes
-		//
-
-		if ((var = ConfigFile.getVarPtr ("Paths")) != NULL)
-		{
-			for (sint i = 0; i < var->size(); i++)
-			{
-				CPath::addSearchPath (var->asString(i));
 			}
 		}
 

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.54 2002/07/26 08:48:01 coutelas Exp $
+ * $Id: service.h,v 1.55 2002/07/29 17:14:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -326,6 +326,9 @@ public:
 
 	/// The window displayer instance
 	NLMISC::CWindowDisplayer			*WindowDisplayer;
+
+	/// Directory where to store files that the services will write (for example, packet_sheets)
+	std::string							WriteFilesDirectory;
 
 private:
 

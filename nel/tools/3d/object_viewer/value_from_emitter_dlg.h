@@ -1,7 +1,7 @@
 /** \file value_from_emitter_dlg.h
  * Dialog used to tune particle attributes that are computed from their emitter
  *
- * $Id: value_from_emitter_dlg.h,v 1.5 2001/12/18 18:41:25 vizerie Exp $
+ * $Id: value_from_emitter_dlg.h,v 1.6 2004/06/17 07:59:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,15 +82,13 @@ protected:
   */
 template <class T> class CValueFromEmitterDlgT : public CValueFromEmitterDlg
 {
-public:	
-	
+public:		
 	CValueFromEmitterDlgT(NL3D::CPSAttribMakerMemory<T> *editedScheme, CAttribDlgT<T> *srcDlg, IPopupNotify *pn, HBITMAP bitmapToDisplay)
 		: CValueFromEmitterDlg(pn), _BitmapToDisplay(bitmapToDisplay), _AttrbDlg(srcDlg)
 	{
 		nlassert(srcDlg);
 		_SchemeWrapper.S = editedScheme ;
-	}
-	
+	}	
 	// inherited from CValueFromEmitterDlg
 	void init(CWnd *pParent)
 	{

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.31 2003/01/03 17:42:47 coutelas Exp $
+ * $Id: admin_executor_service.cpp,v 1.32 2003/01/08 18:05:33 lecroart Exp $
  *
  */
 
@@ -25,15 +25,15 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#	include "config.h"
 #endif // HAVE_CONFIG_H
 
 #ifndef NELNS_CONFIG
-#define NELNS_CONFIG ""
+#	define NELNS_CONFIG ""
 #endif // NELNS_CONFIG
 
 #ifndef NELNS_LOGS
-#define NELNS_LOGS ""
+#	define NELNS_LOGS ""
 #endif // NELNS_LOGS
 
 #include "nel/misc/types_nl.h"
@@ -42,13 +42,13 @@
 #include <sys/stat.h>
 
 #ifdef NL_OS_WINDOWS
-#include <windows.h>
-#include <direct.h>
+#	include <windows.h>
+#	include <direct.h>
 #else
-#include <unistd.h>
-#include <sys/types.h>
-#include <signal.h>
-#include <errno.h>
+#	include <unistd.h>
+#	include <sys/types.h>
+#	include <signal.h>
+#	include <errno.h>
 #endif
 
 #include <string>
@@ -59,11 +59,14 @@
 #include "nel/misc/config_file.h"
 #include "nel/misc/thread.h"
 #include "nel/misc/command.h"
+#include "nel/misc/common.h"
 #include "nel/misc/path.h"
 
 #include "nel/net/service.h"
 #include "nel/net/unified_network.h"
 #include "nel/net/varpath.h"
+#include "nel/net/email.h"
+#include "nel/net/alarms.h"
 
 //
 // Namespaces
@@ -171,10 +174,52 @@ const uint32 RequestTimeout = 5;	// in second
 
 vector<pair<uint32, string> > WaitingToLaunchServices;	// date and alias name
 
+vector<string> AdminAlarms;	// contains *all* alarms
+
+
+//
+// Alarms
+//
+
+void sendAlarms (uint16 sid)
+{
+	// now send alarms to all services
+	CMessage msgout ("ALARMS");
+	msgout.serialCont(AdminAlarms);
+	for (uint j = 0; j < Services.size(); j++)
+	{
+		if (Services[j].ServiceId == sid && Services[j].Connected)
+		{
+			CUnifiedNetwork::getInstance ()->send (Services[j].ServiceId, msgout);
+		}
+	}
+}
+
 
 //
 // Launch services functions
 //
+
+void sendAdminEmail (const char *format, ...)
+{
+	char *text;
+	NLMISC_CONVERT_VARGS (text, format, 4096);
+	
+	CMessage msgout("ADMIN_EMAIL");
+	string str = text;
+	msgout.serial (str);
+	CUnifiedNetwork::getInstance ()->send ("AS", msgout);
+
+	nlinfo ("Forwarded email to AS with '%s'", text);
+}
+
+static void cbAdminEmail (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	string str;
+	msgin.serial(str);
+	sendAdminEmail (str.c_str());
+}
+
 
 // decode a service in a form 'alias/shortname-sid'
 void decodeService (const string &name, string &alias, string &shortName, uint16 &sid)
@@ -1084,6 +1129,25 @@ static void cbRegisteredServices (CMessage &msgin, const std::string &serviceNam
 	msgin.serialCont (RegisteredServices);
 }
 
+static void cbAlarms (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	// receive the list of all alarms
+	msgin.serialCont (AdminAlarms);
+	nlinfo ("Updating alarms and send to all services");
+
+	// set our own alarms for this service
+	setAlarms (AdminAlarms);
+
+	// now send alarms to all services
+	for (uint j = 0; j < Services.size(); j++)
+	{
+		if (Services[j].Connected)
+		{
+			sendAlarms (Services[j].ServiceId);
+		}
+	}
+}	
+
 static void cbRejected (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// receive a message that mean that the AS doesn't want me
@@ -1169,6 +1233,8 @@ void serviceConnection (const std::string &serviceName, uint16 sid, void *arg)
 
 	Services[sid].init (serviceName, sid);
 
+	sendAlarms (sid);
+
 	nlinfo ("%s-%hu connected", Services[sid].ShortName.c_str (), Services[sid].ServiceId);
 
 }
@@ -1209,6 +1275,8 @@ void serviceDisconnection (const std::string &serviceName, uint16 sid, void *arg
 			startService (CTime::getSecondsSince1970()+delay, Services[sid].AliasName);
 		else
 			nlinfo ("Don't restart the service because RestartDelay is %d", delay);
+
+		sendAdminEmail ("Server %s service %s/%s-%hu : Stopped, auto reconnect in %d seconds", Services[sid].AliasName.c_str(), Services[sid].ShortName.c_str (), Services[sid].ServiceId, CInetAddress::localHost().hostName().c_str(), delay);
 	}
 
 	Services[sid].reset();
@@ -1217,7 +1285,7 @@ void serviceDisconnection (const std::string &serviceName, uint16 sid, void *arg
 
 /** Callback Array
  */
-TUnifiedCallbackItem CallbackArray[] =
+static TUnifiedCallbackItem CallbackArray[] =
 {
 	{ "SID", cbServiceIdentification },
 	{ "SR", cbServiceReady },
@@ -1227,8 +1295,16 @@ TUnifiedCallbackItem CallbackArray[] =
 	{ "VIEW", cbView },
 
 	{ "REGISTERED_SERVICES", cbRegisteredServices },
-
+	
 	{ "REJECTED", cbRejected },
+	{ "ADMIN_EMAIL", cbAdminEmail },
+	
+};
+
+// don't mix because we have to add this callbackarray IN the init()
+static TUnifiedCallbackItem AlarmCallbackArray[] =
+{
+	{ "ALARMS", cbAlarms },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1392,7 +1468,7 @@ public:
 
 	/// Init the service
 	void		init ()
-	{		
+	{
 		// be warn when a new service comes
 		CUnifiedNetwork::getInstance()->setServiceUpCallback ("*", serviceConnection, NULL);
 		CUnifiedNetwork::getInstance()->setServiceDownCallback ("*", serviceDisconnection, NULL);
@@ -1400,7 +1476,8 @@ public:
 		// add connection to the admin service
 		CUnifiedNetwork::getInstance()->setServiceUpCallback ("AS", ASConnection, NULL);
 		CUnifiedNetwork::getInstance()->setServiceDownCallback ("AS", ASDisconnection, NULL);
-		//CUnifiedNetwork::getInstance()->addCallbackArray (ASCallbackArray, sizeof(ASCallbackArray)/sizeof(ASCallbackArray[0]));
+		
+		CUnifiedNetwork::getInstance()->addCallbackArray (AlarmCallbackArray, sizeof(AlarmCallbackArray)/sizeof(AlarmCallbackArray[0]));
 
 		string ASHost = ConfigFile.getVar ("ASHost").asString ();
 		if (ASHost.find (":") == string::npos)
@@ -1471,6 +1548,21 @@ NLMISC_COMMAND (displayRequests, "display all pending requests", "")
 
 	return true;
 }
+
+NLMISC_COMMAND (sendAdminEmail, "Send an email to admin", "<text>")
+{
+	if(args.size() <= 0)
+		return false;
+	
+	string text;
+	for (uint i =0; i < args.size(); i++)
+	{
+		text += args[i]+" ";
+	}
+	sendAdminEmail(text.c_str());
+}
+
+
 
 #ifdef NL_OS_UNIX
 

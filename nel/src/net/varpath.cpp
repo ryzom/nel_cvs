@@ -1,7 +1,7 @@
 /** \file varpath.cpp
  * use to manage variable path (ie: [serv1,serv2].*.*.var)
  *
- * $Id: varpath.cpp,v 1.3 2002/12/11 08:36:28 lecroart Exp $
+ * $Id: varpath.cpp,v 1.4 2003/01/08 18:06:28 lecroart Exp $
  *
  */
 
@@ -88,7 +88,7 @@ string CVarPath::getToken ()
 	case '.': case '*': case '[': case ']': case ',': case '=': break;
 	default :
 		{
-			while (TokenPos < RawVarPath.size() && RawVarPath[TokenPos] != '.' && RawVarPath[TokenPos] != '*' && RawVarPath[TokenPos] != '[' && RawVarPath[TokenPos] != ']' && RawVarPath[TokenPos] != ',' && RawVarPath[TokenPos] != '=')
+			while (TokenPos < RawVarPath.size() && RawVarPath[TokenPos] != '.' && RawVarPath[TokenPos] != '[' && RawVarPath[TokenPos] != ']' && RawVarPath[TokenPos] != ',' && RawVarPath[TokenPos] != '=')
 			{
 				res += RawVarPath[TokenPos++];
 			}

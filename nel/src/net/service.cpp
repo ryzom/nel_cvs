@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.156 2003/01/03 16:45:09 coutelas Exp $
+ * $Id: service.cpp,v 1.157 2003/01/08 18:06:28 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -27,23 +27,19 @@
 
 #include "stdnet.h"
 
-#ifdef NL_OS_WINDOWS
-
 //
 // Includes
 //
 
+#ifdef NL_OS_WINDOWS
 // these defines is for IsDebuggerPresent(). it'll not compile on windows 95
 // just comment this and the IsDebuggerPresent to compile on windows 95
 #	define _WIN32_WINDOWS	0x0410
 #	define WINVER			0x0400
 #	include <windows.h>
 #	include <direct.h>
-
 #elif defined NL_OS_UNIX
-
 #	include <unistd.h>
-
 #endif
 
 #include <stdlib.h>
@@ -67,6 +63,7 @@
 #include "nel/net/net_displayer.h"
 #include "nel/net/email.h"
 #include "nel/net/varpath.h"
+#include "nel/net/alarms.h"
 
 #include "nel/memory/memory_manager.h"
 
@@ -74,12 +71,11 @@
 
 
 //
-// Namespace
+// Namespaces
 //
 
 using namespace std;
 using namespace NLMISC;
-
 
 namespace NLNET
 {
@@ -1171,6 +1167,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		CUnifiedNetwork::getInstance()->connect();
 
+		initAlarms ();
 
 		//
 		// Say to the AES that the service is ready
@@ -1251,6 +1248,8 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 			}
 	
 			CConfigFile::checkConfigFiles ();
+	
+			updateAlarms ();
 
 			CFile::checkFileChange();
 

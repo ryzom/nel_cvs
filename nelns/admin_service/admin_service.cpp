@@ -3,7 +3,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.21 2002/12/23 14:46:57 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.22 2003/01/08 18:05:58 lecroart Exp $
  *
  */
 
@@ -51,6 +51,7 @@
 
 #include "nel/net/service.h"
 #include "nel/net/varpath.h"
+#include "nel/net/email.h"
 
 #include "connection_web.h"
 
@@ -208,6 +209,80 @@ MYSQL *DatabaseConnection = NULL;
 
 vector<CRequest> Requests;
 
+uint32 AdminEmailAccumlationTime = 5;
+
+//
+// Admin functions
+//
+
+string Email;
+uint32 FirstEmailTime = 0;
+
+void sendAdminEmail (const char *format, ...)
+{
+	char *text;
+	NLMISC_CONVERT_VARGS (text, format, 4096);
+
+	if(Email.empty() && FirstEmailTime == 0)
+	{
+		Email += text;
+		FirstEmailTime = CTime::getSecondsSince1970();
+	}
+	else
+	{
+		Email += "\n";
+		Email += text;
+	}
+	nlinfo ("pushing email into queue: %s", text);
+}
+
+void updateSendAdminEmail ()
+{
+	if(!Email.empty() && FirstEmailTime != 0 && CTime::getSecondsSince1970() > FirstEmailTime + AdminEmailAccumlationTime)
+	{
+		vector<string> admins;
+		explode (IService::getInstance()->ConfigFile.getVar("AdminEmail").asString(), ";", admins, true);
+		
+		vector<string> lines;
+		explode (Email, "\n", lines, true);
+		string subject;
+		if (!lines.empty())
+		{
+			if (lines.size() == 1)
+			{
+				subject = lines[0];
+			}
+			else
+			{
+				subject = "Multiple problems";
+			}
+		
+			for (uint i = 0; i < admins.size(); i++)
+			{
+				if (!sendEmail ("", CInetAddress::localHost().hostName()+"@admin.org", admins[i], subject, Email))
+				{
+					nlwarning ("Can't send email to '%s'", admins[i].c_str());
+				}
+				else
+				{
+					nlinfo ("Sent email to admin %s the subject: %s", admins[i].c_str(), subject.c_str());
+				}
+			}
+		}
+
+		Email = "";
+		FirstEmailTime = 0;
+	}
+}
+
+
+static void cbAdminEmail (CMessage &msgin, const std::string &serviceName, uint16 sid)
+{
+	string str;
+	msgin.serial(str);
+	sendAdminEmail (str.c_str());
+}
+	
 //
 // Request functions
 //
@@ -875,6 +950,31 @@ void sendHostedServices (uint16 sid)
 	CUnifiedNetwork::getInstance ()->send (sid, msgout);
 }
 
+// send alarms for this service
+void sendAlarms (uint16 sid)
+{
+	AESIT aesit = findAES (sid);
+	
+	vector<string> alarms;
+	MYSQL_ROW row = sqlQuery ("select path, error_bound, alarm_order from variable where error_bound!=-1");
+
+	alarms.clear ();
+
+	while (row != NULL)
+	{
+		alarms.push_back (row[0]);
+		alarms.push_back (row[1]);
+		alarms.push_back (row[2]);
+		row = sqlNextRow ();
+	}
+
+	nlinfo ("Sending the new list of alarms to %s AES-%hu", (*aesit).Name.c_str(), (*aesit).SId);
+	CMessage msgout("ALARMS");
+	msgout.serialCont (alarms);
+	CUnifiedNetwork::getInstance ()->send (sid, msgout);
+}
+
+
 void rejectAES(uint16 sid, const string &res)
 {
 	CMessage msgout("REJECTED");
@@ -915,6 +1015,7 @@ void cbAESConnection /*(const string &serviceName, TSockId from, void *arg)*/(co
 	
 	// send him services that should run on this server
 	sendHostedServices(sid);
+	sendAlarms (sid);
 
 /*
 	// broadcast the message that an admin exec is connected to all admin client
@@ -1094,8 +1195,8 @@ static void cbView (CMessage &msgin, const std::string &serviceName, uint16 sid)
 TUnifiedCallbackItem CallbackArray[] =
 {
 	{ "VIEW", cbView },
+	{ "ADMIN_EMAIL", cbAdminEmail },
 
-	
 /*	{ "ESCR", cbExecuteSystemCommandResult },
 
 	{ "SL", cbServiceList },
@@ -1383,7 +1484,10 @@ void addRequest (const string &rawvarpath, TSockId from)
 	{
 		// it means the we have to resend the list of services managed by AES from the mysql tables
 		for (AESIT aesit = AdminExecutorServices.begin(); aesit != AdminExecutorServices.end(); aesit++)
+		{
 			sendHostedServices ((*aesit).SId);
+			sendAlarms((*aesit).SId);
+		}
 
 		return;
 	}
@@ -1536,6 +1640,11 @@ void addRequest (const string &rawvarpath, TSockId from)
 }
 
 
+void varAdminEmailAccumlationTime (CConfigFile::CVar &var)
+{
+	AdminEmailAccumlationTime = var.asInt();
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////// SERVICE IMPLEMENTATION //////////////////////////////////////////////////////////////
@@ -1549,12 +1658,14 @@ public:
 	/// Init the service, load the universal time.
 	void		init ()
 	{
+		setDefaultEmailParams (ConfigFile.getVar ("SMTPServer").asString (), "", "");
+
 		sqlInit ();
 
 		connectionWebInit ();
 
 		//CVarPath toto ("[toto");
-		
+
 		//CVarPath toto ("*.*.*.*");
 		//CVarPath toto ("[srv1,srv2].*.*.*");
 		//CVarPath toto ("[svr1.svc1,srv2.svc2].*.*");
@@ -1565,6 +1676,9 @@ public:
 
 		CUnifiedNetwork::getInstance ()->setServiceUpCallback ("AES", cbAESConnection);
 		CUnifiedNetwork::getInstance ()->setServiceDownCallback ("AES", cbAESDisconnection);
+
+		ConfigFile.setCallback("AdminEmailAccumlationTime", &varAdminEmailAccumlationTime);
+		varAdminEmailAccumlationTime (ConfigFile.getVar ("AdminEmailAccumlationTime"));
 
 		//
 		// Get the list of AESHosts, add in the structures and create connection to all AES
@@ -1615,6 +1729,8 @@ public:
 	{
 		cleanRequest ();
 		connectionWebUpdate ();
+		
+		updateSendAdminEmail ();
 		return true;
 	}
 

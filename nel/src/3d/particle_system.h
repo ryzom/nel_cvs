@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.28 2002/10/14 09:48:57 vizerie Exp $
+ * $Id: particle_system.h,v 1.29 2002/11/14 17:31:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,11 +82,10 @@ const uint MaxPSUserParam = 4;
  */
 class CParticleSystem : public NLMISC::CRefCount
 {
-
 public:
 	// the pass that is applied on particles
 	enum TPass { Anim, SolidRender, BlendRender, ToolRender };
-
+public:
 	//*****************************************************************************************************
 
 	///\name Object
@@ -102,7 +101,7 @@ public:
 			  */
 			void merge(CParticleSystemShape *toMerge);
 
-			/*** duplication method NOT SUPPORTED for now (suplication is using streams, but it may not last)
+			/*** duplication method NOT SUPPORTED for now (duplication is using streams, but it may not last)
 			 * \param ch for private use, set to null by default
 			 */
 			//	CParticleSystem *clone(CPSCopyHelper *ch = NULL) ;
@@ -156,8 +155,10 @@ public:
 
 
 		/** Set the matrix for the system. This only affect elements that are in the same basis
-		 * you don't need to call this if it is used in a CPaticleSystemModel : Call ITransformable method. In this case
-		 * , setSysMat will be called automatically when needed to mirror the ITransformable matrix
+		 * you don't need to call this if it is used with a CPaticleSystemModel : Call ITransformable method. In this case
+		 * , setSysMat will be called automatically when needed to mirror the ITransformable matrix.
+		 * NB: The previous matrix is backuped during this call (used to interpolate the system when emission occur in the world basis),
+		 * so this should be called only once per frame
 		 */
 		 
 		void setSysMat(const NLMISC::CMatrix &m);
@@ -165,8 +166,10 @@ public:
 		/// return the matrix of the system
 		const NLMISC::CMatrix &getSysMat(void) const { return _SysMat; }
 
-		/// return the inverted matrix of the system
+		/// return the previous matrix of the system
+		const NLMISC::CMatrix &getOldSysMat(void) const { return _SysMat; }
 
+		/// return the inverted matrix of the system
 		const NLMISC::CMatrix &getInvertedSysMat(void) const { return _InvSysMat; } 
 
 		/** set the view matrix  
@@ -287,22 +290,58 @@ public:
 		/** Set the value of a user parameter. It must range from 0 to 1. The user value are not saved, and their default value is 0.f.
 		  * The max number of user param is MaxPSUserParam.
 		  */
-		void setUserParam(uint numParam, float value) 
+		void setUserParam(uint userParamIndex, float value) 
 		{
-			nlassert(numParam < MaxPSUserParam);
+			nlassert(userParamIndex < MaxPSUserParam);
 			NLMISC::clamp(value, 0, MaxInputValue);			
-			_UserParam[numParam] = value;
+			_UserParam[userParamIndex] = value;
 		}
 
 		/** Get a user param.
 		  * The max number of user param is in MaxPSUserParam.
 		  */
-		float getUserParam(uint numParam) const
+		float getUserParam(uint userParamIndex) const
 		{
-			nlassert(numParam < MaxPSUserParam);
-			return _UserParam[numParam];
+			nlassert(userParamIndex < MaxPSUserParam);
+			return _UserParam[userParamIndex];
 		}
-		
+
+		/** Bind/Unbind a global value to a user param.
+		  * Any further call to setUserParam will then be overriden by the user param.
+		  * Example of use : global strenght of wind.
+		  * \param globalValueName NULL to unbind the value, or the name of the value
+		  */
+		void  bindGlobalValueToUserParam(const std::string &globalValueName, uint userParamIndex);
+		// Get name of a global value, or NULL if no global value is bound to that user param
+		std::string getGlobalValueName(uint userParamIndex) const;		 
+		// Set a global value
+		static void  setGlobalValue(const std::string &name, float value);
+		// Get a global value
+		static float getGlobalValue(const std::string &name);
+		/** Set a global vector value. Global vector values are set to (0, 0, 0) by default
+		  * Global vector values are used in some places. For example, direction for a directionnal force.
+		  */
+		static void					 setGlobalVectorValue(const std::string &name, const NLMISC::CVector &value);
+		// Get a global vector value
+		static NLMISC::CVector		 getGlobalVectorValue(const std::string &name);
+		// define a handle to a global value
+		class CGlobalVectorValueHandle
+		{
+		public:
+			CGlobalVectorValueHandle() { reset(); }
+			const NLMISC::CVector &get() const						 { nlassert(_Value); return *_Value; }
+			void				   set(const NLMISC::CVector &value) { nlassert(_Value); *_Value = value; }
+			const std::string     &getName() const					 { nlassert(_Name); return *_Name; }
+			bool				   isValid() const { return _Name != NULL && _Value != NULL; }
+			void                   reset() { _Name = NULL; _Value = NULL; }			
+		/////////////////////////////
+		private:
+			friend class CParticleSystem;
+			const std::string *_Name;
+			NLMISC::CVector   *_Value;		
+		};
+		// Get a handle on a global value that provide a quick access on it (no map lookup)
+		static CGlobalVectorValueHandle     getGlobalVectorValueHandle(const std::string &name);		
 	//@}
 
 		
@@ -746,7 +785,7 @@ public:
 		// @{
 			/** register a locatedBindable, and allow it to be referenced by the given ID
 			  * this locatedBindable must belong to this system.
-			  * each pair <id, locatedBindable> must be unqiue, but there may be sevral LB for the same key
+			  * each pair <id, locatedBindable> must be unique, but there may be sevral LB for the same key
 			  */
 			void registerLocatedBindableExternID(uint32 id, CPSLocatedBindable *lb);
 
@@ -769,23 +808,27 @@ public:
 				/// Get the nth ID, or 0 if index is invalid.			  
 				uint32 getID(uint index) const;
 				/** Get all the IDs in the system. 
-				  * \warning As IDs are not stored in a vector, it is faster than several calls to getID
+				  * \warning As IDs are not internally stored in a vector, it is faster than several calls to getID
 				  */
 				void getIDs(std::vector<uint32> &dest) const;
 		// @}
-
-
 	
 
 private:
-	friend class CParticleSystemDetailObs;
+	typedef std::map<std::string, float> TGlobalValuesMap;
+	typedef std::map<std::string, NLMISC::CVector> TGlobalVectorValuesMap;
+private:
+	friend class CParticleSystemDetailObs;	
 	/// process a pass on the bound located
 	void					stepLocated(TPSProcessPass pass, TAnimationTime et, TAnimationTime realEt);
 	void					updateLODRatio();
 	void					updateColor();
-
+	// map that contain global value that can be affected to user param
+	static TGlobalValuesMap  _GlobalValuesMap;
+	// map that contain gloàbal vector values
+	static TGlobalVectorValuesMap _GlobalVectorValuesMap;
+	// A bbox that has been specified by the user
 	NLMISC::CAABBox			 _PreComputedBBox;
-
 	// the driver used for rendering
 	IDriver					 *_Driver;	
 		
@@ -801,8 +844,14 @@ private:
 
 	// the matrix of the system
 	NLMISC::CMatrix			 _SysMat; 
+	// The previous matrix of the system. It is used to perform emission of particles in the world basis at the right position when the systm is moving
+	NLMISC::CMatrix			 _OldSysMat; 
 	// the inverted matrix of the system
 	NLMISC::CMatrix			 _InvSysMat;
+	// Current position of the system. It is interpolated during integration, and is used by emitter to emit at the correct position
+	NLMISC::CVector          _CurrentDeltaPos;
+	// Delta position of the system
+	NLMISC::CVector          _DeltaPos;
 
 	// number of rendered pass on the system, incremented each time the system is redrawn
 	uint64					 _Date;	
@@ -822,14 +871,14 @@ private:
 	 * the system may add objects to the scene (for particle that are meshs for instance)
 	 */
 
-	CScene											*_Scene;
+	CScene					*_Scene;
 
 
 	// contains the name of the system. (VERSION >= 2 only)
 	std::string _Name;
 	
 	TAnimationTime								_TimeThreshold;
-	TAnimationTime								_SystemDate;
+	TAnimationTime								_SystemDate;	
 	uint32										_MaxNbIntegrations;	
 
 
@@ -845,9 +894,12 @@ private:
 	uint										_MaxNumFacesWanted;	
 	TAnimType									_AnimType;
 
-	static UPSSoundServer *						_SoundServer;
+	static UPSSoundServer                      *_SoundServer;
 
 	float										_UserParam[MaxPSUserParam];
+	const TGlobalValuesMap::value_type		    **_UserParamGlobalValue; // usually set to NULL unless some user params mirror a global value, 
+	                                                                     // in this case this contains as many pointer into the global map as there are user params
+	uint8                                       _BypassGlobalUserParam;  // mask to bypass a global user param. This state is not serialized
 
 	TPresetBehaviour							_PresetBehaviour;
 
@@ -873,7 +925,13 @@ private:
 	bool										_AutoLOD;
 	bool										_KeepEllapsedTimeForLifeUpdate;
 	bool										_AutoLODSkipParticles;
-	bool										_EnableLoadBalancing;	
+	bool										_EnableLoadBalancing;
+
+	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
+	float										_InverseEllapsedTime;	
+public:
+	// For use by emitters only : This compute a delta of position to ensure that spaning position are correct when the system moves
+	void		interpolatePosDelta(NLMISC::CVector &dest, TAnimationTime deltaT);
 };
 
 

@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.53 2002/10/14 09:48:57 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.54 2002/11/14 17:31:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,14 +46,10 @@
 namespace NL3D 
 {
 
-
-
-
-uint32 CParticleSystem::NbParticlesDrawn = 0;
-UPSSoundServer *		 CParticleSystem::_SoundServer = NULL;
-
-
-
+uint32										CParticleSystem::NbParticlesDrawn = 0;
+UPSSoundServer *							CParticleSystem::_SoundServer = NULL;
+CParticleSystem::TGlobalValuesMap			CParticleSystem::_GlobalValuesMap;
+CParticleSystem::TGlobalVectorValuesMap		CParticleSystem::_GlobalVectorValuesMap;
 
 
 ///////////////////////////////////
@@ -87,6 +83,8 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _DelayBeforeDieTest(0.2f),									 									
 									 _MaxNumFacesWanted(0),
 									 _AnimType(AnimInCluster),
+									 _UserParamGlobalValue(NULL),
+									 _BypassGlobalUserParam(0),
 									 _PresetBehaviour(UserBehaviour),									 
 									 _AutoLODStartDistPercent(0.3f),
 									 _AutoLODDegradationExponent(1),																		 
@@ -102,9 +100,13 @@ CParticleSystem::CParticleSystem() : _Driver(NULL),
 									 _AutoLOD(false),
 									 _KeepEllapsedTimeForLifeUpdate(false),
 									 _AutoLODSkipParticles(false),
-									 _EnableLoadBalancing(true)
+									 _EnableLoadBalancing(true),
+									 _InverseEllapsedTime(0.f),
+									 _CurrentDeltaPos(NLMISC::CVector::Null),
+									 _DeltaPos(NLMISC::CVector::Null)
+
 {
-	for (uint k = 0; k < MaxPSUserParam; ++k) _UserParam[k] = 0;
+	std::fill(_UserParam, _UserParam + MaxPSUserParam, 0);	
 }
 
 
@@ -221,6 +223,7 @@ CParticleSystem::~CParticleSystem()
 		delete *it;
 	}
 	delete _ColorAttenuationScheme;
+	delete _UserParamGlobalValue;
 }
 
 ///=======================================================================================
@@ -281,6 +284,16 @@ inline void CParticleSystem::updateColor()
 	}
 }
 
+
+/*
+static void displaySysPos(IDriver *drv, const CVector &pos, CRGBA col)
+{
+	if (!drv) return;	
+	drv->setupModelMatrix(CMatrix::Identity);
+	CPSUtil::displayArrow(drv, pos, CVector::K, 1.f, CRGBA::White, col);
+}
+*/
+
 ///=======================================================================================
 void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 {		
@@ -316,7 +329,21 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 		break;
 		case Anim:
 		{
-		
+			// update user param from global value if needed, unless this behaviour is bypassed has indicated by a flag in _BypassGlobalUserParam
+			if (_UserParamGlobalValue)
+			{
+				nlctassert(MaxPSUserParam < 8); // there should be less than 8 parameters because of mask stored in a byte			
+				uint8 bypassMask = 1;
+				for(uint k = 0; k < MaxPSUserParam; ++k)
+				{
+					if (_UserParamGlobalValue[k] && !(_BypassGlobalUserParam & bypassMask)) // if there is a global value for this param and if the update is not bypassed
+					{
+						_UserParam[k] = _UserParamGlobalValue[k]->second;						
+					}
+					bypassMask <<= 1;
+				}
+			}
+			//
 			_BBoxTouched = true;
 			TAnimationTime et = ellapsedTime;
 			uint nbPass = 1;
@@ -328,21 +355,46 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 					if (nbPass > _MaxNbIntegrations)
 					{ 
 						nbPass = _MaxNbIntegrations;
-						et = _CanSlowDown ? _TimeThreshold : (ellapsedTime / nbPass);
+						if (_CanSlowDown)
+						{
+							et = _TimeThreshold;
+							nlassert(_TimeThreshold != 0);
+							_InverseEllapsedTime = 1.f / (_TimeThreshold * nbPass);
+						}
+						else
+						{
+							et = ellapsedTime / nbPass;
+							_InverseEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
+						}						
 					}
 					else
 					{
 						et = ellapsedTime / nbPass;
+						_InverseEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
 					}
-				}			
+				}
+				else
+				{
+					_InverseEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
+				}
+			}
+			else
+			{
+				_InverseEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
 			}
 			updateLODRatio();
 
+			// set start position. Used by emitters that emit from Local basis to world
+			_CurrentDeltaPos = -_DeltaPos;
+			//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Red);
 			// process passes
 			float realEt = _KeepEllapsedTimeForLifeUpdate ? (ellapsedTime / nbPass)
-														  : et;
+														  : et;			
 			do
 			{					
+				// position of the system at the end of the integration
+				_CurrentDeltaPos += _DeltaPos * (et * _InverseEllapsedTime);
+				//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Blue);
 				// the order of the following is important...
 				stepLocated(PSCollision, et,  realEt);
 				for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
@@ -351,7 +403,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 					(*it)->step(PSMotion, et, realEt);					
 				}
 				_SystemDate += realEt;
-				stepLocated(PSEmit, et,  realEt);								
+				stepLocated(PSEmit, et,  realEt);				
 			}
 			while (--nbPass);
 			
@@ -370,7 +422,8 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 ///=======================================================================================
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	sint version =  f.serialVersion(11);			
+	sint version =  f.serialVersion(12);
+	// version 12: global userParams
 	// version 11: enable load balancing flag 
 	// version 9: Sharing flag added
 	//            Auto-lod parameters
@@ -399,6 +452,9 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		_InvSysMat = _SysMat.inverted();
 		_FontGenerator = NULL;
 		_FontManager = NULL;
+		delete _UserParamGlobalValue;
+		_UserParamGlobalValue = NULL;
+		_BypassGlobalUserParam = 0;
 	}
 	else
 	{
@@ -481,7 +537,54 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_EnableLoadBalancing);
 	}
-	
+
+	if (version >= 12)
+	{
+		// serial infos about global user params
+		nlctassert(MaxPSUserParam < 8); // In this version mask of used global user params are stored in a byte..		
+		if (f.isReading())
+		{			
+			uint8 mask;
+			f.serial(mask);
+			if (mask)
+			{		
+				std::string globalValueName;
+				uint8 testMask = 1;
+				for(uint k = 0; k < MaxPSUserParam; ++k)
+				{					
+					if (mask & testMask)
+					{						
+						f.serial(globalValueName);
+						bindGlobalValueToUserParam(globalValueName.c_str(), k);
+					}
+					testMask <<= 1;
+				}
+			}
+		}
+		else
+		{
+			uint8 mask = 0;
+			if (_UserParamGlobalValue)
+			{
+				for(uint k = 0; k < MaxPSUserParam; ++k)
+				{
+					if (_UserParamGlobalValue[k]) mask |= (1 << k);
+				}
+			}
+			f.serial(mask);
+			if (_UserParamGlobalValue)
+			{
+				for(uint k = 0; k < MaxPSUserParam; ++k)
+				{				
+					if (_UserParamGlobalValue[k]) 
+					{
+						std::string valueName = _UserParamGlobalValue[k]->first;	
+						f.serial(valueName);
+					}
+				}
+			}
+		}		
+	}	
 
 	if (f.isReading())
 	{
@@ -554,6 +657,16 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 ///=======================================================================================
 void CParticleSystem::setSysMat(const CMatrix &m)
 {
+	if (_SystemDate != 0.f)
+	{	
+		_OldSysMat = _SysMat; // _sysMat is relevant if at least one call to setSysMat has been performed before
+		_DeltaPos  = m.getPos() -  _OldSysMat.getPos();
+	}
+	else
+	{
+		_DeltaPos = NLMISC::CVector::Null;
+		_OldSysMat = m;
+	}
 	_SysMat = m;
 	_InvSysMat = _SysMat.inverted();
 }
@@ -808,6 +921,109 @@ void CParticleSystem::getIDs(std::vector<uint32> &dest) const
 		dest[k] = it->first;
 		++k;
 	}
+}
+
+///=======================================================================================
+void CParticleSystem::interpolatePosDelta(NLMISC::CVector &dest,TAnimationTime deltaT)
+{
+	dest = _CurrentDeltaPos - (deltaT * _InverseEllapsedTime) * _DeltaPos;
+}
+
+///=======================================================================================
+void CParticleSystem::bindGlobalValueToUserParam(const std::string &globalValueName, uint userParamIndex)
+{
+	nlassert(userParamIndex < MaxPSUserParam);
+	if (globalValueName.empty()) // disable a user param global value
+	{
+		if (!_UserParamGlobalValue) return;
+		_UserParamGlobalValue[userParamIndex] = NULL;
+		for(uint k = 0; k < MaxPSUserParam; ++k)
+		{
+			if (_UserParamGlobalValue[k] != NULL) return;
+		}
+		// no more entry used
+		delete _UserParamGlobalValue;
+		_UserParamGlobalValue = NULL;
+	}
+	else // enable a user param global value
+	{
+		if (!_UserParamGlobalValue) 
+		{
+			// no table has been allocated yet, so create one
+			_UserParamGlobalValue = new const TGlobalValuesMap::value_type *[MaxPSUserParam];
+			std::fill(_UserParamGlobalValue, _UserParamGlobalValue + MaxPSUserParam, (TGlobalValuesMap::value_type *) NULL);
+		}
+		// has the global value be created yet ?
+		TGlobalValuesMap::const_iterator it = _GlobalValuesMap.find(globalValueName);
+		if (it != _GlobalValuesMap.end())
+		{
+			// yes, make a reference on it
+			_UserParamGlobalValue[userParamIndex] = &(*it);
+		}
+		else
+		{
+			// create a new entry
+			std::pair<TGlobalValuesMap::iterator, bool> itPair = _GlobalValuesMap.insert(TGlobalValuesMap::value_type(globalValueName, 0.f));
+			_UserParamGlobalValue[userParamIndex] = &(*(itPair.first));
+		}
+	}
+}
+
+///=======================================================================================
+void CParticleSystem::setGlobalValue(const std::string &name, float value)
+{
+	nlassert(!name.empty());
+	NLMISC::clamp(value, 0.f, 1.f);
+	_GlobalValuesMap[name] = value;
+}
+
+///=======================================================================================
+float CParticleSystem::getGlobalValue(const std::string &name)
+{
+	TGlobalValuesMap::const_iterator it = _GlobalValuesMap.find(name);
+	if (it != _GlobalValuesMap.end()) return it->second;
+	return 0.f; // not a known value
+}
+
+///=======================================================================================
+std::string CParticleSystem::getGlobalValueName(uint userParamIndex) const
+{
+	nlassert(userParamIndex < MaxPSUserParam);
+	if (!_UserParamGlobalValue) return "";
+	if (!_UserParamGlobalValue[userParamIndex]) return "";
+	return _UserParamGlobalValue[userParamIndex]->first;
+}
+
+///=======================================================================================
+void CParticleSystem::setGlobalVectorValue(const std::string &name, const NLMISC::CVector &value)
+{
+	nlassert(!name.empty());
+	_GlobalVectorValuesMap[name] = value;	
+}
+
+
+///=======================================================================================
+NLMISC::CVector CParticleSystem::getGlobalVectorValue(const std::string &name)
+{
+	nlassert(!name.empty());
+	TGlobalVectorValuesMap::const_iterator it = _GlobalVectorValuesMap.find(name);
+	if (it != _GlobalVectorValuesMap.end()) return it->second;
+	return NLMISC::CVector::Null; // not a known value  	
+}
+
+///=======================================================================================
+CParticleSystem::CGlobalVectorValueHandle CParticleSystem::getGlobalVectorValueHandle(const std::string &name)
+{
+	nlassert(!name.empty());	
+	TGlobalVectorValuesMap::iterator it = _GlobalVectorValuesMap.find(name);
+	if (it == _GlobalVectorValuesMap.end())
+	{
+		it = _GlobalVectorValuesMap.insert(TGlobalVectorValuesMap::value_type(name, NLMISC::CVector::Null)).first;		
+	}
+	CGlobalVectorValueHandle handle;
+	handle._Value = &it->second;	
+	handle._Name = &it->first;
+	return handle;
 }
 
 

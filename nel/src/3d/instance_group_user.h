@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.4 2001/08/09 14:59:28 besson Exp $
+ * $Id: instance_group_user.h,v 1.5 2001/08/14 16:22:35 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,6 +73,8 @@ private:
 	const NLMISC::CQuat& getInstanceRot (uint instanceNb) const;
 	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;
 	const UInstance *getByName (std::string& name) const;
+
+	void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor);
 
 	void createRoot (UScene &scene);
 	void setClusterSystem (UInstanceGroup *pClusterSystem);

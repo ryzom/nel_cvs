@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.6 2001/08/09 14:59:28 besson Exp $
+ * $Id: u_instance_group.h,v 1.7 2001/08/14 16:22:35 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_INSTANCE_GROUP_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/rgba.h"
 
 #include <vector>
 #include <string>
@@ -121,6 +122,11 @@ public:
 	 */
 	virtual const UInstance *getByName (std::string& name) const=0;
 
+
+	/**
+	 * Control a lightmap
+	 */
+	virtual void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor)=0;
 
 	/**
 	 * Create the link between scene and instance group before the addToScene

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.15 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.16 2001/06/25 13:41:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/aabbox.h"
 #include "3d/ps_util.h"
 #include "3d/ps_zone.h"
-
+#include "3d/driver.h"
 
 
 
@@ -62,13 +62,13 @@ CPSLocated::~CPSLocated()
 	// call all the dtor observers
 	for (TDtorObserversVect::iterator it = copyVect.begin() ; it != copyVect.end() ; ++it)
 	{
-		(*it)->detachTarget(this) ;
+		(*it)->notifyTargetRemoved(this) ;
 	}
 
 	nlassert(_CollisionInfoNbRef == 0) ; //If this is not = 0, then someone didnt call releaseCollisionInfo
-										 // If this happen, you can register with the CPSTargetLocatedBindable
+										 // If this happen, you can register with the registerDTorObserver
 										 // (observer pattern)
-										 // and override releaseTarget to call releaseCollisionInfo
+										 // and override notifyTargetRemove to call releaseCollisionInfo
 	nlassert(!_CollisionInfo) ;
 
 	// delete all bindable
@@ -98,10 +98,14 @@ void CPSLocated::bind(CPSLocatedBindable *lb)
 
 	// any located bindable that is bound to us should have no element in it for now !!
 	// we reisze the boundable, so that it has ne same number of elements as us
-	for (uint32 k = 0 ; k < _Size ; ++k)
+
+	uint32 initialSize  = _Size ;
+	for (uint32 k = 0 ; k < initialSize ; ++k)
 	{
+		_Size = k ;
 		lb->newElement() ;
 	}
+	_Size = initialSize ;
 }
 
 
@@ -115,14 +119,14 @@ void CPSLocated::remove(const CPSLocatedBindable *p)
 }
 
 
-void CPSLocated::registerDtorObserver(CPSTargetLocatedBindable *anObserver)
+void CPSLocated::registerDtorObserver(CPSLocatedBindable *anObserver)
 {
 	// check wether the observer wasn't registered twice
 	nlassert(std::find(_DtorObserversVect.begin(), _DtorObserversVect.end(), anObserver) == _DtorObserversVect.end()) ;
 	_DtorObserversVect.push_back(anObserver) ;
 }
 
-void CPSLocated::unregisterDtorObserver(CPSTargetLocatedBindable *anObserver)
+void CPSLocated::unregisterDtorObserver(CPSLocatedBindable *anObserver)
 {
 	// check that it was registered
 	TDtorObserversVect::iterator it = std::find(_DtorObserversVect.begin(), _DtorObserversVect.end(), anObserver) ;
@@ -645,6 +649,14 @@ void CPSLocated::resetCollisionInfo(void)
 	}
 }
 
+///////////////////////////////////////
+// CPSLocatedBindable implementation //
+///////////////////////////////////////
+
+void CPSLocatedBindable::notifyTargetRemoved(CPSLocated *ptr)
+{
+	ptr->unregisterDtorObserver(this) ;
+}
 
 void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
@@ -654,6 +666,9 @@ void CPSLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
+/////////////////////////////////////////////
+// CPSTargetLocatedBindable implementation //
+/////////////////////////////////////////////
 
 void CPSTargetLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
@@ -692,15 +707,17 @@ void CPSTargetLocatedBindable::attachTarget(CPSLocated *ptr)
 	ptr->registerDtorObserver(this) ;
 }
 
-void CPSTargetLocatedBindable::detachTarget(CPSLocated *ptr)
-{
+
+void CPSTargetLocatedBindable::notifyTargetRemoved(CPSLocated *ptr) 
+{	
 	TTargetCont::iterator it = std::find(_Targets.begin(), _Targets.end(), ptr) ;
 	nlassert(it != _Targets.end()) ;
 	releaseTargetRsc(*it) ;	
 	_Targets.erase(it) ;
-	ptr->unregisterDtorObserver(this) ;
 
+	CPSLocatedBindable::notifyTargetRemoved(ptr) ;	
 }
+
 
 CPSTargetLocatedBindable::~CPSTargetLocatedBindable()
 {

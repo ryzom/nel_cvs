@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_located.h,v 1.2 2001/06/25 13:41:33 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,6 @@
 #include "nel/misc/types_nl.h"
 #include "3d/particle_system.h"
 #include "3d/ps_attrib.h" // an attribute template container
-#include "3d/nelu.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/aabbox.h"
@@ -308,7 +307,12 @@ public:
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	/// Shortcut to get an instance of the 3d driver
-	IDriver *getDriver() const { return CNELU::Driver ;  }
+	IDriver *getDriver() const 
+	{ 
+		nlassert(_Owner) ;
+		nlassert (_Owner->getDriver() ) ; // you haven't called setDriver on the system
+		return _Owner->getDriver() ;
+	}
 
 
 
@@ -376,20 +380,21 @@ public:
 
 
 	 
-	/** Register a dtor observer; (that derives from CPSTargetLocatedBindable)
-	*  Each observer will be called when this object dtor is called
-	*  This allow for objects that hold this as a target to know when the located is suppressed
+	/** Register a dtor observer; (that derives from CPSLocatedBindable)
+	*  Each observer will be called when this object dtor is called (call of method notifyTargetRemoved() )
+	*  This allow for objects that hold this as a target to know when it is suppressed
 	*  (example : collision objects hold located as targets)
-	*  When an observer is detroyed, it MUST call removeDtorObserver, unless the located has been destroyed
-	*  which will be notified by the call of releaseTargetRsc in CPSTargetLocatedBindable
+	*  When an observer is detroyed, it MUST call unregisterDtorObserver,
 	*  The same observer can only register once, otherwise, an assertion occurs	
 	*/
 
-	void registerDtorObserver(CPSTargetLocatedBindable *observerInterface) ;	
+	void registerDtorObserver(CPSLocatedBindable *observer) ;	
 
 
-	/// remove a dtor observer (not present -> nlassert)
-	void unregisterDtorObserver(CPSTargetLocatedBindable *anObserver) ;
+	/** remove a dtor observer (not present -> nlassert)
+	 *  see register dtor observer
+	 */
+	void unregisterDtorObserver(CPSLocatedBindable *anObserver) ;
 
 
 
@@ -406,6 +411,8 @@ public:
 	std::string getName(void) const { return _Name ; }
 
 protected:	
+
+	
 
 	std::string _Name ;
 	
@@ -499,7 +506,7 @@ protected:
 	 /// this prepare the located ofr collision tests
 	 void resetCollisionInfo(void) ;
 	
-	 typedef std::vector<CPSTargetLocatedBindable *> TDtorObserversVect ;
+	 typedef std::vector<CPSLocatedBindable *> TDtorObserversVect ;
 
 	TDtorObserversVect _DtorObserversVect ;
 } ;
@@ -640,11 +647,24 @@ public:
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
 	/// dtor
-
 	virtual ~CPSLocatedBindable() {}
 
 	/// process one pass for this bindable
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) = 0 ;
+
+
+	/** can be used by located bindable that have located as targets (emitter, collision zone, forces)
+     *	to be notified that one of their target has been removed.
+	 *  To do this :
+	 *  The object that focus the target must call registerDTorObserver on the target, with himself as a parameter
+	 *  When the target is removed, this target will call this method for all registered CPSLocated
+	 *	The default behaviour remove this object as an observer 
+	 *   
+	 *  \see CPSLocated::registerDTorObserver()
+	 */
+	virtual void notifyTargetRemoved(CPSLocated *ptr)  ;
+	
+	
 
 	
 	/***
@@ -653,11 +673,7 @@ public:
 	* with a particle which has a radius of 2, you must enlarge the bbox to get the correct one.
 	* The default behaviour does nothing
 	* \return true if you modified the bbox
-	*/
-
-
-	
-	
+	*/	
 	virtual bool completeBBox(NLMISC::CAABBox &box) const  { return false  ;}
 
 	/***
@@ -670,7 +686,12 @@ public:
 
 
 	/// shortcut to get an instance of the driver
-	 IDriver *getDriver() const { return CNELU::Driver ;  }		
+	 IDriver *getDriver() const 
+	 { 
+		 nlassert(_Owner) ;
+		 nlassert(_Owner->getDriver()) ;
+		 return _Owner->getDriver() ;
+	 }		
 
 
 
@@ -874,17 +895,19 @@ class CPSTargetLocatedBindable : public CPSLocatedBindable
 {
 	public:
 
-		/** Add a new type of located for this force to apply on. nlassert if present
+		/** Add a new type of located for this to apply on. nlassert if present
 		 *  By overriding this and calling the CPSTargetLocatedBindable version,
-		 *  you can also send some notficiation to the object that's being attached
+		 *  you can also send some notificiation to the object that's being attached
 		 */
-
 		virtual void attachTarget(CPSLocated *ptr) ;
 
-		/** Detach a target. If not present -> assert
-		 * This also call releaseTargetRsc for clean up
-		 */		
-		void detachTarget(CPSLocated *ptr) ;
+		/** remove a target
+		 *  \see attachTarget
+		 */
+		void detachTarget(CPSLocated *ptr)
+		{
+			notifyTargetRemoved(ptr) ;
+		}				
 
 		/// return the number of targets
 		uint32 getNbTargets(void) const { return _Targets.size() ; }
@@ -918,9 +941,15 @@ class CPSTargetLocatedBindable : public CPSLocatedBindable
 		/// Seralization, must be called by derivers
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
-
 		virtual ~CPSTargetLocatedBindable() ;
+
+
 	protected:
+
+		/** Inherited from CPSLocatedBindable. A target has been remove If not present -> assert
+		 * This also call releaseTargetRsc for clean up
+		 */		
+		virtual void notifyTargetRemoved(CPSLocated *ptr) ;
 
 		typedef std::vector< CPSLocated *> TTargetCont ;
 		TTargetCont _Targets ;	

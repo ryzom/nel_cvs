@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.9 2000/11/10 09:56:01 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.10 2000/11/10 10:38:16 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,6 +163,7 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 		}
 		ShowWindow(_hWnd,SW_SHOW);
 	}
+	_EventEmitter.setHWnd((uint32)_hWnd);
 	_hDC=GetDC(_hWnd);
 	Depth=GetDeviceCaps(_hDC,BITSPIXEL);
 	// ---

@@ -21,7 +21,7 @@ zone_source_directories=`cat ../../cfg/directories.cfg | grep "zone_source_direc
 ligo_flag=`cat ../../cfg/config.cfg | grep "process_to_complete" | grep "ligo"`
 
 # Maxdir
-max_directory=`echo $MAX_DIR | sed -e 's&\\&/&g'`
+max_directory=`echo $MAX_DIR | sed -e 's&\\\&/&g'`
 
 if ( test "$ligo_flag" )
 then

@@ -21,7 +21,7 @@ shape_source_directories=`cat ../../cfg/directories.cfg | grep "shape_source_dir
 quality_flag=`cat ../../cfg/site.cfg | grep "build_quality" | grep "1"`
 
 # Maxdir
-max_directory=`echo $MAX_DIR | sed -e 's&\\&/&g'`
+max_directory=`echo $MAX_DIR | sed -e 's&\\\&/&g'`
 
 # Get the options
 if ( test "$quality_flag" )

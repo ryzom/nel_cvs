@@ -18,7 +18,7 @@ build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_director
 skel_source_directories=`cat ../../cfg/directories.cfg | grep "skel_source_directory" | sed -e 's/skel_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Maxdir
-max_directory=`echo $MAX_DIR | sed -e 's&\\&/&g'`
+max_directory=`echo $MAX_DIR | sed -e 's&\\\&/&g'`
 
 # Log error
 echo ------- > log.log

@@ -21,7 +21,7 @@ ig_land_source_directories=`cat ../../cfg/directories.cfg | grep "ig_land_source
 ig_other_source_directories=`cat ../../cfg/directories.cfg | grep "ig_other_source_directory" | sed -e 's/ig_other_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Maxdir
-max_directory=`echo $MAX_DIR | sed -e 's&\\&/&g'`
+max_directory=`echo $MAX_DIR | sed -e 's&\\\&/&g'`
 
 # Log error
 echo ------- > log.log

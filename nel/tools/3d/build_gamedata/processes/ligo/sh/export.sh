@@ -33,7 +33,7 @@ cp $bank_filename smallbank/ligo.smallbank 2> log.log
 cp $bankfar_filename smallbank/ligo.farbank 2> log.log
 
 # Maxdir
-max_directory=`echo $MAX_DIR | sed -e 's&\\&/&g'`
+max_directory=`echo $MAX_DIR | sed -e 's&\\\&/&g'`
 
 # delete ini file
 

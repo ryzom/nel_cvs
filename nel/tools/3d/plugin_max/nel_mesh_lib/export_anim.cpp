@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.33 2002/08/27 12:40:45 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.34 2002/11/19 14:53:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1910,6 +1910,7 @@ void				CExportNel::overSampleBipedAnimation(CAnimationBuildCtx &animBuildCtx, u
 
 	// TestYoyo. To see what Pos are animated. Strange biped stuff
 	//=========================
+	// NB: 	for all node, you must _ExportBipedBonePosSet.insert(node) in compileBiped() to test it correctly
 	/*for(i=0; i<animBuildCtx.BipedNodes.size(); i++)
 	{
 		CAnimationBuildCtx::CBipedNode		&bpNode= animBuildCtx.BipedNodes[i];
@@ -1923,7 +1924,8 @@ void				CExportNel::overSampleBipedAnimation(CAnimationBuildCtx &animBuildCtx, u
 			if( (bpNode.Keys[j].Pos-posRef).norm()>0.001 )
 			{
 				std::string	name= getName(*bpNode.Node);
-				nlinfo(name.c_str());
+				nlinfo("BipedNode %s has a Pos animation", name.c_str());
+				break;
 			}
 		}
 	}*/
@@ -1966,9 +1968,11 @@ void				CExportNel::CAnimationBuildCtx::compileBiped()
 			// Add him to the set.
 			_ExportBipedBonePosSet.insert(node);
 
-			// Must add the clavicles of this biped too (Biped stuff).
+			// Must add some important limbs of this biped too (Biped stuff => sometimes pos are animated).
 			addLimbNodeToExportPos(node, "#larm");
 			addLimbNodeToExportPos(node, "#rarm");
+			addLimbNodeToExportPos(node, "#spine");
+			addLimbNodeToExportPos(node, "#tail");
 		}
 	}
 }

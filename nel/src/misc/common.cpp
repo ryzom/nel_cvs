@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.1 2001/02/16 14:50:48 cado Exp $
+ * $Id: common.cpp,v 1.2 2001/02/20 11:10:09 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
@@ -41,6 +41,13 @@ namespace	NLMISC
 void nlSleep( uint32 ms )
 {
 #ifdef NL_OS_WINDOWS
+
+// Yoyo: TODODO: BUG WITH DEBUG/_CONSOLE!!!! a Sleep(0) "block" the other thread!!!
+// console suxxxx
+#ifdef NL_DEBUG
+	ms= std::max(ms, (uint32)1);
+#endif
+
 	Sleep( ms );
 #elif defined NL_OS_UNIX
 	usleep( ms*1000 );

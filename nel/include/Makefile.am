@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.7 2001/03/05 18:02:13 valignat Exp $
+# $Id: Makefile.am,v 1.8 2001/03/05 18:08:49 valignat Exp $
 #
 
 install-exec-local:
@@ -12,7 +12,6 @@ install-exec-local:
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/c
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/e
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/fuzzy
-	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/link
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/logic
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/nimat
 	$(INSTALL_PROGRAM) -d $(includedir)/nel/ai/pyserver
@@ -53,7 +52,6 @@ dist-hook:
 	       $(distdir)/nel/ai/c/CVS          \
 	       $(distdir)/nel/ai/e/CVS          \
 	       $(distdir)/nel/ai/fuzzy/CVS      \
-	       $(distdir)/nel/ai/link/CVS       \
 	       $(distdir)/nel/ai/logic/CVS      \
 	       $(distdir)/nel/ai/nimat/CVS      \
 	       $(distdir)/nel/ai/pyserver/CVS   \

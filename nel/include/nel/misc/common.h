@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.13 2000/11/17 15:18:02 coutelas Exp $
+ * $Id: common.h,v 1.14 2000/11/21 10:49:36 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,8 +28,12 @@
 
 
 #include "nel/misc/types_nl.h"
+
+#include <ctype.h>
+
 #include <stdlib.h>
 #include <algorithm>
+#include <string>
 
 namespace	NLMISC
 {
@@ -85,7 +89,7 @@ template<class T>	inline T maxof(const T& a,  const T& b,  const T& c,  const T&
   * This function is usefull because resize, clear, erase or reserve methods never realloc when the array size come down.
   * \param a is the container to reset.
   */
-template<class T>	inline contReset (T& a)
+template<class T>	inline void contReset (T& a)
 {
 	a.~T();
 	new (&a) T;
@@ -133,6 +137,72 @@ inline bool isPowerOf2(sint32 v)
 	}
 
 	return true;
+}
+
+
+// ===========================================================================
+/** 
+ * strlwr
+ * \param a string to transform to lower case
+ */
+inline std::string &strlwr ( std::string &str )
+{
+	for (int i=str.size()-1; i>=0; i--)
+	{
+		str[i] = tolower(str[i]);
+	}
+
+	return (str);
+}
+
+/** 
+ * strlwr
+ * \param a pointer to char to transform to lower case
+ */
+inline char *strlwr ( char *str )
+{
+	if (str == NULL)
+		return (NULL);
+
+	while (*str != '\0')
+	{
+		*str = tolower(*str);
+		str++;
+	}
+
+	return (str);
+}
+
+/** 
+ * strupr
+ * \param a string to transform to upper case
+ */
+inline std::string &strupr ( std::string &str )
+{
+	for (int i=str.size()-1; i>=0; i--)
+	{
+		str[i] = toupper(str[i]);
+	}
+
+	return (str);
+}
+
+/** 
+ * strupr
+ * \param a pointer to char to transform to upper case
+ */
+inline char *strupr ( char *str )
+{
+	if (str == NULL)
+		return (NULL);
+
+	while (*str != '\0')
+	{
+		*str = toupper(*str);
+		str++;
+	}
+
+	return (str);
 }
 
 

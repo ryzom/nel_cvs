@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.34 2002/01/17 12:16:08 chafik Exp $
+ * $Id: baseai.cpp,v 1.35 2002/01/24 13:28:20 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -141,7 +141,7 @@ namespace NLAIAGENT
 /////////////////////////////////////////////////////////////////////////////
 
 	IObjectIA::CProcessResult IObjectIA::ProcessRun = IObjectIA::CProcessResult();
-	IObjectIA::CProcessResult IObjectIA::ProcessNotComplit = IObjectIA::CProcessResult(processNotComplit);	
+	IObjectIA::CProcessResult IObjectIA::ProcessNotComplit = IObjectIA::CProcessResult(processNotComplete);	
 	TProcessStatement IObjectIA::ProcessIdle = processIdle;
 	TProcessStatement IObjectIA::ProcessLocked = processLocked;
 	TProcessStatement IObjectIA::ProcessBuzzy = processBuzzy;

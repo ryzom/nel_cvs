@@ -218,6 +218,10 @@ SOURCE=.\nel_export_zone.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\progress.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\std_afx.cpp
 # ADD CPP /Yc"std_afx.h"
 # End Source File
@@ -236,6 +240,10 @@ SOURCE=.\nel_export.h
 # Begin Source File
 
 SOURCE=.\nel_export_scene.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\progress.h
 # End Source File
 # Begin Source File
 

@@ -1,10 +1,10 @@
 /** \file calc_lm.cpp
- * <File description>
+ * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.13 2001/08/02 12:18:11 besson Exp $
+ * $Id: calc_lm.cpp,v 1.14 2001/08/08 11:54:47 besson Exp $
  */
 
-/* Copyright, 2000 Nevrax Ltd.
+/* Copyright, 2001 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify
@@ -58,7 +58,6 @@ using namespace NLMISC;
 // Substract to all to get more precision
 CVector vGlobalPos;
 
-
 // ***********************************************************************************************
 struct SLightBuild
 {
@@ -77,6 +76,9 @@ struct SLightBuild
 	Bitmap *pProjMap;
 	CMatrix mProj;
 
+	// Accel for dir light
+	float rDirRadius; // Radius of the cylinder passing trough the bounding sphere of the object
+
 	set<string> setExclusion;
 
 	// -----------------------------------------------------------------------------------------------
@@ -94,6 +96,7 @@ struct SLightBuild
 		rMult = 1.0f;
 		GroupName = "GlobalLight";
 		pProjMap = NULL;
+		rDirRadius = 0.0f;
 	}
 
 	// -----------------------------------------------------------------------------------------------
@@ -858,8 +861,8 @@ struct SGradient
 };
 
 // ***********************************************************************************************
-// An element of the cube grid
-struct SCubeGridCell
+// An element of the cube grid and the directionnal light grid
+struct SGridCell
 {
 	CMesh::CFace* pF;
 	CMesh::CMeshBuild* pMB;
@@ -871,16 +874,16 @@ struct SCubeGridCell
 class SCubeGrid
 {
 	enum gridPos { kUp = 0, kDown, kLeft, kRight, kFront, kBack };
-	CQuadGrid<SCubeGridCell> grids[6];
+	CQuadGrid<SGridCell> grids[6];
 
 	sint32 nSelGrid;
-	CQuadGrid<SCubeGridCell>::CIterator itSel;
+	CQuadGrid<SGridCell>::CIterator itSel;
 
 public:
 
 	// -----------------------------------------------------------------------------------------------
 	void project( CTriangle &tri, CPlane pyr[4], CPlane &gridPlane, 
-					sint32 nGridNb, SCubeGridCell &cell )
+					sint32 nGridNb, SGridCell &cell )
 	{
 		CVector vIn[7], vOut[7];
 		sint32 i, nOut;
@@ -965,7 +968,7 @@ public :
 	}
 
 	// -----------------------------------------------------------------------------------------------
-	void insert( CTriangle &tri, SCubeGridCell &cell )
+	void insert( CTriangle &tri, SGridCell &cell )
 	{
 		CPlane p[4], gp;
 		// Construct clip pyramid for grid : UP
@@ -1068,7 +1071,7 @@ public :
 	}
 
 	// -----------------------------------------------------------------------------------------------
-	SCubeGridCell getSel()
+	SGridCell getSel()
 	{
 		return *itSel;
 	}
@@ -1088,14 +1091,118 @@ public :
 };
 
 // ***********************************************************************************************
+// Grid aligned on a directionnal light
+struct SDirGrid
+{
+	CQuadGrid<SGridCell> grid;
+	CMatrix invMat;
+	CQuadGrid<SGridCell>::CIterator itSel;
+	
+	float rMin, rMax;	// distance min and max from the light position to clip all rays 
+						// the distance is given in the direction of the light direction
+
+	// -----------------------------------------------------------------------------------------------
+	SDirGrid()
+	{
+		rMin = 100000.0f;
+		rMax = -100000.0f;
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	void create (int nSize, float rRadius, CVector &vDirection)
+	{
+		grid.create	( nSize, 2*rRadius );
+
+		CMatrix	tmp;
+		CVector	I = (fabs(vDirection*CVector(1.f,0,0))>0.99)?CVector(0.f,1.f,0.f):CVector(1.f,0.f,0.f);
+		CVector	K = vDirection;
+		CVector	J = K^I;
+		J.normalize();
+		I=J^K;
+		I.normalize();
+		
+		tmp.identity();
+		tmp.setRot (I, J, K, true);
+		invMat = tmp;		
+		invMat.invert ();
+
+		tmp.identity();
+		grid.changeBase (tmp);
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	void insert (CTriangle &tri, SGridCell &cell)
+	{
+		CVector vMin;
+		CVector vMax;
+		CTriangle t = tri;
+
+		t.V0 = invMat.mulPoint (t.V0);
+		t.V1 = invMat.mulPoint (t.V1);
+		t.V2 = invMat.mulPoint (t.V2);
+
+		vMin = t.V0; vMax = t.V0;
+		
+		if (vMin.x > t.V1.x) vMin.x = t.V1.x;
+		if (vMin.y > t.V1.y) vMin.y = t.V1.y;
+		if (vMin.z > t.V1.z) vMin.z = t.V1.z;
+		if (vMin.x > t.V2.x) vMin.x = t.V2.x;
+		if (vMin.y > t.V2.y) vMin.y = t.V2.y;
+		if (vMin.z > t.V2.z) vMin.z = t.V2.z;
+
+		if (vMax.x < t.V1.x) vMax.x = t.V1.x;
+		if (vMax.y < t.V1.y) vMax.y = t.V1.y;
+		if (vMax.z < t.V1.z) vMax.z = t.V1.z;
+		if (vMax.x < t.V2.x) vMax.x = t.V2.x;
+		if (vMax.y < t.V2.y) vMax.y = t.V2.y;
+		if (vMax.z < t.V2.z) vMax.z = t.V2.z;
+
+		grid.insert (vMin, vMax, cell);
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	// Select the square of one of the 6 grids which is intersected by the 
+	// following ray : (0,0,0) -> v
+	void select( CVector &v )
+	{
+		CVector vSel = v;
+		vSel = invMat.mulPoint (vSel);
+		grid.select (vSel, vSel);
+		itSel = grid.begin();
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	SGridCell getSel()
+	{
+		return *itSel;
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	void nextSel()
+	{
+		++itSel;
+	}
+
+	// -----------------------------------------------------------------------------------------------
+	// To call after a nextSel to test if this is the end of the selection
+	bool isEndSel()
+	{
+		return (itSel == grid.end());
+	}
+
+
+};
+
+// ***********************************************************************************************
 struct SWorldRT
 {
-	vector<CMesh::CMeshBuild *> vMB;
+	vector<CMesh::CMeshBuild *>			vMB;
 	vector<CMeshBase::CMeshBaseBuild *> vMBB;
-	vector<INode *>				vINode;
+	vector<INode *>						vINode;
 	
-	vector<SCubeGrid> cgAccel; // One cube grid by light
-	vector<CBitmap> proj; // One projector by light
+	vector<SCubeGrid> cgAccel;	// One cube grid by light point or spot
+	vector<CBitmap> proj;		// One projector by light spot
+	vector<SDirGrid> dirAccel;	// One grid by light (directionnal only)
 };
 
 // -----------------------------------------------------------------------------------------------
@@ -1177,6 +1284,7 @@ void ComputeAreaOfTextureName(vector<sint32> &TextureNames, vector<CMesh::CFace*
 	TextureNames.resize( nNbTexName );
 }
 
+// -----------------------------------------------------------------------------------------------
 void ClearFaceWithNoLM( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, vector<CMesh::CFace*> &ZeFaces )
 {
 	sint32 i;
@@ -1299,13 +1407,114 @@ bool FaceContinuous( CMesh::CFace *pF1, CMesh::CFace *pF2, bool bTestUV = true, 
 	return true;
 }
 
-// -----------------------------------------------------------------------------------------------
-void SortFaceBySMoothGroup( vector<sint32> &FaceGroup, vector<CMesh::CFace*>::iterator ItFaces, sint32 nNbFace )
+struct FaceNext
 {
+	CMesh::CFace *face;
+	sint32 cont[3];
+	uint8 nNbCont;
+	bool added;
+};
+
+// -----------------------------------------------------------------------------------------------
+void SortFaceBySMoothGroup( vector<sint32> &FaceGroup, vector<CMesh::CFace*>::iterator ItFaces, uint32 nNbFace )
+{
+	uint32 i, j, k, nCurSG_NbFace, nCurSG_NbFaceLeft, nGroupNb;
+	vector<FaceNext> FacesNext;
+	vector<FaceNext> FacesFinal;
+
+	if (gOptions.FeedBack != NULL)
+	{
+		string sTmp = "Grouping (1/2)";
+		gOptions.FeedBack->setLine (4, sTmp);
+		gOptions.FeedBack->update ();
+	}
+
+
+	vector<CMesh::CFace*>::iterator ItParseI = ItFaces;
+	FacesNext.resize (nNbFace);
+	FacesFinal.resize (nNbFace);
+	for (i = 0; i < nNbFace; ++i, ++ItParseI)
+	{
+		FacesNext[i].face = *ItParseI;
+		FacesNext[i].cont[0] = FacesNext[i].cont[1] = FacesNext[i].cont[2] = -1;
+		FacesNext[i].nNbCont = 0;
+		FacesNext[i].added = false;
+	}
+
+	vector<CMesh::CFace*>::iterator ItParseJ = ItFaces;
+
+	for (j = 0; j < nNbFace; ++j, ++ItParseJ)
+	{
+		ItParseI = ItParseJ;
+		for (i = j; i < nNbFace; ++i, ++ItParseI)
+		if (i != j)
+		{
+			if (FaceContinuous (*ItParseI, *ItParseJ, false))
+			{
+				nlassert(FacesNext[j].nNbCont != 3);
+				if (FacesNext[j].nNbCont != 3)
+				{
+					FacesNext[j].cont[FacesNext[j].nNbCont] = i;
+					++FacesNext[j].nNbCont;
+				}
+				nlassert(FacesNext[i].nNbCont != 3);
+				if (FacesNext[i].nNbCont != 3)
+				{
+					FacesNext[i].cont[FacesNext[i].nNbCont] = j;
+					++FacesNext[i].nNbCont;
+				}
+			}
+		}
+	}
+
+	if (gOptions.FeedBack != NULL)
+	{
+		string sTmp = "Grouping (2/2)";
+		gOptions.FeedBack->setLine (4, sTmp);
+		gOptions.FeedBack->update ();
+	}
+
+	FaceGroup.resize (nNbFace);
+	for( j = 0; j < nNbFace; ++j )
+		FaceGroup[j] = 1;
+	nGroupNb = 0;
+
+	i = 0;
+	for (j = 0; j < nNbFace; ++j)
+	{
+		if (FacesNext[j].added == false)
+		{
+			FacesFinal[i] = FacesNext[j];
+			FacesNext[j].added = true;
+			nCurSG_NbFace = 1;
+			for (nCurSG_NbFaceLeft = 1; nCurSG_NbFaceLeft > 0; --nCurSG_NbFaceLeft)
+			{
+				for (k = 0; k < FacesFinal[i].nNbCont; ++k)
+					if (FacesNext[FacesFinal[i].cont[k]].added == false)
+					{
+						FacesNext[FacesFinal[i].cont[k]].added = true;
+						FacesFinal[i+nCurSG_NbFaceLeft] = FacesNext[FacesFinal[i].cont[k]];
+						++nCurSG_NbFace;
+						++nCurSG_NbFaceLeft;
+					}
+				++i;
+			}
+			FaceGroup[nGroupNb] = nCurSG_NbFace;
+			++nGroupNb;
+		}
+	}
+	FaceGroup.resize(nGroupNb);
+
+	ItParseI = ItFaces;
+	for (i = 0; i < nNbFace; ++i, ++ItParseI)
+		*ItParseI = FacesFinal[i].face;
+		
+	/*
 	sint32 j, k, nGroupNb = 0, nGroupOffset = 1;
 	bool bFaceAdded;
 
 	// Bubble sort face
+
 	FaceGroup.resize(nNbFace);
 	for( j = 0; j < nNbFace; ++j )
 		FaceGroup[j] = 1;
@@ -1349,6 +1558,7 @@ void SortFaceBySMoothGroup( vector<sint32> &FaceGroup, vector<CMesh::CFace*>::it
 		nGroupOffset += 1;
 	}
 	FaceGroup.resize(nGroupNb);
+	*/
 }
 
 
@@ -1429,6 +1639,15 @@ bool segmentIntersection(double x1, double y1, double x2, double y2, double x3, 
 }
 
 // -----------------------------------------------------------------------------------------------
+bool vertexInSquare(double xs, double ys, double ws, double hs, double xv, double yv)
+{
+	if ((fabs(xv - xs) < ws) && (fabs(yv - ys) < hs))
+		return true;
+	else
+		return false;
+}
+
+// -----------------------------------------------------------------------------------------------
 bool intersectionTriangleSphere( CTriangle &t, CBSphere &s )
 {
 	// if a vertex of the triangle is in the sphere
@@ -1475,6 +1694,18 @@ bool intersectionTriangleSphere( CTriangle &t, CBSphere &s )
 	if( ( fabs(f) < newRadius ) || ( fabs(f2) < newRadius ) || ( fabs(f3) < newRadius ) )
 		return true;
 	return false;
+}
+
+// -----------------------------------------------------------------------------------------------
+bool intersectionSphereCylinder (CBSphere &s, CVector &cyCenter, CVector &cyDir, float cyRadius)
+{
+	float t = ((s.Center - cyCenter)*cyDir) / (cyDir*cyDir);
+	CVector Xp = cyCenter + t*cyDir;
+	float d = (s.Center-Xp).norm();
+	if (d <= (cyRadius+s.Radius))
+		return true;
+	else
+		return false;
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -2284,79 +2515,116 @@ void PlaceLMPlaneInLMPLane( SLMPlane &Dst, SLMPlane &Src )
 }
 
 // -----------------------------------------------------------------------------------------------
-CRGBAF TestRay( CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 nLightNb, uint8& rtVal )
+// rtVal is the raytrace information see SLMPlane.ray for more information
+void testCell (CRGBAF &retValue, SGridCell &cell, CVector &vLightPos, CVector &vVertexPos, uint8& rtVal)
+{
+	CVector hit;
+
+	CTriangle t(cell.pMB->Vertices[cell.pF->Corner[0].Vertex],
+				cell.pMB->Vertices[cell.pF->Corner[1].Vertex],
+				cell.pMB->Vertices[cell.pF->Corner[2].Vertex] );
+	CPlane plane;
+	plane.make( t.V0, t.V1, t.V2 );
+
+	if( t.intersect( vLightPos, vVertexPos, hit, plane ) )
+	{
+		if( cell.pMBB->Materials[cell.pF->MaterialId].getBlend() ||
+			cell.pMBB->Materials[cell.pF->MaterialId].getAlphaTest() )
+		{ // This is a transparent face we have to look in the texture
+			ITexture *pT = cell.pMBB->Materials[cell.pF->MaterialId].getTexture(0);
+			CRGBAF cPixMap;
+			if( pT == NULL )
+			{
+				retValue *= 1.0f - (cell.pMBB->Materials[cell.pF->MaterialId].getOpacity()/255.0f);
+				cPixMap = CRGBAF(1.0f, 1.0f, 1.0f, 0.0f);
+			}
+			else
+			{
+				CVector gradU, gradV;
+				t.computeGradient(	cell.pF->Corner[0].Uvs[0].U,
+									cell.pF->Corner[1].Uvs[0].U,
+									cell.pF->Corner[2].Uvs[0].U, gradU );
+				t.computeGradient(	cell.pF->Corner[0].Uvs[0].V,
+									cell.pF->Corner[1].Uvs[0].V,
+									cell.pF->Corner[2].Uvs[0].V, gradV );
+				float u = cell.pF->Corner[0].Uvs[0].U+gradU*(hit-t.V0);
+				float v = cell.pF->Corner[0].Uvs[0].V+gradV*(hit-t.V0);
+				u = fmodf( u, 1.0f ); if( u < 0.0f ) u += 1.0f;
+				v = fmodf( v, 1.0f ); if( v < 0.0f ) v += 1.0f;
+
+				if( pT->getWidth() == 0 )
+					((CTextureFile*)pT)->generate();
+				cPixMap = pT->getColor( u,v );
+				cPixMap /= 255.0f;
+			}
+			cPixMap.A *= cell.pMBB->Materials[cell.pF->MaterialId].getOpacity()/255.0f;
+			cPixMap.R *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().R/255.0f;
+			cPixMap.G *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().G/255.0f;
+			cPixMap.B *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().B/255.0f;
+			if (cell.pMBB->Materials[cell.pF->MaterialId].getStainedGlassWindow())
+			{
+				retValue = (1.0f - cPixMap.A)*(	retValue*(1.0f-cPixMap.A) + 
+												retValue*cPixMap*cPixMap.A );
+			}
+			else
+			{
+				retValue *= (1.0f - cPixMap.A);
+			}
+			rtVal = 255;
+		}
+		else
+		{ // This is not a transparent face so if we intersect we get shadow
+			if( rtVal < 255 ) rtVal += 1;
+			retValue = CRGBAF(0.0f, 0.0f, 0.0f, 0.0f);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------------------------
+CRGBAF testRayLightPointSpot (CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 nLightNb, uint8& rtVal)
 {
 	CRGBAF retValue(1.0f, 1.0f, 1.0f, 1.0f);
 	// Optim avec Cube Grid
 	wrt.cgAccel[nLightNb].select( vVertexPos - vLightPos );
 	while( !wrt.cgAccel[nLightNb].isEndSel() )
 	{
-		SCubeGridCell cell = wrt.cgAccel[nLightNb].getSel();
+		// Get selected element
+		SGridCell cell = wrt.cgAccel[nLightNb].getSel();
 
-		CVector hit;
-
-		CTriangle t(cell.pMB->Vertices[cell.pF->Corner[0].Vertex],
-					cell.pMB->Vertices[cell.pF->Corner[1].Vertex],
-					cell.pMB->Vertices[cell.pF->Corner[2].Vertex] );
-		CPlane plane;
-		plane.make( t.V0, t.V1, t.V2 );
-
-		if( t.intersect( vLightPos, vVertexPos, hit, plane ) )
-		{
-			if( cell.pMBB->Materials[cell.pF->MaterialId].getBlend() ||
-				cell.pMBB->Materials[cell.pF->MaterialId].getAlphaTest() )
-			{ // This is a transparent face we have to look in the texture
-				ITexture *pT = cell.pMBB->Materials[cell.pF->MaterialId].getTexture(0);
-				CRGBAF cPixMap;
-				if( pT == NULL )
-				{
-					retValue *= 1.0f - (cell.pMBB->Materials[cell.pF->MaterialId].getOpacity()/255.0f);
-					cPixMap = CRGBAF(1.0f, 1.0f, 1.0f, 0.0f);
-				}
-				else
-				{
-					CVector gradU, gradV;
-					t.computeGradient(	cell.pF->Corner[0].Uvs[0].U,
-										cell.pF->Corner[1].Uvs[0].U,
-										cell.pF->Corner[2].Uvs[0].U, gradU );
-					t.computeGradient(	cell.pF->Corner[0].Uvs[0].V,
-										cell.pF->Corner[1].Uvs[0].V,
-										cell.pF->Corner[2].Uvs[0].V, gradV );
-					float u = cell.pF->Corner[0].Uvs[0].U+gradU*(hit-t.V0);
-					float v = cell.pF->Corner[0].Uvs[0].V+gradV*(hit-t.V0);
-					u = fmodf( u, 1.0f ); if( u < 0.0f ) u += 1.0f;
-					v = fmodf( v, 1.0f ); if( v < 0.0f ) v += 1.0f;
-
-					if( pT->getWidth() == 0 )
-						((CTextureFile*)pT)->generate();
-					cPixMap = pT->getColor( u,v );
-					cPixMap /= 255.0f;
-				}
-				cPixMap.A *= cell.pMBB->Materials[cell.pF->MaterialId].getOpacity()/255.0f;
-				cPixMap.R *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().R/255.0f;
-				cPixMap.G *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().G/255.0f;
-				cPixMap.B *= cell.pMBB->Materials[cell.pF->MaterialId].getDiffuse().B/255.0f;
-				if (cell.pMBB->Materials[cell.pF->MaterialId].getStainedGlassWindow())
-				{
-					retValue = (1.0f - cPixMap.A)*(	retValue*(1.0f-cPixMap.A) + 
-													retValue*cPixMap*cPixMap.A );
-				}
-				else
-				{
-					retValue *= (1.0f - cPixMap.A);
-				}
-				rtVal = 255;
-			}
-			else
-			{ // This is not a transparent face so if we intersect we get shadow
-				if( rtVal < 255 ) rtVal += 1;
-				return CRGBAF(0.0f, 0.0f, 0.0f, 0.0f);
-			}
-		}
-
+		testCell (retValue, cell, vLightPos, vVertexPos, rtVal);
+		if ((retValue.R == 0.0f) &&
+			(retValue.G == 0.0f) &&
+			(retValue.B == 0.0f))
+			return retValue;
+			
 		// Next selected element
 		wrt.cgAccel[nLightNb].nextSel();
 	}
+	return retValue;
+}
+
+// -----------------------------------------------------------------------------------------------
+CRGBAF testRayLightDir (CVector &vLightPos, CVector &vVertexPos, SWorldRT &wrt, sint32 nLightNb, uint8& rtVal)
+{
+	CRGBAF retValue(1.0f, 1.0f, 1.0f, 1.0f);
+
+	// Optim avec Grid pour la direction
+	wrt.dirAccel[nLightNb].select (vVertexPos);
+	while (!wrt.dirAccel[nLightNb].isEndSel())
+	{
+		// Get selected element
+		SGridCell cell = wrt.dirAccel[nLightNb].getSel();
+
+		testCell (retValue, cell, vLightPos, vVertexPos, rtVal);
+		if ((retValue.R == 0.0f) &&
+			(retValue.G == 0.0f) &&
+			(retValue.B == 0.0f))
+			return retValue;
+		
+		// Next selected element
+		wrt.dirAccel[nLightNb].nextSel();
+	}
+
 	return retValue;
 }
 
@@ -2380,18 +2648,17 @@ CRGBAF RayTraceAVertex( CVector &p, SWorldRT &wrt, sint32 nLightNb, SLightBuild&
 			light_p_distance = light_p_distance - (0.01f+(0.05f*light_p_distance/100.0f)); // Substract n centimeter
 			light_p.normalize();
 			light_p *= light_p_distance;
-			Factor = TestRay( rLight.Position, rLight.Position + light_p, wrt, nLightNb, rtVal );
+			Factor = testRayLightPointSpot (rLight.Position, rLight.Position + light_p, wrt, nLightNb, rtVal);
 		}
 		break;
 		case SLightBuild::LightDir:
-		// Not handled for the moment
-		//{
-		//	CVector r1 = p-rLight.Direction/100;
-		//	CVector r2 = p-100*rLight.Direction;
-		//	rFactor = TestRay( r1, r2, wrt );
-		//	nLightForFactor++;
-		//}
-			Factor = CRGBAF(1.0f, 1.0f, 1.0f, 1.0f);
+		{
+			float lightdist = ((p - rLight.Position)*rLight.Direction) / (rLight.Direction*rLight.Direction);
+			lightdist = lightdist - wrt.dirAccel[nLightNb].rMin;
+			CVector lightpos = p - rLight.Direction*lightdist;
+			CVector vertexpos = p - (0.01f+(0.05f*lightdist/100.0f))*rLight.Direction;
+			Factor = testRayLightDir(lightpos, vertexpos, wrt, nLightNb, rtVal);
+		}
 		break;
 		default:
 		break;
@@ -2467,7 +2734,7 @@ CRGBAF LightAVertex( uint8 &rtVal, CVector &pRT, CVector &p, CVector &n,
 				{
 					p_light = -p_light;
 				}
-				light_intensity *= rLight.rMult;
+				light_intensity = rLight.rMult;
 				lightAmbiCol.R = light_intensity * rLight.Ambient.R / 255.0f;
 				lightAmbiCol.G = light_intensity * rLight.Ambient.G / 255.0f;
 				lightAmbiCol.B = light_intensity * rLight.Ambient.B / 255.0f;
@@ -2732,7 +2999,12 @@ void SecondLight( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB,
 	
 				segmentIntersection(j+1.5, k+1.5, j+0.5, k+1.5, lumx1, lumy1, lumx2, lumy2) ||
 				segmentIntersection(j+1.5, k+1.5, j+0.5, k+1.5, lumx2, lumy2, lumx3, lumy3) ||
-				segmentIntersection(j+1.5, k+1.5, j+0.5, k+1.5, lumx3, lumy3, lumx1, lumy1) )
+				segmentIntersection(j+1.5, k+1.5, j+0.5, k+1.5, lumx3, lumy3, lumx1, lumy1) ||
+
+				vertexInSquare(j+0.5, k+0.5, 1.0, 1.0, lumx1, lumy1) || 
+				vertexInSquare(j+0.5, k+0.5, 1.0, 1.0, lumx2, lumy2) || 
+				vertexInSquare(j+0.5, k+0.5, 1.0, 1.0, lumx3, lumy3)							)
+
 			{
 				// If all segment of the current face are linked with a face in this plane, no need to continue
 				vector<CMesh::CFace*>::iterator ItParseM = pP1->faces.begin();
@@ -2956,9 +3228,18 @@ bool isInteractionLightMesh( SLightBuild &rSLB, CMesh::CMeshBuild &rMB, CMeshBas
 {
 	CAABBox meshBox;
 
-	if( rSLB.Type == SLightBuild::LightAmbient )
+	if (rSLB.Type == SLightBuild::LightAmbient)
 		return true;
+
 	meshBox = getMeshBBox( rMB, rMBB, true );
+
+	if (rSLB.Type == SLightBuild::LightDir)
+	{
+		// Construct acceleration for a dir light to not select all nodes in scene
+		rSLB.rDirRadius = meshBox.getHalfSize().norm();
+		rSLB.Position = meshBox.getCenter();
+		return true;
+	}
 	return isLightCanCastShadowOnBox( rSLB, meshBox );
 }
 
@@ -2967,9 +3248,22 @@ bool isInteractionLightMeshWithoutAmbient( SLightBuild &rSLB, CMesh::CMeshBuild 
 {
 	CAABBox meshBox;
 
-	if( rSLB.Type == SLightBuild::LightAmbient )
+	if (rSLB.Type == SLightBuild::LightAmbient)
 		return false;
+
 	meshBox = getMeshBBox( rMB, rMBB, true );
+
+	if (rSLB.Type == SLightBuild::LightDir)
+	{
+		// Use acceleration for dir light to not select all nodes in scene
+		CBSphere s;
+		s.Radius = meshBox.getHalfSize().norm();
+		s.Center = meshBox.getCenter();
+		// Test against the cylinder
+		if (intersectionSphereCylinder (s, rSLB.Position, rSLB.Direction, rSLB.rDirRadius))
+			return true;
+		return false;
+	}
 	return isLightCanCastShadowOnBox( rSLB, meshBox );
 }
 
@@ -3007,7 +3301,7 @@ void getLightInteract( CMesh::CMeshBuild* pMB, CMeshBase::CMeshBaseBuild *pMBB, 
 }
 
 // -----------------------------------------------------------------------------------------------
-void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< CMeshBase::CMeshBaseBuild* > &MeshesBase,
+void getAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< CMeshBase::CMeshBaseBuild* > &MeshesBase,
 						vector< INode* > &INodes, Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath )
 {
 	// Get time
@@ -3030,7 +3324,7 @@ void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< CMeshBas
 			bool bInteract = false;
 			if( pMBB->bCastShadows )
 			for( uint32 i = 0; i < AllLights.size(); ++i )
-			if( isInteractionLightMeshWithoutAmbient( AllLights[i], *pMB, *pMBB ) )
+			if( isInteractionLightMeshWithoutAmbient (AllLights[i], *pMB, *pMBB))
 			{
 				bInteract = true;
 				break;
@@ -3051,7 +3345,7 @@ void GetAllSelectedNode( vector< CMesh::CMeshBuild* > &Meshes,  vector< CMeshBas
 }
 
 // -----------------------------------------------------------------------------------------------
-void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< CMeshBase::CMeshBaseBuild* > &BaseMeshes, vector< INode* > &INodes,
+void getAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< CMeshBase::CMeshBaseBuild* > &BaseMeshes, vector< INode* > &INodes,
 					   Interface& ip, vector<SLightBuild> &AllLights, bool bAbsPath,
 					   INode* pNode = NULL )
 {
@@ -3071,7 +3365,7 @@ void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< CMeshBase:
 		bool bInteract = false;
 		if( pMBB->bCastShadows )
 		for( uint32 i = 0; i < AllLights.size(); ++i )
-		if( isInteractionLightMeshWithoutAmbient( AllLights[i], *pMB,*pMBB ) )
+		if (isInteractionLightMeshWithoutAmbient (AllLights[i], *pMB,*pMBB))
 		{
 			bInteract = true;
 			break;
@@ -3090,7 +3384,7 @@ void GetAllNodeInScene( vector< CMesh::CMeshBuild* > &Meshes, vector< CMeshBase:
 	}
 
 	for( sint32 i = 0; i < pNode->NumberOfChildren(); ++i )
-		GetAllNodeInScene( Meshes, BaseMeshes, INodes, ip, AllLights, bAbsPath, pNode->GetChildNode(i) );
+		getAllNodeInScene( Meshes, BaseMeshes, INodes, ip, AllLights, bAbsPath, pNode->GetChildNode(i) );
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -3112,6 +3406,7 @@ void convertToWorldCoordinate( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild
 }
 
 // -----------------------------------------------------------------------------------------------
+// Build the world for the raytracing and intialize all the accelerators
 void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip, bool absPath )
 {
 	uint32 i, j, k;
@@ -3119,65 +3414,96 @@ void buildWorldRT( SWorldRT &wrt, vector<SLightBuild> &AllLights, Interface &ip,
 
 	// Get all the nodes in the scene
 	if( gOptions.bExcludeNonSelected )
-		GetAllSelectedNode( wrt.vMB, wrt.vMBB, wrt.vINode, ip, AllLights, absPath );
+		getAllSelectedNode (wrt.vMB, wrt.vMBB, wrt.vINode, ip, AllLights, absPath);
 	else
-		GetAllNodeInScene( wrt.vMB, wrt.vMBB, wrt.vINode, ip, AllLights, absPath );
+		getAllNodeInScene (wrt.vMB, wrt.vMBB, wrt.vINode, ip, AllLights, absPath);
 
 	// Transform the meshbuilds vertices and normals to have world coordinates
 	for( i = 0; i < wrt.vMB.size(); ++i )
 	{
 		convertToWorldCoordinate( wrt.vMB[i], wrt.vMBB[i] );
-/*
-		CMatrix MBMatrix = getObjectToWorldMatrix( wrt.vMB[i], wrt.vMBB[i] );
-		// Update vertices
-		for( j = 0; j < wrt.vMB[i]->Vertices.size(); ++j )
-			wrt.vMB[i]->Vertices[j] = MBMatrix * wrt.vMB[i]->Vertices[j];
-		// Update normals
-		MBMatrix.invert();
-		MBMatrix.transpose();
-		for( j = 0; j < wrt.vMB[i]->Faces.size(); ++j )
-			for( k = 0; k < 3 ; ++k )
-				wrt.vMB[i]->Faces[j].Corner[k].Normal = 
-									MBMatrix.mulVector( wrt.vMB[i]->Faces[j].Corner[k].Normal );
-*/
 	}
 
 	// Construct all cube grids from all lights
 	wrt.cgAccel.resize( AllLights.size() );
+	wrt.dirAccel.resize( AllLights.size() );
 	for( i = 0; i < AllLights.size(); ++i )
 	{
-		wrt.cgAccel[i].create( 64 ); // width of each grid in number of square
-		switch( AllLights[i].Type )
+		SLightBuild &rLight = AllLights[i];
+		switch( rLight.Type )
 		{
 			case SLightBuild::LightAmbient:
 				// No ambient handled for the moment
 			break;
+			// --------------------------
 			case SLightBuild::LightSpot: // For the moment spot like point
 			case SLightBuild::LightPoint:
 			{
+			wrt.cgAccel[i].create( 64 ); // width of each grid in number of square
 			for( j = 0; j < wrt.vMB.size(); ++j )
 			{
-				if( AllLights[i].setExclusion.find( wrt.vINode[j]->GetName() ) != AllLights[i].setExclusion.end() ) 
+				if( rLight.setExclusion.find( wrt.vINode[j]->GetName() ) != rLight.setExclusion.end() ) 
 					continue;
 				
 				for( k = 0; k < wrt.vMB[j]->Faces.size(); ++k )
 				{
-					SCubeGridCell cell;
+					SGridCell cell;
 					cell.pF = &(wrt.vMB[j]->Faces[k]);
 					cell.pMB = wrt.vMB[j];
 					cell.pMBB = wrt.vMBB[j];
 					CTriangle tri = CTriangle( 
-						cell.pMB->Vertices[cell.pF->Corner[0].Vertex] - AllLights[i].Position,
-						cell.pMB->Vertices[cell.pF->Corner[1].Vertex] - AllLights[i].Position,
-						cell.pMB->Vertices[cell.pF->Corner[2].Vertex] - AllLights[i].Position );
-					if( intersectionTriangleSphere( tri, CBSphere(CVector(0,0,0), AllLights[i].rRadiusMax) ) )
+						cell.pMB->Vertices[cell.pF->Corner[0].Vertex] - rLight.Position,
+						cell.pMB->Vertices[cell.pF->Corner[1].Vertex] - rLight.Position,
+						cell.pMB->Vertices[cell.pF->Corner[2].Vertex] - rLight.Position );
+					if( intersectionTriangleSphere( tri, CBSphere(CVector(0,0,0), rLight.rRadiusMax) ) )
 						wrt.cgAccel[i].insert( tri, cell );
 				}
 			}
 			}
 			break;
+			// ------------------------
 			case SLightBuild::LightDir:
-				// No directionnal handled for the moment
+			{
+			wrt.dirAccel[i].create (64, rLight.rDirRadius/64.0f, rLight.Direction);
+			for( j = 0; j < wrt.vMB.size(); ++j )
+			{
+				if( rLight.setExclusion.find( wrt.vINode[j]->GetName() ) != rLight.setExclusion.end() ) 
+					continue;
+				
+				for( k = 0; k < wrt.vMB[j]->Faces.size(); ++k )
+				{
+					SGridCell cell;
+					cell.pF = &(wrt.vMB[j]->Faces[k]);
+					cell.pMB = wrt.vMB[j];
+					cell.pMBB = wrt.vMBB[j];
+					CTriangle tri = CTriangle( 
+						cell.pMB->Vertices[cell.pF->Corner[0].Vertex],
+						cell.pMB->Vertices[cell.pF->Corner[1].Vertex],
+						cell.pMB->Vertices[cell.pF->Corner[2].Vertex] );
+					// Convert the triangle into a sphere
+					CBSphere s;
+					s.Center = (tri.V0 + tri.V1 + tri.V2)/3.0f;
+					s.Radius = (tri.V0-s.Center).norm();
+					float tmp = (tri.V1-s.Center).norm();
+					if (tmp > s.Radius) s.Radius = tmp;
+					tmp = (tri.V2-s.Center).norm();
+					if (tmp > s.Radius) s.Radius = tmp;
+
+					if (intersectionSphereCylinder (s, rLight.Position, rLight.Direction, rLight.rDirRadius))
+					{
+						float t = ((s.Center - rLight.Position)*rLight.Direction) / (rLight.Direction*rLight.Direction);
+
+						if ((t-s.Radius) < wrt.dirAccel[i].rMin)
+							wrt.dirAccel[i].rMin = t - s.Radius;
+
+						if ((t+s.Radius) > wrt.dirAccel[i].rMax)
+							wrt.dirAccel[i].rMax = t + s.Radius;
+
+						wrt.dirAccel[i].insert (tri, cell);
+					}
+				}
+			}
+			}
 			break;
 		}
 	}
@@ -3225,12 +3551,12 @@ void supprLightNoInteract( vector<SLightBuild> &vLights,
 		bool bInteract = false;
 
 		for( j = 0; j < AllSelectedMeshes.size(); ++j )
-		if( isInteractionLightMesh( vLights[i], *AllSelectedMeshes[j].first.first, *AllSelectedMeshes[j].first.second ) )
+		if (isInteractionLightMesh( vLights[i], *AllSelectedMeshes[j].first.first, *AllSelectedMeshes[j].first.second))
 		{
 			bInteract = true;
 			break;
 		}
-		if( !bInteract )
+		if (!bInteract)
 		{
 			// Suppress the light because it has no interaction with selected meshes
 			for( j = i; j < (vLights.size()-1); ++j )
@@ -3255,10 +3581,12 @@ void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* p
 			bInteract = false;
 		}
 		else
+		{
 			if( isInteractionLightMesh( vLights[i], *pMB, *pMBB ) )
 			{
 				bInteract = true;			
 			}
+		}
 		if( !bInteract )
 		{
 			// Suppress the light because it has no interaction with selected meshes
@@ -3272,7 +3600,7 @@ void supprLightNoInteractOne( vector<SLightBuild> &vLights, CMesh::CMeshBuild* p
 
 // -----------------------------------------------------------------------------------------------
 // Add information for ont mesh to reference all the lights that interact with him
-void AddLightInfo( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, string &LightName, uint8 nMatNb, uint8 nStageNb )
+void addLightInfo( CMesh::CMeshBuild *pMB, CMeshBase::CMeshBaseBuild *pMBB, string &LightName, uint8 nMatNb, uint8 nStageNb )
 {
 	CMesh::CMatStage ms;
 	ms.nMatNb = nMatNb;
@@ -3341,20 +3669,37 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 
 	gOptions = structExport;
 
+	if(gOptions.FeedBack != NULL)
+	{
+		string sTmp = "LumelSize = " + toString(structExport.rLumelSize);
+		if (structExport.bShadow)
+			sTmp += " Shadow On";
+		else
+			sTmp += " Shadow Off";
+		sTmp += "OverSampling = " +toString(structExport.nOverSampling*structExport.nOverSampling);
+		gOptions.FeedBack->setLine (1, sTmp);
+	}
+
+
 	SWorldRT WorldRT; // The static world for raytrace
 	vector<SLightBuild> AllLights;
 
 	CMatrix mtmp = getObjectToWorldMatrix (pZeMeshBuild, pZeMeshBaseBuild);
 	vGlobalPos = mtmp.getPos();
-	vGlobalPos.x = (int)vGlobalPos.x;
-	vGlobalPos.y = (int)vGlobalPos.y;
-	vGlobalPos.z = (int)vGlobalPos.z;
+	vGlobalPos.x = (float)((int)vGlobalPos.x);
+	vGlobalPos.y = (float)((int)vGlobalPos.y);
+	vGlobalPos.z = (float)((int)vGlobalPos.z);
 
+	if (gOptions.FeedBack != NULL)
+	{
+		string sTmp = "Initializing";
+		gOptions.FeedBack->setLine (2, sTmp);
+		gOptions.FeedBack->update ();
+	}
 	// Select meshes to test for raytrace
 	// Get all lights from MAX
 	getLightBuilds( AllLights, tvTime, ip );
 	// Get all lights L that have influence over the mesh selected
-	// supprLightNoInteract( AllLights, AllMeshBuilds );
 	supprLightNoInteractOne( AllLights, pZeMeshBuild, pZeMeshBaseBuild, ZeNode );
 	// Get all meshes that are influenced by the lights L			
 	buildWorldRT( WorldRT, AllLights, ip, absolutePath );
@@ -3396,6 +3741,13 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		ClearFaceWithNoLM( pMB, pMBB, AllFaces );
 		if( AllFaces.size() == 0 )
 			return false;
+
+		if (gOptions.FeedBack != NULL)
+		{
+			string sTmp = "Calculating";
+			gOptions.FeedBack->setLine (2, sTmp);
+			gOptions.FeedBack->update ();
+		}
 		SortFaceByMaterialId( FaceGroupByMat, AllFaces.begin(), AllFaces.size() );
 		if( ! isAllFaceMapped( AllFaces.begin(), AllFaces.size() ) )
 		{
@@ -3408,14 +3760,20 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		}
 
 		// PATCH
-		FaceGroupByMat.resize(1);
-		FaceGroupByMat[0] = AllFaces.size();
+		//FaceGroupByMat.resize(1);
+		//FaceGroupByMat[0] = AllFaces.size();
 
 		offsetMat = 0;
 		for( uint32 nMat = 0; nMat < FaceGroupByMat.size(); ++nMat )
 		{
 			vector<sint32> FaceGroupBySmooth;
 
+			if (gOptions.FeedBack != NULL)
+			{
+				string sTmp = "Material (" + toString(1+nMat) + "/" + toString(FaceGroupByMat.size()) + ")";
+				gOptions.FeedBack->setLine (3, sTmp);
+				gOptions.FeedBack->update ();
+			}
 			// Sort faces by smoothing group
 			SortFaceBySMoothGroup( FaceGroupBySmooth, AllFaces.begin()+offsetMat, FaceGroupByMat[nMat] );
 
@@ -3425,6 +3783,13 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 				uint32 nPlaneNb, nLight;
 				vector<sint32> FaceGroupByPlane;
 				
+				if (gOptions.FeedBack != NULL)
+				{
+					string sTmp = "SmoothGroup (" + toString(1+nSmoothNb) + "/" + toString(FaceGroupBySmooth.size()) + ")";
+					gOptions.FeedBack->setLine (4, sTmp);
+					gOptions.FeedBack->update ();
+				}
+
 				if( ! PutFaceUV1InLumelCoord( gOptions.rLumelSize, AllVertices, 
 										AllFaces.begin()+offsetSmooth, FaceGroupBySmooth[nSmoothNb] ) )
 					continue;
@@ -3505,42 +3870,6 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 						delete TempPlanes[nPlaneNb];
 				}
 
-
-				/*
-				for( nLight = 0; nLight < vvLights.size(); ++nLight )
-				{
-					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
-					{					
-						// Light the LightMap for the plane (interior only)
-						FirstLight( pMB, pMBB, *AllPlanes[AllPlanesPrevSize+nPlaneNb], 
-									AllVertices, MBMatrix, vvLights[nLight], AllLights,
-									nLight, WorldRT );
-					}
-					// Make extoriors
-					SecondLight( pMB, pMBB, AllPlanes.begin()+AllPlanesPrevSize, FaceGroupByPlane.size(),
-								AllVertices, MBMatrix, vvLights[nLight], AllLights,
-								nLight, WorldRT );
-				}
-				if( gOptions.nOverSampling > 1 )
-				{
-					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
-						ModifyLMPlaneWithOverSampling( AllPlanes[AllPlanesPrevSize+nPlaneNb],
-														gOptions.nOverSampling );
-					for( nLight = 0; nLight < vvLights.size(); ++nLight )
-					{
-						for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
-							FirstLight( pMB, pMBB, *AllPlanes[AllPlanesPrevSize+nPlaneNb], 
-										AllVertices, MBMatrix, vvLights[nLight], AllLights,
-										nLight, WorldRT );
-						SecondLight( pMB, pMBB, AllPlanes.begin()+AllPlanesPrevSize, FaceGroupByPlane.size(),
-									AllVertices, MBMatrix, vvLights[nLight],  AllLights,
-									nLight, WorldRT );
-					}						
-					for( nPlaneNb = 0; nPlaneNb < FaceGroupByPlane.size(); ++nPlaneNb )
-						ModifyLMPlaneWithOverSampling( AllPlanes[AllPlanesPrevSize+nPlaneNb],
-														1.0/((double)gOptions.nOverSampling) );
-				}
-				*/
 				// Next group of face with the same smooth group and the same material
 				offsetSmooth += FaceGroupBySmooth[nSmoothNb];
 			}
@@ -3549,11 +3878,26 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		}
 		
 		// Create the lightmap
-		
+		if (gOptions.FeedBack != NULL)
+		{
+			string sTmp = "Placement";
+			gOptions.FeedBack->setLine (3, sTmp);
+			sTmp = "";
+			for(i=4;i<14;++i)
+				gOptions.FeedBack->setLine (i, sTmp);
+			gOptions.FeedBack->update ();
+		}
+
 		SLMPlane LightMap;
 		SortPlanesBySurface( AllPlanes );
 		for( i = 0; i < AllPlanes.size(); ++i )
 		{
+			if (gOptions.FeedBack != NULL)
+			{
+				string sTmp = "Plane (" + toString(i) + "/" + toString(AllPlanes.size()) + ")";
+				gOptions.FeedBack->setLine (4, sTmp);
+				gOptions.FeedBack->update ();
+			}
 			// Put in the basis of the plane
 			MoveFaceUV1( AllPlanes[i]->faces.begin(), AllPlanes[i]->faces.size(), 
 						-AllPlanes[i]->x, -AllPlanes[i]->y );
@@ -3594,11 +3938,9 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			for( i = 0; i < pMBB->Materials.size(); ++i )
 			if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 			{
-				////pLightMap->setFilterMode(ITexture::Nearest,ITexture::NearestMipMapOff);
-				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );
-				//AllMeshBuilds[nNode].first->Materials[i].setLighting( false );
-				AddLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );
-				//////int a = pMB->LightInfoMap.size();
+				/// \todo add an export option to do that: pLightMap->setFilterMode(ITexture::Nearest,ITexture::NearestMipMapOff);
+				pMBB->Materials[i].setLightMap( nLightMapNb, pLightMap );				
+				addLightInfo( pMB, pMBB, AllLights[vvLights[j].operator[](0)].GroupName, (uint8)i, (uint8)nLightMapNb );				
 			}
 			++nLightMapNb;
 		}		

@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.18 2001/08/08 09:04:46 legros Exp $
+ * $Id: export_nel.h,v 1.19 2001/08/08 11:54:48 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,7 +82,15 @@ namespace NL3D
 };
 
 // ***************************************************************************
+// Interface for feed back during calculation
+class IProgress
+{
+public:
+	virtual void setLine (uint32 LineNumber, std::string &LineText)=0;
+	virtual void update()=0;
+};
 
+// ***************************************************************************
 struct CExportNelOptions
 {
 	bool bShadow;
@@ -92,6 +100,8 @@ struct CExportNelOptions
 	float rLumelSize;
 	sint32 nOverSampling;
 	bool bExcludeNonSelected;
+	IProgress *FeedBack;
+
 
 	CExportNelOptions::CExportNelOptions()
 	{
@@ -103,6 +113,7 @@ struct CExportNelOptions
 		rLumelSize = 0.25f;
 		nOverSampling = 1;
 		bExcludeNonSelected = false;
+		FeedBack = NULL;
 	}
 
 	void serial(NLMISC::IStream& stream)

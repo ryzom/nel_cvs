@@ -94,16 +94,18 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,7,145,10
 END
 
-IDD_CALCULATING DIALOG DISCARDABLE  0, 0, 186, 63
+IDD_CALCULATING DIALOG DISCARDABLE  0, 0, 186, 181
 STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
 CAPTION "Calculating..."
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         "Progress1",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,
-                    7,42,172,14
+                    7,41,172,14
     LTEXT           "Please wait intializing...",IDC_STATICTIMELEFT,7,7,172,
                     8
-    PUSHBUTTON      "Cancel",IDC_BUTTONCANCEL,129,23,50,14,BS_NOTIFY
+    PUSHBUTTON      "Interrupt",IDC_BUTTONCANCEL,129,23,50,14,BS_NOTIFY
+    LTEXT           "Object progression",IDC_STATIC,7,28,79,8
+    LTEXT           "Lightmaps Informations...",IDC_STATICINFO,7,60,172,114
 END
 
 
@@ -144,7 +146,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 179
         TOPMARGIN, 7
-        BOTTOMMARGIN, 56
+        BOTTOMMARGIN, 174
     END
 END
 #endif    // APSTUDIO_INVOKED

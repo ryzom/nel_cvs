@@ -84,6 +84,7 @@
 #define IDC_DYNAMIC_PORTAL              1051
 #define IDC_EDIT_INSTANCE_NAME          1052
 #define IDC_DONT_ADD_TO_SCENE           1053
+#define IDC_STATICINFO                  1054
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -94,7 +95,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        113
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1054
+#define _APS_NEXT_CONTROL_VALUE         1055
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

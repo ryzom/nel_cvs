@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.10 2001/08/01 14:24:55 besson Exp $
+ * $Id: nel_export_view.cpp,v 1.11 2001/08/08 11:54:47 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,135 +39,18 @@
 #include "nel/misc/time_nl.h"
 
 #include "nel_export.h"
+#include "progress.h"
 
 using namespace NLMISC;
 using namespace NL3D;
+using namespace std;
 
 #define VIEW_WIDTH 800
 #define VIEW_HEIGHT 600
 
-typedef std::map<INode*, CExportNel::mapBoneBindPos > mapRootMapBoneBindPos;
-
-
+typedef map<INode*, CExportNel::mapBoneBindPos > mapRootMapBoneBindPos;
 
 // -----------------------------------------------------------------------------------------------
-// -----------------------------------------------------------------------------------------------
-
-volatile bool gbCancelCalculation;
-float gRatioCalculated;
-double gTimeBegin;
-uint32 gNbTotalMeshes;
-HWND gHWndProgress;
-
-// -----------------------------------------------------------------------------------------------
-// -----------------------------------------------------------------------------------------------
-
-int CALLBACK CalculatingDialogCallback (
-  HWND hwndDlg,  // handle to dialog box
-  UINT uMsg,     // message
-  WPARAM wParam, // first message parameter
-  LPARAM lParam  // second message parameter
-)
-{
-	double TimeCurrent = CTime::ticksToSecond( CTime::getPerformanceTime() );
-	switch (uMsg) 
-	{
-		case WM_INITDIALOG:
-		{
-			CenterWindow( hwndDlg, theCNelExport.ip->GetMAXHWnd() );
-			ShowWindow( hwndDlg, SW_SHOWNORMAL );
-			gRatioCalculated = 0.0;
-			gbCancelCalculation = false;
-		}
-		break;
-
-		case WM_PAINT:
-		{
-			char temp[256];
-			SendMessage( GetDlgItem( hwndDlg, IDC_PROGRESS1 ), PBM_SETPOS, gRatioCalculated*100, 0 );
-
-			if( gRatioCalculated > 0.0 )
-			{
-				double TimeLeft = (TimeCurrent - gTimeBegin) * (1.0-gRatioCalculated);
-				sprintf( temp, "Time remaining : %02d h %02d m %02d s", ((uint32)TimeLeft)/3600,
-																		(((uint32)TimeLeft)/60)%60,
-																		(((uint32)TimeLeft))%60 );
-
-				SendMessage( GetDlgItem( hwndDlg, IDC_STATICTIMELEFT ), WM_SETTEXT, 0, (long)temp );
-				SendMessage( GetDlgItem( hwndDlg, IDC_BUTTONCANCEL ), WM_PAINT, 0, 0 );
-			}
-		}
-		break;
-
-		case WM_DESTROY:
-			gbCancelCalculation = true;
-		break;
-		case WM_COMMAND:
-		{
-			switch( LOWORD(wParam) )
-			{
-				// ---
-				case IDC_BUTTONCANCEL:
-					if( HIWORD(wParam) == BN_CLICKED )
-						gbCancelCalculation = true;
-				break;
-				default:
-				break;
-			}
-		}		
-		break;
-		default:
-			return FALSE;
-		break;
-	}
-	return TRUE;
-}
-
-// -----------------------------------------------------------------------------------------------
-// Initialize the dialog with the total number of meshes to treat
-void initProgressBar( sint32 nNbMesh, Interface &ip)
-{
-	gTimeBegin = CTime::ticksToSecond( CTime::getPerformanceTime() );
-	gNbTotalMeshes = nNbMesh;
-	gHWndProgress = CreateDialog(	CNelExportDesc.HInstance(), 
-									MAKEINTRESOURCE(IDD_CALCULATING),
-									NULL,//ip.GetMAXHWnd(), 
-									CalculatingDialogCallback			);								
-}
-
-// -----------------------------------------------------------------------------------------------
-void uninitProgressBar()
-{
-	DestroyWindow( gHWndProgress );
-}
-
-// -----------------------------------------------------------------------------------------------
-// Update with the current mesh treated
-void updateProgressBar( sint32 NMeshNb )
-{
-	gRatioCalculated = ((float)NMeshNb) / ((float)gNbTotalMeshes);
-	for( uint i = 0; i < 32; ++i )
-	{
-		MSG msg;
-		PeekMessage(&msg,(HWND)gHWndProgress ,0,0,PM_REMOVE);
-		{
-			if( IsDialogMessage(gHWndProgress ,&msg) )
-			{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-			}
-		}
-	}
-
-}
-
-// -----------------------------------------------------------------------------------------------
-bool isCanceledProgressBar()
-{
-	return gbCancelCalculation;
-}
-
-
 void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt)
 {
 	// Register classes
@@ -186,7 +69,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 
 		// Get node count
 		int nNumSelNode=ip.GetSelNodeCount();
-
+		int nNbMesh=0;
 		// Create an animation for the models
 		CAnimation *anim=new CAnimation;
 		CAnimation *autoAnim=new CAnimation;
@@ -259,7 +142,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 			{
 				// Build skined ?
 				bool skined=false;
-				
+				++nNbMesh;
 				// Skinning ?
 				if (CExportNel::isSkin (*pNode))
 				{
@@ -307,13 +190,24 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 		}
 		view->setAutoAnimation (autoAnim);
 
-		initProgressBar( nNumSelNode, ip );
+		CProgressBar ProgBar;
+		ProgBar.initProgressBar (nNbMesh, ip);
+		opt.FeedBack = &ProgBar;
+		nNbMesh = 0;
 		// View all selected objects
 		for (nNode=0; nNode<nNumSelNode; nNode++)
 		{
 			// Get the node
 			INode* pNode=ip.GetSelNode (nNode);
 
+			string sTmp = "Object Name: ";
+			sTmp += pNode->GetName();
+			ProgBar.setLine (0, sTmp);
+			sTmp = "";
+			for (uint32 i = 1; i < 14; ++i) 
+				ProgBar.setLine (i, sTmp);
+			ProgBar.update();
+			
 			// It is a zone ?
 			if (RPO::isZone (*pNode, time))
 			{
@@ -323,7 +217,7 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 			{
 				// Build skined ?
 				bool skined=false;
-
+				++nNbMesh;
 				// Skinning ?
 				if (CExportNel::isSkin (*pNode))
 				{
@@ -377,11 +271,13 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				CExportNel::addAnimation (*anim, *pNode, (CExportNel::getName (*pNode)+".").c_str(), &ip);
 				
 			}
-			updateProgressBar( nNode );
-			if( isCanceledProgressBar() )
+			ProgBar.updateProgressBar (nNbMesh);
+			if( ProgBar.isCanceledProgressBar() )
 				break;
 		}
-		uninitProgressBar();
+
+		ProgBar.uninitProgressBar();
+		opt.FeedBack = NULL;
 
 		// Set the single animation
 		view->setSingleAnimation (anim, "3dsmax current animation");

@@ -61,6 +61,9 @@ try
 	-- Get files in the zone_source_directory
 	files = getFiles "zone_source_directory/*.max" 
 
+	-- Sort files
+	sort files
+
 	-- No file ?
 	if files.count != 0 then
 	(
@@ -144,5 +147,7 @@ catch
 )
 
 -- Bye
+
 quitMAX #noPrompt
+quitMAX () #noPrompt
 

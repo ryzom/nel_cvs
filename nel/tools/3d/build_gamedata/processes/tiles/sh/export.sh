@@ -6,7 +6,7 @@
 database_directory=`cat ../../cfg/config.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the tile directories
-tile_source_directories=`cat ../../cfg/config.cfg | grep "tile_source_directories" | sed -e 's/tile_source_directories//' | sed -e 's/ //g' | sed -e 's/=//g'`
+tile_source_directories=`cat ../../cfg/directories.cfg | grep "tile_source_directories" | sed -e 's/tile_source_directories//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error
 echo ------- > log.log

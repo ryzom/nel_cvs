@@ -150,12 +150,18 @@ try
 	-- Get files in the shape_source_directory
 	files = getFiles "shape_source_directory/*.max" 
 
+	-- Sort files
+	sort files
+
 	-- No file ?
 	if files.count != 0 then
 	(
 		-- For each files
 		for i = 1 to files.count do
 		(
+			-- Delete lod files
+			lod_array = #()
+
 			-- Ok ?
 			ok = false
 
@@ -192,7 +198,9 @@ try
 
 								-- Node exist ?
 								if (nd != undefined) then 
+								(
 									append lod_array nd
+								)
 							)
 						)
 					)							
@@ -225,7 +233,7 @@ try
 							if (isToBeExported node == true) then
 							(
 								-- Not a lod ?
-								if (isLod node == false) then
+								if ((isLod node) == false) then
 								(
 									-- Output directory
 									if (haveCoarseMesh node) == true then
@@ -294,5 +302,7 @@ catch
 )
 
 -- Bye
+
 quitMAX #noPrompt
+quitMAX () #noPrompt
 

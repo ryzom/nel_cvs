@@ -12,7 +12,7 @@ database_directory=`cat ../../cfg/config.cfg | grep "database_directory" | sed -
 build_gamedata_directory=`cat ../../cfg/config.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the anim directories
-anim_source_directories=`cat ../../cfg/config.cfg | grep "anim_source_directory" | sed -e 's/anim_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+anim_source_directories=`cat ../../cfg/directories.cfg | grep "anim_source_directory" | sed -e 's/anim_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error
 echo ------- > log.log

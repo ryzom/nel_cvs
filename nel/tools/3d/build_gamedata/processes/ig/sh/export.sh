@@ -12,7 +12,7 @@ database_directory=`cat ../../cfg/config.cfg | grep "database_directory" | sed -
 build_gamedata_directory=`cat ../../cfg/config.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the ig directories
-ig_source_directories=`cat ../../cfg/config.cfg | grep "ig_source_directory" | sed -e 's/ig_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+ig_source_directories=`cat ../../cfg/directories.cfg | grep "ig_source_directory" | sed -e 's/ig_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error
 echo ------- > log.log

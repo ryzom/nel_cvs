@@ -31,6 +31,9 @@ try
 	-- Get files in the swt_source_directory
 	files = getFiles "swt_source_directory/*.max" 
 
+	-- Sort files
+	sort files
+
 	-- No file ?
 	if files.count != 0 then
 	(
@@ -86,5 +89,7 @@ catch
 )
 
 -- Bye
+
 quitMAX #noPrompt
+quitMAX () #noPrompt
 

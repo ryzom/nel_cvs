@@ -6,7 +6,7 @@
 database_directory=`cat ../../cfg/config.cfg | grep "database_directory" | sed -e 's/database_directory//g' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the ps directories
-ps_source_directories=`cat ../../cfg/config.cfg | grep "ps_source_directory" | sed -e 's/ps_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+ps_source_directories=`cat ../../cfg/directories.cfg | grep "ps_source_directory" | sed -e 's/ps_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Log error
 echo ------- > log.log

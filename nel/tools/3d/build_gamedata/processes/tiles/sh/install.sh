@@ -3,7 +3,7 @@
 # Install tiles in the client data
 
 # Get the tile install directory
-tile_install_directory=`cat ../../cfg/config.cfg | grep "tile_install_directory" | sed -e 's/tile_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+tile_install_directory=`cat ../../cfg/directories.cfg | grep "tile_install_directory" | sed -e 's/tile_install_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the client directory
 client_directory=`cat ../../cfg/config.cfg | grep "client_directory" | sed -e 's/client_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`

@@ -12,7 +12,7 @@ database_directory=`cat ../../cfg/config.cfg | grep "database_directory" | sed -
 build_gamedata_directory=`cat ../../cfg/config.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the shape directories
-shape_source_directories=`cat ../../cfg/config.cfg | grep "shape_source_directory" | sed -e 's/shape_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+shape_source_directories=`cat ../../cfg/directories.cfg | grep "shape_source_directory" | sed -e 's/shape_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the options
 seoel=`cat ../../cfg/config.cfg | grep "shape_export_opt_export_lighting" | sed -e 's/shape_export_opt_export_lighting//' | sed -e 's/ //g' | sed -e 's/=//g'`

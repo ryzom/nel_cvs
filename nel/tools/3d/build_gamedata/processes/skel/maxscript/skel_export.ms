@@ -31,6 +31,9 @@ try
 	-- Get files in the skel_source_directory
 	files = getFiles "skel_source_directory/*.max" 
 
+	-- Sort files
+	sort files
+
 	-- No file ?
 	if files.count != 0 then
 	(
@@ -97,5 +100,7 @@ catch
 )
 
 -- Bye
+
 quitMAX #noPrompt
+quitMAX () #noPrompt
 

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.47 2002/03/29 14:17:03 vizerie Exp $
+# $Id: Makefile.am,v 1.48 2002/03/29 14:47:39 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -71,10 +71,12 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         mem_displayer.cpp                  \
                         game_device_events.cpp             \
                         input_device.cpp                   \
-                        input_device_server.cpp            \
+                        input_device_server.cpp
 
-
-
+noinst_HEADERS        = di_game_device.h                   \
+                        di_keyboard_device.h               \
+                        di_mouse_device.h                  \
+                        stdmisc.h
 
 libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread
 

@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * <File description>
  *
- * $Id: string_id_array.h,v 1.5 2001/03/13 15:56:45 lecroart Exp $
+ * $Id: string_id_array.h,v 1.6 2001/03/16 17:17:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include <math.h>
 #include <string>
 #include <vector>
+#include <set>
 #include <algorithm>
 
 #include "nel/misc/types_nl.h"
@@ -50,14 +51,22 @@ public:
 
 	typedef sint16 TStringId;
 
+	CStringIdArray () : _IgnoreAllUnknownId(false) { }
+
 	void addString(const std::string &str, TStringId id)
 	{
 		nlassert (id >= 0 && id < pow(2, sizeof (TStringId)*8));
 
-		if (id > (sint32) _StringArray.size())
+		if (id >= (sint32) _StringArray.size())
 			_StringArray.resize(id+1);
 
 		_StringArray[id] = str;
+
+		if (!_IgnoreAllUnknownId)
+		{
+			_AskedStringArray.erase (str);
+			_NeedToAskStringArray.erase (str);
+		}
 	}
 
 	void addString(const std::string &str)
@@ -76,13 +85,31 @@ public:
 				return i;
 		}
 
-		// the string is not found, add it to the _AskedStringArray if necessary
-		std::vector<std::string>::iterator it = std::find (_AskedStringArray.begin(), _AskedStringArray.end(), str);
-		if (it == _AskedStringArray.end ())
+		if (!_IgnoreAllUnknownId)
 		{
-			nldebug ("Didn't found the id for '%s', adding it to _AskedStringArray", str.c_str ());
-			_AskedStringArray.push_back (str);
+			// the string is not found, add it to the _AskedStringArray if necessary
+			if (_NeedToAskStringArray.find (str) == _NeedToAskStringArray.end ())
+			{
+				if (_AskedStringArray.find (str) == _AskedStringArray.end ())
+				{
+					nldebug ("String '%s' not found, add it to _NeedToAskStringArray", str.c_str ());	
+					_NeedToAskStringArray.insert (str);
+				}
+				else
+				{
+					nldebug ("Found '%s' in the _AskedStringArray", str.c_str ());	
+				}
+			}
+			else
+			{
+				nldebug ("Found '%s' in the _NeedToAskStringArray", str.c_str ());	
+			}
 		}
+		else
+		{
+			nldebug ("Ignoring unknown association ('%s')", str.c_str ());	
+		}
+
 		return -1;
 	}
 
@@ -103,21 +130,36 @@ public:
 		return _StringArray.size ();
 	}
 
-	const std::vector<std::string> &getAskedStringArray () const
+	const std::set<std::string> &getNeedToAskedStringArray () const
+	{
+		return _NeedToAskStringArray;
+	}
+
+	const std::set<std::string> &getAskedStringArray () const
 	{
 		return _AskedStringArray;
 	}
 
-	void clearAskedStringArray ()
+	void moveNeedToAskToAskedStringArray ()
 	{
-		_AskedStringArray.clear ();
+		if (!_IgnoreAllUnknownId)
+		{
+			_AskedStringArray.insert (_NeedToAskStringArray.begin(), _NeedToAskStringArray.end());
+			_NeedToAskStringArray.clear ();
+		}
 	}
+
+	void ignoreAllUnknownId (bool b) { _IgnoreAllUnknownId = b; }
 
 private:
 
+	bool _IgnoreAllUnknownId;
+
 	std::vector<std::string>	_StringArray;
 
-	std::vector<std::string>	_AskedStringArray;
+	std::set<std::string>	_NeedToAskStringArray;
+
+	std::set<std::string>	_AskedStringArray;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: abstract_interface.h,v 1.2 2001/01/05 13:48:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -303,14 +303,14 @@ namespace NLIAC //Gen pour general.
 		*/
 		virtual void save(NLMISC::IStream &) = 0;
 		/**
-		Load the class in a stream.
+		Load the class from a stream.
 		*/		
 		virtual void load(NLMISC::IStream &) = 0;			
 	};
 		
 	inline void IBasicInterface::save(NLMISC::IStream &)
 	{
-	}
+	} 
 
 	inline void IBasicInterface::load(NLMISC::IStream &)
 	{

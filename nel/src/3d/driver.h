@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.h,v 1.68 2004/03/30 14:36:29 berenguier Exp $
+ * $Id: driver.h,v 1.69 2004/04/01 09:40:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -712,7 +712,7 @@ public:
 	  * The x, y, width and height parameters are only used in this case to optimize the copy from the framebuffer
 	  * to the texture.
 	  *
-	  * If a texture is set as target, the viewport and the frustum are now relative to the texture sizes,
+	  * If a texture is set as target, the viewport and the scissor are now relative to the texture sizes,
 	  * and not to the x, y, width and height parameters.
 	  *
 	  * The texture content can be lost after the first setRenderTarget().

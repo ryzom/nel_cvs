@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op.cpp
  * <File description>
  *
- * $Id: ps_attrib_maker_bin_op.cpp,v 1.1 2001/07/12 15:54:12 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op.cpp,v 1.2 2001/07/24 09:41:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

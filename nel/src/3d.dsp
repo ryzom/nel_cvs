@@ -226,6 +226,14 @@ SOURCE=..\include\nel\3d\tessellation.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\texture_far.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\texture_far.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\tile_element.cpp
 # End Source File
 # Begin Source File

@@ -185,6 +185,9 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name lib
     End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name zviewer
+    End Project Dependency
 }}}
 
 ###############################################################################
@@ -197,6 +200,24 @@ Package=<5>
 
 Package=<4>
 {{{
+}}}
+
+###############################################################################
+
+Project: "zviewer"=..\..\..\tool\zviewer\zviewer.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+    Begin Project Dependency
+    Project_Dep_Name 3d
+    End Project Dependency
+    Begin Project Dependency
+    Project_Dep_Name misc
+    End Project Dependency
 }}}
 
 ###############################################################################

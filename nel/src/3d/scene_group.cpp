@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.34 2002/05/24 12:37:38 vizerie Exp $
+ * $Id: scene_group.cpp,v 1.35 2002/06/12 10:14:37 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -498,10 +498,10 @@ bool CInstanceGroup::addToScene (CScene& scene, IDriver *driver)
 			if( _Instances[i] == NULL )
 			{
 				
-				nlwarning("Not found %s.shape file\n", rInstanceInfo.Name.c_str());
-				#if defined(NL_DEBUG) && defined(__STL_DEBUG)
-					nlstop;
-				#endif
+				nlwarning("Not found '%s' file\n", shapeName.c_str());
+				//#if defined(NL_DEBUG) && defined(__STL_DEBUG)
+				//	nlstop;
+				//#endif
 
 				/*
 					for (uint32 j = 0; j < i; ++j)

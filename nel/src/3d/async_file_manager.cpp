@@ -1,7 +1,7 @@
 /** \file async_file_manager.cpp
  * <File description>
  *
- * $Id: async_file_manager.cpp,v 1.14 2002/05/21 10:01:30 vizerie Exp $
+ * $Id: async_file_manager.cpp,v 1.15 2002/06/12 10:14:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,7 +208,7 @@ void CAsyncFileManager::CMeshLoad::run()
 		// Is the pointer is invalid return -1
 		if (mesh.getShapePointer() == NULL)
 		{
-			nlwarning ("cant load %s", MeshName.c_str());
+			nlwarning ("Couldn't load '%s'", MeshName.c_str());
 			*_ppShp = (IShape*)-1;
 			delete this;
 			return;
@@ -221,6 +221,7 @@ void CAsyncFileManager::CMeshLoad::run()
 
 		if ((pMesh == NULL) || ((pMesh != NULL) && (_pDriver == NULL)))
 		{
+			nlwarning ("mesh or driver is NULL for file '%s'", MeshName.c_str());
 			*_ppShp = mesh.getShapePointer();
 			delete this;
 			return;
@@ -295,7 +296,7 @@ void CAsyncFileManager::CMeshLoad::run()
 	}
 	catch(EPathNotFound &)
 	{
-		nlwarning ("cant load %s", MeshName.c_str());
+		nlwarning ("Couldn't load '%s'", MeshName.c_str());
 		*_ppShp = (IShape*)-1;
 		delete this;
 		return;
@@ -331,6 +332,7 @@ void CAsyncFileManager::CIGLoad::run (void)
 	}
 	catch(EPathNotFound &)
 	{
+		nlwarning ("Couldn't load '%s'", _IGName.c_str());
 		*_ppIG = (CInstanceGroup*)-1;
 		delete this;
 		return;
@@ -361,6 +363,7 @@ void CAsyncFileManager::CIGLoadUser::run (void)
 		}
 		else
 		{
+			nlwarning ("Couldn't init '%s'", _IGName.c_str());
 			*_ppIG = (UInstanceGroup*)-1;
 			delete this;
 			return;
@@ -368,6 +371,7 @@ void CAsyncFileManager::CIGLoadUser::run (void)
 	}
 	catch(EPathNotFound &)
 	{
+		nlwarning ("Couldn't load '%s'", _IGName.c_str());
 		*_ppIG = (UInstanceGroup*)-1;
 		delete this;
 		return;
@@ -405,6 +409,7 @@ void CAsyncFileManager::CFileLoad::run (void)
 	}
 	else
 	{
+		nlwarning ("Couldn't load '%s'", _FileName.c_str());
 		*_ppFile = (uint8*)-1;
 	}
 }
@@ -442,6 +447,7 @@ void CAsyncFileManager::CMultipleFileLoad::run (void)
 		}
 		else
 		{
+			nlwarning ("Couldn't load '%s'", _FileNames[i].c_str());
 			*_Ptrs[i] = (uint8*)-1;
 		}
 	}

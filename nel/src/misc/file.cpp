@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.19 2002/04/30 13:48:46 besson Exp $
+ * $Id: file.cpp,v 1.20 2002/05/13 07:47:49 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,8 @@ CIFile::~CIFile()
 // ======================================================================================================
 bool		CIFile::open(const std::string &path, bool text)
 {
+	const uint32 READPACKETSIZE = 64 * 1024;
+	const uint32 INTERPACKETSLEEP = 5;
 	close();
 
 	char mode[3];
@@ -91,15 +93,18 @@ bool		CIFile::open(const std::string &path, bool text)
 		{
 			fseek (_F, _BigFileOffset, SEEK_SET);
 			_Cache = new uint8[_FileSize];
-			for (uint32 i = 0; i < _FileSize; i += 100*1024)
+			for (uint32 i = 0; i < _FileSize; i += READPACKETSIZE)
 			{
-				if ((i+100*1024) > _FileSize)
+				if ((i+READPACKETSIZE) > _FileSize)
 					fread (_Cache+i, _FileSize-i, 1, _F);
 				else
-					fread (_Cache+i, 100*1024, 1, _F);
+					fread (_Cache+i, READPACKETSIZE, 1, _F);
 				if (_IsAsyncLoading)
-					nlSleep (5);
+					nlSleep (INTERPACKETSLEEP);
 			}
+
+			//fread (_Cache, _FileSize, 1, _F);
+
 			if (!_AlwaysOpened)
 			{
 				fclose (_F);
@@ -128,14 +133,14 @@ bool		CIFile::open(const std::string &path, bool text)
 		if ((_CacheFileOnOpen) && (_F != NULL))
 		{
 			_Cache = new uint8[_FileSize];
-			for (uint32 i = 0; i < _FileSize; i += 100*1024)
+			for (uint32 i = 0; i < _FileSize; i += READPACKETSIZE)
 			{
-				if ((i+100*1024) > _FileSize)
+				if ((i+READPACKETSIZE) > _FileSize)
 					fread (_Cache+i, _FileSize-i, 1, _F);
 				else
-					fread (_Cache+i, 100*1024, 1, _F);
+					fread (_Cache+i, READPACKETSIZE, 1, _F);
 				if (_IsAsyncLoading)
-					nlSleep (5);
+					nlSleep (INTERPACKETSLEEP);
 			}
 			fclose (_F);
 			_F = NULL;
@@ -221,9 +226,9 @@ void		CIFile::serialBuffer(uint8 *buf, uint len) throw(EReadError)
 	if (_IsAsyncLoading)
 	{
 		_NbBytesSerialized += len;
-		if (_NbBytesSerialized > 100*1024)
+		if (_NbBytesSerialized > 64 * 1024)
 		{
-			nlSleep(5);
+			nlSleep (5);
 			_NbBytesSerialized = 0;
 		}
 	}

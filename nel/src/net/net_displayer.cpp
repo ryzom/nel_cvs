@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.15 2001/02/05 16:11:36 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.16 2001/02/05 16:30:08 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,7 +142,8 @@ void CNetDisplayer::display (time_t date, CLog::TLogType logType, const std::str
 		
 		CMessage msg( "", false );
 		msg.setType( LOG_CBINDEX ); // we don't listen for incoming replies, therefore we must not use a type as string. 0 is the default action for CLogService : "LOG"
-		msg.serial( const_cast<std::string&>(ss.str()) );
+		string s = ss.str();
+		msg.serial( s );
 		_Server.send( msg );
 	}
 	catch( NLMISC::Exception& )

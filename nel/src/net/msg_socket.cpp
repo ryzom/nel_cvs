@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.50 2001/01/15 15:09:55 cado Exp $
+ * $Id: msg_socket.cpp,v 1.51 2001/01/15 16:01:17 nevrax Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -290,10 +290,14 @@ CMsgSocket::~CMsgSocket()
  */
 void CMsgSocket::listen( CSocket *listensock, uint16 port ) throw (ESocket)
 {
+        // Use any address
 	CInetAddress localaddr; // By default, INETADDR_ANY (useful for gateways that have several ip addresses)
 	localaddr.setPort( port );
 	listen( listensock, localaddr ); // throw (ESocket)
+
+	// Now set the address visible from outside
 	listensock->_LocalAddr = CInetAddress::localHost();
+	listensock->_LocalAddr.setPort( port );
 }
 
 

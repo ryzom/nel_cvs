@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.16 2001/06/20 09:36:09 berenguier Exp $
+ * $Id: rgba.h,v 1.17 2001/11/07 10:31:07 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_RGBA_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 
 
 namespace NLMISC 
@@ -91,8 +92,8 @@ public:
 	 */	
 	void blendFromui(const CRGBA &c0, const CRGBA &c1, uint coef) // coef must be in [0,256]
 	{
-		sint	a1 = coef;
-		sint	a2 = 256-a1;
+		uint	a1 = coef;
+		uint	a2 = 256-a1;
 		R = (c0.R*a2 + c1.R*a1) >>8;
 		G = (c0.G*a2 + c1.G*a1) >>8;
 		B = (c0.B*a2 + c1.B*a1) >>8;
@@ -165,10 +166,10 @@ public:
 	 */
 	void	avg2(const CRGBA &a, const CRGBA &b)
 	{
-		R= ((sint)a.R+(sint)b.R)>>1;
-		G= ((sint)a.G+(sint)b.G)>>1;
-		B= ((sint)a.B+(sint)b.B)>>1;
-		A= ((sint)a.A+(sint)b.A)>>1;
+		R= ((uint)a.R+(uint)b.R)>>1;
+		G= ((uint)a.G+(uint)b.G)>>1;
+		B= ((uint)a.B+(uint)b.B)>>1;
+		A= ((uint)a.A+(uint)b.A)>>1;
 	}
 
 	/**
@@ -177,11 +178,75 @@ public:
 	 */
 	void	avg4(const CRGBA &a, const CRGBA &b, const CRGBA &c, const CRGBA &d)
 	{
-		R= ((sint)a.R+(sint)b.R+(sint)c.R+(sint)d.R+ 1)>>1;
-		G= ((sint)a.G+(sint)b.G+(sint)c.G+(sint)d.G+ 1)>>1;
-		B= ((sint)a.B+(sint)b.B+(sint)c.B+(sint)d.B+ 1)>>1;
-		A= ((sint)a.A+(sint)b.A+(sint)c.A+(sint)d.A+ 1)>>1;
+		R= ((uint)a.R+(uint)b.R+(uint)c.R+(uint)d.R+ 1)>>2;
+		G= ((uint)a.G+(uint)b.G+(uint)c.G+(uint)d.G+ 1)>>2;
+		B= ((uint)a.B+(uint)b.B+(uint)c.B+(uint)d.B+ 1)>>2;
+		A= ((uint)a.A+(uint)b.A+(uint)c.A+(uint)d.A+ 1)>>2;
 	}
+
+	/**
+	 *	Do the sum of 2 rgba, clamp, and store in this
+	 */
+	void	add(const CRGBA &c0, const CRGBA &c1)
+	{
+		uint	r,g,b,a;
+		r= c0.R + c1.R;	clamp(r, 0U, 255U);	R= (uint8)r;
+		g= c0.G + c1.G;	clamp(g, 0U, 255U);	G= (uint8)g;
+		b= c0.B + c1.B;	clamp(b, 0U, 255U);	B= (uint8)b;
+		a= c0.A + c1.A;	clamp(a, 0U, 255U);	A= (uint8)a;
+	}
+
+
+	/// \name RGBOnly methods. Same f() as their homonym, but don't modify A component.
+	// @{
+
+	/// see blendFromui()
+	void	blendFromuiRGBOnly(const CRGBA &c0, const CRGBA &c1, uint coef) // coef must be in [0,256]
+	{
+		uint	a1 = coef;
+		uint	a2 = 256-a1;
+		R = (c0.R*a2 + c1.R*a1) >>8;
+		G = (c0.G*a2 + c1.G*a1) >>8;
+		B = (c0.B*a2 + c1.B*a1) >>8;
+	}
+	/// see modulateFromui()
+	void	modulateFromuiRGBOnly(CRGBA &c0, uint a)
+	{
+		R = (c0.R*a) >>8;
+		G = (c0.G*a) >>8;
+		B = (c0.B*a) >>8;
+	}
+	/// see modulateFromColor()
+	void	modulateFromColorRGBOnly(const CRGBA &c0, const CRGBA &c1)
+	{
+		R = (c0.R*c1.R) >>8;
+		G = (c0.G*c1.G) >>8;
+		B = (c0.B*c1.B) >>8;
+	}
+	/// see avg2()
+	void	avg2RGBOnly(const CRGBA &a, const CRGBA &b)
+	{
+		R= ((uint)a.R+(uint)b.R)>>1;
+		G= ((uint)a.G+(uint)b.G)>>1;
+		B= ((uint)a.B+(uint)b.B)>>1;
+	}
+	/// see avg4()
+	void	avg4RGBOnly(const CRGBA &a, const CRGBA &b, const CRGBA &c, const CRGBA &d)
+	{
+		R= ((uint)a.R+(uint)b.R+(uint)c.R+(uint)d.R+ 1)>>2;
+		G= ((uint)a.G+(uint)b.G+(uint)c.G+(uint)d.G+ 1)>>2;
+		B= ((uint)a.B+(uint)b.B+(uint)c.B+(uint)d.B+ 1)>>2;
+	}
+	/// see add()
+	void	addRGBOnly(const CRGBA &c0, const CRGBA &c1)
+	{
+		uint	r,g,b;
+		r= c0.R + c1.R;	clamp(r, 0U, 255U);	R= (uint8)r;
+		g= c0.G + c1.G;	clamp(g, 0U, 255U);	G= (uint8)g;
+		b= c0.B + c1.B;	clamp(b, 0U, 255U);	B= (uint8)b;
+	}
+
+	// @}
 
 
 	/// Red componant.

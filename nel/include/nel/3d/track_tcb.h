@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.1 2001/03/26 14:52:55 berenguier Exp $
+ * $Id: track_tcb.h,v 1.2 2001/03/27 09:13:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,14 +48,17 @@ template<class CKeyT, class T, class TMapTimeCKey>
 class CTCBTools
 {
 protected:
+	typedef typename TMapTimeCKey::iterator		TMapTimeCKeyIterator;
+
+
 
 	/// compute TCB ease information.
 	void compileTCBEase(TMapTimeCKey &mapKey, bool loopMode)
 	{
-		TMapTimeCKey::iterator	it= mapKey.begin();
+		TMapTimeCKeyIterator	it= mapKey.begin();
 		for(;it!=mapKey.end();it++)
 		{
-			TMapTimeCKey::iterator	next= it;
+			TMapTimeCKeyIterator	next= it;
 			next++;
 
 			// loop mgt. must compute ease from last to first (usefull if _RangeLock is false).
@@ -208,6 +211,11 @@ public:
 	
 protected:
 
+
+	typedef typename CKeyT::TValueType		TKeyValueType;
+
+
+
 	/// \name From ITrackKeyFramer
 	// @{
 
@@ -323,7 +331,7 @@ private:
 		computeTCBFactors(key, timeBefore, time, timeAfter, rangeDelta, firstKey, endKey, isLoop, ksm,ksp,kdm,kdp);
 
 		// Delta.
-		CKeyT::TValueType	delm, delp;
+		TKeyValueType	delm, delp;
 		delm = key.Value - keyBefore.Value;
 		delp = keyAfter.Value - key.Value;
 
@@ -337,7 +345,7 @@ private:
 	void computeTCBKeyLinear(CKeyT &key0, CKeyT &key1)
 	{
 		float f0, f1;
-		CKeyT::TValueType	dv;
+		TKeyValueType	dv;
 		
 		f0 = 1.0f - key0.Tension;
 		f1 = 1.0f - key1.Tension;

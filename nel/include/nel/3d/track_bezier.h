@@ -1,7 +1,7 @@
 /** \file track_bezier.h
  * ITrack Bezier implementation
  *
- * $Id: track_bezier.h,v 1.1 2001/03/26 14:52:55 berenguier Exp $
+ * $Id: track_bezier.h,v 1.2 2001/03/27 09:13:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,9 @@ public:
 	
 protected:
 
+	typedef typename CKeyT::TValueType		TKeyValueType;
+
+
 	/// \name From ITrackKeyFramer
 	// @{
 
@@ -82,7 +85,7 @@ protected:
 			float u3 = u2 * u;
 
 			// compute Bezier control points from tangents.
-			CKeyT::TValueType	cp0, cp1;
+			TKeyValueType	cp0, cp1;
 
 			// NB: loop case: dateNext is always > datePrevious....
 			cp0 =	previous->Value + previous->OutTan * (dateNext-datePrevious) / 3.0f;
@@ -225,5 +228,5 @@ protected:
 	// @}
 
 private:
-	CAnimatedValueBlendable<T>	_Value;
+	CAnimatedValueBlendable<CQuat>	_Value;
 };

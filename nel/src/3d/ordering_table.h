@@ -1,7 +1,7 @@
 /** \file ordering_table.h
  * Generic Ordering Table
  *
- * $Id: ordering_table.h,v 1.1 2001/07/02 12:00:10 besson Exp $
+ * $Id: ordering_table.h,v 1.2 2001/07/05 09:21:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,11 @@ public:
 	 * The ordering table has a range from 0 to nNbEntries-1
 	 */
 	void init( uint32 nNbEntries );
+
+	/**
+	 * Just return the number of entries in the ordering table
+	 */
+	uint32 getSize();
 
 	/**
 	 * Put the ordering table to empty
@@ -145,14 +150,22 @@ template<class T> void COrderingTable<T>::init( uint32 nNbEntries )
 }
 
 // ***************************************************************************
+template<class T> uint32 COrderingTable<T>::getSize()
+{
+	return _nNbElt;
+}
+
+// ***************************************************************************
 template<class T> void COrderingTable<T>::reset()
 {
 	_Allocator.free();
 
 	for( uint32 i = 0; i < _nNbElt-1; ++i )
 	{
+		_Array[i].val = NULL;
 		_Array[i].next = &_Array[i+1];
 	}
+	_Array[_nNbElt-1].val  = NULL;
 	_Array[_nNbElt-1].next = NULL;
 }
 
@@ -161,13 +174,13 @@ template<class T> void COrderingTable<T>::insert( uint32 nEntryPos, T *pValue )
 {
 	if( nEntryPos >= _nNbElt )
 		nEntryPos = _nNbElt-1;
-	CNode *SelNode = &_Array[nEntryPos];
-	while( SelNode->val != NULL )
-		SelNode = SelNode->next;
-	SelNode->val = pValue;
+	CNode *ANode = &_Array[nEntryPos];
+	while( ANode->val != NULL )
+		ANode = ANode->next;
+	ANode->val = pValue;
 	CNode *nextNode = _Allocator.allocate();
-	nextNode->next = SelNode->next;
-	SelNode->next = nextNode;
+	nextNode->next = ANode->next;
+	ANode->next = nextNode;
 }
 
 // ***************************************************************************

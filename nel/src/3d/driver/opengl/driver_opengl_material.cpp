@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.76 2003/11/04 18:17:21 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.77 2003/11/06 09:39:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1049,16 +1049,14 @@ void			CDriverGL::setupSpecularPass(uint pass)
 	// Manage the rare case when the SpecularMap is not provided (error of a graphist).
 	if(mat.getTexture(1)==NULL)
 	{
-		// Just display the texture forcing no blend (as in std case).
+		// Just display the texture
 		// NB: setupMaterial() code has correclty setuped textures.
-		_DriverGLStates.enableBlend(false);
 		return;
 	}
 
 	/// Support NVidia combine 4 extension to do specular map in a single pass
 	if( _Extensions.NVTextureEnvCombine4 )
 	{	// Ok we can do it in a single pass
-		_DriverGLStates.enableBlend(false);
 
 		// Set Stage 1
 		// Special: not the same sepcial env if there is or not texture in stage 0.
@@ -1099,12 +1097,23 @@ void			CDriverGL::setupSpecularPass(uint pass)
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_RGB_NV, GL_ZERO );
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_RGB_NV, GL_ONE_MINUS_SRC_COLOR);
 			// Result : Texture*Previous.Alpha+Previous
+			// Setup Alpha Diffuse Copy
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PRIMARY_COLOR_EXT );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA );
+			// Arg1.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_ONE_MINUS_SRC_ALPHA);
+			// Arg2.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_SRC_ALPHA );
+			// Arg3.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA);
 		}
 	}
 	else if (_Extensions.ATIXTextureEnvCombine3)
 	{
 		// Ok we can do it in a single pass
-		_DriverGLStates.enableBlend(false);
 
 		// Set Stage 1
 		// Special: not the same sepcial env if there is or not texture in stage 0.
@@ -1121,7 +1130,7 @@ void			CDriverGL::setupSpecularPass(uint pass)
 
 			_DriverGLStates.activeTextureARB(1);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE_EXT);
-			// Operator Add (Arg0*Arg1+Arg2*Arg3)
+			// Operator Add (Arg0*Arg2+Arg1)
 			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_MODULATE_ADD_ATIX );
 			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_ALPHA_EXT, GL_MODULATE_ADD_ATIX );
 			// Arg0.
@@ -1142,6 +1151,15 @@ void			CDriverGL::setupSpecularPass(uint pass)
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PREVIOUS_EXT );
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_RGB_EXT, GL_SRC_COLOR );			
 			// Result : Texture*Previous.Alpha+Previous
+			// Setup Alpha Diffuse Copy
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_ALPHA_EXT, GL_PRIMARY_COLOR_EXT );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND0_ALPHA_EXT, GL_SRC_ALPHA );
+			// Arg2.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE2_ALPHA_EXT, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND2_ALPHA_EXT, GL_ONE_MINUS_SRC_ALPHA );
+			// Arg1.
+			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE1_ALPHA_EXT, GL_ZERO );
+			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND1_ALPHA_EXT, GL_SRC_ALPHA);
 		}
 	}
 	else

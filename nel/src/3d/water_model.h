@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.3 2001/11/09 14:41:36 vizerie Exp $
+ * $Id: water_model.h,v 1.4 2001/11/14 15:38:21 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@ namespace NL3D {
 class CWaterPoolManager;
 class CWaterShape;
 class IDriver;
+class CScene;
 
 /**
  * A water quad
@@ -54,11 +55,15 @@ public:
 	CWaterModel();
 
 	// register this model and his observers
-	static void registerBasic();	
+	static void registerBasic();
 	static IModel *creator() { return new CWaterModel; }
 
 	// get default tracks
 	virtual ITrack* getDefaultTrack (uint valueId);
+protected:
+	friend class CWaterRenderObs;
+	friend class CWaterShape;
+	CScene	*_Scene;
 
 };
 
@@ -69,7 +74,11 @@ public:
 	virtual	void	traverse(IObs *caller);	
 	static IObs	    *creator() {return new CWaterRenderObs;}
 private:
-	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos);
+	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist);
+	///   setup the vertex program to perform the right attenuation
+	//void setAttenuationFactor(IDriver *drv, bool reversed, const NLMISC::CVector &obsPos, const NLMISC::CVector &cameraJ, float farDist);
+	// disable attenuation with distance
+	//void disableAttenuation(IDriver *drv);
 };
 
 

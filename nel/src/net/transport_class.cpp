@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * TODO: File description
  *
- * $Id: transport_class.cpp,v 1.21 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.22 2005/03/22 14:41:39 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -272,7 +272,7 @@ void cbTCReceiveMessage (CMessage &msgin, const string &name, uint16 sid)
 	
 	if (!(*it).second.Instance->read (name, (uint8)sid))
 	{
-		nlwarning ("NETTC: Can't read the transportclass '%s' received from %s-%hu", className.c_str(), name.c_str(), sid);
+		nlwarning ("NETTC: Can't read the transportclass '%s' received from %s-%hu (probably not registered on sender service)", className.c_str(), name.c_str(), sid);
 	}
 }
 

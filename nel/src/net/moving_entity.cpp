@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.11 2001/01/09 16:54:03 cado Exp $
+ * $Id: moving_entity.cpp,v 1.12 2001/01/16 11:23:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,8 +35,6 @@ namespace NLNET {
 
 TEntityId	IMovingEntity::_MaxId = 1000001; //	avoid 0 and ids allocated by the LS
 
-bool		IMovingEntity::SerialFull3d = false;
-
 
 /*
  * Constructor
@@ -50,6 +48,7 @@ IMovingEntity::IMovingEntity() :
 	_Vector( 0,0,0 ),
 	_AngVel( 0.0f ),
 	_GroundMode( true ),
+	_Full3d( true ),
 	_PrevPos( 0,0,0 ),
 	Tag( 0 )
 {
@@ -74,6 +73,7 @@ IMovingEntity::IMovingEntity( TEntityType t,
 	_Vector( vec ),
 	_AngVel( av ),
 	_GroundMode( groundmode ),
+	_Full3d( true ),
 	_PrevPos( 0,0,0) ,
 	Tag( 0 )
 {
@@ -175,8 +175,8 @@ void IMovingEntity::serial ( NLMISC::IStream &s )
 {
 	s.serial( _Id );
 	s.serial( _EntityType );
-	s.serial( IMovingEntity::SerialFull3d );
-	if ( IMovingEntity::SerialFull3d )
+	s.serial( _Full3d );
+	if ( _Full3d )
 	{
 		s.serial( _Pos );
 		s.serial( _Vector );

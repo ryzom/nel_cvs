@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.15 2001/01/12 10:45:23 coutelas Exp $
+ * $Id: moving_entity.h,v 1.16 2001/01/16 11:23:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,9 @@ public:
 	/// Sets ground mode on/off
 	void					setGroundMode( bool gm )	{ _GroundMode = gm; }
 
+	/// Sets full3d mode on/off
+	void					setFull3d( bool f )			{ _Full3d = f; }
+
 	/// Update the entity state
 	void					update( TDuration deltatime )
 	{
@@ -119,6 +122,9 @@ public:
 
 	/// Returns true if the entity is in ground mode
 	bool					groundMode() const	{ return _GroundMode; }
+
+	/// Returns true if the 3 coordinates are being updated
+	bool					full3d() const		{ return _Full3d; }
 	
 	//@}
 
@@ -148,6 +154,7 @@ public:
 		_Vector = other._Vector;
 		_AngVel = other._AngVel;
 		_GroundMode = other._GroundMode;
+		_Full3d = other._Full3d;
 		_PrevPos = other._PrevPos;
 		Tag = other.Tag;
 		return *this;
@@ -166,7 +173,7 @@ public:
 	}
 
 	/** Serialization.
-	 * Note: before serializing out, you can set SerialFull3d to true.
+	 * Note: before serializing out, you can setFull3d() to true.
 	 * It is part of the message.
 	 */
 	void					serial ( NLMISC::IStream &s );
@@ -196,9 +203,6 @@ public:
 	{
 		return _MaxId;
 	}
-
-	/// Flag used by serial()
-	static bool				SerialFull3d;
 
 // protected:
 
@@ -272,8 +276,11 @@ private:
 	/// Angular velocity
 	TAngVelocity			_AngVel;
 
-	/// If the entity follows the ground (then we transmit only 2 coordinates)
+	/// If the entity follows the ground
 	bool					_GroundMode;
+
+	/// If the 3 coordinates have are being updated
+	bool					_Full3d;
 
 	// Highest Id
 	static TEntityId		_MaxId;

@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.35 2001/01/12 10:52:47 cado Exp $
+ * $Id: local_area.cpp,v 1.36 2001/01/16 11:23:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,7 +97,6 @@ void NLNET::cbProcessEntityState( CMessage& msgin, TSenderId idfrom )
 	msgin.serial( es );
 	nldebug( "Entity state received, with id %u", es.id() );
 	processEntityState( es );
-	IMovingEntity::SerialFull3d = false;
 }
 
 
@@ -309,6 +308,7 @@ void CLocalArea::update()
 			  || ((*ipe).second->bodyHeading() != previoushdg) )
 			{
 				_EntityMovedCallback( (*ipe).second );
+				(*ipe).second->setFull3d( false ); // go back into 2d mode after callback
 			}
 		}
 	}

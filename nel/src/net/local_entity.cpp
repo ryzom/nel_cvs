@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.23 2001/01/15 13:40:57 cado Exp $
+ * $Id: local_entity.cpp,v 1.24 2001/01/16 11:23:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,7 +211,7 @@ void CLocalEntity::propagateState()
 		_UpdateSentIndex = (_UpdateSentIndex + 1) % CLocalEntity::FrequencyOfFull3dUpdates;
 		if ( _UpdateSentIndex == 0 )
 		{
-			IMovingEntity::SerialFull3d = true;
+			setFull3d( true );
 		}
 		// Serialize out the entity state
 		CMessage msgout( "ES" );
@@ -222,9 +222,10 @@ void CLocalEntity::propagateState()
 	}
 
 	// Update local replica
+	_DRReplica.setFull3d( full3d() );
 	_DRReplica.changeStateTo( *this );
-
-	IMovingEntity::SerialFull3d = false;
+	_DRReplica.setFull3d( false );
+	setFull3d( false );
 }
 
 
@@ -236,7 +237,7 @@ void CLocalEntity::keepAlive( TTime actualtime )
 	if ( (sint64)actualtime-(sint64)_LastMsgSentTime > (sint64)CLocalEntity::KeepAlivePeriod )
 	{
 		_UpdateSentIndex--; // because we force SerialFull3d, we delay the equivalent mecanism in propagateState()
-		IMovingEntity::SerialFull3d = true;
+		setFull3d( true );
 		propagateState();
 	}
 }

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.24 2001/01/15 14:44:26 cado Exp $
+ * $Id: inet_address.cpp,v 1.25 2001/01/16 11:23:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,7 +191,7 @@ CInetAddress& CInetAddress::setByName( const std::string& hostName )
 			_Valid = false;
 			nldebug( "Network error: resolution of hostname '%s' failed", hostName.c_str() );
 			// return *this;
-			throw ESocket( "Hostname resolution failed" );
+			throw ESocket( (string("Hostname resolution failed for ")+hostName).c_str() );
 		}
 		_HostName = string( phostent->h_name );
 		memcpy( &_SockAddr->sin_addr, phostent->h_addr, sizeof(in_addr) );

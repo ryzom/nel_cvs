@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.cpp
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.cpp,v 1.7 2001/01/03 16:38:19 cado Exp $
+ * $Id: cubic_entity_interpolator.cpp,v 1.8 2001/01/16 11:23:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,7 +136,7 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 		
 		// Continuity for trajectory vector
 		CVector p = es.pos();
-		p.z = 0.0f; // assuming ground mode for now
+		//p.z = 0.0f;
 		es.setTrajVector( (p-prevpos).normed() / deltatime );
 
 		// Body heading : linear interpolation
@@ -145,7 +145,6 @@ void CCubicEntityInterpolator::getNextState( IMovingEntity& es, TDuration deltat
 	else
 	{
 		es = _Dest; // setting the right pos
-		es.setAltitude( 0.0f ); // assuming ground mode for now
 		_Active = false;
 	}
 

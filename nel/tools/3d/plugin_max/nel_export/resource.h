@@ -174,12 +174,17 @@
 #define IDC_SWT                         1123
 #define IDC_SET_GLOBAL_LIGHT            1124
 #define IDC_RESET_NAME                  1125
+
 #define IDC_CHECK_COLLISION             1126
 #define IDC_CHECK_COLLISION_EXTERIOR    1127
 #define IDC_TEST_SURFACE_LIGHT          1127
 #define IDC_EDITCELLSIZE                1128
 #define IDC_EDITCELLDELTAZ              1129
 #define IDC_STATIC2                     1130
+#define IDC_BYPASS_VP                   1131
+#define IDC_VP_TEXT                     1132
+
+
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -190,7 +195,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        124
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1131
+#define _APS_NEXT_CONTROL_VALUE         1133
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

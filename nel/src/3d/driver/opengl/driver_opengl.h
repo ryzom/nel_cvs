@@ -91,6 +91,13 @@ private:
 
 
 public:
+
+	// Acces
+	uint32					getHwnd ()
+	{
+		return (uint32)_hWnd;
+	}
+
 							CDriverGL();
 	virtual					~CDriverGL() { release(); };
 

@@ -1,7 +1,7 @@
 /** \file collision_mesh_build.h
  * 
  *
- * $Id: collision_mesh_build.h,v 1.4 2001/08/27 08:46:26 legros Exp $
+ * $Id: collision_mesh_build.h,v 1.5 2001/08/29 12:21:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,9 @@ struct CCollisionFace
 	/// The number of the surface of which it is associated. -1 means exterior surface.
 	sint32	Surface;
 
+	///
+	sint32	Material;
+
 	// @}
 
 
@@ -90,7 +93,7 @@ struct CCollisionFace
 		f.serial(Visibility[1]);
 		f.serial(Visibility[2]);
 
-		f.serial(Surface);
+		f.serial(Surface, Material);
 	}
 };
 

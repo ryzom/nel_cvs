@@ -1,7 +1,7 @@
 /** \file collision_surface_temp.h
  * Temp collision data used during resolution of collision within surfaces.
  *
- * $Id: collision_surface_temp.h,v 1.3 2001/08/07 14:14:32 legros Exp $
+ * $Id: collision_surface_temp.h,v 1.4 2001/08/29 12:21:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,7 +90,7 @@ public:
 	bool		sameSurfacesThan(const CCollisionChain &o) const
 	{
 		return (LeftSurface==o.LeftSurface  && RightSurface==o.RightSurface) 
-			|| (LeftSurface==o.RightSurface && LeftSurface ==o.RightSurface);
+			|| (LeftSurface==o.RightSurface && RightSurface==o.LeftSurface);
 	}
 
 	/// test if Left or Right == surf.

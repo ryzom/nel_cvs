@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.45 2001/08/23 13:40:04 legros Exp $
+ * $Id: global_retriever.cpp,v 1.46 2001/08/29 12:21:41 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -891,7 +891,44 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 			// test for all collisionChain inserted before.
 			for(sint k=0; k<firstCollisionChain; k++)
 			{
-				// if same collision chain (same surface Ident Left/Right==Left/Right or swapped Left/Right==Right/Left).
+				const CCollisionChain	&cj = cst.CollisionChains[j],
+										&ck = cst.CollisionChains[k];
+
+				if (cj.LeftSurface.RetrieverInstanceId != cj.RightSurface.RetrieverInstanceId &&
+					cj.LeftSurface == ck.RightSurface && cj.RightSurface == ck.LeftSurface)
+				{
+					const CRetrieverInstance	&instj = getInstance(cj.LeftSurface.RetrieverInstanceId),
+												&instk = getInstance(ck.LeftSurface.RetrieverInstanceId);
+					const CLocalRetriever		&retrj = getRetriever(instj.getRetrieverId()),
+												&retrk = getRetriever(instk.getRetrieverId());
+
+					nlassert(retrj.getChain(cj.ChainId).isBorderChain() && retrk.getChain(ck.ChainId).isBorderChain());
+
+					if (instj.getBorderChainLink(retrj.getChain(cj.ChainId).getBorderChainIndex()).ChainId != ck.ChainId ||
+						instk.getBorderChainLink(retrk.getChain(ck.ChainId).getBorderChainIndex()).ChainId != cj.ChainId)
+					{
+						continue;
+					}
+
+					// remove this jth entry.
+					// by swapping with last entry. Only if not already last.
+					if(j<nCollisionChain-1)
+					{
+						swap(cst.CollisionChains[j], cst.CollisionChains[nCollisionChain-1]);
+						// NB: some holes remain in cst._EdgeCollideNodes, but do not matters since reseted at 
+						// each collision test.
+					}
+
+					// pop last entry.
+					nCollisionChain--;
+					cst.CollisionChains.resize(nCollisionChain);
+
+					// next entry??
+					j--;
+					break;
+				}
+/*
+				// if same surface Ident Left/Right==Left/Right or swapped Left/Right==Right/Left
 				if( cst.CollisionChains[j].sameSurfacesThan(cst.CollisionChains[k]) )
 				{
 					// remove this jth entry.
@@ -911,6 +948,7 @@ void	NLPACS::CGlobalRetriever::findCollisionChains(CCollisionSurfaceTemp &cst, c
 					j--;
 					break;
 				}
+*/
 			}
 
 		}

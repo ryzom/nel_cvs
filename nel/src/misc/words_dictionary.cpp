@@ -1,7 +1,7 @@
 /** \file words_dictionary.cpp
  * Words dictionary
  *
- * $Id: words_dictionary.cpp,v 1.11 2005/01/19 10:37:26 brigand Exp $
+ * $Id: words_dictionary.cpp,v 1.12 2005/03/17 10:58:06 boucher Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -214,14 +214,16 @@ void CWordsDictionary::lookup( const CSString& inputStr, CVectorSString& resultV
 	}
 
 	// Search
-	for ( CVectorSString::const_iterator ivs=_Keys.begin(); ivs!=_Keys.end(); ++ivs )
+	const vector<string> &vec = _Keys;
+//	for ( CVectorSString::const_iterator ivs=_Keys.begin(); ivs!=_Keys.end(); ++ivs )
+	for ( vector<string>::const_iterator ivs=vec.begin(); ivs!=vec.end(); ++ivs )
 	{
 		const CSString& key = *ivs;
 		string::size_type p;
 		if ( (p = key.findNS( searchStr.c_str() )) != string::npos )
 		{
 			if ( ((!findAtBeginning) || (p==0)) && ((!findAtEnd) || (p==key.size()-searchStr.size())) )
-				resultVec.push_back( makeResult( key, _Words[ivs-_Keys.begin()] ) );
+				resultVec.push_back( makeResult( key, _Words[ivs-vec.begin()] ) );
 		}
 	}
 	for ( CVectorSString::const_iterator ivs=_Words.begin(); ivs!=_Words.end(); ++ivs )

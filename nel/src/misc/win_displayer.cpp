@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: win_displayer.cpp,v 1.3 2001/06/29 08:46:51 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.4 2001/08/23 14:32:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,8 +126,8 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						if (!str.empty())
 						{
 							ICommand::execute (str, *InfoLog);
-							*pos2++;
 						}
+						*pos2++;
 					}
 				}
 			}

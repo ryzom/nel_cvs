@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.21 2001/05/25 08:51:07 lecroart Exp $
+ * $Id: unitime.cpp,v 1.22 2001/05/25 11:52:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,7 +251,7 @@ void CUniTime::installServer (CCallbackServer *server)
 {
 	static alreadyAddedCallback = false;
 	nlassert (server != NULL);
-	nlassert (!alreadyAddedCallback)
+	nlassert (!alreadyAddedCallback);
 
 	server->addCallbackArray (ServerTimeServiceCallbackArray, sizeof (ServerTimeServiceCallbackArray) / sizeof (ServerTimeServiceCallbackArray[0]));
 	alreadyAddedCallback = true;

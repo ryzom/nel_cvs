@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * TODO: File description
  *
- * $Id: flare_model.cpp,v 1.30 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: flare_model.cpp,v 1.31 2005/01/31 15:58:00 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ CFlareModel::CFlareModel()
 	resetOcclusionQuerries();
 	std::fill(_LastRenderIntervalBegin, _LastRenderIntervalBegin + MaxNumContext, (uint64) -2);
 	std::fill(_LastRenderIntervalEnd, _LastRenderIntervalEnd + MaxNumContext, (uint64) -2);	
-	std::fill(_NumFrameForOcclusionQuery, _NumFrameForOcclusionQuery, 1);
+	std::fill(_NumFrameForOcclusionQuery, _NumFrameForOcclusionQuery + MaxNumContext, 1);
 	Next = NULL;
 }
 

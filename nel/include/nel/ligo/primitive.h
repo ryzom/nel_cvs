@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.12 2002/12/13 14:28:35 coutelas Exp $
+ * $Id: primitive.h,v 1.13 2002/12/13 14:55:09 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,7 @@ class CPropertyString : public IProperty
 public:
 	CPropertyString () {};
 	CPropertyString (const char *str);
+	~CPropertyString () {};
 	std::string			String;
 
 	// Force class to be polymorphic

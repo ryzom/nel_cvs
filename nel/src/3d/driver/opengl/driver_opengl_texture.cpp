@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.25 2001/05/07 14:41:57 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.26 2001/06/27 17:41:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include <string>
 
 #include "driver_opengl.h"
+#include "3d/texture_cube.h"
 #include "nel/misc/rect.h"
 using	namespace NLMISC;
 using	namespace std;
@@ -188,6 +189,9 @@ static inline bool		sameDXTCFormat(ITexture &tex, GLint glfmt)
 // ***************************************************************************
 bool CDriverGL::setupTexture(ITexture& tex)
 {
+	if(tex.isTextureCube() && (!_Extensions.ARBTextureCubeMap))
+		return true;
+
 	// 0. Create/Retrieve the driver texture.
 	//=======================================
 	if ( !tex.TextureDrvShare )
@@ -287,62 +291,110 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 			// system of "backup the previous binded texture" seems to not work with some drivers....
 			glActiveTextureARB(GL_TEXTURE0_ARB);
-			glEnable(GL_TEXTURE_2D);
+			if(tex.isTextureCube())
+			{
+				glEnable(GL_TEXTURE_CUBE_MAP_ARB);
+				// Bind this texture, for reload...
+				glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, gltext->ID);
+			}
+			else
+			{
+				glEnable(GL_TEXTURE_2D);
+				// Bind this texture, for reload...
+				glBindTexture(GL_TEXTURE_2D, gltext->ID);
+			}
 
 
-			// Bind this texture, for reload...
-			glBindTexture(GL_TEXTURE_2D, gltext->ID);
 			glPixelStorei(GL_UNPACK_ALIGNMENT,1);
 
 			// a. Load All the texture case.
 			//==============================
 			if (mustLoadAll)
 			{
-				// Regenerate all the texture.
-				tex.generate();
-
-				if(tex.getSize()>0)
+				if(tex.isTextureCube())
 				{
-					// Get the correct texture format from texture...
-					GLint	glfmt= getGlTextureFormat(tex, gltext->Compressed);
-
-					// DXTC: if same format, and same mipmapOn/Off, use glTexCompressedImage*.
-					// We cannot build the mipmaps if they are not here.
-					if(_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt) &&
-						(tex.mipMapOff() || tex.getMipMapCount()>1) )
+					static GLenum face_map[6] = {	GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB,
+													GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB,
+													GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB,
+													GL_TEXTURE_CUBE_MAP_NEGATIVE_Y_ARB,
+													GL_TEXTURE_CUBE_MAP_POSITIVE_Z_ARB,
+													GL_TEXTURE_CUBE_MAP_NEGATIVE_Z_ARB	};
+					// Regenerate all the texture.
+					tex.generate();
+					CTextureCube *pTC = (CTextureCube *)&tex;
+					for(uint nText = 0; nText < 6; ++nText)
+					if(pTC->getTexture((CTextureCube::TFace)nText) != NULL)
 					{
+						ITexture *pTInTC = pTC->getTexture((CTextureCube::TFace)nText);
+						// Get the correct texture format from texture...
+						GLint	glfmt= getGlTextureFormat(*pTInTC, gltext->Compressed);
+
 						sint	nMipMaps;
-						if(tex.mipMapOn())
-							nMipMaps= tex.getMipMapCount();
+						pTInTC->convertToType(CBitmap::RGBA);
+						if(pTC->mipMapOn())
+						{
+							pTInTC->buildMipMaps();
+							nMipMaps= pTInTC->getMipMapCount();
+						}
 						else
 							nMipMaps= 1;
 
 						// Fill mipmaps.
 						for(sint i=0;i<nMipMaps;i++)
 						{
-							void	*ptr= &(*tex.getPixels(i).begin());
-							sint	size= tex.getPixels(i).size();
-							glCompressedTexImage2DARB(GL_TEXTURE_2D, i, glfmt, tex.getWidth(i),tex.getHeight(i), 0, 
-								size, ptr );
+							void	*ptr= &(*pTInTC->getPixels(i).begin());
+							glTexImage2D(face_map[nText],i,glfmt,pTInTC->getWidth(i),pTInTC->getHeight(i),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
 						}
 					}
-					else
+				}
+				else
+				{
+					// Regenerate all the texture.
+					tex.generate();
+
+					if(tex.getSize()>0)
 					{
-						sint	nMipMaps;
-						tex.convertToType(CBitmap::RGBA);
-						if(tex.mipMapOn())
+						// Get the correct texture format from texture...
+						GLint	glfmt= getGlTextureFormat(tex, gltext->Compressed);
+
+						// DXTC: if same format, and same mipmapOn/Off, use glTexCompressedImage*.
+						// We cannot build the mipmaps if they are not here.
+						if(_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt) &&
+							(tex.mipMapOff() || tex.getMipMapCount()>1) )
 						{
-							tex.buildMipMaps();
-							nMipMaps= tex.getMipMapCount();
+							sint	nMipMaps;
+							if(tex.mipMapOn())
+								nMipMaps= tex.getMipMapCount();
+							else
+								nMipMaps= 1;
+
+							// Fill mipmaps.
+							for(sint i=0;i<nMipMaps;i++)
+							{
+								void	*ptr= &(*tex.getPixels(i).begin());
+								sint	size= tex.getPixels(i).size();
+								glCompressedTexImage2DARB(GL_TEXTURE_2D, i, glfmt, tex.getWidth(i),tex.getHeight(i), 0, 
+									size, ptr );
+							}
 						}
 						else
-							nMipMaps= 1;
-
-						// Fill mipmaps.
-						for(sint i=0;i<nMipMaps;i++)
 						{
-							void	*ptr= &(*tex.getPixels(i).begin());
-							glTexImage2D(GL_TEXTURE_2D,i,glfmt,tex.getWidth(i),tex.getHeight(i),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+							sint	nMipMaps;
+							tex.convertToType(CBitmap::RGBA);
+							if(tex.mipMapOn())
+							{
+								tex.buildMipMaps();
+								nMipMaps= tex.getMipMapCount();
+							}
+							else
+								nMipMaps= 1;
+
+							// Fill mipmaps.
+							for(sint i=0;i<nMipMaps;i++)
+							{
+								void	*ptr= &(*tex.getPixels(i).begin());
+								glTexImage2D(GL_TEXTURE_2D,i,glfmt,tex.getWidth(i),tex.getHeight(i),0,GL_RGBA,GL_UNSIGNED_BYTE, ptr );
+							}
 						}
 					}
 				}
@@ -435,14 +487,24 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			gltext->WrapT= tex.getWrapT();
 			gltext->MagFilter= tex.getMagFilter();
 			gltext->MinFilter= tex.getMinFilter();
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
-			glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+			if(tex.isTextureCube())
+			{
+				glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_S, translateWrapToGl(ITexture::Clamp, _Extensions));
+				glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_T, translateWrapToGl(ITexture::Clamp, _Extensions));
+				glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_R, translateWrapToGl(ITexture::Clamp, _Extensions));
+				glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
+				glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+				glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+			}
+			else
+			{
+				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
+				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
+				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
+				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+				glDisable(GL_TEXTURE_2D);
+			}
 
-
-			// reset the stage 0
-			glDisable(GL_TEXTURE_2D);
 			_CurrentTexture[0]= NULL;
 		}
 
@@ -462,39 +524,75 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
 		if(tex)
 		{
-			// Activate texturing...
-			//======================
-			glEnable(GL_TEXTURE_2D);
-			CTextureDrvInfosGL*	gltext;
-			gltext= getTextureGl(*tex);
-			glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);
+			if(tex->isTextureCube())
+			{
+				if(_Extensions.ARBTextureCubeMap)
+				{
+					// Activate texturing...
+					//======================
+					glDisable(GL_TEXTURE_2D);
+					glEnable(GL_TEXTURE_CUBE_MAP_ARB);
+					CTextureDrvInfosGL*	gltext;
+					gltext= getTextureGl(*tex);
+					glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, getTextureGl(*tex)->ID);
 
-			// Change parameters of texture, if necessary.
-			//============================================
-			if(gltext->WrapS!= tex->getWrapS())
-			{
-				gltext->WrapS= tex->getWrapS();
-				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
+					// Change parameters of texture, if necessary.
+					//============================================
+					if(gltext->MagFilter!= tex->getMagFilter())
+					{
+						gltext->MagFilter= tex->getMagFilter();
+						glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
+					}
+					if(gltext->MinFilter!= tex->getMinFilter())
+					{
+						gltext->MinFilter= tex->getMinFilter();
+						glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+					}
+				}
+				else
+				{
+					glDisable(GL_TEXTURE_2D);
+				}
 			}
-			if(gltext->WrapT!= tex->getWrapT())
+			else
 			{
-				gltext->WrapT= tex->getWrapT();
-				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
-			}
-			if(gltext->MagFilter!= tex->getMagFilter())
-			{
-				gltext->MagFilter= tex->getMagFilter();
-				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
-			}
-			if(gltext->MinFilter!= tex->getMinFilter())
-			{
-				gltext->MinFilter= tex->getMinFilter();
-				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+				// Activate texturing...
+				//======================
+				glEnable(GL_TEXTURE_2D);
+				glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+				CTextureDrvInfosGL*	gltext;
+				gltext= getTextureGl(*tex);
+				glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);
+
+				// Change parameters of texture, if necessary.
+				//============================================
+				if(gltext->WrapS!= tex->getWrapS())
+				{
+					gltext->WrapS= tex->getWrapS();
+					glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, translateWrapToGl(gltext->WrapS, _Extensions));
+				}
+				if(gltext->WrapT!= tex->getWrapT())
+				{
+					gltext->WrapT= tex->getWrapT();
+					glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
+				}
+				if(gltext->MagFilter!= tex->getMagFilter())
+				{
+					gltext->MagFilter= tex->getMagFilter();
+					glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
+				}
+				if(gltext->MinFilter!= tex->getMinFilter())
+				{
+					gltext->MinFilter= tex->getMinFilter();
+					glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
+				}
 			}
 		}
 		else
 		{
 			glDisable(GL_TEXTURE_2D);
+			if(_Extensions.ARBTextureCubeMap)
+				glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 		}
 
 		this->_CurrentTexture[stage]= tex;

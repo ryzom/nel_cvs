@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.103 2001/06/19 16:57:41 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.104 2001/06/27 17:41:12 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1207,6 +1207,7 @@ bool CDriverGL::swapBuffers()
 		_CurrentTexture[stage]= NULL;
 		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
 		glDisable(GL_TEXTURE_2D);
+		glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 		
 		// init default env.
 		CMaterial::CTexEnv	env;	// envmode init to default.

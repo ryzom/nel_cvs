@@ -611,6 +611,14 @@ SOURCE=.\3d\skeleton_shape.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\3d\texture_cube.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\texture_cube.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\texture_file.cpp
 # End Source File
 # Begin Source File

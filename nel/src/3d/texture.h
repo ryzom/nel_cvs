@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.2 2001/06/26 10:09:25 berenguier Exp $
+ * $Id: texture.h,v 1.3 2001/06/27 17:41:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -305,7 +305,7 @@ public:
 	/** 
 	 * Release the texure (free memory)
 	 */	
-	void release() { reset(); _GoodGenerate= false; }
+	virtual void release() { reset(); _GoodGenerate= false; }
 
 	/** 
 	 * Does this texture support sharing system.
@@ -326,6 +326,8 @@ public:
 		return TextureDrvShare!=NULL;
 	}
 
+	/// Does this texture is a cube texture
+	virtual bool isTextureCube() const { return false; }
 
 	/// serial ITexture basic infos (clamp ...).
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);

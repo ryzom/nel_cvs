@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.8 2001/05/31 10:05:09 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.9 2001/06/27 17:41:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -257,6 +257,16 @@ static bool	setupNVTextureEnvCombine4(const char	*glext)
 	return true;
 }
 
+// *********************************
+static bool	setupARBTextureCubeMap(const char	*glext)
+{
+	if(strstr(glext, "GL_ARB_texture_cube_map")==NULL)
+		return false;
+
+	return true;
+}
+
+
 
 // ***************************************************************************
 // Extension Check.
@@ -296,6 +306,8 @@ void	registerGlExtensions(CGlExtensions &ext)
 	// Check NVTextureEnvCombine4.
 	ext.NVTextureEnvCombine4= setupNVTextureEnvCombine4(glext);
 
+	// Check for cube mapping
+	ext.ARBTextureCubeMap = setupARBTextureCubeMap(glext);
 }
 
 

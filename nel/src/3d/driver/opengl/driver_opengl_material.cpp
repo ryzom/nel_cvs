@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.29 2001/06/26 08:00:46 besson Exp $
+ * $Id: driver_opengl_material.cpp,v 1.30 2001/06/27 17:41:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -527,6 +527,17 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 // ***************************************************************************
 sint			CDriverGL::beginSpecularMultiPass(const CMaterial &mat)
 {
+	CMatrix mTemp = _ViewMtx;
+	mTemp.setPos(CVector(0.0f,0.0f,0.0f));
+	mTemp.invert();
+	
+	glMatrixMode(GL_TEXTURE);
+	glLoadMatrixf( mTemp.get() );
+	glMatrixMode(GL_MODELVIEW);
+
+	if(!_Extensions.ARBTextureCubeMap)
+		return 1;
+
 	// One texture stage hardware not supported.
 	if(getNbTextureStages()<2)
 		return 1;
@@ -540,6 +551,7 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 	if(getNbTextureStages()<2)
 		return;
 
+	/// \TODO mb : Support NVidia combine 4 extension to do specular map in a single pass
 	//if( _Extensions.NVTextureEnvCombine4 )
 	//{ // Ok we can do it in a single pass
 	//}
@@ -550,7 +562,7 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 		{ // Just display the texture
 			glDisable(GL_BLEND);
 			glActiveTextureARB(GL_TEXTURE0_ARB+1);
-			glDisable(GL_TEXTURE_2D);
+			glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 		}
 		else
 		{ // Multiply texture1 by alpha_texture0 and display with add
@@ -580,16 +592,14 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 			if(_CurrentTexEnv[1].EnvPacked!= env.EnvPacked)
 				activateTexEnvMode(1, env);
 
-
 			glActiveTextureARB(GL_TEXTURE0_ARB+1);
-			glEnable( GL_TEXTURE_2D );
-			glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP );
-			glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP );
+			glEnable( GL_TEXTURE_CUBE_MAP_ARB );
+			glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
+			glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
+			glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
 			glEnable( GL_TEXTURE_GEN_S );
 			glEnable( GL_TEXTURE_GEN_T );
-			glDisable( GL_TEXTURE_GEN_R );
-
-			setupUVPtr(1, *_LastVB, 0);
+			glEnable( GL_TEXTURE_GEN_R );
 		}
 	}
 }
@@ -599,8 +609,8 @@ void			CDriverGL::endSpecularMultiPass(const CMaterial &mat)
 	glActiveTextureARB(GL_TEXTURE0_ARB+1);
 	glDisable(GL_TEXTURE_GEN_S);
 	glDisable(GL_TEXTURE_GEN_T);
-	setupUVPtr(1, *_LastVB, 1);
+	glDisable(GL_TEXTURE_GEN_R);
+	glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 }
-
 
 } // NL3D

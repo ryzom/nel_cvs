@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.11 2001/05/31 10:05:09 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.12 2001/06/27 17:41:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,7 @@ struct	CGlExtensions
 	bool	EXTVertexWeighting;
 	bool	EXTSeparateSpecularColor;
 	bool	NVTextureEnvCombine4;
+	bool	ARBTextureCubeMap;
 
 public:
 	CGlExtensions()
@@ -91,6 +92,7 @@ public:
 		EXTVertexWeighting= false;
 		EXTSeparateSpecularColor= false;
 		NVTextureEnvCombine4= false;
+		ARBTextureCubeMap= false;
 	};
 };
 

@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.7 2001/06/26 08:00:46 besson Exp $
+ * $Id: export_material.cpp,v 1.8 2001/06/27 17:41:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include "export_nel.h"
 #include <3d/texture_file.h>
+#include <3d/texture_cube.h>
 
 using namespace NLMISC;
 using namespace NL3D;
@@ -218,7 +219,33 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 	{
 		// Pointer on the  diffuse texture
 		static ITexture* pTexture=NULL;
+		static CTextureCube* pTextureCube=NULL;
 
+		pTextureCube = new CTextureCube;
+		pTextureCube->setWrapS( ITexture::Clamp );
+		pTextureCube->setWrapT( ITexture::Clamp );
+		pTextureCube->setFilterMode(ITexture::Linear,ITexture::LinearMipMapOff);
+
+		if( isClassIdCompatible(*pSpeTexmap, Class_ID (COMPOSITE_CLASS_ID,0)))
+		{
+			int nNbSubMap = pSpeTexmap->NumSubTexmaps();
+			if( nNbSubMap > 6 )
+				nNbSubMap = 6;	
+			for( int i = 0; i < nNbSubMap; ++i )
+			{
+				std::vector<CMaterialDesc> _3dsTexChannel;
+				Texmap *pSubMap = pSpeTexmap->GetSubTexmap(i);
+
+				if( pSubMap != NULL )
+				if (isClassIdCompatible(*pSubMap, Class_ID (BMTEX_CLASS_ID,0)))
+				{					
+					std::vector<CMaterialDesc> _3dsTexChannel;
+					pTexture = buildATexture (*pSubMap, _3dsTexChannel, tvTime, absolutePath);
+					pTextureCube->setTexture((CTextureCube::TFace)i, pTexture);
+				}
+			}
+		}
+		else
 		// Is it a simple file ?
 		if (isClassIdCompatible(*pSpeTexmap, Class_ID (BMTEX_CLASS_ID,0)))
 		{
@@ -226,13 +253,11 @@ std::string CExportNel::buildAMaterial (CMaterial& material, std::vector<CMateri
 			std::vector<CMaterialDesc> _3dsTexChannel;
 			
 			// Ok export the texture in NeL format
-			pTexture=buildATexture (*pSpeTexmap, _3dsTexChannel, tvTime, absolutePath);
-			pTexture->setWrapS( ITexture::Repeat );
-			pTexture->setWrapT( ITexture::Repeat );
-			pTexture->setFilterMode(ITexture::Linear,ITexture::LinearMipMapOff);
-			// Add the texture if it exist
-			material.setTexture(1, pTexture);
+			pTexture = buildATexture (*pSpeTexmap, _3dsTexChannel, tvTime, absolutePath);
+			pTextureCube->setTexture(CTextureCube::positive_x, pTexture);
 		}
+		// Add the texture if it exist
+		material.setTexture(1, pTextureCube);
 	}
 
 	// Blend mode

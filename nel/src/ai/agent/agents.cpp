@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.29 2001/04/18 11:45:10 portier Exp $
+ * $Id: agents.cpp,v 1.30 2001/04/19 08:13:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,16 +153,14 @@ namespace NLAIAGENT
 	}
 
 	const IObjectIA::CProcessResult &IAgent::run()
-	{
-		setState(processBuzzy,NULL); 
+	{		
 
 		runChildren();		// Gestion des fils
 		getMail()->run();	// Execution de la boite aux lettres
 
 		processMessages();	// Traitement de ses propres messages
 
-		if(haveActivity()) runActivity();
-		setState(processIdle,NULL);
+		if(haveActivity()) runActivity();		
 		return getState();  
 	}
 

@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.14 2001/04/17 09:26:09 portier Exp $
+ * $Id: baseai.h,v 1.15 2001/04/19 08:11:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ namespace NLAIAGENT
 		processLocked,	/// The agent is locked, so that we can't run it.
 		processBuzzy,	/// The agent is in the buzzy state (curently executing itself)
 		processEnd,		/// The agent has completed its execution
+		processToKill,	/// The agent has completed its execution
 		processError	/// The agent has encountered problems during its excecution.
 	};
 

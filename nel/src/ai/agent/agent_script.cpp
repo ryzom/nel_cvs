@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.55 2001/04/17 09:26:03 portier Exp $
+ * $Id: agent_script.cpp,v 1.56 2001/04/19 08:13:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,13 +50,13 @@ namespace NLAIAGENT
 {	
 	//static CGroupType listBidon;
 
-	static NLAISCRIPT::COperandSimpleListOr *msgType;
-	static NLAISCRIPT::COperandSimpleListOr *msgPerf;
-	static NLAISCRIPT::CParam *SendParamMessageScript;
-	static NLAISCRIPT::CParam *SendCompParamMessageScript;
-	static NLAISCRIPT::COperandSimple *IdMsgNotifyParentClass;
-	static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent;
-	static NLAISCRIPT::CParam *ParamRunParentNotify;
+	NLAISCRIPT::COperandSimpleListOr *CAgentScript::msgType = NULL;
+	NLAISCRIPT::COperandSimpleListOr *CAgentScript::msgPerf = NULL;
+	NLAISCRIPT::CParam *CAgentScript::SendParamMessageScript = NULL;
+	NLAISCRIPT::CParam *CAgentScript::SendCompParamMessageScript = NULL;
+	NLAISCRIPT::COperandSimple *CAgentScript::IdMsgNotifyParentClass = NULL;
+	NLAISCRIPT::COperandSimpleListOr *CAgentScript::IdMsgNotifyParent = NULL;
+	NLAISCRIPT::CParam *CAgentScript::ParamRunParentNotify = NULL;
 	CAgentScript::CMethodCall **CAgentScript::StaticMethod = NULL;
 
 /////////////////////////////////////////////////////////////////
@@ -1042,22 +1042,19 @@ namespace NLAIAGENT
 
 	const IObjectIA::CProcessResult &CAgentScript::run()
 	{
-		setState(processBuzzy,NULL);
-
+		
 #ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
 		//const NLAIAGENT::IRefrence *dbg_mail_parent = _ScriptMail->getParent();
 #endif
-
-		//_ScriptMail->run();
+		
 		getMail()->run();
 		runChildren();
 		
 		processMessages();
 
 		if(haveActivity()) runActivity();
-
-		setState(processIdle,NULL);
+				
 		return getState();
 	}
 
@@ -1114,6 +1111,7 @@ namespace NLAIAGENT
 			{
 				return addDynamicAgent((IBaseGroupType *)o);
 			}
+
 		case TFather:
 			{
 				IObjectIA::CProcessResult a;

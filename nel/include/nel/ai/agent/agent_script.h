@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.27 2001/04/17 09:26:09 portier Exp $
+ * $Id: agent_script.h,v 1.28 2001/04/19 08:11:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,9 @@ namespace NLAISCRIPT
 {
 	class CAgentClass;
 	class IOpCode;
+	class COperandSimpleListOr;
+	class COperandSimple;
+	class CParam;
 }
 
 namespace NLAIAGENT
@@ -117,6 +120,15 @@ namespace NLAIAGENT
 		};
 
 		static CMethodCall **StaticMethod;
+
+	public:
+		static NLAISCRIPT::COperandSimpleListOr *msgType;
+		static NLAISCRIPT::COperandSimpleListOr *msgPerf;
+		static NLAISCRIPT::CParam *SendParamMessageScript;
+		static NLAISCRIPT::CParam *SendCompParamMessageScript;
+		static NLAISCRIPT::COperandSimple *IdMsgNotifyParentClass;
+		static NLAISCRIPT::COperandSimpleListOr *IdMsgNotifyParent;
+		static NLAISCRIPT::CParam *ParamRunParentNotify;
 	private:
 		///Type def for the map witch store the name of dynamic agent store in the agent.		
 		typedef std::multiset<CKeyAgent> tsetDefNameAgent;
@@ -143,7 +155,7 @@ namespace NLAIAGENT
 		NLAISCRIPT::CAgentClass *_AgentClass;
 
 	public:
-		static const NLAIC::CIdentType IdAgentScript;		
+		static const NLAIC::CIdentType IdAgentScript;
 
 	public:
 		///Construct with copy constructor.

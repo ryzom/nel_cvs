@@ -1,7 +1,7 @@
-/** \file agent_script.h
+/** \file agent_string.h
  * class for string manipulation.
  *
- * $Id: agent_string.h,v 1.5 2001/04/17 09:26:09 portier Exp $
+ * $Id: agent_string.h,v 1.6 2001/04/19 08:11:57 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *

@@ -201,7 +201,6 @@ namespace NLAIAGENT
 	const IObjectIA::CProcessResult &COperatorScript::run()
 	{
 
-		setState(processBuzzy,NULL);
 
 #ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
@@ -271,8 +270,7 @@ namespace NLAIAGENT
 		else
 		{
 			if ( _IsActivated == true )
-				unActivate();
-			setState(processIdle,NULL);			
+				unActivate();			
 			return IObjectIA::ProcessRun;
 		}
 	}

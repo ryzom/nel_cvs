@@ -153,17 +153,7 @@ namespace NLAIAGENT
 		}
 		else
 			return IObjectIA::ProcessRun;
-		/*
-		setState(processBuzzy,NULL); 
-
-		runChildren();		// Gestion des fils
-		getMail()->run();	// Execution de la boite aux lettres
-
-		processMessages();	// Traitement de ses propres messages
-
-		setState(processIdle,NULL);
-		return getState();  
-		*/
+				
 	}
 
 	/*IObjectIA *CActor::run(const IMessageBase &msg)

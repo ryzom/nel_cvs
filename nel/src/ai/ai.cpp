@@ -11,6 +11,7 @@
 #include "nel/ai/script/test_method.h"
 #include "nel/ai/character/character.h"
 #include "nel/ai/logic/fsm_script.h"
+#include "nel/ai/agent/agent_timer.h"
 //#include "static_init.h"
 
 using namespace NLAIAGENT;
@@ -30,7 +31,10 @@ namespace NLAILINK
 		NLAISCRIPT::CLibTest::initClass();
 
 		NLAICHARACTER::CCharacterNoeud::initClass();
-		NLAICHARACTER::CCharacterChild::initClass();	
+		NLAICHARACTER::CCharacterChild::initClass();
+
+		NLAIAGENT::CAgentManagerTimer::initClass();
+		CAgentWatchTimer::initClass();
 	}
 
 	void releaseIALib()
@@ -48,6 +52,9 @@ namespace NLAILINK
 		NLAISCRIPT::CLibTest::releaseClass();
 		NLAICHARACTER::CCharacterNoeud::releaseClass();
 		NLAICHARACTER::CCharacterChild::releaseClass();
+
+		NLAIAGENT::CAgentManagerTimer::releaseClass();
+		CAgentWatchTimer::releaseClass();
 
 		staticReleaseLibClass();
 	}

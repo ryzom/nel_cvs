@@ -38,8 +38,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "Release"
-# PROP Intermediate_Dir "Release"
+# PROP Output_Dir "ai/bin/release"
+# PROP Intermediate_Dir "ai/bin/release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
@@ -61,8 +61,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "Debug"
-# PROP Intermediate_Dir "Debug"
+# PROP Output_Dir "ai/bin/Debug"
+# PROP Intermediate_Dir "ai/bin/Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD CPP /nologo /MDd /W3 /Gm /GX /Zi /Od /D "_LIB" /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "__STL_DEBUG" /YX /FD /GZ /c
@@ -84,8 +84,8 @@ LIB32=link.exe -lib
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "ia___Win32_ReleaseDebug"
-# PROP Intermediate_Dir "ia___Win32_ReleaseDebug"
+# PROP Output_Dir "ai/bin/release_debug"
+# PROP Intermediate_Dir "ai/bin/release_debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /Zi /Od /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD CPP /nologo /MD /W3 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
@@ -154,6 +154,10 @@ SOURCE=.\ai\agent\agent_script.cpp
 # Begin Source File
 
 SOURCE=.\ai\agent\agent_string.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\agent\agent_timer.cpp
 # End Source File
 # Begin Source File
 
@@ -306,6 +310,10 @@ SOURCE=..\include\nel\ai\agent\agent_script.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\agent\agent_string.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\agent\agent_timer.h
 # End Source File
 # Begin Source File
 

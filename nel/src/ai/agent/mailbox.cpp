@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.16 2001/04/13 09:44:56 chafik Exp $
+ * $Id: mailbox.cpp,v 1.17 2001/04/19 08:13:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -447,16 +447,14 @@ namespace NLAIAGENT
 	}
 
 	const IObjectIA::CProcessResult &CLocalMailBox::run()
-	{
-		setState(processBuzzy,NULL);	
+	{		
 		while(_ListSharedMessage.size())
 		{
 			((IMessageBase *)_ListSharedMessage.back())->release();
 			_ListSharedMessage.pop_back();
 		}
 		tListMailBoxIter j;
-		fillMailBox();
-		setState(processIdle,NULL);
+		fillMailBox();		
 		return getState();
 	}
 

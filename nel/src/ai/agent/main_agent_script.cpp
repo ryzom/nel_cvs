@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.16 2001/04/13 09:44:56 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.17 2001/04/19 08:13:12 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,9 +138,7 @@ namespace NLAIAGENT
 	}
 
 	const IObjectIA::CProcessResult &CMainAgentScript::run()
-	{
-		setState(processBuzzy,NULL);
-
+	{		
 		runChildren();
 
 		//((IMailBox *)getLocalMailBox())->run();
@@ -154,8 +152,7 @@ namespace NLAIAGENT
 		processMessages();
 
 		if(haveActivity()) runActivity();
-
-		setState(processIdle,NULL);
+		
 		return getState();
 	}
 

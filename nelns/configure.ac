@@ -2,7 +2,7 @@ dnl ====================================================================
 dnl Configuration script for NeLNS
 dnl ====================================================================
 dnl
-dnl $Id: configure.in,v 1.16 2002/10/21 10:19:03 lecroart Exp $
+dnl $Id: configure.ac,v 1.1 2004/01/15 19:28:55 lecroart Exp $
 dnl 
 
 

@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.2 2000/12/19 15:15:50 coutelas Exp $
+ * $Id: text_context.h,v 1.3 2000/12/20 10:43:14 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,6 +198,22 @@ public:
 		_StringList.push_back(cptdstr);
 		return _StringList.size()-1;
 	}
+
+	/**
+	 *	textPush
+	 * computes an ucstring and adds the result to the stack
+	 * \param an ucstring
+	 * \return the index where computed string has been inserted
+	 */
+	uint32 textPush(ucstring str) 
+	{ 
+		nlassert(_FontGen);
+
+		NL3D::CComputedString cptdstr;
+		_FontManager.computeString(str,_FontGen,_Color,_FontSize,_DispDesc,cptdstr);
+		_StringList.push_back(cptdstr);
+		return _StringList.size()-1;
+	}
 	
 	/**
 	 *	erase
@@ -234,7 +250,7 @@ public:
 
 	/**
 	 *	printAt
-	 * print a ucstring at the location
+	 * compute and print a ucstring at the location
 	 * \param x (between 0 and 1)
 	 * \param y (between 0 and 1)
 	 * \param ucstr the ucstring

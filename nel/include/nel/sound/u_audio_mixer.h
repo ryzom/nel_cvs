@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.13 2001/09/15 17:53:46 cado Exp $
+ * $Id: u_audio_mixer.h,v 1.14 2002/06/18 16:02:32 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,10 +86,12 @@ public:
 	/** Load buffers. Returns the number of buffers successfully loaded.
 	 *  If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
 	 */
-	virtual uint32		loadSoundBuffers( const char *filename, std::vector<std::string> *notfoundfiles=NULL ) = 0;
+	virtual uint32		loadSampleBank( const char *filename, std::vector<std::string> *notfoundfiles=NULL ) = 0;
 	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
 	virtual	void		loadEnvSounds( const char *filename,
 									   UEnvSound **treeRoot=NULL ) = 0;
+	/// Load sounds. Returns the number of sounds successfully loaded.
+	virtual void		loadSoundBank( const char *path ) = 0;
 	/// Get a TSoundId from a name (returns NULL if not found)
 	virtual TSoundId	getSoundId( const char *name ) = 0;
 
@@ -119,7 +121,7 @@ public:
 	virtual void		update() = 0;
 
 
-	/// Return the names of the sounds (call this method after loadSoundBuffers())
+	/// Return the names of the sounds (call this method after loadSounds())
 	virtual void		getSoundNames( std::vector<const char *>& names ) const = 0;
 	/// Return the number of mixing tracks (voices)
 	virtual uint		getPolyphony() const = 0;
@@ -127,9 +129,13 @@ public:
 	virtual uint		getSourcesNumber() const = 0;
 	/// Return the number of playing sources
 	virtual uint		getPlayingSourcesNumber() const = 0;
+	/// Return the number of available tracks
+	virtual uint		getNumberAvailableTracks() const = 0;
 	/// Return a string showing the playing sources
 	virtual std::string	getSourcesStats() const = 0;
 
+	/// Set the global path to the sample banks
+	virtual void		setSamplePath(std::string& path) = 0;
 
 	/// Destructor
 	virtual				~UAudioMixer() {}

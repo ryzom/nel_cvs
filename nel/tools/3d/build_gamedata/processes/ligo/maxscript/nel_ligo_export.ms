@@ -731,6 +731,6 @@ catch
 
 
 
---quitMAX #noPrompt
---quitMAX () #noPrompt
+quitMAX #noPrompt
+quitMAX () #noPrompt
 

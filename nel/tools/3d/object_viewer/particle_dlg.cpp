@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.26 2004/02/19 09:53:09 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.27 2004/06/17 08:09:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,8 +34,9 @@
 #include "editable_range.h"
 #include "located_properties.h"
 #include "particle_system_edit.h"
+#include "skippable_message_box.h"
 #include "main_frame.h"
-
+//
 // TODO : remove these include when the test system will be removed
 #include "3d/particle_system.h"
 #include "3d/ps_force.h"
@@ -54,78 +55,47 @@
 #include "3d/nelu.h"
 #include "3d/font_manager.h"
 #include "3d/font_generator.h"
-
+//
 #include "nel/misc/file.h"
-
 #include "start_stop_particle_system.h"
-
-
+//
+#include "save_options_dlg.h"
+#include "create_file_dlg.h"
 
 using namespace NL3D;
 
 //**************************************************************************************************************************
 CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame, CAnimationDlg *animDLG)
-	: CDialog(CParticleDlg::IDD, pParent), MainFrame(mainFrame), CurrentRightPane(NULL), _ObjView(main), _EmptyBBox(true), _AutoUpdateBBox(false)
+	: CDialog(CParticleDlg::IDD, pParent),
+	  MainFrame(mainFrame),
+	  CurrentRightPane(NULL),
+	  _ActiveNode(NULL),
+	  _ObjView(main),
+	  _EmptyBBox(true),
+	  _AutoUpdateBBox(false),
+	  _PW(NULL)
 
 {
 	//{{AFX_DATA_INIT(CParticleDlg)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-
 	nlverify (FontManager = main->getFontManager());
 	nlverify (FontGenerator = main->getFontGenerator());
-
-
-	NL3D::CParticleSystem::setSerializeIdentifierFlag(true); // serialize identifiers for edition
-
-	resetSystem();	
-
-
+	NL3D::CParticleSystem::setSerializeIdentifierFlag(true); // serialize identifiers for edition	
 	ParticleTreeCtrl = new CParticleTreeCtrl(this);
 	StartStopDlg = new CStartStopParticleSystem(this, animDLG);
-
-
 	/** register us, so that our 'go' method will be called
 	  * this gives us a chance to display a bbox when needed
 	  */
-	_ObjView->registerMainLoopCallBack(this);
-
-
-	
-
+	_ObjView->registerMainLoopCallBack(this);	
 }
 
+
 //**************************************************************************************************************************
-void CParticleDlg::resetSystem(void)
+BOOL CParticleDlg::Create( UINT nIDTemplate, CWnd* pParentWnd /*= NULL*/ )
 {
-	const std::string emptySystemName("private_empty_particle_system.ps");
-	CParticleSystem emptyPS;
-	
-	CParticleSystemShape *pss = new NL3D::CParticleSystemShape;
-	pss->buildFromPS(emptyPS);
-	CNELU::Scene->getShapeBank()->add(emptySystemName, pss);
-	
-	_CurrSystemModel = (NL3D::CParticleSystemModel *) CNELU::Scene->createInstance(emptySystemName);
-	_CurrSystemModel->setTransformMode(NL3D::CTransform::DirectMatrix);	
-
-	// link to the root for manipulation
-	_ObjView->getSceneRoot()->hrcLinkSon(_CurrSystemModel);
-
-	_CurrSystemModel->enableDisplayTools();
-	_CurrSystemModel->enableAutoGetEllapsedTime(false);		
-	_CurrSystemModel->setEllapsedTime(0.f);
-	_CurrSystemModel->setEditionMode(true); // enable edition mode
-											 // this will prevent it from being removed when it is too far
-										     // this also allow us to safely keep a pointer on it
-	for(uint k = 0; k < NL3D::MaxPSUserParam; ++k)
-	{
-		_CurrSystemModel->bypassGlobalUserParamValue(k);
-	}
-
-	_CurrPS = _CurrSystemModel->getPS();
-
-	_CurrPS->setFontManager(FontManager);
-	_CurrPS->setFontGenerator(FontGenerator);	
+	if (!CDialog::Create(nIDTemplate, pParentWnd)) return FALSE;	
+	return TRUE;
 }
 
 //**************************************************************************************************************************
@@ -143,14 +113,12 @@ NLMISC::CMatrix CParticleDlg::getElementMatrix(void) const
 //**************************************************************************************************************************
 CParticleDlg::~CParticleDlg()
 {
-	//NL3D::CNELU::Scene->deleteInstance(_CurrSystemModel);
-
-	_ObjView->removeMainLoopCallBack(this);
-	
+	_ObjView->removeMainLoopCallBack(this);	
 	delete ParticleTreeCtrl;
 	delete CurrentRightPane;
-
 	delete StartStopDlg;
+	if (_PW) _PW->setModificationCallback(NULL);
+	delete _PW;
 }
 
 //**************************************************************************************************************************
@@ -168,19 +136,24 @@ BEGIN_MESSAGE_MAP(CParticleDlg, CDialog)
 	ON_WM_SIZE()
 	ON_WM_SHOWWINDOW()
 	ON_WM_CHAR()
+	ON_COMMAND(IDM_CREATE_NEW_PS_WORKSPACE, OnCreateNewPsWorkspace)
+	ON_COMMAND(IDM_LOAD_PS_WORKSPACE, OnLoadPSWorkspace)
+	ON_COMMAND(IDM_SAVE_ALL_PS_WORKSPACE, OnSaveAllPsWorkspace)
+	ON_COMMAND(IDM_SAVE_PS_WORKSPACE, OnSavePsWorkspace)
+	ON_COMMAND(IDM_VIEW_PS_FILENAME, OnViewPsFilename)	
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 //**************************************************************************************************************************
 void CParticleDlg::OnDestroy() 
 {
+	checkModifiedWorkSpace();	
 	if (CurrentRightPane)
 	{
 		CurrentRightPane->DestroyWindow();
 		delete CurrentRightPane;
 		CurrentRightPane = NULL;
 	}
-
 	setRegisterWindowState (this, REGKEY_OBJ_PARTICLE_DLG);
 	CDialog::OnDestroy();		
 }
@@ -189,67 +162,71 @@ void CParticleDlg::OnDestroy()
 BOOL CParticleDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
-
 	CRect r;
-	GetWindowRect(&r);
-	
+	GetWindowRect(&r);	
 	ParticleTreeCtrl->Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD | WS_BORDER
 							   | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_EDITLABELS 
-							   | TVS_DISABLEDRAGDROP , r, this, 0x1005);
-
-
-	ParticleTreeCtrl->buildTreeFromPS(_CurrPS, _CurrSystemModel);
+							   | TVS_DISABLEDRAGDROP , r, this, 0x1005);	
 	ParticleTreeCtrl->init();
 	ParticleTreeCtrl->ShowWindow(SW_SHOW);
-
-
 	StartStopDlg->Create(IDD_PARTICLE_SYSTEM_START_STOP, this);	
-
-
-
+	// create menu bar that allow to create / load a particle workspace
+	CMenu menu;
+	menu.LoadMenu(MAKEINTRESOURCE(IDR_PARTICLE_DLG_MENU));
+	this->SetMenu(&menu);
+	menu.Detach();		
+	updateMenu();
+	//
+	_StatusBar.Create(this);
+	UINT indicators = ID_PS_EDITOR_STATUS;
+	_StatusBar.SetIndicators(&indicators, 1);		
+	_StatusBar.SetPaneInfo(0, ID_PS_EDITOR_STATUS, SBPS_NORMAL, computeStatusBarWidth());
+	RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, ID_PS_EDITOR_STATUS);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::setStatusBarText(CString &str)
+{
+	_StatusBar.SetPaneText(0, str, TRUE);
 }
 
 //**************************************************************************************************************************
 void CParticleDlg::OnSize(UINT nType, int cx, int cy) 
 {	
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
 	bool blocked = false;
-
 	if (ParticleTreeCtrl->m_hWnd && this->m_hWnd)
 	{	
-
 		CRect r = getTreeRect(cx, cy);			
 		ParticleTreeCtrl->MoveWindow(&r);
-
 		if (CurrentRightPane)
 		{								
 			CurrentRightPane->MoveWindow(r.right + 10, r.top, r.right + CurrRightPaneWidth + 10, r.top + CurrRightPaneHeight);
+		}			
+		CDialog::OnSize(nType, cx, cy);	
+		if (IsWindow(_StatusBar))
+		{					
+			_StatusBar.SetPaneInfo(0, ID_PS_EDITOR_STATUS, SBPS_NORMAL, computeStatusBarWidth());
+			RepositionBars(AFX_IDW_CONTROLBAR_FIRST, AFX_IDW_CONTROLBAR_LAST, ID_PS_EDITOR_STATUS);
 		}
-		
-
-	
-		CDialog::OnSize(nType, cx, cy);
-
-	
 	}
 }
 
 //**************************************************************************************************************************
 CRect CParticleDlg::getTreeRect(int cx, int cy) const
 {
-	const uint ox = 10, oy = 10;
+	const uint ox = 0, oy = 10;
 
 	if (CurrentRightPane)
 	{		
-		CRect res(ox, oy, cx - CurrRightPaneWidth - 10, cy - 10); 
+		CRect res(ox, oy, cx - CurrRightPaneWidth - 10, cy - 20); 
 		return res;
 	}
 	else
 	{
-		CRect res(ox, oy, cx - 10, cy - 10);
+		CRect res(ox, oy, cx - 10, cy - 20);
 		return res;
 	}
 }
@@ -325,15 +302,17 @@ void CParticleDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 }
 
 //**************************************************************************************************************************
-void CParticleDlg::go(void)
+void CParticleDlg::goPostRender()
 {
-	if (StartStopDlg->isBBoxDisplayEnabled() && _CurrPS)
+	NL3D::CParticleSystem *currPS = _ActiveNode ? _ActiveNode->getPSPointer() : NULL;
+	if (!currPS) return;
+	if (StartStopDlg->isBBoxDisplayEnabled() && currPS)
 	{
-		NL3D::CNELU::Driver->setupModelMatrix(_CurrPS->getSysMat());		
+		NL3D::CNELU::Driver->setupModelMatrix(currPS->getSysMat());		
 		if (_AutoUpdateBBox)
 		{
 			NLMISC::CAABBox currBBox;
-			_CurrPS->forceComputeBBox(currBBox);
+			currPS->forceComputeBBox(currBBox);
 			if (_EmptyBBox)
 			{
 				_EmptyBBox = false;
@@ -344,17 +323,17 @@ void CParticleDlg::go(void)
 				NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, _CurrBBox, CRGBA::Blue);			
 				_CurrBBox = NLMISC::CAABBox::computeAABBoxUnion(currBBox, _CurrBBox);
 			}
-			_CurrPS->setPrecomputedBBox(_CurrBBox);
+			currPS->setPrecomputedBBox(_CurrBBox);
 		}	
 		else
 		{
-			_CurrPS->getLastComputedBBox(_CurrBBox);
+			currPS->getLastComputedBBox(_CurrBBox);
 		}
-		NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, _CurrBBox, _CurrPS->getAutoComputeBBox() ? CRGBA::White : CRGBA::Red);
+		NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, _CurrBBox, currPS->getAutoComputeBBox() ? CRGBA::White : CRGBA::Red);
 	}
 	// copy user matrix into current fx
 	nlassert(_ObjView);
-	_CurrSystemModel->setUserMatrix(_ObjView->getFXUserMatrix());
+	_ActiveNode->getPSModel()->setUserMatrix(_ObjView->getFXUserMatrix());
 }
 
 //**************************************************************************************************************************
@@ -372,67 +351,405 @@ void CParticleDlg::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 //**************************************************************************************************************************
 const NLMISC::CMatrix &CParticleDlg::getPSMatrix() const
 {
-	nlassert(_CurrSystemModel);
-	return _CurrSystemModel->getMatrix();
+	if (!getActivePSM()) return NLMISC::CMatrix::Identity;		
+	return getActivePSM()->getMatrix();
 }
 
 //**************************************************************************************************************************
 const NLMISC::CMatrix &CParticleDlg::getPSWorldMatrix() const
 {
-	nlassert(_CurrSystemModel);
-	return _CurrSystemModel->getWorldMatrix();
+	if (!getActivePSM()) return NLMISC::CMatrix::Identity;	
+	return getActivePSM()->getWorldMatrix();
 }
 
 //**************************************************************************************************************************
 void CParticleDlg::setPSMatrix(const NLMISC::CMatrix &mat)
 {
-	nlassert(_CurrSystemModel);
-	_CurrSystemModel->setMatrix(mat);
+	if (!getActivePSM()) return;		
+	getActivePSM()->setMatrix(mat);
 }
 
 //**************************************************************************************************************************
 void CParticleDlg::setPSWorldMatrix(const NLMISC::CMatrix &mat)
 {
-	nlassert(_CurrSystemModel);
-	CMatrix invParentMat =  _CurrSystemModel->getMatrix() * _CurrSystemModel->getWorldMatrix().inverted();
+	if (!getActivePSM()) return;	
+	CMatrix invParentMat =  getActivePSM()->getMatrix() * getActivePSM()->getWorldMatrix().inverted();
 	invParentMat.normalize(CMatrix::XYZ);
 	CMatrix newMat = invParentMat * mat;
 	newMat.normalize(CMatrix::XYZ);
-	_CurrSystemModel->setMatrix(newMat);
+	getActivePSM()->setMatrix(newMat);
 }
 
-//**************************************************************************************************************************
-void CParticleDlg::refreshRightPane()
-{
-	CParticleSystemEdit *pse = dynamic_cast<CParticleSystemEdit *>(CurrentRightPane);
-	if (!pse) return;
-	
-}
 
 //**************************************************************************************************************************
-void CParticleDlg::stickPSToSkeleton(NL3D::CSkeletonModel *skel, uint bone)
+void CParticleDlg::stickPSToSkeleton(CParticleWorkspace::CNode *node, NL3D::CSkeletonModel *skel, uint bone)
 {
-	unstickPSFromSkeleton();
+	if (!node) return;	
+	node->stickPSToSkeleton(skel, bone);
 	if (skel)
 	{
-		skel->stickObject(_CurrSystemModel, bone);
-		_CurrSystemModel->setMatrix(CMatrix::Identity);
 		if (_ObjView->getMainFrame()->MouseMoveType == CMainFrame::MoveFX)
 		{
 			_ObjView->getMainFrame()->OnEditMovecamera();
 		}		
-		_ObjView->getMainFrame()->ToolBar.Invalidate();
-		_ParentSkel = skel;
+		_ObjView->getMainFrame()->ToolBar.Invalidate();		
 	}
 }
 
 //**************************************************************************************************************************
-void CParticleDlg::unstickPSFromSkeleton()
+void CParticleDlg::unstickPSFromSkeleton(CParticleWorkspace::CNode *node)
 {
-	if (_ParentSkel)
-	{
-		_ParentSkel->detachSkeletonSon(_CurrSystemModel);
-		_ParentSkel = NULL;
-		_ObjView->getMainFrame()->ToolBar.Invalidate();		
-	}	
+	if (!node) return;
+	node->unstickPSFromSkeleton();	
+	_ObjView->getMainFrame()->ToolBar.Invalidate();		
 }
+
+//**************************************************************************************************************************
+bool CParticleDlg::savePS(HWND parent, CParticleWorkspace::CNode &psNode, bool askToContinueWhenError)
+{
+	return savePSAs(parent, psNode, psNode.getFullPath(), askToContinueWhenError);
+}
+
+//**************************************************************************************************************************
+bool CParticleDlg::savePSAs(HWND parent, CParticleWorkspace::CNode &psNode ,const std::string &fullPath, bool askToContinueWhenError)
+{
+	nlassert(psNode.getPSPointer());
+	if (psNode.getResetAutoCountFlag() && psNode.getPSPointer()->getAutoCountFlag())
+	{		
+		MessageBox(psNode.getFilename().c_str() + getStrRsc(IDS_AUTO_COUNT_ERROR), getStrRsc(IDS_WARNING), MB_ICONEXCLAMATION);
+		return false;
+	}
+	try
+	{	
+		psNode.savePSAs(fullPath);
+		psNode.setModified(false);
+		setStatusBarText(CString(fullPath.c_str()) + " " + getStrRsc(IDS_SAVED));
+	}
+	catch (NLMISC::Exception &e)
+	{
+		if (askToContinueWhenError)
+		{		
+			int result = ::MessageBox(parent, CString(e.what()) + getStrRsc(IDS_CONTINUE_SAVING) , getStrRsc(IDS_ERROR), MB_ICONEXCLAMATION);
+			return result == MB_OK;
+		}
+		else
+		{
+			::MessageBox(parent, e.what(), getStrRsc(IDS_ERROR), MB_ICONEXCLAMATION);
+			return false;
+		}
+	}
+	return true;
+}
+
+//**************************************************************************************************************************
+bool CParticleDlg::loadPS(HWND parent, CParticleWorkspace::CNode &psNode, TLoadPSBehav behav)
+{
+	bool loadingOK = true;	
+	try
+	{	
+		if (!psNode.loadPS())
+		{
+			loadingOK = false;
+			switch(behav)
+			{
+				case Silent: return true; // no op
+				case ReportError:					
+					::MessageBox(parent, (LPCTSTR) (CString(psNode.getFilename().c_str()) + " : " + getStrRsc(IDS_COULDNT_INSTANCIATE_PS)), getStrRsc(IDS_ERROR), MB_OK|MB_ICONEXCLAMATION);
+					return true;
+				break;
+				case ReportErrorSkippable:
+				{
+					CSkippableMessageBox mb(getStrRsc(IDS_ERROR), CString(psNode.getFilename().c_str()) + " : " + getStrRsc(IDS_COULDNT_INSTANCIATE_PS), CWnd::FromHandle(parent));
+					mb.DoModal();
+					return !mb.getBypassFlag();
+				}
+				break;
+				default:
+					nlassert(0);
+				break;
+			}			
+		}
+		else
+		{
+			setStatusBarText(CString(psNode.getFullPath().c_str()) + " " + getStrRsc(IDS_LOADED));
+		}
+	}
+	catch (NLMISC::Exception &e)
+	{
+		switch(behav)
+		{
+			case Silent: return true; // no op
+			case ReportError:	
+				::MessageBox(parent, e.what(), getStrRsc(IDS_ERROR), MB_OK|MB_ICONEXCLAMATION);				
+				return true;
+			break;
+			case ReportErrorSkippable:
+			{
+				CSkippableMessageBox mb(getStrRsc(IDS_ERROR), CString(e.what()), CWnd::FromHandle(parent));
+				mb.DoModal();
+				return !mb.getBypassFlag();
+			}
+			break;
+			default:
+				nlassert(0);
+			break;
+		}		
+	}
+	if (psNode.getPSPointer()->hasLoop())
+	{		
+		localizedMessageBox(parent, IDS_FX_HAS_LOOP, IDS_WARNING, MB_OK|MB_ICONEXCLAMATION);
+	}	
+	return true;
+}
+
+
+//**************************************************************************************************************************
+void CParticleDlg::checkModifiedWorkSpace()
+{
+	if (_PW)
+	{
+		// see if current tree has been changed				
+		if (_PW->isModified())
+		{			
+			int result = localizedMessageBox(*this, IDS_PS_WORKSPACE_MODIFIED, IDS_PARTICLE_EDITOR, MB_YESNO|MB_ICONQUESTION);
+			if (result == IDYES)
+			{
+				saveWorkspaceStructure();
+			}
+		}
+		if (_PW->isContentModified())
+		{			
+			saveWorkspaceContent(true);			
+		}
+	}
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::closeWorkspace()
+{
+	setActiveNode(NULL);
+	ParticleTreeCtrl->setActiveNode(NULL);
+	ParticleTreeCtrl->reset();
+	delete _PW;
+	_PW = NULL;
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::OnCreateNewPsWorkspace() 
+{		
+	checkModifiedWorkSpace();
+	// ask name of the new workspace to create
+	CCreateFileDlg cf(getStrRsc(IDS_CHOOSE_WORKSPACE_NAME), "", "pws");
+	int result = cf.DoModal();
+	if (result = IDOK)
+	{			
+		if (cf.touchFile())
+		{				
+			CParticleWorkspace *newPW = new CParticleWorkspace;
+			newPW->setModificationCallback(ParticleTreeCtrl);
+			newPW->init(_ObjView, cf.getFullPath(), _ObjView->getFontManager(), _ObjView->getFontGenerator());
+			// save empty workspace
+			try
+			{		
+				newPW->save();
+			}
+			catch(NLMISC::EStream &e)
+			{
+				MessageBox(e.what(), getStrRsc(IDS_ERROR), MB_ICONEXCLAMATION);
+			}
+			closeWorkspace();			
+			_PW = newPW;
+			ParticleTreeCtrl->buildTreeFromWorkSpace(*_PW);
+		}
+	}
+
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::OnLoadPSWorkspace() 
+{
+	checkModifiedWorkSpace();
+	static const char BASED_CODE szFilter[] = "particle workspaces(*.pws)|*.pws||";
+	CFileDialog fd( TRUE, ".pws", "*.pws", 0, szFilter);
+	int result = fd.DoModal();
+	if (result != IDOK) return;		
+	// Add to the path
+	std::auto_ptr<CParticleWorkspace> newPW(new CParticleWorkspace);
+	newPW->init(_ObjView, (LPCTSTR) fd.GetPathName(), _ObjView->getFontManager(), _ObjView->getFontGenerator());
+	newPW->setModificationCallback(ParticleTreeCtrl);
+	// save empty workspace
+	try
+	{		
+		newPW->load();
+		setStatusBarText(CString(newPW->getFilename().c_str()) + " " + getStrRsc(IDS_LOADED));
+	}
+	catch(NLMISC::EStream &e)
+	{
+		MessageBox(e.what(), getStrRsc(IDS_ERROR), MB_ICONEXCLAMATION);
+		setStatusBarText(CString(e.what()));
+		return;
+	}	
+	// try to load each ps
+	CParticleWorkspace::CNode *firstLoadedNode = NULL;
+	bool displayErrorMsg = true;
+	for(uint k = 0; k < newPW->getNumNode(); ++k)
+	{
+		
+		displayErrorMsg = loadPS(*this, *newPW->getNode(k), displayErrorMsg ? ReportErrorSkippable : Silent);		
+		if (newPW->getNode(k)->isLoaded() && !firstLoadedNode)
+		{
+			firstLoadedNode = newPW->getNode(k);
+		}			
+	}	
+	closeWorkspace();
+	_PW = newPW.release();
+	ParticleTreeCtrl->buildTreeFromWorkSpace(*_PW);	
+	setActiveNode(firstLoadedNode);
+	ParticleTreeCtrl->setActiveNode(firstLoadedNode);
+	ParticleTreeCtrl->expandRoot();
+	setStatusBarText(getStrRsc(IDS_READY));
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::OnSaveAllPsWorkspace() 
+{
+	saveWorkspaceStructure();
+	saveWorkspaceContent(false);
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::OnSavePsWorkspace() 
+{
+	saveWorkspaceStructure();
+	saveWorkspaceContent(true);
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::saveWorkspaceStructure()
+{
+	nlassert(_PW);
+	try
+	{
+		_PW->save();		
+		setStatusBarText(CString(_PW->getFilename().c_str()) + " " + getStrRsc(IDS_SAVED));
+	}
+	catch(NLMISC::EStream &e)
+	{
+		localizedMessageBox(*this, e.what(), IDS_ERROR, MB_ICONEXCLAMATION);
+		setStatusBarText(CString(e.what()));
+	}
+}
+
+
+//**************************************************************************************************************************
+void CParticleDlg::saveWorkspaceContent(bool askToSaveModifiedPS)
+{
+	bool saveAll = !askToSaveModifiedPS;
+	// check each component of the tree
+	for(uint k = 0; k < _PW->getNumNode(); ++k)
+	{
+		if (_PW->getNode(k)->isModified())
+		{				
+			if (saveAll)
+			{
+				bool keepSaving = savePS(*this, *_PW->getNode(k), k != _PW->getNumNode());
+				if (!keepSaving) break;
+			}
+			else
+			{
+				// ask if the user wants to save the ps, or save all ps
+				CString mess;					
+				mess = CString(_PW->getNode(k)->getFilename().c_str()) + getStrRsc(IDS_SAVE_MODIFIED_PS);
+				CSaveOptionsDlg sop(getStrRsc(IDS_SAVE_FILE), mess, this);
+				sop.DoModal();
+				bool saveThisFile = false;
+				bool stop = false;
+				switch(sop.getChoice())
+				{
+					case CSaveOptionsDlg::Yes:		saveThisFile = true;  break;
+					case CSaveOptionsDlg::No:		saveThisFile = false; break;
+					case CSaveOptionsDlg::SaveAll:	saveAll =	   true;  break;
+					case CSaveOptionsDlg::Stop:		stop =		   true;  break;
+					default: nlassert(0);
+				}
+				if (stop) break;
+				if (saveAll || saveThisFile)
+				{
+					bool keepSaving = savePS(*this, *_PW->getNode(k), k != _PW->getNumNode());
+					if (!keepSaving) break;
+				}
+			}				
+		}
+	}
+	setStatusBarText(getStrRsc(IDS_READY));
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::setActiveNode(CParticleWorkspace::CNode *node)
+{
+	if (node == _ActiveNode) return;	
+	_ActiveNode = node;
+	StartStopDlg->setActiveNode(node);		
+	if(MainFrame->isMoveFX())
+	{
+		if (node)
+		{	
+			_ObjView->getMouseListener().setModelMatrix(node->getPSModel()->getMatrix());	
+		}
+		else
+		{
+			_ObjView->getMouseListener().setModelMatrix(NLMISC::CMatrix::Identity);
+		}
+	}
+	else
+	if(MainFrame->isMoveFXUserMatrix())
+	{
+		if (node)
+		{
+			_ObjView->getMouseListener().setModelMatrix(node->getPSModel()->getUserMatrix());
+		}
+		else
+		{
+			_ObjView->getMouseListener().setModelMatrix(NLMISC::CMatrix::Identity);
+		}
+	}
+}
+
+//**************************************************************************************************************************
+NL3D::CParticleSystemModel *CParticleDlg::getModelFromPS(NL3D::CParticleSystem *ps) const
+{
+	if (!ps) return	NULL;
+	if (!_PW) return NULL;
+	CParticleWorkspace::CNode *node = _PW->getNodeFromPS(ps);
+	if (!node) return NULL;
+	return node->getPSModel();
+}
+
+//**************************************************************************************************************************
+uint CParticleDlg::computeStatusBarWidth() const
+{
+	nlassert(ParticleTreeCtrl);
+	CRect tcRect;
+	ParticleTreeCtrl->GetClientRect(&tcRect);
+	if (!CurrentRightPane) return (uint) std::max((sint) tcRect.Width() - 16, (sint) 0);
+	return (uint) std::max((sint) tcRect.Width() - 4, (sint) 0);
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::OnViewPsFilename() 
+{
+	ParticleTreeCtrl->setViewFilenameFlag(!ParticleTreeCtrl->getViewFilenameFlag());
+	updateMenu();
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::updateMenu()
+{
+	if (!ParticleTreeCtrl) return;
+	CMenu *menu = GetMenu();
+	if (!menu) return;
+	// update the view menu
+	menu->CheckMenuItem(IDM_VIEW_PS_FILENAME, MF_BYCOMMAND|(ParticleTreeCtrl->getViewFilenameFlag() ? MF_CHECKED : 0));
+}
+
+ 

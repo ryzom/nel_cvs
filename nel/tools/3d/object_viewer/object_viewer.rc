@@ -156,7 +156,7 @@ BEGIN
     IDS_NO_FINITE_DURATION_FOR_OBJ 
                             "The system must have a finite duration for this setting! Please check that the following object doesn't live forever or doesn't create a loop in the system :"
     IDS_ERROR               "Error"
-    IDS_AUTO_COUNT_ERROR    "Current FX uses auto count feature, and it has been modified. You should run the system entirely at least once at full detail before saving so that the editor can compute the number of particles in the system. If user params are used to modify system aspect, you should run the system for extreme cases before saving."
+    IDS_AUTO_COUNT_ERROR    " uses auto count feature, and it has been modified. You should run the system entirely at least once at full detail before saving so that the editor can compute the number of particles in the system. If user params are used to modify system aspect, you should run the system for extreme cases before saving."
     IDS_WARNING             "WARNING"
 END
 
@@ -200,6 +200,33 @@ BEGIN
     IDS_BAD_ZBIAS           "Invalid ZBias value"
     IDS_FORCE_ZBIAS         "Force all object ZBias"
     IDS_FX_HAS_LOOP         "The particle system has a loop of emitters. You must break the loop before you can play it."
+    IDS_PS_WORKSPACE_MODIFIED 
+                            "Particle workspace structure has been modified, would you like to save it ?"
+    IDS_SAVE_MODIFIED_PS    " has been modified, save it ?"
+    IDS_SAVE_FILE           "Save file"
+    IDS_CONTINUE_SAVING     ".\nSave remaining files ?"
+    IDS_CHOOSE_WORKSPACE_NAME "Choose workspace file"
+    IDS_EMPTY_PATH          "Path is empty"
+    IDS_FILENAME_PATH       "Filename is empty"
+    IDS_COULDNT_CREATE_DIRECTORY "Couldn't create directory "
+    IDS_INVALID_FILENAME    "Invalid filename"
+    IDS_CANNOT_CREATE_FILE  "Cannot create file"
+    IDS_OVERWRITE_FILE      " already exists. Overwrite file ?"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_PS_ALREADY_INSERTED ": a particle system with this name is already present in the project."
+    IDS_COULDNT_INSTANCIATE_PS "Couldn't instanciate ps, bad shape type ?"
+    IDS_CLEAR_CONTENT       "Clear content ?"
+    IDS_PARTICLE_EDITOR     "Particle editor"
+    IDS_CANT_CHANGE_PS_NAME "The particle system isn't loaded, can't change its name."
+    IDS_CREATE_NEW_PS       "Create new particle system"
+    IDS_CHOOSE_BASE_PATH    "Choose base path :"
+    IDS_SAVED               "saved."
+    IDS_LOADED              "loaded."
+    IDS_READY               "Ready."
+    IDS_REMOVE_ALL_PS       "Remove all particle systems from workspace ?"
 END
 
 #endif    // English (U.S.) resources
@@ -250,6 +277,9 @@ IDB_MORPH_SCHEME        BITMAP  DISCARDABLE     "bmp00024.bmp"
 IDB_PAUSE_SYSTEM        BITMAP  DISCARDABLE     "bmp00025.bmp"
 IDB_LIGHT_ATTEN_START   BITMAP  DISCARDABLE     "bmp00026.bmp"
 IDB_LIGHT_ATTEN_END     BITMAP  DISCARDABLE     "light_at.bmp"
+IDB_PS_WORKSPACE        BITMAP  DISCARDABLE     "bitmap4.bmp"
+IDB_PARTICLE_SYSTEM_NOT_LOADED BITMAP  DISCARDABLE     "bitmap3.bmp"
+IDB_START_MULTIPLE_SYSTEM BITMAP  DISCARDABLE     "bmp00027.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -497,7 +527,7 @@ BEGIN
     LTEXT           "Upper bound",IDC_STATIC,13,27,44,14
 END
 
-IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 109, 225
+IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 131, 236
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Particle system start/stop"
@@ -506,28 +536,34 @@ BEGIN
     PUSHBUTTON      "Button1",IDC_START_PICTURE,7,6,24,24,BS_BITMAP
     PUSHBUTTON      "Button1",IDC_STOP_PICTURE,69,6,24,24,BS_BITMAP
     CONTROL         "Display bbox",IDC_DISPLAY_BBOX,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,73,55,10
+                    WS_TABSTOP,18,79,55,10
     PUSHBUTTON      "Button1",IDC_PAUSE_PICTURE,39,7,24,24,BS_BITMAP
     CONTROL         "Slider1",IDC_ANIM_SPEED,"msctls_trackbar32",TBS_BOTH | 
-                    TBS_NOTICKS | WS_TABSTOP,15,38,70,11
+                    TBS_NOTICKS | WS_TABSTOP,15,38,84,11
     LTEXT           "0 %",IDC_STATIC,2,39,12,8
-    LTEXT           "100 %",IDC_STATIC,84,39,22,8
+    LTEXT           "100 %",IDC_STATIC,101,39,22,8
     CONTROL         "Display helpers",IDC_DISPLAY_HELPERS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,87,61,8
-    GROUPBOX        "",IDC_STATIC,15,66,74,34
-    GROUPBOX        "",IDC_STATIC,13,102,79,46
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,103,61,8
     CONTROL         "Enable auto count",IDC_ENABLE_AUTO_COUNT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,17,107,73,15
-    PUSHBUTTON      "Reset count",IDC_RESET_COUNT,30,123,46,17
-    LTEXT           "Num particles : ? / ?",IDC_NUM_PARTICLES,4,170,103,9
-    LTEXT           "System date : ? s",IDC_SYSTEM_DATE,4,195,103,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,10,111,73,15
+    PUSHBUTTON      "Reset auto count",IDC_RESET_COUNT,10,127,69,17
+    LTEXT           "Num particles : ? / ?",IDC_NUM_PARTICLES,9,148,103,9
+    LTEXT           "System date : ? s",IDC_SYSTEM_DATE,9,169,103,9
     CONTROL         "Auto repeat",IDC_AUTOREPEAT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,28,153,57,11
-    PUSHBUTTON      "Link to skeleton",IDC_LINK_TO_SKELETON,3,206,63,16
-    PUSHBUTTON      "Unlink",IDC_UNLINK_FROM_SKELETON,70,206,35,16
+                    WS_TABSTOP,18,51,57,11
+    PUSHBUTTON      "Link to skeleton",IDC_LINK_TO_SKELETON,6,179,63,16
+    PUSHBUTTON      "Unlink",IDC_UNLINK_FROM_SKELETON,73,179,51,16
     CONTROL         "Link play to scene play",IDC_LINK_PLAY_TO_SCENE_PLAY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,50,92,14
-    LTEXT           "Num asked faces : ? / ?",IDC_NUM_ASKED_FACES,4,179,98,9
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,64,92,14
+    LTEXT           "Num asked faces : ? / ?",IDC_NUM_ASKED_FACES,9,159,98,9
+    EDITTEXT        IDC_TRIGGER_ANIM,8,212,73,12,ES_AUTOHSCROLL | 
+                    WS_DISABLED
+    LTEXT           "anim :",IDC_ANIM,7,200,20,10
+    PUSHBUTTON      "...",IDC_BROWSE_ANIM,83,212,20,13
+    PUSHBUTTON      "Button1",IDC_START_MULTIPLE_PICTURE,99,7,24,24,
+                    BS_BITMAP
+    GROUPBOX        "Active ps",IDC_ACTIVE_PS,3,92,126,137
+    PUSHBUTTON      "Clear",IDC_CLEAR_ANIM,106,212,20,13
 END
 
 IDD_ATTRIB_DLG DIALOG DISCARDABLE  0, 0, 346, 71
@@ -545,7 +581,7 @@ BEGIN
                     WS_TABSTOP,9,46,41,11
     CONTROL         "",IDC_ATTRIB_NB_CYCLES,"Static",SS_ETCHEDFRAME | NOT 
                     WS_VISIBLE,113,39,226,24
-    LTEXT           "Input mutliplier :",IDC_INPUT_MULTIPLIER_TXT,58,47,61,
+    LTEXT           "Input mutliplier :",IDC_INPUT_MULTIPLIER_TXT,58,47,52,
                     11
     LTEXT           "Src:",IDC_SRC_INPUT_TXT,257,12,14,11
     COMBOBOX        IDC_SCHEME_INPUT,274,10,46,77,CBS_DROPDOWNLIST | 
@@ -1631,6 +1667,55 @@ BEGIN
     LTEXT           "Specular :",IDC_STATIC,9,88,33,10
 END
 
+IDD_SAVE_OPTIONS_DLG DIALOG DISCARDABLE  0, 0, 256, 71
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Yes",IDOK,17,50,50,14
+    PUSHBUTTON      "Save none",IDCANCEL,182,50,60,14
+    PUSHBUTTON      "Save all",ID_SAVEALL,127,50,50,14
+    LTEXT           "Static",IDC_MB_TEXT,7,7,242,39
+    PUSHBUTTON      "No",ID_NO,71,50,50,14
+END
+
+IDD_CREATE_FILE DIALOG DISCARDABLE  0, 0, 186, 57
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Create file"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,80,39,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,132,39,50,14
+    EDITTEXT        IDC_LOCATION,36,4,123,14,ES_AUTOHSCROLL
+    LTEXT           "Location :",IDC_STATIC_LOCATION,2,6,32,8
+    PUSHBUTTON      "&...",IDC_BROWSE,163,3,20,16
+    LTEXT           "Filename :",IDC_STATIC_FILENAME,2,24,33,8
+    EDITTEXT        IDC_FILENAME,35,20,147,14,ES_AUTOHSCROLL
+END
+
+IDD_SKIPPABLE_MESSAGE_BOX DIALOG DISCARDABLE  0, 0, 186, 76
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Dialog"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,67,54,50,14
+    LTEXT           "Static",IDC_MB_CONTENT,7,7,172,26
+    CONTROL         "Don't show again for current operation",
+                    IDC_DONT_SHOW_AGAIN,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,7,40,172,11
+END
+
+IDD_CHOOSE_ANIM DIALOG DISCARDABLE  0, 0, 157, 294
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Choose an animation"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,31,273,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,88,273,50,14
+    LISTBOX         IDC_ANIM_LIST,7,7,143,260,LBS_SORT | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1723,9 +1808,9 @@ BEGIN
     IDD_PARTICLE_SYSTEM_START_STOP, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 102
+        RIGHTMARGIN, 124
         TOPMARGIN, 7
-        BOTTOMMARGIN, 218
+        BOTTOMMARGIN, 229
     END
 
     IDD_ATTRIB_DLG, DIALOG
@@ -2199,6 +2284,38 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 128
     END
+
+    IDD_SAVE_OPTIONS_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 249
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 64
+    END
+
+    IDD_CREATE_FILE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 50
+    END
+
+    IDD_SKIPPABLE_MESSAGE_BOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 69
+    END
+
+    IDD_CHOOSE_ANIM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 150
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 287
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2368,14 +2485,17 @@ IDR_PARTICLE_SYSTEM_MENU MENU DISCARDABLE
 BEGIN
     POPUP "MENU"
     BEGIN
-        MENUITEM "&New located",                ID_MENU_NEWLOCATED
-        MENUITEM SEPARATOR
+        MENUITEM "Set as acti&ve particle system", 
+                                                IDM_SET_ACTIVE_PARTICLE_SYSTEM
+
         MENUITEM "&Save",                       ID_MENU_SAVE_PS
-        MENUITEM "&Load",                       ID_MENU_LOAD_PS
-        MENUITEM "&Delete",                     ID_MENU_DELETE_PS
-        MENUITEM SEPARATOR
-        MENUITEM "&Paste located",              IDM_PASTE_LOCATED
+        MENUITEM "Save as ...",                 IDM_SAVE_PS_AS
+        MENUITEM "&Clear content",              IDM_CLEAR_PS_CONTENT
+        MENUITEM "&Remove from workspace",      IDM_REMOVE_PS_FROM_WORKSPACE
         MENUITEM "&Merge",                      IDM_MERGE_PS
+        MENUITEM SEPARATOR
+        MENUITEM "&New located",                ID_MENU_NEWLOCATED
+        MENUITEM "&Paste located",              IDM_PASTE_LOCATED
         MENUITEM SEPARATOR
         POPUP "Bind &particle..."
         BEGIN
@@ -2551,6 +2671,47 @@ BEGIN
         MENUITEM "Copy vegetable",              ID_MENU_COPY
         MENUITEM "Load .vegetdesc",             ID_MENU_LOADVEGETDESC
         MENUITEM "Save .vegetdesc",             ID_MENU_SAVEVEGETDESC
+    END
+END
+
+IDR_PARTICLE_DLG_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "&Workspace"
+    BEGIN
+        MENUITEM "Create",                      IDM_CREATE_NEW_PS_WORKSPACE
+        MENUITEM "Load",                        IDM_LOAD_PS_WORKSPACE
+        MENUITEM "Save",                        IDM_SAVE_PS_WORKSPACE
+        MENUITEM "Save all",                    IDM_SAVE_ALL_PS_WORKSPACE
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "View &filenames",             IDM_VIEW_PS_FILENAME
+    END
+END
+
+IDR_PARTICLE_WORKSPACE_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "MENU"
+    BEGIN
+        MENUITEM "&Load",                       IDM_LOAD_PS_WORKSPACE
+        MENUITEM "&Save",                       IDM_SAVE_PS_WORKSPACE
+        MENUITEM SEPARATOR
+        MENUITEM "&Insert new particle system(s)", IDM_INSERT_NEW_PS
+        MENUITEM "&Create new particle system", IDM_CREATE_NEW_PS
+        MENUITEM "Remove &all particle systems from workspace", 
+                                                IDM_REMOVE_ALL_PS
+        MENUITEM SEPARATOR
+        MENUITEM "Sort by &filename",           IDM_PS_SORT_BY_FILENAME
+        MENUITEM "Sort by &name",               IDM_PS_SORT_BY_NAME
+    END
+END
+
+IDR_PARTICLE_SYSTEM_NOT_LOADED_MENU MENU DISCARDABLE 
+BEGIN
+    POPUP "MENU"
+    BEGIN
+        MENUITEM "Reload ps",                   IDM_RELOAD_PS
+        MENUITEM "&Remove from workspace",      IDM_REMOVE_PS_FROM_WORKSPACE
     END
 END
 

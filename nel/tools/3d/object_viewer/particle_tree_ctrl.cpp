@@ -1,26 +1,26 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.54 2004/06/01 16:25:33 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.55 2004/06/17 08:07:26 vizerie Exp $
  */
 
-/* Copyright, 2000 Nevrax Ltd.
+/* Copyright,  2000 Nevrax Ltd.
  *
  * This file is part of NEVRAX NEL.
  * NEVRAX NEL is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2, or (at your option)
+ * the Free Software Foundation; either version 2,  or (at your option)
  * any later version.
 
- * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * NEVRAX NEL is distributed in the hope that it will be useful,  but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
 
  * You should have received a copy of the GNU General Public License
- * along with NEVRAX NEL; see the file COPYING. If not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
- * MA 02111-1307, USA.
+ * along with NEVRAX NEL; see the file COPYING. If not,  write to the
+ * Free Software Foundation,  Inc.,  59 Temple Place - Suite 330,  Boston, 
+ * MA 02111-1307,  USA.
  */
 
 
@@ -41,9 +41,16 @@
 #include "edit_ps_sound.h"
 #include "edit_ps_light.h"
 #include "dup_ps.h"
- 
-
-
+#include "object_viewer.h"
+#include "ps_mover_dlg.h"
+#include "set_value_dlg.h"
+#include "create_file_dlg.h"
+#include "located_properties.h"
+#include "located_bindable_dialog.h"
+#include "located_target_dlg.h"
+#include "lb_extern_id_dlg.h"
+#include "skippable_message_box.h"
+// 
 #include "3d/particle_system.h"
 #include "3d/particle_system_model.h"
 #include "3d/particle_system_shape.h"
@@ -56,18 +63,10 @@
 #include "3d/ps_emitter.h"
 #include "3d/ps_edit.h"
 #include "3d/nelu.h"
-
+//
 #include "nel/misc/path.h"
 #include "nel/misc/file.h"
 
-#include "located_properties.h"
-#include "located_bindable_dialog.h"
-#include "located_target_dlg.h"
-#include "lb_extern_id_dlg.h"
-
-#include "object_viewer.h"
-#include "ps_mover_dlg.h"
-#include "set_value_dlg.h"
 
 
 
@@ -82,28 +81,61 @@ using NL3D::CNELU;
 
 
 
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CParticleTreeCtrl
 
 
-static const uint IconIDs[] = { IDB_FORCE, IDB_PARTICLE, IDB_EMITTER, IDB_LIGHT, IDB_COLLISION_ZONE, IDB_SOUND
-								, IDB_PARTICLE_SYSTEM, IDB_LOCATED, IDB_LOCATED_INSTANCE };
+enum TPSIcon 
+{
+	PSIconForce			          = 0, 
+	PSIconParticle		          = 1, 
+	PSIconEmitter		          = 2, 
+	PSIconLight                   = 3, 
+	PSIconCollisionZone           = 4, 
+	PSIconSound                   = 5, 
+	PSIconParticleSystem          = 6, 
+	PSIconLocated		          = 7,
+	PSIconLocatedInstance         = 8,
+	PSIconWorkspace				  = 9,
+	PSIconParticleSystemNotLoaded = 10
+};
+
+static const uint IconIDs[] = 
+{ 
+	IDB_FORCE, 
+	IDB_PARTICLE, 
+	IDB_EMITTER, 
+	IDB_LIGHT, 
+	IDB_COLLISION_ZONE, 
+	IDB_SOUND, 
+	IDB_PARTICLE_SYSTEM, 
+	IDB_LOCATED, 
+	IDB_LOCATED_INSTANCE, 
+	IDB_PS_WORKSPACE, 
+	IDB_PARTICLE_SYSTEM_NOT_LOADED
+};
 static const uint NumIconIDs = sizeof(IconIDs) / sizeof(uint);
 
 // this map is used to create increasing names
-static std::map<std::string, uint> _PSElementIdentifiers;
+static std::map<std::string,  uint> _PSElementIdentifiers;
 
 
 //****************************************************************************************************************
-CParticleTreeCtrl::CParticleTreeCtrl(CParticleDlg *pdlg) : _ParticleDlg(pdlg), _LastClickedPS(NULL)
+CParticleTreeCtrl::CParticleTreeCtrl(CParticleDlg *pdlg)
 {
 	CBitmap bm[NumIconIDs];
-	_ImageList.Create(16, 16, ILC_COLOR4, 0, NumIconIDs);
+	_ImageList.Create(16,  16,  ILC_COLOR4,  0,  NumIconIDs);
 	for (uint k = 0; k  < NumIconIDs; ++k)
 	{
 		bm[k].LoadBitmap(IconIDs[k]);
-		_ImageList.Add(&bm[k], RGB(1, 1, 1));
+		_ImageList.Add(&bm[k],  RGB(1,  1,  1));
 	}
+	_ParticleDlg = pdlg;
+	_LastClickedPS = NULL;
+	_LastActiveNode = NULL;
+	_ViewFilenameFlag = true;
 }
 
 //****************************************************************************************************************
@@ -115,6 +147,10 @@ CParticleTreeCtrl::~CParticleTreeCtrl()
 //****************************************************************************************************************
 void CParticleTreeCtrl::reset()
 {
+	if (IsWindow(*this))
+	{	
+		DeleteAllItems();
+	}
 	for (std::vector<CNodeType *>::iterator it = _NodeTypes.begin(); it != _NodeTypes.end(); ++it)
 	{
 		delete *it;
@@ -123,34 +159,34 @@ void CParticleTreeCtrl::reset()
 }
 
 //****************************************************************************************************************
-void CParticleTreeCtrl::rebuildLocatedInstance(void)
+void CParticleTreeCtrl::rebuildLocatedInstance(CParticleWorkspace::CNode &node)
 {
-	HTREEITEM currPS = GetRootItem(), currLocated;
-
-	currLocated = this->GetChildItem(currPS);
-
+	HTREEITEM currPS = getTreeItem(&node);
+	nlassert(currPS);
+	HTREEITEM currLocated = this->GetChildItem(currPS);
 	while(currLocated)
 	{
 		CNodeType *nt = (CNodeType *) GetItemData(currLocated);
 		nlassert(nt->Type == CNodeType::located);
 		CPSLocated *loc = nt->Loc;
-
 		for (uint32 k = 0; k < loc->getSize(); ++k)
 		{
-			CNodeType *newNt = new CNodeType(loc, k);
+			CNodeType *newNt = new CNodeType(loc,  k);
 			_NodeTypes.push_back(newNt);
 			// bind located instance icon
-			InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, "instance", 8, 8, 0, 0, (LPARAM) newNt, currLocated, TVI_LAST);
+			InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT,  "instance",  PSIconLocatedInstance,  PSIconLocatedInstance,  0,  0,  (LPARAM) newNt,  currLocated,  TVI_LAST);
 		}
-		currLocated = GetNextItem(currLocated, TVGN_NEXT);
+		currLocated = GetNextItem(currLocated,  TVGN_NEXT);
 	}
 	Invalidate();
 }
 
 //=====================================================================================================
-void CParticleTreeCtrl::suppressLocatedInstanceNbItem(uint32 newSize)
+void CParticleTreeCtrl::suppressLocatedInstanceNbItem(CParticleWorkspace::CNode &node,  uint32 newSize)
 {
-	HTREEITEM currPS = GetRootItem(), currLocated, currLocElement, nextCurrLocElement;
+	HTREEITEM currPS = getTreeItem(&node);
+	nlassert(currPS);
+	HTREEITEM currLocated,  currLocElement,  nextCurrLocElement;
 	currLocated = this->GetChildItem(currPS);
 	while(currLocated)
 	{				
@@ -159,168 +195,192 @@ void CParticleTreeCtrl::suppressLocatedInstanceNbItem(uint32 newSize)
 		{
 			CNodeType *nt = (CNodeType *) GetItemData(currLocElement);
 
-			nextCurrLocElement = GetNextItem(currLocElement, TVGN_NEXT);
+			nextCurrLocElement = GetNextItem(currLocElement,  TVGN_NEXT);
 			// remove instance item
 			if (nt->Type == CNodeType::locatedInstance)
 			{
 				if (nt->LocatedInstanceIndex >= newSize)
 				{
-					delete nt;
-					_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));
-					DeleteItem(currLocElement);										
+					removeTreePart(currLocElement);					
 				}
 			}
 			currLocElement = nextCurrLocElement;		
 		}
 		
-		currLocated = GetNextItem(currLocated, TVGN_NEXT);
+		currLocated = GetNextItem(currLocated,  TVGN_NEXT);
 	}	
 	Invalidate();
 }
 
 
 //=====================================================================================================
-void CParticleTreeCtrl::buildTreeFromPS(CParticleSystem *ps, CParticleSystemModel *psm)
-{	
-	reset();
-	DeleteAllItems();
-	// for now, there's only one root ...			
-	CNodeType *nt = new CNodeType(ps, psm);
+HTREEITEM CParticleTreeCtrl::buildTreeFromPS(CParticleWorkspace::CNode &node,  HTREEITEM rootHandle,  HTREEITEM prevSibling /*= TVI_LAST*/)
+{		
+	// for now,  there's only one root ...			
+	CNodeType *nt = new CNodeType(&node);
 	_NodeTypes.push_back(nt);
-	// bind particle system icon
-	HTREEITEM rootHandle =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT, ps->getName().c_str(), 6, 6, 0, 0, NULL, TVI_ROOT, TVI_LAST);
-	// set the param (doesn't seems to work during first creation)
-	SetItemData(rootHandle, (LPARAM) nt);
-	// now, create each located		
-	for (uint k = 0; k < ps->getNbProcess(); k++)
-	{				
-		CPSLocated *loc = dynamic_cast<CPSLocated *>(ps->getProcess(k));		
-		if (loc) createNodeFromLocated(loc, rootHandle);
+	if (node.isLoaded())
+	{	
+		// bind particle system icon
+		HTREEITEM psRoot =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT, computeCaption(node).c_str(),  PSIconParticleSystem,  PSIconParticleSystem,  0,  0,  NULL,  rootHandle,  prevSibling);
+		// set the param (doesn't seems to work during first creation)
+		SetItemData(psRoot,  (LPARAM) nt);
+		// now,  create each located		
+		for (uint k = 0; k < node.getPSPointer()->getNbProcess(); k++)
+		{				
+			CPSLocated *loc = dynamic_cast<CPSLocated *>(node.getPSPointer()->getProcess(k));		
+			if (loc) createNodeFromLocated(loc,  psRoot);
+		}
+		rebuildLocatedInstance(node);
+		return psRoot;
+	}
+	else
+	{
+		// bind a bitmap that say that the PS hasn't been loaded
+		HTREEITEM psRoot =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT, computeCaption(node).c_str(),  PSIconParticleSystemNotLoaded,  PSIconParticleSystemNotLoaded,  0,  0,  NULL,  rootHandle,  prevSibling);
+		SetItemData(psRoot,  (LPARAM) nt);
+		return psRoot;
 	}
 }
 
 //=====================================================================================================
-void CParticleTreeCtrl::createNodeFromLocated(NL3D::CPSLocated *loc, HTREEITEM rootHandle)
+void CParticleTreeCtrl::buildTreeFromWorkSpace(CParticleWorkspace &ws)
+{
+	reset();
+	DeleteAllItems();
+	CNodeType *nt = new CNodeType(&ws);
+	_NodeTypes.push_back(nt);
+	// bind particle system icon
+	HTREEITEM rootHandle =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT,  computeCaption(ws).c_str(),  PSIconWorkspace,  PSIconWorkspace,  0,  0,  NULL,  NULL,  TVI_LAST);
+	// set the param (doesn't seems to work during first creation)
+	SetItemData(rootHandle,  (LPARAM) nt);
+	// now,  create each particle system
+	for (uint k = 0; k < ws.getNumNode(); ++k)
+	{				
+		buildTreeFromPS(*ws.getNode(k),  rootHandle);
+	}
+}
+
+//=====================================================================================================
+void CParticleTreeCtrl::createNodeFromLocated(NL3D::CPSLocated *loc,  HTREEITEM rootHandle)
 {	
 	// insert an item for the located
 	CNodeType *nt = new CNodeType(loc);
 	_NodeTypes.push_back(nt);
 	// bind located icon
-	HTREEITEM nodeHandle =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM |TVIF_TEXT, loc->getName().c_str() , 7, 7, 0, 0, (LPARAM) nt, rootHandle, TVI_LAST);
-	// now, insert each object that is bound to the located	
+	HTREEITEM nodeHandle =  InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM |TVIF_TEXT,  loc->getName().c_str() ,  PSIconLocated,  PSIconLocated,  0,  0,  (LPARAM) nt,  rootHandle,  TVI_LAST);
+	// now,  insert each object that is bound to the located	
 	for (uint l = 0; l < loc->getNbBoundObjects(); ++l)
 	{
-		createNodeFromLocatedBindable(loc->getBoundObject(l), nodeHandle);				
+		createNodeFromLocatedBindable(loc->getBoundObject(l),  nodeHandle);				
 	}
 }
 
 //=====================================================================================================
-void CParticleTreeCtrl::createNodeFromLocatedBindable(NL3D::CPSLocatedBindable *lb, HTREEITEM rootHandle)
+void CParticleTreeCtrl::createNodeFromLocatedBindable(NL3D::CPSLocatedBindable *lb,  HTREEITEM rootHandle)
 {
-	// we ordered the image so that they match the type for a located bindable (force, particles, collision zones...)
+	// we ordered the image so that they match the type for a located bindable (force,  particles,  collision zones...)
 	CNodeType *nt = new CNodeType(lb);
 	_NodeTypes.push_back(nt);
-	InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT , lb->getName().c_str() , lb->getType(), lb->getType(), 0, 0, (LPARAM) nt, rootHandle, TVI_LAST);
+	InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT ,  lb->getName().c_str() ,  lb->getType(),  lb->getType(),  PSIconForce,  PSIconForce,  (LPARAM) nt,  rootHandle,  TVI_LAST);
 }
 
 
 
-BEGIN_MESSAGE_MAP(CParticleTreeCtrl, CTreeCtrl)
+BEGIN_MESSAGE_MAP(CParticleTreeCtrl,  CTreeCtrl)
 	//{{AFX_MSG_MAP(CParticleTreeCtrl)
-	ON_NOTIFY_REFLECT(TVN_SELCHANGED, OnSelchanged)
+	ON_NOTIFY_REFLECT(TVN_SELCHANGED,  OnSelchanged)
 	ON_WM_RBUTTONDOWN()
-	ON_NOTIFY_REFLECT(TVN_ENDLABELEDIT, OnEndlabeledit)
-	ON_WM_CHAR()
+	ON_NOTIFY_REFLECT(TVN_ENDLABELEDIT,  OnEndlabeledit)
+	ON_NOTIFY_REFLECT(TVN_BEGINLABELEDIT, OnBeginlabeledit)
+	ON_WM_LBUTTONDBLCLK()
+	ON_NOTIFY_REFLECT(TVN_KEYDOWN, OnKeydown)
+	ON_WM_KEYUP()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 //=====================================================================================================
 void CParticleTreeCtrl::init(void)
 {
-	this->SetImageList(&_ImageList, TVSIL_NORMAL);
+	this->SetImageList(&_ImageList,  TVSIL_NORMAL);
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CParticleTreeCtrl message handlers
-
-
-void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult) 
+//=====================================================================================================
+void CParticleTreeCtrl::updateRightPane(CNodeType &nt)
 {
-	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;	
-	*pResult = 0;
-	CNodeType *nt = (CNodeType  *) pNMTreeView->itemNew.lParam;	
-	nlassert(nt);
-		
-	switch (nt->Type)
+	switch (nt.Type)
 	{
 		case CNodeType::located:
 		{	
-
-			CLocatedProperties *lp = new CLocatedProperties(nt->Loc, _ParticleDlg);			
-			lp->init(0, 0);	
-
+			nlassert(getOwnerNode(&nt));
+			CLocatedProperties *lp = new CLocatedProperties(getOwnerNode(&nt), nt.Loc,  _ParticleDlg);	
+			lp->init(0,  0);	
 			_ParticleDlg->setRightPane(lp);
 			if (_LastClickedPS)
 			{
 				_LastClickedPS->setCurrentEditedElement(NULL);
 			}
-
-
-
 			return;
 		}
 		break;
 		case CNodeType::locatedBindable:
 		{
-			if (dynamic_cast<NL3D::CPSEmitter *>(nt->Bind))
+			if (dynamic_cast<NL3D::CPSEmitter *>(nt.Bind))
 			{
-				CEmitterDlg *ed =  new CEmitterDlg(static_cast<NL3D::CPSEmitter *>(nt->Bind), _ParticleDlg);
+				CEmitterDlg *ed =  new CEmitterDlg(getOwnerNode(&nt), static_cast<NL3D::CPSEmitter *>(nt.Bind),  _ParticleDlg);
 				ed->init(_ParticleDlg);
 				_ParticleDlg->setRightPane(ed);
 			}
 			else
-			if (dynamic_cast<NL3D::CPSTargetLocatedBindable *>(nt->Bind))
+			if (dynamic_cast<NL3D::CPSTargetLocatedBindable *>(nt.Bind))
 			{
-				CLocatedTargetDlg *ltd =  new CLocatedTargetDlg(static_cast<NL3D::CPSTargetLocatedBindable *>(nt->Bind), _ParticleDlg);
+				CLocatedTargetDlg *ltd =  new CLocatedTargetDlg(getOwnerNode(&nt),  static_cast<NL3D::CPSTargetLocatedBindable *>(nt.Bind),  _ParticleDlg);
 				ltd->init(_ParticleDlg);
 				_ParticleDlg->setRightPane(ltd);
 			}
 			else
-			if (dynamic_cast<NL3D::CPSSound *>(nt->Bind))
+			if (dynamic_cast<NL3D::CPSSound *>(nt.Bind))
 			{
-				CEditPSSound *epss =  new CEditPSSound(static_cast<NL3D::CPSSound *>(nt->Bind));
+				nlassert(getOwnerNode(&nt));
+				CEditPSSound *epss =  new CEditPSSound(getOwnerNode(&nt),  static_cast<NL3D::CPSSound *>(nt.Bind));
 				epss->init(_ParticleDlg);
 				_ParticleDlg->setRightPane(epss);
 			}
 			else
-			if (dynamic_cast<NL3D::CPSLight *>(nt->Bind))
+			if (dynamic_cast<NL3D::CPSLight *>(nt.Bind))
 			{
-				CEditPSLight *epsl =  new CEditPSLight(static_cast<NL3D::CPSLight *>(nt->Bind));
+				nlassert(getOwnerNode(&nt));
+				CEditPSLight *epsl =  new CEditPSLight(getOwnerNode(&nt),  static_cast<NL3D::CPSLight *>(nt.Bind));
 				epsl->init(_ParticleDlg);
 				_ParticleDlg->setRightPane(epsl);
 			}
 			else
 			{
-				CLocatedBindableDialog *lbd = new CLocatedBindableDialog(nt->Bind);
+				nlassert(getOwnerNode(&nt));
+				CLocatedBindableDialog *lbd = new CLocatedBindableDialog(getOwnerNode(&nt), nt.Bind);
 				lbd->init(_ParticleDlg);
 				_ParticleDlg->setRightPane(lbd);			
 			}
-
 			if (_LastClickedPS)
 			{
 				_LastClickedPS->setCurrentEditedElement(NULL);
 			}
-
-
-
 			return;
 		}
 		break;
 		case CNodeType::particleSystem:
 		{
-			CParticleSystemEdit *pse = new CParticleSystemEdit(nt->PS, this);
-			pse->init(_ParticleDlg);
-			_ParticleDlg->setRightPane(pse);
+			// see if the particle system has been loaded
+			if (nt.PS->isLoaded())
+			{			
+				CParticleSystemEdit *pse = new CParticleSystemEdit(nt.PS,  this);
+				pse->init(_ParticleDlg);
+				_ParticleDlg->setRightPane(pse);
+			}
+			else
+			{
+				_ParticleDlg->setRightPane(NULL);
+			}
 			if (_LastClickedPS)
 			{
 				_LastClickedPS->setCurrentEditedElement(NULL);
@@ -329,44 +389,55 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 		break;
 		case CNodeType::locatedInstance:
 		{			
-			NL3D::CParticleSystem *ps = nt->Loc->getOwner();
-			
-			
-			
-			_LastClickedPS = ps;
-			
-			CPSMoverDlg *moverDlg = new CPSMoverDlg(this, &_ParticleDlg->MainFrame->ObjView->getMouseListener(), nt->Loc, nt->LocatedInstanceIndex);			
+			NL3D::CParticleSystem *ps = nt.Loc->getOwner();									
+			_LastClickedPS = ps;			
+			CPSMoverDlg *moverDlg = new CPSMoverDlg(getOwnerNode(&nt),  this,  &_ParticleDlg->MainFrame->ObjView->getMouseListener(),  nt.Loc,  nt.LocatedInstanceIndex);			
 			moverDlg->init(_ParticleDlg);
 			_ParticleDlg->setRightPane(moverDlg);
-
-
 			CObjectViewer *ov = _ParticleDlg->MainFrame->ObjView;
-
 			if(_ParticleDlg->MainFrame->isMoveElement())
 			{
 				ov->getMouseListener().setModelMatrix(_ParticleDlg->getElementMatrix());
 			}
-			ps->setCurrentEditedElement(nt->Loc, nt->LocatedInstanceIndex, moverDlg->getLocatedBindable());
-			
+			ps->setCurrentEditedElement(nt.Loc,  nt.LocatedInstanceIndex,  moverDlg->getLocatedBindable());			
+		}
+		break;
+		case CNodeType::workspace:
+		{
+			if (_LastClickedPS)
+			{
+				_LastClickedPS->setCurrentEditedElement(NULL);
+			}
+			_ParticleDlg->setRightPane(NULL);
 		}
 		break;
 	}		
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// CParticleTreeCtrl message handlers
+
+
+void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR,  LRESULT* pResult) 
+{
+	NM_TREEVIEW* pNMTreeView = (NM_TREEVIEW*)pNMHDR;	
+	*pResult = 0;
+	CNodeType *nt = (CNodeType  *) pNMTreeView->itemNew.lParam;	
+	nlassert(nt);
+	updateRightPane(*nt);
+}
+
 //****************************************************************************************************************
-void CParticleTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point) 
+void CParticleTreeCtrl::OnRButtonDown(UINT nFlags,  CPoint point) 
 {
 
 	if (_LastClickedPS)
 	{
 		_LastClickedPS->setCurrentEditedElement(NULL);
 	}
-
-//	CTreeCtrl::OnRButtonDown(nFlags, point);
-
 	// test wether there is an item under that point
 	UINT flags;
-	HTREEITEM item  = this->HitTest(point, &flags);
+	HTREEITEM item  = this->HitTest(point,  &flags);
 	if (item)
 	{
 		this->SelectItem(item);
@@ -382,68 +453,214 @@ void CParticleTreeCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 		GetItem(&item);
 
 		CNodeType *nt =  (CNodeType *) item.lParam;
-
-
-		UINT bIsRunning = _ParticleDlg->StartStopDlg->isRunning() ? MF_BYCOMMAND | MF_DISABLED | MF_GRAYED : MF_ENABLED;
+		UINT bIsRunning = MF_BYCOMMAND | MF_DISABLED | MF_GRAYED;
+		CParticleWorkspace::CNode *node = getOwnerNode(nt);
+		if (node)
+		{		
+			if (!node->isStateMemorized() && _ParticleDlg->StartStopDlg->getState() != CStartStopParticleSystem::RunningMultiple)
+			{			
+				bIsRunning = MF_ENABLED;
+			}
+		}
 
 		switch (nt->Type)
 		{
 			case CNodeType::located:
 			{
 				 menu.LoadMenu(IDR_LOCATED_MENU);
-				 menu.EnableMenuItem(ID_INSTANCIATE_LOCATED,  bIsRunning);
-				 menu.EnableMenuItem(IDM_COPY_LOCATED,  bIsRunning);
-				 menu.EnableMenuItem(IDM_PASTE_BINDABLE,  bIsRunning);
+				 menu.EnableMenuItem(ID_INSTANCIATE_LOCATED,   bIsRunning);
+				 menu.EnableMenuItem(IDM_COPY_LOCATED,   bIsRunning);
+				 menu.EnableMenuItem(IDM_PASTE_BINDABLE,   bIsRunning);
 			}
 			break;
 			case CNodeType::locatedBindable:
 				menu.LoadMenu(IDR_LOCATED_BINDABLE_MENU);		 				
-				menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1N2, MF_UNCHECKED | MF_BYCOMMAND);
-				menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1, MF_UNCHECKED | MF_BYCOMMAND);
-				menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD2, MF_UNCHECKED | MF_BYCOMMAND);
+				menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1N2,  MF_UNCHECKED | MF_BYCOMMAND);
+				menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1,  MF_UNCHECKED | MF_BYCOMMAND);
+				menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD2,  MF_UNCHECKED | MF_BYCOMMAND);
 				// check the menu to tell which lod is used for this located bindable
-				if (nt->Bind->getLOD() == NL3D::PSLod1n2) menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1N2, MF_CHECKED | MF_BYCOMMAND);
-				if (nt->Bind->getLOD() == NL3D::PSLod1) menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1, MF_CHECKED | MF_BYCOMMAND);
-				if (nt->Bind->getLOD() == NL3D::PSLod2) menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD2, MF_CHECKED | MF_BYCOMMAND);
+				if (nt->Bind->getLOD() == NL3D::PSLod1n2) menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1N2,  MF_CHECKED | MF_BYCOMMAND);
+				if (nt->Bind->getLOD() == NL3D::PSLod1) menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD1,  MF_CHECKED | MF_BYCOMMAND);
+				if (nt->Bind->getLOD() == NL3D::PSLod2) menu.GetSubMenu(0)->CheckMenuItem(IDM_LB_LOD2,  MF_CHECKED | MF_BYCOMMAND);
 
-				 menu.EnableMenuItem(IDM_COPY_BINDABLE,  bIsRunning);
+				 menu.EnableMenuItem(IDM_COPY_BINDABLE,   bIsRunning);
 			break;
 			case CNodeType::particleSystem:
-				 menu.LoadMenu(IDR_PARTICLE_SYSTEM_MENU);	
- 				 menu.EnableMenuItem(IDM_PASTE_LOCATED,  bIsRunning);
+				if (nt->PS->isLoaded())
+				{
+					 menu.LoadMenu(IDR_PARTICLE_SYSTEM_MENU);	
+ 					 menu.EnableMenuItem(IDM_PASTE_LOCATED,   bIsRunning);
+				}
+				else
+				{
+					menu.LoadMenu(IDR_PARTICLE_SYSTEM_NOT_LOADED_MENU);
+				}
 			break;
 			case CNodeType::locatedInstance:
 				menu.LoadMenu(IDR_LOCATED_INSTANCE_MENU);
 			break;
+			case CNodeType::workspace:
+				menu.LoadMenu(IDR_PARTICLE_WORKSPACE_MENU);
+			break;
 			default:
 				return;
 			break;
-		}
-		
-
+		}		
 		subMenu = menu.GetSubMenu(0);    
 		nlassert(subMenu);
-		subMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, r.left + point.x, r.top + point.y, this);
-
-
-	}
-	
-
-
+		subMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,  r.left + point.x,  r.top + point.y,  this);
+	}	
 }
 
 //****************************************************************************************************************
-BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) 
+void CParticleTreeCtrl::deleteSelection()
 {
-
-	if (nCode != 0) return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
-	CPSLocatedBindable *toCreate = NULL;
-				
+	if (!GetSelectedItem()) return;
 	CNodeType *nt = (CNodeType *) GetItemData(GetSelectedItem());
-	bool	  createLocAndBindable = false; // when set to true, must create a located and a simultaneously a located bindable
+	switch(nt->Type)
+	{
+		case CNodeType::located:
+		{			
+			_ParticleDlg->setRightPane(NULL);			
+			CPSLocated *loc = nt->Loc;
+			touchPSState(nt);
+			CParticleWorkspace::CNode *ownerNode = getOwnerNode(nt);
+			nlassert(ownerNode);
+			ownerNode->setModified(true);
+			// if the system is running,  we must destroy initial infos about the located, 
+			// as they won't need to be restored when the stop button will be pressed			
+			ownerNode->removeLocated(loc);
+			_ParticleDlg->StartStopDlg->resetAutoCount(getOwnerNode(nt));
+			nt->getOwnerPS()->remove(loc);	
+			removeTreePart(GetSelectedItem());
+		}
+		break;
+		case CNodeType::particleSystem:
+		{		
+			if (GetSelectedItem() == _LastActiveNode)
+			{
+				setActiveNode(NULL);
+				_ParticleDlg->setActiveNode(NULL);
+			}
+			nt->PS->getWorkspace()->removeNode(nt->PS);
+			removeTreePart(GetSelectedItem());
+			_ParticleDlg->setRightPane(NULL);
+		}
+		break;
+		case CNodeType::locatedBindable:
+		{			
+			CPSLocatedBindable *lb = nt->Bind;
+			touchPSState(nt);
+			CParticleWorkspace::CNode *ownerNode = getOwnerNode(nt);
+			nlassert(ownerNode);
+			// if the system is running,  we must destroy initial infos 
+			// that what saved about the located bindable,  when the start button was pressed,  as they won't need
+			// to be restored
+			ownerNode->removeLocatedBindable(lb);
+			ownerNode->setModified(true);
+			_ParticleDlg->StartStopDlg->resetAutoCount(getOwnerNode(nt));
+			lb->getOwner()->remove(lb);						
+			removeTreePart(GetSelectedItem());
+			_ParticleDlg->setRightPane(NULL);
+		}
+		break;
+		case CNodeType::locatedInstance:
+		{
+			nlassert(nt->Type == CNodeType::locatedInstance);
+			nlassert(getOwnerNode(nt));
+			getOwnerNode(nt)->setModified(true);
+			_ParticleDlg->StartStopDlg->resetAutoCount(getOwnerNode(nt));
+			CParticleWorkspace::CNode *owner = getOwnerNode(nt);
+			nlassert(owner);
+			//suppressLocatedInstanceNbItem(*owner);
+			NL3D::CPSEmitter::setBypassEmitOnDeath(true);
+			nt->Loc->deleteElement(nt->LocatedInstanceIndex);					
+			NL3D::CPSEmitter::setBypassEmitOnDeath(false);
+			CParticleWorkspace::CNode *ownerNode = getOwnerNode(nt);
+			nlassert(ownerNode);
+			removeTreePart(GetSelectedItem());
+			suppressLocatedInstanceNbItem(*ownerNode, 0);
+			rebuildLocatedInstance(*ownerNode);
+			_ParticleDlg->setRightPane(NULL);
+		}
+		break;
+		case CNodeType::workspace:
+			// no-op -> close the workpsace
+		break;
+		default:
+			nlassert(0);
+		break;
+	}
+}
 
+//****************************************************************************************************************
+BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID,  int nCode,  void* pExtra,  AFX_CMDHANDLERINFO* pHandlerInfo) 
+{
+	if (nCode != 0) return CTreeCtrl::OnCmdMsg(nID,  nCode,  pExtra,  pHandlerInfo);
+	CPSLocatedBindable *toCreate = NULL;	
+	CNodeType *nt = (CNodeType *) GetItemData(GetSelectedItem());
+	bool	  createLocAndBindable = false; // when set to true,  must create a located and a simultaneously a located bindable		
 	switch(nID)
 	{
+			///////////////
+		// workspace //
+		///////////////
+		case IDM_INSERT_NEW_PS:
+			nlassert(nt->Type == CNodeType::workspace);
+			insertNewPS(*nt->WS);
+		break;
+		case IDM_CREATE_NEW_PS:
+			nlassert(nt->Type == CNodeType::workspace);
+			createNewPS(*nt->WS);
+		break;
+		case IDM_REMOVE_ALL_PS:
+			removeAllPS(*nt->WS);
+		break;
+		case IDM_PS_SORT_BY_FILENAME:
+		{
+			nlassert(nt->Type == CNodeType::workspace);
+			struct CSortByFilename : public CParticleWorkspace::ISort
+			{
+				bool less(const CParticleWorkspace::CNode &lhs, const CParticleWorkspace::CNode &rhs) const
+				{					
+					return lhs.getFilename() < rhs.getFilename();					
+				}
+			};
+			sortWorkspace(*nt->WS, CSortByFilename());
+		}			
+		break;
+		case IDM_PS_SORT_BY_NAME:
+		{
+			nlassert(nt->Type == CNodeType::workspace);
+			struct CSortByName : public CParticleWorkspace::ISort
+			{
+				bool less(const CParticleWorkspace::CNode &lhs, const CParticleWorkspace::CNode &rhs) const
+				{					
+					if (!rhs.isLoaded())
+					{
+						if (lhs.isLoaded()) return true;
+						return lhs.getFilename() < rhs.getFilename();
+					}
+					if (!lhs.isLoaded())
+					{
+						if (rhs.isLoaded()) return false;
+					}
+					return lhs.getPSPointer()->getName() < rhs.getPSPointer()->getName();
+				}
+			};
+			sortWorkspace(*nt->WS, CSortByName());
+		}
+		break;
+		case IDM_SAVE_PS_WORKSPACE:
+		{
+			_ParticleDlg->OnSavePsWorkspace();
+		}
+		break;
+		case IDM_LOAD_PS_WORKSPACE:
+		{
+			_ParticleDlg->OnLoadPSWorkspace();
+		}
+		break;
 		///////////////
 		// particles //
 		///////////////
@@ -603,79 +820,32 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		//////////////
 		case IDM_DELETE_LOCATED:
 		{
-			_ParticleDlg->setRightPane(NULL);
-			
-			CPSLocated *loc = nt->Loc;			
-			CParticleSystem *ps = _ParticleDlg->getCurrPS();
-			ps->remove(loc);	
-			DeleteItem(GetSelectedItem());			
-			_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));
-			delete nt;
-
-
-			// if the system is running, we must destroy initial infos about the located
-			// , as they won't need to be restored when the stop button will be pressed
-			_ParticleDlg->StartStopDlg->removeLocated(loc);
-
-			_ParticleDlg->getCurrPSModel()->touchTransparencyState();
-			_ParticleDlg->getCurrPSModel()->touchLightableState();			
-			_ParticleDlg->StartStopDlg->resetAutoCount();
-
-			return TRUE;
-			
-			//return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+			deleteSelection();
+			return TRUE;			
+			//return CTreeCtrl::OnCmdMsg(nID,  nCode,  pExtra,  pHandlerInfo);
 		}
 		break;
 
 
 		case IDM_DELETE_LOCATED_BINDABLE:
-		{					
-
-			_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));
-
-			CPSLocatedBindable *lb = nt->Bind;			
-
-			// now, get the father								
-			CPSLocated *loc = ((CNodeType *) GetItemData(GetParentItem(GetSelectedItem())))->Loc;	
-			loc->remove(lb);
-			delete nt; 
-			
-
-			// if the system is running, we must destroy initial infos 
-			// that what saved about the located bindable, when the start button was pressed, as they won't need
-			// to be restored
-
-			_ParticleDlg->StartStopDlg->removeLocatedBindable(lb);
-
-
-			_ParticleDlg->setRightPane(NULL);
-			DeleteItem(GetSelectedItem());			
-			
-			_ParticleDlg->getCurrPSModel()->touchTransparencyState();
-			_ParticleDlg->getCurrPSModel()->touchLightableState();
-			_ParticleDlg->StartStopDlg->resetAutoCount();			
+		{								
+			deleteSelection();			
 			return TRUE;			
 		}
 		break;
 
 		case IDM_DELETE_LOCATED_INSTANCE:
 		{
-			nlassert(nt->Type == CNodeType::locatedInstance);		
-			DeleteItem(GetSelectedItem());			
-			_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));			
-			suppressLocatedInstanceNbItem(0);
-			NL3D::CPSEmitter::setBypassEmitOnDeath(true);
-			nt->Loc->deleteElement(nt->LocatedInstanceIndex);					
-			NL3D::CPSEmitter::setBypassEmitOnDeath(false);
-			delete nt;
-			rebuildLocatedInstance();			
-			_ParticleDlg->StartStopDlg->resetAutoCount();
+			deleteSelection();
+			return TRUE;
 		}
 		break; 
 
 		// instanciate an element
 		case ID_INSTANCIATE_LOCATED:
 		{						
+			getOwnerNode(nt)->setModified(true);
+			_ParticleDlg->StartStopDlg->resetAutoCount(getOwnerNode(nt));
 			if (nt->Loc->getSize() == nt->Loc->getMaxSize())
 			{
 				nt->Loc->resize(nt->Loc->getMaxSize() + 1);
@@ -683,17 +853,15 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				NM_TREEVIEW nmt;
 				LRESULT pResult;
 				nmt.itemNew.lParam = GetItemData(GetSelectedItem());
-				OnSelchanged((NMHDR *) &nmt, &pResult);
+				OnSelchanged((NMHDR *) &nmt,  &pResult);
 			}
-
-			sint32 objIndex = nt->Loc->newElement(NLMISC::CVector::Null, NLMISC::CVector::Null, NULL, 0, nt->Loc->getMatrixMode(), 0.f);
-
-			nt = new CNodeType(nt->Loc, objIndex);
+			sint32 objIndex = nt->Loc->newElement(NLMISC::CVector::Null,  NLMISC::CVector::Null,  NULL,  0,  nt->Loc->getMatrixMode(),  0.f);
+			nt = new CNodeType(nt->Loc,  objIndex);
 			_NodeTypes.push_back(nt);
 			// insert the element in the tree
-			InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, "instance", 8, 8, 0, 0, (LPARAM) nt, GetSelectedItem(), TVI_LAST);
+			HTREEITEM root = InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT,  "instance",  PSIconLocatedInstance,  PSIconLocatedInstance,  0,  0,  (LPARAM) nt,  GetSelectedItem(),  TVI_LAST);
+			SetItemData(root, (DWORD) nt);
 			Invalidate();
-			_ParticleDlg->StartStopDlg->resetAutoCount();
 		}
 		break;
 
@@ -703,14 +871,17 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case IDM_LB_LOD1N2:
 			nlassert(nt->Type = CNodeType::locatedBindable);
 			nt->Bind->setLOD(NL3D::PSLod1n2);
+			getOwnerNode(nt)->setModified(true);
 		break;
 		case IDM_LB_LOD1:
 			nlassert(nt->Type = CNodeType::locatedBindable);
 			nt->Bind->setLOD(NL3D::PSLod1);
+			getOwnerNode(nt)->setModified(true);
 		break;
 		case IDM_LB_LOD2:
 			nlassert(nt->Type = CNodeType::locatedBindable);
 			nt->Bind->setLOD(NL3D::PSLod2);
+			getOwnerNode(nt)->setModified(true);
 		break;
 
 		////////////////
@@ -725,6 +896,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			if ( res == IDOK )
 			{
 				nt->Bind->setExternID( dlg.getNewID() );
+				getOwnerNode(nt)->setModified(true);
 			}
 		}
 		break;
@@ -745,11 +917,13 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		{			
 			nlassert(nt->Type== CNodeType::particleSystem);
 			nlassert(nt->PS);
+			getOwnerNode(nt)->setModified(true);
+			_ParticleDlg->StartStopDlg->resetAutoCount(getOwnerNode(nt));
 			CPSLocated *copy = dynamic_cast<CPSLocated *>(::DupPSLocated(_LocatedCopy.get()));
 			if (!copy) break;
-			if (nt->PS->attach(copy))
+			if (nt->PS->getPSPointer()->attach(copy))
 			{			
-				createNodeFromLocated(copy, GetRootItem());
+				createNodeFromLocated(copy, GetSelectedItem());
 				Invalidate();
 			}
 			else
@@ -758,20 +932,21 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				mess.LoadString(IDS_PS_NO_FINITE_DURATION);
 				CString errorStr;
 				errorStr.LoadString(IDS_ERROR);
-				MessageBox((LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);
+				MessageBox((LPCTSTR) mess,  (LPCTSTR) errorStr,  MB_ICONEXCLAMATION);
 			}
-			_ParticleDlg->StartStopDlg->resetAutoCount();
 		}
 		break;
 		case IDM_PASTE_BINDABLE:
 		{
 			nlassert(nt->Type == CNodeType::located);
 			nlassert(nt->Loc);
+			getOwnerNode(nt)->setModified(true);
+			_ParticleDlg->StartStopDlg->resetAutoCount(getOwnerNode(nt));
 			CPSLocatedBindable *copy = ::DupPSLocatedBindable(_LocatedBindableCopy.get());
 			if (!copy) break;
 			if (nt->Loc->bind(copy))
 			{			
-				createNodeFromLocatedBindable(copy, GetSelectedItem());
+				createNodeFromLocatedBindable(copy,  GetSelectedItem());
 				Invalidate();
 			}
 			else
@@ -781,9 +956,8 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				mess.LoadString(IDS_PS_NO_FINITE_DURATION);
 				CString errorStr;
 				errorStr.LoadString(IDS_ERROR);
-				MessageBox((LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);
+				MessageBox((LPCTSTR) mess,  (LPCTSTR) errorStr,  MB_ICONEXCLAMATION);
 			}
-			_ParticleDlg->StartStopDlg->resetAutoCount();
 		}
 		break;
 
@@ -791,258 +965,182 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		////////////////////////
 		// PARTICLE SYSTEM OP //
 		////////////////////////
+		case IDM_SET_ACTIVE_PARTICLE_SYSTEM:
+			nlassert(nt->Type == CNodeType::particleSystem);
+			setActiveNode(nt->PS);
+			_ParticleDlg->setActiveNode(nt->PS);
+		break;
 		case ID_MENU_NEWLOCATED:
 		{			
-			createLocated(nt->PS, GetSelectedItem());												
+			getOwnerNode(nt)->setModified(true);
+			createLocated(nt->PS->getPSPointer(),  GetSelectedItem());	
 			Invalidate();
 		}
 		break;
-		case ID_MENU_LOAD_PS:
+		case IDM_RELOAD_PS:
 		{			
-			try
-			{				
-				_ParticleDlg->StartStopDlg->stop();
-				static char BASED_CODE szFilter[] = "ps & shapes files(*.ps;*.shape)|*.ps; *.shape||";
-				CFileDialog fd( TRUE, ".ps", "*.ps;*.shape", 0, szFilter);
-				int res = fd.DoModal();
-				if (res != IDOK)
-				{ 
-					return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
-				}
-				
+			nlassert(!nt->PS->isLoaded());
+			_ParticleDlg->loadPS(*this,  *nt->PS,  CParticleDlg::ReportError);
+			if (nt->PS->isLoaded())
+			{						
+				// remove old icon
+				HTREEITEM root = GetParentItem(GetSelectedItem());
+				HTREEITEM previousSibling = GetPrevSiblingItem(GetSelectedItem());
+				DeleteItem(GetSelectedItem());			
+				// add newly loaded ps in the tree
+				buildTreeFromPS(*nt->PS,  root,  previousSibling);
+				updateRightPane(*nt);
+			}
+		}			
+		break;
+		case IDM_REMOVE_PS_FROM_WORKSPACE:
+		{
+			deleteSelection();			
+			return TRUE;
+		}
+		break;		
+		case IDM_MERGE_PS:
+		{			
+			_ParticleDlg->StartStopDlg->stop();
+			static char BASED_CODE szFilter[] = "ps & shapes files(*.ps;*.shape)|*.ps; *.shape||";
+			CFileDialog fd( TRUE,  ".ps",  "*.ps;*.shape",  0,  szFilter);
+			
+			if (fd.DoModal() == IDOK)
+			{
+				CParticleWorkspace::CNode *ownerNode = getOwnerNode(nt);
+				nlassert(ownerNode);				
 				// Add to the path
 				char drive[256];
 				char dir[256];
 				char path[256];
-
 				// Add search path for the texture
-				_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
-				_makepath (path, drive, dir, NULL, NULL);
+				_splitpath (fd.GetPathName(),  drive,  dir,  NULL,  NULL);
+				_makepath (path,  drive,  dir,  NULL,  NULL);
 				NLMISC::CPath::addSearchPath (path);
-													
-			
-				_ParticleDlg->unstickPSFromSkeleton();
-				NL3D::IShape *sh = nt->PSModel->Shape;																			
-				CNELU::Scene->deleteInstance(nt->PSModel);
-				CNELU::Scene->getShapeBank()->reset();						
-			
-				DeleteItem(TVI_ROOT);				
-			
-				NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(CNELU::Scene->createInstance(std::string((LPCTSTR) fd.GetPathName())));
-				if (!newModel)
-				{
-					NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(CNELU::Scene->createInstance(std::string((LPCTSTR) fd.GetFileName())));
-				}
-
-				if (newModel)
+				CParticleSystemModel *psm = NULL;
+				std::auto_ptr<NL3D::CShapeBank> sb(new NL3D::CShapeBank);
+				try
 				{					
-					newModel->setTransformMode(NL3D::CTransform::DirectMatrix);
-					newModel->setMatrix(NLMISC::CMatrix::Identity);					
-					// link to the root for manipulation
-					_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(newModel);
-
-					_ParticleDlg->StartStopDlg->reset();
-					CParticleSystemModel *psm = newModel;					
-					psm->setEditionMode(true); // this also force the system instanciation
-					for(uint k = 0; k < NL3D::MaxPSUserParam; ++k)
+					NL3D::CShapeStream ss;
+					NLMISC::CIFile inputFile;
+					inputFile.open((LPCTSTR) fd.GetPathName());
+					ss.serial(inputFile);
+					std::string shapeName = NLMISC::CFile::getFilename((LPCTSTR) fd.GetPathName());
+					sb->add(shapeName, ss.getShapePointer());
+					NL3D::CShapeBank *oldSB = CNELU::Scene->getShapeBank();
+					CNELU::Scene->setShapeBank(sb.get());
+					NL3D::CTransformShape *trs = CNELU::Scene->createInstance(shapeName);
+					NL3D::CNELU::Scene->setShapeBank(oldSB);
+					if (!trs)
 					{
-						psm->bypassGlobalUserParamValue(k);
+						localizedMessageBox(*this, IDS_COULDNT_INSTANCIATE_PS,  IDS_ERROR, MB_OK|MB_ICONEXCLAMATION);
+						return false;
 					}
-					CParticleSystem      *ps  = psm->getPS();
-
-					psm->enableAutoGetEllapsedTime(false);
-					psm->setEllapsedTime(0.f); // system is paused
-					psm->enableDisplayTools(true);							
-			
-					_ParticleDlg->setRightPane(NULL);
-					_ParticleDlg->setNewCurrPS(ps, psm);
-
-					ps->setFontManager(_ParticleDlg->FontManager);
-					ps->setFontGenerator(_ParticleDlg->FontGenerator);
-					ps->stopSound();
-					
-					buildTreeFromPS(ps, psm);
-
-					// flush textures
-					newModel->Shape->flushTextures(*CNELU::Driver, 0);					
-					if (_ParticleDlg->getCurrPS()->hasLoop())
+					CParticleSystemModel *psm = dynamic_cast<CParticleSystemModel *>(trs);
+					if (!psm)
 					{
-						CString mess;
-						CString caption;
-						mess.LoadString(IDS_FX_HAS_LOOP);
-						caption.LoadString(IDS_WARNING);
-						MessageBox(mess, caption, MB_ICONEXCLAMATION);
+						localizedMessageBox(*this, IDS_COULDNT_INSTANCIATE_PS,  IDS_ERROR, MB_OK|MB_ICONEXCLAMATION);
+						// Not a particle system
+						NL3D::CShapeBank *oldSB = CNELU::Scene->getShapeBank();
+						NL3D::CNELU::Scene->setShapeBank(sb.get());
+						NL3D::CNELU::Scene->deleteInstance(trs);
+						NL3D::CNELU::Scene->setShapeBank(oldSB);
+						return false;
 					}
 				}
-				else
+				catch(NLMISC::EStream &e)
 				{
-					throw NLMISC::Exception("Unable to load or intanciate the system");
-					
-				}								
-			}
-
-			catch (NLMISC::Exception &e)
-			{
-				MessageBox(e.what(), "error loading particle system");				
-				// create a blank system
-				_ParticleDlg->resetSystem();
-				_ParticleDlg->setRightPane(NULL);
-				buildTreeFromPS(_ParticleDlg->getCurrPS(), _ParticleDlg->getCurrPSModel());
-			}		
-			
-			_ParticleDlg->setAutoBBox(false);
-			rebuildLocatedInstance();
-			_LastClickedPS = NULL;							
-			_ParticleDlg->StartStopDlg->enableAutoCount(false);
-			_ParticleDlg->getCurrPS()->setAutoCountFlag(false);
-			_ParticleDlg->StartStopDlg->resetAutoCount(true);
-
-			// reset the camera
-			_ParticleDlg->MainFrame->OnResetCamera();
-
-		}
-		break;
-		case IDM_MERGE_PS:
-		{
-			try
-			{		
-				_ParticleDlg->StartStopDlg->stop();
-				static char BASED_CODE szFilter[] = "ps & shapes files(*.ps;*.shape)|*.ps; *.shape||";
-				CFileDialog fd( TRUE, ".ps", "*.ps;*.shape", 0, szFilter);
-				
-				if (fd.DoModal() == IDOK)
+					MessageBox(e.what(),  getStrRsc(IDS_ERROR),  MB_OK|MB_ICONEXCLAMATION);
+					return TRUE;
+				}							
+				ownerNode->setResetAutoCountFlag(false);								
+				bool wasActiveNode = _LastActiveNode == GetSelectedItem();
+				if (wasActiveNode)
 				{
-					// Add to the path
-					char drive[256];
-					char dir[256];
-					char path[256];
-
-					// Add search path for the texture
-					_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
-					_makepath (path, drive, dir, NULL, NULL);
-					NLMISC::CPath::addSearchPath (path);
-																																				
-					NL3D::CParticleSystemModel *newModel = dynamic_cast<CParticleSystemModel *>(CNELU::Scene->createInstance(std::string((LPCTSTR) fd.GetFileName())));
-
-					if (newModel)
-					{									
-						// link to the root for manipulation
-						_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(newModel);
-
-						if (!nt->PSModel->getPS()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) newModel->Shape)))
-						{
-							CString mess;
-							mess.LoadString(IDS_PS_NO_FINITE_DURATION);
-							CString errorStr;
-							errorStr.LoadString(IDS_ERROR);
-							MessageBox((LPCTSTR) mess, (LPCTSTR) errorStr, MB_ICONEXCLAMATION);
-						}
-					}
-					CNELU::Scene->deleteInstance(newModel);
-					CNELU::Scene->getShapeBank()->reset();
-
-					DeleteItem(TVI_ROOT);
-					buildTreeFromPS(nt->PS, nt->PSModel);
-					_ParticleDlg->MainFrame->OnResetCamera();			
-				}					
-			}
-
-			catch (NLMISC::Exception &e)
-			{
-				MessageBox(e.what(), "error merging particle system");						
-			}	
-			_ParticleDlg->refreshRightPane();
-			_ParticleDlg->StartStopDlg->resetAutoCount();
+					_ParticleDlg->StartStopDlg->stop();
+				}
+				// link to the root for manipulation
+				_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(psm);
+				bool mergeOK = nt->PSModel->getPS()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) psm->Shape));
+				NL3D::CShapeBank *oldSB = CNELU::Scene->getShapeBank();
+				CNELU::Scene->setShapeBank(sb.get());
+				CNELU::Scene->deleteInstance(psm);
+				CNELU::Scene->setShapeBank(oldSB);
+				if (!mergeOK)
+				{					
+					localizedMessageBox(*this, IDS_PS_NO_FINITE_DURATION,  IDS_ERROR,  MB_ICONEXCLAMATION);
+					return TRUE;
+				}				
+				if (wasActiveNode)
+				{					
+					setActiveNode(NULL);					
+					_ParticleDlg->setActiveNode(NULL);
+				}
+				HTREEITEM prevSibling = GetPrevSiblingItem(GetSelectedItem());
+				HTREEITEM prevParent = GetParentItem(GetSelectedItem());
+				removeTreePart(GetSelectedItem());
+				ownerNode->createEmptyPS();
+				ownerNode->setModified(true);
+				buildTreeFromPS(*ownerNode,  prevParent,  prevSibling);
+				if (wasActiveNode)
+				{
+					setActiveNode(ownerNode);
+					_ParticleDlg->setActiveNode(ownerNode);
+				}
+				updateRightPane(*nt);				
+				_LastClickedPS = NULL;				
+			}								
 		}
 		break;
 		case ID_MENU_SAVE_PS:
+			nlassert(getOwnerNode(nt));
+			_ParticleDlg->savePS(*this,  *getOwnerNode(nt),  false);	
+		break;
+		case IDM_SAVE_PS_AS:
 		{
-			if (_ParticleDlg->StartStopDlg->getResetFlag() && nt->PS->getAutoCountFlag())
-			{
-				CString caption;
-				CString mess;
-				caption.LoadString(IDS_WARNING);
-				mess.LoadString(IDS_AUTO_COUNT_ERROR);
-				MessageBox((LPCTSTR) mess, (LPCTSTR) caption, MB_ICONEXCLAMATION);				
-			}
+			if (nt->PS->getResetAutoCountFlag() && nt->PS->getPSPointer()->getAutoCountFlag())
+			{		
+				MessageBox(nt->PS->getFilename().c_str() + getStrRsc(IDS_AUTO_COUNT_ERROR), getStrRsc(IDS_WARNING), MB_ICONEXCLAMATION);				
+			}			
 			else
 			{			
 				_ParticleDlg->StartStopDlg->stop();
-				std::string fileName;
-				if (nt->PS->getName() != std::string())
-				{
-					fileName = nt->PS->getName() + std::string(".ps");
-				}
-				else
-				{
-					fileName = "*.ps";
-				}
-				CFileDialog fd(FALSE, ".ps", fileName.c_str(), OFN_OVERWRITEPROMPT, NULL, this);
+				std::string fileName = nt->PS->getFilename();
+				static char BASED_CODE szFilter[] = "ps & shapes files(*.ps;*.shape)|*.ps; *.shape||";
+				CFileDialog fd(FALSE,  ".ps",  fileName.c_str(),  OFN_OVERWRITEPROMPT,  szFilter, this);				
 				if (fd.DoModal() == IDOK)
 				{
-					// Add to the path
-					char drive[256];
-					char dir[256];
-					char path[256];
-
-					// Add search path for the texture
-					_splitpath (fd.GetPathName(), drive, dir, NULL, NULL);
-					_makepath (path, drive, dir, NULL, NULL);
-					NLMISC::CPath::addSearchPath (path);
-
-
-					nlassert(nt->Type == CNodeType::particleSystem);
-
-					// build a shape from our system, and save it
-					NL3D::CParticleSystemShape psc;
-
-					try
-					{
-						psc.buildFromPS(*nt->PS);
-						{
-							NL3D::CShapeStream st(&psc);
-							NLMISC::COFile oFile((LPCTSTR) fd.GetPathName());
-							oFile.serial(st);
-						}
-					}
-					catch (NLMISC::Exception &E)
-					{
-						MessageBox(E.what(), "save error");
-					}	
+					_ParticleDlg->savePSAs(*this, *nt->PS, (LPCTSTR) fd.GetPathName(), false);
 				}
 			}
 		}
 		break;
-		case ID_MENU_DELETE_PS:
+		case IDM_CLEAR_PS_CONTENT:
 		{
-			if (MessageBox("Delete the system ?", "Particle editor", MB_YESNO) == IDYES)
-			{
-				/*
-				NL3D::CParticleSystem *ps = nt->PS;			
-				while (ps->getNbProcess())
+			if (localizedMessageBox(*this, IDS_CLEAR_CONTENT,  IDS_PARTICLE_EDITOR,  MB_YESNO) == IDYES)
+			{				
+				CParticleWorkspace::CNode *ownerNode = getOwnerNode(nt);
+				nlassert(ownerNode);
+				ownerNode->setResetAutoCountFlag(false);								
+				bool wasActiveNode = _LastActiveNode == GetSelectedItem();
+				if (wasActiveNode)
 				{					
-					DeleteItem(TVI_ROOT);
-					ps->remove(ps->getProcess(0));					
+					setActiveNode(NULL);					
+					_ParticleDlg->setActiveNode(NULL);
 				}
-				////
-				_ParticleDlg->StartStopDlg->reset();
-				buildTreeFromPS(nt->PS, nt->PSModel);
-				_ParticleDlg->MainFrame->OnResetCamera();
-				*/
-				
-				_ParticleDlg->StartStopDlg->stop();																						
-				NL3D::IShape *sh = nt->PSModel->Shape;																			
-				CNELU::Scene->deleteInstance(nt->PSModel);
-				CNELU::Scene->getShapeBank()->reset();										
-				DeleteItem(TVI_ROOT);				
-								
-				// create a blank system
-				_ParticleDlg->resetSystem();
-				_ParticleDlg->setRightPane(NULL);
-				buildTreeFromPS(_ParticleDlg->getCurrPS(), _ParticleDlg->getCurrPSModel());																	
+				HTREEITEM prevSibling = GetPrevSiblingItem(GetSelectedItem());
+				HTREEITEM prevParent = GetParentItem(GetSelectedItem());
+				removeTreePart(GetSelectedItem());
+				ownerNode->createEmptyPS();
+				ownerNode->setModified(true);
+				buildTreeFromPS(*ownerNode,  prevParent,  prevSibling);
+				if (wasActiveNode)
+				{
+					setActiveNode(ownerNode);
+					_ParticleDlg->setActiveNode(ownerNode);
+				}
+				updateRightPane(*nt);
 				_LastClickedPS = NULL;
-				_ParticleDlg->StartStopDlg->enableAutoCount(false);
-				_ParticleDlg->StartStopDlg->resetAutoCount();
 			}
 		}
 		break;
@@ -1060,9 +1158,11 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			{
 				float value;		
 				int dummy; // to avoid non numeric characters at the end
-				if (sscanf ((LPCTSTR)(valueDlg.Value + "\n0"), "%f\n%d", &value, &dummy) == 2)
+				if (sscanf ((LPCTSTR)(valueDlg.Value + "\n0"),  "%f\n%d",  &value,  &dummy) == 2)
 				{
-					_ParticleDlg->getCurrPS()->setZBias(-value);
+					nlassert(getOwnerNode(nt)->getPSPointer());
+					getOwnerNode(nt)->getPSPointer()->setZBias(-value);
+					getOwnerNode(nt)->setModified(true);
 				}
 				else
 				{
@@ -1070,7 +1170,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 					CString mess;
 					caption.LoadString(IDS_CAPTION_ERROR);
 					mess.LoadString(IDS_BAD_ZBIAS);								
-					MessageBox((LPCTSTR) mess, (LPCTSTR) caption, MB_ICONERROR);
+					MessageBox((LPCTSTR) mess,  (LPCTSTR) caption,  MB_ICONERROR);
 				}
 			}			
 		break;
@@ -1079,16 +1179,17 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 	if (toCreate)
 	{
-		HTREEITEM son, lastSon, father;
+		HTREEITEM son,  lastSon,  father;
 		if (createLocAndBindable)
 		{
 			
-			std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> p = createLocated(nt->PS, GetSelectedItem());
+			std::pair<CParticleTreeCtrl::CNodeType *,  HTREEITEM> p = createLocated(nt->PS->getPSPointer(),  GetSelectedItem());
 			nt = p.first;
 			son = 0;
 			father = p.second;
 			lastSon = p.second;
-			if (_ParticleDlg->getCurrPS()->getBypassMaxNumIntegrationSteps())
+			nlassert(getOwnerNode(nt) && getOwnerNode(nt)->getPSPointer());				
+			if (getOwnerNode(nt)->getPSPointer()->getBypassMaxNumIntegrationSteps())
 			{		
 				if (toCreate->getType() == NL3D::PSParticle || toCreate->getType() == NL3D::PSEmitter)
 				{				
@@ -1101,43 +1202,34 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		{
 			son = GetChildItem(GetSelectedItem());
 			father = GetSelectedItem();
-		}
-		
-		
+		}				
 		if (!nt->Loc->bind(toCreate))
 		{
-			MessageBox("The system is flagged with 'No max Nb steps', or uses the preset 'Spell FX'. System must have finite duration. Can't add object. To solve this, set a limited life time for the father.", "Error", MB_ICONEXCLAMATION);
+			MessageBox("The system is flagged with 'No max Nb steps',  or uses the preset 'Spell FX'. System must have finite duration. Can't add object. To solve this,  set a limited life time for the father.",  "Error",  MB_ICONEXCLAMATION);
 			delete toCreate;
 			if (createLocAndBindable)
 			{			
 				nlassert(0);
 				/* ps->remove(nt->Loc);	
 				DeleteItem(father);				
-				_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt));
+				_NodeTypes.erase(std::find(_NodeTypes.begin(),  _NodeTypes.end(),  nt));
 				delete nt;*/
 			}
-			return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
-		}
-			
-
+			return CTreeCtrl::OnCmdMsg(nID,  nCode,  pExtra,  pHandlerInfo);
+		}			
 		// complete the name
 		std::string name = toCreate->getName();
 		char num[128];
 		if (_PSElementIdentifiers.count(name))
 		{			 
-			sprintf(num, "%d", ++_PSElementIdentifiers[name]);
+			sprintf(num,  "%d",  ++_PSElementIdentifiers[name]);
 			toCreate->setName(name + num);
 		}
 		else
-		{
+		{ 
 			_PSElementIdentifiers[toCreate->getName()] = 0;
 			toCreate->setName(name + "0");
-		}
-
-		
-		
-
-		
+		}						
 		CNodeType *newNt = new CNodeType(toCreate);
 		_NodeTypes.push_back(newNt);
 
@@ -1166,37 +1258,31 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				}
 			}
 		}
-
-
-		InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, toCreate->getName().c_str(), toCreate->getType(), toCreate->getType(), 0, 0, (LPARAM) newNt, father, lastSon);
-
-		_ParticleDlg->getCurrPSModel()->touchTransparencyState();		
-		_ParticleDlg->getCurrPSModel()->touchLightableState();
-		Invalidate();
-		_ParticleDlg->refreshRightPane();
-		_ParticleDlg->StartStopDlg->resetAutoCount();
+		getOwnerNode(nt)->setModified(true);
+		// TODO : an enum for CPSLocatedBindable::getType would be better...
+		InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT,  toCreate->getName().c_str(),  toCreate->getType(),  toCreate->getType(),  0,  0,  (LPARAM) newNt,  father,  lastSon);		
+		touchPSState(nt);		
+		Invalidate();		
+		_ParticleDlg->StartStopDlg->resetAutoCount(getOwnerNode(nt));
 	}
-	return CTreeCtrl::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+	return CTreeCtrl::OnCmdMsg(nID,  nCode,  pExtra,  pHandlerInfo);
 }
 
 //****************************************************************************************************************
-std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> CParticleTreeCtrl::createLocated(NL3D::CParticleSystem *ps, HTREEITEM headItem)
+std::pair<CParticleTreeCtrl::CNodeType *,  HTREEITEM> CParticleTreeCtrl::createLocated(NL3D::CParticleSystem *ps,  HTREEITEM headItem)
 { 
 	std::string name; 
 	char num[128];
 	if (_PSElementIdentifiers.count(std::string("located")))
 	{
-		sprintf(num, "located %d", ++_PSElementIdentifiers[std::string("located")]);
+		sprintf(num,  "located %d",  ++_PSElementIdentifiers[std::string("located")]);
 		name = num;
 	}
 	else
 	{
 		name = std::string("located 0");
 		_PSElementIdentifiers["located"] = 0;
-	}		
-
-	
-	
+	}			
 	CPSLocated *loc = new CPSLocated;
 	loc->setName(name);
 	loc->setMatrixMode(NL3D::PSFXWorldMatrix);
@@ -1205,41 +1291,56 @@ std::pair<CParticleTreeCtrl::CNodeType *, HTREEITEM> CParticleTreeCtrl::createLo
 	CNodeType *newNt = new CNodeType(loc);
 	_NodeTypes.push_back(newNt);
 	// insert item in tree
-	HTREEITEM insertedItem = InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT, name.c_str(), 7, 7, 0, 0, (LPARAM) newNt, headItem, TVI_LAST);
-	_ParticleDlg->getCurrPSModel()->touchTransparencyState();
-	_ParticleDlg->getCurrPSModel()->touchLightableState();
-	return std::make_pair(newNt, insertedItem);
+	HTREEITEM insertedItem = InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM | TVIF_TEXT,  name.c_str(),  PSIconLocated,  PSIconLocated,  0,  0,  (LPARAM) newNt,  headItem,  TVI_LAST);
+	touchPSState(newNt);	
+	return std::make_pair(newNt,  insertedItem);
 }
 
 
 //****************************************************************************************************************
 /// The user finished to edit a label in the tree
-void CParticleTreeCtrl::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult) 
+void CParticleTreeCtrl::OnEndlabeledit(NMHDR* pNMHDR,  LRESULT* pResult) 
 {
 	NMTVDISPINFO* info = (NMTVDISPINFO*)pNMHDR;
-
 	*pResult = 0;
-
 	if (info->item.pszText)
 	{
-		this->SetItemText(info->item.hItem, info->item.pszText);
-
 		CNodeType *nt = (CNodeType *) info->item.lParam;
-
 		switch (nt->Type)
 		{
-			case CNodeType::particleSystem :
+			case CNodeType::workspace:
 			{
-				nt->PS->setName(std::string(info->item.pszText));
+				nt->WS->setName(std::string(info->item.pszText));
+				workspaceModifiedFlagChanged(*nt->WS); // change name (this may be called twice because of the modification callback, but this doesn't matter)
 			}
 			break;
-			case CNodeType::located :
+			case CNodeType::particleSystem:
 			{
+				if (!nt->PS->isLoaded())
+				{
+					localizedMessageBox(*this, IDS_CANT_CHANGE_PS_NAME, IDS_ERROR, MB_OK|MB_ICONEXCLAMATION);
+				}
+				else
+				{				
+					nt->PS->getPSPointer()->setName(std::string(info->item.pszText));
+					nt->PS->setModified(true);
+				}
+				this->SetItemText(info->item.hItem,  computeCaption(*nt->PS).c_str());
+			}
+			break;
+			case CNodeType::located:
+			{
+				nlassert(getOwnerNode(nt));
+				getOwnerNode(nt)->setModified(true);
+				this->SetItemText(info->item.hItem,  info->item.pszText);
 				nt->Loc->setName(std::string(info->item.pszText));
 			}
 			break;
-			case CNodeType::locatedBindable :
+			case CNodeType::locatedBindable:
 			{
+				nlassert(getOwnerNode(nt));
+				getOwnerNode(nt)->setModified(true);
+				this->SetItemText(info->item.hItem,  info->item.pszText);
 				nt->Bind->setName(std::string(info->item.pszText));
 			}
 			break;
@@ -1294,7 +1395,7 @@ void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &m)
 													
 					if (psm && !psm->onlyStoreNormal())
 					{									
-						psm->setMatrix(rp->getLocatedIndex(), mat);										
+						psm->setMatrix(rp->getLocatedIndex(),  mat);										
 					}
 					else
 					{
@@ -1334,10 +1435,467 @@ NLMISC::CMatrix CParticleTreeCtrl::getElementMatrix(void) const
 	return NLMISC::CMatrix::Identity;
 }
 
+
 //****************************************************************************************************************
-void CParticleTreeCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags) 
+CParticleSystem *CParticleTreeCtrl::CNodeType::getOwnerPS() const
 {
-	// TODO: Add your message handler code here and/or call default
-	
-	CTreeCtrl::OnChar(nChar, nRepCnt, nFlags);
+	switch(Type)
+	{
+		case located:			return Loc->getOwner();
+		case particleSystem:	return PS->getPSPointer();
+		case locatedBindable:	return Bind->getOwner()->getOwner();
+		case locatedInstance:	return Loc->getOwner();
+		case workspace:			return NULL;
+		default:
+			nlassert(0);
+		break;
+	}
+	return NULL;
 }
+
+//****************************************************************************************************************
+CParticleWorkspace::CNode *CParticleTreeCtrl::getOwnerNode(CNodeType *nt) const
+{
+	if (!nt) return NULL;
+	HTREEITEM node = getTreeItem(nt);	
+	while(node)
+	{
+		CNodeType *nt = (CNodeType *) GetItemData(node);
+		if (!nt) return NULL;
+		if (nt->Type == CNodeType::particleSystem)
+		{
+			return nt->PS;
+		}
+		node = GetParentItem(node);
+	}
+	return NULL;
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::updateCaption(CParticleWorkspace::CNode &node)
+{
+	HTREEITEM item = getTreeItem(&node);
+	if (!item) return;
+	// update name of ps to dipslay a star in front of it (this tells that the ps has been modified)
+	SetItemText(item,  computeCaption(node).c_str());	
+}
+
+//****************************************************************************************************************
+std::string CParticleTreeCtrl::computeCaption(const std::string &path, const std::string &userName, bool modified)
+{	
+	std::string name;
+	if (modified)
+	{
+		name = "* ";
+	}
+	if (!userName.empty())
+	{ 
+		name += userName;
+		if (_ViewFilenameFlag)
+		{
+			name += " - ";
+		}
+	}
+	if (_ViewFilenameFlag)
+	{	
+		name += NLMISC::CFile::getFilename(path);
+	}
+	return name;
+}
+
+//****************************************************************************************************************
+std::string CParticleTreeCtrl::computeCaption(CParticleWorkspace::CNode &node)
+{
+	std::string baseCaption;
+	if (node.isLoaded())
+	{	
+		baseCaption = computeCaption(node.getRelativePath(), node.getPSPointer()->getName(), node.isModified());
+	}
+	else
+	{
+		baseCaption = computeCaption(node.getRelativePath(), "", false);
+	}
+	if (node.getParentSkel())
+	{	
+		baseCaption = "(L)" + baseCaption;
+	}
+	if (!node.getTriggerAnim().empty())
+	{
+		baseCaption = "(" + node.getTriggerAnim() + ") " + baseCaption;
+	}
+	return baseCaption;
+}
+
+//****************************************************************************************************************
+std::string CParticleTreeCtrl::computeCaption(CParticleWorkspace &workspace)
+{
+	return computeCaption(workspace.getFilename(), workspace.getName(), workspace.isModified());	
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::insertNewPS(CParticleWorkspace &pws)
+{
+	static const char BASED_CODE szFilter[] = "NeL Particle systems (*.ps)|*.ps||";
+	CFileDialog fd(TRUE,  ".ps",  "*.ps",  OFN_ALLOWMULTISELECT|OFN_FILEMUSTEXIST,  szFilter,  this);	
+	const uint MAX_NUM_CHAR = 65536;
+	char filenamesBuf[MAX_NUM_CHAR];
+	strcpy(filenamesBuf, "*.ps");
+	fd.m_ofn.lpstrFile = filenamesBuf;
+	fd.m_ofn.nMaxFile = MAX_NUM_CHAR - 1;
+	if (fd.DoModal() == IDOK)
+	{
+		CParticleWorkspace::IModificationCallback *oldCallback = pws.getModificationCallback();
+		pws.setModificationCallback(NULL);
+		POSITION pos = fd.GetStartPosition();
+		bool diplayLoadingError = true;
+		bool diplayNodeAlreadyInserted = true;
+		bool hasSelectedNode = _ParticleDlg->getActiveNode() != NULL;
+		CParticleWorkspace::CNode *firstLoadedNode = NULL;
+		while (pos)
+		{
+			CString path = fd.GetNextPathName(pos);						
+			CParticleWorkspace::CNode *node = pws.addNode((LPCTSTR) path);
+			if (!node)
+			{
+				if (diplayNodeAlreadyInserted)
+				{
+					if (pos)
+					{					
+						CSkippableMessageBox smb(path + getStrRsc(IDS_PS_ALREADY_INSERTED), getStrRsc(IDS_ERROR), this);
+						smb.DoModal();
+						diplayNodeAlreadyInserted = !smb.getBypassFlag();
+					}
+					else
+					{
+						MessageBox(NLMISC::CFile::getFilename((LPCTSTR)path).c_str() + getStrRsc(IDS_PS_ALREADY_INSERTED), getStrRsc(IDS_ERROR), MB_OK|MB_ICONEXCLAMATION);
+					}
+				}								
+				continue;				
+			}
+			if (diplayLoadingError)
+			{
+				diplayLoadingError = _ParticleDlg->loadPS(*this,  *node, pos ? CParticleDlg::ReportErrorSkippable : CParticleDlg::ReportError);
+			}
+			else
+			{
+				_ParticleDlg->loadPS(*this,  *node, CParticleDlg::Silent);
+			}
+			if (!node->isLoaded()) 
+			{
+				pws.removeNode(pws.getNumNode() - 1);				
+			}
+			else
+			{		
+				if (!firstLoadedNode) firstLoadedNode = node;			
+				buildTreeFromPS(*node,  GetRootItem());
+			}
+		}
+		pws.setModificationCallback(oldCallback);
+		if (firstLoadedNode)
+		{
+			expandRoot();
+			pws.touch();
+			if (!hasSelectedNode)
+			{
+				_ParticleDlg->setActiveNode(firstLoadedNode);
+				setActiveNode(firstLoadedNode);
+			}
+		}
+		// update modified state
+		SetItemText(GetRootItem(), computeCaption(pws).c_str());
+	}
+	
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::createNewPS(CParticleWorkspace &pws)
+{
+	CCreateFileDlg cfd(getStrRsc(IDS_CREATE_NEW_PS), NLMISC::CPath::standardizeDosPath(pws.getPath()), "ps", this);
+	if (cfd.DoModal() == IDOK)
+	{
+		if (pws.containsFile(cfd.getFileName()))
+		{
+			MessageBox((LPCTSTR) (CString(NLMISC::CFile::getFilename(cfd.getFileName()).c_str()) + getStrRsc(IDS_PS_ALREADY_INSERTED)),  getStrRsc(IDS_ERROR),  MB_ICONEXCLAMATION);
+		}
+		if (cfd.touchFile())
+		{
+			CParticleWorkspace::CNode *node = pws.addNode(cfd.getFullPath());
+			nlassert(node); // should always succeed because we tested if file already exists
+			node->createEmptyPS();
+			_ParticleDlg->savePS(*this, *node,   false); // write empty ps to disk
+			// create an icon at the end of workspace
+			buildTreeFromPS(*node,  GetRootItem());
+		}
+	}
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::removeTreePart(HTREEITEM root)
+{
+	CNodeType *nt = (CNodeType *) GetItemData(root);
+	_NodeTypes.erase(std::find(_NodeTypes.begin(),  _NodeTypes.end(),  nt));
+	delete nt;
+	HTREEITEM child = GetChildItem(root);
+	while (child)
+	{
+		HTREEITEM tmpChild = child;
+		child = GetNextSiblingItem(child);
+		removeTreePart(tmpChild);
+	}	
+	DeleteItem(root);
+}
+
+//****************************************************************************************************************
+HTREEITEM CParticleTreeCtrl::getTreeItem(CNodeType *nt) const
+{
+	if (!GetRootItem()) return NULL;
+	std::stack<HTREEITEM> leftToTraverse;
+	leftToTraverse.push(GetRootItem());
+	while (!leftToTraverse.empty())
+	{
+		HTREEITEM curr = leftToTraverse.top();
+		leftToTraverse.pop();
+		if ((CNodeType *) GetItemData(curr) == nt)
+		{
+			return curr;
+		}
+		if (GetChildItem(curr)) leftToTraverse.push(GetChildItem(curr));
+		if (GetNextSiblingItem(curr)) leftToTraverse.push(GetNextSiblingItem(curr));
+	}
+	return NULL;
+}
+
+//****************************************************************************************************************
+HTREEITEM CParticleTreeCtrl::getTreeItem(CParticleWorkspace::CNode *node) const
+{
+	if (!GetRootItem()) return NULL;
+	std::stack<HTREEITEM> leftToTraverse;
+	leftToTraverse.push(GetRootItem());
+	while (!leftToTraverse.empty())
+	{
+		HTREEITEM curr = leftToTraverse.top();
+		leftToTraverse.pop();
+		const CNodeType *nt = (CNodeType *) GetItemData(curr);
+		if (nt && nt->Type == CNodeType::particleSystem && nt->PS == node)
+		{
+			return curr;
+		}
+		if (GetChildItem(curr)) leftToTraverse.push(GetChildItem(curr));
+		if (GetNextSiblingItem(curr)) leftToTraverse.push(GetNextSiblingItem(curr));
+	}
+	return NULL;
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::nodeModifiedFlagChanged(CParticleWorkspace::CNode &node)
+{
+	updateCaption(node);	
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::workspaceModifiedFlagChanged(CParticleWorkspace &ws)
+{
+	// for now assume that workspace is the root
+	HTREEITEM root = GetRootItem();
+	if (!root) return;
+	SetItemText(root, (LPCTSTR) computeCaption(ws).c_str());
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::nodeSkelParentChanged(CParticleWorkspace::CNode &node)
+{
+	updateCaption(node);	
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::setActiveNode(CParticleWorkspace::CNode *node)
+{
+	HTREEITEM newItem = getTreeItem(node);
+	if (_LastActiveNode) SetItemState(_LastActiveNode,  0,  TVIS_BOLD);
+	if (newItem)
+	{	
+		SetItemState(newItem,  TVIS_BOLD,  TVIS_BOLD);
+	}
+	_LastActiveNode = newItem;
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::touchPSState(CNodeType *nt)
+{
+	if (!nt) return;
+	CParticleWorkspace::CNode *ownerNode = getOwnerNode(nt);
+	if (ownerNode && ownerNode->getPSModel())
+	{
+		ownerNode->getPSModel()->touchLightableState();
+		ownerNode->getPSModel()->touchTransparencyState();
+	}
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::OnBeginlabeledit(NMHDR* pNMHDR, LRESULT* pResult) 
+{	
+	TV_DISPINFO* pTVDispInfo = (TV_DISPINFO*)pNMHDR;	
+	NMTVDISPINFO* info = (NMTVDISPINFO*)pNMHDR;
+	*pResult = 0;
+	CEdit* pEdit = GetEditControl();
+	if (!pEdit) return;
+	if (info->item.pszText)
+	{
+		CNodeType *nt = (CNodeType *) info->item.lParam;
+		switch (nt->Type)
+		{
+			case CNodeType::workspace:
+				pEdit->SetWindowText(nt->WS->getName().c_str());
+			break;
+			case CNodeType::particleSystem:
+			{
+				if (!nt->PS->isLoaded())
+				{
+					pEdit->SetWindowText("");
+					//localizedMessageBox(*this, IDS_CANT_CHANGE_PS_NAME, IDS_ERROR, MB_OK|MB_ICONEXCLAMATION);
+				}
+				else
+				{				
+					pEdit->SetWindowText(nt->PS->getPSPointer()->getName().c_str());
+				}				
+			}
+			break;
+			case CNodeType::located:
+			{				
+				pEdit->SetWindowText(nt->Loc->getName().c_str());
+			}
+			break;
+			case CNodeType::locatedBindable:
+			{
+				pEdit->SetWindowText(nt->Bind->getName().c_str());
+			}
+			break;
+		}
+	}	
+	*pResult = 0;
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::OnLButtonDblClk(UINT nFlags, CPoint point) 
+{	
+	UINT flags;	
+	HTREEITEM item  = this->HitTest(point,  &flags);
+	if (item)
+	{
+		CNodeType *nt =  (CNodeType *) GetItemData(item);
+		nlassert(nt);
+		if (nt->Type == CNodeType::particleSystem && nt->PS->isLoaded())
+		{						
+			_ParticleDlg->setActiveNode(nt->PS);
+			setActiveNode(nt->PS);
+			return;
+		}
+	}
+	CTreeCtrl::OnLButtonDblClk(nFlags, point);
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::sortWorkspace(CParticleWorkspace &ws, CParticleWorkspace::ISort &sorter)
+{
+	// stop all fx
+	nlassert(_ParticleDlg);
+	_ParticleDlg->StartStopDlg->stop();
+	CParticleWorkspace::CNode *activeNode = _ParticleDlg->getActiveNode();
+	setActiveNode(NULL);
+	reset();
+	ws.sort(sorter);
+	buildTreeFromWorkSpace(ws);
+	Select(GetRootItem(), TVGN_FIRSTVISIBLE);
+	setActiveNode(activeNode);
+	expandRoot();
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::OnKeydown(NMHDR* pNMHDR, LRESULT* pResult) 
+{
+	/*
+	TV_KEYDOWN* pTVKeyDown = (TV_KEYDOWN*)pNMHDR;
+	if (pTVKeyDown->wVKey == VK_DELETE)
+	{
+		deleteSelection();
+	}	
+	*pResult = 0;
+	*/
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags) 
+{
+	/*
+	if (nChar == VK_DELETE)
+	{
+		deleteSelection();
+	}		
+	*/
+	CTreeCtrl::OnKeyUp(nChar, nRepCnt, nFlags);
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::expandRoot()
+{
+	if (GetRootItem()) Expand(GetRootItem(), TVE_EXPAND);
+}
+	
+//****************************************************************************************************************
+void CParticleTreeCtrl::setViewFilenameFlag(bool enabled)
+{
+	if (enabled == _ViewFilenameFlag) return;
+	_ViewFilenameFlag = enabled;
+	updateAllCaptions();
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::updateAllCaptions()
+{
+	if (!GetRootItem()) return;
+	std::stack<HTREEITEM> leftToTraverse;
+	leftToTraverse.push(GetRootItem());
+	// TODO: factorize code to traverse all nodes
+	while (!leftToTraverse.empty())
+	{
+		HTREEITEM curr = leftToTraverse.top();
+		leftToTraverse.pop();
+		CNodeType *nt = (CNodeType *) GetItemData(curr);
+		switch(nt->Type)
+		{
+			case CNodeType::particleSystem:
+				SetItemText(curr, computeCaption(*nt->PS).c_str());
+			break;
+			case CNodeType::workspace:
+				SetItemText(curr, computeCaption(*nt->WS).c_str());
+			break;
+			case CNodeType::located:			
+			case CNodeType::locatedBindable:			
+			case CNodeType::locatedInstance:
+				// no-op
+			break;
+			default:
+				nlassert(0);
+			break;
+		}
+		if (GetChildItem(curr)) leftToTraverse.push(GetChildItem(curr));
+		if (GetNextSiblingItem(curr)) leftToTraverse.push(GetNextSiblingItem(curr));
+	}	
+}
+
+//****************************************************************************************************************
+void CParticleTreeCtrl::removeAllPS(CParticleWorkspace &ws)
+{
+	if (localizedMessageBox(*this, IDS_REMOVE_ALL_PS, IDS_PARTICLE_SYSTEM_EDITOR, MB_OKCANCEL|MB_ICONQUESTION) != IDOK) return;
+	setActiveNode(NULL);
+	_ParticleDlg->setActiveNode(NULL);	
+	uint numNodes = ws.getNumNode();
+	for(uint k = 0; k < numNodes; ++k)
+	{
+		ws.removeNode((uint) 0);
+	}
+	reset();
+	buildTreeFromWorkSpace(ws);
+}
+
+

@@ -55,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 nlligo_r.lib nlgeorges_r.lib mfcs42.lib msvcrt.lib libc.lib libxml2.lib freetype.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:yes /machine:I386 /out:"../../../lib/object_viewer.dll"
+# ADD LINK32 nlligo_r.lib nlgeorges_r.lib mfcs42.lib msvcrt.lib libc.lib libxml2.lib freetype.lib shlwapi.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:yes /machine:I386 /out:"../../../lib/object_viewer.dll"
 # SUBTRACT LINK32 /pdb:none
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
@@ -87,7 +87,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 nlligo_d.lib nlgeorges_d.lib libxml2_debug.lib mfcs42d.lib freetype_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# ADD LINK32 nlligo_d.lib nlgeorges_d.lib libxml2_debug.lib mfcs42d.lib freetype_debug.lib shlwapi.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
@@ -115,7 +115,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42.lib msvcrt.lib libc.lib /nologo /subsystem:windows /dll /machine:I386 /out:"../../../lib/object_viewer.dll"
-# ADD LINK32 nlligo_rd.lib nlgeorges_rd.lib mfcs42.lib libxml2.lib freetype.lib libjpeg.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll" /pdbtype:sept
+# ADD LINK32 nlligo_rd.lib nlgeorges_rd.lib mfcs42.lib libxml2.lib freetype.lib shlwapi.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_rd.dll" /pdbtype:sept
 # SUBTRACT LINK32 /incremental:yes
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 DebugFast"
@@ -145,7 +145,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 mfcs42d.lib msvcrtd.lib libc.lib version.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none /incremental:no
-# ADD LINK32 nlligo_df.lib nlgeorges_df.lib freetype_debug.lib libxml2_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
+# ADD LINK32 shlwapi.lib nlligo_df.lib nlgeorges_df.lib freetype_debug.lib libxml2_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug_fast.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
@@ -180,6 +180,10 @@ SOURCE=.\blend_wnd.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\choose_animation.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\choose_bg_color_dlg.cpp
 # End Source File
 # Begin Source File
@@ -197,6 +201,10 @@ SOURCE=.\choose_pool_id.cpp
 # Begin Source File
 
 SOURCE=.\choose_sun_color_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\create_file_dlg.cpp
 # End Source File
 # Begin Source File
 
@@ -264,6 +272,10 @@ SOURCE=.\object_viewer.rc
 # End Source File
 # Begin Source File
 
+SOURCE=.\save_options_dlg.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\scene_rot_dlg.cpp
 # End Source File
 # Begin Source File
@@ -278,6 +290,10 @@ SOURCE=.\select_string.cpp
 # Begin Source File
 
 SOURCE=.\set_value_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\skippable_message_box.cpp
 # End Source File
 # Begin Source File
 
@@ -319,6 +335,10 @@ SOURCE=.\blend_wnd.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\choose_animation.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\choose_bg_color_dlg.h
 # End Source File
 # Begin Source File
@@ -336,6 +356,10 @@ SOURCE=.\choose_pool_id.h
 # Begin Source File
 
 SOURCE=.\choose_sun_color_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\create_file_dlg.h
 # End Source File
 # Begin Source File
 
@@ -387,6 +411,10 @@ SOURCE=.\Resource.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\save_options_dlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\scene_rot_dlg.h
 # End Source File
 # Begin Source File
@@ -400,6 +428,10 @@ SOURCE=.\select_string.h
 # Begin Source File
 
 SOURCE=.\set_value_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\skippable_message_box.h
 # End Source File
 # Begin Source File
 
@@ -428,6 +460,14 @@ SOURCE=.\bitmap1.bmp
 # Begin Source File
 
 SOURCE=.\bitmap2.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bitmap3.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bitmap4.bmp
 # End Source File
 # Begin Source File
 
@@ -819,10 +859,6 @@ SOURCE=.\particle_dlg.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\particle_dsw.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\particle_system_edit.cpp
 # End Source File
 # Begin Source File
@@ -836,6 +872,14 @@ SOURCE=.\particle_tree_ctrl.cpp
 # Begin Source File
 
 SOURCE=.\particle_tree_ctrl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\particle_workspace.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\particle_workspace.h
 # End Source File
 # Begin Source File
 
@@ -864,6 +908,14 @@ SOURCE=.\ps_global_color_dlg.cpp
 # Begin Source File
 
 SOURCE=.\ps_global_color_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ps_initial_pos.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ps_initial_pos.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.120 2004/04/26 13:48:24 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.121 2004/06/17 08:10:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -553,39 +553,32 @@ void CObjectViewer::loadConfigFile()
 	}
 }
 
-// ***************************************************************************
 
+// ***************************************************************************
+// properly remove a single window
+static void removeWindow(CWnd *wnd)
+{
+	if (!wnd) return;
+	wnd->DestroyWindow();
+	delete wnd;
+}
+
+// ***************************************************************************
 CObjectViewer::~CObjectViewer ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	if (_MainFrame)
-		delete (_MainFrame);
-	if (_ChooseFrameDelayDlg)
-		delete _ChooseFrameDelayDlg;
-	if (_SlotDlg)	
-		delete _SlotDlg;
-	if (_AnimationSetDlg)
-		delete _AnimationSetDlg;
-	if (_AnimationDlg)
-		delete _AnimationDlg;
-	if (_ParticleDlg)
-		delete _ParticleDlg;
-	if (_DayNightDlg)
-		delete _DayNightDlg;
-	if (_WaterPoolDlg)
-		delete _WaterPoolDlg;
-	if (_SoundAnimDlg)
-		delete _SoundAnimDlg;
-	if (_LightGroupDlg)
-		delete _LightGroupDlg;	
-	if (_ChooseBGColorDlg)
-		delete _ChooseBGColorDlg;
-	if (_VegetableDlg)
-		delete _VegetableDlg;
-	if (_GlobalWindDlg)
-		delete _GlobalWindDlg;
-	if (_FontGenerator)
-		delete _FontGenerator;
+	removeWindow(_MainFrame);			
+	removeWindow(_SlotDlg);	
+	removeWindow(_AnimationSetDlg);	
+	removeWindow(_AnimationDlg);	
+	removeWindow(_DayNightDlg);	
+	removeWindow(_WaterPoolDlg);	
+	removeWindow(_SoundAnimDlg);	
+	removeWindow(_LightGroupDlg);	
+	removeWindow(_ChooseBGColorDlg);	
+	removeWindow(_VegetableDlg);	
+	removeWindow(_GlobalWindDlg);	
+	delete _FontGenerator;	
 }
 
 // ***************************************************************************
@@ -1123,8 +1116,8 @@ static bool isParentWnd(HWND parent, HWND son)
 	return isParentWnd(parent, directParent);
 }
 
-// ***************************************************************************
 
+// ***************************************************************************
 void CObjectViewer::go ()
 {
 	nlassert(!_InstanceRunning); // this shouldn't be called if an instance of the viewer is running.
@@ -1138,7 +1131,8 @@ void CObjectViewer::go ()
 		_CrtCheckMemory();
 		if (isParentWnd(_MainFrame->m_hWnd, GetForegroundWindow()))
 		{
- 			CNELU::Driver->activate ();
+ 			CNELU::Driver->activate ();			
+
 
 			// Handle animation
 			_AnimationDlg->handle ();
@@ -1161,30 +1155,43 @@ void CObjectViewer::go ()
 			// Animate the automatic animation in the scene
 			//CNELU::Scene->animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
 
-			animateCNELUScene (_CS);
-
+			
 			// Eval channel mixer for transform
 			for (uint i=0; i<_ListInstance.size(); i++)
-				_ListInstance[i]->ChannelMixer.eval (false);
+				
+			_ListInstance[i]->ChannelMixer.eval (false);
+
+			animateCNELUScene (_CS);			
 
 			// Clear the buffers
-			CNELU::clearBuffers(_BackGroundColor);
+			CNELU::clearBuffers(_BackGroundColor);			
 
+			
+			//if (_CS) _CS->setDebugQuad(true);
+
+			// call of callback list
+			{
+				std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end());
+				for (std::vector<IMainLoopCallBack *>::iterator it = _CallBackList.begin(); it != _CallBackList.end(); ++it)
+				{
+					(*it)->goPreRender();
+				}
+			}
 			// Render the CS
-			if (_CS) _CS->render ();
-
+			if (_CS) _CS->render ();			
+			
 			// Draw the scene		
-			CNELU::Scene->render();
+			CNELU::Scene->render();	
 			
 			// call of callback list
 			{
 				std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end());
-
 				for (std::vector<IMainLoopCallBack *>::iterator it = _CallBackList.begin(); it != _CallBackList.end(); ++it)
 				{
-					(*it)->go();
+					(*it)->goPostRender();
 				}
 			}
+			
 
 			// Profile polygon count
 			CPrimitiveProfile in, out;
@@ -1459,6 +1466,10 @@ void CObjectViewer::releaseUI ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
+	// Release particles
+	removeWindow(_ChooseFrameDelayDlg);	
+	removeWindow(_ParticleDlg);	
+
 	// release sound
 	CSoundSystem::releaseSoundSystem();
 
@@ -1507,6 +1518,8 @@ void CObjectViewer::releaseUI ()
 		CNELU::Scene->deleteModel(_VegetableLandscape);
 		_VegetableLandscape= NULL;
 	}
+
+	
 
 	// Release all instances and all Igs.
 	removeAllInstancesFromScene();
@@ -3795,4 +3808,29 @@ uint CObjectViewer::getCameraInstance (uint cameraId) const
 uint CObjectViewer::getNumCamera () const
 {
 	return _Cameras.size ();
+}
+
+int localizedMessageBox(HWND parentWindow, int messageStringID, int captionStringID, UINT nType)
+{
+	
+	CString caption;
+	CString mess;
+	caption.LoadString(captionStringID);
+	mess.LoadString(messageStringID);
+	return MessageBox(parentWindow, (LPCTSTR) mess, (LPCTSTR) caption, nType);
+	// TODO : replace older call to ::MessageBox in the object viewer with that function
+}
+
+int localizedMessageBox(HWND parentWindow, const char *message, int captionStringID, UINT nType)
+{
+	CString caption;	
+	caption.LoadString(captionStringID);	
+	return MessageBox(parentWindow, message, (LPCTSTR) caption, nType);
+}
+
+CString getStrRsc(uint stringID)
+{
+	CString str;
+	str.LoadString(stringID);
+	return str;
 }

@@ -1,7 +1,7 @@
  /** \file particle_system_edit.cpp
  * Dialog used to edit global parameters of a particle system.
  *
- * $Id: particle_system_edit.cpp,v 1.22 2004/05/14 16:20:31 vizerie Exp $
+ * $Id: particle_system_edit.cpp,v 1.23 2004/06/17 08:08:41 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,11 +66,15 @@ CLODRatioWrapper CParticleSystemEdit::_LODRatioWrapper;
 CUserParamWrapper CParticleSystemEdit::_UserParamWrapper[4];
 
 //=====================================================
-CParticleSystemEdit::CParticleSystemEdit(NL3D::CParticleSystem *ps, CParticleTreeCtrl *ptc)
-	: _PS(ps), _TimeThresholdDlg(NULL), _MaxIntegrationStepDlg(NULL)
-		, _MaxViewDistDlg(NULL), _LODRatioDlg(NULL), _AutoLODDlg(NULL),
-		_GlobalColorDlg(NULL),
-		_ParticleTreeCtrl(ptc)
+CParticleSystemEdit::CParticleSystemEdit(CParticleWorkspace::CNode *ownerNode, CParticleTreeCtrl *ptc)
+	: _Node(ownerNode),
+	  _TimeThresholdDlg(NULL),
+	  _MaxIntegrationStepDlg(NULL),
+	  _MaxViewDistDlg(NULL),
+	  _LODRatioDlg(NULL),
+	  _AutoLODDlg(NULL),
+	  _GlobalColorDlg(NULL),
+	  _ParticleTreeCtrl(ptc)
 {
 	nlassert(ptc);
 	//{{AFX_DATA_INIT(CParticleSystemEdit)
@@ -114,22 +118,22 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	const sint xPos = 80;
 	sint yPos = 162;
 
-	_MaxViewDistDlg = new CEditableRangeFloat (std::string("MAX VIEW DIST"), 0, 100.f);
-	_MaxViewDistWrapper.PS = _PS;
+	_MaxViewDistDlg = new CEditableRangeFloat (std::string("MAX VIEW DIST"), _Node, 0, 100.f);
+	_MaxViewDistWrapper.PS = _Node->getPSPointer();
 	_MaxViewDistDlg->enableLowerBound(0, true);
 	_MaxViewDistDlg->setWrapper(&_MaxViewDistWrapper);
 	_MaxViewDistDlg->init(87, 325, this);
 
-	_LODRatioDlg = new CEditableRangeFloat (std::string("LOD RATIO"), 0, 1.f);
-	_LODRatioWrapper.PS = _PS;
+	_LODRatioDlg = new CEditableRangeFloat (std::string("LOD RATIO"), _Node, 0, 1.f);
+	_LODRatioWrapper.PS = _Node->getPSPointer();
 	_LODRatioDlg->enableLowerBound(0, true);
 	_LODRatioDlg->enableUpperBound(1, true);
 	_LODRatioDlg->setWrapper(&_LODRatioWrapper);
 	_LODRatioDlg->init(87, 357, this);
 
 
-	_TimeThresholdDlg = new CEditableRangeFloat (std::string("TIME THRESHOLD"), 0.005f, 0.3f);
-	_TimeThresholdWrapper.PS = _PS;
+	_TimeThresholdDlg = new CEditableRangeFloat (std::string("TIME THRESHOLD"), _Node, 0.005f, 0.3f);
+	_TimeThresholdWrapper.PS = _Node->getPSPointer();
 	_TimeThresholdDlg->enableLowerBound(0, true);
 	_TimeThresholdDlg->setWrapper(&_TimeThresholdWrapper);
 	GetDlgItem(IDC_TIME_THRESHOLD_PLACE_HOLDER)->GetWindowRect(&r);
@@ -137,8 +141,8 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	_TimeThresholdDlg->init(r.left, r.top, this);
 
 
-	_MaxIntegrationStepDlg = new CEditableRangeUInt (std::string("MAX INTEGRATION STEPS"), 0, 4);	
-	_MaxNbIntegrationWrapper.PS = _PS;
+	_MaxIntegrationStepDlg = new CEditableRangeUInt (std::string("MAX INTEGRATION STEPS"), _Node, 0, 4);	
+	_MaxNbIntegrationWrapper.PS = _Node->getPSPointer();
 	_MaxIntegrationStepDlg->enableLowerBound(0, true);
 	_MaxIntegrationStepDlg->setWrapper(&_MaxNbIntegrationWrapper);
 	GetDlgItem(IDC_MAX_STEP_PLACE_HOLDER)->GetWindowRect(&r);
@@ -149,9 +153,9 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 				
 	for (uint k = 0; k < 4; ++k)
 	{
-		_UserParamWrapper[k].PS = _PS;
+		_UserParamWrapper[k].PS = _Node->getPSPointer();
 		_UserParamWrapper[k].Index = k;
-		CEditableRangeFloat *erf = new CEditableRangeFloat (std::string("USER PARAM") + (char) (k + 65), 0, 1.0f);
+		CEditableRangeFloat *erf = new CEditableRangeFloat (std::string("USER PARAM") + (char) (k + 65), NULL, 0, 1.0f);
 		erf->enableLowerBound(0, false);
 		erf->enableUpperBound(1, false);
 		pushWnd(erf);
@@ -165,23 +169,23 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	uint32 max;
 	bool csd;
 	bool klt;
-	_PS->getAccurateIntegrationParams(t, max, csd, klt);
+	_Node->getPSPointer()->getAccurateIntegrationParams(t, max, csd, klt);
 	
-	m_PrecomputeBBoxCtrl.SetCheck(_PS->getAutoComputeBBox() ? 0 : 1);
+	m_PrecomputeBBoxCtrl.SetCheck(_Node->getPSPointer()->getAutoComputeBBox() ? 0 : 1);
 	((CButton *) GetDlgItem(IDC_AUTO_BBOX))->SetCheck(_ParticleTreeCtrl->getParticleDlg()->getAutoBBox() ? 1 : 0);
 	
 	m_EnableSlowDown = csd;	
-	((CButton *)	GetDlgItem(IDC_SHARABLE))->SetCheck(_PS->isSharingEnabled());	
+	((CButton *)	GetDlgItem(IDC_SHARABLE))->SetCheck(_Node->getPSPointer()->isSharingEnabled());	
 
-	m_AccurateIntegration = _PS->isAccurateIntegrationEnabled();
+	m_AccurateIntegration = _Node->getPSPointer()->isAccurateIntegrationEnabled();
 
-	BOOL bAutoLOD = _PS->isAutoLODEnabled();
+	BOOL bAutoLOD = _Node->getPSPointer()->isAutoLODEnabled();
 	((CButton *)	GetDlgItem(IDC_ENABLE_AUTO_LOD))->SetCheck(bAutoLOD);
 	GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(bAutoLOD);
 
 
 	/// global color
-	int bGlobalColor = _PS->getColorAttenuationScheme() != NULL ?  1 : 0;
+	int bGlobalColor = _Node->getPSPointer()->getColorAttenuationScheme() != NULL ?  1 : 0;
 	((CButton *) GetDlgItem(IDC_GLOBAL_COLOR))->SetCheck(bGlobalColor);
 	GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(bGlobalColor);
 
@@ -191,9 +195,9 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 	updatePrecomputedBBoxParams();	
 	updateLifeMgtPresets();
 
-	m_EnableLoadBalancing = _PS->isLoadBalancingEnabled();
-	_MaxIntegrationStepDlg->EnableWindow(_PS->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
-	m_ForceLighting = _PS->getForceGlobalColorLightingFlag();
+	m_EnableLoadBalancing = _Node->getPSPointer()->isLoadBalancingEnabled();
+	_MaxIntegrationStepDlg->EnableWindow(_Node->getPSPointer()->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
+	m_ForceLighting = _Node->getPSPointer()->getForceGlobalColorLightingFlag();
 
 	CString lockButtonStr;
 	lockButtonStr.LoadString(IDS_LOCK_PS);
@@ -208,7 +212,7 @@ void CParticleSystemEdit::init(CWnd *pParent)   // standard constructor
 //=====================================================
 void CParticleSystemEdit::updateIntegrationParams()
 {
-	BOOL ew = _PS->isAccurateIntegrationEnabled();
+	BOOL ew = _Node->getPSPointer()->isAccurateIntegrationEnabled();
 	_TimeThresholdDlg->EnableWindow(ew);
 	_MaxIntegrationStepDlg->EnableWindow(ew);
 	m_EnableSlowDownCtrl.EnableWindow(ew);
@@ -218,22 +222,22 @@ void CParticleSystemEdit::updateIntegrationParams()
 //=====================================================
 void CParticleSystemEdit::updateDieOnEventParams()
 {
-	BOOL ew = _PS->getDestroyCondition() == NL3D::CParticleSystem::none ? FALSE : TRUE;
+	BOOL ew = _Node->getPSPointer()->getDestroyCondition() == NL3D::CParticleSystem::none ? FALSE : TRUE;
 	GetDlgItem(IDC_AUTO_DELAY)->EnableWindow(ew);
-	bool autoDelay = _PS->getAutoComputeDelayBeforeDeathConditionTest();
+	bool autoDelay = _Node->getPSPointer()->getAutoComputeDelayBeforeDeathConditionTest();
 	if (autoDelay)
 	{
 		ew = FALSE;
 	}
 	GetDlgItem(IDC_APPLY_AFTER_DELAY)->EnableWindow(ew);
 	char out[128];
-	if (_PS->getDelayBeforeDeathConditionTest() >= 0)
+	if (_Node->getPSPointer()->getDelayBeforeDeathConditionTest() >= 0)
 	{	
-		sprintf(out, "%.2g", _PS->getDelayBeforeDeathConditionTest());
+		sprintf(out, "%.2g", _Node->getPSPointer()->getDelayBeforeDeathConditionTest());
 	}
 	else
 	{
-		sprintf(out, "???");
+		strcpy(out,"???");
 	}
 	GetDlgItem(IDC_APPLY_AFTER_DELAY)->SetWindowText(out);
 	((CButton *) GetDlgItem(IDC_AUTO_DELAY))->SetCheck(autoDelay ? 1 : 0);
@@ -243,8 +247,8 @@ void CParticleSystemEdit::updateDieOnEventParams()
 void CParticleSystemEdit::OnPrecomputeBbox() 
 {
 	UpdateData();
-	_PS->setAutoComputeBBox(!_PS->getAutoComputeBBox() ? true : false);
-	if (!_PS->getAutoComputeBBox())
+	_Node->getPSPointer()->setAutoComputeBBox(!_Node->getPSPointer()->getAutoComputeBBox() ? true : false);
+	if (!_Node->getPSPointer()->getAutoComputeBBox())
 	{
 		_ParticleTreeCtrl->getParticleDlg()->setAutoBBox(true);
 		_ParticleTreeCtrl->getParticleDlg()->resetAutoBBox();
@@ -256,20 +260,21 @@ void CParticleSystemEdit::OnPrecomputeBbox()
 		((CButton *) GetDlgItem(IDC_AUTO_BBOX))->SetCheck(0);
 	}
 	updatePrecomputedBBoxParams();	
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::updatePrecomputedBBoxParams()
 {
 	nlassert(_ParticleTreeCtrl);
-	BOOL ew = !_ParticleTreeCtrl->getParticleDlg()->getAutoBBox() && !_PS->getAutoComputeBBox();
+	BOOL ew = !_ParticleTreeCtrl->getParticleDlg()->getAutoBBox() && !_Node->getPSPointer()->getAutoComputeBBox();
 		
 	m_BBoxXCtrl.EnableWindow(ew);
 	m_BBoxYCtrl.EnableWindow(ew);
 	m_BBoxZCtrl.EnableWindow(ew);
-	GetDlgItem(IDC_DEC_BBOX)->EnableWindow(!_PS->getAutoComputeBBox());
-	GetDlgItem(IDC_INC_BBOX)->EnableWindow(!_PS->getAutoComputeBBox());
-	GetDlgItem(IDC_AUTO_BBOX)->EnableWindow(!_PS->getAutoComputeBBox());
+	GetDlgItem(IDC_DEC_BBOX)->EnableWindow(!_Node->getPSPointer()->getAutoComputeBBox());
+	GetDlgItem(IDC_INC_BBOX)->EnableWindow(!_Node->getPSPointer()->getAutoComputeBBox());
+	GetDlgItem(IDC_AUTO_BBOX)->EnableWindow(!_Node->getPSPointer()->getAutoComputeBBox());
 	
 	if (!ew)
 	{
@@ -280,14 +285,14 @@ void CParticleSystemEdit::updatePrecomputedBBoxParams()
 	else
 	{
 		NLMISC::CAABBox b;
-		_PS->computeBBox(b);
+		_Node->getPSPointer()->computeBBox(b);
 		char out[128];
 		sprintf(out, "%.3g", b.getHalfSize().x); m_BBoxX = out;
 		sprintf(out, "%.3g", b.getHalfSize().y); m_BBoxY = out;
 		sprintf(out, "%.3g", b.getHalfSize().z); m_BBoxZ = out;
 	}
 
-	GetDlgItem(IDC_RESET_BBOX)->EnableWindow(_ParticleTreeCtrl->getParticleDlg()->getAutoBBox() && !_PS->getAutoComputeBBox());
+	GetDlgItem(IDC_RESET_BBOX)->EnableWindow(_ParticleTreeCtrl->getParticleDlg()->getAutoBBox() && !_Node->getPSPointer()->getAutoComputeBBox());
 
 	UpdateData(FALSE);
 }
@@ -296,8 +301,10 @@ void CParticleSystemEdit::updatePrecomputedBBoxParams()
 void CParticleSystemEdit::OnSelchangePsDieOnEvent() 
 {
 	UpdateData();
-	_PS->setDestroyCondition((NL3D::CParticleSystem::TDieCondition) m_DieOnEvent.GetCurSel());
+	_Node->getPSPointer()->setDestroyCondition((NL3D::CParticleSystem::TDieCondition) m_DieOnEvent.GetCurSel());
 	updateDieOnEventParams();
+	updateModifiedFlag();
+	updateModifiedFlag();
 }
 
 //=====================================================
@@ -340,7 +347,7 @@ BEGIN_MESSAGE_MAP(CParticleSystemEdit, CDialog)
 	ON_BN_CLICKED(IDC_DEC_BBOX, OnDecBbox)
 	ON_BN_CLICKED(IDC_DIE_WHEN_OUT_OF_RANGE, OnDieWhenOutOfRange)
 	ON_CBN_SELCHANGE(IDC_PS_DIE_ON_EVENT, OnSelchangePsDieOnEvent)
-	ON_EN_CHANGE(IDC_APPLY_AFTRE_DELAY, OnChangeApplyAfterDelay)
+	ON_EN_CHANGE(IDC_APPLY_AFTER_DELAY, OnChangeApplyAfterDelay)
 	ON_BN_CLICKED(IDC_DIE_WHEN_OUT_OF_FRUSTRUM, OnDieWhenOutOfFrustum)	
 	ON_CBN_SELCHANGE(IDC_LIFE_MGT_PRESETS, OnSelchangeLifeMgtPresets)
 	ON_CBN_SELCHANGE(IDC_ANIM_TYPE_CTRL, OnSelchangeAnimTypeCtrl)
@@ -374,8 +381,9 @@ END_MESSAGE_MAP()
 void CParticleSystemEdit::OnAccurateIntegration() 
 {
 	UpdateData();
-	_PS->enableAccurateIntegration(m_AccurateIntegration ? true : false);
+	_Node->getPSPointer()->enableAccurateIntegration(m_AccurateIntegration ? true : false);
 	updateIntegrationParams();
+	updateModifiedFlag();
 }
 
 //=====================================================
@@ -386,8 +394,9 @@ void CParticleSystemEdit::OnEnableSlowDown()
 	uint32 max;
 	bool csd;
 	bool klt;
-	_PS->getAccurateIntegrationParams(t, max, csd, klt);
-	_PS->setAccurateIntegrationParams(t, max, m_EnableSlowDown ? true : false, klt);
+	_Node->getPSPointer()->getAccurateIntegrationParams(t, max, csd, klt);
+	_Node->getPSPointer()->setAccurateIntegrationParams(t, max, m_EnableSlowDown ? true : false, klt);
+	updateModifiedFlag();
 }
 
 //=====================================================
@@ -405,7 +414,7 @@ void CParticleSystemEdit::updateBBoxFromText()
 	{
 		NLMISC::CAABBox b;
 		b.setHalfSize(h);
-		_PS->setPrecomputedBBox(b);
+		_Node->getPSPointer()->setPrecomputedBBox(b);
 	}
 	else
 	{
@@ -417,47 +426,57 @@ void CParticleSystemEdit::updateBBoxFromText()
 void CParticleSystemEdit::OnIncBbox() 
 {
 	NLMISC::CAABBox b;
-	_PS->computeBBox(b);
+	_Node->getPSPointer()->computeBBox(b);
 	b.setHalfSize(1.1f * b.getHalfSize());
-	_PS->setPrecomputedBBox(b);
+	_Node->getPSPointer()->setPrecomputedBBox(b);
 	updatePrecomputedBBoxParams();
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnDecBbox() 
 {
 	NLMISC::CAABBox b;
-	_PS->computeBBox(b);	 
+	_Node->getPSPointer()->computeBBox(b);	 
 	b.setHalfSize(0.9f * b.getHalfSize());
-	_PS->setPrecomputedBBox(b);
+	_Node->getPSPointer()->setPrecomputedBBox(b);
 	updatePrecomputedBBoxParams();	
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnDieWhenOutOfRange() 
 {
 	UpdateData();
-	_PS->setDestroyModelWhenOutOfRange(m_DieWhenOutOfRange ? true : false);
+	_Node->getPSPointer()->setDestroyModelWhenOutOfRange(m_DieWhenOutOfRange ? true : false);
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnDieWhenOutOfFrustum() 
 {
 	UpdateData();
-	_PS->destroyWhenOutOfFrustum(m_DieWhenOutOfFrustum ? true : false);
+	_Node->getPSPointer()->destroyWhenOutOfFrustum(m_DieWhenOutOfFrustum ? true : false);
 	m_AnimTypeCtrl.EnableWindow(!m_DieWhenOutOfFrustum);
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnChangeApplyAfterDelay() 
 {
+	if (_Node->getPSPointer()->getAutoComputeDelayBeforeDeathConditionTest()) return;
+	//
 	char in[128];	
-	GetDlgItem(IDC_APPLY_AFTRE_DELAY)->GetWindowText(in, 128);		
+	GetDlgItem(IDC_APPLY_AFTER_DELAY)->GetWindowText(in, 128);		
 	float value;
 	if (sscanf(in, "%f", &value) == 1)
 	{
-		_PS->setDelayBeforeDeathConditionTest(value);
-	}
+		if (_Node->getPSPointer()->getDelayBeforeDeathConditionTest() != value)
+		{
+			_Node->getPSPointer()->setDelayBeforeDeathConditionTest(value);
+			updateModifiedFlag();
+		}
+	}	
 }
 
 //=====================================================
@@ -468,9 +487,9 @@ void CParticleSystemEdit::OnSelchangeLifeMgtPresets()
 		m_PresetCtrl.GetCurSel() == NL3D::CParticleSystem::SpawnedEnvironmentFX)
 	{
 		NL3D::CPSLocatedBindable *lb;
-		if (!_PS->canFinish(&lb))
+		if (!_Node->getPSPointer()->canFinish(&lb))
 		{
-			m_PresetCtrl.SetCurSel((int) _PS->getBehaviourType());
+			m_PresetCtrl.SetCurSel((int) _Node->getPSPointer()->getBehaviourType());
 			CString mess;
 			CString err;
 			err.LoadString(IDS_ERROR);
@@ -488,36 +507,38 @@ void CParticleSystemEdit::OnSelchangeLifeMgtPresets()
 			return;
 		}
 	}
-	_PS->activatePresetBehaviour((NL3D::CParticleSystem::TPresetBehaviour) m_PresetCtrl.GetCurSel());	
+	_Node->getPSPointer()->activatePresetBehaviour((NL3D::CParticleSystem::TPresetBehaviour) m_PresetCtrl.GetCurSel());	
 	updateLifeMgtPresets();
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnSelchangeAnimTypeCtrl() 
 {
 	UpdateData(TRUE);
-	_PS->setAnimType((NL3D::CParticleSystem::TAnimType) m_AnimTypeCtrl.GetCurSel());
+	_Node->getPSPointer()->setAnimType((NL3D::CParticleSystem::TAnimType) m_AnimTypeCtrl.GetCurSel());
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::updateLifeMgtPresets()
 {
-	m_PresetCtrl.SetCurSel((int) _PS->getBehaviourType());
-	m_DieWhenOutOfRange = _PS->getDestroyModelWhenOutOfRange();
-	m_DieWhenOutOfFrustum = _PS->doesDestroyWhenOutOfFrustum();
-	m_BypassMaxNumSteps = _PS->getBypassMaxNumIntegrationSteps();
-	m_DieOnEvent.SetCurSel((int) _PS->getDestroyCondition());
-	m_AnimTypeCtrl.SetCurSel((int) _PS->getAnimType());
+	m_PresetCtrl.SetCurSel((int) _Node->getPSPointer()->getBehaviourType());
+	m_DieWhenOutOfRange = _Node->getPSPointer()->getDestroyModelWhenOutOfRange();
+	m_DieWhenOutOfFrustum = _Node->getPSPointer()->doesDestroyWhenOutOfFrustum();
+	m_BypassMaxNumSteps = _Node->getPSPointer()->getBypassMaxNumIntegrationSteps();
+	m_DieOnEvent.SetCurSel((int) _Node->getPSPointer()->getDestroyCondition());
+	m_AnimTypeCtrl.SetCurSel((int) _Node->getPSPointer()->getAnimType());
 	updateDieOnEventParams();
 
 	NL3D::TAnimationTime t;
 	uint32 max;
 	bool csd;
 	bool klt;
-	_PS->getAccurateIntegrationParams(t, max, csd, klt);
+	_Node->getPSPointer()->getAccurateIntegrationParams(t, max, csd, klt);
 	((CButton *)	GetDlgItem(IDC_FORCE_LIFE_TIME_UPDATE))->SetCheck(klt);
 
-	BOOL bEnable =  _PS->getBehaviourType() == NL3D::CParticleSystem::UserBehaviour ? TRUE :  FALSE;
+	BOOL bEnable =  _Node->getPSPointer()->getBehaviourType() == NL3D::CParticleSystem::UserBehaviour ? TRUE :  FALSE;
 	
 	m_DieWhenOutOfRangeCtrl.EnableWindow(bEnable);
 	m_DieWhenOutOfFrustumCtrl.EnableWindow(bEnable);
@@ -525,7 +546,7 @@ void CParticleSystemEdit::updateLifeMgtPresets()
 	m_AnimTypeCtrl.EnableWindow(bEnable);
 	m_ForceLifeTimeUpdate.EnableWindow(bEnable);
 	m_BypassMaxNumStepsCtrl.EnableWindow(bEnable);
-	_MaxIntegrationStepDlg->EnableWindow(_PS->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
+	_MaxIntegrationStepDlg->EnableWindow(_Node->getPSPointer()->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
 
 	UpdateData(FALSE);
 }
@@ -536,7 +557,8 @@ void CParticleSystemEdit::updateLifeMgtPresets()
 void CParticleSystemEdit::OnSharable() 
 {
 	bool shared = ((CButton *)	GetDlgItem(IDC_SHARABLE))->GetCheck() != 0;
-	_PS->enableSharing(shared);	
+	_Node->getPSPointer()->enableSharing(shared);	
+	updateModifiedFlag();
 }
 
 //=====================================================
@@ -546,7 +568,7 @@ void CParticleSystemEdit::OnEditAutoLod()
 	GetDlgItem(IDC_ENABLE_AUTO_LOD)->EnableWindow(FALSE);
 	GetDlgItem(IDC_SHARABLE)->EnableWindow(FALSE);	
 	nlassert(_AutoLODDlg == NULL);
-	CAutoLODDlg *autoLODDlg = new CAutoLODDlg(_PS, this, this);	
+	CAutoLODDlg *autoLODDlg = new CAutoLODDlg(_Node, _Node->getPSPointer(), this);	
 	autoLODDlg->init(this);
 	_AutoLODDlg = autoLODDlg;
 }
@@ -576,7 +598,8 @@ void CParticleSystemEdit::OnEnableAutoLod()
 {
 	BOOL bEnable = ((CButton *) GetDlgItem(IDC_ENABLE_AUTO_LOD))->GetCheck() != 0;
 	GetDlgItem(IDC_EDIT_AUTO_LOD)->EnableWindow(bEnable);
-	_PS->enableAutoLOD(bEnable ? true : false /* performance warning */);
+	_Node->getPSPointer()->enableAutoLOD(bEnable ? true : false /* performance warning */);
+	updateModifiedFlag();
 }
 
 ///=====================================================================
@@ -585,26 +608,28 @@ void CParticleSystemEdit::OnEditGlobalColor()
 	nlassert(!_GlobalColorDlg);
 	GetDlgItem(IDC_GLOBAL_COLOR)->EnableWindow(FALSE);
 	GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(FALSE);
-	CPSGlobalColorDlg *gcd = new CPSGlobalColorDlg(_PS, this, this);
+	CPSGlobalColorDlg *gcd = new CPSGlobalColorDlg(_Node, this, this);
 	gcd->init(this);
 	_GlobalColorDlg = gcd;
+	updateModifiedFlag();
 }
 
 ///=====================================================================
 void CParticleSystemEdit::OnGlobalColor() 
 {	
 	/// if the system hasn't a global color scheme, add one.
-	if (_PS->getColorAttenuationScheme() == NULL)
+	if (_Node->getPSPointer()->getColorAttenuationScheme() == NULL)
 	{
 		static const NLMISC::CRGBA grad[] = { NLMISC::CRGBA::White, NLMISC::CRGBA::Black };
-		_PS->setColorAttenuationScheme(new NL3D::CPSColorGradient(grad, 2, 64, 1.f));
+		_Node->getPSPointer()->setColorAttenuationScheme(new NL3D::CPSColorGradient(grad, 2, 64, 1.f));
 		GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(TRUE);
 	}
 	else
 	{
-		_PS->setColorAttenuationScheme(NULL);
+		_Node->getPSPointer()->setColorAttenuationScheme(NULL);
 		GetDlgItem(IDC_EDIT_GLOBAL_COLOR)->EnableWindow(FALSE);
 	}
+	updateModifiedFlag();
 }
 
 
@@ -700,9 +725,10 @@ void CParticleSystemEdit::OnForceLifeTimeUpdate()
 	uint32 max;
 	bool csd;
 	bool klt;	
-	_PS->getAccurateIntegrationParams(t, max, csd, klt);
+	_Node->getPSPointer()->getAccurateIntegrationParams(t, max, csd, klt);
 	klt = ((CButton *)	GetDlgItem(IDC_FORCE_LIFE_TIME_UPDATE))->GetCheck() != 0;
-	_PS->setAccurateIntegrationParams(t, max, csd, klt);
+	_Node->getPSPointer()->setAccurateIntegrationParams(t, max, csd, klt);
+	updateModifiedFlag();
 }
 
 //=====================================================
@@ -714,7 +740,7 @@ void CParticleSystemEdit::OnEnableLoadBalancing()
 		int result = MessageBox("Are you sure ?", "Load balancing on/off", MB_OKCANCEL);
 		if (result == IDOK)
 		{
-			_PS->enableLoadBalancing(false);
+			_Node->getPSPointer()->enableLoadBalancing(false);
 		}
 		else
 		{
@@ -723,9 +749,10 @@ void CParticleSystemEdit::OnEnableLoadBalancing()
 	}
 	else
 	{
-		_PS->enableLoadBalancing(false);
+		_Node->getPSPointer()->enableLoadBalancing(false);
 	}
 	UpdateData(FALSE);
+	updateModifiedFlag();
 }
 
 //=====================================================
@@ -742,47 +769,55 @@ static void chooseGlobalUserParam(uint userParam, NL3D::CParticleSystem *ps, CWn
 //=====================================================
 void CParticleSystemEdit::OnGlobalUserParam1() 
 {
-	nlassert(_PS)
-	chooseGlobalUserParam(0, _PS, this);
+	nlassert(_Node->getPSPointer());
+	chooseGlobalUserParam(0, _Node->getPSPointer(), this);
 }
 
 //=====================================================
 void CParticleSystemEdit::OnGlobalUserParam2() 
 {	
-	chooseGlobalUserParam(1, _PS, this);
+	chooseGlobalUserParam(1, _Node->getPSPointer(), this);
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnGlobalUserParam3() 
 {
-	chooseGlobalUserParam(2, _PS, this);
+	chooseGlobalUserParam(2, _Node->getPSPointer(), this);
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnGlobalUserParam4() 
 {
-	chooseGlobalUserParam(3, _PS, this);
+	chooseGlobalUserParam(3, _Node->getPSPointer(), this);
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnBypassMaxNumSteps() 
 { 
 	UpdateData(TRUE);
-	if (m_BypassMaxNumSteps && !_PS->canFinish())
+	if (m_BypassMaxNumSteps && !_Node->getPSPointer()->canFinish())
 	{		
 		MessageBox("The system must have a finite duration for this setting! Please check that.", "error", MB_ICONEXCLAMATION);
 		return;
 	}
-	_PS->setBypassMaxNumIntegrationSteps(m_BypassMaxNumSteps != FALSE);	
-	_MaxIntegrationStepDlg->EnableWindow(_PS->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
+	_Node->getPSPointer()->setBypassMaxNumIntegrationSteps(m_BypassMaxNumSteps != FALSE);	
+	_MaxIntegrationStepDlg->EnableWindow(_Node->getPSPointer()->getBypassMaxNumIntegrationSteps() ? FALSE : TRUE);
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnForceGlobalLighitng() 
 {
 	UpdateData(TRUE);
-	_PS->setForceGlobalColorLightingFlag(m_ForceLighting != 0);
-	_ParticleTreeCtrl->getParticleDlg()->getCurrPSModel()->touchLightableState();
+	_Node->getPSPointer()->setForceGlobalColorLightingFlag(m_ForceLighting != 0);
+	if (_Node && _Node->getPSModel())
+	{	
+		_Node->getPSModel()->touchLightableState();
+	}
+	updateModifiedFlag();
 }
 
 //=====================================================
@@ -790,8 +825,9 @@ void CParticleSystemEdit::OnAutoDelay()
 {
 	UpdateData(TRUE);
 	bool autoDelay = ((CButton *) GetDlgItem(IDC_AUTO_DELAY))->GetCheck() != 0;
-	_PS->setAutoComputeDelayBeforeDeathConditionTest(autoDelay);
+	_Node->getPSPointer()->setAutoComputeDelayBeforeDeathConditionTest(autoDelay);
 	GetDlgItem(IDC_APPLY_AFTER_DELAY)->EnableWindow(autoDelay ? FALSE : TRUE);
+	updateModifiedFlag();
 }
 
 //=====================================================
@@ -815,7 +851,8 @@ void CParticleSystemEdit::OnChangeBBX()
 		concatEdit2Lines(m_BBoxXCtrl);
 		m_BBoxXCtrl.GetWindowText(m_BBoxX);
 		updateBBoxFromText();		
-	}	
+		updateModifiedFlag();
+	}
 }
 
 //=====================================================
@@ -829,7 +866,8 @@ void CParticleSystemEdit::OnChangeBBY()
 		// must ccat 2 lines of the CEdit.
 		concatEdit2Lines(m_BBoxYCtrl);
 		m_BBoxYCtrl.GetWindowText(m_BBoxY);
-		updateBBoxFromText();		
+		updateBBoxFromText();
+		updateModifiedFlag();
 	}
 }
 
@@ -844,7 +882,8 @@ void CParticleSystemEdit::OnChangeBBZ()
 		// must ccat 2 lines of the CEdit.
 		concatEdit2Lines(m_BBoxZCtrl);
 		m_BBoxZCtrl.GetWindowText(m_BBoxZ);
-		updateBBoxFromText();		
+		updateBBoxFromText();
+		updateModifiedFlag();
 	}	
 }
 
@@ -854,13 +893,15 @@ void CParticleSystemEdit::OnAutoBbox()
 	nlassert(_ParticleTreeCtrl);
 	_ParticleTreeCtrl->getParticleDlg()->setAutoBBox(!_ParticleTreeCtrl->getParticleDlg()->getAutoBBox());
 	updatePrecomputedBBoxParams();
+	updateModifiedFlag();
 }
 
 //=====================================================
 void CParticleSystemEdit::OnResetBBox() 
 {
 	nlassert(_ParticleTreeCtrl);
-	_ParticleTreeCtrl->getParticleDlg()->resetAutoBBox();	
+	_ParticleTreeCtrl->getParticleDlg()->resetAutoBBox();
+	updateModifiedFlag();
 }
 
 //=====================================================
@@ -870,5 +911,5 @@ void CParticleSystemEdit::OnLockFrameDelay()
 	_ParticleTreeCtrl->getParticleDlg()->getObjectViewer()->getFrameDelayDlg()->lockToPS(locked);
 	CString buttonStr;
 	buttonStr.LoadString(locked ? IDS_UNLOCK_PS : IDS_LOCK_PS);
-	GetDlgItem(IDC_LOCK_FRAME_DELAY)->SetWindowText(buttonStr);
+	GetDlgItem(IDC_LOCK_FRAME_DELAY)->SetWindowText(buttonStr);	
 }

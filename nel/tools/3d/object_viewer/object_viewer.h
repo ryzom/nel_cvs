@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.54 2004/04/19 12:27:21 vizerie Exp $
+ * $Id: object_viewer.h,v 1.55 2004/06/17 08:09:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -352,7 +352,8 @@ public:
 	struct IMainLoopCallBack
 	{
 		/// this will be called each time the main loop is processed
-		virtual void go() = 0 ;
+		virtual void goPostRender() = 0;
+		virtual void goPreRender() = 0;
 	} ;
 
 	/** add an object that will be notified each time a frame is processed
@@ -644,6 +645,21 @@ private:
 
 void setRegisterWindowState (const CWnd *pWnd, const char* keyName);
 void getRegisterWindowState (CWnd *pWnd, const char* keyName, bool resize);
+
+/** display a localized message box. Caption an message text are retrieved from the string table
+  * \param parentWindow    Pointer to initiator of the message box
+  * \param messageStringID ID in string table of the message box content
+  * \param captionStringID ID in string table of the message box caption
+  * \param nType		   Type of message box (the same as the last parameter of ::MessageBox)
+  * \return				   Same value than ::MessageBox
+  */
+int localizedMessageBox(HWND parentWindow, int messageStringID, int captionStringID, UINT nType);
+int localizedMessageBox(HWND parentWindow, const char *message, int captionStringID, UINT nType);
+
+// Return a string from the string table
+CString getStrRsc(uint stringID);
+
+
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

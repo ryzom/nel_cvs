@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.14 2003/08/22 09:06:23 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.15 2004/06/17 08:07:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,23 +33,24 @@
 
 
 #include "nel/misc/matrix.h"
-
+//
 #include "3d/ps_particle.h"
 #include "3d/ps_edit.h"
 #include "3d/ps_located.h"
-
-
+//
+#include "particle_workspace.h"
+//
 #include <algorithm>
 #include <memory>
 
-class CParticleDlg ;
-
+class CParticleDlg;
+class CParticleWorkspace;
 
 
 namespace NL3D
 {
-	class CParticleSystem ;
-	class CParticleSystemModel ;
+	class CParticleSystem;
+	class CParticleSystemModel;
 }
 
 
@@ -58,7 +59,7 @@ namespace NL3D
 /////////////////////////////////////////////////////////////////////////////
 // CParticleTreeCtrl window
 
-class CParticleTreeCtrl : public CTreeCtrl
+class CParticleTreeCtrl : public CTreeCtrl, public CParticleWorkspace::IModificationCallback
 {
 
 // Construction
@@ -78,23 +79,26 @@ public:
 	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
 	//}}AFX_VIRTUAL
 
-
-	/// build a portion of the tree using the given particle system
-	void					buildTreeFromPS(NL3D::CParticleSystem *ps, NL3D::CParticleSystemModel *psm) ;
+	// build the whole tree from a workspace
+	void					buildTreeFromWorkSpace(CParticleWorkspace &ws);
+	/** build a portion of the tree using the given particle system
+	  * \return root of the built tree
+      */
+	HTREEITEM				buildTreeFromPS(CParticleWorkspace::CNode &node, HTREEITEM rootHandle, HTREEITEM prevSibling = TVI_LAST);
 	/// Add a node from the given lcoated
 	void					createNodeFromLocated(NL3D::CPSLocated *loc, HTREEITEM rootHandle);
 	/// Add a node from the given located bindable
 	void					createNodeFromLocatedBindable(NL3D::CPSLocatedBindable *lb, HTREEITEM rootHandle);
 	// rebuild the located instance in the tree (after loading for example)
-	void					rebuildLocatedInstance(void) ;	  
+	void					rebuildLocatedInstance(CParticleWorkspace::CNode &node);  
 	/// suppress located instance item, so that they don't have higher index than the new size
-	void					suppressLocatedInstanceNbItem(uint32 newSize) ;
+	void					suppressLocatedInstanceNbItem(CParticleWorkspace::CNode &node, uint32 newSize);
 	//
-	void					init(void) ;
+	void					init(void);
 	// move the current element by using the given matrix
-	void					moveElement(const NLMISC::CMatrix &mat) ;
+	void					moveElement(const NLMISC::CMatrix &mat);
 	// get the matrix of the current element being selected, or identity if there's none
-	NLMISC::CMatrix			getElementMatrix(void) const ;
+	NLMISC::CMatrix			getElementMatrix(void) const;
 	// reset the list of node in the tree (but don't delete the tree)
 	void					reset();
 	//
@@ -104,72 +108,115 @@ protected:
 	afx_msg void OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult);	
-	afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
+	afx_msg void OnBeginlabeledit(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
+	afx_msg void OnKeydown(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
 	//}}AFX_MSG
 
-	CImageList _ImageList ;  // the image list containing the icons
+	CImageList _ImageList;  // the image list containing the icons
 
 
 	// the dialog that contain us
-	CParticleDlg *_ParticleDlg ;
+	CParticleDlg *_ParticleDlg;
 
 public:
 	/** this struct is used to identify the type of each node	
 	 */
 	struct CNodeType
 	{	
-		enum { located, particleSystem, locatedBindable, locatedInstance  } Type ;
+		enum { located, particleSystem, locatedBindable, locatedInstance, workspace  } Type;
 		union
 		{
-			NL3D::CPSLocated *Loc ;
-			NL3D::CPSLocatedBindable *Bind ;
-			NL3D::CParticleSystem *PS ;		
-		} ;
-
-		
+			CParticleWorkspace		  *WS;
+			NL3D::CPSLocated		  *Loc;
+			NL3D::CPSLocatedBindable  *Bind;
+			CParticleWorkspace::CNode *PS;
+		};		
 		// if Type = particleSystem, it gives the model of this system
-		NL3D::CParticleSystemModel *PSModel ;
-
+		NL3D::CParticleSystemModel *PSModel;
 		// for the located instance type, this is the index of the instance
-		uint32 LocatedInstanceIndex ;
-		
-		// a located
-		CNodeType(NL3D::CPSLocated *loc) { Loc = loc ; Type = located ; }
-
-		// an instance of a located
+		uint32 LocatedInstanceIndex;		
+		// build node for a workspace
+		CNodeType(CParticleWorkspace *ws) { nlassert(ws); WS = ws; Type = workspace; }		
+		// build node for a located
+		CNodeType(NL3D::CPSLocated *loc) { nlassert(loc); Loc = loc; Type = located; }
+		// build node for an instance of a located
 		CNodeType(NL3D::CPSLocated *loc, uint32 index) 
 		{ 
-			Loc = loc ; 
-			Type = locatedInstance ; 
-			LocatedInstanceIndex = index ; 
-
-				
+			nlassert(loc);
+			Loc = loc; 
+			Type = locatedInstance; 
+			LocatedInstanceIndex = index; 				
 		}
-		CNodeType(NL3D::CParticleSystem *ps, NL3D::CParticleSystemModel *psModel) 
-		{ 			
-			Type = particleSystem ; 
-			PS = ps ; 
-		
-			PSModel = psModel ;
+		CNodeType(CParticleWorkspace::CNode *node) 
+		{ 				
+			PS = node;
+			Type = particleSystem;
 		}
-		CNodeType(NL3D::CPSLocatedBindable *lb) { Bind = lb ; Type = locatedBindable ; }
+		CNodeType(NL3D::CPSLocatedBindable *lb) { Bind = lb; Type = locatedBindable; }
 
-	} ;
+		// Get the ps that owns that node (or NULL if it is a worspace)
+		NL3D::CParticleSystem *getOwnerPS() const;
+	};
 
+	void setViewFilenameFlag(bool enabled);
+	bool getViewFilenameFlag() const {	return _ViewFilenameFlag; }	
+	// Update caption of a node
+	void		updateCaption(CParticleWorkspace::CNode &node);
 private:
 	// instanciate a located in the given system , and return its nodetype and htreeitem
-	std::pair<CNodeType *, HTREEITEM> CParticleTreeCtrl::createLocated(NL3D::CParticleSystem *ps, HTREEITEM headItem);
-
+	std::pair<CNodeType *, HTREEITEM> createLocated(NL3D::CParticleSystem *ps, HTREEITEM headItem);
+	// Compute caption to display for a particle system
+	std::string computeCaption(CParticleWorkspace::CNode &node);
+	// Compute caption to display for a workspace
+	std::string computeCaption(CParticleWorkspace &workspace);
+	// Compute a node caption from its filename, username & modified state
+	std::string computeCaption(const std::string &path, const std::string &userName, bool modified);
+	
+	// Allow user to insert multiple PS in the workspace (prompt a file dialog to chose them)
+	void insertNewPS(CParticleWorkspace &pws);
+	// allow user to create a new particle system in the workspace
+	void createNewPS(CParticleWorkspace &pws);	
+	// remove part of the tree and the associated CNodeType objects. IMPORTANT : DOES NOT update the matching elements in the ps that is being edited.
+	void removeTreePart(HTREEITEM root);
+	// get tree item from its matching CNodeType object
+	HTREEITEM getTreeItem(CNodeType *nt) const;
+	// get a tree item from a workspace node
+	HTREEITEM getTreeItem(CParticleWorkspace::CNode *node) const;
+	// Get the parent node in the workspace for the given element in the tree
+	CParticleWorkspace::CNode *getOwnerNode(CNodeType *nt) const;
 	// the last ps that had a selected instance in it
-	NL3D::CParticleSystem *_LastClickedPS ;
-	// node that we allocated
-	std::vector<CNodeType *> _NodeTypes ;
-
+	NLMISC::CRefPtr<NL3D::CParticleSystem> _LastClickedPS;
+	// Update right pane to edit the given element
+	void updateRightPane(CNodeType &nt);
+	// Matching infos for each nodes in the CTreeCtrl
+	std::vector<CNodeType *> _NodeTypes;
+	//
 	std::auto_ptr<NL3D::CPSLocated>			_LocatedCopy;
 	std::auto_ptr<NL3D::CPSLocatedBindable> _LocatedBindableCopy;
-
-
+	//
 	DECLARE_MESSAGE_MAP()
+	// from CParticleWorkspace::IModificationCallback
+	virtual void nodeModifiedFlagChanged(CParticleWorkspace::CNode &node);
+	// from CParticleWorkspace::IModificationCallback
+	virtual void workspaceModifiedFlagChanged(CParticleWorkspace &ws);
+	// from CParticleWorkspace::IModificationCallback
+	virtual void nodeSkelParentChanged(CParticleWorkspace::CNode &node);
+
+	HTREEITEM	_LastActiveNode;
+
+	bool		_ViewFilenameFlag;
+public:
+	// Update currently active node. Its node in the tree is displayed with bold characters.
+	void setActiveNode(CParticleWorkspace::CNode *node);
+	void touchPSState(CNodeType *nt);
+	void sortWorkspace(CParticleWorkspace &ws, CParticleWorkspace::ISort &sorter);
+	// delete the current selected node, and update the edited ps acoordingly
+	void deleteSelection();
+	void expandRoot();
+	void updateAllCaptions();
+	void removeAllPS(CParticleWorkspace &ws);
 };
 
 /////////////////////////////////////////////////////////////////////////////

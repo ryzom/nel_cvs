@@ -1,7 +1,7 @@
 /** \file color_edit.h
  * a dialog to edit a color (or call the windows color dialog)
  *
- * $Id: color_edit.h,v 1.6 2001/09/12 13:26:24 vizerie Exp $
+ * $Id: color_edit.h,v 1.7 2001/09/13 14:27:07 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,6 +102,7 @@ protected:
 	afx_msg void OnBrowseColor();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+	
 };
 
 //{{AFX_INSERT_LOCATION}}

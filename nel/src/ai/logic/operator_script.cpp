@@ -7,6 +7,7 @@
 #include "nel/ai/fuzzy/fuzzyset.h"
 #include "nel/ai/logic/valueset.h"
 #include "nel/ai/logic/factbase.h"
+#include "nel/ai/script/interpret_object_message.h"
 
 namespace NLAIAGENT
 {
@@ -182,7 +183,7 @@ namespace NLAIAGENT
 					return CAgentScript::run();
 				else
 				{
-					processMessages();
+					CActorScript::processMessages();
 					return IObjectIA::ProcessRun;
 				}
 			}		
@@ -194,7 +195,7 @@ namespace NLAIAGENT
 				unActivate();
 				_CurrentGoal = NULL;				
 			}
-			processMessages();
+			CActorScript::processMessages();
 			return IObjectIA::ProcessRun;
 		}
 		return IObjectIA::ProcessRun;
@@ -381,12 +382,13 @@ namespace NLAIAGENT
 		const char *dbg_class = (const char *) getType();
 #endif
 
-		float class_pri = ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getPriority();
+//		float class_pri = ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getPriority();
 
 		if (! _IsActivable )
 			_Priority = 0.0;
 		else
-			_Priority = (float)pri * class_pri;
+//			_Priority = (float)pri * class_pri;
+			_Priority = (float)pri * _BasePriority;
 	}
 
 	float COperatorScript::priority() const
@@ -593,7 +595,7 @@ namespace NLAIAGENT
 
 			case fid_setPriority:
 				{
-					_Priority  = ((NLAIAGENT::DigitalType *)((NLAIAGENT::IBaseGroupType *) params)->get())->getValue();
+					setPriority(((NLAIAGENT::DigitalType *)((NLAIAGENT::IBaseGroupType *) params)->get())->getValue());
 					r.ResultState =  NLAIAGENT::processIdle;
 					r.Result = NULL;
 					return r;
@@ -806,5 +808,23 @@ namespace NLAIAGENT
 			}
 		}
 		return false;
+	}
+
+	void COperatorScript::processMessages(NLAIAGENT::IMessageBase *msg,NLAIAGENT::IObjectIA *o)
+	{
+#ifdef NL_DEBUG
+	const char *txt = (const char *)msg->getType();
+#endif
+
+		if(NLAISCRIPT::CMsgNotifyParentClass::IdMsgNotifyParentClass == msg->getType())
+		{
+			_BasePriority = ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getPriority();
+		}		
+		CAgentScript::processMessages(msg,o);
+	}
+
+	void COperatorScript::setPriority(float prio)
+	{
+		_BasePriority = prio;
 	}
 }

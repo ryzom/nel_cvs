@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.28 2002/06/06 08:45:53 portier Exp $
+ * $Id: operator_script.h,v 1.29 2002/08/02 13:27:20 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,7 @@ namespace NLAIAGENT
 			bool								_Exclusive;
 			bool								_Maintain;
 			float								_Priority;
+			float								_BasePriority;
 		public:
 			// Builds and actor with its father
 			COperatorScript(IAgentManager *, bool activated = false);
@@ -92,7 +93,8 @@ namespace NLAIAGENT
 //			virtual void processMessages();
 			virtual bool checkActivation();
 			virtual const CProcessResult &run();
- 
+		 	virtual void processMessages(NLAIAGENT::IMessageBase *msg,NLAIAGENT::IObjectIA *o);
+
 //			virtual IObjectIA *run(const IMessageBase &msg);
 //			virtual	CProcessResult sendMessage(IObjectIA *);
 			virtual const NLAIC::CIdentType &getType() const;
@@ -138,6 +140,7 @@ namespace NLAIAGENT
 			void execOnActivate();
 			void checkPause();
 			bool isExclusive();
+			void setPriority(float prio);
 
 			virtual bool checkTrigMsg();
 	};

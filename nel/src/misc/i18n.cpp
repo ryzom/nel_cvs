@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.11 2000/12/18 13:49:10 lecroart Exp $
+ * $Id: i18n.cpp,v 1.12 2000/12/20 16:02:59 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -434,7 +434,7 @@ const vector<ucstring> &CI18N::getLanguageNames()
 			}
 			// add the language name
 			_LanguageNames.push_back (lg);
-			nldebug ("add %d %s %s -> %s", i, fn.c_str (), _LanguageFiles[i], lg.toString ());
+			nldebug ("add %d %s %s -> %s", i, fn.c_str (), _LanguageFiles[i], lg.toString ().c_str());
 		}
 		_LanguagesNamesLoaded = true;
 	}

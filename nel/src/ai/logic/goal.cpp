@@ -94,7 +94,7 @@ namespace NLAILOGIC
 #endif
 */
 
-		nlinfo("operatorSuccess: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),op,(const char *)op->getType());
+//		nlinfo("operatorSuccess: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),op,(const char *)op->getType());
 		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
 		while ( it_s != _Successors.end() )
 		{			

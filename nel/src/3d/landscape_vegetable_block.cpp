@@ -1,7 +1,7 @@
 /** \file landscape_vegetable_block.cpp
  * <File description>
  *
- * $Id: landscape_vegetable_block.cpp,v 1.3 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: landscape_vegetable_block.cpp,v 1.4 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -249,7 +249,15 @@ void			CLandscapeVegetableBlock::createVegetableIGForDistType(uint i, CVegetable
 			// generate 
 			_Patch->generateTileVegetable(vegetIg, i, tms, tmt, vbCreateCtx);
 
-			// NB: vegtable SortBlock is updated in update() after
+			// If the ig is empty, delete him. This optimize rendering because no unusefull ig are 
+			// tested for rendering. This speed up some 1/10 of ms...
+			if(vegetIg->isEmpty())
+			{
+				vegeManager->deleteIg(vegetIg);
+				_VegetableIG[tileId][i]= NULL;
+			}
+
+			// NB: vegtable SortBlock is updated in CLandscapeVegetableBlock::update() after
 		}
 	}
 
@@ -298,6 +306,8 @@ void			CLandscapeVegetableBlockCreateContext::eval(uint ts, uint tt, float x, fl
 			{
 				float	s= (float)(_Ts+i)/_Patch->getOrderS();
 				// eval position.
+				// use computeVertex() and not bpatch->eval() because vegetables must follow the 
+				// noise (at least at tile precision...). It is slower but necessary.
 				_Pos[j*3+i]= _Patch->computeVertex(s, t);
 			}
 		}

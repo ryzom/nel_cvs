@@ -1,7 +1,7 @@
 /** \file vegetable.h
  * <File description>
  *
- * $Id: vegetable.h,v 1.7 2001/12/03 09:29:22 berenguier Exp $
+ * $Id: vegetable.h,v 1.8 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,7 @@ using NLMISC::CVector2f;
 class	CVegetableManager;
 class	CVegetableShape;
 class	CVegetableInstanceGroup;
+class	CVegetableInstanceGroupReserve;
 
 
 // ***************************************************************************
@@ -131,6 +132,14 @@ public:
 	 *	(0,0.5), (1,0.5), (0.5,0), (0.5,1) (in instance UV coordinates space (as returned in "instances").
 	 */
 	void	generateGroupBiLinear(const CVector &posInWorld, const CVector posInWorldBorder[4], const CVector &surfaceNormal, float area, uint vegetSeed, std::vector<CVector2f> &instances) const;
+
+
+	/** Fast allocation reservation: you must call this before generating all your instances in an Ig:
+	 *	Add N instances of Vegetable to the reservation system.
+	 *	\param numInstances number of instances to generate (as "returned" by generateGroup()).
+	 *	\see CVegetableManager::reserveIgCompile().
+	 */
+	void	reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, uint numInstances) const;
 
 
 	/** posInWorld should be a matrix of position + rotation (typically for surface alignement). 

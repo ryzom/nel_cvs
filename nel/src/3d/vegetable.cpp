@@ -1,7 +1,7 @@
 /** \file vegetable.cpp
  * <File description>
  *
- * $Id: vegetable.cpp,v 1.8 2001/12/03 09:29:22 berenguier Exp $
+ * $Id: vegetable.cpp,v 1.9 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -286,6 +286,15 @@ void	CVegetable::generateGroupBiLinear(const CVector &posInWorld, const CVector 
 
 	}
 
+}
+
+
+// ***************************************************************************
+void	CVegetable::reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, uint numInstances) const
+{
+	nlassert(_Manager);
+
+	_Manager->reserveIgAddInstances(vegetIgReserve, _VegetableShape, numInstances);
 }
 
 

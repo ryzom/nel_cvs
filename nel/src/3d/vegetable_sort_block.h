@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.h
  * <File description>
  *
- * $Id: vegetable_sort_block.h,v 1.2 2001/12/03 16:34:40 berenguier Exp $
+ * $Id: vegetable_sort_block.h,v 1.3 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,6 +63,9 @@ public:
 	const CVector	&getCenter() const {return _Center;}
 
 	/** After adding some instance to any instance group of a sorted block, you must recall this method
+	 *	NB: CVegetableManager::addInstance() and CVegetableManager::deleteIg() flag this SB as Dirty, when
+	 *	needed only. if !Dirty, updateSortBlock() is a no-op.
+	 *	/see CVegetableManager::addInstance()  CVegetableManager::deleteIg()
 	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
 	 */
 	void			updateSortBlock(CVegetableManager &vegetManager);
@@ -79,6 +82,10 @@ private:
 	// Who owns us.
 	CVegetableClipBlock		*_Owner;
 
+	// This flag is set to true by CVegetableManager in addInstance() or deleteIg() if the ig impact on me.
+	// If false, updateSortBlock() is a no-op.
+	bool					_Dirty;
+
 	/// \name Fast sorting.
 	// @{
 	/// center of the sort block.
@@ -92,8 +99,14 @@ private:
 	uint			_QuadrantId;
 
 	/// Quadrants.
-	std::vector<uint32>		SortedTriangleIndices[NL3D_VEGETABLE_NUM_QUADRANT];
-	uint			_NTriangles;
+	/// the big array of indices, for the NL3D_VEGETABLE_NUM_QUADRANT quadrants.
+	std::vector<uint32>		_SortedTriangleArray;
+	/// start ptr.
+	uint32					*_SortedTriangleIndices[NL3D_VEGETABLE_NUM_QUADRANT];
+	/// number of triangles.
+	uint					_NTriangles;
+	/// number of indeices= numTriangles*3.
+	uint					_NIndices;
 
 	// @}
 

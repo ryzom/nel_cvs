@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.4 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.5 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,6 +57,9 @@ public:
 	/// Constructor
 	CVegetableInstanceGroup();
 
+	/// tells if the instanceGroup has no faces at all.
+	bool			isEmpty() const;
+
 
 // ***************
 private:
@@ -96,7 +99,51 @@ private:
 
 	// list of triangles order, for quadrant ZSorting. only for NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT rdrpass.
 	// this is why this don't appear in CVegetableRdrPass
-	std::vector<float>			TriangleQuadrantOrders[NL3D_VEGETABLE_NUM_QUADRANT];
+	std::vector<float>			_TriangleQuadrantOrderArray;
+	uint						_TriangleQuadrantOrderNumTriangles;
+	float						*_TriangleQuadrantOrders[NL3D_VEGETABLE_NUM_QUADRANT];
+	// If the Igs contains some instance in NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT rdrpass, this flag is true.
+	bool						_HasZSortPassInstances;
+
+};
+
+
+// ***************************************************************************
+/**
+ *	Mirror struct of CVegetableInstanceGroup, for reserveIg system in CVegetableManager.
+ *	Internal to VegetableManager. 
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CVegetableInstanceGroupReserve
+{
+public:
+
+	/// Constructor
+	CVegetableInstanceGroupReserve();
+
+
+// ********************
+private:
+	friend class	CVegetableManager;
+
+
+	// For each rdrPass, the number of Vertices and Triangles to reserve.
+	struct	CVegetableRdrPass
+	{
+		uint		NVertices;
+		uint		NTriangles;
+
+		CVegetableRdrPass()
+		{
+			NVertices= 0;
+			NTriangles= 0;
+		}
+	};
+
+	// space to be reserved for all rdrPass.
+	CVegetableRdrPass			_RdrPass[NL3D_VEGETABLE_NRDRPASS];
 
 };
 

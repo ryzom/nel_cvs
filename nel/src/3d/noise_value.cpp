@@ -1,7 +1,7 @@
 /** \file noise_value.cpp
  * <File description>
  *
- * $Id: noise_value.cpp,v 1.3 2001/11/21 13:57:32 berenguier Exp $
+ * $Id: noise_value.cpp,v 1.4 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,22 +128,29 @@ public:
 		uint	uy2= (y+1)& (NL3D_NOISE_GRID_SIZE-1);
 		uint	uz2= (z+1)& (NL3D_NOISE_GRID_SIZE-1);
 		// delta.
-		float	dx2= easeInEaseOut(pos.x-x);
-		float	dy2= easeInEaseOut(pos.y-y);
-		float	dz2= easeInEaseOut(pos.z-z);
+		float	dx2;
+		float	dy2;
+		float	dz2;
+		easeInEaseOut(dx2, pos.x-x);
+		easeInEaseOut(dy2, pos.y-y);
+		easeInEaseOut(dz2, pos.z-z);
 		float	dx= 1-dx2;
 		float	dy= 1-dy2;
 		float	dz= 1-dz2;
 		// TriLinear in texture3D.
 		float	turb=0;
-		turb+= lookup(ux,uy,uz)* dx*dy*dz;
-		turb+= lookup(ux,uy,uz2)* dx*dy*dz2;
-		turb+= lookup(ux,uy2,uz)* dx*dy2*dz;
-		turb+= lookup(ux,uy2,uz2)* dx*dy2*dz2;
-		turb+= lookup(ux2,uy,uz)* dx2*dy*dz;
-		turb+= lookup(ux2,uy,uz2)* dx2*dy*dz2;
-		turb+= lookup(ux2,uy2,uz)* dx2*dy2*dz;
-		turb+= lookup(ux2,uy2,uz2)* dx2*dy2*dz2;
+		float	dxdy= dx*dy;
+		turb+= lookup(ux,uy,uz)* dxdy*dz;
+		turb+= lookup(ux,uy,uz2)* dxdy*dz2;
+		float	dxdy2= dx*dy2;
+		turb+= lookup(ux,uy2,uz)* dxdy2*dz;
+		turb+= lookup(ux,uy2,uz2)* dxdy2*dz2;
+		float	dx2dy= dx2*dy;
+		turb+= lookup(ux2,uy,uz)* dx2dy*dz;
+		turb+= lookup(ux2,uy,uz2)* dx2dy*dz2;
+		float	dx2dy2= dx2*dy2;
+		turb+= lookup(ux2,uy2,uz)* dx2dy2*dz;
+		turb+= lookup(ux2,uy2,uz2)* dx2dy2*dz2;
 
 		// End!
 		return turb*NL3D_OO255;
@@ -179,14 +186,12 @@ private:
 	}
 
 	// easineasout
-	static inline float	easeInEaseOut(float x)
+	static inline void	easeInEaseOut(float &y, float x)
 	{
-		float	y;
 		// cubic such that f(0)=0, f'(0)=0, f(1)=1, f'(1)=0.
 		float	x2=x*x;
 		float	x3=x2*x;
 		y= -2*x3 + 3*x2;
-		return y;
 	}
 
 };

@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.8 2001/12/03 16:34:39 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.9 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -722,6 +722,12 @@ void						CVegetableManager::deleteIg(CVegetableInstanceGroup *ig)
 	CVegetableClipBlock		*clipBlock= ig->_ClipOwner;
 	CVegetableSortBlock		*sortBlock= ig->_SortOwner;
 
+	// If I have got some faces in ZSort rdrPass
+	if(ig->_HasZSortPassInstances)
+		// after my deletion, the sortBlock must be updated.
+		sortBlock->_Dirty= true;
+
+
 	// unlink from sortBlock, and delete.
 	sortBlock->_InstanceGroupList.remove(ig);
 	_InstanceGroupMemory.free(ig);
@@ -764,22 +770,17 @@ CVegetableShape				*CVegetableManager::getVegetableShape(const std::string &shap
 
 
 // ***************************************************************************
-void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig, 
-		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
-		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
-		float	bendFactor, float bendPhase, float blendDistMax)
+uint			CVegetableManager::getRdrPassInfoForShape(CVegetableShape *shape, 
+	bool &instanceLighted, bool &instanceDoubleSided, bool &instanceZSort,
+	bool &destLighted, bool &precomputeLighting)
 {
-	sint	i;
+	instanceLighted= shape->Lighted;
+	instanceDoubleSided= shape->DoubleSided;
+	instanceZSort= shape->AlphaBlend;
+	destLighted= instanceLighted && !shape->PreComputeLighting;
+	precomputeLighting= instanceLighted && shape->PreComputeLighting;
 
-	// Some setup.
-	//--------------------
-	bool	instanceLighted= shape->Lighted;
-	bool	instanceDoubleSided= shape->DoubleSided;
-	bool	instanceZSort= shape->AlphaBlend;
-	bool	destLighted= instanceLighted && !shape->PreComputeLighting;
-	bool	precomputeLighting= instanceLighted && shape->PreComputeLighting;
-
-	// get correct rdrPass / allocator where we insert vertices/faces
+	// get correct rdrPass
 	uint	rdrPass;
 	// get according to lighted / doubleSided state
 	if(destLighted)
@@ -802,12 +803,125 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			rdrPass= NL3D_VEGETABLE_RDRPASS_UNLIT;
 	}
 
+	return rdrPass;
+}
+
+
+// ***************************************************************************
+void			CVegetableManager::reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, CVegetableShape *shape, uint numInstances)
+{
+	bool	instanceLighted;
+	bool	instanceDoubleSided;
+	bool	instanceZSort;
+	bool	destLighted;
+	bool	precomputeLighting;
+
+	// get correct rdrPass / info
+	uint	rdrPass;
+	rdrPass= getRdrPassInfoForShape(shape, instanceLighted, instanceDoubleSided, 
+		instanceZSort, destLighted, precomputeLighting);
+
+	// veget rdrPass
+	CVegetableInstanceGroupReserve::CVegetableRdrPass	&vegetRdrPass= vegetIgReserve._RdrPass[rdrPass];
+
+	// Reserve space in the rdrPass.
+	vegetRdrPass.NVertices+= numInstances * shape->VB.getNumVertices();
+	vegetRdrPass.NTriangles+= numInstances * shape->TriangleIndices.size()/3;
+}
+
+
+// ***************************************************************************
+void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CVegetableInstanceGroupReserve &vegetIgReserve)
+{
+	uint	rdrPass;
+
+
+	// Check.
+	//===========
+	// For all rdrPass of the ig, check empty
+	for(rdrPass= 0; rdrPass<NL3D_VEGETABLE_NRDRPASS; rdrPass++)
+	{
+		CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
+		nlassert(vegetRdrPass.TriangleIndices.capacity()==0);
+		nlassert(vegetRdrPass.TriangleLocalIndices.capacity()==0);
+		nlassert(vegetRdrPass.Vertices.capacity()==0);
+	}
+	// Do the same for all quadrants of the zsort rdrPass.
+	nlassert(ig->_TriangleQuadrantOrderArray.capacity()==0);
+	nlassert(ig->_TriangleQuadrantOrderNumTriangles==0);
+
+
+	// Reserve.
+	//===========
+	// For all rdrPass of the ig, reserve.
+	for(rdrPass= 0; rdrPass<NL3D_VEGETABLE_NRDRPASS; rdrPass++)
+	{
+		CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
+		uint	numVertices= vegetIgReserve._RdrPass[rdrPass].NVertices;
+		uint	numTris= vegetIgReserve._RdrPass[rdrPass].NTriangles;
+		// reserve triangles indices and vertices for this rdrPass.
+		vegetRdrPass.TriangleIndices.reserve(numTris*3);
+		vegetRdrPass.TriangleLocalIndices.reserve(numTris*3);
+		vegetRdrPass.Vertices.reserve(numVertices);
+	}
+
+	// Reserve space for the zsort rdrPass sorting.
+	uint	numZSortTris= vegetIgReserve._RdrPass[NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT].NTriangles;
+	// allocate sufficient space for all quadrants (1 alloc for all quadrants).
+	ig->_TriangleQuadrantOrderArray.resize(numZSortTris * NL3D_VEGETABLE_NUM_QUADRANT);
+
+	// And init ptrs.
+	if(numZSortTris>0)
+	{
+		float	*start= &ig->_TriangleQuadrantOrderArray[0];
+		// init ptr to each qaudrant
+		for(uint i=0; i<NL3D_VEGETABLE_NUM_QUADRANT; i++)
+		{
+			ig->_TriangleQuadrantOrders[i]= start + i*numZSortTris;
+		}
+	}
+}
+
+
+// ***************************************************************************
+void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig, 
+		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
+		const NLMISC::CRGBAF &ambientColor, const NLMISC::CRGBAF &diffuseColor, 
+		float	bendFactor, float bendPhase, float blendDistMax)
+{
+	sint	i;
+
+	// Some setup.
+	//--------------------
+	bool	instanceLighted;
+	bool	instanceDoubleSided;
+	bool	instanceZSort;
+	bool	destLighted;
+	bool	precomputeLighting;
+
+	// get correct rdrPass / info
+	uint	rdrPass;
+	rdrPass= getRdrPassInfoForShape(shape, instanceLighted, instanceDoubleSided, 
+		instanceZSort, destLighted, precomputeLighting);
+
+
 	// veget rdrPass
 	CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
 
 	// color.
-	CRGBA		primaryRGBA= diffuseColor;
-	CRGBA		secondaryRGBA= ambientColor;
+	// setup using OptFastFloor.
+	CRGBA		primaryRGBA, secondaryRGBA;
+	// diffuseColor
+	primaryRGBA.R= (uint8)OptFastFloor(diffuseColor.R*255);
+	primaryRGBA.G= (uint8)OptFastFloor(diffuseColor.G*255);
+	primaryRGBA.B= (uint8)OptFastFloor(diffuseColor.B*255);
+	primaryRGBA.A= 255;
+	// ambientColor
+	secondaryRGBA.R= (uint8)OptFastFloor(ambientColor.R*255);
+	secondaryRGBA.G= (uint8)OptFastFloor(ambientColor.G*255);
+	secondaryRGBA.B= (uint8)OptFastFloor(ambientColor.B*255);
+	secondaryRGBA.A= 255;
+
 
 	// if the instance is not lighted, then suppose full lighting => add ambient and diffuse
 	if(!instanceLighted)
@@ -1070,6 +1184,12 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	//--------------------
 	if(rdrPass==NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
 	{
+		// inform the SB that it must be updated.
+		ig->_SortOwner->_Dirty= true;
+		// For deletion, inform the ig that it has instances which impact the SB.
+		ig->_HasZSortPassInstances= true;
+
+		// new triangles.
 		uint	numTris= shape->TriangleIndices.size()/3;
 
 		// static to avoid reallocation
@@ -1095,20 +1215,24 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			triangleCenters[i]-= ig->_SortOwner->_Center;
 		}
 
+
+		// resize the array. Actually only modify the number of triangles really setuped.
+		uint	offTri= ig->_TriangleQuadrantOrderNumTriangles;
+		ig->_TriangleQuadrantOrderNumTriangles+= numTris;
+		// verify user has correclty used reserveIg system.
+		nlassert(ig->_TriangleQuadrantOrderNumTriangles * NL3D_VEGETABLE_NUM_QUADRANT <= ig->_TriangleQuadrantOrderArray.size());
+
+
 		// compute distance for each quadrant.
 		for(uint quadId=0; quadId<NL3D_VEGETABLE_NUM_QUADRANT; quadId++)
 		{
 			const CVector		&quadDir= CVegetableQuadrant::Dirs[quadId];
 
-			// resize the array.
-			uint	offTri= ig->TriangleQuadrantOrders[quadId].size();
-			ig->TriangleQuadrantOrders[quadId].resize(offTri + numTris);
-
 			// For all tris.
 			for(uint i=0; i<numTris; i++)
 			{
 				// compute the distance with orientation of the quadrant. (DotProduct)
-				ig->TriangleQuadrantOrders[quadId][offTri + i]= triangleCenters[i] * quadDir;
+				ig->_TriangleQuadrantOrders[quadId][offTri + i]= triangleCenters[i] * quadDir;
 			}
 		}
 	}
@@ -1119,6 +1243,14 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 	// TODO_VEGET_OPTIM: system reallocation of array is very bad...
 
+
+	// verify user has correclty used reserveIg system.
+	nlassert(vegetRdrPass.Vertices.size()+numVertices <= vegetRdrPass.Vertices.capacity());
+	sint	numNewIndices= shape->TriangleIndices.size();
+	nlassert(vegetRdrPass.TriangleIndices.size()+numNewIndices <= vegetRdrPass.TriangleIndices.capacity());
+	nlassert(vegetRdrPass.TriangleLocalIndices.size()+numNewIndices <= vegetRdrPass.TriangleLocalIndices.capacity());
+
+
 	// get the number of vertices actually
 	uint	localVertexOffset= vegetRdrPass.Vertices.size();
 
@@ -1127,7 +1259,6 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		shape->InstanceVertices.begin(), shape->InstanceVertices.end());
 
 	// insert array of triangles in ig.
-	sint	numNewIndices= shape->TriangleIndices.size();
 	// resize arrays of triangles.
 	nlassert(vegetRdrPass.TriangleIndices.size() == vegetRdrPass.TriangleLocalIndices.size());
 	uint	triIdxOffset= vegetRdrPass.TriangleIndices.size();
@@ -1589,7 +1720,7 @@ void			CVegetableManager::render(const CVector &viewCenter, const CVector &front
 			while(ptrSortBlock)
 			{
 				// if the sortBlock has some sorted faces to render
-				if(ptrSortBlock->SortedTriangleIndices[0].size() != 0)
+				if(ptrSortBlock->_NTriangles != 0)
 				{
 					// Compute Distance to Viewer.
 					/* NB: compute radial distance (with norm()) instead of linear distance 

@@ -1,7 +1,7 @@
 /** \file vegetable_blend_layer_model.cpp
  * <File description>
  *
- * $Id: vegetable_blend_layer_model.cpp,v 1.1 2001/12/03 16:34:40 berenguier Exp $
+ * $Id: vegetable_blend_layer_model.cpp,v 1.2 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,7 +112,8 @@ void	CVegetableBlendLayerModel::render(IDriver *driver)
 		}
 
 		// render him. we are sure that size > 0, because tested before.
-		driver->renderSimpleTriangles(&ptrSortBlock->SortedTriangleIndices[ptrSortBlock->_QuadrantId][0], 
+		driver->renderSimpleTriangles(
+			ptrSortBlock->_SortedTriangleIndices[ptrSortBlock->_QuadrantId], 
 			ptrSortBlock->_NTriangles);
 	}
 

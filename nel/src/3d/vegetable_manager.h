@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.7 2001/12/03 16:34:40 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.8 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,14 +126,53 @@ public:
 	 */
 	void						deleteIg(CVegetableInstanceGroup *ig);
 
-	/** add an instance to an ig, enlarging the associated clipBlock
+	// @}
+
+
+	/// \name Adding Instances to an Ig.
+	/**
+	 *	Adding instances in an Ig is a 2 step process:
+	 *		- reserve Ig Space
+	 *		- add instances to the ig
+	 *
+	 *	More precisely:
+	 *		- For all vegetables shapes which will be created in an instance group
+	 *			- reserveIgAddInstances(ig, shape, number of instances, vegetIgReserve)
+	 *		- call reserveIgCompile(ig, vegetIgReserve)
+	 *		- For all vegetables instances
+	 *			- addInstance(ig, ...)
+	 *
+	 *	After this setup, you CANNOT add anymore instances to the Ig (this is a requirement for fast allocation).
+	 *
+	 *	After adding all your instances to an Ig, you must call sortBlockOwnerOfTheIg->updateSortBlock()
+	 *	If the sortBlock has many Igs, you can do it after filling all your igs.
+	 */
+	// @{
+
+	/**	reserve some instance space in an Ig.
+	 *	nothing is really done here, after doing this for all shapes of your ig, you must call
+	 *	reserveIgCompile()
+	 *	\param vegetIgReserve the object where space required for the ig is added
+	 */
+	void			reserveIgAddInstances(CVegetableInstanceGroupReserve &vegetIgReserve, CVegetableShape *shape, uint numInstances);
+	/** reserve the space in the ig.
+	 *	nlassert() if the ig is not empty.
+	 *  \see reserveIgAddInstances()
+	 */
+	void			reserveIgCompile(CVegetableInstanceGroup *ig, const CVegetableInstanceGroupReserve &vegetIgReserve);
+
+
+	/** add an instance to an ig, enlarging the associated clipBlock bbox.
 	 *	If the shape is not lighted, then only diffuseColor is used, to setup color per vertex.
 	 *	Warning! Use OptFastFloor()! So call must be enclosed with a OptFastFloorBegin()/OptFastFloorEnd().
 	 *
 	 *	Also, buffer must be locked.
 	 *
-	 *	After adding a bunch of instances to an Ig, you must call igSortBlockOwner->updateSortBlock()
-	 *	If the sortBlock has many Igs, you can do it after updating all your igs.
+	 *	ambientColor and diffuseColor should be in [0..1] (no clamp), else uint8 will wrap...
+	 *
+	 *	nlassert() if no sufficient space reserved in reserveIgCompile().
+	 *
+	 *	\see reserveIgAddInstances() reserveIgCompile()
 	 */
 	void						addInstance(CVegetableInstanceGroup *ig, 
 		CVegetableShape	*shape, const NLMISC::CMatrix &mat, 
@@ -228,6 +267,12 @@ private:
 
 	// return true if the ith rdrPass is 2Sided.
 	static	bool	doubleSidedRdrPass(uint rdrPass);
+
+
+	/// get the rdrPass and other info for a given shape.
+	uint			getRdrPassInfoForShape(CVegetableShape *shape, 
+		bool &instanceLighted, bool &instanceDoubleSided, bool &instanceZSort,
+		bool &destLighted, bool &precomputeLighting);
 
 
 	/// Get the good allocator for the appropriate rdr pass.

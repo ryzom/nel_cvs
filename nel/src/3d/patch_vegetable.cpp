@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.8 2001/12/03 09:29:22 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.9 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,14 +130,52 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 
 	// for all vegetable of this list, generate instances.
 	// =========================
+
+	// Get an array for each vegetable (static for speed).
+	typedef		std::vector<NLMISC::CVector2f>	TPositionVector;
+	static	std::vector<TPositionVector>	instanceUVArray;
+	// realloc if necessary.
+	if(instanceUVArray.size() < numVegetable)
+	{
+		// clean.
+		contReset(instanceUVArray);
+		// realloc.
+		instanceUVArray.resize(numVegetable);
+	}
+
+	// First, for each vegetable, generate the number of instance to create, and their relative position.
 	for(i= 0; i<numVegetable; i++)
 	{
 		// get the vegetable
 		const CVegetable	&veget=	vegetableList[i];
 
 		// generate instance for this vegetable.
-		static	vector<CVector2f>	instanceUV;
-		veget.generateGroupBiLinear(tilePos, tilePosBiLinear, tileNormal, NL3D_PATCH_TILE_AREA, i + distAddSeed, instanceUV);
+		veget.generateGroupBiLinear(tilePos, tilePosBiLinear, tileNormal, NL3D_PATCH_TILE_AREA, i + distAddSeed, instanceUVArray[i]);
+	}
+
+	// Then, now that we kno how many instance to generate for each vegetable, reserve space.
+	CVegetableInstanceGroupReserve	vegetIgReserve;
+	for(i= 0; i<numVegetable; i++)
+	{
+		// get the vegetable
+		const CVegetable	&veget=	vegetableList[i];
+
+		// reseve instance space for this vegetable.
+		// instanceUVArray[i].size() is the number of instances to create.
+		veget.reserveIgAddInstances(vegetIgReserve, instanceUVArray[i].size());
+	}
+	// actual reseve memory of the ig.
+	getLandscape()->_VegetableManager->reserveIgCompile(vegetIg, vegetIgReserve);
+
+
+	// generate the instances for all the vegetables.
+	for(i= 0; i<numVegetable; i++)
+	{
+		// get the vegetable
+		const CVegetable	&veget=	vegetableList[i];
+
+		// get the relatives position of the instances
+		std::vector<CVector2f>	&instanceUV= instanceUVArray[i];
 
 		// For all instance, generate the real instances.
 		for(uint j=0; j<instanceUV.size(); j++)

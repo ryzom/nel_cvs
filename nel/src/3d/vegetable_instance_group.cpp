@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.cpp
  * <File description>
  *
- * $Id: vegetable_instance_group.cpp,v 1.4 2001/11/30 13:17:53 berenguier Exp $
+ * $Id: vegetable_instance_group.cpp,v 1.5 2001/12/05 11:03:50 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,8 +35,31 @@ CVegetableInstanceGroup::CVegetableInstanceGroup()
 {
 	_ClipOwner= NULL;
 	_SortOwner= NULL;
+	_HasZSortPassInstances= false;
+	_TriangleQuadrantOrderNumTriangles= 0;
 }
 
+
+// ***************************************************************************
+CVegetableInstanceGroupReserve::CVegetableInstanceGroupReserve()
+{
+}
+
+
+// ***************************************************************************
+bool			CVegetableInstanceGroup::isEmpty() const
+{
+	for(uint i=0; i<NL3D_VEGETABLE_NRDRPASS; i++)
+	{
+		const CVegetableRdrPass	&vegetRdrPass= _RdrPass[i];
+		// If some triangles to render, the ig is not empty
+		if(vegetRdrPass.NTriangles != 0)
+			return false;
+	}
+
+	// for all pass, no triangles to render => the ig is empty.
+	return true;
+}
 
 
 

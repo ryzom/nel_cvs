@@ -1,7 +1,7 @@
 /** \file tile_element.cpp
  * <File description>
  *
- * $Id: tile_element.cpp,v 1.7 2001/07/23 14:40:20 berenguier Exp $
+ * $Id: tile_element.cpp,v 1.8 2001/10/29 09:36:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,10 +87,8 @@ uint8	CTileElement::getTileSubNoise() const
 
 void	CTileElement::serial(NLMISC::IStream &f)
 {
-	f.serial(Flags);
-	f.serial(Tile[0]);
-	f.serial(Tile[1]);
-	f.serial(Tile[2]);
+	f.xmlSerial (Flags, "FLAGS");
+	f.xmlSerial (Tile[0], Tile[1], Tile[2], "TILES_ID");
 }
 
 

@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.55 2001/10/10 15:48:38 berenguier Exp $
+ * $Id: zone.cpp,v 1.56 2001/10/29 09:36:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -301,7 +301,10 @@ void			CZone::build(const CZone &zone)
 void			CBorderVertex::serial(NLMISC::IStream &f)
 {
 	uint	ver= f.serialVersion(0);
-	f.serial(CurrentVertex, NeighborZoneId, NeighborVertex);
+
+	f.xmlSerial (CurrentVertex, "CURRENT_VERTEX");
+	f.xmlSerial (NeighborZoneId, "NEIGHTBOR_ZONE_ID");
+	f.xmlSerial (NeighborVertex, "NEIGHTBOR_VERTEX");
 }
 void			CZone::CPatchConnect::serial(NLMISC::IStream &f)
 {
@@ -311,20 +314,17 @@ void			CZone::CPatchConnect::serial(NLMISC::IStream &f)
 		f.serial(OldOrderS, OldOrderT, ErrorSize);
 	else
 		f.serial(ErrorSize);
-	f.serial(BaseVertices[0], BaseVertices[1], BaseVertices[2], BaseVertices[3]);
-	f.serial(BindEdges[0], BindEdges[1], BindEdges[2], BindEdges[3]);
+	f.xmlSerial (BaseVertices[0], BaseVertices[1], BaseVertices[2], BaseVertices[3], "BASE_VERTICES");
+	f.xmlSerial (BindEdges[0], BindEdges[1], BindEdges[2], BindEdges[3], "BIND_EDGES");
 }
 void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 {
-	int		i;
 	uint	ver= f.serialVersion(0);
-	f.serial(NPatchs);
+	f.xmlSerial(NPatchs, "NPATCH");
 	nlassert ( (NPatchs==0) | (NPatchs==1) | (NPatchs==2) | (NPatchs==4) | (NPatchs==5) );
-	f.serial(ZoneId);
-	for(i=0;i<4;i++)
-		f.serial(Next[i]);
-	for(i=0;i<4;i++)
-		f.serial(Edge[i]);
+	f.xmlSerial (ZoneId, "ZONE_ID");
+	f.xmlSerial (Next[0], Next[1], Next[2], Next[3], "NEXT_PATCH");
+	f.xmlSerial (Edge[0], Edge[1], Edge[2], Edge[3], "NEXT_EDGE");
 }
 
 // ***************************************************************************
@@ -349,10 +349,24 @@ void			CZone::serial(NLMISC::IStream &f)
 	}
 
 	f.serialCheck((uint32)'ENOZ');
-	f.serial(ZoneId, ZoneBB, PatchBias, PatchScale, NumVertices);
+
+	f.xmlSerial (ZoneId, "ZONE_ID");
+	f.xmlSerial (ZoneBB, "BB");
+	f.xmlSerial (PatchBias, "PATCH_BIAS");
+	f.xmlSerial (PatchScale, "PATCH_SCALE");
+	f.xmlSerial (NumVertices, "NUM_VERTICES");
+
+	f.xmlPush ("BORDER_VERTICES");
 	f.serialCont(BorderVertices);
+	f.xmlPop ();
+
+	f.xmlPush ("PATCHES");
 	f.serialCont(Patchs);
+	f.xmlPop ();
+
+	f.xmlPush ("PATCH_CONNECTS");
 	f.serialCont(PatchConnects);
+	f.xmlPop ();
 
 	// If read and version 0, must init default TileColors of patchs.
 	//===============================================================

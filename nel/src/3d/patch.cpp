@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.68 2001/10/11 13:29:05 berenguier Exp $
+ * $Id: patch.cpp,v 1.69 2001/10/29 09:36:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1295,24 +1295,37 @@ void			CPatch::serial(NLMISC::IStream &f)
 	*/
 	uint	ver= f.serialVersion(_Version);
 
-	f.serial(Vertices[0], Vertices[1], Vertices[2], Vertices[3]);
-	f.serial(Tangents[0], Tangents[1], Tangents[2], Tangents[3]);
-	f.serial(Tangents[4], Tangents[5], Tangents[6], Tangents[7]);
-	f.serial(Interiors[0], Interiors[1], Interiors[2], Interiors[3]);
+	f.xmlSerial (Vertices[0], Vertices[1], Vertices[2], Vertices[3], "VERTICIES");
+
+	f.xmlPush ("TANGENTS");
+	f.serial (Tangents[0], Tangents[1], Tangents[2], Tangents[3]);
+	f.serial (Tangents[4], Tangents[5], Tangents[6], Tangents[7]);
+	f.xmlPop ();
+	
+	f.xmlSerial (Interiors[0], Interiors[1], Interiors[2], Interiors[3], "INTERIORS");
+
+	f.xmlPush ("TILES");
 	f.serialCont(Tiles);
+	f.xmlPop ();
+
 	if(ver>=1)
+		f.xmlPush ("TILE_COLORS");
 		f.serialCont(TileColors);
+		f.xmlPop ();
 	if(ver>=2)
 	{
-		f.serial (OrderS);
-		f.serial (OrderT);
-		f.serialCont(CompressedLumels);
+		f.xmlSerial (OrderS, "ORDER_S");
+		f.xmlSerial (OrderT, "ORDER_T");
+
+		f.xmlPush ("COMPRESSED_LUMELS");
+			f.serialCont(CompressedLumels);
+		f.xmlPop ();
 	}
 	// Else cannot create here the TileColors, because we need the OrderS/OrderT information... Done into CZone serial.
 	if(ver>=3)
 	{
-		f.serial(NoiseRotation);
-		f.serial(_CornerSmoothFlag);
+		f.xmlSerial (NoiseRotation, "NOISE_ROTATION");
+		f.xmlSerial (_CornerSmoothFlag, "CORNER_SMOOTH_FLAG");
 	}
 	else
 	{
@@ -1322,7 +1335,7 @@ void			CPatch::serial(NLMISC::IStream &f)
 	}
 	if(ver>=4)
 	{
-		f.serial(Flags);
+		f.xmlSerial(Flags, "FLAGS");
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file tile_color.h
  * <File description>
  *
- * $Id: tile_color.h,v 1.2 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: tile_color.h,v 1.3 2001/10/29 09:36:38 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,8 +56,8 @@ public:
 
 	void	serial(NLMISC::IStream &f)
 	{
-		f.serial(Color565);
-		f.serial(LightX,LightY,LightZ);
+		f.xmlSerial (Color565, "COLOR");
+		f.xmlSerial (LightX,LightY,LightZ, "LIGHT_VECTOR");
 	}
 };
 

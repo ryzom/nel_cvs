@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.43 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: ps_located.cpp,v 1.44 2002/02/27 13:55:03 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,7 +158,7 @@ void CPSLocated::performParametricMotion(TAnimationTime date, TAnimationTime ell
 		}
 		while (it != endIt);
 	}
-	step(PSEmit, ellapsedTime, realEllapsedTime);	
+	//step(PSEmit, ellapsedTime, realEllapsedTime);	
 }
 
 /// allocate parametric infos

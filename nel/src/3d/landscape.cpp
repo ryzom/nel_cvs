@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.44 2001/02/14 16:11:53 corvazier Exp $
+ * $Id: landscape.cpp,v 1.45 2001/02/16 11:07:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -655,7 +655,9 @@ void			CLandscape::loadTile(uint16 tileId)
 	tileInfo->AlphaUvScaleBias.y= 0;
 	tileInfo->AlphaUvScaleBias.z= 1;
 	// Retrieve the good rot alpha decal.
-	tileInfo->RotAlpha= tile->getRotAlpha();
+
+	if (tile)
+		tileInfo->RotAlpha= tile->getRotAlpha();
 
 
 	// Increment RefCount of RenderPart.

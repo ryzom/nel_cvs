@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.22 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: entities.cpp,v 1.23 2001/07/18 16:12:10 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,8 +68,6 @@ using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 using namespace NLPACS;
-
-map<uint32, CEntity> Entities;
 
 // The collision bits used by pacs (dynamic collisions)
 enum

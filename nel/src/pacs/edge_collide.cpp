@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.7 2001/05/25 14:27:30 berenguier Exp $
+ * $Id: edge_collide.cpp,v 1.8 2001/05/30 10:02:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "nel/pacs/edge_collide.h"
 #include "nel/misc/common.h"
+#include "nel/misc/vector_2d.h"
 #include <algorithm>
 
 using namespace NLMISC;
@@ -216,11 +217,11 @@ static	inline float		testCirclePoint(const CVector2f &start, const CVector2f &de
 		}
 		else	// r0<0 && r1>0. the point is already in the sphere!!
 		{
-			//nldebug("COL: Point problem: %.2f, %.2f", r0, r1);
+			//nlinfo("COL: Point problem: %.2f, %.2f.  b=%.2f", r0, r1, b);
 			// we allow the movement only if we go away from this point.
 			// this is true if the derivative at t=0 is >=0 (because a>0).
-			if(b>=0)
-				res= min(1.f, r1);	// go out.
+			if(b>0)
+				res= 1;	// go out.
 			else
 				res=0;
 		}
@@ -239,20 +240,17 @@ static	inline float		testCirclePoint(const CVector2f &start, const CVector2f &de
 float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &delta, float radius, CVector2f &normal)
 {
 	// distance from point to line.
-	float	dist= start*Norm + C;
+	double	dist= start*Norm + C;
 	// projection of speed on normal.
-	float	speed= delta*Norm;
+	double	speed= delta*Norm;
 
 	// test if the movement is against the line or not.
 	bool	sensPos= dist>0;
 	bool	sensSpeed= speed>0;
-	// if signs are equals, same side of the line, so we allow the circle to leave the line.
-	if(sensPos==sensSpeed)
-		return 1;
 
 	// Does the point intersect the line?
-	dist= (float)fabs(dist) - radius;
-	speed= (float)fabs(speed);
+	dist= fabs(dist) - radius;
+	speed= fabs(speed);
 	if( dist > speed )
 		return 1;
 
@@ -260,8 +258,12 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 	// ===============================
 	if(dist>=0)
 	{
+		// if signs are equals, same side of the line, so we allow the circle to leave the line.
+		if(sensPos==sensSpeed )
+			return 1;
+
 		// collide the line, at what time.
-		float	t= dist/speed;
+		double	t= dist/speed;
 
 
 		// compute the collision position of the Circle on the edge.
@@ -270,7 +272,7 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 		// must add radius vector.
 		proj+= Norm * (sensSpeed?radius:-radius);
 		// compute projection on edge.
-		float		aProj= proj*Dir;
+		double		aProj= proj*Dir;
 
 		// if on the interval of the edge.
 		if( aProj>=A0 && aProj<=A1)
@@ -297,8 +299,32 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 		// if on the interval of the edge.
 		if( aProj>=A0 && aProj<=A1)
 		{
-			// hit the interior of the edge, and sensPos!=sensSpeed. So must stop now!!
-			return 0;
+			// if signs are equals, same side of the line, so we allow the circle to leave the edge.
+			/* Special case: do not allow to leave the edge if we are too much in the edge.
+			 It is important for CGlobalRetriever::testCollisionWithCollisionChains().
+			 Suppose we can walk on this chain SA/SB (separate Surface A/SurfaceB). Suppose we are near this edge, 
+			 and on Surface SA, and suppose there is an other chain SB/SC the circle collide with. If we 
+			 return 1 (no collision), SB/SC won't be detected (because only SA/?? chains will be tested) and 
+			 so the cylinder will penetrate SB/SC...
+			 This case arise at best if chains SA/SB and chain SB/SC do an angle of 45°
+
+			 TODO: this is a Hack.
+			*/
+			if(sensPos==sensSpeed && (-dist)<0.5*radius)
+			{
+				return 1;
+			}
+			else
+			{
+				// hit the interior of the edge, and sensPos!=sensSpeed. So must stop now!!
+				// collision occurs on interior of the edge. the normal to return is +- Norm.
+				if(sensPos)	// if algebric distance of start position was >0.
+					normal= Norm;
+				else
+					normal= -Norm;
+
+				return 0;
+			}
 		}
 	}
 
@@ -333,8 +359,8 @@ float		CEdgeCollide::testCircleMove(const CVector2f &start, const CVector2f &del
 // ***************************************************************************
 float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, const CVector2f &delta)
 {
-	float	a,b,cv,cc,  d,e,f;
-	CVector2f	tmp;
+	double	a,b,cv,cc,  d,e,f;
+	CVector2d	tmp;
 
 	// compute D1 line equation of q0q1. bx - ay + c(t)=0, where c is function of time [0,1].
 	// ===========================
@@ -343,10 +369,10 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 	tmp/= tmp.sqrnorm();
 	a= tmp.x;
 	b= tmp.y;
-	// c= - q0(t)*CVector2f(b,-a).  but since q0(t) is a function of time t (q0+delta*t), compute cv, and cc.
+	// c= - q0(t)*CVector2d(b,-a).  but since q0(t) is a function of time t (q0+delta*t), compute cv, and cc.
 	// so c= cv*t + cc.
-	cv= - delta*CVector2f(b,-a);
-	cc= - q0*CVector2f(b,-a);
+	cv= - CVector2d(b,-a)*delta;
+	cc= - CVector2d(b,-a)*q0;
 
 	// compute D2 line equation of P0P1. ex - dy + f=0.
 	// ===========================
@@ -355,7 +381,7 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 	tmp/= tmp.sqrnorm();
 	d= tmp.x;
 	e= tmp.y;
-	f= - P0*CVector2f(e,-d);
+	f= - CVector2d(e,-d)*P0;
 
 
 	// Solve system.
@@ -373,13 +399,13 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 	*/
 
 	// determinant of matrix2x2.
-	float	det= a*e - b*d;
+	double	det= a*e - b*d;
 	// if to near of 0. (take delta for reference of test).
 	if(det==0 || fabs(det)<delta.norm()*EdgeCollideEpsilon)
 		return 1;
 
 	// intersection I(t)= pInt + vInt*t.
-	CVector2f		pInt, vInt;
+	CVector2d		pInt, vInt;
 	pInt.x= ( d*cc - f*a ) / det;
 	pInt.y= ( e*cc - f*b ) / det;
 	vInt.x= ( d*cv ) / det;
@@ -392,16 +418,16 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 		Now, we project x,y onto each line D1 and D2, which gives  u(t) and v(t), each one giving the parameter of 
 		the parametric line function. When it is in [0,1], we are on the edge.
 
-		u(t)= (I(t)-q0(t)) * CVector2f(a,b)	= uc + uv*t
-		v(t)= (I(t)-P0) * CVector2f(d,e)	= vc + vv*t
+		u(t)= (I(t)-q0(t)) * CVector2d(a,b)	= uc + uv*t
+		v(t)= (I(t)-P0) * CVector2d(d,e)	= vc + vv*t
 	*/
-	float	uc, uv;
-	float	vc, vv;
+	double	uc, uv;
+	double	vc, vv;
 	// NB: q0(t)= q0+delta*t
-	uc= (pInt-q0) * CVector2f(a,b);
-	uv= (vInt-delta) * CVector2f(a,b);
-	vc= (pInt-P0) * CVector2f(d,e);
-	vv= (vInt) * CVector2f(d,e);
+	uc= (pInt-q0) * CVector2d(a,b);
+	uv= (vInt-delta) * CVector2d(a,b);
+	vc= (pInt-P0) * CVector2d(d,e);
+	vv= (vInt) * CVector2d(d,e);
 
 
 	// Compute intervals.
@@ -410,7 +436,7 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 		Now, for each edge, compute time interval where parameter is in [0,1]. If intervals overlap, there is a collision.
 		Then clamp this collision time with [0,1].
 	*/
-	float	tu0, tu1, tv0, tv1;
+	double	tu0, tu1, tv0, tv1;
 
 	// compute time interval for u(t).
 	if(uv==0 || fabs(uv)<EdgeCollideEpsilon)
@@ -459,15 +485,15 @@ float		CEdgeCollide::testEdgeMove(const CVector2f &q0, const CVector2f &q1, cons
 	else
 	{
 		// compute intersection of intervals.
-		float	tInt0= max(tu0, tv0);
-		float	tInt1= min(tu1, tv1);
+		double	tInt0= max(tu0, tv0);
+		double	tInt1= min(tu1, tv1);
 
 		// if this interval do not overlap with [0,1], no collision.
 		if(tInt0>1 || 0>tInt1)
 			return 1;
 		else
 			// return time of collision of the 2 edges.
-			return max(0.0f, tInt0);
+			return (float)max(0.0, tInt0);
 	}
 	
 }
@@ -517,7 +543,37 @@ float		CEdgeCollide::testBBoxMove(const CVector2f &start, const CVector2f &delta
 // ***************************************************************************
 bool		CEdgeCollide::testBBoxCollide(const CVector2f bbox[4])
 {
-	return false;
+	// clip the edge against the edge of the bbox.
+	CVector2f		p0= P0, p1= P1;
+
+	for(sint i=0; i<4; i++)
+	{
+		CVector2f	a= bbox[i];
+		CVector2f	b= bbox[(i+1)&3];
+		CVector2f	delta= b-a, norm;
+		// sign is important. bbox is CCW. normal goes OUT the bbox.
+		norm.x= delta.y;
+		norm.y= -delta.x;
+
+		float	d0= (p0-a)*norm;
+		float	d1= (p1-a)*norm;
+
+		// if boths points are out this plane, no collision.
+		if( d0>0 && d1>0)
+			return false;
+		// if difference, must clip.
+		if( d0>0 || d1>0)
+		{
+			CVector2f	intersect= p0 + (p1-p0)* ((0-d0)/(d1-d0));
+			if(d1>0)
+				p1= intersect;
+			else
+				p0= intersect;
+		}
+	}
+
+	// if a segment is still in the bbox, collision occurs.
+	return true;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file edge_collide.h
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.h,v 1.2 2001/05/25 14:27:30 berenguier Exp $
+ * $Id: edge_collide.h,v 1.3 2001/05/30 10:02:39 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -214,7 +214,8 @@ public:
 	 */
 	float		testBBoxMove(const CVector2f &start, const CVector2f &delta, const CVector2f bbox[4], CVector2f &normal);
 	/** return true if this oriented bbox collide this edge.
-	 * \param bbox 4 points of the bbox.
+	 * \param bbox 4 points of the bbox, in CCW.
+	 * \return true if collision occurs.
 	 */
 	bool		testBBoxCollide(const CVector2f bbox[4]);
 

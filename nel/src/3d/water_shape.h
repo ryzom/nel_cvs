@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.2 2001/11/07 10:32:35 vizerie Exp $
+ * $Id: water_shape.h,v 1.3 2001/11/08 10:38:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -205,8 +205,8 @@ private:
 	static bool								_GridSizeTouched;
 	static std::auto_ptr<CVertexProgram>	_VertexProgram;
 	static std::auto_ptr<CVertexProgram>	_VertexProgramAlpha;
-
-
+	static std::auto_ptr<CVertexProgram>	_VertexProgram2Stages;
+	static std::auto_ptr<CVertexProgram>	_VertexProgram2StagesAlpha;
 
 };
 

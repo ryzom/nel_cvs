@@ -1,7 +1,7 @@
 /** \file water_shape.cpp
  * <File description>
  *
- * $Id: water_shape.cpp,v 1.2 2001/11/07 10:32:35 vizerie Exp $
+ * $Id: water_shape.cpp,v 1.3 2001/11/08 10:38:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -101,6 +101,64 @@ const char *WaterPlusAlphaVpCode = "!!VP1.0\n\
 					  ";
 
 
+// temporary code for gfx card that have less than 4 stage. We keep the envmap only
+const char *WaterVpCode2Stages = "!!VP1.0\n\
+					  ADD R1, c[7], -v[0];\n\
+					  DP3 R2, R1, R1;\n\
+					  RSQ R2, R2.x;\n\
+					  MUL R3, R2, c[4].y;\n\
+					  MIN R3, c[4].x, R3;\n\
+					  MUL R0,   R3, v[8];\n\
+					  MOV R0.z,  c[4].x;\n\
+					  DP3 R3.x, R0, R0;\n\
+					  RSQ R3.x,  R3.x;\n\
+					  MUL R0,  R0, R3.x;\n\
+					  DP3 o[COL0], R0, c[6];\n\
+					  DP4 o[HPOS].x, c[0], v[0];\n\
+					  DP4 o[HPOS].y, c[1], v[0];\n\
+					  DP4 o[HPOS].z, c[2], v[0];\n\
+					  DP4 o[HPOS].w, c[3], v[0];\n\
+					  MUL R1, R1, R2.x;\n\
+					  DP3 R2.x, R1, R0;\n\
+					  MUL R0, R0, R2.x;\n\
+					  ADD R2, R0, R0;\n\
+					  ADD R0, R2, -R1;\n\
+					  MAD o[TEX0].xy, R0, c[8], c[8];\n\
+					  END\
+					  ";
+
+
+// temporary code for card that have less than 4 stage. We keep the alpha and the envmap
+const char *WaterVpCode2StagesAlpha = "!!VP1.0\n\
+					  ADD R1, c[7], -v[0];\n\
+					  DP3 R2, R1, R1;\n\
+					  RSQ R2, R2.x;\n\
+					  MUL R3, R2, c[4].y;\n\
+					  MIN R3, c[4].x, R3;\n\
+					  MUL R0,   R3, v[8];\n\
+					  MOV R0.z,  c[4].x;\n\
+					  DP3 R3.x, R0, R0;\n\
+					  RSQ R3.x,  R3.x;\n\
+					  MUL R0,  R0, R3.x;\n\
+					  DP3 o[COL0], R0, c[6];\n\
+					  DP4 o[HPOS].x, c[0], v[0];\n\
+					  DP4 o[HPOS].y, c[1], v[0];\n\
+					  DP4 o[HPOS].z, c[2], v[0];\n\
+					  DP4 o[HPOS].w, c[3], v[0];\n\
+					  DP4 o[TEX1].x, v[0], c[15];\n\
+					  DP4 o[TEX1].y, v[0], c[16];\n\
+					  MUL R1, R1, R2.x;\n\
+					  DP3 R2.x, R1, R0;\n\
+					  MUL R0, R0, R2.x;\n\
+					  ADD R2, R0, R0;\n\
+					  ADD R0, R2, -R1;\n\
+					  MAD o[TEX0].xy, R0, c[8], c[8];\n\
+					  END\
+					  ";
+
+
+
+
 
 // static members
 
@@ -113,6 +171,10 @@ NLMISC::CSmartPtr<IDriver>				CWaterShape::_Driver;
 bool									CWaterShape::_GridSizeTouched = true;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram;
 std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgramAlpha;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram2Stages;
+std::auto_ptr<CVertexProgram>			CWaterShape::_VertexProgram2StagesAlpha;
+
+
 
 
 
@@ -151,6 +213,8 @@ void CWaterShape::initVertexProgram()
 {	
 	_VertexProgram		= std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode));	
 	_VertexProgramAlpha = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterPlusAlphaVpCode));	
+	_VertexProgram2Stages = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode2Stages));
+	_VertexProgram2StagesAlpha = std::auto_ptr<CVertexProgram>(new CVertexProgram(WaterVpCode2StagesAlpha));	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.5 2001/11/07 17:09:29 vizerie Exp $
+ * $Id: water_model.cpp,v 1.6 2001/11/08 10:38:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -112,8 +112,8 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	{
 		whm.swapBuffers();
 		whm.propagate();
-		whm.filterNStoreGradient();	
-		whm.Date = idate;	
+		whm.filterNStoreGradient();
+		whm.Date = idate;
 	}
 	
 
@@ -181,104 +181,134 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		projPoly.computeBorders(rasters, startY);						
 
 		if (!rasters.size()) return;		
-		
 	
-	//=========================//
-	//	setup water material   //
-	//=========================//
-		static CMaterial waterMat;
+		drv->setupModelMatrix(/*HrcObs->WorldMatrix*/NLMISC::CMatrix::Identity);
 	
-		// setup bump proj matrix
-		static const float idMat[] = {0.25f, 0, 0, 0.25f};	
-		drv->setMatrix2DForTextureOffsetAddrMode(0, idMat);
-		drv->setMatrix2DForTextureOffsetAddrMode(1, idMat);
+	static CMaterial waterMat;
 
+	if (drv->isVertexProgramSupported())
+	{
+
+		//=========================//
+		//	setup water material   //
+		//=========================//
+	
+		uint alphaMapStage;
 
 		waterMat.setLighting(false);
 		waterMat.setDoubleSided(true);	
 		waterMat.setColor(NLMISC::CRGBA::White);
-		waterMat.setTexture(0, shape->_BumpMap[0]);
-		waterMat.setTexture(1, shape->_BumpMap[1]);
-		waterMat.setTexture(2, shape->_EnvMap);	
-		waterMat.texEnvOpRGB(1, CMaterial::Replace);
-		waterMat.enableTexAddrMode();
-		waterMat.setTexAddressingMode(0, CMaterial::FetchTexture);		
-		waterMat.setTexAddressingMode(1, CMaterial::OffsetTexture);
-		waterMat.setTexAddressingMode(2, CMaterial::OffsetTexture);		
+	
 		waterMat.setBlend(true);
 		waterMat.setSrcBlend(CMaterial::srcalpha);
 		waterMat.setDstBlend(CMaterial::invsrcalpha);
-		
-		shape->envMapUpdate();
 
-		if (!shape->_ColorMap)
-		{
-			waterMat.setTexAddressingMode(3, CMaterial::TextureOff);
-			
+		if (drv->getNbTextureStages() < 4)
+		{			
+			waterMat.setTexture(0, shape->_EnvMap);	
+			waterMat.texEnvOpRGB(0, CMaterial::Modulate);
+			alphaMapStage = 1;
 		}
 		else
 		{
-			waterMat.setTexAddressingMode(3, CMaterial::FetchTexture);
-			waterMat.setTexture(3, shape->_ColorMap);
+			// setup bump proj matrix
+			static const float idMat[] = {0.25f, 0, 0, 0.25f};	
+			drv->setMatrix2DForTextureOffsetAddrMode(0, idMat);
+			drv->setMatrix2DForTextureOffsetAddrMode(1, idMat);
+
+			waterMat.setTexture(0, shape->_BumpMap[0]);
+			waterMat.setTexture(1, shape->_BumpMap[1]);
+			waterMat.setTexture(2, shape->_EnvMap);	
+			/*terMat.texEnvOpRGB(0, CMaterial::Replace);
+			waterMat.texEnvOpRGB(1, CMaterial::Replace);
+			waterMat.texEnvOpRGB(1, CMaterial::Replace);*/
+			waterMat.enableTexAddrMode();
+			waterMat.setTexAddressingMode(0, CMaterial::FetchTexture);		
+			waterMat.setTexAddressingMode(1, CMaterial::OffsetTexture);
+			waterMat.setTexAddressingMode(2, CMaterial::OffsetTexture);
+			waterMat.setTexAddressingMode(3, shape->_ColorMap ? CMaterial::FetchTexture : CMaterial::TextureOff);
+			alphaMapStage = 3;
+		}
+		
+		shape->envMapUpdate();
+
+		
+		if (shape->_ColorMap)
+		{			
+			waterMat.setTexture(alphaMapStage, shape->_ColorMap);
 
 			// setup 2x3 matrix for lookup in diffuse map
 			drv->setConstant(15, shape->_ColorMapMatColumn0.x, shape->_ColorMapMatColumn1.x, 0, shape->_ColorMapMatPos.x); 
 			drv->setConstant(16, shape->_ColorMapMatColumn0.y, shape->_ColorMapMatColumn1.y, 0, shape->_ColorMapMatPos.y);
-			waterMat.texEnvOpRGB(3, CMaterial::Modulate);
-			waterMat.texEnvOpAlpha(3, CMaterial::Modulate);
+			waterMat.texEnvOpRGB(alphaMapStage, CMaterial::Modulate);
+			waterMat.texEnvOpAlpha(alphaMapStage, CMaterial::Modulate);
 		}
 
-
-
-
-		drv->setupMaterial(waterMat);
-
 		
+		
+		//================================//
+		// setup vertex program contants  //
+		//================================//
 
 
+		drv->setConstant(6, 0.f, 0.f, 1, 0); // upcoming light vector
+				
 
-	//================================//
-	// setup vertex program contants  //
-	//================================//
+		/// set bumpmap matrix		
+		drv->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
 
+		// retrieve current time
+		float date  = 0.001f * NLMISC::CTime::getLocalTime();
+		// set bumpmaps pos
+		drv->setConstant(11, date * shape->_HeightMapSpeed[0].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 0 offset
+		drv->setConstant(12, shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 0); // bump map 0 scale
+		drv->setConstant(13, date * shape->_HeightMapSpeed[1].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 1 offset
+		drv->setConstant(14, shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 0); // bump map 1 scale
 
-	drv->setConstant(6, 0.f, 0.f, 1, 0); // upcoming light vector
-			
-
-	/// set bumpmap matrix
-	drv->setupModelMatrix(/*HrcObs->WorldMatrix*/NLMISC::CMatrix::Identity);
-	drv->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
-
-	// retrieve current time
-	float date  = 0.001f * NLMISC::CTime::getLocalTime();
-	// set bumpmaps pos
-	drv->setConstant(11, date * shape->_HeightMapSpeed[0].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 0 offset
-	drv->setConstant(12, shape->_HeightMapScale[0].x, shape->_HeightMapScale[0].y, 0, 0); // bump map 0 scale
-	drv->setConstant(13, date * shape->_HeightMapSpeed[1].x, date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 1 offset
-	drv->setConstant(14, shape->_HeightMapScale[1].x, shape->_HeightMapScale[1].y, 0, 0); // bump map 1 scale
-
+				
 			
 		
-	
 
 
-	drv->setConstant(4, 1.f, 3.f, 0.f, 0.f); // y is used to compute attenuation (inverse distance is multiplied by this and clamped below 1 to get the factor)
-	drv->setConstant(6, 0.0f, 0.0f, 1.0f, 0.f);		
-	drv->setConstant(7, ObsPos.x, ObsPos.y, ObsPos.z, 0.f);
-	drv->setConstant(8, 0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
+		drv->setConstant(4, 1.f, 3.f, 0.f, 0.f); // y is used to compute attenuation (inverse distance is multiplied by this and clamped below 1 to get the factor)
+		drv->setConstant(6, 0.0f, 0.0f, 1.0f, 0.f);		
+		drv->setConstant(7, ObsPos.x, ObsPos.y, ObsPos.z, 0.f);
+		drv->setConstant(8, 0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
 
-	// active vertex program
-	if (drv != shape->_Driver)
-	{
-		shape->initVertexProgram();
-		shape->_Driver = drv;	
+		// active vertex program
+		if (drv != shape->_Driver)
+		{
+			shape->initVertexProgram();
+			shape->_Driver = drv;	
+		}
+
+		bool result;
+		if (drv->getNbTextureStages() >= 4)
+		{
+			result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramAlpha).get())
+											: drv->activeVertexProgram((shape->_VertexProgram).get());
+		}
+		else
+		{
+			result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgram2StagesAlpha).get())
+										: drv->activeVertexProgram((shape->_VertexProgram2Stages).get());
+		}
+		if (!result) nlwarning("no vertex program setupped");
 	}
+	else
+	{
+		waterMat.setLighting(false);
+		waterMat.setDoubleSided(true);		
 
-	bool result = shape->getColorMap() ? drv->activeVertexProgram((shape->_VertexProgramAlpha).get())
-										: drv->activeVertexProgram((shape->_VertexProgram).get());
-	nlassert(result);
+		waterMat.setColor(NLMISC::CRGBA(0, 32, 190, 128));	
+		waterMat.setBlend(true);
+		waterMat.setSrcBlend(CMaterial::srcalpha);
+		waterMat.setDstBlend(CMaterial::invsrcalpha);
+
+	}
 	
-	
+
+	drv->setupMaterial(waterMat);
 
 	//================================//
 	//	Vertex buffer setup           //
@@ -471,8 +501,11 @@ void	CWaterRenderObs::traverse(IObs *caller)
 		}		
     
 
-		result =  drv->activeVertexProgram(NULL);
-		nlassert(result);	
+	if (drv->isVertexProgramSupported())
+	{
+		bool result =  drv->activeVertexProgram(NULL);
+		if (!result) nlwarning("no vertex program setupped");
+	}
 	
 
 	this->traverseSons();

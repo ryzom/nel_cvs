@@ -982,6 +982,10 @@ SOURCE=..\include\nel\misc\class_id.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\singelton.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\smart_ptr.cpp
 # End Source File
 # Begin Source File

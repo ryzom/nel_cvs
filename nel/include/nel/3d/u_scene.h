@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.28 2002/11/08 18:39:35 berenguier Exp $
+ * $Id: u_scene.h,v 1.29 2002/11/14 12:52:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -257,6 +257,13 @@ public:
 	 *	return 0 if the Group does not exist.
 	 */
 	virtual float				getGroupNbFaceAsked (const std::string &group) const =0;
+
+	/** LoadBalancing for CLod and Skeletons.
+	 *	Setup the max number of skeletons displayed in std way (ie not CLod). Default is 20.
+	 */
+	virtual void				setMaxSkeletonsInNotCLodForm(uint m) =0;
+	/// see setMaxSkeletonsInNotCLodForm()
+	virtual uint				getMaxSkeletonsInNotCLodForm() const =0;
 
 	//@}
 

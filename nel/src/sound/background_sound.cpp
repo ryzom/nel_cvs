@@ -1,6 +1,6 @@
 /** \file background_sound.cpp
  *
- * $Id: background_sound.cpp,v 1.4 2003/03/03 12:58:08 boucher Exp $
+ * $Id: background_sound.cpp,v 1.4.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 #include "stdsound.h"
 
 #include "background_sound.h"
+#include "audio_mixer_user.h"
 #include "nel/misc/path.h"
 #include <numeric>
 /*#include "simple_sound.h"

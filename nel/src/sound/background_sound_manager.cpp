@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.15 2003/03/03 12:58:08 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.15.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@
 
 #include "nel/sound/u_source.h"
 #include "clustered_sound.h"
+#include "sample_bank.h"
 
 #include "background_sound_manager.h"
 #include "source_common.h"
@@ -515,7 +516,11 @@ void CBackgroundSoundManager::addSampleBank(const std::vector<std::string> &bank
 	bd.MaxBox = vmax;
 	bd.MinBox = vmin;
 
-	bd.Banks = bankNames;
+	for(uint i=0; i<bankNames.size(); ++i)
+	{
+		if (!bankNames[i].empty())
+			bd.Banks.push_back(bankNames[i]);
+	}
 
 	// ok, store it in the container.
 	_Banks.push_back(bd);
@@ -931,6 +936,27 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 				}
 			}
 		}
+
+/*		{
+			nldebug("-----------------------------");
+			nldebug("Loaded sample banks (%u elements):", _LoadedBanks.size());
+			set<string>::iterator first(_LoadedBanks.begin()), last(_LoadedBanks.end());
+			for (; first != last; ++first)
+			{
+				const string &str = *first;
+				nldebug("  %s", first->c_str());
+			}
+		}
+		{
+			nldebug("New Sample bank list (%u elements):", newBanks.size());
+			set<string>::iterator first(newBanks.begin()), last(newBanks.end());
+			for (; first != last; ++first)
+			{
+				const string &str = *first;
+				nldebug("  %s", first->c_str());
+			}
+		}
+*/
 		// ok, now compute to set : the set of bank to load, and the set of banks to unload.
 		std::set<std::string>	noChange;
 		std::set_intersection(_LoadedBanks.begin(), _LoadedBanks.end(), newBanks.begin(), newBanks.end(), std::inserter(noChange, noChange.end()));
@@ -946,6 +972,7 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 			std::set<std::string>::iterator first(loadList.begin()), last(loadList.end());
 			for (; first != last; ++first)
 			{
+//				nldebug("Trying to load sample bank %s", first->c_str());
 				mixer->loadSampleBank(true, *first);
 			}
 			_LoadedBanks.insert(loadList.begin(), loadList.end());
@@ -954,9 +981,15 @@ void CBackgroundSoundManager::updateBackgroundStatus()
 			std::set<std::string>::iterator first(unloadList.begin()), last(unloadList.end());
 			for (; first != last; ++first)
 			{
+//				nldebug("Trying to unload sample bank %s", first->c_str());
 				if (mixer->unloadSampleBank(*first))
 				{
 					// ok, the bank is unloaded
+					_LoadedBanks.erase(*first);
+				}
+				else if (CSampleBank::findSampleBank(CStringMapper::map(*first)) == 0)
+				{
+					// ok, the bank is unavailable !
 					_LoadedBanks.erase(*first);
 				}
 			}

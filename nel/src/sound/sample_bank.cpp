@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.14 2003/03/25 16:56:53 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.14.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,8 +44,69 @@ namespace NLSOUND {
 /// Constante for the number of file to load asynchronously at a time.
 uint32		ASYNC_LOADING_SPLIT = 10;		// 10 file by 10 file
 
-CSampleBank::TSampleBankContainer CSampleBank::_Banks;
+CSampleBank::TSampleBankContainer	CSampleBank::_Banks;
 uint	CSampleBank::_LoadedSize = 0;
+
+CSampleBank::TVirtualBankCont		CSampleBank::_VirtualBanks;
+
+
+
+
+void				CSampleBank::init(NLGEORGES::UFormElm *mixerConfig)
+{
+	if (mixerConfig == 0)
+		return;
+
+	NLGEORGES::UFormElm	*virtualBanks;
+	mixerConfig->getNodeByName(&virtualBanks, ".VirtualBanks");
+	if (virtualBanks == 0)
+		return;
+
+	uint size;
+	virtualBanks->getArraySize(size);
+
+	for (uint i=0; i<size; ++i)
+	{
+		NLGEORGES::UFormElm	*virtualBank;
+		virtualBanks->getArrayNode(&virtualBank, i);
+
+		if (virtualBank != 0)
+		{
+			std::vector<TFilteredBank> vfb;
+			std::string virtualName;
+			virtualBank->getValueByName(virtualName, ".VirtualName");
+			NLGEORGES::UFormElm	*realBanks;
+			virtualBank->getNodeByName(&realBanks, ".FilteredBank");
+			if (realBanks != 0)
+			{
+				uint size2;
+				realBanks->getArraySize(size2);
+
+				for (uint j=0; j<size2; ++j)
+				{
+					TFilteredBank fb;
+					std::string	bankName;
+					NLGEORGES::UFormElm	*realBank;
+					realBank->getArrayNode(&realBank, j);
+
+					realBank->getValueByName(bankName, ".SampleBank");
+					fb.BankName = CStringMapper::map(bankName);
+					realBank->getValueByName(fb.Filter, ".Filter");
+
+					vfb.push_back(fb);
+				}
+			}
+
+			if (!vfb.empty())
+			{
+				_VirtualBanks.insert(std::make_pair(NLMISC::CStringMapper::map(virtualName), vfb));
+				// create the sample bank
+				new CSampleBank(virtualName, NULL);
+			}
+		}
+	}
+}
+
 
 
 
@@ -116,10 +177,10 @@ void CSampleBank::getLoadedSampleBankInfo(std::vector<std::pair<std::string, uin
 // ********************************************************
 
 CSampleBank::CSampleBank(const std::string& name, ISoundDriver *sd) 
-	: _SoundDriver(sd), _Name(name), _Loaded(false), _LoadingDone(true), _ByteSize(0)
+: _SoundDriver(sd), _Name(CStringMapper::map(name)), _Loaded(false), _LoadingDone(true), _ByteSize(0)
 {
 //	_Name = CFile::getFilenameWithoutExtension(_Path);
-	_Banks.insert(make_pair(CStringMapper::map(_Name), this));
+	_Banks.insert(make_pair(_Name, this));
 }
 
 
@@ -127,6 +188,7 @@ CSampleBank::CSampleBank(const std::string& name, ISoundDriver *sd)
 
 CSampleBank::~CSampleBank()
 {
+	CAudioMixerUser::instance()->unregisterUpdate(this);
 	while (!_LoadingDone)
 	{
 		// need to wait for loading end.
@@ -159,29 +221,159 @@ CSampleBank::~CSampleBank()
 
 void				CSampleBank::load(bool async)
 {
-	nldebug("Loading sample bank %s %", _Name.c_str(), async?"":"Asynchronously");
+	// TODO : add async loading support !
+
+	TVirtualBankCont::iterator it(_VirtualBanks.find(_Name));
+	if (it != _VirtualBanks.end())
+	{
+		// this is a virtual sample bank !
+		nlinfo("Loading virtual sample bank %s", CStringMapper::unmap(_Name).c_str());
+
+		CAudioMixerUser	*mixer = CAudioMixerUser::instance();
+		const CAudioMixerUser::TBackgroundFlags &flags = mixer->getBackgroundFlags();
+
+		for (uint i=0; i<it->second.size(); ++i)
+		{
+			if (flags.Flags[it->second[i].Filter])
+			{
+				CSampleBank *bank = findSampleBank(it->second[i].BankName);
+				if (bank)
+					bank->load(async);
+			}
+		}
+	}
+
+	nlinfo("Loading sample bank %s %", CStringMapper::unmap(_Name).c_str(), async?"":"Asynchronously");
 
 	vector<string> filenames;
-	vector<string>::iterator iter;
+//	vector<string>::iterator iter;
 
 	if (_Loaded)
 	{
-		nlwarning("Trying to load an already loaded bank : %s", _Name.c_str ());
+		nlwarning("Trying to load an already loaded bank : %s", CStringMapper::unmap(_Name).c_str ());
 		return;
 	}
 
-	std::string list = CPath::lookup(_Name+CAudioMixerUser::SampleBankListExt, false);
+
+	// Load the sample bank from the builded sample_bank file.
+	string bankName(CStringMapper::unmap(_Name)+".sample_bank");
+	string filename = CPath::lookup(bankName);
+	if (filename.empty())
+	{
+		nlwarning("Trying to load an unknown sample bank [%s]", bankName.c_str());
+		return;
+	}
+
+	try
+	{
+
+		CIFile	sampleBank(filename);
+
+		CAudioMixerUser::TSampleBankHeader sbh;
+		sampleBank.serial(sbh);
+		_LoadingDone = false;
+
+		sint32 seekStart = sampleBank.getPos();
+
+
+		uint8	*data = 0;
+		uint	i;
+		for (i=0; i<sbh.Name.size(); ++i)
+		{
+			IBuffer *ibuffer = _SoundDriver->createBuffer();
+			nlassert(ibuffer);
+
+			TStringId	nameId = CStringMapper::map(CFile::getFilenameWithoutExtension(sbh.Name[i]));
+			ibuffer->presetName(nameId);
+			
+	/*		{
+				sint16 *data16 = new sint16[sbh.NbSample[i]];
+				IBuffer::TADPCMState	state;
+				state.PreviousSample = 0;
+				state.StepIndex = 0;
+				uint count =0;
+				for (count=0; count+1024<sbh.NbSample[i]; count+=1024)
+				{
+					IBuffer::decodeADPCM(data+count/2, data16+count, 1024, state);
+				}
+				IBuffer::decodeADPCM(data+count/2, data16+count, sbh.NbSample[i]-count, state);
+
+				state.PreviousSample = 0;
+				state.StepIndex = 0;
+				sint16	*data16_2 = new sint16[sbh.NbSample[i]];
+ 				IBuffer::decodeADPCM(data, data16_2, sbh.NbSample[i], state);
+
+				for (uint j=0; j<sbh.NbSample[i]; ++j)
+				{
+					if (data16[j] != data16_2[j])
+					{
+						nlwarning("Sample differ at %u", j);
+					}
+				}
+
+				_SoundDriver->readRawBuffer(ibuffer, sbh.Name[i], (uint8*)data16, sbh.NbSample[i]*2, Mono16, sbh.Freq[i]);
+				delete [] data16;
+				delete [] data16_2;
+			}
+	*/
+
+			if (CAudioMixerUser::instance()->useAPDCM())
+			{
+				data = (uint8*) realloc(data, sbh.SizeAdpcm[i]);
+				sampleBank.seek(seekStart + sbh.OffsetAdpcm[i], CIFile::begin);
+				sampleBank.serialBuffer(data, sbh.SizeAdpcm[i]);
+				_SoundDriver->readRawBuffer(ibuffer, sbh.Name[i], data, sbh.SizeAdpcm[i], Mono16ADPCM, sbh.Freq[i]);
+			}
+			else
+			{
+				data = (uint8*) realloc(data, sbh.SizeMono16[i]);
+				sampleBank.seek(seekStart + sbh.OffsetMono16[i], CIFile::begin);
+				sampleBank.serialBuffer(data, sbh.SizeMono16[i]);
+				_SoundDriver->readRawBuffer(ibuffer, sbh.Name[i], data, sbh.SizeMono16[i], Mono16, sbh.Freq[i]);
+			}
+			
+			_ByteSize += ibuffer->getSize();
+
+			_Samples[nameId] = ibuffer;
+
+			// Warn the sound bank that the sample are available.
+			CSoundBank::instance()->bufferLoaded(nameId, ibuffer);
+		}
+		free(data);
+
+		_LoadedSize += _ByteSize;
+	}
+	catch(Exception &e)
+	{
+		// loading failed !
+		nlwarning("Exception %s during loading of sample bank %s", e.what(), filename.c_str());
+		CAudioMixerUser	*mixer = CAudioMixerUser::instance();
+
+		if (mixer->getPackedSheetUpdate())
+		{
+			nlinfo("Deleting offending sound bank, you need to restart to recreate it!");
+			CFile::deleteFile(filename);
+		}
+	}
+
+	_Loaded = true;
+	_LoadingDone = true;
+
+
+
+///////////////////////////////////////// OLD Version //////////////////////////////////////
+/*
+
+	std::string list = CPath::lookup(CStringMapper::unmap(_Name)+CAudioMixerUser::SampleBankListExt, false);
 	if (list.empty())
 	{
-		nlwarning("File %s not found to load sample bank %s", (_Name+CAudioMixerUser::SampleBankListExt).c_str(), _Name.c_str());
+		nlwarning("File %s not found to load sample bank %s", (CStringMapper::unmap(_Name)+CAudioMixerUser::SampleBankListExt).c_str(), CStringMapper::unmap(_Name).c_str());
 		return;
 	}
 
-	_LoadingDone = false;
 
 	NLMISC::CIFile sampleBankList(list);
 	sampleBankList.serialCont(filenames);
-
 
 	for (iter = filenames.begin(); iter != filenames.end(); iter++)
 	{
@@ -258,6 +450,7 @@ void				CSampleBank::load(bool async)
 		// and register for update on the mixer
 		CAudioMixerUser::instance()->registerUpdate(this);
 	}
+	*/
 }
 
 void CSampleBank::onUpdate()
@@ -283,7 +476,7 @@ void CSampleBank::onUpdate()
 			// Force an update in the background manager (can restar stoped sound).
 			CAudioMixerUser::instance()->getBackgroundSoundManager()->updateBackgroundStatus();
 
-			nldebug("Sample bank %s loaded.", _Name.c_str());
+			nlinfo("Sample bank %s loaded.", CStringMapper::unmap(_Name).c_str());
 		}
 		else
 		{
@@ -308,14 +501,15 @@ bool				CSampleBank::unload()
 
 	if (!_Loaded)
 	{
-		nlwarning("Trying to unload an already unloaded bank : %s", _Name.c_str ());
+		nlwarning("Trying to unload an already unloaded bank : %s", CStringMapper::unmap(_Name).c_str ());
+		return  true;
 	}
 
 	// need to wait end of load ?
 	if (!_LoadingDone)
 		return false;
 
-	nldebug("Unloading sample bank %s", _Name.c_str());
+	nlinfo("Unloading sample bank %s", CStringMapper::unmap(_Name).c_str());
 
 	for (it = _Samples.begin(); it != _Samples.end(); ++it)
 	{

@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.h,v 1.5 2003/03/03 12:58:08 boucher Exp $
+ * $Id: complex_source.h,v 1.5.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 //#include "nel/sound/u_source.h"
 #include "source_common.h"
+#include "audio_mixer_user.h"
 
 
 namespace NLSOUND {

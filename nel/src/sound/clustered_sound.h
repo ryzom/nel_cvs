@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.h,v 1.4 2003/03/03 12:58:08 boucher Exp $
+ * $Id: clustered_sound.h,v 1.4.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -44,6 +44,8 @@ namespace NL3D
 
 namespace NLSOUND
 {
+
+class USource;
 
 /** This class will manage the clipping/positioning/occlusion of sound placed inside the 
  *	cluster/portal system.

@@ -1,7 +1,7 @@
 /** \file async_file_manager_sound.cpp
  * <File description>
  *
- * $Id: async_file_manager_sound.h,v 1.1 2002/11/04 15:40:43 boucher Exp $
+ * $Id: async_file_manager_sound.h,v 1.1.4.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 
 namespace NLSOUND
 {
+
+class IBuffer;
 
 
 /**

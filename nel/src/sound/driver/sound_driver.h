@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.14 2003/03/05 15:14:52 boucher Exp $
+ * $Id: sound_driver.h,v 1.14.2.1 2003/04/24 14:05:45 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,6 +89,12 @@ class ISource;
 #endif
 
 
+/*
+ * Sound sample format
+ */
+enum TSampleFormat { Mono8, Mono16ADPCM, Mono16, Stereo8, Stereo16 };
+
+
 
 /**
  * Abstract sound driver (implemented in sound driver dynamic library)
@@ -151,6 +157,8 @@ public:
 	/// Temp
 //	virtual bool			loadWavFile( IBuffer *destbuffer, const char *filename ) = 0;
 	virtual bool			readWavBuffer( IBuffer *destbuffer, const std::string &name, uint8 *wavData, uint dataSize) = 0;
+
+	virtual bool			readRawBuffer( IBuffer *destbuffer, const std::string &name, uint8 *rawData, uint dataSize, TSampleFormat format, uint32 frequency) = 0;
 
 	/// Commit all the changes made to 3D settings of listener and sources
 	virtual void			commit3DChanges() = 0;

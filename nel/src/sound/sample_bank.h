@@ -1,7 +1,7 @@
 /** \file sample_bank.h
  * CSampleBank: a set of samples
  *
- * $Id: sample_bank.h,v 1.6 2003/03/24 17:09:25 boucher Exp $
+ * $Id: sample_bank.h,v 1.6.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/string_mapper.h"
+#include "nel/georges/u_form_elm.h"
 #include "nel/sound/u_source.h"
 #include "audio_mixer_user.h"
 #include <string>
@@ -67,6 +68,10 @@ class CSampleBank : public CAudioMixerUser::IMixerUpdate
 {
 public:
 
+	/** Initialise the sample bank with the mixer config file.
+	*/
+	static void			init(NLGEORGES::UFormElm *mixerConfig);
+
 	/// Return an existing bank for the given file name, NULL if no bank for this file.
 	static CSampleBank *findSampleBank(const NLMISC::TStringId &filename);
 
@@ -75,13 +80,13 @@ public:
 	static IBuffer*		get(const NLMISC::TStringId &name);
 
 	/// Reload all the sample bank.
-	static void				reload(bool async);
+	static void			reload(bool async);
 
 	/// Return the total loaded samples size.
-	static uint				getTotalByteSize()				{	return _LoadedSize; };
+	static uint			getTotalByteSize()				{	return _LoadedSize; };
 
 	/// Fill a vector with current loaded sample banks.
-	static void				getLoadedSampleBankInfo(std::vector<std::pair<std::string, uint> > &result);
+	static void			getLoadedSampleBankInfo(std::vector<std::pair<std::string, uint> > &result);
 
 
 
@@ -90,6 +95,7 @@ public:
 
 	/// Destructor
 	virtual ~CSampleBank();
+
 
 	/** Load all the samples.
 	 *
@@ -120,7 +126,7 @@ public:
 //	const std::string&	getPath() const						{ return _Path; }
 
 	/// Return the name (must be unique)
-	const std::string&	getName() const						{ return _Name; }
+	const NLMISC::TStringId	getName() const						{ return _Name; }
 
 	/// Delete all the loaded banks.
 	static	void		releaseAll();
@@ -146,7 +152,7 @@ private:
 
 	// Sample bank name and path 
 //	std::string			_Path;
-	std::string			_Name;
+	NLMISC::TStringId	_Name;
 
 	// Did we load the buffers.
 	bool				_Loaded;
@@ -160,6 +166,16 @@ private:
 
 	/// List of sample that need to be loaded asynchronously.
 	std::list<std::pair<IBuffer *, NLMISC::TStringId> >	_LoadList;
+
+	struct TFilteredBank
+	{
+		uint32				Filter;
+		NLMISC::TStringId	BankName;
+	};
+
+	/// List of virtual sample bank.
+	typedef std::hash_map<NLMISC::TStringId, std::vector<TFilteredBank> >	TVirtualBankCont;
+	static TVirtualBankCont		_VirtualBanks;
 
 };
 

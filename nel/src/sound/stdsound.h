@@ -20,4 +20,3 @@
 #include "nel/misc/debug.h"
 
 #include "nel/misc/vector.h"
-#include "audio_mixer_user.h"

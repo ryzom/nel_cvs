@@ -1,7 +1,7 @@
 /** \file async_file_manager_sound.cpp
  * <File description>
  *
- * $Id: async_file_manager_sound.cpp,v 1.4 2003/03/24 17:09:25 boucher Exp $
+ * $Id: async_file_manager_sound.cpp,v 1.4.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "async_file_manager_sound.h"
 #include "nel/misc/async_file_manager.h"
 #include "driver/sound_driver.h"
+#include "audio_mixer_user.h"
 
 using namespace NLMISC;
 

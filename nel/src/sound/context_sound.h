@@ -1,6 +1,6 @@
 /** \file context_sound.h
  *
- * $Id: context_sound.h,v 1.2 2003/03/03 12:58:08 boucher Exp $
+ * $Id: context_sound.h,v 1.2.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,13 @@ class CSound;
 template <uint NbJoker, bool UseRandom, uint Shift = 5>
 struct CContextMatcher
 {
+	// speudo constante
+	enum
+	{
+		// Size of array : special case for 0 joker because we can't declare array of 0 elements
+		JOKER_ARRAY_SIZE = (NbJoker == 0 ? 1 : NbJoker)
+	};
+
 	CContextMatcher(uint32 *jokersValues, uint32 randomValue)
 		: HashValue(0)
 	{
@@ -77,7 +84,7 @@ struct CContextMatcher
 	}
 
 	uint32	HashValue;
-	uint32	JokersValues[NbJoker];
+	uint32	JokersValues[JOKER_ARRAY_SIZE];
 	uint32	RandomValue;
 
 	struct CHash : public std::unary_function<CContextMatcher, size_t>
@@ -105,6 +112,12 @@ public:
 template <uint NbJoker, bool UseRandom, uint Shift = 5>
 class CContextSoundContainer : public IContextSoundContainer
 {
+	// speudo constante
+	enum
+	{
+		// Size of array : special case for 0 joker because we can't declare array of 0 elements
+		JOKER_ARRAY_SIZE = (NbJoker == 0 ? 1 : NbJoker)
+	};
 
 	typedef std::hash_map<CContextMatcher<NbJoker, UseRandom, Shift>, CSound *, CContextMatcher<NbJoker, UseRandom, Shift>::CHash>	THashContextSound;
 
@@ -125,7 +138,7 @@ class CContextSoundContainer : public IContextSoundContainer
 		nlassert(patternName.size() >= baseName.size());
 
 		std::string arg;
-		uint32		args[NbJoker];
+		uint32		args[JOKER_ARRAY_SIZE];
 
 		_MaxDist = std::max(sound->getMaxDistance(), _MaxDist);
 
@@ -231,7 +244,7 @@ class CContextSoundContainer : public IContextSoundContainer
 	virtual CSound		*getSound(const CSoundContext &context, uint32 randomValue)
 	{
 		// create a key
-		uint32		args[NbJoker];
+		uint32		args[JOKER_ARRAY_SIZE];
 		for (uint i=0; i<NbJoker; ++i)
 			args[i] = context.Args[_ContextArgsIndex[i]];
 
@@ -255,7 +268,7 @@ class CContextSoundContainer : public IContextSoundContainer
 	}
 
 private:
-	uint32				_ContextArgsIndex[NbJoker];
+	uint32				_ContextArgsIndex[JOKER_ARRAY_SIZE];
 	THashContextSound	_ContextSounds;
 	float				_MaxDist;
 };

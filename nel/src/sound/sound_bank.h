@@ -1,7 +1,7 @@
 /** \file sound_bank.h
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.h,v 1.6 2003/03/03 12:58:09 boucher Exp $
+ * $Id: sound_bank.h,v 1.6.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/string_mapper.h"
+#include "audio_mixer_user.h"
 #include <string>
 #include <hash_map>
 

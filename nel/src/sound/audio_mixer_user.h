@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.36 2003/04/11 13:22:28 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.36.2.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #ifndef NL_AUDIO_MIXER_USER_H
 #define NL_AUDIO_MIXER_USER_H
 
+#include "nel/misc/stream.h"
 #include "nel/misc/types_nl.h"
 #include "nel/sound/u_audio_mixer.h"
 #include "nel/misc/time_nl.h"
@@ -39,6 +40,7 @@
 #include <hash_set>
 #include <hash_map>
 #include <list>
+#include <numeric>
 
 
 namespace NLSOUND {
@@ -126,7 +128,7 @@ public:
 	 * The sources will be auto-balanced every "balance_period" calls to update()
 	 * (set 0 for "never auto-balance")
 	 */
-	virtual void		init(uint maxTrack, bool useEax, NLMISC::IProgressCallback *progressCallBack);
+	virtual void		init(uint maxTrack, bool useEax, bool useADPCM, NLMISC::IProgressCallback *progressCallBack);
 
 	virtual void		initClusteredSound(NL3D::UScene *uscene, float minGain, float maxDistance, float portalInterpolate);
 	virtual void		initClusteredSound(NL3D::CScene *scene, float minGain, float maxDistance, float portalInterpolate);
@@ -165,6 +167,9 @@ public:
 	virtual void				enable( bool b );
 	/// Load environmental effects
 //	virtual void				loadEnvEffects( const char *filename );
+
+	void						buildSampleBankList();
+	bool						useAPDCM()	{	return _UseADPCM;};
 	/** Load buffers. Returns the number of buffers successfully loaded.
 	 * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
 	 * You can call this method several times, to load several sound banks.
@@ -409,6 +414,9 @@ protected:
 	TUserVarControlsContainer	_UserVarControls;
 
 private:
+	/// flag for usage of ADPCM mixing
+	bool						_UseADPCM;
+
 	/// The vector of curently free tracks.
 	std::vector<CTrack*>		_FreeTracks;
 
@@ -455,8 +463,59 @@ private:
 	TBufferToSourceContainer	_BufferToSources;
 
 public: 
+	struct TSampleBankHeader
+	{
+		enum
+		{
+			// Mind to increment the version number each time the format change
+			sample_bank_header_version = 7,
+		};
+		uint32						Version;
+		std::vector<std::string>	Name;
+		std::vector<uint32>			NbSample;
+		std::vector<uint32>			Freq;
+		std::vector<uint32>			OffsetMono16;
+		std::vector<uint32>			OffsetAdpcm;
+		std::vector<uint32>			SizeMono16;
+		std::vector<uint32>			SizeAdpcm;
+
+		TSampleBankHeader()
+		{
+			Version = sample_bank_header_version;
+		}
+
+		void addSample(const std::string &name, uint32 frequency, uint32 nbSample, uint32 sizeMono16, uint32 sizeAdpcm)
+		{
+			Name.push_back(name);
+			Freq.push_back(frequency);
+			NbSample.push_back(nbSample);
+			uint32 off16;
+			uint32 offAdpcm;
+			off16 = std::accumulate(SizeMono16.begin(), SizeMono16.end(), 0);
+			off16 = std::accumulate(SizeAdpcm.begin(), SizeAdpcm.end(), off16);
+			OffsetMono16.push_back(off16);
+			SizeMono16.push_back(sizeMono16);
+			offAdpcm = std::accumulate(SizeMono16.begin(), SizeMono16.end(), 0);
+			offAdpcm = std::accumulate(SizeAdpcm.begin(), SizeAdpcm.end(), offAdpcm);
+			OffsetAdpcm.push_back(offAdpcm);
+			SizeAdpcm.push_back(sizeAdpcm);
+		}
+
+		void serial(NLMISC::IStream &s)
+		{
+			s.serialCheck(Version);
+			s.serialCont(Name);
+			s.serialCont(Freq);
+			s.serialCont(NbSample);
+			s.serialCont(OffsetMono16);
+			s.serialCont(OffsetAdpcm);
+			s.serialCont(SizeMono16);
+			s.serialCont(SizeAdpcm);
+		}
+	};
+
 	/// Extension for sample bank list file
-	static const std::string	SampleBankListExt;
+//	static const std::string	SampleBankListExt;
 
 	/// All Logical sources
 	TSourceContainer		_Sources;

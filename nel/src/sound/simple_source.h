@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.h,v 1.3 2003/02/06 09:22:43 boucher Exp $
+ * $Id: simple_source.h,v 1.3.4.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 	/// Get playing state. Return false even if the source has stopped on its own.
 	virtual bool					isPlaying();
 	///
-	virtual NLMISC::TTicks			getPlayTime()								{ return NLMISC::CTime::getLocalTime() - _PlayStart; }
+	virtual NLMISC::TTicks			getPlayTime()								{ return getTime(); }
 	/// Returns the number of milliseconds the source has been playing
 	virtual uint32					getTime();
 	//@}

@@ -1,7 +1,7 @@
 /** \file listener_user.cpp
  * UListenerUser: implementation of UListener
  *
- * $Id: listener_user.cpp,v 1.3 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: listener_user.cpp,v 1.3.8.1 2003/04/24 14:05:44 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdsound.h"
 
 #include "listener_user.h"
+#include "audio_mixer_user.h"
 
 
 namespace NLSOUND {

@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.12 2000/11/27 10:07:07 cado Exp $
+ * $Id: naming_client.h,v 1.13 2000/11/27 13:03:59 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@ namespace NLNET {
 
 
 class CSocket;
+
 
 /// Type of map of registered services
 typedef std::map<std::string,CInetAddress> CRegServices;
@@ -105,6 +106,7 @@ public:
 	 * \param addr [out] Address of the service
 	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
 	 * before sending a message to the service
+	 * \return True if all worked fine
 	 */
 	static bool			lookup( const std::string& name, CInetAddress& addr, uint16& validitytime );
 
@@ -114,8 +116,19 @@ public:
 	 * \param addr [in/out] In: Address of the service that does not respond. Out: Alternative address
 	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
 	 * before sending a message to the service
+	 * \return True if all worked fine
 	 */
-	static bool			lookupAlternate( const std::string& name, CInetAddress& addr, uint16& validitytime  );
+	static bool			lookupAlternate( const std::string& name, CInetAddress& addr, uint16& validitytime );
+
+	/** Obtains a socket connected to a server providing the service \e name.
+	 * In case of failure, the method throws EServiceNotFound
+	 * \param name [in] Name of the service to find and connected
+	 * \param sock [out] The returned socket.
+	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
+	 * before sending a message to the service
+	 * \return True if all worked fine
+	 */
+	static bool			lookupAndConnect( const std::string& name, CSocket& sock, uint16& validitytime );
 
 	//@}
 

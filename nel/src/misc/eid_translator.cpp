@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.16 2003/09/20 09:02:19 distrib Exp $
+ * $Id: eid_translator.cpp,v 1.17 2003/10/17 14:52:50 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -384,6 +384,7 @@ void CEntityIdTranslator::load (const string &fileName, const string &invalidEnt
 	CIFile ifile;
 	if( ifile.open(FileName) )
 	{
+		FileVersion = Version;
 		ifile.serialVersion (FileVersion);
 		ifile.serialCont (RegisteredEntities);
 

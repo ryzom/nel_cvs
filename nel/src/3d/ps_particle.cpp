@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.27 2001/07/04 12:29:56 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.28 2001/07/12 15:43:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -640,7 +640,7 @@ void CPSMaterial::serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialVersion(1) ;
 	if (f.isReading())
 	{
-		TBlendingMode m ;
+		TBlendingMode m = add ; // initialization to avoid a warning only
 		f.serialEnum(m) ;
 		setBlendingMode(m) ;
 	}
@@ -693,6 +693,7 @@ CPSMaterial::TBlendingMode CPSMaterial::getBlendingMode(void) const
 
 		// unrecognized mode
 		nlassert(0) ;
+		return alphaTest ; // to avoid a warning only ...
 	}
 	else
 	{
@@ -746,13 +747,24 @@ void CPSDot::updateMatAndVbForColor(void)
 }
 
 
+
+bool CPSDot::hasTransparentFaces(void)
+{
+	return getBlendingMode() != CPSMaterial::alphaTest  ;
+}
+bool CPSDot::hasOpaqueFaces(void)
+{
+	return !hasTransparentFaces() ;
+}
+
+
 void CPSDot::resize(uint32 size)
 {
 	_Vb.setNumVertices(size < dotBufSize ? size : dotBufSize) ;
 	resizeColor(size) ;
 }
 
-void CPSDot::draw(void)
+void CPSDot::draw(bool opaque)
 {
 	
 	PARTICLES_CHECK_MEM ;
@@ -763,7 +775,9 @@ void CPSDot::draw(void)
 	if (!size) return ;
 
 
-	CParticleSystem::_NbParticlesDrawn += size ;
+	_Owner->incrementNbDrawnParticles(size) ; // for benchmark purpose	
+
+	
 	
 	setupDriverModelMatrix() ;
 	
@@ -852,6 +866,14 @@ CPSQuad::~CPSQuad()
 }
 
 
+bool CPSQuad::hasTransparentFaces(void)
+{
+	return getBlendingMode() != CPSMaterial::alphaTest  ;
+}
+bool CPSQuad::hasOpaqueFaces(void)
+{
+	return !hasTransparentFaces() ;
+}
 
 
 void CPSQuad::init(void)
@@ -1038,7 +1060,7 @@ void CPSFaceLookAt::resize(uint32 capacity)
 	resizeAngle2D(capacity) ;
 }
 
-void CPSFaceLookAt::draw(void)
+void CPSFaceLookAt::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM ;
 
@@ -1050,7 +1072,8 @@ void CPSFaceLookAt::draw(void)
 
 	IDriver *driver = getDriver() ;
 
-	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose	
+	_Owner->incrementNbDrawnParticles(size) ; // for benchmark purpose	
+
 
 	setupDriverModelMatrix() ;
 	driver->activeVertexBuffer(_Vb) ;	
@@ -1422,6 +1445,15 @@ void CPSFanLight::initFanLightPrecalc(void)
 }
 
 
+bool CPSFanLight::hasTransparentFaces(void)
+{
+	return getBlendingMode() != CPSMaterial::alphaTest  ;
+}
+bool CPSFanLight::hasOpaqueFaces(void)
+{
+	return !hasTransparentFaces() ;
+}
+
 
 void CPSFanLight::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
@@ -1444,7 +1476,7 @@ void CPSFanLight::setPhaseSpeed(float multiplier)
 }
 
 
-void CPSFanLight::draw(void)
+void CPSFanLight::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM ;
 	nlassert(_RandomPhaseTabInitialized) ;
@@ -1466,7 +1498,8 @@ void CPSFanLight::draw(void)
 		_ColorScheme->make(_Owner, 0, _Vb.getColorPointer(), _Vb.getVertexSize() * (_NbFans + 1), size) ;	
 	}
 
-	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
+	_Owner->incrementNbDrawnParticles(size) ; // for benchmark purpose	
+
 
 
 
@@ -1763,6 +1796,15 @@ CPSTailDot::CPSTailDot(uint32 nbSegmentInTail) : _TailNbSeg(nbSegmentInTail), _C
 }
 
 
+bool CPSTailDot::hasTransparentFaces(void)
+{
+	return getBlendingMode() != CPSMaterial::alphaTest  ;
+}
+bool CPSTailDot::hasOpaqueFaces(void)
+{
+	return !hasTransparentFaces() ;
+}
+
 void CPSTailDot::init(void)
 {
 	_Mat.setLighting(false) ;	
@@ -1773,7 +1815,7 @@ void CPSTailDot::init(void)
 }
 	
 
-void CPSTailDot::draw(void)
+void CPSTailDot::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM ;
 	// the number of particles
@@ -1804,7 +1846,8 @@ void CPSTailDot::draw(void)
 	uint8 *currVertex ;
 
 
-	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
+	_Owner->incrementNbDrawnParticles(size) ; // for benchmark purpose	
+
 
 	TPSAttribVector::const_iterator posIt, endPosIt = _Owner->getPos().end() ;
 		
@@ -1902,8 +1945,8 @@ void CPSTailDot::draw(void)
 	else
 	{
 		// the tail are not in the same basis, we need a conversion matrix
-		const CMatrix &m = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() 
-												 : _Owner->getOwner()->getSysMat() ;
+		const CMatrix &m = _SystemBasisEnabled ?   /*_Owner->getOwner()->*/getInvertedSysMat() 
+												 : /*_Owner->getOwner()->*/getSysMat() ;
 		// copy the position after transformation
 		for (posIt = _Owner->getPos().begin() ; posIt != endPosIt ; ++posIt)
 		{
@@ -1917,7 +1960,7 @@ void CPSTailDot::draw(void)
 	IDriver *driver = getDriver() ;
 	if (_SystemBasisEnabled)
 	{
-		driver->setupModelMatrix(_Owner->getOwner()->getSysMat()) ;
+		driver->setupModelMatrix(/*_Owner->getOwner()->*/getSysMat()) ;
 	}
 	else
 	{
@@ -1987,8 +2030,8 @@ void CPSTailDot::resizeVb(uint32 oldTailSize, uint32 size)
 	}
 	else
 	{
-		m = _SystemBasisEnabled ?  & _Owner->getOwner()->getInvertedSysMat() 
-								: &_Owner->getOwner()->getSysMat() ;
+		m = _SystemBasisEnabled ?  & /*_Owner->getOwner()->*/getInvertedSysMat() 
+								: &/*_Owner->getOwner()->*/getSysMat() ;
 	}
 
 	const TPSAttribVector &oldPos = _Owner->getPos() ;
@@ -2102,8 +2145,8 @@ void CPSTailDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 			}
 			else
 			{
-				const CMatrix &m = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() 
-												 : _Owner->getOwner()->getSysMat() ;
+				const CMatrix &m = _SystemBasisEnabled ?   /*_Owner->getOwner()->*/getInvertedSysMat() 
+												 : /*_Owner->getOwner()->*/getSysMat() ;
 				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
 				{
 					CHECK_VERTEX_BUFFER(_Vb, currVert) ;
@@ -2133,8 +2176,8 @@ void CPSTailDot::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 			}
 			else
 			{
-				const CMatrix &m = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() 
-												 : _Owner->getOwner()->getSysMat() ;
+				const CMatrix &m = _SystemBasisEnabled ?  /*_Owner->getOwner()->*/getInvertedSysMat() 
+												 : /*_Owner->getOwner()->*/getSysMat() ;
 				for (uint32 k = 0 ; k < _TailNbSeg + 1 ; ++k)
 				{
 					CHECK_VERTEX_BUFFER(_Vb, currVert) ;
@@ -2293,6 +2336,15 @@ CPSRibbon::~CPSRibbon()
 	}
 }
 
+
+bool CPSRibbon::hasTransparentFaces(void)
+{
+	return getBlendingMode() != CPSMaterial::alphaTest  ;
+}
+bool CPSRibbon::hasOpaqueFaces(void)
+{
+	return !hasTransparentFaces() ;
+}
 
 // querry for light persistence in ribbons
 void CPSRibbon::setPersistAfterDeath(bool persist)
@@ -2646,8 +2698,8 @@ void CPSRibbon::computeLastSlice(CRibbonsDesc &rb, const uint32 size)
 	}
 	else
 	{
-		modelMat = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() 
-								:          _Owner->getOwner()->getSysMat() ;
+		modelMat = _SystemBasisEnabled ?   /*_Owner->getOwner()->*/getInvertedSysMat() 
+								:          /*_Owner->getOwner()->*/getSysMat() ;
 	}
 
 	rotModelMat = modelMat ;
@@ -2740,7 +2792,7 @@ void CPSRibbon::render(CRibbonsDesc &rb, const uint32 size)
 }
 
 
-void CPSRibbon::draw(void)
+void CPSRibbon::draw(bool opaque)
 {	
 	
 	PARTICLES_CHECK_MEM ;
@@ -2758,7 +2810,7 @@ void CPSRibbon::draw(void)
 
 	if (_SystemBasisEnabled)
 	{
-		getDriver()->setupModelMatrix(_Owner->getOwner()->getSysMat()) ;
+		getDriver()->setupModelMatrix(/*_Owner->getOwner()->*/getSysMat()) ;
 	}
 	else
 	{
@@ -2926,8 +2978,8 @@ void CPSRibbon::initRibbonPos(CRibbonsDesc &rb, uint32 index, const CVector &aPo
 	}
 	else
 	{
-		pos = _SystemBasisEnabled ?   _Owner->getOwner()->getInvertedSysMat() * aPos 
-								:     _Owner->getOwner()->getSysMat()         * aPos;
+		pos = _SystemBasisEnabled ?   /*_Owner->getOwner()->*/getInvertedSysMat() * aPos 
+								:     /*_Owner->getOwner()->*/getSysMat()         * aPos;
 	}
 	
 	const uint32 vSize = rb._Vb.getVertexSize() ;
@@ -3308,7 +3360,7 @@ CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
 	_Name = std::string("Face") ;	
 }
 
-void CPSFace::draw(void)
+void CPSFace::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM ;
 
@@ -3334,7 +3386,8 @@ void CPSFace::draw(void)
 	uint32 leftFaces = size, toProcess ;
 
 
-	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose
+	_Owner->incrementNbDrawnParticles(size) ; // for benchmark purpose	
+
 
 	IDriver *driver = getDriver() ;
 
@@ -3714,12 +3767,16 @@ CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex)
 }
 
 
+
+bool CPSShockWave::hasTransparentFaces(void)
+{
+	return getBlendingMode() != CPSMaterial::alphaTest  ;
+}
+bool CPSShockWave::hasOpaqueFaces(void)
+{
+	return !hasTransparentFaces() ;
+}
 	
-	// we don't init the _IndexBuffer for now, as it will be when resize is called
-
-
-	
-
 void CPSShockWave::setNbSegs(uint nbSeg)
 {
 	nlassert(nbSeg > 2 && nbSeg <= 64) ;
@@ -3760,7 +3817,7 @@ void CPSShockWave::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
-void CPSShockWave::draw(void)
+void CPSShockWave::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM ;
 
@@ -3775,7 +3832,8 @@ void CPSShockWave::draw(void)
 
 	IDriver *driver = getDriver() ;
 
-	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose	
+	_Owner->incrementNbDrawnParticles(size) ; // for benchmark purpose	
+
 
 	setupDriverModelMatrix() ;
 	driver->activeVertexBuffer(_Vb) ;	
@@ -4150,6 +4208,17 @@ void CPSMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 }
 
 
+bool CPSMesh::hasTransparentFaces(void)
+{
+	/// we don't draw any face ! (the meshs are drawn by the scene)
+	return false ;
+}
+bool CPSMesh::hasOpaqueFaces(void)
+{
+	/// we don't draw any face ! (the meshs are drawn by the scene)
+	return false ;
+}
+
 
 void CPSMesh::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
@@ -4160,7 +4229,7 @@ void CPSMesh::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 	nlassert(_Owner) ;
 	nlassert(_Owner->getOwner()) ;
 
-	CScene *scene = _Owner->getOwner()->getScene() ;
+	CScene *scene = _Owner->getScene() ;
 	nlassert(scene) ; // the setScene method of the particle system should have been called
 	//CTransformShape *instance = _Shape->createInstance(*scene) ;
 
@@ -4197,7 +4266,7 @@ void CPSMesh::deleteElement(uint32 index)
 	nlassert(_Owner) ;
 	nlassert(_Owner->getOwner()) ;
 
-	CScene *scene = _Owner->getOwner()->getScene() ;
+	CScene *scene = _Owner->getScene() ;
 	nlassert(scene) ; // the setScene method of the particle system should have been called
 
 	scene->deleteInstance(_Instances[index]) ;
@@ -4205,7 +4274,7 @@ void CPSMesh::deleteElement(uint32 index)
 }
 
 
-void CPSMesh::draw(void)
+void CPSMesh::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM ;
 
@@ -4214,7 +4283,8 @@ void CPSMesh::draw(void)
 	if (!size) return ;
 
 
-	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose	
+	_Owner->incrementNbDrawnParticles(size) ; // for benchmark purpose	
+
 
 	if (_Invalidated)
 	{
@@ -4222,7 +4292,7 @@ void CPSMesh::draw(void)
 		nlassert(_Owner) ;
 		nlassert(_Owner->getOwner()) ;
 
-		CScene *scene = _Owner->getOwner()->getScene() ;
+		CScene *scene = _Owner->getScene() ;
 		nlassert(scene) ; // the setScene method of the particle system should have been called
 	
 
@@ -4300,7 +4370,7 @@ void CPSMesh::draw(void)
 		
 
 		// the matrix used to get in the right basis
-		const CMatrix &transfo = _Owner->isInSystemBasis() ? _Owner->getOwner()->getSysMat() : CMatrix::Identity ;
+		const CMatrix &transfo = _Owner->isInSystemBasis() ? /*_Owner->getOwner()->*/getSysMat() : CMatrix::Identity ;
 
 		do
 		{
@@ -4354,7 +4424,7 @@ CPSMesh::~CPSMesh()
 	nlassert(_Owner) ;
 	nlassert(_Owner->getOwner()) ;
 
-	CScene *scene = _Owner->getOwner()->getScene() ;
+	CScene *scene = _Owner->getScene() ;
 	nlassert(scene) ; // the setScene method of the particle system should have been called
 
 	for (TInstanceCont::iterator it = _Instances.begin() ; it != _Instances.end() ; ++it)
@@ -4463,6 +4533,24 @@ static void DuplicatePrimitiveBlock(const CPrimitiveBlock &srcBlock, CPrimitiveB
 }
 
 
+
+
+
+bool CPSConstraintMesh::hasTransparentFaces(void)
+{
+	if (!_Touched) return _HasTransparentFaces ;
+	/// we must construct the mesh to know wether it has transparent faces
+	update() ;
+	return _HasTransparentFaces ;
+}
+bool CPSConstraintMesh::hasOpaqueFaces(void)
+{
+	if (!_Touched) return _HasOpaqueFaces ;	
+	update() ;
+	return _HasOpaqueFaces ;
+}
+
+
 void CPSConstraintMesh::setShape(const std::string &meshFileName)
 {
 	_MeshShapeFileName = meshFileName ;
@@ -4476,9 +4564,9 @@ void CPSConstraintMesh::update(void)
 
 	clean() ;
 	
-	nlassert(_Owner->getOwner()->getScene()) ;
+	nlassert(_Owner->getScene()) ;
 
-	CScene *scene = _Owner->getOwner()->getScene() ;
+	CScene *scene = _Owner->getScene() ;
 
 	CShapeBank *sb = scene->getShapeBank() ;
 
@@ -4513,10 +4601,21 @@ void CPSConstraintMesh::update(void)
 
 	const CVertexBuffer &srcVb = m.getVertexBuffer() ;
 
+	_HasTransparentFaces = false ;
+	_HasOpaqueFaces = false ;
 	
 	for (uint k = 0 ; k < m.getNbRdrPass(0) ; ++k)
 	{
 		_RdrPasses[k].Mat = m.getMaterial(m.getRdrPassMaterial(0, k)) ;
+		if (!_RdrPasses[k].Mat.getZWrite())
+		{
+			_HasTransparentFaces = true ;
+		}
+		else // z-buffer write or no blending -> the face is opaque
+		{
+			_HasOpaqueFaces = true ;
+		}
+			 
 		DuplicatePrimitiveBlock(m.getRdrPassPrimitiveBlock(0, k), _RdrPasses[k].Pb, constraintMeshBufSize, srcVb.getNumVertices() ) ;		
 	}
 	
@@ -4532,6 +4631,8 @@ void CPSConstraintMesh::update(void)
 	_ModelShape = is ;
 
 	_Touched = false ;
+
+	/// check for transparent faces
 
 	
 }
@@ -4743,7 +4844,7 @@ void CPSConstraintMesh::clean(void)
 	
 	
 
-void CPSConstraintMesh::draw(void)
+void CPSConstraintMesh::draw(bool opaque)
 {
 	PARTICLES_CHECK_MEM ;
 	nlassert(_Owner) ;
@@ -4758,7 +4859,7 @@ void CPSConstraintMesh::draw(void)
 
 
 
-	CParticleSystem::_NbParticlesDrawn += size ; // for benchmark purpose	
+	_Owner->incrementNbDrawnParticles(size) ; // for benchmark purpose	
 
 
 	// size for model vertices
@@ -4945,9 +5046,13 @@ void CPSConstraintMesh::draw(void)
 			{
 				// TODO : update this when new primitive will be added
 
-				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess / constraintMeshBufSize) ;
-				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess / constraintMeshBufSize) ;
-				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess / constraintMeshBufSize) ;
+				/// check wether this material has to be rendered
+				if ((opaque && rdrPassIt->Mat.getZWrite()) || (!opaque && !rdrPassIt->Mat.getZWrite()))
+				{
+					rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess / constraintMeshBufSize) ;
+					rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess / constraintMeshBufSize) ;
+					rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess / constraintMeshBufSize) ;
+				}
 
 				driver->render(rdrPassIt->Pb, rdrPassIt->Mat) ;
 
@@ -5078,10 +5183,13 @@ void CPSConstraintMesh::draw(void)
 			{
 				// TODO : update this when new primitive will be added
 
-				rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess / constraintMeshBufSize) ;
-				rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess / constraintMeshBufSize) ;
-				rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess / constraintMeshBufSize) ;
-
+				// check wether this material has to be rendered
+				if ((opaque && rdrPassIt->Mat.getZWrite()) || (!opaque && !rdrPassIt->Mat.getZWrite()))
+				{
+					rdrPassIt->Pb.setNumTri(rdrPassIt->Pb.capacityTri() * toProcess / constraintMeshBufSize) ;
+					rdrPassIt->Pb.setNumQuad(rdrPassIt->Pb.capacityQuad() * toProcess / constraintMeshBufSize) ;
+					rdrPassIt->Pb.setNumLine(rdrPassIt->Pb.capacityLine() * toProcess / constraintMeshBufSize) ;
+				}
 				driver->render(rdrPassIt->Pb, rdrPassIt->Mat) ;
 
 			}

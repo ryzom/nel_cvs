@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.6 2001/07/04 12:29:56 vizerie Exp $
+ * $Id: ps_particle.h,v 1.7 2001/07/12 15:43:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,20 +77,28 @@ public:
 	*/
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	{
-		if (pass == PSBlendRender)
+		if (
+			(pass == PSBlendRender && hasTransparentFaces())
+			|| (pass == PSSolidRender && hasOpaqueFaces())
+			)
 		{
-			draw() ;
+			draw(pass == PSSolidRender) ;
 		}
-		else
+		else 
 		if (pass == PSToolRender) // edition mode only
 		{			
 			showTool() ;
 		}
 	}
 
+	/// return true if there are transparent faces in the object
+	virtual bool hasTransparentFaces(void)  = 0 ;
+
+	/// return true if there are Opaque faces in the object
+	virtual bool hasOpaqueFaces(void)  = 0 ;
 
 	/// draw the particles
-	virtual void draw(void) = 0 ;
+	virtual void draw(bool opaque) = 0 ;
 
 	/// draw the particles for edition mode. The default behaviour just draw a wireframe model 	 
 	virtual void showTool() ;
@@ -630,7 +638,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 		/**
 		* process one pass for the particle	
 		*/
-		virtual void draw(void) ;
+		virtual void draw(bool opaque) ;
 
 	
 	
@@ -643,6 +651,13 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 
 		///serialisation
 		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+		/// return true if there are transparent faces in the object
+		virtual bool hasTransparentFaces(void) ;
+
+		/// return true if there are Opaque faces in the object
+		virtual bool hasOpaqueFaces(void) ;
+
 	protected:
 		
 		virtual CPSLocated *getColorOwner(void) { return _Owner ; }
@@ -683,13 +698,21 @@ class CPSDot : public CPSParticle, public CPSColoredParticle, public CPSMaterial
 			   , public CPSSizedParticle
 			   , public CPSMaterial
  {
-
-	protected:
+	public:
 
 		/** create the quad by giving a texture. This can't be a CTextureGrouped (for animation)
 		* animation must be set later by using setTextureScheme
 		*/
 		CPSQuad(CSmartPtr<ITexture> tex = NULL) ;
+
+
+		/// return true if there are transparent faces in the object
+		virtual bool hasTransparentFaces(void) ;
+
+		/// return true if there are Opaque faces in the object
+		virtual bool hasOpaqueFaces(void) ;
+
+	protected:		
 
 		// dtor
 		virtual ~CPSQuad() ;
@@ -766,7 +789,7 @@ public:
      * animation must be set later by using setTextureScheme
 	 */
 	CPSFaceLookAt(CSmartPtr<ITexture> tex = NULL) ;
-	virtual void draw(void) ;
+	virtual void draw(bool opaque) ;
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 	
 	NLMISC_DECLARE_CLASS(CPSFaceLookAt) ;
@@ -833,7 +856,7 @@ class CPSFanLight : public CPSParticle, public CPSColoredParticle
 				  , public CPSMaterial
 {
 public:
-	virtual void draw(void) ;
+	virtual void draw(bool opaque) ;
 
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
@@ -871,6 +894,13 @@ public:
 
 	/// dtor
 	~CPSFanLight() ;
+
+
+	/// return true if there are transparent faces in the object
+	virtual bool hasTransparentFaces(void) ;
+
+	/// return true if there are Opaque faces in the object
+	virtual bool hasOpaqueFaces(void) ;
 
 protected:
 	/// initialisations
@@ -918,7 +948,7 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 	public:
 		/// process one pass for the particle	
 		
-		virtual void draw(void) ;
+		virtual void draw(bool opaque) ;
 		
 	
 		/** (de)activate color fading
@@ -959,6 +989,11 @@ class CPSTailDot : public CPSParticle, public CPSColoredParticle
 		/// return true if the tails are in the system basis
 		bool isInSystemBasis(void) const { return _SystemBasisEnabled ; }
 
+		/// return true if there are transparent faces in the object
+		virtual bool hasTransparentFaces(void) ;
+
+		/// return true if there are Opaque faces in the object
+		virtual bool hasOpaqueFaces(void) ;
 
 	protected:
 		
@@ -1024,7 +1059,7 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 		public:
 		/// process one pass for the particle	
 		
-		virtual void draw(void) ;
+		virtual void draw(bool opaque) ;
 	
 	
 		/** (de)activate color fading
@@ -1127,6 +1162,12 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 		{
 			return _Tex ; 
 		}
+
+		/// return true if there are transparent faces in the object
+		virtual bool hasTransparentFaces(void) ;
+
+		/// return true if there are Opaque faces in the object
+		virtual bool hasOpaqueFaces(void) ;
 	
 
 		/// Predefined shape : a regular losange shape
@@ -1145,9 +1186,7 @@ class CPSRibbon : public CPSParticle, public CPSSizedParticle
 
 		/// Predifined shape : triangle
 		static const CVector Triangle[] ;
-		static const uint32 NbVerticesInTriangle ;
-
-		
+		static const uint32 NbVerticesInTriangle ;				
 
 
 	protected:
@@ -1322,7 +1361,7 @@ public:
 	 */
 	CPSFace(CSmartPtr<ITexture> tex = NULL) ;
 
-	virtual void draw(void) ;
+	virtual void draw(bool opaque) ;
 
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
 
@@ -1439,12 +1478,17 @@ public:
 
 	NLMISC_DECLARE_CLASS(CPSShockWave) ;
 
-	virtual void draw(void) ;
+	virtual void draw(bool opaque) ;
 
 
 	/// complete the bbox depending on the size of particles
 	virtual bool completeBBox(NLMISC::CAABBox &box) const   ;
 
+	/// return true if there are transparent faces in the object
+	virtual bool hasTransparentFaces(void) ;
+
+	/// return true if there are Opaque faces in the object
+	virtual bool hasOpaqueFaces(void) ;
 	
 	
 protected:
@@ -1548,6 +1592,12 @@ public:
 		_Instances.clear() ;
 	}
 
+	/// return true if there are transparent faces in the object
+	virtual bool hasTransparentFaces(void) ;
+
+	/// return true if there are Opaque faces in the object
+	virtual bool hasOpaqueFaces(void) ;
+
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
 	 */
@@ -1560,7 +1610,7 @@ protected:
 	virtual void deleteElement(uint32 index)  ;
 
 
-	virtual void draw(void) ;
+	virtual void draw(bool opaque) ;
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
@@ -1654,6 +1704,11 @@ public:
 	
 	NLMISC_DECLARE_CLASS(CPSConstraintMesh) ;
 	
+	/// return true if there are transparent faces in the object
+	virtual bool hasTransparentFaces(void) ;
+
+	/// return true if there are Opaque faces in the object
+	virtual bool hasOpaqueFaces(void) ;
 
 protected:
 	/**	Generate a new element for this bindable. They are generated according to the properties of the class		 
@@ -1666,8 +1721,10 @@ protected:
 	 */
 	virtual void deleteElement(uint32 index)  ;
 
-
-	virtual void draw(void) ;
+	/** called when particles must be drawn
+	  * \param opaque true if we are dealing with the opaque pass, false for transparent faces
+	  */
+	virtual void draw(bool opaque) ;
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead
@@ -1693,6 +1750,13 @@ protected:
 
 	// A new mesh has been set, so we must reconstruct it when needed
 	bool _Touched ;
+
+	// flags that indicate wether the object has transparent faces. When touched, it is undefined
+	bool _HasTransparentFaces ;
+
+	// flags that indicate wether the object has opaques faces. When touched, it is undefined
+	bool _HasOpaqueFaces ;
+
 
 	// the shape bank containing the shape
 	CShapeBank  *_ModelBank ;

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.43 2001/02/14 15:12:37 corvazier Exp $
+ * $Id: landscape.cpp,v 1.44 2001/02/14 16:11:53 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -638,9 +638,7 @@ void			CLandscape::loadTile(uint16 tileId)
 		pass.TextureDiffuse= new CTextureCross;
 	if(tile)
 	{
-		// TODO_ALPHA: replace CTile::diffuse by CTile::alpha.
-		// patch yoyo: en attendant le changement de tilebank, on prend l'alpha de la texture diffuse.
-		textName= tile->getRelativeFileName (CTile::diffuse);
+		textName= tile->getRelativeFileName (CTile::alpha);
 		if(textName!="")
 			pass.TextureAlpha= findTileTexture(TileBank.getAbsPath()+textName);
 	}

@@ -1,7 +1,7 @@
 /** \file instance_material_user.cpp
  * <File description>
  *
- * $Id: instance_material_user.cpp,v 1.8 2004/03/23 10:21:31 vizerie Exp $
+ * $Id: instance_material_user.cpp,v 1.9 2004/04/09 14:31:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -137,7 +137,7 @@ void CInstanceMaterialUser::setTextureMem(uint stage, uint8 *data, uint32 length
 		nlwarning("UInstanceMaterialUser::emptyTexture : invalid stage");
 		return;
 	}	
-	_Material->setTexture((uint8) stage, new CTextureMem(data, length, _delete, isFile, height, texType));
+	_Material->setTexture((uint8) stage, new CTextureMem(data, length, _delete, isFile, width, height, texType));
 }
 
 

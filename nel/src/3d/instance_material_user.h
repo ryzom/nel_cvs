@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.15 2004/03/23 10:21:31 vizerie Exp $
+ * $Id: instance_material_user.h,v 1.16 2004/04/09 14:31:36 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -344,6 +344,49 @@ public:
 
 	virtual	bool	isSupportedByDriver(UDriver &drv);
 
+	virtual	void				setWrapS(uint stage, TWrapMode mode)
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		if (stage >= IDRV_MAT_MAXTEXTURES || !_Material->getTexture(stage) == NULL)
+		{
+			nlwarning("UInstanceMaterial::setWrapS : stage %d is invalid or there's no texture", stage);
+			return;
+		}
+		_Material->getTexture(stage)->setWrapS((ITexture::TWrapMode) mode);
+	}
+
+	virtual	void				setWrapT(uint stage, TWrapMode mode)
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		if (stage >= IDRV_MAT_MAXTEXTURES || _Material->getTexture(stage) == NULL)
+		{
+			nlwarning("UInstanceMaterial::setWrapT : stage %d is invalid or there's no texture", stage);
+			return;
+		}
+		_Material->getTexture(stage)->setWrapT((ITexture::TWrapMode) mode);
+	}
+
+	virtual	TWrapMode			getWrapS(uint stage) const
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		if (stage >= IDRV_MAT_MAXTEXTURES || _Material->getTexture(stage) == NULL)
+		{
+			nlwarning("UInstanceMaterial::getWrapS : stage %d is invalid or there's no texture", stage);
+			return Repeat;
+		}
+		return (TWrapMode) _Material->getTexture(stage)->getWrapS();
+	}
+
+	virtual	TWrapMode			getWrapT(uint stage) const
+	{
+		NL3D_MEM_MATERIAL_INSTANCE
+		if (stage >= IDRV_MAT_MAXTEXTURES || _Material->getTexture(stage) == NULL)
+		{
+			nlwarning("UInstanceMaterial::getWrapT : stage %d is invalid or there's no texture", stage);
+			return Repeat;
+		}
+		return (TWrapMode) _Material->getTexture(stage)->getWrapT();
+	}
 
 	// @}
 

@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.17 2002/01/30 15:39:59 chafik Exp $
+ * $Id: opcode.cpp,v 1.18 2002/03/12 15:52:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
 		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
 
-		context.Stack[k - 1] = (*a) + (*b);
+		context.Stack[k - 1] = (*a) + (b);
 		
 		context.Stack--;
 		a->release();
@@ -79,7 +79,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
 		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
 
-		context.Stack[k - 1] = (*a) - (*b);
+		context.Stack[k - 1] = (*a) - (b);
 		
 		context.Stack--;
 		a->release();
@@ -103,7 +103,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
 		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
 
-		context.Stack[k - 1] = (*a) / (*b);
+		context.Stack[k - 1] = (*a) / (b);
 		
 		context.Stack--;
 		a->release();
@@ -128,7 +128,7 @@ namespace NLAISCRIPT
 		NLAIAGENT::IObjetOp *a = (NLAIAGENT::IObjetOp *)context.Stack[k - 1];
 		NLAIAGENT::IObjetOp *b = (NLAIAGENT::IObjetOp *)context.Stack[k];
 
-		context.Stack[k - 1] = (*a) * (*b);
+		context.Stack[k - 1] = (*a) * (b);
 		
 		context.Stack--;
 		a->release();

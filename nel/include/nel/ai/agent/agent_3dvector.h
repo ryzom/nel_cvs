@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
  * <File description>
  *
- * $Id: agent_3dvector.h,v 1.8 2001/12/19 14:37:47 robert Exp $
+ * $Id: agent_3dvector.h,v 1.9 2002/03/12 15:52:38 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,14 +176,14 @@ namespace NLAIAGENT
 			return *this;
 		}
 
-		virtual IObjetOp *operator + (const IObjetOp &a)  const
+		virtual IObjetOp *operator + (const IObjetOp &a) 
 		{
 			IObjetOp *o = (IObjetOp *)clone();			
 			*o += a;
 			return o;
 		}
 
-		virtual IObjetOp *operator - (const IObjetOp &a)  const
+		virtual IObjetOp *operator - (const IObjetOp &a) 
 		{
 			IObjetOp *o = (IObjetOp *)clone();			
 			*o -= a;

@@ -1,7 +1,7 @@
 
 /** \file varstack.h
  *
- * $Id: varstack.h,v 1.9 2002/03/12 15:53:04 chafik Exp $
+ * $Id: varstack.h,v 1.10 2002/03/12 15:55:21 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -395,23 +395,23 @@ namespace NLAISCRIPT
 			return *this;
 		}	
 
-		NLAIAGENT::IObjetOp *operator + (const NLAIAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator + (const NLAIAGENT::IObjetOp &a)
 		{
 			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) + a;
 			
 		}
 
-		NLAIAGENT::IObjetOp *operator - (const NLAIAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator - (const NLAIAGENT::IObjetOp &a)
 		{
 			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) - a;
 		}
 
-		NLAIAGENT::IObjetOp *operator * (const NLAIAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator * (const NLAIAGENT::IObjetOp &a)
 		{
 			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) * a;
 		}
 
-		NLAIAGENT::IObjetOp *operator / (const NLAIAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator / (const NLAIAGENT::IObjetOp &a)
 		{
 			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) / a;
 		}

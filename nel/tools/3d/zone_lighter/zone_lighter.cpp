@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.28 2003/05/22 15:56:58 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.29 2003/07/07 10:28:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -683,8 +683,8 @@ int main(int argc, char* argv[])
 							// Get the instance shape name
 							string name=group->getShapeName (instance);
 
-							// Skip it??
-							if(group->getInstance(instance).DontCastShadow)
+							// Skip it?? use the DontCastShadowForExterior flag. See doc of this flag
+							if(group->getInstance(instance).DontCastShadow || group->getInstance(instance).DontCastShadowForExterior)
 								continue;
 
 							// PS ?

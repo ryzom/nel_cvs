@@ -2,7 +2,7 @@
  * zone_ig_lighter.cpp : instance lighter for ig in landscape zones
  * greatly copied from ../zone_lighter/zone_lighter.cpp
  *
- * $Id: zone_ig_lighter.cpp,v 1.12 2003/04/22 16:38:10 distrib Exp $
+ * $Id: zone_ig_lighter.cpp,v 1.13 2003/07/07 10:28:40 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,8 +417,8 @@ int main(int argc, char* argv[])
 						// Get the instance shape name
 						string name=group->getShapeName (instance);
 
-						// Skip it??
-						if(group->getInstance(instance).DontCastShadow)
+						// Skip it?? use the DontCastShadowForExterior flag. See doc of this flag
+						if(group->getInstance(instance).DontCastShadow || group->getInstance(instance).DontCastShadowForExterior)
 							continue;
 
 						// Add a .shape at the end ?

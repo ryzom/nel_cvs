@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.57 2003/06/26 14:53:23 besson Exp $
+ * $Id: scene_group.cpp,v 1.58 2003/07/07 10:25:59 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,15 +52,18 @@ CInstanceGroup::CInstance::CInstance ()
 	StaticLightEnabled= false;
 	DontCastShadow= false;
 	LocalAmbientId= 0xFF;
-	DontCastShadowForIgLighter= false;
+	DontCastShadowForInterior= false;
+	DontCastShadowForExterior= false;
 }
 
 // ***************************************************************************
 void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 {
 	/*
+	Version 6:
+		- DontCastShadowForExterior
 	Version 5:
-		- DontCastShadowForIgLighter
+		- DontCastShadowForInterior
 	Version 4:
 		- LocalAmbientId.
 	Version 3:
@@ -71,14 +74,20 @@ void CInstanceGroup::CInstance::serial (NLMISC::IStream& f)
 		- Clusters
 	*/
 	// Serial a version number
-	sint version=f.serialVersion (5);
+	sint version=f.serialVersion (6);
 
 
-	// DontCastShadowForIgLighter
-	if (version >= 5)
-		f.serial(DontCastShadowForIgLighter);
+	// DontCastShadowForExterior
+	if (version >= 6)
+		f.serial(DontCastShadowForExterior);
 	else
-		DontCastShadowForIgLighter= false;
+		DontCastShadowForExterior= false;
+
+	// DontCastShadowForInterior
+	if (version >= 5)
+		f.serial(DontCastShadowForInterior);
+	else
+		DontCastShadowForInterior= false;
 
 	// Serial the LocalAmbientId.
 	if (version >= 4)

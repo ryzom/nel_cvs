@@ -1,7 +1,7 @@
 /** \file ig_lighter_lib.cpp
  * <File description>
  *
- * $Id: ig_lighter_lib.cpp,v 1.4 2003/05/26 09:06:43 berenguier Exp $
+ * $Id: ig_lighter_lib.cpp,v 1.5 2003/07/07 10:27:53 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -168,8 +168,8 @@ void	CIgLighterLib::lightIg(CInstanceLighter &instanceLighter,
 			// progress
 			instanceLighter.progress("Loading Shapes obstacles", float(i)/igIn.getNumInstance());
 
-			// Skip it?? IgLighterLib use the DontCastShadowForIgLighter flag. See doc of this flag
-			if(igIn.getInstance(i).DontCastShadow || igIn.getInstance(i).DontCastShadowForIgLighter)
+			// Skip it?? IgLighterLib use the DontCastShadowForInterior flag. See doc of this flag
+			if(igIn.getInstance(i).DontCastShadow || igIn.getInstance(i).DontCastShadowForInterior)
 				continue;
 
 			// Get the instance shape name

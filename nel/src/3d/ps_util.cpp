@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.15 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_util.cpp,v 1.16 2001/06/25 13:38:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,7 +144,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 }
 
 
-void CPSUtil::displayBBox(const NLMISC::CAABBox &box)
+void CPSUtil::displayBBox(IDriver *driver, const NLMISC::CAABBox &box)
 {	
 	CVector max = box.getMax()
 			,min = box.getMin() ;
@@ -188,7 +188,7 @@ void CPSUtil::displayBBox(const NLMISC::CAABBox &box)
 	pb.addLine(2, 6) ; 
 
 
-	IDriver *driver = CNELU::Driver ;
+
 
 	CMatrix mat ;
 	mat.identity() ;
@@ -201,10 +201,10 @@ void CPSUtil::displayBBox(const NLMISC::CAABBox &box)
 
 
 
-void CPSUtil::displayBasis(const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm)
+void CPSUtil::displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm)
 {
 	CMaterial material  ;
-	IDriver *driver = CNELU::Driver ;
+
 	driver->setupModelMatrix(modelMat) ;
 	uint32 vTab[] = { 1, 2, 4,
 						  4, 2, 3,
@@ -280,9 +280,9 @@ void CPSUtil::displayBasis(const CMatrix &modelMat, const NLMISC::CMatrix &m, fl
 
 	// draw the letters
 
-	CPSUtil::print(std::string("x"), fg, fm, modelMat * m * CVector(1.4f * size, 0, 0), 15.0f * size) ;
-	CPSUtil::print(std::string("y"), fg, fm, modelMat * m * CVector(0, 1.4f  * size, 0), 15.0f * size) ;
-	CPSUtil::print(std::string("z"), fg, fm, modelMat * m * CVector(0, 0, 1.4f  * size), 15.0f * size) ;
+	CPSUtil::print(driver, std::string("x"), fg, fm, modelMat * m * CVector(1.4f * size, 0, 0), 15.0f * size) ;
+	CPSUtil::print(driver, std::string("y"), fg, fm, modelMat * m * CVector(0, 1.4f  * size, 0), 15.0f * size) ;
+	CPSUtil::print(driver, std::string("z"), fg, fm, modelMat * m * CVector(0, 0, 1.4f  * size), 15.0f * size) ;
 
 
 
@@ -290,10 +290,9 @@ void CPSUtil::displayBasis(const CMatrix &modelMat, const NLMISC::CMatrix &m, fl
 
 
 
-void CPSUtil::print(const std::string &text, CFontGenerator &fg, CFontManager &fm, const CVector &pos, float size)
+void CPSUtil::print(IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const CVector &pos, float size)
 {
-	nlassert((&fg) && (&fm)) ;
-	IDriver *driver = CNELU::Driver ;
+	nlassert((&fg) && (&fm)) ;	
 	CComputedString cptedString ;	
 	fm.computeString ( text,
 						&fg, 

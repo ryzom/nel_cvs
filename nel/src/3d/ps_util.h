@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ps_util.h,v 1.2 2001/06/25 13:38:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ struct CPSUtil
 
 	/// this draw a bounding box		
 
-	static void displayBBox(const NLMISC::CAABBox &box) ;
+	static void displayBBox(IDriver *driver, const NLMISC::CAABBox &box) ;
 
 	/// draw a sphere
 	static void displaySphere(IDriver &driver, float radius, const CVector &center, uint nbSubdiv = 4, CRGBA color = CRGBA::White) ;
@@ -91,11 +91,11 @@ struct CPSUtil
 	inline static void addRadiusToAABBox(NLMISC::CAABBox &box, float radius) ;
 	 
 	/// display a basis using the given matrix. The model matrix must be restored after this call
-	static void displayBasis(const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm) ;
+	static void displayBasis(IDriver *driver, const CMatrix &modelMat, const NLMISC::CMatrix &m, float size, CFontGenerator &fg, CFontManager &fm) ;
 
 
 	/// display a string at the given position. The model matrix must be restored after this call
-	static void print(const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size) ;
+	static void print(IDriver *driver, const std::string &text, CFontGenerator &fg, CFontManager &fm, const NLMISC::CVector &pos, float size) ;
 
 
 	

@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.15 2004/08/03 16:15:52 vizerie Exp $
+ * $Id: water_model.h,v 1.16 2005/01/10 15:03:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -66,8 +66,6 @@ class CVertexBufferReadWrite;
 class CWaterModel : public CTransformShape
 {
 public:
-	static CVertexBuffer VB;
-public:
 	/// ctor
 	CWaterModel();
 
@@ -112,7 +110,7 @@ public:
 	uint fillVB(void *dataStart, uint startTri, IDriver &drv);
 
 	// setup vertex buffer before render
-	static void setupVertexBuffer(uint numWantedVertices, IDriver *drv);
+	static void setupVertexBuffer(CVertexBuffer &vb, uint numWantedVertices, IDriver *drv);
 
 protected:
 	friend class CWaterShape;	
@@ -148,8 +146,7 @@ private:
 	std::vector<uint>		   _ClippedTriNumVerts;
 	// vertex range into global vb for current render
 	uint32					   _StartTri;
-	uint32                     _NumTris;
-	CVertexBuffer			   *_VB;
+	uint32                     _NumTris;	
 public:
 	// for use by CScene
 	void unlink();

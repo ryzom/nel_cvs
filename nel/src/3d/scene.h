@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.60 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: scene.h,v 1.61 2005/01/10 15:03:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -631,6 +631,8 @@ public:
 	  * Should be called at the beginning of the frame before anything is rendered.
 	  */
 	void		  updateWaterEnvMaps(TGlobalAnimationTime time);
+	// Get vertex buffer used for water rendering
+	CVertexBuffer &getWaterVB() { return _WaterVB; }
 private:
 
 	/// The camera / Viewport.
@@ -807,6 +809,9 @@ private:
 	/// Delayed model creation For skeleton spawn script animation
 	std::vector<class CSSSModelRequest>		_SSSModelRequests;
 	void									flushSSSModelRequests();
+	// common vb for water display
+	CVertexBuffer	 _WaterVB;
+	
 
 };
 

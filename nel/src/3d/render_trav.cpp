@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * TODO: File description
  *
- * $Id: render_trav.cpp,v 1.60 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: render_trav.cpp,v 1.61 2005/01/10 15:04:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -320,11 +320,11 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 				numWantedVertices += curr->getNumWantedVertices();
 				curr = curr->_Next;
 			}
-			CWaterModel::setupVertexBuffer(numWantedVertices, getDriver());
+			CWaterModel::setupVertexBuffer(Scene->getWaterVB(), numWantedVertices, getDriver());
 			//
 			{		
 				CVertexBufferReadWrite vbrw;
-				CWaterModel::VB.lock(vbrw);
+				Scene->getWaterVB().lock(vbrw);
 				CWaterModel *curr = _FirstWaterModel;
 				void *datas = vbrw.getVertexCoordPointer(0);			
 				//

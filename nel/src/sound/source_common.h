@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.h,v 1.7 2003/07/03 15:16:12 boucher Exp $
+ * $Id: source_common.h,v 1.8 2003/08/21 09:30:06 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,6 +97,10 @@ public:
 
 	NL3D::CCluster					*getCluster() const { return _Cluster; } 
 
+	/** This method is called from backgroup sound to check if
+	 *	subsound need to be restarted (ie subsound in loop mode).
+	 */
+	virtual void					checkup() {};
 
 protected:
 	// Dynamic properties

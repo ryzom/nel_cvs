@@ -134,22 +134,6 @@ SOURCE=.\sound\audio_mixer_user.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\background_source.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\background_source.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\complex_source.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\complex_source.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\sound\env_sound_user.cpp
 # PROP Exclude_From_Build 1
 # End Source File
@@ -165,22 +149,6 @@ SOURCE=.\sound\listener_user.cpp
 # Begin Source File
 
 SOURCE=.\sound\listener_user.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\simple_source.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\simple_source.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\source_common.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\source_common.h
 # End Source File
 # End Group
 # Begin Group "Makefile"
@@ -261,6 +229,42 @@ SOURCE=.\sound\sound_animation.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\sound\sound_animation.h
+# End Source File
+# End Group
+# Begin Group "source"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\sound\background_source.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\background_source.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\complex_source.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\complex_source.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\simple_source.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\simple_source.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\source_common.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\source_common.h
 # End Source File
 # End Group
 # Begin Source File

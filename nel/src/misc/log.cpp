@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.53 2003/04/16 13:52:55 lecroart Exp $
+ * $Id: log.cpp,v 1.54 2003/08/21 09:25:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,7 +56,9 @@ void CLog::setDefaultProcessName ()
 {
 	if (_ProcessName == NULL)
 	{
+#undef new
 		_ProcessName = new string;
+#define new NL_NEW
 	}
 
 #ifdef NL_OS_WINDOWS

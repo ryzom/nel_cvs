@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.79 2003/08/20 14:50:33 lecroart Exp $
+ * $Id: path.cpp,v 1.80 2003/08/21 09:25:47 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -111,7 +111,9 @@ CPath *CPath::getInstance ()
 {
 	if (_Instance == NULL)
 	{
+#undef new
 		_Instance = new CPath;
+#define new NL_NEW
 	}
 	return _Instance;
 }

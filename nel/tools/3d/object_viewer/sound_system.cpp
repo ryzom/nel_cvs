@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.16 2002/11/07 11:06:17 berenguier Exp $
+ * $Id: sound_system.cpp,v 1.17 2002/11/25 14:13:39 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ using namespace NLSOUND;
 
 
 UAudioMixer				*CSoundSystem::_AudioMixer = NULL;
-set<string>				CSoundSystem::_SoundBanksFileName;
+//set<string>				CSoundSystem::_SoundBanksFileName;
 set<string>				CSoundSystem::_SampleBanksFileName;
 CSoundAnimManager		*CSoundSystem::_AnimManager = NULL;
 //TSoundAnimId			CSoundSystem::_CurrentAnimation = CSoundAnimation::NoId;
@@ -70,7 +70,7 @@ void CSoundSystem::initSoundSystem ()
 	_AudioMixer = NLSOUND::UAudioMixer::createAudioMixer();
 	try
 	{
-		_AudioMixer->init(AUTOBALANCE_DEFAULT_PERIOD);
+		_AudioMixer->init();
 		_AudioMixer->setSamplePath(_SamplePath);
 		_AnimManager = new CSoundAnimManager(_AudioMixer);
 	}
@@ -110,7 +110,7 @@ void CSoundSystem::initSoundSystem ()
 		}
 	}					
 
-	for (set<string>::const_iterator it2 = _SoundBanksFileName.begin();
+/*	for (set<string>::const_iterator it2 = _SoundBanksFileName.begin();
 		 it2 != _SoundBanksFileName.end();
 		 ++it2)
 	{
@@ -126,7 +126,7 @@ void CSoundSystem::initSoundSystem ()
 			nlwarning ("Init sound: %s", mess.c_str());
 		}
 	}					
-
+*/
 
 }
 

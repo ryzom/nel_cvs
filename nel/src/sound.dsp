@@ -53,8 +53,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/sound"
 # PROP Intermediate_Dir "../obj/Debug/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /GZ /c
-# SUBTRACT CPP /Gf /Gy /Fr
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /GZ /Zm200 /c
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -169,19 +168,19 @@ SOURCE=.\sound\listener_user.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\sound\simple_source.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\simple_source.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\sound\source_common.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\sound\source_common.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\source_user.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\source_user.h
 # End Source File
 # End Group
 # Begin Group "Makefile"
@@ -210,6 +209,14 @@ SOURCE=.\sound\complex_sound.cpp
 # Begin Source File
 
 SOURCE=.\sound\complex_sound.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\context_sound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\context_sound.h
 # End Source File
 # Begin Source File
 
@@ -284,31 +291,6 @@ SOURCE=.\sound\background_sound_manager.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\bounding_box.cpp
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\bounding_box.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\bounding_shape.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\bounding_sphere.cpp
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\bounding_sphere.h
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
 SOURCE=.\sound\env_effect.cpp
 # PROP Exclude_From_Build 1
 # End Source File
@@ -324,11 +306,6 @@ SOURCE=.\sound\mixing_track.cpp
 # Begin Source File
 
 SOURCE=.\sound\mixing_track.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\playable.h
-# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 
@@ -349,16 +326,6 @@ SOURCE=.\sound\sound_bank.h
 # Begin Source File
 
 SOURCE=.\sound\sound_controller.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\sound_process.cpp
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\sound\sound_process.h
-# PROP Exclude_From_Build 1
 # End Source File
 # Begin Source File
 

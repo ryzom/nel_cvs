@@ -2,7 +2,7 @@
 * NeL plug-ins for 3DSMAX 3.1 compilation notes
 ************************************************
 
-* $Id: compilation_notes.txt,v 1.5 2001/08/06 08:22:30 corvazier Exp $
+* $Id: compilation_notes.txt,v 1.6 2001/10/05 14:56:45 corvazier Exp $
 
 ** DISTRIBUTION NOTES **
 
@@ -74,6 +74,8 @@ Thoses dll must go in the 3dsmax root directory. (ex: c:/3dsmax3_1)
 * nel_light.ms
 * nel_material.ms
 * nel_swt.ms
+* nel_flare.ms
+* nel_ps.ms
 
 Thoses scripts must go in the startup script dirctory. (ex: c:/3dsmax3_1/scripts/startup)
 

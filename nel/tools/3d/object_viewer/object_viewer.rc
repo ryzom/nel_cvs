@@ -185,6 +185,9 @@ BEGIN
     IDS_HAS_FORCE_APPLIED   "The object has force(s) applied on it. If it last forever, its motion can become instable after a while. Continue anyway ? (clue : you've been warned ..)"
     IDS_ENABLE_AUTOCOUNT    "Enable auto count ?"
     IDS_PARTICLE_SYSTEM_EDITOR "Particle system editor"
+    IDS_NO_SKELETON_IN_SCENE "No skeleton in scene. Can't select a bone"
+    IDS_CHOOSE_BONE_FOR_PS  "Choose bone to stick particle system"
+    IDS_NOT_STICKED_TO_SKELETON "Particle system not sticked to a bone."
 END
 
 #endif    // English (U.S.) resources
@@ -431,7 +434,7 @@ END
 
 IDD_EDITABLE_RANGE DIALOGEX 0, 0, 226, 24
 STYLE WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Slider1",IDC_SLIDER,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,34,6,59,12
@@ -446,7 +449,7 @@ END
 
 IDD_LOCATED_PROPERTIES DIALOGEX 0, 0, 351, 266
 STYLE DS_CONTROL | WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Limited life time",IDC_LIMITED_LIFE_TIME,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,17,48,63,12
@@ -482,7 +485,7 @@ BEGIN
     LTEXT           "Upper bound",IDC_STATIC,13,27,44,14
 END
 
-IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 109, 182
+IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 109, 214
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Particle system start/stop"
@@ -491,23 +494,27 @@ BEGIN
     PUSHBUTTON      "Button1",IDC_START_PICTURE,7,6,24,24,BS_BITMAP
     PUSHBUTTON      "Button1",IDC_STOP_PICTURE,69,6,24,24,BS_BITMAP
     CONTROL         "Display bbox",IDC_DISPLAY_BBOX,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,22,58,55,10
+                    WS_TABSTOP,22,73,55,10
     PUSHBUTTON      "Button1",IDC_PAUSE_PICTURE,39,7,24,24,BS_BITMAP
     CONTROL         "Slider1",IDC_ANIM_SPEED,"msctls_trackbar32",TBS_BOTH | 
                     TBS_NOTICKS | WS_TABSTOP,15,38,70,11
     LTEXT           "0 %",IDC_STATIC,2,39,12,8
     LTEXT           "100 %",IDC_STATIC,84,39,22,8
     CONTROL         "Display helpers",IDC_DISPLAY_HELPERS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,22,72,61,8
-    GROUPBOX        "",IDC_STATIC,15,51,74,34
-    GROUPBOX        "",IDC_STATIC,13,87,79,46
+                    BS_AUTOCHECKBOX | WS_TABSTOP,22,87,61,8
+    GROUPBOX        "",IDC_STATIC,15,66,74,34
+    GROUPBOX        "",IDC_STATIC,13,102,79,46
     CONTROL         "Enable auto count",IDC_ENABLE_AUTO_COUNT,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,17,92,73,15
-    PUSHBUTTON      "Reset count",IDC_RESET_COUNT,30,108,46,17
-    LTEXT           "Num particles : ? / ?",IDC_NUM_PARTICLES,4,155,103,9
-    LTEXT           "System date : ? s",IDC_SYSTEM_DATE,4,166,103,9
+                    BS_AUTOCHECKBOX | WS_TABSTOP,17,107,73,15
+    PUSHBUTTON      "Reset count",IDC_RESET_COUNT,30,123,46,17
+    LTEXT           "Num particles : ? / ?",IDC_NUM_PARTICLES,4,170,103,9
+    LTEXT           "System date : ? s",IDC_SYSTEM_DATE,4,182,103,9
     CONTROL         "Auto repeat",IDC_AUTOREPEAT,"Button",BS_AUTOCHECKBOX | 
-                    WS_TABSTOP,1,138,105,16
+                    WS_TABSTOP,28,153,57,11
+    PUSHBUTTON      "Link to skeleton",IDC_LINK_TO_SKELETON,3,193,63,16
+    PUSHBUTTON      "Unlink",IDC_UNLINK_FROM_SKELETON,70,193,35,16
+    CONTROL         "Link play to scene play",IDC_LINK_PLAY_TO_SCENE_PLAY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,50,92,14
 END
 
 IDD_ATTRIB_DLG DIALOG DISCARDABLE  0, 0, 346, 71
@@ -1688,7 +1695,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 102
         TOPMARGIN, 7
-        BOTTOMMARGIN, 175
+        BOTTOMMARGIN, 207
     END
 
     IDD_ATTRIB_DLG, DIALOG
@@ -2462,6 +2469,8 @@ BEGIN
         MENUITEM "Camera 5",                    ID_SCENE_CAMERA_5, GRAYED
         MENUITEM "Camera 6",                    ID_SCENE_CAMERA_6, GRAYED
         MENUITEM "Camera 7",                    ID_SCENE_CAMERA_7, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "Move FX",                     ID_EDIT_MOVE_FX
     END
     POPUP "&Window"
     BEGIN

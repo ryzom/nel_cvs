@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.54 2002/08/27 10:07:53 coutelas Exp $
+ * $Id: path.cpp,v 1.55 2002/08/27 10:10:20 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -430,10 +430,6 @@ dirent *readdir (DIR *dir)
 
 #endif // NL_OS_WINDOWS
 
-#ifndef NL_OS_WINDOWS
-string PathUsedIngetPathContent;
-#endif
-
 bool isdirectory (dirent *de)
 {
 	nlassert (de != NULL);
@@ -444,7 +440,7 @@ bool isdirectory (dirent *de)
 	// we can't use "de->d_type & DT_DIR" because it s always NULL on libc2.1
 	//return (de->d_type & DT_DIR) != 0;
 
-	return CFile::isDirectory (PathUsedIngetPathContent + de->d_name);
+	return CFile::isDirectory (de->d_name);
 
 #endif // NL_OS_WINDOWS
 }
@@ -458,7 +454,7 @@ bool isfile (dirent *de)
 	// we can't use "de->d_type & DT_DIR" because it s always NULL on libc2.1
 	//return (de->d_type & DT_DIR) == 0;
 
-	return !CFile::isDirectory (PathUsedIngetPathContent + de->d_name);
+	return !CFile::isDirectory (de->d_name);
 
 #endif // NL_OS_WINDOWS
 }
@@ -475,10 +471,6 @@ string getname (dirent *de)
 
 void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result)
 {			
-#ifndef NL_OS_WINDOWS
-	PathUsedIngetPathContent = CPath::standardizePath (path);
-#endif
-	
 	DIR *dir = opendir (path.c_str());
 
 	if (dir == NULL)
@@ -505,8 +497,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		if (fn == "." || fn == "..")
 			continue;
 
-		//if (isdirectory(de))
-		if (CFile::isDirectory(fn))
+		if (isdirectory(de))
 		{
 			// skip CVS directory
 			if (fn == "CVS")
@@ -560,10 +551,6 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 	{		
 		getPathContent (recursPath[i], recurse, wantDir, wantFile, result);
 	}
-
-#ifndef NL_OS_WINDOWS
-	PathUsedIngetPathContent = "";
-#endif
 }
 
 void CPath::removeAllAlternativeSearchPath ()

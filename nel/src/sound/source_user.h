@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.7 2001/08/02 13:47:26 cado Exp $
+ * $Id: source_user.h,v 1.8 2001/08/24 16:55:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,10 @@ public:
 	virtual ~CSourceUser();
 
 	/// Static init (call at the very beginning)
-	static void						init() { NLMISC_REGISTER_CLASS(CSourceUser); }
+	static void						init() 
+	{ 
+		NLMISC_REGISTER_CLASS(CSourceUser); 
+	}
 
 	
 	/// Change the sound binded to the source

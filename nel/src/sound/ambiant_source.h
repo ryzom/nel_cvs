@@ -1,7 +1,7 @@
 /** \file ambiant_source.h
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.h,v 1.2 2001/07/17 15:32:12 cado Exp $
+ * $Id: ambiant_source.h,v 1.3 2001/08/24 16:55:53 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -55,7 +55,10 @@ public:
 	/// Destructor
 	virtual ~CAmbiantSource();
 	/// Static init (call at the very beginning)
-	static void				init() { NLMISC_REGISTER_CLASS(CAmbiantSource); }
+	static void				init() 
+	{		
+		NLMISC_REGISTER_CLASS(CAmbiantSource); 			
+	}
 
 	
 	/** Init. You can pass a position vector to link to (if the playable has stereo source(s))

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.10 2001/08/24 12:43:17 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.11 2001/08/24 16:55:53 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,10 +159,15 @@ void				CAudioMixerUser::init( uint32 balance_period )
 	CSound::init( _SoundDriver );
 
 	// Init registrable classes
-	CSourceUser::init();
-	CAmbiantSource::init();
-	CBoundingSphere::init();
-	CBoundingBox::init();
+	static bool initialized = false;
+	if (!initialized)
+	{
+		CSourceUser::init();
+		CAmbiantSource::init();
+		CBoundingSphere::init();
+		CBoundingBox::init();
+		initialized = true;
+	}
 
 	// Init listener
 	_Listener.init( _SoundDriver );

@@ -1,7 +1,7 @@
 /** \file bounding_box.h
  * CBoundingBox: Bounding box (different from the NL3D ones)
  *
- * $Id: bounding_box.h,v 1.2 2001/07/17 15:32:12 cado Exp $
+ * $Id: bounding_box.h,v 1.3 2001/08/24 16:55:53 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -48,7 +48,10 @@ public:
 	/// Constructor
 	CBoundingBox();
 	/// Static init (call at the very beginning)
-	static void						init() { NLMISC_REGISTER_CLASS(CBoundingBox); }
+	static void						init() 
+	{
+		NLMISC_REGISTER_CLASS(CBoundingBox); 	
+	}
 
 
 	/// Return true if the box includes the specified point

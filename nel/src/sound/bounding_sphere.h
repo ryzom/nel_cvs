@@ -1,7 +1,7 @@
 /** \file bounding_sphere.h
  * CBoundingSphere: Bounding sphere (different from the NL3D ones)
  *
- * $Id: bounding_sphere.h,v 1.2 2001/07/17 15:32:12 cado Exp $
+ * $Id: bounding_sphere.h,v 1.3 2001/08/24 16:55:53 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -46,7 +46,11 @@ class CBoundingSphere : public IBoundingShape
 public:
 
 	/// Static init (call at the very beginning)
-	static void						init() { NLMISC_REGISTER_CLASS(CBoundingSphere); }
+	static void						init() 
+	{
+		NLMISC_REGISTER_CLASS(CBoundingSphere);
+	}
+ 
 
 	
 	/// Return true if the box includes the specified point

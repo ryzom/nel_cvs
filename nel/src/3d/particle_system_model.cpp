@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.20 2001/09/26 17:03:05 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.21 2001/09/26 17:43:16 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -211,7 +211,8 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 	CParticleSystem *ps = psm->getPS();
 	if (psm->_Invalidated) return;
 
-	if (!psm->_InCluster)
+	
+	if (!psm->_EditionMode && !psm->_InCluster)
 	{
 		CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)psm->Shape);
 		if (pss->_DestroyWhenOutOfFrustum)
@@ -400,7 +401,11 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 						return;
 					}
 				}			
-				m->_InCluster = true;						
+				Visible = true; // not too far, but not in cluster
+				m->_InsertedInVisibleList = true;
+				trav->addVisibleObs(this);
+				m->_InCluster = true;
+				return;						
 			}
 			else
 			{
@@ -431,6 +436,9 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 					}
 				}			
 
+				Visible = true; // not too far, but not in cluster
+				m->_InsertedInVisibleList = true;
+				trav->addVisibleObs(this);
 				m->_InCluster = true;
 				return;
 				
@@ -514,6 +522,9 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 			}
 		}
 
+		Visible = true; // not too far, but not in cluster
+		m->_InsertedInVisibleList = true;
+		trav->addVisibleObs(this);
 		m->_InCluster = true;
 }
 

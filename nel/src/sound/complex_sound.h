@@ -1,7 +1,7 @@
 /** \file complex_sound.h
  *
  *
- * $Id: complex_sound.h,v 1.3 2003/03/03 12:58:08 boucher Exp $
+ * $Id: complex_sound.h,v 1.4 2003/08/21 09:28:41 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,7 +61,7 @@ public:
 
 	const std::vector<uint32>		&getSoundSeq() const						{ return _SoundSeq;}
 	const std::vector<uint32>		&getDelaySeq() const						{ return _DelaySeq;}
-	const NLMISC::TStringId			&getSound(uint index) const					{ return _Sounds[index%_Sounds.size()];}
+	const NLMISC::TStringId			&getSound(uint index) const					{ return !_Sounds.empty() ? _Sounds[index%_Sounds.size()]: NULL;}
 	const std::vector<NLMISC::TStringId>	&getSounds() const							{ return _Sounds;}
 
 	uint32							getFadeLenght() const						{ return _XFadeLenght;} 

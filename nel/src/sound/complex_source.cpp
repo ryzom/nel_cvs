@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: complex_source.cpp,v 1.8 2003/07/03 15:16:12 boucher Exp $
+ * $Id: complex_source.cpp,v 1.9 2003/08/21 09:29:02 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -146,36 +146,54 @@ void CComplexSource::playStuf()
 			// use Source1, sound sequence, delay sequence and event.
 			_SoundSeqIndex = 0;
 			_DelaySeqIndex = 0;
-			const vector<uint32>	&soundSeq = _PatternSound->getSoundSeq();
-			if (!soundSeq.empty())
+
+			const std::vector<uint32> &delaySeq = _PatternSound->getDelaySeq();
+
+			if (!delaySeq.empty() && delaySeq[_DelaySeqIndex] != 0)
 			{
-				CSound *sound = mixer->getSoundId(_PatternSound->getSound(soundSeq[_SoundSeqIndex++]));
-
-				_Source1 = mixer->createSource(sound, false, 0, 0, _Cluster);
-				if (_Source1 == NULL)
-					return;
-				_Source1->setPriority(_Priority);
-				_Source1->setRelativeGain(_Gain*_Gain*_Gain);
-				_Source1->setPos(_Position);
-				_Source1->setPitch(_Source1->getSound()->getPitch() * _Pitch);
-				_Source1->play();
-				_StartTime1 = now;
-
-				// register event for next sound.
-				const std::vector<uint32> &delaySeq = _PatternSound->getDelaySeq();
-				if (!delaySeq.empty() && _DelaySeqIndex < delaySeq.size())
+				_LastSparseEvent = false;
+				// begin with a delay
+				mixer->addEvent(this, uint64(now + delaySeq[_DelaySeqIndex++]/_TickPerSecond));
+			}
+			else
+			{
+				if (!delaySeq.empty())
+					_DelaySeqIndex = 1;
+				const vector<uint32>	&soundSeq = _PatternSound->getSoundSeq();
+				if (!soundSeq.empty())
 				{
-					_LastSparseEvent = false;
-					// event for next sound.
-					mixer->addEvent(this, uint64(now + sound->getDuration() + delaySeq[_DelaySeqIndex++]/_TickPerSecond));
-				}
-				else
-				{
-					_LastSparseEvent = true;
-					// event for stop
-					mixer->addEvent(this, now + sound->getDuration());
+					CSound *sound = mixer->getSoundId(_PatternSound->getSound(soundSeq[_SoundSeqIndex++]));
+
+					_Source1 = mixer->createSource(sound, false, 0, 0, _Cluster);
+					if (_Source1 == NULL)
+						return;
+					_Source1->setPriority(_Priority);
+					_Source1->setRelativeGain(_Gain*_Gain*_Gain);
+					_Source1->setPos(_Position);
+					_Source1->setPitch(_Source1->getSound()->getPitch() * _Pitch);
+					_Source1->play();
+					_StartTime1 = now;
+
+					// register event for next sound.
+					const std::vector<uint32> &delaySeq = _PatternSound->getDelaySeq();
+					if (!delaySeq.empty() && _DelaySeqIndex < delaySeq.size())
+					{
+						// event for next sound.
+						mixer->addEvent(this, uint64(now + sound->getDuration() + delaySeq[_DelaySeqIndex++]/_TickPerSecond));
+						if (_DelaySeqIndex >= delaySeq.size() && !_Looping)
+							_LastSparseEvent = true;
+						else
+							_LastSparseEvent = false;
+					}
+					else
+					{
+						_LastSparseEvent = true;
+						// event for stop
+						mixer->addEvent(this, now + sound->getDuration());
+					}
 				}
 			}
+
 		}
 		break;
 	case CComplexSound::MODE_ALL_IN_ONE:
@@ -221,7 +239,11 @@ void CComplexSource::playStuf()
 				}
 			}
 
-			mixer->addEvent(this, NLMISC::CTime::getLocalTime() + _PatternSound->getDuration());
+			if (!_Looping)
+			{
+				// event to stop the sound
+				mixer->addEvent(this, NLMISC::CTime::getLocalTime() + _PatternSound->getDuration());
+			}
 		}
 		break;
 	default:
@@ -255,7 +277,9 @@ void CComplexSource::stop()
 	{
 		if ((*first)->isPlaying())
 			(*first)->stop();
+		delete *first;
 	}
+	_AllSources.clear();
 
 	switch (_PatternSound->getPatternMode())
 	{
@@ -359,7 +383,7 @@ void CComplexSource::setGain( float gain )
 		(*first)->setGain(_Gain);
 	}
 
-	if (_Muted)
+	if (_Muted && _Playing)
 		playStuf();
 }
 
@@ -388,10 +412,10 @@ void CComplexSource::setRelativeGain( float gain )
 	std::vector<USource	*>::iterator first(_AllSources.begin()), last(_AllSources.end());
 	for (; first != last; ++first)
 	{
-		(*first)->setRelativeGain(_Gain*_Gain*_Gain);
+		(*first)->setRelativeGain(_Gain);
 	}
 
-	if (_Muted)
+	if (_Muted && _Playing)
 		playStuf();
 }
 
@@ -608,8 +632,12 @@ void CComplexSource::onEvent()
 
 			if (_Looping && _DelaySeqIndex >= delaySeq.size())
 			{
-				_DelaySeqIndex = 0;
-			}
+				_DelaySeqIndex = 1;
+/*				if (!delaySeq.empty() && delaySeq[0] == 0)
+					_DelaySeqIndex = 1;
+				else
+					_DelaySeqIndex = 0;
+*/			}
 
 			if (!soundSeq.empty() && !_LastSparseEvent)
 			{
@@ -637,11 +665,16 @@ void CComplexSource::onEvent()
 				{
 					// event for next sound.
 					mixer->addEvent(this, uint64(now + sound->getDuration() + delaySeq[_DelaySeqIndex++]/_TickPerSecond));
+					if (_DelaySeqIndex == delaySeq.size() && !_Looping)
+						_LastSparseEvent = true;
 				}
 				else
 				{
-					// event for stop
-					_LastSparseEvent = true;
+					// event for stop ?
+					if (!_Looping)
+						_LastSparseEvent = true;
+					else
+						_LastSparseEvent = false;
 					mixer->addEvent(this, now + sound->getDuration());
 				}
 			}
@@ -658,6 +691,26 @@ void CComplexSource::onEvent()
 		break;
 	default:
 		nlassert(false);
+	}
+}
+
+
+void CComplexSource::checkup()
+{
+	if (_Muted)
+		return;
+
+	if (_Source1 != NULL && _Source1->getSound()->getLooping() && !_Source1->isPlaying())
+		_Source1->play();
+	if (_Source2 != NULL && _Source2->getSound()->getLooping() && !_Source2->isPlaying())
+		_Source2->play();
+
+	std::vector<USource	*>::iterator first(_AllSources.begin()), last(_AllSources.end());
+	for (; first != last; ++first)
+	{
+		USource *source = *first;
+		if (source != NULL && source->getSound()->getLooping() && !source->isPlaying())
+			source->play();
 	}
 }
 

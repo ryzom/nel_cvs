@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.31 2002/08/22 14:52:29 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.32 2002/08/22 15:04:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -140,8 +140,6 @@ bool CBufSock::flush()
 	nlassert (this != InvalidSockId);	// invalid bufsock
 	//nlnettrace( "CBufSock::flush" );
 
-	nlwarning ("flush bufsock");
-
 	// Copy data from the send queue to _ReadyToSendBuffer
 	TBlockSize netlen;
 //	vector<uint8> tmpbuffer;
@@ -162,11 +160,7 @@ bool CBufSock::flush()
 		// Append the temporary buffer to the global buffer
 		CFastMem::memcpy (&_ReadyToSendBuffer[oldBufferSize+sizeof(TBlockSize)], tmpbuffer, size);
 		SendFifo.pop();
-	
-		nlwarning ("flush prepare one");
 	}
-
-	nlwarning ("flush ready to send %d", _ReadyToSendBuffer.size());
 
 	// Actual sending of _ReadyToSendBuffer
 	//if ( ! _ReadyToSendBuffer.empty() )
@@ -175,9 +169,6 @@ bool CBufSock::flush()
 		// Send
 		CSock::TSockResult res;
 		TBlockSize len = _ReadyToSendBuffer.size() - _RTSBIndex;
-
-	nlwarning ("flush bufsock send");
-
 
 		res = Sock->send( _ReadyToSendBuffer.getPtr()+_RTSBIndex, len, false );
 
@@ -255,7 +246,6 @@ bool CBufSock::update()
 //	nlnettrace( "CBufSock::update-BEGIN" );
 	// Time trigger
 
-	nlwarning ("bufsock update %u", (uint32)_TriggerTime);
 	if ( _TriggerTime != -1 )
 	{
 		TTime now = CTime::getLocalTime();
@@ -264,7 +254,6 @@ bool CBufSock::update()
 #ifdef NL_DEBUG
 			_FlushTrigger = FTTime;
 #endif
-	nlwarning ("bufsock need flush now update %u", (uint32)_TriggerTime);
 			if ( flush() )
 			{
 				_LastFlushTime = now;

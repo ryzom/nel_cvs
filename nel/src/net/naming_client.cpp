@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.52 2002/08/22 15:06:55 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.53 2002/08/22 15:07:38 lecroart Exp $
  *
  */
 
@@ -305,7 +305,6 @@ bool CNamingClient::registerService (const std::string &name, const std::vector<
 	msgout.serial (sid);
 	_Connection->send (msgout);
 
-	TTime before = CTime::getLocalTime ();
 	// wait the answer of the naming service "RG"
 	Registered = false;
 	RegisteredSID = &sid;
@@ -341,7 +340,6 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const std::
 	msgout.serial (sid);
 	_Connection->send (msgout);
 
-	TTime before = CTime::getLocalTime ();
 	// wait the answer of the naming service "RGI"
 	Registered = false;
 	while (!Registered)
@@ -410,7 +408,6 @@ uint16 CNamingClient::queryServicePort ()
 	CMessage msgout (_Connection->getSIDA(), "QP");
 	_Connection->send (msgout);
 
-	TTime before = CTime::getLocalTime ();
 	// wait the answer of the naming service "QP"
 	QueryPort = false;
 	while (!QueryPort)

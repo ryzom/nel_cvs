@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.18 2002/08/22 14:47:13 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.19 2002/08/22 15:04:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,8 +113,6 @@ void CBufClient::send( const NLMISC::CMemStream& buffer )
 	nlnettrace( "CBufClient::send" );
 	nlassert( buffer.length() > 0 );
 	nlassert( buffer.length() <= maxSentBlockSize() );
-
-nlwarning ("send bufclient");
 
 	H_AUTO (CBufServer_send);
 

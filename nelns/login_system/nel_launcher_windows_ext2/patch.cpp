@@ -1,6 +1,6 @@
 /** \file patch.cpp
  *
- * $Id: patch.cpp,v 1.2 2004/01/08 11:38:58 lecroart Exp $
+ * $Id: patch.cpp,v 1.3 2004/01/20 18:49:14 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -497,18 +497,18 @@ private:
 
 			for (i = 0; i < res.size (); i++)
 			{
-				string fn = NLMISC::CFile::getFilename (res[i]);
+				string fn = strlwr(NLMISC::CFile::getFilename (res[i]));
 				uint j;
 				for (j = 0; j < filesList.size (); j++)
 				{
-					if (fn == filesList[j].Filename)
+					if (fn == strlwr(filesList[j].Filename))
 					{
 						break;
 					}
 				}
 				if (j == filesList.size ())
 				{
-					string file = ClientPatchPath+fn;
+					string file = ClientPatchPath+NLMISC::CFile::getFilename (res[i]);
 					setState(true, true, "Deleting %s", file.c_str());
 					string err = deleteFile (file, false);
 					if (!err.empty()) setState(true, true, err.c_str());

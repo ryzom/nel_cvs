@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.48 2003/01/02 13:31:52 lecroart Exp $
+ * $Id: displayer.cpp,v 1.49 2003/02/07 17:44:00 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,7 +129,7 @@ IDisplayer::~IDisplayer()
 /*
  * Display the string where it does.
  */
-void IDisplayer::display ( const TDisplayInfo& args, const char *message )
+void IDisplayer::display ( const CLog::TDisplayInfo& args, const char *message )
 {
 	_Mutex->enter();
 	try
@@ -145,7 +145,7 @@ void IDisplayer::display ( const TDisplayInfo& args, const char *message )
 
 
 // Log format : "<LogType> <ThreadNo> <FileName> <Line> <ProcessName> : <Msg>"
-void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
+void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message )
 {
 	bool needSpace = false;
 	stringstream ss;
@@ -332,7 +332,7 @@ uint32	toto (FILE *fp)
 }
 
 // Log format: "2000/01/15 12:05:30 <ProcessName> <LogType> <ThreadId> <Filename> <Line> : <Msg>"
-void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
+void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message )
 {
 	bool needSpace = false;
 	stringstream ss;
@@ -423,7 +423,7 @@ void CFileDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 // Log format in clipboard: "2000/01/15 12:05:30 <LogType> <ProcessName> <FileName> <Line>: <Msg>"
 // Log format on the screen: in debug   "<ProcessName> <FileName> <Line>: <Msg>"
 //                           in release "<Msg>"
-void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message)
+void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message)
 {
 #ifdef NL_OS_WINDOWS
 

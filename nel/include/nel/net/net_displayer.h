@@ -1,7 +1,7 @@
 /** \file net_displayer.h
  * Implementation of the CDisplayer (look at displayer.h) that display on a network connection
  *
- * $Id: net_displayer.h,v 1.17 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: net_displayer.h,v 1.18 2003/02/07 17:42:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,7 @@ protected:
 	/** Sends the string to the logging server
 	 * \warning If not connected, tries to connect to the logging server each call. It can slow down your program a lot.
 	 */
-	virtual void doDisplay ( const NLMISC::TDisplayInfo& args, const char *message);
+	virtual void doDisplay ( const NLMISC::CLog::TDisplayInfo& args, const char *message);
 
 	 /// Find the server (using the NS) and connect
 	void findAndConnect();

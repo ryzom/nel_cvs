@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.17 2002/11/12 17:25:04 lecroart Exp $
+ * $Id: displayer.h,v 1.18 2003/02/07 17:42:30 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,22 +36,6 @@ namespace NLMISC
 {
 
 
-// Debug information
-struct TDisplayInfo
-{
-	TDisplayInfo() : Date(0), LogType(CLog::LOG_NO), ThreadId(0), Filename(NULL), Line(-1) {}
-	
-	time_t				Date;
-	CLog::TLogType		LogType;
-	std::string			ProcessName;
-	uint				ThreadId;
-	const char			*Filename;
-	sint				Line;
-
-	std::string			CallstackAndLog;	// contains the callstack and a log with not filter of N last line (only in error/assert log type)
-};
-
-
 class CMutex;
 
 
@@ -73,7 +57,7 @@ public:
 	virtual ~IDisplayer();
 
 	/// Display the string where it does.
-	void display( const TDisplayInfo& args, const char *message );
+	void display( const CLog::TDisplayInfo& args, const char *message );
 
 	/// This is the idenfiant for a displayer, it is used to fond or remove a displayer
 	std::string DisplayerName;
@@ -81,7 +65,7 @@ public:
 protected:
 
 	/// Method to implement in the deriver
-	virtual void doDisplay( const TDisplayInfo& args, const char *message) = 0;
+	virtual void doDisplay( const CLog::TDisplayInfo& args, const char *message) = 0;
 
 	
 	/// Convert log type to string
@@ -121,7 +105,7 @@ public:
 protected:
 
 	/// Display the string to stdout and OutputDebugString on Windows
-	virtual void doDisplay ( const TDisplayInfo& args, const char *message );
+	virtual void doDisplay ( const CLog::TDisplayInfo& args, const char *message );
 };
 
 
@@ -146,7 +130,7 @@ public:
 
 protected:
 	/// Put the string into the file.
-    virtual void doDisplay ( const TDisplayInfo& args, const char *message );
+    virtual void doDisplay ( const CLog::TDisplayInfo& args, const char *message );
 
 private:
 	std::string _FileName;
@@ -172,7 +156,7 @@ public:
 
 protected:
 	/// Put the string into the file.
-    virtual void doDisplay ( const TDisplayInfo& args, const char *message );
+    virtual void doDisplay ( const CLog::TDisplayInfo& args, const char *message );
 };
 
 

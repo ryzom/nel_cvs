@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.11 2003/02/03 15:53:56 coutelas Exp $
+ * $Id: window_displayer.cpp,v 1.12 2003/02/07 17:44:00 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,7 +123,7 @@ void CWindowDisplayer::create (string windowNameEx, bool iconified, sint x, sint
 	_Thread->start ();
 }
 
-void CWindowDisplayer::doDisplay (const NLMISC::TDisplayInfo &args, const char *message)
+void CWindowDisplayer::doDisplay (const NLMISC::CLog::TDisplayInfo &args, const char *message)
 {
 	bool needSpace = false;
 	stringstream ss;

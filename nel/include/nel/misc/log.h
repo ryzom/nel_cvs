@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.32 2002/11/13 11:57:52 lecroart Exp $
+ * $Id: log.h,v 1.33 2003/02/07 17:42:30 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NLMISC
 
 class IDisplayer;
 
+
 /**
  * When display() is called, the logger builds a string a sends it to its attached displayers.
  * The positive filters, if any, are applied first, then the negative filters.
@@ -54,6 +55,22 @@ class CLog {
 public:
 
 	typedef enum { LOG_NO=0, LOG_ERROR, LOG_WARNING, LOG_INFO, LOG_DEBUG, LOG_STAT, LOG_ASSERT, LOG_UNKNOWN } TLogType;
+
+	// Debug information
+	struct TDisplayInfo
+	{
+		TDisplayInfo() : Date(0), LogType(CLog::LOG_NO), ThreadId(0), Filename(NULL), Line(-1) {}
+		
+		time_t				Date;
+		TLogType		LogType;
+		std::string			ProcessName;
+		uint				ThreadId;
+		const char			*Filename;
+		sint				Line;
+
+		std::string			CallstackAndLog;	// contains the callstack and a log with not filter of N last line (only in error/assert log type)
+	};
+
 
 	CLog(TLogType logType = LOG_NO);
 
@@ -154,6 +171,10 @@ protected:
 
 	/// Display a Raw string to all attached displayers.
 	void displayRawString (const char *str);
+
+	std::string							TempString;
+	TDisplayInfo						TempArgs;
+
 
 };
 

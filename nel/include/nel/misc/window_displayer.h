@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.h,v 1.12 2003/01/22 13:34:55 lecroart Exp $
+ * $Id: window_displayer.h,v 1.13 2003/02/07 17:42:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,7 +75,7 @@ public:
 protected:
 
 	// display a string (MT)
-	virtual void doDisplay (const NLMISC::TDisplayInfo &args, const char *message);
+	virtual void doDisplay (const NLMISC::CLog::TDisplayInfo &args, const char *message);
 
 	// true for windows
 	bool needSlashR;

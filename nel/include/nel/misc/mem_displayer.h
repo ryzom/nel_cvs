@@ -1,7 +1,7 @@
 /** \file mem_displayer.h
  * <File description>
  *
- * $Id: mem_displayer.h,v 1.5 2002/12/23 14:45:45 lecroart Exp $
+ * $Id: mem_displayer.h,v 1.6 2003/02/07 17:42:30 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -63,7 +63,7 @@ public:
 
 protected:
 	/// Put the string into the file.
-    virtual void	doDisplay ( const TDisplayInfo& args, const char *message );
+    virtual void	doDisplay ( const CLog::TDisplayInfo& args, const char *message );
 
 	bool						_NeedHeader;
 
@@ -89,7 +89,7 @@ public:
 
 protected:
 	/// Put the string into the file.
-    virtual void	doDisplay ( const TDisplayInfo& args, const char *message );
+    virtual void	doDisplay ( const CLog::TDisplayInfo& args, const char *message );
 };
 
 

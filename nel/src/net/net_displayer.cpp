@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.21 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.22 2003/02/07 17:44:14 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,7 +120,7 @@ CNetDisplayer::~CNetDisplayer ()
  *
  * Log format: "2000/01/15 12:05:30 <LogType> <ProcessName>: <Msg>"
  */
-void CNetDisplayer::doDisplay ( const TDisplayInfo& args, const char *message)
+void CNetDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message)
 {
 	try
 	{

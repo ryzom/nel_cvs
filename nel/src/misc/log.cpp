@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.49 2002/12/18 19:13:52 lecroart Exp $
+ * $Id: log.cpp,v 1.50 2003/02/07 17:44:00 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -231,9 +231,6 @@ bool CLog::attached(IDisplayer *displayer) const
 	return (find( _Displayers.begin(), _Displayers.end(), displayer ) != _Displayers.end()) ||
 			(find( _BypassFilterDisplayers.begin(), _BypassFilterDisplayers.end(), displayer ) != _BypassFilterDisplayers.end());
 }
-
-static string TempString;
-static TDisplayInfo TempArgs;
 
 
 void CLog::displayString (const char *str)

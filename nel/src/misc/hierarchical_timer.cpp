@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.23 2003/02/07 16:06:35 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.24 2003/02/07 17:44:00 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -568,7 +568,7 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 
 
 	// display header.
-	TDisplayInfo	dummyDspInfo;
+	CLog::TDisplayInfo	dummyDspInfo;
 	log->displayNL("HTIMER: =========================================================================");
 	log->displayRawNL("HTIMER: Hierarchical display of bench by execution path");
 	log->displayRawNL("HTIMER: %*s |      total |      local |       visits |  loc%%/ glb%% |       min |       max |      mean", labelNumChar, "");

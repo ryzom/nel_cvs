@@ -1,7 +1,7 @@
 dnl
 dnl Configuration script for NeLNS
 dnl
-dnl $Id: configure.in,v 1.4 2001/08/07 12:41:46 valignat Exp $
+dnl $Id: configure.in,v 1.5 2001/08/07 12:58:26 valignat Exp $
 dnl 
 
 dnl Process this file with autoconf to produce a configure script.
@@ -67,51 +67,56 @@ dnl ==========
 dnl STLPort
 dnl ==========
 
-dnl Ask user for path to the STLport header files
+dnl Ask user for path to the STLport files location
 AC_ARG_WITH( stlport,
-    [  --with-stlport=<path>   path to the STLPort header files directory.
-                          e.g. /usr/local/include/stlport],
-    [STLPORT_DIR=$with_stlport
-      AC_MSG_RESULT(using STLPort header files located in $with_stlport)],
-    AC_MSG_ERROR([You must call configure with the --with-stlport option.
-    This tells configure where to find the STLPort header files.
-    e.g. --with-stlport=/usr/local/include/stlport])
+    [  --with-stlport=<path>   path to the STLPort install files directory.
+                          e.g. /usr/local/stlport]
 )
 
-if test X"$STLPORT_DIR" != X"";
+AC_ARG_WITH( stlport-include,
+    [  --with-stlport-include=<path>
+                          path to the STLPort header files directory.
+                          e.g. /usr/local/stlport/include]
+)
+
+AC_ARG_WITH( stlport-lib,
+    [  --with-stlport-lib=<path>
+                          path to the STLPort library files directory.
+                          e.g. /usr/local/stlport/lib]
+)
+
+if test "$with_stlport" != "no"
 then
-    CXXFLAGS="-I$STLPORT_DIR $CXXFLAGS"
+    if test -z "$with_stlport" && test -z "$with_stlport_lib" -o -z "$with_stlpo
+rt_include"
+    then
+        AC_MSG_ERROR([You must call configure with the --with-stlport or --with-stlport-lib and with-stlport-include options.
+This tells configure where to find the STLPort files.])
+    fi
+
+    if test $with_stlport
+    then
+        AC_MSG_RESULT(using STLPort files located in $with_stlport)
+
+        STLPORT_CFLAGS="$with_stlport/include"
+        STLPORT_LIB="$with_stlport/lib"
+    fi
+else
+    no_stlport="no"
+    AC_MSG_RESULT(*** Override the use of the STLPorts (EXPERIMENTAL) ***)
 fi
 
-dnl Ask user for path to the STLPort library files
-AC_ARG_WITH( stllib,
-    [  --with-stllib=<path>    path to the STLPort installation directory.
-                          e.g. /usr/local/lib/stlport],
-    [STLLIB_DIR=$with_stllib
-      AC_MSG_RESULT(using STLPort library located in $with_stllib)]
-)
-
-if test X"$STLLIB_DIR" != X"";
+if test -z "$no_stlport" -a "$with_stlport_include"
 then
-    LIBS="-L$STLLIB_DIR $LIBS"
+    AC_MSG_RESULT(using STLPort header files located in $with_stlport_include)
+    STLPORT_CFLAGS="$with_stlport_include"
 fi
 
-LIBS="$LIBS -lstlport_gcc"
-
-_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CXXFLAGS"
-
-AC_MSG_CHECKING(for STLPort)
-AC_EGREP_CPP( yo_stlport,
-[#include <algorithm>
-#ifdef __SGI_STL_PORT
-   yo_stlport
-#endif],
-[AC_MSG_RESULT(yes)],
-AC_MSG_ERROR([STLPort is needed to compile NeLNS (www.stlport.org)])
-)
-
-CPPFLAGS="$_CPPFLAGS"
+if test -z "$no_stlport" -a  "$with_stlport_lib"
+then
+    AC_MSG_RESULT(using STLPort library files located in $with_stlport_lib)
+    STLPORT_LIB="$with_stlport_lib"
+fi
 
 
 dnl ==========
@@ -198,6 +203,38 @@ fi
 
 dnl ====================================================================
 dnl Checks for libraries.
+
+dnl ==========
+dnl STLPort
+dnl ==========
+
+if test -z "$no_stlport"
+then 
+  
+    if test X"$STLPORT_CFLAGS" != X
+    then
+        CXXFLAGS="-I$STLPORT_CFLAGS $CXXFLAGS"
+    fi
+
+    if test X"$STLPORT_LIB" != X
+    then
+        LIBS="-L$STLPORT_LIB $LIBS -lstlport_gcc"
+    fi
+
+    _CPPFLAGS="$CPPFLAGS"
+    CPPFLAGS="$CXXFLAGS $STLPORT_CFLAGS"
+
+    AC_MSG_CHECKING(for STLPort)
+    AC_EGREP_CPP( yo_stlport,
+    [#include <algorithm>
+#ifdef __SGI_STL_PORT
+   yo_stlport
+#endif],
+    [ AC_MSG_RESULT(yes)],
+      AC_MSG_ERROR([STLPort is needed to compile NeL (www.stlport.org).]) )
+    
+      CPPFLAGS="$_CPPFLAGS"
+fi
 
 
 dnl ====================================================================

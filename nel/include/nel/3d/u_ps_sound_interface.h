@@ -1,7 +1,7 @@
 /** \file u_ps_sound_interface.h
  * <File description>
  *
- * $Id: u_ps_sound_interface.h,v 1.5 2004/01/13 12:52:59 berenguier Exp $
+ * $Id: u_ps_sound_interface.h,v 1.6 2004/02/11 14:08:13 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -91,6 +91,9 @@ struct UPSSoundInstance
 
 	/// get pitch
 	virtual float getPitch() const = 0;
+
+	// set sound looping
+	virtual void setLooping(bool looping) = 0;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.8 2001/07/31 12:50:09 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.9 2001/08/23 14:29:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/sound/u_audio_mixer.h"
 #include "driver/source.h"
 #include "listener_user.h"
-#include "track.h"
+#include "mixing_track.h"
 #include "sound.h"
 #include <vector>
 #include <set>

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.9 2001/08/02 13:47:26 cado Exp $
+ * $Id: source_user.cpp,v 1.10 2001/08/23 14:29:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #include "nel/misc/vector.h"
 #include "driver/buffer.h"
 #include "driver/source.h"
-#include "track.h"
+#include "mixing_track.h"
 #include "sound.h"
 #include "audio_mixer_user.h"
 

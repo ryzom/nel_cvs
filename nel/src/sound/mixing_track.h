@@ -1,7 +1,7 @@
-/** \file track.h
+/** \file mixing_track.h
  * CTrack: a source selected for playing
  *
- * $Id: track.h,v 1.2 2001/07/13 09:44:16 cado Exp $
+ * $Id: mixing_track.h,v 1.1 2001/08/23 14:29:13 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,4 +81,4 @@ private:
 
 #endif // NL_TRACK_H
 
-/* End of track.h */
+/* End of mixing_track.h */

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.69 2003/01/07 18:12:08 lecroart Exp $
+ * $Id: path.cpp,v 1.70 2003/01/07 18:39:45 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1156,10 +1156,10 @@ uint32	CFile::getFileSize (FILE *f)
 {
 #if defined (NL_OS_WINDOWS)
 	struct _stat buf;
-	int result = _fstat (filno(f), &buf);
+	int result = _fstat (fileno(f), &buf);
 #elif defined (NL_OS_UNIX)
 	struct stat buf;
-	int result = fstat (filno(f), &buf);
+	int result = fstat (fileno(f), &buf);
 #endif
 	if (result != 0) return 0;
 	else return buf.st_size;

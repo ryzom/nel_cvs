@@ -72,8 +72,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GR /GX /Z7 /Od /Gf /I "C:\Dev\Ryzom\code\nel\include\nel" /I "C:\Dev\Ryzom\code\nel\src" /I "C:\Dev\Ryzom\code\nel\include\nel\stlport" /I "C:\Dev\zlib114" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /U "LIBCMTD" /FR /Yu"stdafx.h" /FD /GZ /c
-# SUBTRACT CPP /X
+# ADD CPP /nologo /MDd /W3 /GR /GX /Z7 /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /U "LIBCMTD" /Yu"stdafx.h" /FD /GZ /c
+# SUBTRACT CPP /Gf /X /Fr
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
@@ -83,7 +83,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /pdb:none /debug /machine:I386 /libpath:"C:\Dev\Ryzom\code\nel\lib" /libpath:"C:\Dev\zlib114"
+# ADD LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /pdb:none /debug /debugtype:both /machine:I386
 
 !ELSEIF  "$(CFG)" == "nel_launcher - Win32 DebugFast"
 
@@ -100,7 +100,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /GR /GX /Z7 /Od /Ob1 /Gf /I "D:\nevrax\code\nel\src" /I "D:\Launcher\src\include\stlport" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /U "LIBCMTD" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Z7 /Od /Ob1 /Gf /I "D:\nevrax\code\nel\src" /I "D:\Launcher\src\include\stlport" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /D "NL_DEBUG_FAST" /U "LIBCMTD" /Yu"stdafx.h" /FD /GZ /c
 # SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -128,7 +128,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Z7 /O2 /I "C:\Dev\Ryzom\code\nel\include\nel" /I "C:\Dev\Ryzom\code\nel\src" /I "C:\Dev\Ryzom\code\nel\include\nel\stlport" /I "C:\Dev\zlib114" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /U "LIBCMTD" /FR /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Z7 /O2 /I "C:\Dev\Ryzom\code\nel\include\nel" /I "C:\Dev\Ryzom\code\nel\src" /I "C:\Dev\Ryzom\code\nel\include\nel\stlport" /I "C:\Dev\zlib114" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /U "LIBCMTD" /FR /Yu"stdafx.h" /FD /c
 # SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -139,8 +139,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 zlib.lib Wininet.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 Zlib.lib Wininet.lib /nologo /subsystem:windows /incremental:yes /debug /machine:I386 /nodefaultlib:"LIBCMTD" /libpath:"C:\Dev\Ryzom\code\nel\lib" /libpath:"C:\Dev\zlib114"
-# SUBTRACT LINK32 /pdb:none
+# ADD LINK32 Zlib.lib Wininet.lib /nologo /subsystem:windows /debug /machine:I386 /nodefaultlib:"LIBCMTD" /libpath:"C:\Dev\Ryzom\code\nel\lib" /libpath:"C:\Dev\zlib114"
+# SUBTRACT LINK32 /pdb:none /incremental:yes
 
 !ENDIF 
 

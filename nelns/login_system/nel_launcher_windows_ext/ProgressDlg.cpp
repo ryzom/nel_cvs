@@ -122,7 +122,7 @@ HBRUSH CProgressDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	{
 		hbr	= m_brushBG;
 		pDC->SetBkColor(BG_MSG_CLR);
-		pDC->SetTextColor(RGB(max(m_iClr-100, 0), m_iClr, int(m_iClr/2)));
+		pDC->SetTextColor(RGB(std::max(m_iClr-100, 0), m_iClr, int(m_iClr/2)));
 	}
 	return hbr;
 }

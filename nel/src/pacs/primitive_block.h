@@ -1,7 +1,7 @@
 /** \file primitive_block.h
  * Block of PACS primitive
  *
- * $Id: primitive_block.h,v 1.2 2002/05/23 09:57:40 vizerie Exp $
+ * $Id: primitive_block.h,v 1.3 2003/05/20 15:50:44 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -80,6 +80,9 @@ public:
 
 	// Orientation of the primitive
 	float							Orientation;
+
+	// User data
+	UMovePrimitive::TUserData		UserData;
 
 	// Serial methods
 	void serial (NLMISC::IStream &s);

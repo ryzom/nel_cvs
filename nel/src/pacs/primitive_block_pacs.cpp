@@ -1,7 +1,7 @@
 /** \file primitive_block_pacs.cpp
  * Block of PACS primitives
  *
- * $Id: primitive_block_pacs.cpp,v 1.4 2002/10/29 17:17:29 corvazier Exp $
+ * $Id: primitive_block_pacs.cpp,v 1.5 2003/05/20 15:50:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ CPrimitiveDesc::CPrimitiveDesc ()
 void CPrimitiveDesc::serial (NLMISC::IStream &s)
 {
 	// Serial the version
-	(void)s.serialVersion (0);
+	sint ver = s.serialVersion (1);
 	
 	s.xmlPush ("LENGTH");
 	s.serial (Length[0]);
@@ -77,6 +77,11 @@ void CPrimitiveDesc::serial (NLMISC::IStream &s)
 	s.xmlSerial (CollisionMask, "COLLISION_MASK");
 	s.xmlSerial (Position, "POSITION");
 	s.xmlSerial (Orientation, "ORIENTATION");
+
+	if (ver>=1)
+	{
+		s.xmlSerial (UserData, "USER_DATA");
+	}
 }
 
 // ***************************************************************************

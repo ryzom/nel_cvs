@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.16 2003/04/22 12:01:56 berenguier Exp $
+ * $Id: export_collision.cpp,v 1.17 2003/05/20 15:50:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -545,6 +545,10 @@ bool	CExportNel::buildPrimitiveBlock (TimeValue time, std::vector<INode*> object
 				uint collision;
 				uint occlusion;
 				int obstacle;
+				uint userdata0;
+				uint userdata1;
+				uint userdata2;
+				uint userdata3;
 				float absorbtion;
 				bool error = 
 					(!CExportNel::getValueByNameUsingParamBlock2(*node, "Reaction", (ParamType2)TYPE_INT, &reaction, 0)) ||
@@ -554,6 +558,10 @@ bool	CExportNel::buildPrimitiveBlock (TimeValue time, std::vector<INode*> object
 					(!CExportNel::getValueByNameUsingParamBlock2(*node, "OverlapTrigger", (ParamType2)TYPE_BOOL, &overlap, 0)) ||
 					(!CExportNel::getValueByNameUsingParamBlock2(*node, "CollisionMask", (ParamType2)TYPE_INT, &collision, 0)) ||
 					(!CExportNel::getValueByNameUsingParamBlock2(*node, "OcclusionMask", (ParamType2)TYPE_INT, &occlusion, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "UserData0", (ParamType2)TYPE_INT, &userdata0, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "UserData1", (ParamType2)TYPE_INT, &userdata1, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "UserData2", (ParamType2)TYPE_INT, &userdata2, 0)) ||
+					(!CExportNel::getValueByNameUsingParamBlock2(*node, "UserData3", (ParamType2)TYPE_INT, &userdata3, 0)) ||
 					(!CExportNel::getValueByNameUsingParamBlock2(*node, "Absorbtion", (ParamType2)TYPE_FLOAT, &absorbtion, 0));
 
 				// Get the node matrix
@@ -604,6 +612,7 @@ bool	CExportNel::buildPrimitiveBlock (TimeValue time, std::vector<INode*> object
 					desc.CollisionMask = collision;
 					desc.Position = mt.getPos ();
 					desc.Orientation = orientation;
+					desc.UserData = ((uint64)userdata0) | (((uint64)userdata1)<<16) | (((uint64)userdata2)<<32) | (((uint64)userdata3)<<48);
 				}
 				else
 				{

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.38 2003/04/15 10:18:52 corvazier Exp $
+ * $Id: move_container.cpp,v 1.39 2003/05/20 15:50:44 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1724,6 +1724,7 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 		primitive->setObstacle (desc.Obstacle);
 		primitive->setAbsorbtion (desc.Attenuation);
 		primitive->setDontSnapToGround(dontSnapToGround);
+		primitive->UserData = desc.UserData;
 		if (desc.Type == UMovePrimitive::_2DOrientedBox)
 		{
 			// ONLY ASSUME UNIFORM SCALE ON X/Y

@@ -1,7 +1,7 @@
 -- \file nel_pacs_box.ms
 -- Pacs box primitive object for 3dsmax.
 --
--- $Id: nel_pacs_box.ms,v 1.1 2002/03/26 10:11:02 corvazier Exp $
+-- $Id: nel_pacs_box.ms,v 1.2 2003/05/20 15:50:44 corvazier Exp $
 --
 -- Copyright, 2001 Nevrax Ltd.
 --
@@ -25,7 +25,7 @@ plugin Geometry nel_pacs_box
 name:"PACS Box"
 category:"Nel Tools"
 classID:#(0x7f374277, 0x5d3971df)
-version:1.0
+version:2.0
 extends:Box
 (
 	parameters pblock rollout:param
@@ -38,6 +38,10 @@ extends:Box
 		OcclusionMask type:#integer animatable:false ui:ui_occlusion_mask default:1
 		Obstacle type:#boolean animatable:false ui:ui_obstacle default:true
 		Absorbtion type:#float animatable:false ui:ui_absorbtion default:1
+		UserData0 type:#integer animatable:false ui:ui_user_data_0 default:0
+		UserData1 type:#integer animatable:false ui:ui_user_data_1 default:0
+		UserData2 type:#integer animatable:false ui:ui_user_data_2 default:0
+		UserData3 type:#integer animatable:false ui:ui_user_data_3 default:0
 	)
 
 	rollout param "PACS Parameters"
@@ -50,5 +54,9 @@ extends:Box
 		spinner			ui_collision_mask	"Collision mask"		range:[0,65535,0] type:#integer scale:1
 		spinner			ui_occlusion_mask	"Occlusion mask"		range:[0,65535,1] type:#integer scale:1
 		spinner			ui_absorbtion		"Absorbtion ratio"		range:[0,1,1] type:#float scale:0.01
+		spinner			ui_user_data_0		"User data 0"			range:[0,65535,0] type:#integer scale:1
+		spinner			ui_user_data_1		"User data 1"			range:[0,65535,0] type:#integer scale:1
+		spinner			ui_user_data_2		"User data 2"			range:[0,65535,0] type:#integer scale:1
+		spinner			ui_user_data_3		"User data 3"			range:[0,65535,0] type:#integer scale:1
 	)
 )

@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.36 2002/07/01 18:23:55 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.37 2002/07/03 16:37:35 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,6 +194,9 @@ void	NLPACS::CRetrieverInstance::link(CRetrieverInstance &neighbor,
 
 	vector< pair<CVector,CVector> >				chainTips,
 												nChainTips;
+
+	_BorderChainLinks.resize(borderChains.size());
+	neighbor._BorderChainLinks.resize(nBorderChains.size());
 
 	for (i=0; i<borderChains.size(); ++i)
 		chainTips.push_back(make_pair(retriever.getTip(chains[borderChains[i]].getStartTip()).Point,

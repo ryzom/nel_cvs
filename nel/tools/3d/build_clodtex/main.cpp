@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.h
  * <File description>
  *
- * $Id: main.cpp,v 1.3 2002/11/12 16:46:37 berenguier Exp $
+ * $Id: main.cpp,v 1.4 2003/03/11 11:20:11 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -213,7 +213,12 @@ int main(int argc, char *argv[])
 			// search in all lods if the file Name match a filter
 			for(uint j=0;j<LodFilters.size();j++)
 			{
-				if( testWildCard(fileNameIn.c_str(), LodFilters[j].c_str()) )
+				// Make the test case-unsensitive
+				string	lwrFileName= fileNameIn;
+				string	lwrFilter= LodFilters[j];
+				strlwr(lwrFileName);
+				strlwr(lwrFilter);
+				if( testWildCard(lwrFileName.c_str(), lwrFilter.c_str()) )
 				{
 					// Ok, try to do the compute.
 					if( computeOneShape( (clod_dir_in+"/"+LodNames[j]+".clod").c_str(), pathNameIn.c_str(), pathNameOut.c_str() ) )

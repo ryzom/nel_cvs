@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.24 2002/10/10 13:03:28 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.25 2002/10/14 12:50:18 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -373,11 +373,9 @@ const CVector	&CSceneUser::getGlobalWindDirection() const
 // ***************************************************************************
 void CSceneUser::updateWaitingIG()
 {
-#ifdef NL_DEBUG
-	if (_WaitingIGs.size() > 0)
-#endif
-	for(TWaitingIGList::iterator it = _WaitingIGs.begin(); it != _WaitingIGs.end(); ++it)
+	for(TWaitingIGList::iterator it = _WaitingIGs.begin(); it != _WaitingIGs.end();)
 	{
+		bool	erased= false;
 		if (it->IGToLoad != NULL) // ig loaded ?
 		{			
 			if (it->IGToLoad != (UInstanceGroup *) -1)
@@ -394,10 +392,7 @@ void CSceneUser::updateWaitingIG()
 						*it->CallerPtr = it->IGToLoad;
 						// remove from list
 						it = _WaitingIGs.erase(it);
-						#ifdef NL_DEBUG
-							if (_WaitingIGs.size() == 0)
-								return;
-						#endif
+						erased= true;
 					break;
 					default:
 					break;
@@ -408,12 +403,12 @@ void CSceneUser::updateWaitingIG()
 				// loading failed
 				*it->CallerPtr = it->IGToLoad;
 				it = _WaitingIGs.erase(it);
-				#ifdef NL_DEBUG
-					if (_WaitingIGs.size() == 0)
-						return;
-				#endif
+				erased= true;
 			}
 		}
+		// next IG.
+		if(!erased)
+			it++;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.19 2002/01/28 14:54:23 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.20 2002/02/15 17:18:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,6 +90,15 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 	Create(IDD_LOCATED_BINDABLE, pParent);
 	ShowWindow(SW_SHOW);
 	_ParticleDlg = pParent;
+
+	if (_Bindable->getOwner()->getOwner()->isAutoLODEnabled() == false)
+	{
+		GetDlgItem(IDC_NO_AUTO_LOD)->EnableWindow(FALSE);
+	}
+	else
+	{
+		((CButton *) GetDlgItem(IDC_NO_AUTO_LOD))->SetCheck(NLMISC::safe_cast<NL3D::CPSParticle *>(_Bindable)->isAutoLODDisabled());
+	}
 
 	uint yPos = 35;
 	const uint xPos = 5;
@@ -515,6 +524,7 @@ BEGIN_MESSAGE_MAP(CLocatedBindableDialog, CDialog)
 	ON_BN_CLICKED(IDC_INDE_SIZES, OnIndeSizes)
 	ON_BN_CLICKED(IDC_SIZE_WIDTH, OnSizeWidth)
 	ON_BN_CLICKED(IDC_SIZE_HEIGHT, OnSizeHeight)
+	ON_BN_CLICKED(IDC_NO_AUTO_LOD, OnNoAutoLod)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -612,4 +622,10 @@ void CLocatedBindableDialog::OnSizeWidth()
 void CLocatedBindableDialog::OnSizeHeight() 
 {
 	updateSizeControl();	
+}
+
+void CLocatedBindableDialog::OnNoAutoLod() 
+{
+	NL3D::CPSParticle *p = NLMISC::safe_cast<NL3D::CPSParticle *>(_Bindable);
+	p->disableAutoLOD(((CButton *) GetDlgItem(IDC_NO_AUTO_LOD))->GetCheck() != 0);
 }

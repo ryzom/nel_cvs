@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * <File description>
  *
- * $Id: object_vector.h,v 1.10 2004/03/19 18:47:47 lecroart Exp $
+ * $Id: object_vector.h,v 1.11 2004/03/23 10:18:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,12 @@ public:
 		copy(0, _Size, vec._Ptr);
 
 		return *this;
+	}
+	// swap this vector content with another vector
+	void swap(CObjectVector<T, EnableObjectBehavior> &other)
+	{
+		std::swap(_Ptr, other._Ptr);
+		std::swap(_Size, other._Size);
 	}
 	// @}
 

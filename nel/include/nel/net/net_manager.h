@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.5 2001/06/05 15:36:38 lecroart Exp $
+ * $Id: net_manager.h,v 1.6 2001/06/06 15:36:59 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:
 	static void	addCallbackArray (const std::string &serviceName, const TCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
 
 	/// Calls it evenly
-	static void	update (sint32 timeout);
+	static void	update (sint32 timeout = 0);
 
 	/// Sends a message to a specific serviceName
 	static void	send (const std::string &serviceName, const CMessage &buffer, TSockId hostid = 0);

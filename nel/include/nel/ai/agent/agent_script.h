@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.54 2002/06/06 09:26:56 portier Exp $
+ * $Id: agent_script.h,v 1.55 2002/06/12 08:09:13 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -338,13 +338,19 @@ namespace NLAIAGENT
 		virtual const NLAIC::CIdentType &getType() const;
 		//@}
 
-
 		///Test the set of the agent.
 		virtual bool isa(const std::string &) const;
 		///Add a set for the agent.
 		virtual void addSet(const std::string &);
+		virtual std::set<std::string>::const_iterator beginSet() const
+		{
+			return mapSet.begin();
+		}
 
-
+		virtual std::set<std::string>::const_iterator endSet() const
+		{
+			return mapSet.end();
+		}
 
 	protected:
 		virtual	CProcessResult sendBroadCast(IObjectIA *);

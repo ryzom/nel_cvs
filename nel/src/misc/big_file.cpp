@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.3 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: big_file.cpp,v 1.4 2002/10/25 15:48:22 berenguier Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -34,12 +34,44 @@ namespace NLMISC {
 
 CBigFile *CBigFile::_Singleton = NULL;
 
-// ======================================================================================================
+
+// ***************************************************************************
+CBigFile::CThreadFileArray::CThreadFileArray()
+{
+	_CurrentId= 0;
+}
+// ***************************************************************************
+uint32						CBigFile::CThreadFileArray::allocate()
+{
+	return _CurrentId++;
+}
+// ***************************************************************************
+CBigFile::CHandleFile		&CBigFile::CThreadFileArray::get(uint32 index)
+{
+	// If the thread struct ptr is NULL, must allocate it.
+	vector<CHandleFile>		*ptr= (vector<CHandleFile>*)_TDS.getPointer();
+	if(ptr==NULL)
+	{
+		ptr= new vector<CHandleFile>;
+		_TDS.setPointer(ptr);
+	}
+
+	// if the vector is not allocated, allocate it (empty entries filled with NULL => not opened FILE* in this thread)
+	if(index>=ptr->size())
+	{
+		ptr->resize(index+1);
+	}
+
+	return (*ptr)[index];
+}
+
+
+// ***************************************************************************
 CBigFile::CBigFile ()
 {
 }
 
-// ======================================================================================================
+// ***************************************************************************
 CBigFile &CBigFile::getInstance ()
 {
 	if (_Singleton == NULL)
@@ -49,43 +81,52 @@ CBigFile &CBigFile::getInstance ()
 	return *_Singleton;
 }
 
-// ======================================================================================================
+// ***************************************************************************
 bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 {
 	BNP bnpTmp;
+
+	bnpTmp.BigFileName= sBigFileName;
 
 	// Is already the same bigfile name ?
 	string bigfilenamealone = CFile::getFilename (sBigFileName);
 	if (_BNPs.find(bigfilenamealone) != _BNPs.end())
 		return false;
-	bnpTmp.Handle = fopen (sBigFileName.c_str(), "rb");
-	if (bnpTmp.Handle == NULL)
+
+	// Allocate a new ThreadSafe FileId for this bnp.
+	bnpTmp.ThreadFileId= _ThreadFileArray.allocate();
+
+	// Get a ThreadSafe handle on the file
+	CHandleFile		&handle= _ThreadFileArray.get(bnpTmp.ThreadFileId);
+	// Open the big file.
+	handle.File = fopen (sBigFileName.c_str(), "rb");
+	if (handle.File == NULL)
 		return false;
-	fseek (bnpTmp.Handle, 0, SEEK_END);
-	uint32 nFileSize = ftell (bnpTmp.Handle);
-	fseek (bnpTmp.Handle, nFileSize-4, SEEK_SET);
+	fseek (handle.File, 0, SEEK_END);
+	uint32 nFileSize = ftell (handle.File);
+	fseek (handle.File, nFileSize-4, SEEK_SET);
 	uint32 nOffsetFromBegining;
-	fread (&nOffsetFromBegining, sizeof(uint32), 1, bnpTmp.Handle);
-	fseek (bnpTmp.Handle, nOffsetFromBegining, SEEK_SET);
+	fread (&nOffsetFromBegining, sizeof(uint32), 1, handle.File);
+	fseek (handle.File, nOffsetFromBegining, SEEK_SET);
 	uint32 nNbFile;
-	fread (&nNbFile, sizeof(uint32), 1, bnpTmp.Handle);
+	fread (&nNbFile, sizeof(uint32), 1, handle.File);
 	for (uint32 i = 0; i < nNbFile; ++i)
 	{
 		char FileName[256];
 		uint8 nStringSize;
-		fread (&nStringSize, 1, 1, bnpTmp.Handle);
-		fread (FileName, 1, nStringSize, bnpTmp.Handle);
+		fread (&nStringSize, 1, 1, handle.File);
+		fread (FileName, 1, nStringSize, handle.File);
 		FileName[nStringSize] = 0;
 		uint32 nFileSize;
-		fread (&nFileSize, sizeof(uint32), 1, bnpTmp.Handle);
+		fread (&nFileSize, sizeof(uint32), 1, handle.File);
 		uint32 nFilePos;
-		fread (&nFilePos, sizeof(uint32), 1, bnpTmp.Handle);
+		fread (&nFilePos, sizeof(uint32), 1, handle.File);
 		BNPFile bnpfTmp;
 		bnpfTmp.Pos = nFilePos;
 		bnpfTmp.Size = nFileSize;
 		bnpTmp.Files.insert (make_pair(strlwr(string(FileName)), bnpfTmp));
 	}
-	fseek (bnpTmp.Handle, 0, SEEK_SET);
+	fseek (handle.File, 0, SEEK_SET);
 
 	if (nOptions&BF_CACHE_FILE_ON_OPEN)
 		bnpTmp.CacheFileOnOpen = true;
@@ -94,8 +135,8 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 
 	if (!(nOptions&BF_ALWAYS_OPENED))
 	{
-		fclose (bnpTmp.Handle);
-		bnpTmp.Handle = NULL;
+		fclose (handle.File);
+		handle.File = NULL;
 		bnpTmp.AlwaysOpened = false;
 	}
 	else
@@ -108,22 +149,31 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	return true;
 }
 
-// ======================================================================================================
+// ***************************************************************************
 void CBigFile::remove (const std::string &sBigFileName)
 {
 	if (_BNPs.find (sBigFileName) != _BNPs.end())
 	{
 		map<string, BNP>::iterator it = _BNPs.find (sBigFileName);
 		BNP &rbnp = it->second;
-		if (rbnp.Handle != NULL)
+		/* \todo yoyo: THERE is a MAJOR drawback here: Only the FILE * of the current (surely main) thread
+			is closed. other FILE* in other threads are still opened. This is not a big issue (system close the FILE* 
+			at the end of the process) and this is important so AsyncLoading of a currentTask can end up correclty 
+			(without an intermediate fclose()).
+		*/
+		// Get a ThreadSafe handle on the file
+		CHandleFile		&handle= _ThreadFileArray.get(rbnp.ThreadFileId);
+		// close it if needed
+		if (handle.File != NULL)
 		{
-			fclose (rbnp.Handle);
+			fclose (handle.File);
+			handle.File= NULL;
 		}
 		_BNPs.erase (it);
 	}
 }
 
-// ======================================================================================================
+// ***************************************************************************
 void CBigFile::list (const std::string &sBigFileName, std::vector<std::string> &vAllFiles)
 {
 	string zeFileName, zeBigFileName, lwrFileName = strlwr (sBigFileName);
@@ -139,7 +189,7 @@ void CBigFile::list (const std::string &sBigFileName, std::vector<std::string> &
 	}
 }
 
-// ======================================================================================================
+// ***************************************************************************
 void CBigFile::removeAll ()
 {
 	while (_BNPs.begin() != _BNPs.end())
@@ -148,8 +198,7 @@ void CBigFile::removeAll ()
 	}
 }
 
-// ======================================================================================================
-	
+// ***************************************************************************
 FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize, 
 						 uint32 &rBigFileOffset, bool &rCacheFileOnOpen, bool &rAlwaysOpened)
 {
@@ -182,11 +231,23 @@ FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize,
 
 	BNPFile &rbnpfile = rbnp.Files.find (zeFileName)->second;
 
+	// Get a ThreadSafe handle on the file
+	CHandleFile		&handle= _ThreadFileArray.get(rbnp.ThreadFileId);
+	/* If not opened, open it now. There is 2 reason for it to be not opened: 
+		rbnp.AlwaysOpened==false, or it is a new thread which use it for the first time.
+	*/
+	if(handle.File== NULL)
+	{
+		handle.File = fopen (rbnp.BigFileName.c_str(), "rb");
+		if (handle.File == NULL)
+			return NULL;
+	}
+
 	rCacheFileOnOpen = rbnp.CacheFileOnOpen;
 	rAlwaysOpened = rbnp.AlwaysOpened;
 	rBigFileOffset = rbnpfile.Pos;
 	rFileSize = rbnpfile.Size;
-	return rbnp.Handle;
+	return handle.File;
 }
 
 } // namespace NLMISC

@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.1 2002/04/24 08:13:18 besson Exp $
+ * $Id: big_file.h,v 1.2 2002/10/25 15:45:59 berenguier Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_BIG_FILE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/tds.h"
 
 
 namespace NLMISC {
@@ -41,6 +42,7 @@ namespace NLMISC {
 const uint32 BF_ALWAYS_OPENED		=	0x00000001;
 const uint32 BF_CACHE_FILE_ON_OPEN	=	0x00000002;
 
+// ***************************************************************************
 class CBigFile
 {
 
@@ -65,27 +67,66 @@ public:
 	FILE* getFile (const std::string &sFileName, uint32 &rFileSize, uint32 &rBigFileOffset, 
 					bool &rCacheFileOnOpen, bool &rAlwaysOpened);
 
+// ***************
 private:
+	class	CThreadFileArray;
+	friend class	CThreadFileArray;
 
-	CBigFile(); // Singleton mode -> access it with the getInstance function
+	// A ptr to a file.
+	struct	CHandleFile
+	{
+		FILE		*File;
+		CHandleFile()
+		{
+			File= NULL;
+		}
+	};
 
-	static CBigFile *_Singleton;
+	// A class which return a FILE * handle per Thread.
+	class	CThreadFileArray
+	{
+	public:
+		CThreadFileArray();
 
-private:
+		// Allocate a FileId for a BNP.
+		uint32			allocate();
+		// Given a BNP File Id, return its FILE* handle for the current thread.
+		CHandleFile		&get(uint32 index);
 
+	private:
+		// Do it this way because a few limited TDS is possible (64 on NT4)
+		CTDS		_TDS;
+		// The array is grow only!!
+		uint32		_CurrentId;
+	};
+
+	// A BNPFile header
 	struct BNPFile
 	{
 		uint32		Size;
 		uint32		Pos;
 	};
 
+	// A BNP structure
 	struct BNP
 	{
+		// FileName of the BNP. important to open it in getFile() (for other threads or if not always opened).
+		std::string						BigFileName;
+		// map of files in the BNP.
 		std::map<std::string, BNPFile>	Files;
-		FILE							*Handle;
+		// Since many seek may be done on a FILE*, each thread should have its own FILE opened.
+		uint32							ThreadFileId;
 		bool							CacheFileOnOpen;
 		bool							AlwaysOpened;
 	};
+private:
+
+	CBigFile(); // Singleton mode -> access it with the getInstance function
+
+	static CBigFile				*_Singleton;
+
+	// This is an array of CHandleFile, unique to each thread
+	CThreadFileArray			_ThreadFileArray;
 
 	std::map<std::string, BNP> _BNPs;
 };

@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.2 2002/08/06 10:18:27 vizerie Exp $
+ * $Id: algo.h,v 1.3 2002/10/25 15:45:59 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -33,6 +33,7 @@
 namespace NLMISC 
 {
 
+// ***************************************************************************
 /** bilinear of 4 values
   *  v3    v2
   *  +-----+
@@ -98,6 +99,38 @@ uint		searchLowerBound(const std::vector<T> &array, const T &key)
 		return 0;
 	else
 		return searchLowerBound(&array[0], size, key);
+}
+
+
+// ***************************************************************************
+/** Clamp a sint in 0..255. Avoid cond jump.
+ */
+static inline	void fastClamp8(sint &v)
+{
+#ifdef NL_OS_WINDOWS
+	// clamp v in 0..255 (no cond jmp)
+	__asm
+	{
+		mov		esi, v
+		mov		eax, [esi]
+		mov		ebx, eax
+		// clamp to 0.
+		add		eax, 0x80000000
+		sbb		ecx, ecx
+		not		ecx
+		and		ebx, ecx
+		// clamp to 255.
+		add		eax, 0x7FFFFF00
+		sbb		ecx, ecx
+		and		ebx, 255
+		and		ecx, 255
+		or		ebx, ecx
+		// store
+		mov		[esi], ebx
+	}
+#else
+	clamp(v, 0, 255);
+#endif
 }
 
 

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.15 2002/10/10 12:43:49 berenguier Exp $
+ * $Id: bitmap.h,v 1.16 2002/10/25 15:45:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -409,6 +409,25 @@ public:
 	 * \param newType is the new type of the bitmap. If don_t_know, keep the same pixel format that before.
 	 */	
 	void resize (sint32 nNewWidth, sint32 nNewHeight, TType newType=DonTKnow);
+
+
+	/**  ADVANCED USE
+	 * Resize a single mipmap level. resize() should have been called before.
+	 * This is not a crop. Pixels are lost after resize.
+	 *	No validity check is made. It is the user responsabitility fo setup correct mipmap size.
+	 *
+	 * \param numMipMap id of the mipmap
+	 * \param nNewWidth width after resize
+	 * \param nNewHeight height after resize
+	 */	
+	void resizeMipMap (uint32 numMipMap, sint32 nNewWidth, sint32 nNewHeight);
+
+
+	/**  ADVANCED USE
+	 *	To use in conjunction with resizeMipMap. Setup the correct total number of mipmap
+	 *	No validity check is made. It is the user responsabitility fo setup correct mipmap count.
+	 */
+	void setMipMapCount(uint32 mmc);
 
 
 	/** 

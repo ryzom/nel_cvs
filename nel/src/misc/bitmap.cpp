@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.29 2002/10/10 12:44:29 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.30 2002/10/25 15:48:22 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -203,8 +203,6 @@ void	CBitmap::makeDummy()
 \*-------------------------------------------------------------------*/
 uint8 CBitmap::readDDS(NLMISC::IStream &f, uint mipMapSkip)
 {
-	uint32 i;
-
 	//------------------ Reading Header ------------------------
 
 	//-------------- reading entire header
@@ -215,10 +213,14 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f, uint mipMapSkip)
 	 std::auto_ptr<uint32> _DDSSurfaceDescAuto(_DDSSurfaceDesc);
 	_DDSSurfaceDesc[0]= size;
 
-	for(i= 0; i<size/4 - 1; i++)
+#ifdef NL_LITTLE_ENDIAN
+	f.serialBuffer((uint8*)(_DDSSurfaceDesc+1), size-4);
+#else
+	for(uint i= 0; i<size/4 - 1; i++)
 	{
 		f.serial(_DDSSurfaceDesc[i+1]);
 	}
+#endif
 	
 	// flags determines which members of the header structure contain valid data
 	uint32 flags = _DDSSurfaceDesc[1];
@@ -261,17 +263,16 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f, uint mipMapSkip)
 	{
 		throw EDDSBadHeader();
 	}
-	
-	if((_Width%4!=0) || (_Height%4!=0)) return 0;
-	
+
+	// compute the min power of 2 between width and height
+	uint	minSizeLevel= min(_Width, _Height);
+	minSizeLevel= getPowerOf2(minSizeLevel);
 
 	//------------- manage mipMapSkip 
-	if(_MipMapCount>1 && mipMapSkip>0)
+	if(_MipMapCount>1 && mipMapSkip>0 && minSizeLevel>2)
 	{
 		// Keep at least the level where width and height are at leat 4.
-		uint	minLevel= min(_Width, _Height);
-		minLevel= getPowerOf2(minLevel);
-		mipMapSkip= min(mipMapSkip, minLevel-2);
+		mipMapSkip= min(mipMapSkip, minSizeLevel-2);
 		// skip any mipmap
 		uint	seekSize= 0;
 		while(mipMapSkip>0)
@@ -302,12 +303,13 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f, uint mipMapSkip)
 
 	}
 
-	//------------- reading mipmap levels compressed data
-	
+	//------------- preload all the mipmaps (one serialBuffer() is faster)
 	uint32 w = _Width;
 	uint32 h = _Height;
+	uint32	totalSize= 0;
 
-	for(uint8 m= 0; m<_MipMapCount; m++)
+	uint8	m;
+	for(m= 0; m<_MipMapCount; m++)
 	{
 		uint32 wtmp, htmp;
 		if(w<4)
@@ -327,11 +329,30 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f, uint mipMapSkip)
 
 
 		_Data[m].resize(mipMapSz);
-		f.serialBuffer(&(*_Data[m].begin()), mipMapSz);
+		totalSize+= mipMapSz;
 
 	  	w = (w+1)/2;
 		h = (h+1)/2;
 	}
+
+	// Read all the data in one block.
+	vector<uint8>	pixData;
+	pixData.resize(totalSize);
+	f.serialBuffer(&(*pixData.begin()), totalSize);
+
+
+	//------------- reading mipmap levels from pixData
+	
+	uint32 pixIndex= 0;
+
+	for(m= 0; m<_MipMapCount; m++)
+	{
+		uint32	mipMapSz= _Data[m].size();
+		memcpy(&(*_Data[m].begin()), &(pixData[pixIndex]), mipMapSz);
+		pixIndex+= mipMapSz;
+	}
+
+	//------------- End
 
 	switch(PixelFormat)
 	{
@@ -1474,10 +1495,38 @@ void CBitmap::resize (sint32 nNewWidth, sint32 nNewHeight, TType newType)
 	_Width = nNewWidth;
 	_Height = nNewHeight;
 
-	NLMISC::contReset(_Data[0]); // free memory
+	// resize the level 0 only.
+	resizeMipMap(0, nNewWidth, nNewHeight);
+}
+
+
+/*-------------------------------------------------------------------*\
+							resizeMipMap
+\*-------------------------------------------------------------------*/
+void CBitmap::resizeMipMap (uint32 numMipMap, sint32 nNewWidth, sint32 nNewHeight)
+{
+	nlassert(numMipMap<MAX_MIPMAP);
+
+	// free memory
+	NLMISC::contReset(_Data[numMipMap]);
+
+	// DXTC compressed??
+	bool	isDXTC= PixelFormat==DXTC1 || PixelFormat==DXTC1Alpha || PixelFormat==DXTC3 || PixelFormat==DXTC5;
+	// if yes, must round up width and height to 4, for allocation
+	nNewWidth= 4*((nNewWidth+3)/4);
+	nNewHeight= 4*((nNewHeight+3)/4);
 
 	// resize the buffer
-	_Data[0].resize (((uint32)(nNewWidth*nNewHeight)*bitPerPixels[PixelFormat])/8);
+	_Data[numMipMap].resize (((uint32)(nNewWidth*nNewHeight)*bitPerPixels[PixelFormat])/8);
+}
+
+
+/*-------------------------------------------------------------------*\
+							reset
+\*-------------------------------------------------------------------*/
+void CBitmap::setMipMapCount(uint32 mmc)
+{
+	_MipMapCount= mmc;
 }
 
 

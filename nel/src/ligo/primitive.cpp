@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.7 2002/11/29 15:06:22 coutelas Exp $
+ * $Id: primitive.cpp,v 1.8 2002/12/05 14:33:11 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1446,8 +1446,8 @@ bool IPrimitive::read (xmlNodePtr xmlNode, const char *filename, uint version)
 
 						// Read strings
 						xmlNodePtr stringNode;
-						propertyStringArray->StringArray.reserve (CIXml::countChildren (xmlNode, "STRING"));
-						stringNode = CIXml::getFirstChildNode (xmlNode, "STRING");
+						propertyStringArray->StringArray.reserve (CIXml::countChildren (propNode, "STRING"));
+						stringNode = CIXml::getFirstChildNode (propNode, "STRING");
 						if (stringNode)
 						{
 							do

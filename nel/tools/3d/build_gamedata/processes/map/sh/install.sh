@@ -22,11 +22,7 @@ echo -------
 date >> log.log
 date
 
-for i in dds/*.[dD][dD][sS]; do
-  cp -u -p $i $client_directory/$bitmap_install_directory  2>> log.log
-	# Idle
-	../../idle.bat
-done
+cp -u -p -R dds/. $client_directory/$bitmap_install_directory 2>> log.log
 
 panoply_file_list=`cat ../../cfg/config.cfg | grep "panoply_file_list" | sed -e 's/panoply_file_list//' | sed -e 's/ //g' | sed -e 's/=//g'`
 if test "$panoply_file_list" ; then

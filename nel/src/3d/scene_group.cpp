@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.40 2002/07/26 09:49:32 corvazier Exp $
+ * $Id: scene_group.cpp,v 1.41 2002/08/09 09:31:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -208,6 +208,14 @@ const CInstanceGroup::CInstance		&CInstanceGroup::getInstance(uint instanceNb) c
 CInstanceGroup::CInstance		&CInstanceGroup::getInstance(uint instanceNb)
 {
 	return _InstancesInfos[instanceNb];
+}
+
+// ***************************************************************************
+CTransformShape				*CInstanceGroup::getTransformShape(uint instanceNb) const
+{
+	if(instanceNb>_Instances.size())
+		return NULL;
+	return _Instances[instanceNb];
 }
 
 // ***************************************************************************
@@ -1089,6 +1097,15 @@ CQuat CInstanceGroup::getRotQuat ()
 		return CQuat();
 }
 
+// ***************************************************************************
+void		CInstanceGroup::linkRoot (CScene &scene, CTransform *father)
+{
+	if(_Root)
+	{
+		ITrav *pHrcTrav = scene.getTrav (HrcTravId);
+		pHrcTrav->link(father, _Root);
+	}
+}
 
 // ***************************************************************************
 void		CInstanceGroup::freezeHRC()

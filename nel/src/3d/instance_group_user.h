@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.19 2002/06/24 17:10:19 vizerie Exp $
+ * $Id: instance_group_user.h,v 1.20 2002/08/09 09:31:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -122,6 +122,10 @@ private:
 
 	friend class CTransformUser;
 	friend class CSceneUser;
+
+public:
+	// Debug purpose only.
+	CInstanceGroup	&getInternalIG() {return _InstanceGroup;}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.35 2002/07/31 09:33:38 corvazier Exp $
+ * $Id: material.cpp,v 1.36 2002/08/09 09:31:13 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -248,7 +248,12 @@ void		CMaterial::serial(NLMISC::IStream &f)
 void		CMaterial::setShader(TShader val)
 {
 	// First, reset all textures.
-	for(sint i=0;i<IDRV_MAT_MAXTEXTURES;i++)
+	uint	nTexts= IDRV_MAT_MAXTEXTURES;
+	// If user color or lightmap, set only the 1st.
+	if(_ShaderType==LightMap || _ShaderType==UserColor)
+		nTexts=1;
+	// reset all needed
+	for(sint i=0;i<nTexts;i++)
 		setTexture(i ,NULL);
 
 	// If userColor, use TexEnv caps (we got it, so use it :) ).

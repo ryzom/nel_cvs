@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.18 2002/06/24 17:14:27 vizerie Exp $
+ * $Id: scene_group.h,v 1.19 2002/08/09 09:31:13 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,6 +164,10 @@ public:
 	// Get the ig global pos
 	const NLMISC::CVector &getGlobalPos() const { return _GlobalPos; }
 
+	/** Get the instance added to the scene. NULL if instanceNb too big, if addToScene not called, 
+	 *	or if instance is DontAddToScene
+	 */
+	CTransformShape			*getTransformShape(uint instanceNb) const;
 
 	/**
 	 * Construct, serialize and link to scene
@@ -281,6 +285,9 @@ public:
 	/**
 	 * Transformation part
 	 */
+
+	/// link the root of the ig to a node. No-op if not added to scene. Pass NULL to reset by default
+	void linkRoot (CScene &scene, CTransform *father);
 
 	/// Set the position of the IG
 	void setPos (const CVector &pos);

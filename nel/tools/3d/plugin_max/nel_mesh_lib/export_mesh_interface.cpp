@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.1 2002/04/23 16:30:04 vizerie Exp $
+ * $Id: export_mesh_interface.cpp,v 1.2 2002/05/07 09:03:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -242,7 +242,7 @@ static bool SelectVerticesInMeshFromInterfaces(const std::vector<CMeshInterface>
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/** private func to build a vector of set interface from a max file  
+/** private func to build a vector of meshs interface from a max file  
   * The max file is merged to this one 
   */
 static bool BuildMeshInterfaces(const char *cMaxFileName, std::vector<CMeshInterface> &meshInterfaces, CExportNel &exportNel, TimeValue tvTime)
@@ -261,7 +261,7 @@ static bool BuildMeshInterfaces(const char *cMaxFileName, std::vector<CMeshInter
 	/** don't know why, but a call to Interface::MergeFromFile freeze the application, so we
 	  * use a call to maxscript instead
 	  */
-	std::string command = std::string("mergeMAXFile \"" + maxFileName + "\" #noRedraw #mergeDups");
+	std::string command("mergeMAXFile \"" + maxFileName + "\" #noRedraw #mergeDups");
 	if (CExportNel::scriptEvaluate(command.c_str(), NULL, scriptNothing) == false)
 	{
 		nlwarning("Unable to merge %s", maxFileName.c_str());

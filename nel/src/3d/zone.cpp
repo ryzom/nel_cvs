@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.72 2004/04/05 07:52:19 corvazier Exp $
+ * $Id: zone.cpp,v 1.73 2004/09/30 18:47:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -806,23 +806,9 @@ void		CZone::bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc, boo
 				paBind.NPatchs=0;
 			else
 			{
-				// Get the BindInfo on me stored in our neighbor bigger CPatch
-				CPatch::CBindInfo	nbOnMe;
-				paBind.Next[0]->getBindNeighbor(paBind.Edge[0], nbOnMe);
-				// if this patch has not already been binded on me, nbOnMe.Zone==NULL
-				if( nbOnMe.Zone == NULL )
-				{
-					// Simple case: do nothing: don't need to rebind() to the bigger patch since 
-					// himself is not bound
-					paBind.NPatchs=0;
-					paBind.Zone= NULL;
-				}
-				else
-				{
-					// pa.bind() will do the job.
-					// Leave it flagged with NPatchs==5.
-					continue;
-				}
+				// pa.bind() will do the job.
+				// Leave it flagged with NPatchs==5.
+				continue;
 			}
 		}
 

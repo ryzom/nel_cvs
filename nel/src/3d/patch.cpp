@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.98 2004/08/13 15:40:13 vizerie Exp $
+ * $Id: patch.cpp,v 1.99 2004/09/30 18:47:01 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1962,58 +1962,68 @@ void			CPatch::bind(CBindInfo	Edges[4], bool rebind)
 		}
 		else if(bind.NPatchs==5)
 		{
-			/* I am binded to a bigger patch and this one has already done the binding on me => 
-				It must be correclty tesselated. Note also that bind 1/X are only possible on interior of zone.
+			/* I am binded to a bigger patch. There is 2 cases:
+				- rebind=false. This is an original Bind of all patch of a zone. CANNOT do rebind faces, since my bigger
+					neighbor patch may not be correctly tesselated (but if the bigger neighbor patch Id is Lower than the small
+					neighbor patch Id, for instance if BiggerPatchId==50, and ThisPatch=100, since in this case, the BIND is 
+					already done). Therefore let the BiggerPatch do the correct bind (see above)
+				- rebind=true. This is possible for a patch in border of zone to have some bind 1/X (even if Bind 1/X 
+					is not possible across zone, it IS possible that a patch containing a bind 1/X on a edge not on ZONE 
+					exist (and they do exist...))
+					In this case, MUST do the rebind (because of CZoneBindPatch() which first unbind all, then rebind)
+
 			*/
-
-			// First, make the link with the face to which I must connect.
-			// -----------------
-
-			// Get the coordinate of the current edge of this patch
-			CVector2f	uvi0, uvi1;
-			switch(i)
+			if(rebind==true)
 			{
-			case 0: uvi0.set(0,0); uvi1.set(0,1);  break;
-			case 1: uvi0.set(0,1); uvi1.set(1,1);  break;
-			case 2: uvi0.set(1,1); uvi1.set(1,0);  break;
-			case 3: uvi0.set(1,0); uvi1.set(0,0);  break;
-			};
-			// mul by OrderS/OrderT for CPatchUVLocator
-			uvi0.x*= OrderS;
-			uvi0.y*= OrderT;
-			uvi1.x*= OrderS;
-			uvi1.y*= OrderT;
-			// build a CPatchUVLocator to transpose coorindate ot this edge in coordinate on the bigger Neighbor patch.
-			CBindInfo	bindInfo;
-			getBindNeighbor(i, bindInfo);
-			nlassert(bindInfo.Zone!=NULL && bindInfo.NPatchs==1);
-			CPatchUVLocator		puvloc;
-			puvloc.build(this, i, bindInfo);
+				// First, make the link with the face to which I must connect.
+				// -----------------
 
-			// transpose from this patch coord in neighbor patch coord.
-			CVector2f	uvo0, uvo1;
-			uint	pid;
-			CPatch	*patchNeighbor;
-			// Do it for uvi0
-			pid= puvloc.selectPatch(uvi0);
-			puvloc.locateUV(uvi0, pid, patchNeighbor, uvo0);
-			nlassert(patchNeighbor == bindInfo.Next[0]);
-			// Do it for uvi1
-			pid= puvloc.selectPatch(uvi1);
-			puvloc.locateUV(uvi1, pid, patchNeighbor, uvo1);
-			nlassert(patchNeighbor == bindInfo.Next[0]);
-			// Rescale to have uv in 0,1 basis.
-			uvo0.x/= patchNeighbor->OrderS;
-			uvo0.y/= patchNeighbor->OrderT;
-			uvo1.x/= patchNeighbor->OrderS;
-			uvo1.y/= patchNeighbor->OrderT;
+				// Get the coordinate of the current edge of this patch
+				CVector2f	uvi0, uvi1;
+				switch(i)
+				{
+				case 0: uvi0.set(0,0); uvi1.set(0,1);  break;
+				case 1: uvi0.set(0,1); uvi1.set(1,1);  break;
+				case 2: uvi0.set(1,1); uvi1.set(1,0);  break;
+				case 3: uvi0.set(1,0); uvi1.set(0,0);  break;
+				};
+				// mul by OrderS/OrderT for CPatchUVLocator
+				uvi0.x*= OrderS;
+				uvi0.y*= OrderT;
+				uvi1.x*= OrderS;
+				uvi1.y*= OrderT;
+				// build a CPatchUVLocator to transpose coorindate ot this edge in coordinate on the bigger Neighbor patch.
+				CBindInfo	bindInfo;
+				getBindNeighbor(i, bindInfo);
+				nlassert(bindInfo.Zone!=NULL && bindInfo.NPatchs==1);
+				CPatchUVLocator		puvloc;
+				puvloc.build(this, i, bindInfo);
 
-			// Now, traverse the tesselation and find the first CTessFace which use this edge.
-			CTessFace	*faceNeighbor;
-			faceNeighbor= patchNeighbor->linkTessFaceWithEdge(uvo0, uvo1, this->getRootFaceForEdge(i));
-			nlassert(faceNeighbor);
-			// Bind me on Next.
-			this->changeEdgeNeighbor(i, faceNeighbor);
+				// transpose from this patch coord in neighbor patch coord.
+				CVector2f	uvo0, uvo1;
+				uint	pid;
+				CPatch	*patchNeighbor;
+				// Do it for uvi0
+				pid= puvloc.selectPatch(uvi0);
+				puvloc.locateUV(uvi0, pid, patchNeighbor, uvo0);
+				nlassert(patchNeighbor == bindInfo.Next[0]);
+				// Do it for uvi1
+				pid= puvloc.selectPatch(uvi1);
+				puvloc.locateUV(uvi1, pid, patchNeighbor, uvo1);
+				nlassert(patchNeighbor == bindInfo.Next[0]);
+				// Rescale to have uv in 0,1 basis.
+				uvo0.x/= patchNeighbor->OrderS;
+				uvo0.y/= patchNeighbor->OrderT;
+				uvo1.x/= patchNeighbor->OrderS;
+				uvo1.y/= patchNeighbor->OrderT;
+
+				// Now, traverse the tesselation and find the first CTessFace which use this edge.
+				CTessFace	*faceNeighbor;
+				faceNeighbor= patchNeighbor->linkTessFaceWithEdge(uvo0, uvo1, this->getRootFaceForEdge(i));
+				nlassert(faceNeighbor);
+				// Bind me on Next.
+				this->changeEdgeNeighbor(i, faceNeighbor);
+			}
 		}
 
 	}

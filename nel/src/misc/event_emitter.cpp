@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.2 2000/11/09 17:25:21 coutelas Exp $
+ * $Id: event_emitter.cpp,v 1.3 2000/11/09 17:48:41 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,10 +54,12 @@ void CEventEmitterWin32::submitEvents(CEventServer & server)
 				break;
 				case WM_CHAR:
 					server.postEvent (new CEventChar ((ucchar)msg.wParam));
+					/*
 				case WM_MBUTTONDOWN:
 					server.postEvent (new CEventMouseDown (GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
 				case WM_MBUTTONUP:
 					server.postEvent (new CEventMouseUp (GET_X_LPARAM(msg.lParam), GET_Y_LPARAM(msg.lParam));
+					*/
 				break;
 			}
 		}

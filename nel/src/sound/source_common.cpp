@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.cpp,v 1.2 2002/11/25 14:11:41 boucher Exp $
+ * $Id: source_common.cpp,v 1.3 2003/01/08 15:41:40 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,7 +33,7 @@ using namespace NLMISC;
 namespace NLSOUND 
 {
 
-CSourceCommon::CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam)
+CSourceCommon::CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam, NL3D::CCluster *cluster)
 :	_Priority(MidPri),
 	_Playing(false),
 	_Looping(false),
@@ -48,7 +48,8 @@ CSourceCommon::CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void
 	_PlayStart(0),
 	_Spawn(spawn),
 	_SpawnEndCb(cb),
-	_CbUserParam(cbUserParam)
+	_CbUserParam(cbUserParam),
+	_Cluster(cluster)
 {
 	CAudioMixerUser::instance()->addSource(this);
 }

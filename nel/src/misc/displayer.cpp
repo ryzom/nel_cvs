@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.51 2003/02/10 10:26:56 lecroart Exp $
+ * $Id: displayer.cpp,v 1.52 2003/02/10 16:36:49 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,7 +190,7 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 
 	string s = ss.str();
 
-#if defined(NL_OS_WINDOWS) && defined(_CONSOLE)
+#if defined(NL_OS_WINDOWS) && defined(_CONSOLE) || !defined(NL_OS_WINDOWS)
 	// we don't use cout because sometimes, it crashs because cout isn't already init, printf doesn t crash.
 	if (!s.empty())
 		printf ("%s", s.c_str());

@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.6 2001/08/02 08:34:32 berenguier Exp $
+ * $Id: skeleton_shape.cpp,v 1.7 2001/09/14 18:27:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,22 @@
 #include "3d/skeleton_shape.h"
 #include "3d/skeleton_model.h"
 #include "3d/scene.h"
+#include "nel/misc/bsphere.h"
 
+using namespace NLMISC;
 
 namespace NL3D
 {
 
+
+// ***************************************************************************
+CSkeletonShape::CSkeletonShape()
+{
+	// By default for now....
+	// Temp. Have a huge BBox, so clip badly. 
+	_BBox.setCenter(CVector(0,0,1.5));
+	_BBox.setSize(CVector(3,3,3));
+}
 
 
 // ***************************************************************************
@@ -102,8 +113,31 @@ float CSkeletonShape::getNumTriangles (float distance)
 // ***************************************************************************
 bool	CSkeletonShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {
-	/// clip this skeleton (no-op).
+	// Speed Clip: clip just the sphere.
+	CBSphere	localSphere(_BBox.getCenter(), _BBox.getRadius());
+	CBSphere	worldSphere;
+
+	// transform the sphere in WorldMatrix (with nearly good scale info).
+	localSphere.applyTransform(worldMatrix, worldSphere);
+
+	// if out of only plane, entirely out.
+	for(sint i=0;i<(sint)pyramid.size();i++)
+	{
+		// We are sure that pyramid has normalized plane normals.
+		// if SpherMax OUT return false.
+		float	d= pyramid[i]*worldSphere.Center;
+		if(d>worldSphere.Radius)
+			return false;
+	}
+
 	return true;
+}
+
+
+// ***************************************************************************
+void		CSkeletonShape::getAABBox(NLMISC::CAABBox &bbox) const
+{
+	bbox= _BBox;
 }
 
 

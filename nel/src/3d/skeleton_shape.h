@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * <File description>
  *
- * $Id: skeleton_shape.h,v 1.5 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: skeleton_shape.h,v 1.6 2001/09/14 18:27:51 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "3d/shape.h"
 #include "3d/bone.h"
+#include "nel/misc/aabbox.h"
 #include <vector>
 #include <map>
 
@@ -49,7 +50,7 @@ class CSkeletonShape : public IShape
 public:
 
 	/// Constructor
-	CSkeletonShape() {}
+	CSkeletonShape();
 
 	/** Build a skeletonShape, replacing old.
 	 * WARNING: bones must be organized in Depth-first order (this is not checked).
@@ -76,6 +77,10 @@ public:
 	{
 	}
 
+	/** return the bounding box of the shape. Default is to return Null bbox.
+	 */
+	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const;
+
 	/// get an approximation of the number of triangles this instance will render for a fixed distance.
 	virtual float	getNumTriangles (float distance);
 
@@ -91,6 +96,7 @@ public:
 private:
 	std::vector<CBoneBase>			_Bones;
 	std::map<std::string, uint32>	_BoneMap;
+	NLMISC::CAABBox					_BBox;
 
 };
 

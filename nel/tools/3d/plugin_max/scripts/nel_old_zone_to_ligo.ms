@@ -36,7 +36,7 @@ struct metazone (name, posMin, posMax)
 -- Parameters, uppercase for cell position
 old_zone_directory_fyros	=	"w:/database/landscape/zones/fyros"
 ligo_directory_fyros		=	"w:/database/landscape/ligo/desert"
-metazones_fyros				=	#(metazone "1_MZ_city" "152_EK" "155_EO", metazone "bridge_a" "158_EM" "158_EO")
+metazones_fyros				=	#(metazone "1_MZ_city" "152_EK" "155_EO", metazone "bridge_a" "158_EM" "158_EO", metazone "brandon" "164_ES" "165_ET")
 
 old_zone_directory_tryker	=	"w:/database/landscape/zones/tryker"
 ligo_directory_tryker		=	"r:/database/landscape/ligo/lacustre"

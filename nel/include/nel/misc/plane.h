@@ -1,7 +1,7 @@
 /** \file plane.h
  * class CPlane
  *
- * $Id: plane.h,v 1.5 2001/11/14 15:46:58 vizerie Exp $
+ * $Id: plane.h,v 1.6 2003/04/14 09:36:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,6 +156,13 @@ public:
 	{
 		f.serial(a,b,c,d);
 	}
+
+	// Strict equality comparator
+	bool	operator==(const CPlane &o) const
+	{
+		return a==o.a && b==o.b && c==o.c && d==o.d;
+	}
+
 	//@}
 
 };

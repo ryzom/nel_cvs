@@ -3,7 +3,6 @@
 	include_once('../config.php');
 	include_once('service_connection.php');
 
-
 // ---------------------------------------------------------------------------------------- 
 // Functions
 // ---------------------------------------------------------------------------------------- 
@@ -191,6 +190,7 @@
 
 	// check cp is set (force bool)
 	$cp = ($cp == "1");
+
 	if (!checkUserValidity($login, $password, $clientApplication, $cp, $id, $reason, $priv, $extended))
 	{
 		echo "0:".$reason;

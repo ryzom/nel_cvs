@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.61 2004/10/26 13:48:56 lecroart Exp $
+ * $Id: config_file.cpp,v 1.62 2004/11/04 12:26:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
 #include "nel/misc/path.h"
+#include "locale.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -545,6 +546,9 @@ bool CConfigFile::exists (const std::string &varName)
 
 void CConfigFile::save () const
 {
+	// Avoid any problem, Force Locale to English
+	setlocale(LC_ALL, "English");
+
 	FILE *fp = fopen (getFilename().c_str (), "w");
 	if (fp == NULL)
 	{

@@ -1,7 +1,7 @@
 /** \file task_manager.h
  * CTaskManager class
  *
- * $Id: task_manager.h,v 1.4 2001/02/16 14:47:54 saffray Exp $
+ * $Id: task_manager.h,v 1.5 2001/02/20 15:35:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ private:
 	IThread *_Thread;
 
 	//flag indicate thread loop, if false cause thread exit
-	bool _TreadRunning;
+	volatile	bool _ThreadRunning;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.9 2001/08/13 14:22:38 legros Exp $
+ * $Id: u_global_retriever.h,v 1.10 2001/08/14 13:59:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,6 +67,11 @@ public:
 	virtual float					getMeanHeight(const UGlobalPosition &pos) const =0;
 
 	/**
+	  * Returns the material corresponding to the global position
+	  */
+	virtual uint32					getMaterial(const UGlobalPosition &pos) const =0;
+
+	/**
 	  * Retrieves the position of an estimated point in the global retriever.
 	  */
 	virtual UGlobalPosition			retrievePosition(const NLMISC::CVector &estimated) const =0;
@@ -75,6 +80,11 @@ public:
 	  * Retrieves the position of an estimated point in the global retriever (double instead.)
 	  */
 	virtual UGlobalPosition			retrievePosition(const NLMISC::CVectorD &estimated) const =0;
+
+	/**
+	  * Tests if the global position is a interior position
+	  */
+	virtual bool					isInterior(const UGlobalPosition &pos) const =0;
 
 	/**
 	  * For interior position only, snap the position to the ground.

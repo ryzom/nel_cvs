@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * CMemStream class
  *
- * $Id: mem_stream.h,v 1.10 2001/05/28 15:35:41 cado Exp $
+ * $Id: mem_stream.h,v 1.11 2001/06/18 08:59:28 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,10 +132,19 @@ public:
 		}
 	}
 
-	/// Returns a pointer to the message buffer (read only)
+	/** Returns a pointer to the message buffer (read only)
+	 * Returns NULL if the buffer is empty
+	 */
 	const uint8		*buffer() const
 	{
-		return &(*_Buffer.begin());
+		if ( _Buffer.empty() )
+		{
+			return NULL;
+		}
+		else
+		{
+			return &(*_Buffer.begin());
+		}
 	}
 
 	/// Returns the message buffer (read only)

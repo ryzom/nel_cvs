@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.10 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.11 2004/04/26 13:48:24 corvazier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -487,9 +487,6 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 						vp.init (0, 0, 1, 1);
 						driverForShadowGeneration->setupViewport(vp);
 						driverForShadowGeneration->renderRawQuads (_CopyMaterial, 0, 1);
-
-						/* todo hulud remove*/
-						// driverForShadowGeneration->copyFrameBufferToTexture(text, 0, 0, 0, textX*bts, textY*bts, bts, bts);
 
 						// Set default render target
 						driverForShadowGeneration->setRenderTarget (NULL);

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.119 2004/04/19 14:02:07 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.120 2004/04/26 13:48:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,10 +54,6 @@
 #include <3d/font_generator.h>
 #include <3d/register_3d.h>
 #include <3d/seg_remanence.h>
-
-
-
-
 
 #include <nel/misc/common.h>
 #include <nel/misc/file.h>
@@ -1178,7 +1174,7 @@ void CObjectViewer::go ()
 			if (_CS) _CS->render ();
 
 			// Draw the scene		
-			CNELU::Scene->render();		
+			CNELU::Scene->render();
 			
 			// call of callback list
 			{

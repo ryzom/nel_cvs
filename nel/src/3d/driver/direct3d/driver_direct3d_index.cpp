@@ -1,7 +1,7 @@
 /** \file driver_direct3d_index.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_index.cpp,v 1.3 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_direct3d_index.cpp,v 1.4 2004/04/26 13:48:23 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -74,8 +74,12 @@ uint32 *CIBDrvInfosD3D::lock (uint first, uint last, bool readOnly)
 	{
 		CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 		// Lock the good buffer
+	/* todo hulud volatile
 		CVolatileIndexBuffer *buffer = VolatileRAM ? &(driver->_VolatileIndexBufferRAM[driver->_CurrentRenderPass&1]):
 			&(driver->_VolatileIndexBufferAGP[driver->_CurrentRenderPass&1]);
+			*/
+		CVolatileIndexBuffer *buffer = VolatileRAM ? &(driver->_VolatileIndexBufferRAM[0]):
+			&(driver->_VolatileIndexBufferAGP[0]);
 		uint32 *ptr = (uint32*)buffer->lock ((last-first)*sizeof(uint32), Offset);
 		IndexBuffer = buffer->IndexBuffer;
 		ptr -= first;
@@ -104,8 +108,11 @@ void	CIBDrvInfosD3D::unlock (uint first, uint last)
 	{
 		CDriverD3D *driver = static_cast<CDriverD3D*>(_Driver);
 		// Unlock the good buffer
+		/* todo hulud volatile
 		CVolatileIndexBuffer *buffer = VolatileRAM ? &(driver->_VolatileIndexBufferRAM[driver->_CurrentRenderPass&1]):
-			&(driver->_VolatileIndexBufferAGP[driver->_CurrentRenderPass&1]);
+			&(driver->_VolatileIndexBufferAGP[driver->_CurrentRenderPass&1]);*/
+		CVolatileIndexBuffer *buffer = VolatileRAM ? &(driver->_VolatileIndexBufferRAM[0]):
+			&(driver->_VolatileIndexBufferAGP[0]);
 		buffer->unlock ();
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.3 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.4 2004/04/26 13:48:23 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -655,7 +655,7 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 			// Disable fog if dest blend is ONE
 			if (blend && (pShader->DstBlend == D3DBLEND_ONE))
 			{
-				setRenderState (D3DRS_FOGENABLE, TRUE);
+				setRenderState (D3DRS_FOGENABLE, FALSE);
 			}
 		}
 

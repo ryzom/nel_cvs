@@ -19,10 +19,10 @@ public:
 	enum
 	{
 		Path = 0,
-		OldSize,
 		NewSize,
-		OldDate,
+		OldSize,
 		NewDate,
+		OldDate,
 		Type,
 		ParametersCount,
 	};

@@ -1,7 +1,7 @@
 /** \file driver_direct3d_matrix.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_matrix.cpp,v 1.2 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_direct3d_matrix.cpp,v 1.3 2004/04/26 13:48:23 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -269,15 +269,22 @@ void CDriverD3D::setupScissor (const class CScissor& scissor)
 			getRenderTargetSize (clientWidth, clientHeight);
 
 			// Setup d3d scissor
+
 			RECT rect;
 			rect.left=(int)floor((float)clientWidth * x + 0.5f);
 			clamp (rect.left, 0, (int)clientWidth);
-			rect.top=(int)floor((float)clientHeight* y + 0.5f);
+			if (_RenderTarget.Texture)
+				rect.top=(int)floor((float)clientHeight* y + 0.5f);
+			else
+				rect.top=(int)floor((float)clientHeight* (1-y-height) + 0.5f);
 			clamp (rect.top, 0, (int)clientHeight);
 
 			rect.right=(int)floor((float)clientWidth * (x+width) + 0.5f );
 			clamp (rect.right, 0, (int)clientWidth);
-			rect.bottom=(int)floor((float)clientHeight* (y+height) + 0.5f );
+			if (_RenderTarget.Texture)
+				rect.bottom=(int)floor((float)clientHeight* (y+height) + 0.5f);
+			else
+				rect.bottom=(int)floor((float)clientHeight* (1-y) + 0.5f);
 			clamp (rect.bottom, 0, (int)clientHeight);
 
 			_DeviceInterface->SetScissorRect (&rect);

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.7 2004/04/20 16:55:38 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.8 2004/04/26 13:48:23 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -945,6 +945,7 @@ private:
 
 		// Ref on the state
 		CTextureIndexState &_textureState = _TextureIndexStateCache[stage];
+		_textureState.TexGen = false;
 		_textureState.UVChannel = value;
 		touchRenderVariable (&_textureState);
 	}
@@ -1151,6 +1152,15 @@ private:
 			_VertexBufferCache.Offset = 0;
 			_VertexBufferCache.Stride = stride;
 			touchRenderVariable (&_VertexBufferCache);
+
+			/* Work around for a NVIDIA bug in driver 53.03 - 56.72
+			 * Sometime, after a lock D3DLOCK_NOOVERWRITE, the D3DTSS_TEXCOORDINDEX state seams to change.
+			 * So, force it at every vertex buffer set.
+			**/
+			touchRenderVariable (&_TextureStateCache[0][D3DTSS_TEXCOORDINDEX]);
+			touchRenderVariable (&_TextureStateCache[1][D3DTSS_TEXCOORDINDEX]);
+			touchRenderVariable (&_TextureStateCache[2][D3DTSS_TEXCOORDINDEX]);
+			touchRenderVariable (&_TextureStateCache[3][D3DTSS_TEXCOORDINDEX]);
 		}
 		_UseVertexColor = useVertexColor;
 		_VertexBufferSize = size;

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.7 2004/04/20 16:55:38 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.8 2004/04/26 13:48:23 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -57,7 +57,7 @@ HINSTANCE HInstDLL = NULL;
 
 // Initial volatile vertex buffer size
 #define NL_VOLATILE_RAM_VB_SIZE	512*1024
-#define NL_VOLATILE_AGP_VB_SIZE	512*1024
+#define NL_VOLATILE_AGP_VB_SIZE	128*1024
 #define NL_VOLATILE_RAM_IB_SIZE	10*1024
 #define NL_VOLATILE_AGP_IB_SIZE	10*1024
 
@@ -620,8 +620,14 @@ void CDriverD3D::updateRenderVariablesInternal()
 				if (renderLight->Enabled)
 				{
 					if (renderLight->SettingsTouched)
+					{
+						// New position
+						renderLight->Light.Position.x -= _PZBCameraPos.x;
+						renderLight->Light.Position.y -= _PZBCameraPos.y;
+						renderLight->Light.Position.z -= _PZBCameraPos.z;
 						_DeviceInterface->SetLight (renderLight->LightIndex, &(renderLight->Light));
-					renderLight->SettingsTouched = false;
+						renderLight->SettingsTouched = false;
+					}
 				}
 
 				// Clean
@@ -1264,6 +1270,10 @@ bool CDriverD3D::clearZBuffer(float zval)
 
 	// Restaure the old viewport
 	setupViewport (oldViewport);
+
+	// NVidia driver 56.72 needs to reset the vertex buffer after a clear Z
+	touchRenderVariable (&_VertexBufferCache);
+
 	return result;
 }
 
@@ -1292,6 +1302,9 @@ bool CDriverD3D::swapBuffers()
 	_VolatileIndexBufferRAM[_CurrentRenderPass&1].reset ();
 	_VolatileIndexBufferAGP[_CurrentRenderPass&1].reset ();
 
+	// todo hulud volatile
+	_DeviceInterface->SetStreamSource(0, _VolatileVertexBufferRAM[1].VertexBuffer, 0, 12);
+
 	// Is direct input running ?
 	if (_EventEmitter.getNumEmitters() > 1) 
 	{
@@ -1317,8 +1330,6 @@ bool CDriverD3D::swapBuffers()
 	
 	// Check window size
 	handlePossibleSizeChange ();
-
-	_DeviceInterface->SetVertexShader(NULL);
 
 	// Reset the profiling counter.
 	_PrimitiveProfileIn.reset();

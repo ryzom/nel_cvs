@@ -1,7 +1,7 @@
 /** \file driver_direct3d_light.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_light.cpp,v 1.2 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_direct3d_light.cpp,v 1.3 2004/04/26 13:48:23 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -101,7 +101,6 @@ void CDriverD3D::enableLight (uint8 index, bool enable)
 	nlassert (_DeviceInterface);
 	if (index<MaxLight)
 	{
-		// State change ?
 		if (_LightCache[index].Enabled != enable)
 		{
 			_LightCache[index].Enabled = enable;

@@ -272,23 +272,23 @@ void CData_mirrorDlg::updateList ()
 		subString = 1;
 
 		// Add the sizes
-		if (ModifiedFilter != Added)
-		{
-			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::OldSize].c_str ());
-		}
 		if (ModifiedFilter != Removed)
 		{
 			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::NewSize].c_str ());
 		}
-
-		// Add the dates
 		if (ModifiedFilter != Added)
 		{
-			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::OldDate].c_str ());
+			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::OldSize].c_str ());
 		}
+
+		// Add the dates
 		if (ModifiedFilter != Removed)
 		{
 			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::NewDate].c_str ());
+		}
+		if (ModifiedFilter != Added)
+		{
+			List.SetItemText (nItem, subString++, entry.Strings[CEntryFile::OldDate].c_str ());
 		}
 
 		// Add the type
@@ -584,7 +584,11 @@ void CData_mirrorDlg::buildSourceFiles ()
 				FILETIME time1;
 				getFileTime (mirrorFile.c_str (), time0);
 				getFileTime (mainFile.c_str (), time1);
-				if (CompareFileTime (&time0, &time1) == -1)
+				sint64 deltaInt = (((uint64)time1.dwHighDateTime)<<32|((uint64)time1.dwLowDateTime)) - (((uint64)time0.dwHighDateTime)<<32|((uint64)time0.dwLowDateTime));
+				double deltaInSec = (double)deltaInt;
+				deltaInSec /= 10000000.0;
+				
+				if (deltaInSec > 2.0)
 				{
 					addEntry (Modified, str.c_str (), time1, time0);
 				}

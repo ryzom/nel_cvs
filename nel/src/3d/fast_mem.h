@@ -1,7 +1,7 @@
 /** \file fast_mem.h
  * <File description>
  *
- * $Id: fast_mem.h,v 1.1 2002/03/28 13:18:25 berenguier Exp $
+ * $Id: fast_mem.h,v 1.2 2002/04/22 17:11:28 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -64,6 +64,13 @@ public:
 	 *	nbytes should not override 4K
 	 */
 	static void		precacheMMX(const void *src, uint nbytes);
+
+	/**
+	 *	Fast precaching of memory in L1 cache using SSE or MMX where available 
+	 *	(NB: others methods don't do the test)
+	 *	nbytes should not override 4K
+	 */
+	static void		precacheBest(const void *src, uint nbytes);
 
 };
 

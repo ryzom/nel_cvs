@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
  * <File description>
  *
- * $Id: texture_dlm.cpp,v 1.5 2002/04/18 13:06:53 berenguier Exp $
+ * $Id: texture_dlm.cpp,v 1.6 2002/04/22 17:11:28 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "3d/texture_dlm.h"
 #include "nel/misc/common.h"
+#include "3d/fast_mem.h"
 
 
 using namespace std;
@@ -275,6 +276,10 @@ void			CTextureDLM::modulateAndfillRect565(uint x, uint y, uint w, uint h, CRGBA
 	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
 	dst+= y*getWidth()+x;
 
+	// precahce Data in memory (best CPU support)
+	CFastMem::precacheBest(textMap, w*h*sizeof(CRGBA));
+	CFastMem::precacheBest(modColor, w*h*sizeof(uint16));
+
 	// For all lines
 	for(sint n= h;n>0;n--, dst+= (getWidth()-w) )
 	{
@@ -302,6 +307,10 @@ void			CTextureDLM::modulateAndfillRect8888(uint x, uint y, uint w, uint h, CRGB
 	// compute start dst to copy.
 	CRGBA	*dst= (CRGBA*)&(*getPixels().begin());
 	dst+= y*getWidth()+x;
+
+	// precahce Data in memory (best CPU support)
+	CFastMem::precacheBest(textMap, w*h*sizeof(CRGBA));
+	CFastMem::precacheBest(modColor, w*h*sizeof(CRGBA));
 
 	// For all lines
 	for(sint n= h;n>0;n--, dst+= (getWidth()-w) )

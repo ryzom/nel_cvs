@@ -1,7 +1,7 @@
 /** \file fast_mem.cpp
  * <File description>
  *
- * $Id: fast_mem.cpp,v 1.1 2002/03/28 13:18:25 berenguier Exp $
+ * $Id: fast_mem.cpp,v 1.2 2002/04/22 17:11:28 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/fast_mem.h"
+#include "nel/misc/cpu_info.h"
 
 
 namespace NL3D 
@@ -186,6 +187,16 @@ void		CFastMem::precacheMMX(const void *src, uint nbytes)
 }
 
 
+// ***************************************************************************
+void		CFastMem::precacheBest(const void *src, uint nbytes)
+{
+	if(NLMISC::CCpuInfo::hasSSE())
+		precacheSSE(src, nbytes);
+	else if(NLMISC::CCpuInfo::hasMMX())
+		precacheMMX(src, nbytes);
+}
+
+
 #else
 
 
@@ -200,6 +211,10 @@ void		CFastMem::precacheSSE(const void *src, uint nbytes)
 	// no-op.
 }
 void		CFastMem::precacheMMX(const void *src, uint nbytes)
+{
+	// no-op.
+}
+void		CFastMem::precacheBest(const void *src, uint nbytes)
 {
 	// no-op.
 }

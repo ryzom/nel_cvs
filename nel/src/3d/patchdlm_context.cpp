@@ -1,7 +1,7 @@
 /** \file patchdlm_context.cpp
  * <File description>
  *
- * $Id: patchdlm_context.cpp,v 1.8 2002/04/22 16:35:42 berenguier Exp $
+ * $Id: patchdlm_context.cpp,v 1.9 2002/04/22 17:11:28 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -700,16 +700,8 @@ void			CPatchDLMContext::addPointLightInfluence(const CPatchDLMPointLight &pl)
 		vert= originVert + startY*Width;
 		dst= originDst + startY*Width;
 		uint	nPixelLine= (endY-startY)*Width;
-		if(CCpuInfo::hasSSE())
-		{
-			CFastMem::precacheSSE(vert, nPixelLine * sizeof(CVertex));
-			CFastMem::precacheSSE(dst, nPixelLine * sizeof(CRGBA));
-		}
-		else if(CCpuInfo::hasMMX())
-		{
-			CFastMem::precacheMMX(vert, nPixelLine * sizeof(CVertex));
-			CFastMem::precacheMMX(dst, nPixelLine * sizeof(CRGBA));
-		}
+		CFastMem::precacheBest(vert, nPixelLine * sizeof(CVertex));
+		CFastMem::precacheBest(dst, nPixelLine * sizeof(CRGBA));
 	}*/
 
 	// Start 24 precision, for faster compute.

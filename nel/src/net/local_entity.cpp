@@ -1,7 +1,7 @@
 /** \file local_entity.cpp
  * Locally-controlled entities
  *
- * $Id: local_entity.cpp,v 1.20 2001/01/03 16:38:20 cado Exp $
+ * $Id: local_entity.cpp,v 1.21 2001/01/09 16:54:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,10 @@ using namespace NLMISC;
 namespace NLNET {
 
 
+const uint	CLocalEntity::FrequencyOfFull3dUpdates = 10;
+
+const TTime	CLocalEntity::KeepAlivePeriod = 10000; // in ms
+
 
 /*
  * Constructor
@@ -46,6 +50,7 @@ CLocalEntity::CLocalEntity() :
 	_StrafeVel( 0.0 ),
 	_VertVel( 0.0 ),
 	_DeltaTime( 0 ),
+	_UpdateSentIndex( 0 ),
 	_DRThresholdPos( 0.5 ),
 	_DRTestBodyHeading( true ),
 	_DRThresholdHeading( 0.5 ),
@@ -65,6 +70,7 @@ CLocalEntity::CLocalEntity( const IMovingEntity& es ) :
 	_StrafeVel( 0.0 ),
 	_VertVel( 0.0 ),
 	_DeltaTime( 0 ),
+	_UpdateSentIndex( 0 ),
 	_DRThresholdPos( 0.5 ),
 	_DRTestBodyHeading( true ),
 	_DRThresholdHeading( 0.5 ),
@@ -201,26 +207,38 @@ void CLocalEntity::propagateState()
 	// Send
 	if ( (CLocalArea::Instance->ClientSocket != NULL) && CLocalArea::Instance->ClientSocket->connected() && (id() != 0) )
 	{
+		// Sometimes, send the update in full 3d
+		_UpdateSentIndex = (_UpdateSentIndex + 1) % CLocalEntity::FrequencyOfFull3dUpdates;
+		if ( _UpdateSentIndex == 0 )
+		{
+			IMovingEntity::SerialFull3d = true;
+		}
+		// Serialize out the entity state
 		CMessage msgout;
-		if ( groundMode() )
-		{
-			msgout.setType( "GES" ); // Entity State, Ground mode
-		}
-		else
-		{
-			msgout.setType( "FES" ); // Full Entity State
-		}
 		msgout.serial( *this );
 		CLocalArea::Instance->ClientSocket->send( msgout );
 		nlinfo( "Entity State sent, with id %u", id() );
-		if ( ! groundMode() )
-		{
-			setGroundMode( true ); // enter ground mode after sending a full entity state
-		}
+		_LastMsgSentTime = CTime::getLocalTime();
 	}
 
 	// Update local replica
 	_DRReplica.changeStateTo( *this );
+
+	IMovingEntity::SerialFull3d = false;
+}
+
+
+/*
+ * Sends an entity state msg only if the KeepAlivePeriod is elapsed since the last msg sent
+ */
+void CLocalEntity::keepAlive( TTime actualtime )
+{
+	if ( (sint64)actualtime-(sint64)_LastMsgSentTime > (sint64)CLocalEntity::KeepAlivePeriod )
+	{
+		_UpdateSentIndex--; // because we force SerialFull3d, we delay the equivalent mecanism in propagateState()
+		IMovingEntity::SerialFull3d = true;
+		propagateState();
+	}
 }
 
 

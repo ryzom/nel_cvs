@@ -1,7 +1,7 @@
 /** \file replica.cpp
  * <File description>
  *
- * $Id: replica.cpp,v 1.2 2000/11/30 17:03:10 cado Exp $
+ * $Id: replica.cpp,v 1.3 2001/01/09 16:54:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ CReplica::CReplica( const IMovingEntity& es ) :
  */
 void CReplica::changeStateTo( const IMovingEntity& es )
 {
-	if ( groundMode() )
+	if ( ! IMovingEntity::SerialFull3d )
 	{
 		CVector p = es.pos();
 		CVector v = es.trajVector();
@@ -80,8 +80,10 @@ void CReplica::changeStateTo( const IMovingEntity& es )
 		setTrajVector( es.trajVector() );
 		setBodyHeading( es.bodyHeading() );
 	}
+	/*
 	setAngularVelocity( es.angularVelocity() );
 	setRollAngle( es.rollAngle() );
+	*/
 }
 
 

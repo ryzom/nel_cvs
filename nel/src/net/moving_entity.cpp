@@ -1,7 +1,7 @@
 /** \file moving_entity.cpp
  * Interface for all moving entities
  *
- * $Id: moving_entity.cpp,v 1.10 2000/12/19 16:06:09 cado Exp $
+ * $Id: moving_entity.cpp,v 1.11 2001/01/09 16:54:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,9 @@ using namespace NLMISC;
 namespace NLNET {
 
 
-TEntityId IMovingEntity::_MaxId = 1000001; //	avoid 0 and ids allocated by the LS
+TEntityId	IMovingEntity::_MaxId = 1000001; //	avoid 0 and ids allocated by the LS
+
+bool		IMovingEntity::SerialFull3d = false;
 
 
 /*
@@ -171,29 +173,28 @@ void IMovingEntity::computePosAfterDuration( TDuration d )
  */
 void IMovingEntity::serial ( NLMISC::IStream &s )
 {
-	if ( groundMode() )
+	s.serial( _Id );
+	s.serial( _EntityType );
+	s.serial( IMovingEntity::SerialFull3d );
+	if ( IMovingEntity::SerialFull3d )
 	{
-		s.serial( _Id );
-		s.serial( _EntityType );
+		s.serial( _Pos );
+		s.serial( _Vector );
+		s.serial( _BodyHdg );
+	}
+	else
+	{
 		s.serial( _Pos.x );
 		s.serial( _Pos.y );
 		s.serial( _Vector.x );
 		s.serial( _Vector.y );
 		s.serial( _BodyHdg.x );
 		s.serial( _BodyHdg.y );
-		s.serial( _AngVel );
-		s.serial( _RollAngle );
 	}
-	else
-	{
-		s.serial( _Id );
-		s.serial( _EntityType );
-		s.serial( _Pos );
-		s.serial( _Vector );
-		s.serial( _BodyHdg );
-		s.serial( _AngVel );
-		s.serial( _RollAngle );
-	}
+	/*
+	s.serial( _AngVel );
+	s.serial( _RollAngle );
+	*/
 }
 
 

@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.16 2001/01/04 11:30:38 cado Exp $
+ * $Id: local_area.h,v 1.17 2001/01/09 16:54:02 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,7 +129,23 @@ public:
 	}
 
 	/// Returns the name of an entity in the local area
-	const std::string		*nameFromId( TEntityId id );	
+	const std::string		*nameFromId( TEntityId id ) const;	
+
+	/// Returns true if the specified position is within the radius of the local area
+	bool					inRadius( const NLMISC::CVector& pos ) const;
+
+	/// Returns the radius of the local area
+	TPosUnit				radius() const
+	{
+		return _Radius;
+	}
+
+	/// Change the radius of the local area
+	void					setRadius( TPosUnit r )
+	{
+		_Radius = r;
+	}
+
 
 	/// The entity controlled by the player
 	CLocalEntity			User;
@@ -143,8 +159,7 @@ public:
 	friend void processEntityState( IMovingEntity& es );
 
 	// Callbacks
-	friend void cbProcessEntityStateInGroundMode( CMessage& msgin, TSenderId idfrom );
-	friend void cbProcessEntityStateFull( CMessage& msgin, TSenderId idfrom );
+	friend void cbProcessEntityState( CMessage& msgin, TSenderId idfrom );
 	friend void cbAssignId( CMessage& msgin, TSenderId idfrom );
 	friend void cbRemoveEntity( CMessage& msgin, TSenderId idfrom );
 	friend void cbCreateNewEntity( CMessage& msgin, TSenderId idfrom );

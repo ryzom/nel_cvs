@@ -1,7 +1,7 @@
 /** \file moving_entity.h
  * Interface for all moving entities
  *
- * $Id: moving_entity.h,v 1.12 2000/12/19 16:06:09 cado Exp $
+ * $Id: moving_entity.h,v 1.13 2001/01/09 16:54:02 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -166,9 +166,8 @@ public:
 	}
 
 	/** Serialization.
-	 * Notes: the serialization is different whether ground mode is on or off.
-	 * The receiver must know the ground mode by an external way.
-	 * The body heading is never transmitted.
+	 * Note: before serializing out, you can set SerialFull3d to true.
+	 * It is part of the message.
 	 */
 	void					serial ( NLMISC::IStream &s );
 
@@ -197,6 +196,9 @@ public:
 	{
 		return _MaxId;
 	}
+
+	/// Flag used by serial()
+	static bool				SerialFull3d;
 
 // protected:
 

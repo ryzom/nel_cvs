@@ -1,7 +1,7 @@
 /** \file local_entity.h
  * Locally-controlled entities
  *
- * $Id: local_entity.h,v 1.12 2000/12/22 13:46:16 cado Exp $
+ * $Id: local_entity.h,v 1.13 2001/01/09 16:54:02 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/common.h"
+#include "nel/misc/time_nl.h"
 #include "nel/net/moving_entity.h"
 #include "nel/net/replica.h"
 
@@ -69,12 +70,15 @@ public:
 	 */
 	void			commitPos( const NLMISC::CVector& p );
 
-	/* Sends an update to all replicas, including local replica.
-	 * Call it yourself only if you explicitly want to send an update
+	/* Sends an entity state msg to all replicas, including local replica.
+	 * Call it yourself (from outside NeL) only if you explicitly want to send an update
 	 * (e.g. just after the creation and setup of the local entity, or when the user
 	 * begins or stops a movement)
 	 */
 	void			propagateState();
+
+	/// Sends an entity state msg only if the KeepAlivePeriod is elapsed since the last msg sent
+	void			keepAlive( NLMISC::TTime actualtime );
 
 	///	Sets the initial position
 	void			resetPos( const NLMISC::CVector& p )
@@ -150,6 +154,12 @@ public:
 	/// Roll of the camera (or of the head)
 	TAngle			ViewRoll;
 
+	/// Frequency of full 3d updates (once every n messages sent)
+	static const uint FrequencyOfFull3dUpdates;
+
+	/// Period of keep alive (in milliseconds)
+	static const NLMISC::TTime KeepAlivePeriod;
+
 protected:
 
 	/// Computes trajectory vector.
@@ -171,6 +181,12 @@ private:
 
 	/// Delta time that was passed to update()
 	TDuration		_DeltaTime;
+
+	/// Counter for state updates sent (when moving)
+	uint			_UpdateSentIndex;
+
+	/// Time for state updates sent (when not moving)
+	NLMISC::TTime	_LastMsgSentTime;
 
 ///@name Dead Reckoning properties
 //@{

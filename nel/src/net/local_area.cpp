@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.28 2001/01/04 11:30:38 cado Exp $
+ * $Id: local_area.cpp,v 1.29 2001/01/09 16:54:03 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,46 +62,34 @@ bool NLNET::findEntity( TEntityId id, ItRemoteEntities& ire )
 
 // Processes the entity state
 void NLNET::processEntityState( IMovingEntity& es )
-{
-	// Search id in the entity map
-	ItRemoteEntities ire;
-	if ( findEntity( es.id(), ire ) )
+{	
+	if ( CLocalArea::Instance->inRadius( es.pos() ) )
 	{
-		// Change state
-		(*ire).second->convergeTo( es );
-	}
-	else
-	{	// Not found => create a new remote entity
-		createRemoteEntity( es );
+		// Search id in the entity map
+		ItRemoteEntities ire;
+		if ( findEntity( es.id(), ire ) )
+		{
+			// Change state
+			(*ire).second->convergeTo( es );
+		}
+		else
+		{	// Not found => create a new remote entity
+			createRemoteEntity( es );
+		}
 	}
 }
 
 
 /*
- * Callback cbProcessEntityStateInGroundMode (friend of CLocalArea)
+ * Callback cbProcessEntityState (friend of CLocalArea)
  */
-void NLNET::cbProcessEntityStateInGroundMode( CMessage& msgin, TSenderId idfrom )
+void NLNET::cbProcessEntityState( CMessage& msgin, TSenderId idfrom )
 {
 	IMovingEntity es;
-	es.setGroundMode( true );
 	msgin.serial( es );
-	nldebug( "Entity state in ground mode received, with id %u", es.id() );
-
+	nldebug( "Entity state received, with id %u", es.id() );
 	processEntityState( es );
-}
-
-
-/*
- * Callback cbProcessEntityStateFull (friend of CLocalArea)
- */
-void NLNET::cbProcessEntityStateFull( CMessage& msgin, TSenderId idfrom )
-{
-	IMovingEntity es;
-	es.setGroundMode( false );
-	msgin.serial( es );
-	nldebug( "Full entity state received, with id %u", es.id() );
-
-	processEntityState( es );
+	IMovingEntity::SerialFull3d = false;
 }
 
 
@@ -148,7 +136,9 @@ void NLNET::cbRemoveEntity( CMessage& msgin, TSenderId idfrom )
 {
 	TEntityId id = 0;
 	msgin.serial( id );
-	CLocalArea::Instance->_Neighbors.erase( id );
+	CRemoteEntities::iterator ire = CLocalArea::Instance->_Neighbors.find( id );
+	delete (*ire).second;
+	CLocalArea::Instance->_Neighbors.erase( ire );
 	if ( CLocalArea::Instance->_EntityRemovedCallback != NULL )
 	{
 		CLocalArea::Instance->_EntityRemovedCallback( id );
@@ -203,8 +193,7 @@ void NLNET::cbHandleUnknownMessage( CMessage& msgin, TSenderId idfrom )
  */
 TCallbackItem CbArray [] =
 {
-	{ "GES", cbProcessEntityStateInGroundMode },
-	{ "FES", cbProcessEntityStateFull },
+	{ "ES", cbProcessEntityState },
 	{ "ID", cbAssignId },
 	{ "RM", cbRemoveEntity },
 	{ "CRE", cbCreateNewEntity },
@@ -220,7 +209,7 @@ namespace NLNET {
  * Constructor
  */
 CLocalArea::CLocalArea( const CMsgSocket *clientsocket, const CVector& userpos, const CVector& userhdg ) :
-	_Radius( 20000 ),
+	_Radius( 200 ),
 	_NewEntityCallback( NULL ),
 	_EntityRemovedCallback( NULL ),
 	_UnknownMessagesCallback( NULL )
@@ -276,6 +265,7 @@ void CLocalArea::update()
 
 	// Update local entity
 	User.update( deltatime ); // note: you have to call CLocalArea.User.commitPos() after CLocalArea::update()
+	User.keepAlive( actualtime );
 
 	// Update remote entities
 	CRemoteEntities::iterator ipe;
@@ -298,13 +288,9 @@ void CLocalArea::update()
 		//}
 
 		// Remove neighbor if it exits from the local area
-		if ( ((*ipe).second->pos()-User.pos()).norm() > _Radius )
+		if ( ! inRadius( (*ipe).second->pos() ) )
 		{
-			/*NLMISC::CVector v1 = User.pos();
-			NLMISC::CVector v2 = (*ipe).second->pos();*/
-//#ifdef NL_DEBUG
 			TEntityId id = (*ipe).second->id();
-//#endif
 			delete (*ipe).second;
 			CRemoteEntities::iterator ipebis = ipe;
 			ipe++;
@@ -329,7 +315,7 @@ void CLocalArea::update()
 /*
  * Returns the name of an entity in the local area
  */
-const string *CLocalArea::nameFromId( TEntityId id )
+const string *CLocalArea::nameFromId( TEntityId id ) const
 {
 	if ( id == User.id() )
 	{
@@ -337,7 +323,7 @@ const string *CLocalArea::nameFromId( TEntityId id )
 	}
 	else
 	{
-		CRemoteEntities::iterator ipr = _Neighbors.find( id );
+		CRemoteEntities::const_iterator ipr = _Neighbors.find( id );
 		if ( ipr != _Neighbors.end() )
 		{
 			return &((*ipr).second->name());
@@ -347,6 +333,15 @@ const string *CLocalArea::nameFromId( TEntityId id )
 			return NULL;
 		}
 	}
+}
+
+
+/*
+ * Returns true if the specified position is within the radius of the local area
+ */
+bool CLocalArea::inRadius( const CVector& pos ) const
+{
+	return (pos - User.pos()).norm() < _Radius;
 }
 
 

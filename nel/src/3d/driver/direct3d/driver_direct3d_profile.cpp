@@ -1,7 +1,7 @@
 /** \file driver_direct3d_profile.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_profile.cpp,v 1.4 2004/08/09 14:53:03 vizerie Exp $
+ * $Id: driver_direct3d_profile.cpp,v 1.5 2004/08/09 14:53:52 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -182,6 +182,7 @@ void CDriverD3D::appendVBHardLockProfile(NLMISC::TTicks time, CVertexBuffer *vb)
 // ***************************************************************************
 void CDriverD3D::startProfileIBLock() 
 {	
+	/*
 	if(_IBProfiling)
 		return;
 	
@@ -191,12 +192,14 @@ void CDriverD3D::startProfileIBLock()
 	_IBProfiling= true;
 	_CurIBLockCount= 0;
 	_NumIBProfileFrame= 0;	
+	*/
 }
 
 // ***************************************************************************
 
 void CDriverD3D::endProfileIBLock(std::vector<std::string> &result) 
 {	
+	/*
 	if(!_IBProfiling)
 		return;
 	
@@ -231,12 +234,14 @@ void CDriverD3D::endProfileIBLock(std::vector<std::string> &result)
 	// clear.
 	_IBProfiling= false;
 	contReset(_IBProfiles);	
+	*/
 }
 
 // ***************************************************************************
 
 void CDriverD3D::appendIBLockProfile(NLMISC::TTicks time, CIndexBuffer *ib)
 {	
+	/*
 	// must allocate a new place?
 	if(_CurIBLockCount>=_IBProfiles.size())
 	{
@@ -256,6 +261,7 @@ void CDriverD3D::appendIBLockProfile(NLMISC::TTicks time, CIndexBuffer *ib)
 	
 	// next!
 	_CurIBLockCount++;	
+	*/
 }
 
 // ***************************************************************************
@@ -297,6 +303,7 @@ void CDriverD3D::profileVBHardAllocation(std::vector<std::string> &result)
 // ***************************************************************************
 void CDriverD3D::profileIBAllocation(std::vector<std::string> &result)
 {
+	/*
 	result.clear();
 	result.reserve(1000);
 	result.push_back(toString("Memory Allocated: %4d Ko in AGP / %4d Ko in VRAM", 
@@ -325,6 +332,7 @@ void CDriverD3D::profileIBAllocation(std::vector<std::string> &result)
 				ib->IndexBufferPtr->getName().c_str(), sizeof(uint32) * numIndex));
 		}
 	}
+	*/
 }
 
 // ***************************************************************************

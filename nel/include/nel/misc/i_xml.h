@@ -1,7 +1,7 @@
 /** \file i_xml.h
  * Input xml stream
  *
- * $Id: i_xml.h,v 1.8 2003/12/10 15:12:38 corvazier Exp $
+ * $Id: i_xml.h,v 1.9 2004/07/09 12:45:43 miller Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -154,6 +154,21 @@ public:
 	  */
 	static bool		getPropertyString (std::string &result, xmlNodePtr node, const char *property);
 	
+	/**
+	  *	Read an integer property - if the property is not found the default value is returned
+	  */
+	static int		getIntProperty(xmlNodePtr node, const char *property, int defaultValue); 
+
+	/**
+	  *	Read a floating point property - if the property is not found the default value is returned
+	  */
+	static double	getFloatProperty(xmlNodePtr node, const char *property, float defaultValue); 
+
+	/**
+	  *	Read a string property - if the property is not found the default value is returned
+	  */
+	static std::string getStringProperty(xmlNodePtr node, const char *property, const std::string& defaultValue); 
+
 	/** 
 	  * Read the content of the node as a string
 	  *

@@ -1,7 +1,7 @@
 /** \file i_xml.cpp
  * Input xml stream
  *
- * $Id: i_xml.cpp,v 1.19 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: i_xml.cpp,v 1.20 2004/07/09 12:45:43 miller Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdmisc.h"
 
 #include "nel/misc/i_xml.h"
+#include "nel/misc/sstring.h"
 
 #ifndef NL_DONT_USE_EXTERNAL_CODE
 
@@ -1077,6 +1078,56 @@ bool CIXml::getPropertyString (std::string &result, xmlNodePtr node, const char 
 	}
 	return false;
 }
+
+// ***************************************************************************
+
+int CIXml::getIntProperty(xmlNodePtr node, const char *property, int defaultValue)
+{
+	CSString s;
+	bool b;
+
+	b=getPropertyString(s,node,property);
+	if (b==false)
+		return defaultValue;
+
+	s=s.strip();
+	int val=s.atoi();
+	if (val==0 && s!="0")
+	{
+		nlwarning("bad integer value: %s",s.c_str());
+		return defaultValue;
+	}
+
+	return val;
+} 
+
+// ***************************************************************************
+
+double CIXml::getFloatProperty(xmlNodePtr node, const char *property, float defaultValue)
+{
+	CSString s;
+	bool b;
+
+	b=getPropertyString(s,node,property);
+	if (b==false)
+		return defaultValue;
+
+	return s.strip().atof();
+} 
+
+// ***************************************************************************
+
+std::string CIXml::getStringProperty(xmlNodePtr node, const char *property, const std::string& defaultValue)
+{
+	std::string s;
+	bool b;
+
+	b=getPropertyString(s,node,property);
+	if (b==false)
+		return defaultValue;
+
+	return s;
+} 
 
 // ***************************************************************************
 	

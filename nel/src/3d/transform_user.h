@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.17 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: transform_user.h,v 1.18 2003/02/06 09:16:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -207,6 +207,9 @@ public:
 		NL3D_MEM_TRANSFORM
 		return _Transform->getLastClippedState();
 	}
+
+	virtual void	getLastParentClusters(std::vector<CCluster*> &clusters) const;
+
 
 	virtual	const CMatrix	&getLastWorldMatrixComputed() const;
 

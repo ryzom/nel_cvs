@@ -1,7 +1,7 @@
 /** \file transform_user.cpp
  * <File description>
  *
- * $Id: transform_user.cpp,v 1.10 2002/08/05 15:29:11 berenguier Exp $
+ * $Id: transform_user.cpp,v 1.11 2003/02/06 09:16:21 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,33 @@ void CTransformUser::setClusterSystem (UInstanceGroup *pIG)
 UInstanceGroup *CTransformUser::getClusterSystem ()
 {
 	return _pIG;
+}
+
+void			CTransformUser::getLastParentClusters(std::vector<CCluster*> &clusters) const
+{
+	// look in the list of parent of the transform object and extract the CCluster and CQuadGridClipCluster parents
+	if (_Scene == NULL)
+		return;
+
+	CClipTrav *clipTrav = _Scene->getClipTrav();
+
+	if (clipTrav == NULL)
+		return;
+
+	IModel *m = clipTrav->getFirstParent(_Transform);
+	while (m != NULL)
+	{
+		CCluster *pcluster = dynamic_cast<CCluster*>(m);
+		if (pcluster != NULL)
+			clusters.push_back(pcluster);
+		else 
+		{
+			CQuadGridClipCluster *pquad = dynamic_cast<CQuadGridClipCluster*>(m);
+			if (pquad != NULL)
+				clusters.push_back(clipTrav->RootCluster);
+		}
+		m = clipTrav->getNextParent(_Transform);
+	}
 }
 
 

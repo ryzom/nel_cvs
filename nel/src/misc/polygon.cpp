@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * TODO: File description
  *
- * $Id: polygon.cpp,v 1.30 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: polygon.cpp,v 1.31 2005/02/21 15:17:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1483,13 +1483,13 @@ static void ScanOuterEdgeLeft(CPolygon2D::TRaster *r, float x1, float y1, float 
 // *******************************************************************************
 void CPolygon2D::computeOuterBorders(TRasterVect &borders, sint &minimumY)
 {
+	borders.clear();
 	// NB : this version is not much optimized, because of the min/max test
 	// during rasterization.
 	// TODO : optimize if needed ...
 	
 	if (Vertices.empty())
-	{
-		borders.clear();
+	{		
 		minimumY = -1;
 		return;
 	}
@@ -1680,8 +1680,9 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 		inverseSlope = deltaX / deltaY;
 	else
 		inverseSlope = 0;
-	iInverseSlope = (sint32) (rol16 * inverseSlope);
-	currRaster = r + ((sint) floorf(y1) - minY);
+	iInverseSlope = (sint32) (rol16 * inverseSlope);	
+	currRaster = r + ((sint) floorf(y1) - minY);	
+	//
 	iposx = (sint32) (rol16 * (x1 + inverseSlope * (ceilf(y1) - y1))); // sub-pixel accuracy	
 	if (rightEdge)
 	{	
@@ -1770,9 +1771,9 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 // *******************************************************************************
 void CPolygon2D::computeInnerBorders(TRasterVect &borders, sint &minimumY)
 {
+	borders.clear();
 	if (Vertices.empty())
-	{
-		borders.clear();
+	{		
 		minimumY = -1;
 		return;
 	}

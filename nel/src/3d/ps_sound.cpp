@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.1 2001/08/07 14:20:52 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.2 2001/08/16 17:12:51 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,20 +33,20 @@ namespace NL3D
 {
 
 
-// we batch computation of volumes and frequencies. Here is the buffer size:
+// we batch computation of Gains and frequencies. Here is the buffer size:
 static const uint SoundBufSize = 1024;
 
 
-CPSSound::CPSSound() : _VolumeScheme(NULL), _FrequencyScheme(NULL)
-					   ,_Volume(1.f)	  , _Frequency(1000.f)
+CPSSound::CPSSound() : _GainScheme(NULL), _PitchScheme(NULL)
+					   ,_Gain(1.f)	  , _Pitch(1.f)
 {
 	_Name = std::string("sound");
 }
 
 CPSSound::~CPSSound()
 {
-	delete _VolumeScheme;	
-	delete _FrequencyScheme;	
+	delete _GainScheme;	
+	delete _PitchScheme;	
 }
 
 uint32			CPSSound::getType(void) const
@@ -62,11 +62,11 @@ void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	if (!size) return;
 	uint32 toProcess, leftToDo = size;
 
-	float   volumes[SoundBufSize];
+	float   Gains[SoundBufSize];
 	float   frequencies[SoundBufSize];
 
-	uint	volumePtInc    = _VolumeScheme ? 1 : 0;
-	uint	frequencyPtInc = _FrequencyScheme ? 1 : 0;
+	uint	GainPtInc    = _GainScheme ? 1 : 0;
+	uint	frequencyPtInc = _PitchScheme ? 1 : 0;
 	float   *currVol, *currFrequency;
 	
 
@@ -78,12 +78,12 @@ void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	do
 	{
 		toProcess = leftToDo > SoundBufSize ? SoundBufSize : leftToDo;
-		// compute volume		
-		currVol = _VolumeScheme ? (float *) _VolumeScheme->make(getOwner(), size - leftToDo, volumes, sizeof(float), toProcess, true)
-								: &_Volume;
+		// compute Gain		
+		currVol = _GainScheme ? (float *) _GainScheme->make(getOwner(), size - leftToDo, Gains, sizeof(float), toProcess, true)
+								: &_Gain;
 		// compute frequency
-		currFrequency = _FrequencyScheme ? (float *) _FrequencyScheme->make(getOwner(), size - leftToDo, frequencies, sizeof(float), toProcess, true)
-								: &_Frequency;
+		currFrequency = _PitchScheme ? (float *) _PitchScheme->make(getOwner(), size - leftToDo, frequencies, sizeof(float), toProcess, true)
+								: &_Pitch;
 
 		endIt = it + toProcess;
 		do
@@ -95,7 +95,7 @@ void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 									  , *speedIt
 									  , *currFrequency);						  
 			}
-			currVol += volumePtInc;
+			currVol += GainPtInc;
 			currFrequency += frequencyPtInc;
 			++posIt;
 			++speedIt;
@@ -109,34 +109,34 @@ void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 
 }
 
-void	CPSSound::setVolume(float volume)
+void	CPSSound::setGain(float Gain)
 {
-	delete _VolumeScheme;
-	_VolumeScheme = NULL;
-	_Volume = volume;	
+	delete _GainScheme;
+	_GainScheme = NULL;
+	_Gain = Gain;	
 }
 
 
-void	CPSSound::setVolumeScheme(CPSAttribMaker<float> *volume)
+void	CPSSound::setGainScheme(CPSAttribMaker<float> *Gain)
 {
-	delete _VolumeScheme;
-	_VolumeScheme = volume;	
+	delete _GainScheme;
+	_GainScheme = Gain;	
 }
 
 
 
 
-void	CPSSound::setFrequency(float frequency)
+void	CPSSound::setPitch(float pitch)
 {
-	delete _FrequencyScheme;
-	_FrequencyScheme = NULL;
-	_Frequency = frequency;
+	delete _PitchScheme;
+	_PitchScheme = NULL;
+	_Pitch = pitch;
 }
 
-void	CPSSound::setFrequencyScheme(CPSAttribMaker<float> *frequency)
+void	CPSSound::setPitchScheme(CPSAttribMaker<float> *pitch)
 {
-	delete _FrequencyScheme;	
-	_FrequencyScheme = frequency;
+	delete _PitchScheme;	
+	_PitchScheme = pitch;
 }
 
 	
@@ -169,44 +169,52 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	if (f.isReading())
 	{
-		delete _VolumeScheme;
-		_VolumeScheme = NULL;
-		delete _FrequencyScheme;
-		_FrequencyScheme = NULL;
+		delete _GainScheme;
+		_GainScheme = NULL;
+		delete _PitchScheme;
+		_PitchScheme = NULL;
 	}
-	// save volume infos
-	hasScheme = _VolumeScheme != NULL;
+	// save Gain infos
+	hasScheme = _GainScheme != NULL;
 	f.serial(hasScheme);
 	if (hasScheme)
 	{
-		f.serialPolyPtr(_VolumeScheme);
+		f.serialPolyPtr(_GainScheme);
 	}
 	else
 	{
-		f.serial(_Volume);
+		f.serial(_Gain);
 	}
 	// save frequency infos
-	hasScheme = _FrequencyScheme != NULL;
+	hasScheme = _PitchScheme != NULL;
 	f.serial(hasScheme);
 	if (hasScheme)
 	{
-		f.serialPolyPtr(_FrequencyScheme);
+		f.serialPolyPtr(_PitchScheme);
 	}
 	else
 	{
-		f.serial(_Frequency);
+		f.serial(_Pitch);
 	}			
 }
 	
 
 void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 {
-	if (_VolumeScheme && _VolumeScheme->hasMemory()) _FrequencyScheme->newElement(emitterLocated, emitterIndex);
-	if (_FrequencyScheme && _FrequencyScheme->hasMemory()) _FrequencyScheme->newElement(emitterLocated, emitterIndex);
+	if (_GainScheme && _GainScheme->hasMemory()) _PitchScheme->newElement(emitterLocated, emitterIndex);
+	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->newElement(emitterLocated, emitterIndex);
 	// if there's a sound server, we generate a new sound instance
 	if (CParticleSystem::getSoundServer())
 	{
-		_Sounds.insert(CParticleSystem::getSoundServer()->createSound(_SoundName));
+		uint32 index = _Sounds.insert(CParticleSystem::getSoundServer()->createSound(_SoundName));
+		/// set position and activate the sound
+	
+		if (_Sounds[index])
+		{
+			_Sounds[index]->play();
+			_Sounds[index]->setSoundParams(0, _Owner->getPos()[index], _Owner->getSpeed()[index], 1);
+		}
+	
 	}
 	else
 	{
@@ -216,15 +224,19 @@ void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 
 void			CPSSound::deleteElement(uint32 index)
 {
-	if (_VolumeScheme && _VolumeScheme->hasMemory()) _FrequencyScheme->deleteElement(index);
-	if (_FrequencyScheme && _FrequencyScheme->hasMemory()) _FrequencyScheme->deleteElement(index);
+	if (_GainScheme && _GainScheme->hasMemory()) _PitchScheme->deleteElement(index);
+	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->deleteElement(index);
+	if (_Sounds[index])
+	{
+		_Sounds[index]->release();
+	}
 	_Sounds.remove(index);
 }
 
 void			CPSSound::resize(uint32 size)
 {
-	if (_VolumeScheme && _VolumeScheme->hasMemory()) _VolumeScheme->resize(size, getOwner()->getSize());
-	if (_FrequencyScheme && _FrequencyScheme->hasMemory()) _FrequencyScheme->resize(size, getOwner()->getSize());
+	if (_GainScheme && _GainScheme->hasMemory()) _GainScheme->resize(size, getOwner()->getSize());
+	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->resize(size, getOwner()->getSize());
 	_Sounds.resize(size);
 }
 

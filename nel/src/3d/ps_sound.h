@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * <File description>
  *
- * $Id: ps_sound.h,v 1.1 2001/08/07 14:20:52 vizerie Exp $
+ * $Id: ps_sound.h,v 1.2 2001/08/16 17:12:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -85,54 +85,54 @@ public:
 		return _SoundName;
 	}
 
-	/// set a constant volume. Any previous volume scheme is discarded.
-	void							setVolume(float volume);
+	/// set a constant gain. Any previous gain scheme is discarded.
+	void							setGain(float gain);
 
-	/// get the current volume. meaningful only if a scheme is not used
-	float							getVolume(void) const
+	/// get the current gain. meaningful only if a scheme is not used
+	float							getGain(void) const
 	{
-		return _Volume;
+		return _Gain;
 	}
 
-	/** Set a volume scheme. It must have been allocated by new, and is then owned by this object
+	/** Set a gain scheme. It must have been allocated by new, and is then owned by this object
 	  */	  
-	void							setVolumeScheme(CPSAttribMaker<float> *volume);
+	void							setGainScheme(CPSAttribMaker<float> *gain);
 
-	/// get the current volume scheme
-	CPSAttribMaker<float> *			getVolumeScheme(void)
+	/// get the current gain scheme
+	CPSAttribMaker<float> *			getGainScheme(void)
 	{
-		return _VolumeScheme;
+		return _GainScheme;
 	}
 
-	/// get the current volume scheme (const version)
-	const CPSAttribMaker<float> *	getVolumeScheme(void) const
+	/// get the current gain scheme (const version)
+	const CPSAttribMaker<float> *	getGainScheme(void) const
 	{
-		return _VolumeScheme;
+		return _GainScheme;
 	}
 
-	/// set a constant frequency. Any previous frequency scheme is discarded.
-	void							setFrequency(float frequency);
+	/// set a constant pitch. Any previous pitch scheme is discarded.
+	void							setPitch(float pitch);
 
-	/// get the current frequency. meaningful only if a scheme is not used
-	float							getFrequency(void) const
+	/// get the current pitch. meaningful only if a scheme is not used
+	float							getPitch(void) const
 	{
-		return _Frequency;
+		return _Pitch;
 	}
 
-	/** Set a frequency scheme. It must have been allocated by new, and is then owned by this object
+	/** Set a pitch scheme. It must have been allocated by new, and is then owned by this object
 	  */	  
-	void							setFrequencyScheme(CPSAttribMaker<float> *frequency);
+	void							setPitchScheme(CPSAttribMaker<float> *pitch);
 
-	/// get the current frequency scheme
-	CPSAttribMaker<float> *			getFrequencyScheme(void)
+	/// get the current pitch scheme
+	CPSAttribMaker<float> *			getPitchScheme(void)
 	{
-		return _FrequencyScheme;
+		return _PitchScheme;
 	}
 
-	/// get the current frequency scheme (const version)
-	const CPSAttribMaker<float> *  getFrequencyScheme(void) const
+	/// get the current pitch scheme (const version)
+	const CPSAttribMaker<float> *  getPitchScheme(void) const
 	{
-		return _FrequencyScheme;
+		return _PitchScheme;
 	}
 
 	
@@ -143,10 +143,10 @@ protected:
 
 	CPSAttrib<IPSSoundInstance *>	_Sounds;
 	std::string						_SoundName;
-	float							_Volume;
-	CPSAttribMaker<float> *			_VolumeScheme;
-	float							_Frequency;
-	CPSAttribMaker<float> *			_FrequencyScheme;
+	float							_Gain;
+	CPSAttribMaker<float> *			_GainScheme;
+	float							_Pitch;
+	CPSAttribMaker<float> *			_PitchScheme;
 
 };
 

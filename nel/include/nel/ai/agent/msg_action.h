@@ -1,6 +1,6 @@
 /** \file msg_action.h
  *
- * $Id: msg_action.h,v 1.2 2001/03/28 12:15:27 portier Exp $
+ * $Id: msg_action.h,v 1.3 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLAIAGENT
 		CSuccessMsg( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
 		CSuccessMsg(NLAISCRIPT::CMessageClass *b = NULL);
 		CSuccessMsg(IBasicAgent *);
-		~CSuccessMsg();
+		virtual ~CSuccessMsg();
 
 
 		/// \name NLAIC::IBasicInterface member class. 
@@ -70,7 +70,7 @@ namespace NLAIAGENT
 		CFailureMsg( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
 		CFailureMsg(NLAISCRIPT::CMessageClass *b = NULL);
 		CFailureMsg(IBasicAgent *);
-		~CFailureMsg();
+		virtual ~CFailureMsg();
 
 
 		/// \name NLAIC::IBasicInterface member class. 

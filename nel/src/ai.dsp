@@ -657,6 +657,10 @@ SOURCE=.\ai\logic\varset.cpp
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\include\nel\ai\script\action_class.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\ai\logic\bool_assert.h
 # End Source File
 # Begin Source File

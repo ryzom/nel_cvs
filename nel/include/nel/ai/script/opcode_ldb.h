@@ -1,7 +1,7 @@
 /** \file opcode_ldb.h
  * Sevral op-code for loading object to the stack.
  *
- * $Id: opcode_ldb.h,v 1.5 2001/01/23 09:15:44 chafik Exp $
+ * $Id: opcode_ldb.h,v 1.6 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,7 @@ namespace NLAISCRIPT
 			_B->load(is);
 		}				
 		
-		~CLdbOpCode()
+		virtual ~CLdbOpCode()
 		{
 			_B->release();
 		}
@@ -131,7 +131,7 @@ namespace NLAISCRIPT
 			_B = (int) b;
 		}				
 		
-		~CLdbMemberOpCode()
+		virtual ~CLdbMemberOpCode()
 		{			
 		}
 	};
@@ -181,7 +181,7 @@ namespace NLAISCRIPT
 			is.serialCont(_I);
 		}
 		
-		~CLdbStackMemberiOpCode()
+		virtual ~CLdbStackMemberiOpCode()
 		{			
 		}
 	};
@@ -235,7 +235,7 @@ namespace NLAISCRIPT
 			is.serial(_N);
 		}
 		
-		~CLdbHeapMemberiOpCode()
+		virtual ~CLdbHeapMemberiOpCode()
 		{			
 		}
 	};
@@ -285,7 +285,7 @@ namespace NLAISCRIPT
 			is.serialCont(_I);
 		}
 		
-		~CLdbMemberiOpCode()
+		virtual ~CLdbMemberiOpCode()
 		{			
 		}
 	};
@@ -336,7 +336,7 @@ namespace NLAISCRIPT
 			_B = (int) b;
 		}		
 
-		~CLdbRefOpCode()
+		virtual ~CLdbRefOpCode()
 		{			
 		}
 		

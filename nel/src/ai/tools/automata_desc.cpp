@@ -1,7 +1,7 @@
 /** \file automata_desc.cpp
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.cpp,v 1.7 2001/04/03 15:30:41 chafik Exp $
+ * $Id: automata_desc.cpp,v 1.8 2001/04/17 09:26:03 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -170,7 +170,7 @@ const sint32 CAutomataDesc::IDFAIL		= -2;
 			if ( state_id != IDSUCCESS && state_id != IDFAIL )
 			{
 #ifdef NL_DEBUG
-				tmp_script << "\tOnEnterState()" << endl;
+				tmp_script << "\tOnActivate()" << endl;
 				tmp_script << "\t\tPrint('Etat " << state_name << " actif');" << endl;
 				tmp_script << "\tEnd" << endl << endl;
 #endif

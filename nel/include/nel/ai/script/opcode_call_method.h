@@ -1,7 +1,7 @@
 /** \file opcode_call_method.h
  * Sevral call op-code fonctionality.
  *
- * $Id: opcode_call_method.h,v 1.4 2001/01/17 10:32:29 chafik Exp $
+ * $Id: opcode_call_method.h,v 1.5 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -147,7 +147,7 @@ namespace NLAISCRIPT
 		}
 				
 
-		~CCallMethod()
+		virtual ~CCallMethod()
 		{
 		}
 
@@ -224,7 +224,7 @@ namespace NLAISCRIPT
 			is.serialCont(_N);
 		}
 				
-		~CCallHeapMethodi()
+		virtual ~CCallHeapMethodi()
 		{
 		}
 
@@ -297,7 +297,7 @@ namespace NLAISCRIPT
 			is.serialCont(_N);
 		}
 				
-		~CCallStackMethodi()
+		virtual ~CCallStackMethodi()
 		{
 		}
 
@@ -343,7 +343,7 @@ namespace NLAISCRIPT
 			return IdCallStackNewMethodei;
 		}
 				
-		~CCallStackNewMethodi()
+		virtual ~CCallStackNewMethodi()
 		{
 		}
 
@@ -420,7 +420,7 @@ namespace NLAISCRIPT
 			is.serialCont(_N);
 		}
 				
-		~CCallMethodi()
+		virtual ~CCallMethodi()
 		{
 		}
 

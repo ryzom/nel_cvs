@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.8 2001/02/21 11:07:39 chafik Exp $
+ * $Id: mailbox.h,v 1.9 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,7 +88,7 @@ namespace NLAIAGENT
 		CSimpleLocalMailBox (const IWordNumRef *parent);
 		CSimpleLocalMailBox (NLMISC::IStream &is);
 		CSimpleLocalMailBox (const CSimpleLocalMailBox &a);
-		~CSimpleLocalMailBox();
+		virtual ~CSimpleLocalMailBox();
 		virtual void addMessage(IMessageBase *msg);
 		virtual void addMailBox(IMailBox *);
 		virtual void removeMailBox(IMailBox *);

@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.10 2001/04/05 16:29:41 portier Exp $
+ * $Id: operator_script.h,v 1.11 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,15 +33,15 @@
 #include "nel/ai/logic/bool_cond.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/logic/interpret_object_operator.h"
+#include "nel/ai/agent/actor_script.h"
 
 namespace NLAIAGENT
 {
-	class COperatorScript  : public CAgentScript
+	class COperatorScript  : public CActorScript
 	{
 		private:
 			std::vector<NLAIAGENT::IObjectIA *> _VarValues;		// Values of the vars for the instanciated operator
 			NLAILOGIC::CFactBase				*_FactBase;		// The father's factbase
-			bool _Activated;
 			NLAILOGIC::CGoal					*_CurrentGoal;
 
 			std::list<IBasicAgent *>			_Launched;
@@ -55,7 +55,7 @@ namespace NLAIAGENT
 			virtual ~COperatorScript();
 
 			/// Priority of the operator
-//			virtual float priority() const;
+			virtual float priority() const;
 
 			virtual int getBaseMethodCount() const;
 
@@ -87,6 +87,7 @@ namespace NLAIAGENT
 //			virtual void setParent(const IWordNumRef *parent);
 
 			virtual void cancel();
+//			virtual bool isActive();
 	};
 }
 #endif

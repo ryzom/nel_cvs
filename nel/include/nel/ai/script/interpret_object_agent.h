@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.14 2001/02/02 09:10:10 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.15 2001/04/17 09:26:09 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -57,7 +57,7 @@ namespace NLAISCRIPT
 		IAgentMultiClass()
 		{
 		}
-		virtual~IAgentMultiClass()
+		virtual ~IAgentMultiClass()
 		{
 		}
 		///Get the base method count.
@@ -132,7 +132,7 @@ namespace NLAISCRIPT
 				DefineInBaseClass = true;
 			}
 
-			~CMethodType()
+			virtual ~CMethodType()
 			{
 				if(Method != NULL) Method->release();
 			}
@@ -171,7 +171,7 @@ namespace NLAISCRIPT
 		CAgentClass(const CAgentClass &);
 		CAgentClass(const NLAIC::CIdentType &);
 		CAgentClass();
-		~CAgentClass();
+		virtual ~CAgentClass();
 
 		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 		virtual const NLAIC::IBasicType *clone() const;

@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.10 2001/01/18 15:47:53 chafik Exp $
+ * $Id: type_def.h,v 1.11 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,7 +136,7 @@ namespace NLAISCRIPT
 			return true;
 		}		
 
-		~COperandVoid()
+		virtual ~COperandVoid()
 		{						
 		}
 	};
@@ -233,7 +233,7 @@ namespace NLAISCRIPT
 			}
 		}
 
-		~COperandSimple()
+		virtual ~COperandSimple()
 		{
 			delete _Ident;
 			delete _TxtInfo;
@@ -374,7 +374,7 @@ namespace NLAISCRIPT
 
 		virtual double eval (IOpType *);
 
-		~COperandSimpleListOr()
+		virtual ~COperandSimpleListOr()
 		{
 			while(_TypeListe.size())
 			{
@@ -488,7 +488,7 @@ namespace NLAISCRIPT
 			return getConstraintTypeOf()  != NULL;
 		}
 		
-		~COperandUnknown()			
+		virtual ~COperandUnknown()			
 		{			
 			if (_Constraint != NULL)
 			{			
@@ -615,7 +615,7 @@ namespace NLAISCRIPT
 			return operationType;
 		}
 
-		~COperationType()
+		virtual ~COperationType()
 		{
 			_Operand->release();
 			delete _TxtInfo;
@@ -749,7 +749,7 @@ namespace NLAISCRIPT
 			return operationTypeGD;
 		}
 
-		~COperationTypeGD()
+		virtual ~COperationTypeGD()
 		{
 			if(_OpG) _OpG->release();
 			if(_OpD) _OpD->release();
@@ -903,7 +903,7 @@ namespace NLAISCRIPT
 			_List.push_back(o);
 		}
 
-		~COperandListType()
+		virtual ~COperandListType()
 		{
 			while(_List.size())
 			{

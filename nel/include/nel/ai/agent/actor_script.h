@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.13 2001/04/04 16:33:28 portier Exp $
+ * $Id: actor_script.h,v 1.14 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,7 @@ namespace NLAIAGENT
 			CActorScript(IAgentManager *, bool activated = false);
 			// copy constructor
 			CActorScript(const CActorScript &);
-			CActorScript(IAgentManager *, IBasicAgent *, std::list<IObjectIA *> &, NLAISCRIPT::CActorClass *);
+			CActorScript(IAgentManager *, IBasicAgent *, std::list<IObjectIA *> &, NLAISCRIPT::CAgentClass *);
 			virtual ~CActorScript();
 
 			/// Returns true if the actor has a token
@@ -134,6 +134,17 @@ namespace NLAIAGENT
 			void getFatherComponent(IVarName &);
 
 			virtual void cancel();
+
+			/// Own success and failure functions
+			/// These function telle other operators and goals that might be waiting for
+			/// the execution of this one.
+			virtual void success() {}
+			virtual void failure() {}
+
+			/// Dependencies failure and success notification
+			/// These functions are called by other operators or goals who failed or succeeded
+			virtual void onSuccess( IObjectIA *) {}
+			virtual void onFailure( IObjectIA *) {}
 	};
 }
 #endif

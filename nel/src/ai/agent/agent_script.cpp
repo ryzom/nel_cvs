@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.54 2001/04/13 09:44:56 chafik Exp $
+ * $Id: agent_script.cpp,v 1.55 2001/04/17 09:26:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -355,6 +355,11 @@ namespace NLAIAGENT
 			delete[] _Components;
 		}
 		
+		for ( int i = 0; i < (int) _GoalStack.size(); i++ )
+		{
+			_GoalStack[i]->release();	
+		}
+
 		//if(_AgentManager != NULL) _AgentManager->release();
 		
 		//if ( _ScriptMail != NULL )	_ScriptMail->release();
@@ -550,7 +555,6 @@ namespace NLAIAGENT
 
 	void CAgentScript::onKill(IConnectIA *a)
 	{
-		//eraseFromList<IBasicAgent *>(&_AgentList,(IBasicAgent *)a);		
 		IAgent::onKill(a);
 	}
 
@@ -1439,16 +1443,16 @@ namespace NLAIAGENT
 	tQueue CAgentScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
 	{		
 #ifdef NL_DEBUG	
-	char nameM[1024*4];
-	char nameP[1024*4];
-	char name[1024*8];
-	methodName->getDebugString(nameM);
-	param.getDebugString(nameP);
-	sprintf(name,"%s%s",nameM,nameP);
+		char nameM[1024*4];
+		char nameP[1024*4];
+		char name[1024*8];
+		methodName->getDebugString(nameM);
+		param.getDebugString(nameP);
+		sprintf(name,"%s%s",nameM,nameP);
 
-	const char *dbg_class_name = (const char *) getType();
-	const char *dbg_base_class_name = NULL;
-	if(_AgentClass) dbg_base_class_name = (const char *) _AgentClass->getType();
+		const char *dbg_class_name = (const char *) getType();
+		const char *dbg_base_class_name = NULL;
+		if(_AgentClass) dbg_base_class_name = (const char *) _AgentClass->getType();
 #endif
 		
 

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.8 2001/04/03 10:04:58 portier Exp $
+ * $Id: goal.h,v 1.9 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,7 @@ namespace NLAILOGIC
 			CGoal(const NLAIAGENT::IVarName &);
 			CGoal(const NLAIAGENT::IVarName &, std::list<const NLAIAGENT::IObjectIA *> &);
 			CGoal(const CGoal &);
-			~CGoal();
+			virtual ~CGoal();
 
 			void setVars(std::list<IBaseVar *> &);
 

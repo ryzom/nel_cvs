@@ -2,7 +2,7 @@
  *	
  *	Instances of finite state machines
  *
- * $Id: fsm_script.h,v 1.3 2001/04/06 13:29:17 chafik Exp $
+ * $Id: fsm_script.h,v 1.4 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,10 +33,11 @@
 #include "nel/ai/logic/bool_cond.h"
 #include "nel/ai/script/type_def.h"
 #include "nel/ai/script/interpret_fsm.h"
+#include "nel/ai/agent/actor_script.h"
 
 namespace NLAIAGENT
 {
-	class CFsmScript  : public CAgentScript
+	class CFsmScript  : public CActorScript
 	{
 
 		public:
@@ -99,20 +100,9 @@ namespace NLAIAGENT
 			virtual void unactivate(IBasicAgent *);
 
 
-			/// Own success and failure functions
-			/// These function telle other operators and goals that might be waiting for
-			/// the execution of this one.
-/*			virtual void success() {}
-			virtual void failure() {}
-			*/
-
-			/// Dependencies failure and success notification
-			/// These functions are called by other operators or goals who failed or succeeded
-			virtual void onSuccess( IObjectIA *);
-			virtual void onFailure( IObjectIA *);
-		public:
 			static void initClass();
 			static void releaseClass();
+
 	};
 }
 #endif

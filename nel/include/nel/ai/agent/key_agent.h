@@ -1,7 +1,7 @@
 /** \file key_agent.h
  * key for the multi set in the CAgentScript class.
  *
- * $Id: key_agent.h,v 1.2 2001/03/21 14:59:34 chafik Exp $
+ * $Id: key_agent.h,v 1.3 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -71,7 +71,7 @@ namespace NLAIAGENT
 		{
 		}
 
-		~CKeyObject()
+		virtual ~CKeyObject()
 		{
 			Obj->release();
 		}

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.8 2001/03/08 13:42:56 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.9 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,9 @@ namespace NLAISCRIPT
 
 		std::vector<NLAILOGIC::IBaseAssert *>		_Concs;				/// Postconditions asserts			
 		std::vector< std::vector<sint32> >			_PosVarsConc;		/// Pos of a postcondition pattern's vars in the operator's vars table
+
+		std::vector< NLAIAGENT::IVarName *>			_FuzzyVars;
+		std::vector< NLAIAGENT::IVarName *>			_FuzzySets;
 
 		char										*_Comment;			/// Description of the operator
 
@@ -108,7 +111,7 @@ public:
 		COperatorClass(const NLAIAGENT::IVarName &, const NLAIAGENT::IVarName &);
 		COperatorClass(const COperatorClass &);
 		COperatorClass();
-		~COperatorClass();
+		virtual ~COperatorClass();
 
 		const NLAIC::IBasicType *clone() const;
 		const NLAIC::IBasicType *newInstance() const;
@@ -124,19 +127,19 @@ public:
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		/// Initialisation from the grammar
 
-	// Logique
-	std::list<const NLAIAGENT::IVarName *> _BooleanConds;
-	std::list<const NLAIAGENT::IVarName *> _BooleanConcs;
-	std::vector<const NLAIAGENT::IVarName *> _CondAsserts;
-	std::vector<const NLAIAGENT::IVarName *> _ConcAsserts;
-	std::vector< std::list<const NLAIAGENT::IVarName *> *> _ClassCondVars;
-	std::vector< std::list<const NLAIAGENT::IVarName *> *> _ClassConcVars;
-	std::vector< IOpCode *> _CondCode;
-	std::vector< IOpCode *> _ConcCode;
+		// Logique
+		std::list<const NLAIAGENT::IVarName *> _BooleanConds;
+		std::list<const NLAIAGENT::IVarName *> _BooleanConcs;
+		std::vector<const NLAIAGENT::IVarName *> _CondAsserts;
+		std::vector<const NLAIAGENT::IVarName *> _ConcAsserts;
+		std::vector< std::list<const NLAIAGENT::IVarName *> *> _ClassCondVars;
+		std::vector< std::list<const NLAIAGENT::IVarName *> *> _ClassConcVars;
+		std::vector< IOpCode *> _CondCode;
+		std::vector< IOpCode *> _ConcCode;
 
-	NLAILOGIC::CFactBase *fact_base;
-//	NLAIAGENT::CStringVarName *_GoalName;
-	///////////////////////////////////////////////////
+		NLAILOGIC::CFactBase *_FactBase;
+	//	NLAIAGENT::CStringVarName *_GoalName;
+		///////////////////////////////////////////////////
 
 /*
 		/// Adds a first order logic precondition to the operator
@@ -161,6 +164,9 @@ public:
 		/// PostConditions code is code that will be executed upon completion of the execution of the operator
 		void addCodeConc(IOpCode *);
 
+		// Adds a fuzzy cond of the form <attrib> is <filter>
+		void addFuzzyCond(const NLAIAGENT::IVarName &, NLAILOGIC::IBaseBoolType *) {};
+
 		/// Initialises the tables
 		void buildLogicTables();
 
@@ -168,6 +174,11 @@ public:
 		void activatePostConditions(NLAIAGENT::IObjectIA *);
 
 		void initialiseFactBase(NLAILOGIC::CFactBase *);
+
+		std::vector<NLAIAGENT::IVarName *> &getFuzzyVars()
+		{
+			return _FuzzyVars;
+		}
 	};
 }
 #endif

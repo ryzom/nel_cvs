@@ -20,7 +20,7 @@ namespace NLAIAGENT
 	CActorScript::CActorScript(IAgentManager *manager, 
 							   IBasicAgent *father,
 							   std::list<IObjectIA *> &components,	
-							   NLAISCRIPT::CActorClass *actor_class )
+							   NLAISCRIPT::CAgentClass *actor_class )
 	: CAgentScript(manager, father, components, actor_class )
 	{	
 		_IsActivated = false;
@@ -59,7 +59,7 @@ namespace NLAIAGENT
 			}
 
 			// Looks for the function to call at the activation of the state
-			tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnEnterState"), NLAISCRIPT::CParam() );
+			tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnActivate"), NLAISCRIPT::CParam() );
 			if ( !r.empty() )
 				_OnActivateIndex = r.top().Index;
 
@@ -79,7 +79,7 @@ namespace NLAIAGENT
 				( (CFsmScript *)father)->unactivate( this );
 			}
 
-			tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnExitState"), NLAISCRIPT::CParam() );
+			tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnUnActivate"), NLAISCRIPT::CParam() );
 			if ( !r.empty() )
 			{	
 				_OnUnActivateIndex = r.top().Index;
@@ -207,7 +207,9 @@ namespace NLAIAGENT
 				{
 					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
 					context->Self = this;
-					runMethodeMember( _OnActivateIndex ,context);
+					CProcessResult r = runMethodeMember( _OnActivateIndex ,context);
+					if ( r.Result != NULL )
+						r.Result->release();
 					_OnActivateIndex = -1;
 				}
 			}
@@ -383,9 +385,12 @@ namespace NLAIAGENT
 //				}
 
 				std::vector<CComponentHandle *> switched;
-				for ( int i = 0; i < (int) handles.size(); i++)
+				int i;
+				for ( i = 0; i < (int) handles.size(); i++)
 					switched.push_back( new CComponentHandle( handles[ i ]->getStr(), (IAgent *) getParent() ) );
 				switchActor( switched, false );
+				for ( i = 0; i < (int) switched.size(); i++)
+					delete switched[i];
 			}
 			IObjectIA::CProcessResult r;
 			r.ResultState =  NLAIAGENT::processIdle;

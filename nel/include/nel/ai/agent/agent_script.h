@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.26 2001/04/13 09:44:45 chafik Exp $
+ * $Id: agent_script.h,v 1.27 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,7 @@ namespace NLAIAGENT
 				ArgCount = argCount;
 			}
 
-			~CMethodCall()
+			virtual ~CMethodCall()
 			{
 				if(ReturnValue) ReturnValue->release();
 				if(ArgType != NULL) ArgType->release();

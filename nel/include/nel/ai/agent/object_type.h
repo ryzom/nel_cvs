@@ -1,7 +1,7 @@
 /** \file object_type.h
  * class encaputation a type of object.
  *
- * $Id: object_type.h,v 1.5 2001/03/01 13:44:05 chafik Exp $
+ * $Id: object_type.h,v 1.6 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ namespace NLAIAGENT
 		}
 		
 
-		~CObjectType()
+		virtual ~CObjectType()
 		{
 			delete _Type;
 		}

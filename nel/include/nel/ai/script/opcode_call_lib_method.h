@@ -1,7 +1,7 @@
 /** \file opcode_call_lib_method.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode_call_lib_method.h,v 1.4 2001/01/17 10:32:29 chafik Exp $
+ * $Id: opcode_call_lib_method.h,v 1.5 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@ namespace NLAISCRIPT
 		}
 		
 			
-		~CLibMemberMethod()
+		virtual ~CLibMemberMethod()
 		{			
 		}
 
@@ -137,7 +137,7 @@ namespace NLAISCRIPT
 			_Inheritance = n;
 		}		
 
-		~CLibMemberInheritedMethod()
+		virtual ~CLibMemberInheritedMethod()
 		{			
 		}
 
@@ -200,7 +200,7 @@ namespace NLAISCRIPT
 			is.serialCont(_I);
 		}		
 
-		~CLibMemberMethodi()
+		virtual ~CLibMemberMethodi()
 		{			
 		}
 
@@ -263,7 +263,7 @@ namespace NLAISCRIPT
 		}
 		
 			
-		~CLibCallMethod()
+		virtual ~CLibCallMethod()
 		{
 			_Lib->release();
 		}
@@ -331,7 +331,7 @@ namespace NLAISCRIPT
 
 		}		
 
-		~CLibCallInheritedMethod()
+		virtual ~CLibCallInheritedMethod()
 		{
 			_Lib->release();
 		}
@@ -401,7 +401,7 @@ namespace NLAISCRIPT
 			is.serialCont ( _I );
 		}		
 
-		~CLibCallMethodi()
+		virtual ~CLibCallMethodi()
 		{
 			_Lib->release();
 		}
@@ -468,7 +468,7 @@ namespace NLAISCRIPT
 		}
 		
 			
-		~CLibStackMemberMethod()
+		virtual ~CLibStackMemberMethod()
 		{			
 		}
 
@@ -506,7 +506,7 @@ namespace NLAISCRIPT
 			return IdLibStackNewMemberMethod;
 		}
 
-		~CLibStackNewMemberMethod()
+		virtual ~CLibStackNewMemberMethod()
 		{			
 		}
 	};
@@ -566,7 +566,7 @@ namespace NLAISCRIPT
 		}
 		
 			
-		~CLibHeapMemberMethod()
+		virtual ~CLibHeapMemberMethod()
 		{			
 		}
 

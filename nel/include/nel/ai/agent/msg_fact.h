@@ -2,7 +2,7 @@
 
 /** \file msg_fact.h
  *
- * $Id: msg_fact.h,v 1.1 2001/03/08 13:51:38 portier Exp $
+ * $Id: msg_fact.h,v 1.2 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLAIAGENT
 		CFactMsg( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
 		CFactMsg(NLAISCRIPT::CMessageClass *b = NULL);
 		CFactMsg(IBasicAgent *);
-		~CFactMsg();
+		virtual ~CFactMsg();
 
 
 		/// \name NLAIC::IBasicInterface member class. 

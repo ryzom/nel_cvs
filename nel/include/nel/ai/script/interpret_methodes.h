@@ -1,7 +1,7 @@
 /** \file interpret_methodes.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: interpret_methodes.h,v 1.7 2001/04/04 10:06:41 chafik Exp $
+ * $Id: interpret_methodes.h,v 1.8 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -69,7 +69,7 @@ exemple:
 		*/
 		CParam(int count, ...);
 
-		~CParam();
+		virtual ~CParam();
 		///Need to know if a CParam is equal as an ather.
 		bool operator == (const CParam &p) const;
 
@@ -150,7 +150,7 @@ exemple:
 		CMethodeName(const NLAIAGENT::IVarName &name);
 		CMethodeName(const CMethodeName &);
 		CMethodeName();
-		~CMethodeName();
+		virtual ~CMethodeName();
 		void setName(const NLAIAGENT::IVarName &name);
 		const NLAIAGENT::IVarName &getName() const;		
 		void setParam(const CParam &p);

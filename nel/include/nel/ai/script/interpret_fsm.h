@@ -1,7 +1,7 @@
 /** \file interpret_fsm.h
  *	Interpret class for operators
  *
- * $Id: interpret_fsm.h,v 1.1 2001/03/28 12:48:37 portier Exp $
+ * $Id: interpret_fsm.h,v 1.2 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 		CFsmClass(const NLAIAGENT::IVarName &, const NLAIAGENT::IVarName &);
 		CFsmClass(const CFsmClass &);
 		CFsmClass();
-		~CFsmClass();
+		virtual ~CFsmClass();
 
 		const NLAIC::IBasicType *clone() const;
 		const NLAIC::IBasicType *newInstance() const;

@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.13 2001/04/04 16:33:28 portier Exp $
+ * $Id: codage.h,v 1.14 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -627,7 +627,7 @@ namespace NLAISCRIPT
 			return *_TableCode[_Ip++];
 		}					
 
-		/// \name pure virtual method realize.		
+		/// \name pure virtual method realize.		<
 		//@{
 
 		/// \name ICodeBranche method.

@@ -1,7 +1,7 @@
 /** \file opcode.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode.h,v 1.7 2001/01/23 09:15:44 chafik Exp $
+ * $Id: opcode.h,v 1.8 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,7 +109,7 @@ namespace NLAISCRIPT
 		const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;;}
 		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const{ return true;}	
 		
-		~CLdbNewOpCode()
+		virtual ~CLdbNewOpCode()
 		{
 			_B->release();
 		}
@@ -181,7 +181,7 @@ namespace NLAISCRIPT
 		{		
 		}
 		
-		~CNegOpCode()
+		virtual ~CNegOpCode()
 		{
 		}
 	};
@@ -247,7 +247,7 @@ namespace NLAISCRIPT
 		{		
 		}
 		
-		~CAddOpCode()
+		virtual ~CAddOpCode()
 		{
 		}
 	};
@@ -314,7 +314,7 @@ namespace NLAISCRIPT
 		{		
 		}				
 
-		~CSubOpCode()
+		virtual ~CSubOpCode()
 		{
 		}
 	};
@@ -380,7 +380,7 @@ namespace NLAISCRIPT
 		{		
 		}
 				
-		~CDivOpCode()
+		virtual ~CDivOpCode()
 		{
 		}
 	};
@@ -446,7 +446,7 @@ namespace NLAISCRIPT
 		{		
 		}				
 		
-		~CMulOpCode()
+		virtual ~CMulOpCode()
 		{
 		}
 	};
@@ -514,7 +514,7 @@ namespace NLAISCRIPT
 		{		
 		}				
 		
-		~CSupOpCode()
+		virtual ~CSupOpCode()
 		{
 		}
 	};
@@ -582,7 +582,7 @@ namespace NLAISCRIPT
 		{		
 		}				
 
-		~CInfOpCode()
+		virtual ~CInfOpCode()
 		{
 		}
 	};
@@ -651,7 +651,7 @@ namespace NLAISCRIPT
 		{		
 		}
 				
-		~CEqOpCode()
+		virtual ~CEqOpCode()
 		{
 		}
 	};
@@ -718,7 +718,7 @@ namespace NLAISCRIPT
 		}
 				
 		
-		~CSupEqOpCode()
+		virtual ~CSupEqOpCode()
 		{
 		}
 	};
@@ -787,7 +787,7 @@ namespace NLAISCRIPT
 		}
 				
 
-		~CInfEqOpCode()
+		virtual ~CInfEqOpCode()
 		{
 		}
 	};
@@ -854,7 +854,7 @@ namespace NLAISCRIPT
 		{		
 		}				
 		
-		~CDiffOpCode()
+		virtual ~CDiffOpCode()
 		{
 		}
 	};
@@ -922,7 +922,7 @@ namespace NLAISCRIPT
 		}
 				
 		
-		~CNotOpCode()
+		virtual ~CNotOpCode()
 		{
 		}
 	};
@@ -993,7 +993,7 @@ namespace NLAISCRIPT
 			_N = (int) n;
 		}
 		
-		~CJFalseOpCode()
+		virtual ~CJFalseOpCode()
 		{
 		}
 	};
@@ -1057,7 +1057,7 @@ namespace NLAISCRIPT
 			_N = (int) n;
 		}
 
-		~CJmpOpCode()
+		virtual ~CJmpOpCode()
 		{
 		}
 	};
@@ -1141,7 +1141,7 @@ namespace NLAISCRIPT
 		}
 				
 
-		~CAffOpCode()
+		virtual ~CAffOpCode()
 		{
 		}
 	};
@@ -1159,7 +1159,7 @@ namespace NLAISCRIPT
 	public:	
 		CAffOpCodeDebug(int i, const char* varName);
 		
-		~CAffOpCodeDebug();
+		virtual ~CAffOpCodeDebug();
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
@@ -1239,7 +1239,7 @@ namespace NLAISCRIPT
 			is.serialCont(_I);
 		}
 
-		~CAffHeapMemberiOpCode()
+		virtual ~CAffHeapMemberiOpCode()
 		{
 		}
 	};
@@ -1303,7 +1303,7 @@ namespace NLAISCRIPT
 		}
 				
 
-		~CAffMemberiOpCode()
+		virtual ~CAffMemberiOpCode()
 		{
 		}
 	};
@@ -1370,7 +1370,7 @@ namespace NLAISCRIPT
 		}
 				
 
-		~CAffMemberOpCode()
+		virtual ~CAffMemberOpCode()
 		{
 		}
 	};
@@ -1427,7 +1427,7 @@ namespace NLAISCRIPT
 		}
 				
 		
-		~CLocAlloc()
+		virtual ~CLocAlloc()
 		{			
 		}
 	};
@@ -1442,7 +1442,7 @@ namespace NLAISCRIPT
 	
 		CLocAllocDebug();
 		
-		~CLocAllocDebug();
+		virtual ~CLocAllocDebug();
 
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
@@ -1504,7 +1504,7 @@ namespace NLAISCRIPT
 		{				
 		}				
 
-		~CMarkAlloc()
+		virtual ~CMarkAlloc()
 		{
 		}
 	};
@@ -1557,7 +1557,7 @@ namespace NLAISCRIPT
 		{				
 		}				
 		
-		~CFreeAlloc()
+		virtual ~CFreeAlloc()
 		{
 		}
 	};
@@ -1573,7 +1573,7 @@ namespace NLAISCRIPT
 		
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		~CFreeAllocDebug();
+		virtual ~CFreeAllocDebug();
 
 		void getDebugResult(char *str,CCodeContext &context) const;
 
@@ -1632,7 +1632,7 @@ namespace NLAISCRIPT
 		}
 				
 
-		~CHaltOpCode()
+		virtual ~CHaltOpCode()
 		{
 		}
 	};		
@@ -1683,7 +1683,7 @@ namespace NLAISCRIPT
 		}
 				
 
-		~CNopOpCode()
+		virtual ~CNopOpCode()
 		{
 		}
 	};		
@@ -1741,7 +1741,7 @@ namespace NLAISCRIPT
 		{
 		}				
 		
-		~CTellOpCode()
+		virtual ~CTellOpCode()
 		{
 		}
 	};
@@ -1757,7 +1757,7 @@ namespace NLAISCRIPT
 		{
 		}
 
-		~CMakeArgOpCode()
+		virtual ~CMakeArgOpCode()
 		{
 		}
 
@@ -1835,7 +1835,7 @@ namespace NLAISCRIPT
 		{			
 		}
 
-		~CMarkMsg()
+		virtual ~CMarkMsg()
 		{
 		}
 
@@ -1962,7 +1962,7 @@ namespace NLAISCRIPT
 
 		CFindRunMsg(const NLAIAGENT::IBaseGroupType &methodName,const CParam &param,const IOpType &baseClass,const ILoadObject &objectLoad);
 
-		~CFindRunMsg();
+		virtual ~CFindRunMsg();
 		
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		void getDebugResult(char *str,CCodeContext &context) const;		
@@ -2013,7 +2013,7 @@ namespace NLAISCRIPT
 		
 		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		~CAddParamNameDebug();
+		virtual ~CAddParamNameDebug();
 
 		void getDebugResult(char *str,CCodeContext &context) const;
 

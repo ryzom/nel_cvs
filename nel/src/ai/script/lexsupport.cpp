@@ -1,6 +1,6 @@
 /** \file lexsupport.cpp
  *
- * $Id: lexsupport.cpp,v 1.13 2001/03/28 12:15:14 portier Exp $
+ * $Id: lexsupport.cpp,v 1.14 2001/04/17 09:26:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,6 +126,7 @@ namespace NLAISCRIPT
 		DicoDeNom.insert(Arbre::value_type("deffuzzyrule",FUZZYRULE) );
 		DicoDeNom.insert(Arbre::value_type("fuzzyruleset",FUZZYRULESET) );
 		DicoDeNom.insert(Arbre::value_type("FuzzyVar", FUZZYVAR) );
+		DicoDeNom.insert(Arbre::value_type("Fuzzy", FUZZY) );
 		DicoDeNom.insert(Arbre::value_type("is", FIS) );
 		DicoDeNom.insert(Arbre::value_type("sets", SETS) );
 		DicoDeNom.insert(Arbre::value_type("Null",NILL) );

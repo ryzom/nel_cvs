@@ -1,7 +1,7 @@
 /** \file constraint.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: constraint.h,v 1.7 2001/01/18 15:47:53 chafik Exp $
+ * $Id: constraint.h,v 1.8 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,7 +109,7 @@ namespace NLAISCRIPT
 			ReturnType->incRef();
 		}
 
-		~CFunctionTag()
+		virtual ~CFunctionTag()
 		{
 			if(ReturnType) ReturnType->release();
 		}

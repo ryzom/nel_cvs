@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for string manipulation.
  *
- * $Id: agent_string.h,v 1.4 2001/03/22 17:53:22 saffray Exp $
+ * $Id: agent_string.h,v 1.5 2001/04/17 09:26:09 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -361,7 +361,7 @@ namespace NLAIAGENT
 		const NLAIC::IBasicType *newInstance() const;
 		void getDebugString(char *text) const;
 
-		~CIndexedVarName();
+		virtual ~CIndexedVarName();
 
 	private:
 		///Insert new string.

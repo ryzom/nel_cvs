@@ -1,7 +1,7 @@
 /** \file object_ident.h
  * class for identification an objects fonctionality.
  *
- * $Id: object_ident.h,v 1.3 2001/03/26 14:49:56 chafik Exp $
+ * $Id: object_ident.h,v 1.4 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,7 @@ namespace NLAIAGENT
 		{
 		}
 
-		~CObjectIdent()
+		virtual ~CObjectIdent()
 		{
 		}
 

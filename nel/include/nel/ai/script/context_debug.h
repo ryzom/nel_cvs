@@ -1,7 +1,7 @@
 /** \file context_debug.h
  * Debug informations in the context.
  *
- * $Id: context_debug.h,v 1.5 2001/01/15 17:58:20 chafik Exp $
+ * $Id: context_debug.h,v 1.6 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,7 +79,7 @@ namespace NLAISCRIPT
 		CContextDebug();
 
 		/// Destructor.
-		~CContextDebug();
+		virtual ~CContextDebug();
 
 		/// Return the class type.
 		const NLAIC::CIdentType &getType() const;

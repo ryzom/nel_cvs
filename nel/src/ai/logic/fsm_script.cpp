@@ -41,7 +41,7 @@ namespace NLAIAGENT
 	/////////////////////////////////////////////////////////////
 
 
-	CFsmScript::CFsmScript(const CFsmScript &a) : CAgentScript(a)
+	CFsmScript::CFsmScript(const CFsmScript &a) : CActorScript(a)
 	{
 /*		std::vector<IBasicAgent *>::const_iterator it_c = a._ActiveChilds.begin();
 		while ( it_c != a._ActiveChilds.end() )
@@ -56,11 +56,11 @@ namespace NLAIAGENT
 							   IBasicAgent *father,
 							   std::list<IObjectIA *> &components,	
 							   NLAISCRIPT::CFsmClass *actor_class )
-	: CAgentScript(manager, father, components, actor_class )
+	: CActorScript(manager, father, components, actor_class )
 	{	
 	}	
 
-	CFsmScript::CFsmScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
+	CFsmScript::CFsmScript(IAgentManager *manager, bool stay_alive) : CActorScript( manager, stay_alive )
 	{
 	}
 
@@ -267,7 +267,7 @@ namespace NLAIAGENT
 		CAgentScript::runChildren();
 	}
 
-
+/*
 	void CFsmScript::onSuccess( IObjectIA *)
 	{
 		// Envoi d'un message succès au père
@@ -277,4 +277,5 @@ namespace NLAIAGENT
 	{
 		// Envoi d'un message echec au père
 	}
+	*/
 }

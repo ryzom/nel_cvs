@@ -9,9 +9,8 @@ namespace NLAIAGENT
 {
 	static CGroupType listBidon;
 
-	COperatorScript::COperatorScript(const COperatorScript &a) : CAgentScript(a)
+	COperatorScript::COperatorScript(const COperatorScript &a) : CActorScript(a)
 	{
-		_Activated = a._Activated;
 		_CurrentGoal = a._CurrentGoal;
 	}
 
@@ -19,15 +18,13 @@ namespace NLAIAGENT
 							   IBasicAgent *father,
 							   std::list<IObjectIA *> &components,	
 							   NLAISCRIPT::COperatorClass *actor_class )
-	: CAgentScript(manager, father, components, actor_class )
+	: CActorScript(manager, father, components, actor_class )
 	{	
-		_Activated = false;
 		_CurrentGoal = NULL;
 	}	
 
-	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
+	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CActorScript( manager )
 	{
-		_Activated = false;
 		_CurrentGoal = NULL;
 	}
 
@@ -38,7 +35,7 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *COperatorScript::clone() const
 	{		
 		COperatorScript *m = new COperatorScript(*this);
-		return m;
+		return m; 
 	}		
 
 	const NLAIC::IBasicType *COperatorScript::newInstance() const
@@ -65,6 +62,14 @@ namespace NLAIAGENT
 		}
 		else
 			strcpy(t,"<COperatorScript>");
+		strcat(t,"<");
+		if ( _IsActivated )
+			strcat(t,"activated>");
+		else
+			strcat(t,"idle>");
+		char pri_buf[1024];
+		sprintf(pri_buf," <P %d>", priority() );
+		strcat(t, pri_buf);
 	}
 
 	bool COperatorScript::isEqual(const IBasicObjectIA &a) const
@@ -233,7 +238,6 @@ namespace NLAIAGENT
 			
 			if ( !((NLAISCRIPT::COperatorClass *)_AgentClass)->isValidFonc( context ) )
 				is_activated = false;
-
 		}
 		else
 			is_activated = false;
@@ -241,29 +245,31 @@ namespace NLAIAGENT
 		// Runs the operator if every precondition is validated	
 		if ( is_activated )
 		{
-			if ( _Activated == false)
+			if ( _IsActivated == false)
 			{
 				// Registers with the goal and gets the args
 				NLAILOGIC::CGoal *current_goal = activated_goals.front();
 				current_goal->addSuccessor( (IBasicAgent *) this );
 
-				// Executes the OnActivate() function
-				tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnActivate"), NLAISCRIPT::CParam() );
-				if ( !r.empty() )
-				{
-					NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
-					context->Self = this;
-					runMethodeMember( r.top().Index ,context);
-				}
 
-				_Activated = true;
+				activate();
+				if ( _OnActivateIndex != -1 )
+				{
+					if ( getAgentManager() != NULL )
+					{
+						NLAISCRIPT::CCodeContext *context = (NLAISCRIPT::CCodeContext *) getAgentManager()->getAgentContext();
+						context->Self = this;
+						runMethodeMember( _OnActivateIndex ,context);
+						_OnActivateIndex = -1;
+					}
+				}
 			}
 			return CAgentScript::run();
 		}
 		else
 		{
-			if ( _Activated == true )
-				_Activated = false;
+			if ( _IsActivated == true )
+				unActivate();
 			setState(processIdle,NULL);			
 			return IObjectIA::ProcessRun;
 		}
@@ -276,5 +282,14 @@ namespace NLAIAGENT
 			_Launched.front()->Kill();
 			_Launched.pop_front();
 		}
+	}
+
+	float COperatorScript::priority() const
+	{
+		int i;
+		for ( i = 0; i < (int) ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getFuzzyVars().size(); i++)
+		{
+		}
+		return 1.0;
 	}
 }

@@ -38,7 +38,7 @@ using  namespace NLAIFUZZY;
 %token	END IF THEN BEGINING
 %token	END_GRAMMAR
 %token	LOGICVAR RULE IA_ASSERT
-%token	FUZZYRULE FUZZYRULESET SETS FUZZYVAR FIS OR COMMENT STEPS
+%token	FUZZY FUZZYRULE FUZZYRULESET SETS FUZZYVAR FIS OR COMMENT STEPS
 %token	NEW AND	LOCAL 
 
 %left	NON_BIN		OR_BIN		AND_BIN		XOR_BIN
@@ -219,6 +219,13 @@ using  namespace NLAIFUZZY;
 							{
 								char *txt1 = LastyyText[0];
 								char *txt2 = LastyyText[1];
+								if ( classIsAnOperator() )
+								{
+									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+									op_class->setComment( LastyyText[1] );
+								}
+
+
 							}
 							;
 
@@ -325,6 +332,15 @@ using  namespace NLAIFUZZY;
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
 							}
 							POINT_VI
+						|	FuzzyCond
+							{
+
+								if ( classIsAnOperator() )
+								{
+									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+									op_class->addFuzzyCond(NLAIAGENT::CStringVarName("MaVar"), (NLAILOGIC::CBoolType *) NULL);
+								}
+							}
 						|	FirstOrderPattern
 							{
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
@@ -397,6 +413,30 @@ using  namespace NLAIFUZZY;
 							_LastBooleanConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
 						}
 						;
+
+
+	FuzzyCond			:	FUZZY	PAR_G
+							Expression
+							{
+								
+							}
+							FIS 
+							{
+								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
+							}
+							Expression
+							{
+								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
+							}
+							PAR_D
+							{
+								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
+							}
+							POINT_VI
+							{
+								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
+							}
+							;
 
 
 	FirstOrderPattern	: INTERROGATION PAR_G 
@@ -1510,3 +1550,4 @@ using  namespace NLAIFUZZY;
 						}
 						;
 %%
+ 

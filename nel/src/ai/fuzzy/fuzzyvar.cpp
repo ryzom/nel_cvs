@@ -1,7 +1,7 @@
 /** \file fuzzyvar.cpp
  * Fuzzy controler class for the scripting language
  *
- * $Id: fuzzyvar.cpp,v 1.7 2001/01/17 10:47:05 chafik Exp $
+ * $Id: fuzzyvar.cpp,v 1.8 2001/04/17 09:26:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -406,5 +406,4 @@ namespace NLAIFUZZY
 		}
 		return result;
 	}
-
 }

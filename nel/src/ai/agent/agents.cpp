@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.27 2001/04/05 16:29:50 portier Exp $
+ * $Id: agents.cpp,v 1.28 2001/04/17 09:26:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,12 +53,11 @@ namespace NLAIAGENT
 
 	void IAgent::Kill()
 	{
-		std::list<IBasicAgent *>::iterator i_agl = _AgentList.begin();
-		while ( i_agl != _AgentList.end() )
+		while ( _AgentList.size() )
 		{					
-			IBasicAgent *c = *i_agl;
+			IConnectIA *c = _AgentList.front();
 			c->Kill();
-			i_agl++;
+			_AgentList.pop_front();
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file interpret_object_message.h
  * Class for define an message class in the interpreter.
  *
- * $Id: interpret_object_message.h,v 1.16 2001/04/03 10:04:58 portier Exp $
+ * $Id: interpret_object_message.h,v 1.17 2001/04/17 09:26:09 portier Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -79,7 +79,7 @@ namespace NLAISCRIPT
 		CGoalMsgClass(const NLAIAGENT::IVarName &);
 		CGoalMsgClass(const NLAIC::CIdentType &);
 		CGoalMsgClass();
-		~CGoalMsgClass(){}
+		virtual ~CGoalMsgClass(){}
 
 		/// \name CAgentClass method.
 		//@{
@@ -101,7 +101,7 @@ namespace NLAISCRIPT
 		CCancelGoalMsgClass(const NLAIAGENT::IVarName &);
 		CCancelGoalMsgClass(const NLAIC::CIdentType &);
 		CCancelGoalMsgClass();
-		~CCancelGoalMsgClass(){}
+		virtual ~CCancelGoalMsgClass(){}
 
 		/// \name CAgentClass method.
 		//@{
@@ -123,7 +123,7 @@ namespace NLAISCRIPT
 		CFactMsgClass(const NLAIAGENT::IVarName &);
 		CFactMsgClass(const NLAIC::CIdentType &);
 		CFactMsgClass();
-		~CFactMsgClass(){}
+		virtual ~CFactMsgClass(){}
 
 		/// \name CAgentClass method.
 		//@{
@@ -145,7 +145,7 @@ namespace NLAISCRIPT
 		CDebugMsgClass(const NLAIAGENT::IVarName &);
 		CDebugMsgClass(const NLAIC::CIdentType &);
 		CDebugMsgClass();
-		~CDebugMsgClass(){}
+		virtual ~CDebugMsgClass(){}
 
 		/// \name CAgentClass method.
 		//@{
@@ -167,7 +167,7 @@ namespace NLAISCRIPT
 		COnChangeMsgClass(const NLAIAGENT::IVarName &);
 		COnChangeMsgClass(const NLAIC::CIdentType &);
 		COnChangeMsgClass();
-		~COnChangeMsgClass(){}
+		virtual ~COnChangeMsgClass(){}
 
 		/// \name CAgentClass method.
 		//@{

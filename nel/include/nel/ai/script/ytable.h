@@ -78,17 +78,18 @@
 #define	LOGICVAR	332
 #define	RULE	333
 #define	IA_ASSERT	334
-#define	FUZZYRULE	335
-#define	FUZZYRULESET	336
-#define	SETS	337
-#define	FUZZYVAR	338
-#define	FIS	339
-#define	OR	340
-#define	COMMENT	341
-#define	STEPS	342
-#define	NEW	343
-#define	AND	344
-#define	LOCAL	345
+#define	FUZZY	335
+#define	FUZZYRULE	336
+#define	FUZZYRULESET	337
+#define	SETS	338
+#define	FUZZYVAR	339
+#define	FIS	340
+#define	OR	341
+#define	COMMENT	342
+#define	STEPS	343
+#define	NEW	344
+#define	AND	345
+#define	LOCAL	346
 
 
 extern YYSTYPE yylval;

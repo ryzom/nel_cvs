@@ -1,7 +1,7 @@
 /** \file libcode.h
  * Library class exemple for the script.
  *
- * $Id: libcode.h,v 1.5 2001/01/29 11:11:24 chafik Exp $
+ * $Id: libcode.h,v 1.6 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,7 +104,7 @@ namespace NLAISCRIPT
 		}
 		//@}
 		
-		~CCallPrint()
+		virtual ~CCallPrint()
 		{
 		}
 	};

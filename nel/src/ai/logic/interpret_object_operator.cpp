@@ -15,6 +15,8 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());		
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 		_Goal = NULL;
+		_Comment = NULL;
+		_FactBase = NULL;
 	}
 	
 	COperatorClass::COperatorClass(const NLAIC::CIdentType &id): CAgentClass(id)
@@ -22,6 +24,8 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 		_Goal = NULL;
+		_Comment = NULL;
+		_FactBase = NULL;
 	}
 
 	COperatorClass::COperatorClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
@@ -29,6 +33,8 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));		
 		_Goal = NULL;
+		_Comment = NULL;
+		_FactBase = NULL;
 	}
 
 	COperatorClass::COperatorClass(const COperatorClass &c) : CAgentClass( c )
@@ -39,6 +45,20 @@ namespace NLAISCRIPT
 			_Goal = (NLAILOGIC::CGoal *) c._Goal->clone();
 		else
 			_Goal = NULL;
+
+		if ( c._Comment != NULL )
+		{
+			_Comment = new char[ strlen( c._Comment ) ];
+			strcpy( _Comment, c._Comment );
+		}
+		else
+			_Comment = NULL;
+
+		if ( c._FactBase != NULL)
+			_FactBase = (NLAILOGIC::CFactBase *) c._FactBase->clone();
+		else
+			_FactBase = NULL;
+
 	}	
 
 	COperatorClass::COperatorClass()
@@ -46,49 +66,17 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::COperatorScript *)(NLAIAGENT::COperatorScript::IdOperatorScript.getFactory()->getClass())));
 		_Goal = NULL;
-	}
-
-
-	const NLAIC::IBasicType *COperatorClass::clone() const
-	{
-		NLAIC::IBasicType *clone = new COperatorClass(*this);
-		return clone;
-	}
-
-	const NLAIC::IBasicType *COperatorClass::newInstance() const
-	{
-		NLAIC::IBasicType *instance = new COperatorClass();
-		return instance;
-	}
-
-	void COperatorClass::getDebugString(char *t) const
-	{
-		strcpy( t, "<COperatorClass>\n");
-		int i;
-		for ( i = 0; i < (int) _Vars.size(); i++ )
-		{
-			char buf[1024];
-			_Vars[i]->getDebugString(buf);
-			strcat(t,"   -");
-			strcat(t, buf);
-			strcat(t,"\n");
-		}
-	}
-
-	NLAIAGENT::IObjectIA *COperatorClass::buildNewInstance() const
-	{
-		// Création des composants statiques
-		std::list<NLAIAGENT::IObjectIA *> components;
-		createBaseClassComponents( components );
-
-		// Création du message
-		NLAIAGENT::COperatorScript *instance = new NLAIAGENT::COperatorScript( NULL, NULL ,components,  (COperatorClass *) this );
-
-		return instance;
+		_Comment = NULL;
+		_FactBase = NULL;
 	}
 
 	COperatorClass::~COperatorClass()
 	{
+		if ( _Comment != NULL )
+			delete[] _Comment;
+
+		if ( _FactBase != NULL )
+			_FactBase->release();
 /*
 		int i;
 		for ( i = 0; i < (int) _CondCode.size(); i++ )
@@ -125,6 +113,44 @@ namespace NLAISCRIPT
 			_BooleanConcs.pop_front();
 		}
 		*/
+	}
+
+
+	const NLAIC::IBasicType *COperatorClass::clone() const
+	{
+		NLAIC::IBasicType *clone = new COperatorClass(*this);
+		return clone;
+	}
+
+	const NLAIC::IBasicType *COperatorClass::newInstance() const
+	{
+		NLAIC::IBasicType *instance = new COperatorClass();
+		return instance;
+	}
+
+	void COperatorClass::getDebugString(char *t) const
+	{
+		strcpy( t, "<COperatorClass>");
+		int i;
+		for ( i = 0; i < (int) _Vars.size(); i++ )
+		{
+			char buf[1024];
+			_Vars[i]->getDebugString(buf);
+			strcat(t,"   -");
+			strcat(t, buf);
+		}
+	}
+
+	NLAIAGENT::IObjectIA *COperatorClass::buildNewInstance() const
+	{
+		// Création des composants statiques
+		std::list<NLAIAGENT::IObjectIA *> components;
+		createBaseClassComponents( components );
+
+		// Création du message
+		NLAIAGENT::COperatorScript *instance = new NLAIAGENT::COperatorScript( NULL, NULL ,components,  (COperatorClass *) this );
+
+		return instance;
 	}
 
 	/// Verifies if the preconditions are validated<
@@ -531,12 +557,12 @@ namespace NLAISCRIPT
 	/// Compiles the conds and concs internaly
 	void COperatorClass::buildLogicTables()
 	{
-		fact_base = new NLAILOGIC::CFactBase();
+		_FactBase = new NLAILOGIC::CFactBase();
 		int i;
 		for ( i = 0; i < (int) _CondAsserts.size() ; i++ )
 		{
 			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_CondAsserts[i]->clone();
-			NLAILOGIC::IBaseAssert *assert = fact_base->addAssert( name, _ClassCondVars[i]->size() );
+			NLAILOGIC::IBaseAssert *assert = _FactBase->addAssert( name, _ClassCondVars[i]->size() );
 			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
 			std::list<const NLAIAGENT::IVarName *>::iterator it_var = _ClassCondVars[i]->begin();
 			while ( it_var != _ClassCondVars[i]->end() )
@@ -552,7 +578,7 @@ namespace NLAISCRIPT
 		for ( i = 0; i < (int) _ConcAsserts.size() ; i++ )
 		{
 			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_ConcAsserts[i]->clone();
-			NLAILOGIC::IBaseAssert *assert = fact_base->addAssert( name, _ClassConcVars[i]->size() );
+			NLAILOGIC::IBaseAssert *assert = _FactBase->addAssert( name, _ClassConcVars[i]->size() );
 			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
 			std::list<const NLAIAGENT::IVarName *>::iterator it_var = _ClassConcVars[i]->begin();
 			while ( it_var != _ClassConcVars[i]->end() )
@@ -641,13 +667,13 @@ namespace NLAISCRIPT
 		}
 	}
 	
-	void COperatorClass::initialiseFactBase(NLAILOGIC::CFactBase *inst_fact_base)
+	void COperatorClass::initialiseFactBase(NLAILOGIC::CFactBase *inst__FactBase)
 	{
 		int i;
 		for ( i = 0; i < (int) _CondAsserts.size() ; i++ )
 		{
 /*			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_CondAsserts[i]->clone();
-			NLAILOGIC::IBaseAssert *assert = inst_fact_base->addAssert( name, _ClassCondVars[i]->size() ); */
+			NLAILOGIC::IBaseAssert *assert = inst__FactBase->addAssert( name, _ClassCondVars[i]->size() ); */
 /*			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
 			std::list<const NLAIAGENT::IVarName *>::iterator it_var = _ClassCondVars[i]->begin();
 			while ( it_var != _ClassCondVars[i]->end() )
@@ -664,7 +690,7 @@ namespace NLAISCRIPT
 		for ( i = 0; i < (int) _ConcAsserts.size() ; i++ )
 		{
 /*			NLAIAGENT::CStringVarName name = *(NLAIAGENT::CStringVarName *)_ConcAsserts[i]->clone();
-			NLAILOGIC::IBaseAssert *assert = inst_fact_base->addAssert( name, _ClassConcVars[i]->size() ); */
+			NLAILOGIC::IBaseAssert *assert = inst__FactBase->addAssert( name, _ClassConcVars[i]->size() ); */
 /*			NLAILOGIC::CFactPattern *pattern = new NLAILOGIC::CFactPattern( assert );
 			std::list<const NLAIAGENT::IVarName *>::iterator it_var = _ClassConcVars[i]->begin();
 			while ( it_var != _ClassConcVars[i]->end() )
@@ -678,5 +704,16 @@ namespace NLAISCRIPT
 			*/
 		}
 		
+	}
+
+	/// Sets the comment for the operator
+	void COperatorClass::setComment(char *c)
+	{
+		if ( _Comment != NULL )
+		{
+			delete[] _Comment;
+		}
+		_Comment = new char[ strlen(c) + 1];
+		strcpy(_Comment, c);
 	}
 }

@@ -1,7 +1,7 @@
 /** \file constraint_type.h
  * class for the compiler fonctionality.
  *
- * $Id: constraint_type.h,v 1.3 2001/01/08 11:16:29 chafik Exp $
+ * $Id: constraint_type.h,v 1.4 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,7 @@ namespace NLAISCRIPT
 		}
 		//@}
 		
-		~CConstraintChkMethodeType();
+		virtual ~CConstraintChkMethodeType();
 	};
 }
 

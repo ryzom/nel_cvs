@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.13 2001/04/05 16:29:41 portier Exp $
+ * $Id: baseai.h,v 1.14 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,7 +125,7 @@ namespace NLAIAGENT
 
 		CIdMethod();		
 
-		~CIdMethod();		
+		virtual ~CIdMethod();		
 
 		bool operator < (const CIdMethod &) const;		
 		const CIdMethod &operator = (const CIdMethod &);

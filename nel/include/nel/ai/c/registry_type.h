@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.10 2001/03/28 12:15:27 portier Exp $
+ * $Id: registry_type.h,v 1.11 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -278,7 +278,7 @@ namespace NLAIC
 		{
 		}		
 		
-		~CTypeOfObject()
+		virtual ~CTypeOfObject()
 		{			
 		}
 	public:
@@ -366,7 +366,7 @@ namespace NLAIC
 		}
 		
 		
-		~CTypeOfOperator()
+		virtual ~CTypeOfOperator()
 		{
 		}
 	public:

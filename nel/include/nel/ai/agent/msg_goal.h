@@ -1,6 +1,6 @@
 /** \file msg_goal.h
  *
- * $Id: msg_goal.h,v 1.5 2001/04/03 10:04:58 portier Exp $
+ * $Id: msg_goal.h,v 1.6 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLAIAGENT
 		CGoalMsg( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
 		CGoalMsg(NLAISCRIPT::CMessageClass *b = NULL);
 		CGoalMsg(IBasicAgent *);
-		~CGoalMsg();
+		virtual ~CGoalMsg();
 
 
 		/// \name NLAIC::IBasicInterface member class. 
@@ -70,7 +70,7 @@ namespace NLAIAGENT
 		CCancelGoalMsg( std::list<IObjectIA *> &, NLAISCRIPT::CMessageClass *);
 		CCancelGoalMsg(NLAISCRIPT::CMessageClass *b = NULL);
 		CCancelGoalMsg(IBasicAgent *);
-		~CCancelGoalMsg();
+		virtual ~CCancelGoalMsg();
 
 
 		/// \name NLAIC::IBasicInterface member class. 

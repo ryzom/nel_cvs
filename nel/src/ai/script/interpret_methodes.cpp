@@ -1,6 +1,6 @@
 /** \file interpret_methodes.cpp
  *
- * $Id: interpret_methodes.cpp,v 1.14 2001/04/05 15:29:02 chafik Exp $
+ * $Id: interpret_methodes.cpp,v 1.15 2001/04/17 09:26:03 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -307,6 +307,8 @@ namespace NLAISCRIPT
 
 		if ( _TypeOfMethode != NULL )
 				_TypeOfMethode->release();
+
+
 	}
 
 	CMethodeName::CMethodeName(const CMethodeName &c)

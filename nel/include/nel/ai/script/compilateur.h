@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.20 2001/02/28 09:45:15 portier Exp $
+ * $Id: compilateur.h,v 1.21 2001/04/17 09:26:09 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,7 +98,7 @@ namespace NLAISCRIPT
 
 		CFactorType(const CFactorType &v);
 
-		~CFactorType()
+		virtual ~CFactorType()
 		{
 			del();
 		}

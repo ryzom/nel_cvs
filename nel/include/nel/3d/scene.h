@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.18 2001/04/17 12:15:06 besson Exp $
+ * $Id: scene.h,v 1.19 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,10 +175,17 @@ public:
 	//@{
 	/// Set the shape bank
 	void			setShapeBank(CShapeBank*pShapeBank);
+
 	/** Create a model, instance of the shape "shapename". If not present, try to load "shapename" via the CPath.
 	 * If fails, return NULL.
 	 */
 	virtual	CTransformShape	*createInstance(const std::string &shapeName);
+
+	/** Create an instance, if the shape is not present, load the shape asynchronously. The instance is really
+	 * created when we process it in the rendering.
+	 */
+	void			createInstanceAsync(const std::string &shapeName, CTransformShape **pInstance);
+
 	/** Delete an instance via his pointer. An instance is an entity which reference a shape.
 	 */
 	void			deleteInstance(CTransformShape*model);
@@ -208,6 +215,9 @@ private:
 	/// \name Shape/Instances.
 	//@{
 	CShapeBank		*_ShapeBank;
+
+	typedef std::multimap<std::string,CTransformShape**> TWaitingInstancesMMap;
+	TWaitingInstancesMMap _WaitingInstances;
 	//@}
 
 };

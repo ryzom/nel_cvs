@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.3 2001/04/13 16:39:55 berenguier Exp $
+ * $Id: u_scene.h,v 1.4 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ class UInstance;
 class ULandscape;
 class UInstanceGroup;
 class USkeleton;
-
+class UTransform;
 
 //****************************************************************************
 /**
@@ -104,6 +104,13 @@ public:
 	 * nlerror if the file is not a mesh file.
 	 */
 	virtual	UInstance		*createInstance(const std::string &shapeName)=0;
+	/** Same as createInstance but the instance is loaded asynchronously.
+	 * You must poll to know if the instance if created by calling render()
+	 */
+	virtual	void			createInstanceAsync(const std::string &shapeName,UInstance**ppInstance)=0;
+	/** Create a dummy object
+	 */
+	virtual	UTransform		*createTransform()=0;
 	/** Delete an instance via his pointer.
 	 */
 	virtual	void			deleteInstance(UInstance *inst)=0;

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.5 2001/04/18 10:39:55 besson Exp $
+ * $Id: scene_user.h,v 1.6 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,8 @@ protected:
 	TLandscapeSet		_Landscapes;
 	TInstanceGroupSet	_InstanceGroups;
 
+	std::map<UInstance**,CTransformShape*> _WaitingInstances;
+
 public:
 
 	/// \name Object
@@ -108,6 +110,28 @@ public:
 		if(_CurrentCamera==NULL)
 			nlerror("render(): try to render with no camera linked (may have been deleted)");
 		_Scene.render();
+
+		// Update waiting instances
+		// Done after the _Scene.render because in this method the instance are checked for creation
+		std::map<UInstance**,CTransformShape*>::iterator it = _WaitingInstances.begin();
+		while( it != _WaitingInstances.end() )
+		{
+			if( it->second != NULL )
+			{
+				if( dynamic_cast<CMeshInstance*>(it->second)==NULL )
+					nlerror("UScene::createInstance(): shape is not a mesh");
+
+				*(it->first) = dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, it->second)) );
+				std::map<UInstance**,CTransformShape*>::iterator delIt = it;
+				++it;
+				_WaitingInstances.erase(delIt);
+			}
+			else
+			{
+				++it;
+			}
+		}
+
 		// Must restore the matrix context, so 2D/3D interface not disturbed.
 		_DriverUser->restoreMatrixContext();
 	}
@@ -174,8 +198,38 @@ public:
 		// The component is auto added/deleted to _Scene in ctor/dtor.
 		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
 	}
+
+	virtual	void createInstanceAsync(const std::string &shapeName, UInstance**ppInstance)
+	{
+		_WaitingInstances[ppInstance] = NULL;
+		_Scene.createInstanceAsync(shapeName,&_WaitingInstances[ppInstance]);
+//		IModel	*model= _Scene.createInstance(shapeName);
+		// If not found, return NULL.
+//		if(model==NULL)
+//			return NULL;
+
+//		if( dynamic_cast<CMeshInstance*>(model)==NULL )
+//			nlerror("UScene::createInstance(): shape is not a mesh");
+
+		// The component is auto added/deleted to _Scene in ctor/dtor.
+//		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model)) );
+	}
+
+	virtual UTransform *createTransform()
+	{
+		IModel	*model= _Scene.createModel(TransformId);
+		// If not found, return NULL.
+		if(model==NULL)
+			return NULL;
+
+		// The component is auto added/deleted to _Scene in ctor/dtor.
+		return dynamic_cast<UTransform*>( _Transforms.insert(new CTransformUser(&_Scene, model)) );
+	}
+
 	virtual	void			deleteInstance(UInstance *inst)
 	{
+	//	CTransformShape *pTSInstance = dynamic_cast<CTransformShape*>(inst->);
+	//	_Scene.deleteInstance(pTSInstance);
 		// The component is auto added/deleted to _Scene in ctor/dtor.
 		_Transforms.erase(dynamic_cast<CTransformUser*>(inst));
 	}

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.22 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.23 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -225,26 +225,31 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 
 			// insert or get the texture.
-			ITextureDrvInfos	*gltext= _TexDrvInfos[name];
-			/* There is a trick here: this test both if:
-				- the textureptr was not in the map. (because CRefPtr() is inited to NULL)
-				- the texture was deleted (by smartptr) by TextureDrvShare. Hence the entry is not deleted even if
-					the ptr is.
-			*/
-			if(gltext==NULL)
+			ITextureDrvInfos	*gltext;
 			{
-				_TexDrvInfos[name]= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL;
-				// need to load ALL this texture.
-				mustLoadAll= true;
+				CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
+				TTexDrvInfoPtrMap &rTexDrvInfos = access.value();
+				gltext = rTexDrvInfos[name];
+		
+				/* There is a trick here: this test both if:
+					- the textureptr was not in the map. (because CRefPtr() is inited to NULL)
+					- the texture was deleted (by smartptr) by TextureDrvShare. Hence the entry is not deleted even if
+						the ptr is.
+				*/
+				if(gltext==NULL)
+				{
+					rTexDrvInfos[name]= tex.TextureDrvShare->DrvTexture= new CTextureDrvInfosGL;
+					// need to load ALL this texture.
+					mustLoadAll= true;
+				}
+				else
+				{
+					tex.TextureDrvShare->DrvTexture= gltext;
+					// Do not need to reload this texture, even if the format/mipmap has changed, since we found this 
+					// couple in the map.
+					mustLoadAll= false;
+				}
 			}
-			else
-			{
-				tex.TextureDrvShare->DrvTexture= gltext;
-				// Do not need to reload this texture, even if the format/mipmap has changed, since we found this 
-				// couple in the map.
-				mustLoadAll= false;
-			}
-
 			// Do not test if part of texture may need to be computed, because Rect invalidation is incompatible 
 			// with texture sharing.
 		}

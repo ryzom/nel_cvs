@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.94 2001/04/19 12:49:28 puzin Exp $
+ * $Id: driver_opengl.cpp,v 1.95 2001/04/23 09:14:27 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -652,6 +652,30 @@ bool CDriverGL::activate()
 	}
 #endif // NL_OS_WINDOWS
 	return true;
+}
+
+// --------------------------------------------------
+
+bool CDriverGL::isTextureExist(const ITexture&tex)
+{
+	bool result;
+	// Create the shared Name.
+	std::string	name= tex.getShareName();
+	// append format Id of the texture.
+	static char	fmt[256];
+	smprintf(fmt, 256, "@Fmt:%d", (uint32)tex.getUploadFormat());
+	name+= fmt;
+	// append mipmap info
+	if(tex.mipMapOn())
+		name+= "@MMp:On";
+	else
+		name+= "@MMp:Off";
+	{
+		CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
+		TTexDrvInfoPtrMap &rTexDrvInfos = access.value();
+		result = (rTexDrvInfos.find(name) != rTexDrvInfos.end());
+	}
+	return result;
 }
 
 // --------------------------------------------------

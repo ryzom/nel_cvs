@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.13 2001/04/11 10:29:35 berenguier Exp $
+ * $Id: mesh.h,v 1.14 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,6 +186,17 @@ public:
 
 	// @}
 
+	/// Get the number of materials in the mesh
+	uint getNbMaterial()
+	{
+		return _Materials.size();
+	}
+
+	/// Get the materials number id in the materials list
+	const CMaterial& getMaterial(uint id)
+	{
+		return _Materials[id];
+	}
 
 	/// get the extended axis aligned bounding box of the mesh
 	const NLMISC::CAABBoxExt& getBoundingBox() const

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.26 2001/04/18 10:40:22 besson Exp $
+ * $Id: scene.cpp,v 1.27 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -208,6 +208,27 @@ void	CScene::render(bool	doHrcPass)
 		// Go!
 		trav->traverse();
 	}
+
+	// Instance handling
+	// Parse all the waiting instance
+	TWaitingInstancesMMap::iterator wimmIt = _WaitingInstances.begin();
+	while( wimmIt != _WaitingInstances.end() )
+	{
+		if( _ShapeBank->isPresent( wimmIt->first ) )
+		{
+			// Then create a reference to the shape
+			*(wimmIt->second) = _ShapeBank->addRef( wimmIt->first )->createInstance(*this);
+			// Delete the waiting instance
+			TWaitingInstancesMMap::iterator	itDel= wimmIt;
+			++wimmIt;
+			_WaitingInstances.erase(itDel);
+		}
+		else
+		{
+			++wimmIt;
+		}
+	}
+
 }
 
 
@@ -265,16 +286,33 @@ CTransformShape	*CScene::createInstance(const std::string &shapeName)
 
 // ***************************************************************************
 
-void CScene::deleteInstance(CTransformShape *model)
+void CScene::createInstanceAsync(const std::string &shapeName, CTransformShape **pInstance)
 {
-	CTransformShape* pTrfmShp = dynamic_cast<CTransformShape*>(model);
-	IShape *pShp = NULL;
-	if( pTrfmShp != NULL )
+	// We must attach a bank to the scene (a ShapeBank handle the shape caches and 
+	// the creation/deletion of the instances)
+	nlassert( _ShapeBank != NULL );
+	*pInstance = NULL;
+	// Add the instance request
+	_WaitingInstances.insert(TWaitingInstancesMMap::value_type(shapeName,pInstance));
+	// If the shape is not present in the bank
+	if( !_ShapeBank->isPresent( shapeName ) )
 	{
-		pShp = pTrfmShp->Shape;
+		// Load it from file asynchronously
+		_ShapeBank->loadAsync( shapeName, getDriver() );
 	}
+}
+
+// ***************************************************************************
+
+void CScene::deleteInstance(CTransformShape *pTrfmShp)
+{
+	IShape *pShp = NULL;
+	if( pTrfmShp == NULL )
+		return;
+
+	pShp = pTrfmShp->Shape;
 	
-	deleteModel( model );
+	deleteModel( pTrfmShp );
 
 	if(pShp)
 	{

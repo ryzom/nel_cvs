@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.28 2001/04/19 12:49:28 puzin Exp $
+ * $Id: driver.cpp,v 1.29 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,16 +24,17 @@
  * MA 02111-1307, USA.
  */
 
+#include <string>
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/driver.h"
 #include "nel/3d/shader.h"
 #include "nel/3d/vertex_buffer.h"
 
-#include <stdio.h>
+//#include <stdio.h>
 
-using namespace std;
 using namespace NLMISC;
+using namespace std;
 
 
 namespace NL3D
@@ -53,8 +54,12 @@ IDriver::~IDriver()
 {
 	// Must clean up everything before closing driver.
 	// Must doing this in release(), so assert here if not done...
+	{		
+		CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
+		TTexDrvInfoPtrMap &rTexDrvInfos = access.value();
+		nlassert( rTexDrvInfos.size() == 0 );
+	}
 
-	nlassert(_TexDrvInfos.size()==0);
 	nlassert(_TexDrvShares.size()==0);
 	nlassert(_Shaders.size()==0);
 	nlassert(_VBDrvInfos.size()==0);
@@ -79,15 +84,19 @@ bool		IDriver::release(void)
 
 
 	// Release refptr of TextureDrvInfos. Should be all null (because of precedent pass).
-	ItTexDrvInfoPtrMap		ittexmap = _TexDrvInfos.begin();
-	while( ittexmap!=_TexDrvInfos.end() )
 	{
-		// Do not need to kill the pointer must be NULL.
-		nlassert((*ittexmap).second==NULL);
-		ittexmap++;
-	}
-	_TexDrvInfos.clear();
+		CSynchronized<TTexDrvInfoPtrMap>::CAccessor access(&_SyncTexDrvInfos);
+		TTexDrvInfoPtrMap &rTexDrvInfos = access.value();
 
+		ItTexDrvInfoPtrMap ittexmap = rTexDrvInfos.begin();
+		while( ittexmap!=rTexDrvInfos.end() )
+		{
+			// Do not need to kill the pointer must be NULL.
+			nlassert((*ittexmap).second==NULL);
+			ittexmap++;
+		}
+		rTexDrvInfos.clear();
+	}
 
 	// Release Shader drv.
 	ItShaderPtrList		itshd = _Shaders.begin();

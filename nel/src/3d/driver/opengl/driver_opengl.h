@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.61 2001/04/19 12:49:28 puzin Exp $
+ * $Id: driver_opengl.h,v 1.62 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,6 +163,8 @@ public:
 	virtual bool			activate();
 
 	virtual	sint			getNbTextureStages() {return _Extensions.NbTextureStages;}
+
+	virtual bool			isTextureExist(const ITexture&tex);
 
 	virtual NLMISC::IEventEmitter	*getEventEmitter() { return&_EventEmitter; };
 

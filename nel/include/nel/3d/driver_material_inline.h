@@ -1,7 +1,7 @@
 /** \file driver_material_inline.h
  * <File description>
  *
- * $Id: driver_material_inline.h,v 1.16 2001/04/18 09:18:11 berenguier Exp $
+ * $Id: driver_material_inline.h,v 1.17 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@ namespace NL3D
 
 // --------------------------------------------------
 
-inline bool CMaterial::texturePresent(uint8 n)
+inline bool CMaterial::texturePresent(uint8 n) const
 {
 	nlassert(n<IDRV_MAT_MAXTEXTURES);
 	if (_Textures[n])
@@ -43,7 +43,7 @@ inline bool CMaterial::texturePresent(uint8 n)
 	return(false);
 }
 
-inline ITexture*		CMaterial::getTexture(uint8 n)
+inline ITexture*		CMaterial::getTexture(uint8 n) const
 { 
 	nlassert(n<IDRV_MAT_MAXTEXTURES);
 	return(_Textures[n]); 

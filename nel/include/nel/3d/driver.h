@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.63 2001/04/19 12:49:28 puzin Exp $
+ * $Id: driver.h,v 1.64 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include "nel/misc/stream.h"
 #include "nel/misc/uv.h"
 #include "nel/3d/texture.h"
+#include "nel/misc/mutex.h"
 
 #include <vector>
 #include <list>
@@ -57,6 +58,8 @@ using NLMISC::CSmartPtr;
 using NLMISC::CRGBA;
 using NLMISC::CVector;
 using NLMISC::CMatrix;
+using NLMISC::CSynchronized;
+
 
 class IShader;
 class IVBDrvInfos;
@@ -119,7 +122,9 @@ public:
 
 protected:
 	// The map of shared textures.
-	typedef	std::map< std::string, CRefPtr<ITextureDrvInfos> >	TTexDrvInfoPtrMap;
+	
+	class TTexDrvInfoPtrMap : public std::map< std::string, CRefPtr<ITextureDrvInfos> > {};
+
 	// The list of pointer on shared textures.
 	typedef	std::list< CRefPtr<CTextureDrvShare> >	TTexDrvSharePtrList;
 	typedef	std::list< CRefPtr<IShader> >			TShaderPtrList;
@@ -151,7 +156,9 @@ public:
 
 
 protected:
-	TTexDrvInfoPtrMap		_TexDrvInfos;
+
+	CSynchronized<TTexDrvInfoPtrMap> _SyncTexDrvInfos;
+
 	TTexDrvSharePtrList		_TexDrvShares;
 	TShaderPtrList			_Shaders;
 	TVBDrvInfoPtrList		_VBDrvInfos;
@@ -178,6 +185,9 @@ public:
 
 	/// Get the number of texture stage avaliable, for multitexturing (Normal material shaders). Valid only after setDisplay().
 	virtual	sint			getNbTextureStages()=0;
+
+	/// is the texture is set up in the driver
+	virtual bool			isTextureExist(const ITexture&tex)=0;
 
 	virtual NLMISC::IEventEmitter*	getEventEmitter(void)=0;
 

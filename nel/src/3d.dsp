@@ -984,6 +984,14 @@ SOURCE=.\3d\Makefile.am
 # End Group
 # Begin Source File
 
+SOURCE=.\3d\async_file_manager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\async_file_manager.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\event_mouse_listener.cpp
 
 !IF  "$(CFG)" == "3d - Win32 Release"

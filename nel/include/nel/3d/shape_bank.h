@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.3 2001/04/18 10:39:55 besson Exp $
+ * $Id: shape_bank.h,v 1.4 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,9 +31,12 @@
 #include <map>
 #include <list>
 
+#include "nel/3d/async_file_manager.h"
 
 namespace NL3D
 {
+
+class IDriver;
 
 // ***************************************************************************
 /**
@@ -67,11 +70,16 @@ public:
 	  */
 	void			release(IShape* pShp);
 
-	/// Return TRUE if the shape is present in the bank.
+	/// Return TRUE if the shape is present in the bank. Process the waiting shapes.
 	bool			isPresent(const std::string &shapeName);
 
 	/// Load the corresponding file from disk and add it to the bank.
 	void			load(const std::string &shapeName);
+
+	/** Load the corresponding file from disk asynchronously and add it to the bank.
+	 * The driver passed to this function is used to know if we have to load the textures.
+	 */
+	void			loadAsync(const std::string &shapeName, IDriver *pDriver);
 
 	/// Add directly a shape to the bank. If the shape name is already used do nothing.
 	void			add(const std::string &shapeName, IShape* shape);
@@ -106,6 +114,12 @@ private:
 	typedef		NLMISC::CSmartPtr<IShape>		PShape;
 	typedef		std::map<std::string, PShape>	TShapeMap;
 	TShapeMap	ShapeMap;
+
+	typedef		std::multimap<std::string,IShape*> TWaitingShapesMMap;
+	TWaitingShapesMMap	WaitingShapes;
+
+	CAsyncFileManager	asyncFileManager;
+	IDriver *_pDriver;
 	//@}
 
 	/// \name Shape/Caches.

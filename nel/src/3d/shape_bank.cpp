@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.4 2001/04/19 08:40:24 berenguier Exp $
+ * $Id: shape_bank.cpp,v 1.5 2001/04/23 09:14:27 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/3d/shape_bank.h"
+#include "nel/3d/mesh.h"
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
 
@@ -115,6 +116,44 @@ void CShapeBank::release(IShape* pShp)
 
 bool CShapeBank::isPresent(const string &shapeName)
 {
+	// Process the waiting shapes
+	TWaitingShapesMMap::iterator wsmmIt = WaitingShapes.begin();
+	while( wsmmIt != WaitingShapes.end() )
+	{
+		IShape *pShp = wsmmIt->second;
+
+		if( pShp != NULL )
+		{
+			add(wsmmIt->first, pShp);
+
+			// Setup all textures of the shape
+			CMesh *pMesh = dynamic_cast<CMesh*>(pShp);
+			if( pMesh != NULL )
+			{
+				uint i,j;
+				uint nNbMat = pMesh->getNbMaterial();
+
+				for(i = 0; i < nNbMat; ++i)
+				{
+					const CMaterial &rMat = pMesh->getMaterial(i);
+					// Parse all textures from this material and setup
+					for(j = 0; j < IDRV_MAT_MAXTEXTURES; ++j)
+					if( rMat.texturePresent(j) )
+						_pDriver->setupTexture(*rMat.getTexture(j));
+				}
+			}
+			
+			// Delete the waiting shape
+			TWaitingShapesMMap::iterator delIt = wsmmIt;
+			++wsmmIt;
+			WaitingShapes.erase(delIt);
+		}
+		else
+		{
+			++wsmmIt;
+		}
+	}
+	// Is the shape is found so return true
 	TShapeMap::iterator smIt = ShapeMap.find( shapeName );
 	if( smIt == ShapeMap.end() )
 		return false;
@@ -148,10 +187,21 @@ void CShapeBank::load(const string &shapeName)
 
 // ***************************************************************************
 
+void CShapeBank::loadAsync(const std::string &shapeName,IDriver *pDriver)
+{
+	_pDriver = pDriver; // Backup the pointer to the driver for later use
+	TWaitingShapesMMap::iterator wsmmIt;
+	wsmmIt = WaitingShapes.insert(TWaitingShapesMMap::value_type(shapeName,NULL));
+	asyncFileManager.loadMesh(shapeName, &(wsmmIt->second), pDriver);
+}
+
+// ***************************************************************************
+
 void CShapeBank::add(const string &shapeName, IShape* pShp)
 {
 	// Is the shape name already used ?
-	if( ! isPresent( shapeName ) )
+	TShapeMap::iterator smIt = ShapeMap.find( shapeName );
+	if( smIt == ShapeMap.end() )
 	{
 		// No ok so lets add the smart pointer
 		CSmartPtr<IShape> spShape = pShp;
@@ -280,7 +330,8 @@ void CShapeBank::linkShapeToShapeCache(const string &shapeName, const string &sh
 	}
 	
 	// Is the shape is present ?
-	if( isPresent( shapeName ) )
+	TShapeMap::iterator smIt = ShapeMap.find( shapeName );
+	if( smIt != ShapeMap.end() )
 	{
 		// Yes -> UpdateShapeInfo
 		updateShapeInfo(getShapePtrFromShapeName(shapeName), getShapeCachePtrFromShapeCacheName(shapeCacheName));

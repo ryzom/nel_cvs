@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.52 2002/05/22 13:42:21 lecroart Exp $
+# $Id: Makefile.am,v 1.53 2002/06/10 10:12:09 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -73,7 +73,8 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         game_device_events.cpp             \
                         input_device.cpp                   \
                         input_device_server.cpp            \
-                        fast_mem.cpp
+                        fast_mem.cpp                       \
+                        sheet_id.cpp
 
 noinst_HEADERS        = di_game_device.h                   \
                         di_keyboard_device.h               \

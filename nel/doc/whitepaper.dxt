@@ -50,7 +50,7 @@ features and lots of objects.
 To achieve this objective, the library implements several techniques:
 
 - Geometry:
-  - The ROAHM algorithm, which provides an adaptative subdivision of the landscape base
+  - The ROAM algorithm, which provides an adaptative subdivision of the landscape base
   - Use of Bezier Patches to create smooth-looking landscapes
   - Multi-Resolution Meshes, to provide a smooth reduction in polygon count as objects
     retreat further in distance
@@ -100,6 +100,50 @@ altered, according to the necessities of the 3D universe.
 
 \subsection componentai Artificial Intelligence
 
+The purpose of the AI library is to provide a pragmatic approach to creating a distributed
+agents platform. Its focus is agents; individual entities that communicate regardless of
+location, using an action-reaction model.
+
+The library provide three different categories of concepts:
+
+- Autonomous agents
+  - Basic components that can be assembled to build an agent
+  - Messages that can be sent between agents
+  - Triggers
+- A dedicated scripting language
+  - Based on a virtual machine approach (similar to Java)
+  - Object oriented, with a strong agent flavor
+  - Declarative rather than procedural (allows to define sets of actions, then select
+    among them which one to take)
+- Basic AI techniques
+  - Pathfinding in a 3D universe (animated objects may have different paths depending on
+    their physical abilities)
+  - Basic expert system framework
+  - Order-1 logic
+  - Fuzzy logic operations
+  - Evolutive algorithms
+
+The library offers three different layers of code:
+
+- Layer 1, or base classes layer, which implements the basic classes, and all the basic
+  AI techniques available to agents
+- Layer 2, or agent layer, which provides the base agent, and the components used to
+  build an agent
+- Layer 3, or scripting layer, which defines the scripting language, the virtual machine,
+  and allows the programmer to create, assemble and define agent behaviour. This is where
+  the AI programmer acts to create specific agents.
+
+Modification of the layer 1 should be very infrequent, and occur only if someone wants
+to add new AI techniques, or alter the communication layers between agents.
+
+Modification of the layer 2 occurs only if you want to create different agent types. In
+general, this is not necessary; the set of agents implemented in the layer 2 is assumed
+to be adequate to cover all bases.
+
+Modification of the layer 3 is where one may add new functionalities to the scripting
+language, such as allowing to call other scripts (in Python, Perl, or whatever langage)
+or external compiled code.
+
 \subsection componentdb Database & File
 
 \subsection componentnet Network
@@ -121,6 +165,9 @@ extracting the NeL source tree, while others are kept separate, and require you 
 obtain them separately prior to building NeL.
 
 - Autoconfig & Automake : The GNU standard configuration tools for Open Source development.
+- Clanlib : A portable system interface
+- STL Ports
+- CLAP
 
 [to be completed]
  */

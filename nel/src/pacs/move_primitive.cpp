@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.10 2001/06/26 09:48:32 corvazier Exp $
+ * $Id: move_primitive.cpp,v 1.11 2001/07/19 15:17:46 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -343,14 +343,20 @@ float CMovePrimitive::getRadius () const
 
 double CMovePrimitive::getOrientation (uint8 worldImage) const
 {
-	return getWorldImage (worldImage)->getOrientation ();
+	if (isNonCollisionable())
+		return getWorldImage (0)->getOrientation ();
+	else
+		return getWorldImage (worldImage)->getOrientation ();
 }
 
 // ***************************************************************************
 
 void CMovePrimitive::getGlobalPosition (UGlobalPosition& pos, uint8 worldImage) const
 {
-	pos=getWorldImage (worldImage)->getGlobalPosition();
+	if (isNonCollisionable())
+		pos=getWorldImage (0)->getGlobalPosition();
+	else
+		pos=getWorldImage (worldImage)->getGlobalPosition();
 }
 
 // ***************************************************************************

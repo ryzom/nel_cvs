@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.12 2001/04/09 16:07:37 berenguier Exp $
+ * $Id: transformable.h,v 1.13 2001/04/12 13:54:56 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,12 +116,22 @@ public:
 		_Pos.Value= pos;
 		touch(PosValue, OwnerBit);
 	}
+	/// Work only in Rot* mode(nlassert).
+	void	setPos(float x, float y, float z)
+	{
+		setPos(CVector(x,y,z));
+	}
 	/// Work only in RotEuler mode(nlassert).
 	void	setRotEuler(const CVector &rot)
 	{
 		nlassert(_Mode==RotEuler);
 		_RotEuler.Value= rot;
 		touch(RotEulerValue, OwnerBit);
+	}
+	/// Work only in RotEuler mode(nlassert).
+	void	setRotEuler(float rotX, float rotY, float rotZ)
+	{
+		setRotEuler(CVector(rotX, rotY, rotZ));
 	}
 	/// Work only in RotQuat mode (nlassert).
 	void	setRotQuat(const CQuat &quat)
@@ -138,11 +148,26 @@ public:
 		touch(ScaleValue, OwnerBit);
 	}
 	/// Work only in Rot* mode (nlassert).
+	void	setScale(float scaleX, float scaleY, float scaleZ)
+	{
+		setScale(CVector(scaleX, scaleY, scaleZ));
+	}
+	/// Work only in Rot* mode (nlassert).
+	void	setScale(float scale)
+	{
+		setScale(CVector(scale, scale, scale));
+	}
+	/// Work only in Rot* mode (nlassert).
 	void	setPivot(const CVector &pivot)
 	{
 		nlassert(_Mode==RotEuler || _Mode==RotQuat);
 		_Pivot.Value= pivot;
 		touch(PivotValue, OwnerBit);
+	}
+	/// Work only in Rot* mode (nlassert).
+	void	setPivot(float x, float y, float z)
+	{
+		setPivot(CVector(x, y, z));
 	}
 	/// Work only in DirecTMatrix mode (nlassert).
 	void	setMatrix(const CMatrix &mat)

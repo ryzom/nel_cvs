@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CIndexBuffer, IDriver
  *
- * $Id: driver.cpp,v 1.87 2004/04/29 08:36:58 lecroart Exp $
+ * $Id: driver.cpp,v 1.88 2004/05/27 17:32:16 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -364,7 +364,7 @@ std::string				CTextureDebugKey::_EmptyString;
 void IDriver::profileTextureUsage(std::vector<std::string> &result)
 {
 	std::set<ITextureDrvInfos	*>		texSet;
-	uint	i;
+//	uint	i;
 	
 	// reserve result, sort by UploadFormat
 	map<CTextureDebugKey, vector<CTextureDebugInfo> >	tempInfo;

@@ -1003,6 +1003,18 @@ SOURCE=..\include\nel\3d\ps_attrib.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\ps_attrib_maker.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_color.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_color.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\3d\ps_edit.h
 # End Source File
 # Begin Source File
@@ -1012,6 +1024,14 @@ SOURCE=.\3d\ps_emitter.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\ps_emitter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\ps_float.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\ps_float.h
 # End Source File
 # Begin Source File
 
@@ -1032,6 +1052,17 @@ SOURCE=..\include\nel\3d\ps_located.h
 # Begin Source File
 
 SOURCE=.\3d\ps_particle.cpp
+
+!IF  "$(CFG)" == "3d - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
+
+# ADD CPP /FAcs
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

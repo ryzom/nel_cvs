@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.15 2001/06/13 10:22:26 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.16 2001/06/18 09:06:02 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_CALLBACK_NET_BASE_H
 #define NL_CALLBACK_NET_BASE_H
 
-#include <vector>
+#define USE_MESSAGE_RECORDER
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"
@@ -34,6 +34,13 @@
 #include "nel/net/buf_net_base.h"
 #include "nel/net/message.h"
 #include "nel/net/inet_address.h"
+
+#ifdef USE_MESSAGE_RECORDER
+#include "nel/net/message_recorder.h"
+#include <queue>
+#endif
+
+#include <vector>
 
 
 namespace NLNET {
@@ -138,13 +145,16 @@ public:
 		_InputSIDA.ignoreAllUnknownId (b);
 	}
 
+	// Defined even when USE_MESSAGE_RECORDER is not defined
+	enum TRecordingState { Off, Record, Replay };
+
 protected:
 
 	/// Used by client and server class
 	TNetCallback _NewDisconnectionCallback;
 
 	/// Constructor.
-	CCallbackNetBase ();
+	CCallbackNetBase( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true );
 
 	/// Used by client and server class
 	void baseUpdate ( sint32 timeout=0 );
@@ -170,6 +180,19 @@ protected:
 
 	bool _IsAServer;
 	bool _FirstUpdate;
+
+	// ---------------------------------------
+#ifdef USE_MESSAGE_RECORDER
+	bool			replayDataAvailable();
+	virtual bool	replaySystemCallbacks() = 0;
+	void			noticeDisconnection( TSockId hostid );
+
+	TRecordingState						_MR_RecordingState;
+	sint64								_MR_UpdateCounter;
+
+	CMessageRecorder					_MR_Recorder;
+#endif
+	// ---------------------------------------
 
 private:
 

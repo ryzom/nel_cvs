@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.6 2001/06/13 10:22:26 lecroart Exp $
+ * $Id: callback_client.h,v 1.7 2001/06/18 09:06:02 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ class CInetAddress;
 
 /**
  * Client class for layer 3
- * \author Vianney Lecroart
+ * \author Vianney Lecroart, Olivier Cado
  * \author Nevrax France
  * \date 2001
  */
@@ -47,26 +47,37 @@ class CCallbackClient : public CCallbackNetBase, public CStreamClient
 {
 public:
 
-	CCallbackClient ();
+	/// Constructor
+	CCallbackClient( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true );
 
 	/// Sends a message to the remote host (the second parameter isn't used
 	void	send (const CMessage &buffer, TSockId hostid = 0, bool log = true);
 
 	/// Force to send all data pending in the send queue.
-	bool	flush (TSockId hostid = 0) { checkThreadId (); return CStreamClient::flush(); }
+	bool	flush (TSockId hostid = 0);
 	
 	/// Updates the network (call this method evenly)
 	void	update ( sint32 timeout=0 );
 
-	/// Returns true if the connection is still connected
+	/// Connects to the specified host
+	void	connect( const CInetAddress& addr );
+
+	/** Returns true if the connection is still connected (changed when a disconnection
+	 * event has reached the front of the receive queue, just before calling the disconnection callback
+	 * if there is one)
+	 */
 	virtual bool	connected () const { checkThreadId (); return CStreamClient::connected (); } 
 
-	/// Disconnect a connection
-	void	disconnect (TSockId hostid = 0) { checkThreadId (); CStreamClient::disconnect (); }
+	/** Disconnect a connection
+	 * Unlike in CCallbackClient, you can call disconnect() on a socket that is already disconnected
+	 * (it will do nothing)
+	 */
+	void	disconnect (TSockId hostid = 0);
 
 	/// Sets callback for disconnections (or NULL to disable callback)
 	void	setDisconnectionCallback (TNetCallback cb, void *arg) { checkThreadId (); CCallbackNetBase::setDisconnectionCallback (cb, arg); }
 
+	/// Returns the sockid
 	virtual TSockId	getSockId (TSockId hostid = 0);
 
 private:
@@ -74,9 +85,16 @@ private:
 	/// These function is public in the base class and put it private here because user cannot use it in layer 2
 	void	send (const NLMISC::CMemStream &buffer) { nlstop; }
 
-	bool	dataAvailable () {  checkThreadId (); return CStreamClient::dataAvailable (); }
+	/// Returns true if there are messages to read
+	bool	dataAvailable ();
+
 	void	receive (CMessage &buffer, TSockId *hostid = NULL);
 
+	// ---------------------------------------
+#ifdef USE_MESSAGE_RECORDER
+	virtual bool replaySystemCallbacks();
+#endif
+	
 };
 
 

@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.18 2001/06/14 13:55:10 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.19 2001/06/18 09:06:18 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,12 +33,23 @@
 #include "nel/net/buf_sock.h"
 #include "nel/net/callback_net_base.h"
 
+#ifdef USE_MESSAGE_RECORDER
+#pragma message ( "NeL Net layer 3: message recorder enabled" )
+#include "nel/net/message_recorder.h"
+#else
+#pragma message ( "NeL Net layer 3: message recorder disabled" )
+#endif
+
+
 using namespace std;
 using namespace NLMISC;
 
 namespace NLNET {
 
 
+/*
+ *
+ */
 void cbnbMessageRecvAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// receive a new message association
@@ -69,7 +80,9 @@ void cbnbMessageRecvAssociations (CMessage &msgin, TSockId from, CCallbackNetBas
 }
 
 
-// the other side want to know some of my association, send them!
+/*
+ * the other side want to know some of my association, send them!
+ */
 void cbnbMessageAskAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	CMessage msgout (netbase.getSIDA(), "RA");
@@ -105,6 +118,10 @@ static TCallbackItem cbnbMessageAssociationArray[] =
 	{ "RA", cbnbMessageRecvAssociations },
 };
 
+
+/*
+ * Disconnection callback
+ */
 void cbnbNewDisconnection (TSockId from, void *data)
 {
 	nlassert (data != NULL);
@@ -112,12 +129,25 @@ void cbnbNewDisconnection (TSockId from, void *data)
 
 	nldebug("L3NB: cbnbNewDisconnection()");
 
-	// call the client callback if necessary
+#ifdef USE_MESSAGE_RECORDER
+	// Record or replay disconnection
+	base->noticeDisconnection( from );
+#endif
+	
+	// Call the client callback if necessary
 	if (base->_DisconnectionCallback != NULL)
 		base->_DisconnectionCallback (from, base->_DisconnectionCbArg);
 }
 
-CCallbackNetBase::CCallbackNetBase () : _FirstUpdate (true), _DisconnectionCallback(NULL), _DisconnectionCbArg(NULL)
+
+/*
+ * Constructor
+ */
+CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilename, bool recordall ) :
+	_FirstUpdate (true), _DisconnectionCallback(NULL), _DisconnectionCbArg(NULL)
+#ifdef USE_MESSAGE_RECORDER
+	, _MR_RecordingState(rec), _MR_UpdateCounter(0)
+#endif
 {
 	_ThreadId = getThreadId ();
 	_NewDisconnectionCallback = cbnbNewDisconnection;
@@ -127,7 +157,22 @@ CCallbackNetBase::CCallbackNetBase () : _FirstUpdate (true), _DisconnectionCallb
 
 	// add the callback needed to associate messages with id
 	addCallbackArray (cbnbMessageAssociationArray, sizeof (cbnbMessageAssociationArray) / sizeof (cbnbMessageAssociationArray[0]));
+
+#ifdef USE_MESSAGE_RECORDER
+	switch ( _MR_RecordingState )
+	{
+	case Record :
+		_MR_Recorder.startRecord( recfilename, recordall );
+		break;
+	case Replay :
+		_MR_Recorder.startReplay( recfilename );
+		break;
+	default:;
+		// No recording
+	}
+#endif
 }
+
 
 /*
  *	Append callback array with the specified array
@@ -167,6 +212,10 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 	nldebug ("L3NB_CB: Added %d callback Now, there's %d callback associated with message type", arraysize, _CallbackArray.size ());
 }
 
+
+/*
+ * processOneMessage()
+ */
 void CCallbackNetBase::processOneMessage ()
 {
 	checkThreadId ();
@@ -223,6 +272,12 @@ void CCallbackNetBase::processOneMessage ()
 }
 
 
+
+/*
+ * baseUpdate
+ * Recorded : YES
+ * Replayed : YES
+ */
 void CCallbackNetBase::baseUpdate (sint32 timeout)
 {
 	checkThreadId ();
@@ -253,7 +308,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		if (!sa.empty ())
 		{
 			CMessage msgout (_InputSIDA, "AA");
-			nlassert (sa.size () < 65536);
+			//nlassert (sa.size () < 65536); // no size limit anymore
 			CStringIdArray::TStringId size = sa.size ();
 			nldebug ("L3NB_ASSOC: I need %d string association, ask them to the other side", size);
 			msgout.serial (size);
@@ -278,7 +333,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		// we didn't have an answer for the association, resend them
 		const set<string> sa = _InputSIDA.getAskedStringArray ();
 		CMessage msgout (_InputSIDA, "AA");
-		nlassert (sa.size () < 65536);
+		//nlassert (sa.size () < 65536); // no size limit anymore
 		CStringIdArray::TStringId size = sa.size ();
 		nldebug ("L3NB_ASSOC: client didn't answer my asked association, retry! I need %d string association, ask them to the other side", size);
 		msgout.serial (size);
@@ -324,6 +379,10 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		}
 	}
 
+#ifdef USE_MESSAGE_RECORDER
+	_MR_UpdateCounter++;
+#endif
+
 /* old message processing
 	while (dataAvailable ()) // can be interrupted by "break"
 	{
@@ -343,6 +402,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		}
 	}
 */
+
 }
 
 
@@ -389,6 +449,54 @@ void	CCallbackNetBase::authorizeOnly (const char *callbackName, TSockId hostid)
 		hostid->AuthorizedCallback = callbackName;
 }
 
+
+#ifdef USE_MESSAGE_RECORDER
+
+/*
+ * Replay dataAvailable() in replay mode
+ */
+bool CCallbackNetBase::replayDataAvailable()
+{
+	nlassert( _MR_RecordingState == Replay );
+
+	if ( _MR_Recorder.ReceivedMessages.empty() )
+	{
+		// Fill the queue of received messages related to the present update
+		_MR_Recorder.replayNextDataAvailable( _MR_UpdateCounter );
+	}
+
+	return replaySystemCallbacks();
+}
+
+
+/*
+ * Record or replay disconnection
+ */
+void CCallbackNetBase::noticeDisconnection( TSockId hostid )
+{
+	if ( _MR_RecordingState != Replay )
+	{
+		if ( _MR_RecordingState == Record )
+		{
+			// Record disconnection
+			CMessage emptymsg;
+			_MR_Recorder.recordNext( _MR_UpdateCounter, Disconnecting, hostid, emptymsg );
+		}
+	}
+	else
+	{
+		// Replay disconnection
+		hostid->disconnect( false );
+	}
+}
+
+#endif // USE_MESSAGE_RECORDER
+
+
+
+/*
+ * checkThreadId
+ */
 void CCallbackNetBase::checkThreadId () const
 {
 /*	some people use this class in different thread but with a mutex to be sure to have
@@ -397,6 +505,9 @@ void CCallbackNetBase::checkThreadId () const
 	{
 		nlerror ("You try to access to the same CCallbackClient or CCallbackServer with 2 differents thread (%d and %d)", _ThreadId, getThreadId());
 	}
-*/}
+*/
+}
+
 
 } // NLNET
+

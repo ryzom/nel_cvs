@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.7 2001/06/13 10:22:26 lecroart Exp $
+ * $Id: callback_server.h,v 1.8 2001/06/18 09:06:02 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,8 @@ class CCallbackServer : public CCallbackNetBase, public CStreamServer
 {
 public:
 
-	CCallbackServer ();
+	/// Constructor
+	CCallbackServer( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true );
 
 	/// Sends a message to the specified host
 	void	send (const CMessage &buffer, TSockId hostid, bool log = true);
@@ -65,28 +66,43 @@ public:
 	/// Returns true if the connection is still connected. on server, we always "connected"
 	bool	connected () const { checkThreadId (); return true; } 
 
-	/// Disconnect a connection
-	void	disconnect (TSockId hostid) { checkThreadId (); CStreamServer::disconnect (hostid); }
+	/** Disconnect a connection
+	 * Set hostid to NULL to disconnect all connections.
+	 * If hostid is not null and the socket is not connected, the method does nothing.
+	 * Before disconnecting, any pending data is actually sent.
+	 */
+	void	disconnect (TSockId hostid);
 
 	/// Returns the address of the specified host
 	const CInetAddress& hostAddress (TSockId hostid) { checkThreadId (); return CStreamServer::hostAddress (hostid); }
 
+	/// Returns the sockid (cf. CCallbackClient)
 	virtual TSockId	getSockId (TSockId hostid = 0);
 
 private:
 
 	/// This function is public in the base class and put it private here because user cannot use it in layer 2
-	void	send (const NLMISC::CMemStream &buffer, TSockId hostid) { nlstop; }
+	void			send (const NLMISC::CMemStream &buffer, TSockId hostid) { nlstop; }
 
-	bool	dataAvailable () { checkThreadId (); return CStreamServer::dataAvailable (); }
-	void	receive (CMessage &buffer, TSockId *hostid);
+	bool			dataAvailable ();
+	void			receive (CMessage &buffer, TSockId *hostid);
 
-	void	sendAllMyAssociations (TSockId to);
+	void			sendAllMyAssociations (TSockId to);
 
-	TNetCallback	 _ConnectionCallback;
+	TNetCallback	_ConnectionCallback;
 	void			*_ConnectionCbArg;
 
-	friend void cbsNewConnection (TSockId from, void *data);
+	friend void		cbsNewConnection (TSockId from, void *data);
+
+	// ---------------------------------------
+#ifdef USE_MESSAGE_RECORDER
+	void						noticeConnection( TSockId hostid );
+	virtual						bool replaySystemCallbacks();
+	std::vector<CBufSock*>		_MR_Connections;
+	std::map<TSockId,TSockId>	_MR_SockIds; // first=sockid in file; second=CBufSock*
+#endif
+	// ---------------------------------------
+	
 };
 
 

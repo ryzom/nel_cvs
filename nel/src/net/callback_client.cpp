@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.8 2001/06/13 12:11:14 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.9 2001/06/18 09:06:18 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,11 +25,19 @@
 
 #include "nel/net/callback_net_base.h"
 #include "nel/net/callback_client.h"
-
 #include "nel/net/stream_client.h"
+
+#ifdef USE_MESSAGE_RECORDER
+#include "nel/net/message_recorder.h"
+#endif
 
 
 namespace NLNET {
+
+
+/*
+ * Callbacks management
+ */
 
 static void cbcMessageRecvAllAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
@@ -37,12 +45,18 @@ static void cbcMessageRecvAllAssociations (CMessage &msgin, TSockId from, CCallb
 	cbnbMessageRecvAssociations (msgin, from, netbase);
 }
 
+
 static TCallbackItem ClientMessageAssociationArray[] =
 {
 	{ "RAA", cbcMessageRecvAllAssociations },
 };
 
-CCallbackClient::CCallbackClient ()
+
+/*
+ * Constructor
+ */
+CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfilename, bool recordall ) :
+	CCallbackNetBase( rec, recfilename, recordall ), CStreamClient( true, rec==Replay )
 {
 	CBufClient::setDisconnectionCallback (_NewDisconnectionCallback, this);
 
@@ -52,11 +66,14 @@ CCallbackClient::CCallbackClient ()
 	_InputSIDA.ignoreAllUnknownId (true);
 
 	_IsAServer = false;
+
 }
 
 
 /*
- * Send a message to the specified host
+ * Send a message to the remote host (pushing to its send queue)
+ * Recorded : YES
+ * Replayed : MAYBE
  */
 void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 {
@@ -70,29 +87,151 @@ void CCallbackClient::send (const CMessage &buffer, TSockId hostid, bool log)
 		nldebug ("L3C: Client: send(%s)", buffer.toString().c_str());
 	}
 
-	CStreamClient::send (buffer);
+#ifdef USE_MESSAGE_RECORDER
+	if ( _MR_RecordingState != Replay )
+	{
+#endif
+
+		// Send
+		CStreamClient::send (buffer);
+
+#ifdef USE_MESSAGE_RECORDER
+		if ( _MR_RecordingState == Record )
+		{
+			// Record sent message
+			_MR_Recorder.recordNext( _MR_UpdateCounter, Sending, hostid, const_cast<CMessage&>(buffer) );
+		}
+	}
+	else
+	{	
+		// TODO: Check that the next sending is the same
+	}
+#endif
 }
 
 
+/*
+ * Force to send all data pending in the send queue.
+ * Recorded : NO
+ * Replayed : NO
+ */
+bool CCallbackClient::flush (TSockId hostid) 
+{
+	checkThreadId ();
+
+#ifdef USE_MESSAGE_RECORDER
+	if ( _MR_RecordingState != Replay )
+	{
+#endif
+
+		// Flush sending (nothing to do in replay mode)
+		return CStreamClient::flush();
+		
+#ifdef USE_MESSAGE_RECORDER
+	}
+	else
+	{
+		return true;
+	}
+#endif
+}
+
+
+/*
+ * Updates the network (call this method evenly)
+ * Recorded : YES (in baseUpdate())
+ * Replayed : YES (in baseUpdate())
+ */
 void CCallbackClient::update ( sint32 timeout )
 {
-//	nldebug ("L3C: Client: update()");
+//	nldebug ("L3: Client: update()");
 
 	checkThreadId ();
-	CStreamClient::update ();
-	baseUpdate (timeout);
+
+	baseUpdate (timeout); // first receive
+
+#ifdef USE_MESSAGE_RECORDER
+	if ( _MR_RecordingState != Replay )
+	{
+#endif
+
+		// L1-2 Update (nothing to do in replay mode)
+		CStreamClient::update (); // then send
+
+#ifdef USE_MESSAGE_RECORDER
+	}
+#endif
 }
 
+
+/*
+ * Returns true if there are messages to read
+ * Recorded : NO
+ * Replayed : YES
+ */
+bool CCallbackClient::dataAvailable ()
+{
+	checkThreadId ();
+
+#ifdef USE_MESSAGE_RECORDER
+	if ( _MR_RecordingState != Replay )
+	{
+#endif
+
+		// Real dataAvailable()
+		return CStreamClient::dataAvailable (); 
+
+#ifdef USE_MESSAGE_RECORDER
+	}
+	else
+	{
+		// Simulated dataAvailable()
+		return CCallbackNetBase::replayDataAvailable();
+	}
+#endif
+}
+
+
+/*
+ * Read the next message in the receive queue
+ * Recorded : YES
+ * Replayed : YES
+ */
 void CCallbackClient::receive (CMessage &buffer, TSockId *hostid)
 {
 	checkThreadId ();
 	nlassert (connected ());
-
 	*hostid = NULL;
-	CStreamClient::receive (buffer);
+
+#ifdef USE_MESSAGE_RECORDER
+	if ( _MR_RecordingState != Replay )
+	{
+#endif
+		
+		// Receive
+		CStreamClient::receive (buffer);
+
+#ifdef USE_MESSAGE_RECORDER
+		if ( _MR_RecordingState == Record )
+		{
+			// Record received message
+			_MR_Recorder.recordNext( _MR_UpdateCounter, Receiving, *hostid, const_cast<CMessage&>(buffer) );
+		}
+	}
+	else
+	{
+		// Retrieve received message loaded by dataAvailable()
+		buffer = _MR_Recorder.ReceivedMessages.front().Message;
+		_MR_Recorder.ReceivedMessages.pop();
+	}
+#endif
+
 	buffer.readType ();
 }
 
+/*
+ *
+ */
 TSockId	CCallbackClient::getSockId (TSockId hostid)
 {
 	checkThreadId ();
@@ -101,6 +240,156 @@ TSockId	CCallbackClient::getSockId (TSockId hostid)
 	nlassert (hostid == NULL);
 	return id ();
 }
+
+
+/*
+ * Connect to the specified host
+ * Recorded : YES
+ * Replayed : YES
+ */
+void CCallbackClient::connect( const CInetAddress& addr )
+{
+	checkThreadId ();
+
+#ifdef USE_MESSAGE_RECORDER
+	if ( _MR_RecordingState != Replay )
+	{
+		try
+		{
+#endif
+
+			// Connect
+			CStreamClient::connect( addr );
+
+#ifdef USE_MESSAGE_RECORDER
+			if ( _MR_RecordingState == Record )
+			{
+				// Record connection
+				CMessage addrmsg;
+				addrmsg.serial( const_cast<CInetAddress&>(addr) );
+				_MR_Recorder.recordNext( _MR_UpdateCounter, Connecting, _BufSock, addrmsg );
+			}
+		}
+		catch ( ESocketConnectionFailed& )
+		{
+			if ( _MR_RecordingState == Record )
+			{
+				// Record connection
+				CMessage addrmsg;
+				addrmsg.serial( const_cast<CInetAddress&>(addr) );
+				_MR_Recorder.recordNext( _MR_UpdateCounter, ConnFailing, _BufSock, addrmsg );
+			}
+			throw;
+		}
+	}
+	else
+	{
+		// Check the connection : failure or not
+		TNetworkEvent event = _MR_Recorder.replayConnectionAttempt( addr );
+		switch ( event )
+		{
+		case Connecting :
+			// Set the remote address
+			nlassert( ! _BufSock->Sock->connected() );
+			_BufSock->connect( addr, _NoDelay, true );
+			_PrevBytesDownloaded = 0;
+			_PrevBytesUploaded = 0;
+			/*_PrevBytesReceived = 0;
+			_PrevBytesSent = 0;*/
+			break;
+		case ConnFailing :
+			throw ESocketConnectionFailed( addr );
+			//break;
+		default :
+			nlwarning( "L3C: No connection event in replay data, at update #%"NL_I64"u", _MR_UpdateCounter );
+		}
+	}
+#endif
+}
+
+
+/*
+ * Disconnect a connection
+ * Recorded : YES
+ * Replayed : YES
+ */
+void CCallbackClient::disconnect( TSockId hostid )
+{
+	checkThreadId ();
+
+	// Disconnect only if connected (same as physically connected for the client)
+	if ( _BufSock->connectedState() )
+	{
+		
+#ifdef USE_MESSAGE_RECORDER
+		if ( _MR_RecordingState != Replay )
+		{
+#endif
+
+			// Disconnect
+			CStreamClient::disconnect ();
+
+#ifdef USE_MESSAGE_RECORDER
+		}
+		else
+		{
+			// Read (skip) disconnection in the file
+			if ( ! (_MR_Recorder.checkNextOne( _MR_UpdateCounter ) == Disconnecting) )
+			{
+				nlwarning( "L3C: No disconnection event in the replay data, at update #%"NL_I64"u", _MR_UpdateCounter );
+			}
+		}
+		// Record or replay disconnection (because disconnect() in the client does not push a disc. event)
+		noticeDisconnection( _BufSock );
+#endif
+	}
+}
+
+
+#ifdef USE_MESSAGE_RECORDER
+
+
+/*
+ * replay connection and disconnection callbacks, client version
+ */
+bool CCallbackClient::replaySystemCallbacks()
+{
+	do
+	{
+		if ( _MR_Recorder.ReceivedMessages.empty() )
+		{
+			return false;
+		}
+		else
+		{
+			switch( _MR_Recorder.ReceivedMessages.front().Event )
+			{
+			case Receiving:
+				return true;
+
+			case Disconnecting:
+				nldebug( "Disconnection event" );
+				_BufSock->setConnectedState( false );
+	
+				// Call callback if needed
+				if ( disconnectionCallback() != NULL )
+				{
+					disconnectionCallback()( id(), argOfDisconnectionCallback() );
+				}
+				break;
+
+			default:
+				nlerror( "L1: Invalid system event type in client receive queue" );
+			}
+			// Extract system event
+			_MR_Recorder.ReceivedMessages.pop();
+		}
+	}
+	while ( true );
+}
+
+
+#endif // USE_MESSAGE_RECORDER
 
 
 } // NLNET

@@ -1,7 +1,7 @@
 /** \file common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.22 2001/04/11 14:58:14 cado Exp $
+ * $Id: common.h,v 1.23 2001/04/17 15:32:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -319,6 +319,19 @@ uint getThreadId();
 
 /// Returns a readable string from a vector of bytes. '\0' are replaced by ' '
 std::string stringFromVector( const std::vector<uint8>& v );
+
+
+/** Returns a string corresponding to the class T in string format
+ * Example:
+ *  string num = toString (1234); // num = "1234";
+ */
+template<class T> std::string toString (const T &t)
+{
+	std::stringstream ss;
+	ss << t;
+	return ss.str();
+}
+
 
 
 }	// NLMISC

@@ -120,8 +120,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 6
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "nel_launcher___Win32_ReleaseDebug"
-# PROP Intermediate_Dir "nel_launcher___Win32_ReleaseDebug"
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /c

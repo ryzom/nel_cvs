@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.12 2001/06/15 14:33:58 portier Exp $
+ * $Id: agent_digital.h,v 1.13 2001/06/15 14:39:10 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,8 +37,8 @@ namespace NLAIAGENT
 	This class store a float in an IObjectIA. 
 
 	* \author Chafik sameh	 
-	* \author Portier Pierre
-	* \author Nevrax France
+	* \author Portier Pierre                   
+	* \author Nevrax France 
 	* \date 2000	
 	*/
 	class DigitalType : public INombre<float>

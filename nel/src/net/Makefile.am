@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2000/11/24 17:17:23 valignat Exp $
+# $Id: Makefile.am,v 1.4 2000/11/30 09:31:20 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -15,10 +15,6 @@ libnelnet_la_SOURCES = base_socket.cpp cubic_entity_interpolator.cpp \
                        unitime.cpp
 
 libnelnet_la_LIBADD  = -lc
-
-
-all-local:
-	cp -f ./.libs/* $(top_srcdir)/lib
 
 
 # End of Makefile.am

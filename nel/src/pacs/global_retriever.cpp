@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.95 2004/10/25 11:54:17 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.96 2004/12/08 15:22:02 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -363,6 +363,19 @@ void	NLPACS::CGlobalRetriever::getBorders(const CAABBox &sbox, std::vector<std::
 					edges.back().first.V1.z = zp;
 				}
 			}
+		}
+		// Bind edges for exterior mesh
+		const CExteriorMesh &em = retriever.getExteriorMesh();
+		const CExteriorMesh::CEdge *previousEdge = NULL;
+		for(uint k = 0; k < em.getEdges().size(); ++k)
+		{
+			if (previousEdge)
+			{
+				edges.push_back(make_pair(CLine(), previousEdge->Link < 0 ? 4 : 5));
+				edges.back().first.V0 = previousEdge->Start + origin;
+				edges.back().first.V1 = em.getEdges()[k].Start + origin;
+			}
+			previousEdge = em.getEdges()[k].Link != -2 ? &em.getEdges()[k] : NULL;
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.28 2003/03/11 09:41:30 berenguier Exp $
+ * $Id: water_model.cpp,v 1.29 2003/03/14 13:08:02 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -340,6 +340,7 @@ static void ComputeUpMatrix(const NLMISC::CVector &J, NLMISC::CMatrix &dest, con
 
 //*************************************************************
 // draw a 2d polygon after a transformation
+/*
 static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CMatrix &mat, const NLMISC::CPolygon &p)
 {
 	uint k;
@@ -361,6 +362,32 @@ static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CMatrix &m
 	}	
 	drv->renderSimpleTriangles(&ib[0], p.Vertices.size() - 2);	
 }
+
+ */
+
+
+
+static void DrawPoly2D(CVertexBuffer &vb, IDriver *drv, const NLMISC::CPolygon &p)
+{
+	uint k;
+
+	for (k = 0; k < p.Vertices.size(); ++k)
+	{		
+		vb.setValueFloat3Ex (WATER_VB_POS, k, p.Vertices[k].x, p.Vertices[k].y, p.Vertices[k].z);
+		vb.setValueFloat2Ex (WATER_VB_DX,  k, 0, 0);			
+	}
+	static std::vector<uint32> ib;
+	ib.resize(3 * p.Vertices.size());
+
+	for (k = 0; k < p.Vertices.size() - 2; ++k)
+	{
+		ib[ k * 3      ] = 0;
+		ib[ k * 3  + 1 ] = k + 1;
+		ib[ k * 3  + 2 ] = k + 2;
+	}	
+	drv->renderSimpleTriangles(&ib[0], p.Vertices.size() - 2);	
+}
+
 
 //***************************************************************************************************************
 
@@ -483,7 +510,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 
 
 	/// anything to show ?
-	if (clippedPoly.Vertices.size() == 0 && endClippedPoly.Vertices.size() == 0)
+	if (clippedPoly.Vertices.empty() && endClippedPoly.Vertices.empty())
 	{
 		return;	
 	}
@@ -664,7 +691,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 				
 
 
-				 NLMISC::CPolygon2D::TRasterVect::const_iterator it = rasters.begin();
+				NLMISC::CPolygon2D::TRasterVect::const_iterator it = rasters.begin();
 				for (uint l = 0; l <= wqHeight; ++l)
 				{		
 					//nlinfo("start = %d, end = %d", it->first, it->second);				
@@ -785,14 +812,17 @@ void	CWaterRenderObs::traverse(IObs *caller)
 
 	if (endClippedPoly.Vertices.size() != 0)
 	{	
-		CMatrix mtx; /*= HrcObs->WorldMatrix;*/
-		// mtx.setPos(NLMISC::CVector(-obsPos.x, -obsPos.y, obsPos.z));
-
-		mtx.setPos(HrcObs->WorldMatrix.getPos() + NLMISC::CVector(-obsPos.x, -obsPos.y, 0));
-		// set right obsever position
-		drv->setConstant(7, 0, 0, obsPos.z /* - zHeight*/ , 0.f);
+		NLMISC::CVector modelPos = HrcObs->WorldMatrix.getPos();
+		drv->setupModelMatrix(HrcObs->WorldMatrix);
+		drv->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
+		// observer position in object
+		NLMISC::CVector localObsPos = HrcObs->WorldMatrix.inverted() * obsPos;	
+		float date  = 0.001f * NLMISC::CTime::getLocalTime();
+		drv->setConstant(7, localObsPos.x, localObsPos.y, localObsPos.z, 1.f);
+		drv->setConstant(9, modelPos.x * shape->_HeightMapScale[0].x + date * shape->_HeightMapSpeed[0].x, shape->_HeightMapScale[0].y * modelPos.y + date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 0 offset		
+		drv->setConstant(11, shape->_HeightMapScale[1].x * modelPos.x + date * shape->_HeightMapSpeed[1].x, shape->_HeightMapScale[1].y * modelPos.y + date * shape->_HeightMapSpeed[0].y, 0.f, 0.f); // bump map 1 offset
 		//setAttenuationFactor(drv, true, obsPos, camMat.getJ(), farDist);				
-		DrawPoly2D(shape->_VB, drv, mtx, endClippedPoly);
+		DrawPoly2D(shape->_VB, drv, endClippedPoly);
 	}
 
 	/*if (endTransitionClippedPoly.Vertices.size() != 0)

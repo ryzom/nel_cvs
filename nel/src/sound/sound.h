@@ -1,7 +1,7 @@
 /** \file sound.h
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.h,v 1.11 2001/09/14 14:40:14 cado Exp $
+ * $Id: sound.h,v 1.12 2002/06/20 08:36:16 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/sound/u_source.h"
+#include "nel/georges/u_form_elm.h"
 #include <string>
 #include <hash_map>
 
@@ -45,6 +46,7 @@ struct eqstr
 {
   bool operator()(const char* s1, const char* s2) const
   {
+	nldebug("eq? %s : %s", s1, s2);
     return strcmp(s1, s2) == 0;
   }
 };
@@ -56,6 +58,7 @@ typedef std::hash_map<const char*, CSound*, std::hash<const char*>, eqstr> TSoun
 /// Sound names set (for ambiant sounds)
 typedef std::set<CSound*> TSoundSet;
 
+const double Sqrt12_2 = 1.0594630943592952645618252949463;  // 2^1/12
 
 /**
  * A sound buffer and its static properties
@@ -72,7 +75,7 @@ public:
 	/// Destructor
 	virtual ~CSound();
 	/// Init with sound driver
-	static void			init( ISoundDriver *sd )		{ _SoundDriver = sd; }
+	//static void			init( ISoundDriver *sd )		{ _SoundDriver = sd; }
 	/** Allow to load sound files when corresponding wave file is missing
 	 * (default: false, i.e. an input serial or a load throws an exception ESoundFileNotFound)
 	 */
@@ -84,16 +87,19 @@ public:
 	 * The filename is searched in the global path (see CPath).
 	 * Can throw EPathNotFound or ESoundFileNotFound (check Exception)
 	 */
-	void				loadBuffer( const std::string& filename );
+	//void				loadBuffer( const std::string& filename );
 	/// Serialize file header
-	static void			serialFileHeader( NLMISC::IStream& s, uint32& nb );
+	//static void			serialFileHeader( NLMISC::IStream& s, uint32& nb );
 	/** Load several sounds and return the number of sounds loaded
 	 * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
 	 */
-	static uint32		load( TSoundMap& container, NLMISC::IStream& s, std::vector<std::string> *notfoundfiles=NULL );
+	//static uint32		load( TSoundMap& container, NLMISC::IStream& s, std::vector<std::string> *notfoundfiles=NULL );
+
+	/// Load the sound parameters from georges' form
+	virtual void		importForm(std::string& filename, NLGEORGES::UFormElm& formRoot);
 
 	/// Return the buffer
-	IBuffer				*getBuffer()					{ return _Buffer; }
+	IBuffer*			getBuffer();	//				{ return _Buffer; }
 	/// Return the gain
 	float				getGain() const					{ return _Gain; }
 	/// Return the pitch
@@ -115,22 +121,26 @@ public:
 	/// Return the outer gain of the cone
 	float				getConeOuterGain() const			{ return _ConeOuterGain; }
 	/// Return the length of the sound in ms
-	uint32				getDuration() const;
+	uint32				getDuration();
 	/// Return the filename
 	const std::string&	getFilename() const					{ return _Filename; }
 	/// Return the name (must be unique)
 	const std::string&	getName() const						{ return _Name; }
+	/// Return the name of the buffer (must be unique)
+	const std::string&	getBuffername() const				{ return _Buffername; }
 
 	/// Set properties. Returns false if one or more values are invalid (EDIT)
+	/*
 	bool				setProperties( const std::string& name, const std::string& filename,
 									   float gain=1.0f, float pitch=1.0f, TSoundPriority priority=MidPri, bool looping=false, bool detail=false,
 									   float mindist=1.0f, float maxdist=1000000.0f,
 									   float innerangle=6.283185f, float outerangle=6.283185f, // 360°
 									   float outergain=1.0f );
+									   */
 	/// Set looping
 	void				setLooping( bool looping ) { _Looping = looping; }
 	/// Save (output stream only) (EDIT)
-	static void			save( const std::vector<CSound*>& container, NLMISC::IStream& s );
+	//static void			save( const std::vector<CSound*>& container, NLMISC::IStream& s );
 
 	friend bool			operator<( const CSound& s1, const CSound& s2 )
 	{
@@ -140,15 +150,15 @@ public:
 public:
 
 	/// Version (used by backward-compatibility support)
-	static uint			CurrentVersion;
+	//static uint			CurrentVersion;
 
 	/// Version of serialized (in) files
-	static uint			FileVersion;
+	//static uint			FileVersion;
 
 private:
 
 	// Sound driver
-	static ISoundDriver *_SoundDriver;
+	//static ISoundDriver *_SoundDriver;
 
 	// Allow to load sound files when corresponding wave file is missing ?
 	static bool			_AllowMissingWave;
@@ -168,6 +178,7 @@ private:
 	// Sound name and filename (required for output (EDIT))
 	std::string			_Filename;
 	std::string			_Name;
+	std::string			_Buffername;
 
 };
 

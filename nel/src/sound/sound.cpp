@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.18 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: sound.cpp,v 1.19 2002/06/20 08:36:16 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "driver/sound_driver.h"
 #include "driver/buffer.h"
 #include "nel/misc/path.h"
+#include "sample_bank.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -38,7 +39,7 @@ namespace NLSOUND {
 
 
 // Sound driver
-ISoundDriver	*CSound::_SoundDriver = NULL;
+//ISoundDriver	*CSound::_SoundDriver = NULL;
 
 
 /* To add a static property (or initial value), do the following:
@@ -51,10 +52,10 @@ ISoundDriver	*CSound::_SoundDriver = NULL;
  */
 
 // Software current version (used by backward-compatibility support)
-uint			CSound::CurrentVersion = 4;
+//uint			CSound::CurrentVersion = 4;
 
 // Input file version
-uint			CSound::FileVersion = 0;
+//uint			CSound::FileVersion = 0;
 
 // Allow to load sound files when corresponding wave file is not present ?
 bool			CSound::_AllowMissingWave = true;
@@ -75,32 +76,42 @@ CSound::CSound() : _Buffer(NULL), _Gain(1.0f), _Pitch(1.0f), _Priority(MidPri), 
  */
 CSound::~CSound()
 {
-	if ( _Buffer != NULL )
-	{
-		delete _Buffer;
-	}
 }
 
 
 /*
+ * Return the sample buffer of this sound
+ */
+IBuffer*			CSound::getBuffer() 
+{ 
+	if (_Buffer == 0)
+	{
+		_Buffer = CSampleBank::get(_Buffername.c_str()); 
+	}
+	return _Buffer;
+}
+
+/*
  * Return the length of the sound in ms
  */
-uint32				CSound::getDuration() const
+uint32				CSound::getDuration() 
 {
-	if ( _Buffer == NULL )
+	IBuffer* buffer = getBuffer();
+
+	if ( buffer == NULL )
 	{
 		return 0;
 	}
 	else
 	{
-		return (uint32)(_Buffer->getDuration());
+		return (uint32)(buffer->getDuration());
 	}
 }
-
 
 /*
  * Serialize
  */
+/*
 void				CSound::serial( NLMISC::IStream& s )
 {
 	// If you change this, increment the version number in serialFileHeader()
@@ -172,18 +183,19 @@ void				CSound::serial( NLMISC::IStream& s )
 	else
 	{
 		// Prevent from writing a blank filename (disabled)
-		/*if ( _Filename == "" )
-		{
-			string reason = "Invalid sound filename for " + _Name;
-			throw EStream( reason );
-		}*/
+		//if ( _Filename == "" )
+		//{
+		//	string reason = "Invalid sound filename for " + _Name;
+		//	throw EStream( reason );
+		//}
 	}
 }
-
+*/
 
 /*
  * Load the buffer (automatically done by serial())
  */
+/*
 void				CSound::loadBuffer( const std::string& filename )
 {
 	_Buffer = _SoundDriver->createBuffer();
@@ -200,11 +212,12 @@ void				CSound::loadBuffer( const std::string& filename )
 		throw;
 	}
 }
-
+*/
 
 /*
  * Serialize file header
  */
+/*
 void				CSound::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 {
 	s.serialCheck( (uint32)'SSN' ); // NeL Source Sounds
@@ -217,12 +230,13 @@ void				CSound::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 
 	s.serial( nb );
 }
-
+*/
 
 /*
  * Load several sounds and return the number of sound loaded.
  * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
  */
+/*
 uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<std::string> *notfoundfiles )
 {
 	if ( s.isReading() )
@@ -270,11 +284,12 @@ uint32				CSound::load( TSoundMap& container, NLMISC::IStream& s, std::vector<st
 		return 0;
 	}
 }
-
+*/
 
 /*
  * Set properties. Returns false if one or more values are invalid (EDIT)
  */
+/*
 bool				CSound::setProperties( const std::string& name, const std::string& filename,
 										   float gain, float pitch, TSoundPriority priority, bool looping, bool detail,
 										   float mindist, float maxdist,
@@ -297,11 +312,12 @@ bool				CSound::setProperties( const std::string& name, const std::string& filen
 		return true;
 	}
 }
-
+*/
 		  
 /*
  * Save (output stream only) (EDIT)
  */
+/*
 void				CSound::save( const std::vector<CSound*>& container, NLMISC::IStream& s )
 {
 	nlassert( ! s.isReading() );
@@ -313,6 +329,91 @@ void				CSound::save( const std::vector<CSound*>& container, NLMISC::IStream& s 
 		s.serial( const_cast<CSound&>(*container[i]) );
 	}
 }
+*/
+
+/**
+ * 	Load the sound parameters from georges' form
+ */
+void				CSound::importForm(std::string& filename, NLGEORGES::UFormElm& root)
+{
+	// Name
+	_Filename = filename;
+	_Name = CFile::getFilenameWithoutExtension(filename);	
+
+	// Buffername
+	root.getValueByName(_Buffername, ".Filename");
+	_Buffername = CFile::getFilenameWithoutExtension(_Buffername);
+
+	// InternalConeAngle
+	uint32 inner;
+	root.getValueByName(inner, ".InternalConeAngle");
+	if (inner > 360)
+	{
+		inner = 360;
+	}
+	_ConeInnerAngle = (float) (Pi * inner / 180.0f);  // convert to radians
+
+	// ExternalConeAngle
+	uint32 outer;
+	root.getValueByName(outer, ".ExternalConeAngle");
+	if (outer > 360)
+	{
+		outer = 360;
+	}
+	_ConeOuterAngle= (float) (Pi * outer / 180.0f);  // convert to radians
+
+	// Loop
+	root.getValueByName(_Looping, ".Loop");
+
+	// Gain
+	sint32 gain;
+	root.getValueByName(gain, ".Gain");
+	if (gain > 0)
+	{
+		gain = 0;
+	}
+	if (gain < -100)
+	{
+		gain = -100;
+	}
+	_Gain = (float) pow(10.0, gain / 20.0); // convert dB to linear gain
+
+	// External gain
+	root.getValueByName(gain, ".ExternalGain");
+	if (gain > 0)
+	{
+		gain = 0;
+	}
+	if (gain < -100)
+	{
+		gain = -100;
+	}
+	_ConeOuterGain = (float) pow(10.0, gain / 20.0); // convert dB to linear gain
+
+	// Pitch
+	sint32 trans;
+	root.getValueByName(trans, ".Transpose");
+	_Pitch =  (float) pow(Sqrt12_2, trans); // convert semi-tones to playback speed
+
+	// MinDistance
+	root.getValueByName(_MinDist, ".MinDistance");
+
+	// MaxDistance
+ 	root.getValueByName(_MaxDist, ".MaxDistance");
+
+	// Priority
+	uint32 prio = 0;
+ 	root.getValueByName(prio, ".Priority");
+	switch (prio)
+	{
+	case 0: _Priority = LowPri; break;
+	default:
+	case 1: _Priority = MidPri; break;
+	case 2: _Priority = HighPri; break;
+	case 3: _Priority = HighestPri;	break;
+	}
+}
+
 
 
 } // NLSOUND

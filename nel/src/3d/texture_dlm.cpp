@@ -1,7 +1,7 @@
 /** \file texture_dlm.cpp
  * <File description>
  *
- * $Id: texture_dlm.cpp,v 1.2 2002/04/16 12:36:27 berenguier Exp $
+ * $Id: texture_dlm.cpp,v 1.3 2002/04/16 13:58:53 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -56,8 +56,9 @@ CTextureDLM::CTextureDLM(uint width, uint height)
 	setReleasable(false);
 	// create the bitmap.
 	CBitmap::resize(width, height, CBitmap::RGBA);
-	// Format of texture, 16 bits and no mipmaps.
-	setUploadFormat(ITexture::RGB565);
+	// Format of texture, 32 bits and no mipmaps.
+	// NB: 16 bits is not a good idea, because implies lot of flicking
+	setUploadFormat(ITexture::RGBA8888);
 	setFilterMode(ITexture::Linear, ITexture::LinearMipMapOff);
 
 	// Fill the array of blocks.

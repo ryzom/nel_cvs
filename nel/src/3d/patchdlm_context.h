@@ -1,7 +1,7 @@
 /** \file patchdlm_context.h
  * <File description>
  *
- * $Id: patchdlm_context.h,v 1.3 2002/04/16 12:36:27 berenguier Exp $
+ * $Id: patchdlm_context.h,v 1.4 2002/04/16 13:58:53 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -196,6 +196,12 @@ private:
 	bool							_IsSrcTextureFullBlack;
 	// Tells if all dst texture in _DLMTexture is black.
 	bool							_IsDstTextureFullBlack;
+
+
+private:
+	// as it sounds...
+	void							modulateSrcWithTileColor();
+
 };
 
 

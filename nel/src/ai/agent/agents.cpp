@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.46 2002/01/03 15:06:14 chafik Exp $
+ * $Id: agents.cpp,v 1.47 2002/01/24 10:59:45 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,13 +170,28 @@ namespace NLAIAGENT
 		{					
 			IBasicAgent *c = *i_agl;
 			c->run();
-			if(c->getState().ResultState == processToKill)
+			switch(c->getState().ResultState)
 			{
-				std::list<IBasicAgent *>::iterator i_temp = i_agl;
+			case processToKill:
+				{
+					std::list<IBasicAgent *>::iterator i_temp = i_agl;
+					i_agl ++;
+					removeChild(c);
+				}
+				break;
+			case processPresKill:
+				{
+					std::list<IBasicAgent *>::iterator i_temp = i_agl;
+					i_agl ++;
+					c->incRef();
+					removeChild(c);
+				}
+				break;
+			default:
 				i_agl ++;
-				removeChild(c);
-			}
-			else i_agl++;
+				break;
+
+			};			
 		}
 	}		
 	

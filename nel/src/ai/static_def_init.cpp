@@ -340,10 +340,7 @@
 		NLAIC::CSelfClassFactory( (NLAIC::IBasicInterface &) staticOperatorScript ),
 		NLAIC::CTypeOfObject( NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tInterpret  | NLAIC::CTypeOfObject::tActor ),
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
-
-	const NLAIC::CIdentType CActor::IdActor("CActor", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CActor() ),
-													NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tActor),
-													NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	
 
 	const NLAIC::CIdentType CActorScript::IdActorScript("ActorScript", NLAIC::CSelfClassFactory( (const NLAIC::IBasicInterface &)CActorScript(NULL) ),
 								NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent | NLAIC::CTypeOfObject::tInterpret | NLAIC::CTypeOfObject::tActor),

@@ -394,6 +394,14 @@ SOURCE=.\net\stdnet.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\net\transport_class.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\net\transport_class.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\net\unitime.cpp
 # End Source File
 # Begin Source File

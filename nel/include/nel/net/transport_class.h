@@ -1,0 +1,494 @@
+/** \file transport_class.h
+ * <File description>
+ *
+ * $Id: transport_class.h,v 1.1 2002/02/15 14:40:28 lecroart Exp $
+ */
+
+/* Copyright, 2000-2002 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NeL Network Services.
+ * NEVRAX NeL Network Services is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NeL Network Services is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NeL Network Services; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+#ifndef NL_TRANSPORT_CLASS_H
+#define NL_TRANSPORT_CLASS_H
+
+
+//
+// Includes
+//
+
+#include "nel/misc/types_nl.h"
+#include "nel/misc/stream.h"
+
+#include "nel/net/message.h"
+
+#include <vector>
+#include <string>
+
+
+//
+// Macros
+//
+
+/**
+ * Use this macro to register a class that can be transported in the init of your program.
+ */
+
+#define TRANSPORT_CLASS_REGISTER(_c) \
+	static _c _c##Instance; \
+	CTransportClass::registerClass (_c##Instance);
+
+
+//
+// Classes
+//
+
+/**
+ * You have to inherit this class and implement description() and callback() method.
+ * For an example of use, take a look at nel/samples/class_transport sample.
+ * \author Vianney Lecroart
+ * \author Nevrax France
+ * \date 2002
+ */
+class CTransportClass
+{
+public:
+
+	/** Different types that we can use in a Transport class
+	 * warning: if you add/change a prop, change also in CTransportClass::init()
+	 * warning: PropUKN must be the last value (used to resize a vector)
+	 */
+	enum TProp {
+		PropUInt8, PropUInt16, PropUInt32, PropUInt64,
+		PropSInt8, PropSInt16, PropSInt32, PropSInt64,
+		PropBool, PropFloat, PropDouble, PropUKN };
+
+
+	//
+	// Static methods
+	//
+
+	/// Init the transport class system (must be called one time, in the IService5::init() for example)
+	static void init ();
+
+	/// Release the transport class system (must be called one time, in the IService5::release() for example)
+	static void release ();
+
+	/** Call this function to register a new transport class.
+	 * \param instance A reference to a GLOBAL space of the instance of this transport class. It will be used when receive this class from network.
+	 */
+	static void registerClass (CTransportClass &instance);
+
+	/// Display registered transport class (debug purpose)
+	static void displayLocalRegisteredClass ();
+
+
+	//
+	// Virtual methods
+	//
+
+	/** You have to implement this function with the description of your class. This description
+	 * is used to send the class accross the network and read it. It must contains a class name and
+	 * a set properties.
+	 * Example:
+	 *\code
+		virtual void description ()
+		{
+			className ("SharedClass");
+			property ("i1", PropUInt32, (uint32)11, i1);
+		}
+	 *\encode
+	 */
+	virtual void description () = 0;
+
+	/** This function will be call when we receive this class from the network. It will use the instance given at the
+	 * registration process.
+	 */
+	virtual void callback (const std::string &name, uint8 sid) = 0;
+
+
+	//
+	// Other methods
+	//
+
+	/// send the transport class to a specified service using the service id
+	void send (uint8 sid);
+
+	/// send the transport class to a specified service using the service name
+	void send (std::string serviceName);
+
+	/** The name of the transport class. Must be uniq for each class.
+	 */
+	void className (const std::string &name);
+
+	/** One property of the class. Look description() for an example of use.
+	 * \param name The name of the property
+	 * \param type Type of the property
+	 * \param defaultValue The value you want to be set when a message comes without this property
+	 * \param value Reference to the value where the property will be read or write
+	 */
+	template <class T> void property (const std::string &name, TProp type, T defaultValue, T &value)
+	{
+		if (Mode == 2)			// write
+		{
+			// send only if needed
+			// todo manage unknown prop
+			TempMessage.serial (value);
+		}
+		else if (Mode == 3)	// register
+		{
+			// add a new prop to the current class
+			nlassert (TempRegisteredClass.Instance != NULL);
+			TempRegisteredClass.Instance->Prop.push_back (new CRegisteredProp<T> (name, type, defaultValue, &value));
+		}
+		else if (Mode == 4)	// display
+		{
+			std::string val;
+			val = "defval: ";
+			val += NLMISC::toString (defaultValue);
+			val += " val: ";
+			val += NLMISC::toString (value);
+			nlinfo ("  prop %s %d: %s", name.c_str(), type, val.c_str());
+		}
+		else
+		{
+			nlstop;
+		}
+	}
+	
+	template <class T> void propertyCont (const std::string &name, TProp type, T &value)
+	{
+		if (Mode == 2)			// write
+		{
+			// send only if needed
+			// todo manage unknown prop
+			TempMessage.serialCont (value);
+		}
+		else if (Mode == 3)	// register
+		{
+			// add a new prop to the current class
+			nlassert (TempRegisteredClass.Instance != NULL);
+			TempRegisteredClass.Instance->Prop.push_back (new CRegisteredPropCont<T> (name, type, &value));
+		}
+		else if (Mode == 4)	// display
+		{
+			std::string val;
+			for (T::iterator it = value.begin (); it != value.end(); it++)
+			{
+				val += NLMISC::toString (*it);
+				val += " ";
+			}
+			nlinfo ("  prop %s %d: %d elements ( %s)", name.c_str(), type, value.size(), val.c_str());
+		}
+		else
+		{
+			nlstop;
+		}
+	}
+
+	
+	/// Display with nlinfo the content of the class (debug purpose)
+	void display ();
+
+private:
+
+	//
+	// Structures
+	//
+
+	struct CRegisteredBaseProp
+	{
+		CRegisteredBaseProp () : Type(PropUKN) { }
+
+		CRegisteredBaseProp (const std::string &name, TProp type) : Name(name), Type(type) { }
+		
+		std::string	Name;
+		TProp Type;
+
+		virtual void serialDefaultValue (NLMISC::IStream &f) { }
+
+		virtual void serialValue (NLMISC::IStream &f) { }
+
+		virtual void setDefaultValue () { }
+	};
+
+	typedef std::vector<std::pair<std::string, std::vector <CRegisteredBaseProp> > > TOtherSideRegisteredClass;
+
+	struct CRegisteredClass
+	{
+		CTransportClass *Instance;
+
+		CRegisteredClass () { clear (); }
+
+		void clear () { Instance = NULL; }
+	};
+
+	typedef std::map<std::string, CRegisteredClass> TRegisteredClass;
+
+	template <class T> struct CRegisteredProp : public CRegisteredBaseProp
+	{
+		CRegisteredProp () : Value(NULL) { }
+
+		CRegisteredProp (const std::string &name, TProp type, T defaultValue, T *value = NULL) :
+			CRegisteredBaseProp (name, type), DefaultValue(defaultValue), Value (value) { }
+		
+		T DefaultValue, *Value;
+
+		virtual void serialDefaultValue (NLMISC::IStream &f)
+		{
+			f.serial (DefaultValue);
+		}
+
+		virtual void serialValue (NLMISC::IStream &f)
+		{
+			nlassert (Value != NULL);
+			f.serial (*Value);
+		}
+
+		virtual void setDefaultValue ()
+		{
+			nlassert (Value != NULL);
+			*Value = DefaultValue;
+		}
+	};
+
+	template <class T> struct CRegisteredPropCont : public CRegisteredBaseProp
+	{
+		CRegisteredPropCont () : Value(NULL) { }
+
+		CRegisteredPropCont (const std::string &name, TProp type, T *value = NULL) :
+			CRegisteredBaseProp (name, type), Value (value) { }
+		
+		T *Value;
+
+		virtual void serialDefaultValue (NLMISC::IStream &f)
+		{
+			// nothing
+		}
+
+		virtual void serialValue (NLMISC::IStream &f)
+		{
+			nlassert (Value != NULL);
+			f.serialCont (*Value);
+		}
+
+		virtual void setDefaultValue ()
+		{
+			nlassert (Value != NULL);
+			Value->clear ();
+		}
+	};
+
+
+	//
+	// Variables
+	//
+
+	// Name of the class
+	std::string	Name;
+
+	// States to decode the stream from the network
+	std::vector<std::vector<std::pair<sint, TProp> > > States;
+
+	// Contains all propterties for this class
+	std::vector<CRegisteredBaseProp *> Prop;
+
+
+	//
+	// Methods
+	//
+	
+	// Read the TempMessage and call the callback
+	void read (const std::string &name, uint8 sid);
+
+	// Used to create a TempMessage with this class
+	NLNET::CMessage &write ();
+	
+
+	//
+	// Static Variables
+	//
+
+	// Used to serialize unused properties from the TempMessage
+	static std::vector<CRegisteredBaseProp *>	DummyProp;
+
+	// Select what the description() must do
+	static uint									Mode;	// 0=nothing 1=read 2=write 3=register 4=display
+
+	// Contains all registered transport class
+	static TRegisteredClass						LocalRegisteredClass;	// registered class that are in my program
+
+	// The registered class that is currently filled (before put in LocalRegisteredClass)
+	static CRegisteredClass						TempRegisteredClass;
+
+	// The message that is currently filled/emptyed
+	static NLNET::CMessage						TempMessage;
+
+
+	//
+	// Static methods
+	//
+
+	// Called by release() to delete all structures
+	static void unregisterClass ();
+
+	// Fill the States merging local and other side class
+	static void registerOtherSideClass (uint16 sid, TOtherSideRegisteredClass &osrc);
+
+	// Create a message with local transport classes to send to the other side
+	static void createLocalRegisteredClassMessage ();
+
+	// Send the local transport classes to another service using the service id
+	static void sendLocalRegisteredClass (uint8 sid)
+	{
+		nlinfo ("sendLocalRegisteredClass to %d", sid);
+		createLocalRegisteredClassMessage ();
+		NLNET::CUnifiedNetwork::getInstance()->send (sid, TempMessage);
+	}
+
+	// Display a specific registered class (debug purpose)
+	static void displayLocalRegisteredClass (CRegisteredClass &c);
+
+
+	//
+	// Friends
+	//
+
+	friend void cbReceiveMessage (NLNET::CMessage &msgin, const std::string &name, uint16 sid);
+	friend void cbUpService (const std::string &serviceName, uint16 sid, void *arg);
+	friend void cbReceiveOtherSideClass (NLNET::CMessage &msgin, const std::string &name, uint16 sid);
+};
+
+
+//
+// Inlines
+//
+
+inline void CTransportClass::className (const std::string &name)
+{
+	if (Mode == 2)		// write
+	{
+		TempMessage.serial (std::string (name));
+	}
+	else if (Mode == 3) // register
+	{
+		// add a new entry in my registered class
+		nlassert (TempRegisteredClass.Instance != NULL);
+		TempRegisteredClass.Instance->Name = name;
+	}
+	else if (Mode == 4) // display
+	{
+		nlinfo ("class %s:", name.c_str());
+	}
+	else
+	{
+		nlstop;
+	}
+}
+
+
+inline void CTransportClass::send (uint8 sid)
+{
+	NLNET::CUnifiedNetwork::getInstance()->send (sid, write ());
+}
+
+
+inline void CTransportClass::send (std::string serviceName)
+{
+	NLNET::CUnifiedNetwork::getInstance()->send (serviceName, write ());
+}
+
+inline void CTransportClass::display ()
+{
+	nlassert (Mode == 0);
+
+	// set the mode to register
+	Mode = 4;
+	
+	description ();
+
+	// set to mode none
+	Mode = 0;
+}
+
+inline NLNET::CMessage &CTransportClass::write ()
+{
+	nlassert (Mode == 0);
+
+	// set the mode to register
+	Mode = 2;
+
+	TempMessage.clear ();
+	if (TempMessage.isReading())
+		TempMessage.invert();
+	TempMessage.setType ("CT_MSG");
+
+	description ();
+
+	// set to mode none
+	Mode = 0;
+
+	display ();
+
+	return TempMessage;
+}
+
+inline void CTransportClass::read (const std::string &name, uint8 sid)
+{
+	nlassert (Mode == 0);
+
+	// set flag of all prop
+
+	std::vector<uint8> bitfield;
+	bitfield.resize (Prop.size(), 0);
+
+	// init prop from the stream
+	uint i;
+	for (i = 0; i < States[sid].size(); i++)
+	{
+		if (States[sid][i].first == -1)
+		{
+			// skip the value from the stream
+			DummyProp[States[sid][i].second]->serialDefaultValue (TempMessage);
+		}
+		else
+		{
+			// get the good value
+			Prop[States[sid][i].first]->serialValue (TempMessage);
+			bitfield[States[sid][i].first] = 1;
+		}
+	}
+
+	// set default value for unknown prop
+	for (i = 0; i < Prop.size(); i++)
+	{
+		if (bitfield[i] == 0)
+		{
+			Prop[i]->setDefaultValue ();
+		}
+	}
+
+	display ();
+
+	// call the user callback
+	callback (name, sid);
+}
+
+
+#endif // NL_TRANSPORT_CLASS_H
+
+/* End of transport_class.h */

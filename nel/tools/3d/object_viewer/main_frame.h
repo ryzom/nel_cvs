@@ -39,6 +39,7 @@ public:
 public:
 
 	enum	TMouseMove {MoveCamera=0, MoveSceneRoot, MoveElement, MoveObjectLightTest};
+	enum	TCameraMode {FirstMode=0, ObjectMode, CameraMode };
 
 	CStatusBar		StatusBar;
 	CToolBar		ToolBar;
@@ -69,7 +70,7 @@ public:
 	bool			FogActive;
 	float			FogStart;
 	float			FogEnd;
-	
+
 	void update ();
 	void registerValue (bool update=true);
 
@@ -107,6 +108,7 @@ public:
 	afx_msg void OnFileOpen();	
 	afx_msg void OnFileSaveconfig();
 	afx_msg void OnViewFirstpersonmode();
+	afx_msg void OnViewCamera();
 	afx_msg void OnViewObjectmode();
 	afx_msg void OnResetCamera();
 	afx_msg void OnViewSetbackground();
@@ -132,6 +134,7 @@ public:
 	afx_msg void OnUpdateWindowSoundAnim(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewObjectmode(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateViewFirstpersonmode(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateViewCamera(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditX(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditY(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateEditZ(CCmdUI* pCmdUI);
@@ -156,6 +159,8 @@ public:
 	afx_msg void OnViewSetSceneRotation();
 	afx_msg void OnShootScene();
 	//}}AFX_MSG
+	afx_msg void OnSceneCamera(UINT id);
+	afx_msg void OnUpdateSceneCamera(CCmdUI* pCmdUI);
 	DECLARE_MESSAGE_MAP()
 
 	CSceneDlgMouseListener _RightButtonMouseListener ;

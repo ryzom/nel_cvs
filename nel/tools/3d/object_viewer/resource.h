@@ -661,7 +661,8 @@
 #define ID_VIEW_RESET_CAMERA            32829
 #define ID_VIEW_OBJECTMODE              32830
 #define ID_VIEW_FIRSTPERSONMODE         32831
-#define ID_VIEW_SETMOVESPEED            32832
+#define ID_VIEW_CAMERAMODE              32832
+#define ID_VIEW_SETMOVESPEED            32833
 #define ID_WINDOW_ANIMATIONSET          32836
 #define ID_WINDOW_MIXERSSLOTS           32837
 #define ID_WINDOW_PARTICLES             32838
@@ -726,13 +727,23 @@
 #define IDC_RELOAD_TEXTURES             32910
 #define ID_SHOOT_SCENE                  32911
 #define ID_SCENE_SETLIGHTGROUPFACTOR    32912
+#define ID_SCENE_CAMERA_FIRST           32914
+#define ID_SCENE_CAMERA_LAST            32921
+#define ID_SCENE_CAMERA_0               32914
+#define ID_SCENE_CAMERA_1               32915
+#define ID_SCENE_CAMERA_2               32916
+#define ID_SCENE_CAMERA_3               32917
+#define ID_SCENE_CAMERA_4               32918
+#define ID_SCENE_CAMERA_5               32919
+#define ID_SCENE_CAMERA_6               32920
+#define ID_SCENE_CAMERA_7               32921
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1126
-#define _APS_NEXT_COMMAND_VALUE         32913
+#define _APS_NEXT_COMMAND_VALUE         32955
 #define _APS_NEXT_CONTROL_VALUE         1367
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif

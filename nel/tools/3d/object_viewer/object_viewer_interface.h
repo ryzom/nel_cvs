@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.17 2002/03/15 10:57:51 vizerie Exp $
+ * $Id: object_viewer_interface.h,v 1.18 2003/04/18 15:14:46 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,9 @@ public:
 
 	// Add a skel
 	virtual uint addSkel (NL3D::IShape* pSkelShape, const char* skelName) =0;
+
+	// Add a camera
+	virtual uint addCamera (const NL3D::CCameraInfo &cameraInfo, const char* cameraName) =0;
 
 	// remove all the instance from the scene
 	virtual void					 removeAllInstancesFromScene()=0;

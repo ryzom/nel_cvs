@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.66 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: export_nel.h,v 1.67 2003/04/18 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/mesh.h"
 #include "3d/material.h"
 #include "3d/mesh_vertex_program.h"
+#include "3d/camera.h"
 #include <3d/key.h>
 #include <3d/track_keyframer.h>
 #include <3d/bone.h>
@@ -325,6 +326,10 @@ public:
 	void							buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, NL3D::IDriver &driver, TimeValue tvTime, 
 												NL3D::CLandscape *landscape, IProgress *progress, bool buildHidden, bool onlySelected, bool buildLods);
 
+	/**
+	  * Build a NeL camera
+	  */
+	void							buildCamera(NL3D::CCameraInfo &cameraInfo, INode& node, TimeValue time);
 
 	/**
 	  * Return true if it is a mesh.
@@ -335,6 +340,7 @@ public:
 	  *	else don't test NL3D_APPDATA_COLLISION.
 	  */
 	static bool						isMesh (INode& node, TimeValue time, bool excludeCollision= true);
+	static bool						isCamera (INode& node, TimeValue time);
 	static bool						isDummy (INode& node, TimeValue time);
 	static bool						isVegetable (INode& node, TimeValue time);
 

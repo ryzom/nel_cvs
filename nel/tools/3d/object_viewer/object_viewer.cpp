@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.92 2003/04/10 10:16:07 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.93 2003/04/18 15:13:36 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -251,6 +251,7 @@ CObjectViewer::CObjectViewer ()
 	_ObjectLightTest= NULL;
 
 	_CharacterScalePos= 1;
+	_CurrentCamera = -1;
 
 	// Charge l'object_viewer.ini
 	try
@@ -494,14 +495,22 @@ CObjectViewer::~CObjectViewer ()
 
 // ***************************************************************************
 
-void initCamera (float focal)
+void CObjectViewer::initCamera ()
 {
 	// Camera
 	CFrustum frustrum;
 	uint32 width, height;
 	CNELU::Driver->getWindowSize (width, height);
-	frustrum.initPerspective( focal *(float)Pi/180.f, (float)width/(float)height, 0.1f, 1000.f);
+	frustrum.initPerspective( _CameraFocal *(float)Pi/180.f, (float)width/(float)height, 0.1f, 1000.f);
 	CNELU::Camera->setFrustum (frustrum);
+
+	// Others camera
+	uint i;
+	for (i=0; i<_Cameras.size (); i++)
+	{
+		frustrum.initPerspective( _ListInstance[_Cameras[i]]->Camera->getFov(), (float)width/(float)height, 0.1f, 1000.f);
+		_ListInstance[_Cameras[i]]->Camera->setFrustum (frustrum);
+	}
 }
 
 // ***************************************************************************
@@ -598,7 +607,7 @@ void CObjectViewer::initUI (HWND parent)
 	setupSceneLightingSystem(_SceneLightEnabled, _SceneLightSunDir, _SceneLightSunAmbiant, _SceneLightSunDiffuse, _SceneLightSunSpecular);
 
 	// Camera
-	initCamera (_CameraFocal);
+	initCamera ();
 
 	_MainFrame->OnResetCamera();
 
@@ -930,24 +939,40 @@ void CObjectViewer::setupPlaylist (float time)
 						pos*= _CharacterScalePos;
 					}
 
-					_ListInstance[i]->TransformShape->setPos (pos);
-					_ListInstance[i]->TransformShape->setRotQuat (current.getRot());
+					if (_ListInstance[i]->TransformShape)
+					{
+						_ListInstance[i]->TransformShape->setPos (pos);
+						_ListInstance[i]->TransformShape->setRotQuat (current.getRot());
+					}
+					if (_ListInstance[i]->Camera)
+					{
+						_ListInstance[i]->Camera->setPos (pos);
+						_ListInstance[i]->Camera->setRotQuat (current.getRot());
+					}
 				}
 			}
 			else
 			{
-				CMeshBase *meshBase = dynamic_cast<CMeshBase *> ((IShape*)_ListInstance[i]->TransformShape->Shape);
-				if (meshBase)
+				if (_ListInstance[i]->TransformShape)
 				{
-					_ListInstance[i]->TransformShape->setPos (((CAnimatedValueVector&)meshBase->getDefaultPos ()->getValue ()).Value);
-					_ListInstance[i]->TransformShape->setRotQuat (((CAnimatedValueQuat&)meshBase->getDefaultRotQuat ()->getValue ()).Value);
-					_ListInstance[i]->TransformShape->setScale (((CAnimatedValueVector&)meshBase->getDefaultScale ()->getValue ()).Value);
+					CMeshBase *meshBase = dynamic_cast<CMeshBase *> ((IShape*)_ListInstance[i]->TransformShape->Shape);
+					if (meshBase)
+					{
+						_ListInstance[i]->TransformShape->setPos (((CAnimatedValueVector&)meshBase->getDefaultPos ()->getValue ()).Value);
+						_ListInstance[i]->TransformShape->setRotQuat (((CAnimatedValueQuat&)meshBase->getDefaultRotQuat ()->getValue ()).Value);
+						_ListInstance[i]->TransformShape->setScale (((CAnimatedValueVector&)meshBase->getDefaultScale ()->getValue ()).Value);
+					}
+					else
+					{
+						/*_ListInstance[i]->TransformShape->setPos (CVector::Null);
+						_ListInstance[i]->TransformShape->setRotQuat (CQuat::Identity);
+						_ListInstance[i]->TransformShape->setScale (1, 1, 1);*/
+					}
 				}
-				else
+				if (_ListInstance[i]->Camera)
 				{
-					/* _ListInstance[i]->TransformShape->setPos (CVector::Null);
-					_ListInstance[i]->TransformShape->setRotQuat (CQuat::Identity);
-					_ListInstance[i]->TransformShape->setScale (1, 1, 1); */
+					_ListInstance[i]->Camera->setPos (CVector::Null);
+					_ListInstance[i]->Camera->setRotQuat (CQuat::Identity);
 				}
 			}
 		}
@@ -1032,7 +1057,7 @@ void CObjectViewer::go ()
 			CNELU::Driver->profileRenderedPrimitives (in, out);
 
 			// Draw the hotSpot
-			if (_MainFrame->MoveMode)
+			if (_MainFrame->MoveMode == CMainFrame::ObjectMode)
 			{
 				float radius=_HotSpotSize/2.f;
 				CNELU::Driver->setupModelMatrix (CMatrix::Identity);
@@ -1137,17 +1162,36 @@ void CObjectViewer::go ()
 			// Swap the buffers
 			CNELU::swapBuffers();
 
+			// Select the good camera
+			if (_MainFrame->MoveMode == CMainFrame::CameraMode)
+			{
+				sint cameraId = getCurrentCamera ();
+				if (cameraId != -1)
+				{
+					CInstanceInfo *info = getInstance(getCameraInstance (cameraId));
+					nlassert (info->Camera);
+					CNELU::Scene.setCam (info->Camera);
+				}
+			}
+			else
+			{
+				CNELU::Scene.setCam (CNELU::Camera);
+			}
 
-			if (_MainFrame->MoveMode)
+			if (_MainFrame->MoveMode == CMainFrame::ObjectMode)
+			{
 				_MouseListener.setMouseMode (CEvent3dMouseListener::edit3d);
+			}
 			else
 			{
 				_MouseListener.setMouseMode (CEvent3dMouseListener::firstPerson);
 				_MouseListener.setSpeed (_MainFrame->MoveSpeed);
 			}
 
+		
+
 			// Reset camera aspect ratio
-			initCamera (_CameraFocal);
+			initCamera ();
 
 			if (_MainFrame->isMoveElement())
 			{
@@ -1235,6 +1279,8 @@ void CObjectViewer::go ()
 
 			// Save last time
 			_LastTime=_AnimationDlg->getTime();
+
+			theApp.OnIdle (0);
 		}
 		else
 		{
@@ -1412,7 +1458,10 @@ void CObjectViewer::reinitChannels ()
 
 		if (!autoAnim)
 		{
-			_ListInstance[i]->TransformShape->registerToChannelMixer (&(_ListInstance[i]->ChannelMixer), "");
+			if (_ListInstance[i]->TransformShape)
+				_ListInstance[i]->TransformShape->registerToChannelMixer (&(_ListInstance[i]->ChannelMixer), "");
+			if (_ListInstance[i]->Camera)
+				_ListInstance[i]->Camera->registerToChannelMixer (&(_ListInstance[i]->ChannelMixer), "");
 		}
 	}
 
@@ -1490,20 +1539,28 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 						// Instance loaded
 						uint instance = 0xffffffff;
 
-						// Is a skeleton ?
-						if (readed[i].IsSkeleton)
+						// Is a camera ?
+						if (readed[i].Camera)
 						{
-							// Add the skel
-							instance = addSkel (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str());
-							SkeletonUsedForSound = instance;
+							instance = addCamera (readed[i].CameraInfo, readed[i].ShapeFilename.c_str());
 						}
 						else
 						{
-							// Add the mesh
-							if (readed[i].SkeletonId != 0xffffffff)
-								instance = addMesh (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str(), readed[i].SkeletonId + firstInstance, (readed[i].BindBoneName=="")?NULL:readed[i].BindBoneName.c_str());
+							// Is a skeleton ?
+							if (readed[i].IsSkeleton)
+							{
+								// Add the skel
+								instance = addSkel (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str());
+								SkeletonUsedForSound = instance;
+							}
 							else
-								instance = addMesh (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str(), 0xffffffff, (readed[i].BindBoneName=="")?NULL:readed[i].BindBoneName.c_str());
+							{
+								// Add the mesh
+								if (readed[i].SkeletonId != 0xffffffff)
+									instance = addMesh (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str(), readed[i].SkeletonId + firstInstance, (readed[i].BindBoneName=="")?NULL:readed[i].BindBoneName.c_str());
+								else
+									instance = addMesh (serialShape.getShapePointer(), readed[i].ShapeFilename.c_str(), 0xffffffff, (readed[i].BindBoneName=="")?NULL:readed[i].BindBoneName.c_str());
+							}
 						}
 
 						// Check instance number
@@ -1941,6 +1998,40 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 
 // ***************************************************************************
 
+uint CObjectViewer::addCamera (const NL3D::CCameraInfo &cameraInfo, const char* cameraName)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// *** Add the shape
+
+	// link to the root for manipulation
+	CCamera *pCamera = (CCamera*)CNELU::Scene.createModel (CameraId);
+	_SceneRoot->hrcLinkSon(pCamera);
+
+	// Build the camera
+	pCamera->build (cameraInfo);
+
+	// Store the transform shape pointer
+	CInstanceInfo *iInfo = new CInstanceInfo;
+	iInfo->Camera = pCamera;
+
+	// Store the name of the shape
+	iInfo->MustDelete = true;
+	iInfo->Saved.ShapeFilename = cameraName;
+	iInfo->Saved.SkeletonId = 0xffffffff;
+	iInfo->Saved.CameraInfo = cameraInfo;
+	_ListInstance.push_back (iInfo);
+	_Cameras.push_back (_ListInstance.size()-1);
+
+	// Reinit camera
+	initCamera ();
+
+	// Return the instance index
+	return _ListInstance.size()-1;
+}
+
+// ***************************************************************************
+
 uint CObjectViewer::addSkel (NL3D::IShape* pSkelShape, const char* skelName)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -2152,6 +2243,8 @@ void CObjectViewer::removeAllInstancesFromScene()
 
 	// Remove all stand alone TransformShapes.
 	_ListInstance.clear();
+	_Cameras.clear();
+	_CurrentCamera = -1;
 	_SelectedObject = 0xffffffff;
 
 	// Remove added/loaded igs and their instances.
@@ -2977,6 +3070,7 @@ void		CObjectViewer::snapToGroundVegetableLandscape(bool enable)
 CInstanceInfo::CInstanceInfo ()
 {
 	TransformShape = NULL;
+	Camera = NULL;
 	MustDelete = false;
 }
 
@@ -2984,7 +3078,12 @@ CInstanceInfo::CInstanceInfo ()
 CInstanceInfo::~CInstanceInfo ()
 {
 	if (MustDelete)
-		CNELU::Scene.deleteInstance (TransformShape);
+	{
+		if (TransformShape)
+			CNELU::Scene.deleteInstance (TransformShape);
+		if (Camera)
+			CNELU::Scene.deleteModel (Camera);
+	}
 }
 
 // ***************************************************************************
@@ -3094,13 +3193,14 @@ CInstanceSave::CInstanceSave ()
 {
 	SkeletonId = 0xffffffff;
 	IsSkeleton = false;
+	Camera = false;
 }
 
 // ***************************************************************************
 void CInstanceSave::serial (NLMISC::IStream &f)
 {
 	// Serial a version
-	f.serialVersion (0);
+	sint ver = f.serialVersion (1);
 
 	// Play list of this object
 	f.serialCont (PlayList);
@@ -3128,6 +3228,13 @@ void CInstanceSave::serial (NLMISC::IStream &f)
 
 	// Skeleton weight input file
 	f.serialCont (SWTFileName);
+
+	// Is a camera
+	if (ver>=1)
+	{
+		f.serial (Camera);
+		f.serial (CameraInfo);
+	}
 }
 
 // ***************************************************************************
@@ -3228,23 +3335,26 @@ void CObjectViewer::reloadTextures ()
 		CInstanceInfo *info = getInstance (instance);
 
 		// For each material
-		uint numMaterial = info->TransformShape->getNumMaterial ();
-		uint mat;
-		for (mat=0; mat<numMaterial; mat++)
+		if (info->TransformShape)
 		{
-			// Get the material
-			CMaterial *material = info->TransformShape->getMaterial (mat);
-
-			// For each texture
-			int tex;
-			for (tex=0; tex<IDRV_MAT_MAXTEXTURES; tex++)
+			uint numMaterial = info->TransformShape->getNumMaterial ();
+			uint mat;
+			for (mat=0; mat<numMaterial; mat++)
 			{
-				ITexture *texture = material->getTexture (tex);
+				// Get the material
+				CMaterial *material = info->TransformShape->getMaterial (mat);
 
-				// Touch it!
-				if (texture)
+				// For each texture
+				int tex;
+				for (tex=0; tex<IDRV_MAT_MAXTEXTURES; tex++)
 				{
-					CNELU::Driver->invalidateShareTexture (*texture);
+					ITexture *texture = material->getTexture (tex);
+
+					// Touch it!
+					if (texture)
+					{
+						CNELU::Driver->invalidateShareTexture (*texture);
+					}
 				}
 			}
 		}
@@ -3375,4 +3485,25 @@ void		CObjectViewer::shootScene()
 			}
 		}
 	}
+}
+
+sint CObjectViewer::getCurrentCamera () const
+{
+	return _CurrentCamera;
+}
+	
+void CObjectViewer::setCurrentCamera (sint currentCamera)
+{
+	nlassert ((currentCamera == -1) ||(currentCamera < (sint)_Cameras.size ()));
+	_CurrentCamera = currentCamera;
+}
+	
+uint CObjectViewer::getCameraInstance (uint cameraId) const
+{
+	return _Cameras[cameraId];
+}
+
+uint CObjectViewer::getNumCamera () const
+{
+	return _Cameras.size ();
 }

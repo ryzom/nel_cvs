@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.33 2003/04/14 17:08:11 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.34 2003/04/18 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -654,6 +654,28 @@ bool CExportNel::isMesh (INode& node, TimeValue time, bool excludeCollision)
 
 // --------------------------------------------------
 
+bool CExportNel::isCamera (INode& node, TimeValue time)
+{
+	// Result false by default
+	bool bRet=false;
+
+	// Eval the object a time
+	ObjectState os = node.EvalWorldState(time);
+
+	// Object exist ?
+	if (os.obj)
+	{
+		// Object can convert itself to NeL patchmesh ?
+		if (os.obj->CanConvertToType(Class_ID(LOOKAT_CAM_CLASS_ID, 0)))
+			bRet=true;
+	}
+
+	// Return result
+	return bRet;
+}
+
+// --------------------------------------------------
+
 bool	CExportNel::isDummy (INode& node, TimeValue time)
 {
 	ObjectState os = node.EvalWorldState(time);
@@ -1147,7 +1169,54 @@ std::string toStringMax(int value)
 	::sprintf(str, "%d", value);	
 	return str;*/
 }
+///=======================================================================
+void CExportNel::buildCamera(NL3D::CCameraInfo &cameraInfo, INode& node, TimeValue time)
+{
+	// Eval the object a time
+	ObjectState os = node.EvalWorldState(time);
 
+	// Object exist ?
+	if (os.obj)
+	{
+		// Object can convert itself to NeL patchmesh ?
+		GenCamera *genCamera = (GenCamera *)os.obj->ConvertToType(time, Class_ID (LOOKAT_CAM_CLASS_ID, 0));
+		if (genCamera)
+		{
+			INode *target = node.GetTarget();
+			if (target)
+			{
+				cameraInfo.TargetMode = true;
+				cameraInfo.UseFov = true;
+
+				bool deleteIt = genCamera != os.obj;
+
+				// Camera position
+				Point3 pos=node.GetNodeTM(time).GetTrans ();
+				CVector position;
+				position.x=pos.x;
+				position.y=pos.y;
+				position.z=pos.z;
+				cameraInfo.Pos = position;
+
+				// Target position
+				pos=target->GetNodeTM(time).GetTrans ();
+				position.x=pos.x;
+				position.y=pos.y;
+				position.z=pos.z;
+				cameraInfo.TargetPos = position;
+
+				// Set the roll parameter
+				cameraInfo.Roll = 0;
+
+				// Set the fov
+				cameraInfo.Fov = genCamera->GetFOV(time);
+
+				if (deleteIt)
+					delete genCamera;
+			}
+		}
+	}
+}
 
 bool		CExportNel::isErrorInDialog () const
 {

@@ -87,8 +87,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 nlligo_d.lib nlgeorges_d.lib libxml2_debug.lib mfcs42d.lib freetype_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /incremental:no /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
-# SUBTRACT LINK32 /pdb:none
+# ADD LINK32 nlligo_d.lib nlgeorges_d.lib libxml2_debug.lib mfcs42d.lib freetype_debug.lib version.lib libjpeg.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
 

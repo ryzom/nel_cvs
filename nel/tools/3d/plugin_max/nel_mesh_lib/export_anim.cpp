@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.35 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: export_anim.cpp,v 1.36 2003/04/18 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,21 +353,55 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 		// Export roll for camera
 		desc.reset();
 
-		// Get the Roll controler
-		c=transform->GetRollController ();
-		if (c)
+		if (isCamera (node, 0))
 		{
-			pTrack=buildATrack (animation, *c, typeFloat, node, desc, animBuildCtx, bodyBiped);
-			if (pTrack)
+			// Get the Roll controler
+			c=transform->GetRollController ();
+			if (c)
 			{
-				name=parentName+std::string (CCamera::getRollValueName());
-				if (animation.getTrackByName (name.c_str()))
+				pTrack=buildATrack (animation, *c, typeFloat, node, desc, animBuildCtx, bodyBiped);
+				if (pTrack)
 				{
-					delete pTrack;
+					name=parentName+std::string (CCamera::getRollValueName());
+					if (animation.getTrackByName (name.c_str()))
+					{
+						delete pTrack;
+					}
+					else
+					{
+						animation.addTrack (name.c_str(), pTrack);
+					}
 				}
-				else
+			}
+
+			// Export target position for camera
+			desc.reset();
+
+			// Get the target controler
+			INode *target = node.GetTarget ();
+			if (target)
+			{
+				// Get the transformation controler
+				Control *targetTransform = target->GetTMController();
+
+				// Get the Position controler
+				Control *targetC = targetTransform->GetPositionController ();
+				if (targetC)
 				{
-					animation.addTrack (name.c_str(), pTrack);
+					pTrack=buildATrack (animation, *targetC, typePos, *target, desc, animBuildCtx, bodyBiped);
+					if (pTrack)
+					{
+						// Choose the good name for this track
+						name=parentName+std::string (CCamera::getTargetValueName());
+						if (animation.getTrackByName (name.c_str()))
+						{
+							delete pTrack;
+						}
+						else
+						{
+							animation.addTrack (name.c_str(), pTrack);
+						}
+					}
 				}
 			}
 		}

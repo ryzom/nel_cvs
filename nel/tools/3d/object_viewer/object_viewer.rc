@@ -37,6 +37,7 @@ IDR_TOOL_EDIT TOOLBAR DISCARDABLE  16, 15
 BEGIN
     BUTTON      ID_VIEW_OBJECTMODE
     BUTTON      ID_VIEW_FIRSTPERSONMODE
+    BUTTON      ID_VIEW_CAMERAMODE
     SEPARATOR
     BUTTON      ID_EDIT_X
     BUTTON      ID_EDIT_Y
@@ -147,6 +148,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
+    ID_VIEW_CAMERAMODE      "Camera mode"
     ID_BUTTON32846          "X"
     ID_BUTTON32847          "Y"
 END
@@ -2311,6 +2313,15 @@ BEGIN
         MENUITEM "&Clear scene",                ID_CLEAR
         MENUITEM "&Reload Textures",            IDC_RELOAD_TEXTURES
         MENUITEM "&Shoot the scene",            ID_SHOOT_SCENE
+        MENUITEM SEPARATOR
+        MENUITEM "Camera 0",                    ID_SCENE_CAMERA_0, GRAYED
+        MENUITEM "Camera 1",                    ID_SCENE_CAMERA_1, GRAYED
+        MENUITEM "Camera 2",                    ID_SCENE_CAMERA_2, GRAYED
+        MENUITEM "Camera 3",                    ID_SCENE_CAMERA_3, GRAYED
+        MENUITEM "Camera 4",                    ID_SCENE_CAMERA_4, GRAYED
+        MENUITEM "Camera 5",                    ID_SCENE_CAMERA_5, GRAYED
+        MENUITEM "Camera 6",                    ID_SCENE_CAMERA_6, GRAYED
+        MENUITEM "Camera 7",                    ID_SCENE_CAMERA_7, GRAYED
     END
     POPUP "&Window"
     BEGIN

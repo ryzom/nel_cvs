@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.41 2003/04/15 13:28:57 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.42 2003/04/18 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -605,13 +605,44 @@ void CNelExport::viewMesh (TimeValue time)
 			uint firstInstance = view->addInstanceGroup(ig);
 
 			// Setup animations
-			for (uint instance = 0; instance<ig->getNumInstance(); instance++)
+			uint i;
+			for (i=0; i<ig->getNumInstance(); i++)
 			{
 				// Set the single animation
-				view->setSingleAnimation (igAnim[resultInstanceNode[instance]], "3dsmax current animation", firstInstance + instance);
+				view->setSingleAnimation (igAnim[resultInstanceNode[i]], "3dsmax current animation", firstInstance + i);
 
 				// Remove the animation
-				igAnim.erase (resultInstanceNode[instance]);				
+				igAnim.erase (resultInstanceNode[i]);
+			}
+		}
+
+
+		// Add cameras
+		for (nNode=0; nNode<nNumSelNode; nNode++)
+		{
+			// Get the node
+			INode* pNode=_Ip->GetSelNode (nNode);
+
+			// Is a camera ?
+			if (CExportNel::isCamera (*pNode, time))
+			{
+				// Export the shape
+				CCameraInfo cameraInfo;
+				_ExportNel->buildCamera (cameraInfo, *pNode, time);
+
+				// Camera name
+				std::string name = CExportNel::getNelObjectName(*pNode);
+				strlwr (name);
+
+				uint instance = view->addCamera (cameraInfo, name.c_str ());
+
+				// Add tracks
+				CAnimation *anim=new CAnimation;
+				_ExportNel->addAnimation (*anim, *pNode, "", true);
+
+				// Set the single animation
+				view->setSingleAnimation (anim, "3dsmax current animation", instance);
+				instance++;
 			}
 		}
 

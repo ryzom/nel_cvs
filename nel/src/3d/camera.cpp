@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * <File description>
  *
- * $Id: camera.cpp,v 1.14 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: camera.cpp,v 1.15 2003/04/18 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,48 +163,79 @@ void	CCamera::registerToChannelMixer(CChannelMixer *chanMixer, const std::string
 // ***************************************************************************
 void	CCamera::update()
 {
-	CTransform::update();
-	
 	// test animations
-	if(IAnimatable::isTouched(OwnerBit))
+	if(IAnimatable::isTouched(OwnerBit) || IAnimatable::isTouched(ITransformable::OwnerBit))
 	{
 		// FOV.
 		if( _FovAnimationEnabled && IAnimatable::isTouched(FovValue))
 		{
 			// keep the same near/far.
 			setPerspective(_Fov.Value, _FovAnimationAspectRatio, _Frustum.Near, _Frustum.Far);
+			IAnimatable::clearFlag(FovValue);
 		}
 
 		// Target / Roll.
 		// If target/Roll is animated, compute our own quaternion.
-		if( _TargetAnimationEnabled && (IAnimatable::isTouched(TargetValue) || IAnimatable::isTouched(RollValue)) )
+		if( _TargetAnimationEnabled && (IAnimatable::isTouched(TargetValue) || IAnimatable::isTouched(RollValue) || IAnimatable::isTouched(PosValue)) )
 		{
-			CQuat	q0, q1;
+			lookAt (getPos (), _Target.Value, -_Roll.Value);
 
-			// compute rotation of target.
-			CMatrix	mat;
-			mat.setRot(CVector::I, _Target.Value, CVector::K);
-			mat.normalize(CMatrix::YZX);
-			q0= mat.getRot();
-
-			// compute roll rotation.
-			q1.setAngleAxis(CVector::J, _Roll.Value);
-
-
-			// combine and set rotquat!!
-			setRotQuat(q0*q1);
+			IAnimatable::clearFlag(TargetValue);
+			IAnimatable::clearFlag(RollValue);
 		}
-
-
-		IAnimatable::clearFlag(FovValue);
-		IAnimatable::clearFlag(TargetValue);
-		IAnimatable::clearFlag(RollValue);
-
-		// We are OK!
-		IAnimatable::clearFlag(OwnerBit);
 	}
+
+	CTransform::update();
+
+	// We are OK!
+	IAnimatable::clearFlag(OwnerBit);
 }
 
 
+// ***************************************************************************
+void CCamera::build (const CCameraInfo &cameraInfo)
+{
+	// Target ?
+	enableTargetAnimation(cameraInfo.TargetMode);
+	enableFovAnimation(cameraInfo.UseFov);
+	if (cameraInfo.TargetMode)
+	{
+		// Set the rot model
+		setTransformMode (ITransformable::RotQuat);
+		setTargetPos (cameraInfo.TargetPos);
+		setRoll (cameraInfo.Roll);
+	}
+	if (cameraInfo.UseFov)
+	{
+		setFov (cameraInfo.Fov);
+	}
+	setPos (cameraInfo.Pos);
 }
+
+
+// ***************************************************************************
+CCameraInfo::CCameraInfo ()
+{
+	Roll = 0;
+	Fov = 0;
+	TargetMode = false;
+	UseFov = false;
+}
+
+
+// ***************************************************************************
+void CCameraInfo::serial (NLMISC::IStream &s)
+{
+	s.serialVersion (0);
+	
+	s.serial (Pos);
+	s.serial (TargetPos);
+	s.serial (Roll);
+	s.serial (Fov);
+	s.serial (TargetMode);
+	s.serial (UseFov);
+}
+
+}
+
 

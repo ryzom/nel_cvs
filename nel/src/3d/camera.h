@@ -1,7 +1,7 @@
 /** \file camera.h
  * <File description>
  *
- * $Id: camera.h,v 1.3 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: camera.h,v 1.4 2003/04/18 15:15:04 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,27 @@ namespace	NL3D
 // ClassIds.
 const NLMISC::CClassId		CameraId=NLMISC::CClassId(0x5752634c, 0x6abe76f5);
 
+// ***************************************************************************
+
+/**
+  * A camera descriptor
+  *
+  * Used to export or build a CCamera. 
+  */
+class CCameraInfo
+{
+public:
+	CCameraInfo ();
+	NLMISC::CVector			Pos;
+	NLMISC::CVector			TargetPos;
+	float					Roll;
+	float					Fov;
+	bool					TargetMode;
+	bool					UseFov;
+
+	void serial (NLMISC::IStream &s);
+};
+
 
 // ***************************************************************************
 /**
@@ -61,6 +82,9 @@ public:
 
 
 public:
+
+	/// Build a camera
+	void		build (const CCameraInfo &info);
 
 	/// Set the frustum of the camera.
 	void		setFrustum(const CFrustum &f) {_Frustum= f;}
@@ -106,6 +130,51 @@ public:
 		return true;
 	}
 
+	/// \name Get / Set some values
+	/// Work only if enableTargetAnimation.
+	void	setTargetPos(const CVector &pos)
+	{
+		nlassert(_TargetAnimationEnabled);
+		_Target.Value= pos;
+		touch(TargetValue, OwnerBit);
+	}
+	/// Work only if enableTargetAnimation.
+	void	setTargetPos(float x, float y, float z)
+	{
+		setTargetPos(CVector(x,y,z));
+	}
+	/// Work only if enableTargetAnimation.
+	void	setRoll(float roll)
+	{
+		nlassert(_TargetAnimationEnabled);
+		_Roll.Value = roll;
+		touch(RollValue, OwnerBit);
+	}
+	/// Work only if enableFovAnimation.
+	void	setFov(float fov)
+	{
+		nlassert(_FovAnimationEnabled);
+		_Fov.Value = fov;
+		touch(FovValue, OwnerBit);
+	}
+	/// Work only if enableTargetAnimation.
+	void	getTargetPos(CVector &pos) const
+	{
+		nlassert(_TargetAnimationEnabled);
+		pos=_Target.Value;
+	}
+	/// Work only if enableTargetAnimation.
+	float	getRoll() const
+	{
+		nlassert(_TargetAnimationEnabled);
+		return _Roll.Value;
+	}
+	/// Work only if enableFovAnimation.
+	float	getFov() const
+	{
+		nlassert(_FovAnimationEnabled);
+		return _Fov.Value;
+	}
 
 	/// \name Get some track name
 	// @{

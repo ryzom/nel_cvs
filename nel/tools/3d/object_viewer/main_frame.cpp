@@ -100,7 +100,7 @@ CMainFrame::CMainFrame( CObjectViewer *objView, winProc windowProc )
 	SoundAnimWindow=false;
 	LightGroupWindow=false;
 	MouseMoveType= MoveCamera;
-	MoveMode=true;
+	MoveMode=ObjectMode;
 	X=true;
 	Y=true;
 	Z=true;
@@ -141,6 +141,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
 	ON_COMMAND(ID_FILE_SAVECONFIG, OnFileSaveconfig)	
 	ON_COMMAND(ID_VIEW_FIRSTPERSONMODE, OnViewFirstpersonmode)
+	ON_COMMAND(ID_VIEW_CAMERAMODE, OnViewCamera)
 	ON_COMMAND(ID_VIEW_OBJECTMODE, OnViewObjectmode)
 	ON_COMMAND(ID_VIEW_RESET_CAMERA, OnResetCamera)
 	ON_COMMAND(ID_VIEW_SETBACKGROUND, OnViewSetbackground)
@@ -167,6 +168,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_UPDATE_COMMAND_UI(ID_SCENE_SETLIGHTGROUPFACTOR, OnUpdateWindowLightGroup)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_OBJECTMODE, OnUpdateViewObjectmode)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_FIRSTPERSONMODE, OnUpdateViewFirstpersonmode)
+	ON_UPDATE_COMMAND_UI(ID_VIEW_CAMERAMODE, OnUpdateViewCamera)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_X, OnUpdateEditX)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Y, OnUpdateEditY)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_Z, OnUpdateEditZ)
@@ -190,6 +192,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_VIEW_SET_SCENE_ROTATION, OnViewSetSceneRotation)
 	ON_COMMAND(ID_SHOOT_SCENE, OnShootScene)
 	//}}AFX_MSG_MAP
+	ON_COMMAND_RANGE(ID_SCENE_CAMERA_FIRST, ID_SCENE_CAMERA_LAST, OnSceneCamera)
+	ON_UPDATE_COMMAND_UI_RANGE(ID_SCENE_CAMERA_FIRST, ID_SCENE_CAMERA_LAST, OnUpdateSceneCamera)
 END_MESSAGE_MAP()
 
 
@@ -254,7 +258,7 @@ void CMainFrame::registerValue (bool read)
 			RegQueryValueEx (hKey, "ViewSoundAnimWind", 0, &type, (LPBYTE)&GlobalWindWindow, &len);
 			len=sizeof (float);
 			RegQueryValueEx (hKey, "MoveSpeed", 0, &type, (LPBYTE)&MoveSpeed, &len);
-			len=sizeof (BOOL);
+			len=sizeof (uint);
 			RegQueryValueEx (hKey, "ObjectMode", 0, &type, (LPBYTE)&MoveMode, &len);
 			len=sizeof(NLMISC::CRGBA) ;
 			RegQueryValueEx (hKey, "BackGroundColor", 0, &type, (LPBYTE)&BgColor, &len);
@@ -279,7 +283,7 @@ void CMainFrame::registerValue (bool read)
 			RegSetValueEx(hKey, "ViewSoundAnimWind", 0, REG_BINARY, (LPBYTE)&SoundAnimWindow, sizeof(bool));
 			RegSetValueEx(hKey, "ViewLightGroupWind", 0, REG_BINARY, (LPBYTE)&LightGroupWindow, sizeof(bool));
 			RegSetValueEx(hKey, "MoveSpeed", 0, REG_BINARY, (LPBYTE)&MoveSpeed, sizeof(float));
-			RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&MoveMode, sizeof(BOOL));
+			RegSetValueEx(hKey, "ObjectMode", 0, REG_BINARY, (LPBYTE)&MoveMode, sizeof(uint));
 			RegSetValueEx(hKey, "BackGroundColor", 0, REG_BINARY, (LPBYTE)&BgColor, sizeof(NLMISC::CRGBA));
 			RegSetValueEx(hKey, "GlobalWindPower", 0, REG_BINARY, (LPBYTE)&GlobalWindPower, sizeof(float));
 		}
@@ -688,13 +692,19 @@ void CMainFrame::OnFileSaveconfig()
 
 void CMainFrame::OnViewFirstpersonmode() 
 {
-	MoveMode=false;
+	MoveMode=FirstMode;
 	ToolBar.Invalidate ();
 }
 
 void CMainFrame::OnViewObjectmode() 
 {
-	MoveMode=true;
+	MoveMode=ObjectMode;
+	ToolBar.Invalidate ();
+}
+
+void CMainFrame::OnViewCamera() 
+{
+	MoveMode=CameraMode;
 	ToolBar.Invalidate ();
 }
 
@@ -861,13 +871,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Docking
 	ToolBar.SetButtonStyle (0, TBBS_CHECKGROUP);
 	ToolBar.SetButtonStyle (1, TBBS_CHECKGROUP);
-	ToolBar.SetButtonStyle (3, TBBS_CHECKBOX);
+	ToolBar.SetButtonStyle (2, TBBS_CHECKGROUP);
 	ToolBar.SetButtonStyle (4, TBBS_CHECKBOX);
 	ToolBar.SetButtonStyle (5, TBBS_CHECKBOX);
-	ToolBar.SetButtonStyle (7, TBBS_CHECKGROUP);
+	ToolBar.SetButtonStyle (6, TBBS_CHECKBOX);
 	ToolBar.SetButtonStyle (8, TBBS_CHECKGROUP);
 	ToolBar.SetButtonStyle (9, TBBS_CHECKGROUP);
 	ToolBar.SetButtonStyle (10, TBBS_CHECKGROUP);
+	ToolBar.SetButtonStyle (11, TBBS_CHECKGROUP);
 	ToolBar.EnableDocking(CBRS_ALIGN_ANY);
 
 	InitialUpdateFrame (NULL, TRUE);
@@ -938,12 +949,18 @@ void CMainFrame::OnUpdateWindowLightGroup(CCmdUI* pCmdUI)
 
 void CMainFrame::OnUpdateViewObjectmode(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck (MoveMode);
+	pCmdUI->SetCheck (MoveMode == ObjectMode);
 }
 
 void CMainFrame::OnUpdateViewFirstpersonmode(CCmdUI* pCmdUI) 
 {
-	pCmdUI->SetCheck (!MoveMode);
+	pCmdUI->SetCheck (MoveMode == FirstMode);
+}
+
+void CMainFrame::OnUpdateViewCamera(CCmdUI* pCmdUI) 
+{
+	pCmdUI->SetCheck (MoveMode == CameraMode);
+	pCmdUI->Enable (ObjView->getNumCamera () != 0);
 }
 
 void CMainFrame::OnUpdateEditX(CCmdUI* pCmdUI) 
@@ -1162,3 +1179,35 @@ void CMainFrame::OnShootScene()
 }
 
 // ***************************************************************************
+
+void CMainFrame::OnSceneCamera (UINT id)
+{
+	MoveMode = CameraMode;
+	ObjView->setCurrentCamera (id-ID_SCENE_CAMERA_FIRST);
+	ToolBar.UpdateDialogControls (this, TRUE);
+	UpdateDialogControls (this, TRUE);
+	UpdateData (FALSE);
+}
+
+// ***************************************************************************
+
+void CMainFrame::OnUpdateSceneCamera(CCmdUI* pCmdUI) 
+{
+	bool checked = ObjView->getCurrentCamera () == (sint)(pCmdUI->m_nID - ID_SCENE_CAMERA_FIRST);
+	bool exist = (pCmdUI->m_nID - ID_SCENE_CAMERA_FIRST) < ObjView->getNumCamera ();
+	pCmdUI->SetCheck ((checked && exist)?TRUE:FALSE);
+	pCmdUI->Enable (exist?TRUE:FALSE);
+	if (exist)
+	{
+		CInstanceInfo *instance = ObjView->getInstance (ObjView->getCameraInstance (pCmdUI->m_nID - ID_SCENE_CAMERA_FIRST));
+		nlassert (instance->Camera);
+		pCmdUI->SetText (("Camera "+instance->Saved.ShapeFilename).c_str ());
+	}
+	else
+	{
+		pCmdUI->SetText ("No camera");
+	}
+}
+
+// ***************************************************************************
+

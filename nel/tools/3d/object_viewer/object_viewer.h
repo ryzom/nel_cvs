@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.44 2003/04/10 10:16:07 vizerie Exp $
+ * $Id: object_viewer.h,v 1.45 2003/04/18 15:13:37 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,6 +144,12 @@ public:
 	// Slot info for this object
 	CSlotInfo					SlotInfo[NL3D::CChannelMixer::NumAnimationSlot];
 
+	// Camera info
+	NL3D::CCameraInfo			CameraInfo;
+
+	// Camera ?
+	bool						Camera;
+
 	// Input file
 	std::string					ShapeFilename;
 
@@ -173,6 +179,9 @@ class CInstanceInfo
 public:
 	CInstanceInfo ();
 	~CInstanceInfo ();
+
+	// Camera pointer
+	NL3D::CCamera				*Camera;
 
 	// Transform shape pointer
 	NL3D::CTransformShape		*TransformShape;
@@ -226,6 +235,9 @@ public:
 
 	// Add a mesh
 	uint addMesh (NL3D::IShape* pMeshShape, const char* meshName, uint skelIndex, const char* bindSkelName = NULL, bool createInstance = true);
+
+	// Add a camera
+	uint addCamera (const NL3D::CCameraInfo &cameraInfo, const char* cameraName);
 
 	// Add a skel  
 	uint addSkel (NL3D::IShape* pSkelShape, const char* skelName);
@@ -429,6 +441,23 @@ public:
 	// Shoot the scene
 	void		shootScene ();
 
+	// Camera methods
+
+	// Return -1 if no current camera
+	sint		getCurrentCamera () const;
+
+	// -1 If no current camera
+	void		setCurrentCamera (sint currentCamera);
+	
+	// Get the instance id of a camera
+	uint		getCameraInstance (uint cameraId) const;
+
+	// Get the camera count
+	uint		getNumCamera () const;
+
+	// Reinit camera
+	void		initCamera ();
+
 private:
 
 	CMainFrame									*_MainFrame;
@@ -442,6 +471,10 @@ private:
 	CSoundAnimDlg								*_SoundAnimDlg;
 	CLightGroupFactor							*_LightGroupDlg;
 	uint32										_SelectedObject;
+	sint										_CurrentCamera;
+
+	// Vector of camera
+	std::vector<uint>							_Cameras;
 
 	// Vector of loaded instance
 	std::vector<CInstanceInfo*>					_ListInstance;

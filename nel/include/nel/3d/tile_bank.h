@@ -1,7 +1,7 @@
 /** \file tile_bank.h
  * Management of tile texture.
  *
- * $Id: tile_bank.h,v 1.11 2000/12/20 15:32:14 corvazier Exp $
+ * $Id: tile_bank.h,v 1.12 2000/12/22 10:42:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,6 +53,8 @@ class CTileBank;
 class CTile
 {
 public:
+	friend class CTileSet;
+	friend class CTileBank;
 	enum TBitmap { diffuse=0, additive, bump, bitmapCount };
 public:
 	CTile ()
@@ -64,19 +66,9 @@ public:
 	{ 
 		return _BitmapName[bitmapType]; 
 	}
-	void setFileName (TBitmap bitmapType, const std::string& name)
-	{ 
-		_Free=false;
-		_BitmapName[bitmapType]=name;
-	}
 	bool isFree () const
 	{
 		return _Free;
-	}
-	void Free ()
-	{
-		nlassert (!_Free);
-		_Free=true;
 	}
 	bool isInvert () const
 	{
@@ -87,9 +79,20 @@ public:
 		_Invert=invert;
 	}
 	void    serial(class NLMISC::IStream &f) throw(NLMISC::EStream);
-	void	clearTile (CTile::TBitmap type);
 
 private:
+	void	clearTile (CTile::TBitmap type);
+	void setFileName (TBitmap bitmapType, const std::string& name)
+	{ 
+		_Free=false;
+		_BitmapName[bitmapType]=name;
+	}
+	void	free ()
+	{
+		nlassert (!_Free);
+		_Free=true;
+	}
+
 	bool						_Free;
 	bool						_Invert;
 	std::string					_BitmapName[bitmapCount];
@@ -182,6 +185,9 @@ public:
 	void reset()
 	{
 		_Set=false;
+		_Borders[CTile::diffuse].clear();
+		_Borders[CTile::additive].clear();
+		_Borders[CTile::bump].clear();
 	}
 	sint32 getWidth() const
 	{
@@ -229,7 +235,9 @@ public:
 	void removeTile256 (int indexInTileSet, CTileBank& bank);
 
 	// clear
-	void ClearTransition (TTransition transition, CTile::TBitmap type, CTileBank& bank);
+	void clearTile128 (int indexInTileSet, CTile::TBitmap type, CTileBank& bank);
+	void clearTile256 (int indexInTileSet, CTile::TBitmap type, CTileBank& bank);
+	void clearTransition (TTransition transition, CTile::TBitmap type, CTileBank& bank);
 
 	// set
 	void setName (const std::string& name);
@@ -296,6 +304,8 @@ public:
 private:
 	static TFlagBorder getComplementaryBorder (TFlagBorder border);
 
+	// Delete 128 and 256 borders if no more valid texture file name for each bitmap type.
+	void			deleteBordersIfLast (const CTileBank& bank, CTile::TBitmap type);
 
 private:
 	std::string	_Name;

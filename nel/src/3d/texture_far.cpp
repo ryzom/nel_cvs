@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * <File description>
  *
- * $Id: texture_far.cpp,v 1.1 2000/12/21 09:32:08 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.2 2000/12/22 10:42:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,13 +28,6 @@
 
 namespace NL3D {
 
-
-/*
- * Constructor
- */
-CTextureFar::CTextureFar()
-{
-}
 
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.14 2000/12/20 15:32:06 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.15 2000/12/22 10:42:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -175,7 +175,7 @@ void CTileBank::freeTile (int tileIndex)
 	nlassert (tileIndex<(sint)_TileVector.size());
 
 	// Free
-	_TileVector[tileIndex].Free();
+	_TileVector[tileIndex].free();
 
 	// Resize tile table
 	int i;
@@ -679,6 +679,11 @@ void CTileSet::removeTile128 (int indexInTileSet, CTileBank& bank)
 	// Erase
 	_Tile128.erase (_Tile128.begin()+indexInTileSet);
 	bank.freeTile (index);
+
+	// Erase border if it is the last texture
+	deleteBordersIfLast (bank, CTile::diffuse);
+	deleteBordersIfLast (bank, CTile::additive);
+	deleteBordersIfLast (bank, CTile::bump);
 }
 // ***************************************************************************
 void CTileSet::removeTile256 (int indexInTileSet, CTileBank& bank)
@@ -693,6 +698,11 @@ void CTileSet::removeTile256 (int indexInTileSet, CTileBank& bank)
 	// Erase
 	_Tile256.erase (_Tile256.begin()+indexInTileSet);
 	bank.freeTile (index);
+
+	// Erase border if it is the last texture
+	deleteBordersIfLast (bank, CTile::diffuse);
+	deleteBordersIfLast (bank, CTile::additive);
+	deleteBordersIfLast (bank, CTile::bump);
 }
 // ***************************************************************************
 CTileSet::TTransition CTileSet::getTransitionTile (TFlagBorder _top, TFlagBorder _bottom, TFlagBorder _left, TFlagBorder _right)
@@ -810,12 +820,103 @@ CTileSet::TFlagBorder CTileSet::getOrientedBorder (TBorder where, TFlagBorder bo
 	return _0000;
 }
 // ***************************************************************************
-void CTileSet::ClearTransition (TTransition transition, CTile::TBitmap type, CTileBank& bank)
+void CTileSet::clearTile128 (int indexInTileSet, CTile::TBitmap type, CTileBank& bank)
+{
+	int nTile=_Tile128[indexInTileSet];
+	bank.getTile (nTile)->clearTile(type);
+	
+	// Erase border if it is the last texture
+	deleteBordersIfLast (bank, type);
+}
+// ***************************************************************************
+void CTileSet::clearTile256 (int indexInTileSet, CTile::TBitmap type, CTileBank& bank)
+{
+	int nTile=_Tile256[indexInTileSet];
+	bank.getTile (nTile)->clearTile(type);
+	
+	// Erase border if it is the last texture
+	deleteBordersIfLast (bank, type);
+}
+// ***************************************************************************
+void CTileSet::clearTransition (TTransition transition, CTile::TBitmap type, CTileBank& bank)
 {
 	int nTile=_TileTransition[transition]._Tile;
 	if (nTile!=-1)
 		bank.getTile (nTile)->clearTile(type);
 	_BorderTransition[transition][type].reset();
+	
+	// Erase border if it is the last texture
+	deleteBordersIfLast (bank, type);
+}
+// ***************************************************************************
+// Delete 128 and 256 borders if no more valid texture file name for each bitmap type.
+void CTileSet::deleteBordersIfLast (const CTileBank& bank, CTile::TBitmap type)
+{
+	// delete is true
+	bool bDelete=true;
+
+	// iterator..
+	std::vector<sint32>::iterator ite=_Tile128.begin();
+
+	// Check all the 128x128 tiles
+	while (ite!=_Tile128.end())
+	{
+		// If the file name is valid
+		if (bank.getTile (*ite)->getFileName(type)!="")
+		{
+			// Don't delete, 
+			bDelete=false;
+			break;
+		}
+		ite++;
+	}
+	// If break, not empty, return
+	if (ite!=_Tile128.end())
+		return;
+
+	// Check all the 256x256 tiles
+	ite=_Tile256.begin();
+	while (ite!=_Tile256.end())
+	{
+		// If the file name is valid
+		if (bank.getTile (*ite)->getFileName(type)!="")
+		{
+			// Don't delete, 
+			bDelete=false;
+			break;
+		}
+		ite++;
+	}
+	// If break, not empty, return
+	if (ite!=_Tile256.end())
+		return;
+
+
+	// Check all the transitions tiles
+	for (int trans=0; trans<count; trans++)
+	{
+		// Get the tile associed with the transition
+		int nTile=_TileTransition[trans]._Tile;
+
+		// If it is not NULL..
+		if (nTile!=-1)
+		{
+			// If the file name is valid
+			if (bank.getTile (nTile)->getFileName(type)!="")
+			{
+				// Don't delete, 
+				bDelete=false;
+				break;
+			}
+		}
+		ite++;
+	}
+	if (trans!=count)
+		return;
+
+	// Ok, erase borders because no tile use it anymore
+	_Border128[type].reset();
+	_Border256[type].reset();
 }
 
 

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.15 2000/12/15 18:19:42 berenguier Exp $
+ * $Id: texture.h,v 1.16 2000/12/22 10:42:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,8 +29,10 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/rect.h"
 #include "nel/3d/bitmap.h"
 #include <string>
+#include <list>
 
 
 namespace NL3D 
@@ -73,7 +75,14 @@ private:
 
 protected:
 	// Derived texture should set it to true when they are updated.
-	bool	_Touched;
+	bool				_Touched;
+
+	/**
+	 *  List of invalided rectangle. If the list is empty, generate() will rebuild all the texture.
+     *
+	 * \see isAllInvalidated(), generate(), touch(), touchRect(), touched()
+	 */
+	std::list<NLMISC::CRect>	_ListInvalidRect;
 
 public:
 	// Private. For Driver Only.
@@ -92,13 +101,64 @@ public:
 	ITexture &operator=(const ITexture &tex);
 
 
-	bool	touched(void) { return(_Touched); }
-	void	clearTouched(void) { _Touched=0; }
+	/**
+	 *  This method return the touched flag. If it is true, the driver will call generate to rebuild the texture.
+     *
+	 * \see isAllInvalidated(), generate(), touch(), touchRect(), _ListInvalidRect
+	 */
+	bool	touched (void)
+	{
+		return _Touched;
+	}
 
+	/**
+	 *  This method invalidates all the texture surface. When the driver calls generate, the
+	 *  texture will rebuild all the texture and the driver will update it.
+     *
+	 * \see isAllInvalidated(), generate(), touchRect(), touched(), _ListInvalidRect
+	 */
+	void	touch (NLMISC::CRect& rect) 
+	{ 
+		_ListInvalidRect.clear (); 
+		_Touched=true; 
+	}
+
+	/**
+	 *  This method invalidates a rectangle of the texture surface. When the driver calls generate, the
+	 *  texture could rebuild only this part of texture and the driver will update only those rectangles.
+     *
+	 * \see isAllInvalidated(), generate(), touch(), touched(), _ListInvalidRect
+	 */
+	void	touchRect(NLMISC::CRect& rect) 
+	{ 
+		// Don't invalidate the rectangle if the full texture is already invalidate
+		if (!isAllInvalidated ())
+		{
+			// Add the region to invalidate list
+			_ListInvalidRect.push_back (rect); 
+			// Touch flag
+			_Touched=true; 
+		}
+	}
+
+	/*
+	 * Clear the touched flag and the invalid rectangle list
+	 *
+	 * \see isAllInvalidated(), generate(), touch(), touched(), touchRect(), _ListInvalidRect
+	 */
+	void	clearTouched(void) 
+	{ 
+		_Touched=0; 
+		_ListInvalidRect.clear();
+	}
 	
 	/** 
-	 * Return whether texture can be released
+	 * Return whether texture can be released. If it returns true, the driver will release the texture
+	 * after generate it and upload it into the videomemory by calling release(). If it returns false,
+	 * the driver won't release the texture.
+	 *
 	 * \return true if texture can be released, false else
+	 * \see setReleasable(), generate()
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
@@ -107,6 +167,10 @@ public:
 
 	/** 
 	 * Set if texture can be released
+	 * If it is true, the driver will release the texture after generating it and upload it into the 
+	 * videomemory by calling release(). If it is false, the driver won't release the texture.
+     *
+	 * \see getReleasable(), generate()
 	 * \param true if texture can be released, false else
 	 * \author Stephane Coutelas
 	 * \date 2000
@@ -114,7 +178,24 @@ public:
 	void setReleasable(bool r) { _Releasable = r; }
 
 	/** 
-	 * Generate the texture
+	 * Generate the texture pixels.
+	 * 
+	 * This method is called by the driver when it needs to generate pixels of the texture. If the 
+	 * texture is used for the first time or if it is touched, the driver will call this method.
+	 * For exemple, a texture file will load the bitmap in this method.
+	 *
+	 * If the invalidate rect list is empty, generate() must rebuild all the texture.
+	 * If the invalidate rect list is not empty, generate() rebuilds only the invalidate rectangles 
+	 * in the list.
+	 *
+	 * Don't clear the touch flag or the invalid rectangle list until updating the texture in generate(). 
+	 * It's the generate()'s caller jobs.
+	 *
+	 * After generation, if the texture is releasable, the driver will release the texture by calling
+	 * release(). 
+	 *
+	 * \see isAllInvalidated(), touch(), touched(), touchRect(), clearTouched(), _ListInvalidRect
+	 * \see getReleasable(), setReleasable()
 	 * \author Stephane Coutelas
 	 * \date 2000
 	 */	
@@ -148,8 +229,21 @@ public:
 	 * \author Lionel Berenguier
 	 * \date 2000
 	 */	
-	bool	loadedIntoDriver() const {return TextureDrvShare!=NULL;}
+	bool	loadedIntoDriver() const 
+	{
+		return TextureDrvShare!=NULL;
+	}
 
+protected:
+	/** 
+	 * Return true if ALL the texture is invalidate, else return false.
+	 * \author Cyril Corvazier
+	 * \date 2000
+	 */	
+	bool					isAllInvalidated () const
+	{
+		return  _Touched&&(_ListInvalidRect.begin()==_ListInvalidRect.end());
+	}
 };
 
 

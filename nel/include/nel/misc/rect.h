@@ -1,7 +1,7 @@
 /** \file rect.h
  * <File description>
  *
- * $Id: rect.h,v 1.1 2000/12/21 14:33:14 corvazier Exp $
+ * $Id: rect.h,v 1.2 2000/12/22 10:42:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@ namespace NLMISC {
 
 
 /**
- * <Class description>
+ * This class describe an integer 2d rectangle.
  * \author Cyril Corvazier
  * \author Nevrax France
  * \date 2000
@@ -41,10 +41,74 @@ namespace NLMISC {
 class CRect
 {
 public:
+	/// Constructor with a 2d point, a width and a height
+	CRect (sint32 x, sint32 y, uint32 width, uint32 height)
+	{
+		X=x;
+		Y=y;
+		Width=width;
+		Height=height;
+	}
 
-	/// Constructor
-	CRect();
+	/// Constructor with a single 2d point. Build a rectangle with width and height = 0.
+	CRect (sint32 x, sint32 y)
+	{
+		X=x;
+		Y=y;
+		Width=0;
+		Height=0;
+	}
 
+	/// Extend the box for including the point which coordinates are passed in parameter.
+	void		extend (sint32 x, sint32 y);
+
+	/// Return the lower X coordinate of the box
+	sint32		left()
+	{
+		return X;
+	}
+
+	/// Return the higher X coordinate of the box + 1
+	sint32		right()
+	{
+		return X+Width;
+	}
+
+	/// Return the lower Y coordinate of the box
+	sint32		top()
+	{
+		return Y;
+	}
+
+	/// Return the higher Y coordinate of the box + 1
+	sint32		bottom()
+	{
+		return Y+Height;
+	}
+
+	/// Compute the x center of the rectangle
+	sint32		getXCenter()
+	{
+		return X+(sint32)(Width>>1);
+	}
+
+	/// Compute the y center of the rectangle
+	sint32		getYCenter()
+	{
+		return Y+(sint32)(Height>>1);
+	}
+
+	/// Lower X coordinate of the rect
+	sint32		X;
+
+	/// Lower Y coordinate of the rect
+	sint32		Y;
+
+	/// Width of the rect
+	uint32		Width;
+
+	/// Height of the rect
+	uint32		Height;
 };
 
 

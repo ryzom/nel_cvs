@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.2 2000/12/21 13:39:31 corvazier Exp $
+ * $Id: texture_far.h,v 1.3 2000/12/22 10:42:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,13 +28,16 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/texture.h"
+#include "nel/misc/rect.h"
 
 
 namespace NL3D {
 
+class CPatch;
 
 /**
- * <Class description>
+ * A CTextureFar is a set of texture used to map a whole patch when it is in far Mode. (ie not in tile mode).
+ * A CTextureFar handle several tile
  * \author Cyril Corvazier
  * \author Nevrax France
  * \date 2000
@@ -43,9 +46,53 @@ class CTextureFar : public ITexture
 {
 public:
 
-	/// Constructor
-	CTextureFar();
+	/// Patch identifier
+	struct CPatchIdent
+	{
+		/// Default constructor. do nothing, only for vector
+		CPatchIdent () {};
 
+		/// Constructor
+		CPatchIdent (CPatch* patch, uint8 order)
+		{
+			Patch=patch;
+			Order=order;
+		}
+
+		// Data
+
+		// Patch pointer
+		CPatch*	Patch;
+
+		// Zone Id of the patch
+		uint8	Order;
+	};
+
+	/// Constructor
+	CTextureFar()
+	{
+		// This texture is not releasable. It stays in standard memory.
+		setReleasable (false);
+	}
+
+	/// Number of patches in the width
+	uint8						_WidthPatches;
+
+	/// Number of patches in the height
+	uint8						_HeightPatches;
+
+	/**
+	 *  Vector of patches which texture far is stored in this CTextureFar
+	 *  Should be == to _WidthPatches*_HeightPatches
+	 */
+	std::vector<CPatchIdent>	_Patches;
+
+	/**
+	 *  Generate the texture. See ITexture::generate().
+	 *
+	 *  \see ITexture::generate()
+	 */
+	virtual void				generate();
 };
 
 

@@ -1,7 +1,7 @@
 /** \file rect.cpp
  * <File description>
  *
- * $Id: rect.cpp,v 1.1 2000/12/21 14:33:04 corvazier Exp $
+ * $Id: rect.cpp,v 1.2 2000/12/22 10:42:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,12 +28,23 @@
 
 namespace NLMISC {
 
-
-/*
- * Constructor
- */
-CRect::CRect()
+// *********************************************************************
+void CRect::extend (sint32 x, sint32 y)
 {
+	if (x<X)
+	{
+		Width+=(uint32)(X-x);
+		x=X;
+	}
+	else if (x>=(X+(sint32)Width))
+		Width=(uint32)(x-X+1);
+	if (y<Y)
+	{
+		Height+=(uint32)(Y-y);
+		y=Y;
+	}
+	else if (y>=(Y+(sint32)Height))
+		Height=(uint32)(y-Y+1);
 }
 
 

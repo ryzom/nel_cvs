@@ -1,7 +1,7 @@
 /** \file dru.h
  * Driver Utilities.
  *
- * $Id: dru.h,v 1.8 2000/12/18 14:07:10 lecroart Exp $
+ * $Id: dru.h,v 1.9 2000/12/22 10:42:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #ifdef NL_OS_WINDOWS
 #ifdef NL_DEBUG
 #define NL3D_DLL_NAME "nel_drv_opengl_win_debug.dll"
+#elif defined (NL_RELEASE_DEBUG)
+#define NL3D_DLL_NAME "nel_drv_opengl_win_rd.dll"
 #elif defined (NL_RELEASE)
 #define NL3D_DLL_NAME "nel_drv_opengl_win.dll"
 #else

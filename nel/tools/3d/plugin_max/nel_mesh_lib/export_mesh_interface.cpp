@@ -1,6 +1,6 @@
 /** \file export_mesh_interface.cpp
  *
- * $Id: export_mesh_interface.cpp,v 1.3 2002/06/06 14:44:01 vizerie Exp $
+ * $Id: export_mesh_interface.cpp,v 1.4 2002/06/10 15:30:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,12 +108,14 @@ struct CMeshInterface
 	void	buildBBox(NLMISC::CAABBox &dest)
 	{
 		nlassert(!Verts.empty());
-		dest.setCenter(Verts[0].Pos);
-		dest.setHalfSize(NLMISC::CVector::Null);
+		CVector minV = Verts[0].Pos;
+		CVector maxV = Verts[0].Pos;		
 		for(uint k = 1; k < Verts.size(); ++k)
 		{
-			dest.extend(Verts[k].Pos);
+			minV.minof(minV, Verts[k].Pos);
+			maxV.maxof(maxV, Verts[k].Pos);			
 		}
+		dest.setMinMax(minV, maxV);
 	}
 
 	// build this Interface from a max mesh (usually a polygon converted to a mesh)
@@ -209,10 +211,13 @@ struct CNodeFace
 	uint32  SmoothGroup;    // smoothgroup;
 	void	buildBBox(NLMISC::CAABBox &dest)
 	{
-		dest.setCenter(P[0]);
-		dest.setHalfSize(NLMISC::CVector::Null);
-		dest.extend(P[1]);
-		dest.extend(P[2]);
+		CVector minV(P[0]);
+		CVector maxV(P[0]);
+		minV.minof(minV, P[1]);
+		minV.minof(minV, P[2]);
+		maxV.maxof(maxV, P[1]);
+		maxV.maxof(maxV, P[2]);
+		dest.setMinMax(minV, maxV);
 	}
 	CVector getNormal() const
 	{
@@ -236,6 +241,7 @@ static void AddNodeToQuadGrid(const NLMISC::CAABBox &delimiter, TNodeFaceQG &des
 	{
 		if (delimiter.intersect(nodeBBox))
 		{
+			nldebug((std::string("Adding ") + node.GetName() + std::string(" to mesh interface quad grid")).c_str());
 			// add this node tris
 			Object *obj = node.EvalWorldState(time).obj;		
 			if (obj)
@@ -257,6 +263,7 @@ static void AddNodeToQuadGrid(const NLMISC::CAABBox &delimiter, TNodeFaceQG &des
 
 					NLMISC::CAABBox faceBBox;
 
+					uint numFaceAdded = 0;
 					for(sint l = 0; l < mesh.getNumFaces(); ++l)
 					{
 						for(uint m = 0; m < 3; ++m)
@@ -270,15 +277,16 @@ static void AddNodeToQuadGrid(const NLMISC::CAABBox &delimiter, TNodeFaceQG &des
 						{
 							nodeFace.SmoothGroup = mesh.faces[l].smGroup;
 							destQuadGrid.insert(faceBBox.getMin(), faceBBox.getMax(), nodeFace);
+							++ numFaceAdded;
 						}
 						
-					}					
+					}	
+					nldebug("%d faces where added", numFaceAdded);
 					//
 					if (deleteIt)
 					{
 						delete tri;
-					}
-					return;
+					}					
 				}
 			}
 		}
@@ -342,6 +350,7 @@ static void ApplyMeshInterfacesUsingSceneNormals(INode &sceneBaseNode, std::vect
 		sceneQG.clear();
 		::BuildNodeFacesQuadGrid(iBBox, sceneQG, sceneBaseNode, time);
 
+		uint numWelds = 0;
 		// test each corner of the meshbuild faces
 		for(uint l = 0; l < mbuild.Faces.size(); ++l)
 		{
@@ -377,12 +386,13 @@ static void ApplyMeshInterfacesUsingSceneNormals(INode &sceneBaseNode, std::vect
 					if (!candidateFaces.empty()) 
 					{
 						::BuildNormalFromNodeFaces(candidateFaces, mbuild.Faces[l].Corner[m].Normal);
-						 mbuild.Faces[l].Corner[m].Normal = toWorldMatInv.mulVector(mbuild.Faces[l].Corner[m].Normal);						
+						 mbuild.Faces[l].Corner[m].Normal = toWorldMatInv.mulVector(mbuild.Faces[l].Corner[m].Normal);
+						 ++ numWelds;
 					}
 				}
-			}			
+			}						
 		}
-	
+		nldebug("%d vertices have been welded for interface %d", numWelds, k);
 		
 	}
 }
@@ -463,10 +473,23 @@ static bool BuildMeshInterfaces(const char *cMaxFileName, std::vector<CMeshInter
 	/** don't know why, but a call to Interface::MergeFromFile freeze the application, so we
 	  * use a call to maxscript instead
 	  */
-	std::string command("mergeMAXFile \"" + maxFileName + "\" #noRedraw #mergeDups");
+	std::string maxFileNameWithSlash;
+	for(uint k = 0; k < maxFileName.length(); ++k)
+	{
+		if (maxFileName[k] == '\\')
+		{
+			maxFileNameWithSlash += "\\\\";
+		}
+		else
+		{
+			maxFileNameWithSlash += maxFileName[k];
+		}
+	}
+	std::string command("mergeMAXFile \"" + maxFileNameWithSlash + "\" #noRedraw #mergeDups");
 	if (CExportNel::scriptEvaluate(command.c_str(), NULL, scriptNothing) == false)
 	{
 		nlwarning("Unable to merge %s", maxFileName.c_str());
+		CExportNel::scriptEvaluate(("print \"Failed to load mesh interfaces " + maxFileNameWithSlash + "\"").c_str(), NULL, scriptNothing);
 		return false;
 	}
 
@@ -496,8 +519,11 @@ static bool BuildMeshInterfaces(const char *cMaxFileName, std::vector<CMeshInter
 		CMeshInterface meshInterface;
 		if (meshInterface.buildFromMaxMesh(**it, tvTime))
 		{
-			// well we could avoid a vector copy
-			meshInterfaces.push_back(meshInterface);
+			if (!meshInterface.Verts.empty())
+			{			
+				// well we could avoid a vector copy
+				meshInterfaces.push_back(meshInterface);
+			}
 		}
 		else
 		{
@@ -523,6 +549,7 @@ static bool BuildMeshInterfaces(const char *cMaxFileName, std::vector<CMeshInter
 
 void CExportNel::applyInterfaceToMeshBuild(INode &node, CMesh::CMeshBuild &mbuild, const NLMISC::CMatrix &toWorldMat, TimeValue time)
 {
+	nldebug("===============================================");
 	nldebug("Applying interface on : %s", node.GetName());
 	std::string interfaceFile = CExportNel::getScriptAppData(&node, NEL3D_APPDATA_INTERFACE_FILE, "");
 	if (interfaceFile.empty()) return;
@@ -595,6 +622,27 @@ bool	CExportNel::selectInterfaceVertices(INode &node, TimeValue time)
 
 	return ::SelectVerticesInMeshFromInterfaces(meshInterfaces, threshold, node, time );			
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

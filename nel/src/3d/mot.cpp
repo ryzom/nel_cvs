@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.19 2002/04/12 16:20:08 vizerie Exp $
+ * $Id: mot.cpp,v 1.20 2003/03/20 14:54:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -464,8 +464,6 @@ IModel* ITrav::getNextParent (IModel *m) const
 IModel::IModel()
 {
 	TouchObs.resize(Last);
-	LastClassId= 0;
-	LastObs= NULL;
 
 	_OwnerMot= NULL;
 	_PrecModelToValidate= NULL;
@@ -490,17 +488,11 @@ IObs	*IModel::getObs(const CClassId &idTrav) const
 {
 	CObsMap::const_iterator	it;
 
-	if(idTrav==LastClassId)
-		return LastObs;
-
-	LastClassId= idTrav;
 	it= Observers.find(idTrav);
 	if(it==Observers.end())
-		LastObs= NULL;
+		return NULL;
 	else
-		LastObs= (*it).second;
-
-	return LastObs;
+		return (*it).second;
 }
 
 

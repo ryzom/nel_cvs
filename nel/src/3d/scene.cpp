@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.93 2003/03/13 14:15:51 berenguier Exp $
+ * $Id: scene.cpp,v 1.94 2003/03/20 14:55:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,7 +51,6 @@
 #include "3d/scene_group.h"
 #include "3d/flare_model.h"
 #include "3d/skip_model.h"
-#include "3d/quad_grid_clip_cluster.h"
 #include "3d/water_model.h"
 #include "3d/vegetable_blend_layer_model.h"
 #include "3d/root_model.h"
@@ -77,8 +76,7 @@ using namespace NLMISC;
 #define NL3D_MEM_MOT						NL_ALLOC_CONTEXT( 3dMot )
 
 #define NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE	400
-#define NL3D_SCENE_QUADGRID_CLIP_NUM_MAXDIST	3
-const	float	NL3D_QuadGridClipManagerMaxDist[NL3D_SCENE_QUADGRID_CLIP_NUM_MAXDIST]= {200, 400, 600};
+const	float	NL3D_QuadGridClipManagerMaxDist[]= {200, 400, 600};
 // The manager is limited to a square of 3000m*3000m around the camera. Beyond, models are clipped individually (bad!!).
 const	float	NL3D_QuadGridClipManagerRadiusMax= 1500;
 
@@ -106,7 +104,6 @@ void	CScene::registerBasics()
 	CCluster::registerBasic();
 	CFlareModel::registerBasic();
 	CSkipModel::registerBasic();
-	CQuadGridClipCluster::registerBasic();
 	CWaterModel::registerBasic();
 	CWaveMakerModel::registerBasic();
 	CVegetableBlendLayerModel::registerBasic();
@@ -343,8 +340,9 @@ void	CScene::initQuadGridClipManager ()
 	// Init clip features.
 	// setup maxDists clip.
 	vector<float>	maxDists;
-	for(uint i=0; i<NL3D_SCENE_QUADGRID_CLIP_NUM_MAXDIST; i++)
-		maxDists.push_back(NL3D_QuadGridClipManagerMaxDist[i]);
+	maxDists.resize( sizeof(NL3D_QuadGridClipManagerMaxDist) / sizeof(NL3D_QuadGridClipManagerMaxDist[0]) );
+	for(uint i=0; i<maxDists.size(); i++)
+		maxDists[i]= NL3D_QuadGridClipManagerMaxDist[i];
 	// init _QuadGridClipManager.
 	_QuadGridClipManager.init(this, NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE, maxDists, NL3D_QuadGridClipManagerRadiusMax);
 }

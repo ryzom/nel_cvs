@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.8 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: mot.h,v 1.9 2003/03/20 14:54:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -322,9 +322,6 @@ protected:
 	typedef	std::map<NLMISC::CClassId, IObs*>		CObsMap;
 	CObsMap	Observers;
 
-	// Cache the last observer acceded through getObs().
-	mutable	NLMISC::CClassId	LastClassId;
-	mutable	IObs				*LastObs;
 	/// Get an observer according to his Traversal Id. NULL, if not found.
 	IObs	*getObs(const NLMISC::CClassId &idTrav) const;
 

@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.3 2002/02/15 15:26:37 lecroart Exp $
+ * $Id: transport_class.h,v 1.4 2002/02/19 13:14:53 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/entity_id.h"
 
 #include "nel/net/message.h"
 
@@ -75,7 +76,7 @@ public:
 	enum TProp {
 		PropUInt8, PropUInt16, PropUInt32, PropUInt64,
 		PropSInt8, PropSInt16, PropSInt32, PropSInt64,
-		PropBool, PropFloat, PropDouble, PropUKN };
+		PropBool, PropFloat, PropDouble, PropString, PropEntityId, PropUKN };
 
 
 	//

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.3 2002/02/15 15:23:29 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.4 2002/02/19 13:14:57 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -36,11 +36,11 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/entity_id.h"
 
 #include "nel/net/unified_network.h"
 
 #include "nel/net/transport_class.h"
-
 
 //
 // Namespace
@@ -279,6 +279,8 @@ void CTransportClass::init ()
 	DummyProp[PropBool] =  new CTransportClass::CRegisteredProp<bool>;
 	DummyProp[PropFloat] =  new CTransportClass::CRegisteredProp<float>;
 	DummyProp[PropDouble] =  new CTransportClass::CRegisteredProp<double>;
+	DummyProp[PropString] =  new CTransportClass::CRegisteredProp<string>;
+	DummyProp[PropEntityId] =  new CTransportClass::CRegisteredProp<CEntityId>;
 
 	// we have to know when a service comes, so add callback (put the callback before all other one because we have to send this message first)
 	CUnifiedNetwork::getInstance()->setServiceUpCallback("*", cbTCUpService, NULL, false);

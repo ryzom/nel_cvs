@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.41 2001/12/11 09:27:05 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.42 2001/12/11 13:41:01 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,14 +88,17 @@ namespace NLAISCRIPT
 
 	CAgentClass::~CAgentClass()
 	{
-		
-		for(sint32 i =  0; i < (sint32)_Components.size(); i++)
+		sint32 i;
+		for(i =  0; i < (sint32)_Components.size(); i++)
 		{
 			CComponent *c = _Components[i];
 			if(c->ObjectName) c->ObjectName->release();
 			if(c->RegisterName) c->RegisterName->release();
 			delete c;
 		}
+
+		for(i = 0; i < (sint32) _StaticComponents.size(); i++ )
+			_StaticComponents[i]->release();
 
 		clearIndirectMsgTable();
 

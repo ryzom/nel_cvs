@@ -45,7 +45,8 @@ using  namespace NLAIFUZZY;
 %token	NEW 
 
 // Operator tokens
-%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS UPDATEEVERY PRIORITY MSG
+%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS UPDATEEVERY PRIORITY 
+%token	MSG
 
 // Logic tokens
 %token	LOGICVAR RULE IA_ASSERT OR AND
@@ -293,8 +294,10 @@ using  namespace NLAIFUZZY;
 									// Adds it as goal to the operator class
 									COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
 									op_class->setGoal( _LastAsserts.back(), _LastLogicParams.back() );
-										_LastAsserts.pop_back();
-										_LastLogicParams.pop_back();
+//									((NLAIAGENT::IObjectIA *)(_LastAsserts.back()))->release();
+									_LastAsserts.pop_back();
+//									((NLAIAGENT::IObjectIA *)(_LastLogicParams.back()))->release();
+									_LastLogicParams.pop_back();
 								}
 							}
 							POINT_VI

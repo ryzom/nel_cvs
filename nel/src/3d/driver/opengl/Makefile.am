@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.6 2001/07/27 17:25:40 valignat Exp $
+# $Id: Makefile.am,v 1.7 2001/10/29 10:51:00 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES         = Makefile.in
@@ -13,8 +13,11 @@ libnel_drv_opengl_la_SOURCES = driver_opengl.cpp           \
                                driver_opengl_light.cpp     \
                                driver_opengl_material.cpp  \
                                driver_opengl_matrix.cpp    \
+                               driver_opengl_states.cpp   \
+                               driver_opengl_states.h   \
                                driver_opengl_texture.cpp   \
                                driver_opengl_vertex.cpp    \
+                               driver_opengl_vertex_program.cpp    \
                                unix_event_emitter.cpp      \
                                unix_event_emitter.h
 

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.39 2002/01/07 14:35:58 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.40 2002/01/28 14:36:13 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -437,10 +437,10 @@ CPSLocated::~CPSLocated()
 	// delete all bindable
 
 	for (TLocatedBoundCont::iterator it2 = _LocatedBoundCont.begin(); it2 != _LocatedBoundCont.end(); ++it2)
-	{
+	{					
 		(*it2)->finalize();
-		delete *it2;
-	}
+		delete *it2;		
+	} 
 
 
 	delete _LifeScheme;
@@ -475,6 +475,9 @@ void CPSLocated::bind(CPSLocatedBindable *lb)
 		lb->newElement(NULL, 0);
 	}
 	_Size = initialSize;
+
+
+	if (_ParametricMotion) lb->motionTypeChanged(true);
 
 	/// the max number of shapes may have changed
 	notifyMaxNumFacesChanged();

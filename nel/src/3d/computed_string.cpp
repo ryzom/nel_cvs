@@ -1,7 +1,7 @@
 /** \file computed_string.cpp
  * Computed string
  *
- * $Id: computed_string.cpp,v 1.15 2001/06/22 15:01:03 corvazier Exp $
+ * $Id: computed_string.cpp,v 1.16 2001/07/04 11:57:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -109,10 +109,14 @@ void CComputedString::render2D (IDriver& driver,
 	driver.setupModelMatrix(matrix);
 	
 	driver.activeVertexBuffer(Vertices);
-	
+
 	// rendering each primitives 
 	for(uint32 i=0; i<Primitives.size(); i++)
 	{
+		// Disactive zbuffer
+		Materials[i]->setZFunc (CMaterial::always);
+		Materials[i]->setZWrite (false);
+
 		driver.render(Primitives[i], *Materials[i]);
 	}
 }
@@ -135,6 +139,10 @@ void CComputedString::render3D (IDriver& driver,CMatrix matrix,THotSpot hotspot)
 	int i = 0;
 	for(itpb = Primitives.begin(); itpb<Primitives.end(); itpb++)
 	{
+		// Active zbuffer
+		Materials[i]->setZFunc (CMaterial::lessequal);
+		Materials[i]->setZWrite (true);
+
 		driver.render((*itpb), *Materials[i]);
 		i++;
 	}	

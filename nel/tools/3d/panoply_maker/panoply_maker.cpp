@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.6 2002/05/27 08:16:17 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.7 2002/05/31 08:53:01 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -53,7 +53,7 @@ struct CBuildInfo
 	std::string					 InputPath;
 	std::string					 OutputPath;
 	std::vector<std::string>     BitmapExtensions; // the supported extension for bitmaps
-	std::string					 DefaultChar;
+	std::string					 DefaultSeparator;
 	TColorMaskVect				 ColorMasks;
 };
 
@@ -132,11 +132,11 @@ int main(int argc, char* argv[])
 			/// default ascii character for unused masks
 			try
 			{
-				bi.DefaultChar = cf.getVar ("default_col_char").asString();								
+				bi.DefaultSeparator = cf.getVar ("default_separator").asString();								
 			}
 			catch (NLMISC::EUnknownVar &)
 			{
-				bi.DefaultChar = '_';
+				bi.DefaultSeparator = '_';
 			}
 
 			/// extension for bitmaps
@@ -375,16 +375,16 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 			cm.convertBitmap(resultBitmap, resultBitmap, masks[l].Mask);
 
 			/// complete the file name
-			outputFileName += bi.ColorMasks[maskID].CMs[colorID].ColID;
+			outputFileName += bi.DefaultSeparator + bi.ColorMasks[maskID].CMs[colorID].ColID;
 
 			/// fill the gap with default character (for unused masks)
 			uint nextMaskID = (l == (masks.size() - 1))	? 
 							  bi.ColorMasks.size()  :
 							  masks[l + 1].MaskID;
-			for (uint m = masks[l].MaskID + 1; m < nextMaskID; ++m)
+			/* for (uint m = masks[l].MaskID + 1; m < nextMaskID; ++m)
 			{
 				outputFileName += bi.DefaultChar;
-			}								   
+			}*/								   
 		}
 		
 		nlinfo("--- writing %s", outputFileName.c_str());

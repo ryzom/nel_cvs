@@ -1,7 +1,7 @@
 /** \file header.cpp
  * Georges header file class
  *
- * $Id: header.cpp,v 1.3 2002/06/12 11:13:50 corvazier Exp $
+ * $Id: header.cpp,v 1.4 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,10 @@ using namespace NLMISC;
 
 namespace NLGEORGES
 {
+
+// ***************************************************************************
+
+void warning (bool exception, const char *format, ... );
 
 // ***************************************************************************
 
@@ -115,11 +119,9 @@ void CFileHeader::read (xmlNodePtr root)
 			// Delete the value
 			xmlFree ((void*)value);
 
-			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "Georges TYPE XML Syntax error in TYPE block line %d, the Version argument is invalid", 
+			// Throw exception
+			warning (true, "read", "XML Syntax error in TYPE block line %d, the Version argument is invalid.", 
 				(int)root->content);
-			throw EXmlParsingError (tmp);
 		}
 
 		// Delete the value
@@ -150,11 +152,9 @@ void CFileHeader::read (xmlNodePtr root)
 			// Delete the value
 			xmlFree ((void*)value);
 
-			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "Georges TYPE XML Syntax error in TYPE block line %d, the State argument is invalid", 
+			// Throw exception
+			warning (true, "read", "XML Syntax error in TYPE block line %d, the State argument is invalid.", 
 				(int)root->content);
-			throw EXmlParsingError (tmp);
 		}
 
 		// Delete the value
@@ -215,6 +215,21 @@ const char *CFileHeader::getStateString (TState state)
 		return "Modified";
 	else
 		return "Checked";
+}
+
+// ***************************************************************************
+
+void CFileHeader::warning (bool exception, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	NLGEORGES::warning (exception, "(CFileHeader::%s) : %s", function, buffer);
 }
 
 // ***************************************************************************

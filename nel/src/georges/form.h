@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.8 2002/06/11 17:38:58 corvazier Exp $
+ * $Id: form.h,v 1.9 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,8 +97,11 @@ public:
 	// Clear parents
 	void				clearParents ();
 
-	// Get the form filename
+	// Get the form filename with extension
 	const std::string	&getFilename () const;
+
+	// Error handling
+	void				warning (bool exception, const char *function, const char *format, ... ) const;
 
 private:
 

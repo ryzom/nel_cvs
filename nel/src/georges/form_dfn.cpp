@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.11 2002/09/03 11:08:52 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.12 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "stdgeorges.h"
 
 #include "nel/misc/i_xml.h"
+#include "nel/misc/path.h"
 
 #include "form_dfn.h"
 #include "form_loader.h"
@@ -45,8 +46,15 @@ namespace NLGEORGES
 
 // ***************************************************************************
 
-void CFormDfn::write (xmlDocPtr doc) const
+void warning (bool exception, const char *format, ... );
+
+// ***************************************************************************
+
+void CFormDfn::write (xmlDocPtr doc, const char *filename)
 {
+	// Save filename
+	_Filename = CFile::getFilename (filename);
+
 	// Create the first node
 	xmlNodePtr node = xmlNewDocNode (doc, NULL, (const xmlChar*)"DFN", NULL);
 	xmlDocSetRootElement (doc, node);
@@ -107,16 +115,16 @@ void CFormDfn::write (xmlDocPtr doc) const
 
 // ***************************************************************************
 
-void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
+void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad, const char *filename)
 {
+	// Save filename
+	_Filename = CFile::getFilename (filename);
+
 	// Check node name
 	if ( ((const char*)root->name == NULL) || (strcmp ((const char*)root->name, "DFN") != 0) )
 	{
-		// Make an error message
-		char tmp[512];
-		smprintf (tmp, 512, "Georges DFN XML Syntax error in block line %d, node %s should be DFN", 
-			(int)root->content, root->name);
-		throw EXmlParsingError (tmp);
+		// Throw exception
+		warning (true, "read", "XML Syntax error in block line %d, node (%s) should be DFN.", (int)root->content, root->name);
 	}
 
 	// Count the parent
@@ -141,18 +149,15 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 			Parents[parentNumber].Parent = loader.loadFormDfn (Parents[parentNumber].ParentFilename.c_str (), forceLoad);
 			if ((Parents[parentNumber].Parent == NULL) && !forceLoad)
 			{
-				char tmp[512];
-				smprintf (tmp, 512, "Georges (CFormDfn::read): Can't load parent DFN file %s", Parents[parentNumber].ParentFilename.c_str ());
-				throw EXmlParsingError (tmp);
+				// Throw exception
+				warning (true, "read", "Can't load parent DFN file (%s).", Parents[parentNumber].ParentFilename.c_str ());
 			}
 		}
 		else
 		{
-			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "Georges DFN XML Syntax error in block %s line %d, aguments Name not found", 
+			// Throw exception
+			warning (true, "read", "XML Syntax error in block (%s) line %d, aguments Name not found.", 
 				parent->name, (int)parent->content);
-			throw EXmlParsingError (tmp);
 		}
 
 		// Next parent
@@ -233,12 +238,9 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 						Entries[childNumber].Type = loader.loadType (Entries[childNumber].Filename.c_str ());
 						if ((Entries[childNumber].Type == NULL) && !forceLoad)
 						{
-							// Make an error message
-							char tmp[512];
-							smprintf (tmp, 512, "Georges TYPE XML In block %s line %d, file not found %s.", 
+							// Throw exception
+							warning (true, "read", "In XML block (%s) line %d, file not found %s.", 
 								child->name, (int)child->content, Entries[childNumber].Filename.c_str ());
-
-							throw EXmlParsingError (tmp);
 						}
 
 						// Read the default value
@@ -253,12 +255,9 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 					}
 					else
 					{
-						// Make an error message
-						char tmp[512];
-						smprintf (tmp, 512, "Georges TYPE XML In block %s line %d, no filename found for the .typ file.", 
+						// Throw exception
+						warning (true, "read", "XML In block (%s) line %d, no filename found for the .typ file.", 
 							child->name, (int)child->content, Entries[childNumber].Filename.c_str ());
-
-						throw EXmlParsingError (tmp);
 					}
 				}
 				else if (stricmp (typeName, "Dfn") == 0)
@@ -273,22 +272,16 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 						Entries[childNumber].Dfn = loader.loadFormDfn (Entries[childNumber].Filename.c_str (), forceLoad);
 						if ((Entries[childNumber].Dfn == NULL) && !forceLoad)
 						{
-							// Make an error message
-							char tmp[512];
-							smprintf (tmp, 512, "Georges DFN XML In block %s line %d, file not found %s.", 
+							// Throw exception
+							warning (true, "read", "XML In block (%s) line %d, file not found %s.", 
 								child->name, (int)child->content, Entries[childNumber].Filename.c_str ());
-
-							throw EXmlParsingError (tmp);
 						}
 					}
 					else
 					{
-						// Make an error message
-						char tmp[512];
-						smprintf (tmp, 512, "Georges TYPE XML In block %s line %d, no filename found for the .typ file.", 
+						// Throw exception
+						warning (true, "read", "XML In block (%s) line %d, no filename found for the .typ file.", 
 							child->name, (int)child->content, Entries[childNumber].Filename.c_str ());
-
-						throw EXmlParsingError (tmp);
 					}
 				}
 				else if (stricmp (typeName, "DfnPointer") == 0)
@@ -297,11 +290,9 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 				}
 				else
 				{
-					// Make an error message
-					char tmp[512];
-					smprintf (tmp, 512, "Georges DFN XML Syntax error in block %s line %d, element has not a valid type name attribut \"Type = %s\".", 
+					// Throw exception
+					warning (true, "read", "XML Syntax error in block (%s) line %d, element has not a valid type name attribut \"Type = %s\".", 
 						child->name, (int)child->content, typeName);
-					throw EXmlParsingError (tmp);
 				}
 
 				// Delete the value
@@ -309,11 +300,9 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 			}
 			else
 			{
-				// Make an error message
-				char tmp[512];
-				smprintf (tmp, 512, "Georges DFN XML Syntax error in block %s line %d, element has no type name attribut \"Type = [Type][Dfn][DfnPointer]\".", 
+				// Throw exception
+				warning (true, "read", "XML Syntax error in block (%s) line %d, element has no type name attribut \"Type = [Type][Dfn][DfnPointer]\".", 
 					child->name, (int)child->content);
-				throw EXmlParsingError (tmp);
 			}
 
 			// Get the array attrib
@@ -329,11 +318,9 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 		}
 		else
 		{
-			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "Georges DFN XML Syntax error in block %s line %d, aguments Name not found", 
+			// Throw exception
+			warning (true, "read", "XML Syntax error in block (%s) line %d, aguments Name not found.", 
 				root->name, (int)root->content);
-			throw EXmlParsingError (tmp);
 		}
 
 		// Next child
@@ -350,14 +337,14 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 uint CFormDfn::countParentDfn (uint32 round) const
 {
 	// Checkout recurcive calls
-	/*if (Round == round)
+	if (Round == round)
 	{
 		// Turn around..
-		nlwarning ("Georges (CFormDfn::countParentDfn) : Recurcive call on the same DFN, look for loop inheritances.");
+		warning (false, "countParentDfn", "Recurcive call on the same DFN, look for loop inheritances.");
 		return 0;
 	}
 	else
-		Round = round;*/ 
+		Round = round;
 
 	uint count = 0;
 	uint i;
@@ -373,14 +360,14 @@ uint CFormDfn::countParentDfn (uint32 round) const
 void CFormDfn::getParentDfn (std::vector<CFormDfn*> &array, uint32 round)
 {
 	// Checkout recurcive calls
-	/*if (Round == round)
+	if (Round == round)
 	{
 		// Turn around..
-		nlwarning ("Georges (CFormDfn::getParentDfn) : Recurcive call on the same DFN, look for loop inheritances.");
+		warning (false, "getParentDfn", "Recurcive call on the same DFN, look for loop inheritances.");
 		return;
 	}
 	else
-		Round = round;*/
+		Round = round;
 
 	uint count = 0;
 	uint i;
@@ -396,14 +383,14 @@ void CFormDfn::getParentDfn (std::vector<CFormDfn*> &array, uint32 round)
 void CFormDfn::getParentDfn (std::vector<const CFormDfn*> &array, uint32 round) const
 {
 	// Checkout recurcive calls
-	/*if (Round == round)
+	if (Round == round)
 	{
 		// Turn around..
-		nlwarning ("Georges (CFormDfn::getParentDfn) : Recurcive call on the same DFN, look for loop inheritances.");
+		warning (false, "getParentDfn", "Recurcive call on the same DFN, look for loop inheritances.");
 		return;
 	}
 	else
-		Round = round;*/
+		Round = round;
 
 	uint count = 0;
 	uint i;
@@ -666,7 +653,7 @@ bool CFormDfn::getEntryType (uint entry, TEntryType &type, bool &array) const
 		array = Entries[entry].Array;
 		return true;
 	}
-	nlwarning ("Georges (CFormDfn::getEntryType) : wrong entry ID."); 
+	warning (false, "getEntryType", "Wrong entry ID.");
 	return false;
 }
 
@@ -679,7 +666,7 @@ bool CFormDfn::getEntryFilename (uint entry, std::string& filename) const
 		filename = Entries[entry].Filename;
 		return true;
 	}
-	nlwarning ("Georges (CFormDfn::getEntryFilename) : wrong entry ID."); 
+	warning (false, "getEntryFilename", "Wrong entry ID.");
 	return false;
 }
 
@@ -694,10 +681,10 @@ bool CFormDfn::getEntryName (uint entry, std::string &name) const
 			name = Entries[entry].Name;
 			return true;
 		}
-		nlwarning ("Georges (CFormDfn::getEntryName) : the entry is a virtual DFN."); 
+		warning (false, "getEntryName", "The entry is a virtual DFN.");
 		return false;
 	}
-	nlwarning ("Georges (CFormDfn::getEntryName) : wrong entry ID."); 
+	warning (false, "getEntryName", "Wrong entry ID.");
 	return false;
 }
 
@@ -713,9 +700,9 @@ bool CFormDfn::getEntryDfn (uint entry, UFormDfn **dfn)
 			return true;
 		}
 		else
-			nlwarning ("Georges (CFormDfn::getEntryDfn) : this entry is not a DFN."); 
+			warning (false, "getEntryDfn", "This entry is not a DFN.");
 	}
-	nlwarning ("Georges (CFormDfn::getEntryDfn) : wrong entry ID."); 
+	warning (false, "getEntryDfn", "Wrong entry ID.");
 	return false;
 }
 
@@ -731,9 +718,9 @@ bool CFormDfn::getEntryType (uint entry, UType **type)
 			return true;
 		}
 		else
-			nlwarning ("Georges (CFormDfn::getEntryType) : this entry is not a type."); 
+			warning (false, "getEntryType", "This entry is not a type."); 
 	}
-	nlwarning ("Georges (CFormDfn::getEntryType) : wrong entry ID."); 
+	warning (false, "getEntryType", "Wrong entry ID."); 
 	return false;
 }
 
@@ -753,7 +740,7 @@ bool CFormDfn::getParent (uint parent, UFormDfn **parentRet)
 		*parentRet = Parents[parent].Parent;
 		return true;
 	}
-	nlwarning ("Georges (CFormDfn::getParent) : wrong parent ID."); 
+	warning (false, "getParent", "Wrong parent ID."); 
 	return false;
 }
 
@@ -767,7 +754,7 @@ bool CFormDfn::getParentFilename (uint parent, std::string &filename) const
 		filename = Parents[parent].ParentFilename;
 		return true;
 	}
-	nlwarning ("Georges (CFormDfn::getParentFilename) : wrong parent ID."); 
+	warning (false, "getParentFilename", "Wrong parent ID."); 
 	return false;
 }
 
@@ -790,6 +777,21 @@ const std::string &CFormDfn::CEntry::getFilenameExt() const
 void CFormDfn::CEntry::setFilenameExt (const char *ext)
 {
 	FilenameExt = ext;
+}
+
+// ***************************************************************************
+
+void CFormDfn::warning (bool exception, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	NLGEORGES::warning (exception, "(CFormDfn::%s) in form DFN (%s) : %s", function, _Filename.c_str (), buffer);
 }
 
 // ***************************************************************************

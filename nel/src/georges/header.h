@@ -1,7 +1,7 @@
 /** \file header.h
  * Georges header file class
  *
- * $Id: header.h,v 1.1 2002/05/17 06:28:05 corvazier Exp $
+ * $Id: header.h,v 1.2 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,9 @@ public:
 
 	// Get state string
 	static const char	*getStateString (TState state);
+
+	// Error handling
+	void				warning (bool exception, const char *function, const char *format, ... ) const;
 };
 
 } // NLGEORGES

@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.10 2002/09/02 08:42:33 corvazier Exp $
+ * $Id: form_dfn.h,v 1.11 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,7 +168,7 @@ public:
 	};
 
 	// ** IO functions
-	void							write (xmlDocPtr root) const;
+	void							write (xmlDocPtr root, const char *filename);
 
 	// Count parent DFN
 	uint							countParentDfn (uint32 round=UFormElm::LastRound++) const;
@@ -224,6 +224,9 @@ public:
 	// Header
 	CFileHeader						Header;
 
+	// Error handling
+	void							warning (bool exception, const char *function, const char *format, ... ) const;
+
 private:
 	// The parents array
 	std::vector<CParent>			Parents;
@@ -234,10 +237,12 @@ private:
 	// Recurcive call count
 	mutable uint32					Round;
 
+	// The form DFN filename
+	std::string						_Filename;
+
 private:
 	// Read method called by the form loader
-	void							read (xmlNodePtr doc, CFormLoader &loader, bool forceLoad = false);
-
+	void							read (xmlNodePtr doc, CFormLoader &loader, bool forceLoad, const char *filename);
 };
 
 } // NLGEORGES

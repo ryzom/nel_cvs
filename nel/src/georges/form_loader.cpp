@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.9 2002/07/10 17:09:41 lecroart Exp $
+ * $Id: form_loader.cpp,v 1.10 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -41,6 +41,10 @@ using namespace std;
 
 namespace NLGEORGES 
 {
+
+// ***************************************************************************
+
+void warning (bool exception, const char *format, ... );
 
 // ***************************************************************************
 // UFormLoader
@@ -100,7 +104,7 @@ CType *CFormLoader::loadType (const char *filename)
 			else
 			{
 				// Output error
-				nlwarning ("CFormLoader: Can't open the form file %s", filename);
+				warning (false, "loadType", "Can't open the form file (%s).", filename);
 
 				// Delete the type
 				delete type;
@@ -110,7 +114,7 @@ CType *CFormLoader::loadType (const char *filename)
 		catch (Exception &e)
 		{
 			// Output error
-			nlwarning ("CFormLoader: Error while loading the form %s: %s", filename, e.what());
+			warning (false, "loadType", "Error while loading the form (%s): %s", filename, e.what());
 
 			// Delete the type
 			delete type;
@@ -168,12 +172,12 @@ CFormDfn *CFormLoader::loadFormDfn (const char *filename, bool forceLoad)
 				read.init (file);
 
 				// Read the type
-				formDfn->read (read.getRootNode (), *this, forceLoad);
+				formDfn->read (read.getRootNode (), *this, forceLoad, filename);
 			}
 			else
 			{
 				// Output error
-				nlwarning ("CFormLoader: Can't open the form file %s", filename);
+				warning (false, "loadFormDfn", "Can't open the form file (%s).", filename);
 
 				// Delete the formDfn
 				delete formDfn;
@@ -184,7 +188,7 @@ CFormDfn *CFormLoader::loadFormDfn (const char *filename, bool forceLoad)
 		catch (Exception &e)
 		{
 			// Output error
-			nlwarning ("CFormLoader: Error while loading the form %s: %s", filename, e.what());
+			warning (false, "loadFormDfn", "Error while loading the form (%s): %s", filename, e.what());
 
 			// Delete the formDfn
 			delete formDfn;
@@ -228,7 +232,7 @@ UForm *CFormLoader::loadForm (const char *filename)
 			if (index == string::npos)
 			{
 				// Output error
-				nlwarning ("CFormLoader: FORM name is invalid (%s). It should have the extension of its DFN type.", name.c_str ());
+				warning (false, "loadForm", "Form name is invalid (%s). It should have the extension of its DFN type.", name.c_str ());
 
 				// Delete the form
 				delete form;
@@ -259,7 +263,7 @@ UForm *CFormLoader::loadForm (const char *filename)
 				else
 				{
 					// Output error
-					nlwarning ("CFormLoader: Can't open the form file %s", filename);
+					warning (false, "loadForm", "Can't open the form file (%s).", filename);
 
 					// Delete the form
 					delete form;
@@ -270,7 +274,7 @@ UForm *CFormLoader::loadForm (const char *filename)
 			else
 			{
 				// Output error
-				nlwarning ("CFormLoader: Can't open the dfn file %s", name.c_str ());
+				warning (false, "loadForm", "Can't open the dfn file (%s).", name.c_str ());
 
 				// Delete the form
 				delete form;
@@ -281,7 +285,7 @@ UForm *CFormLoader::loadForm (const char *filename)
 		catch (Exception &e)
 		{
 			// Output error
-			nlwarning ("CFormLoader: Error while loading the form %s: %s", filename, e.what());
+			warning (false, "loadForm", "Error while loading the form (%s): %s", filename, e.what());
 
 			// Delete the form
 			delete form;
@@ -298,6 +302,21 @@ UForm *CFormLoader::loadForm (const char *filename)
 UFormDfn *CFormLoader::loadFormDfn (const char *filename)
 {
 	return loadFormDfn (filename, false);
+}
+
+// ***************************************************************************
+
+void CFormLoader::warning (bool exception, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	NLGEORGES::warning (exception, "(CFormLoader::%s) : %s", function, buffer);
 }
 
 // ***************************************************************************

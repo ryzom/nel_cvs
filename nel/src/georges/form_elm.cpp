@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.27 2002/09/03 11:08:52 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.28 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,10 @@ uint32 UFormElm::LastRound = 0;
 
 // ***************************************************************************
 
+void warning (bool exception, const char *format, ... );
+
+// ***************************************************************************
+
 bool CFormElm::isArray () const 
 { 
 	return false; 
@@ -56,7 +60,7 @@ bool CFormElm::isArray () const
 
 bool CFormElm::getArraySize (uint &size) const 
 {
-	nlwarning ("Georges (CFormElm::getArraySize) : this node is not an array"); 
+	warning (false, "getArraySize", "This node is not an array.");
 	return false; 
 };
 
@@ -64,7 +68,7 @@ bool CFormElm::getArraySize (uint &size) const
 
 bool CFormElm::getArrayNode (const UFormElm **result, uint arrayIndex) const
 { 
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	warning (false, "getArrayNode", "This node is not an array.");
 	return false; 
 };
 
@@ -72,7 +76,7 @@ bool CFormElm::getArrayNode (const UFormElm **result, uint arrayIndex) const
 
 bool CFormElm::getArrayNode (UFormElm **result, uint arrayIndex) 
 { 
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	warning (false, "getArrayNode", "This node is not an array.");
 	return false; 
 };
 
@@ -80,7 +84,7 @@ bool CFormElm::getArrayNode (UFormElm **result, uint arrayIndex)
 
 bool CFormElm::getArrayNodeName (std::string &result, uint arrayIndex) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNodeName) : this node is not an array"); 
+	warning (false, "getArrayNodeName", "This node is not an array.");
 	return false;
 }
 
@@ -88,7 +92,7 @@ bool CFormElm::getArrayNodeName (std::string &result, uint arrayIndex) const
 
 bool CFormElm::getArrayValue (std::string &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayNode) : this node is not an array"); 
+	warning (false, "getArrayNode", "This node is not an array.");
 	return false;
 }
 
@@ -96,7 +100,7 @@ bool CFormElm::getArrayValue (std::string &result, uint arrayIndex, bool evaluat
 
 bool CFormElm::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -104,7 +108,7 @@ bool CFormElm::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate, TWh
 
 bool CFormElm::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -112,7 +116,7 @@ bool CFormElm::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate, TWh
 
 bool CFormElm::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -120,7 +124,7 @@ bool CFormElm::getArrayValue (sint16 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -128,7 +132,7 @@ bool CFormElm::getArrayValue (uint16 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -136,7 +140,7 @@ bool CFormElm::getArrayValue (sint32 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -144,7 +148,7 @@ bool CFormElm::getArrayValue (uint32 &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -152,7 +156,7 @@ bool CFormElm::getArrayValue (float &result, uint arrayIndex, bool evaluate, TWh
 
 bool CFormElm::getArrayValue (double &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -160,7 +164,7 @@ bool CFormElm::getArrayValue (double &result, uint arrayIndex, bool evaluate, TW
 
 bool CFormElm::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -168,7 +172,7 @@ bool CFormElm::getArrayValue (bool &result, uint arrayIndex, bool evaluate, TWhe
 
 bool CFormElm::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool evaluate, TWhereIsValue *where) const
 {
-	nlwarning ("Georges (CFormElm::getArrayValue) : this node is not an array"); 
+	warning (false, "getArrayValue", "This node is not an array.");
 	return false;
 }
 
@@ -197,7 +201,7 @@ bool CFormElm::getDfnName (std::string &dfnName ) const
 
 bool CFormElm::getStructSize (uint &size) const 
 { 
-	nlwarning ("Georges (CFormElm::getStructSize) : this node is not a struct"); 
+	warning (false, "getStructSize", "This node is not a struct.");
 	return false; 
 };
 
@@ -205,7 +209,7 @@ bool CFormElm::getStructSize (uint &size) const
 
 bool CFormElm::getStructNodeName (uint element, string &result) const 
 { 
-	nlwarning ("Georges (CFormElm::getStructNodeName) : this node is not a struct"); 
+	warning (false, "getStructNodeName", "This node is not a struct.");
 	return false; 
 };
 
@@ -213,7 +217,7 @@ bool CFormElm::getStructNodeName (uint element, string &result) const
 
 bool CFormElm::getStructNode (uint element, const UFormElm **result) const 
 { 
-	nlwarning ("Georges (CFormElm::getStructNode) : this node is not a struct"); 
+	warning (false, "getStructNode", "This node is not a struct.");
 	return false; 
 };
 
@@ -221,7 +225,7 @@ bool CFormElm::getStructNode (uint element, const UFormElm **result) const
 
 bool CFormElm::getStructNode (uint element, UFormElm **result) 
 { 
-	nlwarning ("Georges (CFormElm::getStructNode) : this node is not a struct"); 
+	warning (false, "getStructNode", "This node is not a struct.");
 	return false; 
 };
 
@@ -236,7 +240,7 @@ bool CFormElm::isAtom () const
 
 bool CFormElm::getValue (string &result, bool evaluate) const 
 { 
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom.");
 	return false; 
 };
 
@@ -244,7 +248,7 @@ bool CFormElm::getValue (string &result, bool evaluate) const
 
 bool CFormElm::getValue (sint8 &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom.");
 	return false; 
 }
 
@@ -252,7 +256,7 @@ bool CFormElm::getValue (sint8 &result, bool evaluate) const
 
 bool CFormElm::getValue (uint8 &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom.");
 	return false; 
 }
 
@@ -260,7 +264,7 @@ bool CFormElm::getValue (uint8 &result, bool evaluate) const
 
 bool CFormElm::getValue (sint16 &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom.");
 	return false; 
 }
 
@@ -268,7 +272,7 @@ bool CFormElm::getValue (sint16 &result, bool evaluate) const
 
 bool CFormElm::getValue (uint16 &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom.");
 	return false; 
 }
 
@@ -276,7 +280,7 @@ bool CFormElm::getValue (uint16 &result, bool evaluate) const
 
 bool CFormElm::getValue (sint32 &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom.");
 	return false; 
 }
 
@@ -284,7 +288,7 @@ bool CFormElm::getValue (sint32 &result, bool evaluate) const
 
 bool CFormElm::getValue (uint32 &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom.");
 	return false; 
 }
 
@@ -292,7 +296,7 @@ bool CFormElm::getValue (uint32 &result, bool evaluate) const
 
 bool CFormElm::getValue (float &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom.");
 	return false; 
 }
 
@@ -300,7 +304,7 @@ bool CFormElm::getValue (float &result, bool evaluate) const
 
 bool CFormElm::getValue (double &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom."); 
 	return false; 
 }
 
@@ -308,7 +312,7 @@ bool CFormElm::getValue (double &result, bool evaluate) const
 
 bool CFormElm::getValue (bool &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom."); 
 	return false; 
 }
 
@@ -316,7 +320,7 @@ bool CFormElm::getValue (bool &result, bool evaluate) const
 
 bool CFormElm::getValue (NLMISC::CRGBA &result, bool evaluate) const
 {
-	nlwarning ("Georges (CFormElm::getValue) : this node is not an atom"); 
+	warning (false, "getValue", "This node is not an atom."); 
 	return false; 
 }
 
@@ -422,18 +426,18 @@ bool CFormElm::getValueByName (string& result, const char *name, bool evaluate, 
 
 			// Evale
 			nlassert (nodeType);
-			return (nodeType->getValue (result, Form, atom, *parentDfn, parentIndex, evaluate, (uint32*)where, round));
+			return (nodeType->getValue (result, Form, atom, *parentDfn, parentIndex, evaluate, (uint32*)where, round, name));
 		}
 		else
 		{
 			// Error message
-			nlwarning ("Georges (CFormElm::getValueByName) : The node %s is not an atom element. Can't return a value.", name);
+			warning (false, "getValueByName", "The node (%s) is not an atom element. Can't return a value.", name);
 		}
 	}
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::getValueByName) : Can't find the node %s.", name);
+		warning (false, "getValueByName", "Can't find the node (%s).", name);
 	}
 
 	// Error
@@ -759,19 +763,6 @@ bool CFormElm::arrayDeleteNodeByName (const char *name, const CFormDfn **parentD
 
 bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormDfn **parentDfn, uint &indexDfn, const CFormDfn **nodeDfn, const CType **nodeType, CFormElm **node, UFormDfn::TEntryType &type, bool &array, TNodeAction action, bool &created, bool &parentVDfnArray, bool verbose, uint32 round)
 {
-	/*// Recurse warning !
-	if (*node)
-	{
-		if ((*node)->Round == round)
-		{
-			// Turn around..
-			nlwarning ("Georges (CFormElm::getNodeByName) : Recurcive call on the same node (%s), look for loop references or inheritances.", name);
-			return false;
-		}
-		else
-			(*node)->Round = round;
-	}*/
-
 	// *** Init output variables
 	created = false;
 	parentVDfnArray = false;
@@ -780,7 +771,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 	nlassert ( (*parentDfn) || (*node) );
 
 	// Error message
-	char error[256];
+	char error[512];
 
 	// Parent exist ?
 	if (*parentDfn)
@@ -833,6 +824,8 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 
 	// Current form name
 	string currentName;
+	if (*node)
+		(*node)->getFormName (currentName);
 
 	// Error
 	uint errorIndex;
@@ -929,7 +922,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 										else
 										{
 											// Error message
-											smprintf (error, 512, "Georges (CFormElm::getIternalNodeByName) : internal node error. (%s) (%s)", currentName.c_str(), name);
+											smprintf (error, 512, "Internal node parsing error.");
 											goto exit;
 										}
 									}
@@ -940,7 +933,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 							if (*nodeDfn == NULL)
 							{
 								// Error message
-								smprintf (error, 512, "Georges (CFormElm::getNodeByName) : %s is a empty virtual struct element. Can't look into it while is not defined. (%s)", currentName.c_str(), name);
+								smprintf (error, 512, "Empty virtual struct element. Can't look into it while it is not defined.");
 								goto exit;
 							}
 						}
@@ -1070,14 +1063,14 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 						if (i==arrayDfn.size())
 						{
 							// Not found
-							smprintf (error, 512, "Georges (CFormElm::getNodeByName) : %s struct does not comptain element named %s", currentName.c_str(), token.c_str());
+							smprintf (error, 512, "Struct does not contain element named (%s).", token.c_str());
 							goto exit;
 						}
 					}
 					else
 					{
 						// Error message
-						smprintf (error, 512, "Georges (CFormElm::getNodeByName) : %s is not a struct element. Can't open the node %s", currentName.c_str(), name);
+						smprintf (error, 512, "Not a struct element. Can't open the node (%s).", token.c_str());
 						goto exit;
 					}
 				}
@@ -1088,7 +1081,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 					if ((type != UFormDfn::EntryDfn) && (type != UFormDfn::EntryVirtualDfn))
 					{
 						// Error message
-						smprintf (error, 512, "Georges (CFormElm::getNodeByName) : %s is not a struct element. Can't open the node %s", currentName.c_str(), name);
+						smprintf (error, 512, "Not a struct element. Can't open the node (%s).", token.c_str());
 						goto exit;
 					}
 				}
@@ -1099,7 +1092,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 					if (!array)
 					{
 						// Error message
-						smprintf (error, 512, "Georges (CFormElm::getNodeByName) : %s is not an array element. Can't open the node %s", currentName.c_str(), name);
+						smprintf (error, 512, "Not an array element. Can't open the node (%s).", token.c_str());
 						goto exit;
 					}
 					inArrayIndex = true;
@@ -1109,7 +1102,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 			default:
 				{
 					// Error message
-					smprintf (error, 512, "Georges (CFormElm::getNodeByName) : syntax error in %s. Can't open the node %s", currentName.c_str(), name);
+					smprintf (error, 512, "Syntax error at keyword (%s).", token.c_str ());
 					goto exit;
 				}
 				break;
@@ -1125,7 +1118,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 					if (sscanf (token.c_str(), "%d", &arrayIndex)!=1)
 					{
 						// Error message
-						smprintf (error, 512, "Georges (CFormElm::getNodeByName) : %s is not an array index. Can't open the node %s", token.c_str(), name);
+						smprintf (error, 512, "Keyword (%s) is not an array index.", token.c_str());
 						goto exit;
 					}
 
@@ -1194,7 +1187,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 							else
 							{
 								// Error message
-								smprintf (error, 512, "Georges (CFormElm::getNodeByName) : Out of array bounds (size of %s is %d). Can't open the node %s", currentName.c_str(), arraySize, name);
+								smprintf (error, 512, "Out of array bounds (%d >= %d).", arrayIndex, arraySize);
 								goto exit;
 							}
 						}
@@ -1202,7 +1195,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 					else
 					{
 						// Error message
-						smprintf (error, 512, "Georges (CFormElm::getNodeByName) : The array %s is not defined.", currentName.c_str());
+						smprintf (error, 512, "Array is not defined.");
 						goto exit;
 					}
 				}
@@ -1213,7 +1206,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 					if (arrayIndex == 0xffffffff)
 					{
 						// Error message
-						smprintf (error, 512, "Georges (CFormElm::getNodeByName) : array index is missing in %s. Can't open the node %s", currentName.c_str(), name);
+						smprintf (error, 512, "Missing array index.");
 					}
 					else
 					{
@@ -1292,7 +1285,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 			default:
 				{
 					// Error message
-					smprintf (error, 512, "Georges (CFormElm::getNodeByName) : %s is not an array index. Can't open the node %s", currentName.c_str(), name);
+					smprintf (error, 512, "Keyword (%s) is not an array index.", token.c_str());
 					goto exit;
 				}
 			}
@@ -1437,10 +1430,27 @@ exit:;
 		}
 	}
 
+	// Recurce warning !
+	if (*node)
+	{
+		if ((*node)->Round == round)
+		{
+			// Turn around..
+			string formName;
+			(*node)->getFormName (formName);
+			warning (false, formName.c_str (), form->getFilename ().c_str(), "getIternalNodeByName", "Recurcive call on the same node (%s), look for loop references or inheritances.", name);
+			return false;
+		}
+		else
+			(*node)->Round = round;
+	}
+
 	if (verbose && errorAppend)
 	{
 		nlassert (*error);
-		nlwarning (error);
+
+		// Get the best form name
+		warning (false, currentName.c_str (), form->getFilename ().c_str(), "getIternalNodeByName", "Getting the node (%s) : %s", name, error);
 	}
 
 	return !errorAppend;
@@ -1531,13 +1541,13 @@ bool CFormElm::setValueByName (const char *value, const char *name, bool *create
 		else
 		{
 			// Error message
-			nlwarning ("Georges (CFormElm::setValueByName) : The node %s is not an atom element. Can't set the value.", name);
+			warning (false, "setValueByName", "The node (%s) is not an atom element. Can't set the value.", name);
 		}
 	}
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::setValueByName) : Can't created / set the node %s.", name);
+		warning (false, "setValueByName", "Can't created / set the node (%s).", name);
 
 		// Created flag
 		if (created)
@@ -1621,6 +1631,35 @@ bool CFormElm::setValueByName (NLMISC::CRGBA value, const char *name, bool *crea
 }
 
 // ***************************************************************************
+
+void CFormElm::warning (bool exception, const char *formName, const char *formFileName, const char *function, const char *format, ... )
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	NLGEORGES::warning (exception, "(CFormElm::%s) on node (%s) in form (%s) : %s", function, formName, formFileName, buffer);
+}
+
+// ***************************************************************************
+
+void CFormElm::warning (bool exception, const char *function, const char *format, ... ) const
+{
+	va_list args;
+	va_start( args, format );
+
+	string formName;
+	getFormName (formName);
+	warning (exception, formName.c_str (), getForm ()->getFilename ().c_str (), function, format, args);
+
+	va_end( args );
+}
+
+// ***************************************************************************
 // class CFormElmStruct
 // ***************************************************************************
 
@@ -1676,7 +1715,7 @@ bool CFormElmStruct::getStructNodeName (uint element, string &result) const
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmStruct::getStructNodeName) : Index (%d) out of bound (%d)", element, Elements.size() );
+		warning (false, "getStructNodeName", "Index (%d) out of bound (%d).", element, Elements.size() );
 		return false;
 	}
 };
@@ -1692,7 +1731,7 @@ bool CFormElmStruct::getStructNode (uint element, const UFormElm **result) const
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmStruct::getStructNode) : Index (%d) out of bound (%d)", element, Elements.size() );
+		warning (false, "getStructNode", "Index (%d) out of bound (%d).", element, Elements.size() );
 		return false;
 	}
 };
@@ -1708,7 +1747,7 @@ bool CFormElmStruct::getStructNode (uint element, UFormElm **result)
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmStruct::getStructNode) : Index (%d) out of bound (%d)", element, Elements.size() );
+		warning (false, "getStructNode", "Index (%d) out of bound (%d).", element, Elements.size() );
 		return false;
 	}
 };
@@ -1832,24 +1871,21 @@ void CFormElmStruct::read (xmlNodePtr node, CFormLoader &loader, const CFormDfn 
 						else
 						{
 							// Make a warning message
-							nlwarning ("Georges FORM XML in block line %d, node %s type in DFN have changed.", 
+							warning (false, "read", "In block line %d, node (%s) type in DFN have changed.",
 								(int)child->content, child->name);
 						}
 					}
 					else
 					{
-						// Make an error message
-						char tmp[512];
-						smprintf (tmp, 512, "Georges FORM XML Syntax error in block line %d, node %s name should be STRUCT, ATOM or ARRAY", 
-							(int)child->content, child->name);
-
 						if (name)
 						{
 							// Delete the value
 							xmlFree ((void*)name);
 						}
 
-						throw EXmlParsingError (tmp);
+						// Throw exception
+						warning (true, "read", "XML Syntax error in block line %d, node (%s) name should be STRUCT, ATOM or ARRAY.", 
+							(int)child->content, child->name);
 					}
 				}
 
@@ -2024,9 +2060,26 @@ void CFormElmStruct::getFormName (std::string &result, const CFormElm *child) co
 		// Draw some warning
 		if (i==Elements.size ())
 		{
-			nlwarning ("Georges (CFormElmStruct::getFormName) Child node not found!");
+			warning (false, "getFormName", "Child node not found.");
 		}
 	}
+}
+
+// ***************************************************************************
+
+void CFormElmStruct::warning (bool exception, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	string formName;
+	getFormName (formName, NULL);
+	NLGEORGES::warning (exception, "(CFormElmStruct::%s) on node (%s) in form (%s) : %s", function, formName.c_str (), Form->getFilename ().c_str (), buffer);
 }
 
 // ***************************************************************************
@@ -2090,19 +2143,15 @@ void CFormElmVirtualStruct::read (xmlNodePtr node, CFormLoader &loader, CForm *f
 		FormDfn = loader.loadFormDfn (DfnFilename.c_str (), false);
 		if (!FormDfn)
 		{
-			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "Can't find DFN filename %s.", DfnFilename.c_str ());				
-			throw EXmlParsingError (tmp);
+			// Throw exception
+			warning (true, "read", "Can't find DFN filename (%s).", DfnFilename.c_str ());
 		}
 	}
 	else
 	{
-		// Make an error message
-		char tmp[512];
-		smprintf (tmp, 512, "Georges FORM XML Syntax error in virtual struct in block line %d, should have a DfnName property.", 
+		// Throw exception
+		warning (true, "read", "XML Syntax error in virtual struct in block line %d, should have a DfnName property.", 
 			(int)node->content, node->name);
-		throw EXmlParsingError (tmp);
 	}
 
 	// Read the parent
@@ -2129,6 +2178,23 @@ bool CFormElmVirtualStruct::getDfnName (std::string &dfnName ) const
 bool CFormElmVirtualStruct::isUsed (const CForm *form) const
 {
 	return true;
+}
+
+// ***************************************************************************
+
+void CFormElmVirtualStruct::warning (bool exception, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	string formName;
+	getFormName (formName, NULL);
+	NLGEORGES::warning (exception, "(CFormElmVirtualStruct::%s) on node (%s) in form (%s) : %s", function, formName.c_str (), Form->getFilename ().c_str (), buffer);
 }
 
 // ***************************************************************************
@@ -2188,7 +2254,7 @@ bool CFormElmArray::getArrayNode (const UFormElm **result, uint arrayIndex) cons
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayNode) : Index (%d) out of bound (%d)", arrayIndex, Elements.size() );
+		warning (false, "getArrayNode", "Index (%d) out of bound (%d).", arrayIndex, Elements.size() );
 		return false;
 	}
 };
@@ -2207,7 +2273,7 @@ bool CFormElmArray::getArrayNodeName (std::string &result, uint arrayIndex) cons
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayNodeName) : Index (%d) out of bound (%d)", arrayIndex, Elements.size() );
+		warning (false, "getArrayNodeName", "Index (%d) out of bound (%d).", arrayIndex, Elements.size() );
 		return false;
 	}
 }
@@ -2223,7 +2289,7 @@ bool CFormElmArray::getArrayNode (UFormElm **result, uint arrayIndex)
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayNode) : Index (%d) out of bound (%d)", arrayIndex, Elements.size() );
+		warning (false, "getArrayNode", "Index (%d) out of bound (%d).", arrayIndex, Elements.size() );
 		return false;
 	}
 };
@@ -2235,11 +2301,11 @@ bool CFormElmArray::getArrayValue (std::string &result, uint arrayIndex, bool ev
 {
 	if (Type)
 	{
-		return (Type->getValue (result, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++));
+		return (Type->getValue (result, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL));
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2252,14 +2318,14 @@ bool CFormElmArray::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2272,14 +2338,14 @@ bool CFormElmArray::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2292,14 +2358,14 @@ bool CFormElmArray::getArrayValue (sint16 &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2312,14 +2378,14 @@ bool CFormElmArray::getArrayValue (uint16 &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2332,14 +2398,14 @@ bool CFormElmArray::getArrayValue (sint32 &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2353,14 +2419,14 @@ bool CFormElmArray::getArrayValue (uint32 &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2373,14 +2439,14 @@ bool CFormElmArray::getArrayValue (float &result, uint arrayIndex, bool evaluate
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2393,14 +2459,14 @@ bool CFormElmArray::getArrayValue (double &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2413,14 +2479,14 @@ bool CFormElmArray::getArrayValue (bool &result, uint arrayIndex, bool evaluate,
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2433,14 +2499,14 @@ bool CFormElmArray::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool 
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where, LastRound++, NULL))
 		{
 			return convertValue (result, str.c_str ());
 		}
 	}
 	else
 	{
-		nlwarning ("Georges (CFormElmArray::getArrayValue) : This array is not an array of atom. This is an array of structure.");
+		warning (false, "getArrayValue", "This array is not an array of atom. This is an array of structure.");
 	}
 
 	return false;
@@ -2495,14 +2561,14 @@ void CFormElmArray::read (xmlNodePtr node, CFormLoader &loader, CForm *form)
 			nlassert (FormDfn == NULL);
 
 			// Count children
-			uint childCount = CIXml::countChildren (node, "ATOM");
+			uint childCount = CIXml::countChildren (node, "atom.");
 
 			// Resize the table
 			Elements.resize (childCount);
 
 			// For each children
 			uint childNum=0;
-			xmlNodePtr child = CIXml::getFirstChildNode (node, "ATOM");
+			xmlNodePtr child = CIXml::getFirstChildNode (node, "atom.");
 			while (child)
 			{
 				// Get node name
@@ -2519,7 +2585,7 @@ void CFormElmArray::read (xmlNodePtr node, CFormLoader &loader, CForm *form)
 				newElt->read (child, loader, Type, form);
 
 				// Next child
-				child = CIXml::getNextChildNode (child, "ATOM");
+				child = CIXml::getNextChildNode (child, "atom.");
 				childNum++;
 			}
 		}
@@ -2634,9 +2700,26 @@ void CFormElmArray::getFormName (std::string &result, const CFormElm *child) con
 		// Draw some warning
 		if (i==Elements.size ())
 		{
-			nlwarning ("Georges (CFormElmArray::getFormName) Child node not found!");
+			warning (false, "getFormName", "Child node not found.");
 		}
 	}
+}
+
+// ***************************************************************************
+
+void CFormElmArray::warning (bool exception, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	string formName;
+	getFormName (formName, NULL);
+	NLGEORGES::warning (exception, "(CFormElmArray::%s) on node (%s) in form (%s) : %s", function, formName.c_str (), Form->getFilename ().c_str (), buffer);
 }
 
 // ***************************************************************************
@@ -2899,6 +2982,23 @@ void CFormElmAtom::getFormName (std::string &result, const CFormElm *child) cons
 	// Get parent form name
 	if (ParentNode)
 		ParentNode->getFormName (result, this);
+}
+
+// ***************************************************************************
+
+void CFormElmAtom::warning (bool exception, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	string formName;
+	getFormName (formName, NULL);
+	NLGEORGES::warning (exception, "(CFormElmAtom::%s) on node (%s) in form (%s) : %s", function, formName.c_str (), Form->getFilename ().c_str (), buffer);
 }
 
 // ***************************************************************************

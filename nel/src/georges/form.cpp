@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.9 2002/06/11 17:38:58 corvazier Exp $
+ * $Id: form.cpp,v 1.10 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,31 @@ using namespace NLMISC;
 
 namespace NLGEORGES
 {
+
+// ***************************************************************************
+// Misc
+// ***************************************************************************
+
+void warning (bool exception, const char *format, ... )
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	if (exception)
+	{
+		// Make an error message
+		char tmp[1024];
+		smprintf (tmp, 1024, "NeL::Georges %s", buffer);
+		throw EXmlParsingError (tmp);
+	}
+	else
+		nlwarning ("NeL::Georges %s", buffer);
+}
 
 // ***************************************************************************
 // UForm
@@ -88,7 +113,7 @@ CForm::~CForm ()
 void CForm::write (xmlDocPtr doc, const char *filename)
 {
 	// Save the filename
-	_Filename = CFile::getFilenameWithoutExtension (filename);
+	_Filename = CFile::getFilename (filename);
 
 	// Create the first node
 	xmlNodePtr node = xmlNewDocNode (doc, NULL, (const xmlChar*)"FORM", NULL);
@@ -132,25 +157,25 @@ void CForm::readParent (const char *parent, CFormLoader &loader)
 		if (!insertParent (getParentCount (), parent, theParent))
 		{
 			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "Can't set the parent FORM named %s. Check if it is the same form or if it use a differnt formDfn.", parent);
+			std::string parentName = parent;
 
 			// Delete the value
 			xmlFree ((void*)parent);
 
-			throw EXmlParsingError (tmp);
+			// Throw exception
+			warning (true, "readParent", "Can't set the parent FORM named (%s). Check if it is the same form or if it use a differnt formDfn.", parentName.c_str ());
 		}
 	}
 	else
 	{
 		// Make an error message
-		char tmp[512];
-		smprintf (tmp, 512, "Can't load the parent FORM named %s.", parent);
+		std::string parentName = parent;
 
 		// Delete the value
 		xmlFree ((void*)parent);
 
-		throw EXmlParsingError (tmp);
+		// Throw exception
+		warning (true, "readParent", "Can't load the parent FORM named (%s).", parentName.c_str ());
 	}
 }
 
@@ -159,7 +184,7 @@ void CForm::readParent (const char *parent, CFormLoader &loader)
 void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, const char *filename)
 {
 	// Save the filename
-	_Filename = CFile::getFilenameWithoutExtension (filename);
+	_Filename = CFile::getFilename (filename);
 
 	// Reset form
 	clean ();
@@ -168,21 +193,17 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, const cha
 	if ( ((const char*)node->name == NULL) || (strcmp ((const char*)node->name, "FORM") != 0) )
 	{
 		// Make an error message
-		char tmp[512];
-		smprintf (tmp, 512, "Georges FORM XML Syntax error in block line %d, node %s should be FORM", 
+		warning (true, "read", "XML Syntax error in block line %d, node (%s) should be FORM.", 
 			(int)node->content, node->name);
-		throw EXmlParsingError (tmp);
 	}
 
 	// Get first struct node
 	xmlNodePtr child = CIXml::getFirstChildNode (node, "STRUCT");
 	if (child == NULL)
 	{
-		// Make an error message
-		char tmp[512];
-		smprintf (tmp, 512, "Georges FORM XML Syntax error in block line %d, node %s should have a STRUCT child node", 
+		// Throw exception
+		warning (true, "read", "Syntax error in block line %d, node (%s) should have a STRUCT child node.", 
 			(int)node->content, node->name);
-		throw EXmlParsingError (tmp);
 	}
 
 	// Read the struct
@@ -260,7 +281,8 @@ bool CForm::insertParent (uint before, const char *filename, CForm *parent)
 	}
 	else
 	{
-		nlwarning ("Georges (CForm::insertParent) Can't insert parent form (%s) that has not the same DFN.", filename);
+		// Output an error
+		warning (false, "insertParent", "Can't insert parent form (%s) that has not the same DFN.", filename);
 	}
 
 	return false;
@@ -314,6 +336,23 @@ const std::string &CForm::getFilename () const
 {
 	return _Filename;
 }
+
+// ***************************************************************************
+
+void CForm::warning (bool exception, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	NLGEORGES::warning (exception, "(CForm::%s) in form (%s) : %s", function, _Filename.c_str (), buffer);
+}
+
+// ***************************************************************************
 
 } // NLGEORGES
 

@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.4 2002/09/02 08:42:33 corvazier Exp $
+ * $Id: type.h,v 1.5 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,7 +93,7 @@ public:
 
 	// Evaluate a node
 	bool				getValue (std::string &result, const class CForm *form, const class CFormElmAtom *node, const class CFormDfn &parentDfn, 
-									uint parentIndex, bool evaluate, uint32 *where, uint32 round) const;
+									uint parentIndex, bool evaluate, uint32 *where, uint32 round, const char *formName) const;
 
 	// Definitions
 	class CDefinition
@@ -117,6 +117,11 @@ public:
 	virtual TType getType () const;
 
 private:
+
+	// Error handling
+	virtual void		warning (bool exception, const char *formName, const char *formFilename, const char *function, const char *format, ... ) const;
+	virtual void		warning2 (bool exception, const char *function, const char *format, ... ) const;
+
 	// Type names
 	static const char	*TypeNames[];
 	static const char	*UITypeNames[];

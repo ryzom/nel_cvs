@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.12 2002/09/02 08:42:33 corvazier Exp $
+ * $Id: form_elm.h,v 1.13 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,16 +128,16 @@ public:
 
 	// ** Convert functions
 
-	static inline bool convertValue (sint8 &result, const char *value);
-	static inline bool convertValue (uint8 &result, const char *value);
-	static inline bool convertValue (sint16 &result,	const char *value);
-	static inline bool convertValue (uint16 &result,	const char *value);
-	static inline bool convertValue (sint32 &result,	const char *value);
-	static inline bool convertValue (uint32 &result,	const char *value);
-	static inline bool convertValue (float &result, const char *value);
-	static inline bool convertValue (double &result, const char *value);
-	static inline bool convertValue (bool &result, const char *value);
-	static inline bool convertValue (NLMISC::CRGBA &result, const char *value);
+	inline bool		convertValue (sint8 &result, const char *value) const;
+	inline bool		convertValue (uint8 &result, const char *value) const;
+	inline bool		convertValue (sint16 &result,	const char *value) const;
+	inline bool		convertValue (uint16 &result,	const char *value) const;
+	inline bool		convertValue (sint32 &result,	const char *value) const;
+	inline bool		convertValue (uint32 &result,	const char *value) const;
+	inline bool		convertValue (float &result, const char *value) const;
+	inline bool		convertValue (double &result, const char *value) const;
+	inline bool		convertValue (bool &result, const char *value) const;
+	inline bool		convertValue (NLMISC::CRGBA &result, const char *value) const;
 
 	// ** Internal node access
 
@@ -232,6 +232,10 @@ protected:
 	// Recurce Tag
 	uint32				Round;
 
+	// Error handling
+	static void			warning (bool exception, const char *formName, const char *formFileName, const char *function, const char *format, ... );
+	virtual void		warning (bool exception, const char *function, const char *format, ... ) const;
+
 private:
 	// Tokens
 	enum TToken
@@ -301,6 +305,9 @@ public:
 
 	// Sub Elements
 	std::vector<CFormElmStructElm>		Elements;
+
+	// Error handling
+	virtual void		warning (bool exception, const char *function, const char *format, ... ) const;
 };
 
 /**
@@ -325,6 +332,9 @@ public:
 
 	// Call by CFormLoader
 	void				read (xmlNodePtr node, CFormLoader &loader, CForm *form);
+
+	// Error handling
+	virtual void		warning (bool exception, const char *function, const char *format, ... ) const;
 };
 
 /**
@@ -389,6 +399,9 @@ public:
 
 	// Array of elements
 	std::vector<CElement>		Elements;
+
+	// Error handling
+	virtual void		warning (bool exception, const char *function, const char *format, ... ) const;
 };
 
 /**
@@ -437,13 +450,16 @@ public:
 private:
 	// The value
 	std::string					Value;
+
+	// Error handling
+	virtual void		warning (bool exception, const char *function, const char *format, ... ) const;
 };
 
 // ***************************************************************************
 // CFormElm inlines
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (sint8 &result, const char *value)
+inline bool CFormElm::convertValue (sint8 &result, const char *value) const
 {
 	float tmp;
 	if (sscanf (value, "%f", &tmp) == 1)
@@ -455,14 +471,14 @@ inline bool CFormElm::convertValue (sint8 &result, const char *value)
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in sint8.", value);
+		warning (false, "convertValue", "Can't convert the string \"%s\" in sint8.", value);
 	}
 	return false;
 }
 
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (uint8 &result, const char *value)
+inline bool CFormElm::convertValue (uint8 &result, const char *value) const
 {
 	float tmp;
 	if (sscanf (value, "%f", &tmp) == 1)
@@ -474,14 +490,14 @@ inline bool CFormElm::convertValue (uint8 &result, const char *value)
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in uint8.", value);
+		warning (false, "convertValue", "Can't convert the string \"%s\" in uint8.", value);
 	}
 	return false;
 }
 
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (sint16 &result,	const char *value)
+inline bool CFormElm::convertValue (sint16 &result,	const char *value) const
 {
 	float tmp;
 	if (sscanf (value, "%f", &tmp) == 1)
@@ -493,14 +509,14 @@ inline bool CFormElm::convertValue (sint16 &result,	const char *value)
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in sint16.", value);
+		warning (false, "convertValue", "Can't convert the string \"%s\" in sint16.", value);
 	}
 	return false;
 }
 
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (uint16 &result,	const char *value)
+inline bool CFormElm::convertValue (uint16 &result,	const char *value) const
 {
 	float tmp;
 	if (sscanf (value, "%f", &tmp) == 1)
@@ -512,14 +528,14 @@ inline bool CFormElm::convertValue (uint16 &result,	const char *value)
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in uint16.", value);
+		warning (false, "convertValue", "Can't convert the string \"%s\" in uint16.", value);
 	}
 	return false;
 }
 
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (sint32 &result,	const char *value)
+inline bool CFormElm::convertValue (sint32 &result,	const char *value) const
 {
 	float tmp;
 	if (sscanf (value, "%f", &tmp) == 1)
@@ -531,14 +547,14 @@ inline bool CFormElm::convertValue (sint32 &result,	const char *value)
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in sint32.", value);
+		warning (false, "convertValue", "Can't convert the string \"%s\" in sint32.", value);
 	}
 	return false;
 }
 
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (uint32 &result,	const char *value)
+inline bool CFormElm::convertValue (uint32 &result,	const char *value) const
 {
 	float tmp;
 	if (sscanf (value, "%f", &tmp) == 1)
@@ -550,14 +566,14 @@ inline bool CFormElm::convertValue (uint32 &result,	const char *value)
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in uint32.", value);
+		warning (false, "convertValue", "Can't convert the string \"%s\" in uint32.", value);
 	}
 	return false;
 }
 
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (float &result, const char *value)
+inline bool CFormElm::convertValue (float &result, const char *value) const
 {
 	if (sscanf (value, "%f", &result) == 1)
 	{
@@ -566,14 +582,14 @@ inline bool CFormElm::convertValue (float &result, const char *value)
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in float.", value);
+		warning (false, "convertValue", "Can't convert the string \"%s\" in float.", value);
 	}
 	return false;
 }
 
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (double &result, const char *value)
+inline bool CFormElm::convertValue (double &result, const char *value) const
 {
 	float tmp;
 	if (sscanf (value, "%f", &tmp) == 1)
@@ -584,14 +600,14 @@ inline bool CFormElm::convertValue (double &result, const char *value)
 	else
 	{
 		// Error message
-		nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in double.", value);
+		warning (false, "convertValue", "Can't convert the string \"%s\" in double.", value);
 	}
 	return false;
 }
 
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (bool &result, const char *value)
+inline bool CFormElm::convertValue (bool &result, const char *value) const
 {
 	int tmp;
 	if (sscanf (value, "%d", &tmp) == 1)
@@ -616,14 +632,14 @@ inline bool CFormElm::convertValue (bool &result, const char *value)
 	}
 
 	// Error message
-	nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in boolean.", value);
+	warning (false, "convertValue", "Can't convert the string \"%s\" in boolean.", value);
 	
 	return false;
 }
 
 // ***************************************************************************
 
-inline bool CFormElm::convertValue (NLMISC::CRGBA &result, const char *value)
+inline bool CFormElm::convertValue (NLMISC::CRGBA &result, const char *value) const
 {
 	float r, g, b;
 	if (sscanf (value, "%f,%f,%f", &r, &g, &b) == 1)
@@ -638,7 +654,7 @@ inline bool CFormElm::convertValue (NLMISC::CRGBA &result, const char *value)
 	}
 
 	// Error message
-	nlwarning ("Georges (CFormElm::convertValue) : Can't convert the string %s in RGB color.", value);
+	warning (false, "convertValue", "Can't convert the string \"%s\" in RGB color.", value);
 	
 	return false;
 }

@@ -1,7 +1,7 @@
 /** \file form_loader.h
  * Georges form loader implementation
  *
- * $Id: form_loader.h,v 1.3 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: form_loader.h,v 1.4 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -59,6 +59,9 @@ public:
 	CFormDfn	*loadFormDfn (const char *filename, bool forceLoad);
 
 private:
+
+	// Error handling
+	virtual void		warning (bool exception, const char *function, const char *format, ... ) const;
 
 	typedef std::map<std::string, NLMISC::CRefPtr<CType> >		TTypeMap;
 	typedef std::map<std::string, NLMISC::CRefPtr<CFormDfn> >	TFormDfnMap;

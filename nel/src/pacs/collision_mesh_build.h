@@ -1,7 +1,7 @@
 /** \file collision_mesh_build.h
  * 
  *
- * $Id: collision_mesh_build.h,v 1.7 2002/09/03 16:42:52 legros Exp $
+ * $Id: collision_mesh_build.h,v 1.8 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -205,11 +205,11 @@ public:
 					NLMISC::CVector	eva = Vertices[va], evb = Vertices[vb];
 					static char	buf[512];
 					sprintf(buf, "Edge issue: (%.2f,%.2f,%.2f)-(%.2f,%.2f,%.2f) [left face already found]\n"
-								 "left.0:%d: v0:(%.2f,%.2f) v1:(%.2f,%.2f), v2:(%.2f,%.2f)\n"
-								 "left.1:%d: v0:(%.2f,%.2f) v1:(%.2f,%.2f), v2:(%.2f,%.2f)",
+								 "left.0:%d: v0:(%.2f,%.2f) v1:(%.2f,%.2f), v2:(%.2f,%.2f) surf=%d material=%d\n"
+								 "left.1:%d: v0:(%.2f,%.2f) v1:(%.2f,%.2f), v2:(%.2f,%.2f) surf=%d material=%d",
 									eva.x, eva.y, eva.z, evb.x, evb.y, evb.z,
-									(*it).second.Left, Vertices[left0.V[0]].x, Vertices[left0.V[0]].y, Vertices[left0.V[1]].x, Vertices[left0.V[1]].y, Vertices[left0.V[2]].x, Vertices[left0.V[2]].y,
-									i,                 Vertices[left1.V[0]].x, Vertices[left1.V[0]].y, Vertices[left1.V[1]].x, Vertices[left1.V[1]].y, Vertices[left1.V[2]].x, Vertices[left1.V[2]].y);
+									(*it).second.Left, Vertices[left0.V[0]].x, Vertices[left0.V[0]].y, Vertices[left0.V[1]].x, Vertices[left0.V[1]].y, Vertices[left0.V[2]].x, Vertices[left0.V[2]].y, Faces[(*it).second.Left].Surface, Faces[(*it).second.Left].Material, 
+									i,                 Vertices[left1.V[0]].x, Vertices[left1.V[0]].y, Vertices[left1.V[1]].x, Vertices[left1.V[1]].y, Vertices[left1.V[2]].x, Vertices[left1.V[2]].y, Faces[i].Surface, Faces[i].Material);
 					errors.push_back(std::string(buf));
 					continue;
 /*					nlerror("On face %d, edge %d: left side of edge (%d,%d) already linked to face %d",

@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.7 2002/09/03 10:25:07 corvazier Exp $
+ * $Id: type.cpp,v 1.8 2002/09/04 10:28:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,10 @@ using namespace std;
 
 namespace NLGEORGES
 {
+
+// ***************************************************************************
+
+void warning (bool exception, const char *format, ... );
 
 // ***************************************************************************
 
@@ -112,11 +116,9 @@ void CType::read (xmlNodePtr root)
 	// Check node name
 	if ( ((const char*)root->name == NULL) || (strcmp ((const char*)root->name, "TYPE") != 0) )
 	{
-		// Make an error message
-		char tmp[512];
-		smprintf (tmp, 512, "Georges TYPE XML Syntax error in block line %d, node %s should be TYPE", 
+		// Throw exception
+		warning2 (true, "read", "XML Syntax error in block line %d, node (%s) should be TYPE.",
 			(int)root->content, root->name);
-		throw EXmlParsingError (tmp);
 	}
 
 	// Read the type
@@ -137,14 +139,14 @@ void CType::read (xmlNodePtr root)
 		else
 		{
 			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "Georges TYPE XML Syntax error in TYPE block line %d, the Type value is unknown (%s)", 
-				(int)root->content, value);
+			string valueStr = value;
 
 			// Delete the value
 			xmlFree ((void*)value);
 
-			throw EXmlParsingError (tmp);
+			// Throw exception
+			warning2 (true, "read", "XML Syntax error in TYPE block line %d, the Type value is unknown (%s).", 
+				(int)root->content, valueStr.c_str ());
 		}
 
 		// Delete the value
@@ -152,11 +154,9 @@ void CType::read (xmlNodePtr root)
 	}
 	else
 	{
-		// Make an error message
-		char tmp[512];
-		smprintf (tmp, 512, "Georges TYPE XML Syntax error in TYPE block line %d, the Type argument was not found", 
+		// Throw exception
+		warning2 (true, "read", "XML Syntax error in TYPE block line %d, the Type argument was not found.", 
 			(int)root->content);
-		throw EXmlParsingError (tmp);
 	}
 
 	// Read the UI
@@ -262,11 +262,9 @@ void CType::read (xmlNodePtr root)
 				// Delete the value
 				xmlFree ((void*)label);
 
-				// Make an error message
-				char tmp[512];
-				smprintf (tmp, 512, "Georges TYPE XML Syntax error in DEFINITION block line %d, the Value argument was not found", 
+				// Throw exception
+				warning2 (true, "read", "XML Syntax error in DEFINITION block line %d, the Value argument was not found.", 
 					(int)childPtr->content);
-				throw EXmlParsingError (tmp);
 			}			
 
 			// Delete the value
@@ -274,11 +272,9 @@ void CType::read (xmlNodePtr root)
 		}
 		else
 		{
-			// Make an error message
-			char tmp[512];
-			smprintf (tmp, 512, "Georges TYPE XML Syntax error in DEFINITION block line %d, the Label argument was not found", 
+			// Throw exception
+			warning2 (true, "read", "XML Syntax error in DEFINITION block line %d, the Label argument was not found.", 
 				(int)childPtr->content);
-			throw EXmlParsingError (tmp);
 		}
 
 		// One more
@@ -373,8 +369,38 @@ public:
 			else
 			{
 				// try to get a Form value
-				if (Form->getRootNode ().getValueByName (result, value, true, NULL, round))
-					return CEvalNumExpr::NoError;
+
+				// The parent Dfn
+				const CFormDfn *parentDfn;
+				const CFormDfn *nodeDfn;
+				const CType *nodeType;
+				CFormElm *node;
+				uint parentIndex;
+				bool array;
+				bool parentVDfnArray;
+				UFormDfn::TEntryType type;
+
+				// Search for the node
+				if (((const CFormElm&)Form->getRootNode ()).getNodeByName (value, &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array, parentVDfnArray, false, round))
+				{
+					// End, return the current index
+					if (type == UFormDfn::EntryType)
+					{
+						// The atom
+						const CFormElmAtom *atom = node ? safe_cast<const CFormElmAtom*> (node) : NULL;
+
+						// Evale
+						nlassert (nodeType);
+						string res;
+						if (nodeType->getValue (res, Form, atom, *parentDfn, parentIndex, true, NULL, round, value))
+						{
+							if (((const CFormElm&)Form->getRootNode ()).convertValue (result, res.c_str ()))
+							{
+								return CEvalNumExpr::NoError;
+							}
+						}
+					}
+				}
 			}
 		}
 		return CEvalNumExpr::evalValue (value, result, round);
@@ -386,7 +412,7 @@ public:
 
 // ***************************************************************************
 
-bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *node, const CFormDfn &parentDfn, uint parentIndex, bool evaluate, uint32 *where, uint32 round) const
+bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *node, const CFormDfn &parentDfn, uint parentIndex, bool evaluate, uint32 *where, uint32 round, const char *formName) const
 {
 	// Node exist ?
 	if (node && !node->Value.empty())
@@ -456,7 +482,7 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 					msg[i] = '^';
 					msg[i+1] = 0;
 				}
-				nlwarning ("Syntax error in expression: %s\n%s\n%s\n", expr.getErrorString (error), result.c_str (), msg);
+				warning (false, formName, form->getFilename ().c_str (), "getValue", "Syntax error in expression: %s\n%s\n%s", expr.getErrorString (error), result.c_str (), msg);
 				return false;
 			}
 		}
@@ -478,16 +504,41 @@ bool CType::getValue (string &result, const CForm *form, const CFormElmAtom *nod
 					}
 					if (i == result.size ())
 					{
-						nlwarning ("Geroges (CType::getValue) Missing double quote in value : %s", result.c_str ());
+						warning (false, formName, form->getFilename ().c_str (), "getValue", "Missing double quote in value : %s.", result.c_str ());
 						return false;
 					}
 					string valueName = result.substr (1, i-1);
 
 					// try to get a Form value
-					if ((form) && (form->getRootNode ().getValueByName (result, valueName.c_str (), true, NULL, round)))
-						return true;
-					else
-						return false;
+
+					// The parent Dfn
+					const CFormDfn *parentDfn;
+					const CFormDfn *nodeDfn;
+					const CType *nodeType;
+					CFormElm *node;
+					uint parentIndex;
+					bool array;
+					bool parentVDfnArray;
+					UFormDfn::TEntryType type;
+
+					// Search for the node
+					if (((const CFormElm&)form->getRootNode ()).getNodeByName (valueName.c_str (), &parentDfn, parentIndex, &nodeDfn, &nodeType, &node, type, array, parentVDfnArray, false, round))
+					{
+						// End, return the current index
+						if (type == UFormDfn::EntryType)
+						{
+							// The atom
+							const CFormElmAtom *atom = node ? safe_cast<const CFormElmAtom*> (node) : NULL;
+
+							// Evale
+							nlassert (nodeType);
+							if (nodeType->getValue (result, form, atom, *parentDfn, parentIndex, true, NULL, round, valueName.c_str ()))
+							{
+								return true;
+							}
+						}
+					}
+					return false;
 				}
 			}	
 		}
@@ -520,6 +571,36 @@ bool CType::uiCompatible (TType type, TUI ui)
 		return (ui == ColorEdit);
 	}
 	return false;
+}
+
+// ***************************************************************************
+
+void CType::warning (bool exception, const char *formName, const char *formFilename, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	NLGEORGES::warning (exception, "(CType::%s) In form (%s) in node (%s) : %s", function, formFilename, formName, buffer);
+}
+
+// ***************************************************************************
+
+void CType::warning2 (bool exception, const char *function, const char *format, ... ) const
+{
+	// Make a buffer string
+	va_list args;
+	va_start( args, format );
+	char buffer[1024];
+	sint ret = vsnprintf( buffer, 1024, format, args );
+	va_end( args );
+
+	// Set the warning
+	NLGEORGES::warning (exception, "(CType::%s) : %s", function, buffer);
 }
 
 // ***************************************************************************

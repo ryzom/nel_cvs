@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.52 2002/09/18 09:44:05 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.53 2002/09/30 13:13:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -395,9 +395,9 @@ namespace NLAISCRIPT
 				if(classType != NULL) n -= classType->getStaticMemberSize();
 			}
 		}				
-		catch(NLAIE::IException &e)
+		catch(NLAIE::IException &)
 		{
-			throw NLAIE::CExceptionContainer(e.what());
+			//throw NLAIE::CExceptionContainer(e.what());
 		}
 				
 		return NULL;

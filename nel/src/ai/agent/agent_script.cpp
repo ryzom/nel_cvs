@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.134 2002/09/27 09:56:46 portier Exp $
+ * $Id: agent_script.cpp,v 1.135 2002/09/30 13:13:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -811,11 +811,9 @@ namespace NLAIAGENT
 		return r;
 	}
 
-
 	IObjectIA::CProcessResult CAgentScript::removeDynamic(NLAIAGENT::IBaseGroupType *g)
 	{
 		CStringType *s = (CStringType *)g->getFront();
-//		NLAIAGENT::IBasicAgent *removed = (NLAIAGENT::IBasicAgent *)g->get();		
 		IObjectIA::CProcessResult r;
 		r.ResultState = IObjectIA::ProcessIdle;
 		std::pair<tsetDefNameAgent::iterator,tsetDefNameAgent::iterator>  p = _DynamicAgentName.equal_range(CKeyAgent(*s));
@@ -837,6 +835,24 @@ namespace NLAIAGENT
 		r.Result = &DigitalType::NullOperator;
 		r.Result->incRef();
 		return r;
+	}
+
+
+	void CAgentScript::removeDynamic(NLAIAGENT::IBasicAgent *ag)
+	{		
+		
+		tsetDefNameAgent::iterator p = _DynamicAgentName.begin();
+		
+		while(p != _DynamicAgentName.end())
+		{
+			if((*(*p).Itr) == ag)
+			{
+				_DynamicAgentName.erase(p);				
+				removeChild(ag);			
+				break;
+			}
+			p ++;
+		}					
 	}
 
 	IObjectIA::CProcessResult CAgentScript::getDynamicAgent(IBaseGroupType *g)

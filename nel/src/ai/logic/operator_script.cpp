@@ -105,6 +105,32 @@ namespace NLAIAGENT
 		text = NLAIC::stringGetBuild("%f", priority() );
 		t += text;
 		t += "\n\t";
+
+		if( _AgentManager != NULL)
+		{
+			const NLAISCRIPT::CParam p;
+			static CStringVarName debugStringF("GetDebugString");
+
+			tQueue r = isMember(NULL,&debugStringF,p);
+			if(r.size())
+			{
+				NLAISCRIPT::CCodeContext *c = (NLAISCRIPT::CCodeContext *)_AgentManager->getAgentContext()->clone();
+				NLAIAGENT::CIdMethod m = r.top();
+				//msg->setMethodIndex(0,m.Index);	
+				c->Self = this;
+
+				IBaseGroupType *param = new CGroupType();								
+				(*c).Stack ++;
+				(*c).Stack[(int)(*c).Stack] = param;
+				NLAISCRIPT::IMethodContext *methodContex = new NLAISCRIPT::CMethodContext();
+				NLAISCRIPT::CCallMethod opCall(methodContex,0,m.Index);
+				opCall.runOpCode(*c);												
+				const NLAIAGENT::CStringType *returnMsg = (const NLAIAGENT::CStringType *)c->Stack[(int)(*c).Stack];				
+				t += returnMsg->getStr().getString();
+				(*c).Stack--;
+				c->release();				
+			}
+		}
 	}
 
 	bool COperatorScript::isEqual(const IBasicObjectIA &a) const

@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.70 2002/09/27 09:56:46 portier Exp $
+ * $Id: actor_script.cpp,v 1.71 2002/09/30 13:13:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -174,6 +174,10 @@ namespace NLAIAGENT
 			while ( _Launched.size() )
 			{
 				( (CActorScript *) _Launched.front() )->cancel();
+				//_Launched.front()->Kill();
+				/*if(_Launched.front()->getRef() >= 2)
+												_Launched.front()->release();*/
+				removeDynamic(_Launched.front());
 				_Launched.front()->release();
 				_Launched.pop_front();
 			}
@@ -504,8 +508,24 @@ namespace NLAIAGENT
 			
 				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 				{
-					IObjectIA *child = (IObjectIA *)((NLAIAGENT::IBaseGroupType *)params)->get();
-					Launch("Actor", (NLAIAGENT::IBasicAgent *) child);
+					/*IObjectIA *child = (IObjectIA *)((NLAIAGENT::IBaseGroupType *)params)->get();
+					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);					
+					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
+					{
+						if ( _TopLevel )
+							((CActorScript *)child)->setTopLevel( _TopLevel );
+						else
+							((CActorScript *)child)->setTopLevel( this );
+						
+						((CActorScript *)child)->activate();
+					}
+
+					_Launched.push_back( (NLAIAGENT::IAgent *) child );
+					child->incRef();*/
+					CIteratorContener i = ((NLAIAGENT::IBaseGroupType *) params)->getIterator();
+					CStringType &s = (CStringType &)*i++;
+					IBasicAgent *a = (IBasicAgent *)i++;
+					Launch(s.getStr().getString(), a);
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
@@ -586,9 +606,10 @@ namespace NLAIAGENT
 
 	void CActorScript::Launch(const std::string &name, NLAIAGENT::IBasicAgent *child)
 	{
-		addDynamicAgent( CStringType( name.c_str() ) , child );
-		child->incRef();
-//		_NbAnswers++;
+
+		addDynamicAgent( CStringType( name.c_str() ) , child );		
+		_NbAnswers++;
+
 		if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
 		{
 			if ( _TopLevel )
@@ -667,8 +688,26 @@ namespace NLAIAGENT
 			case fid_launch:
 				if ( ( (NLAIAGENT::IBaseGroupType *) params)->size() )
 				{
-					IObjectIA *child = (IObjectIA *)((NLAIAGENT::IBaseGroupType *)params)->get();
-					Launch("Actor", (NLAIAGENT::IBasicAgent *) child);
+					/*IObjectIA *child = (IObjectIA *)((NLAIAGENT::IBaseGroupType *)params)->get();
+					addDynamicAgent( (NLAIAGENT::IBaseGroupType *) params);
+					_NbAnswers++;
+					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
+					{
+						if ( _TopLevel )
+							((CActorScript *)child)->setTopLevel( _TopLevel );
+						else
+							((CActorScript *)child)->setTopLevel( this );
+						
+						((CActorScript *)child)->activate();
+					}
+					_Launched.push_back( (NLAIAGENT::IAgent *) child );
+					child->incRef();*/
+					
+					CIteratorContener i = ((NLAIAGENT::IBaseGroupType *) params)->getIterator();
+					CStringType &s = (CStringType &)*i++;
+					IBasicAgent *a = (IBasicAgent *)i++;
+					Launch(s.getStr().getString(), a);
+
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
@@ -963,6 +1002,7 @@ namespace NLAIAGENT
 
 	void CActorScript::processFailure(NLAIAGENT::IObjectIA *param)
 	{
+
 
 #ifdef NL_DEBUG
 		const char *dbg_type = (const char *) getType();

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.6 2001/01/17 10:14:52 saffray Exp $
+ * $Id: group_type.cpp,v 1.7 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,8 +80,7 @@ namespace NLAIAGENT
 			{
 				if(*methodName == IBaseGroupType::_Method[i].MethodName)
 				{					
-					CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
-					c->incRef();					
+					CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));					
 					a.push(CIdMethod(IBaseGroupType::_Method[i].Index + IObjetOp::getMethodIndexSize(),0.0,NULL,c));					
 					break;
 				}
@@ -184,7 +183,7 @@ namespace NLAIAGENT
 				
 
 				set((sint32)f->getValue(),n);
-				n->incRef();							
+				n->incRef();
 				return IObjectIA::CProcessResult();
 			}						
 		}
@@ -220,7 +219,6 @@ namespace NLAIAGENT
 	IObjetOp *CGroupType::operator ! () const
 	{		
 		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!size());
-		x->incRef();
 		return x;
 	}
 
@@ -498,14 +496,12 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CGroupType::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CGroupType(*this);
-		m->incRef();
 		return m;
 	}
 
 	const NLAIC::IBasicType *CGroupType::newInstance() const
 	{
 		NLAIC::IBasicInterface *m = new CGroupType();
-		m->incRef();
 		return m;
 	}
 
@@ -590,7 +586,6 @@ namespace NLAIAGENT
 	IObjetOp *CVectorGroupType::operator ! () const
 	{		
 		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!size());
-		x->incRef();
 		return x;
 	}
 
@@ -864,14 +859,12 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CVectorGroupType::clone() const
 	{
 		NLAIC::IBasicInterface *m = new CVectorGroupType(*this);
-		m->incRef();
 		return m;
 	}
 
 	const NLAIC::IBasicType *CVectorGroupType::newInstance() const
 	{
 		NLAIC::IBasicInterface *m = new CVectorGroupType();
-		m->incRef();
 		return m;
 	}
 
@@ -947,7 +940,6 @@ namespace NLAIAGENT
 			{				
 				
 				CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
-				c->incRef();					
 				a.push(CIdMethod(_Const + IBaseGroupType::getMethodIndexSize(),0.0,NULL,c));				
 			}
 			else

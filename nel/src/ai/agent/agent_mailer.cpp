@@ -1,6 +1,6 @@
 /** \file agent_mailer.cpp
  *
- * $Id: agent_mailer.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
+ * $Id: agent_mailer.cpp,v 1.4 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLAIAGENT
 			//_HostAgent->onKill(this);			
 			Kill();
 
-			_HostAgent->release();
+			//_HostAgent->release();
 
 		}
 		else Kill();
@@ -54,7 +54,7 @@ namespace NLAIAGENT
 	}
 	void CLocalAgentMail::onKill(IConnectIA *a)
 	{
-		if(a == _HostAgent) _HostAgent->release();
+		//if(a == _HostAgent) _HostAgent->release();
 
 	}
 

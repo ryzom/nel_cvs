@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.7 2001/01/16 11:55:37 robert Exp $
+ * $Id: main_agent_script.cpp,v 1.8 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,6 @@ namespace NLAIAGENT
 		_Heap = new NLAISCRIPT::CStackPointer();
 
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,a._CodeContext->InputOutput);
-		_CodeContext->incRef();
 	}
 
 	CMainAgentScript::CMainAgentScript(IAgentManager *main,NLAIC::IIO *io):CAgentScript (main)
@@ -42,7 +41,6 @@ namespace NLAIAGENT
 		_Stack = new NLAISCRIPT::CStackPointer();
 		_Heap = new NLAISCRIPT::CStackPointer();
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
-		_CodeContext->incRef();
 	}
 	
 	CMainAgentScript::CMainAgentScript(NLAIC::IIO *io):CAgentScript (NULL)
@@ -50,7 +48,6 @@ namespace NLAIAGENT
 		_Stack = new NLAISCRIPT::CStackPointer();
 		_Heap = new NLAISCRIPT::CStackPointer();
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
-		_CodeContext->incRef();		
 	}
 
 	CMainAgentScript::~CMainAgentScript()
@@ -78,14 +75,12 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CMainAgentScript::clone() const
 	{
 		NLAIC::IBasicType *x = new CMainAgentScript(*this);
-		x->incRef();
 		return x;
 	}
 	
 	const NLAIC::IBasicType *CMainAgentScript::newInstance() const
 	{
 		NLAIC::IBasicType *x = new CMainAgentScript(_CodeContext->InputOutput);
-		x->incRef();
 		return x;
 	}
 
@@ -121,7 +116,6 @@ namespace NLAIAGENT
 			{
 				const IMessageBase &msg = ((IMailBox *)getLocalMailBox())->getMessage();
 				IBaseGroupType *param = new CGroupType();
-				param->incRef();
 				param->push(&msg);
 				context.Stack ++;
 				context.Stack[(int)context.Stack] = param;
@@ -162,7 +156,6 @@ namespace NLAIAGENT
 
 		if(((const NLAIC::CTypeOfObject &)o->getType()) & NLAIC::CTypeOfObject::tAgentInterpret)
 		{
-			//incRef();
 			((CAgentScript *)o)->setAgentManager(this);
 		}
 		

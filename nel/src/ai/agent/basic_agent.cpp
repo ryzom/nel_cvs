@@ -1,6 +1,6 @@
 /** \file basic_agent.cpp
  *
- * $Id: basic_agent.cpp,v 1.6 2001/01/15 17:58:29 chafik Exp $
+ * $Id: basic_agent.cpp,v 1.7 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,6 @@ namespace NLAIAGENT
 		while(i != a._AgentList.end())
 		{				
 			IBasicAgent *b = ( *i++ );
-			//b->incRef();	
 			addChild( b );
 		}
 	}

@@ -115,7 +115,6 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CActorScript::clone() const
 	{		
 		CActorScript *m = new CActorScript(*this);
-		m->incRef();
 		return m;
 	}		
 
@@ -129,7 +128,6 @@ namespace NLAIAGENT
 		else 
 		{			
 			instance = new CActorScript(NULL);
-			instance->incRef();
 		}
 		return instance;
 	}
@@ -366,14 +364,12 @@ namespace NLAIAGENT
 		if ( *name == CStringVarName("activate") )
 		{
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			r_type->incRef();
 			result.push( NLAIAGENT::CIdMethod(  IAgent::getMethodIndexSize() + fid_activate, 0.0,NULL, r_type ) );
 		}
 
 		if ( *name == CStringVarName("onActivate") )
 		{
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			r_type->incRef();
 			result.push( NLAIAGENT::CIdMethod( IAgent::getMethodIndexSize() + fid_onActivate , 0.0,NULL, r_type ) );
 		}
 
@@ -381,21 +377,18 @@ namespace NLAIAGENT
 		if ( *name == CStringVarName("unActivate") )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			r_type->incRef();
 			result.push( NLAIAGENT::CIdMethod( IAgent::getMethodIndexSize() + fid_onUnActivate, 0.0,NULL, r_type ) );
 		}
 
 		if ( *name == CStringVarName("onUnActivate") )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			r_type->incRef();
 			result.push( NLAIAGENT::CIdMethod( IAgent::getMethodIndexSize() + fid_unActivate, 0.0,NULL, r_type ) );
 		}
 
 		if ( *name == CStringVarName("switch") )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			r_type->incRef();
 			result.push( NLAIAGENT::CIdMethod( IAgent::getMethodIndexSize() + fid_switch, 0.0, NULL, r_type ) );
 		}
 

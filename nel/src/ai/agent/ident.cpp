@@ -1,6 +1,6 @@
 /** \file identifiant.cpp
  *
- * $Id: ident.cpp,v 1.1 2001/01/11 16:38:22 chafik Exp $
+ * $Id: ident.cpp,v 1.2 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -287,14 +287,12 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CIndexedVarName::clone() const
 	{
 		NLAIC::IBasicInterface *x = new CIndexedVarName(*this);
-		x->incRef();
 		return x;
 	}
 
 	const NLAIC::IBasicType *CIndexedVarName::newInstance() const
 	{
 		NLAIC::IBasicInterface *x = new CIndexedVarName("Inst");
-		x->incRef();
 		return x;
 	}
 

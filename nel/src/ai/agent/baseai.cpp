@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.3 2001/01/12 11:31:34 chafik Exp $
+ * $Id: baseai.cpp,v 1.4 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,7 +198,6 @@ namespace NLAIAGENT
 		{
 			tQueue r;			
 			CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
-			c->incRef();
 			r.push(CIdMethod(0,0.0,NULL,c));
 			return r;
 		}
@@ -262,14 +261,12 @@ namespace NLAIAGENT
 	IRefrence::IRefrence():_Parent(NULL)
 	{
 		_NumRef = new CLocWordNumRef(*this);
-		_NumRef->incRef();
 	}
 
 	IRefrence::IRefrence(const IWordNumRef *parent):_Parent((IWordNumRef *)parent)
 	{
 		if(_Parent != NULL) _Parent->incRef();
 		_NumRef = new CLocWordNumRef(*this);
-		_NumRef->incRef();
 	}
 
 	IRefrence::IRefrence(NLMISC::IStream &is)
@@ -368,7 +365,6 @@ namespace NLAIAGENT
 	{			
 		if(_Parent != NULL) _Parent->incRef();
 		_NumRef = new CLocWordNumRef(*this);
-		_NumRef->incRef();
 	}		
 
 /////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 /** \file agent_object.cpp
  *
- * $Id: agent_object.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: agent_object.cpp,v 1.5 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,6 @@ namespace NLAIAGENT
 	{		
 		const IVarName &b = (const IVarName &)a;
 		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(*_Str < b);
-		x->incRef();
 		return x;
 	}
 
@@ -60,7 +59,6 @@ namespace NLAIAGENT
 	{		
 		const IVarName &b = (const IVarName &)a;		
 		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(*_Str > b);
-		x->incRef();
 		return x;
 	}
 
@@ -68,7 +66,6 @@ namespace NLAIAGENT
 	{
 		const IVarName &b = (const IVarName &)a;		
 		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!(*_Str > b));
-		x->incRef();
 		return x;
 	}
 
@@ -76,7 +73,6 @@ namespace NLAIAGENT
 	{		
 		const IVarName &b = (const IVarName &)a;		
 		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!(*_Str < b));
-		x->incRef();
 		return x;
 	}
 	
@@ -84,7 +80,6 @@ namespace NLAIAGENT
 	{
 		const IVarName &b = (const IVarName &)a;		
 		NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(!(*_Str == b));
-		x->incRef();
 		return x;
 	}
 

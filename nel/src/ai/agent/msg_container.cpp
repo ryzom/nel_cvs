@@ -1,6 +1,6 @@
 /** \file msg_contenair.cpp
  *
- * $Id: msg_container.cpp,v 1.7 2001/01/17 10:29:05 portier Exp $
+ * $Id: msg_container.cpp,v 1.8 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -91,14 +91,12 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CVectorMsgContainer::clone() const
 	{
 		NLAIC::IBasicType *x = new CVectorMsgContainer( *this );
-		x->incRef();
 		return x;
 	}
 
 	const NLAIC::IBasicType *CVectorMsgContainer::newInstance() const
 	{
 		NLAIC::IBasicType *x = new CVectorMsgContainer( *this );
-		x->incRef();
 		return x;
 	}	
 	const NLAIC::CIdentType &CVectorMsgContainer::getType() const	

@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.4 2001/01/12 11:49:58 portier Exp $
+ * $Id: agents.cpp,v 1.5 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,7 +52,6 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *IAgent::clone() const
 	{		
 		NLAIC::IBasicInterface *m = new IAgent(*this);
-		m->incRef();
 		return m;
 	}		
 
@@ -61,7 +60,6 @@ namespace NLAIAGENT
 		NLAIC::IBasicInterface *m;
 		if(getParent() != NULL) m = new	IAgent((IBasicAgent *)getParent());
 		else m = new IAgent(NULL);
-		m->incRef();
 		return m;
 	}
 	
@@ -162,7 +160,6 @@ namespace NLAIAGENT
 	IBasicAgent::IBasicAgent(const IWordNumRef *parent): IConnectIA(parent)
 	{
 		_Mail = new tMailBoxLettre((const IWordNumRef *) *this);
-		_Mail->incRef();			
 	}		
 
 	IBasicAgent::IBasicAgent(const IWordNumRef *parent,IMailBox	*m): IConnectIA(parent),_Mail(m)
@@ -251,7 +248,6 @@ namespace NLAIAGENT
 				if(*methodName == IBasicAgent::_Method[i].MethodName)
 				{					
 					CObjectType *c = new CObjectType(new NLAIC::CIdentType(CLocalAgentMail::LocalAgentMail));
-					c->incRef();					
 					a.push(CIdMethod(IBasicAgent::_Method[i].Index + IObjectIA::getMethodIndexSize(),0.0,NULL,c));					
 					break;
 				}
@@ -276,10 +272,8 @@ namespace NLAIAGENT
 		{
 		case _GetMailer:
 			{
-				IObjectIA::CProcessResult a;
-				incRef();
-				a.Result = new CLocalAgentMail(this);
-				a.Result->incRef();
+				IObjectIA::CProcessResult a;				
+				a.Result = new CLocalAgentMail(this);				
 				return a;
 			}			
 		}

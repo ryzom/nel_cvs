@@ -1,6 +1,6 @@
 /** \file message_script.cpp
  *
- * $Id: message_script.cpp,v 1.6 2001/01/12 09:52:55 chafik Exp $
+ * $Id: message_script.cpp,v 1.7 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,6 @@ namespace NLAIAGENT
 			it_c++;					
 			i ++;
 		}
-		x->incRef();
 		setMessageGroup(x);
 		setGroup(CMessageGroup::msgScriptingGroup);
 	}	
@@ -250,8 +249,7 @@ namespace NLAIAGENT
 		{
 			tQueue r;
 			NLAISCRIPT::COperandVoid typeR;
-			NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());
-			t->incRef();
+			NLAISCRIPT::CObjectUnknown *t = new NLAISCRIPT::CObjectUnknown((NLAISCRIPT::IOpType *)typeR.clone());			
 			r.push(CIdMethod(0,0.0,NULL,t));
 			return r;
 		}
@@ -272,7 +270,6 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CMessageScript::clone() const
 	{		
 		CMessageScript *cl = new CMessageScript( *this );
-		cl->incRef();
 		return cl;
 	}
 
@@ -286,7 +283,6 @@ namespace NLAIAGENT
 		else 
 		{
 			instance = new CMessageScript();
-			instance->incRef();
 		}
 		return instance;
 	}

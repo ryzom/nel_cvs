@@ -1,6 +1,6 @@
 /** \file mailbox.cpp
  *
- * $Id: mailbox.cpp,v 1.6 2001/01/15 17:58:29 chafik Exp $
+ * $Id: mailbox.cpp,v 1.7 2001/01/17 10:42:55 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,7 +77,6 @@ namespace NLAIAGENT
 	void CSimpleLocalMailBox::addMessage(IMessageBase *msg)
 	{
 		_ListMessage.push_back( msg );
-		//msg->incRef();
 	}
 
 	void CSimpleLocalMailBox::addMailBox(IMailBox *)
@@ -113,7 +112,6 @@ namespace NLAIAGENT
 		while(i != _ListMessage.end() )
 		{
 			result->push_back( *i++ );
-	//		((IMessageBase *) result->back() )->incRef();
 		}
 		return result;
 	}
@@ -158,7 +156,6 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CSimpleLocalMailBox::clone() const
 	{
 		NLAIC::IBasicType *a = new CSimpleLocalMailBox(*this);
-		a->incRef();
 		return a;
 	}
 
@@ -169,7 +166,6 @@ namespace NLAIAGENT
 			a = new	CSimpleLocalMailBox((const IWordNumRef *) getParent());
 		else 
 			a = new CSimpleLocalMailBox((const IWordNumRef *) NULL);
-		a->incRef();
 		return a;
 	}
 
@@ -322,7 +318,6 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CLocalMailBox::clone() const
 	{
 		NLAIC::IBasicType *a = new CLocalMailBox(*this);
-		a->incRef();
 		return a;
 	}
 
@@ -333,7 +328,6 @@ namespace NLAIAGENT
 			a = new	CLocalMailBox((const IWordNumRef *)getParent());
 		else 
 			a = new CLocalMailBox((const IWordNumRef *)NULL);
-		a->incRef();
 		return a;
 	}
 
@@ -589,7 +583,6 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CScriptMailBox::clone() const
 	{
 		NLAIC::IBasicType *a = new CScriptMailBox(*this);
-		a->incRef();
 		return a;
 	}
 
@@ -600,7 +593,6 @@ namespace NLAIAGENT
 			a = new	CScriptMailBox((const IWordNumRef *)getParent());
 		else 
 			a = new CScriptMailBox((const IWordNumRef *)NULL);
-		a->incRef();
 		return a;
 	}
 

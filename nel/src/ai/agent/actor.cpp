@@ -21,12 +21,6 @@ namespace NLAIAGENT
 	CActor::CActor(const CActor &c) : IAgent( c )
 	{
 		_IsActivated = c._IsActivated;
-/*		for (int i = 0; i  < (unsigned int) c._Transitions.size(); i++ )
-		{
-		//	_Transitions[i]->incRef();
-			_Transitions.push_back( _Transitions[i] );
-		}
-		*/
 	}
 
 	CActor::~CActor()
@@ -91,9 +85,7 @@ namespace NLAIAGENT
 	/// Adds a transition, ie a condition and a list of newly activated agents
 	void CActor::addTransition(NLAILOGIC::IBaseCond *cond, std::vector<CActor *> &outputs, bool stay_alive)
 	{
-//		CTransition *trans = new CTransition( cond, outputs, stay_alive );
-//		trans->incRef();
-//		_Transitions.push_back( trans );
+
 	}
 
 //	void CActor::addTransition(CTransition *trans)
@@ -115,7 +107,6 @@ namespace NLAIAGENT
 	const NLAIC::IBasicType *CActor::clone() const
 	{		
 		CActor *m = new CActor(*this);
-		m->incRef();
 		return m;
 	}		
 
@@ -126,7 +117,6 @@ namespace NLAIAGENT
 			m = new	CActor((IAgent *)getParent());
 		else 
 			m = new CActor(NULL);
-		m->incRef();
 		return m;
 	}
 	
@@ -212,21 +202,18 @@ namespace NLAIAGENT
 			if ( *name == CStringVarName("activate") )
 			{
 				CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-				r_type->incRef();
 				result.push( NLAIAGENT::CIdMethod( fid_activate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
 			}
 
 			if ( *name == CStringVarName("unActivate") )
 			{
 				CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-				r_type->incRef();
 				result.push( NLAIAGENT::CIdMethod( fid_unActivate + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
 			}
 
 			if ( *name == CStringVarName("forwardActivity") )
 			{
 				CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-				r_type->incRef();
 				result.push( NLAIAGENT::CIdMethod( fid_forwardActivity + IAgent::getMethodIndexSize(), 0.0,NULL, r_type ) );
 			}
 //		}

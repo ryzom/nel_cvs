@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.9 2000/11/23 13:27:37 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.10 2000/11/28 13:23:03 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,7 +117,7 @@ uint8 CBitmap::load(NLMISC::IStream &f)
 
 
 /*-------------------------------------------------------------------*\
-								load		
+								makeDummy		
 \*-------------------------------------------------------------------*/
 void	CBitmap::makeDummy()
 {

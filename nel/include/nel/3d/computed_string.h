@@ -1,7 +1,7 @@
 /** \file computed_string.h
  * Computed string
  *
- * $Id: computed_string.h,v 1.3 2000/11/23 10:47:49 valignat Exp $
+ * $Id: computed_string.h,v 1.4 2000/11/28 13:21:56 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,9 +124,9 @@ struct CComputedString
 	 */	
 	void render2D (IDriver& driver, 
 					float x, float z,
+					THotSpot hotspot = LeftBottom,
 					float scaleX = 1, float scaleZ = 1,
-					float rotateY = 0,
-					THotSpot hotspot = LeftBottom );
+					float rotateY = 0);
 
 
 };

@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.cpp
  * <File description>
  *
- * $Id: meshvp_wind_tree.cpp,v 1.7 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: meshvp_wind_tree.cpp,v 1.8 2003/03/17 17:36:28 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -172,24 +172,16 @@ void	CMeshVPWindTree::initInstance(CMeshBaseInstance *mbi)
 	// init a random phase.
 	mbi->_VPWindTreePhase= frand(1);
 }
+
 // ***************************************************************************
-bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat, const NLMISC::CVector & /*viewerPos*/)
+inline void			CMeshVPWindTree::setupPerMesh(IDriver *driver, CScene *scene)
 {
-	if (!(driver->isVertexProgramSupported() && !driver->isVertexProgramEmulated())) return false;
-
-
-	// precompute mesh/instance.
-	//===============
-
-
-	// Get info from scene/instance
-	float	windPower= scene->getGlobalWindPower();
-	float	instancePhase= mbi->_VPWindTreePhase;
-
-
 	// process current times and current power. Only one time per render() and per CMeshVPWindTree.
 	if(scene->getCurrentTime() != _LastSceneTime)
 	{
+		// Get info from scene
+		float	windPower= scene->getGlobalWindPower();
+
 		float	dt= (float)(scene->getCurrentTime() - _LastSceneTime);
 		_LastSceneTime= scene->getCurrentTime();
 
@@ -210,6 +202,24 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 		}
 	}
 
+	// Setup common constants for each instances.
+	// c[8] take usefull constants.
+	static	float	ct8[4]= {0, 1, 0.5f, 2};
+	driver->setConstant(8, 1, ct8);
+	// c[9] take other usefull constants.
+	static	float	ct9[4]= {3.f, 0.f, -1.f, -2.f};
+	driver->setConstant(9, 1, ct9);
+	// c[10] take Number of phase (4) for level2 and 3. -0.01 to avoid int value == 4.
+	static	float	ct10[4]= {4-0.01f, 0, 0, 0};
+	driver->setConstant(10, 1, ct10);
+}
+
+// ***************************************************************************
+inline	void		CMeshVPWindTree::setupPerInstanceConstants(IDriver *driver, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat)
+{
+	// get instance info
+	float	instancePhase= mbi->_VPWindTreePhase;
+
 
 	// maxDeltaPos in ObjectSpace. So same world Wind direction is applied to all objects
 	static	CMatrix		invWorldMatrix;
@@ -223,9 +233,6 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	}
 
 
-	// Setup constants
-	//===============
-
 	// Setup lighting and lighting constants
 	setupLighting(scene, mbi, invertedModelMat);
 
@@ -233,15 +240,6 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	driver->setConstantMatrix(0, IDriver::ModelViewProjection, IDriver::Identity);
 	// c[4..7] take the ModelView Matrix. After setupModelMatrix();
 	driver->setConstantMatrix(4, IDriver::ModelView, IDriver::Identity);
-	// c[8] take usefull constants.
-	static	float	ct8[4]= {0, 1, 0.5f, 2};
-	driver->setConstant(8, 1, ct8);
-	// c[9] take other usefull constants.
-	static	float	ct9[4]= {3.f, 0.f, -1.f, -2.f};
-	driver->setConstant(9, 1, ct9);
-	// c[10] take Number of phase (4) for level2 and 3. -0.01 to avoid int value == 4.
-	static	float	ct10[4]= {4-0.01f, 0, 0, 0};
-	driver->setConstant(10, 1, ct10);
 
 
 	// c[15] take Wind of level 0.
@@ -283,7 +281,19 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 	// phase 3.
 	f= speedCos( instTime2+0.75f ) + Bias[2];
 	driver->setConstant(20+3, maxDeltaPosOS[2]*f);
+}
 
+// ***************************************************************************
+bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat, const NLMISC::CVector & /*viewerPos*/)
+{
+	if (!(driver->isVertexProgramSupported() && !driver->isVertexProgramEmulated())) return false;
+
+
+	// precompute mesh
+	setupPerMesh(driver, scene);
+
+	// Setup instance constants
+	setupPerInstanceConstants(driver, scene, mbi, invertedModelMat);
 
 	// Activate the good VertexProgram
 	//===============
@@ -305,6 +315,7 @@ bool	CMeshVPWindTree::begin(IDriver *driver, CScene *scene, CMeshBaseInstance *m
 
 	return true;
 }
+
 // ***************************************************************************
 void	CMeshVPWindTree::end(IDriver *driver)
 {
@@ -346,5 +357,73 @@ void	CMeshVPWindTree::setupLighting(CScene *scene, CMeshBaseInstance *mbi, const
 	// setup cte for lighting
 	renderTrav->beginVPLightSetup(VPLightConstantStart, SpecularLighting, invertedModelMat);
 }
+
+
+// ***************************************************************************
+// ***************************************************************************
+// MBR interface
+// ***************************************************************************
+// ***************************************************************************
+
+
+// ***************************************************************************
+bool	CMeshVPWindTree::supportMeshBlockRendering() const
+{
+	return true;
+}
+
+// ***************************************************************************
+bool	CMeshVPWindTree::isMBRVpOk(IDriver *driver) const
+{
+	return driver->isVertexProgramSupported() && !driver->isVertexProgramEmulated();
+}
+
+// ***************************************************************************
+void	CMeshVPWindTree::beginMBRMesh(IDriver *driver, CScene *scene)
+{
+	// precompute mesh
+	setupPerMesh(driver, scene);
+
+	/* Since need a VertexProgram Activation before activeVBHard, activate a default one
+		bet the common one will be "NoPointLight, NoSpecular, No ForceNormalize" => 0.
+	*/
+	_LastMBRIdVP= 0;
+
+	// activate VP.
+	driver->activeVertexProgram(_VertexProgram[_LastMBRIdVP].get());
+}
+
+// ***************************************************************************
+void	CMeshVPWindTree::beginMBRInstance(IDriver *driver, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat)
+{
+	// setup first constants for this instance
+	setupPerInstanceConstants(driver, scene, mbi, invertedModelMat);
+
+	// Get how many pointLights are setuped now.
+	nlassert(scene != NULL);
+	CRenderTrav		*renderTrav= scene->getRenderTrav();
+	sint	numPls= renderTrav->getNumVPLights()-1;
+	clamp(numPls, 0, CRenderTrav::MaxVPLight-1);
+
+	// Enable normalize only if requested by user. Because lighting don't manage correct "scale lighting"
+	uint	idVP= (SpecularLighting?2:0) + (driver->isForceNormalize()?1:0) ;
+	// correct VP id for correct number of pls.
+	idVP= numPls*4 + idVP;
+
+	// re-activate VP if idVP different from last setup
+	if( idVP!=_LastMBRIdVP )
+	{
+		_LastMBRIdVP= idVP;
+		driver->activeVertexProgram(_VertexProgram[_LastMBRIdVP].get());
+	}
+}
+
+// ***************************************************************************
+void	CMeshVPWindTree::endMBRMesh(IDriver *driver)
+{
+	// Disable the VertexProgram
+	driver->activeVertexProgram(NULL);
+}
+
 
 } // NL3D

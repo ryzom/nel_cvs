@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.75 2003/03/13 13:40:58 corvazier Exp $
+ * $Id: mesh.cpp,v 1.76 2003/03/17 17:36:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -568,9 +568,15 @@ void	CMeshGeom::updateVertexBufferHard(IDriver *drv)
 		// If KO, use normal VertexBuffer.
 		if(_VertexBufferHard==NULL)
 			return;
-		// else, Fill it with VertexBuffer.
+		// else, setup and Fill it with VertexBuffer.
 		else
 		{
+			// If the mesh is static: not skinned/no meshMorpher, then setup a static VBHard -> runs faster under NVidia
+			if( !_Skinned && ( !_MeshMorpher || _MeshMorpher->BlendShapes.size()==0) )
+				_VertexBufferHard->lockHintStatic(true);
+
+
+			// Fill VB
 			void	*vertexPtr= _VertexBufferHard->lock();
 
 			nlassert(_VBuffer.getVertexFormat() == _VertexBufferHard->getVertexFormat());
@@ -598,7 +604,6 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 	CScene			*ownerScene= mi->getScene();
 	// get a ptr on renderTrav
 	CRenderTrav		*renderTrav= ownerScene->getRenderTrav();
-
 
 	// update the VBufferHard (create/delete), to maybe render in AGP memory.
 	updateVertexBufferHard (drv);
@@ -1064,16 +1069,24 @@ void	CMeshGeom::compileRunTime()
 	_PreciseClipping= _BBox.getRadius() >= NL3D_MESH_PRECISE_CLIP_THRESHOLD;
 
 	// Support MeshBlockRendering only if not skinned/meshMorphed.
-	_SupportMeshBlockRendering= !_Skinned && _MeshMorpher->BlendShapes.size()==0;
+	bool	supportMeshBlockRendering= !_Skinned && _MeshMorpher->BlendShapes.size()==0;
 
 	// true only if one matrix block, and at least one rdrPass.
-	_SupportMeshBlockRendering= _SupportMeshBlockRendering && _MatrixBlocks.size()==1 && _MatrixBlocks[0].RdrPass.size()>0;
-
-	// \todo yoyo: support later MeshVertexProgram 
-	_SupportMeshBlockRendering= _SupportMeshBlockRendering && _MeshVertexProgram==NULL;
+	supportMeshBlockRendering= supportMeshBlockRendering && _MatrixBlocks.size()==1 && _MatrixBlocks[0].RdrPass.size()>0;
 
 	// TestYoyo
-	//_SupportMeshBlockRendering= false;
+	//supportMeshBlockRendering= false;
+
+	// support MeshVertexProgram, but no material sorting...
+	bool	supportMBRPerMaterial= supportMeshBlockRendering && _MeshVertexProgram==NULL;
+
+
+	// setup flags
+	_SupportMBRFlags= 0;
+	if(supportMeshBlockRendering)
+		_SupportMBRFlags|= MBROk;
+	if(supportMBRPerMaterial)
+		_SupportMBRFlags|= MBRSortPerMaterial;
 }
 
 
@@ -1982,13 +1995,13 @@ void	CMeshGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans,
 // ***************************************************************************
 bool	CMeshGeom::supportMeshBlockRendering () const
 {
-	return _SupportMeshBlockRendering;
+	return _SupportMBRFlags!=0;
 }
 
 // ***************************************************************************
 bool	CMeshGeom::sortPerMaterial() const
 {
-	return true;
+	return (_SupportMBRFlags & MBRSortPerMaterial)!=0;
 }
 // ***************************************************************************
 uint	CMeshGeom::getNumRdrPassesForMesh() const 
@@ -2006,11 +2019,22 @@ void	CMeshGeom::beginMesh(CMeshGeomRenderContext &rdrCtx)
 	if(rdrCtx.RenderThroughVBHeap)
 	{
 		// Don't setup VB in this case, since use the VBHeap setuped one.
+		// NB: no VertexProgram test since VBHeap not possible with it...
+		nlassert( (_SupportMBRFlags & MBRCurrentUseVP)==0 );
 	}
 	else
 	{
 		// update the VBufferHard (create/delete), to maybe render in AGP memory.
 		updateVertexBufferHard ( rdrCtx.Driver );
+
+		// use MeshVertexProgram effect?
+		if( _MeshVertexProgram != NULL && _MeshVertexProgram->isMBRVpOk(rdrCtx.Driver) )
+		{
+			// Ok will use it.
+			_SupportMBRFlags|= MBRCurrentUseVP;
+			// Before VB activation
+			_MeshVertexProgram->beginMBRMesh(rdrCtx.Driver, rdrCtx.Scene );
+		}
 
 
 		// if VB Hard is here, use it.
@@ -2035,7 +2059,13 @@ void	CMeshGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance
 	// setupLighting.
 	inst->changeLightSetup(rdrCtx.RenderTrav);
 
-	// \todo yoyo: MeshVertexProgram.
+	// MeshVertexProgram ?
+	if( _SupportMBRFlags & MBRCurrentUseVP )
+	{
+		CMatrix		invertedObjectMatrix;
+		invertedObjectMatrix = inst->getWorldMatrix().inverted();
+		_MeshVertexProgram->beginMBRInstance(rdrCtx.Driver, rdrCtx.Scene, inst, invertedObjectMatrix);
+	}
 }
 // ***************************************************************************
 void	CMeshGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi, float polygonCount, uint rdrPassId) 
@@ -2046,30 +2076,53 @@ void	CMeshGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi
 	// Render with the Materials of the MeshInstance, only if not blended.
 	if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) ) )
 	{
-		// \todo yoyo: MeshVertexProgram.
+		CMaterial	&material= mi->Materials[rdrPass.MaterialId];
+
+		// MeshVertexProgram ?
+		if( _SupportMBRFlags & MBRCurrentUseVP )
+		{
+			rdrCtx.RenderTrav->changeVPLightSetupMaterial(material, false);
+		}
 
 		if(rdrCtx.RenderThroughVBHeap)
 			// render shifted primitives
-			rdrCtx.Driver->render(rdrPass.VBHeapPBlock, mi->Materials[rdrPass.MaterialId]);
+			rdrCtx.Driver->render(rdrPass.VBHeapPBlock, material);
 		else
 			// render primitives
-			rdrCtx.Driver->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
+			rdrCtx.Driver->render(rdrPass.PBlock, material);
 	}
 }
 // ***************************************************************************
 void	CMeshGeom::endMesh(CMeshGeomRenderContext &rdrCtx) 
 {
-	// nop.
-	// \todo yoyo: MeshVertexProgram.
+	// MeshVertexProgram ?
+	if( _SupportMBRFlags & MBRCurrentUseVP )
+	{
+		// End Mesh
+		_MeshVertexProgram->endMBRMesh( rdrCtx.Driver );
+
+		// and remove Current Flag.
+		_SupportMBRFlags&= ~MBRCurrentUseVP;
+	}
 }
 
 // ***************************************************************************
 bool	CMeshGeom::getVBHeapInfo(uint &vertexFormat, uint &numVertices)
 {
-	// CMeshGeom support VBHeap rendering, assuming _SupportMeshBlockRendering is true
-	vertexFormat= _VBuffer.getVertexFormat();
-	numVertices= _VBuffer.getNumVertices();
-	return _SupportMeshBlockRendering;
+	// CMeshGeom support VBHeap rendering, assuming supportMeshBlockRendering is true.
+	if( _SupportMBRFlags )
+	/* Yoyo: If VertexProgram, DON'T SUPPORT!! because VB need to be activated AFTER meshVP activation
+		NB: still possible with complex code to do it (sort per VP type (with or not)...), but tests in Ryzom
+		shows that VBHeap is not really important (not so much different shapes...)
+	*/
+	if( _MeshVertexProgram==NULL )
+	{
+		vertexFormat= _VBuffer.getVertexFormat();
+		numVertices= _VBuffer.getNumVertices();
+		return true;
+	}
+
+	return false;
 }
 
 // ***************************************************************************

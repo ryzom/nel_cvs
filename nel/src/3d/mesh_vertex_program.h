@@ -1,7 +1,7 @@
 /** \file mesh_vertex_program.h
  * <File description>
  *
- * $Id: mesh_vertex_program.h,v 1.2 2002/03/14 18:12:54 vizerie Exp $
+ * $Id: mesh_vertex_program.h,v 1.3 2003/03/17 17:36:28 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -104,6 +104,27 @@ public:
 
 	// Test wether this vertex program need tangent space informations (stored in the last texture coordinate of the mesh)
 	virtual	bool	needTangentSpace() const { return false; }
+
+
+	/** \name MBR support.
+	 *	Actually, it's targeted to work optimally with WindTree.
+	 *	Requirement are:
+	 *		- No special Validity test per instance (hence isMBRVpOk() takes only the driver).
+	 *		- begin(), end(), setupForMaterial() is replaced with the following interface.
+	 *		- there is no setupMBRMaterial(), because the caller has just to call per material (and must do it):
+	 *			renderTrav->changeVPLightSetupMaterial(mat, false);
+	 *		- beginMBRMesh MUST activate the VertexProgram, because called before VB activation
+	 *		- beginMBRInstance still can change of VertexProgram, but cannot disable VP!!
+	 */
+	// @{
+	virtual	bool	supportMeshBlockRendering() const { return false; }
+	virtual	bool	isMBRVpOk(IDriver *drv) const {return false;}
+	virtual	void	beginMBRMesh(IDriver *drv, CScene *scene) {};
+	virtual	void	beginMBRInstance(IDriver *drv, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat) {};
+	virtual	void	endMBRMesh(IDriver *drv) {}
+	// @}
+
+
 };
 
 

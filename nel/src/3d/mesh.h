@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.36 2003/03/13 13:40:58 corvazier Exp $
+ * $Id: mesh.h,v 1.37 2003/03/17 17:36:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -689,7 +689,14 @@ private:
 	/// \name Mesh Block Render Implementation
 	// @{
 	/// setuped at compileRunTime.
-	bool							_SupportMeshBlockRendering;
+	enum TMBRSupport
+	{
+		MBROk= 1,
+		MBRSortPerMaterial= 2,
+		MBRCurrentUseVP= 4,
+	};
+	// Of if don't support MBR at all
+	uint8							_SupportMBRFlags;
 	// @}
 
 	/// Estimate if we must do a Precise clipping (ie with bboxes)

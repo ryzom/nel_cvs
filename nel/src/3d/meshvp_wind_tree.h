@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.h
  * <File description>
  *
- * $Id: meshvp_wind_tree.h,v 1.3 2002/06/17 12:54:46 berenguier Exp $
+ * $Id: meshvp_wind_tree.h,v 1.4 2003/03/17 17:36:28 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -99,6 +99,15 @@ public:
 									 CScene *scene,
 									 IVertexBufferHard *vb);
 
+	/** \name MBR support For WindTree
+	 */
+	// @{
+	virtual	bool	supportMeshBlockRendering() const;
+	virtual	bool	isMBRVpOk(IDriver *drv) const;
+	virtual	void	beginMBRMesh(IDriver *drv, CScene *scene);
+	virtual	void	beginMBRInstance(IDriver *drv, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat);
+	virtual	void	endMBRMesh(IDriver *drv);
+	// @}
 
 
 	// Serial.
@@ -125,12 +134,15 @@ private:
 	// maximum amplitude vector for each level. Stored in mesh because same for all instances.
 	CVector		_MaxDeltaPos[HrcDepth];
 
+	// MBR Cache
+	uint		_LastMBRIdVP;
 
 	// Compute a cosinus with an angle given in 0-1 <=> 0-2Pi. Actual values goes from 0 to 2.
 	static float	speedCos(float angle);
 
 	
-	
+	void		setupPerMesh(IDriver *driver, CScene *scene);
+	void		setupPerInstanceConstants(IDriver *driver, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat);
 	
 };
 

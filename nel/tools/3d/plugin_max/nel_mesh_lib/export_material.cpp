@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.18 2001/11/22 08:49:23 corvazier Exp $
+ * $Id: export_material.cpp,v 1.19 2001/11/27 16:43:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -160,6 +160,9 @@ void CExportNel::buildMaterials (std::vector<NL3D::CMaterial>& materials, CMaxMe
 
 		// Init the first material
 		materials[maxBaseBuild.FirstMaterial].initLighted();
+
+		// Default mat
+		materials[maxBaseBuild.FirstMaterial].setLighting(true, true);
 
 		// Export the main material
 		maxBaseBuild.MaterialInfo[0].MaterialName = "Default";

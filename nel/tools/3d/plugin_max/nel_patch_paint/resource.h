@@ -8,6 +8,7 @@
 #define IDD_EDPATCH_OPS                 200
 #define IDC_PAINT                       1073
 #define IDC_INCLUDE_MESHES              1074
+#define IDC_PRELOAD_TILES               1075
 
 // Next default values for new objects
 // 

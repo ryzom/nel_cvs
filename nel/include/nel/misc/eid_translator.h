@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.18 2005/02/22 10:14:12 besson Exp $
+ * $Id: eid_translator.h,v 1.19 2005/03/17 10:56:57 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -52,6 +52,8 @@ public:
 	void				registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const std::string &userName);
 	// unregister an entity from this manager
 	void				unregisterEntity (const CEntityId &eid);
+	// Check if an entity is registered
+	bool				isEntityRegistered(const CEntityId &eid);
 	// set an association entityName / entityStringId, return true if association has been set
 	bool				setEntityNameStringId(const ucstring &entityName, uint32 stringId);
 	// get string id for entityId
@@ -138,9 +140,11 @@ private:
 	// It means that there only alphabetic and numerical character and the name is at least 3 characters long.
 	bool isValidEntityName (const ucstring &entityName, NLMISC::CLog *log = NLMISC::InfoLog );
 
-	typedef std::map<NLMISC::CEntityId, CEntity>::iterator reit;
+	typedef std::map<NLMISC::CEntityId, CEntity>	TEntityCont;
+	typedef std::map<ucstring, NLMISC::CEntityId>	TNameIndexCont;
 
-	std::map<NLMISC::CEntityId, CEntity>	RegisteredEntities;
+	TEntityCont		RegisteredEntities;
+	TNameIndexCont	NameIndex;
 
 	// Singleton, no ctor access
 	CEntityIdTranslator() { EntityInfoCallback = NULL; }

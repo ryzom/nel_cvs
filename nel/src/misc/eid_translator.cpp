@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.31 2005/01/12 15:02:09 legros Exp $
+ * $Id: eid_translator.cpp,v 1.32 2005/03/17 10:56:57 boucher Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -94,7 +94,7 @@ CEntityIdTranslator *CEntityIdTranslator::getInstance ()
 void CEntityIdTranslator::getByUser (uint32 uid, vector<CEntityId> &res)
 {
 	H_AUTO(EIdTrans_getByUser);
-	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
+	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
 		if ((*it).second.UId == uid)
 		{
@@ -108,7 +108,7 @@ void CEntityIdTranslator::getByUser (const string &userName, vector<CEntityId> &
 	H_AUTO(EIdTrans_getByUser2);
 	string lowerName = toLower(userName);
 	
-	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
+	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
 		if (exact)
 		{
@@ -135,7 +135,7 @@ ucstring CEntityIdTranslator::getByEntity (const CEntityId &eid)
 	reid.setCreatorId(0);
 	reid.setDynamicId(0);
 
-	reit it = RegisteredEntities.find (reid);
+	TEntityCont::iterator it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
 		return ucstring("");
@@ -162,7 +162,7 @@ void CEntityIdTranslator::getByEntity (const ucstring &entityName, vector<CEntit
 	H_AUTO(EIdTrans_getByEntity3);
 	string lowerName = toLower(entityName.toString());
 
-	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); ++it)
+	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != RegisteredEntities.end(); ++it)
 	{
 		if (exact)
 		{
@@ -233,9 +233,10 @@ bool CEntityIdTranslator::checkEntityName (const ucstring &entityName )
 bool CEntityIdTranslator::entityNameExists (const ucstring &entityName )
 {
 	// Names are stored in case dependant, so we have to test them without case.
-	string registerable = getRegisterableString (entityName);
+	ucstring registerable = getRegisterableString (entityName);
 	
-	for (reit it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
+	return NameIndex.find(registerable) !=NameIndex.end();
+/*	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != RegisteredEntities.end(); it++)
 	{
 		if (getRegisterableString ((*it).second.EntityName) == registerable)
 		{
@@ -243,6 +244,7 @@ bool CEntityIdTranslator::entityNameExists (const ucstring &entityName )
 		}
 	}
 	return false;
+*/
 }
 
 void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &entityName, sint8 entitySlot, uint32 uid, const string &userName)
@@ -267,6 +269,7 @@ void CEntityIdTranslator::registerEntity (const CEntityId &eid, const ucstring &
 	
 	nlinfo ("EIT: Register EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), entityName.toString().c_str(), uid, userName.c_str());
 	RegisteredEntities.insert (make_pair(reid, CEntityIdTranslator::CEntity(entityName, uid, userName, entitySlot)));
+	NameIndex.insert(make_pair(entityName, reid));
 }
 
 void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
@@ -277,7 +280,7 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 	reid.setCreatorId(0);
 	reid.setDynamicId(0);
 
-	reit it = RegisteredEntities.find (reid);
+	TEntityCont::iterator it = RegisteredEntities.find (reid);
 	
 	if (it == RegisteredEntities.end ())
 	{
@@ -286,8 +289,23 @@ void CEntityIdTranslator::unregisterEntity (const CEntityId &eid)
 	}
 	
 	nlinfo ("EIT: Unregister EId %s EntityName %s UId %d UserName %s", reid.toString().c_str(), (*it).second.EntityName.toString().c_str(), (*it).second.UId, (*it).second.UserName.c_str());
+	NameIndex.erase(it->second.EntityName);
 	RegisteredEntities.erase (reid);
 }
+
+bool CEntityIdTranslator::isEntityRegistered(const CEntityId &eid)
+{
+	H_AUTO(EIdTrans_unregisterEntity);
+	// we have to remove the crea and dyna because it can changed dynamically and will not be found in the storage array
+	CEntityId reid(eid);
+	reid.setCreatorId(0);
+	reid.setDynamicId(0);
+
+	TEntityCont::iterator it = RegisteredEntities.find (reid);
+	
+	return it != RegisteredEntities.end ();
+}
+
 
 void CEntityIdTranslator::checkEntity (const CEntityId &eid, const ucstring &entityName, uint32 uid, const string &userName)
 {
@@ -404,6 +422,14 @@ void CEntityIdTranslator::load (const string &fileName, const string &invalidEnt
 			ifile.serialCont (RegisteredEntities);
 			
 			ifile.close ();
+
+			// fill the entity name index container
+			NameIndex.clear();
+			TEntityCont::iterator first(RegisteredEntities.begin()), last(RegisteredEntities.end());
+			for (; first != last; ++first)
+			{
+				NameIndex.insert(make_pair(first->second.EntityName, first->first));
+			}
 		}
 		else
 		{
@@ -445,8 +471,8 @@ void CEntityIdTranslator::save ()
 
 uint32 CEntityIdTranslator::getUId (const string &userName)
 {
-	const reit itEnd = RegisteredEntities.end();
-	for (reit it = RegisteredEntities.begin(); it != itEnd ; ++it)
+	const TEntityCont::iterator itEnd = RegisteredEntities.end();
+	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != itEnd ; ++it)
 	{
 		if ((*it).second.UserName == userName)
 		{
@@ -458,8 +484,8 @@ uint32 CEntityIdTranslator::getUId (const string &userName)
 
 string CEntityIdTranslator::getUserName (uint32 uid)
 {
-	const reit itEnd = RegisteredEntities.end();
-	for (reit it = RegisteredEntities.begin(); it != itEnd ; ++it)
+	const TEntityCont::iterator itEnd = RegisteredEntities.end();
+	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != itEnd ; ++it)
 	{
 		if ((*it).second.UId == uid)
 		{
@@ -479,7 +505,7 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 	if (additional != NULL)
 		additional->clear();
 
-	reit it = RegisteredEntities.find (reid);
+	TEntityCont::iterator it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
 		nlwarning ("EIT: %s is not registered in CEntityIdTranslator", reid.toString().c_str());
@@ -504,8 +530,8 @@ void CEntityIdTranslator::getEntityIdInfo (const CEntityId &eid, ucstring &entit
 
 bool CEntityIdTranslator::setEntityNameStringId(const ucstring &entityName, uint32 stringId)
 {
-	const reit itEnd = RegisteredEntities.end();
-	for (reit it = RegisteredEntities.begin(); it != itEnd ; ++it)
+	const TEntityCont::iterator itEnd = RegisteredEntities.end();
+	for (TEntityCont::iterator it = RegisteredEntities.begin(); it != itEnd ; ++it)
 	{
 		if ((*it).second.EntityName == entityName)
 		{
@@ -524,7 +550,7 @@ uint32 CEntityIdTranslator::getEntityNameStringId(const CEntityId &eid)
 	reid.setCreatorId(0);
 	reid.setDynamicId(0);
 	
-	const reit it = RegisteredEntities.find (reid);
+	const TEntityCont::iterator it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
 		return 0;
@@ -542,7 +568,7 @@ void CEntityIdTranslator::setEntityOnline (const CEntityId &eid, bool online)
 	reid.setCreatorId(0);
 	reid.setDynamicId(0);
 
-	reit it = RegisteredEntities.find (reid);
+	TEntityCont::iterator it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
 		nlwarning ("EIT: %s is not registered in CEntityIdTranslator", reid.toString().c_str());
@@ -560,7 +586,7 @@ bool CEntityIdTranslator::isEntityOnline (const CEntityId &eid)
 	reid.setCreatorId(0);
 	reid.setDynamicId(0);
 
-	reit it = RegisteredEntities.find (reid);
+	TEntityCont::iterator it = RegisteredEntities.find (reid);
 	if (it == RegisteredEntities.end ())
 	{
 		nlwarning ("EIT: %s is not registered in CEntityIdTranslator", reid.toString().c_str());

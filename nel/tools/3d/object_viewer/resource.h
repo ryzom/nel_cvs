@@ -192,6 +192,7 @@
 #define IDC_PARTICLE_COLOR              1087
 #define IDB_PARTICLE_HEIGHT             1087
 #define IDC_BINDABLE_TYPE               1088
+#define IDD_CURVE_EDIT                  1088
 #define IDC_BROWSE_COLOR                1089
 #define IDC_VALUE1                      1090
 #define IDC_VALUE2                      1091
@@ -276,6 +277,7 @@
 #define IDC_REMOVE                      1174
 #define IDC_SCHEME_LIST                 1175
 #define IDC_NAME_CHOSEN                 1176
+#define IDC_RENAME                      1176
 #define IDC_SAVE_BANK                   1177
 #define IDC_LOAD_BANK                   1178
 #define IDC_INDE_SIZES                  1179
@@ -391,7 +393,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1088
+#define _APS_NEXT_RESOURCE_VALUE        1089
 #define _APS_NEXT_COMMAND_VALUE         32865
 #define _APS_NEXT_CONTROL_VALUE         1183
 #define _APS_NEXT_SYMED_VALUE           1000

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.38 2001/01/22 15:32:05 lecroart Exp $
+ * $Id: landscape.cpp,v 1.39 2001/01/23 14:31:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -799,6 +799,10 @@ uint		CLandscape::getTileLightMap(CRGBA  map[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHT
 	if(_NFreeLightMaps==0)
 	{
 		CTextureNear	*text= new CTextureNear(TextureNearSize);
+
+		// TODO: remove
+		//text->setFilterMode (ITexture::Nearest, ITexture::NearestMipMapOff);
+
 		_TextureNears.push_back(text);
 		_NFreeLightMaps+= text->getNbAvailableTiles();
 	}

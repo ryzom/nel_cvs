@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.7 2001/01/15 15:45:23 corvazier Exp $
+ * $Id: texture_far.cpp,v 1.8 2001/01/23 14:31:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,12 +27,17 @@
 #include "nel/3d/tile_far_bank.h"
 #include "nel/3d/patch.h"
 #include "nel/3d/tile_color.h"
+#include "nel/3d/tile_lumel.h"
 #include "nel/3d/zone.h"
 #include "nel/3d/landscape.h"
 
 using namespace NLMISC;
+using namespace NL3D;
 
 namespace NL3D {
+
+CRGBA CTextureFar::_LightmapExpanded[NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE];
+CTileLumel CTextureFar::_LumelExpanded[(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)*(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)];
 
 void CTextureFar::setSizeOfFarPatch (sint width, sint height)
 {
@@ -321,16 +326,39 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 	// ** Build expand lightmap..
 	NL3D_CExpandLightmap lightMap;
 	
-	// Static buffer for far expanded lightmap 64*64  (16*4 * 16*4)
-	static CRGBA lightmapExpanded[NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE*NL_NUM_PIXELS_ON_FAR_TILE_EDGE*NL_MAX_TILES_BY_PATCH_EDGE];
-
 	// Fill the structure
 	lightMap.MulFactor=tileSize;
 	lightMap.ColorTile=&patch->TileColors[0];
 	lightMap.Width=nS+1;
 	lightMap.Height=nT+1;
 	lightMap.StaticLightColor=patch->getZone()->getLandscape()->getStaticLight();
-	lightMap.DstPixels=lightmapExpanded;
+	lightMap.DstPixels=_LightmapExpanded;
+
+	// Expand the shadowmap
+	switch (tileSize)
+	{
+	case 1:	// use the light map
+		break;
+	case 2:
+		// Decompress it
+		patch->unpackShadowMap (_LumelExpanded, 2);
+		lightMap.LumelTile=_LumelExpanded;
+		break;
+	case 4:
+		// Shadow map already decompressed ?
+		if (patch->UncompressedLumels.begin()!=patch->UncompressedLumels.end())
+			// ok, just pass this pointer
+			lightMap.LumelTile=&patch->UncompressedLumels[0];
+		else
+		{
+			// Decompress it
+			patch->unpackShadowMap (_LumelExpanded, 1);
+			lightMap.LumelTile=_LumelExpanded;
+		}
+		break;
+	default:
+		nlassert (0);		// no, only 1, 2, 4 tile size
+	}
 
 	// Expand the patch lightmap now
 	NL3D_expandLightmap (&lightMap);
@@ -352,7 +380,7 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 			TileFar.DstPixels=(CRGBA*)&(getPixels()[0])+nBaseDstTilePixels;
 
 			// Lightmap pointer
-			TileFar.SrcLightingPixels=lightmapExpanded+(s*tileSize)+(t*nS*tileSize*tileSize);
+			TileFar.SrcLightingPixels=_LightmapExpanded+(s*tileSize)+(t*nS*tileSize*tileSize);
 
 			// For each layer of the tile
 			for (sint l=0; l<3; l++)
@@ -519,10 +547,16 @@ void CTextureFar::rebuildRectangle (uint x, uint y)
 		// Next line of tiles
 		nBaseDstTileLine+=dstDeltaY*tileSize;
 	}
+
+	// Quit Far 0 ? (ie new far ID are not 0)
+	if (patch->getFar0()&&patch->getFar1())
+	{
+		// Erase the shadow map of the patch
+		patch->clearUncompressedLumels ();
+	}
 }
 
 } // NL3D
-
 
 // ***************************************************************************
 // TODO: asm implementation of this function \\//
@@ -534,12 +568,17 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 	// Ptr on the begining of the line
 	const NL3D::CTileColor*		pColorTile=pLightmap->ColorTile;
 
+	// Ptr on the shadow map
+	const NL3D::CTileLumel*		pLumelTile=pLightmap->LumelTile;
+
 	// Ptr on the begining of the dst line
 	CRGBA*	pDstPixels=pLightmap->DstPixels;
 
 	// Expanded width
 	uint dstWidth=(pLightmap->Width-1)*pLightmap->MulFactor;
 	uint dstBlock=dstWidth*pLightmap->MulFactor;
+	uint dstWidthLumel=(pLightmap->Width-1)*pLightmap->MulFactor+1;
+	uint dstBlockLumel=dstWidthLumel*pLightmap->MulFactor;
 
 	// Switch to the optimal method for each expansion value
 	switch (pLightmap->MulFactor)
@@ -582,31 +621,24 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 			{
 				// Ptr on the line
 				CRGBA *pDst=pDstPixels;
+				const CTileLumel *pLumel=pLumelTile;
 
 				// Comupte previous colors
 				uint color16=pColorTile[0].Color565;
-				uint shade=pColorTile[0].Shade;									// 8:0
-				uint shadingR=(uint)pLightmap->StaticLightColor[shade].R;		// 8:0
-				uint shadingG=(uint)pLightmap->StaticLightColor[shade].G;	
-				uint shadingB=(uint)pLightmap->StaticLightColor[shade].B;
-				uint PreviousUpR=color16>>11;									// 8:8
-				PreviousUpR=((PreviousUpR<<3)|(PreviousUpR>>3))*shadingR;
+				uint PreviousUpR=color16>>11;									// 8:0
+				PreviousUpR=((PreviousUpR<<3)|(PreviousUpR>>3));
 				uint PreviousUpG=color16&0x07e0;
-				PreviousUpG=((PreviousUpG>>3)|(PreviousUpG>>9))*shadingG;
+				PreviousUpG=((PreviousUpG>>3)|(PreviousUpG>>9));
 				uint PreviousUpB=color16&0x001f;
-				PreviousUpB=((PreviousUpB<<3)|(PreviousUpB>>2))*shadingB;
+				PreviousUpB=((PreviousUpB<<3)|(PreviousUpB>>2));
 
 				color16=pColorTile[pLightmap->Width].Color565;
-				shade=pColorTile[pLightmap->Width].Shade;
-				shadingR=(uint)pLightmap->StaticLightColor[shade].R;
-				shadingG=(uint)pLightmap->StaticLightColor[shade].G;
-				shadingB=(uint)pLightmap->StaticLightColor[shade].B;
-				uint PreviousDownR=color16>>11;									// 8:8
-				PreviousDownR=((PreviousDownR<<3)|(PreviousDownR>>3))*shadingR;
+				uint PreviousDownR=color16>>11;									// 8:0
+				PreviousDownR=((PreviousDownR<<3)|(PreviousDownR>>3));
 				uint PreviousDownG=color16&0x07e0;
-				PreviousDownG=((PreviousDownG>>3)|(PreviousDownG>>9))*shadingG;
+				PreviousDownG=((PreviousDownG>>3)|(PreviousDownG>>9));
 				uint PreviousDownB=color16&0x001f;
-				PreviousDownB=((PreviousDownB<<3)|(PreviousDownB>>2))*shadingB;
+				PreviousDownB=((PreviousDownB<<3)|(PreviousDownB>>2));
 
 				// Shade colors
 
@@ -617,73 +649,75 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 					CRGBA NextUp;
 					CRGBA NextDown;
 					color16=pColorTile[x].Color565;
-					shade=pColorTile[x].Shade;									// 8:0
-					shadingR=(uint)pLightmap->StaticLightColor[shade].R;
-					shadingG=(uint)pLightmap->StaticLightColor[shade].G;
-					shadingB=(uint)pLightmap->StaticLightColor[shade].B;
-					uint NextUpR=color16>>11;									// 8:8
-					NextUpR=((NextUpR<<3)|(NextUpR>>3))*shadingR;
+					uint NextUpR=color16>>11;									// 8:0
+					NextUpR=((NextUpR<<3)|(NextUpR>>3));
 					uint NextUpG=color16&0x07e0;
-					NextUpG=((NextUpG>>3)|(NextUpG>>9))*shadingG;
+					NextUpG=((NextUpG>>3)|(NextUpG>>9));
 					uint NextUpB=color16&0x001f;
-					NextUpB=((NextUpB<<3)|(NextUpB>>2))*shadingB;
+					NextUpB=((NextUpB<<3)|(NextUpB>>2));
 
 					color16=pColorTile[pLightmap->Width+x].Color565;
-					shade=pColorTile[pLightmap->Width+x].Shade;
-					shadingR=(uint)pLightmap->StaticLightColor[shade].R;
-					shadingG=(uint)pLightmap->StaticLightColor[shade].G;
-					shadingB=(uint)pLightmap->StaticLightColor[shade].B;
-					uint NextDownR=color16>>11;									// 8:8
-					NextDownR=((NextDownR<<3)|(NextDownR>>3))*shadingR;
+					uint NextDownR=color16>>11;									// 8:0
+					NextDownR=((NextDownR<<3)|(NextDownR>>3));
 					uint NextDownG=color16&0x07e0;
-					NextDownG=((NextDownG>>3)|(NextDownG>>9))*shadingG;
+					NextDownG=((NextDownG>>3)|(NextDownG>>9));
 					uint NextDownB=color16&0x001f;
-					NextDownB=((NextDownB<<3)|(NextDownB>>2))*shadingB;
+					NextDownB=((NextDownB<<3)|(NextDownB>>2));
 
 					// 2x2 expansion ?
 					if (pLightmap->MulFactor==2)
 					{
 						// Expand 4x4
-						pDst[0].R=PreviousUpR>>8;													// 8:8
-						pDst[0].G=PreviousUpG>>8;													
-						pDst[0].B=PreviousUpB>>8;													
-						pDst[1].R=(uint8)(((uint)PreviousUpR+(uint)NextUpR)>>9);					// 8:9
-						pDst[1].G=(uint8)(((uint)PreviousUpG+(uint)NextUpG)>>9);
-						pDst[1].B=(uint8)(((uint)PreviousUpB+(uint)NextUpB)>>9);
-						pDst[dstWidth].R=(uint8)(((uint)PreviousUpR+(uint)PreviousDownR)>>9);		// 8:9
-						pDst[dstWidth].G=(uint8)(((uint)PreviousUpG+(uint)PreviousDownG)>>9);
-						pDst[dstWidth].B=(uint8)(((uint)PreviousUpB+(uint)PreviousDownB)>>9);
-						pDst[dstWidth+1].R=(uint8)(((uint)PreviousUpR+(uint)NextUpR+(uint)PreviousDownR+(uint)NextDownR)>>10);	// 8:10
-						pDst[dstWidth+1].G=(uint8)(((uint)PreviousUpG+(uint)NextUpG+(uint)PreviousDownG+(uint)NextDownG)>>10);
-						pDst[dstWidth+1].B=(uint8)(((uint)PreviousUpB+(uint)NextUpB+(uint)PreviousDownB+(uint)NextDownB)>>10);
+						uint shade=pLumel[0].Shaded;
+						pDst[0].R=(uint8)(((uint)pLightmap->StaticLightColor[shade].R*(uint)PreviousUpR)>>8);	// 8:8
+						pDst[0].G=(uint8)(((uint)pLightmap->StaticLightColor[shade].G*(uint)PreviousUpG)>>8);
+						pDst[0].B=(uint8)(((uint)pLightmap->StaticLightColor[shade].B*(uint)PreviousUpB)>>8);
+						shade=pLumel[1].Shaded;
+						pDst[1].R=(uint8)(((uint)pLightmap->StaticLightColor[shade].R*((uint)PreviousUpR+(uint)NextUpR))>>9);	// 8:9
+						pDst[1].G=(uint8)(((uint)pLightmap->StaticLightColor[shade].G*((uint)PreviousUpG+(uint)NextUpG))>>9);	// 8:9
+						pDst[1].B=(uint8)(((uint)pLightmap->StaticLightColor[shade].B*((uint)PreviousUpB+(uint)NextUpB))>>9);	// 8:9
+						shade=pLumel[dstWidthLumel].Shaded;
+						pDst[dstWidth].R=(uint8)(((uint)pLightmap->StaticLightColor[shade].R*((uint)PreviousUpR+(uint)PreviousDownR))>>9);	// 8:9
+						pDst[dstWidth].G=(uint8)(((uint)pLightmap->StaticLightColor[shade].G*((uint)PreviousUpG+(uint)PreviousDownG))>>9);	// 8:9
+						pDst[dstWidth].B=(uint8)(((uint)pLightmap->StaticLightColor[shade].B*((uint)PreviousUpB+(uint)PreviousDownB))>>9);	// 8:9
+						shade=pLumel[dstWidthLumel+1].Shaded;
+						pDst[dstWidth+1].R=(uint8)(((uint)pLightmap->StaticLightColor[shade].R*
+							((uint)PreviousUpR+(uint)NextUpR+(uint)PreviousDownR+(uint)NextDownR))>>10);			// 8:10
+						pDst[dstWidth+1].G=(uint8)(((uint)pLightmap->StaticLightColor[shade].G*
+							((uint)PreviousUpG+(uint)NextUpG+(uint)PreviousDownG+(uint)NextDownG))>>10);			// 8:10
+						pDst[dstWidth+1].B=(uint8)(((uint)pLightmap->StaticLightColor[shade].B*
+							((uint)PreviousUpB+(uint)NextUpB+(uint)PreviousDownB+(uint)NextDownB))>>10);			// 8:10
 					}
 					else	// 4x4 expansion
 					{
 						// Pointer on line dst
 						CRGBA *pDstLine=pDst;
+						const CTileLumel *pLumelLine=pLumel;
 
 						// For each 4x4 expanded pixels
 						int s,t;
 						for (t=0; t<4; t++)
 						{
 							// Compute start and end of line
-							uint startR=(uint)PreviousUpR*(4-t)+(uint)PreviousDownR*t;		// 8:10
+							uint startR=(uint)PreviousUpR*(4-t)+(uint)PreviousDownR*t;		// 8:2
 							uint startG=(uint)PreviousUpG*(4-t)+(uint)PreviousDownG*t;
 							uint startB=(uint)PreviousUpB*(4-t)+(uint)PreviousDownB*t;
-							uint endR=(uint)NextUpR*(4-t)+(uint)NextDownR*t;				// 8:10
+							uint endR=(uint)NextUpR*(4-t)+(uint)NextDownR*t;				// 8:2
 							uint endG=(uint)NextUpG*(4-t)+(uint)NextDownG*t;
 							uint endB=(uint)NextUpB*(4-t)+(uint)NextDownB*t;						
 
 							// Compute the line
 							for (s=0; s<4; s++)
 							{
-								pDstLine[s].R=((uint)startR*(4-s)+(uint)endR*s)>>12;		// 8:12
-								pDstLine[s].G=((uint)startG*(4-s)+(uint)endG*s)>>12;
-								pDstLine[s].B=((uint)startB*(4-s)+(uint)endB*s)>>12;
+								uint shade=pLumelLine[s].Shaded;
+								pDstLine[s].R=((uint)pLightmap->StaticLightColor[shade].R*((uint)startR*(4-s)+(uint)endR*s))>>12;		// 8:12
+								pDstLine[s].G=((uint)pLightmap->StaticLightColor[shade].G*((uint)startR*(4-s)+(uint)endG*s))>>12;		// 8:12
+								pDstLine[s].B=((uint)pLightmap->StaticLightColor[shade].B*((uint)startR*(4-s)+(uint)endB*s))>>12;		// 8:12
 							}
 
 							// Next line
 							pDstLine+=dstWidth;
+							pLumelLine+=dstWidthLumel;
 						}
 					}
 
@@ -700,8 +734,10 @@ extern "C" void NL3D_expandLightmap (const NL3D_CExpandLightmap* pLightmap)
 
 					// Next pixel dst
 					pDst+=pLightmap->MulFactor;
+					pLumel+=pLightmap->MulFactor;
 				}
 				pColorTile+=pLightmap->Width;
+				pLumelTile+=dstBlockLumel;
 				pDstPixels+=dstBlock;
 			}
 		}

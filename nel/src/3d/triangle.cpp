@@ -1,7 +1,7 @@
 /** \file triangle.cpp
  * <File description>
  *
- * $Id: triangle.cpp,v 1.1 2000/12/13 10:26:09 berenguier Exp $
+ * $Id: triangle.cpp,v 1.2 2001/01/23 14:31:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,11 +24,44 @@
  */
 
 #include "nel/3d/triangle.h"
+#include "nel/misc/plane.h"
 
+using namespace NLMISC;
 
 namespace NL3D 
 {
 
+// ***************************************************************************
+bool CTriangle::intersect (const CVector& p0, const CVector& p1, CVector& hit, const CPlane& plane) const
+{
+	// Normale
+	CVector normal=plane.getNormal();
+
+	// Not clipped by the plane ?
+	if (plane*p0<0.f)
+	{
+		if (plane*p1<0.f)
+			return false;
+	}
+	else
+	{
+		if (plane*p1>=0.f)
+			return false;
+	}
+
+	// Point on the plane
+	hit=plane.intersect (p0, p1);
+
+	// Check
+	float fDist=plane*hit;
+
+	// Check the point...
+	bool positive=(((V0-hit)^(V1-hit))*normal>0.f);
+
+	if ((((V1-hit)^(V2-hit))*normal>0.f)!=positive)
+		return false;
+	return ((((V2-hit)^(V0-hit))*normal>0.f)==positive);
+}
 
 
 } // NL3D

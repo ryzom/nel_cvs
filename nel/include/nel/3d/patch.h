@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.28 2001/01/19 14:25:49 berenguier Exp $
+ * $Id: patch.h,v 1.29 2001/01/23 14:31:41 corvazier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -37,6 +37,7 @@
 #include "nel/3d/bsphere.h"
 #include "nel/3d/tile_element.h"
 #include "nel/3d/tile_color.h"
+#include "nel/3d/tile_lumel.h"
 
 
 namespace NL3D {
@@ -45,6 +46,9 @@ namespace NL3D {
 #define NL_MAX_TILES_BY_PATCH_EDGE (1<<NL_MAX_TILES_BY_PATCH_EDGE_SHIFT)		// max 16x16 tiles by patch
 #define NL_PATCH_FAR0_ROTATED 0x1												// Flags far0 rotated
 #define NL_PATCH_FAR1_ROTATED 0x2												// Flags far1 rotated
+
+#define NL_LUMEL_BY_TILE_SHIFT 2												// 4 lumels by tile
+#define NL_LUMEL_BY_TILE (1<<NL_LUMEL_BY_TILE_SHIFT)							// 4 lumels by tile
 
 using NLMISC::CVector;
 
@@ -141,30 +145,11 @@ public:
 		
 	*/
 
-	class CStreamBit
-	{
-	public:
-		// Init the pointer of the stream
-		void setPtr (const std::vector<uint8>& buffer);
+	// Lumel array compressed.
+	std::vector<uint8>	CompressedLumels;
 
-		// Push a bool
-		void pushBackBool (bool bBoolean);
-
-		// Push 4 bits
-		void pushBack4bits (uint8 fourBits);
-
-		// Pop a bool
-		bool popBackBool ();
-
-		// Pop 4 bits
-		uint8 popBack4bits ();
-	private:
-		const std::vector<uint8>		*_Vector;
-		uint							_Offset;
-	};
-
-	// Shadow array. Use CPatch::CStreamBit to read inside.
-	std::vector<uint8>	Shadows;
+	// Lumel array uncompressed.
+	std::vector<CTileLumel>	UncompressedLumels;
 
 	// There is OrderS*OrderT tiles. CZone build it at build() time.
 	std::vector<CTileElement>	Tiles;
@@ -197,6 +182,8 @@ public:
 	uint8			getOrderS() const {return OrderS;}
 	uint8			getOrderT() const {return OrderT;}
 	float			getErrorSize() const {return ErrorSize;}
+	sint			getFar0() const {return Far0;}
+	sint			getFar1() const {return Far1;}
 
 	/// Build the bbox of the patch, according to ctrl points, and displacement map max value.
 	CAABBox			buildBBox() const;
@@ -256,6 +243,52 @@ public:
 	// unpack the patch into a floating point one.
 	void			unpack(CBezierPatch	&p) const;
 
+	/// \name Lumels methods
+
+	/**
+	  *  Expand the shading part of the patch in bilinear. Array must have a size of ((OrderS*4/ratio)+1)*((OrderT*4/ratio)+1)
+	  *
+	  *  \param Shading is a pointer on the destination shading buffer. Size must be ((OrderS*4/ratio)+1)*((OrderT*4/ratio)+1).
+	  *  \param ratio is the one over the ratio of the texture destination. Must be 1 or 2.
+	  *  \see unpackShadowMap(), packShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
+	  */
+	void			expandShading (uint8 * Shading, uint ratio=1);
+
+	/**
+	  *  Unpack the lumels of the patches. Lumels are classes that describe the lighting environnement at a given texel
+	  *  of the lightmap. It is used to compute the shadow map of the patch, compress it and uncompress it.
+	  *  This method uncompress the lumels stored in its Lumels member.
+	  *
+	  *  \param pShadow is a pointer on the destination lumel buffer. Size must be ((OrderS*4/ratio)+1)*((OrderT*4/ratio)+1).
+	  *  \param ratio is the one over the ratio of the texture destination. Must be 1 or 2.
+	  *  \see expandShading(), packShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
+	  */
+	void			unpackShadowMap (class CTileLumel *pShadow, uint ratio=1);
+
+	/**
+	  *  Pack the lumels of the patches. Lumels are classes that describe the lighting environnement at a given texel
+	  *  of the lightmap. It is used to compute the shadow map of the patch, compress it and uncompress it.
+	  *  This method compress the lumels passed in parameter and stored them in its Lumels member.
+	  *
+	  *  \param pShadow is a pointer on the destination lumel buffer. Size must be (OrderS*4+1)*(OrderS*4+1).
+	  *  \see expandShading(), unpackShadowMap(), resetCompressedLumels(), clearUncompressedLumels()
+	  */
+	void			packShadowMap (const class CTileLumel *pLumel);
+
+	/**
+	  *  Rebuild the packed lumels without shadow. Only the interpolated color will be used.
+	  *
+	  *  \see expandShading(), packShadowMap(), unpackShadowMap(), clearUncompressedLumels()
+	  */
+	void			resetCompressedLumels ();
+
+	/**
+	  *  Clear the uncompressed lumel of the patch.
+	  *
+	  *  \see expandShading(), packShadowMap(), unpackShadowMap()
+	  */
+	void			clearUncompressedLumels ();
+public:
 
 	// only usefull for CZone refine.
 	bool			isClipped() const {return Clipped;}
@@ -265,6 +298,7 @@ private:
 /*********************************/
 
 	friend	class CTessFace;
+	friend	class CZone;
 
 	CZone			*Zone;
 	// Tile Order for the patch.
@@ -314,6 +348,16 @@ private:
 	// The N tess faces for this patch.
 	sint			NCurrentFaces;
 
+	/**
+	  *  Static buffer used to expand shading in expandShading. Its size is 
+	  *  (NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)*(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)
+	  */
+	static uint8	_ShadingBuffer[];
+
+	/**
+	  *  Stream version of the class. 
+	  */
+	static uint32	_Version;
 
 private:
 	// Guess.
@@ -373,68 +417,6 @@ private:
 	CBezierPatch	*unpackIntoCache() const;
 
 };
-
-// inline CPatch::CStreamBit **********************************************************************
-
-// Init the pointer of the stream
-/*void CPatch::CStreamBit::setPtr (const std::vector<uint8>& buffer)
-{
-	_Vector=&buffer;
-	_Offset=0;
-}
-
-// Push a bool
-void CPatch::CStreamBit::pushBackBool (bool bBoolean)
-{
-	// Size
-	if ((_Offset>>5)>=_Vector.size())
-		_Vector.resize ((_Offset>>5)+1);
-
-	uint off=_Offset>>5;
-	_Vector[off]&=~(1<<(_Offset&0x1f));
-	_Vector[off]|=(((uint)bBoolean)<<(_Offset&0x1f));
-	_Offset++;
-}
-
-// Push 4 bits
-void CPatch::CStreamBit::pushBack4bits (uint8 fourBits)
-{
-	nlassert ((fourBits>=0)&&(fourBits<4));
-
-	if (((_Offset+3)>>5)>=_Vector.size())
-		_Vector.resize (((_Offset+3)>>5)+1);
-
-	uint off0=_Offset>>5;
-	uint off1=off0+1;
-	_Vector[off0]&=~(0xf<<(_Offset&0x1f));
-	_Vector[off0]|=((uint)fourBits)<<(_Offset&0x1f));
-	_Vector[off1]&=~(0xf>>(32-(_Offset&0x1f)));
-	_Vector[off1]|=(((uint)fourBits)>>(32-(_Offset&0x1f)));
-	_Offset+=4;
-}
-
-// Pop a bool
-bool CPatch::CStreamBit::popBackBool ()
-{
-	// Size
-	nlassert ((_Offset>>5)<_Vector.size())
-
-	uint off=_Offset>>5;
-	_Offset++;
-	return (_Vector[off]&(1<<(_Offset&0x1f)))!=0;
-}
-
-// Pop 4 bits
-uint8 CPatch::CStreamBit::popBack4bits ()
-{
-	nlassert (((_Offset+3)>>5)<_Vector.size());
-
-	uint off0=_Offset>>5;
-	uint off1=off0+1;
-	_Offset+=4;
-	return 	((_Vector[off0]&(0xf<<(  _Offset&0x1f   )))>>(_Offset&0x1f))|
-			((_Vector[off1]&(0xf>>(32-(_Offset&0x1f))))<<(32-(_Offset&0x1f)));
-}*/
 
 
 } // NL3D

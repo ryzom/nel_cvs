@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.32 2001/01/22 15:32:05 lecroart Exp $
+ * $Id: landscape.h,v 1.33 2001/01/23 14:31:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -168,7 +168,8 @@ public:
 	 * on patch level. Worst, but faster.
 	 */
 	void			buildCollideFaces(const CAABBoxExt &bbox, std::vector<CTriangle> &faces, bool faceSplit);
-	/** Build the set of faces of landscape, from a certain patch. Usefull for collisions.
+	/** Build the set of faces of landscape, from a certain patch. Usefull for collisions. Triangles are built first in S 
+	 *  then T order. There is two triangles by tiles. So the number of triangles for a patch is 2*OrderS*OrderT.
 	 */
 	void			buildCollideFaces(sint zoneId, sint patch, std::vector<CTriangle> &faces);
 	// @}

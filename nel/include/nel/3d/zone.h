@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.20 2001/01/19 14:25:49 berenguier Exp $
+ * $Id: zone.h,v 1.21 2001/01/23 14:31:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,15 +124,24 @@ public:
 
 	/// \name Patch texture.
 	// @{
+
 	/** The Tiles for this patch. There must be OrderS*OrderT tiles.
 	 * They are stored in line first order, from S=0 to 1, and T=0 to 1.
 	 */
 	std::vector<CTileElement>	Tiles;
+
 	/** The Tile colors for this patch. There must be (OrderS+1)*(OrderT+1) tile colors. Those are the colors at 
 	 * the corners of the tiles.
 	 * They are stored in line first order, from S=0 to 1, and T=0 to 1.
 	 */
 	std::vector<CTileColor>		TileColors;
+
+	/** The Tile lumels for this patch. There must be (OrderS*4+1)*(OrderT*4+1) tile lumels. Those are lumel value
+	 *  in tiles. There is 4x4 lumels by tiles plus last lumels.
+	 *  They are stored in line first order, from S=0 to 1, and T=0 to 1.
+	 */
+	std::vector<CTileLumel>		Lumels;
+
 	// @}
 
 
@@ -187,7 +196,7 @@ public:
 	struct	CPatchConnect
 	{
 		// NB: same meanings than in CPatchInfo.
-		uint8			OrderS, OrderT;
+		uint8			OldOrderS, OldOrderT;
 		float			ErrorSize;
 		uint16			BaseVertices[4];
 		CPatchInfo::CBindInfo		BindEdges[4];

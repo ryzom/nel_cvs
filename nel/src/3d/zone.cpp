@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.28 2001/01/19 14:26:04 berenguier Exp $
+ * $Id: zone.cpp,v 1.29 2001/01/23 14:31:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,14 +115,16 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 			pa.Interiors[i].pack(p.Interiors[i], PatchBias, PatchScale);
 		pa.Tiles= pi.Tiles;
 		pa.TileColors= pi.TileColors;
+
+		// Pack the lumel map
+		pa.packShadowMap (&pi.Lumels[0]);
+
 		nlassert(pa.Tiles.size()== (uint)pi.OrderS*pi.OrderT);
 		nlassert(pa.TileColors.size()== (uint)(pi.OrderS+1)*(pi.OrderT+1));
 
-
-
 		// Build the patchConnect.
-		pc.OrderS= pi.OrderS;
-		pc.OrderT= pi.OrderT;
+		pa.OrderS= pi.OrderS;
+		pa.OrderT= pi.OrderT;
 		pc.ErrorSize= pi.ErrorSize;
 		for(i=0;i<4;i++)
 		{
@@ -161,9 +163,14 @@ void			CZone::retrieve(std::vector<CPatchInfo> &patchs, std::vector<CBorderVerte
 			pa.Interiors[i].unpack(p.Interiors[i], PatchBias, PatchScale);
 		pi.Tiles= pa.Tiles;
 		pi.TileColors= pa.TileColors;
+		pi.Lumels.resize ((pa.OrderS*4+1)*(pa.OrderT*4+1));
+
+		// Unpack the lumel map
+		pa.unpackShadowMap (&pi.Lumels[0]);
+
 		// from the patchConnect.
-		pi.OrderS= pc.OrderS;
-		pi.OrderT= pc.OrderT;
+		pi.OrderS= pa.OrderS;
+		pi.OrderT= pa.OrderT;
 		pi.ErrorSize= pc.ErrorSize;
 		for(i=0;i<4;i++)
 		{
@@ -213,8 +220,12 @@ void			CBorderVertex::serial(NLMISC::IStream &f)
 }
 void			CZone::CPatchConnect::serial(NLMISC::IStream &f)
 {
-	uint	ver= f.serialVersion(0);
-	f.serial(OrderS, OrderT, ErrorSize);
+	uint	ver= f.serialVersion(1);
+
+	if (ver<1)
+		f.serial(OldOrderS, OldOrderT, ErrorSize);
+	else
+		f.serial(ErrorSize);
 	f.serial(BaseVertices[0], BaseVertices[1], BaseVertices[2], BaseVertices[3]);
 	f.serial(BindEdges[0], BindEdges[1], BindEdges[2], BindEdges[3]);
 }
@@ -234,12 +245,14 @@ void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 void			CZone::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 2:
+		- Lumels.
 	Version 1:
 		- Tile color.
 	Version 0:
 		- base verison.
 	*/
-	uint	ver= f.serialVersion(1);
+	uint	ver= f.serialVersion(2);
 
 	f.serialCheck((uint32)'ENOZ');
 	f.serial(ZoneId, ZoneBB, PatchBias, PatchScale, NumVertices);
@@ -249,23 +262,38 @@ void			CZone::serial(NLMISC::IStream &f)
 
 	// If read and version 0, must init default TileColors of patchs.
 	//===============================================================
-	if(f.isReading() && ver==0)
+	if(f.isReading() && ver<2)
 	{
 		for(sint j=0;j<(sint)Patchs.size();j++)
 		{
 			CPatch				&pa= Patchs[j];
 			CPatchConnect		&pc= PatchConnects[j];
 
-			// Leave it as default behavior: Must init the color as pure white...
-			// We must fo it with help of patchconnects OrderS and OrderT.
-			pa.TileColors.resize( (pc.OrderS+1)*(pc.OrderT+1) );
-			for(sint i=0;i<(sint)pa.TileColors.size();i++)
+			// Force Order of the patch
+			pa.OrderS=pc.OldOrderS;
+			pa.OrderT=pc.OldOrderT;
+
+			// Tile colors exist ?
+			if (ver<1)
 			{
-				pa.TileColors[i].Color565= 0xFFFF;
-				pa.TileColors[i].Shade= 0xFF;
-				pa.TileColors[i].LightX= 0xFF;
-				pa.TileColors[i].LightY= 0x00;
-				pa.TileColors[i].LightZ= 0x00;
+				// Leave it as default behavior: Must init the color as pure white...
+				// We must fo it with help of patchconnects OrderS and OrderT.
+				pa.TileColors.resize( (pc.OldOrderS+1)*(pc.OldOrderT+1) );
+				for(sint i=0;i<(sint)pa.TileColors.size();i++)
+				{
+					pa.TileColors[i].Color565= 0xFFFF;
+					pa.TileColors[i].Shade= 0xFF;
+					pa.TileColors[i].LightX= 0xFF;
+					pa.TileColors[i].LightY= 0x00;
+					pa.TileColors[i].LightZ= 0x00;
+				}
+			}
+
+			// Lumels exist ?
+			if (ver<2)
+			{
+				// Reset shadows
+				pa.resetCompressedLumels ();
 			}
 		}
 	}
@@ -333,7 +361,7 @@ void			CZone::compile(CLandscape *landscape, TZoneMap &loadedZones)
 		baseVertices[1]= &(BaseVertices[pc.BaseVertices[1]]->Vert);
 		baseVertices[2]= &(BaseVertices[pc.BaseVertices[2]]->Vert);
 		baseVertices[3]= &(BaseVertices[pc.BaseVertices[3]]->Vert);
-		pa.compile(this, pc.OrderS, pc.OrderT, baseVertices, pc.ErrorSize);
+		pa.compile(this, pa.OrderS, pa.OrderT, baseVertices, pc.ErrorSize);
 	};
 
 	// bind() the patchs. (after all compiled).

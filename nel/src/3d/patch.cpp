@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.36 2001/01/19 14:26:04 berenguier Exp $
+ * $Id: patch.cpp,v 1.37 2001/01/23 14:31:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,8 @@ namespace NL3D
 // ***************************************************************************
 CBezierPatch	CPatch::CachePatch;
 const CPatch	*CPatch::LastPatch= NULL;
-
+uint8			CPatch::_ShadingBuffer[(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)*(NL_MAX_TILES_BY_PATCH_EDGE*NL_LUMEL_BY_TILE+1)];
+uint32			CPatch::_Version=2;
 
 // ***************************************************************************
 CPatch::CPatch()
@@ -397,8 +398,8 @@ void			CPatch::compile(CZone *z, uint8 orderS, uint8 orderT, CTessVertex *baseVe
 
 	nlassert(orderS==2 || orderS==4 || orderS==8 || orderS==16);
 	nlassert(orderT==2 || orderT==4 || orderT==8 || orderT==16);
-	OrderS= orderS;
-	OrderT= orderT;
+	nlassert (OrderS==orderS);
+	nlassert (OrderT==orderT);
 
 	// Compile additional infos.
 	sint	ps= getPowerOf2(orderS) , pt= getPowerOf2(orderT);
@@ -1120,12 +1121,14 @@ void			CPatch::bind(CBindInfo	Edges[4])
 void			CPatch::serial(NLMISC::IStream &f)
 {
 	/*
+	Version 2:
+		- Lumels.
 	Version 1:
 		- Tile color.
 	Version 0:
 		- base verison.
 	*/
-	uint	ver= f.serialVersion(1);
+	uint	ver= f.serialVersion(_Version);
 
 	f.serial(Vertices[0], Vertices[1], Vertices[2], Vertices[3]);
 	f.serial(Tangents[0], Tangents[1], Tangents[2], Tangents[3]);
@@ -1134,6 +1137,12 @@ void			CPatch::serial(NLMISC::IStream &f)
 	f.serialCont(Tiles);
 	if(ver>=1)
 		f.serialCont(TileColors);
+	if(ver>=2)
+	{
+		f.serial (OrderS);
+		f.serial (OrderT);
+		f.serialCont(CompressedLumels);
+	}
 	// Else cannot create here the TileColors, because we need the OrderS/OrderT information... Done into CZone serial.
 }
 
@@ -1219,8 +1228,19 @@ uint		CPatch::getTileLightMap(sint ts, sint tt, ITexture *&lightmap)
 // ***************************************************************************
 	// Compute the lightmap texture, with help of TileColors.
 	CRGBA	lightText[NL_TILE_LIGHTMAP_SIZE*NL_TILE_LIGHTMAP_SIZE];
+	
 	// Following code assume size of 5...
-	nlassert(NL_TILE_LIGHTMAP_SIZE==5);
+	nlassert (NL_TILE_LIGHTMAP_SIZE==5);
+	float	c= -normal*getLandscape()->getAutomaticLightDir();
+	// Warning: Uncompressed data should be filled now. Rebuild the shadow map ?
+	if (UncompressedLumels.begin()==UncompressedLumels.end())
+	// FastFloor using fistp. Don't care convention.
+		// Resize the lumel array
+		UncompressedLumels.resize ((OrderS*4+1)*(OrderT*4+1));
+	{
+		// Unpack the far shadow map
+		unpackShadowMap (&UncompressedLumels[0]);
+				dest[y*stride + x]=colorTable[UncompressedLumels[offset + x + (y<<NL_LUMEL_BY_TILE_SHIFT)]];
 		}
 	// Get the static lighting array
 	const CRGBA* pStaticLight=Zone->getLandscape()->getStaticLight();
@@ -1234,7 +1254,6 @@ uint		CPatch::getTileLightMap(sint ts, sint tt, ITexture *&lightmap)
 		// Blend the color.
 		CRGBA	col;
 		col.set565 (tcol.Color565);
-		col.modulateFromColor (col, pStaticLight[tcol.Shade]);
 		col.A=255;
 void		CPatch::computeTileLightmapPixelAroundCorner(const CVector2f &stIn, CRGBA *dest, bool lookAround)
 		// TempYoyo.
@@ -1256,6 +1275,22 @@ void		CPatch::computeTileLightmapPixelAroundCorner(const CVector2f &stIn, CRGBA 
 	// Bilinear!!!
 	NL3D_bilinearTileLightMap(lightText);
 			mustLookOnNeighbor= true;
+	// Add shadow
+	CRGBA *texel=lightText;
+	CTileLumel *lumels=&UncompressedLumels[ 4*tt*(OrderS*4+1) + 4*ts ];
+	for (int y=0; y<NL_TILE_LIGHTMAP_SIZE; y++)
+	}
+		for (int x=0; x<NL_TILE_LIGHTMAP_SIZE; x++)
+			computeTileLightmapPixel(ts+decalS, tt+decalT, subS, subT, dest);
+			// Modulate with the color of the shadow
+			texel->modulateFromColor (*texel, pStaticLight[lumels[x].Shaded]);
+			texel++;
+					}
+				}
+		// Next line
+		lumels+=OrderS*4+1;
+			}
+		}
 	return Zone->Landscape->getTileLightMap(lightText, lightmap);
 
 }
@@ -1268,8 +1303,231 @@ void		CPatch::releaseTileLightMap(uint tileLightMapId)
 
 	Zone->Landscape->releaseTileLightMap(tileLightMapId);
 	{
+	}
+extern "C" void	NL3D_bilinearShadingLightMap4x (uint8 *tex, uint lineSize);
+void		CPatch::expandShading (uint8 * Shading, uint ratio)
+
+	// Check args
+	nlassert ((ratio==1)||(ratio==2));		// only ratio 1:1 or 1:2
+	// Number of block in a line
+	// Check the size of the tile color array. Must be (OrderS+1) * (OrderT+1)
+	nlassert (TileColors.size()==(uint)((OrderS+1)*(OrderT+1)));
+
+	switch (ratio)
+	{
+	case 1:
+	{
+		// Unpack shading first
+		uint s, t;
+		for (t=0; t<OrderT; t++)
+		for (s=0; s<OrderS; s++)
+		{
+			// Start of dist block
+			uint8 *pStartBlock=Shading+t*(OrderS*NL_LUMEL_BY_TILE+1)*NL_LUMEL_BY_TILE+s*NL_LUMEL_BY_TILE;
+			const CTileColor *pStartBlockSrc=&TileColors[0]+t*(OrderS+1)+s;
+
+			// Place the 4 values
+			pStartBlock[0]=pStartBlockSrc[0].Shade;
+			pStartBlock[NL_LUMEL_BY_TILE]=pStartBlockSrc[1].Shade;
+			pStartBlock[(OrderS*NL_LUMEL_BY_TILE+1)*NL_LUMEL_BY_TILE]=pStartBlockSrc[OrderS+1].Shade;
+			pStartBlock[(OrderS*NL_LUMEL_BY_TILE+1)*NL_LUMEL_BY_TILE+NL_LUMEL_BY_TILE]=pStartBlockSrc[OrderS+2].Shade;
+
+			// Bili it!
+			NL3D_bilinearShadingLightMap4x (pStartBlock, OrderS*NL_LUMEL_BY_TILE+1);
+		}
+	}
+	break;
+	case 2:
+
+		// Assume that NL_LUMEL_BY_TILE==4
+		nlassert (NL_LUMEL_BY_TILE==4);
+	{
+		// Unpack shading first
+		uint s, t;
+		for (t=0; t<OrderT; t++)
+		for (s=0; s<OrderS; s++)
+
+			// Start of dist block
+			uint8 *pStartBlock=Shading+t*(OrderS*2+1)*2+s*2;
+			const CTileColor *pStartBlockSrc=&TileColors[0]+t*(OrderS+1)+s;
+		{
+			// Bili it!
+			uint corner0=pStartBlockSrc[0].Shade;
+			pStartBlock[0]=corner0;
+			uint corner1=pStartBlockSrc[1].Shade;
+			pStartBlock[2]=corner1;
+			uint corner3=pStartBlockSrc[OrderS+1].Shade;
+			pStartBlock[2*(OrderS*2+1)]=corner3;
+			uint corner4=pStartBlockSrc[OrderS+2].Shade;
+			pStartBlock[2*(OrderS*2+1)+2]=corner4;
+				countU=lumelCount&3;
+			pStartBlock[1]=(uint8)(((uint)corner0+(uint)corner1)>>1);
+			pStartBlock[OrderS*2+1]=(uint8)(((uint)corner0+(uint)corner3)>>1);
+			pStartBlock[2*(OrderS*2+1)+1]=(uint8)(((uint)corner3+(uint)corner4)>>1);
+			pStartBlock[OrderS*2+3]=(uint8)(((uint)corner4+(uint)corner1)>>1);
+			pStartBlock[OrderS*2+2]=(uint8)(((uint)pStartBlock[OrderS*2+1]+(uint)pStartBlock[OrderS*2+3])>>1);
+		}
+	}
+	break;
+	}
+}
+// ***************************************************************************
+void		CPatch::unpackShadowMap (CTileLumel *pLumel, uint ratio)
+{
+	// Check args
+	nlassert ((ratio==1)||(ratio==2));		// only ratio 1:1 or 1:2
+
+	// Expand the shading
+	expandShading (_ShadingBuffer, ratio);
+	
+	// *** Now create lumel
+
+	// Create a bit stream for shadows
+	CTileLumel::CStreamBit stream;
+
+	// Init the stream on a buffer
+	stream.setPtr (&CompressedLumels);
+
+	// Ptr on the bilinear value
+	uint8 *pInterpolated=_ShadingBuffer;
+
+	// Unpack by line
+	int nLine;
+	int nLineCount=OrderT*NL_LUMEL_BY_TILE+1;
+	uint lumelCount=(OrderS*NL_LUMEL_BY_TILE+1);
+	for (nLine=0; nLine<nLineCount; nLine++)
+	{
+		// Skip on over two lumel line when ratio==2
+		if ((ratio!=2)||((nLine&1)==0))
+		{
+			// Read the first bit
+			if (stream.popBackBool())
+
+				// Ok, on this line, some lumels are shadowed
+				uint lumel;
+				for (lumel=0; lumel<lumelCount; lumel++)
+			for (uint v=0; v<NL_LUMEL_BY_TILE; v++)
+					// Skip on over two lumel when ratio==2
+					if ((ratio!=2)||((lumel&1)==0))
+					{
+						// Unpack the lumel
+						pLumel->unpack (stream, *pInterpolated);
+					// Copy the lumel
+						// Next shading value
+						pLumel++;
+						pInterpolated++;
+					}
+					else
+						CTileLumel::skip (stream);
+				}
+
+			else
+			{
+				// No lumels shadowed on this line
+				uint lumel;
+				for (lumel=0; lumel<lumelCount; lumel++)
+				{
+					if ((ratio!=2)||((lumel&1)==0))
+					{
+						// Create it
+						pLumel->createUncompressed (*pInterpolated, *pInterpolated);
+				// Next line
+						// Next shading value
+						pLumel++;
+						pInterpolated++;
+					}
+				}
+			}
+		}
+		else
+		// skip the whole line
+		{
+			// Read the first bit
+			if (stream.popBackBool())
+
+				// Ok, on this line, some lumels are shadowed
+				uint lumel;
+				for (lumel=0; lumel<lumelCount; lumel++)
+				{
+					// Skip all lumel
+					CTileLumel::skip (stream);
+				}
+					alphaMin=originalBlock[i];
+		}
+	}
+}
+				if (originalBlock[i]>alphaMax)
+// ***************************************************************************
+void		CPatch::packShadowMap (const CTileLumel *pLumel)
+{
+	// Create a bit stream for shadows
+	CTileLumel::CStreamBit stream;
+
+	// Init the stream on a buffer
+	stream.setPtr (&CompressedLumels);
 			// second compression
+	// Ptr on the bilinear value
+	uint8 *pInterpolated=_ShadingBuffer;
+
+	// Pack by line
+	int nLine;
+	int nLineCount=OrderT*NL_LUMEL_BY_TILE+1;
+	uint lumelCount=(OrderS*NL_LUMEL_BY_TILE+1);
+	for (nLine=0; nLine<nLineCount; nLine++)
+	{
+		// Check if some lumels are shadowed
+		// Ok, on this line, some lumels are shadowed
+		uint lumel;
+		bool bShadowed=false;
+		for (lumel=0; lumel<lumelCount; lumel++)
+		{
+			// Found one?
+			if (pLumel[lumel].isShadowed ())
+
+				bShadowed=true;
+				break;
+			{
+		}
 				// Copy compressed data
+		// Put true if the line is shadowed
+		stream.pushBackBool (bShadowed);
+
+		// Ok, now pack the line if some lumel are shadowed
+		if (bShadowed)
+		{
+			// Ok, on this line, some lumels are shadowed
+			for (lumel=0; lumel<lumelCount; lumel++)
+			{
+				// Pack the lumel
+				pLumel[lumel].pack (stream);
+			}
+
+			// Next block on the line
+		// Increment pointers
+		pLumel+=lumelCount;
+
+		// Next line of block
+		pLumelSrc+=lumelCount*4;
+	}
+}
+
+	nlassert ((lineCount&0x3)==0);
+	uint size=((OrderS*NL_LUMEL_BY_TILE+1)*(OrderT*NL_LUMEL_BY_TILE+1))/8+1;
+
+	// On bit per lumel
+	uint size=numLineBlock*numLumelBlock*8;
+
+	// 4 bits per lumel
+	CompressedLumels.resize (size);
+
+	// No line have shadows.
+	memset (&CompressedLumels[0], 0, size);
+}
+
+// ***************************************************************************
+void		CPatch::clearUncompressedLumels ()
+{
+	// Erase the uncompressed array
 	if (UncompressedLumels.begin()!=UncompressedLumels.end())
 		contReset (UncompressedLumels);
 }
@@ -1349,6 +1607,89 @@ void	NL3D_bilinearTileLightMap(CRGBA *tex)
 	// Fill Line 4. 
 	a24.avg2(a04, a44);
 	a14.avg2(a04, a24);
+	a34.avg2(a24, a44);
+
+#define		b00	tex[0]
+#define		b10	tex[1]
+#define		b20	tex[2]
+#define		b30	tex[3]
+#define		b40	tex[4]
+
+#define		b01	tex[lineSize+0]
+#define		b11	tex[lineSize+1]
+#define		b21	tex[lineSize+2]
+#define		b31	tex[lineSize+3]
+#define		b41	tex[lineSize+4]
+
+#define		b02	tex[lineSize*2+0]
+#define		b12	tex[lineSize*2+1]
+#define		b22	tex[lineSize*2+2]
+#define		b32	tex[lineSize*2+3]
+#define		b42	tex[lineSize*2+4]
+
+#define		b03	tex[lineSize*3+0]
+#define		b13	tex[lineSize*3+1]
+#define		b23	tex[lineSize*3+2]
+#define		b33	tex[lineSize*3+3]
+#define		b43	tex[lineSize*3+4]
+
+#define		b04	tex[lineSize*4+0]
+#define		b14	tex[lineSize*4+1]
+#define		b24	tex[lineSize*4+2]
+#define		b34	tex[lineSize*4+3]
+#define		b44	tex[lineSize*4+4]
+
+void	NL3D_bilinearShadingLightMap4x(uint8 *tex, uint lineSize)
+{
+	// Fast bilinear of a 5x5 tile.
+	// Corners must be set.
+	// Later: pass it to ASM.
+
+#ifndef NL_OS_WINDOWS	// This code doesn't work under VC++ 6.0 in Release. It should. Compilator bug.
+	// Fill first column 0 and column 4.
+	b02=(uint8)(((uint)b00+(uint)b04)>>1);
+	b01=(uint8)(((uint)b00+(uint)b02)>>1);
+	b03=(uint8)(((uint)b02+(uint)b04)>>1);
+	b42=(uint8)(((uint)b40+(uint)b44)>>1);
+	b41=(uint8)(((uint)b40+(uint)b42)>>1);
+	b43=(uint8)(((uint)b42+(uint)b44)>>1);
+	
+	// Fill Line 0.
+	b20=(uint8)(((uint)b00+(uint)b40)>>1);
+	b10=(uint8)(((uint)b00+(uint)b20)>>1);
+	b30=(uint8)(((uint)b20+(uint)b40)>>1);
+
+	// Fill Line 1.
+	b21=(uint8)(((uint)b01+(uint)b41)>>1);
+	b11=(uint8)(((uint)b01+(uint)b21)>>1);
+	b31=(uint8)(((uint)b21+(uint)b41)>>1);
+
+	// Fill Line 2. 
+	b22=(uint8)(((uint)b02+(uint)b42)>>1);
+	b12=(uint8)(((uint)b02+(uint)b22)>>1);
+	b32=(uint8)(((uint)b22+(uint)b42)>>1);
+
+	// Fill Line 3. 
+	b23=(uint8)(((uint)b03+(uint)b43)>>1);
+	b13=(uint8)(((uint)b03+(uint)b23)>>1);
+	b33=(uint8)(((uint)b23+(uint)b43)>>1);
+
+	// Fill Line 4. 
+	b24=(uint8)(((uint)b04+(uint)b44)>>1);
+	b14=(uint8)(((uint)b04+(uint)b24)>>1);
+	b34=(uint8)(((uint)b24+(uint)b44)>>1);
+#else // NL_OS_WINDOWS
+	uint s, t;
+	for (t=0; t<5; t++)
+	for (s=0; s<5; s++)
+	{
+		tex[t*lineSize+s]= 
+			(uint8)((((uint)b00*(4-s) + (uint)b40*s)*(4-t) +
+			((uint)b04*(4-s) + (uint)b44*s)*t)>>4);
+	}
+#endif // NL_OS_WINDOWS
+	nlassert(Son1);
+	Son0->appendTessellationLeaves(leaves);
 		neighborEdge.MultipleBindNum= 0;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file tile_far_bank.h
  * <File description>
  *
- * $Id: tile_far_bank.h,v 1.5 2001/01/15 15:45:23 corvazier Exp $
+ * $Id: tile_far_bank.h,v 1.6 2001/01/23 14:31:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -132,16 +132,26 @@ public:
 	/// Get a read only far tile pointer. Return NULL if the tile doesn't exist.
 	const CTileFar*			getTile (sint tile) const
 	{
+#ifdef NL_DEBUG
+		if (tile>=(sint)_TileVector.size())
+			return NULL;
+#else // NL_DEBUG
 		if (_TileVector.begin()+tile>=_TileVector.end())
 			return NULL;
+#endif
 		return &_TileVector[tile];
 	}
 
 	/// Get a far tile pointer. Return NULL if the tile doesn't exist.
 	CTileFar*				getTile (sint tile)
 	{
+#ifdef NL_DEBUG
+		if (tile>=(sint)_TileVector.size())
+			return NULL;
+#else // NL_DEBUG
 		if (_TileVector.begin()+tile>=_TileVector.end())
 			return NULL;
+#endif
 		return &_TileVector[tile];
 	}
 

@@ -1,7 +1,7 @@
 /** \file quad_tree.h
  * Generic quad tree.
  *
- * $Id: quad_tree.h,v 1.14 2001/01/03 15:25:14 berenguier Exp $
+ * $Id: quad_tree.h,v 1.15 2001/01/23 14:31:41 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -196,6 +196,13 @@ public:
 	  * \param dir is the direction off the ray
 	  */
 	void		selectRay(const NLMISC::CVector& source, const NLMISC::CVector& dir);
+
+	/** Select element with a segment
+	  *
+	  * \param source is the source of the segment
+	  * \param dest is the destination of the segment
+	  */
+	void		selectSegment(const NLMISC::CVector& source, const NLMISC::CVector& dest);
 
 	/** Return the first iterator of the selected element list. begin and end are valid till the next insert.
 	  */
@@ -832,6 +839,42 @@ template<class T>	void		CQuadTree<T>::selectRay(const NLMISC::CVector& source, c
 	plane.make (-mat.getJ(), source);
 	BVolume.push_back (plane);
 	plane.make (-mat.getK(), source);
+	BVolume.push_back (plane);
+
+	// Select the nodes
+	select (BVolume);
+}
+// ============================================================================================
+template<class T>	void		CQuadTree<T>::selectSegment(const NLMISC::CVector& source, const NLMISC::CVector& dest)
+{
+	NLMISC::CMatrix mat;
+	mat.identity ();
+
+	// Set a wrong matrix
+	CVector dir=dest-source;
+	NLMISC::CVector vTmp=dir^((fabs(vTmp*CVector(1,0,0))>0.f)?CVector(1,0,0):CVector(0,1,0));
+	mat.setRot (dir, vTmp, dir^vTmp);
+
+	// Normalize it Yoyo!
+	mat.normalize (NLMISC::CMatrix::XYZ);
+
+	// Get the planes..
+	std::vector<NLMISC::CPlane> BVolume;
+	BVolume.reserve (4);
+	
+	// Setup the planes
+	NLMISC::CPlane plane;
+	plane.make (mat.getJ(), source);
+	BVolume.push_back (plane);
+	plane.make (mat.getK(), source);
+	BVolume.push_back (plane);
+	plane.make (-mat.getJ(), source);
+	BVolume.push_back (plane);
+	plane.make (-mat.getK(), source);
+	BVolume.push_back (plane);
+	plane.make (mat.getI(), dest);
+	BVolume.push_back (plane);
+	plane.make (-mat.getI(), source);
 	BVolume.push_back (plane);
 
 	// Select the nodes

@@ -84,6 +84,14 @@ LINK32=link.exe
 # Name "zone_welder - Win32 Debug"
 # Begin Source File
 
+SOURCE=.\zone_utility.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\zone_utility.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\zone_welder.cpp
 # End Source File
 # End Target

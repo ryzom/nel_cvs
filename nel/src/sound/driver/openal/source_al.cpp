@@ -1,7 +1,7 @@
 /** \file source_al.cpp
  * OpenAL sound source
  *
- * $Id: source_al.cpp,v 1.10 2001/08/27 08:50:56 cado Exp $
+ * $Id: source_al.cpp,v 1.11 2001/09/03 14:21:39 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,6 +179,18 @@ bool					CSourceAL::isPlaying() const
 	alGetSourcei( _SourceName, AL_SOURCE_STATE, &srcstate );
 	TestALError();
 	return (srcstate == AL_PLAYING);
+}
+
+
+/*
+ * Return true if playing is finished or stop() has been called.
+ */
+bool					CSourceAL::isStopped() const
+{
+	ALint srcstate;
+	alGetSourcei( _SourceName, AL_SOURCE_STATE, &srcstate );
+	TestALError();
+	return (srcstate == AL_STOPPED);
 }
 
 

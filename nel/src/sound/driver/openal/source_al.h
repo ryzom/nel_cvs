@@ -1,7 +1,7 @@
 /** \file source_al.h
  * OpenAL sound source
  *
- * $Id: source_al.h,v 1.8 2001/08/27 08:50:56 cado Exp $
+ * $Id: source_al.h,v 1.9 2001/09/03 14:21:39 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,8 @@ public:
 	virtual void			pause();
 	/// Return the playing state
 	virtual bool			isPlaying() const;
+	/// Return true if playing is finished or stop() has been called.
+	virtual bool			isStopped() const;
 	/// Update the source (e.g. continue to stream the data in)
 	virtual void			update();
 	//@}

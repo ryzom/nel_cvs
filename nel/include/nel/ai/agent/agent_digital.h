@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.10 2001/05/22 16:08:01 chafik Exp $
+ * $Id: agent_digital.h,v 1.11 2001/06/15 12:17:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -92,6 +92,7 @@ namespace NLAIAGENT
 		virtual const CProcessResult &run();
 		//@}				
 	};
+
 
 	/**	
 	This class store a float in an IObjectIA. The float have a borne still as [min, max].
@@ -448,7 +449,140 @@ namespace NLAIAGENT
 
 		virtual const CProcessResult &run();
 	};
+
+	class UInt8Type: public INombre<uint8>
+	{
+	public:
+
+		static const NLAIC::CIdentType IdUInt8Type;
+
+	public:
+		UInt8Type(sint8 value):INombre<uint8>(value)
+		{			
+		}
+
+		UInt8Type():INombre<uint8>()
+		{			
+		}
+
+		UInt8Type(const UInt8Type &a):INombre<uint8>(a)
+		{			
+		}
+
+		UInt8Type(NLMISC::IStream &is):INombre<uint8>(is)
+		{
+		}
+		
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new UInt8Type(*this);			
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;		
+		
+
+		virtual void getDebugString(std::string &text) const
+		{
+			text += NLAIC::stringGetBuild("%c",getValue());
+		}		
+
+		virtual const CProcessResult &run();
+	};
+
+	class UInt16Type: public INombre<uint16>
+	{
+	public:
+
+		static const NLAIC::CIdentType IdUInt16Type;
+
+	public:
+		UInt16Type(uint16 value):INombre<uint16>(value)
+		{			
+		}
+
+		UInt16Type():INombre<uint16>()
+		{			
+		}
+
+		UInt16Type(const UInt16Type &a):INombre<uint16>(a)
+		{			
+		}
+
+		UInt16Type(NLMISC::IStream &is):INombre<uint16>(is)
+		{
+		}
+		
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new UInt16Type(*this);			
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;		
+		
+
+		virtual void getDebugString(std::string &text) const
+		{
+			text += NLAIC::stringGetBuild("%c",getValue());
+		}		
+
+		virtual const CProcessResult &run();
+	};
+
+	class UInt32Type: public INombre<uint32>
+	{
+	public:
+
+		static const NLAIC::CIdentType IdUInt32Type;
+
+	public:
+		UInt32Type(uint32 value):INombre<uint32>(value)
+		{			
+		}
+
+		UInt32Type():INombre<uint32>()
+		{			
+		}
+
+		UInt32Type(const UInt32Type &a):INombre<uint32>(a)
+		{			
+		}
+
+		UInt32Type(NLMISC::IStream &is):INombre<uint32>(is)
+		{
+		}
+		
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new UInt32Type(*this);			
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;		
+		
+
+		virtual void getDebugString(std::string &text) const
+		{
+			text += NLAIC::stringGetBuild("%c",getValue());
+		}		
+
+		virtual const CProcessResult &run();
+	};
 }
-
-
 #endif

@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.15 2001/05/31 13:30:14 chafik Exp $
+ * $Id: agent_object.h,v 1.16 2001/06/15 12:17:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -782,5 +782,93 @@ namespace NLAIAGENT
 
 		virtual ~CVectorGroupType();
 	};
+/*
+	class CMapGroupType: public IBaseGroupType
+	{
+
+	public:
+		static const NLAIC::CIdentType IdVectorGroupType;
+		
+	public:
+		typedef std::vector<const IObjectIA *> tVectorType;
+	private:				
+		///std::vector for store IObjectIA object.
+		std::map<IObjectIA *, IObjectIA *> _Map;
+
+	protected:
+		tVectorType &getVector();
+
+	public:
+		///Construct a vector with n uninitialize momory unite. Programmer must initialize the vector list after. 
+		CMapGroupType(sint32 );
+		CMapGroupType();
+		CMapGroupType(const CMapGroupType &g);
+
+		virtual void getDebugString(std::string &text) const;
+
+		virtual const CProcessResult &run();
+
+		virtual IObjetOp &operator += (const IObjetOp &a);
+		virtual IObjetOp &operator -= (const IObjetOp &a);
+		virtual IObjectIA &operator = (const IObjectIA &a);
+
+		virtual const IObjectIA *operator[] (sint32) const;
+
+		virtual void set(int,IObjectIA *);
+
+		// virtual bool isTrue() const;
+
+		IObjetOp *CMapGroupType::operator ! () const;
+		void push(const IObjectIA *o);
+		void pushFront(const IObjectIA *o);
+		virtual CIteratorContener getIterator()
+		{
+			return CIteratorContener(new CMapIterator(_Map));
+		}
+
+
+		virtual CConstIteratorContener getConstIterator() const
+		{
+			return CConstIteratorContener((IBasicIterator *)(new CConstMapIterator(_Map)));
+		}
+
+		void setObject(sint32 i,IObjectIA *a)
+		{
+			_Map[i] = a;
+		}
+
+		void cpy(const IObjectIA &o);
+		const IObjectIA *pop();
+		const IObjectIA *get() const;
+		const IObjectIA *popFront();
+		const IObjectIA *getFront() const;
+		sint32 size() const;
+		tVectorType findList(const IObjectIA &obj) const;
+		tVectorType::const_iterator getBegin() const;
+		tVectorType::const_iterator getEnd() const;
+		tVectorType::iterator getBegin();
+		tVectorType::iterator getEnd();
+		const IObjectIA *find(const IObjectIA &obj) const;		
+		void eraseAll(const IObjectIA &obj); 
+		void erase(const IObjectIA *o); 
+		void erase(const IObjectIA &obj);
+		void erase(std::list<const IObjectIA *> &l);
+		virtual bool isEqual(const IBasicObjectIA &a) const;
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
+		virtual const NLAIC::CIdentType &getType() const;		
+		virtual void save(NLMISC::IStream &os);
+		virtual IObjetOp &neg();
+		virtual void load(NLMISC::IStream &is);
+		void clear();
+
+		virtual sint32 getMethodIndexSize() const;
+		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
+		virtual	CProcessResult runMethodeMember(sint32, sint32, IObjectIA *);
+		virtual	CProcessResult runMethodeMember(sint32 index,IObjectIA *);
+
+		virtual ~CMapGroupType();
+	};
+*/
 }
 #endif

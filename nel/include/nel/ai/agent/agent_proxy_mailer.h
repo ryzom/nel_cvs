@@ -1,7 +1,7 @@
 /** \file agent_server_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_proxy_mailer.h,v 1.13 2001/05/22 16:08:01 chafik Exp $
+ * $Id: agent_proxy_mailer.h,v 1.14 2001/06/15 12:17:30 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,6 @@ namespace NLAIAGENT
 			else t = "CProxyAgentMail 'NILL' agents";
 		}
 		//@}
-
 		/// \name IObjectIA method.
 		//@{
 		virtual const CProcessResult &run()

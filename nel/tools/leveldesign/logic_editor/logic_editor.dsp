@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=logic_editor - Win32 Debug
+CFG=logic_editor - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,12 +13,14 @@ CFG=logic_editor - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "logic_editor.mak" CFG="logic_editor - Win32 Debug"
+!MESSAGE NMAKE /f "logic_editor.mak" CFG="logic_editor - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "logic_editor - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "logic_editor - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "logic_editor - Win32 DebugFast" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "logic_editor - Win32 ReleaseDebug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -40,6 +42,7 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
 # ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
@@ -52,7 +55,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor_r.dll"
 
 !ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
 
@@ -78,7 +81,60 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor.dll" /pdbtype:sept
+# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor_d.dll" /pdbtype:sept
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "logic_editor___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "logic_editor___Win32_DebugFast"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor.dll" /pdbtype:sept
+# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor_df.dll" /pdbtype:sept
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "logic_editor___Win32_ReleaseDebug"
+# PROP BASE Intermediate_Dir "logic_editor___Win32_ReleaseDebug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor_rd.dll"
 
 !ENDIF 
 
@@ -86,6 +142,8 @@ LINK32=link.exe
 
 # Name "logic_editor - Win32 Release"
 # Name "logic_editor - Win32 Debug"
+# Name "logic_editor - Win32 DebugFast"
+# Name "logic_editor - Win32 ReleaseDebug"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -320,6 +378,15 @@ SOURCE=..\..\..\..\..\distrib\gamedev\lib\logic_debug.lib
 
 !ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
 !ENDIF 
 
 # End Source File
@@ -330,6 +397,15 @@ SOURCE=..\..\..\..\..\distrib\gamedev\lib\logic.lib
 !IF  "$(CFG)" == "logic_editor - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
 
 # PROP Exclude_From_Build 1
 
@@ -346,6 +422,15 @@ SOURCE=..\..\..\..\..\distrib\nel\lib\nlmisc_debug.lib
 
 !ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
 
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
 !ENDIF 
 
 # End Source File
@@ -356,6 +441,99 @@ SOURCE=..\..\..\..\..\distrib\nel\lib\nlmisc.lib
 !IF  "$(CFG)" == "logic_editor - Win32 Release"
 
 !ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP BASE Exclude_From_Build 1
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\gamedev\lib\logic_rd.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\gamedev\lib\logic_debug_fast.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\nel\lib\nlmisc_rd.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\nel\lib\nlmisc_debug_fast.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
 
 # PROP Exclude_From_Build 1
 

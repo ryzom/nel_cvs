@@ -38,7 +38,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "../obj/Release/misc"
 # PROP Target_Dir ""
 # ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "_MBCS" /D "_LIB" /D "WIN32" /D "NDEBUG" /Yu"stdmisc.h" /FD /c
-# SUBTRACT CPP /Z<none> /Fr
+# SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -323,35 +323,34 @@ SOURCE=..\include\nel\misc\vectord_inline.h
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\misc\config_file\cf_gramatical.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\config_file\cf_gramatical.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\config_file\cf_gramatical.yxx
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\config_file\cf_lexical.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\config_file\cf_lexical.lxx
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\config_file\config_file.cpp
 # ADD CPP /Yu"../stdmisc.h"
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\misc\config_file.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\config_file\config_file.lex
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\config_file\config_file.lex.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\config_file\config_file.yacc
-# PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\config_file\config_file.yacc.cpp
-# SUBTRACT CPP /YX /Yc /Yu
-# End Source File
-# Begin Source File
-
-SOURCE=.\misc\config_file\config_file.yacc.cpp.h
 # End Source File
 # End Group
 # Begin Group "Events"

@@ -3,17 +3,21 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-//#include <io.h>
-//#include <direct.h>
 
-#include "nel/misc/debug.h"
-#include "nel/misc/common.h"
-#include "nel/misc/file.h"
-#include "nel/misc/path.h"
-#include "nel/misc/algo.h"
+#ifdef NL_OS_WINDOWS
+#include <io.h>
+#include <direct.h>
+#endif
 
 #include <vector>
 #include <string>
+
+#include "nel/misc/debug.h"
+#include "nel/misc/file.h"
+#include "nel/misc/path.h"
+#include "nel/misc/algo.h"
+#include "nel/misc/common.h"
+
 
 using namespace std;
 using namespace NLMISC;

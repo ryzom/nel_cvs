@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.20 2001/06/27 08:31:19 lecroart Exp $
+ * $Id: displayer.cpp,v 1.21 2001/07/03 12:12:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,6 +138,7 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 	if ( args.ThreadId != 0 )
 	{
 		ss << setw(5) << args.ThreadId;
+		needSpace = true;
 	}
 
 	if (args.Filename != NULL)

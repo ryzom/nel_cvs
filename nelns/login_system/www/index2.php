@@ -39,7 +39,7 @@
 					$row = mysql_fetch_row ($result);
 					$id = $row[0];
 					$priv = $row[5];
-					$extended = ""; // TODO: edit this when the "extended" row will be available in database
+					$extended = $row["ExtendedPrivilege"];
 
 					// add the default permission
 					$query = "INSERT INTO permission (UId) VALUES ('$id')";
@@ -103,7 +103,7 @@
 					{
 						$id = $row[0];
 						$priv = $row[5];
-						$extended = ""; // TODO: edit this when the "extended" row will be available in database
+						$extended = $row["ExtendedPrivilege"];
 						$res = true;
 					}
 				}

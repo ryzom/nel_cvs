@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.9 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: displayer.h,v 1.10 2001/07/11 12:14:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,13 +63,16 @@ class IDisplayer
 public:
 
 	/// Constructor
-	IDisplayer();
+	IDisplayer(const char *displayerName = "");
 
 	/// Destructor
 	virtual ~IDisplayer();
 
 	/// Display the string where it does.
 	void display( const TDisplayInfo& args, const char *message );
+
+	/// This is the idenfiant for a displayer, it is used to fond or remove a displayer
+	std::string DisplayerName;
 
 protected:
 
@@ -108,6 +111,9 @@ private:
  */
 class CStdDisplayer : virtual public IDisplayer
 {
+public:
+	CStdDisplayer (const char *displayerName = "") : IDisplayer (displayerName) {}
+
 protected:
 
 	/// Display the string to stdout and OutputDebugString on Windows
@@ -127,7 +133,7 @@ class CFileDisplayer : virtual public IDisplayer
 public:
 
 	/// Constructor
-	CFileDisplayer(const std::string& fileName, bool eraseLastLog = false);
+	CFileDisplayer(const std::string &fileName, bool eraseLastLog = false, const char *displayerName = "");
 
 protected:
 	/// Put the string into the file.
@@ -149,9 +155,7 @@ private:
 class CMsgBoxDisplayer : virtual public IDisplayer
 {
 public:
-
-	/// Constructor
-	CMsgBoxDisplayer() {}
+	CMsgBoxDisplayer (const char *displayerName = "") : IDisplayer (displayerName) {}
 
 protected:
 	/// Put the string into the file.

@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.30 2001/07/03 12:12:09 lecroart Exp $
+ * $Id: log.cpp,v 1.31 2001/07/11 12:14:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,25 +23,26 @@
  * MA 02111-1307, USA.
  */
 
-#include <stdarg.h>
-
-#include <algorithm>
-#include <vector>
-
-#include "nel/misc/displayer.h"
-#include "nel/misc/log.h"
-#include "nel/misc/debug.h"
-
-#include <stdio.h>
-#include <time.h>
-#include <string>
-#include <sstream>
+#include "nel/misc/types_nl.h"
 
 #ifdef NL_OS_WINDOWS
 #include <process.h>
 #else
 #include <unistd.h>
 #endif
+
+#include <stdio.h>
+#include <time.h>
+#include <stdarg.h>
+
+#include <algorithm>
+#include <vector>
+#include <string>
+#include <sstream>
+
+#include "nel/misc/displayer.h"
+#include "nel/misc/log.h"
+#include "nel/misc/debug.h"
 
 using namespace std;
 
@@ -124,6 +125,46 @@ void CLog::removeDisplayer (IDisplayer *displayer)
 	}
 }
 
+void CLog::removeDisplayer (const char *displayerName)
+{
+	if (displayerName == NULL || displayerName[0] == '\0')
+	{
+		nlwarning ("Trying to remove an empty displayer name");
+		return;
+	}
+
+	CDisplayers::iterator idi;
+	for (idi = _Displayers.begin (); idi != _Displayers.end ();)
+	{
+		if ((*idi)->DisplayerName == displayerName)
+		{
+			idi = _Displayers.erase (idi);
+		}
+		else
+		{
+			idi++;
+		}
+	}
+}
+
+IDisplayer *CLog::getDisplayer (const char *displayerName)
+{
+	if (displayerName == NULL || displayerName[0] == '\0')
+	{
+		nlwarning ("Trying to get an empty displayer name");
+		return NULL;
+	}
+
+	CDisplayers::iterator idi;
+	for (idi = _Displayers.begin (); idi != _Displayers.end (); idi++)
+	{
+		if ((*idi)->DisplayerName == displayerName)
+		{
+			return *idi;
+		}
+	}
+	return NULL;
+}
 
 /*
  * Returns true if the specified displayer is attached to the log object

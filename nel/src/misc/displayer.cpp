@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.21 2001/07/03 12:12:09 lecroart Exp $
+ * $Id: displayer.cpp,v 1.22 2001/07/11 12:14:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,9 +94,10 @@ const char *IDisplayer::HeaderString ()
 }
 
 
-IDisplayer::IDisplayer()
+IDisplayer::IDisplayer(const char *displayerName)
 {
 	_Mutex = new CMutex;
+	DisplayerName = displayerName;
 }
 
 IDisplayer::~IDisplayer()
@@ -243,7 +244,7 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 #endif
 }
 
-CFileDisplayer::CFileDisplayer(const std::string& filename, bool eraseLastLog) : _FileName(filename), _NeedHeader(true)
+CFileDisplayer::CFileDisplayer(const std::string& filename, bool eraseLastLog, const char *displayerName) : IDisplayer (displayerName), _FileName(filename), _NeedHeader(true)
 {
 	if (eraseLastLog && !filename.empty())
 	{

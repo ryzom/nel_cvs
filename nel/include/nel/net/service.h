@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.30 2001/06/27 08:32:40 lecroart Exp $
+ * $Id: service.h,v 1.31 2001/07/11 12:14:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,7 @@ typedef uint8 TServiceId;
 
 #define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray) \
  \
-NLMISC::CWinDisplayer __wd; \
+NLMISC::CWinDisplayer __wd ("DEFAULT_WD"); \
  \
 int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
 { \

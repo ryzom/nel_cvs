@@ -1,7 +1,7 @@
 /** \file win_displayer.h
  * Implementation of the CDisplayer (look at displayer.h) that display on a Win32 Windows
  *
- * $Id: win_displayer.h,v 1.3 2001/06/29 08:46:51 lecroart Exp $
+ * $Id: win_displayer.h,v 1.4 2001/07/11 12:14:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,14 +48,14 @@ class CWinDisplayer : public NLMISC::IDisplayer
 {
 public:
 
-	CWinDisplayer () : _Init (false), _ToolBarHeight (25), _InputEditHeight (25) { }
+	CWinDisplayer (const char *displayerName = "") : IDisplayer(displayerName), _Init (false), _ToolBarHeight (25), _InputEditHeight (25) { }
 
 	/// Destructor
 	virtual ~CWinDisplayer ();
 
-	void create (std::string WindowNameEx = "", uint w = 700, uint h = 300, sint hs = 10000);
-	void update ();
-	void clear ();
+	void	create (std::string WindowNameEx = "", uint w = 700, uint h = 300, sint hs = 10000);
+	void	update ();
+	void	clear ();
 
 	uint	createLabel (const char *Name);
 	void	setLabel (uint Label, const char *Name);

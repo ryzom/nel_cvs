@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.23 2001/06/27 08:30:42 lecroart Exp $
+ * $Id: log.h,v 1.24 2001/07/11 12:14:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,8 +63,14 @@ public:
 	/// screen is available and do nothing otherwise. In this case, if you want, you could leave the displayer all the time.
 	void addDisplayer (IDisplayer *displayer);
 
+	/// Return the first displayer selected by his name
+	IDisplayer *getDisplayer (const char *displayerName);
+
 	/// Remove a displayer. If the displayer doesn't work in a specific time, you could remove it.
 	void removeDisplayer (IDisplayer *displayer);
+
+	/// Remove a displayer using his name
+	void removeDisplayer (const char *displayerName);
 
 	/// Returns true if the specified displayer is attached to the log object
 	bool attached(IDisplayer *displayer) const;

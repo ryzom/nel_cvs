@@ -607,6 +607,12 @@ rc /l 0x40c /fo&quot;Release/object_viewer.res&quot; /d &quot;NDEBUG&quot; /d &q
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\color_static.cpp">
+			</File>
+			<File
+				RelativePath=".\color_static.h">
+			</File>
+			<File
 				RelativePath="create_file_dlg.cpp">
 				<FileConfiguration
 					Name="ReleaseDebug|Win32">

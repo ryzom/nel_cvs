@@ -3951,6 +3951,12 @@
 				RelativePath="3d\seg_remanence_shape.h">
 			</File>
 			<File
+				RelativePath=".\3d\shadow_skin.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\shadow_skin.h">
+			</File>
+			<File
 				RelativePath="3d\shape.cpp">
 				<FileConfiguration
 					Name="DebugFast|Win32">
@@ -8907,6 +8913,12 @@
 			</File>
 			<File
 				RelativePath="3d\landscape_collision_grid.h">
+			</File>
+			<File
+				RelativePath=".\3d\ray_mesh.cpp">
+			</File>
+			<File
+				RelativePath=".\3d\ray_mesh.h">
 			</File>
 			<File
 				RelativePath="3d\visual_collision_entity.cpp">

@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.8 2001/05/04 09:53:42 coutelas Exp $
+ * $Id: callback_net_base.cpp,v 1.9 2001/05/10 08:19:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -131,7 +131,13 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 {
 	// be sure that the 2 array have the same size
 	nlassert (_CallbackArray.size () == (uint)_OutputSIDA.size ());
-	
+
+	if (arraysize == 1 && callbackarray[0].Callback == NULL && string("") == callbackarray[0].Key)
+	{
+		// it's an empty array, ignore it
+		return;
+	}
+
 	// resize the array
 	sint oldsize = _CallbackArray.size();
 
@@ -155,7 +161,7 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 }
 
 
-void CCallbackNetBase::baseUpdate( sint32 timeout )
+void CCallbackNetBase::baseUpdate (sint32 timeout)
 {
 	nlassert( timeout >= -1 );
 	TTime t0 = CTime::getLocalTime();
@@ -169,7 +175,7 @@ void CCallbackNetBase::baseUpdate( sint32 timeout )
 		_LastMovedStringArray = CTime::getLocalTime ();
 	}
 
-	// Every seconds if we have new unknown association, we ask them to the other side
+	// Every 1 seconds if we have new unknown association, we ask them to the other side
 	if (_LastUpdateTime + 1000 < CTime::getLocalTime ())
 	{
 //		nldebug("L3: baseUpdate()");
@@ -196,8 +202,8 @@ void CCallbackNetBase::baseUpdate( sint32 timeout )
 		}
 	}
 
-	// Every 20 seconds if we have not answered association, we ask again to get them!
-	if (!_InputSIDA.getAskedStringArray().empty() && _LastMovedStringArray + 20000 < CTime::getLocalTime ())
+	// Every 60 seconds if we have not answered association, we ask again to get them!
+	if (!_InputSIDA.getAskedStringArray().empty() && _LastMovedStringArray + 60000 < CTime::getLocalTime ())
 	{
 		// we didn't have an answer for the association, resend them
 		const set<string> sa = _InputSIDA.getAskedStringArray ();
@@ -274,7 +280,7 @@ void CCallbackNetBase::baseUpdate( sint32 timeout )
 			else
 			{
 				nldebug ("Calling callback (%s)", _CallbackArray[pos].Key);
-				_CallbackArray[pos].Callback (msgin, tsid, *this);
+				_CallbackArray[pos].Callback (msgin, realid, *this);
 			}
 		}
 

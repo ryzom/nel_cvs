@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.4 2001/01/08 14:42:11 valignat Exp $
+ * $Id: ident_type.cpp,v 1.5 2001/01/10 09:35:51 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ namespace NLAIC
 		if(_OpSupport != NULL) _OpSupport->release();
 	}
 
-	CIdentType::CIdentType(NLMISC::IStream &f) throw(NLMISC::EStream)
+	CIdentType::CIdentType(NLMISC::IStream &f)/// throw(NLMISC::EStream)
 	{
 		_ObjType = NULL;
 		_OpSupport = NULL;

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.32 2000/12/11 14:19:52 cado Exp $
+ * $Id: socket.cpp,v 1.33 2000/12/11 16:39:57 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -126,7 +126,7 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 		}
 		else
 		{
-			sprintf( buf, "%s", message.typeAsString() );
+			sprintf( buf, "%s", message.typeAsString().c_str() );
 		}
 		nlnetoutput( localAddr().asIPString().c_str(), _CurrentMsgNumberSend-1, remoteAddr().asIPString().c_str(), buf, message.length() );
 	}

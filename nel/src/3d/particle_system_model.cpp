@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.14 2001/08/09 15:20:26 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.15 2001/08/15 12:02:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,8 @@
 #include "3d/scene.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
+
+
 
 namespace NL3D {
 
@@ -187,21 +189,26 @@ float CParticleSystemModel::getNumTriangles (float distance)
 void	CParticleSystemDetailObs ::traverse(IObs *caller)
 {    
 	CTransformAnimDetailObs::traverse(caller);
+	
 
 
 	if (ClipObs->Visible)
 	{
-				
+		
+
 		nlassert(dynamic_cast<CParticleSystemModel *>(Model));
 		CParticleSystemModel *psm= (CParticleSystemModel *)Model;
 		if (psm->_Invalidated) return;
 
 		CParticleSystem *ps = psm->getPS();
+
+		
+	
 		// check for trigger. If the trigger is false, and there is a system instanciated, we delete it.
 		if (!psm->getEditionMode())
 		{
 			if (!psm->_TriggerAnimatedValue.Value)
-			{					
+			{									
 				// system is off, or hasn't been instanciated now...
 				if (ps)
 				{
@@ -211,15 +218,23 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 				return;
 			}
 		}
-		
+
+	
 
 		// the system or its center is in the view frustum, but it may not have been instanciated from its shape now
 		if (!ps)
 		{
 			nlassert(psm->_Scene);
 			nlassert(psm->Shape);
-			ps = psm->_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape))->instanciatePS(*psm->_Scene);								
+			ps = psm->_ParticleSystem = (NLMISC::safe_cast<CParticleSystemShape *>((IShape *) psm->Shape))->instanciatePS(*psm->_Scene);			
 		}
+
+		CClipTrav			*trav= (CClipTrav*) ClipObs->Trav;
+		const CMatrix		&mat= HrcObs->WorldMatrix;	 
+		ps->setSysMat(mat);
+		ps->setViewMat(trav->ViewMatrix);
+
+
 
 		if (psm->isAutoGetEllapsedTimeEnabled())
 		{
@@ -245,10 +260,15 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 				psm->clearFlag((uint)CParticleSystemModel::PSParam0 + k);
 			}
 		}
+		
 
+		
+	
 		// animate particles
 		ps->step(PSCollision, delay);
-		ps->step(PSMotion, delay);	 		
+		ps->step(PSMotion, delay);	 
+		
+		
 	}
 }
 
@@ -275,188 +295,185 @@ void	CParticleSystemRenderObs::traverse(IObs *caller)
 	
 void	CParticleSystemClipObs::traverse(IObs *caller)
 {
-	nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
-	CClipTrav			*trav= (CClipTrav*)Trav;
-	CParticleSystemModel		*m= (CParticleSystemModel*)Model;	
+		nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
+		CClipTrav			*trav= (CClipTrav*)Trav;
+		CParticleSystemModel		*m= (CParticleSystemModel*)Model;	
 
 
-	const std::vector<CPlane>	&pyramid= trav->WorldPyramid;
-	
-	/** traverse the sons
-	  * we must do this before us, because this object may delete himself from the scene
-	  */
-	traverseSons();
+		const std::vector<CPlane>	&pyramid= trav->WorldPyramid;
+		
+		/** traverse the sons
+		  * we must do this before us, because this object may delete himself from the scene
+		  */
+		traverseSons();
 
-	// now the pyramid is directly expressed in the world
-	const CMatrix		&mat= HrcObs->WorldMatrix;	 
+		// now the pyramid is directly expressed in the world
+		const CMatrix		&mat= HrcObs->WorldMatrix;	 
 
-	if (m->_Invalidated) return;
+		if (m->_Invalidated) return;
 
-	CParticleSystem *ps = m->_ParticleSystem;
-	// Transform the pyramid in Object space.
+		CParticleSystem *ps = m->_ParticleSystem;
+		// Transform the pyramid in Object space.
 
-	
-	if(!ps)
-	{
-		CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)m->Shape);
-		nlassert(pss);
-
-		// the system wasn't present the last time, we use its center to see if it's back in the view frustum,
-		// or if it is near enough.
-		// if this is the case, we say it isn't clipped, so it will be reinstanciated from the shape
-		// during the DetailAnimTraversal
-
-		const CVector pos = m->getMatrix().getPos();
-	
-		const CVector d = pos - trav->CamPos;
-		// check wether system not too far		
-		if (d * d > pss->_MaxViewDist * pss->_MaxViewDist) 
+		
+		if(!ps)
 		{
-			Visible = false;
-			m->_OutOfFrustum = true;
-			if (pss->_DestroyModelWhenOutOfRange)
-			{
-				m->invalidate();
-			}			
-			return;
-		}		
+			CParticleSystemShape		*pss= NLMISC::safe_cast<CParticleSystemShape *>((IShape *)m->Shape);
+			nlassert(pss);
 
+			// the system wasn't present the last time, we use its center to see if it's back in the view frustum,
+			// or if it is near enough.
+			// if this is the case, we say it isn't clipped, so it will be reinstanciated from the shape
+			// during the DetailAnimTraversal
 
-		m->_OutOfFrustum = false;
-		/// frustum test		
-		for(sint i=0; i < (sint)pyramid.size(); i++)
-		{					
-			if ( (pyramid[i]   *  mat  ) * pos > 0.f ) 
+			const CVector pos = m->getMatrix().getPos();
+		
+			const CVector d = pos - trav->CamPos;
+			// check wether system not too far		
+			if (d * d > pss->_MaxViewDist * pss->_MaxViewDist) 
 			{
+				Visible = false;
 				m->_OutOfFrustum = true;
-				if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
+				if (pss->_DestroyModelWhenOutOfRange)
 				{
-					Visible = false;
-					// this system will never be instanciated, so we invalidate it
 					m->invalidate();
-					return;		
-				}
-				break;					
-			}
-		}			
+				}			
+				return;
+			}		
 
-		nlassert(dynamic_cast<CClipTrav*>(Trav));
-		static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
 
-		Visible = true;		
-		return;
-	}
-	
-	
-
-	/// set the view matrix of the system
-	ps->setViewMat(trav->ViewMatrix);
-	ps->setSysMat(mat);
-
-	if (!m->_EditionMode)
-	{
-		// test deletion condition (no more particle, no more particle and emitters)
-		if (ps->getDestroyCondition() != CParticleSystem::none)
-		{
-			if (ps->getSystemDate() > ps->getDelayBeforeDeathConditionTest())
-			{
-				switch (ps->getDestroyCondition())
+			m->_OutOfFrustum = false;
+			/// frustum test		
+			for(sint i=0; i < (sint)pyramid.size(); i++)
+			{					
+				if ( (pyramid[i]   *  mat  ) * pos > 0.f ) 
 				{
-					case CParticleSystem::noMoreParticles:
-						if (!ps->hasParticles())
-						{							
-							m->invalidate();
-							return;
-						}
-					break;
-					case CParticleSystem::noMoreParticlesAndEmitters:
-						if (!ps->hasParticles() && !ps->hasEmitters())
+					m->_OutOfFrustum = true;
+					if (pss->_DestroyWhenOutOfFrustum && pss->_DestroyModelWhenOutOfRange)
+					{
+						Visible = false;
+						// this system will never be instanciated, so we invalidate it
+						m->invalidate();
+						return;		
+					}
+					break;					
+				}
+			}			
+
+			nlassert(dynamic_cast<CClipTrav*>(Trav));
+			static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
+
+			Visible = true;		
+			return;
+		}
+		
+		
+
+
+		if (!m->_EditionMode)
+		{
+			// test deletion condition (no more particle, no more particle and emitters)
+			if (ps->getDestroyCondition() != CParticleSystem::none)
+			{
+				if (ps->getSystemDate() > ps->getDelayBeforeDeathConditionTest())
+				{
+					switch (ps->getDestroyCondition())
+					{
+						case CParticleSystem::noMoreParticles:
+							if (!ps->hasParticles())
+							{							
+								m->invalidate();
+								return;
+							}
+						break;
+						case CParticleSystem::noMoreParticlesAndEmitters:
+							if (!ps->hasParticles() && !ps->hasEmitters())
+							{
+								m->invalidate();
+								return;
+							}
+						break;
+					}
+				}
+			}
+		}
+
+		NLMISC::CAABBox bbox;
+		ps->computeBBox(bbox);
+
+		/// test if object is not too far	  
+		CPlane farPlane;
+		farPlane.make(trav->CamLook, trav->CamPos + ps->getMaxViewDist() * trav->CamLook);
+		if (!bbox.clipBack(farPlane  * mat  ))
+		{			
+       		
+			if (!m->_EditionMode)
+			{						
+				if (ps->getDestroyModelWhenOutOfRange())
+				{ 
+					m->invalidate();
+					return;
+				}
+				else
+				{
+					delete ps;
+					m->_ParticleSystem = NULL;	
+				}
+			}
+
+			Visible = false;
+			return;
+		}
+
+		// Transform the pyramid in Object space.	
+		for(sint i=0;i<(sint)pyramid.size();i++)
+		{	
+			// test wether the bbox is entirely in the neg side of the plane
+			if (!bbox.clipBack(pyramid[i]  * mat  )) 
+			{
+				if (!ps->doesDestroyWhenOutOfFrustum()
+					&& ps->doesPerformMotionWhenOutOfFrustum())
+				{
+					nlassert(dynamic_cast<CClipTrav*>(Trav));
+					static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
+					Visible = true;	       // we perform motion, but we don't show anything
+					m->_OutOfFrustum = true;
+					return;
+				}
+
+				if (!m->_EditionMode)
+				{
+					if (ps->doesDestroyWhenOutOfFrustum())
+					{
+						/// the system has gone out of the scope
+						/// for now, we just delete the system
+										
+						if (m->_ParticleSystem->getDestroyModelWhenOutOfRange())
 						{
 							m->invalidate();
 							return;
 						}
-					break;
+						else
+						{							
+							delete ps;
+							m->_ParticleSystem = NULL;					
+						}
+					}				
 				}
-			}
-		}
-	}
-
-	NLMISC::CAABBox bbox;
-	ps->computeBBox(bbox);
-
-	/// test if object is not too far	  
-    CPlane farPlane;
-	farPlane.make(trav->CamLook, trav->CamPos + ps->getMaxViewDist() * trav->CamLook);
-	if (!bbox.clipBack(farPlane  * mat  ))
-	{			
-       	
-		if (!m->_EditionMode)
-		{						
-			if (ps->getDestroyModelWhenOutOfRange())
-			{ 
-				m->invalidate();
-				return;
-			}
-			else
-			{
-				delete ps;
-				m->_ParticleSystem = NULL;	
+				Visible = false;
+				return;			  			
 			}
 		}
 
-		Visible = false;
-		return;
-	}
-
-	// Transform the pyramid in Object space.	
-	for(sint i=0;i<(sint)pyramid.size();i++)
-	{	
-		// test wether the bbox is entirely in the neg side of the plane
-		if (!bbox.clipBack(pyramid[i]  * mat  )) 
-		{
-			if (!ps->doesDestroyWhenOutOfFrustum()
-				&& ps->doesPerformMotionWhenOutOfFrustum())
-			{
-				nlassert(dynamic_cast<CClipTrav*>(Trav));
-				static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
-				Visible = true;	       // we perform motion, but we don't show anything
-				m->_OutOfFrustum = true;
-				return;
-			}
-
-			if (!m->_EditionMode)
-			{
-				if (ps->doesDestroyWhenOutOfFrustum())
-				{
-					/// the system has gone out of the scope
-					/// for now, we just delete the system
-									
-					if (m->_ParticleSystem->getDestroyModelWhenOutOfRange())
-					{
-						m->invalidate();
-						return;
-					}
-					else
-					{							
-						delete ps;
-						m->_ParticleSystem = NULL;					
-					}
-				}				
-			}
-			Visible = false;
-			return;			  			
-		}
-	}
 
 
+		// set this model to visible, so that the detail anim traversal will be performed
+		
 
-	// set this model to visible, so that the detail anim traversal will be performed
-	
-
-	nlassert(dynamic_cast<CClipTrav*>(Trav));
-	static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
-	Visible = true;
-	m->_OutOfFrustum = false;
+		nlassert(dynamic_cast<CClipTrav*>(Trav));
+		static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
+		Visible = true;
+		m->_OutOfFrustum = false;
 }
 
 

@@ -56,17 +56,21 @@ namespace NLAILOGIC
 		{
 			if (  (*it_g)->priority() > 0 )
 			{		
-				if ( i < _MaxGoals )		// Exclusive operators
+				if ( (*it_g)->isExclusive() )
 				{
-					_Goals[i]->select();
-					i++;
+					if ( i < _MaxGoals )		// Exclusive operators
+					{
+						(*it_g)->select();
+						i++;
+					}
+					else
+						(*it_g)->unSelect();
 				}
- 
-				if ( !(*it_g)->isExclusive() )		// B&ackground operator
-					_Goals[i]->select();
+				else
+					(*it_g)->select();			// B&ackground operator
 			}
 			else
-				_Goals[i]->unSelect();
+				(*it_g)->unSelect();
 			it_g++;
 		}
 		return NLAIAGENT::IObjectIA::CProcessResult();

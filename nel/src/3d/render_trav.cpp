@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.55 2004/08/13 15:41:15 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.56 2004/09/02 17:06:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,7 +93,7 @@ CRenderTrav::CRenderTrav()
 // ***************************************************************************
 void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 {
-	H_AUTO( NL3D_TravRender );		
+	H_AUTO( NL3D_TravRender );			
 	CTravCameraScene::update();
 	// Bind to Driver.
 	setupDriverCamera();
@@ -102,9 +102,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 	// reset the light setup, and set global ambient.
 	resetLightSetup();
 	if (newRender)
-	{	
-		
-
+	{					
 
 		// reset the Skin manager, if needed
 		if(_MeshSkinManager)
@@ -116,7 +114,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 					NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT, 
 					NL3D_MESH_SKIN_MANAGER_MAXVERTICES, 
 					NL3D_MESH_SKIN_MANAGER_NUMVB, 
-					"MRMSkinVB");
+					"MRMSkinVB", true);
 			}
 		}
 
@@ -130,7 +128,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 					NL3D_SHADOW_MESH_SKIN_MANAGER_VERTEXFORMAT, 
 					NL3D_SHADOW_MESH_SKIN_MANAGER_MAXVERTICES,
 					NL3D_SHADOW_MESH_SKIN_MANAGER_NUMVB,
-					"ShadowSkinVB");
+					"ShadowSkinVB", true);
 			}
 		}
 
@@ -201,11 +199,11 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 
 		}
 		// fast floor
-		NLMISC::OptFastFloorEnd();
+		NLMISC::OptFastFloorEnd();		
 	}
 	
 	if (renderPart & UScene::RenderOpaque)
-	{	
+	{			
 		// Render Opaque stuff.
 		// =============================
 
@@ -226,7 +224,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 		OrderOpaqueList.begin();
 		while( OrderOpaqueList.get() != NULL )
 		{			
-			CTransform	*tr= OrderOpaqueList.get();
+			CTransform	*tr= OrderOpaqueList.get();			
 			tr->traverseRender();			
 			OrderOpaqueList.next();			
 		}
@@ -283,12 +281,12 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 				OrderOpaqueList.get()->profileRender();
 				OrderOpaqueList.next();
 			}
-		}
+		}		
 	}
 
 
 	if (renderPart & UScene::RenderTransparent)
-	{
+	{		
 		if (_FirstWaterModel) // avoid a lock if no water is to be rendered
 		{		
 			// setup water models
@@ -321,13 +319,13 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 			{
 				_FirstWaterModel->unlink();
 			}
-		}
+		}		
 	}
 
 	if ((renderPart & UScene::RenderTransparent) && 
 		(renderPart & UScene::RenderFlare)
 	   )
-	{
+	{		
 		// Render all transparent stuffs including flares.
 		// =============================
 		 // Render transparent materials (draw higher priority last, because their appear in front)
@@ -337,7 +335,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 			it->begin(_LayersRenderingOrder);	
 			while( it->get() != NULL )
 			{				
-				it->get()->traverseRender();
+				it->get()->traverseRender();				
 				it->next();
 			}
 		}	
@@ -354,10 +352,10 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 					it->next();
 				}
 			}
-		}
+		}		
 	}
 	else if (renderPart & UScene::RenderTransparent)
-	{
+	{		
 		// Render all transparent stuffs, don't render flares
 		// =============================
 		_CurrentPassOpaque = false;
@@ -367,8 +365,8 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 			while( it->get() != NULL )
 			{			
 				if (!it->get()->isFlare())
-				{				
-					it->get()->traverseRender();
+				{					
+					it->get()->traverseRender();					
 				}
 				it->next();
 			}
@@ -389,10 +387,10 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 					it->next();
 				}
 			}
-		}
+		}		
 	}
 	else if (renderPart & UScene::RenderFlare)
-	{
+	{		
 		// Render flares only
 		// =============================
 		_CurrentPassOpaque = false;
@@ -402,8 +400,8 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 			while( it->get() != NULL )
 			{			
 				if (it->get()->isFlare())
-				{				
-					it->get()->traverseRender();
+				{					
+					it->get()->traverseRender();					
 				}
 				it->next();
 			}
@@ -424,7 +422,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 					it->next();
 				}
 			}
-		}
+		}		
 	}
 
 
@@ -1219,6 +1217,27 @@ void CRenderTrav::setupTransparencySorting(uint8 maxPriority /*=0*/,uint NbDista
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file vertex_stream_manager.h
  * <File description>
  *
- * $Id: vertex_stream_manager.h,v 1.2 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vertex_stream_manager.h,v 1.3 2004/09/02 17:06:42 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NL3D
  *	of VertexBuffer are kept and the swapVBHard() method cycles around them.
  *	NB: it is used for instance to render all skins of a CSkeletonModel, in just one CVertexStreamManager. 
  *	This allow optimisation because less VBuffer activation is needed.
+ * NB: only a single lock/unlock may happen between 2 calls of swapVBHard
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2002
@@ -63,8 +64,10 @@ public:
 	 *	NB: if VBufferHard creation fail (not supported etc...), then a VBSoft is created instead (and just one since not usefull)
 	 *	\param numVBHard the number of VBHard to create. The max you set, the lower lock you'll have.
 	 *	\param vbName base, for Lock profiling
+	 *  \param allowVolatileVertexBuffer allow to use a volatile vertex buffer instead of several buffers on devices that support it
+	 *         NB : in this case, you should not keep the vertex buffer locked outside of render, you should follow an atomic lock/unlock/render sequence
 	 */
-	void			init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard, const std::string &vbName);
+	void			init(IDriver *driver, uint vertexFormat, uint maxVertices, uint numVBHard, const std::string &vbName, bool allowVolatileVertexBuffer = false);
 	/// release the VBHard. init() can be called after this.
 	void			release();
 
@@ -84,9 +87,13 @@ public:
 	/// \name Rendering. Those method assert if init() not called with correct parameters.
 	// @{
 
-	/// lock the currently activated VBHard, for future filling
+	/** lock the currently activated VBHard, for future filling
+	  * NB: only a single lock/unlock may happen between 2 calls of swapVBHard
+	  */
 	uint8			*lock();
-	/// unlock the currently activated VBHard. Tell how many vertices have changed.
+	/** unlock the currently activated VBHard. Tell how many vertices have changed.
+	  * NB: only a single lock/unlock may happen between 2 calls of swapVBHard
+	  */
 	void			unlock(uint numVertices);
 
 	/// activate the currentVBhard as the current VB in the driver, for future rendering
@@ -105,8 +112,11 @@ private:
 
 	NLMISC::CRefPtr<IDriver>			_Driver;
 	std::vector<CVertexBuffer>			_VB;
+	CVertexBuffer                       _VBVolatile; // volatile vertex buffer, used if supported by driver
 	CVertexBufferReadWrite				_VBA;
 	bool			_InitOk;
+	bool			_SupportVolatileVB;
+	bool			_LockDone;
 	uint			_VertexFormat;
 	uint			_VertexSize;
 	uint			_MaxVertices;

@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.7 2001/03/08 12:57:40 corvazier Exp $
+ * $Id: track.h,v 1.8 2001/03/08 15:51:29 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,8 +101,22 @@ class ITrackKeyFramer : public ITrack
 {
 public:
 	// Some types
-	typedef std::auto_ptr<CKeyT >					TAPtrCKey;
-	typedef std::map <CAnimationTime, TAPtrCKey>	TMapTimeAPtrCKey;
+	typedef std::map <CAnimationTime, CKeyT*>	TMapTimeAPtrCKey;
+
+	/// Destructor
+	~ITrackKeyFramer ()
+	{
+		// Erase all pointers in the map
+		TMapTimeAPtrCKey::iterator ite=_MapKey.begin ();
+		while (ite!=_MapKey.end())
+		{
+			// Erase it
+			delete ite->second;
+
+			// Next element
+			ite++;
+		}
+	}
 
 	/// From ITrack. 
 	virtual void eval (const CAnimationTime& date)
@@ -113,13 +127,13 @@ public:
 		CAnimationTime dateNext;
 
 		// Return upper key
-		std::map <CAnimationTime, std::auto_ptr<CKeyT > >::iterator ite=_MapKey.upper_bound (date);
+		TMapTimeAPtrCKey::iterator ite=_MapKey.upper_bound (date);
 
 		// First next ?
 		if (ite!=_MapKey.end())
 		{
 			// Next
-			next=ite->second.get();
+			next=ite->second;
 			dateNext=ite->first;
 		}
 
@@ -130,7 +144,7 @@ public:
 		if (ite!=_MapKey.end())
 		{
 			// Previous
-			previous=ite->second.get();
+			previous=ite->second;
 			datePrevious=ite->first;
 		}
 
@@ -179,7 +193,7 @@ public:
 				f.serialPolyPtr (keyPointer);
 
 				// Insert in the map
-				_MapKey.insert (TMapTimeAPtrCKey::value_type ( time, TAPtrCKey (keyPointer)));
+				_MapKey.insert (TMapTimeAPtrCKey::value_type ( time, keyPointer));
 			}
 		}
 		// Writing...
@@ -195,7 +209,7 @@ public:
 			{
 				// Write the element
 				CAnimationTime time=ite->first;
-				CKeyT *keyPointer=ite->second.get();
+				CKeyT *keyPointer=ite->second;
 				f.serial (time);
 				f.serialPolyPtr (keyPointer);
 

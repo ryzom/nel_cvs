@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.50 2003/11/13 18:10:30 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.51 2003/11/18 13:56:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -376,7 +376,7 @@ bool		CSkeletonModel::isBoneComputed(uint boneId) const
 	if(boneId>=_BoneUsage.size())
 		return false;
 	else
-		return _BoneUsage[boneId].MustCompute!=0;
+		return _BoneUsage[boneId].MustCompute!=0 && isClipVisible();
 }
 
 
@@ -395,7 +395,7 @@ bool CSkeletonModel::forceComputeBone(uint boneId)
 	// build list of ancestor, then must build
 	std::vector<CForceComputeBoneInfo> ancestors;
 	// count the number of ancestors (to avoid unwanted alloc with vector)
-	uint numAncestors = 0;
+	uint numAncestors = 1;
 	CTransform *currTransform = this;
 	for(;;)
 	{
@@ -437,16 +437,16 @@ bool CSkeletonModel::forceComputeBone(uint boneId)
 		fcbi.Transform   = currTransform;
 		ancestors.push_back(fcbi);
 		currTransform = currTransform->_HrcParent ? currTransform->_HrcParent : currTransform->_FatherSkeletonModel; // find father transform (maybe a skeleton or a std transform)
-		if (!currTransform) break; // root reached ?
-		++ numAncestors;
+		if (!currTransform) break; // root reached ?		
 	}
 	// bones must be recomputed from father bone to sons, so must traverse bones until root is reached to retrieve correct ordering
 	CBone *OrderedBone[MaxNumBones];
 	//
+	const CMatrix *parentWorldMatrix = &CMatrix::Identity;
 	for(std::vector<CForceComputeBoneInfo>::reverse_iterator it = ancestors.rbegin(); it != ancestors.rend(); ++it)
-	{				
-		it->Transform->update();						// animate transform
-		it->Transform->updateWorldMatrixFromFather ();  // recompute matrix
+	{					
+		// update world matrix (NB : the call to getmatrix will update the local matrix)
+		it->Transform->setWorldMatrix(*parentWorldMatrix * it->Transform->getMatrix());		
 		if (it->Transform->isSkeleton())
 		{
 			CSkeletonModel *skel = static_cast<CSkeletonModel *>(it->Transform);
@@ -471,8 +471,13 @@ bool CSkeletonModel::forceComputeBone(uint boneId)
 			{
 				OrderedBone[numBones]->compute(fatherBone, modelWorldMatrix, NULL);
 				fatherBone = OrderedBone[numBones];
-			}			
-		}		
+			}
+			parentWorldMatrix = &(OrderedBone[0]->getWorldMatrix());
+		}
+		else
+		{
+			parentWorldMatrix = &it->Transform->getWorldMatrix();
+		}
 	}
 	return true;
 }

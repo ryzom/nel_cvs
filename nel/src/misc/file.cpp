@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.38 2004/03/29 11:33:14 lecroart Exp $
+ * $Id: file.cpp,v 1.39 2004/05/12 09:08:04 brigand Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -513,7 +513,8 @@ bool	COFile::open(const std::string &path, bool append, bool text, bool useTempF
 
 	char mode[3];
 	mode[0] = (append)?'a':'w';
-	mode[1] = (text)?'\0':'b';
+// ACE: NEVER SAVE IN TEXT MODE!!!	mode[1] = (text)?'\0':'b';
+	mode[1] = 'b';
 	mode[2] = '\0';
 
 	string fileToOpen = path;

@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.12 2002/06/07 12:34:36 legros Exp $
+ * $Id: edge_quad.cpp,v 1.13 2002/06/12 14:57:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,6 +78,7 @@ CEdgeQuad	&CEdgeQuad::operator=(const CEdgeQuad &o)
 	_Height= o._Height;
 	_X= o._X;
 	_Y= o._Y;
+	_EdgeEntries = o._EdgeEntries;
 
 	// copy good pointers.
 	_Quad.clear();

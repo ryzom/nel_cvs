@@ -1,7 +1,7 @@
 /** \file nel_export.h
  * <File description>
  *
- * $Id: nel_export.h,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: nel_export.h,v 1.6 2001/07/04 16:38:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,7 @@ public:
 
 	static void initOptions(); // read the CNelExportSceneStruct from disk or init it
 	static void deleteLM(INode& ZeNode); // the export scene struct MUST be initialized before calling this fn
+	void			OnNodeProperties ();
 
 	ULONG ExtractFileName(char* Path, char* Name);
 	ULONG ExtractPath(char* FullPath, char* Path);

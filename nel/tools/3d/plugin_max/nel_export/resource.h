@@ -5,12 +5,17 @@
 #define IDS_LIBDESCRIPTION              1
 #define IDS_CATEGORY                    2
 #define IDS_CLASS_NAME                  3
+#define IDC_ADD                         3
 #define IDS_PARAMS                      4
+#define IDC_REMOVE                      4
 #define IDS_SPIN                        5
+#define IDC_UP                          5
+#define IDC_DOWN                        6
 #define IDD_PANEL                       101
 #define IDD_SWT                         103
 #define IDD_EXPORTSCENE                 104
 #define IDD_CALCULATING                 106
+#define IDD_NODE_PROPERTIES             110
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define ID_SAVEAS                       1001
@@ -31,6 +36,7 @@
 #define ID_EXPORTSCENE                  1008
 #define ID_OPTIONS                      1008
 #define IDC_CHECKEXPORTINSTANCEGROUP    1009
+#define ID_NODE_PROPERTIES              1009
 #define IDC_CHECKEXPORTSHAPES           1010
 #define IDC_CHECKEXPORTLIGHTING         1011
 #define IDC_RADIONORMALEXPORTLIGHTING   1012
@@ -51,6 +57,13 @@
 #define IDC_BUTTONCANCEL                1027
 #define IDC_SHADOW                      1028
 #define IDC_EXCLUDE                     1029
+#define IDC_LIST1                       1030
+#define IDC_BLEND_IN                    1031
+#define IDC_BLEND_OUT                   1032
+#define IDC_COARSE_MESH                 1033
+#define IDC_DIST_MAX                    1034
+#define IDC_DYNAMIC_MESH                1035
+#define IDC_BLEND_LENGTH                1036
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -59,9 +72,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        110
+#define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1030
+#define _APS_NEXT_CONTROL_VALUE         1035
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

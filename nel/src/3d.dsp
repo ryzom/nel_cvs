@@ -1319,10 +1319,6 @@ SOURCE=.\3d\async_file_manager.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\3d\event_mouse_listener.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\3d\coarse_mesh_manager.cpp
 # End Source File
 # Begin Source File
@@ -1347,14 +1343,6 @@ SOURCE=.\3d\event_mouse_listener.cpp
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\mesh_multi_lod.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\3d\mesh_multi_lod.h
 # End Source File
 # Begin Source File
 

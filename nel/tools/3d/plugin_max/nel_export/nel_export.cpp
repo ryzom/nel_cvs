@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File description>
  *
- * $Id: nel_export.cpp,v 1.6 2001/06/26 14:58:35 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.7 2001/07/04 16:38:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -390,6 +390,13 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 						// EXPORT THE SCENE
 						// theCNelExport.exportScene( vectNode );
 					}
+				}
+				break;
+				// ---
+				case ID_NODE_PROPERTIES:
+				{
+					theCNelExport.OnNodeProperties ();
+					break;
 				}
 				break;
 				// ---

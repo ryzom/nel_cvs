@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.9 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: export_nel.h,v 1.10 2001/07/04 16:38:39 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -321,7 +321,29 @@ public:
 	static NLMISC::CRGBA			getAmbientColor (Interface& ip, TimeValue time);
 
 	// *** Script access
+
+	// Eval a scripted function
 	static bool						scriptEvaluate (Interface *ip, char *script, void *out, TNelScriptValueType type);
+
+	// *** Appdata access
+
+	// Get an appData float
+	static float 					getScriptAppData (Animatable *node, uint32 id, float def);
+
+	// Set an appData float
+	static void						setScriptAppData (Animatable *node, uint32 id, float value);
+
+	// Get an appData integer
+	static int						getScriptAppData (Animatable *node, uint32 id, int def);
+
+	// Set an appData integer
+	static void						setScriptAppData (Animatable *node, uint32 id, int value);
+
+	// Get an appData integer
+	static std::string				getScriptAppData (Animatable *node, uint32 id, const std::string& def);
+
+	// Set an appData integer
+	static void						setScriptAppData (Animatable *node, uint32 id, const std::string& value);
 
 private:
 

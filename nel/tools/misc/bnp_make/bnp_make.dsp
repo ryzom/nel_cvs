@@ -87,8 +87,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "bnp_make___Win32_ReleaseDebug"
-# PROP Intermediate_Dir "bnp_make___Win32_ReleaseDebug"
+# PROP Output_Dir "ReleaseDebug"
+# PROP Intermediate_Dir "ReleaseDebug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /YX /FD /c

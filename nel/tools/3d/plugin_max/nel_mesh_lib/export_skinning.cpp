@@ -1,7 +1,7 @@
 /** \file export_skinning.cpp
  * Export skinning from 3dsmax to NeL. Works only with the com_skin2 plugin.
  *
- * $Id: export_skinning.cpp,v 1.12 2001/11/05 09:30:15 corvazier Exp $
+ * $Id: export_skinning.cpp,v 1.13 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -282,6 +282,21 @@ uint CExportNel::buildSkinning (CMesh::CMeshBuild& buildMesh, const TInodePtrInt
 
 	// Get the skin modifier
 	Modifier* skin=getModifier (&node, SKIN_CLASS_ID);
+
+	// Build a the name array
+	buildMesh.BonesNames.resize (skeletonShape.size());
+	TInodePtrInt::const_iterator ite=skeletonShape.begin();
+	while (ite != skeletonShape.end())
+	{
+		// Check the id
+		nlassert ((uint)ite->second<buildMesh.BonesNames.size());
+
+		// Names
+		buildMesh.BonesNames[ite->second] = ite->first->GetName();
+
+		// Next
+		ite++;
+	}
 
 	// Found it ?
 	if (skin)

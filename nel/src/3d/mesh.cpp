@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.44 2002/02/28 12:59:49 besson Exp $
+ * $Id: mesh.cpp,v 1.45 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -120,6 +120,7 @@ CMeshGeom::CMeshGeom()
 	_Skinned= false;
 	_VertexBufferHardDirty= true;
 	_MeshMorpher = new CMeshMorpher;
+	_BoneIdComputed = false;
 }
 
 
@@ -319,6 +320,62 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 
 	// SmartPtr Copy VertexProgram effect.
 	this->_MeshVertexProgram= m.MeshVertexProgram;
+
+	/// 7. Compact bones id and build bones name array.
+	//=================================================	
+
+	// If skinned
+	if(_Skinned)
+	{
+		// Reserve some space
+		_BonesName.reserve (m.BonesNames.size ());
+
+		// Current local bone
+		uint currentBone = 0;
+
+		// For each matrix block
+		uint matrixBlock;
+		for (matrixBlock=0; matrixBlock<_MatrixBlocks.size(); matrixBlock++)
+		{
+			// Ref on the matrix block
+			CMatrixBlock &mb = _MatrixBlocks[matrixBlock];
+
+			// Remap the skeleton index in model index
+			std::map<uint, uint> remap;
+
+			// For each matrix
+			uint matrix;
+			for (matrix=0; matrix<mb.NumMatrix; matrix++)
+			{
+				// Get bone id in the skeleton
+				std::map<uint, uint>::iterator ite = remap.find (mb.MatrixId[matrix]);
+
+				// Not found
+				if (ite == remap.end())
+				{
+					// Insert it
+					remap.insert (std::map<uint, uint>::value_type (mb.MatrixId[matrix], currentBone));
+
+					// Check the matrix id
+					nlassert (mb.MatrixId[matrix] < m.BonesNames.size());
+
+					// Set the bone name
+					_BonesName.push_back (m.BonesNames[mb.MatrixId[matrix]]);
+
+					// Set the id in local
+					mb.MatrixId[matrix] = currentBone++;
+				}
+				else
+				{
+					// Set the id in local
+					mb.MatrixId[matrix] = ite->second;
+				}
+			}
+		}
+
+		// Bone id in local
+		_BoneIdComputed = false;
+	}
 
 
 	// End!!
@@ -637,6 +694,8 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 4:
+		- BonesName.
 	Version 3:
 		- MeshVertexProgram.
 	Version 2:
@@ -646,7 +705,24 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- separate serialisation CMesh / CMeshGeom.
 	*/
-	sint ver = f.serialVersion (3);
+	sint ver = f.serialVersion (4);
+
+	// Version 4+: Array of bone name
+	if (ver >= 4)
+	{
+		f.serialCont (_BonesName);
+	}
+
+	if (f.isReading())
+	{
+		// Version3-: Bones index are in skeleton model id list
+		_BoneIdComputed = (ver < 4);
+	}
+	else
+	{
+		// Warning, if you have skinned this shape, you can't write it anymore because skinning id have been changed! 
+		nlassert (_BoneIdComputed==false);
+	}
 
 	// Version3+: MeshVertexProgram.
 	if (ver >= 3)
@@ -1053,6 +1129,55 @@ float	CMeshGeom::getNumTriangles (float distance)
 }
 
 
+// ***************************************************************************
+void	CMeshGeom::computeBonesId (CSkeletonModel *skeleton)
+{
+	// Already computed ?
+	if (!_BoneIdComputed)
+	{
+		// Get a pointer on the skeleton
+		nlassert (skeleton);
+		if (skeleton)
+		{
+			// For each matrix block
+			uint matrixBlock;
+			for (matrixBlock=0; matrixBlock<_MatrixBlocks.size(); matrixBlock++)
+			{
+				// Ref on the matrix block
+				CMatrixBlock &mb = _MatrixBlocks[matrixBlock];
+
+				// For each matrix
+				uint matrix;
+				for (matrix=0; matrix<mb.NumMatrix; matrix++)
+				{
+					// Get bone id in the skeleton
+					nlassert (mb.MatrixId[matrix]<_BonesName.size());
+					sint32 boneId = skeleton->getBoneIdByName (_BonesName[mb.MatrixId[matrix]]);
+
+					// Bones found ?
+					if (boneId != -1)
+					{
+						// Set the bone id
+						mb.MatrixId[matrix] = (uint32)boneId;
+					}
+					else
+					{
+						// Put id 0
+						mb.MatrixId[matrix] = 0;
+
+						// Error
+						nlwarning ("Bone %s not found in the skeleton.", _BonesName[mb.MatrixId[matrix]].c_str());
+					}
+				}
+			}
+
+			// Computed
+			_BoneIdComputed = true;
+		}
+	}
+}
+
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -1296,7 +1421,12 @@ const	CMeshGeom& CMesh::getMeshGeom () const
 {
 	return *_MeshGeom;
 }
-
+// ***************************************************************************
+void	CMesh::computeBonesId (CSkeletonModel *skeleton)
+{
+	nlassert (_MeshGeom);
+	_MeshGeom->computeBonesId (skeleton);
+}
 
 
 } // NL3D

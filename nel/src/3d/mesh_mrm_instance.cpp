@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.2 2002/02/28 12:59:50 besson Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.3 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/mesh_mrm_instance.h"
+#include "3d/mesh_mrm.h"
 
 
 namespace NL3D 
@@ -36,6 +37,22 @@ namespace NL3D
 void		CMeshMRMInstance::registerBasic()
 {
 	CMOT::registerModel(MeshMRMInstanceId, MeshBaseInstanceId, CMeshMRMInstance::creator);
+}
+
+// ***************************************************************************
+void		CMeshMRMInstance::setApplySkin(bool state)
+{
+	// Call parents method
+	CMeshBaseInstance::setApplySkin (state);
+
+	// Recompute the id
+	if (state)
+	{
+		// Get a pointer on the shape
+		CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+
+		pMesh->computeBonesId (_FatherSkeletonModel);
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.25 2002/02/28 12:59:50 besson Exp $
+ * $Id: mesh_mrm.cpp,v 1.26 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -195,6 +195,7 @@ CMeshMRMGeom::CMeshMRMGeom()
 	_VertexBufferHardDirty= true;
 	_Skinned= false;
 	_NbLodLoaded= 0;
+	_BoneIdComputed = false;
 }
 
 
@@ -246,7 +247,6 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	_Lods= meshBuildMRM.Lods;
 	_Skinned= meshBuildMRM.Skinned;
 	_SkinWeights= meshBuildMRM.SkinWeights;
-
 
 	// Compute degradation control.
 	//================================================
@@ -336,6 +336,87 @@ void			CMeshMRMGeom::build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*>
 	//================================================	
 	this->_MeshVertexProgram= m.MeshVertexProgram;
 
+	// Compact bone id and build a bone id names
+	//================================================	
+
+	// Skinned ?
+	if (_Skinned)
+	{
+		// Remap
+		std::map<uint, uint> remap;
+
+		// Current bone
+		uint currentBone = 0;
+
+		// Reserve memory
+		_BonesName.reserve (m.BonesNames.size());
+
+		// For each vertices
+		uint vert;
+		for (vert=0; vert<_SkinWeights.size(); vert++)
+		{
+			// Found one ?
+			bool found=false;
+			
+			// For each weight
+			uint weight;
+			for (weight=0; weight<NL3D_MESH_SKINNING_MAX_MATRIX; weight++)
+			{
+				// Active ?
+				if ((_SkinWeights[vert].Weights[weight]>0)||(weight==0))
+				{
+					// Look for it
+					std::map<uint, uint>::iterator ite = remap.find (_SkinWeights[vert].MatrixId[weight]);
+
+					// Find ?
+					if (ite == remap.end())
+					{
+						// Insert it
+						remap.insert (std::map<uint, uint>::value_type (_SkinWeights[vert].MatrixId[weight], currentBone));
+
+						// Check the id
+						nlassert (_SkinWeights[vert].MatrixId[weight]<m.BonesNames.size());
+
+						// Set the bone name
+						_BonesName.push_back (m.BonesNames[_SkinWeights[vert].MatrixId[weight]]);
+
+						// Set the local bone id
+						_SkinWeights[vert].MatrixId[weight] = currentBone++;
+					}
+					else
+					{
+						// Set the local bone id
+						_SkinWeights[vert].MatrixId[weight] = ite->second;
+					}
+
+					// Found one
+					found = true;
+				}
+			}
+
+			// Found one ?
+			nlassert (found);
+		}
+
+		// Remap the vertex influence by lods
+		uint lod;
+		for (lod=0; lod<_Lods.size(); lod++)
+		{
+			// For each matrix used
+			uint matrix;
+			for (matrix=0; matrix<_Lods[lod].MatrixInfluences.size(); matrix++)
+			{
+				// Remap
+				std::map<uint, uint>::iterator ite = remap.find (_Lods[lod].MatrixInfluences[matrix]);
+
+				// Find ?
+				nlassert (ite != remap.end());
+
+				// Remap
+				_Lods[lod].MatrixInfluences[matrix] = ite->second;
+			}
+		}
+	}
 
 }
 
@@ -869,6 +950,8 @@ void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 3:
+		- Bones names.
 	Version 2:
 		- Mesh Vertex Program.
 	Version 1:
@@ -876,7 +959,16 @@ void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(2);
+	sint	ver= f.serialVersion(3);
+
+	// if >= version 3, serial boens names
+	if(ver>=3)
+	{
+		f.serialCont (_BonesName);
+	}
+
+	// Version3-: Bones index are in skeleton model id list
+	_BoneIdComputed = (ver < 3);
 
 	// Mesh Vertex Program.
 	if (ver >= 2)
@@ -979,7 +1071,6 @@ void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// Now, all lods are loaded.
 	_NbLodLoaded= _Lods.size();
-
 }
 
 
@@ -987,6 +1078,8 @@ void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 3:
+		- Bones names.
 	Version 2:
 		- Mesh Vertex Program.
 	Version 1:
@@ -994,8 +1087,14 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(2);
+	sint	ver= f.serialVersion(3);
 	uint	i;
+
+	// if >= version 3, serial bones names
+	f.serialCont (_BonesName);
+
+	// Warning, if you have skinned this shape, you can't write it anymore because skinning id have been changed! 
+	nlassert (_BoneIdComputed==false);
 
 	// Mesh Vertex Program.
 	if (ver >= 2)
@@ -1708,7 +1807,81 @@ void				CMeshMRMGeom::updateVertexBufferHard(IDriver *drv, uint32 numVertices)
 
 }
 
+// ***************************************************************************
+void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
+{
+	// Already computed ?
+	if (!_BoneIdComputed)
+	{
+		// Get a pointer on the skeleton
+		nlassert (skeleton);
+		if (skeleton)
+		{
+			// Remap bones id table
+			std::vector<uint> remap (_BonesName.size());
 
+			// For each bones
+			uint bone;
+			for (bone=0; bone<remap.size(); bone++)
+			{
+				// Look for the bone
+				sint32 boneId = skeleton->getBoneIdByName (_BonesName[bone]);
+
+				// Bones found ?
+				if (boneId != -1)
+				{
+					// Set the bone id
+					remap[bone] = (uint32)boneId;
+				}
+				else
+				{
+					// Put id 0
+					remap[bone] = 0;
+
+					// Error
+					nlwarning ("Bone %s not found in the skeleton.", _BonesName[bone].c_str());
+				}
+			}
+
+			// Remap the vertex
+			uint vert;
+			for (vert=0; vert<_SkinWeights.size(); vert++)
+			{
+				// For each weight
+				uint weight;
+				for (weight=0; weight<NL3D_MESH_SKINNING_MAX_MATRIX; weight++)
+				{
+					// Active ?
+					if ((_SkinWeights[vert].Weights[weight]>0)||(weight==0))
+					{
+						// Check id
+						nlassert (_SkinWeights[vert].MatrixId[weight] < remap.size());
+						_SkinWeights[vert].MatrixId[weight] = remap[_SkinWeights[vert].MatrixId[weight]];
+					}
+				}				
+			}
+
+			// Remap the vertex influence by lods
+			uint lod;
+			for (lod=0; lod<_Lods.size(); lod++)
+			{
+				// For each matrix used
+				uint matrix;
+				for (matrix=0; matrix<_Lods[lod].MatrixInfluences.size(); matrix++)
+				{
+					// Check
+					nlassert (_Lods[lod].MatrixInfluences[matrix]<remap.size());
+
+					// Remap
+					_Lods[lod].MatrixInfluences[matrix] = remap[_Lods[lod].MatrixInfluences[matrix]];
+				}
+			}
+
+			// Computed
+			_BoneIdComputed = true;
+		}
+	}
+}
 
 // ***************************************************************************
 // ***************************************************************************
@@ -1810,6 +1983,13 @@ float	CMeshMRM::getNumTriangles (float distance)
 const CMeshMRMGeom& CMeshMRM::getMeshGeom () const
 {
 	return _MeshMRMGeom;
+}
+
+
+// ***************************************************************************
+void	CMeshMRM::computeBonesId (CSkeletonModel *skeleton)
+{
+	_MeshMRMGeom.computeBonesId (skeleton);
 }
 
 } // NL3D

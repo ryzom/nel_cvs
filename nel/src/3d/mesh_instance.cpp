@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.8 2002/02/28 12:59:50 besson Exp $
+ * $Id: mesh_instance.cpp,v 1.9 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,5 +41,20 @@ void		CMeshInstance::registerBasic()
 	CMOT::registerModel(MeshInstanceId, MeshBaseInstanceId, CMeshInstance::creator);
 }
 
+// ***************************************************************************
+void		CMeshInstance::setApplySkin(bool state)
+{
+	// Call parents method
+	CMeshBaseInstance::setApplySkin (state);
+
+	// Recompute the id
+	if (state)
+	{
+		// Get a pointer on the shape
+		CMesh *pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
+
+		pMesh->computeBonesId (_FatherSkeletonModel);
+	}
+}
 
 } // NL3D

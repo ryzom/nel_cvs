@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.20 2002/03/04 17:03:31 corvazier Exp $
+ * $Id: mesh_mrm.h,v 1.21 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,8 @@ public:
 	 */
 	void			build(CMesh::CMeshBuild &m, std::vector<CMesh::CMeshBuild*> &bsList, uint numMaxMaterial, const CMRMParameters &params= CMRMParameters());
 
+	/// Compute skinning id
+	void			computeBonesId (CSkeletonModel *skeleton);
 
 	/// \name From IMeshGeom
 	// @{
@@ -345,6 +347,13 @@ private:
 	
 	/// This is the array of SkinWeights, same size as the VB.
 	std::vector<CMesh::CSkinWeight>		_SkinWeights;
+
+	/// This boolean is true if the bones id have been passed in the skeleton
+	bool						_BoneIdComputed;
+
+	/// This array give the name of the local bones
+	std::vector<std::string>	_BonesName;
+
 	/// List of Lods.
 	std::vector<CLod>			_Lods;
 	/// For clipping. this is the BB of all vertices of all Lods.
@@ -469,6 +478,9 @@ public:
 	 */
 	void			build (CMeshBase::CMeshBaseBuild &m, const CMeshMRMGeom &mgeom);
 
+
+	/// Compute skinning id
+	void			computeBonesId (CSkeletonModel *skeleton);
 
 	/// \name From IShape
 	// @{

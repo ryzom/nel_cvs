@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.2 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.3 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,6 +65,9 @@ protected:
 	}
 	/// Destructor
 	virtual ~CMeshMRMInstance() {}
+
+	/// Call when the skin is applied on the skeleton
+	virtual	void	setApplySkin(bool state);
 
 
 private:

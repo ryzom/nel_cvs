@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.18 2002/03/04 14:55:32 corvazier Exp $
+ * $Id: mesh.h,v 1.19 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ using	NLMISC::CMatrix;
 
 
 class CMeshGeom;
-
+class CSkeletonModel;
 
 // ***************************************************************************
 // Should be 4.
@@ -152,6 +152,9 @@ public:
 		// Palette Skinning Vertices array (same size as Vertices). NULL if no skinning.
 		std::vector<CSkinWeight>	SkinWeights;
 
+		// Bones name. Each matrix id used in SkinWeights must have a corresponding string in the bone name array.
+		std::vector<std::string>	BonesNames;
+
 		// Faces array
 		std::vector<CFace>			Faces;
 
@@ -188,6 +191,9 @@ public:
 	void			build(CMeshBase::CMeshBaseBuild &mbuild, CMeshGeom &meshGeom);
 
 	void			setBlendShapes(std::vector<CBlendShape>&bs);
+
+	/// Compute skinning id
+	void			computeBonesId (CSkeletonModel *skeleton);
 
 	/// \name From IShape
 	// @{
@@ -276,6 +282,9 @@ public:
 	void			build(CMesh::CMeshBuild &mbuild, uint numMaxMaterial);
 
 	void			setBlendShapes(std::vector<CBlendShape>&bs);
+
+	/// Compute skinning id
+	void			computeBonesId (CSkeletonModel *skeleton);
 
 	/// \name From IMeshGeom
 	// @{
@@ -518,6 +527,12 @@ private:
 	NLMISC::CAABBoxExt			_BBox;
 	/// This tells if the mesh is correctly skinned.
 	bool						_Skinned;
+
+	/// This boolean is true if the bones id have been passed in the skeleton
+	bool						_BoneIdComputed;
+
+	/// This array give the name of the local bones
+	std::vector<std::string>	_BonesName;
 
 
 	/// \name VBufferHard mgt.

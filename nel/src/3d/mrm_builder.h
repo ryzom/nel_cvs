@@ -1,7 +1,7 @@
 /** \file mrm_builder.h
  * A Builder of MRM.
  *
- * $Id: mrm_builder.h,v 1.7 2001/10/10 15:38:09 besson Exp $
+ * $Id: mrm_builder.h,v 1.8 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,6 +173,7 @@ private:
 	 *
 	 */
 	void	buildFinalMRM(std::vector<CMRMMeshGeom> &lodMeshs, CMRMMeshFinal &finalMRM);
+
 	// @}
 
 

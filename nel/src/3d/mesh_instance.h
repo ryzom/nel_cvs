@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.4 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: mesh_instance.h,v 1.5 2002/03/06 10:24:47 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,8 +65,12 @@ protected:
 	CMeshInstance()
 	{
 	}
+
 	/// Destructor
 	virtual ~CMeshInstance() {}
+
+	/// Call when the skin is applied on the skeleton
+	virtual	void	setApplySkin(bool state);
 
 
 private:

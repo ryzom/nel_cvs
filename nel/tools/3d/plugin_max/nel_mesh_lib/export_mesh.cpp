@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.27 2001/11/26 13:16:00 vizerie Exp $
+ * $Id: export_mesh.cpp,v 1.28 2001/11/27 17:18:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 #include <3d/coarse_mesh_manager.h>
 #include <3d/flare_shape.h>
 #include <3d/water_shape.h>
+
 
 #include <nel/misc/polygon.h>
 
@@ -136,7 +137,7 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 	// Check if there is an object
 	if (obj)
 	{
-		Class_ID  clid = obj->ClassID() ;
+		Class_ID  clid = obj->ClassID();
 		// is the object a particle system ? (we do this defore meshs, because for now there is a mesh in max scenes to say where a particle system is...)
 		if (clid.PartA() == NEL_PARTICLE_SYSTEM_CLASS_ID)
 		{
@@ -144,13 +145,13 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 			AppDataChunk *ad = obj->GetAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA );
 			if (ad&&ad->data)
 			{											
-				NL3D::CShapeStream ss ;
-				NLMISC::CIFile iF ;
+				NL3D::CShapeStream ss;
+				NLMISC::CIFile iF;
 				if (iF.open((const char *) ad->data))
 				{
-					iF.serial(ss) ;
+					iF.serial(ss);
 
-					CParticleSystemShape *pss = NLMISC::safe_cast<CParticleSystemShape *>(ss.getShapePointer()) ;
+					CParticleSystemShape *pss = NLMISC::safe_cast<CParticleSystemShape *>(ss.getShapePointer());
 
 					// ********************************
 					// *** Export default transformation
@@ -166,107 +167,112 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 						decompMatrix (scale, rot, pos, localTM);
 
 						// Set the default values
-						pss->getDefaultPos()->setValue(pos) ;					
-						pss->getDefaultScale()->setValue(scale) ;					
-						pss->getDefaultRotQuat()->setValue(rot) ;												
-						return pss ;
+						pss->getDefaultPos()->setValue(pos);					
+						pss->getDefaultScale()->setValue(scale);					
+						pss->getDefaultRotQuat()->setValue(rot);												
+						return pss;
 				}
 				else
 				{
-					throw NLMISC::EStream("file not found (particle system file)") ;
+					throw NLMISC::EStream("file not found (particle system file)");
 				}				
 			}
+		}
+
+		if (clid.PartA() == NEL_WAVE_MAKER_CLASS_ID_A)
+		{
+			return buildWaveMakerShape(node, time, absolutePath);
 		}
 
 		// is the object a flare ?
 		if (clid.PartA() == NEL_FLARE_CLASS_ID_A /*&& clid.PartB() == NEL_FLARE_CLASS_ID_B*/)
 		{
 			// build the shape
-			CFlareShape *fs = new CFlareShape ;
+			CFlareShape *fs = new CFlareShape;
 
-			Point3 col ;
-			float persistence, size, spacing, attenuationRange, pos, maxViewDistRatio ;
-			int   attenuable ;
-			int	  firstFlareKeepSize ;
-			int   hasDazzle ;
+			Point3 col;
+			float persistence, size, spacing, attenuationRange, pos, maxViewDistRatio;
+			int   attenuable;
+			int	  firstFlareKeepSize;
+			int   hasDazzle;
 
 
 			// retrieve the color of the flare from the node
-			CExportNel::getValueByNameUsingParamBlock2(node, "ColorParam", (ParamType2)TYPE_RGBA, &col, 0) ;
-			fs->setColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z))) ;
+			CExportNel::getValueByNameUsingParamBlock2(node, "ColorParam", (ParamType2)TYPE_RGBA, &col, 0);
+			fs->setColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z)));
 			// retrieve the persistence of the flare
-			CExportNel::getValueByNameUsingParamBlock2(node, "PersistenceParam", (ParamType2)TYPE_FLOAT, &persistence, 0) ;
-			fs->setPersistence(persistence) ;
+			CExportNel::getValueByNameUsingParamBlock2(node, "PersistenceParam", (ParamType2)TYPE_FLOAT, &persistence, 0);
+			fs->setPersistence(persistence);
 			// retrieve spacing of the flare
-			CExportNel::getValueByNameUsingParamBlock2(node, "Spacing", (ParamType2)TYPE_FLOAT, &spacing, 0) ;
-			fs->setFlareSpacing(spacing) ;
+			CExportNel::getValueByNameUsingParamBlock2(node, "Spacing", (ParamType2)TYPE_FLOAT, &spacing, 0);
+			fs->setFlareSpacing(spacing);
 			// retrieve use of radial attenuation
-			CExportNel::getValueByNameUsingParamBlock2(node, "Attenuable", (ParamType2) TYPE_BOOL, &attenuable, 0) ;			
+			CExportNel::getValueByNameUsingParamBlock2(node, "Attenuable", (ParamType2) TYPE_BOOL, &attenuable, 0);			
 			if (attenuable)
 			{
-				fs->setAttenuable() ;
-				CExportNel::getValueByNameUsingParamBlock2(node, "AttenuationRange", (ParamType2) TYPE_FLOAT, &attenuationRange, 0) ;			
-				fs->setAttenuationRange(attenuationRange) ;
+				fs->setAttenuable();
+				CExportNel::getValueByNameUsingParamBlock2(node, "AttenuationRange", (ParamType2) TYPE_FLOAT, &attenuationRange, 0);			
+				fs->setAttenuationRange(attenuationRange);
 			}			
-			CExportNel::getValueByNameUsingParamBlock2(node, "FirstFlareKeepSize", (ParamType2) TYPE_BOOL, &firstFlareKeepSize, 0) ;			
-			fs->setFirstFlareKeepSize(firstFlareKeepSize ? true : false) ; // avoid VC++ warning
+			CExportNel::getValueByNameUsingParamBlock2(node, "FirstFlareKeepSize", (ParamType2) TYPE_BOOL, &firstFlareKeepSize, 0);			
+			fs->setFirstFlareKeepSize(firstFlareKeepSize ? true : false); // avoid VC++ warning
 
 			/// check for dazzle
-			CExportNel::getValueByNameUsingParamBlock2(node, "HasDazzle", (ParamType2) TYPE_BOOL, &hasDazzle, 0) ;			
+			CExportNel::getValueByNameUsingParamBlock2(node, "HasDazzle", (ParamType2) TYPE_BOOL, &hasDazzle, 0);			
 
 			if (hasDazzle)
 			{
-				fs->enableDazzle() ;
+				fs->enableDazzle();
 				// get dazzle color
-				CExportNel::getValueByNameUsingParamBlock2(node, "DazzleColor", (ParamType2) TYPE_RGBA, &col, 0) ;			
-				fs->setDazzleColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z))) ;
+				CExportNel::getValueByNameUsingParamBlock2(node, "DazzleColor", (ParamType2) TYPE_RGBA, &col, 0);			
+				fs->setDazzleColor(NLMISC::CRGBA((uint) (255.f * col.x), (uint) (255.f * col.y), (uint) (255.f * col.z)));
 				// get dazzle attenuation range
-				CExportNel::getValueByNameUsingParamBlock2(node, "DazzleAttenuationRange", (ParamType2) TYPE_FLOAT, &attenuationRange, 0) ;			
-				fs->setDazzleAttenuationRange(attenuationRange) ;
+				CExportNel::getValueByNameUsingParamBlock2(node, "DazzleAttenuationRange", (ParamType2) TYPE_FLOAT, &attenuationRange, 0);			
+				fs->setDazzleAttenuationRange(attenuationRange);
 			}
 
 			/// retrieve maxViewDistRatio
-			CExportNel::getValueByNameUsingParamBlock2(node, "MaxViewDistRatio", (ParamType2) TYPE_BOOL, &maxViewDistRatio, 0) ;
-			fs->setMaxViewDistRatio(maxViewDistRatio) ;
+			CExportNel::getValueByNameUsingParamBlock2(node, "MaxViewDistRatio", (ParamType2) TYPE_BOOL, &maxViewDistRatio, 0);
+			fs->setMaxViewDistRatio(maxViewDistRatio);
 
 
 
 			// retrieve sizes & tex
-			for (uint k = 0 ; k < MaxFlareNum ; ++k)
+			for (uint k = 0; k < MaxFlareNum; ++k)
 			{
-				char out[16] ; sprintf(out, "size%d", k) ;
-				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2)TYPE_FLOAT, &size, 0) ;
-				fs->setSize(k, size) ;
+				char out[16]; sprintf(out, "size%d", k);
+				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2)TYPE_FLOAT, &size, 0);
+				fs->setSize(k, size);
 				// get relative position
-				sprintf(out, "pos%d", k) ;
-				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2)TYPE_FLOAT, &pos, 0) ;
-				fs->setRelativePos(k, pos) ;
+				sprintf(out, "pos%d", k);
+				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2)TYPE_FLOAT, &pos, 0);
+				fs->setRelativePos(k, pos);
 
 				// check wether the flare is used
-				int texUsed ;
-				sprintf(out, "flareUsed%d", k) ;
-				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2) TYPE_BOOL, &texUsed, 0) ;			
+				int texUsed;
+				sprintf(out, "flareUsed%d", k);
+				CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2) TYPE_BOOL, &texUsed, 0);			
 				if (texUsed)
 				{
-					sprintf(out, "texFileName%d", k) ;
+					sprintf(out, "texFileName%d", k);
 					// retrieve the texture name
-					std::string fileName ;
-					CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2) TYPE_STRING, &fileName, 0) ;
+					std::string fileName;
+					CExportNel::getValueByNameUsingParamBlock2(node, out, (ParamType2) TYPE_STRING, &fileName, 0);
 					if (absolutePath)
 					{
-						fs->setTexture(k, new NL3D::CTextureFile(fileName.c_str())) ;
+						fs->setTexture(k, new NL3D::CTextureFile(fileName.c_str()));
 					}
 					else
 					{
 						char fName[_MAX_FNAME];
 						// get file name only
-						::_splitpath(fileName.c_str(), NULL, NULL, fName, NULL) ;
-						fs->setTexture(k, new NL3D::CTextureFile(fName)) ;
+						::_splitpath(fileName.c_str(), NULL, NULL, fName, NULL);
+						fs->setTexture(k, new NL3D::CTextureFile(fName));
 					}
 				}
 				else
 				{
-					fs->setTexture(k, NULL) ;
+					fs->setTexture(k, NULL);
 				}	
 			}
 
@@ -275,13 +281,13 @@ IShape* CExportNel::buildShape (INode& node, Interface& ip, TimeValue time, cons
 			getLocalMatrix (localTM, node, time);			
 
 
-			Point3  fp = localTM.GetTrans() ;
+			Point3  fp = localTM.GetTrans();
 
 			// export default transformation
-			fs->getDefaultPos()->setValue( CVector(fp.x, fp.y, fp.z) ) ;					
+			fs->getDefaultPos()->setValue( CVector(fp.x, fp.y, fp.z) );					
 			
 
-			return fs ;
+			return fs;
 		}
 
 
@@ -1373,9 +1379,40 @@ void CExportNel::buildMeshMorph (CMesh::CMeshBuild& buildMesh, INode &node, Time
 
 }
 
+
 // ***************************************************************************
+NL3D::IShape				*CExportNel::buildWaveMakerShape(INode& node, TimeValue time, bool absolutePath)
+{
+	NL3D::CWaveMakerShape *wms = new CWaveMakerShape;
+	float  radius = 3;
+	float  intensity = 1;
+	float  period = 1;
+	uint32 poolID = 0;
+	int	   impulsionMode; 
+	CExportNel::getValueByNameUsingParamBlock2 (node, "period", (ParamType2)TYPE_FLOAT, &period, time);
+	CExportNel::getValueByNameUsingParamBlock2 (node, "intensity", (ParamType2)TYPE_FLOAT, &intensity, time);
+	CExportNel::getValueByNameUsingParamBlock2 (node, "radius", (ParamType2)TYPE_FLOAT, &radius, time);
+	CExportNel::getValueByNameUsingParamBlock2 (node, "poolID", (ParamType2)TYPE_FLOAT, &poolID, time);
+	CExportNel::getValueByNameUsingParamBlock2 (node, "impulsionMode", (ParamType2)TYPE_BOOL, &impulsionMode, time);
 
+	wms->setPeriod(period);
+	wms->setIntensity(intensity);
+	wms->setRadius(3);
+	wms->setWaterPoolID(poolID);
+	wms->setImpulsionMode(impulsionMode != 0);
 
+	// Get the node matrix
+	Matrix3 localTM;
+	getLocalMatrix (localTM, node, time);
+	Point3 pos = localTM.GetRow(3);
+	NLMISC::CVector nelPos;
+	convertVector(nelPos, pos);	
+	wms->getDefaultPos()->setValue(nelPos);
+
+	return wms;
+}
+
+// ***************************************************************************
 NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool absolutePath)
 {
 	// must have a water material
@@ -1432,9 +1469,9 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 
 
 	const float proj[] = { 1, 0, 0, 0,
-							   0, 1, 0, 0,
-							   0, 0, 0, 0,
-							   0, 0, 0, 0 };
+						   0, 1, 0, 0,
+						   0, 0, 0, 0,
+						   0, 0, 0, 0 };
 	CMatrix projMat;
 	projMat.set(proj);
 	CPolygon2D projDest(dest, projMat); // project the poly
@@ -1625,15 +1662,15 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 		NLMISC::CVector2f displaceMapScale;
 		NLMISC::CVector2f displaceMapSpeed;
 
-		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpUScale", (ParamType2)TYPE_FLOAT, &bumpMapScale.x, 0) ;
-		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpVScale", (ParamType2)TYPE_FLOAT, &bumpMapScale.y, 0) ;
-		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpUSpeed", (ParamType2)TYPE_FLOAT, &bumpMapSpeed.x, 0) ;
-		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpVSpeed", (ParamType2)TYPE_FLOAT, &bumpMapSpeed.y, 0) ;
+		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpUScale", (ParamType2)TYPE_FLOAT, &bumpMapScale.x, 0);
+		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpVScale", (ParamType2)TYPE_FLOAT, &bumpMapScale.y, 0);
+		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpUSpeed", (ParamType2)TYPE_FLOAT, &bumpMapSpeed.x, 0);
+		CExportNel::getValueByNameUsingParamBlock2(node, "fBumpVSpeed", (ParamType2)TYPE_FLOAT, &bumpMapSpeed.y, 0);
 
-		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapUScale", (ParamType2)TYPE_FLOAT, &displaceMapScale.x, 0) ;
-		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapVScale", (ParamType2)TYPE_FLOAT, &displaceMapScale.y, 0) ;
-		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapUSpeed", (ParamType2)TYPE_FLOAT, &displaceMapSpeed.x, 0) ;
-		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapVSpeed", (ParamType2)TYPE_FLOAT, &displaceMapSpeed.y, 0) ;
+		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapUScale", (ParamType2)TYPE_FLOAT, &displaceMapScale.x, 0);
+		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapVScale", (ParamType2)TYPE_FLOAT, &displaceMapScale.y, 0);
+		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapUSpeed", (ParamType2)TYPE_FLOAT, &displaceMapSpeed.x, 0);
+		CExportNel::getValueByNameUsingParamBlock2(node, "fDisplaceMapVSpeed", (ParamType2)TYPE_FLOAT, &displaceMapSpeed.y, 0);
 
 
 
@@ -1681,8 +1718,18 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 
 		
 
-		ws->setWaterPoolID(0);
+		
 		ws->setShape(convexPoly);
+
+		/// water height factor
+		float waterHeightFactor = 1.f;
+		CExportNel::getValueByNameUsingParamBlock2(node, "fWaterHeightFactor", (ParamType2)TYPE_FLOAT, &waterHeightFactor, 0);
+		ws->setWaveHeightFactor(waterHeightFactor);
+		
+		// pool id
+		uint32 poolID;
+		CExportNel::getValueByNameUsingParamBlock2(node, "iWaterPoolID", (ParamType2)TYPE_INT, &poolID, 0);
+		ws->setWaterPoolID(poolID);
 
 
 		// Export default transformation

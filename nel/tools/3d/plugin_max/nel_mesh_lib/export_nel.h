@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.32 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: export_nel.h,v 1.33 2001/11/27 17:18:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,8 @@
 #define NEL_PARTICLE_SYSTEM_CLASS_ID	0x58ce2893
 #define NEL_FLARE_CLASS_ID_A			0x4e913532
 #define NEL_FLARE_CLASS_ID_B			0x3c2f2307
+#define NEL_WAVE_MAKER_CLASS_ID_A		0x77e24828
+#define NEL_WAVE_MAKER_CLASS_ID_B		0x329a1de5
 #define MAX_MORPHER_CLASS_ID			Class_ID(0x17bb6854, 0xa5cba2a3)
 
 
@@ -577,6 +579,9 @@ private:
 
 	// Build a water shape. The given node must have a water materiel, an assertion is raised otherwise
 	static NL3D::IShape				*buildWaterShape(INode& node, TimeValue time, bool absolutePath);
+
+	// build a wave maker shape
+	static NL3D::IShape				*CExportNel::buildWaveMakerShape(INode& node, TimeValue time, bool absolutePath);
 
 	// *********************
 	// *** Ëxport material

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.105 2004/12/29 19:10:09 boucher Exp $
+ * $Id: debug.cpp,v 1.105.2.1 2005/01/20 17:35:46 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,6 +101,17 @@ static TCrashCallback CrashCallback = NULL;
 void setCrashCallback(TCrashCallback crashCallback)
 {
 	CrashCallback = crashCallback;
+}
+
+// Yoyo: allow only the crash report to be emailed once
+static bool	CrashAlreadyReported = false;
+bool	isCrashAlreadyReported()
+{
+	return CrashAlreadyReported;
+}
+void	setCrashAlreadyReported(bool state)
+{
+	CrashAlreadyReported= state;
 }
 
 
@@ -491,8 +502,13 @@ public:
 
 			if(!shortExc.empty() || !longExc.empty())
 			{
+				// yoyo: allow only to send the crash report once. Because users usually click ignore, 
+				// which create noise into list of bugs (once a player crash, it will surely continues to do it).
 				bool i = false;
-				report (progname+shortExc, "", subject, _Reason, true, 1, true, 1, true, i, NL_CRASH_DUMP_FILE);
+				report (progname+shortExc, "", subject, _Reason, true, 1, true, 1, !isCrashAlreadyReported(), i, NL_CRASH_DUMP_FILE);
+
+				// no more sent mail for crash
+				setCrashAlreadyReported(true);
 			}
 		}
 	}

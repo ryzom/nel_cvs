@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.40 2002/01/07 15:18:18 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.41 2002/01/28 14:22:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,28 +65,32 @@ const float PSDefaultMaxViewDist = 300.f;
 /*
  * Constructor
  */
-CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
-									, _Date(0), _Scene(NULL), _CurrEditedElementLocated(NULL)
-									, _CurrEditedElementIndex(0), _Driver(NULL)
-									, _TimeThreshold(0.15f)
-									, _MaxNbIntegrations(2)
-									, _CanSlowDown(true)
-									, _AccurateIntegration(true)
-									, _InvMaxViewDist(1.f / PSDefaultMaxViewDist)									
-									, _InvCurrentViewDist(1.f / PSDefaultMaxViewDist)									
-									, _MaxViewDist(PSDefaultMaxViewDist)
-									, _LODRatio(0.5f)
-									, _ComputeBBox(true)
-									, _BBoxTouched(true)
-									, _DieCondition(none)
-									, _DelayBeforeDieTest(0.2f) 
-									, _DestroyModelWhenOutOfRange(false)
-									, _DestroyWhenOutOfFrustum(false)
-									, _SystemDate(0.f)
-									, _OneMinusCurrentLODRatio(0)									
-									, _MaxNumFacesWanted(0)
-									, _PerformMotionWhenOutOfFrustum(true)
-								
+CParticleSystem::CParticleSystem() : _FontGenerator(NULL),
+									 _FontManager(NULL),
+									 _Date(0),
+									 _Scene(NULL),
+									 _CurrEditedElementLocated(NULL),
+									 _CurrEditedElementIndex(0),
+									 _Driver(NULL),
+									 _TimeThreshold(0.15f),
+									 _MaxNbIntegrations(2),
+									 _CanSlowDown(true),
+									 _AccurateIntegration(true),
+									 _InvMaxViewDist(1.f / PSDefaultMaxViewDist),
+									 _InvCurrentViewDist(1.f / PSDefaultMaxViewDist),
+									 _MaxViewDist(PSDefaultMaxViewDist),
+									 _LODRatio(0.5f),
+									 _ComputeBBox(true),
+									 _BBoxTouched(true),
+									 _DieCondition(none),
+									 _DelayBeforeDieTest(0.2f),
+									 _DestroyModelWhenOutOfRange(false),
+									 _DestroyWhenOutOfFrustum(false),
+									 _SystemDate(0.f),
+									 _OneMinusCurrentLODRatio(0),
+									 _MaxNumFacesWanted(0),
+									 _AnimType(AnimInCluster),
+									 _PresetBehaviour(UserBehaviour)
 									
 {
 	for (uint k = 0; k < MaxPSUserParam; ++k) _UserParam[k] = 0;
@@ -284,7 +288,8 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 				stepLocated(PSMotion, et);
 				stepLocated(PSCollision, et);
 				stepLocated(PSDynamic, et);
-				stepLocated(PSPostdynamic, et);										
+				stepLocated(PSPostdynamic, et);
+				_SystemDate += et;
 			}
 			while (--nbPass);
 			
@@ -296,7 +301,7 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			
 
 			// update system date
-			_SystemDate += ellapsedTime;
+			
 		}
 	}	
 		
@@ -304,7 +309,10 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {		
-	sint version =  f.serialVersion(7);	
+	sint version =  f.serialVersion(8);	
+
+	// version 8: Replaced the attribute '_PerformMotionWhenOutOfFrustum' by a _AnimType field which allow more precise control
+
 	//f.serial(_ViewMat);
 	f.serial(_SysMat);
 	f.serial(_Date);
@@ -369,9 +377,25 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial(_DestroyWhenOutOfFrustum);
 	}
 
-	if (version > 6)
+	if (version > 6 && version < 8)
 	{
-		f.serial(_PerformMotionWhenOutOfFrustum);
+		bool performMotionWOOF;
+		if (f.isReading())
+		{
+			f.serial(performMotionWOOF);
+			performMotionWhenOutOfFrustum(performMotionWOOF);
+		}
+		else
+		{
+			performMotionWOOF = doesPerformMotionWhenOutOfFrustum();
+			f.serial(performMotionWOOF);
+		}
+	}
+
+	if (version > 7)
+	{
+		f.serialEnum(_AnimType);
+		f.serialEnum(_PresetBehaviour);
 	}
 
 	if (f.isReading())
@@ -590,6 +614,47 @@ void CParticleSystem::merge(CParticleSystemShape *pss)
 	}
 	duplicate->_ProcessVect.clear();
 	delete duplicate;
+}
+
+
+
+void CParticleSystem::activatePresetBehaviour(TPresetBehaviour behaviour)
+{
+
+	switch(behaviour)
+	{
+		case EnvironmentFX:
+			setDestroyModelWhenOutOfRange(false);
+			setDestroyCondition(none);
+			destroyWhenOutOfFrustum(false);
+			setAnimType(AnimVisible);
+		break;
+		case RunningEnvironmentFX:
+			setDestroyModelWhenOutOfRange(false);
+			setDestroyCondition(none);
+			destroyWhenOutOfFrustum(false);
+			setAnimType(AnimInCluster);
+		break;
+		case SpellFX:
+			setDestroyModelWhenOutOfRange(true);
+			setDestroyCondition(noMoreParticles);
+			destroyWhenOutOfFrustum(false);
+			setAnimType(AnimAlways);
+		break;
+		case LoopingSpellFX:
+			setDestroyModelWhenOutOfRange(true);
+			setDestroyCondition(noMoreParticles);
+			destroyWhenOutOfFrustum(false);
+			setAnimType(AnimInCluster);
+		break;
+		case MinorFX:
+			setDestroyModelWhenOutOfRange(true);
+			setDestroyCondition(noMoreParticles);
+			destroyWhenOutOfFrustum(true);
+			setAnimType(AnimVisible);
+		break;		
+	}
+	_PresetBehaviour = behaviour;
 }
 
 

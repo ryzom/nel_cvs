@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.21 2001/11/23 18:48:56 vizerie Exp $
+ * $Id: particle_system.h,v 1.22 2002/01/28 14:22:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -187,7 +187,7 @@ public:
 	  */
 
 		//@{
-		/** attach a process (such as a located : see particle_system_process.h, and os_located.h) to the system. 
+		/** attach a process (such as a located : see particle_system_process.h, and ps_located.h) to the system. 
 		 *  It is then owned by the process and will be deleted by it. 
 		 *  if already present -> nl assert	 
 		 */
@@ -457,12 +457,16 @@ public:
 	
 	//*****************************************************************************************************
 
-	///\name Invalidity flags (no direct effect, just indications for a thirs party, a model holding the system for example)
+	///\name Invalidity flags (no direct effect, just indications for a third party, a model holding the system for example)
 		// @{
 		/** Tell the system that it is invalid when its out of range. The default is false.	  
 		  * This is only a indication flag and must be checked by third party (a model holding the system for example)
 		  */
-		void				setDestroyModelWhenOutOfRange(bool enable = true) { _DestroyModelWhenOutOfRange  = enable; }
+		void				setDestroyModelWhenOutOfRange(bool enable = true) 
+		{ 
+			_DestroyModelWhenOutOfRange  = enable;
+			_PresetBehaviour = UserBehaviour;
+		}
 		
 		/// check whether the system is invalid it's out of range.
 		bool				getDestroyModelWhenOutOfRange(void) const { return _DestroyModelWhenOutOfRange; }
@@ -478,7 +482,11 @@ public:
 		  * \see hasEmitters
 		  * \see hasParticles
 		  */
-		void				setDestroyCondition(TDieCondition dieCondition) { _DieCondition = dieCondition; }
+		void				setDestroyCondition(TDieCondition dieCondition) 
+		{ 
+			_DieCondition = dieCondition;
+			_PresetBehaviour = UserBehaviour;
+		}
 
 		/// get the destroy condition
 		TDieCondition		getDestroyCondition(void) const { return _DieCondition; }
@@ -491,7 +499,10 @@ public:
 		  * \see hasParticles()
 		  * \see getDelayBeforeDeathConditionTest()
 		  */
-		void setDelayBeforeDeathConditionTest(TAnimationTime delay) { _DelayBeforeDieTest  = delay; }
+		void setDelayBeforeDeathConditionTest(TAnimationTime delay) 
+		{
+			_DelayBeforeDieTest  = delay; 
+		}
 
 		/// get the a delay before to apply the death condition test	  
 		TAnimationTime		getDelayBeforeDeathConditionTest(void) const { return _DelayBeforeDieTest; }
@@ -501,7 +512,11 @@ public:
 		  * It has no direct effects
 		  * \see doesDestroyWhenOutOfRange()
 		  */
-		void				destroyWhenOutOfFrustum(bool enable = true) { _DestroyWhenOutOfFrustum = enable; }
+		void				destroyWhenOutOfFrustum(bool enable = true) 
+		{ 
+			_DestroyWhenOutOfFrustum = enable; 
+			_PresetBehaviour = UserBehaviour;
+		}
 
 		/** check wether the system must be destroyed when it goes out of the frustum
 		  * \see getDelayBeforeDeathConditionTest()
@@ -515,13 +530,73 @@ public:
 		/// return true when there are still particles
 		bool				hasParticles(void) const;
 
-		/** Tells the system to continue the motion pass when its out of the frustum.
-		  * This is the default.
-		  */
-		void				performMotionWhenOutOfFrustum(bool enable = true) { _PerformMotionWhenOutOfFrustum = enable; }
+		/// This enum tells when animation must be performed
+		enum TAnimType 
+		{  AnimVisible = 0,   /* visible systems only are animated */
+		   AnimInCluster, /* systems that are in cluster are animated */
+		   AnimAlways,    /* animate always when not too far */
+		   LastValue
+		};
 
-		/// test wether the system perform the motion pass when it's out of the frustum
-		bool				doesPerformMotionWhenOutOfFrustum(void) const { return _PerformMotionWhenOutOfFrustum; }
+		/** Deprecated. This set the animation type to AnimInCluster.
+          * \see setAnimType(TAnimType animType)
+		  */
+		void				performMotionWhenOutOfFrustum(bool enable = true) 
+		{ 
+			_AnimType = enable ? AnimInCluster : AnimVisible;
+			_PresetBehaviour = UserBehaviour;
+		}
+
+		/** Deprecated. Test if animType == AnimInCluster.
+		  * * \see setAnimType(TAnimType animType)
+		  */
+		bool				doesPerformMotionWhenOutOfFrustum(void) const { return _AnimType == AnimInCluster; }
+
+		/// Tells when animation must be done
+		void				setAnimType(TAnimType animType)
+		{
+			nlassert(animType < LastValue);
+			_AnimType = animType;
+			_PresetBehaviour = UserBehaviour;
+		}
+
+		/// Test what the animation type is
+		TAnimType			getAnimType() const { return _AnimType; }
+
+		/** Because choosing the previous parameters can be difficult, this define
+		  * presets hat can be used to tune the system easily.
+		  * Any call to :
+		  * - setDestroyModelWhenOutOfRange
+		  * - setAnimType
+		  * - setDestroyCondition
+		  * - destroyWhenOutOfFrustum
+		  * - performMotionWhenOutOfFrustum
+		  *
+		  * will set the behaviour to 'user'
+		  */
+		enum TPresetBehaviour
+		{
+			EnvironmentFX = 0,
+			RunningEnvironmentFX, /* an environment fx that should 
+								   * run when in parsed cluster : cascade for example,
+								   * so that it doesn't start when the player first see
+								   * it
+								   */
+			SpellFX,
+			LoopingSpellFX,
+			MinorFX,
+			UserBehaviour,
+			PresetLast
+		};
+
+		void activatePresetBehaviour(TPresetBehaviour behaviour);
+
+		TPresetBehaviour getBehaviourType() const 
+		{ 
+			return _PresetBehaviour; 
+		}
+
+
 
 
 		// @}
@@ -642,13 +717,15 @@ protected:
 	TDieCondition								_DieCondition;
 	TAnimationTime								_DelayBeforeDieTest;
 	bool										_DestroyModelWhenOutOfRange;
-	bool										_DestroyWhenOutOfFrustum;	
-	bool										_PerformMotionWhenOutOfFrustum;
+	bool										_DestroyWhenOutOfFrustum;		
 	uint										_MaxNumFacesWanted;	
+	TAnimType									_AnimType;
 
 	static UPSSoundServer *						_SoundServer;
 
 	float										_UserParam[MaxPSUserParam];
+
+	TPresetBehaviour							_PresetBehaviour;
 
 	typedef 
 	std::multimap<uint32, CPSLocatedBindable *> TLBMap;

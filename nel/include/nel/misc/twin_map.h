@@ -1,6 +1,6 @@
 /** \file twin_map.h
  *
- * $Id: twin_map.h,v 1.1 2004/12/06 17:10:05 vizerie Exp $
+ * $Id: twin_map.h,v 1.2 2004/12/14 10:44:09 guignot Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -60,7 +60,7 @@ class CTwinMap
 {
 public:
 	typedef std::map<TypeA, TypeB> TAToBMap;
-	typedef std::map<TypeB, TypeA> TBToAMap;	
+	typedef std::map<TypeB, TypeA> TBToAMap;
 public:	
 	// add a couple in the twin map. An assertion is raised if either valueA or valueB were already present in the map
 	inline void			add(const TypeA &valueA, const TypeB &valueB);
@@ -99,7 +99,7 @@ inline void	CTwinMap<TypeA, TypeB>::add(const TypeA &valueA, const TypeB &valueB
 template <class TypeA, class TypeB>
 inline const TypeA *CTwinMap<TypeA, TypeB>::get(const TypeB &valueB) const
 {
-	TBToAMap::const_iterator it = _BToA.find(valueB);
+	typename TBToAMap::const_iterator it = _BToA.find(valueB);
 	if (it == _BToA.end()) return NULL;
 	else return &(it->second);
 }
@@ -108,7 +108,7 @@ inline const TypeA *CTwinMap<TypeA, TypeB>::get(const TypeB &valueB) const
 template <class TypeA, class TypeB>
 inline const TypeB *CTwinMap<TypeA, TypeB>::get(const TypeA &valueA) const
 {
-	TAToBMap::const_iterator it = _AToB.find(valueA);
+	typename TAToBMap::const_iterator it = _AToB.find(valueA);
 	if (it == _AToB.end()) return NULL;
 	else return &(it->second);
 }
@@ -117,9 +117,9 @@ inline const TypeB *CTwinMap<TypeA, TypeB>::get(const TypeA &valueA) const
 template <class TypeA, class TypeB>
 inline void	CTwinMap<TypeA, TypeB>::remove(const TypeA &valueA)
 {
-	TAToBMap::iterator itA = _AToB.find(valueA);
+	typename TAToBMap::iterator itA = _AToB.find(valueA);
 	nlassert(itA != _AToB.end());
-	TBToAMap::iterator itB = _BToA.find(itA->second);
+	typename TBToAMap::iterator itB = _BToA.find(itA->second);
 	nlassert(itB != _BToA.end());
 	_AToB.erase(itA);
 	_BToA.erase(itB);
@@ -129,9 +129,9 @@ inline void	CTwinMap<TypeA, TypeB>::remove(const TypeA &valueA)
 template <class TypeA, class TypeB>
 inline void	CTwinMap<TypeA, TypeB>::remove(const TypeB &valueB)
 {	
-	TBToAMap::iterator itB = _BToA.find(valueB);
+	typename TBToAMap::iterator itB = _BToA.find(valueB);
 	nlassert(itB != _BToA.end());
-	TAToBMap::iterator itA = _AToB.find(itB.second);
+	typename TAToBMap::iterator itA = _AToB.find(itB.second);
 	nlassert(itA != _AToB.end());
 	_AToB.erase(itA);
 	_BToA.erase(itB);

@@ -1,24 +1,24 @@
-# Microsoft Developer Studio Project File - Name="misc" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="net" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=misc - Win32 Debug
+CFG=net - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "misc.mak".
+!MESSAGE NMAKE /f "net.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "misc.mak" CFG="misc - Win32 Debug"
+!MESSAGE NMAKE /f "net.mak" CFG="net - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "misc - Win32 Release" (based on "Win32 (x86) Static Library")
-!MESSAGE "misc - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "net - Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "net - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -28,7 +28,7 @@ CFG=misc - Win32 Debug
 CPP=cl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "misc - Win32 Release"
+!IF  "$(CFG)" == "net - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -51,7 +51,7 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
-!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
+!ELSEIF  "$(CFG)" == "net - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -78,51 +78,39 @@ LIB32=link.exe -lib
 
 # Begin Target
 
-# Name "misc - Win32 Release"
-# Name "misc - Win32 Debug"
+# Name "net - Win32 Release"
+# Name "net - Win32 Debug"
 # Begin Source File
 
-SOURCE=..\..\include\nel\misc\assert.h
+SOURCE=.\net\inet_address.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\class_registry.cpp
+SOURCE=..\include\nel\net\inet_address.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\misc\class_registry.h
+SOURCE=.\net\message.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\displayer.cpp
+SOURCE=..\include\nel\net\message.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\misc\displayer.h
+SOURCE=.\net\service.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\file.cpp
+SOURCE=..\include\nel\net\service.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\misc\file.h
+SOURCE=.\net\socket.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\stream.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\include\nel\misc\stream.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\include\nel\misc\stream_inline.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\include\nel\misc\types_nl.h
+SOURCE=..\include\nel\net\socket.h
 # End Source File
 # End Target
 # End Project

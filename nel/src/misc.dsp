@@ -1,24 +1,24 @@
-# Microsoft Developer Studio Project File - Name="network" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="misc" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Static Library" 0x0104
 
-CFG=network - Win32 Debug
+CFG=misc - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "network.mak".
+!MESSAGE NMAKE /f "misc.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "network.mak" CFG="network - Win32 Debug"
+!MESSAGE NMAKE /f "misc.mak" CFG="misc - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "network - Win32 Release" (based on "Win32 (x86) Static Library")
-!MESSAGE "network - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "misc - Win32 Release" (based on "Win32 (x86) Static Library")
+!MESSAGE "misc - Win32 Debug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -28,7 +28,7 @@ CFG=network - Win32 Debug
 CPP=cl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "network - Win32 Release"
+!IF  "$(CFG)" == "misc - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -51,20 +51,20 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
-!ELSEIF  "$(CFG)" == "network - Win32 Debug"
+!ELSEIF  "$(CFG)" == "misc - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "Debug"
-# PROP BASE Intermediate_Dir "Debug"
+# PROP BASE Output_Dir "misc___Win32_Debug"
+# PROP BASE Intermediate_Dir "misc___Win32_Debug"
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
+# ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ  /c
+# ADD CPP /nologo /W3 /Gm /GR /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ  /c
 # ADD BASE RSC /l 0x40c /d "_DEBUG"
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -78,39 +78,55 @@ LIB32=link.exe -lib
 
 # Begin Target
 
-# Name "network - Win32 Release"
-# Name "network - Win32 Debug"
+# Name "misc - Win32 Release"
+# Name "misc - Win32 Debug"
 # Begin Source File
 
-SOURCE=.\inet_address.cpp
+SOURCE=..\include\nel\misc\assert.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\network\inet_address.h
+SOURCE=.\misc\class_registry.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\message.cpp
+SOURCE=..\include\nel\misc\class_registry.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\network\message.h
+SOURCE=.\misc\file.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\service.cpp
+SOURCE=..\include\nel\misc\file.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\network\service.h
+SOURCE=.\misc\stream.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\socket.cpp
+SOURCE=..\include\nel\misc\stream.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\include\nel\network\socket.h
+SOURCE=..\include\nel\misc\stream_inline.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\types_nl.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\vector.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vector.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\vector_inline.h
 # End Source File
 # End Target
 # End Project

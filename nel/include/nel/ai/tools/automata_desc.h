@@ -1,7 +1,7 @@
 /** \file automata_desc.h
  * A class which describe a simple success/fail automat.
  *
- * $Id: automata_desc.h,v 1.5 2002/08/21 13:58:17 lecroart Exp $
+ * $Id: automata_desc.h,v 1.6 2004/03/12 16:44:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_AUTOMATADESC_H
 #define NL_AUTOMATADESC_H
 
-#include "nel/misc.h"
+#include "nel/misc/stream.h"
 #include <list>
 #include <map>
 #include <set>

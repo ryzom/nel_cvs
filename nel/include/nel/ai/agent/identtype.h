@@ -1,7 +1,7 @@
 /** \file identtype.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identtype.h,v 1.28 2004/01/15 17:26:17 lecroart Exp $
+ * $Id: identtype.h,v 1.29 2004/03/12 16:44:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,10 @@ namespace NLAIAGENT
 		}
 
 		CAgentNumber(uint64 p):NLMISC::CEntityId(p)
+		{
+		}
+
+		CAgentNumber(NLMISC::CEntityId p):NLMISC::CEntityId(p)
 		{
 		}
 

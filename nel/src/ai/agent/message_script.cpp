@@ -1,0 +1,336 @@
+/** \file message_script.cpp
+ *
+ * $Id: message_script.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+#include "agent/message_script.h"
+#include "script/interpret_object_message.h"
+#include "script/codage.h"
+#include "script/type_def.h"
+#include "script/object_unknown.h"
+#include "agent/messagerie.h"
+
+namespace NLIAAGENT
+{
+
+	CMessageScript::CMessageScript(const CMessageScript &m):IMessageBase(m)
+	{
+		_MessageClass = m._MessageClass;
+		if ( _MessageClass )
+			_MessageClass->incRef();		
+	}
+	
+	CMessageScript::CMessageScript() : _MessageClass( NULL )
+	{
+
+	}
+
+	CMessageScript::CMessageScript( std::list<IObjectIA *> &components, NLIASCRIPT::CMessageClass *message_class ): _MessageClass( message_class )
+	{	
+		if ( _MessageClass )
+			_MessageClass->incRef();
+
+		// Creates the static components array
+		CVectorGroupType *x = new CVectorGroupType(components.size());
+		std::list<IObjectIA *>::iterator it_c = components.begin();		
+		sint32 i = 0;
+		while ( it_c != components.end() )
+		{			
+			x->setObject(i,*it_c);
+			it_c++;					
+			i ++;
+		}
+		x->incRef();
+		setMessageGroup(x);
+		setGroup(CMessageGroup::msgScriptingGroup);
+	}	
+
+	CMessageScript::~CMessageScript()
+	{
+		if ( _MessageClass )
+			_MessageClass->release();		
+	}
+
+	sint32 CMessageScript::getMethodIndexSize() const
+	{
+		return IMessageBase::getMethodIndexSize() + _MessageClass->getMethodIndexSize();
+	}
+
+	sint32 CMessageScript::getBaseMethodCount() const
+	{
+		return IMessageBase::getMethodIndexSize();
+	}
+
+
+	NLIASCRIPT::IOpCode &CMessageScript::getMethode(sint32 inheritance,sint32 index)
+	{
+#ifdef _DEBUG
+		if ( index >= _MessageClass->getMethodIndexSize())
+		{
+			throw NLIAE::CExceptionIndexError();
+		}
+
+		if ( inheritance >= _MessageClass->sizeVTable())
+		{
+			throw NLIAE::CExceptionIndexError();
+		}
+#endif
+		return (NLIASCRIPT::IOpCode &)_MessageClass->getBrancheCode(inheritance,index).getCode();
+	}
+
+	NLIASCRIPT::IOpCode &CMessageScript::getMethode(sint32 index)
+	{
+#ifdef _DEBUG
+		if ( index >= _MessageClass->getMethodIndexSize())
+		{
+			throw NLIAE::CExceptionIndexError();
+		}
+#endif
+		return (NLIASCRIPT::IOpCode &)_MessageClass->getBrancheCode(index).getCode();
+	}
+
+
+	IObjectIA::CProcessResult CMessageScript::runMethodeMember(sint32 inheritance, sint32 index, IObjectIA *c)
+	{
+
+		NLIASCRIPT::IOpCode *opPtr = NULL;
+		NLIASCRIPT::CCodeContext &context = (NLIASCRIPT::CCodeContext &)*c;
+
+		sint32 i = index - getBaseMethodCount();
+		if(i < 0)
+		{
+			return IMessageBase::runMethodeMember(inheritance,index,(IObjectIA *)context.Param.back());
+		}
+		else
+		{
+			opPtr = &getMethode(inheritance,i);
+		}
+		
+		NLIASCRIPT::IOpCode &op = *opPtr;
+		NLIASCRIPT::CCodeBrancheRun *opTmp = context.Code;
+		sint32 ip = (uint32)*context.Code;
+		context.Code = (NLIASCRIPT::CCodeBrancheRun *)&op;		
+		*context.Code = 0;
+
+		/*TProcessStatement k = IObjectIA::ProcessIdle;
+
+		while(k != IObjectIA::ProcessEnd)
+		{
+			k = op.run(context);	
+		}*/
+		
+		IObjectIA::CProcessResult r = ((NLIASCRIPT::ICodeBranche *)opPtr)->run(context);
+
+		// If we are in Debug Mode
+		if (context.ContextDebug.Active)
+		{
+			context.ContextDebug.callStackPop();
+		}
+		
+		*context.Code = ip;
+		context.Code = opTmp;
+		/*IObjectIA::CProcessResult r;
+		r.Result = NULL;
+		r.ResultState = k;*/
+		return r;
+	}
+
+	IObjectIA::CProcessResult CMessageScript::runMethodeMember(sint32 index,IObjectIA *c)
+	{
+		NLIASCRIPT::IOpCode *opPtr = NULL;
+		NLIASCRIPT::CCodeContext &context = (NLIASCRIPT::CCodeContext &)*c;
+
+		sint32 i = index - getBaseMethodCount();
+		if(i < 0)
+		{
+			return IMessageBase::runMethodeMember(index,(IObjectIA *)context.Param.back());
+		}
+		else
+		{
+			opPtr = &getMethode(i);
+		}
+		
+		NLIASCRIPT::IOpCode &op = *opPtr;
+		NLIASCRIPT::CCodeBrancheRun *opTmp = context.Code;
+		sint32 ip = (uint32)*context.Code;
+		context.Code = (NLIASCRIPT::CCodeBrancheRun *)&op;		
+		*context.Code = 0;
+
+		/*:TProcessStatement k = IObjectIA::ProcessIdle;
+
+		while(k != IObjectIA::ProcessEnd)
+		{
+			k = op.run(context);	
+		}*/		
+
+		IObjectIA::CProcessResult r = ((NLIASCRIPT::ICodeBranche *)opPtr)->run(context);
+
+		// If we are in Debug Mode
+		if (context.ContextDebug.Active)
+		{
+			context.ContextDebug.callStackPop();
+		}
+
+		*context.Code = ip;
+		context.Code = opTmp;
+		/*IObjectIA::CProcessResult r;
+		r.Result = NULL;
+		r.ResultState = k;*/
+		return r;
+	}	
+
+	sint32 CMessageScript::isClassInheritedFrom(const IVarName &class_name) const
+	{
+		return _MessageClass->isClassInheritedFrom( class_name );
+	}	
+
+	void CMessageScript::setStaticMember(sint32 index,IObjectIA *op)
+	{
+#ifdef _DEBUG
+		if ( index >= size() )
+		{
+			throw NLIAE::CExceptionIndexError();
+		}
+#endif
+		CVectorGroupType *a = (CVectorGroupType *)getMessageGroup();
+		IObjectIA *b = (IObjectIA *)(*a)[ index ];
+		b->release();
+		a->setObject(index, op);		
+	}
+
+	const IObjectIA *CMessageScript::getStaticMember(sint32 index) const
+	{
+#ifdef _DEBUG
+		if ( index >= size() )
+		{
+			throw NLIAE::CExceptionIndexError();
+		}
+#endif
+		return (*this)[ index ];		
+	}
+
+	sint32 CMessageScript::getStaticMemberIndex(const IVarName &name) const
+	{
+		return _MessageClass->getStaticMemberIndex(name);
+	}
+
+	sint32 CMessageScript::getStaticMemberSize() const
+	{
+		return 0;
+	}
+
+	tQueue CMessageScript::isMember(const IVarName *className,const IVarName *methodName,const IObjectIA &param) const
+	{	
+		tQueue result = IMessageBase::isMember(className, methodName, param);
+		
+		if ( result.size()  )
+		{
+			return result;
+		}
+
+		if( *methodName == CStringVarName("send") )
+		{
+			tQueue r;
+			NLIASCRIPT::COperandVoid typeR;
+			NLIASCRIPT::CObjectUnknown *t = new NLIASCRIPT::CObjectUnknown((NLIASCRIPT::IOpType *)typeR.clone());
+			t->incRef();
+			r.push(CIdMethod(0,0.0,NULL,t));
+			return r;
+		}
+
+		return result;
+	}
+
+	void CMessageScript::save(NLMISC::IStream &os)
+	{
+		IMessageBase::save(os);
+	}
+
+	void CMessageScript::load(NLMISC::IStream &is)
+	{
+		IMessageBase::load(is);
+	}
+
+	const NLIAC::IBasicType *CMessageScript::clone() const
+	{		
+		CMessageScript *cl = new CMessageScript( *this );
+		cl->incRef();
+		return cl;
+	}
+
+	const NLIAC::IBasicType *CMessageScript::newInstance() const
+	{
+		CMessageScript *instance;
+		if ( _MessageClass )
+		{
+			instance = (CMessageScript *) _MessageClass->buildNewInstance();
+		}
+		else 
+		{
+			instance = new CMessageScript();
+			instance->incRef();
+		}
+		return instance;
+	}
+
+	void CMessageScript::getDebugString(char *t) const
+	{
+		if ( _MessageClass )
+			sprintf(t,"<%s> (scripted)\n   -StaticComponents:\n",(const char *)_MessageClass->getType());
+		else
+			strcat(t,"<undefined_class> (scripted)\n   -StaticComponents:\n");
+
+		char buf[2048];
+		for (sint32 i = 0; i < size(); i++ )
+		{
+			strcat(t, "     ");
+			if ( _MessageClass->getComponentName(i) )
+			{
+				strcat(t, _MessageClass->getComponentName(i) );
+			}
+			else
+				strcat(t, "<unnamed>");
+
+			strcat(t, "     ");
+			(*this)[i]->getDebugString(buf);
+			strcat(t, buf);
+			strcat(t, "\n");
+		}
+	}
+
+	bool CMessageScript::isEqual(const IBasicObjectIA &a) const
+	{
+		return IMessageBase::isEqual(a);
+	}
+
+	const NLIAC::CIdentType &CMessageScript::getType() const
+	{
+		if ( _MessageClass ) 
+			return _MessageClass->getType();
+		else
+			return IdMessageScript;
+	}	
+
+	const IObjectIA::CProcessResult &CMessageScript::run()
+	{
+		return IObjectIA::ProcessRun;
+	}
+}

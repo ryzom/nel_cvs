@@ -1,0 +1,736 @@
+/** \file interpret_object_agent.cpp
+ *
+ * $Id: interpret_object_agent.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+#include "script/interpret_object_agent.h"
+#include "c/registry_class.h"
+#include "agent/agent_script.h"
+#include "script/type_def.h"
+#include "script/object_unknown.h"
+#include "script/lexsupport.h"
+
+namespace NLIASCRIPT
+{	
+
+	const NLIAAGENT::IObjectIA::CProcessResult &CAgentClass::run()
+	{
+		return NLIAAGENT::IObjectIA::ProcessRun;
+	}
+
+	CAgentClass::CAgentClass(const NLIAAGENT::IVarName &name) : _Components(0),_Inheritance(NULL)
+	{
+		setType(name, *this);	
+		_lastRef = -1;
+		_RunIndex = -1;
+		setBaseMethodCount(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+	}
+
+	CAgentClass::CAgentClass(const NLIAAGENT::IVarName &name, const NLIAAGENT::IVarName &base_class_name) :
+		_Components(0),
+		_Inheritance( (NLIAAGENT::IVarName *)base_class_name.clone() )
+	{
+		setType(name, *this);
+		_lastRef = -1;
+		_RunIndex = -1;
+		setBaseMethodCount(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+	}
+	
+	CAgentClass::CAgentClass( const CAgentClass &a):
+						_Components(a._Components),_Inheritance(a._Inheritance == NULL ? NULL : (NLIAAGENT::IVarName *)a._Inheritance->clone())
+	{		
+		setType(new NLIAC::CIdentType(a.getType()));
+		_lastRef = -1;
+		_RunIndex = -1;
+		setBaseMethodCount(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+	}
+	
+	CAgentClass::CAgentClass(const NLIAC::CIdentType &ident):_Components(0),_Inheritance(NULL)
+	{
+		setType(new NLIAC::CIdentType(ident));
+		_lastRef = -1;
+		_RunIndex = -1;
+		setBaseMethodCount(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+	}
+
+	CAgentClass::CAgentClass():_Components(0),_Inheritance(NULL)
+	{		
+		_lastRef = -1;
+		_RunIndex = -1;
+		_Methode.size();		
+		setBaseMethodCount(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
+		setBaseObjectInstance(((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
+	}
+//		_BaseMethodCount = ((NLIAAGENT::CAgentScript *)(NLIAAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount();
+	CAgentClass::~CAgentClass()
+	{
+		
+		for(sint32 i =  0; i < (sint32)_Components.size(); i++)
+		{
+			CComponent *c = _Components[i];
+			if(c->ObjectName) c->ObjectName->release();
+			if(c->RegisterName) c->RegisterName->release();
+			delete c;
+		}
+
+		if(_Methode.size())
+		{		
+#ifdef _DEBUG
+	char txtClass[2048*8];
+	sprintf(txtClass,getClassName()->getString());
+#endif	
+			for(sint32 j =  0; j < (sint32)_Methode.size(); j++)
+			{				
+				CMethodeName *c = _Methode[j];
+#ifdef _DEBUG
+	char txt[2048*8];
+	c->getDebugString(txt);
+#endif					
+				c->release();				
+			}
+		}
+
+		if(_Inheritance != NULL) 
+			_Inheritance->release();
+
+	}
+
+	// Adds a property to an agent
+	sint32 CAgentClass::registerComponent(const NLIAAGENT::IVarName &type_name)
+	{			
+		CComponent *c = new CComponent();
+		c->RegisterName = (NLIAAGENT::IVarName *)type_name.clone();
+		c->ObjectName = NULL;
+		_Components.push_back(c);
+		return _Components.size() - 1;
+	}
+	
+	// Adds a property to an agent
+	sint32 CAgentClass::registerComponent(const NLIAAGENT::IVarName &type_name, NLIAAGENT::CStringVarName &field_name)
+	{			
+		CComponent *c = new CComponent();
+		c->RegisterName = (NLIAAGENT::IVarName *)type_name.clone();
+		c->ObjectName = (NLIAAGENT::IVarName *)field_name.clone();
+		_Components.push_back(c);
+		return _Components.size() - 1;
+	}
+	
+	sint32 CAgentClass::getComponentIndex(const NLIAAGENT::IVarName &name) const
+	{
+		for(sint32 i = _Components.size() - 1; i >= 0; i --)
+		{
+			if (_Components[i]->ObjectName !=NULL && *_Components[i]->ObjectName == name) 
+				return i;
+		}
+		return -1;
+	}
+
+	CComponent *CAgentClass::getComponent(const NLIAAGENT::IVarName &name) const
+	{
+		for(sint32 i = _Components.size() - 1; i >= 0; i --)
+		{
+			if (_Components[i]->ObjectName !=NULL && *_Components[i]->ObjectName == name) 
+				return _Components[i];
+		}
+		return NULL;
+	}
+
+
+	sint32 CAgentClass::getStaticMemberIndex(const NLIAAGENT::IVarName &name) const
+	{
+		sint32 n = 0;
+		const IClassInterpret *classType = getBaseClass();
+		while(classType != NULL)
+		{
+			n += classType->getStaticMemberSize();
+			classType = classType->getBaseClass();
+		}
+		classType = this;
+		while(classType != NULL)
+		{		
+			for(sint32 i = classType->getStaticMemberSize() - 1; i >= 0; i --)
+			{
+				if (classType->getComponent(i)->ObjectName != NULL && *classType->getComponent(i)->ObjectName == name) 
+				{										
+					return i + n;
+				}
+			}			
+			classType = classType->getBaseClass();
+			if(classType != NULL) n -= classType->getStaticMemberSize();
+		}
+		
+		return -1;
+	}
+
+	sint32 CAgentClass::getInheritedStaticMemberIndex(const NLIAAGENT::IVarName &name) const
+	{
+		sint32 nb_components = 0;
+		std::vector<const CAgentClass *>::const_iterator it_bc = _VTable.begin();
+		sint32 index;
+		while ( it_bc != _VTable.end() && (  ( index = (*it_bc)->getComponentIndex( name ) ) == -1 ) )
+		{
+			nb_components += (*it_bc)->getStaticMemberSize();
+			it_bc++;
+		}
+
+		if ( it_bc != _VTable.end() && index != -1)
+			return nb_components + index;
+		else
+			return -1;
+	}
+/*
+	sint32 CAgentClass::getInheritedStaticMemberIndex(const NLIAAGENT::IVarName &name) const
+	{
+		sint32 n = 0;
+		const IClassInterpret *classType = getBaseClass();
+		while(classType != NULL)
+		{
+			n += classType->getStaticMemberSize();
+			classType = classType->getBaseClass();
+		}
+		classType = this;
+		while(classType != NULL)
+		{		
+			for(sint32 i = classType->getStaticMemberSize() - 1; i >= 0; i --)
+			{
+				if (classType->getComponent(i)->ObjectName != NULL && *classType->getComponent(i)->ObjectName == name) 
+				{										
+					return i + n;
+				}
+			}			
+			classType = classType->getBaseClass();
+			if(classType != NULL) n -= classType->getStaticMemberSize();
+
+		}
+		return -1;
+	}
+*/
+	const NLIAAGENT::IObjectIA *CAgentClass::getStaticMember(sint32 index) const
+	{					
+		try
+		{
+			/*NLIAC::CIdentType id(_Components[i]->RegisterName->getString());
+			const NLIAAGENT::IObjectIA *o = (const NLIAAGENT::IObjectIA *)id.getFactory()->getClass();
+			return o;*/
+			sint32 n = 0;
+			const IClassInterpret *classType = getBaseClass();
+			while(classType != NULL)
+			{
+				n += classType->getStaticMemberSize();
+				classType = classType->getBaseClass();
+			}
+			classType = this;
+			while(classType != NULL)
+			{		
+				for(sint32 i = classType->getStaticMemberSize() - 1; i >= 0; i --)
+				{
+					if(index == i + n)
+					{
+						NLIAC::CIdentType id(classType->getComponent(i)->RegisterName->getString());
+						const NLIAAGENT::IObjectIA *o = (const NLIAAGENT::IObjectIA *)id.getFactory()->getClass();
+						return o;
+
+					}
+					/*if (classType->getComponent(i)->ObjectName != NULL && *classType->getComponent(i)->ObjectName == name) 
+					{										
+						return i + n;
+					}*/
+				}			
+				classType = classType->getBaseClass();
+				if(classType != NULL) n -= classType->getStaticMemberSize();
+			}
+		}				
+		catch(NLIAE::IException &e)
+		{
+			throw NLIAE::CExceptionContainer(e);
+		}
+				
+		return NULL;
+	}
+
+	sint32 CAgentClass::getStaticMemberSize() const
+	{		
+		return _Components.size();
+	}
+
+	CComponent *CAgentClass::getComponent(sint32 i) const
+	{
+		/*sint32 n = 0;
+		const IClassInterpret *classType = getBaseClass();
+		while(classType != NULL)
+		{
+			n += classType->getStaticMemberSize();
+			classType = classType->getBaseClass();
+		}
+		classType = this;
+		while(classType != NULL)
+		{		
+			for(sint32 i = classType->getStaticMemberSize() - 1; i >= 0; i --)
+			{
+				if (classType->getComponent(i)->ObjectName != NULL && *classType->getComponent(i)->ObjectName == name) 
+				{										
+					return i + n;
+				}
+			}			
+			classType = classType->getBaseClass();
+			if(classType != NULL) n -= classType->getStaticMemberSize();
+		}*/
+
+
+		if ( i < (sint32)_Components.size() ) 
+			return _Components[i];
+		else 
+			return NULL;
+	}
+
+	CMethodeName &CAgentClass::getBrancheCode(sint32 i) const
+	{
+		return 	*_Methode[i];
+	}
+
+	CMethodeName &CAgentClass::getBrancheCode(sint32 no_base_class, sint32 no_methode) const
+	{
+		return _VTable[ no_base_class ]->getBrancheCode( no_methode );
+	}
+
+	CMethodeName &CAgentClass::getBrancheCode() const
+	{
+		if(_lastRef < 0) throw NLIAE::CExceptionUnReference("you try to access to an unrefrence index");
+		return *_Methode[_lastRef];
+	}
+	
+	sint32 CAgentClass::getMethodIndexSize() const
+	{
+		return (sint32)_Methode.size() + getBaseMethodCount();
+	}
+
+	sint32 CAgentClass::addBrancheCode(const NLIAAGENT::IVarName &name,const CParam &param)
+	{	
+#ifdef _DEBUG
+	char txtClass[2048*8];
+	char txt[2048*8];
+	param.getDebugString(txtClass);
+	sprintf(txt,"%s%s",name.getString(),txtClass);
+	sprintf(txtClass,getClassName()->getString());			
+#endif
+		sint32 i = findMethod(name,param);
+		CMethodeName *m = new CMethodeName(name);
+		m->incRef();
+		if(i >= 0) 
+		{			
+			CMethodeName *oldM = _Methode[i];
+			oldM->release();
+			_Methode[i] = m;
+			_Methode[i]->setParam(param) ;
+			_lastRef = i;
+		}
+		else
+		{
+
+			_Methode.push_back(m);
+			_Methode.back()->setParam(param);
+			_lastRef = _Methode.size() - 1;
+		}
+		return _lastRef;
+	}
+
+	NLIAAGENT::tQueue CAgentClass::isMember(const NLIAAGENT::IVarName *className,const NLIAAGENT::IVarName *methodName,const NLIAAGENT::IObjectIA &param) const
+	{
+		NLIAAGENT::tQueue q;
+		const IClassInterpret *classType = this;
+		NLIAAGENT::CIdMethod k;
+
+		if( className != NULL )
+		{
+			classType = NULL;
+			for(sint32 i = 1; i < (sint32)_VTable.size(); i ++)
+			{
+				if(*_VTable[i]->getClassName() == *className)
+				{
+					classType = _VTable[i];
+				}
+			}
+		}
+
+		if( classType != NULL )
+		{		
+			for(sint32 i = 0; i < getMethodIndexSize() - getBaseMethodCount(); i ++)
+			{
+				CMethodeName &m = classType->getBrancheCode(i);
+				if(m.getName() == *methodName )
+				{
+					k.Weight = m.getParam().eval((const CParam &)param);
+					k.Index = i + getBaseMethodCount();
+					k.Method = &m;					
+					IOpType *t = (IOpType *)m.getTypeOfMethode();
+					t->incRef();
+					if(k.ReturnType != NULL)
+					{
+						k.ReturnType->release();
+					}
+					k.ReturnType = new CObjectUnknown(t);
+					k.ReturnType->incRef();
+					if(k.Weight >= 0.0)
+					{
+						q.push(k);
+					}
+				}
+			}
+		}
+
+		if( !q.size() )
+		{
+			return getBaseObjectInstance()->isMember(className,methodName,param);
+		}
+		return q;
+	}
+
+	sint32 CAgentClass::findMethod(const NLIAAGENT::IVarName &name,const CParam &param) const
+	{						
+		for(sint32 i = 0 ; i < (sint32)_Methode.size(); i ++)
+		{			
+			CMethodeName *m = _Methode[i];
+			const CParam &p = (const CParam &)m->getParam();
+			if(m->getName() == name && p == param) return i;
+		}
+		return -1;
+	}
+
+	
+
+	void CAgentClass::createBaseClassComponents( std::list<NLIAAGENT::IObjectIA *> &comps) const
+	{
+#ifdef _DEBUG
+		const char *txt = NULL;
+		if(getName() != NULL) txt = getName()->getString();		
+#endif				
+		if ( _Inheritance )
+		{
+			const CAgentClass *base_class = (const CAgentClass *) getBaseClass();
+			base_class->createBaseClassComponents( comps );
+		}		
+		createComponents( comps );
+#ifdef _DEBUG
+		sint32 i = (sint32)comps.size();
+#endif		
+	}
+
+	void CAgentClass::createComponents( std::list<NLIAAGENT::IObjectIA *> &comps) const
+	{
+		for (sint32 i = 0; i < (sint32) _Components.size(); i++)
+		{
+			CComponent *comp = _Components[i];
+			sint32 class_index = NLIAC::getRegistry()->getNumIdent( comp->RegisterName->getString() );
+
+			NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *) NLIAC::getRegistry()->createInstance( class_index );
+			comps.push_back( obj );
+		}
+	}
+
+	void CAgentClass::buildVTable()
+	{		
+		_VTable.clear();
+		getClassPath(_VTable);
+					
+		buildVMethode();
+	}
+
+	void CAgentClass::buildVMethode()
+	{
+#ifdef _DEBUG
+	char txtClass[2048*8];
+	sprintf(txtClass,getClassName()->getString());
+#endif					
+		if(sizeVTable() > 1)
+		{	
+			const IClassInterpret *t= _VTable[sizeVTable() - 2];
+			if(t->getMethodIndexSize() - getBaseMethodCount()) _Methode.resize(t->getMethodIndexSize() - getBaseMethodCount());
+			
+			for(sint32 i = 0; i < t->getMethodIndexSize() - getBaseMethodCount(); i ++)
+			{
+				CMethodeName *m = &t->getBrancheCode(i);
+#ifdef _DEBUG
+	char txt[2048*8];
+	m->getDebugString(txt);	
+#endif
+				m->incRef();
+				_Methode[i] = m;
+			}
+		}		
+	}	
+
+	sint32 CAgentClass::isClassInheritedFrom(const NLIAAGENT::IVarName &className) const
+	{		
+		for(sint32 i = 0; i < (sint32)_VTable.size(); i ++)
+		{
+			const NLIAAGENT::IObjectIA *o = _VTable[i];
+			if(*(_VTable[i]->getClassName()) == className)
+			{
+				return i;
+			}
+		}		
+		return -1;
+	}
+
+	const IClassInterpret *CAgentClass::getInheritance(sint32 n) const
+	{
+		return _VTable[n];
+	}
+
+	sint32 CAgentClass::sizeVTable() const
+	{
+		return _VTable.size();
+	}
+
+	NLIAAGENT::IObjectIA *CAgentClass::buildNewInstance() const
+	{
+		// Création des composants statiques
+		std::list<NLIAAGENT::IObjectIA *> components;
+
+		// Composants des classes de base
+		createBaseClassComponents( components );
+
+		// Composants propres
+		//createComponents( components );		
+
+		// Création de l'agent
+		NLIAAGENT::CAgentScript *instance = new NLIAAGENT::CAgentScript(NULL, NULL, components,  (CAgentClass *) this );
+		instance->incRef();
+
+		return instance;
+	}
+	
+	const NLIAC::IBasicType *CAgentClass::clone() const
+	{
+		NLIAC::IBasicType *x = new CAgentClass(*this);
+		x->incRef();
+		return x;
+	}
+
+	const NLIAC::IBasicType *CAgentClass::newInstance() const
+	{
+		NLIAC::IBasicType *x = new CAgentClass();
+		x->incRef();
+		return x;
+	}
+
+	void CAgentClass::getDebugString(char *t) const
+	{
+		sprintf(t,"<CAgentClass> %s\n", getClassName()->getString() );
+	}
+
+	void CAgentClass::save(NLMISC::IStream &os)
+	{
+		// Saves static components
+		sint32 size = _Components.size();
+		os.serial( size );
+		sint32 i;
+		for ( i = 0; i < (sint32) _Components.size() ; i++ )
+		{
+			_Components[i]->save( os );
+		}
+		
+		// Saves class methods
+		size = _Methode.size();
+		os.serial( size );
+		for ( i = 0; i < (sint32) _Methode.size(); i++)
+		{
+			os.serial( (NLIAC::CIdentType &)_Methode[i]->getType() );
+			_Methode[i]->save( os );
+		}
+		os.serial( (NLIAC::CIdentType &) _Inheritance->getType() );
+		_Inheritance->save( os );
+	}
+
+	void CAgentClass::load(NLMISC::IStream &is)
+	{
+		// Saves static components
+		sint32 _NbComponents;
+		is.serial( _NbComponents );
+		sint32 i;
+		for ( i = 0; i < (sint32) _NbComponents ; i++ )
+		{
+			NLIAC::CIdentTypeAlloc id;
+			is.serial( id );
+			CComponent *comp = (CComponent *)id.allocClass();
+			comp->load(is);
+			_Components.push_back( comp );
+		}
+
+		for ( i = 0; i < (sint32) _Methode.size(); i++)
+		{
+			delete _Methode[i];
+		}
+		_Methode.clear();
+
+		// Loads class methods
+		sint32 nb_methods;
+		is.serial( nb_methods );
+		for ( i = 0; i < (sint32) nb_methods; i++)
+		{
+			NLIAC::CIdentTypeAlloc id;
+			is.serial( id );
+			CMethodeName *methode = (CMethodeName *)id.allocClass();
+			methode->load(is);
+			methode->incRef();
+			_Methode.push_back( methode );
+		}
+
+		NLIAC::CIdentTypeAlloc id;
+		is.serial( id );
+		_Inheritance = (NLIAAGENT::IVarName *) id.allocClass();
+		_Inheritance->load( is );
+		_Inheritance->incRef();
+	}
+
+	const NLIAAGENT::IObjectIA::CProcessResult &CAgentClass::run();
+	
+	bool CAgentClass::isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+	{
+		const CAgentClass &i = (const CAgentClass &)a;			
+		return getClassName() == i.getClassName();
+	}
+
+	const NLIAAGENT::IVarName *CAgentClass::getInheritanceName() const
+	{
+		return _Inheritance;
+	}
+	
+	void CAgentClass::setInheritanceName(const NLIAAGENT::IVarName &name)
+	{
+		if(_Inheritance != NULL)
+		{
+			_Inheritance->release();				
+		}
+		_Inheritance = (NLIAAGENT::IVarName *)name.clone();
+		
+	}
+
+	const IClassInterpret *CAgentClass::getBaseClass() const
+	{
+		if ( _Inheritance )
+		{
+			const IClassInterpret *base_class = (const IClassInterpret *)( (CClassInterpretFactory *) NLIAC::getRegistry()->getFactory( _Inheritance->getString() ) )->getClass();
+			return base_class;
+		}
+		else
+			return NULL;
+	}
+
+	// Returns the highest class in the class hiérarchie (SuperClass)
+	const CAgentClass *CAgentClass::getSuperClass() const
+	{
+		const CAgentClass *base_class = this;
+		
+		while ( base_class->getBaseClass() )
+		{
+			base_class = (CAgentClass *) base_class->getBaseClass();
+		}
+		return base_class;
+	}
+
+	// Builds a vector with the path from the super class to this class
+	const void CAgentClass::getClassPath(std::vector<const CAgentClass *> &path) const
+	{
+		const CAgentClass *base_class = (CAgentClass *) getBaseClass();
+#ifdef _DEBUG
+		const char *txt = NULL;
+		if(getName() != NULL) txt = getName()->getString();
+		else if(getName() != NULL) txt = base_class->getName()->getString();
+#endif		
+		if ( base_class /*&& !(base_class->getType() == IdAgentClass)*/)
+		{
+			base_class->getClassPath( path );
+		}
+		path.push_back( this );
+	}
+
+	// Returns the number of base classes ( the distance to the super class)
+	sint32 CAgentClass::getNbBaseClass() const
+	{
+		sint32 dist = 0;
+		const CAgentClass *base_class = this;
+		while ( base_class->getBaseClass() )
+		{
+			base_class = (CAgentClass *) base_class->getBaseClass();
+			dist++;
+		}
+		return dist;
+	}
+
+	const char *CAgentClass::getComponentName(sint32 i) const
+	{
+		sint32 nb_components = 0;
+		std::vector<const CAgentClass *>::const_iterator it_bc = _VTable.begin();
+		while ( it_bc != _VTable.end() && nb_components <= i )
+		{
+			nb_components = nb_components + (*it_bc)->getStaticMemberSize();
+			it_bc++;
+		}
+		it_bc--;
+		CComponent *component = (*it_bc)->getComponent( i - ( nb_components - (*it_bc)->getStaticMemberSize() ) );
+		return component->ObjectName->getString();
+	}
+/*<<<<<<< interpret_object_agent.cpp
+	}
+
+	sint32 CAgentClass::getComponentIndex(const NLIAAGENT::IVarName &name) const
+	{
+		for(sint32 i = _Components.size() - 1; i >= 0; i --)
+		{
+			if (_Components[i]->ObjectName !=NULL && *_Components[i]->ObjectName == name) 
+				return i;
+		}
+		return -1;
+	}
+
+	sint32 CAgentClass::getInheritedComponentIndex(const NLIAAGENT::IVarName &name) const
+	{
+		sint32 nb_components = 0;
+		std::vector<const CAgentClass *>::const_iterator it_bc = _VTable.begin();
+		sint32 index;
+		while ( it_bc != _VTable.end() && (  ( index = (*it_bc)->getComponentIndex( name ) ) == -1 ) )
+		{
+			nb_components += (*it_bc)->getStaticMemberSize();
+			it_bc++;
+		}
+
+		if ( it_bc != _VTable.end() && index != -1)
+		{
+			return nb_components + index;
+		}
+		else
+			return -1;
+	}*/
+
+	sint32 CAgentClass::getRunMethod() const
+	{
+		return _RunIndex;
+	}
+	void CAgentClass::setRunMethod(sint32 index)
+	{
+		_RunIndex = index + getBaseMethodCount();
+	}
+}

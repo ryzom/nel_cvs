@@ -1,0 +1,119 @@
+/** \file fuzzyfact.cpp
+ * Fuzzy facts
+ *
+ * $Id: fuzzyfact.cpp,v 1.1 2001/01/05 10:53:49 chafik Exp $
+ */
+
+/* Copyright, 2000 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+#include "fuzzy/fuzzyfact.h"
+
+namespace NLIAFUZZY
+{
+	
+	CFuzzyFact::CFuzzyFact(IFuzzySet *set, double value)
+	{
+		_Set = set;
+		_Value = value;
+	}
+
+	CFuzzyFact::CFuzzyFact(const CFuzzyFact &cp)
+	{
+		_Set = cp._Set;
+		_Value = cp._Value;
+	}
+
+	IFuzzySet *CFuzzyFact::set()
+	{
+		return _Set;
+	}
+
+	double CFuzzyFact::value()
+	{
+		return _Value;
+	}
+
+	CFuzzyVar *CFuzzyFact::var()
+	{
+		return _Var;
+	}
+
+	void CFuzzyFact::getDebugString(char *)
+	{
+
+	}
+
+	void CFuzzyFact::load(NLMISC::IStream &)
+	{
+	}
+
+	void CFuzzyFact::save(NLMISC::IStream &)
+	{
+	}
+
+	const NLIAAGENT::IObjectIA::CProcessResult &CFuzzyFact::run()
+	{
+		return NLIAAGENT::IObjectIA::ProcessRun;
+	}
+
+	bool CFuzzyFact::isEqual(const NLIAAGENT::IBasicObjectIA &) const
+	{
+		return false;
+	}
+
+	bool CFuzzyFact::isEqual(const NLIALOGIC::CBoolType &) const
+	{
+		return false;
+	}
+
+	const NLIAC::CIdentType &CFuzzyFact::getType() const
+	{
+		return IdFuzzyFact;
+	}
+
+	const NLIAC::IBasicType *CFuzzyFact::clone() const
+	{
+		NLIAC::IBasicInterface *m = new CFuzzyFact( *this );
+		m->incRef();
+		return m;
+	}
+
+	const NLIAC::IBasicType *CFuzzyFact::newInstance() const
+	{
+		return clone();
+	}
+
+	void CFuzzyFact::getDebugString(char *txt) const
+	{
+		char buf[1024];
+		_Set->getDebugString( buf );
+		sprintf(txt, "CFuzzyFact (%s IS %d)", buf, _Value);
+	}
+
+	bool CFuzzyFact::isTrue() const
+	{
+		return false;
+	}
+
+	std::vector<NLIALOGIC::IBaseVar *> *CFuzzyFact::getVars()
+	{
+		return NULL;
+	}
+
+}

@@ -90,7 +90,7 @@ public:
 
 	virtual NLMISC::IEventEmitter*	getEventEmitter(void) { return&_EventEmitter; };
 
-	virtual bool			clear2D(CRGBA& rgba);
+	virtual bool			clear2D(CRGBA rgba);
 
 	virtual bool			clearZBuffer(float zval=1);
 

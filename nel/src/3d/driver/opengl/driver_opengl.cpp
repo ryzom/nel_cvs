@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.14 2000/11/21 13:59:38 coutelas Exp $
+ * $Id: driver_opengl.cpp,v 1.15 2000/11/21 18:28:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -232,7 +232,7 @@ bool CDriverGL::activate(void)
 
 // --------------------------------------------------
 
-bool CDriverGL::clear2D(CRGBA& rgba)
+bool CDriverGL::clear2D(CRGBA rgba)
 {
 	glClearColor((float)rgba.R/255.0f,(float)rgba.G/255.0f,(float)rgba.B/255.0f,(float)rgba.A/255.0f);
 	glClear(GL_COLOR_BUFFER_BIT);

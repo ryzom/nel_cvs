@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.75 2004/10/19 12:51:51 vizerie Exp $
+ * $Id: mesh_mrm.cpp,v 1.76 2004/10/27 16:37:54 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2753,7 +2753,7 @@ void	CMeshMRMGeom::computeMeshVBHeap(void *dst, uint indexStart)
 			dstPb.setNumIndexes(srcPb.getNumIndexes());
 			// nico : apparently not used, so don't manage 16 bit index here
 			nlassert(ibaRead.getIndexNumBytes() == sizeof(uint32));
-			nlassert(ibaWrite.getIndexNumBytes() == sizeof(uint32)4);
+			nlassert(ibaWrite.getIndexNumBytes() == sizeof(uint32));
 			nlassert(ibaRead.getFormat() == CIndexBuffer::Indices32); // nico : apparently not called for now
 			const uint32	*srcTriPtr= (const uint32 *) ibaRead.getPtr();
 			uint32			*dstTriPtr= (uint32 *) ibaWrite.getPtr();

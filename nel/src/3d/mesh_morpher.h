@@ -1,7 +1,7 @@
 /** \file mesh_morpher.h
  * <File description>
  *
- * $Id: mesh_morpher.h,v 1.1 2001/10/10 16:07:10 besson Exp $
+ * $Id: mesh_morpher.h,v 1.2 2002/03/14 18:08:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,7 @@ public:
 
 	std::vector<NLMISC::CVector>	deltaPos;
 	std::vector<NLMISC::CVector>	deltaNorm;
+	std::vector<NLMISC::CVector>	deltaTgSpace;
 	std::vector<NLMISC::CUV>		deltaUV;
 	std::vector<NLMISC::CRGBAF>		deltaCol;
 
@@ -66,7 +67,7 @@ class CMeshMorpher
 	{
 		OriginalAll,		// The vertex is the same as original into VBDst and VBHard
 		OriginalVBDst,		// The vertex is the same as original into VBDst
-		ModifiedPosNorm,	// Vertex modified (pos, norm or pos/norm are modified, uv and col are not modified)
+		ModifiedPosNorm,	// Vertex modified (pos, norm or pos/norm/tg space are modified, uv and col are not modified)
 		ModifiedUVCol		// Vertex modified (pos or norm can be modified, uv, col or uv/col are modified)
 	} TState;
 
@@ -76,12 +77,17 @@ public:
 
 	CMeshMorpher();
 	// The allocation of the buffers must be managed by the caller
-	void init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBufferHard *vbDstHrd);
-	void initMRM (	CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBufferHard *vbDstHrd,
-					std::vector<CVector> *vVertices, std::vector<CVector> *vNormals, bool bSkinApplied);
+	void init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBufferHard *vbDstHrd, bool hasTgSpace);
+	void initMRM (CVertexBuffer *vbOri,
+				  CVertexBuffer *vbDst,
+				  IVertexBufferHard *vbDstHrd,
+				  std::vector<CVector> *vVertices,
+				  std::vector<CVector> *vNormals,
+				  std::vector<CVector> *vTgSpace, /* NULL if none */
+				  bool bSkinApplied);
 
 	void update (std::vector<CAnimatedMorph> *pBSFactor);
-	void updateMRM (std::vector<CAnimatedMorph> *pBSFactor);
+	void updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTangentSpace);
 	
 	void serial (NLMISC::IStream &f) throw(NLMISC::EStream);
 
@@ -93,8 +99,11 @@ private:
 
 	std::vector<CVector>	*_Vertices;
 	std::vector<CVector>	*_Normals;
+	std::vector<CVector>	*_TgSpace;
 
-	bool					_SkinApplied;
+
+	bool					_SkinApplied : 1;
+	bool					_UseTgSpace  : 1;
 
 	std::vector<uint8>	_Flags;	// 0 - OriginalAll  (vbDst & vbDstHrd original)
 								// 1 - OriginalVBDst  (vbDst original)

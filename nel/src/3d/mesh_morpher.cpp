@@ -1,7 +1,7 @@
 /** \file mesh_morpher.cpp
  * <File description>
  *
- * $Id: mesh_morpher.cpp,v 1.2 2002/02/28 12:59:50 besson Exp $
+ * $Id: mesh_morpher.cpp,v 1.3 2002/03/14 18:08:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,8 @@ namespace NL3D
 // ***************************************************************************
 void CBlendShape::serial (NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion (0);
+	// version 1 : added tangent space support
+	sint ver = f.serialVersion (1);
 
 	f.serial (Name);
 
@@ -48,6 +49,8 @@ void CBlendShape::serial (NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialCont (deltaNorm);
 	f.serialCont (deltaUV);
 	f.serialCont (deltaCol);
+
+	if (ver >= 1) f.serialCont(deltaTgSpace);
 
 	f.serialCont (VertRefs);
 }
@@ -60,20 +63,26 @@ CMeshMorpher::CMeshMorpher()
 	_VBDstHrd = NULL;
 
 	_Vertices = NULL;
-	_Normals = NULL;
+	_Normals = NULL;	
 }
 
 // ***************************************************************************
-void CMeshMorpher::init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBufferHard *vbDstHrd)
+void CMeshMorpher::init (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBufferHard *vbDstHrd, bool hasTgSpace)
 {
 	_VBOri = vbOri;
 	_VBDst = vbDst;
 	_VBDstHrd = vbDstHrd;
+	_UseTgSpace = hasTgSpace;
 }
 
 // ***************************************************************************
-void CMeshMorpher::initMRM (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexBufferHard *vbDstHrd,
-							std::vector<CVector> *vVertices, std::vector<CVector> *vNormals, bool bSkinApplied)
+void CMeshMorpher::initMRM (CVertexBuffer *vbOri,
+							CVertexBuffer *vbDst,
+							IVertexBufferHard *vbDstHrd,
+							std::vector<CVector> *vVertices,
+							std::vector<CVector> *vNormals,
+							std::vector<CVector> *vTgSpace, /* NULL if none */
+							bool bSkinApplied)
 {
 	_VBOri = vbOri;
 	_VBDst = vbDst;
@@ -81,6 +90,7 @@ void CMeshMorpher::initMRM (CVertexBuffer *vbOri, CVertexBuffer *vbDst, IVertexB
 
 	_Vertices = vVertices;
 	_Normals = vNormals;
+	_TgSpace = vTgSpace;
 	_SkinApplied = bSkinApplied;
 }
 
@@ -125,6 +135,12 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 
 		for(j = 0; j < VBVertexSize; ++j)
 			pDst[j+i*VBVertexSize] = pOri[j+i*VBVertexSize];
+	}
+
+	uint tgSpaceStage;
+	if (_UseTgSpace)
+	{
+		tgSpaceStage = _VBDst->getNumTexCoordUsed() - 1;
 	}
 
 	// Blending with blendshape
@@ -174,6 +190,14 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 				clamp(rgbf.A, 0.0f, 1.0f);
 				*pRGBA = rgbf;
 			}
+
+			if (_UseTgSpace)
+			if (rBS.deltaTgSpace.size() > 0)
+			{
+				CVector *pV = (CVector*)_VBDst->getTexCoordPointer (vp, tgSpaceStage);
+				*pV += rBS.deltaTgSpace[j] * rFactor;
+			}
+
 			_Flags[vp] = 2; // Modified
 		}
 	}
@@ -197,7 +221,7 @@ void CMeshMorpher::update (std::vector<CAnimatedMorph> *pBSFactor)
 }
 
 // ***************************************************************************
-void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor)
+void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor, bool useTangentSpace)
 {
 	uint32 i, j;
 
@@ -225,6 +249,14 @@ void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor)
 
 	nlassert(_VBOri->getVertexFormat() == _VBDst->getVertexFormat());
 
+	uint tgSpaceStage;
+	uint tgSpaceOff;
+	if (useTangentSpace || _TgSpace)
+	{
+		tgSpaceStage = _VBDst->getNumTexCoordUsed() - 1;
+		tgSpaceOff = _VBDst->getTexCoordOff(tgSpaceStage);
+	}
+
 	// Cleaning with original vertex buffer
 	uint32 VBVertexSize = _VBOri->getVertexSize();
 	uint8 *pOri = (uint8*)_VBOri->getVertexCoordPointer ();
@@ -243,6 +275,9 @@ void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor)
 		if (_VBDst->getVertexFormat() & CVertexBuffer::NormalFlag)
 			if (_Normals != NULL)
 				_Normals->operator[](i) = ((CVector*)(pOri+i*VBVertexSize))[1];
+
+		if (_TgSpace)
+			(*_TgSpace)[i] = * (CVector*)(pOri + i * VBVertexSize + tgSpaceOff);
 			
 		_Flags[i] = OriginalVBDst;
 	}
@@ -321,6 +356,28 @@ void CMeshMorpher::updateMRM (std::vector<CAnimatedMorph> *pBSFactor)
 				clamp(rgbf.A, 0.0f, 1.0f);
 				*pRGBA = rgbf;
 				_Flags[vp] = ModifiedUVCol;
+			}
+
+			if (useTangentSpace)
+			{
+				if (_TgSpace != NULL)
+				{
+					if (rBS.deltaTgSpace.size() > 0)
+					{
+						CVector *pV = &((*_TgSpace)[vp]);
+						*pV += rBS.deltaTgSpace[j] * rFactor;
+						_Flags[vp] = ModifiedPosNorm;
+					}
+				}
+				else
+				{
+					if (rBS.deltaTgSpace.size() > 0)
+					{
+						CVector *pV = (CVector *) ((uint8 * ) _VBDst->getVertexCoordPointer(vp) + tgSpaceOff);
+						*pV += rBS.deltaTgSpace[j] * rFactor;
+						_Flags[vp] = ModifiedPosNorm;
+					}
+				}
 			}
 		}
 	}

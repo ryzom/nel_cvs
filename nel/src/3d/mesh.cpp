@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.45 2002/03/06 10:24:47 corvazier Exp $
+ * $Id: mesh.cpp,v 1.46 2002/03/14 18:07:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -82,8 +82,8 @@ bool	CMeshGeom::CCornerTmp::operator<(const CCornerTmp &c) const
 		return Normal<c.Normal;
 	for(i=0; i<CVertexBuffer::MaxStage; i++)
 	{
-		if((CCornerTmp::Flags & (CVertexBuffer::TexCoord0Flag<<i)) && Uvs[i]!=c.Uvs[i])
-			return Uvs[i]<c.Uvs[i];
+		if((CCornerTmp::Flags & (CVertexBuffer::TexCoord0Flag<<i)) && Uvws[i]!=c.Uvws[i])
+			return Uvws[i]<c.Uvws[i];
 	}
 	if((CCornerTmp::Flags & CVertexBuffer::PrimaryColorFlag) && Color!=c.Color)
 		return Color<c.Color;
@@ -230,7 +230,58 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 	// Setup VB.
 	_VBuffer.setNumVertices(0);
 	_VBuffer.reserve(0);
-	_VBuffer.setVertexFormat(vbFlags);
+
+	bool useFormatExt = false;
+	/** If all texture coordinates are of dimension 2, we can setup the flags as before.
+	  * If this isn't the case, we must setup a custom format
+	  */
+	for (uint k = 0; k < CVertexBuffer::MaxStage; ++k)
+	{
+		if (
+			(vbFlags & (CVertexBuffer::TexCoord0Flag << k))
+			&& m.NumCoords[k] != 2)
+		{
+			useFormatExt = true;
+			break;
+		}
+	}
+
+	if (!useFormatExt)
+	{
+		// setup standard format
+		_VBuffer.setVertexFormat(vbFlags);
+	}
+	else // setup extended format
+	{
+		_VBuffer.clearValueEx();		
+		if (vbFlags & CVertexBuffer::PositionFlag) _VBuffer.addValueEx(CVertexBuffer::Position, CVertexBuffer::Float3);
+		if (vbFlags & CVertexBuffer::NormalFlag) _VBuffer.addValueEx(CVertexBuffer::Normal, CVertexBuffer::Float3);
+		if (vbFlags & CVertexBuffer::PrimaryColorFlag) _VBuffer.addValueEx(CVertexBuffer::PrimaryColor, CVertexBuffer::UChar4);
+		if (vbFlags & CVertexBuffer::SecondaryColorFlag) _VBuffer.addValueEx(CVertexBuffer::SecondaryColor, CVertexBuffer::UChar4);
+		if (vbFlags & CVertexBuffer::WeightFlag) _VBuffer.addValueEx(CVertexBuffer::Weight, CVertexBuffer::Float4);
+		if (vbFlags & CVertexBuffer::PaletteSkinFlag) _VBuffer.addValueEx(CVertexBuffer::PaletteSkin, CVertexBuffer::UChar4);
+		if (vbFlags & CVertexBuffer::FogFlag) _VBuffer.addValueEx(CVertexBuffer::Fog, CVertexBuffer::Float1);
+
+		for (uint k = 0; k < CVertexBuffer::MaxStage; ++k)
+		{
+			if (vbFlags & (CVertexBuffer::TexCoord0Flag << k))
+			{
+				switch(m.NumCoords[k])
+				{	
+					case 2:
+						_VBuffer.addValueEx((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), CVertexBuffer::Float2);
+					break;
+					case 3:
+						_VBuffer.addValueEx((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + k), CVertexBuffer::Float3);
+					break;
+					default:
+						nlassert(0);
+					break;
+				}
+			}
+		}
+		_VBuffer.initEx();
+	}
 
 	// Set local flags for corner comparison.
 	CCornerTmp::Flags= vbFlags;
@@ -250,9 +301,9 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 		sint	v0= pFace->Corner[0].Vertex;
 		sint	v1= pFace->Corner[1].Vertex;
 		sint	v2= pFace->Corner[2].Vertex;
-		findVBId(corners, &pFace->Corner[0], currentVBIndex, m.Vertices[v0]);
-		findVBId(corners, &pFace->Corner[1], currentVBIndex, m.Vertices[v1]);
-		findVBId(corners, &pFace->Corner[2], currentVBIndex, m.Vertices[v2]);
+		findVBId(corners, &pFace->Corner[0], currentVBIndex, m.Vertices[v0], m);
+		findVBId(corners, &pFace->Corner[1], currentVBIndex, m.Vertices[v1], m);
+		findVBId(corners, &pFace->Corner[2], currentVBIndex, m.Vertices[v2], m);
 		CMesh::CVertLink vl1(nFaceMB, 0, pFace->Corner[0].VBId);
 		CMesh::CVertLink vl2(nFaceMB, 1, pFace->Corner[1].VBId);
 		CMesh::CVertLink vl3(nFaceMB, 2, pFace->Corner[2].VBId);
@@ -511,30 +562,24 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 	}
 
 
-	// use MeshVertexProgram effect?
-	bool	useMeshVP= _MeshVertexProgram != NULL && drv->isVertexProgramSupported() && !drv->isVertexProgramEmulated();
-	bool	useMeshVPLightSetup= false;
-	// Disable meshVP with Skinning, because incompatible (hardware use VertexProgram too :) ).
-	if(skinOk)
-		useMeshVP= false;
-	// Test if must setup VP Lighting fragment
-	if(useMeshVP)
+	bool	useMeshVP;
+
+
+	if (skinOk)
 	{
-		bool	meshVPLightSpecular;
-		uint	meshVPLightCteStart;
-		useMeshVPLightSetup= _MeshVertexProgram->useSceneVPLightSetup(meshVPLightSpecular, meshVPLightCteStart);
-		// If use VPLightSetup
-		if(useMeshVPLightSetup)
-		{
-			// setup ctes for lighting
-			renderTrav->beginVPLightSetup(meshVPLightCteStart, meshVPLightSpecular, trans->getWorldMatrix().inverted());
-		}
+		// Disable meshVP with Skinning, because incompatible (hardware use VertexProgram too :) ).
+		useMeshVP = false;
 	}
+	else
+	{
+		useMeshVP = _MeshVertexProgram != NULL ?  _MeshVertexProgram->begin(drv, ownerScene, mi, trans->getWorldMatrix().inverted(), renderTrav->CamPos) : false;
+	}
+
 
 
 	// update the VBufferHard (create/delete), to maybe render in AGP memory.
 	updateVertexBufferHard (drv);
-	_MeshMorpher->init (&_VBufferOri, &_VBuffer, _VertexBufferHard);
+	_MeshMorpher->init (&_VBufferOri, &_VBuffer, _VertexBufferHard, _MeshVertexProgram && _MeshVertexProgram->needTangentSpace());
 	_MeshMorpher->update (mi->getBlendShapeFactors());
 
 	// Global alpha used ?
@@ -578,14 +623,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 				drv->multiplyModelMatrix(skeleton->Bones[curBoneId].getBoneSkinMatrix(), idMat);
 			}
 		}
-
-		// If use MeshGeom special VertexProgram.
-		if(useMeshVP)
-		{
-			// Apply it.
-			_MeshVertexProgram->begin(drv, ownerScene, mi);
-		}
-
+				
 		// if VB Hard is here, use it.
 		if(_VertexBufferHard != NULL)
 		{
@@ -629,11 +667,9 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 					bool blend=material.getBlend ();
 					material.setBlend (true);
 
-					// If use meshVertexProgram, and use VPLightSetup
-					if(useMeshVPLightSetup)
+					if (useMeshVP)
 					{
-						// setup ctes for Vertex Program lighting which depend on material
-						renderTrav->changeVPLightSetupMaterial(material);
+						_MeshVertexProgram->setupForMaterial(material, drv, ownerScene, &_VBuffer);
 					}
 
 					// Render
@@ -659,13 +695,11 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, bool opaquePass, fl
 				// Render with the Materials of the MeshInstance.
 				if( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (opaquePass == true) ) ||
 					( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (opaquePass == false) )		)
-				{
-					// If use meshVertexProgram, and use VPLightSetup
-					if(useMeshVPLightSetup)
+				{					
+					if (useMeshVP)
 					{
-						// setup ctes for Vertex Program lighting which depend on material
-						renderTrav->changeVPLightSetupMaterial(mi->Materials[rdrPass.MaterialId]);
-					}
+						_MeshVertexProgram->setupForMaterial(mi->Materials[rdrPass.MaterialId], drv, ownerScene, &_VBuffer);
+					}									
 
 					// render primitives
 					drv->render(rdrPass.PBlock, mi->Materials[rdrPass.MaterialId]);
@@ -1194,7 +1228,9 @@ CMesh::CCorner::CCorner()
 	Vertex= 0;
 	Normal= CVector::Null;
 	for(i=0;i<CVertexBuffer::MaxStage;i++)
-		Uvs[i]= CUV(0,0);
+	{
+		Uvws[i]= CUVW(0, 0, 0);	
+	}
 	Color.set(255,255,255,255);
 	Specular.set(0,0,0,0);
 }
@@ -1203,9 +1239,10 @@ CMesh::CCorner::CCorner()
 // ***************************************************************************
 void CMesh::CCorner::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	nlassert(0); // not used
 	f.serial(Vertex);
 	f.serial(Normal);
-	for(int i=0;i<CVertexBuffer::MaxStage;++i) f.serial(Uvs[i]);
+	for(int i=0;i<CVertexBuffer::MaxStage;++i) f.serial(Uvws[i]);
 	f.serial(Color);
 	f.serial(Specular);
 }
@@ -1244,6 +1281,16 @@ void CMesh::CMeshBuild::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialCont( Faces );
 
 }*/
+
+
+//************************************
+CMesh::CMeshBuild::CMeshBuild()
+{
+	for (uint k = 0; k < CVertexBuffer::MaxStage; ++k)
+	{
+		NumCoords[k] = 2;
+	}
+}
 
 
 // ***************************************************************************

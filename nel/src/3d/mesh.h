@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.19 2002/03/06 10:24:47 corvazier Exp $
+ * $Id: mesh.h,v 1.20 2002/03/14 18:07:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,11 +79,11 @@ public:
 	/// A corner of a face.
 	struct	CCorner
 	{
-		sint32		Vertex;		/// The vertex Id.
-		CVector		Normal;
-		NLMISC::CUV	Uvs[CVertexBuffer::MaxStage];
-		CRGBA		Color;
-		CRGBA		Specular;
+		sint32			Vertex;		/// The vertex Id.
+		CVector			Normal;
+		NLMISC::CUVW	Uvws[CVertexBuffer::MaxStage];
+		CRGBA			Color;
+		CRGBA			Specular;
 
 		// Setup all to 0, but Color (to white)... Important for good corner comparison.
 		// This is slow but doesn't matter since used at mesh building....
@@ -142,9 +142,11 @@ public:
 	struct	CMeshBuild
 	{
 		/** the IDRV_VF* flags which tells what vertices data are used. See IDriver::setVertexFormat() for 
-		 * more information. NB: IDRV_VF_XYZ is always considered to true.
+		 * more information. NB: IDRV_VF_XYZ is always considered to true..
+		 * Note that is some stage use 2 textures coordinates instead of 3, then the extended vertex format must be used isntead
 		 */
 		sint32						VertexFlags;
+		uint8						NumCoords[CVertexBuffer::MaxStage]; // tells for each uvw if is uses 2 or 3 coords
 
 		// Vertices array
 		std::vector<CVector>		Vertices;
@@ -166,6 +168,9 @@ public:
 
 		// MeshVertexProgram to copy to meshGeom.
 		NLMISC::CSmartPtr<IMeshVertexProgram>	MeshVertexProgram;
+
+
+		CMeshBuild();
 
 		// Serialization
 		//void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
@@ -443,7 +448,9 @@ private:
 			Vertex= o.Vertex;
 			Normal= o.Normal;
 			for(sint i=0;i<=CVertexBuffer::MaxStage;i++)
-				Uvs[i]= o.Uvs[i];
+			{
+				Uvws[i]= o.Uvws[i];
+			}			
 			Color= o.Color;
 			Specular= o.Specular;
 
@@ -570,7 +577,7 @@ private:
 	typedef		TCornerSet::iterator ItCornerSet;
 
 	// Find and fill the VBuffer.
-	void	findVBId(TCornerSet  &corners, const CCornerTmp *corn, sint &currentVBIndex, const CVector &vert)
+	void	findVBId(TCornerSet  &corners, const CCornerTmp *corn, sint &currentVBIndex, const CVector &vert, const CMesh::CMeshBuild &mb)
 	{
 		ItCornerSet  it= corners.find(const_cast<CCornerTmp *>(corn));
 		if(it!=corners.end())
@@ -589,11 +596,24 @@ private:
 			// Normal
 			if(CCornerTmp::Flags & CVertexBuffer::NormalFlag)
 				_VBuffer.setNormalCoord(id, corn->Normal);
-			// Uvs.
+			// Uvws.
 			for(i=0;i<CVertexBuffer::MaxStage;i++)
 			{
 				if(CCornerTmp::Flags & (CVertexBuffer::TexCoord0Flag<<i))
-					_VBuffer.setTexCoord(id, i, corn->Uvs[i].U, corn->Uvs[i].V);
+				{
+					switch(mb.NumCoords[i])
+					{
+						case 2:
+							_VBuffer.setTexCoord(id, i, corn->Uvws[i].U, corn->Uvws[i].V);
+						break;
+						case 3:
+							_VBuffer.setValueFloat3Ex((CVertexBuffer::TValue) (CVertexBuffer::TexCoord0 + i), id, corn->Uvws[i].U, corn->Uvws[i].V, corn->Uvws[i].W);
+						break;
+						default: // not supported
+							nlassert(0);
+						break;
+					}					
+				}
 			}
 			// Color.
 			if(CCornerTmp::Flags & CVertexBuffer::PrimaryColorFlag)

@@ -140,6 +140,14 @@ LIB32=link.exe -lib
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=.\misc\bit_mem_stream.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\bit_mem_stream.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\class_registry.cpp
 # End Source File
 # Begin Source File

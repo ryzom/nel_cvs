@@ -1,7 +1,19 @@
 /** \file types_nl.h
- * base types
+ * basic types, define and class
  *
- * $Id: types_nl.h,v 1.10 2000/11/07 16:44:44 cado Exp $
+ * $Id: types_nl.h,v 1.11 2000/11/08 15:06:47 lecroart Exp $
+ *
+ * \todo ace: create the ucstring type (unicode string type based on a STL basic_string?)
+ *
+ * Available constantes:
+ * - NL_OS_WINDOWS		: windows operating system (32bits)
+ * - NL_OS_UNIX			: linux operating system
+ *
+ * - NL_BIG_ENDIAN		: other processor
+ * - NL_LITTLE_ENDIAN	: x86 processor
+ *
+ * - NL_DEBUG			: no optimization, full debug information, all log for the client
+ * - NL_RELEASE			: full optimization, no debug information, no log for the client
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,28 +35,13 @@
  * MA 02111-1307, USA.
  */
 
-/*
- * Compilation mode :	NL_DEBUG	: no optimization, full debug information, all log for the client
- *						NL_RELEASE	: full optimization, no debug information, no log for the client
- */
-
-/*
- * Evalable constantes :
- *	NL_OS_WINDOWS		: windows operating system (32bits)
- *	NL_OS_UNIX			: linux operating system
- *
- *	NL_BIG_ENDIAN		: other processor
- *	NL_LITTLE_ENDIAN	: x86 processor
- */
-
-
 #ifndef NL_TYPES_H
 #define NL_TYPES_H
 
 
 #include	<exception>
 
-// Operating systems
+// Operating systems definition
 
 #ifdef WIN32
 #  define NL_OS_WINDOWS
@@ -72,6 +69,70 @@
  * correct numeric types:	sint8, uint8, sint16, uint16, sint32, uint32, sint64, uint64, sint, uint
  * correct char types:		char, string, wchar, wstring
  * correct misc types:		void, bool, float, double
+ *
+ */
+
+/**
+ * \typedef uint8
+ * An unsigned 8 bits integer (use char only as \b character and not as integer)
+ **/
+
+/**
+ * \typedef sint8
+ * An signed 8 bits integer (use char only as \b character and not as integer)
+ */
+
+/**
+ * \typedef uint16
+ * An unsigned 16 bits integer (don't use short)
+ **/
+
+/**
+ * \typedef sint16
+ * An signed 16 bits integer (don't use short)
+ */
+
+/**
+ * \typedef uint32
+ * An unsigned 32 bits integer (don't use int or long)
+ **/
+
+/**
+ * \typedef sint32
+ * An signed 32 bits integer (don't use int or long)
+ */
+
+/**
+ * \typedef uint64
+ * An unsigned 64 bits integer (don't use long long or __int64)
+ **/
+
+/**
+ * \typedef sint64
+ * An signed 64 bits integer (don't use long long or __int64)
+ */
+
+/**
+ * \typedef uint
+ * An unsigned integer, at least 32 bits (used only for interal loops or speedy purpose, processor dependant)
+ **/
+
+/**
+ * \typedef sint
+ * An signed integer at least 32 bits (used only for interal loops or speedy purpose, processor dependant)
+ */
+
+/**
+ * \def NL_I64
+ * Used to display a int64 in a platform independant way with printf.
+ \code
+ printf("the value is: %"NL_I64"d\n"n, int64value);
+ \endcode
+ */
+
+/**
+ * \typedef ucchar
+ * An unicode character (16 bits)
  */
 
 #ifdef NL_OS_WINDOWS
@@ -88,6 +149,9 @@ typedef	unsigned	__int64		uint64;
 typedef	signed		int			sint;			// at least 32bits (depend of processor)
 typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
+#define	NL_I64	\
+		"I64"
+
 #elif defined (NL_OS_UNIX)
 
 typedef	signed		char		sint8;
@@ -102,11 +166,14 @@ typedef	unsigned	long long	uint64;
 typedef	signed		int			sint;			// at least 32bits (depend of processor)
 typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
+#define	NL_I64	\
+		"ll"
+
 #endif
 
-typedef	uint16	wchar;
+typedef	uint16	ucchar;
 
-// TODO: wstring
+// TODO: ucstring
 
 /*
  * base class for all exceptions

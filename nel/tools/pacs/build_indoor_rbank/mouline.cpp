@@ -1,7 +1,7 @@
 /** \file mouline.cpp
  * 
  *
- * $Id: mouline.cpp,v 1.1 2002/01/07 11:17:03 lecroart Exp $
+ * $Id: mouline.cpp,v 1.2 2002/07/19 13:29:29 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,9 +194,8 @@ void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 			// if the next edge belongs to the border, then go on the same element
 			cmb.Faces[current].EdgeFlags[nextEdge] = true;
 			/// \todo get the real edge link
-			sint	link = (cmb.Faces[current].Visibility[nextEdge]) ? -1 : (numLink++);
+			sint	link = (cmb.Faces[current].Visibility[nextEdge]) ? -1 : 0;	//(numLink++);
 			edges.push_back(CExteriorMesh::CEdge(cmb.Vertices[cmb.Faces[current].V[pivot]], link));
-			nldebug("border: vertex=%d (%.2f,%.2f,%.2f) link=%d", cmb.Faces[current].V[pivot], cmb.Vertices[cmb.Faces[current].V[pivot]].x, cmb.Vertices[cmb.Faces[current].V[pivot]].y, cmb.Vertices[cmb.Faces[current].V[pivot]].z, link);
 			pivot = (pivot+1)%3;
 			nextEdge = (nextEdge+1)%3;
 			next = cmb.Faces[current].Edge[nextEdge];
@@ -213,6 +212,25 @@ void	buildExteriorMesh(CCollisionMeshBuild &cmb, CExteriorMesh &em)
 			next = cmb.Faces[current].Edge[nextEdge];
 		}
 	}
+
+	bool	previousWasLink = false;
+	sint	previousLink = -1;
+	for (i=0; i<edges.size(); ++i)
+	{
+		//nldebug("border: vertex=%d (%.2f,%.2f,%.2f) link=%d", cmb.Faces[current].V[pivot], cmb.Vertices[cmb.Faces[current].V[pivot]].x, cmb.Vertices[cmb.Faces[current].V[pivot]].y, cmb.Vertices[cmb.Faces[current].V[pivot]].z, link);
+		if (edges[i].Link >= 0)
+		{
+			if (!previousWasLink)
+				++previousLink;
+			edges[i].Link = previousLink;
+			previousWasLink = true;
+		}
+		else
+		{
+			previousWasLink = false;
+		}
+	}
+
 
 	edges.push_back(edges.front());
 	edges.back().Link = -1;
@@ -234,11 +252,13 @@ void	linkExteriorToInterior(CLocalRetriever &lr)
 	{
 		uint	i;
 
+		nlinfo("Border chains (to be linked) for this retriever:");
+
 		for (i=0; i<bchains.size(); ++i)
 		{
 			static char	buf[512], w[256];
 			const CChain	&chain = chains[bchains[i]];
-			sprintf(buf, "chain=%d ", bchains[i]);
+			sprintf(buf, "Border chain %d: chain=%d ", i, bchains[i]);
 			uint	och;
 			for (och=0; och<chain.getSubChains().size(); ++och)
 			{
@@ -258,12 +278,23 @@ void	linkExteriorToInterior(CLocalRetriever &lr)
 	}
 
 	uint	edge, ch;
-	for (edge=0; edge+1<edges.size(); ++edge)
+	for (edge=0; edge+1<edges.size(); )
 	{
 		if (edges[edge].Link == -1)
+		{
+			++edge;
 			continue;
+		}
 
-		CVector	start = edges[edge].Start, stop = edges[edge+1].Start;
+		uint	startedge = edge;
+		uint	stopedge;
+
+		for (stopedge=edge; stopedge+1<edges.size() && edges[stopedge+1].Link == edges[startedge].Link; ++stopedge)
+			;
+
+		edge = stopedge+1;
+
+		CVector	start = edges[startedge].Start, stop = edges[stopedge+1].Start;
 		bool	found = false;
 
 		for (ch=0; ch<bchains.size() && !found; ++ch)
@@ -280,35 +311,6 @@ void	linkExteriorToInterior(CLocalRetriever &lr)
 				found = true;
 				break;
 			}
-
-/*
-			uint	och;
-			for (och=0; och<chain.getSubChains().size() && !found; ++och)
-			{
-				const COrderedChain3f	&ochain = ochains[chain.getSubChain(och)];
-
-				sint	e, soffset, eoffset;
-
-				soffset = (ochain.isForward()) ? 0 : 1;
-				eoffset = 1-soffset;
-
-				for (e=0; e<(sint)ochain.getVertices().size()-1; ++e)
-				{
-					float	d = (start-ochain[e+soffset]).norm()+(stop-ochain[e+eoffset]).norm();
-					if (d < 1.0e-2f)
-					{
-						found = true;
-						break;
-					}
-				}
-
-				if (found)
-					break;
-			}
-
-			if (found)
-				break;
-*/
 		}
 
 		// create a link
@@ -317,7 +319,7 @@ void	linkExteriorToInterior(CLocalRetriever &lr)
 		if (!found)
 		{
 			nlwarning("in linkInteriorToExterior():");
-			nlwarning("couldn't find any link to the exterior edge %d!!", edge);
+			nlwarning("couldn't find any link to the exterior edge %d-%d!!", startedge, stopedge);
 		}
 		else
 		{
@@ -328,20 +330,20 @@ void	linkExteriorToInterior(CLocalRetriever &lr)
 		}
 
 		// enlarge the links
-		if (edges[edge].Link >= (sint)links.size())
-			links.resize(edges[edge].Link+1);
+		if (edges[startedge].Link >= (sint)links.size())
+			links.resize(edges[startedge].Link+1);
 
 		// if the link already exists, warning
-		if (links[edges[edge].Link].BorderChainId != 0xFFFF ||
-			links[edges[edge].Link].ChainId != 0xFFFF ||
-			links[edges[edge].Link].SurfaceId != 0xFFFF)
+		if (links[edges[startedge].Link].BorderChainId != 0xFFFF ||
+			links[edges[startedge].Link].ChainId != 0xFFFF ||
+			links[edges[startedge].Link].SurfaceId != 0xFFFF)
 		{
 			nlwarning("in linkInteriorToExterior():");
-			nlwarning("link %d already set!!", edges[edge].Link);
+			nlwarning("link %d already set!!", edges[startedge].Link);
 		}
 
 		// setup the link
-		links[edges[edge].Link] = link;
+		links[edges[startedge].Link] = link;
 	}
 
 	em.setEdges(edges);

@@ -1,7 +1,7 @@
 /** \file u_listener.h
  * UListener: game interface for listener control
  *
- * $Id: u_listener.h,v 1.2 2001/07/17 14:30:24 cado Exp $
+ * $Id: u_listener.h,v 1.3 2001/07/23 15:45:30 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 	virtual void			setVelocity( const NLMISC::CVector& vel ) = 0;
 	/// Get the velocity vector
 	virtual void			getVelocity( NLMISC::CVector& vel ) const = 0;
-	/// Set the orientation vectors (3D mode only, ignored in stereo mode) (default: (0,1,0), (0,0,-1))
+	/// Set the orientation vectors (3D mode only, ignored in stereo mode) (default: (0,0,-1), (0,1,0))
 	virtual void			setOrientation( const NLMISC::CVector& front, const NLMISC::CVector& up ) = 0;
 	/// Get the orientation vectors
 	virtual void			getOrientation( NLMISC::CVector& front, NLMISC::CVector& up ) const = 0;

@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
  * <File description>
  *
- * $Id: agent_3dvector.h,v 1.7 2001/08/23 09:35:31 chafik Exp $
+ * $Id: agent_3dvector.h,v 1.8 2001/12/19 14:37:47 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -56,11 +56,11 @@ namespace NLAIAGENT
 		{
 		}
 
-		IVector(const NLMISC::CVector &v):_Value(v)
+		IVector(const NLMISC::CVectorD &v):_Value(v)
 		{			
 		}
 
-		IVector(const IVector &value):IObjetOp(value), _Value((NLMISC::CVector)value._Value)
+		IVector(const IVector &value):IObjetOp(value), _Value((NLMISC::CVectorD)value._Value)
 		{
 		}
 		IVector()

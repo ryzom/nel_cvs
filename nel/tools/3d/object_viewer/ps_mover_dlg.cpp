@@ -123,6 +123,6 @@ void CPSMoverDlg::OnSelchangeSubComponent()
 void CPSMoverDlg::init(void)
 {
 
-	Create(IDD_PS_MOVER, (CWnd *) _TreeCtrl) ;
+	Create(CPSMoverDlg::IDD, _TreeCtrl) ;
 	ShowWindow(SW_SHOW) ;
 }

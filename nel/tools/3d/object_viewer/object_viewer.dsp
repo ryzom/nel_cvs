@@ -393,6 +393,14 @@ SOURCE=.\particle_tree_ctrl.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ps_mover_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ps_mover_dlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\ps_wrapper.h
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.7 2001/07/20 16:08:33 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.8 2001/07/31 12:50:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,13 +99,13 @@ public:
 	virtual	void				loadEnvSounds( const char *filename,
 											   UEnvSound **treeRoot=NULL );
 	/// Get a TSoundId from a name (returns NULL if not found)
-	virtual TSoundId	getSoundId( const char *name );
+	virtual TSoundId			getSoundId( const char *name );
 
 
 	/// Add a logical sound source (returns NULL if name not found). To remove a source, just delete it.
-	virtual USource		*createSource( const char *name );
+	virtual USource				*createSource( const char *name );
 	/// Add a logical sound source (by sound id). To remove a source, just delete it.
-	virtual USource		*createSource( TSoundId id );
+	virtual USource				*createSource( TSoundId id );
 
 
 	/// Return the listener interface
@@ -116,6 +116,10 @@ public:
 	virtual void				selectEnvEffects( const char *tag );
 	/// Update audio mixer (call evenly)
 	virtual void				update(); 
+
+
+	/// Return the number of mixing tracks (voices)
+	virtual uint				getPolyphony() const { return _NbTracks; }
 
 
 	/// Remove logical sound source (called by CSourceUser's destructor)

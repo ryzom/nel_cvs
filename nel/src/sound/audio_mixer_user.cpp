@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.7 2001/07/23 15:46:25 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.8 2001/07/31 12:50:09 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -168,19 +168,28 @@ void				CAudioMixerUser::init( uint32 balance_period )
 	// Init tracks (physical sources)
 	_NbTracks = MAX_TRACKS; // could be chosen by the user, or according to the capabilities of the sound card
 	uint i;
-	for ( i=0; i!=_NbTracks; i++ )
+	try
 	{
-		_Tracks[i] = new CTrack();
-		_Tracks[i]->init( _SoundDriver );
+		for ( i=0; i!=_NbTracks; i++ )
+		{
+			_Tracks[i] = new CTrack();
+			_Tracks[i]->init( _SoundDriver );
+		}
 	}
+	catch ( ESoundDriver & )
+	{
+		// If the source generation failed, keep only the generated number of sources
+		_NbTracks = i;
+		//delete _Tracks[i]; // Bug: the desctructor would not work because the source's name is invalid
+	}
+
 	for ( i=_NbTracks+1; i<MAX_TRACKS; i++ )
 	{
 		_Tracks[i] = NULL;
 	}
-
 	_BalancePeriod = balance_period;
 
-	nldebug( "AM: Initialized" );
+	nlinfo( "Initialized audio mixer with %u voices", _NbTracks );
 }
 
 

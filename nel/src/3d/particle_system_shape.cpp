@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.11 2001/07/05 09:38:49 besson Exp $
+ * $Id: particle_system_shape.cpp,v 1.12 2001/07/12 15:56:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,35 +56,28 @@ using NLMISC::CIFile ;
 
 CParticleSystemShape::CParticleSystemShape()
 {
+	for (uint k = 0 ; k < 4 ; ++k)
+	{
+		_UserParamDefaultTrack[k].setValue(0) ;
+	}
 }
 
 
 void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1) ;
+	sint ver = f.serialVersion(2) ;
 	NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector() ;
 	f.serialCont(buf) ;
-}
-
-
-void CParticleSystemShape::buildFromFile(const std::string &fileName) throw(NLMISC::EStream)
-{
-	CIFile inputFile(fileName) ;
-	IStream &f = inputFile ;
-
-	f.seek(0, IStream::end) ;
-	uint32 fileSize = f.getPos() ;
-	f.seek(0, IStream::begin) ;
-
-	// must be sure that we are writting in the stream
-	if (_ParticleSystemProto.isReading())
+	if (ver > 1)
 	{
-		_ParticleSystemProto.invert() ;
+		// serial default tracks
+		for (uint k = 0 ; k < 4 ; ++k)
+		{
+			f.serial(_UserParamDefaultTrack[k]) ;
+		}
 	}
-	NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector() ;
-	buf.reserve(fileSize) ;
-	f.serialBuffer(&buf[0], fileSize) ;// copy the file into the stream
 }
+
 
 
 void CParticleSystemShape::buildFromPS(const CParticleSystem &ps)
@@ -138,28 +131,19 @@ bool CParticleSystemShape::clip(const std::vector<CPlane>	&pyramid)
 
 void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
+
 	nlassert(dynamic_cast<CParticleSystemModel *>(trans)) ;
 	nlassert(drv) ;
 
 	CParticleSystemModel *psm = (CParticleSystemModel *) trans ;
 	CParticleSystem *ps = psm->getPS() ;
-	nlassert(ps) ; 
-
-	if (psm->isAutoGetEllapsedTimeEnabled())
-	{
-		psm->setEllapsedTime(ps->getScene()->getEllapsedTime()) ;
-	}
+	nlassert(ps) ;
+	
 	CAnimationTime delay = psm->getEllapsedTime() ;
-
-
-	ps->setSysMat(psm->getWorldMatrix()) ;
-
 	nlassert(ps->getScene()) ;	
 
-	// animate particles
-	ps->step(PSCollision, delay) ;
-	ps->step(PSMotion, delay) ;
 
+	// render particles
 	
 
     // TODO : do this during load balancing traversal or the like
@@ -168,7 +152,15 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool pas
 
 	// draw particle
 	PARTICLES_CHECK_MEM ;
-	ps->step(PSBlendRender, delay) ;
+	if (passOpaque)
+	{
+		ps->step(PSSolidRender, delay) ;
+	}
+	else
+	{
+		ps->step(PSBlendRender, delay) ;
+	}
+
 	PARTICLES_CHECK_MEM ;
 
 

@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.3 2001/07/05 09:38:49 besson Exp $
+ * $Id: particle_system_shape.h,v 1.4 2001/07/12 15:55:45 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/class_id.h"
 #include "nel/misc/mem_stream.h"
 #include "3d/shape.h"
+#include "3d/track.h"
 
 
 
@@ -44,12 +45,16 @@ namespace NL3D {
 const NLMISC::CClassId		ParticleSystemModelId=NLMISC::CClassId(0x3a9b1dc3, 0x49627ff0) ;
 
 
-// ***************************************************************************
+class CParticleSystem ;
+
+
+
 
 
 /** This class helps to instanciate a particle system 
  * (the shape contains a particle system prototype stored as a memory stream)
  *  Use the createInstance method to insert the system in a scene 
+ *  To load the shape from a file, use a shape stream
  */
 class CParticleSystemShape : public IShape
 {
@@ -58,13 +63,11 @@ public:
 	/// Default ctor
 	CParticleSystemShape() ;
 
-	/// build the shape from a file (2^32 max size)
-	void buildFromFile(const std::string &fileName) throw(NLMISC::EStream) ;
 
 	/** build the shape from a 'raw' particle system. A prototype will be created by copying the system in a memory stream
 	 *  NOTE : For now, prefer the instanciation from a file, which do not need reallocation
 	 */
-	void buildFromPS(const CParticleSystem &ps) ;
+	void buildFromPS(const NL3D::CParticleSystem &ps) ;
 
 	/// Dtor.
 	virtual ~CParticleSystemShape() {}
@@ -73,7 +76,7 @@ public:
 	 * \param scene the scene used to createModel().
 	 * \return the specialized instance for this shape.
 	 */
-	virtual	CTransformShape		*createInstance(CScene &scene) ;
+	virtual	CTransformShape		*createInstance(NL3D::CScene &scene) ;
 
 	/// \name From IShape
 	// @{
@@ -88,7 +91,7 @@ public:
 	/** render() a particle system in a driver, with the specified TransformShape information.
 	 * CTransfromShape call this method in the render traversal.
 	 */
-	virtual void				render(IDriver *drv, CTransformShape *trans, bool passOpaque);
+	virtual void				render(NL3D::IDriver *drv, CTransformShape *trans, bool passOpaque);
 
 	/** get an approximation of the number of triangles this instance will render for a fixed distance.
 	  *
@@ -105,11 +108,23 @@ public:
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CParticleSystemShape);
 
-	protected:
+
+	/// get a the user param default tracks
+	CTrackDefaultFloat *getUserParamDefaultTrack(uint numTrack)
+	{
+		nlassert(numTrack < 4) ;
+		return &_UserParamDefaultTrack[numTrack] ;
+	}
+
+protected:
 
 		
 		// A memory stream containing a particle system. Each system is instanciated from this prototype
-		NLMISC::CMemStream  _ParticleSystemProto ; 
+	NLMISC::CMemStream  _ParticleSystemProto ; 
+
+	/// the default track for animation of user parameters
+	CTrackDefaultFloat _UserParamDefaultTrack[4] ;
+
 } ;
 
 } // NL3D

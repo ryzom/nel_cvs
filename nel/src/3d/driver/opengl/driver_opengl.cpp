@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.20 2000/11/28 13:13:37 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.21 2000/12/01 16:36:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,11 +29,14 @@
 #endif
 #include <gl/gl.h>
 #include "driver_opengl.h"
+#include "nel/3d/viewport.h"
 
 #ifndef NL_OS_WINDOWS
 #include <stdio.h>
 #endif // NL_OS_WINDOWS
 // --------------------------------------------------
+
+using namespace NLMISC;
 
 namespace NL3D
 {
@@ -89,6 +92,9 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 CDriverGL::CDriverGL()
 {
 	_FullScreen= false;
+	_hWnd = NULL;
+	_hRC = NULL;
+	_hDC = NULL;
 }
 
 
@@ -365,8 +371,13 @@ bool CDriverGL::swapBuffers(void)
 bool CDriverGL::release(void)
 {
 	wglMakeCurrent(NULL,NULL);
-	wglDeleteContext(_hRC);
-	ReleaseDC(_hWnd,_hDC);
+	if (_hRC)
+		wglDeleteContext(_hRC);
+	if (_hWnd&&_hDC)
+	{
+		ReleaseDC(_hWnd,_hDC);
+		DestroyWindow (_hWnd);
+	}
 
 	if(_FullScreen)
 	{
@@ -374,6 +385,10 @@ bool CDriverGL::release(void)
 		_FullScreen= false;
 	}
 
+	_hRC=NULL;
+	_hDC=NULL;
+	_hWnd=NULL;
+	
 	return(true);
 }
 
@@ -421,4 +436,35 @@ IDriver::TMessageBoxId	CDriverGL::systemMessageBox (const char* message, const c
 }
 
 // --------------------------------------------------
+
+void CDriverGL::setupViewport (const class CViewport& viewport)
+{
+	if (_hWnd)
+	{
+		// Get window rect
+		RECT rect;
+		GetClientRect (_hWnd, &rect);
+
+		// Get viewport
+		float x;
+		float y;
+		float width;
+		float height;
+		viewport.getValues (x, y, width, height);
+
+		// Setup gl viewport
+		int clientWidth=rect.right-rect.left;
+		int clientHeight=rect.bottom-rect.top;
+		int ix=(int)((float)clientWidth*x);
+		clamp (ix, 0, clientWidth);
+		int iy=(int)((float)clientHeight*y);
+		clamp (iy, 0, clientHeight);
+		int iwidth=(int)((float)clientWidth*width);
+		clamp (iwidth, 0, clientWidth-ix);
+		int iheight=(int)((float)clientHeight*height);
+		clamp (iheight, 0, clientHeight-iy);
+		glViewport (ix, iy, iwidth, iheight);
+	}
+}
+
 }

@@ -117,6 +117,9 @@ public:
 	virtual bool			release(void);
 
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
+
+	virtual void			setupViewport (const class CViewport& viewport);
+
 };
 
 // --------------------------------------------------

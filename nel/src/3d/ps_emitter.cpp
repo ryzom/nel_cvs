@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.13 2001/06/26 09:23:04 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.14 2001/06/26 11:58:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -570,9 +570,7 @@ void CPSEmitterConic::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 void CPSEmitterConic::setDir(const CVector &v)
 {
 	CPSEmitterDirectionnal::setDir(v) ;
-	CMatrix m = CPSUtil::buildSchmidtBasis(v) ;
-	_EI = m.getI() ;
-	_EJ = m.getJ() ;
+	
 }
 
 
@@ -581,13 +579,21 @@ void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 	// TODO : optimize that
 	nlassert(_EmittedType) ;	
 	
-	// choose a random direction for emission
-	CVector dir = (((rand() % 32000) / 16000.f) - 1.f) * _EI 
-				  + (((rand() % 32000) / 16000.f) - 1.f) * _EJ ;
+	// we choose a custom direction like with omnidirectionnal emitter
+	// then we force the direction vect to have the unit size
+
+	CVector dir = _Radius *
+					(
+						(((rand() % 32000) / 16000.f) - 1.f) * CVector::I 
+					  + (((rand() % 32000) / 16000.f) - 1.f) * CVector::J
+					  + (((rand() % 32000) / 16000.f) - 1.f) * CVector::K
+					) ;
+
+	dir -= (_Dir * dir) * _Dir ;
+	dir += dir ;
 	dir.normalize() ;
-	dir *= _Radius * (rand() % 32000) * (1.f / 32000.f) ;
-	dir += _Dir ;
-	dir.normalize() ;
+	
+	
 	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed) 
 		    * dir ;
 	pos = _Owner->getPos()[index] ;	

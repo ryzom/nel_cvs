@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.5 2001/06/26 09:23:04 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.6 2001/06/26 11:58:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -527,7 +527,7 @@ class CPSEmitterConic : public CPSEmitterDirectionnal
 {	
 public:
 
-	CPSEmitterConic()
+	CPSEmitterConic() : _Radius(1.f)
 	{
 		_Name = std::string("EmitterConic") ;
 	}
@@ -551,14 +551,7 @@ public:
 	virtual void setDir(const CVector &v) ;
 
 protected:
-
-
 	
-	// tangent to emission plane
-	CVector _EI ;
-
-	// 2nd tangent to emission plane
-	CVector _EJ ;
 
 	// the radius for emission
 	float _Radius ;

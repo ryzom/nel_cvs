@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.5 2002/08/23 12:18:13 lecroart Exp $
+ * $Id: system_info.h,v 1.6 2002/11/13 15:45:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,14 @@ public:
 	static bool hasSSE ();
 
 	static bool isNT();
+
+	/** returns all the physical memory available on this computer
+	  */
+	static uint32 availablePhysicalMemory ();
+
+	/** returns all the physical memory on this computer
+	  */
+	static uint32 totalPhysicalMemory ();
 };
 
 

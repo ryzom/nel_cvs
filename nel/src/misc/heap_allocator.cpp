@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.4 2002/11/05 16:48:24 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.5 2002/11/13 15:45:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2259,6 +2259,45 @@ uint CHeapAllocator::getAllocatedSystemMemory ()
 			}
 		}
 	}
+
+#elif defined NL_OS_UNIX
+	
+	char buffer[4096], *p;
+	int fd, len;
+	
+	fd = open("/proc/self/stat", O_RDONLY);
+	len = read(fd, buffer, sizeof(buffer)-1);
+	close(fd);
+	
+	buffer[len] = '\0';
+	
+	p = buffer;
+	p = strchr(p, ')')+1;			/* skip pid */
+	p = skipWS(p);
+	p++;
+	
+	p = skipToken(p);				/* skip ppid */
+	p = skipToken(p);				/* skip pgrp */
+	p = skipToken(p);				/* skip session */
+	p = skipToken(p);				/* skip tty */
+	p = skipToken(p);				/* skip tty pgrp */
+	p = skipToken(p);				/* skip flags */
+	p = skipToken(p);				/* skip min flt */
+	p = skipToken(p);				/* skip cmin flt */
+	p = skipToken(p);				/* skip maj flt */
+	p = skipToken(p);				/* skip cmaj flt */
+	p = skipToken(p);				/* utime */
+	p = skipToken(p);				/* stime */
+	p = skipToken(p);				/* skip cutime */
+	p = skipToken(p);				/* skip cstime */
+	p = skipToken(p);				/* priority */
+	p = skipToken(p);				/* nice */
+	p = skipToken(p);				/* skip timeout */
+	p = skipToken(p);				/* skip it_real_val */
+	p = skipToken(p);				/* skip start_time */
+	
+	systemMemory = strtoul(p, &p, 10);	/* vsize in bytes */
+
 #endif // NL_OS_WINDOWS
 	return systemMemory;
 }

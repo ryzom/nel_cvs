@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.7 2002/08/23 12:17:40 lecroart Exp $
+ * $Id: system_info.cpp,v 1.8 2002/11/13 15:45:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #endif
 
 #include "nel/misc/system_info.h"
+#include "nel/misc/command.h"
+#include "nel/misc/heap_allocator.h"
 
 using namespace std;
 
@@ -364,6 +366,108 @@ bool CSystemInfo::isNT()
 #else
 	return false;
 #endif
+}
+
+
+#ifdef NL_OS_LINUX
+
+static inline char *skipWS(const char *p)
+{
+    while (isspace(*p)) p++;
+    return (char *)p;
+}
+
+static inline char *skipToken(const char *p)
+{
+    while (isspace(*p)) p++;
+    while (*p && !isspace(*p)) p++;
+    return (char *)p;
+}
+
+// col: 0=total used free shared buffers cached
+uint32 getSystemMemory (uint col)
+{
+	if (col > 5)
+		return 0;
+
+    char buffer[4096+1];
+    int fd, len;
+    char *p;
+	
+    /* get system wide memory usage */
+    {
+		char *p;
+		
+		fd = open("/proc/meminfo", O_RDONLY);
+		len = read(fd, buffer, sizeof(buffer)-1);
+		close(fd);
+		buffer[len] = '\0';
+		
+		/* be prepared for extra columns to appear be seeking
+		to ends of lines */
+		p = strchr(buffer, '\n');
+		p = skipToken(p);			/* "Mem:" */
+		for (uint i = 0; i < col; i++)
+		{
+			p = skipToken(p);
+		}
+		return strtoul(p, &p, 10);
+	}
+}
+
+#endif // NL_OS_LINUX
+
+
+
+
+uint32 CSystemInfo::availablePhysicalMemory ()
+{
+#ifdef NL_OS_WINDOWS
+
+	MEMORYSTATUS ms;
+	GlobalMemoryStatus (&ms);
+	return ms.dwAvailPhys;
+
+#elif defined NL_OS_UNIX
+
+	return getSystemMemory (2);
+
+#endif
+
+	return 0;
+}
+
+uint32 CSystemInfo::totalPhysicalMemory ()
+{
+#ifdef NL_OS_WINDOWS
+
+	MEMORYSTATUS ms;
+	GlobalMemoryStatus (&ms);
+	return ms.dwTotalPhys;
+
+#elif defined NL_OS_UNIX
+
+	return getSystemMemory (0);
+	
+#endif
+
+	return 0;
+}
+
+
+NLMISC_DYNVARIABLE(uint32, AvailablePhysicalMemory, "Physical memory available on this computer in bytes")
+{
+	if (get) *pointer = CSystemInfo::availablePhysicalMemory ();
+}
+
+NLMISC_DYNVARIABLE(uint32, TotalPhysicalMemory, "Total physical memory on this computer in bytes")
+{
+	if (get) *pointer = CSystemInfo::totalPhysicalMemory ();
+}
+
+NLMISC_DYNVARIABLE(uint32, ProcessUsedMemory, "Memory used by this process in bytes")
+{
+	if (get) *pointer = CHeapAllocator::getAllocatedSystemMemory ();
 }
 
 

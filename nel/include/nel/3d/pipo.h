@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: pipo.h,v 1.1 2000/11/14 14:40:44 berenguier Exp $
+ * $Id: pipo.h,v 1.2 2000/11/14 14:42:03 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/matrix.h"
 #include "nel/3d/texture.h"
+#include "nel/3d/tamereenslip.h"
 
 #include <vector>
 #include <list>
@@ -62,39 +63,8 @@ public:
 
 // --------------------------------------------------
 
-class ITextureDrvInfos : public CRefCount
-{
-private:
-public:
-			ITextureDrvInfos() {};
-			ITextureDrvInfos(class IDriver& driver);
-			virtual ~ITextureDrvInfos(void){ };
-};
 
-class CTexture : public CRefCount
-{
-private:
-	uint16					_Width;
-	uint16					_Height;
-	std::vector<CRGBA>		_Data;
-
-public:
-	CRefPtr<ITextureDrvInfos> DrvInfos;
-
-public:
-							CTexture(void);
-							CTexture(uint16 width, uint16 height);
-
-	void					resize(uint16 width, uint16 height);
-
-	uint16					getWidth() const { return(_Width); }
-	uint16					getHeight() const { return(_Height); }
-
-	bool					fillData(const void* data);
-	bool					fillData(const std::vector<CRGBA>& data);
-	void*					getDataPointer() {return( &(*_Data.begin()) );}
-};
-
+   
 
 // --------------------------------------------------
 

@@ -1,7 +1,7 @@
 /** \file landscape.h
  * 
  *
- * $Id: landscape.h,v 1.3 2001/07/12 10:11:02 legros Exp $
+ * $Id: landscape.h,v 1.4 2001/07/17 13:49:45 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,10 @@
 void	initLandscape();
 void	updateLandscape();
 void	releaseLandscape();
+
+void	initAiming();
+void	releaseAiming();
+NLMISC::CVector	getTarget(const NLMISC::CVector &start, const NLMISC::CVector &step, uint numSteps);
 
 extern NL3D::ULandscape	*Landscape;
 

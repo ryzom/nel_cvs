@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.28 2001/07/17 12:27:42 legros Exp $
+ * $Id: client.cpp,v 1.29 2001/07/17 13:49:45 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,8 +124,8 @@ int main(int argc, char **argv)
 	CPath::addSearchPath (dataPath);
 	CPath::addSearchPath (dataPath + "zones/");
 	CPath::addSearchPath (dataPath + "tiles/");
-	CPath::addSearchPath (dataPath + "meshes/");
-	CPath::addSearchPath (dataPath + "materials/");
+	CPath::addSearchPath (dataPath + "shapes/");
+	CPath::addSearchPath (dataPath + "maps/");
 	CPath::addSearchPath (dataPath + "pacs/");
 
 	// Create a driver
@@ -150,11 +150,13 @@ int main(int argc, char **argv)
 	// Init the pacs
 	initPACS();
 
+	// Init the aiming system
+	initAiming();
+
 	// Camera
 	initCamera();
 
 	// Create a 3D mouse listener
-//	MouseListener = Driver->create3dMouseListener ();
 	MouseListener = new C3dMouseListener();
 	MouseListener->addToServer(Driver->EventServer);
 	MouseListener->setCamera(Camera);
@@ -302,6 +304,7 @@ int main(int argc, char **argv)
 
 	releaseNetwork ();
 	releaseAnimation ();
+	releaseAiming();
 	releasePACS();
 	releaseLandscape();
 

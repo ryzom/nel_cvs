@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape management with user interface
  *
- * $Id: landscape.cpp,v 1.5 2001/07/17 12:27:42 legros Exp $
+ * $Id: landscape.cpp,v 1.6 2001/07/17 13:49:45 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,14 +42,20 @@
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
 
+#include <nel/3d/u_visual_collision_entity.h>
+#include <nel/3d/u_visual_collision_manager.h>
+
 #include "client.h"
+#include "pacs.h"
 #include "mouse_listener.h"
 
 using namespace std;
 using namespace NLMISC;
 using namespace NL3D;
 
-ULandscape	*Landscape = NULL;
+ULandscape				*Landscape = NULL;
+UVisualCollisionEntity	*AimingEntity = NULL;
+
 
 void	initLandscape()
 {
@@ -78,3 +84,36 @@ void	updateLandscape()
 void	releaseLandscape()
 {
 }
+
+void	initAiming()
+{
+	AimingEntity = VisualCollisionManager->createEntity();
+	AimingEntity->setCeilMode(true);
+}
+
+void	releaseAiming()
+{
+	VisualCollisionManager->deleteEntity(AimingEntity);
+}
+
+CVector	getTarget(const CVector &start, const CVector &step, uint numSteps)
+{
+	CVector	testPos = start;
+
+	uint	i;
+	for (i=0; i<numSteps; ++i)
+	{
+		CVector	snapped = testPos;
+		CVector	normal;
+		// here use normal to check if we have collision
+		if (AimingEntity->snapToGround(snapped, normal) && (testPos.z-snapped.z)*normal.z < 0.0f)
+		{
+			testPos -= step*0.5f;
+			break;
+		}
+		testPos += step;
+	}
+
+	return testPos;
+}
+

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.14 2001/07/17 12:27:42 legros Exp $
+ * $Id: entities.cpp,v 1.15 2001/07/17 13:49:45 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,6 +60,7 @@
 #include "animation.h"
 #include "camera.h"
 #include "mouse_listener.h"
+#include "landscape.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -95,6 +96,7 @@ float		EntityNameSize;
 CRGBA		EntityNameColor;
 
 CEntity		*Self = NULL;
+UInstance	*AimingInstance = NULL;
 
 void CEntity::setState (TState state)
 {
@@ -629,6 +631,9 @@ void initEntities()
 	cbUpdateEntities (ConfigFile.getVar ("EntityNameSize"));
 }
 
+void releaseEntities()
+{
+}
 
 //
 void cbUpdateRadar (CConfigFile::CVar &var)
@@ -778,8 +783,11 @@ void	shotSnowball(uint32 eid, const CVector &target)
 	CEntity	&snowball = (*eit).second;
 	snowball.AutoMove = 1;
 
+
 	if (launcher.Type == CEntity::Self)
 	{
+		snowball.ServerPosition = getTarget(start, direction, 100);
+/*
 		const uint	numTestStep = 100;
 		CVector	testPos = start;
 		CVector	step = (target-start)/numTestStep;
@@ -799,7 +807,8 @@ void	shotSnowball(uint32 eid, const CVector &target)
 		}
 
 		snowball.ServerPosition = testPos;
-	}
+*/
+  }
 }
 
 

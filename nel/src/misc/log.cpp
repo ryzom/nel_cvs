@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.51 2003/02/10 09:55:01 lecroart Exp $
+ * $Id: log.cpp,v 1.52 2003/03/25 16:06:26 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -472,9 +472,16 @@ void CLog::forceDisplayRaw (const char *format, ...)
 	NLMISC_CONVERT_VARGS (str, format, 256/*NLMISC::MaxCStringSize*/);
 
 	TDisplayInfo args;
+	CDisplayers::iterator idi;
+
+	// send to all bypass filter displayers
+	for (idi=_BypassFilterDisplayers.begin(); idi!=_BypassFilterDisplayers.end(); idi++ )
+	{
+		(*idi)->display( args, str );
+	}
 
 	// Send to the attached displayers
-	for ( CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
+	for ( idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
 	{
 		(*idi)->display( args, str );
 	}

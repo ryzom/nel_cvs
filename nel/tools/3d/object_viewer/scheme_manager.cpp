@@ -1,7 +1,7 @@
 /** \file scheme_manager.cpp
  * a collection of scheme (to set particle atributes)
  *
- * $Id: scheme_manager.cpp,v 1.3 2001/09/13 14:29:25 vizerie Exp $
+ * $Id: scheme_manager.cpp,v 1.4 2003/07/01 15:34:44 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,7 +98,8 @@ void	CSchemeManager::swap(CSchemeManager &other)
 
 void    CSchemeManager::remove(NL3D::CPSAttribMakerBase *am)
 {
-	for (TSchemeMap::iterator smIt = _SchemeMap.begin(); smIt != _SchemeMap.end(); ++smIt)
+	TSchemeMap::iterator smIt;
+	for (smIt = _SchemeMap.begin(); smIt != _SchemeMap.end(); ++smIt)
 	{
 		if (smIt->second.second == am) break;
 	}
@@ -115,7 +116,8 @@ void    CSchemeManager::remove(NL3D::CPSAttribMakerBase *am)
 // rename a scheme, given a pointer on it
 void  CSchemeManager::rename(NL3D::CPSAttribMakerBase *am, const std::string &newName)
 {
-	for (TSchemeMap::iterator smIt = _SchemeMap.begin(); smIt != _SchemeMap.end(); ++smIt)
+	TSchemeMap::iterator smIt;
+	for (smIt = _SchemeMap.begin(); smIt != _SchemeMap.end(); ++smIt)
 	{
 		if (smIt->second.second == am) break;
 	}

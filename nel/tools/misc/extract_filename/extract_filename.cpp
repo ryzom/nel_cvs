@@ -1,7 +1,7 @@
 /** \file extract_filename.cpp
  * This utility extract filename from any files.
  *
- * $Id: extract_filename.cpp,v 1.1 2002/03/21 13:52:38 corvazier Exp $
+ * $Id: extract_filename.cpp,v 1.2 2003/07/01 15:31:21 distrib Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -467,7 +467,8 @@ void progress (const char *message, float progress)
 	uint	pgId= (uint)(progress*(float)BAR_LENGTH);
 	pgId= min(pgId, (uint)(BAR_LENGTH-1));
 	sprintf (msg, "\r%s %s", progressbar[pgId], message );
-	for (uint i=strlen(msg); i<79; i++)
+	uint i;
+	for (i=strlen(msg); i<79; i++)
 		msg[i]=' ';
 	msg[i]=0;
 	printf (msg);

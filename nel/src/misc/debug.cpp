@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.60 2002/08/23 12:27:13 lecroart Exp $
+ * $Id: debug.cpp,v 1.61 2002/08/23 12:53:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -178,6 +178,26 @@ void initDebug2 (bool logInFile)
 		nlwarning ("NLMISC::initDebug2() already called");
 	}
 }
+
+
+void getCallStackAndLog (string &result, sint skipNFirst)
+{
+#ifdef NL_OS_WINDOWS
+	try
+	{
+		DWORD array[1];
+		array[0] = skipNFirst;
+		RaiseException (0xACE0ACE, 0, 1, array);
+	}
+	catch (Exception &e)
+	{
+		result += e.what();
+	}
+#else
+	result += "No callstack available";
+#endif
+}
+
 
 #ifdef NL_OS_WINDOWS
 
@@ -637,25 +657,6 @@ public:
 private:
 	EXCEPTION_POINTERS * m_pexp;
 };
-
-
-void getCallStackAndLog (string &result, sint skipNFirst)
-{
-#ifdef NL_OS_WINDOWS
-	try
-	{
-		DWORD array[1];
-		array[0] = skipNFirst;
-		RaiseException (0xACE0ACE, 0, 1, array);
-	}
-	catch (Exception &e)
-	{
-		result += e.what();
-	}
-#else
-	result += "No callstack available";
-#endif
-}
 
 
 static void exceptionTranslator(unsigned, EXCEPTION_POINTERS *pexp)

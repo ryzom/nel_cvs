@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.65 2004/04/14 12:35:29 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.66 2004/05/14 16:18:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1975,7 +1975,10 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time)
 		ws->getDefaultRotQuat()->setDefaultValue(rot);
 
 
-
+		// See if splash enabled
+		int splashEnabled = 1;
+		CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bEnableWaterSplash", (ParamType2)TYPE_BOOL, &splashEnabled, time);
+		ws->enableSplash(splashEnabled != 0);
 
 
 		// Delete the triObject if we should...

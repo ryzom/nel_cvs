@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.9 2003/06/04 17:16:31 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.10 2003/06/04 17:23:40 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -58,7 +58,7 @@ void CSegRemanenceShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// version 1 : rollup ratio
 	// version 0 : base version
 
-	sint ver = f.serialVersion(1);
+	sint ver = f.serialVersion(2);
 	f.serial(_NumSlices);
 	f.serial(_SliceTime);
 	f.serialCont(_Corners);	

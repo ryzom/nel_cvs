@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.8 2002/03/26 10:11:43 corvazier Exp $
+ * $Id: u_move_container.h,v 1.9 2002/03/26 17:09:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -106,10 +106,13 @@ public:
 	  * \param firstWorldImage is the first world image where the primitive can be inserted.
 	  * \param numWorldImage is the count of world image where the primitive can be inserted.
 	  * \param primitives is a pointer on an array of primitive pointer to fill if success. If NULL, Do return nothing.
+	  * \param orientation is the orientation to give to the primitives.
+	  * \param position is the position to give to the primitives.
+	  * \param primitives is a pointer on an array of primitive pointer to fill if success. If NULL, Do return nothing.
 	  * \see addCollisionablePrimitive
 	  * \return true if the file is successfully loaded, else return false.
 	  */
-	virtual bool				loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives) =0;
+	virtual bool				loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position) =0;
 
 	/**
 	  * Remove a primitive from the container.

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.19 2002/03/26 10:11:43 corvazier Exp $
+ * $Id: move_container.cpp,v 1.20 2002/03/26 17:09:37 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1429,7 +1429,7 @@ void UTriggerInfo::serial (NLMISC::IStream& stream)
 
 // ***************************************************************************
 
-bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives)
+bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position)
 {
 	// Check world image
 	if ( (uint)(firstWorldImage+numWorldImage) > _ChangedRoot.size() )
@@ -1496,11 +1496,20 @@ bool CMoveContainer::loadCollisionablePrimitiveBlock (const char *filename, uint
 					// Insert the primitive
 					primitive->insertInWorldImage (firstWorldImage);
 
+					// Final position
+					float cosa = (float) cos (orientation);
+					float sina = (float) sin (orientation);
+					CVector finalPos;
+					finalPos.x = cosa * desc.Position.x - sina * desc.Position.y + position.x;
+					finalPos.y = sina * desc.Position.y + cosa * desc.Position.y + position.y;
+					finalPos.z = desc.Position.z + position.z;
+
 					// Set the primtive orientation
-					primitive->setOrientation (desc.Orientation, wI);
+					if (desc.Type == UMovePrimitive::_2DOrientedBox)
+						primitive->setOrientation ((float)fmod (desc.Orientation + orientation, 2*Pi), wI);
 
 					// Set the primitive global position
-					primitive->setGlobalPosition (desc.Position, wI);
+					primitive->setGlobalPosition (finalPos, wI);
 				}
 
 				// Feedback asked ?

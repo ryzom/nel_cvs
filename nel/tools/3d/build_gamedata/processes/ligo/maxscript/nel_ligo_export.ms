@@ -236,6 +236,31 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 			)
 		)
 	)
+	
+	for node in helpers do
+	(
+		ig = getIg node
+		if (ig != undefined) then
+		(
+			-- Found ?
+			found = false
+			-- Already found ?
+			for j = 1 to ig_array.count do
+			(
+				if (ig_array[j]==ig) then
+				(								
+					found = true
+					exit
+				)
+			)
+			-- Found ?
+			if (found == false) then
+			(
+				append ig_array ig
+			)
+		)
+	)
+
 
 
 	-- Have some ig ?
@@ -267,7 +292,13 @@ fn exportInstanceGroupFromZone inputFile outputPath =
 					if ( (getIg node) == ig_array[ig]) then
 						selectmore node
 				)
-
+				-- Select all helpers in this ig
+				for node in helpers do
+				(
+					-- Select it if in the ig
+					if ( (getIg node) == ig_array[ig]) then
+						selectmore node
+				)
 				-- Check export
 				try
 				(

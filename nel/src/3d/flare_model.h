@@ -1,7 +1,7 @@
 /** \file flare_model.h
  * <File description>
  *
- * $Id: flare_model.h,v 1.2 2001/07/25 10:19:44 vizerie Exp $
+ * $Id: flare_model.h,v 1.3 2001/07/26 17:16:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -47,16 +47,14 @@ public:
 	CFlareModel();
 
 	// register this model and his observers
-	static void registerBasic() ;
-	
-	
+	static void registerBasic() ;	
+	static IModel *creator() { return new CFlareModel; }
+
 protected:
 	friend class CFlareShape ;
 	friend class CFlareRenderObs ;
-	float				_Intensity ;
-	CAnimationTime		*_LastViewDate ;
-private:
-	static IModel *creator() { return new CFlareModel; }
+	float				_Intensity ;	
+	CScene				*_Scene		  ;	
 };
 
 

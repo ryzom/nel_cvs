@@ -1,7 +1,7 @@
 /** \file flare_shape.h
  * <File description>
  *
- * $Id: flare_shape.h,v 1.3 2001/07/25 10:19:22 vizerie Exp $
+ * $Id: flare_shape.h,v 1.4 2001/07/26 17:16:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -40,6 +40,9 @@ namespace NL3D {
 // class id for flares
 const NLMISC::CClassId FlareModelClassId =  NLMISC::CClassId(0x6d674c32, 0x53b961a0) ;
 
+// max number of flares
+const uint MaxFlareNum= 8 ;
+
 /**
  * shape for a flare
  * \author Nicolas Vizerie
@@ -51,8 +54,15 @@ class CFlareShape : public IShape
 public:
 	NLMISC_DECLARE_CLASS(CFlareShape) ;
 
-	/// Constructor
-	CFlareShape();
+	///\name Object
+		//{@
+		/// Constructor
+		CFlareShape();
+
+		/// serial this shape
+		void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+		//@}
+
 
 	/// inherited from IShape
 	virtual	CTransformShape		*createInstance(CScene &scene) ;
@@ -67,55 +77,81 @@ public:
 	virtual	void				getAABBox(NLMISC::CAABBox &bbox) const ;
 
 	/// inherited from ishape
-	virtual float				getNumTriangles (float distance) { return 2 ; }
+	virtual float				getNumTriangles (float distance) ;
 
 
-	/// set a texture for the flare
-	void						setTexture(ITexture *tex) 
+	/** set a texture for the flare
+	  * \param index the index of the flare to set. Vaklue ranges from 0 to MaxFlareNum - 1
+	  * \param tex the texture to set. NULL removes the texture
+	  */
+	void						setTexture(uint index, ITexture *tex) 
 	{ 
-		_Tex = tex ; 
+		nlassert(index < MaxFlareNum) ;
+		_Tex[index] = tex ; 
 	}
 
-	/// get the texture used by the flare
-	ITexture					*getTexture(void) 
+	/** get the nth texture used by the flare.
+	  *  \param index the index of the flare to set. Value ranges from 0 to MaxFlareNum - 1
+	  */
+	ITexture					*getTexture(uint index) 
 	{ 
-		return _Tex ; 
+		nlassert(index < MaxFlareNum) ;
+		return _Tex[index] ;
 	}
 
 	/// get the texture used by the flare (const version)
-	const ITexture				*getTexture(void) const 
+	const ITexture				*getTexture(uint index) const 
 	{ 
-		return _Tex ; 
+		nlassert(index < MaxFlareNum) ;
+		return _Tex[index] ; 
 	}
 
-	/// set the size of the flare
-	void						setSize(float size) 
+	/** set the size of the nth flare flare
+	  * \param index the index of the flare to set. Value ranges from 0 to MaxFlareNum - 1
+	  */
+	void						setSize(uint index, float size) 
 	{ 
-		_Size = size ; 
+		nlassert(index < MaxFlareNum) ;
+		_Size[index]  = size ; 
 	}
 
-	/// get the size of the flare
-	float						getSize(void) const 
+	/** get the size of the nth flare
+	  * \param index the index of the flare to set. Value ranges from 0 to MaxFlareNum - 1
+	  */
+	float						getSize(uint index) const 
 	{ 
-		return _Size ; 
+		return _Size[index] ; 
 	}
 
-	/// set the color of the flare
+	/// set the color of flares
 	void						setColor(NLMISC::CRGBA col) 
-	{ 
+	{ 		
 		_Color = col ; 
 	}
 
-	/// get the color of the shape
+	/// get the color of flares
 	NLMISC::CRGBA				getColor(void) const 
 	{ 
 		return _Color ; 
 	}
 
+	/// set the flares spacing 
+	void						setFlareSpacing(float spacing)
+	{
+		_Spacing = spacing ;
+	}
+
+	/** Get the flares spacing : A spacing of 1.f means thta the last flare will reach the center of the screen
+	  * , a spacing of 0.5f means only the half way to the middle of the screen will be reached
+	  */
+	float						getFlareSpacing(void) const
+	{
+		return _Spacing ;
+	}
+
 	/// set the persistence of this shape, in second (the time it takes to fade from white to black)
 	void						setPersistence(CAnimationTime persistence) 
-	{ 
-		nlassert(persistence > 0) ; 
+	{ 	
 		_Persistence = persistence ; 
 	}
 
@@ -127,17 +163,37 @@ public:
 		return _Persistence ; 
 	}
 
-	/// serial this shape
-	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+
+	/// force radial attenuation of the flares
+	void		setAttenuable(bool enable = true)	{ _Attenuable = enable ; }
+
+	/// check wether radial :attenuation is on
+	bool		getAttenuable(void) const			{ return _Attenuable ;   }
+
+	/// set the range for attenuation
+	void		setAttenuationRange(float range)    { _AttenuationRange = range ; }
+
+	/// get the attenuation rnage
+	float		getAttenuationRange(void) const		{ return _AttenuationRange ; }
+
+
+	/// force the first flare to keep its real size (e.g the isze on screen doesn't remains constant)
+	void		setFirstFlareKeepSize(bool enable = true) { _FirstFlareKeepSize = enable ; }
+
+	/// test wether the first flare keep its real size
+	bool		getFirstFlareKeepSize(void) const		  { return _FirstFlareKeepSize ; }
+
 
 protected:
-
-	friend class CFlareModel ;
-
-	NLMISC::CSmartPtr<ITexture> _Tex ;
+	friend class CFlareModel ;	
+	NLMISC::CSmartPtr<ITexture> _Tex[MaxFlareNum] ;
 	NLMISC::CRGBA				_Color ;
-	float						_Size ;
+	float						_Size[MaxFlareNum] ;
 	CAnimationTime				_Persistence ;
+	float						_Spacing ;
+	bool					    _Attenuable ;
+	float					    _AttenuationRange ;
+	bool						_FirstFlareKeepSize ;
 };
 
 

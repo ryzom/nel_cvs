@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.3 2001/07/25 10:20:13 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.4 2001/07/26 17:16:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -27,6 +27,9 @@
 #include "3d/flare_shape.h"
 #include "3d/driver.h"
 #include "3d/material.h"
+#include "3d/dru.h"
+#include "3d/scene.h"
+
 
 
 namespace NL3D {
@@ -35,7 +38,7 @@ namespace NL3D {
 /*
  * Constructor
  */
-CFlareModel::CFlareModel() : _LastViewDate(0), _Intensity(0)
+CFlareModel::CFlareModel() : _Intensity(0)
 {
 	setTransparency(true) ;
 	setOpacity(false) ;
@@ -63,51 +66,89 @@ void	CFlareRenderObs::traverse(IObs *caller)
 
 	// transform the flare on screen
 	
-	const CVector		upt = HrcObs->WorldMatrix.getPos() ; // unstransformed pos
-	const CVector		pt = trav->ViewMatrix * upt ;
-	if (pt.y <= trav->Near) return ;
+	const CVector		upt = HrcObs->WorldMatrix.getPos() ; // unstransformed pos	
+	const CVector	pt = trav->ViewMatrix * upt ;
+	if (pt.y <= trav->Near) return ; // flare behind us
 
+
+	nlassert(m->Shape) ;
+	CFlareShape *fs = NLMISC::safe_cast<CFlareShape *>((IShape *) m->Shape) ;
+
+	// compute position on screen
 	uint32 width, height ;
 	drv->getWindowSize(width, height) ;
-
 	const float middleX = .5f * (trav->Left + trav->Right) ;
 	const float middleZ = .5f * (trav->Bottom + trav->Top) ;
-
 	const sint xPos = (width>>1) + (sint) (width * (((trav->Near * pt.x) / pt.y) - middleX) / (trav->Right - trav->Left))  ;
-	const sint yPos = (height>>1) - (sint) (height * (((trav->Near * pt.z) / pt.y) - middleZ) / (trav->Top - trav->Bottom))  ;
-	
+	const sint yPos = (height>>1) - (sint) (height * (((trav->Near * pt.z) / pt.y) - middleZ) / (trav->Top - trav->Bottom))  ;	
 
+
+	// read z-buffer value at the pos we are
 	static std::vector<float> v(1) ;
-	NLMISC::CRect rect(xPos, yPos, 1, 1) ;
+	NLMISC::CRect rect(xPos, height - yPos, 1, 1) ;
 	drv->getZBufferPart(v, rect) ;
 
-	const float z = pt.y / trav->Far ;
+
+	
+
+
+	// project in screen space
+	const float z = (float) (1.0 - (1.0 / pt.y - 1.0 / trav->Far) / (1.0 /trav->Near - 1.0 / trav->Far)) ;
 	
 
 	if (!v.size() || z > v[0]) // test against z-buffer
 	{
-		m->_Intensity -= 0.01f ;
-		if (m->_Intensity < 0.f) m->_Intensity =0.f ;
+		float p = fs->getPersistence() ;
+		if (fs == 0)
+		{
+			m->_Intensity = 0 ;
+			return ;
+		}
+		else
+		{
+			m->_Intensity -= 1.f / p * m->_Scene->getEllapsedTime() ;	
+			if (m->_Intensity < 0.f) 
+			{
+				m->_Intensity = 0.f ;
+				return ;	// nothing to draw
+			}
+		}			
 	}
 	else
 	{
-		m->_Intensity += 0.01f ;
-		if (m->_Intensity > 1.f) m->_Intensity = 1.f ;
+		float p = fs->getPersistence() ;
+		if (fs == 0)
+		{
+			m->_Intensity = 1 ;
+		}
+		else
+		{
+			m->_Intensity += 1.f / p * m->_Scene->getEllapsedTime() ;	
+			if (m->_Intensity > 1.f) m->_Intensity = 1.f ;
+		}			
 	}
 
 	static CMaterial material ;
 	static CVertexBuffer vb ; 
-	CRGBA  col ;
-	nlassert(m->Shape) ;
-	CFlareShape *fs = NLMISC::safe_cast<CFlareShape *>((IShape *) m->Shape) ;
+	CRGBA  col ;	
 	CRGBA        flareColor = fs->getColor() ; 
-	col.modulateFromui(flareColor, (uint) (255.f * m->_Intensity)) ;
+	if (!fs->getAttenuable() )
+	{
+		col.modulateFromui(flareColor, (uint) (255.f * m->_Intensity)) ;
+	}
+	else
+	{
+		const float norm = sqrtf((float) (((xPos - (width>>1)) * (xPos - (width>>1)) + (yPos - (height>>1))*(yPos - (height>>1)))))
+						   / (float) (width>>1) ;
+		if (norm > fs->getAttenuationRange() || fs->getAttenuationRange() == 0.f) return ; // nothing to draw ;
+
+		col.modulateFromui(flareColor, (uint) (255.f * m->_Intensity * (1.f - norm / fs->getAttenuationRange() ))) ;
+	}
 
 	material.setColor(col) ;	
 	material.setBlend(true) ;
 	material.setBlendFunc(CMaterial::one, CMaterial::one) ;
-	material.setZWrite(false) ;
-	material.setTexture(0, fs->getTexture()) ;
+	material.setZWrite(false) ;	
 	material.setZFunc(CMaterial::always) ;
 	material.setLighting(false) ;	
 	material.setDoubleSided(true) ;
@@ -116,14 +157,12 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	vb.setNumVertices(4) ;
 
 	const CVector I = trav->CamMatrix.getI() ;
+	const CVector J = trav->CamMatrix.getJ() ;
 	const CVector K = trav->CamMatrix.getK() ;
 
-	const float size = 10 * fs->getSize() ;
+	CVector scrPos ; // vector that will map to the center of the flare on screen
+	
 
-	vb.setVertexCoord(0, size * (I + K)) ;
-	vb.setVertexCoord(1, size * (I - K)) ;
-	vb.setVertexCoord(2, size * (-I - K)) ;
-	vb.setVertexCoord(3, size * (-I + K)) ;
 
 	vb.setTexCoord(0, 0, NLMISC::CUV(1, 0)) ;
 	vb.setTexCoord(1, 0, NLMISC::CUV(1, 1)) ;
@@ -131,13 +170,92 @@ void	CFlareRenderObs::traverse(IObs *caller)
 	vb.setTexCoord(3, 0, NLMISC::CUV(0, 0)) ;
 
 
-	CMatrix tm ;
-	tm.setPos(upt) ;
-	drv->setupModelMatrix(tm) ;
-
+	
+	drv->setupModelMatrix(CMatrix::Identity) ;
+	
 	drv->activeVertexBuffer(vb) ;
 
-	drv->renderQuads(material, 0, 1) ;
+	// we don't change the fustrum to draw 2d shapes : it is costly, and we need to restore it after the drawing has been done
+	// we setup Z to be (near + far) / 2, and setup x and y to get the screen coordinates we want
+	const float zPos             = 0.5f * (trav->Near + trav->Far) ; 
+	const float zPosDivNear      = zPos / trav->Near ;
+
+	// compute the coeeff so that x = ax * px + bx ; y = ax * py + by
+	const float aX = ( (trav->Right - trav->Left) / (float) width) * zPosDivNear ;
+	const float bX = - (sint) (width>>1) * aX + middleX * zPosDivNear ;
+	const float aY = - ( (trav->Top - trav->Bottom) / (float) height) * zPosDivNear ;
+	const float bY = - (sint) (height>>1) * aY - middleZ * zPosDivNear ;
+   
+	float px = (float) xPos ;
+	float py = (float) yPos ;
+
+	// process each flare
+
+	// delta for each new Pos 
+	const float iK = 1.f / (MaxFlareNum) ;
+	const float dX = fs->getFlareSpacing() * ((width>>1) - px) * iK ;
+	const float dY = fs->getFlareSpacing() * ((height>>1) - py) * iK ;
+
+	float size ; // size of the current flare
+
+
+	uint k ;
+	ITexture *tex ;
+
+	if (fs->getFirstFlareKeepSize())
+	{
+		tex = fs->getTexture(0) ;
+		if (tex)
+		{
+			size = fs->getSize(0) ;
+
+			vb.setVertexCoord(0, upt + size * (I + K) ) ;
+			vb.setVertexCoord(1, upt + size * (I - K) ) ;
+			vb.setVertexCoord(2, upt + size * (-I - K) ) ;
+			vb.setVertexCoord(3, upt + size * (-I + K) ) ;
+
+
+			material.setTexture(0, tex) ;
+			drv->renderQuads(material, 0, 1) ;	
+
+			k = 1 ;
+		}
+	}
+	else
+	{
+		k = 0 ;
+	}
+
+	for (; k < MaxFlareNum ; ++k)
+	{
+		tex = fs->getTexture(k) ;
+		if (tex)
+		{
+			// compute vector that map to the center of the flare
+
+			scrPos = (aX * px + bX) * I +  zPos * J + (aY * py + bY) * K ; 
+
+
+			
+			size = fs->getSize(k) / trav->Near ;
+			
+
+			vb.setVertexCoord(0, scrPos + size * (I + K) ) ;
+			vb.setVertexCoord(1, scrPos + size * (I - K) ) ;
+			vb.setVertexCoord(2, scrPos + size * (-I - K) ) ;
+			vb.setVertexCoord(3, scrPos + size * (-I + K) ) ;
+
+
+			material.setTexture(0, tex) ;
+			drv->renderQuads(material, 0, 1) ;
+
+
+			px += dX ;
+			py += dY ;
+		}
+	}
+	
+	
 	
 	this->traverseSons() ;
 }

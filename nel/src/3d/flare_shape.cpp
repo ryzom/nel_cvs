@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.1 2001/07/24 08:45:37 vizerie Exp $
+ * $Id: flare_shape.cpp,v 1.2 2001/07/26 17:16:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,20 +33,36 @@ namespace NL3D {
 /*
  * Constructor
  */
-CFlareShape::CFlareShape()  : _Tex(NULL), _Color(NLMISC::CRGBA::White), _Size(1.f) 
+CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White), _Persistence(1), _Spacing(1)
+							  ,_Attenuable(false), _AttenuationRange (1.0f), _FirstFlareKeepSize(false)
 {
+	for (uint k = 0 ; k < MaxFlareNum ; ++k)
+	{
+		_Tex [k]  = NULL ;
+		_Size[k] = 1.f ;
+	}
 }
 
 
 void CFlareShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;
-	f.serial(_Color, _Size, _Persistence) ;
-	ITexture *tex = (ITexture *) _Tex ;
-	f.serialPolyPtr(tex) ;
-	if (f.isReading())
+	f.serial(_Color, _Persistence, _Spacing) ;
+	f.serial(_Attenuable) ;
+	if (_Attenuable)
 	{
-		_Tex = tex ;
+		f.serial(_AttenuationRange) ;
+	}
+	f.serial(_FirstFlareKeepSize) ;
+	for (uint k = 0 ; k < MaxFlareNum ; ++k)
+	{
+		ITexture *tex = (ITexture *) _Tex ;
+		f.serialPolyPtr(tex) ;
+		if (f.isReading())
+		{
+			_Tex[k] = tex ;
+		}
+		f.serial(_Size[k]) ;
 	}
 }
 
@@ -55,14 +71,25 @@ CTransformShape		*CFlareShape::createInstance(CScene &scene)
 {
 	CFlareModel *fm = NLMISC::safe_cast<CFlareModel *>(scene.createModel(FlareModelClassId) ) ;
 	fm->Shape = this ;	
+	fm->_Scene = &scene ;
 	return fm ;
+}
+
+float				CFlareShape::getNumTriangles (float distance)
+{
+	float count ;
+	for (uint k = 0 ; k < MaxFlareNum ; ++k)
+	{
+	if (_Tex[k]) count += 2 ;
+	}
+	return count ;
 }
 
 bool				CFlareShape::clip(const std::vector<CPlane>	&pyramid)
 {
 	for (std::vector<NLMISC::CPlane>::const_iterator it = pyramid.begin() ; it != pyramid.end() ; ++it)
 	{
-		if (it->d > _Size) return false ;
+		if (it->d > _Size[0]) return false ;
 	}
 	return true ;
 }
@@ -71,7 +98,7 @@ bool				CFlareShape::clip(const std::vector<CPlane>	&pyramid)
 void				CFlareShape::getAABBox(NLMISC::CAABBox &bbox) const
 {
 	bbox.setCenter(CVector::Null) ;
-	bbox.setHalfSize(CVector(_Size, _Size, _Size) ) ;
+	bbox.setHalfSize(CVector::Null) ;
 }
 
 

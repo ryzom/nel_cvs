@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.h
  * <File description>
  *
- * $Id: quad_grid_clip_manager.h,v 1.2 2003/03/20 15:00:03 berenguier Exp $
+ * $Id: quad_grid_clip_manager.h,v 1.3 2003/03/26 16:45:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/quad_grid_clip_cluster.h"
 #include <vector>
 #include "3d/fast_ptr_list.h"
+#include "3d/transform.h"
 
 
 namespace NL3D 
@@ -44,6 +45,12 @@ class CScene;
 class CTransformShape;
 class CClipTrav;
 
+
+// ***************************************************************************
+// ClassIds.
+const NLMISC::CClassId		QuadGridClipManagerId=NLMISC::CClassId(0x1ffb079a, 0x6c536a96);
+
+
 // ***************************************************************************
 /**
  * A quadgrix of QuadGridCluster
@@ -51,8 +58,12 @@ class CClipTrav;
  * \author Nevrax France
  * \date 2001
  */
-class CQuadGridClipManager
+class CQuadGridClipManager : public CTransform
 {
+public:
+	/// Call at the begining of the program, to register the model
+	static	void	registerBasic();
+
 public:
 
 	/// Constructor
@@ -64,29 +75,39 @@ public:
 	 *	there is maxDists.size()+1  clusters created by case of clusterSize*clusterSize. And as so many test.
 	 *	\param radiusMax a square of radiusMax*2 x radiusMax*2  of CQuadGridClusterCase are ensured to be created.
 	 */
-	void				init(CScene *scene, float clusterSize, std::vector<float> maxDists, float radiusMax );
+	void				init(float clusterSize, std::vector<float> maxDists, float radiusMax );
 
 	/// delete clusters from scene, and reset the manager.
 	void				reset();
 
 	/** create / delete QuadGridClusters around us.
 	 */
-	void				updateClustersFromCamera(CClipTrav *pClipTrav, const CVector &camPos);
+	void				updateClustersFromCamera(const CVector &camPos);
 
 
 	/** link a model to the best cluster possible, and update the bbox of this cluster.
 	 *	if out of range (no cluster found), don't link to any and return false.
 	 *	NB: pTfmShp->getFirstParent() should be NULL.
 	 */
-	bool				linkModel(CTransformShape *pTfmShp, CClipTrav *pClipTrav);
-
-	/** Parse Clusters
-	 */
-	void				clipClusters(CClipTrav *pClipTrav);
+	bool				linkModel(CTransformShape *pTfmShp);
 
 	/**	output (nlinfo) Stats for Usage of the QuadClip
 	 */
-	void				profile(CClipTrav	*clipTrav) const;
+	void				profile() const;
+
+	/// \name CTransform traverse specialisation. Only clip is special
+	// @{
+	virtual void	traverseHrc(CTransform *caller) {}
+	virtual void	traverseClip(CTransform *caller);
+	virtual void	traverseAnimDetail(CTransform *caller) {}
+	virtual void	traverseLoadBalancing(CTransform *caller) {}
+	virtual void	traverseLigth(CTransform *caller) {}
+	virtual void	traverseRender() {}
+	virtual	void	profileRender() {}
+	// @}
+
+private:
+	static CTransform	*creator() {return new CQuadGridClipManager;}
 
 private:
 
@@ -96,7 +117,6 @@ private:
 		std::vector<CQuadGridClipCluster*>	QuadGridClipClusters;
 	};
 
-	CScene							*_Scene;
 	float							_ClusterSize;
 	float							_RadiusMax;
 	std::vector<float>				_MaxDists;

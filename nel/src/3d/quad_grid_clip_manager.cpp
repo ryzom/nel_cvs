@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.cpp
  * <File description>
  *
- * $Id: quad_grid_clip_manager.cpp,v 1.11 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: quad_grid_clip_manager.cpp,v 1.12 2003/03/26 16:45:29 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,9 +43,15 @@ namespace NL3D
 
 
 // ***************************************************************************
+void	CQuadGridClipManager::registerBasic()
+{
+	CScene::registerModel(QuadGridClipManagerId, TransformId, CQuadGridClipManager::creator);
+}
+
+	
+// ***************************************************************************
 CQuadGridClipManager::CQuadGridClipManager()
 {
-	_Scene= NULL;
 	_ClusterSize= 0;
 	_X= _Y= 0;
 	_Width= _Height= 0;
@@ -58,14 +64,13 @@ CQuadGridClipManager::~CQuadGridClipManager()
 
 
 // ***************************************************************************
-void				CQuadGridClipManager::init(CScene *scene, float clusterSize, std::vector<float> maxDists, float radiusMax )
+void				CQuadGridClipManager::init(float clusterSize, std::vector<float> maxDists, float radiusMax )
 {
 	// reset first.
 	reset();
 
 	// copy params.
 	nlassert(clusterSize>0);
-	_Scene= scene;
 	_ClusterSize= clusterSize;
 	_MaxDists= maxDists;
 	_RadiusMax= radiusMax;
@@ -83,7 +88,7 @@ void				CQuadGridClipManager::init(CScene *scene, float clusterSize, std::vector
 void				CQuadGridClipManager::reset()
 {
 	// delete the clusters.
-	if(_Scene)
+	if(getOwnerScene())
 	{
 		sint	oldX0, oldX1, oldY0, oldY1;
 
@@ -96,7 +101,7 @@ void				CQuadGridClipManager::reset()
 		{
 			for(sint x=oldX0; x<oldX1; x++)
 			{
-				deleteCaseModels(&_Scene->getClipTrav(), x,y);
+				deleteCaseModels(&getOwnerScene()->getClipTrav(), x,y);
 			}
 		}
 
@@ -106,16 +111,17 @@ void				CQuadGridClipManager::reset()
 
 	// reset others params.
 	_MaxDists.clear();
-	_Scene= NULL;
 	_ClusterSize= 0;
 	_X= _Y= 0;
 	_Width= _Height= 0;
 }
 
 // ***************************************************************************
-void				CQuadGridClipManager::updateClustersFromCamera(CClipTrav *pClipTrav, const CVector &camPos)
+void				CQuadGridClipManager::updateClustersFromCamera(const CVector &camPos)
 {
 	H_AUTO( NL3D_QuadClip_updateClusters );
+
+	CClipTrav *pClipTrav= &getOwnerScene()->getClipTrav();
 
 	sint	newX0, newX1, newY0, newY1;
 	sint	oldX0, oldX1, oldY0, oldY1;
@@ -198,9 +204,11 @@ void				CQuadGridClipManager::updateClustersFromCamera(CClipTrav *pClipTrav, con
 
 
 // ***************************************************************************
-bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp, CClipTrav *pClipTrav)
+bool				CQuadGridClipManager::linkModel(CTransformShape *pTfmShp)
 {
 	H_AUTO( NL3D_QuadClip_linkModel );
+
+	CClipTrav *pClipTrav= &getOwnerScene()->getClipTrav();
 
 	// use the position to get the cluster to use.
 	CAABBox box;
@@ -332,8 +340,10 @@ void				CQuadGridClipManager::newCaseModels(CQuadGridClusterCase &clusterCase)
 
 
 // ***************************************************************************
-void				CQuadGridClipManager::clipClusters(CClipTrav *pClipTrav)
+void				CQuadGridClipManager::traverseClip(CTransform *caller)
 {
+	CClipTrav *pClipTrav= &getOwnerScene()->getClipTrav();
+
 	// Run All NotEmpty Clusters,
 	CQuadGridClipCluster	**it;
 	it= _NotEmptyQuadGridClipClusters.begin();
@@ -346,8 +356,10 @@ void				CQuadGridClipManager::clipClusters(CClipTrav *pClipTrav)
 
 
 // ***************************************************************************
-void				CQuadGridClipManager::profile(CClipTrav	*clipTrav) const
+void				CQuadGridClipManager::profile() const
 {
+	CClipTrav *pClipTrav= &getOwnerScene()->getClipTrav();
+
 	nlinfo(" ***** CQuadGridClipManager stats");
 	nlinfo(" There is %d clusters per level", _Width*_Height );
 	for(uint lvl=0;lvl<_MaxDists.size()+1;lvl++)

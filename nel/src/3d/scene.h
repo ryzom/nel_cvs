@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.38 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: scene.h,v 1.39 2003/03/26 16:45:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -578,7 +578,7 @@ private:
 
 	/// \name Clip features
 	//@{
-	CQuadGridClipManager		_QuadGridClipManager;
+	CQuadGridClipManager		*_QuadGridClipManager;
 	//@}
 
 

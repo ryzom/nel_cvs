@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.95 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: scene.cpp,v 1.96 2003/03/26 16:45:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,7 @@ void	CScene::registerBasics()
 	CRootModel::registerBasic();
 	CPointLightModel::registerBasic();
 	CSegRemanence::registerBasic();
+	CQuadGridClipManager::registerBasic();
 }
 
 	
@@ -130,6 +131,7 @@ CScene::CScene()
 	Root= NULL;
 	RootCluster= NULL;
 	SonsOfAncestorSkeletonModelGroup= NULL;
+	_QuadGridClipManager= NULL;
 
 	_CurrentTime = 0 ;
 	_EllapsedTime = 0 ;
@@ -169,7 +171,8 @@ void	CScene::release()
 	CAsyncFileManager::terminate();
 
 	// reset the _QuadGridClipManager, => unlink models, and delete clusters.
-	_QuadGridClipManager.reset();
+	if( _QuadGridClipManager )
+		_QuadGridClipManager->reset();
 
 	// First, delete models
 	set<CTransform*>::iterator	it;
@@ -188,6 +191,8 @@ void	CScene::release()
 	RootCluster= NULL;
 	SonsOfAncestorSkeletonModelGroup= NULL;
 	CurrentCamera= NULL;
+	_QuadGridClipManager= NULL;
+	ClipTrav.setQuadGridClipManager(NULL);
 
 	// reset the _LodCharacterManager
 	if(_LodCharacterManager)
@@ -237,13 +242,25 @@ void	CScene::initDefaultRoots()
 void	CScene::initQuadGridClipManager ()
 {
 	// Init clip features.
-	// setup maxDists clip.
-	vector<float>	maxDists;
-	maxDists.resize( sizeof(NL3D_QuadGridClipManagerMaxDist) / sizeof(NL3D_QuadGridClipManagerMaxDist[0]) );
-	for(uint i=0; i<maxDists.size(); i++)
-		maxDists[i]= NL3D_QuadGridClipManagerMaxDist[i];
-	// init _QuadGridClipManager.
-	_QuadGridClipManager.init(this, NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE, maxDists, NL3D_QuadGridClipManagerRadiusMax);
+	if( !_QuadGridClipManager )
+	{
+		// create the model
+		_QuadGridClipManager= static_cast<CQuadGridClipManager*>(createModel(QuadGridClipManagerId));
+		// unlink it from hrc, and link it only to RootCluster. 
+		// NB: hence the quadGridClipManager may be clipped by the cluster system
+		_QuadGridClipManager->hrcUnlink();
+		_QuadGridClipManager->clipUnlinkFromAll();
+		RootCluster->clipAddChild(_QuadGridClipManager);
+
+		// setup maxDists clip.
+		vector<float>	maxDists;
+		maxDists.resize( sizeof(NL3D_QuadGridClipManagerMaxDist) / sizeof(NL3D_QuadGridClipManagerMaxDist[0]) );
+		for(uint i=0; i<maxDists.size(); i++)
+			maxDists[i]= NL3D_QuadGridClipManagerMaxDist[i];
+
+		// init _QuadGridClipManager.
+		_QuadGridClipManager->init(NL3D_SCENE_QUADGRID_CLIP_CLUSTER_SIZE, maxDists, NL3D_QuadGridClipManagerRadiusMax);
+	}
 }
 
 
@@ -276,7 +293,7 @@ void	CScene::render(bool	doHrcPass)
 
 	// Set Infos for cliptrav.
 	ClipTrav.Camera = CurrentCamera;
-	ClipTrav.setQuadGridClipManager (&_QuadGridClipManager);
+	ClipTrav.setQuadGridClipManager (_QuadGridClipManager);
 
 
 	// **** For all render traversals, traverse them (except the Hrc one), in ascending order.
@@ -402,7 +419,7 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 	CTransformShape *pTShp = _ShapeBank->addRef( shapeName )->createInstance(*this);
 	if (pTShp) pTShp->setDistMax(pTShp->Shape->getDistMax());
 #ifdef NL_DEBUG
-//	pTShp->NameForDebug = shapeName; // \todo traptemp
+	//pTShp->NameForDebug = shapeName; // \todo traptemp
 #endif
 
 	// Look if this instance get lightmap information

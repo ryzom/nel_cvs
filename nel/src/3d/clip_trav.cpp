@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.30 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.31 2003/03/26 16:45:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,7 +164,7 @@ void CClipTrav::traverse()
 	// update the QuadGridClipManager.
 	if(_QuadGridClipManager)
 	{
-		_QuadGridClipManager->updateClustersFromCamera(this, CamPos);
+		_QuadGridClipManager->updateClustersFromCamera(CamPos);
 	}
 
 	H_BEFORE( NL3D_TravClip_ClearLists );
@@ -322,7 +322,7 @@ void CClipTrav::traverse()
 			if( _QuadGridClipManager && pTfmShp->isQuadGridClipEnabled() )
 			{
 				// try to insert in the best cluster of the _QuadGridClipManager.
-				if(!_QuadGridClipManager->linkModel(pTfmShp, this))
+				if(!_QuadGridClipManager->linkModel(pTfmShp))
 					// if fails, link to "root".
 					RootCluster->clipAddChild(pTfmShp);
 			}
@@ -340,9 +340,6 @@ void CClipTrav::traverse()
 
 	H_BEFORE( NL3D_TravClip_Traverse);
 
-	// Traverse The QuadGridClipManager
-	if( _QuadGridClipManager )
-		_QuadGridClipManager->clipClusters(this);
 
 	// Traverse the graph.
 	sceneRoot->traverseClip(NULL);

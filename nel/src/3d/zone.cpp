@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.24 2001/01/09 15:25:29 berenguier Exp $
+ * $Id: zone.cpp,v 1.25 2001/01/10 11:13:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 		pa.Tiles= pi.Tiles;
 		pa.TileColors= pi.TileColors;
 		nlassert(pa.Tiles.size()== (uint)pi.OrderS*pi.OrderT);
-		nlassert(pa.TileColors.size()== (uint)pi.OrderS*pi.OrderT);
+		nlassert(pa.TileColors.size()== (uint)(pi.OrderS+1)*(pi.OrderT+1));
 
 
 
@@ -229,13 +229,42 @@ void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 // ***************************************************************************
 void			CZone::serial(NLMISC::IStream &f)
 {
-	uint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- Tile color.
+	Version 0:
+		- base verison.
+	*/
+	uint	ver= f.serialVersion(1);
 
 	f.serialCheck((uint32)'ENOZ');
 	f.serial(ZoneId, ZoneBB, PatchBias, PatchScale, NumVertices);
 	f.serialCont(BorderVertices);
 	f.serialCont(Patchs);
 	f.serialCont(PatchConnects);
+
+	// If read and version 0, must init default TileColors of patchs.
+	//===============================================================
+	if(f.isReading() && ver==0)
+	{
+		for(sint j=0;j<(sint)Patchs.size();j++)
+		{
+			CPatch				&pa= Patchs[j];
+			CPatchConnect		&pc= PatchConnects[j];
+
+			// Leave it as default behavior: Must init the color as pure white...
+			// We must fo it with help of patchconnects OrderS and OrderT.
+			pa.TileColors.resize( (pc.OrderS+1)*(pc.OrderT+1) );
+			for(sint i=0;i<(sint)pa.TileColors.size();i++)
+			{
+				pa.TileColors[i].Color565= 0xFFFF;
+				pa.TileColors[i].Shade= 0xFF;
+				pa.TileColors[i].LightX= 0xFF;
+				pa.TileColors[i].LightY= 0x00;
+				pa.TileColors[i].LightZ= 0x00;
+			}
+		}
+	}
 }
 
 

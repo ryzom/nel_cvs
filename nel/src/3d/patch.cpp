@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.29 2001/01/10 09:26:09 berenguier Exp $
+ * $Id: patch.cpp,v 1.30 2001/01/10 11:13:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1113,19 +1113,7 @@ void			CPatch::serial(NLMISC::IStream &f)
 	f.serialCont(Tiles);
 	if(ver>=1)
 		f.serialCont(TileColors);
-	else if(f.isReading())
-	{
-		// Leave it as default behavior: Must init the color as pure white...
-		TileColors.resize(Tiles.size());
-		for(sint i=0;i<(sint)TileColors.size();i++)
-		{
-			TileColors[i].Color565= 0xFFFF;
-			TileColors[i].Shade= 0xFF;
-			TileColors[i].LightX= 0xFF;
-			TileColors[i].LightY= 0x00;
-			TileColors[i].LightZ= 0x00;
-		}
-	}
+	// Else cannot create here the TileColors, because we need the OrderS/OrderT information... Done into CZone serial.
 }
 
 

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * <File description>
  *
- * $Id: calc_lm.cpp,v 1.9 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.10 2001/07/05 09:42:31 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3400,6 +3400,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	// Build the mesh with the build interface
 
 	for( i = 0; i < pMBB->Materials.size(); ++i )
+	if( pMBB->Materials[i].getShader() == CMaterial::TShader::LightMap )
 	{
 		pMBB->Materials[i].setLighting( false );
 		pMBB->Materials[i].setColor( CRGBA(255,255,255,255) );

@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.h
  * <File description>
  *
- * $Id: shadow_map_manager.h,v 1.4 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: shadow_map_manager.h,v 1.5 2004/03/31 13:33:41 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -44,7 +44,7 @@ class	CTransform;
 // ***************************************************************************
 #define	NL3D_SMM_QUADGRID_SIZE		16
 #define	NL3D_SMM_QUADCELL_SIZE		8.0f
-#define	NL3D_SMM_MAX_TEXTDEST_SIZE	512
+#define	NL3D_SMM_MAX_TEXTDEST_SIZE	256
 #define	NL3D_SMM_MAX_FREETEXT		20
 #define	NL3D_SMM_FADE_SPEED			0.5f
 

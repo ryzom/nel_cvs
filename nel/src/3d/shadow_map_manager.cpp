@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.6 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.7 2004/03/31 13:33:41 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -347,8 +347,8 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 		// ********
 
 		// Render the polygons with Smooth Anti-Alias. Less jittering for little performance overcost
-/*		if(_PolySmooth)
-			driverForShadowGeneration->enablePolygonSmoothing(true);*/
+		if(_PolySmooth)
+			driverForShadowGeneration->enablePolygonSmoothing(true);
 
 		textX=0;
 		textY=0;

@@ -1,6 +1,9 @@
 #!/bin/bash
 rm log.log 2> /dev/null
 
+# Bin
+tga_2_dds='../../bin/tga2dds.exe'
+
 # *** Export interface tile (.tga)
 
 # Get the database directory
@@ -22,20 +25,38 @@ echo -------
 date >> log.log
 date
 
-# For each interface fullscreen directory
+# For each interface fullscreen directory compress independently all in dds
+rm tga_tmp/*.[tT][gG][aA]
 for i in $interface_fullscreen_directories; do
 	# Copy
-	cp -u -p $database_directory/$i/*.[tT][gG][aA] tga 2>> log.log
+	cp -u -p $database_directory/$i/*.[tT][gG][aA] tga_tmp 2>> log.log
 
 	# Idle
 	../../idle.bat
 done
 
+for i in tga_tmp/*.[tT][gG][aA] ; do
+
+	# Destination file
+	dest=`echo $i | sed -e 's/tga_tmp/tga/g'`
+	dest=`echo $dest | sed -e 's/.[tT][gG][aA]/.dds/g'`
+
+	if ( ! test -e $dest ) || ( test $i -nt $dest )
+	then
+		# Convert
+		$tga_2_dds $i -o $dest -a 5 2>> log.log
+	fi
+
+	# Idle
+	../../idle.bat
+done
+
+
 # For each interface 3d directory
 for i in $interface_3d_directories; do
 	# Copy
 	cp -u -p $database_directory/$i/*.[tT][gG][aA] tga 2>> log.log
-	cp -u -p $database_directory/$i/*.[sS][hH][aA][pP][eE]  shape 2>> log.log
+	cp -u -p $database_directory/$i/*.[sS][hH][aA][pP][eE] shape 2>> log.log
 
 	# Idle
 	../../idle.bat

@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.15 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.16 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -157,12 +157,6 @@ CLoadBalancingTrav::CLoadBalancingTrav()
 void				CLoadBalancingTrav::clearVisibleList()
 {
 	_VisibleList.clear();
-}
-
-// ***************************************************************************
-void				CLoadBalancingTrav::addVisibleModel(CTransform *model)
-{
-	_VisibleList.push_back(model);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.31 2003/03/26 16:45:29 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.32 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,8 +269,8 @@ void CClipTrav::traverse()
 		{
 			CTransform *pFather = pTfmShp->clipGetParent(j);
 
-			// Does the father is a cluster ?? TODODO optimize dynamic_cast
-			if ( dynamic_cast<CCluster*>(pFather)!= NULL  )
+			// Does the father is a cluster ??
+			if ( pFather->isCluster() )
 			{
 				vModels.push_back (pFather);
 			}
@@ -418,14 +418,6 @@ void CClipTrav::unregisterCluster (CCluster* pCluster)
 		}
 		++itAcc;
 	}
-}
-
-
-// ***************************************************************************
-void CClipTrav::addVisibleModel(CTransform *model)
-{
-	model->_IndexInVisibleList= _VisibleList.size();
-	_VisibleList.push_back(model);
 }
 
 

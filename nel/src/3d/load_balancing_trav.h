@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.h
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.h,v 1.8 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: load_balancing_trav.h,v 1.9 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,7 +175,10 @@ public:
 	void				clearVisibleList();
 
 	// For ClipTrav only. NB: list is cleared at begining of traverse().
-	void				addVisibleModel(CTransform *model);
+	void				addVisibleModel(CTransform *model)
+	{
+		_VisibleList.push_back(model);
+	}
 
 // **************
 private:

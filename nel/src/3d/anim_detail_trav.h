@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.h
  * <File description>
  *
- * $Id: anim_detail_trav.h,v 1.7 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: anim_detail_trav.h,v 1.8 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,10 @@ public:
 	void				clearVisibleList();
 
 	// For ClipTrav only. NB: list is cleared at begining of traverse(). NB: only CTransform are supported
-	void				addVisibleModel(CTransform *model);
+	void				addVisibleModel(CTransform *model)
+	{
+		_VisibleList.push_back(model);
+	}
 
 
 // ********************

@@ -1,7 +1,7 @@
 /** \file light_trav.h
  * <File description>
  *
- * $Id: light_trav.h,v 1.5 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: light_trav.h,v 1.6 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,10 @@ public:
 	/// Clear the list of lighted models.
 	void				clearLightedList();
 	/// Add a model to the list of lighted models. \b DOESN'T \b CHECK if already inserted.
-	void				addLightedModel(CTransform *m);
+	void				addLightedModel(CTransform *m)
+	{
+		_LightedList.push_back(m);
+	}
 	//@}
 
 	/// \name LightingList. Add a PointLightModel to the list.

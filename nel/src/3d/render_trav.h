@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.17 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: render_trav.h,v 1.18 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,10 @@ public:
 	void			clearRenderList();
 	/** Add a model to the list of rendered models. \b DOESN'T \b CHECK if already inserted.
 	 */
-	void			addRenderModel(CTransform *m);
+	void			addRenderModel(CTransform *m)
+	{
+		RenderList.push_back(m);
+	}
 	//@}
 
 

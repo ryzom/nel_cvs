@@ -1,7 +1,7 @@
 /** \file clip_trav.h
  * <File description>
  *
- * $Id: clip_trav.h,v 1.17 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: clip_trav.h,v 1.18 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,11 @@ public:
 	/// \name Visible List mgt. Those visible modles are updated each traverse().
 	//@{
 	// NB: list is cleared at begining of traverse().
-	void				addVisibleModel(CTransform *model);
+	void				addVisibleModel(CTransform *model)
+	{
+		model->_IndexInVisibleList= _VisibleList.size();
+		_VisibleList.push_back(model);
+	}
 	//@}
 
 

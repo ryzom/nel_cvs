@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.58 2003/03/26 16:46:14 berenguier Exp $
+ * $Id: transform.cpp,v 1.59 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,6 +103,8 @@ CTransform::CTransform()
 
 			IsSkeleton= 0
 			IsTransformShape=0
+			IsCluster= 0
+			IsMeshBaseInstance= 0
 
 			IsDeleteChannelMixer = 0;
 	*/

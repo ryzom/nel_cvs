@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.42 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.43 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -257,11 +257,6 @@ void		CRenderTrav::traverse()
 void		CRenderTrav::clearRenderList()
 {
 	RenderList.clear();
-}
-// ***************************************************************************
-void		CRenderTrav::addRenderModel(CTransform *m)
-{
-	RenderList.push_back(m);
 }
 
 

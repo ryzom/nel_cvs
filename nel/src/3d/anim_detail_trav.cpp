@@ -1,7 +1,7 @@
 /** \file anim_detail_trav.cpp
  * <File description>
  *
- * $Id: anim_detail_trav.cpp,v 1.11 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.12 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,12 +52,6 @@ CAnimDetailTrav::CAnimDetailTrav()
 void				CAnimDetailTrav::clearVisibleList()
 {
 	_VisibleList.clear();
-}
-
-// ***************************************************************************
-void				CAnimDetailTrav::addVisibleModel(CTransform *model)
-{
-	_VisibleList.push_back(model);
 }
 
 

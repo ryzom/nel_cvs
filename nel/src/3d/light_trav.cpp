@@ -1,7 +1,7 @@
 /** \file light_trav.cpp
  * <File description>
  *
- * $Id: light_trav.cpp,v 1.10 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: light_trav.cpp,v 1.11 2003/03/27 16:51:45 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,11 +54,7 @@ void		CLightTrav::clearLightedList()
 {
 	_LightedList.clear();
 }
-// ***************************************************************************
-void		CLightTrav::addLightedModel(CTransform *m)
-{
-	_LightedList.push_back(m);
-}
+
 
 // ***************************************************************************
 void		CLightTrav::addPointLightModel(CPointLightModel *pl)

@@ -1,7 +1,7 @@
 /** \file system_info.h
  * Retrieves system information (OS, processor, memory, etc...)
  *
- * $Id: system_info.h,v 1.6 2002/11/13 15:45:33 lecroart Exp $
+ * $Id: system_info.h,v 1.7 2003/01/13 14:07:21 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,6 @@ public:
 
 	static std::string getOS ();
 	static std::string getProc ();
-	static std::string getMem ();
 
 	/** test wether the cpuid instruction is supported
 	  * (always false on non intel architectures)

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * <File description>
  *
- * $Id: win_displayer.cpp,v 1.6 2001/08/24 14:29:51 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.7 2001/08/27 12:55:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,10 +65,12 @@ CWinDisplayer::~CWinDisplayer ()
 	}
 }
 
+static bool NeedToUpdateAll = true;
 
 LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	static vector<string> History;
+	static vector<string> CommandsToExecute;
 	static int	PosInHistory;
 
 	static MSGFILTER *pmf;
@@ -135,9 +137,16 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 						if (!str.empty())
 						{
-							ICommand::execute (str, *InfoLog);
-							History.push_back(str);
-							PosInHistory = History.size();
+							if (NeedToUpdateAll)
+							{
+								ICommand::execute (str, *InfoLog);
+								History.push_back(str);
+								PosInHistory = History.size();
+							}
+							else
+							{
+								CommandsToExecute.push_back(str);
+							}
 						}
 					}
 				}
@@ -188,7 +197,22 @@ LRESULT CALLBACK WndProc (HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 		}
-   }
+	}
+	
+	if (NeedToUpdateAll && !CommandsToExecute.empty())
+	{
+		// must be set to flase before the for()
+		NeedToUpdateAll = false;
+
+		for (uint i = 0; i < CommandsToExecute.size(); i++)
+		{
+			ICommand::execute (CommandsToExecute[i], *InfoLog);
+			History.push_back(CommandsToExecute[i]);
+			PosInHistory = History.size();
+		}
+		CommandsToExecute.clear ();
+	}
+
    return DefWindowProc (hWnd, message, wParam, lParam);
 }
 
@@ -313,17 +337,21 @@ void CWinDisplayer::create (string WindowNameEx, uint w, uint h, sint hs)
 	SetFocus(_HInputEdit);
 	
 	_Thread = getThreadId ();
-	update ();
+	update (false);
 }
 
-void CWinDisplayer::update ()
+void CWinDisplayer::update (bool all)
 {
+	NeedToUpdateAll = all;
+	
 	MSG	msg;
 	while (PeekMessage(&msg,NULL,0,0,PM_REMOVE))
 	{
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	NeedToUpdateAll = false;
 }
 
 void CWinDisplayer::clear ()
@@ -426,7 +454,7 @@ void CWinDisplayer::doDisplay (const NLMISC::TDisplayInfo &args, const char *mes
 	// restore old selection
 	SendMessage (_HEdit, EM_SETSEL, startSel, endSel);
 
-	update ();
+	update (false);
 }
 
 } // NLMISC

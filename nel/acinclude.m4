@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.3 2002/01/10 14:33:19 valignat Exp $
+dnl $Id: acinclude.m4,v 1.4 2002/01/22 14:24:56 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -350,6 +350,11 @@ fi
 if test "$nel_includes"
 then
     NEL_CFLAGS="-I$nel_includes"
+fi
+
+if test "$nel_libraries"
+then
+    NEL_LIBS="-L$nel_libraries"
 fi
 
 dnl Checking for NeL headers

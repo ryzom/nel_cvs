@@ -1,7 +1,7 @@
 /** \file ps_attrib.h
  * <File description>
  *
- * $Id: ps_attrib.h,v 1.14 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_attrib.h,v 1.15 2002/09/09 09:52:32 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -255,9 +255,9 @@ public:
 		typedef T value_type;
 
 		/// an iterator on the datas
-		typedef TContType::iterator iterator;
+		typedef typename TContType::iterator iterator;
 		/// a const iterator on the datas
-		typedef TContType::const_iterator const_iterator;
+		typedef typename TContType::const_iterator const_iterator;
 	//@}
 
 

@@ -1,7 +1,7 @@
 /** \file ptr_set.h
  * <File description>
  *
- * $Id: ptr_set.h,v 1.1 2001/06/15 16:24:44 corvazier Exp $
+ * $Id: ptr_set.h,v 1.2 2002/09/09 09:52:32 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,7 +82,7 @@ public:
 	 */
 	void			clear()
 	{
-		std::set<T*>::iterator it;
+		typename std::set<T*>::iterator it;
 		for(it= Set.begin();it!=Set.end();it++)
 		{
 			delete *it;

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.9 2000/11/21 18:11:11 valignat Exp $
+ * $Id: tile_bank.cpp,v 1.10 2000/11/21 18:28:45 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,7 +200,7 @@ sint CTileBank::getNumBitmap (CTile::TBitmap bitmap) const
 			{
 				std::vector<char> vect (str.length()+1);
 				memcpy (&*vect.begin(), str.c_str(), str.length()+1);
-				strlwr (&*vect.begin());
+				NLMISC::strlwr (&*vect.begin());
 				setString.insert (std::string (&*vect.begin()));
 			}
 		}

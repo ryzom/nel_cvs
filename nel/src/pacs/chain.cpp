@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.1 2001/05/04 14:51:21 legros Exp $
+ * $Id: chain.cpp,v 1.2 2001/05/04 16:50:14 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ static inline bool	isEqual(const CVector &a, const CVector &b)
 }
 
 
-void	NLPACS::COrderedChain::serial(NLMISC::IStream &f)
+void	NLPACS::COrderedChain::serial(IStream &f)
 {
 	f.serialCont(_Vertices);
 	f.serial(_Forward);
@@ -90,6 +90,11 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 				;
 		--last;
 
+		uint32	subChainId = chains.size();
+		if (subChainId > 65535)
+			nlerror("in NLPACS::CChain::make(): reached the maximum number of ordered chains");
+		_SubChains.push_back((uint16)subChainId);
+
 		chains.resize(chains.size()+1);
 		COrderedChain	&subchain = chains.back();
 		subchain._Vertices.reserve(last-first+1);
@@ -106,7 +111,7 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 	}
 }
 
-void	NLPACS::CChain::serial(NLMISC::IStream &f)
+void	NLPACS::CChain::serial(IStream &f)
 {
 	f.serialCont(_SubChains);
 	f.serial(_Left, _Right);

@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.35 2003/07/09 15:17:08 cado Exp $
+ * $Id: message.h,v 1.36 2003/08/05 14:46:13 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,9 +95,11 @@ public:
 	// Returns true if the message type was already set
 	bool typeIsSet () const;
 
-	/** Returns the length (size) of the message, in bytes.
+	/**
+	 * Returns the length (size) of the message, in bytes.
 	 * If isReading(), it is the number of bytes that can be read,
 	 * otherwise it is the number of bytes that have been written.
+	 * Overloaded because uses a specific version of lengthR().
 	 */
 	virtual uint32	length() const
 	{
@@ -154,6 +156,7 @@ public:
 	 *
 	 * Preconditions:
 	 * - The message is an input message (isReading()) and has been locked using lockSubMessage()
+	 * - The reading pos is within or at the end of the previous sub message (if any) (see nlassertex)
 	 *
 	 * Postconditions:
 	 * - The current pos is the next byte after the sub message
@@ -161,7 +164,8 @@ public:
 	void			unlockSubMessage()
 	{
 		nlassert( isReading() && hasLockedSubMessage() );
-		nlassert( getPos() <= (sint32)_LengthR ); // locking the message ensures the user can't read more
+		nlassertex( getPos() <= (sint32)_LengthR, ("The callback for msg %s read more data than there is in the message (pos=%d len=%u)", getName().c_str(), getPos(), _LengthR) );
+
 		uint32 subMsgEndPos = _LengthR;
 		resetSubMessageInternals();
 		seek( subMsgEndPos, IStream::begin );

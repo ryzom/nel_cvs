@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.18 2001/02/16 14:36:20 lecroart Exp $
+ * $Id: config_file.cpp,v 1.19 2001/02/16 15:09:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,7 +202,8 @@ void CConfigFile::reparse ()
 	cfin = fopen (_FileName.c_str (), "r");
 	if (cfin != NULL)
 	{
-		_Vars.clear();
+// if we clear all the array, we'll lost the callback on variable and all information
+//		_Vars.clear();
 		bool parsingOK = (cfparse (&(_Vars)) == 0);
 		fclose (cfin);
 		if (!parsingOK) throw EParseError (_FileName, cf_CurrentLine);

@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.11 2003/01/03 11:25:27 lecroart Exp $
+ * $Id: system_info.cpp,v 1.12 2003/01/03 15:24:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,16 @@ string CSystemInfo::getOS ()
 
 #elif defined NL_OS_UNIX
 
-	OSString = "Unix";
+    char buffer[4096+1];
+    int fd, len;
+    char *p;
+	
+	fd = open("/proc/version", O_RDONLY);
+	len = read(fd, buffer, sizeof(buffer)-1);
+	close(fd);
+	buffer[len] = '\0';
+
+	OSString = buffer;
 
 #endif	// NL_OS_UNIX
 

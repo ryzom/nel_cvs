@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.17 2001/05/07 14:41:57 berenguier Exp $
+ * $Id: vertex_buffer.cpp,v 1.18 2001/05/31 09:34:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -265,6 +265,108 @@ void* CVertexBuffer::getPaletteSkinPointer(uint idx)
 	ptr+=idx*_VertexSize;
 	return((void*)ptr);
 }
+
+
+////////////////////
+// const versions //
+////////////////////
+
+
+const void* CVertexBuffer::getVertexCoordPointer(uint idx) const 
+{
+	const uint8*	ptr;
+
+	ptr=&(*_Verts.begin());
+	ptr+=(idx*_VertexSize);
+	return((void*)ptr);
+}
+
+const void* CVertexBuffer::getNormalCoordPointer(uint idx) const
+{
+	const uint8*	ptr;
+
+	if ( !(_Flags & IDRV_VF_NORMAL) )
+	{
+		return(NULL);
+	}
+	ptr=&(*_Verts.begin());
+	ptr+=_NormalOff;
+	ptr+=idx*_VertexSize;
+	return((void*)ptr);
+}
+
+const void* CVertexBuffer::getColorPointer(uint idx) const
+{
+	const uint8*	ptr;
+
+	if ( !(_Flags & IDRV_VF_COLOR) )
+	{
+		return(NULL);
+	}
+	ptr=&(*_Verts.begin());
+	ptr+=_RGBAOff;
+	ptr+=idx*_VertexSize;
+	return((void*)ptr);
+}
+
+const void* CVertexBuffer::getSpecularPointer(uint idx) const
+{
+	const uint8*	ptr;
+
+	if ( !(_Flags & IDRV_VF_SPECULAR) )
+	{
+		return(NULL);
+	}
+	ptr=&(*_Verts.begin());
+	ptr+=_SpecularOff;
+	ptr+=idx*_VertexSize;
+	return((void*)ptr);
+}
+
+const void* CVertexBuffer::getTexCoordPointer(uint idx, uint8 stage) const
+{
+	const uint8*	ptr;
+
+	if ( !(_Flags & IDRV_VF_UV[stage]) )
+	{
+		return(NULL);
+	}
+	ptr=&(*_Verts.begin());
+	ptr+=_UVOff[stage];
+	ptr+=idx*_VertexSize;
+	return((void*)ptr);
+}
+
+
+const void* CVertexBuffer::getWeightPointer(uint idx, uint8 wgt) const
+{
+	const uint8*	ptr;
+
+	nlassert(wgt<IDRV_VF_MAXW);
+	if( !(_Flags & IDRV_VF_W[wgt]))
+		return NULL;
+
+	ptr=(uint8*)(&_Verts[idx*_VertexSize]);
+	ptr+=_WOff[wgt];
+
+	return ptr;
+}
+
+
+const void* CVertexBuffer::getPaletteSkinPointer(uint idx) const
+{
+	const uint8*	ptr;
+
+	if ( (_Flags & IDRV_VF_PALETTE_SKIN) != IDRV_VF_PALETTE_SKIN )
+	{
+		return(NULL);
+	}
+	ptr=&(*_Verts.begin());
+	ptr+=_PaletteSkinOff;
+	ptr+=idx*_VertexSize;
+	return((void*)ptr);
+}
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.9 2001/05/07 14:41:57 berenguier Exp $
+ * $Id: vertex_buffer.h,v 1.10 2001/05/31 09:34:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,8 +153,8 @@ public:
 
 	/// Setup the vertex format. Do it before any other method.
 	bool					setVertexFormat(uint32 Flags);
-	uint32					getVertexFormat(void) { return(_Flags); };
-	uint8					getVertexSize(void) {return(_VertexSize);}
+	uint32					getVertexFormat(void) const  { return(_Flags); };
+	uint8					getVertexSize(void) const {return(_VertexSize);}
 
 	/// reserve space for nVerts vertices. You are allowed to write your vertices on this space.
 	void					reserve(uint32 nVerts);
@@ -163,7 +163,7 @@ public:
 	/// Set the number of active vertices. It enlarge capacity, if needed.
 	void					setNumVertices(uint32 n);
 	/// Get the number of active vertices.
-	uint32					getNumVertices(void) {return(_NbVerts);}
+	uint32					getNumVertices(void) const  {return(_NbVerts);}
 
 
 	// It is an error (assert) to set a vertex component if not setuped in setVertexFormat().
@@ -196,6 +196,14 @@ public:
 	void*					getSpecularPointer(uint idx=0);
 	void*					getWeightPointer(uint idx=0, uint8 wgt=0);
 	void*					getPaletteSkinPointer(uint idx=0);
+
+	const void*					getVertexCoordPointer(uint idx=0) const ;
+	const void*					getNormalCoordPointer(uint idx=0) const ;
+	const void*					getTexCoordPointer(uint idx=0, uint8 stage=0) const ;
+	const void*					getColorPointer(uint idx=0) const ;
+	const void*					getSpecularPointer(uint idx=0) const ;
+	const void*					getWeightPointer(uint idx=0, uint8 wgt=0) const ;
+	const void*					getPaletteSkinPointer(uint idx=0) const ;
 
 
 	void		serial(NLMISC::IStream &f);

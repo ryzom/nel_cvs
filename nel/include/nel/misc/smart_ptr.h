@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: smart_ptr.h,v 1.6 2000/10/02 17:09:41 berenguier Exp $
+ * $Id: smart_ptr.h,v 1.7 2000/10/03 08:23:08 berenguier Exp $
  *
  * CSmartPtr and CRefPtr class.
  */
@@ -134,6 +134,8 @@ public:
 	}
  \endcode
  *
+ * \b PERFORMANCE \b WARNING! operator=() are about 10 times slower than normal pointers.
+ * For local use, prefer cast the smartptr to a normal Ptr.
  * \sa CRefPtr
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -193,6 +195,10 @@ public:
 		rp= p;		// Error!!! (compile but will lead too funny crashs).
 	}
  \endcode
+ *
+ * \b PERFORMANCE \b WARNING! operator=() are about 10 times slower than normal pointers. So use them wisely.
+ * For local use, prefer cast the smartptr to a normal Ptr.
+ * Also, an object used with a CRefPtr will allocate a small PtrInfo (one only per object, not per ptr).
  * \sa CSmartPtr
  */
 template <class T> 

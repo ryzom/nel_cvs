@@ -1,7 +1,7 @@
 /** \file shared_memory.cpp
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.cpp,v 1.2 2002/08/08 12:44:22 cado Exp $
+ * $Id: shared_memory.cpp,v 1.3 2002/08/08 14:41:33 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -43,6 +43,9 @@ namespace NLMISC {
 #ifdef NL_OS_WINDOWS
 	// Storage for file handles, necessary to close the handles
 	map<void*,HANDLE>	AccessAddressesToHandles;
+#else
+  // Storage for shmid, necessary to destroy the segments
+  map<TSharedMemId, int>   SharedMemIdsToShmids;
 #endif
 
 
@@ -66,21 +69,17 @@ void			*CSharedMemory::createSharedMemory( TSharedMemId sharedMemId, uint32 size
 #else
 
 	// Create a shared memory segment
-	int shmid = shmget( sharedMemId, size, IPC_CREAT | 0666 );
+	int shmid = shmget( sharedMemId, size, IPC_CREAT | IPC_EXCL | 0666 );
 	if ( shmid == -1 )
 		return NULL;
+	SharedMemIdsToShmids.insert( make_pair( sharedMemId, shmid ) );
 
 	// Map the segment into memory address space
 	void *accessAddress = (void*)shmat( shmid, 0, 0 );
 	if ( accessAddress == (void*)-1 )
 		return NULL;
 	else
-	{
-		// Set the segment to auto-destroying (when the last process detaches)
-		shmctl( shmid, IPC_RMID, 0 );
 		return accessAddress;
-	}
-
 #endif
 }
 
@@ -136,6 +135,7 @@ bool			CSharedMemory::closeSharedMemory( void *accessAddress )
 	if ( im != AccessAddressesToHandles.end() )
 	{
 		CloseHandle( (*im).second );
+		AccessAddressesToHandles.erase( im );
 		return true;
 	}
 	else
@@ -148,6 +148,35 @@ bool			CSharedMemory::closeSharedMemory( void *accessAddress )
 	// Detach the shared memory segment
 	return ( shmdt( accessAddress ) != -1 );
 	
+#endif
+}
+
+
+/*
+ * Destroy a shared memory segment (to call only by the process that created the segment)
+ * Note: does nothing under Windows, it is automatic.
+ */
+void        CSharedMemory::destroySharedMemory( TSharedMemId sharedMemId, bool force )
+{
+#ifndef NL_OS_WINDOWS
+  // Set the segment to auto-destroying (when the last process detaches)
+  map<TSharedMemId,int>::iterator im = SharedMemIdsToShmids.find( sharedMemId );
+  if ( im != SharedMemIdsToShmids.end() )
+	{
+	  // Destroy the segment created before
+	  shmctl( (*im).second, IPC_RMID, 0 );
+	  SharedMemIdsToShmids.erase( im );
+	}
+  else if ( force )
+	{
+	  // Open and destroy the segment
+	  int shmid = shmget( sharedMemId, 0, 0666 );
+	  if ( shmid != -1 )
+		{
+		  // Destroy the segment
+		  shmctl( shmid, IPC_RMID, 0 );
+		}
+	}
 #endif
 }
 

@@ -250,6 +250,10 @@ SOURCE=.\ai\agent\msg_fact.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\agent\msg_getvalue.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\agent\msg_goal.cpp
 # End Source File
 # Begin Source File
@@ -891,6 +895,10 @@ SOURCE=.\ai\script\interpret_fsm.cpp
 # Begin Source File
 
 SOURCE=.\ai\script\interpret_message_action.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\script\interpret_message_getvalue.cpp
 # End Source File
 # Begin Source File
 

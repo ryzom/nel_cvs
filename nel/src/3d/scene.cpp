@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.62 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: scene.cpp,v 1.63 2002/02/18 12:55:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -463,7 +463,11 @@ CTransformShape	*CScene::createInstance(const string &shapeName)
 #endif
 
 	// Look if this instance get lightmap information
-	CMeshBase *pMB = dynamic_cast<CMeshBase*>( (IShape*)(pTShp->Shape) );
+#if defined(__GNUC__) && __GNUC__ < 3
+	CMeshBase *pMB = (CMeshBase*)((IShape*)(pTShp->Shape));
+#else // not GNUC
+	CMeshBase *pMB = dynamic_cast<CMeshBase*>((IShape*)(pTShp->Shape));
+#endif // not GNUC
 	CMeshBaseInstance *pMBI = dynamic_cast<CMeshBaseInstance*>( pTShp );
 	if( ( pMB != NULL ) && ( pMBI != NULL ) )
 	{ // Try to bind to automatic animation

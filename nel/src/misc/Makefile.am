@@ -1,10 +1,10 @@
 #
-# $Id: Makefile.am,v 1.39 2001/12/12 15:40:10 legros Exp $
+# $Id: Makefile.am,v 1.40 2002/02/18 12:57:05 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
 
-SUBDIRS               = config_file .
+SUBDIRS               = config_file
 
 lib_LTLIBRARIES       = libnelmisc.la
 

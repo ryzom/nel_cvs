@@ -1,7 +1,7 @@
 /** \file cube_map_builder.h
  * a function that helps to build cube maps
  *
- * $Id: cube_map_builder.h,v 1.1 2002/02/04 10:42:31 vizerie Exp $
+ * $Id: cube_map_builder.h,v 1.2 2002/02/18 12:54:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

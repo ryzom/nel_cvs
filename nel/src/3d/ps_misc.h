@@ -1,7 +1,7 @@
 /** \file ps_misc.h
  * Some functions used by the particle system
  *
- * $Id: ps_misc.h,v 1.1 2001/10/02 16:35:39 vizerie Exp $
+ * $Id: ps_misc.h,v 1.2 2002/02/18 12:56:09 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

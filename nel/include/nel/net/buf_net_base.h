@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.5 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: buf_net_base.h,v 1.6 2002/02/18 12:54:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -135,7 +135,7 @@ public:
 
 protected:
 
-	friend CBufSock;
+	friend class NLNET::CBufSock;
 	
 	/// Constructor
 	CBufNetBase();

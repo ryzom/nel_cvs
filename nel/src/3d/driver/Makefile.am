@@ -1,10 +1,10 @@
 #
-# $Id: Makefile.am,v 1.1 2000/12/18 15:30:11 lecroart Exp $
+# $Id: Makefile.am,v 1.2 2002/02/18 12:56:32 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS              = opengl .
+SUBDIRS              = opengl
 
 
 # End of Makefile.am

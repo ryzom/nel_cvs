@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.67 2002/02/15 17:37:54 vizerie Exp $
+# $Id: Makefile.am,v 1.68 2002/02/18 12:55:55 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -460,10 +460,7 @@ libnel3d_la_SOURCES  = animatable.cpp                                  \
                        visual_collision_manager_user.h                 \
                        water_height_map.cpp                            \
                        water_height_map.h                              \
-                       water_imp.cpp                                   \
                        water_model.cpp                                 \
-                       water_model.cpp (essai)                         \
-                       water_model.cpp(old)                            \
                        water_model.h                                   \
                        water_pool_manager.cpp                          \
                        water_pool_manager.h                            \

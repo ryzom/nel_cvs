@@ -1,10 +1,10 @@
 #
-# $Id: Makefile.am,v 1.3 2001/08/24 14:20:32 valignat Exp $
+# $Id: Makefile.am,v 1.4 2002/02/18 12:57:44 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
 
-SUBDIRS              = driver .
+SUBDIRS              = driver
 
 lib_LTLIBRARIES      = libnelsnd.la
 

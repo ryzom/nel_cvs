@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.42 2002/02/14 13:03:53 legros Exp $
+ * $Id: entities.cpp,v 1.43 2002/02/18 12:58:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -719,7 +719,7 @@ void updateEntities ()
 			}
 */
 			// snap to the ground
-			if (!GlobalRetriever->isInterior(gPos)
+			if (!GlobalRetriever->isInterior(gPos))
 				entity.VisualCollisionEntity->snapToGround(entity.Position);
 
 			if (entity.Type == CEntity::Other &&
@@ -728,7 +728,7 @@ void updateEntities ()
 //				nlinfo("detected over entity %d", entity.Id);
 				entity.ServerPosition.z = entity.Position.z;
 				entity.Position = entity.ServerPosition;
-				if (!GlobalRetriever->isInterior(gPos)
+				if (!GlobalRetriever->isInterior(gPos))
 					entity.VisualCollisionEntity->snapToGround(entity.Position);
 				entity.MovePrimitive->setGlobalPosition(CVectorD(entity.Position.x, entity.Position.y, entity.Position.z), 0);
 			}

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.19 2002/02/12 13:55:59 lecroart Exp $
+ * $Id: path.cpp,v 1.20 2002/02/18 12:57:05 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -723,7 +723,7 @@ bool CFile::isExists (const string &filename)
 #else // NL_OS_WINDOWS
 	struct stat buf;
 	return stat (filename.c_str (), &buf) == 0;
-#endif NL_OS_WINDOWS
+#endif // NL_OS_WINDOWS
 }
 
 bool CFile::fileExists (const string& filename)

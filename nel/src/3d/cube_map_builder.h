@@ -1,7 +1,7 @@
 /** \file cube_map_builder.h
  * a function that helps to build cube maps
  *
- * $Id: cube_map_builder.h,v 1.3 2002/02/18 16:23:37 valignat Exp $
+ * $Id: cube_map_builder.h,v 1.4 2002/03/14 18:06:30 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -50,9 +50,11 @@ struct ICubeMapFunctor
   * Each face is encoded in a memory texture
   * \param mapSize the size of each tface of the cube map
   * \param f a functor that helps to build the cube map.
-  * WARNING NOT TESTED YET
+  * \param luminanceOnly When set to true, a luminance cube map is build. The luminance is taken from the alpha component of the color produced by the functor.
+  *                      Warning : this isn't supported anywhere.
+  * \param shareName a prefix for sharename. If not empty this allow each face of the cube map to be sharable (a number is append to the given string)
   */
-CTextureCube *BuildCubeMap(sint mapSize, ICubeMapFunctor &f);
+CTextureCube *BuildCubeMap(sint mapSize, ICubeMapFunctor &f, bool luminanceOnly = false, const std::string &shareName = "");
 
 }
 

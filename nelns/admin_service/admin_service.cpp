@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.8 2001/06/18 14:54:06 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.9 2001/06/27 08:34:23 lecroart Exp $
  *
  */
 
@@ -30,6 +30,7 @@
 #include "nel/net/service.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
+#include "nel/misc/command.h"
 
 #include "nel/net/net_manager.h"
 
@@ -51,7 +52,7 @@ struct CService
 	bool			Ready;			/// true if the service is ready
 	bool			Connected;		/// true if the service is connected to the AES
 	bool			InConfig;		/// true if the service is in the configuration
-	vector<string>	Commands;
+	std::vector<NLMISC::CSerialCommand>	Commands;
 
 	void setValues (const CService &t)
 	{
@@ -525,6 +526,7 @@ static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetB
 		(*sit).Ready = (*sit).Connected = false;
 		(*sit).Id = 0xFFFFFFFF;
 		(*sit).ShortName = (*sit).LongName = "";
+		(*sit).Commands.clear ();
 	}
 	else
 	{
@@ -609,10 +611,18 @@ static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// received an answer for a command, give it to all admin client
 
+	// get the aes with the appid
+	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
+
 	// broadcast the message to the admin service
-	CMessage msgout (CNetManager::getSIDA ("AS"), "LOG");
+	CMessage msgout (CNetManager::getSIDA ("AS"), "XLOG");
 	string log;
+	uint32 sid;
+	msgin.serial (sid);
 	msgin.serial (log);
+
+	msgout.serial (aes->Id);
+	msgout.serial (sid);
 	msgout.serial (log);
 	CNetManager::send ("AS", msgout, 0);
 }
@@ -630,7 +640,7 @@ TCallbackItem AESCallbackArray[] =
 
 	{ "SAL", cbServiceAliasList },
 
-	{ "LOG", cbLog },
+	{ "XLOG", cbLog },
 };
 
 

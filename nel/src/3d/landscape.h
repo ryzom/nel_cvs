@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.48 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: landscape.h,v 1.49 2003/08/19 15:13:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -409,11 +409,7 @@ public:
 	void	removeAllPointLights();
 
 
-	/** 
-	 *	set the Light factor for all pointLights in All zones with LightGroupName= "lightGroupName".
-	 *	Additionaly, it stores a map<lightGroupName, NLMISC::CRGBA nFactor>, so each added zone will
-	 *	be correclty assigned.
-	 */
+	/// update the Light factor for all pointLights in All zones, according to scene LightGroups and AnimatedLights.
 	void	setPointLightFactor(const CScene &scene);
 
 

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.47 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.48 2003/08/19 15:13:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -276,14 +276,6 @@ void				CSceneUser::setLightGroupColor(uint lightmapGroup, NLMISC::CRGBA color)
 	NL3D_HAUTO_UI_SCENE;
 
 	_Scene.setLightGroupColor(lightmapGroup, color);
-
-	// Update landscape light group colors
-	std::set<CLandscapeUser*>::iterator ite = _Landscapes.Set.begin();
-	while (ite != _Landscapes.Set.end())
-	{
-		(*ite)->getLandscape()->Landscape.setPointLightFactor(_Scene);
-		ite++;
-	}
 }
 
 

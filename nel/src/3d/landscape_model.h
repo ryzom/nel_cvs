@@ -1,7 +1,7 @@
 /** \file landscape_model.h
  * <File description>
  *
- * $Id: landscape_model.h,v 1.11 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: landscape_model.h,v 1.12 2003/08/19 15:13:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,8 @@ public:
 	/** Override CTransform::initModel(), to create CLandscape's VegetableManager's BlendLayer models in the scene.
 	 */
 	virtual void	initModel();
+	/// special traverseHRC.
+	virtual void	traverseHrc();
 	/// special clip(). NB: the real landscape clip is done in traverseRender()
 	virtual void	traverseClip();
 	virtual bool	clip() {return true;}

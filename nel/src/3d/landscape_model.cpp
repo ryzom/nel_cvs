@@ -1,7 +1,7 @@
 /** \file landscape_model.cpp
  * <File description>
  *
- * $Id: landscape_model.cpp,v 1.35 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: landscape_model.cpp,v 1.36 2003/08/19 15:13:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,21 @@ void	CLandscapeModel::initModel()
 	// After creating the landscape (and so the VegetableManager in the ctor).
 	// we must init correclty the VegetableManager.
 	Landscape.createVegetableBlendLayersModels(getOwnerScene());
+}
+
+
+// ***************************************************************************
+void	CLandscapeModel::traverseHrc()
+{
+	// Call std method.
+	CTransform::traverseHrc();
+
+	/* Compile Animate PointLight here.
+		NB: Animated PointLight are important for Dynamic Object lighted by landscape lights.
+		The landscape and vegetable are not influenced by thoses animation (as if the light were not animated)
+		NB: important to do before the LightTrav. Also even if landscape is hidden, still must animate those light?
+	*/
+	Landscape.setPointLightFactor(*getOwnerScene());
 }
 
 

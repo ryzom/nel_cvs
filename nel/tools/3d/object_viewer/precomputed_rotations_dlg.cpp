@@ -1,7 +1,7 @@
 /** \file precomputed_rotations_dlg.cpp
  * a dialog to edit precomputed rotations of elements in a particle system
  *
- * $Id: precomputed_rotations_dlg.cpp,v 1.3 2001/06/25 13:07:14 vizerie Exp $
+ * $Id: precomputed_rotations_dlg.cpp,v 1.4 2001/12/06 16:58:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "object_viewer.h"
 #include "precomputed_rotations_dlg.h"
 #include "3d/ps_particle.h"
+#include "3d/ps_mesh.h"
 #include "attrib_dlg.h"
 
 #ifdef _DEBUG
@@ -42,11 +43,11 @@ static char THIS_FILE[] = __FILE__;
 CPrecomputedRotationsDlg::CPrecomputedRotationsDlg(NL3D::CPSHintParticleRotateTheSame *prts, CAttribDlg *toDisable)	
 	: _RotatedParticle(prts), _WndToDisable(toDisable)
 {
-	float minValue, maxValue ;
-	uint32 nbModels = prts->checkHintRotateTheSame(minValue, maxValue) ;
+	float minValue, maxValue;
+	uint32 nbModels = prts->checkHintRotateTheSame(minValue, maxValue);
 	//{{AFX_DATA_INIT(CPrecomputedRotationsDlg)
 	m_RotSpeedMax = _T("");
-	m_PrecomputedRotations = nbModels ? TRUE : FALSE ;
+	m_PrecomputedRotations = nbModels ? TRUE : FALSE;
 	m_RotSpeedMin = _T("");
 	m_NbModels = _T("");
 	//}}AFX_DATA_INIT
@@ -55,51 +56,51 @@ CPrecomputedRotationsDlg::CPrecomputedRotationsDlg(NL3D::CPSHintParticleRotateTh
 
 void CPrecomputedRotationsDlg::init(CWnd *pParent, sint x, sint y)
 {
-	Create(IDD_HINT_ROTATE_THE_SAME, pParent) ;
-	RECT r ;
-	GetClientRect(&r) ;
-	CRect wr ;
-	wr.left = r.left + x ;
-	wr.top = r.top + y ;
-	wr.bottom = r.bottom + y ;
-	wr.right = r.right + x ;
-	MoveWindow(wr) ;
-	ShowWindow(SW_SHOW) ;
-	enablePrecompRotationControl() ; 
-	updateFromReader() ;	
+	Create(IDD_HINT_ROTATE_THE_SAME, pParent);
+	RECT r;
+	GetClientRect(&r);
+	CRect wr;
+	wr.left = r.left + x;
+	wr.top = r.top + y;
+	wr.bottom = r.bottom + y;
+	wr.right = r.right + x;
+	MoveWindow(wr);
+	ShowWindow(SW_SHOW);
+	enablePrecompRotationControl(); 
+	updateFromReader();	
 }
 
 void CPrecomputedRotationsDlg::enablePrecompRotationControl(void)
 {
-	nlassert(_RotatedParticle) ;
-	UpdateData() ;
-	m_RotSpeedMinCtrl.EnableWindow(m_PrecomputedRotations) ;
-	m_RotSpeedMaxCtrl.EnableWindow(m_PrecomputedRotations) ;
-	m_NbModelsCtrl.EnableWindow(m_PrecomputedRotations) ;
+	nlassert(_RotatedParticle);
+	UpdateData();
+	m_RotSpeedMinCtrl.EnableWindow(m_PrecomputedRotations);
+	m_RotSpeedMaxCtrl.EnableWindow(m_PrecomputedRotations);
+	m_NbModelsCtrl.EnableWindow(m_PrecomputedRotations);
 
-	UpdateData(FALSE) ;
+	UpdateData(FALSE);
 }
 
 void CPrecomputedRotationsDlg::updateFromReader(void)
 {
-	UpdateData() ;
+	UpdateData();
 	if (m_PrecomputedRotations)
 	{
-		char out[256] ;
-		float minVelocity, maxVelocity ;
-		sprintf(out, "%d", _RotatedParticle->checkHintRotateTheSame(minVelocity, maxVelocity)) ;
-		m_NbModels = out ;
-		sprintf(out, "%g", minVelocity) ;
-		m_RotSpeedMin = out ;
-		sprintf(out, "%g", maxVelocity) ;
-		m_RotSpeedMax = out ;
+		char out[256];
+		float minVelocity, maxVelocity;
+		sprintf(out, "%d", _RotatedParticle->checkHintRotateTheSame(minVelocity, maxVelocity));
+		m_NbModels = out;
+		sprintf(out, "%g", minVelocity);
+		m_RotSpeedMin = out;
+		sprintf(out, "%g", maxVelocity);
+		m_RotSpeedMax = out;
 	}
 	else
 	{
-		m_NbModels = m_RotSpeedMin = m_RotSpeedMax = "" ;
+		m_NbModels = m_RotSpeedMin = m_RotSpeedMax = "";
 	}
 
-	UpdateData(FALSE) ;
+	UpdateData(FALSE);
 }
 
 
@@ -132,83 +133,89 @@ END_MESSAGE_MAP()
 
 void CPrecomputedRotationsDlg::OnUpdateMinRotSpeed() 
 {
-	nlassert(_RotatedParticle) ;
-	UpdateData() ;
-	float newValue, valueMin, valueMax ;
+	nlassert(_RotatedParticle);
+	UpdateData();
+	float newValue, valueMin, valueMax;
 	if (sscanf(m_RotSpeedMin, "%f", &newValue) == 1)
 	{
-		uint32 nbModels = _RotatedParticle->checkHintRotateTheSame(valueMin, valueMax) ;
-		valueMin = newValue ;
-		_RotatedParticle->hintRotateTheSame(nbModels, valueMin, valueMax) ;
+		uint32 nbModels = _RotatedParticle->checkHintRotateTheSame(valueMin, valueMax);
+		valueMin = newValue;
+		_RotatedParticle->hintRotateTheSame(nbModels, valueMin, valueMax);
 	}
 	else
 	{
-		MessageBox("invalid value !!") ;
+		MessageBox("invalid value !!");
 	}
 
 
-	UpdateData(FALSE) ;
+	UpdateData(FALSE);
 }
 
 void CPrecomputedRotationsDlg::OnUpdateMaxRotSpeed() 
 {
-	nlassert(_RotatedParticle) ;
-	UpdateData() ;
-	float newValue, valueMin, valueMax ;
+	nlassert(_RotatedParticle);
+	UpdateData();
+	float newValue, valueMin, valueMax;
 	if (sscanf(m_RotSpeedMax, "%f", &newValue) == 1)
 	{
-		uint32 nbModels = _RotatedParticle->checkHintRotateTheSame(valueMin, valueMax) ;
-		valueMax = newValue ;
-		_RotatedParticle->hintRotateTheSame(nbModels, valueMin, valueMax) ;
+		uint32 nbModels = _RotatedParticle->checkHintRotateTheSame(valueMin, valueMax);
+		valueMax = newValue;
+		_RotatedParticle->hintRotateTheSame(nbModels, valueMin, valueMax);
 	}
 	else
 	{
-		MessageBox("invalid value !!") ;
+		MessageBox("invalid value !!");
 	}
 
 
-	UpdateData(FALSE) ;
+	UpdateData(FALSE);
 	
 }
 
 void CPrecomputedRotationsDlg::OnUpdateNbModels() 
 {
-	nlassert(_RotatedParticle) ;
-	UpdateData() ;
-	float valueMin, valueMax ;
-	sint32 newNbModels ;
-	if (sscanf(m_NbModels, "%d", &newNbModels) == 1 && newNbModels > 0 )
+	nlassert(_RotatedParticle);
+	UpdateData();
+	float valueMin, valueMax;
+	sint32 newNbModels;
+	bool valid = (sscanf(m_NbModels, "%d", &newNbModels) == 1 && newNbModels > 0);
+	if (dynamic_cast<NL3D::CPSConstraintMesh *>(_RotatedParticle))
 	{
-		_RotatedParticle->checkHintRotateTheSame(valueMin, valueMax) ;	
-		_RotatedParticle->hintRotateTheSame((uint32) newNbModels, valueMin, valueMax) ;
+		valid &= (newNbModels < NL3D::ConstraintMeshMaxNumPrerotatedModels);
+	}
+
+	if (valid)
+	{
+		_RotatedParticle->checkHintRotateTheSame(valueMin, valueMax);	
+		_RotatedParticle->hintRotateTheSame((uint32) newNbModels, valueMin, valueMax);
 	}
 	else
 	{
-		MessageBox("invalid value !!") ;
+		MessageBox("invalid value !!");
 	}
 
 
-	UpdateData(FALSE) ;	
+	UpdateData(FALSE);	
 }
 
 void CPrecomputedRotationsDlg::OnHintPrecomputedRotations() 
 {
-	nlassert(_RotatedParticle) ;
-	UpdateData() ;
+	nlassert(_RotatedParticle);
+	UpdateData();
 	if (_WndToDisable)
 	{
-		_WndToDisable->EnableWindow(!m_PrecomputedRotations) ;
+		_WndToDisable->EnableWindow(!m_PrecomputedRotations);
 	}
 	if (m_PrecomputedRotations)
 	{
-		_RotatedParticle->hintRotateTheSame(32) ;	
+		_RotatedParticle->hintRotateTheSame(32);	
 	}
 	else
 	{
-		_RotatedParticle->disableHintRotateTheSame() ;
+		_RotatedParticle->disableHintRotateTheSame();
 	}
 
-	enablePrecompRotationControl() ; 
-	updateFromReader() ;
-	UpdateData(FALSE) ;	
+	enablePrecompRotationControl(); 
+	updateFromReader();
+	UpdateData(FALSE);	
 }

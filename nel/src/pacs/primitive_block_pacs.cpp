@@ -1,7 +1,7 @@
 /** \file primitive_block_pacs.cpp
  * Block of PACS primitives
  *
- * $Id: primitive_block_pacs.cpp,v 1.6 2003/05/20 15:52:07 corvazier Exp $
+ * $Id: primitive_block_pacs.cpp,v 1.7 2003/11/14 09:48:04 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -123,17 +123,21 @@ UPrimitiveBlock *UPrimitiveBlock::createPrimitiveBlockFromFile(const std::string
 {
 	NL_ALLOC_CONTEXT( Pacs )
 
-	NLMISC::CIFile input(fileName);
-	NLMISC::CIXml xmlInput;
-	// Init
-	if (xmlInput.init (input))
+	NLMISC::CIFile input;
+	if (input.open(fileName))
 	{
-		return createPrimitiveBlock(xmlInput);
+		NLMISC::CIXml xmlInput;
+		// Init
+		if (xmlInput.init (input))
+		{
+			return createPrimitiveBlock(xmlInput);
+		}
+		else
+		{
+			throw NLMISC::Exception(std::string("Unable to init an xml input file from ") + fileName);
+		}
 	}
-	else
-	{
-		throw NLMISC::Exception(std::string("Unable to init an xml input file from ") + fileName);
-	}
+	return NULL;
 }
 
 

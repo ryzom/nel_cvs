@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.4 2001/11/14 15:38:21 vizerie Exp $
+ * $Id: water_model.h,v 1.5 2001/11/16 16:46:27 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ public:
 	virtual	void	traverse(IObs *caller);	
 	static IObs	    *creator() {return new CWaterRenderObs;}
 private:
-	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist);
+	void setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight);
 	///   setup the vertex program to perform the right attenuation
 	//void setAttenuationFactor(IDriver *drv, bool reversed, const NLMISC::CVector &obsPos, const NLMISC::CVector &cameraJ, float farDist);
 	// disable attenuation with distance

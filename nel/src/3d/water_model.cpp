@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.8 2001/11/14 15:38:21 vizerie Exp $
+ * $Id: water_model.cpp,v 1.9 2001/11/16 16:46:12 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -325,7 +325,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 	//==================//
 
 	CWaterHeightMap &whm = GetWaterPoolManager().getPoolByID(shape->_WaterPoolID);
-	setupMaterialNVertexShader(drv, shape, obsPos, isAbove > 0, whm.getUnitSize() * (whm.getSize() >> 1));
+	setupMaterialNVertexShader(drv, shape, obsPos, isAbove > 0, whm.getUnitSize() * (whm.getSize() >> 1), zHeight);
 
 	//setAttenuationFactor(drv, false, obsPos, camMat.getJ(), farDist);
 	//disableAttenuation(drv);
@@ -386,15 +386,14 @@ void	CWaterRenderObs::traverse(IObs *caller)
 			const float invWaterRatio = 1.f / waterRatio;
 			const uint  waterHeightMapSize = whm.getSize();
 			const uint  doubleWaterHeightMapSize = (waterHeightMapSize << 1);
-				
-			whm.setUserPos((sint) (obsPos.x * invWaterRatio) - (waterHeightMapSize >> 1),
-						   (sint) (obsPos.y * invWaterRatio) - (waterHeightMapSize >> 1)
-						  );
-
+						
 
 			sint64 idate = (NLMISC::safe_cast<CHrcTrav *>(HrcObs->Trav))->CurrentDate;
 			if (idate != whm.Date)
 			{
+				whm.setUserPos((sint) (obsPos.x * invWaterRatio) - (waterHeightMapSize >> 1),
+					   (sint) (obsPos.y * invWaterRatio) - (waterHeightMapSize >> 1)
+					  );
 				nlassert(m->_Scene); // this object should have been created from a CWaterShape!
 				whm.swapBuffers((float) (m->_Scene->getEllapsedTime()));
 				whm.propagate();
@@ -627,7 +626,7 @@ void	CWaterRenderObs::traverse(IObs *caller)
 // WATER MATERIAL SEUP //
 //***********************
 
-void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist)
+void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shape, const NLMISC::CVector &obsPos, bool above, float maxDist, float zHeight)
 {
 	CMaterial waterMat;
 		waterMat.setLighting(false);
@@ -731,7 +730,7 @@ void CWaterRenderObs::setupMaterialNVertexShader(IDriver *drv, CWaterShape *shap
 
 
 		drv->setConstant(4, 1.f, 1.f, 1.f, 1.f); // use with min man, and to get the 1 constant		
-		drv->setConstant(7, obsPos.x, obsPos.y, obsPos.z, 0.f);
+		drv->setConstant(7, obsPos.x, obsPos.y, obsPos.z - zHeight, 0.f);
 		drv->setConstant(8, 0.5f, 0.5f, 0.f, 0.f); // used to scale reflected ray into the envmap
 
 	

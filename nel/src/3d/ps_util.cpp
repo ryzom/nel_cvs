@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.31 2001/12/06 16:52:59 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.32 2001/12/12 10:28:51 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,6 +166,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		initFastCosNSinTable(); // init fast cosine lookup table
 		initPerlinNoiseTable(); // init perlin noise table
 		CPSFanLight::initFanLightPrecalc();
+		CPSDot::initVertexBuffers();
 		CPSQuad::initVertexBuffers();
 		CPSConstraintMesh::initPrerotVB();
 }

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.14 2002/08/21 09:36:01 lecroart Exp $
+ * $Id: bitmap.h,v 1.15 2002/10/10 12:43:49 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,7 +105,7 @@ private :
 	 * \return image depth
 	 * \throw EDDSBadHeader : surface is header is not valid.
 	 */
-	uint8 readDDS(NLMISC::IStream &f);
+	uint8 readDDS(NLMISC::IStream &f, uint mipMapSkip);
 
 
 	/** 
@@ -257,10 +257,11 @@ public:
 	 * Bitmap supported are DDS (DXTC1, DXTC1 with Alpha, DXTC3, DXTC5, and
 	 * uncompressed TGA (24 and 32 bits).
 	 * \param IStream The stream must be in reading mode.
+	 * \param mipMapSkip if the file is a DDS with mipMap. N=mipMapSkip mipmaps are skipped.
 	 * \return image depth (24 or 32), or 0 if load failed
 	 * \throw ESeekFailed : seek has failed
 	 */
-	uint8	load(NLMISC::IStream &f);
+	uint8	load(NLMISC::IStream &f, uint mipMapSkip=0);
 
 
 	/** 

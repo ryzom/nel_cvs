@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.28 2002/09/25 10:47:09 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.29 2002/10/10 12:44:29 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,11 +28,14 @@
 #include "stdmisc.h"
 
 #include <memory>
+#include <algorithm>
 
 #include "nel/misc/bitmap.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/file.h"
 
+
+using namespace std;
 
 namespace NLMISC
 {
@@ -76,7 +79,7 @@ const uint32 CBitmap::DXTC5HEADER = NL_MAKEFOURCC('D','X', 'T', '5');
 /*-------------------------------------------------------------------*\
 								load		
 \*-------------------------------------------------------------------*/
-uint8 CBitmap::load(NLMISC::IStream &f) 
+uint8 CBitmap::load(NLMISC::IStream &f, uint mipMapSkip) 
 {
 	nlassert(f.isReading()); 
 	
@@ -85,7 +88,7 @@ uint8 CBitmap::load(NLMISC::IStream &f)
 	f.serial(fileType);
 	if(fileType == DDS)
 	{
-		return readDDS(f);
+		return readDDS(f, mipMapSkip);
 	}
 	// assuming it's TGA
 	else 
@@ -198,7 +201,7 @@ void	CBitmap::makeDummy()
 /*-------------------------------------------------------------------*\
 								readDDS		
 \*-------------------------------------------------------------------*/
-uint8 CBitmap::readDDS(NLMISC::IStream &f)
+uint8 CBitmap::readDDS(NLMISC::IStream &f, uint mipMapSkip)
 {
 	uint32 i;
 
@@ -261,6 +264,43 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 	
 	if((_Width%4!=0) || (_Height%4!=0)) return 0;
 	
+
+	//------------- manage mipMapSkip 
+	if(_MipMapCount>1 && mipMapSkip>0)
+	{
+		// Keep at least the level where width and height are at leat 4.
+		uint	minLevel= min(_Width, _Height);
+		minLevel= getPowerOf2(minLevel);
+		mipMapSkip= min(mipMapSkip, minLevel-2);
+		// skip any mipmap
+		uint	seekSize= 0;
+		while(mipMapSkip>0)
+		{
+			uint32 mipMapSz;
+			if(PixelFormat==DXTC1 || PixelFormat==DXTC1Alpha)
+				mipMapSz = _Width*_Height/2;
+			else
+				mipMapSz = _Width*_Height;
+
+			// add to how many to skip
+			seekSize+= mipMapSz;
+
+			// Size of final bitmap is reduced.
+			_Width>>=1;
+			_Height>>=1;
+			_MipMapCount--;
+			mipMapSkip--;
+		}
+		// skip data in file
+		if(seekSize>0)
+		{
+			if(!f.seek(seekSize, IStream::current))
+			{
+				throw ESeekFailed();
+			}
+		}
+
+	}
 
 	//------------- reading mipmap levels compressed data
 	

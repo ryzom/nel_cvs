@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.73 2003/12/29 17:29:49 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.74 2003/12/30 14:18:45 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -442,7 +442,7 @@ void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 			
 			{
 				H_AUTO(L5UCHTimerOverhead);
-				string callbackName = "USR_CB_" + msgin.getName();
+				string callbackName = "USRCB_" + msgin.getName();
 				it = timers.find(callbackName);
 				if(it == timers.end())
 				{

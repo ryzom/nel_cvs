@@ -1,7 +1,7 @@
 /** \file font_generator.h
  * CFontGenerator class
  *
- * $Id: font_generator.h,v 1.3 2001/12/27 10:19:16 lecroart Exp $
+ * $Id: font_generator.h,v 1.4 2002/02/11 10:21:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,9 @@
 
 #ifndef NL_FONT_GENERATOR_H
 #define NL_FONT_GENERATOR_H
+
+//#define NL_DONT_USE_EXTERNAL_CODE
+#undef NL_DONT_USE_EXTERNAL_CODE
 
 #ifndef NL_DONT_USE_EXTERNAL_CODE
 #	include <freetype/freetype.h>

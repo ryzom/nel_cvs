@@ -1,7 +1,7 @@
 /** \file network_viewer.cpp
  * network_viewer prototype
  *
- * $Id: network_viewer.cpp,v 1.7 2000/12/19 16:07:18 lecroart Exp $
+ * $Id: network_viewer.cpp,v 1.8 2001/01/09 18:00:00 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -463,11 +463,8 @@ void CMsg::drawArrow()
 	v2= v0+(v1-v0)/5;
 	if (!cs)
 	{
-		CDisplayDescriptor displayDesc;
-		displayDesc.ResX = Width;
-		displayDesc.ResY = Height;
 		cs = true;
-		fontManager.computeString(name, &fontGen, CRGBA(255,128,75), (uint32) (MsgFontSize*ZoomX), displayDesc, csname);
+		fontManager.computeString(name, &fontGen, CRGBA(255,128,75), (uint32) (MsgFontSize*ZoomX), CNELU::Driver, csname);
 	}
 
 	csname.render2D(*scene->getDriver(), v2.x, v2.y, CComputedString::MiddleMiddle);
@@ -482,10 +479,7 @@ void render ()
 
 		if (!(*View)[i].cs)
 		{
-			CDisplayDescriptor displayDesc;
-			displayDesc.ResX = Width;
-			displayDesc.ResY = Height;
-			fontManager.computeString((*View)[i].name, &fontGen, CRGBA(255,255,128), (uint32)(HostFontSize*FontZoom), displayDesc, (*View)[i].csname);
+			fontManager.computeString((*View)[i].name, &fontGen, CRGBA(255,255,128), (uint32)(HostFontSize*FontZoom), CNELU::Driver, (*View)[i].csname);
 			(*View)[i].cs = true;
 		}
 
@@ -947,14 +941,11 @@ void main()
 		CNELU::EventServer.addListener (EventMouseDownId, &cb4);
 		CNELU::EventServer.addListener (EventMouseUpId, &cb4);
 
-		CDisplayDescriptor displayDesc;
-		displayDesc.ResX = Width;
-		displayDesc.ResY = Height;
 		CComputedString autoString, cnxString, procString, hostString;
-		fontManager.computeString("AutoScroll", &fontGen, CRGBA(255,0,0), 20, displayDesc, autoString);
-		fontManager.computeString("Connexion", &fontGen, CRGBA(255,128,255), 20, displayDesc, cnxString);
-		fontManager.computeString("Process", &fontGen, CRGBA(255,128,255), 20, displayDesc, procString);
-		fontManager.computeString("Host", &fontGen, CRGBA(255,128,255), 20, displayDesc, hostString);
+		fontManager.computeString("AutoScroll", &fontGen, CRGBA(255,0,0), 20, CNELU::Driver, autoString);
+		fontManager.computeString("Connexion", &fontGen, CRGBA(255,128,255), 20, CNELU::Driver, cnxString);
+		fontManager.computeString("Process", &fontGen, CRGBA(255,128,255), 20, CNELU::Driver, procString);
+		fontManager.computeString("Host", &fontGen, CRGBA(255,128,255), 20, CNELU::Driver, hostString);
 
 		do
 		{

@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.57 2003/01/14 10:51:23 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.58 2003/01/17 15:03:41 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1850,6 +1850,26 @@ NLMISC_COMMAND(l5InternalTables, "Displays internal table of network layer5", ""
 
 	CUnifiedNetwork::getInstance ()->displayInternalTables(&log);
 
+	return true;
+}
+
+NLMISC_COMMAND(l5Callback, "Displays all callback registered in layer5", "")
+{
+	if(args.size() != 0) return false;
+
+	if (!CUnifiedNetwork::isUsed ())
+	{
+		log.displayNL("Can't display internal table because layer5 is not used");
+		return false;
+	}
+	
+	log.displayNL ("There're %d registered callbacks:", CUnifiedNetwork::getInstance()->_Callbacks.size());
+	uint i = 0;
+	for (CUnifiedNetwork::TMsgMappedCallback::iterator it = CUnifiedNetwork::getInstance()->_Callbacks.begin(); it != CUnifiedNetwork::getInstance()->_Callbacks.end(); it++)
+	{
+		log.displayNL (" %d '%s' %s", i++, (*it).first.c_str(), ((*it).second == NULL?"have a NULL address":""));
+	}
+	
 	return true;
 }
 

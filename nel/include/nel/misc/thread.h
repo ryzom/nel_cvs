@@ -1,7 +1,7 @@
 /** \file thread.h
  * thread interface
  *
- * $Id: thread.h,v 1.1 2000/12/14 17:04:23 lecroart Exp $
+ * $Id: thread.h,v 1.2 2000/12/15 14:50:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,29 @@ namespace NLMISC {
 
 /**
  * Thread callback interface.
- * When a thread is created, it will call run() in its attached CL_Runnable interface.
+ * When a thread is created, it will call run() in its attached IRunnable interface.
+ *
+ *\code
+
+	#include "nel/misc/thread.h"
+
+	class HelloLoopThread : public IRunnable
+	{
+		void run ()
+		{
+			while(true)	printf("Hello World\n");
+		}
+
+	};
+
+	IThread *thread = IThread::create (new HelloLoopThread);
+	thread->start ();
+
+ *\endcode
+ *
+ *
+ *
+ *
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
@@ -47,7 +69,7 @@ public:
 };
 
 /**
- * <Class description>
+ * Thread base interaface, must be implemented for all OS
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000

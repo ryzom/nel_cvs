@@ -10,6 +10,7 @@
 #include "nel/ai/agent/agent_proxy_mailer.h"
 #include "nel/ai/script/test_method.h"
 #include "nel/ai/character/character.h"
+#include "nel/ai/logic/fsm_script.h"
 //#include "static_init.h"
 
 using namespace NLAIAGENT;

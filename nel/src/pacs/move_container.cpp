@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.47 2004/03/29 11:32:54 lecroart Exp $
+ * $Id: move_container.cpp,v 1.48 2004/07/09 09:44:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1856,7 +1856,7 @@ void CMoveContainer::addCollisionnablePrimitiveBlock(UPrimitiveBlock *pb,uint8 f
 
 			// Set the primtive orientation
 			if (desc.Type == UMovePrimitive::_2DOrientedBox)
-				primitive->setOrientation ((float)fmod (desc.Orientation + orientation, 2*Pi), wI);
+				primitive->setOrientation ((float)fmod ((float)(desc.Orientation + orientation), (float)(2.0f*Pi)), wI);
 
 			// Set the primitive global position
 			primitive->setGlobalPosition (finalPos, wI);

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.69 2004/06/29 17:16:28 legros Exp $
+ * $Id: local_retriever.cpp,v 1.70 2004/07/09 09:44:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1190,7 +1190,8 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, CCollisionSurf
 				sint16			intersect = vstart.y + (vstop.y-vstart.y)*(estim.x-vstart.x)/(vstop.x-vstart.x);
 
 				isUpper = estim.y > intersect;
-				isOnBorder = (fabs(estim.y - intersect)<BorderThreshold*Vector2sAccuracy);
+				//isOnBorder = (fabs(estim.y - intersect)<BorderThreshold*Vector2sAccuracy);
+				isOnBorder = (fabs((double)(estim.y - intersect))<(double)(BorderThreshold*Vector2sAccuracy));
 //				nlinfo("Edge: start(%d,%d) stop(%d,%d) forward=%d left=%d right=%d upper=%s border=%s", vertices[start].x, vertices[start].y, vertices[stop].x, vertices[stop].y, sub.isForward(), left, right, isUpper ? "true":"false", isOnBorder ? "true":"false");
 			}
 		}

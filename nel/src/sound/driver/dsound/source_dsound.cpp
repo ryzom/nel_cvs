@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.27 2003/12/31 16:11:54 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.28 2004/07/09 09:44:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1767,7 +1767,7 @@ void CSourceDSound::getCone( float& innerAngle, float& outerAngle, float& outerG
 		}
 		else
 		{
-			outerGain = (float) pow(10, (double) volume / 20.0 / 100.0);
+			outerGain = (float) pow((double)10, (double) volume / 20.0 / 100.0);
 		}
 	}
 	else

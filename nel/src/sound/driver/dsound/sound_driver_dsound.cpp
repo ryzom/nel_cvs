@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.27 2004/05/10 14:43:09 corvazier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.28 2004/07/09 09:44:33 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -969,7 +969,7 @@ float CSoundDriverDSound::getGain()
 			return 1.0;
 		}
 
-		return (float) pow(10, (double) volume / 20.0 / 100.0);
+		return (float) pow((double)10, (double) volume / 20.0 / 100.0);
 	}
 
 	return 1.0;

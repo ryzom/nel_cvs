@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.1 2001/04/26 16:37:32 corvazier Exp $
+ * $Id: script.cpp,v 1.2 2001/05/31 13:38:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,7 +186,7 @@ get_selected_tile_cf(Value** arg_list, int count)
 			int nSize=tri->rpatch->tileSel.NumberSet();
 			array=new Array (nSize);
 			int j=0;
-			for (int i=0; i<nSize; i++)
+			for (int i=0; i<tri->rpatch->tileSel.GetSize(); i++)
 			{
 				if (tri->rpatch->tileSel[i])
 					array->append(Integer::intern(i+1));
@@ -231,7 +231,7 @@ get_selected_patch_cf(Value** arg_list, int count)
 			int nSize=tri->patch.patchSel.NumberSet();
 			array=new Array (nSize);
 			int j=0;
-			for (int i=0; i<nSize; i++)
+			for (int i=0; i<tri->patch.patchSel.GetSize(); i++)
 			{
 				if (tri->patch.patchSel[i])
 					array->append(Integer::intern(i+1));
@@ -276,7 +276,7 @@ get_selected_vertex_cf(Value** arg_list, int count)
 			int nSize=tri->patch.vertSel.NumberSet();
 			array=new Array (nSize);
 			int j=0;
-			for (int i=0; i<nSize; i++)
+			for (int i=0; i<tri->patch.vertSel.GetSize(); i++)
 			{
 				if (tri->patch.vertSel[i])
 					array->append(Integer::intern(i+1));
@@ -897,7 +897,7 @@ get_sel_edge_cf(Value** arg_list, int count)
 			int nSize=tri->patch.edgeSel.NumberSet();
 			array=new Array (nSize);
 			int j=0;
-			for (int i=0; i<nSize; i++)
+			for (int i=0; i<tri->patch.edgeSel.GetSize(); i++)
 			{
 				if (tri->patch.edgeSel[i])
 					array->append(Integer::intern(i+1));

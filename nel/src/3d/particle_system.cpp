@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * TODO: File description
  *
- * $Id: particle_system.cpp,v 1.87 2004/11/15 10:24:45 lecroart Exp $
+ * $Id: particle_system.cpp,v 1.88 2004/11/29 14:23:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -773,6 +773,16 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	// version 8: Replaced the attribute '_PerformMotionWhenOutOfFrustum' by a _AnimType field which allow more precise control
 
 	//f.serial(_ViewMat);
+
+	// patch for old fx : force to recompute duration when fx is saved to avoid prbs
+	if (!f.isReading())
+	{
+		if (_AutoComputeDelayBeforeDeathTest)
+		{
+			_DelayBeforeDieTest = evalDuration();
+		}
+	}
+
 	if (version < 19)
 	{	
 		NLMISC::CMatrix dummy;
@@ -1757,7 +1767,7 @@ TAnimationTime CParticleSystem::getDelayBeforeDeathConditionTest() const
 // struct to eval duration of an emitter chain
 struct CToVisitEmitter
 {
-	float		Duration; // cumuled duration of thi emitter parent emitters
+	float		Duration; // cumuled duration of this emitter parent emitters
 	const CPSLocated *Located;
 };
 

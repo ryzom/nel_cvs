@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.h,v 1.7 2000/11/21 11:22:26 corvazier Exp $
+ * $Id: file.h,v 1.8 2000/11/21 13:32:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,6 +70,7 @@ class CIFile : public IStream
 public:		// Basic Usage.
 	/// Object. NB: destructor close() the stream.
 	CIFile();
+	CIFile(std::string path, bool text=false);
 	~CIFile();
 
 	/// Open a file for reading. false if failed. close() if a file was opened.
@@ -107,6 +108,7 @@ class COFile : public IStream
 public:		// Basic Usage.
 	/// Object. NB: destructor close() the stream.
 	COFile();
+	COFile(std::string path, bool append=false, bool text=false);
 	~COFile();
 
 	/// Open a file for writing. false if failed. close() if a file was opened.

@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.10 2000/11/21 11:22:19 corvazier Exp $
+ * $Id: file.cpp,v 1.11 2000/11/21 13:31:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,14 @@ CIFile::CIFile() : IStream(true, true)
 {
 	_F=NULL;
 }
+
+// ======================================================================================================
+CIFile::CIFile(std::string path, bool text) : IStream(true, true)
+{
+	_F=NULL;
+	open(path, text);
+}
+
 // ======================================================================================================
 CIFile::~CIFile()
 {
@@ -139,6 +147,14 @@ COFile::COFile() : IStream(false, true)
 {
 	_F=NULL;
 }
+
+// ======================================================================================================
+COFile::COFile(std::string path, bool append, bool text) : IStream(false, true)
+{
+	_F=NULL;
+	open(path, append, text);
+}
+
 // ======================================================================================================
 COFile::~COFile()
 {
@@ -179,7 +195,7 @@ void	COFile::flush()
 
 
 // ======================================================================================================
-void		COFile::serialBuffer(uint8 *buf, uint len) throw(EStream)
+void		COFile::serialBuffer(uint8 *buf, uint len) throw(EWriteError)
 {
 	if(!_F)
 		throw	EFileNotOpened();
@@ -187,7 +203,7 @@ void		COFile::serialBuffer(uint8 *buf, uint len) throw(EStream)
 		throw	EWriteError();
 }
 // ======================================================================================================
-void		COFile::serialBit(bool &bit) throw(EStream)
+void		COFile::serialBit(bool &bit) throw(EWriteError)
 {
 	// Simple for now.
 	uint8	v=bit;

@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.1 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: buf_client.h,v 1.2 2001/05/11 09:29:19 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -150,7 +150,7 @@ public:
 	 * event has reached the front of the receive queue, just before calling the disconnection callback
 	 * if there is one)
 	 */
-	bool	connected() const { return _Connected; } 
+	bool	connected() const { return _BufSock->connectedState(); } 
 
 	/// Returns the address of the remote host
 	const CInetAddress&	remoteAddress() const { return _BufSock->Sock->remoteAddr(); }
@@ -182,7 +182,7 @@ public:
 	*/
 
 	/// Returns the id of the connection
-	TSockId	id() const { return _RecvTask->sockId(); }
+	TSockId	id() const { return _BufSock; /*_RecvTask->sockId();*/ }
 
 
 protected:
@@ -208,9 +208,6 @@ private:
 
 	/// Previous number of bytes uploaded
 	uint64				_PrevBytesUploaded;
-
-	/// True if connected to the remote host (from the user's point of view, i.e. changed when the connection/disconnection event is at the front of the receive queue)
-	bool				_Connected;
 
 	/*
 	/// Previous number of bytes received

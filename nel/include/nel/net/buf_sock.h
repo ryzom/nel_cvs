@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.2 2001/05/10 08:49:12 cado Exp $
+ * $Id: buf_sock.h,v 1.3 2001/05/11 09:29:19 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -176,8 +176,11 @@ protected:
 	/// Disconnects; set connectedstate to false if no disconnection advertising is needed
 	void disconnect( bool connectedstate );
 
-	/// Returns the "logically connected" state (changed automatically when processing a connection/disconnection callback)
-	bool connectedState() const { return _KnowConnected; }
+	/// Sets the "logically connected" state (changed when processing a connection/disconnection callback)
+	void setConnectedState( bool connectedstate ) { _ConnectedState = connectedstate; } 
+
+	/// Returns the "logically connected" state (changed when processing a connection/disconnection callback)
+	bool connectedState() const { return _ConnectedState; }
 
 	// Send queue
 	NLMISC::CBufFIFO	SendFifo;
@@ -185,9 +188,7 @@ protected:
 	// Socket (pointer because it can be allocated by an accept())
 	CTcpSock			*Sock;
 
-protected:
-
-	// Connected state
+	// Prevents from pushing a connection/disconnection event twice
 	bool				_KnowConnected;
 
 private:
@@ -204,6 +205,9 @@ private:
 	std::vector<uint8>	_ReadyToSendBuffer;
 
 	uint64				_AppId;
+
+	// Connected state (from the user's point of view, i.e. changed when the connection/disconnection event is at the front of the receive queue)
+	bool				_ConnectedState;
 };
 
 

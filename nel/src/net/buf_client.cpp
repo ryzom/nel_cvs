@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.3 2001/05/10 08:49:12 cado Exp $
+ * $Id: buf_client.cpp,v 1.4 2001/05/11 09:29:19 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,8 +53,7 @@ CBufClient::CBufClient( bool nodelay ) :
 	_RecvThread( NULL ),
 	_NoDelay( nodelay ),
 	_PrevBytesDownloaded( 0 ),
-	_PrevBytesUploaded( 0 ),
-	_Connected( false )
+	_PrevBytesUploaded( 0 )
 	/*_PrevBytesReceived( 0 ),
 	_PrevBytesSent( 0 )*/
 {
@@ -72,7 +71,6 @@ void CBufClient::connect( const CInetAddress& addr )
 {
 	nlnettrace( "CBufClient::connect" );
 	_BufSock->connect( addr, _NoDelay, true );
-	_Connected = true;
 	_PrevBytesDownloaded = 0;
 	_PrevBytesUploaded = 0;
 	/*_PrevBytesReceived = 0;
@@ -139,7 +137,7 @@ bool CBufClient::dataAvailable()
 				case CBufNetBase::Disconnection:
 
 					nldebug( "Disconnection event" );
-					_Connected = false;
+					_BufSock->setConnectedState( false );
 
 					// Call callback if needed
 					if ( disconnectionCallback() != NULL )
@@ -223,9 +221,6 @@ void CBufClient::disconnect( bool quick )
 
 	// Disconnect and prevent from advertising the disconnection
 	_BufSock->disconnect( false );
-
-	// Reset _Connected
-	_Connected = false;
 
 	// Empty the receive queue
 	{

@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.2 2001/05/10 08:49:12 cado Exp $
+ * $Id: buf_server.cpp,v 1.3 2001/05/11 09:29:19 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -317,33 +317,40 @@ bool CBufServer::dataAvailable()
 
 				// Process disconnection event
 				case CBufNetBase::Disconnection:
+				{
 
-					nldebug( "L1: Disconnection event for %p", *((TSockId*)(&*buffer.begin())) );
+					TSockId sockid = *((TSockId*)(&*buffer.begin()));
+					nldebug( "L1: Disconnection event for %p", sockid );
+
+					sockid->setConnectedState( false );
 
 					// Call callback if needed
 					if ( disconnectionCallback() != NULL )
 					{
-						disconnectionCallback()( *((TSockId*)(&*buffer.begin())), argOfDisconnectionCallback() );
+						disconnectionCallback()( sockid, argOfDisconnectionCallback() );
 					}
 
 					// Add socket object into the synchronized remove list
 					nldebug( "L1: Adding the connection to the remove list" );
-					nlassert( (*((CServerBufSock**)(&*buffer.begin())))->ownerTask() != NULL );
-					(*((CServerBufSock**)(&*buffer.begin())))->ownerTask()->addToRemoveSet( *((TSockId*)(&*buffer.begin())) );
+					nlassert( ((CServerBufSock*)sockid)->ownerTask() != NULL );
+					((CServerBufSock*)sockid)->ownerTask()->addToRemoveSet( sockid );
 					break;
-
+				}
 				// Process connection event
 				case CBufNetBase::Connection:
+				{
+					TSockId sockid = *((TSockId*)(&*buffer.begin()));
+					nldebug( "L1: Connection event for %p", sockid );
 
-					nldebug( "L1: Connection event for %p", *((TSockId*)(&*buffer.begin())) );
-
+					sockid->setConnectedState( true );
+					
 					// Call callback if needed
 					if ( connectionCallback() != NULL )
 					{
-						connectionCallback()( *((TSockId*)(&*buffer.begin())), argOfConnectionCallback() );
+						connectionCallback()( sockid, argOfConnectionCallback() );
 					}
 					break;
-
+				}
 				default:
 					nlinfo( "L1: Invalid block type: %hu", (uint16)(buffer[buffer.size()-1]) );
 					nlinfo( "L1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );

@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.4 2001/05/10 15:41:53 cado Exp $
+ * $Id: buf_sock.cpp,v 1.5 2001/05/11 09:29:19 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,6 +53,7 @@ CBufSock::CBufSock( CTcpSock *sock ) :
 	_TriggerSize( -1 ),
 	_LastFlushTime( 0 ),
 	_KnowConnected( false ),
+	_ConnectedState( false ),
 	_AppId (0)
 {
 	nlnettrace( "CBufSock::CBufSock" ); // don't define a global object
@@ -246,6 +247,7 @@ bool CBufSock::update()
 void CBufSock::connect( const CInetAddress& addr, bool nodelay, bool connectedstate )
 {
 	Sock->connect( addr );
+	_ConnectedState = connectedstate;
 	_KnowConnected = connectedstate;
 	if ( nodelay )
 	{
@@ -260,6 +262,7 @@ void CBufSock::connect( const CInetAddress& addr, bool nodelay, bool connectedst
 void CBufSock::disconnect( bool connectedstate )
 {
 	Sock->disconnect();
+	_ConnectedState = connectedstate;
 	_KnowConnected = connectedstate;
 }
 

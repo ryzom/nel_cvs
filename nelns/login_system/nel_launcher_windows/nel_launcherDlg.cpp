@@ -547,7 +547,10 @@ void CNel_launcherDlg::OnTimer(UINT nIDEvent)
 		nlinfo ("finnish");
 		KillTimer (0);
 		if (res)
+		{
 			MessageBox ("Patch completed succesfuly.", "patch");
+			system("ryzom_configuration_rd.exe /auto_init");
+		}
 		else
 			MessageBox ("Patch could not be completed due to an error.", "patch");
 		openUrl (url.c_str());

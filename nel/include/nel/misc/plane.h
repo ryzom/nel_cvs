@@ -1,7 +1,7 @@
 /** \file plane.h
  * class CPlane
  *
- * $Id: plane.h,v 1.6 2003/04/14 09:36:55 berenguier Exp $
+ * $Id: plane.h,v 1.7 2004/01/15 17:29:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ public:
 	/**
 	 * return the normalized version of a plane. \see normalize()
 	 */
-	CPlane	normed() const;
+	inline CPlane	normed() const;
 	//@}
 
 
@@ -102,7 +102,7 @@ public:
 	 */
 	float	distance(const CVector &p) const;
 	/// Return plane*vector. 
-	float	operator*(const CVector &p) const;
+	inline float	operator*(const CVector &p) const;
 	/// Intersect a line onto a plane. p1 is returned if line // to plane.
 	CVector intersect(const CVector &p0,const CVector &p1) const;
 	/// Project a point onto a plane.

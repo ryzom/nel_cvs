@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.52 2002/05/21 16:41:13 lecroart Exp $
+ * $Id: stream.h,v 1.53 2002/07/05 14:01:56 fleury Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1258,7 +1258,7 @@ private:
 
 			for(sint i=0;i<len;i++)
 			{
-				__value_type v;
+/*				__value_type v;
 
 				xmlPush ("KEY");
 
@@ -1274,6 +1274,18 @@ private:
 				xmlPop ();
 
 				cont.insert(cont.end(), v);
+*/
+				// MALKAV 05/07/02 : prevent a copy of the value, copy the key instead
+				__key_type k;
+
+				xmlPush ("KEY");
+				serial ( k );
+				xmlPop ();
+
+
+				xmlPush ("ELM");
+				serial (cont[k]);
+				xmlPop ();
 			}
 		}
 		else

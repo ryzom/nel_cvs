@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.7 2001/11/09 14:03:29 chafik Exp $
+ * $Id: pylib.cpp,v 1.8 2001/11/12 15:35:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,17 +86,17 @@ namespace NLAIPYSERVER
 
 	PyObject *CPyExport::debugFunction(PyObject *Func,PyObject *Arg)
 	{
-		sint32 oops,res;
-		PyObject *Result;
+		/*sint32 oops,res;
+		PyObject *Result = NULL;
 
-		oops = _PyTuple_Resize(&Arg,(1 + PyTuple_Size(Arg)),1);
+		oops = _PyTuple_Resize(&Arg,(1 + PyTuple_Size(Arg)));
 		oops |= PyTuple_SetItem(Arg,0,Func);
 
 		if(oops) return NULL;
 
-		res = runFunction("pdb","runcall","O",&Result,"O",Arg);
+		res = runFunction("pdb","runcall","O",&Result,"O",Arg);*/
 
-		return (res != 0) ? NULL : Result;
+		return NULL;//(res != 0) ? NULL : Result;
 	}
 
 	PyObject *CPyExport::debugCode(sint32 RunMode,const char *code,PyObject *ModDict)

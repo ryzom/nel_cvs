@@ -1,6 +1,6 @@
 /** \file pythonmethode.cpp
  *
- * $Id: pythonmethode.cpp,v 1.15 2001/11/09 14:03:29 chafik Exp $
+ * $Id: pythonmethode.cpp,v 1.16 2001/11/12 15:35:26 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -213,7 +213,7 @@ namespace NLAIPYSERVER
 #ifdef NL_DEBUG
 		NLAIC::Out((char *)Py_GetPath());
 		k = (char *)Py_GetPath();
-#endif
+#endif 
 		
 		PyObject *O = Py_InitModule("RysonSytemeIO",M_Constructeur);
 

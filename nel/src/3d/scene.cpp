@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.13 2000/12/13 10:26:09 berenguier Exp $
+ * $Id: scene.cpp,v 1.14 2000/12/13 14:52:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,7 @@ void	CScene::registerBasics()
 	CTransform::registerBasic();
 	CCamera::registerBasic();
 	CLandscapeModel::registerBasic();
+	CTransformShape::registerBasic();
 }
 
 	

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.1 2000/12/08 10:36:52 berenguier Exp $
+ * $Id: transform_shape.cpp,v 1.2 2000/12/13 14:52:17 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,8 +67,6 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 {
 	// Must update() the observer.
 	update();
-
-	IBaseRenderObs::traverse(caller);
 
 	CRenderTrav			*trav= (CRenderTrav*)Trav;
 	CTransformShape		*m= (CTransformShape*)Model;

@@ -1,7 +1,7 @@
 /** \file config_file.h
  * CConfigFile class
  *
- * $Id: config_file.h,v 1.10 2000/11/08 15:07:00 lecroart Exp $
+ * $Id: config_file.h,v 1.11 2000/11/23 12:01:26 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -142,7 +142,7 @@ public:
 		bool		operator!=	(const CVar& var) const;
 		
 		// Get the size of the variable. It's the number of element of the array or 1 if it's not an array.
-		int			 size ();
+		int			 size () const;
 
 		/// \name Internal use
 		//@{

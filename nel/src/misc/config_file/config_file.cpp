@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.10 2000/11/23 11:48:15 valignat Exp $
+ * $Id: config_file.cpp,v 1.11 2000/11/23 11:58:55 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -93,7 +93,7 @@ bool CConfigFile::CVar::operator!=	(const CVar& var) const
 	return !(*this==var);
 }
 
-int CConfigFile::CVar::size ()
+int CConfigFile::CVar::size () const
 {
 	switch (Type)
 	{
@@ -259,8 +259,8 @@ uint32 CConfigFile::getLastModified ()
 void CConfigFile::checkConfigFiles ()
 {
 	static clock_t LastCheckClock = clock ();
-	
-	if (_Timeout > 0 && (float)(clock () - LastCheckClock)/(float)CLOCKS_PER_SEC < (float)_Timeout) return;
+
+	if (_Timeout > 0 && (float)(clock () - LastCheckClock)*1000.0f/(float)CLOCKS_PER_SEC < (float)_Timeout) return;
 
 	LastCheckClock = clock ();
 
@@ -268,10 +268,10 @@ void CConfigFile::checkConfigFiles ()
 	{
 		if ((*it)->_LastModified != (*it)->getLastModified ())
 		{
-			if ((*it)->_Callback != NULL) (*it)->_Callback();
 			try
 			{
 				(*it)->reparse ();
+				if ((*it)->_Callback != NULL) (*it)->_Callback();
 			}
 			catch (EConfigFile &ee)
 			{

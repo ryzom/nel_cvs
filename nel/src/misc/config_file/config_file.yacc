@@ -137,6 +137,7 @@ expression:	expr2 { $$ = $1; cf_CurrentVar.Comp = false; DEBUG_PRINTF("false\n")
 
 exprbrace:	expr2 { $$ =  $1; cf_CurrentVar.Type = $1.Type; cf_setVar (cf_CurrentVar, $1); }
 			| expr2 { $$ = $1; cf_CurrentVar.Type = $1.Type; cf_setVar (cf_CurrentVar, $1); } COMMA exprbrace
+			| { }
 			;
 
 expr2:		expr3 { $$ = $1; }

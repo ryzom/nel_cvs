@@ -140,18 +140,18 @@ static const char yytranslate[] = {     0,
 #if YYDEBUG != 0
 static const short yyprhs[] = {     0,
      0,     1,     4,     5,     8,    10,    15,    17,    21,    23,
-    24,    29,    31,    35,    39,    41,    45,    49,    52,    55,
-    59,    61,    63,    65,    67
+    24,    29,    30,    32,    36,    40,    42,    46,    50,    53,
+    56,    60,    62,    64,    66,    68
 };
 
 static const short yyrhs[] = {    -1,
     19,    20,     0,     0,    20,    21,     0,    21,     0,     4,
      3,    22,     6,     0,    25,     0,    14,    23,    13,     0,
-    25,     0,     0,    25,    24,    15,    23,     0,    26,     0,
-    25,     7,    26,     0,    25,     8,    26,     0,    27,     0,
-    26,     9,    27,     0,    26,    10,    27,     0,     7,    27,
-     0,     8,    27,     0,    12,    22,    11,     0,    16,     0,
-    17,     0,     5,     0,    28,     0,     4,     0
+    25,     0,     0,    25,    24,    15,    23,     0,     0,    26,
+     0,    25,     7,    26,     0,    25,     8,    26,     0,    27,
+     0,    26,     9,    27,     0,    26,    10,    27,     0,     7,
+    27,     0,     8,    27,     0,    12,    22,    11,     0,    16,
+     0,    17,     0,     5,     0,    28,     0,     4,     0
 };
 
 #endif
@@ -159,8 +159,8 @@ static const short yyrhs[] = {    -1,
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
     81,    81,    81,    84,    85,    88,   134,   135,   138,   139,
-   139,   142,   143,   144,   147,   148,   149,   152,   153,   154,
-   155,   156,   157,   158,   161
+   139,   140,   143,   144,   145,   148,   149,   150,   153,   154,
+   155,   156,   157,   158,   159,   162
 };
 #endif
 
@@ -176,21 +176,21 @@ static const char * const yytname[] = {   "$","error","$undefined.","ASSIGN",
 
 static const short yyr1[] = {     0,
     19,    18,    18,    20,    20,    21,    22,    22,    23,    24,
-    23,    25,    25,    25,    26,    26,    26,    27,    27,    27,
-    27,    27,    27,    27,    28
+    23,    23,    25,    25,    25,    26,    26,    26,    27,    27,
+    27,    27,    27,    27,    27,    28
 };
 
 static const short yyr2[] = {     0,
      0,     2,     0,     2,     1,     4,     1,     3,     1,     0,
-     4,     1,     3,     3,     1,     3,     3,     2,     2,     3,
-     1,     1,     1,     1,     1
+     4,     0,     1,     3,     3,     1,     3,     3,     2,     2,
+     3,     1,     1,     1,     1,     1
 };
 
 static const short yydefact[] = {     1,
-     0,     0,     2,     5,     0,     4,    25,    23,     0,     0,
-     0,     0,    21,    22,     0,     7,    12,    15,    24,    18,
-    19,     0,     0,     9,     6,     0,     0,     0,     0,    20,
-     8,     0,    13,    14,    16,    17,     0,    11,     0,     0,
+     0,     0,     2,     5,     0,     4,    26,    24,     0,     0,
+     0,    12,    22,    23,     0,     7,    13,    16,    25,    19,
+    20,     0,     0,     9,     6,     0,     0,     0,     0,    21,
+     8,     0,    14,    15,    17,    18,    12,    11,     0,     0,
      0
 };
 
@@ -851,44 +851,44 @@ case 10:
 { yyval.Val = yyvsp[0].Val; cf_CurrentVar.Type = yyvsp[0].Val.Type; cf_setVar (cf_CurrentVar, yyvsp[0].Val); ;
     break;}
 case 12:
-#line 142 "config_file.yacc"
-{ yyval.Val = yyvsp[0].Val; ;
+#line 140 "config_file.yacc"
+{ ;
     break;}
 case 13:
 #line 143 "config_file.yacc"
-{ yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_PLUS); ;
+{ yyval.Val = yyvsp[0].Val; ;
     break;}
 case 14:
 #line 144 "config_file.yacc"
-{ yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MINUS); ;
+{ yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_PLUS); ;
     break;}
 case 15:
-#line 147 "config_file.yacc"
-{ yyval.Val = yyvsp[0].Val; ;
+#line 145 "config_file.yacc"
+{ yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MINUS); ;
     break;}
 case 16:
 #line 148 "config_file.yacc"
-{ yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MULT); ;
+{ yyval.Val = yyvsp[0].Val; ;
     break;}
 case 17:
 #line 149 "config_file.yacc"
-{ yyval.Val = cf_op (yyvsp[-2].Val, yyvsp[0].Val, OP_DIVIDE); ;
+{ yyval.Val = cf_op(yyvsp[-2].Val, yyvsp[0].Val, OP_MULT); ;
     break;}
 case 18:
-#line 152 "config_file.yacc"
-{ yyval.Val = yyvsp[0].Val; ;
+#line 150 "config_file.yacc"
+{ yyval.Val = cf_op (yyvsp[-2].Val, yyvsp[0].Val, OP_DIVIDE); ;
     break;}
 case 19:
 #line 153 "config_file.yacc"
-{ cf_value v; v.Type=NLMISC::CConfigFile::CVar::T_INT; /* just to avoid a warning, I affect 'v' with a dummy value */ yyval.Val = cf_op(yyvsp[0].Val,v,OP_NEG); ;
+{ yyval.Val = yyvsp[0].Val; ;
     break;}
 case 20:
 #line 154 "config_file.yacc"
-{ yyval.Val = yyvsp[-1].Val; ;
+{ cf_value v; v.Type=NLMISC::CConfigFile::CVar::T_INT; /* just to avoid a warning, I affect 'v' with a dummy value */ yyval.Val = cf_op(yyvsp[0].Val,v,OP_NEG); ;
     break;}
 case 21:
 #line 155 "config_file.yacc"
-{ yyval.Val = yylval.Val; ;
+{ yyval.Val = yyvsp[-1].Val; ;
     break;}
 case 22:
 #line 156 "config_file.yacc"
@@ -900,10 +900,14 @@ case 23:
     break;}
 case 24:
 #line 158 "config_file.yacc"
-{ yyval.Val = yyvsp[0].Val; ;
+{ yyval.Val = yylval.Val; ;
     break;}
 case 25:
-#line 162 "config_file.yacc"
+#line 159 "config_file.yacc"
+{ yyval.Val = yyvsp[0].Val; ;
+    break;}
+case 26:
+#line 163 "config_file.yacc"
 {
 				DEBUG_PRINTF("yacc: cont\n");
 				bool ok=false;
@@ -1158,7 +1162,7 @@ yyerrhandle:
     }
   return 1;
 }
-#line 194 "config_file.yacc"
+#line 195 "config_file.yacc"
 
 
 /* compute the good operation with a, b and op */

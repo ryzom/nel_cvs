@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.31 2001/01/10 16:22:49 cado Exp $
+ * $Id: local_area.cpp,v 1.32 2001/01/11 10:36:40 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,19 +66,24 @@ bool NLNET::findEntity( TEntityId id, ItRemoteEntities& ire )
 // Processes the entity state
 void NLNET::processEntityState( IMovingEntity& es )
 {	
-	if ( CLocalArea::Instance->inRadius( es.pos() ) )
+	// Search id in the entity map
+	ItRemoteEntities ire;
+	if ( findEntity( es.id(), ire ) )
 	{
-		// Search id in the entity map
-		ItRemoteEntities ire;
-		if ( findEntity( es.id(), ire ) )
+		if ( CLocalArea::Instance->inRadius( es.pos() ) )
 		{
-			// Change state
+			// Change state smoothly
 			(*ire).second->convergeTo( es );
 		}
 		else
-		{	// Not found => create a new remote entity
-			createRemoteEntity( es );
+		{
+			// Change state quickly
+			(*ire).second->changeStateTo( es );
 		}
+	}
+	else
+	{	// Not found => create a new remote entity
+		createRemoteEntity( es );
 	}
 }
 
@@ -219,7 +224,7 @@ namespace NLNET {
  * Constructor
  */
 CLocalArea::CLocalArea( const CMsgSocket *clientsocket, const CVector& userpos, const CVector& userhdg ) :
-	_Radius( 20000 ),
+	_Radius( 200 ),
 	_NewEntityCallback( NULL ),
 	_EntityRemovedCallback( NULL ),
 	_UnknownMessagesCallback( NULL )
@@ -297,6 +302,7 @@ void CLocalArea::update()
 		}
 		//}
 
+		/* //DISABLED : outside the local area, the entities are only hidden (in the client program)
 		// Remove neighbor if it exits from the local area
 		if ( ! inRadius( (*ipe).second->pos() ) )
 		{
@@ -318,6 +324,7 @@ void CLocalArea::update()
 		{
 			ipe++;
 		}
+		*/
 	}
 }
 

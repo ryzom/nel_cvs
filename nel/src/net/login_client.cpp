@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.cpp,v 1.7 2001/07/02 11:44:18 lecroart Exp $
+ * $Id: login_client.cpp,v 1.8 2001/07/02 14:27:33 lecroart Exp $
  *
  */
 
@@ -169,6 +169,7 @@ string CLoginClient::authenticate (const string &loginServiceAddr, const string 
 
 	if (!VerifyLoginPasswordReason.empty())
 	{
+		_CallbackClient->disconnect ();
 		delete _CallbackClient;
 		_CallbackClient = NULL;
 	}

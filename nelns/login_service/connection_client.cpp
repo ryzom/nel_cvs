@@ -1,7 +1,7 @@
 /** \file login_service.cpp
  * Login Service (LS)
  *
- * $Id: connection_client.cpp,v 1.3 2001/05/18 16:51:01 lecroart Exp $
+ * $Id: connection_client.cpp,v 1.4 2001/07/02 14:27:43 lecroart Exp $
  *
  */
 
@@ -327,7 +327,9 @@ static void cbClientVerifyLoginPassword (CMessage &msgin, TSockId from, CCallbac
 		msgout.serial (ok);
 		msgout.serial (reason);
 		netbase.send (msgout, from);
-		netbase.disconnect (from);
+// FIX: On linux, when we disconnect now, sometime the other side doesnt receive the message sent just before.
+//      So it's the other side to disconnect
+//		netbase.disconnect (from);
 	}
 }
 
@@ -366,8 +368,9 @@ static void cbClientChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase
 			msgout.serial (ok);
 			msgout.serial (reason);
 			netbase.send (msgout, from);
-			// disconnect him
-			netbase.disconnect (from);
+// FIX: On linux, when we disconnect now, sometime the other side doesnt receive the message sent just before.
+//      So it's the other side to disconnect
+//			netbase.disconnect (from);
 			return;
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.7 2001/01/10 08:59:17 chafik Exp $
+ * $Id: type_def.h,v 1.8 2001/01/12 16:44:09 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -284,6 +284,10 @@ namespace NLAISCRIPT
 		
 		const NLAIC::CIdentType *getConstraintTypeOf() 
 		{
+			if(_Id == NULL)
+			{
+				_Id = (NLAIC::CIdentType *)_Constraint->getConstraintTypeOf();
+			}
 			return _Id;
 		}
 
@@ -335,7 +339,7 @@ namespace NLAISCRIPT
 
 		bool satisfied()
 		{
-			return _Id != NULL;
+			return getConstraintTypeOf()  != NULL;
 		}
 		
 		~COperandUnknown()			

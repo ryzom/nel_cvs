@@ -1,7 +1,7 @@
 /** \file collision_mesh_build.h
  * 
  *
- * $Id: collision_mesh_build.h,v 1.9 2002/12/31 10:07:36 corvazier Exp $
+ * $Id: collision_mesh_build.h,v 1.10 2002/12/31 11:13:51 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
+#include "nel/misc/matrix.h"
 #include "nel/misc/file.h"
 
 #include "nel/misc/vector.h"

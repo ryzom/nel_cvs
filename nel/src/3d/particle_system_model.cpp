@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.40 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: particle_system_model.cpp,v 1.41 2002/10/10 14:53:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -150,8 +150,7 @@ CParticleSystemModel::~CParticleSystemModel()
 	nlassert(_Scene);
 	if (_ParticleSystem)
 	{
-		_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);
-		/* _ParticleSystem = NULL; */
+		_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);		
 	}
 	// Auto detach me from skeleton. Must do it here, not in ~CTransform().
 	if(_FatherSkeletonModel)
@@ -178,6 +177,27 @@ void CParticleSystemModel::reallocRsc()
 	{
 		_AnimatedModelHandle = psmgt.addPermanentlyAnimatedSystem(this);
 	}
+	// touch user params animated value. If the system rsc have been released before, this force to restore them
+	for (uint k = 0; k < MaxPSUserParam; ++k)
+	{		
+		touch((uint)CParticleSystemModel::PSParam0 + k, OwnerBit);
+	}
+}
+
+///=====================================================================================
+void CParticleSystemModel::releasePSPointer()
+{
+	if (_ParticleSystem.getNbRef() == 1)
+	{	
+		// Backup user params (in animated value) so that they will be restored when the system is recreated
+		for (uint k = 0; k < MaxPSUserParam; ++k)
+		{
+			
+			_UserParam[k].Value = _ParticleSystem->getUserParam(k);					
+		}
+	}
+	//
+	_ParticleSystem = NULL; // one less ref with the smart ptr 
 }
 
 ///=====================================================================================
@@ -188,7 +208,7 @@ bool CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFr
 	  * Why do we test this here addtionnaly to the clip traversal ?
 	  * Simply because the clip observer is not called if the cluster it is inserted in is not parsed.
 	  * This is not good, because we want to keep few CParticleSystem instance.
-	  * This method solve that problem. This is called by the particle system manager when each scene as rendered
+	  * This method solve that problem. This is called by the particle system manager when each scene has rendered
 	  */
 
 
@@ -212,7 +232,7 @@ bool CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFr
 			_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
 			_AnimatedModelHandle.Valid = false;
 		}		
-		_ParticleSystem = NULL; // one less ref with the smart ptr
+		releasePSPointer();
 		if (shape->_DestroyModelWhenOutOfRange)
 		{			
 			_Invalidated = true;
@@ -235,7 +255,7 @@ bool CParticleSystemModel::refreshRscDeletion(const std::vector<CPlane>	&worldFr
 			{							
 				_Invalidated = true;
 			}
-			_ParticleSystem = NULL; // one less ref with the smart ptr
+			releasePSPointer();
 			return true;
 		}
 	}
@@ -253,7 +273,6 @@ void CParticleSystemModel::releaseRsc()
 		_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
 		_AnimatedModelHandle.Valid = false;
 	}	
-	_ParticleSystem = NULL; // one less ref with the smart ptr
 	nlassert(_Scene);
 	_Scene->getParticleSystemManager().removeSystemModel(_ModelHandle);
 }
@@ -269,7 +288,7 @@ void CParticleSystemModel::releaseRscAndInvalidate()
 		_Scene->getParticleSystemManager().removePermanentlyAnimatedSystem(_AnimatedModelHandle);
 		_AnimatedModelHandle.Valid = false;
 	}	
-	_ParticleSystem = NULL; // one less ref with the smart ptr
+	releasePSPointer();
 	_Invalidated = true;
 
 	nlassert(_Scene);
@@ -456,8 +475,7 @@ void	CParticleSystemDetailObs::traverse(IObs *caller)
 		{
 			const CMatrix		&mat= HrcObs->WorldMatrix;	 
 			ps->setSysMat(mat);
-			ps->setViewMat(trav->ViewMatrix);				
-
+			ps->setViewMat(trav->ViewMatrix);
 			psm->updateOpacityInfos();
 
 			//ps->setSysMat(psm->getWorldMatrix());

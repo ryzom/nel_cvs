@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.26 2002/08/01 16:45:58 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.27 2002/10/10 14:53:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -264,7 +264,7 @@ class CParticleSystemModel : public CTransformShape
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	protected:
+	private:
 
 		friend class CParticleSystemShape;
 		friend class CParticleSystemDetailObs;
@@ -283,7 +283,7 @@ class CParticleSystemModel : public CTransformShape
 		  */
 		bool refreshRscDeletion(const std::vector<CPlane>	&worldFrustumPyramid,  const NLMISC::CVector &viewerPos);
 
-		// Release the resources (attached system) of this model, but doesn't 
+		// Release the resources (attached system) of this model, but doesn't make it invalid.
 		void releaseRsc();
 
 		// Mark this system model as invalid, delete the attached system, and calls his observers
@@ -293,7 +293,10 @@ class CParticleSystemModel : public CTransformShape
 		/// Return true if the system is in the given world pyramid
 		bool checkAgainstPyramid(const std::vector<CPlane>	&worldFrustumPyramid) const;
 
-	protected:		
+		// Release PS and backup system params
+		void releasePSPointer();
+
+	private:		
 		CParticleSystemManager::TModelHandle    _ModelHandle; /** a handle to say when the resources
 																* of the model (_ParticleSystem) are deleted
 																*/

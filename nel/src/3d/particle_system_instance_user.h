@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.27 2004/03/04 14:26:30 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.28 2004/03/23 10:16:39 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -157,6 +157,7 @@ public:
 
 	virtual void		setZBias(float value);	
 
+	virtual	bool		supportMaterialRendering(UDriver &drv) { return true; /* rendering of ps always supported */ }	
 
 private:
 	/// list of observers

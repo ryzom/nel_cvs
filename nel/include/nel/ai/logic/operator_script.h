@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.17 2001/06/22 13:50:32 portier Exp $
+ * $Id: operator_script.h,v 1.18 2001/07/06 08:23:22 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,8 @@ namespace NLAIAGENT
 			std::vector<NLAIAGENT::IObjectIA *> _VarValues;		// Values of the vars for the instanciated operator
 			NLAILOGIC::CFactBase				*_FactBase;		// The father's factbase
 			NLAILOGIC::CGoal					*_CurrentGoal;
+			sint32								_CyclesBeforeUpdate;	// Number of cycles before the preconditions are checked
+			std::list<NLAILOGIC::CGoal *>		_ActivatedGoals;
 		public:
 			// Builds and actor with its father
 			COperatorScript(IAgentManager *, bool activated = false);
@@ -68,6 +70,7 @@ namespace NLAIAGENT
 			virtual void getDebugString(std::string &) const;
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 //			virtual void processMessages();
+			virtual bool checkActivation();
 			virtual const CProcessResult &run();
  
 //			virtual IObjectIA *run(const IMessageBase &msg);
@@ -91,6 +94,9 @@ namespace NLAIAGENT
 
 			/// Binds the goal args to the variables of the operator (defined by the "Goal:" field in the script).
 			void linkGoalArgs(NLAILOGIC::CGoal *);
+	
+			/// Selects a goal among the ones the operator can process
+			virtual NLAILOGIC::CGoal *selectGoal();
 
 			virtual void cancel();
 //			virtual bool isActive();

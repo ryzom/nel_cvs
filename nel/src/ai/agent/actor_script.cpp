@@ -364,6 +364,16 @@ namespace NLAIAGENT
 				r.Result = new NLAIAGENT::CFailureMsg();
 				return r;
 				break;
+
+			case fid_toplevel:
+				r.Result = new CLocalAgentMail( (IBasicAgent *) getTopLevel() );				
+				return r;
+				break;
+
+			case fid_owner:
+				r.Result = new CLocalAgentMail( (IBasicAgent *) getTopLevel()->getParent() );				
+				return r;
+				break;
 		}
 		return r;
 	}
@@ -493,6 +503,15 @@ namespace NLAIAGENT
 				return r;
 				break;
 
+			case fid_toplevel:
+				r.Result = new CLocalAgentMail( (IBasicAgent *) getTopLevel() );				
+				return r;
+				break;
+
+			case fid_owner:
+				r.Result = new CLocalAgentMail( (IBasicAgent *) getTopLevel()->getParent() );				
+				return r;
+				break;
 		}
 		return CAgentScript::runMethodBase(index, params);
 	}
@@ -501,87 +520,6 @@ namespace NLAIAGENT
 	{
 		return CAgentScript::getBaseMethodCount() + fid_last;
 	}
-/*
-	tQueue CActorScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
-	{		
-
-#ifdef NL_DEBUG
-		const char *dbg_func_name = name->getString();
-		std::string buffer;
-		param.getDebugString( buffer );
-#endif
-
-		tQueue result; 
-
-		if ( *name == CStringVarName("activate") )
-		{
-			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_activate, 0.0,NULL, r_type ) );
-		}
-
-		if ( *name == CStringVarName("onActivate") )
-		{
-			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_onActivate , 0.0,NULL, r_type ) );
-		}
-
-		if ( *name == CStringVarName("unActivate") )
-		{
-			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_onUnActivate, 0.0,NULL, r_type ) );
-		}
-
-		if ( *name == CStringVarName("onUnActivate") )
-		{
-			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_unActivate, 0.0,NULL, r_type ) );
-		}
-
-		if ( *name == CStringVarName("switch") )
-		{
-			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_switch, 0.0, NULL, r_type ) );
-		}
-
-		if ( *name == CStringVarName("Launch") )
-		{
-			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_launch, 0.0, NULL, r_type ) );
-		}
-
-		// Processes succes and failure functions
-		if ( *name == CStringVarName("RunTell") )
-		{
-			double d;
-			d = ((NLAISCRIPT::CParam &)*ParamSuccessMsg).eval((NLAISCRIPT::CParam &)param);
-			if ( d >= 0.0 )
-			{
-				NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-				result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_success, 0.0,NULL, r_type ) );
-			}
-
-			d = ((NLAISCRIPT::CParam &)*ParamFailureMsg).eval((NLAISCRIPT::CParam &)param);
-			if ( d >= 0.0 )
-			{
-				NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
-				result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_failure, 0.0,NULL, r_type ) );
-			}
-		}
-
-
-		if(_AgentClass != NULL && result.empty() )
-		{
-			result = _AgentClass->isMember(className, name, param);
-			if( !result.empty() ) 
-				return result;
-		}
-
-		if ( result.empty() )
-			return CAgentScript::isMember(className, name, param);
-
-		return result;
-	}
-*/
 
 	tQueue CActorScript::getPrivateMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{		
@@ -592,49 +530,56 @@ namespace NLAIAGENT
 		param.getDebugString( buffer );
 #endif
 
-		tQueue result; /* = CAgentScript::isMember( className, name, param);
+		tQueue result; 
 
-		if ( result.size() )
-			return result;
-*/
-		if ( *name == CStringVarName("activate") )
+		static NLAIAGENT::CStringVarName activate_name("activate");
+		static NLAIAGENT::CStringVarName onactivate_name("onActivate");
+		static NLAIAGENT::CStringVarName unactivate_name("unActivate");
+		static NLAIAGENT::CStringVarName onunactivate_name("onUnActivate");
+		static NLAIAGENT::CStringVarName switch_name("switch");
+		static NLAIAGENT::CStringVarName launch_name("Launch");
+		static NLAIAGENT::CStringVarName tell_name("RunTell");
+		static NLAIAGENT::CStringVarName toplevel_name("TopLevel");
+		static NLAIAGENT::CStringVarName owner_name("Owner");
+
+		if ( *name == activate_name )
 		{
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod(  CAgentScript::getMethodIndexSize() + fid_activate, 0.0,NULL, r_type ) );
 		}
 
-		if ( *name == CStringVarName("onActivate") )
+		if ( *name == onactivate_name )
 		{
 			NLAIAGENT::CObjectType *r_type = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_onActivate , 0.0,NULL, r_type ) );
 		}
 
-		if ( *name == CStringVarName("unActivate") )
+		if ( *name == unactivate_name )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_onUnActivate, 0.0,NULL, r_type ) );
 		}
 
-		if ( *name == CStringVarName("onUnActivate") )
+		if ( *name == onunactivate_name )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_unActivate, 0.0,NULL, r_type ) );
 		}
 
-		if ( *name == CStringVarName("switch") )
+		if ( *name == switch_name )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_switch, 0.0, NULL, r_type ) );
 		}
 
-		if ( *name == CStringVarName("Launch") )
+		if ( *name == launch_name )
 		{
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_launch, 0.0, NULL, r_type ) );
 		}
 
 		// Processes succes and failure functions
-		if ( *name == CStringVarName("RunTell") )
+		if ( *name == tell_name )
 		{
 			double d;
 			d = ((NLAISCRIPT::CParam &)*ParamSuccessMsg).eval((NLAISCRIPT::CParam &)param);
@@ -652,14 +597,18 @@ namespace NLAIAGENT
 			}
 		}
 
-/*
-		if(_AgentClass != NULL && result.empty() )
+		if ( *name == toplevel_name )
 		{
-			result = _AgentClass->isMember(className, name, param);
-			if( !result.empty() ) 
-				return result;
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_toplevel, 0.0, NULL, r_type ) );
 		}
-*/
+
+		if ( *name == owner_name )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_owner, 0.0, NULL, r_type ) );
+		}
+
 		if ( result.empty() )
 			return CAgentScript::getPrivateMember(className, name, param);
 

@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.23 2001/06/01 14:51:36 portier Exp $
+ * $Id: compilateur.h,v 1.24 2001/07/06 08:23:22 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -189,6 +189,7 @@ namespace NLAISCRIPT
 		std::list<NLAIFUZZY::CFuzzyVar *> _FuzzVars;
 		sint32 _LastFVarIndex;
 		sint32 _NbLogicParams;
+		bool _InCond;
 		///////////////////////////////////////////////////
 		
 		bool   _InLineParse;
@@ -210,7 +211,8 @@ namespace NLAISCRIPT
 			_LastString("_"),
 			_LastBaseObjectDef("_"),
 			_Debug(false),
-			_Goal(NULL)
+			_Goal(NULL),
+			_InCond(false)
 		{
 			_SourceFileName = fileName;
 			_SourceFileName->incRef();
@@ -245,7 +247,8 @@ namespace NLAISCRIPT
 			_LastString("_"),
 			_LastBaseObjectDef("_"),
 			_Debug(false),
-			_Goal(NULL)
+			_Goal(NULL),
+			_InCond(false)
 		{					
 			_SourceFileName = fileName;
 			_SourceFileName->incRef();

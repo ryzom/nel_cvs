@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.19 2001/05/22 16:08:16 chafik Exp $
+ * $Id: var_control.cpp,v 1.20 2001/07/06 08:24:01 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,7 @@ namespace NLAISCRIPT
 				NLAIC::CIdentType id(t.getString());
 				IOpType * c= new COperandSimple(new NLAIC::CIdentType(id));
 				CObjectUnknown *o = (CObjectUnknown *)((CVarPStackParam *)var)->getObject();				
-				o->setClassType(c);
+				o->setBaseType(c);
 				return true;
 			}
 			catch(NLAIE::IException &)

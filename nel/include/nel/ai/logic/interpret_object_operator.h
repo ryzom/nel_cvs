@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.15 2001/06/26 13:28:21 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.16 2001/07/06 08:23:22 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,8 @@ namespace NLAISCRIPT
 
 		std::vector<NLAILOGIC::CGoal>				_Steps;				// Successive goals to be achieved
 		std::vector<sint32>							_StepsMode;			// Infos about synchro for the steps of the operator
+
+		sint32										_UpdateCycles;		// Number of cycles before checking preconditions
 
 	public:
 		static const NLAIC::CIdentType IdOperatorClass;
@@ -223,6 +225,16 @@ public:
 		std::vector<sint32> &getGoalVarPos()
 		{
 			return _GoalPosVar;
+		}
+
+		virtual void setUpdateEvery(sint32 cycles)
+		{
+			_UpdateCycles = cycles;
+		}
+
+		sint32 getUpdateEvery()
+		{
+			return _UpdateCycles;
 		}
 	};
 }

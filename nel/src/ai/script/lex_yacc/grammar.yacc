@@ -45,7 +45,7 @@ using  namespace NLAIFUZZY;
 %token	NEW 
 
 // Operator tokens
-%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS
+%token	TRIGGER	PRECONDITION POSTCONDITION GOAL RETURN COMMENT STEPS UPDATEEVERY
 
 // Logic tokens
 %token	LOGICVAR RULE IA_ASSERT OR AND
@@ -226,7 +226,9 @@ using  namespace NLAIFUZZY;
 						|	PreCondition
 						|	PostCondition 
 						|	Goal
+						|	UpdateCycles
 						;	
+
 	
 
 	OpComment			:	COMMENT
@@ -248,7 +250,8 @@ using  namespace NLAIFUZZY;
 	PreCondition		:	PRECONDITION POINT_DEUX 
 							{
 								is_cond = true;
-								initParam()
+								initParam();
+								_InCond = true;
 							}
 							OperatorCond
 							{
@@ -269,6 +272,7 @@ using  namespace NLAIFUZZY;
 										_LastCodeBranche.pop_front();
 									}
 								}
+								_InCond = false;
 							}
 							END
 							;
@@ -323,11 +327,34 @@ using  namespace NLAIFUZZY;
 						POINT_VI
 						;
 
+	UpdateCycles			:	UPDATEEVERY POINT_DEUX NOMBRE	
+								{
+									if ( classIsAnOperator() )
+									{
+										sint32 update = (sint32) LastyyNum;
+										COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+										op_class->setUpdateEvery( update );
+										if(_LastFact.Value != NULL) 
+										{
+											_LastFact.Value->release();
+											_LastFact.Value = NULL;
+										}
+
+										if(_FlotingExpressionType != NULL)
+										{
+											_FlotingExpressionType->release();
+											_FlotingExpressionType = NULL;
+										}
+									}	
+								}
+								POINT_VI
+							;
 
 	PostCondition		:	POSTCONDITION POINT_DEUX 
 							{
 								is_cond = false;
-								initParam()
+								initParam();
+								_InCond = true;
 							}
 							OperatorCond
 							{
@@ -350,6 +377,7 @@ using  namespace NLAIFUZZY;
 										_LastCodeBranche.pop_back();
 									}
 								}
+								_InCond = false;
 							}
 							END
 							;
@@ -362,7 +390,7 @@ using  namespace NLAIFUZZY;
 							{
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
 							}
-						OperatorCond
+							OperatorCond
 							{
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
 							}
@@ -405,7 +433,7 @@ using  namespace NLAIFUZZY;
 									_LastLogicParams.pop_back();
 								}
 							}
-						|	DuCode
+						|	ACCOL_G DuCode
 							{
 								if(_LastBloc != NULL && !_LastBloc->isCodeMonted())
 								{
@@ -462,8 +490,8 @@ using  namespace NLAIFUZZY;
 									_IsVoid = true;
 								}				
 */				
-
 							}
+							ACCOL_D
 							;
 
 	BooleanCond			:	INTERROGATION IDENT
@@ -854,7 +882,8 @@ using  namespace NLAIFUZZY;
 	RetourDeFonction	:	RETURN								
 							Expression
 							{
-								if(!typeOfMethod()) return false;
+								if ( !_InCond )
+									if(!typeOfMethod()) return false;
 							}
 						;		
 

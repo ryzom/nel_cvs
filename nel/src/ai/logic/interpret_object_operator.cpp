@@ -721,12 +721,19 @@ namespace NLAISCRIPT
 				*context.Code = ip;
 				context.Code = opTmp;		
 
-				if ( r.Result != NULL)
+				NLAIAGENT::IObjetOp *result = (NLAIAGENT::IObjetOp *)context.Stack[(int)context.Stack];
+				result->incRef();
+				context.Stack--;
+
+				if ( result != NULL)
 				{
 #ifdef NL_DEBUG
-					const char *dbg_return_type = (const char *) r.Result->getType();
+					const char *dbg_return_type = (const char *) result->getType();
+					std::string dbg_str;
+					result->getDebugString( dbg_str );
 #endif
-					return false;
+					if ( ! result->isTrue() )
+						return false;
 				}
 
 			}

@@ -1,6 +1,6 @@
 /** \file digital.cpp
  *
- * $Id: digital.cpp,v 1.4 2001/01/10 10:10:08 chafik Exp $
+ * $Id: digital.cpp,v 1.5 2001/01/10 17:08:52 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 namespace NLAIAGENT
 {
 
+	// DigitalType
 	DigitalType DigitalType::NullOperator = DigitalType(0.0);
 	
 	const NLAIC::CIdentType &DigitalType::getType() const
@@ -38,7 +39,7 @@ namespace NLAIAGENT
 		return IObjectIA::ProcessRun;
 	}
 	
-
+	// BorneDigitalType
 	const IObjectIA::CProcessResult &BorneDigitalType::run()
 	{
 		return IObjectIA::ProcessRun;
@@ -48,6 +49,30 @@ namespace NLAIAGENT
 	{		
 		return IdBorneDigitalType;
 	}	
+
+	// DDigitalType
+	
+	const NLAIC::CIdentType &DDigitalType::getType() const
+	{		
+		return IdDDigitalType;
+	}
+	
+	const IObjectIA::CProcessResult &DDigitalType::run()
+	{
+		return IObjectIA::ProcessRun;
+	}
+	
+	// 
+	const IObjectIA::CProcessResult &BorneDDigitalType::run()
+	{
+		return IObjectIA::ProcessRun;
+	}
+
+	const NLAIC::CIdentType &BorneDDigitalType::getType() const
+	{		
+		return IdBorneDDigitalType;
+	}	
+
 
 
 	/*const IObjectIA::CProcessResult &IntegerType::run()

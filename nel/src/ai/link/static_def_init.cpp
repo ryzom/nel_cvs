@@ -70,7 +70,35 @@
 																NLAIC::CTypeOfOperator::opSupEq | 																
 																NLAIC::CTypeOfOperator::opDiff));
 
-	const NLAIC::CIdentType DigitalType::IdDigitalType("Digital",	NLAIC::CSelfClassCFactory(DigitalType(0)),
+	const NLAIC::CIdentType DigitalType::IdDigitalType("Float",	NLAIC::CSelfClassCFactory(DigitalType(0)),
+																NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+																NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+																NLAIC::CTypeOfOperator::opSub | 
+																NLAIC::CTypeOfOperator::opMul | 
+																NLAIC::CTypeOfOperator::opDiv | 
+																NLAIC::CTypeOfOperator::opEq | 
+																NLAIC::CTypeOfOperator::opInf | 
+																NLAIC::CTypeOfOperator::opSup | 
+																NLAIC::CTypeOfOperator::opInfEq | 
+																NLAIC::CTypeOfOperator::opSupEq |
+																NLAIC::CTypeOfOperator::opNot |
+																NLAIC::CTypeOfOperator::opDiff));	
+
+	const NLAIC::CIdentType BorneDigitalType::IdBorneDigitalType("BornedFloat",	NLAIC::CSelfClassCFactory(BorneDigitalType(-1,1)),
+																				NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+																				NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+																				NLAIC::CTypeOfOperator::opSub | 
+																				NLAIC::CTypeOfOperator::opMul | 
+																				NLAIC::CTypeOfOperator::opDiv | 
+																				NLAIC::CTypeOfOperator::opEq | 
+																				NLAIC::CTypeOfOperator::opInf |
+																				NLAIC::CTypeOfOperator::opSup | 
+																				NLAIC::CTypeOfOperator::opInfEq | 
+																				NLAIC::CTypeOfOperator::opSupEq |
+																				NLAIC::CTypeOfOperator::opNot |
+																				NLAIC::CTypeOfOperator::opDiff));
+
+	const NLAIC::CIdentType DDigitalType::IdDDigitalType("Double",	NLAIC::CSelfClassCFactory(DDigitalType(0)),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
 																	NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
 																	NLAIC::CTypeOfOperator::opSub | 
@@ -84,19 +112,20 @@
 																	NLAIC::CTypeOfOperator::opNot |
 																	NLAIC::CTypeOfOperator::opDiff));	
 
-	const NLAIC::CIdentType BorneDigitalType::IdBorneDigitalType("BorneDigital",NLAIC::CSelfClassCFactory(BorneDigitalType(-1,1)),
-																				NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
-																				NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
-																				NLAIC::CTypeOfOperator::opSub | 
-																				NLAIC::CTypeOfOperator::opMul | 
-																				NLAIC::CTypeOfOperator::opDiv | 
-																				NLAIC::CTypeOfOperator::opEq | 
-																				NLAIC::CTypeOfOperator::opInf |
-																				NLAIC::CTypeOfOperator::opSup | 
-																				NLAIC::CTypeOfOperator::opInfEq | 
-																				NLAIC::CTypeOfOperator::opSupEq |
-																				NLAIC::CTypeOfOperator::opNot |
-																				NLAIC::CTypeOfOperator::opDiff));
+	const NLAIC::CIdentType BorneDDigitalType::IdBorneDDigitalType("BornedDouble",	NLAIC::CSelfClassCFactory(BorneDDigitalType(-1,1)),
+																					NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),
+																					NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opAdd | 
+																					NLAIC::CTypeOfOperator::opSub | 
+																					NLAIC::CTypeOfOperator::opMul | 
+																					NLAIC::CTypeOfOperator::opDiv | 
+																					NLAIC::CTypeOfOperator::opEq | 
+																					NLAIC::CTypeOfOperator::opInf |
+																					NLAIC::CTypeOfOperator::opSup | 
+																					NLAIC::CTypeOfOperator::opInfEq | 
+																					NLAIC::CTypeOfOperator::opSupEq |
+																					NLAIC::CTypeOfOperator::opNot |
+																					NLAIC::CTypeOfOperator::opDiff));
+
 
 	/*const NLAIC::CIdentType IntegerType::IdIntegerType("Integer",	NLAIC::CSelfClassCFactory(IntegerType(0)),
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tNombre),

@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: agent_digital.h,v 1.5 2001/01/10 17:09:30 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,12 +157,134 @@ namespace NLAIAGENT
 		}
 		//@}
 
-		virtual ~BorneDigitalType()
+	protected:		
+	};
+
+	/**
+	
+	This class store a double in an IObjectIA. 
+
+	* \author Saffray Alain
+	* \author Nevrax France
+	* \date 2001
+	*/
+	class DDigitalType : public INombre<double>
+	{
+
+	public:
+		static const NLAIC::CIdentType IdDDigitalType;
+
+	public:
+		///Construct with an initial value.
+		DDigitalType(double value):INombre<double>(value)
+		{			
+		}
+
+		///Construct with an uninitialize value.
+		DDigitalType():INombre<double>()
+		{			
+		}
+		
+		DDigitalType(const DDigitalType &a):INombre<double>(a)
+		{			
+		}
+
+		///Construct from a NEL stream.
+		DDigitalType(NLMISC::IStream &is):INombre<double>(is)
+		{
+		}
+		
+		/// \name Base class member method.			
+		//@{
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new DDigitalType(*this);
+			m->incRef();
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;		
+		
+
+		virtual void getDebugString(char *text) const
+		{
+			sprintf(text,"%e",getValue());
+		}		
+
+		virtual const CProcessResult &run();
+		//@}				
+	};
+
+	/**	
+	This class store a double in an IObjectIA. The double have a borne still as [min, max].
+
+	* \author Chafik sameh	 
+	* \author Portier Pierre
+	* \author Nevrax France
+	* \date 2000	
+	*/
+	class BorneDDigitalType: public IBornNombre<double>
+	{			
+
+	public:
+		static const NLAIC::CIdentType IdBorneDDigitalType;
+
+	public:
+
+		/**
+		Construct with a [inf, sup] born and a value.
+		*/
+		BorneDDigitalType(double sup,double inf,double value): IBornNombre<double>(value,sup,inf)
+		{
+		}
+		/**
+		Construct with a [inf, sup] born and an uninitialize value.
+		*/
+		BorneDDigitalType(double sup,double inf):IBornNombre<double>(sup,inf)
+		{
+		}		
+
+		BorneDDigitalType(const BorneDDigitalType &a): IBornNombre<double>(a)
+		{
+		}				
+
+		///Construct from a NEL stream.
+		BorneDDigitalType(NLMISC::IStream &is):IBornNombre<double>(is)
 		{
 		}
 
+		/// \name Base class member method.			
+		//@{
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new BorneDDigitalType(*this);
+			m->incRef();
+				return m;
+		}		
+
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual const NLAIC::CIdentType &getType() const;				
+
+		virtual const CProcessResult &run();
+		
+		virtual void getDebugString(char *text) const
+		{
+			sprintf(text,"_Value<%e> [_inf<%e> _sup<%e>]",getValue(),getInf(),getSup());
+		}
+		//@}
+
 	protected:		
 	};
+
 
 	/*class IntegerType: public INombre<sint32>
 	{

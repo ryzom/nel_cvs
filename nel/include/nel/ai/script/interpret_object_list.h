@@ -1,7 +1,7 @@
 /** \file interpret_object_list.h
  * Class for define list of class interpreted.
  *
- * $Id: interpret_object_list.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: interpret_object_list.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -23,7 +23,7 @@
  */
 #ifndef NL_INTERPRET_OBJECT_LIST_H
 #define NL_INTERPRET_OBJECT_LIST_H
-#include "interpret_object.h"
+#include "script/interpret_object.h"
 
 namespace NLIASCRIPT
 {

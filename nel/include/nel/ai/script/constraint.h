@@ -1,7 +1,7 @@
 /** \file constraint.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: constraint.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: constraint.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_CONSTRAINT_H
 #define NL_CONSTRAINT_H
 
-#include "interpret_methodes.h"
+#include "script/interpret_methodes.h"
 
 namespace NLIASCRIPT
 {

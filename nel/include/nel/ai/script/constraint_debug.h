@@ -1,6 +1,6 @@
 /* A debug constraint. It keep a trace between original source code and OpCode.
  *
- * $Id: constraint_debug.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: constraint_debug.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef NL_CONSTRAINT_DEBUG_H
 #define NL_CONSTRAINT_DEBUG_H
 
-#include "constraint.h"
+#include "script/constraint.h"
 
 namespace NLIASCRIPT
 {

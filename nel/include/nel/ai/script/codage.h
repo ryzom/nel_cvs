@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: codage.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,8 +30,8 @@
 //#include "stacktype.h"
 
 //#include "pythonsupport.h"
-#include "virtual_op_code.h"
-#include "context_debug.h"
+#include "script/virtual_op_code.h"
+#include "script/context_debug.h"
 
 namespace NLIASCRIPT
 {

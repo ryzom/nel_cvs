@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.18 2000/12/01 14:15:24 lecroart Exp $
+ * $Id: types_nl.h,v 1.19 2000/12/13 17:00:28 cado Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -279,7 +279,7 @@ public:
 		str.resize (size ());
 		for (sint i = 0; i < (sint) str.size (); i++)
 		{
-			operator[](i) = str[i];
+			str[i] = (char) operator[](i);
 		}
 	}
 

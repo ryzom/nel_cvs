@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.13 2001/06/27 08:29:42 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.14 2001/10/16 09:22:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,7 @@ CCallbackServer::CCallbackServer( TRecordingState rec, const string& recfilename
 	CBufServer::setConnectionCallback (cbsNewConnection, this);
 
 	_IsAServer = true;
+	_DefaultCallback = NULL;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.24 2001/09/20 13:24:24 cado Exp $
+ * $Id: callback_net_base.cpp,v 1.25 2001/10/16 09:22:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -252,9 +252,49 @@ void CCallbackNetBase::processOneMessage ()
 		}
 	}
 
+	TMsgCallback	cb = NULL;
 	if (pos < 0 || pos >= (sint16) _CallbackArray.size ())
 	{
-		nlwarning ("L3NB_CB: Callback %s not found in _CallbackArray", msgin.toString().c_str());
+		if (_DefaultCallback == NULL)
+		{
+			nlwarning ("L3NB_CB: Callback %s not found in _CallbackArray", msgin.toString().c_str());
+		}
+		else
+		{
+			cb = _DefaultCallback;
+		}
+	}
+	else
+	{
+		cb = _CallbackArray[pos].Callback;
+	}
+
+	TSockId realid = getSockId (tsid);
+
+	if (!realid->AuthorizedCallback.empty() && msgin.getName() != realid->AuthorizedCallback)
+	{
+		nlwarning ("L3NB_CB: %s try to call the callback %s but only %s is authorized. Disconnect him!", tsid->asString().c_str(), msgin.toString().c_str(), tsid->AuthorizedCallback.c_str());
+		disconnect (tsid);
+	}
+	else if (cb == NULL)
+	{
+		nlwarning ("L3NB_CB: Callback %s is NULL, can't call it", msgin.toString().c_str());
+	}
+	else
+	{
+		nldebug ("L3NB_CB: Calling callback (%s)%s", msgin.getName().c_str(), (cb==_DefaultCallback)?" DEFAULT_CB":"");
+		cb(msgin, realid, *this);
+	}
+	
+/*
+	if (pos < 0 || pos >= (sint16) _CallbackArray.size ())
+	{
+		if (_DefaultCallback == NULL)
+			nlwarning ("L3NB_CB: Callback %s not found in _CallbackArray", msgin.toString().c_str());
+		else
+		{
+			// ...
+		}
 	}
 	else
 	{
@@ -275,6 +315,7 @@ void CCallbackNetBase::processOneMessage ()
 			_CallbackArray[pos].Callback (msgin, realid, *this);
 		}
 	}
+*/
 }
 
 

@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.18 2001/06/27 08:29:42 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.19 2001/10/16 09:20:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,6 +101,9 @@ public:
 	 */
 	void	addCallbackArray (const TCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
 
+	/// Sets default callback for unknown message types
+	void	setDefaultCallback(TMsgCallback defaultCallback) { _DefaultCallback = defaultCallback; }
+
 	/// Sets callback for disconnections (or NULL to disable callback)
 	void	setDisconnectionCallback (TNetCallback cb, void *arg) { checkThreadId ();  _DisconnectionCallback = cb; _DisconnectionCbArg = arg; }
 
@@ -185,6 +188,9 @@ protected:
 
 	// contains callbacks
 	std::vector<TCallbackItem>	_CallbackArray;
+	
+	// called if the received message is not found in the callback array
+	TMsgCallback				_DefaultCallback;
 
 	bool _IsAServer;
 	bool _FirstUpdate;

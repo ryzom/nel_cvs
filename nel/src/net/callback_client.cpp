@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.14 2001/08/30 17:07:36 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.15 2001/10/16 09:22:26 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,6 +66,7 @@ CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfil
 	_InputSIDA.ignoreAllUnknownId (true);
 
 	_IsAServer = false;
+	_DefaultCallback = NULL;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * 
  *
- * $Id: main.cpp,v 1.4 2002/07/19 13:29:09 legros Exp $
+ * $Id: main.cpp,v 1.5 2002/07/26 16:05:38 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -263,10 +263,15 @@ void createRetriever(vector<CVector> &translation)
 
 
 		computeRetriever(cmb, lr, translation[i], true);
-		int sharpPos = meshName.rfind ('#');
+		
+		// Compute an identifier name
+		string indentifier = meshName;
+		int sharpPos = indentifier.rfind ('#');
 		if (sharpPos != string::npos)
-			meshName = meshName.substr (0, sharpPos);
-		lr.setIdentifier(meshName);
+			indentifier = indentifier.substr (0, sharpPos);
+		lr.setIdentifier(indentifier);
+
+		// Save the lr file
 		serialAndSave(lr, OutputPath+meshName+".lr");
 	}
 }

@@ -1,6 +1,6 @@
 /** \file constraint_find_run.cpp
  *
- * $Id: constraint_find_run.cpp,v 1.9 2001/02/05 10:36:00 chafik Exp $
+ * $Id: constraint_find_run.cpp,v 1.10 2001/02/05 10:46:30 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NLAISCRIPT
 
 	void CConstraintFindRun::run(CCompilateur &c)
 	{		
-/*#ifdef NL_DEBUG
+#ifdef NL_DEBUG
 		char mtxt[1024];
 		char ptxt[1024];
 		char txt[1024*2];
@@ -54,7 +54,7 @@ namespace NLAISCRIPT
 		_MethodName->getDebugString(mtxt);
 		_Param->getDebugString(ptxt);
 		sprintf(txt,"%s%s",mtxt,ptxt);
-#endif*/
+#endif
 
 		if(_BaseClass)
 		{

@@ -149,6 +149,7 @@ namespace NLAIAGENT
 	// This is where the activation of the operator and its children is controled...
 	const IObjectIA::CProcessResult &COperatorScript::run()
 	{
+
 #ifdef NL_DEBUG
 		const char *dbg_class_name = (const char *) getType();
 		std::string dbg_goal;		
@@ -166,7 +167,7 @@ namespace NLAIAGENT
 
 		if ( _IsActivable ) // If the goal exists and the preconditions are validated
 		{
-			if ( _IsActivated == false)		// If the operator wasn't activated before, initialises the current goal and runs the OnActivate() function
+			if ( ! _IsActivated )		// If the operator wasn't activated before, initialises the current goal and runs the OnActivate() function
 			{
 				// Registers to the goal and gets the args
 				if ( _CurrentGoal == NULL && ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() != NULL )
@@ -233,7 +234,7 @@ namespace NLAIAGENT
 				}
 
 #ifdef NL_DEBUG
-				if(sp != context->Stack.CIndexStackPointer::operator int ())
+				if ( sp != context->Stack.CIndexStackPointer::operator int () )
 				{
 					throw;
 				}
@@ -252,9 +253,9 @@ namespace NLAIAGENT
 #endif
 		if ( (_CurrentGoal != NULL) )
 		{
-			if ( (_IsPaused == false) && !_CurrentGoal->isSelected() )
+			if ( !_IsPaused && !_CurrentGoal->isSelected() )
 				pause();
-			if ( (_IsPaused == true)  && _CurrentGoal->isSelected() )
+			if ( _IsPaused && _CurrentGoal->isSelected() )
 				restart();
 		}
 	}

@@ -1,6 +1,6 @@
 /** \file opcode.cpp
  *
- * $Id: opcode.cpp,v 1.18 2002/03/12 15:52:56 chafik Exp $
+ * $Id: opcode.cpp,v 1.19 2002/04/17 15:35:54 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NLAISCRIPT
 	void CNegOpCode::getDebugResult(std::string &str,CCodeContext &context) const
 	{
 		std::string X;
+
 		((NLAIAGENT::IObjectIA *)context.Stack)->getDebugString(X);
 		str +="-";
 		str += X;		

@@ -1,6 +1,6 @@
 /** \file msg_stream.h
  *
- * $Id: msg_stream.h,v 1.1 2002/01/03 15:09:23 chafik Exp $
+ * $Id: msg_stream.h,v 1.2 2002/04/17 15:35:42 portier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLAIAGENT
 		sint32 _Pos;
 
 	public:
-		CMsgIStream(const IBaseGroupType &l):NLMISC::IStream(false,false), _List(l), _It(_List.getConstIterator()), _Len(_List.size()), _Pos(0)
+		CMsgIStream(const IBaseGroupType &l):NLMISC::IStream(true,false), _List(l), _It(_List.getConstIterator()), _Len(_List.size()), _Pos(0)
 		{			
 		}
 

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.16 2001/08/16 17:04:57 vizerie Exp $
+ * $Id: particle_system.h,v 1.17 2001/08/29 14:25:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ class CPSCopyHelper;
 class CScene;
 class CPSLocated;
 class IDriver;
-struct IPSSoundServer;
+struct UPSSoundServer;
 
 
 
@@ -526,13 +526,13 @@ public:
 	///\name sound managment
 		// @{
 		/// register a Sound server to this system. All systems share the same sound server. 
-		static void					registerSoundServer(IPSSoundServer *soundServer)
+		static void					registerSoundServer(UPSSoundServer *soundServer)
 		{
 			_SoundServer = soundServer;
 		}
 
 		/// get the current sound server used by this system. NULL if none
-		static IPSSoundServer *		getSoundServer(void)
+		static UPSSoundServer *		getSoundServer(void)
 		{
 			return _SoundServer;
 		}	
@@ -633,7 +633,7 @@ protected:
 	bool										_PerformMotionWhenOutOfFrustum;
 	uint										_MaxNumFacesWanted;	
 
-	static IPSSoundServer *						_SoundServer;
+	static UPSSoundServer *						_SoundServer;
 
 	float										_UserParam[MaxPSUserParam];
 

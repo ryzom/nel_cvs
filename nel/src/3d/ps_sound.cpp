@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.4 2001/08/29 10:37:11 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.5 2001/08/29 14:25:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,7 +25,7 @@
 
 #include "3d/ps_sound.h"
 #include "3d/particle_system.h"
-#include "3d/ps_sound_interface.h"
+#include "nel/3d/u_ps_sound_interface.h"
 #include "3d/ps_attrib_maker.h"
 
 
@@ -59,7 +59,7 @@ void			CPSSound::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 	if (pass != PSMotion) return;
 	const uint32 size = _Owner->getSize();	
 
-	CPSAttrib<IPSSoundInstance *>::iterator it = _Sounds.begin()
+	CPSAttrib<UPSSoundInstance *>::iterator it = _Sounds.begin()
 												, endIt;
 
 	if (ellapsedTime == 0.f)

@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * <File description>
  *
- * $Id: ps_sound.h,v 1.3 2001/08/29 10:37:11 vizerie Exp $
+ * $Id: ps_sound.h,v 1.4 2001/08/29 14:25:43 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 
 template <class T>
 class CPSAttribMaker;
-struct IPSSoundInstance;
+struct UPSSoundInstance;
 
 /**
  * This is a goup of sound instances sound instance. sounds are produced during the motion pass
@@ -141,7 +141,7 @@ protected:
 	virtual void			deleteElement(uint32 index);
 	virtual void			resize(uint32 size);
 
-	CPSAttrib<IPSSoundInstance *>	_Sounds;
+	CPSAttrib<UPSSoundInstance *>	_Sounds;
 	std::string						_SoundName;
 	float							_Gain;
 	CPSAttribMaker<float> *			_GainScheme;

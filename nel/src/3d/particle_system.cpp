@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.32 2001/08/24 13:27:18 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.33 2001/08/29 14:25:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ namespace NL3D
 
 
 uint32 CParticleSystem::NbParticlesDrawn = 0;
-IPSSoundServer *		 CParticleSystem::_SoundServer = NULL;
+UPSSoundServer *		 CParticleSystem::_SoundServer = NULL;
 
 
 

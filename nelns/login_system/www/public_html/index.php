@@ -191,7 +191,7 @@
 	}
 
 	// check cp is set (force bool)
-	$cp = ($_GET["$cp"] == "1");
+	$cp = ($_GET["cp"] == "1");
 
 	if (!checkUserValidity($_GET["login"], $_GET["password"], $_GET["clientApplication"], $cp, $id, $reason, $priv, $extended))
 	{

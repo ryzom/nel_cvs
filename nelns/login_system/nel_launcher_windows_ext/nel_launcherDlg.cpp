@@ -179,7 +179,7 @@ string getValue(const string &str, const string &token)
 }
 
 void CNel_launcherDlg::launch(CString cs)
-{
+{	
 	string str((LPCSTR)cs);
 	launch(str);
 }

@@ -12,12 +12,6 @@
 #include "nel/misc/path.h"
 #include "patch.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // CLoginDlg dialog
 using namespace std;

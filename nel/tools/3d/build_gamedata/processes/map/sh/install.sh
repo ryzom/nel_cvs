@@ -42,6 +42,3 @@ if test "$panoply_file_list" ; then
 	done
 	ls panoply >> $panoply_file_list
 fi
-
-
-fi

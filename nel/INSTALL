@@ -64,6 +64,9 @@ Compilation
       is done in the [Tools -> Options -> Directories] menu :
 
          - Add the STLPort include directory to the "Library Files" category.
+           The STLPort include *must* be inserted before the microsoft one or
+           the compiler will take microsoft STL instead of STLPort STL.
+           (use the arrow button to put the STLPort include at the top)
            ex: D:/stlport-4.0/stlport
 
          - Add the STLPort library directory to the "Library Files" category.

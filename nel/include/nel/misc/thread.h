@@ -1,7 +1,7 @@
 /** \file thread.h
  * thread interface
  *
- * $Id: thread.h,v 1.5 2000/12/20 15:43:08 lecroart Exp $
+ * $Id: thread.h,v 1.6 2001/01/10 10:08:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -107,7 +107,7 @@ class EThread : public Exception
 
 #ifdef NL_OS_UNIX
 // not implemented ;)
-IThread *IThread::create (IRunnable *runnable)
+inline IThread *IThread::create (IRunnable *runnable)
 {
 	return NULL;
 }

@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.4 2001/10/05 14:59:46 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.5 2001/10/08 15:02:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -341,11 +341,19 @@ int CheckBind (int nVert, int nSeg, int& v0, int& v1, int& v2, int& v3, const CV
 		}
 		else
 		{
+#if (MAX_RELEASE < 4000)
 			if ((patch.edges[nSeg].patch2!=-1)&&bCreate)
 			{
 				if (bAssert)
 					nlassert (0);
 			}
+#else // (MAX_RELEASE < 4000)
+			if ((patch.edges[nSeg].patches[1]!=-1)&&bCreate)
+			{
+				if (bAssert)
+					nlassert (0);
+			}
+#endif // (MAX_RELEASE < 4000)
 			else
 			{
 				// config 1?
@@ -1300,16 +1308,19 @@ void RPatchMesh::AddHook (int nVert, int nSeg, PatchMesh& patch)
 // AddHook
 void RPatchMesh::AddHook (int nVert0, int nVert1, int nVert2, int nSeg, PatchMesh& patch)
 {
+#if (MAX_RELEASE < 4000)
 	// Une side of the edge must be cleared
 	nlassert (patch.edges[nSeg].patch2==-1);
 
-#if (MAX_RELEASE < 4000)
 	int nEdge=WhereIsTheEdge (patch.edges[nSeg].patch1, nSeg, patch);
 
 	BindingVertex (nVert0, patch.edges[nSeg].patch1, nEdge, nVert1, BIND_25);
 	BindingVertex (nVert1, patch.edges[nSeg].patch1, nEdge, nVert1, BIND_50);
 	BindingVertex (nVert2, patch.edges[nSeg].patch1, nEdge, nVert1, BIND_75);
 #else // (MAX_RELEASE < 4000)
+	// Une side of the edge must be cleared
+	nlassert (patch.edges[nSeg].patches[1]==-1);
+
 	int nEdge=WhereIsTheEdge (patch.edges[nSeg].patches[0], nSeg, patch);
 
 	BindingVertex (nVert0, patch.edges[nSeg].patches[0], nEdge, nVert1, BIND_25);
@@ -1413,7 +1424,7 @@ void RPatchMesh::CreateExtrusion (PatchMesh *patch)
 		// Patch selected
 		if (patch->patchSel[i])
 		{
-			int nNewFaces[4];
+			/*int nNewFaces[4];
 			int nWhichEdge[4];
 			int nEdgeCount=(patch->patches[i].type==PATCH_QUAD)?4:3;
 			
@@ -1435,11 +1446,30 @@ void RPatchMesh::CreateExtrusion (PatchMesh *patch)
 					if ((int)getUIVertex (nV).Binding.nPatch==i)
 					{
 						int nEd=getUIVertex (nV).Binding.nEdge;
+
+						// Must have been found
+						nlassert (nNewFaces[nEd]!=-1);
+						nlassert (nWhichEdge[nEd]!=-1);
+						
+						UnBindingVertex (i);
+
 						getUIVertex (nV).Binding.nPatch=nNewFaces[nEd];
 						getUIVertex (nV).Binding.nEdge=(nWhichEdge[nEd]+2)&3;
 					}
 				}
-			}
+			}*/
+
+			// Look for binded point...
+			for (int nV=0; nV<nOldVertCount; nV++)
+			{
+				if (getUIVertex (nV).Binding.bBinded)
+				{
+					if ((int)getUIVertex (nV).Binding.nPatch==i)
+					{
+						UnbindRelatedVertex (nV, *patch);
+					}
+				}
+			}			
 		}
 	}
 	InvalidateBindingInfo ();
@@ -1513,7 +1543,13 @@ void RPatchMesh::FindPatch (PatchMesh *patch, int nEdge, int &WhichEdge, int &nP
 		if (nv!=4)
 			break;
 	}
-	nlassert (nn!=patch->numPatches);
+
+	// Not found ?
+	if (nn==patch->numPatches)
+	{
+		nPatch=-1;
+		WhichEdge=-1;
+	}
 }
 
 // Resolve topologie changes -> Bind safe

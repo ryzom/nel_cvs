@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.36 2002/08/09 09:31:13 berenguier Exp $
+ * $Id: material.cpp,v 1.37 2002/08/09 09:43:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -253,7 +253,7 @@ void		CMaterial::setShader(TShader val)
 	if(_ShaderType==LightMap || _ShaderType==UserColor)
 		nTexts=1;
 	// reset all needed
-	for(sint i=0;i<nTexts;i++)
+	for(uint i=0;i<nTexts;i++)
 		setTexture(i ,NULL);
 
 	// If userColor, use TexEnv caps (we got it, so use it :) ).

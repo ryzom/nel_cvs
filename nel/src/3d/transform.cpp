@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.48 2002/07/18 16:28:37 berenguier Exp $
+ * $Id: transform.cpp,v 1.49 2002/08/09 15:00:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,7 +80,7 @@ CTransform::CTransform()
 	_ForceCLodSticked= false;
 
 	// default MeanColor value
-	_MeanColor.set(100,100,100);
+	_MeanColor.set(80,80,80);
 
 
 	// Setup some state.

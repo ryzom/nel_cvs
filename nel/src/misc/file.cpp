@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: file.cpp,v 1.2 2000/09/12 15:16:24 berenguier Exp $
+ * $Id: file.cpp,v 1.3 2000/09/12 15:41:10 berenguier Exp $
  *
  * Standard File Input/Output.
  */
@@ -61,6 +61,8 @@ void	CIFile::flush()
 // ======================================================================================================
 void		CIFile::serialBuffer(uint8 *buf, uint len) throw(EReadError)
 {
+	if(!_F)
+		throw	EFileNotOpened();
 	if(fread(buf, 1, len, _F) < len)
 		throw	EReadError();
 }
@@ -117,6 +119,8 @@ void	COFile::flush()
 // ======================================================================================================
 void		COFile::serialBuffer(uint8 *buf, uint len) throw(EStream)
 {
+	if(!_F)
+		throw	EFileNotOpened();
 	if(fwrite(buf, 1, len, _F) < len)
 		throw	EWriteError();
 }

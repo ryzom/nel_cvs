@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: file.h,v 1.2 2000/09/12 15:15:56 berenguier Exp $
+ * $Id: file.h,v 1.3 2000/09/12 15:41:22 berenguier Exp $
  *
  * Standard File Input/Output.
  */
@@ -34,13 +34,17 @@ struct EFile : public EStream
 {
 	virtual const char	*what() const throw() {return "File Error";}
 };
+struct EFileNotOpened : public EFile
+{
+	virtual const char	*what() const throw() {return "File Not Opened";}
+};
 struct EReadError : public EFile
 {
-	virtual const char	*what() const throw() {return "Read Error (End of file??), or file not opened";}
+	virtual const char	*what() const throw() {return "Read Error (End of file??)";}
 };
 struct EWriteError : public EFile
 {
-	virtual const char	*what() const throw() {return "Write Error, or file not opened";}
+	virtual const char	*what() const throw() {return "Write Error";}
 };
 
 

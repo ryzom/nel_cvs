@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.198 2003/11/25 16:19:25 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.199 2003/12/03 14:21:03 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1372,10 +1372,10 @@ bool CDriverGL::setMode(const GfxMode& mode)
 	_WindowWidth = clientRect.right-clientRect.left;
 	_WindowHeight = clientRect.bottom-clientRect.top;
 	_WindowX = clientRect.left;
-	_WindowY = clientRect.top;	return true;
-#endif
-
+	_WindowY = clientRect.top;
 	_FullScreen = !mode.Windowed;
+#endif
+	return true;
 }
 
 // --------------------------------------------------

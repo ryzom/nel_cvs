@@ -1,7 +1,7 @@
 /** \file render_trav.h
  * <File description>
  *
- * $Id: render_trav.h,v 1.6 2000/11/07 15:35:11 berenguier Exp $
+ * $Id: render_trav.h,v 1.7 2000/12/01 10:08:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_RENDER_TRAV_H
 
 #include "nel/3d/trav_scene.h"
+#include "nel/3d/viewport.h"
 #include <vector>
 
 
@@ -100,6 +101,14 @@ public:
 
 	void			setDriver(IDriver *drv) {Driver= drv;}
 	IDriver			*getDriver() {return Driver;}
+	void			setViewport (const CViewport& viewport) 
+	{
+		_Viewport = viewport;
+	}
+	CViewport		getViewport () const
+	{
+		return _Viewport;
+	}
 
 private:
 	// A grow only list of observers to be rendered.
@@ -107,6 +116,7 @@ private:
 	std::vector<IBaseRenderObs*>	RenderList;
 
 	IDriver			*Driver;
+	CViewport		_Viewport;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.5 2000/11/07 17:07:42 berenguier Exp $
+ * $Id: scene.h,v 1.6 2000/12/01 10:08:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 
 #include "nel/3d/mot.h"
 #include "nel/3d/trav_scene.h"
+#include "nel/3d/viewport.h"
 #include "nel/misc/rgba.h"
 
 
@@ -90,7 +91,8 @@ class CScene : public CMOT
 public:
 	/// The camera (SmartPtr-ed !!).
 	NLMISC::CSmartPtr<CCamera>	CurrentCamera;
-
+private:
+	CViewport					_Viewport;
 
 	/// \name The 4 default traversals, created / linked by CScene::initDefaultTraversals().
 	//@{
@@ -152,6 +154,14 @@ public:
 
 	/// Set the current camera (smartptr-ed!!).
 	void	setCam(const NLMISC::CSmartPtr<CCamera>	&cam);
+	void	setViewport(const class CViewport& viewport)
+	{
+		_Viewport=viewport;
+	}
+	CViewport	getViewport()
+	{
+		return _Viewport;
+	}
 
 private:
 	typedef		std::map<sint, ITravScene*>	TravMap;

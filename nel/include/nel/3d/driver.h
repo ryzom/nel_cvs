@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.23 2000/11/23 11:37:11 corvazier Exp $
+ * $Id: driver.h,v 1.24 2000/12/01 10:07:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -401,6 +401,12 @@ public:
 	  * \param icon This is the icon of the message box should use like warning, error etc...
 	  */
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
+
+	/** Set the current viewport
+	  *
+	  * \param viewport is a viewport to setup as current viewport.
+	  */
+	virtual void			setupViewport (const class CViewport& viewport)=0;
 };
 
 // --------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file scene_ut.h
  * <File description>
  *
- * $Id: nelu.h,v 1.3 2000/11/15 17:23:24 berenguier Exp $
+ * $Id: nelu.h,v 1.4 2000/12/01 10:08:35 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -74,7 +74,7 @@ public:
 	 * You can retrieve the created driver with scene.getDriver(). Usefull for window message processing as example.
 	 * \param scene a non-inited CScene.
 	 */
-	static void		init3d(CScene &scene, uint w, uint h, uint bpp=32, bool windowed=true);
+	static void		init3d(CScene &scene, uint w, uint h, const class CViewport& viewport, uint bpp=32, bool windowed=true);
 
 	/** Delete all 3d:
 	 * - delete the camera.

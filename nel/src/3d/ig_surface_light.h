@@ -1,7 +1,7 @@
 /** \file ig_surface_light.h
  * <File description>
  *
- * $Id: ig_surface_light.h,v 1.3 2002/08/21 09:39:51 lecroart Exp $
+ * $Id: ig_surface_light.h,v 1.4 2003/05/19 13:08:17 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -98,6 +98,8 @@ public:
 	float			getCellSize() const {return _CellSize;}
 	float			getOOCellSize() const {return _OOCellSize;}
 
+	// debug
+	const TRetrieverGridMap &getRetrieverGridMap() const {return _RetrieverGridMap;}
 
 // *********************
 private:

@@ -1,7 +1,7 @@
 /** \file scene_group.h
  * <File description>
  *
- * $Id: scene_group.h,v 1.22 2003/04/23 12:45:30 corvazier Exp $
+ * $Id: scene_group.h,v 1.23 2003/05/19 13:08:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -332,6 +332,9 @@ public:
 		return _IGSurfaceLight.getStaticLightSetup(retrieverIdentifier, surfaceId, localPos,
 			pointLightList, sunContribution, localAmbient);
 	}
+
+	/// Get the SurfaceLight info, for debug purposes.
+	const CIGSurfaceLight	&getIGSurfaceLight() const {return _IGSurfaceLight;}
 
 	/// Setuped at export, tells if the ig is touched by the sun. true by default.
 	void			enableRealTimeSunContribution(bool enable);

@@ -1,7 +1,7 @@
 /** \file nel_export_export.cpp
  * <File description>
  *
- * $Id: nel_export_export.cpp,v 1.6 2001/08/09 13:12:50 corvazier Exp $
+ * $Id: nel_export_export.cpp,v 1.7 2001/09/05 15:45:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #include "3d/animation.h"
 #include "3d/skeleton_shape.h"
 #include "../nel_mesh_lib/export_nel.h"
+#include "../nel_mesh_lib/export_lod.h"
+
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -131,7 +133,17 @@ bool CNelExport::exportAnim (const char *sPath, std::vector<INode*>& vectNode, I
 
 		// Set the name only if it is a scene animation
 		if (scene)
-			nodeName=CExportNel::getName (*vectNode[n])+".";
+		{
+			// try to get the prefix from the appData if present. If not, takes it from the node name
+			nodeName = CExportNel::getScriptAppData (vectNode[n], NEL3D_APPDATA_INSTANCE_NAME, "");
+			if (nodeName == "") // not found ?
+			{
+				nodeName=CExportNel::getName (*vectNode[n]);
+			}
+			nodeName+=".";
+		}	
+
+
 
 		// Add animation
 		CExportNel::addAnimation (animFile, *vectNode[n], nodeName.c_str(), &ip);

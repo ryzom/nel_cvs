@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.4 2002/02/04 10:36:06 vizerie Exp $
+ * $Id: texture_cube.cpp,v 1.5 2002/02/05 11:17:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ void CTextureCube::setTexture(TFace f, ITexture *t)
 }
 
 // ***************************************************************************
-string CTextureCube::getShareName()
+string CTextureCube::getShareName() const
 {
 	string sTemp;
 
@@ -153,6 +153,7 @@ void CTextureCube::selectTexture(uint index)
 	{
 		_Textures[i]->selectTexture(index);
 	}
+	touch();
 }
 
 } // NL3D

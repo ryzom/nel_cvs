@@ -1,7 +1,7 @@
 /** \file texture_cube.h
  * Cube mapping (6 maps around the object)
  *
- * $Id: texture_cube.h,v 1.2 2002/02/04 10:36:06 vizerie Exp $
+ * $Id: texture_cube.h,v 1.3 2002/02/05 11:17:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 	 * sharing system.
 	 */	
 	virtual bool			supportSharing() const {return true;}
-	virtual std::string		getShareName();
+	virtual std::string		getShareName() const;
 
 
 	/** 

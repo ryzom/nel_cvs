@@ -37,6 +37,7 @@ Browse::Browse(int nland, CWnd* pParent /*=NULL*/)
 	SubGroup11 = FALSE;
 	SubGroup8 = FALSE;
 	SubGroup9 = FALSE;
+	Oriented = FALSE;
 	//}}AFX_DATA_INIT
 	land=nland;
 	m_128x128=0;
@@ -63,6 +64,7 @@ void Browse::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_SUBGROUP11, SubGroup11);
 	DDX_Check(pDX, IDC_SUBGROUP8, SubGroup8);
 	DDX_Check(pDX, IDC_SUBGROUP9, SubGroup9);
+	DDX_Check(pDX, IDC_ORIENTED, Oriented);
 	//}}AFX_DATA_MAP
 }
 
@@ -662,6 +664,11 @@ void Browse::Init()
 	// The land	
 	CTileSet *tileSet=tileBank2.getTileSet (land);
 
+	if (tileSet->getOriented())
+		Oriented = 1;
+	else
+		Oriented = 0;
+	
 	// 128
 	m_ctrl.InfoList.theList128.resize (tileSet->getNumTile128 ());
 	for (int i=0; i<tileSet->getNumTile128 (); i++)
@@ -804,6 +811,12 @@ void Browse::OnOk()
 {
 	// TODO: Add your control notification handler code here
 	if (thread_actif) return;
+
+	// trap - Don't know if this is the right place to do this
+	UpdateData ();
+	CTileSet *tileSet=tileBank2.getTileSet (land);
+	tileSet->setOriented(Oriented?true:false);
+
 
 	this->SendMessage(WM_CLOSE);
 	EndDialog(1);

@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=tile_edit_exe - Win32 Debug
+CFG=tile_edit_exe - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,13 +13,14 @@ CFG=tile_edit_exe - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "tile_edit_exe.mak" CFG="tile_edit_exe - Win32 Debug"
+!MESSAGE NMAKE /f "tile_edit_exe.mak" CFG="tile_edit_exe - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "tile_edit_exe - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "tile_edit_exe - Win32 Debug" (based on "Win32 (x86) Application")
 !MESSAGE "tile_edit_exe - Win32 ReleaseDebug" (based on "Win32 (x86) Application")
+!MESSAGE "tile_edit_exe - Win32 DebugFast" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -109,6 +110,34 @@ LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386 /out:"Release/tile_edit.exe"
 # ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /out:"ReleaseDebug/tile_edit.exe"
 
+!ELSEIF  "$(CFG)" == "tile_edit_exe - Win32 DebugFast"
+
+# PROP BASE Use_MFC 6
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "tile_edit_exe___Win32_DebugFast"
+# PROP BASE Intermediate_Dir "tile_edit_exe___Win32_DebugFast"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 6
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "DebugFast"
+# PROP Intermediate_Dir "DebugFast"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "__STL_DEBUG" /D "_AFXDLL" /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GR /GX /Zi /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_AFXDLL" /D "NL_DEBUG_FAST" /Yu"stdafx.h" /FD /GZ /c
+# SUBTRACT CPP /Fr
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /out:"Debug/tile_edit.exe" /pdbtype:sept
+# ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /out:"Debug/tile_edit.exe" /pdbtype:sept
+
 !ENDIF 
 
 # Begin Target
@@ -116,6 +145,7 @@ LINK32=link.exe
 # Name "tile_edit_exe - Win32 Release"
 # Name "tile_edit_exe - Win32 Debug"
 # Name "tile_edit_exe - Win32 ReleaseDebug"
+# Name "tile_edit_exe - Win32 DebugFast"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"

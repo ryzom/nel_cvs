@@ -75,6 +75,7 @@ public:
 	int		SubGroup11;
 	int		SubGroup8;
 	int		SubGroup9;
+	int		Oriented;
 	//}}AFX_DATA
 
 

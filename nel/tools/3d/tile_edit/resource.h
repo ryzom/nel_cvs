@@ -106,6 +106,7 @@
 #define IDC_SUBGROUP9                   1091
 #define IDC_SUBGROUP10                  1092
 #define IDC_SUBGROUP11                  1093
+#define IDC_ORIENTED                    1094
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496

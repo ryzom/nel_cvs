@@ -1,7 +1,7 @@
 /** \file command.h
  * <File description>
  *
- * $Id: command.h,v 1.2 2001/02/14 13:22:12 lecroart Exp $
+ * $Id: command.h,v 1.3 2001/02/14 15:42:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,13 @@
 
 #include <string>
 #include <map>
+#include <vector>
+#include <sstream>
+#include <istream>
 
 #include "nel/misc/types_nl.h"
+
+#include "nel/misc/log.h"
 
 
 namespace NLMISC {
@@ -58,13 +63,13 @@ namespace NLMISC {
  * \date 2001
  */
 #define NLMISC_COMMAND(__name,__help,__args) \
-struct __name : public ICommand \
+struct __name##class : public ICommand \
 { \
-	__name() : NLMISC::ICommand(#__name,__help,__args) { } \
+	__name##class() : NLMISC::ICommand(#__name,__help,__args) { } \
 	virtual bool execute(const vector<std::string> &args, NLMISC::CLog &log); \
 }; \
-__name __name##instance; \
-bool __name::execute(const vector<std::string> &args, NLMISC::CLog &log)
+__name##class __name##instance; \
+bool __name##class::execute(const vector<std::string> &args, NLMISC::CLog &log)
 
 
 
@@ -117,17 +122,17 @@ CVariable<__type> __var##instance(#__var, __help " (" #__type ")", &__var)
  * \date 2001
  */
 #define NLMISC_DYNVARIABLE(__type,__name,__help) \
-class __name : public NLMISC::ICommand \
+class __name##class : public NLMISC::ICommand \
 { \
 public: \
-	__name () : NLMISC::ICommand(#__name, __help " (" #__type ")", "[<value>]") { } \
+	__name##class () : NLMISC::ICommand(#__name, __help " (" #__type ")", "[<value>]") { } \
 	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log) \
 	{ \
 		if (args.size() == 1) \
 		{ \
-			std::stringstream s2 = args[0]; \
+			std::stringstream s (args[0]); \
 			__type p; \
-			s2 >> p; \
+			s >> p; \
 			pointer (&p, false, log); \
 			log.display("Set "); \
 		} \
@@ -147,8 +152,8 @@ public: \
  \
 	void pointer(__type *pointer, bool get, NLMISC::CLog &log); \
 }; \
-__name __name##instance; \
-void __name::pointer(__type *pointer, bool get, NLMISC::CLog &log)
+__name##class __name##instance; \
+void __name##class::pointer(__type *pointer, bool get, NLMISC::CLog &log)
 
 
 
@@ -210,7 +215,7 @@ public:
 	{
 		if (args.size() == 1)
 		{
-			std::stringstream s2 = args[0];
+			std::stringstream s2 (args[0]);
 			s2 >> *_Pointer;
 			log.display("Set ");
 		}
@@ -236,7 +241,7 @@ private:
  * So we can use stringstream operator << and >> with all NeL simple types (except for ucchar and ucstring)
  */
 
-
+#if 0
 #define NLMISC_ADD_BASIC_ISTREAM_OPERATOR(__type,__casttype) \
 template <class _CharT, class _Traits> \
 std::basic_istream<_CharT, _Traits>& __STL_CALL \
@@ -403,7 +408,7 @@ operator<<(std::basic_ostream<_CharT, _Traits>& __os, const sint64& __z)
 
 	return __os << __tmp.str();
 }
-
+#endif
 
 } // NLMISC
 

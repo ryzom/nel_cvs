@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.7 2002/03/14 17:00:35 corvazier Exp $
+ * $Id: zone_manager.cpp,v 1.8 2002/04/24 13:47:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,7 @@ CZoneManager::CZoneManager()
 	ZoneRemoved = true;
 	ZoneAdded = true;
 	Zone = NULL;
-	_pLoadTask = new CTaskManager;
+	//_pLoadTask = new CTaskManager;
 	step = 0;
 }
 
@@ -55,7 +55,7 @@ CZoneManager::CZoneManager()
 CZoneManager::~CZoneManager()
 {
 	// kill thread.
-	delete _pLoadTask;
+	//delete _pLoadTask;
 	// After thread exit, delete any zone remainining.
 	if(!ZoneAdded)
 	{
@@ -148,7 +148,8 @@ void CZoneManager::loadAllZonesAround(uint x, uint y, uint area, bool scanAll)
 						{
 							//Add loading to TaskManager
 							CZoneLoadingTask *tsk = new CZoneLoadingTask(&((*it).second), this);
-							_pLoadTask->addTask(tsk);
+							//trap _pLoadTask->addTask(tsk);
+							CAsyncFileManager::getInstance().addTask (tsk);
 							(*it).second.Runnable = tsk;
 							(*it).second.LoadInProgress = true;
 						}
@@ -180,7 +181,8 @@ void CZoneManager::loadAllZonesAround(uint x, uint y, uint area, bool scanAll)
 							CLoadZone *pLoadZone = new CLoadZone;
 							*pLoadZone = (*it).second;
 							CZoneUnloadingTask *tsk = new CZoneUnloadingTask(pLoadZone, this);
-							_pLoadTask->addTask(tsk);
+							//trap _pLoadTask->addTask(tsk);
+							CAsyncFileManager::getInstance().addTask (tsk);
 							//STLPort not return an iterator for erase...
 							multimap<uint32, CLoadZone>::iterator itPrev = it;
 							it++;
@@ -210,9 +212,11 @@ void CZoneLoadingTask::run(void)
 {
 	while(!_Zm->ZoneAdded)
 	{
-		_Zm->getTask()->sleepTask();
+		//trap _Zm->getTask()->sleepTask();
+		CAsyncFileManager::getInstance().sleepTask();
 		// must test if thread wants to exit.
-		if(!_Zm->getTask()->isThreadRunning())
+		//trap if(!_Zm->getTask()->isThreadRunning())
+		if(!CAsyncFileManager::getInstance().isThreadRunning())
 		{
 			delete this;
 			return;
@@ -260,9 +264,11 @@ void CZoneUnloadingTask::run(void)
 {
 	while(!_Zm->ZoneRemoved)
 	{
-		_Zm->getTask()->sleepTask();
+		//trap _Zm->getTask()->sleepTask();
+		CAsyncFileManager::getInstance().sleepTask();
 		// must test if thread wants to exit.
-		if(!_Zm->getTask()->isThreadRunning())
+		//trap if(!_Zm->getTask()->isThreadRunning())
+		if (!CAsyncFileManager::getInstance().isThreadRunning())
 		{
 			delete this;
 			return;

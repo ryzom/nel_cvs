@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.2 2001/08/22 16:40:53 berenguier Exp $
+ * $Id: zone_manager.h,v 1.3 2002/04/24 13:47:52 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,8 +30,9 @@
 #include <map>
 #include "nel/misc/types_nl.h"
 #include "3d/zone.h"
-#include "nel/misc/task_manager.h"
+//#include "nel/misc/task_manager.h"
 
+#include "3d/async_file_manager.h"
 #include "3d/zone_search.h"
 
 
@@ -107,13 +108,13 @@ public:
 	* GetTask give a pointer on TaskManager
 	* \return pointer of class CTaskManager
 	*/
-	inline NLMISC::CTaskManager* getTask(void) { return _pLoadTask; }
+	//inline NLMISC::CTaskManager* getTask(void) { 	return _pLoadTask; }
 
 	/**
 	* Get Size of TaskList
 	* \return number of task in list
 	*/
-	inline uint getTaskListSize(void) { return _pLoadTask->taskListSize(); }
+	inline uint getTaskListSize(void) { return CAsyncFileManager::getInstance().taskListSize(); }
 
 	/**
 	* Set Path for zone loading
@@ -129,7 +130,7 @@ private:
 	//Path for zone loading
 	std::string _zonePath;
 	//Zones loading / unloading taskmanager
-	NLMISC::CTaskManager *_pLoadTask;
+	//NLMISC::CTaskManager *_pLoadTask;
 	//Zones management with multimap
 	std::multimap<uint32, CLoadZone> _LoadZone;
 

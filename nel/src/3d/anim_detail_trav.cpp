@@ -1,7 +1,7 @@
-/** \file animatable.cpp
- * Class IAnimatable
+/** \file anim_detail_trav.cpp
+ * <File description>
  *
- * $Id: animatable.cpp,v 1.4 2001/03/19 14:07:32 berenguier Exp $
+ * $Id: anim_detail_trav.cpp,v 1.1 2001/03/19 14:07:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,18 +23,17 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/3d/animatable.h"
-#include "nel/3d/channel_mixer.h"
+#include "nel/3d/anim_detail_trav.h"
 
 
 namespace NL3D 
 {
 
+
 // ***************************************************************************
-void	IAnimatable::addValue(CChannelMixer *chanMixer, uint valueId, const std::string &prefix, bool detail)
+IObs				*CAnimDetailTrav::createDefaultObs() const
 {
-	nlassert(chanMixer);
-	chanMixer->addChannel(prefix+getValueName(valueId), this, getValue(valueId), getDefaultTrack(valueId), valueId, detail);
+	return new CDefaultAnimDetailObs;
 }
 
 

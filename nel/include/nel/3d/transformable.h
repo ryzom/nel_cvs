@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.1 2001/03/16 16:44:26 berenguier Exp $
+ * $Id: transformable.h,v 1.2 2001/03/19 14:07:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -255,8 +255,8 @@ public:
 	/// From IAnimatable. Deriver must implement this.
 	virtual ITrack* getDefaultTrack (uint valueId) =0;
 
-	/// From IAnimatable.
-	virtual	void	registerToChannelMixer(CChannelMixer &chanMixer, const std::string &prefix);
+	/// From IAnimatable. Deriver must implement this (channels may be detail-ed or not).
+	virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix) =0;
 
 	// @}
 

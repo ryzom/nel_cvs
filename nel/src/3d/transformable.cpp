@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.2 2001/03/16 19:22:53 berenguier Exp $
+ * $Id: transformable.cpp,v 1.3 2001/03/19 14:07:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,20 +92,6 @@ const char 	*ITransformable::getValueName (uint valueId) const
 
 	return "";
 }
-
-
-// ***************************************************************************
-void	ITransformable::registerToChannelMixer(CChannelMixer &chanMixer, const std::string &prefix)
-{
-	addValue(chanMixer, PosValue, prefix);
-	addValue(chanMixer, RotEulerValue, prefix);
-	addValue(chanMixer, RotQuatValue, prefix);
-	addValue(chanMixer, ScaleValue, prefix);
-	addValue(chanMixer, PivotValue, prefix);
-
-	// Deriver note: if necessary, call	BaseClass::registerToChannelMixer(chanMixer, prefix);
-}
-
 
 
 // ***************************************************************************

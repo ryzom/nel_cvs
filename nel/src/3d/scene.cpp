@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * <File description>
  *
- * $Id: scene.cpp,v 1.19 2001/03/16 16:50:14 berenguier Exp $
+ * $Id: scene.cpp,v 1.20 2001/03/19 14:07:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "nel/3d/hrc_trav.h"
 #include "nel/3d/clip_trav.h"
 #include "nel/3d/light_trav.h"
+#include "nel/3d/anim_detail_trav.h"
 #include "nel/3d/render_trav.h"
 #include "nel/3d/transform.h"
 #include "nel/3d/camera.h"
@@ -66,6 +67,7 @@ CScene::CScene()
 	HrcTrav= NULL;
 	ClipTrav= NULL;
 	LightTrav= NULL;
+	AnimDetailTrav= NULL;
 	RenderTrav= NULL;
 
 	Root= NULL;
@@ -80,7 +82,7 @@ void	CScene::release()
 	// Unlink the rendertrav.
 	RenderTraversals.clear();
 
-	// Delete only the 4 default Traversals (owned by CScene), and the 4 default Root.
+	// Delete only the 5 default Traversals (owned by CScene).
 	if (HrcTrav != NULL)
 	{
 		delete	HrcTrav;
@@ -97,6 +99,12 @@ void	CScene::release()
 	{
 		delete	LightTrav;
 		LightTrav= NULL;
+	}
+
+	if (AnimDetailTrav != NULL)
+	{
+		delete	AnimDetailTrav;
+		AnimDetailTrav= NULL;
 	}
 
 	if (RenderTrav != NULL)
@@ -120,12 +128,14 @@ void	CScene::initDefaultTravs()
 	HrcTrav= new CHrcTrav;
 	ClipTrav= new CClipTrav;
 	LightTrav= new CLightTrav;
+	AnimDetailTrav= new CAnimDetailTrav;
 	RenderTrav= new CRenderTrav;
 
 	// Register them to the scene.
 	addTrav(HrcTrav);
 	addTrav(ClipTrav);
 	addTrav(LightTrav);
+	addTrav(AnimDetailTrav);
 	addTrav(RenderTrav);
 }
 // ***************************************************************************
@@ -135,6 +145,7 @@ void	CScene::initDefaultRoots()
 	Root= static_cast<CTransform*>(createModel(TransformId));
 	HrcTrav->setRoot(Root);
 	ClipTrav->setRoot(Root);
+	AnimDetailTrav->setRoot(Root);
 
 	// TODO: create / setRoot the lightgroup.
 }

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.11 2001/03/16 16:54:09 berenguier Exp $
+ * $Id: transform.h,v 1.12 2001/03/19 14:07:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 #include "nel/3d/track.h"
 #include "nel/3d/transformable.h"
 #include "nel/3d/animated_value.h"
+#include "nel/3d/anim_detail_trav.h"
+#include "nel/3d/channel_mixer.h"
 #include "nel/misc/matrix.h"
 
 
@@ -90,6 +92,8 @@ public:
 	// @{
 	/// Default Track Values are identity (pos,pivot= 0, scale= 1, rots=0).
 	virtual ITrack* getDefaultTrack (uint valueId);
+	/// register transform channels (in global anim mode).
+	virtual void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix);
 	// @}
 
 
@@ -138,6 +142,10 @@ private:
 	static IModel	*creator() {return new CTransform;}
 	friend class	CTransformHrcObs;
 	friend class	CTransformClipObs;
+	friend class	CTransformAnimDetailObs;
+
+	// For anim detail.
+	NLMISC::CRefPtr<CChannelMixer>		_ChannelMixer;
 
 };
 
@@ -200,6 +208,41 @@ public:
 
 };
 
+
+// ***************************************************************************
+/**
+ * This observer:
+ * - leave the notification system to DO NOTHING.
+ * - implement the traverse method.
+ *
+ * \sa CHrcTrav IBaseHrcObs
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2000
+ */
+class	CTransformAnimDetailObs : public IBaseAnimDetailObs
+{
+public:
+
+	/** this do all the good things:
+	 *	- animdetail if the model channelmixer is not NULL.
+	 *	- traverseSons().
+	 */
+	virtual	void	traverse(IObs *caller)
+	{
+		// test if the refptr is NULL or not (RefPtr).
+		CChannelMixer	*chanmix= static_cast<CTransform*>(Model)->_ChannelMixer;
+		if(chanmix)
+		{
+			// eval detail!!
+			chanmix->eval(true, static_cast<CAnimDetailTrav*>(Trav)->CurrentDate);
+		}
+
+		// important for the root only. Else, There is no reason to do a hierarchy for AnimDetail.
+		traverseSons();
+	}
+
+};
 
 
 }

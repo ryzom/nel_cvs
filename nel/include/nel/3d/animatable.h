@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.4 2001/03/16 16:57:00 berenguier Exp $
+ * $Id: animatable.h,v 1.5 2001/03/19 14:07:57 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,7 +64,7 @@ class CChannelMixer;
  *	virtual register(CChannelMixer *, const string &prefix);
  *
  *
- * Watch NL3D::ITransformable for a good example.
+ * Watch NL3D::ITransformable and NL3D::CTransform for a good example.
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
@@ -121,16 +121,16 @@ public:
 	virtual ITrack* getDefaultTrack (uint valueId) =0;
 
 	/** 
-	  * register the Aniamtable to a channelMixer (using CChannelMixer::addChannel()).
+	  * register the Aniamtable to a channelMixer (using CChannelMixer::addChannel()). You MUST use this method to register Animatable.
 	  * This method should:
 	  *		- call is BaseClass method.
 	  *		- register local AnimatableValues, with channel name:	prefix+getValueName().
 	  *		- register local sons!!. eg: matlist[0]->registerToChannelMixer(chanMixer, prefix+"mat0.").
 	  *
-	  * \param chanMixer is the channel mixer.
+	  * \param chanMixer is the channel mixer. Should not be NULL. for anim detail purpose , the IAnimatable may store a RefPtr on this channel mixer.
 	  * \param prefix prefix to be append to valueNames
 	  */
-	virtual	void	registerToChannelMixer(CChannelMixer &chanMixer, const std::string &prefix) =0;
+	virtual	void	registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix) =0;
 
 	// @}
 
@@ -227,7 +227,7 @@ private:
 
 protected:
 	/// This is a tool function which add a given value to a channel.
-	void	addValue(CChannelMixer &chanMixer, uint valueId, const std::string &prefix);
+	void	addValue(CChannelMixer *chanMixer, uint valueId, const std::string &prefix, bool detail);
 
 	/// This method clear a bit in the bitset.
 	void	clearFlag(uint valueId)

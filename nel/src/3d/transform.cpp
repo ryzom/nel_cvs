@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.12 2001/03/16 19:22:53 berenguier Exp $
+ * $Id: transform.cpp,v 1.13 2001/03/19 14:07:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -108,6 +108,22 @@ ITrack* CTransform::getDefaultTrack (uint valueId)
 
 	return NULL;
 
+}
+
+// ***************************************************************************
+void	CTransform::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
+{
+	// Hey!! we are animated!!
+	_ChannelMixer= chanMixer;
+
+	// For CTransfom, channels are not detailled.
+	addValue(chanMixer, PosValue, prefix, false);
+	addValue(chanMixer, RotEulerValue, prefix, false);
+	addValue(chanMixer, RotQuatValue, prefix, false);
+	addValue(chanMixer, ScaleValue, prefix, false);
+	addValue(chanMixer, PivotValue, prefix, false);
+
+	// Deriver note: if necessary, call	BaseClass::registerToChannelMixer(chanMixer, prefix);
 }
 
 

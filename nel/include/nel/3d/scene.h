@@ -1,7 +1,7 @@
 /** \file scene.h
  * <File description>
  *
- * $Id: scene.h,v 1.15 2001/02/28 16:24:23 berenguier Exp $
+ * $Id: scene.h,v 1.16 2001/03/19 14:07:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,10 +47,12 @@ using	NLMISC::CSmartPtr;
 class	CHrcTrav;
 class	CClipTrav;
 class	CLightTrav;
+class	CAnimDetailTrav;
 class	CRenderTrav;
 class	CDefaultHrcObs;
 class	CDefaultClipObs;
 class	CDefaultLightObs;
+class	CAnimDetailObs;
 class	CDefaultRenderObs;
 class	CTransform;
 class	CTransformShape;
@@ -64,10 +66,11 @@ class	IDriver;
  * \b USER \b RULES:
  * - Before creating any CScene, call the cool method CScene::registerBasics(), to register baisc models and observers.
  * - Create a CScene (NB: may be static \c CScene \c scene;).
- * - call first initDefaultRoot() to create / register automatically the 4 basic traversals:
+ * - call first initDefaultRoot() to create / register automatically the 5 basic traversals:
  *		- CHrcTrav
  *		- CClipTrav
  *		- CLightTrav
+ *		- CAnimDetailTrav
  *		- CRenderTrav
  * - add others user-specified traversals with addTrav().
  * - initRootModels() to create/setRoot the defaults models roots for the basic traversals:
@@ -120,7 +123,7 @@ public:
 	CScene();
 	/// Destructor. release().
 	~CScene();
-	/// Create / register the 4 basic traversals:CHrcTrav, CClipTrav, CLightTrav, CRenderTravInit.
+	/// Create / register the 5 basic traversals:CHrcTrav, CClipTrav, CLightTrav, CAnimDetailTrav, CRenderTravInit.
 	void			initDefaultTravs();
 	/// Create/setRoot the defaults models roots: a CTransform and a CLightGroup.
 	void			initDefaultRoots();
@@ -192,11 +195,12 @@ private:
 	CRefPtr<CCamera>	CurrentCamera;
 	CViewport		_Viewport;
 
-	/// \name The 4 default traversals, created / linked by CScene::initDefaultTraversals().
+	/// \name The 5 default traversals, created / linked by CScene::initDefaultTraversals().
 	//@{
 	CHrcTrav		*HrcTrav;
 	CClipTrav		*ClipTrav;
 	CLightTrav		*LightTrav;
+	CAnimDetailTrav	*AnimDetailTrav;
 	CRenderTrav		*RenderTrav;
 	//@}
 

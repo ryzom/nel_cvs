@@ -273,14 +273,6 @@ SOURCE=..\include\nel\sound\sound_anim_marker.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\sound\sound_anim_player.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\sound\sound_anim_player.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\sound\sound_animation.cpp
 # End Source File
 # Begin Source File
@@ -294,6 +286,14 @@ SOURCE=.\sound\sound_bank.cpp
 # Begin Source File
 
 SOURCE=.\sound\sound_bank.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sound_pattern.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\sound_pattern.h
 # End Source File
 # Begin Source File
 

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * viewer of cluster system
  *
- * $Id: main.cpp,v 1.5 2004/05/13 09:12:04 besson Exp $
+ * $Id: main.cpp,v 1.6 2005/04/04 09:53:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,7 +45,9 @@
 #include "3d/event_mouse_listener.h"
 #include "3d/text_context.h"
 
+#ifdef NL_OS_WINDOWS
 #include <windows.h>
+#endif
 
 using namespace std;
 using namespace NL3D;
@@ -199,13 +201,16 @@ void LoadSceneScript (const char *ScriptName, CScene* pScene, vector<SDispCS> &D
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
-
+#ifdef NL_OS_WINDOWS
 int WINAPI WinMain(
   HINSTANCE hInstance,      // handle to current instance
   HINSTANCE hPrevInstance,  // handle to previous instance
   LPSTR lpCmdLine,          // command line
   int nCmdShow              // show state
 )
+#else
+int main()
+#endif
 {
 	double rGlobalTime = 0;
 	double rOldGlobalTime = 0;
@@ -314,7 +319,7 @@ int WINAPI WinMain(
 			{
 				TextContext.printfAt (0, 1, "AutoDetect : ON");
 				
-				pClipTrav->fullSearch (vCluster, pClipTrav->RootCluster->Group, pClipTrav->CamPos);
+				pClipTrav->fullSearch (vCluster, pClipTrav->CamPos);
 
 				for (uint32 i = 0; i < DispCS.size(); ++i)
 				{

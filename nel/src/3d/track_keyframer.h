@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.5 2001/08/30 10:15:38 vizerie Exp $
+ * $Id: track_keyframer.h,v 1.6 2001/08/31 08:07:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -238,19 +238,7 @@ public:
 	/** From UTrackKeyframer, retrieve the keys that are in the given range [t1, t2] of the track
 	  * \param result a vector that will be cleared, and filled with the date ofthe keys
 	  */
-	void getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result)
-	{
-		nlassert(t1 <= t2);
-		TMapTimeCKey::const_iterator it = _MapKey.lower_bound(t1)
-									, ub = _MapKey.upper_bound(t2);
-		result.clear();		
-		while (it != ub)
-		{			
-			result.push_back(it->first);
-			++it;
-		}
-	}
-
+	void getKeysInRange(CAnimationTime t1, CAnimationTime t2, std::vector<CAnimationTime> &result);
 
 
 private:

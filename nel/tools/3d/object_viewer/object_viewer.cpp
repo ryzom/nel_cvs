@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.116 2004/04/07 09:54:45 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.117 2004/04/09 14:43:34 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,6 +202,7 @@ IMPLEMENT_DYNCREATE(CObjView, CView)
 
 void animateCNELUScene (CCloudScape *cs, uint64 deltaTime = 0)
 {
+	if (!cs) return;
 	static sint64 firstTime = NLMISC::CTime::getLocalTime();
 	static sint64 lastTime = NLMISC::CTime::getLocalTime();
 	if (deltaTime == 0)
@@ -825,7 +826,7 @@ bool CObjectViewer::initUI (HWND parent)
 
 	// Create the cloud scape
 	_CS = new CCloudScape(CNELU::Driver);
-	_CS->init (&_CSS);
+	_CS->init (&_CSS);	
 
 	return true;
 }
@@ -1157,7 +1158,7 @@ void CObjectViewer::go ()
 			CNELU::clearBuffers(_BackGroundColor);
 
 			// Render the CS
-			_CS->render ();
+			if (_CS) _CS->render ();
 
 			// Draw the scene		
 			CNELU::Scene->render();		

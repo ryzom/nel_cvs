@@ -1,7 +1,7 @@
 /** \file mem_displayer.h
  * <File description>
  *
- * $Id: mem_displayer.h,v 1.4 2002/09/16 14:58:59 lecroart Exp $
+ * $Id: mem_displayer.h,v 1.5 2002/12/23 14:45:45 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLMISC {
 
 
 /**
- * <Class description>
+ * Display into a string vector
  * \author Benjamin Legros
  * \author Nevrax France
  * \date 2001
@@ -65,8 +65,6 @@ protected:
 	/// Put the string into the file.
     virtual void	doDisplay ( const TDisplayInfo& args, const char *message );
 
-private:
-
 	bool						_NeedHeader;
 
 	uint32						_MaxStrings;	// number of string in the _Strings queue (default is 50)
@@ -77,7 +75,25 @@ private:
 
 };
 
+/**
+ * Same as CMemDisplayer but only display the text (no line, no date, no process...)
+ * \author Vianney Lecroart
+ * \author Nevrax France
+ * \date 2002
+ */
+class CLightMemDisplayer : public CMemDisplayer
+{
+public:
+	/// Constructor
+	CLightMemDisplayer (const char *displayerName = "") : CMemDisplayer(displayerName) { }
 
+protected:
+	/// Put the string into the file.
+    virtual void	doDisplay ( const TDisplayInfo& args, const char *message );
+};
+
+
+	
 } // NLMISC
 
 

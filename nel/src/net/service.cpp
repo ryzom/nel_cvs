@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.154 2002/12/16 16:38:49 lecroart Exp $
+ * $Id: service.cpp,v 1.155 2002/12/23 14:45:33 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -124,12 +124,20 @@ static CLog commandLog;
 // Callback managing
 //
 
+bool isCommand (const string &str)
+{
+	if (str.empty())
+		return false;
+	
+	return isupper(str[0]) == 0;
+}
+
 // this callback is used to create a view for the admin system
 void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<string>, vector<string> > > &answer)
 {
 	string str;
 	CLog logDisplayVars;
-	CMemDisplayer mdDisplayVars;
+	CLightMemDisplayer mdDisplayVars;
 	logDisplayVars.addDisplayer (&mdDisplayVars);
 	
 	CVarPath varpath(rawvarpath);
@@ -158,34 +166,54 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 			}
 			else
 				vara.push_back(cmd);
-			
+
+
 			mdDisplayVars.clear ();
 			ICommand::execute(cmd, logDisplayVars, true);
 			const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
-			if (strs.size()>0)
+			
+			if (isCommand(cmd))
 			{
-				uint32 pos = strs[0].find("=");
-				if(pos != string::npos && pos + 2 < strs[0].size())
+				// we want the log of the command
+				if (j == 0)
 				{
-					uint32 pos2 = string::npos;
-					if(strs[0][strs[0].size()-1] == '\n')
-						pos2 = strs[0].size() - pos - 2 - 1;
-					
-					str = strs[0].substr (pos+2, pos2);
+					vara.clear ();
+					vara.push_back ("__log");
+					vala.clear ();
+				}
+				
+				vala.push_back ("----- Result from command: "+cmd+"\n");
+				for (uint k = 0; k < strs.size(); k++)
+				{
+					vala.push_back (strs[k]);
+				}
+			}
+			else
+			{
+				if (strs.size()>0)
+				{
+					uint32 pos = strs[0].find("=");
+					if(pos != string::npos && pos + 2 < strs[0].size())
+					{
+						uint32 pos2 = string::npos;
+						if(strs[0][strs[0].size()-1] == '\n')
+							pos2 = strs[0].size() - pos - 2 - 1;
+						
+						str = strs[0].substr (pos+2, pos2);
+					}
+					else
+					{
+						str = "???";
+					}
 				}
 				else
 				{
 					str = "???";
 				}
-			}
-			else
-			{
-				str = "???";
+				vala.push_back (str);
+				nlinfo ("Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
 			}
 			mdDisplayVars.unlockStrings();
-
-			vala.push_back (str);
-			nlinfo ("Add to result view '%s' = '%s'", varpath.Destination[j].first.c_str(), str.c_str());
 		}
 
 		answer.push_back (make_pair(vara, vala));
@@ -208,88 +236,114 @@ void serviceGetView (uint32 rid, const string &rawvarpath, vector<pair<vector<st
 				// set the variable name
 				string cmd = subvarpath.Destination[j].first;
 
-				// replace = with space to execute the command
-				uint eqpos = cmd.find("=");
-				if (eqpos != string::npos)
+				/*if (isCommand(cmd))
 				{
-					cmd[eqpos] = ' ';
-					// add the entity
-					cmd.insert(eqpos, " "+varpath.Destination[i].first);
+					// it's a command with parameter, do it
+					mdDisplayVars.clear ();
+					cmd += " " + subvarpath.Destination[j].second;
+					ICommand::execute(cmd, logDisplayVars, true);
+					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
+					
+					answer.push_back (make_pair(vector<string>(), vector<string>()));
+					
+					vara = &(answer[answer.size()-1].first);
+					vala = &(answer[answer.size()-1].second);
+
+					// we want the log of the command
+					vara->clear ();
+					vara->push_back ("__log");
+					
+					vala->push_back ("----- Result from command: "+cmd);
+					for (uint k = 0; k < strs.size(); k++)
+					{
+						vala->push_back (strs[k]);
+					}
 				}
-				else
+				else*/
 				{
-					// add the entity
-					cmd += " "+varpath.Destination[i].first;
-				}
-				
-				mdDisplayVars.clear ();
-				ICommand::execute(cmd, logDisplayVars, true);
-				const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
-				for (uint k = 0; k < strs.size(); k++)
-				{
-					uint32 pos, pos2;
-
-					const string &str = strs[k];
-
-					string entity = "???";
-					pos = str.find("Entity ");
-					if(pos != string::npos)
+					// replace = with space to execute the command
+					uint eqpos = cmd.find("=");
+					if (eqpos != string::npos)
 					{
-						pos2 = str.find(" ", pos+7);
-						if(pos2 != string::npos)
-							entity = str.substr(pos+7, pos2-pos-7);
-					}
-
-					// look in the array if we already have something about his entity
-
-					uint y;
-					for (y = 0; y < answer.size(); y++)
-					{
-						if (answer[y].second[1] == entity)
-						{
-							// ok we found it, just push_back new stuff
-							vara = &(answer[y].first);
-							vala = &(answer[y].second);
-							break;
-						}
-					}
-					if (y == answer.size ())
-					{
-						answer.push_back (make_pair(vector<string>(), vector<string>()));
-
-						vara = &(answer[answer.size()-1].first);
-						vala = &(answer[answer.size()-1].second);
-						
-						// don't add service if we want an entity
-// todo when we work on entity, we don't need service name and server so we should remove them and collapse all var for the same entity
-						vara->push_back ("service");
-						string name = IService::getInstance ()->getServiceUnifiedName();
-						vala->push_back (name);
-						
-						// add default row
-						vara->push_back ("entity");
-						vala->push_back (entity);
-					}
-
-					vara->push_back(cmd.substr(0, cmd.find(" ")));
-
-					pos = str.find("=");
-					if(pos != string::npos && pos + 2 < str.size())
-					{
-						uint32 pos2 = string::npos;
-						if(str[str.size()-1] == '\n')
-							pos2 = str.size() - pos - 2 - 1;
-						
-						vala->push_back (strs[k].substr (pos+2, pos2));
+						cmd[eqpos] = ' ';
+						// add the entity
+						cmd.insert(eqpos, " "+varpath.Destination[i].first);
 					}
 					else
 					{
-						vala->push_back ("???");
+						// add the entity
+						cmd += " "+varpath.Destination[i].first;
 					}
 					
-					nlinfo ("Add to result view for entity '%s', '%s' = '%s'", varpath.Destination[i].first.c_str(), subvarpath.Destination[j].first.c_str(), str.c_str());
+					mdDisplayVars.clear ();
+					ICommand::execute(cmd, logDisplayVars, true);
+					const std::deque<std::string>	&strs = mdDisplayVars.lockStrings();
+					for (uint k = 0; k < strs.size(); k++)
+					{
+						uint32 pos, pos2;
+
+						const string &str = strs[k];
+
+						string entity = "???";
+						pos = str.find("Entity ");
+						if(pos != string::npos)
+						{
+							pos2 = str.find(" ", pos+7);
+							if(pos2 != string::npos)
+								entity = str.substr(pos+7, pos2-pos-7);
+						}
+
+						// look in the array if we already have something about this entity
+
+						uint y;
+						for (y = 0; y < answer.size(); y++)
+						{
+							if (answer[y].second[1] == entity)
+							{
+								// ok we found it, just push_back new stuff
+								vara = &(answer[y].first);
+								vala = &(answer[y].second);
+								break;
+							}
+						}
+						if (y == answer.size ())
+						{
+							answer.push_back (make_pair(vector<string>(), vector<string>()));
+
+							vara = &(answer[answer.size()-1].first);
+							vala = &(answer[answer.size()-1].second);
+							
+							// don't add service if we want an entity
+	// todo when we work on entity, we don't need service name and server so we should remove them and collapse all var for the same entity
+							vara->push_back ("service");
+							string name = IService::getInstance ()->getServiceUnifiedName();
+							vala->push_back (name);
+							
+							// add default row
+							vara->push_back ("entity");
+							vala->push_back (entity);
+						}
+
+						vara->push_back(cmd.substr(0, cmd.find(" ")));
+
+						pos = str.find("=");
+						if(pos != string::npos && pos + 2 < str.size())
+						{
+							uint32 pos2 = string::npos;
+							if(str[str.size()-1] == '\n')
+								pos2 = str.size() - pos - 2 - 1;
+							
+							vala->push_back (strs[k].substr (pos+2, pos2));
+						}
+						else
+						{
+							vala->push_back ("???");
+						}
+						
+						nlinfo ("Add to result view for entity '%s', '%s' = '%s'", varpath.Destination[i].first.c_str(), subvarpath.Destination[j].first.c_str(), str.c_str());
+					}
+					mdDisplayVars.unlockStrings();
 				}
-				mdDisplayVars.unlockStrings();
 			}
 		}
 	}
@@ -1146,7 +1200,7 @@ sint IService::main (const char *serviceShortName, const char *serviceLongName, 
 
 		string str;
 		CLog logDisplayVars;
-		CMemDisplayer mdDisplayVars;
+		CLightMemDisplayer mdDisplayVars;
 		logDisplayVars.addDisplayer (&mdDisplayVars);
 
 		nlinfo ("Service ready");
@@ -1630,7 +1684,7 @@ uint32 foo = 7777, bar = 6666;
 NLMISC_VARIABLE(uint32, foo, "test the get view system");
 NLMISC_VARIABLE(uint32, bar, "test the get view system");
 
-vector<pair<uint32,uint32> > Entities;
+vector<pair<uint32,uint32> > _Entities;
 
 void selectEntities (const string entityName, vector <uint32> &entities)
 {
@@ -1642,7 +1696,7 @@ void selectEntities (const string entityName, vector <uint32> &entities)
 	if (entityName == "*")
 	{
 		// we want all entities
-		for (uint i = 0; i < Entities.size(); i++)
+		for (uint i = 0; i < _Entities.size(); i++)
 			entities.push_back (i);
 	}
 	else if (entityName.find ("-") != string::npos)
@@ -1695,16 +1749,16 @@ ENTITY_VARIABLE(test, "test")
 	if (get)
 	{
 		// get the value if available
-		if(entity < Entities.size())
-			value = toString(Entities[entity].first);
+		if(entity < _Entities.size())
+			value = toString(_Entities[entity].first);
 	}
 	else
 	{
 		// set the variable with the new value
-		if(entity >= Entities.size())
-			Entities.resize(entity+1);
+		if(entity >= _Entities.size())
+			_Entities.resize(entity+1);
 
-		Entities[entity].first = atoi(value.c_str());
+		_Entities[entity].first = atoi(value.c_str());
 	}
 }
 
@@ -1713,16 +1767,16 @@ ENTITY_VARIABLE(test2, "test2")
 	if (get)
 	{
 		// get the value if available
-		if(entity < Entities.size())
-			value = toString(Entities[entity].second);
+		if(entity < _Entities.size())
+			value = toString(_Entities[entity].second);
 	}
 	else
 	{
 		// set the variable with the new value
-		if(entity >= Entities.size())
-			Entities.resize(entity+1);
+		if(entity >= _Entities.size())
+			_Entities.resize(entity+1);
 		
-		Entities[entity].second = atoi(value.c_str());
+		_Entities[entity].second = atoi(value.c_str());
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.3 2002/08/23 12:17:40 lecroart Exp $
+ * $Id: mem_displayer.cpp,v 1.4 2002/12/23 14:45:27 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -420,6 +420,25 @@ void CMemDisplayer::write (string &str)
 	{
 		str += (*it);
 	}
+}
+
+
+void	CLightMemDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
+{
+	stringstream	ss;
+	bool			needSpace = false;
+	
+	if (!_CanUseStrings) return;
+	
+	ss << message;
+	
+	// clear old line
+	while (_Strings.size () > _MaxStrings)
+	{
+		_Strings.pop_front ();
+	}
+	
+	_Strings.push_back (ss.str());
 }
 
 

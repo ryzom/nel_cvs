@@ -2,7 +2,7 @@
 Cluster Viewer
 **************
 
-By default the camera automatically detect the cluster
+By default the camera automatically detects the cluster
 system it belongs to. In upper left corner we have the list
 of cluster system in the scene (the cluster system in red is
 the cluster system the camera is tested) and the cluster of

@@ -1,7 +1,7 @@
 /** \file main.cpp
  * viewer of cluster system
  *
- * $Id: main.cpp,v 1.1 2002/03/13 10:09:09 besson Exp $
+ * $Id: main.cpp,v 1.1 2002/03/13 11:15:52 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

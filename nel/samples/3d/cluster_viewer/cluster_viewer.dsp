@@ -1,26 +1,26 @@
-# Microsoft Developer Studio Project File - Name="clusterViewer" - Package Owner=<4>
+# Microsoft Developer Studio Project File - Name="cluster_viewer" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (x86) Application" 0x0101
 
-CFG=clusterViewer - Win32 DebugFast
+CFG=cluster_viewer - Win32 DebugFast
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "clusterViewer.mak".
+!MESSAGE NMAKE /f "cluster_viewer.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "clusterViewer.mak" CFG="clusterViewer - Win32 DebugFast"
+!MESSAGE NMAKE /f "cluster_viewer.mak" CFG="cluster_viewer - Win32 DebugFast"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "clusterViewer - Win32 Release" (based on "Win32 (x86) Application")
-!MESSAGE "clusterViewer - Win32 Debug" (based on "Win32 (x86) Application")
-!MESSAGE "clusterViewer - Win32 DebugFast" (based on "Win32 (x86) Application")
-!MESSAGE "clusterViewer - Win32 ReleaseDebug" (based on "Win32 (x86) Application")
+!MESSAGE "cluster_viewer - Win32 Release" (based on "Win32 (x86) Application")
+!MESSAGE "cluster_viewer - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "cluster_viewer - Win32 DebugFast" (based on "Win32 (x86) Application")
+!MESSAGE "cluster_viewer - Win32 ReleaseDebug" (based on "Win32 (x86) Application")
 !MESSAGE 
 
 # Begin Project
@@ -31,7 +31,7 @@ CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
 
-!IF  "$(CFG)" == "clusterViewer - Win32 Release"
+!IF  "$(CFG)" == "cluster_viewer - Win32 Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -57,7 +57,7 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
 # ADD LINK32 freetype.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
 
-!ELSEIF  "$(CFG)" == "clusterViewer - Win32 Debug"
+!ELSEIF  "$(CFG)" == "cluster_viewer - Win32 Debug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -83,7 +83,7 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 freetype.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
-!ELSEIF  "$(CFG)" == "clusterViewer - Win32 DebugFast"
+!ELSEIF  "$(CFG)" == "cluster_viewer - Win32 DebugFast"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 1
@@ -109,7 +109,7 @@ LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 # ADD LINK32 freetype.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
 
-!ELSEIF  "$(CFG)" == "clusterViewer - Win32 ReleaseDebug"
+!ELSEIF  "$(CFG)" == "cluster_viewer - Win32 ReleaseDebug"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -139,29 +139,21 @@ LINK32=link.exe
 
 # Begin Target
 
-# Name "clusterViewer - Win32 Release"
-# Name "clusterViewer - Win32 Debug"
-# Name "clusterViewer - Win32 DebugFast"
-# Name "clusterViewer - Win32 ReleaseDebug"
-# Begin Group "Source Files"
-
-# PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Name "cluster_viewer - Win32 Release"
+# Name "cluster_viewer - Win32 Debug"
+# Name "cluster_viewer - Win32 DebugFast"
+# Name "cluster_viewer - Win32 ReleaseDebug"
 # Begin Source File
 
 SOURCE=.\main.cpp
 # End Source File
-# End Group
-# Begin Group "Header Files"
-
-# PROP Default_Filter "h;hpp;hxx;hm;inl"
-# End Group
-# Begin Group "Resource Files"
-
-# PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
-# End Group
 # Begin Source File
 
 SOURCE=.\main.cvs
+# End Source File
+# Begin Source File
+
+SOURCE=.\readme.txt
 # End Source File
 # End Target
 # End Project

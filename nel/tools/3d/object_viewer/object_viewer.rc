@@ -789,6 +789,14 @@ BEGIN
     LTEXT           "ms",IDC_STATIC,77,10,11,9
 END
 
+IDD_EDITSPINNER DIALOG DISCARDABLE  0, 0, 281, 63
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Edit spinner"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Nb samples :",IDC_STATIC,3,43,50,11
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1093,6 +1101,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 29
     END
+
+    IDD_EDITSPINNER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 274
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 56
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1142,7 +1158,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,30
+ FILEVERSION 1, 0, 0, 34
  PRODUCTVERSION 1,0,0,1
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -1161,7 +1177,7 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
             VALUE "FileDescription", "object_viewer DLL\0"
-            VALUE "FileVersion", "1, 0, 0, 30\0"
+            VALUE "FileVersion", "1, 0, 0, 34\0"
             VALUE "InternalName", "object_viewer\0"
             VALUE "LegalCopyright", "Copyright (C) 2001\0"
             VALUE "LegalTrademarks", "\0"
@@ -1260,7 +1276,54 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Save",                        ID_MENU_SAVE_PS
         MENUITEM "Load",                        ID_MENU_LOAD_PS
-        MENUITEM "Delete",                      ID_MENU_DELETE
+        MENUITEM "Delete",                      ID_MENU_DELETE_PS
+        MENUITEM SEPARATOR
+        MENUITEM "Merge",                       IDM_MERGE_PS
+        MENUITEM SEPARATOR
+        POPUP "Bind particle..."
+        BEGIN
+            MENUITEM "Point",                       IDM_DOT_LOC
+            MENUITEM "LookAt",                      IDM_LOOKAT_LOC
+            MENUITEM "FanLight",                    IDM_FANLIGHT_LOC
+            MENUITEM "Ribbon",                      IDM_RIBBON_LOC
+            MENUITEM "TailDot",                     IDM_TAILDOT_LOC
+            MENUITEM "Mesh",                        IDM_MESH_LOC
+            MENUITEM "ConstraintMesh",              IDM_CONSTRAINT_MESH_LOC
+            MENUITEM "Face",                        IDM_FACE_LOC
+            MENUITEM "ShockWave",                   IDM_SHOCKWAVE_LOC
+        END
+        POPUP "Bind force..."
+        BEGIN
+            MENUITEM "Gravity",                     IDM_GRAVITY_FORCE_LOC
+            MENUITEM "Directionnal force",          IDM_DIRECTIONNAL_FORCE_LOC
+
+            MENUITEM "Spring",                      IDM_SPRING_FORCE_LOC
+            MENUITEM "Fluid friction",              IDM_FLUID_FRICTION_LOC
+            MENUITEM "Central gravity",             IDM_CENTRAL_GRAVITY_LOC
+            MENUITEM "Cylindric vortex",            IDM_CYLINDRIC_VORTEX_LOC
+            MENUITEM "Brownian move",               IDM_BROWNIAN_MOVE_LOC
+        END
+        POPUP "Bind zone..."
+        BEGIN
+            MENUITEM "Plane",                       IDM_ZONE_PLANE_LOC
+            MENUITEM "Sphere",                      IDM_ZONE_SPHERE_LOC
+            MENUITEM "Rectangle",                   IDM_ZONE_RECTANGLE_LOC
+            MENUITEM "Disc",                        IDM_ZONE_DISC_LOC
+            MENUITEM "Cylinder",                    IDM_ZONE_CYLINDER_LOC
+        END
+        POPUP "Bind emitter..."
+        BEGIN
+            MENUITEM "Directionnal",                IDM_DIRECTIONNAL_EMITTER_LOC
+
+            MENUITEM "Omnidirectionnal",            IDM_OMNIDIRECTIONNAL_EMITTER_LOC
+
+            MENUITEM "Rectangle",                   IDM_RECTANGLE_EMITTER_LOC
+
+            MENUITEM "Conic",                       IDM_CONIC_EMITTER_LOC
+            MENUITEM "Spherical",                   IDM_SPHERICAL_EMITTER_LOC
+
+        END
+        MENUITEM "Bind sound",                  IDM_SOUND_LOC
     END
 END
 

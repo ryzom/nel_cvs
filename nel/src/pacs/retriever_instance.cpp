@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.17 2001/07/09 10:54:58 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.18 2001/07/09 14:12:35 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,8 +163,8 @@ void	NLPACS::CRetrieverInstance::link(CRetrieverInstance &neighbor,
 	for (i=0; i<borderChains.size(); ++i)
 	{
 		// if the chain is already linked, just step
-		if (_BorderChainLinks[i].Instance != 0xffff || _BorderChainLinks[i].BorderChainId != 0xffff ||
-			_BorderChainLinks[i].ChainId != 0xffff || _BorderChainLinks[i].SurfaceId != 0xffff)
+		if (_BorderChainLinks[i].Instance != -1 || _BorderChainLinks[i].BorderChainId != -1 ||
+			_BorderChainLinks[i].ChainId != -1 || _BorderChainLinks[i].SurfaceId != -1)
 			continue;
 
 		float	bestDist = 1.0f;
@@ -172,8 +172,8 @@ void	NLPACS::CRetrieverInstance::link(CRetrieverInstance &neighbor,
 
 		for (j=0; j<nBorderChains.size(); ++j)
 		{
-			if (neighbor._BorderChainLinks[j].Instance != 0xffff || neighbor._BorderChainLinks[j].BorderChainId != 0xffff ||
-				neighbor._BorderChainLinks[j].ChainId != 0xffff || neighbor._BorderChainLinks[j].SurfaceId != 0xffff)
+			if (neighbor._BorderChainLinks[j].Instance != -1 || neighbor._BorderChainLinks[j].BorderChainId != -1 ||
+				neighbor._BorderChainLinks[j].ChainId != -1 || neighbor._BorderChainLinks[j].SurfaceId != -1)
 				continue;
 
 			float	d = (chainTips[i].first-nChainTips[j].second).norm()+(chainTips[i].second-nChainTips[j].first).norm();

@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.10 2001/01/11 08:56:14 coutelas Exp $
+ * $Id: text_context.h,v 1.11 2001/01/12 19:24:57 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,6 +113,14 @@ public:
 	void setFontGenerator(const std::string fontFileName, const std::string fontExFileName = "")
 	{
 		_FontGen = new NL3D::CFontGenerator(fontFileName, fontExFileName);
+	}
+
+	/**
+	 * set the FontManager max memory.
+	 */
+	void	setMaxMemory(uint maxMem)
+	{
+		_FontManager.setMaxMemory(maxMem);
 	}
 
 	/**

@@ -1,7 +1,7 @@
 /** \file transform_shape.h
  * <File description>
  *
- * $Id: transform_shape.h,v 1.19 2002/11/18 17:50:34 vizerie Exp $
+ * $Id: transform_shape.h,v 1.20 2003/03/11 09:42:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -224,6 +224,9 @@ public:
 	/// setup lighting if lightable, render the instance and Don't traverseSons().
 	virtual	void	traverse(IObs *caller);
 	
+	// Profile.
+	virtual	void	profile();
+
 	static IObs	*creator() {return new CTransformShapeRenderObs;}
 };
 

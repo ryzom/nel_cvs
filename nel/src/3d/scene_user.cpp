@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.33 2003/03/03 12:57:12 boucher Exp $
+ * $Id: scene_user.cpp,v 1.34 2003/03/11 09:41:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -974,6 +974,26 @@ void		CSceneUser::setMaxSkeletonsInNotCLodForm(uint m)
 uint		CSceneUser::getMaxSkeletonsInNotCLodForm() const
 {
 	return _Scene.getMaxSkeletonsInNotCLodForm();
+}
+
+
+// ***************************************************************************
+void		CSceneUser::enableElementRender(TRenderFilter elt, bool state)
+{
+	_Scene.enableElementRender(elt, state);
+}
+
+
+// ***************************************************************************
+void		CSceneUser::profileNextRender()
+{
+	_Scene.profileNextRender();
+}
+// ***************************************************************************
+void		CSceneUser::getProfileResults(CBenchResults &results)
+{
+	// Fill profile results
+	results= _Scene.BenchRes;
 }
 
 

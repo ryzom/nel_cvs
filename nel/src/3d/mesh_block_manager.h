@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.h
  * <File description>
  *
- * $Id: mesh_block_manager.h,v 1.2 2002/08/14 12:43:35 berenguier Exp $
+ * $Id: mesh_block_manager.h,v 1.3 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -131,7 +131,7 @@ private:
 	void			allocateMeshVBHeap(IMeshGeom *mesh);
 
 	// render all instance of this meshGeoms, sorting by material, VP etc....
-	void			render(IMeshGeom *meshGeom, std::vector<CInstanceInfo>	&rdrInstances);
+	void			render(CVBHeapBlock	*hb, IMeshGeom *meshGeom, std::vector<CInstanceInfo>	&rdrInstances);
 
 	// current flush setup
 	CMeshGeomRenderContext		_RenderCtx;

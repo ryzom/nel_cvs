@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.39 2002/11/12 13:56:08 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.40 2003/03/11 09:39:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -233,6 +233,17 @@ void		CRenderTrav::traverse()
 	Scene->getStaticCoarseMeshManager()->render(Driver);
 
 
+	// Profile this frame?
+	if(Scene->isNextRenderProfile())
+	{
+		OrderOpaqueList.begin();
+		while( OrderOpaqueList.get() != NULL )
+		{
+			OrderOpaqueList.get()->profile();
+			OrderOpaqueList.next();
+		}
+	}
+
 	// Render Transparent stuff.
 	// =============================
 
@@ -246,6 +257,16 @@ void		CRenderTrav::traverse()
 		OrderTransparentList.next();
 	}
 
+	// Profile this frame?
+	if(Scene->isNextRenderProfile())
+	{
+		OrderTransparentList.begin();
+		while( OrderTransparentList.get() != NULL )
+		{
+			OrderTransparentList.get()->profile();
+			OrderTransparentList.next();
+		}
+	}
 
 	// END!
 	// =============================

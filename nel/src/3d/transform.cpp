@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.52 2002/11/14 12:55:14 berenguier Exp $
+ * $Id: transform.cpp,v 1.53 2003/03/11 09:42:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,6 +105,9 @@ CTransform::CTransform()
 			IsDeleteChannelMixer = 0;
 	*/
 	_StateFlags= IsOpaque | IsUserLightable;
+
+	// By default, always allow rendering of Transform Models.
+	_RenderFilterType= ~0;
 }
 
 
@@ -713,6 +716,7 @@ void	CTransformClipObs::traverse(IObs *caller)
 	CClipTrav		*clipTrav= safe_cast<CClipTrav*>(Trav);
 	IBaseClipObs	*callerClipObs= static_cast<IBaseClipObs*>(caller);
 	CTransform		*transform= (CTransform*)Model;
+	CScene			*scene= safe_cast<CScene*>(transform->_OwnerMot);
 
 	if ((Date == clipTrav->CurrentDate) && Visible)
 		return;
@@ -745,7 +749,11 @@ void	CTransformClipObs::traverse(IObs *caller)
 		}
 		// else, clip.
 		else
-			Visible= clip(callerClipObs);
+		{
+			// If the instance is not filtered
+			if(scene->getFilterRenderFlags() & transform->_RenderFilterType)
+				Visible= clip(callerClipObs);
+		}
 	}
 
 	// if visible, add to list.

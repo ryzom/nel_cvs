@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.13 2002/11/18 17:53:35 vizerie Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.14 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,9 @@ public:
 
 	// From CTransformShape
 	virtual float				getNumTriangles (float distance);
+
+	// called at instanciation
+	void			initRenderFilterType();
 
 private:
 

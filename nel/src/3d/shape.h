@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.12 2002/11/18 17:51:25 vizerie Exp $
+ * $Id: shape.h,v 1.13 2003/03/11 09:42:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@ class	CTransformShape;
 class	IDriver;
 class	CScene;
 class	IMeshGeom;
+class	CRenderTrav;
 
 // ***************************************************************************
 /**
@@ -115,6 +116,11 @@ public:
 	 *	setting <0 means -1 and so means DistMax = infinite.
 	 */
 	void						setDistMax(float distMax);
+
+	/** Profiling. Called in RenderPass if Current Frame profiled. No-Op by default
+	 *	Informations must be added in rdrTrav->Scene
+	 */
+	virtual void				profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool opaquePass) {}
 
 
 	/// \name Load balancing methods

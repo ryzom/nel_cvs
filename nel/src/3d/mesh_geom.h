@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.14 2002/08/14 12:43:35 berenguier Exp $
+ * $Id: mesh_geom.h,v 1.15 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -120,6 +120,13 @@ public:
 	 */
 	virtual void	renderSkin(CTransformShape *trans, float alphaMRM) =0;
 
+	/// True if this mesh has a vertexProgram
+	virtual bool	hasMeshVertexProgram() const {return false;}
+
+	/** Profile the render of this meshGeom.
+	 */
+	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, float polygonCount, uint32 rdrFlags) =0;
+
 
 	/// \name Load balancing methods
 	// @{
@@ -158,9 +165,14 @@ public:
 	virtual bool	sortPerMaterial() const =0;
 
 	/** return the number of renderPasses for this mesh.
-	 *
+	 * Used only if sortPerMaterial()) is true
 	 */
-	virtual uint	getNumRdrPasses() const =0;
+	virtual uint	getNumRdrPassesForMesh() const =0;
+
+	/** return the number of renderPasses for this instance. Called after activateInstance()
+	 * Used only if sortPerMaterial()) is false
+	 */
+	virtual uint	getNumRdrPassesForInstance(CMeshBaseInstance *inst) const =0;
 
 	/** The framework call this method when he will render instances of this meshGeom soon.
 	 *
@@ -170,7 +182,7 @@ public:
 	/** The framework call this method any time a change of instance occurs.
 	 *
 	 */
-	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) =0;
+	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, void *vbDst) =0;
 
 	/** The framework call this method to render the current renderPass, with the current instance
 	 *	NB: if the material is blended, DON'T render it!!
@@ -194,6 +206,14 @@ public:
 	 */
 	virtual	void	computeMeshVBHeap(void *dst, uint indexStart)  {}
 
+	/** Return true if the meshGeom has to Fill some Vertices at activeInstance() time
+	 *	if VBHeap enabled at this time, then vbDst in activeInstance(,,,vbDst) will contains the vb to write to.
+	 */
+	virtual	bool	isActiveInstanceNeedVBFill() const {return false;}
+
+	// Return True if the mesh fit in a VBHeap
+	bool			isMeshInVBHeap() const {return _MeshVBHeapId!=0;}
+
 	// @}
 
 
@@ -213,7 +233,8 @@ private:
 	uint				_MeshVBHeapId;
 	/// Delta of index for mesh into VBHeap.
 	uint				_MeshVBHeapIndexStart;
-
+	/// Number of vertices for mesh into VBHeap.
+	uint				_MeshVBHeapNumVertices;
 	// @}
 
 };

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.31 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: transform.h,v 1.32 2003/03/11 09:42:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -561,6 +561,11 @@ protected:
 	// shortcut to the LightObs.
 	CTransformLightObs			*_LightObs;
 
+
+	/** State for renderFiltering. Default is 0xFFFFFFFF (always displayed)
+	 *	Deriver work to change this value
+	 */
+	uint32						_RenderFilterType;
 
 };
 

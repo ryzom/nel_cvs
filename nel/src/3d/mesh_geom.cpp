@@ -1,7 +1,7 @@
 /** \file mesh_geom.cpp
  * <File description>
  *
- * $Id: mesh_geom.cpp,v 1.5 2002/08/14 12:43:35 berenguier Exp $
+ * $Id: mesh_geom.cpp,v 1.6 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@ IMeshGeom::IMeshGeom()
 	_RootInstanceId= -1;
 	_MeshBlockManager= NULL;
 	_MeshVBHeapId= 0;
+	_MeshVBHeapNumVertices= 0;
 }
 
 // ***************************************************************************

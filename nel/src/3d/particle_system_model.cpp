@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.46 2003/03/04 18:16:30 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.47 2003/03/11 09:39:54 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,6 +68,9 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 
 	// AnimDetail behavior: Must be traversed in AnimDetail, even if no channel mixer registered
 	CTransform::setIsForceAnimDetail(true);
+
+	// RenderFilter: We are a Landscape
+	_RenderFilterType= UScene::FilterPS;
 }
 
 
@@ -595,6 +598,13 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 			}
 		}
 		
+		// check wether display filtered or not
+		if( !(m->_Scene->getFilterRenderFlags() & m->_RenderFilterType) )
+		{
+			Visible = false;					
+			return;
+		}
+
 		// special case : system sticked to a skeleton
 		if( ((CTransformHrcObs*)HrcObs)->_AncestorSkeletonModel!=NULL )
 		{

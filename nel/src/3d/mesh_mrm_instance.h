@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.h
  * <File description>
  *
- * $Id: mesh_mrm_instance.h,v 1.10 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: mesh_mrm_instance.h,v 1.11 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -105,6 +105,8 @@ protected:
 
 	// @}
 
+	// called at instanciation
+	void			initRenderFilterType();
 
 // *************************
 private:

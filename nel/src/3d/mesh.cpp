@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.72 2002/11/13 17:02:48 berenguier Exp $
+ * $Id: mesh.cpp,v 1.73 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -906,6 +906,8 @@ void	CMeshGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 // ***************************************************************************
 void	CMeshGeom::renderSimpleWithMaterial(IDriver *drv, const CMatrix &worldMatrix, CMaterial &mat)
 {
+	H_AUTO( NL3D_MeshGeom_RenderSimpleWithMaterial );
+
 	nlassert(drv);
 
 	// setup matrix
@@ -998,6 +1000,9 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		// release vp
 		_MeshVertexProgram= NULL;
 	}
+
+	// TestYoyo
+	//_MeshVertexProgram= NULL;
 
 	// Version1+: _MeshMorpher.
 	if (ver >= 1)
@@ -1904,6 +1909,59 @@ void	CMeshGeom::computeSkinMatrixes(CSkeletonModel *skeleton, CMatrix3x4 *matrix
 
 
 // ***************************************************************************
+void	CMeshGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, float polygonCount, uint32 rdrFlags)
+{
+	// get the mesh instance.
+	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
+
+	// For all _MatrixBlocks
+	uint	triCount= 0;
+	for(uint mb=0;mb<_MatrixBlocks.size();mb++)
+	{
+		CMatrixBlock	&mBlock= _MatrixBlocks[mb];
+
+		// Profile all pass.
+		for (uint i=0;i<mBlock.RdrPass.size();i++)
+		{
+			CRdrPass	&rdrPass= mBlock.RdrPass[i];
+			// Profile with the Materials of the MeshInstance.
+			if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (rdrFlags & IMeshGeom::RenderOpaqueMaterial) ) ||
+				 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (rdrFlags & IMeshGeom::RenderTransparentMaterial) ) )
+			{
+				triCount+= rdrPass.PBlock.getNumTri();
+			}
+		}
+	}
+
+	// Profile
+	if(triCount)
+	{
+		rdrTrav->Scene->incrementProfileTriVBFormat(rdrTrav->Scene->BenchRes.MeshProfileTriVBFormat, 
+			_VBuffer.getVertexFormat(), triCount);
+		// rendered in BlockRendering, only if not transparent pass (known it if RenderTransparentMaterial is set)
+		if(supportMeshBlockRendering() && (rdrFlags & IMeshGeom::RenderTransparentMaterial)==0 )
+		{
+			if(isMeshInVBHeap())
+			{
+				rdrTrav->Scene->BenchRes.NumMeshRdrBlockWithVBHeap++;
+				rdrTrav->Scene->BenchRes.NumMeshTriRdrBlockWithVBHeap+= triCount;
+			}
+			else
+			{
+				rdrTrav->Scene->BenchRes.NumMeshRdrBlock++;
+				rdrTrav->Scene->BenchRes.NumMeshTriRdrBlock+= triCount;
+			}
+		}
+		else
+		{
+			rdrTrav->Scene->BenchRes.NumMeshRdrNormal++;
+			rdrTrav->Scene->BenchRes.NumMeshTriRdrNormal+= triCount;
+		}
+	}
+}
+
+
+// ***************************************************************************
 // ***************************************************************************
 // Mesh Block Render Interface
 // ***************************************************************************
@@ -1922,7 +1980,12 @@ bool	CMeshGeom::sortPerMaterial() const
 	return true;
 }
 // ***************************************************************************
-uint	CMeshGeom::getNumRdrPasses() const 
+uint	CMeshGeom::getNumRdrPassesForMesh() const 
+{
+	return _MatrixBlocks[0].RdrPass.size();
+}
+// ***************************************************************************
+uint	CMeshGeom::getNumRdrPassesForInstance(CMeshBaseInstance *inst) const 
 {
 	return _MatrixBlocks[0].RdrPass.size();
 }
@@ -1953,7 +2016,7 @@ void	CMeshGeom::beginMesh(CMeshGeomRenderContext &rdrCtx)
 	}
 }
 // ***************************************************************************
-void	CMeshGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) 
+void	CMeshGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, void *vbDst) 
 {
 	// setup instance matrix
 	rdrCtx.Driver->setupModelMatrix(inst->getWorldMatrix());
@@ -2237,6 +2300,8 @@ CTransformShape		*CMesh::createInstance(CScene &scene)
 	// do some instance init for MeshGeom
 	_MeshGeom->initInstance(mi);
 
+	// init render Filter
+	mi->initRenderFilterType();
 
 	return mi;
 }
@@ -2357,6 +2422,20 @@ IMeshGeom	*CMesh::supportMeshBlockRendering (CTransformShape *trans, float &poly
 	}
 	else
 		return NULL;
+}
+
+
+// ***************************************************************************
+void	CMesh::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool passOpaque)
+{
+	// 0 or 0xFFFFFFFF
+	uint32	mask= (0-(uint32)passOpaque);
+	uint32	rdrFlags;
+	// select rdrFlags, without ifs.
+	rdrFlags=	mask & (IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderPassOpaque);
+	rdrFlags|=	~mask & (IMeshGeom::RenderTransparentMaterial);
+	// render the mesh
+	_MeshGeom->profileSceneRender(rdrTrav, trans, 0, rdrFlags);
 }
 
 

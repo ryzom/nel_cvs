@@ -1,7 +1,7 @@
 /** \file water_model.cpp
  * <File description>
  *
- * $Id: water_model.cpp,v 1.27 2003/03/04 13:14:41 vizerie Exp $
+ * $Id: water_model.cpp,v 1.28 2003/03/11 09:41:30 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -52,6 +52,9 @@ CWaterModel::CWaterModel() : _Scene(NULL)
 	setOpacity(false);
 	setTransparency(true);
 	setOrderingLayer(1);
+
+	// RenderFilter: We are a SegRemanece
+	_RenderFilterType= UScene::FilterWater;
 }
 
 //=======================================================================

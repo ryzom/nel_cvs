@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.55 2002/11/13 17:02:48 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.56 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -210,6 +210,8 @@ CMeshMRMGeom::CMeshMRMGeom()
 	_PreciseClipping= false;
 	_SupportSkinGrouping= false;
 	_MeshDataId= 0;
+	_SupportMeshBlockRendering=  false;
+	_MBRCurrentLodId= 0;
 }
 
 
@@ -2488,7 +2490,70 @@ void	CMeshMRMGeom::compileRunTime()
 			!_MeshVertexProgram;
 	}
 
+	// Support MeshBlockRendering only if not skinned/meshMorphed.
+	_SupportMeshBlockRendering= !_Skinned && _MeshMorpher.BlendShapes.size()==0;
+
+	// \todo yoyo: support later MeshVertexProgram 
+	_SupportMeshBlockRendering= _SupportMeshBlockRendering && _MeshVertexProgram==NULL;
 }
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, float polygonCount, uint32 rdrFlags)
+{
+	// get the result of the Load Balancing.
+	float	alphaMRM= _LevelDetail.getLevelDetailFromPolyCount(polygonCount);
+
+	// choose the lod.
+	float	alphaLod;
+	sint	numLod= chooseLod(alphaMRM, alphaLod);
+
+	// Render the choosen Lod.
+	CLod	&lod= _Lods[numLod];
+
+	// get the mesh instance.
+	CMeshBaseInstance	*mi= safe_cast<CMeshBaseInstance*>(trans);
+
+	// Profile all pass.
+	uint	triCount= 0;
+	for (uint i=0;i<lod.RdrPass.size();i++)
+	{
+		CRdrPass	&rdrPass= lod.RdrPass[i];
+		// Profile with the Materials of the MeshInstance.
+		if ( ( (mi->Materials[rdrPass.MaterialId].getBlend() == false) && (rdrFlags & IMeshGeom::RenderOpaqueMaterial) ) ||
+			 ( (mi->Materials[rdrPass.MaterialId].getBlend() == true) && (rdrFlags & IMeshGeom::RenderTransparentMaterial) ) )
+		{
+			triCount+= rdrPass.PBlock.getNumTri();
+		}
+	}
+
+	// Profile
+	if(triCount)
+	{
+		rdrTrav->Scene->incrementProfileTriVBFormat(rdrTrav->Scene->BenchRes.MeshMRMProfileTriVBFormat, 
+			_VBufferFinal.getVertexFormat(), triCount);
+		// rendered in BlockRendering, only if not transparent pass (known it if RenderTransparentMaterial is set)
+		if(supportMeshBlockRendering() && (rdrFlags & IMeshGeom::RenderTransparentMaterial)==0 )
+		{
+			if(isMeshInVBHeap())
+			{
+				rdrTrav->Scene->BenchRes.NumMeshMRMRdrBlockWithVBHeap++;
+				rdrTrav->Scene->BenchRes.NumMeshMRMTriRdrBlockWithVBHeap+= triCount;
+			}
+			else
+			{
+				rdrTrav->Scene->BenchRes.NumMeshMRMRdrBlock++;
+				rdrTrav->Scene->BenchRes.NumMeshMRMTriRdrBlock+= triCount;
+			}
+		}
+		else
+		{
+			rdrTrav->Scene->BenchRes.NumMeshMRMRdrNormal++;
+			rdrTrav->Scene->BenchRes.NumMeshMRMTriRdrNormal+= triCount;
+		}
+	}
+}
+
 
 
 // ***************************************************************************
@@ -2501,35 +2566,193 @@ void	CMeshMRMGeom::compileRunTime()
 // ***************************************************************************
 bool	CMeshMRMGeom::supportMeshBlockRendering () const
 {
-	// \todo yoyo: TODO_OPTIMIZE support MeshBlockRendering with MRM
+	/*
+		Yoyo: Don't Support It for MRM because too Slow!!
+		The problem is that lock() unlock() on each instance, on the same VBHeap IS AS SLOWER AS
+		VB switching.
+
+		TODO_OPTIMIZE: find a way to optimize MRM.
+	*/
 	return false;
+	//return _SupportMeshBlockRendering;
 }
 
 // ***************************************************************************
 bool	CMeshMRMGeom::sortPerMaterial() const
 {
+	// Can't do it per material since 2 lods may not have the same number of RdrPass!!
 	return false;
 }
 // ***************************************************************************
-uint	CMeshMRMGeom::getNumRdrPasses() const 
+uint	CMeshMRMGeom::getNumRdrPassesForMesh() const 
 {
+	// not used...
 	return 0;
+
+}
+// ***************************************************************************
+uint	CMeshMRMGeom::getNumRdrPassesForInstance(CMeshBaseInstance *inst) const 
+{
+	return _Lods[_MBRCurrentLodId].RdrPass.size();
 }
 // ***************************************************************************
 void	CMeshMRMGeom::beginMesh(CMeshGeomRenderContext &rdrCtx) 
 {
+	if(_Lods.empty())
+		return;
+
+	IDriver	*drv= rdrCtx.Driver;
+
+	if(rdrCtx.RenderThroughVBHeap)
+	{
+		// Don't setup VB in this case, since use the VBHeap setuped one.
+	}
+	else
+	{
+		updateVertexBufferHard(drv, _VBufferFinal.getNumVertices());
+
+		// active VB.
+		if(_VBHard)
+		{
+			drv->activeVertexBufferHard(_VBHard);
+		}
+		else
+		{
+			drv->activeVertexBuffer(_VBufferFinal);
+		}
+	}
+
+
+	// force normalisation of normals..
+	_MBRBkupNormalize= drv->isForceNormalize();
+	drv->forceNormalize(true);			
+
 }
 // ***************************************************************************
-void	CMeshMRMGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) 
+void	CMeshMRMGeom::activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, void *vbDst) 
 {
+	H_AUTO( NL3D_MeshMRMGeom_RenderNormal );
+
+	if(_Lods.empty())
+		return;
+
+	// get the result of the Load Balancing.
+	float	alphaMRM= _LevelDetail.getLevelDetailFromPolyCount(polygonCount);
+
+	// choose the lod.
+	float	alphaLod;
+	_MBRCurrentLodId= chooseLod(alphaMRM, alphaLod);
+
+	// Geomorph the choosen Lod (if not the coarser mesh).
+	if(_MBRCurrentLodId>0)
+	{
+		if(rdrCtx.RenderThroughVBHeap)
+			applyGeomorphWithVBHardPtr(_Lods[_MBRCurrentLodId].Geomorphs, alphaLod, (uint8*)vbDst);
+		else
+			applyGeomorph(_Lods[_MBRCurrentLodId].Geomorphs, alphaLod, _VBHard);
+	}
+
+	// set the instance worldmatrix.
+	rdrCtx.Driver->setupModelMatrix(inst->getWorldMatrix());
+
+	// setupLighting.
+	inst->changeLightSetup(rdrCtx.RenderTrav);
 }
 // ***************************************************************************
 void	CMeshMRMGeom::renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *mi, float polygonCount, uint rdrPassId) 
 {
+	if(_Lods.empty())
+		return;
+
+	CLod		&lod= _Lods[_MBRCurrentLodId];
+	CRdrPass	&rdrPass= lod.RdrPass[rdrPassId];
+
+	if ( mi->Materials[rdrPass.MaterialId].getBlend() == false )
+	{
+		// CMaterial Ref
+		CMaterial &material=mi->Materials[rdrPass.MaterialId];
+
+		// Render with the Materials of the MeshInstance.
+		if(rdrCtx.RenderThroughVBHeap)
+			// render shifted primitives
+			rdrCtx.Driver->render(rdrPass.VBHeapPBlock, material);
+		else
+			rdrCtx.Driver->render(rdrPass.PBlock, material);
+	}
 }
+
 // ***************************************************************************
 void	CMeshMRMGeom::endMesh(CMeshGeomRenderContext &rdrCtx) 
 {
+	if(_Lods.empty())
+		return;
+
+	// bkup force normalisation.
+	rdrCtx.Driver->forceNormalize(_MBRBkupNormalize);
+}
+
+
+// ***************************************************************************
+bool	CMeshMRMGeom::getVBHeapInfo(uint &vertexFormat, uint &numVertices)
+{
+	// CMeshMRMGeom support VBHeap rendering, assuming _SupportMeshBlockRendering is true
+	vertexFormat= _VBufferFinal.getVertexFormat();
+	numVertices= _VBufferFinal.getNumVertices();
+	return _SupportMeshBlockRendering;
+}
+
+// ***************************************************************************
+void	CMeshMRMGeom::computeMeshVBHeap(void *dst, uint indexStart)
+{
+	// Fill dst with Buffer content.
+	memcpy(dst, _VBufferFinal.getVertexCoordPointer(), _VBufferFinal.getNumVertices()*_VBufferFinal.getVertexSize() );
+
+	// For All Lods
+	for(uint lodId=0; lodId<_Lods.size();lodId++)
+	{
+		CLod	&lod= _Lods[lodId];
+
+		// For all rdrPass.
+		for(uint i=0;i<lod.RdrPass.size();i++)
+		{
+			// shift the PB
+			CPrimitiveBlock	&srcPb= lod.RdrPass[i].PBlock;
+			CPrimitiveBlock	&dstPb= lod.RdrPass[i].VBHeapPBlock;
+			uint j;
+
+			// Lines.
+			dstPb.setNumLine(srcPb.getNumLine());
+			uint32			*srcLinePtr= srcPb.getLinePointer();
+			uint32			*dstLinePtr= dstPb.getLinePointer();
+			for(j=0; j<dstPb.getNumLine()*2;j++)
+			{
+				dstLinePtr[j]= srcLinePtr[j]+indexStart;
+			}
+			// Tris.
+			dstPb.setNumTri(srcPb.getNumTri());
+			uint32			*srcTriPtr= srcPb.getTriPointer();
+			uint32			*dstTriPtr= dstPb.getTriPointer();
+			for(j=0; j<dstPb.getNumTri()*3;j++)
+			{
+				dstTriPtr[j]= srcTriPtr[j]+indexStart;
+			}
+			// Quads.
+			dstPb.setNumQuad(srcPb.getNumQuad());
+			uint32			*srcQuadPtr= srcPb.getQuadPointer();
+			uint32			*dstQuadPtr= dstPb.getQuadPointer();
+			for(j=0; j<dstPb.getNumQuad()*4;j++)
+			{
+				dstQuadPtr[j]= srcQuadPtr[j]+indexStart;
+			}
+		}
+	}
+}
+
+// ***************************************************************************
+bool	CMeshMRMGeom::isActiveInstanceNeedVBFill() const
+{
+	// Yes, need it for geomorph
+	return true;
 }
 
 
@@ -2607,6 +2830,9 @@ CTransformShape		*CMeshMRM::createInstance(CScene &scene)
 	// do some instance init for MeshGeom
 	_MeshMRMGeom.initInstance(mi);
 
+	// init the FilterType
+	mi->initRenderFilterType();
+
 	return mi;
 }
 
@@ -2681,6 +2907,34 @@ void	CMeshMRM::changeMRMDistanceSetup(float distanceFinest, float distanceMiddle
 {
 	_MeshMRMGeom.changeMRMDistanceSetup(distanceFinest, distanceMiddle, distanceCoarsest);
 }
+
+// ***************************************************************************
+IMeshGeom	*CMeshMRM::supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const
+{
+	// Ok if meshGeom is ok.
+	if(_MeshMRMGeom.supportMeshBlockRendering())
+	{
+		polygonCount= trans->getNumTrianglesAfterLoadBalancing();
+		return (IMeshGeom*)&_MeshMRMGeom;
+	}
+	else
+		return NULL;
+}
+
+// ***************************************************************************
+void	CMeshMRM::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool passOpaque)
+{
+	// 0 or 0xFFFFFFFF
+	uint32	mask= (0-(uint32)passOpaque);
+	uint32	rdrFlags;
+	// select rdrFlags, without ifs.
+	rdrFlags=	mask & (IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderPassOpaque);
+	rdrFlags|=	~mask & (IMeshGeom::RenderTransparentMaterial);
+	// profile the mesh
+	_MeshMRMGeom.profileSceneRender(rdrTrav, trans, trans->getNumTrianglesAfterLoadBalancing(), rdrFlags);
+}
+
+
 
 // ***************************************************************************
 // ***************************************************************************

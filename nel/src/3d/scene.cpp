@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.91 2003/03/03 12:57:00 boucher Exp $
+ * $Id: scene.cpp,v 1.92 2003/03/11 09:41:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,6 +161,10 @@ CScene::CScene()
 	_NumRender = 0;
 
 	_MaxSkeletonsInNotCLodForm= 20;
+
+	_FilterRenderFlags= ~0;
+
+	_NextRenderProfile= false;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -447,6 +451,8 @@ void	CScene::render(bool	doHrcPass)
 	clamp (deltaT, 0.01, 0.1);
 	updateWaitingInstances(deltaT);
 
+	// Reset profiling
+	_NextRenderProfile= false;
 }
 
 // ***************************************************************************
@@ -831,6 +837,15 @@ CParticleSystemManager &CScene::getParticleSystemManager()
 	return _ParticleSystemManager;
 }
 
+// ***************************************************************************
+void	CScene::enableElementRender(UScene::TRenderFilter elt, bool state)
+{
+	if(state)
+		_FilterRenderFlags|= (uint32)elt;
+	else
+		_FilterRenderFlags&= ~(uint32)elt;
+}
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -978,6 +993,21 @@ CScene::ItSkeletonModelList	CScene::appendSkeletonModelToList(CSkeletonModel *sk
 void					CScene::eraseSkeletonModelToList(CScene::ItSkeletonModelList	it)
 {
 	_SkeletonModelList.erase(it);
+}
+
+// ***************************************************************************
+// ***************************************************************************
+/// Misc
+// ***************************************************************************
+// ***************************************************************************
+
+// ***************************************************************************
+void					CScene::profileNextRender()
+{
+	_NextRenderProfile= true;
+
+	// Reset All Stats.
+	BenchRes.reset();
 }
 
 

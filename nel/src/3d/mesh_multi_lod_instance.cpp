@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.cpp
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.cpp,v 1.12 2002/11/18 17:53:35 vizerie Exp $
+ * $Id: mesh_multi_lod_instance.cpp,v 1.13 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -295,6 +295,32 @@ float	   CMeshMultiLodInstance::getNumTriangles (float distance)
 {
 	CMeshMultiLod *shape = safe_cast<CMeshMultiLod*> ((IShape*)Shape);
 	return shape->getNumTrianglesWithCoarsestDist(distance, _CoarseMeshDistance);	
+}
+
+
+// ***************************************************************************
+void		CMeshMultiLodInstance::initRenderFilterType()
+{
+	if(Shape)
+	{
+		CMeshMultiLod *shape = safe_cast<CMeshMultiLod*> ((IShape*)Shape);
+
+		// Look only the First LOD to know if it has a VP or not
+		bool			hasVP= false;
+		bool			coarseMesh;
+		if(shape->getNumSlotMesh()>0 && shape->getSlotMesh(0, coarseMesh))
+		{
+			IMeshGeom		*meshGeom= shape->getSlotMesh(0, coarseMesh);
+			// hasVP possible only if not a coarseMesh.
+			if(!coarseMesh)
+				hasVP= meshGeom->hasMeshVertexProgram();
+		}
+
+		if(hasVP)
+			_RenderFilterType= UScene::FilterMeshLodVP;
+		else
+			_RenderFilterType= UScene::FilterMeshLodNoVP;
+	}
 }
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file transform_shape.cpp
  * <File description>
  *
- * $Id: transform_shape.cpp,v 1.34 2002/11/18 17:50:34 vizerie Exp $
+ * $Id: transform_shape.cpp,v 1.35 2003/03/11 09:42:50 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,6 +181,7 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 	// Compute the current lighting setup for this instance
 	//===================
 
+
 	// if the transform is lightable (ie not a fully lightmaped model), setup lighting
 	if(m->isLightable())
 	{
@@ -239,6 +240,22 @@ void	CTransformShapeRenderObs::traverse(IObs *caller)
 			IDriver				*drv= rdrTrav->getDriver();
 			m->Shape->render( drv, m, currentPassOpaque );
 		}
+	}
+}
+
+
+// ***************************************************************************
+void	CTransformShapeRenderObs::profile()
+{
+	CTransformShape		*m= (CTransformShape*)Model;
+
+	// profile the shape.
+	if(m->Shape)
+	{
+		CRenderTrav			*rdrTrav= (CRenderTrav*)Trav;
+		bool				currentPassOpaque= rdrTrav->isCurrentPassOpaque();
+
+		m->Shape->profileSceneRender( rdrTrav, m, currentPassOpaque );
 	}
 }
 

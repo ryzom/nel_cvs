@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.12 2002/08/07 09:46:16 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.13 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "3d/skeleton_model.h"
 #include "3d/raw_skin.h"
 #include "3d/shifted_triangle_cache.h"
+#include "nel/3d/u_scene.h"
 
 
 using namespace NLMISC;
@@ -202,5 +203,21 @@ void			CMeshMRMInstance::renderSkinGroupPrimitives(uint baseVertex)
 	CMeshMRMGeom	&meshGeom= const_cast<CMeshMRMGeom&>(pMesh->getMeshGeom ());
 	meshGeom.renderSkinGroupPrimitives(this, baseVertex);
 }
+
+// ***************************************************************************
+void	CMeshMRMInstance::initRenderFilterType()
+{
+	if(Shape)
+	{
+		// If the Shape has a VP or not...
+		CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+
+		if( pMesh->getMeshGeom().hasMeshVertexProgram() )
+			_RenderFilterType= UScene::FilterMeshMRMVP;
+		else
+			_RenderFilterType= UScene::FilterMeshMRMNoVP;
+	}
+}
+
 
 } // NL3D

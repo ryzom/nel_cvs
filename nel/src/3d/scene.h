@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.35 2002/11/14 12:56:17 berenguier Exp $
+ * $Id: scene.h,v 1.36 2003/03/11 09:41:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 
 
 #include "nel/3d/viewport.h"
+#include "nel/3d/u_scene.h"
 
 #include "nel/misc/rgba.h"
 #include "nel/misc/smart_ptr.h"
@@ -460,6 +461,11 @@ public:
 	/// Set the async texture manager
 	void						setAsyncTextureManager(CAsyncTextureManager *mgr) {_AsyncTextureManager= mgr;}
 
+	/// \name Render Filtering
+	// @{
+	void				enableElementRender(UScene::TRenderFilter elt, bool state);
+	uint32				getFilterRenderFlags() const {return _FilterRenderFlags;}
+	// @}
 
 	/// \name Private
 	// @{
@@ -470,6 +476,29 @@ public:
 	void						eraseSkeletonModelToList(ItSkeletonModelList	it);
 	ItSkeletonModelList			getSkeletonModelListBegin() {return _SkeletonModelList.begin();}
 	ItSkeletonModelList			getSkeletonModelListEnd() {return _SkeletonModelList.end();}
+	// @}
+
+
+	/// \name Profiling
+	// @{
+
+	// Enable Profiling for the next render(). Reset All stats.
+	void						profileNextRender();
+	bool						isNextRenderProfile() const {return _NextRenderProfile;}
+
+	// Result profiling
+	UScene::CBenchResults		BenchRes;
+	// increment with the current VBufferFormat
+	void							incrementProfileTriVBFormat(std::map<uint32, uint32> &formatToTri, uint32 vbFormat, uint32 numTris)
+	{
+		std::map<uint32, uint32>::iterator	it= formatToTri.find(vbFormat);
+		if(it==formatToTri.end())
+		{
+			it= formatToTri.insert(std::make_pair(vbFormat,0)).first;
+		}
+		it->second+= numTris;
+	}
+
 	// @}
 
 private:
@@ -582,6 +611,11 @@ private:
 	// Max Skeleton displayed as std.
 	uint						_MaxSkeletonsInNotCLodForm;
 
+	// Render filtering
+	uint32						_FilterRenderFlags;
+
+	// profile
+	bool						_NextRenderProfile;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.28 2002/11/18 17:53:35 vizerie Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.29 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/mesh_blender.h"
 
 #include "nel/misc/debug.h"
+#include "nel/misc/hierarchical_timer.h"
 
 using namespace NLMISC;
 
@@ -207,6 +208,9 @@ CTransformShape	*CMeshMultiLod::createInstance(CScene &scene)
 		if(_MeshVector[i].MeshGeom)
 			_MeshVector[i].MeshGeom->initInstance(mi);
 	}
+
+	// init the Filter type
+	mi->initRenderFilterType();
 
 
 	return mi;
@@ -681,6 +685,86 @@ IMeshGeom		*CMeshMultiLod::supportMeshBlockRendering (CTransformShape *trans, fl
 	}
 	else
 		return NULL;
+}
+
+
+// ***************************************************************************
+void	CMeshMultiLod::profileMeshGeom (uint slot, CRenderTrav *rdrTrav, CMeshMultiLodInstance *trans, float numPoylgons, uint32 rdrFlags)
+{
+	// Ref
+	CMeshSlot &slotRef=_MeshVector[slot];
+
+	// MeshGeom exist?
+	if (slotRef.MeshGeom)
+	{
+		// NB Here, the meshGeom may still be a coarseMesh, but rendered through CMeshGeom
+		if(slotRef.Flags&CMeshSlot::CoarseMesh)
+		{
+			// Render only for opaque material
+			if(rdrFlags & IMeshGeom::RenderOpaqueMaterial)
+			{
+				slotRef.MeshGeom->profileSceneRender(rdrTrav, trans, numPoylgons, rdrFlags);
+			}
+		}
+		else
+		{
+			slotRef.MeshGeom->profileSceneRender(rdrTrav, trans, numPoylgons, rdrFlags);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshMultiLod::profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool passOpaque)
+{
+	// Render good meshes
+	CMeshMultiLodInstance *instance=safe_cast<CMeshMultiLodInstance*>(trans);
+
+
+	// Second lod ?
+	if ( (instance->Lod1!=0xffffffff) && (passOpaque==false) )
+	{
+		// build rdrFlags to rdr both transparent and opaque materials, 
+		// use globalAlphaBlend, and disable ZWrite for Lod1
+		uint32	rdrFlags= IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderTransparentMaterial |
+			IMeshGeom::RenderGlobalAlpha | IMeshGeom::RenderGADisableZWrite;
+		// NB: very important to render Lod1 first, because Lod0 is still rendered with ZWrite enabled.
+		profileMeshGeom (instance->Lod1, rdrTrav, instance, instance->PolygonCountLod1, rdrFlags);
+	}
+
+
+	// Have an opaque pass ?
+	if ( (instance->Flags&CMeshMultiLodInstance::Lod0Blend) == 0)
+	{
+		// Is this slot a CoarseMesh?
+		if ( _MeshVector[instance->Lod0].Flags&CMeshSlot::CoarseMesh )
+		{
+		}
+		else
+		{
+			// build rdrFlags the normal way (as CMesh::render() for example)
+			uint32	mask= (0-(uint32)passOpaque);
+			uint32	rdrFlags;
+			// select rdrFlags, without ifs.
+			rdrFlags=	mask & (IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderPassOpaque);
+			rdrFlags|=	~mask & (IMeshGeom::RenderTransparentMaterial);
+			// Only render the normal way the first lod
+			profileMeshGeom (instance->Lod0, rdrTrav, instance, instance->PolygonCountLod0, rdrFlags);
+		}
+	}
+	else
+	{
+		// Should not be in opaque
+		nlassert (passOpaque==false);
+
+		// build rdrFlags to rdr both transparent and opaque materials, 
+		// use globalAlphaBlend, BUT Don't disable ZWrite for Lod0
+		uint32	rdrFlags= IMeshGeom::RenderOpaqueMaterial | IMeshGeom::RenderTransparentMaterial |
+			IMeshGeom::RenderGlobalAlpha;
+
+		// Render first lod in blend mode. Don't disable ZWrite for Lod0
+		profileMeshGeom (instance->Lod0, rdrTrav, instance, instance->PolygonCountLod0, rdrFlags);
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.19 2002/11/18 17:53:35 vizerie Exp $
+ * $Id: mesh_multi_lod.h,v 1.20 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -134,6 +134,9 @@ public:
 	/// Declare name of the shape
 	NLMISC_DECLARE_CLASS(CMeshMultiLod);
 
+	/// profiling
+	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool opaquePass);
+
 	// @}
 
 	/// Geometry accessor
@@ -256,6 +259,9 @@ private:
 
 	/// Render the CoarseMesh of a slot. must be a coarseMesh, and shoudl be called only in passOpaque.
 	void	renderCoarseMesh (uint slot, IDriver *drv, CMeshMultiLodInstance *trans, CCoarseMeshManager *manager);
+
+	/// Profile the MeshGeom of a slot, even if coarseMesh
+	void	profileMeshGeom (uint slot, CRenderTrav *rdrTrav, CMeshMultiLodInstance *trans, float numPoylgons, uint32 rdrFlags);
 
 	/// copileDistMax when builded/loaded.
 	void	compileDistMax();

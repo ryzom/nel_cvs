@@ -1,7 +1,7 @@
 /** \file mesh_block_manager.cpp
  * <File description>
  *
- * $Id: mesh_block_manager.cpp,v 1.4 2002/09/10 13:36:58 berenguier Exp $
+ * $Id: mesh_block_manager.cpp,v 1.5 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -149,7 +149,7 @@ void			CMeshBlockManager::flush(IDriver *drv, CScene *scene, CRenderTrav *render
 		for(i=0; i<hb->RdrMeshGeoms.size();i++)
 		{
 			// render the meshGeom and his instances
-			render(hb->RdrMeshGeoms[i], hb->RdrInstances);
+			render(hb, hb->RdrMeshGeoms[i], hb->RdrInstances);
 		}
 	}
 
@@ -176,7 +176,7 @@ void			CMeshBlockManager::flush(IDriver *drv, CScene *scene, CRenderTrav *render
 
 
 // ***************************************************************************
-void			CMeshBlockManager::render(IMeshGeom *meshGeom, std::vector<CInstanceInfo> &rdrInstances)
+void			CMeshBlockManager::render(CVBHeapBlock	*vbHeapBlock, IMeshGeom *meshGeom, std::vector<CInstanceInfo> &rdrInstances)
 {
 	// TestYoyo
 	/*extern uint TEMP_Yoyo_NMeshVBHeap;
@@ -190,12 +190,13 @@ void			CMeshBlockManager::render(IMeshGeom *meshGeom, std::vector<CInstanceInfo>
 	// Start for this mesh.
 	meshGeom->beginMesh(_RenderCtx);
 
-	// number of renderPasses for this mesh.
-	uint	numRdrPass= meshGeom->getNumRdrPasses();
 
 	// sort per material first?
 	if( meshGeom->sortPerMaterial() )
 	{
+		// number of renderPasses for this mesh.
+		uint	numRdrPass= meshGeom->getNumRdrPassesForMesh();
+
 		// for all material.
 		for(uint rdrPass=0;rdrPass<numRdrPass;rdrPass++)
 		{
@@ -206,7 +207,7 @@ void			CMeshBlockManager::render(IMeshGeom *meshGeom, std::vector<CInstanceInfo>
 				CInstanceInfo		&instInfo= rdrInstances[instId];
 
 				// activate this instance
-				meshGeom->activeInstance(_RenderCtx, instInfo.MBI, instInfo.PolygonCount);
+				meshGeom->activeInstance(_RenderCtx, instInfo.MBI, instInfo.PolygonCount, NULL);
 
 				// render the pass.
 				meshGeom->renderPass(_RenderCtx, instInfo.MBI, instInfo.PolygonCount, rdrPass);
@@ -225,8 +226,27 @@ void			CMeshBlockManager::render(IMeshGeom *meshGeom, std::vector<CInstanceInfo>
 		{
 			CInstanceInfo		&instInfo= rdrInstances[instId];
 
+			// If the meshGeom need to change Some VB (geomorphs...)
+			bool	needVBHeapLock= _RenderCtx.RenderThroughVBHeap && meshGeom->isActiveInstanceNeedVBFill();
+			void	*vbDst= NULL;
+			if(needVBHeapLock)
+			{
+				// Lock the VBHeap
+				vbDst= vbHeapBlock->VBHeap.lock(meshGeom->_MeshVBHeapIndexStart);
+			}
+
 			// activate this instance
-			meshGeom->activeInstance(_RenderCtx, instInfo.MBI, instInfo.PolygonCount);
+			meshGeom->activeInstance(_RenderCtx, instInfo.MBI, instInfo.PolygonCount, vbDst);
+
+			if(needVBHeapLock)
+			{
+				// unlock only what vertices have changed (ATI problem)
+				vbHeapBlock->VBHeap.unlock(meshGeom->_MeshVBHeapIndexStart, 
+					meshGeom->_MeshVBHeapIndexStart + meshGeom->_MeshVBHeapNumVertices);
+			}
+
+			// number of renderPasses for this mesh.
+			uint	numRdrPass= meshGeom->getNumRdrPassesForInstance(instInfo.MBI);
 
 			// for all material.
 			for(uint rdrPass=0;rdrPass<numRdrPass;rdrPass++)
@@ -301,6 +321,7 @@ void			CMeshBlockManager::allocateMeshVBHeap(IMeshGeom *mesh)
 	// info for delete in mesh
 	mesh->_MeshVBHeapIndexStart= indexStart;
 	mesh->_MeshVBHeapId= vbHeapId + (meshId<<NL3D_MBM_VBHEAP_MESH_SHIFT);
+	mesh->_MeshVBHeapNumVertices= numVertices;
 
 
 	// Fill VB.

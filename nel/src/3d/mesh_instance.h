@@ -1,7 +1,7 @@
 /** \file mesh_instance.h
  * <File description>
  *
- * $Id: mesh_instance.h,v 1.10 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: mesh_instance.h,v 1.11 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,8 @@ protected:
 
 	// @}
 
+	// called at instanciation
+	void			initRenderFilterType();
 
 private:
 	static IModel	*creator() {return new CMeshInstance;}

@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.16 2002/08/07 09:46:16 berenguier Exp $
+ * $Id: mesh_instance.cpp,v 1.17 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/mesh_instance.h"
 #include "3d/mesh.h"
 #include "3d/skeleton_model.h"
+#include "nel/3d/u_scene.h"
 #include <list>
 
 using namespace std;
@@ -124,6 +125,22 @@ void	CMeshInstance::renderSkin(float alphaMRM)
 		// render the meshGeom
 		CMeshGeom	&meshGeom= const_cast<CMeshGeom&>(pMesh->getMeshGeom ());
 		meshGeom.renderSkin( this, alphaMRM );
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshInstance::initRenderFilterType()
+{
+	if(Shape)
+	{
+		// If the Shape has a VP or not...
+		CMesh *pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
+
+		if( pMesh->getMeshGeom().hasMeshVertexProgram() )
+			_RenderFilterType= UScene::FilterMeshVP;
+		else
+			_RenderFilterType= UScene::FilterMeshNoVP;
 	}
 }
 

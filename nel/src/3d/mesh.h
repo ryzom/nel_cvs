@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.34 2002/11/20 10:20:36 berenguier Exp $
+ * $Id: mesh.h,v 1.35 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -266,6 +266,9 @@ public:
 	/// Get bbox.
 	virtual void	getAABBox(NLMISC::CAABBox &bbox) const {bbox= getBoundingBox().getAABBox();}
 
+	/// profiling
+	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool opaquePass);
+
 	// @}
 
 	/// \name Geometry accessors
@@ -364,6 +367,9 @@ public:
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CMeshGeom);
 
+	// profile
+	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, float polygonCount, uint32 rdrFlags);
+
 	// @}
 
 
@@ -449,9 +455,10 @@ public:
 	virtual bool	supportMeshBlockRendering () const;
 
 	virtual bool	sortPerMaterial() const;
-	virtual uint	getNumRdrPasses() const ;
+	virtual uint	getNumRdrPassesForMesh() const ;
+	virtual uint	getNumRdrPassesForInstance(CMeshBaseInstance *inst) const ;
 	virtual	void	beginMesh(CMeshGeomRenderContext &rdrCtx) ;
-	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) ;
+	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, void *vbDst) ;
 	virtual	void	renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, uint rdrPass) ;
 	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) ;
 
@@ -460,6 +467,8 @@ public:
 
 	// @}
 
+	// Is this mesh Geom has a VertexProgram bound?
+	virtual bool	hasMeshVertexProgram() const {return _MeshVertexProgram!=NULL;}
 
 // ************************
 private:

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.39 2002/11/13 17:02:48 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.40 2003/03/11 09:39:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,6 +125,9 @@ public:
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CMeshMRMGeom);
 
+	/// Scene profile
+	void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, float polygonCount, uint32 rdrFlags);
+
 	// @}
 
 
@@ -247,11 +250,16 @@ public:
 	virtual bool	supportMeshBlockRendering () const;
 
 	virtual bool	sortPerMaterial() const;
-	virtual uint	getNumRdrPasses() const ;
+	virtual uint	getNumRdrPassesForMesh() const ;
+	virtual uint	getNumRdrPassesForInstance(CMeshBaseInstance *inst) const ;
 	virtual	void	beginMesh(CMeshGeomRenderContext &rdrCtx) ;
-	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount) ;
+	virtual	void	activeInstance(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, void *vbDst) ;
 	virtual	void	renderPass(CMeshGeomRenderContext &rdrCtx, CMeshBaseInstance *inst, float polygonCount, uint rdrPass) ;
 	virtual	void	endMesh(CMeshGeomRenderContext &rdrCtx) ;
+
+	virtual	bool	getVBHeapInfo(uint &vertexFormat, uint &numVertices);
+	virtual	void	computeMeshVBHeap(void *dst, uint indexStart);
+	virtual	bool	isActiveInstanceNeedVBFill() const;
 
 	// @}
 
@@ -266,6 +274,9 @@ public:
 	sint			renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uint remainingVertices, uint8 *vbDest);
 	void			renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVertex);
 	// @}
+
+	// Is this mesh Geom has a VertexProgram bound?
+	virtual bool	hasMeshVertexProgram() const {return _MeshVertexProgram!=NULL;}
 
 
 // ************************
@@ -283,7 +294,8 @@ private:
 		uint32				MaterialId;
 		// The list of primitives.
 		CPrimitiveBlock		PBlock;
-
+		// The same, precomputed for VBHeap Index Shifting
+		CPrimitiveBlock		VBHeapPBlock;
 
 		// Serialize a rdrpass.
 		void	serial(NLMISC::IStream &f)
@@ -491,6 +503,16 @@ private:
 	// Possible MeshVertexProgram to apply at render()
 	NLMISC::CSmartPtr<IMeshVertexProgram>	_MeshVertexProgram;
 
+	/// \name Mesh Block Render Implementation
+	// @{
+	/// setuped at compileRunTime.
+	bool							_SupportMeshBlockRendering;
+	/// BeginMesh setup
+	bool							_MBRBkupNormalize;
+	/// global setup at activateInstance()
+	sint							_MBRCurrentLodId;
+	// @}
+
 private:
 	/// serial a subset of the vertices.
 	void	serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint endWedge);
@@ -673,6 +695,9 @@ public:
 	/// Get bbox.
 	virtual void	getAABBox(NLMISC::CAABBox &bbox) const {bbox= getBoundingBox().getAABBox();}
 
+	/// profiling
+	virtual void	profileSceneRender(CRenderTrav *rdrTrav, CTransformShape *trans, bool opaquePass);
+
 	// @}
 
 
@@ -722,6 +747,12 @@ public:
 	/// Get the mesh geom
 	const CMeshMRMGeom& getMeshGeom () const;
 
+	// @}
+
+
+	/// \name Mesh Block Render Interface
+	// @{
+	virtual IMeshGeom	*supportMeshBlockRendering (CTransformShape *trans, float &polygonCount ) const;
 	// @}
 
 

@@ -1,6 +1,6 @@
 /** \file seg_remanence.cpp
  *
- * $Id: seg_remanence.cpp,v 1.7 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: seg_remanence.cpp,v 1.8 2003/03/11 09:41:30 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -69,6 +69,9 @@ CSegRemanence::CSegRemanence() : _NumSlice(0),
 								 _AniMat(NULL)
 {	
 	IAnimatable::resize(AnimValueLast);
+
+	// RenderFilter: We are a SegRemanece
+	_RenderFilterType= UScene::FilterSegRemanence;
 }
 
 //===============================================================

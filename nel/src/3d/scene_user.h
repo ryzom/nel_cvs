@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.36 2002/11/14 12:55:32 berenguier Exp $
+ * $Id: scene_user.h,v 1.37 2003/03/11 09:41:14 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -277,6 +277,12 @@ public:
 	virtual sint32				getCLodAnimIdByName(uint32 shapeId, const std::string &name) const;
 	//@}
 
+	/// \name Profiling and Render Filtering
+	// @{
+	virtual	void				enableElementRender(TRenderFilter elt, bool state);
+	virtual void				profileNextRender();
+	virtual void				getProfileResults(CBenchResults &results);
+	// @}
 
 public:
 	/// \name Accessor for CSceneUser.

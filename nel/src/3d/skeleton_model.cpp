@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.37 2002/11/14 12:58:41 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.38 2003/03/11 09:41:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,9 @@ CSkeletonModel::CSkeletonModel()
 
 	// build a bug-free level detail
 	buildDefaultLevelDetail();
+
+	// RenderFilter: We are a skeleton
+	_RenderFilterType= UScene::FilterSkeleton;
 }
 
 	

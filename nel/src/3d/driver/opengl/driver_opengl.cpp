@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.97 2001/04/24 14:42:35 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.98 2001/04/27 14:25:42 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -91,7 +91,7 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0x5;
+const uint32		CDriverGL::ReleaseVersion = 0x6;
 
 #ifdef NL_OS_WINDOWS
 
@@ -1145,6 +1145,22 @@ void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 	//==============================
 	if(ntris!=0)
 		glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, tri);
+}
+
+// --------------------------------------------------
+void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
+{
+	// Check user code :)
+	nlassert(!_MatrixSetupDirty);
+
+	if ( !setupMaterial(Mat) )
+		return;	
+
+
+	// render primitives.
+	//==============================
+	if(numPoints)
+		glDrawArrays(GL_POINTS,0, numPoints);
 }
 
 

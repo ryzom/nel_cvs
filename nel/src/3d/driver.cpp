@@ -2,7 +2,7 @@
  * Generic driver.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.cpp,v 1.29 2001/04/23 09:14:27 besson Exp $
+ * $Id: driver.cpp,v 1.30 2001/04/27 14:26:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-const uint32 IDriver::InterfaceVersion = 0x18;
+const uint32 IDriver::InterfaceVersion = 0x19;
 
 // ***************************************************************************
 IDriver::IDriver()

@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.64 2001/04/23 09:14:27 besson Exp $
+ * $Id: driver.h,v 1.65 2001/04/27 14:25:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,6 +269,12 @@ public:
 	 * NB: this is usefull for landscape....
 	 */
 	virtual void			renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)=0;
+
+	/** render points with previously setuped VertexBuffer / Matrixes.
+	 * NB: nlassert() if setupModelMatrix() or setupViewMatrix() has been called between activeVertexBuffer() and render*().
+	 */
+	virtual void			renderPoints(CMaterial& Mat, uint32 numPoints)=0;
+
 
 	/// Swap the back and front buffers.
 	virtual bool			swapBuffers(void)=0;

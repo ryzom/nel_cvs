@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.12 2003/08/18 14:31:42 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.13 2003/11/06 14:51:06 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/particle_system_manager.h"
 #include "3d/particle_system_model.h"
 #include "3d/scene.h"
+#include "3d/skeleton_model.h"
 
 
 namespace NL3D {
@@ -132,22 +133,29 @@ void		CParticleSystemManager::removeSystemModel(TModelHandle &handle)
 
 
 ///=========================================================	
-CParticleSystemManager::TModelHandle	CParticleSystemManager::addPermanentlyAnimatedSystem(CParticleSystemModel *ps)
+CParticleSystemManager::TAlwaysAnimatedModelHandle	CParticleSystemManager::addPermanentlyAnimatedSystem(CParticleSystemModel *ps)
 {
 	#ifdef NL_DEBUG
-		nlassert(std::find(_PermanentlyAnimatedModelList.begin(), _PermanentlyAnimatedModelList.end(), ps) == _PermanentlyAnimatedModelList.end());
+		for(TAlwaysAnimatedModelList::iterator it = _PermanentlyAnimatedModelList.begin(); it != _PermanentlyAnimatedModelList.end(); ++it)
+		{  
+			nlassert(it->Model != ps);
+		}		
 	#endif
-	_PermanentlyAnimatedModelList.push_front(ps);
+	CAlwaysAnimatedPS aaps;
+	aaps.Model = ps;
+	aaps.HasAncestorSkeleton = false; // even if there's an ancestor skeleton yet, force the manager to recompute relative pos of the system when clipped	
+	//#error finir de remplir la structure
+	_PermanentlyAnimatedModelList.push_front(aaps);
 
 
-	TModelHandle handle;
+	TAlwaysAnimatedModelHandle handle;
 	handle.Valid = true;
 	handle.Iter = _PermanentlyAnimatedModelList.begin();
 	return handle;	
 }
 
 ///=========================================================	
-void			CParticleSystemManager::removePermanentlyAnimatedSystem(CParticleSystemManager::TModelHandle &handle)
+void			CParticleSystemManager::removePermanentlyAnimatedSystem(CParticleSystemManager::TAlwaysAnimatedModelHandle &handle)
 {
 	nlassert(handle.Valid);
 	_PermanentlyAnimatedModelList.erase(handle.Iter);	
@@ -157,11 +165,11 @@ void			CParticleSystemManager::removePermanentlyAnimatedSystem(CParticleSystemMa
 ///=========================================================	
 void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 {
-	for (TModelList::iterator it = _PermanentlyAnimatedModelList.begin(); it != _PermanentlyAnimatedModelList.end();)
+	for (TAlwaysAnimatedModelList::iterator it = _PermanentlyAnimatedModelList.begin(); it != _PermanentlyAnimatedModelList.end();)
 	{
-		CParticleSystemModel &psm = *(*it);
+		CParticleSystemModel &psm = *(it->Model);
 		CParticleSystem		 *ps  = psm.getPS();
-		TModelList::iterator nextIt = it;
+		TAlwaysAnimatedModelList::iterator nextIt = it;
 		nextIt++;
 		if (ps)
 		{
@@ -172,6 +180,43 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 				it = _PermanentlyAnimatedModelList.erase(it);
 				continue;
 			}
+			// special case for sticked fxs :
+			// When a fx is sticked as a son of a skeleton model, the skeleton matrix is not updated 
+			// when the skeleton is not visible (clipped)
+			// This is a concern when fx generate trails because when the skeleton becomes visible again,
+			// a trail will appear between the previous visible pos and the new visible pos
+			// to solve this :
+			// When the ancestor skeleton is visible, we backup the relative position to the ancestor skeleton.
+			//			- if it is not visible at start, we must evaluate the position of the stick point anyway
+			// When the father skeleton is clipped, we use the relative position 					
+			if (psm.getAncestorSkeletonModel())
+			{								
+				if (!psm.isClipVisible()) // the system may not be visible because of clod
+				{
+					if (!it->HasAncestorSkeleton)
+					{
+						// no ancestor skeleton -> the ancestor skeleton matrix is not up to date, so must force to compute 
+						// the relative position of the system toward its ancestor skeleton
+						psm.forceCompute();
+						it->OldAncestorMatOrRelPos = it->OldAncestorMatOrRelPos.inverted() * psm.getWorldMatrix();
+						it->HasAncestorSkeleton = true;
+					}
+					// update the fx matrix using the relative 
+					if (!it->IsRelMatrix) // relative matrix already computed ?
+					{
+						it->OldAncestorMatOrRelPos = it->OldAncestorMatOrRelPos.inverted() * psm.getWorldMatrix();
+						it->IsRelMatrix = true;
+					}					
+					psm.setWorldMatrix(psm.getAncestorSkeletonModel()->getWorldMatrix() * it->OldAncestorMatOrRelPos);					
+				}
+				else
+				{
+					// backup ancestor position matrix relative to the ancestor skeleton
+					it->HasAncestorSkeleton = true;
+					it->OldAncestorMatOrRelPos = psm.getAncestorSkeletonModel()->getWorldMatrix();
+					it->IsRelMatrix = false;					
+				}
+			}			
 			psm.doAnimate();
 			if (!psm.getEditionMode())
 			{			
@@ -181,6 +226,7 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 					psm.releaseRscAndInvalidate();
 				}				
 			}
+
 		}
 		it = nextIt;
 	}
@@ -237,3 +283,24 @@ void CParticleSystemManager::reactivateSoundForAllManagers()
 
 
 } // NL3D
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

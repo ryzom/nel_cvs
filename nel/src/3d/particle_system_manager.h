@@ -1,7 +1,7 @@
 /** \file particle_system_manager.h
  * <File description>
  *
- * $Id: particle_system_manager.h,v 1.5 2003/07/11 16:50:16 corvazier Exp $
+ * $Id: particle_system_manager.h,v 1.6 2003/11/06 14:51:06 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -87,7 +87,17 @@ public:
 private:
 	friend class CParticleSystemModel;
 	
-	typedef std::list<CParticleSystemModel *> TModelList;
+	// info about a ps that is always animated
+	struct CAlwaysAnimatedPS
+	{
+		CParticleSystemModel *Model;		
+		CMatrix				 OldAncestorMatOrRelPos;	// last matrix of ancestor skeleton or relative matrix of ps to its ancestor (see flag below)
+		bool				 IsRelMatrix;				// gives usage of the field OldAncestorMatOrRelPos		
+		bool				 HasAncestorSkeleton;		// has the system an ancestor skeleton ?
+	};
+
+	typedef std::list<CParticleSystemModel *>   TModelList;
+	typedef std::list<CAlwaysAnimatedPS>		TAlwaysAnimatedModelList;
 	typedef std::list<CParticleSystemManager *> TManagerList;
 
 
@@ -96,6 +106,13 @@ private:
 		TModelList::iterator Iter;
 		bool				 Valid;
 		TModelHandle() : Valid(false) {}
+	};
+
+	struct TAlwaysAnimatedModelHandle
+	{
+		TAlwaysAnimatedModelList::iterator Iter;
+		bool							   Valid;
+		TAlwaysAnimatedModelHandle() : Valid(false) {}
 	};
 
 	
@@ -108,16 +125,16 @@ private:
 	void			removeSystemModel(TModelHandle &handle);
 
 	/// Should be called to attach a system that must always be animated
-	TModelHandle addPermanentlyAnimatedSystem(CParticleSystemModel *);
+	TAlwaysAnimatedModelHandle addPermanentlyAnimatedSystem(CParticleSystemModel *);
 
 	/// Remove a permanenlty animated system
-	void			removePermanentlyAnimatedSystem(TModelHandle &handle);
+	void			removePermanentlyAnimatedSystem(TAlwaysAnimatedModelHandle &handle);
 	
 private:
 
 	TModelList::iterator	_CurrListIterator; /// the current element being processed
 	TModelList				_ModelList;
-	TModelList				_PermanentlyAnimatedModelList;
+	TAlwaysAnimatedModelList _PermanentlyAnimatedModelList;
 	uint					_NumModels;	
 	// access to list of currently instanciated managers
 	static TManagerList     &getManagerList();

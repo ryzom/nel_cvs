@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.68 2004/06/24 14:46:01 distrib Exp $
+ * $Id: debug.h,v 1.69 2004/08/09 08:55:20 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -551,6 +551,16 @@ template<class T, class U>	inline T	type_cast(U o)
 *	(ask Stephane LE DORZE for more explanations).
 */
 
+// Need a breakpoint in the assert / verify macro
+extern bool DebugNeedAssert;
+
+// Internal process, don't use it
+extern bool NoAssert;
+
+// Internal process, don't use it
+extern bool GlobalAssertCall;
+
+
 template<class T>
 class CMustConsume
 {
@@ -610,15 +620,6 @@ private:
 //
 // Following are internal functions, you should never use them
 //
-
-// Need a breakpoint in the assert / verify macro
-extern bool DebugNeedAssert;
-
-// Internal process, don't use it
-extern bool NoAssert;
-
-// Internal process, don't use it
-extern bool GlobalAssertCall;
 
 /// Never use this function (internal use only)
 void nlFatalError (const char *format, ...);

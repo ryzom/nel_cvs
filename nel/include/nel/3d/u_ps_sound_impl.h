@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.15 2004/05/24 09:32:32 vizerie Exp $
+ * $Id: u_ps_sound_impl.h,v 1.16 2004/06/01 15:11:46 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -189,10 +189,12 @@ public:
 		NLSOUND::USource *source = _AudioMixer->createSource(soundName, spawned, SpawnedSourceEndedCallback, sound );
 		if (source)
 		{			
+			/*
 			if (spawned)
 			{
 				source->setLooping(false);
 			}
+			*/
 			sound->init(source, this, spawned);
 			return sound;
 		}

@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.8 2002/06/24 17:11:13 vizerie Exp $
+ * $Id: texture_cube.cpp,v 1.9 2002/10/14 12:50:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,13 +104,44 @@ void CTextureCube::doGenerate()
 			_Textures[i]->generate();
 		else
 			_Textures[i] = pRefTex;
+
+		// The texture must have the same UpLoadFormat
+		if( _Textures[i]->getUploadFormat()!=pRefTex->getUploadFormat() )
+		{
+			nlwarning("Bad TextureCube: different UpLoad format: %s and %s", 
+				_Textures[i]->getShareName(), pRefTex->getShareName() );
+			// => replace the texture with the reference
+			_Textures[i] = pRefTex;
+		}
+		// if Auto format, must have the same PixelFormat
+		else if( _Textures[i]->getUploadFormat()==ITexture::Auto && _Textures[i]->getPixelFormat()!=pRefTex->getPixelFormat() )
+		{
+			nlwarning("Bad TextureCube: different Pixel format: %s and %s", 
+				_Textures[i]->getShareName(), pRefTex->getShareName() );
+			// => replace the texture with the reference
+			_Textures[i] = pRefTex;
+		}
+
+		// The textures must have the same size.
 		if( ( _Textures[i]->getWidth()  != pRefTex->getWidth()  ) || 
 			( _Textures[i]->getHeight() != pRefTex->getHeight() ) )
 		{
-			_Textures[i]->resample( pRefTex->getWidth(), pRefTex->getHeight() );
+			// If can't resample the bitmap
+			if( _Textures[i]->getPixelFormat()!=CBitmap::RGBA )
+			{
+				nlwarning("Bad TextureCube: different Size (not RGBA): %s and %s", 
+					_Textures[i]->getShareName(), pRefTex->getShareName() );
+				// => replace the texture with the reference
+				_Textures[i] = pRefTex;
+			}
+			else
+			{
+				// Ok, can resample the bitmap.
+				_Textures[i]->resample( pRefTex->getWidth(), pRefTex->getHeight() );
+			}
 		}
-		// Let's apply the flips depending on the texture
 
+		// Let's apply the flips depending on the texture
 		if (!_NoFlip)
 		{
 			if( ((TFace)i) == positive_x )

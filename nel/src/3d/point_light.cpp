@@ -1,7 +1,7 @@
 /** \file point_light.cpp
  * <File description>
  *
- * $Id: point_light.cpp,v 1.7 2004/07/20 16:23:49 berenguier Exp $
+ * $Id: point_light.cpp,v 1.8 2004/10/22 07:58:17 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,7 +194,7 @@ void			CPointLight::computeAttenuationFactors()
 	else
 	{
 		// precompute attenuation values, with help of CLight formula!!
-		static	CLight	dummyLight;
+		CLight	dummyLight;
 		dummyLight.setupAttenuation(_AttenuationBegin, _AttenuationEnd);
 		_ConstantAttenuation= dummyLight.getConstantAttenuation();
 		_LinearAttenuation= dummyLight.getLinearAttenuation();

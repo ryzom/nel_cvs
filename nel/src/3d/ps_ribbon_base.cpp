@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.cpp
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.cpp,v 1.12 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_ribbon_base.cpp,v 1.13 2004/07/16 07:29:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,6 +80,7 @@ CPSRibbonBase::CPSRibbonBase() : _NbSegs(8),
 								 _SegDuration(0.02f),
 								 _Parametric(false),
 								 _RibbonIndex(0),
+								 _MatrixMode(FatherMatrix),
 								 _LastUpdateDate(0),
 								 _RibbonMode(VariableSize),
 								 _InterpolationMode(Hermitte),
@@ -89,6 +90,14 @@ CPSRibbonBase::CPSRibbonBase() : _NbSegs(8),
 
 {
 	initDateVect();
+}
+
+//=======================================================
+void CPSRibbonBase::setMatrixMode(TMatrixMode matrixMode)
+{
+	if (matrixMode == _MatrixMode) return;
+	if (_Owner) resetFromOwner();
+	_MatrixMode = matrixMode;
 }
 
 //=======================================================
@@ -139,7 +148,7 @@ void	CPSRibbonBase::setSegDuration(TAnimationTime ellapsedTime)
 void	CPSRibbonBase::updateGlobals()
 {
 	nlassert(!_Parametric);
-	nlassert(_Owner);
+	nlassert(_Owner);	
 	const uint size = _Owner->getSize();
 	if (!size) return;
 	const TAnimationTime currDate = _Owner->getOwner()->getSystemDate() + CParticleSystem::RealEllapsedTime;
@@ -157,16 +166,37 @@ void	CPSRibbonBase::updateGlobals()
 	_SamplingDate[0] = currDate;
 
 	/// updating ribbons positions	
-	TPSAttribVector::iterator posIt = _Owner->getPos().begin();
-	NLMISC::CVector *currIt = &_Ribbons[_RibbonIndex];
-	uint k = size;
-	for (;;)
+	TPSMatrixMode mm = convertMatrixMode();
+	if (mm == _Owner->getMatrixMode())
 	{
-		*currIt = *posIt;
-		--k;
-		if (!k) break;
-		++posIt;
-		currIt += (_NbSegs + 1 + EndRibbonStorage);
+		// trail reside in the same coord system -> no conversion needed
+		TPSAttribVector::iterator posIt = _Owner->getPos().begin();
+		NLMISC::CVector *currIt = &_Ribbons[_RibbonIndex];
+		uint k = size;
+		for (;;)
+		{
+			*currIt = *posIt;
+			--k;
+			if (!k) break;
+			++posIt;
+			currIt += (_NbSegs + 1 + EndRibbonStorage);
+		}
+	}
+	else
+	{		
+		nlassert(_Owner->getOwner());
+		const CMatrix &mat = CPSLocated::getConversionMatrix(*_Owner->getOwner(), mm, _Owner->getMatrixMode());
+		TPSAttribVector::iterator posIt = _Owner->getPos().begin();
+		NLMISC::CVector *currIt = &_Ribbons[_RibbonIndex];
+		uint k = size;
+		for (;;)
+		{
+			*currIt = mat * *posIt;
+			--k;
+			if (!k) break;
+			++posIt;
+			currIt += (_NbSegs + 1 + EndRibbonStorage);
+		}
 	}
 }
 
@@ -576,7 +606,8 @@ void CPSRibbonBase::initDateVect()
 void CPSRibbonBase::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSParticle::serial(f);
-	sint ver = f.serialVersion(1);
+	// version 2 : added matrix mode
+	sint ver = f.serialVersion(2);
 	f.serialEnum(_RibbonMode);
 	f.serialEnum(_InterpolationMode);
 	f.serial(_NbSegs, _SegDuration);	
@@ -588,7 +619,6 @@ void CPSRibbonBase::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			_SegLength = _RibbonLength / _NbSegs;
 		}
 	}
-
 	if (f.isReading())
 	{
 		if (_Owner)
@@ -598,10 +628,13 @@ void CPSRibbonBase::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			resetFromOwner();
 		}
 	}
-
 	if (ver >= 1)
 	{
 		f.serial(_LODDegradation);
+	}
+	if (ver >= 2)
+	{
+		f.serialEnum(_MatrixMode);
 	}
 }
 

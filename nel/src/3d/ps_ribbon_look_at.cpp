@@ -1,7 +1,7 @@
 /** \file ps_ribbon_look_at.cpp
  * Ribbons that faces the user.
  *
- * $Id: ps_ribbon_look_at.cpp,v 1.18 2004/07/09 09:45:15 lecroart Exp $
+ * $Id: ps_ribbon_look_at.cpp,v 1.19 2004/07/16 07:29:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -327,40 +327,29 @@ void CPSRibbonLookAt::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	nlassert(_Owner);	
 	CPSRibbonBase::updateLOD();
 	if (_UsedNbSegs < 2) return;
-
 	const float date = _Owner->getOwner()->getSystemDate();
 	uint8						*currVert;
-
 	CVBnPB						&VBnPB = getVBnPB(); // get the appropriate vb (build it if needed)
 	CVertexBuffer				&VB = VBnPB.VB;
 	CIndexBuffer				&PB = VBnPB.PB;
-
 	const uint32				vertexSize  = VB.getVertexSize();
 	uint						colorOffset=0;
 	const uint32				vertexSizeX2  = vertexSize << 1;
 	const NLMISC::CVector       I = _Owner->computeI();
 	const NLMISC::CVector       K = _Owner->computeK();
-
-	
-	const NLMISC::CMatrix &mat =  getViewMat() * getLocalToWorldMatrix();
-										
+	const NLMISC::CMatrix &localToWorldMatrix = getLocalToWorldTrailMatrix();
+	const NLMISC::CMatrix &mat =  getViewMat() * localToWorldMatrix;	
 	IDriver *drv = this->getDriver();
-	setupDriverModelMatrix();
+	#ifdef NL_DEBUG
+		nlassert(drv);
+	#endif
+	drv->setupModelMatrix(localToWorldMatrix);	
 	drv->activeVertexBuffer(VB);
-	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose	
-
-	
-	
-	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribons to process at once
-	
-
+	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose			
+	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribbons to process at once	
 	static TRibbonVect				   currRibbon;
 	static std::vector<float>		   sizes;
-	static std::vector<NLMISC::CRGBA>  colors;
-
-
-	
-	
+	static std::vector<NLMISC::CRGBA>  colors;	
 
 	if (_UsedNbSegs == 0) return;
 

@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.17 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.18 2004/07/16 07:29:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,9 @@ namespace NL3D
 
 static NLMISC::CRGBA GradientB2W[] = {NLMISC::CRGBA(0, 0, 0, 0), NLMISC::CRGBA(255, 255, 255, 255) };
 
+CPSRibbon::TVBMap CPSRibbon::_VBMaps[16];
+
+
 /// private use : this create a gradient texture that goew from black to white
 static ITexture *CreateGradientTexture()
 {
@@ -57,7 +60,7 @@ static ITexture *CreateGradientTexture()
 // ribbon implementation //
 ///////////////////////////
 
-	// predifined shapes
+// predifined shapes
 const NLMISC::CVector CPSRibbon::Triangle[] = 
 { 
 	NLMISC::CVector(0, 1, 0),
@@ -95,21 +98,40 @@ const NLMISC::CVector CPSRibbon::Pentagram[] =
 	NLMISC::CVector(-1, -1, 0)
 };
 
+const NLMISC::CVector CPSRibbon::SimpleSegmentX[] =
+{
+	NLMISC::CVector(1, 0, 0),
+	NLMISC::CVector(-1, 0, 0),
+};
+const uint CPSRibbon::NbVerticesInSimpleSegmentX = sizeof(CPSRibbon::SimpleSegmentX) / sizeof(CVector);
+
+const NLMISC::CVector CPSRibbon::SimpleSegmentY[] =
+{
+	NLMISC::CVector(0, 1, 0),
+	NLMISC::CVector(0, -1, 0),
+};
+const uint CPSRibbon::NbVerticesInSimpleSegmentY = sizeof(CPSRibbon::SimpleSegmentY) / sizeof(CVector);
+
+const NLMISC::CVector CPSRibbon::SimpleSegmentZ[] =
+{
+	NLMISC::CVector(0, 0, 1),
+	NLMISC::CVector(0, 0, -1),
+};
+const uint CPSRibbon::NbVerticesInSimpleSegmentZ = sizeof(CPSRibbon::SimpleSegmentZ) / sizeof(CVector);
+
+const NLMISC::CVector CPSRibbon::SimpleBrace[] =
+{
+	NLMISC::CVector(1, 0, 0),
+	NLMISC::CVector(-1, 0, 0),
+	NLMISC::CVector(0, 1, 0),
+	NLMISC::CVector(0, -1, 0)
+};
+const uint CPSRibbon::NbVerticesInSimpleBrace = sizeof(CPSRibbon::SimpleBrace) / sizeof(CVector);
+
 const uint CPSRibbon::NbVerticesInTriangle = sizeof(CPSRibbon::Triangle) / sizeof(CVector);
 const uint CPSRibbon::NbVerticesInLosange = sizeof(Losange) / sizeof(CVector);
 const uint CPSRibbon::NbVerticesInHeightSide = sizeof(CPSRibbon::HeightSides) / sizeof(CVector);
 const uint CPSRibbon::NbVerticesInPentagram = sizeof(CPSRibbon::Pentagram) / sizeof(CVector);
-
-
-CPSRibbon::TVBMap			CPSRibbon::_VBMap;			     // index / vertex buffers with no color
-CPSRibbon::TVBMap			CPSRibbon::_FadedVBMap;			 // index / vertex buffers for constant color with fading
-CPSRibbon::TVBMap			CPSRibbon::_ColoredVBMap;		 // index / vertex buffer + colors
-CPSRibbon::TVBMap			CPSRibbon::_FadedColoredVBMap;   // index / vertex buffer + faded colors
-
-CPSRibbon::TVBMap			CPSRibbon::_TexVBMap;			    // index / vertex buffers with no color + texture
-CPSRibbon::TVBMap			CPSRibbon::_TexFadedVBMap;	        // index / vertex buffers for constant color with fading + texture
-CPSRibbon::TVBMap			CPSRibbon::_TexColoredVBMap;		// index / vertex buffer + colors + texture
-CPSRibbon::TVBMap			CPSRibbon::_TexFadedColoredVBMap;   // index / vertex buffer + faded colors + texture
 
 
 struct CDummy2DAngle : CPSRotated2DParticle
@@ -120,7 +142,9 @@ struct CDummy2DAngle : CPSRotated2DParticle
 ///==================================================================================================================
 void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(2);
+	// Version 3 : - added brace mode
+	//             - added orientation enum
+	sint ver = f.serialVersion(3);
 	if (ver == 1)
 	{
 		nlassert(f.isReading());
@@ -222,6 +246,15 @@ void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			f.serial(_UFactor, _VFactor) ;
 		}
 	}
+
+	if (ver >= 3)
+	{
+		bool braceMode = _BraceMode;
+		f.serial(braceMode);
+		_BraceMode = braceMode;
+		f.serialEnum(_Orientation);
+	}
+
 	if (f.isReading())
 	{
 		touch();
@@ -232,6 +265,8 @@ void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 //=======================================================	
 CPSRibbon::CPSRibbon() : _UFactor(1.f),
 						 _VFactor(1.f),
+						 _Orientation(FollowPath),
+						 _BraceMode(true),
 						 _ColorFading(true),
 						 _GlobalColor(false),
 						 _Touch(true),
@@ -255,7 +290,14 @@ CPSRibbon::~CPSRibbon()
 //==========================================================================	
 inline uint CPSRibbon::getNumVerticesInSlice() const
 {
-	return _Shape.size() + (_Tex == NULL ? 0 : 1);
+	if (_BraceMode)
+	{
+		return _Shape.size();
+	}
+	else
+	{	
+		return _Shape.size() + (_Tex == NULL ? 0 : 1);
+	}
 }
 
 
@@ -363,7 +405,7 @@ static inline uint8 *BuildRibbonFirstSlice(const NLMISC::CVector &pos,
 
 ///=========================================================================
 // This compute one slice of a ribbon, and return the next vertex to be filled
-static inline uint8 *ComputeRibbonSlice(const NLMISC::CVector &prev,
+static inline uint8 *ComputeRibbonSliceFollowPath(const NLMISC::CVector &prev,
 									    const NLMISC::CVector &next,									 
 									    const NLMISC::CVector *shape,
 									    uint  numVerts,
@@ -396,6 +438,67 @@ static inline uint8 *ComputeRibbonSlice(const NLMISC::CVector &prev,
 	return dest;
 }
 
+///=========================================================================
+// This compute one slice of a ribbon, and return the next vertex to be filled
+static inline uint8 *ComputeRibbonSliceIdentity(const NLMISC::CVector &prev,
+											   const NLMISC::CVector &next,									 
+											   const NLMISC::CVector *shape,
+											   uint  numVerts,
+											   uint8 *dest,
+											   uint  vertexSize,
+											   float size
+											  )
+{		
+	const NLMISC::CVector *shapeEnd = shape + numVerts;
+	do
+	{		
+		((NLMISC::CVector *) dest)->set(size * shape->x + next.x, 
+			                            size * shape->y + next.y,
+										size * shape->z + next.z);
+		++shape;
+		dest += vertexSize;
+	}
+	while (shape != shapeEnd);
+	return dest;
+}
+
+///=========================================================================
+static inline uint8 *ComputeRibbonSliceFollowPathXY(const NLMISC::CVector &prev,
+												  const NLMISC::CVector &next,									 
+												  const NLMISC::CVector *shape,
+												  uint  numVerts,
+												  uint8 *dest,
+												  uint  vertexSize,
+												  float size,
+												  NLMISC::CMatrix &basis
+												  )
+{	
+	float deltaX = next.x - prev.x;
+	float deltaY = next.y - prev.y;
+	const float epsilon = 10E-5f;
+	if (fabsf(deltaX) > epsilon
+		|| fabsf(deltaY) > epsilon)
+	{	
+		float norm = sqrtf(NLMISC::sqr(deltaX) + NLMISC::sqr(deltaY));
+		float invNorm = (norm != 0.f) ? 1.f / norm : 0.f;
+		NLMISC::CVector I, J;
+		J.set(deltaX * invNorm, deltaY * invNorm, 0.f);
+		I.set(-J.y, J.x, 0.f);
+		basis.setRot(I, CVector::K, J, true);
+	}
+	basis.setPos(next);	
+	const NLMISC::CVector *shapeEnd = shape + numVerts;
+	do
+	{		
+		*(NLMISC::CVector *) dest = basis * (size * (*shape));
+		++shape;
+		dest += vertexSize;
+	}
+	while (shape != shapeEnd);
+	return dest;
+}
+
+
 
 
 ///=========================================================================
@@ -408,25 +511,66 @@ static inline uint8 *ComputeUntexturedRibbonMesh(uint8 *destVb,
 											     uint  numSegs,
 												 uint  numVerticesInShape,
 												 float sizeIncrement,
-												 float size
+												 float size,
+												 CPSRibbon::TOrientation orientation
 												)
 {			
 	CMatrix basis;
 	basis.scale(0);
-	do
-	{
-		destVb = ComputeRibbonSlice(curve[1],
-								    curve[0],
-									shape,
-									numVerticesInShape,
-									destVb,
-									vertexSize,
-									size,
-									basis);
-		++ curve;
-		size -= sizeIncrement;
+	switch(orientation)
+	{	
+		case CPSRibbon::FollowPath:
+			do
+			{
+				destVb = ComputeRibbonSliceFollowPath(curve[1],
+											         curve[0],
+											         shape,
+											         numVerticesInShape,
+											         destVb,
+											         vertexSize,
+											         size,
+											         basis);
+				++ curve;
+				size -= sizeIncrement;
+			}
+			while (--numSegs);
+		break;
+		case CPSRibbon::FollowPathXY:
+			do
+			{
+				destVb = ComputeRibbonSliceFollowPathXY(curve[1],
+											         curve[0],
+													 shape,
+													 numVerticesInShape,
+													 destVb,
+													 vertexSize,
+													 size,
+													 basis);
+				++ curve;
+				size -= sizeIncrement;
+			}
+			while (--numSegs);
+		break;		
+		case CPSRibbon::Identity:
+			do
+			{
+				destVb = ComputeRibbonSliceIdentity(curve[1],
+											        curve[0],
+													shape,
+													numVerticesInShape,
+													destVb,
+													vertexSize,
+													size
+												   );
+				++ curve;
+				size -= sizeIncrement;
+			}
+			while (--numSegs);
+		break;
+		default:
+			nlassert(0);
+		break;
 	}
-	while (--numSegs);
 	return BuildRibbonFirstSlice(curve[0], numVerticesInShape, destVb, vertexSize);  		
 }
 
@@ -440,30 +584,80 @@ static inline uint8 *ComputeTexturedRibbonMesh(uint8 *destVb,
 											   uint  numSegs,
 											   uint  numVerticesInShape,
 											   float sizeIncrement,
-											   float size
+											   float size,
+											   CPSRibbon::TOrientation orientation
 											  )
 {	
 	CMatrix basis;
 	basis.scale(0);	
-	do
+	switch(orientation)
 	{
-		uint8 *nextDestVb = ComputeRibbonSlice(curve[1],
-											   curve[0],
-											   shape,
-											   numVerticesInShape,
-											   destVb,
-											   vertexSize,
-											   size,
-											   basis
-											  );
-		// duplicate last vertex ( equal first)
-		* (NLMISC::CVector *) nextDestVb = * (NLMISC::CVector *) destVb;
-		destVb = nextDestVb + vertexSize;
-		//
-		++ curve;
-		size -= sizeIncrement;
+		case CPSRibbon::FollowPath:
+			do
+			{
+				uint8 *nextDestVb = ComputeRibbonSliceFollowPath(curve[1],
+													   curve[0],
+													   shape,
+													   numVerticesInShape,
+													   destVb,
+													   vertexSize,
+													   size,
+													   basis
+													  );
+				// duplicate last vertex ( equal first)
+				* (NLMISC::CVector *) nextDestVb = * (NLMISC::CVector *) destVb;
+				destVb = nextDestVb + vertexSize;
+				//
+				++ curve;
+				size -= sizeIncrement;
+			}
+			while (--numSegs);
+		break;		
+		case CPSRibbon::FollowPathXY:
+			do
+			{
+				uint8 *nextDestVb = ComputeRibbonSliceFollowPathXY(curve[1],
+					curve[0],
+					shape,
+					numVerticesInShape,
+					destVb,
+					vertexSize,
+					size,
+					basis
+					);
+				// duplicate last vertex ( equal first)
+				* (NLMISC::CVector *) nextDestVb = * (NLMISC::CVector *) destVb;
+				destVb = nextDestVb + vertexSize;
+				//
+				++ curve;
+				size -= sizeIncrement;
+			}
+			while (--numSegs);
+		break;
+		case CPSRibbon::Identity:
+			do
+			{
+				uint8 *nextDestVb = ComputeRibbonSliceIdentity(curve[1],
+					curve[0],
+					shape,
+					numVerticesInShape,
+					destVb,
+					vertexSize,
+					size					
+					);
+				// duplicate last vertex ( equal first)
+				* (NLMISC::CVector *) nextDestVb = * (NLMISC::CVector *) destVb;
+				destVb = nextDestVb + vertexSize;
+				//
+				++ curve;
+				size -= sizeIncrement;
+			}
+			while (--numSegs);
+		break;
+		default:
+			nlassert(0);
+		break;
 	}
-	while (--numSegs);
 	return BuildRibbonFirstSlice(curve[0], numVerticesInShape + 1, destVb, vertexSize);  	
 }
 
@@ -483,7 +677,10 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	uint						colorOffset=0;	
 	
 	IDriver *drv = this->getDriver();
-	setupDriverModelMatrix();
+	#ifdef NL_DEBUG
+		nlassert(drv);
+	#endif
+	drv->setupModelMatrix(getLocalToWorldTrailMatrix());	
 	drv->activeVertexBuffer(VB);
 	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose		
 	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribons to process at once		
@@ -571,7 +768,7 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 					//////////////////////
 					// INCREMENTAL CASE //
 					//////////////////////				
-					if (_Tex != NULL) // textured case
+					if (_Tex != NULL && !_BraceMode) // textured case : must duplicate last vertex, unless in brace mod
 					{
 						do
 						{
@@ -586,7 +783,8 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 																 _UsedNbSegs,
 																 numVerticesInShape,
 																 ribbonSizeIncrement,
-																 *ptCurrSize
+																 *ptCurrSize,
+																 _Orientation
 																);
 							fpRibbonIndex += srcStep;
 						}
@@ -607,7 +805,8 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 																   _UsedNbSegs,
 																   numVerticesInShape,
 																   ribbonSizeIncrement,
-																   *ptCurrSize
+																   *ptCurrSize,
+																   _Orientation
 																  );
 							fpRibbonIndex += srcStep;
 						}
@@ -638,7 +837,8 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 																 _UsedNbSegs,
 																 numVerticesInShape,
 																 ribbonSizeIncrement,
-																 *ptCurrSize
+																 *ptCurrSize,
+																 _Orientation
 																);
 							fpRibbonIndex += srcStep;
 						}
@@ -663,7 +863,8 @@ void CPSRibbon::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 																   _UsedNbSegs,
 																   numVerticesInShape,
 																   ribbonSizeIncrement,
-																   *ptCurrSize
+																   *ptCurrSize,
+																   _Orientation
 																  );				
 							fpRibbonIndex += srcStep;
 						}
@@ -706,24 +907,13 @@ uint32 CPSRibbon::getNumWantedTris() const
 //==========================================================================	
 CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 {
-	static TVBMap * const vbMaps[] =
-	{
-		/// untextured cases
-		&_VBMap,		
-		&_FadedVBMap,	     
-		&_ColoredVBMap,  
-		&_FadedColoredVBMap,
-		/// textured cases
-		&_TexVBMap,		
-		&_TexFadedVBMap,	     
-		&_TexColoredVBMap,  
-		&_TexFadedColoredVBMap
-	};
-
+	// TODO : vb pointer caching ?
+	// TODO : better vb reuse ?
 	/// choose the right vb by building an index for lookup into 'vbMaps' defined above
-	TVBMap &map = *vbMaps[ (_Tex != NULL			 ? (1 << 2) : 0)  | // set bit 2 if textured
-						   (_ColorScheme != NULL  ? (1 << 1) : 0)  | // set bit 1 if per ribbon color
-						   (_ColorFading			 ? 1 : 0)		   // set bit 0 if color fading
+	TVBMap &map = _VBMaps[ (_BraceMode		         ? 8 : 0)  | // set bit 3 if brace mode
+						   (_Tex != NULL			 ? 4 : 0)  | // set bit 2 if textured
+						   (_ColorScheme != NULL     ? 2 : 0)  | // set bit 1 if per ribbon color
+						   (_ColorFading			 ? 1 : 0)		    // set bit 0 if color fading
 						 ];
 
 	const uint numVerticesInSlice = getNumVerticesInSlice(); /// 1 vertex added for textured ribbon (to avoid texture stretching)
@@ -751,10 +941,17 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 						   (_ColorScheme || _ColorFading ? CVertexBuffer::PrimaryColorFlag : 0) | /* need a color ? */
 						   ((_ColorScheme && _ColorFading) ||  _Tex != NULL ? CVertexBuffer::TexCoord0Flag : 0) | /* need texture coordinates ? */
 						   (_Tex != NULL && _ColorScheme && _ColorFading ? CVertexBuffer::TexCoord1Flag : 0) /* need 2nd texture coordinates ? */
-						  );
+						  );		
 		vb.setNumVertices((_UsedNbSegs + 1) * numRibbonInVB * numVerticesInSlice); // 1 seg = 1 line + terminal vertices
 		// set the primitive block size		
-		pb.setNumIndexes(3 * ((_UsedNbSegs * numRibbonInVB * _Shape.size()) << 1));
+		if (_BraceMode)
+		{		
+			pb.setNumIndexes(6 * _UsedNbSegs * numRibbonInVB * (_Shape.size() / 2));
+		}
+		else
+		{
+			pb.setNumIndexes(6 * _UsedNbSegs * numRibbonInVB * _Shape.size());			
+		}
 		//
 		CIndexBufferReadWrite ibaWrite;
 		pb.lock (ibaWrite);
@@ -772,57 +969,112 @@ CPSRibbon::CVBnPB &CPSRibbon::getVBnPB()
 				/// setup primitive block
 				if (k != _UsedNbSegs) /// there are alway one more slice than segments in the ribbon...
 				{	
-					uint vIndex = vbIndex;
-					for (l = 0; l < (numVerticesInShape - 1); ++l) /// deals with each ribbon vertices
-					{																			
-						ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, vIndex + numVerticesInSlice + 1);
+					if (_BraceMode)
+					{
+						uint vIndex = vbIndex;
+						for (l = 0; l < numVerticesInShape / 2; ++l) /// deals with segment
+						{																			
+							ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, vIndex + numVerticesInSlice + 1);
+							pbIndex+=3;
+							ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice + 1, vIndex + 1);
+							pbIndex+=3;
+							vIndex += 2;
+						}													
+					}
+					else
+					{					
+						uint vIndex = vbIndex;
+						for (l = 0; l < (numVerticesInShape - 1); ++l) /// deals with each ribbon vertices
+						{																			
+							ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, vIndex + numVerticesInSlice + 1);
+							pbIndex+=3;
+							ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice + 1, vIndex + 1);
+							pbIndex+=3;
+							++ vIndex;
+						}	
+						
+						/// the last 2 index don't loop if there's a texture
+						uint nextVertexIndex = (numVerticesInShape == numVerticesInSlice) ?	vIndex + 1 - numVerticesInShape // no texture -> we loop 
+											   : vIndex + 1; // a texture is used : use onemore vertex										
+						ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, nextVertexIndex + numVerticesInSlice);
 						pbIndex+=3;
-						ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice + 1, vIndex + 1);
+						ibaWrite.setTri(pbIndex, vIndex, nextVertexIndex + numVerticesInSlice, nextVertexIndex);
 						pbIndex+=3;
-						++ vIndex;
-					}	
-					
-					/// the last 2 index don't loop if there's a texture
-					uint nextVertexIndex = (numVerticesInShape == numVerticesInSlice) ?	vIndex + 1 - numVerticesInShape // no texture -> we loop 
-										   : vIndex + 1; // a texture is used : use onemore vertex										
-					ibaWrite.setTri(pbIndex, vIndex, vIndex + numVerticesInSlice, nextVertexIndex + numVerticesInSlice);
-					pbIndex+=3;
-					ibaWrite.setTri(pbIndex, vIndex, nextVertexIndex + numVerticesInSlice, nextVertexIndex);
-					pbIndex+=3;
+					}
 				}
 
 				/// setup vb
-				for (l = 0; l < numVerticesInSlice; ++l) /// deals with each ribbon vertices
+				if (_BraceMode)
 				{
-					nlassert(vbIndex < vb.getNumVertices());
-					/// setup texture (if any)
-					if (_Tex != NULL)
-					{						
-						vba.setTexCoord(vbIndex,
-									   _ColorScheme && _ColorFading ? 1 : 0,		// must we use the second texture coord ? (when 1st one used by the gradient texture : we can't encode it in the diffuse as it encodes each ribbon color)
-									   (float) k / _UsedNbSegs,				  // u
-									   1.f - (l / (float) numVerticesInShape) // v
-									  );						
-					}
-
-					/// setup gradient
-					if (_ColorFading)
+					for (l = 0; l < numVerticesInSlice / 2; ++l) /// deals with each ribbon vertices
 					{
-						// If not per ribbon color, we can encode it in the diffuse
-						if (_ColorScheme == NULL)
-						{
-							uint8 intensity = (uint8) (255 * (1.f - ((float) k / _UsedNbSegs)));
-							NLMISC::CRGBA col(intensity, intensity, intensity, intensity);
-							vba.setColor(vbIndex, col);						
+						nlassert(vbIndex < vb.getNumVertices());
+						/// setup texture (if any)
+						if (_Tex != NULL)
+						{									
+							vba.setTexCoord(vbIndex,
+											_ColorScheme && _ColorFading ? 1 : 0,		// must we use the second texture coord ? (when 1st one used by the gradient texture : we can't encode it in the diffuse as it encodes each ribbon color)
+											(float) k / _UsedNbSegs,				    // u
+											0.f											// v
+										   );
+							vba.setTexCoord(vbIndex + 1,
+								            _ColorScheme && _ColorFading ? 1 : 0,		
+								            (float) k / _UsedNbSegs,				    
+								            1.f											
+								           );
 						}
-						else // encode it in the first texture
+						/// setup gradient
+						if (_ColorFading)
 						{
-							vba.setTexCoord(vbIndex, 0, 0.5f - 0.5f * ((float) k / _UsedNbSegs), 0);
+							// If not per ribbon color, we can encode it in the diffuse
+							if (_ColorScheme == NULL)
+							{
+								uint8 intensity = (uint8) (255 * (1.f - ((float) k / _UsedNbSegs)));
+								NLMISC::CRGBA col(intensity, intensity, intensity, intensity);
+								vba.setColor(vbIndex, col);
+								vba.setColor(vbIndex + 1, col);
+							}
+							else // encode it in the first texture
+							{
+								vba.setTexCoord(vbIndex, 0, 0.5f - 0.5f * ((float) k / _UsedNbSegs), 0);
+								vba.setTexCoord(vbIndex + 1, 0, 0.5f - 0.5f * ((float) k / _UsedNbSegs), 0);
+							}
 						}
+						vbIndex += 2;
 					}
-					++ vbIndex;
 				}
-				
+				else
+				{				
+					for (l = 0; l < numVerticesInSlice; ++l) /// deals with each ribbon vertices
+					{
+						nlassert(vbIndex < vb.getNumVertices());
+						/// setup texture (if any)
+						if (_Tex != NULL)
+						{									
+							vba.setTexCoord(vbIndex,
+										   _ColorScheme && _ColorFading ? 1 : 0,		// must we use the second texture coord ? (when 1st one used by the gradient texture : we can't encode it in the diffuse as it encodes each ribbon color)
+										   (float) k / _UsedNbSegs,				  // u
+										   1.f - (l / (float) numVerticesInShape) // v
+										  );						
+						}
+						/// setup gradient
+						if (_ColorFading)
+						{
+							// If not per ribbon color, we can encode it in the diffuse
+							if (_ColorScheme == NULL)
+							{
+								uint8 intensity = (uint8) (255 * (1.f - ((float) k / _UsedNbSegs)));
+								NLMISC::CRGBA col(intensity, intensity, intensity, intensity);
+								vba.setColor(vbIndex, col);						
+							}
+							else // encode it in the first texture
+							{
+								vba.setTexCoord(vbIndex, 0, 0.5f - 0.5f * ((float) k / _UsedNbSegs), 0);
+							}
+						}
+						++ vbIndex;
+					}
+				}				
 			}
 		}
 		return VBnPB;
@@ -1155,11 +1407,20 @@ void CPSRibbon::setupTextureMatrix()
 
 //==========================================================================	
 ///==================================================================================================================
-void CPSRibbon::setShape(const CVector *shape, uint32 nbPointsInShape)
+void CPSRibbon::setShape(const CVector *shape, uint32 nbPointsInShape, bool braceMode)
 {
-	nlassert(nbPointsInShape >= 3);		
+	if (!braceMode)
+	{	
+		nlassert(nbPointsInShape >= 3);
+	}
+	else
+	{
+		nlassert(nbPointsInShape >= 2);
+		nlassert(!(nbPointsInShape & 1)); // must be even
+	}
 	_Shape.resize(nbPointsInShape);
 	std::copy(shape, shape + nbPointsInShape, _Shape.begin());	
+	_BraceMode = braceMode;
 }
 
 ///==================================================================================================================

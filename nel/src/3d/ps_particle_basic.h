@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.19 2004/06/02 16:30:11 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.20 2004/07/16 07:29:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -775,15 +775,7 @@ struct CPSTailParticle
 	// get the number of segments in the tail
 	virtual	uint32 getTailNbSeg(void) const = 0;
 
-	
-	/** tells in which basis is the tail
-	 *  It requires one transform per particle if it is not the same as the located that hold that particle
-	 *  The default is false. With that you can control if a rotation of the system will rotate the tail
-	 */
-	virtual void setSystemBasis(bool yes) = 0;
 		
-	/// return true if the tails are in the system basis
-	virtual bool isInSystemBasis(void) const = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

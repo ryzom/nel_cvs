@@ -1,7 +1,7 @@
 /** \file ps_ribbon_base.h
  * Base class for (some) ribbons.
  *
- * $Id: ps_ribbon_base.h,v 1.9 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_ribbon_base.h,v 1.10 2004/07/16 07:29:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,6 +45,15 @@ namespace NL3D
 class CPSRibbonBase : public CPSParticle, public CPSTailParticle
 {
 public:		
+	// Coord. system in which trail will reside
+	enum TMatrixMode
+	{
+		FXWorldMatrix = 0,
+		IdentityMatrix,
+		UserMatrix,
+		FatherMatrix, // father located matrix (introduced for backward compatibility)
+		MatrixModeCount
+	};
 	enum TRibbonMode		{ VariableSize = 0, FixedSize, RibbonModeLast };
 	enum TInterpolationMode { Linear = 0, Hermitte, InterpModeLast };
 
@@ -62,6 +71,9 @@ public:
 		TRibbonMode				getRibbonMode() const { return _RibbonMode; }
 		void					setInterpolationMode(TInterpolationMode mode);
 		TInterpolationMode		getInterpolationMode() const { return _InterpolationMode; }
+		// Set the the coordinate system in which the trail will be created
+		void					setMatrixMode(TMatrixMode matrixMode);
+		TMatrixMode				getMatrixMode() const { return _MatrixMode; }
 	///@}	
 
 	///\name Geometry
@@ -141,8 +153,7 @@ private:
 
 	TFloatVect					      _SamplingDate;
 	uint							  _RibbonIndex;  // indicate which is the first index for the ribbons head	
-	
-
+	TMatrixMode						  _MatrixMode;
 	TPosVect						  _Ribbons;		
 	TAnimationTime					  _LastUpdateDate;	
 	TRibbonMode						  _RibbonMode;
@@ -154,6 +165,9 @@ private:
 protected: // should be call by derivers for backward compatibility only
 	void					initDateVect();
 	void					resetFromOwner();	
+	inline const NLMISC::CMatrix  &getLocalToWorldTrailMatrix() const;
+	// Convert matrix mode to the TPSMatrixMode enum.
+	inline TPSMatrixMode convertMatrixMode() const;	
 private:
 	void					resetSingleRibbon(uint index, const NLMISC::CVector &pos);
 
@@ -187,6 +201,36 @@ private:
 	// called by the system when its date has been manually changed
 	virtual void			systemDateChanged();
 };
+
+/////////////
+// INLINES //
+/////////////
+
+//=======================================================
+inline const NLMISC::CMatrix &CPSRibbonBase::getLocalToWorldTrailMatrix() const
+{
+	#ifdef NL_DEBUG
+		nlassert(_Owner);
+		nlassert(_Owner->getOwner());
+	#endif
+	return CPSLocated::getConversionMatrix(*_Owner->getOwner(), PSIdentityMatrix, convertMatrixMode());
+}
+
+
+//=======================================================
+// Convert matrix mode to the TPSMatrixMode enum.
+inline TPSMatrixMode CPSRibbonBase::convertMatrixMode() const
+{
+	if (_MatrixMode == FatherMatrix)
+	{
+		#ifdef NL_DEBUG
+			nlassert(_Owner);
+		#endif
+		return _Owner->getMatrixMode();
+	}
+	return (TPSMatrixMode) _MatrixMode;
+}
+
 
 } // NL3D
 

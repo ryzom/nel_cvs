@@ -1,7 +1,7 @@
 /** \file ps_tail_dot.cpp
  * Tail dot particles.
  *
- * $Id: ps_tail_dot.cpp,v 1.14 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: ps_tail_dot.cpp,v 1.15 2004/07/16 07:29:59 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -254,7 +254,10 @@ void CPSTailDot::displayRibbons(uint32 nbRibbons, uint32 srcStep)
 	uint						colorOffset=0;	
 	
 	IDriver *drv = this->getDriver();
-	setupDriverModelMatrix();
+	#ifdef NL_DEBUG
+		nlassert(drv);
+	#endif
+	drv->setupModelMatrix(getLocalToWorldTrailMatrix());
 	drv->activeVertexBuffer(VB);
 	_Owner->incrementNbDrawnParticles(nbRibbons); // for benchmark purpose		
 	const uint numRibbonBatch = getNumRibbonsInVB(); // number of ribons to process at once		

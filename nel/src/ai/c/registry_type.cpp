@@ -1,6 +1,6 @@
 /** \file register_type.cpp
  *
- * $Id: registry_type.cpp,v 1.3 2001/01/08 14:42:11 valignat Exp $
+ * $Id: registry_type.cpp,v 1.4 2001/01/10 16:39:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,6 @@ namespace NLAIC
 	
 	void CTypeOfOperator::getDebugString(char *txt) const
 	{
-		
 		if((uint32)*this)
 		{		
 			txt[0] = 0;
@@ -93,11 +92,7 @@ namespace NLAIC
 		else
 		{
 			strcpy(txt,"non definition of operation in the object");
-		}
-		
-		
+		}			
 	}
-
-	
-
 }
+

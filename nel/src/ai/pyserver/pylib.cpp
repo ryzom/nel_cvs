@@ -1,6 +1,6 @@
 /** \file pylib.cpp
  *
- * $Id: pylib.cpp,v 1.4 2001/01/09 15:19:14 chafik Exp $
+ * $Id: pylib.cpp,v 1.5 2001/01/10 16:39:11 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NLAIPYSERVER
 		Module = PyDict_GetItemString(PyImport_GetModuleDict(),Name);
 
 
-		if(strcmp(Name,"__main__") == NULL) return PyImport_AddModule(Name);
+		if(strcmp(Name,"__main__") == 0) return PyImport_AddModule(Name);
 		else	
 		if(Module != NULL && PyDict_GetItemString(Module,"__dummy__")) return Module;	
 		else

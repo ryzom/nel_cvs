@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: python_export.h,v 1.4 2001/01/08 14:39:59 valignat Exp $
+ * $Id: python_export.h,v 1.5 2001/01/10 16:38:59 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,33 @@ namespace NLAIC
 {
 	enum PyMemDeleteType {unDeleteMemory,deleteMemory};
 
+	template <class T>
+	class CPyTemplateDef
+	{
+	public:
+		PyObject_HEAD	
+		T  *Instance;
+		//PyMemDeleteType memType;
+
+
+	public:		
+		CPyTemplateDef(T *a)
+		{
+			Instance = a;
+			Instance->incRef();
+		}
+		operator T *() const
+		{
+			return Instance;
+		}
+
+		~CPyTemplateDef()
+		{
+			Instance->release();
+		}
+	};
+
+	/*
 	struct PyRyzomeDict
 	{
 		const char *Name;
@@ -47,33 +74,7 @@ namespace NLAIC
 		{
 		}
 	};
-
-	template <class T>
-	class ryzPyObjetDef
-	{
-	public:
-		PyObject_HEAD	
-		T  *Instance;
-		//PyMemDeleteType memType;
-
-
-	public:		
-		ryzPyObjetDef(T *a)
-		{
-			Instance = a;
-			Instance->incRef();
-		}
-		operator T *() const
-		{
-			return Instance;
-		}
-
-		~ryzPyObjetDef()
-		{
-			Instance->release();
-		}
-	};
-
+	
 	class PyCharStr: public IPointerGestion
 	{
 	private:
@@ -94,12 +95,7 @@ namespace NLAIC
 		{
 			return _Size;
 		}
-
-		/*virtual void release()
-		{
-			if(decRef() == 0) delete this;
-		}*/
-
+		
 		virtual ~PyCharStr()
 		{
 			delete []_Str;
@@ -141,12 +137,7 @@ namespace NLAIC
 				break;			
 				
 			}
-		}
-
-		/*virtual void release()
-		{
-			if(decRef() == 0) delete this;
-		}*/
+		}		
 
 		virtual ~PyOstream()
 		{
@@ -168,12 +159,7 @@ namespace NLAIC
 		virtual void getDebug(char *txt) const
 		{
 			sprintf(txt,"class PyMemOstream inst,ace at <%4x>",this);
-		}
-
-		/*virtual void release()
-		{
-			if(decRef() == 0) delete this;
-		}*/
+		}		
 
 		virtual ~PyFileOstream()
 		{
@@ -198,12 +184,7 @@ namespace NLAIC
 		virtual void getDebug(char *txt) const
 		{
 			sprintf(txt,"class PyMemOstream inst,ace at <%4x>",this);
-		}
-
-		/*virtual void release()
-		{
-			if(decRef() == 0) delete this;
-		}*/
+		}		
 
 		virtual ~PyMemOstream()
 		{
@@ -230,12 +211,7 @@ namespace NLAIC
 		virtual void getDebug(char *txt) const
 		{
 			sprintf(txt,"class PyTypeOstream inst,ace at <%4x>",this);
-		}
-
-		/*virtual void release()
-		{
-			if(decRef() == 0) delete this;
-		}*/
+		}		
 
 		virtual ~PyTypeOstream()
 		{			
@@ -286,12 +262,7 @@ namespace NLAIC
 				
 			}
 		}
-
-		/*virtual void release()
-		{
-			if(decRef() == 0) delete this;
-		}*/
-
+		
 		virtual ~PyIstream()
 		{
 		}
@@ -313,11 +284,7 @@ namespace NLAIC
 		virtual void getDebug(char *txt) const
 		{
 			sprintf(txt,"class PyMemOstream inst,ace at <%4x>",this);
-		}
-		/*virtual void release()
-		{
-			if(decRef() == 0) delete this;
-		}*/
+		}		
 
 		virtual ~PyFileIstream()
 		{
@@ -343,10 +310,7 @@ namespace NLAIC
 		{
 			sprintf(txt,"class PyMemIstream inst,ace at <%4x>",this);
 		}
-		/*virtual void release()
-		{
-			if(decRef() == 0) delete this;
-		}*/
+		
 		virtual ~PyMemIstream()
 		{		
 			delete &_Stream;
@@ -372,10 +336,7 @@ namespace NLAIC
 		{
 			sprintf(txt,"class PyTypeIstream inst,ace at <%4x>",this);
 		}
-		/*virtual void release()
-		{
-			if(decRef() == 0) delete this;
-		}*/
+		
 		virtual ~PyTypeIstream()
 		{			
 		}
@@ -405,15 +366,15 @@ namespace NLAIC
 	void addToDict(const PyRyzomeDict &dict);
 	void removeFromDict(const char *name);
 	void initPyExport();
-	void releasePyExport();
+	void releasePyExport();*/
 
 	template<class T>
-	ryzPyObjetDef<T> *CreateCyInstance(T *O,PyTypeObject *defType)
+	CPyTemplateDef<T> *CreatePyObjectInstance(T *o,PyTypeObject *defType)
 	{
-		ryzPyObjetDef<T> *ThisClass;
-		ThisClass = new ryzPyObjetDef<T>(O);
-		if(ThisClass == NULL) return NULL;
-		ThisClass->instance = O;		
+		CPyTemplateDef<T> *ThisClass;
+		ThisClass = new CPyTemplateDef<T>(o);
+		if(ThisClass == NULL) return NULL;		
+		ThisClass->Instance = o;
 		ThisClass->ob_type = defType;
 		_Py_NewReference((PyObject *)ThisClass);
 		return ThisClass;

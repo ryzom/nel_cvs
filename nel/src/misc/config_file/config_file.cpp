@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.34 2002/06/12 10:04:48 corvazier Exp $
+ * $Id: config_file.cpp,v 1.35 2002/06/12 11:46:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -351,7 +351,6 @@ void CConfigFile::save () const
 				{
 					fprintf(fp, "%d%s", _Vars[i].IntValues[it], it<(int)_Vars[i].IntValues.size()-1?", ":" ");
 				}
-				fprintf(fp, "};\n");
 				break;
 			}
 			case CConfigFile::CVar::T_STRING:
@@ -360,7 +359,6 @@ void CConfigFile::save () const
 				{
 					fprintf(fp, "\"%s\"%s", _Vars[i].StrValues[st].c_str(), st<(int)_Vars[i].StrValues.size()-1?", ":" ");
 				}
-				fprintf(fp, "};\n");
 				break;
 			}
 			case CConfigFile::CVar::T_REAL:
@@ -369,10 +367,10 @@ void CConfigFile::save () const
 				{
 					fprintf(fp, "%.10f%s", _Vars[i].RealValues[rt], rt<(int)_Vars[i].RealValues.size()-1?", ":" ");
 				}
-				fprintf(fp, "};\n");
 				break;
 			}
 			}
+			fprintf(fp, "};\n");
 		}
 		else
 		{

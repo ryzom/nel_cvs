@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.36 2002/11/04 15:40:45 boucher Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.37 2002/11/18 18:01:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -801,6 +801,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 						_ParticleDlg->StartStopDlg->reset();
 						CParticleSystemModel *psm = newModel;					
 						psm->setEditionMode(true); // this also force the system instanciation
+						for(uint k = 0; k < NL3D::MaxPSUserParam; ++k)
+						{
+							psm->bypassGlobalUserParamValue(k);
+						}
 						CParticleSystem      *ps  = psm->getPS();
 
 						psm->enableAutoGetEllapsedTime(false);

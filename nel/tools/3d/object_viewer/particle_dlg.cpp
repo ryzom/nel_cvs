@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.15 2002/11/04 15:40:45 boucher Exp $
+ * $Id: particle_dlg.cpp,v 1.16 2002/11/18 17:59:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -118,7 +118,12 @@ void CParticleDlg::resetSystem(void)
 	_CurrSystemModel->setEllapsedTime(0.f) ;
 	_CurrSystemModel->setEditionMode(true) ; // enable edition mode
 											 // this will prevent it from being removed when it is too far
-										     // this also allow us to safely keep a pointer on it													
+										     // this also allow us to safely keep a pointer on it
+	for(uint k = 0; k < NL3D::MaxPSUserParam; ++k)
+	{
+		_CurrSystemModel->bypassGlobalUserParamValue(k);
+	}
+
 	_CurrPS = _CurrSystemModel->getPS() ;
 
 	_CurrPS->setFontManager(FontManager) ;

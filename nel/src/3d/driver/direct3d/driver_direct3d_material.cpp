@@ -1,7 +1,7 @@
 /** \file driver_direct3d_material.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_material.cpp,v 1.4 2004/04/26 13:48:23 corvazier Exp $
+ * $Id: driver_direct3d_material.cpp,v 1.5 2004/05/07 13:28:06 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -777,13 +777,13 @@ bool CDriverD3D::setupMaterial (CMaterial& mat)
 
 				// Setup the texture
 				ITexture *texture = mat.getTexture(0);
-				if (!setupTexture (*texture))
+				if (!texture || !setupTexture (*texture))
 					return false;
 				setTexture (0, texture);
 
 				// Setup the texture
 				texture = mat.getTexture(1);
-				if (!setupTexture (*texture))
+				if (!texture || !setupTexture (*texture))
 					return false;
 				setTexture (1, texture);
 

@@ -45,7 +45,7 @@ fi
 
 for i in $ig_land_source_directories ; do
 	# Copy the script
-	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/ig/ig_land&g" > $max_directory/scripts/ig_export.ms
+	cat maxscript/ig_export.ms | sed -e "s&ig_source_directory&$database_directory/$i&g" | sed -e "s&output_directory&$build_gamedata_directory/processes/ig/ig_land_max&g" > $max_directory/scripts/ig_export.ms
 
 	# Start max
 	$exec_timeout $timeout $max_directory/3dsmax.exe -U MAXScript ig_export.ms -q -mi -vn
@@ -54,7 +54,7 @@ for i in $ig_land_source_directories ; do
 	cat $max_directory/log.log >> log.log
 done
 
-cd ig_land
+cd ig_land_max
 for i in *.ig ; do
 	if ( test -f $i )
 	then

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.58 2004/03/24 16:36:58 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.59 2004/04/09 14:23:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -558,7 +558,7 @@ void CSceneUser::updateWaitingInstances()
 		{
 			if( it->second != NULL )
 			{
-				*(it->first) = dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, it->second, true)) );
+				*(it->first) = dynamic_cast<UInstance*>( _Transforms.insert(it->second->buildMatchingUserInterfaceObject(true)));
 				std::map<UInstance**,CTransformShape*>::iterator delIt = it;
 				++it;
 				_WaitingInstances.erase(delIt);
@@ -677,17 +677,10 @@ UInstance		*CSceneUser::createInstance(const std::string &shapeName)
 	if(model==NULL)
 		return NULL;
 
-	// The component is auto added/deleted to _Scene in ctor/dtor.
-	if (dynamic_cast<CParticleSystemModel *>(model))
-	{
-		/// particle system
-		return dynamic_cast<UInstance*>( _Transforms.insert(new CParticleSystemInstanceUser(&_Scene, model)) );
-	}
-	else
-	{
-		/// mesh
-		return dynamic_cast<UInstance*>( _Transforms.insert(new CInstanceUser(&_Scene, model, true)) );
-	}
+	// The component is auto added/deleted to _Scene in ctor/dtor.			
+	CInstanceUser *iu = model->buildMatchingUserInterfaceObject(true);
+	_Transforms.insert(iu);	
+	return iu;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.30 2001/12/06 16:58:14 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.31 2001/12/12 10:32:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -880,7 +880,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 				{
 					fileName = "*.ps";
 				}
-				CFileDialog fd(FALSE, ".ps", fileName.c_str(), 0, NULL, this);
+				CFileDialog fd(FALSE, ".ps", fileName.c_str(), OFN_OVERWRITEPROMPT, NULL, this);
 				if (fd.DoModal() == IDOK)
 				{
 					// Add to the path

@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.3 2001/09/26 17:50:23 vizerie Exp $
+ * $Id: mesh_dlg.cpp,v 1.4 2001/12/06 16:57:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,9 @@
 #include "object_viewer.h"
 #include "mesh_dlg.h"
 #include "3d/ps_particle.h"
+#include "3d/ps_mesh.h"
+
+
 
 #include "nel/misc/path.h"
 
@@ -43,20 +46,20 @@ CMeshDlg::CMeshDlg(NL3D::CPSShapeParticle *sp)
 	: _ShapeParticle(sp)
 {
 	//{{AFX_DATA_INIT(CMeshDlg)
-	m_ShapeName = sp->getShape().c_str() ;
+	m_ShapeName = sp->getShape().c_str();
 	//}}AFX_DATA_INIT
 }
 
 void CMeshDlg::init(CWnd *pParent, sint x, sint y)
 {
-	Create(IDD_CHOOSE_MESH, pParent) ;
-	RECT r ;
-	GetClientRect(&r) ;
-	r.top += y; r.bottom += y ;
-	r.right += x ; r.left += x ;
-	MoveWindow(&r) ;	
+	Create(IDD_CHOOSE_MESH, pParent);
+	RECT r;
+	GetClientRect(&r);
+	r.top += y; r.bottom += y;
+	r.right += x; r.left += x;
+	MoveWindow(&r);	
 
-	ShowWindow(SW_SHOW) ;
+	ShowWindow(SW_SHOW);
 }
 
 void CMeshDlg::DoDataExchange(CDataExchange* pDX)
@@ -80,7 +83,7 @@ END_MESSAGE_MAP()
 void CMeshDlg::OnBrowseShape() 
 {
 	
-	CFileDialog fd(TRUE, ".shape", "*.shape", 0, NULL, this) ;
+	CFileDialog fd(TRUE, ".shape", "*.shape", 0, NULL, this);
 	if (fd.DoModal() == IDOK)
 	{
 		// Add to the path
@@ -94,14 +97,22 @@ void CMeshDlg::OnBrowseShape()
 		NLMISC::CPath::addSearchPath (path);
 
 		try
-		{
-			_ShapeParticle->setShape(std::string(fd.GetFileName())) ;		
-			m_ShapeName = fd.GetFileName() ;
+		{		
+			_ShapeParticle->setShape(std::string(fd.GetFileName()));		
+			m_ShapeName = fd.GetFileName();;
+			/*if (_ShapeParticle->setShape(std::string(fd.GetFileName())))
+			{
+				m_ShapeName = fd.GetFileName();
+			}
+			else
+			{
+				MessageBox("Unable to set shape (invalid or not found)", "Error", MB_OK | MB_ICONEXCLAMATION);
+			}*/
 		}
 		catch (NLMISC::Exception &e)
 		{
-			MessageBox(e.what(), "shape loading error") ;
+			MessageBox(e.what(), "shape loading error");
 		}		
 	}
-	UpdateData(false) ;
+	UpdateData(false);
 }

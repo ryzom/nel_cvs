@@ -1,7 +1,7 @@
 /** \file particle_system_shape.h
  * <File description>
  *
- * $Id: particle_system_shape.h,v 1.9 2001/08/07 14:11:02 vizerie Exp $
+ * $Id: particle_system_shape.h,v 1.10 2001/08/09 08:02:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,12 +42,12 @@ namespace NL3D {
 
 // ***************************************************************************
 // ClassIds.
-const NLMISC::CClassId		ParticleSystemModelId=NLMISC::CClassId(0x3a9b1dc3, 0x49627ff0) ;
+const NLMISC::CClassId		ParticleSystemModelId=NLMISC::CClassId(0x3a9b1dc3, 0x49627ff0);
 
 
-class CParticleSystem ;
-class CParticlesystemModel ;
-class CParticleSystemDetailObs ;
+class CParticleSystem;
+class CParticlesystemModel;
+class CParticleSystemDetailObs;
 
 
 
@@ -61,13 +61,13 @@ class CParticleSystemShape : public IShape
 public:
 
 	/// Default ctor
-	CParticleSystemShape() ;
+	CParticleSystemShape();
 
 
 	/** build the shape from a 'raw' particle system. A prototype will be created by copying the system in a memory stream
 	 *  NOTE : For now, prefer the instanciation from a file, which do not need reallocation
 	 */
-	void buildFromPS(const NL3D::CParticleSystem &ps) ;
+	void buildFromPS(const NL3D::CParticleSystem &ps);
 
 	/// Dtor.
 	virtual ~CParticleSystemShape() {}
@@ -76,7 +76,7 @@ public:
 	 * \param scene the scene used to createModel().
 	 * \return the specialized instance for this shape.
 	 */
-	virtual	CTransformShape		*createInstance(NL3D::CScene &scene) ;
+	virtual	CTransformShape		*createInstance(NL3D::CScene &scene);
 
 	/// \name From IShape
 	// @{
@@ -98,19 +98,27 @@ public:
 	/// get a the user param default tracks
 	CTrackDefaultFloat *getUserParamDefaultTrack(uint numTrack)
 	{
-		nlassert(numTrack < 4) ;
-		return &_UserParamDefaultTrack[numTrack] ;
+		nlassert(numTrack < 4);
+		return &_UserParamDefaultTrack[numTrack];
+	}
+
+
+	/// get a the trigger default track
+	CTrackDefaultBool *getDefaultTriggerTrack(void)
+	{
+	
+		return &_DefaultTriggerTrack;
 	}
 
 
 	/// always return a unit bounding box. Only a model of particle system can compute his bounding box
-	virtual	void	getAABBox(NLMISC::CAABBox &bbox) const ;
+	virtual	void	getAABBox(NLMISC::CAABBox &bbox) const;
 
 
 	/** this method is meaningless here : the load balancing observer for particle system
 	  * compute the number of triangles from the Model, not the shape
 	  */
-	virtual float				getNumTriangles (float distance) { return 0 ; }
+	virtual float				getNumTriangles (float distance) { return 0; }
 
 
 	/// \name access default tracks.
@@ -120,31 +128,42 @@ public:
 		CTrackDefaultQuat*		getDefaultRotQuat ()	{return &_DefaultRotQuat;}
 	// @}
 
-
 protected:
 
-	friend class CParticleSystemModel ; 
-	friend class CParticleSystemDetailObs ;
+	friend class CParticleSystemModel; 
+	friend class CParticleSystemDetailObs;
+	friend class CParticleSystemClipObs;
 
 	/** Instanciate a particle system from this shape.
 	  * A particle system may need to call this when a system is back in the frustum
 	  */
-	CParticleSystem *instanciatePS(CScene &scene) ;
+	CParticleSystem *instanciatePS(CScene &scene);
 		
-	// A memory stream containing a particle system. Each system is instanciated from this prototype
-	NLMISC::CMemStream  _ParticleSystemProto ; 
+	/** A memory stream containing a particle system. Each system is instanciated from this prototype
+	  * Nevrtheless, we store some more system infos which are needed for its lifecycle
+	  */
+	NLMISC::CMemStream  _ParticleSystemProto;
+	float				_MaxViewDist;							// the max view distance of the system, mirror the PS value
+	bool                _DestroyWhenOutOfFrustum;				// mirror the ps value	
+	bool				_DestroyModelWhenOutOfRange;			// mirror the ps value
+
+	
 
 	/// the default track for animation of user parameters
-	CTrackDefaultFloat _UserParamDefaultTrack[4] ;
+	CTrackDefaultFloat _UserParamDefaultTrack[4];
 
 
 	/// Transform default tracks.
 	CTrackDefaultVector			_DefaultPos;
 	CTrackDefaultVector			_DefaultScale;	
 	CTrackDefaultQuat			_DefaultRotQuat;
+
+	/// Trigger default track
+	CTrackDefaultBool			_DefaultTriggerTrack;
+
 	
 
-} ;
+};
 
 } // NL3D
 

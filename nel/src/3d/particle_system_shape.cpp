@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.19 2001/08/06 10:17:11 vizerie Exp $
+ * $Id: particle_system_shape.cpp,v 1.20 2001/08/09 08:02:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,8 +32,8 @@
 
 namespace NL3D {
 
-using NLMISC::IStream ;
-using NLMISC::CIFile ;
+using NLMISC::IStream;
+using NLMISC::CIFile;
 
 
 
@@ -41,44 +41,41 @@ using NLMISC::CIFile ;
 // private usage : macro to check the memory integrity
 #if defined(NL_DEBUG) && defined(NL_OS_WINDOWS)
 	#include <crtdbg.h>
-//	#define PARTICLES_CHECK_MEM nlassert(_CrtCheckMemory()) ;
+//	#define PARTICLES_CHECK_MEM nlassert(_CrtCheckMemory());
 	#define PARTICLES_CHECK_MEM 
 #else
 	#define PARTICLES_CHECK_MEM
 #endif
 
 
-/////////////////////////////////////////
-// CParticleSystemShape implementation //
-/////////////////////////////////////////
 
 
-
-
-CParticleSystemShape::CParticleSystemShape()
+CParticleSystemShape::CParticleSystemShape() : _MaxViewDist(100.f), _DestroyWhenOutOfFrustum(false)												
+												, _DestroyModelWhenOutOfRange(false)
 {
-	for (uint k = 0 ; k < 4 ; ++k)
+	for (uint k = 0; k < 4; ++k)
 	{
-		_UserParamDefaultTrack[k].setValue(0) ;
+		_UserParamDefaultTrack[k].setValue(0);
 	}
+	_DefaultPos.setValue(CVector::Null);
+	_DefaultScale.setValue( CVector(1, 1, 1) );	
+	_DefaultRotQuat.setValue(CQuat());
+	_DefaultTriggerTrack.setValue(true); // by default, system start as soon as they are instanciated
 
-	_DefaultPos.setValue(CVector::Null) ;
-	_DefaultScale.setValue( CVector(1, 1, 1) ) ;	
-	_DefaultRotQuat.setValue(CQuat()) ;
 }
 
 
 void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(3) ;
-	NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector() ;
-	f.serialCont(buf) ;
+	sint ver = f.serialVersion(4);
+	NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector();
+	f.serialCont(buf);
 	if (ver > 1)
 	{
 		// serial default tracks
-		for (uint k = 0 ; k < 4 ; ++k)
+		for (uint k = 0; k < 4; ++k)
 		{
-			f.serial(_UserParamDefaultTrack[k]) ;
+			f.serial(_UserParamDefaultTrack[k]);
 		}
 	}
 	if ( ver > 2)
@@ -86,6 +83,12 @@ void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serial (_DefaultPos);
 		f.serial (_DefaultScale);		
 		f.serial (_DefaultRotQuat);
+	}
+	if ( ver > 3)
+	{
+		f.serial(_MaxViewDist);
+		f.serial(_DestroyWhenOutOfFrustum);		
+		f.serial(_DestroyModelWhenOutOfRange);
 	}
 }
 
@@ -96,21 +99,26 @@ void CParticleSystemShape::buildFromPS(const CParticleSystem &ps)
 	// must be sure that we are writting in the stream
 	if (_ParticleSystemProto.isReading())
 	{
-		_ParticleSystemProto.invert() ;
+		_ParticleSystemProto.invert();
 	}
 	
 	// to have const correctness in the prototype, we must do this...
-	CParticleSystem *myPs = const_cast<CParticleSystem *>(&ps) ;
+	CParticleSystem *myPs = const_cast<CParticleSystem *>(&ps);
+	nlassert(myPs);
+	// build the prototype
+	_ParticleSystemProto.serialPtr(myPs);
 
-
-	_ParticleSystemProto.serialPtr(myPs) ;
+	// mirror some system values
+	_MaxViewDist = myPs->getMaxViewDist();
+	_DestroyWhenOutOfFrustum = myPs->doesDestroyWhenOutOfFrustum();	
+	_DestroyModelWhenOutOfRange    = myPs->getDestroyModelWhenOutOfRange();
 }
 
 
 void	CParticleSystemShape::getAABBox(NLMISC::CAABBox &bbox) const
 {
-	bbox.setCenter(NLMISC::CVector::Null) ;
-	bbox.setHalfSize(NLMISC::CVector(1, 1, 1)) ;
+	bbox.setCenter(NLMISC::CVector::Null);
+	bbox.setHalfSize(NLMISC::CVector(1, 1, 1));
 }
 
 
@@ -118,40 +126,42 @@ void	CParticleSystemShape::getAABBox(NLMISC::CAABBox &bbox) const
 CParticleSystem *CParticleSystemShape::instanciatePS(CScene &scene)
 {
 	// copy the datas
-	CParticleSystem *myInstance = NULL ;
+	CParticleSystem *myInstance = NULL;
 
 	// serialize from the memory stream	
 	if (!_ParticleSystemProto.isReading()) // we must be sure that we are reading the stream
 	{
-		_ParticleSystemProto.invert() ;
+		_ParticleSystemProto.invert();
 	}
 
-	_ParticleSystemProto.resetPtrTable() ;
-	_ParticleSystemProto.seek(0, IStream::begin) ;
-	_ParticleSystemProto.serialPtr(myInstance) ; // instanciate the system
+	_ParticleSystemProto.resetPtrTable();
+	_ParticleSystemProto.seek(0, IStream::begin);
+	_ParticleSystemProto.serialPtr(myInstance); // instanciate the system
 	
 
-	myInstance->setScene(&scene) ;		
+	myInstance->setScene(&scene);		
 
 
 
-	return myInstance ;
+	return myInstance;
 }
 
 CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 {
-	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(scene.createModel(NL3D::ParticleSystemModelId) ) ;
-	psm->Shape = this ;
-	psm->_Scene = &scene ; // the model needs the scene to recreate the particle system he holds
-	psm->setParticleSystem(instanciatePS(scene)) ;	
-	psm->_MaxViewDist = psm->getPS()->getMaxViewDist() ;
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(scene.createModel(NL3D::ParticleSystemModelId) );
+	psm->Shape = this;
+	psm->_Scene = &scene; // the model needs the scene to recreate the particle system he holds
+		
+
+	
+	// by default, we don't instanciate the system. It will be instanciated only if visible and triggered
 
 	// Setup position with the default value
 	psm->ITransformable::setPos( ((CAnimatedValueVector&)_DefaultPos.getValue()).Value  );
 	psm->ITransformable::setRotQuat( ((CAnimatedValueQuat&)_DefaultRotQuat.getValue()).Value  );	
 	psm->ITransformable::setScale( ((CAnimatedValueVector&)_DefaultScale.getValue()).Value  );
 
-	return psm ;
+	return psm;
 }
 
 
@@ -159,44 +169,47 @@ CTransformShape		*CParticleSystemShape::createInstance(CScene &scene)
 void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans, bool passOpaque)
 {
 
-	nlassert(dynamic_cast<CParticleSystemModel *>(trans)) ;
-	nlassert(drv) ;
+	nlassert(dynamic_cast<CParticleSystemModel *>(trans));
+	nlassert(drv);
 
-	CParticleSystemModel *psm = (CParticleSystemModel *) trans ;
+	CParticleSystemModel *psm = (CParticleSystemModel *) trans;
 
 
-	if (psm->_Invalidated) return ;
+	if (psm->_Invalidated) return;
 
-	CParticleSystem *ps = psm->getPS() ;
-	nlassert(ps) ;
+	CParticleSystem *ps = psm->getPS();
+
+
+	/// has the systme been triggered yet ?
+	if (!ps) return;
 	
-	CAnimationTime delay = psm->getEllapsedTime() ;
-	nlassert(ps->getScene()) ;	
+	CAnimationTime delay = psm->getEllapsedTime();
+	nlassert(ps->getScene());	
 
 
 	// render particles
 	
 
-	ps->setDriver(drv) ;
+	ps->setDriver(drv);
 
 	// draw particle
-	PARTICLES_CHECK_MEM ;
+	PARTICLES_CHECK_MEM;
 	if (passOpaque)
 	{
-		ps->step(PSSolidRender, delay) ;
+		ps->step(PSSolidRender, delay);
 	}
 	else
 	{
-		ps->step(PSBlendRender, delay) ;
+		ps->step(PSBlendRender, delay);
 	}
 
-	PARTICLES_CHECK_MEM ;
+	PARTICLES_CHECK_MEM;
 
 
 	if (psm->isToolDisplayEnabled())
 	{
-		ps->step(PSToolRender, delay) ;
-		PARTICLES_CHECK_MEM ;
+		ps->step(PSToolRender, delay);
+		PARTICLES_CHECK_MEM;
 	}
 }
 

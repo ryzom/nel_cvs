@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.13 2000/12/18 10:59:58 lecroart Exp $
+ * $Id: dru.cpp,v 1.14 2000/12/18 11:13:54 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,7 +86,7 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 			throw EDruOpenglDriverUnknownVersion();
 	}
 
-#elif defined (NL_OS_LINUX)
+#elif defined (NL_OS_UNIX)
 
 	int		dlclose_status;
     int		dummy_status;

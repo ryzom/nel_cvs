@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.44 2001/02/20 11:05:05 berenguier Exp $
+ * $Id: patch.cpp,v 1.45 2001/02/22 13:39:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,7 +157,10 @@ CAABBox			CPatch::buildBBox() const
 		ret.extend(p.Tangents[i]);
 	for(i=0;i<4;i++)
 		ret.extend(p.Interiors[i]);
-	// TODO_NOISE: modulate with the displacement map.
+	// Modulate with the maximum displacement map (usefull for patch clipping).
+	ret.setHalfSize(ret.getHalfSize()+CVector(NL3D_NOISE_MAX, NL3D_NOISE_MAX, NL3D_NOISE_MAX));
+	// NB: this is not very optimal, since the BBox may be very too big. eg: patch 16mx16m => bbox 18mx18m.
+	// But remind that tessblocks do not use this BBox, and are computed with the real geometry.
 
 	return ret;
 }

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.31 2001/02/20 11:03:39 berenguier Exp $
+ * $Id: patch.h,v 1.32 2001/02/22 13:40:53 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -57,6 +57,10 @@ using NLMISC::CVector;
 class	CZone;
 class	CBezierPatch;
 class	ITexture;
+
+
+// ***************************************************************************
+#define	NL3D_NOISE_MAX	1
 
 
 // ***************************************************************************

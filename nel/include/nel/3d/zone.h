@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.22 2001/02/20 11:03:39 berenguier Exp $
+ * $Id: zone.h,v 1.23 2001/02/22 13:40:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,8 +45,6 @@ namespace NL3D
 class CZone;
 class CLandscape;
 
-
-#define	NL3D_NOISE_MAX	10
 
 // ***************************************************************************
 typedef	std::map<uint16, CZone*>			TZoneMap;

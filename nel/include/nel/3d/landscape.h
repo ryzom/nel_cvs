@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.35 2001/02/20 11:03:39 berenguier Exp $
+ * $Id: landscape.h,v 1.36 2001/02/22 13:41:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,7 +103,8 @@ public:
  *		- patch order 16x16 maximum.
  *		- connectivity on a edge: 1/1, 1/2, or 1/4.
  *		- connectivity on a edge of a zone: 1/1 only.
- *		- The value of Noise amplitude is global and cannot go over 10 meters.
+ *		- The value of Noise amplitude is global and cannot go over 1 meter (+- 1m).
+ *			Sorry, this is a FIXED (for ever) value which should NEVER change (because of Gfx database).
  *
  *	If you use the tiles mapped on the patches, load the near bank file (.bank) and the far bank file (.farbank)
  *  by seralizing TileBank and TileFarBank with those files. Then call initTileBanks.

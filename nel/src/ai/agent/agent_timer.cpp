@@ -1,6 +1,6 @@
 /** \file agent_timer.cpp
  *
- * $Id: agent_timer.cpp,v 1.1 2001/04/19 08:13:12 chafik Exp $
+ * $Id: agent_timer.cpp,v 1.2 2001/04/19 13:45:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -22,6 +22,7 @@
  * MA 02111-1307, USA.
  */
 #include "nel/misc/time_nl.h"
+#include "nel/ai/nl_ai.h"
 #include "nel/ai/agent/agent_timer.h"
 #include "nel/ai/agent/agent_method_def.h"
 #include "nel/ai/agent/agent_digital.h"
@@ -86,13 +87,13 @@ namespace NLAIAGENT
 	NLMISC::IThread *CAgentManagerTimer::TimerManagerRun = NULL;	
 	CAgentManagerTimer::CRunTimer *CAgentManagerTimer::RunTimer = NULL;
 
-	const int CAgentManagerTimer::ClockTick = 40;
+	const int CAgentManagerTimer::ClockTick = 20;
 
 	void CAgentManagerTimer::initClass()
 
 	{
 		CAgentManagerTimer *h = new CAgentManagerTimer(NULL);
-		CAgentManagerTimer::IdAgentTimer = new NLAIC::CIdentType ("AgentManagerTimer", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)*h), 
+		CAgentManagerTimer::IdAgentTimer = new NLAIC::CIdentType ("AgentStaticManagerTimer", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)*h), 
 															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
 															NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
 
@@ -131,7 +132,7 @@ namespace NLAIAGENT
 		{
 			NLMISC::TTime t= NLMISC::CTime::getLocalTime();
 			time = (t - start);
-			if(time > 40)
+			if(time > (uint)CAgentManagerTimer::ClockTick)
 			{
 				start = NLMISC::CTime::getLocalTime();
 				NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
@@ -140,6 +141,71 @@ namespace NLAIAGENT
 			NLMISC::nlSleep(CAgentManagerTimer::ClockTick);
 		}
 	}
+
+//##################################
+//CLibTimerManager
+//##################################
+	const NLAIC::CIdentType *CLibTimerManager::IdAgentManagerTimer = NULL;
+	NLAIAGENT::CAgentScript::CMethodCall **CLibTimerManager::StaticMethod = NULL;
+
+	NLAIAGENT::tQueue CLibTimerManager::isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const
+	{
+		NLAIAGENT::tQueue r = NLAIAGENT::isTemplateMember(CLibTimerManager::StaticMethod,CLibTimerManager::TLastM,IObjectIA::getMethodIndexSize(),className,methodName,param);
+		if(r.size()) return r;
+		else return IObjectIA::isMember(className,methodName,param);
+	}
+	
+
+	NLAIAGENT::IObjectIA::CProcessResult CLibTimerManager::runMethodeMember(sint32 index,NLAIAGENT::IObjectIA *o)
+	{
+		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)o;
+
+		switch(index - IObjectIA::getMethodIndexSize())
+		{
+		case CLibTimerManager::TGetTimer:
+			{												
+				NLAIAGENT::IObjectIA::CProcessResult a;
+				{					
+					NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
+					a = accessor.value()->getDynamicAgent(param);
+				}				
+				return a;
+			}		
+		default:
+			return IObjectIA::runMethodeMember(index,o);
+		}
+	}
+
+	void CLibTimerManager::initClass()
+	{
+		CLibTimerManager h;
+		CLibTimerManager::IdAgentManagerTimer = new NLAIC::CIdentType ("AgentManagerTimer", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)h), 
+																	  NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
+																	  NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+
+		NLAISCRIPT::CParam *ParamString = new NLAISCRIPT::CParam(1,new NLAISCRIPT::COperandSimple(new NLAIC::CIdentType(NLAIAGENT::CStringType::IdStringType)));
+		CLibTimerManager::StaticMethod = new NLAIAGENT::CAgentScript::CMethodCall *[CLibTimerManager::TLastM];
+		
+		CLibTimerManager::StaticMethod[CLibTimerManager::TGetTimer] = 
+							new NLAIAGENT::CAgentScript::CMethodCall(_GETTIMER_,
+																	CLibTimerManager::TGetTimer,
+																	ParamString,NLAIAGENT::CAgentScript::CheckAll,
+																	1,	new NLAISCRIPT::CObjectUnknown(
+																		new NLAISCRIPT::COperandSimple(
+																		new NLAIC::CIdentType(CVectorGroupManager::IdVectorGroupManager))));
+	}
+
+	void CLibTimerManager::releaseClass()
+	{
+		delete CLibTimerManager::IdAgentManagerTimer;
+		int i;
+		for(i = 0; i < CLibTimerManager::TLastM; i++)
+		{
+			delete CLibTimerManager::StaticMethod[i];
+		}
+		delete CLibTimerManager::StaticMethod;
+	}
+
 //##################################
 //CAgentWatchTimer
 //##################################
@@ -185,15 +251,19 @@ namespace NLAIAGENT
 	{
 		_Clock -= CAgentManagerTimer::ClockTick;
 		if(_Clock <= 0)
-		{				
-			IMessageBase *msg = (IMessageBase *)_MSG->clone();
-			msg->setSender(this);
-			msg->setPerformatif(IMessageBase::PTell);
-			_Call->sendMessage(msg);
-			setState(processEnd,NULL);
-			return getState();
+		{					
+			tellBroker();
+			setState(processToKill,NULL);			
 		}
-		return IObjectIA::CProcessResult();
+		return getState();
+	}
+
+	void CAgentWatchTimer::tellBroker()
+	{
+		IMessageBase *msg = (IMessageBase *)_MSG->clone();
+		msg->setSender(this);
+		msg->setPerformatif(IMessageBase::PTell);
+		_Call->sendMessage(msg);
 	}
 
 	void CAgentWatchTimer::setAttrib(IObjectIA *c,IMessageBase *m)
@@ -213,8 +283,14 @@ namespace NLAIAGENT
 
 	void CAgentWatchTimer::attach()
 	{		
+		CVectorGroupType g(2);
+		char t[256*4];
+		((const IWordNumRef &)*this).getNumIdent().getDebugString(t);		
+		g.set(0,new CStringType(CStringVarName(t)));
+		this->incRef();
+		g.set(1,this);
 		NLMISC::CSynchronized<CAgentScript *>::CAccessor accessor(CAgentManagerTimer::TimerManager);
-		accessor.value()->addChild(this);
+		accessor.value()->addDynamicAgent(&g);
 	}
 
 	int CAgentWatchTimer::getBaseMethodCount() const
@@ -254,8 +330,7 @@ namespace NLAIAGENT
 		switch(index - CAgentScript::getMethodIndexSize())
 		{
 		case CAgentWatchTimer::TAttach:
-			{
-				//addZone((CZoneType &)*param->get());
+			{				
 				CIteratorContener i = param->getIterator();
 				IObjectIA *call = (IObjectIA *)i++;
 				call->incRef();
@@ -263,7 +338,11 @@ namespace NLAIAGENT
 				msg->incRef();
 				setAttrib(call,msg);
 				attach();
-				return NLAIAGENT::IObjectIA::CProcessResult();
+				IObjectIA::CProcessResult a;				
+				char t[256*4];
+				((const IWordNumRef &)*this).getNumIdent().getDebugString(t);
+				a.Result = new CStringType(CStringVarName(t));
+				return a;
 			}
 		case CAgentWatchTimer::TSetClock:
 			{
@@ -280,11 +359,44 @@ namespace NLAIAGENT
 			return CAgentScript::runMethodBase(index,o);
 		}
 	}
+	IMessageBase *CAgentWatchTimer::runTell(const IMessageBase &m)
+	{
+		static NLAIC::CIdentType idMsgKillTimer ("MsgStopTimer");
+		static NLAIC::CIdentType idMsgStartTimer ("MsgStartTimer");
+		if(m.getType() == idMsgKillTimer)
+		{
+			setState(processEnd,NULL);
+			return NULL;
+		}
+		else
+		if(m.getType() == idMsgStartTimer)
+		{
+			setState(processIdle,NULL);
+			return NULL;
+		}
+		else return CAgentScript::runTell(m);
+
+
+	}
 
 	NLAIAGENT::CAgentScript::CMethodCall **CAgentWatchTimer::StaticMethod = NULL;
 
+	void CAgentWatchTimer::initMsgClass()
+	{
+		std::string msgStr;
+		std::string scriptName("MsgTimer");
+		msgStr = std::string("From Message : Define MsgStopTimer\n{");
+		msgStr += std::string("Component:\n");		
+		msgStr += std::string("End\n}\n");		
+		NLAILINK::buildScript(msgStr,scriptName);
+		msgStr = std::string("From Message : Define MsgStartTimer\n{");
+		msgStr += std::string("Component:\n");
+		msgStr += std::string("End\n}\n");		
+		NLAILINK::buildScript(msgStr,scriptName);
+	}
 	void CAgentWatchTimer::initClass()
 	{
+		initMsgClass();
 		CAgentWatchTimer h;
 		CAgentWatchTimer::IdAgentWatchTimer = new NLAIC::CIdentType ("AgentWatchTimer", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)h), 
 																	  NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
@@ -301,7 +413,8 @@ namespace NLAIAGENT
 							new NLAIAGENT::CAgentScript::CMethodCall(_ATTACH_,
 																	CAgentWatchTimer::TAttach,
 																	NULL,NLAIAGENT::CAgentScript::CheckCount,
-																	2, new NLAISCRIPT::CObjectUnknown(new NLAISCRIPT::COperandVoid));
+																	2,	new NLAISCRIPT::CObjectUnknown(	new NLAISCRIPT::COperandSimple(
+																		new NLAIC::CIdentType(NLAIAGENT::CStringType::IdStringType))));
 		CAgentWatchTimer::StaticMethod[CAgentWatchTimer::TGetClock] = 
 							new NLAIAGENT::CAgentScript::CMethodCall(_GETCLOCK_,
 																	CAgentWatchTimer::TGetClock,
@@ -322,5 +435,75 @@ namespace NLAIAGENT
 	void CAgentWatchTimer::releaseClass()
 	{
 		delete CAgentWatchTimer::IdAgentWatchTimer;
+		int i;
+		for(i = 0; i < CAgentWatchTimer::TLastM; i++)
+		{
+			delete CAgentWatchTimer::StaticMethod[i];
+		}
+		delete CAgentWatchTimer::StaticMethod;
+	}
+
+//##################################
+//CAgentClockTimer
+//##################################
+
+	const NLAIC::CIdentType *CAgentClockTimer::IdAgentClockTimer = NULL;
+
+	CAgentClockTimer::CAgentClockTimer():CAgentWatchTimer(), _TimeCount(0)
+	{
+	}
+
+	CAgentClockTimer::CAgentClockTimer(IAgentManager *m):CAgentWatchTimer(m), _TimeCount(0)
+	{
+	}
+
+	CAgentClockTimer::CAgentClockTimer(IAgentManager *m, IBasicAgent *a, std::list<IObjectIA *> &v, NLAISCRIPT::CAgentClass *c):
+					CAgentWatchTimer(m,a,v,c), _TimeCount(0)
+	{
+	}
+
+	CAgentClockTimer::CAgentClockTimer(const CAgentClockTimer &t):CAgentWatchTimer(t), _TimeCount(t._TimeCount)
+	{
+	}
+
+	CAgentClockTimer::~CAgentClockTimer()
+	{
+	}
+
+	const NLAIC::IBasicType *CAgentClockTimer::clone() const
+	{
+		return new CAgentClockTimer(*this);
+	}
+	const NLAIC::IBasicType *CAgentClockTimer::newInstance() const
+	{
+		return new CAgentClockTimer();
+	}
+	const NLAIC::CIdentType &CAgentClockTimer::getType() const
+	{
+		return *IdAgentClockTimer;
+	}
+
+	IObjectIA::CProcessResult CAgentClockTimer::runActivity()
+	{
+		_Clock -= CAgentManagerTimer::ClockTick;
+		if(_Clock <= 0)
+		{
+			_Clock = _TimeCount;
+			tellBroker();
+		}
+		return getState();
+	}
+
+	void CAgentClockTimer::initClass()
+	{
+		CAgentClockTimer h;
+		CAgentClockTimer::IdAgentClockTimer = new NLAIC::CIdentType ("AgentClockTimer", NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)h), 
+																	  NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgent),
+																	  NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone));
+	}
+
+	void CAgentClockTimer::releaseClass()
+	{
+		delete CAgentClockTimer::IdAgentClockTimer;
 	}
 }

@@ -34,7 +34,9 @@ namespace NLAILINK
 		NLAICHARACTER::CCharacterChild::initClass();
 
 		NLAIAGENT::CAgentManagerTimer::initClass();
+		CLibTimerManager::initClass();
 		CAgentWatchTimer::initClass();
+		CAgentClockTimer::initClass();
 	}
 
 	void releaseIALib()
@@ -54,6 +56,8 @@ namespace NLAILINK
 		NLAICHARACTER::CCharacterChild::releaseClass();
 
 		NLAIAGENT::CAgentManagerTimer::releaseClass();
+		CLibTimerManager::releaseClass();
+		CAgentClockTimer::releaseClass();
 		CAgentWatchTimer::releaseClass();
 
 		staticReleaseLibClass();
@@ -70,5 +74,78 @@ namespace NLAILINK
 	{
 		NLAIAGENT::CProxyAgentMail::MainAgent = manager;
 		//NLAIAGENT::CProxyAgentMail::MainAgent->incRef();
-	}	
+	}
+
+	static char LaseErrorCodeOrdreInterprete[32*1024];
+
+	class IOTrace : public NLAIC::IIO
+	{		
+	public:
+
+		IOTrace()
+		{
+
+		}
+		
+		virtual void Echo(char *str, ...)		
+		{
+			char	temp[32*1024];		
+			va_list argument;
+			va_start (argument, str);	
+			
+			vsprintf(temp, str, argument);		
+			strcpy(LaseErrorCodeOrdreInterprete,temp);			
+			printf("%s",LaseErrorCodeOrdreInterprete);			
+				
+		}
+		virtual const std::string InPut()
+		{
+			return std::string();
+		}
+		virtual void save(NLMISC::IStream &os)
+		{
+		}
+		void getDebugString(char *t) const
+		{
+			sprintf(t,"this is a IOConsolInterface");
+		}
+
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new IOTrace();
+			m->incRef();
+			return m;
+		}
+
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+
+		virtual void load(NLMISC::IStream &is)
+		{
+		}
+
+		virtual const NLAIC::CIdentType &getType() const
+		{
+			static const NLAIC::CIdentType id("IDIOTEMP",	NLAIC::CSelfClassFactory(*this),
+															NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
+			return id;
+		}
+		
+
+		virtual ~IOTrace()
+		{
+		}
+	};
+
+	void buildScript(const std::string &scriptSrc, const std::string &name)
+	{
+		NLAISCRIPT::IScriptDebugSource *sourceCode = new NLAISCRIPT::CScriptDebugSourceFile(name.c_str());
+		IOTrace Interface;
+		NLAISCRIPT::CCompilateur *comp = new NLAISCRIPT::CCompilateur(Interface, scriptSrc.c_str(), scriptSrc.size(), sourceCode);
+		NLAIAGENT::IObjectIA::CProcessResult r = comp->Compile();
+		sourceCode->release();
+
+	}
 }

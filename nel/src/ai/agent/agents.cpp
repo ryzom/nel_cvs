@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.30 2001/04/19 08:13:12 chafik Exp $
+ * $Id: agents.cpp,v 1.31 2001/04/19 13:45:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -114,12 +114,18 @@ namespace NLAIAGENT
 
 	void IAgent::runChildren()	// Se charge de l'activation des fils
 	{
-		std::list<IBasicAgent *>::iterator i_agl = _AgentList.begin();
+		std::list<IBasicAgent *>::iterator i_agl = _AgentList.begin();		
 		while ( i_agl != _AgentList.end() )
 		{					
 			IBasicAgent *c = *i_agl;
 			c->run();
-			i_agl++;
+			if(c->getState().ResultState == processToKill)
+			{
+				std::list<IBasicAgent *>::iterator i_temp = i_agl;
+				i_agl ++;
+				removeChild(c);
+			}
+			else i_agl++;
 		}
 	}		
 	
@@ -160,7 +166,7 @@ namespace NLAIAGENT
 
 		processMessages();	// Traitement de ses propres messages
 
-		if(haveActivity()) runActivity();		
+		if(haveActivity() && getState().ResultState == processIdle) runActivity();		
 		return getState();  
 	}
 
@@ -433,7 +439,7 @@ namespace NLAIAGENT
 				IObjectIA::CProcessResult a;				
 				char t[256*4];
 				((const IWordNumRef &)*this).getNumIdent().getDebugString(t);
-				a.Result = new CStringType(CStringVarName(t));//((const IWordNumRef &)*this).getNumIdent();
+				a.Result = new CStringType(CStringVarName(t));
 				return a;
 			}
 			break;

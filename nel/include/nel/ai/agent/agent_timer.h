@@ -1,7 +1,7 @@
 /** \file agent_timer.h
  * class for string manipulation.
  *
- * $Id: agent_timer.h,v 1.1 2001/04/19 08:43:21 chafik Exp $
+ * $Id: agent_timer.h,v 1.2 2001/04/19 13:45:01 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -83,6 +83,70 @@ namespace NLAIAGENT
 		static void releaseClass();
 	};
 
+
+	class CLibTimerManager: public NLAIAGENT::IObjectIA
+	{
+	public:
+		///This enum define ident for hard coded method that we have to import its under the script.
+		enum {			
+			TGetTimer,
+			TLastM ///The count of export method.
+		};
+		static NLAIAGENT::CAgentScript::CMethodCall **StaticMethod;
+
+	public:
+		static const NLAIC::CIdentType *IdAgentManagerTimer;
+	public:
+		CLibTimerManager() {}
+
+		virtual sint32 getMethodIndexSize() const
+		{
+			return IObjectIA::getMethodIndexSize() + 0;
+		}
+		
+		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &) const;		
+		virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index,NLAIAGENT::IObjectIA *);
+
+		const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;}
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const{ return true;}	
+		//@}
+
+		/// \name NLAIC::IBasicInterface method.
+		//@{
+		const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicType *x = new CLibTimerManager();
+			return x;            
+		}
+
+		const NLAIC::IBasicType *newInstance() const 
+		{
+			return clone();
+		}
+
+		const NLAIC::CIdentType &getType() const
+		{
+			return *IdAgentManagerTimer;
+		}
+
+		void getDebugString(char *t) const
+		{
+			sprintf(t,"lib for Timer access manager");
+		}
+
+		void save(NLMISC::IStream &os)
+		{
+			
+		}
+
+		void load(NLMISC::IStream &is) 
+		{				
+		}
+	public:
+		static void initClass();
+		static void releaseClass();
+	};
+
 	class CAgentWatchTimer: public CAgentScript
 	{
 	public:				
@@ -98,7 +162,7 @@ namespace NLAIAGENT
 	public:
 		static const NLAIC::CIdentType *IdAgentWatchTimer;
 
-	private:
+	protected:
 
 		int _Clock;
 		IObjectIA *_Call;
@@ -118,16 +182,16 @@ namespace NLAIAGENT
 		uint getClock() const
 		{
 			return _Clock;
-
 		}
 
-		void setClock(uint c)
+		virtual void setClock(uint c)
 		{
 			_Clock = c;
 		}
 
 		void setAttrib(IObjectIA *,IMessageBase *);
 		void attach();
+		void tellBroker();
 
 		virtual IObjectIA::CProcessResult runActivity();
 
@@ -144,9 +208,51 @@ namespace NLAIAGENT
 		virtual IObjectIA::CProcessResult runMethodBase(int index,NLAIAGENT::IObjectIA *);
 		virtual IObjectIA::CProcessResult runMethodeMember(sint32 index,NLAIAGENT::IObjectIA *);
 
+		virtual IMessageBase *runTell(const IMessageBase &m);
+		virtual IMessageBase *runKill(const IMessageBase &m)
+		{
+			setState(processToKill,NULL);
+			return NULL;
+		}
+
+	public:
+		static void initClass();
+		static void initMsgClass();
+		static void releaseClass();
+	};
+
+	class CAgentClockTimer: public CAgentWatchTimer
+	{
+
+	public:
+		static const NLAIC::CIdentType *IdAgentClockTimer;
+	private:
+		int _TimeCount;
+	public:
+		CAgentClockTimer();
+		CAgentClockTimer(IAgentManager *);
+		CAgentClockTimer(IAgentManager *, IBasicAgent *, std::list<IObjectIA *> &, NLAISCRIPT::CAgentClass *);
+		CAgentClockTimer(const CAgentClockTimer &);
+		virtual ~CAgentClockTimer();
+
+		virtual void setClock(uint c)
+		{	
+			CAgentWatchTimer::setClock(c);
+			_TimeCount = getClock();
+
+		}
+
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
+		virtual const NLAIC::CIdentType &getType() const;
+
+		virtual IObjectIA::CProcessResult runActivity();
+
 	public:
 		static void initClass();
 		static void releaseClass();
+
+
 	};
 }
 #endif

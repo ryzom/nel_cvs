@@ -1,6 +1,6 @@
 /** \file basic_agent.cpp
  *
- * $Id: basic_agent.cpp,v 1.8 2001/01/31 14:01:09 chafik Exp $
+ * $Id: basic_agent.cpp,v 1.9 2001/04/19 13:45:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,10 +101,10 @@ namespace NLAIAGENT
 		{					
 			if((*i) == p)
 			{
+				p->getMail()->removeMailBox( this->getMail() );
 				(*i)->release();
 				_AgentList.erase(i);
-				// Supprime chez l'ancien fils la boite au lettre du père
-				p->getMail()->removeMailBox( this->getMail() );
+				// Supprime chez l'ancien fils la boite au lettre du père				
 				return;
 			}
 			i++;

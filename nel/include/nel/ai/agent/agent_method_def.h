@@ -1,7 +1,7 @@
 /** \file agent_method_def.h
  * Sevral define name method manipulation.
  *
- * $Id: agent_method_def.h,v 1.15 2001/04/19 08:11:57 chafik Exp $
+ * $Id: agent_method_def.h,v 1.16 2001/04/19 13:45:01 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,7 @@
 #define	_ATTACH_		"Attach"
 #define	_SETCLOCK_		"SetClock"
 #define	_GETCLOCK_		"GetClock"
+#define	_GETTIMER_		"GetTimer"
 
 #define	_CONSTRUCTOR_	"Constructor"
 #define _DESTRUCTOR_	"Destructor"

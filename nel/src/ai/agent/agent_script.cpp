@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.56 2001/04/19 08:13:12 chafik Exp $
+ * $Id: agent_script.cpp,v 1.57 2001/04/19 13:45:09 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1006,13 +1006,13 @@ namespace NLAIAGENT
 
 	void CAgentScript::processMessages()
 	{
-		IObjectIA *c;
+		IObjectIA *c = NULL;
 		if( _AgentManager != NULL) c = (IObjectIA *)_AgentManager->getAgentContext();
 		else c = NULL;
 		while(getMail()->getMessageCount())
 		{
 			IMessageBase &msg = (IMessageBase &)getMail()->getMessage();
-			if(msg.getMethodIndex() >= 0)
+			if(msg.getMethodIndex() >= 0 && c != NULL)
 			{
 				processMessages(&msg,c);
 				getMail()->popMessage();
@@ -1053,7 +1053,7 @@ namespace NLAIAGENT
 		
 		processMessages();
 
-		if(haveActivity()) runActivity();
+		if(haveActivity() && getState().ResultState == processIdle) runActivity();
 				
 		return getState();
 	}

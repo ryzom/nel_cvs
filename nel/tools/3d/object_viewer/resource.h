@@ -176,6 +176,7 @@
 #define IDC_GRADIENT_LIST               1098
 #define IDC_EMITTED_TYPE                1101
 #define IDC_BROWSE_TEXTURE              1104
+#define IDC_REMOVE_TEXTURE              1105
 #define IDC_USE_SPEED_BASIS             1108
 #define IDC_ADD_TARGET                  1109
 #define IDC_REMOVE_TARGET               1110
@@ -216,6 +217,7 @@
 #define IDC_NO_SAMPLES                  1141
 #define IDC_BLENDING_MODE               1142
 #define IDC_BLENDING_MODE_STATIC        1143
+#define IDC_BG_COLOR                    1144
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
 #define IDM_FANLIGHT                    32775
@@ -267,7 +269,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1065
 #define _APS_NEXT_COMMAND_VALUE         32823
-#define _APS_NEXT_CONTROL_VALUE         1144
+#define _APS_NEXT_CONTROL_VALUE         1146
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

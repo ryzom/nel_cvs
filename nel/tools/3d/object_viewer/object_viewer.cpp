@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.90 2003/03/31 12:47:48 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.91 2003/04/02 09:49:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -192,6 +192,20 @@ public:
 // ***************************************************************************
 
 IMPLEMENT_DYNCREATE(CObjView, CView)
+
+// ***************************************************************************
+
+void animateCNELUScene (uint64 deltaTime = 0)
+{
+	static sint64 firstTime = NLMISC::CTime::getLocalTime();
+	static sint64 lastTime = NLMISC::CTime::getLocalTime();
+	if (deltaTime == 0)
+	{
+		deltaTime = NLMISC::CTime::getLocalTime() - lastTime;
+	}
+	lastTime += deltaTime;
+	CNELU::Scene.animate ( 0.001f * (float) (lastTime - firstTime));
+}
 
 // ***************************************************************************
 
@@ -988,8 +1002,7 @@ void CObjectViewer::go ()
 			// Animate the automatic animation in the scene
 			//CNELU::Scene.animate( (float) + NLMISC::CTime::ticksToSecond( NLMISC::CTime::getPerformanceTime() ) );
 
-			static sint64 firstTime = NLMISC::CTime::getLocalTime();
-			CNELU::Scene.animate ( 0.001f * (float) (NLMISC::CTime::getLocalTime() - firstTime));
+			animateCNELUScene ();
 
 			// Eval channel mixer for transform
 			for (uint i=0; i<_ListInstance.size(); i++)
@@ -3314,7 +3327,7 @@ void		CObjectViewer::shootScene()
 				setupPlaylist (_AnimationDlg->getTime());
 
 				// Animate the automatic animation in the scene
-				CNELU::Scene.animate ( 1.f / _AnimationDlg->Speed );
+				animateCNELUScene ((uint64)(1000.f / _AnimationDlg->Speed));
 
 				// Eval channel mixer for transform
 				for (uint j=0; j<_ListInstance.size(); j++)

@@ -655,6 +655,14 @@ SOURCE=..\include\nel\3d\track.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\3d\track_bezier.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\track_tcb.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\transformable.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file landscape_user.cpp
  * <File description>
  *
- * $Id: landscape_user.cpp,v 1.40 2004/01/26 10:34:38 vizerie Exp $
+ * $Id: landscape_user.cpp,v 1.41 2004/02/06 14:35:14 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -297,7 +297,7 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius, std::s
 				zoneAdded = Work.NameZoneAdded;
 				zoneAdded = zoneAdded.substr(0, zoneAdded.find('.'));
 			}
-	}
+		}
 
 		// Check if a zone must be removed from landscape
 		if (Work.ZoneRemoved)
@@ -311,6 +311,42 @@ void	CLandscapeUser::refreshZonesAround(const CVector &pos, float radius, std::s
 	_ZoneManager.checkZonesAround((uint)pos.x, (uint)(-pos.y), (uint)radius);
 }
 
+//****************************************************************************
+void CLandscapeUser::removeAllZones()
+{
+	NL3D_MEM_LANDSCAPE
+	NL3D_HAUTO_LOAD_LANDSCAPE;
+
+	CZoneManager::SZoneManagerWork Work;
+	// Check if new zone must be added to landscape
+	while (_ZoneManager.isLoading())
+	{
+		if (_ZoneManager.isWorkComplete(Work))
+		{
+			if (Work.ZoneAdded)
+			{
+				if (Work.Zone == (CZone*)-1)
+				{
+					nlwarning ("Can't load zone %s", Work.NameZoneAdded.c_str ());
+				}
+				else
+				{
+					delete Work.Zone;
+				}
+			}
+
+			// Check if a zone must be removed from landscape
+			if (Work.ZoneRemoved)
+			{
+				_Landscape->Landscape.removeZone (Work.IdZoneToRemove);
+			}
+		}
+	}
+
+	_Landscape->Landscape.clear();
+
+	_ZoneManager.clear();
+}
 
 //****************************************************************************
 void	CLandscapeUser::setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant, float multiply)

@@ -1,7 +1,7 @@
 /** \file zone_manager.h
  * CZoneManager class
  *
- * $Id: zone_manager.h,v 1.11 2004/02/05 09:48:57 besson Exp $
+ * $Id: zone_manager.h,v 1.12 2004/02/06 14:35:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -97,6 +97,9 @@ public:
 	
 	/// Return the count of zone left to load
 	uint getNumZoneLeftToLoad ();
+
+	/// Remove all zones
+	void clear();
 
 	/**
 	 * Accessors

@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.16 2004/02/05 18:26:34 berenguier Exp $
+ * $Id: zone_manager.cpp,v 1.17 2004/02/06 14:35:57 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -217,6 +217,15 @@ bool CZoneManager::isWorkComplete (CZoneManager::SZoneManagerWork &rWork)
 }
 
 // ------------------------------------------------------------------------------------------------
+void CZoneManager::clear()
+{
+	nlassert(_LoadingZones.size() == 0);
+	_LoadedZones.clear();
+	_RemovingZone = false;
+}
+
+
+// ------------------------------------------------------------------------------------------------
 // CZoneLoadingTask
 // ------------------------------------------------------------------------------------------------
 
@@ -228,7 +237,7 @@ CZoneLoadingTask::CZoneLoadingTask(const std::string &sZoneName, TVolatileZonePt
 	_ZoneName = sZoneName;
 	Position = pos;
 	_Monochrome = monochrome;
-	_TileColorFactor = max(1.f, factor);
+	_TileColorFactor = max(0.0f, factor);
 }
 
 // ------------------------------------------------------------------------------------------------

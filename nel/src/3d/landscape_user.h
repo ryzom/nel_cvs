@@ -1,7 +1,7 @@
 /** \file landscape_user.h
  * <File description>
  *
- * $Id: landscape_user.h,v 1.25 2004/02/05 09:48:57 besson Exp $
+ * $Id: landscape_user.h,v 1.26 2004/02/06 14:35:24 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,8 @@ public:
 	virtual	void	refreshAllZonesAround(const CVector &pos, float radius, std::vector<std::string> &zonesAdded, std::vector<std::string> &zonesRemoved, 
 		NLMISC::IProgressCallback &progress);
 	virtual	void	getAllZoneLoaded(std::vector<std::string>	&zoneLoaded) const;
-	virtual void    invalidateAllTiles();	
+	virtual void    invalidateAllTiles();
+	virtual void	removeAllZones();
 	// @}
 
 

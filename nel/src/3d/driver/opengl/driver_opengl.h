@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.150 2003/08/07 08:56:56 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.151 2003/08/20 09:57:29 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -221,6 +221,8 @@ public:
 	virtual void			disableHardwareTextureShader();
 
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBadDisplay);
+	virtual bool			setMode(const GfxMode& mode);
+	virtual bool			getModes(std::vector<GfxMode> &modes);
 
 	virtual void*			getDisplay()
 	{
@@ -509,7 +511,7 @@ private:
 	// Version of the driver. Not the interface version!! Increment when implementation of the driver change.
 	static const uint32		ReleaseVersion;
 
-	bool					_FullScreen;
+	bool						_FullScreen;
 	bool						_OffScreen;
 
 #ifdef NL_OS_WINDOWS

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.190 2003/08/07 08:56:56 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.191 2003/08/20 09:57:29 besson Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1293,6 +1293,106 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode, bool show) throw(EBad
 	return true;
 }
 
+// --------------------------------------------------
+// This code comes from MFC
+static void modifyStyle (HWND hWnd, int nStyleOffset, DWORD dwRemove, DWORD dwAdd)
+{
+	DWORD dwStyle = ::GetWindowLong(hWnd, nStyleOffset);
+	DWORD dwNewStyle = (dwStyle & ~dwRemove) | dwAdd;
+	if (dwStyle == dwNewStyle)
+		return;
+
+	::SetWindowLong(hWnd, nStyleOffset, dwNewStyle);
+}
+
+// --------------------------------------------------
+bool CDriverGL::setMode(const GfxMode& mode)
+{
+	if (mode.Windowed)
+	{
+		if (_FullScreen)
+		{
+			ChangeDisplaySettings (NULL,0);
+			modifyStyle(_hWnd, GWL_STYLE, WS_POPUP, WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS);
+		}
+		_WindowWidth  = mode.Width;
+		_WindowHeight = mode.Height;
+	}
+	else
+	{
+		_WindowWidth  = mode.Width;
+		_WindowHeight = mode.Height;
+
+		DEVMODE		devMode;
+		if (!_FullScreen)
+		{
+			_OldScreenMode.dmSize= sizeof(DEVMODE);
+			_OldScreenMode.dmDriverExtra= 0;
+			EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &_OldScreenMode);
+			_OldScreenMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY ;
+		}
+
+		devMode.dmSize= sizeof(DEVMODE);
+		devMode.dmDriverExtra= 0;
+		devMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY ;
+		devMode.dmPelsWidth  = _WindowWidth;
+		devMode.dmPelsHeight = _WindowHeight;
+		devMode.dmBitsPerPel = _Depth;
+		devMode.dmDisplayFrequency = mode.Frequency;
+		if (ChangeDisplaySettings(&devMode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
+			return false;
+		
+		if (!_FullScreen)
+		{
+			modifyStyle(_hWnd, GWL_STYLE, WS_OVERLAPPEDWINDOW+WS_CLIPCHILDREN+WS_CLIPSIBLINGS, WS_POPUP);
+		}
+	}
+	_FullScreen = !mode.Windowed;
+
+	// Resize the window
+	RECT rc;
+	SetRect (&rc, 0, 0, _WindowWidth, _WindowHeight);
+	AdjustWindowRectEx (&rc, GetWindowStyle (_hWnd), false, GetWindowExStyle (_hWnd));
+	SetWindowPos (_hWnd, NULL, 0, 0, rc.right-rc.left, rc.bottom-rc.top, SWP_NOZORDER | SWP_NOACTIVATE );
+
+	ShowWindow(_hWnd, SW_SHOW);
+
+	// Init Window Width and Height
+	RECT clientRect;
+	GetClientRect (_hWnd, &clientRect);
+	_WindowWidth = clientRect.right-clientRect.left;
+	_WindowHeight = clientRect.bottom-clientRect.top;
+	_WindowX = clientRect.left;
+	_WindowY = clientRect.top;	return true;
+}
+
+// --------------------------------------------------
+bool CDriverGL::getModes(std::vector<GfxMode> &modes)
+{
+	sint modeIndex = 0;
+	DEVMODE devMode;
+	while (EnumDisplaySettings (NULL, modeIndex, &devMode))
+	{
+		// Keep only 16 and 32 bits
+		if ((devMode.dmBitsPerPel == 16 ) || (devMode.dmBitsPerPel == 32))
+		{
+			// Add this mode
+			GfxMode mode;
+			mode.Width = devMode.dmPelsWidth;
+			mode.Height = devMode.dmPelsHeight;
+			mode.Depth = devMode.dmBitsPerPel;
+			mode.Frequency = devMode.dmDisplayFrequency;
+			modes.push_back (mode);
+		}
+
+		// Mode index
+		modeIndex++;
+	}
+
+	return true;
+}
+
+// --------------------------------------------------
 
 void CDriverGL::resetTextureShaders()
 {	

@@ -1,6 +1,6 @@
 /** \file texture_chooser.cpp
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.cpp,v 1.3 2001/06/25 12:54:57 vizerie Exp $
+ * $Id: texture_chooser.cpp,v 1.4 2001/06/27 16:37:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,7 +63,7 @@ void CTextureChooser::DoDataExchange(CDataExchange* pDX)
 }
 
 
-void CTextureChooser::init(uint x, uint y, CWnd *pParent)
+void CTextureChooser::init(uint32 x, uint32 y, CWnd *pParent)
 {
 	Create(IDD_TEXTURE_CHOOSER, pParent) ;
 	RECT r ;

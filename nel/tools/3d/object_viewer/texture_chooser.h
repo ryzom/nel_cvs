@@ -1,6 +1,6 @@
 /** \file texture_chooser.h
  * A dailog that helps to choose particles texture
- * $Id: texture_chooser.h,v 1.3 2001/06/25 12:54:57 vizerie Exp $
+ * $Id: texture_chooser.h,v 1.4 2001/06/27 16:37:17 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,8 +34,10 @@
 
 #include "nel/misc/smart_ptr.h"
 #include "3d/texture.h"
+#include "edit_attrib_dlg.h"
 
 #include "ps_wrapper.h"
+
 
 using NLMISC::CSmartPtr ;
 
@@ -45,7 +47,7 @@ using NLMISC::CSmartPtr ;
 /////////////////////////////////////////////////////////////////////////////
 // CTextureChooser dialog
 
-class CTextureChooser : public CDialog
+class CTextureChooser : public CEditAttribDlg
 {
 // Construction
 public:
@@ -54,7 +56,7 @@ public:
 
 	~CTextureChooser();
 
-	void init(uint x, uint y, CWnd *pParent = NULL) ;
+	virtual void init(uint32 x, uint32 y, CWnd *pParent = NULL) ;
 
 
 
@@ -82,7 +84,7 @@ protected:
 	HBITMAP _CurrBitmap ;
 
 	// update the current bitmap
-	void CTextureChooser::textureToBitmap() ;
+	void textureToBitmap() ;
 
 	// the current texture
 	CSmartPtr<NL3D::ITexture> _Texture ;
@@ -93,8 +95,13 @@ protected:
 	afx_msg void OnBrowseTexture();
 	afx_msg void OnPaint();
 	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
-};
+	DECLARE_MESSAGE_MAP() ;
+
+	
+} ;
+
+
+
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.

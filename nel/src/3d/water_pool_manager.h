@@ -1,7 +1,7 @@
 /** \file water_pool_manager.h
  * <File description>
  *
- * $Id: water_pool_manager.h,v 1.4 2001/11/16 16:47:32 vizerie Exp $
+ * $Id: water_pool_manager.h,v 1.5 2001/11/21 16:04:45 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ public:
 		uint32		WaveRadius;
 		float		WavePeriod;
 		bool		BorderWaves;
-		CWaterHeightMapBuild() : ID(0), Size(256), WavesEnabled(true), Damping(0.99f), FilterWeight(4), UnitSize(0.15f), WaveIntensity(3), WavePeriod(0), WaveRadius(3), BorderWaves(true) {}
+		CWaterHeightMapBuild() : ID(0), Size(256), WavesEnabled(false), Damping(0.99f), FilterWeight(3), UnitSize(0.30f), WaveIntensity(1.5), WavePeriod(0.05f), WaveRadius(3), BorderWaves(true) {}
 	};
 	/// create a water pool with the given id and the given parameters. If the pool existed before, its parameter are reset
 	CWaterHeightMap				*createWaterPool(const CWaterHeightMapBuild &params = CWaterHeightMapBuild());

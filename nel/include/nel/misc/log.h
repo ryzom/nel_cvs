@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: log.h,v 1.2 2000/10/04 14:34:10 cado Exp $
+ * $Id: log.h,v 1.3 2000/10/04 15:03:28 cado Exp $
  *
  * Interface for CLog
  */
@@ -54,6 +54,12 @@ public:
 
 	/// Remove a displayer. If the displayer doesn't work, you could remove it.
 	void removeDisplayer (IDisplayer *displayer);
+
+	/// Sets longinfo (if true, display() will then write a bigger header)
+	void setLongInfo( bool longinfo )
+	{
+		_Long = longinfo;
+	}
 
 	/// Sets line and file parameters
 	void setParam( uint line, char *file )

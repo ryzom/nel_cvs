@@ -72,7 +72,7 @@ extends:Sphere
 		angleDisappear			 type:#Float   default: 0        ui:UIAngleDisappear
 		scaleWhenDisappear 		 type:#boolean  animatable:false default:  false ui:UIScaleWhenDisappear
 
-		lookAtMode 				type:#boolean  animatable:false default:true ui:UIScaleLookAtMode
+		lookAtMode 				type:#boolean  animatable:false default:true ui:UILookAtMode
 	)
 
 	rollout param "Parameters"

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.20 2003/10/22 14:38:01 boucher Exp $
+ * $Id: smart_ptr.h,v 1.21 2003/12/09 17:24:35 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,7 @@ public:
 	friend struct		CPtrInfo;
 	
 	// for special case use only.
-	sint	getRefCount()
+	inline	const	sint	&getRefCount()	const
 	{
 		return	crefs;
 	}

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.23 2000/11/24 11:22:13 cado Exp $
+ * $Id: service.cpp,v 1.24 2000/11/30 17:02:50 cado Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -252,9 +252,9 @@ sint IService::main (int argc, char **argv)
 					CNamingClient::close();
 
 				}
-				catch ( ESocket& )
+				catch ( ESocket& e )
 				{
-					nlwarning( "Could not register service into the Naming Service." );
+					nlwarning( "Could not register service into the Naming Service : %s", e.what() );
 					CNamingClient::close();
 				}
 				if ( ! registered )

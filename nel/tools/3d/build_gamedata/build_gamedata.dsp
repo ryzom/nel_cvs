@@ -780,6 +780,10 @@ SOURCE=.\log.log
 # End Source File
 # Begin Source File
 
+SOURCE=.\set_title.bat
+# End Source File
+# Begin Source File
+
 SOURCE=.\sh\setup.sh
 # End Source File
 # Begin Source File

@@ -1,3 +1,6 @@
+@echo off
+
+../../set_title %1
 
 REM light All the ..\ig\ig_other directory
 

@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges system files
  *
- * $Id: form.h,v 1.1 2002/02/14 10:39:35 corvazier Exp $
+ * $Id: form.h,v 1.2 2002/04/02 08:59:15 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

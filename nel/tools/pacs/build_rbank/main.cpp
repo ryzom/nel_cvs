@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.5 2002/02/20 17:13:09 legros Exp $
+ * $Id: main.cpp,v 1.6 2002/04/02 08:59:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,7 +218,7 @@ void	moulineZones(vector<string> &zoneNames)
 	{
 		for (i=0; i<zoneNames.size(); ++i)
 		{
-			nlinfo("-------- Build .tessel for zone %s --------", zoneNames[i].c_str());
+			nlinfo("Build .tessel for zone %s", zoneNames[i].c_str());
 			tessellateZone(zoneNames[i]);
 		}
 	}
@@ -227,7 +227,7 @@ void	moulineZones(vector<string> &zoneNames)
 	{
 		for (i=0; i<zoneNames.size(); ++i)
 		{
-			nlinfo("-------- Preprocess .lr for zone %s --------", zoneNames[i].c_str());
+			nlinfo("Preprocess .lr for zone %s", zoneNames[i].c_str());
 			moulineZone(zoneNames[i]);
 		}
 	}
@@ -236,14 +236,14 @@ void	moulineZones(vector<string> &zoneNames)
 	{
 		for (i=0; i<zoneNames.size(); ++i)
 		{
-			nlinfo("-------- Process .lr for zone %s --------", zoneNames[i].c_str());
+			nlinfo("Process .lr for zone %s", zoneNames[i].c_str());
 			processRetriever(zoneNames[i]);
 		}
 	}
 
 	if (ProcessGlobal)
 	{
-		nlinfo("-------- Process .gr and .rbank --------");
+		nlinfo("Process .gr and .rbank");
 		processGlobalRetriever();
 	}
 

@@ -4,94 +4,100 @@
 # Build the IG_LAND made with the LevelDesign Tool
 # ************************************************
 
-# create cfg file
-# +++++++++++++++
-
-rm prim_export.cfg
-echo "// prim_export.cfg" > prim_export.cfg
-
-echo "EXP_OutIGDir = \"ig_land_ld\";" >> prim_export.cfg
-echo "EXP_ZoneWDir = \"..\\zone\\zone_welded\";" >> prim_export.cfg
-
-name_bank=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "EXP_SmallBank = $name_bank" >> prim_export.cfg
-name_farbank=`cat ../../cfg/properties.cfg | grep "bankfar_name" | sed -e 's/bankfar_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "EXP_FarBank = $name_farbank" >> prim_export.cfg
-
-displacedir=`cat ../../cfg/directories.cfg | grep "displace_source_directory" | sed -e 's/displace_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "EXP_DisplaceDir = \"$dir_database/$displacedir\";" >> prim_export.cfg
-
-echo "EXP_CellSize = 160.0;" >> prim_export.cfg
-
-# Set the continent directory to export
-
+# Get the ligo value
 continentdir=`cat ../../cfg/config.cfg | grep "leveldesign_igexport_continent_dir" | sed -e 's/leveldesign_igexport_continent_dir//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "EXP_PrimFloraDir = $continentdir" >> prim_export.cfg
+
+if ( test "$continentdir" )
+then
+	echo [Prim IG] ON
+	echo [Prim IG] ON >> log.log
+	# create cfg file
+	# +++++++++++++++
+
+	rm prim_export.cfg
+	echo "// prim_export.cfg" > prim_export.cfg
+
+	echo "EXP_OutIGDir = \"ig_land_ld\";" >> prim_export.cfg
+	echo "EXP_ZoneWDir = \"..\\zone\\zone_welded\";" >> prim_export.cfg
+
+	name_bank=`cat ../../cfg/properties.cfg | grep "bank_name" | sed -e 's/bank_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "EXP_SmallBank = $name_bank" >> prim_export.cfg
+	name_farbank=`cat ../../cfg/properties.cfg | grep "bankfar_name" | sed -e 's/bankfar_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "EXP_FarBank = $name_farbank" >> prim_export.cfg
+
+	displacedir=`cat ../../cfg/directories.cfg | grep "displace_source_directory" | sed -e 's/displace_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "EXP_DisplaceDir = \"$dir_database/$displacedir\";" >> prim_export.cfg
+
+	echo "EXP_CellSize = 160.0;" >> prim_export.cfg
+
+	# Set the continent directory to export
+	echo "EXP_PrimFloraDir = $continentdir" >> prim_export.cfg
 
 
-# *******************
-# Launch the exporter
-# *******************
+	# *******************
+	# Launch the exporter
+	# *******************
 
-../../bin/prim_export.exe prim_export.cfg
+	../../bin/prim_export.exe prim_export.cfg
 
+	# *******************
+	# Merge it with the IG_LAND exported from Max + elvated with heightmap
+	# *******************
 
+	# elevation of the heightmap
+	# ++++++++++++++++++++++++++
 
-# *******************
-# Merge it with the IG_LAND exported from Max + elvated with heightmap
-# *******************
+	rm ig_elevation.cfg
+	echo "// ig_elevation.cfg" > ig_elevation.cfg
+	echo "OutputIGDir = \"ig_land_max_elev\";" >> ig_elevation.cfg
+	echo "InputIGDir = \"ig_land_max\";" >> ig_elevation.cfg
+	echo "CellSize = 160.0;" >> ig_elevation.cfg
 
-# elevation of the heightmap
-# ++++++++++++++++++++++++++
+	# HeightMapFile1 is the grayscale .tga file (127 is 0, 0 is -127*ZFactor and 255 is +128*ZFactor)
+	dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	dir_ligosrc=`cat ../../cfg/directories.cfg | grep "ligo_source_directory" | sed -e 's/ligo_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	hmf1=`cat ../../cfg/config.cfg | grep "ligo_export_heightmap1" | sed -e 's/ligo_export_heightmap1//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "HeightMapFile1 = \"$dir_database/$dir_ligosrc/$hmf1\";" >> ig_elevation.cfg
 
-rm ig_elevation.cfg
-echo "// ig_elevation.cfg" > ig_elevation.cfg
-echo "OutputIGDir = \"ig_land_max_elev\";" >> ig_elevation.cfg
-echo "InputIGDir = \"ig_land_max\";" >> ig_elevation.cfg
-echo "CellSize = 160.0;" >> ig_elevation.cfg
+	# ZFactor1 is the heightmap factor
+	zf1=`cat ../../cfg/config.cfg | grep "ligo_export_zfactor1" | sed -e 's/ligo_export_zfactor1//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "ZFactor1 = $zf1;" >> ig_elevation.cfg
 
-# HeightMapFile1 is the grayscale .tga file (127 is 0, 0 is -127*ZFactor and 255 is +128*ZFactor)
-dir_database=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 's/database_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-dir_ligosrc=`cat ../../cfg/directories.cfg | grep "ligo_source_directory" | sed -e 's/ligo_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
-hmf1=`cat ../../cfg/config.cfg | grep "ligo_export_heightmap1" | sed -e 's/ligo_export_heightmap1//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "HeightMapFile1 = \"$dir_database/$dir_ligosrc/$hmf1\";" >> ig_elevation.cfg
+	# HeightMapFile2 is the grayscale .tga file (127 is 0, 0 is -127*ZFactor and 255 is +128*ZFactor)
+	hmf2=`cat ../../cfg/config.cfg | grep "ligo_export_heightmap2" | sed -e 's/ligo_export_heightmap2//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "HeightMapFile2 = \"$dir_database/$dir_ligosrc/$hmf2\";" >> ig_elevation.cfg
 
-# ZFactor1 is the heightmap factor
-zf1=`cat ../../cfg/config.cfg | grep "ligo_export_zfactor1" | sed -e 's/ligo_export_zfactor1//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "ZFactor1 = $zf1;" >> ig_elevation.cfg
+	# ZFactor2 is the heightmap factor
+	zf2=`cat ../../cfg/config.cfg | grep "ligo_export_zfactor2" | sed -e 's/ligo_export_zfactor2//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "ZFactor2 = $zf2;" >> ig_elevation.cfg
 
-# HeightMapFile2 is the grayscale .tga file (127 is 0, 0 is -127*ZFactor and 255 is +128*ZFactor)
-hmf2=`cat ../../cfg/config.cfg | grep "ligo_export_heightmap2" | sed -e 's/ligo_export_heightmap2//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "HeightMapFile2 = \"$dir_database/$dir_ligosrc/$hmf2\";" >> ig_elevation.cfg
-
-# ZFactor2 is the heightmap factor
-zf2=`cat ../../cfg/config.cfg | grep "ligo_export_zfactor2" | sed -e 's/ligo_export_zfactor2//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "ZFactor2 = $zf2;" >> ig_elevation.cfg
-
-land_name=`cat ../../cfg/config.cfg | grep "ligo_export_land" | sed -e 's/ligo_export_land//' | sed -e 's/ //g' | sed -e 's/=//g'`
-echo "LandFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> ig_elevation.cfg
+	land_name=`cat ../../cfg/config.cfg | grep "ligo_export_land" | sed -e 's/ligo_export_land//' | sed -e 's/ //g' | sed -e 's/=//g'`
+	echo "LandFile = \"$dir_database/$dir_ligosrc/$land_name\";" >> ig_elevation.cfg
 
 
-../../bin/ig_elevation elevation.cfg
+	../../bin/ig_elevation elevation.cfg
 
 
-# merge
-# +++++
+	# merge
+	# +++++
 
 
-dir_current=`pwd`
-cd ig_land_ld
-list_ig=`ls -1 *.ig`
-cd $dir_current
-for filename in $list_ig ; do
-	if test -e ig_land_max_elev/$filename ; then
-		../../bin/ig_add ig_land/$filename ig_land_max_elev/$filename ig_land_ld/$filename ;
-	else
-		cp ig_land_ld/$filename ig_land/$filename ;
-	fi
-done
-
+	dir_current=`pwd`
+	cd ig_land_ld
+	list_ig=`ls -1 *.ig`
+	cd $dir_current
+	for filename in $list_ig ; do
+		if test -e ig_land_max_elev/$filename ; then
+			../../bin/ig_add ig_land/$filename ig_land_max_elev/$filename ig_land_ld/$filename ;
+		else
+			cp ig_land_ld/$filename ig_land/$filename ;
+		fi
+	done
+else
+	echo [Prim IG] OFF
+	echo [Prim IG] OFF >> log.log
+fi
 
 
 # ******************
@@ -101,21 +107,26 @@ done
 # Get the landscape name
 landscape_name=`cat ../../cfg/config.cfg | grep "landscape_name" | sed -e 's/landscape_name//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
-if ( test -f "$landscape_name"_ig.txt )
+# Landscape name exist ?
+if ( test "$landscape_name" )
 then
-	rm "$landscape_name"_ig.txt
-fi
-
-cd ig_land
-for i in *.ig ; do
-	if ( test -f $i )
+	# If the list file exists, erase it
+	if ( test -f "$landscape_name"_ig.txt )
 	then
-		echo $i >> ../"$landscape_name"_ig.txt
-	else
-		echo >> ../"$landscape_name"_ig.txt
+		rm "$landscape_name"_ig.txt
 	fi
-done
-cd ..
 
+	cd ig_land
+	for i in *.ig ; do
+		# Build an ig list
+		if ( test -f $i )
+		then
+			echo $i >> ../"$landscape_name"_ig.txt
+		else
+			echo >> ../"$landscape_name"_ig.txt
+		fi
+	done
+	cd ..
+fi
 
 

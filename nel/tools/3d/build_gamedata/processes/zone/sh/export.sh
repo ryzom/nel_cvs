@@ -28,8 +28,10 @@ ligo_flag=`cat ../../cfg/config.cfg | grep "process_to_complete" | grep "ligo"`
 if ( test "$ligo_flag" )
 then
 	echo [Ligo] ON
+	echo [Ligo] ON >> log.log
 else
 	echo [Ligo] OFF
+	echo [Ligo] OFF >> log.log
 fi
 
 

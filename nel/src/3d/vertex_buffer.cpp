@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.35 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: vertex_buffer.cpp,v 1.36 2002/09/24 15:03:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,6 +52,25 @@ const uint CVertexBuffer::SizeType[NumType]=
 	4*sizeof(short),
 	4*sizeof(char),
 };
+
+
+const uint CVertexBuffer::NumComponentsType[NumType] =
+{
+	1,
+	1,
+	1,
+	2,
+	2,
+	2,
+	3,
+	3,
+	3,
+	4,
+	4,
+	4,
+	4
+};
+
 
 // --------------------------------------------------
 
@@ -249,6 +268,19 @@ void CVertexBuffer::addValueEx (TValue valueId, TType type)
 
 	// Set the type
 	_Type[valueId]=(uint8)type;
+
+	uint numComp = NumComponentsType[type];
+	// unfortunately, some vertex program implementations don't allow any type for any value
+	switch (valueId)
+	{
+		case Position:			nlassert(numComp >= 2); break;
+		case Normal:			nlassert(numComp == 3); break;
+		case PrimaryColor:		nlassert(numComp == 4); break;
+		case SecondaryColor:	nlassert(numComp == 4); break;
+		case Weight:			nlassert(numComp == 4); break;
+		case PaletteSkin:		nlassert(numComp == 4); break;
+		case Fog:				nlassert(numComp == 4); break;		
+	}
 }
 
 // --------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.8 2002/03/14 18:19:48 vizerie Exp $
+ * $Id: vertex_buffer.h,v 1.9 2002/09/24 15:03:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -198,14 +198,19 @@ public:
 	};
 
 	/**
-	  * Static array with the size of a each value type
+	  * Static array with the size in byte of each value type
 	  */
 	static const uint SizeType[NumType];
 
 	/**
-	  * Static array with the standard type of a each value
+	  * Static array with the standard type of each value
 	  */
 	static const TType DefaultValueType[NumValue];
+
+	/**
+	  * Static array with the number of component of each value type
+	  */
+	static const uint  NumComponentsType[NumType];
 
 private:
 

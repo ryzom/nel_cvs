@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.46 2004/06/29 13:33:52 vizerie Exp $
+ * $Id: u_driver.h,v 1.47 2004/08/03 16:19:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,7 @@ class UShapeBank;
 class U3dMouseListener;
 class ULight;
 class UAnimationSet;
+class UWaterEnvMap;
 
 //****************************************************************************
 /// Monitor color properties
@@ -134,6 +135,8 @@ public:
 	/// Polygon Mode.
 	enum TPolygonMode { Filled=0, Line, Point };
 
+	// Cull mode
+	enum TCullMode { CCW = 0, CW };
 
 public:
 	/// The EventServer of this driver. Init after setDisplay()!!
@@ -224,6 +227,11 @@ public:
 	virtual void			setAmbientColor (CRGBA color) = 0;
 	// @}
 
+	/// \name Cull mode
+	// @{	
+		virtual void			setCullMode(TCullMode cullMode) = 0;
+		virtual	TCullMode       getCullMode() const = 0;
+	// @}
 
 	/// \name Scene gestion.
 	// @{
@@ -700,6 +708,15 @@ public:
 	virtual void displayBench (class NLMISC::CLog *log) =0;
 
 	// @}
+
+	/// \name Water envmap
+	// @{
+		// Create a new water envmap. Such an envmap must then be set in a UScene for the water surfaces of that scene to use it
+		virtual UWaterEnvMap *createWaterEnvMap() = 0;
+		// Delete a water envmap previously created with 'createWaterEnvMap'
+		virtual void		  deleteWaterEnvMap(UWaterEnvMap *) = 0;
+	// @}
+
 
 public:
 

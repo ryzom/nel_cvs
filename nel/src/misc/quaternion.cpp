@@ -1,7 +1,7 @@
 /** \file quaternion.cpp
  * 
  *
- * $Id: quaternion.cpp,v 1.2 2000/11/09 10:32:17 viau Exp $
+ * $Id: quaternion.cpp,v 1.3 2000/11/09 17:00:06 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,7 +23,7 @@
  * MA 02111-1307, USA.
  */
 
-#include "quaternion.h"
+#include "nel/misc/quaternion.h"
 
 // ---------------------------------------------
 // --- Constructors
@@ -61,12 +61,12 @@ Quat::Quat(float af[4])
 
 // ---------------------------------------------
 // --- Accessors
-float& Quat::operator[](uint8 i) 
+float& Quat::operator[](uint i) 
 { 
 	return (&x)[i]; 
 }     
 
-const float& Quat::operator[](uint8 i) const 
+const float& Quat::operator[](uint i) const 
 { 
 	return (&x)[i]; 
 }

@@ -1,0 +1,188 @@
+/** \file main.cpp
+ * Simple example of NeL sound engine usage
+ *
+ * $Id: main.cpp,v 1.1 2001/07/23 15:41:52 cado Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
+
+/*
+ * This sample shows how to initialize the audio mixer (UAudioMixer),
+ * how to create a source (USource), and how to move the listener
+ * (UListener).
+ */
+
+
+#include "nel/misc/debug.h"
+#include "nel/misc/time_nl.h"
+#include "nel/misc/vector.h"
+using namespace NLMISC;
+
+#include "nel/sound/u_audio_mixer.h"
+#include "nel/sound/u_listener.h"
+using namespace NLSOUND;
+
+#include <stdio.h>
+
+
+// Pointer to the audio mixer object
+UAudioMixer	*AudioMixer = NULL;
+
+
+/*
+ * Initialization
+ */
+void Init()
+{
+	try
+	{
+		/*
+		 * 1. Create the audio mixer object and init it.
+		 * If the sound driver cannot be loaded, an exception is thrown.
+		 */
+		AudioMixer = UAudioMixer::createAudioMixer();
+		AudioMixer->init();
+
+		/*
+		 * 2. Load a "sources sounds file" (.nss), its sound properties and
+		 * its attached wave data files (.wav)
+		 */
+		AudioMixer->loadSoundBuffers( "sample_sounds.nss" );
+
+		/*
+		 * In this small example, we don't have any environmental effects or
+		 * environment sounds. If so we would load an "environmental effects
+		 * file" (.nef) and an "environment sounds file" (.nes):
+		 *
+		 * AudioMixer->loadEnvEffects( "effects.nef" );
+		 *
+		 * UEnvSound *root;
+		 * AudioMixer->loadEnvSounds( "envsounds.nes", &root );
+		 */
+
+		/*
+		 * 3. Initialize listener's position
+		 */
+		CVector initpos ( 0.0f, 0.0f, 0.0f );
+		AudioMixer->getListener()->setPos( initpos );
+
+	}
+	catch( Exception& e )
+	{
+		nlerror( "Error: %s", e.what() );
+	}
+}
+
+
+/*
+ * Adding a source
+ */
+USource *OnAddSource( const char *name, bool looping, float x, float y, float z )
+{
+	/*
+	 * Create a source with sound 'name', and set some of its initial properties, if successful
+	 */
+	USource *source = AudioMixer->createSource( name );
+	if ( source != NULL )
+	{
+		source->setPos( CVector(x,y,z) );
+		source->setLooping( looping );
+		source->play(); // start playing immediatly
+	}
+	else
+	{
+		nlwarning( "Sound '%s' not found", name );
+	}
+	return source;
+}
+
+
+/*
+ * Moving the listener
+ */
+void OnMove( const CVector& listenerpos )
+{
+	// Move forward
+	AudioMixer->getListener()->setPos( listenerpos );
+
+	// Wait 20 ms
+	TTime time = CTime::getLocalTime();
+	while ( CTime::getLocalTime() < time+20 );
+}
+
+
+/*
+ * main
+ */
+void main()
+{
+	// Initialization
+	Init();
+
+	// First step: we create two sources
+	printf( "Press ENTER to start playing\n" );
+	getchar();
+	USource *src1 = OnAddSource( "Beep", true, 1.0f, 0.0f, -20.0f );  // Beep on the right, 20 meters ahead
+	USource *src2 = OnAddSource( "Tuut", true, -2.0f, 0.0f, -5.0f ); // Tuut on the left, 5 meters ahead
+
+	// Second step: we will move the listener ahead
+	printf( "Press ENTER again to start moving the listener\n" );
+	getchar();
+
+	// Listener orientation is constant in this example
+	CVector listenerfront ( 0.0f, 0.0f, -1.0f ), listenerup ( 0.0f, 1.0f, 0.0f );
+	AudioMixer->getListener()->setOrientation( listenerfront, listenerup );
+
+	// Move forward, then backward, twice
+	CVector listenervel;
+	CVector listenerpos ( 0.0f, 0.0f, 0.0f );
+	for ( uint i=0; i!=2; i++ )
+	{
+		printf( "%u of 2\n", i+1 );
+
+		// Forward velocity
+		listenervel.set( 0.0f, 0.0f, -0.5f );
+		AudioMixer->getListener()->setVelocity( listenervel );
+
+		// Move forward: set position every frame
+		for ( listenerpos.z=0.0f; listenerpos.z>-30.0f; listenerpos.z-=0.1f )
+		{
+			OnMove( listenerpos );
+		}
+
+		// Backward velocity
+		listenervel.set( 0.0f, 0.0f, +0.5f );
+		AudioMixer->getListener()->setVelocity( listenervel );
+
+		// Move backward: set position every frame
+		for ( listenerpos.z=-30.0f; listenerpos.z<0.0f; listenerpos.z+=0.1f )
+		{
+			OnMove( listenerpos );
+		}
+	}
+
+	// Finalization
+	printf( "Press ENTER again to exit\n" );
+	getchar();
+	delete src1;
+	delete src2;
+	delete AudioMixer;
+}

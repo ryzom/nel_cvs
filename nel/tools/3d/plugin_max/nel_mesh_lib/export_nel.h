@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.59 2002/07/16 12:08:10 corvazier Exp $
+ * $Id: export_nel.h,v 1.60 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -577,7 +577,7 @@ public:
 	// TYPE_POINT3
 	// TYPE_BOOL
 	static bool						getValueByNameUsingParamBlock2 (Animatable& node, const char* sName, 
-																	ParamType2 type, void *pValue, TimeValue time);
+																	ParamType2 type, void *pValue, TimeValue time, bool verbose = true);
 
 	// Get the first modifier in the pipeline of a node by its class identifier
 	static Modifier*				getModifier (INode* pNode, Class_ID modCID);

@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.64 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: zone.cpp,v 1.65 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "3d/zone.h"
 #include "3d/landscape.h"
+#include "3d/zone_symmetrisation.h"
 #include "nel/misc/common.h"
 
 
@@ -1396,5 +1397,505 @@ void CZone::copyTilesFlags(sint destPatchId, const CPatch *srcPatch)
 }
 
 
+// ***************************************************************************
+bool CPatchInfo::getNeighborTile (uint patchId, uint edge, sint position, uint &patchOut, sint &sOut, sint &tOut, 
+								  const vector<CPatchInfo> &patchInfos) const
+{
+	nlassert (edge<4);
+
+	// S or T ?
+	uint length = (edge&1) ? OrderS : OrderT;
+	nlassert ((uint)position<length);
+
+	// What kind of case ?
+	switch (BindEdges[edge].NPatchs)
+	{
+	case 1:
+	case 2:
+	case 4:
+		{
+			// Get neighbor index and position in neighbor
+			uint neighborLength = (length / BindEdges[edge].NPatchs);
+			uint neighbor = position / neighborLength;
+			uint neighborPosition = neighborLength - (position % neighborLength) - 1;
+			uint neighborEdge = BindEdges[edge].Edge[neighbor];
+
+			// Patch id
+			patchOut = BindEdges[edge].Next[neighbor];
+
+			// Check neighbor
+			uint neighborRealLength = (neighborEdge&1) ? patchInfos[patchOut].OrderS : patchInfos[patchOut].OrderT;
+			if (neighborRealLength == neighborLength)
+			{
+				// Get final coordinate
+				switch (neighborEdge)
+				{
+				case 0:
+					sOut = 0;
+					tOut = neighborPosition;
+					break;
+				case 1:
+					sOut = neighborPosition;
+					tOut = patchInfos[patchOut].OrderT-1;
+					break;
+				case 2:
+					sOut = patchInfos[patchOut].OrderS-1;
+					tOut = patchInfos[patchOut].OrderT-neighborPosition-1;
+					break;
+				case 3:
+					sOut = patchInfos[patchOut].OrderS-neighborPosition-1;
+					tOut = 0;
+					break;
+				}
+
+				// Ok todo remove
+				return true;
+			}
+		}
+		break;
+	
+	case 5:
+		{
+			// Find in the neighbor where we are
+			patchOut = BindEdges[edge].Next[0];
+			uint neighborEdge = BindEdges[edge].Edge[0];
+			uint neighborEdgeCount = patchInfos[patchOut].BindEdges[neighborEdge].NPatchs;
+
+			// Check neighbor
+			uint neighborRealLength = (neighborEdge&1) ? patchInfos[patchOut].OrderS : patchInfos[patchOut].OrderT;
+
+			// Good length ?
+			if ((neighborRealLength / neighborEdgeCount) == length)
+			{
+				// Find us in the neighbor
+				uint neighborPosition;
+				for (neighborPosition=0; neighborPosition<neighborEdgeCount; neighborPosition++)
+				{
+					// Found ?
+					if (patchInfos[patchOut].BindEdges[neighborEdge].Next[neighborPosition] == patchId)
+						break;
+				}
+
+				// Must be found
+				nlassert (neighborPosition!=neighborEdgeCount);
+				neighborPosition = (neighborPosition + 1) * (neighborRealLength / neighborEdgeCount) - position - 1;
+
+				// Get final coordinate
+				switch (neighborEdge)
+				{
+				case 0:
+					sOut = 0;
+					tOut = neighborPosition;
+					break;
+				case 1:
+					sOut = neighborPosition;
+					tOut = patchInfos[patchOut].OrderT-1;
+					break;
+				case 2:
+					sOut = patchInfos[patchOut].OrderS-1;
+					tOut = patchInfos[patchOut].OrderT-neighborPosition-1;
+					break;
+				case 3:
+					sOut = patchInfos[patchOut].OrderS-neighborPosition-1;
+					tOut = 0;
+					break;
+				}
+
+				// Ok
+				return true;
+			}
+		}
+		break;
+	}
+
+	return false;
+}
+
+
+// ***************************************************************************
+
+bool CPatchInfo::getTileSymmetryRotate (const CTileBank &bank, uint tile, bool &symmetry, uint &rotate)
+{
+	// Need check the tile ?
+	if ( (symmetry || (rotate != 0)) && (tile != 0xffffffff) )
+	{
+		// Tile exist ?
+		if (tile < (uint)bank.getTileCount())
+		{
+			// Get xref
+			int tileSet;
+			int number;
+			CTileBank::TTileType type;
+
+			// Get tile xref
+			bank.getTileXRef ((int)tile, tileSet, number, type);
+
+			// Is it an oriented tile ?
+			if (bank.getTileSet (tileSet)->getOriented())
+			{
+				// New rotation value
+				rotate = 0;
+			}
+
+			// Ok
+			return true;
+		}
+
+		return false;
+	}
+	else
+		return true;
+}
+
+// ***************************************************************************
+
+bool CPatchInfo::transformTile (const CTileBank &bank, uint &tile, uint &tileRotation, bool symmetry, uint rotate, bool goofy)
+{
+	// Tile exist ?
+	if ( (rotate!=0) || symmetry )
+	{
+		if (tile < (uint)bank.getTileCount())
+		{
+			// Get xref
+			int tileSet;
+			int number;
+			CTileBank::TTileType type;
+
+			// Get tile xref
+			bank.getTileXRef ((int)tile, tileSet, number, type);
+
+			// Transition ?
+			if (type == CTileBank::transition)
+			{
+				// Rotation for transition
+				uint transRotate = rotate;
+
+				// Number should be ok
+				nlassert (number>=0);
+				nlassert (number<CTileSet::count);
+
+				// Tlie set number
+				const CTileSet *pTileSet = bank.getTileSet (tileSet);
+
+				// Get border desc
+				CTileSet::TFlagBorder oriented[4] = 
+				{	
+					pTileSet->getOrientedBorder (CTileSet::left, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::left)),
+					pTileSet->getOrientedBorder (CTileSet::bottom, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::bottom)),
+					pTileSet->getOrientedBorder (CTileSet::right, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::right)),
+					pTileSet->getOrientedBorder (CTileSet::top, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::top))
+				};
+
+				// Symmetry ?
+				if (symmetry)
+				{
+					if ( (tileRotation & 1) ^ goofy )
+					{
+						CTileSet::TFlagBorder tmp = oriented[1];
+						oriented[1] = CTileSet::getInvertBorder (oriented[3]);
+						oriented[3] = CTileSet::getInvertBorder (tmp);
+						oriented[2] = CTileSet::getInvertBorder (oriented[2]);
+						oriented[0] = CTileSet::getInvertBorder (oriented[0]);
+					}
+					else
+					{
+						CTileSet::TFlagBorder tmp = oriented[0];
+						oriented[0] = CTileSet::getInvertBorder (oriented[2]);
+						oriented[2] = CTileSet::getInvertBorder (tmp);
+						oriented[1] = CTileSet::getInvertBorder (oriented[1]);
+						oriented[3] = CTileSet::getInvertBorder (oriented[3]);
+					}
+				}
+
+				// Rotation
+				CTileSet::TFlagBorder edges[4];
+				edges[0] = pTileSet->getOrientedBorder (CTileSet::left, oriented[(0 + transRotate )&3]);
+				edges[1] = pTileSet->getOrientedBorder (CTileSet::bottom, oriented[(1 + transRotate )&3]);
+				edges[2] = pTileSet->getOrientedBorder (CTileSet::right, oriented[(2 + transRotate )&3]);
+				edges[3] = pTileSet->getOrientedBorder (CTileSet::top, oriented[(3 + transRotate )&3]);
+
+				// Get the good tile number
+				CTileSet::TTransition transition = pTileSet->getTransitionTile (edges[3], edges[1], edges[0], edges[2]);
+				nlassert ((CTileSet::TTransition)transition != CTileSet::notfound);
+				tile = (uint)(pTileSet->getTransition (transition)->getTile ());
+			}
+
+			// Transform rotation: invert rotation
+			tileRotation += rotate;
+
+			// If goofy, add +2
+			if (goofy && symmetry)
+				tileRotation += 2;
+
+			// Mask the rotation
+			tileRotation &= 3;
+		}
+		else
+			return false;
+	}
+
+	// Ok
+	return true;
+}
+
+// ***************************************************************************
+
+void CPatchInfo::transform256Case (const CTileBank &bank, uint8 &case256, uint tileRotation, bool symmetry, uint rotate, bool goofy)
+{
+	// Tile exist ?
+	if ( (rotate!=0) || symmetry )
+	{
+		// Symmetry ?
+		if (symmetry)
+		{
+			// Take the symmetry
+			uint symArray[4] = {3, 2, 1, 0};
+			case256 = symArray[case256];
+
+			if (goofy && ((tileRotation & 1) ==0))
+				case256 += 2;
+			if ((!goofy) && (tileRotation & 1))
+				case256 += 2;
+		}
+
+		// Rotation ?
+		case256 -= rotate;
+		case256 &= 3;
+	}
+}
+
+// ***************************************************************************
+
+bool CPatchInfo::transform (std::vector<CPatchInfo> &patchInfo, NL3D::CZoneSymmetrisation &zoneSymmetry, const NL3D::CTileBank &bank, bool symmetry, uint rotate, float snapCell, float weldThreshold, const NLMISC::CMatrix &toOriginalSpace)
+{
+	uint patchCount = patchInfo.size ();
+	uint i;
+
+	// --- Export tile info Symmetry of the bind info.
+	// --- Parse each patch and each edge
+
+	// For each patches
+	NL3D::CZoneSymmetrisation::CError error;
+	
+	// Build the structure
+	if (!zoneSymmetry.build (patchInfo, snapCell, weldThreshold, bank, error, toOriginalSpace))
+	{
+		return false;
+	}
+	
+	// Symmetry ?
+	if (symmetry)
+	{
+		for(i=0 ; i<patchCount; i++)
+		{
+			// Ref on the current patch
+			CPatchInfo &pi = patchInfo[i];
+
+			// --- Symmetry vertex indexes
+
+			// Vertices
+			CVector tmp = pi.Patch.Vertices[0];
+			pi.Patch.Vertices[0] = pi.Patch.Vertices[3];
+			pi.Patch.Vertices[3] = tmp;
+			tmp = pi.Patch.Vertices[1];
+			pi.Patch.Vertices[1] = pi.Patch.Vertices[2];
+			pi.Patch.Vertices[2] = tmp;
+
+			// Tangents
+			tmp = pi.Patch.Tangents[0];
+			pi.Patch.Tangents[0] = pi.Patch.Tangents[5];
+			pi.Patch.Tangents[5] = tmp;
+			tmp = pi.Patch.Tangents[1];
+			pi.Patch.Tangents[1] = pi.Patch.Tangents[4];
+			pi.Patch.Tangents[4] = tmp;
+			tmp = pi.Patch.Tangents[2];
+			pi.Patch.Tangents[2] = pi.Patch.Tangents[3];
+			pi.Patch.Tangents[3] = tmp;
+			tmp = pi.Patch.Tangents[6];
+			pi.Patch.Tangents[6] = pi.Patch.Tangents[7];
+			pi.Patch.Tangents[7] = tmp;
+
+			// Interior
+			tmp = pi.Patch.Interiors[0];
+			pi.Patch.Interiors[0] = pi.Patch.Interiors[3];
+			pi.Patch.Interiors[3] = tmp;
+			tmp = pi.Patch.Interiors[1];
+			pi.Patch.Interiors[1] = pi.Patch.Interiors[2];
+			pi.Patch.Interiors[2] = tmp;
+
+			// ** Symmetries tile colors
+
+			uint u,v;
+			uint countU = pi.OrderS/2+1;
+			uint countV = pi.OrderT+1;
+			for (v=0; v<countV; v++)
+			for (u=0; u<countU; u++)
+			{
+				// Store it in the tile info
+				uint index0 = u+v*(pi.OrderS+1);
+				uint index1 = (pi.OrderS-u)+v*(pi.OrderS+1);
+
+				// XChg
+				uint16 tmp = pi.TileColors[index0].Color565;
+				pi.TileColors[index0].Color565 = pi.TileColors[index1].Color565;
+				pi.TileColors[index1].Color565 = tmp;
+			}
+
+			// Smooth flags
+			uint backupFlag = pi.Flags;
+			for (int edge=0; edge<4; edge+=2)
+			{
+				// Clear smooth flags
+				pi.Flags &= (1<<edge);
+
+				// Symmetry edge
+				uint symEdge = ((edge+2)&3);
+
+				// Copy the flag
+				pi.Flags |= (((backupFlag>>symEdge)&1)<<edge);
+			}
+		}
+
+		// --- Symmetry of the bind info.
+		// --- Parse each patch and each edge
+		// For each patches
+		for (i=0 ; i<patchCount; i++)
+		{
+			// Ref on the patch info
+			CPatchInfo &pi = patchInfo[i];
+
+			// Xchg left and right
+			swap (pi.BindEdges[0], pi.BindEdges[2]);
+			swap (pi.BaseVertices[0], pi.BaseVertices[3]);
+			swap (pi.BaseVertices[1], pi.BaseVertices[2]);
+
+			// Flip edges
+			for (uint edge=0; edge<4; edge++)
+			{
+				// Ref on the patch info
+				CPatchInfo::CBindInfo &bindEdge = pi.BindEdges[edge];
+
+				uint next;
+				// Look if it is a bind ?
+				if ( (bindEdge.NPatchs>1) && (bindEdge.NPatchs!=5) )
+				{
+					for (next=0; next<(uint)bindEdge.NPatchs/2; next++)
+					{
+						swap (bindEdge.Next[bindEdge.NPatchs - next - 1], bindEdge.Next[next]);
+						swap (bindEdge.Edge[bindEdge.NPatchs - next - 1], bindEdge.Edge[next]);
+					}
+				}
+
+				// Look if we are binded on a reversed edge
+				uint bindCount = (bindEdge.NPatchs==5) ? 1 : bindEdge.NPatchs;
+				for (next=0; next<bindCount; next++)
+				{
+					// Left or right ?
+					if ( (bindEdge.Edge[next] & 1) == 0)
+					{
+						// Invert
+						bindEdge.Edge[next] += 2;
+						bindEdge.Edge[next] &= 3;
+					}
+				}
+			}
+		}
+	}
+
+	// For each patches
+	for (i=0 ; i<patchCount; i++)
+	{
+		// Tile infos
+		CPatchInfo &pi = patchInfo[i];
+
+		// Backup tiles
+		std::vector<CTileElement>	tiles = pi.Tiles;
+
+		int u,v;
+		for (v=0; v<pi.OrderT; v++)
+		for (u=0; u<pi.OrderS; u++)
+		{
+			// U tile
+			int uSymmetry = symmetry ? (pi.OrderS-u-1) : u;
+
+			// Destination tile
+			CTileElement &element = pi.Tiles[u+v*pi.OrderS];
+
+			// Copy the orginal symmetrical element
+			element = tiles[uSymmetry+v*pi.OrderS];
+
+			// For each layer
+			for (int l=0; l<3; l++)
+			{
+				// Empty ?
+				if (element.Tile[l] != 0xffff)
+				{
+					// Get the tile index
+					uint tile = element.Tile[l];
+					uint tileRotation = element.getTileOrient (l);
+
+					// Get rot and symmetry for this tile
+					uint tileRotate = rotate;
+					bool tileSymmetry = symmetry;
+					bool goofy = symmetry && (zoneSymmetry.getTileState (i, uSymmetry+v*pi.OrderS, l) == CZoneSymmetrisation::Goofy);
+
+					// Transform the transfo
+					if (getTileSymmetryRotate (bank, tile, tileSymmetry, tileRotate))
+					{
+						// Transform the tile
+						if (!transformTile (bank, tile, tileRotation, tileSymmetry, (4-tileRotate)&3, goofy))
+						{
+							// Info
+							nlwarning ("Error getting symmetrical / rotated zone tile.");
+							return false;
+						}
+					}
+					else
+					{
+						// Info
+						nlwarning ("Error getting symmetrical / rotated zone tile.");
+						return false;
+					}
+
+					// Set the tile
+					element.Tile[l] = tile;
+					element.setTileOrient (l, (uint8)tileRotation);
+				}
+			}
+
+			// Empty ?
+			if (element.Tile[0]!=0xffff)
+			{
+				// Get 256 info
+				bool is256x256;
+				uint8 uvOff;
+				element.getTile256Info (is256x256, uvOff);
+
+				// 256 ?
+				if (is256x256)
+				{
+					// Get rot and symmetry for this tile
+					uint tileRotate = rotate;
+					bool tileSymmetry = symmetry;
+					uint tileRotation = tiles[uSymmetry+v*pi.OrderS].getTileOrient (0);
+					bool goofy = symmetry && (zoneSymmetry.getTileState (i, uSymmetry+v*pi.OrderS, 0) == CZoneSymmetrisation::Goofy);
+
+					// Transform the transfo
+					getTileSymmetryRotate (bank, element.Tile[0], tileSymmetry, tileRotate);
+
+					// Transform the case
+					transform256Case (bank, uvOff, tileRotation, tileSymmetry, (4-tileRotate)&3, goofy);
+
+					element.setTile256Info (true, uvOff);
+				}
+			}
+		}
+	}
+
+	// Ok
+	return true;
+}
+
+// ***************************************************************************
 
 } // NL3D

@@ -20,14 +20,14 @@ void CFillPatch::fillTile (int mesh, int patch, std::vector<EPM_Mesh> &vectMesh,
 
 		// Clear tile description
 		tileDesc descClear;
-		descClear.setTile (0, 0, 0, tileIndex (false, 0,0), tileIndex (false, 0,0), tileIndex (false, 0,0));
+		descClear.setTile (0, 0, 0, tileIndex (0,0), tileIndex (0,0), tileIndex (0,0));
 
 		// Fill tile description
 		tileDesc descFill;					// Four fill descriptor LeftTop, LeftBottom, RightTop, RightBottom
 
 		// Fill with clear ?
 		if (tileSet==-1)
-			descFill.setTile (0, 0, 0, tileIndex (false, 0,0), tileIndex (false, 0,0), tileIndex (false, 0,0));
+			descFill.setTile (0, 0, 0, tileIndex (0,0), tileIndex (0,0), tileIndex (0,0));
 
 		// Tiles numbers
 		uint numU=1<<vectMesh[mesh].RMesh->getUIPatch (patch).NbTilesU;
@@ -206,19 +206,19 @@ void CFillPatch::fillTile (int mesh, int patch, std::vector<EPM_Mesh> &vectMesh,
 									{
 									case 0:
 										// LeftTop
-										descFill.setTile (1, ((0-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+										descFill.setTile (1, ((0-rot)&3)+1, 0, tileIndex (nTile, rot), tileIndex (0, 0), tileIndex (0, 0));
 										break;
 									case 1:
 										// LeftBottom
-										descFill.setTile (1, ((1-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+										descFill.setTile (1, ((1-rot)&3)+1, 0, tileIndex (nTile, rot), tileIndex (0, 0), tileIndex (0, 0));
 										break;
 									case 2:
 										// RightTop
-										descFill.setTile (1, ((3-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+										descFill.setTile (1, ((3-rot)&3)+1, 0, tileIndex (nTile, rot), tileIndex (0, 0), tileIndex (0, 0));
 										break;
 									case 3:
 										// RightBottom
-										descFill.setTile (1, ((2-rot)&3)+1, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+										descFill.setTile (1, ((2-rot)&3)+1, 0, tileIndex (nTile, rot), tileIndex (0, 0), tileIndex (0, 0));
 										break;
 									default:
 										nlassert (0);		// no !
@@ -226,7 +226,7 @@ void CFillPatch::fillTile (int mesh, int patch, std::vector<EPM_Mesh> &vectMesh,
 								}
 								else
 									// Set the tile
-									descFill.setTile (1, 0, 0, tileIndex (false, nTile, rot), tileIndex (false, 0, 0), tileIndex (false, 0, 0));
+									descFill.setTile (1, 0, 0, tileIndex (nTile, rot), tileIndex (0, 0), tileIndex (0, 0));
 							}
 
 							// Get the displace index

@@ -407,6 +407,14 @@ SOURCE=.\3d\zone_smoother.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\zone_symmetrisation.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\zone_symmetrisation.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\zone_tgt_smoother.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.h
  * <File description>
  *
- * $Id: nel_patch_mesh.h,v 1.10 2002/04/04 11:49:27 corvazier Exp $
+ * $Id: nel_patch_mesh.h,v 1.11 2002/08/21 13:38:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,6 +41,7 @@
 namespace NL3D
 {
 class CZone;
+class CZoneSymmetrisation;
 };
 
 typedef unsigned int uint;
@@ -132,15 +133,13 @@ class tileIndex
 public:
 	tileIndex ()
 	{}
-	tileIndex ( bool invert, int tile, int rotate)
+	tileIndex (int tile, int rotate)
 	{
-		Invert=invert;
 		Tile=tile;
 		Rotate=rotate;
 	}
 	uint Tile:16;
 	int Rotate:8;
-	int Invert:1;
 };
 
 class tileDesc
@@ -151,6 +150,10 @@ class tileDesc
 #define DISPLACE_MASK ((DISPLACE_COUNT-1)<<DISPLACE_SHIFT)
 	friend class RPatchMesh;
 public:
+	tileDesc ()
+	{
+		setEmpty ();
+	}
 	void setTile (int num, int ncase, int displace, tileIndex tile0, tileIndex tile1, tileIndex tile2)
 	{
 		_Num=num;
@@ -750,7 +753,7 @@ public:
 	void TurnPatch(PatchMesh *patch);
 
 	// Export a zone to NeL format
-	bool exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int zoneId);
+	bool exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, NL3D::CZoneSymmetrisation& sym, int zoneId, float snapCell, float weldThreshold);
 
 	// Export a zone to NeL format
 	void importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId);
@@ -779,11 +782,6 @@ public:
 		// Store the color
 		getUIPatch (patch).setColor (t*((1<<getUIPatch (patch).NbTilesU)+1)+s, encodedColor);
 	}
-
-	// Transform tile and 256 case with rotation and symmetry parameters
-	static bool getTileSymmetryRotate (const NL3D::CTileBank &bank, uint tile, bool &symmetry, uint &rotate);
-	static bool transformTile (const NL3D::CTileBank &bank, uint &tile, uint &tileRotation, bool symmetry, uint rotate);
-	static void transform256Case (const NL3D::CTileBank &bank, uint &case256, uint tileRotation, bool symmetry, uint rotate);
 };
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------

@@ -42,6 +42,7 @@ uint PainterKeys[KeyCounter]=
 	KeyL,
 	Key1,
 	Key2,
+	KeyI,
 };
 
 // Keys
@@ -75,6 +76,7 @@ const char* PainterKeysName[KeyCounter]=
 	"LockBorders",
 	"ZoomIn",
 	"ZoomOut",
+	"GetState",
 };
 
 // Light settings
@@ -133,6 +135,12 @@ extern const unsigned char lock[];
 extern const unsigned int lockSize;
 extern const unsigned char oriented[];
 extern const unsigned int orientedSize;
+extern const unsigned char nothing[];
+extern const unsigned int nothingSize;
+extern const unsigned char regular[];
+extern const unsigned int regularSize;
+extern const unsigned char goofy[];
+extern const unsigned int goofySize;
 
 /*-------------------------------------------------------------------*/
 
@@ -265,6 +273,9 @@ CBankCont::CBankCont (CTileBank& bank, HINSTANCE hInstance)
 	lightBitmap		=	new CTextureMem ((uint8*)light, lightSize, false);
 	lockBitmap		=	new CTextureMem ((uint8*)lock, lockSize, false);
 	orientedBitmap	=	new CTextureMem ((uint8*)oriented, orientedSize, false);
+	nothingBitmap	=	new CTextureMem ((uint8*)nothing, nothingSize, false);
+	regularBitmap	=	new CTextureMem ((uint8*)regular, regularSize, false);
+	goofyBitmap		=	new CTextureMem ((uint8*)goofy, goofySize, false);
 
 	// Resize the tileset array
 	TileSet.resize (bank.getTileSetCount());
@@ -274,6 +285,7 @@ CBankCont::CBankCont (CTileBank& bank, HINSTANCE hInstance)
 		TileSet[tileSet].build (bank, tileSet);
 
 	// Load cursors
+	HInspect = LoadCursor(hInstance, MAKEINTRESOURCE(IDC_INSPECT));
 	HCur = LoadCursor(hInstance, MAKEINTRESOURCE(IDC_PICK_COLOR));
 	HFill = LoadCursor(hInstance, MAKEINTRESOURCE(IDC_FILL));
 	HTrick = LoadCursor(hInstance, MAKEINTRESOURCE(IDC_TRICK));

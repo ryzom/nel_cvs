@@ -1,7 +1,7 @@
 /** \file nel_export_zone.cpp
  * <File description>
  *
- * $Id: nel_export_zone.cpp,v 1.3 2001/08/23 12:31:36 corvazier Exp $
+ * $Id: nel_export_zone.cpp,v 1.4 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std_afx.h"
 #include "nel_export.h"
 #include "3d/zone.h"
+#include "3d/zone_symmetrisation.h"
 #include "../nel_patch_lib/rpo.h"
 
 using namespace NL3D;
@@ -52,7 +53,8 @@ bool CNelExport::exportZone (const char *sPath, INode& node, TimeValue time)
 		{
 			// Build the zone
 			CZone zone;
-			if (pPatchObject->rpatch->exportZone (&node, &pPatchObject->patch, zone, 0))
+			CZoneSymmetrisation zoneSymmetry;
+			if (pPatchObject->rpatch->exportZone (&node, &pPatchObject->patch, zone, zoneSymmetry, 0, 160, 1))
 			{
 				// Open a file
 				COFile file;

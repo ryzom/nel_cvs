@@ -13,12 +13,15 @@
 #include "3d/texture_mem.h"
 #include "3d/transform_shape.h"
 #include "3d/zone_corner_smoother.h"
+#include "3d/zone_symmetrisation.h"
 
 #include "nel/misc/vector.h"
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
 #include "nel/misc/events.h"
 #include "nel/misc/file.h"
+
+#include "ligo/ligo_config.h"
 
 #include "paint_ui.h"
 #include "paint_vcolor.h"
@@ -30,7 +33,7 @@
 
 using namespace NL3D;
 using namespace NLMISC;
-
+using namespace NLLIGO;
 
 // Paint mouse proc
 
@@ -136,9 +139,13 @@ void exitPainter ()
 
 /*-------------------------------------------------------------------*/
 
+std::vector<CZoneSymmetrisation> symVector;
+
+/*-------------------------------------------------------------------*/
+
 // Painter modes
 enum TModePaint { ModeTile, ModeColor, ModeDisplace};
-enum TModeMouse { ModePaint, ModeSelect, ModePick, ModeFill};
+enum TModeMouse { ModePaint, ModeSelect, ModePick, ModeFill, ModeGetState };
 
 /*-------------------------------------------------------------------*/
 
@@ -402,6 +409,14 @@ void drawInterface (TModeMouse select, TModePaint mode, PaintPatchMod *pobj, IDr
 			// Draw brush icon
 			CDRU::drawBitmap ( 0, (float)(MOD_HEIGHT-3)/(float)MOD_HEIGHT, 1.f/(float)MOD_WIDTH, 1.f/(float)MOD_HEIGHT, paintColor.getBrush (), driver, CViewport(), false);
 		}
+
+		// For color only
+		if (pobj->ShowCurrentState && ((int)pobj->CurrentState<3) && ((int)pobj->CurrentState>=0))
+		{
+			// Draw brush icon
+			ITexture* bitmaps[3]={bankCont->nothingBitmap, bankCont->regularBitmap, bankCont->goofyBitmap};
+			CDRU::drawBitmap ( 0, (float)(MOD_HEIGHT-5)/(float)MOD_HEIGHT, 1.f/(float)MOD_WIDTH, 1.f/(float)MOD_HEIGHT, *(bitmaps[(int)pobj->CurrentState]), driver, CViewport(), true);
+		}
 	}
 }
 
@@ -454,22 +469,59 @@ void makeVectMesh (std::vector<EPM_Mesh>& vectMesh, INodeTab& nodes, ModContextL
 	}
 }
 
-void transformDesc (tileDesc &desc, bool symmetry, uint rotate)
+void transformDesc (tileDesc &desc, bool symmetry, uint rotate, uint mesh, uint tile, std::vector<EPM_Mesh>& vectMesh)
 {
+	uint patch=tile/NUM_TILE_SEL;
+	uint ttile=tile%NUM_TILE_SEL;
+	uint v=ttile/MAX_TILE_IN_PATCH;
+	uint u=ttile%MAX_TILE_IN_PATCH;
+
+	// Get the patch
+	int OrderS=(1<<vectMesh[mesh].RMesh->getUIPatch (patch).NbTilesU);
+	uint symTile = OrderS*v+u;
+
 	// 256 ?
 	if (desc.getCase()!=0)
 	{
 		// Transform the case
-		uint case256 = desc.getCase()-1;
+		uint8 case256 = desc.getCase()-1;
 
 		// Get rot and symmetry for this tile
 		uint tileRotate = rotate;
 		bool tileSymmetry = symmetry;
+		uint tile = desc.getLayer (0).Tile;
+
+		// XRef
+		int tileSet;
+		int number;
+		CTileBank::TTileType type;
+		bank.getTileXRef (tile, tileSet, number, type);
 
 		// Transform the transfo		
-		RPatchMesh::getTileSymmetryRotate (bank, desc.getLayer(0).Tile, tileSymmetry, tileRotate);
+		CPatchInfo::getTileSymmetryRotate (bank, desc.getLayer(0).Tile, tileSymmetry, tileRotate);
 
-		RPatchMesh::transform256Case (bank, case256, 0, tileSymmetry, tileRotate);
+		// Get the state of the layer 0
+		bool goofy = false;
+		uint tileRotation = desc.getLayer (0).Rotate;
+		if (symmetry || rotate)
+		{
+			if (bank.getTileSet (tileSet)->getOriented ())
+			{
+				if ((symVector[mesh].getOrientedTileBorderState (patch, symTile) != CZoneSymmetrisation::Nothing))
+					goofy = (symVector[mesh].getOrientedTileBorderState (patch, symTile) == CZoneSymmetrisation::Goofy);
+				else
+					goofy = (symVector[mesh].getTileState (patch, symTile, 0) == CZoneSymmetrisation::Goofy);
+			}
+			else
+			{
+				if ((symVector[mesh].getTileBorderState (patch, symTile) != CZoneSymmetrisation::Nothing))
+					goofy = (symVector[mesh].getTileBorderState (patch, symTile) == CZoneSymmetrisation::Goofy);
+				else
+					goofy = (symVector[mesh].getTileState (patch, symTile, 0) == CZoneSymmetrisation::Goofy);
+			}
+		}
+
+		CPatchInfo::transform256Case (bank, case256, tileRotation, tileSymmetry, tileRotate, goofy);
 		desc.setCase (case256+1);
 	}
 
@@ -479,15 +531,41 @@ void transformDesc (tileDesc &desc, bool symmetry, uint rotate)
 		uint tile = desc.getLayer (l).Tile;
 		uint tileRotation = desc.getLayer (l).Rotate;
 
+		// XRef
+		int tileSet;
+		int number;
+		CTileBank::TTileType type;
+		bank.getTileXRef (tile, tileSet, number, type);
+
 		// Get rot and symmetry for this tile
 		uint tileRotate = rotate;
 		bool tileSymmetry = symmetry;
 
+		// Get the state of the
+		bool goofy = false;
+		if (symmetry || rotate)
+		{
+			if (bank.getTileSet (tileSet)->getOriented ())
+			{
+				if ((symVector[mesh].getOrientedTileBorderState (patch, symTile) != CZoneSymmetrisation::Nothing))
+					goofy = (symVector[mesh].getOrientedTileBorderState (patch, symTile) == CZoneSymmetrisation::Goofy);
+				else
+					goofy = (symVector[mesh].getTileState (patch, symTile, l) == CZoneSymmetrisation::Goofy);
+			}
+			else
+			{
+				if ((symVector[mesh].getTileBorderState (patch, symTile) != CZoneSymmetrisation::Nothing))
+					goofy = (symVector[mesh].getTileBorderState (patch, symTile) == CZoneSymmetrisation::Goofy);
+				else
+					goofy = (symVector[mesh].getTileState (patch, symTile, l) == CZoneSymmetrisation::Goofy);
+			}
+		}
+
 		// Transform the transfo
-		if (RPatchMesh::getTileSymmetryRotate (bank, tile, tileSymmetry, tileRotate))
+		if (CPatchInfo::getTileSymmetryRotate (bank, tile, tileSymmetry, tileRotate))
 		{
 			// Transform it
-			if (RPatchMesh::transformTile (bank, tile, tileRotation, tileSymmetry, tileRotate))
+			if (CPatchInfo::transformTile (bank, tile, tileRotation, tileSymmetry, tileRotate, goofy))
 			{
 				desc.getLayer (l).Tile = tile;
 				desc.getLayer (l).Rotate = tileRotation;
@@ -496,10 +574,10 @@ void transformDesc (tileDesc &desc, bool symmetry, uint rotate)
 	}
 }
 
-void transformInvDesc (tileDesc &desc, bool symmetry, uint rotate)
+void transformInvDesc (tileDesc &desc, bool symmetry, uint rotate, uint mesh, uint tile, std::vector<EPM_Mesh>& vectMesh)
 {
-	transformDesc (desc, false, 4-rotate);
-	transformDesc (desc, symmetry, 0);
+	transformDesc (desc, false, 4-rotate, mesh, tile, vectMesh);
+	transformDesc (desc, symmetry, 0, mesh, tile, vectMesh);
 }
 
 void EPM_PaintMouseProc::SetTile (int mesh, int tile, const tileDesc& desc, std::vector<EPM_Mesh>& vectMesh, CLandscape* land, 
@@ -525,8 +603,8 @@ void EPM_PaintMouseProc::SetTile (int mesh, int tile, const tileDesc& desc, std:
 
 	// Transform tile 
 	tileDesc copyDesc=maxDesc;
-	transformInvDesc (maxDesc, vectMesh[mesh].Symmetry, 4-vectMesh[mesh].Rotate);
-	transformInvDesc (copyDesc, vectMesh[mesh].Symmetry, 0);
+	transformInvDesc (maxDesc, vectMesh[mesh].Symmetry, 4-vectMesh[mesh].Rotate, mesh, tile, vectMesh);
+	transformInvDesc (copyDesc, vectMesh[mesh].Symmetry, 0, mesh, tile, vectMesh);
 
 	// 3dsmax update
 	vectMesh[mesh].RMesh->setTileDesc (tile, maxDesc);
@@ -540,11 +618,6 @@ void EPM_PaintMouseProc::SetTile (int mesh, int tile, const tileDesc& desc, std:
 			// Same mesh ?
 			if (vectMesh[i].RMesh == vectMesh[mesh].RMesh)
 			{
-				// Get a desc for this tile
-				tileDesc nelDesc=copyDesc;
-				transformInvDesc (nelDesc, vectMesh[mesh].Symmetry, 4-vectMesh[mesh].Rotate);
-				transformDesc (nelDesc, vectMesh[i].Symmetry, 4-vectMesh[i].Rotate);
-
 				int patch=tile/NUM_TILE_SEL;
 				int ttile=tile%NUM_TILE_SEL;
 				int v=ttile/MAX_TILE_IN_PATCH;
@@ -554,6 +627,11 @@ void EPM_PaintMouseProc::SetTile (int mesh, int tile, const tileDesc& desc, std:
 				std::vector<CTileElement>& copyZone = *nelPatchChg.getTileArray (i, patch);
 				RPatchMesh *pMesh=vectMesh[i].RMesh;
 				int OrderS=(1<<pMesh->getUIPatch (patch).NbTilesU);
+
+				// Get a desc for this tile
+				tileDesc nelDesc=copyDesc;
+				transformInvDesc (nelDesc, vectMesh[mesh].Symmetry, 4-vectMesh[mesh].Rotate, mesh, tile, vectMesh);
+				transformDesc (nelDesc, vectMesh[i].Symmetry, 4-vectMesh[i].Rotate, mesh, tile, vectMesh);
 
 				// Symmetry ?
 				if (vectMesh[i].Symmetry)
@@ -611,7 +689,7 @@ void EPM_PaintMouseProc::GetTile (int mesh, int tile, tileDesc& desc, std::vecto
 		desc=pMesh->getTileDesc (tile);
 
 		// Transform it
-		transformDesc (desc, vectMesh[mesh].Symmetry, 4-vectMesh[mesh].Rotate);
+		transformDesc (desc, vectMesh[mesh].Symmetry, 4-vectMesh[mesh].Rotate, mesh, tile, vectMesh);
 	}
 }
 
@@ -752,7 +830,7 @@ bool EPM_PaintMouseProc::ClearATile ( EPM_PaintTile* pTile, std::vector<EPM_Mesh
 	if (_256)
 	{
 		tileDesc desc;
-		desc.setTile (0, 0, 0, tileIndex (false, 0,0), tileIndex (false, 0,0), tileIndex (false, 0,0));
+		desc.setTile (0, 0, 0, tileIndex (0,0), tileIndex (0,0), tileIndex (0,0));
 
 		// Get right tile
 		int nRot;
@@ -790,7 +868,7 @@ bool EPM_PaintMouseProc::ClearATile ( EPM_PaintTile* pTile, std::vector<EPM_Mesh
 		
 		// Cleared descriptor
 		tileDesc desc;
-		desc.setTile (0, 0, 0, tileIndex (false, 0,0), tileIndex (false, 0,0), tileIndex (false, 0,0));
+		desc.setTile (0, 0, 0, tileIndex (0,0), tileIndex (0,0), tileIndex (0,0));
 
 		// Get the displace index
 		tileDesc descOrig;
@@ -898,7 +976,7 @@ bool EPM_PaintMouseProc::PutATile ( EPM_PaintTile* pTile, int tileSet, int curRo
 		{
 			// Main tile
 			tileDesc desc;
-			desc.setTile (1, 1+((-curRotation)&3), 0, tileIndex (false, nTile, curRotation), tileIndex (false, 0,0), tileIndex (false, 0,0));
+			desc.setTile (1, 1+((-curRotation)&3), 0, tileIndex (nTile, curRotation), tileIndex (0,0), tileIndex (0,0));
 
 			// Main tile
 			SetTile (pTile->Mesh, pTile->tile, desc, vectMesh, land, nelPatchChg, &backupStack);
@@ -906,7 +984,7 @@ bool EPM_PaintMouseProc::PutATile ( EPM_PaintTile* pTile, int tileSet, int curRo
 			// get right
 			int nRot;
 			EPM_PaintTile* other=pTile->getRight256 (0, nRot);
-			desc.setTile (1, 1+((-curRotation-1)&3), 0, tileIndex (false, nTile, (curRotation-nRot)&3), tileIndex (false, 0,0), tileIndex (false, 0,0));
+			desc.setTile (1, 1+((-curRotation-1)&3), 0, tileIndex (nTile, (curRotation-nRot)&3), tileIndex (0,0), tileIndex (0,0));
 			nlassert (other);
 			SetTile (other->Mesh, other->tile, desc, vectMesh, land, nelPatchChg, &backupStack);
 			
@@ -915,7 +993,7 @@ bool EPM_PaintMouseProc::PutATile ( EPM_PaintTile* pTile, int tileSet, int curRo
 
 			// get bottom
 			other=pTile->getBottom256 (0, nRot);
-			desc.setTile (1, 1+((-curRotation+1)&3), 0, tileIndex (false, nTile, (curRotation-nRot)&3), tileIndex (false, 0,0), tileIndex (false, 0,0));
+			desc.setTile (1, 1+((-curRotation+1)&3), 0, tileIndex (nTile, (curRotation-nRot)&3), tileIndex (0,0), tileIndex (0,0));
 			nlassert (other);
 			SetTile (other->Mesh, other->tile, desc, vectMesh, land, nelPatchChg, &backupStack);
 			
@@ -924,7 +1002,7 @@ bool EPM_PaintMouseProc::PutATile ( EPM_PaintTile* pTile, int tileSet, int curRo
 
 			// get corner
 			other=pTile->getRightBottom256 (0, nRot);
-			desc.setTile (1, 1+((-curRotation+2)&3), 0, tileIndex (false, nTile, (curRotation-nRot)&3), tileIndex (false, 0,0), tileIndex (false, 0,0));
+			desc.setTile (1, 1+((-curRotation+2)&3), 0, tileIndex (nTile, (curRotation-nRot)&3), tileIndex (0,0), tileIndex (0,0));
 			nlassert (other);
 			nlassert (other==pTile->getBottomRight256 (0, nRot));
 			SetTile (other->Mesh, other->tile, desc, vectMesh, land, nelPatchChg, &backupStack);
@@ -935,7 +1013,7 @@ bool EPM_PaintMouseProc::PutATile ( EPM_PaintTile* pTile, int tileSet, int curRo
 		else
 		{
 			tileDesc desc;
-			desc.setTile (1, 0, 0, tileIndex (false, nTile, curRotation), tileIndex (false, 0,0), tileIndex (false, 0,0));
+			desc.setTile (1, 0, 0, tileIndex (nTile, curRotation), tileIndex (0,0), tileIndex (0,0));
 			SetTile (pTile->Mesh, pTile->tile, desc, vectMesh, land, nelPatchChg, &backupStack);
 		}
 	}
@@ -1299,10 +1377,10 @@ zap:;
 			switch (setIndex.size())
 			{
 			case 1:
-				desc.setTile (1, 0, desc.getDisplace (), finalIndex[0], tileIndex (false, 0,0), tileIndex (false, 0,0));
+				desc.setTile (1, 0, desc.getDisplace (), finalIndex[0], tileIndex (0,0), tileIndex (0,0));
 				break;
 			case 2:
-				desc.setTile (2, 0, desc.getDisplace (), finalIndex[0], finalIndex[1], tileIndex (false, 0,0));
+				desc.setTile (2, 0, desc.getDisplace (), finalIndex[0], finalIndex[1], tileIndex (0,0));
 				break;
 			case 3:
 				desc.setTile (3, 0, desc.getDisplace (), finalIndex[0], finalIndex[1], finalIndex[2]);
@@ -2220,10 +2298,10 @@ bool EPM_PaintMouseProc::PropagateBorder (EPM_PaintTile* tile, int curRotation, 
 	switch (setIndex.size())
 	{
 	case 1:
-		desc.setTile (1, 0, desc.getDisplace (), finalIndex[0], tileIndex (false, 0,0), tileIndex (false, 0,0));
+		desc.setTile (1, 0, desc.getDisplace (), finalIndex[0], tileIndex (0,0), tileIndex (0,0));
 		break;
 	case 2:
-		desc.setTile (2, 0, desc.getDisplace (), finalIndex[0], finalIndex[1], tileIndex (false, 0,0));
+		desc.setTile (2, 0, desc.getDisplace (), finalIndex[0], finalIndex[1], tileIndex (0,0));
 		break;
 	case 3:
 		desc.setTile (3, 0, desc.getDisplace (), finalIndex[0], finalIndex[1], finalIndex[2]);
@@ -2499,6 +2577,11 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 		modeSelect=ModePick;
 
 	// Mode picking
+	if (AsyncListener.isKeyDown ((TKey)PainterKeys[GetState]))
+		// Set mode
+		modeSelect=ModeGetState;
+
+	// Mode picking
 	if (AsyncListener.isKeyDown ((TKey)PainterKeys[Fill0]))
 	{
 		// Set mode
@@ -2669,15 +2752,16 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 		{
 			// Get the zone
 			CZone *pZone=landscape.Landscape.getZone (zone);
-			nlassert (pZone);
-
-			// For each patch
-			uint numPatch=pZone->getNumPatchs();
-			for (uint patch=0; patch<numPatch; patch++)
+			if (pZone)
 			{
-				// Invalidate this patch
-				pZone->changePatchTextureAndColor (patch, NULL, NULL);
-				//pZone->refreshTesselationGeometry (patch);
+				// For each patch
+				uint numPatch=pZone->getNumPatchs();
+				for (uint patch=0; patch<numPatch; patch++)
+				{
+					// Invalidate this patch
+					pZone->changePatchTextureAndColor (patch, NULL, NULL);
+					//pZone->refreshTesselationGeometry (patch);
+				}
 			}
 		}
 	}
@@ -2795,7 +2879,9 @@ void	mainproc(CScene& scene, CEventListenerAsync& AsyncListener, CEvent3dMouseLi
 		pData->pobj->TileTrick=false;
 
 	// Set cursor
-	if (modeSelect==ModePick)
+	if (modeSelect==ModeGetState)
+		SetCursor (bankCont->HInspect);
+	else if (modeSelect==ModePick)
 		SetCursor (bankCont->HCur);
 	else if (modeSelect==ModeFill)
 		SetCursor (bankCont->HFill);
@@ -2938,6 +3024,9 @@ private:
 	// Pick a tile
 	void pick (int mesh, int tile, const CVector& hit, TModePaint mode);
 
+	// Get the state of a tile
+	CZoneSymmetrisation::TState MouseListener::getState (int mesh, int tile, const CVector& hit, std::vector<EPM_Mesh>& vectMesh);
+
 	// Callback on mouse events
 	virtual void operator ()(const CEvent& event)
 	{
@@ -2976,7 +3065,7 @@ private:
 					if (_Eproc->HitATile(*_Viewport, *_Camera, mouse->X, mouse->Y, &tile1, &mesh1, _T, _VectMesh, hotSpot, topVector))
 					{
 						// Set hit as next hotspot
-						if (modeSelect!=ModePick)
+						if ( (modeSelect!=ModePick) && (modeSelect!=ModeGetState) )
 							_3dMouseListener->setHotSpot (hotSpot);
 
 						// Patch number
@@ -3026,6 +3115,15 @@ private:
 							// Pick tile
 							pick (mesh1, tile1, hotSpot, nModeTexture);
 						}
+						else if (modeSelect==ModeGetState)
+						{
+							// Pick tile state
+							CZoneSymmetrisation::TState state = getState (mesh1, tile1, hotSpot, _VectMesh);
+							_Pobj->CurrentState = state;
+
+							// Active show state
+							_Pobj->ShowCurrentState = true;
+						}
 						else if (modeSelect==ModeFill)
 						{
 							// Paint mode
@@ -3041,7 +3139,6 @@ private:
 								// Fill this patch with the current color
 								_FillTile.fillDisplace (mesh1, patch, _VectMesh, bank);
 						}
-
 					}
 				}
 				// Pick with right mouse
@@ -3057,6 +3154,7 @@ private:
 				if (mouse->Button==leftButton)
 				{
 					pressed = false;
+					_Pobj->ShowCurrentState = false;
 					
 					// Undo step
 					bankCont->Undo.pushUndo ();
@@ -3254,6 +3352,28 @@ void MouseListener::pick (int mesh, int tile, const CVector& hit, TModePaint mod
 		// Set the color
 		color1=nelToMax (bestColor);
 	}
+}
+
+/*-------------------------------------------------------------------*/
+// Pick a tile
+CZoneSymmetrisation::TState MouseListener::getState (int mesh, int tile, const CVector& hit, std::vector<EPM_Mesh>& vectMesh)
+{
+	if (vectMesh[mesh].Symmetry || vectMesh[mesh].Rotate)
+	{
+		uint patch=tile/NUM_TILE_SEL;
+		uint ttile=tile%NUM_TILE_SEL;
+		uint v=ttile/MAX_TILE_IN_PATCH;
+		uint u=ttile%MAX_TILE_IN_PATCH;
+
+		// Get the patch
+		int OrderS=(1<<vectMesh[mesh].RMesh->getUIPatch (patch).NbTilesU);
+		uint symTile = OrderS*v+u;
+
+		// Pick tile under the cursor
+		return symVector[mesh].getTileState (patch, symTile, 0);
+	}
+	else
+		return CZoneSymmetrisation::Nothing;
 }
 
 /*-------------------------------------------------------------------*/
@@ -3879,7 +3999,46 @@ void EPM_PaintCMode::DoPaint ()
 	setlocale (LC_NUMERIC, "");
 }
 
- 
+bool loadLigoConfigFile (CLigoConfig& config, Interface& it)
+{
+	// Get the module path
+	HMODULE hModule = GetModuleHandle("nelpaintpatch.dlm");
+	if (hModule)
+	{
+		// Get the path
+		char sModulePath[256];
+		int res=GetModuleFileName(hModule, sModulePath, 256);
+
+		// Success ?
+		if (res)
+		{
+			// Path
+			char sDrive[256];
+			char sDir[256];
+			_splitpath (sModulePath, sDrive, sDir, NULL, NULL);
+			_makepath (sModulePath, sDrive, sDir, "ligoscape", ".cfg");
+
+			try
+			{
+				// Load the config file
+				config.read (sModulePath);
+
+				// ok
+				return true;
+			}
+			catch (Exception& e)
+			{
+				// Print an error message
+				char msg[512];
+				smprintf (msg, 512, "Error loading the config file ligoscape.cfg: %s", e.what());
+				nlwarning (msg);
+			}
+		}
+	}
+
+	// Can't found the module
+	return false;
+}
 	
 DWORD WINAPI myThread (LPVOID vData)
 {	
@@ -4021,6 +4180,9 @@ DWORD WINAPI myThread (LPVOID vData)
 			CNELU::Camera->setMatrix (mat);
 			CNELU::Camera->setPerspective( 75.f*(float)Pi/180.f/*vp->GetFOV()*/, 1.33f, 0.1f, 1000.f);
 
+			// Resize the sym vector
+			symVector.resize (pData->VectMesh.size());
+
 			// Form each zone
 			uint i;
 			for (i = 0; i <(int)pData->VectMesh.size(); i++)
@@ -4032,9 +4194,18 @@ DWORD WINAPI myThread (LPVOID vData)
 				if ((!patchData)||(!patch)||(!rpatch))
 					continue;
 
+				// Get the symmetry flag
+				CLigoConfig config;
+				if (!loadLigoConfigFile (config, *pData->eproc->ip))
+				{
+					config.CellSize = 100;
+					config.Snap = 1;
+					config.ZoneSnapShotRes = 128;
+				}
+
 				// Create the zone..
 				CZone	zone;
-				if (rpatch->exportZone (pData->VectMesh[i].Node, patch, zone, i))
+				if (rpatch->exportZone (pData->VectMesh[i].Node, patch, zone, symVector[i], i, config.CellSize, config.Snap))
 				{
 					// Smooth corner
 					CZoneCornerSmoother cornerSmoother;

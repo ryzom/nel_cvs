@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "nel_patch_paint.h"
+#include "3d/zone_symmetrisation.h"
 
 // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -17,13 +18,15 @@ EPM_PaintCMode*		PaintPatchMod::paintMode   = NULL;
 
 int					PaintPatchMod::channelModified = EDITPAT_CHANNELS;
 
+bool				PaintPatchMod::ShowCurrentState	= false;
+uint				PaintPatchMod::CurrentState	= (uint)CZoneSymmetrisation::Nothing;
 int					PaintPatchMod::CurrentTileSet	= -1;
 int					PaintPatchMod::brushSize		= 0;		// Default 1 tile
 int					PaintPatchMod::ColorBushSize	= 0;
 int					PaintPatchMod::tileSize			= 1;		// Default 256
 bool				PaintPatchMod::additiveTile		= false;	// 
-int					PaintPatchMod::TileGroup		= 0;				// Default all tiles
-int					PaintPatchMod::DisplaceTile		= 0;			// Default displace 0
+int					PaintPatchMod::TileGroup		= 0;		// Default all tiles
+int					PaintPatchMod::DisplaceTile		= 0;		// Default displace 0
 int					PaintPatchMod::DisplaceTileSet	= -1;		// 
 uint				PaintPatchMod::TileFillRotation	= 0;
 bool				PaintPatchMod::TileTrick		= false;

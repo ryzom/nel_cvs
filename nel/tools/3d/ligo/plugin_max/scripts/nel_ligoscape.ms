@@ -35,6 +35,30 @@ rootpath				= (getdir #maxroot)
 title_msgbox			= "NeL Ligo tools"
 NoError					= 1
 
+-- Some structures
+
+struct zone_transformation ( symmetry, rotation )
+
+-- Structures methods
+
+fn xor b1 b2 = (not (b1 and b2)) and (b1 or b2) 
+
+fn compose transfo0 transfo1 =
+(
+	ret = zone_transformation false 0
+
+	-- Compose the symmetry
+	ret.symmetry = xor transfo0.symmetry transfo1.symmetry
+
+	-- Compose the rotation
+	ret.rotation = transfo0.rotation
+	if transfo1.symmetry == true then
+		ret.rotation = 4 - ret.rotation
+	ret.rotation = mod (ret.rotation + transfo1.rotation) 4
+
+	return ret
+)
+
 -- NoError					- color 0 255 0
 -- NoEdgeVertices			- color 0 0 0
 -- OpenedEdge				- color 255 0 0
@@ -76,7 +100,7 @@ TransitionNumBis		= #( 5,			4,			2,				3,				7,			6,			0,				1,				8)
 ligo					= 1304892483
 ligo_passable_app		= ligo
 ligo_rotate_app			= 1266703978
-ligo_scale_app			= 1266703979
+ligo_symmetry_app		= 1266703979
 ligo_instance_app		= 1266703980
 ligo_use_boundingbox	= 1342141818
 
@@ -894,7 +918,7 @@ fn export_and_check_and_debug_transition_zone checkOnly debug displayMB =
 										if TransitionScale[zone] == true then
 										(
 											mt = scale mt [-1,1,1]
-											setappdata c ligo_scale_app "1"
+											setappdata c ligo_symmetry_app "1"
 										)
 
 										-- Rotate
@@ -1663,11 +1687,11 @@ group "Projects management"
 							ref = undefined
 							zone = undefined
 
-							-- Rotation to do
-							rot = 0
+							-- First transfor, to place good edge on the left
+							firstTransfo = zone_transformation false 0
 
-							-- Symmetry to do
-							sym = 0
+							-- Second transfor, to place good edge on the good destination edge
+							secondTransfo = zone_transformation false 0
 
 							-- Reference painter ?
 							refPainter = false
@@ -1697,10 +1721,8 @@ group "Projects management"
 								zone = getTransition 2
 
 								-- Rotation
-								rot = 1
-
-								-- Symemtry
-								sym = true
+								firstTransfo.symmetry = true
+								firstTransfo.rotation = 1
 
 								-- Translation
 								trans = [-cellSize,0,0]
@@ -1715,10 +1737,8 @@ group "Projects management"
 								zone = getTransition 1
 
 								-- Rotation
-								rot = 2
-
-								-- Symemtry
-								sym = true
+								firstTransfo.symmetry = true
+								firstTransfo.rotation = 0
 
 								-- The same ?
 								if id == 1 then
@@ -1750,43 +1770,35 @@ group "Projects management"
 
 								-- Rotation
 								mt = translate mt ([-cellSize/2,-cellSize/2,0] + trans)
-								mt = rotateZ mt (90*rot)
-
-								-- Scale
-								scaled = false
-
-								if sym == true then
-								(
-									mt = scale mt [1,-1,1] true
-									if scaled == true then
-										scaled = false
-									else 
-										scaled = true
-								)
 
 								if EdgeType[id][edge] >= 3 then
 								(
-									mt = scale mt [1,-1,1] true
-									if scaled == true then
-										scaled = false
-									else 
-										scaled = true
+									-- Destintation edge in inverted ? Symmetry
+									secondTransfo = compose (zone_transformation false 3) (zone_transformation true 1) 
 								)
 
-								if scaled == true then
-									scaled = 1
+								-- Final transformation
+								secondTransfo = compose secondTransfo (zone_transformation false (NeighborDeltaRot[edge] / 90))
+								finalTransfo = compose firstTransfo secondTransfo
+
+								-- Final symmetry
+								if finalTransfo.symmetry == true then
+								(
+									mt = scale mt [-1,1,1] true
+								)
+
+								-- Final rotation
+								mt = rotateZ mt (90*finalTransfo.rotation)
+
+								-- Set appdata
+								if finalTransfo.symmetry == true then
+									symmetryValue = 1
 								else
-									scaled = 0
-								
-								setappdata ref ligo_scale_app (scaled as string)
+									symmetryValue = 0
+								setappdata ref ligo_symmetry_app (symmetryValue as string)
+								setappdata ref ligo_rotate_app (finalTransfo.rotation as string)
 
-								-- Compute finale rotation
-								if scaled == 1 then
-									rot = 4-rot;
-								rot = mod (rot + NeighborDeltaRot[edge] / 90) 4
-								setappdata ref ligo_rotate_app (rot as string)
-
-								mt = rotateZ mt NeighborDeltaRot[edge]
+								-- Final translation
 								pos = (NeighborDeltaPos[edge] + [posX,posY,0]) * cellSize
 								mt = translate mt ([cellSize/2,cellSize/2,0] + pos)
 
@@ -2589,11 +2601,11 @@ group "Projects management"
 							-- Our zone
 							ref = undefined
 
-							-- Rotation to do
-							rot = 0
+							-- First transfor, to place good edge on the left
+							firstTransfo = zone_transformation false 0
 
-							-- Symmetry to do
-							sym = 0
+							-- Second transfor, to place good edge on the good destination edge
+							secondTransfo = zone_transformation false 0
 
 							-- Translation to do
 							trans= point3 0 0 0
@@ -2615,10 +2627,9 @@ group "Projects management"
 								ref = NeLImportzone (ligo_root_path+ligo_transition_path+(getFilenameFile materialName[1])+"-"+(getFilenameFile materialName[2])+"-1"+nel_zone_ext) true
 
 								-- Rotation
-								rot = 1
-
-								-- Symemtry
-								sym = true
+								-- Symmetry
+								firstTransfo.symmetry = true
+								firstTransfo.rotation = 1
 
 								-- Translation
 								trans = [-cellSize,0,0]
@@ -2629,10 +2640,9 @@ group "Projects management"
 								ref = NeLImportzone (ligo_root_path+ligo_transition_path+(getFilenameFile materialName[1])+"-"+(getFilenameFile materialName[2])+"-0"+nel_zone_ext) true
 
 								-- Rotation
-								rot = 2
-
-								-- Symemtry
-								sym = true
+								-- Symmetry
+								firstTransfo.symmetry = true
+								firstTransfo.rotation = 0
 							)
 
 							if ref != undefined then
@@ -2654,44 +2664,35 @@ group "Projects management"
 
 								-- Rotation
 								mt = translate mt ([-cellSize/2,-cellSize/2,0] + trans)
-								mt = rotateZ mt (90*rot)
-
-								-- Scale
-								scaled = false
-
-								if sym == true then
-								(
-									mt = scale mt [1,-1,1] true
-									if scaled == true then
-										scaled = false
-									else 
-										scaled = true
-								)
 
 								if EdgeType[id][edge] >= 3 then
 								(
-									mt = scale mt [1,-1,1] true
-									if scaled == true then
-										scaled = false
-									else 
-										scaled = true
+									-- Destintation edge in inverted ? Symmetry
+									secondTransfo = compose (zone_transformation false 3) (zone_transformation true 1) 
 								)
 
-								-- Set the scale app data
-								if scaled == true then
-									scaled = 1
+								-- Final transformation
+								secondTransfo = compose secondTransfo (zone_transformation false (NeighborDeltaRot[edge] / 90))
+								finalTransfo = compose firstTransfo secondTransfo
+
+								-- Final symmetry
+								if finalTransfo.symmetry == true then
+								(
+									mt = scale mt [-1,1,1] true
+								)
+
+								-- Final rotation
+								mt = rotateZ mt (90*finalTransfo.rotation)
+
+								-- Set appdata
+								if finalTransfo.symmetry == true then
+									symmetryValue = 1
 								else
-									scaled = 0
+									symmetryValue = 0
+								setappdata ref ligo_symmetry_app (symmetryValue as string)
+								setappdata ref ligo_rotate_app (finalTransfo.rotation as string)
 
-								setappdata ref ligo_scale_app (scaled as string)
-
-								-- Compute finale rotation
-								if scaled == 1 then
-									rot = 4-rot;
-								rot = mod (rot + NeighborDeltaRot[edge] / 90) 4
-								setappdata ref ligo_rotate_app (rot as string)
-
-								mt = rotateZ mt NeighborDeltaRot[edge]
+								-- Final translation
 								pos = (NeighborDeltaPos[edge] + [posX,posY,0]) * cellSize
 								mt = translate mt ([cellSize/2,cellSize/2,0] + pos)
 

@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.16 2002/03/07 15:39:08 berenguier Exp $
+ * $Id: zone.h,v 1.17 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,8 @@ namespace NL3D
 
 class CZone;
 class CLandscape;
+class CZoneSymmetrisation;
+class CTileBank;
 
 using NLMISC::CAABBoxExt;
 
@@ -191,6 +193,42 @@ public:
 		// Test it
 		return ((Flags&(1<<edge))!=0);
 	}
+
+	/** Get neighbor tile across a edge 
+	  * 
+	  * \param patchid is the id of this patch
+	  * \param edge is the edge shared with the neigbor
+	  * \param position is the position over the edge in CCW across the patch.
+	  * So if edge == 0, position is oriented like OT
+	  * So if edge == 1, position is oriented like OS
+	  * So if edge == 2, position is oriented like -OT
+	  * So if edge == 3, position is oriented like -OS
+	  * \param patchOut will be filled with the output patch id
+	  * \param sOut will be filled with the output patch s coordinate
+	  * \param tOut will be filled with the output patch t coordinate
+	  * \param patchInfos is the vector of all patch info
+	  * \return false if no neighbor has been found or tile ratio is not the same than in this patch.
+	  */
+	bool getNeighborTile (uint patchId, uint edge, sint position, uint &patchOut, sint &sOut, sint &tOut, const std::vector<CPatchInfo> &patchInfos) const;
+
+	/** Adjusts a CPatchInfo array to get a symmetrized / rotated zone with matching oriented tiles.
+	  * This method only adjuste tile and vertex color array, does'nt transform vertices.
+	  *
+	  * Transform an array of patchInfo by a symmetry on OY axis followed by a 90° CCW rotation (0, 1, 2, 3).
+	  *
+	  * The method doesn't transform vertices.
+	  * If symmetry, the method invert 0-3 and 1-2 vertices indexes to get CCW oriented patches. It will fix bind informations.
+	  * The method fixes tile and color vertex arrays.
+	  * The method fixes tile rotation, 256 cases and tile transistions.
+	  *
+	  * Return false if something wrong.
+	  */
+	static bool transform (std::vector<CPatchInfo> &patchInfo, NL3D::CZoneSymmetrisation &zoneSymmetry, const NL3D::CTileBank &bank, bool symmetry, uint rotate, float snapCell, float weldThreshold, const NLMISC::CMatrix &toOriginalSpace);
+
+	// Transform tile and 256 case with rotation and symmetry parameters
+	static bool getTileSymmetryRotate (const NL3D::CTileBank &bank, uint tile, bool &symmetry, uint &rotate);
+	static bool transformTile (const NL3D::CTileBank &bank, uint &tile, uint &tileRotation, bool symmetry, uint rotate, bool goofy);
+	static void transform256Case (const NL3D::CTileBank &bank, uint8 &case256, uint tileRotation, bool symmetry, uint rotate, bool goofy);
 
 	/// \name Patch Binding.
 	// @{

@@ -88,7 +88,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /debug /machine:I386
 # ADD LINK32 Maxscrpt.lib helpsys.lib comctl32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib delayimp.lib bmm.lib core.lib edmodel.lib geom.lib gfx.lib mesh.lib mnmath.lib paramblk2.lib maxutil.lib acap.lib version.lib winmm.lib stlport_vc6.lib freetype.lib /nologo /base:"0x05830000" /subsystem:windows /dll /debug /machine:I386 /out:"C:\3dsmax3_1 debug\exe\plugins\nelpaintpatch.dlm"
-# SUBTRACT LINK32 /pdb:none
+# SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Hybrid"
 
@@ -212,6 +212,10 @@ SOURCE=.\cur00001.cur
 # Begin Source File
 
 SOURCE=.\cursor1.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\pick_col.cur
 # End Source File
 # Begin Source File
 
@@ -1183,6 +1187,66 @@ InputName=all
 # End Source File
 # Begin Source File
 
+SOURCE=.\goofy.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\goofy.tga
+
+!IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\goofy.tga
+InputName=goofy
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Debug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\goofy.tga
+InputName=goofy
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Hybrid"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\goofy.tga
+InputName=goofy
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 ReleaseDebug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\goofy.tga
+InputName=goofy
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\large.cpp
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1423,6 +1487,66 @@ InputName=medium
 # End Source File
 # Begin Source File
 
+SOURCE=.\nothing.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\nothing.tga
+
+!IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\nothing.tga
+InputName=nothing
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Debug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\nothing.tga
+InputName=nothing
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Hybrid"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\nothing.tga
+InputName=nothing
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 ReleaseDebug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\nothing.tga
+InputName=nothing
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=.\oriented.cpp
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -1472,6 +1596,66 @@ InputName=oriented
 ProjDir=.
 InputPath=.\oriented.tga
 InputName=oriented
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=.\regular.cpp
+# SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=.\regular.tga
+
+!IF  "$(CFG)" == "nel_patch_paint - Win32 Release"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\regular.tga
+InputName=regular
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Debug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\regular.tga
+InputName=regular
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 Hybrid"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\regular.tga
+InputName=regular
+
+"$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
+	bin2c $(InputPath) $(InputName).cpp
+
+# End Custom Build
+
+!ELSEIF  "$(CFG)" == "nel_patch_paint - Win32 ReleaseDebug"
+
+# Begin Custom Build - Generate $(InputName).cpp
+ProjDir=.
+InputPath=.\regular.tga
+InputName=regular
 
 "$(ProjDir)\$(InputName).cpp" : $(SOURCE) "$(INTDIR)" "$(OUTDIR)"
 	bin2c $(InputPath) $(InputName).cpp

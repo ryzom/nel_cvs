@@ -70,9 +70,13 @@ public:
 	CSmartPtr<CTextureMem>				lightBitmap;
 	CSmartPtr<CTextureMem>				lockBitmap;
 	CSmartPtr<CTextureMem>				orientedBitmap;
+	CSmartPtr<CTextureMem>				nothingBitmap;
+	CSmartPtr<CTextureMem>				regularBitmap;
+	CSmartPtr<CTextureMem>				goofyBitmap;
 
 	// Handle on 
 	HCURSOR								HCur;
+	HCURSOR								HInspect;
 	HCURSOR								HFill;
 	HCURSOR								HTrick;
 
@@ -117,6 +121,7 @@ enum PainterKeysType
 	LockBorders,
 	ZoomIn,
 	ZoomOut,
+	GetState,
 	KeyCounter
 };
 

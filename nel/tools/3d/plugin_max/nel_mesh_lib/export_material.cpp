@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.34 2002/08/19 09:31:25 berenguier Exp $
+ * $Id: export_material.cpp,v 1.35 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -691,7 +691,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 		// Look for a diffuse texmap
 		vector<bool> mapEnables;
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "mapEnables", (ParamType2)TYPE_BOOL_TAB, &mapEnables, time);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "mapEnables", (ParamType2)TYPE_BOOL_TAB, &mapEnables, time, false);
 
 		Texmap *pDifTexmap = NULL;
 		Texmap *pOpaTexmap = NULL;
@@ -710,10 +710,10 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		int bForceZWrite = 0; // false
 		int bForceNoZWrite = 0; // false
 
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceZWrite", (ParamType2)TYPE_BOOL, &bForceZWrite, time);
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceNoZWrite", (ParamType2)TYPE_BOOL, &bForceNoZWrite, time);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceZWrite", (ParamType2)TYPE_BOOL, &bForceZWrite, time, false);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bForceNoZWrite", (ParamType2)TYPE_BOOL, &bForceNoZWrite, time, false);
 
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaTest", (ParamType2)TYPE_BOOL, &bAlphaTest, time);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaTest", (ParamType2)TYPE_BOOL, &bAlphaTest, time, false);
 
 		if( pSpeTexmap != NULL )
 		{
@@ -721,7 +721,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		}
 		else
 		{
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, time);		
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "bLightMap", (ParamType2)TYPE_BOOL, &bLightMap, time, false);
 			if (bLightMap)
 			{
 				material.setShader (CMaterial::LightMap);
@@ -733,7 +733,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		}
 
 		int bStainedGlassWindow = 0;
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bStainedGlassWindow", (ParamType2)TYPE_BOOL, &bStainedGlassWindow, time);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bStainedGlassWindow", (ParamType2)TYPE_BOOL, &bStainedGlassWindow, time, false);
 		material.setStainedGlassWindow( bStainedGlassWindow!=0 );
 
 		material.setAlphaTest(false);
@@ -830,7 +830,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 														CTextureCube::negative_x, CTextureCube::positive_x,
 														CTextureCube::negative_y, CTextureCube::positive_y	};
 				vector<string> names;
-				CExportNel::getValueByNameUsingParamBlock2 (mtl, "bitmapName", (ParamType2)TYPE_STRING_TAB, &names, time);
+				CExportNel::getValueByNameUsingParamBlock2 (mtl, "bitmapName", (ParamType2)TYPE_STRING_TAB, &names, time, false);
 				for( int i = 0; i< (int)names.size(); ++i )
 				{
 					CTextureFile *pT = new CTextureFile;
@@ -890,7 +890,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 		// Blend mode
 		int opacityType = 0; // 0-filter 1-substractive 2-additive
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacityType", (ParamType2)TYPE_INT, &opacityType, time);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacityType", (ParamType2)TYPE_INT, &opacityType, time, false);
 		if( opacityType == 0 ) // Filter
 			material.setBlendFunc (CMaterial::srcalpha, CMaterial::invsrcalpha);
 		else
@@ -921,14 +921,14 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 			//Color color=stdmat->GetDiffuse (time);
 			Point3 maxDiffuse;
 			CRGBA  nelDiffuse;
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "diffuse", (ParamType2)TYPE_RGBA, &maxDiffuse, time);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "diffuse", (ParamType2)TYPE_RGBA, &maxDiffuse, time, false);
 
 			// Convert to NeL color
 			convertColor (nelDiffuse, maxDiffuse);
 			// Get the opacity value from the material
 			// float fOp=stdmat->GetOpacity (time);
 			float fOp = 0.0f;
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacity", (ParamType2)TYPE_PCNT_FRAC, &fOp, time);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "opacity", (ParamType2)TYPE_PCNT_FRAC, &fOp, time, false);
 
 			// Add alpha to the value
 			float fA=(fOp*255.f+0.5f);
@@ -969,35 +969,35 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 			int bSelfIllumColorOn;
 			Point3 maxSelfIllum;
 			float fTemp;
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "useSelfIllumColor", (ParamType2)TYPE_BOOL, &bSelfIllumColorOn, time);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "useSelfIllumColor", (ParamType2)TYPE_BOOL, &bSelfIllumColorOn, time, false);
 			if( bSelfIllumColorOn )
 			{
-				CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumColor", (ParamType2)TYPE_RGBA, &maxSelfIllum, time);
+				CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumColor", (ParamType2)TYPE_RGBA, &maxSelfIllum, time, false);
 			}
 			else
 			{
-				CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumAmount", (ParamType2)TYPE_PCNT_FRAC, &fTemp, time);
+				CExportNel::getValueByNameUsingParamBlock2 (mtl, "selfIllumAmount", (ParamType2)TYPE_PCNT_FRAC, &fTemp, time, false);
 				maxSelfIllum = maxDiffuse * fTemp;
 			}
 			convertColor( nelEmissive, maxSelfIllum );
 
 			Point3 maxAmbient;
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "ambient", (ParamType2)TYPE_RGBA, &maxAmbient, time);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "ambient", (ParamType2)TYPE_RGBA, &maxAmbient, time, false);
 			convertColor (nelAmbient, maxAmbient);
 
 			Point3 maxSpecular;
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "specular", (ParamType2)TYPE_RGBA, &maxSpecular, time);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "specular", (ParamType2)TYPE_RGBA, &maxSpecular, time, false);
 			convertColor (nelSpecular, maxSpecular);
 
 			// Specular level
 			float shininess; //=stdmat->GetShinStr(time);
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "specularLevel", (ParamType2)TYPE_PCNT_FRAC, &shininess, time);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "specularLevel", (ParamType2)TYPE_PCNT_FRAC, &shininess, time, false);
 			CRGBAF fColor = nelSpecular;
 			fColor *= shininess;
 			nelSpecular = fColor;
 
 			// Shininess
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "glossiness", (ParamType2)TYPE_PCNT_FRAC, &shininess, time);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "glossiness", (ParamType2)TYPE_PCNT_FRAC, &shininess, time, false);
 			//shininess=stdmat->GetShader()->GetGlossiness(time);
 			shininess=(float)pow(2.0, shininess * 10.0) * 4.f;
 
@@ -1006,7 +1006,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 			// Double sided
 			int bDoubleSided;
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "twoSided", (ParamType2)TYPE_BOOL, &bDoubleSided, time);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "twoSided", (ParamType2)TYPE_BOOL, &bDoubleSided, time, false);
 
 			//material.setDoubleSided (stdmat->GetTwoSided()!=FALSE);
 			material.setDoubleSided ( bDoubleSided!=0 );
@@ -1015,7 +1015,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		if( ! bLightMap )
 		{
 			int bUnlighted = 0; // false
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "bUnlighted", (ParamType2)TYPE_BOOL, &bUnlighted, 0);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "bUnlighted", (ParamType2)TYPE_BOOL, &bUnlighted, 0, false);
 			if( bUnlighted )	
 			{
 				material.setLighting( false );
@@ -1026,7 +1026,7 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 		int bAlphaVertex = 0; // false
 
 		// Get the scripted value
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaVertex", (ParamType2)TYPE_BOOL, &bAlphaVertex, time);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bAlphaVertex", (ParamType2)TYPE_BOOL, &bAlphaVertex, time, false);
 
 		// Find ?
 		if ( bAlphaVertex )
@@ -1054,14 +1054,14 @@ void CExportNel::buildAMaterial (NL3D::CMaterial& material, CMaxMaterialInfo& ma
 
 			// Get the channel for alpha vertex
 			materialInfo.AlphaVertexChannel = 0;
-			CExportNel::getValueByNameUsingParamBlock2 (mtl, "iAlphaVertexChannel", (ParamType2)TYPE_INT, &materialInfo.AlphaVertexChannel, time);
+			CExportNel::getValueByNameUsingParamBlock2 (mtl, "iAlphaVertexChannel", (ParamType2)TYPE_INT, &materialInfo.AlphaVertexChannel, time, false);
 		}
 
 		// Use color vertex ?
 		int bColorVertex = 0; // false
 
 		// Get the scripted value
-		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bColorVertex", (ParamType2)TYPE_BOOL, &bColorVertex, time);
+		CExportNel::getValueByNameUsingParamBlock2 (mtl, "bColorVertex", (ParamType2)TYPE_BOOL, &bColorVertex, time, false);
 
 		// Find ?
 		if ( bColorVertex )

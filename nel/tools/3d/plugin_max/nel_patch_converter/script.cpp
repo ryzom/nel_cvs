@@ -1,7 +1,7 @@
 /** \file script.cpp
  * <File description>
  *
- * $Id: script.cpp,v 1.9 2002/07/16 12:08:10 corvazier Exp $
+ * $Id: script.cpp,v 1.10 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "..\nel_mesh_lib\export_lod.h"
 
 #include "3d/zone.h"
+#include "3d/zone_symmetrisation.h"
 #include "3d/tile_bank.h"
 
 #include "nel/misc/file.h"
@@ -179,7 +180,8 @@ export_zone_cf (Value** arg_list, int count)
 
 			// Create a zone
 			CZone zone;
-			if (tri->rpatch->exportZone (node, &tri->patch, zone, nZone))
+			CZoneSymmetrisation zoneSymmetry;
+			if (tri->rpatch->exportZone (node, &tri->patch, zone, zoneSymmetry, nZone, 160, 1))
 			{
 				// Export path 
 				const char* sPath=arg_list[1]->to_string();

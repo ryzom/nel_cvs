@@ -5,6 +5,7 @@
 #define IDC_PICK_COLOR                  192
 #define IDC_FILL                        193
 #define IDC_TRICK                       194
+#define IDC_INSPECT                     195
 #define IDD_EDPATCH_OPS                 200
 #define IDC_PAINT                       1073
 #define IDC_INCLUDE_MESHES              1074

@@ -400,6 +400,8 @@ class PaintPatchMod : public Modifier
 		static BOOL rsOps;	// rollup states (FALSE = rolled up)
 		
 		static EPM_PaintCMode *paintMode;
+		static bool		ShowCurrentState;
+		static uint		CurrentState;
 		static int		CurrentTileSet;
 		static int		brushSize;
 		static int		ColorBushSize;

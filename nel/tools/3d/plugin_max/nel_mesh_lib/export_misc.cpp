@@ -1,7 +1,7 @@
 /** \file export_misc.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_misc.cpp,v 1.25 2002/07/03 13:24:08 corvazier Exp $
+ * $Id: export_misc.cpp,v 1.26 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -409,7 +409,7 @@ bool getValueByNameUsingParamBlock2Internal (Animatable& node, const char* sName
 // --------------------------------------------------
 
 // Return the pointer on the subanim with the name sName of the node. If it doesn't exist, return NULL.
-bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* sName, ParamType2 type, void *pValue, TimeValue tvTime)
+bool CExportNel::getValueByNameUsingParamBlock2 (Animatable& node, const char* sName, ParamType2 type, void *pValue, TimeValue tvTime, bool verbose)
 {
 	if (getValueByNameUsingParamBlock2Internal (node, sName, type, pValue, tvTime))
 	{

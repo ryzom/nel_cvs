@@ -96,7 +96,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1, 0, 0, 50
+ FILEVERSION 1,0,0,50
  PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -155,6 +155,7 @@ LANGUAGE LANG_FRENCH, SUBLANG_FRENCH
 IDC_PICK_COLOR          CURSOR  DISCARDABLE     "pick_color.cur"
 IDC_FILL                CURSOR  DISCARDABLE     "cursor1.cur"
 IDC_TRICK               CURSOR  DISCARDABLE     "cur00001.cur"
+IDC_INSPECT             CURSOR  DISCARDABLE     "pick_col.cur"
 #endif    // French (France) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.21 2002/07/16 12:08:10 corvazier Exp $
+ * $Id: export_scene.cpp,v 1.22 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "3d/scene_group.h"
 #include "3d/scene.h"
 #include "3d/shape_bank.h"
+#include "3d/zone_symmetrisation.h"
 
 #include <vector>
 
@@ -620,8 +621,9 @@ void CExportNel::buildScene (NL3D::CScene &scene, NL3D::CShapeBank &shapeBank, I
 					if (tri)
 					{
 						CZone zone;
+						CZoneSymmetrisation	sym;
 						static int zoneId = 0;
-						if (tri->rpatch->exportZone (pNode, &tri->patch, zone, zoneId++))
+						if (tri->rpatch->exportZone (pNode, &tri->patch, zone, sym, zoneId++, 160, 1))
 							landscape->addZone (zone);
 					}
 				}

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.19 2002/05/13 12:49:34 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.20 2002/08/21 13:38:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,140 +155,7 @@ int getScriptAppData (Animatable *node, uint32 id, int def)
 
 // ***************************************************************************
 
-bool RPatchMesh::getTileSymmetryRotate (const CTileBank &bank, uint tile, bool &symmetry, uint &rotate)
-{
-	// Need check the tile ?
-	if ( (symmetry || (rotate != 0)) && (tile != 0xffffffff) )
-	{
-		// Tile exist ?
-		if (tile < (uint)bank.getTileCount())
-		{
-			// Get xref
-			int tileSet;
-			int number;
-			CTileBank::TTileType type;
-
-			// Get tile xref
-			bank.getTileXRef ((int)tile, tileSet, number, type);
-
-			// Is it an oriented tile ?
-			if (bank.getTileSet (tileSet)->getOriented())
-			{
-				// New rotation value
-				rotate = 0;
-			}
-
-			// Ok
-			return true;
-		}
-
-		return false;
-	}
-	else
-		return true;
-}
-
-// ***************************************************************************
-
-bool RPatchMesh::transformTile (const CTileBank &bank, uint &tile, uint &tileRotation, bool symmetry, uint rotate)
-{
-	// Tile exist ?
-	if ( (rotate!=0) || symmetry )
-	{
-		if (tile < (uint)bank.getTileCount())
-		{
-			// Get xref
-			int tileSet;
-			int number;
-			CTileBank::TTileType type;
-
-			// Get tile xref
-			bank.getTileXRef ((int)tile, tileSet, number, type);
-
-			// Transition ?
-			if (type == CTileBank::transition)
-			{
-				// Number should be ok
-				nlassert (number>=0);
-				nlassert (number<CTileSet::count);
-
-				// Tlie set number
-				const CTileSet *pTileSet = bank.getTileSet (tileSet);
-
-				// Get border desc
-				CTileSet::TFlagBorder oriented[4] = 
-				{	
-					pTileSet->getOrientedBorder (CTileSet::left, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::left)),
-					pTileSet->getOrientedBorder (CTileSet::bottom, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::bottom)),
-					pTileSet->getOrientedBorder (CTileSet::right, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::right)),
-					pTileSet->getOrientedBorder (CTileSet::top, CTileSet::getEdgeType ((CTileSet::TTransition)number, CTileSet::top))
-				};
-
-				// Symmetry ?
-				if (symmetry)
-				{
-					CTileSet::TFlagBorder tmp = oriented[(0)&3];
-					oriented[(0)&3] = CTileSet::getInvertBorder (oriented[(2)&3]);
-					oriented[(2)&3] = CTileSet::getInvertBorder (tmp);
-					oriented[(1)&3] = CTileSet::getInvertBorder (oriented[(1)&3]);
-					oriented[(3)&3] = CTileSet::getInvertBorder (oriented[(3)&3]);
-				}
-
-				// Rotation
-				CTileSet::TFlagBorder edges[4];
-				edges[0] = pTileSet->getOrientedBorder (CTileSet::left, oriented[(0 + rotate )&3]);
-				edges[1] = pTileSet->getOrientedBorder (CTileSet::bottom, oriented[(1 + rotate )&3]);
-				edges[2] = pTileSet->getOrientedBorder (CTileSet::right, oriented[(2 + rotate )&3]);
-				edges[3] = pTileSet->getOrientedBorder (CTileSet::top, oriented[(3 + rotate )&3]);
-
-				// Get the good tile number
-				CTileSet::TTransition transition = pTileSet->getTransitionTile (edges[3], edges[1], edges[0], edges[2]);
-				nlassert ((CTileSet::TTransition)transition != CTileSet::notfound);
-				tile = (uint)(pTileSet->getTransition (transition)->getTile ());
-			}
-
-			// Transform rotation
-			if (symmetry)
-				tileRotation = (4-tileRotation)&3;
-			tileRotation += rotate;
-			tileRotation &= 3;
-		}
-		else
-			return false;
-	}
-
-	// Ok
-	return true;
-}
-
-// ***************************************************************************
-
-void RPatchMesh::transform256Case (const CTileBank &bank, uint &case256, uint tileRotation, bool symmetry, uint rotate)
-{
-	// Tile exist ?
-	if ( (rotate!=0) || symmetry )
-	{
-		// Remove its rotation
-		case256 += tileRotation;
-		case256 &= 3;
-
-		// Symmetry ?
-		if (symmetry)
-		{
-			// Take the symmetry
-			uint symArray[4] = {3, 2, 1, 0};
-			case256 = symArray[case256];
-		}
-
-		// Rotation ?
-		case256 -= rotate + tileRotation;
-		case256 &= 3;
-	}
-}
-
-// ***************************************************************************
-
-bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int zoneId)
+bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZoneSymmetrisation &zoneSymmetry, int zoneId, float snapCell, float weldThreshold)
 {
 	Matrix3					TM;
 	CPatchInfo				pi;
@@ -299,9 +166,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 	
 	TM=pNode->GetObjectTM(0);
 
-	// ---
 	// --- Get the rotation value and symmetry flags
-	// ---
 	bool symmetry = getScriptAppData (pNode, NEL3D_APPDATA_ZONE_SYMMETRY, 0) != 0;
 	int rotate = getScriptAppData (pNode, NEL3D_APPDATA_ZONE_ROTATE, 0);
 
@@ -458,130 +323,16 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 		pi.BaseVertices[3]=pPatch->v[3];
 		pi.Tiles.resize(pi.OrderS*pi.OrderT);
 
-		// Symmetry ?
-		if (symmetry)
-		{
-			// Vertices
-			CVector tmp = pi.Patch.Vertices[0];
-			pi.Patch.Vertices[0] = pi.Patch.Vertices[3];
-			pi.Patch.Vertices[3] = tmp;
-			tmp = pi.Patch.Vertices[1];
-			pi.Patch.Vertices[1] = pi.Patch.Vertices[2];
-			pi.Patch.Vertices[2] = tmp;
-
-			// Tangents
-			tmp = pi.Patch.Tangents[0];
-			pi.Patch.Tangents[0] = pi.Patch.Tangents[5];
-			pi.Patch.Tangents[5] = tmp;
-			tmp = pi.Patch.Tangents[1];
-			pi.Patch.Tangents[1] = pi.Patch.Tangents[4];
-			pi.Patch.Tangents[4] = tmp;
-			tmp = pi.Patch.Tangents[2];
-			pi.Patch.Tangents[2] = pi.Patch.Tangents[3];
-			pi.Patch.Tangents[3] = tmp;
-			tmp = pi.Patch.Tangents[6];
-			pi.Patch.Tangents[6] = pi.Patch.Tangents[7];
-			pi.Patch.Tangents[7] = tmp;
-
-			// Interior
-			tmp = pi.Patch.Interiors[0];
-			pi.Patch.Interiors[0] = pi.Patch.Interiors[3];
-			pi.Patch.Interiors[3] = tmp;
-			tmp = pi.Patch.Interiors[1];
-			pi.Patch.Interiors[1] = pi.Patch.Interiors[2];
-			pi.Patch.Interiors[2] = tmp;
-		}
-
-		// Tile infos
-		int u,v;
-		for (v=0; v<pi.OrderT; v++)
-		for (u=0; u<pi.OrderS; u++)
-		{
-			// U tile
-			int uSymmetry = symmetry ? (pi.OrderS-u-1) : u;
-
-			tileDesc &desc=getUIPatch (i).getTileDesc (u+v*pi.OrderS);
-			for (int l=0; l<3; l++)
-			{
-				if (l>=desc.getNumLayer ())
-				{
-					pi.Tiles[uSymmetry+v*pi.OrderS].Tile[l]=0xffff;
-				}
-				else
-				{
-					// Get the tile index
-					uint tile = desc.getLayer (l).Tile;
-					uint tileRotation = desc.getLayer (l).Rotate;
-
-					// Get rot and symmetry for this tile
-					uint tileRotate = rotate;
-					bool tileSymmetry = symmetry;
-
-					// Transform the transfo
-					if (getTileSymmetryRotate (bank, tile, tileSymmetry, tileRotate))
-					{
-						// Transform the tile
-						if (!transformTile (bank, tile, tileRotation, tileSymmetry, (4-tileRotate)&3))
-						{
-							// Info
-							nlwarning ("Error getting symmetrical / rotated zone tile.");
-							return false;
-						}
-					}
-					else
-					{
-						// Info
-						nlwarning ("Error getting symmetrical / rotated zone tile.");
-						return false;
-					}
-
-					// Set the tile
-					pi.Tiles[uSymmetry+v*pi.OrderS].Tile[l] = tile;
-					pi.Tiles[uSymmetry+v*pi.OrderS].setTileOrient (l, (uint8)tileRotation);
-				}
-			}
-			if (pi.Tiles[uSymmetry+v*pi.OrderS].Tile[0]==0xffff)
-				pi.Tiles[uSymmetry+v*pi.OrderS].setTile256Info (false, 0);
-			else
-			{
-				if (desc.getCase()==0)
-					pi.Tiles[uSymmetry+v*pi.OrderS].setTile256Info (false, 0);
-				else
-				{
-					// Transform 256 case
-					uint case256 = desc.getCase()-1;
-
-					// Get rot and symmetry for this tile
-					uint tileRotate = rotate;
-					bool tileSymmetry = symmetry;
-
-					// Transform the transfo
-					getTileSymmetryRotate (bank, pi.Tiles[uSymmetry+v*pi.OrderS].Tile[0], tileSymmetry, tileRotate);
-
-					// Transform the case
-					transform256Case (bank, case256, 0, tileSymmetry, (4-tileRotate)&3);
-
-					pi.Tiles[uSymmetry+v*pi.OrderS].setTile256Info (true, case256);
-				}
-			}
-			pi.Tiles[uSymmetry+v*pi.OrderS].setTileSubNoise (desc.getDisplace());
-
-			// Default VegetableState: AboveWater. Important: must not be VegetableDisabled
-			pi.Tiles[uSymmetry+v*pi.OrderS].setVegetableState (CTileElement::AboveWater);
-		}
-
 		// ** Export tile colors
 
 		// Resize color table
 		pi.TileColors.resize ((pi.OrderS+1)*(pi.OrderT+1));
 
 		// Export it
+		int u,v;
 		for (v=0; v<pi.OrderT+1; v++)
 		for (u=0; u<pi.OrderS+1; u++)
 		{
-			// U tile
-			int uSymmetry = symmetry ? (pi.OrderS-u) : u;
-
 			// Get rgb value at this vertex
 			uint color=getUIPatch (i).getColor (u+v*(pi.OrderS+1));
 
@@ -589,7 +340,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 			CRGBA rgba ( (color&0xff0000)>>16, (color&0x00ff00)>>8, color&0xff );
 
 			// Store it in the tile info
-			pi.TileColors[uSymmetry+v*(pi.OrderS+1)].Color565=rgba.get565();
+			pi.TileColors[u+v*(pi.OrderS+1)].Color565=rgba.get565();
 		}
 
 		// ** Export tile shading
@@ -617,6 +368,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 		patchinfo.push_back(pi);
 
 	}
+	
 	// ---
 	// --- Pass 1 :
 	// --- Parse each patch and then each vertex.
@@ -709,6 +461,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 			}
 		}
 	}
+	
 	// ---
 	// --- Pass 2 :
 	// --- Get all one/one cases.
@@ -760,58 +513,75 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 		}
 	}
 
-	// ---
-	// --- Pass 3 :
-	// --- Symmetry of the bind info.
-	// --- Parse each patch and each edge
-	// ---
-	if (symmetry)
+	// Fill tile infos with temp data 
+	// Tileset of the tile and rotation is important but tile number, rotation and case will be ajusted later
+	// For each patches
+	for (i=0; i<pPM->numPatches; i++)
 	{
-		// For each patches
-		for (i=0 ; i<pPM->numPatches ; i++)
+		// Ref on the patch info
+		CPatchInfo &patchInfo = patchinfo[i];
+
+		int u,v;
+		for (v=0; v<patchInfo.OrderT; v++)
+		for (u=0; u<patchInfo.OrderS; u++)
 		{
-			// Ref on the patch info
-			CPatchInfo &patchInfo = patchinfo[i];
-
-			// Xchg left and right
-			swap (patchInfo.BindEdges[0], patchInfo.BindEdges[2]);
-			swap (patchInfo.BaseVertices[0], patchInfo.BaseVertices[3]);
-			swap (patchInfo.BaseVertices[1], patchInfo.BaseVertices[2]);
-
-			// Flip edges
-			for (uint edge=0; edge<4; edge++)
+			tileDesc &desc=getUIPatch (i).getTileDesc (u+v*patchInfo.OrderS);
+			for (int l=0; l<3; l++)
 			{
-				// Ref on the patch info
-				CPatchInfo::CBindInfo &bindEdge = patchinfo[i].BindEdges[edge];
-
-				uint next;
-				// Look if it is a bind ?
-				if ( (bindEdge.NPatchs>1) && (bindEdge.NPatchs!=5) )
+				if (l>=desc.getNumLayer ())
 				{
-					for (next=0; next<(uint)bindEdge.NPatchs/2; next++)
-					{
-						swap (bindEdge.Next[bindEdge.NPatchs - next - 1], bindEdge.Next[next]);
-						swap (bindEdge.Edge[bindEdge.NPatchs - next - 1], bindEdge.Edge[next]);
-					}
+					patchInfo.Tiles[u+v*patchInfo.OrderS].Tile[l]=0xffff;
 				}
-
-				// Look if we are binded on a reversed edge
-				uint bindCount = (bindEdge.NPatchs==5) ? 1 : bindEdge.NPatchs;
-				for (next=0; next<bindCount; next++)
+				else
 				{
-					// Left or right ?
-					if ( (bindEdge.Edge[next] & 1) == 0)
-					{
-						// Invert
-						bindEdge.Edge[next] += 2;
-						bindEdge.Edge[next] &= 3;
-					}
+					// Get the tile index
+					uint tile = desc.getLayer (l).Tile;
+					uint tileRotation = desc.getLayer (l).Rotate;
+
+					// Set the tile
+					patchInfo.Tiles[u+v*patchInfo.OrderS].Tile[l] = tile;
+					patchInfo.Tiles[u+v*patchInfo.OrderS].setTileOrient (l, (uint8)tileRotation);
 				}
 			}
+			if (patchInfo.Tiles[u+v*patchInfo.OrderS].Tile[0]==0xffff)
+				patchInfo.Tiles[u+v*patchInfo.OrderS].setTile256Info (false, 0);
+			else
+			{
+				if (desc.getCase()==0)
+					patchInfo.Tiles[u+v*patchInfo.OrderS].setTile256Info (false, 0);
+				else
+				{
+					// Transform 256 case
+					uint case256 = desc.getCase()-1;
+					patchInfo.Tiles[u+v*patchInfo.OrderS].setTile256Info (true, case256);
+				}
+			}
+			patchInfo.Tiles[u+v*patchInfo.OrderS].setTileSubNoise (desc.getDisplace());
+
+			// Default VegetableState: AboveWater. Important: must not be VegetableDisabled
+			patchInfo.Tiles[u+v*patchInfo.OrderS].setVegetableState (CTileElement::AboveWater);
 		}
 	}
 
-	zone.build(zoneId, patchinfo, std::vector<CBorderVertex>());
+	// Transform the zone (symmetry and rotate)
+	if (symmetry || rotate)
+	{
+		CMatrix sym, rot;
+		sym.identity ();
+		rot.identity ();
+		if (symmetry)
+			sym.scale (CVector (1, -1, 1));
+		rot.rotateZ ((float) Pi * (float) rotate / 2.f);
+		sym *= rot;	
+		sym.invert ();
+		if (!CPatchInfo::transform (patchinfo, zoneSymmetry, bank, symmetry, rotate, snapCell, weldThreshold, sym))
+		{
+			return false;
+		}
+	}
+
+	// Build the zone
+	zone.build (zoneId, patchinfo, std::vector<CBorderVertex>());
 	return true;
 }
 
@@ -933,9 +703,9 @@ void RPatchMesh::importZone (PatchMesh* pPM, NL3D::CZone& zone, int &zoneId)
 
 			// Set the tile
 			desc.setTile (numLayer, is256x256?uvOff+1:0, tileElement.getTileSubNoise(), 
-				tileIndex (false, tileElement.Tile[0], tileElement.getTileOrient (0)), 
-				tileIndex (false, tileElement.Tile[1], tileElement.getTileOrient (1)), 
-				tileIndex (false, tileElement.Tile[2], tileElement.getTileOrient (2)));
+				tileIndex (tileElement.Tile[0], tileElement.getTileOrient (0)), 
+				tileIndex (tileElement.Tile[1], tileElement.getTileOrient (1)), 
+				tileIndex (tileElement.Tile[2], tileElement.getTileOrient (2)));
 		}
 
 		// Tile colors

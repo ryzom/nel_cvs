@@ -88,6 +88,10 @@ echo "ZoneLight = 0;" >> land_exporter.cfg
 
 echo "CellSize = 160;" >> land_exporter.cfg
 
+# Threshild is the weld threshold in meter
+
+echo "Threshold = 1;" >> land_exporter.cfg
+
 # Where to take dfn files
 echo "DFNDir = \"$dir_dfn\";" >> land_exporter.cfg
 

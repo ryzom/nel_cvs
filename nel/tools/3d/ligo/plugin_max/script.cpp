@@ -1,7 +1,7 @@
 /** \file script.cpp
  * MaxScript extension for ligo plugins
  *
- * $Id: script.cpp,v 1.14 2002/07/25 16:45:48 corvazier Exp $
+ * $Id: script.cpp,v 1.15 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 
 // From nel 3d
 #include <3d/zone.h>
+#include <3d/zone_symmetrisation.h>
 #include <3d/nelu.h>
 #include <3d/landscape_model.h>
 
@@ -168,7 +169,8 @@ Value* export_material_cf (Value** arg_list, int count)
 				{
 					// Build a zone
 					NL3D::CZone zone;
-					if (tri->rpatch->exportZone (node, &tri->patch, zone, 0))
+					CZoneSymmetrisation zoneSymmetry;
+					if (tri->rpatch->exportZone (node, &tri->patch, zone, zoneSymmetry, 0, config.CellSize, config.Snap))
 					{
 						// Build a material
 						NLLIGO::CMaterial material;
@@ -442,7 +444,8 @@ Value* export_transition_cf (Value** arg_list, int count)
 								for (zone=0; zone<CTransition::TransitionZoneCount; zone++)
 								{
 									// Build the zone
-									if (!arrayTri[zone]->rpatch->exportZone (arrayNode[zone], &arrayTri[zone]->patch, zones[zone], 0))
+									CZoneSymmetrisation zoneSymmetry;
+									if (!arrayTri[zone]->rpatch->exportZone (arrayNode[zone], &arrayTri[zone]->patch, zones[zone], zoneSymmetry, 0, config.CellSize, config.Snap))
 									{
 										// Error, zone can't be exported
 										CMaxToLigo::errorMessage ("Error: can't export the Nel zone, check bind errors.", "NeL Ligo export material", 
@@ -1075,7 +1078,8 @@ Value* export_zone_cf (Value** arg_list, int count)
 
 					// Build the zone
 					CZone zone;
-					if (!tri->rpatch->exportZone (node, &tri->patch, zone, 0))
+					CZoneSymmetrisation zoneSymmetry;
+					if (!tri->rpatch->exportZone (node, &tri->patch, zone, zoneSymmetry, 0, config.CellSize, config.Snap))
 					{
 						// Error, zone can't be exported
 						CMaxToLigo::errorMessage ("Error: can't export the Nel zone, check bind errors.", "NeL Ligo export zone", 
@@ -1709,7 +1713,8 @@ Value* get_zone_mask_cf (Value** arg_list, int count)
 			{
 				// Build the zone
 				CZone zone;
-				if (!tri->rpatch->exportZone (node, &tri->patch, zone, 0))
+				CZoneSymmetrisation zoneSymmetry;
+				if (!tri->rpatch->exportZone (node, &tri->patch, zone, zoneSymmetry, 0, config.CellSize, config.Snap))
 				{
 					// Error, zone can't be exported
 					CMaxToLigo::errorMessage ("Error: can't export the Nel zone, check bind errors.", "NeL Ligo export zone", 
@@ -1872,7 +1877,8 @@ Value* get_zone_size_cf (Value** arg_list, int count)
 			{
 				// Build the zone
 				CZone zone;
-				if (!tri->rpatch->exportZone (node, &tri->patch, zone, 0))
+				CZoneSymmetrisation zoneSymmetry;
+				if (!tri->rpatch->exportZone (node, &tri->patch, zone, zoneSymmetry, 0, config.CellSize, config.Snap))
 				{
 					// Error, zone can't be exported
 					CMaxToLigo::errorMessage ("Error: can't export the Nel zone, check bind errors.", "NeL Ligo export zone", 
@@ -2143,7 +2149,8 @@ Value* make_snapshot_cf (Value** arg_list, int count)
 
 				// Build the zone
 				CZone zone;
-				if (!tri->rpatch->exportZone (node, &tri->patch, zone, 0))
+				CZoneSymmetrisation zoneSymmetry;
+				if (!tri->rpatch->exportZone (node, &tri->patch, zone, zoneSymmetry, 0, config.CellSize, config.Snap))
 				{
 					// Error, zone can't be exported
 					CMaxToLigo::errorMessage ("Error: can't export the Nel zone, check bind errors.", "NeL Ligo export zone", 

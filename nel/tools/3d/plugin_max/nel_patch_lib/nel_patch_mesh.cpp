@@ -1,7 +1,7 @@
 /** \file nel_patch_mesh.cpp
  * <File description>
  *
- * $Id: nel_patch_mesh.cpp,v 1.8 2002/04/04 11:49:27 corvazier Exp $
+ * $Id: nel_patch_mesh.cpp,v 1.9 2002/08/21 13:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "nel/misc/time_nl.h"
 #include "vertex_neighborhood.h"
 #include "../nel_3dsmax_shared/nel_3dsmax_shared.h"
+#include "3d/zone_symmetrisation.h"
 
 // For MAX_RELEASE
 #include <plugapi.h>
@@ -1936,7 +1937,7 @@ IOResult RPatchMesh::Load(ILoad *iload)
 							iload->Read(&invert, sizeof (bool), &nb);
 							iload->Read(&tile, sizeof (int), &nb);
 							iload->Read(&rotate, sizeof (int), &nb);
-							getUIPatch (i).getTileDesc (j)._MatIDTab[k].Invert=invert;
+							// Not used anymore getUIPatch (i).getTileDesc (j)._MatIDTab[k].Invert=invert;
 							getUIPatch (i).getTileDesc (j)._MatIDTab[k].Tile=tile;
 							getUIPatch (i).getTileDesc (j)._MatIDTab[k].Rotate=rotate;
 						}
@@ -2071,10 +2072,10 @@ IOResult RPatchMesh::Save(ISave *isave)
 
 			for (int k=0; k<3; k++)
 			{								
-				bool invert;
+				bool invert = false;
 				int tile;
 				int rotate;
-				invert=(getUIPatch (i).getTileDesc (j)._MatIDTab[k].Invert!=0);
+				// Not used anymore invert=(getUIPatch (i).getTileDesc (j)._MatIDTab[k].Invert!=0);
 				tile=getUIPatch (i).getTileDesc (j)._MatIDTab[k].Tile;
 				rotate=getUIPatch (i).getTileDesc (j)._MatIDTab[k].Rotate;
 				isave->Write(&invert, sizeof (bool), &nb);

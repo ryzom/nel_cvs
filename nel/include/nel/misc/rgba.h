@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.10 2001/01/11 13:54:18 berenguier Exp $
+ * $Id: rgba.h,v 1.11 2001/01/12 13:21:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,9 +94,16 @@ public:
 	/** 
 	 * Modulate colors with a constant.
 	 * \param c0 Color 0.
-	 * \param a E [0,255].  col*factor returned into this.
+	 * \param a E [0,255]. c0*a returned into this.
 	 */
 	void	modulateFromui (CRGBA &c0, uint a); 
+
+	/** 
+	 * Modulate colors with another color.
+	 * \param c0 Color 0.
+	 * \param c1 Color 1. c0*c1 returned into this.
+	 */
+	void	modulateFromColor (const CRGBA &c0, const CRGBA &c1);
 
 	/** 
 	 * Set colors.

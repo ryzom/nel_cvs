@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.55 2001/01/12 09:50:53 lecroart Exp $
+ * $Id: driver_opengl.cpp,v 1.56 2001/01/12 13:21:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -776,21 +776,17 @@ void CDriverGL::setPolygonMode (TPolygonMode mode)
 {
 	IDriver::setPolygonMode (mode);
 
-	// Retreive old values
-	GLenum value[2];
-	glGetIntegerv (GL_POLYGON_MODE, (GLint*)value);
-
 	// Set the polygon mode
 	switch (_PolygonMode)
 	{
 	case Filled:
-		glPolygonMode (value[0], GL_FILL);
+		glPolygonMode (GL_FRONT, GL_FILL);
 		break;
 	case Line:
-		glPolygonMode (value[0], GL_LINE);
+		glPolygonMode (GL_FRONT, GL_LINE);
 		break;
 	case Point:
-		glPolygonMode (value[0], GL_POINT);
+		glPolygonMode (GL_FRONT, GL_POINT);
 		break;
 	}
 }

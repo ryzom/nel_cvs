@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * ARGB pixel format
  *
- * $Id: rgba.cpp,v 1.7 2001/01/11 13:55:28 berenguier Exp $
+ * $Id: rgba.cpp,v 1.8 2001/01/12 13:21:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -72,6 +72,13 @@ void	CRGBA::modulateFromui (CRGBA &c0, uint a)
 	A = (c0.A*a) >>8;
 }
 
+void	CRGBA::modulateFromColor (const CRGBA &c0, const CRGBA &c1)
+{
+	R = (c0.R*c1.R) >>8;
+	G = (c0.G*c1.G) >>8;
+	B = (c0.B*c1.B) >>8;
+	A = (c0.A*c1.A) >>8;
+}
 
 
 // ***************************************************************************

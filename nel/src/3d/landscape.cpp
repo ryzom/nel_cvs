@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.33 2001/01/11 16:01:33 corvazier Exp $
+ * $Id: landscape.cpp,v 1.34 2001/01/12 13:21:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,9 @@ CLandscape::CLandscape()
 	// Far texture not initialized till initTileBanks is not called
 	_FarInitialized=false;
 	
+	// Init far lighting with White/black
+	setupStaticLight (CRGBA(255,255,255), CRGBA(0,0,0), 1.f);
+
 	fill(TileInfos.begin(), TileInfos.end(), (CTileInfo*)NULL);
 
 	_TileDistNear=100.f;
@@ -1241,5 +1244,38 @@ bool			CLandscape::initTileBanks ()
 	return bCompatibility;
 }
 
+
+// ***************************************************************************
+void			CLandscape::setupStaticLight (CRGBA diffuse, CRGBA ambiant, float multiply)
+{
+	sint nMultiply=(sint)(256.f*multiply);
+	for (int i=0; i<256; i++)
+	{
+		sint max=0;
+		sint r=(((nMultiply*diffuse.R*i)>>8)+ambiant.R*(256-i))>>8;
+		if (r>max)
+			max=r;
+		sint g=(((nMultiply*diffuse.G*i)>>8)+ambiant.G*(256-i))>>8;
+		if (g>max)
+			max=g;
+		sint b=(((nMultiply*diffuse.B*i)>>8)+ambiant.B*(256-i))>>8;
+		if (b>max)
+			max=b;
+		r<<=8;
+		g<<=8;
+		b<<=8;
+		max=std::max(max, 256);
+		r/=max;
+		g/=max;
+		b/=max;
+		clamp (r, 0, 255);
+		clamp (g, 0, 255);
+		clamp (b, 0, 255);
+		_LightValue[i].R=r;
+		_LightValue[i].G=g;
+		_LightValue[i].B=b;
+		_LightValue[i].A=255;
+	}
+}
 
 } // NL3D

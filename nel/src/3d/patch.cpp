@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.32 2001/01/11 16:01:33 corvazier Exp $
+ * $Id: patch.cpp,v 1.33 2001/01/12 13:21:16 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1212,6 +1212,9 @@ uint		CPatch::getTileLightMap(sint ts, sint tt, ITexture *&lightmap)
 	// Following code assume size of 5...
 	nlassert(NL_TILE_LIGHTMAP_SIZE==5);
 		}
+	// Get the static lighting array
+	const CRGBA* pStaticLight=Zone->getLandscape()->getStaticLight();
+{
 	// Get the tilecolors at the corners.
 	for(sint i=0;i<4;i++)
 
@@ -1220,8 +1223,8 @@ uint		CPatch::getTileLightMap(sint ts, sint tt, ITexture *&lightmap)
 	modulateTileLightmapPixelWithTileColors(ts, tt, s, t, dest);
 		// Blend the color.
 		CRGBA	col;
-		col.set565(tcol.Color565);
-		col.modulateFromui(col, tcol.Shade);
+		col.set565 (tcol.Color565);
+		col.modulateFromColor (col, pStaticLight[tcol.Shade]);
 		col.A=255;
 	sint	u, v;
 		lightText[lut[i]]= col;

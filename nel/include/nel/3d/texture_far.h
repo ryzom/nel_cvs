@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.5 2001/01/11 16:01:33 corvazier Exp $
+ * $Id: texture_far.h,v 1.6 2001/01/12 13:21:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,8 +209,8 @@ public:
 	// Mul factor for the size (1, 2 or 4)
 	uint32						MulFactor;
 
-	// Sun color
-	NLMISC::CRGBA				SunColor;
+	// Static light color
+	const NLMISC::CRGBA*		StaticLightColor;
 
 	// Destination array
 	NLMISC::CRGBA*				DstPixels;

@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.17 2001/01/10 11:12:48 berenguier Exp $
+ * $Id: zone.h,v 1.18 2001/01/12 13:21:52 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -279,6 +279,15 @@ public:
 	 */
 	const std::vector<CTileElement> &getPatchTexture(sint numPatch) const;
 
+	/**
+	 *  Get the landscape in which is placed this zone. If no landscape, return NULL.
+	 *
+	 *	\return the pointer of the landscape of the zone or NULL if the zone hasn't be compiled.
+	 */
+	CLandscape*		getLandscape () const
+	{
+		return Landscape;
+	}
 
 	// NB: for all those function, CTessFace static rendering context must be setup.
 	/// Clip a zone. To know if must be rendered etc... A zone is IN if in BACK of at least one plane of the pyramid.

@@ -1,7 +1,7 @@
 /** \file texture_far.cpp
  * Texture used to store far textures for several patches.
  *
- * $Id: texture_far.cpp,v 1.26 2004/02/06 14:37:44 besson Exp $
+ * $Id: texture_far.cpp,v 1.27 2004/03/23 10:13:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -181,7 +181,7 @@ sint	CTextureFar::tryAllocatePatch (CPatch *pPatch, uint farIndex)
 
 	// make width the biggest
 	if(width<height)
-		swap(width, height);
+		std::swap(width, height);
 
 	// get where to find a subtexture
 	uint	freeListId= getFreeListId(width, height);
@@ -281,7 +281,7 @@ void	CTextureFar::allocatePatch (CPatch *pPatch, uint farIndex, float& farUScale
 
 	// make width the biggest
 	if(width<height)
-		swap(width, height);
+		std::swap(width, height);
 
 	// get where to find a subtexture
 	uint	freeListId= getFreeListId(width, height);
@@ -358,7 +358,7 @@ void	CTextureFar::removePatch (CPatch *pPatch, uint farIndex)
 	uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
 	uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
 	if(width<height)
-		swap(width, height);
+		std::swap(width, height);
 	uint	freeListId= getFreeListId(width, height);
 	_FreeSpaces[freeListId].push_back(pos);
 }
@@ -380,7 +380,7 @@ uint	CTextureFar::touchPatchULAndNext()
 		uint width=(pPatch->getOrderS ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
 		uint height=(pPatch->getOrderT ()*NL_NUM_PIXELS_ON_FAR_TILE_EDGE)>>(farIndex-1);
 		if(width<height)
-			swap(width, height);
+			std::swap(width, height);
 
 		// Invalidate the associated rectangle
 		CRect rect (x, y, width, height);

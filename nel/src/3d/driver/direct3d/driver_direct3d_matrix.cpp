@@ -1,7 +1,7 @@
 /** \file driver_direct3d_matrix.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_matrix.cpp,v 1.3 2004/04/26 13:48:23 corvazier Exp $
+ * $Id: driver_direct3d_matrix.cpp,v 1.4 2004/06/29 13:58:44 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -329,20 +329,44 @@ void CDriverD3D::setupViewport (const class CViewport& viewport)
 	int iheight=(int)((float)clientHeight*height);
 	clamp (iheight, 0, (int)clientHeight-iy);
 
-	// Setup D3D viewport
-	D3DVIEWPORT9 viewPort9;
-	viewPort9.X = ix;
-	viewPort9.Y = iy;
-	viewPort9.Width = iwidth;
-	viewPort9.Height = iheight;
-	viewPort9.MinZ = 0;
-	viewPort9.MaxZ = 1;
-	_DeviceInterface->SetViewport (&viewPort9);
+	// Setup D3D viewport	
+	_D3DViewport.X = ix;
+	_D3DViewport.Y = iy;
+	_D3DViewport.Width = iwidth;
+	_D3DViewport.Height = iheight;
+	_D3DViewport.MinZ = _DepthRangeNear;
+	_D3DViewport.MaxZ = _DepthRangeFar;
+	_DeviceInterface->SetViewport (&_D3DViewport);
 
 	// Backup the viewport
 	_Viewport = viewport;
 
 	updateProjectionMatrix ();
+}
+
+// ***************************************************************************
+void CDriverD3D::setDepthRange(float znear, float zfar)
+{
+	nlassert(znear != zfar);
+	if (_HWnd == NULL) 
+		return;
+#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+	if (znear != _DepthRangeNear || zfar != _DepthRangeFar)
+#endif
+	{
+		_DepthRangeNear = znear;
+		_DepthRangeFar = zfar;
+		_D3DViewport.MinZ = _DepthRangeNear;
+		_D3DViewport.MaxZ = _DepthRangeFar;
+		_DeviceInterface->SetViewport (&_D3DViewport);
+	}
+}
+
+// ***************************************************************************
+void CDriverD3D::getDepthRange(float &znear, float &zfar) const
+{
+	znear = _DepthRangeNear;
+	zfar = _DepthRangeFar;
 }
 
 // ***************************************************************************

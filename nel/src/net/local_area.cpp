@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.33 2001/01/11 14:22:30 cado Exp $
+ * $Id: local_area.cpp,v 1.34 2001/01/11 18:00:22 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,10 +113,12 @@ void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 	nldebug( "Local entity %s has id %u", CLocalArea::Instance->User.name().c_str(), id );
 	nlinfo( "Entering online mode" );
 
-	// Send entity state and name
+	// Send entity state and name and type
+	uint32 metype = CLocalArea::Instance->User.type();
 	CMessage msgout( "NAM" );
 	msgout.serial( CLocalArea::Instance->User );
 	msgout.serial( const_cast<string&>(CLocalArea::Instance->User.name()) );
+	msgout.serial( metype );
 	CLocalArea::Instance->ClientSocket->send( msgout );
 
 	// Create other remote entities
@@ -129,8 +131,10 @@ void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 	{
 		msgin.serial( es );
 		msgin.serial( name );
-		DebugLog.displayRaw( " %s", name.c_str() );
+		msgin.serial( metype );
+		DebugLog.displayRaw( " %s (type %u)", name.c_str(), metype );
 		es.setName( name );
+		es.setType( metype );
 		createRemoteEntity( es );
 	}
 	DebugLog.displayRawNL( "." );
@@ -170,12 +174,15 @@ void NLNET::cbCreateNewEntity( CMessage& msgin, TSenderId idfrom )
 	// Receive name
 	IMovingEntity es;
 	string name;
+	uint32 metype;
 	msgin.serial( es );
 	msgin.serial( name );
+	msgin.serial( metype );
 	
 	// Create remote entity and set name
 	nldebug( "Retrieving new player name: %s", name.c_str() );
 	es.setName( name );
+	es.setType( metype );
 	createRemoteEntity( es );
 	nldebug( "Entity %u is %s", es.id(), name.c_str() );
 }

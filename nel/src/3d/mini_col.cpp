@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.3 2000/12/22 09:56:04 berenguier Exp $
+ * $Id: mini_col.cpp,v 1.4 2000/12/22 10:31:05 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,6 +216,7 @@ bool			CMiniCol::testMove(const CVector &prec, CVector &cur)
 	// Must not go to near of a wall.
 	CVector	test= cur+dir*0.5;
 	float	norm= (test-prec).norm();
+	norm*=3;
 	if(!snapToGround(test, norm, norm))
 	{
 		cur= prec;
@@ -225,6 +226,7 @@ bool			CMiniCol::testMove(const CVector &prec, CVector &cur)
 	{
 		// Must test and snap the current position.
 		norm= (cur-prec).norm();
+		norm*=3;
 		if(!snapToGround(cur, norm, norm))
 		{
 			cur= prec;

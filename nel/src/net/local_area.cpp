@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.24 2000/12/20 17:05:33 cado Exp $
+ * $Id: local_area.cpp,v 1.25 2000/12/22 10:31:05 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -216,7 +216,7 @@ namespace NLNET {
  * Constructor
  */
 CLocalArea::CLocalArea( const CMsgSocket *clientsocket, const CVector& userpos, const CVector& userhdg ) :
-	_Radius( 400 ),
+	_Radius( 20000 ),
 	_NewEntityCallback( NULL ),
 	_EntityRemovedCallback( NULL ),
 	_UnknownMessagesCallback( NULL )
@@ -265,9 +265,10 @@ void CLocalArea::init()
 void CLocalArea::update()
 {
 	// Compute time difference
-	TTime actualtime = CTime::getLocalTime();
+ 	TTime actualtime = CTime::getLocalTime();
 	TDuration deltatime = (TDuration)(sint64)(actualtime - _PreviousTime) / 1000.0f;
 	_PreviousTime = actualtime;
+	//deltatime = 0.020;
 
 	// Update all entities
 	User.update( deltatime );
@@ -278,6 +279,9 @@ void CLocalArea::update()
 
 		// Update neighbor
 		(*ipe).second->update( deltatime );
+
+		/*nldebug( "Previous: %f\t%f\t%f", (*ipe).second->previousPos().x, (*ipe).second->previousPos().y, (*ipe).second->previousPos().z );
+		nldebug( "Current:  %f\t%f\t%f", (*ipe).second->pos().x, (*ipe).second->pos().y, (*ipe).second->pos().z );*/
 
 		//if ( (*ipe).second->pos() != (*ipe).second->previousPos() ) // if this line is not commented out, we don't see when the entity turns without changing its position
 		//{

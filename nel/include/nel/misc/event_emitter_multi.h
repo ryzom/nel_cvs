@@ -1,7 +1,7 @@
 /** \file event_emitter_multi.h
  * <File description>
  *
- * $Id: event_emitter_multi.h,v 1.1 2002/03/28 10:47:24 vizerie Exp $
+ * $Id: event_emitter_multi.h,v 1.2 2003/04/28 12:32:07 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -53,6 +53,7 @@ public:
 	uint	getNumEmitters() const { return _Emitters.size(); }
 	// Get an emitter
 	IEventEmitter *getEmitter(uint index);
+	const IEventEmitter *getEmitter(uint index) const;
 	/// From IEventEmitter. This call submitEvents on all the emitters
 	virtual void submitEvents(CEventServer &server);
 private:

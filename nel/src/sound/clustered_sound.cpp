@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.18 2004/05/11 16:37:12 berenguier Exp $
+ * $Id: clustered_sound.cpp,v 1.19 2004/05/27 17:41:45 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -284,7 +284,7 @@ void CClusteredSound::update(const CVector &listenerPos, const CVector &view, co
 		static bool bDisplayOnce = false;
 		if (!bDisplayOnce)
 		{
-			nlwarning("CClusteredSound::update : no scene specified !");
+			nlinfo("CClusteredSound::update : no scene specified !");
 			bDisplayOnce = true;
 		}
 		return;

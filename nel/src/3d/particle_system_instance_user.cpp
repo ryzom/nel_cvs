@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.12 2002/06/04 13:45:40 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.13 2002/08/05 13:03:59 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -69,19 +69,24 @@ bool		CParticleSystemInstanceUser::getSystemBBox(NLMISC::CAABBox &bbox)
 
 void		CParticleSystemInstanceUser::setUserParam(uint index, float value)
 {
-	nlassert(isSystemPresent())      ; // user : you forgot to check wether the system was present with isPresent() !!
+	// nlassert(isSystemPresent())      ; // user : you forgot to check wether the system was present with isPresent() !!
+	nlassert(value >= 0 && value < 1.f);
 	nlassert(index < MaxPSUserParam) ; // invalid parameter index
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-	psm->getPS()->setUserParam(index, value) ;
+	// psm->getPS()->setUserParam(index, value) ;
+	IAnimatedValue *av = psm->getValue(CParticleSystemModel::PSParam0 + index);
+	NLMISC::safe_cast<CAnimatedValueFloat *>(av)->Value = value;
+	psm->touch(CParticleSystemModel::PSParam0 + index, CParticleSystemModel::OwnerBit);	
 }
 
 float		CParticleSystemInstanceUser::getUserParam(uint index) const
 {
-	nlassert(isSystemPresent())      ; // user : you forgot to check wether the system was present with isPresent() !!
+	//nlassert(isSystemPresent())      ; // user : you forgot to check wether the system was present with isPresent() !!
 	nlassert(index < MaxPSUserParam) ; // invalid parameter index
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform) ;
-	return psm->getPS()->getUserParam(index) ;
-
+	//return psm->getPS()->getUserParam(index) ;
+	IAnimatedValue *av = psm->getValue(CParticleSystemModel::PSParam0 + index);
+	return NLMISC::safe_cast<CAnimatedValueFloat *>(av)->Value;
 }
 
 bool		CParticleSystemInstanceUser::isValid(void) const

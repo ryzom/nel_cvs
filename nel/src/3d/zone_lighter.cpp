@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.25 2003/02/18 15:31:27 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.26 2003/02/20 14:18:02 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1865,11 +1865,11 @@ void CZoneLighter::getTexture (const CMaterial &material, CBitmap *&result, bool
 				// Release the texture
 				texture->release ();
 			}
-		}
 
-		// Wrap flags
-		clampU = texture->getWrapS () == ITexture::Clamp;
-		clampV = texture->getWrapT () == ITexture::Clamp;
+			// Wrap flags
+			clampU = texture->getWrapS () == ITexture::Clamp;
+			clampV = texture->getWrapT () == ITexture::Clamp;
+		}
 	}
 
 	// Get double sided flag

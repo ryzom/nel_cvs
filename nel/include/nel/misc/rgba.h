@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.2 2000/10/17 15:36:07 cado Exp $
+ * $Id: rgba.h,v 1.3 2000/10/20 16:16:08 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ public:
 	void    serial(class NLMISC::IStream &f);
 
 	///
-	uint8	B,G,R,A;
+	uint8	R,G,B,A;
 };
 
 

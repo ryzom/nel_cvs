@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * <File description>
  *
- * $Id: rgba.cpp,v 1.2 2000/10/17 15:36:07 cado Exp $
+ * $Id: rgba.cpp,v 1.3 2000/10/20 16:15:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,9 +33,9 @@ namespace NLMISC {
 // ***************************************************************************
 void CRGBA::serial(class NLMISC::IStream &f)
 {
-	f.serial (B);
-	f.serial (G);
 	f.serial (R);
+	f.serial (G);
+	f.serial (B);
 	f.serial (A);
 }
 

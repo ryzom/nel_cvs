@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.19 2000/11/23 14:09:34 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.20 2000/11/28 13:13:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,7 +173,7 @@ bool CDriverGL::setDisplay(void* wnd, const GfxMode& mode)
 			_OldScreenMode.dmSize= sizeof(DEVMODE);
 			_OldScreenMode.dmDriverExtra= 0;
 			EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &_OldScreenMode);
-			_OldScreenMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
+			_OldScreenMode.dmFields= DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY ;
 
 			devMode.dmSize= sizeof(DEVMODE);
 			devMode.dmDriverExtra= 0;

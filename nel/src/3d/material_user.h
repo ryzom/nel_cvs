@@ -1,7 +1,7 @@
 /** \file material_user.h
  * <File description>
  *
- * $Id: material_user.h,v 1.3 2002/06/13 08:44:50 berenguier Exp $
+ * $Id: material_user.h,v 1.4 2002/06/25 14:54:59 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,8 +74,15 @@ public:
 	virtual void 			setTexture(UTexture* ptex) 
 	{
 		CTextureUser	*text= dynamic_cast<CTextureUser*>(ptex);
-		_Material.setTexture(0, text->getITexture());
-		// NB: _Material smartpoint to this ITexture. But this is correct because so does CTextureUser.		
+		if (text != NULL)
+		{
+			_Material.setTexture (0, text->getITexture());
+		}
+		else
+		{
+			_Material.setTexture (0, NULL);
+		}
+		// NB: _Material smartpoint to this ITexture. But this is correct because so does CTextureUser.
 	}
 
 	virtual bool			texturePresent() 

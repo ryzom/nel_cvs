@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.41 2005/01/26 16:02:21 corvazier Exp $
+ * $Id: file.cpp,v 1.42 2005/01/27 16:10:29 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -531,6 +531,14 @@ bool	COFile::open(const std::string &path, bool append, bool text, bool useTempF
 		fileToOpen = _TempFileName;
 	}
 
+	// if appending to file and using a temporary file, copycat temporary file from original...
+	if (append && useTempFile && CFile::fileExists(_FileName))
+	{
+		// open fails if can't copy original content
+		if (!CFile::copyFile(_TempFileName.c_str(), _FileName.c_str()))
+			return false;
+	}
+
 	_F=fopen(fileToOpen.c_str(), mode);
 
 	return _F!=NULL;
@@ -553,7 +561,8 @@ void	COFile::internalClose(bool success)
 			// Delete old
 			if (success)
 			{
-				CFile::deleteFile (_FileName);
+				if (CFile::fileExists(_FileName))
+					CFile::deleteFile (_FileName);
 
 				// Bug under windows, sometimes the file is not deleted
 				uint retry = 1000;

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.70 2003/01/07 18:39:45 lecroart Exp $
+ * $Id: path.cpp,v 1.71 2003/01/14 12:10:58 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -889,6 +889,9 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 	// add the link with the CBigFile singleton
 	CBigFile::getInstance().add (sBigFilename, BF_ALWAYS_OPENED | BF_CACHE_FILE_ON_OPEN);
 
+	// also add the bigfile name in the map to retreive the full path of a .bnp when we want modification date of the bnp for example
+	insertFileInMap (CFile::getFilename (sBigFilename), sBigFilename, false, CFile::getExtension(sBigFilename));
+
 	// parse the big file to add file in the map
 	uint32 nFileSize=CFile::getFileSize (Handle);
 	//fseek (Handle, 0, SEEK_END);
@@ -1141,15 +1144,25 @@ uint32	CFile::getFileSize (const std::string &filename)
 	return size;
 */
 
+	if (filename.find('@') != string::npos)
+	{
+		uint32 fs = 0, bfo;
+		bool c, d;
+		CBigFile::getInstance().getFile (filename, fs, bfo, c, d);
+		return fs;
+	}
+	else
+	{
 #if defined (NL_OS_WINDOWS)
-	struct _stat buf;
-	int result = _stat (filename.c_str (), &buf);
+		struct _stat buf;
+		int result = _stat (filename.c_str (), &buf);
 #elif defined (NL_OS_UNIX)
-	struct stat buf;
-	int result = stat (filename.c_str (), &buf);
+		struct stat buf;
+		int result = stat (filename.c_str (), &buf);
 #endif
-	if (result != 0) return 0;
-	else return buf.st_size;
+		if (result != 0) return 0;
+		else return buf.st_size;
+	}
 }
 
 uint32	CFile::getFileSize (FILE *f)
@@ -1171,7 +1184,7 @@ uint32	CFile::getFileModificationDate(const std::string &filename)
 	string fn;
 	if ((pos=filename.find('@')) != string::npos)
 	{
-		fn = filename.substr (0, pos);
+		fn = CPath::lookup(filename.substr (0, pos));
 	}
 	else
 	{
@@ -1197,7 +1210,7 @@ uint32	CFile::getFileCreationDate(const std::string &filename)
 	string fn;
 	if ((pos=filename.find('@')) != string::npos)
 	{
-		fn = filename.substr (0, pos);
+		fn = CPath::lookup(filename.substr (0, pos));
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.1 2000/10/26 15:33:07 viau Exp $
+ * $Id: driver_opengl.cpp,v 1.2 2000/10/27 15:06:46 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,9 +63,9 @@ ModeList CDriverGL::enumModes()
 	while( EnumDisplaySettings(NULL, n, &devmode) )
 	{
 		Mode.Windowed=false;
-		Mode.Width=devmode.dmPelsWidth;
-		Mode.Height=devmode.dmPelsHeight;	
-		Mode.Depth=devmode.dmBitsPerPel;	
+		Mode.Width=(uint16)devmode.dmPelsWidth;
+		Mode.Height=(uint16)devmode.dmPelsHeight;	
+		Mode.Depth=(uint8)devmode.dmBitsPerPel;	
 		ML.push_back(Mode);
 		n++;	
 	}
@@ -151,7 +151,7 @@ bool CDriverGL::setupTexture(CTexture& tex)
 {
 	if (tex.DrvInfos==NULL)
 	{
-// Hardcore C++ style :
+// C++ Hardcore style :
 //		tex.DrvInfos=new CTextureDrvInfosGL;
 //		ITextureDrvInfos* iinfos=static_cast<ITextureDrvInfos*>(tex.DrvInfos);
 //		CTextureDrvInfosGL* infos=static_cast<CTextureDrvInfosGL*>(iinfos);
@@ -249,6 +249,41 @@ static bool convBlend(TBlend blend, GLenum& glenum)
 	}
 	return(false);
 }
+
+static bool convZFunction(ZFunc zfunc, GLenum& glenum)
+{
+	switch(zfunc)
+	{
+	case always:
+		glenum=GL_ALWAYS;
+		return(true);
+	case never:
+		glenum=GL_NEVER;
+		return(true);
+	case equal:
+		glenum=GL_EQUAL;
+		return(true);
+	case notequal:
+		glenum=GL_NOTEQUAL;
+		return(true);
+	case less:
+		glenum=GL_LESS;
+		return(true);
+	case lessequal:
+		glenum=GL_LEQUAL;
+		return(true);
+	case greater:
+		glenum=GL_GREATER;
+		return(true);
+	case greaterequal:
+		glenum=GL_GEQUAL;
+		return(true);
+	default:
+		return(false);
+	}
+	return(false);
+}
+
 
 bool CDriverGL::setupMaterial(CMaterial& mat)
 {

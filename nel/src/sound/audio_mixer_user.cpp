@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.21 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: audio_mixer_user.cpp,v 1.22 2002/06/04 10:06:01 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,9 +33,14 @@
 #include "bounding_sphere.h"
 #include "bounding_box.h"
 #include "driver/buffer.h"
+#include "sample_bank.h"
+
 
 #include "nel/misc/file.h"
 #include "nel/misc/path.h"
+#include "nel/misc/time_nl.h"
+
+
 using namespace NLMISC;
 
 using namespace std;
@@ -43,6 +48,9 @@ using namespace std;
 
 namespace NLSOUND {
 
+
+//#define _profile   nlwarning 
+#define _profile   if (0) nlwarning
 
 // The audio mixer singleton instance
 CAudioMixerUser		*CAudioMixerUser::_Instance = NULL;
@@ -192,6 +200,9 @@ void				CAudioMixerUser::reset()
 void				CAudioMixerUser::init( uint32 balance_period )
 {
 	nldebug( "AM: Init..." );
+
+	_profile( "AM: ---------------------------------------------------------------" );
+	_profile( "AM: DRIVER: %s", NLSOUND_DLL_NAME );
 	
 	// Init sound driver
 	try
@@ -247,6 +258,8 @@ void				CAudioMixerUser::init( uint32 balance_period )
 		_Tracks[i] = NULL;
 	}
 	_BalancePeriod = balance_period;
+
+	_StartTime = CTime::getLocalTime();
 
 	nlinfo( "Initialized audio mixer with %u voices", _NbTracks );
 }
@@ -326,10 +339,12 @@ void				CAudioMixerUser::giveTrack( CSourceUser *source )
 	{
 		// Free tracks remain
 		source->enterTrack( track );
+		//nlwarning("AM: give: found free track");
 	}
 	else
 	{
 		// All track used
+		_profile("AM: GIVETRACK: CALLING REDISPATCH");
 		redispatchSourcesToTrack();
 	}
 }
@@ -353,6 +368,7 @@ void				CAudioMixerUser::releaseTrack( CSourceUser *source )
 	// Dispatch if needed
 	if ( recomp && (! _Leaving) )
 	{
+		_profile("AM: RELEASETRACK: CALLING REDISPATCH");
 		redispatchSourcesToTrack();
 	}
 }
@@ -380,7 +396,7 @@ void				CAudioMixerUser::getFreeTracks( uint nb, CTrack **tracks )
 	{
 		tracks[i] = NULL;
 	}
-	nldebug( "AM: Requested %u tracks, obtained %u", nb, found );
+	//nlwarning( "AM: Requested %u tracks, obtained %u", nb, found );
 }
 
  
@@ -423,6 +439,8 @@ void				CAudioMixerUser::update()
 			{
 				cb( *ipOld, (*ipOld)->getCallbackUserParam());
 			}
+			_profile( "AM: [%u]---------------------------------------------------------------", curTime() );
+			_profile( "AM: UPDATE: REMOVESOURCE" );
 			removeSource( ipOld, true );
 		}
 	}
@@ -463,7 +481,12 @@ void				CAudioMixerUser::update()
 			}*/
 
 			// Auto-Balance
-			balanceSources();
+			//balanceSources();
+			if (moreSourcesThanTracks())
+			{
+				_profile("AM: UPDATE: CALLING REDISPATCH");
+				redispatchSourcesToTrack(); 
+			}
 		}
 		/*else
 		{
@@ -487,6 +510,8 @@ void				CAudioMixerUser::update()
 					(uint)(su->getGain()*100.0f) );
 		}
 	}*/
+
+	_SoundDriver->commit3DChanges();
 }
 
 
@@ -507,6 +532,16 @@ TSoundId			CAudioMixerUser::getSoundId( const char *name )
 	}
 }
 
+// Add a source which was created by an EnvSound
+void				CAudioMixerUser::addSource( CSourceUser *source )
+{ 
+	_Sources.insert( source ); 
+
+	_profile( "AM: ADDSOURCE, SOUND: %d, TRACK: %p, NAME=%s", source->getSound(), source->getTrack(),
+			source->getSound() && (source->getSound()->getName()!="") ? source->getSound()->getName().c_str() : "" );
+
+}
+
 
 /* Add a logical sound source (returns NULL if name not found).
  * If spawn is true, the source will auto-delete after playing. If so, the return USource* pointer
@@ -516,28 +551,39 @@ TSoundId			CAudioMixerUser::getSoundId( const char *name )
  */
 USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCallback cb, void *userParam )
 {
+	_profile( "AM: [%u]---------------------------------------------------------------", curTime() );
+	_profile( "AM: CREATESOURCE: SOUND=%p, NAME=%s, TIME=%d", id, id->getName().c_str(), curTime() );
+	_profile( "AM: SOURCES: %d, PLAYING: %d, TRACKS: %d", getSourcesNumber(), getPlayingSourcesNumber(), getNumberAvailableTracks() );
+	//_profile( "AM: { %u, \"%s\" },", curTime(), id->getName().c_str() );
+
 	if ( id == NULL )
 	{
+		_profile("AM: FAILED CREATESOURCE");
 		nldebug( "AM: Sound not created: invalid sound id" );
 		return NULL;
 	}
 
 	// Create source
 	CSourceUser *source = new CSourceUser( id, spawn, cb, userParam );
-	_Sources.insert( source );
+	addSource( source );
 
-	// Link the position to the listener position if it'a stereo source
-	if ( id->getBuffer()->isStereo() )
+	if (id->getBuffer() != 0)
 	{
-		source->set3DPositionVector( &_ListenPosition );
-	}
+		// Link the position to the listener position if it'a stereo source
+		if ( id->getBuffer()->isStereo() )
+		{
+			source->set3DPositionVector( &_ListenPosition );
+		}
 
-	// Give it a free track
-	if ( source->getSound() != NULL )
-	{
+		// Give it a free track
 		giveTrack( source );
 	}
-	nldebug( "AM: Source created" ); 
+	else
+	{
+		int dummy = 0; // FIXME
+	}
+
+	//nldebug( "AM: Source created" ); 
 	return source;
 }
 
@@ -596,10 +642,16 @@ void				CAudioMixerUser::removeMySource( USource *source )
 void				CAudioMixerUser::removeSource( std::set<CSourceUser*>::iterator ips, bool deleteit )
 {
 	nlassert( ips != _Sources.end() );
+
 	CSourceUser *src = *ips;
+
+	//nldebug( "AM: Source %s removed", src->getSound() && (src->getSound()->getName()!="") ? src->getSound()->getName().c_str() : "" );
+	_profile( "AM: REMOVESOURCE: SOUND=%d, TRACK=%p, NAME=%s, TIME=%d, PLAYED=%d, DUR=%d", src->getSound(), src->getTrack(),
+				src->getSound() && (src->getSound()->getName()!="") ? src->getSound()->getName().c_str() : "" ,
+				curTime(), (uint32) src->getPlayTime(), src->getSound()->getDuration());
+
 	_Sources.erase( ips );
 	releaseTrack( src );
-	nldebug( "AM: Source %s removed", src->getSound() && (src->getSound()->getName()!="") ? src->getSound()->getName().c_str() : "" );
 
 	if ( deleteit )
 	{
@@ -714,6 +766,24 @@ uint			CAudioMixerUser::getPlayingSourcesNumber() const
 
 
 /*
+ * Return the number of available tracks
+ */
+uint			CAudioMixerUser::getNumberAvailableTracks() const
+{
+	uint nb = 0;	
+	for ( uint i=0; i!=_NbTracks; i++ )
+	{
+		if ( _Tracks[i]->isAvailable() )
+		{
+			++nb;
+		}
+	}
+	return nb;
+}
+
+
+
+/*
  * Return a string showing the playing sources (slow)
  */
 string			CAudioMixerUser::getSourcesStats() const
@@ -807,7 +877,8 @@ void			CAudioMixerUser::redispatchSourcesToTrack()
 		return;
 	}
 
-	nldebug( "AM: Redispatching sources" );
+	_profile( "AM: [%u]---------------------------------------------------------------", curTime() );
+	_profile( "AM: Redispatching sources" );
 	
 	CVector listenerpos;
 	_Listener.getPos( listenerpos );
@@ -820,15 +891,25 @@ void			CAudioMixerUser::redispatchSourcesToTrack()
 	set<CSourceUser*>::iterator ips;
 	set<CSourceUser*> selected_sources;
 	uint32 i;
+
+	// Select the sources
+
+	// Select the nbtracks "smallest" sources (the ones that have the higher priorities)
 	for ( i=0; i!=_NbTracks; i++ )
 	{
 		ips = min_element( sources_copy.begin(), sources_copy.end(), CompareSources( &listenerpos ) );
-		selected_sources.insert( *ips );
+
+		if ((*ips)->isPlaying())
+		{
+			selected_sources.insert( *ips );
+		}
+
 		sources_copy.erase( ips );
 	}
 
 	// Clear the current tracks where the sources are not selected anymore
-	//nldebug( "Selected sources: %u", selected_sources.size() );
+	_profile( "AM: Total sources: %u", _Sources.size() );
+	_profile( "AM: Selected sources: %u", selected_sources.size() );
 	for ( i=0; i!=_NbTracks; i++ )
 	{
 		if ( ! _Tracks[i]->isAvailable() )
@@ -838,31 +919,34 @@ void			CAudioMixerUser::redispatchSourcesToTrack()
 			if ( (ips = selected_sources.find( _Tracks[i]->getUserSource() )) == selected_sources.end() )
 			{
 				// There will be a new source in this track
+				_profile( "AM: TRACK: %p: REPLACED, SOURCE: %p", _Tracks[i], _Tracks[i]->getUserSource() );
 				_Tracks[i]->getUserSource()->leaveTrack();
-				//nldebug( "%u: -> REPLACED", i );
 			}
 			else
 			{
 				// The track will remain unchanged
 				selected_sources.erase( ips );
-				//nldebug( "%u: UNCHANGED", i );
+				_profile( "AM: TRACK: %p: UNCHANGED, SOURCE: %p", _Tracks[i], _Tracks[i]->getUserSource() );
 			}
 		}
 		else
 		{
-			//nldebug( "%u: FREE", i );
+			_profile( "AM: TRACK: %p: FREE", _Tracks[i] );
 		}
 	}
 
 	// Now, only the sources to add into the tracks remain in selected_sources
-	//nldebug( "Remaining selected sources: %u", selected_sources.size() );
 	CTrack *track [MAX_TRACKS]; // a little bit more than needed (avoiding a "new")
 	getFreeTracks( selected_sources.size(), track );
+
+	_profile( "AM: Remaining sources: %u", selected_sources.size() );
+
 	i=0;
 	for ( ips=selected_sources.begin(); ips!=selected_sources.end(); ++ips )
 	{
 		nlassert( track[i] != NULL );
 		(*ips)->enterTrack( track[i] );
+		_profile( "AM: TRACK: %p: ASSIGNED, SOURCE: %p", track[i], track[i]->getUserSource() );
 		i++;
 	}
 }

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.20 2001/09/15 17:53:37 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.21 2002/06/04 10:06:01 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/sound/u_audio_mixer.h"
+#include "nel/misc/time_nl.h"
 #include "driver/source.h"
 #include "listener_user.h"
 #include "mixing_track.h"
@@ -126,11 +127,17 @@ public:
 	virtual USource				*createSource( const char *name, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL );
 	/// Add a logical sound source (by sound id). To remove a source, just delete it. See createSource(const char*)
 	virtual USource				*createSource( TSoundId id, bool spawn=false, TSpawnEndCallback cb=NULL, void *cbUserParam = NULL );
+	/// Add a source which was created by an EnvSound
+	void						addSource( CSourceUser *source );
 	/** Delete a logical sound source. If you don't call it, the source will be auto-deleted
 	 * when deleting the audio mixer object
 	 */
 	virtual void				removeSource( USource *source );
 
+	/// Put source into a track
+	void						giveTrack( CSourceUser *source );
+	/// Release track
+	void						releaseTrack( CSourceUser *source );
 
 	/// Return the listener interface
 	virtual UListener			*getListener()	{ return &_Listener; }
@@ -150,20 +157,15 @@ public:
 	virtual uint				getSourcesNumber() const { return _Sources.size(); }
 	/// Return the number of playing sources (slow)
 	virtual uint				getPlayingSourcesNumber() const;
+	/// Return the number of available tracks
+	virtual uint				getNumberAvailableTracks() const;
+
 	/// Return a string showing the playing sources (slow)
 	virtual std::string			getSourcesStats() const;
 
 
-	/// Add a source which was created by an EnvSound
-	void						addSource( CSourceUser *source )		{ _Sources.insert( source ); }
-	/// Put source into a track
-	void						giveTrack( CSourceUser *source );
-	/// Release track
-	void						releaseTrack( CSourceUser *source );
 	/// Take a listener's move into account
 	void						applyListenerMove( const NLMISC::CVector& listenerpos );
-	/// Redispatch the sources into tracks if needed
-	void						balanceSources()						{ if ( moreSourcesThanTracks() ) redispatchSourcesToTrack(); }
 	/// Return the root of the envsounds tree
 	CEnvSoundUser				*getEnvSounds()							{ return _EnvSounds; }
 	/// Return the listen pos vector
@@ -179,6 +181,8 @@ public:
 
 protected:
 
+	/// Redispatch the sources into tracks if needed
+	void						balanceSources()						{ if ( moreSourcesThanTracks() ) redispatchSourcesToTrack(); }
 	/// Returns nb available tracks (or NULL)
 	void						getFreeTracks( uint nb, CTrack **tracks );
 	/// Select the appropriate environmental effect
@@ -242,6 +246,11 @@ public: // Temp (EDIT)
 
 	/// Flag set in destructor
 	bool						_Leaving;
+
+	NLMISC::TTicks				_StartTime;
+
+	uint32						curTime() { return (uint32) (NLMISC::CTime::getLocalTime() - _StartTime); }
+
 };
 
 

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.15 2001/06/26 14:58:35 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.16 2001/07/04 17:17:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@
 #include <nel/misc/time_nl.h>
 
 #include "editable_range.h"
+#include "range_manager.h"
 #include "located_properties.h"
 #include "color_button.h"
 
@@ -120,6 +121,8 @@ CObjectViewer::CObjectViewer ()
 	_HotSpotColor.G=255;
 	_HotSpotColor.B=0;
 	_HotSpotColor.A=255;
+
+	_BackGroundColor = CRGBA::Black ;
 
 	// Hotspot size
 	_HotSpotSize=10.f;
@@ -255,9 +258,9 @@ void CObjectViewer::go ()
 		
 
 		// Clear the buffers
-//		CNELU::clearBuffers(CRGBA(120,120,120));
 
-		CNELU::clearBuffers(CRGBA(0,0,0));
+
+		CNELU::clearBuffers(_BackGroundColor);
 
 		// Draw the scene
 		CNELU::Scene.render();
@@ -426,7 +429,7 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 	f.serialCheck ((uint32)'GFC_');
 
 	// serial the version
-	int ver=f.serialVersion (0);
+	int ver=f.serialVersion (2);
 
 	// update data
 	_AnimationDlg->UpdateData ();
@@ -540,6 +543,16 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 
 		// Touch the channel mixer
 		reinitChannels ();
+	}
+
+	if (ver > 1)
+	{
+		f.serial(_BackGroundColor) ;
+
+		// serial the ranges for particles edition
+		CRangeManager<float>::serial(f) ;
+		CRangeManager<uint32>::serial(f) ;
+		CRangeManager<sint32>::serial(f) ;
 	}
 }
 

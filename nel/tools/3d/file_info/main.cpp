@@ -1,7 +1,7 @@
 /** \file main.cpp
  * Display info on many NEL files. ig, zone etc...
  *
- * $Id: main.cpp,v 1.18 2004/07/21 12:18:43 berenguier Exp $
+ * $Id: main.cpp,v 1.19 2004/12/06 12:54:19 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -378,23 +378,48 @@ void	displayInfoFileInStream(FILE *logStream, const char *fileName, const set<st
 				fprintf(logStream, "Num Bones: %d\n", bones.size());
 				for(uint i=0; i<bones.size(); i++)
 				{
+
+					// get parent
+					sint32	parent = bones[i].FatherId;
+
+					// get parent
+					bool	inheritScale = bones[i].UnheritScale;
+
 					// get default pos.
-					CVector	pos= bones[i].DefaultPos.getDefaultValue();
+					CVector	pos = bones[i].DefaultPos.getDefaultValue();
 
 					// get default rotquat.
-					CQuat	rotQuat= bones[i].DefaultRotQuat.getDefaultValue();
+					CQuat	rotQuat = bones[i].DefaultRotQuat.getDefaultValue();
 
 					// get default scale.
-					CVector	scale= bones[i].DefaultScale.getDefaultValue();
+					CVector	scale = bones[i].DefaultScale.getDefaultValue();
+
+					// get inv bind pos.
+					CMatrix	invBindPos = bones[i].InvBindPos;
+					CVector invBindPosI = invBindPos.getI();
+					CVector invBindPosJ = invBindPos.getJ();
+					CVector invBindPosK = invBindPos.getK();
+					CVector invBindPosT = invBindPos.getPos();
 
 					// print info
 					fprintf(logStream, "Bone %2d. %s.\n", i, bones[i].Name.c_str());
-					fprintf(logStream, "   Pos:      (%2.3f, %2.3f, %2.3f)\n", 
+					fprintf(logStream, "   Parent:          %d\n", parent );
+					fprintf(logStream, "   InheritScale:    %d\n", inheritScale );
+					fprintf(logStream, "   Position:        (%2.3f, %2.3f, %2.3f)\n", 
 						pos.x, pos.y, pos.z);
-					fprintf(logStream, "   RotQuat:  (%2.3f, %2.3f, %2.3f, %2.3f)\n", 
+					fprintf(logStream, "   RotQuat:         (%2.3f, %2.3f, %2.3f, %2.3f)\n", 
 						rotQuat.x, rotQuat.y, rotQuat.z, rotQuat.w);
-					fprintf(logStream, "   Scale:    (%2.3f, %2.3f, %2.3f)\n",
+					fprintf(logStream, "   Scale:           (%2.3f, %2.3f, %2.3f)\n",
 						scale.x, scale.y, scale.z);
+					fprintf(logStream, "   InvBindPos: I:   (%2.3f, %2.3f, %2.3f)\n", 
+						invBindPosI.x, invBindPosI.y, invBindPosI.z);
+					fprintf(logStream, "   InvBindPos: J:   (%2.3f, %2.3f, %2.3f)\n", 
+						invBindPosJ.x, invBindPosJ.y, invBindPosJ.z);
+					fprintf(logStream, "   InvBindPos: K:   (%2.3f, %2.3f, %2.3f)\n", 
+						invBindPosK.x, invBindPosK.y, invBindPosK.z);
+					fprintf(logStream, "   InvBindPos: Pos: (%2.3f, %2.3f, %2.3f)\n", 
+						invBindPosT.x, invBindPosT.y, invBindPosT.z);
+					
 				}
 			}
 			else

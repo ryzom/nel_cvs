@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.14 2001/06/26 11:58:30 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.15 2001/06/27 16:57:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -305,6 +305,7 @@ void CPSEmitter::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialPolyPtr(_EmittedType) ;
 	f.serial(_Phase) ;
 	f.serial(_SpeedInheritanceFactor) ;
+	f.serial(_SpeedBasisEmission) ;
 	
 	f.serialEnum(_EmissionType) ;
 
@@ -582,15 +583,16 @@ void CPSEmitterConic::emit(uint32 index, CVector &pos, CVector &speed)
 	// we choose a custom direction like with omnidirectionnal emitter
 	// then we force the direction vect to have the unit size
 
-	CVector dir = _Radius *
-					(
-						(((rand() % 32000) / 16000.f) - 1.f) * CVector::I 
+	CVector dir = 		(((rand() % 32000) / 16000.f) - 1.f) * CVector::I 
 					  + (((rand() % 32000) / 16000.f) - 1.f) * CVector::J
 					  + (((rand() % 32000) / 16000.f) - 1.f) * CVector::K
-					) ;
+					 ;
+	const float n =dir.norm() ;
+
+	dir *= _Radius / n ;
 
 	dir -= (_Dir * dir) * _Dir ;
-	dir += dir ;
+	dir += _Dir ;
 	dir.normalize() ;
 	
 	

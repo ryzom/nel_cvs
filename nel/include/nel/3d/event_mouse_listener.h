@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.h
  * <File description>
  *
- * $Id: event_mouse_listener.h,v 1.6 2001/05/22 08:34:38 corvazier Exp $
+ * $Id: event_mouse_listener.h,v 1.7 2001/06/12 11:50:02 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,7 @@ public:
 	  * MouseTranslateXYHotSpot:	MIDDLEMOUSE
 	  * MouseTranslateZHotSpot:		CTRL + MIDDLEMOUSE
 	  * 
-	  * (firstPerson) First person shoorter style is:
+	  * (firstPerson) First person shooter style is:
 	  * MouseRotateView:			MOUSE MOVE
 	  * KeyUp:						MOVE FORWARD
 	  * KeyDown:					MOVE BACKWARD

@@ -1,7 +1,7 @@
 /** \file patchdlm_context.h
  * <File description>
  *
- * $Id: patchdlm_context.h,v 1.1 2002/04/12 15:59:57 berenguier Exp $
+ * $Id: patchdlm_context.h,v 1.2 2002/04/16 09:44:03 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -173,6 +173,20 @@ private:
 
 	/// The computed lightmap: Width*Height.
 	NLMISC::CObjectVector<CRGBA>	_LightMap;
+
+	/// A clip cluster, for quadTree of clusters.
+	struct	CCluster
+	{
+		// The bounding sphere of the cluster
+		NLMISC::CBSphere			BSphere;
+		// If cluster not clipped, how many cluster to skip. NB: if NSkips==0, then it is a leaf cluster.
+		uint						NSkips;
+		// For leaf cluster: logical position of the cluster
+		uint16						X, Y;
+	};
+
+	/// Bounding Sphere QuadTree (with NSkips paradigm)
+	NLMISC::CObjectVector<CCluster>	_Clusters;
 
 	// Tells if all _LightMap[] is all black.
 	bool							_IsSrcTextureFullBlack;

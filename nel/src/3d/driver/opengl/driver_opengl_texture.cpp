@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.38 2001/10/16 16:45:23 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.39 2001/10/24 09:59:34 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -260,6 +260,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 
 	// 0. Create/Retrieve the driver texture.
 	//=======================================
+	bool mustCreate = false;
 	if ( !tex.TextureDrvShare )
 	{
 		// insert into driver list. (so it is deleted when driver is deleted).
@@ -268,13 +269,13 @@ bool CDriverGL::setupTexture(ITexture& tex)
 		*it= tex.TextureDrvShare= new CTextureDrvShare(this, it);
 
 		// Must (re)-create the texture.
-		tex.touch();
+		mustCreate = true;
 	}
 
 
 	// 1. If modified, may (re)load texture part or all of the texture.
 	//=================================================================
-	if ( tex.touched() )
+	if (( tex.touched() ) || (mustCreate))
 	{
 		bool	mustLoadAll= false;
 		bool	mustLoadPart= false;

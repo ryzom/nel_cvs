@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.45 2001/08/28 13:00:20 valignat Exp $
+# $Id: Makefile.am,v 1.46 2001/09/26 17:45:40 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -193,8 +193,10 @@ libnel3d_la_SOURCES  = anim_detail_trav.cpp                \
                        ps_located.cpp                      \
                        ps_located.h                        \
                        ps_lod.h                            \
-                       ps_particle.cpp                     \
+                       ps_particle.cpp                     \					   
                        ps_particle.h                       \
+					   ps_particle2.cpp                    \
+					   ps_particle2.h                      \
                        ps_plane_basis.h                    \
                        ps_plane_basis_maker.cpp            \
                        ps_plane_basis_maker.h              \

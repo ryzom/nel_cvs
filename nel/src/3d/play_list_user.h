@@ -1,7 +1,7 @@
 /** \file play_list_user.h
  * <File description>
  *
- * $Id: play_list_user.h,v 1.2 2001/08/01 09:38:25 berenguier Exp $
+ * $Id: play_list_user.h,v 1.3 2001/08/13 15:48:08 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,13 +74,13 @@ public:
 
 	/// \name Animatable Link.
 	// @{
-	virtual	void	registerTransform(UTransform *object)
+	virtual	void	registerTransform(UTransform *object, const char* prefix)
 	{
 		CTransformUser	*obj= dynamic_cast<CTransformUser*>(object);
 		nlassert(obj);
 
 		// Register the transform to the channel mixer.
-		obj->getTransform()->registerToChannelMixer(&_ChannelMixer, "");
+		obj->getTransform()->registerToChannelMixer(&_ChannelMixer, prefix);
 	}
 	virtual	void	resetAllChannels()
 	{

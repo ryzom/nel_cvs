@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.68 2003/07/01 10:12:30 cado Exp $
+ * $Id: unified_network.cpp,v 1.69 2003/08/05 14:46:32 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -1870,7 +1870,7 @@ void CUnifiedNetwork::CUnifiedConnection::display (bool full, CLog *log)
 // Commands
 //
 
-static bool createMessage (CMessage &msgout, const vector<string> &args, CLog &log)
+bool createMessage (CMessage &msgout, const vector<string> &args, CLog &log)
 {
 	for (uint i = 2; i < args.size (); i+=2)
 	{

@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.11 2002/03/26 14:37:45 valignat Exp $
+dnl $Id: acinclude.m4,v 1.12 2002/03/29 10:19:10 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -237,7 +237,7 @@ AC_ARG_WITH( nel,
 AC_ARG_WITH( nel-include,
     [  --with-nel-include=<path>
                           path to the NeL header files directory.
-                          e.g. /usr/local/nel/stlport])
+                          e.g. /usr/local/nel/include])
 
 AC_ARG_WITH( nel-lib,
     [  --with-nel-lib=<path>

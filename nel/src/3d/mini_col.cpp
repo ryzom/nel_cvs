@@ -1,7 +1,7 @@
 /** \file mini_col.cpp
  * <File description>
  *
- * $Id: mini_col.cpp,v 1.12 2001/02/28 14:28:57 berenguier Exp $
+ * $Id: mini_col.cpp,v 1.13 2001/06/08 16:07:19 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,8 +38,8 @@ static const	sint	QuadDepth= 10;
 
 
 // Element for grid lookup.
-static const sint	GridSize=256;
-static const float	GridEltSize=3;
+static const sint	GridSize=512;
+static const float	GridEltSize=2;
 
 
 // ***************************************************************************
@@ -267,7 +267,7 @@ bool			CMiniCol::snapToGround(CVector &pos, float hup, float hbot)
 		// TOIMP: This is VERY SLOW!!! (hope that the quadtree will help, but it still very slow...).
 
 		// Yoyo Debug, test, if the point may be IN the bbox.
-		CAABBox		bbFace;
+		/*CAABBox		bbFace;
 		bbFace.setCenter(p0);
 		bbFace.extend(p1);
 		bbFace.extend(p2);
@@ -277,7 +277,7 @@ bool			CMiniCol::snapToGround(CVector &pos, float hup, float hbot)
 		bext.z= minof(p0.z, p1.z, p2.z)-hup;
 		bbFace.extend(bext);
 		if(!bbFace.include(pos))
-			continue;
+			continue;*/
 
 		// Test if the face enclose the pos in X/Y plane.
 		// NB: compute and using a BBox to do a rapid test is not a very good idea, since it will 
@@ -304,20 +304,28 @@ bool			CMiniCol::snapToGround(CVector &pos, float hup, float hbot)
 		CVector		tmp;
 		// intersect the vertical line with the plane.
 		tmp= pPlane.intersect(pos, pos-CVector(0,0,100));
-		float		h= tmp.z;
-		// Test if it would fit in the wanted field.
-		if(h>pos.z+hup)	continue;
-		if(h<pos.z-hbot)	continue;
 
-		// OK!!
-		if(!found)
+		/*
+		// CTriangle intersect() method.
+		CVector	tmp;
+		if(pFace.intersect(b1, b2, tmp, pPlane))
+		*/
 		{
-			found=true;
-			height=h;
-		}
-		else
-		{
-			height= max(height,h);
+			float		h= tmp.z;
+			// Test if it would fit in the wanted field.
+			if(h>pos.z+hup)	continue;
+			if(h<pos.z-hbot)	continue;
+
+			// OK!!
+			if(!found)
+			{
+				found=true;
+				height=h;
+			}
+			else
+			{
+				height= max(height,h);
+			}
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.9 2001/07/12 14:36:53 corvazier Exp $
+ * $Id: scene_user.h,v 1.10 2001/07/12 16:04:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -144,6 +144,12 @@ public:
 		// Must restore the matrix context, so 2D/3D interface not disturbed.
 		_DriverUser->restoreMatrixContext();
 	}
+
+	virtual	void			animate(CAnimationTime time)
+	{
+		_Scene.animate(time);
+	}
+
 	//@}
 
 

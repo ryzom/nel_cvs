@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.6 2001/07/11 16:11:28 corvazier Exp $
+ * $Id: u_scene.h,v 1.7 2001/07/12 16:04:15 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_U_SCENE_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/3d/animation_time.h"
 
 
 namespace NLMISC
@@ -81,6 +82,12 @@ public:
 	 * NB: nlerror if the current camera has been deleted.
 	 */
 	virtual	void			render()=0;
+
+	/**
+	 *	Set the animation time for lightmap and Particle System animation.
+	 */
+	virtual	void			animate(CAnimationTime time)=0;
+
 	//@}
 
 

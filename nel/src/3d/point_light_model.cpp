@@ -1,7 +1,7 @@
 /** \file point_light_model.cpp
  * <File description>
  *
- * $Id: point_light_model.cpp,v 1.6 2003/08/06 17:02:22 vizerie Exp $
+ * $Id: point_light_model.cpp,v 1.7 2003/08/07 08:49:44 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,6 +126,7 @@ void	CPointLightModel::traverseLight()
 		else
 		{
 			// We are hidden because a skeleton has hide us, or created during anim detail traversal (or else don't know why).
+			// NB: a point light can't be in a cluster since it is not a transformShape...
 			if (!_AncestorSkeletonModel) return;
 			const CMatrix &skMatrix= _AncestorSkeletonModel->getWorldMatrix();
 

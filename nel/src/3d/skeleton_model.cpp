@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.27 2002/07/11 09:26:57 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.28 2002/07/15 08:31:34 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,7 @@
 
 #include "std3d.h"
 
+#include "nel/misc/hierarchical_timer.h"
 #include "3d/skeleton_model.h"
 #include "3d/hrc_trav.h"
 #include "3d/clip_trav.h"
@@ -787,6 +788,8 @@ void		CSkeletonModelClipObs::traverse(IObs *caller)
 // ***************************************************************************
 void		CSkeletonModelRenderObs::traverse(IObs *caller)
 {
+	H_AUTO( NL3D_Skeleton_Render );
+
 	CSkeletonModel		*sm= (CSkeletonModel*)Model;
 
 	// render as CLod, or render Skins.

@@ -853,6 +853,10 @@ SOURCE=..\include\nel\misc\stop_watch.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\string_conversion.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\string_id_array.cpp
 # End Source File
 # Begin Source File

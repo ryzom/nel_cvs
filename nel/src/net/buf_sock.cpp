@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.8 2001/06/01 13:38:06 cado Exp $
+ * $Id: buf_sock.cpp,v 1.9 2001/06/01 16:25:25 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -86,7 +86,7 @@ CBufSock::~CBufSock()
  */
 string stringFromVectorPart( const vector<uint8>& v, uint32 pos, uint32 len )
 {
-	nlassert( pos+len < v.size() );
+	nlassert( pos+len <= v.size() );
 
 	string s;
 	if ( ! v.empty() )

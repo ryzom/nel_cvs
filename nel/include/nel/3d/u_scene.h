@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.26 2002/10/25 15:50:09 berenguier Exp $
+ * $Id: u_scene.h,v 1.27 2002/10/25 16:19:47 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,6 +43,7 @@ namespace NL3D
 class UCamera;
 class UInstance;
 class ULandscape;
+class UCloudScape;
 class UInstanceGroup;
 class USkeleton;
 class UTransform;
@@ -173,6 +174,11 @@ public:
 	virtual	ULandscape		*createLandscape()=0;
 	/// delete a landscape.
 	virtual	void			deleteLandscape(ULandscape *land)=0;
+
+	/// Create a landscape. There could be many Landscape per Scene (Driver? :). But never tested :).
+	virtual	UCloudScape		*createCloudScape()=0;
+	/// delete a landscape.
+	virtual	void			deleteCloudScape(UCloudScape *cs)=0;
 
 	/** Assign the Instance Group to the root cluster
 	  * 

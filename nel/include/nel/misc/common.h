@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.61 2003/11/14 09:10:34 lecroart Exp $
+ * $Id: common.h,v 1.60 2003/09/26 14:24:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,17 +274,6 @@ char			*strupr ( char *str );
   * \return 0 if strings are equal, < 0 if lhs < rhs, > 0 if lhs > rhs
   */
 sint			nlstricmp(const char *lhs, const char *rhs);
-
-
-/** Implement the stricmp on unix because windows program often use it without knowledge that this
-  *  function is not ANSI
-  */
-#ifdef NL_OS_UNIX
-inline int		stricmp(const char *lhs, const char *rhs)
-{
-	return nlstricmp(lhs, rhs);
-}
-#endif
 
 /** Compare 2 strings without regard to case
   */

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.25 2003/11/14 14:06:58 berenguier Exp $
+ * $Id: hierarchical_timer.h,v 1.24 2003/11/03 10:09:15 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@
 	//
 #	define H_AUTO(__name)		static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer);
 	// display the timer info after each loop call
-#	define H_AUTO_INST(__name)	static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimerInst	__name##_auto(&__name##_timer);
+#	define H_AUTO_INST(__name)	static NLMISC::CHTimer	__name##_timer(#__name); NLMISC::CAutoTimer	__name##_auto(&__name##_timer, true);
 
 /** H_AUTO splitted in 2. The declaration of the static timer, and a CAutoTimer instance.
  *	Usefull to group same timer bench in different functions for example
@@ -202,22 +202,9 @@ public:
 	CHTimer() : _Name(NULL), _IsRoot(false) {}
 	CHTimer(const char *name, bool isRoot = false) : _Name(name), _IsRoot(isRoot) {}
 	/// Starts a measuring session
-	void		before()
-	{
-		if (_Benching)
-			doBefore();
-	}
+	void		before();
 	// Ends a measuring session
-	void		after()
-	{
-		if (_Benching)
-			doAfter(false);
-	}
-	void		after(bool displayAfter)
-	{
-		if (_Benching)
-			doAfter(displayAfter);
-	}
+	void		after(bool displayAfter = false);	
 	// Get this node name
 	const char	   *getName() const { return _Name; }
 	void			setName(const char *name) { _Name = name; }
@@ -394,10 +381,7 @@ private:
 		}
 	};
 
-	// Real Job.
-	void		doBefore();
-	void		doAfter(bool displayAfter = false);	
-	
+
 private:
 	// walk the tree to current execution node, creating it if necessary
 	void	walkTreeToCurrent();
@@ -456,24 +440,82 @@ class CAutoTimer
 {
 private:
 	CHTimer		*_HTimer;
+	bool		_DisplayAfter;
 public:
-	CAutoTimer(CHTimer *timer) : _HTimer(timer) { _HTimer->before(); }
-	~CAutoTimer() { _HTimer->after(); }
+	CAutoTimer(CHTimer *timer, bool displayAfter=false) : _HTimer(timer), _DisplayAfter(displayAfter) { _HTimer->before(); }
+	~CAutoTimer() { _HTimer->after(_DisplayAfter); }
 };
 
 
-/**
- *	Same but display result at end.
- */
-class CAutoTimerInst
+////////////////////////////
+// inlines implementation //
+////////////////////////////
+#if 0
+//===============================================
+inline void	CHTimer::before()
+{	
+	if (!_Benching) return;
+	_PreambuleClock.start();
+	walkTreeToCurrent();			
+	++ _CurrNode->NumVisits;
+	_CurrNode->SonsPreambule = 0;
+	if (!_Parent && _CurrTimer != this)
+	{
+		_Parent = _CurrTimer;
+		// register as a son of the parent
+		_Parent->_Sons.push_back(this); 
+	}
+	_CurrTimer = this;
+	_PreambuleClock.stop();
+	if (_CurrNode->Parent)
+	{	
+		_CurrNode->Parent->SonsPreambule += _PreambuleClock.getNumTicks();
+	}
+	_CurrNode->Clock.start();
+}
+
+//===============================================
+inline void	CHTimer::after(bool displayAfter /*= false*/)
 {
-private:
-	CHTimer		*_HTimer;
-public:
-	CAutoTimerInst(CHTimer *timer) : _HTimer(timer) { _HTimer->before(); }
-	~CAutoTimerInst() { _HTimer->after(true); }
-};
+	if (!_Benching) return;
+	_CurrNode->Clock.stop();		
+	_PreambuleClock.start();
+	//		
+	//nlinfo((std::string("clock ") + _Name + std::string(" time = ") + NLMISC::toString(_CurrNode->Clock.getNumTicks())).c_str());
+	uint64 numTicks = _CurrNode->Clock.getNumTicks()  - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
 
+	_CurrNode->TotalTime += numTicks;		
+	_CurrNode->MinTime = std::min(_CurrNode->MinTime, numTicks);
+	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, numTicks);
+	_CurrNode->LastSonsTotalTime = _CurrNode->SonsTotalTime;
+	if (displayAfter)
+	{		
+		nlinfo("HTIMER: %s %.3fms loop number %d", _Name, numTicks * _MsPerTick, _CurrNode->NumVisits);
+	}
+	//
+	if (_WantStandardDeviation)
+	{
+		_CurrNode->Measures.push_back(numTicks * _MsPerTick);
+	}
+	//
+	if (_Parent)
+	{
+		_CurrTimer = _Parent;
+	}	
+	//
+	if (_CurrNode->Parent)
+	{
+		_PreambuleClock.stop();
+		_CurrNode = _CurrNode->Parent;
+		_CurrNode->SonsTotalTime += numTicks;
+		_CurrNode->SonsPreambule += _PreambuleClock.getNumTicks();
+	}
+	else
+	{
+		_PreambuleClock.stop();
+	}
+}
+#endif
 
 } // NLMISC
 

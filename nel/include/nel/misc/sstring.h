@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.3 2003/11/14 09:27:27 distrib Exp $
+ * $Id: sstring.h,v 1.2 2003/11/12 17:51:25 cado Exp $
  */
 
 
@@ -582,9 +582,8 @@ public:
 } // NLMISC
 
 
-_STLP_BEGIN_NAMESPACE
-//namespace std
-//{
+namespace std
+{
 
 	/*
 	 * less<CSString> is case insensitive
@@ -594,8 +593,8 @@ _STLP_BEGIN_NAMESPACE
 	{
 		bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); }
 	};
-//} // std
-_STLP_END_NAMESPACE
+
+} // std
 
 
 #endif // NL_SSTRING_H

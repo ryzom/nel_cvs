@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.31 2003/11/14 14:07:17 berenguier Exp $
+ * $Id: hierarchical_timer.cpp,v 1.30 2003/10/20 16:10:17 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -760,8 +760,9 @@ bool CHTimer::CStatSorter::operator()(const CHTimer::CStats *lhs, const CHTimer:
 
 
 //===============================================
-void	CHTimer::doBefore()
+void	CHTimer::before()
 {	
+	if (!_Benching) return;
 	_PreambuleClock.start();	
 	walkTreeToCurrent();			
 	++ _CurrNode->NumVisits;
@@ -782,8 +783,9 @@ void	CHTimer::doBefore()
 }
 
 //===============================================
-void	CHTimer::doAfter(bool displayAfter)
+void	CHTimer::after(bool displayAfter /*= false*/)
 {
+	if (!_Benching) return;
 	_CurrNode->Clock.stop();		
 	_PreambuleClock.start();
 	//		

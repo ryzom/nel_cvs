@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.69 2004/05/24 17:02:31 berenguier Exp $
+ * $Id: stream.h,v 1.70 2004/05/25 08:33:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -920,7 +920,7 @@ private:
 		if(isReading())
 		{
 			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			uint32	ssize= getDbgStreamSize();
+			sint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
 				// NB: suppose the serial of the element serialize at least one byte
@@ -1024,7 +1024,7 @@ protected:
 			serial(len);
 
 			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			uint32	ssize= getDbgStreamSize();
+			sint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
 				// NB: suppose the serial of the element serialize at least one byte
@@ -1087,7 +1087,7 @@ private:
 		if(isReading())
 		{
 			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			uint32	ssize= getDbgStreamSize();
+			sint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
 				// NB: suppose the serial of the element serialize at least one byte
@@ -1202,7 +1202,7 @@ private:
 		if(isReading())
 		{
 			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			uint32	ssize= getDbgStreamSize();
+			sint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
 				// NB: suppose the serial of the element serialize at least one byte
@@ -1331,7 +1331,7 @@ private:
 			serial(len);
 
 			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			uint32	ssize= getDbgStreamSize();
+			sint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
 				// NB: suppose the serial of the element serialize at least one byte
@@ -1429,7 +1429,7 @@ private:
 			serial(len);
 
 			// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-			uint32	ssize= getDbgStreamSize();
+			sint32	ssize= getDbgStreamSize();
 			if(ssize)
 			{
 				// NB: suppose the serial of the element serialize at least one byte

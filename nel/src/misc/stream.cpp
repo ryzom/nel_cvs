@@ -1,7 +1,7 @@
 /** \file stream.cpp
  * This File handles IStream 
  *
- * $Id: stream.cpp,v 1.30 2004/05/24 17:10:16 berenguier Exp $
+ * $Id: stream.cpp,v 1.31 2004/05/25 08:33:33 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -332,7 +332,7 @@ void			IStream::serialCont(vector<uint8> &cont)
 		serial(len);
 
 		// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-		uint32	ssize= getDbgStreamSize();
+		sint32	ssize= getDbgStreamSize();
 		if(ssize)
 		{
 			// NB: suppose the serial of the element serialize at least one byte
@@ -361,7 +361,7 @@ void			IStream::serialCont(vector<sint8> &cont)
 		serial(len);
 
 		// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-		uint32	ssize= getDbgStreamSize();
+		sint32	ssize= getDbgStreamSize();
 		if(ssize)
 		{
 			// NB: suppose the serial of the element serialize at least one byte
@@ -392,7 +392,7 @@ void			IStream::serialCont(vector<bool> &cont)
 		serial(len);
 
 		// if DBGStreamSize is supported (return != 0), assert the length could fit in the stream
-		uint32	ssize= getDbgStreamSize();
+		sint32	ssize= getDbgStreamSize();
 		if(ssize)
 		{
 			// NB: bit serialisation.

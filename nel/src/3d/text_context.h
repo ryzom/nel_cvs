@@ -1,7 +1,7 @@
 /** \file text_context.h
  * <File description>
  *
- * $Id: text_context.h,v 1.7 2002/09/11 13:51:26 besson Exp $
+ * $Id: text_context.h,v 1.8 2002/12/05 15:22:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -134,6 +134,13 @@ public:
 	{
 		nlassert (index < _CacheStrings.size());
 		CComputedString &rCS = _CacheStrings[index];
+		if(_Shaded)
+		{
+			CRGBA	bkup= rCS.Color;
+			rCS.Color= CRGBA::Black;
+			rCS.render2D (*_Driver, x+_ShadeExtent, z-_ShadeExtent, _HotSpot, _ScaleX, _ScaleZ);
+			rCS.Color= bkup;
+		}
 		rCS.render2D (*_Driver, x, z, _HotSpot, _ScaleX, _ScaleZ);
 	}
 
@@ -142,6 +149,13 @@ public:
 	{
 		nlassert (index < _CacheStrings.size());
 		CComputedString &rCS = _CacheStrings[index];
+		if(_Shaded)
+		{
+			CRGBA	bkup= rCS.Color;
+			rCS.Color= CRGBA::Black;
+			rCS.render2DClip(*_Driver, x+_ShadeExtent, z-_ShadeExtent, xmin, ymin, xmax, ymax);
+			rCS.Color= bkup;
+		}
 		rCS.render2DClip (*_Driver, x, z, xmin, ymin, xmax, ymax);
 	}
 

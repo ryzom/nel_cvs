@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.3 2001/07/13 13:27:53 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.4 2001/07/17 14:21:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,8 +62,8 @@ class CEnvEffect;
  * - Removing a new source
  * - Entering/Exiting from an envsound area
  *
- * Removing does not mean deleting. The user is responsible for deleting the sources.
- * that have been allocated by createSource().
+ * Important: The user is responsible for deleting the sources that have been allocated by
+ * createSource(), before deleting the audio mixer object.
  *
  * \author Olivier Cado
  * \author Nevrax France
@@ -91,13 +91,11 @@ public:
 	/// Load buffers
 	virtual void				loadSoundBuffers( const char *filename,
 											  const std::vector<TSoundId> **idvec );
-	/// Load environment sounds ; idvec can be null if you don't want an access to the envsounds
+	/// Load environment sounds ; treeRoot can be null if you don't want an access to the envsounds
 	virtual	void				loadEnvSounds( const char *filename,
-											   const std::vector<UEnvSound*> **esvec=NULL );
+											   UEnvSound **treeRoot=NULL );
 	/// Add logical sound source
 	virtual USource				*createSource( TSoundId id );
-	/// Remove logical sound source
-	virtual void				removeSource( USource *source );
 	/// Return the listener interface
 	virtual UListener			*getListener()	{ return &_Listener; }
 
@@ -108,6 +106,8 @@ public:
 	virtual void				update(); 
 
 
+	/// Remove logical sound source
+	void						removeSource( USource *source );
 	/// Add a source which was created by an EnvSound
 	void						addSource( CSourceUser *source )		{ _Sources.insert( source ); }
 	/// Put source into a track
@@ -118,6 +118,8 @@ public:
 	void						applyListenerMove( const NLMISC::CVector& listenerpos );
 	/// Redispatch the sources into tracks if needed
 	void						balanceSources()						{ if ( moreSourcesThanTracks() ) redispatchSourcesToTrack(); }
+	/// Return the root of the envsounds tree
+	CEnvSoundUser				*getEnvSounds()							{ return _EnvSounds; }
 
 protected:
 
@@ -147,8 +149,8 @@ private:
 	/// Listener position vector
 	NLMISC::CVector				_ListenPosition;
 
-	/// Environment sounds
-	std::vector<CEnvSoundUser*>	_EnvSounds;
+	/// Environment sounds tree
+	CEnvSoundUser				*_EnvSounds;
 
 	/// Auto-Balance period
 	uint32						_BalancePeriod;

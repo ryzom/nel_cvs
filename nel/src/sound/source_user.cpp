@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.3 2001/07/13 13:27:53 cado Exp $
+ * $Id: source_user.cpp,v 1.4 2001/07/17 14:21:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,6 +64,7 @@ CSourceUser::~CSourceUser()
 		}
 		_Track->setUserSource( NULL );
 	}
+	CAudioMixerUser::instance()->removeSource( this );
 }
 
 
@@ -170,14 +171,14 @@ void					CSourceUser::stop()
  * 3D mode -> 3D position
  * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
  */
-void					CSourceUser::setPosition( const NLMISC::CVector& pos )
+void					CSourceUser::setPos( const NLMISC::CVector& pos )
 {
 	_Position = pos;
 
 	// Set the position
 	if ( _Track != NULL )
 	{
-		_Track->DrvSource->setPosition( pos );
+		_Track->DrvSource->setPos( pos );
 	}
 }
 
@@ -185,7 +186,7 @@ void					CSourceUser::setPosition( const NLMISC::CVector& pos )
 /* Get the position vector.
  * If the source is stereo, return the position vector which reference was passed to set3DPositionVector()
  */
-void					CSourceUser::getPosition( NLMISC::CVector& pos ) const
+void					CSourceUser::getPos( NLMISC::CVector& pos ) const
 {
 	if ( _3DPosition == NULL )
 	{
@@ -306,7 +307,7 @@ void					CSourceUser::copyToTrack()
 	nlassert( _Sound->getBuffer() != NULL );
 	_Track->DrvSource->setStaticBuffer( _Sound->getBuffer() );
 
-	_Track->DrvSource->setPosition( _Position );
+	_Track->DrvSource->setPos( _Position );
 	_Track->DrvSource->setVelocity( _Velocity );
 	_Track->DrvSource->setDirection( _Direction );
 	_Track->DrvSource->setGain( _Gain );
@@ -364,6 +365,59 @@ void					CSourceUser::leaveTrack()
 		}
 	}
 	enterTrack( NULL );
+}
+
+
+/*
+ * Enable (play with high priority) or disable (stop and set low priority)
+ */
+void					CSourceUser::enable( bool toplay, float gain )
+{
+	if ( getSound() != NULL )
+	{
+		if ( toplay )
+		{
+			// Set gain
+			setRelativeGain( gain );
+
+			// Start playing
+			if ( getPriority() == LowPri )
+			{
+				setPriority( HighPri );
+				play();
+			}
+		}
+		else
+		{
+			// Stop playing
+			if ( getPriority() != LowPri )
+			{
+				stop();
+				setPriority( LowPri );
+			}
+		}
+	}
+}
+
+
+/*
+ * Serial position, sound and looping state (warning: partial serial, for CEnvSoundUser)
+ */
+void					CSourceUser::serial( NLMISC::IStream& s )
+{
+	// If you change this, increment the version number in CEnvSoundUser::load() !
+
+	// 3D position and sound
+	s.serial( _Position );
+	s.serialPtr( _Sound );
+	s.serial( _Looping );
+
+	if ( s.isReading() )
+	{
+		// Put into tracks
+		CAudioMixerUser::instance()->addSource( this );
+		CAudioMixerUser::instance()->giveTrack( this );
+	}
 }
 
 

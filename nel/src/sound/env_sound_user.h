@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.2 2001/07/13 09:46:36 cado Exp $
+ * $Id: env_sound_user.h,v 1.3 2001/07/17 14:21:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,6 @@
 #define NL_ENV_SOUND_USER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/misc/time_nl.h"
 #include "nel/sound/u_env_sound.h"
 #include "source_user.h"
 #include <vector>
@@ -37,6 +36,8 @@ namespace NLSOUND {
 
 
 class CListenerUser;
+class IPlayable;
+class IBoundingShape;
 
 
 // Number of environment channels
@@ -66,28 +67,22 @@ public:
 	/// Serialize
 	void					serial( NLMISC::IStream& s );
 	/// Serialize file header
-	static void				serialFileHeader( NLMISC::IStream& s, uint32& nb );
+	static void				serialFileHeader( NLMISC::IStream& s );
 	/// Load several envsounds and return the number of envsounds loaded
-	static uint32			load( std::vector<CEnvSoundUser*>& container, NLMISC::IStream& s, CListenerUser *listener  );
-
-	/// Return the corresponding localized 3D sound source
-	virtual USource			*get3DSource()			{ return &_CenterSource; }
-	/// Return the non-localized stereo sound source (TEMP)
-	CSourceUser				*getStereoSources()		{ return _StereoChannels; }
-	/// Return the inner radius
-	float					getInnerRadius()		{ return _InnerRadius; }
-	/// Return the outer radius
-	float					getOuterRadius()		{ return _OuterRadius; }
+	static uint32			load( CEnvSoundUser* &envSoundTreeRoot, NLMISC::IStream& s );
 
 
-	/// Init
-	void					init( CListenerUser *listener );
-	/// Recompute the EnvSound. Call this method after having moved the 3D source.
-	virtual void			recompute();
-	/// Get the sources to play corresponding to the listener's position, set with the right volume
-	void					getCurrentSources( const NLMISC::CVector& listenerpos,
-											   bool& centersrc, bool& stereosrcs );
-	/// Update the stereo mix (call evenly)
+	/// Return the position
+	virtual void			getPos( NLMISC::CVector& pos ) const;
+	/// Moves the envsound (and its transition envsound if it has one)
+	virtual void			setPos( const NLMISC::CVector& pos );
+	/// Return the children envsounds
+	virtual std::vector<UEnvSound*>& getChildren();
+
+
+	/// Recompute the EnvSound. Call this method after having moved the 3D source (call only on the root env).
+	void					recompute();
+	/// Update the stereo mixes (call evenly on the root) (recursive)
 	void					update();
 
 
@@ -100,59 +95,64 @@ public:
 
 
 	/// Set properties (EDIT)
-	void					setProperties( CSourceUser& centersrc,
-										   CSourceUser stchannels[MAX_ENV_CHANNELS],
-										   float innerradius, float outerradius,
-										   std::vector<TSoundId>& ambiantsounds,
-										   std::vector<TSoundId>& sparsesounds,
-										   uint32 crossfadeTimeMs=4000, uint32 sustainTimeMs=8000,
-										   uint32 sparseAvgPeriodMs=20000 );
+	void					setProperties( bool transition,
+										   IBoundingShape *bshape,	// set NULL for all world
+										   IPlayable *source );		// set NULL for no source
+	/// Add a child (EDIT)
+	void					addChild( CEnvSoundUser *child );
 	/// Save (output stream only) (EDIT)
-	static void				save( const std::vector<CEnvSoundUser>& container, NLMISC::IStream& s );
+	static void				save( CEnvSoundUser *envSoundTreeRoot, NLMISC::IStream& s );
+	/// Return the bounding shape (EDIT)
+	IBoundingShape			*getBoundingShape() { return _BoundingShape; }
+	/// Return the source (EDIT)
+	IPlayable				*getSource()		{ return _Source; }
+	/// Return the parent (EDIT)
+	CEnvSoundUser			*getParent()		{ return _Parent; }
 
 protected:
 
-	/// Calc pos in cycle
-	NLMISC::TTime			calcPosInCycle( bool& crossfade, uint32& leadchannel );
-	/// Select a random sound in a bank
-	TSoundId				getRandomSound( const std::vector<CSound*>& bank ) const;
-	/// Calculate the next time a sparse sound plays (set NULL for no current sound)
-	void					calcRandomSparseSoundTime( TSoundId currentsparesound );
-	/// Start or stop the center source
-	void					manageCenterSource( bool toplay );
-	/// Start or stop the stereo channels
-	void					manageStereoChannels( bool toplay, bool crossfade, uint32 leadchannel );
+	// Return true if the envsound is a leaf in the hierarchy tree
+	//bool					isLeaf() const	{ return _Children.empty(); }
+
+	/// Return true if the envsound is the root of the hierarchy tree
+	bool					isRoot() const	{ return _Parent==NULL; }
+
+	// Enable/disable the source and set general gain if enabled, and reset the source mark (recursive)
+	void					applySourcesMarks();
+
+	/// Find the area where the listener is located (recursive)
+	CEnvSoundUser			*findCurrentEnv( const NLMISC::CVector& listenerpos );
+
+	/** Prepare the related sources to play (recursive).
+	 * In each children branch, there must be an env which is not a transition, for the recursion to stop
+	 */
+	void					markSources( const NLMISC::CVector& listenerpos, float gain, CEnvSoundUser *except=NULL );
+
+	/// Count the envs in the tree (call on the root)
+	uint32					getCount() const;
 
 private:
 
 	// Must play or not
-	bool					_Play;
+	bool						_Play;
 
-	// Localized 3D sound source
-	CSourceUser				_CenterSource;
-	CListenerUser			*_Listener;
+	// Sound source (3D source or ambiant source)
+	IPlayable					*_Source;
 
 	// Area
-	float					_InnerRadius;
-	float					_OuterRadius;
+	IBoundingShape				*_BoundingShape;
 
-	// Non-localized stereo source
-	CSourceUser				_StereoChannels [MAX_ENV_CHANNELS];
-	float					_StereoGain;
+	// Transition shape ?
+	bool						_Transition;
 
-	// Sound banks
-	std::vector<CSound*>	_AmbiantSounds, _SparseSounds;
+	// Hierarchy
+	CEnvSoundUser				*_Parent;
+	std::vector<CEnvSoundUser*>	_Children;
 
-	// Crossfade control
-	NLMISC::TTime			_StartTime;
-	bool					_Sustain;
-	bool					_RandomSoundChosen;
-	NLMISC::TTime			_NextSparseSoundTime;
+	// Playing preparation
+	bool						_Mark;
+	float						_Gain;
 
-	// Constants
-	uint32					_CrossfadeTime;
-	uint32					_SustainTime;
-	uint32					_SparseAvgPeriod;
 };
 
 

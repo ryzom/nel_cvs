@@ -1,7 +1,7 @@
 /** \file env_effect.cpp
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.cpp,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: env_effect.cpp,v 1.2 2001/07/17 14:21:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NLSOUND {
 /*
  * Constructor
  */
-CEnvEffect::CEnvEffect() : _Current(0), _Corner1(CVector::Null), _Corner2(CVector::Null)
+CEnvEffect::CEnvEffect() : _Current(0), _BoundingShape(NULL)
 {
 }
 
@@ -45,7 +45,7 @@ CEnvEffect::CEnvEffect() : _Current(0), _Corner1(CVector::Null), _Corner2(CVecto
 void			CEnvEffect::serialFileHeader( NLMISC::IStream& s, uint32& nb )
 {
 	s.serialCheck( (uint32)'FEN' ); // NeL Environment FX
-	s.serialVersion( 0 );
+	s.serialVersion( 1 );
 	s.serial( nb );
 }
 
@@ -72,34 +72,6 @@ uint32			CEnvEffect::load( std::vector<CEnvEffect*>& container, NLMISC::IStream&
 		nlstop;
 		return 0;
 	}
-}
-
-
-/*
- * Does the box include a point ?
- */
-bool			CEnvEffect::include( const CVector& pos )
-{
-	if ( _Corner1.x > pos.x ) return false;
-	if ( _Corner2.x < pos.x ) return false;
-	if ( _Corner1.y > pos.y ) return false;
-	if ( _Corner2.y < pos.y ) return false;
-	if ( _Corner1.z > pos.z ) return false;
-	if ( _Corner2.z < pos.z ) return false;
-	return true;
-}
-
-
-/*
- * Return the environment size
- */
-float			CEnvEffect::getEnvSize() const
-{
-	// Set it to the average of the three widths (?)
-	float dx = _Corner2.x-_Corner1.x;
-	float dy = _Corner2.y-_Corner1.y;
-	float dz = _Corner2.z-_Corner1.z;
-	return (dx+dy+dz) / 3.0f;
 }
 
 

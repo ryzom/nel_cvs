@@ -1,7 +1,7 @@
 /** \file listener_user.cpp
  * UListenerUser: implementation of UListener
  *
- * $Id: listener_user.cpp,v 1.1 2001/07/10 16:48:03 cado Exp $
+ * $Id: listener_user.cpp,v 1.2 2001/07/17 14:21:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,10 +33,10 @@ namespace NLSOUND {
 /*
  * Set the position vector (default: (0,0,0)) (3D mode only)
  */
-void	CListenerUser::setPosition( const NLMISC::CVector& pos )
+void	CListenerUser::setPos( const NLMISC::CVector& pos )
 {
 	// Change position
-	_DrvListener->setPosition( pos );
+	_DrvListener->setPos( pos );
 
 	// Select environment effect
 	CAudioMixerUser::instance()->applyListenerMove( pos );

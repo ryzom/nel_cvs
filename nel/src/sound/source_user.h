@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.h,v 1.3 2001/07/13 13:27:53 cado Exp $
+ * $Id: source_user.h,v 1.4 2001/07/17 14:21:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/sound/u_source.h"
 #include "nel/misc/vector.h"
+#include "playable.h"
 
 
 namespace NLSOUND {
@@ -45,15 +46,18 @@ class CSound;
  * \author Nevrax France
  * \date 2001
  */
-class CSourceUser : public USource
+class CSourceUser : public USource, public IPlayable
 {
 public:
 
 	/// Constructor
 	CSourceUser( TSoundId id=NULL );
-
 	/// Destructor
 	virtual ~CSourceUser();
+
+	/// Static init (call at the very beginning)
+	static void						init() { NLMISC_REGISTER_CLASS(CSourceUser); }
+
 	
 	/// Change the sound binded to the source
 	virtual void					setSound( TSoundId id );
@@ -86,11 +90,11 @@ public:
 	 * 3D mode -> 3D position
 	 * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
 	 */
-	virtual void					setPosition( const NLMISC::CVector& pos );
+	virtual void					setPos( const NLMISC::CVector& pos );
 	/** Get the position vector.
 	 * If the source is stereo, return the position vector which reference was passed to set3DPositionVector()
 	 */
-	virtual void					getPosition( NLMISC::CVector& pos ) const;
+	virtual void					getPos( NLMISC::CVector& pos ) const;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
 	virtual void					setVelocity( const NLMISC::CVector& vel );
 	/// Get the velocity vector
@@ -132,6 +136,13 @@ public:
 	void							leaveTrack();
 	/// Return the track
 	CTrack							*getTrack()									{ return _Track; }
+
+
+	/// Enable (play with high priority) or disable (stop and set low priority)
+	virtual void					enable( bool toplay, float gain );
+	/// Serial position, sound and looping state (warning: partial serial)
+	virtual void					serial( NLMISC::IStream& s );
+	NLMISC_DECLARE_CLASS(CSourceUser);
 	
 protected:
 

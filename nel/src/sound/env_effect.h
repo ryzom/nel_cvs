@@ -1,7 +1,7 @@
 /** \file env_effect.h
  * CEnvEffect: environmental effects and where they are applied
  *
- * $Id: env_effect.h,v 1.2 2001/07/13 09:45:07 cado Exp $
+ * $Id: env_effect.h,v 1.3 2001/07/17 14:21:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
-#include "nel/misc/vector.h"
+#include "bounding_shape.h"
 
 namespace NLSOUND {
 
@@ -51,8 +51,7 @@ public:
 	void			serial( NLMISC::IStream& s )
 	{
 		// If you change this, increment the version number in serialFileHeader()
-		s.serial( _Corner1 );
-		s.serial( _Corner2 );
+		s.serialPolyPtr( _BoundingShape );
 		s.serialCont( _EnvNums );
 		s.serialCont( _Tags );
 	}
@@ -61,26 +60,22 @@ public:
 	/// Load several EnvEffects and return the number of effects loaded
 	static uint32	load( std::vector<CEnvEffect*>& container, NLMISC::IStream& s );
 
-	/// Does the box include a point ?
-	bool			include( const NLMISC::CVector& pos );
+	/// Return true if the environment includes the specified point
+	bool			include( const NLMISC::CVector& pos ) { return _BoundingShape->include( pos ); }
 	/// Select the current environment
 	void			selectEnv( const std::string& tag );
-
-
 	/// Return the environment type
 	uint			getEnvNum() const		{ return _EnvNums[_Current]; }
 	/// Return the environment size
-	float			getEnvSize() const;
+	float			getEnvSize() const		{ return _BoundingShape->getDiameter(); }
 
 
-	/// Return the corners (EDIT)
-	void			getCorners( NLMISC::CVector& c1, NLMISC::CVector& c2 )
-											{ c1 = _Corner1; c2 = _Corner2; }
 	/// Set the environment type (EDIT)
 	void			addEnvNum( uint8 num, const std::string& tag="" );
-	/// Set the corners (the corners must be ordered: 1 has smaller x, y, z) (EDIT)
-	void			setCorners( const NLMISC::CVector& c1, const NLMISC::CVector& c2 )
-											{ _Corner1 = c1; _Corner2 = c2; }
+	/// Access the bounding shape (EDIT)
+	IBoundingShape	*getBoundingShape()		{ return _BoundingShape; }
+	/// Set the bounding shape (EDIT)
+	void			setBoundingShape( IBoundingShape *bs ) { _BoundingShape = bs; }
 	/// Save (output stream only) (EDIT)
 	static void		save( const std::vector<CEnvEffect>& container, NLMISC::IStream& s );
 
@@ -96,8 +91,8 @@ private:
 	// Environment tags (indicate which env to select)
 	std::vector<std::string>	_Tags;
 
-	// For now, its a box (the corners must be ordered: 1 has smaller x, y, z)
-	NLMISC::CVector				_Corner1, _Corner2;
+	// Bounding shape
+	IBoundingShape				*_BoundingShape;
 };
 
 

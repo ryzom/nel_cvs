@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.3 2001/07/13 13:27:53 cado Exp $
+ * $Id: audio_mixer_user.cpp,v 1.4 2001/07/17 14:21:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,13 @@
 #include "env_sound_user.h"
 #include "env_effect.h"
 #include "sound.h"
+#include "ambiant_source.h"
+#include "bounding_sphere.h"
+#include "bounding_box.h"
 #include "driver/buffer.h"
 
 #include "nel/misc/file.h"
+#include "nel/misc/path.h"
 using namespace NLMISC;
 
 using namespace std;
@@ -86,12 +90,8 @@ CAudioMixerUser::~CAudioMixerUser()
 		_Tracks[i]->DrvSource->setStaticBuffer( NULL );
 	}
 
-	// Env. sounds
-	vector<CEnvSoundUser*>::iterator ipes;
-	for ( ipes=_EnvSounds.begin(); ipes!=_EnvSounds.end(); ++ipes )
-	{
-		delete (*ipes);
-	}
+	// Env. sounds tree
+	delete _EnvSounds;
 
 	// Remaining sources (should have been removed and deleted by the user !)
 	set<CSourceUser*>::iterator ips;
@@ -143,9 +143,15 @@ void				CAudioMixerUser::init( uint32 balance_period )
 	_SoundDriver = ISoundDriver::createDriver();
 	CSound::init( _SoundDriver );
 
+	// Init registrable classes
+	CSourceUser::init();
+	CAmbiantSource::init();
+	CBoundingSphere::init();
+	CBoundingBox::init();
+
 	// Init listener
 	_Listener.init( _SoundDriver );
-	
+
 	// Init tracks (physical sources)
 	_NbTracks = MAX_TRACKS; // could be chosen by the user, or according to the capabilities of the sound card
 	uint i;
@@ -282,11 +288,7 @@ void				CAudioMixerUser::applyListenerMove( const NLMISC::CVector& listenerpos )
 	computeEnvEffect( listenerpos );
 
 	// Environment sounds
-	vector<CEnvSoundUser*>::iterator ipe;
-	for ( ipe=_EnvSounds.begin(); ipe!=_EnvSounds.end(); ++ipe )
-	{
-		(*ipe)->recompute();
-	}
+	_EnvSounds->recompute();
 }
 
 
@@ -299,12 +301,9 @@ void				CAudioMixerUser::applyListenerMove( const NLMISC::CVector& listenerpos )
 void				CAudioMixerUser::update()
 {
 	// Update envsounds
-	vector<CEnvSoundUser*>::iterator ipe;
-	for ( ipe=_EnvSounds.begin(); ipe!=_EnvSounds.end(); ++ipe )
-	{
-		(*ipe)->update();
-	}
+	_EnvSounds->update();
 
+	// Balance sources
 	if ( _BalancePeriod != 0 )
 	{
 		static uint32 update_counter = 1;
@@ -415,7 +414,7 @@ void				CAudioMixerUser::selectEnvEffects( const std::string& tag )
 
 	// Compute
 	CVector pos;
-	_Listener.getPosition( pos );
+	_Listener.getPos( pos );
 	computeEnvEffect( pos, true );
 }
 
@@ -438,7 +437,7 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 
 	// Load env effects
 	CIFile file;
-	if ( file.open( filename ) )
+	if ( file.open( NLMISC::CPath::lookup( filename ) ) )
 	{
 		uint32 n = CEnvEffect::load( _EnvEffects, file );
 		nldebug( "AM: Loaded %u environmental effects", n );
@@ -460,7 +459,7 @@ void			CAudioMixerUser::loadSoundBuffers( const char *filename, const vector<TSo
 
 
 	CIFile file;
-	if ( file.open( filename ) )
+	if ( file.open( NLMISC::CPath::lookup( filename ) ) )
 	{
 		uint32 n = CSound::load( _Sounds, file );
 		nldebug( "AM: Loaded %u sound buffers", n );
@@ -477,24 +476,24 @@ void			CAudioMixerUser::loadSoundBuffers( const char *filename, const vector<TSo
 /*
  * Load environment sounds
  */
-void			CAudioMixerUser::loadEnvSounds( const char *filename, const std::vector<UEnvSound*> **esvec )
+void			CAudioMixerUser::loadEnvSounds( const char *filename, UEnvSound **treeRoot )
 {
 	nlassert( filename != NULL );
 	nldebug( "AM: Loading environment sounds..." );
 
 	CIFile file;
-	if ( file.open( filename ) )
+	if ( file.open( NLMISC::CPath::lookup( filename ) ) )
 	{
-		uint32 n = CEnvSoundUser::load( _EnvSounds, file, &_Listener );
+		uint32 n = CEnvSoundUser::load( _EnvSounds, file );
 		nldebug( "AM: Loaded %u environment sounds", n );
 	}
 	else
 	{
 		nlwarning( "AM: Environment sounds file not found: %s", filename );
 	}
-	if ( esvec != NULL )
+	if ( treeRoot != NULL )
 	{
-		*esvec = (const std::vector<UEnvSound*>*)&_EnvSounds;
+		*treeRoot = _EnvSounds;
 	}
 }
 
@@ -518,8 +517,8 @@ struct CompareSources : public binary_function<CSourceUser*,CSourceUser*,bool>
 		{
 			// Equal priority, test distances to the listener
 			CVector src1pos, src2pos;
-			s1->getPosition( src1pos );
-			s2->getPosition( src2pos );
+			s1->getPos( src1pos );
+			s2->getPos( src2pos );
 			return ( (src1pos-(*_Pos)).norm() < (src2pos-(*_Pos)).norm() );
 		}
 		else
@@ -541,7 +540,7 @@ void			CAudioMixerUser::redispatchSourcesToTrack()
 	nldebug( "AM: Redispatching sources" );
 	
 	CVector listenerpos;
-	_Listener.getPosition( listenerpos );
+	_Listener.getPos( listenerpos );
 
 	// Get a copy of the sources set (we will modify it)
 	set<CSourceUser*> sources_copy = _Sources;

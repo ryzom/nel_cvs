@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.3 2001/07/13 13:27:53 cado Exp $
+ * $Id: env_sound_user.cpp,v 1.4 2001/07/17 14:21:54 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "env_sound_user.h"
 #include "sound.h"
 #include "audio_mixer_user.h"
+#include "bounding_shape.h"
 #include <stdlib.h>
 
 using namespace std;
@@ -35,23 +36,11 @@ using namespace NLMISC;
 namespace NLSOUND {
 
 
-// If this flag is defined, one ambiant sound cannot be the next one to itself
-#define ENVSOUND_DONT_DUPLICATE_AMBIANT
-
-
 /*
  * Constructor
  */
-CEnvSoundUser::CEnvSoundUser() : _InnerRadius(0.0f), _OuterRadius(0.0f), _Play(false),
-	_RandomSoundChosen(false), _Sustain(false), _StereoGain(0.0f), _Listener(NULL),
-	_CrossfadeTime(4000), _SustainTime(8000), _SparseAvgPeriod(20000), _NextSparseSoundTime(0)
+CEnvSoundUser::CEnvSoundUser() : _Play(false), _Parent(NULL), _Mark(false), _Gain(1.0f)
 {
-	_CenterSource.setLooping( true );
-	_StereoChannels[AMBIANT_CH1].setLooping( true );
-	_StereoChannels[AMBIANT_CH2].setLooping( true );
-	//_StereoChannels[SPARSE_CH].setLooping( false );
-
-	srand( (uint32)CTime::getLocalTime() );
 }
 
 
@@ -60,136 +49,93 @@ CEnvSoundUser::CEnvSoundUser() : _InnerRadius(0.0f), _OuterRadius(0.0f), _Play(f
  */
 CEnvSoundUser::~CEnvSoundUser()
 {
-	CAudioMixerUser::instance()->removeSource( &_CenterSource );
-	CAudioMixerUser::instance()->removeSource( &_StereoChannels[AMBIANT_CH1] );
-	CAudioMixerUser::instance()->removeSource( &_StereoChannels[AMBIANT_CH2] );
-	CAudioMixerUser::instance()->removeSource( &_StereoChannels[SPARSE_CH] );
-
-	// Delete sounds
-	vector<CSound*>::iterator ipsnds;
-	for ( ipsnds=_AmbiantSounds.begin(); ipsnds!=_AmbiantSounds.end(); ++ipsnds )
+	vector<CEnvSoundUser*>::iterator ipe;
+	for ( ipe=_Children.begin(); ipe!=_Children.end(); ++ipe )
 	{
-		nlinfo( "Deleting ambiant sound" );
-		delete (*ipsnds);
+		delete (*ipe);
 	}
-	for ( ipsnds=_SparseSounds.begin(); ipsnds!=_SparseSounds.end(); ++ipsnds )
+
+	if ( _Source != NULL )
 	{
-		delete (*ipsnds);
+		delete _Source;
+	}
+	if ( _BoundingShape != NULL )
+	{
+		delete _BoundingShape;
 	}
 }
 
 
 /*
- * Serialize
+ * Serialize (recursive)
  */
 void CEnvSoundUser::serial( NLMISC::IStream& s )
 {
-	// If you change this, increment the version number in load()
+	// If you change this, increment the version number in CEnvSoundUser::load() !
 
-	// 3D position and sound
-	CVector pos;
-	CSound *sound;
-	if ( ! s.isReading() )
-	{
-		_CenterSource.getPosition( pos );
-		sound = _CenterSource.getSound();
-	}
-	s.serial( pos );
-	s.serialPtr( sound );
+	s.serial( _Transition );
+	s.serialPolyPtr( _BoundingShape );
+	s.serialPolyPtr( _Source );
+
 	if ( s.isReading() )
 	{
-		_CenterSource.setPosition( pos );
-		_CenterSource.setSound( sound );
+		if ( ! _Transition )
+		{
+			if ( (_Source != NULL) )
+			{
+				if ( _BoundingShape != NULL )
+				{
+					_Source->initPos( const_cast<CVector*>(&(_BoundingShape->getCenter())) );
+				}
+				else
+				{
+					_Source->initPos( NULL );
+				}
+			}
+		}
 	}
 
-	// Area
-	s.serial( _InnerRadius );
-	s.serial( _OuterRadius );
-
-	// Constants
-	s.serial( _CrossfadeTime );
-	s.serial( _SustainTime );
-	s.serial( _SparseAvgPeriod );
-
-	// Stereo sound banks
-	s.serialContPtr( _AmbiantSounds );
-	s.serialContPtr( _SparseSounds );
-}
-
-
-/*
- * Init
- */
-void CEnvSoundUser::init( CListenerUser *listener )
-{
-	// Set listener
-	_Listener = listener;
-
-	// Initialize center source
-	CAudioMixerUser::instance()->addSource( &_CenterSource );
-	CAudioMixerUser::instance()->giveTrack( &_CenterSource );
-
-	// Initialize ambiant sound channels
-	if ( _AmbiantSounds.size() >= 2 )
-	{
-		_StereoChannels[AMBIANT_CH1].set3DPositionVector( _CenterSource.getPositionP() );
-		_StereoChannels[AMBIANT_CH1].setSound( getRandomSound( _AmbiantSounds ) );
-		_StereoChannels[AMBIANT_CH1].setGain( 0.0f );
-		_StereoChannels[AMBIANT_CH1].setPriority( LowPri, false );
-
-		_StereoChannels[AMBIANT_CH2].set3DPositionVector( _CenterSource.getPositionP() );
-		_StereoChannels[AMBIANT_CH2].setSound( getRandomSound( _AmbiantSounds ) );
-		_StereoChannels[AMBIANT_CH2].setGain( 0.0f );
-		_StereoChannels[AMBIANT_CH2].setPriority( LowPri, false );
-
-		CAudioMixerUser::instance()->addSource( &_StereoChannels[AMBIANT_CH1] );
-		CAudioMixerUser::instance()->giveTrack( &_StereoChannels[AMBIANT_CH1] );
-		CAudioMixerUser::instance()->addSource( &_StereoChannels[AMBIANT_CH2] );
-		CAudioMixerUser::instance()->giveTrack( &_StereoChannels[AMBIANT_CH2] );
-	}
-
-	// Initialize sparse sounds channel
-	if ( ! _SparseSounds.empty() )
-	{
-		_StereoChannels[SPARSE_CH].set3DPositionVector( _CenterSource.getPositionP() );
-		_StereoChannels[SPARSE_CH].setPriority( LowPri );
-		_StereoChannels[SPARSE_CH].setSound( getRandomSound( _SparseSounds ) );
-		CAudioMixerUser::instance()->addSource( &_StereoChannels[SPARSE_CH] );
-		CAudioMixerUser::instance()->giveTrack( &_StereoChannels[SPARSE_CH] );
-	}
-
-	recompute();
+	// Children envsounds
+	s.serialPtr( _Parent );
+	s.serialContPtr( _Children );
 }
 
 
 /*
  * Serialize file header
  */
-void	CEnvSoundUser::serialFileHeader( NLMISC::IStream& s, uint32& nb )
+void	CEnvSoundUser::serialFileHeader( NLMISC::IStream& s )
 {
 	s.serialCheck( (uint32)'SEN' ); // NeL Environment Sounds
-	s.serialVersion( 0 );
-	s.serial( nb );
+	s.serialVersion( 1 );
+}
+
+
+/*
+ * Count the envs in the tree (call on the root)
+ */
+uint32	CEnvSoundUser::getCount() const
+{
+	uint32 cnt=1;
+	vector<CEnvSoundUser*>::const_iterator ipe;
+	for ( ipe=_Children.begin(); ipe!=_Children.end(); ++ipe )
+	{
+		cnt += (*ipe)->getCount();
+	}
+	return cnt;
 }
 
 
 /*
  * Load several envsounds and return the number of envsounds loaded
  */
-uint32 CEnvSoundUser::load( std::vector<CEnvSoundUser*>& container, NLMISC::IStream& s, CListenerUser *listener )
+uint32 CEnvSoundUser::load( CEnvSoundUser* &envSoundTreeRoot, NLMISC::IStream& s )
 {
 	if ( s.isReading() )
 	{
-		uint32 nb, i, notfound=0;
-		serialFileHeader( s, nb );
-		for ( i=0; i!=nb; i++ )
-		{
-			CEnvSoundUser *envsound = new CEnvSoundUser();
-			s.serial( *envsound );
-			envsound->init( listener );
-			container.push_back( envsound );
-		}
-		return nb;
+		serialFileHeader( s );
+		s.serialPtr( envSoundTreeRoot );
+		return envSoundTreeRoot->getCount();
 	}
 	else
 	{
@@ -199,247 +145,167 @@ uint32 CEnvSoundUser::load( std::vector<CEnvSoundUser*>& container, NLMISC::IStr
 }
 
 
-
 /*
- * Play or stop the sources
+ * Update the stereo mixes (call evenly on the root) (recursive)
  */
-void CEnvSoundUser::recompute()
+void			CEnvSoundUser::update()
 {
-	// Collect all sources to play EnvSounds
-	bool centersrc, stereosrc;
-	CVector listenerpos;
-	nlassert( _Listener != NULL );
-	_Listener->getPosition( listenerpos );
-	getCurrentSources( listenerpos, centersrc, stereosrc );
-
-	// Calc position in cycle
-	bool crossfade;
-	uint32 leadchannel;
-	calcPosInCycle( crossfade, leadchannel );
-
-	// Play or stop the sources
-	manageCenterSource( centersrc );
-	manageStereoChannels( stereosrc, crossfade, leadchannel );
+	if ( _Source != NULL )
+	{
+		_Source->update();
+	}
+	vector<CEnvSoundUser*>::iterator ipe;
+	for ( ipe=_Children.begin(); ipe!=_Children.end(); ++ipe )
+	{
+		(*ipe)->update();
+	}
 }
 
 
 /*
- * Get the sources to play corresponding to the listener's position, set with the right volume
+ * Find the area where the listener is located (recursive)
  */
-void CEnvSoundUser::getCurrentSources( const CVector& listenerpos, bool& centersrc, bool& stereosrcs )
+CEnvSoundUser *CEnvSoundUser::findCurrentEnv( const NLMISC::CVector& listenerpos )
 {
-	// Check if we must play
-	if ( ! _Play )
+	// Find in children first (check from leaves to root)
+	vector<CEnvSoundUser*>::iterator ipe = _Children.begin();
+	CEnvSoundUser *found = NULL;
+	while ( ! ( (found) || (ipe==_Children.end()) ) )
 	{
-		centersrc = false;
-		stereosrcs = false;
-		return;
+		found = (*ipe)->findCurrentEnv( listenerpos );
+		ipe++;
 	}
+	if ( found )
+		return found;
+	else if ( (_BoundingShape == NULL) || (_BoundingShape->include( listenerpos )) )
+		return this;
+	else
+		return NULL;
+}
 
-	bool between = true;
-	CVector center;
-	_CenterSource.getPosition( center );
-	float distanceToCenter = (center-listenerpos).norm();
 
-	// Add stereo channels ?
-	if ( distanceToCenter <= _OuterRadius )
+/*
+ * Return the position
+ */
+void CEnvSoundUser::getPos( NLMISC::CVector& pos ) const
+{
+	if ( _BoundingShape == NULL )
 	{
-		stereosrcs = true;
+		pos = CVector::Null;
 	}
 	else
 	{
-		// If the listener is strictly outside the outer sphere
-		stereosrcs = false;
-		_CenterSource.setRelativeGain( 1.0f );
-		_StereoGain = 0.0f;
-		between = false;
-	}
-
-	// Add 3D source ?
-	if ( distanceToCenter > _InnerRadius )
-	{
-		centersrc = true;
-	}
-	else
-	{
-		// If the listener is inside the inner sphere, or at its border
-		centersrc = false;
-		_StereoGain = 1.0f;
-		between = false;
-	}
-
-	// Lower volume, between _InnerRadius and _OutRadius
-	if ( between )
-	{
-		nlassert( _InnerRadius != _OuterRadius ); // not equal because between would be false
-		_StereoGain = (_OuterRadius-distanceToCenter) / (_OuterRadius-_InnerRadius);
-		_CenterSource.setRelativeGain( 1.0f - _StereoGain );
-	}
-
-	// Take changes into account
-	//update();
-}
-
-
-/*
- * Calc pos in cycle
- */
-TTime CEnvSoundUser::calcPosInCycle( bool& crossfade, uint32& leadchannel )
-{
-	TTime pos = CTime::getLocalTime();
-	pos = pos % ((_CrossfadeTime+_SustainTime)*2);
-	if ( pos < _CrossfadeTime+_SustainTime )
-	{
-		leadchannel = 0;
-	}
-	else
-	{
-		leadchannel = 1;
-		pos = pos - (_CrossfadeTime+_SustainTime);
-	}
-	crossfade = ( pos < _CrossfadeTime );
-	return pos;
-}
-
-
-/*
- * Update the stereo mix (call evenly)
- */
-void CEnvSoundUser::update()
-{
-	/*nldebug( "AM: EnvSound: Center source %p has sound %p, buffer %p, track %p, buffer %p",
-		&_CenterSource, _CenterSource.getSound(), _CenterSource.getSound()?_CenterSource.getSound()->getBuffer():NULL,
-		_CenterSource.getTrack(), _CenterSource.getTrack()?_CenterSource.getTrack()->DrvSource->getStaticBuffer():NULL );
-	nldebug( "AM: EnvSound: Channel #1    %p has sound %p, buffer %p, track %p, buffer %p",
-		&_StereoChannels[0], _StereoChannels[0].getSound(), _StereoChannels[0].getSound()?_StereoChannels[0].getSound()->getBuffer():NULL,
-		_StereoChannels[0].getTrack(), _StereoChannels[0].getTrack()?_StereoChannels[0].getTrack()->DrvSource->getStaticBuffer():NULL );
-	nldebug( "AM: EnvSound: Channel #2    %p has sound %p, buffer %p, track %p, buffer %p",
-		&_StereoChannels[1], _StereoChannels[1].getSound(), _StereoChannels[1].getSound()?_StereoChannels[1].getSound()->getBuffer():NULL,
-		_StereoChannels[1].getTrack(), _StereoChannels[1].getTrack()?_StereoChannels[1].getTrack()->DrvSource->getStaticBuffer():NULL );
-	nldebug( "AM: EnvSound: Channel #3    %p has sound %p, buffer %p, track %p, buffer %p",
-		&_StereoChannels[2], _StereoChannels[2].getSound(), _StereoChannels[2].getSound()?_StereoChannels[2].getSound()->getBuffer():NULL,
-		_StereoChannels[2].getTrack(), _StereoChannels[2].getTrack()?_StereoChannels[2].getTrack()->DrvSource->getStaticBuffer():NULL );*/
-
-	if ( (!_Play) || (_StereoGain==0.0f) )
-	{
-		return;
-	}
-
-	bool crossfade;
-	uint32 leadchannel, backchannel;
-	TTime posInCycle = calcPosInCycle( crossfade, leadchannel );
-	backchannel = 1 - leadchannel;
-	
-	// Crossfade the first two sources
-	if ( crossfade )
-	{
-		// Attack
-		float ratio = (float)posInCycle / (float)_CrossfadeTime;
-		_StereoChannels[leadchannel].setRelativeGain( ratio*_StereoGain );
-		_StereoChannels[backchannel].setRelativeGain( (1.0f - ratio)*_StereoGain );
-
-		// Start next sound
-		if ( _Sustain )
-		{
-			nldebug( "AM: EnvSound: Beginning crossfade: channel #%u rising", leadchannel );
-			_StereoChannels[leadchannel].setPriority( HighPri ) ;
-			_StereoChannels[leadchannel].play();
-			_Sustain = false;
-		}
-	}
-	else
-	{
-		// Set sustain gain (takes into account the possible changes to _StereoGain)
-		_StereoChannels[leadchannel].setRelativeGain( _StereoGain );
-
-		// Prepare next sound
-		if ( ! _Sustain )
-		{
-			_Sustain = true;
-			TSoundId nextsound = getRandomSound( _AmbiantSounds );
-#ifdef ENVSOUND_DONT_DUPLICATE_AMBIANT
-			while ( nextsound == _StereoChannels[leadchannel].getSound() )
-			{
-				nldebug( "AM: EnvSound: Avoiding ambiant sound duplication..." );
-				nextsound = getRandomSound( _AmbiantSounds );
-			}
-#endif
-			nldebug( "AM: EnvSound: Sustain: channel #1" );
-			_StereoChannels[backchannel].setRelativeGain( 0.0f );
-			_StereoChannels[backchannel].stop(); // we don't set the priority to LowPri
-			_StereoChannels[backchannel].setSound( nextsound );
-		}
-	}
-
-	// Add a short random sound into the third source
-	if ( ! _SparseSounds.empty() )
-	{
-		TTime now = CTime::getLocalTime();
-		if ( now > _NextSparseSoundTime )
-		{
-			TSoundId nextsound = getRandomSound( _SparseSounds );
-			_StereoChannels[SPARSE_CH].stop();
-			_StereoChannels[SPARSE_CH].setSound( nextsound );
-			_StereoChannels[SPARSE_CH].setPriority( MidPri );
-			_StereoChannels[SPARSE_CH].play();
-			nldebug( "AM: EnvSound: Playing sparse sound" );
-			if ( _StereoChannels[SPARSE_CH].getTrack() == NULL )
-			{
-				nldebug( "AM: Ensound: Switch on sparse channel" );
-				nlassert( _StereoChannels[SPARSE_CH].getSound() != NULL );
-			}
-			// Does not leave the track at present time
-			calcRandomSparseSoundTime( nextsound );
-		}
+		pos = _BoundingShape->getCenter();
 	}
 }
 
 
 /*
- * Calculate the next time a sparse sound plays
+ * Return the position
  */
-void		CEnvSoundUser::calcRandomSparseSoundTime( TSoundId currentsparesound )
+void CEnvSoundUser::setPos( const NLMISC::CVector& pos )
 {
-	uint32 delay = (uint)((float)rand() * (float)(_SparseAvgPeriod*2) / (float)RAND_MAX);
-
-	// Check the next sound will play after the current one
-	if ( currentsparesound != NULL )
+	if ( _BoundingShape != NULL )
 	{
-		uint32 soundlength = currentsparesound->getDuration();
-		if ( delay <= soundlength )
+		// Get the vector between the pos of this envsound and the pos of its transition envsound
+		CVector dtrans;
+		if ( (_Parent != NULL) && ( _Parent->_Transition ) )
 		{
-			delay = soundlength+1;
-		}
-	}
-
-	nldebug( "AM: EnvSound: Next sparse sound will play in %u ms", delay );
-	_NextSparseSoundTime = CTime::getLocalTime() + delay;
-}
-
-
-/*
- * Start or stop the center source
- */
-void		CEnvSoundUser::manageCenterSource( bool toplay )
-{
-	if ( _CenterSource.getSound() != NULL )
-	{
-		if ( toplay )
-		{
-			// Enter track and play
-			if ( _CenterSource.getPriority() == LowPri )
-			{
-				_CenterSource.setPriority( HighPri );
-				_CenterSource.play();
-			}
+			dtrans = _Parent->_BoundingShape->getCenter() - _BoundingShape->getCenter();
 		}
 		else
 		{
-			// Stop and remove useless source from track
-			if ( _CenterSource.getPriority() != LowPri )
+			dtrans = CVector::Null;
+		}
+
+		// Set the new pos
+		_BoundingShape->setCenter( pos );
+		if ( (_Parent != NULL) && ( _Parent->_Transition ) )
+		{
+			_Parent->_BoundingShape->setCenter( pos + dtrans );
+		}
+
+		// Recompute the entire tree
+		CAudioMixerUser::instance()->getEnvSounds()->recompute();
+	}
+}
+
+
+/*
+ * Return the children envsounds
+ */
+std::vector<UEnvSound*>& CEnvSoundUser::getChildren()
+{
+	return (vector<UEnvSound*>&)(_Children);
+}
+
+
+/*
+ * Play or stop the sources (call only on the root env)
+ */
+void CEnvSoundUser::recompute()
+{
+	nlassert( isRoot() );
+
+	// Find the area of the listener
+	CVector listenerpos;
+	CAudioMixerUser::instance()->getListener()->getPos( listenerpos );
+	CEnvSoundUser *current = findCurrentEnv( listenerpos );
+
+	// Mark the envs that have to play their source
+	if ( current != NULL )
+	{
+		current->markSources( listenerpos, 1.0f );
+	}
+	
+	// Enable/disable the sources in the hierarchy, and reset the marks
+	applySourcesMarks();
+}
+
+
+/* Prepare the related sources to play (recursive).
+ * In each children branch, there must be an env which is not a transition, for the recursion to stop
+ */
+void CEnvSoundUser::markSources( const NLMISC::CVector& listenerpos, float gain, CEnvSoundUser *except )
+{
+	// Is the listener in a transition area ?
+	if ( _Transition )
+	{
+		//nldebug( "AM: EnvSound: Marking sources for transition between child and parent" );
+
+		// Compute the listener position to find the ratio between up and down envs
+		nlassert( (_Children.size() == 1) && (_Children[0] != NULL) && (_Parent != NULL) );
+		nlassert( _BoundingShape && _Children[0]->_BoundingShape );
+		float ratio = _BoundingShape->getRatio( listenerpos, _Children[0]->_BoundingShape );
+
+		// The child env plays at gain*ratio
+		// The recursion stops because the child env is not a transition area
+		_Children[0]->markSources( listenerpos, gain * ratio );
+
+		// The 3d source of the current env and the parent env play at gain*(1-ratio)
+		// The recursion stops because the parent env is not a transition area
+		float outergain = gain * (1.0f-ratio);
+		_Mark = true;
+		_Gain = outergain;
+		_Parent->markSources( listenerpos, outergain, this );	
+	}
+	else
+	{
+		//nldebug( "AM: EnvSound: Marking sources for environnement" );
+
+		// The listener in an environment, containing other environments (e.g. a town) or not (e.g. a room).
+		// The current env plays
+		_Mark = true;
+		_Gain = gain;
+
+		// The children env (next level only) play, except the one specified
+		vector<CEnvSoundUser*>::iterator ipe;
+		for( ipe=_Children.begin(); ipe!=_Children.end(); ++ipe )
+		{
+			if ( (*ipe) != except )
 			{
-				_CenterSource.stop();
-				_CenterSource.setPriority( LowPri );
+				(*ipe)->_Mark = true;
+				(*ipe)->_Gain = gain;
 			}
 		}
 	}
@@ -447,105 +313,52 @@ void		CEnvSoundUser::manageCenterSource( bool toplay )
 
 
 /*
- * Start or stop the stereo channels
+ * Enable/disable the source and set general gain if enabled, and reset the source mark (recursive)
  */
-void		CEnvSoundUser::manageStereoChannels( bool toplay, bool crossfade, uint32 leadchannel )
+void CEnvSoundUser::applySourcesMarks()
 {
-	if ( toplay )
+	if ( ! _Play )
 	{
-		if ( _StereoChannels[leadchannel].getPriority() == LowPri )
-		{
-			nldebug( "AM: Envsound: Switch on channel %u", leadchannel );
-			nlassert( _StereoChannels[leadchannel].getSound() != NULL );
-			_StereoChannels[leadchannel].setPriority( HighPri ) ;
-			_StereoChannels[leadchannel].play();
-		}
-		if ( (_StereoChannels[1-leadchannel].getPriority() == LowPri) && crossfade )
-		{
-			nldebug( "AM: Envsound: Switch on channel %u", 1-leadchannel );
-			nlassert( _StereoChannels[1-leadchannel].getSound() != NULL );
-			_StereoChannels[1-leadchannel].setPriority( HighPri ) ;
-			_StereoChannels[1-leadchannel].play();
-		}
-		// The SPARSE_CH is added only when needed
+		_Mark = false;
 	}
-	else
+	if ( _Source != NULL )
 	{
-		if ( _StereoChannels[leadchannel].getPriority() != LowPri )
-		{
-			nldebug( "AM: Envsound: Switch off channel %u", leadchannel );
-			_StereoChannels[leadchannel].stop();
-			_StereoChannels[leadchannel].setPriority( LowPri );
-		}
-		if ( (_StereoChannels[1-leadchannel].getPriority() != LowPri) && crossfade )
-		{
-			nldebug( "AM: Envsound: Switch off channel %u", 1-leadchannel );
-			_StereoChannels[1-leadchannel].stop();
-			_StereoChannels[1-leadchannel].setPriority( LowPri );
-		}
-		if ( _StereoChannels[SPARSE_CH].getPriority() != LowPri )
-		{
-			nldebug( "AM: Envsound: Switch off sparse channel" );
-			_StereoChannels[SPARSE_CH].stop();
-			_StereoChannels[SPARSE_CH].setPriority( LowPri );
-		}
+		_Source->enable( _Mark, _Gain );
 	}
-}
+	_Mark = false;
 
-
-/*
- * Select a random sound in a bank
- */
-TSoundId	CEnvSoundUser::getRandomSound( const std::vector<CSound*>& bank ) const
-{
-	nlassert( ! bank.empty() );
-	// Note: does not work with a very big size (rand()*bank.size() would overflow)
-	uint32 r = rand()*bank.size()/(RAND_MAX+1);
-	nlassert( r < bank.size() );
-	nldebug( "AM: EnvSound: Prepared random sound number %u of %u", r, bank.size()-1 );
-
-	return bank[r];
+	// Apply on children
+	vector<CEnvSoundUser*>::iterator ipe;
+	for ( ipe=_Children.begin(); ipe!=_Children.end(); ++ipe )
+	{
+		(*ipe)->applySourcesMarks();
+	}
 }
 
 
 /*
  * Set properties (EDIT)
  */
-void		CEnvSoundUser::setProperties( CSourceUser& centersrc,
-										   CSourceUser stchannels[MAX_ENV_CHANNELS],
-										   float innerradius, float outerradius,
-										   std::vector<TSoundId>& ambiantsounds,
-										   std::vector<TSoundId>& sparsesounds,
-										   uint32 crossfadeTimeMs, uint32 sustainTimeMs,
-										   uint32 sparseAvgPeriodMs )
+void		CEnvSoundUser::setProperties( bool transition,
+										   IBoundingShape *bshape,
+										   IPlayable *source )
 {
-	_CenterSource = centersrc;
-	_StereoChannels[0] = stchannels[0];
-	_StereoChannels[1] = stchannels[1];
-	_StereoChannels[2] = stchannels[2];
-	_InnerRadius = innerradius;
-	_OuterRadius = outerradius;
-	_AmbiantSounds = ambiantsounds;
-	_SparseSounds = sparsesounds;
-	_CrossfadeTime = crossfadeTimeMs;
-	_SustainTime = sustainTimeMs;
-	_SparseAvgPeriod = sparseAvgPeriodMs;
+	_Transition = transition;
+	_BoundingShape = bshape;
+	_Source = source;
 }
 
 
 /*
  * Save (output stream only) (EDIT)
  */
-void CEnvSoundUser::save( const std::vector<CEnvSoundUser>& container, NLMISC::IStream& s )
+void CEnvSoundUser::save( CEnvSoundUser *envSoundTreeRoot, NLMISC::IStream& s )
 {
 	nlassert( ! s.isReading() );
+	nlassert( envSoundTreeRoot->isRoot() );
 
-	uint32 nb=container.size(), i;
-	serialFileHeader( s, nb );
-	for ( i=0; i!=nb; i++ )
-	{
-		s.serial( const_cast<CEnvSoundUser&>(container[i]) );
-	}
+	serialFileHeader( s );
+	s.serialPtr( envSoundTreeRoot );
 }
 
 
@@ -555,8 +368,14 @@ void CEnvSoundUser::save( const std::vector<CEnvSoundUser>& container, NLMISC::I
 void CEnvSoundUser::play()
 {
 	_Play = true;
-	calcRandomSparseSoundTime( NULL );
-	recompute();
+
+	// Start transition as well
+	if ( (_Parent != NULL) && ( _Parent->_Transition ) )
+	{
+		_Parent->_Play = true;
+	}
+
+	CAudioMixerUser::instance()->getEnvSounds()->recompute();
 }
 
 
@@ -566,8 +385,24 @@ void CEnvSoundUser::play()
 void CEnvSoundUser::stop()
 {
 	_Play = false;
-	recompute();
-	//_StereoChannels[SPARSE_CH].stop(); // if playing, emergency stop, before its end
+
+	// Stop transition as well
+	if ( (_Parent != NULL) && ( _Parent->_Transition ) )
+	{
+		_Parent->_Play = false;
+	}
+
+	CAudioMixerUser::instance()->getEnvSounds()->recompute();
+}
+
+
+/*
+ * Add a child (EDIT)
+ */
+void CEnvSoundUser::addChild( CEnvSoundUser *child ) 
+{
+	child->_Parent = this;
+	_Children.push_back( child );
 }
 
 

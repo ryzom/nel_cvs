@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.15 2002/09/16 14:52:58 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.16 2002/09/17 12:50:32 lecroart Exp $
  *
  */
 
@@ -327,9 +327,9 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 	}
 
 	msgout.serial (shardId);
-	CUnifiedNetwork::getInstance()->send (serviceName, msgout);
+	CUnifiedNetwork::getInstance()->send (sid, msgout);
 
-	nlinfo ("Connected to LS and sent the shardId '%d'", shardId);
+	nlinfo ("Connected to %s-%hu and sent identification with shardId '%d'", serviceName, sid, shardId);
 }
 
 
@@ -360,16 +360,19 @@ public:
 		CUnifiedNetwork::getInstance()->setServiceUpCallback(FrontendServiceName, cbFESConnection, NULL);
 		CUnifiedNetwork::getInstance()->setServiceDownCallback(FrontendServiceName, cbFESDisconnection, NULL);
 
-		// add a connection to the LS
-		string LSAddr = ConfigFile.getVar("LSHost").asString();
-		
-		// add default port if not set by the config file
-		if (LSAddr.find (":") == string::npos)
-			LSAddr += ":49998";
+		for (uint i = 0; i < ConfigFile.getVar("LSHost").size (); i++)
+		{
+			// add a connection to the LS
+			string LSAddr = ConfigFile.getVar("LSHost").asString(i);
+			
+			// add default port if not set by the config file
+			if (LSAddr.find (":") == string::npos)
+				LSAddr += ":49998";
 
-		CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
-		CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
-		CUnifiedNetwork::getInstance()->addService("LS", LSAddr, false);
+			CUnifiedNetwork::getInstance()->addCallbackArray(LSCallbackArray, sizeof(LSCallbackArray)/sizeof(LSCallbackArray[0]));
+			CUnifiedNetwork::getInstance()->setServiceUpCallback("LS", cbLSConnection, NULL);
+			CUnifiedNetwork::getInstance()->addService("LS", LSAddr, false);
+		}
 	}
 };
 

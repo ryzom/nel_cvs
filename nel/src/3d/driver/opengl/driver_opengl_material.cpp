@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.56 2002/02/13 14:49:26 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.57 2002/02/15 17:43:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -104,6 +104,79 @@ static inline void convTexAddr(ITexture *tex, CMaterial::TTexAddressingMode mode
 
 
 // --------------------------------------------------
+inline void CDriverGL::setTextureEnvFunction(uint stage, CMaterial& mat)
+{
+	ITexture	*text= mat.getTexture(stage);
+	if(text)
+	{
+		CMaterial::CTexEnv	&env= mat._TexEnvs[stage];
+
+		// Activate the env for this stage.
+		// NB: Thoses calls use caching.
+		activateTexEnvMode(stage, env);
+		activateTexEnvColor(stage, env);
+
+		// Activate texture generation mapping
+		_DriverGLStates.activeTextureARB(stage);
+		if (mat.getTexCoordGen (stage))
+		{
+			// Enable it
+			_DriverGLStates.enableTexGen (stage, true);
+
+			// Cubic or normal ?
+			if (text->isTextureCube ())
+				_DriverGLStates.setTexGenMode (stage, GL_REFLECTION_MAP_ARB);
+			else
+				_DriverGLStates.setTexGenMode (stage, GL_SPHERE_MAP);
+		}
+		else
+		{
+			_DriverGLStates.enableTexGen (stage, false);
+		}
+	}
+}
+
+
+//--------------------------------
+inline void CDriverGL::setupUserTextureMatrix(uint numStages, CMaterial& mat)
+{ 
+	if (
+		(_UserTexMatEnabled != 0 && (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) == 0)		
+		|| (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) != 0
+	   )
+	{
+		glMatrixMode(GL_TEXTURE);
+		// for each stage, setup the texture matrix if needed
+		uint newMask = (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) >> IDRV_MAT_USER_TEX_FIRST_BIT;
+		uint shiftMask = 1;
+		for (uint k = 0; k < numStages ; ++k)
+		{
+			if (newMask & shiftMask) // user matrix for this stage
+			{		
+				_DriverGLStates.activeTextureARB(k);
+				glLoadMatrixf(mat.getUserTexMat(k).get());
+				_UserTexMatEnabled |= shiftMask;
+			}
+			else
+			{
+				/// check if matrix disabled
+				if (
+					(newMask & shiftMask) != (_UserTexMatEnabled & shiftMask)
+				   )
+				{
+					_DriverGLStates.activeTextureARB(k);
+					glLoadIdentity();
+					_UserTexMatEnabled &= ~shiftMask;
+				}				
+			}
+			shiftMask <<= 1;
+		}
+		glMatrixMode(GL_MODELVIEW);
+	}
+}
+
+
+// --------------------------------------------------
 
 bool CDriverGL::setupMaterial(CMaterial& mat)
 {
@@ -139,12 +212,20 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				return(false);
 		}
 	}
+
+	// Here, for caustic shader, setup the lightmaps
+	/*if (mat.getShader() == CMaterial::Caustics)
+	{
+		if (mat.getTexture(stage))
+	}*/
 	
 
 	// Activate the textures.
 	// Do not do it for Lightmap, because done in multipass in a very special fashion.
 	// This avoid the useless multiple change of texture states per lightmapped object.
-	if(mat.getShader()!=CMaterial::LightMap)
+	if(mat.getShader() != CMaterial::LightMap
+		/* && mat.getShader() != CMaterial::Caustics	*/
+	   )
 	{
 		for(stage=0 ; stage<getNbTextureStages() ; stage++)
 		{
@@ -155,33 +236,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 
 			// If texture not NULL, Change texture env fonction.
 			//==================================================
-			if(text)
-			{
-				CMaterial::CTexEnv	&env= mat._TexEnvs[stage];
-
-				// Activate the env for this stage.
-				// NB: Thoses calls use caching.
-				activateTexEnvMode(stage, env);
-				activateTexEnvColor(stage, env);
-
-				// Activate texture generation mapping
-				_DriverGLStates.activeTextureARB(stage);
-				if (mat.getTexCoordGen (stage))
-				{
-					// Enable it
-					_DriverGLStates.enableTexGen (stage, true);
-
-					// Cubic or normal ?
-					if (text->isTextureCube ())
-						_DriverGLStates.setTexGenMode (stage, GL_REFLECTION_MAP_ARB);
-					else
-						_DriverGLStates.setTexGenMode (stage, GL_SPHERE_MAP);
-				}
-				else
-				{
-					_DriverGLStates.enableTexGen (stage, false);
-				}
-			}
+			setTextureEnvFunction(stage, mat);
 		}				
 	}
 
@@ -328,37 +383,40 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 			_DriverGLStates.setVertexColorLighted(false);
 		}
 		
-
-		// Texture addressing modes (support only via NVTextureShader for now)
-		//===================================================================				
-		if (_Extensions.NVTextureShader)
+		
+		if (mat.getShader() == CMaterial::Normal)
 		{
-			if ( // supported only with normal shader
-				mat.getShader() == CMaterial::Normal 
-				&& (mat.getFlags() & IDRV_MAT_TEX_ADDR)
-			   )
-			{		
-				enableNVTextureShader(true);
-
-				GLenum glAddrMode;
-				for (stage = 0; stage < getNbTextureStages(); ++stage)
-				{										
-					convTexAddr(mat.getTexture(stage), (CMaterial::TTexAddressingMode) (mat._TexAddrMode[stage]), glAddrMode);
-
-					if (glAddrMode != _CurrentTexAddrMode[stage]) // addressing mode different from the one in the device?
-				
-					{
-						_DriverGLStates.activeTextureARB(stage);
-						glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, glAddrMode);				
-						_CurrentTexAddrMode[stage] = glAddrMode;					
-					}
-				}
-				
-								
-			}
-			else
+			// Texture addressing modes (support only via NVTextureShader for now)
+			//===================================================================				
+			if (_Extensions.NVTextureShader)
 			{
-				enableNVTextureShader(false);
+				if ( // supported only with normal shader
+					mat.getShader() == CMaterial::Normal 
+					&& (mat.getFlags() & IDRV_MAT_TEX_ADDR)
+				   )
+				{		
+					enableNVTextureShader(true);
+
+					GLenum glAddrMode;
+					for (stage = 0; stage < getNbTextureStages(); ++stage)
+					{										
+						convTexAddr(mat.getTexture(stage), (CMaterial::TTexAddressingMode) (mat._TexAddrMode[stage]), glAddrMode);
+
+						if (glAddrMode != _CurrentTexAddrMode[stage]) // addressing mode different from the one in the device?
+					
+						{
+							_DriverGLStates.activeTextureARB(stage);
+							glTexEnvi(GL_TEXTURE_SHADER_NV, GL_SHADER_OPERATION_NV, glAddrMode);				
+							_CurrentTexAddrMode[stage] = glAddrMode;					
+						}
+					}
+					
+									
+				}
+				else
+				{
+					enableNVTextureShader(false);
+				}
 			}
 		}
 
@@ -366,44 +424,12 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	}
 
 
-
-	// Textures user matrix
-	//=====================================
-	if (
-		(_UserTexMatEnabled != 0 && (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) == 0)		
-		|| (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) != 0
-	   )
+	if (mat.getShader() == CMaterial::Normal)
 	{
-		glMatrixMode(GL_TEXTURE);
-		// for each stage, setup the texture matrix if needed
-		uint newMask = (mat.getFlags() & IDRV_MAT_USER_TEX_MAT_ALL) >> IDRV_MAT_USER_TEX_FIRST_BIT;
-		uint shiftMask = 1;
-		for (uint k = 0; k < (uint) getNbTextureStages(); ++k)
-		{
-			if (newMask & shiftMask) // user matrix for this stage
-			{		
-				_DriverGLStates.activeTextureARB(k);
-				glLoadMatrixf(mat.getUserTexMat(k).get());
-				_UserTexMatEnabled |= shiftMask;
-			}
-			else
-			{
-				/// check if matrix disabled
-				if (
-					(newMask & shiftMask) != (_UserTexMatEnabled & shiftMask)
-				   )
-				{
-					_DriverGLStates.activeTextureARB(k);
-					glLoadIdentity();
-					_UserTexMatEnabled &= ~shiftMask;
-				}				
-			}
-			shiftMask <<= 1;
-		}
-		glMatrixMode(GL_MODELVIEW);
+		// Textures user matrix
+		//=====================================
+		setupUserTextureMatrix((uint) getNbTextureStages(), mat);		
 	}
-
-
 
 	return true;
 }
@@ -419,6 +445,8 @@ sint			CDriverGL::beginMultiPass(const CMaterial &mat)
 		return  beginLightMapMultiPass(mat);
 	case CMaterial::Specular: 
 		return  beginSpecularMultiPass(mat);
+	/* case CMaterial::Caustics:
+		return  beginCausticsMultiPass(mat); */
 
 	// All others materials require just 1 pass.
 	default: return 1;
@@ -435,6 +463,9 @@ void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
 	case CMaterial::Specular: 
 		setupSpecularPass(mat, pass);
 		break;
+	/* case CMaterial::Caustics:
+		case CMaterial::Caustics:
+		break; */
 
 	// All others materials do not require multi pass.
 	default: return;
@@ -453,7 +484,9 @@ void			CDriverGL::endMultiPass(const CMaterial &mat)
 	case CMaterial::Specular: 
 		endSpecularMultiPass(mat);
 		break;
-
+	/* case CMaterial::Caustics:
+		endCausticsMultiPass(mat);
+		break; */
 	// All others materials do not require multi pass.
 	default: return;
 	}
@@ -934,5 +967,85 @@ void			CDriverGL::endSpecularMultiPass(const CMaterial &mat)
 	glLoadIdentity();
 	glMatrixMode(GL_MODELVIEW);
 }
+
+// ***************************************************************************
+/* sint		CDriverGL::beginCausticsMultiPass(const CMaterial &mat)
+{
+	nlassert(mat.getShader() == CMaterial::Caustics);
+	if (!_Extensions.ARBTextureCubeMap) return 1;
+	switch (getNbTextureStages())
+	{
+		case 1: return 3;
+		case 2: return 2;
+		default:
+				return 1;
+	}
+}*/
+
+
+// ***************************************************************************
+/*inline void		CDriverGL::setupCausticsFirstTex(const CMaterial &mat)
+{
+	/// setup texture 0
+	activateTexture(0, mat.getTexture(0));
+
+	/// texture environment 0
+	setTextureEnvFunction(0, mat);
+
+	/// texture matrix 0
+	setupUserTextureMatrix(0, mat);
+}
+
+// ***************************************************************************
+inline void		CDriverGL::setupCausticsSecondTex(uint stage)
+{
+	activateTexture(stage, mat.getTexture(0));
+	_CausticCubeMap
+}
+
+// ***************************************************************************
+void		CDriverGL::setupCausticsPass(const CMaterial &mat, uint pass)
+{
+	
+	nlassert(mat.getShader() == CMaterial::Caustics);
+
+	if (getNbTextureStages() == 1 || !_Extensions.ARBTextureCubeMap)
+	{
+		setupCausticsFirstTex(mat);
+	}
+	else
+	if (getNbTextureStages() >= 3) /// do it in one pass
+	{
+		nlassert(pass == 0);		
+
+		setupCausticsFirstTex(mat);
+		
+
+	}
+	else if (getNbTextureStages() == 2) /// do in in 2 pass
+	{
+		nlassert(pass < 2);
+		if (pass == 0) 
+		{
+			setupCausticsFirstTex(mat);	
+		}
+		else /// caustics setup
+		{
+			/// setup additif blending
+			_DriverGLStates.enableBlend();			
+			_DriverGLStates.blendFunc(pShader->SrcBlend, pShader->DstBlend);
+
+
+		}
+	}
+}
+
+// ***************************************************************************
+void		CDriverGL::endCausticsMultiPass(const CMaterial &mat)
+{
+	nlassert(mat.getShader() == CMaterial::Caustics);	
+
+}
+*/
 
 } // NL3D

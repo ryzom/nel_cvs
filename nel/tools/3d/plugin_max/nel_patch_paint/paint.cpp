@@ -4214,7 +4214,7 @@ DWORD WINAPI myThread (LPVOID vData)
 				else
 				{
 					char message[512];
-					smprintf (message, 512, "Can't bulid the zone named %s", pData->VectMesh[i].Node->GetName());
+					smprintf (message, 512, "Can't build the zone named %s", pData->VectMesh[i].Node->GetName());
 					MessageBox (pData->eproc->ip->GetMAXHWnd(), message, "NeL Painter", MB_OK|MB_ICONEXCLAMATION);
 				}
 			}

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.22 2002/09/13 08:22:01 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.23 2003/03/05 14:33:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,7 +172,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 	int rotate = getScriptAppData (pNode, NEL3D_APPDATA_ZONE_ROTATE, 0);
 
 	// Need a tile bank ?
-	if (symmetry || rotate)
+	if (symmetry || rotate || forceBuildZoneSymmetry)
 	{
 		// Bank loaded
 		bool loaded = false;
@@ -206,6 +206,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 		if (loaded == false)
 		{
 			nlwarning ("Can't load any tile bank. Select on with the tile_utility plug-in");
+			mprintf ("Can't load any tile bank. Select on with the tile_utility plug-in");
 			return false;
 		}
 	}
@@ -274,6 +275,7 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 
 		// Show the message
 		mprintf (error);
+		nlwarning (error);
 
 		// Error
 		return false;
@@ -400,6 +402,8 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 					icv=getCommonVertex(pPM,idstpatch,isrcpatch,&orderdstvtx);			
 					if (icv==-1)
 					{
+						mprintf ("Invalid bind");
+						nlwarning ("Invalid bind");
 						return false;
 					}
 					if (idstedge==orderdstvtx) 
@@ -422,6 +426,8 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 						icv=getCommonVertex(pPM,idstpatch,isrcpatch);			
 						if (icv==-1)
 						{
+							mprintf ("Invalid bind");
+							nlwarning ("Invalid bind");
 							return false;
 						}
 					}
@@ -437,6 +443,8 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 						icv=getCommonVertex(pPM,idstpatch,isrcpatch);			
 						if (icv==-1)
 						{
+							mprintf ("Invalid bind");
+							nlwarning ("Invalid bind");
 							return false;
 						}
 					}
@@ -447,7 +455,9 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 					isrcedge=getEdge(pPM,srcpatch,srcpatch->v[nv],icv);
 					if (isrcedge==-1)
 					{
-							return false;
+						mprintf ("Invalid edge");
+						nlwarning ("Invalid bind");
+						return false;
 					}
 					// let's fill the dst patch (n is important here... it's the order)
 					patchinfo[idstpatch].BindEdges[idstedge].NPatchs++;
@@ -577,6 +587,8 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 		sym.invert ();
 		if (!CPatchInfo::transform (patchinfo, zoneSymmetry, bank, symmetry, rotate, snapCell, weldThreshold, sym))
 		{
+			mprintf ("Can't transform the zone");
+			nlwarning ("Invalid bind");
 			return false;
 		}
 	}
@@ -589,6 +601,11 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, CZo
 		// Build the structure
 		if (!zoneSymmetry.build (patchinfo, snapCell, weldThreshold, bank, error, CMatrix::Identity))
 		{
+			uint i;
+			for (i=0; i<error.Errors.size (); i++)
+			{
+				mprintf (error.Errors[i].c_str ());
+			}
 			return false;
 		}
 	}

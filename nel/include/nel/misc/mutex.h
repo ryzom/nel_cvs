@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.23 2003/03/27 17:51:23 coutelas Exp $
+ * $Id: mutex.h,v 1.24 2003/03/27 18:23:20 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -187,6 +187,7 @@ test_again:
 			cmpxchg     dword ptr [ecx],edx
 			jne         test_again
 			mov [result],eax*/
+		}
 #else
 		 ASM_ASWAP_FOR_GCC_2
 #endif

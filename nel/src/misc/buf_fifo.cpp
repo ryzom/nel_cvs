@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.11 2001/03/07 16:19:22 cado Exp $
+ * $Id: buf_fifo.cpp,v 1.12 2001/03/07 16:42:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,7 +32,7 @@
 
 using namespace std;
 
-#define DEBUG_FIFO 1
+#define DEBUG_FIFO 0
 
 namespace NLMISC {
 
@@ -97,6 +97,10 @@ void CBufFIFO::push(const std::vector<uint8> &buffer)
 	// stat code
 	TTicks after = CTime::getPerformanceTime();
 	_PushedTime += after - before;
+
+#if DEBUG_FIFO
+	display ();
+#endif
 }
 
 void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> &buffer2)
@@ -137,6 +141,10 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 	// stat code
 	TTicks after = CTime::getPerformanceTime();
 	_PushedTime += after - before;
+
+#if DEBUG_FIFO
+	display ();
+#endif
 }
 
 void CBufFIFO::pop ()
@@ -174,6 +182,10 @@ void CBufFIFO::pop ()
 	_Tail += size + sizeof (uint32);
 
 	if (_Tail == _Head) _Empty = true;
+
+#if DEBUG_FIFO
+	display ();
+#endif
 }
 	
 void CBufFIFO::front (vector<uint8> &buffer)
@@ -219,6 +231,10 @@ void CBufFIFO::front (vector<uint8> &buffer)
 	// stat code
 	TTicks after = CTime::getPerformanceTime ();
 	_FrontedTime += after - before;
+
+#if DEBUG_FIFO
+	display ();
+#endif
 }
 
 
@@ -243,7 +259,10 @@ uint32 CBufFIFO::size ()
 	else if (_Head == _Tail)
 	{
 		// buffer is full
-		return _BufferSize;
+		if (_Rewinder == NULL)
+			return _BufferSize;
+		else
+			return _Rewinder - _Buffer;
 	}
 	else if (_Head > _Tail)
 	{
@@ -333,6 +352,10 @@ void CBufFIFO::resize (uint32 size)
 	TTicks after = CTime::getPerformanceTime();
 
 	_ResizedTime += after - before;
+
+#if DEBUG_FIFO
+	display ();
+#endif
 }
 
 void CBufFIFO::displayStats ()

@@ -1,7 +1,7 @@
 /** \file ViewDialog.cpp
  * implementation file
  *
- * $Id: ViewDialog.cpp,v 1.7 2004/01/13 18:36:04 cado Exp $
+ * $Id: ViewDialog.cpp,v 1.8 2004/03/01 19:47:53 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -507,6 +507,7 @@ void		CViewDialog::loadFileOrSeries( const vector<int>& bookmarksAbsoluteLines )
 			while ( ! ifs.eof() )
 			{
 				ifs.getline( line, 1024 );
+				line[1023] = '\0'; // force valid end of line
 				if ( SessionDatePassed )
 				{
 					// Stop if the session is finished

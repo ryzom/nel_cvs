@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.22 2004/02/13 10:03:48 lecroart Exp $
+ * $Id: displayer.h,v 1.23 2004/03/01 19:47:53 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,13 +68,13 @@ protected:
 	virtual void doDisplay( const CLog::TDisplayInfo& args, const char *message) = 0;
 
 	
-	/// Convert log type to string
-	static const char *logTypeToString (CLog::TLogType logType, bool longFormat = false);
-
 	// Return the header string with date (for the first line of the log)
 	static const char *HeaderString ();
 
 public:
+
+	/// Convert log type to string
+	static const char *logTypeToString (CLog::TLogType logType, bool longFormat = false);
 
 	/// Convert the current date to human string
 	static const char *dateToHumanString ();

@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.44 2003/12/31 16:08:41 boucher Exp $
+ * $Id: path.h,v 1.45 2004/03/01 19:47:53 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -167,8 +167,9 @@ public:
 	 *	\param wantFile true if want to add files in result
 	 *	\param result list of string where directories/files names are added.
 	 *  \param progressCallBack is a progression callback interface pointer.
+	 *  \param showEverything false skips *.log files and CVS directories
 	 */
-	static void			getPathContent (const std::string &path, bool recurse, bool wantDir, bool wantFile, std::vector<std::string> &result, class IProgressCallback *progressCallBack = NULL);
+	static void			getPathContent (const std::string &path, bool recurse, bool wantDir, bool wantFile, std::vector<std::string> &result, class IProgressCallback *progressCallBack = NULL, bool showEverything=false);
 
 	/** Get the full path based on a file/path and the current directory. Example, imagine that the current path is c:\temp and toto is a directory
 	 * getFullPath ("toto") returns "c:/temp/toto/"

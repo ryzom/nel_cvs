@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.100 2004/02/05 11:02:18 legros Exp $
+ * $Id: path.cpp,v 1.101 2004/03/01 19:47:53 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -685,7 +685,7 @@ string getname (dirent *de)
 #endif // NL_OS_WINDOWS
 }
 
-void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result, class IProgressCallback *progressCallBack)
+void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result, class IProgressCallback *progressCallBack, bool showEverything)
 {			
 	if(	path.empty() )
 	{
@@ -726,7 +726,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		if (isdirectory(de))
 		{
 			// skip CVS directory
-			if (fn == "CVS")
+			if ((!showEverything) && (fn == "CVS"))
 			{
 				NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): skip CVS directory", path.c_str(), recurse, wantDir, wantFile);
 				continue;
@@ -747,7 +747,7 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		}
 		if (wantFile && isfile(de))
 		{
-			if (fn.size() >= 4 && fn.substr (fn.size()-4) == ".log")
+			if ( (!showEverything) && (fn.size() >= 4 && fn.substr (fn.size()-4) == ".log"))
 			{
 				NL_DISPLAY_PATH("PATH: CPath::getPathContent(%s, %d, %d, %d): skip *.log files (%s)", path.c_str(), recurse, wantDir, wantFile, fn.c_str());
 				continue;

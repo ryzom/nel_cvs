@@ -233,56 +233,55 @@ void CCondition::conditionDeleted( CString name)
 //	cConditionNodeToCLogicConditionNode (Editor --> Service)
 //
 //-----------------------------------------------------
-void cConditionNodeToCLogicConditionNode(CConditionNode& conditionNode, CLogicConditionNode& logicConditionNode )
+void cConditionNodeToCLogicConditionNode(CConditionNode * conditionNode, CLogicConditionNode * logicConditionNode )
 {
 	// if this node is a terminator node
-	if( conditionNode.m_type == CConditionNode::TERMINATOR )
+	if( conditionNode->m_type == CConditionNode::TERMINATOR )
 	{
-		logicConditionNode.Type = CLogicConditionNode::TERMINATOR; 
-		
+		logicConditionNode->Type = CLogicConditionNode::TERMINATOR; 		
 	}
 	else
 	// this node is a logic node
 	{
-		logicConditionNode.Type = CLogicConditionNode::LOGIC_NODE;
+		logicConditionNode->Type = CLogicConditionNode::LOGIC_NODE;
 				
 		// part 1 : a logic block(not/comparison/subcondition)
-		switch( conditionNode.m_type )
+		switch( conditionNode->m_type )
 		{
 			case CConditionNode::NOT :
 			{
-				logicConditionNode.LogicBlock.Type = CLogicConditionLogicBlock::NOT;
+				logicConditionNode->LogicBlock.Type = CLogicConditionLogicBlock::NOT;
 				
 			}
 			break;
 
 			case CConditionNode::COMPARISON :
 			{
-				logicConditionNode.LogicBlock.Type = CLogicConditionLogicBlock::COMPARISON;
+				logicConditionNode->LogicBlock.Type = CLogicConditionLogicBlock::COMPARISON;
 				
-				logicConditionNode.LogicBlock.ComparisonBlock.VariableName = string( (LPCSTR)conditionNode.m_sVariableName );
-				logicConditionNode.LogicBlock.ComparisonBlock.Operator = string( (LPCSTR)conditionNode.m_sOperator );
-				logicConditionNode.LogicBlock.ComparisonBlock.Comparand = (sint64)conditionNode.m_dComparand;
+				logicConditionNode->LogicBlock.ComparisonBlock.VariableName = string( (LPCSTR)conditionNode->m_sVariableName );
+				logicConditionNode->LogicBlock.ComparisonBlock.Operator = string( (LPCSTR)conditionNode->m_sOperator );
+				logicConditionNode->LogicBlock.ComparisonBlock.Comparand = (sint64)conditionNode->m_dComparand;
 			}
 			break;
 			
 			case CConditionNode::SUB_CONDITION :
 			{
-				logicConditionNode.LogicBlock.Type = CLogicConditionLogicBlock::SUB_CONDITION;
+				logicConditionNode->LogicBlock.Type = CLogicConditionLogicBlock::SUB_CONDITION;
 				
-				logicConditionNode.LogicBlock.SubCondition = string( (LPCSTR)conditionNode.m_sConditionName );
+				logicConditionNode->LogicBlock.SubCondition = string( (LPCSTR)conditionNode->m_sConditionName );
 			}
 			break;
 		}
 
 		// part 2 : a condition sub tree
 		POSITION pos;
-		for( pos = conditionNode.m_ctSubTree.GetHeadPosition(); pos != NULL; )
+		for( pos = conditionNode->m_ctSubTree.GetHeadPosition(); pos != NULL; )
 		{
-			CConditionNode * pConditionNode = conditionNode.m_ctSubTree.GetNext( pos );
-			CLogicConditionNode logicConditionNodeTmp;
-			cConditionNodeToCLogicConditionNode( *pConditionNode, logicConditionNodeTmp );
-			logicConditionNode.addNode( logicConditionNodeTmp );
+			CConditionNode * pConditionNode = conditionNode->m_ctSubTree.GetNext( pos );
+			CLogicConditionNode * logicConditionNodeTmp = new CLogicConditionNode();
+			cConditionNodeToCLogicConditionNode( pConditionNode, logicConditionNodeTmp );
+			logicConditionNode->addNode( logicConditionNodeTmp );
 		}
 	}
 
@@ -308,11 +307,11 @@ void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicC
 		CConditionNode * pConditionNode = condition.m_ctConditionTree.GetNext( pos );
 		
 		// convert the node
-		CLogicConditionNode logicConditionNode;
-		cConditionNodeToCLogicConditionNode( *pConditionNode,logicConditionNode );
+		CLogicConditionNode * logicConditionNode = new CLogicConditionNode();
+		cConditionNodeToCLogicConditionNode( pConditionNode, logicConditionNode );
 
 		// add the node
-		logicCondition.addNode( logicConditionNode );
+		logicCondition.addNode( *logicConditionNode );
 	}
 
 } // cConditionToCLogicCondition //
@@ -322,10 +321,73 @@ void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicC
 
 
 
+//-----------------------------------------------------
+//	cLogicConditionNodeToCConditionNode (Service --> Editor)
+//
+//-----------------------------------------------------
+void cLogicConditionNodeToCConditionNode( CLogicConditionNode * logicConditionNode, CConditionNode * node )
+{
+	// terminator node
+	if(logicConditionNode->Type == CLogicConditionNode::TERMINATOR)
+	{
+		node->m_type = CConditionNode::TERMINATOR;
+	}
+	// logic block with condition sub tree
+	else
+	{
+		// part 1 : a logic block(not/comparison/subcondition)
+		switch( logicConditionNode->LogicBlock.Type )
+		{
+			case CLogicConditionLogicBlock::NOT :
+			{
+				node->m_type = CConditionNode::NOT;
+			};
+			break;
+
+			case CLogicConditionLogicBlock::COMPARISON :
+			{
+				node->m_type = CConditionNode::COMPARISON;
+				
+				node->m_sVariableName = CString(logicConditionNode->LogicBlock.ComparisonBlock.VariableName.c_str());
+				node->m_sOperator = CString(logicConditionNode->LogicBlock.ComparisonBlock.Operator.c_str());
+				node->m_dComparand = (double)logicConditionNode->LogicBlock.ComparisonBlock.Comparand;
+
+			};
+			break;
+
+			case CLogicConditionLogicBlock::SUB_CONDITION :
+			{
+				node->m_type = CConditionNode::SUB_CONDITION;
+				node->m_sConditionName = CString(logicConditionNode->LogicBlock.SubCondition.c_str());
+			};
+			break;
+
+			default :
+			{
+				node->m_type = CConditionNode::TERMINATOR;
+			}
+
+		}
+		
+		// part 2 : a condition sub tree
+		vector<CLogicConditionNode *>::iterator itNode;
+		for( itNode = logicConditionNode->_Nodes.begin(); itNode != logicConditionNode->_Nodes.end(); ++itNode )
+		{
+			CConditionNode * nodeTmp = new CConditionNode();
+			cLogicConditionNodeToCConditionNode( *itNode, nodeTmp );
+			nodeTmp->m_pParentNode = node;
+			node->m_ctSubTree.AddTail( nodeTmp );
+		}
+		
+	}
+
+} // cLogicConditionNodeToCConditionNode //
+
+
 
 
 //-----------------------------------------------
-//	cLogicConditionToCCondition // TODO : use a recursive function (Service --> Editor)
+//	cLogicConditionToCCondition 
 //
 //-----------------------------------------------
 void cLogicConditionToCCondition( CLogicCondition& logicCondition, CCondition& condition )
@@ -337,60 +399,11 @@ void cLogicConditionToCCondition( CLogicCondition& logicCondition, CCondition& c
 	vector<CLogicConditionNode>::iterator itNode;
 	for( itNode = logicCondition.Nodes.begin(); itNode != logicCondition.Nodes.end(); ++itNode )
 	{
+		// convert the node
 		CConditionNode * node = new CConditionNode();
-
-		// terminator node
-		if((*itNode).Type == CLogicConditionNode::TERMINATOR)
-		{
-			node->m_type = CConditionNode::TERMINATOR;
-		}
-		// logic block with condition sub tree
-		else
-		{
-			switch( (*itNode).LogicBlock.Type )
-			{
-/*
-				case CLogicConditionLogicBlock::NOT :
-				{
-					node->m_type = CConditionNode::NOT;
-				};
-				break;
-*/
-
-				case CLogicConditionLogicBlock::COMPARISON :
-				{
-					node->m_type = CConditionNode::COMPARISON;
-					
-					node->m_sVariableName = CString((*itNode).LogicBlock.ComparisonBlock.VariableName.c_str());
-					node->m_sOperator = CString((*itNode).LogicBlock.ComparisonBlock.Operator.c_str());
-					node->m_dComparand = (double)(*itNode).LogicBlock.ComparisonBlock.Comparand;
-
-				};
-				break;
-
-/*
-				case CLogicConditionLogicBlock::SUB_CONDITION :
-				{
-					node->m_type = CConditionNode::SUB_CONDITION;
-					node->m_sConditionName = CString((*itNode).LogicBlock.SubCondition.c_str());
-				};
-				break;
-*/
-
-				// TEMP : other case are not managed yet, the node is set to termiator
-				default :
-				{
-					node->m_type = CConditionNode::TERMINATOR; //TEMP
-				}
-
-			}
-			
-			// TODO : subtree
-			//initCConditionSubtree( m_ctSubTree );
-			
-		}
-
-		// add the new node 
+		cLogicConditionNodeToCConditionNode( &(*itNode), node );
+	
+		// add the node
 		condition.m_ctConditionTree.AddTail( node );
 	}
 

@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.36 2004/02/06 14:37:44 besson Exp $
+ * $Id: patch.h,v 1.37 2004/08/13 15:40:13 vizerie Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -531,6 +531,10 @@ public:
 	  * The patchs must match
 	  */
 	void copyTileFlagsFromPatch(const CPatch *src);
+
+	// Count the number of tri needed to draw the patch
+	uint32 countNumTriFar0() const;
+	uint32 countNumTriFar1() const;
 	
 private:
 
@@ -881,7 +885,9 @@ private:
 	// There is (OrderT/2)*(OrderS/2) TessBlocks.
 	NLMISC::CObjectVector<CTessBlock>	TessBlocks;
 	// The block render of far only. Only Far faces bigger than a block are inserted here.
+public: // tmp
 	CTessBlock					MasterBlock;
+private:
 	// The counter of faces which need TessBlocks (FarFaces, TileMaterial and FarVertices). When 0, the vector is contReset()-ed.
 	sint						TessBlockRefCount;
 	// @}
@@ -1239,6 +1245,7 @@ public:
 	CBezierPatch	*unpackIntoCache() const;
 
 };
+
 
 
 } // NL3D

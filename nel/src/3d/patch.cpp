@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.97 2004/08/03 16:25:37 vizerie Exp $
+ * $Id: patch.cpp,v 1.98 2004/08/13 15:40:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2284,6 +2284,45 @@ CTileElement *CPatch::getTileElement(const CUV &uv)
 	// get the lumel
 	return &(Tiles[ts+tt*OrderS]);
 }
+
+//***************************************************************
+uint32	CPatch::countNumTriFar0() const
+{
+	uint32 numIndex = MasterBlock.Far0FaceVector ? *MasterBlock.Far0FaceVector : 0;
+	uint			nTessBlock= TessBlocks.size();
+	CTessBlock		*pTessBlock= nTessBlock>0? &TessBlocks[0]: NULL;
+	for(; nTessBlock>0; pTessBlock++, nTessBlock--)
+	{
+		CTessBlock		&tblock= *pTessBlock;
+		// if block visible, render
+		if( tblock.visibleFar0() )
+		{
+			numIndex += *(tblock.Far0FaceVector);				
+		}
+	}
+	return numIndex;
+}
+
+//***************************************************************
+uint32	CPatch::countNumTriFar1() const
+{
+	uint32 numIndex = MasterBlock.Far1FaceVector ? *MasterBlock.Far1FaceVector : 0;
+	uint			nTessBlock= TessBlocks.size();
+	CTessBlock		*pTessBlock= nTessBlock>0? &TessBlocks[0]: NULL;
+	for(; nTessBlock>0; pTessBlock++, nTessBlock--)
+	{
+		CTessBlock		&tblock= *pTessBlock;
+		// if block visible, render
+		if( tblock.visibleFar1() )
+		{
+			numIndex += *(tblock.Far1FaceVector);				
+		}
+	}
+	return numIndex;	
+}
+
+
+
 
 
 } // NL3D

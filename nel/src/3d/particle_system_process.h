@@ -1,7 +1,7 @@
 /** \file particle_system_process.h
  * <File description>
  *
- * $Id: particle_system_process.h,v 1.17 2004/05/18 08:47:05 vizerie Exp $
+ * $Id: particle_system_process.h,v 1.18 2004/08/25 09:20:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,32 @@ namespace NLMISC
 	class CAABBox ;
 }
 
+
+// append debuging header to ps functions/methods
+//#define NL_PS_DEBUG
+
+// debug class
+class CPSEnterLeave
+{
+public:
+	CPSEnterLeave(const char *name);
+	~CPSEnterLeave();
+	std::string Name;
+};
+
+#ifdef NL_PS_DEBUG
+	extern std::string PSCurrName;
+	#define NL_PS_FUNC(name) CPSEnterLeave __psDebugHeader(#name);
+	#define NL_PS_FUNC_MAIN(name) CPSEnterLeave __psDebugHeader(#name); PSCurrName = _Name;
+#else
+	#define NL_PS_FUNC(name)
+	#define NL_PS_FUNC_MAIN(name)
+#endif
+
+
 namespace NL3D {
+
+	
 
 
 class CParticleSystem ;
@@ -61,7 +86,7 @@ enum TPSMatrixMode
 {
 	PSFXWorldMatrix = 0,
 	PSIdentityMatrix,
-	PSUserMatrix,
+	PSUserMatrix,	
 	PSMatrixModeCount
 };
 
@@ -174,10 +199,10 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 
 		// returns the number of sub-objects (including this one, that requires the user matrix for its computations)
 		virtual uint			getUserMatrixUsageCount() const;
-
+                                
 		// append all tex in the given vector
 		virtual void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv) = 0;
-		
+
 		// Force z-bias for all material.
 		virtual void setZBias(float value) = 0;
 			

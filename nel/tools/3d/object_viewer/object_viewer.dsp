@@ -147,6 +147,10 @@ SOURCE=.\blend_wnd.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\choose_lag.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\main_dlg.cpp
 # ADD CPP /Yu"std_afx.h"
 # End Source File
@@ -200,7 +204,15 @@ SOURCE=.\animation_dlg.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\animation_set_dlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\blend_wnd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\choose_lag.h
 # End Source File
 # Begin Source File
 
@@ -364,10 +376,6 @@ SOURCE=.\toolbar1.bmp
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\animation_set_dlg.h
-# End Source File
-# Begin Source File
-
 SOURCE=R:\code\nel\tools\3d\object_viewer\attrib_dlg.cpp
 # End Source File
 # Begin Source File
@@ -397,14 +405,6 @@ SOURCE=.\bin_op_dlg.cpp
 # Begin Source File
 
 SOURCE=.\bin_op_dlg.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\choose_lag.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\choose_lag.h
 # End Source File
 # Begin Source File
 
@@ -461,6 +461,14 @@ SOURCE=.\edit_ps_sound.cpp
 # Begin Source File
 
 SOURCE=.\edit_ps_sound.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_spinner.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_spinner.h
 # End Source File
 # Begin Source File
 
@@ -556,11 +564,11 @@ SOURCE=R:\code\nel\tools\3d\object_viewer\particle_tree_ctrl.h
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\tools\3d\object_viewer\pick_sound.cpp
+SOURCE=.\pick_sound.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=R:\code\nel\tools\3d\object_viewer\pick_sound.h
+SOURCE=.\pick_sound.h
 # End Source File
 # Begin Source File
 

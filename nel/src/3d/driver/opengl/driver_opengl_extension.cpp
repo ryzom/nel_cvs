@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.cpp
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.cpp,v 1.40 2003/04/29 16:51:21 berenguier Exp $
+ * $Id: driver_opengl_extension.cpp,v 1.41 2004/02/06 18:07:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -540,6 +540,15 @@ static bool	setupATIXTextureEnvCombine3(const char	*glext)
 }
 
 // *********************************
+static bool	setupATIXTextureEnvRoute(const char *glext)
+{
+	if(strstr(glext, "GL_ATIX_texture_env_route")==NULL)
+		return false;
+	
+	return true;
+}
+
+// *********************************
 static bool	setupATIEnvMapBumpMap(const char	*glext)
 {
 	if(strstr(glext, "GL_ATI_envmap_bumpmap")==NULL)
@@ -835,6 +844,7 @@ static bool	setupATIVertexArrayObject(const char *glext)
 
 static bool	setupATIMapObjectBuffer(const char *glext)
 {	
+	return false; // tmp fix
 	if(strstr(glext, "GL_ATI_map_object_buffer")==NULL)
 		return false;
 	if (!(nglMapObjectBufferATI= (NEL_PFNGLMAPOBJECTBUFFERATIPROC)nelglGetProcAddress("glMapObjectBufferATI"))) return false;
@@ -1021,6 +1031,8 @@ void	registerGlExtensions(CGlExtensions &ext)
 	}
 	// Check ATIXTextureEnvCombine3.
 	ext.ATIXTextureEnvCombine3= setupATIXTextureEnvCombine3(glext);
+	// Check ATIXTextureEnvRoute
+	ext.ATIXTextureEnvRoute= setupATIXTextureEnvRoute(glext);
 	// Check ATIEnvMapBumpMap
 	ext.ATIEnvMapBumpMap = setupATIEnvMapBumpMap(glext);
 	// Check ATIFragmentShader

@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.34 2003/04/29 16:51:21 berenguier Exp $
+ * $Id: driver_opengl_extension.h,v 1.35 2004/02/06 18:07:25 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,7 +102,7 @@ struct	CGlExtensions
 	bool	ATIXTextureEnvCombine3;
 	bool    ATIEnvMapBumpMap;
 	bool    ATIFragmentShader;
-
+	bool	ATIXTextureEnvRoute;
 	// ARB Extensions
 	bool	ARBTextureCompression;
 	bool	ARBFragmentProgram;
@@ -133,6 +133,7 @@ public:
 		EXTSeparateSpecularColor= false;
 		NVTextureEnvCombine4= false;
 		ATIXTextureEnvCombine3= false;
+		ATIXTextureEnvRoute= false;
 		ARBTextureCubeMap= false;
 		NVTextureShader= false;
 		NVVertexProgram= false;

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * <File description>
  *
- * $Id: primitive.cpp,v 1.35 2004/07/19 08:15:57 boucher Exp $
+ * $Id: primitive.cpp,v 1.36 2004/08/31 17:39:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -993,8 +993,8 @@ void IPrimitive::serial (NLMISC::IStream &f)
 	}
 	f.serial(_ChildId);
 
-	f.serial(Layer);
-	f.serial(Name);
+//	f.serial(Layer);
+//	f.serial(Name);
 	f.serial(Expanded);
 
 	// serial the childrens
@@ -1032,8 +1032,8 @@ void IPrimitive::operator= (const IPrimitive &node)
 	removeProperties ();
 
 	// copy deprecated param
-	Layer = node.Layer;
-	Name = node.Name;
+//	Layer = node.Layer;
+//	Name = node.Name;
 
 	// Copy the flags
 	Expanded = node.Expanded;
@@ -2035,7 +2035,7 @@ void CPrimitives::convertAddPrimitive (IPrimitive *child, const IPrimitive *prim
 	{
 		// Create a property for the name
 		CPropertyString *nameProp = new CPropertyString;
-		nameProp->String = prim->Name;
+//		nameProp->String = prim->Name;
 
 		// Add the property
 		primitive->addPropertyByName ("name", nameProp);
@@ -2074,12 +2074,12 @@ void CPrimitives::convertPrimitive (const IPrimitive *prim, bool hidden)
 			if (name)
 			{
 				// This one ?
-				if (name->String == prim->Layer)
+/*				if (name->String == prim->Layer)
 				{
 					convertAddPrimitive (child, prim, hidden);
 					break;
 				}
-			}
+*/			}
 		}
 	}
 
@@ -2091,7 +2091,7 @@ void CPrimitives::convertPrimitive (const IPrimitive *prim, bool hidden)
 	
 		// Create a property for the layer
 		CPropertyString *nameProp = new CPropertyString;
-		nameProp->String = prim->Layer;
+//		nameProp->String = prim->Layer;
 
 		// Add the property
 		primNode->addPropertyByName ("name", nameProp);

@@ -1,6 +1,6 @@
 /** \file diff_tool.cpp
  *
- * $Id: diff_tool.cpp,v 1.9 2004/08/18 13:54:00 boucher Exp $
+ * $Id: diff_tool.cpp,v 1.10 2004/08/31 17:39:47 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -632,7 +632,12 @@ bool readExcelSheet(const ucstring &str, TWorksheet &worksheet, bool checkUnique
 		numCells++;
 		
 		// take max cell of all lines
-		newColCount= max(newColCount, numCells);
+		if (newColCount != max(newColCount, numCells))
+		{
+			newColCount = max(newColCount, numCells);
+			nldebug("At line %u, numCol changed to %u",
+				i, newColCount);
+		}
 	}
 
 	

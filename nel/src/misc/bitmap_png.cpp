@@ -1,7 +1,7 @@
 /** \file bitmap_png.cpp
  * Class managing bitmaps (complementary file in order to keep bitmap.cpp as clean as possible
  *
- * $Id: bitmap_png.cpp,v 1.2 2004/08/23 18:05:45 lecroart Exp $
+ * $Id: bitmap_png.cpp,v 1.3 2004/08/31 17:39:47 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -101,15 +101,21 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 											void *warn_fn)		
 	=NULL;
 	*(FARPROC*)&png_create_read_struct=fctLoader.loadFunction(string("png_create_read_struct"));
-		if(!png_create_read_struct)
-			return 0;
+	if(!png_create_read_struct)
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_create'");
+		return 0;
+	}
 
 	///////////////////////////
 		
 	BOOL (* png_create_info_struct)(png_struct *png_ptr)=NULL;
 	*(FARPROC*)&png_create_info_struct=fctLoader.loadFunction(string("png_create_info_struct"));
 	if(!png_create_info_struct)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_create_info_struct'");
+		return 0;
+	}
 
 	///////////////////////////
 	
@@ -119,7 +125,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_destroy_read_struct=fctLoader.loadFunction(string("png_destroy_read_struct"));
 	if(!png_destroy_read_struct)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_destroy_read_struct'");
+		return 0;
+	}
 
 	///////////////////////////
 	
@@ -128,7 +137,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_set_sig_bytes=fctLoader.loadFunction(string("png_set_sig_bytes"));
 	if(!png_set_sig_bytes)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_set_sig_bytes'");
+		return 0;
+	}
 
 	///////////////////////////
 	
@@ -137,7 +149,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_malloc=fctLoader.loadFunction(string("png_malloc"));
 	if(!png_malloc)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_malloc'");
+		return 0;
+	}
 
 	///////////////////////////
 	
@@ -146,7 +161,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_get_rowbytes=fctLoader.loadFunction(string("png_get_rowbytes"));
 	if(!png_get_rowbytes)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_get_rowbytes'");
+		return 0;
+	}
 
 	///////////////////////////
 	
@@ -155,7 +173,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_init_io=fctLoader.loadFunction(string("png_init_io"));
 	if(!png_init_io)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_init_io'");
+		return 0;
+	}
 
 	///////////////////////////
 	
@@ -164,7 +185,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_read_info=fctLoader.loadFunction(string("png_read_info"));
 	if(!png_read_info)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_read_info'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -174,7 +198,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_set_read_fn=fctLoader.loadFunction(string("png_set_read_fn"));
 	if(!png_set_read_fn)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_set_read_fn'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -191,7 +218,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	
 	*(FARPROC*)&png_get_IHDR=fctLoader.loadFunction(string("png_get_IHDR"));
 	if(!png_get_IHDR)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_get_IHDR'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -200,7 +230,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_get_channels=fctLoader.loadFunction(string("png_get_channels"));
 	if(!png_get_channels)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_get_channels'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -208,7 +241,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_set_strip_16=fctLoader.loadFunction(string("png_set_strip_16"));
 	if(!png_set_strip_16)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_set_strip_16'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -216,7 +252,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_set_gray_1_2_4_to_8=fctLoader.loadFunction(string("png_set_gray_1_2_4_to_8"));
 	if(!png_set_gray_1_2_4_to_8)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_set_gray_1_2_4_to_8'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -226,7 +265,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_get_valid=fctLoader.loadFunction(string("png_get_valid"));
 	if(!png_get_valid)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_get_valid'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -234,7 +276,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_set_expand=fctLoader.loadFunction(string("png_set_expand"));
 	if(!png_set_expand)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_set_expand'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -244,7 +289,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_get_gAMA=fctLoader.loadFunction(string("png_get_gAMA"));
 	if(!png_get_gAMA)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_get_gAMA'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -254,7 +302,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_set_gamma=fctLoader.loadFunction(string("png_set_gamma"));
 	if(!png_set_gamma)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_set_gamma'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -263,7 +314,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_read_update_info=fctLoader.loadFunction(string("png_read_update_info"));
 	if(!png_read_update_info)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_read_update_info'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -272,7 +326,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_error=fctLoader.loadFunction(string("png_error"));
 	if(!png_error)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_error'");
+		return 0;
+	}
 
 	///////////////////////////
 	
@@ -281,7 +338,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_read_image=fctLoader.loadFunction(string("png_read_image"));
 	if(!png_read_image)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_read_image'");
+		return 0;
+	}
 
 	///////////////////////////
 	
@@ -291,7 +351,10 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	=NULL;
 	*(FARPROC*)&png_read_end=fctLoader.loadFunction(string("png_read_end"));
 	if(!png_read_end)
-			return 0;
+	{
+		nlwarning("CBitmap::readPNG : can't find function 'png_read_end'");
+		return 0;
+	}
 
 	///////////////////////////
 
@@ -304,15 +367,17 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 
 	if (png_ptr == NULL)
 	{
-	  return (0);
+		nlwarning("CBitmap::readPNG : failed to create the png read struct");
+		return (0);
 	}
 
 	/* Allocate/initialize the memory for image information. */
 	info_ptr = (png_info*)png_create_info_struct(png_ptr);
 	if (info_ptr == NULL)
 	{
-	  png_destroy_read_struct(&png_ptr, NULL, NULL);
-	  return (0);
+		png_destroy_read_struct(&png_ptr, NULL, NULL);
+		nlwarning("CBitmap::readPNG : failed to create the png info struct");
+		return (0);
 	}
 
 
@@ -321,6 +386,7 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 		/* Free all of the memory associated with the png_ptr and info_ptr */
 		png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		/* If we get here, we had a problem reading the file */
+		nlwarning("CBitmap::readPNG : failed to setjump");
 		return (0);
 	}
 
@@ -515,10 +581,11 @@ uint8 CBitmap::readPNG( NLMISC::IStream &f )
 	if(iColorType==PNG_COLOR_TYPE_PALETTE)
 	{
 		//test->close();
+		nlwarning("CBitmap::readPNG : paletted image are not supported yet");
 		return 0;
 	}
-		delete []ppbRowPointers;//free allocated memory to copy the image
-		delete []pbImageData;
+	delete []ppbRowPointers;//free allocated memory to copy the image
+	delete []pbImageData;
 
 
    

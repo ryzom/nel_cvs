@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.29 2004/06/18 15:18:22 ledorze Exp $
+ * $Id: primitive.h,v 1.30 2004/08/31 17:40:28 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -190,9 +190,9 @@ class IPrimitive : public NLMISC::IStreamable
 public:
 
 	// Deprecated
-	std::string						Layer;
+//	std::string						Layer;
 	// Deprecated
-	std::string						Name;
+//	std::string						Name;
 
 	// Expended in the tree view
 	bool							Expanded;
@@ -267,13 +267,13 @@ public:
 
 	/** 
 	  * Get a properties by its index
-	  * This is method (iterate a list) is slower than getPropertyByName (look up in a map).
+	  * This method (iterate a list) is slower than getPropertyByName (look up in a map).
 	  **/
 	bool				getProperty (uint index, std::string &property_name, const IProperty *&result) const;
 
 	/** 
 	  * Get a properties by its index
-	  * This is method (iterate a list) is slower than getPropertyByName (look up in a map).
+	  * This method (iterate a list) is slower than getPropertyByName (look up in a map).
 	  **/
 	bool				getProperty (uint index, std::string &property_name, IProperty *&result);
 
@@ -358,7 +358,7 @@ public:
 	// Make a copy
 	virtual IPrimitive *copy () const = 0;
 
-	// used for fast binary save/load (exploitation  mode)
+	// used for fast binary save/load (exploitation mode)
 	void serial(NLMISC::IStream &f);	
 
 private:
@@ -588,9 +588,6 @@ public:
 	// Convert from old format to the new one
 	void			convert (const CPrimRegion &region);
 
-	// Root primitive hierarchy
-	CPrimNode		*RootNode;
-
 	// Read the primitive
 	bool			read (xmlNodePtr xmlNode, const char *filename, CLigoConfig &config);
 
@@ -603,11 +600,15 @@ public:
 	// serial the primitive. Used for binary files.
 	void			serial(NLMISC::IStream &f);
 
+	// Root primitive hierarchy
+	CPrimNode		*RootNode;
+
 private:
 	// Conversion internal methods
 	void			convertAddPrimitive (IPrimitive *child, const IPrimitive *prim, bool hidden);
 	void			convertPrimitive (const IPrimitive *prim, bool hidden);
 
+	// Last generated unique ID
 };
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file misc/dynloadlib.h
  * class for dynamic library loading
  *
- * $Id: dynloadlib.h,v 1.1 2004/07/13 15:16:31 cardouat Exp $
+ * $Id: dynloadlib.h,v 1.2 2004/08/31 17:40:29 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,7 +66,14 @@ public:
 
 inline HMODULE CLibrary::loadLibrary(std::string& libName)
 {
-	return LoadLibrary(libName.c_str());
+	HMODULE hm = LoadLibrary(libName.c_str());
+
+	if (hm == NULL)
+	{
+		nlwarning("CLibrary::loadLibrary: failed to load the module '%s'", libName.c_str());
+	}
+
+	return hm;
 }
 
 inline FARPROC CLibrary::loadFunction(HMODULE& hm,std::string& functionName)

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.17 2001/11/05 09:30:15 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.18 2001/11/07 17:17:02 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,10 @@
 #include "3d/skeleton_model.h"
 #include "3d/mesh_instance.h"
 #include "3d/light.h"
+#include "3d/water_pool_manager.h"
+
 #include "r:/code/nel/tools/3d/object_viewer/object_viewer_interface.h"
+
 
 #include "../nel_mesh_lib/export_nel.h"
 #include "../nel_patch_lib/rpo.h"
@@ -74,6 +77,9 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 	
 	// Create an object viewer
 	IObjectViewer* view = IObjectViewer::getInterface();
+
+	// set the water pool manager
+	view->setWaterPoolManager(NL3D::GetWaterPoolManager());
 	
 	// Build a skeleton map
 	mapRootMapBoneBindPos				skeletonMap;
@@ -288,8 +294,8 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 				if (!skined)
 				{
 					// Export the shape
-					IShape *pShape;
-					pShape=CExportNel::buildShape (*pNode, ip, time, NULL, true, opt, true);
+					IShape *pShape = NULL;
+					pShape=CExportNel::buildShape (*pNode, ip, time, NULL, true, opt, true);					
 
 					// Export successful ?
 					if (pShape)

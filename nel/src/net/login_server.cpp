@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to accepts authenticate users.
  *
- * $Id: login_server.cpp,v 1.8 2001/10/26 13:51:56 lecroart Exp $
+ * $Id: login_server.cpp,v 1.9 2001/10/29 18:33:54 lecroart Exp $
  *
  */
 
@@ -33,6 +33,8 @@
 
 #include "nel/net/callback_client.h"
 #include "nel/net/unified_network.h"
+#include "nel/net/net_manager.h"
+#include "nel/net/service.h"
 
 #include "nel/net/login_cookie.h"
 #include "nel/net/login_server.h"
@@ -64,7 +66,45 @@ TNewClientCallback NewClientCallback;
 //////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////
 
-void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbWSChooseShard (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	// the WS call me that a new client want to come in my shard
+	string reason;
+	CLoginCookie cookie;
+	
+	//
+	// S08: receive "CS" message from WS and send "SCS" message to WS
+	//
+
+	msgin.serial (cookie);
+
+	list<CPendingUser>::iterator it;
+	for (it = PendingUsers.begin(); it != PendingUsers.end (); it++)
+	{
+		if ((*it).Cookie == cookie)
+		{
+			// the cookie already exists, erase it and return false
+			nlwarning ("cookie %s is already in the pending user list", cookie.toString().c_str());
+			PendingUsers.erase (it);
+			reason = "cookie already exists";
+			break;
+		}
+	}
+	if (it == PendingUsers.end ())
+	{
+		// add it to the awaiting client
+		PendingUsers.push_back (CPendingUser (cookie));
+		reason = "";
+	}
+
+	CMessage msgout (CNetManager::getSIDA ("WS"), "SCS");
+	msgout.serial (reason);
+	msgout.serial (cookie);
+	msgout.serial (ListenAddr);
+	CNetManager::send ("WS", msgout);
+}
+
+void cbWSChooseShard5 (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the WS call me that a new client want to come in my shard
 	string reason;
@@ -102,7 +142,7 @@ void cbWSChooseShard (CMessage &msgin, const std::string &serviceName, uint16 si
 	CUnifiedNetwork::getInstance()->send ("WS", msgout);
 }
 
-void cbWSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint16 sid)
+void cbWSDisconnectClient5 (CMessage &msgin, const std::string &serviceName, uint16 sid)
 {
 	// the WS tells me that i have to disconnect a client
 
@@ -120,13 +160,21 @@ void cbWSDisconnectClient (CMessage &msgin, const std::string &serviceName, uint
 		Server->disconnect ((*it).second);
 	}
 }
+void cbWSDisconnectClient (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	cbWSDisconnectClient5 (msgin, "", 0);
+}
 
-
-static TUnifiedCallbackItem WSCallbackArray[] =
+static TCallbackItem WSCallbackArray[] =
 {
 	{ "CS", cbWSChooseShard },
-
 	{ "DC", cbWSDisconnectClient },
+};
+
+static TUnifiedCallbackItem WSCallbackArray5[] =
+{
+	{ "CS", cbWSChooseShard5 },
+	{ "DC", cbWSDisconnectClient5 },
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -189,7 +237,15 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 		uint32 userid = cookie.getUserId();
 		msgout.serial (userid);
 		msgout.serial (con);
-		CUnifiedNetwork::getInstance()->send("WS", msgout);
+
+		if (CUnifiedNetwork::isUsed ())
+		{
+			CUnifiedNetwork::getInstance()->send("WS", msgout);
+		}
+		else
+		{
+			CNetManager::send("WS", msgout);
+		}
 
 		// add the user association
 		UserIdSockAssociations.insert (make_pair(userid, from));
@@ -223,7 +279,23 @@ static const TCallbackItem ClientCallbackArray[] =
 void CLoginServer::init (CCallbackServer &server, TNewClientCallback ncl)
 {
 	// connect to the welcome service
-	CUnifiedNetwork::getInstance()->addCallbackArray(WSCallbackArray, sizeof(WSCallbackArray)/sizeof(WSCallbackArray[0]));
+	if (CUnifiedNetwork::isUsed ())
+	{
+		CUnifiedNetwork::getInstance()->addCallbackArray(WSCallbackArray5, sizeof(WSCallbackArray5)/sizeof(WSCallbackArray5[0]));
+	}
+	else
+	{
+		CNetManager::addClient ("WS");
+		CNetManager::addCallbackArray ("WS", WSCallbackArray, sizeof (WSCallbackArray) / sizeof (WSCallbackArray[0]));
+
+		CMessage	msg("UN_SIDENT");
+		nlassert (IService::Instance);
+		uint16		ssid = IService::Instance->serviceId();
+		string name = IService::Instance->serviceName();
+		msg.serial(name);
+		msg.serial(ssid);	// serializes a 16 bits service id
+		CNetManager::send("WS", msg);
+	}
 
 	// add callback to the server
 	server.addCallbackArray (ClientCallbackArray, sizeof (ClientCallbackArray) / sizeof (ClientCallbackArray[0]));
@@ -242,6 +314,16 @@ void CLoginServer::clientDisconnected (uint32 userId)
 	CMessage msgout ("CC");
 	msgout.serial (userId);
 	msgout.serial (con);
+
+	if (CUnifiedNetwork::isUsed ())
+	{
+		CUnifiedNetwork::getInstance()->send("WS", msgout);
+	}
+	else
+	{
+		CNetManager::send("WS", msgout);
+	}
+	
 	CUnifiedNetwork::getInstance()->send("WS", msgout);
 
 	// remove the user association

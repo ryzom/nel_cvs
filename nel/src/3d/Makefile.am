@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.65 2002/02/13 17:30:10 berenguier Exp $
+# $Id: Makefile.am,v 1.66 2002/02/13 17:40:25 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -67,7 +67,6 @@ libnel3d_la_SOURCES  = animatable.cpp								\
 						landscape_profile.cpp						\
 						landscape_user.cpp							\
 						landscape_vegetable_block.cpp				\
-						layered_ordering_table.cpp					\
 						light.cpp									\
 						lighting_manager.cpp						\
 						light_contribution.cpp						\

@@ -1,7 +1,7 @@
 /** \file lighting_manager.cpp
  * <File description>
  *
- * $Id: lighting_manager.cpp,v 1.2 2002/02/11 16:54:27 berenguier Exp $
+ * $Id: lighting_manager.cpp,v 1.3 2002/02/13 17:42:31 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -158,7 +158,8 @@ void		CLightingManager::addDynamicLight(CPointLight *light)
 	bbmax+= CVector(radius, radius, radius);
 
 	// choose the correct quadgrid according to the radius of the light.
-	for(uint qgId= 0; qgId<NL3D_QUADGRID_LIGHT_NUM_LEVEL-1; qgId++)
+	uint qgId;
+	for(qgId= 0; qgId<NL3D_QUADGRID_LIGHT_NUM_LEVEL-1; qgId++)
 	{
 		// if radius is inferior to the requested radius for this quadGrid, ok!
 		if(radius<_LightQuadGridRadiusLimit[qgId])

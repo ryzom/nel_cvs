@@ -1,7 +1,7 @@
 /** \file surface_light_grid.cpp
  * <File description>
  *
- * $Id: surface_light_grid.cpp,v 1.1 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: surface_light_grid.cpp,v 1.2 2002/02/13 17:44:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -108,7 +108,8 @@ void		CSurfaceLightGrid::getStaticLightSetup(const CVector &localPos, std::vecto
 			const CCellCorner						&cellCorner= Cells[ (yCell+y)*Width + xCell+x ];
 			CLightInfluenceInterpolator::CCorner	&corner= interp.Corners[y*2 + x];
 			// For all lights
-			for(uint lid= 0; lid<CSurfaceLightGrid::NumLightPerCorner; lid++)
+			uint lid;
+			for(lid= 0; lid<CSurfaceLightGrid::NumLightPerCorner; lid++)
 			{
 				// get the id of the light in the ig
 				uint	igLightId= cellCorner.Light[lid];

@@ -1,7 +1,7 @@
 /** \file point_light_named_array.cpp
  * <File description>
  *
- * $Id: point_light_named_array.cpp,v 1.1 2002/02/06 16:54:56 berenguier Exp $
+ * $Id: point_light_named_array.cpp,v 1.2 2002/02/13 17:44:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,7 +96,8 @@ void			CPointLightNamedArray::build(const std::vector<CPointLightNamed> &pointLi
 		bool	first= true;
 		string	precName;
 		// for all sorted pointLights
-		for(uint i=0;i<_PointLights.size();i++)
+		uint i;
+		for(i=0;i<_PointLights.size();i++)
 		{
 			const	std::string &curName= _PointLights[i].LightGroupName;
 			if(first || precName!=curName )

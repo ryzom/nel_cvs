@@ -1,7 +1,7 @@
 /** \file classifier.cpp
  * A simple Classifier System.
  *
- * $Id: classifier.cpp,v 1.5 2002/10/11 13:31:19 robert Exp $
+ * $Id: classifier.cpp,v 1.6 2002/12/03 17:59:16 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -344,6 +344,7 @@ void CMotivationEnergy::setMotivationPP(std::string motivationName, sint16 PP)
 	_SumValue -= _EnergyByMotivation[motivationName].Value * _EnergyByMotivation[motivationName].PP;
 	_SumValue += _EnergyByMotivation[motivationName].Value * PP;
 	_EnergyByMotivation[motivationName].PP = PP;
+	_MotivationProviders[motivationName][motivationName].PP = PP;
 }
 
 /// Fixe la valeur d'une motivation
@@ -352,6 +353,7 @@ void CMotivationEnergy::setMotivationValue(std::string motivationName, sint16 va
 	_SumValue -= _EnergyByMotivation[motivationName].Value * _EnergyByMotivation[motivationName].PP;
 	_SumValue += value * _EnergyByMotivation[motivationName].PP;
 	_EnergyByMotivation[motivationName].Value = value;
+	_MotivationProviders[motivationName][motivationName].Value = value;
 }
 
 /// Chaine de debug
@@ -512,6 +514,7 @@ std::string CNetCS::selectBehavior()
 		sint16 value = (*itActionsExecutionIntensity).second.getSumValue();
 		if (value > executionIntensity)
 		{
+			executionIntensity = value;
 			ret = (*itActionsExecutionIntensity).first;
 		}
 	}

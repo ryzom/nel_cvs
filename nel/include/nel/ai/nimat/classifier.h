@@ -1,7 +1,7 @@
 /** \file classifier.h
  * A simple Classifier System.
  *
- * $Id: classifier.h,v 1.3 2002/10/11 13:25:53 robert Exp $
+ * $Id: classifier.h,v 1.4 2002/12/03 17:59:28 robert Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -255,6 +255,26 @@ private :
 	CSensorCenter :
 		- centralise toutes la valeurs des senseurs
 		- il y a une liste par ID
+ ****/
+
+/****
+MHiCS s'articule autoure d'une partie active (MHiCSagent) associé à chaque agent et une partie passive (MHiCSbase) qui est la base des règles partagée.
+
+MHiCSagent :
+------------
+Composents :
+ - Une map de valeurs de senseurs
+ - Un ensemble de valeurs de motivations (MV & RP)
+ - Une valeur de motivation d'ordre (associé directement à une action virtuel ou non)
+ - Une référence à un MHiCSbase
+ - Une trace des classeurs actifs (MI)
+ - Une trace des actions actives (EI)
+
+MHiCSbase :
+-----------
+Composents :
+ - Un ensemble de CS
+
  ****/
 
 } // NLAINIMAT

@@ -1,7 +1,7 @@
 /** \file u_ps_sound_interface.h
  * <File description>
  *
- * $Id: u_ps_sound_interface.h,v 1.4 2003/03/03 12:55:12 boucher Exp $
+ * $Id: u_ps_sound_interface.h,v 1.5 2004/01/13 12:52:59 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -71,11 +71,11 @@ struct UPSSoundInstance
 	/** The system will call this method to set the parameters of the sound	  
 	  * Values are clamped
 	  */
-	virtual void setSoundParams(float gain
-						   , const NLMISC::CVector &pos
-						   , const NLMISC::CVector &velocity
-						   , float frequency
-						  ) = 0;
+	virtual void setSoundParams(float gain,
+								const NLMISC::CVector &pos,
+								const NLMISC::CVector &velocity,
+								float frequency
+							   ) = 0;
 
 	/// start to play the sound
 	virtual void play(void) = 0;
@@ -88,6 +88,9 @@ struct UPSSoundInstance
 
 	/// when this method is called, the sound is not needed anymore by the system
 	virtual void release(void) = 0;	
+
+	/// get pitch
+	virtual float getPitch() const = 0;
 };
 
 

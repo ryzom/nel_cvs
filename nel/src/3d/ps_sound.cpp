@@ -1,7 +1,7 @@
 /** \file ps_sound.cpp
  * <File description>
  *
- * $Id: ps_sound.cpp,v 1.24 2003/11/18 13:57:30 vizerie Exp $
+ * $Id: ps_sound.cpp,v 1.25 2004/01/13 12:52:58 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -47,7 +47,8 @@ CPSSound::CPSSound() : _Gain(1.f),
 					   _SpawnSounds(false),
 					   _Mute(false),
 					   _SoundStopped(false),
-					   _SoundReactivated(false)
+					   _SoundReactivated(false),
+					   _UseOriginalPitch(false)
 {
 	_Name = std::string("sound");
 	_SoundName = NLMISC::CStringMapper::emptyId();
@@ -137,8 +138,8 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 	float   frequencies[SoundBufSize];
 
 	uint	GainPtInc    = _GainScheme ? 1 : 0;
-	uint	frequencyPtInc = _PitchScheme ? 1 : 0;
-	float   *currVol, *currFrequency;
+	uint	pitchPtInc = _PitchScheme ? 1 : 0;
+	float   *currVol, *currPitch;
 	
 
 	CPSAttrib<UPSSoundInstance *>::iterator it = _Sounds.begin(),
@@ -152,27 +153,51 @@ void			CPSSound::step(TPSProcessPass pass, TAnimationTime ellapsedTime, TAnimati
 		// compute Gain		
 		currVol = _GainScheme ? (float *) _GainScheme->make(getOwner(), size - leftToDo, Gains, sizeof(float), toProcess, true)
 							  : &_Gain;
-		// compute frequency
-		currFrequency = _PitchScheme ? (float *) _PitchScheme->make(getOwner(), size - leftToDo, frequencies, sizeof(float), toProcess, true)
-									 : &_Pitch;
-		endIt = it + toProcess;
-		const CMatrix &localToWorld = _Owner->getLocalToWorldMatrix();		
-		do
-		{
-			if (*it) // was this sound instanciated?
-			{							
-				(*it)->setSoundParams(*currVol,
-									  localToWorld * *posIt,
-									  localToWorld.mulVector(*speedIt),
-									  *currFrequency);						  
+		if (!_UseOriginalPitch)
+		{		
+			// compute pitch
+			currPitch = _PitchScheme ? (float *) _PitchScheme->make(getOwner(), size - leftToDo, frequencies, sizeof(float), toProcess, true)
+										 : &_Pitch;		
+			endIt = it + toProcess;
+			const CMatrix &localToWorld = _Owner->getLocalToWorldMatrix();		
+			do
+			{
+				if (*it) // was this sound instanciated?
+				{							
+					(*it)->setSoundParams(*currVol,
+										  localToWorld * *posIt,
+										  localToWorld.mulVector(*speedIt),
+										  *currPitch);  
+				}
+				currVol += GainPtInc;
+				currPitch += pitchPtInc;
+				++posIt;
+				++speedIt;
+				++it;
 			}
-			currVol += GainPtInc;
-			currFrequency += frequencyPtInc;
-			++posIt;
-			++speedIt;
-			++it;
+			while (it != endIt);
 		}
-		while (it != endIt);		
+		else
+		{
+			// keep original pitch
+			endIt = it + toProcess;
+			const CMatrix &localToWorld = _Owner->getLocalToWorldMatrix();		
+			do
+			{
+				if (*it) // was this sound instanciated?
+				{							
+					(*it)->setSoundParams(*currVol,
+						localToWorld * *posIt,
+						localToWorld.mulVector(*speedIt),
+						(*it)->getPitch());
+				}
+				currVol += GainPtInc;				
+				++posIt;
+				++speedIt;
+				++it;
+			}
+			while (it != endIt);
+		}
 		leftToDo -= toProcess;
 	}
 	while (leftToDo);
@@ -220,7 +245,8 @@ void	CPSSound::setPitchScheme(CPSAttribMaker<float> *pitch)
 void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	CPSLocatedBindable::serial(f);
-	sint ver = f.serialVersion(2);
+	// version 3 : added option to keep original pitch from the .sound
+	sint ver = f.serialVersion(3);
 	if (f.isReading())
 	{
 		std::string soundName;
@@ -269,17 +295,40 @@ void			CPSSound::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		f.serial(_Gain);
 	}
-	// save frequency infos
-	hasScheme = _PitchScheme != NULL;
-	f.serial(hasScheme);
-	if (hasScheme)
+	// serial pitch infos
+	if (ver >= 3)
 	{
-		f.serialPolyPtr(_PitchScheme);
+		bool useOriginalPitch = _UseOriginalPitch;
+		f.serial(useOriginalPitch);
+		_UseOriginalPitch = useOriginalPitch;
+		if (!_UseOriginalPitch)
+		{
+			// serialize pitch infos (no needed otherwise)
+			hasScheme = _PitchScheme != NULL;
+			f.serial(hasScheme);
+			if (hasScheme)
+			{
+				f.serialPolyPtr(_PitchScheme);
+			}
+			else
+			{
+				f.serial(_Pitch);
+			}
+		}
 	}
 	else
-	{
-		f.serial(_Pitch);
-	}	
+	{	
+		hasScheme = _PitchScheme != NULL;
+		f.serial(hasScheme);
+		if (hasScheme)
+		{
+			f.serialPolyPtr(_PitchScheme);
+		}
+		else
+		{
+			f.serial(_Pitch);
+		}
+	}
 	
 	if (f.isReading())
 	{
@@ -315,15 +364,27 @@ void			CPSSound::newElement(CPSLocated *emitterLocated, uint32 emitterIndex)
 		if ((rand() % 99) * 0.01f < _EmissionPercent)
 		{
 			uint32 index = _Sounds.insert(CParticleSystem::getSoundServer()->createSound(_SoundName, _SpawnSounds));
+
+			
+
 			/// set position and activate the sound
-		
 			if (_Sounds[index])
 			{			
-				const NLMISC::CMatrix &mat = getLocalToWorldMatrix();
+				const NLMISC::CMatrix &mat = getLocalToWorldMatrix();				
+				float pitch;
+				if (_UseOriginalPitch)
+				{
+					pitch = _Sounds[index]->getPitch();
+				}
+				else
+				{
+					pitch = _PitchScheme ? _PitchScheme->get(getOwner(), 0) : _Pitch;
+				}
 				_Sounds[index]->setSoundParams(_GainScheme ? _GainScheme->get(getOwner(), 0) : 0,
 											   mat * _Owner->getPos()[index], 
 											   _Owner->getSpeed()[index], 
-											   _PitchScheme ? _PitchScheme->get(getOwner(), 0) : 1 );
+											   pitch
+											  );		
 				_Sounds[index]->play();
 			}
 		}
@@ -358,5 +419,17 @@ void	CPSSound::resize(uint32 size)
 	if (_PitchScheme && _PitchScheme->hasMemory()) _PitchScheme->resize(size, getOwner()->getSize());
 	_Sounds.resize(size);
 }
+
+//***************************************************************************************************
+void	CPSSound::setUseOriginalPitchFlag(bool useOriginalPitch)
+{
+	if (_PitchScheme)
+	{
+		delete _PitchScheme;
+		_PitchScheme = NULL;
+	}
+	_UseOriginalPitch = useOriginalPitch;
+}
+
 
 } // NL3D

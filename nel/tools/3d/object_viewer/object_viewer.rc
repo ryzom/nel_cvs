@@ -242,6 +242,7 @@ IDB_MORPH_SCHEME        BITMAP  DISCARDABLE     "bmp00024.bmp"
 IDB_PAUSE_SYSTEM        BITMAP  DISCARDABLE     "bmp00025.bmp"
 IDB_LIGHT_ATTEN_START   BITMAP  DISCARDABLE     "bmp00026.bmp"
 IDB_LIGHT_ATTEN_END     BITMAP  DISCARDABLE     "light_at.bmp"
+IDB_BITMAP1             BITMAP  DISCARDABLE     "bmp00027.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -453,7 +454,7 @@ END
 
 IDD_LOCATED_PROPERTIES DIALOGEX 0, 0, 351, 266
 STYLE DS_CONTROL | WS_CHILD
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "Limited life time",IDC_LIMITED_LIFE_TIME,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,17,48,63,12
@@ -937,10 +938,12 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,3,1,245,29
     CONTROL         "Spawn",IDC_SPAWN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
                     253,4,39,10
-    PUSHBUTTON      "Play sound",IDC_BUTTON1,253,15,52,14
+    PUSHBUTTON      "Play",IDC_BUTTON1,325,2,22,14
     CONTROL         "Mute",IDC_MUTE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
-                    292,4,39,10
+                    292,4,31,10
     LTEXT           "Emission percent :",IDC_STATIC,3,39,70,10
+    CONTROL         "Keep original pitch",IDC_KEEP_ORIGINAL_PITCH,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,252,17,75,14
 END
 
 IDD_LB_EXTERN_ID DIALOG DISCARDABLE  0, 0, 185, 52

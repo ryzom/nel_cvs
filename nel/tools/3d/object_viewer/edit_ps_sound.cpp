@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.cpp
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.cpp,v 1.10 2003/03/03 13:05:37 boucher Exp $
+ * $Id: edit_ps_sound.cpp,v 1.11 2004/01/13 12:52:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -112,7 +112,7 @@ void CEditPSSound::init(CWnd* pParent /*= NULL*/)
 
 
 	_PitchWrapper.S = _Sound;
-	_PitchDlg = new CAttribDlgFloat(std::string("SOUND FREQ"), 0.001f, 1);
+	_PitchDlg = new CAttribDlgFloat(std::string("SOUND PITCH"), 0.001f, 5);
 	_PitchDlg->setWrapper(&_PitchWrapper);
 	_PitchDlg->setSchemeWrapper(&_PitchWrapper);	
 	bmh = LoadBitmap(::AfxGetInstanceHandle(), MAKEINTRESOURCE(IDB_SOUND_FREQ));
@@ -122,6 +122,9 @@ void CEditPSSound::init(CWnd* pParent /*= NULL*/)
 
 	m_Spawn = _Sound->getSpawn();
 	m_Mute  = _Sound->getMute();
+	m_KeepOriginalPitch = _Sound->getUseOriginalPitchFlag();
+	_PitchDlg->EnableWindow(!m_KeepOriginalPitch);
+	
 	ShowWindow(SW_SHOW); 
 	UpdateData(FALSE);
 }
@@ -136,7 +139,8 @@ void CEditPSSound::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CEditPSSound)
 	DDX_Text(pDX, IDC_SOUND_NAME, m_SoundName);
 	DDX_Check(pDX, IDC_SPAWN, m_Spawn);
-	DDX_Check(pDX, IDC_MUTE, m_Mute);
+	DDX_Check(pDX, IDC_MUTE, m_Mute);	
+	DDX_Check(pDX, IDC_KEEP_ORIGINAL_PITCH, m_KeepOriginalPitch);
 	//}}AFX_DATA_MAP
 }
 
@@ -148,6 +152,7 @@ BEGIN_MESSAGE_MAP(CEditPSSound, CDialog)
 	ON_BN_CLICKED(IDC_SPAWN, OnSpawn)
 	ON_BN_CLICKED(IDC_BUTTON1, OnPlaySound)
 	ON_BN_CLICKED(IDC_MUTE, OnMute)
+	ON_BN_CLICKED(IDC_KEEP_ORIGINAL_PITCH, OnKeepOriginalPitch)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -211,4 +216,18 @@ void CEditPSSound::OnMute()
 {
 	UpdateData(TRUE);
 	_Sound->setMute(m_Mute ? true : false /* to avoid VCC warning*/);	
+}
+
+void CEditPSSound::OnKeepOriginalPitch() 
+{
+	UpdateData(TRUE);
+	bool hadScheme = _PitchWrapper.getScheme() != NULL;
+	_Sound->setUseOriginalPitchFlag(m_KeepOriginalPitch ? true : false /* to avoid VCC warning*/);	
+	nlassert(_PitchDlg);
+	if (m_KeepOriginalPitch)
+	{		
+		if (hadScheme) _PitchDlg->update();
+		_PitchDlg->closeEditWindow();		
+	}
+	_PitchDlg->EnableWindow(!m_KeepOriginalPitch);
 }

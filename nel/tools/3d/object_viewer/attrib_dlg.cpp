@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.23 2003/07/01 14:07:40 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.24 2004/01/13 12:52:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,6 +264,13 @@ CAttribDlg::CAttribDlg(const std::string &valueID, bool enableConstantValue /* =
 
 
 //*************************************************************************************************************
+void CAttribDlg::closeEditWindow()
+{
+	childPopupClosed(NULL);
+}
+
+
+//*************************************************************************************************************
 BOOL CAttribDlg::EnableWindow( BOOL bEnable)
 {
 	if (_CstValueDlg)
@@ -313,6 +320,23 @@ CAttribDlg::~CAttribDlg()
 }
 
 //*************************************************************************************************************
+void CAttribDlg::update()
+{
+	_FirstDrawing = true;
+	if (useScheme())
+	{
+		
+		schemeValueUpdate();
+	}
+	else
+	{
+		
+		nlassert(_EnableConstantValue);
+		cstValueUpdate();
+	}
+}
+
+//*************************************************************************************************************
 void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 {
 
@@ -342,19 +366,7 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 
 	}
 
-	if (useScheme())
-	{
-
-		schemeValueUpdate();
-	}
-	else
-	{
-
-		nlassert(_EnableConstantValue);
-		cstValueUpdate();
-	}
-
-
+	update();	
 
 	if (!_EnableConstantValue)
 	{

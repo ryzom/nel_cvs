@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.11 2003/03/03 12:54:59 boucher Exp $
+ * $Id: u_ps_sound_impl.h,v 1.12 2004/01/13 12:52:58 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -73,17 +73,16 @@ public:
 	}
 
 	/// change this sound source paramerters
-	virtual void setSoundParams(float gain
-						   , const NLMISC::CVector &pos
-						   , const NLMISC::CVector &velocity
-						   , float pitch
-						  )
+	virtual void setSoundParams(float gain,
+								const NLMISC::CVector &pos,
+								const NLMISC::CVector &velocity,
+								float pitch
+							  )
 	{
 		NL3D_MEM_PS_SOUND
 		if (!_Source) return;		
 		if (gain < 0) gain = 0;
-		if (gain > 1) gain = 1;
-		if (pitch > 1) pitch = 1;
+		if (gain > 1) gain = 1;		
 		if (pitch < 0.0001f) pitch = 0.0001f;
 		_Source->setPos(pos);
 		_Source->setVelocity(velocity);
@@ -114,6 +113,15 @@ public:
 		if (!_Source) return;
 		_Source->stop();
 	}
+
+	// get pitch
+	virtual float getPitch() const
+	{
+		NL3D_MEM_PS_SOUND
+		if (!_Source) return 0.f;
+		return _Source->getPitch();
+	}
+
 
 	/// release the sound source
 	virtual void release(void);	

@@ -1,7 +1,7 @@
 /** \file edit_ps_sound.h
  * A dialog for editing sounds in a particle system
  *
- * $Id: edit_ps_sound.h,v 1.6 2002/08/08 11:00:45 lecroart Exp $
+ * $Id: edit_ps_sound.h,v 1.7 2004/01/13 12:52:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,7 @@ public:
 	CString	m_SoundName;
 	BOOL	m_Spawn;
 	BOOL	m_Mute;
+	BOOL	m_KeepOriginalPitch;
 	//}}AFX_DATA
 
 
@@ -101,6 +102,7 @@ protected:
 	afx_msg void OnSpawn();
 	afx_msg void OnPlaySound();
 	afx_msg void OnMute();
+	afx_msg void OnKeepOriginalPitch();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 

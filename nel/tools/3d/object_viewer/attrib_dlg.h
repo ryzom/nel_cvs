@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.12 2002/02/15 17:16:45 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.13 2004/01/13 12:52:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,6 +68,9 @@ public:
 	/// must be called before init, disable constant value usage
 	void disableConstantValue(void) { _EnableConstantValue = false; }
 
+	// close window if being edited
+	void closeEditWindow();
+
 // Dialog Data
 	//{{AFX_DATA(CAttribDlg)
 	enum { IDD = IDD_ATTRIB_DLG };
@@ -90,12 +93,15 @@ public:
 	/// init the dialog with the given bitmap
 	void init(HBITMAP bitmap, sint x, sint y, CWnd *pParent = NULL);
 
+	// force to update dialog content
+	void update();
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CAttribDlg)
 	protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-	//}}AFX_VIRTUAL
+	//}}AFX_VIRTUAL	
 
 public:
 

@@ -297,6 +297,7 @@
 #define IDB_LIGHT_ATTEN_END             1131
 #define IDD_CHOOSE_SUN_COLOR            1131
 #define IDC_CUSTOM_DIRECTION            1132
+#define IDB_BITMAP1                     1133
 #define IDC_VECT_K                      1134
 #define IDC_VECT_MINUS_K                1135
 #define IDC_ENABLE_TEXTURE_ANIM         1139
@@ -619,6 +620,7 @@
 #define IDC_LINK_PLAY_TO_SCENE_PLAY     1389
 #define IDC_DIRECTION                   1390
 #define IDC_DIRECTION_MODE              1391
+#define IDC_KEEP_ORIGINAL_PITCH         1392
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -822,9 +824,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        1133
+#define _APS_NEXT_RESOURCE_VALUE        1134
 #define _APS_NEXT_COMMAND_VALUE         32967
-#define _APS_NEXT_CONTROL_VALUE         1392
+#define _APS_NEXT_CONTROL_VALUE         1393
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file ps_sound.h
  * <File description>
  *
- * $Id: ps_sound.h,v 1.10 2003/08/08 16:54:52 vizerie Exp $
+ * $Id: ps_sound.h,v 1.11 2004/01/13 12:52:58 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -156,6 +156,12 @@ public:
 	void						stopSound();
 
 	void						reactivateSound();
+
+	/** force the sound to use original pitch that has been entered in the .sound sheet
+	  * This remove any existing pitchScheme
+	  */
+	void						setUseOriginalPitchFlag(bool useOriginalPitch);
+	bool						getUseOriginalPitchFlag() const { return _UseOriginalPitch; }
 	
 protected:
 	virtual void			newElement(CPSLocated *emitterLocated, uint32 emitterIndex);
@@ -172,7 +178,9 @@ protected:
 	float							_EmissionPercent;
 	bool							_SpawnSounds;
 	bool							_Mute;
-	bool							_SoundStopped, _SoundReactivated;
+	bool							_SoundStopped;
+	bool							_SoundReactivated;
+	bool							_UseOriginalPitch;
 };
 
 

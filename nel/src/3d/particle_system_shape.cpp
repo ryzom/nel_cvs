@@ -1,7 +1,7 @@
 /** \file particle_system_shape.cpp
  * <File description>
  *
- * $Id: particle_system_shape.cpp,v 1.9 2001/07/03 08:33:39 corvazier Exp $
+ * $Id: particle_system_shape.cpp,v 1.10 2001/07/04 12:38:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,6 +61,7 @@ CParticleSystemShape::CParticleSystemShape()
 
 void	CParticleSystemShape::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	f.serialVersion(1) ;
 	NLMISC::CVector8 &buf = _ParticleSystemProto.bufferAsVector() ;
 	f.serialCont(buf) ;
 }
@@ -75,7 +76,7 @@ void CParticleSystemShape::buildFromFile(const std::string &fileName) throw(NLMI
 	uint32 fileSize = f.getPos() ;
 	f.seek(0, IStream::begin) ;
 
-	// must be sure that we are wirtting in the stream
+	// must be sure that we are writting in the stream
 	if (_ParticleSystemProto.isReading())
 	{
 		_ParticleSystemProto.invert() ;
@@ -142,17 +143,24 @@ void	CParticleSystemShape::render(IDriver *drv, CTransformShape *trans)
 
 	CParticleSystemModel *psm = (CParticleSystemModel *) trans ;
 	CParticleSystem *ps = psm->getPS() ;
+	nlassert(ps) ; 
 
+	if (psm->isAutoGetEllapsedTimeEnabled())
+	{
+		psm->setEllapsedTime(ps->getScene()->getEllapsedTime()) ;
+	}
 	CAnimationTime delay = psm->getEllapsedTime() ;
 
 
 	ps->setSysMat(psm->getWorldMatrix()) ;
-	
+
+	nlassert(ps->getScene()) ;	
 
 	// animate particles
 	ps->step(PSCollision, delay) ;
 	ps->step(PSMotion, delay) ;
 
+	
 
     // TODO : do this during load balancing traversal or the like
 

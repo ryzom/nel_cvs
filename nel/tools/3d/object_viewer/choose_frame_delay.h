@@ -10,7 +10,7 @@
 
 #include "editable_range.h"
 #include "object_viewer.h"
-
+#include "particle_workspace.h"
 
 
 
@@ -62,7 +62,8 @@ protected:
 		virtual void set(const uint32 &value);
 	} _CFDWrapper;
 	// From CObjectViewer::IMainLoopCallBack
-	virtual void go();
+	virtual void goPreRender();
+	virtual void goPostRender() {}
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -19,7 +19,7 @@ CChooseFrameDelay::CChooseFrameDelay(CObjectViewer *objectViewer, CWnd* pParent)
 	_CFDWrapper.OV = objectViewer;
 	//{{AFX_DATA_INIT(CChooseFrameDelay)	
 	//}}AFX_DATA_INIT
-	_ER = new CEditableRangeUInt("CHOOSE_FRAME_DELAY", 0, 500);
+	_ER = new CEditableRangeUInt("CHOOSE_FRAME_DELAY", NULL, 0, 500);
 	_ER->enableLowerBound(0, false);
 	_ER->enableUpperBound(10000, false);	
 	_ER->setWrapper(&_CFDWrapper);
@@ -90,13 +90,16 @@ void CChooseFrameDelay::OnDestroy()
 }
 
 //*****************************************************************************************************
-void CChooseFrameDelay::go()
+void CChooseFrameDelay::goPreRender()
 {
-	if (_LockToPS)
+	CObjectViewer *ov = _CFDWrapper.OV;
+	if (_LockToPS && ov->getParticleDialog()->getActiveNode())
 	{
+		CParticleWorkspace::CNode *activeNode = ov->getParticleDialog()->getActiveNode();
+		nlassert(activeNode->isLoaded());
 		// get integration step from ps
 		CObjectViewer *ov = _CFDWrapper.OV;
-		NL3D::CParticleSystem *ps = ov->getParticleDialog()->getCurrPS();
+		NL3D::CParticleSystem *ps = activeNode->getPSPointer();
 		uint integrationTime = (uint) (1000.f * ps->getTimeTheshold());
 		if (!ps->getBypassMaxNumIntegrationSteps())
 		{

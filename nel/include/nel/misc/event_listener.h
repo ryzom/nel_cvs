@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * events listener
  *
- * $Id: event_listener.h,v 1.7 2000/12/05 10:37:00 coutelas Exp $
+ * $Id: event_listener.h,v 1.8 2000/12/05 15:18:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,27 @@ public:
 	  */
 	bool isKeyPush (TKey key) const;
 
+	/**
+	  * Get if a the state of key has change from "released" to "pushed".
+	  * \param key is the key to check.
+	  * \param release if true, the Down state of the key is released (force to be false).
+	  *		It will return to true only if key is released, then re-pushed.
+	  * \see clearDownStates()
+	  */
+	bool isKeyDown (TKey key, bool release=true);
+
+
+	/**
+	  * Clear all the Down states to false. Usefull sometimes when you don't bother what have been pushed before.
+	  * e.g.: your app listen/test to the key 'A' and 'B' for a certain long period. Then, it test 'C' and 'D' later.
+	  * If the user has press (by error) the key 'C' during the first period, this API has record it, and then, at the
+	  * second period, isKeyDown(KeyC) will return true the first time the key is tested, unless if you do a 
+	  * clearDownStates() at the beggining of the second period.
+	  * \see isKeyDown()
+	  */
+	void clearDownStates();
+
+
 protected:
 	/*
 	 * Call back of the listener.
@@ -93,6 +114,8 @@ protected:
 	 */
 	virtual void operator ()(const CEvent& event);
 	CBitSet _KeyArray;
+	// Must have 2 arrays because of key repetition...
+	CBitSet _KeyDownArray, _KeyReleaseArray;
 };
 
 

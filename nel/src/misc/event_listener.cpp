@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.7 2000/12/01 10:13:01 corvazier Exp $
+ * $Id: event_listener.cpp,v 1.8 2000/12/05 15:18:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,8 @@ IEventListener::IEventListener()
 CEventListenerAsync::CEventListenerAsync()
 {
 	_KeyArray.resize (KeyCount);
+	_KeyDownArray.resize (KeyCount);
+	_KeyReleaseArray.resize (KeyCount);
 }
 // ***************************************************************************
 void CEventListenerAsync::addToServer (CEventServer& server)
@@ -68,6 +70,18 @@ bool CEventListenerAsync::isKeyPush (TKey key) const
 {
 	return _KeyArray.get(key);
 }
+
+// ***************************************************************************
+bool CEventListenerAsync::isKeyDown (TKey key, bool release)
+{
+	bool	ret= _KeyDownArray.get(key) && !(_KeyReleaseArray.get(key));
+	if(ret && release)
+	{
+		_KeyReleaseArray.set(key, true);
+	}
+	return ret;
+}
+
 // ***************************************************************************
 void CEventListenerAsync::operator ()(const CEvent& event)
 {
@@ -76,12 +90,19 @@ void CEventListenerAsync::operator ()(const CEvent& event)
 	{
 		CEventKeyDown *pEvent=(CEventKeyDown*)&event;
 		_KeyArray.set (pEvent->Key);
+		_KeyDownArray.set (pEvent->Key);
 	}
 	// Key up ?
 	if (event==EventKeyUpId)
 	{
 		CEventKeyUp *pEvent=(CEventKeyUp*)&event;
 		_KeyArray.clear (pEvent->Key);
+		// Do not "raise up" the key, until someone has get the state of this key.
+		if(_KeyReleaseArray.get(pEvent->Key))
+		{
+			_KeyDownArray.clear (pEvent->Key);
+			_KeyReleaseArray.clear (pEvent->Key);
+		}
 	}
 	// Activate false ?
 	if (event==EventSetFocusId)
@@ -91,8 +112,18 @@ void CEventListenerAsync::operator ()(const CEvent& event)
 		{
 			// Disactive all keys
 			_KeyArray.clearAll ();
+			_KeyDownArray.clearAll ();
+			_KeyReleaseArray.clearAll ();
 		}
 	}
+}
+
+
+// ***************************************************************************
+void CEventListenerAsync::clearDownStates()
+{
+	_KeyDownArray.clearAll ();
+	_KeyReleaseArray.clearAll ();
 }
 
 

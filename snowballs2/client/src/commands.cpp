@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: commands.cpp,v 1.14 2001/07/19 13:45:53 lecroart Exp $
+ * $Id: commands.cpp,v 1.15 2003/02/24 13:05:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,7 +94,7 @@ void addLine (const string &line)
 // Display used to display on the commands interface
 class CCommandsDisplayer : public IDisplayer
 {
-	virtual void doDisplay (const TDisplayInfo &args, const char *message)
+	virtual void doDisplay (const CLog::TDisplayInfo &args, const char *message)
 	{
 		bool needSpace = false;
 		stringstream ss;

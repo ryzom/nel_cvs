@@ -1,6 +1,6 @@
 /** \file ps_light.cpp
  *
- * $Id: ps_light.cpp,v 1.2 2003/09/30 09:37:31 vizerie Exp $
+ * $Id: ps_light.cpp,v 1.3 2003/10/23 09:20:37 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -325,31 +325,31 @@ void CPSLight::deleteElement(uint32 index)
 	if (_Lights[index])
 	{	
 		nlassert(_Owner && _Owner->getScene());
-		_Owner->getScene()->deleteModel(_Lights[index]);
-		_Lights.remove(index);
+		_Owner->getScene()->deleteModel(_Lights[index]);		
 	}
+	_Lights.remove(index);
 }
 
 //***************************************************************************************************************
 void CPSLight::resize(uint32 size)
 {
-	nlassert(size < (1 << 16));
-	if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->resize(size, getOwner()->getSize());
-	if (_AttenStartScheme && _AttenStartScheme->hasMemory()) _AttenStartScheme->resize(size, getOwner()->getSize());
-	if (_AttenEndScheme && _AttenEndScheme->hasMemory()) _AttenEndScheme->resize(size, getOwner()->getSize());
+	nlassert(size < (1 << 16));		
+	if (_ColorScheme && _ColorScheme->hasMemory()) _ColorScheme->resize(size, getOwner() ? getOwner()->getSize() : 0);
+	if (_AttenStartScheme && _AttenStartScheme->hasMemory()) _AttenStartScheme->resize(size, getOwner() ? getOwner()->getSize() : 0);
+	if (_AttenEndScheme && _AttenEndScheme->hasMemory()) _AttenEndScheme->resize(size, getOwner() ? getOwner()->getSize() : 0);
 	_Lights.resize(size);	
 }
 
 //***************************************************************************************************************
 void CPSLight::releaseAllRef()
 {
-	CPSLocatedBindable::releaseAllRef();
-	nlassert(_Owner && _Owner->getScene());
+	CPSLocatedBindable::releaseAllRef();	
 	// delete all lights, because pointer to the scene is lost after detaching from a system.
 	for(uint k = 0; k < _Lights.getSize(); ++k)
 	{
 		if (_Lights[k])
 		{
+			nlassert(_Owner && _Owner->getScene()); // if there's an instance there must be a scene from which it was created.
 			_Owner->getScene()->deleteModel(_Lights[k]);
 			_Lights[k] = NULL;
 		}

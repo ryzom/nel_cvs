@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.26 2003/11/03 10:12:10 lecroart Exp $
+ * $Id: sheet_id.cpp,v 1.27 2003/11/06 12:51:33 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -39,8 +39,11 @@ using namespace std;
 
 namespace NLMISC {
 
-map<uint32,std::string> CSheetId::_SheetIdToName;
-map<std::string,uint32> CSheetId::_SheetNameToId;
+CSheetId::CChar CSheetId::_AllStrings;
+CStaticMap<uint32,CSheetId::CChar> CSheetId::_SheetIdToName;
+CStaticMap<CSheetId::CChar,uint32, CSheetId::CCharComp> CSheetId::_SheetNameToId;
+//map<uint32,std::string> CSheetId::_SheetIdToName;
+//map<std::string,uint32> CSheetId::_SheetNameToId;
 map<uint32,std::string> CSheetId::_SheetIdToAlias;
 map<std::string,uint32> CSheetId::_SheetAliasToId;
 vector<std::string> CSheetId::_FileExtensions;
@@ -79,22 +82,29 @@ bool CSheetId::build(const std::string& sheetName)
 {
 	nlassert(_Initialised);
 
-	map<string,uint32>::const_iterator itId;
+	map<string,uint32>::const_iterator itIdAlias;
 	
-	itId = _SheetAliasToId.find( strlwr(sheetName) );
-	if( itId != _SheetAliasToId.end() )
+	itIdAlias = _SheetAliasToId.find( strlwr(sheetName) );
+	if( itIdAlias != _SheetAliasToId.end() )
 	{
-		_Id.Id = (*itId).second;
+		_Id.Id = (*itIdAlias).second;
 		return true;
 	}
 	
-	itId = _SheetNameToId.find( strlwr(sheetName) );
+
+	CStaticMap<CChar,uint32,CCharComp>::const_iterator itId;
+	CChar c;
+	c.Ptr = new char [sheetName.size()+1];
+	strcpy(c.Ptr, sheetName.c_str());
+	strlwr(c.Ptr);
+
+	itId = _SheetNameToId.find (c);
+	delete [] c.Ptr;
 	if( itId != _SheetNameToId.end() )
 	{
 		_Id.Id = (*itId).second;
 		return true;
 	}
-	
 	return false;		
 	
 }
@@ -114,8 +124,57 @@ void CSheetId::loadSheetId ()
 		// reserve space for the vector of file extensions
 		_FileExtensions.resize(256);
 
-		// Get the map.
-		file.serialCont(_SheetIdToName);
+		// Get the map from the file
+		map<uint32,string> tempMap;
+		contReset(tempMap);
+		file.serialCont(tempMap);
+
+		// Convert the map to one big string and 1 static map (id to name)
+		{
+			// Get the number and size of all strings
+			vector<CChar> tempVec; // Used to initialise the first map
+			uint32 nNb = 0;
+			uint32 nSize = 0;
+			map<uint32,string>::const_iterator it = tempMap.begin();
+			while (it != tempMap.end())
+			{
+				nSize += it->second.size()+1;
+				nNb++;
+				it++;
+			}
+
+			// Make the big string (composed of all strings) and a vector referencing each string
+			tempVec.resize(nNb);
+			_AllStrings.Ptr = new char[nSize];
+			it = tempMap.begin();
+			nSize = 0;
+			nNb = 0;
+			while (it != tempMap.end())
+			{
+				tempVec[nNb].Ptr = _AllStrings.Ptr+nSize;
+				strcpy(_AllStrings.Ptr+nSize, it->second.c_str());
+				strlwr(_AllStrings.Ptr+nSize);
+				nSize += it->second.size()+1;
+				nNb++;
+				it++;
+			}
+
+			// Finally build the static map (id to name)
+			_SheetIdToName.reserve(tempVec.size());
+			it = tempMap.begin();
+			nNb = 0;
+			while (it != tempMap.end())
+			{
+				_SheetIdToName.add(pair<uint32, CChar>::pair(it->first, CChar(tempVec[nNb])));
+
+				nNb++;
+				it++;
+			}
+
+			// The vector of all small string is not needed anymore we have all the info in
+			// the static map and with the pointer AllStrings referencing the beginning.
+		}
+
 
 		// Close the file.
 		file.close();
@@ -126,19 +185,19 @@ void CSheetId::loadSheetId ()
 			uint32 nbfiles = _SheetIdToName.size();
 
 			// now we remove all files that not available
-			map<uint32,string>::iterator itStr2;
+			CStaticMap<uint32,CChar>::iterator itStr2;
 			for( itStr2 = _SheetIdToName.begin(); itStr2 != _SheetIdToName.end(); )
 			{
-				if (CPath::exists ((*itStr2).second))
+				if (CPath::exists ((*itStr2).second.Ptr))
 				{
 					++itStr2;
 				}
 				else
 				{
-					map<uint32,string>::iterator olditStr = itStr2;
+					CStaticMap<uint32,CChar>::iterator olditStr = itStr2;
 					//nldebug ("Removing file '%s' from CSheetId because the file not exists", (*olditStr).second.c_str ());
 					itStr2++;
-					_SheetIdToName.erase (olditStr);
+					_SheetIdToName.del (olditStr);
 					removednbfiles++;
 				}
 			}
@@ -146,24 +205,30 @@ void CSheetId::loadSheetId ()
 			nlinfo ("SHEETID: Removed %d files on %d from CSheetId because these files doesn't exists", removednbfiles, nbfiles);
 		}
 
-		// build the invert map & file extension vector
-		map<uint32,string>::iterator itStr;
-		for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
+		// Build the invert map (Name to Id) & file extension vector
 		{
-			// add entry to the inverse map
-			_SheetNameToId.insert( make_pair(strlwr((*itStr).second),(*itStr).first) );
-
-			// work out the type value for this entry in the map
-			TSheetId sheetId;
-			sheetId.Id=(*itStr).first;
-			uint8 type=	sheetId.IdInfos.Type;
- 
-			// check whether we need to add an entry to the file extensions vector
-			if (_FileExtensions[type].empty())
+			uint32 nSize = _SheetIdToName.size();
+			_SheetNameToId.reserve(nSize);
+			CStaticMap<uint32,CChar>::iterator itStr;
+			for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
 			{
-				// find the file extension part of the given file name
-				_FileExtensions[type]=strlwr(CFile::getExtension((*itStr).second));
+				// add entry to the inverse map
+				_SheetNameToId.add( make_pair((*itStr).second, (*itStr).first) );
+
+				// work out the type value for this entry in the map
+				TSheetId sheetId;
+				sheetId.Id=(*itStr).first;
+				uint8 type=	sheetId.IdInfos.Type;
+ 
+				// check whether we need to add an entry to the file extensions vector
+				if (_FileExtensions[type].empty())
+				{
+					// find the file extension part of the given file name
+					_FileExtensions[type]=strlwr(CFile::getExtension((*itStr).second.Ptr));
+				}
+				nSize--;
 			}
+			_SheetNameToId.endAdd();
 		}
 	}
 	else
@@ -258,7 +323,14 @@ void CSheetId::init(bool removeUnknownSheet)
 } // init //
 
 
-
+//-----------------------------------------------
+//	uninit
+//
+//-----------------------------------------------
+void CSheetId::uninit()
+{
+	delete [] _AllStrings.Ptr;
+} // uninit //
 
 //-----------------------------------------------
 //	operator=
@@ -289,25 +361,30 @@ CSheetId& CSheetId::operator=( const string& sheetName )
 {
 	nlassert(_Initialised);
 
-	map<string,uint32>::const_iterator itId;
+	map<string,uint32>::const_iterator itIdAlias;
 	
-	itId = _SheetAliasToId.find( strlwr(sheetName) );
-	if( itId != _SheetAliasToId.end() )
+	itIdAlias = _SheetAliasToId.find( strlwr(sheetName) );
+	if( itIdAlias != _SheetAliasToId.end() )
 	{
-		_Id.Id = (*itId).second;
+		_Id.Id = (*itIdAlias).second;
 		return *this;
 	}
 	
-	itId = _SheetNameToId.find( strlwr(sheetName) );
+
+	CStaticMap<CChar,uint32,CCharComp>::const_iterator itId;
+	CChar c;
+	c.Ptr = new char [sheetName.size()+1];
+	strcpy(c.Ptr, sheetName.c_str());
+	strlwr(c.Ptr);
+
+	itId = _SheetNameToId.find (c);
+	delete [] c.Ptr;
 	if( itId != _SheetNameToId.end() )
 	{
 		_Id.Id = (*itId).second;
 		return *this;
 	}
-	
-	nlwarning("SHEETID: The sheet %s is not in sheet_id.bin, setting it to Unknown",sheetName.c_str());
 	*this = Unknown;
-	
 	return *this;
 
 } // operator= //
@@ -356,10 +433,10 @@ string CSheetId::toString() const
 {
 	nlassert(_Initialised);
 
-	map<uint32,string>::const_iterator itStr = _SheetIdToName.find( _Id.Id );
+	CStaticMap<uint32,CChar>::const_iterator itStr = _SheetIdToName.find (_Id.Id);
 	if( itStr != _SheetIdToName.end() )
 	{
-		return (*itStr).second;
+		return string((*itStr).second.Ptr);
 	}
 	else
 	{
@@ -381,11 +458,11 @@ void CSheetId::display()
 {
 	nlassert(_Initialised);
 
-	map<uint32,string>::const_iterator itStr;
+	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
 	{
 		//nlinfo("%d %s",(*itStr).first,(*itStr).second.c_str());
-		nlinfo("SHEETID: (%08x %d) %s",(*itStr).first,(*itStr).first,(*itStr).second.c_str());
+		nlinfo("SHEETID: (%08x %d) %s",(*itStr).first,(*itStr).first,(*itStr).second.Ptr);
 	}
 
 } // display //
@@ -400,7 +477,7 @@ void CSheetId::display(uint8 type)
 {
 	nlassert(_Initialised);
 
-	map<uint32,string>::const_iterator itStr;
+	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
 	{
 		// work out the type value for this entry in the map
@@ -411,7 +488,7 @@ void CSheetId::display(uint8 type)
 		if (type==sheetId.IdInfos.Type)
 		{
 			//nlinfo("%d %s",(*itStr).first,(*itStr).second.c_str());
-			nlinfo("SHEETID: (%08x %d) %s",(*itStr).first,(*itStr).first,(*itStr).second.c_str());
+			nlinfo("SHEETID: (%08x %d) %s",(*itStr).first,(*itStr).first,(*itStr).second.Ptr);
 		}
 	}
 
@@ -427,7 +504,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result)
 {
 	nlassert(_Initialised);
 
-	map<uint32,string>::const_iterator itStr;
+	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
 	{
 		result.push_back( (CSheetId)(*itStr).first );
@@ -444,7 +521,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result,uint8 type)
 {
 	nlassert(_Initialised);
 
-	map<uint32,string>::const_iterator itStr;
+	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
 	{
 		// work out the type value for this entry in the map
@@ -468,7 +545,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::s
 {
 	nlassert(_Initialised);
 
-	map<uint32,string>::const_iterator itStr;
+	CStaticMap<uint32,CChar>::const_iterator itStr;
 	for( itStr = _SheetIdToName.begin(); itStr != _SheetIdToName.end(); ++itStr )
 	{
 		// work out the type value for this entry in the map
@@ -479,7 +556,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::s
 		if (type==sheetId.IdInfos.Type)
 		{
 			result.push_back( (CSheetId)sheetId.Id );
-			resultFilenames.push_back( (*itStr).second );
+			resultFilenames.push_back( (*itStr).second.Ptr );
 		}
 	}
 

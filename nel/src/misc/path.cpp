@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.84 2003/11/03 10:11:48 lecroart Exp $
+ * $Id: path.cpp,v 1.85 2003/11/06 12:51:33 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -91,7 +91,8 @@ void CPath::getFileList(const std::string &extension, std::vector<std::string> &
 	{
 		for (; first != last; ++ first)
 		{
-			if (first->second.Extension == extension)
+			string ext = CPath::getInstance()->SSMext.get(first->second.idExt);
+			if (ext == extension)
 			{
 				filenames.push_back(first->first);
 			}
@@ -168,7 +169,8 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 		while (it != inst->_Files.end ())
 		{
 			nit++;
-			if ((*it).second.Remapped && (*it).second.Extension == ext2lwr)
+			string ext = inst->SSMext.get((*it).second.idExt);
+			if ((*it).second.Remapped && ext == ext2lwr)
 			{
 				inst->_Files.erase (it);
 			}
@@ -193,7 +195,8 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 		map<string, CFileEntry>::iterator it = inst->_Files.begin();
 		while (it != inst->_Files.end ())
 		{
-			if (!(*it).second.Remapped && (*it).second.Extension == ext1lwr)
+			string ext = inst->SSMext.get((*it).second.idExt);
+			if (!(*it).second.Remapped && ext == ext1lwr)
 			{
 				// find if already exist
 				uint32 pos = (*it).first.find_last_of (".");
@@ -203,7 +206,8 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 					file += ext2lwr;
 
 // TODO perhaps a problem because I insert in the current map that i parcours
-					insertFileInMap (file, (*it).second.Path, true, ext2lwr);
+					string path = inst->SSMpath.get((*it).second.idPath);
+					insertFileInMap (file, path+file, true, ext1lwr);
 				}
 			}
 			it++;
@@ -242,8 +246,19 @@ string CPath::lookup (const string &filename, bool throwException, bool displayW
 	// If found in the map, returns it
 	if (it != inst->_Files.end())
 	{
-		NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the map directory: '%s'", filename.c_str(), (*it).second.Path.c_str());
-		return (*it).second.Path;
+		if (it->second.Remapped)
+		{
+			string path = inst->SSMpath.get((*it).second.idPath);
+			string fname = CFile::getFilenameWithoutExtension(filename) + "." + inst->SSMext.get((*it).second.idExt);
+			NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the map directory: '%s'", fname.c_str(), path.c_str());
+			return path + fname;
+		}
+		else
+		{
+			string path = inst->SSMpath.get((*it).second.idPath);
+			NL_DISPLAY_PATH("PATH: CPath::lookup(%s): found in the map directory: '%s'", filename.c_str(), path.c_str());
+			return path+(*it).first;
+		}
 	}
 	
 
@@ -819,7 +834,7 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 
 	string filenamewoext = CFile::getFilenameWithoutExtension (newFile);
 	string filename, ext;
-	
+
 	if (virtual_ext.empty())
 	{
 		filename = CFile::getFilename (newFile);
@@ -828,7 +843,7 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 	else
 	{
 		filename = filenamewoext + "." + virtual_ext;
-		ext = virtual_ext;
+		ext = CFile::getExtension (newFile);
 	}
 
 	insertFileInMap (filename, newFile, remap, ext);
@@ -877,7 +892,7 @@ void CPath::addSearchListFile (const string &filename, bool recurse, bool altern
 // WARNING : recurse is not used
 void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alternative, NLMISC::IProgressCallback *progressCallBack)
 {
-  //#ifndef NL_OS_WINDOWS
+ //#ifndef NL_OS_WINDOWS
   //	nlerror( "BNP currently not supported on Unix" ); // test of BNP failed on Linux
   //#endif
 
@@ -963,7 +978,7 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 				insertFileInMap (filenamewoext+"."+inst->_Extensions[j].second, 
 								bigfilenamealone + "@" + sTmp, 
 								true, 
-								inst->_Extensions[j].second);
+								inst->_Extensions[j].first);
 			}
 		}
 
@@ -989,14 +1004,16 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 	map<string, CFileEntry>::iterator it = inst->_Files.find (strlwr(filename));
 	if (it != inst->_Files.end ())
 	{
-		if ((*it).second.Path.find("@") != string::npos && filepath.find("@") == string::npos)
+		string path = inst->SSMpath.get((*it).second.idPath);
+		if (path.find("@") != string::npos && filepath.find("@") == string::npos)
 		{
 			// if there's a file in a big file and a file in a path, the file in path wins
 			// replace with the new one
-			nlinfo ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s' but special case so overide it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
-			(*it).second.Path = filepath;
+			nlinfo ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s' but special case so overide it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), path.c_str());
+			string sTmp = filepath.substr(0,filepath.rfind('/')+1);
+			(*it).second.idPath = inst->SSMpath.add(sTmp);
 			(*it).second.Remapped = remap;
-			(*it).second.Extension = extension;
+			(*it).second.idExt = inst->SSMext.add(strlwr(extension));
 		}
 		else
 		{
@@ -1007,14 +1024,27 @@ void CPath::insertFileInMap (const string &filename, const string &filepath, boo
 					return;
 			}
 			// if the path is the same, don't warn
-			if ((*it).second.Path == filepath)
+			string path = inst->SSMpath.get((*it).second.idPath);
+			string sPathOnly = filepath.substr(0,filepath.rfind('@')+1);
+			if (path == sPathOnly)
 				return;
-			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), (*it).second.Path.c_str());
+			nlwarning ("PATH: CPath::insertFileInMap(%s, %s, %d, %s): already inserted from '%s', skip it", filename.c_str(), filepath.c_str(), remap, extension.c_str(), path.c_str());
 		}
 	}
 	else
 	{
-		inst->_Files.insert (make_pair (strlwr(filename), CFileEntry (filepath, remap, strlwr(extension))));
+		CFileEntry fe;
+		fe.idExt = inst->SSMext.add(strlwr(extension));
+		fe.Remapped = remap;
+		string sTmp;
+		if (filepath.find("@") == string::npos)
+			sTmp = filepath.substr(0,filepath.rfind('/')+1);
+		else
+			sTmp = filepath.substr(0,filepath.rfind('@')+1);
+			
+		fe.idPath = inst->SSMpath.add(sTmp);
+
+		inst->_Files.insert (make_pair(filename, fe));
 		NL_DISPLAY_PATH("PATH: CPath::insertFileInMap(%s, %s, %d, %s): added", strlwr(filename).c_str(), filepath.c_str(), remap, strlwr(extension).c_str());
 	}
 }
@@ -1027,7 +1057,9 @@ void CPath::display ()
 	nlinfo ("PATH: ----------------------------------------------------");
 	for (map<string, CFileEntry>::iterator it = inst->_Files.begin(); it != inst->_Files.end (); it++)
 	{
-		nlinfo ("PATH: %-25s %-5s %-5d %s", (*it).first.c_str(), (*it).second.Extension.c_str(), (*it).second.Remapped, (*it).second.Path.c_str());
+		string ext = inst->SSMext.get((*it).second.idExt);
+		string path = inst->SSMpath.get((*it).second.idPath);
+		nlinfo ("PATH: %-25s %-5s %-5d %s", (*it).first.c_str(), ext.c_str(), (*it).second.Remapped, path.c_str());
 	}
 	nlinfo ("PATH: ");
 	nlinfo ("PATH: Contents of the alternative directory:");
@@ -1042,6 +1074,19 @@ void CPath::display ()
 		nlinfo ("PATH: '%s' -> '%s'", inst->_Extensions[j].first.c_str (), inst->_Extensions[j].second.c_str ());
 	}
 	nlinfo ("PATH: End of display");
+}
+
+void CPath::memoryCompress()
+{ 
+	CPath *inst = CPath::getInstance ();
+	inst->SSMext.memoryCompress(); 
+	inst->SSMpath.memoryCompress(); 
+	uint nDbg = inst->_Files.size();
+	nlinfo ("PATH: Number of file : %d", nDbg);
+	nDbg = inst->SSMext.getCount();
+	nlinfo ("PATH: Number of different extension : %d", nDbg);
+	nDbg = inst->SSMpath.getCount();
+	nlinfo ("PATH: Number of different path : %d", nDbg);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -5,7 +5,7 @@
  * The class can also (but not in an optimized manner) return the
  * string associated with an id.
  *
- * $Id: string_mapper.cpp,v 1.4 2003/03/06 18:32:22 coutelas Exp $
+ * $Id: string_mapper.cpp,v 1.5 2003/11/06 12:51:33 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,107 +30,149 @@
 #include "stdmisc.h"
 #include "nel/misc/string_mapper.h"
 
+using namespace std;
+
 namespace NLMISC
 {
 
-//CStringMapper::TStringRefHashMap		CStringMapper::_StringMap;
-//std::vector<CStringMapper::CStringRef>	CStringMapper::_StringTable;
 CStringMapper	CStringMapper::_GlobalMapper;
 
 
+// ****************************************************************************
 CStringMapper::CStringMapper()
 {
-	_EmptyId = localMap("");
+	_EmptyId = new string;
+	*_EmptyId = "";
 }
 
+// ****************************************************************************
 CStringMapper *CStringMapper::createLocalMapper()
 {
 	return new CStringMapper;
 }
 
-TStringId	CStringMapper::map(const std::string &str)
+// ****************************************************************************
+TStringId CStringMapper::localMap(const std::string &str)
 {
-	return _GlobalMapper.localMap(str);
-}
-const std::string	&CStringMapper::unmap(const TStringId &stringId)
-{
-	return _GlobalMapper.localUnmap(stringId);
+	if (str.size() == 0)
+		return NULL;
 
-}
-TStringId	CStringMapper::emptyId()
-{
-	return _GlobalMapper._EmptyId;
-}
+	string *pStr = new string;
+	*pStr = str;
 
+	std::set<string*,CCharComp>::iterator it = _StringTable.find(pStr);
 
-NLMISC::TStringId CStringMapper::localMap(const std::string &str)
-{
-	CStringRef	ref(&str);
-	TStringRefMap::iterator it(_StringMap.find(ref));
-
-	if (it == _StringMap.end())
+	if (it == _StringTable.end())
 	{
-		// create a new id
-		uint id = _StringTable.size();
-		_StringTable.push_back(CStringRef(new std::string(str)));
-		_StringMap.insert(std::make_pair(_StringTable.back(), id));
-#if defined(NL_DEBUG)
-		return TStringId(id, this);
-#else
-		return id;
-#endif
+		_StringTable.insert(pStr);
 	}
 	else
 	{
-#if defined(NL_DEBUG)
-		return TStringId(it->second, *(it->first.String));
-#else
-		return it->second;		
-#endif
-	}
-		
+		delete pStr;
+		pStr = (*it);
+	}	
+	return (TStringId)pStr;
 }
 
-const std::string	&CStringMapper::localUnmap(const NLMISC::TStringId &stringId)
+// ****************************************************************************
+void CStringMapper::localClear()
 {
-	const static std::string notFound("** Invalid stringId unmapped ! **");
+	std::set<string*,CCharComp>::iterator it = _StringTable.begin();
+	while (it != _StringTable.end())
+	{
+		string *ptrTmp = (*it);
+		delete ptrTmp;
+		it++;
+	}
+	_StringTable.clear();
+	delete _EmptyId;
+}
+
+// ****************************************************************************
+// CStaticStringMapper
+// ****************************************************************************
+
+// ****************************************************************************
+TSStringId CStaticStringMapper::add(const std::string &str)
+{
+	nlassert(!_MemoryCompressed);
+	std::map<std::string, TSStringId>::iterator it = _TempStringTable.find(str);
+	if (it == _TempStringTable.end())
+	{
+		_TempStringTable.insert(pair<string,TSStringId>::pair(str,_IdCounter));
+		_TempIdTable.insert(pair<TSStringId,string>::pair(_IdCounter,str));
+		_IdCounter++;
+		return _IdCounter-1;
+	}
+	else
+	{
+		return it->second;
+	}
+}
+
+// ****************************************************************************
+void CStaticStringMapper::memoryCompress()
+{
+	_MemoryCompressed = true;
+	std::map<TSStringId, std::string>::iterator it = _TempIdTable.begin();
+
+	uint nTotalSize = 0;
+	uint32 nNbStrings = 0;
+	while (it != _TempIdTable.end())
+	{
+		nTotalSize += it->second.size() + 1;
+		nNbStrings++;
+		it++;
+	}
 	
-	if (uint(stringId) < _StringTable.size())
+	_AllStrings = new char[nTotalSize];
+	_IdToStr.resize(nNbStrings);
+	nNbStrings = 0;
+	nTotalSize = 0;
+	it = _TempIdTable.begin();
+	while (it != _TempIdTable.end())
 	{
-		// ok, we have an unmap
-		return *(_StringTable[uint(stringId)].String);
+		strcpy(_AllStrings + nTotalSize, it->second.c_str());
+		_IdToStr[nNbStrings] = _AllStrings + nTotalSize;
+		nTotalSize += it->second.size() + 1;
+		nNbStrings++;
+		it++;
+	}
+	contReset(_TempStringTable);
+	contReset(_TempIdTable);
+}
+
+// ****************************************************************************
+const char *CStaticStringMapper::get(TSStringId stringId)
+{
+	if (_MemoryCompressed)
+	{
+		nlassert(stringId < _IdToStr.size());
+		return _IdToStr[stringId];
 	}
 	else
 	{
-		nlassertex(false, ("There are no string mapped to id %u", uint(stringId)));
-		// not found ! return an empty string
-		return notFound;
+		std::map<TSStringId, std::string>::iterator it = _TempIdTable.find(stringId);
+		if (it != _TempIdTable.end())
+			return it->second.c_str();
+		else
+			return NULL;
 	}
 }
 
-#if defined(NL_DEBUG)
-const std::string &CStringMapper::unmap(uint stringId)
+// ****************************************************************************
+void CStaticStringMapper::clear()
 {
-	return _GlobalMapper.localUnmap(stringId);
+	contReset(_TempStringTable);
+	contReset(_TempIdTable);
+	delete [] _AllStrings;
+	contReset(_IdToStr);
+
+	_IdCounter = 0;
+	_AllStrings = NULL;
+	_MemoryCompressed = false;
+	add("");
 }
 
-const std::string &CStringMapper::localUnmap(uint stringId)
-{
-	const static std::string notFound;
-	
-	if (stringId < _StringTable.size())
-	{
-		// ok, we have an unmap
-		return *(_StringTable[stringId].String);
-	}
-	else
-	{
-		nlassertex(false, ("There are no string mapped to id %u", uint(stringId)));
-		// not found ! return an empty string
-		return notFound;
-	}
-}
-
-#endif
 
 } // namespace NLMISC

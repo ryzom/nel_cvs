@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.13 2003/09/08 08:20:00 berenguier Exp $
+ * $Id: sheet_id.h,v 1.14 2003/11/06 12:50:03 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -29,6 +29,7 @@
 // misc
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
+#include "nel/misc/static_map.h"
 
 // std
 #include <string>
@@ -70,6 +71,11 @@ public :
 	 *	Load the association sheet ref / sheet name 
 	 */
 	static void init(bool removeUnknownSheet = true);
+
+	/**
+	 * Remove all allocated memory
+	 */
+	static void uninit();
 	
 	/**
 	 * Return the **whole** sheet id (id+type)
@@ -175,8 +181,29 @@ private :
 	TSheetId _Id;
 
 	/// associate sheet id and sheet name
-	static std::map<uint32,std::string> _SheetIdToName;
-	static std::map<std::string,uint32> _SheetNameToId;
+	//static std::map<uint32,std::string> _SheetIdToName;
+	//static std::map<std::string,uint32> _SheetNameToId;
+
+	class CChar
+	{
+	public:
+		char *Ptr;
+		CChar() { Ptr = NULL; }
+		CChar(const CChar& c) { Ptr = c.Ptr; } // WARNING : Share Pointer
+	};
+
+	class CCharComp
+	{
+	public:
+		bool operator()(CChar x, CChar y) const
+		{
+			return strcmp(x.Ptr, y.Ptr) < 0;
+		}
+	};
+
+	static CChar _AllStrings;
+	static CStaticMap<uint32, CChar> _SheetIdToName;
+	static CStaticMap<CChar,uint32, CCharComp> _SheetNameToId;
 
 	static std::map<uint32,std::string> _SheetIdToAlias;
 	static std::map<std::string,uint32> _SheetAliasToId;

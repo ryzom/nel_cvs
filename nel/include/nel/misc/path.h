@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.37 2003/11/03 10:11:48 lecroart Exp $
+ * $Id: path.h,v 1.38 2003/11/06 12:50:03 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -34,6 +34,7 @@
 #include <vector>
 
 #include "nel/misc/common.h"
+#include "nel/misc/string_mapper.h"
 
 namespace NLMISC {
 
@@ -192,6 +193,8 @@ public:
 	 */
 	static void addIgnoredDoubleFile(const std::string &ignoredFile);
 
+	static void memoryCompress();
+
 private:
 
 	static CPath *getInstance ();
@@ -203,19 +206,31 @@ private:
 
 	std::vector<std::string> IgnoredFiles;
 
+	CStaticStringMapper	SSMext;
+	CStaticStringMapper	SSMpath;
 
 	struct CFileEntry
 	{
-		CFileEntry (std::string	path, bool remapped, std::string ext) : Path(path), Remapped(remapped), Extension(ext) { }
-		std::string	Path;
-		bool		Remapped;		// true if the file is remapped
-		std::string	Extension;		// extention of the file
+		uint32	idPath	 : 16;	// Path (not with file at the end) - look in the SSMpath (65536 different path allowed)
+		uint32	idExt	 : 15;	// real extention of the file if remapped - look in the SSMext (32768 different extension allowed)
+		uint32	Remapped : 1;	// true if the file is remapped
 	};
 
-	/** first is the filename, second the full path for the filename.
+	class CNoCaseComp
+	{
+	public:
+		bool operator()(const std::string &x, const std::string &y) const
+		{
+			return stricmp(x.c_str(), y.c_str()) < 0;
+		}
+	};
+
+	/** 
+	 * first is the filename that can be with a remapped extension
+	 * first is the filename, second the full path for the filename.
 	 * Due to the remapping, first and second.path could have different extention.
 	 */
-	std::map<std::string, CFileEntry> _Files;
+	std::map<std::string, CFileEntry, CNoCaseComp> _Files;
 
 	/// first ext1, second ext2 (ext1 could remplace ext2)
 	std::vector<std::pair<std::string, std::string> > _Extensions;

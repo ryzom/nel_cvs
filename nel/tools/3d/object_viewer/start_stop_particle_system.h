@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * <File description>
  *
- * $Id: start_stop_particle_system.h,v 1.2 2001/06/15 16:05:03 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.3 2001/06/18 16:33:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,16 +67,29 @@ protected:
 
 	// initial position and speed of a located instance in a particle system
 	struct CInitPSInstanceInfo
-	{
-		CInitPSInstanceInfo(const NLMISC::CVector &pos, const NLMISC::CVector &speed) : Pos(pos), Speed(speed) {}
-		NLMISC::CVector Pos ;
+	{	
+		uint32 Index ;
+		NL3D::CPSLocated *Loc ;
 		NLMISC::CVector Speed ;
+		NLMISC::CVector Pos ;		
 	} ;
 
-	typedef std::vector<CInitPSInstanceInfo> TInitInfoVect ;
+	// rotation and scale
+	struct CRotScaleInfo
+	{	
+		uint32 Index ;
+		NL3D::IPSMover *Psm ;
+		NLMISC::CMatrix Rot ;
+		NLMISC::CVector Scale ;
+	} ;
 
-	// initial infos of the system
-	std::map<NL3D::CPSLocated *, TInitInfoVect> _StartInfos ;
+
+	typedef std::vector<CInitPSInstanceInfo> TInitInfoVect ;
+	typedef std::vector<CRotScaleInfo> TRotScaleInfoVect ;
+
+	TInitInfoVect _InitInfoVect ;
+	TRotScaleInfoVect _RotScaleInfoVect ;
+	
 
 	NL3D::CParticleSystem *_PS ;
 } ;

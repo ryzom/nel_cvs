@@ -26,11 +26,13 @@ CPSMoverDlg::CPSMoverDlg(CParticleTreeCtrl *parent, HTREEITEM editedItem)   // s
 
 	nlassert(_EditedNode->Type == CParticleTreeCtrl::CNodeType::locatedInstance) ;
 
-	const NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;
+	const NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;	
+	
+	m_X.Format("%.3g", pos.x) ;
+	m_Y.Format("%.3g", pos.y) ;
+	m_Z.Format("%.3g", pos.z) ;
+
 	//{{AFX_DATA_INIT(CPSMoverDlg)
-	m_X = pos.x ; 
-	m_Y = pos.y ;
-	m_Z = pos.z ;
 	//}}AFX_DATA_INIT
 
 
@@ -40,9 +42,11 @@ void CPSMoverDlg::updatePosition(void)
 {
 	UpdateData() ;
 	const NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;	
-	m_X = pos.x ; 
-	m_Y = pos.y ;
-	m_Z = pos.z ;
+	
+	m_X.Format("%.3g", pos.x) ;
+	m_Y.Format("%.3g", pos.y) ;
+	m_Z.Format("%.3g", pos.z) ;
+
 	UpdateData(FALSE) ;
 }
 
@@ -74,7 +78,15 @@ void CPSMoverDlg::OnUpdateXpos()
 {
 	UpdateData() ;
 	NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;
-	pos.x = m_X ;
+	float x ;
+	if (::sscanf(m_X, "%f", &x) == 1)
+	{
+		pos.x = x ;
+	}
+	else
+	{
+		MessageBox("invalid entry", "error") ;
+	}
 	UpdateData(FALSE) ;
 }
 
@@ -82,7 +94,15 @@ void CPSMoverDlg::OnUpdateYpos()
 {
 	UpdateData() ;
 	NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;
-	pos.y = m_Y ;
+	float y ;
+	if (::sscanf(m_Y, "%f", &y) == 1)
+	{
+		pos.y = y ;
+	}
+	else
+	{
+		MessageBox("invalid entry", "error") ;
+	}
 	UpdateData(FALSE) ;	
 }
 
@@ -90,7 +110,15 @@ void CPSMoverDlg::OnUpdateZpos()
 {
 	UpdateData() ;
 	NLMISC::CVector &pos = _EditedNode->Loc->getPos()[_EditedNode->LocatedInstanceIndex] ;
-	pos.z = m_Z ;
+	float z ;
+	if (::sscanf(m_Z, "%f", &z) == 1)
+	{
+		pos.z = z ;
+	}
+	else
+	{
+		MessageBox("invalid entry", "error") ;
+	}
 	UpdateData(FALSE) ;	
 }
 
@@ -99,12 +127,20 @@ BOOL CPSMoverDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 	nlassert(_EditedNode) ;
 	uint numBound = _EditedNode->Loc->getNbBoundObjects() ;
+	
+	uint nbCandidates = 0 ;
 
 	for (uint k = 0 ; k < numBound ; ++k)
 	{
-		m_SubComponentCtrl.AddString(_EditedNode->Loc->getBoundObject(k)->getName().c_str()) ;
+		if (dynamic_cast<NL3D::IPSMover *>(_EditedNode->Loc->getBoundObject(k)))
+		{
+			m_SubComponentCtrl.AddString(_EditedNode->Loc->getBoundObject(k)->getName().c_str()) ;
+			m_SubComponentCtrl.SetItemData(nbCandidates, (DWORD) _EditedNode->Loc->getBoundObject(k)) ;
+			++nbCandidates ;			
+		}
 	}
 	m_SubComponentCtrl.SetSel(0) ;	
+	
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
@@ -114,15 +150,16 @@ void CPSMoverDlg::OnSelchangeSubComponent()
 	UpdateData() ;
 	nlassert(_EditedNode) ;
 
-	_EditedNode->LocBindable = _EditedNode->Loc->getBoundObject(m_SubComponentCtrl.GetCurSel()) ;
-
+	NL3D::CPSLocatedBindable *lb = (NL3D::CPSLocatedBindable *) m_SubComponentCtrl.GetItemData(m_SubComponentCtrl.GetCurSel()) ;
+	_EditedNode->LocMover = dynamic_cast<NL3D::IPSMover *>(lb) ;
+	_EditedNode->Loc->getOwner()->setCurrentEditedElement(_EditedNode->Loc, _EditedNode->LocatedInstanceIndex, lb) ;
 	
 	UpdateData(FALSE) ;
 }
 
-void CPSMoverDlg::init(void)
+void CPSMoverDlg::init(CWnd *parent)
 {
 
-	Create(CPSMoverDlg::IDD, _TreeCtrl) ;
+	Create(CPSMoverDlg::IDD, parent) ;
 	ShowWindow(SW_SHOW) ;
 }

@@ -21,9 +21,9 @@ public:
 	//{{AFX_DATA(CPSMoverDlg)
 	enum { IDD = IDD_PS_MOVER };
 	CListBox	m_SubComponentCtrl;
-	float	m_X;
-	float	m_Y;
-	float	m_Z;
+	CString	m_X;
+	CString	m_Y;
+	CString	m_Z;
 	//}}AFX_DATA
 
 
@@ -40,7 +40,7 @@ public:
 	void updatePosition(void) ;
 
 
-	void init(void) ;
+	void init(CWnd *parent) ;
 
 
 // Implementation

@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.cpp
  * <File description>
  *
- * $Id: start_stop_particle_system.cpp,v 1.4 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: start_stop_particle_system.cpp,v 1.5 2001/06/18 16:33:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,8 @@ void CStartStopParticleSystem::OnStopSystem()
 ///////////////////////////////////
 void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 {
-	_StartInfos.clear() ;
+	_InitInfoVect.clear() ;
+	_RotScaleInfoVect.clear() ;
 	uint32 nbLocated = ps->getNbProcess() ;
 	_PS = ps ; 
 	for(uint32 k = 0 ; k < nbLocated ; ++k)
@@ -138,7 +139,24 @@ void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 		{
 			for (uint32 l = 0 ; l < loc->getSize() ; ++l)
 			{
-				_StartInfos[loc].push_back(CInitPSInstanceInfo(loc->getPos()[l], loc->getSpeed()[l])) ;
+				CInitPSInstanceInfo ii ;
+				ii.Index = l ;
+				ii.Loc = loc ;
+				ii.Pos = loc->getPos()[l] ;
+				ii.Speed = loc->getSpeed()[l] ;
+				
+				for (uint32 m = 0 ; m < loc->getNbBoundObjects() ; ++m)
+				{
+					if (dynamic_cast<NL3D::IPSMover *>(loc->getBoundObject(m)))
+					{
+						CRotScaleInfo rsi ;
+						rsi.Index = l ;
+						rsi.Psm = dynamic_cast<NL3D::IPSMover *>(loc->getBoundObject(m)) ;
+						rsi.Scale = rsi.Psm->getScale(l) ;											
+						rsi.Rot = rsi.Psm->getMatrix(l) ;
+						_RotScaleInfoVect.push_back(rsi) ;
+					}
+				}
 			}
 		}
 	}
@@ -151,29 +169,21 @@ void CPSInitialPos::copySystemInitialPos(NL3D::CParticleSystem *ps)
 void CPSInitialPos::restoreSystem()
 {
 	nlassert(_PS) ; // no system has been memorized yet
-	uint32 nbLocated = _PS->getNbProcess() ;
-	for(uint32 k = 0 ; k < nbLocated ; ++k)
+	for (TInitInfoVect::iterator it = _InitInfoVect.begin() ; it != _InitInfoVect.end() ; ++it)
 	{
-		NL3D::CPSLocated *loc = dynamic_cast<NL3D::CPSLocated *>(_PS->getProcess(k)) ;
-		if (loc)
+		it->Loc->getPos()[it->Index] = it->Pos ;
+		it->Loc->getSpeed()[it->Index] = it->Speed ;
+	}
+	for (TRotScaleInfoVect::iterator it2 = _RotScaleInfoVect.begin() ; it2 != _RotScaleInfoVect.end() ; ++it2)
+	{
+		it2->Psm->setMatrix(it2->Index, it2->Rot) ;
+		if (it2->Psm->supportNonUniformScaling())
 		{
-			uint32 size = loc->getSize() ;
-			for	(uint32 l = 0 ; l < size ; ++l)
-			{
-				loc->deleteElement(0) ;
-			}
-			if (_StartInfos.count(loc))
-			{
-				TInitInfoVect::const_iterator curr = _StartInfos[loc].begin()
-											 , end = _StartInfos[loc].end() ;
-
-				while (curr != end)
-				{
-					loc->newElement(curr->Pos, curr->Speed) ;
-					++curr ;
-				}
-
-			}
+			it2->Psm->setScale(it2->Index, it2->Scale) ;
+		}
+		else if (it2->Psm->supportUniformScaling())
+		{
+			it2->Psm->setScale(it2->Index, it2->Scale.x) ;
 		}
 	}
 }

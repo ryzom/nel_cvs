@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * <File description>
  *
- * $Id: particle_tree_ctrl.cpp,v 1.5 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.6 2001/06/18 16:33:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -322,7 +322,7 @@ void CParticleTreeCtrl::OnSelchanged(NMHDR* pNMHDR, LRESULT* pResult)
 			ov->getMouseListener().setModelMatrix(_ParticleDlg->getElementMatrix()) ;
 			lastClickedPS = ps ;
 			CPSMoverDlg *moverDlg = new CPSMoverDlg(this, GetSelectedItem()) ;			
-			moverDlg->init() ;
+			moverDlg->init(_ParticleDlg) ;
 			_ParticleDlg->setRightPane(moverDlg) ;
 			
 		}
@@ -510,15 +510,12 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 			// now, get the father
 
 			item.hItem = GetParentItem(GetSelectedItem()) ;
-			GetItem(&item) ;
-			
-
-			
-			CPSLocated *loc = ((CNodeType *) item.lParam)->Loc ;	
-			loc->remove(lb) ;
+			GetItem(&item) ;								
 
 			DeleteItem(GetSelectedItem()) ;			
-			
+
+			CPSLocated *loc = ((CNodeType *) item.lParam)->Loc ;	
+			loc->remove(lb) ;
 			delete nt ; 
 			_NodeTypes.erase(std::find(_NodeTypes.begin(), _NodeTypes.end(), nt)) ;
 
@@ -778,7 +775,13 @@ void CParticleTreeCtrl::OnEndlabeledit(NMHDR* pNMHDR, LRESULT* pResult)
 
 void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &m)
 {
-	NLMISC::CMatrix mat = m ;
+	static NLMISC::CMatrix mat ;
+
+	// no == operator yet... did the matrix change ?
+	if (::memcmp(&m, &mat, sizeof(NLMISC::CMatrix) == 0)) return ;
+
+
+	mat = m ;
 	
 	// the current element must be an instance
 	if (::IsWindow(m_hWnd))
@@ -788,20 +791,16 @@ void CParticleTreeCtrl::moveElement(const NLMISC::CMatrix &m)
 		{
 			CNodeType *nt = (CNodeType *) GetItemData(currItem) ;
 			if (nt->Type == CNodeType::locatedInstance)
-			{
-				// translate
-				nt->Loc->getPos()[nt->LocatedInstanceIndex] = mat.getPos() ;
+			{				
 
-				// rotate
-				mat.setPos(NLMISC::CVector::Null) ;
-
-				if (nt->LocBindable)
-				{				
-					if (dynamic_cast<NL3D::IPSMover *>(nt->LocBindable))
-					{
-						
-						(dynamic_cast<NL3D::IPSMover *>(nt->LocBindable))->setMatrix(nt->LocatedInstanceIndex, mat) ;
-					}
+				if (nt->LocMover)
+				{	
+					nlassert(dynamic_cast<NL3D::IPSMover *>(nt->LocMover)) ;
+					nt->LocMover->setMatrix(nt->LocatedInstanceIndex, mat) ;					
+				}
+				else
+				{
+					nt->Loc->getPos()[nt->LocatedInstanceIndex] = mat.getPos() ;
 				}
 
 				// update the dialog

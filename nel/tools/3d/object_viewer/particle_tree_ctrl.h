@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * <File description>
  *
- * $Id: particle_tree_ctrl.h,v 1.3 2001/06/18 11:18:57 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.4 2001/06/18 16:33:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -127,7 +127,7 @@ public:
 		// for the located instance type, this is the index of the instance
 		uint32 LocatedInstanceIndex ;
 		// for the located instance type, this the located bindable which is selected for rotation and scale opertations
-		NL3D::CPSLocatedBindable *LocBindable ;
+		struct NL3D::IPSMover *LocMover ;
 
 		// a located
 		CNodeType(NL3D::CPSLocated *loc) { Loc = loc ; Type = located ; }
@@ -138,14 +138,17 @@ public:
 			Loc = loc ; 
 			Type = locatedInstance ; 
 			LocatedInstanceIndex = index ; 
-			if (Loc->getNbBoundObjects())
+
+			for (uint k  = 0 ; k < Loc->getNbBoundObjects() ; ++k)
 			{
-				LocBindable = Loc->getBoundObject(0) ;	
+				if (dynamic_cast<NL3D::IPSMover *>(Loc->getBoundObject(k)))
+				{
+					LocMover = dynamic_cast<NL3D::IPSMover *>(Loc->getBoundObject(k)) ;
+					return ;
+				}
 			}
-			else
-			{
-				LocBindable = NULL ;
-			}
+		
+			LocMover = NULL ;		
 		}
 		CNodeType(NL3D::CParticleSystem *ps, NL3D::CParticleSystemModel *psModel) 
 		{ 			

@@ -207,6 +207,10 @@ SOURCE=.\webbrowser2.h
 # PROP Default_Filter "ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 # Begin Source File
 
+SOURCE=.\res\barre_top.bmp
+# End Source File
+# Begin Source File
+
 SOURCE=.\res\nel_launcher.ico
 # End Source File
 # Begin Source File

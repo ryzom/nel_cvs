@@ -1,7 +1,7 @@
 /** \file rgba.cpp
- * <File description>
+ * ARGB pixel format
  *
- * $Id: rgba.cpp,v 1.4 2000/10/23 14:16:01 coutelas Exp $
+ * $Id: rgba.cpp,v 1.5 2000/10/24 15:24:33 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

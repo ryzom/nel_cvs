@@ -1,16 +1,26 @@
-/* stream_inline.h
+/** \file stream_inline.h
+ * This File Declares inline for stream.h CRegistry and CBaseStream 
  *
- * Copyright (C) 2000 Nevrax. All rights reserved.
- *
- * The redistribution, use and modification in source or binary forms of
- * this software is subject to the conditions set forth in the copyright
- * document ("Copyright") included with this distribution.
+ * $Id: stream_inline.h,v 1.13 2000/10/24 15:24:33 lecroart Exp $
  */
 
-/*
- * $Id: stream_inline.h,v 1.12 2000/10/19 10:05:21 berenguier Exp $
+/* Copyright, 2000 Nevrax Ltd.
  *
- * This File Declares inline for stream.h CRegistry and CBaseStream 
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
  */
 
 #ifndef NL_STREAM_INLINE_H

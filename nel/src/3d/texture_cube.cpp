@@ -1,7 +1,7 @@
 /** \file texture_cube.cpp
  * Implementation of a texture cube
  *
- * $Id: texture_cube.cpp,v 1.6 2002/02/28 12:59:52 besson Exp $
+ * $Id: texture_cube.cpp,v 1.7 2002/03/14 18:19:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NL3D
 {
 
 // ***************************************************************************
-CTextureCube::CTextureCube()
+	CTextureCube::CTextureCube() : _NoFlip(false)
 {
 	for( uint i = 0; i < 6; ++i )
 		_Textures[i] = NULL;
@@ -108,18 +108,22 @@ void CTextureCube::doGenerate()
 			_Textures[i]->resample( pRefTex->getWidth(), pRefTex->getHeight() );
 		}
 		// Let's apply the flips depending on the texture
-		if( ((TFace)i) == positive_x )
-			_Textures[i]->flipH();
-		if( ((TFace)i) == negative_x )
-			_Textures[i]->flipH();
-		if( ((TFace)i) == positive_y )
-			_Textures[i]->flipH();
-		if( ((TFace)i) == negative_y )
-			_Textures[i]->flipH();
-		if( ((TFace)i) == positive_z )
-			_Textures[i]->flipV();
-		if( ((TFace)i) == negative_z )
-			_Textures[i]->flipV();
+
+		if (!_NoFlip)
+		{
+			if( ((TFace)i) == positive_x )
+				_Textures[i]->flipH();
+			if( ((TFace)i) == negative_x )
+				_Textures[i]->flipH();
+			if( ((TFace)i) == positive_y )
+				_Textures[i]->flipH();
+			if( ((TFace)i) == negative_y )
+				_Textures[i]->flipH();
+			if( ((TFace)i) == positive_z )
+				_Textures[i]->flipV();
+			if( ((TFace)i) == negative_z )
+				_Textures[i]->flipV();
+		}
 	}
 }
 
@@ -135,7 +139,7 @@ void	CTextureCube::release()
 // ***************************************************************************
 void	CTextureCube::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint	ver= f.serialVersion(0);
+	sint	ver= f.serialVersion(1);
 
 	// serial the base part of ITexture.
 	ITexture::serial(f);
@@ -144,6 +148,11 @@ void	CTextureCube::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		f.serialPolyPtr( _Textures[i] );
 	if( f.isReading() )
 		touch();
+
+	if (ver >= 1)
+	{
+		f.serial(_NoFlip);
+	}
 }
 
 

@@ -1,7 +1,7 @@
 /** \file moulinette.cpp
  *
  *
- * $Id: build_rbank.cpp,v 1.15 2004/01/13 16:36:59 legros Exp $
+ * $Id: build_rbank.cpp,v 1.16 2004/02/03 15:25:34 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -149,6 +149,7 @@ void processAllPasses(string &zoneName)
 
 			CAABBox	tbox = tessellation.computeBBox();
 
+/*
 			vector<CIGBox>				boxes;
 			try
 			{
@@ -224,6 +225,7 @@ void processAllPasses(string &zoneName)
 					}
 				}
 			}
+*/
 
 			tessellation.compile();
 			tessellation.generateBorders(1.0);

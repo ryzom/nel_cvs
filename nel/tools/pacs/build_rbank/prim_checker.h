@@ -1,7 +1,7 @@
 /** \file prim_checker.h
  * <File description>
  *
- * $Id: prim_checker.h,v 1.1 2003/08/27 09:23:07 legros Exp $
+ * $Id: prim_checker.h,v 1.2 2004/02/03 15:25:34 legros Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -28,6 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
+
+#include <nel/misc/polygon.h>
 
 namespace NLMISC
 {
@@ -60,15 +62,34 @@ public:
 	{
 		Include = 1,
 		Exclude = 2,
-		ClusterHint = 4
+		ClusterHint = 4,
+		Water = 8
 	};
 
 
 	/// Init CPrimChecker
-	bool	init(const std::string &primitivesPath, const std::string &outputDirectory = "./", bool forceRebuild = false);
+	bool	build(const std::string &primitivesPath, const std::string &igLandPath, const std::string &igVillagePath, const std::string &outputDirectory = "./", bool forceRebuild = false);
+
+	/// load CPrimChecker state
+	bool	load(const std::string &outputDirectory = "./");
 
 	/// Reads bits value at a given position
 	uint8	get(uint x, uint y)	const	{ return _Grid.get(x, y); }
+
+	/// Reads bits value at a given position
+	uint16	index(uint x, uint y) const	{ return _Grid.index(x, y); }
+
+	/// Gete water height
+	float	waterHeight(uint index, bool &exists) const
+	{
+		if (index >= _WaterHeight.size())
+		{
+			exists = false;
+			return 0.0;
+		}
+		exists = true;
+		return _WaterHeight[index];
+	}
 
 private:
 
@@ -104,14 +125,35 @@ private:
 			return cell != NULL ? cell->get(x, y) : (uint8)0;
 		}
 
+		/// Set bits in grid
+		void	index(uint x, uint y, uint16 idx)
+		{
+			CGridCell	*cell = _Grid[((x&0xff00)>>8) + (y&0xff00)];
+			if (cell == NULL)
+			{
+				cell = new CGridCell();
+				_Grid[((x&0xff00)>>8) + (y&0xff00)] = cell;
+			}
+			cell->index(x, y, idx);
+		}
+
+		/// Get bits in grid
+		uint16	index(uint x, uint y) const
+		{
+			CGridCell	*cell = _Grid[((x&0xff00)>>8) + (y&0xff00)];
+			return cell != NULL ? cell->index(x, y) : (uint16)0;
+		}
+
 
 		/// Clear grid
 		void	clear()
 		{
 			for (uint i=0; i<256*256; ++i)
-				if (_Grid != NULL)	
-					delete _Grid[i],
+				if (_Grid != NULL)
+				{
+					delete _Grid[i];
 					_Grid[i] = NULL;
+				}
 		}
 
 		/// Serializes
@@ -144,29 +186,53 @@ private:
 		 */
 		class CGridCell
 		{
+			class CGridElm
+			{
+				uint16		_Value;
+
+			public:
+
+				CGridElm() : _Value(0)	{}
+
+				uint8		flags() const						{ return (uint8)((_Value >> 12) & 0x0f); }
+				void		flags(uint8 bits)					{ _Value |= (((uint16)bits) << 12); }
+				uint16		index() const						{ return _Value & 0x0fff; }
+				void		index(uint16 idx)					{ _Value = ((idx & 0x0fff) | (_Value & 0xf000)); }
+
+				void		serial(NLMISC::IStream &f)			{ f.serial(_Value); }
+			};
+
 		public:
 
 			/// Constructor
-			CGridCell()		{ for (uint i=0; i<256*256; ++i)	_Grid[i] = 0; }
+			CGridCell()	{}
 
 			/// Set bits in grid
-			void	set(uint x, uint y, uint8 bits)		{ _Grid[(x&0xff) + ((y&0xff)<<8)] |= bits; }
+			void	set(uint x, uint y, uint8 bits)		{ _Grid[(x&0xff) + ((y&0xff)<<8)].flags(bits); }
 
 			/// Get bits in grid
-			uint8	get(uint x, uint y) const			{ return _Grid[(x&0xff) + ((y&0xff)<<8)]; }
+			uint8	get(uint x, uint y) const			{ return _Grid[(x&0xff) + ((y&0xff)<<8)].flags(); }
+
+
+			///
+			uint16	index(uint x, uint y)				{ return _Grid[(x&0xff) + ((y&0xff)<<8)].index(); }
+			///
+			void	index(uint x, uint y, uint idx)		{ _Grid[(x&0xff) + ((y&0xff)<<8)].index(idx); }
 
 
 			/// Serializes
-			void	serial(NLMISC::IStream &f)			{ f.serialBuffer(_Grid, 256*256); }
+			void	serial(NLMISC::IStream &f)			{ for (uint i=0; i<256*256; ++i) f.serial(_Grid[i]); }
 
 		private:
-			uint8		_Grid[256*256];
+			CGridElm	_Grid[256*256];
 		};
 
 		CGridCell		*_Grid[256*256];
 	};
 
-	CGrid		_Grid;
+	CGrid				_Grid;
+
+	std::vector<float>	_WaterHeight;
 
 	//@}
 
@@ -181,6 +247,8 @@ private:
 	/// Renders a primitive
 	void	render(NLLIGO::CPrimZone *zone, uint8 bits);
 
+	/// Render a water shape, as a CPolygon
+	void	render(const NLMISC::CPolygon &poly, uint16 value);
 };
 
 

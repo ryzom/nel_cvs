@@ -1,7 +1,7 @@
 /** \file main.cpp
  *
  *
- * $Id: main.cpp,v 1.15 2004/01/21 16:57:32 legros Exp $
+ * $Id: main.cpp,v 1.16 2004/02/03 15:25:34 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,6 +77,7 @@ bool												MoulineZones;
 bool												TessellateAndMoulineZones;
 bool												ProcessRetrievers;
 string												PreprocessDirectory;
+float												WaterThreshold = 0.0f;
 bool												UseZoneSquare;
 string												ZoneUL;
 string												ZoneDR;
@@ -86,6 +87,8 @@ string												GlobalUL;
 string												GlobalDR;
 bool												ProcessGlobal;
 string												LevelDesignWorldPath;
+string												IgLandPath;
+string												IgVillagePath;
 bool												Verbose = false;
 
 CPrimChecker										PrimChecker;
@@ -104,6 +107,19 @@ int		getInt(CConfigFile &cf, const string &varName, int defaultValue=0)
 			nlinfo("Couldn't read %s, using default = %d", varName.c_str(), defaultValue);
 	}
 	return var ? var->asInt() : defaultValue;
+}
+
+float		getFloat(CConfigFile &cf, const string &varName, float defaultValue=0.0)
+{
+	CConfigFile::CVar *var = cf.getVarPtr(varName);
+	if (Verbose)
+	{
+		if (var)
+			nlinfo("Read %s = %f", varName.c_str(), var->asFloat());
+		else
+			nlinfo("Couldn't read %s, using default = %f", varName.c_str(), defaultValue);
+	}
+	return var ? var->asFloat() : defaultValue;
 }
 
 string	getString(CConfigFile &cf, const string &varName, const string &defaultValue="")
@@ -166,6 +182,8 @@ void	initMoulinette()
 		OutputRootPath = getString(cf, "OutputRootPath");
 		UseZoneSquare = getBool(cf, "UseZoneSquare", false);
 
+		WaterThreshold = getFloat(cf, "WaterThreshold", 0.0);
+
 		//if (TessellateZones || MoulineZones)
 		{
 			ZoneExt = getString(cf, "ZoneExt", ".zonew");
@@ -180,6 +198,8 @@ void	initMoulinette()
 		//if (MoulineZones)
 		{
 			LevelDesignWorldPath = getString(cf, "LevelDesignWorldPath");
+			IgLandPath = getString(cf, "IgLandPath");
+			IgVillagePath = getString(cf, "IgVillagePath");
 			IGBoxes = getString(cf, "IGBoxes", "./temp.bbox");
 			ReduceSurfaces = getBool(cf, "ReduceSurfaces", true);
 			ComputeElevation = getBool(cf, "ComputeElevation", false);
@@ -247,8 +267,10 @@ void	moulineZones(vector<string> &zoneNames)
 
 	if (CheckPrims)
 	{
-		PrimChecker.init(LevelDesignWorldPath);
+		PrimChecker.build(LevelDesignWorldPath, IgLandPath, IgVillagePath);
 	}
+
+	PrimChecker.load();
 
 	if (ProcessAllPasses)
 	{

@@ -1,7 +1,7 @@
 /** \file build_surf.h
  * 
  *
- * $Id: build_surf.h,v 1.12 2004/01/16 19:38:28 legros Exp $
+ * $Id: build_surf.h,v 1.13 2004/02/03 15:25:34 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,8 @@ extern bool						MoulineZones;
 extern bool						TessellateAndMoulineZones;
 extern bool						ProcessRetrievers;
 extern std::string				PreprocessDirectory;
+
+extern float					WaterThreshold;
 
 extern bool						UseZoneSquare;
 extern std::string				ZoneUL;
@@ -406,7 +408,10 @@ public:
 		uint	waterShape = first->WaterShape;
 
 		IsUnderWater = (first->WaterShape != 255);
-		WaterHeight = IsUnderWater ? zoneTessel->WaterShapes[first->WaterShape].Vertices[0].z : 123456.0f;
+
+		//WaterHeight = IsUnderWater ? zoneTessel->WaterShapes[first->WaterShape].Vertices[0].z : 123456.0f;
+		bool	tamere;
+		WaterHeight = IsUnderWater ? PrimChecker.waterHeight(first->WaterShape, tamere)+WaterThreshold : 123456.0f;
 
 
 		uint32	currentZoneId = first->ZoneId;

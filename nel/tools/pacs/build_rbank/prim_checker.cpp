@@ -1,7 +1,7 @@
 /** \file prim_checker.cpp
  * <File description>
  *
- * $Id: prim_checker.cpp,v 1.2 2004/01/13 16:36:59 legros Exp $
+ * $Id: prim_checker.cpp,v 1.3 2004/02/03 15:25:34 legros Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -36,15 +36,25 @@
 #include "nel/ligo/ligo_config.h"
 #include "nel/ligo/primitive.h"
 
+// NeL 3d
+#include "3d/scene_group.h"
+#include "3d/transform_shape.h"
+#include "3d/water_model.h"
+#include "3d/water_shape.h"
+#include "3d/quad_grid.h"
+
 // STL includes
 #include <vector>
+#include <set>
 
 using namespace NLMISC;
 using namespace NLLIGO;
+using namespace NL3D;
 using namespace std;
 
 NLLIGO::CLigoConfig LigoConfig;
 extern bool						Verbose;
+extern float					WaterThreshold;
 
 /*
  * Constructor
@@ -58,7 +68,7 @@ CPrimChecker::CPrimChecker()
 /*
  *		init()
  */
-bool	CPrimChecker::init(const string &primitivesPath, const string &outputDirectory, bool forceRebuild)
+bool	CPrimChecker::build(const string &primitivesPath, const string &igLandPath, const string &igVillagePath, const string &outputDirectory, bool forceRebuild)
 {
 	if (Verbose)
 		nlinfo("Checking pacs.packed_prims consistency");
@@ -73,60 +83,143 @@ bool	CPrimChecker::init(const string &primitivesPath, const string &outputDirect
 		return false;
 	}
 
-	vector<string>	files;
-	CPath::getPathContent(primitivesPath, true, false, true, files);
-
-	uint	i;
+	uint	i, j;
 	string	outputfname = CPath::standardizePath(outputDirectory)+"pacs.packed_prims";
-
-	forceRebuild |= (!CFile::fileExists(outputfname));
-	uint	numPrims = 0;
-
-	uint32	outputstamp = (forceRebuild ? 0 : CFile::getFileModificationDate(outputfname));
-	for (i=0; i<files.size(); ++i)
-		if (CFile::getExtension(files[i]) == "primitive" && CFile::getFileModificationDate(files[i]) > outputstamp)
-			forceRebuild = true, ++numPrims;
 
 	_Grid.clear();
 
-	if (forceRebuild)
-	{
-		if (Verbose)
-			nlinfo("Building file pacs.packed_prims (%d files changed)", numPrims);
+	vector<string>	files;
+	CPath::getPathContent(primitivesPath, true, false, true, files);
 
-		for (i=0; i<files.size(); ++i)
+/*
+	for (i=0; i<files.size(); ++i)
+	{
+		if (CFile::getExtension(files[i]) == "primitive")
 		{
-			if (CFile::getExtension(files[i]) == "primitive")
+			readFile(files[i]);
+		}
+	}
+*/
+	files.clear();
+	CPath::getPathContent(igLandPath, true, false, true, files);
+	CPath::getPathContent(igVillagePath, true, false, true, files);
+
+	set<string>		noWaterShapes;
+
+	for (i=0; i<files.size(); ++i)
+	{
+		try
+		{
+			// load ig associated to the zone
+			string	igname = files[i];
+
+			string	ignamelookup = CPath::lookup(igname);
+			//nlinfo("Reading ig '%s'", ignamelookup.c_str());
+			CIFile			igStream(ignamelookup);
+			CInstanceGroup	ig;
+			igStream.serial(ig);
+
+			// search in group for water instance
+			for (j=0; j<ig._InstancesInfos.size(); ++j)
 			{
-				readFile(files[i]);
+				string	shapeName = ig._InstancesInfos[j].Name;
+				if (CFile::getExtension (shapeName) == "")
+					shapeName += ".shape";
+
+				if (noWaterShapes.find(shapeName) != noWaterShapes.end())
+					continue;
+
+				string	shapeNameLookup = CPath::lookup (shapeName, false, false);
+				if (!shapeNameLookup.empty())
+				{
+					CIFile			f;
+					if (f.open (shapeNameLookup))
+					{
+						CShapeStream	shape;
+						shape.serial(f);
+
+						CWaterShape	*wshape = dynamic_cast<CWaterShape*>(shape.getShapePointer());
+						if (wshape == NULL)
+						{
+							noWaterShapes.insert(shapeName);
+							continue;
+						}
+
+						//nlinfo("Render water shape '%s'", shapeNameLookup.c_str());
+
+						CMatrix	matrix;
+						ig.getInstanceMatrix(j, matrix);
+
+						CPolygon			wpoly;
+						//wshape->getShapeInWorldSpace(wpoly);
+						CPolygon2D			wpoly2d = wshape->getShape();
+
+						uint	k;
+						for (k=0; k<wpoly2d.Vertices.size(); ++k)
+						{
+							wpoly.Vertices.push_back(matrix * wpoly2d.Vertices[k]);
+						}
+
+						float	zwater = wpoly.Vertices[0].z - WaterThreshold;
+						uint16	idx = (uint16)_WaterHeight.size();
+						_WaterHeight.push_back(zwater);
+						render(wpoly, idx);
+
+						if (Verbose)
+							nlinfo("Rendered water shape '%s' in instance '%s'", CFile::getFilenameWithoutExtension(shapeName).c_str(), CFile::getFilenameWithoutExtension(igname).c_str());
+					}
+					else if (Verbose)
+					{
+						noWaterShapes.insert(shapeName);
+						nlwarning ("Can't load shape %s", shapeNameLookup.c_str());
+					}
+				}
+				else if (Verbose)
+				{
+					noWaterShapes.insert(shapeName);
+					nlwarning ("Can't find shape %s", shapeName.c_str());
+				}
 			}
 		}
-
-		if (Verbose)
-			nlinfo("pacs.packed_prims built!");
-
-		COFile	f;
-		if (f.open(outputfname))
+		catch (Exception &e)
 		{
-			f.serial(_Grid);
+			nlwarning("%s", e.what());
 		}
-		else
-		{
-			nlwarning("Couldn't save pacs.packed_prims file '%s'", outputfname.c_str());
-		}
+	}
+
+	COFile	f;
+	if (f.open(outputfname))
+	{
+		f.serial(_Grid);
+		f.serialCont(_WaterHeight);
 	}
 	else
 	{
-		CIFile	f;
-		if (f.open(outputfname))
-		{
-			f.serial(_Grid);
-		}
-		else
-		{
-			nlwarning("Couldn't load pacs.packed_prims file '%s'", outputfname.c_str());
-			return false;
-		}
+		nlwarning("Couldn't save pacs.packed_prims file '%s'", outputfname.c_str());
+	}
+
+	return true;
+}
+
+
+
+/*
+ *		load()
+ */
+bool	CPrimChecker::load(const string &outputDirectory)
+{
+	string	outputfname = CPath::standardizePath(outputDirectory)+"pacs.packed_prims";
+
+	CIFile	f;
+	if (f.open(outputfname))
+	{
+		f.serial(_Grid);
+		f.serialCont(_WaterHeight);
+	}
+	else
+	{
+		nlwarning("Couldn't load pacs.packed_prims file '%s'", outputfname.c_str());
+		return false;
 	}
 
 	return true;
@@ -240,3 +333,58 @@ void	CPrimChecker::render(CPrimZone *zone, uint8 bits)
 			if (zone->contains(CVector((float)x, (float)y, 0.0f)))
 				_Grid.set(x, y, bits);
 }
+
+
+/*
+ * Render a water shape, as a CPolygon
+ */
+void	CPrimChecker::render(const CPolygon &poly, uint16 value)
+{
+	list<CPolygon>		convex;
+
+	// divide poly in convex polys
+	if (!poly.toConvexPolygons(convex, CMatrix::Identity))
+	{
+		convex.clear();
+		CPolygon	reverse = poly;
+		std::reverse(reverse.Vertices.begin(), reverse.Vertices.end());
+		if (!reverse.toConvexPolygons(convex, CMatrix::Identity))
+			return;
+	}
+
+	list<CPolygon>::iterator	it;
+	for (it=convex.begin(); it!=convex.end(); ++it)
+	{
+		CPolygon2D					convex2d(*it);
+
+		CPolygon2D::TRasterVect		rasterized;
+		sint						ymin;
+
+		convex2d.computeBorders(rasterized, ymin);
+
+		sint	dy;
+		for (dy=0; dy<(sint)rasterized.size(); ++dy)
+		{
+			sint	x;
+
+			for (x=rasterized[dy].first; x<=rasterized[dy].second; ++x)
+			{
+				uint8	prevBits = _Grid.get((uint)x, (uint)(ymin+dy));
+
+				// only set if there was not a water shape there or if previous was lower
+				if ((prevBits & Water) != 0)
+				{
+					uint16	prevWS = _Grid.index((uint)x, (uint)(ymin+dy));
+
+					if (_WaterHeight[value] < _WaterHeight[prevWS])
+						continue;
+				}
+
+				_Grid.index((uint)x, (uint)(ymin+dy), value);
+				_Grid.set((uint)x, (uint)(ymin+dy), Water);
+			}
+		}
+	}
+
+}
+

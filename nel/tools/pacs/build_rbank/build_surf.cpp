@@ -1,7 +1,7 @@
 /** \file build_surf.cpp
  *
  *
- * $Id: build_surf.cpp,v 1.19 2004/01/22 14:57:07 legros Exp $
+ * $Id: build_surf.cpp,v 1.20 2004/02/03 15:25:34 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -311,10 +311,15 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 
 	IsValid = (Normal.z > 0.707f);
 
-	uint8	bits = 0;
-	bits |= PrimChecker.get((uint)v0.x, (uint)v0.y);
-	bits |= PrimChecker.get((uint)v1.x, (uint)v1.y);
-	bits |= PrimChecker.get((uint)v2.x, (uint)v2.y);
+	uint8	bits0 = PrimChecker.get((uint)v0.x, (uint)v0.y);
+	uint8	bits1 = PrimChecker.get((uint)v1.x, (uint)v1.y);
+	uint8	bits2 = PrimChecker.get((uint)v2.x, (uint)v2.y);
+
+	uint16	ws0 = PrimChecker.index((uint)v0.x, (uint)v0.y);
+	uint16	ws1 = PrimChecker.index((uint)v1.x, (uint)v1.y);
+	uint16	ws2 = PrimChecker.index((uint)v2.x, (uint)v2.y);
+
+	uint8	bits = bits0|bits1|bits2;
 
 	if (bits & CPrimChecker::Include)
 	{
@@ -331,6 +336,34 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 		ClusterHint = true;
 	}
 
+	if (bits & CPrimChecker::Water && IsValid)
+	{
+		bool	w0 = ((bits0&CPrimChecker::Water) != 0);
+		bool	w1 = ((bits1&CPrimChecker::Water) != 0);
+		bool	w2 = ((bits2&CPrimChecker::Water) != 0);
+
+		uint	ws;
+
+		if ((w0 && w1 && ws0 == ws1) || (w0 && w2 && ws0 == ws2))
+			ws = ws0;
+		else if (w1 && w2 && ws1 == ws2)
+			ws = ws1;
+		else if (w0)
+			ws = ws0;
+		else if (w1)
+			ws = ws1;
+		else if (w2)
+			ws = ws2;
+
+		bool	exists;
+		float	wh = PrimChecker.waterHeight(ws, exists);
+		if (exists && ((*Vertices)[Tri[0]].z < wh || (*Vertices)[Tri[1]].z < wh || (*Vertices)[Tri[2]].z < wh))
+		{
+			WaterShape = ws;
+		}
+	}
+
+/*
 	CVector	vmin;
 	CVector	vmax;
 	vmin.minof((*Vertices)[Tri[0]], (*Vertices)[Tri[1]]);
@@ -354,6 +387,7 @@ void	NLPACS::CSurfElement::computeQuantas(CZoneTessellation *zoneTessel)
 			break;
 		}
 	}
+*/
 }
 
 CAABBox	NLPACS::CSurfElement::getBBox() const
@@ -1038,7 +1072,7 @@ void	NLPACS::CZoneTessellation::compile()
 	uint	i, j;
 
 	CAABBox	tbox = computeBBox();
-
+/*
 	// setup water quad grid
 	WaterGrid.create(128, 4.0f);
 	for (i=0; i<WaterShapes.size(); ++i)
@@ -1060,6 +1094,7 @@ void	NLPACS::CZoneTessellation::compile()
 
 		WaterGrid.insert(vvmin, vvmax, i);
 	}
+*/
 
 	// compute elements features
 	if (Verbose)

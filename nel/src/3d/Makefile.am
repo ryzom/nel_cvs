@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.31 2001/04/23 16:34:08 berenguier Exp $
+# $Id: Makefile.am,v 1.32 2001/04/25 08:51:08 vizerie Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -42,8 +42,8 @@ libnel3d_la_SOURCES  = bezier_patch.cpp \
                        skeleton_shape.cpp instance_group_user.cpp \
                        transformable_user.cpp skeleton_user.cpp \
                        bone_user.cpp instance_material_user.cpp \
-                       shape_bank_user.cpp shape_bank.cpp height_map.cpp
-
+                       shape_bank_user.cpp shape_bank.cpp height_map.cpp \
+		       particle_system.cpp ps_emitter.cpp ps_force.cpp ps_located.cpp ps_particle.cpp ps_util.cpp ps_zone.cpp
 
 AM_CXXFLAGS          = @FREETYPE_CFLAGS@
 

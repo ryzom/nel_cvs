@@ -2676,6 +2676,14 @@ SOURCE=.\3d\async_file_manager_3d.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\3d\debug_vb.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\debug_vb.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\3d\event_mouse_listener.cpp
 # End Source File
 # Begin Source File

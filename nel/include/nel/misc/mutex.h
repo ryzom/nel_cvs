@@ -1,7 +1,7 @@
 /** \file mutex.h
  * class CMutex
  *
- * $Id: mutex.h,v 1.3 2001/02/20 15:35:41 berenguier Exp $
+ * $Id: mutex.h,v 1.4 2001/04/19 12:07:31 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_MUTEX_H
 
 #include "nel/misc/types_nl.h"
+#include <map>
 
 #ifdef NL_OS_UNIX
 #include <pthread.h>
@@ -70,6 +71,11 @@ private:
 #endif // NL_OS_WINDOWS
 
 };
+
+
+// DEBUG
+void initAcquireTimeMap();
+std::map<CMutex*,uint32>	getNewAcquireTimes();
 
 
 /**

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.33 2001/04/06 16:45:39 cado Exp $
+ * $Id: debug.cpp,v 1.34 2001/04/19 12:07:31 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,6 +130,9 @@ void createDebug ()
 	static bool alreadyCreate = false;
 	if (!alreadyCreate)
 	{
+		// DEBUG
+		initAcquireTimeMap();
+
 		ErrorLog = new CLog (CLog::LOG_ERROR);
 		WarningLog = new CLog (CLog::LOG_WARNING);
 		InfoLog = new CLog (CLog::LOG_INFO);

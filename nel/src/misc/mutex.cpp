@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.7 2001/04/06 16:45:39 cado Exp $
+ * $Id: mutex.cpp,v 1.8 2001/04/19 12:07:31 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,9 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
 #include "nel/misc/mutex.h"
+#include "nel/misc/time_nl.h"
+#include <iostream>
+using namespace std;
 
 #ifdef NL_OS_WINDOWS
 
@@ -45,12 +48,50 @@
 #include <errno.h>
 //TEST
 //#include <unistd.h>
-#include <iostream>
-using namespace std;
 #endif // NL_OS_WINDOWS/NL_OS_UNIX
 
 
 namespace NLMISC {
+
+
+
+map<CMutex*,uint32>	*AcquireTime = NULL;
+CMutex				*ATMutex = NULL;
+bool				InitAT = true;
+
+
+//
+void initAcquireTimeMap()
+{
+	if ( InitAT )
+	{
+		ATMutex = new CMutex();
+		AcquireTime = new map<CMutex*,uint32>;
+		InitAT = false;
+	}
+}
+
+
+// Call it evenly (e.g. once per second)
+map<CMutex*,uint32>	getNewAcquireTimes()
+{
+	map<CMutex*,uint32>	m;
+	ATMutex->enter();
+
+	// Copy map
+	m = *AcquireTime;
+
+	// Reset map
+	map<CMutex*,uint32>::iterator im;
+	for ( im=AcquireTime->begin(); im!=AcquireTime->end(); ++im )
+	{
+		(*im).second = 0;
+	}
+
+	ATMutex->leave();
+	return m;
+}
+
 
 
 #ifdef NL_OS_UNIX
@@ -70,7 +111,7 @@ extern "C"
 /*
  * Constructor
  */
-  CMutex::CMutex()
+CMutex::CMutex()
 {
 #ifdef NL_OS_WINDOWS
 
@@ -87,6 +128,21 @@ extern "C"
 	pthread_mutexattr_destroy( &attr );
 
 #endif // NL_OS_WINDOWS
+
+	// DEBUG
+	if ( ! InitAT )
+	{
+		ATMutex->enter();
+		(*AcquireTime)[this] = 0;
+		ATMutex->leave();
+		char dbgstr [256];
+		smprintf( dbgstr, 256, "MUTEX: Creating mutex %p\n", this );
+#ifdef NL_OS_WINDOWS
+		if ( IsDebuggerPresent() )
+			OutputDebugString( dbgstr );
+#endif
+		cout << dbgstr << endl;
+	}
 }
 
 
@@ -106,6 +162,10 @@ CMutex::~CMutex()
  */
 void CMutex::enter ()
 {
+
+	// DEBUG
+	TTime before = CTime::getLocalTime();
+	
 #ifdef NL_OS_WINDOWS
 
 #ifdef NL_DEBUG
@@ -145,8 +205,16 @@ void CMutex::enter ()
 	}*/
 
 #endif // NL_OS_WINDOWS
-}
 
+	// DEBUG
+	if ( this != ATMutex )
+	{
+		TTime diff = CTime::getLocalTime()-before;
+		ATMutex->enter();
+		(*AcquireTime)[this] += (uint32)diff;
+		ATMutex->leave();
+	}
+}
 
 /*
  * leave

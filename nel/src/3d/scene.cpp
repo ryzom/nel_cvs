@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.56 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: scene.cpp,v 1.57 2001/11/27 16:29:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@ void	CScene::registerBasics()
 	CSkipModel::registerBasic();
 	CQuadGridClipCluster::registerBasic();
 	CWaterModel::registerBasic();
+	CWaveMakerModel::registerBasic();
 }
 
 	

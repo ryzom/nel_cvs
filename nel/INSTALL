@@ -17,6 +17,9 @@ Requirements
       - FreeType 2     <URL:http://freetype.sourceforge.net/>
       - Python   1.5   <URL:http://www.python.org/>
 
+   STLPort need to be compiled. NeL is using the SGI iostreams and it require
+   the STLPort compilation and a linking of NeL with the STLPort library.
+
    On a GNU/Linux platform you will need the following libraries and
    softwares :
 

@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.33 2003/08/22 09:46:00 besson Exp $
+ * $Id: u_driver.h,v 1.34 2003/09/25 12:13:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -668,6 +668,11 @@ public:
 	 *	This is the static function which build a UDriver, the root for all 3D functions.
 	 */
 	static	UDriver			*createDriver(uint windowIcon = 0);
+
+	/**
+	 *	Purge static memory
+	 */
+	static	void			purgeMemory();
 
 };
 

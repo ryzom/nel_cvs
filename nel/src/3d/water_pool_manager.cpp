@@ -1,7 +1,7 @@
 /** \file water_pool_manager.cpp
  * <File description>
  *
- * $Id: water_pool_manager.cpp,v 1.8 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: water_pool_manager.cpp,v 1.9 2003/09/25 12:13:12 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -126,6 +126,7 @@ void CWaterPoolManager::reset()
 	{
 		delete it->second;
 	}
+	_PoolMap.clear ();
 }
 	
 

@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.110 2003/08/18 14:32:37 vizerie Exp $
+ * $Id: scene.cpp,v 1.111 2003/09/25 12:13:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -223,6 +223,12 @@ void	CScene::release()
 	{
 		delete _CoarseMeshManager;
 		_CoarseMeshManager= NULL;
+	}
+
+	if(_GlobalInstanceGroup)
+	{
+		delete _GlobalInstanceGroup;
+		_GlobalInstanceGroup = NULL;
 	}
 
 	// delete the play list

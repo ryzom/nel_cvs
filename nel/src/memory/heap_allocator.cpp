@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.5 2003/07/03 07:46:52 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.6 2003/09/25 12:13:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1525,7 +1525,9 @@ bool CHeapAllocator::debugStatisticsReport (const char* stateFile, bool memoryMa
 		fprintf (file, "\n\nSYSTEM HEAP STATISTICS\n");
 		fprintf (file, "TOTAL ALLOCATED MEMORY, NEL ALLOCATED MEMORY, OTHER ALLOCATED MEMORY\n");
 		fprintf (file, "%d, %d, %d\n", systemMemory, nelSystemMemory, systemMemory-nelSystemMemory);
-
+		
+		// **************************
+		
 		// Write the category map file
 		fprintf (file, "\n\n\nCATEGORY STATISTICS\n");
 		fprintf (file, "CATEGORY, BLOCK COUNT, MEMORY ALLOCATED, MIN BLOCK SIZE, MAX BLOCK SIZE, AVERAGE BLOCK SIZE, SB COUNT 8, SB COUNT 16, SB COUNT 24, SB COUNT 32, SB COUNT 40, SB COUNT 48, SB COUNT 56, SB COUNT 64, SB COUNT 72, SB COUNT 80, SB COUNT 88, SB COUNT 96, SB COUNT 104, SB COUNT 112, SB COUNT 120, SB COUNT 128\n");

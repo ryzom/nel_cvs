@@ -1,7 +1,7 @@
 /** \file point_light.h
  * <File description>
  *
- * $Id: point_light.h,v 1.4 2003/08/19 09:14:58 berenguier Exp $
+ * $Id: point_light.h,v 1.5 2003/09/25 12:13:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,6 +199,9 @@ public:
 	void			removeLightedModel(ItTransformList it);
 
 	// @}
+
+	// Purge static memory
+	static void		purge ();
 
 
 // ******************

@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.49 2003/09/16 13:51:54 besson Exp $
+ * $Id: scene_user.cpp,v 1.50 2003/09/25 12:13:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -776,6 +776,10 @@ void CSceneUser::stopCreatingAndAddingIG(UInstanceGroup **pIG)
 	}		
 }
 
+void CSceneUser::deleteInstanceGroup(UInstanceGroup *pIG)
+{
+	delete pIG;
+}
 
 UTransform *CSceneUser::createTransform()
 {

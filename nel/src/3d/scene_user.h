@@ -1,7 +1,7 @@
 /** \file scene_user.h
  * <File description>
  *
- * $Id: scene_user.h,v 1.45 2003/08/12 17:28:34 berenguier Exp $
+ * $Id: scene_user.h,v 1.46 2003/09/25 12:13:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -147,7 +147,8 @@ public:
 														uint selectedTexture);
 
 	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG);
-
+	virtual void deleteInstanceGroup(UInstanceGroup *pIG);
+	
 	/// should be called at each render
 	void	updateWaitingIG();
 

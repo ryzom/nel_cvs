@@ -1,7 +1,7 @@
 /** \file point_light.cpp
  * <File description>
  *
- * $Id: point_light.cpp,v 1.5 2003/08/19 09:14:58 berenguier Exp $
+ * $Id: point_light.cpp,v 1.6 2003/09/25 12:13:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -420,6 +420,9 @@ void			CPointLight::removeLightedModel(ItTransformList it)
 	// delete the entry in the list.
 	_LightedModels.erase(it);
 }
-
-
+// ***************************************************************************
+void			CPointLight::purge ()
+{
+	_LightedModelListMemory.purge();
+}
 } // NL3D

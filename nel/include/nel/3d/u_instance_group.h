@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.27 2003/07/30 15:56:40 vizerie Exp $
+ * $Id: u_instance_group.h,v 1.28 2003/09/25 12:13:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,6 +102,7 @@ public:
  * \date 2001
  */
 class UInstanceGroup
+
 {
 public:
 

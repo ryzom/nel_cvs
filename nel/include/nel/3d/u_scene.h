@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.41 2003/08/12 17:28:46 berenguier Exp $
+ * $Id: u_scene.h,v 1.42 2003/09/25 12:13:13 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -156,6 +156,9 @@ public:
 	  */
 	virtual	void stopCreatingAndAddingIG(UInstanceGroup **pIG) = 0;
 	
+	/** Delete an instance group
+	  */
+	virtual void deleteInstanceGroup(UInstanceGroup *pIG) = 0;
 
 	/** Create a dummy object
 	 */

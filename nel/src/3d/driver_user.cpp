@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.36 2003/08/20 09:56:10 besson Exp $
+ * $Id: driver_user.cpp,v 1.37 2003/09/25 12:13:12 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "3d/material_user.h"
 #include "3d/scene_user.h"
 #include "3d/init_3d.h"
+#include "3d/water_pool_manager.h"
 #include "nel/3d/u_camera.h"
 #include "nel/misc/hierarchical_timer.h"
 
@@ -98,6 +99,16 @@ UDriver					*UDriver::createDriver(uint windowIcon)
 {
 	NL3D_MEM_DRIVER
 	return new CDriverUser (windowIcon);
+}
+
+
+// ***************************************************************************
+void					UDriver::purgeMemory()
+{
+	NL3D_MEM_DRIVER
+	CPointLight::purge ();
+	GetWaterPoolManager().reset();
+	contReset(CLandscapeGlobals::PassTriArray);
 }
 
 

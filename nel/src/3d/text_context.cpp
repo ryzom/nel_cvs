@@ -1,7 +1,7 @@
 /** \file text_context.cpp
  * <File description>
  *
- * $Id: text_context.cpp,v 1.7 2002/12/30 16:18:24 besson Exp $
+ * $Id: text_context.cpp,v 1.8 2003/09/25 12:13:12 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,7 +113,8 @@ uint32 CTextContext::textPush (const ucstring &str)
 	// compute the string.
 	uint32 index = _CacheFreePlaces[_CacheNbFreePlaces-1];
 	CComputedString &strToFill = _CacheStrings[index];
-	_FontManager->computeString (str, _FontGen, _Color, _FontSize, _Driver, strToFill, _Keep800x600Ratio);
+	_FontManager->computeString (str, _FontGen, _Color
+		, _FontSize, _Driver, strToFill, _Keep800x600Ratio);
 
 	_CacheNbFreePlaces--;
 

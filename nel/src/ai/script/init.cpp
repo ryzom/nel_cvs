@@ -1,6 +1,6 @@
 /** \file init.cpp
  *
- * $Id: init.cpp,v 1.8 2002/03/11 09:56:52 portier Exp $
+ * $Id: init.cpp,v 1.9 2002/08/27 09:25:50 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/ai/script/interpret_message_connect.h"
 #include "nel/ai/script/interpret_object_manager.h"
 #include "nel/ai/script/interpret_actor.h"
+#include "nel/ai/script/goal_path_class.h"
 #include "nel/ai/logic/interpret_object_operator.h"
 #include "nel/ai/script/libcode.h"
 #include "nel/ai/script/test_method.h"
@@ -60,6 +61,7 @@ namespace NLAISCRIPT
 		reinitClass(CSeqFsmClass(CSeqFsmClass::IdSeqFsmClass),CSeqFsmClass::IdSeqFsmClass);
 		reinitClass(COperatorClass(COperatorClass::IdOperatorClass),COperatorClass::IdOperatorClass);
 		reinitClass(CActorClass(CActorClass::IdActorClass),CActorClass::IdActorClass);
+		reinitClass(CGoalPathClass(CGoalPathClass::IdGoalPathClass),CGoalPathClass::IdGoalPathClass);
 		reinitClass(CMessageClass(CMessageClass::IdMessageClass),CMessageClass::IdMessageClass);
 		reinitClass(CMsgNotifyParentClass(CMsgNotifyParentClass::IdMsgNotifyParentClass),CMsgNotifyParentClass::IdMsgNotifyParentClass);
 		reinitClass(CGoalMsgClass(CGoalMsgClass::IdGoalMsgClass),CGoalMsgClass::IdGoalMsgClass);

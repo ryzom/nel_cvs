@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.21 2002/06/25 13:03:04 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.22 2002/06/26 13:22:54 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -427,8 +427,10 @@ int main(int argc, char* argv[])
 				
 				// Shadow are enabled ?
 				if (lighterDesc.Shadow)
+				{
 					// Load and parse the dependency file
 					dependency.load (argv[4]);
+				}
 
 				// Get the search pathes
 				CConfigFile::CVar &search_pathes = parameter.getVar ("search_pathes");
@@ -569,14 +571,13 @@ int main(int argc, char* argv[])
 				
 				// *** Scan dependency file
 
-				CConfigFile::CVar &dependant_zones = dependency.getVar ("dependencies");
-				std::vector<std::string> zoneNameArray;
-				zoneNameArray.reserve(1 + (uint)dependant_zones.size());
-				zoneNameArray.push_back(argv[1]);
-
 				if (lighterDesc.Shadow)
 				{
 					CConfigFile::CVar &dependant_zones = dependency.getVar ("dependencies");
+					std::vector<std::string> zoneNameArray;
+					zoneNameArray.reserve(1 + (uint)dependant_zones.size());
+					zoneNameArray.push_back(argv[1]);
+
 					for (uint i=0; i<(uint)dependant_zones.size(); i++)
 					{
 						// Get zone name
@@ -630,12 +631,12 @@ int main(int argc, char* argv[])
 							}
 						}
 					}
-				}
 
-				if (loadInstanceGroup)
-				{
-					// Ryzom specific : additionnal villages from a continent form
-					loadIGFromContinent(parameter, instanceGroup, zoneNameArray);
+					if (loadInstanceGroup)
+					{
+						// Ryzom specific : additionnal villages from a continent form
+						loadIGFromContinent(parameter, instanceGroup, zoneNameArray);
+					}
 				}
 
 				// A vector of CZoneLighter::CTriangle

@@ -1,7 +1,7 @@
 /** \file u_text_context.h
  * <File description>
  *
- * $Id: u_text_context.h,v 1.13 2003/02/24 13:05:22 lecroart Exp $
+ * $Id: u_text_context.h,v 1.14 2003/03/11 15:35:15 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,7 +256,7 @@ public:
 	/**
 	 * compute and print a ucstring at the location (2D method) x/y E [0,1]
 	 */
-	virtual	void			printAt (float x, float y, ucstring ucstr) = 0;
+	virtual	void			printAt (float x, float y, const ucstring &ucstr) = 0;
 	/**
 	 * compute and print a string at the location (2D method) x/y E [0,1]
 	 */
@@ -266,7 +266,7 @@ public:
 	 * compute and render a ucstring at the location (3D method)
 	 *	render3D() use UDriver Matrix context for Frustum/ViewMatrix, but use its own modelmatrix (mat).
 	 */
-	virtual	void			render3D (const NLMISC::CMatrix &mat, ucstring ucstr) = 0;
+	virtual	void			render3D (const NLMISC::CMatrix &mat, const ucstring &ucstr) = 0;
 	/**
 	 * compute and render a string at the location (3D method)
 	 *	render3D() use UDriver Matrix context for Frustum/ViewMatrix, but use its own modelmatrix (mat).

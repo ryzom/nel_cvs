@@ -1,7 +1,7 @@
 /** \file text_context_user.h
  * <File description>
  *
- * $Id: text_context_user.h,v 1.14 2003/01/27 10:24:09 coutelas Exp $
+ * $Id: text_context_user.h,v 1.15 2003/03/11 15:35:15 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,10 +113,10 @@ public:
 	void printClipAt(URenderStringBuffer &renderBuffer, float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax) ;
 	void printClipAtOld (float x, float y, uint32 i, float xmin, float ymin, float xmax, float ymax);
 
-	void printAt(float x, float y, ucstring ucstr) ;
+	void printAt(float x, float y, const ucstring &ucstr) ;
 	void printfAt(float x, float y, const char * format, ...) ;
 
-	void render3D(const CMatrix &mat, ucstring ucstr) ;
+	void render3D(const CMatrix &mat, const ucstring &ucstr) ;
 	void render3D(const CMatrix &mat, const char *format, ...) ;
 
 	float getLastXBound() const ;

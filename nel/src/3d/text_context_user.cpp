@@ -1,7 +1,7 @@
 /** \file text_context_user.cpp
  * <File description>
  *
- * $Id: text_context_user.cpp,v 1.15 2003/01/27 10:24:09 coutelas Exp $
+ * $Id: text_context_user.cpp,v 1.16 2003/03/11 15:35:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -311,7 +311,7 @@ void CTextContextUser::printClipAtOld (float x, float y, uint32 i, float xmin, f
 	printClipAt(rdrBuffer, x, y ,i, xmin, ymin, xmax, ymax);
 	flushRenderBuffer(&rdrBuffer);
 }
-void CTextContextUser::printAt(float x, float y, ucstring ucstr) 
+void CTextContextUser::printAt(float x, float y, const ucstring &ucstr) 
 {
 	NL3D_MEM_TEXT_CONTEXT
 	NL3D_HAUTO_RENDER_2D_TEXTCONTEXT;
@@ -331,7 +331,7 @@ void CTextContextUser::printfAt(float x, float y, const char * format, ...)
 	_DriverUser->restoreMatrixContext();
 }
 
-void CTextContextUser::render3D(const CMatrix &mat, ucstring ucstr) 
+void CTextContextUser::render3D(const CMatrix &mat, const ucstring &ucstr) 
 {
 	NL3D_MEM_TEXT_CONTEXT
 	NL3D_HAUTO_RENDER_3D_TEXTCONTEXT;

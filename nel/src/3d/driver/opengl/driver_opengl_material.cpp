@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.55 2002/01/15 15:28:58 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.56 2002/02/13 14:49:26 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -750,6 +750,10 @@ sint			CDriverGL::beginSpecularMultiPass(const CMaterial &mat)
 	glLoadMatrixf( _TexMtx.get() );
 	glMatrixMode(GL_MODELVIEW);
 
+	// Manage the rare case whe the SpecularMap is not provided (fault of graphist).
+	if(mat.getTexture(1)==NULL)
+		return 1;
+
 	if(!_Extensions.ARBTextureCubeMap)
 		return 1;
 
@@ -769,6 +773,15 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 	// One texture stage hardware not supported.
 	if(getNbTextureStages()<2)
 		return;
+
+	// Manage the rare case whe the SpecularMap is not provided (fault of graphist).
+	if(mat.getTexture(1)==NULL)
+	{
+		// Just display the texture forcing no blend (as in std case).
+		// NB: setupMaterial() code has correclty setuped textures.
+		_DriverGLStates.enableBlend(false);
+		return;
+	}
 
 	/// Support NVidia combine 4 extension to do specular map in a single pass
 	if( _Extensions.NVTextureEnvCombine4 )

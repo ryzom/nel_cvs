@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.9 2000/11/22 10:11:35 coutelas Exp $
+ * $Id: bitmap.h,v 1.10 2000/11/23 13:26:30 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -228,6 +228,13 @@ public:
 	 * \throw ESeekFailed : seek has failed
 	 */
 	uint8 load(NLMISC::IStream &f);
+
+
+	/** 
+	 * Make a dummy "?" texture. Usefull for file not found. Mode is RGBA.
+	 */
+	void	makeDummy();
+
 
 	/** 
 	 * Return the pixels buffer of the image, or of one of its mipmap.

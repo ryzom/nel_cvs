@@ -112,42 +112,6 @@ LINK32=link.exe
 # Name "client - Win32 Release"
 # Name "client - Win32 Debug"
 # Name "client - Win32 ReleaseDebug"
-# Begin Group "interface"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\character_interface.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\character_interface.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\language_interface.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\language_interface.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\login_interface.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\login_interface.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\shards_list_interface.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\shards_list_interface.h
-# End Source File
-# End Group
 # Begin Source File
 
 SOURCE=.\client.cfg
@@ -155,46 +119,6 @@ SOURCE=.\client.cfg
 # Begin Source File
 
 SOURCE=.\src\client.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\lens_flare.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\lens_flare.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\move_listener.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\move_listener.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\pb_message_box.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\pb_message_box.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\player_view.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\player_view.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sight.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\src\sight.h
 # End Source File
 # End Target
 # End Project

@@ -118,7 +118,7 @@
 		return $res;
 	}
 
-	function displayAvailableShards($id, $clientApplication)
+	function displayAvailableShards($id, $clientApplication, $multiplePatchers)
 	{
 		global $PHP_SELF;
 		global $DBHost, $DBUserName, $DBPassword, $DBName;
@@ -149,7 +149,7 @@
 					$res = $res."999999|";
 					$res = $res.$row["WsAddr"]."|";
 					$res = $res.$row["PatchURL"];
-					if (strlen($row["DynPatchURL"]) > 0)
+					if (strlen($row["DynPatchURL"]) > 0 && $multiplePatchers)
 						$res = $res."|".$row["DynPatchURL"];
 					$res = $res."\n";
 				}
@@ -239,7 +239,7 @@
 		else
 		{
 			// user logged, display the available shard
-			displayAvailableShards ($id, $clientApplication);
+			displayAvailableShards ($id, $clientApplication, $cp);
 		}
 	}
 ?>

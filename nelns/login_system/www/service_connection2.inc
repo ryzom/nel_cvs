@@ -219,10 +219,12 @@
 			}
 
 			$patchURLS = '';
+			/*
 			if (!$msgin->serialstring($patchURLS))
 			{
 				$patchURLS = '';
 			}
+			*/
 
 			$res = $cookie.' '.$addr;
 

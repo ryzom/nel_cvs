@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.25 2002/06/03 08:50:11 vizerie Exp $
+ * $Id: particle_system.h,v 1.26 2002/08/07 08:37:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -290,7 +290,7 @@ public:
 		void setUserParam(uint numParam, float value) 
 		{
 			nlassert(numParam < MaxPSUserParam);
-			nlassert(value >= 0.f && value <= 1.f);
+			NLMISC::clamp(value, 0, MaxInputValue);			
 			_UserParam[numParam] = value;
 		}
 

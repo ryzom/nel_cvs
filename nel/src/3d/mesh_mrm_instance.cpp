@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.10 2002/08/05 12:17:29 berenguier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.11 2002/08/07 08:37:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,7 +149,7 @@ void	CMeshMRMInstance::renderSkin(float alphaMRM)
 {
 	// Don't setup lighting or matrix in Skin. Done by the skeleton
 
-	if(Shape)
+	if(Shape  && getVisibility() == CHrcTrav::Show)
 	{
 		// Get a pointer on the shape
 		CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);

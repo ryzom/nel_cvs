@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.11 2002/02/15 17:01:29 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.12 2002/08/07 08:37:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,7 +60,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 		virtual T get(float input)
 		{
 			OptFastFloorBegin();
-			nlassert(input >= 0.f && input < 1.f);
+			nlassert(input >= 0.f && input <= 1.f);
 			return _F(input);
 			OptFastFloorEnd();
 		}
@@ -649,7 +649,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{			
 							CDecalIterator it;
 							it.Value = loc->getUserParam(_InputType.UserParamNum); 
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
 						case CPSInputType::attrLOD:
@@ -737,7 +737,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{			
 							CDecalIterator it;
 							it.Value = loc->getUserParam(_InputType.UserParamNum); 
-							makeByIterator(it, tab, stride, numAttrib, true);
+							makeByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
 						case CPSInputType::attrLOD:
@@ -841,7 +841,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{			
 							CDecalIterator it;
 							it.Value = loc->getUserParam(_InputType.UserParamNum); 
-							make4ByIterator(it, tab, stride, numAttrib, true);
+							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
 						case CPSInputType::attrLOD:
@@ -927,7 +927,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{			
 							CDecalIterator it;
 							it.Value = loc->getUserParam(_InputType.UserParamNum); 
-							make4ByIterator(it, tab, stride, numAttrib, true);
+							make4ByIterator(it, tab, stride, numAttrib, false);
 						}
 						break;
 						case CPSInputType::attrLOD:
@@ -1029,7 +1029,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{			
 							CDecalIterator it;
 							it.Value = loc->getUserParam(_InputType.UserParamNum); 
-							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, true);
+							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;
 						case CPSInputType::attrLOD:
@@ -1115,7 +1115,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{			
 							CDecalIterator it;
 							it.Value = loc->getUserParam(_InputType.UserParamNum); 
-							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, true);
+							makeNByIterator(it, tab, stride, numAttrib, nbReplicate, false);
 						}
 						break;
 						case CPSInputType::attrLOD:

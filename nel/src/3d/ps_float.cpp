@@ -1,7 +1,7 @@
 /** \file ps_float.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.13 2002/02/28 12:59:50 besson Exp $
+ * $Id: ps_float.cpp,v 1.14 2002/08/07 08:37:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -108,7 +108,7 @@ void CPSFloatCurveFunctor::setNumSamples(uint32 numSamples)
 ///=======================================================================================
 float CPSFloatCurveFunctor::getValue(float date) const
 {
-	nlassert(date >= 0 && date <= 1);
+	NLMISC::clamp(date, 0, 1);	
 	// find a key that has a higher value
 	std::vector<CCtrlPoint>::const_iterator it = _CtrlPoints.begin();
 	while ( it != _CtrlPoints.end() && it->Date <= date ) ++it;
@@ -143,8 +143,8 @@ void CPSFloatCurveFunctor::updateTab(void)
 {
 	float step  = 1.f / _NumSamples;
 	float d = 0.f;
-	_Tab.resize(_NumSamples);
-	for (uint k = 0; k < _NumSamples; ++k)
+	_Tab.resize(_NumSamples + 1);
+	for (uint k = 0; k <= _NumSamples; ++k)
 	{
 		_Tab[k] = getValue(d);
 		d += step;

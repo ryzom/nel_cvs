@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.10 2002/02/15 17:01:29 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.11 2002/08/07 08:37:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,7 +92,7 @@ struct CPSInputType
 
 
 // The max value for inputs of an attribute maker.
-const float MaxInputValue = 0.9999f ;
+const float MaxInputValue = 1.0f ;
 
 /**
   * this is the base for attribute makers. It allows to duplicate an attribute maker, and to querry its type

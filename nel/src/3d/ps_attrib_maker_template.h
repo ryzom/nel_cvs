@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.13 2001/11/22 15:34:14 corvazier Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.14 2002/08/07 08:37:40 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -298,7 +298,7 @@ public:
 		nlassert(tab);
 		T *pt = tab;
 		uint32 src = 0;
-		for (uint32 k = 0; k <= ((_NbValues - 1) / _NbStages); ++k, src = src + _NbStages)
+		for (uint32 k = 0; k <= (_NbValues / _NbStages); ++k, src = src + _NbStages)
 		{
 			*pt++ =_Tab[src];
 		}
@@ -314,7 +314,7 @@ public:
 
 
 
-	uint32 getNumValues(void) const { return ((_NbValues - 1) / _NbStages) + 1; }
+	uint32 getNumValues(void) const { return (_NbValues / _NbStages) + 1; }
 
 	/** set the colors
 	 *  \param numValue number of Values, must be >= 2
@@ -410,8 +410,8 @@ inline void CPSValueGradientFunc<T>::setValues(const T *valueTab, uint32 numValu
 
 	_NbStages = nbStages;
 	_MaxValue = valueTab[0];
-	_NbValues = 1 + (numValues - 1) * nbStages;
-	_Tab.resize(_NbValues);
+	_NbValues = (numValues - 1) * nbStages;
+	_Tab.resize(_NbValues + 1);
 
 
 	float step = 1.0f / float(nbStages);
@@ -455,7 +455,7 @@ void CPSValueGradientFunc<T>::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 		uint32 numVal;
 		f.serial(numVal);		
-		_NbValues = 1 + (numVal - 1) * _NbStages;
+		_NbValues = (numVal - 1) * _NbStages;
 
 		// create the table on the stack for small gradient
 		if (numVal < 256)

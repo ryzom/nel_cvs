@@ -5,7 +5,7 @@
  *  - a speed vector
  *  - a lifetime
  *
- * $Id: located_properties.h,v 1.4 2001/06/25 13:25:08 vizerie Exp $
+ * $Id: located_properties.h,v 1.5 2001/06/27 16:48:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,6 +86,8 @@ protected:
 	CEditableRangeFloat *_MinMass, *_MaxMass ;
 	CEditableRangeFloat *_MinLife, *_MaxLife ;
 	CEditableRangeUInt *_MaxNbParticles ;
+	CEditableRangeUInt *_SkipFramesDlg ;
+	
 	 
 
 	CParticleDlg *_ParticleDlg ;
@@ -93,14 +95,14 @@ protected:
 	/// some wrappers used to read / write value from / to the particle system
 
 		
-		struct tagMinMassWrapper : public IPSWrapperFloat
+		struct CMinMassWrapper : public IPSWrapperFloat
 		{
 		   NL3D::CPSLocated *Located ;
 		   float get(void) const { return Located->getMinMass() ; }
 		   void set(const float &v) { Located->setMinMass(v) ; }
 		} _MinMassWrapper ;
 
-		struct tagMaxMassWrapper: public IPSWrapperFloat
+		struct CMaxMassWrapper: public IPSWrapperFloat
 		{
 			NL3D::CPSLocated *Located ;
 			float get(void) const { return Located->getMaxMass() ; }
@@ -108,7 +110,7 @@ protected:
 		} _MaxMassWrapper ;
 
 
-		struct tagMaxNbParticlesWrapper : public IPSWrapperUInt
+		struct CMaxNbParticlesWrapper : public IPSWrapperUInt
 		{
 			NL3D::CPSLocated *Located ;
 			CParticleTreeCtrl *TreeCtrl ;
@@ -128,7 +130,7 @@ protected:
 		} _MaxNbParticlesWrapper ;
 
 
-		struct tagMinLifeWrapper : public IPSWrapperFloat
+		struct CMinLifeWrapper : public IPSWrapperFloat
 		{
 			NL3D::CPSLocated *Located ;
 			float get(void) const { return Located->getMinLife() ; }
@@ -136,7 +138,7 @@ protected:
 		} _MinLifeWrapper ;
 
 		
-		struct tagMaxLifeWrapper : public IPSWrapperFloat
+		struct CMaxLifeWrapper : public IPSWrapperFloat
 		{
 			NL3D::CPSLocated *Located ;
 			float get(void) const { return Located->getMaxLife() ; }
@@ -144,6 +146,16 @@ protected:
 		} _MaxLifeWrapper ;
 					
 				
+		////////////////////////////////
+		// wrapper for frame skipping //
+		////////////////////////////////
+		struct CSkipFrameWrapper : public IPSWrapperUInt
+		{
+			NL3D::CPSLocated *Located ;
+			uint32 get(void) const { return Located->getFrameRate() ; }
+			void set(const uint32 &value) { Located->setFrameRate(value) ; }
+		} _SkipFrameRateWrapper ;
+
 
 
 	// the located this dialog is editing

@@ -1,7 +1,7 @@
 /** \file font_manager.h
  * Font manager
  *
- * $Id: font_manager.h,v 1.2 2000/11/10 15:20:17 coutelas Exp $
+ * $Id: font_manager.h,v 1.3 2000/11/17 14:58:12 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,33 +27,40 @@
 #define NL_FONT_MANAGER_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/smart_ptr.h"
 #include "nel/3d/texture.h"
+
 #include <map>
 #include <list>
 #include <functional>
 
-namespace NLMISC {
-
-template <class T> class CRefPtr;
-
-}
 
 
 
 namespace NL3D {
 
 class CTextureFont;
+class CFontGenerator;
+struct CDisplayDescriptor;
+struct CComputedString;
 struct CFontDescriptor;
 
 
-
-typedef std::pair< std::list<NLMISC::CRefPtr<CTextureFont> >::iterator,  uint32> pairRefPtrInt;
+typedef std::pair< std::list<NLMISC::CSmartPtr<CTextureFont> >::iterator,  uint32> pairRefPtrInt;
 typedef std::map< CFontDescriptor , pairRefPtrInt> mapFontDec;
-
 
 
 /**
  * Font manager
+ * The font manager manages CTextureFont pointers through a list
+ * of CSmartPtr. When the user asks for the texture font representing
+ * a character(font/size), it generates and stores this pointer in the list. 
+ * If this character has already been generated, and lies in the list, 
+ * it increments its reference count.
+ * If the memory used by generated textures exceeds the max memory, 
+ * then the useless character/pointer is erased from the list. 
+ * Max memory is set to 0 by default, so this value should be set to non-zero
+ * before generating textures to prevent immediate memory deletion.
  * \author Stephane Coutelas
  * \author Nevrax France
  * \date 2000
@@ -63,14 +70,12 @@ class CFontManager
 	uint32 _MemSize;
 	uint32 _MaxMemory;
 	mapFontDec _Letters;
-	std::list<NLMISC::CRefPtr<CTextureFont> > _TextureFontList;
+	std::list<NLMISC::CSmartPtr<CTextureFont> > _TextureFontList;
 
 public:
 
 	/** 
 	 * Default constructor
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	CFontManager()
 	{
@@ -82,8 +87,6 @@ public:
 	/** 
 	 * define maximum memory allowed
 	 * \param maximum memory
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void setMaxMemory(uint32 mem) { _MaxMemory = mem; }
 
@@ -91,22 +94,38 @@ public:
 	/** 
 	 * gives maximum memory allowed
 	 * \return maximum memory
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	uint32 getMaxMemory() const { return _MaxMemory; }
 
 
 	/** 
-	 * manages fonts in memory using CRefPtr
+	 * manages fonts in memory using CSmartPtr
 	 * \param character descriptor
-	 * \author Stephane Coutelas
-	 * \date 2000
+	 * \return CSmartPtr to a font texture
 	 */	
-	void getFontTexture(CFontDescriptor desc);
+	NLMISC::CSmartPtr<CTextureFont> getFontTexture(CFontDescriptor desc);
 
+
+	/** 
+	 * Compute primitive blocks and materials of each character of
+	 * the string.
+	 * \param s string to compute
+	 * \param fontGen font generator
+	 * \param color primitive blocks color
+	 * \param fontSize font size
+	 * \param desc display descriptor (screen size, font ratio)
+	 * \param output computed string
+	 */	
+	void computeString (//const ucstring s, 
+						const std::string& s, //
+						CFontGenerator * fontGen, 
+						NLMISC::CRGBA& color,
+						uint32 fontSize, 
+						const CDisplayDescriptor& desc, 
+						CComputedString& output);
 
 };
+
 
 
 } // NL3D

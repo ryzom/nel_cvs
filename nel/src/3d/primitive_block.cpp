@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.2 2000/11/10 09:52:07 berenguier Exp $
+ * $Id: primitive_block.cpp,v 1.3 2000/11/17 14:57:33 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,63 @@ void				CPrimitiveBlock::setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 
 	ptr++;
 	*ptr=vidx2;
 }
+
+
+
+
+
+/*---------------------------------------------------------------------------*\
+							getQuadPointer()
+\*---------------------------------------------------------------------------*/
+uint32* CPrimitiveBlock::getQuadPointer(void)
+{
+	if(_Quad.begin()==_Quad.end())
+		return NULL;
+	else
+		return(&(*_Quad.begin()));
+}
+
+
+/*---------------------------------------------------------------------------*\
+							reserveQuad()
+\*---------------------------------------------------------------------------*/
+void CPrimitiveBlock::reserveQuad(uint32 n)
+{
+	_Quad.resize(n*4);
+	_QuadCapacity = n;
+}
+
+
+/*---------------------------------------------------------------------------*\
+							setNumQuad()
+\*---------------------------------------------------------------------------*/
+void CPrimitiveBlock::setNumQuad(uint32 n)
+{
+	if(_QuadCapacity<n)
+	{
+		reserveQuad(n);
+	}
+	_NbQuads = n;
+}
+
+
+/*---------------------------------------------------------------------------*\
+							setQuad()
+\*---------------------------------------------------------------------------*/
+void CPrimitiveBlock::setQuad(uint quadIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2, uint32 vidx3)
+{
+	uint32*	ptr;
+
+	ptr = (uint32*)(&_Quad[quadIdx*3]);
+	*ptr = vidx0;
+	ptr++;
+	*ptr = vidx1;
+	ptr++;
+	*ptr = vidx2;
+	ptr++;
+	*ptr = vidx3;
+}
+
 
 
 }

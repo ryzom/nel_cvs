@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.18 2000/11/14 13:31:27 berenguier Exp $
+ * $Id: driver.h,v 1.19 2000/11/17 14:58:12 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,7 +60,6 @@ public:
 };
 
 
-// --------------------------------------------------
 
 const uint32 IDRV_TOUCHED_SRCBLEND	=	0x00000001;
 const uint32 IDRV_TOUCHED_DSTBLEND	=	0x00000002;
@@ -246,16 +245,24 @@ private:
 	uint32				_NbTris;
 	uint32				_TriCapacity;
 	std::vector<uint32>	_Tri;
+
+	// Quads
+	uint32				_NbQuads;
+	uint32				_QuadCapacity;
+	std::vector<uint32>	_Quad;
+
 	// Strip/Fans (todo later).
 	uint32				_StripIdx;
 	uint32*				_Strip;
 	uint32				_FanIdx;
 	uint32*				_Fan;
 public:
-						CPrimitiveBlock(void) {_TriCapacity=_NbTris=0;};
+						CPrimitiveBlock(void) {_TriCapacity=_NbTris= _NbQuads=_QuadCapacity=0;};
 						~CPrimitiveBlock(void) {}; 
-
+	
+	
 	// Triangles. A triangle is 3 uint32.
+	
 	/// reserve space for nTris triangles. You are allowed to write your triangles indices on this space.
 	void				reserveTri(uint32 n);
 	/// Return the number of triangles reserved.
@@ -269,6 +276,39 @@ public:
 	void				setTri(uint triIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2);
 
 	uint32*				getTriPointer(void);
+
+
+	// Quads (a quad is 4 uint32)
+
+	/**
+	 *	reserve space for quads. 
+	 */
+	void reserveQuad(uint32 n);
+	
+	/**
+	 * Return the number of triangles reserved.
+	 */
+	uint32 capacityQuad() { return _QuadCapacity; }
+	
+	/**
+	 * Set the number of active quads. It enlarges Quad capacity, if needed.
+	 */
+	void setNumQuad(uint32 n);
+	
+	/**
+	 * Get the number of active quads.
+	 */
+	uint32 getNumQuad(void) { return _NbQuads; }
+
+	/**
+	 * Build a quad.
+	 */
+	void setQuad(uint quadIdx, uint32 vidx0, uint32 vidx1, uint32 vidx2, uint32 vidx3);
+
+	/**
+	 * Return the Quad buffer
+	 */
+	uint32*	getQuadPointer(void);
 };
 
 // --------------------------------------------------

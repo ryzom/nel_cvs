@@ -1,7 +1,7 @@
 /** \file event_server.cpp
- * <File description>
+ * events server
  *
- * $Id: event_server.cpp,v 1.6 2000/11/13 13:25:15 berenguier Exp $
+ * $Id: event_server.cpp,v 1.7 2000/11/17 14:57:43 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

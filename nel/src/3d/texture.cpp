@@ -1,7 +1,7 @@
 /** \file texture.cpp
  * ITexture & CTextureFile
  *
- * $Id: texture.cpp,v 1.4 2000/11/14 14:55:08 lecroart Exp $
+ * $Id: texture.cpp,v 1.5 2000/11/17 14:57:33 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/3d/texture.h"
 #include "nel/3d/font_generator.h"
 #include "nel/misc/file.h"
+#include "nel/misc/common.h"
 #include <vector>
 
 
@@ -65,16 +66,16 @@ void CTextureFile::generate()
 void CTextureFont::generate()
 {
 	// getting bitmap infos
-	uint32 pitch;
+	uint32 pitch = 0;
 	uint8 *bitmap = _FontGen->getBitmap(Char, _Size, _CharWidth, _CharHeight, pitch, Left, Top, AdvX, GlyphIndex);
 
 	// computing new width and height as powers of 2
-	if(!isPowerOf2(_CharWidth))
-		_Width = getNextPowerOf2(_CharWidth);
+	if(!NLMISC::isPowerOf2(_CharWidth))
+		_Width = NLMISC::raiseToNextPowerOf2(_CharWidth);
 	else
 		_Width = _CharWidth;
-	if(!isPowerOf2(_CharHeight))
-		_Height = getNextPowerOf2(_CharHeight);
+	if(!NLMISC::isPowerOf2(_CharHeight))
+		_Height = NLMISC::raiseToNextPowerOf2(_CharHeight);
 	else
 		_Height = _CharHeight;
 	
@@ -97,12 +98,13 @@ void CTextureFont::generate()
 			}
 			else
 			{
-				_Data[0][(i*_Width + j)*4] = 0;
-				_Data[0][(i*_Width + j)*4 + 1] = 0;
-				_Data[0][(i*_Width + j)*4 + 2] = 0;
+				_Data[0][(i*_Width + j)*4] = 255;
+				_Data[0][(i*_Width + j)*4 + 1] = 255;
+				_Data[0][(i*_Width + j)*4 + 2] = 255;
 				_Data[0][(i*_Width + j)*4 + 3] = 0;
 			}
-/*			if(j<_CharWidth && i<_CharHeight)
+			/*
+			if(j<_CharWidth && i<_CharHeight)
 			{
 				if (bitmap[i*pitch + j] == 0)
 				{
@@ -126,7 +128,8 @@ void CTextureFont::generate()
 				_Data[0][(i*_Width + j)*4 + 2] = 0;
 				_Data[0][(i*_Width + j)*4 + 3] = 64;
 			}
-*/		}
+			*/
+		}
 	}
 }
 

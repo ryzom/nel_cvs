@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.6 2000/11/14 13:23:21 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.7 2000/11/17 14:57:13 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,10 +24,10 @@
  */
 
 #include <math.h>
-#include "nel/misc/debug.h"
 #include "nel/3d/bitmap.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/common.h"
+
 
 namespace NL3D {
 
@@ -49,51 +49,6 @@ struct EAllocationFailure : public Exception
 
 void blendFromui(NLMISC::CRGBA &c0, NLMISC::CRGBA &c1, uint coef);
 uint32 blend(uint32 &n0, uint32 &n1, uint32 coef0);
-
-
-
-
-/*-------------------------------------------------------------------*\
-							isPowerOf2
-\*-------------------------------------------------------------------*/
-bool isPowerOf2(sint32 v)
-{
-	while(v)
-	{
-		if(v&1)
-		{
-			v>>=1;
-			if(v)
-				return false;
-		}
-		else
-			v>>=1;
-	}
-
-	return true;
-}
-
-
-
-/*-------------------------------------------------------------------*\
-							getNextPowerOf2
-\*-------------------------------------------------------------------*/
-uint32 getNextPowerOf2(uint32 v)
-{
-	if(v==0) return v;
-	
-	uint32 p = 2;
-	while(p<v)
-	{
-		p*=2;
-	}
-	return p;
-}
-
-
-
-
-
 
 
 
@@ -349,9 +304,9 @@ bool CBitmap::alphaToRGBA()
 
 		for(i=0; i<_Data[m].size(); i++)
 		{
-			dataTmp.push_back(0);
-			dataTmp.push_back(0);
-			dataTmp.push_back(0);
+			dataTmp.push_back(255);
+			dataTmp.push_back(255);
+			dataTmp.push_back(255);
 			dataTmp.push_back(_Data[m][i]);
 		}
 		_Data[m] = dataTmp;
@@ -1293,8 +1248,8 @@ void CBitmap::resample(sint32 nNewWidth, sint32 nNewHeight)
 		return;
 	}
 	
-	nlassert(isPowerOf2(nNewWidth));
-	nlassert(isPowerOf2(nNewHeight));
+	if(!NLMISC::isPowerOf2(nNewWidth)) return;
+	if(!NLMISC::isPowerOf2(nNewHeight)) return;
 
 	std::vector<uint8> pDestui;
 	pDestui.resize(nNewWidth*nNewHeight*4);

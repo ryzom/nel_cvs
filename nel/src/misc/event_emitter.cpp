@@ -1,7 +1,7 @@
 /** \file event_emitter.cpp
  * <File description>
  *
- * $Id: event_emitter.cpp,v 1.10 2000/11/13 14:30:06 lecroart Exp $
+ * $Id: event_emitter.cpp,v 1.11 2000/11/17 14:57:43 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,9 @@ namespace NLMISC {
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
 
+/*------------------------------------------------------------------*\
+							submitEvents()
+\*------------------------------------------------------------------*/
 void CEventEmitterWin32::submitEvents(CEventServer & server)
 {
 	MSG	msg;
@@ -49,6 +52,10 @@ void CEventEmitterWin32::submitEvents(CEventServer & server)
 
 }
 
+
+/*------------------------------------------------------------------*\
+							processMessage()
+\*------------------------------------------------------------------*/
 void CEventEmitterWin32::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, uint32 lParam, CEventServer *server)
 {
 	if (!server)

@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.7 2000/11/14 14:55:17 lecroart Exp $
+ * $Id: bitmap.h,v 1.8 2000/11/17 14:58:06 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,21 +64,6 @@ const uint8	MAX_MIPMAP = 12;
 
 
 
-/** 
- * To know if the value is a power of two.
- * \param v an integer.
- * \return true if value is a power of 2, else return false.
- */
-bool isPowerOf2(sint32 v);
-
-
-/** return the power of 2 higher than the value
- * \param v an integer.
- * \return the power of 2.
- */
-uint32 getNextPowerOf2(uint32 v);
-
-
 
 
 /**
@@ -104,8 +89,6 @@ private :
 	 * \param n0 first integer
 	 * \param n1 second integer
 	 * \param coef coefficient for the first integer (must be in [0,256])
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */
 	uint32 blend(uint32 &n0, uint32 &n1, uint32 coef0);
 
@@ -117,8 +100,6 @@ private :
 	 * _MipMapCount include the initial image.
 	 * \param IStream The stream must be in reading mode.
 	 * \return image depth
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 * \throw EDDSBadHeader : surface is header is not valid.
 	 */
 	uint8 readDDS(NLMISC::IStream &f);
@@ -129,8 +110,6 @@ private :
 	 * TGA pictures can be in 24 or 32 bits, RLE or uncompressed
 	 * \param f IStream (must be a reading stream)
 	 * \return image depth if succeed, 0 else
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */
 	uint8 readTGA(	NLMISC::IStream &f);
 
@@ -148,8 +127,6 @@ private :
 	 * about luminance to alpha and alpha to luminance :
 	 *      the buffer keeps unchanged
 	 *
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */
 	///@{
 	bool convertToDXTC5();
@@ -179,15 +156,11 @@ private :
 	/** 
 	 * Decompress bitmap compressed with S3TC DXT1 algorithm. 
 	 * \param alpha if alpha is true there's alpha.
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */
 	bool decompressDXT1(bool alpha);
 
 	/** 
 	 * Decompress bitmap compressed with S3TC DXT3 algorithm. 
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 * \throw EAllocationFailure : can't allocate memory.
 	 */
 	bool decompressDXT3();
@@ -195,8 +168,6 @@ private :
 
 	/** 
 	 * Decompress bitmap compressed with S3TC DXT3 algorithm. 
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 * \throw EAllocationFailure : can't allocate memory.
 	 */
 	bool decompressDXT5();
@@ -206,8 +177,6 @@ private :
 	 * Extracting RGBA infos from a 16bits word. (used by S3TC decompression)
 	 * \param color a 16bits integer
 	 * \param r a CRGBA
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */
 	void uncompress(uint16 color, NLMISC::CRGBA &);
 
@@ -220,8 +189,6 @@ private :
 	 * \param nSrcHeight original height
 	 * \param nDestWidth width after resample
 	 * \param nDestHeight height after resample
-	 * \author Cyril Corvazier, integrated by Stephane Coutelas
-	 * \date 2000
 	 */	
 	void resamplePicture32 (const NLMISC::CRGBA *pSrc, NLMISC::CRGBA *pDest, 
 							 sint32 nSrcWidth, sint32 nSrcHeight, 
@@ -258,8 +225,6 @@ public:
 	 * uncompressed TGA (24 and 32 bits).
 	 * \param IStream The stream must be in reading mode.
 	 * \return image depth (24 or 32), or 0 if load failed
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 * \throw ESeekFailed : seek has failed
 	 */
 	uint8 load(NLMISC::IStream &f);
@@ -268,8 +233,6 @@ public:
 	 * Return the pixels buffer of the image, or of one of its mipmap.
 	 * Return a reference of an array in pixel format get with getPixelFormat().
 	 * \return vector<uint8>& RGBA pixels
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	///@{
 	std::vector<uint8>& getPixels(uint32 numMipMap = 0) 
@@ -290,8 +253,6 @@ public:
 	 * conversion to RGBA always work. No-op if already RGBA.
 	 * \param type new type for the bitmap
 	 * \return true if conversion succeeded, false else
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */
 	bool convertToType (TType type);
 
@@ -300,8 +261,6 @@ public:
 	/** 
 	 * Return the format of pixels stored at the present time in the object buffer.
 	 * \return Pixel format (DXTC1,DXTC1A, DXTC3, DXTC5, PIC_TGA, PIC_RGBA)
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	TType getPixelFormat() const
 	{
@@ -313,8 +272,6 @@ public:
 	 * Return the image width, or a mipmap width.
 	 * \param mipMap mipmap level 
 	 * \return image width (0 if mipmap not found)
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	uint32 getWidth(uint32 numMipMap = 0) const;
 
@@ -323,8 +280,6 @@ public:
 	 * Return the image height, or a mipmap height.
 	 * \param mipMap mipmap level 
 	 * \return image height (0 if mipmap not found)
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	uint32 getHeight(uint32 numMipMap = 0) const;
 
@@ -333,8 +288,6 @@ public:
 	 * Return the size (in pixels) of the image: <=> getHeight()*getWidth().
 	 * \param mipMap mipmap level 
 	 * \return image size (0 if mipmap not found)
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	uint32 getSize(uint32 numMipMap = 0) const;
 
@@ -342,8 +295,6 @@ public:
 	/** 
 	 * Return the number of mipmaps.
 	 * \return number of mipmaps
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	uint32 getMipMapCount() const
 	{
@@ -353,16 +304,12 @@ public:
 
 	/** 
 	 * Build the mipmaps of the bitmap if they don't exist.
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void buildMiMaps();
 
 
 	/** 
 	 * Reset the buffer. Mipmaps are deleted and bitmap is not valid anymore.
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void reset();
 	
@@ -372,8 +319,6 @@ public:
 	 * after resampling.
 	 * \param nNewWidth width after resample
 	 * \param nNewHeight height after resample
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	void resample (sint32 nNewWidth, sint32 nNewHeight);
 
@@ -384,8 +329,6 @@ public:
 	 * \param f IStream (must be a reading stream)
 	 * \param d depth : 24 or 32
 	 * \return 1 if succeed, 0 else
-	 * \author Stephane Coutelas
-	 * \date 2000
 	 */	
 	uint32 writeTGA(NLMISC::IStream &f, uint32 d);
 

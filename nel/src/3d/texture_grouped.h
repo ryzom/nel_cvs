@@ -1,7 +1,7 @@
 /** \file texture_grouped.h
  * <File description>
  *
- * $Id: texture_grouped.h,v 1.2 2001/06/27 16:55:55 vizerie Exp $
+ * $Id: texture_grouped.h,v 1.3 2002/02/15 17:13:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,8 +35,8 @@
 namespace NL3D {
 
 
-using NLMISC::CSmartPtr ;
-using NLMISC::CUV ;
+using NLMISC::CSmartPtr;
+using NLMISC::CUV;
 
 /**
  * This kind texture is used for grouping several other textures. Each texture must have the same size. 
@@ -51,23 +51,21 @@ class CTextureGrouped : public ITexture
 public:
 
 	/// default ctor. by default, there are no texture present	 	
-	CTextureGrouped() ;
+	CTextureGrouped();
 
 	/// copy ctor	
-	CTextureGrouped(const CTextureGrouped &src) ;
+	CTextureGrouped(const CTextureGrouped &src);
 	
 
 	/// = operator
-	CTextureGrouped &operator=(const CTextureGrouped &src) ;
-
-
+	CTextureGrouped &operator=(const CTextureGrouped &src);
 
 	/** Check if all the textures in a tab have the same size and the same pixel format	
 	 *  \param textureTab : pointer to a texture list*
 	 *  \nbTex the number of textures in the list (>0)
 	 *  \see setTextures()
 	 */
-	bool areValid(CSmartPtr<ITexture> *textureTab, uint nbTex) ;
+	bool areValid(CSmartPtr<ITexture> *textureTab, uint nbTex);
 
 	/** This set the textures to be used. They all must have the same size.
 	 *  An assertion is thrown otherwise.	 
@@ -76,7 +74,7 @@ public:
 	 *  \nbTex the number of textures in the list (>0)
 	 *  \see haveValidSizes()
 	 */
-	void setTextures(CSmartPtr<ITexture> *textureTab, uint nbTex) ;
+	void setTextures(CSmartPtr<ITexture> *textureTab, uint nbTex);
 	
 
 	/// Retrieve the number of textures grouped in this one
@@ -88,10 +86,10 @@ public:
 	 *  \see getNbTextures()
 	 */
 
-	void getTextures(CSmartPtr<ITexture> *textureTab) const ;
+	void getTextures(CSmartPtr<ITexture> *textureTab) const;
 
 	// get a texture in the list
-	CSmartPtr<ITexture> getTexture(uint32 index) { return _Textures[index] ; }
+	CSmartPtr<ITexture> getTexture(uint32 index) { return _Textures[index]; }
 	
 	/** Get the U-delta and V delta in the groupedTexture for one unit texture (they all have the same size).	 
 	 *  return (0, 0) if no textures have been set
@@ -99,21 +97,21 @@ public:
 
 	const CUV &getUVDelta(void) const
 	{
-		return _DeltaUV ;
+		return _DeltaUV;
 	}
 
 	/// Get the origin UV for one texture. Its index is the same than in the tab that was sent to setTextures()
 	const CUV &getUV(uint32 index) const
 	{
-		return _TexUVs[index].uv0 ;
+		return _TexUVs[index].uv0;
 	}
 
 
 	/** 
 	 * sharing system.	 
 	 */	
-	virtual bool			supportSharing() const ;
-	virtual std::string		getShareName() const ;
+	virtual bool			supportSharing() const;
+	virtual std::string		getShareName() const;
 
 
 	/** 
@@ -122,28 +120,28 @@ public:
 	void doGenerate();
 
 	/// serialization
-	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
+	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 
 
 	/// a group of 4 uvs
 	struct TFourUV
 	{
-		CUV uv0, uv1, uv2, uv3 ;
-	} ;
+		CUV uv0, uv1, uv2, uv3;
+	};
 
 	// a list of uv's
-	typedef std::vector< TFourUV > TFourUVList ;
+	typedef std::vector< TFourUV > TFourUVList;
 
 	// Get a tab of 4 UVs for a texture in the group : 0 = top-left, 1 = top-right, 2 = bottom-right, 3 = bottom-left
 	const TFourUV &getUVQuad(uint texIndex)
 	{
 		if (texIndex < _NbTex)
 		{
-			return _TexUVs[texIndex] ;
+			return _TexUVs[texIndex];
 		}
 		else
 		{
-			return _TexUVs[texIndex % _NbTex] ;
+			return _TexUVs[texIndex % _NbTex];
 		}
 	}
 
@@ -153,25 +151,25 @@ public:
 protected:
 
 	/// number of textures in the group
-	uint32 _NbTex ;
+	uint32 _NbTex;
 
 	
 
 	/// pointers to the original textures
-	typedef std::vector< CSmartPtr<ITexture> > TTexList ;
-	TTexList _Textures ;
+	typedef std::vector< CSmartPtr<ITexture> > TTexList;
+	TTexList _Textures;
 
 	/// uv delta for one texture in the group
-	CUV _DeltaUV ;
+	CUV _DeltaUV;
 
 	/// the UVs for each texture in the group
 
 
-	TFourUVList _TexUVs ;
+	TFourUVList _TexUVs;
 
 
 	// Copy this class attributes from src; Used by the = operator and the copy ctor
-	void duplicate(const CTextureGrouped &src) ;
+	void duplicate(const CTextureGrouped &src);
 
 };
 

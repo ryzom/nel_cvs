@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.5 2001/07/18 17:14:35 cado Exp $
+ * $Id: audio_mixer_user.h,v 1.6 2001/07/19 12:49:41 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,6 +82,10 @@ public:
 
 	
 	/** Initialization
+	 *
+	 * In case of failure, can throw one of these ESoundDriver (Exception) objects:
+	 * ESoundDriverNotFound, ESoundDriverCorrupted, ESoundDriverOldVersion, ESoundDriverUnknownVersion.
+	 *
 	 * The sources will be auto-balanced every "balance_period" calls to update()
 	 * (set 0 for "never auto-balance")
 	 */

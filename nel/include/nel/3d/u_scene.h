@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.52 2004/05/05 17:05:14 berenguier Exp $
+ * $Id: u_scene.h,v 1.51 2004/04/13 17:01:41 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,7 +37,6 @@ namespace NLMISC
 class CRGBA;
 class CVector;
 class CPolygon2D;
-class CMatrix;
 };
 
 namespace NL3D

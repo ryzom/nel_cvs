@@ -1,7 +1,7 @@
 /** \file water_shape.h
  * <File description>
  *
- * $Id: water_shape.h,v 1.15 2004/05/05 17:08:11 berenguier Exp $
+ * $Id: water_shape.h,v 1.14 2004/03/19 10:11:36 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -135,12 +135,9 @@ public:
 		/// get the polygon used by this shape, in the object space
 		const NLMISC::CPolygon2D &getShape() const { return _Poly; }
 
-		/// get the polygon this shape, in world space, according to its default position
+		/// get the polygon this shape, in world space
 		void getShapeInWorldSpace(NLMISC::CPolygon &poly) const;
 
-		/// get the polygon of this shape, in world space, according to a user matrix
-		void getShapeInWorldSpace(NLMISC::CPolygon &poly, const NLMISC::CMatrix &objMat) const;
-		
 		/// Set a factor that is applied to waves height when they are displayed. default is 1
 		void	setWaveHeightFactor(float f) { _WaveHeightFactor = f; }
 

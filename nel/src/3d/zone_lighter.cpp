@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.37 2004/05/05 17:08:11 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.36 2004/03/19 16:31:27 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3030,7 +3030,7 @@ void CZoneLighter::makeQuadGridFromWaterShapes(NLMISC::CAABBox zoneBBox)
 		/// test if it intesect the zone bbox
 		if (zoneBBox.intersect(currBB))
 		{
-			_WaterShapeQuadGrid.insert(currBB.getMin(), currBB.getMax(), *it);
+			_WaterShapeQuadGrid.insert(currBB.getMin(), currBB.getMax(), NLMISC::safe_cast<CWaterShape *>(it->Shape));
 		}
 		progress("Building quadtree from water surfaces", (float) count / totalCount);
 	}
@@ -3581,8 +3581,8 @@ void CZoneLighter::computeTileFlagsForPositionTowardWater(const CLightDesc &ligh
 		TWaterShapeQuadGrid::CIterator qgIt;
 		for (qgIt = _WaterShapeQuadGrid.begin(); qgIt != _WaterShapeQuadGrid.end(); ++qgIt)
 		{
-			CWaterShape		*waterShape= safe_cast<CWaterShape*>((*qgIt).Shape);
-			waterShape->getShapeInWorldSpace(waterPoly, (*qgIt).MT);
+			
+			(*qgIt)->getShapeInWorldSpace(waterPoly);
 			NLMISC::CPolygon2D poly(waterPoly);
 			if (poly.intersect(tilePoly)) // above or below a water surface ?		
 			{

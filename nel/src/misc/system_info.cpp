@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.25 2004/05/05 14:42:04 corvazier Exp $
+ * $Id: system_info.cpp,v 1.24 2004/05/03 09:25:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -434,9 +434,6 @@ string CSystemInfo::getProc ()
 
 
 #endif
-
-	// Remove begining spaces
-	ProcString = ProcString.substr (ProcString.find_first_not_of (" "));
 
 	return ProcString;
 }
@@ -902,14 +899,7 @@ bool CSystemInfo::getVideoInfo (std::string &deviceName, uint64 &driverVersion)
 									{
 										// value got the path to the driver
 										string driverName = value;
-										if (atleastNT4)
-										{
-											nlverify (GetWindowsDirectory(value, 512));
-										}
-										else
-										{
-											nlverify (GetSystemDirectory(value, 512));
-										}
+										nlverify (GetWindowsDirectory(value, 512));
 										driverName = string (value) + "\\" + driverName;
 
 										DWORD dwHandle;

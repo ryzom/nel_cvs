@@ -1,7 +1,7 @@
 /** \file track.h
  * class ITrack
  *
- * $Id: track.h,v 1.14 2001/03/16 16:42:32 berenguier Exp $
+ * $Id: track.h,v 1.15 2001/03/19 09:30:40 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -222,7 +222,7 @@ private:
 protected:
 	/**
 	  * Precalc keyframe runtime infos for interpolation (OODTime...). All keys should be processed.
-	  * This is called by evalKey when necessary. Deriver should call ITrackKeyFramer::compile(), to compile basic
+	  * This is called by eval when necessary. Deriver should call ITrackKeyFramer::compile(), to compile basic
 	  * Key runtime info.
 	  */
 	virtual void compile   ()
@@ -383,7 +383,7 @@ public:
 		{
 			// lerp from previous to cur.
 			date-= datePrevious;
-			date/= (dateNext-datePrevious);
+			date*= previous->OODeltaTime;
 			NLMISC::clamp(date, 0,1);
 			
 			_Value.Value= (T) (previous->Value*(1.f-date) + next->Value*date);
@@ -497,7 +497,7 @@ public:
 		{
 			// slerp from previous to cur.
 			date-= datePrevious;
-			date/= (dateNext-datePrevious);
+			date*= previous->OODeltaTime;
 			NLMISC::clamp(date, 0,1);
 			_Value.Value= NLMISC::CQuat::slerp(previous->Value, next->Value, date);
 		}
@@ -579,7 +579,7 @@ public:
 		{
 			// lerp from previous to cur.
 			date-= datePrevious;
-			date/= (dateNext-datePrevious);
+			date*= previous->OODeltaTime;
 			NLMISC::clamp(date, 0,1);
 			
 			// blend.
@@ -635,11 +635,11 @@ public:
 		{
 			// lerp from previous to cur.
 			date-= datePrevious;
-			date/= (dateNext-datePrevious);
+			date*= previous->OODeltaTime;
 			NLMISC::clamp(date, 0,1);
 			
 			// blend.
-			_Value.Value= (sint32) (0.5+floor (((float)previous->Value*(1.f-date) + (float)next->Value*date)));
+			_Value.Value= (sint32) floor ( 0.5+((float)previous->Value*(1.f-date) + (float)next->Value*date));
 		}
 		else
 		{

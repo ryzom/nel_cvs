@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.2 2001/06/18 16:32:38 vizerie Exp $
+ * $Id: particle_system.h,v 1.3 2001/06/25 13:44:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,10 +138,7 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		* Everything is saved, except for the fontManager and the fontGenerator
 		* They must be set again if the edition pass, that show forces and zone, is used
 		*/
-		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
-		
-
-	
+		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;		
 		
 		
 	protected:
@@ -164,11 +161,19 @@ class CParticleSystem /*: public IModel, NLMISC::IEventEmitter*/
 
 public:
 	/**
-	* execute all the process of the system
+	* execute all the process of the system. It uses the driver that was set by a call to setDriver
 	* \param ellapsedTime The ellapsed time since the last call
     * \param pass the pass to be executed
+	* \see setDriver
 	*/
 	virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
+
+
+	/// set the driver use to render the system
+	void setDriver(IDriver *driver) { _Driver = driver ; }
+
+	/// return the driver that will be used for rendering
+	IDriver *getDriver(void) { return _Driver ; }
 
 	/// serialize this particle system
 	void serial(NLMISC::IStream &f)  throw(NLMISC::EStream) ;
@@ -319,6 +324,8 @@ public:
 		
 
 protected:
+	// the driver used for rendering
+	IDriver *_Driver ;
 		
 	typedef std::vector< CParticleSystemProcess *> TProcessVect ;
 	TProcessVect _ProcessVect ;

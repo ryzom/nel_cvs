@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.16 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: particle_system.cpp,v 1.17 2001/06/25 13:44:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,7 +96,7 @@ void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
  */
 CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 									, _Date(0), _Scene(NULL), _CurrEditedElementLocated(NULL)
-									, _CurrEditedElementIndex(0)
+									, _CurrEditedElementIndex(0), _Driver(NULL)
 {
 }
 
@@ -175,6 +175,9 @@ void CParticleSystem::remove(CParticleSystemProcess *ptr)
 	TProcessVect::iterator it = std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) ;
 	nlassert(it != _ProcessVect.end() ) ;	
 	_ProcessVect.erase(it) ;
+	
+	
+
 	delete ptr ;
 }
 

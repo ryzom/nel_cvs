@@ -675,7 +675,9 @@
 #define IDC_SSD_BUTTON_REDO             1426
 #define IDC_SSD_BUTTON_MIRROR           1427
 #define IDC_RIBBON_ORIENTATION          1428
+#define IDC_SSD_BUTTON_LOAD_SCALE       1428
 #define IDC_ZALIGN                      1429
+#define IDC_SSD_BUTTON_SAVE_SCALE       1429
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002

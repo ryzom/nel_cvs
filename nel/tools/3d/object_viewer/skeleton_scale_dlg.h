@@ -106,6 +106,8 @@ protected:
 	afx_msg void OnSsdButtonSave();
 	afx_msg void OnSsdButtonSaveas();
 	afx_msg void OnSsdButtonMirror();
+	afx_msg void OnSsdButtonSaveScale();
+	afx_msg void OnSsdButtonLoadScale();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -162,7 +164,8 @@ private:
 	
 	void		applyScaleSlider(sint scrollValue);
 	void		onSliderReleased(TScaleId sid);
-	void		applyToSkeleton();
+	void		applyMirrorToSkeleton();
+	void		applySkeletonToMirror();
 	void		refreshTextViews();
 	void		refreshTextViewWithScale(TScaleId sid, float scale, float diff);
 	void		roundClampScale(NLMISC::CVector &v) const;
@@ -177,7 +180,9 @@ private:
 	bool		saveCurrentInStream(NLMISC::IStream &f);
 	void		refreshSaveButton();
 	sint		getBoneForMirror(uint boneId, std::string &mirrorName);
-
+	bool		saveSkelScaleInStream(NLMISC::IStream &f);
+	bool		loadSkelScaleFromStream(NLMISC::IStream &f);
+	
 	/// \name undo/redo mgt
 	// @{
 	enum	{MaxUndoRedo= 100};

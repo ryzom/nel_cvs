@@ -5,6 +5,7 @@
 #include "object_viewer.h"
 #include "skeleton_scale_dlg.h"
 #include "3d/skeleton_shape.h"
+#include "nel/misc/algo.h"
 
 
 // ***************************************************************************
@@ -131,6 +132,8 @@ BEGIN_MESSAGE_MAP(CSkeletonScaleDlg, CDialog)
 	ON_BN_CLICKED(IDC_SSD_BUTTON_SAVE, OnSsdButtonSave)
 	ON_BN_CLICKED(IDC_SSD_BUTTON_SAVEAS, OnSsdButtonSaveas)
 	ON_BN_CLICKED(IDC_SSD_BUTTON_MIRROR, OnSsdButtonMirror)
+	ON_BN_CLICKED(IDC_SSD_BUTTON_SAVE_SCALE, OnSsdButtonSaveScale)
+	ON_BN_CLICKED(IDC_SSD_BUTTON_LOAD_SCALE, OnSsdButtonLoadScale)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -162,14 +165,8 @@ void		CSkeletonScaleDlg::setSkeletonToEdit(NL3D::CSkeletonModel *skel, const std
 	if(_SkeletonModel)
 	{
 		_Bones.resize(_SkeletonModel->Bones.size());
-		for(uint i=0;i<_SkeletonModel->Bones.size();i++)
-		{
-			// mul by precision, and round
-			_Bones[i].SkinScale= _SkeletonModel->Bones[i].getSkinScale() * NL_SSD_SCALE_PRECISION;
-			_Bones[i].BoneScale= _SkeletonModel->Bones[i].getScale() * NL_SSD_SCALE_PRECISION;
-			roundClampScale(_Bones[i].SkinScale);
-			roundClampScale(_Bones[i].BoneScale);
-		}
+		// copy from skel to mirror
+		applySkeletonToMirror();
 	}
 
 	// **** reset bone bbox here
@@ -379,7 +376,7 @@ void		CSkeletonScaleDlg::applyScaleSlider(sint scrollValue)
 	}
 
 	// update the skeleton view
-	applyToSkeleton();
+	applyMirrorToSkeleton();
 
 	// refresh text views
 	refreshTextViews();
@@ -391,7 +388,7 @@ void		CSkeletonScaleDlg::applyScaleSlider(sint scrollValue)
 }
 
 // ***************************************************************************
-void		CSkeletonScaleDlg::applyToSkeleton()
+void		CSkeletonScaleDlg::applyMirrorToSkeleton()
 {
 	if(_SkeletonModel)
 	{
@@ -401,6 +398,24 @@ void		CSkeletonScaleDlg::applyToSkeleton()
 			// unmul from precision
 			_SkeletonModel->Bones[i].setScale(_Bones[i].BoneScale / NL_SSD_SCALE_PRECISION);
 			_SkeletonModel->Bones[i].setSkinScale(_Bones[i].SkinScale / NL_SSD_SCALE_PRECISION);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void		CSkeletonScaleDlg::applySkeletonToMirror()
+{
+	if(_SkeletonModel)
+	{
+		nlassert(_SkeletonModel->Bones.size()==_Bones.size());
+		for(uint i=0;i<_SkeletonModel->Bones.size();i++)
+		{
+			// mul by precision, and round
+			_Bones[i].SkinScale= _SkeletonModel->Bones[i].getSkinScale() * NL_SSD_SCALE_PRECISION;
+			_Bones[i].BoneScale= _SkeletonModel->Bones[i].getScale() * NL_SSD_SCALE_PRECISION;
+			roundClampScale(_Bones[i].SkinScale);
+			roundClampScale(_Bones[i].BoneScale);
 		}
 	}
 }
@@ -720,7 +735,7 @@ void CSkeletonScaleDlg::updateScalesFromText(UINT ctrlId)
 	pushUndoState(precState, true);
 	
 	// mirror changed => update skeleton
-	applyToSkeleton();
+	applyMirrorToSkeleton();
 }
 
 
@@ -941,7 +956,7 @@ void		CSkeletonScaleDlg::undo()
 		_UndoQueue.pop_back();
 
 		// refresh display
-		applyToSkeleton();
+		applyMirrorToSkeleton();
 		refreshTextViews();
 		applySelectionToView();
 
@@ -970,7 +985,7 @@ void		CSkeletonScaleDlg::redo()
 		_RedoQueue.pop_front();
 		
 		// refresh display
-		applyToSkeleton();
+		applyMirrorToSkeleton();
 		refreshTextViews();
 		applySelectionToView();
 
@@ -1081,7 +1096,7 @@ void CSkeletonScaleDlg::OnSsdButtonMirror()
 	}
 
 	// refresh display
-	applyToSkeleton();
+	applyMirrorToSkeleton();
 	refreshTextViews();
 	
 	// if some change, bkup for undo/redo
@@ -1179,5 +1194,153 @@ void	CSkeletonScaleDlg::drawSelection()
 		driver->setupModelMatrix(NLMISC::CMatrix::Identity);
 		NL3D::CDRU::drawWiredBox(corner, finalMat.getI(), finalMat.getJ(), finalMat.getK(), NLMISC::CRGBA::White, *driver);
 	}
+}
+
+
+// ***************************************************************************
+void CSkeletonScaleDlg::OnSsdButtonSaveScale() 
+{
+	// if no skeleton edited, quit
+	if(!_SkeletonModel)
+		return;
+	
+	// choose the file
+	std::string	defaultFileName= _SkeletonFileName;
+	NLMISC::strFindReplace(defaultFileName, ".skel", ".scale");
+	CFileDialog fd(FALSE, "scale", defaultFileName.c_str(), OFN_OVERWRITEPROMPT, "SkelScaleFiles (*.scale)|*.scale|All Files (*.*)|*.*||", this) ;
+	fd.m_ofn.lpstrTitle= "Save As Skeleton Scale File";
+	if (fd.DoModal() == IDOK)
+	{
+		NLMISC::COFile	f;
+		if( f.open((const char*)fd.GetPathName()) )
+		{
+			saveSkelScaleInStream(f);
+		}
+		else
+		{
+			MessageBox("Failed to open file for write!");
+		}
+	}
+}
+
+// ***************************************************************************
+void CSkeletonScaleDlg::OnSsdButtonLoadScale() 
+{
+	// if no skeleton edited, quit
+	if(!_SkeletonModel)
+		return;
+	
+	// choose the file
+	std::string	defaultFileName= _SkeletonFileName;
+	NLMISC::strFindReplace(defaultFileName, ".skel", ".scale");
+	CFileDialog fd(TRUE, "scale", defaultFileName.c_str(), 0, "SkelScaleFiles (*.scale)|*.scale|All Files (*.*)|*.*||", this) ;
+	fd.m_ofn.lpstrTitle= "Load a Skeleton Scale File";
+	if (fd.DoModal() == IDOK)
+	{
+		NLMISC::CIFile	f;
+		if( f.open((const char*)fd.GetPathName()) )
+		{
+			loadSkelScaleFromStream(f);
+		}
+		else
+		{
+			MessageBox("Failed to open file for read!");
+		}
+	}
+}
+
+
+// ***************************************************************************
+struct CBoneScaleInfo
+{
+	std::string	Name;
+	NLMISC::CVector	Scale;
+	NLMISC::CVector	SkinScale;
+
+	void	serial(NLMISC::IStream &f)
+	{
+		sint32	ver= f.serialVersion(0);
+		f.serial(Name, Scale, SkinScale);
+	}
+};
+
+// ***************************************************************************
+bool	CSkeletonScaleDlg::saveSkelScaleInStream(NLMISC::IStream &f)
+{
+	try
+	{
+		nlassert(_SkeletonModel);
+		
+		// Copies bone scales from the model 
+		std::vector<CBoneScaleInfo>	boneScales;
+		boneScales.resize(_SkeletonModel->Bones.size());
+		for(uint i=0;i<boneScales.size();i++)
+		{
+			NL3D::CBone		&bone= _SkeletonModel->Bones[i];
+			CBoneScaleInfo	&boneScale= boneScales[i];
+			
+			// get scale info from current edited skeleton
+			boneScale.Name= bone.getBoneName();
+			boneScale.Scale= bone.getScale();
+			boneScale.SkinScale= bone.getSkinScale();
+		}
+		
+		// save the file
+		sint32	ver= f.serialVersion(0);
+		f.serialCont(boneScales);
+	}
+	catch(NLMISC::EStream &)
+	{
+		MessageBox("Failed to save file!");
+		return false;
+	}
+	
+	return true;
+}
+
+// ***************************************************************************
+bool	CSkeletonScaleDlg::loadSkelScaleFromStream(NLMISC::IStream &f)
+{
+	try
+	{
+		nlassert(_SkeletonModel);
+		
+		// load the file
+		sint32	ver= f.serialVersion(0);
+		std::vector<CBoneScaleInfo>	boneScales;
+		f.serialCont(boneScales);
+
+		// apply to the current skeleton
+		for(uint i=0;i<boneScales.size();i++)
+		{
+			sint32	boneId= _SkeletonModel->getBoneIdByName(boneScales[i].Name);
+			if(boneId>=0 && boneId<(sint32)_SkeletonModel->Bones.size())
+			{
+				CBoneScaleInfo	&boneScale= boneScales[i];
+				_SkeletonModel->Bones[boneId].setScale(boneScale.Scale);
+				_SkeletonModel->Bones[boneId].setSkinScale(boneScale.SkinScale);
+			}
+		}
+
+		// Bkup _Bones, for undo
+		static TBoneMirrorArray		precState;
+		precState= _Bones;
+		
+		// Then reapply to the mirror
+		applySkeletonToMirror();
+
+		// change => must save
+		pushUndoState(precState, true);
+		
+		// and update display
+		refreshTextViews();
+	}
+	catch(NLMISC::EStream &)
+	{
+		MessageBox("Failed to save file!");
+		return false;
+	}
+	
+	return true;
 }
 

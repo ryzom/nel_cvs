@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.cpp
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.cpp,v 1.20 2004/09/23 18:50:16 berenguier Exp $
+ * $Id: coarse_mesh_manager.cpp,v 1.21 2004/10/19 12:40:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,8 +70,9 @@ CCoarseMeshManager::CCoarseMeshManager()
 	_VBuffer.setNumVertices(NL3D_COARSEMESH_VERTEXBUFFER_SIZE);
 	_VBuffer.setName("CCoarseMeshManager");
 	_VBuffer.setPreferredMemory(CVertexBuffer::AGPVolatile, false);
+	_Triangles.setFormat(NL_COARSE_MESH_INDEX_FORMAT);
 	_Triangles.setNumIndexes(NL3D_COARSEMESH_TRIANGLE_SIZE*3);
-	_Triangles.setPreferredMemory(CIndexBuffer::RAMVolatile, false); // TODO : see if agp index is better
+	_Triangles.setPreferredMemory(CIndexBuffer::RAMVolatile, false); // TODO : see if agp index is better	
 	_CurrentNumVertices= 0;
 	_CurrentNumTriangles= 0;
 	NL_SET_IB_NAME(_Triangles, "CCoarseMeshManager");	
@@ -86,7 +87,7 @@ void CCoarseMeshManager::setTextureFile (const char* file)
 
 // ***************************************************************************
 
-bool CCoarseMeshManager::addMesh (uint numVertices, const uint8 *vBuffer, uint numTris, const uint32 *indexBuffer)
+bool CCoarseMeshManager::addMesh (uint numVertices, const uint8 *vBuffer, uint numTris, const TCoarseMeshIndexType *indexBuffer)
 {	
 	H_AUTO_USE( NL3D_StaticLod_AddMesh );
 
@@ -148,8 +149,8 @@ void CCoarseMeshManager::flushRender (IDriver *drv)
 		currentNumVertices+= it->NumVertices;
 		
 		// Copy tris to triangles, adding baseVertex to index		
-		uint32			*triDst= _IBA.getPtr()+currentNumTriangles*3;
-		const uint32	*triSrc= it->IndexBuffer;
+		TCoarseMeshIndexType	*triDst= (TCoarseMeshIndexType *) _IBA.getPtr()+currentNumTriangles*3;
+		const TCoarseMeshIndexType	*triSrc= it->IndexBuffer;
 		uint	numIdx= it->NumTris*3;
 		// NB: for the majority of CoarseMesh (4 faces==48 bytes of indices), not interressant to use CFastMem::precache()
 		for(;numIdx>0;numIdx--, triSrc++, triDst++)

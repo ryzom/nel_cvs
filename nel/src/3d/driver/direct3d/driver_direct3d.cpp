@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.23 2004/10/05 17:17:47 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.24 2004/10/19 12:42:36 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -41,6 +41,8 @@
 
 using namespace std;
 using namespace NLMISC;
+
+
 
 #define RASTERIZER D3DDEVTYPE_HAL
 //#define RASTERIZER D3DDEVTYPE_REF
@@ -133,7 +135,7 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 // ***************************************************************************
 
 CDriverD3D::CDriverD3D()
-{
+{	
 	_SwapBufferCounter = 0;
 	_CurrentOcclusionQuery = NULL;
 	_D3D = NULL;
@@ -221,10 +223,14 @@ CDriverD3D::CDriverD3D()
 	_VolatileVertexBufferRAM[1]	= new CVolatileVertexBuffer;
 	_VolatileVertexBufferAGP[0]	= new CVolatileVertexBuffer;
 	_VolatileVertexBufferAGP[1]	= new CVolatileVertexBuffer;
-	_VolatileIndexBufferRAM[0]= new CVolatileIndexBuffer;
-	_VolatileIndexBufferRAM[1]= new CVolatileIndexBuffer;
-	_VolatileIndexBufferAGP[0]= new CVolatileIndexBuffer;
-	_VolatileIndexBufferAGP[1]= new CVolatileIndexBuffer;	
+	_VolatileIndexBuffer16RAM[0]= new CVolatileIndexBuffer;	
+	_VolatileIndexBuffer16RAM[1]= new CVolatileIndexBuffer;	
+	_VolatileIndexBuffer16AGP[0]= new CVolatileIndexBuffer;
+	_VolatileIndexBuffer16AGP[1]= new CVolatileIndexBuffer;
+	_VolatileIndexBuffer32RAM[0]= new CVolatileIndexBuffer;	
+	_VolatileIndexBuffer32RAM[1]= new CVolatileIndexBuffer;	
+	_VolatileIndexBuffer32AGP[0]= new CVolatileIndexBuffer;
+	_VolatileIndexBuffer32AGP[1]= new CVolatileIndexBuffer;
 	_MustRestoreLight = false;	
 	_Lost = false;
 	_SceneBegun = false;	
@@ -234,6 +240,8 @@ CDriverD3D::CDriverD3D()
 	_MaxNumPerStageConstantUnlighted = 0;
 	D3DXMatrixIdentity(&_D3DMatrixIdentity);
 	_FogColor = 0xffffffff;
+	_CurrIndexBufferFormat = CIndexBuffer::IndicesUnknownFormat;
+	_IsGeforce = false;
 }
 
 // ***************************************************************************
@@ -251,10 +259,14 @@ CDriverD3D::~CDriverD3D()
 	delete _VolatileVertexBufferRAM[1];
 	delete _VolatileVertexBufferAGP[0];
 	delete _VolatileVertexBufferAGP[1];
-	delete _VolatileIndexBufferRAM[0];
-	delete _VolatileIndexBufferRAM[1];
-	delete _VolatileIndexBufferAGP[0];
-	delete _VolatileIndexBufferAGP[1];
+	delete _VolatileIndexBuffer16RAM[0];
+	delete _VolatileIndexBuffer16RAM[1];
+	delete _VolatileIndexBuffer16AGP[0];
+	delete _VolatileIndexBuffer16AGP[1];
+	delete _VolatileIndexBuffer32RAM[0];
+	delete _VolatileIndexBuffer32RAM[1];
+	delete _VolatileIndexBuffer32AGP[0];
+	delete _VolatileIndexBuffer32AGP[1];
 }
 
 // ***************************************************************************
@@ -265,9 +277,12 @@ void CDriverD3D::resetRenderVariables()
 	
 	uint i;
 	for (i=0; i<MaxRenderState; i++)
-	{
-		if (_RenderStateCache[i].Value != 0xcccccccc)
-			touchRenderVariable (&(_RenderStateCache[i]));
+	{		
+		if (_RenderStateCache[i].ValueSet)
+		{
+			// here, don't use 0xcccccccc, because it is a valid value for D3DRS_TFACTOR
+			touchRenderVariable (&(_RenderStateCache[i]));			
+		}		
 	}	
 
 	for (i=0; i<MaxTexture; i++)
@@ -276,7 +291,10 @@ void CDriverD3D::resetRenderVariables()
 		for (j=0; j<MaxTextureState; j++)
 		{
 			if (_TextureStateCache[i][j].Value != 0xcccccccc)
+			{
 				touchRenderVariable (&(_TextureStateCache[i][j]));
+				_TextureStateCache[i][j].DeviceValue = 0xcccccccc;
+			}
 		}
 	}
 	for (i=0; i<MaxTexture; i++)
@@ -363,14 +381,27 @@ void CDriverD3D::resetRenderVariables()
 	_VolatileVertexBufferAGP[0]->reset ();
 	_VolatileVertexBufferAGP[1]->init (vertexAgpLocation, _VolatileVertexBufferAGP[1]->Size, _VolatileVertexBufferAGP[1]->MaxSize, this);
 	_VolatileVertexBufferAGP[1]->reset ();	
-	_VolatileIndexBufferRAM[0]->init (CIndexBuffer::RAMResident, _VolatileIndexBufferRAM[0]->Size, _VolatileIndexBufferRAM[0]->MaxSize, this);
-	_VolatileIndexBufferRAM[0]->reset ();
-	_VolatileIndexBufferRAM[1]->init (CIndexBuffer::RAMResident, _VolatileIndexBufferRAM[1]->Size, _VolatileIndexBufferRAM[1]->MaxSize, this);
-	_VolatileIndexBufferRAM[1]->reset ();
-	_VolatileIndexBufferAGP[0]->init (indexAgpLocation, _VolatileIndexBufferAGP[0]->Size, _VolatileIndexBufferAGP[0]->MaxSize, this);
-	_VolatileIndexBufferAGP[0]->reset ();
-	_VolatileIndexBufferAGP[1]->init (indexAgpLocation, _VolatileIndexBufferAGP[1]->Size, _VolatileIndexBufferAGP[1]->MaxSize, this);
-	_VolatileIndexBufferAGP[1]->reset ();	
+	//
+	_VolatileIndexBuffer16RAM[0]->init (CIndexBuffer::RAMResident, _VolatileIndexBuffer16RAM[0]->Size, _VolatileIndexBuffer16RAM[0]->MaxSize, this, CIndexBuffer::Indices16);
+	_VolatileIndexBuffer16RAM[0]->reset ();
+	_VolatileIndexBuffer16RAM[1]->init (CIndexBuffer::RAMResident, _VolatileIndexBuffer16RAM[1]->Size, _VolatileIndexBuffer16RAM[1]->MaxSize, this, CIndexBuffer::Indices16);
+	_VolatileIndexBuffer16RAM[1]->reset ();
+	_VolatileIndexBuffer16AGP[0]->init (indexAgpLocation, _VolatileIndexBuffer16AGP[0]->Size, _VolatileIndexBuffer16AGP[0]->MaxSize, this, CIndexBuffer::Indices16);
+	_VolatileIndexBuffer16AGP[0]->reset ();
+	_VolatileIndexBuffer16AGP[1]->init (indexAgpLocation, _VolatileIndexBuffer16AGP[1]->Size, _VolatileIndexBuffer16AGP[1]->MaxSize, this, CIndexBuffer::Indices16);
+	_VolatileIndexBuffer16AGP[1]->reset ();
+	//
+	if (_MaxVertexIndex > 0xffff) // supports 32 bits ?
+	{
+		_VolatileIndexBuffer32RAM[0]->init (CIndexBuffer::RAMResident, _VolatileIndexBuffer32RAM[0]->Size, _VolatileIndexBuffer32RAM[0]->MaxSize, this, CIndexBuffer::Indices32);
+		_VolatileIndexBuffer32RAM[0]->reset ();
+		_VolatileIndexBuffer32RAM[1]->init (CIndexBuffer::RAMResident, _VolatileIndexBuffer32RAM[1]->Size, _VolatileIndexBuffer32RAM[1]->MaxSize, this, CIndexBuffer::Indices32);
+		_VolatileIndexBuffer32RAM[1]->reset ();
+		_VolatileIndexBuffer32AGP[0]->init (indexAgpLocation, _VolatileIndexBuffer32AGP[0]->Size, _VolatileIndexBuffer32AGP[0]->MaxSize, this, CIndexBuffer::Indices32);
+		_VolatileIndexBuffer32AGP[0]->reset ();
+		_VolatileIndexBuffer32AGP[1]->init (indexAgpLocation, _VolatileIndexBuffer32AGP[1]->Size, _VolatileIndexBuffer32AGP[1]->MaxSize, this, CIndexBuffer::Indices32);
+		_VolatileIndexBuffer32AGP[1]->reset ();
+	}
 	_ScissorTouched = true;
 }
 
@@ -383,7 +414,7 @@ void CDriverD3D::initRenderVariables()
 	for (i=0; i<MaxRenderState; i++)
 	{
 		_RenderStateCache[i].StateID = (D3DRENDERSTATETYPE)i;
-		_RenderStateCache[i].Value = 0xcccccccc;
+		_RenderStateCache[i].ValueSet = false;
 		_RenderStateCache[i].Modified = false;
 	}
 	for (i=0; i<MaxTexture; i++)
@@ -694,7 +725,7 @@ void CDriverD3D::replaceArgumentAtStage(D3DTEXTURESTAGESTATETYPE state, DWORD st
 #ifdef NL_DEBUG
 	inline
 #endif
-void CDriverD3D::replaceAllArgumentAtStage(uint stage, DWORD from, DWORD to, DWORD blendOpFrom)
+void CDriverD3D::replaceAllRGBArgumentAtStage(uint stage, DWORD from, DWORD to, DWORD blendOpFrom)
 {
 	replaceArgumentAtStage(D3DTSS_COLORARG1, stage, from, to);
 	if (_CurrentMaterialInfo->NumColorArg[stage] > 1)
@@ -705,7 +736,21 @@ void CDriverD3D::replaceAllArgumentAtStage(uint stage, DWORD from, DWORD to, DWO
 			replaceArgumentAtStage(D3DTSS_COLORARG0, stage, from, to);
 		}
 	}
-	//
+	//	
+	// Operator is D3DTOP_BLENDDIFFUSEALPHA ?
+	if (_TextureStateCache[stage][D3DTSS_COLOROP].Value == blendOpFrom)
+	{
+		setTextureState (stage, D3DTSS_COLOROP, D3DTOP_LERP);
+		setTextureState (stage, D3DTSS_COLORARG0, to|D3DTA_ALPHAREPLICATE);
+	}
+	
+}
+
+#ifdef NL_DEBUG
+	inline
+#endif
+void CDriverD3D::replaceAllAlphaArgumentAtStage(uint stage, DWORD from, DWORD to, DWORD blendOpFrom)
+{
 	replaceArgumentAtStage(D3DTSS_ALPHAARG1, stage, from, to);
 	if (_CurrentMaterialInfo->NumAlphaArg[stage] > 1)
 	{
@@ -715,16 +760,25 @@ void CDriverD3D::replaceAllArgumentAtStage(uint stage, DWORD from, DWORD to, DWO
 			replaceArgumentAtStage(D3DTSS_ALPHAARG0, stage, from, to);
 		}
 	}
-	// Operator is D3DTOP_BLENDDIFFUSEALPHA ?
-	if (_TextureStateCache[stage][D3DTSS_COLOROP].Value == blendOpFrom)
-	{
-		setTextureState (stage, D3DTSS_COLOROP, D3DTOP_LERP);
-		setTextureState (stage, D3DTSS_COLORARG0, to|D3DTA_ALPHAREPLICATE);
-	}
 	if (_TextureStateCache[stage][D3DTSS_ALPHAOP].Value == blendOpFrom)
 	{
 		setTextureState (stage, D3DTSS_ALPHAOP, D3DTOP_LERP);
 		setTextureState (stage, D3DTSS_ALPHAARG0, to);
+	}
+}
+
+#ifdef NL_DEBUG
+	inline
+#endif
+void CDriverD3D::replaceAllArgumentAtStage(uint stage, DWORD from, DWORD to, DWORD blendOpFrom)
+{	
+	if (_CurrentMaterialInfo->RGBPipe[stage])
+	{
+		replaceAllRGBArgumentAtStage(stage, from, to, blendOpFrom);
+	}
+	if (_CurrentMaterialInfo->AlphaPipe[stage])
+	{
+		replaceAllAlphaArgumentAtStage(stage, from, to, blendOpFrom);
 	}
 }
 
@@ -734,13 +788,13 @@ void CDriverD3D::replaceAllArgumentAtStage(uint stage, DWORD from, DWORD to, DWO
 	inline
 #endif
 void CDriverD3D::replaceAllArgument(DWORD from, DWORD to, DWORD blendOpFrom)
-{
-	const uint maxTexture = inlGetNumTextStages();
+{		
+	const uint maxTexture = inlGetNumTextStages();	
 	// Look for texture state
 	for (uint i=0; i<maxTexture; i++)
-	{											
-		if (_CurrentMaterialInfo->ColorOp[i] == D3DTOP_DISABLE) break;
-		replaceAllArgumentAtStage(i, from, to, blendOpFrom);
+	{				
+		if (_CurrentMaterialInfo->ColorOp[i] == D3DTOP_DISABLE) break;		
+		replaceAllArgumentAtStage(i, from, to, blendOpFrom);		
 	}
 }
 
@@ -868,28 +922,26 @@ void CDriverD3D::updateRenderVariablesInternal()
 		if (_CurrentMaterialInfo) enableVertexColorFlag = _CurrentMaterialInfo->VertexColorLighted;
 	}
 
-			
-	// Fix (one more...) for Radeon 7xxx
+				
+	if (_NbNeLTextureStages == 3)
+	{		
+		// Fix (one more...) for Radeon 7xxx
 	// Don't know why, but the lighting is broken when MULTIPLYADD is used as in the lightmap shader..
 	// Correct behaviour with GeForce & Ref. rasterizer...
 	// The fix is to disable the light contribution from dynamic lights
-	if (_NbNeLTextureStages == 3)
-	{		
 		if (_TextureStateCache[0][D3DTSS_COLOROP].Value == D3DTOP_MULTIPLYADD &&
 			_TextureStateCache[0][D3DTSS_COLORARG0].Value == D3DTA_DIFFUSE
 		)
 		{			
 			_TextureStateCache[0][D3DTSS_COLOROP].Value = D3DTOP_MODULATE;
 			touchRenderVariable(&_TextureStateCache[0][D3DTSS_COLOROP]);
-		}
-	}	
-
-	if (_NbNeLTextureStages == 3)
-	{
-		// fix for radeon 7xxx -> should enable vertex color only if really used
+		}	
+		// fix for radeon 7xxx -> should enable vertex color only if really used in pixel pipe
 		setEnableVertexColor(enableVertexColorFlag);
 	}	
 	setAliasDiffuseToSpecular(aliasDiffuseToSpecular);		
+	
+
 	// Flush all the modified render states	
 	while (_ModifiedRenderState)
 	{
@@ -902,7 +954,19 @@ void CDriverD3D::updateRenderVariablesInternal()
 		// Unlinked
 		_ModifiedRenderState = currentRenderState->NextModified;
 		currentRenderState->apply(this);
-	}					
+	}
+
+
+	// Maybe it is a driver bug : in some situation with GeForce, I got vertex color set to (0, 0, 0, 0) with unlighted vertices and vertex color.
+	// Forcing to resetup material solves the prb.. (though D3DRS_LIGHTING is set to FALSE ...)
+	// I only have the prb with GeForce. The behaviour doesn't exhibit when using the D3D debug dll.
+	if (_IsGeforce)
+	{		
+		if (_RenderStateCache[D3DRS_LIGHTING].Value == FALSE && _VertexProgramCache.VertexProgram == NULL)
+		{				
+			_MaterialState.apply(this);
+		}		
+	}	
 }
 
 
@@ -1240,7 +1304,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	}
 
 	// Create the D3D device	
-	HRESULT result = _D3D->CreateDevice (adapter, _Rasterizer, (HWND)_HWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING|D3DCREATE_PUREDEVICE, &parameters, &_DeviceInterface);		
+	HRESULT result = _D3D->CreateDevice (adapter, _Rasterizer, (HWND)_HWnd, D3DCREATE_HARDWARE_VERTEXPROCESSING|D3DCREATE_PUREDEVICE, &parameters, &_DeviceInterface);
 	if (result != D3D_OK)
 	{
 		nlwarning ("CDriverD3D::setDisplay: Can't create device.");
@@ -1258,7 +1322,8 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_PixelShaderVersion = caps.PixelShaderVersion;
 		_CubbedMipMapSupported = (caps.TextureCaps & D3DPTEXTURECAPS_MIPCUBEMAP) != 0;
 		_MaxPrimitiveCount = caps.MaxPrimitiveCount;
-		_MaxVertexIndex = caps.MaxVertexIndex;
+		_MaxVertexIndex = caps.MaxVertexIndex;		
+		_IsGeforce = !(caps.DevCaps & D3DDEVCAPS_NPATCHES) && (caps.PixelShaderVersion >= D3DPS_VERSION(2, 0) || caps.PixelShaderVersion < D3DPS_VERSION(1, 4));
 	}
 	else
 	{
@@ -1270,6 +1335,7 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 		_PixelShaderVersion = 0;
 		_MaxPrimitiveCount = 0xffff;
 		_MaxVertexIndex = 0xffff;
+		_IsGeforce = false;
 	}
 	// If 16 bits vertices only, build a vb for quads rendering
 	if (_MaxVertexIndex <= 0xffff)
@@ -1405,14 +1471,28 @@ bool CDriverD3D::setDisplay(void* wnd, const GfxMode& mode, bool show) throw(EBa
 	_VolatileVertexBufferAGP[0]->reset ();
 	_VolatileVertexBufferAGP[1]->init (CVertexBuffer::AGPResident, NL_VOLATILE_AGP_VB_SIZE, (uint) (NL_VOLATILE_AGP_VB_MAXSIZE * maxAGPbufferSizeRatio), this);
 	_VolatileVertexBufferAGP[1]->reset ();	
-	_VolatileIndexBufferRAM[0]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this);
-	_VolatileIndexBufferRAM[0]->reset ();
-	_VolatileIndexBufferRAM[1]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this);
-	_VolatileIndexBufferRAM[1]->reset ();
-	_VolatileIndexBufferAGP[0]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, (uint) (NL_VOLATILE_AGP_IB_MAXSIZE * maxAGPbufferSizeRatio), this);
-	_VolatileIndexBufferAGP[0]->reset ();
-	_VolatileIndexBufferAGP[1]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, (uint) (NL_VOLATILE_AGP_IB_MAXSIZE * maxAGPbufferSizeRatio), this);
-	_VolatileIndexBufferAGP[1]->reset ();	
+	//
+	_VolatileIndexBuffer16RAM[0]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this, CIndexBuffer::Indices16);
+	_VolatileIndexBuffer16RAM[0]->reset ();
+	_VolatileIndexBuffer16RAM[1]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this, CIndexBuffer::Indices16);
+	_VolatileIndexBuffer16RAM[1]->reset ();
+	_VolatileIndexBuffer16AGP[0]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, (uint) (NL_VOLATILE_AGP_IB_MAXSIZE * maxAGPbufferSizeRatio), this, CIndexBuffer::Indices16);
+	_VolatileIndexBuffer16AGP[0]->reset ();
+	_VolatileIndexBuffer16AGP[1]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, (uint) (NL_VOLATILE_AGP_IB_MAXSIZE * maxAGPbufferSizeRatio), this, CIndexBuffer::Indices16);
+	_VolatileIndexBuffer16AGP[1]->reset ();	
+	// 32 bits indices supported
+	if (_MaxVertexIndex > 0xffff)
+	{
+		_VolatileIndexBuffer32RAM[0]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this, CIndexBuffer::Indices32);
+		_VolatileIndexBuffer32RAM[0]->reset ();
+		_VolatileIndexBuffer32RAM[1]->init (CIndexBuffer::RAMResident, NL_VOLATILE_RAM_IB_SIZE, NL_VOLATILE_RAM_IB_MAXSIZE, this, CIndexBuffer::Indices32);
+		_VolatileIndexBuffer32RAM[1]->reset ();
+		_VolatileIndexBuffer32AGP[0]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, (uint) (NL_VOLATILE_AGP_IB_MAXSIZE * maxAGPbufferSizeRatio), this, CIndexBuffer::Indices32);
+		_VolatileIndexBuffer32AGP[0]->reset ();
+		_VolatileIndexBuffer32AGP[1]->init (CIndexBuffer::AGPResident, NL_VOLATILE_AGP_IB_SIZE, (uint) (NL_VOLATILE_AGP_IB_MAXSIZE * maxAGPbufferSizeRatio), this, CIndexBuffer::Indices32);
+		_VolatileIndexBuffer32AGP[1]->reset ();
+	}
+	//
 	setupViewport (CViewport());	
 
 	
@@ -1668,8 +1748,10 @@ bool CDriverD3D::swapBuffers()
 	_CurrentRenderPass++;		
 	_VolatileVertexBufferRAM[_CurrentRenderPass&1]->reset ();
 	_VolatileVertexBufferAGP[_CurrentRenderPass&1]->reset ();		
-	_VolatileIndexBufferRAM[_CurrentRenderPass&1]->reset ();
-	_VolatileIndexBufferAGP[_CurrentRenderPass&1]->reset ();		
+	_VolatileIndexBuffer16RAM[_CurrentRenderPass&1]->reset ();
+	_VolatileIndexBuffer16AGP[_CurrentRenderPass&1]->reset ();
+	_VolatileIndexBuffer32RAM[_CurrentRenderPass&1]->reset ();
+	_VolatileIndexBuffer32AGP[_CurrentRenderPass&1]->reset ();
 
 	// todo hulud volatile
 	//_DeviceInterface->SetStreamSource(0, _VolatileVertexBufferRAM[1]->VertexBuffer, 0, 12);
@@ -2123,10 +2205,14 @@ bool CDriverD3D::reset (const GfxMode& mode)
 	_VolatileVertexBufferRAM[1]->release ();
 	_VolatileVertexBufferAGP[0]->release ();
 	_VolatileVertexBufferAGP[1]->release ();
-	_VolatileIndexBufferRAM[0]->release ();
-	_VolatileIndexBufferRAM[1]->release ();
-	_VolatileIndexBufferAGP[0]->release ();
-	_VolatileIndexBufferAGP[1]->release ();	
+	_VolatileIndexBuffer16RAM[0]->release ();
+	_VolatileIndexBuffer16RAM[1]->release ();
+	_VolatileIndexBuffer16AGP[0]->release ();
+	_VolatileIndexBuffer16AGP[1]->release ();
+	_VolatileIndexBuffer32RAM[0]->release ();
+	_VolatileIndexBuffer32RAM[1]->release ();
+	_VolatileIndexBuffer32AGP[0]->release ();
+	_VolatileIndexBuffer32AGP[1]->release ();
 
 	// Back buffer ref
 	if (_BackBuffer)
@@ -2500,8 +2586,19 @@ uint CDriverD3D::getSwapVBLInterval()
 }
 
 // ***************************************************************************
-
 void CDriverD3D::finish()
+{
+	// TODO : actually do not wait until everythin is rendered
+	H_AUTO_D3D(CDriverD3D_finish);	
+	// Flush now
+	//nldebug("EndScene");
+	endScene();
+	//nldebug("BeginScene");
+	beginScene();
+}
+
+// ***************************************************************************
+void CDriverD3D::flush()
 {
 	H_AUTO_D3D(CDriverD3D_finish);	
 	// Flush now
@@ -2724,7 +2821,7 @@ IDriver::TCullMode CDriverD3D::getCullMode() const
 // ***************************************************************************
 void CDriverD3D::CRenderState::apply(CDriverD3D *driver)
 {			
-	H_AUTO_D3D(CDriverD3D_CRenderState);
+	H_AUTO_D3D(CDriverD3D_CRenderState);	
 	/*if (!preciseStateProfile)
 	{*/		
 		driver->_DeviceInterface->SetRenderState (StateID, Value);
@@ -2842,13 +2939,17 @@ void CDriverD3D::CRenderState::apply(CDriverD3D *driver)
 	*/
 }
 		
-
+volatile bool cacheTSS = true;
 
 // ***************************************************************************
 void CDriverD3D::CTextureState::apply(CDriverD3D *driver)
 {		
-	H_AUTO_D3D(CDriverD3D_CTextureState);	
-	driver->_DeviceInterface->SetTextureStageState (StageID, StateID, Value);
+	H_AUTO_D3D(CDriverD3D_CTextureState);		
+	if (Value != DeviceValue || !cacheTSS)
+	{
+		driver->_DeviceInterface->SetTextureStageState (StageID, StateID, Value);
+		DeviceValue = Value;
+	}
 }
 
 // ***************************************************************************
@@ -2915,7 +3016,7 @@ void CDriverD3D::CPixelShaderConstantState::apply(CDriverD3D *driver)
 		
 // ***************************************************************************
 void CDriverD3D::CSamplerState::apply(CDriverD3D *driver)
-{
+{	
 	H_AUTO_D3D(CDriverD3D_CSamplerState);
 	driver->_DeviceInterface->SetSamplerState (SamplerID, StateID, Value);
 }
@@ -3032,8 +3133,6 @@ void CDriverD3D::CMaterialState::apply(CDriverD3D *driver)
 
 
 } // NL3D
-
-
 
 
 

@@ -1,7 +1,7 @@
 /** \file coarse_mesh_manager.h
  * Management of coarse meshes.
  *
- * $Id: coarse_mesh_manager.h,v 1.18 2004/09/23 18:50:16 berenguier Exp $
+ * $Id: coarse_mesh_manager.h,v 1.19 2004/10/19 12:41:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,7 +102,7 @@ public:
 	  *	NB: the color of vbUffer must already be correct against IDriver::getVertexColorFormat()
 	  *	return false
 	  */
-	bool		addMesh (uint numVertices, const uint8 *vBuffer, uint numTris, const uint32 *indexBuffer);
+	bool		addMesh (uint numVertices, const uint8 *vBuffer, uint numTris, const TCoarseMeshIndexType *indexBuffer);
 
 	/**
 	  * Render the container
@@ -140,10 +140,10 @@ private:
 
 	struct CMeshInfo
 	{
-		uint            NumVertices;
-		const uint8     *VBuffer;
-		uint            NumTris;
-		const uint32    *IndexBuffer;
+		uint			  NumVertices;
+		const uint8		  *VBuffer;
+		uint			  NumTris;
+		const TCoarseMeshIndexType *IndexBuffer;
 	};
 	std::vector<CMeshInfo> _Meshs;
 };

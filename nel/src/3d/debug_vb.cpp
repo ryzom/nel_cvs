@@ -1,6 +1,6 @@
 /** \file debug_vb.cpp
  *
- * $Id: debug_vb.cpp,v 1.1 2004/09/17 15:24:19 vizerie Exp $
+ * $Id: debug_vb.cpp,v 1.2 2004/10/19 12:41:22 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -74,25 +74,25 @@ void nlCheckVBARange(CVertexBufferReadWrite &vba, const uint8 *ptStart, uint len
 //************************************************************************************
 void nlCheckIBARange(CIndexBufferReadWrite &iba, const uint8 *ptStart, uint length)
 {
-	checkRange((uint8 *) iba.getPtr(), (uint8 *) iba.getPtr() + iba.getParent()->getNumIndexes() * sizeof(uint32), ptStart, length, iba.getParent()->getName());
+	checkRange((uint8 *) iba.getPtr(), (uint8 *) iba.getPtr() + iba.getParent()->getNumIndexes() * iba.getIndexNumBytes(), ptStart, length, iba.getParent()->getName());
 }
 
 //************************************************************************************
 void nlCheckIBARange(CIndexBufferRead &iba, const uint8 *ptStart, uint length)
 {
-	checkRange((uint8 *) iba.getPtr(), (uint8 *) iba.getPtr() + iba.getParent()->getNumIndexes() * sizeof(uint32), ptStart, length, iba.getParent()->getName());
+	checkRange((uint8 *) iba.getPtr(), (uint8 *) iba.getPtr() + iba.getParent()->getNumIndexes() * iba.getIndexNumBytes(), ptStart, length, iba.getParent()->getName());
 }
 
 //************************************************************************************
 void nlCheckIBA(CIndexBufferReadWrite &iba, const uint8 *ptStart)
 {
-	checkRange((uint8 *) iba.getPtr(), (uint8 *) iba.getPtr() + iba.getParent()->getNumIndexes() * sizeof(uint32), ptStart, 0, iba.getParent()->getName());
+	checkRange((uint8 *) iba.getPtr(), (uint8 *) iba.getPtr() + iba.getParent()->getNumIndexes() * iba.getIndexNumBytes(), ptStart, 0, iba.getParent()->getName());
 }
 
 //************************************************************************************
 void nlCheckIBA(CIndexBufferRead &iba, const uint8 *ptStart)
 {
-	checkRange((uint8 *) iba.getPtr(), (uint8 *) iba.getPtr() + iba.getParent()->getNumIndexes() * sizeof(uint32), ptStart, 0, iba.getParent()->getName());
+	checkRange((uint8 *) iba.getPtr(), (uint8 *) iba.getPtr() + iba.getParent()->getNumIndexes() * iba.getIndexNumBytes(), ptStart, 0, iba.getParent()->getName());
 }
 
 } // NL3D

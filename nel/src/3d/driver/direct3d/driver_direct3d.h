@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.28 2004/10/05 17:17:47 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.29 2004/10/19 12:43:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@
 #include "3d/material.h"
 #include "3d/shader.h"
 #include "3d/vertex_buffer.h"
+#include "3d/index_buffer.h"
 #include "3d/ptr_set.h"
 #include "3d/texture_cube.h"
 #include "3d/occlusion_query.h"
@@ -99,6 +100,10 @@
 #endif
 
 
+
+
+
+
 inline operator==(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
 {
 	return lhs.r == rhs.r && lhs.g == rhs.g && lhs.b == rhs.b && lhs.a == rhs.a;
@@ -116,6 +121,8 @@ inline operator!=(const D3DCOLORVALUE &lhs, const D3DCOLORVALUE &rhs)
 
 namespace NL3D 
 {
+
+
 
 const uint MAX_NUM_QUADS = 32767; // max number of quads in a single draw call	
 
@@ -235,11 +242,17 @@ public:
 
 	CRGBA			Constant2;						// value of the 2nd constant being used (for emulation without pixel shaders)
 
+	// Relevant parts of the pixel pipe for normal shader
+	bool			RGBPipe[IDRV_MAT_MAXTEXTURES];
+	bool			AlphaPipe[IDRV_MAT_MAXTEXTURES];
+
 	CMaterialDrvInfosD3D(IDriver *drv, ItMatDrvInfoPtrList it) : IMaterialDrvInfos(drv, it)
 	{
 		H_AUTO_D3D(CMaterialDrvInfosD3D_CMaterialDrvInfosD3D);
 		PixelShader = NULL;
 		PixelShaderUnlightedNoVertexColor = NULL;
+		std::fill(RGBPipe, RGBPipe + IDRV_MAT_MAXTEXTURES, true);
+		std::fill(AlphaPipe, AlphaPipe + IDRV_MAT_MAXTEXTURES, true);
 	}
 	void buildTexEnv (uint stage, const CMaterial::CTexEnv &env, bool textured);
 };
@@ -304,7 +317,6 @@ public:
 
 
 
-
 // ***************************************************************************
 
 class CIBDrvInfosD3D : public IIBDrvInfos
@@ -317,11 +329,11 @@ public:
 	uint							VolatileLockTime;	// Volatile index buffer	
 	CVolatileIndexBuffer			*VolatileIndexBuffer;
 	CDriverD3D						*Driver;
-	std::vector<uint32>				RamVersion; // If device doesn't support 32 bit indexes, works in ram
+	std::vector<uint32>				RamVersion; // If device doesn't support 32 bit indexes, works in ram (unless it a 16 bit index buffer)	
 	CIBDrvInfosD3D(CDriverD3D *drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib);
 	virtual ~CIBDrvInfosD3D();
-	virtual uint32	*lock (uint first, uint last, bool readOnly);
-	virtual void	unlock (uint first, uint last);
+	virtual void	*lock (uint first, uint last, bool readOnly);
+	virtual void	unlock (uint first, uint last);	
 };
 
 // ***************************************************************************
@@ -494,9 +506,10 @@ public:
 	uint						CurrentIndex;
 	uint						MaxSize;
 	bool						Locked;
+	CIndexBuffer::TFormat		Format;
 
 	/* size is in bytes */
-	void	init (CIndexBuffer::TLocation	location, uint size, uint maxSize, CDriverD3D *driver);
+	void	init (CIndexBuffer::TLocation	location, uint sizeInBytes, uint maxSize, CDriverD3D *driver, CIndexBuffer::TFormat format);
 	void	release ();
 
 	// Runtime buffer access, no-blocking lock. Re
@@ -679,16 +692,23 @@ public:
 	// UV
 	virtual	void			mapTextureStageToUV(uint stage, uint uv);
 
-	// Render
+	// Indexed primitives
 	virtual bool			renderLines(CMaterial& mat, uint32 firstIndex, uint32 nlines);
 	virtual bool			renderTriangles(CMaterial& Mat, uint32 firstIndex, uint32 ntris);
 	virtual bool			renderSimpleTriangles(uint32 firstTri, uint32 ntris);
+	// Indexed primitives with index offset
+	virtual bool			renderLinesWithIndexOffset(CMaterial& mat, uint32 firstIndex, uint32 nlines, uint indexOffset);
+	virtual bool			renderTrianglesWithIndexOffset(CMaterial& mat, uint32 firstIndex, uint32 ntris, uint indexOffset);
+	virtual bool			renderSimpleTrianglesWithIndexOffset(uint32 firstIndex, uint32 ntris, uint indexOffset);
+	// Unindexed primitives with index offset
 	virtual bool			renderRawPoints(CMaterial& Mat, uint32 startIndex, uint32 numPoints);
 	virtual bool			renderRawLines(CMaterial& Mat, uint32 startIndex, uint32 numLines);
 	virtual bool			renderRawTriangles(CMaterial& Mat, uint32 startIndex, uint32 numTris);
 	virtual bool			renderRawQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads);		
+	//
 	virtual void			setPolygonMode (TPolygonMode mode);
 	virtual	void			finish();
+	virtual	void			flush();
 
 	// Profile
 	virtual	void			profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitiveProfile &pOut);
@@ -751,6 +771,9 @@ public:
 	virtual bool			isEMBMSupportedAtStage(uint stage) const;	
 	virtual void			setEMBMMatrix(const uint stage, const float mat[4]);	
 	virtual bool			supportPerPixelLighting(bool specular) const {return false;};
+
+	// index offset support
+	virtual bool			supportIndexOffset() const { return true; /* always supported with D3D driver */ }
 
 	// Blend
 	virtual	bool			supportBlendConstantColor() const;
@@ -858,9 +881,11 @@ private:
 		CRenderState()
 		{
 			Type = RenderState;
+			ValueSet = false;
 		}
 		D3DRENDERSTATETYPE	StateID;
 		DWORD				Value;
+		bool				ValueSet;
 		virtual	void apply(CDriverD3D *driver);
 	};
 
@@ -870,12 +895,15 @@ private:
 		CTextureState()
 		{
 			Type = TextureState;
+			DeviceValue = 0xcccccccc;
 		}
 		DWORD						StageID;
-		D3DTEXTURESTAGESTATETYPE	StateID;
-		DWORD						Value;
+		D3DTEXTURESTAGESTATETYPE	StateID;		
+		DWORD						Value;	
+		DWORD                       DeviceValue;
 		virtual	void apply(CDriverD3D *driver);
 	};
+
 
 	// Render texture index state
 	struct CTextureIndexState : public CRenderVariable
@@ -971,7 +999,7 @@ private:
 	{
 		CSamplerState()
 		{
-			Type = SamplerState;
+			Type = SamplerState;			
 		}
 		DWORD						SamplerID;
 		D3DSAMPLERSTATETYPE			StateID;
@@ -1128,6 +1156,8 @@ private:
 
 	// Replace all arguments of color / alpha operators in the pixel pipe at the given stage with the given value
 	void replaceAllArgumentAtStage(uint stage, DWORD from, DWORD to, DWORD blendOpFrom);
+	void replaceAllRGBArgumentAtStage(uint stage, DWORD from, DWORD to, DWORD blendOpFrom);
+	void replaceAllAlphaArgumentAtStage(uint stage, DWORD from, DWORD to, DWORD blendOpFrom);
 
 	// Replace a the given color / alpha op
 	void replaceArgumentAtStage(D3DTEXTURESTAGESTATETYPE state, DWORD stage, DWORD from, DWORD to);
@@ -1173,10 +1203,11 @@ private:
 		// Ref on the state
 		CRenderState &_renderState = _RenderStateCache[renderState];
 #ifdef NL_D3D_USE_RENDER_STATE_CACHE
-		NL_D3D_CACHE_TEST(CacheTest_RenderState, _renderState.Value != value)
+		NL_D3D_CACHE_TEST(CacheTest_RenderState, _renderState.Value != value || !_renderState.ValueSet)
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			_renderState.Value = value;
+			_renderState.ValueSet = true;
 			touchRenderVariable (&_renderState);
 		}		
 	}	
@@ -1427,7 +1458,7 @@ private:
 		}
 	}	
 
-	// Access sampler states
+	// Access sampler states	 
 	inline void setSamplerState (DWORD sampler, D3DSAMPLERSTATETYPE samplerState, DWORD value)
 	{
 		H_AUTO_D3D(CDriverD3D_setSamplerState);
@@ -1444,7 +1475,7 @@ private:
 			_samplerState.Value = value;
 			touchRenderVariable (&_samplerState);
 		}
-	}
+	}	
 
 	// Set the vertex buffer	
 	inline void CDriverD3D::setVertexBuffer (IDirect3DVertexBuffer9 *vertexBuffer, UINT offset, UINT stride, bool useVertexColor, uint size, CVertexBuffer::TPreferredMemory pm, DWORD usage, uint colorOffset)	
@@ -1695,8 +1726,8 @@ private:
 	bool setShaderTexture (uint textureHandle, ITexture *texture);
 	
 	bool validateShader(CShader *shader);
-
-	void activePass (uint pass)
+	
+	void activePass (uint pass)	
 	{
 		H_AUTO_D3D(CDriverD3D_activePass);		
 		if (_CurrentShader)
@@ -1748,8 +1779,8 @@ private:
 
 	// render helpers
 	bool renderPrimitives(D3DPRIMITIVETYPE primitiveType, uint numVertexPerPrim, CMaterial& mat, uint firstVertex, uint32 nPrims);
-	bool renderIndexedPrimitives(D3DPRIMITIVETYPE primitiveType, uint numVertexPerPrim, CMaterial& mat, uint32 firstIndex, uint32 nPrims);
-	bool renderSimpleIndexedPrimitives(D3DPRIMITIVETYPE primitiveType, uint numVertexPerPrim, uint32 firstIndex, uint32 nPrims);
+	bool renderIndexedPrimitives(D3DPRIMITIVETYPE primitiveType, uint numVertexPerPrim, CMaterial& mat, uint32 firstIndex, uint32 nPrims, uint indexOffset = 0);
+	bool renderSimpleIndexedPrimitives(D3DPRIMITIVETYPE primitiveType, uint numVertexPerPrim, uint32 firstIndex, uint32 nPrims, uint indexOffset = 0);
 	void convertToIndices16(uint firstIndex, uint numIndices);	
 
 	// Returns true if this material needs a constant color for the diffuse component
@@ -1758,6 +1789,10 @@ private:
 	/* Returns true if this normal needs constant. If true, numConstant is the number of needed constants, firstConstant is the first
 	constants needed. */ 
 	static bool needsConstants (uint &numConstant, uint &firstConstant, uint &secondConstant, CMaterial &mat);
+
+	// For normal shader, compute part of the pipeline that are worth setting
+	// For example : if alpha output if not used (no alpha test or blend), then the alpha part won't be set at all
+	static void computeRelevantTexEnv(CMaterial &mat, bool rgbPipe[IDRV_MAT_MAXTEXTURES], bool alphaPipe[IDRV_MAT_MAXTEXTURES]);
 
 	// Build a pixel shader for normal shader
 	IDirect3DPixelShader9	*buildPixelShader (const CNormalShaderDesc &normalShaderDesc, bool unlightedNoVertexColor);
@@ -1868,6 +1903,7 @@ private:
 	bool					_MADOperatorSupported;
 	bool					_EMBMSupported;
 	bool					_CubbedMipMapSupported;
+	bool					_IsGeforce;
 	sint					_NbNeLTextureStages;			// Number of texture stage for NeL (max IDRV_MAT_MAXTEXTURES)
 	uint					_MaxVerticesByVertexBufferHard;
 	uint					_MaxLight;
@@ -1966,7 +2002,8 @@ private:
 
 	// Index buffer cache
 	CIBState				_IndexBufferCache;
-	uint					_IndexBufferOffset;		// Current index buffer offset
+	uint					_IndexBufferOffset;		 // Current index buffer offset
+	CIndexBuffer::TFormat	_CurrIndexBufferFormat;  // updated at call to activeIndexBuffer
 
 	// The last vertex buffer needs vertex color
 	bool					_FogEnabled;
@@ -1980,8 +2017,10 @@ private:
 	// Volatile double buffers
 	CVolatileVertexBuffer	*_VolatileVertexBufferRAM[2];
 	CVolatileVertexBuffer	*_VolatileVertexBufferAGP[2];
-	CVolatileIndexBuffer	*_VolatileIndexBufferRAM[2];
-	CVolatileIndexBuffer	*_VolatileIndexBufferAGP[2];
+	CVolatileIndexBuffer	*_VolatileIndexBuffer16RAM[2];
+	CVolatileIndexBuffer	*_VolatileIndexBuffer16AGP[2];
+	CVolatileIndexBuffer	*_VolatileIndexBuffer32RAM[2];
+	CVolatileIndexBuffer	*_VolatileIndexBuffer32AGP[2];
 
 	// Special 16 bit index buffer for quads
 	IDirect3DIndexBuffer9	*_QuadIB;	
@@ -2126,8 +2165,6 @@ public:
 	}
 
 	bool hasSceneBegun() const { return _SceneBegun; }	
-	// tmp
-	void fixVB(uint32 nPrims, uint numVertexPerPrim);
 };
 
 #define NL_D3DCOLOR_RGBA(rgba) (D3DCOLOR_ARGB(rgba.A,rgba.R,rgba.G,rgba.B))

@@ -1,7 +1,7 @@
 /** \file eid_translator.cpp
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.cpp,v 1.2 2003/04/15 08:46:35 lecroart Exp $
+ * $Id: eid_translator.cpp,v 1.3 2003/04/15 08:47:22 coutelas Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -87,7 +87,7 @@ std::string CEntityIdTranslator::getByEntity (const NLMISC::CEntityId &eid)
 	reit it = RegisteredEntities.find (eid);
 	if (it == RegisteredEntities.end ())
 	{
-		return "";
+		return ucstring("");
 	}
 	else
 	{

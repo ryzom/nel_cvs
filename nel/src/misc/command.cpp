@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.2 2001/02/14 13:22:12 lecroart Exp $
+ * $Id: command.cpp,v 1.3 2001/02/14 17:14:16 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,7 +45,7 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 
 	if (!_CommandsInit)
 	{
-		printf("create map\n");
+		//printf("create map\n");
 		_Commands = new TCommand;
 		_CommandsInit = true;
 	}
@@ -60,7 +60,7 @@ ICommand::ICommand(const char *commandName, const char *commandHelp, const char 
 	else
 	{
 		// insert the new command in the map
-		printf("add command\n");
+		//printf("add command\n");
 		HelpString = commandHelp;
 		CommandArgs = commandArgs;
 		_CommandName = commandName;
@@ -85,13 +85,13 @@ ICommand::~ICommand()
 	{
 		if ((*comm).second == this)
 		{
-			printf("remove command\n");
+			//printf("remove command\n");
 			(*_Commands).erase (comm);
 
 			if ((*_Commands).size() == 0)
 			{
 				// if the commands map is empty, destroy it
-				printf("delete map\n");
+				//printf("delete map\n");
 				delete _Commands;
 				_CommandsInit = false;
 			}
@@ -141,7 +141,7 @@ void ICommand::execute (const std::string &commandWithArgs, CLog &log)
 	}
 	else
 	{
-		printf("execute command\n");
+		//printf("execute command\n");
 		if (!(*comm).second->execute (args, log))
 		{
 			log.displayNL("Bad command usage, try 'help %s'", commandWithArgs.c_str());

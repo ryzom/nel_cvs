@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.32 2003/09/24 10:45:51 cado Exp $
+ * $Id: mem_stream.h,v 1.33 2004/01/14 09:10:19 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,11 +40,6 @@ struct EMemStream : public NLMISC::EStream
 	EMemStream( const std::string& str ) : EStream( str ) {}
 };
 
-/// This exception is raised when someone tries to serialize in more than there is.
-struct EStreamOverflow : public EMemStream
-{
-	EStreamOverflow() : EMemStream( "Stream Overflow Error" ) {}
-};
 
 /*
 /// Vector of uint8

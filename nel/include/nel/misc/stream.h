@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.60 2003/11/18 10:16:30 corvazier Exp $
+ * $Id: stream.h,v 1.61 2004/01/14 09:10:19 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -106,6 +106,12 @@ struct ESeekNotSupported : public EStream
 {
 	ESeekNotSupported() : EStream("Seek fonctionnality is not supported" ) {}
 	ESeekNotSupported(const IStream &f) : EStream(f, "Seek fonctionnality is not supported" ) {}
+};
+
+/// This exception is raised when someone tries to serialize in more than there is.
+struct EStreamOverflow : public EStream
+{
+	EStreamOverflow() : EStream( "Stream Overflow Error" ) {}
 };
 
 

@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.13 2000/11/30 17:03:10 cado Exp $
+ * $Id: local_area.cpp,v 1.14 2000/12/01 10:06:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -255,12 +255,21 @@ void CLocalArea::update()
 		// Remove neighbor if it exits from the local area
 		if ( ((*ipe).second->pos()-User.pos()).norm() > _Radius )
 		{
-			NLMISC::CVector v1 = User.pos();
-			NLMISC::CVector v2 = (*ipe).second->pos();
+			/*NLMISC::CVector v1 = User.pos();
+			NLMISC::CVector v2 = (*ipe).second->pos();*/
+//#ifdef NL_DEBUG
+			TEntityId id = (*ipe).second->id();
+//#endif
 			delete (*ipe).second;
 			CRemoteEntities::iterator ipebis = ipe;
 			ipe++;
 			_Neighbors.erase( ipebis );
+			if ( CLocalArea::Instance->_EntityRemovedCallback != NULL )
+			{
+				CLocalArea::Instance->_EntityRemovedCallback( id );
+			}
+			nldebug( "Removed entity %u", id );
+
 			erased = true;
 		}
 
@@ -273,3 +282,4 @@ void CLocalArea::update()
 
 
 } // NLNET
+

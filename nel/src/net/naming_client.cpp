@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.12 2000/11/27 11:18:59 cado Exp $
+ * $Id: naming_client.cpp,v 1.13 2000/12/01 10:06:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -152,7 +152,7 @@ void CNamingClient::closeT()
 		// Change the address
 		CNamingClient::NamingServiceAddress.setByName( CNamingClient::_ConfigFile->getVar( "Host" ).asString() );
 		CNamingClient::NamingServiceAddress.setPort( CNamingClient::_ConfigFile->getVar( "Port" ).asInt() );
-		nlinfo( "Naming Service is now at %s", CNamingClient::NamingServiceAddress.asIPString().c_str() );
+		nlinfo( "Naming Service is now at %s", CNamingClient::NamingServiceAddress.asString().c_str() );
 	}
 	catch ( EConfigFile& )
 	{
@@ -189,7 +189,7 @@ void CNamingClient::doOpen()
 			CNamingClient::NamingServiceAddress.setPort( CNamingClient::NamingServiceDefPort );
 		}
 		//_ConfigFile->setCallback( cbNamingServiceAddrChanged );
-		nlinfo( "Naming Service is at %s", CNamingClient::NamingServiceAddress.asIPString().c_str() );
+		nlinfo( "Naming Service is at %s", CNamingClient::NamingServiceAddress.asString().c_str() );
 	}
 	nldebug("Trying to connect to the Naming Service");
 	CNamingClient::_ClientSock = new CSocket();
@@ -252,7 +252,7 @@ void CNamingClient::registerService( const std::string& name, const CInetAddress
 	_RegisteredServices.insert( std::make_pair(name,addr) );
 
 	CNamingClient::closeT();
-	nldebug( "Registered service %s at %s", name.c_str(), addr.asIPString().c_str() );
+	nldebug( "Registered service %s at %s", name.c_str(), addr.asString().c_str() );
 }
 
 
@@ -303,7 +303,7 @@ bool CNamingClient::lookup( const std::string& name, CInetAddress& addr, uint16&
 	else
 	{
 		msgin.serial( addr );
-		nldebug( "Service %s is at %s", name.c_str(), addr.asIPString().c_str() );
+		nldebug( "Service %s is at %s", name.c_str(), addr.asString().c_str() );
 		CNamingClient::closeT();
 		return true;
 	}
@@ -338,7 +338,7 @@ bool CNamingClient::lookupAlternate( const std::string& name, CInetAddress& addr
 	else
 	{
 		msgin.serial( addr );
-		nldebug( "Service %s is at %s", name.c_str(), addr.asIPString().c_str() );
+		nldebug( "Service %s is at %s", name.c_str(), addr.asString().c_str() );
 		CNamingClient::closeT();
 		return true;
 	}

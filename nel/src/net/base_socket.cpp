@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.22 2000/11/30 17:02:15 cado Exp $
+ * $Id: base_socket.cpp,v 1.23 2000/12/01 10:06:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,7 +176,7 @@ void CBaseSocket::close()
 #endif
 		if ( _Logging )
 		{
-			nldebug( "Socket %d closed at %s", _Sock, _LocalAddr.asIPString().c_str() );
+			nldebug( "Socket %d closed at %s", _Sock, _LocalAddr.asString().c_str() );
 		}
 		_Sock = INVALID_SOCKET;
 		_Bound = false;
@@ -230,12 +230,12 @@ void CBaseSocket::connect( const CInetAddress& addr ) throw (ESocketConnectionFa
 	}
 	if ( _Logging )
 	{
-		nldebug( "Socket %d connected to %s", _Sock, addr.asIPString().c_str() );
+		nldebug( "Socket %d connected to %s", _Sock, addr.asString().c_str() );
 	}
 	setLocalAddress();
 	if ( _Logging )
 	{
-		nldebug( "Socket %d is at %s", _Sock, _LocalAddr.asIPString().c_str() );
+		nldebug( "Socket %d is at %s", _Sock, _LocalAddr.asString().c_str() );
 	}	
 	_RemoteAddr = addr;
 	_Connected = _Reliable;
@@ -312,7 +312,7 @@ void CBaseSocket::bind( uint16 port ) throw (ESocket)
 	_Bound = true;
 	if ( _Logging )
 	{
-		nldebug( "Socket %d bound at %s", _Sock, _LocalAddr.asIPString().c_str() );
+		nldebug( "Socket %d bound at %s", _Sock, _LocalAddr.asString().c_str() );
 	}
 }
 
@@ -331,7 +331,7 @@ void CBaseSocket::sendTo( const uint8 *buffer, uint len, const CInetAddress& add
 
 	if ( _Logging )
 	{
-		nldebug( "Socket %d sent %d bytes to %s", _Sock, len, addr.asIPString().c_str() );
+		nldebug( "Socket %d sent %d bytes to %s", _Sock, len, addr.asString().c_str() );
 	}
 
 	// If socket is unbound, retrieve local address
@@ -369,7 +369,7 @@ bool CBaseSocket::receivedFrom( uint8 *buffer, uint len, CInetAddress& addr ) th
 	_BytesReceived += len;
 	if ( _Logging )
 	{
-		nldebug( "Socket %d received %d bytes from %s", _Sock, len, addr.asIPString().c_str() );
+		nldebug( "Socket %d received %d bytes from %s", _Sock, len, addr.asString().c_str() );
 	}
 
 	return true;

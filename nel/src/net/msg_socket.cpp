@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.32 2000/11/30 17:01:25 cado Exp $
+ * $Id: msg_socket.cpp,v 1.33 2000/12/01 10:06:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -274,7 +274,7 @@ void CMsgSocket::listen( CSocket *listensock, const CInetAddress& addr ) throw (
 	{
 		throw ESocket("Unable to listen on specified port");
 	}
-	nldebug( "Socket %d listening at %s", listensock->_Sock, addr.asIPString().c_str() );
+	nldebug( "Socket %d listening at %s", listensock->_Sock, addr.asString().c_str() );
 }
 
 
@@ -502,7 +502,7 @@ CSocket& CMsgSocket::accept( SOCKET listen_descr ) throw (ESocket)
 	addr.setSockAddr( &saddr );
 	CSocket *connection = new CSocket( newsock, addr );
 	addNewConnection( connection );
-	nldebug( "Socket %d accepted an incoming connection from %s and opened socket %d", listen_descr, addr.asIPString().c_str(), newsock );
+	nldebug( "Socket %d accepted an incoming connection from %s and opened socket %d", listen_descr, addr.asString().c_str(), newsock );
 	return *connection;
 }
 

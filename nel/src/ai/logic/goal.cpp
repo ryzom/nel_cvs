@@ -95,6 +95,7 @@ namespace NLAILOGIC
 		{
 			if ( (**it_s) == *op )
 			{
+				(*it_s)->release();
 				_Successors.erase( it_s );
 				return;
 			}
@@ -118,6 +119,7 @@ namespace NLAILOGIC
 		{
 			if ( (**it_s) == *op )
 			{
+				(*it_s)->release();
 				_Successors.erase( it_s );
 				return;
 			}
@@ -323,11 +325,13 @@ namespace NLAILOGIC
 	void CGoal::addSuccessor(NLAIAGENT::IBasicAgent *s)
 	{
 		_Successors.push_back(s);
+		s->incRef();
 	}
 
 	void CGoal::addPredecessor(NLAIAGENT::IBasicAgent *p)
 	{
 		_Predecessors.push_back(p);
+		p->incRef();
 	}
 
 	bool CGoal::operator==(const CGoal &g)

@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.25 2003/12/10 10:17:50 corvazier Exp $
+ * $Id: shape_bank.cpp,v 1.26 2004/02/19 09:47:42 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -756,7 +756,7 @@ bool CShapeBank::isShapeCache(const std::string &shapeCacheName) const
 
 // ***************************************************************************
 void CShapeBank::preLoadShapes(const std::string &shapeCacheName, 
-	const std::vector<std::string> &listFile, const std::string &wildCardNotLwr, NLMISC::IProgressCallback *progress)
+	const std::vector<std::string> &listFile, const std::string &wildCardNotLwr, NLMISC::IProgressCallback *progress, bool flushTextures /*= false*/, IDriver *drv /*= NULL*/)
 {
 	// Abort if cache don't exist.
 	if(!isShapeCache(shapeCacheName))
@@ -796,7 +796,13 @@ void CShapeBank::preLoadShapes(const std::string &shapeCacheName,
 						// add it and release it to force it to be in the cache.
 						IShape	*shp= addRef(fileName);
 						if(shp)
+						{
+							if (flushTextures && drv)
+							{							
+								shp->flushTextures(*drv, 0);
+							}
 							release(shp);
+						}
 					}
 				}
 			}

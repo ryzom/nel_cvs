@@ -1,7 +1,7 @@
 /** \file shape_bank.h
  * <File description>
  *
- * $Id: shape_bank.h,v 1.12 2003/07/17 14:47:32 corvazier Exp $
+ * $Id: shape_bank.h,v 1.13 2004/02/19 09:47:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,10 +148,11 @@ public:
 	 *	NB: crash if you try to load a non shape file (eg: a .dds etc...)
 	 *	\param shapeCacheName name of a shapeCache created with addShapeCache()/setShapeCacheSize(). no-op if don't exist
 	 *	\param fileList a list of file names. NB: CPath is used to load the shapes.
-	 *	\param wildcard a filter string like: "*.shape", "??_HOM*.shape". NB: strlwr-ed internally
+	 *	\param wildcard a filter string like: "*.shape", "??_HOM*.shape". NB: strlwr-ed internally	 
+	 *  \param flushTextures if true, then textures are flushed in the driver drv
 	 */
 	void			preLoadShapes(const std::string &shapeCacheName, 
-		const std::vector<std::string> &listFile, const std::string &wildCardNotLwr, NLMISC::IProgressCallback *progress = NULL);
+		const std::vector<std::string> &listFile, const std::string &wildCardNotLwr, NLMISC::IProgressCallback *progress = NULL, bool flushTextures = false, IDriver *drv = NULL);
 	// @}
 
 private:

@@ -1,7 +1,7 @@
 /** \file module.h
  * Class op-code storage.
  *
- * $Id: module.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: module.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 namespace NLIASCRIPT
 {
 	///this typedef define an correct std::map for store local variable in the heap.
-	typedef std::map<NLIASCRIPT::CStringType , NLIAAGENT::IObjectIA *,std::less<NLIASCRIPT::CStringType> > tDicoStr;
+	typedef std::map<NLIASCRIPT::CStringType , NLAIAGENT::IObjectIA *,std::less<NLIASCRIPT::CStringType> > tDicoStr;
 
 	/**
 	* Class IBlock.
@@ -40,14 +40,14 @@ namespace NLIASCRIPT
 	* \date 2000
 	*/	
 
-	class IBlock: public NLIAC::IBasicInterface
+	class IBlock: public NLAIC::IBasicInterface
 	{
 	public:		
-		static const NLIAC::CIdentType IdBlock;
+		static const NLAIC::CIdentType IdBlock;
 
 	protected:
 		///this typedef define an correct std::map iterator for store local variable in the heap.
-		typedef std::map<NLIASCRIPT::CStringType , NLIAAGENT::IObjectIA *,std::less<NLIASCRIPT::CStringType> >::iterator tDicoStrIter;
+		typedef std::map<NLIASCRIPT::CStringType , NLAIAGENT::IObjectIA *,std::less<NLIASCRIPT::CStringType> >::iterator tDicoStrIter;
 		
 	private:
 		///Op-code that define the block. This object is build at the end of parse.
@@ -102,7 +102,7 @@ namespace NLIASCRIPT
 			while(it != _DicoLocVar->end())
 			{
 #ifdef _DEBUG				
-				const NLIAAGENT::IObjectIA *o = (*it).second;
+				const NLAIAGENT::IObjectIA *o = (*it).second;
 #endif								
 				(*it).second->release();
 				it ++;
@@ -112,7 +112,7 @@ namespace NLIASCRIPT
 		}
 
 		///Gets a pointer to a locale variable.
-		NLIAAGENT::IObjectIA *getVar(const char *Name)
+		NLAIAGENT::IObjectIA *getVar(const char *Name)
 		{
 			tDicoStr::iterator Itr = _DicoLocVar->find(NLIASCRIPT::CStringType(Name));
 
@@ -133,7 +133,7 @@ namespace NLIASCRIPT
 		}
 
 		///Allocs a new local var .
-		bool allocLocVar(const char *name, NLIAAGENT::IObjectIA *var)
+		bool allocLocVar(const char *name, NLAIAGENT::IObjectIA *var)
 		{
 			if(getVar(name) != NULL) return false;
 			_DicoLocVar->insert(tDicoStr::value_type(name,var));		
@@ -194,19 +194,19 @@ namespace NLIASCRIPT
 
 		/// \name Base class method.
 		//@{
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new IBlock(_Debug);
+			NLAIC::IBasicType *x = new IBlock(_Debug);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdBlock;
 		}
@@ -222,8 +222,8 @@ namespace NLIASCRIPT
 		void load(NLMISC::IStream &is) 
 		{			
 		}
-		const NLIAAGENT::IObjectIA::CProcessResult &run();
-		bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const{ return true;}
+		const NLAIAGENT::IObjectIA::CProcessResult &run();
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const{ return true;}
 		//@}
 
 		///Get the list of code.

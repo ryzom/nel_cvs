@@ -1,7 +1,7 @@
 /** \file code_branche_run_debug.h
  * A debug version of CCodeBrancheRun. It keep a trace between original source code and OpCode.
  *
- * $Id: code_branche_run_debug.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: code_branche_run_debug.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /** Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@ namespace NLIASCRIPT
 	class CCodeBrancheRunDebug : public CCodeBrancheRun
 	{
 	public:
-		static const NLIAC::CIdentType IdCodeBrancheRunDebug;
+		static const NLAIC::CIdentType IdCodeBrancheRunDebug;
 
 	private :
 		int			*_LineInSourceCodeArray;
@@ -71,12 +71,12 @@ namespace NLIASCRIPT
 		/**	The true run of this class
 		 *	param self A reference to the IObjectIA which call this ICodeBranche
 		 */
-		const NLIAAGENT::IObjectIA::CProcessResult &run(NLIAAGENT::IObjectIA &self);
+		const NLAIAGENT::IObjectIA::CProcessResult &run(NLAIAGENT::IObjectIA &self);
 
-		const NLIAAGENT::IObjectIA::CProcessResult &run(CCodeContext &);
+		const NLAIAGENT::IObjectIA::CProcessResult &run(CCodeContext &);
 
 		/// Run the next IOpCode in the array
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
 		/// Store the linde in the source code associate with the OpCode
 		void setLineCode(int ligne, int index);
@@ -95,9 +95,9 @@ namespace NLIASCRIPT
 
 		/// \name IBasicInterface method.
 		//@{
-		const NLIAC::CIdentType& getType() const;
-		const NLIAC::IBasicType* clone() const;
-		const NLIAC::IBasicType *newInstance() const;
+		const NLAIC::CIdentType& getType() const;
+		const NLAIC::IBasicType* clone() const;
+		const NLAIC::IBasicType *newInstance() const;
 		virtual void save(NLMISC::IStream &);
 		virtual void load(NLMISC::IStream &);
 		//@}

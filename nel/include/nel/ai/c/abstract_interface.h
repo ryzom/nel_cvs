@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.2 2001/01/05 13:48:29 chafik Exp $
+ * $Id: abstract_interface.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 #include "nel/misc/file.h"
 #include "e/ia_exception.h"
 
-namespace NLIAC //Gen pour general.
+namespace NLAIC //Gen pour general.
 {
 	///this method give an char pointer hows it contents a string define by a const char* same as printf. It use for initialise string objects.
 	char *stringBuild(const char *str, ...);	

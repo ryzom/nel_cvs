@@ -1,6 +1,6 @@
 /* A debug constraint. It keep a trace between original source code and OpCode.
  *
- * $Id: constraint_debug.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
+ * $Id: constraint_debug.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -89,7 +89,7 @@ namespace NLIASCRIPT
 		 */
 		//@{
 		bool operator == (const IConstraint &) const;
-		const NLIAC::CIdentType *getConstraintTypeOf();
+		const NLAIC::CIdentType *getConstraintTypeOf();
 		const char *getInfo();
 		bool dependOn(const IConstraint *) const;
 		//@}

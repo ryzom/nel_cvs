@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: actor_script.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 #include "script/type_def.h"
 #include "script/interpret_actor.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 	class CComponentHandle : public IObjectIA {
@@ -151,22 +151,22 @@ namespace NLIAAGENT
 
 
 			/// Inherited functions
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void getDebugString(char *t) const;
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 			virtual void processMessages();
 			virtual const CProcessResult &run();
 			virtual IObjectIA *run(const IMessageBase &msg);
 			virtual	CProcessResult sendMessage(IObjectIA *);
-			virtual const NLIAC::CIdentType &getType() const;
+			virtual const NLAIC::CIdentType &getType() const;
 
-			static const NLIAC::CIdentType IdActorScript;
+			static const NLAIC::CIdentType IdActorScript;
 
 			virtual void save(NLMISC::IStream &os);		
 			virtual void load(NLMISC::IStream &is);		
 
-			virtual tQueue isMember(const NLIAAGENT::IVarName *, const NLIAAGENT::IVarName *, const IObjectIA &) const;
+			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
 			virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;
 

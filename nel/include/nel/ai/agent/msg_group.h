@@ -1,7 +1,7 @@
 /** \file msg_group.h
  * class for define a group of message (a group of message is same as a performative.
  *
- * $Id: msg_group.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: msg_group.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,10 +25,10 @@
 #ifndef NL_IA_MSG_GROUP_H
 #define NL_IA_MSG_GROUP_H
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
-	class IBasicMessageGroup : public NLIAC::IBasicInterface {
+	class IBasicMessageGroup : public NLAIC::IBasicInterface {
 
 		protected:			
 		public:
@@ -53,7 +53,7 @@ namespace NLIAAGENT
 		sint32 _Id;
 
 	public:
-		static const NLIAC::CIdentType IdMessageGroup;
+		static const NLAIC::CIdentType IdMessageGroup;
 	public:
 
 		CMessageGroup(sint32 id = 0)
@@ -79,16 +79,16 @@ namespace NLIAAGENT
 			_Id = (sint32) id;
 		}
 		
-		virtual const NLIAC::IBasicType *clone() const 
+		virtual const NLAIC::IBasicType *clone() const 
 		{
-			NLIAC::IBasicType *x = new CMessageGroup( *this );
+			NLAIC::IBasicType *x = new CMessageGroup( *this );
 			x->incRef();
 			return x;
 		}
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{
-			NLIAC::IBasicType *x = new CMessageGroup( *this );
+			NLAIC::IBasicType *x = new CMessageGroup( *this );
 			x->incRef();
 			return x;
 		}
@@ -108,7 +108,7 @@ namespace NLIAAGENT
 			sprintf(t,"CMessageGroup<%d>",_Id);
 		}
 
-		virtual const NLIAC::CIdentType &getType() const;		
+		virtual const NLAIC::CIdentType &getType() const;		
 
 		virtual const sint32 &getId() const
 		{

@@ -1,7 +1,7 @@
 /** \file fuzzyfact.h
  *	This class describes the output of a fuzzy rule for a particular fuzzy set
  *
- * $Id: fuzzyfact.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fuzzyfact.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,18 +29,18 @@
 
 #include "fuzzy/fuzzyset.h"
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {
 	class CFuzzyVar;
 
-	class CFuzzyFact : public NLIAAGENT::IObjetOp
+	class CFuzzyFact : public NLAIAGENT::IObjetOp
 	{	
 		private:
 			CFuzzyVar *_Var;
 			IFuzzySet *_Set;
 			double _Value;
 		public:			
-			static const NLIAC::CIdentType IdFuzzyFact;
+			static const NLAIC::CIdentType IdFuzzyFact;
 
 			CFuzzyFact(const CFuzzyFact &);
 			CFuzzyFact(IFuzzySet *set, double value);
@@ -53,13 +53,13 @@ namespace NLIAFUZZY
 			virtual void save(NLMISC::IStream &os) ;
 
 			virtual const CProcessResult &run();
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
-			virtual bool isEqual(const NLIALOGIC::CBoolType &a) const;
-			virtual std::vector<NLIALOGIC::IBaseVar *> *getVars();
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+			virtual bool isEqual(const NLAILOGIC::CBoolType &a) const;
+			virtual std::vector<NLAILOGIC::IBaseVar *> *getVars();
 
-			virtual const NLIAC::CIdentType &getType() const;
-			const NLIAC::IBasicType *clone() const;
-			const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;
+			const NLAIC::IBasicType *clone() const;
+			const NLAIC::IBasicType *newInstance() const;
 			virtual void getDebugString(char *) const;
 			
 			bool isTrue() const;

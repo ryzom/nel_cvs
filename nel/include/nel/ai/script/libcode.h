@@ -1,7 +1,7 @@
 /** \file libcode.h
  * Library class exemple for the script.
  *
- * $Id: libcode.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: libcode.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,12 +37,12 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/	
-	class CCallPrint: public NLIAAGENT::IObjectIA
+	class CCallPrint: public NLAIAGENT::IObjectIA
 	{
 
 	public:
-		static const NLIAC::CIdentType IdCallPrint;
-		static NLIAC::IIO *inputOutput;
+		static const NLAIC::CIdentType IdCallPrint;
+		static NLAIC::IIO *inputOutput;
 
 	public:	
 
@@ -51,41 +51,41 @@ namespace NLIASCRIPT
 		}
 
 		
-		/// \name NLIAAGENT::IObjectIA method.
+		/// \name NLAIAGENT::IObjectIA method.
 		//@{
-		virtual sint32 isClassInheritedFrom(const NLIAAGENT::IVarName &) const
+		virtual sint32 isClassInheritedFrom(const NLAIAGENT::IVarName &) const
 		{
 			return -1;
 		}		
-		virtual NLIAAGENT::tQueue isMember(const NLIAAGENT::IVarName *className,const NLIAAGENT::IVarName *mathodName,const NLIAAGENT::IObjectIA &) const;		
-		virtual	NLIAAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 heritance, sint32 index, NLIAAGENT::IObjectIA *);
-		virtual	NLIAAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index,NLIAAGENT::IObjectIA *);
+		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *mathodName,const NLAIAGENT::IObjectIA &) const;		
+		virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 heritance, sint32 index, NLAIAGENT::IObjectIA *);
+		virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 index,NLAIAGENT::IObjectIA *);
 
-		const NLIAAGENT::IObjectIA::CProcessResult &run(){return NLIAAGENT::IObjectIA::ProcessRun;}
-		bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const{ return true;}	
+		const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;}
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const{ return true;}	
 		//@}
 		
 				
-		///Returns the const NLIAAGENT::IBaseGroupType * as an formated string.
-		NLIAAGENT::IObjectIA::CProcessResult format(const NLIAAGENT::IBaseGroupType *g);
-		///Print the contents of the NLIAAGENT::IBaseGroupType.
-		NLIAAGENT::IObjectIA::CProcessResult printList(const NLIAAGENT::IBaseGroupType *g);
+		///Returns the const NLAIAGENT::IBaseGroupType * as an formated string.
+		NLAIAGENT::IObjectIA::CProcessResult format(const NLAIAGENT::IBaseGroupType *g);
+		///Print the contents of the NLAIAGENT::IBaseGroupType.
+		NLAIAGENT::IObjectIA::CProcessResult printList(const NLAIAGENT::IBaseGroupType *g);
 
-		/// \name NLIAC::IBasicInterface method.
+		/// \name NLAIC::IBasicInterface method.
 		//@{
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CCallPrint();
+			NLAIC::IBasicType *x = new CCallPrint();
 			x->incRef();         
 			return x;            
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdCallPrint;
 		}

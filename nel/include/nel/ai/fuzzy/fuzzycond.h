@@ -1,7 +1,7 @@
 /** \file fuzzycond.h
  * Fuzzy condition, ie 
  *
- * $Id: fuzzycond.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fuzzycond.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 
 #include "fuzzy/fuzzytype.h"
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {
  
 	class CFuzzyVar;
@@ -50,7 +50,7 @@ namespace NLIAFUZZY
 			virtual float truthValue();
 			virtual void save(NLMISC::IStream &os) ;
 			virtual void load(NLMISC::IStream &is);
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual void init(NLAIAGENT::IObjectIA *);
 	};
 }
 #endif

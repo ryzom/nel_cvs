@@ -1,7 +1,7 @@
 /** \file constraint_type.h
  * class for the compiler fonctionality.
  *
- * $Id: constraint_type.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: constraint_type.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NLIASCRIPT
 	{
 	private:
 		///Type of expression after the constraint is resolve.
-		NLIAC::CIdentType	*_Ident;
+		NLAIC::CIdentType	*_Ident;
 		///Type of unresolving expression.
 		IConstraint *_Constraint;
 		/// \name Attribut need for IConstraint method.
@@ -89,7 +89,7 @@ namespace NLIASCRIPT
 
 		const IConstraint *clone() const;		
 
-		const NLIAC::CIdentType *getConstraintTypeOf()
+		const NLAIC::CIdentType *getConstraintTypeOf()
 		{
 			return _Ident;
 		}

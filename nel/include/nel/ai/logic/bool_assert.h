@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Bool asserts for rules and operators
  *
- * $Id: bool_assert.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: bool_assert.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,35 +28,35 @@
 
 #include "logic/ia_assert.h"
 
-namespace NLIALOGIC {
-	class CBoolAssert : public NLIALOGIC::IBaseAssert 
+namespace NLAILOGIC {
+	class CBoolAssert : public NLAILOGIC::IBaseAssert 
 	{
 		private:
 			bool _Value;
 		public:
-			CBoolAssert( NLIAAGENT::IVarName &, bool truth = false); 
+			CBoolAssert( NLAIAGENT::IVarName &, bool truth = false); 
 			CBoolAssert( const CBoolAssert &);
 			virtual ~CBoolAssert();
-			virtual void addFact(NLIALOGIC::CFact *);
+			virtual void addFact(NLAILOGIC::CFact *);
 			virtual void addFact(CVarSet *);
 			virtual void addFact(CValueSet *);
-			virtual void removeFact(NLIALOGIC::CFact *);
+			virtual void removeFact(NLAILOGIC::CFact *);
 
-			static const NLIAC::CIdentType IdBoolAssert;
-			virtual const NLIAC::CIdentType &getType() const;
+			static const NLAIC::CIdentType IdBoolAssert;
+			virtual const NLAIC::CIdentType &getType() const;
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *text) const;
-			bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
-			virtual const NLIAAGENT::IObjectIA::CProcessResult &run();
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 
 			virtual bool isTrue() const;
 
 			virtual sint32 nbVars() const;
-			virtual std::list<NLIALOGIC::CFact *> *getFacts() const;
+			virtual std::list<NLAILOGIC::CFact *> *getFacts() const;
 	};
 }
 #endif

@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Class for define an agent script class.
  *
- * $Id: interpret_object_agent.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
+ * $Id: interpret_object_agent.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -25,7 +25,7 @@
 #define NL_INTERPRET_OBJECT_AGENT_H
 #include "script/interpret_object.h"
 
-namespace NLIAAGENT {
+namespace NLAIAGENT {
 	class CAgentScript;
 };
 
@@ -47,7 +47,7 @@ namespace NLIASCRIPT
 		///Number of hard coded method defined in the C++ base class that the agent dervived from for exemple if the base c++ class is an CAgentScript, an CMessageScript, ...
 		sint32	_BaseMethodCount;
 		///C++ Base class representative pointer. This pointer allow to get the offset of base method defined in it.
-		NLIAAGENT::IObjectIA *_BaseObjectInstance;
+		NLAIAGENT::IObjectIA *_BaseObjectInstance;
 	public:
 
 		IAgentMultiClass()
@@ -69,13 +69,13 @@ namespace NLIASCRIPT
 		}
 
 		///Get the C++ base class representative pointer.
-		NLIAAGENT::IObjectIA *getBaseObjectInstance() const
+		NLAIAGENT::IObjectIA *getBaseObjectInstance() const
 		{
 			return _BaseObjectInstance;
 		}
 
 		///Set the C++ base class representative pointer. We have to incRef() before.
-		void setBaseObjectInstance(NLIAAGENT::IObjectIA *o)
+		void setBaseObjectInstance(NLAIAGENT::IObjectIA *o)
 		{
 			_BaseObjectInstance = o;
 		}
@@ -96,7 +96,7 @@ namespace NLIASCRIPT
 	class CAgentClass: public IAgentMultiClass
 	{
 	public:
-		static const NLIAC::CIdentType IdAgentClass;
+		static const NLAIC::CIdentType IdAgentClass;
 	private:
 		std::vector<CComponent *> _Components;
 
@@ -106,63 +106,63 @@ namespace NLIASCRIPT
 		sint32 _lastRef;		
 		sint32 _RunIndex;
 	private:			
-		NLIAAGENT::IVarName *_Inheritance;		
+		NLAIAGENT::IVarName *_Inheritance;		
 
 		
 	public:
 
-		CAgentClass(const NLIAAGENT::IVarName &);
-		CAgentClass(const NLIAAGENT::IVarName &, const NLIAAGENT::IVarName &);
+		CAgentClass(const NLAIAGENT::IVarName &);
+		CAgentClass(const NLAIAGENT::IVarName &, const NLAIAGENT::IVarName &);
 		CAgentClass(const CAgentClass &);
-		CAgentClass(const NLIAC::CIdentType &);
+		CAgentClass(const NLAIC::CIdentType &);
 		CAgentClass();
 		~CAgentClass();
 
-		virtual NLIAAGENT::IObjectIA *buildNewInstance() const;
-		virtual const NLIAC::IBasicType *clone() const;
-		virtual const NLIAC::IBasicType *newInstance() const;
+		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual void getDebugString(char *t) const;
 		virtual void save(NLMISC::IStream &);
 		virtual void load(NLMISC::IStream &);
-		virtual const NLIAAGENT::IObjectIA::CProcessResult &run();
-		virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
+		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 
 
 		//// Static components
-		virtual sint32 registerComponent(const NLIAAGENT::IVarName &type_name);
-		virtual sint32 registerComponent(const NLIAAGENT::IVarName &type_name, NLIAAGENT::CStringVarName &field_name);
+		virtual sint32 registerComponent(const NLAIAGENT::IVarName &type_name);
+		virtual sint32 registerComponent(const NLAIAGENT::IVarName &type_name, NLAIAGENT::CStringVarName &field_name);
 		/// Returns a CComponent struct describing a static component from its index in the class
 		/// Only the class's own static members are considered, not the inherited ones.
 		virtual CComponent *getComponent(sint32 i) const;
 		/// Returns a CComponent struct describing a static component from its name in the class
 		/// Only the class's own static members are considered, not the inherited ones.
-		virtual CComponent *getComponent(const NLIAAGENT::IVarName &name) const;
-		virtual sint32 getComponentIndex(const NLIAAGENT::IVarName &) const;
-//		virtual sint32 getInheritedComponentIndex(const NLIAAGENT::IVarName &name) const;
+		virtual CComponent *getComponent(const NLAIAGENT::IVarName &name) const;
+		virtual sint32 getComponentIndex(const NLAIAGENT::IVarName &) const;
+//		virtual sint32 getInheritedComponentIndex(const NLAIAGENT::IVarName &name) const;
 
 		/// Returns a CComponent struct describing a static component from its name in the class
 		/// Only the class's own static members are considered, not the inherited ones.
-		virtual sint32 getStaticMemberIndex(const NLIAAGENT::IVarName &) const;		
-		virtual const NLIAAGENT::IObjectIA *getStaticMember(sint32) const; //throw Exc::IException &
+		virtual sint32 getStaticMemberIndex(const NLAIAGENT::IVarName &) const;		
+		virtual const NLAIAGENT::IObjectIA *getStaticMember(sint32) const; //throw Exc::IException &
 		/// returns the number of static members specific to the class (not the inherited ones)
 		virtual sint32 getStaticMemberSize() const;
-		sint32 getInheritedStaticMemberIndex(const NLIAAGENT::IVarName &) const;
+		sint32 getInheritedStaticMemberIndex(const NLAIAGENT::IVarName &) const;
 		
 
 		/// Build the class static components for a new instance, including inherited ones		
-		virtual void createComponents(std::list<NLIAAGENT::IObjectIA *> &) const;
+		virtual void createComponents(std::list<NLAIAGENT::IObjectIA *> &) const;
 		/// Build the bases classes for a new instance, including inherited ones
-		virtual void createBaseClassComponents(std::list<NLIAAGENT::IObjectIA *> &) const;
+		virtual void createBaseClassComponents(std::list<NLAIAGENT::IObjectIA *> &) const;
 		///Gets the name of the components with an offset reference.
 		virtual const char *getComponentName(sint32) const;
 		
 		/// \name Methods.
 		//@{
-		virtual sint32 addBrancheCode(const NLIAAGENT::IVarName &,const CParam &);
+		virtual sint32 addBrancheCode(const NLAIAGENT::IVarName &,const CParam &);
 		virtual CMethodeName &getBrancheCode() const; ///throw Exc::CExceptionUnReference;
 		virtual CMethodeName &getBrancheCode(sint32) const;
 		virtual CMethodeName &getBrancheCode(sint32, sint32) const;
-		virtual NLIAAGENT::tQueue isMember(const NLIAAGENT::IVarName *className,const NLIAAGENT::IVarName *methodName,const NLIAAGENT::IObjectIA &param) const;
+		virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *className,const NLAIAGENT::IVarName *methodName,const NLAIAGENT::IObjectIA &param) const;
 		virtual sint32 getMethodIndexSize() const;		
 		virtual sint32 getRunMethod() const;
 		virtual void setRunMethod(sint32 index);
@@ -177,9 +177,9 @@ namespace NLIASCRIPT
 		
 		/// \name Classes.
 		//@{
-		virtual sint32 isClassInheritedFrom(const NLIAAGENT::IVarName &) const;
-		const NLIAAGENT::IVarName *getInheritanceName() const;					/// Returns the name of the base class of this class
-		void setInheritanceName(const NLIAAGENT::IVarName &name);				/// Defines the base class of this class
+		virtual sint32 isClassInheritedFrom(const NLAIAGENT::IVarName &) const;
+		const NLAIAGENT::IVarName *getInheritanceName() const;					/// Returns the name of the base class of this class
+		void setInheritanceName(const NLAIAGENT::IVarName &name);				/// Defines the base class of this class
 		virtual const IClassInterpret *getBaseClass() const;					/// Returns the base class of this class
 		const CAgentClass *getSuperClass() const;								/// Returns the highest class from which this class derives
 		const void getClassPath(std::vector<const CAgentClass *> &path) const;	/// Fills a vector with pointers to all base classes from superclass to this class
@@ -188,7 +188,7 @@ namespace NLIASCRIPT
 
 		/// Return a pointer represent the inheritance range n, the inheritance graph are represented by a vector.
 		virtual const IClassInterpret *getInheritance(sint32 n) const;
-		sint32 findMethod(const NLIAAGENT::IVarName &name,const CParam &CParam) const;
+		sint32 findMethod(const NLAIAGENT::IVarName &name,const CParam &CParam) const;
 	};
 }
 #endif

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Frst order logic assertions
  *
- * $Id: fo_assert.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fo_assert.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "logic/ia_assert.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
 	class CFirstOrderAssert : public IBaseAssert 
 	{
@@ -44,7 +44,7 @@ namespace NLIALOGIC
 			std::vector< std::vector<sint32> > _PosVarsInputs;
 
 		public:
-			CFirstOrderAssert(const NLIAAGENT::IVarName &n, sint32 nb_vars = 0);
+			CFirstOrderAssert(const NLAIAGENT::IVarName &n, sint32 nb_vars = 0);
 			CFirstOrderAssert(const CFirstOrderAssert &);
 			virtual ~CFirstOrderAssert();
 			void connectClause(CClause *, std::vector<sint32> &);
@@ -55,20 +55,20 @@ namespace NLIALOGIC
 			const std::vector<CClause *> &getClauses();
 			void addInput(CClause *, std::vector<sint32> &posvars );
 
-			static const NLIAC::CIdentType IdFirstOrderAssert;
+			static const NLAIC::CIdentType IdFirstOrderAssert;
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *text) const;
-			bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual bool isEqual(const CFirstOrderAssert &) const;
 			virtual const IObjectIA::CProcessResult &run();
 			virtual bool isTrue() const;
-			virtual const NLIAC::CIdentType &getType() const;
+			virtual const NLAIC::CIdentType &getType() const;
 
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual void init(NLAIAGENT::IObjectIA *);
 			virtual sint32 nbVars() const;
 
 			void backward(CValueSet *, std::list<CValueSet *> &);

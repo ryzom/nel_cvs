@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: messagerie.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
+ * $Id: messagerie.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "agent/msg_group.h"
 #include "agent/msg_container.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 	class CIdentType;
 	class IBasicAgent;	
@@ -256,7 +256,7 @@ namespace NLIAAGENT
 		
 
 	public:
-		static const NLIAC::CIdentType IdMessage;
+		static const NLAIC::CIdentType IdMessage;
 	public:
 
 		CMessage()
@@ -292,16 +292,16 @@ namespace NLIAAGENT
 
 		///\name IMessageBase methode realize.
 		//@{	
-		virtual const NLIAC::CIdentType &getType() const;					
+		virtual const NLAIC::CIdentType &getType() const;					
 
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicInterface *c = (NLIAC::IBasicInterface *)new CMessage(*this);
+			NLAIC::IBasicInterface *c = (NLAIC::IBasicInterface *)new CMessage(*this);
 			c->incRef();
 			return c;
 		}		
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{									
 			CMessage *instance = new CMessage;
 			instance->incRef();
@@ -325,7 +325,7 @@ namespace NLIAAGENT
 		
 
 	public:
-		static const NLIAC::CIdentType IdMessageVector;
+		static const NLAIC::CIdentType IdMessageVector;
 	public:
 
 		CMessageVector()
@@ -363,16 +363,16 @@ namespace NLIAAGENT
 		///\name IMessageBase methode realize.
 		//@{	
 
-		virtual const NLIAC::CIdentType &getType() const;					
+		virtual const NLAIC::CIdentType &getType() const;					
 
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicInterface *m = (NLIAC::IBasicInterface *)new CMessageVector(*this);
+			NLAIC::IBasicInterface *m = (NLAIC::IBasicInterface *)new CMessageVector(*this);
 			m->incRef();
 			return m;
 		}		
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{									
 			return clone();
 		}		

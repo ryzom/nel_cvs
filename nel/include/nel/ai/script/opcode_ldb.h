@@ -1,7 +1,7 @@
 /** \file opcode_ldb.h
  * Sevral op-code for loading object to the stack.
  *
- * $Id: opcode_ldb.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: opcode_ldb.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,33 +30,33 @@ namespace NLIASCRIPT
 	class CLdbOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLdbOpCode;
+		static const NLAIC::CIdentType IdLdbOpCode;
 
 	private:
-		NLIAAGENT::IObjectIA *_B;
+		NLAIAGENT::IObjectIA *_B;
 	public:
-		CLdbOpCode(const NLIAAGENT::IObjectIA &b)
+		CLdbOpCode(const NLAIAGENT::IObjectIA &b)
 		{
-		  _B = (NLIAAGENT::IObjectIA *)b.clone();
+		  _B = (NLAIAGENT::IObjectIA *)b.clone();
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
 		void getDebugResult(char *str,CCodeContext &context) const;
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLdbOpCode(*_B);
+			NLAIC::IBasicType *x = new CLdbOpCode(*_B);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLdbOpCode;
 		}
@@ -65,16 +65,16 @@ namespace NLIASCRIPT
 
 		void save(NLMISC::IStream &os)
 		{
-			os.serial( (NLIAC::CIdentType &) _B->getType() );
+			os.serial( (NLAIC::CIdentType &) _B->getType() );
 			_B->save(os);		
 		}
 
 		void load(NLMISC::IStream &is) 
 		{
 			_B->release();
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
-			_B = (NLIAAGENT::IObjectIA *)id.allocClass();
+			_B = (NLAIAGENT::IObjectIA *)id.allocClass();
 			_B->load(is);
 		}				
 		
@@ -87,7 +87,7 @@ namespace NLIASCRIPT
 	class CLdbMemberOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLdbMemberOpCode;
+		static const NLAIC::CIdentType IdLdbMemberOpCode;
 	private:
 		int _B;
 	public:
@@ -97,23 +97,23 @@ namespace NLIASCRIPT
 		}
 		
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
 		void getDebugResult(char *str,CCodeContext &context) const;		
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLdbMemberOpCode(_B);
+			NLAIC::IBasicType *x = new CLdbMemberOpCode(_B);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLdbMemberOpCode;
 		}
@@ -141,7 +141,7 @@ namespace NLIASCRIPT
 	class CLdbStackMemberiOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLdbStackMemberiOpCode;
+		static const NLAIC::CIdentType IdLdbStackMemberiOpCode;
 	private:		
 		 std::list<sint32> _I;
 	public:
@@ -150,23 +150,23 @@ namespace NLIASCRIPT
 		{
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
 		void getDebugResult(char *str,CCodeContext &context) const;		
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLdbStackMemberiOpCode(_I);
+			NLAIC::IBasicType *x = new CLdbStackMemberiOpCode(_I);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLdbStackMemberiOpCode;
 		}
@@ -192,7 +192,7 @@ namespace NLIASCRIPT
 	class CLdbHeapMemberiOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLdbHeapMemberiOpCode;
+		static const NLAIC::CIdentType IdLdbHeapMemberiOpCode;
 	private:
 		std::list<sint32> _I;
 		sint32 _N;
@@ -202,23 +202,23 @@ namespace NLIASCRIPT
 		{
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
 		void getDebugResult(char *str,CCodeContext &context) const;		
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLdbHeapMemberiOpCode(_I,_N);
+			NLAIC::IBasicType *x = new CLdbHeapMemberiOpCode(_I,_N);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLdbHeapMemberiOpCode;
 		}
@@ -247,7 +247,7 @@ namespace NLIASCRIPT
 	class CLdbMemberiOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLdbMemberiOpCode;
+		static const NLAIC::CIdentType IdLdbMemberiOpCode;
 	private:
 		std::list<sint32> _I;
 	public:
@@ -256,23 +256,23 @@ namespace NLIASCRIPT
 		{
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
 		void getDebugResult(char *str,CCodeContext &context) const;		
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLdbMemberiOpCode(_I);
+			NLAIC::IBasicType *x = new CLdbMemberiOpCode(_I);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLdbMemberiOpCode;
 		}
@@ -298,7 +298,7 @@ namespace NLIASCRIPT
 	class CLdbRefOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLdbRefOpCode;
+		static const NLAIC::CIdentType IdLdbRefOpCode;
 	private:
 		int _B;
 	public:
@@ -307,24 +307,24 @@ namespace NLIASCRIPT
 		{			
 		}
 		
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
 		void getDebugResult(char *str,CCodeContext &context) const;
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLdbRefOpCode(_B);
+			NLAIC::IBasicType *x = new CLdbRefOpCode(_B);
 			x->incRef();
 			return x;
 
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLdbRefOpCode;
 		}		

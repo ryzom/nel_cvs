@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Set of values
  *
- * $Id: valueset.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: valueset.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,15 +28,15 @@
 
 #include "agent/agent.h"
 
-namespace NLIALOGIC {
+namespace NLAILOGIC {
 
 	class IBaseVar;
 	class CClause;
 
-	class CValueSet  : public NLIAAGENT::IObjetOp
+	class CValueSet  : public NLAIAGENT::IObjetOp
 	{
 		protected:
-			NLIAAGENT::IObjetOp **_Values;
+			NLAIAGENT::IObjetOp **_Values;
 			sint32 _NbValues;
 
 		public: 
@@ -44,38 +44,38 @@ namespace NLIALOGIC {
 			CValueSet(const CValueSet &);
 			CValueSet(std::vector<IBaseVar *> &);
 			CValueSet(CValueSet *,std::vector<sint32> &);
-			CValueSet(sint32,std::list<NLIAAGENT::IObjetOp *> *,std::vector<sint32> &);
+			CValueSet(sint32,std::list<NLAIAGENT::IObjetOp *> *,std::vector<sint32> &);
 			~CValueSet();
-			virtual NLIAAGENT::IObjetOp *getValue(sint32);
-			void setValue(sint32, NLIAAGENT::IObjetOp *);
+			virtual NLAIAGENT::IObjetOp *getValue(sint32);
+			void setValue(sint32, NLAIAGENT::IObjetOp *);
 			CValueSet *unify(const CValueSet *) const ;
-			CValueSet *unify(std::list<NLIAAGENT::IObjetOp *> *vals, std::vector<sint32> &pos_vals) const;
+			CValueSet *unify(std::list<NLAIAGENT::IObjetOp *> *vals, std::vector<sint32> &pos_vals) const;
 			CValueSet *unify(CValueSet *vals, std::vector<sint32> &pos_vals) const;
 			bool operator==(CValueSet *);
-			virtual NLIAAGENT::IObjetOp *operator[](sint32);
+			virtual NLAIAGENT::IObjetOp *operator[](sint32);
 			sint32 size();
 			sint32 undefined() const;
-			std::list<NLIAAGENT::IObjetOp *> *getValues();
+			std::list<NLAIAGENT::IObjetOp *> *getValues();
 			virtual void getDebugString(char *) const;
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 
-			static const NLIAC::CIdentType IdValueSet;
+			static const NLAIC::CIdentType IdValueSet;
 
-			virtual NLIAAGENT::IObjetOp *operator ! () const;
-			virtual NLIAAGENT::IObjetOp *operator != (NLIAAGENT::IObjetOp &a) const;
-			virtual NLIAAGENT::IObjetOp *operator == (NLIAAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator ! () const;
+			virtual NLAIAGENT::IObjetOp *operator != (NLAIAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator == (NLAIAGENT::IObjetOp &a) const;
 
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &) const;
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &) const;
 			
 
 			virtual bool isTrue() const;
 
-			static const NLIAAGENT::TProcessStatement state;
+			static const NLAIAGENT::TProcessStatement state;
 
 			virtual const IObjectIA::CProcessResult &run();
 			CValueSet *forward(CClause *,std::vector<sint32> &);

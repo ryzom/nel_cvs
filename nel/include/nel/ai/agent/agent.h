@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
+ * $Id: agent.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "agent/baseia.h"
 #include "agent/mailbox.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 	typedef CLocalMailBox tMailBoxLettre;
 
@@ -197,7 +197,7 @@ namespace NLIAAGENT
 	class IAgent:public IAgentComposite
 	{	
 	public:	
-		static const NLIAC::CIdentType IdAgent;
+		static const NLAIC::CIdentType IdAgent;
 		
 	protected:		
 		IAgent(const IAgent &a);
@@ -217,10 +217,10 @@ namespace NLIAAGENT
 				
 		/// \name Some IBasicAgent method.
 		//@{
-		virtual const NLIAC::IBasicType *clone() const;
-		virtual const NLIAC::IBasicType *newInstance() const;
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual void getDebugString(char *t) const;
-		virtual const NLIAC::CIdentType &getType() const;
+		virtual const NLAIC::CIdentType &getType() const;
 		virtual void save(NLMISC::IStream &os);
 		virtual void load(NLMISC::IStream &is);		
 		//@}

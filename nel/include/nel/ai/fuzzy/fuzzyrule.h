@@ -1,7 +1,7 @@
 /** \file fuzzyrule.h
  *	Fuzzy rules class
  *
- * $Id: fuzzyrule.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fuzzyrule.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,13 +29,13 @@
 #include "fuzzy/fuzzycond.h"
 #include "logic/bool_cond.h"
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {
 	/**
 	* This class used for fuzzy inferences
 	*/
 
-	class CFuzzyRule : public NLIALOGIC::CondAnd {
+	class CFuzzyRule : public NLAILOGIC::CondAnd {
 		private:
 			std::vector<CFuzzyVar *>	_Vars;
 			std::vector<IFuzzySet *>	_Sets;
@@ -44,8 +44,8 @@ namespace NLIAFUZZY
 		public:
 			CFuzzyRule(char *comment = NULL);
 			CFuzzyRule(const CFuzzyRule &);
-			CFuzzyRule(const NLIALOGIC::CondAnd &);
-			CFuzzyRule(std::list<NLIALOGIC::IBaseBoolType *> &conds, char *comment, float threshold = 0);
+			CFuzzyRule(const NLAILOGIC::CondAnd &);
+			CFuzzyRule(std::list<NLAILOGIC::IBaseBoolType *> &conds, char *comment, float threshold = 0);
 			~CFuzzyRule();
 			void addConc(CFuzzyVar *, IFuzzySet *);
 			void addCond(CFuzzyVar *, char *);
@@ -56,18 +56,18 @@ namespace NLIAFUZZY
 
 			virtual void getDebugString(char *) const;
 
-			static const NLIAC::CIdentType IdFuzzyRule;
+			static const NLAIC::CIdentType IdFuzzyRule;
 
-			const NLIAC::CIdentType &getType() const;
+			const NLAIC::CIdentType &getType() const;
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			
-			virtual const NLIAAGENT::IObjectIA::CProcessResult &run();
-			bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual bool isTrue() const;
-			virtual NLIAAGENT::IObjetOp *operator == (NLIAAGENT::IObjetOp &a) const;
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual NLAIAGENT::IObjetOp *operator == (NLAIAGENT::IObjetOp &a) const;
+			virtual void init(NLAIAGENT::IObjectIA *);
 	};
 }
 

@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseia.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
+ * $Id: baseia.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@
 /**
 this is the objects agents name scpace.
 */
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 
 
@@ -84,7 +84,7 @@ namespace NLIAAGENT
 	* \author Nevrax France
 	* \date 2000
 	*/
-	class IBasicObjectIA : public NLIAC::IBasicInterface
+	class IBasicObjectIA : public NLAIC::IBasicInterface
 	{
 		public:
 			IBasicObjectIA();
@@ -250,7 +250,7 @@ namespace NLIAAGENT
 		methodName: is the name of the class.
 
 		param: is an IObjectIA where it defined the parametre of the method. 
-		lot of method use a IObjectIA vector object with an NLIAC::CIdentType as the the template argm.
+		lot of method use a IObjectIA vector object with an NLAIC::CIdentType as the the template argm.
 		*/
 		virtual tQueue isMember(const IVarName *,const IVarName *,const IObjectIA &) const;
 		/**

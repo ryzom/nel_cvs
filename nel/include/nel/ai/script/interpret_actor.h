@@ -7,19 +7,19 @@ namespace NLIASCRIPT
 	class CActorClass: public CAgentClass
 	{
 	public:
-		static const NLIAC::CIdentType IdActorClass;
+		static const NLAIC::CIdentType IdActorClass;
 	public:
-		CActorClass(const NLIAAGENT::IVarName &);
-		CActorClass(const NLIAC::CIdentType &);
-		CActorClass(const NLIAAGENT::IVarName &, const NLIAAGENT::IVarName &);
+		CActorClass(const NLAIAGENT::IVarName &);
+		CActorClass(const NLAIC::CIdentType &);
+		CActorClass(const NLAIAGENT::IVarName &, const NLAIAGENT::IVarName &);
 		CActorClass(const CActorClass &);
 		CActorClass();
 
-		const NLIAC::IBasicType *clone() const;
-		const NLIAC::IBasicType *newInstance() const;
+		const NLAIC::IBasicType *clone() const;
+		const NLAIC::IBasicType *newInstance() const;
 		void getDebugString(char *t) const;
 
-		virtual NLIAAGENT::IObjectIA *buildNewInstance() const;
+		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 
 		virtual ~CActorClass();
 	};

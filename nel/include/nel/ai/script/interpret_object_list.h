@@ -1,7 +1,7 @@
 /** \file interpret_object_list.h
  * Class for define list of class interpreted.
  *
- * $Id: interpret_object_list.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
+ * $Id: interpret_object_list.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -37,7 +37,7 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/	
-	class CListClass: public NLIAAGENT::CGroupType
+	class CListClass: public NLAIAGENT::CGroupType
 	{
 	public:
 		CListClass()
@@ -45,7 +45,7 @@ namespace NLIASCRIPT
 		}
 
 		///Find the class defined by a name.
-		IClassInterpret *find(const NLIAAGENT::IVarName *name)
+		IClassInterpret *find(const NLAIAGENT::IVarName *name)
 		{
 			tListType::const_iterator i = getList().begin();
 			while(i != getList().end())

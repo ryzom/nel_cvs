@@ -1,7 +1,7 @@
 /** \file fuzzyvar.h
  *	Dexcribes a fuzzy variable with its fuzzy sets and defuzzyfication method
  *
- * $Id: fuzzyvar.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fuzzyvar.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,26 +30,26 @@
 #include "logic/var.h"
 #include "fuzzy/fuzzyfact.h"
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {
 
 	class CSimpleFuzzyCond;
 
-	class CFuzzyVar : public NLIALOGIC::IBaseVar {
+	class CFuzzyVar : public NLAILOGIC::IBaseVar {
 		private:
 			double _Value;
 			double _Min;
 			double _Max;
 			char *_Name;
 			std::vector<IFuzzySet *> _sets;				// Sous ensembles flous
-			std::vector<NLIAAGENT::CStringVarName *> _qual;		// Qualificateurs linguistiques associés	
+			std::vector<NLAIAGENT::CStringVarName *> _qual;		// Qualificateurs linguistiques associés	
 			std::vector<CFuzzyFact *> _facts;
 
 		public:
 			// Constructors
 			// Parmaters: name, val min, val max, initial value
-			CFuzzyVar(const NLIAAGENT::IVarName &, double, double, NLIAAGENT::IObjetOp *);
-			CFuzzyVar(const NLIAAGENT::IVarName &, double, double, double value = 0 );
+			CFuzzyVar(const NLAIAGENT::IVarName &, double, double, NLAIAGENT::IObjetOp *);
+			CFuzzyVar(const NLAIAGENT::IVarName &, double, double, double value = 0 );
 			CFuzzyVar(const CFuzzyVar &);
 			~CFuzzyVar();
 
@@ -66,33 +66,33 @@ namespace NLIAFUZZY
 
 			CSimpleFuzzyCond *getCond(char *);
 
-			virtual void setValue(NLIAAGENT::IObjetOp *obj);
+			virtual void setValue(NLAIAGENT::IObjetOp *obj);
 			virtual void setValue(float);
-			virtual NLIAAGENT::IObjetOp *getValue() const;
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual NLAIAGENT::IObjetOp *getValue() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *txt) const;
-			virtual const NLIAAGENT::IObjectIA::CProcessResult &run();
+			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 			bool isEqual(const CFuzzyVar &a) const;
-			bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual bool isTrue() const;
-			const NLIAC::CIdentType &getType() const;
-			virtual bool operator==(NLIALOGIC::IBaseVar *var);
-			bool unify(NLIALOGIC::IBaseVar *, bool assign = false);
-			bool unify(NLIAAGENT::IObjetOp *, bool assign = false);
+			const NLAIC::CIdentType &getType() const;
+			virtual bool operator==(NLAILOGIC::IBaseVar *var);
+			bool unify(NLAILOGIC::IBaseVar *, bool assign = false);
+			bool unify(NLAIAGENT::IObjetOp *, bool assign = false);
 
-			virtual NLIAAGENT::IObjetOp *operator == (NLIAAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator == (NLAIAGENT::IObjetOp &a) const;
 			
-			static const NLIAC::CIdentType IdFuzzyVar;
+			static const NLAIC::CIdentType IdFuzzyVar;
 
 			sint32 getMethodIndexSize() const;
-			virtual NLIAAGENT::tQueue isMember(const NLIAAGENT::IVarName *,const NLIAAGENT::IVarName *,const NLIAAGENT::IObjectIA &) const;
-			virtual NLIAAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, NLIAAGENT::IObjectIA *);
-			virtual NLIAAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLIAAGENT::IObjectIA *);
+			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *,const NLAIAGENT::IVarName *,const NLAIAGENT::IObjectIA &) const;
+			virtual NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, NLAIAGENT::IObjectIA *);
+			virtual NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32, sint32, NLAIAGENT::IObjectIA *);
 
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual void init(NLAIAGENT::IObjectIA *);
 	};
 }
 

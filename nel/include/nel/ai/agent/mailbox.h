@@ -1,7 +1,7 @@
 /** \file mailbox.h
  * class for mailing box.
  *
- * $Id: mailbox.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
+ * $Id: mailbox.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "agent/messagerie.h"
 #include "agent/baseia.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 	class IMailBox:public IConnectIA
 	{
@@ -92,7 +92,7 @@ namespace NLIAAGENT
 		std::list<IBasicMessageGroup *> _Msg_grps;
 
 	public:
-		static const NLIAC::CIdentType IdSimpleLocalMailBox;
+		static const NLAIC::CIdentType IdSimpleLocalMailBox;
 	public:
 		CSimpleLocalMailBox (const IWordNumRef *parent):IMailBox(parent)
 		{
@@ -200,23 +200,23 @@ namespace NLIAAGENT
 			return (const IWordNumRef &)m == (const IWordNumRef &)*this;
 		}
 
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *a = new CSimpleLocalMailBox(*this);
+			NLAIC::IBasicType *a = new CSimpleLocalMailBox(*this);
 			a->incRef();
 			return a;
 		}
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{				
-			NLIAC::IBasicType *a;
+			NLAIC::IBasicType *a;
 			if(getParent() != NULL) a = new	CSimpleLocalMailBox((const IWordNumRef *)getParent());
 			else a = new CSimpleLocalMailBox((const IWordNumRef *)NULL);
 			a->incRef();
 			return a;
 		}
 
-		virtual const NLIAC::CIdentType &getType() const
+		virtual const NLAIC::CIdentType &getType() const
 		{
 			return IdSimpleLocalMailBox;
 		}
@@ -236,7 +236,7 @@ namespace NLIAAGENT
 			while(i != _ListMessage.end())
 			{
 				const IMessageBase &m = *(*i);
-				os.serial( (NLIAC::CIdentType &) m.getType() );
+				os.serial( (NLAIC::CIdentType &) m.getType() );
 				os.serial( (IMessageBase &) m );
 			}
 			
@@ -251,7 +251,7 @@ namespace NLIAAGENT
 				_ListMessage.pop_back();				
 			}
 
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			sint32 i;
 			is.serial(i);				
 			if(i)
@@ -288,7 +288,7 @@ namespace NLIAAGENT
 	class CLocalMailBox:public IMailBox
 	{
 		public:
-			static const NLIAC::CIdentType IdLocalMailBox;
+			static const NLAIC::CIdentType IdLocalMailBox;
 		public:			
 			typedef std::list<const IMessageBase *>::iterator tListMessageIter;
 			typedef std::list<const IMessageBase *>::const_iterator tListMessageCstIter;
@@ -384,23 +384,23 @@ namespace NLIAAGENT
 			{				
 			}
 
-			virtual const NLIAC::IBasicType *clone() const
+			virtual const NLAIC::IBasicType *clone() const
 			{
-				NLIAC::IBasicType *a = new CLocalMailBox(*this);
+				NLAIC::IBasicType *a = new CLocalMailBox(*this);
 				a->incRef();
 				return a;
 			}
 
-			virtual const NLIAC::IBasicType *newInstance() const
+			virtual const NLAIC::IBasicType *newInstance() const
 			{				
-				NLIAC::IBasicType *a;
+				NLAIC::IBasicType *a;
 				if(getParent() != NULL) a = new	CLocalMailBox((const IWordNumRef *)getParent());
 				else a = new CLocalMailBox((const IWordNumRef *)NULL);
 				a->incRef();
 				return a;
 			}
 
-			virtual const NLIAC::CIdentType &getType() const
+			virtual const NLAIC::CIdentType &getType() const
 			{
 				return IdLocalMailBox;
 			}
@@ -435,7 +435,7 @@ namespace NLIAAGENT
 			{			
 				IMailBox::load(is);
 				sint32 i;				
-				NLIAC::CIdentTypeAlloc id;			
+				NLAIC::CIdentTypeAlloc id;			
 				is.serial(i);				
 				if(i)
 				{

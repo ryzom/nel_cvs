@@ -1,7 +1,7 @@
 /** \file fuzzyset.h
  *	Basic fuzzy sets
  *
- * $Id: fuzzyset.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fuzzyset.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,9 +29,9 @@
 #include "agent/agent.h"
 #include "agent/agent_digital.h"
 
-namespace NLIAFUZZY {
+namespace NLAIFUZZY {
 
-	class IFuzzySet : public NLIAAGENT::IObjectIA {
+	class IFuzzySet : public NLAIAGENT::IObjectIA {
 		protected:			
 			char *_Name;
 			std::list<double> _Facts;
@@ -76,17 +76,17 @@ namespace NLIAFUZZY {
 			virtual double surface();
 			virtual double center();
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *txt) const;
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 
-			static const NLIAC::CIdentType IdFuzzyInterval;
-			virtual void init(NLIAAGENT::IObjectIA *);
+			static const NLAIC::CIdentType IdFuzzyInterval;
+			virtual void init(NLAIAGENT::IObjectIA *);
 	};
 
 	class CRightFuzzySet : public IFuzzySet {
@@ -103,17 +103,17 @@ namespace NLIAFUZZY {
 			virtual double surface();
 			virtual double center();
 
-			static const NLIAC::CIdentType IdRightFuzzySet;
+			static const NLAIC::CIdentType IdRightFuzzySet;
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *) const;
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual void init(NLAIAGENT::IObjectIA *);
 	};
 
 	class CTriangleFuzzySet : public IFuzzySet {
@@ -131,17 +131,17 @@ namespace NLIAFUZZY {
 			virtual double surface();
 			virtual double center();
 
-			static const NLIAC::CIdentType IdTriangleFuzzySet;
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;
+			static const NLAIC::CIdentType IdTriangleFuzzySet;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *) const;
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual void init(NLAIAGENT::IObjectIA *);
 	};
 
 	class CTrapezeFuzzySet : public IFuzzySet {
@@ -152,7 +152,7 @@ namespace NLIAFUZZY {
 			double _X4;
 
 		public:
-			static const NLIAC::CIdentType IdTrapezeFuzzySet;
+			static const NLAIC::CIdentType IdTrapezeFuzzySet;
 
 			CTrapezeFuzzySet(char *,double p1,double p2,double p3, double p4);
 			CTrapezeFuzzySet(const CTrapezeFuzzySet &);
@@ -162,16 +162,16 @@ namespace NLIAFUZZY {
 			virtual double surface();
 			virtual double center();
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *) const;
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual void init(NLAIAGENT::IObjectIA *);
 	};
 
 	class CLeftFuzzySet : public IFuzzySet {
@@ -189,18 +189,18 @@ namespace NLIAFUZZY {
 			virtual double surface();
 			virtual double center();
 
-			static const NLIAC::CIdentType IdLeftFuzzySet;
+			static const NLAIC::CIdentType IdLeftFuzzySet;
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *) const;
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual void init(NLAIAGENT::IObjectIA *);
 	};
 
 /*
@@ -217,14 +217,14 @@ namespace NLIAFUZZY {
 			virtual double center();
 
 			virtual const CProcessResult &run();
-			static const NLIAC::CIdentType idCompositeFilter;
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;
+			static const NLAIC::CIdentType idCompositeFilter;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *) const;
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 	};
 */
 

@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: agent_script.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLIASCRIPT
 	class IOpCode;
 }
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	class IAgentManager;
 	
@@ -73,7 +73,7 @@ namespace NLIAAGENT
 		///Nomber of static compoment.
 		int _NbComponents;
 		///Vector for store agent operator.
-		std::vector<NLIALOGIC::IBaseOperator *> _Operators;
+		std::vector<NLAILOGIC::IBaseOperator *> _Operators;
 		///The manager where the agent is run this manager have the agent script context.
 		IAgentManager *_AgentManager;
 		/**
@@ -89,7 +89,7 @@ namespace NLIAAGENT
 		NLIASCRIPT::CAgentClass *_AgentClass;
 
 	public:
-		static const NLIAC::CIdentType IdAgentScript;
+		static const NLAIC::CIdentType IdAgentScript;
 				
 
 	public:
@@ -105,20 +105,20 @@ namespace NLIAAGENT
 		/// \name CAgentScript member methods. 
 		//@{
 		///Method for adding operator.
-		virtual void addOperator(NLIALOGIC::IBaseOperator *);
+		virtual void addOperator(NLAILOGIC::IBaseOperator *);
 		///Removing operator from th agent.
-		virtual void remOperator(NLIALOGIC::IBaseOperator *p);
+		virtual void remOperator(NLAILOGIC::IBaseOperator *p);
 		/**
 		Add an agent to the dynamic agent child.
 		Method have an IBaseGroupType argument, this argument must store an CStringType first and an IObjectIA pointer memory next.
 		The CStringType is the name of the agent. The IObjectIA pointer memory is the agent.
 		*/
-		virtual IObjectIA::CProcessResult addDynamicAgent(NLIAAGENT::IBaseGroupType *g);
+		virtual IObjectIA::CProcessResult addDynamicAgent(NLAIAGENT::IBaseGroupType *g);
 		/**
 		Get agent from the dynamic agent child.
 		Method have an IBaseGroupType argument where he must store an CStringType representative of the name of the agent.
 		*/
-		virtual IObjectIA::CProcessResult getDynamicAgent(NLIAAGENT::IBaseGroupType *g);
+		virtual IObjectIA::CProcessResult getDynamicAgent(NLAIAGENT::IBaseGroupType *g);
 		///get the closure correspondent of the method indexed by index in the base class inheritance.
 		NLIASCRIPT::IOpCode &getMethode(sint32 inheritance,sint32 index); 
 		///get the closure correspondent of the method indexed by index.
@@ -172,8 +172,8 @@ namespace NLIAAGENT
 		virtual const IObjectIA *getStaticMember(sint32) const;		
 		virtual void setStaticMember(sint32,IObjectIA *);
 
-		virtual tQueue isMember(const IVarName *,const NLIAAGENT::IVarName *,const IObjectIA &) const;
-		virtual sint32 isClassInheritedFrom(const NLIAAGENT::IVarName &) const;			
+		virtual tQueue isMember(const IVarName *,const NLAIAGENT::IVarName *,const IObjectIA &) const;
+		virtual sint32 isClassInheritedFrom(const NLAIAGENT::IVarName &) const;			
 
 		virtual sint32 getMethodIndexSize() const;		
 		virtual	IObjectIA::CProcessResult runMethodeMember(sint32 heritance, sint32 index,IObjectIA *);
@@ -184,14 +184,14 @@ namespace NLIAAGENT
 		virtual const IObjectIA::CProcessResult &run();
 		//@}
 
-		/// \name NLIAC::IBasicInterface base class method.
+		/// \name NLAIC::IBasicInterface base class method.
 		//@{
 		virtual void load(NLMISC::IStream &is);
 		virtual void save(NLMISC::IStream &os);
-		virtual const NLIAC::IBasicType *clone() const;
-		virtual const NLIAC::IBasicType *newInstance() const;
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual void getDebugString(char *t) const;
-		virtual const NLIAC::CIdentType &getType() const;
+		virtual const NLAIC::CIdentType &getType() const;
 		//@}
 	};
 }

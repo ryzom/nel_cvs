@@ -1,7 +1,7 @@
 /** \file object_load.h
  * Sevral class for loading object from the context.
  *
- * $Id: object_load.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: object_load.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/	
-	class ILoadObject: public NLIAC::IBasicInterface
+	class ILoadObject: public NLAIC::IBasicInterface
 	{
 	public:
 		ILoadObject()
@@ -48,9 +48,9 @@ namespace NLIASCRIPT
 		/// \name Programmer have to define those abstract meyhod.
 		//@{
 		///Extract an object from the context.
-		virtual const NLIAAGENT::IObjectIA *getObject(CCodeContext &context) const = 0;
+		virtual const NLAIAGENT::IObjectIA *getObject(CCodeContext &context) const = 0;
 		///Extract a method argument from context.
-		virtual const NLIAAGENT::IBaseGroupType *getParam(CCodeContext &context) const = 0;
+		virtual const NLAIAGENT::IBaseGroupType *getParam(CCodeContext &context) const = 0;
 		//@}
 
 		virtual void getDebugString(char *) const{}
@@ -71,7 +71,7 @@ namespace NLIASCRIPT
 	class CLoadSelfObject: public ILoadObject
 	{		
 	public:
-		static const NLIAC::CIdentType IdLoadSelfObject;
+		static const NLAIC::CIdentType IdLoadSelfObject;
 	private:
 		std::list<sint32> _I;
 	public:
@@ -85,28 +85,28 @@ namespace NLIASCRIPT
 
 
 		///Get an compoment from the context.Self object.
-		virtual const NLIAAGENT::IObjectIA *getObject(CCodeContext &context) const;
+		virtual const NLAIAGENT::IObjectIA *getObject(CCodeContext &context) const;
 		///Get the argument define in the stack.
-		virtual const NLIAAGENT::IBaseGroupType *getParam(CCodeContext &context) const;
+		virtual const NLAIAGENT::IBaseGroupType *getParam(CCodeContext &context) const;
 
 
-		/// \name NLIAC::IBasicInterface.
+		/// \name NLAIC::IBasicInterface.
 		//@{
-		virtual const NLIAC::CIdentType &getType() const
+		virtual const NLAIC::CIdentType &getType() const
 		{
 			return IdLoadSelfObject;
 		}
 
-		virtual const NLIAC::IBasicType *clone() const 
+		virtual const NLAIC::IBasicType *clone() const 
 		{
-			NLIAC::IBasicType *x= new CLoadSelfObject(_I);
+			NLAIC::IBasicType *x= new CLoadSelfObject(_I);
 			x->incRef();
 			return x;
 		}		
 
-		virtual const NLIAC::IBasicType *newInstance() const 
+		virtual const NLAIC::IBasicType *newInstance() const 
 		{
-			NLIAC::IBasicType *x= new CLoadSelfObject();
+			NLAIC::IBasicType *x= new CLoadSelfObject();
 			x->incRef();
 			return x;
 		}
@@ -126,7 +126,7 @@ namespace NLIASCRIPT
 	class CLoadStackObject: public ILoadObject
 	{		
 	public:
-		static const NLIAC::CIdentType IdLoadSelfObject;
+		static const NLAIC::CIdentType IdLoadSelfObject;
 	private:
 		std::list<sint32> _I;
 
@@ -137,27 +137,27 @@ namespace NLIASCRIPT
 		}
 
 		///Get an compoment from the stack object.
-		virtual const NLIAAGENT::IObjectIA *getObject(CCodeContext &context) const;
+		virtual const NLAIAGENT::IObjectIA *getObject(CCodeContext &context) const;
 		///Get the argument define in the stack for an object stored in the stack.
-		virtual const NLIAAGENT::IBaseGroupType *getParam(CCodeContext &context) const;
+		virtual const NLAIAGENT::IBaseGroupType *getParam(CCodeContext &context) const;
 
-		/// \name NLIAC::IBasicInterface.
+		/// \name NLAIC::IBasicInterface.
 		//@{
-		virtual const NLIAC::CIdentType &getType() const
+		virtual const NLAIC::CIdentType &getType() const
 		{
 			return IdLoadSelfObject;
 		}
 
-		virtual const NLIAC::IBasicType *clone() const 
+		virtual const NLAIC::IBasicType *clone() const 
 		{
-			NLIAC::IBasicType *x= new CLoadStackObject(_I);
+			NLAIC::IBasicType *x= new CLoadStackObject(_I);
 			x->incRef();
 			return x;
 		}		
 
-		virtual const NLIAC::IBasicType *newInstance() const 
+		virtual const NLAIC::IBasicType *newInstance() const 
 		{
-			NLIAC::IBasicType *x= new CLoadStackObject();
+			NLAIC::IBasicType *x= new CLoadStackObject();
 			x->incRef();
 			return x;
 		}
@@ -177,7 +177,7 @@ namespace NLIASCRIPT
 	class CLoadHeapObject: public ILoadObject
 	{
 	public:
-		static const NLIAC::CIdentType IdLoadHeapObject;
+		static const NLAIC::CIdentType IdLoadHeapObject;
 	private:
 		std::list<sint32> _I;
 		sint32 _N;
@@ -188,27 +188,27 @@ namespace NLIASCRIPT
 		}
 
 		///Get an compoment from the heap object.
-		virtual const NLIAAGENT::IObjectIA *getObject(CCodeContext &context) const;
+		virtual const NLAIAGENT::IObjectIA *getObject(CCodeContext &context) const;
 		///Get the argument define in the stack for an object stored in the heap.
-		virtual const NLIAAGENT::IBaseGroupType *getParam(CCodeContext &context) const;
+		virtual const NLAIAGENT::IBaseGroupType *getParam(CCodeContext &context) const;
 
-		/// \name NLIAC::IBasicInterface.
+		/// \name NLAIC::IBasicInterface.
 		//@{
-		virtual const NLIAC::CIdentType &getType() const
+		virtual const NLAIC::CIdentType &getType() const
 		{
 			return IdLoadHeapObject;
 		}
 
-		virtual const NLIAC::IBasicType *clone() const 
+		virtual const NLAIC::IBasicType *clone() const 
 		{
-			NLIAC::IBasicType *x= new CLoadHeapObject(_I,_N);
+			NLAIC::IBasicType *x= new CLoadHeapObject(_I,_N);
 			x->incRef();
 			return x;
 		}		
 
-		virtual const NLIAC::IBasicType *newInstance() const 
+		virtual const NLAIC::IBasicType *newInstance() const 
 		{
-			NLIAC::IBasicType *x= new CLoadHeapObject();
+			NLAIC::IBasicType *x= new CLoadHeapObject();
 			x->incRef();
 			return x;
 		}

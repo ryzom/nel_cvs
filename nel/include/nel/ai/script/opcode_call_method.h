@@ -1,7 +1,7 @@
 /** \file opcode_call_method.h
  * Sevral call op-code fonctionality.
  *
- * $Id: opcode_call_method.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: opcode_call_method.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ namespace NLIASCRIPT
 	class CCallMethod: public ICallMethod
 	{
 	public:
-		static const NLIAC::CIdentType IdCallMethode;
+		static const NLAIC::CIdentType IdCallMethode;
 		
 	private:
 		sint32 _Inheritance;
@@ -106,24 +106,24 @@ namespace NLIASCRIPT
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
 			sprintf(str,"CallMethod %d de la class '%s'",_I, (const char *)(context.Self)->getType());
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CCallMethod(*this);
+			NLAIC::IBasicType *x = new CCallMethod(*this);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdCallMethode;
 		}
@@ -157,7 +157,7 @@ namespace NLIASCRIPT
 	class CCallHeapMethodi: public ICallMethod
 	{
 	public:
-		static const NLIAC::CIdentType IdCallHeapMethodei;
+		static const NLAIC::CIdentType IdCallHeapMethodei;
 		
 	private:
 		sint32 _Inheritance;
@@ -174,30 +174,30 @@ namespace NLIASCRIPT
 		{
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
-			NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *)context.Heap[(int)_HeapPos];
+			NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Heap[(int)_HeapPos];
 			std::list<sint32>::const_iterator it = _N.begin();			
 			while(it != _N.end())
 			{
-				obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*it++);
+				obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 			}
 			sprintf(str,"CallMethod %d de la class '%s' dans le Heap",_I, (const char *)obj->getType());			
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CCallHeapMethodi(*this);
+			NLAIC::IBasicType *x = new CCallHeapMethodi(*this);
 			x->incRef();
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdCallHeapMethodei;
 		}		
@@ -236,7 +236,7 @@ namespace NLIASCRIPT
 	class CCallStackMethodi: public ICallMethod
 	{
 	public:
-		static const NLIAC::CIdentType IdCallStackMethodei;
+		static const NLAIC::CIdentType IdCallStackMethodei;
 
 	protected:
 		sint32 _Inheritance;
@@ -251,30 +251,30 @@ namespace NLIASCRIPT
 		{			
 		}
 
-		virtual  NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		virtual  NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
-			NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *)context.Stack[(int)context.Stack - 1];
+			NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Stack[(int)context.Stack - 1];
 			std::list<sint32>::const_iterator it = _N.begin();			
 			while(it != _N.end())
 			{
-				obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*it++);
+				obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 			}
 			sprintf(str,"CallMethod %d de la class '%s' dans le stack",_I, (const char *)obj->getType());
 		}
 
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CCallStackMethodi(*this);
+			NLAIC::IBasicType *x = new CCallStackMethodi(*this);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		virtual const NLIAC::CIdentType &getType() const
+		virtual const NLAIC::CIdentType &getType() const
 		{
 			return IdCallStackMethodei;
 		}
@@ -309,7 +309,7 @@ namespace NLIASCRIPT
 	class CCallStackNewMethodi: public CCallStackMethodi
 	{
 	public:
-		static const NLIAC::CIdentType IdCallStackNewMethodei;
+		static const NLAIC::CIdentType IdCallStackNewMethodei;
 	
 	public:
 		CCallStackNewMethodi(const CCallStackNewMethodi &c):CCallStackMethodi(c)
@@ -320,29 +320,29 @@ namespace NLIASCRIPT
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
-			NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *)context.Stack[(int)context.Stack];
+			NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Stack[(int)context.Stack];
 			std::list<sint32>::const_iterator it = _N.begin();
 
 			while(it != _N.end())
 			{
-				obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*it++);
+				obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 			}
 
 			sprintf(str,"CallMethod %d de la class '%s' dans le stack apres un new",_I, (const char *)obj->getType());
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CCallStackNewMethodi(*this);
+			NLAIC::IBasicType *x = new CCallStackNewMethodi(*this);
 			x->incRef();         
 			return x;
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdCallStackNewMethodei;
 		}
@@ -357,7 +357,7 @@ namespace NLIASCRIPT
 	class CCallMethodi: public ICallMethod
 	{
 	public:
-		static const NLIAC::CIdentType IdCallMethodei;
+		static const NLAIC::CIdentType IdCallMethodei;
 		
 	private:
 		sint32 _Inheritance;
@@ -374,32 +374,32 @@ namespace NLIASCRIPT
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
-			NLIAAGENT::IObjectIA *obj = (NLIAAGENT::IObjectIA *)context.Self;
+			NLAIAGENT::IObjectIA *obj = (NLAIAGENT::IObjectIA *)context.Self;
 			std::list<sint32>::const_iterator it = _N.begin();
 
 			while(it != _N.end())
 			{
-				obj = (NLIAAGENT::IObjectIA *)obj->getStaticMember(*it++);
+				obj = (NLAIAGENT::IObjectIA *)obj->getStaticMember(*it++);
 			}
 
 			sprintf(str,"CallMethodi %d de la class '%s'",_I, (const char *)obj->getType());
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CCallMethodi(*this);
+			NLAIC::IBasicType *x = new CCallMethodi(*this);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdCallMethodei;
 		}

@@ -1,7 +1,7 @@
 /** \file context_debug.h
  * Debug informations in the context.
  *
- * $Id: context_debug.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: context_debug.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -50,10 +50,10 @@ namespace NLIASCRIPT
 	 * \author Nevrax France
 	 * \date 2000
 	 */
-	class CContextDebug : public NLIAAGENT::IObjectIA
+	class CContextDebug : public NLAIAGENT::IObjectIA
 	{
 	public:
-		static const NLIAC::CIdentType IdContextDebug;
+		static const NLAIC::CIdentType IdContextDebug;
 
 		/// Are we in a debug context ?
 		bool									Active;
@@ -62,10 +62,10 @@ namespace NLIASCRIPT
 		CStackPointer							&HeapDebug; 
 
 		// Var name of the current function.
-		std::list<NLIAAGENT::IObjectIA	*>				Param;	
+		std::list<NLAIAGENT::IObjectIA	*>				Param;	
 
 	private :
-		NLIAAGENT::TProcessStatement					_RunState;
+		NLAIAGENT::TProcessStatement					_RunState;
 		std::list<const CCodeBrancheRun*>		_CallStack;
 		TDebugMode								_DebugMode;
 		uint16									_StepIndex; // Index of the current StepByStep branche in the _CallStack
@@ -82,13 +82,13 @@ namespace NLIASCRIPT
 		~CContextDebug();
 
 		/// Return the class type.
-		const NLIAC::CIdentType &getType() const;
+		const NLAIC::CIdentType &getType() const;
 
 		/// Return a copy of this object.
-		const NLIAC::IBasicType* clone() const;
+		const NLAIC::IBasicType* clone() const;
 
 		/// Idem as clone.
-		const NLIAC::IBasicType* newInstance() const;
+		const NLAIC::IBasicType* newInstance() const;
 
 		/// Return a debugSting.
 		void getDebugString(char* dbgStr) const;
@@ -100,10 +100,10 @@ namespace NLIASCRIPT
 		void load(NLMISC::IStream &is);
 
 		/// Are two object egals ?
-		bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 
 		/// Run current obect.
-		const NLIAAGENT::IObjectIA::CProcessResult &run();
+		const NLAIAGENT::IObjectIA::CProcessResult &run();
 
 		/// Debug mode could be run, steb by step, step in, step out or stop.
 		//@{
@@ -133,7 +133,7 @@ namespace NLIASCRIPT
 		void callStackPush(const CCodeBrancheRun* cbr);
 
 		/// Print the current call stack.
-		void callStackPrint(NLIAC::IIO *inputOutput) const;
+		void callStackPrint(NLAIC::IIO *inputOutput) const;
 
 		/// Add a BreakPoint.
 		void addBreakPoint(uint16 line, const char* fileName);
@@ -145,7 +145,7 @@ namespace NLIASCRIPT
 		bool getBreakPointValue(uint16 line, const char* fileName) const;
 
 		/// Liste active breaks.
-		void printActiveBeaks(NLIAC::IIO *inputOutput) const;
+		void printActiveBeaks(NLAIC::IIO *inputOutput) const;
 
 		/// Get the last command Line.
 		const char* getLastCommandLine() const;

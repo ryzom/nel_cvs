@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base class for assertions
  *
- * $Id: ia_assert.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: ia_assert.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "agent/agent.h"
 #include "logic/var.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
 	class CClause;
 	class CVarSet;
@@ -37,15 +37,15 @@ namespace NLIALOGIC
 	class CFact;
 	class IBaseOperator;
 
-	class IBaseAssert : public NLIAAGENT::IObjetOp
+	class IBaseAssert : public NLAIAGENT::IObjetOp
 	{
 		protected:
-			NLIAAGENT::IVarName *_Name;
+			NLAIAGENT::IVarName *_Name;
 			std::vector<IBaseOperator *>		_Outputs;		// Operators referecing the assertion in their preconditions
 			std::vector<IBaseOperator *>		_Inputs;		// Operators referecing the assertion in their postconditions
 	
 		public:
-			IBaseAssert(const NLIAAGENT::IVarName &n );
+			IBaseAssert(const NLAIAGENT::IVarName &n );
 			virtual ~IBaseAssert();
 
 			//virtual void connectClause(CClause *) = 0;
@@ -53,7 +53,7 @@ namespace NLIALOGIC
 			virtual void addFact(CVarSet *) = 0;
 			virtual void removeFact(CFact *) = 0;
 
-			virtual NLIAAGENT::IVarName &getName() const
+			virtual NLAIAGENT::IVarName &getName() const
 			{
 				return *_Name;
 			}
@@ -68,7 +68,7 @@ namespace NLIALOGIC
 			virtual void addOutput(IBaseOperator *);
 			virtual const std::vector<IBaseOperator *> &getOutputs();
 
-			virtual const NLIAC::CIdentType &getType() const = 0;
+			virtual const NLAIC::CIdentType &getType() const = 0;
 			virtual sint32 nbVars() const = 0;
 			virtual std::list<CFact *> *getFacts() const = 0;
 	};

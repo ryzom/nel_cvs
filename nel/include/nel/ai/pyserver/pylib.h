@@ -224,7 +224,7 @@ exemple:
 	};
 
 
-	CPyExport *initPythonLib(NLIAC::IIO *Interface,char *pathWay);
+	CPyExport *initPythonLib(NLAIC::IIO *Interface,char *pathWay);
 	void endPythonInterface(CPyExport *Interface);
 }
 #endif

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Set of variables
  *
- * $Id: varset.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: varset.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "logic/boolval.h"
 
-namespace NLIALOGIC {
+namespace NLAILOGIC {
 
 	class IBaseAssert;
 	class CValueSet;
@@ -44,16 +44,16 @@ namespace NLIALOGIC {
 			CVarSet(std::vector<IBaseVar *> &);
 			~CVarSet();			
 			CValueSet *asCValueSet();
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
-			virtual const NLIAC::CIdentType &getType() const;			
+			virtual const NLAIC::CIdentType &getType() const;			
 			virtual void getDebugString(char *text) const;
 			virtual float truthValue() const;			
 			virtual const CProcessResult &run();
 			virtual bool isEqual(const CVarSet &a) const;
-			bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 
 			virtual std::vector<IBaseVar *> *getVars();
 			void addVar(IBaseVar *);
@@ -61,14 +61,14 @@ namespace NLIALOGIC {
 			virtual CVarSet *unify(CVarSet *);
 			virtual CVarSet *unify(CValueSet *);
 			bool isUnified();
-			std::list<NLIAAGENT::IObjetOp *> *getValues();
+			std::list<NLAIAGENT::IObjetOp *> *getValues();
 			sint32 size();
 
 		public:
-			static const NLIAC::CIdentType IdVarSet;
+			static const NLAIC::CIdentType IdVarSet;
 
-			virtual NLIAAGENT::IObjetOp *operator ! () const;
-			virtual NLIAAGENT::IObjetOp *operator != (NLIAAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator ! () const;
+			virtual NLAIAGENT::IObjetOp *operator != (NLAIAGENT::IObjetOp &a) const;
 			virtual bool isTrue() const;
 
 			virtual sint32 undefined();
@@ -80,19 +80,19 @@ namespace NLIALOGIC {
 			IBaseAssert *_Assert;
 		public:
 
-			static const NLIAC::CIdentType IdFactPattern ;
+			static const NLAIC::CIdentType IdFactPattern ;
 			CFactPattern  (const CFactPattern   &);
 			CFactPattern  (const CVarSet &);
 			CFactPattern  (IBaseAssert *assert = NULL);
 			IBaseAssert *getAssert();
 			void setAssert(IBaseAssert *);
 			virtual CVarSet *unify(CFactPattern   *);
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &) const;
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &) const;
+			virtual void init(NLAIAGENT::IObjectIA *);
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;			
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;			
 			virtual void getDebugString(char *text) const;
 			virtual void propagate();
 	};

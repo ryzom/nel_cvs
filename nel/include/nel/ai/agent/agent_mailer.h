@@ -1,7 +1,7 @@
 /** \file agent_mailer.h
  * Sevral class for mailing message to an agent.
  *
- * $Id: agent_mailer.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: agent_mailer.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "agent/agent.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 	/**
 	This class define an agent that it can assume the local communication role of an ather agent. This agent can be considered as an mail box agent.
@@ -41,7 +41,7 @@ namespace NLIAAGENT
 	{
 
 	public:
-		static const NLIAC::CIdentType LocalAgentMail;
+		static const NLAIC::CIdentType LocalAgentMail;
 	private:
 		IBasicAgent *_HostAgent;
 
@@ -58,14 +58,14 @@ namespace NLIAAGENT
 		{
 			IBasicAgent::save(os);
 			IWordNumRef &r = (IWordNumRef&)*((IConnectIA *)_HostAgent);
-			os.serial( (NLIAC::CIdentType &) (r.getType()) );
+			os.serial( (NLAIC::CIdentType &) (r.getType()) );
 			r.save(os);
 		}
 		virtual void load(NLMISC::IStream &is)
 		{
 			IBasicAgent::load(is);
 
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is >> id;
 			IWordNumRef *num = (IWordNumRef *)id.allocClass();
 			num->load(is);
@@ -73,22 +73,22 @@ namespace NLIAAGENT
 			_HostAgent = (IBasicAgent *)((const IRefrence *)*num);
 			delete num;
 		}
-		virtual const NLIAC::CIdentType &getType() const
+		virtual const NLAIC::CIdentType &getType() const
 		{
 			return LocalAgentMail;
 		}
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{			
-			NLIAC::IBasicType *x = new CLocalAgentMail();
+			NLAIC::IBasicType *x = new CLocalAgentMail();
 			x->incRef();
 			return x;
 		}
 
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
 			if(_HostAgent != NULL) _HostAgent->incRef();
-			NLIAC::IBasicType *x = new CLocalAgentMail(_HostAgent);
+			NLAIC::IBasicType *x = new CLocalAgentMail(_HostAgent);
 			x->incRef();
 			return x;
 		}

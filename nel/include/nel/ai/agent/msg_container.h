@@ -1,7 +1,7 @@
 /** \file msg_container.h
  * class for container of message in the mail box.
  *
- * $Id: msg_container.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: msg_container.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,13 +26,13 @@
 #ifndef NL_IA_MSG_CONTAINER_H
 #define NL_IA_MSG_CONTAINER_H
 
-namespace NLIAAGENT {
+namespace NLAIAGENT {
 
 	class IMessageBase;
 
 
 	// Classe de base abstraite des containers de messages
-	class  IBasicMsgContainer : public NLIAC::IBasicInterface
+	class  IBasicMsgContainer : public NLAIC::IBasicInterface
 	{
 		protected:
 			
@@ -66,7 +66,7 @@ namespace NLIAAGENT {
 			sint32 findIndex(const IBasicMessageGroup &grp);
 
 		public:
-			static const NLIAC::CIdentType IdVectorMsgContainer;
+			static const NLAIC::CIdentType IdVectorMsgContainer;
 		public:
 			CVectorMsgContainer();
 			CVectorMsgContainer(const CVectorMsgContainer &);
@@ -74,10 +74,10 @@ namespace NLIAAGENT {
 
 			virtual void save(NLMISC::IStream &);
 			virtual void load(NLMISC::IStream &);
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 				
-			virtual const NLIAC::CIdentType &getType() const;			
+			virtual const NLAIC::CIdentType &getType() const;			
 
 			// TODO
 			void getDebugString(char *t) const { t[0] = 0; }

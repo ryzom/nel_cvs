@@ -1,7 +1,7 @@
 /** \file fuzzyruleset.h
  *	A set of fuzzy rules which desribes a fuzzy controler
  *
- * $Id: fuzzyruleset.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fuzzyruleset.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,30 +28,30 @@
 
 #include "agent/agent.h"
 
-namespace NLIAFUZZY
+namespace NLAIFUZZY
 {
 	class CFuzzyRule;
 
-	class CFuzzyRuleSet : public NLIAAGENT::IObjectIA 
+	class CFuzzyRuleSet : public NLAIAGENT::IObjectIA 
 	{
 		private:
 			char *_Comment;
 			std::list<CFuzzyRule *> _Rules;
 		public:
 
-			static const NLIAC::CIdentType idFuzzyRuleSet;
+			static const NLAIC::CIdentType idFuzzyRuleSet;
 
 			CFuzzyRuleSet(char *comment = NULL);
 			void addRule(CFuzzyRule *);
 			virtual const CProcessResult &run();
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *text) const;
-			const NLIAC::CIdentType &getType() const;
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &) const;
-			virtual void init(NLIAAGENT::IObjectIA *);
+			const NLAIC::CIdentType &getType() const;
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &) const;
+			virtual void init(NLAIAGENT::IObjectIA *);
 	};
 }
 

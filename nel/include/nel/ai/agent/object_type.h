@@ -1,7 +1,7 @@
 /** \file object_type.h
  * class encaputation a type of object.
  *
- * $Id: object_type.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: object_type.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #define NL_OBJECT_TYPE_H
 
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 	/**	
-	  This class store an NLIAC::CIdentType as an IObjectIA. This usefull to transimt type object to the script.
+	  This class store an NLAIC::CIdentType as an IObjectIA. This usefull to transimt type object to the script.
 
 	  * \author Portier Pierre	
 	  * \author Chafik sameh
@@ -41,26 +41,26 @@ namespace NLIAAGENT
 	
 	private:
 		///Type to store.
-		NLIAC::CIdentType *_Type;		
+		NLAIC::CIdentType *_Type;		
 
 	public:
-		CObjectType(NLIAC::CIdentType *type):_Type(type)
+		CObjectType(NLAIC::CIdentType *type):_Type(type)
 		{
 
 		}
 
-		const NLIAC::CIdentType &getType() const throw (NLIAE::CExceptionUnReference)
+		const NLAIC::CIdentType &getType() const throw (NLIAE::CExceptionUnReference)
 		{
 			if(_Type == NULL) throw NLIAE::CExceptionUnReference("object type is unreference");
 			return *_Type;
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{			
-			return new CObjectType(new NLIAC::CIdentType (*_Type));
+			return new CObjectType(new NLAIC::CIdentType (*_Type));
 		}
 
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();			
 		}

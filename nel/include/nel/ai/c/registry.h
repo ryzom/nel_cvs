@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: registry.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: registry.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include <map>
 #include <vector>
 
-namespace NLIAC 
+namespace NLAIC 
 {
 	class CIdentType;
 	class IClassCFactory;

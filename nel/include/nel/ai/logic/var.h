@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base variable class for first order and fuzzy logic
  *
- * $Id: var.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: var.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,30 +28,30 @@
 
 #include "agent/agent.h"
 
-namespace NLIALOGIC {
+namespace NLAILOGIC {
 
-	class IBaseVar : public NLIAAGENT::IObjetOp
+	class IBaseVar : public NLAIAGENT::IObjetOp
 	{
 		protected:
-			NLIAAGENT::IVarName *_Name;
+			NLAIAGENT::IVarName *_Name;
 
 		public:
-			IBaseVar(const NLIAAGENT::IVarName &);
+			IBaseVar(const NLAIAGENT::IVarName &);
 			IBaseVar(const char *);
 
 			IBaseVar(const IBaseVar &);
 			virtual ~IBaseVar();
 
-			void setName(NLIAAGENT::IVarName &);
-			NLIAAGENT::IVarName &getName() const;
-			virtual void setValue(NLIAAGENT::IObjetOp*) = 0;
-			virtual NLIAAGENT::IObjetOp*getValue() const = 0;		
+			void setName(NLAIAGENT::IVarName &);
+			NLAIAGENT::IVarName &getName() const;
+			virtual void setValue(NLAIAGENT::IObjetOp*) = 0;
+			virtual NLAIAGENT::IObjetOp*getValue() const = 0;		
 			virtual bool unify(IBaseVar *,bool assign = false) = 0;
-			virtual bool unify(NLIAAGENT::IObjetOp*, bool assign = false) = 0;
+			virtual bool unify(NLAIAGENT::IObjetOp*, bool assign = false) = 0;
 
 			// Ajout du Set dans les variables
-			virtual NLIAAGENT::tQueue isMember(const NLIAAGENT::IVarName *, const NLIAAGENT::IVarName *, const NLIAAGENT::IObjectIA &) const;
-			virtual	NLIAAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 , NLIAAGENT::IObjectIA *);
+			virtual NLAIAGENT::tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const NLAIAGENT::IObjectIA &) const;
+			virtual	NLAIAGENT::IObjectIA::CProcessResult runMethodeMember(sint32 , NLAIAGENT::IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;
 
 	};
@@ -59,33 +59,33 @@ namespace NLIALOGIC {
 	class CVar : public IBaseVar 
 	{	
 		private:
-			NLIAAGENT::IObjetOp*_Value;
+			NLAIAGENT::IObjetOp*_Value;
 
 		public:
-			static const NLIAC::CIdentType IdVar;
+			static const NLAIC::CIdentType IdVar;
 
 		public:
-			CVar(const NLIAAGENT::IVarName &,NLIAAGENT::IObjetOp*value = NULL);
-			CVar(const char *,NLIAAGENT::IObjetOp*value = NULL);
+			CVar(const NLAIAGENT::IVarName &,NLAIAGENT::IObjetOp*value = NULL);
+			CVar(const char *,NLAIAGENT::IObjetOp*value = NULL);
 			CVar(const CVar &cp);
 			virtual ~CVar();
-			virtual void setValue(NLIAAGENT::IObjetOp*obj);
-			virtual NLIAAGENT::IObjetOp*getValue() const;
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual void setValue(NLAIAGENT::IObjetOp*obj);
+			virtual NLAIAGENT::IObjetOp*getValue() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *text) const;
 			virtual bool isEqual(const CVar &a) const;
-			virtual const NLIAAGENT::IObjectIA::CProcessResult &run();
-			bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual bool isTrue() const;
-			const NLIAC::CIdentType &getType() const;
+			const NLAIC::CIdentType &getType() const;
 			virtual bool operator==(IBaseVar *CVar);
 			bool unify(IBaseVar *, bool assign = false);
-			bool unify(NLIAAGENT::IObjetOp*, bool assign = false);
+			bool unify(NLAIAGENT::IObjetOp*, bool assign = false);
 
-			virtual NLIAAGENT::IObjetOp*operator == (NLIAAGENT::IObjetOp&a) const;
+			virtual NLAIAGENT::IObjetOp*operator == (NLAIAGENT::IObjetOp&a) const;
 	};
 }
 #endif

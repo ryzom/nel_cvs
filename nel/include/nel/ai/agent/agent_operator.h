@@ -1,7 +1,7 @@
 /** \file agent_operator.h
  * Includes class operator for IObjectIA objects.
  *
- * $Id: agent_operator.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
+ * $Id: agent_operator.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "agent/baseia.h"
 
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 	/**	
 	This is an abstract class to put on the defintion of an operator. Not that an operator here is an object where we can add, sub, mul, dive it with an ather, and

@@ -1,7 +1,7 @@
 /** \file actor.h
  *	
  *
- * $Id: actor.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: actor.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "logic/bool_cond.h"
 #include "script/type_def.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	class CActor;
 
@@ -79,7 +79,7 @@ namespace NLIAAGENT
 			/// Returns true if the actor has a token
 			bool isActivated();
 			/// Adds a transition, ie a condition and a list of newly activated agents
-			void addTransition(NLIALOGIC::IBaseCond *, std::vector<CActor *> &, bool);
+			void addTransition(NLAILOGIC::IBaseCond *, std::vector<CActor *> &, bool);
 //			void addTransition(CTransition *);
 
 			/// Activates the actor.
@@ -94,21 +94,21 @@ namespace NLIAAGENT
 
 			/// \name Base class member method.			
 			//@{
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void getDebugString(char *t) const;
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 			virtual void processMessages();
 			virtual const CProcessResult &run();
 			virtual IObjectIA *run(const IMessageBase &msg);
-			virtual const NLIAC::CIdentType &getType() const;
+			virtual const NLAIC::CIdentType &getType() const;
 
-			static const NLIAC::CIdentType IdActor;
+			static const NLAIC::CIdentType IdActor;
 
 			virtual void save(NLMISC::IStream &os);		
 			virtual void load(NLMISC::IStream &is);		
 
-			virtual tQueue isMember(const NLIAAGENT::IVarName *, const NLIAAGENT::IVarName *, const IObjectIA &) const;
+			virtual tQueue isMember(const NLAIAGENT::IVarName *, const NLAIAGENT::IVarName *, const IObjectIA &) const;
 			virtual IObjectIA::CProcessResult runMethodeMember(sint32, IObjectIA *);
 			virtual sint32 getMethodIndexSize() const;
 			//@}

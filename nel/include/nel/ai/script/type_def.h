@@ -1,7 +1,7 @@
 /** \file type_def.h
  * Sevral class for typing object.
  *
- * $Id: type_def.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
+ * $Id: type_def.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -86,9 +86,9 @@ namespace NLIASCRIPT
 			return "constraint<COperandVoid>";
 		}
 
-		const NLIAC::CIdentType *getConstraintTypeOf()
+		const NLAIC::CIdentType *getConstraintTypeOf()
 		{
-			return &NLIAC::CIdentType::VoidType;
+			return &NLAIC::CIdentType::VoidType;
 		}
 
 		virtual void serial(NLMISC::IStream	&f) throw(NLMISC::EStream)
@@ -152,19 +152,19 @@ namespace NLIASCRIPT
 	class COperandSimple: public IOpType
 	{
 	private:
-		NLIAC::CIdentType *_Ident;
+		NLAIC::CIdentType *_Ident;
 		char *_TxtInfo;
 
 	public:
 		COperandSimple(NLMISC::IStream	&f)
 		{
-			_Ident = new NLIAC::CIdentType(f);			
+			_Ident = new NLAIC::CIdentType(f);			
 			char txt[1028*8];		
 			sprintf(txt,"constraint<COperandSimple> for %s",(const char *)*_Ident);
 			_TxtInfo = new char [strlen(txt) + 1];
 			strcpy(_TxtInfo,txt);
 		}
-		COperandSimple(NLIAC::CIdentType *i) : _Ident(i)
+		COperandSimple(NLAIC::CIdentType *i) : _Ident(i)
 		{			
 			char txt[1028*8];		
 			sprintf(txt,"constraint<COperandSimple> for %s",(const char *)*_Ident);
@@ -177,7 +177,7 @@ namespace NLIASCRIPT
 			return _TxtInfo;
 		}
 
-		const NLIAC::CIdentType *getConstraintTypeOf()
+		const NLAIC::CIdentType *getConstraintTypeOf()
 		{
 			return _Ident;
 		}
@@ -203,7 +203,7 @@ namespace NLIASCRIPT
 
 		const IConstraint *clone() const
 		{
-			IConstraint *x = new COperandSimple(new NLIAC::CIdentType(*_Ident));
+			IConstraint *x = new COperandSimple(new NLAIC::CIdentType(*_Ident));
 			x->incRef();
 			return x;
 		}		
@@ -217,7 +217,7 @@ namespace NLIASCRIPT
 		{
 			if ( f.isReading() )
 			{
-				_Ident = new NLIAC::CIdentType(f);
+				_Ident = new NLAIC::CIdentType(f);
 				delete _TxtInfo;
 				char txt[1028*8];		
 				sprintf(txt,"constraint<COperandSimple> for %s",(const char *)*_Ident);
@@ -252,7 +252,7 @@ namespace NLIASCRIPT
 	{
 	private:		
 		 IConstraint *_Constraint;		 
-		 NLIAC::CIdentType *_Id;
+		 NLAIC::CIdentType *_Id;
 		 char *_TxtInfo;
 		 bool _RunIsDone;
 		
@@ -271,7 +271,7 @@ namespace NLIASCRIPT
 		{
 			if(_Id != NULL)
 			{
-				COperandSimple n(new NLIAC::CIdentType (*_Id));
+				COperandSimple n(new NLAIC::CIdentType (*_Id));
 				n.serial(f);
 			}
 			else throw NLMISC::EStream();
@@ -282,7 +282,7 @@ namespace NLIASCRIPT
 			return _TxtInfo;
 		}
 		
-		const NLIAC::CIdentType *getConstraintTypeOf() 
+		const NLAIC::CIdentType *getConstraintTypeOf() 
 		{
 			return _Id;
 		}
@@ -307,7 +307,7 @@ namespace NLIASCRIPT
 		{			
 			if(c == _Constraint) 
 			{
-				_Id = (NLIAC::CIdentType *)_Constraint->getConstraintTypeOf();
+				_Id = (NLAIC::CIdentType *)_Constraint->getConstraintTypeOf();
 				if(satisfied())
 				{
 					_RunIsDone = true;					
@@ -367,11 +367,11 @@ namespace NLIASCRIPT
 		///Type of the operand.
 		IOpType	*_Operand;
 		///Type of operation
-		NLIAC::CTypeOfOperator::TTypeOp _Op;
+		NLAIC::CTypeOfOperator::TTypeOp _Op;
 		char *_TxtInfo;
-		NLIAC::CIdentType *_Id;
+		NLAIC::CIdentType *_Id;
 	public:
-		COperationType(const IOpType &operand,NLIAC::CTypeOfOperator::TTypeOp op):
+		COperationType(const IOpType &operand,NLAIC::CTypeOfOperator::TTypeOp op):
 			_Operand((IOpType *)operand.clone()),_Op(op)
 		{
 
@@ -383,7 +383,7 @@ namespace NLIASCRIPT
 		}
 
 
-		COperationType():_Operand(NULL),_Op((NLIAC::CTypeOfOperator::TTypeOp)0)
+		COperationType():_Operand(NULL),_Op((NLAIC::CTypeOfOperator::TTypeOp)0)
 		{
 			_Id = NULL;
 		}
@@ -392,7 +392,7 @@ namespace NLIASCRIPT
 		{
 			if(_Id != NULL)
 			{
-				COperandSimple n(new NLIAC::CIdentType (*_Id));
+				COperandSimple n(new NLAIC::CIdentType (*_Id));
 				n.serial(f);
 			}
 			else throw NLMISC::EStream();
@@ -403,7 +403,7 @@ namespace NLIASCRIPT
 			return _TxtInfo;
 		}
 
-		void setOp(NLIAC::CTypeOfOperator::TTypeOp op)
+		void setOp(NLAIC::CTypeOfOperator::TTypeOp op)
 		{
 			_Op = op;
 		}
@@ -425,7 +425,7 @@ namespace NLIASCRIPT
 		virtual void run(CCompilateur &c)
 		{
 			_Operand->run(c);
-			_Id = (NLIAC::CIdentType *)getConstraintTypeOf();			
+			_Id = (NLAIC::CIdentType *)getConstraintTypeOf();			
 		}
 		
 
@@ -433,10 +433,10 @@ namespace NLIASCRIPT
 		{
 		}
 
-		const NLIAC::CIdentType *getConstraintTypeOf() 
+		const NLAIC::CIdentType *getConstraintTypeOf() 
 		{							
 			if(_Id) return _Id;
-			else return (_Id = (NLIAC::CIdentType *)_Operand->getConstraintTypeOf());
+			else return (_Id = (NLAIC::CIdentType *)_Operand->getConstraintTypeOf());
 		}
 		
 		bool satisfied()
@@ -490,11 +490,11 @@ namespace NLIASCRIPT
 		//Left operand.
 		IOpType	*_OpD;
 		///Operation type.
-		NLIAC::CTypeOfOperator::TTypeOp _Op;
+		NLAIC::CTypeOfOperator::TTypeOp _Op;
 		char *_TxtInfo;
-		NLIAC::CIdentType *_Id;
+		NLAIC::CIdentType *_Id;
 	public:
-		COperationTypeGD(const COperationType &opG,const COperationType &opD,NLIAC::CTypeOfOperator::TTypeOp op):
+		COperationTypeGD(const COperationType &opG,const COperationType &opD,NLAIC::CTypeOfOperator::TTypeOp op):
 				_OpG((IOpType	*)opG.clone()),_OpD((IOpType *)opD.clone()),_Op(op)
 		{
 			char txt[1028*8];		
@@ -509,7 +509,7 @@ namespace NLIASCRIPT
 		COperationTypeGD()
 		{
 			_OpG = _OpD = NULL;
-			_Op = (NLIAC::CTypeOfOperator::TTypeOp)0;
+			_Op = (NLAIC::CTypeOfOperator::TTypeOp)0;
 			_Id = NULL;
 			_TxtInfo = NULL;
 		}
@@ -518,7 +518,7 @@ namespace NLIASCRIPT
 		{
 			if(_Id != NULL)
 			{
-				COperandSimple n(new NLIAC::CIdentType (*_Id));
+				COperandSimple n(new NLAIC::CIdentType (*_Id));
 				n.serial(f);
 			}
 			else throw NLMISC::EStream();
@@ -541,7 +541,7 @@ namespace NLIASCRIPT
 			return _OpG->dependOn(c) || c == _OpG || _OpD->dependOn(c) || c == _OpD;
 		}
 		
-		void setOp(NLIAC::CTypeOfOperator::TTypeOp op)
+		void setOp(NLAIC::CTypeOfOperator::TTypeOp op)
 		{
 			_Op = op;
 		}
@@ -569,7 +569,7 @@ namespace NLIASCRIPT
 			_OpG->run(c);
 			_OpD->run(c);
 			
-			_Id = (NLIAC::CIdentType *)getConstraintTypeOf();
+			_Id = (NLAIC::CIdentType *)getConstraintTypeOf();
 		}
 		
 
@@ -577,9 +577,9 @@ namespace NLIASCRIPT
 		{
 		}
 
-		const NLIAC::CIdentType *getConstraintTypeOf()
+		const NLAIC::CIdentType *getConstraintTypeOf()
 		{			
-			if(satisfied()) return (_Id = (NLIAC::CIdentType *)_OpG->getConstraintTypeOf());
+			if(satisfied()) return (_Id = (NLAIC::CIdentType *)_OpG->getConstraintTypeOf());
 			return NULL;
 		}
 		
@@ -623,7 +623,7 @@ namespace NLIASCRIPT
 	{
 	private:
 		std::list<IOpType *> _List;
-		NLIAC::CIdentType *_Id;
+		NLAIC::CIdentType *_Id;
 		bool _S;
 		char *_TxtInfo;
 	public:
@@ -640,7 +640,7 @@ namespace NLIASCRIPT
 			}			
 			_TxtInfo = new char [strlen(c._TxtInfo) + 1];
 			strcpy(_TxtInfo,c._TxtInfo);
-			if(c._Id) _Id = new NLIAC::CIdentType (*c._Id);
+			if(c._Id) _Id = new NLAIC::CIdentType (*c._Id);
 		}
 
 		COperandListType()
@@ -657,7 +657,7 @@ namespace NLIASCRIPT
 		{
 			if(_Id != NULL)
 			{
-				COperandSimple n(new NLIAC::CIdentType (*_Id));
+				COperandSimple n(new NLAIC::CIdentType (*_Id));
 				n.serial(f);
 			}
 			else throw NLMISC::EStream();
@@ -675,7 +675,7 @@ namespace NLIASCRIPT
 			return x;
 		}
 
-		const NLIAC::CIdentType *getConstraintTypeOf()
+		const NLAIC::CIdentType *getConstraintTypeOf()
 		{
 			return _Id;
 		}
@@ -733,7 +733,7 @@ namespace NLIASCRIPT
 				{
 					if(_Id == NULL) 
 					{
-						_Id = new NLIAC::CIdentType(*o->getConstraintTypeOf());
+						_Id = new NLAIC::CIdentType(*o->getConstraintTypeOf());
 					}
 					else if(!(*_Id == *o->getConstraintTypeOf())) _S = false;
 				}

@@ -1,7 +1,7 @@
 /** \file main_agent_script.h
  * class for the man agent.
  *
- * $Id: main_agent_script.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
+ * $Id: main_agent_script.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_MAIN_AGENTS_SCRIPT_H
 
 #include "agent/agent_manager.h"
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 
 	class NLIASCRIPT::CCodeContext;
@@ -52,7 +52,7 @@ namespace NLIAAGENT
 		NLIASCRIPT::CStackPointer	*_Stack,*_Heap;
 		
 	public:
-		static const NLIAC::CIdentType IdMainAgentScript;
+		static const NLAIC::CIdentType IdMainAgentScript;
 			
 	public:		
 		virtual int getBaseMethodCount() const;
@@ -60,19 +60,19 @@ namespace NLIAAGENT
 
 	public:
 		CMainAgentScript(const CMainAgentScript &);
-		CMainAgentScript(IAgentManager *,NLIAC::IIO *io);
-		CMainAgentScript(NLIAC::IIO *io);
+		CMainAgentScript(IAgentManager *,NLAIC::IIO *io);
+		CMainAgentScript(NLAIC::IIO *io);
 		virtual ~CMainAgentScript();
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdMainAgentScript;
 		}
 
 		virtual IObjectIA::CProcessResult addDynamicAgent(IBaseGroupType *g);
 
-		virtual const NLIAC::IBasicType *clone() const;
-		virtual const NLIAC::IBasicType *newInstance() const;
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
 
 		virtual	void CMainAgentScript::processMessages();
 		virtual	IObjectIA::CProcessResult sendMessage(IObjectIA *);

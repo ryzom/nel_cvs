@@ -1,7 +1,7 @@
 /** \file codage.h
  * Sevral class for the interpreter fonctionality.
  *
- * $Id: codage.h,v 1.3 2001/01/05 16:14:47 chafik Exp $
+ * $Id: codage.h,v 1.4 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -153,13 +153,13 @@ namespace NLIASCRIPT
 		std::list<int>	_Shift;
 
 		///this IObjectIA table have _Count size.
-		NLIAAGENT::IObjectIA	**_Stack;	
+		NLAIAGENT::IObjectIA	**_Stack;	
 
 	public:
 		CStackPointer(int count = 1024*8)
 		{
 			_Count = count;
-			_Stack = new NLIAAGENT::IObjectIA *[ count ];
+			_Stack = new NLAIAGENT::IObjectIA *[ count ];
 			for(int i = 0; i < _Count; i ++)
 			{
 				_Stack[i] = NULL;
@@ -170,13 +170,13 @@ namespace NLIASCRIPT
 		}
 
 		///Get the pointer in the position i.
-		NLIAAGENT::IObjectIA *&operator [] (int i)
+		NLAIAGENT::IObjectIA *&operator [] (int i)
 		{
 			return _Stack[i + _Bp + _Sh];
 		}
 
 		///Get the IObjectIA pointer in current position.
-		operator NLIAAGENT::IObjectIA *()
+		operator NLAIAGENT::IObjectIA *()
 		{
 #ifdef _DEBUG
 			if ( (_Sp + _Bp + _Sh) >= _Count )
@@ -312,7 +312,7 @@ namespace NLIASCRIPT
 	 */
 
 
-	class CCodeContext : public NLIAAGENT::IObjectIA
+	class CCodeContext : public NLAIAGENT::IObjectIA
 	{		
 	public:
 
@@ -323,21 +323,21 @@ namespace NLIASCRIPT
 		///Code is the code in run.
 		tCodeRef			*Code;
 		///Self define the this of the interpreter class objects
-		const NLIAAGENT::IObjectIA	*Self;
+		const NLAIAGENT::IObjectIA	*Self;
 		///InputOutput for the out put and in put request.
-		NLIAC::IIO			*InputOutput;
+		NLAIC::IIO			*InputOutput;
 		///Param shared the function attribut.
-		std::list<NLIAAGENT::IObjectIA	*>Param;
+		std::list<NLAIAGENT::IObjectIA	*>Param;
 		///If the debugger is in run ContextDebug define its context.
 		CContextDebug		ContextDebug;
 
 	public:
 		///Referance of the object in the class factory.
-		static const NLIAC::CIdentType IdCodeContext;
+		static const NLAIC::CIdentType IdCodeContext;
 
 	public:
 
-		CCodeContext(tStackRef &stackMem,tStackRef &heapMem,tCodeRef *codeMem,const NLIAAGENT::IObjectIA *thisClass,NLIAC::IIO *io):
+		CCodeContext(tStackRef &stackMem,tStackRef &heapMem,tCodeRef *codeMem,const NLAIAGENT::IObjectIA *thisClass,NLAIC::IIO *io):
 		Stack(stackMem),
 		Heap(heapMem),		
 		Code(codeMem),
@@ -348,7 +348,7 @@ namespace NLIASCRIPT
 		}
 
 		///set the input output class.
-		void setIO(NLIAC::IIO *io)
+		void setIO(NLAIC::IIO *io)
 		{
 			InputOutput = io;
 			InputOutput->incRef();
@@ -359,17 +359,17 @@ namespace NLIASCRIPT
 
 		/// \name IBasicInterface method.
 		//@{
-		const NLIAC::CIdentType &getType(void) const
+		const NLAIC::CIdentType &getType(void) const
 		{
 			return IdCodeContext;
 		}
-		const NLIAC::IBasicType *clone(void) const
+		const NLAIC::IBasicType *clone(void) const
 		{
 			CCodeContext *x = new CCodeContext(Stack,Heap,Code,Self,InputOutput);
 			x->incRef();
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance(void) const
+		const NLAIC::IBasicType *newInstance(void) const
 		{
 			return clone();
 		}
@@ -387,7 +387,7 @@ namespace NLIASCRIPT
 
 		/// \name IBasicObjectIA method.
 		//@{
-		bool isEqual(const class NLIAAGENT::IBasicObjectIA &) const
+		bool isEqual(const class NLAIAGENT::IBasicObjectIA &) const
 		{
 			return true;
 		}
@@ -395,9 +395,9 @@ namespace NLIASCRIPT
 
 		/// \name IObjectIA method.
 		//@{
-		const NLIAAGENT::IObjectIA::CProcessResult &run(void)
+		const NLAIAGENT::IObjectIA::CProcessResult &run(void)
 		{
-			return NLIAAGENT::IObjectIA::ProcessRun;;
+			return NLAIAGENT::IObjectIA::ProcessRun;;
 		}
 		//@}
 
@@ -488,7 +488,7 @@ namespace NLIASCRIPT
 	class CCodeBrancheRun: public ICodeBranche
 	{
 	public:
-		static NLIAC::IIO	*InputOutput;
+		static NLAIC::IIO	*InputOutput;
 
 	protected:
 		///Table for storage the op code.
@@ -498,7 +498,7 @@ namespace NLIASCRIPT
 		///The count of the op code table.
 		int		_Count;	 
 		///The state of tje last run method called.
-		NLIAAGENT::IObjectIA::CProcessResult _RunState;
+		NLAIAGENT::IObjectIA::CProcessResult _RunState;
 
 	protected:
 
@@ -516,7 +516,7 @@ namespace NLIASCRIPT
 		}
 
 	public:
-		static const NLIAC::CIdentType IdCodeBrancheRun;
+		static const NLAIC::CIdentType IdCodeBrancheRun;
 	public:
 
 		
@@ -619,10 +619,10 @@ namespace NLIASCRIPT
 
 		/// \name ICodeBranche method.
 		//@{		
-		virtual const NLIAAGENT::IObjectIA::CProcessResult &run(NLIAAGENT::IObjectIA &self);
-		virtual const NLIAAGENT::IObjectIA::CProcessResult &run(CCodeContext &);
+		virtual const NLAIAGENT::IObjectIA::CProcessResult &run(NLAIAGENT::IObjectIA &self);
+		virtual const NLAIAGENT::IObjectIA::CProcessResult &run(CCodeContext &);
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		void getDebugResult(char *str,CCodeContext &context) const;		
 		//@}
 
@@ -631,26 +631,26 @@ namespace NLIASCRIPT
 		void save(NLMISC::IStream &f);	
 		void load(NLMISC::IStream &f);	
 		void getDebugString(char *) const;
-		const NLIAC::CIdentType &getType() const;		
-		const NLIAC::IBasicType *clone() const 
+		const NLAIC::CIdentType &getType() const;		
+		const NLAIC::IBasicType *clone() const 
 		{
-			NLIAC::IBasicType *x = new CCodeBrancheRun(*this);
+			NLAIC::IBasicType *x = new CCodeBrancheRun(*this);
 			x->incRef();
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const;
+		const NLAIC::IBasicType *newInstance() const;
 		
 		//@}
 
 		/// \name IBasicObjectIA method.
 		//@{
-		bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const{ return true;}	
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const{ return true;}	
 		//@}
 
 
 		/// \name IObjectIA method.
 		//@{
-		virtual const NLIAAGENT::IObjectIA::CProcessResult &run();		
+		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();		
 		//@}
 		
 		//@}

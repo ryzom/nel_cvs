@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	0 order logic operators base class 
  *
- * $Id: bool_operator.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: bool_operator.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "logic/operator.h"
 #include "logic/ia_assert.h"
 
-namespace NLIALOGIC {
+namespace NLAILOGIC {
 
 	class CBoolOperator : public IBaseOperator
 	{
@@ -49,17 +49,17 @@ namespace NLIALOGIC {
 			std::list<CFact *> *backward(std::list<IBaseAssert *> &, std::list<bool> &);
 			virtual bool isValid(CFactBase *);
 
-			static const NLIAC::CIdentType IdBoolOperator;
-			virtual const NLIAC::CIdentType &getType() const;
+			static const NLAIC::CIdentType IdBoolOperator;
+			virtual const NLAIC::CIdentType &getType() const;
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *text) const;
 			virtual bool isEqual(const CBoolOperator &) const;
-			virtual const NLIAAGENT::IObjectIA::CProcessResult &run();
-			bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual float truthValue() const;
 
 			virtual std::list<CFact *> *backward(std::list<CFact *> &);

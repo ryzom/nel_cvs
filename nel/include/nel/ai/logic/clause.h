@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic condition
  *
- * $Id: clause.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: clause.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_CLAUSE_H
 #include "logic/varset.h"
 
-namespace NLIALOGIC {
+namespace NLAILOGIC {
 
 	class IBaseBoolType;
 	class IBaseAssert;
@@ -50,7 +50,7 @@ namespace NLIALOGIC {
 			bool _FirstOrderTrue;
 
 		public:
-			static const NLIAC::CIdentType IdClause;
+			static const NLAIC::CIdentType IdClause;
 
 			CClause();
 			CClause(const CClause &);
@@ -59,17 +59,17 @@ namespace NLIALOGIC {
 			virtual void addCond(CFactPattern   *cond);
 			virtual void getDebugString(char *) const;
 			virtual CVarSet *unify(CVarSet *);
-			CValueSet *unifyLiaison( const CValueSet *, std::list<NLIAAGENT::IObjetOp *> *, std::vector<sint32> &);
-			virtual void propagate(std::list<NLIAAGENT::IObjetOp *> *, std::vector<sint32> &);
+			CValueSet *unifyLiaison( const CValueSet *, std::list<NLAIAGENT::IObjetOp *> *, std::vector<sint32> &);
+			virtual void propagate(std::list<NLAIAGENT::IObjetOp *> *, std::vector<sint32> &);
 			virtual void propagate(CFactPattern   *);
 			std::list<CClause *> *getInputs();
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 
-			virtual NLIAAGENT::IObjetOp *operator ! () const;
-			virtual NLIAAGENT::IObjetOp *operator != (NLIAAGENT::IObjetOp &a) const;
-			virtual NLIAAGENT::IObjetOp *operator == (NLIAAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator ! () const;
+			virtual NLAIAGENT::IObjetOp *operator != (NLAIAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator == (NLAIAGENT::IObjetOp &a) const;
 			virtual bool isTrue() const;
 			virtual float truthValue() const;
 
@@ -82,7 +82,7 @@ namespace NLIALOGIC {
 
 			std::vector<IBaseAssert *> &CClause::getAssert();
 			sint32 nbVars();
-			void CClause::init(NLIAAGENT::IObjectIA *);
+			void CClause::init(NLAIAGENT::IObjectIA *);
 	};
 }
 #endif

@@ -1,7 +1,7 @@
 /** \file interpret_object_list.h
  * Class for define an message class in the interpreter.
  *
- * $Id: interpret_object_message.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
+ * $Id: interpret_object_message.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -30,20 +30,20 @@ namespace NLIASCRIPT
 	class CMessageClass: public CAgentClass
 	{
 	public:
-		static const NLIAC::CIdentType IdMessageClass;
+		static const NLAIC::CIdentType IdMessageClass;
 	public:
-		CMessageClass(const NLIAAGENT::IVarName &);
-		CMessageClass(const NLIAC::CIdentType &);
-		CMessageClass(const NLIAAGENT::IVarName &, const NLIAAGENT::IVarName &);
+		CMessageClass(const NLAIAGENT::IVarName &);
+		CMessageClass(const NLAIC::CIdentType &);
+		CMessageClass(const NLAIAGENT::IVarName &, const NLAIAGENT::IVarName &);
 		CMessageClass(const CMessageClass &);
 		CMessageClass();
 
 		/// \name CAgentClass method.
 		//@{
-		virtual const NLIAC::IBasicType *clone() const;
-		virtual const NLIAC::IBasicType *newInstance() const;
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual void getDebugString(char *t) const;
-		virtual NLIAAGENT::IObjectIA *buildNewInstance() const;
+		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 		//@}
 
 		virtual ~CMessageClass();

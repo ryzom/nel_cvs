@@ -1,7 +1,7 @@
 /** \file opcode_call_lib_method.h
  * Sevral op-code fonctionality.
  *
- * $Id: opcode_call_lib_method.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: opcode_call_lib_method.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NLIASCRIPT
 	class CLibMemberMethod: public IOpRunCode
 	{		
 	public:
-		static const NLIAC::CIdentType IdLibMemberMethod;
+		static const NLAIC::CIdentType IdLibMemberMethod;
 	private:		
 		sint32 _Id;		
 	public:			
@@ -43,24 +43,24 @@ namespace NLIASCRIPT
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
 			sprintf(str,"call the methode %d",_Id);	
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLibMemberMethod(_Id);
+			NLAIC::IBasicType *x = new CLibMemberMethod(_Id);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLibMemberMethod;
 		}
@@ -91,7 +91,7 @@ namespace NLIASCRIPT
 	class CLibMemberInheritedMethod: public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLibMemberInheritedMethod;
+		static const NLAIC::CIdentType IdLibMemberInheritedMethod;
 	private:		
 		sint32 _Inheritance;
 		sint32 _Id;		
@@ -100,24 +100,24 @@ namespace NLIASCRIPT
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
 			sprintf(str,"call the methode %d member of the %d derivation",_Id,_Inheritance);
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLibMemberInheritedMethod(_Inheritance,_Id);
+			NLAIC::IBasicType *x = new CLibMemberInheritedMethod(_Inheritance,_Id);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLibMemberInheritedMethod;
 		}		
@@ -151,7 +151,7 @@ namespace NLIASCRIPT
 	class CLibMemberMethodi: public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLibMemberMethodi;
+		static const NLAIC::CIdentType IdLibMemberMethodi;
 	private:		
 		sint32 _Inheritance;
 		sint32 _Id;
@@ -161,24 +161,24 @@ namespace NLIASCRIPT
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
 			sprintf(str,"call the methode %d member of the %d derivation",_Id,_Inheritance);
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLibMemberMethodi(_Inheritance,_Id,_I);
+			NLAIC::IBasicType *x = new CLibMemberMethodi(_Inheritance,_Id,_I);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLibMemberMethodi;
 		}		
@@ -213,33 +213,33 @@ namespace NLIASCRIPT
 	class CLibCallMethod: public IOpRunCode
 	{		
 	public:
-		static const NLIAC::CIdentType IdLibCallMethod;
+		static const NLAIC::CIdentType IdLibCallMethod;
 	private:		
 		sint32 _Id;
-		NLIAAGENT::IObjectIA *_Lib;
+		NLAIAGENT::IObjectIA *_Lib;
 	public:			
-		CLibCallMethod(sint32 id,const NLIAAGENT::IObjectIA &lib):_Id(id),_Lib((NLIAAGENT::IObjectIA*)lib.clone())
+		CLibCallMethod(sint32 id,const NLAIAGENT::IObjectIA &lib):_Id(id),_Lib((NLAIAGENT::IObjectIA*)lib.clone())
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
 			sprintf(str,"call the methode %d",_Id);	
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLibCallMethod(_Id,*_Lib);
+			NLAIC::IBasicType *x = new CLibCallMethod(_Id,*_Lib);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLibCallMethod;
 		}
@@ -250,7 +250,7 @@ namespace NLIASCRIPT
 		{
 			sint32 n = (sint32) _Id;
 			os.serial(n);
-			os.serial( (NLIAC::CIdentType &) _Lib->getType() );
+			os.serial( (NLAIC::CIdentType &) _Lib->getType() );
 			_Lib->save(os);
 		}
 
@@ -260,9 +260,9 @@ namespace NLIASCRIPT
 			is.serial(n);
 			_Id = n;
 			_Lib->release();
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
-			_Lib = (NLIAAGENT::IObjectIA *)id.allocClass();
+			_Lib = (NLAIAGENT::IObjectIA *)id.allocClass();
 			_Lib->load(is);
 		}
 		
@@ -278,34 +278,34 @@ namespace NLIASCRIPT
 	class CLibCallInheritedMethod: public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLibCallInheritedMethod;
+		static const NLAIC::CIdentType IdLibCallInheritedMethod;
 	private:		
 		sint32 _Inheritance;
 		sint32 _Id;
-		NLIAAGENT::IObjectIA *_Lib;
+		NLAIAGENT::IObjectIA *_Lib;
 	public:			
-		CLibCallInheritedMethod(sint32 inheritance,sint32 id,const NLIAAGENT::IObjectIA &lib):_Inheritance(inheritance),_Id(id),_Lib((NLIAAGENT::IObjectIA*)lib.clone())
+		CLibCallInheritedMethod(sint32 inheritance,sint32 id,const NLAIAGENT::IObjectIA &lib):_Inheritance(inheritance),_Id(id),_Lib((NLAIAGENT::IObjectIA*)lib.clone())
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
 			sprintf(str,"call the methode %d member of the %d derivation",_Id,_Inheritance);
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLibCallInheritedMethod(_Inheritance,_Id,*_Lib);
+			NLAIC::IBasicType *x = new CLibCallInheritedMethod(_Inheritance,_Id,*_Lib);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLibCallInheritedMethod;
 		}		
@@ -316,7 +316,7 @@ namespace NLIASCRIPT
 			os.serial(n);
 			n = (sint32) _Inheritance;
 			os.serial(n);
-			os.serial( (NLIAC::CIdentType &) _Lib->getType() );
+			os.serial( (NLAIC::CIdentType &) _Lib->getType() );
 			_Lib->save(os);
 		}
 
@@ -329,9 +329,9 @@ namespace NLIASCRIPT
 			_Inheritance = n;
 
 			_Lib->release();
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
-			_Lib =  (NLIAAGENT::IObjectIA *)id.allocClass();
+			_Lib =  (NLAIAGENT::IObjectIA *)id.allocClass();
 			_Lib->load(is);
 
 		}		
@@ -345,36 +345,36 @@ namespace NLIASCRIPT
 	class CLibCallMethodi: public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLibCallMethodi;
+		static const NLAIC::CIdentType IdLibCallMethodi;
 	private:		
 		sint32 _Inheritance;
 		sint32 _Id;
 		std::list<sint32> _I;
-		NLIAAGENT::IObjectIA *_Lib;
+		NLAIAGENT::IObjectIA *_Lib;
 	public:			
-		CLibCallMethodi(sint32 inheritance,sint32 id,std::list<sint32> i,const NLIAAGENT::IObjectIA &lib):
-						_Inheritance(inheritance),_Id(id),_I(i),_Lib((NLIAAGENT::IObjectIA*)lib.clone())
+		CLibCallMethodi(sint32 inheritance,sint32 id,std::list<sint32> i,const NLAIAGENT::IObjectIA &lib):
+						_Inheritance(inheritance),_Id(id),_I(i),_Lib((NLAIAGENT::IObjectIA*)lib.clone())
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
 			sprintf(str,"call the methode %d member of the %d derivation",_Id,_Inheritance);
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLibCallMethodi(_Inheritance,_Id,_I,*_Lib);
+			NLAIC::IBasicType *x = new CLibCallMethodi(_Inheritance,_Id,_I,*_Lib);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLibCallMethodi;
 		}		
@@ -385,7 +385,7 @@ namespace NLIASCRIPT
 			os.serial(n);
 			n = (sint32) _Inheritance;
 			os.serial(n);
-			os.serial( (NLIAC::CIdentType &) _Lib->getType() );
+			os.serial( (NLAIC::CIdentType &) _Lib->getType() );
 			_Lib->save(os);
 			std::list<sint32> &i = (std::list<sint32> &)_I;
 			os.serialCont(i);
@@ -400,9 +400,9 @@ namespace NLIASCRIPT
 			_Inheritance = n;
 
 			_Lib->release();
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
-			_Lib =  (NLIAAGENT::IObjectIA *)id.allocClass();
+			_Lib =  (NLAIAGENT::IObjectIA *)id.allocClass();
 			_Lib->load(is);
 			is.serialCont ( _I );
 		}		
@@ -417,7 +417,7 @@ namespace NLIASCRIPT
 	class CLibStackMemberMethod: public IOpRunCode
 	{		
 	public:
-		static const NLIAC::CIdentType IdLibStackMemberMethod;
+		static const NLAIC::CIdentType IdLibStackMemberMethod;
 	protected:		
 		sint32 _Id;
 		sint32 _H;
@@ -430,24 +430,24 @@ namespace NLIASCRIPT
 		{			
 		}
 
-		virtual NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		virtual NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
 			sprintf(str,"call the methode frome the stack");	
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLibStackMemberMethod(_Id,_H,_I);
+			NLAIC::IBasicType *x = new CLibStackMemberMethod(_Id,_H,_I);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLibStackMemberMethod;
 		}
@@ -484,7 +484,7 @@ namespace NLIASCRIPT
 	class CLibStackNewMemberMethod: public CLibStackMemberMethod
 	{		
 	public:
-		static const NLIAC::CIdentType IdLibStackNewMemberMethod;
+		static const NLAIC::CIdentType IdLibStackNewMemberMethod;
 	public:
 		CLibStackNewMemberMethod(const CLibStackNewMemberMethod &a):CLibStackMemberMethod(a)
 		{
@@ -496,20 +496,20 @@ namespace NLIASCRIPT
 			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLibStackNewMemberMethod(*this);
+			NLAIC::IBasicType *x = new CLibStackNewMemberMethod(*this);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLibStackNewMemberMethod;
 		}
@@ -523,7 +523,7 @@ namespace NLIASCRIPT
 	class CLibHeapMemberMethod: public CLibStackMemberMethod
 	{		
 	public:
-		static const NLIAC::CIdentType IdLibHeapMemberMethod;
+		static const NLAIC::CIdentType IdLibHeapMemberMethod;
 	private:
 		sint32 _Index;
 	public:	
@@ -535,24 +535,24 @@ namespace NLIASCRIPT
 		{			
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 		
 		void getDebugResult(char *str,CCodeContext &context) const
 		{		
 			sprintf(str,"call the methode frome the heap");	
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLibHeapMemberMethod(*this);
+			NLAIC::IBasicType *x = new CLibHeapMemberMethod(*this);
 			x->incRef();         
 			return x;
 		}
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLibHeapMemberMethod;
 		}

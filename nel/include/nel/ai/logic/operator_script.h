@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret base class for scripted operators
  *
- * $Id: operator_script.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: operator_script.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,12 +28,12 @@
 
 #include "logic/fo_operator.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
 	class COperatorScript : public CFirstOrderOperator
 	{
 		public:
-			static const NLIAC::CIdentType IdOperatorScript;
+			static const NLAIC::CIdentType IdOperatorScript;
 			COperatorScript();
 	};
 }

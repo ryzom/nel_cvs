@@ -1,7 +1,7 @@
 /** \file constraint_find_run.h
  * Class for the compiler fonctionality.
  *
- * $Id: constraint_find_run.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: constraint_find_run.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ namespace NLIASCRIPT
 	public:
 		
 		CConstraintFindRun(	CConstraintMethode::TCallTypeOpCode ,int posHeap,IConstraint *baseClass,
-							NLIAAGENT::IBaseGroupType *methodName,CParam *param,int lin,int col);
+							NLAIAGENT::IBaseGroupType *methodName,CParam *param,int lin,int col);
 		
 		virtual void run(CCompilateur &);		
 

@@ -1,7 +1,7 @@
 /** \file agent_digital.h
  * Sevral class for nomber manipulation.
  *
- * $Id: agent_digital.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
+ * $Id: agent_digital.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "agent/agent_object.h"
 #include "agent/agent_nombre.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 	/**
 	
@@ -47,7 +47,7 @@ namespace NLIAAGENT
 	public:
 		static DigitalType NullOperator;
 
-		static const NLIAC::CIdentType IdDigitalType;
+		static const NLAIC::CIdentType IdDigitalType;
 
 	public:
 		///Construct with an initial value.
@@ -71,19 +71,19 @@ namespace NLIAAGENT
 		
 		/// \name Base class member method.			
 		//@{
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicInterface *m = new DigitalType(*this);
+			NLAIC::IBasicInterface *m = new DigitalType(*this);
 			m->incRef();
 			return m;
 		}
 		
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
 
-		virtual const NLIAC::CIdentType &getType() const;		
+		virtual const NLAIC::CIdentType &getType() const;		
 		
 
 		virtual void getDebugString(char *text) const
@@ -107,7 +107,7 @@ namespace NLIAAGENT
 	{			
 
 	public:
-		static const NLIAC::CIdentType IdBorneDigitalType;
+		static const NLAIC::CIdentType IdBorneDigitalType;
 
 	public:
 
@@ -135,19 +135,19 @@ namespace NLIAAGENT
 
 		/// \name Base class member method.			
 		//@{
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicInterface *m = new BorneDigitalType(*this);
+			NLAIC::IBasicInterface *m = new BorneDigitalType(*this);
 			m->incRef();
 				return m;
 		}		
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
 
-		virtual const NLIAC::CIdentType &getType() const;				
+		virtual const NLAIC::CIdentType &getType() const;				
 
 		virtual const CProcessResult &run();
 		
@@ -168,7 +168,7 @@ namespace NLIAAGENT
 	{
 	public:
 
-		static const NLIAC::CIdentType IdIntegerType;
+		static const NLAIC::CIdentType IdIntegerType;
 
 	public:
 		IntegerType(float value):INombre<sint32>((sint32)value)
@@ -188,19 +188,19 @@ namespace NLIAAGENT
 		}
 		
 
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicInterface *m = new IntegerType(*this);
+			NLAIC::IBasicInterface *m = new IntegerType(*this);
 			m->incRef();
 			return m;
 		}
 		
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
 
-		virtual const NLIAC::CIdentType &getType() const;		
+		virtual const NLAIC::CIdentType &getType() const;		
 		
 
 		virtual void getDebugString(char *text) const

@@ -1,7 +1,7 @@
 /** \file constraint.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: constraint.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
+ * $Id: constraint.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,13 +55,13 @@ namespace NLIASCRIPT
 		///Name and type of the method.
 		CMethodeName *Method;
 		///Pointer adress of the class that the metod is define, in general this pointer is the class strored in the class factory.
-		const NLIAAGENT::IObjectIA *Object;
+		const NLAIAGENT::IObjectIA *Object;
 		///Method name.
-		const NLIAAGENT::IVarName *MethodName;
+		const NLAIAGENT::IVarName *MethodName;
 		///Hierarchy access of the method.
 		std::list<sint32>	Member;
 		///Type of returned expression.
-		NLIAAGENT::IObjectIA *ReturnType;
+		NLAIAGENT::IObjectIA *ReturnType;
 
 		///Default constructor.
 		CFunctionTag()
@@ -101,8 +101,8 @@ namespace NLIASCRIPT
 		}
 
 		
-		///Set the type of return method expression, the type is a NLIAAGENT::IObjectIA where its used the getType member method.		
-		void setTypeObject(NLIAAGENT::IObjectIA *o)
+		///Set the type of return method expression, the type is a NLAIAGENT::IObjectIA where its used the getType member method.		
+		void setTypeObject(NLAIAGENT::IObjectIA *o)
 		{
 			ReturnType = o;
 			ReturnType->incRef();
@@ -125,13 +125,13 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/	
-	class IConstraint : public NLIAC::IPointerGestion
+	class IConstraint : public NLAIC::IPointerGestion
 	{
 	public:
 		/**
 		This enum define all IConstraint class type defined.
 		That is'nt very clean because it is'nt very objects way to do jobs but that make easy to make job with out make heavy the hisarchy class.
-		Because the best way is to derive class form NLIAC::IBasicInterface but we have to register class in class factory, define a save an load ..., in short
+		Because the best way is to derive class form NLAIC::IBasicInterface but we have to register class in class factory, define a save an load ..., in short
 		make a lot of work for an internal work. If later peopole need this kind of class we'll clean it.
 		*/
 		enum ConstraintTypeEnum
@@ -190,7 +190,7 @@ namespace NLIASCRIPT
 		virtual bool operator == (const IConstraint &) const = 0;
 
 		///Type of the expression that it have to be resolve by constraint.
-		virtual const NLIAC::CIdentType *getConstraintTypeOf() = 0;
+		virtual const NLAIC::CIdentType *getConstraintTypeOf() = 0;
 		///Get a clone pointer memory.
 		virtual const IConstraint *clone() const = 0;
 		///Get a string info.
@@ -259,7 +259,7 @@ namespace NLIASCRIPT
 		///Type of base class that constain method. A NULL value mean that method is in the last class parsed.
 		IConstraint *_BaseClass;
 		///Hierarchy method name (a hierarchy name is some thing like classBaseName.className.methodName().)
-		NLIAAGENT::IBaseGroupType *_MethodName;
+		NLAIAGENT::IBaseGroupType *_MethodName;
 		///Method argument.
 		CParam *_Param;		
 		bool _Satisfied;				
@@ -274,7 +274,7 @@ namespace NLIASCRIPT
 		CFunctionTag _M;
 		
 	public:
-		CConstraintMethode(TCallTypeOpCode callType,int posHeap,IConstraint *baseClass,NLIAAGENT::IBaseGroupType *methodName,CParam *param,int lin,int col):
+		CConstraintMethode(TCallTypeOpCode callType,int posHeap,IConstraint *baseClass,NLAIAGENT::IBaseGroupType *methodName,CParam *param,int lin,int col):
 			_CallType(callType),_PosHeap(posHeap),_BaseClass(baseClass),_MethodName(methodName),_Param(param),_Satisfied(false),_Lin(lin),_Col(col)
 		{						
 			_Txt = NULL;
@@ -332,11 +332,11 @@ namespace NLIASCRIPT
 
 		const IConstraint *clone() const;					
 
-		bool isEqual(const NLIAAGENT::IBaseGroupType &,const CParam &) const;
+		bool isEqual(const NLAIAGENT::IBaseGroupType &,const CParam &) const;
 
 		virtual void setOpCode(CCompilateur &comp,IOpCode *x,IConstraint *cType,bool del);
 
-		const NLIAC::CIdentType *getConstraintTypeOf()
+		const NLAIC::CIdentType *getConstraintTypeOf()
 		{							
 			return _Type == NULL ? NULL : _Type->getConstraintTypeOf();
 		}

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: interpret_object_operator.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,19 +34,19 @@ namespace NLIASCRIPT
 	class COperatorClass: public CAgentClass
 	{
 	public:
-		static const NLIAC::CIdentType IdOperatorClass;
+		static const NLAIC::CIdentType IdOperatorClass;
 	public:
-		COperatorClass(const NLIAAGENT::IVarName &);
-		COperatorClass(const NLIAC::CIdentType &);
-		COperatorClass(const NLIAAGENT::IVarName &, const NLIAAGENT::IVarName &);
+		COperatorClass(const NLAIAGENT::IVarName &);
+		COperatorClass(const NLAIC::CIdentType &);
+		COperatorClass(const NLAIAGENT::IVarName &, const NLAIAGENT::IVarName &);
 		COperatorClass(const COperatorClass &);
 		COperatorClass();
 
-		const NLIAC::IBasicType *clone() const;
-		const NLIAC::IBasicType *newInstance() const;
+		const NLAIC::IBasicType *clone() const;
+		const NLAIC::IBasicType *newInstance() const;
 		void getDebugString(char *t) const;
 
-		virtual NLIAAGENT::IObjectIA *buildNewInstance() const;
+		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 
 		virtual ~COperatorClass();
 	};

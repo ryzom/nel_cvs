@@ -1,7 +1,7 @@
 /** \file agent_nombre.h
  * template class for nomber manipulation.
  *
- * $Id: agent_nombre.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: agent_nombre.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "logic/boolval.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 
 	/**
@@ -171,7 +171,7 @@ namespace NLIAAGENT
 		virtual IObjetOp *operator < (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();
-			NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(_Value < v);
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value < v);
 			x->incRef();
 			return x;
 		}
@@ -179,7 +179,7 @@ namespace NLIAAGENT
 		virtual IObjetOp *operator > (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();
-			NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(_Value > v);
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value > v);
 			x->incRef();
 			return x;
 		}
@@ -187,7 +187,7 @@ namespace NLIAAGENT
 		virtual IObjetOp *operator <= (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();
-			NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(_Value <= v);
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value <= v);
 			x->incRef();
 			return x;
 		}
@@ -195,14 +195,14 @@ namespace NLIAAGENT
 		virtual IObjetOp *operator >= (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();
-			NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(_Value >= v);
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value >= v);
 			x->incRef();
 			return x;
 		}
 
 		virtual IObjetOp *operator ! () const
 		{			
-			NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(_Value == (tNombre)0);
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value == (tNombre)0);
 			x->incRef();
 			return x;
 		}
@@ -210,7 +210,7 @@ namespace NLIAAGENT
 		virtual IObjetOp *operator != (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();			
-			NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(_Value != v);
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value != v);
 			x->incRef();
 			return x;
 		}
@@ -218,7 +218,7 @@ namespace NLIAAGENT
 		virtual IObjetOp *operator == (IObjetOp &a) const
 		{
 			tNombre v = (tNombre)((const INombre &)a).getValue();			
-			NLIALOGIC::CBoolType *x = new NLIALOGIC::CBoolType(_Value == v);
+			NLAILOGIC::CBoolType *x = new NLAILOGIC::CBoolType(_Value == v);
 			x->incRef();
 			return x;
 		}

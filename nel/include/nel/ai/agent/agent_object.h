@@ -1,7 +1,7 @@
 /** \file agent_object.h
  * Sevral class for objects manipulation.
  *
- * $Id: agent_object.h,v 1.2 2001/01/05 16:11:27 chafik Exp $
+ * $Id: agent_object.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "agent/agent_operator.h"
 
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {			
 
 	/**	
@@ -46,7 +46,7 @@ namespace NLIAAGENT
 		IVarName *_Str;					
 
 	public:
-		static const NLIAC::CIdentType IdStringType;
+		static const NLAIC::CIdentType IdStringType;
 	public:
 		CStringType(const IVarName &str): _Str((IVarName *)str.clone())
 		{			
@@ -61,29 +61,29 @@ namespace NLIAAGENT
 			load(is);
 		}
 		
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicInterface *m = new CStringType(*this);
+			NLAIC::IBasicInterface *m = new CStringType(*this);
 			m->incRef();
 			return m;
 		}		
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
 		
-		virtual const NLIAC::CIdentType &getType() const;		
+		virtual const NLAIC::CIdentType &getType() const;		
 
 		virtual void save(NLMISC::IStream &os)
 		{			
-			os.serial( (NLIAC::CIdentType &) ( _Str->getType() ) );
+			os.serial( (NLAIC::CIdentType &) ( _Str->getType() ) );
 			_Str->save(os);
 		}
 
 		virtual void load(NLMISC::IStream &is)
 		{			
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial( id );
 			_Str->release();
 			_Str = (IVarName *)id.allocClass();			
@@ -145,7 +145,7 @@ namespace NLIAAGENT
 		IObjectIA *_Value;		
 
 	public:
-		static const NLIAC::CIdentType IdPaireType;
+		static const NLAIC::CIdentType IdPaireType;
 		
 	public:
 		CPaireType(const CStringType &valueName,const IObjectIA &value): 
@@ -157,25 +157,25 @@ namespace NLIAAGENT
 		{
 		}				
 
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicInterface *m = new CPaireType(*this);
+			NLAIC::IBasicInterface *m = new CPaireType(*this);
 			m->incRef();
 			return m;
 		}
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();
 		}
 		
-		virtual const NLIAC::CIdentType &getType() const;
+		virtual const NLAIC::CIdentType &getType() const;
 		
 
 		virtual void save(NLMISC::IStream &os)
 		{						
 			_ValueName.save(os);
-			os.serial( (NLIAC::CIdentType &) (_Value->getType()) );
+			os.serial( (NLAIC::CIdentType &) (_Value->getType()) );
 			_Value->save(os);			
 		}
 
@@ -183,7 +183,7 @@ namespace NLIAAGENT
 		{						
 			_ValueName.load(is);
 			_Value->release();
-			NLIAC::CIdentTypeAlloc id;
+			NLAIC::CIdentTypeAlloc id;
 			is.serial(id);
 			_Value = (IObjectIA *)id.allocClass();
 			_Value->load(is);			
@@ -486,7 +486,7 @@ namespace NLIAAGENT
 	{
 
 	public:
-		static const NLIAC::CIdentType IdGroupType;
+		static const NLAIC::CIdentType IdGroupType;
 		
 	public:
 		//typedef of the std::list constainer
@@ -542,9 +542,9 @@ namespace NLIAAGENT
 		void erase(const IObjectIA &obj);
 		void erase(std::list<const IObjectIA *> &l);
 		virtual bool isEqual(const IBasicObjectIA &a) const;
-		virtual const NLIAC::IBasicType *clone() const;
-		virtual const NLIAC::IBasicType *newInstance() const;
-		virtual const NLIAC::CIdentType &getType() const;		
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
+		virtual const NLAIC::CIdentType &getType() const;		
 		virtual void save(NLMISC::IStream &os);
 		virtual IObjetOp &neg();
 		virtual void load(NLMISC::IStream &is);
@@ -565,7 +565,7 @@ namespace NLIAAGENT
 	{
 
 	public:
-		static const NLIAC::CIdentType IdVectorGroupType;
+		static const NLAIC::CIdentType IdVectorGroupType;
 		
 	public:
 		//typedef of the std::vector constainer
@@ -626,9 +626,9 @@ namespace NLIAAGENT
 		void erase(const IObjectIA &obj);
 		void erase(std::list<const IObjectIA *> &l);
 		virtual bool isEqual(const IBasicObjectIA &a) const;
-		virtual const NLIAC::IBasicType *clone() const;
-		virtual const NLIAC::IBasicType *newInstance() const;
-		virtual const NLIAC::CIdentType &getType() const;		
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
+		virtual const NLAIC::CIdentType &getType() const;		
 		virtual void save(NLMISC::IStream &os);
 		virtual IObjetOp &neg();
 		virtual void load(NLMISC::IStream &is);

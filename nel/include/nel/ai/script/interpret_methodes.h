@@ -1,7 +1,7 @@
 /** \file interpret_methodes.h
  * Sevral class for the compiler fonctionality.
  *
- * $Id: interpret_methodes.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: interpret_methodes.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/
-	class CParam : public NLIAAGENT::IObjectIA
+	class CParam : public NLAIAGENT::IObjectIA
 	{
 	private:		
 		typedef std::vector<IOpType *> tParam;
@@ -51,7 +51,7 @@ namespace NLIASCRIPT
 		tParam			_Param;
 
 	public:
-		static const NLIAC::CIdentType IdParam;		
+		static const NLAIC::CIdentType IdParam;		
 
 		CParam();
 		CParam(const CParam &);
@@ -70,8 +70,8 @@ namespace NLIASCRIPT
 		void operator = (const CParam &p);
 		///get a parameter in the vector.
 		const IOpType *operator[] (sint32 i) const;
-		///Push new parameter type define in a list define by an NLIAAGENT::IBaseGroupType object.
-		void push(const NLIAAGENT::IBaseGroupType &);
+		///Push new parameter type define in a list define by an NLAIAGENT::IBaseGroupType object.
+		void push(const NLAIAGENT::IBaseGroupType &);
 		///Push new parameter type. Here we clone the arguments.
 		void push(const IOpType &);
 		///Push new parameter type. User have to make an incRef().
@@ -86,16 +86,16 @@ namespace NLIASCRIPT
 		///get vector size.
 		sint32 size() const;
 
-		/// \name NLIAC::IBasicInterface and NLIAAGENT::IObjectIA method.
+		/// \name NLAIC::IBasicInterface and NLAIAGENT::IObjectIA method.
 		//@{
-		virtual const NLIAC::CIdentType &getType() const;
-		virtual const NLIAC::IBasicType *clone() const;
-		virtual const NLIAC::IBasicType *newInstance() const;
+		virtual const NLAIC::CIdentType &getType() const;
+		virtual const NLAIC::IBasicType *clone() const;
+		virtual const NLAIC::IBasicType *newInstance() const;
 		virtual void getDebugString(char *) const;
-		virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &) const;
+		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &) const;
 		void load(NLMISC::IStream &);
 		void save(NLMISC::IStream &);		
-		virtual const NLIAAGENT::IObjectIA::CProcessResult &run();
+		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 		//@}
 
 		void getString(char *txt) const;		
@@ -110,11 +110,11 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/
-	class CMethodeName : public NLIAAGENT::IObjectIA
+	class CMethodeName : public NLAIAGENT::IObjectIA
 	{	
 	private:
 		///Name of the method.
-		NLIAAGENT::IVarName	*_MethodeName;
+		NLAIAGENT::IVarName	*_MethodeName;
 		///op code pointer for run method.
 		IOpCode			*_Code;
 		///_Param is the rgument of the method.
@@ -123,14 +123,14 @@ namespace NLIASCRIPT
 		IOpType			*_TypeOfMethode;
 		
 	public:
-		static const NLIAC::CIdentType IdMethodeName;
+		static const NLAIC::CIdentType IdMethodeName;
 
-		CMethodeName(const NLIAAGENT::IVarName &name);
+		CMethodeName(const NLAIAGENT::IVarName &name);
 		CMethodeName(const CMethodeName &);
 		CMethodeName();
 		~CMethodeName();
-		void setName(const NLIAAGENT::IVarName &name);
-		const NLIAAGENT::IVarName &getName() const;		
+		void setName(const NLAIAGENT::IVarName &name);
+		const NLAIAGENT::IVarName &getName() const;		
 		void setParam(const CParam &p);
 		void setTypeOfMethode(IOpType *);
 		CParam &getParam();
@@ -138,16 +138,16 @@ namespace NLIASCRIPT
 		IOpCode &getCode();
 		const IOpType *getTypeOfMethode() const;
 
-		/// \name NLIAC::IBasicInterface and NLIAAGENT::IObjectIA method.
+		/// \name NLAIC::IBasicInterface and NLAIAGENT::IObjectIA method.
 		//@{
 		void load(NLMISC::IStream &);
 		void save(NLMISC::IStream &);
-		virtual const NLIAC::CIdentType &getType() const;
-		virtual const NLIAC::IBasicType *clone() const;
-		const NLIAC::IBasicType *newInstance() const;
+		virtual const NLAIC::CIdentType &getType() const;
+		virtual const NLAIC::IBasicType *clone() const;
+		const NLAIC::IBasicType *newInstance() const;
 		virtual void getDebugString(char *) const;
-		virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &) const;
-		virtual const NLIAAGENT::IObjectIA::CProcessResult &run();
+		virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &) const;
+		virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
 		//@}
 	};
 }

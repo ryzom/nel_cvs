@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Base class for operators
  *
- * $Id: operator.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: operator.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "agent/agent.h"
 #include "logic/boolval.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
 	class IBaseVar;
 	class IBaseAssert;

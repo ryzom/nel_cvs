@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for string manipulation.
  *
- * $Id: agent_string.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: agent_string.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -25,16 +25,16 @@
 #define NL_AGENT_STRING_H
 #include <list>
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 	/**	
-	This is an abstract class for string in NLIAC::IBasicInterface format.
+	This is an abstract class for string in NLAIC::IBasicInterface format.
 
 	* \author Chafik sameh	 	
 	* \author Nevrax France
 	* \date 2000	
 	*/
-	class IVarName: public NLIAC::IBasicInterface
+	class IVarName: public NLAIC::IBasicInterface
 	{
 	public:
 
@@ -121,7 +121,7 @@ namespace NLIAAGENT
 	};		
 
 	/**	
-	Basic concret class for string manipulation with NLIAC::IBasicInterface format.
+	Basic concret class for string manipulation with NLAIC::IBasicInterface format.
 
 	* \author Chafik sameh	 	
 	* \author Nevrax France
@@ -130,7 +130,7 @@ namespace NLIAAGENT
 	class CStringVarName : public IVarName
 	{
 	public:
-		static const NLIAC::CIdentType IdStringVarName;
+		static const NLAIC::CIdentType IdStringVarName;
 	private:
 		char *_Name;
 	public:
@@ -172,7 +172,7 @@ namespace NLIAAGENT
 			return _Name;
 		}		
 
-		const NLIAC::CIdentType &getType() const;
+		const NLAIC::CIdentType &getType() const;
 		
 
 		void save(NLMISC::IStream &os)
@@ -231,14 +231,14 @@ namespace NLIAAGENT
 			return *this;
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicInterface *m = new CStringVarName(_Name);
+			NLAIC::IBasicInterface *m = new CStringVarName(_Name);
 			m->incRef();
 			return m;
 		}
 
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{			
 			return clone();
 		}
@@ -261,7 +261,7 @@ namespace NLIAAGENT
 	{
 
 	public:
-		static const NLIAC::CIdentType IdIndexedVarName;
+		static const NLAIC::CIdentType IdIndexedVarName;
 	private:
 		///Structure for store string in a std::map.
 		struct CNameStruc
@@ -341,7 +341,7 @@ namespace NLIAAGENT
 		
 		const char *getString() const;
 
-		const NLIAC::CIdentType &getType() const;	
+		const NLAIC::CIdentType &getType() const;	
 
 		const sint32 &getIndex() const
 		{
@@ -356,8 +356,8 @@ namespace NLIAAGENT
 
 		void save(NLMISC::IStream &os);
 		void load(NLMISC::IStream &is);
-		const NLIAC::IBasicType *clone() const;
-		const NLIAC::IBasicType *newInstance() const;
+		const NLAIC::IBasicType *clone() const;
+		const NLAIC::IBasicType *newInstance() const;
 		void getDebugString(char *text) const;
 
 		~CIndexedVarName();

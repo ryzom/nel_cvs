@@ -1,7 +1,7 @@
 /** \file interpret_object_list.h
  * Class for define an agent manager.
  *
- * $Id: interpret_object_manager.h,v 1.2 2001/01/05 16:05:57 chafik Exp $
+ * $Id: interpret_object_manager.h,v 1.3 2001/01/08 10:47:05 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -30,21 +30,21 @@ namespace NLIASCRIPT
 	class CManagerClass: public CAgentClass
 	{
 	public:
-		static const NLIAC::CIdentType IdManagerClass;
+		static const NLAIC::CIdentType IdManagerClass;
 	public:
-		CManagerClass(const NLIAAGENT::IVarName &);
-		CManagerClass(const NLIAC::CIdentType &);
-		CManagerClass(const NLIAAGENT::IVarName &, const NLIAAGENT::IVarName &);
+		CManagerClass(const NLAIAGENT::IVarName &);
+		CManagerClass(const NLAIC::CIdentType &);
+		CManagerClass(const NLAIAGENT::IVarName &, const NLAIAGENT::IVarName &);
 		CManagerClass(const CManagerClass &);
 		CManagerClass();
 
 		/// \name CAgentClass redefinition method.
 		//@{
-		const NLIAC::IBasicType *clone() const;
-		const NLIAC::IBasicType *newInstance() const;
+		const NLAIC::IBasicType *clone() const;
+		const NLAIC::IBasicType *newInstance() const;
 		void getDebugString(char *t) const;
 
-		virtual NLIAAGENT::IObjectIA *buildNewInstance() const;
+		virtual NLAIAGENT::IObjectIA *buildNewInstance() const;
 		//@}
 
 		virtual ~CManagerClass();

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Factbase, a container for 0 or first order logic asserts and facts of an agent
  *
- * $Id: factbase.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: factbase.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "agent/agent.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
 	class IBaseAssert;
 	class CVarSet;
@@ -36,33 +36,33 @@ namespace NLIALOGIC
 	class CValueSet;
 	class CFact;
 
-	class CFactBase : public NLIAAGENT::IObjetOp {
+	class CFactBase : public NLAIAGENT::IObjetOp {
 		private:
 			std::list<IBaseAssert *> _Asserts;
 
 		private:
 			IBaseAssert *findAssert(IBaseAssert *);
-			IBaseAssert *findAssert(NLIAAGENT::IVarName &, sint32);
+			IBaseAssert *findAssert(NLAIAGENT::IVarName &, sint32);
 
 		public:
-			static const NLIAC::CIdentType IdFactBase;			
+			static const NLAIC::CIdentType IdFactBase;			
 			
 		public:
 			CFactBase();
 			~CFactBase();
-			void addFact(NLIAAGENT::IVarName &, CValueSet *);		
+			void addFact(NLAIAGENT::IVarName &, CValueSet *);		
 			void removeFact(CFact *);
-			IBaseAssert *addAssert(NLIAAGENT::IVarName &, sint32);
+			IBaseAssert *addAssert(NLAIAGENT::IVarName &, sint32);
 			void addAssert(IBaseAssert *);
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *) const;					
 
-			virtual bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
 			virtual const CProcessResult &run();
 			virtual bool isTrue() const;
 

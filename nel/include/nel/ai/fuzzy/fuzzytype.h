@@ -2,7 +2,7 @@
  *	Class used to intergrate fuzzy conditions into boolean complex conditions
  *
 <<<<<<< fuzzytype.h
- * $Id: fuzzytype.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fuzzytype.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,43 +29,43 @@
 
 #include "logic/boolval.h"
 
-namespace NLIAFUZZY {
+namespace NLAIFUZZY {
 
 	// Valeur floue
-	class FuzzyType : public NLIALOGIC::IBaseBoolType {
+	class FuzzyType : public NLAILOGIC::IBaseBoolType {
 		private:
 			float _Value;
 			float _Threshold;
 		public:
 			
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
-			virtual const NLIAC::CIdentType &getType() const;			
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;			
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *text) const;
 			virtual float truthValue() const;
 			virtual bool isTrue() const;
-			virtual const NLIAAGENT::IVarName * getName() const;
-			virtual void setName(const NLIAAGENT::IVarName &n);
+			virtual const NLAIAGENT::IVarName * getName() const;
+			virtual void setName(const NLAIAGENT::IVarName &n);
 			virtual const CProcessResult &run();
 			virtual bool isEqual(const FuzzyType &a) const;
-			bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
-			virtual std::vector<NLIALOGIC::IBaseVar *> *getVars();
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+			virtual std::vector<NLAILOGIC::IBaseVar *> *getVars();
 
-			static const NLIAC::CIdentType IdFuzzyType;
+			static const NLAIC::CIdentType IdFuzzyType;
 
-			virtual NLIAAGENT::IObjetOp &operator += (const NLIAAGENT::IObjetOp &a);
-			virtual NLIAAGENT::IObjetOp &operator -= (const NLIAAGENT::IObjetOp &a);
-			virtual NLIAAGENT::IObjetOp &operator *= (const NLIAAGENT::IObjetOp &a);
+			virtual NLAIAGENT::IObjetOp &operator += (const NLAIAGENT::IObjetOp &a);
+			virtual NLAIAGENT::IObjetOp &operator -= (const NLAIAGENT::IObjetOp &a);
+			virtual NLAIAGENT::IObjetOp &operator *= (const NLAIAGENT::IObjetOp &a);
 
-			virtual NLIAAGENT::IObjetOp *operator < (NLIAAGENT::IObjetOp &a) const;
-			virtual NLIAAGENT::IObjetOp *operator > (NLIAAGENT::IObjetOp &a) const;
-			virtual NLIAAGENT::IObjetOp *operator <= (NLIAAGENT::IObjetOp &a) const;	
-			virtual NLIAAGENT::IObjetOp *operator >= (NLIAAGENT::IObjetOp &a) const;
-			virtual NLIAAGENT::IObjetOp *operator ! () const;
-			virtual NLIAAGENT::IObjetOp *operator != (NLIAAGENT::IObjetOp &a) const;
-			virtual NLIAAGENT::IObjetOp *operator == (NLIAAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator < (NLAIAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator > (NLAIAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator <= (NLAIAGENT::IObjetOp &a) const;	
+			virtual NLAIAGENT::IObjetOp *operator >= (NLAIAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator ! () const;
+			virtual NLAIAGENT::IObjetOp *operator != (NLAIAGENT::IObjetOp &a) const;
+			virtual NLAIAGENT::IObjetOp *operator == (NLAIAGENT::IObjetOp &a) const;
 	};
 }
 

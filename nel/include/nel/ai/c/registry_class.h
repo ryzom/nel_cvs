@@ -1,7 +1,7 @@
 /** \file registry_class.h
  * Includes some methode for acces the static class factory.
  *
- * $Id: registry_class.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: registry_class.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "c/registry.h"
 
 
-namespace NLIAC
+namespace NLAIC
 {
 	///Get the local static CRegistry object define for all object.
 	CRegistry *getRegistry();

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic facts
  *
- * $Id: fact.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fact.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "logic/valueset.h"
 
-namespace NLIALOGIC {
+namespace NLAILOGIC {
 	class IBaseAssert;
 	class CValueSet;
 	class CVarSet;
@@ -45,7 +45,7 @@ namespace NLIALOGIC {
 			IBaseAssert *getAssert();
 			virtual void getDebugString(char *) const;
 			virtual void propagate();
-			virtual bool operator == (const NLIAAGENT::IBasicObjectIA &a) const;
+			virtual bool operator == (const NLAIAGENT::IBasicObjectIA &a) const;
 			CValueSet *asValueSet();
 	};
 }

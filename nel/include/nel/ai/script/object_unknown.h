@@ -1,7 +1,7 @@
 /** \file object_unknown.h
  * Class for store an IOpType.
  *
- * $Id: object_unknown.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: object_unknown.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/	
-	class CObjectUnknown: public NLIAAGENT::IObjectIA	
+	class CObjectUnknown: public NLAIAGENT::IObjectIA	
 	{
 	
 	private:
@@ -68,28 +68,28 @@ namespace NLIASCRIPT
 
 		/// \name Base class method.
 		//@{
-		const NLIAC::CIdentType &getType() const throw (NLIAE::CExceptionUnReference)
+		const NLAIC::CIdentType &getType() const throw (NLIAE::CExceptionUnReference)
 		{
-			const NLIAC::CIdentType *id = _opType->getConstraintTypeOf();
+			const NLAIC::CIdentType *id = _opType->getConstraintTypeOf();
 			if(id == NULL) throw NLIAE::CExceptionUnReference("object type is unreference");
 			return *id;
 		}
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
 			_opType->incRef();
 			_opBaseType->incRef();
 			return new CObjectUnknown(_opType,_opBaseType);
 		}
 
-		const NLIAC::IBasicType *newInstance() const
+		const NLAIC::IBasicType *newInstance() const
 		{
 			return clone();			
 		}
 
 		void getDebugString(char *txt) const
 		{
-			const NLIAC::CIdentType *id = _opType->getConstraintTypeOf();
+			const NLAIC::CIdentType *id = _opType->getConstraintTypeOf();
 			if(id)
 			{
 				sprintf(txt,"CObjectUnknown< _opType < %s > >", (const char *)*id);
@@ -107,14 +107,14 @@ namespace NLIASCRIPT
 		{
 		}
 
-		bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const 
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const 
 		{
 			return true;
 		}		
 
-		const NLIAAGENT::IObjectIA::CProcessResult &run()
+		const NLAIAGENT::IObjectIA::CProcessResult &run()
 		{
-			return NLIAAGENT::IObjectIA::ProcessRun;;
+			return NLAIAGENT::IObjectIA::ProcessRun;;
 		}
 		//@}
 		

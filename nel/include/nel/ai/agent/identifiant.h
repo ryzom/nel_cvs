@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: identifiant.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: identifiant.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "e/ia_exception.h" 
 #include "agent/agent_string.h"
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {	
 	class IRefrence;
 
@@ -324,7 +324,7 @@ namespace NLIAAGENT
 		* \author Nevrax France
 		* \date 2000
 	*/
-	class IWordNumRef: public NLIAC::IBasicInterface
+	class IWordNumRef: public NLAIC::IBasicInterface
 	{
 	public:
 		IWordNumRef()
@@ -394,7 +394,7 @@ namespace NLIAAGENT
 
 	public:
 		///The class factory ident of the class.
-		static const NLIAC::CIdentType IdLocWordNumRef;
+		static const NLAIC::CIdentType IdLocWordNumRef;
 
 	public:
 		///Construct object for an IRefrence agents objects.
@@ -453,16 +453,16 @@ namespace NLIAAGENT
 
 		/// \name IBasicInterface method.
 		//@{
-		virtual const NLIAC::CIdentType &getType() const;		
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::CIdentType &getType() const;		
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicInterface *m = new CLocWordNumRef(*this);
+			NLAIC::IBasicInterface *m = new CLocWordNumRef(*this);
 			m->incRef();
 			return m;
 		}		
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{
-			NLIAC::IBasicInterface *m = new CLocWordNumRef();
+			NLAIC::IBasicInterface *m = new CLocWordNumRef();
 			m->incRef();
 			return m;
 		}

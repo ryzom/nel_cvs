@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some class for typing objects.
  *
- * $Id: registry_type.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: registry_type.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include <iostream>
 #include "nel/misc/types_nl.h"
 
-namespace NLIAC
+namespace NLAIC
 {		
 	/**
 	CBinaryType is a basic binnary nomber manipulation.
@@ -38,7 +38,7 @@ namespace NLIAC
 	* \date 2000
 	*/
 
-	class CBinaryType: public NLIAC::IBasicInterface
+	class CBinaryType: public NLAIC::IBasicInterface
 	{
 	private:
 		///Binary nomber.
@@ -186,18 +186,18 @@ namespace NLIAC
 	public:
 		/// \name IBasicInterface method.
 		//@{
-		virtual const NLIAC::CIdentType &getType() const throw (NLIAE::CExceptionUnReference)
+		virtual const NLAIC::CIdentType &getType() const throw (NLIAE::CExceptionUnReference)
 		{
 
 			throw NLIAE::CExceptionUnReference("const CIdentType & CBinaryType::getType()");
-			return NLIAC::CIdentType::VoidType;
+			return NLAIC::CIdentType::VoidType;
 		}
 
-		virtual const NLIAC::IBasicType *clone() const 
+		virtual const NLAIC::IBasicType *clone() const 
 		{
 			return new CBinaryType(*this);
 		}
-		virtual const NLIAC::IBasicType *newInstance() const 
+		virtual const NLAIC::IBasicType *newInstance() const 
 		{
 			return new CBinaryType();
 		}
@@ -232,7 +232,7 @@ namespace NLIAC
 	class CTypeOfObject: public CBinaryType
 	{
 	public:
-		static NLIAC::CIdentType IdTypeOfObject;
+		static NLAIC::CIdentType IdTypeOfObject;
 		
 	public:
 		///define the type of an objects.
@@ -251,7 +251,7 @@ namespace NLIAC
 			//tExec = 64,
 			///The object is an IBasicInterface object.
 			tObject = 128,
-			///The object is an agent defiend with the interpret. Agents class must derived from NLIAAGENT::CAgentScript.
+			///The object is an agent defiend with the interpret. Agents class must derived from NLAIAGENT::CAgentScript.
 			tAgentInterpret = 256,
 			///Last definition.
 			tLast = tAgentInterpret,			
@@ -282,21 +282,21 @@ namespace NLIAC
 	public:
 		/// \name IBasicInterface method.
 		//@{
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CTypeOfObject(*this);
+			NLAIC::IBasicType *x = new CTypeOfObject(*this);
 			x->incRef();
 			return x;
 		}		
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{
-			NLIAC::IBasicType *x = new CTypeOfObject();
+			NLAIC::IBasicType *x = new CTypeOfObject();
 			x->incRef();
 			return x;
 		}
 
-		virtual const NLIAC::CIdentType &getType() const;
+		virtual const NLAIC::CIdentType &getType() const;
 		virtual void getDebugString(char *txt) const;
 		//@}
 	};
@@ -311,7 +311,7 @@ namespace NLIAC
 	class CTypeOfOperator: public CBinaryType
 	{
 	public:
-		static NLIAC::CIdentType IdTypeOfOperator;
+		static NLAIC::CIdentType IdTypeOfOperator;
 		
 	public:
 		///define the type of an operation.
@@ -371,21 +371,21 @@ namespace NLIAC
 		/// \name IBasicInterface method.
 		//@{
 
-		virtual const NLIAC::IBasicType *clone() const
+		virtual const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CTypeOfOperator(*this);
+			NLAIC::IBasicType *x = new CTypeOfOperator(*this);
 			x->incRef();
 			return x;
 		}		
 
-		virtual const NLIAC::IBasicType *newInstance() const
+		virtual const NLAIC::IBasicType *newInstance() const
 		{
-			NLIAC::IBasicType *x = new CTypeOfOperator();
+			NLAIC::IBasicType *x = new CTypeOfOperator();
 			x->incRef();
 			return x;
 		}
 
-		virtual const NLIAC::CIdentType &getType() const;
+		virtual const NLAIC::CIdentType &getType() const;
 		virtual void getDebugString(char *txt) const;
 		//@}
 	};

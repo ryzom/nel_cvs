@@ -1,6 +1,6 @@
 /** \file virtual_op_code.h
  * Basic definition for op-codes maniputation.
- * $Id: virtual_op_code.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: virtual_op_code.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,14 +32,14 @@ namespace NLIASCRIPT
 	/**
 	* Class IOpCode.
 	* 
-	* This class define an object basic op-code, an op-code is an NLIAAGENT::IObjectIA hows have to run with an CCodeContext.
+	* This class define an object basic op-code, an op-code is an NLAIAGENT::IObjectIA hows have to run with an CCodeContext.
 	* 
 	*
 	* \author Chafik sameh	
 	* \author Nevrax France
 	* \date 2000
 	*/
-	class IOpCode: public NLIAAGENT::IObjectIA
+	class IOpCode: public NLAIAGENT::IObjectIA
 	{
 	public:
 		IOpCode()
@@ -47,7 +47,7 @@ namespace NLIASCRIPT
 		}
 		
 		///Computation of the op-code with a given context.
-		virtual	NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context) = 0;
+		virtual	NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context) = 0;
 		///gets debug string from the op-code.
 		virtual void getDebugResult(char *str,CCodeContext &context) const = 0;
 		virtual ~IOpCode()
@@ -74,9 +74,9 @@ namespace NLIASCRIPT
 			///Get the nex op-code to run.
 			virtual IOpCode &nextCode() = 0;
 			///Run for a given self class. The method create a new context.
-			virtual const NLIAAGENT::IObjectIA::CProcessResult &run(NLIAAGENT::IObjectIA &self) = 0;
+			virtual const NLAIAGENT::IObjectIA::CProcessResult &run(NLAIAGENT::IObjectIA &self) = 0;
 			///Run with a given context
-			virtual const NLIAAGENT::IObjectIA::CProcessResult &run(CCodeContext &) = 0;
+			virtual const NLAIAGENT::IObjectIA::CProcessResult &run(CCodeContext &) = 0;
 
 			virtual ~ICodeBranche()
 			{
@@ -103,9 +103,9 @@ namespace NLIASCRIPT
 		{
 		}
 
-		const NLIAAGENT::IObjectIA::CProcessResult &run(){return NLIAAGENT::IObjectIA::ProcessRun;}
+		const NLAIAGENT::IObjectIA::CProcessResult &run(){return NLAIAGENT::IObjectIA::ProcessRun;}
 		void getDebugString(char *) const{ }
-		bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const{ return true;}	
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const{ return true;}	
 
 		virtual ~IOpRunCode()
 		{

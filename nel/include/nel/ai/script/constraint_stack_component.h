@@ -1,7 +1,7 @@
 /** \file constraint_stack_component.h
  * Class for the compiler fonctionality.
  *
- * $Id: constraint_stack_component.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: constraint_stack_component.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,7 @@ namespace NLIASCRIPT
 		//@}
 
 		///The type of compoment when it resolve.
-		NLIAC::CIdentType *_Id;
+		NLAIC::CIdentType *_Id;
 		///Type of load.
 		OpCodeType _OpCodeType;
 		///It used when the type is a heapCall and define the heap position.
@@ -98,7 +98,7 @@ namespace NLIASCRIPT
 			return constraintStackComp;
 		}
 
-		const NLIAC::CIdentType *getConstraintTypeOf();
+		const NLAIC::CIdentType *getConstraintTypeOf();
 		int getLine() const
 		{
 			return _Lin;

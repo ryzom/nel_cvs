@@ -1,7 +1,7 @@
 /** \file opcode_lpt.h
  * Sevral op-code for loading referance object to the stack.
  *
- * $Id: opcode_lpt.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: opcode_lpt.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@ namespace NLIASCRIPT
 	class CLptMemberOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLptMemberOpCode;
+		static const NLAIC::CIdentType IdLptMemberOpCode;
 	private:
 		int _B;
 	public:
@@ -40,23 +40,23 @@ namespace NLIASCRIPT
 		}
 		
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
 		void getDebugResult(char *str,CCodeContext &context) const;		
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLptMemberOpCode(_B);
+			NLAIC::IBasicType *x = new CLptMemberOpCode(_B);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLptMemberOpCode;
 		}
@@ -84,7 +84,7 @@ namespace NLIASCRIPT
 	class CLptStackMemberiOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLptStackMemberiOpCode;
+		static const NLAIC::CIdentType IdLptStackMemberiOpCode;
 	private:		
 		 std::list<sint32> _I;
 	public:
@@ -93,23 +93,23 @@ namespace NLIASCRIPT
 		{
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 
 		void getDebugResult(char *str,CCodeContext &context) const;		
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLptStackMemberiOpCode(_I);
+			NLAIC::IBasicType *x = new CLptStackMemberiOpCode(_I);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLptStackMemberiOpCode;
 		}
@@ -135,7 +135,7 @@ namespace NLIASCRIPT
 	class CLptHeapMemberiOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLptHeapMemberiOpCode;
+		static const NLAIC::CIdentType IdLptHeapMemberiOpCode;
 	private:
 		std::list<sint32> _I;
 		sint32 _N;
@@ -145,23 +145,23 @@ namespace NLIASCRIPT
 		{
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
 		void getDebugResult(char *str,CCodeContext &context) const;		
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLptHeapMemberiOpCode(_I,_N);
+			NLAIC::IBasicType *x = new CLptHeapMemberiOpCode(_I,_N);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLptHeapMemberiOpCode;
 		}
@@ -187,7 +187,7 @@ namespace NLIASCRIPT
 	class CLptMemberiOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLptMemberiOpCode;
+		static const NLAIC::CIdentType IdLptMemberiOpCode;
 	private:
 		std::list<sint32> _I;
 	public:
@@ -196,23 +196,23 @@ namespace NLIASCRIPT
 		{
 		}
 
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);
 
 		void getDebugResult(char *str,CCodeContext &context) const;
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLptMemberiOpCode(_I);
+			NLAIC::IBasicType *x = new CLptMemberiOpCode(_I);
 			x->incRef();
 			return x;
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLptMemberiOpCode;
 		}
@@ -238,7 +238,7 @@ namespace NLIASCRIPT
 	class CLptRefOpCode : public IOpRunCode
 	{
 	public:
-		static const NLIAC::CIdentType IdLptRefOpCode;
+		static const NLAIC::CIdentType IdLptRefOpCode;
 	private:
 		int _B;
 	public:
@@ -247,23 +247,23 @@ namespace NLIASCRIPT
 		{			
 		}
 		
-		NLIAAGENT::TProcessStatement runOpCode(CCodeContext &context);		
+		NLAIAGENT::TProcessStatement runOpCode(CCodeContext &context);		
 		void getDebugResult(char *str,CCodeContext &context) const;		
 
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CLptRefOpCode(_B);
+			NLAIC::IBasicType *x = new CLptRefOpCode(_B);
 			x->incRef();
 			return x;
 
 		}
 
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
 
-		const NLIAC::CIdentType &getType() const
+		const NLAIC::CIdentType &getType() const
 		{
 			return IdLptRefOpCode;
 		}		

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: fo_operator.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: fo_operator.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "agent/agent.h"
 #include "logic/operator.h"
 
-namespace NLIALOGIC
+namespace NLAILOGIC
 {
 	class IBaseVar;
 	class IBaseBoolType;
@@ -91,19 +91,19 @@ namespace NLIALOGIC
 			/// Propagates facts through the operator and network of asserts/ operators
 			std::list<CFact *> *propagate(std::list<CFact *> &);
 
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void save(NLMISC::IStream &os);
 			virtual void load(NLMISC::IStream &is);
 			virtual void getDebugString(char *text) const;
 			virtual bool isEqual(const CFirstOrderOperator &a) const;
-			virtual const NLIAAGENT::IObjectIA::CProcessResult &run();
-			bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const;
-			const NLIAC::CIdentType &getType() const;
+			virtual const NLAIAGENT::IObjectIA::CProcessResult &run();
+			bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const;
+			const NLAIC::CIdentType &getType() const;
 
 			virtual bool operator==(CFirstOrderOperator *);
 
-			static const NLIAC::CIdentType IdCFirstOrderOperator;
+			static const NLAIC::CIdentType IdCFirstOrderOperator;
 
 			std::list<CFact *> *test(std::list<CFact *> &);
 

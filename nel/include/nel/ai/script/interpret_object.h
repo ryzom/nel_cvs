@@ -1,7 +1,7 @@
 /** \file interpret_object.h
  * Sevral class for define a script class.
  *
- * $Id: interpret_object.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: interpret_object.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,9 +44,9 @@ namespace NLIASCRIPT
 	struct CComponent
 	{
 		///Component type name.
-		NLIAAGENT::IVarName *RegisterName;	
+		NLAIAGENT::IVarName *RegisterName;	
 		///Name of the Component.
-		NLIAAGENT::IVarName *ObjectName;
+		NLAIAGENT::IVarName *ObjectName;
 
 		/**
 		Local define the distribution type.
@@ -82,20 +82,20 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/	
-	class IClassInterpret: public NLIAAGENT::IObjectIA
+	class IClassInterpret: public NLAIAGENT::IObjectIA
 	{
 	private:
 		///Name of the class
-		NLIAAGENT::IVarName *_Name;
+		NLAIAGENT::IVarName *_Name;
 		///Type of the class.
-		NLIAC::CIdentType *_IdType;
+		NLAIC::CIdentType *_IdType;
 
 	protected:
-		IClassInterpret(const NLIAAGENT::IVarName &,const IClassInterpret &);
+		IClassInterpret(const NLAIAGENT::IVarName &,const IClassInterpret &);
 
 	public:
 		/// Returns a static component from its name in the class
-		virtual CComponent *getComponent(const NLIAAGENT::IVarName &) const = 0;
+		virtual CComponent *getComponent(const NLAIAGENT::IVarName &) const = 0;
 		
 		/// Returns a component from its index
 		virtual CComponent *getComponent(sint32 i) const = 0;
@@ -103,24 +103,24 @@ namespace NLIASCRIPT
 	public:		
 
 		IClassInterpret();
-		IClassInterpret(NLIAC::CIdentType *idType);
+		IClassInterpret(NLAIC::CIdentType *idType);
 		virtual ~IClassInterpret();
-		const NLIAC::CIdentType &getType() const;
-		void setType(NLIAC::CIdentType *idType);
-		void setType(const NLIAAGENT::IVarName &, const IClassInterpret &);
+		const NLAIC::CIdentType &getType() const;
+		void setType(NLAIC::CIdentType *idType);
+		void setType(const NLAIAGENT::IVarName &, const IClassInterpret &);
 
 		/// Instanciates an object of the class
-		virtual NLIAAGENT::IObjectIA *buildNewInstance() const = 0;
+		virtual NLAIAGENT::IObjectIA *buildNewInstance() const = 0;
 
 		/// Registers a new static component
-		virtual sint32 registerComponent(const NLIAAGENT::IVarName &) = 0;		
+		virtual sint32 registerComponent(const NLAIAGENT::IVarName &) = 0;		
 				
 		/// Returns the number of static components in the class
 		virtual sint32 getStaticMemberSize() const = 0;		
 
 		/// \name code method.		
 		//@{		
-		virtual sint32 addBrancheCode(const NLIAAGENT::IVarName &,const CParam &) = 0;
+		virtual sint32 addBrancheCode(const NLAIAGENT::IVarName &,const CParam &) = 0;
 		virtual CMethodeName &getBrancheCode() const = 0;
 		///get method in the class.
 		virtual CMethodeName &getBrancheCode(sint32) const= 0;
@@ -141,21 +141,21 @@ namespace NLIASCRIPT
 		virtual sint32 sizeVTable() const= 0;
 
 		/// Returns the name of the class in the registry
-		virtual const NLIAAGENT::IVarName *getClassName() const;
-		virtual void setClassName(const NLIAAGENT::IVarName &);
+		virtual const NLAIAGENT::IVarName *getClassName() const;
+		virtual void setClassName(const NLAIAGENT::IVarName &);
 
 		/// Defines the base class using its name in the registry
-		virtual void setInheritanceName(const NLIAAGENT::IVarName &name) = 0;
+		virtual void setInheritanceName(const NLAIAGENT::IVarName &name) = 0;
 
 		/// Returns the name of the base class in the registry
-		virtual const NLIAAGENT::IVarName *getInheritanceName() const = 0;
+		virtual const NLAIAGENT::IVarName *getInheritanceName() const = 0;
 
 		/// Return a pointer to the base IClassInterpret object
 		virtual const IClassInterpret *getBaseClass() const = 0;
 		///Return the name of the compoment given by an offset.
 		virtual const char *getComponentName(sint32 = 0) const = 0;
 
-		const NLIAAGENT::IVarName *getName() const
+		const NLAIAGENT::IVarName *getName() const
 		{
 			return _Name;
 		}
@@ -174,7 +174,7 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/	
-	class CClassInterpretFactory: public NLIAC::IClassCFactory
+	class CClassInterpretFactory: public NLAIC::IClassCFactory
 	{
 	private:
 		IClassInterpret *_inst;
@@ -184,11 +184,11 @@ namespace NLIASCRIPT
 		/// \name IClassCFactory method.
 		//@{
 		void getDebugString(char *text) const;
-		const NLIAC::IBasicType *clone() const;
-		const NLIAC::IBasicType *newInstance() const;
-		const NLIAC::CIdentType &getType() const;
-		const NLIAC::IBasicInterface *createInstance() const;
-		const NLIAC::IBasicInterface *getClass() const;
+		const NLAIC::IBasicType *clone() const;
+		const NLAIC::IBasicType *newInstance() const;
+		const NLAIC::CIdentType &getType() const;
+		const NLAIC::IBasicInterface *createInstance() const;
+		const NLAIC::IBasicInterface *getClass() const;
 		//@}
 
 		~CClassInterpretFactory();
@@ -198,7 +198,7 @@ namespace NLIASCRIPT
 	/**
 	* Class CExceptionHaveNoType.
 	* 
-	* This an no type exception it happen when an object have no NLIAC::CIdentType.
+	* This an no type exception it happen when an object have no NLAIC::CIdentType.
 	* 	
 	* \author Chafik sameh
 	* \author Portier Perre.

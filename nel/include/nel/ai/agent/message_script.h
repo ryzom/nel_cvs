@@ -1,7 +1,7 @@
 /** \file message_script.h
  * class for script message.
  *
- * $Id: message_script.h,v 1.1 2001/01/05 10:50:22 chafik Exp $
+ * $Id: message_script.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@ namespace NLIASCRIPT
 	class CMessageClass;
 }
 
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	/**
 		Class for managing message agent script. Note that it is write with the same model of CAgentScript but don't have the same base class, because
@@ -47,7 +47,7 @@ namespace NLIAAGENT
 	class CMessageScript : public IMessageBase 
 	{
 		public:
-			static const NLIAC::CIdentType IdMessageScript;
+			static const NLAIC::CIdentType IdMessageScript;
 		private:			
 			NLIASCRIPT::CMessageClass *_MessageClass;
 
@@ -72,14 +72,14 @@ namespace NLIAAGENT
 			virtual bool isEqual(const IBasicObjectIA &a) const;
 			//@}
 
-			/// \name NLIAC::IBasicInterface member class. 
+			/// \name NLAIC::IBasicInterface member class. 
 			//@{
 			virtual void load(NLMISC::IStream &is);
 			virtual void save(NLMISC::IStream &os);
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void getDebugString(char *t) const;			
-			const NLIAC::CIdentType &getType() const;
+			const NLAIC::CIdentType &getType() const;
 			//@}			
 
 		public:

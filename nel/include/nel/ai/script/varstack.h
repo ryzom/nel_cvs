@@ -1,7 +1,7 @@
 
 /** \file varstack.h
  *
- * $Id: varstack.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: varstack.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,32 +39,32 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/
-	class CVarPStack:public NLIAAGENT::IObjetOp
+	class CVarPStack:public NLAIAGENT::IObjetOp
 	{
 
 	public:
-		static NLIAC::CIdentType IdVarPStack;		
+		static NLAIC::CIdentType IdVarPStack;		
 	private:		
 		///Heap pointer index.
 		sint32		_Val;	
 
 	#ifdef _DEBUG
-		NLIAAGENT::IVarName *_NameVar;
+		NLAIAGENT::IVarName *_NameVar;
 	#endif
 
 
 	public:
-		static NLIAAGENT::IObjectIA**	_LocalTableRef;
+		static NLAIAGENT::IObjectIA**	_LocalTableRef;
 
 	public:
 	#ifdef _DEBUG
 		CVarPStack(sint32 val, const char *nameVar):
-		  _Val(val),_NameVar(new NLIAAGENT::CIndexedVarName(nameVar))
+		  _Val(val),_NameVar(new NLAIAGENT::CIndexedVarName(nameVar))
 		{			  
 			_NameVar->incRef();
 		}
 
-		CVarPStack(const CVarPStack &v):NLIAAGENT::IObjetOp(v),_Val(v._Val),_NameVar((NLIAAGENT::IVarName *)v._NameVar->clone())
+		CVarPStack(const CVarPStack &v):NLAIAGENT::IObjetOp(v),_Val(v._Val),_NameVar((NLAIAGENT::IVarName *)v._NameVar->clone())
 		{		
 		}
 	#else
@@ -73,13 +73,13 @@ namespace NLIASCRIPT
 		{
 		}
 
-		CVarPStack(const CVarPStack &v):NLIAAGENT::IObjetOp(v), _Val(v._Val)
+		CVarPStack(const CVarPStack &v):NLAIAGENT::IObjetOp(v), _Val(v._Val)
 		{
 		}
 	#endif
 
 		///Gets the type of object stored in the heap.
-		const NLIAC::CIdentType &getVarType(void) const
+		const NLAIC::CIdentType &getVarType(void) const
 		{			
 			return _LocalTableRef[_Val]->getType();
 		}
@@ -92,14 +92,14 @@ namespace NLIASCRIPT
 				
 		///\name Base class method.
 		//@{
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CVarPStack(*this);
+			NLAIC::IBasicType *x = new CVarPStack(*this);
 			x->incRef();
 			return x;
 		}
 		
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
 			return clone();
 		}
@@ -117,7 +117,7 @@ namespace NLIASCRIPT
 			val = _Val;
 		}
 
-		const NLIAC::CIdentType &getType(void) const
+		const NLAIC::CIdentType &getType(void) const
 		{
 			return IdVarPStack;
 		}		
@@ -129,105 +129,105 @@ namespace NLIASCRIPT
 			sprintf(text,"CVarPStack<%d>: _vale<%d> pointe la variable %s",this,_Val,valVar);
 		}
 
-		bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 		{
 			const CVarPStack &t = (const CVarPStack &)a;
 			return t._Val == _Val;
 		}
 
-		const NLIAAGENT::IObjectIA::CProcessResult &run()
+		const NLAIAGENT::IObjectIA::CProcessResult &run()
 		{
-			return NLIAAGENT::IObjectIA::ProcessRun;
+			return NLAIAGENT::IObjectIA::ProcessRun;
 		}
 
-		virtual	NLIAAGENT::IObjetOp &neg()
+		virtual	NLAIAGENT::IObjetOp &neg()
 		{
-			((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val])->neg();
+			((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val])->neg();
 			return *this;
 		}
 
-		NLIAAGENT::IObjetOp &operator += (const NLIAAGENT::IObjetOp &a)
+		NLAIAGENT::IObjetOp &operator += (const NLAIAGENT::IObjetOp &a)
 		{
-			*((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) += a;
+			*((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) += a;
 			return *this;
 		}
 
-		NLIAAGENT::IObjetOp &operator -= (const NLIAAGENT::IObjetOp &a)
+		NLAIAGENT::IObjetOp &operator -= (const NLAIAGENT::IObjetOp &a)
 		{
-			*((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) -= a;
+			*((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) -= a;
 			return *this;
 		}	
 
-		NLIAAGENT::IObjetOp &operator *= (const NLIAAGENT::IObjetOp &a)
+		NLAIAGENT::IObjetOp &operator *= (const NLAIAGENT::IObjetOp &a)
 		{
-			*((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) *= a;
+			*((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) *= a;
 			return *this;
 		}
-		NLIAAGENT::IObjetOp &operator /= (const NLIAAGENT::IObjetOp &a)
+		NLAIAGENT::IObjetOp &operator /= (const NLAIAGENT::IObjetOp &a)
 		{
-			*((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) /= a;
+			*((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) /= a;
 			return *this;
 		}	
 
-		NLIAAGENT::IObjetOp *operator + (const NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator + (const NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) + a;
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) + a;
 			
 		}
 
-		NLIAAGENT::IObjetOp *operator - (const NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator - (const NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) - a;
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) - a;
 		}
 
-		const NLIAAGENT::IObjetOp *operator * (const NLIAAGENT::IObjetOp &a)  const
+		const NLAIAGENT::IObjetOp *operator * (const NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) * a;
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) * a;
 		}
 
-		const NLIAAGENT::IObjetOp *operator / (const NLIAAGENT::IObjetOp &a)  const
+		const NLAIAGENT::IObjetOp *operator / (const NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) / a;
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) / a;
 		}
 		
 
-		NLIAAGENT::IObjetOp *operator < (NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator < (NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) < a;
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) < a;
 		}
-		NLIAAGENT::IObjetOp *operator > (NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator > (NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) > a;
-		}
-
-		NLIAAGENT::IObjetOp *operator <= (NLIAAGENT::IObjetOp &a)  const
-		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) <= a;
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) > a;
 		}
 
-		NLIAAGENT::IObjetOp *operator >= (NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator <= (NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) >= a;
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) <= a;
+		}
+
+		NLAIAGENT::IObjetOp *operator >= (NLAIAGENT::IObjetOp &a)  const
+		{
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) >= a;
 		}
 		
-		NLIAAGENT::IObjetOp *operator ! ()  const
+		NLAIAGENT::IObjetOp *operator ! ()  const
 		{
-			return !*((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]);
+			return !*((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]);
 		}
 
-		NLIAAGENT::IObjetOp *operator != (NLIAAGENT::IObjetOp &a) const
+		NLAIAGENT::IObjetOp *operator != (NLAIAGENT::IObjetOp &a) const
 		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) != a;
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) != a;
 		}		
 
-		NLIAAGENT::IObjetOp *operator == (NLIAAGENT::IObjetOp &a) const
+		NLAIAGENT::IObjetOp *operator == (NLAIAGENT::IObjetOp &a) const
 		{
-			return *((NLIAAGENT::IObjetOp *)_LocalTableRef[_Val]) == a;
+			return *((NLAIAGENT::IObjetOp *)_LocalTableRef[_Val]) == a;
 		}
 
 		bool isTrue() const
 		{
-			return ((NLIAAGENT::IObjetOp*)_LocalTableRef[_Val])->isTrue();
+			return ((NLAIAGENT::IObjetOp*)_LocalTableRef[_Val])->isTrue();
 		}
 		//@}
 		
@@ -251,27 +251,27 @@ namespace NLIASCRIPT
 	* \author Nevrax France
 	* \date 2000
 	*/
-	class CVarPStackParam:public NLIAAGENT::IObjetOp
+	class CVarPStackParam:public NLAIAGENT::IObjetOp
 	{
 
 	public:
-		static NLIAC::CIdentType IdVarPStackParam;
+		static NLAIC::CIdentType IdVarPStackParam;
 		static	sint32	_Shift;
 	private:		
 		sint32		_Val;		
 
 #ifdef _DEBUG
-		NLIAAGENT::IVarName *_NameVar;
+		NLAIAGENT::IVarName *_NameVar;
 #endif	
 
 	public:
 #ifdef _DEBUG
-		CVarPStackParam(sint32 val, const char *nameVar): _Val(val),_NameVar(new NLIAAGENT::CIndexedVarName(nameVar))
+		CVarPStackParam(sint32 val, const char *nameVar): _Val(val),_NameVar(new NLAIAGENT::CIndexedVarName(nameVar))
 		{			  
 			_NameVar->incRef();
 		}
 
-		CVarPStackParam(const CVarPStackParam &v):NLIAAGENT::IObjetOp(v),_Val(v._Val),_NameVar((NLIAAGENT::IVarName *)v._NameVar->clone())
+		CVarPStackParam(const CVarPStackParam &v):NLAIAGENT::IObjetOp(v),_Val(v._Val),_NameVar((NLAIAGENT::IVarName *)v._NameVar->clone())
 		{		
 		}
 #else
@@ -279,26 +279,26 @@ namespace NLIASCRIPT
 		{
 		}
 
-		CVarPStackParam(const CVarPStackParam &v):NLIAAGENT::IObjetOp(v), _Val(v._Val)
+		CVarPStackParam(const CVarPStackParam &v):NLAIAGENT::IObjetOp(v), _Val(v._Val)
 		{
 		}
 #endif
 				
 
 		///Clone the object stored in the heap.
-		const NLIAAGENT::IObjectIA *getObjectIAClone() const
+		const NLAIAGENT::IObjectIA *getObjectIAClone() const
 		{
-			return (NLIAAGENT::IObjectIA  *)CVarPStack::_LocalTableRef[_Val + _Shift]->clone();
+			return (NLAIAGENT::IObjectIA  *)CVarPStack::_LocalTableRef[_Val + _Shift]->clone();
 		}
 
 		///get the type of the object stored in the heap.
-		const NLIAC::CIdentType &getVarType(void) const
+		const NLAIC::CIdentType &getVarType(void) const
 		{			
 			return CVarPStack::_LocalTableRef[_Val + _Shift]->getType();
 		}
 
 		///get the object stored in the heap.
-		const NLIAAGENT::IObjectIA *getObject(void) const
+		const NLAIAGENT::IObjectIA *getObject(void) const
 		{			
 			return CVarPStack::_LocalTableRef[_Val + _Shift];
 		}
@@ -311,17 +311,17 @@ namespace NLIASCRIPT
 
 		///\name Base class method.
 		//@{
-		const NLIAC::IBasicType *clone() const
+		const NLAIC::IBasicType *clone() const
 		{
-			NLIAC::IBasicType *x = new CVarPStackParam(*this);
+			NLAIC::IBasicType *x = new CVarPStackParam(*this);
 			x->incRef();
 			return x;
-			//return (NLIAAGENT::IObjectIA  *)CVarPStack::_LocalTableRef[_Val + _Shift]->clone();
+			//return (NLAIAGENT::IObjectIA  *)CVarPStack::_LocalTableRef[_Val + _Shift]->clone();
 		}
 		
-		const NLIAC::IBasicType *newInstance() const 
+		const NLAIC::IBasicType *newInstance() const 
 		{
-			NLIAC::IBasicType *x = new CVarPStackParam(*this);
+			NLAIC::IBasicType *x = new CVarPStackParam(*this);
 			x->incRef();
 			return x;
 		}
@@ -344,7 +344,7 @@ namespace NLIASCRIPT
 			_Shift = shift;
 		}
 
-		const NLIAC::CIdentType &getType(void) const
+		const NLAIC::CIdentType &getType(void) const
 		{
 			return IdVarPStackParam;
 		}		
@@ -360,105 +360,105 @@ namespace NLIASCRIPT
 #endif
 		}
 
-		bool isEqual(const NLIAAGENT::IBasicObjectIA &a) const
+		bool isEqual(const NLAIAGENT::IBasicObjectIA &a) const
 		{
 			const CVarPStackParam &t = (const CVarPStackParam &)a;
 			return t._Val == _Val;
 		}
 
-		const NLIAAGENT::IObjectIA::CProcessResult &run()
+		const NLAIAGENT::IObjectIA::CProcessResult &run()
 		{
-			return NLIAAGENT::IObjectIA::ProcessRun;
+			return NLAIAGENT::IObjectIA::ProcessRun;
 		}
 
-		virtual	NLIAAGENT::IObjetOp &neg()
+		virtual	NLAIAGENT::IObjetOp &neg()
 		{
-			((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift])->neg();
+			((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift])->neg();
 			return *this;
 		}
 
-		NLIAAGENT::IObjetOp &operator += (const NLIAAGENT::IObjetOp &a)
+		NLAIAGENT::IObjetOp &operator += (const NLAIAGENT::IObjetOp &a)
 		{
-			*((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) += a;
+			*((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) += a;
 			return *this;
 		}
 
-		NLIAAGENT::IObjetOp &operator -= (const NLIAAGENT::IObjetOp &a)
+		NLAIAGENT::IObjetOp &operator -= (const NLAIAGENT::IObjetOp &a)
 		{
-			*((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) -= a;
+			*((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) -= a;
 			return *this;
 		}	
 
-		NLIAAGENT::IObjetOp &operator *= (const NLIAAGENT::IObjetOp &a)
+		NLAIAGENT::IObjetOp &operator *= (const NLAIAGENT::IObjetOp &a)
 		{
-			*((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) *= a;
+			*((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) *= a;
 			return *this;
 		}
-		NLIAAGENT::IObjetOp &operator /= (const NLIAAGENT::IObjetOp &a)
+		NLAIAGENT::IObjetOp &operator /= (const NLAIAGENT::IObjetOp &a)
 		{
-			*((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) /= a;
+			*((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) /= a;
 			return *this;
 		}	
 
-		NLIAAGENT::IObjetOp *operator + (const NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator + (const NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) + a;
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) + a;
 			
 		}
 
-		NLIAAGENT::IObjetOp *operator - (const NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator - (const NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) - a;
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) - a;
 		}
 
-		const NLIAAGENT::IObjetOp *operator * (const NLIAAGENT::IObjetOp &a)  const
+		const NLAIAGENT::IObjetOp *operator * (const NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) * a;
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) * a;
 		}
 
-		const NLIAAGENT::IObjetOp *operator / (const NLIAAGENT::IObjetOp &a)  const
+		const NLAIAGENT::IObjetOp *operator / (const NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) / a;
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) / a;
 		}
 		
 
-		NLIAAGENT::IObjetOp *operator < (NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator < (NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) < a;
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) < a;
 		}
-		NLIAAGENT::IObjetOp *operator > (NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator > (NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) > a;
-		}
-
-		NLIAAGENT::IObjetOp *operator <= (NLIAAGENT::IObjetOp &a)  const
-		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) <= a;
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) > a;
 		}
 
-		NLIAAGENT::IObjetOp *operator >= (NLIAAGENT::IObjetOp &a)  const
+		NLAIAGENT::IObjetOp *operator <= (NLAIAGENT::IObjetOp &a)  const
 		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) >= a;
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) <= a;
+		}
+
+		NLAIAGENT::IObjetOp *operator >= (NLAIAGENT::IObjetOp &a)  const
+		{
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) >= a;
 		}
 		
-		NLIAAGENT::IObjetOp *operator ! ()  const
+		NLAIAGENT::IObjetOp *operator ! ()  const
 		{
-			return !*((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]);
+			return !*((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]);
 		}
 
-		NLIAAGENT::IObjetOp *operator != (NLIAAGENT::IObjetOp &a) const
+		NLAIAGENT::IObjetOp *operator != (NLAIAGENT::IObjetOp &a) const
 		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) != a;
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) != a;
 		}		
 
-		NLIAAGENT::IObjetOp *operator == (NLIAAGENT::IObjetOp &a) const
+		NLAIAGENT::IObjetOp *operator == (NLAIAGENT::IObjetOp &a) const
 		{
-			return *((NLIAAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) == a;
+			return *((NLAIAGENT::IObjetOp *)CVarPStack::_LocalTableRef[_Val + _Shift]) == a;
 		}
 
 		bool isTrue() const
 		{
-			return ((NLIAAGENT::IObjetOp*)CVarPStack::_LocalTableRef[_Val + _Shift])->isTrue();
+			return ((NLAIAGENT::IObjetOp*)CVarPStack::_LocalTableRef[_Val + _Shift])->isTrue();
 		}		
 		//@}
 		virtual ~CVarPStackParam()

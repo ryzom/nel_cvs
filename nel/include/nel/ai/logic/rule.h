@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic rules with forward and backward chaining
  *
- * $Id: rule.h,v 1.1 2001/01/05 10:50:23 chafik Exp $
+ * $Id: rule.h,v 1.2 2001/01/08 10:47:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,12 +27,12 @@
 #define NL_RULE_H
 
 #include "logic/clause.h"
-namespace NLIAAGENT
+namespace NLAIAGENT
 {
 	class IObjetOp;
 }
 
-namespace NLIALOGIC 
+namespace NLAILOGIC 
 {
 
 	
@@ -47,22 +47,22 @@ namespace NLIALOGIC
 			void getConcPosList(sint32, sint32, std::vector<sint32> &);
 
 		public:
-			static const NLIAC::CIdentType IdRule;
+			static const NLAIC::CIdentType IdRule;
 
 			CRule();
 			CRule(std::list<CFactPattern  *> &, std::list<CFactPattern  *> &);
 			CRule(const CRule &);
-			virtual void init(NLIAAGENT::IObjectIA *);
+			virtual void init(NLAIAGENT::IObjectIA *);
 			~CRule();
 			void addConc(CFactPattern  *);
 			void setCond(CClause &);
 			void forward(CVarSet *);
 			virtual void addConflicts();
-			virtual const NLIAC::CIdentType &getType() const;				
-			virtual const NLIAC::IBasicType *clone() const;
-			virtual const NLIAC::IBasicType *newInstance() const;
+			virtual const NLAIC::CIdentType &getType() const;				
+			virtual const NLAIC::IBasicType *clone() const;
+			virtual const NLAIC::IBasicType *newInstance() const;
 			virtual void getDebugString(char *text) const;
-			CValueSet *unifyLiaisonBack(CValueSet *, std::list<NLIAAGENT::IObjetOp *> &, std::vector<sint32> &, bool &);
+			CValueSet *unifyLiaisonBack(CValueSet *, std::list<NLAIAGENT::IObjetOp *> &, std::vector<sint32> &, bool &);
 
 			CVarSet *backWard(CFactPattern  *);
 			CVarSet *backward(CFactPattern  *, std::vector<sint32> &, std::vector<sint32> &);

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.86 2004/04/09 14:36:43 vizerie Exp $
+ * $Id: driver_opengl_material.cpp,v 1.87 2004/04/19 14:02:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1814,8 +1814,6 @@ void		CDriverGL::setupCloudPass (uint pass)
 			// Arg3 = 0
 			glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE3_ALPHA_NV, GL_ZERO);
 			glTexEnvi(GL_TEXTURE_ENV, GL_OPERAND3_ALPHA_NV, GL_SRC_ALPHA);
-			//
-			activateTexEnvColor (1, mat.getColor());			
 		}
 		else
 		{	
@@ -1864,6 +1862,8 @@ void		CDriverGL::setupCloudPass (uint pass)
 			*/
 		}
 	}
+	if (_Extensions.NVTextureEnvCombine4)
+		activateTexEnvColor (1, mat.getColor());
 }
 
 // ***************************************************************************

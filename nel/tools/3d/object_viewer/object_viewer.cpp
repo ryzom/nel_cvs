@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.118 2004/04/19 12:27:21 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.119 2004/04/19 14:02:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1274,14 +1274,15 @@ void CObjectViewer::go ()
 			}
 
 			// Display std info.
-			sprintf (msgBar, "Nb tri: %d -Texture VRAM used (Mo): %5.2f -Texture VRAM allocated (Mo): %5.2f -Distance: %5.0f -Sounds: %d/%d -Fps: %03.1f",						 
-							 in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips, (float)CNELU::Driver->getUsedTextureMemory () / (float)(1024*1024), 
-							 (float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024), 
-							 (_SceneCenter-CNELU::Camera->getMatrix().getPos()).norm(),						 
-							 nbPlayingSources,
-							 nbSources,
-							 fps
-							 );
+			sprintf (msgBar, "%s - Nb tri: %d -Texture used (Mo): %5.2f - Texture allocated (Mo): %5.2f - Distance: %5.0f - Sounds: %d/%d - Fps: %03.1f",
+				_Direct3d?"Direct3d":"OpenGL",
+							in.NLines+in.NPoints+in.NQuads*2+in.NTriangles+in.NTriangleStrips, (float)CNELU::Driver->getUsedTextureMemory () / (float)(1024*1024), 
+							(float)CNELU::Driver->profileAllocatedTextureMemory () / (float)(1024*1024), 
+							(_SceneCenter-CNELU::Camera->getMatrix().getPos()).norm(),						 
+							nbPlayingSources,
+							nbSources,
+							fps
+							);
 			// Display
 			_MainFrame->StatusBar.SetWindowText (msgBar);
 

@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.27 2004/08/03 16:25:04 vizerie Exp $
+ * $Id: polygon.cpp,v 1.28 2004/08/20 14:35:28 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1768,7 +1768,7 @@ static void ScanInnerEdge(CPolygon2D::TRaster *r, float x1, float y1, float x2, 
 }
 
 // *******************************************************************************
-void CPolygon2D::computeInnerBorders(TRasterVect &borders,sint &minimumY)
+void CPolygon2D::computeInnerBorders(TRasterVect &borders, sint &minimumY)
 {
 	if (Vertices.empty())
 	{
@@ -1811,15 +1811,21 @@ void CPolygon2D::computeInnerBorders(TRasterVect &borders,sint &minimumY)
 		++curr;
 	}
 	while (curr != last);
-
-		
+	if (flowest == fhighest) 
+	{
+		minimumY = -1;
+		return;	
+	}
 	highest = (sint) floorf(fhighest);
 	lowest = (sint) ceilf(flowest);
 
 	polyHeight = lowest - highest;
 	minimumY = highest;	
-	if (polyHeight == 0) return;
-
+	if (polyHeight == 0)
+	{
+		minimumY = -1;
+		return;
+	}
 	// make room for rasters
 	borders.resize(polyHeight);
 	// fill with xmin / xman
@@ -1830,7 +1836,6 @@ void CPolygon2D::computeInnerBorders(TRasterVect &borders,sint &minimumY)
 		it->second = iright;
 		it->first = ileft;
 	}
-
 	pHighestRight = phighest;
 	for (;;)
 	{	

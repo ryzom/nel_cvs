@@ -1,7 +1,7 @@
 /** \file zone_dependencies.cpp
  * zone_dependencies.cpp : make the zone dependencies file
  *
- * $Id: zone_dependencies.cpp,v 1.2 2001/08/21 16:18:55 corvazier Exp $
+ * $Id: zone_dependencies.cpp,v 1.3 2001/09/26 16:04:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -244,7 +244,7 @@ int main (int argc, char* argv[])
 								}
 
 								// Extend the bbox
-								//bBox.extend (target);
+								bBox.extend (target);
 							}
 
 							// Clear quad tree selection
@@ -339,7 +339,8 @@ int main (int argc, char* argv[])
 									getZoneNameByCoord(ite->first, ite->second, zoneName);
 
 									// Write it
-									fprintf (outputFile, (strlwr ("\t\""+zoneName+"\"")).c_str());
+									string message="\t\""+zoneName+"\"";
+									fprintf (outputFile, strlwr (message).c_str());
 
 									// Next ite;
 									ite++;

@@ -1,7 +1,7 @@
 /** \file sound_bank.h
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.h,v 1.9 2004/06/09 14:09:08 berenguier Exp $
+ * $Id: sound_bank.h,v 1.10 2005/01/17 16:39:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,7 +43,7 @@ class CSimpleSound;
 /**
  * A set of sounds.
  * \author Peter Hanappe
- * \authoe Boris Boucher
+ * \author Boris Boucher
  * \author Nevrax France
  * \date 2001
  */

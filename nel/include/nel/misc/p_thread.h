@@ -1,7 +1,7 @@
 /** \file p_thread.h
  * Posix implementation of CThread class (look at thread.h)
  *
- * $Id: p_thread.h,v 1.10 2004/09/22 14:53:37 berenguier Exp $
+ * $Id: p_thread.h,v 1.11 2005/01/17 16:39:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ public:
 	IRunnable	*Runnable;
 
 private:
-	bool		_Started;
+	uint8		_State; // 0=not created, 1=started, 2=finished
 	pthread_t	_ThreadHandle;
 
 };

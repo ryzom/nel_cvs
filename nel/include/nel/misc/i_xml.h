@@ -1,7 +1,7 @@
 /** \file i_xml.h
  * Input xml stream
  *
- * $Id: i_xml.h,v 1.9 2004/07/09 12:45:43 miller Exp $
+ * $Id: i_xml.h,v 1.10 2005/01/17 16:39:41 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -84,7 +84,7 @@ struct EXmlParsingError : public EStream
 	{
 		// Something wrong appends
 	}
- \encode
+ \endcode
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France
  * \date 2001

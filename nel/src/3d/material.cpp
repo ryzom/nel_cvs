@@ -1,7 +1,7 @@
 /** \file 3d/material.cpp
  * CMaterial implementation
  *
- * $Id: material.cpp,v 1.51 2004/10/22 12:56:05 berenguier Exp $
+ * $Id: material.cpp,v 1.52 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -591,7 +591,7 @@ bool CMaterial::isSupportedByDriver(IDriver &drv, bool forceBaseCaps) const
 	{
 		case Normal:
 		{
-			if ((sint) getNumUsedTextureStages() > numTexStages) return false;
+			if (getNumUsedTextureStages() > numTexStages) return false;
 			// see if each tex env is supported
 			for(uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 			{
@@ -602,12 +602,14 @@ bool CMaterial::isSupportedByDriver(IDriver &drv, bool forceBaseCaps) const
 						case InterpolateConstant: if (!drv.supportBlendConstantColor()) return false;
 						case EMBM:				  if (forceBaseCaps || !drv.supportEMBM() || !drv.isEMBMSupportedAtStage(k)) return false;
 						case Mad:				  if (!drv.supportMADOperator()) return false;
+						default: break;
 					}
 					switch(getTexEnvOpAlpha(k))
 					{
 						case InterpolateConstant: if (!drv.supportBlendConstantColor()) return false;
 						case EMBM:				  if (forceBaseCaps || !drv.supportEMBM() || !drv.isEMBMSupportedAtStage(k)) return false;
 						case Mad:				  if (!drv.supportMADOperator()) return false;
+						default: break;
 					}					
 				}
 			}

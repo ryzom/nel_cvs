@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
  * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.24 2004/10/19 12:55:03 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.25 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -590,7 +590,7 @@ protected:
 		CPSAttribMaker<float>	*_MorphScheme;
 	//@}
 private:
-	CPSConstraintMesh(const CPSConstraintMesh &) { nlassert(0); /* not supported */ }
+        CPSConstraintMesh(const CPSConstraintMesh &) : CPSParticle(), CPSSizedParticle(), CPSRotated3DPlaneParticle(), CPSHintParticleRotateTheSame(), CPSShapeParticle(), CPSColoredParticle() { nlassert(0); /* not supported */ }
 	CPSConstraintMesh &operator = (const CPSConstraintMesh &other) { nlassert(0); return *this; /* not supported */ }
 }; 
 

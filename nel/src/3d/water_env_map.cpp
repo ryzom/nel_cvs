@@ -1,6 +1,6 @@
 /** \file water_env_map.cpp
  *
- * $Id: water_env_map.cpp,v 1.5 2004/10/19 13:01:27 vizerie Exp $
+ * $Id: water_env_map.cpp,v 1.6 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -351,7 +351,7 @@ void CWaterEnvMap::invalidate()
 	_StartRenderTime = -1;
 	if (_UpdateTime == 0)
 	{
-		_LastRenderTick = -1;		
+		_LastRenderTick = UINT64_CONSTANT(~0);
 	}
 	else
 	{	
@@ -381,7 +381,7 @@ void CWaterEnvMap::initTestVB()
 		for(uint k = 0; k < TEST_VB_NUM_SEGMENT; ++k)
 		{
 			float theta = 2 * (float) (NLMISC::Pi * (double) k / (double) TEST_VB_NUM_SEGMENT);
-			for(sint l = 0; l <= TEST_VB_NUM_SLICE; ++l)
+			for(uint l = 0; l <= TEST_VB_NUM_SLICE; ++l)
 			{
 				float phi = (float) (NLMISC::Pi / 2 * (1 - 2 * (double) l / (double) TEST_VB_NUM_SLICE));
 				CVector pos;

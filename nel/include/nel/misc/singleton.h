@@ -1,7 +1,7 @@
 /** \file singleton.h
  * This class is used to create singleton class following the singleton design pattern
  *
- * $Id: singleton.h,v 1.1 2004/10/21 11:46:13 lecroart Exp $
+ * $Id: singleton.h,v 1.2 2005/01/17 16:39:41 lecroart Exp $
  */
 
 /* Copyright, 2004 Nevrax Ltd.
@@ -31,21 +31,18 @@
 
 namespace NLMISC {
 	
-/*
-
-	// example of use
-
-	class CFooSingleton : public CSingleton<CFooSingleton>
+/**
+ * Example:
+ * \code
+	struct CFooSingleton : public CSingleton<CFooSingleton>
 	{
-	public:
 		void foo() { nlinfo("foo!"); }
 	};	
 
-
-	/// to call the foo function:
-
+	// call the foo function:
 	CFooSingleton::getInstance().foo();
 
+ * \endcode
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2004
@@ -70,7 +67,7 @@ public:
 
 protected:
 
-	/// no public ctor to be sure that the user can't create an object
+	/// no public ctor to be sure that the user can't create an instance
 	CSingleton()
 	{
 	}

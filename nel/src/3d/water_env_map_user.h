@@ -1,6 +1,6 @@
 /** \file water_env_map_user.h
  *
- * $Id: water_env_map_user.h,v 1.1 2004/08/03 16:15:52 vizerie Exp $
+ * $Id: water_env_map_user.h,v 1.2 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -53,6 +53,7 @@ public:
 	};
 	CWaterEnvMapInternal EnvMap;	
 public:
+	virtual ~CWaterEnvMapUser() { }
 	virtual void				init(uint cubeMapSize, uint projection2DSize, TGlobalAnimationTime updateTime);
 	// Set an external renderer that will update the envmap used for water rendering. The renderer will be called during the update as needed
 	virtual	void			    setWaterEnvMapRenderCallback(IWaterEnvMapRender *rdr) { EnvMap.Rdr = rdr; }	

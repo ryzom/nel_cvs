@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.231 2004/12/30 10:47:46 corvazier Exp $
+ * $Id: driver_opengl.cpp,v 1.232 2005/01/17 16:39:42 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -3891,6 +3891,8 @@ void CDriverGL::checkTextureOn() const
 				nlassert(!flag2D);
 				nlassert(flagCM);
 			break;			
+            default:
+                break;
 		}
 	}		
 	dgs.activeTextureARB(currTexStage);

@@ -1,7 +1,7 @@
 /** \file primitive.cpp
  * TODO: File description
  *
- * $Id: primitive.cpp,v 1.48 2005/01/11 13:18:23 corvazier Exp $
+ * $Id: primitive.cpp,v 1.49 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1019,7 +1019,7 @@ IPrimitive::IPrimitive ()
 }
 
 
-IPrimitive::IPrimitive (const IPrimitive &node)
+IPrimitive::IPrimitive (const IPrimitive &node) : IStreamable()
 {
 	_Parent = NULL;
 	IPrimitive::operator= (node);
@@ -1579,7 +1579,7 @@ bool IPrimitive::unlinkChild(IPrimitive *child)
 		_Children.erase (_Children.begin()+childId);
 		updateChildId (childId);
 		child->_Parent = NULL;
-		child->_ChildId = NULL;
+		child->_ChildId = 0;
 		return true;
 	}
 	else

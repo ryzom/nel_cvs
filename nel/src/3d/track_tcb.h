@@ -1,7 +1,7 @@
 /** \file track_tcb.h
  * ITrack TCB implementation
  *
- * $Id: track_tcb.h,v 1.6 2004/07/09 09:45:52 lecroart Exp $
+ * $Id: track_tcb.h,v 1.7 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -230,7 +230,7 @@ protected:
 			date = ease(previous, date);
 
 			float hb[4];
-			computeHermiteBasis(date, hb);
+			this->computeHermiteBasis(date, hb);
 			copyToValue(resultVal.Value, 
 				previous->Value*hb[0] + next->Value*hb[1] + 
 				previous->TanFrom*hb[2] + next->TanTo*hb[3]);
@@ -251,19 +251,19 @@ protected:
 		ITrackKeyFramer<CKeyT>::compile();
 
 		// Ease Precompute.
-		compileTCBEase(_MapKey, getLoopMode());
+		compileTCBEase(this->_MapKey, this->getLoopMode());
 
 
 		// Tangents Precompute.
-		sint	nKeys= _MapKey.size();
+		sint	nKeys= this->_MapKey.size();
 		if(nKeys<=1)
 			return;
 
-		typename std::map<TAnimationTime, CKeyT>::iterator	it= _MapKey.begin();				// first key.
+		typename std::map<TAnimationTime, CKeyT>::iterator	it= this->_MapKey.begin();				// first key.
 		typename std::map<TAnimationTime, CKeyT>::iterator	itNext= it; itNext++;				// second key.
-		typename std::map<TAnimationTime, CKeyT>::iterator	itPrev= _MapKey.end(); itPrev--;	// last key.
+		typename std::map<TAnimationTime, CKeyT>::iterator	itPrev= this->_MapKey.end(); itPrev--;	// last key.
 
-		if(nKeys==2 && !getLoopMode())
+		if(nKeys==2 && !this->getLoopMode())
 		{
 			computeTCBKeyLinear( it->second, itNext->second );
 		}
@@ -273,18 +273,18 @@ protected:
 			// NB: if RangeLock, rangeDelta==0.
 			float	rangeDelta;
 			// NB: _RangeDelta has just been compiled in ITrackKeyFramer<CKeyT>::compile().
-			rangeDelta= getCompiledRangeDelta();
+			rangeDelta= this->getCompiledRangeDelta();
 
 			// Compute all middle keys.
-			for(;it!=_MapKey.end();)
+			for(;it!=this->_MapKey.end();)
 			{
 				// Do the first key and the last key only in LoopMode.
 				// NB: we are the last if itNext==_MapKey.begin().
-				if(getLoopMode() || (it!=_MapKey.begin() && itNext!=_MapKey.begin()) )
+				if(this->getLoopMode() || (it!=this->_MapKey.begin() && itNext!=this->_MapKey.begin()) )
 				{
 					computeTCBKey(itPrev->second, it->second, itNext->second, 
 						itPrev->first, it->first, itNext->first, rangeDelta, 
-						it==_MapKey.begin(), itNext==_MapKey.begin(), getLoopMode());
+						it==this->_MapKey.begin(), itNext==this->_MapKey.begin(), this->getLoopMode());
 				}
 
 				// Next key!!
@@ -292,16 +292,16 @@ protected:
 				it++;
 				itNext++;
 				// loop.
-				if(itNext==_MapKey.end())
-					itNext= _MapKey.begin();
+				if(itNext==this->_MapKey.end())
+					itNext= this->_MapKey.begin();
 			}
 
 			// In not loop mode, compute first and last key, AFTER middle keys computed.
-			if(!getLoopMode())
+			if(!this->getLoopMode())
 			{
-				typename std::map<TAnimationTime, CKeyT>::iterator	it0= _MapKey.begin();				// first key.
+				typename std::map<TAnimationTime, CKeyT>::iterator	it0= this->_MapKey.begin();				// first key.
 				typename std::map<TAnimationTime, CKeyT>::iterator	it1= it0; it1++;					// second key.
-				typename std::map<TAnimationTime, CKeyT>::iterator	itLast= _MapKey.end();itLast--;		// last key.
+				typename std::map<TAnimationTime, CKeyT>::iterator	itLast= this->_MapKey.end();itLast--;		// last key.
 				typename std::map<TAnimationTime, CKeyT>::iterator	itLastPrev= itLast;itLastPrev--;	// prev of last key.
 
 				computeFirstKey(it0->second, it1->second);

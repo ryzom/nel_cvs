@@ -1,7 +1,7 @@
-/** \file game_device_event.h
+/** \file game_device_events.h
  * TODO: File description
  *
- * $Id: game_device_events.h,v 1.5 2004/11/15 10:24:25 lecroart Exp $
+ * $Id: game_device_events.h,v 1.6 2005/01/17 16:39:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file pacs/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.7 2004/09/23 13:43:10 lecroart Exp $
+ * $Id: quad_grid.h,v 1.8 2005/01/17 16:39:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_QUAD_GRID_PACS_H
-#define NL_QUAD_GRID_PACS_H
+#ifndef NL_QUAD_GRID_H
+#define NL_QUAD_GRID_H
 
 #include "nel/misc/debug.h"
 #include "nel/misc/vector.h"
@@ -298,23 +298,23 @@ public:
 	class CIterator : public const_iterator
 	{
 	public:
-		CIterator()			{_Ptr=NULL;}
+		CIterator()			{this->_Ptr=NULL;}
 		CIterator(CNode *p) : const_iterator(p) {}
 		T&	operator*() const
-			{return _Ptr->Elt; }
+			{return this->_Ptr->Elt; }
 		// Doesn't work...
 		/*T*	operator->() const
 			{return (&**this); }*/
 		CIterator& operator++()
-			{_Ptr = (CNode*)(_Ptr->Next); return (*this); }
+			{this->_Ptr = (CNode*)(this->_Ptr->Next); return (*this); }
 		CIterator operator++(int)
 			{CIterator tmp = *this; ++*this; return (tmp); }
 		CIterator& operator--()
-			{_Ptr = (CNode*)(_Ptr->Prev); return (*this); }
+			{this->_Ptr = (CNode*)(this->_Ptr->Prev); return (*this); }
 		CIterator operator--(int)
 			{CIterator tmp = *this; --*this; return (tmp); }
 		bool operator==(const const_iterator& x) const
-			{return (_Ptr == x._Ptr); }
+			{return (this->_Ptr == x._Ptr); }
 		bool operator!=(const const_iterator& x) const
 			{return (!(*this == x)); }
 	protected:
@@ -364,9 +364,9 @@ template<class T>	void		CQuadGrid<T>::create(uint size, float eltSize)
 {
 	clear();
 
-	nlassert(isPowerOf2(size));
+	nlassert(NLMISC::isPowerOf2(size));
 	nlassert(size<=32768);
-	_SizePower= getPowerOf2(size);
+	_SizePower= NLMISC::getPowerOf2(size);
 	_Size=1<<_SizePower;
 	_Grid.resize(_Size*_Size);
 

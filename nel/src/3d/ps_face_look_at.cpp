@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.15 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_face_look_at.cpp,v 1.16 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,7 +125,7 @@ public:
 			// constant rotation case
 			do
 			{	
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;				
+				toProcess = leftToDo <= (uint32) CPSQuad::quadBufSize ? leftToDo : (uint32) CPSQuad::quadBufSize;
 				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
@@ -251,7 +251,7 @@ public:
 			float *currentAngle;		
 			do
 			{			
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;				
+				toProcess = leftToDo <= (uint32) CPSQuad::quadBufSize ? leftToDo : (uint32) CPSQuad::quadBufSize;
 				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
@@ -442,7 +442,7 @@ public:
 			// constant rotation case
 			do
 			{			
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;				
+				toProcess = leftToDo <= (uint32) CPSQuad::quadBufSize ? leftToDo : (uint32) CPSQuad::quadBufSize;
 				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;
@@ -744,7 +744,7 @@ public:
 			float *currentAngle;		
 			do
 			{			
-				toProcess = leftToDo <= CPSQuad::quadBufSize ? leftToDo : CPSQuad::quadBufSize;				
+				toProcess = leftToDo <= (uint32) CPSQuad::quadBufSize ? leftToDo : (uint32) CPSQuad::quadBufSize;
 				vb.setNumVertices(4 * toProcess);
 				// restart at the beginning of the vertex buffer
 				CVertexBufferReadWrite vba;

@@ -1,7 +1,7 @@
 /** \file ordering_table.h
  * Generic Ordering Table
  *
- * $Id: ordering_table.h,v 1.7 2004/04/09 14:29:11 vizerie Exp $
+ * $Id: ordering_table.h,v 1.8 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,7 +182,7 @@ template<class T> uint32 COrderingTable<T>::getSize()
 template<class T> void COrderingTable<T>::reset(uint maxElementToInsert)
 {
 	// reset allocation
-	maxElementToInsert= max(1U, maxElementToInsert);
+	maxElementToInsert= std::max(1U, maxElementToInsert);
 	_Allocator->NodePool.resize(maxElementToInsert);
 	_Allocator->CurAllocatedNode= &_Allocator->NodePool[0];
 

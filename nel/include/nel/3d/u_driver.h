@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * TODO: File description
  *
- * $Id: u_driver.h,v 1.52 2004/11/15 10:24:17 lecroart Exp $
+ * $Id: u_driver.h,v 1.53 2005/01/17 16:39:41 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,6 +194,7 @@ public:
 	 *	...
 	 * }
 	 * Driver->endDialogMode();
+	 * \endcode
 	 */
 	virtual void			beginDialogMode() =0;
 
@@ -788,24 +789,3 @@ public:
 #endif // NL_U_DRIVER_H
 
 /* End of u_driver.h */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

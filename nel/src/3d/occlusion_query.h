@@ -1,6 +1,6 @@
 /** \file occlusion_query.h
  *
- * $Id: occlusion_query.h,v 1.1 2004/06/29 13:39:07 vizerie Exp $
+ * $Id: occlusion_query.h,v 1.2 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -76,6 +76,9 @@ struct IOcclusionQuery
 		Occluded,
 		NotOccluded
 	};
+
+	virtual ~IOcclusionQuery() { }
+
 	/** Begin occlusion test
       * Should be called prior to primitive rendering
 	  */

@@ -1,7 +1,7 @@
 /** \file u_instance_material.cpp
  * TODO: File description
  *
- * $Id: u_instance_material.cpp,v 1.2 2004/11/15 10:24:52 lecroart Exp $
+ * $Id: u_instance_material.cpp,v 1.3 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -471,7 +471,7 @@ const NLMISC::CMatrix  &UInstanceMaterial::getUserTexMat(uint stage) const
 void				UInstanceMaterial::setWrapS(uint stage, TWrapMode mode)
 {
 	NL3D_MEM_MATERIAL_INSTANCE
-	if (stage >= IDRV_MAT_MAXTEXTURES || !_Object->getTexture(stage) == NULL)
+	if (stage >= IDRV_MAT_MAXTEXTURES || _Object->getTexture(stage) == NULL)
 	{
 		nlwarning("UInstanceMaterial::setWrapS : stage %d is invalid or there's no texture", stage);
 		return;

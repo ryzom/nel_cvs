@@ -1,7 +1,7 @@
 /** \file ps_face.cpp
  * Face particles.
  *
- * $Id: ps_face.cpp,v 1.14 2004/09/02 17:05:23 vizerie Exp $
+ * $Id: ps_face.cpp,v 1.15 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ public:
 			do
 			{		
 				{					
-					toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;					
+					toProcess = leftFaces > (uint32) CPSQuad::quadBufSize ? (uint32) CPSQuad::quadBufSize : leftFaces;
 					vb.setNumVertices(4 * toProcess);
 					CVertexBufferReadWrite vba;
 					vb.lock (vba);
@@ -149,7 +149,7 @@ public:
 			do
 			{			
 				{				
-					toProcess = leftFaces > CPSQuad::quadBufSize ? CPSQuad::quadBufSize : leftFaces;					
+					toProcess = leftFaces > (uint32) CPSQuad::quadBufSize ? (uint32) CPSQuad::quadBufSize : leftFaces;
 					vb.setNumVertices(4 * toProcess);
 					CVertexBufferReadWrite vba;
 					vb.lock (vba);					

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * TODO: File description
  *
- * $Id: ps_attrib_maker_helper.h,v 1.21 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.22 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -199,13 +199,13 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			uint8 *pt = (uint8 *) tab;
 
 			
-			if (_NbCycles > 1 || canOverlapOne || forceClampEntry)
+			if (this->_NbCycles > 1 || canOverlapOne || forceClampEntry)
 			{
 				// the value could cycle, so we need to clamp it to 0.0f 1.0f
 
 				if (!_Clamp && !forceClampEntry)
 				{
-					if (_NbCycles == 1)
+					if (this->_NbCycles == 1)
 					{
 						while (numAttrib --)
 						{	
@@ -218,7 +218,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 					{
 						while (numAttrib --)
 						{
-							const float time =  _NbCycles * (it.get());
+							const float time =  this->_NbCycles * (it.get());
 							*(T *)pt = _F(NLMISC::OptFastFractionnalPart(time)); 
 							pt += stride;
 							it.advance();
@@ -229,7 +229,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				{
 					// clamping is on
 					float value;
-					if (_NbCycles == 1)
+					if (this->_NbCycles == 1)
 					{
 						while (numAttrib --)
 						{	
@@ -247,7 +247,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 					{
 						while (numAttrib --)
 						{
-							float value =  _NbCycles * (it.get());
+							float value =  this->_NbCycles * (it.get());
 							if (value > MaxInputValue)
 							{
 								value = MaxInputValue;
@@ -263,7 +263,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			{
 				// the fastest case : it match the particle's life perfectly
 
-				if (_NbCycles == 1)
+				if (this->_NbCycles == 1)
 				{
 					while (numAttrib --)
 					{
@@ -277,7 +277,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 					// the particle won't cover the whole pattern during his life
 					while (numAttrib --)
 					{
-						*(T *)pt = _F(_NbCycles  * (it.get())); 
+						*(T *)pt = _F(this->_NbCycles  * (it.get()));
 						pt += stride;
 						it.advance();
 					}
@@ -305,12 +305,12 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 
 			const uint32 stride2 = stride << 1;
 
-			if (_NbCycles > 1 || canOverlapOne)
+			if (this->_NbCycles > 1 || canOverlapOne)
 			{
 				
 				if (!_Clamp)
 				{
-					if (_NbCycles == 1)
+					if (this->_NbCycles == 1)
 					{			
 						while (numAttrib --)
 						{		
@@ -330,7 +330,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 					{			
 						while (numAttrib --)
 						{		
-							const float time =  _NbCycles * (it.get());
+							const float time =  this->_NbCycles * (it.get());
 							// fill 4 attrib with the same value at once 
 							//*(T *)pt = *(T *)(pt + stride) = *(T *)(pt + stride2)  = *(T *)(pt + stride3) = _F(OptFastFractionnalPart(time));		
 							*(T *) pt =	_F(NLMISC::OptFastFractionnalPart(time));
@@ -349,7 +349,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				{
 					float value;
 
-					if (_NbCycles == 1)
+					if (this->_NbCycles == 1)
 					{			
 						while (numAttrib --)
 						{		
@@ -375,7 +375,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 					{			
 						while (numAttrib --)
 						{		
-							value =   _NbCycles * (it.get());
+							value =   this->_NbCycles * (it.get());
 							if (value > MaxInputValue)
 							{
 								value = MaxInputValue;
@@ -399,7 +399,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			{
 				// the fastest case : it match the particle's life perfectly
 
-				if (_NbCycles == 1)
+				if (this->_NbCycles == 1)
 				{
 					while (numAttrib --)
 					{		
@@ -424,7 +424,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 					while (numAttrib --)
 					{		
 						// fill 4 attrib with the same value at once 
-						*(T *) pt =	_F(_NbCycles * it.get());
+						*(T *) pt =	_F(this->_NbCycles * it.get());
 						*(T *) (pt + stride) = *(T *) pt;
 						pt += stride;
 						*(T *) (pt + stride) = *(T *) pt;
@@ -456,12 +456,12 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				uint k;
 
 
-				if (_NbCycles > 1 || canOverlapOne)
+				if (this->_NbCycles > 1 || canOverlapOne)
 				{
 					
 					if (!_Clamp)
 					{
-						if (_NbCycles == 1)
+						if (this->_NbCycles == 1)
 						{			
 							while (numAttrib --)
 							{		
@@ -482,7 +482,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{			
 							while (numAttrib --)
 							{		
-								const float time =  _NbCycles * (it.get());
+								const float time =  this->_NbCycles * (it.get());
 								// fill 4 attrib with the same value at once 
 								*(T *)pt = _F(NLMISC::OptFastFractionnalPart(time));					
 								k = nbReplicate - 1;
@@ -501,7 +501,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 					{
 						float value;
 						// clamping is on
-						if (_NbCycles == 1)
+						if (this->_NbCycles == 1)
 						{			
 							while (numAttrib --)
 							{		
@@ -527,7 +527,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						{			
 							while (numAttrib --)
 							{		
-								value =  _NbCycles * (it.get());
+								value =  this->_NbCycles * (it.get());
 								if (value > MaxInputValue)
 								{
 									value = MaxInputValue;
@@ -551,7 +551,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 				{
 					// the fastest case : it match the particle's life perfectly
 
-					if (_NbCycles == 1)
+					if (this->_NbCycles == 1)
 					{
 						while (numAttrib --)
 						{		
@@ -575,7 +575,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 						while (numAttrib --)
 						{		
 							// fill 4 attrib with the same value at once 
-							*(T *)pt =  _F(_NbCycles * it.get());					
+							*(T *)pt =  _F(this->_NbCycles * it.get());
 							k = nbReplicate - 1;
 							do 
 							{
@@ -1163,7 +1163,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			// Compute a single value from the input assuming that NLMISC::OptFastFloorBegin() has been called			  
 			virtual T getInternal(float input)
 			{
-				input *= _NbCycles;
+				input *= this->_NbCycles;
 				if (_Clamp)
 				{
 					if (input >= MaxInputValue) return _F(1.f);
@@ -1217,7 +1217,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 			float lodOffset;			
 			loc->getLODVect(lodVect, lodOffset, loc->getMatrixMode());
 			float r = fabsf(loc->getPos()[index] * lodVect + lodOffset);
-			r = _NbCycles * r > MaxInputValue ? MaxInputValue : r;			
+			r = this->_NbCycles * r > MaxInputValue ? MaxInputValue : r;
 			if (_Clamp)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
@@ -1231,7 +1231,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 			float lodOffset;			
 			loc->getLODVect(lodVect, lodOffset, loc->getMatrixMode());						
 			float r = loc->getPos()[index] * lodVect + lodOffset;
-			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);
+			r = this->_NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);
 
 			if (_Clamp)
 			{
@@ -1252,7 +1252,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 				result = _F(MaxInputValue);
 				break;
 			}
-			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r);									
+			r = this->_NbCycles * (r > MaxInputValue ? MaxInputValue : r);
 			if (_Clamp)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
@@ -1272,7 +1272,7 @@ T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
 				result = _F(MaxInputValue);
 				break; 
 			}
-			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);									
+			r = this->_NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);
 			if (_Clamp)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
@@ -1332,7 +1332,7 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 			float lodOffset;			
 			infos.Loc->getLODVect(lodVect, lodOffset, infos.Loc->getMatrixMode());
 			float r = fabsf(infos.Pos * lodVect + lodOffset);
-			r = _NbCycles * r > MaxInputValue ? MaxInputValue : r;			
+			r = this->_NbCycles * r > MaxInputValue ? MaxInputValue : r;
 			if (_Clamp)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
@@ -1346,7 +1346,7 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 			float lodOffset;			
 			infos.Loc->getLODVect(lodVect, lodOffset, infos.Loc->getMatrixMode());						
 			float r = infos.Pos * lodVect + lodOffset;
-			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);
+			r = this->_NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);
 
 			if (_Clamp)
 			{
@@ -1366,7 +1366,7 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 				result = _F(MaxInputValue);
 				break;
 			}
-			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r);									
+			r = this->_NbCycles * (r > MaxInputValue ? MaxInputValue : r);
 			if (_Clamp)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
@@ -1386,7 +1386,7 @@ T  CPSAttribMakerT<T, F>::get(const CPSEmitterInfo &infos)
 				result = _F(MaxInputValue);
 				break; 
 			}
-			r = _NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);									
+			r = this->_NbCycles * (r > MaxInputValue ? MaxInputValue : r * r);
 			if (_Clamp)
 			{
 				result = _F(r > MaxInputValue ? MaxInputValue : r);
@@ -1418,7 +1418,7 @@ public:
 	/// ctor (note : we don't use the nbCycle field ...)
 	CPSAttribMakerMemoryBase() : CPSAttribMaker<T>(1.f), _Scheme(NULL)
 	{
-		_HasMemory = true;
+		this->_HasMemory = true;
 	}
 
 	/** set a default value for initialisation, otherwise it will be garbage.

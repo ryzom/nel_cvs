@@ -1,7 +1,7 @@
 /** \file ps_color.h
  * TODO: File description
  *
- * $Id: ps_color.h,v 1.10 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_color.h,v 1.11 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,7 +159,7 @@ public:
 	// helps to change internal color representation
 	virtual void setColorType(CVertexBuffer::TVertexColorType colorType)
 	{
-		_F.setColorType(colorType);
+		this->_F.setColorType(colorType);
 	}
 	// serialisation should always be done in RGBA mode, so enforce that
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.19 2004/04/08 19:48:20 berenguier Exp $
+ * $Id: texture.h,v 1.20 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -195,7 +195,7 @@ public:
 	/// By default, a texture is releasable.
 	ITexture();
 	/// see operator=.
-	ITexture(const ITexture &tex) {operator=(tex);}
+	ITexture(const ITexture &tex) : CBitmap(), CRefCount(), IStreamable() {operator=(tex);}
 	/// Need a virtual dtor.
 	virtual ~ITexture();
 	/// The operator= do not copy drv info, and set touched=true. _Releasable, WrapMode and UploadFormat are copied.

@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * TODO: File description
  *
- * $Id: tessellation.cpp,v 1.68 2004/11/15 10:24:49 lecroart Exp $
+ * $Id: tessellation.cpp,v 1.69 2005/01/17 16:39:42 lecroart Exp $
  *
  */
 
@@ -381,7 +381,7 @@ void	CTessFace::allocTileUv(TTileUvId id)
 		case IdUvBase: vertexSrc= VBase; break;
 		case IdUvLeft: vertexSrc= VLeft; break;
 		case IdUvRight: vertexSrc= VRight; break;
-		default: nlstop;
+		default: vertexSrc = 0; nlstop; break;
 	};
 
 	// Do it for all possible pass

@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.18 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.19 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -109,7 +109,7 @@ public:
 
 	void	clear()
 	{
-		delete [] _AllocData;
+		delete [] ((uint8 *)_AllocData);
 		_AllocData= NULL;
 		_Data= NULL;
 		_Size= 0;

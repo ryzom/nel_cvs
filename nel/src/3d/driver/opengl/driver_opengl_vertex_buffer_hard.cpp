@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_buffer_hard.cpp
  * TODO: File description
  *
- * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.19 2004/11/15 10:24:55 lecroart Exp $
+ * $Id: driver_opengl_vertex_buffer_hard.cpp,v 1.20 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -242,7 +242,7 @@ IVertexBufferHardGL		*CVertexArrayRangeNVidia::createVBHardGL(uint size, CVertex
 	CVertexBufferHardGLNVidia	*newVbHard= new CVertexBufferHardGLNVidia(_Driver, vb);
 
 	// try to allocate
-	void	*vertexPtr;
+	void	*vertexPtr = 0;
 	if( allocated() )
 	{
 		 vertexPtr= allocateVB(size);
@@ -498,6 +498,8 @@ bool					CVertexArrayRangeATI::allocate(uint32 size, CVertexBuffer::TPreferredMe
 		else
 			_VertexObjectId= nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 		break;
+    default:
+        break;
 	};
 
 
@@ -820,6 +822,9 @@ bool CVertexArrayRangeMapObjectATI::allocate(uint32 size, CVertexBuffer::TPrefer
 			else
 				vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 			break;
+        default:
+            vertexObjectId = 0;
+            break;
 	}
 	if (vertexObjectId)
 	{	
@@ -859,6 +864,9 @@ IVertexBufferHardGL *CVertexArrayRangeMapObjectATI::createVBHardGL(uint size, CV
 			else
 				vertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 			break;
+        default:
+            vertexObjectId = 0;
+            break;
 	};	
 	// init the allocator, if success	
 	if( nglIsObjectBufferATI(vertexObjectId) )
@@ -893,9 +901,9 @@ void CVertexArrayRangeMapObjectATI::disable()
 
 // ***************************************************************************
 CVertexBufferHardGLMapObjectATI::CVertexBufferHardGLMapObjectATI(CDriverGL *drv, CVertexBuffer *vb) :  IVertexBufferHardGL(drv, vb),
-																					_VertexObjectId(0),
 																					_VertexPtr(NULL),
-																					_VertexArrayRange(NULL)																					
+																					_VertexArrayRange(NULL),
+																					_VertexObjectId(0)
 {	
 	H_AUTO_OGL(CVertexBufferHardGLMapObjectATI_CVertexBufferHardGLMapObjectATI)
 	// Flag our type
@@ -952,6 +960,8 @@ void *CVertexBufferHardGLMapObjectATI::lock()
 				else
 					_VertexObjectId = nglNewObjectBufferATI(size, NULL, GL_DYNAMIC_ATI);
 				break;
+            default:
+                break;
 		};				
 		if (!_VertexObjectId)
 		{			
@@ -1271,8 +1281,8 @@ void CVertexArrayRangeARB::updateLostBuffers()
 
 // ***************************************************************************
 CVertexBufferHardARB::CVertexBufferHardARB(CDriverGL *drv, CVertexBuffer *vb) :  IVertexBufferHardGL(drv, vb),
-																				_VertexObjectId(0),
-																				_VertexPtr(NULL)
+                                                                                 _VertexPtr(NULL),
+																				_VertexObjectId(0)
 																					
 {	
 	H_AUTO_OGL(CVertexBufferHardARB_CVertexBufferHardARB)
@@ -1406,7 +1416,7 @@ void CVertexBufferHardARB::unlock()
 	_VertexPtr = NULL;
 	if (_Invalid) return;
 	if (!_VertexObjectId) return;
-	TTicks	beforeLock;
+	TTicks	beforeLock = 0;
 	if(_Driver->_VBHardProfiling)
 	{
 		beforeLock= CTime::getPerformanceTime();

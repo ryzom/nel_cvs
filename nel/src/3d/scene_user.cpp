@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * TODO: File description
  *
- * $Id: scene_user.cpp,v 1.66 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: scene_user.cpp,v 1.67 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -785,6 +785,8 @@ void CSceneUser::stopCreatingAndAddingIG(UInstanceGroup **pIG)
 					break;
 					case UInstanceGroup::StateNotAdded:
 						delete rWIG.IGToLoad;
+					break;
+					default:
 					break;
 				}
 			}

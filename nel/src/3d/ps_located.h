@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * TODO: File description
  *
- * $Id: ps_located.h,v 1.39 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_located.h,v 1.40 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,11 @@
 #define NL_PARTICLE_SYSTEM_LOCATED_H
 
 #include <stack>
+
+namespace NL3D
+{
+const uint32 DefaultMaxLocatedInstance = 1; // the default value for a located container
+}
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
@@ -67,11 +72,6 @@ class CFontManager;
 class CFontGenerator;
 class CScene;
 class CParticleSystem;
-
-const uint32 DefaultMaxLocatedInstance = 1; // the default value for a located container
-
-
-
 
 
 /// This structure helps to perform the collision step, by telling which collisionner is the nearest if there are several candidate

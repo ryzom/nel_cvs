@@ -1,7 +1,7 @@
 /** \file form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.20 2004/11/15 10:24:57 lecroart Exp $
+ * $Id: form_dfn.h,v 1.21 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef _NLGEORGES__FORM_DFN_H
-#define _NLGEORGES__FORM_DFN_H
+#ifndef NL_FORM_DFN_H
+#define NL_FORM_DFN_H
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/smart_ptr.h"
@@ -257,5 +257,4 @@ private:
 
 } // NLGEORGES
 
-#endif // _NLGEORGES__FORM_DFN_H
-
+#endif // NL_FORM_DFN_H

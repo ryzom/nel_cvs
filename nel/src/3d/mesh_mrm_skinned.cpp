@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.10 2004/10/19 12:52:16 vizerie Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.11 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2274,7 +2274,7 @@ void CMeshMRMSkinnedGeom::getSkinWeights (std::vector<CMesh::CSkinWeight> &skinW
 // ***************************************************************************
 #define	NL3D_SSE_ALIGNEMENT		16
 /**
- *	A CMatrix3x4SSE array correctly aligned
+ *	A CMatrix3x4SSEArray array correctly aligned
  *	NB: SSE is no more used (no speed gain, some memory problem), but keep it for possible future usage.
  */
 class	CMatrix3x4SSEArray
@@ -2324,7 +2324,7 @@ public:
 
 	void	clear()
 	{
-		delete [] _AllocData;
+		delete [] ((uint8 *) _AllocData);
 		_AllocData= NULL;
 		_Data= NULL;
 		_Size= 0;

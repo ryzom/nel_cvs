@@ -1,7 +1,7 @@
 /** \file p_thread.cpp
- * class CPThread (Posix threads)
+ * class CPThread (POSIX threads)
  *
- * $Id: p_thread.cpp,v 1.13 2004/09/22 14:52:30 berenguier Exp $
+ * $Id: p_thread.cpp,v 1.14 2005/01/17 16:39:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,6 @@
 namespace NLMISC {
 
 
-
 /*
  * The IThread static creator
  */
@@ -44,14 +43,14 @@ IThread *IThread::create( IRunnable *runnable )
 }
 
 
-CPThread CurrentThread(NULL);
+CPThread CurrentThread(0);
 
 /*
  * Get the current thread
  */
 IThread *IThread::getCurrentThread ()
 {
-	/// \todo: implement this functionnality for posix thread
+	/// \todo: implement this functionality for POSIX thread
 	return &CurrentThread;
 } 
 
@@ -63,12 +62,13 @@ static void *ProxyFunc( void *arg )
 	CPThread *parent = (CPThread*)arg;
 
 	// Allow to terminate the thread without cancellation point
-	pthread_setcanceltype( PTHREAD_CANCEL_ASYNCHRONOUS, NULL );
+	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 
 	// Run the code of the thread
 	parent->Runnable->run();
 
-	return NULL;
+	// Allow some clean
+	pthread_exit(0);
 }
 
 
@@ -76,7 +76,7 @@ static void *ProxyFunc( void *arg )
 /*
  * Constructor
  */
-CPThread::CPThread( IRunnable *runnable ) : Runnable( runnable ), _Started( false )
+CPThread::CPThread(IRunnable *runnable) : _State(0), Runnable(runnable)
 {}
 
 
@@ -85,72 +85,70 @@ CPThread::CPThread( IRunnable *runnable ) : Runnable( runnable ), _Started( fals
  */
 CPThread::~CPThread()
 {
-	pthread_detach( _ThreadHandle ); // free allocated resources after termination
-	if ( _Started )
-	{
-		terminate();
-	}
+	if(_State == 1)
+		terminate(); // force the end of the thread if not already ended
+	
+	if(_State > 0)
+		pthread_detach(_ThreadHandle); // free allocated resources only if it was created
 }
-
 
 /*
  * start
  */
 void CPThread::start()
 {
-	if ( pthread_create( &_ThreadHandle, NULL, ProxyFunc, this ) != 0 )
+	if(pthread_create(&_ThreadHandle, 0, ProxyFunc, this) != 0)
 	{
-		throw EThread( "Cannot start new thread" );
+		throw EThread("Cannot start new thread");
 	}
-	_Started = true;
+	_State = 1;
 }
-
 
 /*
  * terminate
  */
 void CPThread::terminate()
 {
-	pthread_cancel( _ThreadHandle );
-	_Started = false;
+	if(_State == 1)
+	{
+		// cancel only if started
+		pthread_cancel(_ThreadHandle);
+		_State = 2;	// set to finished
+	}
 }
-
 
 /*
  * wait
  */
 void CPThread::wait ()
 {
-	if ( _Started )
+	if(_State == 1)
 	{
-		if ( pthread_join( _ThreadHandle, NULL ) != 0 )
+		if(pthread_join(_ThreadHandle, 0) != 0)
 		{
 			throw EThread( "Cannot join with thread" );
 		}
-		_Started = false;
+		_State = 2;	// set to finished
 	}
 }
-
 
 /*
  * setCPUMask
  */
 bool CPThread::setCPUMask(uint64 cpuMask)
 {
-	/// \todo: handle processor selection under posix thread
+	/// \todo: handle processor selection under POSIX thread
 	return true;
 }
-
 
 /*
  * getCPUMask
  */
 uint64 CPThread::getCPUMask()
 {
-	/// \todo: handle processor selection under posix thread
+	/// \todo: handle processor selection under POSIX thread
 	return 1;
 }
-
 
 /*
  * getUserName
@@ -160,6 +158,7 @@ std::string CPThread::getUserName()
 	/// \todo: return the thread user name
 	return "Not implemented";
 }
+
 
 // **** Process
 
@@ -177,14 +176,14 @@ IProcess *IProcess::getCurrentProcess ()
  */
 uint64 CPProcess::getCPUMask()
 {
-	/// \todo: handle processor selection under posix thread
+	/// \todo: handle processor selection under POSIX thread
 	return 1;
 }
 
 /// set the CPU mask
 bool CPProcess::setCPUMask(uint64 mask)
 {
-	/// \todo: handle processor selection under posix thread
+	/// \todo: handle processor selection under POSIX thread
 	return 1;
 }
 

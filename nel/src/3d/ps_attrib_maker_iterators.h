@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_iterators.h
  * Special iterators for the private use of ps_attrib_maker_helper
  *
- * $Id: ps_attrib_maker_iterators.h,v 1.2 2002/03/14 18:32:29 vizerie Exp $
+ * $Id: ps_attrib_maker_iterators.h,v 1.3 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ namespace NL3D
 	template <class TBaseIter>
 	struct CVectNormIterator : CPSBaseIterator<TBaseIter>
 	{				
-		GET_INLINE float get() const { return Iter.get().norm(); }
+		GET_INLINE float get() const { return this->Iter.get().norm(); }
 		CVectNormIterator(const TBaseIter &it) : CPSBaseIterator<TBaseIter>(it) {}
 	};
 
@@ -98,7 +98,7 @@ namespace NL3D
 		GET_INLINE 
 		float get() const 
 		{ 
-			const float r = fabsf(Iter.get() * V + Offset);
+			const float r = fabsf(this->Iter.get() * this->V + this->Offset);
 			return r > MaxInputValue ? MaxInputValue : r;
 		}
 		CFDot3AddIterator(const TBaseIter &it) : CDistIterator<TBaseIter>(it) {}
@@ -110,7 +110,7 @@ namespace NL3D
 	{				
 		float get() const 
 		{ 
-			float r = Iter.get() * V + Offset;
+			float r = this->Iter.get() * this->V + this->Offset;
 			r *= r;
 			return r > MaxInputValue ? MaxInputValue : r;
 		}
@@ -124,7 +124,7 @@ namespace NL3D
 		GET_INLINE
 		float get() const 
 		{ 
-			const float r = Iter.get() * V + Offset;
+			const float r = this->Iter.get() * this->V + this->Offset;
 			if (r < 0.f) return MaxInputValue;
 			return r > MaxInputValue ? MaxInputValue : r;
 		}
@@ -139,7 +139,7 @@ namespace NL3D
 		GET_INLINE
 		float get() const 
 		{ 
-			float r = Iter.get() * V + Offset;
+			float r = this->Iter.get() * this->V + this->Offset;
 			if (r < 0) return MaxInputValue;
 			r *= r;
 			return r > MaxInputValue ? MaxInputValue : r;

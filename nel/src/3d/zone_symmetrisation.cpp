@@ -1,7 +1,7 @@
 /** \file zone_symmetrisation.cpp
  * Environnement used to symmetrise zones
  *
- * $Id: zone_symmetrisation.cpp,v 1.8 2004/02/12 10:30:48 corvazier Exp $
+ * $Id: zone_symmetrisation.cpp,v 1.9 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -349,11 +349,11 @@ bool CZoneSymmetrisation::setTileState (const NL3D::CPatchInfo &patch, uint patc
 	for (i=0; i<4; i++)
 	{
 		// Vertex snapped and align on a common axis ?
-		if ( (vertPosU[i] != 0x80000000) || (vertPosV[i] != 0x80000000) )
+		if ( ((uint32) vertPosU[i] != 0x80000000) || ((uint32) vertPosV[i] != 0x80000000) )
 		{
 			// Snapped on U or V ?
-			bool snapU = (vertPosU[i] == vertPosU[(i+1)&3]) && (vertPosU[i] != 0x80000000);
-			bool snapV = (vertPosV[i] == vertPosV[(i+1)&3]) && (vertPosV[i] != 0x80000000);
+			bool snapU = (vertPosU[i] == vertPosU[(i+1)&3]) && ((uint32) vertPosU[i] != 0x80000000);
+			bool snapV = (vertPosV[i] == vertPosV[(i+1)&3]) && ((uint32) vertPosV[i] != 0x80000000);
 			
 			// If snapped on one, continue
 			if (snapU || snapV)
@@ -419,6 +419,10 @@ bool CZoneSymmetrisation::setTileState (const NL3D::CPatchInfo &patch, uint patc
 					delta = patch.OrderS;
 					break;
 				case 3:
+					currentTile = 0;
+					delta = 1;
+					break;
+				default:
 					currentTile = 0;
 					delta = 1;
 					break;
@@ -509,11 +513,11 @@ bool CZoneSymmetrisation::setOrientedTileState (const NL3D::CPatchInfo &patch, u
 	for (i=0; i<4; i++)
 	{
 		// Vertex snapped and align on a common axis ?
-		if ( (vertPosU[i] != 0x80000000) || (vertPosV[i] != 0x80000000) )
+		if ( ((uint32) vertPosU[i] != 0x80000000) || ((uint32) vertPosV[i] != 0x80000000) )
 		{
 			// Snapped on U or V ?
-			bool snapU = (vertPosU[i] == vertPosU[(i+1)&3]) && (vertPosU[i] != 0x80000000);
-			bool snapV = (vertPosV[i] == vertPosV[(i+1)&3]) && (vertPosV[i] != 0x80000000);
+			bool snapU = (vertPosU[i] == vertPosU[(i+1)&3]) && ((uint32) vertPosU[i] != 0x80000000);
+			bool snapV = (vertPosV[i] == vertPosV[(i+1)&3]) && ((uint32) vertPosV[i] != 0x80000000);
 			
 			// If snapped on one, continue
 			if (snapU || snapV)
@@ -564,6 +568,10 @@ bool CZoneSymmetrisation::setOrientedTileState (const NL3D::CPatchInfo &patch, u
 				delta = patch.OrderS;
 				break;
 			case 3:
+				currentTile = 0;
+				delta = 1;
+				break;
+			default:
 				currentTile = 0;
 				delta = 1;
 				break;
@@ -773,6 +781,9 @@ bool CZoneSymmetrisation::propagateTileState (uint patch, uint s, uint t, const 
 										break;
 									case 3:
 										position = patchInfo[currentNode.Patch].OrderS - neighborNode.S - 1;
+										break;
+									default:
+										position = 0;
 										break;
 									}
 

@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.h
  * TODO: File description
  *
- * $Id: visual_collision_mesh.h,v 1.6 2004/11/15 10:24:54 lecroart Exp $
+ * $Id: visual_collision_mesh.h,v 1.7 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -69,7 +69,7 @@ public:
 
 	public:
 		CShadowContext(CMaterial &mat, CIndexBuffer &ib, CShadowMapProjector &smp) : 
-		  ShadowMaterial(mat), IndexBuffer(ib), ShadowMapProjector(smp)
+		  ShadowMapProjector(smp), ShadowMaterial(mat), IndexBuffer(ib)
 		{
 			Driver= NULL;
 			ShadowMap= NULL;

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * TODO: File description
  *
- * $Id: mesh.cpp,v 1.89 2004/11/15 10:24:42 lecroart Exp $
+ * $Id: mesh.cpp,v 1.90 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2308,7 +2308,7 @@ CMesh::~CMesh()
 
 
 // ***************************************************************************
-CMesh::CMesh(const CMesh &mesh)
+CMesh::CMesh(const CMesh &mesh) : CMeshBase()
 {
 	// create the MeshGeom
 	_MeshGeom= new CMeshGeom(*mesh._MeshGeom);

@@ -1,7 +1,7 @@
 /** \file static_quad_grid.h
  * TODO: File description
  *
- * $Id: static_quad_grid.h,v 1.5 2004/11/15 10:24:48 lecroart Exp $
+ * $Id: static_quad_grid.h,v 1.6 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_STATIC_QUAD_GRID_H
 #define NL_STATIC_QUAD_GRID_H
 
-#include "nel/misc/types_nl.h"
+#include "nel/misc/common.h"
 #include "3d/quad_grid.h"
 
 
@@ -185,7 +185,7 @@ void			CStaticQuadGrid<T>::build(CQuadGrid<T> &quadGrid)
 
 	// Copy from quadGrid, and init quads
 	_Size= quadGrid.getSize();
-	_SizePower= getPowerOf2(_Size);
+	_SizePower= NLMISC::getPowerOf2(_Size);
 	_EltSize= quadGrid.getEltSize();
 	_ChangeBasis= quadGrid.getBasis();
 	_Grid.resize(_Size * _Size);

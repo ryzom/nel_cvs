@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * TODO: File description
  *
- * $Id: u_ps_sound_impl.h,v 1.17 2004/11/15 10:24:18 lecroart Exp $
+ * $Id: u_ps_sound_impl.h,v 1.18 2005/01/17 16:39:41 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	/** The system will call this method to set the parameters of the sound	  
 	  */
 	CPSSoundInstanceImpl() 
-		: _Source(NULL), _SoundServImpl(NULL), _Spawned(false)
+		: _Source(NULL), _Spawned(false), _SoundServImpl(NULL)
 	{
 		NL3D_MEM_PS_SOUND
 	}

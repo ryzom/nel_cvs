@@ -1,7 +1,7 @@
 /** \file index_buffer.cpp
  * Index buffers.
  *
- * $Id: index_buffer.cpp,v 1.7 2004/11/15 10:24:34 lecroart Exp $
+ * $Id: index_buffer.cpp,v 1.8 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -68,7 +68,7 @@ CIndexBuffer::CIndexBuffer()
 
 // ***************************************************************************
 
-CIndexBuffer::CIndexBuffer(const CIndexBuffer &vb)
+CIndexBuffer::CIndexBuffer(const CIndexBuffer &vb) : CRefCount()
 {
 	/* ***********************************************
 	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance

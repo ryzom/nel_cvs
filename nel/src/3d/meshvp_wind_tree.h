@@ -1,7 +1,7 @@
 /** \file meshvp_wind_tree.h
  * TODO: File description
  *
- * $Id: meshvp_wind_tree.h,v 1.7 2004/11/15 10:24:44 lecroart Exp $
+ * $Id: meshvp_wind_tree.h,v 1.8 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -44,7 +44,6 @@ namespace NL3D {
 class CMeshVPWindTree : public IMeshVertexProgram
 {
 public:
-	
 
 	enum	{HrcDepth= 3};
 
@@ -94,16 +93,6 @@ public:
 									 CScene *scene,
 									 CVertexBuffer *vb);
 
-	/** \name MBR support For WindTree
-	 */
-	// @{
-	virtual	bool	supportMeshBlockRendering() const;
-	virtual	bool	isMBRVpOk(IDriver *drv) const;
-	virtual	void	beginMBRMesh(IDriver *drv, CScene *scene);
-	virtual	void	beginMBRInstance(IDriver *drv, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat);
-	virtual	void	endMBRMesh(IDriver *drv);
-	// @}
-
 	// Max VP Distance movement
 	virtual float	getMaxVertexMove();
 
@@ -111,6 +100,16 @@ public:
 	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
 	NLMISC_DECLARE_CLASS(CMeshVPWindTree);
 
+	// @}
+
+	/** \name MBR support For WindTree
+	*/
+	// @{
+	virtual	bool	supportMeshBlockRendering() const;
+	virtual	bool	isMBRVpOk(IDriver *drv) const;
+	virtual	void	beginMBRMesh(IDriver *drv, CScene *scene);
+	virtual	void	beginMBRInstance(IDriver *drv, CScene *scene, CMeshBaseInstance *mbi, const NLMISC::CMatrix &invertedModelMat);
+	virtual	void	endMBRMesh(IDriver *drv);
 	// @}
 
 private:

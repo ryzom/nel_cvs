@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.55 2004/10/19 12:47:01 vizerie Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.56 2005/01/17 16:39:42 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -683,6 +683,8 @@ void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 				case CVertexBufferInfo::HwNVIDIA:
 					glTexCoordPointer(numTexCoord,GL_FLOAT,VB.VertexSize, VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
 				break;
+                default:
+                    break;
 			}			
 		}
 		else		
@@ -761,6 +763,8 @@ IVertexBufferHardGL	*CDriverGL::createVertexBufferHard(uint size, uint numVertic
 		else
 			vertexArrayRange= _AGPVertexArrayRange;
 		break;
+        default:
+            break;
 	};
 
 	// If this one at least created (an extension support it).

@@ -1,7 +1,7 @@
 /** \file ps_located.cpp
  * TODO: File description
  *
- * $Id: ps_located.cpp,v 1.78 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_located.cpp,v 1.79 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1884,14 +1884,13 @@ void CPSLocated::updateCollisions()
 			_Pos[currCollision->Index] = currCollision->NewPos;
 			std::swap(_Speed[currCollision->Index], currCollision->NewSpeed);
 			// notify each located bindable that a bounce occured ...
-			TAnimationTime timeFromcollisionToNextSimStep;
 			if (!_LocatedBoundCont.empty())
 			{
-				timeFromcollisionToNextSimStep = computeDateFromCollisionToNextSimStep(currCollision->Index, getAgeInSeconds(currCollision->Index));
-			}
-			for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
-			{	
-				(*it)->bounceOccured(currCollision->Index, timeFromcollisionToNextSimStep);
+				TAnimationTime timeFromcollisionToNextSimStep = computeDateFromCollisionToNextSimStep(currCollision->Index, getAgeInSeconds(currCollision->Index));
+				for (TLocatedBoundCont::iterator it = _LocatedBoundCont.begin(); it != _LocatedBoundCont.end(); ++it)
+				{	
+					(*it)->bounceOccured(currCollision->Index, timeFromcollisionToNextSimStep);
+				}
 			}
 			if (currCollision->CollisionZone->getCollisionBehaviour() == CPSZone::destroy)
 			{
@@ -2647,7 +2646,7 @@ uint CPSLocated::getIndexOf(const CPSLocatedBindable *lb) const
 
 
 ///***************************************************************************************
-CPSLocatedBindable::CPSLocatedBindable() : _LOD(PSLod1n2), _Owner(NULL), _ExternID(0), _Active(true)
+CPSLocatedBindable::CPSLocatedBindable() : _Owner(NULL), _ExternID(0), _LOD(PSLod1n2), _Active(true)
 {
 	NL_PS_FUNC(CPSLocatedBindable_CPSLocatedBindable)
 	_Owner = NULL;
@@ -3083,6 +3082,8 @@ void CPSLocated::computeSpawns(uint firstInstanceIndex, bool includeEmitOnce)
 						emit->doEmitOnce(firstInstanceIndex);
 					}
 				break;
+				default:
+					break;
 			}			
 		}
 	}

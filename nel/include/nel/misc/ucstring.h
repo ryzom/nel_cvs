@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.13 2004/10/26 16:08:47 corvazier Exp $
+ * $Id: ucstring.h,v 1.14 2005/01/17 16:39:41 lecroart Exp $
  *
  */
 
@@ -104,9 +104,9 @@ public:
 
 	ucstring &operator+= (const char *str)
 	{
-		sint s = size();
+		uint s = size();
 		resize (s + strlen(str));
-		for (sint i = 0; i < (sint) strlen(str); i++)
+		for (uint i = 0; i < strlen(str); i++)
 		{
 			operator[](s+i) = uint8(str[i]);
 		}
@@ -115,9 +115,9 @@ public:
 
 	ucstring &operator+= (const std::string &str)
 	{
-		sint s = size();
+		uint s = size();
 		resize (s + str.size());
-		for (sint i = 0; i < (sint) str.size(); i++)
+		for (uint i = 0; i < str.size(); i++)
 		{
 			operator[](s+i) = uint8(str[i]);		
 		}

@@ -1,7 +1,7 @@
 /** \file form_elm.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.24 2004/11/15 10:24:57 lecroart Exp $
+ * $Id: form_elm.h,v 1.25 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef _NLGEORGES__FORM_ELT_H
-#define _NLGEORGES__FORM_ELT_H
+#ifndef NL_FORM_ELM_H
+#define NL_FORM_ELM_H
 
 #include "nel/georges/u_form_elm.h"
 #include "nel/misc/smart_ptr.h"
@@ -677,5 +677,4 @@ inline bool CFormElm::convertValue (NLMISC::CRGBA &result, const char *value) co
 
 } // NLGEORGES
 
-#endif // _NLGEORGES_FORM_ELM_H
-
+#endif // NL_FORM_ELM_H

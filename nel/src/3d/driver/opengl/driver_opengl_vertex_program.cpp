@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex_program.cpp
  * OpenGL driver implementation for vertex program manipulation.
  *
- * $Id: driver_opengl_vertex_program.cpp,v 1.22 2004/08/13 15:31:54 vizerie Exp $
+ * $Id: driver_opengl_vertex_program.cpp,v 1.23 2005/01/17 16:39:42 lecroart Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -474,7 +474,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 		}
 		
 		// allocate one temporary register for fog before conversion
-		GLuint fogTemp;
+		GLuint fogTemp = 0;
 		if (!_ATIFogRangeFixed)
 		{
 			fogTemp = nglGenSymbolsEXT(GL_VECTOR_EXT, GL_LOCAL_EXT, GL_FULL_RANGE_EXT, 1);
@@ -523,7 +523,7 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 		GLuint srcValue[3];
 		//
 		GLuint destValue;
-		GLuint maskedDestValue;
+		GLuint maskedDestValue = 0;
 		
 
 		uint l;
@@ -936,6 +936,8 @@ bool CDriverGL::setupEXTVertexShader(const CVPParser::TProgram &program, GLuint 
 					}
 				}					
 				break;
+                default:
+                    break;
 			}
 
 			glError = glGetError();
@@ -1271,6 +1273,8 @@ static void ARBVertexProgramDumpOperand(const CVPOperand &op, bool destOperand, 
 		case CVPOperand::AddressRegister:
 			out += "A0.x";
 		break;
+        default:
+            break;
 	}
 	std::string suffix;
 	if (destOperand)
@@ -1809,6 +1813,8 @@ void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver:
 				refreshProjMatrixFromGL();				
 				mat = _GLProjMat * _ModelViewMatrix;
 			break;
+            default:
+                break;
 		}
 		
 		switch(transform)
@@ -1824,6 +1830,8 @@ void CDriverGL::setConstantMatrix (uint index, IDriver::TMatrix matrix, IDriver:
 				mat.invert();
 				mat.transpose();
 			break;
+            default:
+                break;
 		}
 		mat.transpose();
 		float matDatas[16];

@@ -1,6 +1,6 @@
 /** \file water_env_map.h
  *
- * $Id: water_env_map.h,v 1.1 2004/08/03 16:15:52 vizerie Exp $
+ * $Id: water_env_map.h,v 1.2 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -52,6 +52,7 @@ class CWaterEnvMap
 public:
 	// ctor
 	CWaterEnvMap();
+	virtual ~CWaterEnvMap() { }
 	/** Init the envmap
 	  * \param CubeMapSize Size of environment cube map.
 	  * \param Projection2DSize Depending on the shader being used, the cube map may need to be projected in 2D before use.

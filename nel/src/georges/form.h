@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.14 2003/10/08 17:10:45 corvazier Exp $
+ * $Id: form.h,v 1.15 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef _NLGEORGES_FORM_H
-#define _NLGEORGES_FORM_H
+#ifndef NL_FORM_H
+#define NL_FORM_H
 
 #include	"nel/misc/types_nl.h"
 #include	"nel/georges/u_form.h"
@@ -134,5 +134,4 @@ private:
 
 } // NLGEORGES
 
-#endif // _NLGEORGES_FORM_H
-
+#endif // NL_FORM_H

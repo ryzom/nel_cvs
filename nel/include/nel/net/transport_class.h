@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * TODO: File description
  *
- * $Id: transport_class.h,v 1.21 2004/11/15 10:24:29 lecroart Exp $
+ * $Id: transport_class.h,v 1.22 2005/01/17 16:39:41 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:
 			className ("SharedClass");
 			property ("i1", PropUInt32, (uint32)11, i1);
 		}
-	 *\encode
+	 *\endcode
 	 */
 	virtual void description () = 0;
 

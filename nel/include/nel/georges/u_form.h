@@ -1,7 +1,7 @@
 /** \file u_form.h
  * Georges form interface class
  *
- * $Id: u_form.h,v 1.8 2004/11/15 10:24:22 lecroart Exp $
+ * $Id: u_form.h,v 1.9 2005/01/17 16:39:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef _NLGEORGES_U_FORM_H
-#define _NLGEORGES_U_FORM_H
+#ifndef NL_U_FORM_H
+#define NL_U_FORM_H
 
 #include	"nel/misc/types_nl.h"
 #include	"nel/misc/smart_ptr.h"
@@ -90,4 +90,4 @@ public:
 
 } // NLGEORGES
 
-#endif // _NLGEORGES_U_FORM_H
+#endif // NL_U_FORM_H

@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.20 2004/10/25 11:53:55 berenguier Exp $
+ * $Id: zone_manager.cpp,v 1.21 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,7 +49,7 @@ CZoneManager::CZoneManager()
 	_ZoneTileColorMono = true;
 	_ZoneTileColorFactor = 1.0f;
 	_LastArea= 0;
-	_LastX= _LastY= -1;
+	_LastX= _LastY= (uint32) ~0;
 }
 
 // ------------------------------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.46 2004/12/07 17:57:06 vizerie Exp $
+ * $Id: vertex_buffer.cpp,v 1.47 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,7 +139,7 @@ CVertexBuffer::CVertexBuffer(const char *name)
 
 // --------------------------------------------------
 
-CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb)
+CVertexBuffer::CVertexBuffer(const CVertexBuffer &vb) : CRefCount()
 {
 	/* ***********************************************
 	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
@@ -420,6 +420,7 @@ void CVertexBuffer::addValueEx (TValue valueId, TType type)
 		case Weight:			nlassert(numComp == 4); break;
 		case PaletteSkin:		nlassert(numComp == 4); break;
 		case Fog:				nlassert(numComp == 4); break;		
+		default: break;
 	}
 }
 

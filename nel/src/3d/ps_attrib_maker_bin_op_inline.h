@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_bin_op_inline.h
  * implementation of binary operator in particle systems
  *
- * $Id: ps_attrib_maker_bin_op_inline.h,v 1.8 2004/05/14 15:38:54 vizerie Exp $
+ * $Id: ps_attrib_maker_bin_op_inline.h,v 1.9 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -299,7 +299,7 @@ template <class T>
 inline CPSAttribMakerBinOp<T>::CPSAttribMakerBinOp() : _Op(CPSBinOp::selectArg1), _Size(0), _MaxSize(0)
 {
 	_Arg[0] = _Arg[1] = NULL;
-	_HasMemory  = true; 
+	this->_HasMemory  = true;
 }
 
 //=================================================================================================================

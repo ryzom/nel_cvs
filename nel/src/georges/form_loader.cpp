@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.14 2004/06/21 17:38:43 lecroart Exp $
+ * $Id: form_loader.cpp,v 1.15 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -65,6 +65,9 @@ void UFormLoader::releaseLoader (UFormLoader *loader)
 // ***************************************************************************
 // CFormLoader
 // ***************************************************************************
+CFormLoader::~CFormLoader()
+{
+}
 
 CType *CFormLoader::loadType (const char *filename)
 {

@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.17 2004/09/21 09:13:41 lecroart Exp $
+ * $Id: ps_particle_basic.cpp,v 1.18 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -817,7 +817,7 @@ void CPSMultiTexturedParticle::setupMaterial(ITexture *primary, IDriver *driver,
 		}
 		else if (driver->supportEMBM())
 		{
-			uint embmTex;
+			uint embmTex = 0;
 			const uint numTexStages = driver->getNbTextureStages();
 			for(uint k = 0; k < numTexStages; ++k)
 			{

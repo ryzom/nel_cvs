@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * TODO: File description
  *
- * $Id: ps_attrib_maker_template.h,v 1.27 2004/11/15 10:24:47 lecroart Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.28 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,8 +173,8 @@ public:
 	{	
 	}
 
-	virtual T getMaxValue(void) const { return _F.getMaxValue(); }
-	virtual T getMinValue(void) const { return _F.getMinValue(); }
+	virtual T getMaxValue(void) const { return this->_F.getMaxValue(); }
+	virtual T getMinValue(void) const { return this->_F.getMinValue(); }
 
 	// serialization is done by CPSAttribMakerT
 };
@@ -281,8 +281,8 @@ public:
 	CPSValueBlenderSample(float nbCycles) : CPSAttribMakerT<T, CPSValueBlendSampleFunc<T, n> >(nbCycles)
 	{
 	}
-	virtual T getMaxValue(void) const { return _F.getMaxValue(); }
-	virtual T getMinValue(void) const { return _F.getMinValue(); }
+	virtual T getMaxValue(void) const { return this->_F.getMaxValue(); }
+	virtual T getMinValue(void) const { return this->_F.getMinValue(); }
 };
 
 
@@ -417,8 +417,8 @@ public:
 	CPSValueGradient(float nbCycles) : CPSAttribMakerT<T, CPSValueGradientFunc<T> >(nbCycles)
 	{
 	}
-	virtual T getMaxValue(void) const { return _F.getMaxValue(); }
-	virtual T getMinValue(void) const { return _F.getMinValue(); }
+	virtual T getMaxValue(void) const { return this->_F.getMaxValue(); }
+	virtual T getMinValue(void) const { return this->_F.getMinValue(); }
 };
 
 

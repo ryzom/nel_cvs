@@ -1,6 +1,6 @@
 /** \file vertex_program_parse.cpp
  *
- * $Id: vertex_program_parse.cpp,v 1.4 2003/03/31 10:31:16 vizerie Exp $
+ * $Id: vertex_program_parse.cpp,v 1.5 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -1072,6 +1072,8 @@ static void dumpOperand(const CVPOperand &op, bool destOperand, std::string &out
 		case CVPOperand::AddressRegister:
 			out += "A0.x";
 		break;
+		default:
+			break;
 	}
 	std::string suffix;
 	if (destOperand)

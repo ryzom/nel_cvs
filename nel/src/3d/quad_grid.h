@@ -1,7 +1,7 @@
 /** \file 3d/quad_grid.h
  * Generic QuadGrid.
  *
- * $Id: quad_grid.h,v 1.12 2004/12/28 12:43:55 lecroart Exp $
+ * $Id: quad_grid.h,v 1.13 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -392,23 +392,23 @@ public:
 	class CIterator : public const_iterator
 	{
 	public:
-		CIterator()			{_Ptr=NULL;}
+		CIterator()			{this->_Ptr=NULL;}
 		CIterator(CNode *p) : const_iterator(p) {}
 		T&	operator*() const
-			{return _Ptr->Elt; }
+			{return this->_Ptr->Elt; }
 		// Doesn't work...
 		/*T*	operator->() const
 			{return (&**this); }*/
 		CIterator& operator++()
-			{_Ptr = (CNode*)(_Ptr->Next); return (*this); }
+			{this->_Ptr = (CNode*)(this->_Ptr->Next); return (*this); }
 		CIterator operator++(int)
 			{CIterator tmp = *this; ++*this; return (tmp); }
 		CIterator& operator--()
-			{_Ptr = (CNode*)(_Ptr->Prev); return (*this); }
+			{this->_Ptr = (CNode*)(this->_Ptr->Prev); return (*this); }
 		CIterator operator--(int)
 			{CIterator tmp = *this; --*this; return (tmp); }
 		bool operator==(const const_iterator& x) const
-			{return (_Ptr == x._Ptr); }
+			{return (this->_Ptr == x._Ptr); }
 		bool operator!=(const const_iterator& x) const
 			{return (!(*this == x)); }
 	protected:
@@ -490,7 +490,7 @@ template<class T>	CQuadGrid<T> &CQuadGrid<T>::operator=(const CQuadGrid<T> &o)
 
 			// get the dest node created for this src node
 			CNode	*dstNode= NULL;
-			std::map<const CNode*, CNode *>::iterator	it= srcNodeToDestNode.find(srcNode);
+			typename std::map<const CNode*, CNode *>::iterator	it= srcNodeToDestNode.find(srcNode);
 			if(it!=srcNodeToDestNode.end())
 			{
 				dstNode= it->second;

@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * TODO: File description
  *
- * $Id: particle_system.cpp,v 1.88 2004/11/29 14:23:23 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.89 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1870,6 +1870,8 @@ float CParticleSystem::evalDuration() const
 										case CPSEmitter::externEmit:
 											tve.Duration = duration; // can't eval duration ..
 										break;
+										default:
+											break;
 									}
 								}
 								toVisitEmitter.push_back(tve);

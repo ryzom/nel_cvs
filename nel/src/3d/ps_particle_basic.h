@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.20 2004/07/16 07:29:59 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.21 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -512,6 +512,7 @@ class CPSMultiTexturedParticle
 public:
 	/// ctor
 	CPSMultiTexturedParticle();
+	virtual ~CPSMultiTexturedParticle() {}
 
 	/// we only use a useful set of operations
 	enum TOperator { Add = 0, Modulate, Decal, EnvBumpMap, Last = 0xff };

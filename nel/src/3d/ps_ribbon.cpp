@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.24 2004/10/19 12:55:18 vizerie Exp $
+ * $Id: ps_ribbon.cpp,v 1.25 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -271,9 +271,9 @@ CPSRibbon::CPSRibbon() : _UFactor(1.f),
 						 _BraceMode(true),
 						 _ColorFading(true),
 						 _GlobalColor(false),
-						 _Touch(true),
 						 _Lighted(false),
-						 _ForceLighted(false)
+						 _ForceLighted(false),
+						 _Touch(true)
 {
 	NL_PS_FUNC(CPSRibbon_CPSRibbon)
 	setInterpolationMode(Linear);

@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * TODO: File description
  *
- * $Id: particle_system_model.cpp,v 1.71 2004/11/15 10:24:46 lecroart Exp $
+ * $Id: particle_system_model.cpp,v 1.72 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,11 +113,12 @@ uint64 PSStatRender = 0;
 
 ///=====================================================================================
 /// ctor
-CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
-											   _ParticleSystem(NULL),
+CParticleSystemModel::CParticleSystemModel() : _ParticleSystem(NULL),
 											   _Scene(NULL),
 											   _EllapsedTime(0.01f),
 											   _EllapsedTimeRatio(1.f),
+											   _AnimType(CParticleSystem::AnimVisible),
+											   _AutoGetEllapsedTime(true),
 											   _ToolDisplayEnabled(false),
 											   _TransparencyStateTouched(true),
 											   _LightableStateTouched(true),
@@ -126,11 +127,10 @@ CParticleSystemModel::CParticleSystemModel() : _AutoGetEllapsedTime(true),
 											   _InsertedInVisibleList(false),
 											   _InClusterAndVisible(false),
 											   _EmitterActive(true),
+											   _SoundActive(true),
 											   _BypassGlobalUserParam(0),
-											   _AnimType(CParticleSystem::AnimVisible),
 											   _UserColor(CRGBA::White),
-											   _ZBias(0.f),
-											   _SoundActive(true)
+											   _ZBias(0.f)
 {
 	setOpacity(false);
 	setTransparency(true);

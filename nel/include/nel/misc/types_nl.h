@@ -1,7 +1,7 @@
 /** \file types_nl.h
  * Basic types, define and class
  *
- * $Id: types_nl.h,v 1.49 2004/09/22 10:20:31 lecroart Exp $
+ * $Id: types_nl.h,v 1.50 2005/01/17 16:39:41 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits only)
@@ -250,20 +250,20 @@ typedef	uint16	ucchar;
 
 // to define a 64bits constant
 #ifdef NL_OS_WINDOWS
-#define INT64_CONSTANT(c)  (c) 
-#define UINT64_CONSTANT(c)  (c) 
-#define SINT64_CONSTANT(c)  (c) 
-#else 
-#define INT64_CONSTANT(c)  (c##LL)
-#define SINT64_CONSTANT(c)  (c##LL)
-#define UINT64_CONSTANT(c)  (c##ULL)
-#endif
+#  define INT64_CONSTANT(c)  (c) 
+#  define UINT64_CONSTANT(c)  (c) 
+#  define SINT64_CONSTANT(c)  (c) 
+#else // NL_OS_WINDOWS
+#  define INT64_CONSTANT(c)  (c##LL)
+#  define SINT64_CONSTANT(c)  (c##LL)
+#  define UINT64_CONSTANT(c)  (c##ULL)
+#endif // NL_OS_WINDOWS
 
 #ifdef NL_OS_WINDOWS
-#ifndef NL_EXTENDED_FOR_SCOPE
-#define for if(false) {} else for
-#endif
-#endif
+#  ifndef NL_EXTENDED_FOR_SCOPE
+#    define for if(false) {} else for
+#  endif // NL_EXTENDED_FOR_SCOPE
+#endif // NL_OS_WINDOWS
 
 
 /**

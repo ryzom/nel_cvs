@@ -1,7 +1,7 @@
 /** \file background_sound_manager.h
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.h,v 1.11 2004/09/01 08:28:04 boucher Exp $
+ * $Id: background_sound_manager.h,v 1.12 2005/01/17 16:39:43 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -285,8 +285,8 @@ private:
 	};
 	//@}
 
-	//@
 	//\name Env fx related thinks
+	//@{
 	/// Storage for a fx zone
 	struct TFxZone
 	{

@@ -1,7 +1,7 @@
 /** \file 3d/material.h
  * TODO: File description
  *
- * $Id: material.h,v 1.30 2004/11/15 10:24:41 lecroart Exp $
+ * $Id: material.h,v 1.31 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,7 +269,7 @@ public:
 	 */
 	CMaterial();
 	/// see operator=.
-	CMaterial(const CMaterial &mat) {_Touched= 0;_Flags=0; operator=(mat);}
+	CMaterial(const CMaterial &mat) : CRefCount() {_Touched= 0;_Flags=0; operator=(mat);}
 	/// dtor.
 	~CMaterial();
 	/// Do not copy DrvInfos, copy all infos and set IDRV_TOUCHED_ALL.

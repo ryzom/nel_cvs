@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * TODO: File description
  *
- * $Id: vegetable_manager.cpp,v 1.45 2004/12/09 09:46:29 vizerie Exp $
+ * $Id: vegetable_manager.cpp,v 1.46 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -60,9 +60,9 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	_ClipBlockMemory(NL3D_VEGETABLE_CLIP_BLOCK_BLOCKSIZE),
 	_SortBlockMemory(NL3D_VEGETABLE_SORT_BLOCK_BLOCKSIZE),
 	_InstanceGroupMemory(NL3D_VEGETABLE_INSTANCE_GROUP_BLOCKSIZE),
+	_GlobalDensity(1.f),
 	_NumZSortBlendLayers(nbBlendLayers), _ZSortLayerDistMax(blendLayerDistMax),
-	_ZSortScene(NULL),
-	_GlobalDensity(1.f)
+	_ZSortScene(NULL)
 {
 	uint	i;
 

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.105 2004/12/29 19:10:09 boucher Exp $
+ * $Id: debug.cpp,v 1.106 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1096,9 +1096,9 @@ void beep( uint freq, uint duration )
 CInstanceCounterManager *CInstanceCounterManager::_Instance = NULL;
 
 TInstanceCounterData::	TInstanceCounterData(char *className)
-:	_ClassName(className),
-	_InstanceCounter(0),
-	_DeltaCounter(0)
+:	_InstanceCounter(0),
+	_DeltaCounter(0),
+	_ClassName(className)
 {
 	CInstanceCounterManager::getInstance().registerInstanceCounter(this);
 }

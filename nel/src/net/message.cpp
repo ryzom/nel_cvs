@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.28 2004/06/14 15:04:42 cado Exp $
+ * $Id: message.cpp,v 1.29 2005/01/17 16:39:43 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -96,7 +96,7 @@ CMessage::CMessage (NLMISC::CMemStream &memstr) :
 /*
  * Copy constructor
  */
-CMessage::CMessage (const CMessage &other)
+CMessage::CMessage (const CMessage &other) : CMemStream()
 {
 	operator= (other);
 }

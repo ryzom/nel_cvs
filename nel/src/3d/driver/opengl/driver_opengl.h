@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.185 2004/10/28 17:38:05 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.186 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_OPENGL_H
-#define NL_OPENGL_H
+#ifndef NL_DRIVER_OPENGL_H
+#define NL_DRIVER_OPENGL_H
 
 
 #include "nel/misc/types_nl.h"
@@ -1287,4 +1287,4 @@ public:
 
 } // NL3D
 
-#endif // NL_OPENGL_H
+#endif // NL_DRIVER_OPENGL_H

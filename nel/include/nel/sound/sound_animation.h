@@ -1,7 +1,7 @@
-/** \file sound_anim_marker.h
+/** \file sound_animation.h
  * A sound event marer on a sound track
  *
- * $Id: sound_animation.h,v 1.6 2003/01/08 15:45:14 boucher Exp $
+ * $Id: sound_animation.h,v 1.7 2005/01/17 16:39:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

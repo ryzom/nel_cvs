@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.10 2003/08/27 16:16:25 distrib Exp $
+ * $Id: type.h,v 1.11 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,8 +23,8 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef _NLGEORGES__TYPE_H
-#define _NLGEORGES__TYPE_H
+#ifndef NL_TYPE_H
+#define NL_TYPE_H
 
 #include	"nel/misc/types_nl.h"
 #include	"nel/georges/u_type.h"
@@ -136,5 +136,4 @@ private:
 
 } // NLGEORGES
 
-#endif // _NLGEORGES__TYPE_H
-
+#endif // NL_TYPE_H

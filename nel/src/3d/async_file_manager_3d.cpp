@@ -1,7 +1,7 @@
 /** \file async_file_manager_3d.cpp
  * TODO: File description
  *
- * $Id: async_file_manager_3d.cpp,v 1.10 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: async_file_manager_3d.cpp,v 1.11 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -94,6 +94,7 @@ public:
 	CLoadMeshCancel (const std::string &meshName)
 		: _MeshName(meshName)
 	{}
+	virtual ~CLoadMeshCancel() { }
 
 private:	
 	std::string	_MeshName;

@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.39 2004/10/19 13:01:44 vizerie Exp $
+ * $Id: zone_lighter.cpp,v 1.40 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -515,7 +515,7 @@ void RenderTriangle (const CZoneLighter::CTriangle &triangle, const CZoneLighter
 		// Texture informations
 		uint width=0;
 		uint height=0;
-		const CObjectVector<uint8> *pixels;
+		const CObjectVector<uint8> *pixels = 0;
 		if (needUV)
 		{
 			// Get pixels

@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * TODO: File description
  *
- * $Id: flare_shape.cpp,v 1.18 2004/11/15 10:24:32 lecroart Exp $
+ * $Id: flare_shape.cpp,v 1.19 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -40,8 +40,8 @@ namespace NL3D {
 //***************************************************************************************************************
 CFlareShape::CFlareShape()  : _Color(NLMISC::CRGBA::White),
 							  _DazzleColor(NLMISC::CRGBA::Black),
-							  _ScaleWhenDisappear(false),
 							  _SizeDisappear(0.f),
+							  _ScaleWhenDisappear(false),
 							  _AngleDisappear(0.f),
 							  _Persistence(1),
 							  _Spacing(1),

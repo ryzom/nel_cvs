@@ -1,7 +1,7 @@
 /** \file key.h
  * class CKey
  *
- * $Id: key.h,v 1.3 2004/07/09 09:45:52 lecroart Exp $
+ * $Id: key.h,v 1.4 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ public:
 		(void)f.serialVersion (0);
 
 		// Serial the value
-		f.serial (Value);
+		f.serial (this->Value);
 		f.serial (Tension);
 		f.serial (Continuity);
 		f.serial (Bias);
@@ -145,7 +145,7 @@ public:
 		(void)f.serialVersion (0);
 
 		// Serial the value
-		f.serial (Value);
+		f.serial (this->Value);
 		f.serial (InTan);
 		f.serial (OutTan);
 		f.serial (Step);

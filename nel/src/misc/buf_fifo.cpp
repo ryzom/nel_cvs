@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.28 2004/02/20 22:20:54 distrib Exp $
+ * $Id: buf_fifo.cpp,v 1.29 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -78,7 +78,7 @@ void	 CBufFIFO::push (const uint8 *buffer, uint32 s)
 	nldebug("%p push(%d)", this, s);
 #endif
 
-	nlassert(s > 0 && s < pow(2, sizeof(TFifoSize)*8));
+	nlassert(s > 0 && s < pow(2.0, static_cast<double>(sizeof(TFifoSize)*8)));
 
 	// stat code
 	if (s > _BiggestBlock) _BiggestBlock = s;
@@ -122,7 +122,7 @@ void CBufFIFO::push(const std::vector<uint8> &buffer1, const std::vector<uint8> 
 	nldebug("%p push2(%d)", this, s);
 #endif
 
-	nlassert((buffer1.size() + buffer2.size ()) > 0 && (buffer1.size() + buffer2.size ()) < pow(2, sizeof(TFifoSize)*8));
+	nlassert((buffer1.size() + buffer2.size ()) > 0 && (buffer1.size() + buffer2.size ()) < pow(2.0, static_cast<double>(sizeof(TFifoSize)*8)));
 
 	// avoid too big fifo
 	if (this->size() > 10000000)

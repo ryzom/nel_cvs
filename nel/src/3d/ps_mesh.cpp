@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.43 2004/10/22 15:06:52 berenguier Exp $
+ * $Id: ps_mesh.cpp,v 1.44 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1222,7 +1222,7 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 
 	CScene *scene = _Owner->getScene();
 	_ModelBank = scene->getShapeBank();
-	IShape *is;
+	IShape *is = 0;
 
 
 	uint32 vFormat = 0;

@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.17 2004/07/09 09:45:52 lecroart Exp $
+ * $Id: track_keyframer.h,v 1.18 2005/01/17 16:39:42 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,7 +90,7 @@ public:
 	void addKey (const CKeyT &key, TAnimationTime time)
 	{
 		// Insert the key in the map
-		_MapKey.insert (TMapTimeCKey::value_type (time, key));
+		_MapKey.insert (typename TMapTimeCKey::value_type (time, key));
 
 		// must precalc at next eval.
 		_Dirty= true;

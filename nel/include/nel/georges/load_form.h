@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.24 2003/05/05 10:01:28 boucher Exp $
+ * $Id: load_form.h,v 1.25 2003/05/28 12:59:17 ledorze Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,7 +166,10 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 	{
 		NLMISC::CIFile ifile;
 		ifile.setCacheFileOnOpen(true);
-		ifile.open (packedFilenamePath);
+		if (!ifile.open (packedFilenamePath))
+		{
+			throw	Exception("can't open PackedSheet %s", packedFilenamePath.c_str());
+		}
 		// an exception will be launch if the file is not the good version or if the file is not found
 
 		nlinfo ("loadForm(): Loading packed file '%s'", packedFilename.c_str());

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.14 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: smart_ptr.h,v 1.15 2003/05/28 12:59:17 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,13 @@ public:
 	// OWN null for ref ptr. (Optimisations!!!)
 	static	CPtrInfo	NullPtrInfo;
 	friend struct		CPtrInfo;
-		
+	
+	// for special case use only.
+	sint	getRefCount()
+	{
+		return	crefs;
+	}
+
 public:
 	// Can't put this to private since must be used by CSmartPtr (and friend doesn't work with template).
 	// Provide incref()/decref() function doen't work since decref() can't do a delete this on a non virtual dtor.

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.93 2003/04/18 15:13:36 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.94 2003/04/24 14:08:31 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -333,9 +333,17 @@ CObjectViewer::CObjectViewer ()
 				CSoundSystem::addSoundBank(dir);
 			}
 */
-			CConfigFile::CVar &var = cf.getVar("sample_path");
-			string samplePath(var.asString());
-			CSoundSystem::setSamplePath(samplePath);
+			{
+				CConfigFile::CVar &var = cf.getVar("sample_path");
+				string samplePath(var.asString());
+				CSoundSystem::setSamplePath(samplePath);
+			}
+
+			{
+				CConfigFile::CVar &var = cf.getVar("packed_sheet_path");
+				string packedSheetPath(var.asString());
+				CSoundSystem::setPackedSheetPath(packedSheetPath);
+			}
 
 /*			var = cf.getVar("samplebanks");
 			for (uint i=0; i<(uint)var.size(); i++)

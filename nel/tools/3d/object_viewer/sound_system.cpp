@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.21 2003/03/26 10:45:03 boucher Exp $
+ * $Id: sound_system.cpp,v 1.22 2003/04/24 14:08:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -74,7 +74,7 @@ void CSoundSystem::initSoundSystem ()
 	{
 		_AudioMixer->setSamplePath(_SamplePath);
 		_AudioMixer->setPackedSheetOption(_PackedSheetPath, true);
-		_AudioMixer->init();
+		_AudioMixer->init(32, true, false);
 	}
 	catch(NLMISC::Exception &e)
 	{

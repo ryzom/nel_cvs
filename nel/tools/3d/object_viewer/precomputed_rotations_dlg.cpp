@@ -20,9 +20,11 @@ static char THIS_FILE[] = __FILE__;
 CPrecomputedRotationsDlg::CPrecomputedRotationsDlg(NL3D::CPSHintParticleRotateTheSame *prts, CAttribDlg *toDisable)	
 	: _RotatedParticle(prts), _WndToDisable(toDisable)
 {
+	float minValue, maxValue ;
+	uint32 nbModels = prts->checkHintRotateTheSame(minValue, maxValue) ;
 	//{{AFX_DATA_INIT(CPrecomputedRotationsDlg)
 	m_RotSpeedMax = _T("");
-	m_PrecomputedRotations = FALSE;
+	m_PrecomputedRotations = nbModels ? TRUE : FALSE ;
 	m_RotSpeedMin = _T("");
 	m_NbModels = _T("");
 	//}}AFX_DATA_INIT
@@ -42,7 +44,7 @@ void CPrecomputedRotationsDlg::init(CWnd *pParent, sint x, sint y)
 	MoveWindow(wr) ;
 	ShowWindow(SW_SHOW) ;
 	enablePrecompRotationControl() ; 
-	updateFromReader() ;
+	updateFromReader() ;	
 }
 
 void CPrecomputedRotationsDlg::enablePrecompRotationControl(void)

@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * <File description>
  *
- * $Id: attrib_dlg.cpp,v 1.5 2001/06/19 16:05:09 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.6 2001/06/19 16:39:41 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,10 +238,13 @@ BOOL CAttribDlg::EnableWindow( BOOL bEnable)
 
 	if (useScheme())
 	{
+		m_Scheme.EnableWindow(bEnable) ;
+		m_SchemeInput.EnableWindow(bEnable) ;
+		m_EditScheme.EnableWindow(bEnable) ;
 		m_ClampCtrl.EnableWindow(bEnable) ;
 	}
 	else
-	{
+	{		
 		m_ClampCtrl.EnableWindow(FALSE) ;
 	}
 

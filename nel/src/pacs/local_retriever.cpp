@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.34 2001/09/21 11:53:30 legros Exp $
+ * $Id: local_retriever.cpp,v 1.35 2001/11/07 17:42:00 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -233,7 +233,7 @@ void	NLPACS::CLocalRetriever::dumpSurface(uint surf, const CVector &vect) const
 	{
 		uint			chainId = surface._Chains[i].Chain;
 		const CChain	&chain = _Chains[chainId];
-		nlinfo("-- chain %d[%d]: %d sub left=%d right=%d", i, chainId, chain.getSubChains().size(), chain.getLeft(), chain.getRight());
+		nlinfo("-- chain %d[%d]: %d sub left=%d right=%d start=%d stop=%d", i, chainId, chain.getSubChains().size(), chain.getLeft(), chain.getRight(), chain.getStartTip(), chain.getStopTip());
 
 		for (j=0; j<chain.getSubChains().size(); ++j)
 		{
@@ -290,6 +290,7 @@ float	NLPACS::CLocalRetriever::distanceToBorder(const ULocalPosition &pos) const
 
 sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 											uint8 mat, uint8 charact, uint8 level,
+											bool isUnderWater, float waterHeight,
 											const CVector &center,
 											const NLPACS::CSurfaceQuadTree &quad)
 {
@@ -315,6 +316,9 @@ sint32	NLPACS::CLocalRetriever::addSurface(uint8 normalq, uint8 orientationq,
 	surf._Flags |= (surf._IsFloor) ? (1<<CRetrievableSurface::IsFloorBit) : 0;
 	surf._Flags |= (surf._IsCeiling) ? (1<<CRetrievableSurface::IsCeilingBit) : 0;
 	surf._Flags |= (!surf._IsFloor && !surf._IsCeiling) ? (1<<CRetrievableSurface::IsSlantBit) : 0;
+
+	surf._Flags |= (isUnderWater) ? (1<<CRetrievableSurface::IsUnderWaterBit) : 0;
+	surf._WaterHeight = waterHeight;
 
 	surf._Flags |= ((0xffffffff<<(CRetrievableSurface::NormalQuantasStartBit)) & CRetrievableSurface::NormalQuantasBitMask);
 
@@ -513,6 +517,9 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 
 	for (i=0; i<_Chains.size(); ++i)
 	{
+		if (i == 431)
+			nlstop;
+
 		uint	whichTip;
 		// for both tips (start and stop)
 		for (whichTip=0; whichTip<=1; ++whichTip)
@@ -531,6 +538,10 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 			{
 				uint	turn;
 				uint	tipId = _Tips.size();
+
+				if (tipId == 310)
+					nlstop;
+
 				_Tips.resize(tipId+1);
 				CTip	&tip = _Tips[tipId];
 				tip.Point = (whichTip) ? getStopVector(i) : getStartVector(i);
@@ -549,6 +560,7 @@ void	NLPACS::CLocalRetriever::computeLoopsAndTips()
 
 					while (surf >= 0)
 					{
+
 						CChain	&nextChain = (turn) ? _Chains[chain = getNextChain(chain, surf)] : _Chains[chain = getPreviousChain(chain, surf)];
 						bool	isForward = (nextChain.getLeft() == surf);	// tells if the left surf is the current surf
 						bool	selectTip = isForward && !turn || !isForward && turn;

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.16 2001/09/12 10:07:05 legros Exp $
+ * $Id: local_retriever.h,v 1.17 2001/11/07 17:42:00 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -319,6 +319,7 @@ public:
 	/// Adds a surface to the local retriever, using its features. Returns the id of the newly created surface.
 	sint32								addSurface(uint8 normalq, uint8 orientationq,
 												   uint8 mat, uint8 charact, uint8 level,
+												   bool isUnderWater, float waterHeight,
 												   const NLMISC::CVector &center,
 												   const CSurfaceQuadTree &quad);
 

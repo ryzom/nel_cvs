@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.3 2001/06/13 08:46:42 legros Exp $
+ * $Id: retrievable_surface.h,v 1.4 2001/11/07 17:42:00 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,6 +94,7 @@ public:
 		IsFloorBit = 24,
 		IsSlantBit = 25,
 		IsCeilingBit = 26,
+		IsUnderWaterBit = 27,
 		NormalQuantasStartBit = 0,
 		NormalQuantasStopBit = 3,
 		NormalQuantasBitMask = 0x0000000f,
@@ -127,6 +128,7 @@ protected:
 
 	/// Various flags.
 	uint32								_Flags;
+	float								_WaterHeight;
 
 	/// The links to the neighbor surfaces.
 	std::vector<CSurfaceLink>			_Chains;
@@ -149,6 +151,8 @@ public:
 		uint	i;
 		for (i=0; i<NumCreatureModels; ++i)
 			_Topologies[i] = -1;
+
+		_WaterHeight = 0.0f;
 	}
 
 	uint8								getNormalQuanta() const { return _NormalQuanta; }

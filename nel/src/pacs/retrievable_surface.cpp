@@ -1,7 +1,7 @@
 /** \file retrievable_surface.cpp
  *
  *
- * $Id: retrievable_surface.cpp,v 1.8 2001/08/10 12:09:44 legros Exp $
+ * $Id: retrievable_surface.cpp,v 1.9 2001/11/07 17:42:00 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,8 +49,10 @@ void	NLPACS::CRetrievableSurface::serial(IStream &f)
 	/*
 	Version 0:
 		- base version.
+	Version 1:
+		- absolute water height and flag
 	*/
-	sint	ver= f.serialVersion(0);
+	sint	ver= f.serialVersion(1);
 
 	uint	i;
 	f.serial(_NormalQuanta);
@@ -66,6 +68,11 @@ void	NLPACS::CRetrievableSurface::serial(IStream &f)
 	f.serial(_Center);
 	f.serial(_IsFloor, _IsCeiling);
 	f.serial(_Flags);
+
+	if (ver >= 1)
+	{
+		f.serial(_WaterHeight);
+	}
 }
 
 void	NLPACS::CRetrievableSurface::TLoop::serial(IStream &f)

@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.73 2004/06/21 17:38:42 lecroart Exp $
+ * $Id: common.h,v 1.74 2004/06/22 10:29:35 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -213,12 +213,12 @@ std::string	toUpper ( const std::string &str);
 void		toUpper ( char *str);
 
 //////////////////////////////////////////////////////////////////////////
-// DEPRECATED: PLEASE DON'T USE THESE METHODS BUT FUNCTIONS ABOVE toLower() and toUpper()
+// ****  DEPRECATED *****: PLEASE DON'T USE THESE METHODS BUT FUNCTIONS ABOVE toLower() and toUpper()
 //////////////////////////////////////////////////////////////////////////
-inline std::string		&strlwr ( std::string &str )		{ toLower(str); return str; }
+inline std::string		&strlwr ( std::string &str )		{ str = toLower(str); return str; }
 inline std::string		 strlwr ( const std::string &str )	{ return toLower(str); }
 inline char			*strlwr ( char *str )				{ toLower(str); return str; }
-inline std::string		&strupr ( std::string &str )		{ toUpper(str); return str; }
+inline std::string		&strupr ( std::string &str )		{ str = toUpper(str); return str; }
 inline std::string		 strupr ( const std::string &str )	{ return toUpper(str); }
 inline char			*strupr ( char *str )				{ toUpper(str); return str; }
 

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.114 2002/05/06 12:55:52 robert Exp $
+ * $Id: agent_script.cpp,v 1.115 2002/05/06 16:25:58 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,6 +264,14 @@ namespace NLAIAGENT
 																			new NLAISCRIPT::CObjectUnknown(
 																			new NLAISCRIPT::COperandSimple(
 																			new NLAIC::CIdentType(CStringType::IdStringType))));
+
+		StaticMethod[CAgentScript::TIsInherited] = new CAgentScript::CMethodCall(	"IsInherited", 
+																			CAgentScript::TIsInherited, 
+																			NULL,CAgentScript::CheckCount,
+																			1,
+																			new NLAISCRIPT::CObjectUnknown(
+																			new NLAISCRIPT::COperandSimple(
+																			new NLAIC::CIdentType(NLAILOGIC::CBoolType::IdBoolType))));
 
 		StaticMethod[CAgentScript::TRemoveChild] = new CAgentScript::CMethodCall(	_REMOVECHILD_, 
 																				CAgentScript::TRemoveChild, 
@@ -1599,6 +1607,25 @@ namespace NLAIAGENT
 				return r;
 			}
 
+		case TIsInherited:
+			{
+				IObjectIA::CProcessResult r;
+				if ( _AgentClass != NULL )
+				{
+					CGroupType *param = (CGroupType *) o;
+					CStringType *comp_name = (CStringType *)((IBaseGroupType *)param)->popFront();
+					if ( isClassInheritedFrom( comp_name->getStr() ) != -1 )
+						r.Result = new NLAILOGIC::CBoolType( true );
+					else
+						r.Result = new NLAILOGIC::CBoolType( false );
+					
+				}
+				else
+					r.Result = new NLAILOGIC::CBoolType( false );
+
+				return r;
+			}
+
 		case TRemoveChild:
 			{
 				return removeDynamic((IBaseGroupType *)o);
@@ -1717,6 +1744,25 @@ namespace NLAIAGENT
 				IObjectIA::CProcessResult r;
 				const NLAIAGENT::IVarName *classname = getClassName();
 				r.Result = new CStringType( *classname );
+
+				return r;
+			}
+
+		case TIsInherited:
+			{
+				IObjectIA::CProcessResult r;
+				if ( _AgentClass != NULL )
+				{
+					CGroupType *param = (CGroupType *) o;
+					CStringType *comp_name = (CStringType *)((IBaseGroupType *)param)->popFront();
+					if ( isClassInheritedFrom( comp_name->getStr() ) != -1 )
+						r.Result = new NLAILOGIC::CBoolType( true );
+					else
+						r.Result = new NLAILOGIC::CBoolType( false );
+					
+				}
+				else
+					r.Result = new NLAILOGIC::CBoolType( false );
 
 				return r;
 			}

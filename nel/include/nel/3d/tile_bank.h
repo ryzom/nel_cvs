@@ -18,7 +18,7 @@
  */
 
 /*
- * $Id: tile_bank.h,v 1.1 2000/10/06 10:04:54 corvazier Exp $
+ * $Id: tile_bank.h,v 1.2 2000/10/19 07:55:09 corvazier Exp $
  *
  * Management of tile texture.
  */
@@ -26,7 +26,9 @@
 #ifndef NL_TILE_BANK_H
 #define NL_TILE_BANK_H
 
-#include "nel/misc/stream.h"
+#include "nel/misc/debug.h"
+//#include "nel/misc/stream.h"
+#include "nel/misc/rgba.h"
 #include <vector>
 #include <set>
 #include <string>
@@ -40,31 +42,7 @@ namespace	NLMISC
 namespace	NL3D
 {
 
-
-/**
- * Tile transition
- * \author Cyril Corvazier
- * \author Nevrax France
- * \date 2000
- */
-class CTileBankTransition
-{
-private:
-	// Class CTileBank;
-	friend class CTileBankLand;
-public:
-	// Return the set of tiles of this transition
-	const std::set<sint32> getTileSet () const { return TileSet; };
-
-	// Access
-	void AddTile (sint32 tileIndex);
-
-	void    serial(class NLMISC::IStream &f);
-private:
-	std::set<sint32>	TileSet;
-
-	static const sint Version;
-};
+class CTileBank;
 
 /**
  * Tiles
@@ -72,63 +50,40 @@ private:
  * \author Nevrax France
  * \date 2000
  */
-class CTileBankTile
+class CTile
 {
-private:
-	// Class CTileBank;
-	friend class CTileBankLand;
 public:
-	enum TBorder { north=0, east, south, west, borderCount };
-	enum TBitmap { normal=0, add, bump, bitmapCount };
+	enum TBitmap { diffuse=0, additive, bump, bitmapCount };
 public:
-	CTileBankTile ()
+	CTile ()
 	{
-		Mask=0;
-		Index=-1;
+		_free=true;
 	}
-
-	// Return the type mask
-	uint32 getTypeMask () const 
+	const std::string& getFileName (TBitmap bitmapType) const 
 	{ 
-		return Mask; 
-	};
-
-	// Get the index of the tile in the land bank
-	sint32 getTileIndex () const 
-	{ 
-		return Index; 
-	};
-
-	// Get filename, return NULL if no bitmap defined
-	std::string getFileName (TBitmap bitmapType) const 
-	{ 
-		return BitmapName[bitmapType]; 
+		return _bitmapName[bitmapType]; 
 	}
-
-	// Get the transition number
-	sint32 getTransition (TBorder where) const 
+	void setFileName (TBitmap bitmapType, const std::string& name)
 	{ 
-		return Transitions[where]; 
-	};
-
-	// Access
-	uint32 AddTypeFlags (uint32 flags) 
-	{ 
-		return Mask|=flags; 
+		_free=false;
+		_bitmapName[bitmapType]=name;
 	}
-	uint32 RemoveTypeFlags (uint32 flags) 
-	{ 
-		return Mask&=~flags; 
+	bool isFree () const
+	{
+		return _free;
 	}
-
+	void Free ()
+	{
+		nlassert (!_free);
+		_free=true;
+	}
 	void    serial(class NLMISC::IStream &f);
-private:
-	uint32	Mask;
-	sint32	Index;
-	std::string	BitmapName[bitmapCount];
-	sint32 Transitions[borderCount];
+	void	clearTile (CTile::TBitmap type);
 
-	static const sint Version;
+private:
+	bool _free;
+	std::string	_bitmapName[bitmapCount];
+	static const sint _version;
 };
 
 /**
@@ -137,86 +92,22 @@ private:
  * \author Nevrax France
  * \date 2000
  */
-class CTileBankLand
+class CTileLand
 {
 private:
-	// Class CTileBank;
-	friend class CTileBank;
+	// Class CTileLand;
 public:
-	enum TTextureResolution { texRes128=0, texRes64, texRes32 };
-
-	// *** Name ***
-	std::string getName () const 
+	const std::string& getName () const 
 	{ 
-		return Name; 
+		return _name; 
 	};
-
-	// *** Tiles ***
-
-	// Get number of tile in this land
-	// This is the number of the last tile + 1
-	sint getTileCount () const 
-	{ 
-		return TileVector.size(); 
-	};
-
-	// Get a tile
-	// Can return NULL if the tile is empty
-	const CTileBankTile* getTile (sint tileIndex) const 
-	{ 
-		return &TileVector[tileIndex]; 
-	};
-	CTileBankTile* getTile (sint tileIndex) 
-	{ 
-		return &TileVector[tileIndex]; 
-	};
-
-	// *** Types ***
-	
-	// Get number of tile type
-	sint getTileTypeCount () const 
-	{ 
-		return TypeVector.size(); 
-	};
-
-	// Get a tile type
-	std::string getTileType (sint typeIndex) const 
-	{ 
-		return TypeVector[typeIndex]; 
-	};
-
-	// *** Compressed tile file ***
-
-	// Return the name for the "nTextureIndex" texture file in the resolution "texRes"
-	std::string GetTextureFileName (sint textureIndex, TTextureResolution texRes) const;
-
-	// *** Transition ***
-
-	// Get transition count
-	sint getTransitionCount () const 
-	{ 
-		return TransitionVector.size(); 
-	};
-
-	// Return a transition
-	const CTileBankTransition* getTransition (sint transitionIndex) const 
-	{ 
-		return &TransitionVector[transitionIndex]; 
-	};
-	CTileBankTransition* getTransition (sint transitionIndex) 
-	{ 
-		return &TransitionVector[transitionIndex]; 
-	};
-
-	// *** Advanced ***
-
-	// Search all tiles matching the 4 transitions in clockzize order. Transition equal to -1 must by ignored.
-	void getMatchingTile (std::vector<sint32> setTiles, sint32 transition1, sint32 transition2, sint32 transition3, sint32 transition4);
-
-	// Access
-	void resizeTile (sint tileCount);
-	sint addType (const std::string& name);
-	sint addTransition ();
+	void setName (const std::string& name);
+	void addTileSet (const std::string& name);
+	void removeTileSet (const std::string& name);
+	bool isTileSet (const std::string& name)
+	{
+		return _tileSet.find (name)!=_tileSet.end();
+	}
 
 	void    serial(class NLMISC::IStream &f);
 private:
@@ -224,12 +115,192 @@ private:
 	// internal use
 	static void intersect (const std::set<sint32>& setSrc1, const std::set<sint32>& setSrc2, std::set<sint32>& setDst);
 
-	std::string	Name;
-	std::vector<CTileBankTile>	TileVector;
-	std::vector<std::string>	TypeVector;
-	std::vector<CTileBankTransition>	TransitionVector;
+	std::string	_name;
+	std::set<std::string>	_tileSet;
+	static const sint _version;
+};
 
-	static const sint Version;
+/**
+ * This class manage a transition tile.
+ * \author Cyril Corvazier
+ * \author Nevrax France
+ * \date 2000
+ */
+class CTileSetTransition
+{
+	friend class CTileSet;
+	friend class CTileBank;
+public:
+	CTileSetTransition ()
+	{
+		_tile=-1;
+	}
+	sint32 getTile () const
+	{
+		return _tile;
+	}
+	bool isInvert () const
+	{
+		return _invert;
+	}
+	void setInvert (bool invert)
+	{
+		_invert=invert;
+	}
+	void    serial(class NLMISC::IStream &f);
+
+private:
+	sint32	_tile;
+	bool	_invert;
+	static const sint _version;
+};
+
+/**
+ * This class is a tile set. It handles all the tile of the same material. 
+ * \author Cyril Corvazier
+ * \author Nevrax France
+ * \date 2000
+ */
+class CTileBorder
+{
+public:
+	enum TBorder { top=0, bottom, left, right, borderCount };
+	CTileBorder ()
+	{
+		reset();
+	}
+	void set (int width, int height, const std::vector<NLMISC::CRGBA>& array);
+	void doubleSize ();
+	bool operator== (const CTileBorder& border) const;
+	void operator= (const CTileBorder& border);
+	void serial(NLMISC::IStream &f);
+	bool isSet() const
+	{
+		return _set;
+	}
+	void reset()
+	{
+		_set=false;
+	}
+	sint32 getWidth() const
+	{
+		return _width;
+	}
+	sint32 getHeight() const
+	{
+		return _height;
+	}
+
+	static bool compare (const CTileBorder& border1, const CTileBorder& border2, TBorder where1, TBorder where2);
+
+private:
+	bool _set;
+	sint32 _width;
+	sint32 _height;
+	std::vector<NLMISC::CRGBA> _borders[borderCount];
+	static const sint _version;
+};
+
+/**
+ * This class is a tile set. It handles all the tile of the same material. 
+ * \author Cyril Corvazier
+ * \author Nevrax France
+ * \date 2000
+ */
+class CTileSet
+{
+	friend class CTileBank;
+public:
+	enum TError { ok=0, topInterfaceProblem, bottomInterfaceProblem, leftInterfaceProblem,
+		rightInterfaceProblem, addFirstA128128, topBottomNotTheSame, rightLeftNotTheSame, 
+		sizeInvalide, errorCount };
+	enum TTransition { first=0, last=47, count=48, notfound=-1 };
+	enum TBorder { top=0, bottom, left, right, borderCount };
+	enum TFlagBorder { _1111=0,	_0111, _1110, _0001, _1000, _0000, dontcare=-1 };
+
+	// add
+	void addTile128 (int& indexInTileSet, CTileBank& bank);
+	void addTile256 (int& indexInTileSet, CTileBank& bank);
+
+	// remove
+	void removeTile128 (int indexInTileSet, CTileBank& bank);
+	void removeTile256 (int indexInTileSet, CTileBank& bank);
+
+	// set
+	void setName (const std::string& name);
+	void setTile128 (int indexInTileSet, const std::string& name, CTile::TBitmap type, CTileBank& bank);
+	void setTile256 (int indexInTileSet, const std::string& name, CTile::TBitmap type, CTileBank& bank);
+	void setTileTransition (TTransition transition, const std::string& name, CTile::TBitmap type, CTileBank& bank, const CTileBorder& border);
+	void setTileTransitionInvert (TTransition transition, bool invert);
+	void setBorder (CTile::TBitmap type, const CTileBorder& border);
+
+	// check
+	TError checkTile128 (CTile::TBitmap type, const CTileBorder& border);
+	TError checkTile256 (CTile::TBitmap type, const CTileBorder& border);
+	TError checkTileTransition (TTransition transition, CTile::TBitmap type, const CTileBorder& border);
+
+	// get
+	const std::string& getName () const;
+	sint getNumTile128 () const
+	{
+		return (sint)_tile128.size();
+	}
+	sint getNumTile256 () const
+	{
+		return _tile256.size();
+	}
+	sint32 getTile128 (sint index) const
+	{
+		return _tile128[index];
+	}
+	sint32 getTile256 (sint index) const
+	{
+		return _tile256[index];
+	}
+	CTileSetTransition* getTransition (sint index)
+	{
+		return _tileTransition+index;
+	}
+	const CTileSetTransition* getTransition (sint index) const
+	{
+		return _tileTransition+index;
+	}
+	bool getTileTransitionInvert (TTransition transition, bool invert)
+	{
+		return _tileTransition[transition]._invert;
+	}
+	static const char* getErrorMessage (TError error)
+	{
+		return _errorMessage[error];
+	}
+	static TTransition getTransitionTile (TFlagBorder top, TFlagBorder bottom, TFlagBorder left, TFlagBorder right);
+	TTransition getExistingTransitionTile (TFlagBorder _top, TFlagBorder _bottom, TFlagBorder _left, 
+		TFlagBorder _right, int reject, CTile::TBitmap type);
+	static TTransition getComplementaryTransition (TTransition transition);
+
+	// other
+	void addChild (const std::string& name);
+	void removeChild (const std::string& name);
+	bool isChild (const std::string& name)
+	{
+		return _childName.find(name)!=_childName.end();
+	}
+	void serial(NLMISC::IStream &f);
+private:
+	static TFlagBorder getComplementaryBorder (TFlagBorder border);
+
+private:
+	std::string	_name;
+	std::vector<sint32>	_tile128;
+	std::vector<sint32>	_tile256;
+	CTileSetTransition _tileTransition[count];
+	std::set<std::string> _childName;
+	CTileBorder _border128[CTile::bitmapCount];
+	CTileBorder _border256[CTile::bitmapCount];
+	CTileBorder _borderTransition[count][CTile::bitmapCount];
+	static const sint _version;
+	static const TFlagBorder _transitionFlags[count][4];
+	static const char* _errorMessage[CTileSet::errorCount];
 };
 
 /**
@@ -241,37 +312,60 @@ private:
  */
 class CTileBank
 {
+	friend class CTileSet;
 public:
-	/// \name Land access
-	/**
-	 * Get count of land in this bank
-	 * \return the number of land in this bank.
-	 */
+	// Get
 	sint getLandCount () const 
 	{ 
-		return LandVector.size(); 
+		return _landVector.size(); 
 	};
-	/**
-	 * Get a pointer on a land class
-	 * \param index Index of the land.
-	 * \return A pointer of the land.
-	 */
-	const CTileBankLand* getLand (int landIndex) const 
+	const CTileLand* getLand (int landIndex) const
 	{ 
-		return &LandVector[landIndex]; 
+		return &_landVector[landIndex]; 
 	};
-	CTileBankLand* getLand (int landIndex) 
+	CTileLand* getLand (int landIndex) 
 	{ 
-		return &LandVector[landIndex]; 
+		return &_landVector[landIndex]; 
+	};
+	sint getTileSetCount () const 
+	{ 
+		return _tileSetVector.size(); 
+	};
+	const CTileSet* getTileSet (int tileIndex) const
+	{ 
+		return &_tileSetVector[tileIndex]; 
+	};
+	CTileSet* getTileSet (int tileIndex)
+	{ 
+		return &_tileSetVector[tileIndex]; 
+	};
+	sint getTileCount () const 
+	{ 
+		return _tileVector.size(); 
+	};
+	const CTile* getTile (int tileIndex) const
+	{ 
+		return &_tileVector[tileIndex]; 
+	};
+	CTile* getTile (int tileIndex)
+	{ 
+		return &_tileVector[tileIndex]; 
 	};
 	sint addLand (const std::string& name);
 	void removeLand (sint landIndex);
+	sint addTileSet (const std::string& name);
+	void removeTileSet (sint landIndex);
 	void clear ();
 
 	void    serial(class NLMISC::IStream &f);
 private:
-	std::vector<CTileBankLand>	LandVector;
-	static const sint Version;
+	sint	createTile ();
+	void	freeTile (int tileIndex);
+private:
+	std::vector<CTileLand>	_landVector;
+	std::vector<CTileSet>	_tileSetVector;
+	std::vector<CTile>	_tileVector;
+	static const sint	_version;
 };
 
 

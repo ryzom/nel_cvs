@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.9 2001/05/31 12:30:18 berenguier Exp $
+ * $Id: retriever_instance.cpp,v 1.10 2001/06/05 10:37:59 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,6 +160,8 @@ void	NLPACS::CRetrieverInstance::link(const CRetrieverInstance &neighbor, uint8 
 
 	if (edgeTips.size() != nEdgeTips.size())
 	{
+		uint	ets = edgeTips.size(),
+				nets = nEdgeTips.size();
 		nlwarning("in call to NLPACS::CRetrieverInstance::link");
 		nlerror("Instance %d and instance %d have different number of tips on common edge", _InstanceId, neighbor._InstanceId);
 	}

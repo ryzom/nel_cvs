@@ -1,7 +1,7 @@
 /** \file chain.h
  * 
  *
- * $Id: chain.h,v 1.3 2001/05/25 10:00:35 legros Exp $
+ * $Id: chain.h,v 1.4 2001/06/05 10:37:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,6 @@ class COrderedChain3f
 {
 protected:
 	friend class CChain;
-	friend class CChainCycle;
 	friend class CRetrievableSurface;
 
 	/// The vertices of the chain, ordered following x growth.
@@ -70,6 +69,9 @@ public:
 	/// Returns the parent chain Id of this ordered chain.
 	uint16								getParentId() const { return _ParentId; }
 
+	///
+	const NLMISC::CVector				&operator[] (uint n) const { return _Vertices[n]; }
+
 	void								translate(const NLMISC::CVector &translation)
 	{
 		uint	i;
@@ -85,6 +87,7 @@ public:
  * In the vertex list, we consider the following order
  *    v1 < v2 iff  v1.x < v2.x  ||  v1.x == v2.x && v1.y < v2.y
  * The vertices composing the chain are only 2 coordinates (x, y) wide, packed on 16 bits each
+ * (which is 4 bytes per vertex.) This is the packed form of the COrderedChain3f.
  * (4 bytes per vertex.)
  * \author Benjamin Legros
  * \author Nevrax France
@@ -94,7 +97,6 @@ class COrderedChain
 {
 protected:
 	friend class CChain;
-	friend class CChainCycle;
 	friend class CRetrievableSurface;
 
 	/// The vertices of the chain, ordered following x growth.
@@ -106,6 +108,9 @@ protected:
 	/// The parent chain Id.
 	uint16								_ParentId;
 
+	/// The length of the chain.
+	float								_Length;
+
 public:
 	/// Returns the vertices of the chain
 	const std::vector<CVector2s>		&getVertices() const { return _Vertices; }
@@ -115,6 +120,9 @@ public:
 
 	/// Returns the parent chain Id of this ordered chain.
 	uint16								getParentId() const { return _ParentId; }
+
+	///
+	const CVector2s						&operator[] (uint n) const { return _Vertices[n]; }
 
 	void								translate(const NLMISC::CVector &translation);
 
@@ -154,11 +162,18 @@ protected:
 	/// The surface on the right of the chain.
 	sint32								_Right;
 
+	/// The tips indexes in the retriever object.
 	uint16								_StartTip;
 	uint16								_StopTip;
 
 	/// The edge on which the chain is stuck (-1 if not stuck on any edge)
 	sint8								_Edge;
+
+	/// The length of the whole chain.
+	float								_Length;
+
+	uint8								_LeftLoop, _LeftLoopIndex;
+	uint8								_RightLoop, _RightLoopIndex;
 
 protected:
 	friend class CRetrievableSurface;
@@ -170,7 +185,26 @@ protected:
 
 	void								setIndexOnEdge(uint edge, sint32 index);
 
+	void								setLoopIndexes(sint32 surface, uint loop, uint loopIndex)
+	{
+		if (_Left == surface)
+		{
+			_LeftLoop = loop;
+			_LeftLoopIndex = loopIndex;
+		}
+		else
+		{
+			_RightLoop = loop;
+			_RightLoopIndex = loopIndex;
+		}
+	}
+
 public:
+
+	/// Constructor.
+	CChain() :	_Left(-1), _Right(-1), _StartTip(0xffff), _StopTip(0xffff), _Edge(-1), _Length(0.0f),
+				_LeftLoop(0), _LeftLoopIndex(0), _RightLoop(0), _RightLoopIndex(0) {}
+
 	/// Returns a vector of ordered chain ids that compose the entire chain.
 	const std::vector<uint16>			&getSubChains() const { return _SubChains; }
 
@@ -179,9 +213,16 @@ public:
 
 	/// Returns the left surface id.
 	sint32								getLeft() const { return _Left; }
+	uint8								getLeftLoop() const { return _LeftLoop; }
+	uint8								getLeftLoopIndex() const { return _LeftLoopIndex; }
 
 	/// Returns the right surface id.
 	sint32								getRight() const { return _Right; }
+	uint8								getRightLoop() const { return _RightLoop; }
+	uint8								getRightLoopIndex() const { return _RightLoopIndex; }
+
+	/// returns the legnth of the whole chain.
+	float								getLength() const { return _Length; }
 
 	/// Gets the index of the chain on the given edge (in the local retriever object.)
 	sint32								getIndexOnEdge(sint edge) const

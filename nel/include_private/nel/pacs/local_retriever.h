@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.4 2001/05/25 10:00:35 legros Exp $
+ * $Id: local_retriever.h,v 1.5 2001/06/05 10:37:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,6 +83,8 @@ public:
 			void	serial(NLMISC::IStream &f) { f.serial(Chain, Start); }
 		};
 
+		CTip() : Point(NLMISC::CVector::Null), Edges(0) {}
+
 		/// The position of the tip.x
 		NLMISC::CVector					Point;
 
@@ -97,6 +99,7 @@ public:
 		void	serial(NLMISC::IStream &f)
 		{
 			f.serial(Point);
+			f.serial(Edges);
 			f.serialCont(Chains);
 		}
 
@@ -150,6 +153,7 @@ protected:
 	
 	/// The chains insinde the zone.
 	std::vector<COrderedChain>			_OrderedChains;
+	std::vector<COrderedChain3f>		_FullOrderedChains;
 
 	/// The chains insinde the zone.
 	std::vector<CChain>					_Chains;
@@ -171,6 +175,9 @@ protected:
 
 	/// The tip recognition threshold
 	static const float					_TipThreshold;
+
+	/// The tip recognition threshold
+	static const float					_EdgeTipThreshold;
 
 	/// For collisions, the chainquad.
 	CChainQuad							_ChainQuad;
@@ -207,9 +214,13 @@ private:
 
 	struct CIntersectionMarker
 	{
-		float	T;
+		float	Position;
 		uint16	OChain;
 		uint16	Edge;
+		bool	In;
+
+		CIntersectionMarker() {}
+		CIntersectionMarker(float position, uint16 ochain, uint16 edge, bool in) : Position(position), OChain(ochain), Edge(edge), In(in) {}
 	};
 
 public:
@@ -238,6 +249,11 @@ public:
 	/// Returns the nth ordered chain.
 	const COrderedChain					&getOrderedChain(uint n) const { return _OrderedChains[n]; }
 
+	/// Returns the full ordered chains.
+	const std::vector<COrderedChain3f>	&getFullOrderedChains() const { return _FullOrderedChains; }
+	/// Returns the nth full ordered chain.
+	const COrderedChain3f				&getFullOrderedChain(uint n) const { return _FullOrderedChains[n]; }
+
 	/// Returns the chains.
 	const std::vector<CChain>			&getChains() const { return _Chains; }
 	/// retruns the nth chain.
@@ -252,6 +268,7 @@ public:
 	const std::vector<CRetrievableSurface>	&getSurfaces() const { return _Surfaces; }
 	/// Returns the nth surface.
 	const CRetrievableSurface			&getSurface(uint n) const { return _Surfaces[n]; }
+
 
 	// @}
 
@@ -270,11 +287,13 @@ public:
 	 * the left and right surfaces id and the edge on which the chain is stuck
 	 */
 	sint32								addChain(const std::vector<NLMISC::CVector> &vertices,
-												 sint32 left, sint32 right, sint edge,
-												 std::vector<COrderedChain3f> &fullChains);
+												 sint32 left, sint32 right, sint edge);
 
 	/// Builds topologies tables.
 	void								computeTopologies();
+
+	/// Builds tips
+	void								computeLoopsAndTips();
 
 	/// Found tips on the edges of the retriever and fills _EdgeTips tables.
 	void								findEdgeTips();
@@ -284,12 +303,17 @@ public:
 	/// Updates surfaces links from the links contained in the chains...
 	void								updateChainIds();
 
+
 	/// Sorts chains references inside the tips. NOT IMPLEMENTED YET.
 	void								sortTips();
 
 
 	/// Translates the local retriever by the translation vector.
 	void								translate(const NLMISC::CVector &translation);
+
+
+	///
+	void								flushFullOrderedChains() { _FullOrderedChains.clear(); }
 
 
 	/// Serialises the CLocalRetriever.
@@ -309,15 +333,37 @@ public:
 
 	// @}
 
-
+/*
 protected:
 	friend class	CRetrieverInstance;
+*/
 
 	/// Retrieves a position inside the retriever (from the local position.)
 	void								retrievePosition(NLMISC::CVector estimated, std::vector<uint8> &retrieveTable) const;
 
 	/// Finds a path in a given surface, from the point A to the point B.
-	void								findPath(const CLocalPosition &A, const CLocalPosition &B, std::vector<CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst) const;
+	void								findPath(const CLocalPosition &A, const CLocalPosition &B, std::vector<CVector2s> &path, NLPACS::CCollisionSurfaceTemp &cst, std::vector<CIntersectionMarker> &intersections) const;
+
+private:
+	const NLMISC::CVector				&getStartVector(uint32 chain) const;
+	const NLMISC::CVector				&getStopVector(uint32 chain) const;
+
+	const NLMISC::CVector				&getStartVector(uint32 chain, sint32 surface) const;
+	const NLMISC::CVector				&getStopVector(uint32 chain, sint32 surface) const;
+
+	uint16								getStartTip(uint32 chain, sint32 surface) const;
+	uint16								getStopTip(uint32 chain, sint32 surface) const;
+	
+	void								setStartTip(uint32 chain, sint32 surface, uint16 startTip);
+	void								setStopTip(uint32 chain, sint32 surface, uint16 stopTip);
+
+	void								mergeTip(uint from, uint to);
+
+	uint32								getPreviousChain(uint32 chain, sint32 surface) const;
+	uint32								getNextChain(uint32 chain, sint32 surface) const;
+	
+	
+	void								dumpSurface(uint surf) const;
 };
 
 }; // NLPACS

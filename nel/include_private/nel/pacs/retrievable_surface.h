@@ -1,7 +1,7 @@
 /** \file retrievable_surface.h
  * 
  *
- * $Id: retrievable_surface.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: retrievable_surface.h,v 1.2 2001/06/05 10:37:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,6 +93,11 @@ public:
 protected:
 	friend class CLocalRetriever;
 
+	struct TLoop : std::vector<uint16>
+	{
+		void	serial(NLMISC::IStream &f) { f.serialCont(*this); }
+	};
+
 	/// @name Surface features.
 	//@{
 	uint8								_NormalQuanta;
@@ -104,8 +109,29 @@ protected:
 	bool								_IsCeiling;
 	//@}
 
+	enum
+	{
+		IsFloorBit = 24,
+		IsCeilingBit = 25,
+		NormalQuantasStartBit = 0,
+		NormalQuantasStopBit = 3,
+		NormalQuantasBitMask = 0x0000000f,
+		CharacterQuantasStartBit = 8,
+		CharacterQuantasStopBit = 11,
+		CharacterQuantasBitMask = 0x00000f00,
+		MaterialQuantasStartBit = 16,
+		MaterialQuantasStopBit = 23,
+		MaterialQuantasBitMask = 0x00ff0000
+	};
+
+	/// Various flags.
+	uint32								_Flags;
+
 	/// The links to the neighbor surfaces.
 	std::vector<CSurfaceLink>			_Chains;
+
+	/// The loops of chains
+	std::vector<TLoop>					_Loops;
 
 	/// A Height QuadTree that allows to easily find the height out for a given 2D point.
 	CSurfaceQuadTree					_Quad;

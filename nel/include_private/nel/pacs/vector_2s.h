@@ -1,7 +1,7 @@
 /** \file vector_2s.h
  * <File description>
  *
- * $Id: vector_2s.h,v 1.1 2001/05/22 16:41:12 legros Exp $
+ * $Id: vector_2s.h,v 1.2 2001/06/05 10:37:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,6 +69,35 @@ public:		// Methods.
 	CVector2s	operator+(const CVector2s &v) const	{return CVector2s(x+v.x, y+v.y);}
 	CVector2s	operator-(const CVector2s &v) const	{return CVector2s(x-v.x, y-v.y);}
 	CVector2s	operator-() const					{return CVector2s(-x, -y);}
+
+	CVector2s	&operator*=(float f)				{ x = (sint16)(f*x); y = (sint16)(f*y); return *this; }
+	CVector2s	&operator/=(float f)				{ x = (sint16)(f/x); y = (sint16)(f/y); return *this; }
+	CVector2s	operator*(float f) const			{return CVector2s((sint16)(x*f), (sint16)(y*f));}
+	CVector2s	operator/(float f) const			{return CVector2s((sint16)(x/f), (sint16)(y/f));}
+	//@}
+
+	/// @name Advanced Maths.
+	//@{
+	/// Dot product.
+	float	operator*(const CVector2s &v) const		{return (float)((sint32)x*(sint32)v.x + (sint32)y*(sint32)v.y)/65536.0f;}
+	/// Return the norm of the vector.
+	float	norm() const							{return (float)sqrt(sqrnorm());}
+	/// Return the square of the norm of the vector.
+	float	sqrnorm() const							{return (float)((sint32)x*(sint32)x + (sint32)y*(sint32)y)/65536.0f;}
+	/// Normalize the vector.
+	void	normalize()
+	{
+		float	f= norm();
+		if(f>0)
+			*this/=f;
+	}
+	/// Return the vector normalized.
+	CVector2s	normed() const
+	{
+		CVector2s	v= *this;
+		v.normalize();
+		return v;
+	}
 	//@}
 
 	/// @name Misc.

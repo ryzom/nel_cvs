@@ -1,7 +1,7 @@
 /** \file chain.cpp
  *
  *
- * $Id: chain.cpp,v 1.9 2001/05/25 10:00:45 legros Exp $
+ * $Id: chain.cpp,v 1.10 2001/06/05 10:37:59 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -93,16 +93,17 @@ void	NLPACS::COrderedChain::serial(IStream &f)
 	f.serialCont(_Vertices);
 	f.serial(_Forward);
 	f.serial(_ParentId);
+	f.serial(_Length);
 }
 
 // sets value to the right surface id for later edge link
 void	NLPACS::CChain::setIndexOnEdge(uint edge, sint32 index)
 {
 	// the _Right id should have been previously set to -2.
-	if (_Right != -2)
+	if (_Right >= 0)
 	{
 		nlwarning("in NLPACS::CChain::setIndexOnEdge()");
-		nlwarning("Tried to set the right surface of a chain whereas previous value (%d) is different from -2", _Right);
+		nlwarning("Tried to set the right surface of a chain whereas previous value (%d) is greater than -1", _Right);
 		return;
 	}
 
@@ -136,6 +137,7 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 	_Left = left;
 	_Right = right;
 	_Edge = edge;
+	_Length = 0.0f;
 
 	// splits the vertices list in ordered sub chains.
 	while (first < (sint)vertices.size()-1)
@@ -178,6 +180,13 @@ void	NLPACS::CChain::make(const vector<CVector> &vertices, sint32 left, sint32 r
 		chains.resize(chains.size()+1);
 		COrderedChain	&subchain = chains.back();
 		subchain.pack(subchain3f);
+
+		float	length = 0.0f;
+		for (i=0; i<(sint)subchain._Vertices.size()-1; ++i)
+			length += (subchain._Vertices[i+1]-subchain._Vertices[i]).norm();
+
+		subchain._Length = length;
+		_Length += length;
 	}
 }
 
@@ -188,6 +197,9 @@ void	NLPACS::CChain::serial(IStream &f)
 	f.serial(_Left, _Right);
 	f.serial(_StartTip, _StopTip);
 	f.serial(_Edge);
+	f.serial(_Length);
+	f.serial(_LeftLoop, _LeftLoopIndex);
+	f.serial(_RightLoop, _RightLoopIndex);
 }
 
 // end of CChain methods implementation

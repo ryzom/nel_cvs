@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.1 2001/05/22 08:24:49 corvazier Exp $
+ * $Id: retriever_bank.h,v 1.2 2001/06/05 10:37:47 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ class CRetrieverBank
 {
 protected:
 	/// The retrievers stored in the retriever bank.
-	std::vector<CLocalRetriever>	_Retrievers;
+	std::vector<CLocalRetriever>		_Retrievers;
 
 public:
 	/// Returns the vector of retrievers.
@@ -73,6 +73,9 @@ public:
 		input.open(filename);
 		localRetriever.serial(input);
 		input.close();
+
+//		localRetriever.buildLoops();
+		
 		return _Retrievers.size()-1;
 	}
 

@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.5 2001/05/25 10:00:45 legros Exp $
+ * $Id: chain_quad.cpp,v 1.6 2001/06/05 10:37:59 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -376,6 +376,8 @@ sint		CChainQuad::selectEdges(CVector start, CVector end, CCollisionSurfaceTemp 
 
 		ya = (sint32)floor(fya / _QuadElementSize) - _Y;
 		yb = (sint32)ceil(fyb / _QuadElementSize) - _Y;
+
+		fx += _QuadElementSize;
 
 		for (y=ya; y<yb; ++y)
 		{

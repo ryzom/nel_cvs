@@ -79,7 +79,7 @@ LRESULT Custom::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		button.left = client.left + 20;
 		button.right = client.right - 90; //button.left + 15;
 		if (nButton>4) SetWindowPos(0,0,0,client.right - client.left,15*2 + (button.bottom - button.top + 10)*nButton + 10,SWP_NOMOVE);
-		font.CreateFont(14,0,0,0,FW_THIN,false,false,false,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,DEFAULT_PITCH,NULL);
+		font.CreateFont(-10,0,0,0,FW_THIN,false,false,false,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FIXED_PITCH,NULL);
 		for (int i = 0;i<nButton;i++)
 		{
 			CString str;

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.3 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.4 2001/02/16 10:56:44 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,9 @@ using namespace NL3D;
 
 #define BAR_LENGTH 21
 #define LAST_LIST_SIZE_MAX 2
+#define EPSILON_ST 0.1
+#define EPSILON_POS 0.001
+#define EPSILON 0.001
 #define shadeShadow 0
 
 char *progressbar[BAR_LENGTH]=
@@ -106,7 +109,7 @@ void initQuadtree (CLandscape& landscape, CQuadGrid<CTriangleShadow>& quadGrid)
 }
 
 // Add zone triangle in a quadtree
-void addZoneInQuadTree (CLandscape& landscape, CQuadGrid<CTriangleShadow>& quadGrid, uint zoneId, std::vector<CPatchInfo>& patchs)
+void addZoneInQuadTree (CLandscape& landscape, CQuadGrid<CTriangleShadow>& quadGrid, uint zoneId, std::vector<CPatchInfo>& patchs, CVector& lightDir)
 {
 	// Get the zone pointer
 	CZone* pZone=landscape.getZone (zoneId);
@@ -141,18 +144,26 @@ void addZoneInQuadTree (CLandscape& landscape, CQuadGrid<CTriangleShadow>& quadG
 			CTriangleShadow triangleShadow;
 			triangleShadow.triangle=triangle;
 			triangleShadow.plane.make (triangle.V0, triangle.V1, triangle.V2);
-			triangleShadow.nS=(uint8)s;
-			triangleShadow.nT=(uint8)t;
-			triangleShadow.zone=zoneId;
-			triangleShadow.patch=patch;
 
-			CVector min;
-			min.minof (triangle.V0, triangle.V1);
-			min.minof (min, triangle.V2);
-			CVector max;
-			max.maxof (triangle.V0, triangle.V1);
-			max.maxof (max, triangle.V2);
-			quadGrid.insert (min, max, triangleShadow);
+			// Back face of the sun ?
+			if (lightDir*triangleShadow.plane.getNormal()>-EPSILON)
+			{
+				triangleShadow.nS=(uint8)s;
+				triangleShadow.nT=(uint8)t;
+				triangleShadow.zone=zoneId;
+				triangleShadow.patch=patch;
+				
+
+				CVector min;
+				min.minof (triangle.V0, triangle.V1);
+				min.minof (min, triangle.V2);
+				min-=CVector ((float)EPSILON_POS, (float)EPSILON_POS, (float)EPSILON_POS);
+				CVector max;
+				max.maxof (triangle.V0, triangle.V1);
+				max.maxof (max, triangle.V2);
+				max+=CVector ((float)EPSILON_POS, (float)EPSILON_POS, (float)EPSILON_POS);
+				quadGrid.insert (min, max, triangleShadow);
+			}
 
 			// Next triangle
 			faceId++;
@@ -164,16 +175,14 @@ bool intersected (const CTriangleShadow& triangleInfo, const CVector& pos, const
 				  uint zoneId, uint patch, sint8 nS, sint8 nT)
 {
 	// Check the pos is back of the face
-	if (triangleInfo.plane*pos<0.f)
+	// if (triangleInfo.plane*pos<0.f)
 	{
 		// Avoid self shadowing...
 		if (
 			(patch!=triangleInfo.patch)||		// patch number is not the same ?
 			(zoneId!=triangleInfo.zone)||		// in the same zone ?
-			(nS<triangleInfo.nS-1) ||			// not same tile ?
-			(nS>triangleInfo.nS+1) ||			// not same tile ?
-			(nT<triangleInfo.nT-1) ||			// not same tile ?
-			(nT>triangleInfo.nT+1)
+			(nS!=triangleInfo.nS) ||			// not same tile ?
+			(nT!=triangleInfo.nT)
 		   )
 		{
 			// hit
@@ -186,7 +195,7 @@ bool intersected (const CTriangleShadow& triangleInfo, const CVector& pos, const
 	return false;
 }
 
-void loadAdjacentZones (const char* sZoneName, CLandscape& landscape, CQuadGrid<CTriangleShadow>& quadGrid)
+void loadAdjacentZones (const char* sZoneName, CLandscape& landscape, CQuadGrid<CTriangleShadow>& quadGrid, CVector &lightDir)
 {
 	// Get the dir
 	string dir=getDir (sZoneName);
@@ -227,7 +236,7 @@ void loadAdjacentZones (const char* sZoneName, CLandscape& landscape, CQuadGrid<
 					landscape.addZone (zone);
 
 					// add the main zone
-					addZoneInQuadTree (landscape, quadGrid, zone.getZoneId(), patchs);
+					addZoneInQuadTree (landscape, quadGrid, zone.getZoneId(), patchs, lightDir);
 				}
 				catch (Exception& except)
 				{
@@ -306,15 +315,19 @@ int main(int argc, char* argv[])
 				initQuadtree (landscape, quadGrid);
 
 				// Load adjacent zones
-				loadAdjacentZones (argv[1], landscape, quadGrid);
+				loadAdjacentZones (argv[1], landscape, quadGrid, lightDir);
 
 				// *** build the quadtree
 
 				// add the main zone
-				addZoneInQuadTree (landscape, quadGrid, zone.getZoneId(), patchs);
+				addZoneInQuadTree (landscape, quadGrid, zone.getZoneId(), patchs, lightDir);
 
 				// time
 				TTime time=CTime::getLocalTime ();
+
+				// Pixels count
+				uint compressed=0;
+				uint uncompressed=0;
 
 				// Light each patch
 				for (uint patch=0; patch<patchs.size(); patch++)
@@ -327,31 +340,34 @@ int main(int argc, char* argv[])
 					CPatchInfo& pa=patchs[patch];
 
 					// Num of tiles
-					uint numS=pa.OrderS*4+1;
-					uint numT=pa.OrderT*4+1;
+					uint numS=pa.OrderS*NL_LUMEL_BY_TILE+1;
+					uint numT=pa.OrderT*NL_LUMEL_BY_TILE+1;
 					uint numTileS=pa.OrderS+1;
 					uint numTileT=pa.OrderT+1;
 
 					// Bool
-					std::vector<bool> vectorShadow(numS*numT);
 					std::vector<uint8> vectorShade(numS*numT);
 
 					// For all tiles
 					uint ss, tt;
-					for (tt=0; tt<numTileT; tt++)
-					for (ss=0; ss<numTileS; ss++)
+					for (tt=0; tt<numTileT-1; tt++)
+					for (ss=0; ss<numTileS-1; ss++)
 					{
 						uint s2, t2;
 
 						// Get the position of the vertices
-						CVector pos0=pa.Patch.eval (((float)ss)/(float)(numTileS-1), ((float)tt)/(float)(numTileT-1));
-						CVector pos1=pa.Patch.eval (((float)ss)/(float)(numTileS-1), ((float)(tt+1))/(float)(numTileT-1));
-						CVector pos2=pa.Patch.eval (((float)(ss+1))/(float)(numTileS-1), ((float)(tt+1))/(float)(numTileT-1));
-						CVector pos3=pa.Patch.eval (((float)(ss+1))/(float)(numTileS-1), ((float)tt)/(float)(numTileT-1));
+						float s0=((float)ss)/(float)(numTileS-1);
+						float s1=((float)(ss+1))/(float)(numTileS-1);
+						float t0=((float)tt)/(float)(numTileT-1);
+						float t1=((float)(tt+1))/(float)(numTileT-1);
+						CVector pos0=pa.Patch.eval (s0, t0);
+						CVector pos1=pa.Patch.eval (s0, t1);
+						CVector pos2=pa.Patch.eval (s1, t1);
+						CVector pos3=pa.Patch.eval (s1, t0);
 
 						// last pixel
-						uint lastS=(ss==numTileS-1)?1:4;
-						uint lastT=(tt==numTileT-1)?1:4;
+						uint lastS=(ss==numTileS-2)?NL_LUMEL_BY_TILE+1:NL_LUMEL_BY_TILE;
+						uint lastT=(tt==numTileT-2)?NL_LUMEL_BY_TILE+1:NL_LUMEL_BY_TILE;
 
 						for (t2=0; t2<lastT; t2++)
 						for (s2=0; s2<lastS; s2++)
@@ -363,11 +379,10 @@ int main(int argc, char* argv[])
 							// offset on the patch. (center off the lumel)
 							float fS=((float)s)/(float)(numS-1);
 							float fT=((float)t)/(float)(numT-1);
-							float fS2=((float)s2)/(float)(lastS);
-							float fT2=((float)t2)/(float)(lastT);
-
-							// Get the patch exact position
-							CVector pos=pa.Patch.eval (fS, fT);
+							float fS2=((float)s2)/(float)(NL_LUMEL_BY_TILE);
+							float fT2=((float)t2)/(float)(NL_LUMEL_BY_TILE);
+							fS2=(float)(EPSILON_ST+fS2*(1.f-2.f*EPSILON_ST));
+							fT2=(float)(EPSILON_ST+fT2*(1.f-2.f*EPSILON_ST));
 
 							// Get the position on the collid mesh for ray trace
 							CVector collidPos;
@@ -376,8 +391,8 @@ int main(int argc, char* argv[])
 							else
 								collidPos=pos1+(pos2-pos1)*fS2+(pos0-pos1)*(1.f-fT2);
 
-							// Collid pos + 1 cm
-							collidPos-=lightDir;
+							// Collid pos + 1 mm
+							//collidPos-=lightDir*(float)EPSILON_POS;
 
 							// Get the normal on the patch
 							CVector normal=pa.Patch.evalNormal (fS, fT);
@@ -428,7 +443,7 @@ int main(int argc, char* argv[])
 							bool bShadow=false;
 
 							// Front of the light
-							if (lightDir*normalAccu<0.f)
+							if (lightDir*normalAccu<=EPSILON)
 							{
 								// Last oply intersected
 								static std::list<CTriangleShadow> lastList;
@@ -483,9 +498,6 @@ int main(int argc, char* argv[])
 								}
 							}
 
-							// Assing shadow
-							vectorShadow[t*numS+s]=bShadow;
-
 							// Light
 							if (bShadow)
 							{
@@ -514,44 +526,61 @@ int main(int argc, char* argv[])
 					// Build shading info: for each lumel, check if it is shadowed. If it is, build it with it's
 					// interpolated value and shading value. If not, build it with only it's shading value.
 					for (t=0; t<numT; t++)
-					for (s=0; s<numS; s++)
 					{
-						// Coordinates in tiles
-						uint tTile=t>>2;
-						uint sTile=s>>2;
+						// For others lumels
+						for (s=0; s<numS; s++)
+						{
+							// Coordinates in tiles
+							uint tTile=t>>2;
+							uint sTile=s>>2;
 
-						// Get the interpolated value
-						uint topLeft=(uint)pa.TileColors[tTile*numTileS+sTile].Shade;
-						uint topRight=0xff;
-						uint bottomLeft=0xff;
-						uint bottomRight=0xff;
-						if (s<numS-1)
-							topRight=(uint)pa.TileColors[tTile*numTileS+sTile+1].Shade;
-						if (t<numT-1)
-							bottomLeft=(uint)pa.TileColors[(tTile+1)*numTileS+sTile].Shade;
-						if ((t<numT-1)&&(s<numS-1))
-							bottomRight=(uint)pa.TileColors[(tTile+1)*numTileS+sTile+1].Shade;
-						uint8 interpolated=
-							(uint8)
-							(
+							// Get the interpolated value
+							uint topLeft=(uint)pa.TileColors[tTile*numTileS+sTile].Shade;
+							uint topRight=0xff;
+							uint bottomLeft=0xff;
+							uint bottomRight=0xff;
+							if (s<numS-1)
+								topRight=(uint)pa.TileColors[tTile*numTileS+sTile+1].Shade;
+							if (t<numT-1)
+								bottomLeft=(uint)pa.TileColors[(tTile+1)*numTileS+sTile].Shade;
+							if ((t<numT-1)&&(s<numS-1))
+								bottomRight=(uint)pa.TileColors[(tTile+1)*numTileS+sTile+1].Shade;
+							uint8 interpolated=
+								(uint8)
 								(
-									(topLeft*(4-(s&0x3)) + topRight*(s&0x3))*(4-(t&0x3)) +
-									(bottomLeft*(4-(s&0x3)) + bottomRight*(s&0x3))*(t&0x3)
-								)>>4
-							);
+									(
+										(topLeft*(4-(s&0x3)) + topRight*(s&0x3))*(4-(t&0x3)) +
+										(bottomLeft*(4-(s&0x3)) + bottomRight*(s&0x3))*(t&0x3)
+									)>>4
+								);
 
-						// Vertex shadowed ?
-						// Create with interpolated value and shading value
-						pa.Lumels[t*numS+s].createUncompressed (interpolated, vectorShade[t*numS+s]);
+							// Vertex shadowed ?
+							// Create with interpolated value and shading value
+							pa.Lumels[t*numS+s].createUncompressed (interpolated, vectorShade[t*numS+s]);
+
+							// Pixel counter
+							if (pa.Lumels[t*numS+s].isShadowed ())
+								uncompressed++;
+							else
+								compressed++;
+						}
 					}
 				}
 
-				// Compute time
-				printf ("\rCompute time: %d ms                                                            \n", 
-					CTime::getLocalTime ()-time);
-
 				// Build the zone
 				zone.build (zone.getZoneId(), patchs, borderVertices);
+
+				// Count memory
+				uint shadowMem=0;
+				for (patch=0; patch<patchs.size(); patch++)
+				{
+					const CPatch *pPatch=((const CZone&)zone).getPatch ((sint)patch);
+					shadowMem+=pPatch->CompressedLumels.size();
+				}
+
+				// Compute time
+				printf ("\rCompute time: %d ms, uncompressed lumels: %d %%, shadow mem used: %d bytes                           \r", 
+					(uint)(CTime::getLocalTime ()-time), uncompressed*100/(compressed+uncompressed), shadowMem);
 
 				// Save the zone
 				COFile outputFile;

@@ -82,8 +82,7 @@ public:
 typedef list<_Edge> edgelist;
 
 extern int CALLBACK CompareFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort);
-//extern int _LoadBitmap(const char *path,LPBITMAPINFO BitmapInfo,void **Bits);//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
-extern int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMISC::CBGRA>&Tampon, bool bMulAlpha, bool bInvertAlpha);//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
+extern int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo, std::vector<NLMISC::CBGRA>&Tampon, std::vector<NLMISC::CBGRA>* Alpha, int rot);
 
 
 

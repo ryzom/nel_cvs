@@ -58,6 +58,7 @@ protected:
 	virtual void OnCancel();
 	virtual void OnSave();
 	virtual void OnSaveAs();
+	afx_msg void OnPath();
 	//}}AFX_MSG
 	void Save(const char* path);
 

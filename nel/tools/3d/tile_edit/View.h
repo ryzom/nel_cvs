@@ -47,33 +47,24 @@ class TileInfo
 public:
 	//constructeurs
 	TileInfo();
-	//~TileInfo();
-	//TileInfo(const TileInfo&);
 
-	bool Load (int index, bool bMulAlpha, bool bInvertAlpha);
+	bool Load (int index, std::vector<NLMISC::CBGRA>* Alpha);
 	void Delete ();
-	//operateurs
-	//int operator < (const TileInfo &) const;
 
 	//data
 	BITMAPINFO BmpInfo; 
 	std::vector<NLMISC::CBGRA> Bits;
-	BITMAPINFO bumpBmpInfo; 
-	std::vector<NLMISC::CBGRA> bumpBits;
+	BITMAPINFO alphaBmpInfo; 
+	std::vector<NLMISC::CBGRA> alphaBits;
 	BITMAPINFO nightBmpInfo; 
 	std::vector<NLMISC::CBGRA> nightBits;
-	/*std::string path; 
-	std::string bumpPath; 
-	std::string nightPath;*/
 
-	const std::string& getFileName (NL3D::CTile::TBitmap type, int index);
+	const std::string& getRelativeFileName (NL3D::CTile::TBitmap type, int index);
 
 	//int number; //son index dans la liste (different de son id selon les tris !)
-	//__int64 groupFlag;
-	int loaded, nightLoaded, bumpLoaded; //tells if the tile was already loaded or not
-	int Selected; //tells if the tile is selected
-	int id; //numero du tile
-	//int h,b,g,d; //index dans la liste des bordures pour le haut, le bas, la gauche et la droite du tile
+	int loaded, nightLoaded, alphaLoaded;	//tells if the tile was already loaded or not
+	int Selected;							//tells if the tile is selected
+	int id;									//numero du tile
 };
 
 using namespace std;
@@ -94,7 +85,9 @@ public:
 
 	int setTile128 (int tile, const std::string& name, NL3D::CTile::TBitmap type);
 	int setTile256 (int tile, const std::string& name, NL3D::CTile::TBitmap type);
-	int setTileTransition (int tile, const std::string& name, NL3D::CTile::TBitmap type, bool bInvert);
+	int setTileTransition (int tile, const std::string& name, NL3D::CTile::TBitmap type);
+	int setTileTransitionAlpha (int tile, const std::string& name, int rot);
+	int setDisplacement (int tile, const std::string& name);
 
 	void removeTile128 (int index);
 	void removeTile256 (int index);
@@ -102,7 +95,7 @@ public:
 	void clearTile128 (int index, NL3D::CTile::TBitmap bitmap);
 	void clearTile256 (int index, NL3D::CTile::TBitmap bitmap);
 	void clearTransition (int index, NL3D::CTile::TBitmap bitmap);
-
+	void clearDisplacement (int index);
 	
 	void Reload(int first, int count, int n); //recharge en memoire une tranche de tiles
 	
@@ -111,37 +104,18 @@ public:
 	tilelist::iterator GetLast(int n);
 	tilelist::iterator Get(int i, int n);
 	int last_id;
-	int smAcces;
 
 public:
-	tilelist theList[3];
+	tilelist theList[4];
 #define theList128 theList[0]
 #define theList256 theList[1]
 #define theListTransition theList[2]
+#define theListDisplacement theList[3]
 	int _tileSet;
 };
 
-/*
-class _Edge //permet de stocker toutes les bordures des tiles
-{
-public:
-	_Edge();
-	~_Edge();
-	_Edge(const _Edge& edge);
-
-	int size;
-	char *line;
-
-	void CreateH(TileInfo *tile);
-	void CreateB(TileInfo *tile);
-	void CreateG(TileInfo *tile);
-	void CreateD(TileInfo *tile);
-	int operator==(const _Edge &ed) const;
-};
-
-typedef list<_Edge> edgelist;*/
-//extern int _LoadBitmap(const char *path,LPBITMAPINFO BitmapInfo,void **Bits);//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
-extern int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMISC::CBGRA>&Tampon, bool bMulAlpha, bool bInvertAlpha);//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
+//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
+extern int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMISC::CBGRA>& Tampon,std::vector<NLMISC::CBGRA>* Alpha, int rot);
 
 class CTView : public CStatic
 {
@@ -153,12 +127,10 @@ public:
 	void Init(int _land, int n);
 	void Delete();
 	void DrawTile(tilelist::iterator i,CDC *pDC,int clear,int n);
-//	void UpdateBuffer(); //permet de charger et d'effacer tous les buffers inutiles des tiles invisible
 	int  LoadInListCtrl(tilelist::iterator iFirst,tilelist::iterator iLast);
 	void DeleteTile(tilelist::iterator p);
 	int  IsSelected(int i);
 	void RemoveSelection(int n);
-	//void CheckTile(TileInfo *theTile); //check si le tile est "tilable" avec un autre et initialise h,b,g,d dans TileInfo
 	void ShadeRect( CDC *pDC, CRect& rect ); //permet d'afficher un bitmap selectionne a la "windows style"
 	void InsertItemInCtrlList(tilelist::iterator iFirst,tilelist::iterator iLast);
 	void GetVisibility(int &First,int &Last, int n);

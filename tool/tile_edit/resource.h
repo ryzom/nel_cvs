@@ -8,12 +8,15 @@
 #define ID_SELECT                       3
 #define IDOKGROUP                       3
 #define ID_ADD                          3
+#define ID_ROT1                         3
 #define IDS_PARAMS                      4
 #define IDCANCELGROUP                   4
 #define ID_SAVE                         4
 #define ID_DEL                          4
+#define ID_ROT2                         4
 #define IDS_SPIN                        5
 #define ID_SAVE_AS                      5
+#define ID_ROT3                         5
 #define IDD_PANEL                       101
 #define IDD_TERRITOIRE                  101
 #define IDC_CURSOR1                     104
@@ -26,6 +29,11 @@
 #define IDD_VIEWPOPUP                   124
 #define IDD_COLUMN                      125
 #define IDD_EDIT_LIST                   126
+#define IDD_DIALOG1                     127
+#define IDB_BITMAP2                     128
+#define IDB_BITMAP3                     129
+#define IDB_BITMAP4                     130
+#define IDB_BITMAP5                     131
 #define IDC_CLOSEBUTTON                 1000
 #define IDC_DOSTUFF                     1000
 #define IDC_BUTTON_GO                   1005
@@ -46,6 +54,7 @@
 #define IDC_JOUR                        1020
 #define IDC_NUIT                        1021
 #define IDC_BUMP                        1022
+#define IDC_ALPHA                       1022
 #define IDC_ZOOM1                       1023
 #define IDC_ZOOM2                       1024
 #define IDC_ZOOM3                       1025
@@ -54,6 +63,7 @@
 #define IDC_SORTGROUP                   1027
 #define IDC_ZOOM5                       1027
 #define IDC_ZOOM6                       1028
+#define IDC_DISPLACE                    1029
 #define IDC_OK                          1048
 #define IDC_CANCEL                      1049
 #define IDC_INFONUM                     1050
@@ -76,6 +86,12 @@
 #define IDC_AND                         1078
 #define IDC_LIST1                       1079
 #define IDC_COMBO1                      1080
+#define ID_ROT0                         1081
+#define IDC_SUBGROUP0                   1082
+#define IDC_SUBGROUP1                   1083
+#define IDC_SUBGROUP2                   1084
+#define IDC_PATH                        1084
+#define IDC_SUBGROUP3                   1085
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -87,9 +103,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        127
+#define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         40007
-#define _APS_NEXT_CONTROL_VALUE         1081
+#define _APS_NEXT_CONTROL_VALUE         1085
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

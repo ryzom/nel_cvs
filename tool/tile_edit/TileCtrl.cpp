@@ -36,40 +36,6 @@ int CALLBACK CompareFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort)
 }
 
 
-//Attention : windows veut que le buffer image commence du bas vers le haut
-/*int _LoadBitmap(const char *path,LPBITMAPINFO BitmapInfo,void **Bits)//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
-{
-	int pathsize = strlen(path);
-	if (pathsize<=3) return 0; //le fichier ne contient pas d'extension
-	FILE *ptr = fopen(path,"rb");
-	if (!ptr) return 0;
-	if (!strcmp(path+pathsize-3,"bmp")) //bmp ...
-	{
-		BITMAPFILEHEADER header; 	//TODO : gerer les cas d'erreur
-		fread(&header,1,sizeof(BITMAPFILEHEADER),ptr);
-		fread(BitmapInfo,1,sizeof(BITMAPINFOHEADER),ptr);
-		if (BitmapInfo->bmiHeader.biBitCount!=TILE_BPP) return 0; //on ne lit que les 24 bits
-		int size=(BitmapInfo->bmiHeader.biHeight*BitmapInfo->bmiHeader.biHeight*BitmapInfo->bmiHeader.biBitCount)>>3;
-		BitmapInfo->bmiHeader.biCompression=BI_RGB;
-		BitmapInfo->bmiHeader.biSizeImage=size;
-		BitmapInfo->bmiHeader.biXPelsPerMeter=1;
-		BitmapInfo->bmiHeader.biYPelsPerMeter=1;
-		BitmapInfo->bmiHeader.biClrImportant=0;
-		BitmapInfo->bmiHeader.biClrUsed=0;
-		*Bits=(void*) new char[size];
-		fread(*Bits,1,size,ptr);
-	}
-	else 
-	{
-		fclose(ptr);
-		return 0;
-	}
-	fclose(ptr);
-	return 1;
-}
-*/
-
-
 
 
 
@@ -216,7 +182,7 @@ void TileList::DeleteAll()
 char buffer_bidon[SIZE_BIG*SIZE_BIG*3];
 void TileList::Reload(CDC *pDC,tilelist::iterator iFirst,int n) //recharge en memoire une tranche de tiles
 {
-	tilelist::iterator p = iFirst;
+	/*tilelist::iterator p = iFirst;
 	for (int i=0;i<n;i++)
 	{
 		if (!(*p)->Loaded && _LoadBitmap((*p)->path,&(*p)->BmpInfo,&(*p)->Bits))
@@ -225,7 +191,7 @@ void TileList::Reload(CDC *pDC,tilelist::iterator iFirst,int n) //recharge en me
 			(*p)->DibSection = CreateDIBSection(pDC->m_hDC,&(*p)->BmpInfo,DIB_RGB_COLORS,(void**)&buffer_bidon,0,0);
 		}
 		p++;
-	}
+	}*/
 }
 
 
@@ -263,13 +229,13 @@ void TileCtrl::Init()
 	SetImageList(pImList,0);
 	char name[256];
 	char *defautpath = ((SelectionTerritoire*)GetParent()->GetParent())->DefautPath.GetBuffer(256);
-	sprintf(name,"%s%s",defautpath,"croix.bmp");
+	/*sprintf(name,"%s%s",defautpath,"croix.bmp");
 	if (_LoadBitmap(name,&TileCroix.BmpInfo,&TileCroix.Bits,false,false))
 	{
 		int size=TileCroix.BmpInfo.bmiHeader.biHeight*TileCroix.BmpInfo.bmiHeader.biWidth*TileCroix.BmpInfo.bmiHeader.biBitCount/8;
 		char *temp = new char[size];
 		TileCroix.DibSection = CreateDIBSection(GetDC()->m_hDC,&TileCroix.BmpInfo,DIB_RGB_COLORS,(void**)&temp,0,0);
-	}
+	}*/
 	count_=1;
 }
 
@@ -486,7 +452,6 @@ int TileCtrl::IsSelected(int i)
 
 void TileCtrl::DrawTile(int i,CDC *pDC)
 {
-//	PROFILE_BEGIN("DrawTile",1);
 	TileInfo *bmp;// = (TileInfo*)this->GetItemData(i);	
 	tilelist::iterator p=InfoList.theList.begin();
 	for (int k=0;k<i && p!=InfoList.theList.end();k++) p++;
@@ -524,18 +489,7 @@ void TileCtrl::DrawTile(int i,CDC *pDC)
 		{
 			sprintf(Name,"%d",bmp->id);
 		}
-		CBrush brush;
-/*		pDC->FillRect(&rect_txt,&brush);
-		pDC->DrawText(Name,strlen(Name),&rect_txt,DT_CENTER | DT_SINGLELINE);*/
-
-		if (IsSelected(i))
-		{
-		//	ShadeRect(pDC,rect_pic);
-		//	ShadeRect(pDC,rect_txt);
-		}
-		::ReleaseDC (*this, pDC->m_hDC);
 	}
-//	PROFILE_END(1);
 }
 
 void TileCtrl::ShadeRect( CDC *pDC, CRect& rect )
@@ -598,10 +552,11 @@ void TileCtrl::OnPaint()
 		SetImageList(pImList,0);
 	}
 	CFont font;
-	font.CreateFont(0,0,0,0,FW_THIN,false,false,false,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,DEFAULT_PITCH,NULL);
-	dc.SelectObject(&font);
+	font.CreateFont(-10,0,0,0,FW_THIN,false,false,false,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FIXED_PITCH,NULL);
+	CFont* oldFont=dc.SelectObject(&font);
 	for (int i=iFV;i<=iLV;i++) DrawTile(i,&dc);
 	::ReleaseDC (*this, dc);
+	dc.SelectObject(oldFont);
 	// Do not call CListCtrl::OnPaint() for painting messages
 }
 
@@ -749,13 +704,7 @@ void TileCtrl::OnRButtonDown(UINT nFlags, CPoint point)
 	{
 		popup.AppendMenu(GetSelectedCount()==1 ? MF_STRING : MF_STRING | MF_GRAYED,0,"Remplacer...");
 		popup.AppendMenu(GetSelectedCount()>0 ? MF_STRING : MF_STRING | MF_GRAYED,1,"Supprimer");
-		//popup.AppendMenu(GetSelectedCount()==1 ? MF_STRING : MF_STRING | MF_GRAYED,2,"Voir les tiles");
 		popup.AppendMenu(MF_STRING,3,"Inserer...");
-	}
-	else
-	{
-		//popup.AppendMenu(GetSelectedCount()==1 ? MF_STRING : MF_STRING | MF_GRAYED,2,"Voir les tiles");
-		//popup.AppendMenu(MF_STRING,4,"Revenir au mode normal");
 	}
 	popup.TrackPopupMenu(TPM_LEFTALIGN,MousePos.x+wndpos.left,MousePos.y+wndpos.top,GetParent(),NULL);
 	CListCtrl::OnRButtonDown(nFlags, point);
@@ -787,6 +736,5 @@ void TileCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 void TileCtrl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar) 
 {
 	// TODO: Add your message handler code here and/or call default
-//	UpdateBuffer();
 	CListCtrl::OnVScroll(nSBCode, nPos, pScrollBar);
 }

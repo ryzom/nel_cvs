@@ -48,6 +48,8 @@ public:
 	CPoint OriginalPos;
 	int land;
 	void OnDestroy();
+	void UpdateFlags ();
+	void Flags (int flagNumber, bool value);
 
 //	listgroup theListGroup;
 
@@ -61,6 +63,10 @@ public:
 	CButton	m_rb_zoom1;
 	CButton	m_rb_num;
 	CButton	m_rb_jour;
+	int		SubGroup0;
+	int		SubGroup1;
+	int		SubGroup2;
+	int		SubGroup3;
 	//}}AFX_DATA
 
 
@@ -79,7 +85,7 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(Browse)
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnBump();
+	afx_msg void OnAlpha();
 	afx_msg void OnChangeVariety();
 	afx_msg void OnJour();
 	afx_msg void OnNuit();
@@ -90,6 +96,10 @@ protected:
 	afx_msg void OnSelchangeListtype();
 	afx_msg void OnUpdateTiles();
 	afx_msg void OnBatchLoad ();
+	afx_msg void OnSubgroup0();
+	afx_msg void OnSubgroup1();
+	afx_msg void OnSubgroup2();
+	afx_msg void OnSubgroup3();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

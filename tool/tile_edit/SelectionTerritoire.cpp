@@ -11,6 +11,7 @@
 #include "nel/3d/tile_bank.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/file.h"
+#include <shlobj.h>
 
 using namespace NL3D;
 using namespace NLMISC;
@@ -26,38 +27,7 @@ void Start(void) //main function
 
 	SelectionTerritoire Sel;
 
-	/*HKEY regkey; char mainfile[256];
-	mainfile[0] = 0;
-	if (RegOpenKey(HKEY_CURRENT_USER,REGKEY_TILEDIT,&regkey)==ERROR_SUCCESS)
-	{
-		unsigned long value;
-		if (RegQueryValueEx(regkey,REGKEY_MAINFILE,0,&value,(unsigned char*)mainfile,&value)==ERROR_SUCCESS)
-		{		
-			char ext[256],drive[256],dir[256],name[256];
-			_splitpath(mainfile,drive,dir,name,ext);
-			Sel.MainFileName = name;
-			Sel.MainFileName += ext;
-			Sel.DefautPath = drive;
-			Sel.DefautPath += dir;
-			Sel.MainFileOk = 1;		
-		}
-		else 
-		{
-			RegCloseKey(regkey);
-			Sel.MainFileOk = 0;
-		}
-	}
-	else Sel.MainFileOk = 0;*/
-
 	Sel.DoModal();
-
-	//pb avec CFile.Open : 'veut po me charger filename ...	
-	/*if (RegOpenKey(HKEY_CURRENT_USER,REGKEY_TILEDIT,&regkey)==ERROR_SUCCESS)
-	{
-		CString complet = Sel.DefautPath + Sel.MainFileName;
-		RegSetValueEx(regkey,REGKEY_MAINFILE,0,REG_SZ,(unsigned char*)(LPCSTR)complet,complet.GetLength()+1);
-		RegCloseKey(regkey);
-	}*/
 }	
 
 /////////////////////////////////////////////////////////////////////////////
@@ -96,6 +66,7 @@ BEGIN_MESSAGE_MAP(SelectionTerritoire, CDialog)
 	ON_BN_CLICKED(ID_SELECT, OnSelect)
 	ON_BN_CLICKED(ID_SAVE, OnSave)
 	ON_BN_CLICKED(ID_SAVE_AS, OnSaveAs)
+	ON_BN_CLICKED(IDC_PATH, OnPath)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -293,35 +264,6 @@ void SelectionTerritoire::OnEditTileSet()
 		if (plop.DoModal()==IDOK)
 		{
 			tileBank=tileBank2;
-			// Resize land
-			/*int nsize=plop.m_ctrl.InfoList.GetSize();
-			CTileBankLand *pLand=tileBank.getLand(index);
-			pLand->resizeTile (nsize);
-
-			// Recopy data
-			for (int i=0; i<nsize; i++)
-			{
-				CTileBankTile* pTile=pLand->getTile (i);
-				tilelist::iterator itTile=plop.m_ctrl.InfoList.Get(i);
-				pTile->removeTypeFlags (0xffffffff);
-				pTile->addTypeFlags ((uint32)itTile->groupFlag);
-				pTile->setTransition (CTileBankTile::north, itTile->h);
-				pTile->setTransition (CTileBankTile::south, itTile->b);
-				pTile->setTransition (CTileBankTile::east, itTile->d);
-				pTile->setTransition (CTileBankTile::west, itTile->g);
-				if (itTile->path)
-					pTile->setFileName (CTileBankTile::diffuse, itTile->path);
-				else
-					pTile->setFileName (CTileBankTile::diffuse, "");
-				if (itTile->nightPath)
-					pTile->setFileName (CTileBankTile::additive, itTile->nightPath);
-				else
-					pTile->setFileName (CTileBankTile::additive, "");
-				if (itTile->bumpPath)
-					pTile->setFileName (CTileBankTile::bump, itTile->bumpPath);
-				else
-					pTile->setFileName (CTileBankTile::bump, "");
-			}*/
 		}
 	}
 	else
@@ -460,6 +402,9 @@ void SelectionTerritoire::OnSelect()
 			button->EnableWindow(true);
 			button = (CButton*)GetDlgItem(ID_SAVE);
 			button->EnableWindow(true);
+
+			// Change the bouton text path
+			GetDlgItem (IDC_PATH)->SetWindowText (tileBank.getAbsPath().c_str());
 		}
 	}
 }
@@ -469,32 +414,6 @@ LRESULT SelectionTerritoire::WindowProc(UINT message, WPARAM wParam, LPARAM lPar
 	// TODO: Add your specialized code here and/or call the base class
 	if (message==WM_INITDIALOG)
 	{
-		/*if (!MainFileOk)
-		{
-			CButton *button = (CButton*)GetDlgItem(IDC_ADD_TERRITOIRE);
-			//button->EnableWindow(false);
-			button = (CButton*)GetDlgItem(IDC_REMOVE_TERRITOIRE);
-			//button->EnableWindow(false);
-			button = (CButton*)GetDlgItem(IDC_EDIT_TERRITOIRE);
-			//button->EnableWindow(false);
-		}
-		else
-		{
-			CString str = DefautPath + MainFileName;
-			char *path = str.GetBuffer(256);
-			FILE *ptr = fopen(path,"rt");
-			char text[100];
-			CListBox *list = (CListBox*)GetDlgItem(IDC_LIST_TERRITOIRE);
-			if (ptr && list)
-			{				
-				int i=0;
-				while (!feof(ptr))
-				{
-					fscanf(ptr,"%s\n",text);
-					list->InsertString(i++,text);
-				}
-			}
-		}*/
 	}
 
 	return CDialog::WindowProc(message, wParam, lParam);
@@ -519,38 +438,12 @@ void SelectionTerritoire::OnSave()
 void SelectionTerritoire::Save(const char* path)
 {
 	// TODO: Add extra validation here
-	//if (MainFileOk) //le fichier main est correct : on enregistre
 	{
 		COFile stream;
 		if (stream.open ((const char*)path))
 		{
 			tileBank.serial (stream);
 		}
-
-		/*FILE * ptr = fopen(path,"wt");
-		if (ptr)
-		{
-			CListBox *list = (CListBox*)GetDlgItem(IDC_LIST_TERRITOIRE);
-			char text[100];
-			for (int i=0;i<list->GetCount();i++)
-			{
-				list->GetText(i,text);
-				fprintf(ptr,"%s\n",text);
-			}
-			fclose(ptr);
-			CButton *button = (CButton*)GetDlgItem(ID_SAVE);
-			button->EnableWindow(true);
-
-			char drive[256],name[256],path2[256],ext[256];
-			_splitpath(path,drive,path2,name,ext);
-			MainFileName = name;
-			MainFileName += ext;
-			DefautPath = drive;
-			DefautPath += path2;
-
-			return;
-		}
-		MessageBox("Impossible de sauvegarder","Erreur");*/
 	}
 }
 
@@ -572,6 +465,14 @@ void SelectionTerritoire::OnSaveAs()
 		button->EnableWindow(true);
 		button = (CButton*)GetDlgItem(ID_SAVE);
 		button->EnableWindow(true);
+
+		// Create a file name
+		char drive[256],name[256],path[256],ext[256];
+		_splitpath(sFile.GetPathName(), drive, path, name, ext);
+		MainFileName = name;
+		MainFileName += ext;
+		DefautPath = drive;
+		DefautPath += path;
 	}
 }
 
@@ -581,5 +482,176 @@ void SelectionTerritoire::OnCancel()
 	if (::MessageBox (NULL, "Are you sure you want to quit?", "Quit", MB_OK|MB_ICONQUESTION|MB_YESNO)==IDYES)
 	{
 		CDialog::OnCancel();
+	}
+}
+
+bool CheckPath (const std::string& path, const char* absolutePathToRemplace)
+{
+	// Look for absolute path in path
+	if (strnicmp (path.c_str(), absolutePathToRemplace, strlen (absolutePathToRemplace))==0)
+		return true;
+	else
+		return false;
+}
+
+bool RemovePath (std::string& path, const char* absolutePathToRemplace)
+{
+	// Look for absolute path in path
+	if (strnicmp (path.c_str(), absolutePathToRemplace, strlen (absolutePathToRemplace))==0)
+	{
+		// New path
+		std::string toto=path;
+		path=toto.c_str()+strlen (absolutePathToRemplace);
+		return true;
+	}
+	else
+		return false;
+}
+
+void SelectionTerritoire::OnPath() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Select a directory.
+	char path[MAX_PATH];
+
+	// Build the struct
+	BROWSEINFO info;
+	memset (&info, 0, sizeof (BROWSEINFO));
+	info.lpszTitle="Select the absolute base path of the bank";
+	info.ulFlags=BIF_RETURNONLYFSDIRS;
+
+	// Select the path
+	LPITEMIDLIST list;
+	if (list=SHBrowseForFolder (&info))
+	{
+		// Convert item into path string
+		BOOL bRet=SHGetPathFromIDList(list, path);
+		nlassert (bRet);
+
+		// Add a final back slash
+		if (strcmp (path, "")!=0)
+		{
+			// Add a '\' at the end
+			if (path[strlen (path)-1]!='\\')
+				strcat (path, "\\");
+		}
+
+		// Last check
+		char msg[512];
+		sprintf (msg, "Do you really want to set %s as base path of the bank ?", path);
+		if (MessageBox (msg, "TileEdit", MB_YESNO|MB_ICONQUESTION)==IDYES)
+		{
+			// Set as default path..
+
+			// Old path
+			const char* oldPath=tileBank.getAbsPath ().c_str();
+
+			// Path are good
+			bool goodPath=true;
+
+			// If no absolute path, must check before use it
+			if ((*oldPath)==0)
+			{
+				// Compute xref
+				tileBank.computeXRef();
+
+				// For all tiles, check we can change the path
+				for (int tiles=0; tiles<tileBank.getTileCount(); tiles++)
+				{
+					// Get tile xref
+					int tileSet;
+					int number;
+					CTileBank::TTileType type;
+					tileBank.getTileXRef (tiles, tileSet, number, type);
+
+					// Is tile used ?
+					if (tileSet!=-1)
+					{
+						// 3 types of bitmaps
+						for (int type=CTile::diffuse; type<CTile::bitmapCount; type++)
+						{
+							// Bitmap string
+							const std::string& bitmapPath=tileBank.getTile(tiles)->getRelativeFileName ((CTile::TBitmap)type);
+
+							// not empty ?
+							if (bitmapPath!="")
+							{
+								// Check the path
+								if (CheckPath (bitmapPath, path)==false)
+								{
+									// Bad path
+									goodPath=false;
+
+									// Make a message
+									sprintf (msg, "Path %s can't be found in bitmap %s. Continue ?", path, bitmapPath.c_str());
+
+									// Message
+									if (MessageBox (msg, "TileEdit", MB_YESNO|MB_ICONQUESTION)==IDNO)
+										break;
+								}
+							}
+						}
+						if (type!=CTile::bitmapCount)
+							break;
+					}
+				}
+
+				// Good path ?
+				if (goodPath)
+				{
+					// Ok change the path
+
+					// For all tiles, check we can change the path
+					for (int tiles=0; tiles<tileBank.getTileCount(); tiles++)
+					{
+						// Get tile xref
+						int tileSet;
+						int number;
+						CTileBank::TTileType type;
+						tileBank.getTileXRef (tiles, tileSet, number, type);
+
+						// Is tile used ?
+						if (tileSet!=-1)
+						{
+							// 3 types of bitmaps
+							for (int type=CTile::diffuse; type<CTile::bitmapCount; type++)
+							{
+								// Bitmap string
+								std::string bitmapPath=tileBank.getTile(tiles)->getRelativeFileName ((CTile::TBitmap)type);
+
+								// not empty ?
+								if (bitmapPath!="")
+								{
+									// Check the path
+									bool res=RemovePath (bitmapPath, path);
+									nlassert (res);
+
+									// Set the bitmap
+									tileBank.getTile(tiles)->setFileName ((CTile::TBitmap)type, bitmapPath);
+								}
+							}
+						}	
+					}
+				}
+				else
+					// Info message
+					MessageBox ("Can't set the path.", "TileEdit", MB_OK|MB_ICONINFORMATION);
+			}
+
+
+			// Good path ?
+			if (goodPath)
+			{
+				// Change the abs path of the bank
+				tileBank.setAbsPath (path);
+
+				// Change the bouton text
+				GetDlgItem (IDC_PATH)->SetWindowText (path);
+			}
+		}
+
+		// Remove path from all tiles
+		//tileBank
 	}
 }

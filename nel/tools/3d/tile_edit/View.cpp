@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "View.h"
 #include "SelectionTerritoire.h"
+#include "select_rotation.h"
 #include "Browse.h"
 #include "popup.h"
 #include <direct.h>
@@ -38,10 +39,33 @@ CFont *normal_font = NULL;
 __int64 flagGroupSort = 0; int showNULL = 0;
 //ViewPopup *theViewPopup = 0;
 
+// Rotate a buffer
+void rotateBuffer (uint &Width, uint &Height, std::vector<NLMISC::CBGRA>& Tampon)
+{
+	// Make a copy
+	std::vector<NLMISC::CBGRA> copy=Tampon;
+
+	// Rotate
+	for (uint y=0; y<Width; y++)
+	{
+		// Line offset
+		uint tmp=y*Width;
+		for (uint x=0; x<Width; x++)
+		{
+			Tampon[y+(Width-x-1)*Height]=copy[x+tmp];
+		}
+	}
+
+	// New size
+	uint tmp=Width;
+	Width=Height;
+	Height=tmp;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // CTView
 //Attention : windows veut que le buffer image commence du bas vers le haut
-int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMISC::CBGRA>&Tampon, bool bMulAlpha, bool bInvertAlpha)//charge une image (bmp pour le moment, tga,png,jpg plus tard ?)
+int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo, std::vector<NLMISC::CBGRA>&Tampon, std::vector<NLMISC::CBGRA>* Alpha, int rot)
 {
 	//vector<NLMISC::CBGRA> Tampon;
 	uint Width;
@@ -63,14 +87,21 @@ int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMI
 		BitmapInfo->bmiColors->rgbRed=0;
 		BitmapInfo->bmiColors->rgbGreen=0;
 
-		if (bMulAlpha)
+		while (rot)
+		{
+			// Rotate the buffer
+			rotateBuffer (Width, Height, Tampon);
+			rot--;
+		}
+
+		if ((Alpha)&&(Alpha->size()==Tampon.size()))
 		{
 			// Pre mul RGB componates by Alpha one
 			int nPixelCount=(int)(Width*Height);
 			for (int p=0; p<nPixelCount; p++)
 			{
 				// Invert alpha ?
-				int alpha=bInvertAlpha?255-Tampon[p].A:Tampon[p].A;
+				int alpha=(*Alpha)[p].A;
 				Tampon[p].R=(uint8)(((int)Tampon[p].R*alpha)>>8);
 				Tampon[p].G=(uint8)(((int)Tampon[p].G*alpha)>>8);
 				Tampon[p].B=(uint8)(((int)Tampon[p].B*alpha)>>8);
@@ -81,35 +112,6 @@ int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMI
 	}
 	else
 		return 0;
-
-	/*int pathsize = strlen(path);
-	if (pathsize<=3) return 0; //le fichier ne contient pas d'extension
-	FILE *ptr = fopen(path,"rb");
-	if (!ptr) return 0;
-	if (!strcmp(path+pathsize-3,"bmp")) //bmp ...
-	{
-		BITMAPFILEHEADER header; 	//TODO : gerer les cas d'erreur
-		fread(&header,1,sizeof(BITMAPFILEHEADER),ptr);
-		fread(BitmapInfo,1,sizeof(BITMAPINFOHEADER),ptr);
-		if (BitmapInfo->bmiHeader.biBitCount!=TILE_BPP) return 0; //on ne lit que les 24 bits
-		int size=(BitmapInfo->bmiHeader.biHeight*BitmapInfo->bmiHeader.biHeight*BitmapInfo->bmiHeader.biBitCount)>>3;
-		BitmapInfo->bmiHeader.biCompression=BI_RGB;
-		BitmapInfo->bmiHeader.biSizeImage=size;
-		BitmapInfo->bmiHeader.biXPelsPerMeter=1;
-		BitmapInfo->bmiHeader.biYPelsPerMeter=1;
-		BitmapInfo->bmiHeader.biClrImportant=0;
-		BitmapInfo->bmiHeader.biClrUsed=0;
-		if (*Bits) delete *Bits;
-		*Bits=(void*) new char[size];
-		fread(*Bits,1,size,ptr);
-	}
-	else 
-	{
-		fclose(ptr);
-		return 0;
-	}
-	fclose(ptr);
-	return 1;*/
 }
 
 
@@ -121,180 +123,10 @@ int _LoadBitmap(const std::string& path,LPBITMAPINFO BitmapInfo,std::vector<NLMI
 TileInfo::TileInfo()
 {
 	nightLoaded = 0;
-	bumpLoaded = 0;
+	alphaLoaded = 0;
 	loaded = 0;
-	//=h=g=b=d=0; 
-	//Bits = NULL; 
-	//number = 0;
 	Selected = 0; 
-	//path = 0; 
-	//groupFlag = 0; 
-	//bumpPath = 0; 
-	//nightPath = 0;
-	//bumpBits  = 0;
-	//nightBits = 0;
 }
-
-/*TileInfo::TileInfo(const TileInfo &a)
-{
-	*this = a;
-	if (a.Bits)
-	{
-		Bits = (char*)new char[a.BmpInfo.bmiHeader.biSizeImage];
-		memcpy(Bits,a.Bits,a.BmpInfo.bmiHeader.biSizeImage);
-	}
-	if (a.bumpBits) 
-	{
-		bumpBits = (char*)new char[a.BmpInfo.bmiHeader.biSizeImage];
-		memcpy(bumpBits,a.bumpBits,a.BmpInfo.bmiHeader.biSizeImage);
-	}
-	if (a.nightBits) 
-	{
-		nightBits = (char*)new char[a.BmpInfo.bmiHeader.biSizeImage];
-		memcpy(nightBits,a.nightBits,a.BmpInfo.bmiHeader.biSizeImage);
-	}
-	if (a.path) 
-	{
-		path = new char[strlen(a.path)+1];
-		strcpy(path,a.path);
-	}
-	if (a.bumpPath)
-	{
-		bumpPath = new char[strlen(a.bumpPath)+1];
-		strcpy(bumpPath,a.bumpPath);
-	}
-	if (a.nightPath)
-	{
-		nightPath = new char[strlen(a.nightPath)+1];
-		strcpy(nightPath,a.nightPath);
-	}
-}*/
-
-/*TileInfo::~TileInfo()
-{
-	if (Bits) 
-	{
-		delete Bits;
-	}
-	if (nightBits) 
-	{
-		delete nightBits;
-	}
-	if (bumpBits) 
-	{
-		delete bumpBits;
-	}
-	if (path) 
-	{
-		delete path;
-	}
-	if (nightPath) 
-	{
-		delete nightPath;
-	}
-	if (bumpPath) 
-	{
-		delete bumpPath;
-	}
-}*/
-
-/*int TileInfo::operator < (const TileInfo &a) const
-{
-	switch(SortTile)
-	{
-	case 0:
-		return (id<a.id);
-	case 1:
-		return (groupFlag<a.groupFlag);
-	}
-	return 1;
-}*/
-
-
-
-
-
-
-//Edge
-/*_Edge::_Edge()
-{
-	line = 0;
-}
-
-_Edge::~_Edge()
-{
-	if (line) delete line;
-}
-
-_Edge::_Edge(const _Edge& edge)
-{
-	line = new char[edge.size*3];
-	memcpy(line,edge.line,edge.size*3);
-	size = edge.size;
-}
-
-int _Edge::operator == (const _Edge & ed) const
-{
-	if (ed.size!=size) return 0;
-	for (int i=0;i<size*3;i++)
-	{
-		if (ed.line[i]!=line[i]) return 0;
-	}
-	return 1;
-}
-
-void _Edge::CreateH(TileInfo *tile)
-{
-	size = tile->BmpInfo.bmiHeader.biWidth-2; //on n'inclut pas les coins dans les bordures
-	line = new char[3*size];
-	for (int i=0;i<size;i++)
-	{
-		line[i*3]=((char*)tile->Bits)[(i+1)*3+(tile->BmpInfo.bmiHeader.biWidth)*(tile->BmpInfo.bmiHeader.biHeight-1)*3];
-		line[i*3+1]=((char*)tile->Bits)[(i+1)*3+1+(tile->BmpInfo.bmiHeader.biWidth)*(tile->BmpInfo.bmiHeader.biHeight-1)*3];
-		line[i*3+2]=((char*)tile->Bits)[(i+1)*3+2+(tile->BmpInfo.bmiHeader.biWidth)*(tile->BmpInfo.bmiHeader.biHeight-1)*3];
-	}
-}
-
-void _Edge::CreateB(TileInfo *tile)
-{
-	size = tile->BmpInfo.bmiHeader.biWidth-2; //on n'inclut pas les coins dans les bordures
-	line = new char[3*size];
-	for (int i=0;i<size;i++)
-	{
-		line[i*3]=((char*)tile->Bits)[(i+1)*3];
-		line[i*3+1]=((char*)tile->Bits)[(i+1)*3+1];
-		line[i*3+2]=((char*)tile->Bits)[(i+1)*3+2];
-	}
-}
-
-void _Edge::CreateG(TileInfo *tile)
-{
-	size = tile->BmpInfo.bmiHeader.biHeight-2; //on n'inclut pas les coins dans les bordures
-	line = new char[3*size];
-	for (int i=0;i<size;i++)
-	{
-		line[i*3]=((char*)tile->Bits)[(i+1)*3*tile->BmpInfo.bmiHeader.biWidth];
-		line[i*3+1]=((char*)tile->Bits)[(i+1)*3*tile->BmpInfo.bmiHeader.biWidth+1];
-		line[i*3+2]=((char*)tile->Bits)[(i+1)*3*tile->BmpInfo.bmiHeader.biWidth+2];
-	}
-}
-
-void _Edge::CreateD(TileInfo *tile)
-{
-	size = tile->BmpInfo.bmiHeader.biHeight-2; //on n'inclut pas les coins dans les bordures
-	line = new char[3*size];
-	for (int i=0;i<size;i++)
-	{
-		line[i*3]=((char*)tile->Bits)[(i+1)*3*tile->BmpInfo.bmiHeader.biWidth+(tile->BmpInfo.bmiHeader.biWidth-1)*3];
-		line[i*3+1]=((char*)tile->Bits)[(i+1)*3*tile->BmpInfo.bmiHeader.biWidth+1+(tile->BmpInfo.bmiHeader.biWidth-1)*3];
-		line[i*3+2]=((char*)tile->Bits)[(i+1)*3*tile->BmpInfo.bmiHeader.biWidth+2+(tile->BmpInfo.bmiHeader.biWidth-1)*3];
-	}
-}*/
-
-
-
-
-
 
 
 
@@ -302,64 +134,31 @@ void _Edge::CreateD(TileInfo *tile)
 TileList::TileList()
 {
 	last_id = 0; 
-	smAcces = 0;
 	_tileSet = -1;
 
-	for (int i=0; i<CTileSet::count; i++)
+	// Add 48 transitions
+	int i;
+	for (i=0; i<CTileSet::count; i++)
 	{
 		TileInfo info;
 		info.id = i;
-		/*info.path=NULL;
-		info.nightPath=NULL;
-		info.bumpPath=NULL;*/
 	
 		theListTransition.push_back (info);
 	}
 
-	//oldFlag = -1;
+	// Add 16 displacements
+	for (i=0; i<CTileSet::CountDisplace; i++)
+	{
+		TileInfo info;
+		info.id = i;
+	
+		theListDisplacement.push_back (info);
+	}
 }
 
-/*int TileList::Add(const char *path,const char *pathNight,const char *pathBump, int hh, int bb, int gg, int dd, unsigned int flags)
-{
-	while (smAcces) {}
-	smAcces = 1;
-	TileInfo info;
-	info.id = theList.size();
-	info.number = theList.size();
-	info.groupFlag = flags; //flagGroupSort;
-	info.path=NULL;
-	info.nightPath=NULL;
-	info.bumpPath=NULL;
-	info.h=hh;
-	info.b=bb;
-	info.g=gg;
-	info.d=dd;
-	if (path)
-	{
-		info.path = new char[strlen(path)+1];
-		strcpy( info.path, path);
-	}
-	if (pathNight)
-	{
-		info.nightPath = new char[strlen(pathNight)+1];
-		strcpy( info.nightPath, pathNight);
-	}
-	if (pathBump)
-	{
-		info.bumpPath = new char[strlen(pathBump)+1];
-		strcpy( info.bumpPath, pathBump);
-	}
-	theList.insert(theList.end(),info);
-	//if (i==NULL) i=theList.begin();
-	//else i++;
-	smAcces = 0;
-	return 1;
-}*/
 
 int TileList::addTile128 ()
 {
-	while (smAcces) {}
-	smAcces = 1;
 
 	int index;
 	tileBank2.getTileSet (_tileSet)->addTile128 (index, tileBank2);
@@ -367,218 +166,317 @@ int TileList::addTile128 ()
 
 	TileInfo info;
 	info.id = index;
-	/*info.path=NULL;
-	info.nightPath=NULL;
-	info.bumpPath=NULL;
-	info.path=NULL;*/
 	theList128.push_back (info);
 
-	smAcces = 0;
 	return index;
 }
 
 int TileList::addTile256 ()
 {
-	while (smAcces) {} 
-	smAcces = 1;
-	
 	int index;
 	tileBank2.getTileSet (_tileSet)->addTile256 (index, tileBank2);
 	nlassert (index==(sint)theList256.size());
 
 	TileInfo info;
 	info.id = index;
-	/*info.path=NULL;
-	info.nightPath=NULL;
-	info.bumpPath=NULL;
-	info.path=NULL;*/
 	theList256.push_back (info);
 
-	smAcces = 0;
 	return index;
 }
 
+bool RemovePath (std::string& path, const char* absolutePathToRemplace);
+
 int TileList::setTile128 (int tile, const std::string& name, NL3D::CTile::TBitmap type)
 {
-	while (smAcces) {}
-	smAcces = 1;
-
-	vector<NLMISC::CBGRA> tampon;
-	uint Width;
-	uint Height;
-	if (!PIC_LoadPic(name, tampon, Width, Height))
+	// Remove the absolute path from the path name
+	std::string troncated=name;
+	if (RemovePath (troncated, tileBank2.getAbsPath ().c_str()))
 	{
-		smAcces = 0;
-		MessageBox (NULL, name.c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
-		return 0;
-	}
-	else
-	{
-		CTileBorder border;
-		border.set (Width, Height, tampon);
-
-		CTileSet::TError error;
-		int pixel=-1;
-		int composante=4;
-		error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
-		if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128))
+		vector<NLMISC::CBGRA> tampon;
+		uint Width;
+		uint Height;
+		if (!PIC_LoadPic(tileBank2.getAbsPath ()+troncated, tampon, Width, Height))
 		{
-			smAcces = 0;
-			char sTmp[512];
-			static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
-			sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
-			MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+			MessageBox (NULL, (tileBank2.getAbsPath ()+troncated).c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
 			return 0;
 		}
 		else
 		{
-			if (error==CTileSet::addFirstA128128)
-				tileBank2.getTileSet(_tileSet)->setBorder (type, border);
-			tileBank2.getTileSet(_tileSet)->setTile128 (tile, name, type, tileBank2);
-			switch (type)
+			CTileBorder border;
+			border.set (Width, Height, tampon);
+
+			CTileSet::TError error;
+			int pixel=-1;
+			int composante=4;
+			error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
+			if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128))
 			{
-			case CTile::diffuse:
-				theList128[tile].loaded=0;
-				break;
-			case CTile::additive:
-				theList128[tile].nightLoaded=0;
-				break;
-			case CTile::bump:
-				theList128[tile].bumpLoaded=0;
-				break;
+				char sTmp[512];
+				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
+				sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
+				MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+				return 0;
 			}
-			theList128[tile].Load (tileBank2.getTileSet(_tileSet)->getTile128(tile), false, false);
+			else
+			{
+				if (error==CTileSet::addFirstA128128)
+					tileBank2.getTileSet(_tileSet)->setBorder (type, border);
+
+				tileBank2.getTileSet(_tileSet)->setTile128 (tile, troncated, type, tileBank2);
+				switch (type)
+				{
+				case CTile::diffuse:
+					theList128[tile].loaded=0;
+					break;
+				case CTile::additive:
+					theList128[tile].nightLoaded=0;
+					break;
+				case CTile::alpha:
+					theList128[tile].alphaLoaded=0;
+					break;
+				}
+				theList128[tile].Load (tileBank2.getTileSet(_tileSet)->getTile128(tile), NULL);
+			}
 		}
 	}
+	else
+	{
+		// Error: bitmap not in the absolute path..
+		char msg[512];
+		sprintf (msg, "The bitmap %s is not in the absolute path %s.", name.c_str(), tileBank2.getAbsPath ().c_str());
+		MessageBox (NULL, msg, "Load error", MB_OK|MB_ICONEXCLAMATION);
+	}
 
-	smAcces = 0;
 	return 1;
 }
 
 int TileList::setTile256 (int tile, const std::string& name, NL3D::CTile::TBitmap type)
 {
-	while (smAcces) {}
-	smAcces = 1;
-	vector<NLMISC::CBGRA> tampon;
-	uint Width;
-	uint Height;
-	if (!PIC_LoadPic(name, tampon, Width, Height))
+	// Remove the absolute path from the path name
+	std::string troncated=name;
+	if (RemovePath (troncated, tileBank2.getAbsPath ().c_str()))
 	{
-		smAcces = 0;
-		MessageBox (NULL, name.c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
-		return 0;
-	}
-	else
-	{
-		CTileBorder border;
-		border.set (Width, Height, tampon);
-		
-		CTileSet::TError error;
-		int pixel=-1;
-		int composante=4;
-		if ((error=tileBank2.getTileSet(_tileSet)->checkTile256 (type, border, pixel, composante))!=CTileSet::ok)
+		vector<NLMISC::CBGRA> tampon;
+		uint Width;
+		uint Height;
+		if (!PIC_LoadPic(tileBank2.getAbsPath ()+troncated, tampon, Width, Height))
 		{
-			smAcces = 0;
-			char sTmp[512];
-			static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
-			sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
-			MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+			MessageBox (NULL, (tileBank2.getAbsPath ()+troncated).c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
 			return 0;
 		}
 		else
 		{
-			tileBank2.getTileSet(_tileSet)->setTile256 (tile, name, type, tileBank2);
-					switch (type)
+			CTileBorder border;
+			border.set (Width, Height, tampon);
+			
+			CTileSet::TError error;
+			int pixel=-1;
+			int composante=4;
+			if ((error=tileBank2.getTileSet(_tileSet)->checkTile256 (type, border, pixel, composante))!=CTileSet::ok)
 			{
-			case CTile::diffuse:
-				theList256[tile].loaded=0;
-				break;
-			case CTile::additive:
-				theList256[tile].nightLoaded=0;
-				break;
-			case CTile::bump:
-				theList256[tile].bumpLoaded=0;
-				break;
+				char sTmp[512];
+				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
+				sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
+				MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+				return 0;
 			}
-			theList256[tile].Load (tileBank2.getTileSet(_tileSet)->getTile256(tile), false, false);
+			else
+			{
+				tileBank2.getTileSet(_tileSet)->setTile256 (tile, troncated, type, tileBank2);
+						switch (type)
+				{
+				case CTile::diffuse:
+					theList256[tile].loaded=0;
+					break;
+				case CTile::additive:
+					theList256[tile].nightLoaded=0;
+					break;
+				case CTile::alpha:
+					theList256[tile].alphaLoaded=0;
+					break;
+				}
+				theList256[tile].Load (tileBank2.getTileSet(_tileSet)->getTile256(tile), NULL);
+			}
 		}
 	}
+	else
+	{
+		// Error: bitmap not in the absolute path..
+		char msg[512];
+		sprintf (msg, "The bitmap %s is not in the absolute path %s.", name.c_str(), tileBank2.getAbsPath ().c_str());
+		MessageBox (NULL, msg, "Load error", MB_OK|MB_ICONEXCLAMATION);
+	}
 
-	smAcces = 0;
 	return 1;
 }
 
-int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile::TBitmap type, bool bInvert)
+int TileList::setTileTransition (int tile, const std::string& name, NL3D::CTile::TBitmap type)
 {
-	while (smAcces) {}
-	smAcces = 1;
+	// Remove the absolute path from the path name
+	std::string troncated=name;
+	if (RemovePath (troncated, tileBank2.getAbsPath ().c_str()))
+	{
+		// No alpha, use setTileTransitionAlpha
+		nlassert (CTile::alpha!=type);
 
-	vector<NLMISC::CBGRA> tampon;
-	uint Width;
-	uint Height;
-	if (!PIC_LoadPic(name, tampon, Width, Height))
-	{
-		smAcces = 0;
-		MessageBox (NULL, name.c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
-		return 0;
-	}
-	else
-	{
-		CTileBorder border;
-		border.set (Width, Height, tampon);
-		
-		CTileSet::TError error;
-		int indexError;
-		int pixel=-1;
-		int composante=4;
-		if ((error=tileBank2.getTileSet(_tileSet)->checkTileTransition ((CTileSet::TTransition)tile, type, border, indexError,
-			pixel, composante, bInvert))!=CTileSet::ok)
+		vector<NLMISC::CBGRA> tampon;
+		uint Width;
+		uint Height;
+		if (!PIC_LoadPic(tileBank2.getAbsPath ()+troncated, tampon, Width, Height))
 		{
-			smAcces = 0;
-			char sMsg[512];
-			if ((error==CTileSet::topInterfaceProblem)||(error==CTileSet::bottomInterfaceProblem)||(error==CTileSet::leftInterfaceProblem)
-				||(error==CTileSet::rightInterfaceProblem)||(error==CTileSet::topBottomNotTheSame)||(error==CTileSet::rightLeftNotTheSame)
-				||(error==CTileSet::topInterfaceProblem))
-			{
-				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
-				if (indexError!=-1)
-					sprintf (sMsg, "%s\nIncompatible with tile n°%d\nPixel: %d (%s)", CTileSet::getErrorMessage (error), indexError,
-						pixel, comp[composante]);
-				else
-					sprintf (sMsg, "%s\nIncompatible with the 128x128 tile\nPixel: %d (%s)", CTileSet::getErrorMessage (error),
-						pixel, comp[composante]);
-				}
-			else
-				sprintf (sMsg, "%s\nIncompatible filled tile", CTileSet::getErrorMessage (error));
-			if (bInvert)
-			{
-				char addInvert[256];
-				sprintf (addInvert, "\n\nWarning: This tile is added with inverted alpha!");
-				strcat (sMsg, addInvert);
-			}
-			MessageBox (NULL, sMsg, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+			MessageBox (NULL, (tileBank2.getAbsPath ()+troncated).c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
 			return 0;
 		}
 		else
 		{
-			tileBank2.getTileSet(_tileSet)->setTileTransition ((CTileSet::TTransition)tile, name, type, tileBank2, border, bInvert);
-			switch (type)
+			CTileBorder border;
+			border.set (Width, Height, tampon);
+			
+			CTileSet::TError error;
+			int pixel=-1;
+			int composante=4;
+			error=tileBank2.getTileSet(_tileSet)->checkTile128 (type, border, pixel, composante);
+			if ((error!=CTileSet::ok)&&(error!=CTileSet::addFirstA128128))
 			{
-			case CTile::diffuse:
-				theListTransition[tile].loaded=0;
-				break;
-			case CTile::additive:
-				theListTransition[tile].nightLoaded=0;
-				break;
-			case CTile::bump:
-				theListTransition[tile].bumpLoaded=0;
-				break;
+				char sTmp[512];
+				static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
+				sprintf (sTmp, "%s\nPixel: %d (%s)", CTileSet::getErrorMessage (error), pixel, comp[composante]);
+				MessageBox (NULL, sTmp, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+				return 0;
 			}
-			theListTransition[tile].Load (tileBank2.getTileSet(_tileSet)->getTransition(tile)->getTile(), true, bInvert);
+			else
+			{
+				if (error==CTileSet::addFirstA128128)
+					tileBank2.getTileSet(_tileSet)->setBorder (type, border);
+				tileBank2.getTileSet(_tileSet)->setTileTransition ((CTileSet::TTransition)tile, troncated, type, tileBank2, border);
+				switch (type)
+				{
+				case CTile::diffuse:
+					theListTransition[tile].loaded=0;
+					break;
+				case CTile::additive:
+					theListTransition[tile].nightLoaded=0;
+					break;
+				case CTile::alpha:
+					theListTransition[tile].alphaLoaded=0;
+					break;
+				}
+				theListTransition[tile].Load (tileBank2.getTileSet(_tileSet)->getTransition(tile)->getTile(), 
+					&theListTransition[tile].alphaBits);
+			}
 		}
 	}
+	else
+	{
+		// Error: bitmap not in the absolute path..
+		char msg[512];
+		sprintf (msg, "The bitmap %s is not in the absolute path %s.", name.c_str(), tileBank2.getAbsPath ().c_str());
+		MessageBox (NULL, msg, "Load error", MB_OK|MB_ICONEXCLAMATION);
+	}
 
-	smAcces = 0;
+	return 1;
+}
+
+int TileList::setDisplacement (int tile, const std::string& name)
+{
+	// Remove the absolute path from the path name
+	std::string troncated=name;
+	if (RemovePath (troncated, tileBank2.getAbsPath ().c_str()))
+	{
+		// change the file name of the displacement map
+		tileBank2.getTileSet(_tileSet)->setDisplacement ((CTileSet::TDisplacement)tile, troncated);
+
+		// not loaded
+		theListDisplacement[tile].loaded=0;
+
+		// load it
+		if (name!="")
+		{
+			if (!_LoadBitmap(tileBank2.getAbsPath() + name, &theListDisplacement[tile].BmpInfo, theListDisplacement[tile].Bits, NULL, 0))
+				MessageBox (NULL, (tileBank2.getAbsPath() + name).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
+			else
+				theListDisplacement[tile].loaded=1;
+		}
+	}
+	else
+	{
+		// Error: bitmap not in the absolute path..
+		char msg[512];
+		sprintf (msg, "The bitmap %s is not in the absolute path %s.", name.c_str(), tileBank2.getAbsPath ().c_str());
+		MessageBox (NULL, msg, "Load error", MB_OK|MB_ICONEXCLAMATION);
+	}
+
+	return 1;
+}
+
+int TileList::setTileTransitionAlpha (int tile, const std::string& name, int rot)
+{
+	// Remove the absolute path from the path name
+	std::string troncated=name;
+	if (RemovePath (troncated, tileBank2.getAbsPath ().c_str()))
+	{
+		vector<NLMISC::CBGRA> tampon;
+		uint Width;
+		uint Height;
+		if (!PIC_LoadPic(tileBank2.getAbsPath ()+troncated, tampon, Width, Height))
+		{
+			MessageBox (NULL, (tileBank2.getAbsPath ()+troncated).c_str(), "Can't load bitmap.", MB_OK|MB_ICONEXCLAMATION);
+			return 0;
+		}
+		else
+		{
+			CTileBorder border;
+			border.set (Width, Height, tampon);
+
+			// rotate the border
+			int rotBis=rot;
+			while (rotBis)
+			{
+				border.rotate ();
+				rotBis--;
+			}
+			
+			CTileSet::TError error;
+			int indexError;
+			int pixel=-1;
+			int composante=4;
+			if ((error=tileBank2.getTileSet(_tileSet)->checkTileTransition ((CTileSet::TTransition)tile, CTile::alpha, border, indexError,
+				pixel, composante))!=CTileSet::ok)
+			{
+				char sMsg[512];
+				if ((error==CTileSet::topInterfaceProblem)||(error==CTileSet::bottomInterfaceProblem)||(error==CTileSet::leftInterfaceProblem)
+					||(error==CTileSet::rightInterfaceProblem)||(error==CTileSet::topBottomNotTheSame)||(error==CTileSet::rightLeftNotTheSame)
+					||(error==CTileSet::topInterfaceProblem))
+				{
+					static const char* comp[]={"Red", "Green", "Blue", "Alpha", ""};
+					if (indexError!=-1)
+						sprintf (sMsg, "%s\nIncompatible with tile n°%d\nPixel: %d (%s)", CTileSet::getErrorMessage (error), indexError,
+							pixel, comp[composante]);
+					else
+						sprintf (sMsg, "%s\nIncompatible with the 128x128 tile\nPixel: %d (%s)", CTileSet::getErrorMessage (error),
+							pixel, comp[composante]);
+				}
+				else
+					sprintf (sMsg, "%s\nIncompatible filled tile", CTileSet::getErrorMessage (error));
+				MessageBox (NULL, sMsg, "Can't add tile", MB_OK|MB_ICONEXCLAMATION);
+				return 0;
+			}
+			else
+			{
+				tileBank2.getTileSet(_tileSet)->setTileTransitionAlpha ((CTileSet::TTransition)tile, troncated, tileBank2, border, rot);
+				theListTransition[tile].alphaLoaded=0;
+				theListTransition[tile].Load (tileBank2.getTileSet(_tileSet)->getTransition(tile)->getTile(), NULL);
+			}
+		}
+	}
+	else
+	{
+		// Error: bitmap not in the absolute path..
+		char msg[512];
+		sprintf (msg, "The bitmap %s is not in the absolute path %s.", name.c_str(), tileBank2.getAbsPath ().c_str());
+		MessageBox (NULL, msg, "Load error", MB_OK|MB_ICONEXCLAMATION);
+	}
+
 	return 1;
 }
 
@@ -614,9 +512,9 @@ void TileList::clearTile128 (int index, CTile::TBitmap bitmap)
 		theList128[index].nightLoaded=0;
 		theList128[index].nightBits.resize(0);
 		break;
-	case CTile::bump:
-		theList128[index].bumpLoaded=0;
-		theList128[index].bumpBits.resize(0);
+	case CTile::alpha:
+		theList128[index].alphaLoaded=0;
+		theList128[index].alphaBits.resize(0);
 		break;
 	}
 	tileBank2.getTileSet (_tileSet)->clearTile128 (index, bitmap, tileBank2);
@@ -634,9 +532,9 @@ void TileList::clearTile256 (int index, CTile::TBitmap bitmap)
 		theList256[index].nightLoaded=0;
 		theList256[index].nightBits.resize(0);
 		break;
-	case CTile::bump:
-		theList256[index].bumpLoaded=0;
-		theList256[index].bumpBits.resize(0);
+	case CTile::alpha:
+		theList256[index].alphaLoaded=0;
+		theList256[index].alphaBits.resize(0);
 		break;
 	}
 	tileBank2.getTileSet (_tileSet)->clearTile256 (index, bitmap, tileBank2);
@@ -654,39 +552,19 @@ void TileList::clearTransition (int index, CTile::TBitmap bitmap)
 		theListTransition[index].nightLoaded=0;
 		theListTransition[index].nightBits.resize(0);
 		break;
-	case CTile::bump:
-		theListTransition[index].bumpLoaded=0;
-		theListTransition[index].bumpBits.resize(0);
+	case CTile::alpha:
+		theListTransition[index].alphaLoaded=0;
+		theListTransition[index].alphaBits.resize(0);
 		break;
 	}
 	tileBank2.getTileSet (_tileSet)->clearTransition ((CTileSet::TTransition)index, bitmap, tileBank2);
 }
 
-/*void TileList::UpdateLF(void)
+void TileList::clearDisplacement (int index)
 {
-	if (oldFlag!=flagGroupSort || oldsize!=(int)theList.size() || oldShowNULL!=showNULL || oldSortMode!=sortMode) 
-	{
-		oldFlag = flagGroupSort;
-		oldSortMode = sortMode;
-		oldsize = theList.size();
-		oldShowNULL = showNULL;		
-		if (showNULL)
-		{
-		}
-		else
-		{
-			if (!oldFlag)
-			{
-			}
-			else if (sortMode) //and
-			{
-			}
-			else //or
-			{
-			}			
-		}
-	}
-}*/
+	// Clear the displacement map filename
+	tileBank2.getTileSet (_tileSet)->clearDisplacement ((CTileSet::TDisplacement)index);
+}
 
 tilelist::iterator TileList::GetFirst(int n)
 {
@@ -706,108 +584,57 @@ int TileList::GetSize(int n)
 	return theList[n].size();
 }
 
-/*void TileList::Sort(void)
-{
-	if (!sortMode && !showNULL)
-	{
-		int temp = SortTile,bDec=1;
-		SortTile = 0;
-		theList.sort();
-		SortTile = temp;
-		tilelist::iterator p = theList.end();
-		size = 0;
-		p--;
-		for (int i = 0;i<(int)theList.size();i++)
-		{
-			if (p->groupFlag&flagGroupSort)
-			{
-				tilelist::iterator next = p;
-				next--;
-				theList.splice(theList.begin(),theList,p);
-				p = next;
-				size++;
-				bDec=0;
-			}
-			else 
-			{
-				p--;
-			}
-		}
-		for (p = theList.begin();p!=theList.end();++p)
-		{
-			int k = p->number;
-		}
-	}
-	else 
-	{
-		theList.sort();
-	}
-	int k = 0;
-	for (tilelist::iterator p = GetFirst();p!=GetLast();++p) p->number = k++;
-}*/
-
 void TileInfo::Delete ()
 {
 	loaded=0;
 	nightLoaded=0;
-	bumpLoaded=0;
+	alphaLoaded=0;
 }
 
 
 tilelist::iterator TileList::Get(int i, int n)
 {
 	return theList[n].begin()+i;
-	/*tilelist::iterator p = GetFirst();
-	for (int k = 0; k<i ;k++)
-	{
-		if (p==GetLast()) 
-			return p;
-		p++;
-	}
-	return p;*/
 }
 
-/*void TileList::DeleteAll()
+const std::string& TileInfo::getRelativeFileName (CTile::TBitmap type, int index)
 {
-	int size = GetSize();
-	if (size==0) return;
-	Delete(GetFirst()++,size);
-}*/
-
-const std::string& TileInfo::getFileName (CTile::TBitmap type, int index)
-{
-	return tileBank2.getTile (index)->getFileName (type);
+	return tileBank2.getTile (index)->getRelativeFileName (type);
 }
 
-bool TileInfo::Load (int index, bool bMulAlpha, bool bInvertAlpha)
+bool TileInfo::Load (int index, std::vector<NLMISC::CBGRA>* Alpha)
 {
 	bool bRes=true;
-	if (!loaded && getFileName (CTile::diffuse, index)!="")
+	if (!loaded && getRelativeFileName (CTile::diffuse, index)!="")
 	{
-		if (!_LoadBitmap(getFileName (CTile::diffuse, index), &BmpInfo, Bits, bMulAlpha, bInvertAlpha))
+		if (!_LoadBitmap(tileBank2.getAbsPath() + getRelativeFileName (CTile::diffuse, index), &BmpInfo, Bits, Alpha, 0))
 		{
 			bRes=false;
-			MessageBox (NULL, getFileName (CTile::diffuse, index).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
+			MessageBox (NULL, (tileBank2.getAbsPath() + getRelativeFileName (CTile::diffuse, index)).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
 		}
-		loaded=1;
+		else
+			loaded=1;
 	}
-	if (!nightLoaded && getFileName (CTile::additive, index)!="")
+	if (!nightLoaded && getRelativeFileName (CTile::additive, index)!="")
 	{
-		if (!_LoadBitmap(getFileName (CTile::additive, index), &nightBmpInfo, nightBits, bMulAlpha, false))
+		if (!_LoadBitmap(tileBank2.getAbsPath() + getRelativeFileName (CTile::additive, index), &nightBmpInfo, nightBits, Alpha, 0))
 		{
 			bRes=false;
-			MessageBox (NULL, getFileName (CTile::additive, index).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
+			MessageBox (NULL, (tileBank2.getAbsPath() + getRelativeFileName (CTile::additive, index)).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
 		}
-		nightLoaded=1;
+		else
+			nightLoaded=1;
 	}
-	if (!bumpLoaded && getFileName (CTile::bump, index)!="")
+	if (!alphaLoaded && getRelativeFileName (CTile::alpha, index)!="")
 	{
-		if (!_LoadBitmap(getFileName (CTile::bump, index), &bumpBmpInfo, bumpBits, bMulAlpha, false))
+		if (!_LoadBitmap(tileBank2.getAbsPath() + getRelativeFileName (CTile::alpha, index), &alphaBmpInfo, alphaBits, NULL, 
+			tileBank2.getTile (index)->getRotAlpha ()))
 		{
 			bRes=false;
-			MessageBox (NULL, getFileName (CTile::bump, index).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
+			MessageBox (NULL, (tileBank2.getAbsPath() + getRelativeFileName (CTile::alpha, index)).c_str(), "Can't load file", MB_OK|MB_ICONEXCLAMATION);
 		}
-		bumpLoaded=1;
+		else
+			alphaLoaded=1;
 	}
 	return bRes;
 }
@@ -819,18 +646,16 @@ void TileList::Reload(int first, int count, int n) //recharge en memoire une tra
 		switch (n)
 		{
 		case 0:
-			theList[n][i].Load (tileBank2.getTileSet(_tileSet)->getTile128 (i), false, false);
+			theList[n][i].Load (tileBank2.getTileSet(_tileSet)->getTile128 (i), NULL);
 			break;
 		case 1:
-			theList[n][i].Load (tileBank2.getTileSet(_tileSet)->getTile256 (i), false, false);
+			theList[n][i].Load (tileBank2.getTileSet(_tileSet)->getTile256 (i), NULL);
 			break;
 		case 2:
 			{
 				int index=tileBank2.getTileSet(_tileSet)->getTransition (i)->getTile();
 				if (index!=-1)
-				{
-					theList[n][i].Load (index, true, tileBank2.getTile (index)->isInvert());
-				}
+					theList[n][i].Load (index, &theListTransition[i].alphaBits);
 			}
 			break;
 		}
@@ -864,14 +689,7 @@ void CTView::Init(int _land, int n)
 	pImList = new CImageList;
 	pImList->Create(sizetile_x,sizetile_y,ILC_COLOR24,0,1);
 	pImList->Add(bmp,(CBitmap*)NULL);
-	char name[256];
 	char *defautpath = ((SelectionTerritoire*)GetParent()->GetParent())->DefautPath.GetBuffer(256);
-	sprintf(name,"%s%s",defautpath,"croix.bmp");
-	if (_LoadBitmap(std::string((const char*)name),&TileCroix.BmpInfo,TileCroix.Bits, false, false))
-	{
-		int size=TileCroix.BmpInfo.bmiHeader.biHeight*TileCroix.BmpInfo.bmiHeader.biWidth*TileCroix.BmpInfo.bmiHeader.biBitCount/8;
-		char *temp = new char[size];
-	}
 	count_=1;
 }
 
@@ -894,8 +712,6 @@ int CTView::GetNbTileColumn(void)
 	else deb = (scrollpos - spacing_y)%(sizeicon_y + spacing_y);
 	if (deb>sizeicon_y) deb -=sizeicon_y + spacing_y;
 	int ret= ((rect.bottom - rect.top /*- spacing_y*/ + deb)/(sizeicon_y + spacing_y)) +1 ;
-//	if (((rect.bottom - rect.top - spacing_y + deb)%(sizeicon_y + spacing_y))) ret++;
-//	if (deb>0) ret++;
 	return max (1, ret);
 }
 
@@ -1004,36 +820,39 @@ void CTView::UpdateSelection(LPRECT rect_,int mode, int n) //rect : coordonnees 
 	pt; pt.x = rect->left; pt.y = rect->top; pt.y -=scrollpos;
 	int index = GetIndex(&pt, n);
 	tilelist::iterator p = InfoList.GetFirst(n);	
-	CDC *pDC = NULL;
+	CDC *pDC = GetDC();
 	if (index==-1 && !(mode&MK_SHIFT))
 	{
 		for (int i = 0;i<InfoList.GetSize(n); i++)
 		{
 			if (p->Selected==1)
 			{
-				if (pDC==NULL) pDC = GetDC();
 				p->Selected = 0;
 				DrawTile(p,pDC,0,n);
 			}
 			p++;
 		}
-		if (pDC) ::ReleaseDC(*this,*pDC);
+		if (pDC) 
+			::ReleaseDC(*this,*pDC);
 		return;
 	}
 	for (int i = 0;i<index;i++) 
 	{
-		if (p==InfoList.GetLast(n)) return;
+		if (p==InfoList.GetLast(n))
+		{
+			if (pDC!=NULL) 
+				::ReleaseDC(*this,*pDC);
+			return;
+		}
 		if (p->Selected==1) 
 		{
 			p->Selected = 0;
-			if (pDC==NULL) pDC = GetDC();				
 			DrawTile(p,pDC,0,n);
 		}
 		else if (p->Selected&4)
 		{
 			if (p->Selected) p->Selected=2;
 			else p->Selected = 3;
-			if (pDC==NULL) pDC = GetDC();				
 			DrawTile(p,pDC,0,n);
 		}
 		p++;
@@ -1047,11 +866,15 @@ void CTView::UpdateSelection(LPRECT rect_,int mode, int n) //rect : coordonnees 
 		{
 			for (;k<incd;k++) 
 			{
-				if (p==InfoList.GetLast(n)) return; 
+				if (p==InfoList.GetLast(n))
+				{
+					if (pDC!=NULL) 
+						::ReleaseDC(*this,*pDC);
+					return;
+				}
 				if (p->Selected==1)
 				{
 					p->Selected = 0; 
-					if (pDC==NULL) pDC = GetDC(); 	
 					DrawTile(p,pDC,0,n);
 				}				
 				else if (p->Selected&4)
@@ -1059,7 +882,6 @@ void CTView::UpdateSelection(LPRECT rect_,int mode, int n) //rect : coordonnees 
 					if (p->Selected&3) p->Selected=2;
 					else p->Selected = 3;
 					int k = !(p->Selected&1);
-					if (pDC==NULL) pDC = GetDC();				
 					DrawTile(p,pDC,0,n);
 				}
 				p++;
@@ -1068,13 +890,17 @@ void CTView::UpdateSelection(LPRECT rect_,int mode, int n) //rect : coordonnees 
 		else k = incd;
 		for (int i = rect->left;i<=rect->right;i+=sizeicon_x + spacing_x)
 		{
-			if (p==InfoList.GetLast(n)) return;
+			if (p==InfoList.GetLast(n)) 
+			{
+				if (pDC!=NULL) 
+					::ReleaseDC(*this,*pDC);
+				return;
+			}
 			if (!(mode&MK_CONTROL))
 			{
 				if (p->Selected!=1)
 				{
 					p->Selected = 1;
-					if (pDC==NULL) pDC = GetDC();				
 					DrawTile(p,pDC,0,n);
 				}
 			}
@@ -1085,7 +911,6 @@ void CTView::UpdateSelection(LPRECT rect_,int mode, int n) //rect : coordonnees 
 					int k = p->Selected;
 					p->Selected = (p->Selected&3)?4:5;				
 					k = p->Selected;
-					if (pDC==NULL) pDC = GetDC();				
 					DrawTile(p,pDC,0,n);
 				}
 			}
@@ -1094,18 +919,21 @@ void CTView::UpdateSelection(LPRECT rect_,int mode, int n) //rect : coordonnees 
 		}
 		for (;k<nbline;k++) 
 		{
-			if (p==InfoList.GetLast(n)) return; 
+			if (p==InfoList.GetLast(n)) 
+			{
+				if (pDC!=NULL) 
+					::ReleaseDC(*this,*pDC);
+				return;
+			}
 			if (p->Selected==1) 
 			{
 				p->Selected = 0; 
-				if (pDC==NULL) pDC = GetDC(); 
 				DrawTile(p,pDC,0,n);
 			} 
 			else if (p->Selected&4)
 			{
 				if (p->Selected&3) p->Selected=2;
 				else p->Selected = 3;
-				if (pDC==NULL) pDC = GetDC();				
 				DrawTile(p,pDC,0,n);
 			}
 			p++;
@@ -1116,117 +944,24 @@ void CTView::UpdateSelection(LPRECT rect_,int mode, int n) //rect : coordonnees 
 		if (p->Selected==1) 
 		{
 			p->Selected = 0;
-			if (pDC==NULL) pDC = GetDC();				
 			DrawTile(p,pDC,0,n);
 		}
 		else if (p->Selected&4)
 		{
 			if (p->Selected&3) p->Selected=2;
 			else p->Selected = 3;
-			if (pDC==NULL) pDC = GetDC();				
 			DrawTile(p,pDC,0,n);
 		}
 	}
-	if (pDC!=NULL) ::ReleaseDC(*this,*pDC);
+	if (pDC!=NULL) 
+		::ReleaseDC(*this,*pDC);
 }
 		
-/*void CTView::CheckTile(TileInfo *theTile)
-{
-	_Edge h,b,g,d;
-	if (!theTile->Bits) return;
-	b.CreateB(theTile);
-	h.CreateH(theTile);
-	g.CreateG(theTile);
-	d.CreateD(theTile);
-
-	_Edge test = b;
-
-	int found=0;
-	int i=0;
-	for (edgelist::iterator p=EdgeList.begin();p!=EdgeList.end();++p)
-	{
-		if (b==*p)
-		{
-			found=1;
-			theTile->b=i;
-			break;
-		}
-		i++;
-	}
-	if (!found) 
-	{
-		EdgeList.insert(EdgeList.end(),b);
-		theTile->b=i;
-	}
-
-	found=0;
-	i=0;
-	for (p=EdgeList.begin();p!=EdgeList.end();++p)
-	{
-		if (h==*p)
-		{
-			found=1;
-			theTile->h=i;
-			break;
-		}
-		i++;
-	}
-	if (!found) 
-	{
-		EdgeList.insert(EdgeList.end(),h);
-		theTile->h=i;
-	}
-
-	found=0;
-	i=0;
-	for (p=EdgeList.begin();p!=EdgeList.end();++p)
-	{
-		if (g==*p)
-		{
-			found=1;
-			theTile->g=i;
-			break;
-		}
-		i++;
-	}
-	if (!found) 
-	{
-		EdgeList.insert(EdgeList.end(),g);
-		theTile->g=i;
-	}
-
-	found=0;
-	i=0;
-	for (p=EdgeList.begin();p!=EdgeList.end();++p)
-	{
-		if (d==*p)
-		{
-			found=1;
-			theTile->d=i;
-			break;
-		}
-		i++;
-	}
-	if (!found) 
-	{
-		EdgeList.insert(EdgeList.end(),d);
-		theTile->d=i;
-	}
-}*/
-
-/*tilelist::iterator CTView::GetTileSelection(tilelist::iterator i)
-{
-	tilelist::iterator ret;
-	while (i!=InfoList.GetLast() && !i->Selected) 
-		i++;
-	return i;
-}*/
-
 void CTView::DeleteTile(tilelist::iterator p)
 {
 	p->loaded = 0;
 	p->nightLoaded = 0;
-	p->bumpLoaded = 0;
+	p->alphaLoaded = 0;
 }
 
 void CTView::UpdateBar(int iFirst,int iLast, int n)
@@ -1251,11 +986,6 @@ void CTView::UpdateBar(int iFirst,int iLast, int n)
 
 int CTView::IsSelected(int i)
 {
-/*	POSITION pos = this->GetFirstSelectedItemPosition();
-	for (int k=0;k<GetSelectedCount();k++)
-	{
-		if (GetNextSelectedItem(pos)==i) return 1;
-	}*/
 	return 0;
 }
 
@@ -1281,8 +1011,11 @@ void CTView::OnPaint()
 	CPaintDC dc(this); // device context for painting
 	// TODO: Add your message handler code here
 	RECT rect; GetClientRect(&rect);	
-	CBrush brush;
+	CBrush brush (GetSysColor(COLOR_3DFACE));
+	
+	
 	dc.FillRect(&rect,&brush);
+	
 	if (InfoList.GetSize(parent->m_128x128)==0) return;
 	
 	debug=(debug+1)&1;
@@ -1308,7 +1041,7 @@ void CTView::OnPaint()
 	if (!normal_font) 
 	{
 		normal_font = new CFont;
-		normal_font->CreateFont(0,0,0,0,FW_THIN,false,false,false,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,DEFAULT_PITCH,NULL);
+		normal_font->CreateFont(-10,0,0,0,FW_THIN,false,false,false,DEFAULT_CHARSET,OUT_DEFAULT_PRECIS,CLIP_DEFAULT_PRECIS,DEFAULT_QUALITY,FIXED_PITCH,NULL);
 	}
 	
 	tilelist::iterator p = InfoList.GetFirst(parent->m_128x128);
@@ -1340,11 +1073,10 @@ void CTView::OnDropFiles(HDROP hDropInfo)
 			case 0:
 				{
 					int index=InfoList.addTile128 ();
-					if (InfoList.setTile128 (index, FileName, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::bump)))
+					if (InfoList.setTile128 (index, FileName, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha)))
 					{
 						tilelist::iterator it = InfoList.GetLast(parent->m_128x128);
 						it--;
-						//InfoList.Reload(&*it,1);
 					}
 					else
 					{
@@ -1355,11 +1087,10 @@ void CTView::OnDropFiles(HDROP hDropInfo)
 			case 1:
 				{
 					int index=InfoList.addTile256 ();
-					if (InfoList.setTile256 (index, FileName, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::bump)))
+					if (InfoList.setTile256 (index, FileName, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha)))
 					{
 						tilelist::iterator it = InfoList.GetLast(parent->m_128x128);
 						it--;
-						//InfoList.Reload(&*it,1);
 					}
 					else
 						InfoList.removeTile256 (index);
@@ -1367,12 +1098,6 @@ void CTView::OnDropFiles(HDROP hDropInfo)
 				break;
 			case 2:
 				{
-					/*if (InfoList.setTileTransition (index, FileName, CTile::diffuse)
-					{
-						tilelist::iterator it = InfoList.GetLast(parent->m_128x128);
-						it--;
-						InfoList.Reload(it,1);
-					}*/
 				}
 				break;
 			}
@@ -1388,15 +1113,13 @@ void CTView::OnDropFiles(HDROP hDropInfo)
 
 void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 {
-	while (InfoList.smAcces) {}
-	InfoList.smAcces = 1;
 	RECT rect; GetClientRect(&rect);	
-	CBrush brush;
+	CBrush brush (GetSysColor(COLOR_3DFACE));
 	if (InfoList.GetSize(n)==0) 
 	{
-		InfoList.smAcces = 0; return;
+		return;
 	}
-	
+
 	LPBITMAPINFO bmpinf;
 	std::string pth; 
 	std::vector<NLMISC::CBGRA> *bits;
@@ -1405,19 +1128,22 @@ void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 	switch (n)
 	{
 	case 0:
-		pth = i->getFileName ((CTile::TBitmap)(Texture-1), tileBank2.getTileSet (InfoList._tileSet)->getTile128 (i->id));
+		pth = i->getRelativeFileName ((CTile::TBitmap)(Texture-1), tileBank2.getTileSet (InfoList._tileSet)->getTile128 (i->id));
 		break;
 	case 1:
-		pth = i->getFileName ((CTile::TBitmap)(Texture-1), tileBank2.getTileSet (InfoList._tileSet)->getTile256 (i->id));
+		pth = i->getRelativeFileName ((CTile::TBitmap)(Texture-1), tileBank2.getTileSet (InfoList._tileSet)->getTile256 (i->id));
 		break;
 	case 2:
 		{
 			int index=tileBank2.getTileSet (InfoList._tileSet)->getTransition (i->id)->getTile();
 			if (index!=-1)
-				pth = i->getFileName ((CTile::TBitmap)(Texture-1), index);
+				pth = i->getRelativeFileName ((CTile::TBitmap)(Texture-1), index);
 			else
 				pth = "";
 		}
+		break;
+	case 3:
+		pth = tileBank2.getTileSet (InfoList._tileSet)->getDisplacementFileName ((CTileSet::TDisplacement)i->id);
 		break;
 	}
 
@@ -1434,9 +1160,9 @@ void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 			loaded = i->nightLoaded;
 			break;
 		case 3:
-			bmpinf = &(i->bumpBmpInfo);
-			bits = &i->bumpBits;
-			loaded = i->bumpLoaded;
+			bmpinf = &(i->alphaBmpInfo);
+			bits = &i->alphaBits;
+			loaded = i->alphaLoaded;
 			break;
 	}
 
@@ -1444,7 +1170,8 @@ void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 	clip.CreateRectRgn(rect.left,rect.top,rect.right,rect.bottom);
 	pDC->SelectClipRgn(&clip);
 	
-	pDC->SelectObject(normal_font);
+	// Select a font
+	CFont *pOldFont=pDC->SelectObject(normal_font);
 	
 	POINT pt;
 	pt = GetPos(i->id);
@@ -1452,10 +1179,16 @@ void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 	rect_txt.top = pt.y;
 	rect_txt.bottom = pt.y + sizeicon_y + spacing_y;
 	rect_txt.left = pt.x; rect_txt.right = pt.x + sizeicon_x + spacing_x;
+
+	// Turn every other pixel to black
+	COLORREF clrBk = pDC->SetBkColor( GetSysColor(COLOR_3DFACE) );
+	COLORREF clrText = pDC->SetTextColor( RGB(0,0,0) );
+	
 	if (clear) pDC->FillRect(&rect_txt,&brush);
+	
 	if (!loaded)
 	{
-		pDC->FillSolidRect( pt.x, pt.y, sizetile_x, sizetile_y, 0xffffffff);
+		pDC->FillSolidRect( pt.x, pt.y, sizetile_x, sizetile_y, GetSysColor(COLOR_3DFACE) );
 		pDC->MoveTo (pt.x,pt.y);
 		pDC->LineTo (pt.x+sizetile_x,pt.y+sizetile_y);
 		pDC->MoveTo (pt.x+sizetile_x,pt.y);
@@ -1465,6 +1198,16 @@ void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 		pDC->LineTo (pt.x+sizetile_x,pt.y+sizetile_y);
 		pDC->LineTo (pt.x,pt.y+sizetile_y);
 		pDC->LineTo (pt.x,pt.y);
+
+		pDC->MoveTo (pt.x+1,pt.y);
+		pDC->LineTo (pt.x+sizetile_x,pt.y+sizetile_y-1);
+		pDC->MoveTo (pt.x,pt.y+1);
+		pDC->LineTo (pt.x+sizetile_x-1,pt.y+sizetile_y);
+		
+		pDC->MoveTo (pt.x+sizetile_x-1,pt.y);
+		pDC->LineTo (pt.x,pt.y+sizetile_y-1);
+		pDC->MoveTo (pt.x+sizetile_x,pt.y+1);
+		pDC->LineTo (pt.x+1,pt.y+sizetile_y);
 	}
 	else
 	{
@@ -1484,20 +1227,6 @@ void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 	else if (InfoTexte==3)
 	{
 		__int64 mask = 1;
-		/*CComboBox *clist = (CComboBox*)GetParent()->GetDlgItem (IDC_LISTTYPE);
-		for (int c = 0;c<64;c++)
-		{
-			if (i->groupFlag&mask)
-			{
-				CString str;
-				ASSERT(c<clist->GetCount());
-				
-				clist->GetLBText(c+2,str);
-				strcat(Name,(LPCSTR)str);
-				strcat(Name," ");
-			}
-			mask<<=1;
-		}*/
 	}
 	else if (InfoTexte==1)
 	{
@@ -1508,13 +1237,23 @@ void CTView::DrawTile(tilelist::iterator i,CDC *pDC,int clear, int n)
 	rect_txt.left -= spacing_x;
 	pDC->DrawText(Name,strlen(Name),&rect_txt,DT_CENTER | DT_SINGLELINE);
 
+	// Restore the device context
+	pDC->SetBkColor( clrBk );
+	pDC->SetTextColor( clrText );
+
 	if (i->Selected&3)
 	{
 		CRect rc;
 		rc.left = pt.x; rc.top = pt.y; rc.right = rc.left + sizetile_x; rc.bottom = rc.top + sizetile_y;
 		ShadeRect(pDC,rc);
 	}
-	InfoList.smAcces = 0;
+
+	// Invalidate flag button
+	Browse *parent = (Browse*)this->GetParent();
+	parent->UpdateFlags ();
+
+	// Release the font
+	pDC->SelectObject(pOldFont);
 }
 
 void CTView::ShadeRect( CDC *pDC, CRect& rect )
@@ -1525,34 +1264,36 @@ void CTView::ShadeRect( CDC *pDC, CRect& rect )
      WORD Bits[8] = { 0x0055, 0x00aa, 0x0055, 0x00aa,
                       0x0055, 0x00aa, 0x0055, 0x00aa };
 
-     CBitmap bmBrush;
-     CBrush brush;
+	CBitmap bmBrush;
+	CBrush brush (GetSysColor(COLOR_3DFACE));
 
-     // Need a monochrome pattern bitmap
-     bmBrush.CreateBitmap( 8, 8, 1, 1, &Bits );
+	// Need a monochrome pattern bitmap
+	bmBrush.CreateBitmap( 8, 8, 1, 1, &Bits );
 
-     // Create the pattern brush
-     brush.CreatePatternBrush( &bmBrush );
+	// Create the pattern brush
+	brush.CreatePatternBrush( &bmBrush );
 
-     CBrush *pOldBrush = pDC->SelectObject( &brush );
+	CBrush *pOldBrush = pDC->SelectObject( &brush );
 
-     // Turn every other pixel to black
-     COLORREF clrBk = pDC->SetBkColor( RGB(255,255,255) );
-     COLORREF clrText = pDC->SetTextColor( RGB(0,0,0) );
-     // 0x00A000C9 is the ROP code to AND the brush with the destination
-     pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), 
-             (DWORD)0x00A000C9);                     //DPa - raster code
+	// Turn every other pixel to black
+	COLORREF clrBk = pDC->SetBkColor( GetSysColor(COLOR_3DFACE) );
+	COLORREF clrText = pDC->SetTextColor( RGB(0,0,0) );
+	// 0x00A000C9 is the ROP code to AND the brush with the destination
+	pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), 
+		 (DWORD)0x00A000C9);                     //DPa - raster code
 
-     pDC->SetBkColor( RGB(0,0,0) );
-     pDC->SetTextColor( GetSysColor(COLOR_HIGHLIGHT) );
-     // 0x00FA0089 is the ROP code to OR the brush with the destination
-     pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), 
-             (DWORD)0x00FA0089);                     //DPo - raster code
+	pDC->SetBkColor( clrBk );
+	pDC->SetTextColor( clrText );
+	clrBk = pDC->SetBkColor( RGB(0,0,0) );
+	clrText = pDC->SetTextColor( GetSysColor(COLOR_HIGHLIGHT) );
+	// 0x00FA0089 is the ROP code to OR the brush with the destination
+	pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), 
+		 (DWORD)0x00FA0089);                     //DPo - raster code
 
-     // Restore the device context
-     pDC->SelectObject( pOldBrush );
-     pDC->SetBkColor( clrBk );
-     pDC->SetTextColor( clrText );
+	// Restore the device context
+	pDC->SelectObject( pOldBrush );
+	pDC->SetBkColor( clrBk );
+	pDC->SetTextColor( clrText );
 }
 
 
@@ -1610,7 +1351,6 @@ void CTView::DrawDragRect(CDC *pDC,LPCRECT lpRect, SIZE size,
 		pBrushOld = pDC->SelectObject(pBrushLast);
 		pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), PATINVERT);
 		pDC->SelectObject(pBrushOld);
-		pBrushOld = NULL;
 	}
 	// draw into the update/new region
 	if (lpRect)
@@ -1619,10 +1359,8 @@ void CTView::DrawDragRect(CDC *pDC,LPCRECT lpRect, SIZE size,
 		pDC->GetClipBox(&rect);
 		pBrushOld = pDC->SelectObject(pBrush);
 		pDC->PatBlt(rect.left, rect.top, rect.Width(), rect.Height(), PATINVERT);
-	}
-	// cleanup DC
-	if (pBrushOld != NULL)
 		pDC->SelectObject(pBrushOld);
+	}
 	pDC->SelectClipRgn(NULL);
 }
 
@@ -1703,6 +1441,9 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 					case 2:
 						InfoList.clearTransition (i, (CTile::TBitmap)(Texture-1));
 						break;
+					case 3:
+						InfoList.clearDisplacement (i);
+						break;
 					default:
 						nlassert (0); // no!
 					}
@@ -1723,11 +1464,6 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				//AfxMessageBox ("toto");
 				POSITION p = load.GetStartPosition(); //la doc dit que p=NULL quand il n'y a pas de selection : c'est faux, genial les MFC
-				//tilelist::iterator pos = InfoList.GetFirst(parent->m_128x128);
-				int index=0;
-				/*CDC *pDC = GetDC();
-				::ReleaseDC(*this,*pDC);*/
-				int pushBack = 0;
 				while (p)
 				{
 					CString str = load.GetNextPathName(p);
@@ -1739,83 +1475,94 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 
 					if (str!=CString(""))
 					{
+						int index=0;
 						const char *pathname = (LPCTSTR)str;
-/*						InfoList.Add(pathname);
-						tilelist::iterator it = InfoList.theList.end();
-						it--;
-						InfoList.Reload(GetDC(),it,1);
-						CheckTile(&(*it));*/
 
-						// Add at the end
+						// Add mode, to the end of the list
 						if (id==ID_MENU_ADD)
-							index=InfoList.GetSize(parent->m_128x128);
+						{
+							// Index of the new tile
+							int index;
 
-						if (index!=InfoList.GetSize(parent->m_128x128))
-						{
-							while (!pushBack && !InfoList.Get(index, parent->m_128x128)->Selected) 
-							{
-								index++;
-								if (index==InfoList.GetSize(parent->m_128x128))
-									break;
-							}
-						}
-//						TileInfo info;
-						if ((index==InfoList.GetSize(parent->m_128x128))&&(id==ID_MENU_ADD))
-						{
-							pushBack = 1;
+							// Index in the list
 							switch (parent->m_128x128)
 							{
 							case 0:
+								// Add a 128 tile
 								index=InfoList.addTile128 ();
+
+								// Set the tile
+								if (!InfoList.setTile128 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha)))
+									// If prb, remove it
+									InfoList.removeTile128 (index);
+
 								break;
 							case 1:
+								// Add a 128 tile
 								index=InfoList.addTile256 ();
+
+								// Set the tile
+								if (!InfoList.setTile256 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha)))
+									// If prb, remove it
+									InfoList.removeTile256 (index);
+
 								break;
 							case 2:
-								// pos=InfoList.Get (InfoList.addTileTransition (), 2);
-								index=InfoList.GetSize(parent->m_128x128);
+								nlassert (0);		// no, can't add transition
 								break;
 							}
 						}
-						if (index!=InfoList.GetSize(parent->m_128x128))
+						else
 						{
-							switch (parent->m_128x128)
+							// Must be a replace mode.
+							nlassert (id==ID_MENU_REPLACE);
+
+							// For each tile
+							for (int index=0; index<InfoList.GetSize(parent->m_128x128); index++)
 							{
-							case 0:								
-								if (!InfoList.setTile128 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::bump)))
+								// If selected
+								if (InfoList.Get(index, parent->m_128x128)->Selected)
 								{
-									if (id==ID_MENU_ADD)
+									switch (parent->m_128x128)
 									{
-										InfoList.removeTile128 (index);
+									case 0:
+										// Set the 128 tile
+										InfoList.setTile128 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha));
+										break;
+									case 1:
+										// Set the 256 tile
+										InfoList.setTile256 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha));
+										break;
+									case 2:
+										// Alpha texture ?
+										if (Texture!=3)
+										{
+											InfoList.setTileTransition (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::alpha));
+										}
+										// Alpha!
+										else
+										{
+											// Select rotation
+											SelectRotation selectRotation;
+											if (selectRotation.DoModal()==IDOK)
+											{
+												// Set the alpha tile with the good rotation
+												InfoList.setTileTransitionAlpha (index, pathname, selectRotation.RotSelected);
+											}
+										}
+										break;
+									case 3:
+										// Displacement
+										InfoList.setDisplacement (index, pathname);
+										break;
+									default:
+										nlassert (0); // no!
 									}
 								}
-								break;
-							case 1:
-								if (!InfoList.setTile256 (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::bump)))
-								{
-									if (id==ID_MENU_ADD)
-									{
-										InfoList.removeTile256 (index);
-									}
-								}
-								break;
-							case 2:
-								{
-									nlassert (id!=ID_MENU_ADD);
-									bool bInvert=false;
-									if (MessageBox ("Do you want to add this transition tile with inverted alpha ?", "Tile edit", MB_YESNO|MB_ICONQUESTION)==IDYES)
-										bInvert=true;
-									InfoList.setTileTransition (index, pathname, Texture==1?CTile::diffuse:(Texture==2?CTile::additive:CTile::bump), bInvert);
-								}
-								break;
-							default:
-								nlassert (0); // no!
-							}
-							if (index!=InfoList.GetSize(parent->m_128x128))
-							{
+
+								// Reload last inserted tile
 								InfoList.Reload(index, 1, parent->m_128x128);
 								InfoList.Get(index, parent->m_128x128)->Selected = 0;
-								index++;
 							}
 						}
 					}
@@ -1829,27 +1576,9 @@ LRESULT CTView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		{
 			ViewTileMode = 1;
 			Browse *parent = (Browse*) this->GetParent();
-/*			POSITION sel = GetFirstSelectedItemPosition();
-			int i = GetNextSelectedItem(sel);
-			parent->TileSelected = (TileInfo*)GetItemData(i);*/
 			parent->SendMessage(WM_PAINT,0,0);
-			//UpdateBuffer();
 			bPopup = 0;
 		}
-		/*else if (id==15)
-		{
-			ListGroup sel(this);
-			sel.DoModal();
-			if (sel.bSelection)
-			{
-				for (tilelist::iterator p = InfoList.GetFirst();p!=InfoList.GetLast();++p)
-				{
-					if (p->Selected) p->groupFlag = sel.iSelection;
-				}
-			}
-			bPopup = 0;
-			//InfoList.Sort();
-		}*/
 		this->RedrawWindow();
 	}
 	return CStatic::WindowProc(message, wParam, lParam);
@@ -1874,17 +1603,13 @@ void CTView::OnRButtonDown(UINT nFlags, CPoint point)
 				
 		if (!ViewTileMode)
 		{
-			popup.AppendMenu(parent->m_128x128!=2 ? MF_STRING : MF_STRING | MF_GRAYED, ID_MENU_ADD,"Add...");
+			popup.AppendMenu(parent->m_128x128<2 ? MF_STRING : MF_STRING | MF_GRAYED, ID_MENU_ADD,"Add...");
 			popup.AppendMenu(c>0 ? MF_STRING : MF_STRING | MF_GRAYED, ID_MENU_REPLACE, "Replace...");
 			popup.AppendMenu(c>0 ? MF_STRING : MF_STRING | MF_GRAYED, ID_MENU_SUPR_BITMAP, "Del bitmap");
-			popup.AppendMenu((c>0 && parent->m_128x128!=2) ? MF_STRING : MF_STRING | MF_GRAYED, ID_MENU_SUPR_TILE, "Del tile");
-			//popup.AppendMenu(c==1 ? MF_STRING : MF_STRING | MF_GRAYED,12,"Voir les tiles");
-			//popup.AppendMenu(c>0 ? MF_STRING : MF_STRING | MF_GRAYED,15,"Group...");
+			popup.AppendMenu((c>0 && parent->m_128x128<2) ? MF_STRING : MF_STRING | MF_GRAYED, ID_MENU_SUPR_TILE, "Del tile");
 		}
 		else
 		{
-			//popup.AppendMenu(c==1 ? MF_STRING : MF_STRING | MF_GRAYED,12,"Voir les tiles");
-			//popup.AppendMenu(MF_STRING,14,"Revenir au mode normal");
 		}
 		bPopup = 1;
 		popup.TrackPopupMenu(TPM_LEFTALIGN,MousePos.x+wndpos.left,MousePos.y+wndpos.top,GetParent(),NULL);
@@ -1903,46 +1628,5 @@ void CTView::OnLButtonDown(UINT nFlags, CPoint point)
 void CTView::OnLButtonDblClk(UINT nFlags, CPoint point) 
 {
 	// TODO: Add your message handler code here and/or call default
-	/*if (nFlags&MK_CONTROL) return;
-	RECT r; r.left = MousePos.x; r.top = MousePos.y;
-	GetParent()->ClientToScreen(&r);
-	POINT pt; pt.x = r.left; pt.y = r.top;
-	ScreenToClient(&pt);
-	int index = GetIndex(&pt);
-	tilelist::iterator p = InfoList.GetFirst();
-	if (index==-1 || InfoList.GetSize()<=index) return;
-	for (int i = 0;i<index;i++) p++;
-	if (index!=-1)
-	{
-		theViewPopup = new ViewPopup(&(*p),this);
-		char wndName[256];
-		if (p->path)
-		{
-			sprintf(wndName,"Tile %d %s",p->id,p->path);
-		}
-		else
-		{
-			sprintf(wndName,"Tile %d",p->id);
-		}
-		__int64 mask=1; int first = 1;
-		for (i = 0;i<64;i++)
-		{
-			if (p->groupFlag&mask)
-			{
-				if (first) {first = 0; strcat(wndName,", group ");}
-				//CComboBox *clist = (CComboBox*)GetParent()->GetDlgItem(IDC_LISTTYPE);
-				CString str; 
-				CWnd *w = GetParent();
-				//int k = clist->GetCount();
-				//clist->GetLBText(2 + i,str);
-				//strcat(wndName,(LPCSTR)str);
-				//strcat(wndName," ");
-			}
-			mask<<=1;
-		}
-		strcpy(theViewPopup->wndName,wndName);
-		theViewPopup->DoModal();
-	}
-	*/
 }
 

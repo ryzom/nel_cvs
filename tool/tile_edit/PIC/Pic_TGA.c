@@ -54,7 +54,7 @@ unsigned long Pic_TGA_Read(	unsigned char *FileName,
 		return(0);
 	}
 	fread(&tgah,1,sizeof(TGA_HEADER),file);
-	if (tgah.ImageType>2)
+	if (tgah.ImageType>3)
 	{
 		Pic_SetError("TGA_Read, unsupported TGA format");
 		return(0);
@@ -85,11 +85,14 @@ unsigned long Pic_TGA_Read(	unsigned char *FileName,
 			Pic_SetError("TGA_Read, not enough memory for palette");
 			return(0);
 		}
-		for(i=0 ; i<256*3 ; i+=3)
+		if (tgah.ImageType==1)
 		{
-			fread(&pPal[i+2],1,1,file);
-			fread(&pPal[i+1],1,1,file);
-			fread(&pPal[i+0],1,1,file);
+			for(i=0 ; i<256*3 ; i+=3)
+			{
+				fread(&pPal[i+2],1,1,file);
+				fread(&pPal[i+1],1,1,file);
+				fread(&pPal[i+0],1,1,file);
+			}
 		}
 		*ppPal=pPal;
 	}

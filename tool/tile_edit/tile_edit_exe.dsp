@@ -376,6 +376,10 @@ SOURCE=.\GetVal.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\select_rotation.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\SelectionTerritoire.cpp
 # End Source File
 # Begin Source File
@@ -489,6 +493,10 @@ SOURCE=.\Resource.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\select_rotation.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\SelectionTerritoire.h
 # End Source File
 # Begin Source File
@@ -514,6 +522,22 @@ SOURCE=.\ViewColumn.h
 # Begin Source File
 
 SOURCE=.\cursor1.cur
+# End Source File
+# Begin Source File
+
+SOURCE=.\rot0.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\rot1.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\rot2.bmp
+# End Source File
+# Begin Source File
+
+SOURCE=.\rot3.bmp
 # End Source File
 # Begin Source File
 

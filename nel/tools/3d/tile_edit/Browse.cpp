@@ -20,6 +20,10 @@ Browse::Browse(int nland, CWnd* pParent /*=NULL*/)
 	: CDialog(Browse::IDD, pParent)
 {	
 	//{{AFX_DATA_INIT(Browse)
+	SubGroup0 = FALSE;
+	SubGroup1 = FALSE;
+	SubGroup2 = FALSE;
+	SubGroup3 = FALSE;
 	//}}AFX_DATA_INIT
 	land=nland;
 	m_128x128=0;
@@ -30,12 +34,14 @@ void Browse::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(Browse)
+	DDX_Radio(pDX, IDC_128X128, m_128x128);
 	DDX_Control(pDX, IDC_VIEW, m_ctrl);
 	DDX_Control(pDX, IDC_INFONUM, m_infotexte);
-	//DDX_Control(pDX, IDC_ZOOM1, m_rb_zoom1);
-	//DDX_Control(pDX, IDC_NUM, m_rb_num);
 	DDX_Control(pDX, IDC_JOUR, m_rb_jour);
-	DDX_Radio(pDX, IDC_128X128, m_128x128);
+	DDX_Check(pDX, IDC_SUBGROUP0, SubGroup0);
+	DDX_Check(pDX, IDC_SUBGROUP1, SubGroup1);
+	DDX_Check(pDX, IDC_SUBGROUP2, SubGroup2);
+	DDX_Check(pDX, IDC_SUBGROUP3, SubGroup3);
 	//}}AFX_DATA_MAP
 }
 
@@ -43,19 +49,23 @@ void Browse::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(Browse, CDialog)
 	//{{AFX_MSG_MAP(Browse)
 	ON_WM_SIZE()
-	ON_BN_CLICKED(IDC_BUMP, OnBump)
+	ON_BN_CLICKED(IDC_ALPHA, OnAlpha)
+	ON_BN_CLICKED(IDC_128X128, OnChangeVariety)
 	ON_BN_CLICKED(IDC_JOUR, OnJour)
 	ON_BN_CLICKED(IDC_NUIT, OnNuit)
-	ON_BN_CLICKED(IDC_128X128, OnChangeVariety)
-	ON_BN_CLICKED(IDC_ZOOM5, OnChangeVariety)
-	ON_BN_CLICKED(IDC_ZOOM6, OnChangeVariety)
-	//ON_BN_CLICKED(IDC_NUM, OnNum)
 	ON_BN_CLICKED(IDC_OK, OnOk)
-	ON_BN_CLICKED(IDCANCEL, OnCancel)
 	ON_WM_RBUTTONDOWN()
-	ON_BN_CLICKED(IDC_CANCEL, OnCancel)
 	ON_BN_CLICKED(IDC_OK2, OnUpdateTiles)
 	ON_BN_CLICKED(IDC_BATCH_LOAD, OnBatchLoad)
+	ON_BN_CLICKED(IDC_SUBGROUP0, OnSubgroup0)
+	ON_BN_CLICKED(IDC_SUBGROUP1, OnSubgroup1)
+	ON_BN_CLICKED(IDC_SUBGROUP2, OnSubgroup2)
+	ON_BN_CLICKED(IDC_SUBGROUP3, OnSubgroup3)
+	ON_BN_CLICKED(IDC_ZOOM5, OnChangeVariety)
+	ON_BN_CLICKED(IDC_ZOOM6, OnChangeVariety)
+	ON_BN_CLICKED(IDCANCEL, OnCancel)
+	ON_BN_CLICKED(IDC_CANCEL, OnCancel)
+	ON_BN_CLICKED(IDC_DISPLACE, OnChangeVariety)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -65,7 +75,6 @@ END_MESSAGE_MAP()
 BOOL Browse::PreCreateWindow(CREATESTRUCT& cs) 
 {
 	// TODO: Add your specialized code here and/or call the base class
-	//this->DragAcceptFiles();
 
 	return CDialog::PreCreateWindow(cs);
 }
@@ -131,15 +140,12 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			current.bottom = m_ctrl.MousePos.y;
 			if (current.left>current.right) {int temp = current.left; current.left = current.right; current.right = temp;}
 			if (current.top>current.bottom) {int temp = current.bottom; current.bottom = current.top; current.top = temp;}
-			//m_ctrl.UpdateSelection(&current);
 			
 			CDC *pDC = GetDC();
 			m_ctrl.DrawDragRect(pDC,NULL,size,&last_sel,size);			//on efface l'ancien carre
-//			::ReleaseDC(*this,*pDC);			
 			
 			m_ctrl.UpdateSelection(&current, wParam, m_128x128);						//on affiche les modifes
 			
-//			pDC = GetDC();
 			m_ctrl.DrawDragRect(pDC,&current,size,NULL,size);			//on affiche le nouveau carre
 			::ReleaseDC(*this,*pDC);			
 			
@@ -176,18 +182,6 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			m_ctrl.InfoTexte = 3;
 			m_ctrl.RedrawWindow();
 		}
-		/*else if (button==IDC_NUM)
-		{
-			//SortTile = 0;
-			//m_ctrl.InfoList.Sort();
-			//m_ctrl.RedrawWindow();
-		}
-		else if (button==IDC_SORTGROUP)
-		{
-			SortTile = 1;
-			m_ctrl.InfoList.Sort();
-			m_ctrl.RedrawWindow();
-		}*/			
 		else if (button>=10 && button<=15) 
 			m_ctrl.PostMessage(WM_COMMAND,wParam,lParam);
 	}
@@ -207,15 +201,12 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			current.bottom = m_ctrl.MousePos.y;
 			if (current.left>current.right) {int temp = current.left; current.left = current.right; current.right = temp;}
 			if (current.top>current.bottom) {int temp = current.bottom; current.bottom = current.top; current.top = temp;}
-			//m_ctrl.UpdateSelection(&current);
 			
 			CDC *pDC = GetDC();
 			m_ctrl.DrawDragRect(pDC,NULL,size,&last_sel,size);			//on efface l'ancien carre
-//			::ReleaseDC(*this,*pDC);			
 			
 			m_ctrl.UpdateSelection(&current,wParam, m_128x128);						//on affiche les modifes
 			
-//			pDC = GetDC();
 			::ReleaseDC(*this,*pDC);			
 			
 			last_sel = current;
@@ -237,10 +228,8 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 				{
 					tilelist::iterator pp = p;
 					if (wParam&MK_CONTROL)
-						//m_ctrl.InfoList.setSelection (index, p->Selected?0:7);
 						p->Selected = p->Selected?0:7;
 					else 
-						//m_ctrl.InfoList.setSelection (index, 1);
 						p->Selected = 1;
 					CDC *pDC = NULL;
 					int indexx=0;
@@ -250,7 +239,6 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 						{
 							if (!(wParam&MK_CONTROL))
 							{
-								//m_ctrl.InfoList.setSelection (indexx, 0);
 								p->Selected = 0;
 								if (pDC==NULL) pDC = m_ctrl.GetDC();
 								m_ctrl.DrawTile(p,pDC,1,m_128x128);
@@ -289,22 +277,15 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 			lbutton = 1;
-			//CDC *pDC = GetDC();
+
 			SIZE size; size.cx = size.cy = 1;
-			/*last_sel.top = m_ctrl.MousePos.x;
-			last_sel.left = m_ctrl.MousePos.y;
-			last_sel.bottom = m_ctrl.MousePos.x;
-			last_sel.right = m_ctrl.MousePos.y;
-			OriginalPos = m_ctrl.MousePos;
-			*/
+
 			last_sel.top = xPos;
 			last_sel.left = yPos;
 			last_sel.bottom = xPos;
 			last_sel.right = yPos;
 			OriginalPos.x=xPos;
 			OriginalPos.y=yPos;
-		//pDC->DrawDragRect(&last_sel,size,NULL,size);
-		//::ReleaseDC(*this,dc);			
 		}
 	}
 	if (message==WM_LBUTTONUP || message==WM_NCLBUTTONUP)
@@ -317,18 +298,6 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 		if (!selection && index!=-1)
 		{
 			int i = 0;
-			CDC *pDC = NULL;
-	/*		for (tilelist::iterator p=m_ctrl.InfoList.GetFirst();p!=m_ctrl.InfoList.GetLast();p++)
-			{
-				if (i!=index && p->Selected)
-				{
-					p->Selected = 0;
-					if (pDC == NULL) pDC = GetDC();
-					m_ctrl.DrawTile(p,pDC,1);
-				}
-				i++;
-			}*/
-			if (pDC) ::ReleaseDC(*this,*pDC);
 		}
 		else if (selection)
 		{
@@ -342,29 +311,11 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 				if (p->Selected&3)
 				{
 					p->Selected=2;
-					//m_ctrl.InfoList.setSelection (index, 2);
 				}
 				else 
 					p->Selected = 0;
-					//m_ctrl.InfoList.setSelection (index, 0);
 			}
 		}
-/*		else if (index==-1)
-		{
-			int i = 0;
-			CDC *pDC = NULL;
-			for (tilelist::iterator p=m_ctrl.InfoList.GetFirst();p!=m_ctrl.InfoList.GetLast();p++)
-			{
-				if ((*p)->Selected)
-				{
-					(*p)->Selected = 0;
-					if (pDC == NULL) pDC = GetDC();
-					m_ctrl.DrawTile(p,pDC);
-				}
-				i++;
-			}
-			if (pDC) ::ReleaseDC(*this,*pDC);
-		}*/
 		selection =0;
 		lbutton = 0;
 	}
@@ -445,7 +396,6 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			pos = SCROLL_MAX - inf.nPage;
 		
 		SetScrollPos(SB_VERT,pos,1);
-		CDC *pDC = m_ctrl.GetDC();
 		rect_scroll.bottom -= rect_scroll.top;
 		rect_scroll.top = 0;
 		rect_clip = rect_scroll;
@@ -465,11 +415,12 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			scroll_pixel -= m_ctrl.scrollpos;
 			if (scroll_pixel)
 			{
+				CDC *pDC = m_ctrl.GetDC();
 				if (abs(scroll_pixel)>(rect_clip.bottom - rect_clip.top)) scroll_pixel = 0;
 				else pDC->ScrollDC(0,scroll_pixel,&rect_scroll,&rect_clip,NULL,NULL);
 
 				tilelist::iterator p = m_ctrl.InfoList.GetFirst(m_128x128);		
-				CBrush brush;
+				CBrush brush (GetSysColor(COLOR_3DFACE));
 				if (scroll_pixel<0)
 				{
 					rect_scroll.top = rect_scroll.bottom + scroll_pixel;
@@ -493,10 +444,10 @@ LRESULT Browse::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 						p++;
 					}
 				}
+				::ReleaseDC(m_ctrl,*pDC);
 			}
-			m_ctrl.lastVBarPos = pos;
-			::ReleaseDC(m_ctrl,*pDC);
 		}
+		m_ctrl.lastVBarPos = pos;
 	}
 	if (message==WM_CLOSE) 
 	{
@@ -526,56 +477,62 @@ unsigned long Browse::MyControllingFunction( void* pParam )
 	for (int i=0;i<br->m_ctrl.InfoList.GetSize(br->m_128x128);i++)
 	{
 		int *ld; 
+		int rot=0;
 		std::string path;
 		LPBITMAPINFO pBmp; 
 		std::vector<NLMISC::CBGRA>* bits;
-		bool bMulAlpha=false;
-		bool bInverted=false;
 
 		switch (br->m_128x128)
 		{
 		case 0:
 			path = tileBank2.getTile (tileBank2.getTileSet (br->m_ctrl.InfoList._tileSet)->getTile128 (i))->
-				getFileName ((CTile::TBitmap)(br->m_ctrl.Texture-1));
+				getRelativeFileName ((CTile::TBitmap)(br->m_ctrl.Texture-1));
 			break;
 		case 1:
 			path = tileBank2.getTile (tileBank2.getTileSet (br->m_ctrl.InfoList._tileSet)->getTile256 (i))->
-				getFileName ((CTile::TBitmap)(br->m_ctrl.Texture-1));
+				getRelativeFileName ((CTile::TBitmap)(br->m_ctrl.Texture-1));
 			break;
 		case 2:
 			{
-				bMulAlpha=true;
 				int index=tileBank2.getTileSet (br->m_ctrl.InfoList._tileSet)->getTransition (i)->getTile();
-				bInverted=tileBank2.getTile (index)->isInvert();
 				if (index!=-1)
-					path = tileBank2.getTile (index)->getFileName ((CTile::TBitmap)(br->m_ctrl.Texture-1));
+				{
+					path = tileBank2.getTile (index)->getRelativeFileName ((CTile::TBitmap)(br->m_ctrl.Texture-1));
+					if (br->m_ctrl.Texture==3)
+						rot = tileBank2.getTile (index)->getRotAlpha ();
+				}
 				else
 					path = "";
 			}
 			break;
+		case 3:
+			// Get diaplcement filename
+			path = tileBank2.getTileSet (br->m_ctrl.InfoList._tileSet)->getDisplacementFileName((CTileSet::TDisplacement)i);
+			break;
 		}
+		std::vector<NLMISC::CBGRA>* pAlpha=NULL;
 		switch (br->m_ctrl.Texture)
 		{
 		case 1:
 			ld = &p->loaded;
 			pBmp = &p->BmpInfo;
 			bits = &p->Bits;
+			pAlpha = &p->alphaBits;
 			break;
 		case 2:
 			ld = &p->nightLoaded;
-			//path = &p->nightPath;
 			pBmp = &p->nightBmpInfo;
 			bits = &p->nightBits;
+			pAlpha = &p->alphaBits;
 			break;
 		case 3:
-			ld = &p->bumpLoaded;
-			//path = &p->bumpPath;
-			pBmp = &p->bumpBmpInfo;
-			bits = &p->bumpBits;
+			ld = &p->alphaLoaded;
+			pBmp = &p->alphaBmpInfo;
+			bits = &p->alphaBits;
 			break;
 		}
 
-		if ((path!="") /*&& !*ld */&& _LoadBitmap(path, pBmp, *bits, bMulAlpha, bInverted))
+		if ((path!="") && _LoadBitmap(tileBank2.getAbsPath() + path, pBmp, *bits, pAlpha, rot))
 		{			
 			*ld=1;
 			int iFV,iLV; br->m_ctrl.GetVisibility(iFV, iLV, br->m_128x128);
@@ -596,7 +553,6 @@ unsigned long Browse::MyControllingFunction( void* pParam )
 void Browse::LoadInThread(void)
 {
 	if (!thread_actif)
-	//CreateThread(NULL, 0, MyControllingFunction, this, 0, &thread_id);
 	MyControllingFunction (this);
 }
 
@@ -656,8 +612,6 @@ void Browse::Init()
 	}		
 	CButton *button = (CButton*)GetDlgItem(IDC_ZOOM1 + m_ctrl.Zoom -1);
 	button->SetCheck(1);
-	/*button = (CButton*)GetDlgItem(IDC_NUM + m_ctrl.Sort -1);
-	button->SetCheck(1);*/
 	button = (CButton*)GetDlgItem(IDC_JOUR + m_ctrl.Texture -1);
 	button->SetCheck(1);
 	button = (CButton*)GetDlgItem(IDC_INFONUM + m_ctrl.InfoTexte -1);
@@ -665,7 +619,6 @@ void Browse::Init()
 	if (cx!=-1 && cy!=-1 && x!=-1 && y!=-1) SetWindowPos(0,x,y,cx,cy,0);
 
 	m_ctrl.Init(land, m_128x128);
-//	_parent = (void*)GetParent();
 	SelectionTerritoire *slt = (SelectionTerritoire*)GetParent();
 	ccount=1;
 	
@@ -673,10 +626,6 @@ void Browse::Init()
 	this->GetWindowRect(&rect);
 	SendMessage(WM_SIZE,rect.right - rect.left,rect.bottom - rect.top); //force resize
 
-/*	DWORD thread_id;
-	CreateThread(NULL, SCROLL_MAX, MyControllingFunction, this, 0, &thread_id);*/	
-	/*CComboBox *list = (CComboBox*)GetDlgItem(IDC_LISTTYPE);		
-	list->InsertString(0,"all"); list->InsertString(1,"custom...");*/
 	SelectionTerritoire *parent = (SelectionTerritoire*)GetParent();
 
 	// The land	
@@ -690,7 +639,7 @@ void Browse::Init()
 		m_ctrl.InfoList.theList128[i].Selected=0;
 		m_ctrl.InfoList.theList128[i].loaded=0;
 		m_ctrl.InfoList.theList128[i].nightLoaded=0;
-		m_ctrl.InfoList.theList128[i].bumpLoaded=0;
+		m_ctrl.InfoList.theList128[i].alphaLoaded=0;
 	}
 	m_ctrl.InfoList.Reload (0, tileSet->getNumTile128 (), 0);
 
@@ -702,7 +651,7 @@ void Browse::Init()
 		m_ctrl.InfoList.theList256[i].Selected=0;
 		m_ctrl.InfoList.theList256[i].loaded=0;
 		m_ctrl.InfoList.theList256[i].nightLoaded=0;
-		m_ctrl.InfoList.theList256[i].bumpLoaded=0;
+		m_ctrl.InfoList.theList256[i].alphaLoaded=0;
 	}
 	m_ctrl.InfoList.Reload (0, tileSet->getNumTile256 (), 1);
 
@@ -713,153 +662,27 @@ void Browse::Init()
 		m_ctrl.InfoList.theListTransition[i].Selected=0;
 		m_ctrl.InfoList.theListTransition[i].loaded=0;
 		m_ctrl.InfoList.theListTransition[i].nightLoaded=0;
-		m_ctrl.InfoList.theListTransition[i].bumpLoaded=0;
+		m_ctrl.InfoList.theListTransition[i].alphaLoaded=0;
 	}
 	m_ctrl.InfoList.Reload (0, CTileSet::count, 2);
 
-	/*// Group name
-	int j;
-	for (j=0; j<pLand->getTileTypeCount(); j++)
+	// Displacement
+	for (i=0; i<CTileSet::CountDisplace; i++)
 	{
-		list->InsertString(list->GetCount(), pLand->getTileType(j).c_str() );
+		m_ctrl.InfoList.theListDisplacement[i].id=i;
+		m_ctrl.InfoList.theListDisplacement[i].Selected=0;
+		m_ctrl.InfoList.theListDisplacement[i].loaded=0;
+		m_ctrl.InfoList.theListDisplacement[i].nightLoaded=0;
+		m_ctrl.InfoList.theListDisplacement[i].alphaLoaded=0;
 	}
-	
-	// Normal tile name
-	for (j=0; j<pLand->getTileCount(); j++)
-	{
-		CTileBankTile* pTile=pLand->getTile (j);
-		const char* name=pTile->getFileName (CTileBankTile::diffuse).c_str();
-		const char* nameNight=pTile->getFileName (CTileBankTile::additive).c_str();
-		const char* nameBump=pTile->getFileName (CTileBankTile::bump).c_str();
-		if (strcmp ( name, "")==0)
-			name = NULL;
-		if (strcmp ( nameNight, "")==0)
-			nameNight = NULL;
-		if (strcmp ( nameBump, "")==0)
-			nameBump = NULL;
-		m_ctrl.InfoList.Add(name, nameNight, nameBump,  pTile->getTransition(CTileBankTile::north), 
-			pTile->getTransition(CTileBankTile::south), pTile->getTransition(CTileBankTile::west), 
-			pTile->getTransition(CTileBankTile::east), pTile->getTypeMask ());
-	}*/
-
+	m_ctrl.InfoList.Reload (0, CTileSet::CountDisplace, 3);
 
 	CString fullpath = parent->DefautPath + parent->CurrentTerritory;
-#if 0
-	char *DefautPath = parent->DefautPath.GetBuffer(256);
-
-	char *str = fullpath.GetBuffer(256);
-	char TilePath[256];
-	FILE *ptr = fopen(str,"rt");
-	if (!ptr) return;
-	int i=0; int h,d,g,b;
-	int nGroup,cursel;	
-	fscanf(ptr,"%d %d\n",&nGroup,&cursel);
-	for (int j=0;j<nGroup;j++)
-	{
-		char sName[100];
-		fscanf(ptr,"%s\n",sName);
-		list->InsertString(list->GetCount(),sName);
-	}
-	if (cursel!=-1)
-	{
-		list->SetCurSel(cursel);
-	}
-	while (1)
-	{
-		int g1,g2;
-		tilelist::const_iterator p;
-		fscanf(ptr,"%Xh%Xh %d %d %d %d\n",&g1,&g2,&h,&g,&b,&d);
-		if (feof(ptr)) break;
-		int s=ftell(ptr);
-		fgets(TilePath,256,ptr);
-		s=ftell(ptr)-s-2;
-		TilePath[s]=0;
-		if (!strcmp(TilePath,"void"))
-		{
-			m_ctrl.InfoList.Add(0,m_ctrl.Texture);
-		}
-		else 
-		{
-			if (TilePath[1]!=':') //check if it's a relative path
-			{
-				char temp[256];
-				sprintf(temp,"%s%s%c",DefautPath,TilePath,0);
-				strcpy(TilePath,temp);
-			}
-			if (m_ctrl.InfoList.Add(TilePath,1))
-			{
-				p = m_ctrl.InfoList.theList.end(); p--;
-				p->groupFlag = (((__int64)g1)<<32 | g2);
-				p->h = h;
-				p->g = g;
-				p->b = b;
-				p->d = d;
-			}
-		}
-		
-		if (feof(ptr)) break;
-		s=ftell(ptr);
-		fgets(TilePath,256,ptr);
-		s=ftell(ptr)-s-2;
-		TilePath[s]=0;
-		if (strcmp(TilePath,"void")) 
-		{
-			if (TilePath[1]!=':') //check if it's a relative path
-			{
-				char temp[256];
-				sprintf(temp,"%s%s%c",DefautPath,TilePath,0);
-				strcpy(TilePath,temp);
-			}
-			p = m_ctrl.InfoList.theList.end(); p--;
-			p->nightPath = new char[strlen(TilePath)+1];
-			strcpy(p->nightPath,TilePath);
-		}
-		if (feof(ptr)) break;
-		s=ftell(ptr);
-		fgets(TilePath,256,ptr);
-		s=ftell(ptr)-s-2;
-		TilePath[s]=0;
-		if (strcmp(TilePath,"void")) 
-		{
-			if (TilePath[1]!=':') //check if it's a relative path
-			{
-				char temp[256];
-				sprintf(temp,"%s%s%c",DefautPath,TilePath,0);
-				strcpy(TilePath,temp);
-			}
-			p = m_ctrl.InfoList.theList.end(); p--;
-			p->bumpPath = new char[strlen(TilePath)+1];
-			strcpy(p->bumpPath,TilePath);
-		}
-		i++;
-	}
-	fclose(ptr);
-	//m_ctrl.InsertItemInCtrlList(m_ctrl.InfoList.GetFirst(),m_ctrl.InfoList.GetLast());
-#endif // 0
-/*
-	fullpath += EDGEFILE_EXT;
-	char *str;
-	str = fullpath.GetBuffer(256);
-	FILE *ptr = fopen(str,"rb");
-	if (!ptr) return;
-	int n;
-	fread(&n,1,sizeof(int),ptr);
-	for (int h=0;h<n;h++)
-	{
-		_Edge edge;
-		fread(&edge.size,1,sizeof(int),ptr);
-		edge.line = new char[edge.size*3];
-		fread(edge.line,1,edge.size*3,ptr);
-		while (m_ctrl.smEdgeList) {}
-		m_ctrl.smEdgeList = 1;
-		m_ctrl.EdgeList.insert(m_ctrl.EdgeList.end(),edge);
-		m_ctrl.smEdgeList = 0;
-	}
-	fclose(ptr);*/
 	
-	//OnSelchangeListtype();
 	LoadInThread();
 	UpdateData (FALSE);
+	
+	OnChangeVariety();
 }
 
 
@@ -867,16 +690,9 @@ void Browse::Init()
 void Browse::OnSize(UINT nType, int cx, int cy) 
 {
 	CDialog::OnSize(nType, cx, cy);
-/*	if (!m_ctrl.count_) return;
-	RECT rect,parent;
-	GetWindowRect(&parent);
-	m_ctrl.GetWindowRect(&rect);*/
-//	m_ctrl.SetWindowPos(NULL,180,20,cx - (rect.left - parent.left) - 20,cy - (rect.top - parent.top),SWP_SHOWWINDOW | SWP_NOZORDER);
-
-
 }
 
-void Browse::OnBump() 
+void Browse::OnAlpha ()
 {
 	// TODO: Add your control notification handler code here
 	m_ctrl.Texture = 3;
@@ -884,7 +700,7 @@ void Browse::OnBump()
 	m_ctrl.RedrawWindow();
 }
 
-void Browse::OnJour() 
+void Browse::OnJour ()
 {
 	// TODO: Add your control notification handler code here
 	m_ctrl.Texture = 1;
@@ -892,7 +708,7 @@ void Browse::OnJour()
 	m_ctrl.RedrawWindow();
 }
 
-void Browse::OnNuit() 
+void Browse::OnNuit ()
 {
 	// TODO: Add your control notification handler code here
 	m_ctrl.Texture = 2;
@@ -949,7 +765,6 @@ void Browse::OnDestroy()
 		RegSetValueEx(regkey,REGKEY_BUTTONTEXTURE,0,REG_DWORD,(const unsigned char*)&m_ctrl.Texture,4);
 		RegSetValueEx(regkey,REGKEY_BUTTONSORT,0,REG_DWORD,(const unsigned char*)&m_ctrl.Sort,4);
 		RegSetValueEx(regkey,REGKEY_BUTTONTEXTINFO,0,REG_DWORD,(const unsigned char*)&m_ctrl.InfoTexte,4);
-		//RegSetValueEx(regkey,REGKEY_LISTCOMBOBOX,0,REG_DWORD,(const unsigned char*)&sel,4);
 		RegCloseKey(regkey);
 	}
 }
@@ -959,11 +774,6 @@ void Browse::OnOk()
 	// TODO: Add your control notification handler code here
 	if (thread_actif) return;
 
-	/*if (::MessageBox (NULL, "Are you sure you want to cancel?", "Cancel", MB_OK|MB_ICONQUESTION|MB_YESNO)==IDYES)
-	{
-		this->SendMessage(WM_CLOSE);
-		EndDialog(1);
-	}*/
 	this->SendMessage(WM_CLOSE);
 	EndDialog(1);
 }
@@ -977,73 +787,48 @@ void Browse::OnRButtonDown(UINT nFlags, CPoint point)
 
 void Browse::OnSelchangeListtype() 
 {
-	// TODO: Add your control notification handler code here
-	/*CComboBox *list = (CComboBox*)GetDlgItem(IDC_LISTTYPE);
-	int sel = list->GetCurSel();
-	showNULL = 0;
-	if (sel!=LB_ERR && list->GetCount()>=2 && oldsel!=sel)
-	{
-		sortMode = 1;
-		if (sel==0)
-		{
-			SortTile = 0;
-			flagGroupSort = 0;
-			m_ctrl.InfoList.Sort();
-		}
-		else if (sel==1 && list->GetCount()>=2) //custom ...
-		{
-			Custom dialog;
-			dialog.clist = (CComboBox*)GetDlgItem(IDC_LISTTYPE);
-			dialog.DoModal();
-			if (dialog.bOk)
-			{
-				flagGroupSort = dialog.flag;
-				SortTile = 1;
-				if (!flagGroupSort) showNULL = 1;				
-				sortMode = dialog.mode;
-				m_ctrl.InfoList.Sort();
-			}
-		}
-		else if (sel>=2)
-		{
-			SortTile = 1;
-			flagGroupSort = 1;
-			for (int i = 2;i<sel;i++) flagGroupSort<<=1;
-			m_ctrl.InfoList.Sort();
-		}
-		m_ctrl.RemoveSelection();
-		LoadInThread();
-		m_ctrl.RedrawWindow();
-	}*/
 }
 
 void Browse::OnUpdateTiles() 
 {
 	// TODO: Add your control notification handler code here
-	/*__int64 temp = flagGroupSort;
-	flagGroupSort = 0;*/
 	LoadInThread();
-	//flagGroupSort = temp;
-	//m_ctrl.EdgeList.clear();
-	/*for (tilelist::iterator p = m_ctrl.InfoList.theList.begin();p!=m_ctrl.InfoList.theList.end();++p) 
-		m_ctrl.CheckTile(&(*p));*/
 }
 
 
 void Browse::OnChangeVariety()
 {
 	UpdateData();
-	m_ctrl.UpdateSize(m_128x128);
+	m_ctrl.UpdateSize (m_128x128);
+
+	// Enable window
+	GetDlgItem (IDC_JOUR)->EnableWindow (m_128x128!=3);
+	GetDlgItem (IDC_NUIT)->EnableWindow (m_128x128!=3);
+	GetDlgItem (IDC_ALPHA)->EnableWindow (m_128x128==2);
+	GetDlgItem (IDC_BATCH_LOAD)->EnableWindow (m_128x128==2);
+
+	if ((m_ctrl.Texture==3)&&(m_128x128!=2))
+	{
+		m_ctrl.Texture=2;
+		((CButton*)GetDlgItem (IDC_ALPHA))->SetCheck (0);
+		((CButton*)GetDlgItem (IDC_NUIT))->SetCheck (1);
+	}
+
+	if ((m_ctrl.Texture!=1)&&(m_128x128==3))
+	{
+		m_ctrl.Texture=1;
+		((CButton*)GetDlgItem (IDC_ALPHA))->SetCheck (0);
+		((CButton*)GetDlgItem (IDC_NUIT))->SetCheck (0);
+		((CButton*)GetDlgItem (IDC_JOUR))->SetCheck (1);
+	}
+
 	m_ctrl.Invalidate ();
-	/*int iFV,iLV;
-	GetVisibility(iFV, iLV, parent->m_128x128);
-	UpdateBar(iFV, iLV, parent->m_128x128);*/
 	UpdateData(FALSE);
 }
 
 void Browse::OnBatchLoad ()
 {
-	CFileDialog sFile (true, NULL, NULL /*m_ctrl.LastPath.c_str()*/, OFN_ENABLESIZING,
+	CFileDialog sFile (true, NULL, NULL, OFN_ENABLESIZING,
 		"Targa bitmap (*.tga)|*.tga|All files (*.*)|*.*||",NULL);
 
 	if (sFile.DoModal()==IDOK)
@@ -1054,14 +839,6 @@ void Browse::OnBatchLoad ()
 		char sExt[256];
 		_splitpath (sFile.GetPathName(), sDrive, sPath, sName, sExt);
 
-		// Try to load inverted tile ?
-		bool bInvert=false;
-		if (m_ctrl.Texture==1)
-		{
-			if (MessageBox ("Do you want to try loading tiles with inverted alpha ?", "tile edit", MB_YESNO|MB_ICONQUESTION)==IDYES)
-				bInvert=true;
-		}
-
 		// look for some numbers..
 		char *sNumber=sName+strlen(sName)-1;
 		while ((sNumber>sName)&&(*sNumber>='0')&&(*sNumber<='9'))
@@ -1070,61 +847,278 @@ void Browse::OnBatchLoad ()
 		}
 		sNumber[1]=0;
 
+		bool rotate=false;
+		if (::MessageBox (NULL, "Do you want to use rotation to reuse alpha tiles ?", "Import rotated tiles", MB_OK|MB_ICONQUESTION|MB_YESNO)==IDYES)
+			rotate=true;
+
 		for (int i=0; i<CTileSet::count; i++)
 		{
-			bool bLoadInvert=false;
-			CTileSetTransition* trans=tileBank2.getTileSet (land)->getTransition (i);
-			if (tileBank2.getTile (trans->getTile())->getFileName (m_ctrl.Texture==1?CTile::diffuse:(m_ctrl.Texture==2?CTile::additive:CTile::bump))=="")
+			if (m_ctrl.Texture==3)
 			{
-				// Try to load a tile with a file name like /tiletransition0.tga
-				char sName2[256];
-				char sFinal[256];
-				sprintf (sName2, "%s%d", sName, i);
-				_makepath (sFinal, sDrive, sPath, sName2, sExt);
-				FILE *pFile=fopen (sFinal, "rb");
-				if (!pFile)
+				// Current transition
+				CTileSet::TTransition transition=(CTileSet::TTransition)i;
+
+				// Transition to patch
+				CTileSetTransition* trans=tileBank2.getTileSet (land)->getTransition (transition);
+				if (tileBank2.getTile (trans->getTile())->getRelativeFileName (CTile::alpha)=="")
 				{
-					// Try to load a name like /tiletransition00.tga
-					sprintf (sName2, "%s%02d", sName, i);
-					_makepath (sFinal, sDrive, sPath, sName2, sExt);
-					pFile=fopen (sFinal, "rb");
-					
-					if (!pFile)
+					// Try to load transition with rotation
+					for (int rot=0; rot<4; rot++)
 					{
-						if (bInvert)
+						// Try to load a tile with a file name like /tiletransition0.tga
+						char sName2[256];
+						char sFinal[256];
+						sprintf (sName2, "%s%02d", sName, (int)transition);
+						_makepath (sFinal, sDrive, sPath, sName2, sExt);
+						FILE *pFile=fopen (sFinal, "rb");
+
+						// Close the file and add the tile if opened
+						if (pFile)
 						{
-							// *** Try to load an inverted alpha transition
-							bLoadInvert=true;
+							fclose (pFile);
+							m_ctrl.InfoList.setTileTransitionAlpha (i, sFinal, (4-rot)%4);
 
-							// Find the border desc of the wanted tile
-							CTileSet::TTransition invert=tileBank2.getTileSet (land)->getComplementaryTransition ((CTileSet::TTransition)i);
-
-							// *** Load it by the two ways
-
-							// Try to load a tile with a file name like /tiletransition0.tga
-							sprintf (sName2, "%s%d", sName, invert);
-							_makepath (sFinal, sDrive, sPath, sName2, sExt);
-							pFile=fopen (sFinal, "rb");
-							if (!pFile)
-							{
-								// Try to load a name like /tiletransition00.tga
-								sprintf (sName2, "%s%02d", sName, invert);
-								_makepath (sFinal, sDrive, sPath, sName2, sExt);
-								pFile=fopen (sFinal, "rb");
-							}
+							// End
+							break;
 						}
+
+						// Rotate the transition
+						transition=CTileSet::rotateTransition (transition);
+
+						if (!rotate)
+							break;
 					}
 				}
+			}
+			else
+			{
+				// Current transition
+				CTileSet::TTransition transition=(CTileSet::TTransition)i;
 
-				// Close the file and add the tile if opened
-				if (pFile)
+				// Transition to patch
+				CTileSetTransition* trans=tileBank2.getTileSet (land)->getTransition (transition);
+				if (tileBank2.getTile (trans->getTile())->getRelativeFileName (m_ctrl.Texture==1?CTile::diffuse:CTile::additive)=="")
 				{
-					fclose (pFile);
-					m_ctrl.InfoList.setTileTransition (i, sFinal, m_ctrl.Texture==1?CTile::diffuse:(m_ctrl.Texture==2?CTile::additive:CTile::bump), bLoadInvert);
+					// Try to load a tile with a file name like /tiletransition0.tga
+					char sName2[256];
+					char sFinal[256];
+					sprintf (sName2, "%s%02d", sName, (int)transition);
+					_makepath (sFinal, sDrive, sPath, sName2, sExt);
+					FILE *pFile=fopen (sFinal, "rb");
+
+					// Close the file and add the tile if opened
+					if (pFile)
+					{
+						fclose (pFile);
+						m_ctrl.InfoList.setTileTransition (i, sFinal, m_ctrl.Texture==1?CTile::diffuse:CTile::additive);
+					}
 				}
 			}
 		}
 		m_ctrl.Invalidate ();
 
 	}
+}
+
+void Browse::UpdateFlags ()
+{
+	SubGroup0=0;
+	SubGroup1=0;
+	SubGroup2=0;
+	SubGroup3=0;
+
+	// Flags
+	uint8 or=0, and=0xff;
+	bool find=false;
+
+	// For each 
+	for (int i=0;i<m_ctrl.InfoList.GetSize(m_128x128);i++)
+	{
+		// Selected ?
+		if (m_ctrl.InfoList.theList[m_128x128][i].Selected)
+		{
+			// Tile index
+			sint index;
+
+			// get flags
+			switch (m_128x128)
+			{
+			case 0:
+				// Tile index
+				index=tileBank2.getTileSet (land)->getTile128 (i);
+				break;
+			case 1:
+				// Tile index
+				index=tileBank2.getTileSet (land)->getTile256 (i);
+				break;
+			case 2:
+				// Tile index
+				index=tileBank2.getTileSet (land)->getTransition (i)->getTile ();
+				break;
+			case 3:
+				// not found
+				index=-1;
+				break;
+			default:
+				nlassert (0);	// no!
+			}
+
+			// valid flags
+			if (index!=-1)
+			{
+				// Get flags
+				or|=tileBank2.getTile (index)->getGroupFlags ();
+				and&=tileBank2.getTile (index)->getGroupFlags ();
+
+				// Find one
+				find=true;
+			}
+		}
+	}
+
+	// Valid ctrl
+	GetDlgItem (IDC_SUBGROUP0)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP1)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP2)->EnableWindow (find?TRUE:FALSE);
+	GetDlgItem (IDC_SUBGROUP3)->EnableWindow (find?TRUE:FALSE);
+
+	// Find at least one tile ?
+	if (find)
+	{
+		// Set UI
+		SubGroup0=(and&1)?1:(or&1)?2:0;
+		SubGroup1=(and&2)?1:(or&2)?2:0;
+		SubGroup2=(and&4)?1:(or&4)?2:0;
+		SubGroup3=(and&8)?1:(or&8)?2:0;
+	}
+
+	// Update UI data
+	UpdateData (FALSE);
+}
+
+void Browse::Flags (int flagNumber, bool go)
+{
+	// For each 
+	for (int i=0;i<m_ctrl.InfoList.GetSize(m_128x128);i++)
+	{
+		// Selected ?
+		if (m_ctrl.InfoList.theList[m_128x128][i].Selected)
+		{
+			// Tile index
+			sint index;
+
+			// get flags
+			switch (m_128x128)
+			{
+			case 0:
+				// Tile index
+				index=tileBank2.getTileSet (land)->getTile128 (i);
+				break;
+			case 1:
+				// Tile index
+				index=tileBank2.getTileSet (land)->getTile256 (i);
+				break;
+			case 2:
+				// Tile index
+				index=tileBank2.getTileSet (land)->getTransition (i)->getTile ();
+				break;
+			default:
+				nlassert (0);	// no!
+			}
+
+			// valid flags
+			if (index!=-1)
+			{
+				// Get flags
+				uint8 value=tileBank2.getTile (index)->getGroupFlags ();
+
+				// Clear flag
+				value&=~(1<<flagNumber);
+
+				// Set the flag
+				if (go)
+					value|=(1<<flagNumber);
+
+				// Setup
+				tileBank2.getTile (index)->setGroupFlags (value);
+			}
+		}
+	}
+}
+
+
+void Browse::OnSubgroup0() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup0==2)
+	{
+		SubGroup0=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup0!=2);
+	if (SubGroup0==0)
+		Flags (0, false);
+	if (SubGroup0==1)
+		Flags (0, true);
+}
+
+void Browse::OnSubgroup1() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup1==2)
+	{
+		SubGroup1=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup1!=2);
+	if (SubGroup1==0)
+		Flags (1, false);
+	if (SubGroup1==1)
+		Flags (1, true);
+}
+
+void Browse::OnSubgroup2() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup2==2)
+	{
+		SubGroup2=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup2!=2);
+	if (SubGroup2==0)
+		Flags (2, false);
+	if (SubGroup2==1)
+		Flags (2, true);
+}
+
+void Browse::OnSubgroup3() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// Check if clicked
+	UpdateData ();
+	if (SubGroup3==2)
+	{
+		SubGroup3=0;
+		UpdateData (FALSE);
+	}
+
+	nlassert (SubGroup3!=2);
+	if (SubGroup3==0)
+		Flags (3, false);
+	if (SubGroup3==1)
+		Flags (3, true);
 }

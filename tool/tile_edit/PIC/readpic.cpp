@@ -32,6 +32,15 @@ bool	PIC_LoadPic(string path, vector<NLMISC::CBGRA> &tampon, uint &Width, uint &
 	tampon.resize(w*h);
 	switch(depth)
 	{
+		case 8:
+			for(i=0;i<w*h;i++)
+			{
+				tampon[i].R= data[i];
+				tampon[i].G= data[i];
+				tampon[i].B= data[i];
+				tampon[i].A= data[i];
+			}
+			break;
 		case 24:
 			for(i=0;i<w*h;i++)
 			{

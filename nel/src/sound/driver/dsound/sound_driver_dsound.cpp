@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.25 2003/12/31 16:11:54 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.26 2004/01/15 19:18:52 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -668,7 +668,7 @@ void CSoundDriverDSound::writeProfile(ostream& out)
 	out << " - c: " << CSourceDSound::getAverageCopyTime();
 	out << " - u: " << CSourceDSound::getAverageUnlockTime() << "\n";
 	out << "update percentage: --- " << getUpdatePercentage() << "\n";
-	out << "update num sources --- " << getAverageUpdateSources() << "\n";
+	out << "update num sources --- " << (int)getAverageUpdateSources() << "\n";
 	out << "update byte size --- " << CSourceDSound::getAverageUpdateSize() << "\n";
 	out << "swap time --- " << CSourceDSound::getTestAverage() << "\n";
 	out << "src --- " << countPlayingSources() << "\n";

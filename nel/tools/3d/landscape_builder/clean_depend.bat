@@ -1,1 +1,0 @@
-del zone_depend\*.depend /Q

@@ -1,7 +1,0 @@
-; georges.def : Declares the module parameters for the DLL.
-
-LIBRARY      "georges"
-DESCRIPTION  'georges Windows Dynamic Link Library'
-
-EXPORTS
-    ; Explicit exports can go here

@@ -1,4 +1,0 @@
-mkdir bank
-mkdir smallbank
-
-

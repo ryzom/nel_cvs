@@ -1,6 +1,0 @@
-mkdir shape
-mkdir shape_with_coarse_mesh
-mkdir lightmap
-mkdir lightmap_16_bits
-mkdir shape_with_coarse_mesh_builded
-

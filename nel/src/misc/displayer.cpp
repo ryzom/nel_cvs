@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.14 2001/05/02 10:32:46 cado Exp $
+ * $Id: displayer.cpp,v 1.15 2001/05/28 11:39:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -194,7 +194,44 @@ void CStdDisplayer::doDisplay ( const TDisplayInfo& args, const char *message )
 
 		ss2 << message;
 
-		OutputDebugString(ss2.str().c_str());
+		const sint maxOutString = 2*1024;
+
+		if(ss2.str().size() < maxOutString)
+		{
+			OutputDebugString(ss2.str().c_str());
+		}
+		else
+		{
+			/*tputDebugString(ss2.str().c_str());
+			OutputDebugString("\n\t\t\t");
+			OutputDebugString("message end: ");
+			OutputDebugString(&message[strlen(message) - 1024]);
+			OutputDebugString("\n");*/
+
+			sint count = 0;	
+			uint n = strlen(message);
+			std::string s(&ss2.str().c_str()[0], (ss2.str().size() - n));
+			OutputDebugString(s.c_str());
+			
+			while(true)
+			{												
+				
+				if((n - count) < maxOutString )
+				{
+					s = std::string(&message[count], (n - count));
+					OutputDebugString(s.c_str());
+					OutputDebugString("\n");
+					break;
+				}	
+				else
+				{
+					s = std::string(&message[count] , count + maxOutString);
+					OutputDebugString(s.c_str());
+					OutputDebugString("\n\t\t\t");
+					count += maxOutString;
+				}
+			}
+		}
 	}
 #endif
 }

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.4 2001/06/25 16:11:23 vizerie Exp $
+ * $Id: particle_system.h,v 1.5 2001/07/04 16:00:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -139,14 +139,14 @@ class CParticleSystemProcess : public NLMISC::IStreamable
 		* They must be set again if the edition pass, that show forces and zone, is used
 		*/
 		virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;		
-		
+			
 		
 	protected:
 		CParticleSystem *_Owner ;
 
 		// true if the system basis is used for display and motion
 		bool _SystemBasisEnabled ;
-
+	
 } ;
 
 
@@ -320,7 +320,11 @@ public:
 		lb = _CurrEditedElementLocatedBindable ;
 	 }
      		
-		
+	/// set the name of the system
+	void setName(const std::string &s) { _Name = s ; }
+
+	/// get the name of the system
+	std::string getName(void) const { return _Name ; }
 		
 
 protected:
@@ -358,6 +362,11 @@ protected:
 	 */
 
 	CScene *_Scene ;
+
+
+	// contains the name of the system. (VERSION >= 2 only)
+	std::string _Name ;
+
 
 };
 

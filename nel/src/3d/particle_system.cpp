@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.19 2001/07/04 12:38:56 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.20 2001/07/04 16:00:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,7 +79,7 @@ void CParticleSystemProcess::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
 	f.serialVersion(1) ;
 	f.serialPtr(_Owner) ;
-	f.serial(_SystemBasisEnabled) ;
+	f.serial(_SystemBasisEnabled) ;	
 }
 
 
@@ -131,7 +131,7 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	f.serialVersion(1) ;	
+	sint version =  f.serialVersion(2) ;	
 	//f.serial(_ViewMat) ;
 	f.serial(_SysMat) ;
 	f.serial(_Date) ;
@@ -154,7 +154,12 @@ void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	else
 	{
 		f.serialContPolyPtr(_ProcessVect) ;	
-	}		
+	}
+	
+	if (version > 1)
+	{
+		f.serial(_Name) ;
+	}
 }
 
 

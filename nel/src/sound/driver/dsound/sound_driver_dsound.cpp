@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.15 2003/03/03 13:45:29 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.16 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,9 @@ CSoundDriverDSound* CSoundDriverDSound::_Instance = NULL;
 uint32 CSoundDriverDSound::_TimerPeriod = 100;
 HINSTANCE CSoundDriverDllHandle = 0;
 HWND CSoundDriverWnd = 0;
+
+/// import io proc def from buffer_dsound.
+LRESULT NelIOProc(LPSTR lpmmioinfo, UINT uMsg, LONG lParam1, LONG lParam2);
 
 
 // ******************************************************************
@@ -108,6 +111,11 @@ __declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useE
 		return 0;
 	}
 	
+/*	// install the NeL Io routine
+	LPMMIOPROC ret = mmioInstallIOProc(mmioStringToFOURCC("NEL_", 0), (LPMMIOPROC)NelIOProc, MMIO_INSTALLPROC);
+	nlassert(ret != 0);
+*/
+
 	CSoundDriverDSound *driver = new CSoundDriverDSound();
 	driver->init(CSoundDriverWnd, useEax, stringMapper);
 
@@ -759,11 +767,18 @@ void CSoundDriverDSound::removeBuffer(IBuffer *buffer)
 }
 
 // ******************************************************************
-
+/*
 bool CSoundDriverDSound::loadWavFile(IBuffer *destbuffer, const char *filename)
 {
 	return ((CBufferDSound*) destbuffer)->loadWavFile(filename);
 }
+*/
+
+bool CSoundDriverDSound::readWavBuffer( IBuffer *destbuffer, const std::string &name, uint8 *wavData, uint dataSize)
+{
+	return ((CBufferDSound*) destbuffer)->readWavBuffer(name, wavData, dataSize);
+}
+
 
 // ******************************************************************
 

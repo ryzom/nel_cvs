@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.7 2003/03/03 17:21:17 boucher Exp $
+ * $Id: buffer_dsound.cpp,v 1.8 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #include "stddsound.h"
 #include "buffer_dsound.h"
 #include "nel/misc/path.h"
+#include "nel/misc/file.h"
 #include "sound_driver_dsound.h"
 
 
@@ -41,6 +42,91 @@ using namespace std;
 namespace NLSOUND {
 
 static const std::string	EmptyString;
+
+// Custom mutimedia IO proc.
+/*LRESULT NelIOProc(LPSTR lpmmioinfo, UINT uMsg, LONG lParam1, LONG lParam2)
+{
+	MMIOINFO *mmioinfo = (MMIOINFO*) lpmmioinfo;
+
+	switch (uMsg)
+	{
+	case MMIOM_OPEN:
+		{
+			// do some validity checking.
+			nlassert((mmioinfo->dwFlags & MMIO_CREATE) == 0);
+
+			char *fileName = (char*)lParam1;
+			std::string fullName = NLMISC::CPath::lookup(fileName, false);
+			if (fullName.empty())
+			{
+				mmioinfo->adwInfo[0] = NULL;
+				return MMIOERR_CANNOTOPEN;
+			}
+
+			NLMISC::CIFile	*pfile = new NLMISC::CIFile(fullName);
+
+			mmioinfo->adwInfo[0] = (DWORD)pfile;
+			return MMSYSERR_NOERROR ;
+		}
+		break;
+	case MMIOM_CLOSE:
+		{
+			NLMISC::CIFile *file = (NLMISC::CIFile *)mmioinfo->adwInfo[0];
+			delete file;
+			return 0;
+		}
+		break;
+	case MMIOM_READ:
+		{
+			uint8 *pdst = (uint8*) lParam1;
+			uint  bytes = (uint) lParam2;
+
+			nlassert(mmioinfo->adwInfo[0] != NULL);
+			NLMISC::CIFile *file = (NLMISC::CIFile *)mmioinfo->adwInfo[0];
+			bytes = std::min(uint(file->getFileSize() - file->getPos()), bytes);
+			file->serialBufferWithSize(pdst, bytes);
+
+			mmioinfo->lBufOffset = file->getPos();
+
+			return bytes;
+		}
+		break;
+	case MMIOM_SEEK:
+		{
+			uint newPos = (uint) lParam1;
+			uint seekMode = lParam2;
+
+			nlassert(mmioinfo->adwInfo[0] != NULL);
+			NLMISC::CIFile *file = (NLMISC::CIFile *)mmioinfo->adwInfo[0];
+
+			switch(seekMode)
+			{
+			case SEEK_CUR:
+				file->seek(newPos, NLMISC::IStream::current);
+				break;
+			case SEEK_END:
+				file->seek(newPos, NLMISC::IStream::end);
+				break;
+			case SEEK_SET:
+				file->seek(newPos, NLMISC::IStream::begin);
+				break;
+			}
+
+			mmioinfo->lBufOffset = file->getPos();
+
+			return mmioinfo->lBufOffset;
+		}
+		break;
+	case MMIOM_WRITE:
+		nlassert("Mutimedia IO write is not supported !");
+		break;
+	case MMIOM_WRITEFLUSH:
+		nlassert("Mutimedia IO write is not supported !");
+		break;
+	}
+}
+*/
+
 
 CBufferDSound::CBufferDSound()
 {
@@ -102,7 +188,8 @@ float CBufferDSound::getDuration() const
 }
 
 
-bool CBufferDSound::loadWavFile(const char* file) 
+//bool CBufferDSound::loadWavFile(const char* file) 
+bool CBufferDSound::readWavBuffer(const std::string &name, uint8 *wavData, uint dataSize)
 {
     sint error; 
     sint32 num;
@@ -119,12 +206,26 @@ bool CBufferDSound::loadWavFile(const char* file)
         _Data = NULL;
     }
 
+/*	NLMISC::CIFile	ifile(file);
+	uint size = ifile.getFileSize();
+	uint8 *buffer = new uint8[ifile.getFileSize()];
+	ifile.serialBuffer(buffer, size);
+*/
+	uint size = dataSize;
+	uint8 *buffer = wavData;
 
-    // Open the file 
-    hmmio = mmioOpen((char*) file, NULL, MMIO_READ | MMIO_DENYWRITE);
+	MMIOINFO mmioInfo;
+	memset(&mmioInfo, 0, sizeof(mmioInfo));
+	mmioInfo.pchBuffer = (char*)buffer;
+	mmioInfo.fccIOProc = FOURCC_MEM;
+	mmioInfo.cchBuffer = size;
+	
+
+    hmmio = mmioOpen(NULL, &mmioInfo, MMIO_READ | MMIO_DENYWRITE);
 
     if (hmmio == NULL) 
     {
+		delete [] buffer;
         throw ESoundDriver("Failed to open the file");
     }
 
@@ -137,6 +238,7 @@ bool CBufferDSound::loadWavFile(const char* file)
     if ((error != 0) || (riff_chunk.ckid != FOURCC_RIFF) || (riff_chunk.fccType != mmioFOURCC('W', 'A', 'V', 'E'))) 
     {
         mmioClose(hmmio, 0);
+		delete buffer;
         throw ESoundDriver("Not a WAVE file");
     }
 
@@ -149,12 +251,15 @@ bool CBufferDSound::loadWavFile(const char* file)
     if (error != 0) 
     {
         mmioClose(hmmio, 0);
+
+		delete [] buffer;
         throw ESoundDriver("Couldn't find the format chunk");
     }
 
     if (chunk.cksize < (long) sizeof(PCMWAVEFORMAT)) 
     {
         mmioClose(hmmio, 0);
+		delete [] buffer;
         throw ESoundDriver("Invalid format chunk size");
     }
 
@@ -165,6 +270,7 @@ bool CBufferDSound::loadWavFile(const char* file)
     if (num != (long) sizeof(format)) 
     {
         mmioClose(hmmio, 0);
+		delete [] buffer;
         throw ESoundDriver("Read failed");
     }
 
@@ -175,6 +281,7 @@ bool CBufferDSound::loadWavFile(const char* file)
     if (mmioAscend(hmmio, &chunk, 0) != 0) 
     {
         mmioClose(hmmio, 0);
+		delete [] buffer;
         throw ESoundDriver("Read failed");
     }
 
@@ -184,6 +291,7 @@ bool CBufferDSound::loadWavFile(const char* file)
     if (format.wFormatTag != WAVE_FORMAT_PCM) 
     {
         mmioClose(hmmio, 0);
+		delete [] buffer;
         throw ESoundDriver("Unsupported sample format");
     }
 
@@ -202,6 +310,7 @@ bool CBufferDSound::loadWavFile(const char* file)
         else
         {
             mmioClose(hmmio, 0);
+			delete [] buffer;
             throw ESoundDriver("Unsupported sample size");
         }
     }
@@ -218,12 +327,14 @@ bool CBufferDSound::loadWavFile(const char* file)
         else
         {
             mmioClose(hmmio, 0);
+			delete [] buffer;
             throw ESoundDriver("Unsupported sample size");
         }
     }
     else // Shouldn't normally happen
     {
         mmioClose(hmmio, 0);
+		delete [] buffer;
         throw ESoundDriver("Unsupported number of channels");
     }
 
@@ -235,6 +346,7 @@ bool CBufferDSound::loadWavFile(const char* file)
     if (pos < 0) 
     {
         mmioClose(hmmio, 0);
+		delete [] buffer;
         throw ESoundDriver("Read to set the read position");
     }
 
@@ -243,6 +355,7 @@ bool CBufferDSound::loadWavFile(const char* file)
     if (mmioDescend(hmmio, &data_chunk, &riff_chunk, MMIO_FINDCHUNK) != 0) 
     {
         mmioClose(hmmio, 0);
+		delete [] buffer;
         throw ESoundDriver("Read to set the read position");
     }
 
@@ -255,6 +368,7 @@ bool CBufferDSound::loadWavFile(const char* file)
     if (_Data == NULL)
     {
         mmioClose(hmmio, 0);
+		delete [] buffer;
         throw ESoundDriver("Out of memory");
     }
 
@@ -265,6 +379,7 @@ bool CBufferDSound::loadWavFile(const char* file)
 
     if (num < 0) 
     {
+		delete [] buffer;
         throw ESoundDriver("Failed to read the samples");
     }
     else if ((uint32) num < _Size)
@@ -277,19 +392,19 @@ bool CBufferDSound::loadWavFile(const char* file)
 
     mmioClose(hmmio, 0);
 
+//	delete [] buffer;
 
 	static NLMISC::TStringId	empty(CSoundDriverDSound::instance()->getStringMapper()->map(""));
-	NLMISC::TStringId name = CSoundDriverDSound::instance()->getStringMapper()->map(CFile::getFilenameWithoutExtension(file));
+//	NLMISC::TStringId name = CSoundDriverDSound::instance()->getStringMapper()->map(CFile::getFilenameWithoutExtension(file));
+	NLMISC::TStringId nameId = CSoundDriverDSound::instance()->getStringMapper()->map(CFile::getFilenameWithoutExtension(name));
 	// if name is preseted, the name must match.
-//	if (!_Name.empty())
 	if (_Name != empty)
 	{
-		nlassertex(name == _Name, ("The preseted name and buffer name doen't match !"));
+		nlassertex(nameId == _Name, ("The preseted name and buffer name doen't match !"));
 	}
-	_Name = name;
+	_Name = nameId;
 
 	return true;
-
 }
 
 

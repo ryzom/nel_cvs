@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.h
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.h,v 1.31 2003/03/03 12:58:08 boucher Exp $
+ * $Id: audio_mixer_user.h,v 1.32 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -169,10 +169,10 @@ public:
 	 * If you specify a non null notfoundfiles vector, it is filled with the names of missing files if any.
 	 * You can call this method several times, to load several sound banks.
 	 */
-	virtual uint32				loadSampleBank(bool async, const std::string &filename, std::vector<std::string> *notfoundfiles=NULL );
+	virtual uint32				loadSampleBank(bool async, const std::string &name, std::vector<std::string> *notfoundfiles=NULL );
 	/** Unload buffers.
 	*/
-	virtual bool				unloadSampleBank( const std::string &filename);
+	virtual bool				unloadSampleBank( const std::string &name);
 	virtual void				reloadSampleBanks(bool async);
 	virtual uint32				getLoadedSampleSize();
 
@@ -255,9 +255,9 @@ public:
 
 	/// Set the global path to the sample banks
 	virtual void				setSamplePath(const std::string& path)		{ _SamplePath = path; }
-	virtual void				setPackedSheetPath(const std::string &path)	{_PackedSheetPath = path; }
+	virtual void				setPackedSheetOption(const std::string &path, bool update);
 	std::string					&getPackedSheetPath()						{return _PackedSheetPath; }
-
+	bool						getPackedSheetUpdate()						{return _UpdatePackedSheet; }
 
 
 	CBackgroundSoundManager		*getBackgroundSoundManager()				{ return _BackgroundSoundManager; }
@@ -437,11 +437,15 @@ private:
 	std::string					_SamplePath;
 	/// The path to the packed sheet files
 	std::string					_PackedSheetPath;
+	/// A flag to update or not the packed sheet
+	bool						_UpdatePackedSheet;
 
 	/// Assoc between buffer and source. Used when buffers are unloaded.
 	TBufferToSourceContainer	_BufferToSources;
 
 public: 
+	/// Extension for sample bank list file
+	static const std::string	SampleBankListExt;
 
 	/// All Logical sources
 	TSourceContainer		_Sources;

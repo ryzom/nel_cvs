@@ -1,7 +1,7 @@
 /** \file clustered_sound.h
  * 
  *
- * $Id: clustered_sound.cpp,v 1.7 2003/03/05 10:35:08 besson Exp $
+ * $Id: clustered_sound.cpp,v 1.8 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -240,7 +240,7 @@ CClusteredSound::CClusteredSound()
 void CClusteredSound::init(NL3D::CScene *scene, float portalInterpolate, float maxEarDist, float minGain)
 {
 	// load the sound_group sheets
-	::loadForm("sound_group", CAudioMixerUser::instance()->getPackedSheetPath()+"/sound_groups.packed_sheets", Container, true);
+	::loadForm("sound_group", CAudioMixerUser::instance()->getPackedSheetPath()+"sound_groups.packed_sheets", Container, CAudioMixerUser::instance()->getPackedSheetUpdate());
 
 	// copy the container data into internal structure
 	std::map<std::string, CSoundGroupSerializer>::iterator first(Container.begin()), last(Container.end());

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.41 2003/03/03 12:58:08 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.42 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,9 @@ CAudioMixerUser		*CAudioMixerUser::_Instance = NULL;
 // Return the priority cstring (debug info)
 const char *PriToCStr [NbSoundPriorities] = { "XH", "HI", "MD", "LO" };
 
+const std::string	CAudioMixerUser::SampleBankListExt(".sample_bank_list");
+
+
 
 // ******************************************************************
 
@@ -120,7 +123,7 @@ CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
 									 _BackgroundSoundManager(0),
 									 _PlayingSources(0),
 									 _ClusteredSound(0),
-									_PackedSheetPath(".")
+									_PackedSheetPath("")
 {
 	if ( _Instance == NULL )
 	{
@@ -337,6 +340,13 @@ void				CAudioMixerUser::reset()
 	_Leaving = false;
 }
 
+void	CAudioMixerUser::setPackedSheetOption(const std::string &path, bool update)
+{
+	_PackedSheetPath = CPath::standardizePath(path, false);
+	_UpdatePackedSheet = update;
+}
+
+
 // ******************************************************************
 
 void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
@@ -405,6 +415,40 @@ void				CAudioMixerUser::init(bool useEax, IProgressCallback *progressCallBack)
 	}
 	
 	_StartTime = CTime::getLocalTime();
+
+	// if needed (update == true), build the sample bank list
+	if (_UpdatePackedSheet)
+	{
+		// regenerate the sample banks list
+		const std::string &sp = _SamplePath;
+
+		std::vector <std::string> dirList;
+		CPath::getPathContent(sp, false, true, false, dirList);
+
+		while (!dirList.empty())
+		{
+			nldebug("Generating sample bank list for %s", dirList.back().c_str());
+			std::vector<std::string> sampleList;
+			CPath::getPathContent(dirList.back(), true, false, true, sampleList);
+
+			for (uint i=0; i< sampleList.size(); ++i)
+			{
+				sampleList[i] = CFile::getFilename(sampleList[i]);
+				nldebug("+- Adding sample %s to bank", sampleList[i].c_str());
+			}
+
+			std::vector<std::string> temp;
+			NLMISC::explode(dirList.back(), "/", temp, true);
+			nlassert(!temp.empty());
+			std::string listName(temp.back());
+
+			COFile file(_PackedSheetPath+listName+SampleBankListExt);
+			file.serialCont(sampleList);
+			dirList.pop_back();
+		}
+	}
+
+
 
 	// Create the background sound manager.
 	_BackgroundSoundManager = new CBackgroundSoundManager();
@@ -625,7 +669,7 @@ void CAudioMixerUser::initUserVar()
 	// read all *.user_var_binding sheet in data/sound/user_var folder
 
 	// load the sound_group sheets
-	::loadForm("user_var_binding", _PackedSheetPath+"/user_var_binding.packed_sheets", Container, true);
+	::loadForm("user_var_binding", _PackedSheetPath+"user_var_binding.packed_sheets", Container, _UpdatePackedSheet);
 	// fill the real container.
 	std::map<std::string, CUserVarSerializer>::iterator first(Container.begin()), last(Container.end());
 	for (; first != last; ++first)
@@ -1394,20 +1438,20 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 
 // ******************************************************************
 
-uint32			CAudioMixerUser::loadSampleBank(bool async, const std::string &filename, std::vector<std::string> *notfoundfiles )
+uint32			CAudioMixerUser::loadSampleBank(bool async, const std::string &name, std::vector<std::string> *notfoundfiles )
 {
 //	nlassert( filename != NULL );
 
-	string path = _SamplePath;
-	path.append("/").append(filename);
+//	string path = _SamplePath;
+//	path.append("/").append(filename);
 
-	nldebug( "Loading samples from %s...", path.c_str() );
+	nldebug( "Loading samples bank %s...", name.c_str() );
 
-	CSampleBank* bank = CSampleBank::findSampleBank(CStringMapper::map(path));
+	CSampleBank* bank = CSampleBank::findSampleBank(CStringMapper::map(name));
 	if (bank == NULL)
 	{
 		// create a new sample bank
-		bank = new CSampleBank(path, _SoundDriver);
+		bank = new CSampleBank(name, _SoundDriver);
 	}
 
 	try 
@@ -1416,8 +1460,9 @@ uint32			CAudioMixerUser::loadSampleBank(bool async, const std::string &filename
 	}
 	catch (Exception& e)
 	{
-		if (notfoundfiles) {
-			notfoundfiles->push_back(path);
+		if (notfoundfiles) 
+		{
+			notfoundfiles->push_back(name);
 		}
 		string reason = e.what();
 		nlwarning( "AM: Failed to load the samples: %s", reason.c_str() );
@@ -1427,13 +1472,13 @@ uint32			CAudioMixerUser::loadSampleBank(bool async, const std::string &filename
 	return bank->countSamples();
 }
 
-bool CAudioMixerUser::unloadSampleBank( const std::string &filename)
+bool CAudioMixerUser::unloadSampleBank( const std::string &name)
 {
-	string path = _SamplePath;
-	path.append("/").append(filename);
+//	string path = _SamplePath;
+//	path.append("/").append(filename);
 
-	nldebug( "Unloading samples from %s...", path.c_str() );
-	CSampleBank *pbank = CSampleBank::findSampleBank(CStringMapper::map(path));
+	nldebug( "Unloading samples bank %s...", name.c_str() );
+	CSampleBank *pbank = CSampleBank::findSampleBank(CStringMapper::map(name));
 
 	if (pbank != NULL)
 	{

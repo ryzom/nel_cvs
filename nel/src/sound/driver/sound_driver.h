@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.13 2003/03/03 12:58:09 boucher Exp $
+ * $Id: sound_driver.h,v 1.14 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -149,8 +149,8 @@ public:
 	virtual	ISource			*createSource() = 0;
 
 	/// Temp
-	virtual bool			loadWavFile( IBuffer *destbuffer, const char *filename ) = 0;
-
+//	virtual bool			loadWavFile( IBuffer *destbuffer, const char *filename ) = 0;
+	virtual bool			readWavBuffer( IBuffer *destbuffer, const std::string &name, uint8 *wavData, uint dataSize) = 0;
 
 	/// Commit all the changes made to 3D settings of listener and sources
 	virtual void			commit3DChanges() = 0;

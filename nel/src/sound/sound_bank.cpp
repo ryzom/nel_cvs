@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.11 2003/03/03 12:58:09 boucher Exp $
+ * $Id: sound_bank.cpp,v 1.12 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -277,7 +277,7 @@ void				CSoundBank::load()
 {
 	nlassert(!_Loaded);
 	// Just call the GEORGE::loadFrom method to read all available sounds
-	::loadForm("sound", CAudioMixerUser::instance()->getPackedSheetPath()+"/sounds.packed_sheets", Container, true);
+	::loadForm("sound", CAudioMixerUser::instance()->getPackedSheetPath()+"sounds.packed_sheets", Container, CAudioMixerUser::instance()->getPackedSheetUpdate());
 	_Loaded = true;
 
 	// add all the loaded sound in the sound banks

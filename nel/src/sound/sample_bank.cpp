@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.10 2003/03/03 12:58:08 boucher Exp $
+ * $Id: sample_bank.cpp,v 1.11 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "driver/sound_driver.h"
 #include "driver/buffer.h"
 #include "nel/misc/path.h"
+#include "nel/misc/file.h"
 #include "async_file_manager_sound.h"
 #include "background_sound_manager.h"
 #include "sound_bank.h"
@@ -94,11 +95,11 @@ void	 CSampleBank::reload(bool async)
 
 // ********************************************************
 
-CSampleBank::CSampleBank(const std::string& path, ISoundDriver *sd) 
-	: _SoundDriver(sd), _Path(path), _Loaded(false), _LoadingDone(true), _ByteSize(0)
+CSampleBank::CSampleBank(const std::string& name, ISoundDriver *sd) 
+	: _SoundDriver(sd), _Name(name), _Loaded(false), _LoadingDone(true), _ByteSize(0)
 {
-	_Name = CFile::getFilenameWithoutExtension(_Path);
-	_Banks.insert(make_pair(CStringMapper::map(path), this));
+//	_Name = CFile::getFilenameWithoutExtension(_Path);
+	_Banks.insert(make_pair(CStringMapper::map(_Name), this));
 }
 
 
@@ -145,45 +146,68 @@ void				CSampleBank::load(bool async)
 
 	if (_Loaded)
 	{
-		nlwarning("Trying to load an already loaded bank : %s", _Path);
+		nlwarning("Trying to load an already loaded bank : %s", _Name);
 		return;
 	}
 
 	_LoadingDone = false;
 
-	CPath::getPathContent(_Path, true, false, true, filenames);
+//	CPath::getPathContent(_Path, true, false, true, filenames);
+
+	std::string list = CPath::lookup(_Name+CAudioMixerUser::SampleBankListExt);
+	if (list.empty())
+	{
+		nlwarning("File %s not found to load sample bank %s", (_Name+CAudioMixerUser::SampleBankListExt).c_str(), _Name.c_str());
+		return;
+	}
+
+//	std::vector<std::string> filenames;
+	NLMISC::CIFile sampleBankList(list);
+	sampleBankList.serialCont(filenames);
+
 
 	for (iter = filenames.begin(); iter != filenames.end(); iter++)
 	{
-		IBuffer* buffer = NULL;
+		IBuffer* ibuffer = NULL;
 		try
 		{
-			buffer = _SoundDriver->createBuffer();
-			nlassert(buffer);
+			ibuffer = _SoundDriver->createBuffer();
+			nlassert(ibuffer);
 
 //			std::string sampleName(CFile::getFilenameWithoutExtension(*iter));
 			NLMISC::TStringId sampleName(CStringMapper::map(CFile::getFilenameWithoutExtension(*iter)));
 
 			if (async)
 			{
-				buffer->presetName(sampleName);
+				ibuffer->presetName(sampleName);
 				nldebug("Preloading sample [%s]", CStringMapper::unmap(sampleName).c_str());
 			}
 			else
 			{
-				_SoundDriver->loadWavFile(buffer, (*iter).c_str());
-				_ByteSize += buffer->getSize();
+				std::string fullName = NLMISC::CPath::lookup(*iter, false);
+				if (!fullName.empty())
+				{
+					NLMISC::CIFile	ifile(fullName);
+					uint size = ifile.getFileSize();
+					uint8 *buffer = new uint8[ifile.getFileSize()];
+					ifile.serialBuffer(buffer, size);
+
+					_SoundDriver->readWavBuffer(ibuffer, fullName, buffer, size);
+					_ByteSize += ibuffer->getSize();
+
+					delete [] buffer;
+				}
 			}
-			_Samples[sampleName] = buffer ;
+			_Samples[sampleName] = ibuffer ;
 
 			// Warn the sound bank that the sample are available.
-			CSoundBank::instance()->bufferLoaded(sampleName, buffer);
+			CSoundBank::instance()->bufferLoaded(sampleName, ibuffer);
 		}
 		catch (ESoundDriver &e)
 		{
-			if (buffer != NULL) {
-				delete buffer;
-				buffer = NULL;
+			if (ibuffer != NULL) {
+				delete ibuffer;
+				ibuffer = NULL;
 			}
 			nlwarning("Problem with file '%s': %s", (*iter).c_str(), e.what());
 		}
@@ -209,7 +233,7 @@ void				CSampleBank::load(bool async)
 		// send the first files
 		for (uint i=0; i<ASYNC_LOADING_SPLIT && !_LoadList.empty(); ++i)
 		{
-			CAsyncFileManagerSound::getInstance().loadWavFile(_LoadList.front().first, _Path+"/"+CStringMapper::unmap(_LoadList.front().second)+".wav");
+			CAsyncFileManagerSound::getInstance().loadWavFile(_LoadList.front().first, CStringMapper::unmap(_LoadList.front().second)+".wav");
 			_LoadList.pop_front();
 		}
 		// add a end loading event...
@@ -249,7 +273,7 @@ void CSampleBank::onUpdate()
 			_SplitLoadDone = false;
 			for (uint i=0; i<ASYNC_LOADING_SPLIT && !_LoadList.empty(); ++i)
 			{
-				CAsyncFileManagerSound::getInstance().loadWavFile(_LoadList.front().first, _Path+"/"+CStringMapper::unmap(_LoadList.front().second)+".wav");
+				CAsyncFileManagerSound::getInstance().loadWavFile(_LoadList.front().first, CStringMapper::unmap(_LoadList.front().second)+".wav");
 				_LoadList.pop_front();
 			}
 			// add a end loading event...
@@ -267,7 +291,7 @@ bool				CSampleBank::unload()
 
 	if (!_Loaded)
 	{
-		nlwarning("Trying to unload an already unloaded bank : %s", _Path);
+		nlwarning("Trying to unload an already unloaded bank : %s", _Name);
 	}
 
 	// need to wait end of load ?

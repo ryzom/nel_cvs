@@ -1,7 +1,7 @@
 /** \file sample_bank.h
  * CSampleBank: a set of samples
  *
- * $Id: sample_bank.h,v 1.4 2003/03/03 12:58:08 boucher Exp $
+ * $Id: sample_bank.h,v 1.5 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ public:
 	static uint				getTotalByteSize()				{	return _LoadedSize; };
 
 	/// Constructor
-	CSampleBank(const std::string& path, ISoundDriver *sd);
+	CSampleBank(const std::string& name, ISoundDriver *sd);
 
 	/// Destructor
 	virtual ~CSampleBank();
@@ -112,7 +112,7 @@ public:
 	uint				getSize();
 
 	/// Return the filename
-	const std::string&	getPath() const						{ return _Path; }
+//	const std::string&	getPath() const						{ return _Path; }
 
 	/// Return the name (must be unique)
 	const std::string&	getName() const						{ return _Name; }
@@ -140,7 +140,7 @@ private:
 	TSampleTable		_Samples;
 
 	// Sample bank name and path 
-	std::string			_Path;
+//	std::string			_Path;
 	std::string			_Name;
 
 	// Did we load the buffers.

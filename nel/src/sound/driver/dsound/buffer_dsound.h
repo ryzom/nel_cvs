@@ -1,7 +1,7 @@
 /** \file buffer_dsound.h
  * DSound buffer
  *
- * $Id: buffer_dsound.h,v 1.6 2003/03/03 12:58:09 boucher Exp $
+ * $Id: buffer_dsound.h,v 1.7 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,7 +89,9 @@ public:
 
 	
     /// Load a sound file in the buffer. Throws an exception is an error occurs.
-	virtual bool			loadWavFile(const char* filename);
+//	virtual bool			loadWavFile(const char* filename);
+
+	virtual bool			readWavBuffer(const std::string &name, uint8 *wavData, uint dataSize);
 
 	/// Return a pointer to the sample data
     virtual uint8*			getData() const				{ return _Data; }

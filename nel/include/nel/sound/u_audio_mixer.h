@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.22 2003/03/03 13:03:46 boucher Exp $
+ * $Id: u_audio_mixer.h,v 1.23 2003/03/05 15:14:52 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,7 +130,7 @@ public:
 	 *	This must be set BEFORE calling init.
 	 *	Default is to store packed sheet in the current directory.
 	 */
-	virtual void		setPackedSheetPath(const std::string &path) =0;
+	virtual void		setPackedSheetOption(const std::string &path, bool update) =0;
 	/** Initialization
 	 *
 	 * In case of failure, can throw one of these ESoundDriver (Exception) objects:

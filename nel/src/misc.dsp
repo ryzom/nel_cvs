@@ -729,6 +729,14 @@ SOURCE=..\include\nel\misc\entity_id.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\eval_num_expr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\eval_num_expr.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\fast_mem.cpp
 # End Source File
 # Begin Source File

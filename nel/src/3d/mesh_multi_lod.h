@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.h
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.h,v 1.8 2001/07/12 14:36:53 corvazier Exp $
+ * $Id: mesh_multi_lod.h,v 1.9 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -118,7 +118,7 @@ public:
 	virtual	CTransformShape		*createInstance(CScene &scene);
 
 	/// clip this mesh in a driver.
-	virtual bool	clip(const std::vector<CPlane>	&pyramid);
+	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
 
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque);

@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod.cpp
  * Mesh with several LOD meshes.
  *
- * $Id: mesh_multi_lod.cpp,v 1.8 2001/07/12 14:36:53 corvazier Exp $
+ * $Id: mesh_multi_lod.cpp,v 1.9 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -194,7 +194,7 @@ CTransformShape	*CMeshMultiLod::createInstance(CScene &scene)
 
 // ***************************************************************************
 
-bool CMeshMultiLod::clip(const std::vector<CPlane>	&pyramid)
+bool CMeshMultiLod::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {
 	// Look for the biggest mesh
 	uint meshCount=_MeshVector.size();
@@ -207,7 +207,7 @@ bool CMeshMultiLod::clip(const std::vector<CPlane>	&pyramid)
 		if (slot.MeshGeom)
 		{
 			// Clip this mesh
-			return slot.MeshGeom->clip (pyramid);
+			return slot.MeshGeom->clip (pyramid, worldMatrix);
 		}
 	}
 	return true;

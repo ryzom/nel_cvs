@@ -1,7 +1,7 @@
 /** \file u_bone.h
  * <File description>
  *
- * $Id: u_bone.h,v 1.2 2001/08/01 15:44:27 berenguier Exp $
+ * $Id: u_bone.h,v 1.3 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,8 @@ protected:
 	virtual	~UBone() {}
 	// @}
 
+public:
+
 
 	/// \name Special feature
 	// @{
@@ -62,8 +64,6 @@ protected:
 	virtual	const CMatrix	&getLastWorldMatrixComputed() const =0;
 
 	// @}
-
-public:
 
 
 };

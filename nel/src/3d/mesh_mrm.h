@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.14 2001/07/13 13:22:39 berenguier Exp $
+ * $Id: mesh_mrm.h,v 1.15 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,7 +87,7 @@ public:
 	// @{
 
 	/// clip this mesh in a driver. true if visible.
-	virtual bool	clip(const std::vector<CPlane>	&pyramid);
+	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
 
 	/// render() this mesh in a driver, given an instance and his materials.
 	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha=1);
@@ -482,7 +482,7 @@ public:
 	virtual	CTransformShape		*createInstance(CScene &scene);
 
 	/// clip this mesh in a driver.
-	virtual bool	clip(const std::vector<CPlane>	&pyramid);
+	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
 
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque);

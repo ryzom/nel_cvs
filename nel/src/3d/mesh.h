@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.9 2001/07/09 17:17:05 corvazier Exp $
+ * $Id: mesh.h,v 1.10 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -172,7 +172,7 @@ public:
 	virtual	CTransformShape		*createInstance(CScene &scene);
 
 	/// clip this mesh in a driver.
-	virtual bool	clip(const std::vector<CPlane>	&pyramid);
+	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
 
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv, CTransformShape *trans, bool opaquePass);
@@ -254,7 +254,7 @@ public:
 	// @{
 
 	/// clip this mesh
-	virtual bool	clip(const std::vector<CPlane>	&pyramid);
+	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
 
 	/// render() this mesh in a driver.
 	virtual void	render(IDriver *drv, CTransformShape *trans, bool passOpaque, float polygonCount, float globalAlpha=1);

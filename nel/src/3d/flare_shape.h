@@ -1,7 +1,7 @@
 /** \file flare_shape.h
  * <File description>
  *
- * $Id: flare_shape.h,v 1.4 2001/07/26 17:16:59 vizerie Exp $
+ * $Id: flare_shape.h,v 1.5 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -68,7 +68,7 @@ public:
 	virtual	CTransformShape		*createInstance(CScene &scene) ;
 
 	/// inherited from IShape
-	virtual bool				clip(const std::vector<CPlane>	&pyramid) ;
+	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) ;
 
 	/// inherited from IShape. Does nothing. A new observer was set for that
 	virtual void				render(IDriver *drv, CTransformShape *trans, bool opaquePass) {}

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.32 2001/07/11 11:36:25 berenguier Exp $
+ * $Id: mesh.cpp,v 1.33 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,9 +27,11 @@
 #include "3d/mesh_instance.h"
 #include "3d/scene.h"
 #include "3d/skeleton_model.h"
+#include "nel/misc/bsphere.h"
 
 
 using namespace std;
+using namespace NLMISC;
 
 
 namespace NL3D 
@@ -279,15 +281,24 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 
 
 // ***************************************************************************
-bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid)
+bool	CMeshGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {
+	// Speed Clip: clip just the sphere.
+	CBSphere	localSphere(_BBox.getCenter(), _BBox.getRadius());
+	CBSphere	worldSphere;
+
+	// transform the sphere in WorldMatrix (with nearly good scale info).
+	localSphere.applyTransform(worldMatrix, worldSphere);
+
+	// if out of only plane, entirely out.
 	for(sint i=0;i<(sint)pyramid.size();i++)
 	{
 		// We are sure that pyramid has normalized plane normals.
-		if(!_BBox.clipBack(pyramid[i]))
+		// if SpherMax OUT return false.
+		float	d= pyramid[i]*worldSphere.Center;
+		if(d>worldSphere.Radius)
 			return false;
 	}
-
 	return true;
 }
 
@@ -1029,9 +1040,9 @@ CTransformShape		*CMesh::createInstance(CScene &scene)
 
 
 // ***************************************************************************
-bool	CMesh::clip(const std::vector<CPlane>	&pyramid)
+bool	CMesh::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {
-	return _MeshGeom->clip(pyramid);
+	return _MeshGeom->clip(pyramid, worldMatrix);
 }
 
 

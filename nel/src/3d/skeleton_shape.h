@@ -1,7 +1,7 @@
 /** \file skeleton_shape.h
  * <File description>
  *
- * $Id: skeleton_shape.h,v 1.3 2001/07/05 09:38:49 besson Exp $
+ * $Id: skeleton_shape.h,v 1.4 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,11 +68,8 @@ public:
 	/// Create a CSkeletonModel, which contains bones.
 	virtual	CTransformShape		*createInstance(CScene &scene);
 
-	/// clip this skeleton (no-op).
-	virtual bool	clip(const std::vector<CPlane>	&pyramid)
-	{
-		return true;
-	}
+	/// clip this skeleton.
+	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix);
 
 	/// render() this skeletonshape in a driver  (no-op)
 	virtual void	render(IDriver *drv, CTransformShape *trans, bool opaquePass)

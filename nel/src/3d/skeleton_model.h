@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.3 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: skeleton_model.h,v 1.4 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -179,42 +179,7 @@ public:
 	 *  - call CTransformAnimDetailObs::traverse() => traverseSons.
 	 *  - update animated bones.
 	 */
-	virtual	void	traverse(IObs *caller)
-	{
-		CTransformAnimDetailObs::traverse(caller);
-
-		// test if bones must be updated.
-		CSkeletonModel	*sm= (CSkeletonModel*)Model;
-		if(sm->IAnimatable::isTouched(CSkeletonModel::OwnerBit))
-		{
-			// Retrieve the WorldMatrix of the current CTransformShape.
-			CMatrix		&modelWorldMatrix= HrcObs->WorldMatrix;
-
-			// must test / update the hierarchy of Bones.
-			// Since they are orderd in depth-first order, we are sure that parent are computed before sons.
-			for(uint i=0;i<sm->Bones.size();i++)
-			{
-				sint	fatherId= sm->Bones[i].getFatherId();
-				// if a root bone...
-				if(fatherId==-1)
-					// Compute root bone worldMatrix.
-					sm->Bones[i].compute( NULL, modelWorldMatrix);
-				else
-					// Compute bone worldMatrix.
-					sm->Bones[i].compute( &sm->Bones[fatherId], modelWorldMatrix);
-			}
-
-			sm->IAnimatable::clearFlag(CSkeletonModel::OwnerBit);
-		}
-
-		// Sticked Objects: must update their WorldMatrix.
-		CSkeletonModel::ItStickObjectSet	it;
-		for(it=sm->_StickedObjects.begin(); it!=sm->_StickedObjects.end(); it++)
-		{
-			CBone	&bone= sm->Bones[it->BoneId];
-			it->Transform->updateWorldMatrixFromSkeleton(bone.getWorldMatrix());
-		}
-	}
+	virtual	void	traverse(IObs *caller);
 
 
 public:

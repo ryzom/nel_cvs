@@ -1,7 +1,7 @@
 /** \file flare_shape.cpp
  * <File description>
  *
- * $Id: flare_shape.cpp,v 1.2 2001/07/26 17:16:59 vizerie Exp $
+ * $Id: flare_shape.cpp,v 1.3 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ float				CFlareShape::getNumTriangles (float distance)
 	return count ;
 }
 
-bool				CFlareShape::clip(const std::vector<CPlane>	&pyramid)
+bool				CFlareShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {
 	for (std::vector<NLMISC::CPlane>::const_iterator it = pyramid.begin() ; it != pyramid.end() ; ++it)
 	{

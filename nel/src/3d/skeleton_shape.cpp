@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.5 2001/06/27 15:23:53 corvazier Exp $
+ * $Id: skeleton_shape.cpp,v 1.6 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -96,6 +96,14 @@ float CSkeletonShape::getNumTriangles (float distance)
 {
 	// No polygons
 	return 0;
+}
+
+
+// ***************************************************************************
+bool	CSkeletonShape::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
+{
+	/// clip this skeleton (no-op).
+	return true;
 }
 
 

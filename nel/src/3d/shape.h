@@ -1,7 +1,7 @@
 /** \file shape.h
  * <File description>
  *
- * $Id: shape.h,v 1.4 2001/07/05 09:38:49 besson Exp $
+ * $Id: shape.h,v 1.5 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,8 @@ namespace NL3D
 
 
 using NLMISC::CPlane;
+using NLMISC::CMatrix;
+
 
 class	CTransformShape;
 class	IDriver;
@@ -81,11 +83,12 @@ public:
 	virtual	CTransformShape		*createInstance(CScene &scene);
 
 	/** clip this shape with a pyramid.
-	 * the pyramid is given in object space so the shape do not need to know the matrix of the object.
-	 * \param pyramid the clipping polytope, planes MUST be normalized.
+	 * the pyramid is given in world space.The world matrix of the object is given.
+	 * \param pyramid the clipping polytope, planes are normalized.
+	 * \param worldMatrix the world matrix of the instance.
 	 * \return true if the object is visible, false otherwise. The default behavior is to return true (never clipped).
 	 */
-	virtual bool				clip(const std::vector<CPlane>	&pyramid) {return true;}
+	virtual bool				clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) {return true;}
 
 	/** render() this shape in a driver, with the specified TransformShape information.
 	 * CTransfromShape call this method in the render traversal.

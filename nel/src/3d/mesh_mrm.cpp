@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.17 2001/07/13 13:22:39 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.18 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "3d/mesh_mrm_instance.h"
 #include "3d/scene.h"
 #include "3d/skeleton_model.h"
-#include "nel/misc/common.h"
+#include "nel/misc/bsphere.h"
 
 
 using namespace NLMISC;
@@ -482,15 +482,24 @@ void	CMeshMRMGeom::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alpha
 
 
 // ***************************************************************************
-bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid)
+bool	CMeshMRMGeom::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {
+	// Speed Clip: clip just the sphere.
+	CBSphere	localSphere(_BBox.getCenter(), _BBox.getRadius());
+	CBSphere	worldSphere;
+
+	// transform the sphere in WorldMatrix (with nearly good scale info).
+	localSphere.applyTransform(worldMatrix, worldSphere);
+
+	// if out of only plane, entirely out.
 	for(sint i=0;i<(sint)pyramid.size();i++)
 	{
 		// We are sure that pyramid has normalized plane normals.
-		if(!_BBox.clipBack(pyramid[i]))
+		// if SpherMax OUT return false.
+		float	d= pyramid[i]*worldSphere.Center;
+		if(d>worldSphere.Radius)
 			return false;
 	}
-
 	return true;
 }
 
@@ -1536,9 +1545,9 @@ CTransformShape		*CMeshMRM::createInstance(CScene &scene)
 
 
 // ***************************************************************************
-bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid)
+bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix)
 {
-	return _MeshMRMGeom.clip(pyramid);
+	return _MeshMRMGeom.clip(pyramid, worldMatrix);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file mesh_geom.h
  * <File description>
  *
- * $Id: mesh_geom.h,v 1.4 2001/07/09 17:17:05 corvazier Exp $
+ * $Id: mesh_geom.h,v 1.5 2001/08/02 08:34:32 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/plane.h"
+#include "nel/misc/matrix.h"
 
 
 namespace NLMISC
@@ -44,6 +45,7 @@ namespace NL3D
 class IDriver;
 class CTransformShape;
 using NLMISC::CPlane;
+using NLMISC::CMatrix;
 
 
 // ***************************************************************************
@@ -63,12 +65,13 @@ public:
 	virtual ~IMeshGeom() {}
 
 
-	/** clip this meshGeom with a pyramid.
-	 * the pyramid is given in object space so the shape do not need to know the matrix of the object.
-	 * \param pyramid the clipping polytope, planes MUST be normalized.
+	/** clip this shape with a pyramid.
+	 * the pyramid is given in world space.The world matrix of the object is given.
+	 * \param pyramid the clipping polytope, planes are normalized.
+	 * \param worldMatrix the world matrix of the instance.
 	 * \return true if the object is visible, false otherwise. The default behavior is to return true (never clipped).
 	 */
-	virtual bool	clip(const std::vector<CPlane>	&pyramid) {return true;}
+	virtual bool	clip(const std::vector<CPlane>	&pyramid, const CMatrix &worldMatrix) {return true;}
 
 	/** render() this meshGeom in a driver, with the specified TransformShape instance information.
 	 */

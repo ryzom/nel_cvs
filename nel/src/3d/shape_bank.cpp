@@ -1,7 +1,7 @@
 /** \file shape_bank.cpp
  * <File description>
  *
- * $Id: shape_bank.cpp,v 1.22 2003/06/19 16:42:55 corvazier Exp $
+ * $Id: shape_bank.cpp,v 1.23 2003/07/17 14:47:33 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -250,10 +250,10 @@ void CShapeBank::processWaitingShapes ()
 				if (rWS.RefCnt == 0)
 				{
 					// We have to signal if we are the last
-					uint i;
-					for (i=0; i<rWS.Signal.size (); i++)
+					std::set<bool *>::iterator ite = rWS.Signal.begin();
+					while (ite != rWS.Signal.end())
 					{
-						bool *bSignal = rWS.Signal[i];
+						bool *bSignal = *ite;
 						if (bSignal != NULL)
 						{
 							bool bFound = false;
@@ -263,17 +263,17 @@ void CShapeBank::processWaitingShapes ()
 								const string &shapeName2 = wsmmIt2->first;
 								if (shapeName2 != shapeName)
 								{
-									// Got this signal ?
-									uint j;
-									for (j=0; j<wsmmIt2->second.Signal.size (); j++)
+									std::set<bool *>::iterator ite2 = wsmmIt2->second.Signal.begin();
+									while (ite2 != wsmmIt2->second.Signal.end())
 									{
-										if ((wsmmIt2->second.Signal[j] == bSignal))
+										if (*ite2 == bSignal)
 										{
 											bFound = true;
 											break;
 										}
+										ite2++;
 									}
-									if (j<wsmmIt2->second.Signal.size ())
+									if (ite2 != wsmmIt2->second.Signal.end())
 										break;
 								}
 								++wsmmIt2;
@@ -281,6 +281,9 @@ void CShapeBank::processWaitingShapes ()
 							if (!bFound)
 								*bSignal = true;
 						}
+
+						// Next iterator
+						ite++;
 					}
 					WaitingShapes.erase (wsmmIt);
 				}
@@ -443,15 +446,25 @@ void CShapeBank::loadAsync (const std::string &shapeNameNotLwr, IDriver *pDriver
 		return;
 	_pDriver = pDriver; // Backup the pointer to the driver for later use
 	TWaitingShapesMap::iterator wsmmIt = WaitingShapes.find (shapeName);
-	if (wsmmIt != WaitingShapes.end())
-	{
-		// Add a reference to it
-		CWaitingShape &rWS = wsmmIt->second;
-		rWS.RefCnt += 1;
-		return; // Do not load 2 shapes with the same names
-	}
-	wsmmIt = WaitingShapes.insert (TWaitingShapesMap::value_type(shapeName, CWaitingShape(bSignal))).first;
-	CAsyncFileManager3D::getInstance().loadMesh (shapeName, &(wsmmIt->second.ShapePtr), pDriver, position, selectedTexture);
+	
+	// First time this shape is loaded ?
+	bool firstTime = wsmmIt == WaitingShapes.end();
+
+	if (firstTime)
+		wsmmIt = WaitingShapes.insert (TWaitingShapesMap::value_type(shapeName, CWaitingShape())).first;
+
+	// Add a reference to it
+	CWaitingShape &rWS = wsmmIt->second;
+
+	// Insert a new signal pointer
+	rWS.Signal.insert (bSignal);
+
+	// Add a signal
+	rWS.RefCnt += 1;
+
+	// Launch an async mesh loader the first time
+	if (firstTime)
+		CAsyncFileManager3D::getInstance().loadMesh (shapeName, &(wsmmIt->second.ShapePtr), pDriver, position, selectedTexture);
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.10 2001/07/24 08:44:36 vizerie Exp $
+ * $Id: particle_system.h,v 1.11 2001/07/25 10:18:39 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,10 +173,9 @@ public:
 		return _ProcessVect[index] ; 
 	}
 
-	/** Compute the aabbox of this located, (expressed in world basis
-	*  TODO : express it in system basis ...	
-	*  \param aabbox a ref to the result box
-	*/
+	/** Compute the aabbox of this system, (expressed in thesystem basis)	
+	 *  \param aabbox a ref to the result box
+	 */
 
 	void computeBBox(NLMISC::CAABBox &aabbox) ;
 

@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.55 2004/06/17 08:07:26 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.56 2004/06/17 17:02:14 vizerie Exp $
  */
 
 /* Copyright,  2000 Nevrax Ltd.
@@ -1016,9 +1016,9 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID,  int nCode,  void* pExtra,  AFX_CMDHA
 				// Add search path for the texture
 				_splitpath (fd.GetPathName(),  drive,  dir,  NULL,  NULL);
 				_makepath (path,  drive,  dir,  NULL,  NULL);
-				NLMISC::CPath::addSearchPath (path);
-				CParticleSystemModel *psm = NULL;
+				NLMISC::CPath::addSearchPath (path);				
 				std::auto_ptr<NL3D::CShapeBank> sb(new NL3D::CShapeBank);
+				CParticleSystemModel *psm  = NULL;
 				try
 				{					
 					NL3D::CShapeStream ss;
@@ -1036,7 +1036,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID,  int nCode,  void* pExtra,  AFX_CMDHA
 						localizedMessageBox(*this, IDS_COULDNT_INSTANCIATE_PS,  IDS_ERROR, MB_OK|MB_ICONEXCLAMATION);
 						return false;
 					}
-					CParticleSystemModel *psm = dynamic_cast<CParticleSystemModel *>(trs);
+					psm = dynamic_cast<CParticleSystemModel *>(trs);
 					if (!psm)
 					{
 						localizedMessageBox(*this, IDS_COULDNT_INSTANCIATE_PS,  IDS_ERROR, MB_OK|MB_ICONEXCLAMATION);
@@ -1061,7 +1061,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID,  int nCode,  void* pExtra,  AFX_CMDHA
 				}
 				// link to the root for manipulation
 				_ParticleDlg->_ObjView->getSceneRoot()->hrcLinkSon(psm);
-				bool mergeOK = nt->PSModel->getPS()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) psm->Shape));
+				bool mergeOK = nt->PS->getPSPointer()->merge( NLMISC::safe_cast<NL3D::CParticleSystemShape *>((NL3D::IShape *) psm->Shape));
 				NL3D::CShapeBank *oldSB = CNELU::Scene->getShapeBank();
 				CNELU::Scene->setShapeBank(sb.get());
 				CNELU::Scene->deleteInstance(psm);
@@ -1078,10 +1078,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID,  int nCode,  void* pExtra,  AFX_CMDHA
 				}
 				HTREEITEM prevSibling = GetPrevSiblingItem(GetSelectedItem());
 				HTREEITEM prevParent = GetParentItem(GetSelectedItem());
-				removeTreePart(GetSelectedItem());
-				ownerNode->createEmptyPS();
+				removeTreePart(GetSelectedItem());				
 				ownerNode->setModified(true);
-				buildTreeFromPS(*ownerNode,  prevParent,  prevSibling);
+				HTREEITEM newRoot = buildTreeFromPS(*ownerNode,  prevParent,  prevSibling);
+				Select(newRoot, TVGN_CARET);
 				if (wasActiveNode)
 				{
 					setActiveNode(ownerNode);
@@ -1514,14 +1514,14 @@ std::string CParticleTreeCtrl::computeCaption(CParticleWorkspace::CNode &node)
 	else
 	{
 		baseCaption = computeCaption(node.getRelativePath(), "", false);
-	}
-	if (node.getParentSkel())
-	{	
-		baseCaption = "(L)" + baseCaption;
-	}
+	}	
 	if (!node.getTriggerAnim().empty())
 	{
 		baseCaption = "(" + node.getTriggerAnim() + ") " + baseCaption;
+	}
+	if (node.getParentSkel())
+	{	
+		baseCaption = "(L) " + baseCaption;
 	}
 	return baseCaption;
 }

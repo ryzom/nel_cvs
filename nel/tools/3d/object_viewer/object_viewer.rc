@@ -227,6 +227,11 @@ BEGIN
     IDS_LOADED              "loaded."
     IDS_READY               "Ready."
     IDS_REMOVE_ALL_PS       "Remove all particle systems from workspace ?"
+    IDS_NO_ACTIVE_PS        "No active ps"
+    IDS_SELECT_ANIMATION    "Select animation"
+    IDS_INCLUDE_PARTICLE_WORKSPACE_INFOS 
+                            "Would you like to include information about the current particle workspace ?"
+    IDS_OBJECT_VIEWER       "Object viewer"
 END
 
 #endif    // English (U.S.) resources
@@ -527,11 +532,11 @@ BEGIN
     LTEXT           "Upper bound",IDC_STATIC,13,27,44,14
 END
 
-IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 131, 236
+IDD_PARTICLE_SYSTEM_START_STOP DIALOGEX 0, 0, 131, 268
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Particle system start/stop"
-FONT 8, "MS Sans Serif", 0, 0, 0x1
+FONT 8, "MS Sans Serif"
 BEGIN
     PUSHBUTTON      "Button1",IDC_START_PICTURE,7,6,24,24,BS_BITMAP
     PUSHBUTTON      "Button1",IDC_STOP_PICTURE,69,6,24,24,BS_BITMAP
@@ -556,14 +561,16 @@ BEGIN
     CONTROL         "Link play to scene play",IDC_LINK_PLAY_TO_SCENE_PLAY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,64,92,14
     LTEXT           "Num asked faces : ? / ?",IDC_NUM_ASKED_FACES,9,159,98,9
-    EDITTEXT        IDC_TRIGGER_ANIM,8,212,73,12,ES_AUTOHSCROLL | 
+    EDITTEXT        IDC_TRIGGER_ANIM,8,227,73,12,ES_AUTOHSCROLL | 
                     WS_DISABLED
-    LTEXT           "anim :",IDC_ANIM,7,200,20,10
-    PUSHBUTTON      "...",IDC_BROWSE_ANIM,83,212,20,13
+    LTEXT           "anim :",IDC_ANIM,7,215,20,10
+    PUSHBUTTON      "...",IDC_BROWSE_ANIM,83,227,20,13
     PUSHBUTTON      "Button1",IDC_START_MULTIPLE_PICTURE,99,7,24,24,
                     BS_BITMAP
-    GROUPBOX        "Active ps",IDC_ACTIVE_PS,3,92,126,137
-    PUSHBUTTON      "Clear",IDC_CLEAR_ANIM,106,212,20,13
+    GROUPBOX        "Active ps",IDC_ACTIVE_PS,3,92,126,151
+    PUSHBUTTON      "Clear",IDC_CLEAR_ANIM,106,227,20,13
+    EDITTEXT        IDC_STICK_BONE,5,197,120,15,ES_AUTOHSCROLL | WS_DISABLED
+    PUSHBUTTON      "Restick all objects",IDC_RESTICK_ALL,3,247,125,17
 END
 
 IDD_ATTRIB_DLG DIALOG DISCARDABLE  0, 0, 346, 71
@@ -1810,7 +1817,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 124
         TOPMARGIN, 7
-        BOTTOMMARGIN, 229
+        BOTTOMMARGIN, 261
     END
 
     IDD_ATTRIB_DLG, DIALOG

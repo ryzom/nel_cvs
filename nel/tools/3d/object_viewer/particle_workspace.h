@@ -1,6 +1,6 @@
 /** \file particle_workspace.h
  *
- * $Id: particle_workspace.h,v 1.1 2004/06/17 08:07:15 vizerie Exp $
+ * $Id: particle_workspace.h,v 1.2 2004/06/17 17:02:14 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -100,6 +100,8 @@ public:
 		void					   removeLocatedBindable(NL3D::CPSLocatedBindable *lb);		
 		// Returns the skeleton to which the ps is currently sticked
 		NL3D::CSkeletonModel	  *getParentSkel() const { return _ParentSkel; }
+		const std::string		   &getParentSkelName() const { return _ParentSkelName; }
+		const std::string		   &getParentBoneName() const { return _ParentBoneName; }
 		//
 		std::string				   getTriggerAnim() { return _TriggerAnim; }
 		void					   setTriggerAnim(const std::string &anim);
@@ -118,13 +120,20 @@ public:
 		CParticleWorkspace			*_WS;		
 		NLMISC::CRefPtr<NL3D::CSkeletonModel> _ParentSkel;
 		bool						_ResetAutoCount;
+		//
+		std::string					_ParentSkelName;
+		std::string					_ParentBoneName;
 	private:
 		void setup(NL3D::CParticleSystemModel &psm);
 	public:
 		bool						getResetAutoCountFlag() const { return _ResetAutoCount; }
 		void						setResetAutoCountFlag(bool reset) { _ResetAutoCount = reset; }
 		// stick to a skeleton
-		void stickPSToSkeleton(NL3D::CSkeletonModel *skel, uint bone);
+		void stickPSToSkeleton(NL3D::CSkeletonModel *skel,
+							   uint bone,
+							   const std::string &parentSkelName, // for callback after loading
+							   const std::string &parentBoneName 
+							  );
 		void unstickPSFromSkeleton();
 	private:
 		friend class CParticleWorkspace;		
@@ -213,7 +222,9 @@ public:
 	void		sort(ISort &predicate);	
 	// get font manager / font generator
 	NL3D::CFontGenerator			*getFontGenerator() const { return _FontGenerator; }
-	NL3D::CFontManager				*getFontManager() const { return _FontManager; }	
+	NL3D::CFontManager				*getFontManager() const { return _FontManager; }
+	// restick all objects, useful after loading
+	void		restickAllObjects(CObjectViewer *ov);
 private:		
 	typedef std::vector<NLMISC::CSmartPtr<CNode> > TNodeVect;
 	TNodeVect						_Nodes;		// use smart ptr to avoir prb wih resize

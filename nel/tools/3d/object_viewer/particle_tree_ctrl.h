@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.h,v 1.15 2004/06/17 08:07:26 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.16 2004/06/17 17:02:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -133,8 +133,6 @@ public:
 			NL3D::CPSLocatedBindable  *Bind;
 			CParticleWorkspace::CNode *PS;
 		};		
-		// if Type = particleSystem, it gives the model of this system
-		NL3D::CParticleSystemModel *PSModel;
 		// for the located instance type, this is the index of the instance
 		uint32 LocatedInstanceIndex;		
 		// build node for a workspace

@@ -639,26 +639,14 @@
 #define IDC_ZTEST                       1393
 #define IDC_ZBIAS_TEXT                  1394
 #define IDC_ZBIAS                       1395
-#define IDC_LOCATION                    3396
-#define IDC_STATIC_LOCATION             3397
-#define IDC_BROWSE                      3398
-#define IDC_STATIC_FILENAME             3399
-#define IDC_MB_TEXT                     3399
-#define IDC_FILENAME                    3400
-#define IDC_DONT_SHOW_AGAIN             3400
-#define IDC_MB_CONTENT                  3401
-#define IDC_ANIM                        3403
-#define IDC_BROWSE_ANIM                 3404
-#define IDC_ACTIVE_PS                   3405
-#define IDC_ANIM_LIST                   3406
-#define IDC_CLEAR_ANIM                  3406
-#define IDC_TRIGGER_ANIM                3407
 #define IDC_BUTTON_COLOR_END0           1396
 #define IDC_BUTTON_COLOR_END1           1397
 #define IDC_BUTTON_COLOR_END2           1398
 #define IDC_BUTTON_COLOR_START0         1402
 #define IDC_BUTTON_COLOR_START1         1403
 #define IDC_BUTTON_COLOR_START2         1404
+#define IDC_STICK_BONE                  1409
+#define IDC_RESTICK_ALL                 1410
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -686,6 +674,20 @@
 #define IDM_CONIC_EMITTER_LOC           2024
 #define IDM_SPHERICAL_EMITTER_LOC       2025
 #define IDM_SOUND_LOC                   2026
+#define IDC_LOCATION                    3396
+#define IDC_STATIC_LOCATION             3397
+#define IDC_BROWSE                      3398
+#define IDC_STATIC_FILENAME             3399
+#define IDC_MB_TEXT                     3399
+#define IDC_FILENAME                    3400
+#define IDC_DONT_SHOW_AGAIN             3400
+#define IDC_MB_CONTENT                  3401
+#define IDC_ANIM                        3403
+#define IDC_BROWSE_ANIM                 3404
+#define IDC_ACTIVE_PS                   3405
+#define IDC_ANIM_LIST                   3406
+#define IDC_CLEAR_ANIM                  3406
+#define IDC_TRIGGER_ANIM                3407
 #define IDD_WATER_POOL                  3666
 #define IDM_DOT                         32773
 #define IDM_LOOKAT                      32774
@@ -858,9 +860,13 @@
 #define IDS_READY                       32906
 #define IDS_REMOVE_ALL_PS               32907
 #define ID_VIEW_RESET_SCENE_ROOT        32908
+#define IDS_NO_ACTIVE_PS                32908
 #define ID_VIEW_SET_SCENE_ROTATION      32909
+#define IDS_SELECT_ANIMATION            32909
 #define IDC_RELOAD_TEXTURES             32910
+#define IDS_INCLUDE_PARTICLE_WORKSPACE_INFOS 32910
 #define ID_SHOOT_SCENE                  32911
+#define IDS_OBJECT_VIEWER               32911
 #define ID_SCENE_SETLIGHTGROUPFACTOR    32912
 #define ID_SCENE_CAMERA_FIRST           32914
 #define ID_SCENE_CAMERA_0               32914
@@ -907,7 +913,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1146
 #define _APS_NEXT_COMMAND_VALUE         32983
-#define _APS_NEXT_CONTROL_VALUE         1409
+#define _APS_NEXT_CONTROL_VALUE         1411
 #define _APS_NEXT_SYMED_VALUE           1001
 #endif
 #endif

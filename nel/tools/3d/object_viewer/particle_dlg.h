@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.14 2004/06/17 08:09:23 vizerie Exp $
+ * $Id: particle_dlg.h,v 1.15 2004/06/17 17:02:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,7 +135,12 @@ public:
 	/** Stick the current edited fx to a skeleton.	  
 	  * This also reset the fx matrix, and prevent from changing it.
 	  */
-	void stickPSToSkeleton(CParticleWorkspace::CNode *node, NL3D::CSkeletonModel *skel, uint bone);
+	void stickPSToSkeleton(CParticleWorkspace::CNode *node,
+		                   NL3D::CSkeletonModel *skel,
+						   uint bone,
+						   const std::string &parentSkelName, // -> saved in the workspace
+						   const std::string &parentBoneName
+						  );
 	// unstick the current edited fx from its parent skeleton (if there's one)
 	void unstickPSFromSkeleton(CParticleWorkspace::CNode *node);
 	// return true is the current edited fx is sticked to a skeleton.
@@ -146,6 +151,10 @@ public:
 	CStartStopParticleSystem *StartStopDlg;
 	// set text of the status bar
 	void setStatusBarText(CString &str);
+	// Check if the current workspace has been modified, and prompt the user to save it if so
+	void checkModifiedWorkSpace();
+	// Load a new particle workspace (without asking if current workspace has been modified)
+	void loadWorkspace(const std::string &fullPath);	
 protected:
 	CStatusBar					 _StatusBar;
 	CObjectViewer				*_ObjView;
@@ -188,9 +197,7 @@ protected:
 	afx_msg void OnViewPsFilename();	
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
-	// Check if the current workspace has been modified, and prompt the user to save it if so
-	void checkModifiedWorkSpace();
+	
 	// Save the workspace structure
 	void saveWorkspaceStructure();
 	// Save the workspace content

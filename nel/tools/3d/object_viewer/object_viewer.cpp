@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.121 2004/06/17 08:10:10 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.122 2004/06/17 17:02:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1698,17 +1698,26 @@ string getFilename (const string &file)
 
 void CObjectViewer::serial (NLMISC::IStream& f)
 {
+	// version 4: include particle workspace infos
 	// serial "OBJV_CFG"
 	f.serialCheck ((uint32)'VJBO');
 	f.serialCheck ((uint32)'GFC_');
 
 	// serial the version
-	int ver=f.serialVersion (3);
+	int ver=f.serialVersion (4);
+	if (ver>=4)
+	{
+		f.serial(ParticleWorkspaceFilename);
+	}
 	if (ver>=3)
 	{
 		// Read the configuration file
 		if (f.isReading())
 		{
+			if (ver <=3)
+			{			
+				ParticleWorkspaceFilename = "";
+			}
 			// First instance
 			uint firstInstance = _ListInstance.size();
 
@@ -2198,8 +2207,9 @@ uint CObjectViewer::addMesh (NL3D::IShape* pMeshShape, const char* meshName, uin
 		return 0xffffffff;
 }
 
+
 // ***************************************************************************
-bool CObjectViewer::chooseBone(const std::string &caption, NL3D::CSkeletonModel *&skel, uint &boneIndex)
+bool CObjectViewer::chooseBone(const std::string &caption, NL3D::CSkeletonModel *&skel, uint &boneIndex, std::string *skelName /*= NULL*/, std::string *boneName /*= NULL*/)
 {
 	for(uint k = 0; k < _ListInstance.size(); ++k)
 	{
@@ -2218,6 +2228,14 @@ bool CObjectViewer::chooseBone(const std::string &caption, NL3D::CSkeletonModel 
 			{
 				boneIndex = dialogSelect.Selection; 
 				skel = transformSkel;
+				if (skelName)
+				{
+					*skelName = _ListInstance[k]->Saved.ShapeFilename;
+				}
+				if (boneName)
+				{
+					*boneName = safe_cast<NL3D::CSkeletonModel *>(_ListInstance[k]->TransformShape)->Bones[boneIndex].getBoneName();
+				}
 				return true;
 			}
 			return false;			

@@ -180,10 +180,6 @@ SOURCE=.\blend_wnd.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\choose_animation.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\choose_bg_color_dlg.cpp
 # End Source File
 # Begin Source File
@@ -332,10 +328,6 @@ SOURCE=.\animation_set_dlg.h
 # Begin Source File
 
 SOURCE=.\blend_wnd.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\choose_animation.h
 # End Source File
 # Begin Source File
 

@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.27 2004/06/17 08:09:23 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.28 2004/06/17 17:02:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -382,10 +382,14 @@ void CParticleDlg::setPSWorldMatrix(const NLMISC::CMatrix &mat)
 
 
 //**************************************************************************************************************************
-void CParticleDlg::stickPSToSkeleton(CParticleWorkspace::CNode *node, NL3D::CSkeletonModel *skel, uint bone)
+void CParticleDlg::stickPSToSkeleton(CParticleWorkspace::CNode *node,
+									 NL3D::CSkeletonModel *skel,
+									 uint bone,
+									 const std::string &parentSkelName,
+									 const std::string &parentBoneName)
 {
 	if (!node) return;	
-	node->stickPSToSkeleton(skel, bone);
+	node->stickPSToSkeleton(skel, bone, parentSkelName, parentBoneName);
 	if (skel)
 	{
 		if (_ObjView->getMainFrame()->MouseMoveType == CMainFrame::MoveFX)
@@ -419,6 +423,7 @@ bool CParticleDlg::savePSAs(HWND parent, CParticleWorkspace::CNode &psNode ,cons
 		MessageBox(psNode.getFilename().c_str() + getStrRsc(IDS_AUTO_COUNT_ERROR), getStrRsc(IDS_WARNING), MB_ICONEXCLAMATION);
 		return false;
 	}
+	StartStopDlg->stop();
 	try
 	{	
 		psNode.savePSAs(fullPath);
@@ -572,10 +577,16 @@ void CParticleDlg::OnLoadPSWorkspace()
 	static const char BASED_CODE szFilter[] = "particle workspaces(*.pws)|*.pws||";
 	CFileDialog fd( TRUE, ".pws", "*.pws", 0, szFilter);
 	int result = fd.DoModal();
-	if (result != IDOK) return;		
+	if (result != IDOK) return;
+	loadWorkspace((LPCTSTR) fd.GetPathName());
+}
+
+//**************************************************************************************************************************
+void CParticleDlg::loadWorkspace(const std::string &fullPath)
+{
 	// Add to the path
 	std::auto_ptr<CParticleWorkspace> newPW(new CParticleWorkspace);
-	newPW->init(_ObjView, (LPCTSTR) fd.GetPathName(), _ObjView->getFontManager(), _ObjView->getFontGenerator());
+	newPW->init(_ObjView, fullPath, _ObjView->getFontManager(), _ObjView->getFontGenerator());
 	newPW->setModificationCallback(ParticleTreeCtrl);
 	// save empty workspace
 	try
@@ -644,6 +655,7 @@ void CParticleDlg::saveWorkspaceStructure()
 //**************************************************************************************************************************
 void CParticleDlg::saveWorkspaceContent(bool askToSaveModifiedPS)
 {
+	StartStopDlg->stop();
 	bool saveAll = !askToSaveModifiedPS;
 	// check each component of the tree
 	for(uint k = 0; k < _PW->getNumNode(); ++k)

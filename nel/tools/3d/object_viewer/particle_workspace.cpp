@@ -1,6 +1,6 @@
 /** \file particle_workspace.cpp
  *
- * $Id: particle_workspace.cpp,v 1.1 2004/06/17 08:07:15 vizerie Exp $
+ * $Id: particle_workspace.cpp,v 1.2 2004/06/17 17:02:14 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "3d/shape_bank.h"
 #include "3d/particle_system_model.h"
 #include "3d/particle_system_shape.h"
+#include "3d/skeleton_model.h"
 //
 #include "nel/misc/o_xml.h"
 #include "nel/misc/i_xml.h"
@@ -81,11 +82,16 @@ bool CParticleWorkspace::CNode::isStateMemorized() const
 }
 
 //**************************************************************************************************************************
-void CParticleWorkspace::CNode::stickPSToSkeleton(NL3D::CSkeletonModel *skel, uint bone)
+void CParticleWorkspace::CNode::stickPSToSkeleton(NL3D::CSkeletonModel *skel,
+												  uint bone,
+												  const std::string &parentSkelName,
+												  const std::string &parentBoneName)
 {
 	nlassert(_WS);
 	if (!_PSM) return;
 	unstickPSFromSkeleton();
+	_ParentSkelName = parentSkelName;
+	_ParentBoneName = parentBoneName;
 	if (skel)
 	{
 		skel->stickObject(_PSM, bone);
@@ -102,6 +108,8 @@ void CParticleWorkspace::CNode::stickPSToSkeleton(NL3D::CSkeletonModel *skel, ui
 void CParticleWorkspace::CNode::unstickPSFromSkeleton()
 {
 	nlassert(_WS);
+	_ParentSkelName = "";
+	_ParentBoneName = "";
 	if (!_PSM) return;
 	if (_ParentSkel)
 	{
@@ -238,11 +246,16 @@ void CParticleWorkspace::CNode::serial(NLMISC::IStream &f)
 {	
 	nlassert(_WS);
 	f.xmlPush("PROJECT_FILE");
-		sint version = f.serialVersion(1);
+		sint version = f.serialVersion(2);
 		f.xmlSerial(_RelativePath, "RELATIVE_PATH");
 		if (version >= 1)
 		{
 			f.xmlSerial(_TriggerAnim, "TRIGGER_ANIMATION");
+		}
+		if (version >= 2)
+		{			
+			f.xmlSerial(_ParentSkelName, "PARENT_SKEL_NAME");
+			f.xmlSerial(_ParentBoneName, "PARENT_BONE_NAME");
 		}
 	f.xmlPop();		
 }
@@ -552,3 +565,35 @@ bool CParticleWorkspace::isContentModified() const
 	}
 	return false;
 }
+
+//***********************************************************************************************
+void CParticleWorkspace::restickAllObjects(CObjectViewer *ov)
+{
+	for(uint k = 0; k < _Nodes.size(); ++k)
+	{
+		std::string parentSkelName = _Nodes[k]->getParentSkelName();
+		std::string parentBoneName = _Nodes[k]->getParentBoneName();
+		//
+		_Nodes[k]->unstickPSFromSkeleton();
+		if (!parentSkelName.empty())
+		// find instance to stick to in the scene
+		for(uint l = 0; l < ov->getNumInstance(); ++l)
+		{
+			CInstanceInfo *ii = ov->getInstance(l);
+			if (ii->TransformShape && ii->Saved.ShapeFilename == parentSkelName)
+			{
+				NL3D::CSkeletonModel *skel = dynamic_cast<NL3D::CSkeletonModel *>(ii->TransformShape);
+				if (skel)
+				{
+					sint boneID = skel->getBoneIdByName(parentBoneName);
+					if (boneID != -1)
+					{
+						_Nodes[k]->stickPSToSkeleton(skel, (uint) boneID, parentSkelName, parentBoneName);
+						break;
+					}
+				}
+			}
+		}
+	}
+}
+

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.55 2004/06/17 08:09:34 vizerie Exp $
+ * $Id: object_viewer.h,v 1.56 2004/06/17 17:02:14 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -217,6 +217,9 @@ public:
 
 class CObjectViewer : public IObjectViewer
 {
+public:
+	// Name of particle workspace, just used to save config file
+	std::string									 ParticleWorkspaceFilename;
 	friend class CMainFrame;
 	friend class CAnimationSetDlg;
 public:
@@ -472,7 +475,7 @@ public:
 	/** popup a dialog to choose a bone in the scene
 	  * \return true is a bone has been selected
 	  */
-	bool		chooseBone(const std::string &caption, NL3D::CSkeletonModel *&skel, uint &boneIndex);
+	bool		chooseBone(const std::string &caption, NL3D::CSkeletonModel *&skel, uint &boneIndex, std::string *skelName = NULL, std::string *boneName = NULL);
 
 	// test if there's a skeleton in the scene
 	bool		isSkeletonPresent() const;
@@ -628,6 +631,8 @@ private:
 
 	// The root of all objects added to the scene. Rotated for user convenience
 	NL3D::CTransform							*_SceneRoot;
+
+	
 
 	// load the config file
 	void	loadConfigFile();

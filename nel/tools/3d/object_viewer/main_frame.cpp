@@ -543,6 +543,16 @@ void CMainFrame::OnFileLoadconfig()
 			try
 			{
 				ObjView->serial (file);
+				if (!ObjView->ParticleWorkspaceFilename.empty())
+				{
+					CParticleDlg *pd = ObjView->getParticleDialog();
+					pd->checkModifiedWorkSpace();
+					pd->loadWorkspace(ObjView->ParticleWorkspaceFilename);										
+					if (pd->getParticleWorkspace())
+					{
+						pd->getParticleWorkspace()->restickAllObjects(ObjView);
+					}
+				}
 			}
 			catch (Exception& e)
 			{
@@ -698,14 +708,23 @@ void CMainFrame::OnFileSaveconfig()
 	static char BASED_CODE szFilter[] = "NeL Object viewer config (*.ovcgf)|*.ovcgf|All Files (*.*)|*.*||";
 	CFileDialog fileDlg( FALSE, ".ovcgf", "*.ovcgf", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
 	if (fileDlg.DoModal()==IDOK)
-	{
+	{		
+		ObjView->ParticleWorkspaceFilename = "";
+		CParticleWorkspace *pw = ObjView->getParticleDialog()->getParticleWorkspace();
+		if (pw && pw->getNumNode() != 0)
+		{
+			if (localizedMessageBox(*this, IDS_INCLUDE_PARTICLE_WORKSPACE_INFOS, IDS_OBJECT_VIEWER, MB_YESNO|MB_ICONQUESTION) == IDYES)
+			{
+				ObjView->ParticleWorkspaceFilename = pw->getFilename();
+			}
+		}
 		// Open the file
 		COFile file;
 		if (file.open ((const char*)fileDlg.GetPathName()))
 		{
 			try
 			{
-				ObjView->serial (file);
+				ObjView->serial(file);
 			}
 			catch (Exception& e)
 			{

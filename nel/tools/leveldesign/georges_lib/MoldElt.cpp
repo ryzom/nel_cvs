@@ -64,7 +64,6 @@ void CMoldElt::SetName( const CStringEx& _sxname )
 	sxname = _sxname;
 }
 
-
 bool CMoldElt::IsEnum() const
 {
 	return( benum );

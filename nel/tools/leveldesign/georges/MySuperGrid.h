@@ -21,6 +21,7 @@ protected:
 	CGeorgesDoc* pdoc;
 	CTreeItem* currenttreeitem;
 	void ExpandAllItems() ;
+	void UpdateItemIndex();
 	// Construction
 public:
 	CMySuperGrid();
@@ -38,7 +39,7 @@ public:
 	void InitializeSubItemNumber();
 	void InitializeItemNumber();
 
-	void HowToInsertItemsAfterTheGridHasBeenInitialized(int nIndex, const CString& str);
+	void HowToInsertItemsAfterTheGridHasBeenInitialized(int nIndex, int indexxx);
 	void HowToLoopThroughAllItems_if_we_wanted_to_print_them_or_what_ever(CDC *pDC);
 	void HowToLoopThroughAllItems_that_has_a_checkmark_and_print_them_or_what_ever(CDC *pDC);
 	void HowToSearch_I_am_using_hardcoded_values_here_cause_I_am_tired_now(void);
@@ -70,6 +71,7 @@ public:
 	BOOL OnVkReturn(void);
 	BOOL OnItemLButtonDown(LVHITTESTINFO& ht);
 	BOOL OnItemRButtonDown(LVHITTESTINFO& ht);
+	BOOL CanEdit( CTreeItem* const _pItem );
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CMySuperGrid)
 	//}}AFX_VIRTUAL
@@ -89,7 +91,6 @@ protected:
 	//{{AFX_MSG(CMySuperGrid)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnListNewitem();
-	afx_msg void OnListchildAdditem();
 	afx_msg void OnListchildDelitem();
 	//}}AFX_MSG
 

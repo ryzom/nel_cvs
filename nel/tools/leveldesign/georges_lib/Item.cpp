@@ -215,6 +215,30 @@ bool CItem::IsEnum( const unsigned int _index ) const
 	return( ( pie->GetInfos() & ITEM_ISENUM ) != 0 );
 }
 
+bool CItem::IsPredef( const unsigned int _index ) const
+{
+	CItemElt* pie = GetElt( _index );
+	if( !pie )
+		return( false );
+	CItemEltAtom* piea = dynamic_cast< CItemEltAtom* >( pie );
+	if( !piea )
+		return( false );
+	CMoldEltType* pmet = piea->GetMoldType();
+	CStringEx sx = pmet->GetPredefDesignation( 0 );
+	return( !sx.empty() );
+}
+
+bool CItem::CanEdit( const unsigned int _index ) const
+{
+	CItemElt* pie = GetElt( _index );
+	if( !pie )
+		return( false );
+	CItemEltAtom* piea = dynamic_cast< CItemEltAtom* >( pie );
+	if( !piea )
+		return( false );
+	return( !( pie->GetInfos() & ITEM_ISENUM ) );
+}
+
 void CItem::GetListPredef( const unsigned int _index, std::vector< CStringEx >& _vsx ) const
 {
 	CItemElt* pie = GetElt( _index );

@@ -16,6 +16,7 @@ public:
 		index = _index;
 	};
 	unsigned int GetItemIndex() const { return index; }
+	void SetItemIndex(const unsigned int _index){ index = _index; }
 	void SetItemText(const CString& strItem){ m_strItemName = strItem; }
 	void SetItemText(const CString& strItem, COLORREF clf) { m_strItemName = strItem; m_clf = clf;}
 	void AddSubItemText(const CString& strSubItem){ m_SubItems.Add(strSubItem); }
@@ -242,6 +243,7 @@ public:
 	//called before from within OnlButtonDown and OnDblclk, but before anything happens, return TRUE to continue, FALSE to say not selecting the item
 	virtual BOOL OnItemLButtonDown(LVHITTESTINFO& ht);
 	virtual BOOL OnItemRButtonDown(LVHITTESTINFO& ht);
+	virtual BOOL CanEdit( CTreeItem* const _pItem );
 public:
 	//creates a root
 	CTreeItem*  InsertRootItem(CItemInfo * lpRoot);

@@ -293,6 +293,17 @@ bool CGeorgesDoc::IsItemEnum( const unsigned int _index ) const
 	return( item.IsEnum( _index+1 ) ); 
 }
 
+bool CGeorgesDoc::IsItemPredef( const unsigned int _index ) const
+{
+	return( item.IsPredef( _index+1 ) ); 
+}
+
+bool CGeorgesDoc::CanEditItem( const unsigned int _index ) const
+{
+	return( item.CanEdit( _index+1 ) ); 
+}
+
+
 void CGeorgesDoc::GetItemListPredef( const unsigned int _index, CStringList* _slist ) const
 {
 	if( !_slist )

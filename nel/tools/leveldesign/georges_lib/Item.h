@@ -45,6 +45,8 @@ public:
 	CStringEx GetCurrentValue( const unsigned int _index ) const;
 	CStringEx GetFormula( const unsigned int _index ) const;
 	bool IsEnum( const unsigned int _index ) const; 
+	bool IsPredef( const unsigned int _index ) const; 
+	bool CanEdit( const unsigned int _index ) const; 
 	void GetListPredef( const unsigned int _index, std::vector< CStringEx >& _vsx ) const;
 
 	CItemElt* GetElt( const unsigned int _index ) const;

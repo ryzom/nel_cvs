@@ -149,7 +149,6 @@ IDR_M_LISTCHILD MENU DISCARDABLE
 BEGIN
     POPUP "LISTCHILD"
     BEGIN
-        MENUITEM "&Add Item",                   ID_LISTCHILD_ADDITEM
         MENUITEM "&Delete Item",                ID_LISTCHILD_DELITEM
     END
 END

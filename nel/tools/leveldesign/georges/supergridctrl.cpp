@@ -558,6 +558,10 @@ LPCTSTR CSuperGridCtrl::MakeShortString(CDC* pDC, LPCTSTR lpszLong, int nColumnL
 }
 
 
+BOOL CSuperGridCtrl::CanEdit( CTreeItem* const _pItem )
+{
+	return( true );
+}
 
 
 void CSuperGridCtrl::OnKeydown(NMHDR* pNMHDR, LRESULT* pResult) 
@@ -565,6 +569,20 @@ void CSuperGridCtrl::OnKeydown(NMHDR* pNMHDR, LRESULT* pResult)
 	LV_KEYDOWN* pLVKeyDow = (LV_KEYDOWN*)pNMHDR;
 	switch(pLVKeyDow->wVKey)
 	{
+		case VK_RETURN: 
+			{
+				int nIndex = GetSelectedItem();
+				if(nIndex !=-1)
+				{
+					CTreeItem* pItem = GetTreeItem(nIndex);
+					if(pItem != NULL)
+					{
+						if( CanEdit( pItem ) )
+							EditLabelEx( nIndex, 2 );	
+					}
+				}
+			}break;
+
 		case VK_SPACE: 
 			{
 				if(GetExtendedStyle() & LVS_EX_CHECKBOXES)
@@ -573,7 +591,7 @@ void CSuperGridCtrl::OnKeydown(NMHDR* pNMHDR, LRESULT* pResult)
 					if(nIndex !=-1)
 					{
 						CTreeItem* pItem = GetTreeItem(nIndex);
-						if(pItem!=NULL)
+						if(pItem != NULL)
 						{
 							CItemInfo *pInfo = GetData(pItem);
 							pInfo->SetCheck(!pInfo->GetCheck());
@@ -2527,8 +2545,8 @@ void CSuperGridCtrl::OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTIN
 	else
 		EditLabelEx(ht.iItem, ht.iSubItem);	
 */
-	if(ht.iSubItem==2)
-		EditLabelEx(ht.iItem, ht.iSubItem);	
+	if( ( ht.iSubItem==2 )&&( CanEdit( GetTreeItem( ht.iItem ) ) ) )
+		EditLabelEx(ht.iItem, ht.iSubItem );	
 }
 	
 void CSuperGridCtrl::OnControlRButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO& ht)

@@ -38,6 +38,8 @@ public:
 	CString GetItemCurrentValue( const unsigned int _index ) const;
 	CString GetItemFormula( const unsigned int _index ) const;
 	bool IsItemEnum( const unsigned int _index ) const;
+	bool IsItemPredef( const unsigned int _index ) const;
+	bool CanEditItem( const unsigned int _index ) const;
 	void GetItemListPredef( const unsigned int _index, CStringList* _slist ) const;
 	void NewDocument( const CStringEx& _sxdfnname ) const;
 	void NewDocument( const CStringEx _sxfilename );

@@ -36,7 +36,6 @@ BEGIN_MESSAGE_MAP(CMySuperGrid, CSuperGridCtrl)
 	//{{AFX_MSG_MAP(CMySuperGrid)
 	ON_WM_CREATE()
 	ON_COMMAND(ID_LIST_NEWITEM, OnListNewitem)
-	ON_COMMAND(ID_LISTCHILD_ADDITEM, OnListchildAdditem)
 	ON_COMMAND(ID_LISTCHILD_DELITEM, OnListchildDelitem)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -102,30 +101,7 @@ void CMySuperGrid::InitializeGrid( CGeorgesDoc* const _pdoc )
     }
 }
 
-unsigned int CMySuperGrid::LoadSubItem( CTreeItem* _itemparent, unsigned int& _index )
-{
-	CItemInfo* lpiteminfo = new CItemInfo( _index+1 );
-	lpiteminfo->SetItemText( pdoc->GetItemName( _index ) );
-	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentResult( _index ) );
-	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentValue( _index ) );
-	lpiteminfo->AddSubItemText( pdoc->GetItemFormula( _index ) );
-	if( pdoc->IsItemEnum( _index ) )
-	{
-		lpiteminfo->SetControlType(lpiteminfo->CONTROLTYPE::combobox, 1);
-		CStringList lst;
-		pdoc->GetItemListPredef( _index, &lst );
-		lpiteminfo->SetListData(1, &lst);
-	}
-	CTreeItem* pParent = InsertItem( _itemparent, lpiteminfo );
-	
-	int n = pdoc->GetItemNbElt( _index );
-	_index++;
-	int nn = n;
-	while( nn > 1 )
-		nn -= LoadSubItem( pParent, _index );
-	return( n );
-}
-
+ 
 void CMySuperGrid::InitializeSubItemNumber( CTreeItem* _itemparent, unsigned int& _index )
 {
 /*
@@ -255,6 +231,8 @@ void CMySuperGrid::LoadItem()
 	InvalidateItemRect(0);
 	EnsureVisible(nScrollIndex, 1);
 
+//	ExpandAllItems();
+
 	SetRedraw(1);
 	InvalidateRect(NULL);
 }
@@ -376,7 +354,8 @@ void CMySuperGrid::OnControlLButtonDown(UINT nFlags, CPoint point, LVHITTESTINFO
 //					CComboBox * pList = ShowList(ht.iItem, ht.iSubItem, list);
 
 					CStringList lst;
-					pdoc->GetItemListPredef( ht.iItem-1, &lst );
+					int ind = pInfo->GetItemIndex();
+					pdoc->GetItemListPredef( pInfo->GetItemIndex()-1, &lst );
 					pInfo->SetListData(1, &lst);
 					CStringList* list=NULL;
 					pInfo->GetListData(ht.iSubItem-1, list);
@@ -450,27 +429,91 @@ void CMySuperGrid::OnListNewitem()
 	CItemInfo *lp = GetData( currenttreeitem );
 	if( lp == NULL )
 		return;
-	unsigned int currentitem = lp->GetItemIndex();
-	if( currentitem < 0 )
+
+	unsigned int currentlistindex = lp->GetItemIndex();
+	if( currentlistindex < 0 )
 		return;
-	pdoc->AddListParent( currentitem );
-//	LoadSubItem( currenttreeitem, currentitem );
-	LoadItem();
+	
+	unsigned int curlistoldnbelt = pdoc->GetItemNbElt( currentlistindex-1 );
+	pdoc->AddListParent( currentlistindex );
+	unsigned int curlistnewnbelt = pdoc->GetItemNbElt( currentlistindex-1 );
 
-	ExpandAllItems();
+	SetRedraw(0);
+	BOOL bUpdate = FALSE;
+	if( !IsCollapsed( currenttreeitem ) )
+		bUpdate = TRUE;
 
+	unsigned int _index = currentlistindex+curlistoldnbelt-1;
+
+	CItemInfo* lpiteminfo = new CItemInfo( _index+1 );
+	lpiteminfo->SetItemText( pdoc->GetItemName( _index ) );
+	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentResult( _index ) );
+	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentValue( _index ) );
+	lpiteminfo->AddSubItemText( pdoc->GetItemFormula( _index ) );
+
+//	if( pdoc->IsItemEnum( _index ) )
+	if( pdoc->IsItemPredef( _index ) )
+	{
+		lpiteminfo->SetControlType(lpiteminfo->CONTROLTYPE::combobox, 1);
+		CStringList lst;
+		pdoc->GetItemListPredef( _index, &lst );
+		lpiteminfo->SetListData(1, &lst);
+	}
+
+	CTreeItem* pParent = InsertItem( currenttreeitem, lpiteminfo, bUpdate );
+	
+	int n = pdoc->GetItemNbElt( _index );
+	_index++;
+	int nn = n;
+	while( nn > 1 )
+		nn -= LoadSubItem( pParent, _index );
+	
+	UpdateItemIndex();
+
+	SetRedraw(1);
 	InvalidateRect(NULL);
 	UpdateWindow();
 }
 
-/*
-//CItemInfo* lpiteminfo = new CItemInfo( _index+1 );
-	CItemInfo* lpiteminfo = new CItemInfo();
-	lpiteminfo->SetItemText( pdoc->GetItemName( currentitem ) );
+
+void CMySuperGrid::UpdateItemIndex()
+{
+	POSITION pos = GetRootHeadPosition();
+	unsigned int k = 0;
+	while(pos != NULL)
+	{
+		CTreeItem *pParent =(CTreeItem*)GetNextRoot(pos); 
+		CTreeItem *pItem = pParent;
+		CItemInfo* lp = GetData(pParent);
+		lp->SetItemIndex( k+1 );
+		for(;;k++)
+		{
+			CTreeItem *pCur = GetNext(pParent,pItem, TRUE, FALSE);	  
+			
+			if(!IsChildOf(pParent, pCur))
+				break;
+			else
+			if(pCur==pItem)
+				break;
+			
+			CItemInfo* lp = GetData(pCur);
+			lp->SetItemIndex( k+1 );
+			lp->SetItemText( pdoc->GetItemName( k ) );
+			pItem=pCur;
+		}
+	}
+}
+
+unsigned int CMySuperGrid::LoadSubItem( CTreeItem* _itemparent, unsigned int& _index )
+{
+	CItemInfo* lpiteminfo = new CItemInfo( _index+1 );
+	lpiteminfo->SetItemText( pdoc->GetItemName( _index ) );
 	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentResult( _index ) );
 	lpiteminfo->AddSubItemText( pdoc->GetItemCurrentValue( _index ) );
 	lpiteminfo->AddSubItemText( pdoc->GetItemFormula( _index ) );
-	if( pdoc->IsItemEnum( _index ) )
+
+//	if( pdoc->IsItemEnum( _index ) )
+	if( pdoc->IsItemPredef( _index ) )
 	{
 		lpiteminfo->SetControlType(lpiteminfo->CONTROLTYPE::combobox, 1);
 		CStringList lst;
@@ -485,26 +528,12 @@ void CMySuperGrid::OnListNewitem()
 	while( nn > 1 )
 		nn -= LoadSubItem( pParent, _index );
 	return( n );
-*/
-
-void CMySuperGrid::OnListchildAdditem() 
-{
-	if( !currenttreeitem  )
-		return;	
-	CItemInfo *lp = GetData( currenttreeitem );
-	if( lp == NULL )
-		return;
-	unsigned int currentitem = lp->GetItemIndex();
-	if( currentitem < 0 )
-		return;
-	pdoc->AddListChild( currentitem );
-	LoadItem();
-
-	ExpandAllItems();
-
-	InvalidateRect(NULL);
-	UpdateWindow();
 }
+
+void CMySuperGrid::HowToInsertItemsAfterTheGridHasBeenInitialized(int nIndex, int indexxx )
+{
+}
+
 
 void CMySuperGrid::OnListchildDelitem() 
 {
@@ -517,12 +546,25 @@ void CMySuperGrid::OnListchildDelitem()
 	if( currentitem < 0 )
 		return;
 	pdoc->DelListChild( currentitem );
-	LoadItem();
 
-	ExpandAllItems();
+//	LoadItem();
+//	ExpandAllItems();
+
+	unsigned int ui = GetCurIndex( currenttreeitem );
+	DeleteItemEx(currenttreeitem, ui);
+	UpdateItemIndex();
 
 	InvalidateRect(NULL);
 	UpdateWindow();
+}
+
+BOOL CMySuperGrid::CanEdit( CTreeItem* const _pItem )
+{
+	CItemInfo *lp = GetData( _pItem );
+	if( lp == NULL )
+		return( false );
+	unsigned int index = lp->GetItemIndex();
+	return( pdoc->CanEditItem( index-1 ) );
 }
 
 BOOL CMySuperGrid::OnVkReturn()
@@ -542,7 +584,6 @@ BOOL CMySuperGrid::OnVkReturn()
 			{	
 				switch(ctrlType)
 				{
-					/*put in your own control here*/
 					case pInfo->CONTROLTYPE::datecontrol:break;
 					case pInfo->CONTROLTYPE::spinbutton:break;
 					case pInfo->CONTROLTYPE::dropdownlistviewwhatevercontrol:break;
@@ -565,7 +606,7 @@ BOOL CMySuperGrid::OnVkReturn()
 			}
 		}
 	}
-	return bResult;
+	return( bResult );
 }
 
 
@@ -646,60 +687,6 @@ int CMySuperGrid::CalcHorzExtent(CWnd* pWnd, CStringList *pList)
 	}
 	return nExtent;
 }
-
-
-//HOWTO: 
-void CMySuperGrid::HowToInsertItemsAfterTheGridHasBeenInitialized(int nIndex, const CString& str)
-{
-	CTreeItem *pSelItem = GetTreeItem(nIndex);
-	if(pSelItem != NULL)
-	{
-		SetRedraw(0);
-		BOOL bUpdate = FALSE;
-		if(!IsCollapsed(pSelItem))
-			bUpdate = TRUE;//Children are expanded, want to see update right away if not no visual update
-
-		CItemInfo* lpRelative = new CItemInfo();
-		lpRelative->SetItemText(str);
-		lpRelative->AddSubItemText(_T("I am"));
-		lpRelative->AddSubItemText(_T("now"));
-		lpRelative->AddSubItemText(_T("going to insert"));
-		lpRelative->AddSubItemText(_T("some items"));
-
-		CTreeItem* pParent = InsertItem(pSelItem, lpRelative, bUpdate);
-		for(int i=0; i < GetNumCol(); i++)
-		{
-			CItemInfo* lpItemInfo = new CItemInfo();
-			CString strItem;
-			strItem.Format(_T("Item %d"), i);
-			//add items text
-			lpItemInfo->SetItemText(strItem);
-			//add subitem text
-			for(int y=0;y < GetNumCol()-1; y++) 
-			{
-				CString str;
-				str.Format(_T("SubItem %d of %s"), y, lpItemInfo->GetItemText());
-				lpItemInfo->AddSubItemText(str);
-			}
-			//set combobox in last col
-			lpItemInfo->SetControlType(lpItemInfo->CONTROLTYPE::combobox, GetNumCol()-2);
-			CStringList list;
-			for(int x = 0; x < 3; x++)
-			{
-				CString str;
-				str.Format("ListItem %d",x);
-				list.AddTail(str);
-			}
-			lpItemInfo->SetListData(GetNumCol()-2, &list);
-
-			InsertItem(pParent, lpItemInfo);
-		}
-		SetRedraw(1);
-		InvalidateRect(NULL);
-//		UpdateWindow();
-	}
-}
-
 
 
 void CMySuperGrid::HowToLoopThroughAllItems_if_we_wanted_to_print_them_or_what_ever(CDC *pDC)

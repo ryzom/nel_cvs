@@ -61,6 +61,7 @@ BOOL CTestTreeDlg::OnInitDialog()
 
 void CTestTreeDlg::OnButtonInsert() 
 {
+/*
 	int nIndex = m_List.GetSelectedItem();
 	if(nIndex!=-1)
 	{
@@ -68,6 +69,7 @@ void CTestTreeDlg::OnButtonInsert()
 		if(dlg.DoModal()==IDOK)
 			m_List.HowToInsertItemsAfterTheGridHasBeenInitialized(nIndex, dlg.m_strItem);
 	}
+*/
 }
 
 

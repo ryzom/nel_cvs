@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.60 2001/12/20 16:54:38 vizerie Exp $
+ * $Id: scene.cpp,v 1.61 2002/01/28 14:38:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -361,6 +361,12 @@ void	CScene::render(bool	doHrcPass)
 		}
 	}
 
+	/** Particle system handling (remove the resources of those which are too far, as their clusters may not have been parsed).
+      * Not that only a few of them are tested at each call
+	  */
+	_ParticleSystemManager.refreshModels(ClipTrav->WorldFrustumPyramid, ClipTrav->CamPos);
+
+
 	// Instance handling
 	// Parse all the waiting instance
 	TWaitingInstancesMMap::iterator wimmIt = _WaitingInstances.begin();
@@ -600,6 +606,7 @@ void CScene::animate( TGlobalAnimationTime atTime )
 	}
 	
 	_LMAnimsAuto.animate( atTime );
+	_ParticleSystemManager.processAnimate(_EllapsedTime); // deals with permanently animated particle systems
 }
 
 
@@ -655,6 +662,12 @@ bool  CScene::getLayersRenderingOrder() const
 {
 	nlassert(RenderTrav);
 	return 	RenderTrav->getLayersRenderingOrder();
+}
+
+// ***************************************************************************
+CParticleSystemManager &CScene::getParticleSystemManager()
+{
+	return _ParticleSystemManager;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.16 2001/12/20 16:54:38 vizerie Exp $
+ * $Id: scene.h,v 1.17 2002/01/28 14:38:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,8 @@
 #include "3d/animated_lightmap.h"
 #include "3d/play_list_manager.h"
 #include "3d/quad_grid_clip_manager.h"
+#include "3d/particle_system_manager.h"
+
 
 #include "nel/3d/viewport.h"
 
@@ -289,6 +291,9 @@ public:
 		bool  getLayersRenderingOrder() const;
 	//@}
 
+	/// Get a ref. to the particle system manager. You shouldn't call this (has methods for private processing)
+	CParticleSystemManager &getParticleSystemManager();
+
 private:
 	typedef			std::map<sint, ITravScene*>	TTravMap;
 	TTravMap		RenderTraversals;	// Sorted via their getRenderOrder().
@@ -352,6 +357,11 @@ private:
 	/// \name Clip features
 	//@{
 	CQuadGridClipManager		_QuadGridClipManager;
+	//@}
+
+	/// \name Particle systems specific
+	//@{		
+		CParticleSystemManager	_ParticleSystemManager;
 	//@}
 
 };

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.10 2004/05/18 16:34:27 berenguier Exp $
+ * $Id: driver_direct3d.h,v 1.11 2004/05/28 15:50:29 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1215,7 +1215,7 @@ private:
 		nlassert (type<MaxMatrixState);
 
 		CMatrixState &theMatrix = _MatrixCache[type];
-#ifdef NL_D3D_USE_RENDER_STATE_CACHE
+#ifdef NL_D3D_USE_RENDER_STATE_CACHE		
 		if ((matrix._11 != theMatrix.Matrix._11) ||
 			(matrix._12 != theMatrix.Matrix._12) ||
 			(matrix._13 != theMatrix.Matrix._13) ||
@@ -1231,7 +1231,7 @@ private:
 			(matrix._41 != theMatrix.Matrix._41) ||
 			(matrix._42 != theMatrix.Matrix._42) ||
 			(matrix._43 != theMatrix.Matrix._43) ||
-			(matrix._44 != theMatrix.Matrix._44))
+			(matrix._44 != theMatrix.Matrix._44))			
 #endif // NL_D3D_USE_RENDER_STATE_CACHE
 		{
 			theMatrix.Matrix = matrix;
@@ -1626,6 +1626,27 @@ private:
 	d3d_mt._24 = nl_mt_ptr[7]; \
 	d3d_mt._34 = nl_mt_ptr[11]; \
 	d3d_mt._44 = nl_mt_ptr[15]; }
+// build matrix for texture 2D transform (special case in D3D)
+#define NL_D3D_TEX2D_MATRIX(d3d_mt,nl_mt) \
+	{	const float *nl_mt_ptr = nl_mt.get(); \
+		d3d_mt._11 = nl_mt_ptr[0]; \
+		d3d_mt._12 = nl_mt_ptr[1]; \
+		d3d_mt._13 = nl_mt_ptr[3]; \
+		d3d_mt._14 = 0.f; \
+		d3d_mt._21 = nl_mt_ptr[4]; \
+		d3d_mt._22 = nl_mt_ptr[5]; \
+		d3d_mt._23 = nl_mt_ptr[7]; \
+		d3d_mt._24 = 0.f; \
+		d3d_mt._31 = nl_mt_ptr[12]; \
+		d3d_mt._32 = nl_mt_ptr[13]; \
+		d3d_mt._33 = nl_mt_ptr[14]; \
+		d3d_mt._34 = 0.f; \
+		d3d_mt._41 = 0.f; \
+		d3d_mt._42 = 0.f; \
+		d3d_mt._43 = 0.f; \
+		d3d_mt._44 = 1.f; }
+
+
 #define NL_D3DVECTOR_VECTOR(dest,vect) dest.x=(vect).x;dest.y=(vect).y;dest.z=(vect).z;
 #define FTODW(f) (*((DWORD*)&(f)))
 #define D3DCOLOR_FLOATS(floats,rgba) {floats[0]=(float)((rgba>>16)&0xff) * (1.f/255.f);floats[1]=(float)((rgba>>8)&0xff) * (1.f/255.f);\

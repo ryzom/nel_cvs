@@ -1,7 +1,7 @@
 /** \file bool_operator.h
  *	0 order logic operators base class 
  *
- * $Id: bool_operator.h,v 1.7 2002/02/20 18:05:10 lecroart Exp $
+ * $Id: bool_operator.h,v 1.8 2003/02/05 16:05:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,10 @@
 #include "nel/ai/logic/ai_assert.h"
 
 namespace NLAILOGIC {
-
+	
+	/**
+	This class define an 0 order logic operators class.
+	*/
 	class CBoolOperator : public IBaseOperator
 	{
 		private:

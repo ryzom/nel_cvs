@@ -1,7 +1,7 @@
 /** \file boolval.h
  *	Base classes for boolean values (conditions, rules...)
  *
- * $Id: boolval.h,v 1.6 2002/02/20 18:05:10 lecroart Exp $
+ * $Id: boolval.h,v 1.7 2003/02/05 16:05:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,8 +40,7 @@ namespace NLAILOGIC {
 
 			/// Returns a value in [0,1]
 			virtual float truthValue() const = 0;
-			virtual const CProcessResult &run() = 0;	
-//			virtual std::vector<IBaseVar *> *getVars() = 0;
+			virtual const CProcessResult &run() = 0;
 	};
 
 	// Valeur booléenne simple

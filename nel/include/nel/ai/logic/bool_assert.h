@@ -1,7 +1,7 @@
 /** \file bool_assert.h
  *	Bool asserts for rules and operators
  *
- * $Id: bool_assert.h,v 1.7 2002/02/20 18:05:10 lecroart Exp $
+ * $Id: bool_assert.h,v 1.8 2003/02/05 16:05:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/ai/logic/ai_assert.h"
 
 namespace NLAILOGIC {
+
 	class CBoolAssert : public NLAILOGIC::IBaseAssert 
 	{
 		private:

@@ -1,7 +1,7 @@
 /** \file agent_3dvector.h
  * <File description>
  *
- * $Id: agent_3dvector.h,v 1.12 2003/01/21 11:24:25 chafik Exp $
+ * $Id: agent_3dvector.h,v 1.13 2003/02/05 16:05:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@
 namespace NLAIAGENT
 {	
 	/**
-	 * This define encapsulate a vector and manage its manipulation.
+	 * This define an vector and manage its manipulation.
 	 * Vector manibulation is need for the script and agent fonctionality.
 	 * \author Alain SAFFRAY
 	 * \author Guillaume PUZIN

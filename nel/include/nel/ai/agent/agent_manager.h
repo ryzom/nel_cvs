@@ -1,7 +1,7 @@
 /** \file agent_manager.h
  * class for mange agent.
  *
- * $Id: agent_manager.h,v 1.3 2002/11/15 09:20:53 chafik Exp $
+ * $Id: agent_manager.h,v 1.4 2003/02/05 16:05:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,7 +75,7 @@ namespace NLAIAGENT
 		{
 		}
 
-	};	
+	};
 }
 
 #endif

@@ -142,6 +142,20 @@
 
 		$link = mysql_connect($DBHost, $DBUserName, $DBPassword) or die ("0:Can't connect to database host:$DBHost user:$DBUserName");
 		mysql_select_db ($DBName) or die ("0:Can't access to the table dbname:$DBName");
+		
+		$query = "SELECT * FROM user WHERE UId='".$id."'";
+		$result = mysql_query ($query) or die ("0:Can't execute the query: ".$query);
+
+		if ($result)
+			$uData = mysql_fetch_array($result);
+			
+		if (strstr($uData['Privilege'], ':DEV:'))
+			$priv = 'dev';
+		else if (strlen($uData['Privilege']) > 0)
+			$priv = 'gm';
+		else
+			$priv = '';
+
 		$query = "SELECT * FROM shard WHERE ClientApplication='".$clientApplication."'";
 		$result = mysql_query ($query) or die ("0:Can't execute the query: ".$query);
 		
@@ -154,13 +168,32 @@
 			{
 				$query2 = "SELECT * FROM permission WHERE UId='".$id."' AND ClientApplication='".$clientApplication."' AND ShardId='".$row["ShardId"]."'";
 				$result2 = mysql_query ($query2) or die ("Can't execute the query: ".$query2);
+				
+				$online = $row["Online"];
+				$uOnline = 1;
+
+				switch ($online)
+				{
+					case 0:
+						$uOnline = 0;
+						break;
+					case 1:
+						$uOnline = ($priv == 'dev' ? 1 : 2);
+						break;
+					case 2:
+						$uOnline = (($priv == 'dev' || $priv == 'gm') ? 1 : 2);
+						break;
+					default:
+						$uOnline = 1;
+						break;
+				}
 
 				// only display the shard if the user have the good application name AND access to this shard with the permission table
 				if (mysql_num_rows ($result2) > 0 && $row["ProgramName"] == $programName)
 				{
 					$nbs++;
 					$res = $res.$row["Version"]."|";
-					$res = $res.$row["Online"]."|";
+					$res = $res.$uOnline."|";
 					$res = $res.$row["ShardId"]."|";
 					$res = $res.$row["Name"]."|";
 					$res = $res."999999|";

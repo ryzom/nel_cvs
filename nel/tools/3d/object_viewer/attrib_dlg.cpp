@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
- * <File description>
+ * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.6 2001/06/19 16:39:41 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.7 2001/06/25 13:15:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,6 +36,7 @@
 #include "basis_edit.h"
 #include "value_blender_dlg.h"
 #include "value_gradient_dlg.h"
+
 
 
 
@@ -163,7 +164,7 @@ public:
 		T *tab = new T[Scheme->getNumValues()] ;
 		Scheme->getValues(tab) ;
 		tab[_CurrentEditedIndex] = v ;
-		Scheme->setValues(tab, Scheme->getNumValues(), Scheme->getNumstages()) ;
+		Scheme->setValues(tab, Scheme->getNumValues(), Scheme->getNumStages()) ;
 		delete[] tab ;
 		GradDlg->invalidateGrad() ;
 	}
@@ -190,21 +191,34 @@ public:
 		{
 			case IValueGradientDlgClient::Add:
 				tab[Scheme->getNumValues()] = DefaultValue ;
-				Scheme->setValues(tab, Scheme->getNumValues() + 1, Scheme->getNumstages()) ;
+				Scheme->setValues(tab, Scheme->getNumValues() + 1, Scheme->getNumStages()) ;
 			break ;
 			case IValueGradientDlgClient::Insert:
 				memcpy(tab + (index + 1), tab + index, sizeof(T) * (Scheme->getNumValues() - index)) ;
 				tab[index] = DefaultValue ;
-				Scheme->setValues(tab, Scheme->getNumValues() + 1, Scheme->getNumstages()) ;
+				Scheme->setValues(tab, Scheme->getNumValues() + 1, Scheme->getNumStages()) ;
 			break ;
 			case IValueGradientDlgClient::Delete:
 				memcpy(tab + index, tab + index + 1, sizeof(T) * (Scheme->getNumValues() - index - 1)) ;
-				Scheme->setValues(tab, Scheme->getNumValues() - 1, Scheme->getNumstages()) ;
+				Scheme->setValues(tab, Scheme->getNumValues() - 1, Scheme->getNumStages()) ;
 			break ;
 		}
 		delete[] tab ;
 	}		
 	virtual uint32 getSchemeSize(void) const { return Scheme->getNumValues() ; }
+
+	// get the number of interpolation step
+	uint32 getNbSteps(void) const
+	{
+		return Scheme->getNumStages() ;
+	}
+
+	// set the number of interpolation steps
+	void setNbSteps(uint32 value)
+	{
+		Scheme->setNumStages(value) ;	
+	}
+
 protected:
 		// index of the value OF the current dialog that exist
 		uint32 _CurrentEditedIndex ;	
@@ -216,7 +230,7 @@ protected:
 // CAttribDlg dialog
 
 
-CAttribDlg::CAttribDlg(const std::string &valueID) : _CstValueDlg(NULL)	
+CAttribDlg::CAttribDlg(const std::string &valueID) : _CstValueDlg(NULL), _FirstDrawing(true)	
 {
 	//{{AFX_DATA_INIT(CAttribDlg)
 	m_AttribName = _T("");
@@ -255,9 +269,11 @@ BOOL CAttribDlg::EnableWindow( BOOL bEnable)
 
 CAttribDlg::~CAttribDlg()	
 {
+	_NbCyclesDlg->DestroyWindow() ;
 	delete _NbCyclesDlg ;
 	if (_CstValueDlg)
 	{
+		_CstValueDlg->DestroyWindow() ;
 		_CstValueDlg->DestroyWindow() ;
 		delete _CstValueDlg ;	
 	}
@@ -322,7 +338,7 @@ void CAttribDlg::DoDataExchange(CDataExchange* pDX)
 
 void CAttribDlg::cstValueUpdate()
 {
-	
+	if (!_FirstDrawing && !useScheme()) return ;	
 
 	m_ClampCtrl.EnableWindow(FALSE) ;
 	_NbCyclesDlg->EnableWindow(FALSE) ;
@@ -345,11 +361,14 @@ void CAttribDlg::cstValueUpdate()
 	GetWindowRect(&ro) ;
 	_CstValueDlg->init(r.left - ro.left, r.top - ro.top, this) ;
 	UpdateData(FALSE) ;
+
+	_FirstDrawing = false ;
 }
 
 void CAttribDlg::schemeValueUpdate()
 {
-	
+	if (!_FirstDrawing && useScheme()) return ;		
+
 	if (_CstValueDlg)
 	{
 		_CstValueDlg->DestroyWindow() ;
@@ -407,6 +426,8 @@ void CAttribDlg::schemeValueUpdate()
 
 
 	UpdateData(FALSE) ;
+
+	_FirstDrawing = false ;
 }
 
 

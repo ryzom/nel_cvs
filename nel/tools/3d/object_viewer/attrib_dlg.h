@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
- * <File description>
+ * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.4 2001/06/19 16:05:09 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.5 2001/06/25 13:15:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -155,6 +155,10 @@ protected:
 			void set(const float &v) { Dlg->setSchemeNbCycles(v) ; }
 	} _NbCyclesWrapper ;
 
+	
+	// true when created, it is set to false once a constant, or scheme dialog has bee shown
+
+	bool _FirstDrawing ;
 
 
 	// the dialog used to tune a constant value

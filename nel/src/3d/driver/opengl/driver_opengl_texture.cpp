@@ -1,7 +1,7 @@
 /** \file driver_opengl_texture.cpp
  * OpenGL driver implementation : setupTexture
  *
- * $Id: driver_opengl_texture.cpp,v 1.11 2001/01/05 11:00:10 berenguier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.12 2001/01/05 15:13:24 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,9 +60,9 @@ static	inline GLint	getGlTextureFormat(ITexture& tex)
 			case CBitmap::DXTC1Alpha: texfmt= ITexture::DXTC1Alpha; break;
 			case CBitmap::DXTC3: texfmt= ITexture::DXTC3; break;
 			case CBitmap::DXTC5: texfmt= ITexture::DXTC5; break;
-			case CBitmap::LUMINANCE: texfmt= ITexture::LUMINANCE; break;
-			case CBitmap::ALPHA: texfmt= ITexture::ALPHA; break;
-			case CBitmap::ALPHA_LUMINANCE: texfmt= ITexture::ALPHA_LUMINANCE; break;
+			case CBitmap::Luminance: texfmt= ITexture::Luminance; break;
+			case CBitmap::Alpha: texfmt= ITexture::Alpha; break;
+			case CBitmap::AlphaLuminance: texfmt= ITexture::AlphaLuminance; break;
 			default: texfmt= ITexture::RGBA8888; break;
 		}
 	}
@@ -81,9 +81,9 @@ static	inline GLint	getGlTextureFormat(ITexture& tex)
 		case ITexture::DXTC3: return GL_RGBA8;
 		case ITexture::DXTC5: return GL_RGBA8;
 		// End tododxtc.
-		case ITexture::LUMINANCE: return GL_LUMINANCE8;
-		case ITexture::ALPHA: return GL_ALPHA8;
-		case ITexture::ALPHA_LUMINANCE: return GL_LUMINANCE8_ALPHA8;
+		case ITexture::Luminance: return GL_LUMINANCE8;
+		case ITexture::Alpha: return GL_ALPHA8;
+		case ITexture::AlphaLuminance: return GL_LUMINANCE8_ALPHA8;
 		default: return GL_RGBA8;
 	}
 }
@@ -292,7 +292,7 @@ bool CDriverGL::setupTexture(ITexture& tex)
 					//===============================================
 					list<NLMISC::CRect>::iterator	itRect;
 					sint level;
-					for(itRect=tex._ListInvalidRect.begin(), level=0; itRect!=tex._ListInvalidRect.end(); level++)
+					for(itRect=tex._ListInvalidRect.begin(), level=0; itRect!=tex._ListInvalidRect.end(); level++, itRect++)
 					{
 						CRect	&rect= *itRect;
 						sint	x0= rect.X;

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.88 2001/04/11 15:00:31 cado Exp $
+ * $Id: driver_opengl.cpp,v 1.89 2001/04/11 15:12:26 cado Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -337,7 +337,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	{
 	  GLX_RGBA,
 	  GLX_DOUBLEBUFFER,
-	  GLX_BUFFER_SIZE, 16,
+	  //GLX_BUFFER_SIZE, 16,
 	  GLX_DEPTH_SIZE, 16,
 	  GLX_RED_SIZE, 4,
 	  GLX_GREEN_SIZE, 4,

@@ -19,6 +19,7 @@ CFG=ia - Win32 Debug
 !MESSAGE 
 !MESSAGE "ia - Win32 Release" (based on "Win32 (x86) Static Library")
 !MESSAGE "ia - Win32 Debug" (based on "Win32 (x86) Static Library")
+!MESSAGE "ia - Win32 ReleaseDebug" (based on "Win32 (x86) Static Library")
 !MESSAGE 
 
 # Begin Project
@@ -41,7 +42,8 @@ RSC=rc.exe
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MDd /W3 /GX /Zi /Od /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# SUBTRACT CPP /Z<none>
 # ADD BASE RSC /l 0x40c /d "NDEBUG"
 # ADD RSC /l 0x40c /d "NDEBUG"
 BSC32=bscmake.exe
@@ -74,12 +76,37 @@ LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo
 
+!ELSEIF  "$(CFG)" == "ia - Win32 ReleaseDebug"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "ia___Win32_ReleaseDebug"
+# PROP BASE Intermediate_Dir "ia___Win32_ReleaseDebug"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "ia___Win32_ReleaseDebug"
+# PROP Intermediate_Dir "ia___Win32_ReleaseDebug"
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GX /Zi /Od /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
+# SUBTRACT CPP /FA<none>
+# ADD BASE RSC /l 0x40c /d "NDEBUG"
+# ADD RSC /l 0x40c /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LIB32=link.exe -lib
+# ADD BASE LIB32 /nologo
+# ADD LIB32 /nologo
+
 !ENDIF 
 
 # Begin Target
 
 # Name "ia - Win32 Release"
 # Name "ia - Win32 Debug"
+# Name "ia - Win32 ReleaseDebug"
 # Begin Group "agent"
 
 # PROP Default_Filter ""

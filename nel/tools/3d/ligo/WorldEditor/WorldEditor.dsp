@@ -159,11 +159,27 @@ SOURCE=.\builderZoneRegion.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\color_button.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Display.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ExportDlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Generate.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainFrm.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\MoveDlg.cpp
 # End Source File
 # Begin Source File
 
@@ -200,11 +216,27 @@ SOURCE=.\builderZoneRegion.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\color_button.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\Display.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\ExportDlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Generate.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\MainFrm.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\MoveDlg.h
 # End Source File
 # Begin Source File
 

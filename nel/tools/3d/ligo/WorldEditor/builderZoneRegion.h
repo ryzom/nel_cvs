@@ -43,7 +43,7 @@ private:
 	struct SZoneUnit
 	{
 		std::string			ZoneName;
-		uint8				PosX, PosY;
+		uint8				PosX, PosY; // Position in a large piece
 		uint8				Rot, Flip; // Rot 0-0°, 1-90°, 2-180°, 3-270°, Flip 0-false, 1-true
 
 		// Work Data : For transition				[2 3]
@@ -102,6 +102,7 @@ public:
 	void				add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIGO::CZoneBankElement *pElt);
 	void				del (sint32 x, sint32 y, bool transition=false, void *pInternal=NULL);
 	void				serial (NLMISC::IStream &f);
+	void				move (sint32 x, sint32 y);
 
 	// Helpers
 	void				set (sint32 x, sint32 y, sint32 nPosX, sint32 nPosY, const std::string &ZoneName, bool transition=false);

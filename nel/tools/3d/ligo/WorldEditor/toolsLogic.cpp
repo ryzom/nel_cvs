@@ -195,15 +195,15 @@ void CToolsLogic::OnMenuCreate()
 		{
 			if (item == _RegionsInfo[i].PointItem)
 			{
-				_MainFrame->_PRegionBuilder.insertPoint (i, newItem, dialog.Name, dialog.LayerName);
+				_MainFrame->_PRegionBuilder.insertPoint (i, newItem, dialog.Name, dialog.LayerName, dialog.ColorBut.getColor());
 			}
 			else if (item == _RegionsInfo[i].PathItem)
 			{
-				_MainFrame->_PRegionBuilder.insertPath (i, newItem, dialog.Name, dialog.LayerName);
+				_MainFrame->_PRegionBuilder.insertPath (i, newItem, dialog.Name, dialog.LayerName, dialog.ColorBut.getColor());
 			}
 			else if (item == _RegionsInfo[i].ZoneItem)
 			{
-				_MainFrame->_PRegionBuilder.insertZone (i, newItem, dialog.Name, dialog.LayerName);
+				_MainFrame->_PRegionBuilder.insertZone (i, newItem, dialog.Name, dialog.LayerName, dialog.ColorBut.getColor());
 			}
 			break;
 		}
@@ -225,11 +225,14 @@ void CToolsLogic::OnMenuProperties()
 	HTREEITEM item = GetTreeCtrl().GetSelectedItem();
 	strcpy (dialog.Name, _MainFrame->_PRegionBuilder.getName(item));
 	strcpy (dialog.LayerName, _MainFrame->_PRegionBuilder.getLayerName(item));
+//	dialog.ColorBut.setColor(_MainFrame->_PRegionBuilder.getColor(item));
+	dialog.colorInit = _MainFrame->_PRegionBuilder.getColor(item);
 	if (dialog.DoModal () == IDOK)
 	{
 		GetTreeCtrl().SetItemText (item, dialog.Name);
 		_MainFrame->_PRegionBuilder.setName (item, dialog.Name);
 		_MainFrame->_PRegionBuilder.setLayerName (item, dialog.LayerName);
+		_MainFrame->_PRegionBuilder.setColor (item, dialog.ColorBut.getColor());
 	}	
 }
 
@@ -300,5 +303,59 @@ void CToolsLogic::OnMenuRegionUnhideAll ()
 	{
 		_MainFrame->_PRegionBuilder.regionHideAll (i, false);
 		break;
+	}
+}
+
+// ---------------------------------------------------------------------------
+// CCreateDialog
+// ---------------------------------------------------------------------------
+BEGIN_MESSAGE_MAP(CCreateDialog, CDialog)
+	//{{AFX_MSG_MAP(CMainFrame)
+		// NOTE - the ClassWizard will add and remove mapping macros here.
+		//    DO NOT EDIT what you see in these blocks of generated code !
+		ON_BN_CLICKED(IDC_BUTTON1, OnColorButton)
+	//}}AFX_MSG_MAP
+END_MESSAGE_MAP()
+
+
+// ---------------------------------------------------------------------------
+CCreateDialog::CCreateDialog (CWnd*pParent) : CDialog(IDD_CREATE_ELEMENT, pParent) 
+{
+	strcpy(Name, "EltName");
+	strcpy(LayerName, "EltLayerName");
+	colorInit = CRGBA(255,255,255,255);
+}
+
+// ---------------------------------------------------------------------------
+BOOL CCreateDialog::OnInitDialog ()
+{
+	CDialog::OnInitDialog();
+	ColorBut.setColor (colorInit);
+	return true;
+}
+
+// ---------------------------------------------------------------------------
+void CCreateDialog::DoDataExchange (CDataExchange* pDX )
+{
+	DDX_Control(pDX, IDC_BUTTON1, ColorBut);
+
+	DDX_Text(pDX, IDC_EDIT_NAME, (LPTSTR)Name, 128);
+	DDV_MaxChars(pDX, Name, 128);
+
+	DDX_Text(pDX, IDC_EDIT_LAYERNAME, (LPTSTR)LayerName, 128);
+	DDV_MaxChars(pDX, LayerName, 128);
+}
+
+// ---------------------------------------------------------------------------
+void CCreateDialog::OnColorButton ()
+{
+	CColorDialog coldlg;
+	if (coldlg.DoModal() == IDOK)
+	{
+		int r = GetRValue(coldlg.GetColor());
+		int g = GetGValue(coldlg.GetColor());
+		int b = GetBValue(coldlg.GetColor());
+		ColorBut.setColor(CRGBA(r,g,b,255));
+		Invalidate();
 	}
 }

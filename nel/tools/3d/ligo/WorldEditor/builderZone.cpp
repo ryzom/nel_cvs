@@ -64,7 +64,7 @@ bool CDataBase::SCacheTexture::isFull()
 CDataBase::CDataBase ()
 {
 	_RefCacheTextureSizeX = _RefCacheTextureSizeY = 1024; // Size of the texture cache
-	_RefSizeX = _RefSizeY = 32; // Size of a zone in pixel
+	_RefSizeX = _RefSizeY = DATABASE_ZONE_SIZE; // Size of a zone in pixel
 	_RefCacheTextureNbEltX = _RefCacheTextureSizeX / _RefSizeX;
 	_RefCacheTextureNbEltY = _RefCacheTextureSizeY / _RefSizeY;
 	for (uint32 i; i < 64; ++i)
@@ -125,7 +125,7 @@ bool CDataBase::init (const string &Path, CZoneBank &zb)
 	uint8 k, l;
 
 	vector<string> ZoneNames;
-	zb.getCategoryValues ("Zone", ZoneNames);
+	zb.getCategoryValues ("zone", ZoneNames);
 	for (i = 0; i < ZoneNames.size(); ++i)
 	{
 		SElement zdbTmp;
@@ -214,7 +214,6 @@ bool CDataBase::init (const string &Path, CZoneBank &zb)
 	if (_CacheTexture[m].Enabled)
 		_CacheTexture[m].Texture->touch ();
 
-
 	_UnusedTexture = loadTexture ("_UNUSED_.TGA");
 	SetCurrentDirectory (sDirBackup);
 	return true;
@@ -267,19 +266,27 @@ ITexture* CDataBase::getTexture (const string &ZoneName, sint32 nPosX, sint32 nP
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
+// Divisor to initialize windows bitmap
+#define WIDTH_DIVISOR	2
+#define HEIGHT_DIVISOR	2
+
 CBitmap *CDataBase::convertToWin (NLMISC::CBitmap *pBitmap)
 {
 	CBitmap *pWinBitmap = new CBitmap;
 	vector<uint8> &rPixel = pBitmap->getPixels();
-	uint8 *pNewPixel = new uint8[rPixel.size()];
-	for (uint32 i = 0; i < (rPixel.size()/4); ++i)
+	uint32 nNewWidth = pBitmap->getWidth()/WIDTH_DIVISOR;
+	uint32 nNewHeight = pBitmap->getHeight()/HEIGHT_DIVISOR;
+	uint8 *pNewPixel = new uint8[nNewHeight*nNewWidth*4];
+	uint32 i, j;
+	for (j = 0; j < nNewHeight; ++j)
+	for (i = 0; i < nNewWidth; ++i)
 	{
-		pNewPixel[i*4+0] = rPixel[i*4+2];
-		pNewPixel[i*4+1] = rPixel[i*4+1];
-		pNewPixel[i*4+2] = rPixel[i*4+0];
-		pNewPixel[i*4+3] = rPixel[i*4+3];
+		pNewPixel[(i+j*nNewWidth)*4+0] = rPixel[(i*WIDTH_DIVISOR+j*HEIGHT_DIVISOR*pBitmap->getWidth())*4+2];
+		pNewPixel[(i+j*nNewWidth)*4+1] = rPixel[(i*WIDTH_DIVISOR+j*HEIGHT_DIVISOR*pBitmap->getWidth())*4+1];
+		pNewPixel[(i+j*nNewWidth)*4+2] = rPixel[(i*WIDTH_DIVISOR+j*HEIGHT_DIVISOR*pBitmap->getWidth())*4+0];
+		pNewPixel[(i+j*nNewWidth)*4+3] = rPixel[(i*WIDTH_DIVISOR+j*HEIGHT_DIVISOR*pBitmap->getWidth())*4+3];
 	}
-	pWinBitmap->CreateBitmap (pBitmap->getWidth(), pBitmap->getHeight(), 1, 32, pNewPixel);
+	pWinBitmap->CreateBitmap (nNewWidth, nNewHeight, 1, 32, pNewPixel);
 	return pWinBitmap;
 }
 
@@ -477,7 +484,7 @@ bool CBuilderZone::init (const string &sPathName, bool makeAZone)
 	sZoneBankPath += "ZoneLigos\\";
 	// Init the ZoneBank
 	_ZoneBank.reset ();
-	_ZoneBank.debugInit (sZoneBankPath.c_str());
+////////	_ZoneBank.debugInit (sZoneBankPath.c_str());
 	initZoneBank (sZoneBankPath);
 	
 	// Construct the DataBase from the ZoneBank
@@ -700,7 +707,15 @@ void CBuilderZone::unload (uint32 pos)
 }
 
 // ---------------------------------------------------------------------------
-CBuilderZone::SCacheRender::SCacheRender()
+void CBuilderZone::move (sint32 x, sint32 y)
+{
+	if (_ZoneRegions.size() == 0)
+		return;
+	_ZoneRegions[_ZoneRegionSelected]->move(x, y);
+}
+
+// ---------------------------------------------------------------------------
+CBuilderZone::SCacheRender::SCacheRender ()
 {
 	Used = false;
 	Mat.initUnlit ();
@@ -1028,6 +1043,9 @@ void CBuilderZone::add (const CVector &worldPos)
 	sint32 y = (sint32)floor (worldPos.y / _Display->_CellSize);
 	uint8 rot, flip;
 
+	if (_ZoneRegions.size() == 0)
+		return;
+
 	if (_StackZone.isEmpty())
 		_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
 
@@ -1077,6 +1095,9 @@ void CBuilderZone::del (const CVector &worldPos)
 {
 	sint32 x = (sint32)floor (worldPos.x / _Display->_CellSize);
 	sint32 y = (sint32)floor (worldPos.y / _Display->_CellSize);
+
+	if (_ZoneRegions.size() == 0)
+		return;
 
 	if (_StackZone.isEmpty())
 		_StackZone.setRegion (_ZoneRegions[_ZoneRegionSelected], _ZoneRegionSelected);
@@ -1169,5 +1190,28 @@ bool CBuilderZone::getZoneMask (sint32 x, sint32 y)
 	else
 	{
 		return _ZoneMask[(x-_MinX)+(y-_MinY)*(1+_MaxX-_MinX)];
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderZone::generate (sint32 nMinX, sint32 nMinY, sint32 nMaxX, sint32 nMaxY, 
+							sint32 nZoneBaseX, sint32 nZoneBaseY, const char *MaterialString)
+{
+	if ((nMinX > nMaxX)	|| (nMinY > nMaxY))
+		return;
+
+	for (sint32 j = nMinY; j <= nMaxY; ++j)
+	for (sint32 i = nMinX; i <= nMaxX; ++i)
+	{
+		// Generate zone name
+		string ZoneName = NLMISC::toString(-nZoneBaseY-j) + "_";
+		ZoneName += ('a' + (nZoneBaseX+i)/26);
+		ZoneName += ('a' + (nZoneBaseX+i)%26);
+		CZoneBankElement *pZBE = _ZoneBank.getElementByZoneName (ZoneName);
+		if (pZBE != NULL)
+		{
+			_ZoneRegions[_ZoneRegionSelected]->init (&_ZoneBank, this);
+			_ZoneRegions[_ZoneRegionSelected]->add (i, j, 0, 0, pZBE);
+		}
 	}
 }

@@ -6,6 +6,7 @@
 
 #include <afxcview.h>
 #include "resource.h"
+#include "color_button.h"
 
 // ***************************************************************************
 
@@ -63,24 +64,24 @@ public:
 
 class CCreateDialog : public CDialog
 {
+	
 public:
+
 	char Name[128], LayerName[128];
+	CColorButton ColorBut;
+	CRGBA colorInit;
+
 public:
 
-	CCreateDialog(CWnd*pParent) : CDialog(IDD_CREATE_ELEMENT, pParent) 
-	{
-		strcpy(Name, "EltName");
-		strcpy(LayerName, "EltLayerName");
-	}
+	CCreateDialog(CWnd*pParent);
 
-	virtual void DoDataExchange(CDataExchange* pDX )
-	{
-		DDX_Text(pDX, IDC_EDIT_NAME, (LPTSTR)Name, 128);
-		DDV_MaxChars(pDX, Name, 128);
-    
-		DDX_Text(pDX, IDC_EDIT_LAYERNAME, (LPTSTR)LayerName, 128);
-		DDV_MaxChars(pDX, LayerName, 128);
-	}
+	virtual BOOL OnInitDialog ();
+	virtual void DoDataExchange (CDataExchange* pDX);
+
+	afx_msg void OnColorButton ();
+
+	DECLARE_MESSAGE_MAP()
+
 };
 
 // ***************************************************************************

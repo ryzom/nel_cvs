@@ -86,9 +86,12 @@ protected:
 	afx_msg void OnMenuFileUnloadLandscape ();
 	afx_msg void OnMenuFileOpenLandscape ();
 	afx_msg void OnMenuFileSaveLandscape ();
+	afx_msg void OnMenuFileGenerate ();
+	afx_msg void OnMenuFileExportToClient ();
 	afx_msg void OnMenuModeZone ();
 	afx_msg void OnMenuModeLogic ();
 	afx_msg void onMenuModeSelectZone ();
+	afx_msg void onMenuModeMove ();
 	afx_msg void OnMenuViewGrid ();
 	afx_msg void OnClose ();
 	afx_msg void OnSize (UINT nType, int cx, int cy);

@@ -42,6 +42,9 @@ namespace NL3D
 // There are 64 cache texture of 1024x1024 (it should be enough)
 // An element is composed of zones (the number of zones is equal to the number
 // of true in the mask (the mask is in the zone bank))
+
+#define DATABASE_ZONE_SIZE	128
+
 class CDataBase
 {
 	struct SCacheTexture
@@ -188,6 +191,7 @@ public:
 	void				autoSaveAll ();
 	void				newZone (bool bDisplay=true);
 	void				unload (uint32 i);
+	void				move (sint32 x, sint32 y);
 
 	void				add (const NLMISC::CVector &worldPos);
 	void				del (const NLMISC::CVector &worldPos);
@@ -207,6 +211,9 @@ public:
 	uint32				getCurZoneRegion ();
 	void				setCurZoneRegion (uint32 i);
 	bool				getZoneMask (sint32 x, sint32 y);
+
+	void				generate (sint32 nMinX, sint32 nMinY, sint32 nMaxX, sint32 nMaxY, 
+								sint32 nZoneBaseX, sint32 nZoneBaseY, const char *MaterialString);
 
 private:
 

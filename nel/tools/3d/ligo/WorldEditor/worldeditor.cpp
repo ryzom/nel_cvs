@@ -1,7 +1,7 @@
 /** \file WorldEditor.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: worldeditor.cpp,v 1.2 2001/11/27 16:15:30 besson Exp $
+ * $Id: worldeditor.cpp,v 1.3 2001/12/05 16:43:38 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -304,10 +304,8 @@ void CWorldEditor::go ()
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
-		
 	}
 	while (!_MainFrame->_Exit);
-
 }
 
 // ***************************************************************************

@@ -74,10 +74,11 @@ public:
 	void unload (uint32 pos);
 	uint32 getNbZoneRegion();
 	const std::string &getZoneRegionName (uint32 nPos);
+	void move (const std::string &name, float x, float y);
 
-	void insertPoint (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName);
-	void insertPath (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName);
-	void insertZone (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName);
+	void insertPoint (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName, NLMISC::CRGBA &col);
+	void insertPath (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName, NLMISC::CRGBA &col);
+	void insertZone (uint32 nPos, HTREEITEM item, const char *Name, const char *LayerName, NLMISC::CRGBA &col);
 	void del (HTREEITEM item);
 	void hide (HTREEITEM item);
 	void hideAll (uint32 nPos, sint32 nID, bool bHide);
@@ -85,9 +86,11 @@ public:
 
 	const char* getName (HTREEITEM item);
 	const char* getLayerName (HTREEITEM item);
+	NLMISC::CRGBA getColor (HTREEITEM item);
 	bool isHidden (HTREEITEM item);
-	void setName (HTREEITEM item, const char* pStr);
-	void setLayerName (HTREEITEM item, const char* pStr);
+	void setName (HTREEITEM item, const char *pStr);
+	void setLayerName (HTREEITEM item, const char *pStr);
+	void setColor (HTREEITEM item, NLMISC::CRGBA &Col);
 
 	// Operation on Selected PrimBuild
 	HTREEITEM getSelPB ();
@@ -109,8 +112,8 @@ private:
 	void convertToScreen (NLMISC::CVector* pVec, sint nNbVec, NLMISC::CVector &viewMin, NLMISC::CVector &viewMax);
 	bool clip (NLMISC::CVector *pVec, uint32 nNbVec, NLMISC::CVector &viewMin, NLMISC::CVector &viewMax);
 	void renderDrawPoint (NLMISC::CVector &pos, NLMISC::CRGBA &col, NL3D::CVertexBuffer *pVB, NL3D::CPrimitiveBlock *pPB);
-	void renderDrawLine (NLMISC::CVector &pos, NLMISC::CVector &pos2, NL3D::CVertexBuffer *pVB, NL3D::CPrimitiveBlock *pPB);
-	void renderDrawTriangle (NLMISC::CVector &pos, NLMISC::CVector &pos2, NLMISC::CVector &pos3, NL3D::CVertexBuffer *pVB, NL3D::CPrimitiveBlock *pPB);
+	void renderDrawLine (NLMISC::CVector &pos, NLMISC::CVector &pos2, NLMISC::CRGBA &col, NL3D::CVertexBuffer *pVB, NL3D::CPrimitiveBlock *pPB);
+	void renderDrawTriangle (NLMISC::CVector &pos, NLMISC::CVector &pos2, NLMISC::CVector &pos3, NLMISC::CRGBA &col, NL3D::CVertexBuffer *pVB, NL3D::CPrimitiveBlock *pPB);
 
 };
 

@@ -89,7 +89,7 @@ void CBuilderZoneRegion::init (NLLIGO::CZoneBank *pBank, CBuilderZone *pBuilder)
 	uint32 i, j, k;
 	SMatNode mn;
 	vector<string> AllValues;
-	_ZeBank->getCategoryValues ("Material", AllValues);
+	_ZeBank->getCategoryValues ("material", AllValues);
 	for (i = 0; i < AllValues.size(); ++i)
 	{
 		mn.Name = AllValues[i];
@@ -97,7 +97,7 @@ void CBuilderZoneRegion::init (NLLIGO::CZoneBank *pBank, CBuilderZone *pBuilder)
 	}
 	// Link between materials
 	AllValues.clear ();
-	_ZeBank->getCategoryValues ("TransName", AllValues);
+	_ZeBank->getCategoryValues ("transname", AllValues);
 	for (i = 0; i < AllValues.size(); ++i)
 	{
 		// Get the 2 materials linked together
@@ -305,7 +305,7 @@ void CBuilderZoneRegion::add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIG
 	}
 
 	// Delete all around all material that are not from the same as us
-	const string &CurMat = pElt->getCategory ("Material");
+	const string &CurMat = pElt->getCategory ("material");
 
 	if (CurMat != STRING_NO_CAT_TYPE)
 	{	// This element is a valid material
@@ -335,15 +335,15 @@ void CBuilderZoneRegion::add (sint32 x, sint32 y, uint8 nRot, uint8 nFlip, NLLIG
 	}
 	else // This element is a transition
 	{
-		const string &CurTrans = pElt->getCategory ("TransName");
+		const string &CurTrans = pElt->getCategory ("transname");
 		if (sMask.Tab.size() > 1)
 			return;
 		// Check if this is the same type of transition
 		sint32 stride = 1+_MaxX-_MinX;
 		CZoneBankElement *pEltUnder = _ZeBank->getElementByZoneName(_Zones[(x-_MinX)+(y-_MinY)*stride].ZoneName);
-		if (pEltUnder->getCategory("TransName") != pElt->getCategory("TransName"))
+		if (pEltUnder->getCategory("transname") != pElt->getCategory("transname"))
 			return;
-		if (pEltUnder->getCategory("TransType") != pElt->getCategory("TransType"))
+		if (pEltUnder->getCategory("transtype") != pElt->getCategory("transtype"))
 			return;
 		
 
@@ -644,8 +644,8 @@ void CBuilderZoneRegion::putTransitions (sint32 inX, sint32 inY, const SPiece &r
 		{
 
 			_ZeBank->resetSelection ();
-			_ZeBank->addOrSwitch ("Material", tCreate.getMat(m));
-			_ZeBank->addAndSwitch ("Size", "1x1");
+			_ZeBank->addOrSwitch ("material", tCreate.getMat(m));
+			_ZeBank->addAndSwitch ("size", "1x1");
 			vector<CZoneBankElement*> vElts;
 			_ZeBank->getSelection (vElts);
 			if (vElts.size() == 0)
@@ -896,11 +896,11 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 		(matNameSet.size() == 1))
 	{
 		CZoneBankElement *pZBE = _ZeBank->getElementByZoneName (_Zones[x+y*stride].ZoneName);
-		if ((pZBE != NULL) && (pZBE->getCategory("Material")==_Zones[x+y*stride].SharingMatNames[0]))
+		if ((pZBE != NULL) && (pZBE->getCategory("material")==_Zones[x+y*stride].SharingMatNames[0]))
 			return;
 		_ZeBank->resetSelection ();
-		_ZeBank->addOrSwitch ("Material", _Zones[x+y*stride].SharingMatNames[0]);
-		_ZeBank->addAndSwitch ("Size", "1x1");
+		_ZeBank->addOrSwitch ("material", _Zones[x+y*stride].SharingMatNames[0]);
+		_ZeBank->addAndSwitch ("size", "1x1");
 		vector<CZoneBankElement*> vElts;
 		_ZeBank->getSelection (vElts);
 		if (vElts.size() == 0)
@@ -931,7 +931,7 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 	string sMatB = *it;
 
 	_ZeBank->resetSelection ();
-	_ZeBank->addOrSwitch ("TransName", sMatA + "-" + sMatB);
+	_ZeBank->addOrSwitch ("transname", sMatA + "-" + sMatB);
 	vector<CZoneBankElement*> selection;
 	_ZeBank->getSelection (selection);
 	if (selection.size() == 0)
@@ -940,7 +940,7 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 		sMatA = sMatB;
 		sMatB = sTmp;
 		_ZeBank->resetSelection ();
-		_ZeBank->addOrSwitch ("TransName", sMatA + "-" + sMatB);
+		_ZeBank->addOrSwitch ("transname", sMatA + "-" + sMatB);
 		_ZeBank->getSelection (selection);
 	}
 
@@ -1006,7 +1006,7 @@ void CBuilderZoneRegion:: updateTrans (sint32 x, sint32 y)
 	else
 		Trans = TransTmp2;
 
-	_ZeBank->addAndSwitch ("TransNum", NLMISC::toString(Trans.Num));
+	_ZeBank->addAndSwitch ("transnum", NLMISC::toString(Trans.Num));
 	_ZeBank->getSelection (selection);
 
 	if (selection.size() > 0)
@@ -1201,6 +1201,15 @@ void CBuilderZoneRegion::serial (NLMISC::IStream &f)
 }
 
 // ---------------------------------------------------------------------------
+void CBuilderZoneRegion::move (sint32 x, sint32 y)
+{
+	_MinX += x;
+	_MinY += y;
+	_MaxX += x;
+	_MaxY += y;
+}
+
+// ---------------------------------------------------------------------------
 void CBuilderZoneRegion::set (sint32 x, sint32 y, sint32 PosX, sint32 PosY, 
 						const std::string &ZoneName, bool transition)
 {
@@ -1223,7 +1232,7 @@ void CBuilderZoneRegion::set (sint32 x, sint32 y, sint32 PosX, sint32 PosY,
 		CZoneBankElement *pZBE = _ZeBank->getElementByZoneName (ZoneName);
 		if (pZBE == NULL)
 			return;
-		const string &sMatName = pZBE->getCategory ("Material");
+		const string &sMatName = pZBE->getCategory ("material");
 		if (sMatName == STRING_NO_CAT_TYPE)
 			return;
 		for (uint32 i = 0; i < 4; ++i)

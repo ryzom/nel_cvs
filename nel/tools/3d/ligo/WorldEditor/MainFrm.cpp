@@ -13,6 +13,10 @@
 #include "MainFrm.h"
 #include "resource.h"
 
+#include "generate.h"
+#include "moveDlg.h"
+#include "exportDlg.h"
+
 #include <string>
 
 using namespace NLLIGO;
@@ -44,12 +48,15 @@ BEGIN_MESSAGE_MAP(CMainFrame, CFrameWnd)
 	ON_COMMAND(ID_FILE_UNLOAD, OnMenuFileUnloadLandscape)
 	ON_COMMAND(ID_FILE_OPENLANDSCAPE, OnMenuFileOpenLandscape)
 	ON_COMMAND(ID_FILE_SAVELANDSCAPE, OnMenuFileSaveLandscape)
+	ON_COMMAND(ID_FILE_GENERATE, OnMenuFileGenerate)
+	ON_COMMAND(ID_FILE_EXPORT, OnMenuFileExportToClient)
 	ON_COMMAND(ID_FILE_EXIT, OnMenuFileExit)
 	ON_COMMAND(ID_MODE_ZONE, OnMenuModeZone)
 	ON_COMMAND(ID_MODE_LOGIC, OnMenuModeLogic)
 	ON_COMMAND(ID_MODE_SELECT, onMenuModeSelectZone)
 	ON_COMMAND(ID_MODE_UNDO, onMenuModeUndo)
 	ON_COMMAND(ID_MODE_REDO, onMenuModeRedo)
+	ON_COMMAND(ID_MODE_MOVE, onMenuModeMove)
 	ON_COMMAND(ID_VIEW_GRID, OnMenuViewGrid)
 	ON_WM_KEYDOWN()
 	ON_WM_CLOSE()
@@ -403,6 +410,27 @@ void CMainFrame::OnMenuFileSaveLandscape ()
 }
 
 // ---------------------------------------------------------------------------
+void CMainFrame::OnMenuFileGenerate ()
+{
+	CGenerate dialog;
+	_ZoneBuilder.getZoneBank().getCategoryValues ("material", dialog.AllMaterials);
+	if (dialog.DoModal() == IDOK)
+	{
+		_ZoneBuilder.generate (dialog.MinX, dialog.MinY, dialog.MaxX, dialog.MaxY, 
+								dialog.ZoneBaseX, dialog.ZoneBaseY, dialog.ComboMaterialString);
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::OnMenuFileExportToClient ()
+{
+	CExportDlg dialog;
+	if (dialog.DoModal() == IDOK)
+	{
+	}
+}
+
+// ---------------------------------------------------------------------------
 void CMainFrame::OnMenuFileExit ()
 {
 	OnClose();
@@ -460,6 +488,27 @@ void CMainFrame::onMenuModeUndo ()
 void CMainFrame::onMenuModeRedo ()
 {
 	_ZoneBuilder.redo();
+}
+
+// ---------------------------------------------------------------------------
+void CMainFrame::onMenuModeMove ()
+{
+	CMoveDlg dialog;
+	if (dialog.DoModal() == IDOK)
+	if (_ZoneBuilder._ZoneRegionNames.size() > 0)
+	{
+		_ZoneBuilder.move (dialog.XOffset, dialog.YOffset);		
+		string tmp = _ZoneBuilder._ZoneRegionNames[_ZoneBuilder._ZoneRegionSelected], tmp2;
+		for(uint32 i = 0; i < tmp.size(); ++i)
+			if (tmp[i] == '.')
+				break;
+			else
+				tmp2 += tmp[i];
+		tmp2 += ".prim";
+		_PRegionBuilder.move (tmp2, dialog.XOffset*_Config.CellSize, dialog.YOffset*_Config.CellSize);
+		CDisplay *dispWnd = dynamic_cast<CDisplay*>(m_wndSplitter.GetPane(0,0));
+		dispWnd->OnDraw	(NULL);
+	}
 }
 
 // ---------------------------------------------------------------------------

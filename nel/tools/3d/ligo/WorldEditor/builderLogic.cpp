@@ -239,13 +239,48 @@ const string &CBuilderLogic::getZoneRegionName (uint32 nPos)
 	return _PRegions[nPos]->Name;
 }
 
+// ---------------------------------------------------------------------------
+void CBuilderLogic::move (const string &regName, float x, float y)
+{
+	uint32 i, j, k;
+
+	for (i = 0; i < _PRegions.size(); ++i)
+	if (_PRegions[i]->Name == regName)
+	{
+		for (j = 0; j < _PRegions[i]->VPoints.size(); ++j)
+		{
+			_PRegions[i]->VPoints[j].Point.x += x;
+			_PRegions[i]->VPoints[j].Point.y += y;
+		}
+
+		for (j = 0; j < _PRegions[i]->VPaths.size(); ++j)
+		{
+			for (k = 0; k < _PRegions[i]->VPaths[j].VPoints.size(); ++k)
+			{
+				_PRegions[i]->VPaths[j].VPoints[k].x += x;
+				_PRegions[i]->VPaths[j].VPoints[k].y += y;
+			}
+		}
+
+		for (j = 0; j < _PRegions[i]->VZones.size(); ++j)
+		{
+			for (k = 0; k < _PRegions[i]->VZones[j].VPoints.size(); ++k)
+			{
+				_PRegions[i]->VZones[j].VPoints[k].x += x;
+				_PRegions[i]->VZones[j].VPoints[k].y += y;
+			}
+		}
+		return;
+	}
+}
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::insertPoint (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName)
+void CBuilderLogic::insertPoint (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName, NLMISC::CRGBA &col)
 {
 	CPrimPoint pp;
 	pp.LayerName = LayerName;
 	pp.Name = Name;
+	pp.Color = col;
 	pp.Point = CVector(0.0f, 0.0f, 0.0f);
 	_PRegions[pos]->VPoints.push_back(pp);
 	SPrimBuild pB;
@@ -256,11 +291,12 @@ void CBuilderLogic::insertPoint (uint32 pos, HTREEITEM item, const char *Name, c
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::insertPath (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName)
+void CBuilderLogic::insertPath (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName, NLMISC::CRGBA &col)
 {
 	CPrimPath pp;
 	pp.LayerName = LayerName;
 	pp.Name = Name;
+	pp.Color = col;
 	_PRegions[pos]->VPaths.push_back (pp);
 	SPrimBuild pB;
 	pB.Type = 1; // Path
@@ -270,11 +306,12 @@ void CBuilderLogic::insertPath (uint32 pos, HTREEITEM item, const char *Name, co
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::insertZone (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName)
+void CBuilderLogic::insertZone (uint32 pos, HTREEITEM item, const char *Name, const char *LayerName, NLMISC::CRGBA &col)
 {
 	CPrimZone pz;
 	pz.LayerName = LayerName;
 	pz.Name = Name;
+	pz.Color = col;
 	_PRegions[pos]->VZones.push_back (pz);
 	SPrimBuild pB;
 	pB.Type = 2; // Zone
@@ -440,6 +477,33 @@ const char* CBuilderLogic::getLayerName (HTREEITEM item)
 }
 
 // ---------------------------------------------------------------------------
+NLMISC::CRGBA CBuilderLogic::getColor (HTREEITEM item)
+{
+	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (item);
+	if (it == _Primitives.end())
+		return CRGBA(0,0,0,0);
+	else
+	{
+		SPrimBuild &rPB = it->second;
+		CPrimRegion &PRegion = *rPB.PRegion;
+
+		switch (rPB.Type)
+		{
+			case 0:
+				return PRegion.VPoints[rPB.Pos].Color;
+			break;
+			case 1:
+				return PRegion.VPaths[rPB.Pos].Color;
+			break;
+			case 2:
+				return PRegion.VZones[rPB.Pos].Color;
+			break;
+		}
+		return CRGBA(0,0,0,0);
+	}
+}
+
+// ---------------------------------------------------------------------------
 bool CBuilderLogic::isHidden (HTREEITEM item)
 {
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (item);
@@ -501,6 +565,32 @@ void CBuilderLogic::setLayerName (HTREEITEM item, const char* pStr)
 			break;
 			case 2:
 				PRegion.VZones[rPB.Pos].LayerName = pStr;
+			break;
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+void CBuilderLogic::setColor (HTREEITEM item, NLMISC::CRGBA &col)
+{
+	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.find (item);
+	if (it == _Primitives.end())
+		return;
+	else
+	{
+		SPrimBuild &rPB = it->second;
+		CPrimRegion &PRegion = *rPB.PRegion;
+
+		switch (rPB.Type)
+		{
+			case 0:
+				PRegion.VPoints[rPB.Pos].Color = col;
+			break;
+			case 1:
+				PRegion.VPaths[rPB.Pos].Color = col;
+			break;
+			case 2:
+				PRegion.VZones[rPB.Pos].Color = col;
 			break;
 		}
 	}
@@ -675,20 +765,18 @@ void CBuilderLogic::delSelVertexOnSelPB ()
 void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 {
 	// Accelerate rendering with vertex buffer
-	CVertexBuffer VB, VBSel;
-	CPrimitiveBlock PB, PBSel;
+	CVertexBuffer VB;
+	CPrimitiveBlock PB;
 	CMaterial Mat;
-	CRGBA Col, ColSel;
 
-	Col = CRGBA(255, 255, 255, 192);
-	ColSel = CRGBA(255, 0, 0, 192);
+	CRGBA colSel = CRGBA(255, 0, 0, 192);
 
 	Mat.initUnlit ();
 	Mat.setSrcBlend(CMaterial::srcalpha);
 	Mat.setDstBlend(CMaterial::invsrcalpha);
 	Mat.setBlend (true);
-	VB.setVertexFormat (CVertexBuffer::PositionFlag);
-	VBSel.setVertexFormat (CVertexBuffer::PositionFlag);
+	Mat.setColor (CRGBA(255, 255, 255, 192));
+	VB.setVertexFormat (CVertexBuffer::PositionFlag|CVertexBuffer::PrimaryColorFlag);
 	
 	// Parse the map
 	map<HTREEITEM, SPrimBuild>::iterator it = _Primitives.begin();
@@ -715,21 +803,26 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 
 		if (curPB.Type == 0) // Point
 		{
+			col = PRegion.VPoints[curPB.Pos].Color;
 			pVec = &PRegion.VPoints[curPB.Pos].Point;
 			nNbVec = 1;
 		}
 
 		if (curPB.Type == 1) // Path
 		{
+			col = PRegion.VPaths[curPB.Pos].Color;
 			pVec = &PRegion.VPaths[curPB.Pos].VPoints[0];
 			nNbVec = PRegion.VPaths[curPB.Pos].VPoints.size();
 		}
 
 		if (curPB.Type == 2) // Zone
 		{
+			col = PRegion.VZones[curPB.Pos].Color;
 			pVec = &PRegion.VZones[curPB.Pos].VPoints[0];
 			nNbVec = PRegion.VZones[curPB.Pos].VPoints.size();
 		}
+
+		col.A = 192;
 
 		if (clip(pVec, nNbVec, viewMin, viewMax))
 		{
@@ -743,7 +836,7 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 		if (curPB.Type == 2) // For Zones
 		{
 			vector<sint32> vRef;
-			uint32 nStart, VBStart = VBSel.getNumVertices(), PBStart = PBSel.getNumTri();
+			uint32 nStart, VBStart = VB.getNumVertices(), PBStart = PB.getNumTri();
 			vRef.resize(nNbVec);
 			for(i = 0; i < vRef.size(); ++i)
 				vRef[i] = i;
@@ -765,8 +858,8 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 					//nlassert(nStart != vRef.size());
 					if (nStart == vRef.size())
 					{
-						VBSel.setNumVertices (VBStart);
-						PBSel.setNumTri(PBStart);
+						VB.setNumVertices (VBStart);
+						PB.setNumTri(PBStart);
 						break;
 					}
 					continue;
@@ -794,8 +887,8 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 					//nlassert(nStart != vRef.size());
 					if (nStart == vRef.size())
 					{
-						VBSel.setNumVertices (VBStart);
-						PBSel.setNumTri(PBStart);
+						VB.setNumVertices (VBStart);
+						PB.setNumTri(PBStart);
 						break;
 					}
 					continue;
@@ -806,9 +899,9 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 				convertToScreen (&pos2, 1, viewMin, viewMax);
 				convertToScreen (&pos3, 1, viewMin, viewMax);
 				if (curItem == _ItemSelected)
-					renderDrawTriangle(pos1, pos2, pos3, &VBSel, &PBSel);
+					renderDrawTriangle(pos1, pos2, pos3, colSel, &VB, &PB);
 				else
-					renderDrawTriangle(pos1, pos2, pos3, &VB, &PB);
+					renderDrawTriangle(pos1, pos2, pos3, col, &VB, &PB);
 				
 				// Erase the point in the middle
 				for (i = 1+((nStart+1)%vRef.size()); i < vRef.size(); ++i)
@@ -829,9 +922,9 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 			convertToScreen (&pos, 1, viewMin, viewMax);
 			convertToScreen (&pos2, 1, viewMin, viewMax);
 			if (curItem == _ItemSelected)
-				renderDrawLine (pos, pos2, &VBSel, &PBSel);
+				renderDrawLine (pos, pos2, colSel, &VB, &PB);
 			else
-				renderDrawLine (pos, pos2, &VB, &PB);
+				renderDrawLine (pos, pos2, col, &VB, &PB);
 		}
 
 		// Draw all points
@@ -843,14 +936,9 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 			if (curItem == _ItemSelected)
 			{
 				if (_VertexSelected == (sint32)i)
-				{
-					col = CRGBA (255, 255, 0, 192);
-					renderDrawPoint (pos, col, NULL, NULL);
-				}
+					renderDrawPoint (pos, CRGBA (255, 255, 0, 192), &VB, &PB);
 				else
-				{
-					renderDrawPoint (pos, col, &VBSel, &PBSel);
-				}
+					renderDrawPoint (pos, col, &VB, &PB);
 			}
 			else
 			{
@@ -869,12 +957,8 @@ void CBuilderLogic::render (CVector &viewMin, CVector &viewMax)
 	CNELU::Driver->setupViewMatrix (mtx);
 	CNELU::Driver->setupModelMatrix (mtx);
 	CNELU::Driver->setFrustum (0.f, 1.f, 0.f, 1.f, -1.f, 1.f, false);
-	Mat.setColor (Col);
 	CNELU::Driver->activeVertexBuffer(VB);
 	CNELU::Driver->render(PB, Mat);
-	Mat.setColor (ColSel);
-	CNELU::Driver->activeVertexBuffer(VBSel);
-	CNELU::Driver->render(PBSel, Mat);
 }
 
 // ---------------------------------------------------------------------------
@@ -893,6 +977,10 @@ void CBuilderLogic::renderDrawPoint (CVector &pos, CRGBA &col, CVertexBuffer *pV
 		pVB->setVertexCoord (nVBPos+1, pos.x+0.01f, pos.z, pos.y);
 		pVB->setVertexCoord (nVBPos+2, pos.x, pos.z, pos.y-0.01f);
 		pVB->setVertexCoord (nVBPos+3, pos.x, pos.z, pos.y+0.01f);
+		pVB->setColor (nVBPos+0, col);
+		pVB->setColor (nVBPos+1, col);
+		pVB->setColor (nVBPos+2, col);
+		pVB->setColor (nVBPos+3, col);
 		sint32 nPBPos = pPB->getNumLine();
 		pPB->setNumLine (nPBPos+2);
 		pPB->setLine (nPBPos+0, nVBPos+0, nVBPos+1);
@@ -901,25 +989,30 @@ void CBuilderLogic::renderDrawPoint (CVector &pos, CRGBA &col, CVertexBuffer *pV
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::renderDrawLine (CVector &pos, CVector &pos2, CVertexBuffer *pVB, CPrimitiveBlock *pPB)
+void CBuilderLogic::renderDrawLine (CVector &pos, CVector &pos2, CRGBA &col, CVertexBuffer *pVB, CPrimitiveBlock *pPB)
 {
 	sint32 nVBPos = pVB->getNumVertices();
 	pVB->setNumVertices (nVBPos+2);
 	pVB->setVertexCoord (nVBPos+0, pos.x, pos.z, pos.y);
 	pVB->setVertexCoord (nVBPos+1, pos2.x, pos2.z, pos2.y);
+	pVB->setColor (nVBPos+0, col);
+	pVB->setColor (nVBPos+1, col);
 	sint32 nPBPos = pPB->getNumLine();
 	pPB->setNumLine (nPBPos+1);
 	pPB->setLine (nPBPos+0, nVBPos+0, nVBPos+1);
 }
 
 // ---------------------------------------------------------------------------
-void CBuilderLogic::renderDrawTriangle (CVector &pos, CVector &pos2, CVector &pos3, CVertexBuffer *pVB, CPrimitiveBlock *pPB)
+void CBuilderLogic::renderDrawTriangle (CVector &pos, CVector &pos2, CVector &pos3, CRGBA &col, CVertexBuffer *pVB, CPrimitiveBlock *pPB)
 {
 	sint32 nVBPos = pVB->getNumVertices();
 	pVB->setNumVertices (nVBPos+3);
 	pVB->setVertexCoord (nVBPos+0, pos.x, pos.z, pos.y);
 	pVB->setVertexCoord (nVBPos+1, pos2.x, pos2.z, pos2.y);
 	pVB->setVertexCoord (nVBPos+2, pos3.x, pos3.z, pos3.y);
+	pVB->setColor (nVBPos+0, col);
+	pVB->setColor (nVBPos+1, col);
+	pVB->setColor (nVBPos+2, col);
 	sint32 nPBPos = pPB->getNumTri();
 	pPB->setNumTri (nPBPos+1);
 	pPB->setTri (nPBPos+0, nVBPos+0, nVBPos+1, nVBPos+2);

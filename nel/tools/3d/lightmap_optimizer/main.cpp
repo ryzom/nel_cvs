@@ -385,24 +385,44 @@ int main(int nNbArg, char **ppArgs)
 			}
 		}
 	
+		/*
+		for(uint k = 0; k < tags.size(); ++k)
+		{
+			nlinfo("tag %d = %s", (int) k, tags[k].c_str());
+		}
+		*/
+
 		AllLightmapTags.resize(AllLightmapNames.size());
 		for(uint k = 0; k < AllLightmapNames.size(); ++k)
 		{
+			nlinfo("k = %d", (int) k);
 			AllLightmapTags[k] = -1;
-			// search for tag
+			// search for longest tag that match
+			uint bestLength = 0;
 			for(uint l = 0; l < tags.size(); ++l)
 			{
 				if (AllLightmapNames[k].size() > tags[l].size())
 				{
-					std::string start = AllLightmapNames[k].substr(0, tags[l].size());
-					if (NLMISC::nlstricmp(start, tags[l]) == 0)
-					{
-						// the tag matchs
-						AllLightmapTags[k] = l;
-						break;
-					}					
+					if (tags[l].size() > bestLength)
+					{					
+						std::string start = AllLightmapNames[k].substr(0, tags[l].size());
+						if (NLMISC::nlstricmp(start, tags[l]) == 0)
+						{
+							bestLength = tags[l].size();
+							// the tag matchs
+							AllLightmapTags[k] = l;						
+						}
+					}
 				}
+			}						
+			if (AllLightmapTags[k] == -1)
+			{
+				nlinfo(NLMISC::toString("Lightmap %s has no tag", AllLightmapNames[k].c_str()).c_str());
 			}
+			else
+			{			
+				nlinfo(NLMISC::toString("Lightmap %s has tag %d : %s", AllLightmapNames[k].c_str(), (int) AllLightmapTags[k], tags[AllLightmapTags[k]].c_str()).c_str());
+			}			
 		}
 
 
@@ -459,8 +479,12 @@ int main(int nNbArg, char **ppArgs)
 					if (strnicmp(AllLightmapNames[k].c_str(), sTmp2.c_str(), sTmp2.size()) == 0)
 					{
 						for (j = k+1; j < (sint32)AllLightmapNames.size(); ++j)
+						{
 							AllLightmapNames[j-1] = AllLightmapNames[j];
+							AllLightmapTags[j - 1] = AllLightmapTags[j];
+						}
 						AllLightmapNames.resize (AllLightmapNames.size()-1);
+						AllLightmapTags.resize(AllLightmapTags.size()  - 1);
 						k = -1;
 						i = -1;
 					}
@@ -505,9 +529,13 @@ int main(int nNbArg, char **ppArgs)
 				string sTmp = AllLightmapNames[i];
 				AllLightmapNames[i] = AllLightmapNames[j];
 				AllLightmapNames[j] = sTmp;
+
+				sint tagTmp = AllLightmapTags[i];
+				AllLightmapTags[i] = AllLightmapTags[j];
+				AllLightmapTags[j] = tagTmp;
 			}
 		}
-
+		nlassert(AllLightmapTags.size() == AllLightmapNames.size());
 		for (i = 0; i < (sint32)AllLightmapNames.size(); ++i)
 		{
 			outString(NLMISC::toString("%d / %d\n", (int) i, (int) AllLightmapNames.size()));
@@ -541,8 +569,10 @@ int main(int nNbArg, char **ppArgs)
 						NLMISC::CBitmap BitmapJ;
 						NLMISC::CIFile inFile;
 
-						outString (string("INFO : Transfering ")+sTexNameI+" in "+sTexNameJ+
-									" at ("+NLMISC::toString(x)+","+NLMISC::toString(y)+")\n");
+						outString (NLMISC::toString("INFO : Transfering %s (tag = %d) in %s (tag = %d)", 
+													sTexNameI.c_str(), (int) AllLightmapTags[i],
+													sTexNameJ.c_str(), (int) AllLightmapTags[j]) +
+													" at ("+NLMISC::toString(x)+","+NLMISC::toString(y)+")\n");
 
 						try
 						{
@@ -782,10 +812,14 @@ int main(int nNbArg, char **ppArgs)
 			// if assigned to another bitmap -> delete the bitmap i
 			if (bAssigned)
 			{
-				// Delete Names
+				// Delete Names && tags
 				for (j = i+1; j < (sint32)AllLightmapNames.size(); ++j)
+				{
 					AllLightmapNames[j-1] = AllLightmapNames[j];
+					AllLightmapTags[j-1] = AllLightmapTags[j];
+				}
 				AllLightmapNames.resize (AllLightmapNames.size()-1);
+				AllLightmapTags.resize (AllLightmapTags.size()-1);
 				// Delete Lightmaps
 				delete AllLightmaps[i];
 				for (j = i+1; j < (sint32)AllLightmaps.size(); ++j)

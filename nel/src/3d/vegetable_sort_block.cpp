@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.cpp
  * <File description>
  *
- * $Id: vegetable_sort_block.cpp,v 1.2 2001/12/05 11:03:50 berenguier Exp $
+ * $Id: vegetable_sort_block.cpp,v 1.3 2001/12/05 15:13:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,14 +101,13 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 	if(_NTriangles == 0)
 	{
 		// reset the array of indices.
-		contReset(_SortedTriangleArray);
+		_SortedTriangleArray.clear();
 		// bye
 		return;
 	}
 	else
 	{
-		// else, allocate the array
-		contReset(_SortedTriangleArray);
+		// else, re-allocate the array
 		_SortedTriangleArray.resize(_NIndices * NL3D_VEGETABLE_NUM_QUADRANT);
 	}
 
@@ -164,7 +163,7 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 		// Fill result.
 		//-------------
 		// init quadrant ptr.
-		_SortedTriangleIndices[quadrant]= &_SortedTriangleArray[0] + quadrant * _NIndices;
+		_SortedTriangleIndices[quadrant]= _SortedTriangleArray.getPtr() + quadrant * _NIndices;
 
 		// fill the indices.
 		uint32	*pIdx= _SortedTriangleIndices[quadrant];

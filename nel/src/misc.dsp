@@ -461,6 +461,14 @@ SOURCE=..\include\nel\misc\heap_memory.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\object_vector.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\object_vector.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\include\nel\misc\pool_memory.h
 # End Source File
 # End Group

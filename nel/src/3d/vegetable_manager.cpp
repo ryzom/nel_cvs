@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.9 2001/12/05 11:03:50 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.10 2001/12/05 15:13:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -842,12 +842,12 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 	for(rdrPass= 0; rdrPass<NL3D_VEGETABLE_NRDRPASS; rdrPass++)
 	{
 		CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ig->_RdrPass[rdrPass];
-		nlassert(vegetRdrPass.TriangleIndices.capacity()==0);
-		nlassert(vegetRdrPass.TriangleLocalIndices.capacity()==0);
-		nlassert(vegetRdrPass.Vertices.capacity()==0);
+		nlassert(vegetRdrPass.TriangleIndices.size()==0);
+		nlassert(vegetRdrPass.TriangleLocalIndices.size()==0);
+		nlassert(vegetRdrPass.Vertices.size()==0);
 	}
 	// Do the same for all quadrants of the zsort rdrPass.
-	nlassert(ig->_TriangleQuadrantOrderArray.capacity()==0);
+	nlassert(ig->_TriangleQuadrantOrderArray.size()==0);
 	nlassert(ig->_TriangleQuadrantOrderNumTriangles==0);
 
 
@@ -860,9 +860,9 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 		uint	numVertices= vegetIgReserve._RdrPass[rdrPass].NVertices;
 		uint	numTris= vegetIgReserve._RdrPass[rdrPass].NTriangles;
 		// reserve triangles indices and vertices for this rdrPass.
-		vegetRdrPass.TriangleIndices.reserve(numTris*3);
-		vegetRdrPass.TriangleLocalIndices.reserve(numTris*3);
-		vegetRdrPass.Vertices.reserve(numVertices);
+		vegetRdrPass.TriangleIndices.resize(numTris*3);
+		vegetRdrPass.TriangleLocalIndices.resize(numTris*3);
+		vegetRdrPass.Vertices.resize(numVertices);
 	}
 
 	// Reserve space for the zsort rdrPass sorting.
@@ -873,7 +873,7 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 	// And init ptrs.
 	if(numZSortTris>0)
 	{
-		float	*start= &ig->_TriangleQuadrantOrderArray[0];
+		float	*start= ig->_TriangleQuadrantOrderArray.getPtr();
 		// init ptr to each qaudrant
 		for(uint i=0; i<NL3D_VEGETABLE_NUM_QUADRANT; i++)
 		{
@@ -1002,8 +1002,10 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	ig->_ClipOwner->extendSphere(instancePos);
 
 
-	// Vertex Info.
-	sint	numVertices= shape->VB.getNumVertices();
+	// Vertex/triangle Info.
+	uint	numNewVertices= shape->VB.getNumVertices();
+	uint	numNewTris= shape->TriangleIndices.size()/3;
+	uint	numNewIndices= shape->TriangleIndices.size();
 
 	// src info.
 	uint	srcVertexSize= shape->VB.getVertexSize();
@@ -1032,12 +1034,12 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	static	vector<CVector>		worldVertices;
 	if(rdrPass == NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT)
 	{
-		worldVertices.resize(numVertices);
+		worldVertices.resize(numNewVertices);
 	}
 
 
 	// For all vertices of shape, transform and store manager indices in temp shape.
-	for(i=0; i<numVertices;i++)
+	for(i=0; i<(sint)numNewVertices;i++)
 	{
 		// allocate a Vertex
 		uint	vid= allocator->allocateVertex();
@@ -1189,15 +1191,12 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 		// For deletion, inform the ig that it has instances which impact the SB.
 		ig->_HasZSortPassInstances= true;
 
-		// new triangles.
-		uint	numTris= shape->TriangleIndices.size()/3;
-
 		// static to avoid reallocation
 		static	vector<CVector>		triangleCenters;
-		triangleCenters.resize(numTris);
+		triangleCenters.resize(numNewTris);
 
 		// compute triangle centers
-		for(uint i=0; i<numTris; i++)
+		for(uint i=0; i<numNewTris; i++)
 		{
 			// get index in shape.
 			uint	v0= shape->TriangleIndices[i*3+0];
@@ -1218,7 +1217,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 
 		// resize the array. Actually only modify the number of triangles really setuped.
 		uint	offTri= ig->_TriangleQuadrantOrderNumTriangles;
-		ig->_TriangleQuadrantOrderNumTriangles+= numTris;
+		ig->_TriangleQuadrantOrderNumTriangles+= numNewTris;
 		// verify user has correclty used reserveIg system.
 		nlassert(ig->_TriangleQuadrantOrderNumTriangles * NL3D_VEGETABLE_NUM_QUADRANT <= ig->_TriangleQuadrantOrderArray.size());
 
@@ -1229,7 +1228,7 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 			const CVector		&quadDir= CVegetableQuadrant::Dirs[quadId];
 
 			// For all tris.
-			for(uint i=0; i<numTris; i++)
+			for(uint i=0; i<numNewTris; i++)
 			{
 				// compute the distance with orientation of the quadrant. (DotProduct)
 				ig->_TriangleQuadrantOrders[quadId][offTri + i]= triangleCenters[i] * quadDir;
@@ -1244,39 +1243,35 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	// TODO_VEGET_OPTIM: system reallocation of array is very bad...
 
 
+	// compute dest start idx.
+	uint	offVertex= vegetRdrPass.NVertices;
+	uint	offTri= vegetRdrPass.NTriangles;
+	uint	offTriIdx= offTri*3;
+
 	// verify user has correclty used reserveIg system.
-	nlassert(vegetRdrPass.Vertices.size()+numVertices <= vegetRdrPass.Vertices.capacity());
-	sint	numNewIndices= shape->TriangleIndices.size();
-	nlassert(vegetRdrPass.TriangleIndices.size()+numNewIndices <= vegetRdrPass.TriangleIndices.capacity());
-	nlassert(vegetRdrPass.TriangleLocalIndices.size()+numNewIndices <= vegetRdrPass.TriangleLocalIndices.capacity());
+	nlassert(offVertex + numNewVertices <= vegetRdrPass.Vertices.size());
+	nlassert(offTriIdx + numNewIndices <= vegetRdrPass.TriangleIndices.size());
+	nlassert(offTriIdx + numNewIndices <= vegetRdrPass.TriangleLocalIndices.size());
 
-
-	// get the number of vertices actually
-	uint	localVertexOffset= vegetRdrPass.Vertices.size();
 
 	// insert list of vertices to delete in ig vertices.
-	vegetRdrPass.Vertices.insert(vegetRdrPass.Vertices.end(), 
-		shape->InstanceVertices.begin(), shape->InstanceVertices.end());
+	vegetRdrPass.Vertices.copy(offVertex, offVertex+numNewVertices, &shape->InstanceVertices[0]);
 
 	// insert array of triangles in ig.
-	// resize arrays of triangles.
-	nlassert(vegetRdrPass.TriangleIndices.size() == vegetRdrPass.TriangleLocalIndices.size());
-	uint	triIdxOffset= vegetRdrPass.TriangleIndices.size();
-	vegetRdrPass.TriangleIndices.resize(triIdxOffset + numNewIndices);
-	vegetRdrPass.TriangleLocalIndices.resize(triIdxOffset + numNewIndices);
 	// for all indices, fill IG
-	for(i=0; i<numNewIndices; i++)
+	for(i=0; i<(sint)numNewIndices; i++)
 	{
 		// get the index of the vertex in the shape
 		uint	vid= shape->TriangleIndices[i];
 		// re-direction, using InstanceVertices;
-		vegetRdrPass.TriangleIndices[triIdxOffset + i]= shape->InstanceVertices[vid];
+		vegetRdrPass.TriangleIndices[offTriIdx + i]= shape->InstanceVertices[vid];
 		// local re-direction: adding vertexOffset.
-		vegetRdrPass.TriangleLocalIndices[triIdxOffset + i]= localVertexOffset + vid;
+		vegetRdrPass.TriangleLocalIndices[offTriIdx + i]= offVertex + vid;
 	}
 
-	// new triangle size.
-	vegetRdrPass.NTriangles= vegetRdrPass.TriangleIndices.size() / 3;
+	// new triangle and vertex size.
+	vegetRdrPass.NTriangles+= numNewTris;
+	vegetRdrPass.NVertices+= numNewVertices;
 }
 
 

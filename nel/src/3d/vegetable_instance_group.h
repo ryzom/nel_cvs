@@ -1,7 +1,7 @@
 /** \file vegetable_instance_group.h
  * <File description>
  *
- * $Id: vegetable_instance_group.h,v 1.5 2001/12/05 11:03:50 berenguier Exp $
+ * $Id: vegetable_instance_group.h,v 1.6 2001/12/05 15:13:33 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_VEGETABLE_INSTANCE_GROUP_H
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/object_vector.h"
 #include "3d/tess_list.h"
 #include "3d/vegetable_instance_group.h"
 #include "3d/vegetable_def.h"
@@ -78,18 +79,21 @@ private:
 		// vertices are in VBSoft or VBHard ??
 		bool					HardMode;
 		// List of vertices used (used for deletion of the ig, and also for change of HardMode).
-		std::vector<uint32>		Vertices;
+		NLMISC::CObjectVector<uint32, false>	Vertices;
 		// List of faces indices to render. They points to vertex in VBuffer.
-		std::vector<uint32>		TriangleIndices;
+		NLMISC::CObjectVector<uint32, false>	TriangleIndices;
 		// List of faces indices to render. They points to Vertices in this.
-		std::vector<uint32>		TriangleLocalIndices;
-		// the number of triangles, ie _TriangleIndices.size()/3.
+		NLMISC::CObjectVector<uint32, false>	TriangleLocalIndices;
+		// the number of triangles currently setuped, ie _TriangleIndices.size()/3.
 		uint32					NTriangles;
+		// the number of vertices currently setuped.
+		uint32					NVertices;
 
 		CVegetableRdrPass()
 		{
 			HardMode= true;
 			NTriangles= 0;
+			NVertices= 0;
 		}
 	};
 
@@ -99,7 +103,7 @@ private:
 
 	// list of triangles order, for quadrant ZSorting. only for NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT rdrpass.
 	// this is why this don't appear in CVegetableRdrPass
-	std::vector<float>			_TriangleQuadrantOrderArray;
+	NLMISC::CObjectVector<float, false>			_TriangleQuadrantOrderArray;
 	uint						_TriangleQuadrantOrderNumTriangles;
 	float						*_TriangleQuadrantOrders[NL3D_VEGETABLE_NUM_QUADRANT];
 	// If the Igs contains some instance in NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT rdrpass, this flag is true.

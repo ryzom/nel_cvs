@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * ARGB pixel format
  *
- * $Id: rgba.cpp,v 1.15 2002/05/21 16:41:31 lecroart Exp $
+ * $Id: rgba.cpp,v 1.16 2003/09/30 17:27:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,7 +199,7 @@ void CRGBA::addColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint nu
 			else
 			{
 				__asm
-				{
+				{						    
 							push        ebp
 							mov			edi, dest
 							mov			esi, src1
@@ -297,10 +297,10 @@ void CRGBA::modulateColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, ui
 		uint64 blank = 0;
 		/// well, this could be further optimized when stride is 4 
 		if (dup == 1)
-		{			__asm
+		{	__asm
 			{
 						push        ebp
-						movq         mm2, blank
+						movq        mm2, blank
 						mov			edi, dest
 						mov			esi, src1
 						mov			ebx, src2
@@ -370,6 +370,7 @@ void CRGBA::modulateColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, ui
 				__asm
 				{
 							push        ebp
+							movq        mm2, blank
 							mov			edi, dest
 							mov			esi, src1
 							mov			ebx, src2

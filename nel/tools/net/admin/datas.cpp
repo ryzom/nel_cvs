@@ -1,7 +1,7 @@
 /** \file datas.cpp
  * 
  *
- * $Id: datas.cpp,v 1.2 2001/06/27 08:32:17 lecroart Exp $
+ * $Id: datas.cpp,v 1.3 2002/03/25 10:19:13 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -25,28 +25,9 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
-
-/*
-#include <conio.h>
-#include <io.h>
-#include <process.h>
-#include <fcntl.h>
-#include <sys/stat.h>
-
-#include <string>
-#include <list>
-
-#include "nel/misc/debug.h"
-#include "nel/misc/config_file.h"
-#include "nel/misc/thread.h"
-#include "nel/misc/command.h"
-#include "nel/misc/log.h"
-#include "nel/misc/displayer.h"
-
-#include "nel/net/service.h"
-#include "nel/net/net_manager.h"
-*/
  
+#include "nel/misc/types_nl.h"
+
 #include "nel/net/buf_sock.h"
 #include "nel/misc/config_file.h"
 

@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.11 2002/03/01 10:21:25 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.12 2002/03/25 10:19:13 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -26,6 +26,8 @@
  * MA 02111-1307, USA.
  */
  
+#include "nel/misc/types_nl.h"
+
 #include "nel/net/net_manager.h"
 
 #include "datas.h"

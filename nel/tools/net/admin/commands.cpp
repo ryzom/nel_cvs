@@ -1,7 +1,7 @@
 /** \file coammnds.cpp
  * 
  *
- * $Id: commands.cpp,v 1.5 2002/03/18 13:15:26 lecroart Exp $
+ * $Id: commands.cpp,v 1.6 2002/03/25 10:19:13 lecroart Exp $
  *
  * contains all admin commands
  *
@@ -25,6 +25,8 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "nel/misc/types_nl.h"
 
 //#include "nel/misc/debug.h"
 //#include "nel/misc/config_file.h"

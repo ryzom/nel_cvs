@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_dos.cpp,v 1.2 2001/06/27 08:32:17 lecroart Exp $
+ * $Id: interf_dos.cpp,v 1.3 2002/03/25 10:19:13 lecroart Exp $
  *
  *
  */
@@ -26,6 +26,8 @@
  */
 
 #ifdef INTERF_DOS
+
+#include "nel/misc/types_nl.h"
 
 #include <string>
 #include <conio.h>

@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.13 2002/03/18 13:34:22 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.14 2002/03/25 10:19:13 lecroart Exp $
  *
  *
  */
@@ -26,6 +26,8 @@
  */
 
 #ifdef INTERF_GTK
+
+#include "nel/misc/types_nl.h"
 
 #include <string>
 

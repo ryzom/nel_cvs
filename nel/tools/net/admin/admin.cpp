@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * 
  *
- * $Id: admin.cpp,v 1.8 2002/03/01 10:21:25 lecroart Exp $
+ * $Id: admin.cpp,v 1.9 2002/03/25 10:19:13 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -25,9 +25,11 @@
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
+
+#include "nel/misc/types_nl.h"
+
 #include <string>
 #include <stdio.h>
-
 
 #include "nel/misc/debug.h"
 #include "nel/misc/command.h"

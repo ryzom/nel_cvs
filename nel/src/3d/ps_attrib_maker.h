@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.2 2001/06/28 07:56:17 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.3 2001/07/04 12:36:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,23 @@
 
 namespace NL3D {
 
+
+// this struct only contains an enum that tell chat the input of an atribute maker is
+struct TPSInputType
+{
+	/// input types
+	enum TInputType
+	{
+		attrDate = 0,
+		attrPosition = 1,
+		attrInverseMass = 2,
+		attrSpeed = 3,
+		attrUniformRandom = 4,
+		attrLast 
+	} ;
+} ;
+
+
 /**
  * Here we define attribute maker, that is object that can produce an attribute following some rule.
  * This allow, for example, creation of a color gradient, or color flicker, size strectching and so on...
@@ -57,20 +74,32 @@ const float MaxInputValue = 0.9999f ;
  * \author Nevrax France
  * \date 2001
  */
+
+
 template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 {	
-	public:
+public:
 
 
 	/// compute one value of the attribute for the given index
 	virtual T get(CPSLocated *loc, uint32 index) = 0 ;
 
+
 	/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes.
 	 *  \param loc the 'located' that hold the 'located bindable' that need an attribute to be filled
 	 *  \param startIndex usually 0, it gives the index of the first element in the located
+	 *  \param tab where the data will be written
+	 *  \param stride the stride, in byte, between each value to write
+	 *  \param numAttrib the number of attributes to compute
+     *  \param allowNoCopy data may be already present in memory, and may not need computation. When set to true, this allow no computation to be made
+	 *         the return parameter is then le location of the datas. this may be tab (if recomputation where needed), or another value 
+	 *         for this to work, the stride must most of the time be sizeof(T). This is intended to be used with derivers of CPSAttribMaker
+	 *         that store values that do not depend on the input. The make method then just copy the data, we is sometime useless
+	 *  \return where the data have been copied, this is always tab, unless allowNoCopy is set to true, in which case this may be different
+	 *                                         
 	 */
 
-	  virtual void make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const = 0 ;
+	  virtual void *make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const = 0 ;
 
 	/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like
 	 *  \see make()
@@ -85,6 +114,7 @@ template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 	/// serialisation of the object. Derivers MUST call this, (if they use the attribute of this class at least)
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
+		f.serialVersion(1) ;
 		f.serial(_NbCycles) ;	
 	}
 
@@ -112,7 +142,7 @@ template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 	/** construct the attrib maker specifying the number of cycles to do.
 	 *  \see setNbCycles()
 	 */	 
-	CPSAttribMaker(float nbCycles) : _NbCycles(nbCycles)
+	CPSAttribMaker(float nbCycles) : _NbCycles(nbCycles), _HasMemory(false)
 	{
 	
 	}
@@ -125,13 +155,13 @@ template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 	/** set a new input type (if supported). The default does nothing
 	 *  \see hasCustomInput()
 	 */
-	virtual void setInput(CPSLocated::AttributeType input) {}
+	virtual void setInput(TPSInputType::TInputType input) {}
 
 
 	/** get the type of input (if supported). The default return attrDate
 	 *  \see hasCustomInput()
 	 */
-	virtual CPSLocated::AttributeType getInput(void) const { return CPSLocated::attrDate ; }
+	virtual TPSInputType::TInputType getInput(void) const { return TPSInputType::attrDate ; }
 	
 
 
@@ -155,17 +185,37 @@ template <typename T> class CPSAttribMaker : public NLMISC::IStreamable
 	virtual bool getClamping(void) const  { return false  ; } ;
 
 
+	/// Some attribute makers may hold memory. this return true if when this is the case
+	bool hasMemory(void) const { return _HasMemory ; }
+
+	/// delete an element, given its index. this must be called  only if memory management is used.
+	virtual void deleteElement(uint32 index) { nlassert(false) ; }
+
+	/** create a new element, and provides the emitter, 
+	  *	this must be called only if this attribute maker has its own memory
+	  */
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) { nlassert(false) ; }
+
+	/** set a new capacity for the memorized attribute, and a number of used element. This usually is 0
+	  * , but during edition, this may not be ... so new element are created.
+	  * this must be called only if this attribute maker has its own memory
+	  */
+	virtual void resize(uint32 capacity, uint32 nbPresentElements) { nlassert(false) ; }
+
 
 
 	/// dtor
 	virtual ~CPSAttribMaker() {}
 
-	protected:
 
-		float _NbCycles ;
+	
 
+protected:
 
+	float _NbCycles ;
 
+	// set to true if the attribute maker owns its own memory for each particle attribute
+	bool _HasMemory ;
 };
 
 
@@ -193,7 +243,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 		/** Fill tab with an attribute by using the given stride. It fills numAttrib attributes, and use it to get the
 		 * The particle life as an input
 		 */
-		  virtual void make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const ;
+		  virtual void *make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const ;
 
 		/** The same as make, but it replicate each attribute 4 times, thus filling 4*numAttrib. Useful for facelookat and the like
 		 *  \see make()
@@ -219,7 +269,7 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 		/** construct the attrib maker specifying the number of cycles to do.
 		 *  \see setNbCycles()
 		 */	 
-		CPSAttribMakerT(float nbCycles) : CPSAttribMaker<T>(nbCycles), _InputType(CPSLocated::attrDate)
+		CPSAttribMakerT(float nbCycles) : CPSAttribMaker<T>(nbCycles), _InputType(TPSInputType::attrDate)
 										  , _Clamp(false)
 		{}
 
@@ -235,13 +285,13 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 
 		/** set a new input type 		
 		 */
-		virtual void setInput(CPSLocated::AttributeType input) { _InputType = input ; }
+		virtual void setInput(TPSInputType::TInputType input) { _InputType = input ; }
 
 
 		/** get the type of input (if supported). The default return attrDate
 		 *  \see hasCustomInput()
 		 */
-		virtual CPSLocated::AttributeType getInput(void) const { return _InputType ; }
+		virtual TPSInputType::TInputType getInput(void) const { return _InputType ; }
 
 
 		/** tells wether clamping is supported for the input (value can't go above MaxInputValue)
@@ -267,11 +317,10 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 		/// the type of the functor object
 		  typedef F functor_type ;
 
-	private:
-
+	private:		
 
 		// type of the input
-		CPSLocated::AttributeType _InputType ;
+		TPSInputType::TInputType _InputType ;
 
 		// clamping on/ off
 		bool _Clamp ;
@@ -324,6 +373,34 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 			{
 				--Iter ;
 				return *this ;
+			}
+
+		} ;
+
+		/** This special iterator return random values every time it is read
+		 *  It is for private use only, and it has not all the functionnalities of an iterator.		 
+		 */
+
+		struct CRandomIterator
+		{
+			float operator*() const { return rand() * (1.f / RAND_MAX) ; }
+
+			
+			// dummy post increment
+			operator++(int)
+			{								
+			}
+			// dummy pre-increment
+			operator++()
+			{						
+			}
+			// dummy post decrement
+			operator--(int)
+			{			
+			}
+			// dummy pre-decrement
+			operator--()
+			{				
 			}
 
 		} ;
@@ -692,47 +769,103 @@ template <typename T, class F> class CPSAttribMakerT : public CPSAttribMaker<T>
 
 template <typename T, class F> 
 T  CPSAttribMakerT<T, F>::get(CPSLocated *loc, uint32 index)
-{
-	
-	const float time = _NbCycles * loc->getTime()[index] ;
-	return _F(time - (uint32) time) ;
-	
+{	
+	switch (_InputType)
+	{
+		case TPSInputType::attrDate:	
+		{
+			float v = _NbCycles * loc->getTime()[index] ;
+			if (_Clamp)
+			{
+				if (v > MaxInputValue) v = MaxInputValue ;
+			}
+
+			return _F(v - (uint32) v) ;
+		}
+		break ;
+		case TPSInputType::attrInverseMass:	
+		{
+			float v = _NbCycles * loc->getInvMass()[index] ;
+			if (_Clamp)
+			{
+				if (v > MaxInputValue) v = MaxInputValue ;
+			}
+			return _F(v - (uint32) v) ;
+		}
+		break ;		
+		case TPSInputType::attrSpeed:	
+		{
+			float v = _NbCycles * loc->getSpeed()[index].norm() ;
+			if (_Clamp)
+			{
+				if (v > MaxInputValue) v = MaxInputValue ;
+			}
+			return _F(v - (uint32) v) ;
+		}
+		break ;
+
+		case TPSInputType::attrPosition:	
+		{
+			float v = _NbCycles * loc->getPos()[index].norm() ;
+			if (_Clamp)
+			{
+				if (v > MaxInputValue) v = MaxInputValue ;
+			}
+			return _F(v - (uint32) v) ;
+		}
+		break ;
+		case TPSInputType::attrUniformRandom:	
+		{
+			return _F(rand() * (1.f / RAND_MAX)) ;
+		}
+		break ;
+	}		
+
+	return T() ;
 }
 
 template <typename T, class F> 
-void CPSAttribMakerT<T, F>::make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
+void *CPSAttribMakerT<T, F>::make(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, bool allowNoCopy /* = false */) const
 {
 	nlassert(loc) ;
 
 	switch (_InputType)
 	{
-		case CPSLocated::attrDate:	
+		case TPSInputType::attrDate:	
 		{
 			TPSAttribTime::const_iterator it = (loc->getTime().begin() ) + startIndex ;
 			makeByIterator(it, tab, stride, numAttrib, loc->getLastForever()) ;
 		}
 		break ;
-		case CPSLocated::attrInvMass:	
+		case TPSInputType::attrInverseMass:	
 		{
 			TPSAttribFloat::const_iterator it = (loc->getInvMass().begin() ) + startIndex ;
 			makeByIterator(it, tab, stride, numAttrib, true) ;
 		}
 		break ;		
-		case CPSLocated::attrSpeed:	
+		case TPSInputType::attrSpeed:	
 		{
 			CVectNormIterator it = (loc->getSpeed().begin() ) + startIndex ;
 			makeByIterator(it, tab, stride, numAttrib, true) ;
 		}
 		break ;
 
-		case CPSLocated::attrPosition:	
+		case TPSInputType::attrPosition:	
 		{
 			CVectNormIterator it = (loc->getPos().begin() ) + startIndex ;
 			makeByIterator(it, tab, stride, numAttrib, true) ;
 		}
 		break ;
+		case TPSInputType::attrUniformRandom:	
+		{
+			CRandomIterator it ;
+			makeByIterator(it, tab, stride, numAttrib, true) ;
+		}
+		break ;
 	}
 
+	// we must alway copy the data there ...
+	return tab ;
 }
 
 
@@ -742,28 +875,34 @@ void CPSAttribMakerT<T, F>::make4(CPSLocated *loc, uint32 startIndex, void *tab,
 	nlassert(loc) ;
 	switch (_InputType)
 	{
-		case CPSLocated::attrDate:	
+		case TPSInputType::attrDate:	
 		{
 			TPSAttribTime::const_iterator it = (loc->getTime().begin() ) + startIndex ;
 			make4ByIterator(it, tab, stride, numAttrib, loc->getLastForever()) ;
 		}
 		break ;		
-		case CPSLocated::attrSpeed:	
+		case TPSInputType::attrSpeed:	
 		{
 			CVectNormIterator it = (loc->getSpeed().begin() ) + startIndex ;
 			make4ByIterator(it, tab, stride, numAttrib, true) ;
 		}
 		break ;
 
-		case CPSLocated::attrPosition:	
+		case TPSInputType::attrPosition:	
 		{
 			CVectNormIterator it = (loc->getPos().begin() ) + startIndex ;
 			make4ByIterator(it, tab, stride, numAttrib, true) ;
 		}
 		break ;
-		case CPSLocated::attrInvMass:	
+		case TPSInputType::attrInverseMass:	
 		{
 			TPSAttribFloat::const_iterator it = (loc->getInvMass().begin() ) + startIndex ;
+			make4ByIterator(it, tab, stride, numAttrib, true) ;
+		}
+		break ;
+		case TPSInputType::attrUniformRandom:	
+		{
+			CRandomIterator it ;
 			make4ByIterator(it, tab, stride, numAttrib, true) ;
 		}
 		break ;
@@ -780,64 +919,248 @@ void CPSAttribMakerT<T, F>::makeN(CPSLocated *loc, uint32 startIndex, void *tab
 
 switch (_InputType)
 {
-		case CPSLocated::attrDate:	
+		case TPSInputType::attrDate:	
 		{
 			TPSAttribTime::const_iterator it = (loc->getTime().begin() ) + startIndex ;
 			makeNByIterator(it, tab, stride, numAttrib, nbReplicate, loc->getLastForever()) ;
 		}
 		break ;				
-		case CPSLocated::attrSpeed:	
+		case TPSInputType::attrSpeed:	
 		{
 			CVectNormIterator it = (loc->getSpeed().begin() ) + startIndex ;
 			makeNByIterator(it, tab, stride, numAttrib, nbReplicate,  true) ;
 		}
 		break ;
 
-		case CPSLocated::attrPosition:	
+		case TPSInputType::attrPosition:	
 		{
 			CVectNormIterator it = (loc->getPos().begin() ) + startIndex ;
 			makeNByIterator(it, tab, stride, numAttrib, nbReplicate, true) ;
 		}
 		break ;
-		case CPSLocated::attrInvMass:	
+		case TPSInputType::attrInverseMass:	
 		{
 			TPSAttribFloat::const_iterator it = (loc->getInvMass().begin() ) + startIndex ;
+			makeNByIterator(it, tab, stride, numAttrib, nbReplicate, true) ;
+		}
+		break ;
+		case TPSInputType::attrUniformRandom:	
+		{
+			CRandomIterator it ;
 			makeNByIterator(it, tab, stride, numAttrib, nbReplicate, true) ;
 		}
 		break ;
 }
 }
 
+/** this functor 
+  *
+  */
 
-/*
-template <typename T, class F> void CPSAttribMakerT<T, F>::makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
+
+/**  This class is an attribute maker that has memory, all what is does is to duplicate its mem when 'make' is called
+  *  It own an attribute maker that tells how to produce the attribute from its emiter date, speed and so on ...
+  */
+template <typename T> class CPSAttribMakerMemory : public CPSAttribMaker<T>
 {
-	nlassert(loc) ;
-	nlassert(nbReplicate  != 0) ;
+public:	
 
-	TPSAttribTime::const_iterator it = (loc->getTime().begin() ) + startIndex ;
-	uint8 *pt = (uint8 *) tab ;
-	uint32 k ;
-	T value ;
-	
-	while (numAttrib --)
-	{		
-		value = _F(*it) ;
-		k = 0 ;
-		++it ;
-		do
-		{
-			*(T *)pt = value  ;
-			pt += stride ;
-		}
-		while (--k) ;
+	///\TODO : create a base class for CPSAttribMaker, that don't have the attributes not needed for this class
+	/// ctor (note : we don't use the nbCycle field ...)
+	CPSAttribMakerMemory() : CPSAttribMaker<T>(1.f), _Scheme(NULL)
+	{
+		_HasMemory = true ;
 	}
-}
-*/
+
+	/** set a default value for initialisation, otherwise it will be garbage.
+	  * This is needed when new element are generated, but not from an emitter
+	  * for example, when you set this scheme to a LocatedBindable that does have a least one instance in it
+	  *
+	  *  example :
+	  *      CPSDot *d = new CPSDot ;
+	  *      CPSAttribMakerMemory<RGBA> *genAttribMaker = new CPSAttribMakerMemory<RGBA> ;
+	  *      genAttribMaker->setScheme(CPSColorBlender(CRGBA::White, CRGBA::Black)
+	  *      Now, if an emitter emit these particle, it'll start to emit white ones, and then black ones
+      *      d->setColorScheme(  genAttribMaker) ;
+	  *      now, suppose that there were several dot instanciated before the setScheme is performed :
+	  *          d->newElement() ;
+	  *      no color has been memorized for this element, so when setScheme is performed, it has to generate one
+	  *      There are no emitter that provides it, so its taken from the default value
+	  *      Note : this should only be useful in an editor, that allow the user to change the scheme with a running system ...
+	  *        
+	  */
+
+    void setDefaultValue(T defaultValue) { _DefaultValue = defaultValue ;}
+
+	/// get the default value :
+	T getDefaultValue(void) const { return _DefaultValue ; }
+
+
+
+	/** set the scheme used to store attribute. this MUST be called, otherwise an assertion will be thrown later
+	  * It must have been allocated by new, and it will be deleted by this object
+	  */
+	void setScheme(CPSAttribMaker<T> *scheme)
+	{
+		nlassert(scheme) ;
+		if (_Scheme) delete _Scheme ;
+		_Scheme = scheme ;
+	}
+
+	/// get the scheme used
+	CPSAttribMaker<T> *getScheme(void) { return _Scheme ; }
+	/// get the scheme used (const version)
+	const CPSAttribMaker<T> *getScheme(void) const { Return _Scheme ; }
+
+
+
+	/// dtor
+	~CPSAttribMakerMemory()
+	{
+		if (_Scheme)
+		{
+			delete _Scheme ;
+		}
+	}
+
+	/// inherited from CPSAttribMaker
+	virtual T get(CPSLocated *loc, uint32 index) 
+	{ 
+		return _T[index] ; 
+	}
+
+	/// inherited from CPSAttribMaker
+	virtual void *make(CPSLocated *loc, uint32 startIndex, void *output, uint32 stride, uint32 numAttrib, bool allowNoCopy = false) const
+	{
+		void *tab = output ;
+		if (!allowNoCopy || sizeof(T) != stride)
+		{
+			// we just copy what we have memorized
+			CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib ;
+			while (it != endIt)
+			{
+				*(T *) tab = *it ;
+				++it ;
+				tab = (uint8 *) tab + stride ;
+			}
+			return output ;
+		}
+		else
+		{
+			// the caller will read data directly in the vector ...
+			return (void *) &(*(_T.begin() + startIndex)) ;
+		}
+	}	
+
+	/// inherited from CPSAttribMaker
+	virtual void make4(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib) const
+	{
+		// we just copy what we have memorized
+		CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib ;
+		while (it != endIt)
+		{
+			*(T *) tab = *it ;
+			tab = (uint8 *) tab + stride ;
+			*(T *) tab = *it ;
+			tab = (uint8 *) tab + stride ;
+			*(T *) tab = *it ;
+			tab = (uint8 *) tab + stride ;
+			*(T *) tab = *it ;
+			tab = (uint8 *) tab + stride ;
+			++it ;			
+		}
+	}
+
+	/// inherited from CPSAttribMaker
+	virtual void makeN(CPSLocated *loc, uint32 startIndex, void *tab, uint32 stride, uint32 numAttrib, uint32 nbReplicate) const
+	{
+		// we just copy what we have memorized
+		uint k ;
+		CPSAttrib<T>::const_iterator it = _T.begin() + startIndex, endIt = _T.begin() + startIndex + numAttrib ;
+		while (it != endIt)
+		{
+			for (k = 0 ; k < nbReplicate ; ++k)
+			{
+				*(T *) tab = *it ;
+				tab = (uint8 *) tab + stride ;
+			}			
+			++it ;			
+		}
+	}
+
+	/// serialisation of the object. Derivers MUST call this, (if they use the attribute of this class at least)
+	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+	{
+		
+		f.serialVersion(1) ;
+		CPSAttribMaker<T>::serial(f) ;
+		if (f.isReading())
+		{
+			if (_Scheme) delete _Scheme ;
+		}
+		f.serialPolyPtr(_Scheme) ;
+		f.serial(_T) ;
+		f.serial(_DefaultValue) ;
+	}
+	
+	/// inherited from CPSAttribMaker
+	virtual void deleteElement(uint32 index) 
+	{ 
+		nlassert(_Scheme) ; // you should have called setScheme !
+		_T.remove(index) ; 
+	}
+	/// inherited from CPSAttribMaker
+	virtual void newElement(CPSLocated *emitterLocated, uint32 emitterIndex) 
+	{ 
+		nlassert(_Scheme) ; // you should have called setScheme !
+		if (emitterLocated)
+		{
+			_T.insert(_Scheme->get(emitterLocated, emitterIndex)) ;
+		}
+		else
+		{			
+			_T.insert(_DefaultValue) ;
+		}
+	}
+	virtual void resize(uint32 capacity, uint32 nbPresentElements)
+	{
+		nlassert(_Scheme) ;
+		_T.resize(capacity) ;
+		if (nbPresentElements > _T.getSize())
+		{
+			while (_T.getSize() != nbPresentElements)
+			{
+				_T.insert(_DefaultValue) ;
+			}
+		}
+		else if (nbPresentElements < _T.getSize())
+		{
+			while (_T.getSize() != nbPresentElements)
+			{
+				_T.remove(_T.getSize() - 1) ;
+			}
+		}
+	}
+
+protected:
+	// the attribute w memorize
+	CPSAttrib<T> _T ;
+
+	// the default value for generation (when no emitter can be used)
+	T _DefaultValue ;
+
+	/** this attribute maker tells us how to produce arguments from an emitter. as an example, we may want to have a gradient
+	  * of color : the emitter emit green then blue particles, following a gradient. the color is produced by _Scheme and 
+	  * _T stores it
+	  */
+	CPSAttribMaker<T> *_Scheme ;
+
+} ;
 
 
 
 } // NL3D
+
 
 
 #endif // NL_PS_ATTRIB_MAKER_H

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_template.h
  * <File description>
  *
- * $Id: ps_attrib_maker_template.h,v 1.6 2001/06/28 07:56:17 vizerie Exp $
+ * $Id: ps_attrib_maker_template.h,v 1.7 2001/07/04 12:36:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -124,6 +124,7 @@ public:
 	/// serialization
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
+		f.serialVersion(1) ;
 		f.serial(_StartValue, _EndValue) ;
 	}
 
@@ -217,6 +218,7 @@ public:
 	/// serialization
 	void serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
+		f.serialVersion(1) ;
 		if (f.isReading())
 		{
 			T t1, t2 ;

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.17 2001/09/14 14:40:15 cado Exp $
+ * $Id: source_user.cpp,v 1.18 2001/09/14 20:23:45 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,6 +163,7 @@ void					CSourceUser::play()
 	{
 		_Track->DrvSource->play();
 		nldebug( "AM: Playing source %s", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
+////		nlinfo( "AM: Playing source %p", this);
 	}
 	_Playing = true;
 	_PlayStart = CTime::getLocalTime();
@@ -178,6 +179,7 @@ void					CSourceUser::stop()
 	{
 		_Track->DrvSource->stop();
 		nldebug( "AM: Source %s stopped", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
+////		nlinfo( "AM: Stoping source %p", this);
 	}
 	_Playing = false;
 }
@@ -528,6 +530,24 @@ bool					CSourceUser::isStopped()
 	{
 		if ( getTrack()->DrvSource->isStopped() )
 		{
+			if (CTime::getLocalTime()-_PlayStart < _Sound->getDuration())
+			{
+				nlwarning ("openagl bug (think that the sample is finnished but not : %u %u", (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
+			}
+		}
+	}
+
+/*	if ( getTrack() != NULL )
+	{
+		if ( getTrack()->DrvSource->isStopped() )
+		{
+			if (CTime::getLocalTime()-_PlayStart < _Sound->getDuration())
+			{
+/// open al thinks that the sound is finnish but is not!!!
+///				nlinfo ("%u %u", (uint32)(CTime::getLocalTime()-_PlayStart), _Sound->getDuration());
+////				nlstop;
+			}
+
 			_Playing = false;
 			return true;
 		}
@@ -537,7 +557,7 @@ bool					CSourceUser::isStopped()
 		}
 	}
 	else
-	{
+*/	{
 		nlassert( _Sound );
 		if ( _PlayStart == 0 )
 		{

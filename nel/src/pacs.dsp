@@ -246,10 +246,6 @@ SOURCE=..\include\nel\pacs\u_collision_desc.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\pacs\u_global_retriever.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=..\include\nel\pacs\u_global_retriever.h
 # End Source File
 # Begin Source File

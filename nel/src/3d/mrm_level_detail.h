@@ -1,7 +1,7 @@
 /** \file mrm_level_detail.h
  * <File description>
  *
- * $Id: mrm_level_detail.h,v 1.1 2002/07/08 10:00:09 berenguier Exp $
+ * $Id: mrm_level_detail.h,v 1.2 2002/10/30 16:18:04 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -32,6 +32,13 @@
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+/* This is used to have correct max Polygon count setuped. This suppose that MRM.NumLod==10
+	Hence, a mean value of 0.5*1/10 is used
+*/
+#define	NL3D_MRM_LD_SHIFT_POLY_COUNT	0.05f
 
 
 // ***************************************************************************
@@ -77,7 +84,17 @@ public:
 		// return the lod detail [0,1].
 		float	ld= getLevelDetailFromDist(dist);
 		// return in nb face.
-		return MinFaceUsed + ld * (MaxFaceUsed - MinFaceUsed);
+		if(ld<=0)
+			return (float)MinFaceUsed;
+		else
+		{
+			/* over-estimate the number of poly rendered 
+				because this is always the higher Lod which is rendered, geomorphing to the coarser one.
+				NB: still need to over-estimate if ld==1, because getLevelDetailFromPolyCount() remove the shift...
+			*/
+			ld+= NL3D_MRM_LD_SHIFT_POLY_COUNT;
+			return MinFaceUsed + ld * (MaxFaceUsed - MinFaceUsed);
+		}
 	}
 
 	/// return a float [0,1], computed from number of poly wanted (should be >0)
@@ -88,6 +105,13 @@ public:
 		{
 			// compute the level of detail we want.
 			ld= (polygonCount - MinFaceUsed) / (MaxFaceUsed - MinFaceUsed);
+			/* remove the value added in getNumTriangles(). For the same reason:
+				this is always the higher Lod which is rendered, geomorphing to the coarser one.
+				Hence we must degrade a bit.
+				NB: if polygonCount==MinFaceUsed, then we have here ld= -NL3D_MRM_LD_SHIFT_POLY_COUNT (ie -0.05f)
+				but it is clamped below
+			*/
+			ld-= NL3D_MRM_LD_SHIFT_POLY_COUNT;
 			NLMISC::clamp(ld, 0, 1);
 		}
 		else

@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.34 2002/08/30 11:59:42 berenguier Exp $
+ * $Id: skeleton_model.cpp,v 1.35 2002/10/30 16:18:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1180,10 +1180,17 @@ void			CSkeletonModelRenderObs::renderSkinList(NLMISC::CObjectVector<CTransform*
 		{
 			// If don't support, or if too big to fit in the manager, just renderSkin()
 			if(!skinList[i]->supportSkinGrouping())
+			{
+				H_AUTO( NL3D_Skin_NotGrouped );
 				skinList[i]->renderSkin(alphaMRM);
+			}
 			else
+			{
 				skinsToGroup.push_back(skinList[i]);
+			}
 		}
+
+		H_AUTO( NL3D_Skin_Grouped );
 
 		// For each skin, have an index which gives the decal of the vertices in the buffer
 		baseVertices.resize(skinsToGroup.size());

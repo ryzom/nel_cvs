@@ -1,7 +1,7 @@
 /** \file load_balancing_trav.cpp
  * The LoadBalancing traversal.
  *
- * $Id: load_balancing_trav.cpp,v 1.12 2002/09/05 08:24:48 berenguier Exp $
+ * $Id: load_balancing_trav.cpp,v 1.13 2002/10/30 16:18:04 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ using namespace NLMISC;
 
 // ***************************************************************************
 #define	NL3D_DEFAULT_LOADBALANCING_VALUE_SMOOTHER	50
+#define	NL3D_LOADBALANCING_SMOOTHER_MAX_RATIO		1.1f
 
 namespace NL3D 
 {
@@ -101,7 +102,20 @@ void			CLoadBalancingGroup::computeRatioAndSmooth(TPolygonBalancingMode polMode)
 	if(polMode!=PolygonBalancingOff)
 	{
 		_ValueSmoother.addValue(_FaceRatio);
-		_FaceRatio= _ValueSmoother.getSmoothValue();
+		float	fSmooth= _ValueSmoother.getSmoothValue();
+
+		// If after smoothing, the number of faces is still too big, reduce smooth effect! (frustrum clip effect)
+		if(fSmooth*_NbFacePass0 > _NbFaceWanted*NL3D_LOADBALANCING_SMOOTHER_MAX_RATIO)
+		{
+			// reset the smoother
+			_ValueSmoother.reset();
+			// reduce smooth effect
+			fSmooth= _FaceRatio*NL3D_LOADBALANCING_SMOOTHER_MAX_RATIO;
+			_ValueSmoother.addValue(fSmooth);
+		}
+
+		// take the smoothed value.
+		_FaceRatio= fSmooth;
 	}
 
 

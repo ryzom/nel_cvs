@@ -1,7 +1,7 @@
 /** \file time_nl.cpp
  * CTime class
  *
- * $Id: time_nl.cpp,v 1.7 2001/09/24 14:13:50 cado Exp $
+ * $Id: time_nl.cpp,v 1.8 2001/10/11 16:42:45 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,14 +73,20 @@ TTime CTime::getLocalTime ()
      * Why do we prefer getPerformanceTime() to timeGetTime() ? Because on one dual-processor Win2k
 	 * PC, we have noticed that timeGetTime() slows down when the client is running !!!
 	 */
-	if ( byperfcounter )
-	{
-		return (TTime)(ticksToSecond(getPerformanceTime()) * 1000.0f);
-	}
-	else
-	{
+
+
+	/* Now we have noticed that on all WinNT4 PC the getPerformanceTime can give us value that
+	 * are less than previous
+	 */
+
+	//if ( byperfcounter )
+	//{
+	//	return (TTime)(ticksToSecond(getPerformanceTime()) * 1000.0f);
+	//}
+	//else
+	//{
 		return timeGetTime();
-	}
+	//}
 
 #elif defined (NL_OS_UNIX)
 

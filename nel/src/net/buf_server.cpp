@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.29 2002/05/21 16:37:38 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.30 2002/06/10 10:11:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "stdnet.h"
+
+#include "nel/misc/hierarchical_timer.h"
 
 #include "nel/net/buf_server.h"
 
@@ -310,6 +312,8 @@ void CBufServer::send( const CMemStream& buffer, TSockId hostid )
 	nlassert( buffer.length() > 0);
 	nlassert( buffer.length() <= maxSentBlockSize() );
 
+	H_AUTO (CBufServer_send);
+
 	if ( hostid != NULL )
 	{
 		// debug features, we number all packet to be sure that they are all sent and received
@@ -369,6 +373,7 @@ void CBufServer::send( const CMemStream& buffer, TSockId hostid )
  */
 bool CBufServer::dataAvailable()
 {
+	H_AUTO (CBufServer_dataAvailable);
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
 		do

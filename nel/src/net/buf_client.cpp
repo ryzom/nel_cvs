@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.14 2002/05/21 16:37:38 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.15 2002/06/10 10:11:32 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "stdnet.h"
+
+#include "nel/misc/hierarchical_timer.h"
 
 #include "nel/net/buf_client.h"
 #include "nel/misc/thread.h"
@@ -112,6 +114,8 @@ void CBufClient::send( const NLMISC::CMemStream& buffer )
 	nlassert( buffer.length() > 0 );
 	nlassert( buffer.length() <= maxSentBlockSize() );
 
+	H_AUTO (CBufServer_send);
+
 	if ( ! _BufSock->pushBuffer( buffer ) )
 	{
 		// Disconnection event if disconnected
@@ -125,6 +129,7 @@ void CBufClient::send( const NLMISC::CMemStream& buffer )
  */
 bool CBufClient::dataAvailable()
 {
+	H_AUTO (CBufClient_dataAvailable);
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
 		do

@@ -1,7 +1,7 @@
 /** \file zone_search.cpp
  * CZoneSearch class
  *
- * $Id: zone_search.cpp,v 1.3 2001/04/27 12:15:50 chafik Exp $
+ * $Id: zone_search.cpp,v 1.4 2001/04/27 13:21:35 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,10 +66,10 @@ pair<string, uint32> CZoneSearch::getZoneName(uint x, uint y, uint cx, uint cy)
 {
 	char name[13];
 
-	uint zoneY = y / _SizeZoneY;
+	uint zoneY = y / _SizeZoneY + 1;
 	uint zoneX = x / _SizeZoneX;
 
-	uint zoneCenterY = cy / _SizeZoneY;
+	uint zoneCenterY = cy / _SizeZoneY + 1;
 	uint zoneCenterX = cx / _SizeZoneX;
 
 	uint32 distance = (zoneX - zoneCenterX) * (zoneX - zoneCenterX) + (zoneY - zoneCenterY) * (zoneY - zoneCenterY);

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.139 2002/03/18 14:46:16 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.140 2002/03/18 16:04:02 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -351,7 +351,11 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		_pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 		_pfd.iPixelType   = PFD_TYPE_RGBA;
 		_pfd.cColorBits   = (char)_Depth;
-		_pfd.cDepthBits   = 16;
+		// Choose best suited Depth Buffer.
+		if(_Depth<=16)
+			_pfd.cDepthBits   = 16;
+		else
+			_pfd.cDepthBits   = 24;
 		_pfd.iLayerType	  = PFD_MAIN_PLANE;
 		pf=ChoosePixelFormat(tempHDC,&_pfd);
 		if (!pf) 
@@ -537,13 +541,27 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		_pfd.dwFlags      = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
 		_pfd.iPixelType   = PFD_TYPE_RGBA;
 		_pfd.cColorBits   = (char)_Depth;
-		_pfd.cDepthBits   = 16;
+		// Choose best suited Depth Buffer.
+		if(_Depth<=16)
+			_pfd.cDepthBits   = 16;
+		else
+			_pfd.cDepthBits   = 24;
 		_pfd.iLayerType	  = PFD_MAIN_PLANE;
 		pf=ChoosePixelFormat(_hDC,&_pfd);
 		if (!pf) 
 		{
 			return false;
-		} 
+		}
+
+		// Debug.
+		/*{
+			PIXELFORMATDESCRIPTOR  pfd; 
+			DescribePixelFormat(_hDC, pf,  
+					sizeof(PIXELFORMATDESCRIPTOR), &pfd);
+			nlinfo("PixelFormat: Color: %d. Depth: %d. Stencil: %d", 
+				pfd.cColorBits, pfd.cDepthBits, pfd.cStencilBits);
+		}*/
+
 		if ( !SetPixelFormat(_hDC,pf,&_pfd) ) 
 		{
 			return false;

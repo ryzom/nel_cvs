@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.13 2001/06/05 15:37:00 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.14 2001/06/07 16:16:47 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,7 @@ void cbnbMessageAskAssociations (CMessage &msgin, TSockId from, CCallbackNetBase
 		nldebug ("L3NB_ASSOC:  sending association '%s' -> %d", name.c_str (), netbase._OutputSIDA.getId(name));
 
 		// if this assert occurs, it means that the other side ask an unknown message
+		// or that there are different types of client (with differents callbackarray) and one of the client doesn't have this callback
 		nlassert(netbase._OutputSIDA.getId(name) != -1);
 
 		msgout.serial (name);

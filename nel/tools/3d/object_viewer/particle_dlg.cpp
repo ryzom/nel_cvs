@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.11 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: particle_dlg.cpp,v 1.12 2001/07/24 09:03:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,8 +75,10 @@ static char THIS_FILE[] = __FILE__;
 // CParticleDlg dialog
 
 
+
 CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame)
-	: CDialog(CParticleDlg::IDD, pParent), MainFrame(mainFrame), CurrentRightPane(NULL)
+	: CDialog(CParticleDlg::IDD, pParent), MainFrame(mainFrame), CurrentRightPane(NULL), _ObjView(main)
+
 {
 	//{{AFX_DATA_INIT(CParticleDlg)
 		// NOTE: the ClassWizard will add member initialization here
@@ -85,7 +87,25 @@ CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame*
 	nlverify (FontManager = main->getFontManager());
 	nlverify (FontGenerator = main->getFontGenerator());
 
-	//////
+	resetSystem() ;
+
+
+	ParticleTreeCtrl = new CParticleTreeCtrl(this) ;
+	StartStopDlg = new CStartStopParticleSystem(this) ;
+
+
+	/** register us, so that our 'go' method will be called
+	  * this gives us a chance to display a bbox when needed
+	  */
+	_ObjView->registerMainLoopCallBack(this) ;
+
+
+	
+
+}
+
+void CParticleDlg::resetSystem(void)
+{
 	const std::string emptySystemName("private_empty_particle_system.ps") ;
 	CParticleSystem emptyPS ;
 	
@@ -99,22 +119,14 @@ CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame*
 	_CurrSystemModel->enableDisplayTools() ;
 	_CurrSystemModel->enableAutoGetEllapsedTime(false) ;		
 	_CurrSystemModel->setEllapsedTime(0.f) ;
+	_CurrSystemModel->setEditionMode(true) ; // enable edition mode
+											 // this will prevent it from being removed when it is too far
+										     // this also allow us to safely keep a pointer on it													
 	_CurrPS = _CurrSystemModel->getPS() ;
 
 	_CurrPS->setFontManager(FontManager) ;
 	_CurrPS->setFontGenerator(FontGenerator) ;
-
-	ParticleTreeCtrl = new CParticleTreeCtrl(this) ;
-	StartStopDlg = new CStartStopParticleSystem(this) ;
-
-
-
-
-
-	
-
 }
-
 
 void CParticleDlg::moveElement(const NLMISC::CMatrix &mat)
 {
@@ -132,6 +144,7 @@ CParticleDlg::~CParticleDlg()
 {
 	//NL3D::CNELU::Scene.deleteInstance(_CurrSystemModel) ;
 
+	_ObjView->removeMainLoopCallBack(this) ;
 	
 	delete ParticleTreeCtrl ;
 	delete CurrentRightPane ;
@@ -174,8 +187,8 @@ BOOL CParticleDlg::OnInitDialog()
 	GetWindowRect(&r) ;
 	
 	ParticleTreeCtrl->Create(WS_VISIBLE | WS_TABSTOP | WS_CHILD | WS_BORDER
-   | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_EDITLABELS 
-   | TVS_DISABLEDRAGDROP , r, this, 0x1005) ;
+							   | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_EDITLABELS 
+							   | TVS_DISABLEDRAGDROP , r, this, 0x1005) ;
 
 
 	ParticleTreeCtrl->buildTreeFromPS(_CurrPS, _CurrSystemModel) ;
@@ -202,34 +215,6 @@ void CParticleDlg::OnSize(UINT nType, int cx, int cy)
 
 	if (ParticleTreeCtrl->m_hWnd && this->m_hWnd)
 	{	
-
-	/*	if (_CurrentRightPane)
-		{
-			if (cx < (120 + CurrRightPaneWidth))
-			{
-				cx = 120 + CurrRightPaneWidth ;
-				blocked = true ;
-			}
-			if (cy < (20 + CurrRightPaneHeight))
-			{
-				cy  = 20 + CurrRightPaneHeight ;
-				blocked = true ;
-			}
-		}
-		else
-		{
-			if (cx < 120) 
-			{
-				blocked = true ;
-				cx = 120 ;
-			}
-			if (cy < 80) 
-			{
-				blocked = true ;
-				cy = 80 ;		
-			}
-		}*/
-
 
 		CRect r = getTreeRect(cx, cy) ;			
 		ParticleTreeCtrl->MoveWindow(&r) ;
@@ -331,4 +316,16 @@ void CParticleDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 	CDialog::OnShowWindow(bShow, nStatus);
 	StartStopDlg->ShowWindow(bShow) ;	
 		
+}
+
+
+void CParticleDlg::go(void)
+{
+	if (StartStopDlg->isBBoxDisplayEnabled() && _CurrPS)
+	{
+		NLMISC::CAABBox b ;
+		_CurrPS->getLastComputedBBox(b) ;
+		NL3D::CNELU::Driver->setupModelMatrix(_CurrPS->getSysMat()) ;
+		NL3D::CPSUtil::displayBBox(NL3D::CNELU::Driver, b, _CurrPS->getAutoComputeBBox() ? CRGBA::White : CRGBA::Red) ;
+	}
 }

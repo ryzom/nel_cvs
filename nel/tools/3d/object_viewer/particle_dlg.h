@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.h,v 1.7 2001/07/18 13:42:34 corvazier Exp $
+ * $Id: particle_dlg.h,v 1.8 2001/07/24 09:03:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,6 +37,7 @@
 //
 
 
+#include "object_viewer.h"
 #include "particle_tree_ctrl.h"
 #include "nel/misc/matrix.h"
 
@@ -51,16 +52,19 @@ namespace NL3D
 
 
 class CStartStopParticleSystem ;
+class CSceneDlg ;
+class CParticleTreeCtrl ;
 class CMainFrame ;
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CParticleDlg dialog
 
-class CParticleDlg : public CDialog
+class CParticleDlg : public CDialog, public CObjectViewer::IMainLoopCallBack
 {
 // Construction
 public:
-	CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame);   // standard constructor
+	CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame* mainFrame) ;
 	~CParticleDlg() ;
 
 	void setRightPane(CWnd *pane) ;
@@ -85,8 +89,14 @@ public:
 	// the tree for viewing the system
 	CParticleTreeCtrl *ParticleTreeCtrl ;
 
+	// inherited from CObjectViewer::IMainLoopCallBack
+	void go(void) ;
 
 public:
+
+	friend class CParticleTreeCtrl ;
+	/// reset the particle system (but doesn't update the window showing it)
+	void resetSystem(void) ;
 
 	NL3D::CParticleSystem *getCurrPS() { return _CurrPS ; }
 	const NL3D::CParticleSystem *getCurrPS() const  { return _CurrPS ; }
@@ -133,7 +143,7 @@ protected:
 
 
 
-
+	CObjectViewer *_ObjView ;
 	
 
 	// the current system that is being edited

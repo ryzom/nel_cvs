@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: matrix.cpp,v 1.5 2000/09/21 10:59:53 berenguier Exp $
+ * $Id: matrix.cpp,v 1.6 2000/09/21 12:35:59 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -634,6 +634,12 @@ CMatrix		CMatrix::operator*(const CMatrix &m) const
 			}
 		}
 	}
+	else
+	{
+		ret.a14= 0;
+		ret.a24= 0;
+		ret.a34= 0;
+	}
 
 
 	// Build Proj part.
@@ -843,6 +849,7 @@ CMatrix		CMatrix::inverted() const
 		}
 		else
 			fastInvert33(ret);
+		// Scale33 is updated in fastInvert33().
 
 		// Invert the translation part.
 		if(StateBit & MAT_TRANS)
@@ -853,6 +860,12 @@ CMatrix		CMatrix::inverted() const
 			ret.a14= ret.a11*(-a14) + ret.a12*(-a24) + ret.a13*(-a34);
 			ret.a24= ret.a21*(-a14) + ret.a22*(-a24) + ret.a23*(-a34);
 			ret.a34= ret.a31*(-a14) + ret.a32*(-a24) + ret.a33*(-a34);
+		}
+		else
+		{
+			ret.a14= 0;
+			ret.a24= 0;
+			ret.a34= 0;
 		}
 
 		// The projection part is unmodified.

@@ -15,7 +15,7 @@ database_directory=`cat ../../cfg/site.cfg | grep "database_directory" | sed -e 
 build_gamedata_directory=`cat ../../cfg/site.cfg | grep "build_gamedata_directory" | sed -e 's/build_gamedata_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Get the collision directories
-collision_source_directories=`cat ../../cfg/directories.cfg | grep "collision_source_directory" | sed -e 's/collision_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
+collision_source_directories=`cat ../../cfg/directories.cfg | grep "cmb_source_directory" | sed -e 's/cmb_source_directory//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 # Maxdir
 max_directory=`echo $MAX_DIR | sed -e 's&\\\&/&g'`

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.22 2003/12/29 13:32:53 lecroart Exp $
+ * $Id: smart_ptr.h,v 1.23 2004/02/12 15:11:33 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,12 +52,12 @@ public:
 	// Can't put those to private since must be used by CRefPtr (and friend doesn't work with template).
 	struct	CPtrInfo
 	{
-		void	*Ptr;			// to know if the instance is valid.
+		const	void	*Ptr;			// to know if the instance is valid.
 		sint	RefCount;		// RefCount of ptrinfo (!= instance)
 		// For fu... dll problems, must use a flag to mark NullPtrInfo.
 		bool	IsNullPtrInfo;
 
-		CPtrInfo(void *p) {Ptr=p; RefCount=0; IsNullPtrInfo=false;}
+		CPtrInfo(const	void *p) {Ptr=p; RefCount=0; IsNullPtrInfo=false;}
 		// Just for internal use, to mark our Null pointer.
 		CPtrInfo(char ) {Ptr=NULL; RefCount=0x7FFFFFFF; IsNullPtrInfo=true;}
 	};
@@ -368,24 +368,24 @@ public:
 	{
 		return	dbgcrefs;
 	}
-	inline	void	incRef	(const CDbgPtr<T>	&ptr)
+	inline	void	incRef	(const CDbgPtr<T>	&ptr)	const
 	{
 		if (_checkOn)
 			nlassert(dbgcrefs<_maxRef);
 		dbgcrefs++;
 	}
-	inline	void	decRef	(const CDbgPtr<T>	&ptr)
+	inline	void	decRef	(const CDbgPtr<T>	&ptr)	const
 	{
 		nlassert(dbgcrefs>0);
 		dbgcrefs--;
 	}
-	inline	void	incRef	(const CstCDbgPtr<T>	&ptr)
+	inline	void	incRef	(const CstCDbgPtr<T>	&ptr)	const
 	{
 		if (_checkOn)
 			nlassert(dbgcrefs<_maxRef);
 		dbgcrefs++;
 	}
-	inline	void	decRef	(const CstCDbgPtr<T>	&ptr)
+	inline	void	decRef	(const CstCDbgPtr<T>	&ptr)	const
 	{
 		nlassert(dbgcrefs>0);
 		dbgcrefs--;
@@ -395,7 +395,7 @@ public:
 		_checkOn=checkOnOff;
 	}
 private:
-    sint	dbgcrefs;
+    mutable	sint	dbgcrefs;
 	sint32	_maxRef;
 	mutable	bool	_checkOn;
 #endif
@@ -569,6 +569,7 @@ inline CDbgPtr<T>::~CDbgPtr(void)
 #ifdef NL_DEBUG_PTR
     if(Ptr)
 	{
+//		CDbgRefCount<T>	*ref=const_cast<CDbgRefCount<T>*>(static_cast<const	CDbgRefCount<T>*>(Ptr));
 		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
 		ref->decRef(*this);
 		Ptr=NULL;
@@ -667,7 +668,16 @@ public:
 	}
     ~CstCDbgPtr();
 	
-	
+	inline	const	T	*ptr	()	const
+	{
+		return	Ptr;
+	}
+
+	inline	bool	isNULL	()	const
+	{
+		return	Ptr==NULL;
+	}
+
     operator const T*(void) const {	return Ptr; }
     const T& operator*(void) const {	return *Ptr; }
     const T* operator->(void) const {	return Ptr; }

@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.2 2002/06/20 08:37:54 hanappe Exp $
+ * $Id: sound_bank.cpp,v 1.3 2002/07/03 10:08:06 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,7 @@ void				CSoundBank::load()
 					{
 						// create a new sound and ask it to import the form
 						NLSOUND::CSound* sound = new CSound();
-						sound->importForm((*iter), form->getRootNode());
+//						sound->importForm((*iter), form->getRootNode());
 						_Sounds.insert(make_pair(sound->getName().c_str(), sound));
 						//nldebug("Loaded sound %s, sample %s", sound->getName().c_str(), sound->getBuffername().c_str());
 

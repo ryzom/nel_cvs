@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.cpp,v 1.3 2002/06/28 19:33:15 hanappe Exp $
+ * $Id: sound_anim_manager.cpp,v 1.4 2002/07/03 10:08:06 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,21 +202,20 @@ void CSoundAnimManager::playAnimation(TSoundAnimId id, float lastTime, float cur
 }
 
 // ********************************************************
-/*
 TSoundAnimPlayId CSoundAnimManager::playAnimation(string& name, float time, CVector* position)
 {
-	nlassert(position);
+/*	nlassert(position);
 
 	TSoundAnimId id = getAnimationFromName(name);
-	return (id == CSoundAnimation::NoId)? -1 : _PlayerId;
+	return (id == CSoundAnimation::NoId)? -1 : _PlayerId;*/
+	return 0; 
 }
-*/
+
 
 // ********************************************************
-/*
 void CSoundAnimManager::stopAnimation(TSoundAnimPlayId playbackId)
 {
-	nlassert(playbackId >= 0);
+/*	nlassert(playbackId >= 0);
 
 	set<CSoundAnimPlayer*>::iterator iter;
 
@@ -228,14 +227,13 @@ void CSoundAnimManager::stopAnimation(TSoundAnimPlayId playbackId)
 			_Players.erase(iter);
 			break;
 		}
-	}
+	}*/
 }
-*/
+
 // ********************************************************
-/*
 bool CSoundAnimManager::isPlaying(TSoundAnimPlayId playbackId)
 {
-	nlassert(playbackId >= 0);
+	/*nlassert(playbackId >= 0);
 
 	set<CSoundAnimPlayer*>::iterator iter;
 
@@ -246,16 +244,15 @@ bool CSoundAnimManager::isPlaying(TSoundAnimPlayId playbackId)
 		{
 			return player->isPlaying();
 		}
-	}
+	}*/
 
 	return false;
 }
-*/
+
 // ********************************************************
-/*
 void CSoundAnimManager::update(float lastTime, float curTime)
 {
-	set<CSoundAnimPlayer*>::iterator iter;
+/*	set<CSoundAnimPlayer*>::iterator iter;
 
 	_Garbage.clear();
 
@@ -281,9 +278,9 @@ void CSoundAnimManager::update(float lastTime, float curTime)
 		{
 			_Players.erase(iter);
 		}
-	}
+	}*/
 }
-*/
+
 
 } // namespace NLSOUND 
 

@@ -5,7 +5,7 @@
  *
  * The coding style is not CPU efficent - the routines are not designed for performance
  *
- * $Id: sstring.h,v 1.6 2004/02/10 17:51:13 boucher Exp $
+ * $Id: sstring.h,v 1.7 2004/03/08 13:58:48 cado Exp $
  */
 
 
@@ -663,13 +663,17 @@ public:
 } // NLMISC
 
 
+/*
+ * The following code does not compile well with STLport/Linux, because it needs to
+ * remap std to a different name. _STLP_BEGIN_NAMESPACE should do the trick,
+ * however the symbol is not defined in public STLport headers.
+ */
 //_STLP_BEGIN_NAMESPACE
 //namespace std
 //{
-
-	/*
-	 * less<CSString> is case insensitive
-	 */
+//	/*
+//	 * less<CSString> is case insensitive
+//	 */
 //	template <>
 //	struct less<NLMISC::CSString> : public std::binary_function<NLMISC::CSString, NLMISC::CSString, bool>
 //	{
@@ -677,6 +681,22 @@ public:
 //	};
 //} // std
 //_STLP_END_NAMESPACE
+
+
+/**
+ * Instead of overriding std::less, please use the following predicate.
+ * For example, declare your map as:
+ *   std::map<NLMISC::CSString, CMyDataClass, NLMISC::CUnsensitiveSStringLessPred> MyMap;
+ * Caution: a map declared without CUnsensitiveSStringLessPred will behave as a
+ * standard string map.
+ *
+ * \see also CUnsensitiveStrLessPred in misc/string_conversion.h
+ * for a similar predicate with std::string.
+ */
+struct CUnsensitiveSStringLessPred : public std::less<NLMISC::CSString>
+{
+	bool operator()(const NLMISC::CSString& x, const NLMISC::CSString& y) const { return x.icompare(y); }
+};
 
 
 #endif // NL_SSTRING_H

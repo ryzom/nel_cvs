@@ -2,7 +2,7 @@ dnl ====================================================================
 dnl Configuration script for NeLNS
 dnl ====================================================================
 dnl
-dnl $Id: configure.in,v 1.15 2002/04/16 12:01:39 valignat Exp $
+dnl $Id: configure.in,v 1.16 2002/10/21 10:19:03 lecroart Exp $
 dnl 
 
 
@@ -12,9 +12,11 @@ dnl ====================================================================
 
 AC_INIT(admin_service/admin_service.cpp)
 
+AC_CANONICAL_SYSTEM
+
 MAJOR_VERSION=0
 MINOR_VERSION=3
-PICO_VERSION=0
+PICO_VERSION=20020923
 
 AM_INIT_AUTOMAKE(nelns, $MAJOR_VERSION.$MINOR_VERSION.$PICO_VERSION)
 
@@ -36,13 +38,21 @@ AC_PROG_MAKE_SET
 AC_PROG_CC
 AC_PROG_CXX
 
-AM_PROG_LIBTOOL
-
 AM_SANITY_CHECK
 
 AC_PROG_INSTALL
 
 AM_PATH_CCACHE
+
+
+AM_PATH_MYSQL(3.23.40,,AC_MSG_ERROR([MySQL 3.23.40 or higher must be installed]))
+
+AC_DEFINE(HAVE_MYSQL)
+
+CFLAGS="$CFLAGS $MYSQL_CFLAGS"
+CXXFLAGS="$CXXFLAGS $MYSQL_CFLAGS"
+
+LIBS="$LIBS $MYSQL_LIBS"
 
 
 dnl ====================================================================
@@ -58,6 +68,21 @@ dnl ====================================================================
 
 AM_NEL_DEBUG
 
+dnl Set the gcc specific warning level
+if test "X$CC" = "Xgcc";
+then
+    if test "$with_debug" != "no"
+    then
+	#
+	# When debugging variables are declared for the sole purpose of
+	# inspecting their content with a debugger. They are not used
+	# in the code itself and this is legitimate, hence the -Wno-unused
+	#
+        CXXFLAGS="$CXXFLAGS -Wall -Wno-multichar -Wno-unused"
+    else
+        CXXFLAGS="$CXXFLAGS -Wall -Wno-multichar"
+    fi
+fi
 
 dnl ====================================================================
 dnl Checks for typedefs, structures, and compiler characteristics.
@@ -77,6 +102,12 @@ dnl ====================================================================
 AC_STDC_HEADERS
 AC_CHECK_HEADERS(fcntl.h unistd.h)
 
+
+dnl ====================================================================
+dnl Checks compilation accelerator
+dnl ====================================================================
+
+AM_PATH_CCACHE
 
 dnl ====================================================================
 dnl Checks for libraries.

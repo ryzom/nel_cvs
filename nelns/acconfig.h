@@ -15,3 +15,8 @@
  */
 #undef NELNS_STATE
 
+/*
+ * If MySQL was found
+ */
+#undef HAVE_MYSQL
+

@@ -1,10 +1,12 @@
 #
-# $Id: Makefile.am,v 1.8 2002/05/03 08:11:14 lecroart Exp $
+# $Id: Makefile.am,v 1.9 2002/10/21 10:19:03 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in configure config.guess missing \
                        config.sub ltconfig aclocal.m4 config.h.in \
-                       install-sh mkinstalldirs 
+                       install-sh mkinstalldirs depcomp $(DISTCLEANFILES)
+
+DISTCLEANFILES       = stamp-h.in config.cache config.log config.status 
 
 EXTRA_DIST	     = acconfig.h services.dsw bootstrap doc
 

@@ -1,6 +1,6 @@
 /** \file libcode.cpp
  *
- * $Id: libcode.cpp,v 1.12 2001/03/07 13:06:06 chafik Exp $
+ * $Id: libcode.cpp,v 1.13 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 namespace NLAISCRIPT
 {
 	const NLAIC::CIdentType CCallPrint::IdCallPrint = NLAIC::CIdentType(	"Print",
-																	NLAIC::CSelfClassCFactory(CCallPrint()),																
+																	NLAIC::CSelfClassFactory(CCallPrint()),																
 																	NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tObject),NLAIC::CTypeOfOperator(0));
 
 	NLAIC::IIO *CCallPrint::inputOutput = NULL;
@@ -172,53 +172,5 @@ namespace NLAISCRIPT
 		}
 		return r;
 	}
-	
-
-	void initExternalLib()
-	{		
-		CCallPrint p;
-		CLibTest c;
-
-		NLAIC::CSelfClassCFactory &f = (NLAIC::CSelfClassCFactory&)*((CAgentClass::IdAgentClass).getFactory());
-		f = NLAISCRIPT::CAgentClass(CAgentClass::IdAgentClass);
-		((CAgentClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CAgentClass::IdAgentClass));
-
-		NLAIC::CSelfClassCFactory &fgda = (NLAIC::CSelfClassCFactory&)*((CGDAgentClass::IdGDAgentClass).getFactory());
-		fgda = NLAISCRIPT::CGDAgentClass(CGDAgentClass::IdGDAgentClass);
-		((CGDAgentClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CGDAgentClass::IdGDAgentClass));
-
-		NLAIC::CSelfClassCFactory &fop = (NLAIC::CSelfClassCFactory&)*((COperatorClass::IdOperatorClass).getFactory());
-		fop = NLAISCRIPT::COperatorClass(COperatorClass::IdOperatorClass);
-		((COperatorClass *)f.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)COperatorClass::IdOperatorClass));
-
-		NLAIC::CSelfClassCFactory &fc = (NLAIC::CSelfClassCFactory&)*((CActorClass::IdActorClass).getFactory());
-		fc = NLAISCRIPT::CActorClass(CActorClass::IdActorClass);
-		((CActorClass *)fc.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CActorClass::IdActorClass));
-
-		NLAIC::CSelfClassCFactory &fi = (NLAIC::CSelfClassCFactory&)*((CMessageClass::IdMessageClass).getFactory());
-		fi = CMessageClass(CMessageClass::IdMessageClass);
-		((CMessageClass *)fi.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CMessageClass::IdMessageClass));
-
-		NLAIC::CSelfClassCFactory &fh = (NLAIC::CSelfClassCFactory&)*((CMsgNotifyParentClass::IdMsgNotifyParentClass).getFactory());
-		fh = CMsgNotifyParentClass(CMsgNotifyParentClass::IdMsgNotifyParentClass);
-		((CMsgNotifyParentClass *)fh.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CMsgNotifyParentClass::IdMsgNotifyParentClass));
-
-		NLAIC::CSelfClassCFactory &fg = (NLAIC::CSelfClassCFactory&)*((CGoalMsgClass::IdGoalMsgClass).getFactory());
-		fg = CGoalMsgClass(CGoalMsgClass::IdGoalMsgClass);
-		((CGoalMsgClass *)fh.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CGoalMsgClass::IdGoalMsgClass));
-
-		NLAIC::CSelfClassCFactory &fj = (NLAIC::CSelfClassCFactory&)*((CDebugMsgClass::IdDebugMsgClass).getFactory());
-		fj = CDebugMsgClass(CDebugMsgClass::IdDebugMsgClass);
-		((CDebugMsgClass *)fj.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CDebugMsgClass::IdDebugMsgClass));
-
-		NLAIC::CSelfClassCFactory &fa = (NLAIC::CSelfClassCFactory&)*((CManagerClass::IdManagerClass).getFactory());
-		fa = CManagerClass(CManagerClass::IdManagerClass);
-		((CManagerClass *)fa.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)CManagerClass::IdManagerClass));
-		NLAIAGENT::DigitalType::NullOperator.incRef();
-
-		NLAIC::CSelfClassCFactory &fl = (NLAIC::CSelfClassCFactory&)*((COnChangeMsgClass::IdOnChangeMsgClass).getFactory());
-		fl = COnChangeMsgClass(COnChangeMsgClass::IdOnChangeMsgClass);
-		((COnChangeMsgClass *)fa.getClass())->setClassName(NLAIAGENT::CStringVarName((const char *)COnChangeMsgClass::IdOnChangeMsgClass));
-		NLAIAGENT::DigitalType::NullOperator.incRef();
-	}
+		
 }

@@ -781,6 +781,10 @@ SOURCE=.\ai\script\hierarchy.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\ai\script\init.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ai\script\interpret_actor.cpp
 # End Source File
 # Begin Source File
@@ -1078,6 +1082,34 @@ SOURCE=..\include\nel\ai\nimat\black_box.h
 # Begin Source File
 
 SOURCE=..\include\nel\ai\nimat\classifier.h
+# End Source File
+# End Group
+# End Group
+# Begin Group "character"
+
+# PROP Default_Filter ""
+# Begin Group "character_cpp"
+
+# PROP Default_Filter "*.cpp"
+# Begin Source File
+
+SOURCE=.\ai\character\character.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ai\character\zone.cpp
+# End Source File
+# End Group
+# Begin Group "character_h"
+
+# PROP Default_Filter "*.h"
+# Begin Source File
+
+SOURCE=..\include\nel\ai\character\character.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\ai\character\zone.h
 # End Source File
 # End Group
 # End Group

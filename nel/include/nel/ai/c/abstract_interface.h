@@ -1,7 +1,7 @@
 /** \file registry_type.h
  * Includes some basic class objects.
  *
- * $Id: abstract_interface.h,v 1.14 2001/02/26 11:12:04 robert Exp $
+ * $Id: abstract_interface.h,v 1.15 2001/03/14 13:19:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ namespace NLAIC //Gen pour general.
 	};
 	
 	class CIdentTypeAlloc;
-	class IClassCFactory;
+	class IClassFactory;
 	class IBasicInterface;
 	class CTypeOfObject;
 	class CTypeOfOperator;
@@ -162,7 +162,7 @@ namespace NLAIC //Gen pour general.
 		Construct object. Object must be mounted in the class factory else an exception wil occur. 
 		CExceptionContainer share an CExceptionUnRegisterClassError exception object.
 		*/
-		CIdentType(const char *ident,const IClassCFactory &classCFactory,
+		CIdentType(const char *ident,const IClassFactory &classCFactory,
 									const CTypeOfObject &objType,
 									const CTypeOfOperator &opSupport);/// throw (NLAIE::CExceptionContainer);
 		///Copy contructor
@@ -223,7 +223,7 @@ namespace NLAIC //Gen pour general.
 		///Alloc an instance of a class.
 		const IBasicInterface *allocClass() const;
 		///Get the class factory associate.
-		const IClassCFactory *getFactory() const;
+		const IClassFactory *getFactory() const;
 				
 		/// \name NLMISC::IStreamable method.
 		//@{
@@ -330,13 +330,13 @@ namespace NLAIC //Gen pour general.
 		
 
 	/**
-	IClassCFactory is an abstract hows define an class factory,
+	IClassFactory is an abstract hows define an class factory,
 	
 	* \author Chafik sameh	 	
 	* \author Nevrax France
 	* \date 2000
 	*/
-	class IClassCFactory: public IBasicType
+	class IClassFactory: public IBasicType
 	{
 
 	public:
@@ -350,22 +350,25 @@ namespace NLAIC //Gen pour general.
 		*/
 		virtual const IBasicInterface *getClass() const = 0;
 
+		///Set the mirror class to build.
+		virtual void setClass(const IBasicInterface &) = 0;
+
 	};
 
 	/**
-	IClassCFactory is an basic class factory. The class builder is an IBasicInterface and we construct new class by calling newInstance method class.	
+	IClassFactory is an basic class factory. The class builder is an IBasicInterface and we construct new class by calling newInstance method class.	
 	* \author Chafik sameh	 	
 	* \author Nevrax France
 	* \date 2000
 	*/
-	class CSelfClassCFactory : public IClassCFactory
+	class CSelfClassFactory : public IClassFactory
 	{
 	private:
 		///Class buider.
 		IBasicInterface *_Inst;
 	public:
 		///Construct class with a builder class.
-		CSelfClassCFactory(const IBasicInterface &a): _Inst((IBasicInterface *)a.newInstance())
+		CSelfClassFactory(const IBasicInterface &a): _Inst((IBasicInterface *)a.newInstance())
 		{
 			
 		}
@@ -379,7 +382,7 @@ namespace NLAIC //Gen pour general.
 		///Clone the class factory.
 		const IBasicType *clone() const
 		{
-			 IBasicType *x = new CSelfClassCFactory(*_Inst);
+			 IBasicType *x = new CSelfClassFactory(*_Inst);
 			 return x;
 		}
 		
@@ -392,40 +395,29 @@ namespace NLAIC //Gen pour general.
 		///Get debufg string.
 		void getDebugString(char *text) const
 		{
-			sprintf(text,"CSelfClassCFactory sur l'interface %s",(const char *)_Inst->getType());
+			sprintf(text,"CSelfClassFactory sur l'interface %s",(const char *)_Inst->getType());
 		}		
 
 		///Get the type of the class, the type is the builder type.
 		const CIdentType &getType() const
 		{
 			return _Inst->getType();
-		}
-
-		///Set a new builder.
-		void setInst(const IBasicInterface &a)
-		{
-			///Release old builder.
-			_Inst->release();
-			///Set new builder.
-			_Inst = (IBasicInterface *)a.newInstance();
-		}
+		}		
 
 		///get the builder class.
 		virtual const IBasicInterface *getClass() const
 		{
 			return _Inst;
-		}
-		
-		///Set a new the builder class.
-		CSelfClassCFactory &operator = (const IBasicInterface &inst)
+		}			
+
+		virtual void setClass(const IBasicInterface &inst)
 		{
 			_Inst->release();
-			_Inst = (IBasicInterface *)inst.clone();
-			return *this;
+			_Inst = (IBasicInterface *)inst.clone();			
 		}
 
 			
-		~CSelfClassCFactory()
+		~CSelfClassFactory()
 		{
 			_Inst->release();
 		}

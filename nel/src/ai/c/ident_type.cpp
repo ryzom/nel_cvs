@@ -1,6 +1,6 @@
 /** \file ident_type.cpp
  *
- * $Id: ident_type.cpp,v 1.6 2001/01/11 17:02:24 chafik Exp $
+ * $Id: ident_type.cpp,v 1.7 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,7 @@ namespace NLAIC
 		_Index = index;
 	}
 	
-	CIdentType::CIdentType(const char *ident,const IClassCFactory &classCFactory,const CTypeOfObject &objType,const CTypeOfOperator &opSupport): _Index(-1),
+	CIdentType::CIdentType(const char *ident,const IClassFactory &classCFactory,const CTypeOfObject &objType,const CTypeOfOperator &opSupport): _Index(-1),
 		_ObjType((CTypeOfObject *)objType.clone()),_OpSupport((CTypeOfOperator *)opSupport.clone())
 	{
 		_Ident = new char [strlen(ident) + 1];
@@ -128,7 +128,7 @@ namespace NLAIC
 		return getRegistry()->createInstance(_Index);
 	}
 
-	const IClassCFactory *CIdentType::getFactory() const
+	const IClassFactory *CIdentType::getFactory() const
 	{
 		return getRegistry()->getFactory(_Index);
 	}

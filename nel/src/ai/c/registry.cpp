@@ -1,6 +1,6 @@
 /** \file registry.cpp
  *
- * $Id: registry.cpp,v 1.7 2001/01/25 10:13:19 chafik Exp $
+ * $Id: registry.cpp,v 1.8 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,13 +28,13 @@
 
 namespace NLAIC
 {
-	CRegistry::CRegistryClass::CRegistryClass(const CIdentType &id,const IClassCFactory &factory,sint32 i):NameClass(*(new CIdentType(id))),FactoryClass ((const IClassCFactory *)factory.clone()),Index(i)
+	CRegistry::CRegistryClass::CRegistryClass(const CIdentType &id,const IClassFactory &factory,sint32 i):NameClass(*(new CIdentType(id))),FactoryClass ((const IClassFactory *)factory.clone()),Index(i)
 	{	
 	}
 
 	CRegistry::CRegistryClass::~CRegistryClass()
 	{
-		delete (IClassCFactory *)FactoryClass;
+		delete (IClassFactory *)FactoryClass;
 		delete (CIdentType *)&NameClass;
 	}
 
@@ -54,7 +54,7 @@ namespace NLAIC
 		delete &_MapRegistry;
 	}
 
-	sint32 CRegistry::registerClass(const CIdentType &ident,const IClassCFactory &FactoryClass)
+	sint32 CRegistry::registerClass(const CIdentType &ident,const IClassFactory &FactoryClass)
 	{
 		// Recherche un emplacement vide
 		/*for(sint32 idx = 0; idx < (sint32) _TableRegistry.size(); idx++) 
@@ -162,7 +162,7 @@ namespace NLAIC
 	}
 
 	// Creates a new instance from a class using its identifier
-	const IClassCFactory *CRegistry::getFactory(const CIdentType &ident)
+	const IClassFactory *CRegistry::getFactory(const CIdentType &ident)
 	{
 		CRegistryClass *t;
 		tMapRegistry::iterator Itr = _MapRegistry.find(ident);
@@ -177,7 +177,7 @@ namespace NLAIC
 	}
 
 	// Creates a new instance from a class using its class name in the registry
-	const IClassCFactory *CRegistry::getFactory(const char *class_name)
+	const IClassFactory *CRegistry::getFactory(const char *class_name)
 	{
 		try
 		{				
@@ -192,7 +192,7 @@ namespace NLAIC
 	}
 
 	// Creates a new instance from a class using its registry index
-	const IClassCFactory *CRegistry::getFactory(sint32 i)
+	const IClassFactory *CRegistry::getFactory(sint32 i)
 	{
 		return _TableRegistry[i]->FactoryClass;
 	}

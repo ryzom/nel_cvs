@@ -1,7 +1,7 @@
 /** \file registry_class.h
  * Includes some methode for acces the static class factory.
  *
- * $Id: registry_class.h,v 1.3 2001/01/08 14:39:59 valignat Exp $
+ * $Id: registry_class.h,v 1.4 2001/03/14 13:19:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ namespace NLAIC
 	void releaseRegistry();
 
 	///Register an object in the CRegistry static object.
-	sint32 registerClass(const CIdentType &ident,const IClassCFactory &factoryClass);
+	sint32 registerClass(const CIdentType &ident,const IClassFactory &factoryClass);
 
 	///Creat new instance from the CRegistry static object.
 	IBasicInterface *createInstance(const CIdentType &ident);

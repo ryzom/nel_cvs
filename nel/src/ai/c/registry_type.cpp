@@ -1,6 +1,6 @@
 /** \file register_type.cpp
  *
- * $Id: registry_type.cpp,v 1.5 2001/01/11 17:02:24 chafik Exp $
+ * $Id: registry_type.cpp,v 1.6 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 
 namespace NLAIC
 {
-	CIdentType CTypeOfObject::IdTypeOfObject("CTypeOfObject",CSelfClassCFactory(CTypeOfObject()),CTypeOfObject(0),CTypeOfOperator(0));
+	CIdentType CTypeOfObject::IdTypeOfObject("CTypeOfObject",CSelfClassFactory(CTypeOfObject()),CTypeOfObject(0),CTypeOfOperator(0));
 	const CIdentType &CTypeOfObject::getType() const
 	{
 		return IdTypeOfObject;
@@ -65,7 +65,7 @@ namespace NLAIC
 
 
 
-	CIdentType CTypeOfOperator::IdTypeOfOperator("CTypeOfOperator",CSelfClassCFactory(CTypeOfOperator()),CTypeOfObject(0),CTypeOfOperator(0));
+	CIdentType CTypeOfOperator::IdTypeOfOperator("CTypeOfOperator",CSelfClassFactory(CTypeOfOperator()),CTypeOfObject(0),CTypeOfOperator(0));
 	const CIdentType &CTypeOfOperator::getType() const
 	{
 		return IdTypeOfOperator;

@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.17 2001/02/21 11:36:39 chafik Exp $
+ * $Id: yacc.cpp,v 1.18 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -542,7 +542,7 @@ namespace NLAISCRIPT
 	className.getString();
 	_ConstraintType.size();
 #endif
-		NLAIC::CIdentType id(className.getString(),(const NLAIC::IClassCFactory &)CClassInterpretFactory(c), 
+		NLAIC::CIdentType id(className.getString(),(const NLAIC::IClassFactory &)CClassInterpretFactory(c), 
 							NLAIC::CTypeOfObject(NLAIC::CTypeOfObject::tAgentInterpret), NLAIC::CTypeOfOperator(0));
 
 		c->setType(new NLAIC::CIdentType(id));

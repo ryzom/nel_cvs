@@ -1,7 +1,7 @@
 /** \file interpret_message_action.h
  * Class for define success and failure message in the interpreter.
  *
- * $Id: interpret_message_action.h,v 1.3 2001/03/08 13:42:56 portier Exp $
+ * $Id: interpret_message_action.h,v 1.4 2001/03/14 13:19:25 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -32,6 +32,7 @@ namespace NLAISCRIPT
 	public:
 		static const NLAIC::CIdentType IdSuccessMsgClass;
 	public:
+		CSuccessMsgClass(const NLAIAGENT::IVarName &);
 		CSuccessMsgClass(const NLAIC::CIdentType &);
 		CSuccessMsgClass();
 		~CSuccessMsgClass(){}
@@ -53,6 +54,7 @@ namespace NLAISCRIPT
 	public:
 		static const NLAIC::CIdentType IdFailureMsgClass;
 	public:
+		CFailureMsgClass(const NLAIAGENT::IVarName &);
 		CFailureMsgClass(const NLAIC::CIdentType &);
 		CFailureMsgClass();
 		~CFailureMsgClass(){}

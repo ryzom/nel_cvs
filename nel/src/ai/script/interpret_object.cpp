@@ -1,6 +1,6 @@
 /** \file object.cpp
  *
- * $Id: interpret_object.cpp,v 1.7 2001/01/26 13:36:35 chafik Exp $
+ * $Id: interpret_object.cpp,v 1.8 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -113,24 +113,34 @@ namespace NLAISCRIPT
 ///////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////
 
-	CClassInterpretFactory::CClassInterpretFactory(IClassInterpret *a) : _inst(a)
+	CClassInterpretFactory::CClassInterpretFactory(IClassInterpret *a) : _Inst(a)
 	{			
-		_inst->incRef();
+		_Inst->incRef();
+	}
+
+	CClassInterpretFactory::CClassInterpretFactory(const IClassInterpret &a) : _Inst((IClassInterpret *)a.clone())
+	{
 	}
 
 	CClassInterpretFactory::~CClassInterpretFactory()
 	{
-		_inst->release();
+		_Inst->release();
 	}	
+
+	void CClassInterpretFactory::setClass(const NLAIC::IBasicInterface &c)
+	{
+		_Inst->release();
+		_Inst = (IClassInterpret *)c.clone();
+	}
 
 	void CClassInterpretFactory::getDebugString(char *text) const
 	{
-		sprintf(text,"class factory: CClassInterpretFactory fabrique des instances pour l'interface %s",(const char *)_inst->getType());
+		sprintf(text,"class factory: CClassInterpretFactory fabrique des instances pour l'interface %s",(const char *)_Inst->getType());
 	}
 
 	const NLAIC::IBasicType *CClassInterpretFactory::clone() const
 	{
-		 NLAIC::IBasicType *x = new CClassInterpretFactory(_inst);
+		 NLAIC::IBasicType *x = new CClassInterpretFactory(_Inst);
 		 return x;
 	}
 
@@ -141,16 +151,16 @@ namespace NLAISCRIPT
 
 	const NLAIC::CIdentType &CClassInterpretFactory::getType() const
 	{
-		return _inst->getType();
+		return _Inst->getType();
 	}
 
 	const NLAIC::IBasicInterface *CClassInterpretFactory::createInstance() const 
 	{
-		return (const NLAIC::IBasicInterface *)_inst->buildNewInstance();
+		return (const NLAIC::IBasicInterface *)_Inst->buildNewInstance();
 	}
 
 	const NLAIC::IBasicInterface *CClassInterpretFactory::getClass() const 
 	{
-		return _inst;
+		return _Inst;
 	}
 }

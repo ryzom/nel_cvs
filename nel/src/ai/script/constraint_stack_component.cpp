@@ -1,6 +1,6 @@
 /** \file constraint_stack_component.cpp
  *
- * $Id: constraint_stack_component.cpp,v 1.6 2001/01/17 10:32:10 chafik Exp $
+ * $Id: constraint_stack_component.cpp,v 1.7 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,7 +67,7 @@ namespace NLAISCRIPT
 		{
 			if(_MemberName.size() == 1)
 			{
-				const NLAIAGENT::IObjectIA *c = (NLAIAGENT::IObjectIA *)((NLAIC::IClassCFactory *)_TypeStack->getConstraintTypeOf()->getFactory())->getClass();
+				const NLAIAGENT::IObjectIA *c = (NLAIAGENT::IObjectIA *)((NLAIC::IClassFactory *)_TypeStack->getConstraintTypeOf()->getFactory())->getClass();
 				sint32 i = c->getStaticMemberIndex(NLAIAGENT::CStringVarName(_MemberName.front().data()));
 				if(i >= 0)
 				{					
@@ -110,7 +110,7 @@ namespace NLAISCRIPT
 			{
 				std::list<sint32> b;
 				IOpType *c;
-				NLAIAGENT::IObjectIA *cl = (NLAIAGENT::IObjectIA *)((NLAIC::IClassCFactory *)_TypeStack->getConstraintTypeOf()->getFactory())->getClass();
+				NLAIAGENT::IObjectIA *cl = (NLAIAGENT::IObjectIA *)((NLAIC::IClassFactory *)_TypeStack->getConstraintTypeOf()->getFactory())->getClass();
 				if(!comp.isValidateVarName(cl,b,_MemberName,c) && c->getConstraintTypeOf() != NULL)
 				{
 					c->release();

@@ -1,7 +1,7 @@
 /** \file interpret_object_message.h
  * Class for define an message class in the interpreter.
  *
- * $Id: interpret_object_message.h,v 1.14 2001/03/08 16:10:06 portier Exp $
+ * $Id: interpret_object_message.h,v 1.15 2001/03/14 13:19:25 chafik Exp $
  */
 /* Copyright, 2000 Nevrax Ltd.
  *
@@ -54,6 +54,7 @@ namespace NLAISCRIPT
 	public:
 		static const NLAIC::CIdentType IdMsgNotifyParentClass;
 	public:
+		CMsgNotifyParentClass(const NLAIAGENT::IVarName &);
 		CMsgNotifyParentClass(const NLAIC::CIdentType &);
 		CMsgNotifyParentClass();
 		~CMsgNotifyParentClass(){}
@@ -75,6 +76,7 @@ namespace NLAISCRIPT
 	public:
 		static const NLAIC::CIdentType IdGoalMsgClass;
 	public:
+		CGoalMsgClass(const NLAIAGENT::IVarName &);
 		CGoalMsgClass(const NLAIC::CIdentType &);
 		CGoalMsgClass();
 		~CGoalMsgClass(){}
@@ -96,6 +98,7 @@ namespace NLAISCRIPT
 	public:
 		static const NLAIC::CIdentType IdFactMsgClass;
 	public:
+		CFactMsgClass(const NLAIAGENT::IVarName &);
 		CFactMsgClass(const NLAIC::CIdentType &);
 		CFactMsgClass();
 		~CFactMsgClass(){}
@@ -117,6 +120,7 @@ namespace NLAISCRIPT
 	public:
 		static const NLAIC::CIdentType IdDebugMsgClass;
 	public:
+		CDebugMsgClass(const NLAIAGENT::IVarName &);
 		CDebugMsgClass(const NLAIC::CIdentType &);
 		CDebugMsgClass();
 		~CDebugMsgClass(){}
@@ -138,6 +142,7 @@ namespace NLAISCRIPT
 	public:
 		static const NLAIC::CIdentType IdOnChangeMsgClass;
 	public:
+		COnChangeMsgClass(const NLAIAGENT::IVarName &);
 		COnChangeMsgClass(const NLAIC::CIdentType &);
 		COnChangeMsgClass();
 		~COnChangeMsgClass(){}

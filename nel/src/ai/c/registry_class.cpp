@@ -1,6 +1,6 @@
 /** \file register_class.cpp
  *
- * $Id: registry_class.cpp,v 1.5 2001/01/11 17:02:24 chafik Exp $
+ * $Id: registry_class.cpp,v 1.6 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@ namespace NLAIC
 			return registry;
 	}
 
-	sint32 registerClass(const CIdentType &ident,const IClassCFactory &factoryClass)
+	sint32 registerClass(const CIdentType &ident,const IClassFactory &factoryClass)
 	{
 		return registry->registerClass(ident,factoryClass);
 	}

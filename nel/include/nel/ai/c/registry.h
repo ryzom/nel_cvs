@@ -1,7 +1,7 @@
 /** \file registry.h
  * Includes class factory object for register class.
  *
- * $Id: registry.h,v 1.3 2001/01/10 08:58:52 chafik Exp $
+ * $Id: registry.h,v 1.4 2001/03/14 13:19:25 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,7 @@
 namespace NLAIC 
 {
 	class CIdentType;
-	class IClassCFactory;
+	class IClassFactory;
 	class IBasicInterface;
 	
 	/**
@@ -53,10 +53,10 @@ namespace NLAIC
 		struct CRegistryClass
 		{			
 			const CIdentType &NameClass;
-			const IClassCFactory *FactoryClass;
+			const IClassFactory *FactoryClass;
 			const sint32 Index;
 			
-			CRegistryClass(const CIdentType &id,const IClassCFactory &factory,sint32 i);
+			CRegistryClass(const CIdentType &id,const IClassFactory &factory,sint32 i);
 			~CRegistryClass();
 		};
 
@@ -72,7 +72,7 @@ namespace NLAIC
 		CRegistry();
 
 		/// Registers a new class
-		sint32 registerClass(const CIdentType &,const IClassCFactory &);
+		sint32 registerClass(const CIdentType &,const IClassFactory &);
 
 		/// Removes a class from the registry
 		void unRegisterClass(const CIdentType &);
@@ -99,13 +99,13 @@ namespace NLAIC
 		IBasicInterface *createInstance(const sint32);
 
 		/// Creates a new instance from a class using its identifier
-		const IClassCFactory *getFactory(const CIdentType &);
+		const IClassFactory *getFactory(const CIdentType &);
 
 		/// Creates a new instance from a class using its class name in the registry
-		const IClassCFactory *getFactory(const char *);
+		const IClassFactory *getFactory(const char *);
 
 		/// Creates a new instance from a class using its registry index
-		const IClassCFactory *getFactory(sint32);
+		const IClassFactory *getFactory(sint32);
 
 		///Get CIdentType with an index.
 		const CIdentType& operator [](sint32 i) const;

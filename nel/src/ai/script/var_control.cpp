@@ -1,6 +1,6 @@
 /** \file var_control.cpp
  *
- * $Id: var_control.cpp,v 1.16 2001/02/21 11:36:39 chafik Exp $
+ * $Id: var_control.cpp,v 1.17 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,7 +121,7 @@ namespace NLAISCRIPT
 
 							if(type->satisfied())
 							{
-								NLAIAGENT::IObjectIA *c = (NLAIAGENT::IObjectIA *)((NLAIC::IClassCFactory *)type->getConstraintTypeOf()->getFactory())->getClass();
+								NLAIAGENT::IObjectIA *c = (NLAIAGENT::IObjectIA *)((NLAIC::IClassFactory *)type->getConstraintTypeOf()->getFactory())->getClass();
 								sint32 i = c->getStaticMemberIndex(NLAIAGENT::CStringVarName(_LasVarStr.front().data()));
 								if(i >= 0)
 								{	

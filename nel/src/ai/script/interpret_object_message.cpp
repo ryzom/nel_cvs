@@ -1,6 +1,6 @@
 /** \file interpret_object_message.cpp
  *
- * $Id: interpret_object_message.cpp,v 1.16 2001/03/08 16:09:38 portier Exp $
+ * $Id: interpret_object_message.cpp,v 1.17 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,6 +102,13 @@ namespace NLAISCRIPT
 //#########################################
 //		CMsgNotifyParentClass
 //#########################################
+	CMsgNotifyParentClass::CMsgNotifyParentClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CNotifyParentScript::IdNotifyParentScript.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
 
 	CMsgNotifyParentClass::CMsgNotifyParentClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
@@ -142,8 +149,13 @@ namespace NLAISCRIPT
 
 //#########################################
 //		CGoalMsgClass
-//#########################################
-
+//#########################################	
+	CGoalMsgClass::CGoalMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("CGoal"),NLAIAGENT::CStringVarName("Goal"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
 	CGoalMsgClass::CGoalMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
@@ -184,6 +196,13 @@ namespace NLAISCRIPT
 //		CFactMsgClass
 //#########################################
 
+	CFactMsgClass::CFactMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFactMsg::IdFactMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("CFact"),NLAIAGENT::CStringVarName("Fact"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+
 	CFactMsgClass::CFactMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFactMsg::IdFactMsg.getFactory()->getClass());		
@@ -221,6 +240,14 @@ namespace NLAISCRIPT
 //#########################################
 //		CDebugMsgClass
 //#########################################
+	
+	CDebugMsgClass::CDebugMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
 	CDebugMsgClass::CDebugMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
 		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CGoalMsg::IdGoalMsg.getFactory()->getClass());		
@@ -261,6 +288,15 @@ namespace NLAISCRIPT
 //#########################################
 //		COnChangeMsgClass
 //#########################################
+
+	COnChangeMsgClass::COnChangeMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::COnChangeMsg::IdOnChangeMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("Float"),NLAIAGENT::CStringVarName("ParentState"));
+		registerComponent(NLAIAGENT::CStringVarName("GenericAgent"),NLAIAGENT::CStringVarName("Parent"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
+
 
 	COnChangeMsgClass::COnChangeMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{

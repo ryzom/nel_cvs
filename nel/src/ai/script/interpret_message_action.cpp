@@ -1,6 +1,6 @@
 /** \file interpret_message_action.cpp
  *
- * $Id: interpret_message_action.cpp,v 1.3 2001/03/08 13:52:24 portier Exp $
+ * $Id: interpret_message_action.cpp,v 1.4 2001/03/14 13:19:34 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,13 @@ namespace NLAISCRIPT
 //#########################################
 //		CSuccessMsgClass
 //#########################################
+
+	CSuccessMsgClass::CSuccessMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CSuccessMsg::IdSuccessMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("IObjectIA"),NLAIAGENT::CStringVarName("Param"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
 
 	CSuccessMsgClass::CSuccessMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{
@@ -75,6 +82,13 @@ namespace NLAISCRIPT
 //#########################################
 //		CFailureMsgClass
 //#########################################
+
+	CFailureMsgClass::CFailureMsgClass(const NLAIAGENT::IVarName &s):CMessageClass(s)
+	{
+		setBaseObjectInstance((NLAIAGENT::IObjectIA *)NLAIAGENT::CFailureMsg::IdFailureMsg.getFactory()->getClass());		
+		registerComponent(NLAIAGENT::CStringVarName("IObjectIA"),NLAIAGENT::CStringVarName("Param"));
+		setInheritanceName(NLAIAGENT::CStringVarName("Message"));
+	}
 
 	CFailureMsgClass::CFailureMsgClass(const NLAIC::CIdentType &id):CMessageClass(id)
 	{

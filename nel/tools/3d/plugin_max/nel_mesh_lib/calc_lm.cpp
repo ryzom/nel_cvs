@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.53 2004/04/14 12:55:30 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.54 2004/04/16 14:28:19 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2521,7 +2521,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 		PutFaceUV1InTextureCoord( LightMap.w, LightMap.h, AllFaces.begin(), AllFaces.size() );
 		uint32 nLightMapNb = 0;
 		for (j = 0; j < LightMap.nNbLayerUsed; ++j)
-		if ((j == 0) || (!LightMap.isAllBlack((uint8)j)))
+		if (!LightMap.isAllBlack((uint8)j))
 		{
 			CTextureFile *pLightMap = new CTextureFile();
 			//string sSaveName = AllMeshBuilds[nNode].second->GetName();

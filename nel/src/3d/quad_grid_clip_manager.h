@@ -1,7 +1,7 @@
 /** \file quad_grid_clip_manager.h
  * <File description>
  *
- * $Id: quad_grid_clip_manager.h,v 1.4 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: quad_grid_clip_manager.h,v 1.5 2003/03/28 16:01:12 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,7 +101,7 @@ public:
 	virtual void	traverseClip();
 	virtual void	traverseAnimDetail() {}
 	virtual void	traverseLoadBalancing() {}
-	virtual void	traverseLigth(CTransform *caller) {}
+	virtual void	traverseLight() {}
 	virtual void	traverseRender() {}
 	virtual	void	profileRender() {}
 	// @}

@@ -153,9 +153,5 @@ SOURCE=..\naming_service.cfg
 
 SOURCE=.\naming_service.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=.\naming_service.h
-# End Source File
 # End Target
 # End Project

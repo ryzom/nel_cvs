@@ -1,7 +1,7 @@
 /** \file located_target_dlg.cpp
  * a dialog that allow to choose targets for a particle system object (collision zone, forces)
  *
- * $Id: located_target_dlg.cpp,v 1.4 2001/07/04 12:17:57 vizerie Exp $
+ * $Id: located_target_dlg.cpp,v 1.5 2001/07/12 16:06:56 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,9 @@
  */
 
 #include "std_afx.h"
+
+
+#include "3d/particle_system.h"
 #include "object_viewer.h"
 #include "located_target_dlg.h"
 #include "collision_zone_dlg.h"

@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.cpp
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.cpp,v 1.6 2001/06/26 09:17:50 vizerie Exp $
+ * $Id: ps_mover_dlg.cpp,v 1.7 2001/07/12 16:02:43 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,8 @@
 #include "ps_mover_dlg.h"
 #include "particle_tree_ctrl.h"
 #include "3d/ps_located.h"
+#include "3d/particle_system.h"
+
 
 #include "editable_range.h"
 #include "direction_attr.h"

@@ -81,7 +81,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"../../../lib/object_viewer_debug.dll" /pdbtype:sept
+# ADD LINK32 mfcs42d.lib msvcrtd.lib libc.lib /nologo /subsystem:windows /dll /debug /machine:I386 /out:"c:\3dsmax3_1\object_viewer.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
 !ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
@@ -99,8 +99,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MD /W3 /GR /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /c
-# SUBTRACT CPP /Fr
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"std_afx.h" /FD /Zm200 /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
@@ -341,6 +340,14 @@ SOURCE=R:\code\nel\tools\3d\object_viewer\basis_edit.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\bin_op_dlg.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\bin_op_dlg.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\collision_zone_dlg.cpp
 # End Source File
 # Begin Source File
@@ -386,6 +393,14 @@ SOURCE=.\direction_edit.h
 # Begin Source File
 
 SOURCE=R:\code\nel\tools\3d\object_viewer\edit_attrib_dlg.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_user_param.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\edit_user_param.h
 # End Source File
 # Begin Source File
 
@@ -446,6 +461,14 @@ SOURCE=R:\code\nel\tools\3d\object_viewer\particle_dlg.h
 # Begin Source File
 
 SOURCE=R:\code\nel\tools\3d\object_viewer\particle_dsw.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\particle_system_edit.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\particle_system_edit.h
 # End Source File
 # Begin Source File
 

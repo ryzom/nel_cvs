@@ -1,7 +1,7 @@
 /** \file ps_emitter.cpp
  * <File description>
  *
- * $Id: ps_emitter.cpp,v 1.27 2001/09/06 10:14:13 vizerie Exp $
+ * $Id: ps_emitter.cpp,v 1.28 2001/09/07 11:59:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -749,7 +749,7 @@ void CPSSphericalEmitter::emit(uint32 index, CVector &pos, CVector &speed)
 	static const double divRand = (2.0 / RAND_MAX);
 	CVector dir((float) (rand() * divRand - 1), (float) (rand() * divRand - 1) , (float) (rand() * divRand - 1) );
 	dir.normalize();
-	pos = _Radius[index] * dir;
+	pos = _Owner->getPos()[index] + _Radius[index] * dir;
 	speed = (_EmitteeSpeedScheme ? _EmitteeSpeedScheme->get(_Owner, index) : _EmitteeSpeed)  * dir;	
 }
 

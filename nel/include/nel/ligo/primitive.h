@@ -1,7 +1,7 @@
 /** \file primitive.h
  * <File description>
  *
- * $Id: primitive.h,v 1.4 2002/08/06 13:40:51 miller Exp $
+ * $Id: primitive.h,v 1.5 2002/09/04 12:10:35 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,3 +110,4 @@ public:
 } // namespace NLLIGO
 
 #endif // __PRIMITIVE_H__
+

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.71 2002/07/03 12:22:31 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.72 2002/07/08 14:53:38 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -401,13 +401,14 @@ CObjectViewer::CObjectViewer ()
 			//
 			if (!loadingOk)
 			{
-				::MessageBox(NULL, "Warning : Unable to load all automatic animation", "Error", MB_OK | MB_ICONEXCLAMATION);
+				//::MessageBox(NULL, "Warning : Unable to load all automatic animation", "Error", MB_OK | MB_ICONEXCLAMATION);
+				nlwarning("Unable to load all automatic animation");
 			}
 			CNELU::Scene.setAutomaticAnimationSet(as.release());
 		}
 		catch (EUnknownVar &)
 		{
-			::MessageBox(NULL, "No automatic animation path specified, please set 'automatic_animation_path'", "warning", MB_OK);
+			//::MessageBox(NULL, "No automatic animation path specified, please set 'automatic_animation_path'", "warning", MB_OK);
 			nlwarning("No automatic animation path specified");
 		}
 

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	First order logic operators with forward and backward chaining
  *
- * $Id: goal.h,v 1.18 2001/07/12 08:40:45 portier Exp $
+ * $Id: goal.h,v 1.19 2001/07/13 14:52:59 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -136,6 +136,10 @@ namespace NLAILOGIC
 				return _Selected;
 			}
 
+			bool isActivable()
+			{
+				return ( !_Successors.empty() );
+			}
 	};
 }
 

@@ -1,6 +1,6 @@
 /** \file group_type.cpp
  *
- * $Id: group_type.cpp,v 1.22 2001/06/25 09:50:29 portier Exp $
+ * $Id: group_type.cpp,v 1.23 2001/07/13 14:53:12 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -944,7 +944,7 @@ namespace NLAIAGENT
 		}			
 	}
 
-	void CVectorGroupType::clear()
+	void CVectorGroupType::clear()  
 	{
 		while(_Vector.size())
 		{
@@ -966,7 +966,6 @@ namespace NLAIAGENT
 		{			
 			if(*methodName == IBaseGroupType::_Method[0].MethodName)
 			{				
-				
 				CObjectType *c = new CObjectType(new NLAIC::CIdentType(NLAIC::CIdentType::VoidType));
 				a.push(CIdMethod(_Const + IBaseGroupType::getMethodIndexSize(),0.0,NULL,c));				
 			}

@@ -116,17 +116,17 @@ namespace NLAIAGENT
 
 		if ( _CyclesBeforeUpdate == 0 )
 		{
-			is_activated = checkActivation();
+			_IsActivable = checkActivation();
 			_CyclesBeforeUpdate = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getUpdateEvery();
 		}
 		else
 		{
 			_CyclesBeforeUpdate--;
-			is_activated = _IsActivated;
+			_IsActivable = _IsActivated;
 		}
 
 		// Runs the operator if every precondition is validated	
-		if ( is_activated )
+		if ( _IsActivable )
 		{
 			// If it wasn't activated before, initialises the current goal and runs the OnActivate() function
 			if ( _IsActivated == false)			
@@ -139,7 +139,7 @@ namespace NLAIAGENT
 					linkGoalArgs( _CurrentGoal );							// Instanciates the goal's args values into the operator's components
 				}
 
-				if ( ( _CurrentGoal != NULL /*&& _CurrentGoal->isSelected()*/ ) || ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() == NULL)
+				if ( ( _CurrentGoal != NULL && _CurrentGoal->isSelected() ) || ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoal() == NULL)
 				{
 					activate();
 
@@ -153,7 +153,6 @@ namespace NLAIAGENT
 							runMethodeMember( _OnActivateIndex , context);
 							_OnActivateIndex = -1;
 						}
-
 					}
 					else
 						onActivate();
@@ -256,7 +255,7 @@ namespace NLAIAGENT
 
 	float COperatorScript::priority() const
 	{
-		if (! _IsActivated )
+		if (! _IsActivable )
 			return 0.0;
 
 		int i;
@@ -264,6 +263,7 @@ namespace NLAIAGENT
 		for ( i = 0; i < (int) ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getFuzzyVars().size(); i++)
 		{
 #ifdef NL_DEBUG
+			const char *dbg_op_class = (const char *) ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getType();
 			const char *dbg_set_name = ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzySets() )[i]->getString();
 			const char *dbg_var_name = ( ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getFuzzyVars() )[i]->getString();
 #endif
@@ -287,8 +287,8 @@ namespace NLAIAGENT
 		const char *dbg_class = (const char *) getType();
 #endif
 
-		double class_pri = ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getPriority();
-		return (float) ( (double) pri * (double) class_pri );
+		float class_pri = ( (NLAISCRIPT::COperatorClass *) _AgentClass)->getPriority();
+		return pri * class_pri;
 	}
 
 	NLAILOGIC::CFact *COperatorScript::buildFromVars(NLAILOGIC::IBaseAssert *assert, std::vector<sint32> &pl, NLAILOGIC::CValueSet *vars)

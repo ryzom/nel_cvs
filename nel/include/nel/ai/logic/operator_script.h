@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.19 2001/07/12 17:01:22 portier Exp $
+ * $Id: operator_script.h,v 1.20 2001/07/13 14:52:59 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,6 +51,7 @@ namespace NLAIAGENT
 			NLAILOGIC::CGoal					*_CurrentGoal;
 			sint32								_CyclesBeforeUpdate;	// Number of cycles before the preconditions are checked
 			std::list<NLAILOGIC::CGoal *>		_ActivatedGoals;
+			bool								_IsActivable;
 		public:
 			// Builds and actor with its father
 			COperatorScript(IAgentManager *, bool activated = false);

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.17 2001/07/12 08:40:45 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.18 2001/07/13 14:52:59 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -62,7 +62,7 @@ namespace NLAISCRIPT
 
 		sint32										_UpdateCycles;		// Number of cycles before checking preconditions
 
-		double										_Priority;
+		float										_Priority;
 
 	public:
 		static const NLAIC::CIdentType IdOperatorClass;
@@ -239,12 +239,12 @@ public:
 			return _UpdateCycles;
 		}
 
-		void setPriority(double p)
+		void setPriority(float p)
 		{
 			_Priority = p;
 		}
 
-		double getPriority()
+		float getPriority()
 		{
 			return _Priority;
 		}

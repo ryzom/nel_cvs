@@ -67,7 +67,6 @@ namespace NLAILOGIC
 				_Goals.front()->select();
 			}
 		}
-
 		return NLAIAGENT::IObjectIA::CProcessResult();
 	}
 
@@ -105,7 +104,18 @@ namespace NLAILOGIC
 
 	void CGoalStack::getDebugString(std::string &t) const
 	{
-		
+		for (int i = 0; i < (int) _Goals.size(); i++ )
+		{
+			t += _Goals[i]->getName().getString();
+			char buf[1024];
+			sprintf( buf, " %f ", _Goals[i]->priority() );
+			t += buf;
+			if ( _Goals[i]->isSelected() )
+				t += "Selected";
+			else
+				t += "Not selected";
+			t += '\n';
+		}
 	}
 
 	const NLAIC::CIdentType &CGoalStack::getType() const

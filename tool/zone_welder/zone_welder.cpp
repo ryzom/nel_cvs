@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.5 2001/01/16 08:35:39 berenguier Exp $
+ * $Id: zone_welder.cpp,v 1.6 2001/01/17 10:14:38 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,8 @@ std::string inputDir;
 std::string inputExt;
 std::string outputDir;
 std::string outputExt;
+
+float weldRadius = 0.35f;
 
 
 /**
@@ -129,7 +131,7 @@ std::string getExt (const std::string& path)
 \*******************************************************************/
 void writeInstructions()
 {
-	printf("zone_welder [input.zone][output.zone]\n");
+	printf("zone_welder <input.zone><output.zone>[<weld threshold>]\n");
 	printf("\t/? for this help\n");
 }
 
@@ -367,9 +369,7 @@ uint16 createZoneId(std::string zoneName)
 void weldZones(const char *center)
 {
 	uint i,j;
-
-	float weldRadius = 0.05f;//0.03f;
-
+	
 	// load zone in the center
 	CIFile zoneFile(inputDir+center+inputExt);
 	CZone zone;
@@ -881,6 +881,11 @@ int main(sint argc, char **argv)
 	inputExt = getExt (argv[1]);
 	outputDir = getDir (argv[2]);
 	outputExt = getExt (argv[2]);
+
+	if(argc == 4)
+	{
+		weldRadius = (float) atof(argv[3]);
+	}
 
 	std::string center=getName(argv[1]).c_str();
 	weldZones(center.c_str());

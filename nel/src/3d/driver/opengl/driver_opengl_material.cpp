@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.5 2000/11/08 15:52:08 viau Exp $
+ * $Id: driver_opengl_material.cpp,v 1.6 2000/11/09 17:57:49 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -115,6 +115,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		{
 			convBlend( mat.getSrcBlend(),glenum );
 			pShader->SrcBlend=glenum;
+
 			mat.clearTouched(IDRV_TOUCHED_SRCBLEND);
 		}
 		if (touched & IDRV_TOUCHED_DSTBLEND)

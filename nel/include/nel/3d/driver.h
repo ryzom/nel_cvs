@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.11 2000/11/08 15:51:54 viau Exp $
+ * $Id: driver.h,v 1.12 2000/11/09 17:57:32 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
 #include "nel/misc/matrix.h"
+#include "nel/misc/event_emitter.h"
 
 #include <vector>
 #include <list>
@@ -301,6 +302,13 @@ typedef std::vector<GfxMode> ModeList;
 
 // --------------------------------------------------
 
+class CEventEmitter
+{
+};
+
+
+// --------------------------------------------------
+
 class IDriver
 {
 private:
@@ -331,10 +339,10 @@ public:
 	// Must be a HWND for Windows (WIN32).
 	virtual bool			setDisplay(void* wnd, const GfxMode& mode)=0;
 
-	virtual bool			processMessages(void)=0;
-
 	/// Before rendering via a driver in a thread, must activate() (per thread).
 	virtual bool			activate(void)=0;
+
+	virtual NLMISC::CEventEmitter*	getEventEmitter(void)=0;
 
 	virtual bool			clear2D(CRGBA& rgba)=0;
 
@@ -346,9 +354,7 @@ public:
 
 	virtual bool			setupMaterial(CMaterial& mat)=0;
 
-//	virtual bool			activateMaterial(CMaterial& mat)=0;
-
-	/// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
+	// Setup the camera mode as a perspective/ortho camera. NB: znear and zfar must be >0 (if perspective).
 	virtual void			setFrustum(float left, float right, float bottom, float top, float znear, float zfar, bool perspective=true)=0;
 
 	virtual void			setupViewMatrix(const CMatrix& mtx)=0;

@@ -12,6 +12,7 @@
 #include "nel/misc/matrix.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/event_emitter.h"
 
 namespace NL3D
 {
@@ -51,12 +52,15 @@ public:
 class CDriverGL : public IDriver
 {
 private:
-#ifdef WIN32
+#ifdef NL_OS_WINDOWS
 	HWND					_hWnd;
 	HDC						_hDC;
 	PIXELFORMATDESCRIPTOR	_pfd;
     HGLRC					_hRC;
+	NLMISC::CEventEmitterWin32	_EventEmitter;
 	static uint				_Registered;
+	
+
 #endif
 	CShaderGL				_Shader;
 
@@ -76,7 +80,7 @@ public:
 
 	virtual bool			activate(void);
 
-	virtual bool			processMessages(void);
+	virtual NLMISC::CEventEmitter*	getEventEmitter(void) { return((NLMISC::CEventEmitter*)&_EventEmitter); };
 
 	virtual bool			clear2D(CRGBA& rgba);
 

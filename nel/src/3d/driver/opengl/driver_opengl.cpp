@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.7 2000/11/08 15:52:08 viau Exp $
+ * $Id: driver_opengl.cpp,v 1.8 2000/11/09 17:57:49 viau Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -123,30 +123,6 @@ ModeList CDriverGL::enumModes()
 		n++;	
 	}
 	return(ML);
-}
-
-// --------------------------------------------------
-
-bool CDriverGL::processMessages(void)
-{
-#ifdef WIN32
-	MSG	msg;
-
-	while ( PeekMessage(&msg,NULL,0,0,PM_NOREMOVE) )
-	{
-		if ( !GetMessage(&msg,NULL,0,0) )
-		{ 
-			return(false);
-		}
-		if (msg.message==WM_QUIT)
-		{
-			return(false);
-		}
-		TranslateMessage(&msg); 
-		DispatchMessage(&msg);
-	}
-#endif
-	return(true);
 }
 
 // --------------------------------------------------

@@ -1,7 +1,7 @@
 /** \file particle_system_manager.cpp
  * <File description>
  *
- * $Id: particle_system_manager.cpp,v 1.15 2003/11/25 14:39:27 vizerie Exp $
+ * $Id: particle_system_manager.cpp,v 1.16 2003/12/08 14:59:15 vizerie Exp $
  */
 
 /* Copyright, 2000 - 2002 Nevrax Ltd.
@@ -189,26 +189,29 @@ void	CParticleSystemManager::processAnimate(TAnimationTime deltaT)
 			//			- if it is not visible at start, we must evaluate the position of the stick point anyway
 			// When the father skeleton is clipped, we use the relative position 					
 			if (psm.getAncestorSkeletonModel())
-			{								
-				if (!psm.isClipVisible()) // the system may not be visible because of clod
-				{																
-					if (!it->IsRelMatrix) // relative matrix already computed ?
-					{
-						if (!it->HasAncestorSkeleton)
+			{		
+				if(psm.getAncestorSkeletonModel()->getVisibility() != CHrcTrav::Hide) // matrix of ancestor is irrelevant if the system is hidden (because sticked to hidden parent for example)
+				{				
+					if (!psm.isClipVisible()) // the system may not be visible because of clod
+					{											
+						if (!it->IsRelMatrix) // relative matrix already computed ?
 						{
-							psm.forceCompute();
-						}
-						it->OldAncestorMatOrRelPos = it->OldAncestorMatOrRelPos.inverted() * psm.getWorldMatrix();
-						it->IsRelMatrix = true;
-					}					
-					psm.setWorldMatrix(psm.getAncestorSkeletonModel()->getWorldMatrix() * it->OldAncestorMatOrRelPos);					
-				}
-				else
-				{
-					// backup ancestor position matrix relative to the ancestor skeleton
-					it->HasAncestorSkeleton = true;
-					it->OldAncestorMatOrRelPos = psm.getAncestorSkeletonModel()->getWorldMatrix();
-					it->IsRelMatrix = false;					
+							if (!it->HasAncestorSkeleton)
+							{
+								psm.forceCompute();
+							}
+							it->OldAncestorMatOrRelPos = it->OldAncestorMatOrRelPos.inverted() * psm.getWorldMatrix();
+							it->IsRelMatrix = true;
+						}					
+						psm.setWorldMatrix(psm.getAncestorSkeletonModel()->getWorldMatrix() * it->OldAncestorMatOrRelPos);					
+					}
+					else
+					{
+						// backup ancestor position matrix relative to the ancestor skeleton
+						it->HasAncestorSkeleton = true;
+						it->OldAncestorMatOrRelPos = psm.getAncestorSkeletonModel()->getWorldMatrix();
+						it->IsRelMatrix = false;					
+					}
 				}
 			}			
 			psm.doAnimate();

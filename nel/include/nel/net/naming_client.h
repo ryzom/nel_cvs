@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.20 2001/05/04 14:44:24 lecroart Exp $
+ * $Id: naming_client.h,v 1.21 2001/05/17 15:39:38 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,7 +92,7 @@ public:
 
 
 	/** Returns true and the address of the specified service if it is found, otherwise returns false
-	 * \param name [in] Name of the service to find
+	 * \param name [in] Short name of the service to find
 	 * \param addr [out] Address of the service
 	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
 	 * before sending a message to the service
@@ -105,7 +105,7 @@ public:
 
 	/** Tells the Naming Service the specified address does not respond for the specified service,
 	 * and returns true and another address for the service if available, otherwise returns false
-	 * \param name [in] Name of the service to find
+	 * \param name [in] Short name of the service to find
 	 * \param addr [in/out] In: Address of the service that does not respond. Out: Alternative address
 	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
 	 * before sending a message to the service
@@ -115,7 +115,7 @@ public:
 
 
 	/**
-	 * Returns all services corresponding to the specified name.
+	 * Returns all services corresponding to the specified short name.
 	 * Ex: lookupAll ("AS", addresses);
 	 */
 	static void			lookupAll (const std::string &name, std::vector<CInetAddress> &addresses);
@@ -123,7 +123,7 @@ public:
 
 	/** Obtains a socket connected to a service providing the service \e name.
 	 * In case of failure to connect, the method informs the Naming Service and tries to get another service.
-	 * \param name [in] Name of the service to find and connected
+	 * \param name [in] Short name of the service to find and connected
 	 * \param sock [out] The connected socket.
 	 * \param validitytime [out] After this number of seconds are elapsed, another lookup will be necessary
 	 * before sending a message to the service.

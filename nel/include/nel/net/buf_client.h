@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.2 2001/05/11 09:29:19 cado Exp $
+ * $Id: buf_client.h,v 1.3 2001/05/17 15:39:38 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -107,7 +107,9 @@ public:
 	 */
 	void	disconnect( bool quick=false );
 
-	/// Sends a message to the remote host (in fact the message is buffered into the send queue)
+	/** Sends a message to the remote host (in fact the message is buffered into the send queue)
+	 * The max length of the buffer is 65535 bytes.
+	 */
 	void	send( const std::vector<uint8>& buffer );
 
 	/** Checks if there is some data to receive. Returns false if the receive queue is empty.

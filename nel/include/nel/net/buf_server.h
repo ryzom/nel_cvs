@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.2 2001/05/10 08:49:12 cado Exp $
+ * $Id: buf_server.h,v 1.3 2001/05/17 15:39:38 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -161,7 +161,9 @@ public:
 
 
 
-	/// Send a message to the specified host, or to all hosts if hostid is zero
+	/** Send a message to the specified host, or to all hosts if hostid is zero
+	 * The max length of the buffer is 65535 bytes.
+	 */
 	void	send( const std::vector<uint8>& buffer, TSockId hostid );
 
 	/** Checks if there is some data to receive. Returns false if the receive queue is empty.

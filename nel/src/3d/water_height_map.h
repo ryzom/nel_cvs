@@ -5,6 +5,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector_2f.h"
 #include "nel/3d/u_water.h"
+#include "nel/3d/animation_time.h"
+
 
 #include <vector>
 #include <string>
@@ -161,7 +163,7 @@ public:
 	void					setPropagationTime(float time);
 
 	/// Get the propagation time
-	float					getPropagationTime() const { return _PropagationTime; }
+	TAnimationTime			getPropagationTime() const { return _PropagationTime; }
 
 
 private:
@@ -198,7 +200,7 @@ private:
 	bool					   _BorderWaves;
 	float					   _EmitEllapsedTime;
 	float					   _PropagateEllapsedTime;
-	float                      _PropagationTime; // the time needed to perform a propagation, this allow split the propagation computation over time.
+	TAnimationTime             _PropagationTime; // the time needed to perform a propagation, this allow split the propagation computation over time.
 
 
 	uint					   _X, _Y;	

@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.4 2001/02/13 17:40:33 cado Exp $
+ * $Id: mutex.cpp,v 1.5 2001/03/09 14:57:00 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,10 +28,19 @@
 #include "nel/misc/mutex.h"
 
 #ifdef NL_OS_WINDOWS
+
+// these defines is for IsDebuggerPresent(). it'll not compile on windows 95
+// just comment this and the IsDebuggerPresent to compile on windows 95
+#define _WIN32_WINDOWS	0x0410
+#define WINVER			0x0400
 #include <windows.h>
+
 #elif defined NL_OS_UNIX
+
 #include <pthread.h>
+
 #endif // NL_OS_WINDOWS
+
 
 namespace NLMISC {
 
@@ -91,14 +100,25 @@ void CMutex::enter ()
 {
 #ifdef NL_OS_WINDOWS
 
+#ifdef NL_DEBUG
+	DWORD timeout;
+	if ( IsDebuggerPresent() )
+		timeout = INFINITE;
+	else
+		timeout = 10000;
+
+    // Request ownership of mutex
+	DWORD dwWaitResult = WaitForSingleObject (Mutex, timeout);
+#else
     // Request ownership of mutex during 10s
 	DWORD dwWaitResult = WaitForSingleObject (Mutex, 10000);
+#endif
 	switch (dwWaitResult)
 	{
 	// The thread got mutex ownership.
 	case WAIT_OBJECT_0:		break;
 	// Cannot get mutex ownership due to time-out.
-	case WAIT_TIMEOUT:		nlerror ("Dead lock in a mutex (or more that 5s for the critical section");
+	case WAIT_TIMEOUT:		nlerror ("Dead lock in a mutex (or more that 10s for the critical section");
 	// Got ownership of the abandoned mutex object.
 	case WAIT_ABANDONED:	nlerror ("A thread forgot to release the mutex");
     }

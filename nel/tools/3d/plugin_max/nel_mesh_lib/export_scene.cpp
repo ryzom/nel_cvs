@@ -1,7 +1,7 @@
 /** \file export_scene.cpp
  * Export from 3dsmax to NeL the instance group and cluster/portal accelerators
  *
- * $Id: export_scene.cpp,v 1.5 2001/08/16 15:50:00 besson Exp $
+ * $Id: export_scene.cpp,v 1.6 2001/08/28 08:39:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -331,7 +331,7 @@ CInstanceGroup*	CExportNel::buildInstanceGroup(vector<INode*>& vectNode, TimeVal
 				MessageBox(NULL,tam,"Error",MB_OK|MB_ICONERROR);
 			}
 
-			if (nAccelType&16)
+			if (nAccelType&16) // is dynamic portal ?
 				portalTemp.setName (string(pNode->GetName()));
 
 			// Check if portal has 2 cluster

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.18 2001/08/23 12:31:36 corvazier Exp $
+ * $Id: calc_lm.cpp,v 1.19 2001/08/28 08:39:45 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2877,10 +2877,10 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	{
 		string sTmp = "LumelSize = " + toString(structExport.rLumelSize);
 		if (structExport.bShadow)
-			sTmp += " Shadow On";
+			sTmp += ",Shadow On";
 		else
-			sTmp += " Shadow Off";
-		sTmp += "OverSampling = " +toString(structExport.nOverSampling*structExport.nOverSampling);
+			sTmp += ",Shadow Off";
+		sTmp += ",OverSampling = " +toString(structExport.nOverSampling*structExport.nOverSampling);
 		gOptions.FeedBack->setLine (1, sTmp);
 	}
 

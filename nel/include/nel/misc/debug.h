@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.61 2003/12/30 11:15:36 lecroart Exp $
+ * $Id: debug.h,v 1.62 2004/02/06 18:52:49 miller Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,8 @@ namespace NLMISC
 //
 // Externals
 //
-	
+
+// NOTE: The following are all NULL until createDebug() has been called at least once
 extern CLog *ErrorLog;
 extern CLog *WarningLog;
 extern CLog *InfoLog;

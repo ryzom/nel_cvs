@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.60 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: transform.cpp,v 1.61 2003/04/08 23:10:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -809,7 +809,13 @@ void	CTransform::traverseClip()
 		{
 			// If the instance is not filtered
 			if(scene->getFilterRenderFlags() & _RenderFilterType)
-				_Visible= clip();
+			{
+				// User cliping enabled ?
+				if (_StateFlags & UserClipping)
+					_Visible= true;
+				else
+					_Visible= clip();
+			}
 		}
 	}
 
@@ -1253,5 +1259,16 @@ void			CTransform::clipDelFromParent(CTransform *parent)
 	}
 }
 
+// ***************************************************************************
+void			CTransform::setUserClipping(bool enable)
+{
+	setStateFlag (UserClipping, enable);
+}
+
+// ***************************************************************************
+bool			CTransform::getUserClipping() const
+{
+	return getStateFlag(UserClipping) != 0;
+}
 
 }

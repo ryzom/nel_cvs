@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.35 2003/03/28 15:53:02 berenguier Exp $
+ * $Id: transform.h,v 1.36 2003/04/08 23:10:59 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -186,6 +186,13 @@ public:
 	void			hide();
 	/// Show the objet and his sons.
 	void			show();
+	/*
+	 *	Enable / disable user clipping. If enable, the transform is not clipped into the engine. 
+	 *  The user has to use show / hide to clip or not the transform.
+	 */
+	void			setUserClipping(bool enable);
+	/// Return the user clipping state
+	bool			getUserClipping() const;
 	/// herit the visibility from his father. (default behavior).
 	void			heritVisibility();
 	/// Get the local visibility state.
@@ -640,7 +647,8 @@ private:
 		IsMeshBaseInstance=		0x10000,
 		IsTransformShape=		0x20000,	// set if the model is a transform_shape (faster than dynamic_cast)
 		IsCluster=				0x40000,	// set if the model is a cluster (faster than dynamic_cast)
-
+		UserClipping=			0x80000,	// set if the user provide a clip method, don't call clip() in ClipTrav
+		
 		// NB: may continue on >=0x80000
 	};
 

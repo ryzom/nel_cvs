@@ -1,7 +1,7 @@
 /** \file transform_user.h
  * <File description>
  *
- * $Id: transform_user.h,v 1.19 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: transform_user.h,v 1.20 2003/04/08 23:10:59 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -141,6 +141,18 @@ public:
 		NL3D_MEM_TRANSFORM
 		nlassert(_Transform) ; // object invalid now ...
 		_Transform->show();
+	}
+	virtual void			setUserClipping(bool enable)
+	{
+		NL3D_MEM_TRANSFORM
+		nlassert(_Transform) ; // object invalid now ...
+		_Transform->setUserClipping(enable);
+	}
+	virtual bool			getUserClipping() const
+	{
+		NL3D_MEM_TRANSFORM
+		nlassert(_Transform) ; // object invalid now ...
+		return _Transform->getUserClipping();
 	}
 	/// herit the visibility from his father. (default behavior).
 	virtual	void			heritVisibility()

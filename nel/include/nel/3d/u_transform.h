@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.16 2003/02/06 09:05:03 boucher Exp $
+ * $Id: u_transform.h,v 1.17 2003/04/08 23:10:59 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,6 +98,13 @@ public:
 	virtual	void			hide()=0;
 	/// Show the objet and his sons.
 	virtual	void			show()=0;
+	/*
+	 *	Enable / disable user clipping. If enable, the transform is not clipped into the engine. 
+	 *  The user has to use show / hide to clip or not the transform.
+	 */
+	virtual void			setUserClipping(bool enable)=0;
+	/// Return the user clipping state
+	virtual bool			getUserClipping() const=0;
 	/// herit the visibility from his father. (default behavior).
 	virtual	void			heritVisibility()=0;
 	/// Get the local visibility state.

@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.47 2001/03/15 16:35:38 cado Exp $
+ * $Id: base_socket.cpp,v 1.48 2001/03/28 09:38:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -219,6 +219,10 @@ void CBaseSocket::close()
 {
 	if ( _Sock != INVALID_SOCKET )
 	{
+		if ( _Logging )
+		{
+			nldebug( "P1: Socket %d closing at %s", _Sock, _LocalAddr.asString().c_str() );
+		}
 #ifdef NL_OS_WINDOWS
 		shutdown( _Sock, SD_BOTH );
 		closesocket( _Sock );
@@ -226,10 +230,6 @@ void CBaseSocket::close()
 		shutdown( _Sock, SHUT_RDWR );
 		::close( _Sock );
 #endif
-		if ( _Logging )
-		{
-			nldebug( "P1: Socket %d closed at %s", _Sock, _LocalAddr.asString().c_str() );
-		}
 		_Sock = INVALID_SOCKET;
 		_Bound = false;
 		_Connected = false;

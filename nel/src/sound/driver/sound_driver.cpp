@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.9 2003/01/03 16:52:22 lecroart Exp $
+ * $Id: sound_driver.cpp,v 1.10 2003/01/08 15:44:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,7 @@ const char *IDRV_VERSION_PROC_NAME = "NLSOUND_interfaceVersion";
 /*
  * The static method which builds the sound driver instance
  */
-ISoundDriver	*ISoundDriver::createDriver()
+ISoundDriver	*ISoundDriver::createDriver(bool useEax)
 {
 	ISDRV_CREATE_PROC	createSoundDriver = NULL;
 	ISDRV_VERSION_PROC	versionDriver = NULL;

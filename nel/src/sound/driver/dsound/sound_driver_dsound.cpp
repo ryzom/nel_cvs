@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.10 2002/11/07 11:03:59 berenguier Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.11 2003/01/08 15:44:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,10 +29,11 @@
 
 #include "stddsound.h"
 
+#include <math.h>
+#include <eax.h>
 
 #include "sound_driver_dsound.h"
 #include "listener_dsound.h"
-#include <math.h>
 
 
 using namespace std;
@@ -67,7 +68,7 @@ long FAR PASCAL CSoundDriverCreateWindowProc(HWND hWnd, unsigned message, WPARAM
 
 // ******************************************************************
 
-__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance()
+__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax)
 {
 	static bool Registered = false;
 
@@ -107,7 +108,7 @@ __declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance()
 	}
 	
 	CSoundDriverDSound *driver = new CSoundDriverDSound();
-	driver->init(CSoundDriverWnd);
+	driver->init(CSoundDriverWnd, useEax);
 
 	return driver;
 }
@@ -205,6 +206,98 @@ CSoundDriverDSound::~CSoundDriverDSound()
 	_Instance = 0;
 }
 
+#ifdef EAX_AVAILABLE
+
+LPKSPROPERTYSET	CSoundDriverDSound::createPropertySet(CSourceDSound *source)
+{
+	if (_Sources.empty())
+		return NULL;
+
+	LPDIRECTSOUND3DBUFFER8 d3dBuffer;
+	if (source == NULL)
+		d3dBuffer = (*_Sources.begin())->_3DBuffer;
+	else
+	{
+		d3dBuffer = source->_3DBuffer;
+	}
+	LPKSPROPERTYSET	propertySet;
+	d3dBuffer->QueryInterface(IID_IKsPropertySet, (void**) &propertySet);
+
+	// some checking code
+	{
+		if (propertySet != 0)
+		{
+			char *listenerProperties[] = 
+			{
+				"DSPROPERTY_EAXLISTENER_NONE",
+				"DSPROPERTY_EAXLISTENER_ALLPARAMETERS",
+				"DSPROPERTY_EAXLISTENER_ROOM",
+				"DSPROPERTY_EAXLISTENER_ROOMHF",
+				"DSPROPERTY_EAXLISTENER_ROOMROLLOFFFACTOR",
+				"DSPROPERTY_EAXLISTENER_DECAYTIME",
+				"DSPROPERTY_EAXLISTENER_DECAYHFRATIO",
+				"DSPROPERTY_EAXLISTENER_REFLECTIONS",
+				"DSPROPERTY_EAXLISTENER_REFLECTIONSDELAY",
+				"DSPROPERTY_EAXLISTENER_REVERB",
+				"DSPROPERTY_EAXLISTENER_REVERBDELAY",
+				"DSPROPERTY_EAXLISTENER_ENVIRONMENT",
+				"DSPROPERTY_EAXLISTENER_ENVIRONMENTSIZE",
+				"DSPROPERTY_EAXLISTENER_ENVIRONMENTDIFFUSION",
+				"DSPROPERTY_EAXLISTENER_AIRABSORPTIONHF",
+				"DSPROPERTY_EAXLISTENER_FLAGS"
+			};
+			uint i;
+			for (i=DSPROPERTY_EAXLISTENER_NONE; i<= DSPROPERTY_EAXLISTENER_FLAGS; ++i)
+			{
+				ULONG ulSupport = 0;
+				propertySet->QuerySupport(DSPROPSETID_EAX_ListenerProperties, i, &ulSupport);
+				if ( (ulSupport&(KSPROPERTY_SUPPORT_GET|KSPROPERTY_SUPPORT_SET)) != (KSPROPERTY_SUPPORT_GET|KSPROPERTY_SUPPORT_SET) )
+				{
+					nlwarning("CSoundDriverDSound::createPropertySet : listener property %s not supported", listenerProperties[i]);
+				}
+			}
+
+			char *bufferProperties[] =
+			{
+				"DSPROPERTY_EAXBUFFER_NONE",
+				"DSPROPERTY_EAXBUFFER_ALLPARAMETERS",
+				"DSPROPERTY_EAXBUFFER_DIRECT",
+				"DSPROPERTY_EAXBUFFER_DIRECTHF",
+				"DSPROPERTY_EAXBUFFER_ROOM",
+				"DSPROPERTY_EAXBUFFER_ROOMHF", 
+				"DSPROPERTY_EAXBUFFER_ROOMROLLOFFFACTOR",
+				"DSPROPERTY_EAXBUFFER_OBSTRUCTION",
+				"DSPROPERTY_EAXBUFFER_OBSTRUCTIONLFRATIO",
+				"DSPROPERTY_EAXBUFFER_OCCLUSION", 
+				"DSPROPERTY_EAXBUFFER_OCCLUSIONLFRATIO",
+				"DSPROPERTY_EAXBUFFER_OCCLUSIONROOMRATIO",
+				"DSPROPERTY_EAXBUFFER_OUTSIDEVOLUMEHF",
+				"DSPROPERTY_EAXBUFFER_AIRABSORPTIONFACTOR",
+				"DSPROPERTY_EAXBUFFER_FLAGS"
+			};
+
+			for (i=DSPROPERTY_EAXBUFFER_NONE; i<=DSPROPERTY_EAXBUFFER_FLAGS; ++i)
+			{
+				ULONG ulSupport = 0;
+				propertySet->QuerySupport(DSPROPSETID_EAX_BufferProperties, i, &ulSupport);
+				if ( (ulSupport&(KSPROPERTY_SUPPORT_GET|KSPROPERTY_SUPPORT_SET)) != (KSPROPERTY_SUPPORT_GET|KSPROPERTY_SUPPORT_SET) )
+				{
+					nlwarning("CSoundDriverDSound::createPropertySet : buffer property %s not supported", bufferProperties[i]);
+				}
+			}
+		}
+		else
+		{
+			nlwarning("CSoundDriverDSound::createPropertySet : propertie set not available !");
+		}
+	}
+
+	return propertySet;
+}
+
+#endif // EAX_AVAILABLE
+
+
 // ******************************************************************
 
 class CDeviceDescription
@@ -249,7 +342,7 @@ BOOL CALLBACK CSoundDriverDSoundEnumCallback(LPGUID guid, LPCSTR description, PC
 
 // ******************************************************************
 
-bool CSoundDriverDSound::init(HWND wnd)
+bool CSoundDriverDSound::init(HWND wnd, bool useEax)
 {
     if (FAILED(DirectSoundEnumerate(CSoundDriverDSoundEnumCallback, this)))
     {
@@ -258,7 +351,7 @@ bool CSoundDriverDSound::init(HWND wnd)
 
     // Create a DirectSound object and set the cooperative level.
 
-    if (DirectSoundCreate(NULL, &_DirectSound, NULL) != DS_OK) 
+    if (EAXDirectSoundCreate8(NULL, &_DirectSound, NULL) != DS_OK) 
     {
         throw ESoundDriver("Failed to create the DirectSound object");
     }
@@ -292,6 +385,17 @@ bool CSoundDriverDSound::init(HWND wnd)
     // If we can't get a 3D hardware buffer, use a 2D hardware buffer.
     // As last option, use a 2D software buffer.
 
+	// check if wa can honor eax request
+	if (countHw3DBuffers() > 10)
+	{
+		_UseEAX = useEax;
+	}
+	else
+	{
+		// not enougth hardware buffer, can't use eax
+		_UseEAX = false;
+	}
+
     if (countHw3DBuffers() > 0) 
     {
 		nldebug("Primary buffer: Allocating 3D buffer in hardware");
@@ -303,6 +407,8 @@ bool CSoundDriverDSound::init(HWND wnd)
         desc.dwFlags = DSBCAPS_PRIMARYBUFFER | DSBCAPS_LOCSOFTWARE | DSBCAPS_CTRL3D | DSBCAPS_CTRLVOLUME;
         desc.guid3DAlgorithm = DS3DALG_NO_VIRTUALIZATION;
     }
+	
+
 
 
     if (_DirectSound->CreateSoundBuffer(&desc, &_PrimaryBuffer, NULL) != DS_OK) 
@@ -508,6 +614,16 @@ void CSoundDriverDSound::writeProfile(ostream& out)
 
 void CALLBACK CSoundDriverDSound::TimerCallback(UINT uID, UINT uMsg, DWORD dwUser, DWORD dw1, DWORD dw2)
 {
+	// a little speed check
+	static NLMISC::TTime lastUpdate = NLMISC::CTime::getLocalTime();
+	NLMISC::TTime now = NLMISC::CTime::getLocalTime();
+
+	if (now - lastUpdate > _TimerPeriod * 2)
+		nlwarning("CSoundDriverDSound::TimerCallback : no update since %u millisec (nominal update = %u", uint32(now-lastUpdate), uint32(_TimerPeriod));
+
+	lastUpdate = now;
+
+
     CSoundDriverDSound* driver = (CSoundDriverDSound*) dwUser;
     driver->update();
 }
@@ -578,7 +694,7 @@ uint CSoundDriverDSound::countHw2DBuffers()
 
 IListener *CSoundDriverDSound::createListener()
 {
-    LPDIRECTSOUND3DLISTENER dsoundListener;
+    LPDIRECTSOUND3DLISTENER8 dsoundListener;
 
     if (CListenerDSound::instance() != NULL) 
     {
@@ -610,7 +726,7 @@ IBuffer *CSoundDriverDSound::createBuffer()
 
 
     // FIXME: set buffer ID
-    return new CBufferDSound();   
+    return new CBufferDSound();
 }
 
 // ******************************************************************
@@ -637,7 +753,7 @@ ISource *CSoundDriverDSound::createSource()
 
 
 	CSourceDSound* src = new CSourceDSound(0);
-	src->init(_DirectSound);
+	src->init(_DirectSound, _UseEAX);
 	_Sources.insert(src);
 
 	return src;

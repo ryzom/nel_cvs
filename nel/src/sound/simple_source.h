@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.h,v 1.1 2002/11/25 14:11:41 boucher Exp $
+ * $Id: simple_source.h,v 1.2 2003/01/08 15:45:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/time_nl.h"
+#include "audio_mixer_user.h"
 //#include "playable.h"
 #include "source_common.h"
 #include "simple_sound.h"
@@ -53,7 +54,7 @@ class CSimpleSource : public CSourceCommon, public CAudioMixerUser::IMixerEvent 
 public:
 
 	/// Constructor
-	CSimpleSource( CSimpleSound *simpleSound=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0);
+	CSimpleSource( CSimpleSound *simpleSound=NULL, bool spawn=false, TSpawnEndCallback cb=0, void *cbUserParam = 0, NL3D::CCluster *cluster = 0);
 	/// Destructor
 	virtual ~CSimpleSource();
 

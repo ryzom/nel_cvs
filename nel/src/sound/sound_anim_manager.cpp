@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.cpp,v 1.10 2002/11/25 14:11:41 boucher Exp $
+ * $Id: sound_anim_manager.cpp,v 1.11 2003/01/08 15:45:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -212,7 +212,7 @@ std::string	CSoundAnimManager::idToName(TSoundAnimId id)
 }
 
 
-void CSoundAnimManager::playAnimation(TSoundAnimId id, float lastTime, float curTime, CSoundContext &context)
+void CSoundAnimManager::playAnimation(TSoundAnimId id, float lastTime, float curTime, NL3D::CCluster *cluster, CSoundContext &context)
 {
 	//nlassert(id != CSoundAnimationNoId);
 	if (id == CSoundAnimationNoId) 
@@ -225,18 +225,18 @@ void CSoundAnimManager::playAnimation(TSoundAnimId id, float lastTime, float cur
 	CSoundAnimation* anim = _Animations[id];
 	nlassert(anim);
 
-	anim->play(_Mixer, lastTime, curTime, context);
+	anim->play(_Mixer, lastTime, curTime, cluster, context);
 }
 
 
 // ********************************************************
-TSoundAnimPlayId		CSoundAnimManager::playAnimation(TSoundAnimId id, float time, CSoundContext &context)
+TSoundAnimPlayId		CSoundAnimManager::playAnimation(TSoundAnimId id, float time, NL3D::CCluster *cluster, CSoundContext &context)
 {
 	return 0;
 }
 
 // ********************************************************
-TSoundAnimPlayId CSoundAnimManager::playAnimation(string& name, float time, CSoundContext &context)
+TSoundAnimPlayId CSoundAnimManager::playAnimation(string& name, float time, NL3D::CCluster *cluster, CSoundContext &context)
 {
 /*	nlassert(position);
 

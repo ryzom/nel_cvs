@@ -37,7 +37,7 @@ RSC=rc.exe
 # PROP Output_Dir "../obj/Release/sound"
 # PROP Intermediate_Dir "../obj/Release/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /O2 /D "NDEBUG" /D "_LIB" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /D "EAX_AVAILABLE" /Yu"stdsound.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -53,7 +53,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/Debug/sound"
 # PROP Intermediate_Dir "../obj/Debug/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /GZ /Zm200 /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Z7 /Od /D "_LIB" /D "__STL_DEBUG" /D "_DEBUG" /D "EAX_AVAILABLE" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /YX"stdsound.h" /FD /GZ /Zm400 /c
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
 BSC32=bscmake.exe
@@ -68,7 +68,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/ReleaseDebug/sound"
 # PROP Intermediate_Dir "../obj/ReleaseDebug/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_LIB" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GR /GX /Zi /O2 /D "_LIB" /D "NDEBUG" /D "NL_RELEASE_DEBUG" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /D "EAX_AVAILABLE" /Yu"stdsound.h" /FD /c
 # SUBTRACT CPP /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "NDEBUG"
@@ -84,7 +84,7 @@ LIB32=link.exe -lib
 # PROP Output_Dir "../obj/DebugFast/sound"
 # PROP Intermediate_Dir "../obj/DebugFast/sound"
 # PROP Target_Dir ""
-# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /Yu"stdsound.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /GR /GX /Zi /Od /Ob1 /D "_LIB" /D "_DEBUG" /D "NL_DEBUG_FAST" /D "WIN32" /D "_MBCS" /D "LIBXML_STATIC" /D "EAX_AVAILABLE" /Yu"stdsound.h" /FD /GZ /c
 # SUBTRACT CPP /Gf /Gy /Fr
 # ADD BASE RSC /l 0x40c
 # ADD RSC /l 0x40c /d "_DEBUG"
@@ -288,6 +288,14 @@ SOURCE=.\sound\background_sound_manager.cpp
 # Begin Source File
 
 SOURCE=.\sound\background_sound_manager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\clustered_sound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\sound\clustered_sound.h
 # End Source File
 # Begin Source File
 

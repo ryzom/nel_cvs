@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: simple_sound.cpp,v 1.2 2002/11/25 14:11:41 boucher Exp $
+ * $Id: simple_sound.cpp,v 1.3 2003/01/08 15:45:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,9 +82,8 @@ void CSimpleSound::setBuffer(IBuffer *buffer)
 void				CSimpleSound::getSubSoundList(std::vector<std::pair<std::string, CSound*> > &subsounds) const
 {
 	// A little hack, we use the reference vector to tag unavailable sample.
-	if (const_cast<CSimpleSound*>(this)->getBuffer() == 0)
+	if (!_Buffername.empty() && const_cast<CSimpleSound*>(this)->getBuffer() == 0)
 		subsounds.push_back(pair<string, CSound*>(_Buffername+" (sample)", 0));
-
 }
 
 

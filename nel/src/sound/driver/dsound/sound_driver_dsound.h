@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.5 2002/07/10 17:08:43 lecroart Exp $
+ * $Id: sound_driver_dsound.h,v 1.6 2003/01/08 15:44:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,7 @@ public:
 	virtual	IListener *createListener();
 
 	/// Initialization
-	virtual bool init(HWND wnd);
+	virtual bool init(HWND wnd, bool useEax);
 
 	/// Create a sound buffer
 	virtual	IBuffer *createBuffer();
@@ -102,6 +102,10 @@ public:
     /// Get the gain
 	float getGain();
 
+#ifdef EAX_AVAILABLE
+	LPKSPROPERTYSET		createPropertySet(CSourceDSound *source);
+#endif
+
 private:
 
 	// The callback for the multimedia timer
@@ -123,10 +127,10 @@ private:
 	virtual void removeSource(ISource *source);
 
 	// The DirectSound object
-    LPDIRECTSOUND _DirectSound;
+    LPDIRECTSOUND8			_DirectSound;
 
     // The application-wide primary buffer
-    LPDIRECTSOUNDBUFFER _PrimaryBuffer;
+    LPDIRECTSOUNDBUFFER	_PrimaryBuffer;
 
     // The capabilities of the driver
     DSCAPS _Caps;
@@ -144,9 +148,12 @@ private:
 	// The timer resolution.
     uint32 _TimerResolution;
 
+	/// The EAX support is requested and accepted (ie, there is enougth hardware 3D buffer)
+	bool	_UseEAX;
 
 #if NLSOUND_PROFILE
 protected:
+
 
     uint _TimerInterval[1024];
     uint _TimerIntervalCount;

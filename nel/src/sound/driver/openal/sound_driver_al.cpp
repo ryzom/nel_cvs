@@ -1,7 +1,7 @@
 /** \file sound_driver_al.cpp
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.cpp,v 1.11 2002/11/04 15:40:44 boucher Exp $
+ * $Id: sound_driver_al.cpp,v 1.12 2003/01/08 15:44:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,7 +84,7 @@ void TestALError()
  */
 #ifdef NL_OS_WINDOWS
 	
-__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance()
+__declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance(bool useEax)
 {
 	CSoundDriverAL *driver = new CSoundDriverAL();
 	driver->init();
@@ -100,10 +100,10 @@ __declspec(dllexport) uint32 NLSOUND_interfaceVersion ()
 
 extern "C"
 {
-ISoundDriver* NLSOUND_createISoundDriverInstance ()
+ISoundDriver* NLSOUND_createISoundDriverInstance (bool useEax)
 {
 	CSoundDriverAL *driver = new CSoundDriverAL();
-	driver->init();
+	driver->init(useEax);
 	return driver;
 }
 

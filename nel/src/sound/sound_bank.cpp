@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.9 2002/11/26 10:15:55 boucher Exp $
+ * $Id: sound_bank.cpp,v 1.10 2003/01/08 15:45:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -260,7 +260,7 @@ public:
 	}
 
 	// return the version of this class, increments this value when the content of this class changed
-	static uint getVersion () { return 1; }
+	static uint getVersion () { return 2; }
 };
 
 // this structure is fill by the loadForm() function and will contain all you need
@@ -274,7 +274,7 @@ void				CSoundBank::load()
 {
 	nlassert(!_Loaded);
 	// Just call the GEORGE::loadFrom method to read all available sounds
-	::loadForm("sound", "sounds.packed_sheets", Container, true);
+	::loadForm("sound", "data/sound/sounds.packed_sheets", Container, true);
 	_Loaded = true;
 }
 

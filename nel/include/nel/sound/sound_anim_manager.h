@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.10 2002/11/25 14:05:22 boucher Exp $
+ * $Id: sound_anim_manager.h,v 1.11 2003/01/08 15:45:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,10 @@
 #include "nel/sound/u_source.h"
 #include <hash_map>
 
+namespace NL3D
+{
+	class CCluster;
+}
 	
 namespace NLSOUND {
 
@@ -111,13 +115,13 @@ public:
 	 *  or -1 if the animation was not found.
  	 *  \param name The id of the animation to play.
 	 */
-	virtual TSoundAnimPlayId		playAnimation(TSoundAnimId id, float time, CSoundContext &context);
+	virtual TSoundAnimPlayId		playAnimation(TSoundAnimId id, float time, NL3D::CCluster *cluster, CSoundContext &context);
 
 	/** Start playing a sound animation. Returns an id number of this playback instance
 	 *  or -1 if the animation was not found.
  	 *  \param name The name of the animation to play.
 	 */
-	virtual TSoundAnimPlayId		playAnimation(std::string& name, float time, CSoundContext &context);
+	virtual TSoundAnimPlayId		playAnimation(std::string& name, float time, NL3D::CCluster *cluster, CSoundContext &context);
 
 	/** Stop the playing of a sound animation. 
  	 *  \param name The playback id that was returned by playAnimation.
@@ -137,7 +141,7 @@ public:
 	 *  Both lastTime and curTime are measured relatively from the beginning of the
 	 *  animation.
 	 */
-	virtual void					playAnimation(TSoundAnimId id, float lastTime, float curTime, CSoundContext &context);
+	virtual void					playAnimation(TSoundAnimId id, float lastTime, float curTime, NL3D::CCluster *cluster, CSoundContext &context);
 
 	/** Convert back from an anim ID to the anim name.
 	 */

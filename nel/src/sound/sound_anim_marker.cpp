@@ -1,7 +1,7 @@
 /** \file sound_anim_marker.cpp
  * A sound event marker on a sound track
  *
- * $Id: sound_anim_marker.cpp,v 1.6 2002/11/25 14:11:41 boucher Exp $
+ * $Id: sound_anim_marker.cpp,v 1.7 2003/01/08 15:45:14 boucher Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,13 +43,13 @@ CSoundAnimMarker::~CSoundAnimMarker()
 
 // ********************************************************
 
-void CSoundAnimMarker::play(UAudioMixer* mixer, CSoundContext &context)
+void CSoundAnimMarker::play(UAudioMixer* mixer, NL3D::CCluster *cluster, CSoundContext &context)
 {
 	set<string>::iterator iter;
 
 	for (iter = _Sounds.begin(); iter != _Sounds.end(); iter++)
 	{
-		USource* source = mixer->createSource((*iter), true, NULL, NULL, &context);
+		USource* source = mixer->createSource((*iter), true, NULL, NULL, cluster, &context);
 		if (source != NULL)
 		{
 			source->setRelativeGain(context.RelativeGain);

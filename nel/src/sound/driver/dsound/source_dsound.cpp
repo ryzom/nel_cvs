@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.14 2002/11/25 14:11:41 boucher Exp $
+ * $Id: source_dsound.cpp,v 1.15 2003/01/08 15:40:35 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,9 @@
 #include "buffer_dsound.h"
 #include "listener_dsound.h"
 
-
+#ifdef EAX_AVAILABLE
+#include <eax.h>
+#endif
 
 using namespace NLMISC;
 
@@ -95,7 +97,10 @@ uint32 CSourceDSound::_TotalUpdateSize = 0;
 
 // ******************************************************************
 
-CSourceDSound::CSourceDSound( uint sourcename ) : ISource(), _SourceName(sourcename)
+CSourceDSound::CSourceDSound( uint sourcename ) 
+:	ISource(), 
+	_SourceName(sourcename),
+	_EAXSource(0)
 {
 	_BufferSize = 0;
 	_SwapBuffer = 0;
@@ -144,6 +149,12 @@ void CSourceDSound::release()
 {
 	_Buffer = 0;
 
+	if (_EAXSource != 0)
+	{
+		_EAXSource->Release();
+		_EAXSource = 0;
+	}
+
 	if (_SecondaryBuffer != 0)
 	{
 		_SecondaryBuffer->Stop();
@@ -165,7 +176,7 @@ void CSourceDSound::release()
 
 // ******************************************************************
 
-void CSourceDSound::init(LPDIRECTSOUND directSound)
+void CSourceDSound::init(LPDIRECTSOUND8 directSound, bool useEax)
 {
 
 	// Initialize the buffer format
@@ -201,6 +212,10 @@ void CSourceDSound::init(LPDIRECTSOUND directSound)
 	} 
 	else
 	{
+		if (useEax)
+		{
+			throw ESoundDriver("No 3d hardware sound buffer, but EAX support requested");
+		}
 		//nldebug("Source: Allocating 3D buffer in software");
 		desc.dwFlags = DSBCAPS_GLOBALFOCUS | DSBCAPS_LOCSOFTWARE | DSBCAPS_GETCURRENTPOSITION2 
 						| DSBCAPS_CTRL3D | DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLFREQUENCY | DSBCAPS_MUTE3DATMAXDISTANCE;
@@ -213,6 +228,10 @@ void CSourceDSound::init(LPDIRECTSOUND directSound)
  
 	if (FAILED(directSound->CreateSoundBuffer(&desc, &_SecondaryBuffer, NULL))) 
 	{
+		if (useEax)
+		{
+			throw ESoundDriver("Failed to create a 3d hardware sound buffer, but EAX support requested");
+		}
 		nlwarning("Source: Failed to create a buffer with 3D capabilities.");
 
 		ZeroMemory(&desc, sizeof(DSBUFFERDESC));
@@ -906,6 +925,11 @@ void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
 
 void CSourceDSound::updateVolume( const NLMISC::CVector& listener )
 {
+#if !defined(MANUAL_ROLLOFF)
+	_SecondaryBuffer->SetVolume(_Volume);
+	return;
+#endif
+
 	CVector pos = getPos();
 	pos -= listener;
 
@@ -1075,9 +1099,15 @@ void CSourceDSound::getCone( float& innerAngle, float& outerAngle, float& outerG
 void CSourceDSound::setEAXProperty( uint prop, void *value, uint valuesize )
 {
 #ifdef EAX_AVAILABLE
-	if ( EAXSetProp != NULL )
+	if (_EAXSource == 0)
 	{
-		EAXSetProp( &DSPROPSETID_EAX_SourceProperties, prop, _SourceName, value, valuesize );
+		_EAXSource = CSoundDriverDSound::instance()->createPropertySet(this);
+	}
+	if ( _EAXSource != NULL )
+	{
+		HRESULT res = _EAXSource->Set( DSPROPSETID_EAX_BufferProperties, prop, NULL, 0, value, valuesize );
+		if (res != S_OK)
+			nlwarning("Setting EAX Param #%u fail : %x", prop, res);
 	}
 #endif
 }
@@ -1129,6 +1159,29 @@ bool CSourceDSound::unlock(uint8* ptr1, DWORD bytes1, uint8* ptr2, DWORD bytes2)
 }
 
 
+void copySampleTo16BitsTrack(void *dst, void *src, uint nbSample, TSampleFormat sourceFormat)
+{
+	if (sourceFormat == Mono8 || sourceFormat == Stereo8)
+	{
+		nlassert("8 bit mixing is not supported now !");
+		return;
+		// convert sample from 8 to 16 inside the dst buffer
+		sint8 *psrc = (sint8*)src;
+		sint16 *pdst = (sint16*)dst;
+		sint8 *endSrc = psrc + nbSample;
+
+		for (; psrc != endSrc; psrc += 2)
+		{
+			// write the high word
+			*pdst++ = sint16(*psrc++) * 256;
+		}
+	}
+	else
+	{
+		// use the fasmem copy buffer
+		CFastMem::memcpy(dst, src, nbSample*2);
+	}
+}
 
 /***************************************************************************
  
@@ -1183,6 +1236,45 @@ bool CSourceDSound::unlock(uint8* ptr1, DWORD bytes1, uint8* ptr2, DWORD bytes2)
 
 ************************************************************************/
 
+uint32 getWritePosAndSpace(uint32 &nextWritePos, uint32 playPos, uint32 writePos, uint32 bufferSize)
+{
+	uint32 space;
+	if (playPos < writePos) //_NextWritePos) 
+	{
+		// the 'forbiden' interval is continuous
+		if (nextWritePos > playPos && nextWritePos < writePos)
+		{
+			// We have a problem here because our write pointer is in the forbiden zone
+			// This is mainly due to cpu overload.
+			nextWritePos = writePos;
+		}
+//		space = playPos - _NextWritePos;
+	}
+	else
+	{
+		// The forbiden interval is wrapping
+		if (nextWritePos > playPos || nextWritePos < writePos)
+		{
+			// We have a problem here because our write pointer is in the forbiden zone
+			// This is mainly due to cpu overload.
+			nextWritePos = writePos;
+		}
+//		space = _SecondaryBufferSize + playPos - _NextWritePos;
+	}
+
+	// compute the available space to write to
+	if (nextWritePos > playPos)
+	{
+		space = bufferSize + playPos - nextWritePos;
+	}
+	else
+	{
+		space = playPos - nextWritePos;
+	}
+
+	return space;
+}
+
 bool CSourceDSound::fill()
 {
 	bool res = false;
@@ -1204,6 +1296,10 @@ bool CSourceDSound::fill()
 		return false;
 	}
 
+	TSampleFormat	sampleFormat;
+	uint			freq;
+	_Buffer->getFormat(sampleFormat, freq);
+
 
 	INITTIME(startPos);
 
@@ -1214,14 +1310,8 @@ bool CSourceDSound::fill()
 	{
 		return false;
 	}
-	else if (playPos > _NextWritePos) 
-	{
-		space = playPos - _NextWritePos;
-	}
-	else
-	{
-		space = _SecondaryBufferSize + playPos - _NextWritePos;
-	}
+
+	space = getWritePosAndSpace(_NextWritePos, playPos, writePos, _SecondaryBufferSize);
 
 	// Don't bother if the number of samples that can be written is too small.
 	if (space < _UpdateCopySize)
@@ -1257,7 +1347,8 @@ bool CSourceDSound::fill()
 
 	if (bytes1 <= bytes) {
 
-		CFastMem::memcpy(ptr1, data + _BytesWritten, bytes1);
+//		CFastMem::memcpy(ptr1, data + _BytesWritten, bytes1);
+		copySampleTo16BitsTrack(ptr1, data + _BytesWritten, bytes1/2, sampleFormat);
 		_BytesWritten += bytes1;
 		bytes -= bytes1;
 
@@ -1265,7 +1356,8 @@ bool CSourceDSound::fill()
 		{
 			if (bytes > 0)
 			{
-				CFastMem::memcpy(ptr2, data + _BytesWritten, bytes);					
+//				CFastMem::memcpy(ptr2, data + _BytesWritten, bytes);					
+				copySampleTo16BitsTrack(ptr2, data + _BytesWritten, bytes/2, sampleFormat);
 				_BytesWritten += bytes;
 			}
 
@@ -1275,7 +1367,8 @@ bool CSourceDSound::fill()
 				{
 					DBGPOS(("[%p] FILL: LOOP", this));
 
-					CFastMem::memcpy(ptr2 + bytes, data, bytes2 - bytes); 
+					//CFastMem::memcpy(ptr2 + bytes, data, bytes2 - bytes); 
+					copySampleTo16BitsTrack(ptr2 + bytes, data, (bytes2 - bytes)/2, sampleFormat); 
 					_BytesWritten = bytes2 - bytes;
 				}
 				else
@@ -1290,7 +1383,8 @@ bool CSourceDSound::fill()
 	{
 		if (bytes > 0)
 		{
-			CFastMem::memcpy(ptr1, data + _BytesWritten, bytes);
+//			CFastMem::memcpy(ptr1, data + _BytesWritten, bytes);
+			copySampleTo16BitsTrack(ptr1, data + _BytesWritten, bytes/2, sampleFormat);
 			_BytesWritten += bytes;
 		}
 
@@ -1298,12 +1392,14 @@ bool CSourceDSound::fill()
 		{
 			DBGPOS(("[%p] FILL: LOOP", this));
 
-			CFastMem::memcpy(ptr1 + bytes, data, bytes1 - bytes);					 
+//			CFastMem::memcpy(ptr1 + bytes, data, bytes1 - bytes);					 
+			copySampleTo16BitsTrack(ptr1 + bytes, data, (bytes1 - bytes)/2, sampleFormat);
 			_BytesWritten = bytes1 - bytes;
 
 			if (ptr2)
 			{
-				CFastMem::memcpy(ptr2, data + _BytesWritten, bytes2);					 
+//				CFastMem::memcpy(ptr2, data + _BytesWritten, bytes2);					 
+				copySampleTo16BitsTrack(ptr2, data + _BytesWritten, bytes2 / 2, sampleFormat);
 				_BytesWritten += bytes2;
 			}
 
@@ -1411,7 +1507,10 @@ bool CSourceDSound::silence()
 	{
 		return false;
 	}
-	else if (playPos > _NextWritePos) 
+
+	space = getWritePosAndSpace(_NextWritePos, playPos, writePos, _SecondaryBufferSize);
+
+/*	else if (playPos > _NextWritePos) 
 	{
 		space = playPos - _NextWritePos;
 	}
@@ -1419,7 +1518,7 @@ bool CSourceDSound::silence()
 	{
 		space = _SecondaryBufferSize + playPos - _NextWritePos;
 	}
-
+*/
 	// Don't bother if the number of samples that can be written is too small.
 	if (space < _UpdateCopySize)
 	{
@@ -1640,6 +1739,9 @@ void CSourceDSound::crossFade()
 
 	EnterCriticalSection(&_CriticalSection); 
 
+	TSampleFormat	sampleFormat;
+	uint			freq;
+	_Buffer->getFormat(sampleFormat, freq);
 
 
 	// The source is currently playing an other buffer. We will do a hot
@@ -1744,16 +1846,20 @@ void CSourceDSound::crossFade()
 		// Copy remaining samples
 
 #if MIX
-		CFastMem::memcpy(ptr1 + xfadeByteSize, data2 + xfadeByteSize, bytes1 - xfadeByteSize);
+//		CFastMem::memcpy(ptr1 + xfadeByteSize, data2 + xfadeByteSize, bytes1 - xfadeByteSize);
+		copySampleTo16BitsTrack(ptr1 + xfadeByteSize, data2 + xfadeByteSize, (bytes1 - xfadeByteSize)/2, sampleFormat);
+			
 		_BytesWritten = bytes1;
 #else
-		CFastMem::memcpy(ptr1 + xfadeByteSize, data2, bytes1 - xfadeByteSize);
+//		CFastMem::memcpy(ptr1 + xfadeByteSize, data2, bytes1 - xfadeByteSize);
+		copySampleTo16BitsTrack(ptr1 + xfadeByteSize, data2, (bytes1 - xfadeByteSize)/2, sampleFormat);
 		_BytesWritten = bytes1 - xfadeByteSize;
 #endif
 
 		if (ptr2)
 		{
-			CFastMem::memcpy(ptr2, data2 + _BytesWritten, bytes2);
+			//CFastMem::memcpy(ptr2, data2 + _BytesWritten, bytes2);
+			copySampleTo16BitsTrack(ptr2, data2 + _BytesWritten, bytes2/2, sampleFormat);
 			_BytesWritten += bytes2;
 		}
 
@@ -1806,10 +1912,12 @@ void CSourceDSound::crossFade()
 
 			// Copy remaining samples
 #if MIX
-			CFastMem::memcpy(ptr2 + 2 * k, data2 + _BytesWritten + 2 * k, bytes2 - 2 * k);
+//			CFastMem::memcpy(ptr2 + 2 * k, data2 + _BytesWritten + 2 * k, bytes2 - 2 * k);
+			copySampleTo16BitsTrack(ptr2 + 2 * k, data2 + _BytesWritten + 2 * k, (bytes2 - 2 * k)/2, sampleFormat);
 			_BytesWritten += bytes2;
 #else
-			CFastMem::memcpy(ptr2 + 2 * k, data2, bytes2 - 2 * k);
+			//CFastMem::memcpy(ptr2 + 2 * k, data2, bytes2 - 2 * k);
+			copySampleTo16BitsTrack(ptr2 + 2 * k, data2, (bytes2 - 2 * k)/2, sampleFormat);
 			_BytesWritten = bytes2 - 2 * k;
 #endif
 		}
@@ -2084,6 +2192,10 @@ void CSourceDSound::fadeIn()
 
 	INITTIME(startPos);
 
+	TSampleFormat	sampleFormat;
+	uint			freq;
+	_Buffer->getFormat(sampleFormat, freq);
+
 	// Set the correct pitch for this sound
 	setPitch(_Freq);
 
@@ -2120,7 +2232,8 @@ void CSourceDSound::fadeIn()
 
 	if (bytes1 <= bytes) {
 
-		CFastMem::memcpy(ptr1, data + _BytesWritten, bytes1);
+//		CFastMem::memcpy(ptr1, data + _BytesWritten, bytes1);
+		copySampleTo16BitsTrack(ptr1, data + _BytesWritten, bytes1/2, sampleFormat);
 		_BytesWritten += bytes1;
 		bytes -= bytes1;
 
@@ -2128,7 +2241,8 @@ void CSourceDSound::fadeIn()
 		{
 			if (bytes > 0)
 			{
-				CFastMem::memcpy(ptr2, data + _BytesWritten, bytes);					
+				//CFastMem::memcpy(ptr2, data + _BytesWritten, bytes);					
+				copySampleTo16BitsTrack(ptr2, data + _BytesWritten, bytes/2, sampleFormat);
 				_BytesWritten += bytes;
 			}
 
@@ -2138,7 +2252,8 @@ void CSourceDSound::fadeIn()
 				{
 					DBGPOS(("[%p] FDIN: LOOP", this));
 
-					CFastMem::memcpy(ptr2 + bytes, data, bytes2 - bytes); 
+					//CFastMem::memcpy(ptr2 + bytes, data, bytes2 - bytes); 
+					copySampleTo16BitsTrack(ptr2 + bytes, data, (bytes2 - bytes)/2, sampleFormat); 
 					_BytesWritten = bytes2 - bytes;
 				}
 				else
@@ -2153,7 +2268,8 @@ void CSourceDSound::fadeIn()
 	{
 		if (bytes > 0)
 		{
-			CFastMem::memcpy(ptr1, data + _BytesWritten, bytes);
+			//CFastMem::memcpy(ptr1, data + _BytesWritten, bytes);
+			copySampleTo16BitsTrack(ptr1, data + _BytesWritten, bytes/2, sampleFormat);
 			_BytesWritten += bytes;
 		}
 
@@ -2161,12 +2277,14 @@ void CSourceDSound::fadeIn()
 		{
 			DBGPOS(("[%p] FDIN: LOOP", this));
 
-			CFastMem::memcpy(ptr1 + bytes, data, bytes1 - bytes);					 
+			//CFastMem::memcpy(ptr1 + bytes, data, bytes1 - bytes);					 
+			copySampleTo16BitsTrack(ptr1 + bytes, data, (bytes1 - bytes) / 2, sampleFormat);
 			_BytesWritten = bytes1 - bytes;
 
 			if (ptr2)
 			{
-				CFastMem::memcpy(ptr2, data + _BytesWritten, bytes2);					 
+				//CFastMem::memcpy(ptr2, data + _BytesWritten, bytes2);					 
+				copySampleTo16BitsTrack(ptr2, data + _BytesWritten, bytes2/2, sampleFormat);
 				_BytesWritten += bytes2;
 			}
 		} 

@@ -1,7 +1,7 @@
 /** \file source_user.h
  * CSourceUSer: implementation of USource
  *
- * $Id: source_common.h,v 1.2 2002/11/25 14:11:41 boucher Exp $
+ * $Id: source_common.h,v 1.3 2003/01/08 15:41:10 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,7 @@ public:
 		SOURCE_BACKGROUND
 	};
 
-	CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam);
+	CSourceCommon(TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam, NL3D::CCluster *cluster);
 
 	~CSourceCommon();
 
@@ -93,61 +93,9 @@ public:
 
 	virtual uint32					getTime();
 
+	NL3D::CCluster					*getCluster() { return _Cluster; }
 
 
-/*	/// Set looping on/off for future playbacks (default: off)
-	virtual void					setLooping( bool l );
-	/// Return the looping state
-	virtual bool					getLooping() const;
-
-	/// Tells this source not to call its callbacks when it ends. This is valid for spawned sources only.
-	virtual	void					unregisterSpawnCallBack();
-
-
-	/// \name Source properties
-	//@{
-*/	/** Set the position vector (default: (0,0,0)).
-	 * 3D mode -> 3D position
-	 * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
-	 */
-/*	virtual void					setPos( const NLMISC::CVector& pos );
-	/// Get the position vector (3D mode only)
-	virtual void					getPos( NLMISC::CVector& pos ) const;
-	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
-	virtual void					setVelocity( const NLMISC::CVector& vel );
-	/// Get the velocity vector
-	virtual void					getVelocity( NLMISC::CVector& vel ) const;
-	/// Set the direction vector (3D mode only, ignored in stereo mode) (default: (0,0,0) as non-directional)
-	virtual void					setDirection( const NLMISC::CVector& dir );
-	/// Get the direction vector
-	virtual void					getDirection( NLMISC::CVector& dir ) const;
-*/	/** Set the gain (volume value inside [0 , 1]). (default: 1)
-	 * 0.0 -> silence
-	 * 0.5 -> -6dB
-	 * 1.0 -> no attenuation
-	 * values > 1 (amplification) not supported by most drivers
-	 */
-/*	virtual void					setGain( float gain );
-	/// Get the gain
-	virtual float					getGain() const;
-*/	/** Set the gain amount (value inside [0, 1]) to map between 0 and the nominal gain
-	 * (which is getSource()->getGain()). Does nothing if getSource() is null.
-	 */
-/*	virtual void					setRelativeGain( float gain );
-	/// Return the relative gain (see setRelativeGain()), or the absolute gain if getSource() is null.
-	virtual float					getRelativeGain() const;
-*/	/** Shift the frequency. 1.0f equals identity, each reduction of 50% equals a pitch shift
-	 * of one octave. 0 is not a legal value.
-	 */
-/*	virtual void					setPitch( float pitch );
-	/// Get the pitch
-	virtual float					getPitch() const;
-	/// Set the source relative mode. If true, positions are interpreted relative to the listener position (default: false)
-	virtual void					setSourceRelativeMode( bool mode );
-	/// Get the source relative mode
-	virtual bool					getSourceRelativeMode() const;
-	//@}
-*/
 protected:
 	// Dynamic properties
 	TSoundPriority					_Priority;
@@ -174,6 +122,7 @@ protected:
 	const bool						_Spawn;
 	TSpawnEndCallback				_SpawnEndCb;
 	void							*_CbUserParam;
+	NL3D::CCluster					*_Cluster;
 };
 
 } // NLSOUND

@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.10 2002/08/26 09:36:28 lecroart Exp $
+ * $Id: sound_driver.h,v 1.11 2003/01/08 15:44:47 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -102,8 +102,12 @@ public:
 	/** The static method which builds the sound driver instance
 	 * In case of failure, can throw one of these ESoundDriver exception objects:
 	 * ESoundDriverNotFound, ESoundDriverCorrupted, ESoundDriverOldVersion, ESoundDriverUnknownVersion
+	 *
+	 * You can request support for EAX. If EAX is requested and if there is enougth hardware
+	 * buffer replay, then only hardware buffer are created when calling createBuffer.
+	 * If the number of available hardware buffer is less than 10, then EAX is ignored.
 	 */
-	static	ISoundDriver	*createDriver();
+	static	ISoundDriver	*createDriver(bool useEax);
 
 	/// Create a sound buffer
 	virtual	IBuffer			*createBuffer() = 0;

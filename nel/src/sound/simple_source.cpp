@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSimpleSource: implementation of USource
  *
- * $Id: simple_source.cpp,v 1.1 2002/11/25 14:11:41 boucher Exp $
+ * $Id: simple_source.cpp,v 1.2 2003/01/08 15:45:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,8 +41,8 @@ namespace NLSOUND
 /*
  * Constructor
  */
-CSimpleSource::CSimpleSource( CSimpleSound *simpleSound, bool spawn, TSpawnEndCallback cb, void *cbUserParam)
-:	CSourceCommon(simpleSound, spawn, cb, cbUserParam),
+CSimpleSource::CSimpleSource( CSimpleSound *simpleSound, bool spawn, TSpawnEndCallback cb, void *cbUserParam, NL3D::CCluster *cluster)
+:	CSourceCommon(simpleSound, spawn, cb, cbUserParam, cluster),
 	_Track(NULL), _PlayMuted(false)
 {
 	nlassert(simpleSound != 0);

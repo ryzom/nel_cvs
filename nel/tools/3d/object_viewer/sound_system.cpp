@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.17 2002/11/25 14:13:39 boucher Exp $
+ * $Id: sound_system.cpp,v 1.18 2003/01/08 15:42:01 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,8 +70,8 @@ void CSoundSystem::initSoundSystem ()
 	_AudioMixer = NLSOUND::UAudioMixer::createAudioMixer();
 	try
 	{
-		_AudioMixer->init();
 		_AudioMixer->setSamplePath(_SamplePath);
+		_AudioMixer->init();
 		_AnimManager = new CSoundAnimManager(_AudioMixer);
 	}
 	catch (NLMISC::Exception &e)
@@ -187,6 +187,6 @@ void CSoundSystem::playAnimation(string& name, float lastTime, float curTime, CS
 
 	if (id != CSoundAnimationNoId)
 	{
-		_AnimManager->playAnimation(id, lastTime, curTime, context);
+		_AnimManager->playAnimation(id, lastTime, curTime, NULL, context);
 	}
 }

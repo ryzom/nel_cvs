@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a generic sound and its static properties
  *
- * $Id: sound.cpp,v 1.26 2002/11/25 14:11:41 boucher Exp $
+ * $Id: sound.cpp,v 1.27 2003/01/08 15:45:14 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 
 #include "simple_sound.h"
 #include "complex_sound.h"
+#include "background_sound.h"
 #include "context_sound.h"
 
 using namespace std;

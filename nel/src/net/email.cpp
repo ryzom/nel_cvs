@@ -1,7 +1,7 @@
 /** \file email.cpp
  * send email
  *
- * $Id: email.cpp,v 1.6 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: email.cpp,v 1.7 2003/12/04 17:52:39 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -214,8 +214,12 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 		// add attachment if any
 		if (!attachedFile.empty())
 		{
-			
+			string ext = CFile::getExtension(attachedFile);
+
 			string mimepart;
+
+			// mime header and main mail text
+
 			mimepart += "Mime-Version: 1.0\r\n";
 			mimepart += "Content-Type: multipart/mixed;\r\n";
 			mimepart += " boundary=\"Multipart_nel\"\r\n";
@@ -223,15 +227,42 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 			mimepart += "This is a multi-part message in MIME format.\r\n";
 			mimepart += "\r\n";
 			mimepart += "--Multipart_nel\r\n";
-			mimepart += "Content-Type: text/plain; charset=US-ASCII\r\n";
+			mimepart += "Content-Type: text/plain; charset=us-ascii\r\n";
 			mimepart += "Content-Transfer-Encoding: 7bit\r\n";
-				
+
 			formatedBody = mimepart + formatedBody;
+
+			// mime attachment
 
 			formatedBody += "--Multipart_nel\r\n";
 			formatedBody += "Content-Disposition: attachment;\r\n";
+
+			if(strlwr(ext) == "tga")
+			{
+				formatedBody += "Content-Type: image/x-targa;\r\n";
+			}
+			else if(strlwr(ext) == "bmp")
+			{
+				formatedBody += "Content-Type: image/bmp;\r\n";
+			}
+			else if(strlwr(ext) == "png")
+			{
+				formatedBody += "Content-Type: image/png;\r\n";
+			}
+			else if(strlwr(ext) == "jpg" || strlwr(ext) == "jpeg")
+			{
+				formatedBody += "Content-Type: image/jpeg;\r\n";
+			}
+			else
+			{
+				formatedBody += "Content-Type: text/plain; charset=us-ascii\r\n";
+			}
+
+			formatedBody += " name=\""+CFile::getFilename(attachedFile)+"\"\r\n";
+			formatedBody += "Content-Transfer-Encoding: base64\r\n";
 			formatedBody += " filename=\""+CFile::getFilename(attachedFile)+"\"\r\n";
-			formatedBody += "Content-Transfer-Encoding: base64\r\n\r\n";
+			// empty line to say that it s the end of the header
+			formatedBody += "\r\n";
 
 			static const size_t src_buf_size = 45;// This *MUST* be a multiple of 3
 			static const size_t dst_buf_size = 4 * ((src_buf_size + 2) / 3);
@@ -262,10 +293,9 @@ bool sendEmail (const string &smtpServer, const string &from, const string &to, 
 					formatedBody += dst_buf;
 					formatedBody += "\r\n";
 				}
-				formatedBody += "--Multipart_nel--";
-
 				fclose (src_stream);
 			}
+			formatedBody += "--Multipart_nel--";
 		}	
 
 		// debug, display what we send into a file

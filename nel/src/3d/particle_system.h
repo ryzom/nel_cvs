@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.13 2001/08/06 10:23:49 vizerie Exp $
+ * $Id: particle_system.h,v 1.14 2001/08/07 14:12:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,22 +36,25 @@
 #include "3d/ps_lod.h"
 
 
+
 namespace NL3D {
 
-class CParticleSystem ;
-class CFontGenerator ;
-class CFontManager ;
-class CPSCopyHelper ;
-class CScene ;
-class CPSLocated ;
-class IDriver ;
+class CParticleSystem;
+class CFontGenerator;
+class CFontManager;
+class CPSCopyHelper;
+class CScene;
+class CPSLocated;
+class IDriver;
+struct IPSSoundServer;
+
 
 
 
 
 
 /// number user params for a particle system
-const uint MaxPSUserParam = 4 ;
+const uint MaxPSUserParam = 4;
 
 
 /** Particles system classes. They can be used as it. If you want to use a particle system in 
@@ -85,13 +88,13 @@ public:
 			/// ctor
 			CParticleSystem();
 			/// dtor
-			~CParticleSystem() ;	
+			~CParticleSystem();	
 			/// serialize this particle system
-			void serial(NLMISC::IStream &f)  throw(NLMISC::EStream) ;
+			void serial(NLMISC::IStream &f)  throw(NLMISC::EStream);
 			/*** duplication method NOT SUPPORTED
 			 * \param ch for private use, set to null by default
 			 */
-			//	CParticleSystem *clone(CPSCopyHelper *ch = NULL)  ;
+			//	CParticleSystem *clone(CPSCopyHelper *ch = NULL) ;
 		//@}
 
 	//*****************************************************************************************************	  
@@ -99,10 +102,10 @@ public:
 	///\name Driver setup
 		//@{
 		/// set the driver use to render the system
-		void setDriver(IDriver *driver) { _Driver = driver ; }
+		void setDriver(IDriver *driver) { _Driver = driver; }
 
 		/// return the driver that will be used for rendering
-		IDriver *getDriver(void) { return _Driver ; }
+		IDriver *getDriver(void) { return _Driver; }
 		//@}
 	//*****************************************************************************************************
 
@@ -111,10 +114,10 @@ public:
 		/** Set the scene in which the particle system is inserted. This is needed when
 		 * system must add objects to the scene (for particle that are mesh for instance)
 		 */
-		void setScene(CScene *scene) { _Scene = scene ; }
+		void setScene(CScene *scene) { _Scene = scene; }
 
 		//// get the scene set by setScene()
-		CScene *getScene(void) { return _Scene ; }
+		CScene *getScene(void) { return _Scene; }
 		//@}
 
 	//*****************************************************************************************************
@@ -128,25 +131,25 @@ public:
 		 * , setSysMat will be called automatically when needed to mirror the ITransformable matrix
 		 */
 		 
-		void setSysMat(const NLMISC::CMatrix &m) ;
+		void setSysMat(const NLMISC::CMatrix &m);
 		
 		/// return the matrix of the system
-		const NLMISC::CMatrix &getSysMat(void) const { return _SysMat ; }
+		const NLMISC::CMatrix &getSysMat(void) const { return _SysMat; }
 
 		/// return the inverted matrix of the system
 
-		const NLMISC::CMatrix &getInvertedSysMat(void) const { return _InvSysMat ; } 
+		const NLMISC::CMatrix &getInvertedSysMat(void) const { return _InvSysMat; } 
 
 		/** set the view matrix  
 		  * This must be called otherwise results can't be correct
 		  */
-		void setViewMat(const NLMISC::CMatrix &m) ;
+		void setViewMat(const NLMISC::CMatrix &m);
 
 		/// get the view matrix .
-		const NLMISC::CMatrix &getViewMat(void) const { return _ViewMat ; }
+		const NLMISC::CMatrix &getViewMat(void) const { return _ViewMat; }
 
 		/// get the inverted view matrix . It is stored each time a new frame is processed	 
-		const NLMISC::CMatrix &getInvertedViewMat(void) const { return _InvertedViewMat ; }
+		const NLMISC::CMatrix &getInvertedViewMat(void) const { return _InvertedViewMat; }
 
 		//@}
 
@@ -162,13 +165,13 @@ public:
 		* \param pass the pass to be executed
 		* \see setDriver
 		*/
-		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime) ;
+		virtual void step(TPSProcessPass pass, CAnimationTime ellapsedTime);
 		//@}
 
 		
 
 		/// used for benchs. must be reset by the user
-		static uint32 NbParticlesDrawn ;
+		static uint32 NbParticlesDrawn;
 
 	//*****************************************************************************************************
 
@@ -181,17 +184,17 @@ public:
 		 *  It is then owned by the process and will be deleted by it. 
 		 *  if already present -> nl assert	 
 		 */
-		void attach(CParticleSystemProcess *ptr) ;
+		void attach(CParticleSystemProcess *ptr);
 
 		/** remove a process
 		 * It is deleted by the system
 		 *  if not present -> nl assert
 		 */
-		void remove(CParticleSystemProcess *ptr) ;
+		void remove(CParticleSystemProcess *ptr);
 
 		/// get the number of process that are attached to the system
 
-		uint32 getNbProcess(void) const { return _ProcessVect.size() ; }
+		uint32 getNbProcess(void) const { return _ProcessVect.size(); }
 
 		/**
 		 *  Get a pointer to the nth process.
@@ -199,8 +202,8 @@ public:
 		 */	
 		CParticleSystemProcess *getProcess(uint32 index)
 		{ 
-			nlassert(index < _ProcessVect.size()) ;
-			return _ProcessVect[index] ; 
+			nlassert(index < _ProcessVect.size());
+			return _ProcessVect[index]; 
 		}
 
 		/**
@@ -209,8 +212,8 @@ public:
 		 */	
 		const CParticleSystemProcess *getProcess(uint32 index) const
 		{ 
-			nlassert(index < _ProcessVect.size()) ;
-			return _ProcessVect[index] ; 
+			nlassert(index < _ProcessVect.size());
+			return _ProcessVect[index]; 
 		}
 
 		//@}
@@ -221,7 +224,7 @@ public:
 		//@{
 
 		/// get the time ellapsed since the system was created.
-		CAnimationTime getSystemDate(void) const { return _SystemDate ; }
+		CAnimationTime getSystemDate(void) const { return _SystemDate; }
 
 		/** Get the date of the system (the number of time it has been drawn in fact)
 		 *  This may be used to skip frames in an animation for example.
@@ -229,7 +232,7 @@ public:
 
 		uint64 getDate(void) const
 		{
-			return _Date ;
+			return _Date;
 		}
 		//@}
 
@@ -245,9 +248,9 @@ public:
 		  */
 		void setUserParam(uint numParam, float value) 
 		{
-			nlassert(numParam < MaxPSUserParam) ;
-			nlassert(value >= 0.f && value <= 1.f) ;
-			_UserParam[numParam].Value = value ;
+			nlassert(numParam < MaxPSUserParam);
+			nlassert(value >= 0.f && value <= 1.f);
+			_UserParam[numParam].Value = value;
 		}
 
 		/** Get a user param.
@@ -255,15 +258,15 @@ public:
 		  */
 		float getUserParam(uint numParam) const
 		{
-			nlassert(numParam < MaxPSUserParam) ;
-			return _UserParam[numParam].Value ;
+			nlassert(numParam < MaxPSUserParam);
+			return _UserParam[numParam].Value;
 		}
 
 		/// Get a pointer to a param, as an animated value.
 		CAnimatedValueFloat *getUserParamAnimatedValue(uint numParam)
 		{
-			nlassert(numParam < MaxPSUserParam) ;
-			return &_UserParam[numParam] ;
+			nlassert(numParam < MaxPSUserParam);
+			return &_UserParam[numParam];
 		}
 	//@}
 
@@ -280,9 +283,9 @@ public:
 		 */
 		 void setCurrentEditedElement(CPSLocated *loc = NULL , uint32 index = 0, class CPSLocatedBindable *bd = NULL )
 		 {
-			_CurrEditedElementLocated = loc ;
-			_CurrEditedElementLocatedBindable = bd ; 
-			_CurrEditedElementIndex = index ;
+			_CurrEditedElementLocated = loc;
+			_CurrEditedElementLocatedBindable = bd; 
+			_CurrEditedElementIndex = index;
 		 }
 
 		/** Retrieve the current edited element
@@ -290,45 +293,45 @@ public:
 		 */
 		 void getCurrentEditedElement(CPSLocated *&loc , uint32 &index, CPSLocatedBindable *&lb)
 		 {
-			loc = _CurrEditedElementLocated ;
-			index = _CurrEditedElementIndex ;
-			lb = _CurrEditedElementLocatedBindable ;
+			loc = _CurrEditedElementLocated;
+			index = _CurrEditedElementIndex;
+			lb = _CurrEditedElementLocatedBindable;
 		 }
 	
 		/// Set a font generator. Useful only for edition. don't need that in runtime.
-		void setFontGenerator(CFontGenerator *fg) { _FontGenerator = fg ; }
+		void setFontGenerator(CFontGenerator *fg) { _FontGenerator = fg; }
 
 		/// Retrieve the font generator. Edition purpose only.
-		CFontGenerator *getFontGenerator(void) { return _FontGenerator ; }
+		CFontGenerator *getFontGenerator(void) { return _FontGenerator; }
 
 		/// Retrieve the font generator (const version). Edition purpose only.
-		const CFontGenerator *getFontGenerator(void) const { return _FontGenerator ; }
+		const CFontGenerator *getFontGenerator(void) const { return _FontGenerator; }
 
 		/// Set a font Manager. Useful only for edition. don't need that in runtime
-		void setFontManager(CFontManager *fg) { _FontManager = fg ; }
+		void setFontManager(CFontManager *fg) { _FontManager = fg; }
 
 		/// Retrieve the font Manager. Edition purpose only.
-		CFontManager *getFontManager(void) { return _FontManager ; }
+		CFontManager *getFontManager(void) { return _FontManager; }
 
 		/// Retrieve the font Manager (const version). Edition purpose only.
-		const CFontManager *getFontManager(void) const { return _FontManager ; }
+		const CFontManager *getFontManager(void) const { return _FontManager; }
 		// @}
 		
 		/// Set the name of the system.
-		void setName(const std::string &s) { _Name = s ; }
+		void setName(const std::string &s) { _Name = s; }
 
 		/// Get the name of the system.
-		std::string getName(void) const { return _Name ; }
+		std::string getName(void) const { return _Name; }
 		
 	//*****************************************************************************************************
 
 	///\name Transparency / opacity
 	// @{
 		/// Return true if the system has opaque object in it.
-		bool hasOpaqueObjects(void) const ;
+		bool hasOpaqueObjects(void) const;
 
 		/// Return true if the system has transparent objects in it.
-		bool hasTransparentObjects(void) const ;
+		bool hasTransparentObjects(void) const;
 	// @}
 
 	//*****************************************************************************************************
@@ -338,19 +341,19 @@ public:
 		/** This enable for more accurate integrations of movement. When this is activated,
 		  *  integration is performed in a more accurate way when the ellapsed time goes over a threshold, but it is more slow to perform.	  
 		  */
-		void enableAccurateIntegration(bool enable = true) { _AccurateIntegration = enable ; }
-		bool isAccurateIntegrationEnabled(void) const { return _AccurateIntegration ; }
+		void enableAccurateIntegration(bool enable = true) { _AccurateIntegration = enable; }
+		bool isAccurateIntegrationEnabled(void) const { return _AccurateIntegration; }
 
 		/** the the time threshold and the max number of integration to perform, when accurate integration is activated.
-		  * The default is 0.10 for time threshold and 4 for max NbIntegrations
+		  * The default is 0.15 for time threshold and 2 for max NbIntegrations
 		  * \param canSlowDown : Allow the system to slow down in speed but to keep accuracy in its movement.
 		  *  It is useful for critical situations where the framerate is very low. The default is true.
 		  */
 		void setAccurateIntegrationParams(CAnimationTime threshold, uint32 maxNbIntegrations, bool canSlowDown)
 		{
-			_TimeThreshold = threshold ;
-			_MaxNbIntegrations = maxNbIntegrations ;
-			_CanSlowDown = canSlowDown ;
+			_TimeThreshold = threshold;
+			_MaxNbIntegrations = maxNbIntegrations;
+			_CanSlowDown = canSlowDown;
 		}
 
 		/** get the parameters used for integration.
@@ -358,9 +361,9 @@ public:
 		  */
 		void getAccurateIntegrationParams(CAnimationTime &threshold, uint32 &maxNbIntegrations, bool &canSlowDown)
 		{
-			threshold = _TimeThreshold  ;
-			maxNbIntegrations = _MaxNbIntegrations ;
-			canSlowDown = _CanSlowDown ;
+			threshold = _TimeThreshold ;
+			maxNbIntegrations = _MaxNbIntegrations;
+			canSlowDown = _CanSlowDown;
 		}
 	// @}
 
@@ -372,32 +375,32 @@ public:
 		/// set the max view distance for the system (in meters) . The default is 50 meters.
 		void setMaxViewDist(float maxDist) 
 		{ 
-			nlassert(maxDist > 0.f) ; 
-			_MaxViewDist = maxDist ;
-			_InvCurrentViewDist = _InvMaxViewDist = 1.f / maxDist ; 
+			nlassert(maxDist > 0.f); 
+			_MaxViewDist = maxDist;
+			_InvCurrentViewDist = _InvMaxViewDist = 1.f / maxDist; 
 		}
 
 		/// get the max view distance
-		float getMaxViewDist(void) const { return _MaxViewDist ; }
+		float getMaxViewDist(void) const { return _MaxViewDist; }
 
 		/// set a percentage that indicate where the 2nd LOD is located. Default is 0.5.
-		void setLODRatio(float ratio) { nlassert(ratio > 0 && ratio <= 1.f) ; _LODRatio =  ratio ; }
+		void setLODRatio(float ratio) { nlassert(ratio > 0 && ratio <= 1.f); _LODRatio =  ratio; }
 
 		/// get the lod ratio.
-		float getLODRatio(void) const  { return _LODRatio ; }
+		float getLODRatio(void) const  { return _LODRatio; }
 
 
 		/** compute a vector and a distance that are used for LOD computations. 
 		  * You'll have for a given pos : pos * v + offset  = 0 at the nearest point, and 1 when
 		  * pos is at maxDist from the viewer. This is used by sub-component of the system.
 		  */
-		void getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis) ;
+		void getLODVect(NLMISC::CVector &v, float &offset, bool systemBasis);
 
 		/// get the current LOD of the system. It is based on the distance of the center of the system to the viewer
-		TPSLod getLOD(void) const ;	
+		TPSLod getLOD(void) const;	
 
 		/// get 1.f - the current lod ratio (it is updated at each motion pass)
-		float getOneMinusCurrentLODRatio(void) const { return _OneMinusCurrentLODRatio ; }
+		float getOneMinusCurrentLODRatio(void) const { return _OneMinusCurrentLODRatio; }
 
 		// @}
 
@@ -406,16 +409,16 @@ public:
 		// \name LOD balancing
 		// @{
 			// get an evaluation of how many tris are needed with the system for the given distance
-			float getWantedNumTris(float dist) ;
+			float getWantedNumTris(float dist);
 
 			/// set the number of tree the system may use. If not clled this will be the max
-			void setNumTris(uint numFaces) ;
+			void setNumTris(uint numFaces);
 
 
 			/** Ask for the particle system to reevaluate the max number of faces it may need.
 			  * You don't usually need to call this
 			  */
-			void notifyMaxNumFacesChanged(void) ;
+			void notifyMaxNumFacesChanged(void);
 		// @}
 
 	//*****************************************************************************************************
@@ -425,16 +428,16 @@ public:
 		/** Compute the aabbox of this system, (expressed in thesystem basis)	
 		 *  \param aabbox a ref to the result box
 		 */
-		void computeBBox(NLMISC::CAABBox &aabbox) ;
+		void computeBBox(NLMISC::CAABBox &aabbox);
 
 		/** When this is set to false, the system will recompute his bbox each time it is querried
 		  * This may be needed for systems that move fast. 
 		  */
-		void setAutoComputeBBox(bool enable = true) { _ComputeBBox = enable ; }
+		void setAutoComputeBBox(bool enable = true) { _ComputeBBox = enable; }
 
 
 		/// test whether the system compute himself his bbox
-		bool getAutoComputeBBox(void) const { return _ComputeBBox ; }
+		bool getAutoComputeBBox(void) const { return _ComputeBBox; }
 
 
 		/** set a precomputed bbox (expressed in the system basis). This is allowed only when setAutoComputeBBox 
@@ -443,12 +446,12 @@ public:
 
 		void setPrecomputedBBox(const NLMISC::CAABBox &precompBBox) 
 		{ 
-			nlassert(!_ComputeBBox) ;
-			_PreComputedBBox = precompBBox ;
+			nlassert(!_ComputeBBox);
+			_PreComputedBBox = precompBBox;
 		}
 			
 		/// get the last computed bbox
-		void getLastComputedBBox(NLMISC::CAABBox &dest) { dest = _PreComputedBBox ; }
+		void getLastComputedBBox(NLMISC::CAABBox &dest) { dest = _PreComputedBBox; }
 		// @}
 	
 	//*****************************************************************************************************
@@ -458,14 +461,14 @@ public:
 		/** Tell the system that it is invalid when its out of range. The default is false.	  
 		  * This is only a indication flag and must be checked by third party (a model holding the system for example)
 		  */
-		void setDestroyModelWhenOutOfRange(bool enable = true) { _DestroyModelWhenOutOfRange  = enable ; }
+		void				setDestroyModelWhenOutOfRange(bool enable = true) { _DestroyModelWhenOutOfRange  = enable; }
 		
 		/// check whether the system is invalid it's out of range.
-		bool getDestroyModelWhenOutOfRange(void) const { return _DestroyModelWhenOutOfRange ; }
+		bool				getDestroyModelWhenOutOfRange(void) const { return _DestroyModelWhenOutOfRange; }
 
 
 		/// this enum give consitions on which the system may be invalid
-		enum TDieCondition { none, noMoreParticles, noMoreParticlesAndEmitters   } ;
+		enum TDieCondition { none, noMoreParticles, noMoreParticlesAndEmitters   };
 
 
 		/** when != to none, the Model hodling this sytem will be considered invalid when dieCondition is met
@@ -474,10 +477,10 @@ public:
 		  * \see hasEmitters
 		  * \see hasParticles
 		  */
-		void setDestroyCondition(TDieCondition dieCondition) { _DieCondition = dieCondition ; }
+		void				setDestroyCondition(TDieCondition dieCondition) { _DieCondition = dieCondition; }
 
 		/// get the destroy condition
-		TDieCondition getDestroyCondition(void) const { return _DieCondition ; }
+		TDieCondition		getDestroyCondition(void) const { return _DieCondition; }
 
 		/** Set a delay before to apply the death condition test
 		  * This may be necessary : the system could be destroyed because there are no particles
@@ -487,105 +490,131 @@ public:
 		  * \see hasParticles()
 		  * \see getDelayBeforeDeathConditionTest()
 		  */
-		void setDelayBeforeDeathConditionTest(CAnimationTime delay) { _DelayBeforeDieTest  = delay ; }
+		void setDelayBeforeDeathConditionTest(CAnimationTime delay) { _DelayBeforeDieTest  = delay; }
 
 		/// get the a delay before to apply the death condition test	  
-		CAnimationTime getDelayBeforeDeathConditionTest(void) const { return _DelayBeforeDieTest ; }
+		CAnimationTime		getDelayBeforeDeathConditionTest(void) const { return _DelayBeforeDieTest; }
 
-		/** tells the model holding this system that he become invalid when its out of the view frustrum.	  
+		/** tells the model holding this system that he become invalid when its out of the view frustum.	  
 		  * This is only an indication flag and must be checked by third party (a model holding it for example)
 		  * It has no direct effects
 		  * \see doesDestroyWhenOutOfRange()
 		  */
-		void destroyWhenOutOfFrustrum(bool enable = true) { _DestroyWhenOutOfFrustrum = enable ; }
+		void				destroyWhenOutOfFrustum(bool enable = true) { _DestroyWhenOutOfFrustum = enable; }
 
-		/** check wether the system must be destroyed when it goes out of the frustrum
+		/** check wether the system must be destroyed when it goes out of the frustum
 		  * \see getDelayBeforeDeathConditionTest()
 		  */
-		bool doesDestroyWhenOutOfFrustrum(void) const { return _DestroyWhenOutOfFrustrum ; }
+		bool				doesDestroyWhenOutOfFrustum(void) const { return _DestroyWhenOutOfFrustum; }
 
 
 		/// return true when there are still emitters in the system
-		bool hasEmitters(void) const ;
+		bool				hasEmitters(void) const;
 
-		/// return true when there are still partciels
-		bool hasParticles(void) const ;
+		/// return true when there are still particles
+		bool				hasParticles(void) const;
+
+		/** Tells the system to continue the motion pass when its out of the frustum.
+		  * This is the default.
+		  */
+		void				performMotionWhenOutOfFrustum(bool enable = true) { _PerformMotionWhenOutOfFrustum = enable; }
+
+		/// test wether the system perform the motion pass when it's out of the frustum
+		bool				doesPerformMotionWhenOutOfFrustum(void) const { return _PerformMotionWhenOutOfFrustum; }
+
+
 		// @}
 
+	//*****************************************************************************************************
+	///\name sound managment
+		// @{
+		/// register a Sound server to this system. All systems share the same sound server. 
+		static void					registerSoundServer(IPSSoundServer *soundServer)
+		{
+			_SoundServer = soundServer;
+		}
 
+		/// get the current sound server used by this system. NULL if none
+		static IPSSoundServer *		getSoundServer(void)
+		{
+			return _SoundServer;
+		}	
+
+		// @}
 	
 
 protected:
 
 	/// when set to true, the system will compute his BBox every time computeBBox is called
-	bool					 _ComputeBBox ;
-	NLMISC::CAABBox			 _PreComputedBBox ;
+	bool					 _ComputeBBox;
+	NLMISC::CAABBox			 _PreComputedBBox;
 
 	// the driver used for rendering
-	IDriver					 *_Driver ;
+	IDriver					 *_Driver;
 
 	/// user params of the system
-	CAnimatedValueFloat		 _UserParam[MaxPSUserParam] ;
+	CAnimatedValueFloat		 _UserParam[MaxPSUserParam];
 		
-	typedef std::vector< CParticleSystemProcess *> TProcessVect ;
-	TProcessVect			 _ProcessVect ;
-	CFontGenerator			 *_FontGenerator ;
-	CFontManager			 *_FontManager ;
+	typedef std::vector< CParticleSystemProcess *> TProcessVect;
+	TProcessVect			 _ProcessVect;
+	CFontGenerator			 *_FontGenerator;
+	CFontManager			 *_FontManager;
 	// the view matrix
-	NLMISC::CMatrix			 _ViewMat ;
+	NLMISC::CMatrix			 _ViewMat;
 
 	// the inverted view matrix
-	NLMISC::CMatrix			 _InvertedViewMat ;
+	NLMISC::CMatrix			 _InvertedViewMat;
 
 	// the matrix of the system
-	NLMISC::CMatrix			 _SysMat ; 
+	NLMISC::CMatrix			 _SysMat; 
 	// the inverted matrix of the system
-	NLMISC::CMatrix			 _InvSysMat ;
+	NLMISC::CMatrix			 _InvSysMat;
 
 	// number of rendered pass on the system, incremented each time the system is redrawn
-	uint64					 _Date ;	
+	uint64					 _Date;	
 
 	// current edited element located (edition purpose only)
-	CPSLocated				 *_CurrEditedElementLocated ;
+	CPSLocated				 *_CurrEditedElementLocated;
 	// current edited located bindable, NULL means all binadable of a located. (edition purpose only)
-	CPSLocatedBindable		 *_CurrEditedElementLocatedBindable ;
+	CPSLocatedBindable		 *_CurrEditedElementLocatedBindable;
 	// current edited element index in its located (edition purpose only)
-	uint32					 _CurrEditedElementIndex ;
+	uint32					 _CurrEditedElementIndex;
 
 
 	/** the scene in which the particle system is inserted. This is needed because
 	 * the system may add objects to the scene (for particle that are mesh for instance)
 	 */
 
-	CScene					 *_Scene ;
+	CScene					 *_Scene;
 
 
 	// contains the name of the system. (VERSION >= 2 only)
-	std::string _Name ;
+	std::string _Name;
 
 
-	bool					 _AccurateIntegration ;	
-	CAnimationTime			 _TimeThreshold ;
-	CAnimationTime			 _SystemDate ;
-	uint32					 _MaxNbIntegrations ;
-	bool					 _CanSlowDown ;
+	bool					 _AccurateIntegration;	
+	CAnimationTime			 _TimeThreshold;
+	CAnimationTime			 _SystemDate;
+	uint32					 _MaxNbIntegrations;
+	bool					 _CanSlowDown;
 
 
-	float					 _LODRatio ;
-	float					 _OneMinusCurrentLODRatio ;
-	float					 _MaxViewDist ;
-	float					 _InvMaxViewDist ;
-	float					 _InvCurrentViewDist ; // inverse of the current view dist. It can be the same than _InvMaxViewDist
+	float					 _LODRatio;
+	float					 _OneMinusCurrentLODRatio;
+	float					 _MaxViewDist;
+	float					 _InvMaxViewDist;
+	float					 _InvCurrentViewDist; // inverse of the current view dist. It can be the same than _InvMaxViewDist
 											       // but when there's LOD, the view distance may be reduced
-	bool					 _Touch ;
+	bool					 _Touch;
 
-	TDieCondition			 _DieCondition ;
-	CAnimationTime			 _DelayBeforeDieTest ;
-	bool					 _DestroyModelWhenOutOfRange ;
-	bool					 _DestroyWhenOutOfFrustrum ;
-	
-	uint _MaxNumFacesWanted ;	
-	
+	TDieCondition			 _DieCondition;
+	CAnimationTime			 _DelayBeforeDieTest;
+	bool					 _DestroyModelWhenOutOfRange;
+	bool					 _DestroyWhenOutOfFrustum;	
+	bool					 _PerformMotionWhenOutOfFrustum;
+	uint					 _MaxNumFacesWanted;	
+
+	static IPSSoundServer *		 _SoundServer;
 	
 };
 
@@ -608,32 +637,32 @@ class CPSCopyHelper
 		// duplicate an object using the copy ctor, if it has not been before
 		template <class T> T *ctorCopy(const T &src) 
 		{
-			TCopiedIt it = _Alreadycopied.find(src) ;
+			TCopiedIt it = _Alreadycopied.find(src);
 			if (it  != _AlreadyCopied.end())
 			{
-				return (T *) it ;
+				return (T *) it;
 			}
 			else
 			{
-				T *result = new T(src) ;
-				_AlreadyCopied.insert((void *) result) ;
-				return result ;
+				T *result = new T(src);
+				_AlreadyCopied.insert((void *) result);
+				return result;
 			}
 		}
 		// duplicate an object using its clone method, if it has not been before
 
 		template <class T> T *clone(const T &src)
 		{
-			TCopiedIt it = _AlreadyCopied.find(src) ;
+			TCopiedIt it = _AlreadyCopied.find(src);
 			if (it  != _AlreadyCopied.end())
 			{
-				return (T *) *it ;
+				return (T *) *it;
 			}
 			else
 			{
-				T *result = src.clone(this) ;
-				_AlreadyCopied.insert((void *) result) ;
-				return result ;
+				T *result = src.clone(this);
+				_AlreadyCopied.insert((void *) result);
+				return result;
 			}
 		}		
 
@@ -641,15 +670,15 @@ class CPSCopyHelper
 		// insert a value that has been copied by other means
 		void insert(void *ptr)
 		{
-			std::pair<TCopiedIt, bool> result = _AlreadyCopied.insert(ptr) ;
-			nlassert(result.second) ;
+			std::pair<TCopiedIt, bool> result = _AlreadyCopied.insert(ptr);
+			nlassert(result.second);
 		}	
 
 	private:
-		typedef std::set<void *> TAlreadyCopied ;
-		typedef TAlreadyCopied::iterator TCopiedIt ;
-		TAlreadyCopied _AlreadyCopied ;
-} ;
+		typedef std::set<void *> TAlreadyCopied;
+		typedef TAlreadyCopied::iterator TCopiedIt;
+		TAlreadyCopied _AlreadyCopied;
+};
 
 */
 

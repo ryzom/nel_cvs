@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.26 2001/07/25 13:16:18 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.27 2001/08/07 14:12:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -39,13 +39,14 @@
 
 
 
-namespace NL3D {
+namespace NL3D 
+{
 
 
 
 
-uint32 CParticleSystem::NbParticlesDrawn = 0 ;
-
+uint32 CParticleSystem::NbParticlesDrawn = 0;
+IPSSoundServer *		 CParticleSystem::_SoundServer = NULL;
 
 
 
@@ -57,7 +58,7 @@ uint32 CParticleSystem::NbParticlesDrawn = 0 ;
 
 
 /// the default max distance of view for particle systems
-const float PSDefaultMaxViewDist = 300.f ;
+const float PSDefaultMaxViewDist = 300.f;
 
 /*
  * Constructor
@@ -65,10 +66,10 @@ const float PSDefaultMaxViewDist = 300.f ;
 CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 									, _Date(0), _Scene(NULL), _CurrEditedElementLocated(NULL)
 									, _CurrEditedElementIndex(0), _Driver(NULL)
-									, _TimeThreshold(0.1f)
-									, _MaxNbIntegrations(4)
+									, _TimeThreshold(0.15f)
+									, _MaxNbIntegrations(2)
 									, _CanSlowDown(true)
-									, _AccurateIntegration(false)
+									, _AccurateIntegration(true)
 									, _InvMaxViewDist(1.f / PSDefaultMaxViewDist)									
 									, _InvCurrentViewDist(1.f / PSDefaultMaxViewDist)									
 									, _MaxViewDist(PSDefaultMaxViewDist)
@@ -77,14 +78,15 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 									, _DieCondition(none)
 									, _DelayBeforeDieTest(0.2f) 
 									, _DestroyModelWhenOutOfRange(false)
-									, _DestroyWhenOutOfFrustrum(false)
+									, _DestroyWhenOutOfFrustum(false)
 									, _SystemDate(0.f)
 									, _OneMinusCurrentLODRatio(0)									
 									, _MaxNumFacesWanted(0)
+									, _PerformMotionWhenOutOfFrustum(true)
 								
 									
 {
-	for (uint k = 0 ; k < MaxPSUserParam ; ++k) _UserParam[k].Value = 0 ;
+	for (uint k = 0; k < MaxPSUserParam; ++k) _UserParam[k].Value = 0;
 }
 
 
@@ -92,10 +94,10 @@ CParticleSystem::CParticleSystem() : _FontGenerator(NULL), _FontManager(NULL)
 void CParticleSystem::notifyMaxNumFacesChanged(void)
 {
 	
-	_MaxNumFacesWanted = 0 ;	
-	for (TProcessVect::iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	_MaxNumFacesWanted = 0;	
+	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{		
-		_MaxNumFacesWanted += (*it)->querryMaxWantedNumFaces() ;
+		_MaxNumFacesWanted += (*it)->querryMaxWantedNumFaces();
 	}
 }
 
@@ -103,28 +105,28 @@ void CParticleSystem::notifyMaxNumFacesChanged(void)
 float CParticleSystem::getWantedNumTris(float dist)
 {
 			 	 
-	if (dist > _MaxViewDist) return 0 ;
-	else return ((1.f - dist * _InvMaxViewDist) * _MaxNumFacesWanted) ;	
+	if (dist > _MaxViewDist) return 0;
+	else return ((1.f - dist * _InvMaxViewDist) * _MaxNumFacesWanted);	
 }
 
 
 void CParticleSystem::setNumTris(uint numFaces)
 {
-	float modelDist = (_SysMat.getPos() - _InvertedViewMat.getPos()).norm() ;
-	/*uint numFaceWanted = (uint) getWantedNumTris(modelDist) ;*/
+	float modelDist = (_SysMat.getPos() - _InvertedViewMat.getPos()).norm();
+	/*uint numFaceWanted = (uint) getWantedNumTris(modelDist);*/
 
-	const float epsilon = 10E-5f ;
+	const float epsilon = 10E-5f;
 
 
-	uint wantedNumTri = (uint) getWantedNumTris(modelDist) ;
+	uint wantedNumTri = (uint) getWantedNumTris(modelDist);
 	if (numFaces >= wantedNumTri || wantedNumTri == 0 || modelDist < epsilon)
 	{ 
-		_InvCurrentViewDist = _InvMaxViewDist ;
+		_InvCurrentViewDist = _InvMaxViewDist;
 	}
 	else
 	{
 		
-		_InvCurrentViewDist = (_MaxNumFacesWanted - numFaces) / ( _MaxNumFacesWanted * modelDist) ;
+		_InvCurrentViewDist = (_MaxNumFacesWanted - numFaces) / ( _MaxNumFacesWanted * modelDist);
 	}
 }
 
@@ -132,17 +134,17 @@ void CParticleSystem::setNumTris(uint numFaces)
 /// dtor
 CParticleSystem::~CParticleSystem()
 {
-	for (TProcessVect::iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
-		delete *it ;
+		delete *it;
 	}
 }
 
 
 void CParticleSystem::setViewMat(const NLMISC::CMatrix &m)
 {
-	_ViewMat = m ;
-	_InvertedViewMat = m.inverted() ;
+	_ViewMat = m;
+	_InvertedViewMat = m.inverted();
 }				
 
 
@@ -150,45 +152,45 @@ void CParticleSystem::setViewMat(const NLMISC::CMatrix &m)
 
 bool CParticleSystem::hasEmitters(void) const
 {
-	for (TProcessVect::const_iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
-		if ((*it)->hasEmitters()) return true ;
+		if ((*it)->hasEmitters()) return true;
 	}
-	return false ;
+	return false;
 }
 	
 bool CParticleSystem::hasParticles(void) const
 {
-	for (TProcessVect::const_iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
-		if ((*it)->hasParticles()) return true ;
+		if ((*it)->hasParticles()) return true;
 	}
-	return false ;
+	return false;
 }
 
 
 void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 {	
-	CAnimationTime et = ellapsedTime ;
-	uint32 nbPass = 1 ;
+	CAnimationTime et = ellapsedTime;
+	uint32 nbPass = 1;
 
 	if (pass == PSSolidRender ||pass == PSBlendRender)
 	{
-		++_Date ; // update time		 
+		++_Date; // update time		 
 	}
 	else if (_AccurateIntegration && pass != PSToolRender)
 	{
 		if (et > _TimeThreshold)
 		{
-			nbPass = (uint32) ceilf(et / _TimeThreshold) ;
+			nbPass = (uint32) ceilf(et / _TimeThreshold);
 			if (nbPass > _MaxNbIntegrations)
 			{ 
-				nbPass = _MaxNbIntegrations ;
-				et = _CanSlowDown ? _TimeThreshold : (ellapsedTime / nbPass) ;
+				nbPass = _MaxNbIntegrations;
+				et = _CanSlowDown ? _TimeThreshold : (ellapsedTime / nbPass);
 			}
 			else
 			{
-				et = ellapsedTime / nbPass ;
+				et = ellapsedTime / nbPass;
 			}
 		}
 	}
@@ -199,119 +201,123 @@ void CParticleSystem::step(TPSProcessPass pass, CAnimationTime ellapsedTime)
 		 // it is needed for FaceLookat or the like		
 		// update current lod ratio
 
-		const CVector d = _SysMat.getPos() - _ViewMat.getPos() ;		
-		_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist) ;
-		if (_OneMinusCurrentLODRatio < 0) _OneMinusCurrentLODRatio = 0.f ;		
+		const CVector d = _SysMat.getPos() - _ViewMat.getPos();		
+		_OneMinusCurrentLODRatio = 1.f - (d.norm() * _InvCurrentViewDist);
+		if (_OneMinusCurrentLODRatio < 0) _OneMinusCurrentLODRatio = 0.f;		
 		
 	
 		// update system date
-		_SystemDate += ellapsedTime ;
+		_SystemDate += ellapsedTime;
 	
 	}
 	
 	do
 	{
-		for (TProcessVect::iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 		{
-			(*it)->step(pass, et) ;
+			(*it)->step(pass, et);
 		}
 	}
-	while (--nbPass) ;
+	while (--nbPass);
 }
 
 void CParticleSystem::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {	
-	sint version =  f.serialVersion(6) ;	
-	//f.serial(_ViewMat) ;
-	f.serial(_SysMat) ;
-	f.serial(_Date) ;
+	sint version =  f.serialVersion(7);	
+	//f.serial(_ViewMat);
+	f.serial(_SysMat);
+	f.serial(_Date);
 	if (f.isReading())
 	{
 		// delete previously attached process
-		for (TProcessVect::iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+		for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 		{
-			delete (*it) ;
+			delete (*it);
 		}
 
-		_ProcessVect.clear() ;
+		_ProcessVect.clear();
 
-		f.serialContPolyPtr(_ProcessVect) ;		
+		f.serialContPolyPtr(_ProcessVect);		
 	
-		_InvSysMat = _SysMat.inverted() ;
-		_FontGenerator = NULL ;
-		_FontManager = NULL ;
+		_InvSysMat = _SysMat.inverted();
+		_FontGenerator = NULL;
+		_FontManager = NULL;
 	}
 	else
 	{
-		f.serialContPolyPtr(_ProcessVect) ;	
+		f.serialContPolyPtr(_ProcessVect);	
 	}
 	
 	if (version > 1) // name of the system
 	{
-		f.serial(_Name) ;
+		f.serial(_Name);
 	}
 
 	if (version > 2) // infos about integration, and LOD
 	{
-		f.serial(_AccurateIntegration) ;
-		if (_AccurateIntegration) f.serial(_CanSlowDown, _TimeThreshold, _MaxNbIntegrations) ;
-		f.serial(_InvMaxViewDist, _LODRatio) ;	
-		_MaxViewDist = 1.f / _InvMaxViewDist ;
-		_InvCurrentViewDist = _InvMaxViewDist ;
+		f.serial(_AccurateIntegration);
+		if (_AccurateIntegration) f.serial(_CanSlowDown, _TimeThreshold, _MaxNbIntegrations);
+		f.serial(_InvMaxViewDist, _LODRatio);	
+		_MaxViewDist = 1.f / _InvMaxViewDist;
+		_InvCurrentViewDist = _InvMaxViewDist;
 	}
 
 	if (version > 3) // tell wether the system must compute his bbox, hold a precomputed bbox
 	{
-		f.serial(_ComputeBBox) ;
+		f.serial(_ComputeBBox);
 		if (!_ComputeBBox)
 		{
-			f.serial(_PreComputedBBox) ;
+			f.serial(_PreComputedBBox);
 		}
 	}
 
 	if (version > 4) // lifetime informations
 	{
-		f.serial(_DestroyModelWhenOutOfRange) ;
-		f.serialEnum(_DieCondition) ;
+		f.serial(_DestroyModelWhenOutOfRange);
+		f.serialEnum(_DieCondition);
 		if (_DieCondition != none)
 		{
-			f.serial(_DelayBeforeDieTest) ;
+			f.serial(_DelayBeforeDieTest);
 		}
 	}	
 
 	if (version > 5)
 	{
-		f.serial(_DestroyWhenOutOfFrustrum) ;
+		f.serial(_DestroyWhenOutOfFrustum);
 	}
 
+	if (version > 6)
+	{
+		f.serial(_PerformMotionWhenOutOfFrustum);
+	}
 
 	if (f.isReading())
 	{
-		notifyMaxNumFacesChanged() ;
+		notifyMaxNumFacesChanged();
 	}
 }
 
 
 void CParticleSystem::attach(CParticleSystemProcess *ptr)
 {
-	nlassert(std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) == _ProcessVect.end() ) ;
-	nlassert(ptr->getOwner() == NULL) ; // deja attache a un autre systeme
-	_ProcessVect.push_back(ptr) ;
-	ptr->setOwner(this) ;
-	notifyMaxNumFacesChanged() ;
+	nlassert(std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) == _ProcessVect.end() );
+	nlassert(ptr->getOwner() == NULL); // deja attache a un autre systeme
+	_ProcessVect.push_back(ptr);
+	ptr->setOwner(this);
+	notifyMaxNumFacesChanged();
 }
 
 
 
 void CParticleSystem::remove(CParticleSystemProcess *ptr)
 {
-	TProcessVect::iterator it = std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) ;
-	nlassert(it != _ProcessVect.end() ) ;	
-	_ProcessVect.erase(it) ;
+	TProcessVect::iterator it = std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr);
+	nlassert(it != _ProcessVect.end() );	
+	_ProcessVect.erase(it);
 	
 	
 
-	delete ptr ;
+	delete ptr;
 }
 
 
@@ -322,48 +328,48 @@ void CParticleSystem::computeBBox(NLMISC::CAABBox &aabbox)
 {
 	if (!_ComputeBBox)
 	{
-		aabbox = _PreComputedBBox ;
-		return ;
+		aabbox = _PreComputedBBox;
+		return;
 	}
 
-	bool foundOne = false ;
-	NLMISC::CAABBox tmpBox ;
-	for (TProcessVect::const_iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	bool foundOne = false;
+	NLMISC::CAABBox tmpBox;
+	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
 		if ((*it)->computeBBox(tmpBox))
 		{
 			if (!(*it)->isInSystemBasis())
 			{
 				// rotate the aabbox so that it is in the correct basis
-				tmpBox = CPSUtil::transformAABBox(_InvSysMat, tmpBox) ;
+				tmpBox = CPSUtil::transformAABBox(_InvSysMat, tmpBox);
 			}
 			if (foundOne)
 			{
-				aabbox = CPSUtil::computeAABBoxUnion(aabbox, tmpBox) ;
+				aabbox = CPSUtil::computeAABBoxUnion(aabbox, tmpBox);
 			}
 			else
 			{
-				aabbox = tmpBox ;
-				foundOne = true ;
+				aabbox = tmpBox;
+				foundOne = true;
 			}
 		}
 	}
 
 	if (!foundOne)
 	{
-		aabbox.setCenter(NLMISC::CVector::Null) ;
-		aabbox.setHalfSize(NLMISC::CVector::Null) ;
+		aabbox.setCenter(NLMISC::CVector::Null);
+		aabbox.setHalfSize(NLMISC::CVector::Null);
 	}
 	
-	_PreComputedBBox = aabbox ;	
+	_PreComputedBBox = aabbox;	
 }
 
 
 
 void CParticleSystem::setSysMat(const CMatrix &m)
 {
-	_SysMat = m ;
-	_InvSysMat = _SysMat.inverted() ;
+	_SysMat = m;
+	_InvSysMat = _SysMat.inverted();
 }
 
 
@@ -372,42 +378,42 @@ void CParticleSystem::setSysMat(const CMatrix &m)
 bool CParticleSystem::hasOpaqueObjects(void) const
 {
 	/// for each process
-	for (TProcessVect::const_iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
 		if (dynamic_cast<CPSLocated *>(*it))
 		{
-			for (uint k = 0 ; k < ((CPSLocated *) *it)->getNbBoundObjects() ; ++k)
+			for (uint k = 0; k < ((CPSLocated *) *it)->getNbBoundObjects(); ++k)
 			{
-				CPSLocatedBindable *lb = ((CPSLocated *) *it)->getBoundObject(k) ;
+				CPSLocatedBindable *lb = ((CPSLocated *) *it)->getBoundObject(k);
 				if (lb->getType() == PSParticle)
 				{
-					if (((CPSParticle *) lb)->hasOpaqueFaces()) return true ;
+					if (((CPSParticle *) lb)->hasOpaqueFaces()) return true;
 				}
 			}
 		}
 	}
-	return false ;
+	return false;
 }
 
 
 bool CParticleSystem::hasTransparentObjects(void) const
 {
 	/// for each process
-	for (TProcessVect::const_iterator it = _ProcessVect.begin() ; it != _ProcessVect.end() ; ++it)
+	for (TProcessVect::const_iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
 	{
 		if (dynamic_cast<CPSLocated *>(*it))
 		{
-			for (uint k = 0 ; k < ((CPSLocated *) *it)->getNbBoundObjects() ; ++k)
+			for (uint k = 0; k < ((CPSLocated *) *it)->getNbBoundObjects(); ++k)
 			{
-				CPSLocatedBindable *lb = ((CPSLocated *) *it)->getBoundObject(k) ;
+				CPSLocatedBindable *lb = ((CPSLocated *) *it)->getBoundObject(k);
 				if (lb->getType() == PSParticle)
 				{
-					if (((CPSParticle *) lb)->hasTransparentFaces()) return true ;
+					if (((CPSParticle *) lb)->hasTransparentFaces()) return true;
 				}
 			}
 		}
 	}
-	return false ;
+	return false;
 }
 
 
@@ -417,23 +423,23 @@ void CParticleSystem::getLODVect(NLMISC::CVector &v, float &offset,  bool system
 {
 	if (!systemBasis)
 	{
-		v = _InvCurrentViewDist * _InvertedViewMat.getJ() ;
-		offset = - _InvertedViewMat.getPos() * v ;
+		v = _InvCurrentViewDist * _InvertedViewMat.getJ();
+		offset = - _InvertedViewMat.getPos() * v;
 	}
 	else
 	{
-		const CVector tv = _InvSysMat.mulVector(_InvertedViewMat.getJ()) ;
-		const CVector org = _InvSysMat.mulVector(_InvertedViewMat.getPos()) ;
-		v = _InvCurrentViewDist * tv ;
-		offset = - org * v ;
+		const CVector tv = _InvSysMat.mulVector(_InvertedViewMat.getJ());
+		const CVector org = _InvSysMat.mulVector(_InvertedViewMat.getPos());
+		v = _InvCurrentViewDist * tv;
+		offset = - org * v;
 	}
 }
 
 
 TPSLod CParticleSystem::getLOD(void) const
 {
-	const float dist = fabsf(_InvCurrentViewDist * (_SysMat.getPos() - _InvertedViewMat.getPos()) * _InvertedViewMat.getJ()) ;
-	return dist > _LODRatio ? PSLod2 : PSLod1 ;
+	const float dist = fabsf(_InvCurrentViewDist * (_SysMat.getPos() - _InvertedViewMat.getPos()) * _InvertedViewMat.getJ());
+	return dist > _LODRatio ? PSLod2 : PSLod1;
 }
 
 

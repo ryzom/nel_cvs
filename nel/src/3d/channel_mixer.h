@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.8 2002/08/05 15:29:11 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.9 2003/11/06 14:49:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -231,7 +231,7 @@ public:
 	const CAnimationSet* getAnimationSet () const;
 
 	/** 
-	  * Launch evaluation of channels.
+	  * Launch evaluation of all channels.
 	  *
 	  * This is the main method. It evals animations selected in the slots for listed
 	  * channels.
@@ -246,6 +246,20 @@ public:
 	  *	else if < or >, compute the anim. ingored if detail is false.
 	  */
 	void eval (bool detail, uint64 evalDetailDate=0);
+
+	/** 
+	  * Launch evaluation of some channels.
+	  * 
+	  * \param channelIdArray array that contains the id of the channel to eval.
+	  * \param numID number of ids in the array
+	  * 
+      */
+	void evalChannels(sint *channelIdArray, uint numID);
+
+	/**
+	  * Force evaluation of a single channel
+	  */
+	inline void evalSingleChannel(sint channelId);
 
 	/// \name Channel access
 
@@ -449,8 +463,25 @@ private:
 	/// Reshresh animate list
 	void							refreshListToEval ();
 
-
+	/**
+	  * Force evaluation of a single channel
+	  *
+	  * \param chan			  the channel to eval
+	  * \param numActiveSlots number of active slots
+	  * \param activeSlot array of contiguous slots ids (there are 'numActiveSlots' of them)
+	  */
+	void evalSingleChannel (CChannel &chan, uint numActiveSlots, uint activeSlot[NumAnimationSlot]);
 };
+
+
+/////////////
+// INLINES //
+/////////////
+
+inline void	CChannelMixer::evalSingleChannel(sint channelId)
+{
+	evalChannels(&channelId, 1);
+}
 
 
 } // NL3D

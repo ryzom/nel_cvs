@@ -1,9 +1,7 @@
 /** \file types_nl.h
  * basic types, define and class
  *
- * $Id: types_nl.h,v 1.15 2000/11/21 18:19:05 valignat Exp $
- *
- * \todo ace: create the ucstring type (unicode string type based on a STL basic_string?)
+ * $Id: types_nl.h,v 1.16 2000/11/23 13:18:37 lecroart Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -40,7 +38,6 @@
 
 #include	<string>
 #include	<exception>
-
 
 // Operating systems definition
 
@@ -146,6 +143,11 @@
  * An unicode character (16 bits)
  */
 
+/**
+ * \typedef ucstring
+ * An unicode string (16 bits per character)
+ */
+
 #ifdef NL_OS_WINDOWS
 
 typedef	signed		__int8		sint8;
@@ -184,7 +186,151 @@ typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
 typedef	uint16	ucchar;
 
-typedef std::basic_string<ucchar, std::char_traits<ucchar>, std::allocator<ucchar> > ucstring;
+/*
+ * ucstring class, there's more converstion between char and ucchar
+ */
+typedef std::basic_string<ucchar> ucstringbase;
+
+class ucstring : public ucstringbase
+{
+public:
+
+	ucstring &operator= (ucchar c)
+	{
+		resize (1);
+		operator[](0) = c;
+		return *this;
+	}
+
+	ucstring &operator= (const char *str)
+	{
+		resize (strlen (str));
+		for (sint i = 0; i < (sint) strlen (str); i++)
+		{
+			operator[](i) = str[i];
+		}
+		return *this;
+	}
+
+	ucstring &operator= (const std::string &str)
+	{
+		resize (str.size ());
+		for (sint i = 0; i < (sint) str.size (); i++)
+		{
+			operator[](i) = str[i];
+		}
+		return *this;
+	}
+
+	ucstring &operator= (const ucstringbase &str)
+	{
+		ucstringbase::operator =(str);
+		return *this;
+	}
+
+	ucstring &operator+= (ucchar c)
+	{
+		resize (size() + 1);
+		operator[](size()-1) = c;
+		return *this;
+	}
+
+	ucstring &operator+= (const char *str)
+	{
+		sint s = size();
+		resize (s + strlen(str));
+		for (sint i = 0; i < (sint) strlen(str); i++)
+		{
+			operator[](s+i) = str[i];
+		}
+		return *this;
+	}
+
+	ucstring &operator+= (const std::string &str)
+	{
+		sint s = size();
+		resize (s + str.size());
+		for (sint i = 0; i < (sint) str.size(); i++)
+		{
+			operator[](s+i) = str[i];
+		}
+		return *this;
+	}
+
+	ucstring &operator+= (const ucstringbase &str)
+	{
+		ucstringbase::operator +=(str);
+		return *this;
+	}
+
+
+	void toString (std::string &str)
+	{
+		str.resize (size ());
+		for (sint i = 0; i < (sint) str.size (); i++)
+		{
+			operator[](i) = str[i];
+		}
+	}
+
+	
+	std::string toString ()
+	{
+		std::string str;
+		toString(str);
+		return str;
+	}
+
+};
+
+inline ucstring operator+(const ucstringbase &ucstr, ucchar c)
+{
+	ucstring	ret;
+	ret= ucstr;
+	ret+= c;
+	return ret;
+}
+
+inline ucstring operator+(const ucstringbase &ucstr, const char *c)
+{
+	ucstring	ret;
+	ret= ucstr;
+	ret+= c;
+	return ret;
+}
+
+inline ucstring operator+(const ucstringbase &ucstr, const std::string &c)
+{
+	ucstring	ret;
+	ret= ucstr;
+	ret+= c;
+	return ret;
+}
+
+inline ucstring operator+(ucchar c, const ucstringbase &ucstr)
+{
+	ucstring	ret;
+	ret= c;
+	ret += ucstr;
+	return ret;
+}
+
+inline ucstring operator+(const char *c, const ucstringbase &ucstr)
+{
+	ucstring	ret;
+	ret= c;
+	ret += ucstr;
+	return ret;
+}
+
+inline ucstring operator+(const std::string &c, const ucstringbase &ucstr)
+{
+	ucstring	ret;
+	ret= c;
+	ret += ucstr;
+	return ret;
+}
+
 
 /*
  * base class for all exceptions

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.22 2002/08/21 09:41:12 lecroart Exp $
+ * $Id: i18n.cpp,v 1.23 2002/11/29 09:11:05 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -43,6 +43,7 @@ string							 CI18N::_FileName = "";
 
 vector<ucstring>				 CI18N::_LanguageNames;
 bool							 CI18N::_LanguagesNamesLoaded = false;
+sint32							 CI18N::_SelectedLanguage = -1;
 
 ucchar CI18N::eatChar (IStream &is)
 {
@@ -229,6 +230,8 @@ void CI18N::load (uint32 lid)
 
 	_FileName  = _Path + _LanguageFiles[lid] + ".uxt";
 
+	_SelectedLanguage = lid;
+
 	if (_StrMapLoaded)	_StrMap.clear ();
 	else				_StrMapLoaded = true;
 
@@ -382,6 +385,15 @@ const ucstring &CI18N::get (const char *str)
 	}
 
 	return it->second;
+}
+
+
+string CI18N::getCurrentLanguage ()
+{
+	if (_SelectedLanguage == -1)
+		return "<NoLanguage>";
+	else
+		return _LanguageFiles[_SelectedLanguage];
 }
 
 const vector<ucstring> &CI18N::getLanguageNames()

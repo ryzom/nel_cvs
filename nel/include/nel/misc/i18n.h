@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.7 2002/06/21 13:02:15 miller Exp $
+ * $Id: i18n.h,v 1.8 2002/11/29 09:11:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,6 +73,9 @@ public:
 	/// Load a language file depending of the language
 	static void load (uint32 lid);
 
+	/// Returns the name of the language in english (french, english...)
+	static std::string getCurrentLanguage ();
+
 	/// Find a string in the selected language and return his association.
 	static const ucstring &get (const char *str);
 
@@ -93,6 +96,8 @@ private:
 
 	static std::vector<ucstring>								 _LanguageNames;
 	static bool													 _LanguagesNamesLoaded;
+
+	static sint32												 _SelectedLanguage;
 
 	static ucchar	eatChar				(IStream &is);
 	static void		checkASCII7B		(ucchar c);

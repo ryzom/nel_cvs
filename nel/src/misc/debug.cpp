@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.22 2000/12/08 09:38:55 cado Exp $
+ * $Id: debug.cpp,v 1.23 2000/12/11 11:46:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,6 @@ void nlFatalError (const char *format, ...)
 	NLMISC::ErrorLog.displayNL (cstring);
 
 #if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
-	// don't install signal is the application is started in debug mode
 	_asm int 3;
 #endif
 
@@ -81,7 +80,6 @@ void nlError (const char *format, ...)
 	NLMISC::ErrorLog.displayNL (cstring);
 
 #if defined(NL_OS_WINDOWS) && defined (NL_DEBUG)
-	// don't install signal is the application is started in debug mode
 	_asm int 3;
 #endif
 }

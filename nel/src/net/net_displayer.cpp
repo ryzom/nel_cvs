@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.12 2000/11/27 13:25:40 cado Exp $
+ * $Id: net_displayer.cpp,v 1.13 2000/12/11 11:46:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,10 +43,10 @@ const sint16 LOG_CBINDEX = 0;
 /*
  * Constructor
  */
-CNetDisplayer::CNetDisplayer() :
+CNetDisplayer::CNetDisplayer(bool autoConnect) :
 	_Server( true, false ) // disable logging otherwise an infinite recursion may occur
 {
-	findAndConnect();
+	if (autoConnect) findAndConnect();
 }
 
 

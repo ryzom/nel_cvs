@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.12 2000/12/08 18:11:43 lecroart Exp $
+ * $Id: unitime.cpp,v 1.13 2000/12/11 11:46:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,11 +49,20 @@ TTime CUniTime::getUniTime ()
 	return getLocalTime () - (_SyncLocalTime - _SyncUniTime);
 }
 
-void CUniTime::syncUniTimeFromService ()
+void CUniTime::syncUniTimeFromService (CInetAddress *addr)
 {
 	uint16 validitytime;
 	CSocket server;
-	if ( CNamingClient::lookupAndConnect( "TS", server, validitytime ) )
+	if (addr != NULL)
+	{
+		server.connect(*addr);
+	}
+	else
+	{
+		CNamingClient::lookupAndConnect( "TS", server, validitytime );
+	}
+
+	if (server.connected ())
 	{
 		sint attempt = 0;
 		TTime bestdelta = 0;

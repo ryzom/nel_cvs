@@ -1,7 +1,7 @@
 /** \file unitime.h
  * CUniTime class
  *
- * $Id: unitime.h,v 1.3 2000/11/24 10:13:58 lecroart Exp $
+ * $Id: unitime.h,v 1.4 2000/12/11 11:46:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,8 @@
 namespace NLNET
 {
 
+	class CInetAddress;
+
 /**
  * This class provide a independant universal time system.
  * \author Vianney Lecroart
@@ -51,7 +53,7 @@ public:
 	/** You need to call this function before calling getUniTime or an assert will occured.
 	 * This function will connect to the time service and synchronize your computer.
 	 */
-	static void				syncUniTimeFromService ();
+	static void				syncUniTimeFromService (CInetAddress *addr=NULL);
 
 
 

@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.33 2000/12/08 18:11:43 lecroart Exp $
+ * $Id: service.cpp,v 1.34 2000/12/11 11:46:58 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -100,13 +100,13 @@ void InitSignal()
 #ifdef NL_DEBUG
 	// in debug mode, we only trap the SIGINT signal
 	signal(Signal[3], SigHandler);
-	nldebug("Signal : %s (%d) trapped", SignalName[3], 3);
+	nldebug("Signal : %s (%d) trapped", SignalName[3], Signal[3]);
 #else
 	// in release, redirect all signals
 	for (int i = 0; i < (int)(sizeof(Signal)/sizeof(Signal[0])); i++)
 	{
 		signal(Signal[i], SigHandler);
-		nldebug("Signal %s (%d) trapped", SignalName[i], i);
+		nldebug("Signal %s (%d) trapped", SignalName[i], Signal[i]);
 	}
 #endif
 }

@@ -1,7 +1,7 @@
 /** \file net_displayer.h
  * CNetDisplayer class
  *
- * $Id: net_displayer.h,v 1.10 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: net_displayer.h,v 1.11 2000/12/11 11:46:58 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@ class CNetDisplayer : public NLMISC::IDisplayer
 public:
 
 	/// Constructor
-	CNetDisplayer();
+	CNetDisplayer(bool autoConnect = true);
 
 	/** Sets logging server address. Call this method from outside only if you want to use a LOGS not registered within the NS.
 	 * It does nothing if the displayer is already connected to a server.

@@ -29,7 +29,6 @@ public:
 	public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	protected:
 	//}}AFX_VIRTUAL
 
 // Implementation

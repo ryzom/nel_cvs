@@ -17,6 +17,7 @@ public:
 
 // Attributes
 public:
+	int		createX, createY, createCX, createCY;
 
 // Operations
 public:

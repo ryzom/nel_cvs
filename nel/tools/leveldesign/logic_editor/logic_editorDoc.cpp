@@ -5,6 +5,17 @@
 #include "logic_editor.h"
 
 #include "logic_editorDoc.h"
+#include "state.h"
+
+#include "logic/logic_state_machine.h"
+
+#include "nel/misc/file.h"
+
+#include <vector>
+
+using namespace NLMISC;
+using namespace std;
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -141,7 +152,7 @@ BOOL CLogic_editorDoc::changeVarName( CString old, const CString &newName)
 
 	// find all occurences of old and replace them with newName
 	// check ALL condition nodes and change occurences.... may take a long time !
-	POSITION nodePos;
+	//POSITION nodePos;
 	POSITION condPos = m_conditions.GetStartPosition();
 
 	while (condPos != NULL)
@@ -426,3 +437,122 @@ void CLogic_editorDoc::deleteState( CString name)
 		}
 	}
 }
+
+
+//------------------------------------------------------
+//	OnSaveDocument
+//
+//------------------------------------------------------
+BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
+{
+	POSITION pos;
+
+	string fName( fileName );
+	COFile f( fName );
+
+	CLogicStateMachine logicStateMachine;
+	toLogicStateMachine( logicStateMachine );
+	
+	
+	/// store the variables
+	CString variable;
+	for( pos = m_variables.GetHeadPosition(); pos != NULL; )
+	{
+		variable = m_variables.GetNext( pos );
+		CLogicVariable logicVariable;
+		logicVariable.setName( string((LPCSTR)variable) );
+		logicStateMachine.addVariable( logicVariable );
+	}
+	
+	// store the counters
+	CString counterName;
+	CCounter * pCounter = new CCounter();
+	for( pos = m_counters.GetStartPosition(); pos != NULL; )
+	{
+		// get counter
+		m_counters.GetNextAssoc( pos, counterName, (void*&)pCounter );
+		// set logic counter from counter
+		CLogicCounter logicCounter;
+		cCounterToCLogicCounter( *pCounter, logicCounter );
+		// set the logic counter name
+		logicCounter.setName( (LPCSTR)counterName );
+		// add the logic counter
+		logicStateMachine.addCounter( logicCounter );
+	}
+
+	// save the logic state machine
+	f.serial( logicStateMachine );
+	
+	return true;
+
+} // OnSaveDocument //
+
+
+
+//------------------------------------------------------
+//	OnOpenDocument
+//
+//------------------------------------------------------
+BOOL CLogic_editorDoc::OnOpenDocument(LPCTSTR lpszPathName) 
+{
+	if (!CDocument::OnOpenDocument(lpszPathName))
+		return FALSE;
+	
+	CIFile f( lpszPathName );
+
+	// load the logic state machine
+	vector<CLogicVariable> variables;
+	vector<CLogicCounter> counters;
+	vector<CLogicState> states;
+	f.serialCont( variables );
+	f.serialCont( counters );
+	f.serialCont( states );
+
+	/// init the variables
+	vector<CLogicVariable>::iterator itVar;
+	for( itVar = variables.begin(); itVar != variables.end(); ++itVar )
+	{
+		m_variables.AddTail( CString((*itVar).getName().c_str()) );
+	}
+
+	// init the counters
+	vector<CLogicCounter>::iterator itCounter; 
+	for( itCounter = counters.begin(); itCounter != counters.end(); ++itCounter )
+	{
+		CCounter * counter = new CCounter();
+		cLogicCounterToCCounter( *itCounter, *counter );
+		m_counters[CString((*itCounter).getName().c_str())] = counter;
+	}
+	
+	return TRUE;
+
+} // OnOpenDocument //
+
+
+
+//------------------------------------------------------
+//	toLogicStateMachine
+//
+//------------------------------------------------------
+void CLogic_editorDoc::toLogicStateMachine( CLogicStateMachine& logicStateMachine )
+{
+
+	// states
+	POSITION pos;
+	CString stateName;
+	CState * pState;
+	for( pos = m_states.GetStartPosition(); pos != NULL; )
+	{
+		m_states.GetNextAssoc( pos, stateName, (void*&)pState );
+		CLogicState logicState;
+		cStateToCLogicState( *pState, logicState );
+		logicStateMachine.addState( logicState );
+	}
+	
+	// file name
+	// TODO
+
+} // toLogicStateMachine //
+
+
+

@@ -12,6 +12,7 @@
 #include <afxtempl.h>
 
 class CConditionNode;
+class CLogicConditionNode;
 
 typedef CList< CConditionNode*, CConditionNode* > TPtrConditionList;
 
@@ -57,7 +58,7 @@ public:
 	/// change all the occurences of the 'old' condition into 'newName' (recursive)
 	void conditionDeleted( const CString &name);
 
-
+	
 // attributes
 public:
 	/// \name condition logic block

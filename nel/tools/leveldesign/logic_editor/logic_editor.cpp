@@ -1,7 +1,12 @@
-// logic_editor.cpp : Defines the class behaviors for the application.
+// logic.cpp : Defines the initialization routines for the DLL.
 //
 
 #include "stdafx.h"
+
+#undef LOGIC_EDITOR_EXPORT
+#define LOGIC_EDITOR_EXPORT __declspec( dllexport ) 
+
+
 #include "logic_editor.h"
 
 #include "MainFrm.h"
@@ -15,18 +20,44 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+
+
+
+//
+//	Note!
+//
+//		If this DLL is dynamically linked against the MFC
+//		DLLs, any functions exported from this DLL which
+//		call into MFC must have the AFX_MANAGE_STATE macro
+//		added at the very beginning of the function.
+//
+//		For example:
+//
+//		extern "C" BOOL PASCAL EXPORT ExportedFunction()
+//		{
+//			AFX_MANAGE_STATE(AfxGetStaticModuleState());
+//			// normal function body here
+//		}
+//
+//		It is very important that this macro appear in each
+//		function, prior to any calls into MFC.  This means that
+//		it must appear as the first statement within the 
+//		function, even before any object variable declarations
+//		as their constructors may generate calls into the MFC
+//		DLL.
+//
+//		Please see MFC Technical Notes 33 and 58 for additional
+//		details.
+//
+
 /////////////////////////////////////////////////////////////////////////////
 // CLogic_editorApp
 
 BEGIN_MESSAGE_MAP(CLogic_editorApp, CWinApp)
 	//{{AFX_MSG_MAP(CLogic_editorApp)
-	ON_COMMAND(ID_APP_ABOUT, OnAppAbout)
 		// NOTE - the ClassWizard will add and remove mapping macros here.
 		//    DO NOT EDIT what you see in these blocks of generated code!
 	//}}AFX_MSG_MAP
-	// Standard file based document commands
-	ON_COMMAND(ID_FILE_NEW, CWinApp::OnFileNew)
-	ON_COMMAND(ID_FILE_OPEN, CWinApp::OnFileOpen)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -43,10 +74,12 @@ CLogic_editorApp::CLogic_editorApp()
 
 CLogic_editorApp theApp;
 
+
+
 /////////////////////////////////////////////////////////////////////////////
 // CLogic_editorApp initialization
-
-BOOL CLogic_editorApp::InitInstance()
+//BOOL CLogic_editorApp::InitInstance()
+BOOL CLogic_editorApp::initInstance()
 {
 	AfxEnableControlContainer();
 
@@ -55,11 +88,13 @@ BOOL CLogic_editorApp::InitInstance()
 	//  of your final executable, you should remove from the following
 	//  the specific initialization routines you do not need.
 
+
 #ifdef _AFXDLL
-	Enable3dControls();			// Call this when using MFC in a shared DLL
+//	Enable3dControls();			// Call this when using MFC in a shared DLL
 #else
-	Enable3dControlsStatic();	// Call this when linking to MFC statically
+//	Enable3dControlsStatic();	// Call this when linking to MFC statically
 #endif
+
 
 	// Change the registry key under which our settings are stored.
 	// TODO: You should modify this string to be something appropriate
@@ -70,7 +105,6 @@ BOOL CLogic_editorApp::InitInstance()
 
 	// Register the application's document templates.  Document templates
 	//  serve as the connection between documents, frame windows and views.
-
 	CMultiDocTemplate* pDocTemplate;
 	pDocTemplate = new CMultiDocTemplate(
 		IDR_LOGIC_TYPE,
@@ -100,9 +134,11 @@ BOOL CLogic_editorApp::InitInstance()
 	if (!ProcessShellCommand(cmdInfo))
 		return FALSE;
 
+	/*
 	// The main window has been initialized, so show and update it.
 	pMainFrame->ShowWindow(m_nCmdShow);
 	pMainFrame->UpdateWindow();
+	*/
 
 	return TRUE;
 }
@@ -155,12 +191,180 @@ BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
 END_MESSAGE_MAP()
 
 // App command to run the dialog
-void CLogic_editorApp::OnAppAbout()
+/*void CLogic_editorApp::OnAppAbout()
 {
 	CAboutDlg aboutDlg;
 	aboutDlg.DoModal();
-}
+}*/
 
 /////////////////////////////////////////////////////////////////////////////
 // CLogic_editorApp message handlers
+
+
+
+
+
+
+
+//---------------------------------------------
+//	CLogicEditor
+//
+//---------------------------------------------
+CLogicEditor::CLogicEditor()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());	
+		
+} // CLogicEditor //
+
+
+
+
+//---------------------------------------------
+//	initUI
+//
+//---------------------------------------------
+void CLogicEditor::initUI( HWND parent )
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	theApp.initInstance();
+		
+	// The main window has been initialized, so show and update it.
+	theApp.m_pMainWnd->ShowWindow(SW_SHOW);
+	theApp.m_pMainWnd->UpdateWindow();
+
+} // initUI //
+
+
+
+//---------------------------------------------
+//	initUILight
+//
+//---------------------------------------------
+void CLogicEditor::initUILight (int x, int y, int cx, int cy)
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	
+	if (theApp.m_pMainWnd != NULL)
+		return;
+
+	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createX = x;
+	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createY = y;
+	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createCX = cx;
+	static_cast<CMainFrame*>(theApp.m_pMainWnd)->createCY = cy;
+	//theApp.initInstance();
+		
+	// The main window has been initialized, so show and update it.
+	theApp.m_pMainWnd->ShowWindow(SW_SHOW);
+	theApp.m_pMainWnd->UpdateWindow();
+	
+
+} // initUILight //
+
+
+
+//---------------------------------------------
+//	Go
+//
+//---------------------------------------------
+void CLogicEditor::go()
+{
+	do
+	{
+		MSG	msg;
+		while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
+	while (true);
+
+} // go
+
+
+
+//---------------------------------------------
+//	releaseUI
+//
+//---------------------------------------------
+void CLogicEditor::releaseUI()
+{
+		
+} // releaseUI
+
+
+
+//---------------------------------------------
+//	getInterface
+//
+//---------------------------------------------
+ILogicEditor * ILogicEditor::getInterface( int version )
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// Check version number
+	if( version != LOGIC_EDITOR_VERSION )
+	{
+		MessageBox( NULL, "Bad version of logic_editor.dll.", "Logic Editor", MB_ICONEXCLAMATION|MB_OK);
+		return NULL;
+	}
+	else
+		return new CLogicEditor;
+
+} // getInterface //
+
+
+
+//---------------------------------------------
+//	getMainFrame
+//
+//---------------------------------------------
+void * CLogicEditor::getMainFrame ()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+	
+	if (theApp.m_pMainWnd == NULL)
+		initUI();
+	
+	return theApp.m_pMainWnd;
+
+} // getMainFrame //
+
+
+
+//---------------------------------------------
+//	releaseInterface
+//
+//---------------------------------------------
+void ILogicEditor::releaseInterface( ILogicEditor * logicEditor )
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	delete logicEditor;
+
+} // releaseInterface //
+
+
+//---------------------------------------------
+//	releaseInterface
+//
+//---------------------------------------------
+ILogicEditor * ILogicEditorGetInterface( int version )
+{
+	return ILogicEditor::getInterface( version );
+
+} // releaseInterface //
+
+
+//---------------------------------------------
+//	ILogicEditorReleaseInterface
+//
+//---------------------------------------------
+void ILogicEditorReleaseInterface( ILogicEditor * pWE )
+{
+	ILogicEditor::releaseInterface( pWE );
+
+} // ILogicEditorReleaseInterface //
+
 

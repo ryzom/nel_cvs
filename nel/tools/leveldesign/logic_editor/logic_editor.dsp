@@ -2,7 +2,7 @@
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
 # ** DO NOT EDIT **
 
-# TARGTYPE "Win32 (x86) Application" 0x0101
+# TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=logic_editor - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
@@ -17,8 +17,8 @@ CFG=logic_editor - Win32 Debug
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "logic_editor - Win32 Release" (based on "Win32 (x86) Application")
-!MESSAGE "logic_editor - Win32 Debug" (based on "Win32 (x86) Application")
+!MESSAGE "logic_editor - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "logic_editor - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -41,18 +41,18 @@ RSC=rc.exe
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Yu"stdafx.h" /FD /c
+# ADD BASE CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
-# ADD RSC /l 0x409 /d "NDEBUG" /d "_AFXDLL"
+# ADD BASE RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "NDEBUG" /d "_AFXDLL"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /machine:I386
+# ADD BASE LINK32 /nologo /subsystem:windows /dll /machine:I386
+# ADD LINK32 /nologo /subsystem:windows /dll /machine:I386
 
 !ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
 
@@ -67,18 +67,18 @@ LINK32=link.exe
 # PROP Intermediate_Dir "Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /D "__STL_DEBUG" /Yu"stdafx.h" /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
-# ADD BASE RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
-# ADD RSC /l 0x409 /d "_DEBUG" /d "_AFXDLL"
+# ADD BASE RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
+# ADD RSC /l 0x40c /d "_DEBUG" /d "_AFXDLL"
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
+# ADD BASE LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
+# ADD LINK32 /nologo /subsystem:windows /dll /debug /machine:I386 /out:"R:\code\nel\tools\leveldesign\logic_editor_exe\logic_editor.dll" /pdbtype:sept
 
 !ENDIF 
 
@@ -124,6 +124,10 @@ SOURCE=.\EditorPropertySheet.cpp
 # Begin Source File
 
 SOURCE=.\logic_editor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\logic_editor.def
 # End Source File
 # Begin Source File
 
@@ -224,6 +228,10 @@ SOURCE=.\logic_editor.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\logic_editor_interface.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\logic_editorDoc.h
 # End Source File
 # Begin Source File
@@ -299,10 +307,62 @@ SOURCE=.\res\logic_editorDoc.ico
 SOURCE=.\res\Toolbar.bmp
 # End Source File
 # End Group
+# Begin Group "libraries"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\logic_editor.reg
+SOURCE=..\..\..\..\..\distrib\gamedev\lib\logic_debug.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\gamedev\lib\logic.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\nel\lib\nlmisc_debug.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\nel\lib\nlmisc.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\ReadMe.txt

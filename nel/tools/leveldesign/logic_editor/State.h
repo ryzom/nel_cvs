@@ -13,6 +13,9 @@
 
 #include <afxtempl.h>
 
+
+class CLogicState;
+
 /**
 * class CEvent
 */
@@ -64,6 +67,9 @@ public:
 typedef CList< CEvent *, CEvent *&> TPEventList;
 
 
+
+
+
 /**
 * class State
 */
@@ -93,5 +99,11 @@ public:
 	/// list of pointers on CEvent objects
 	TPEventList	m_evEvents;
 };
+
+
+/**
+ * Set a CLogicState from a CState 
+ */
+void cStateToCLogicState( CState& state, CLogicState& logicState );
 
 #endif // !defined(AFX_STATE_H__8501C0A2_320A_42B9_BD7E_3D77F27301ED__INCLUDED_)

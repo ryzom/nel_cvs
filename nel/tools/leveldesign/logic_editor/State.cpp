@@ -6,6 +6,12 @@
 #include "logic_editor.h"
 #include "State.h"
 
+#include "logic/logic_state.h"
+
+#include <string>
+
+using namespace std;
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -53,6 +59,43 @@ operator==( const CEvent &ev1, const CEvent &ev2)
 			&& (ev1.m_sStateChange == ev2.m_sStateChange)
 		   );
 }
+
+
+
+//-----------------------------------------------
+//	cEventToCLogicEvent
+//
+//-----------------------------------------------
+void cEventToCLogicEvent( CEvent& event, CLogicEvent& logicEvent )
+{
+	/// condition name
+	logicEvent.ConditionName = string( (LPCSTR)event.m_sConditionName );
+	
+	/// event action
+	logicEvent.EventAction.IsStateChange = event.m_bActionIsMessage;
+
+	if( logicEvent.EventAction.IsStateChange )
+	{
+		/// state name for state change
+		logicEvent.EventAction.StateChange = string( (LPCSTR)event.m_sStateChange );
+	}
+	else
+	{
+		/// event message
+		logicEvent.EventAction.EventMessage.MessageDestination = string( (LPCSTR)event.m_sMessageDestination );
+
+		/// message id
+		logicEvent.EventAction.EventMessage.MessageId = string( (LPCSTR)event.m_sMessageDestination );
+
+		/// message arguments
+		logicEvent.EventAction.EventMessage.MessageArguments = string( (LPCSTR)event.m_sArguments );
+	}
+
+} // cEventToCLogicEvent //
+
+
+
+
 
 //////////////////////////////////////////////////////////////////////
 //  CState Construction/Destruction
@@ -123,3 +166,26 @@ BOOL CState::removeEvent( CEvent *event)
 
 	return FALSE;
 }
+
+
+//-----------------------------------------------
+//	cStateToCLogicState
+//
+//-----------------------------------------------
+void cStateToCLogicState( CState& state, CLogicState& logicState )
+{
+	/// state name
+	logicState.setName( string( (LPCSTR)state.m_sName ) );
+
+	POSITION pos;
+	for( pos = state.m_evEvents.GetHeadPosition(); pos != NULL; )
+	{
+		CEvent * pEvent = state.m_evEvents.GetNext( pos );
+		
+		CLogicEvent logicEvent;
+		cEventToCLogicEvent( *pEvent, logicEvent );
+		
+		logicState.addEvent( logicEvent );
+	}
+
+} // cStateToCLogicState //

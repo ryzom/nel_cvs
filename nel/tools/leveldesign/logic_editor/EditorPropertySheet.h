@@ -32,7 +32,7 @@ public:
 // Attributes
 public:
 
-protected:
+//protected:
 	CCounterPage	m_counterPage;
 	CConditionPage	m_conditionPage;
 	CVariablePage	m_variablePage;

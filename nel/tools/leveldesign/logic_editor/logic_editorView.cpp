@@ -79,3 +79,4 @@ CLogic_editorDoc* CLogic_editorView::GetDocument() // non-debug version is inlin
 
 /////////////////////////////////////////////////////////////////////////////
 // CLogic_editorView message handlers
+

@@ -13,6 +13,7 @@
 #include "Condition.h"
 #include "State.h"
 
+class CLogicStateMachine;
 
 class CLogic_editorDoc : public CDocument
 {
@@ -98,12 +99,27 @@ public:
 	void deleteState( CString name);
 
 
+	/**
+	 * set a serializable state machine
+	 */
+	void toLogicStateMachine( CLogicStateMachine& logicStateMachine );
+
+
+	/**
+	 * callback called at document save
+	 */
+	virtual BOOL OnSaveDocument( LPCTSTR fileName );
+
+
+
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CLogic_editorDoc)
 	public:
 	virtual BOOL OnNewDocument();
 	virtual void Serialize(CArchive& ar);
+	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
 	//}}AFX_VIRTUAL
 
 // Implementation

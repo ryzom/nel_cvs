@@ -4,13 +4,18 @@
 
 #include "stdafx.h"
 #include "logic_editor.h"
-#include "Condition.h"
+#include "condition.h"
+#include "logic/logic_condition.h"
+
+#include <vector>
 
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
+
+using namespace std;
 
 //////////////////////////////////////////////////////////////////////
 // CConditionNode implementation
@@ -127,6 +132,70 @@ void CConditionNode::conditionDeleted( const CString &name)
 	}
 }
 
+
+//-----------------------------------------------------
+//	toLogicConditionNode
+//
+//-----------------------------------------------------
+void cConditionNodeToCLogicConditionNode(CConditionNode& conditionNode, CLogicConditionNode& logicConditionNode )
+{
+	// if this node is a terminator node
+	if( conditionNode.m_type == CConditionNode::TERMINATOR )
+	{
+		logicConditionNode.Type = CLogicConditionNode::TERMINATOR; 
+		
+	}
+	else
+	// this node is a logic node
+	{
+		logicConditionNode.Type = CLogicConditionNode::LOGIC_NODE;
+				
+		// part 1 : a logic block(not/comparison/subcondition)
+		switch( conditionNode.m_type )
+		{
+			case CConditionNode::NOT :
+			{
+				logicConditionNode.LogicBlock.Type = CLogicConditionLogicBlock::NOT;
+				
+			}
+			break;
+
+			case CConditionNode::COMPARISON :
+			{
+				logicConditionNode.LogicBlock.Type = CLogicConditionLogicBlock::COMPARISON;
+				
+				logicConditionNode.LogicBlock.ComparisonBlock.VariableName = string( (LPCSTR)conditionNode.m_sVariableName );
+				logicConditionNode.LogicBlock.ComparisonBlock.Operator = string( (LPCSTR)conditionNode.m_sOperator );
+				logicConditionNode.LogicBlock.ComparisonBlock.Comparand = (sint64)conditionNode.m_dComparand;
+			}
+			break;
+			
+			case CConditionNode::SUB_CONDITION :
+			{
+				logicConditionNode.LogicBlock.Type = CLogicConditionLogicBlock::SUB_CONDITION;
+				
+				logicConditionNode.LogicBlock.SubCondition = string( (LPCSTR)conditionNode.m_sConditionName );
+			}
+			break;
+		}
+
+		// part 2 : a condition sub tree
+		POSITION pos;
+		for( pos = conditionNode.m_ctSubTree.GetHeadPosition(); pos != NULL; )
+		{
+			CConditionNode * pConditionNode = conditionNode.m_ctSubTree.GetNext( pos );
+			CLogicConditionNode logicConditionNodeTmp;
+			cConditionNodeToCLogicConditionNode( *pConditionNode, logicConditionNodeTmp );
+			logicConditionNode.addToSubNodes( logicConditionNodeTmp );
+		}
+	}
+
+} // toLogicConditionNode //
+
+
+
+
+
 //////////////////////////////////////////////////////////////////////
 // CCondition implementation
 //////////////////////////////////////////////////////////////////////
@@ -217,3 +286,26 @@ void CCondition::conditionDeleted( CString name)
 		}
 	}
 }
+
+
+//-----------------------------------------------------
+//	cConditionToCLogicCondition
+//
+//-----------------------------------------------------
+void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicCondition )
+{
+	// condition name
+	logicCondition.ConditionName = string( (LPCSTR)condition.m_sName );
+
+	// nodes
+	POSITION pos;
+	for( pos = condition.m_ctConditionTree.GetHeadPosition(); pos != NULL; )
+	{
+		CConditionNode * pConditionNode = condition.m_ctConditionTree.GetNext( pos );
+		CLogicConditionNode logicConditionNode;
+		cConditionNodeToCLogicConditionNode( *pConditionNode,logicConditionNode );
+		logicCondition.Nodes.push_back( logicConditionNode );
+	}
+
+} // cConditionToCLogicCondition //
+

@@ -106,3 +106,26 @@ void CEditorFormView::OnInitialUpdate()
 	m_bInitDone = TRUE;
 }
 
+
+
+extern CLogic_editorApp theApp;
+
+//-----------------------------------------------
+//	OnUpdate
+//
+//-----------------------------------------------
+void CEditorFormView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
+{
+	/*
+	POSITION pos;
+	CString variable;
+	for( pos = theApp.m_variables.GetHeadPosition(); pos != NULL; )
+	{
+		variable = theApp.m_variables.GetNext( pos );
+	}
+
+	//m_listVariables.AddString( m_sVarName );
+	*/
+	//CLogic_editorDoc *pDoc = static_cast<CLogic_editorDoc *> (GetDocument());
+
+} // OnUpdate //

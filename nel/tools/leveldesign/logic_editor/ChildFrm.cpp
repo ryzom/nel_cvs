@@ -22,8 +22,6 @@ IMPLEMENT_DYNCREATE(CChildFrame, CMDIChildWnd)
 
 BEGIN_MESSAGE_MAP(CChildFrame, CMDIChildWnd)
 	//{{AFX_MSG_MAP(CChildFrame)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -81,3 +79,4 @@ BOOL CChildFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 	//return CMDIChildWnd::OnCreateClient(lpcs, pContext);
 	return TRUE;
 }
+

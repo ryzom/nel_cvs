@@ -9,6 +9,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+class CLogicCounter;
+
 /**
 * Classe CCounter : represent counters in .LOGIC files
 */
@@ -32,7 +34,7 @@ public:
 	inline void upperLimit( long max) { m_nUpperLimit = max; }
 
 //attributes
-private:
+public:
 	/// counter name
 	CString	m_sName;
 
@@ -48,5 +50,19 @@ private:
 	/// upper limit
 	long	m_nUpperLimit;
 };
+
+
+/**
+ * Set a CLogicCounter object from a CCounter
+ */
+void cCounterToCLogicCounter( CCounter& counter, CLogicCounter& logicCounter );
+
+
+/**
+ * Set a CCounter object from a CLogicCounter
+ */
+void cLogicCounterToCCounter( CLogicCounter& logicCounter, CCounter& counter );
+
+
 
 #endif // !defined(AFX_COUNTER_H__0C20D48D_E90E_4B32_B53C_2C91974411DB__INCLUDED_)

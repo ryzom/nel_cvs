@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.16 2003/04/24 13:45:37 boucher Exp $
+ * $Id: background_sound_manager.cpp,v 1.17 2003/06/05 15:45:34 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ const float	INSIDE_FALLOF = 10.0f;
 
 
 CBackgroundSoundManager::CBackgroundSoundManager()
-: _LastPosition(0,0,0), _Playing(false)
+: _LastPosition(0,0,0), _Playing(false), _DoFade(false)
 {
 	for (uint i=0; i<UAudioMixer::TBackgroundFlags::NB_BACKGROUND_FLAGS; ++i)
 	{

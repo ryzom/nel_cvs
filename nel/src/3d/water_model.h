@@ -1,7 +1,7 @@
 /** \file water_model.h
  * A model for water
  *
- * $Id: water_model.h,v 1.1 2001/10/26 08:21:57 vizerie Exp $
+ * $Id: water_model.h,v 1.2 2001/11/07 10:38:00 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -32,6 +32,8 @@
 namespace NL3D {
 
 
+class CWaterPoolManager;
+
 /**
  * A water quad
  * \author Nicolas Vizerie
@@ -47,6 +49,9 @@ public:
 	// register this model and his observers
 	static void registerBasic();	
 	static IModel *creator() { return new CWaterModel; }
+
+	// get default tracks
+	virtual ITrack* getDefaultTrack (uint valueId);
 };
 
 

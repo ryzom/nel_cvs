@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.8 2001/07/25 13:10:42 vizerie Exp $
+ * $Id: particle_system_model.cpp,v 1.9 2001/07/25 14:09:30 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,6 +92,7 @@ void CParticleSystemModel::invalidate(void)
 {
 	delete _ParticleSystem ;
 	_ParticleSystem = NULL ;
+	_Invalidated = true ;
 	std::vector<IPSModelObserver *> copyVect(_Observers.begin(), _Observers.end()) ;
 	for (std::vector<IPSModelObserver *>::iterator it = _Observers.begin(); it != _Observers.end() ; ++it)
 	{
@@ -155,11 +156,13 @@ void	CParticleSystemDetailObs ::traverse(IObs *caller)
 {    
 	CTransformAnimDetailObs::traverse(caller);
 
+
 	if (ClipObs->Visible)
 	{
 		
 		nlassert(dynamic_cast<CParticleSystemModel *>(Model)) ;
 		CParticleSystemModel *psm= (CParticleSystemModel *)Model;
+		if (psm->_Invalidated) return ;
 
 		
 		
@@ -221,6 +224,8 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 	  */
 
 	traverseSons() ;
+
+	if (m->_Invalidated) return ;
 
 	CParticleSystem *ps = m->_ParticleSystem ;
 	// Transform the pyramid in Object space.

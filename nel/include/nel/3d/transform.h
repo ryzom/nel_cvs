@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.6 2000/12/06 14:32:24 berenguier Exp $
+ * $Id: transform.h,v 1.7 2001/02/05 16:51:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/3d/mot.h"
 #include "nel/3d/hrc_trav.h"
 #include "nel/3d/clip_trav.h"
+#include "nel/3d/animatable.h"
 #include "nel/misc/matrix.h"
 
 
@@ -60,7 +61,7 @@ const NLMISC::CClassId		TransformId=NLMISC::CClassId(0x174750cb, 0xf952024);
  * \author Nevrax France
  * \date 2000
  */
-class CTransform : public IModel
+class CTransform : public IModel, IAnimatable
 {
 public:
 	/// Call at the begining of the program, to register the model, and the basic observers.

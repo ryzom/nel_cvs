@@ -1,7 +1,7 @@
 /** \file triangle.cpp
  * <File description>
  *
- * $Id: triangle.cpp,v 1.2 2001/01/23 14:31:41 corvazier Exp $
+ * $Id: triangle.cpp,v 1.3 2001/02/05 16:51:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@ using namespace NLMISC;
 namespace NL3D 
 {
 
+#define EPSILON 0.0001f
+
 // ***************************************************************************
 bool CTriangle::intersect (const CVector& p0, const CVector& p1, CVector& hit, const CPlane& plane) const
 {
@@ -38,30 +40,39 @@ bool CTriangle::intersect (const CVector& p0, const CVector& p1, CVector& hit, c
 	CVector normal=plane.getNormal();
 
 	// Not clipped by the plane ?
-	if (plane*p0<0.f)
+	if (plane*p0<-EPSILON)
 	{
-		if (plane*p1<0.f)
+		if (plane*p1<-EPSILON)
 			return false;
 	}
 	else
 	{
-		if (plane*p1>=0.f)
+		if (plane*p1>EPSILON)
 			return false;
 	}
 
 	// Point on the plane
 	hit=plane.intersect (p0, p1);
 
-	// Check
-	float fDist=plane*hit;
-
 	// Check the point...
-	bool positive=(((V0-hit)^(V1-hit))*normal>0.f);
+	float f=((V0-hit)^(V1-hit))*normal;
+	bool negative=f<EPSILON;
+	bool positive=f>-EPSILON;
 
-	if ((((V1-hit)^(V2-hit))*normal>0.f)!=positive)
+	float f2=((V1-hit)^(V2-hit))*normal;
+	if ((!positive)&&(f2>EPSILON))
 		return false;
-	return ((((V2-hit)^(V0-hit))*normal>0.f)==positive);
+	if ((!negative)&&(f2<-EPSILON))
+		return false;
+
+	f2=((V2-hit)^(V0-hit))*normal;
+	if ((!positive)&&(f2>EPSILON))
+		return false;
+	if ((!negative)&&(f2<-EPSILON))
+		return false;
+	return true;
 }
 
 
 } // NL3D
+

@@ -26,7 +26,7 @@ CFG=3d - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=xicl6.exe
+CPP=cl.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -48,7 +48,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
@@ -71,7 +71,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
@@ -94,7 +94,7 @@ LIB32=xilink6.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=xilink6.exe -lib
+LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"../lib/nl3d.lib"
 # ADD LIB32 /nologo /out:"../lib/nl3d_rd.lib"
 
@@ -573,6 +573,82 @@ SOURCE=.\3d\mrm_mesh.cpp
 SOURCE=..\include\nel\3d\mrm_mesh.h
 # End Source File
 # End Group
+# Begin Group "Animation"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\animatable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\animatable.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\animated_value.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\animated_value.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\animation.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\animation.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\animation_time.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\animation_time.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\channel.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\channel.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\channel_mixer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\channel_mixer.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\key.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\key.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\track.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\track.h
+# End Source File
+# End Group
+# Begin Source File
+
+SOURCE=.\3d\animation_set.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\animation_set.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.cpp

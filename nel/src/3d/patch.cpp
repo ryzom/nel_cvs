@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.40 2001/02/01 16:32:30 berenguier Exp $
+ * $Id: patch.cpp,v 1.41 2001/02/05 16:51:42 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1478,6 +1478,9 @@ void		CPatch::packShadowMap (const CTileLumel *pLumel)
 	// Init the stream on a buffer
 	stream.setPtr (&CompressedLumels);
 			// second compression
+	// Reset
+	contReset (CompressedLumels);
+
 	// Ptr on the bilinear value
 	uint8 *pInterpolated=_ShadingBuffer;
 
@@ -1518,6 +1521,8 @@ void		CPatch::packShadowMap (const CTileLumel *pLumel)
 		// Increment pointers
 		pLumel+=lumelCount;
 
+
+	uint size=CompressedLumels.size();
 		// Next line of block
 		pLumelSrc+=lumelCount*4;
 	}

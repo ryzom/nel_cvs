@@ -1,6 +1,8 @@
 // memory.cpp : Defines the entry point for the DLL application.
 //
 
+//#include <stl/_site_config.h>
+#include "nel/memory/memory_manager.h"
 #include <new>
 #ifdef WIN32
 #include <crtdbg.h>
@@ -71,6 +73,6 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 }
 #else
 
-// not implemented
+// do nothing
 
 #endif // WIN32

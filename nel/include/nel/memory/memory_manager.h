@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.21 2005/02/22 10:14:13 besson Exp $
+ * $Id: memory_manager.h,v 1.22 2005/04/05 10:24:14 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,10 +27,8 @@
 #define NL_MEMORY_MANAGER_H
 
 // CONFIGURATION
-#include "memory_config.h"
-
-// Malloc
-#include <malloc.h>
+#include "nel/memory/memory_config.h"
+#include <stl/_site_config.h>
 
 /*	Doc:
 	----
@@ -204,6 +202,137 @@
 // ********* Cut here
 #endif // 0
 
+
+#if 0
+/*
+ * To use NeL Memory with STLport 4.5.3/4.6 for GCC, you will have to patch STLport a bit more than for VC6.
+ *
+ * To build STLPort library with Nelallocator, you should have build
+ * all the nelmemory libraries.
+ *
+ * Only tested under c++ (GCC) 3.2.3 (Debian)
+ */
+
+/* This tells STLport to perform allocations only through new operator, without any inner debug allocation (NeL memory does it) */
+// ********* Patch in stl/_site_config.h, l. 104 - insert following block
+#define _STLP_USE_NEL 1
+#define _STLP_USE_NEWALLOC 1
+#undef  _STLP_USE_MALLOC
+#undef  _STLP_DEBUG_ALLOC
+// ********* Cut here
+
+/* If using Nel, read native new header, then overload them with NeL memory */
+// ********* Patch in STLport 4.5.3 & 4.6 new, l. 35 - replace #if .. #endif by following block
+# if defined (_STLP_USE_NEL)
+#  include _STLP_NATIVE_CPP_RUNTIME_HEADER(new)
+#  include "nel/memory/memory_manager.h"
+#else
+# if !defined (_STLP_NO_NEW_NEW_HEADER)
+#   include _STLP_NATIVE_CPP_RUNTIME_HEADER(new)
+#  else
+#   include  <new.h>
+# endif
+#endif
+// ********* Cut here
+
+/* Force STLport to use NeL memory functions, as GCC seems not to handle complex new operator use */
+// ********* Patch in STLport 4.6 stl/_new.h, l. 86 or STLport 4.5.3 new, l. 97 - insert following block
+//#elif defined(_STLP_USE_NEL) <-- remove this comment and comment at beginning of line !!!!
+inline void*  _STLP_CALL __stl_new(size_t __n)   { _STLP_CHECK_NULL_ALLOC(NLMEMORY::MemoryAllocateDebug(__n, __FILE__, __LINE__, "STL")); }
+inline void   _STLP_CALL __stl_delete(void* __p) { NLMEMORY::MemoryDeallocate(__p); }
+// ********* Cut here
+
+
+/* Placement new is not handled right with NeL memory, work around so STLport uses vendor placement new.
+ * Actually, this undefs new (as being NL_NEW), then uses placement new, then defines new with appropriate value (NL_NEW or DEBUG_NEW). */
+// ********* Patch in STLport 4.6 stl/_locale.h, l. 127 - replace line with following block
+#   if defined (new)
+#     define _STLP_NEW_REDEFINE new
+#     undef new
+#   endif 
+      _STLP_PLACEMENT_NEW (this) locale(__loc._M_impl, __f != 0);
+#   if defined(_STLP_NEW_REDEFINE)
+#     ifdef _STLP_USE_NEL
+#     define new NL_NEW
+#   elif DEBUG_NEW
+#     define new DEBUG_NEW
+#   endif
+#     undef _STLP_NEW_REDEFINE
+#   endif 
+// ********* Cut here
+
+
+/* Placement new is not handled right with NeL memory, work around so STLport uses vendor placement new.
+ * Actually, this undefs new (as being NL_NEW), then uses placement new, then defines new with appropriate value (NL_NEW or DEBUG_NEW). */
+// ********* Patch in STLport 4.6 stl/_construct.h, l. 113 - replace #if ... #endif with following block
+# if defined(_STLP_NEW_REDEFINE)
+# ifdef _STLP_USE_NEL
+#  define new NL_NEW
+# elif DEBUG_NEW
+#  define new DEBUG_NEW
+# endif
+#  undef _STLP_NEW_REDEFINE
+# endif 
+// ********* Cut here
+
+// ********* Patch in STLport 4.6 stl/_pthread_alloc.h, l. 52 - insert following block
+#   if defined (new)
+#     define _STLP_NEW_REDEFINE new
+#     undef new
+#   endif 
+// ********* Cut here
+
+// ********* Patch in STLport 4.6 stl/_pthread_alloc.h, l. 486 - insert following block
+#   if defined(_STLP_NEW_REDEFINE)
+#     ifdef _STLP_USE_NEL
+#     define new NL_NEW
+#   elif DEBUG_NEW
+#     define new DEBUG_NEW
+#   endif
+#     undef _STLP_NEW_REDEFINE
+#   endif 
+// ********* Cut here
+
+// ********* Patch in STLport 4.6 src/iostream.cpp, l. 37 - insert following block
+#   if defined (new)
+#     define _STLP_NEW_REDEFINE new
+#     undef new
+#   endif 
+// ********* Cut here
+
+// ********* Patch in STLport 4.6 src/iostream.cpp, l. 397 - insert following block
+#   if defined(_STLP_NEW_REDEFINE)
+#     ifdef _STLP_USE_NEL
+#     define new NL_NEW
+#   elif DEBUG_NEW
+#     define new DEBUG_NEW
+#   endif
+#     undef _STLP_NEW_REDEFINE
+#   endif 
+// ********* Cut here
+
+// ********* Patch in STLport 4.6 src/locale_impl.cpp, l. 35 - insert following block
+#   if defined (new)
+#     define _STLP_NEW_REDEFINE new
+#     undef new
+#   endif 
+// ********* Cut here
+
+// ********* Patch in STLport 4.6 src/locale_impl.cpp, l. 485 - insert following block
+#   if defined(_STLP_NEW_REDEFINE)
+#     ifdef _STLP_USE_NEL
+#     define new NL_NEW
+#   elif DEBUG_NEW
+#     define new DEBUG_NEW
+#   endif
+#     undef _STLP_NEW_REDEFINE
+#   endif 
+// ********* Cut here
+
+
+#endif // 0
+
+
 #ifndef _STLP_USE_NEL
 #define NL_USE_DEFAULT_MEMORY_MANAGER
 #endif // _STLP_USE_NEL
@@ -211,6 +340,9 @@
 // *********************************************************
 #ifdef NL_USE_DEFAULT_MEMORY_MANAGER
 // *********************************************************
+
+// Malloc
+#include <malloc.h>
 
 namespace NLMEMORY
 {
@@ -351,21 +483,36 @@ extern "C"
 
 #ifndef NL_USE_DEFAULT_MEMORY_MANAGER
 
-inline void* operator new(size_t size, const char *filename, int line)
+#include <new>
+inline void* operator new(unsigned int size, const char *filename, int line)
 {
 	return NLMEMORY::MemoryAllocateDebug (size, filename, line, 0);
 }
 
 // *********************************************************
 
-inline void* operator new(size_t size)
+inline void* operator new(unsigned int size) throw (std::bad_alloc)
 {
-	return NLMEMORY::MemoryAllocateDebug (size, "::new (size_t size) operator", 0, 0);
+	return NLMEMORY::MemoryAllocateDebug (size, "::new (unsigned int size) operator", 0, 0);
 }
 
 // *********************************************************
 
-inline void operator delete(void* p)
+inline void* operator new[](unsigned int size, const char *filename, int line)
+{
+	return NLMEMORY::MemoryAllocateDebug (size, filename, line, 0);
+}
+
+// *********************************************************
+
+inline void* operator new[](unsigned int size) throw (std::bad_alloc)
+{
+	return NLMEMORY::MemoryAllocateDebug (size, "::new (unsigned int size) operator", 0, 0);
+}
+
+// *********************************************************
+
+inline void operator delete(void* p) throw()
 {
 	NLMEMORY::MemoryDeallocate (p);
 }
@@ -379,7 +526,7 @@ inline void operator delete(void* p, const char *filename, int line)
 
 // *********************************************************
 
-inline void operator delete[](void* p)
+inline void operator delete[](void* p) throw()
 {
 	NLMEMORY::MemoryDeallocate (p);
 }

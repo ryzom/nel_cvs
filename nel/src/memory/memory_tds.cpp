@@ -1,7 +1,7 @@
 /** \file memory_tds.cpp
  * Thread dependant storage class
  *
- * $Id: memory_tds.cpp,v 1.2 2004/01/15 17:37:53 lecroart Exp $
+ * $Id: memory_tds.cpp,v 1.3 2005/04/05 10:25:06 legros Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -23,6 +23,7 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/memory/memory_manager.h"
 #include "memory_tds.h"
 
 #ifdef NL_OS_WINDOWS

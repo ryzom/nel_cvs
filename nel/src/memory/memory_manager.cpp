@@ -1,7 +1,7 @@
 /** \file memory_manager.cpp
  * A new memory manager
  *
- * $Id: memory_manager.cpp,v 1.9 2005/02/21 17:02:46 corvazier Exp $
+ * $Id: memory_manager.cpp,v 1.10 2005/04/05 10:25:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,10 +24,14 @@
  */
 
 // Include STLPort first
-#include <stl/_site_config.h>
+//#include <stl/_site_config.h>
 #include "nel/memory/memory_manager.h"
 #include "memory_common.h"
 #include "heap_allocator.h"
+#include <memory.h>
+
+#include <stdio.h>
+#include <stdlib.h>
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
@@ -48,51 +52,65 @@ sint32			GlobalHeapAllocatorSystemAllocated = 0;
 
 // *********************************************************
 
+inline CHeapAllocator*	getGlobalHeapAllocator()
+{
+#ifndef NL_OS_WINDOWS
+	// check GlobalHeapAllocator is allocated...
+	if (GlobalHeapAllocator == NULL)
+	{
+		GlobalHeapAllocator = (CHeapAllocator*)malloc (sizeof (CHeapAllocator));
+		new (GlobalHeapAllocator) CHeapAllocator (1024*1024*10, 1);
+	}
+#endif
+	// under windows, NeL memory is used as a DLL, and global heap allocator is allocated in dll_main
+	return GlobalHeapAllocator;
+}
+
 #ifndef NL_USE_DEFAULT_MEMORY_MANAGER
 
 #ifdef NL_HEAP_ALLOCATION_NDEBUG
 
 MEMORY_API void* MemoryAllocate (unsigned int size)
 {
-	return GlobalHeapAllocator->allocate (size);
+	return getGlobalHeapAllocator()->allocate (size);
 }
 
 MEMORY_API void* MemoryAllocateDebug (uint size, const char *filename, uint line, const char *category)
 {
-	return GlobalHeapAllocator->allocate (size);
+	return getGlobalHeapAllocator()->allocate (size);
 }
 
 #else // NL_HEAP_ALLOCATION_NDEBUG
 
 MEMORY_API void* MemoryAllocate (unsigned int size)
 {
-	return GlobalHeapAllocator->allocate (size, "", 0, 0);
+	return getGlobalHeapAllocator()->allocate (size, "", 0, 0);
 }
 
 MEMORY_API void* MemoryAllocateDebug (uint size, const char *filename, uint line, const char *category)
 {
-	return GlobalHeapAllocator->allocate (size, filename, line, category);
+	return getGlobalHeapAllocator()->allocate (size, filename, line, category);
 }
 
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 
 MEMORY_API unsigned int GetAllocatedMemory ()
 {
-	return GlobalHeapAllocator->getAllocatedMemory ();
+	return getGlobalHeapAllocator()->getAllocatedMemory ();
 }
 
 // *********************************************************
 
 MEMORY_API unsigned int GetFreeMemory ()
 {
-	return GlobalHeapAllocator->getFreeMemory ();
+	return getGlobalHeapAllocator()->getFreeMemory ();
 }
 
 // *********************************************************
 
 MEMORY_API unsigned int GetTotalMemoryUsed ()
 {
-	return GlobalHeapAllocator->getTotalMemoryUsed ();
+	return getGlobalHeapAllocator()->getTotalMemoryUsed ();
 }
 
 // *********************************************************
@@ -100,7 +118,7 @@ MEMORY_API unsigned int GetTotalMemoryUsed ()
 MEMORY_API unsigned int GetDebugInfoSize ()
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	return GlobalHeapAllocator->debugGetDebugInfoSize ();
+	return getGlobalHeapAllocator()->debugGetDebugInfoSize ();
 #else // NL_HEAP_ALLOCATION_NDEBUG
 	return 0;
 #endif // NL_HEAP_ALLOCATION_NDEBUG
@@ -111,7 +129,7 @@ MEMORY_API unsigned int GetDebugInfoSize ()
 MEMORY_API unsigned int GetAllocatedMemoryByCategory (const char *category)
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	return GlobalHeapAllocator->debugGetAllocatedMemoryByCategory (category);
+	return getGlobalHeapAllocator()->debugGetAllocatedMemoryByCategory (category);
 #else // NL_HEAP_ALLOCATION_NDEBUG
 	return 0;
 #endif // NL_HEAP_ALLOCATION_NDEBUG
@@ -122,7 +140,7 @@ MEMORY_API unsigned int GetAllocatedMemoryByCategory (const char *category)
 MEMORY_API bool StartAllocationLog (const char *filename, uint blockSize)
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	return GlobalHeapAllocator->debugStartAllocationLog (filename, blockSize);
+	return getGlobalHeapAllocator()->debugStartAllocationLog (filename, blockSize);
 #else // NL_HEAP_ALLOCATION_NDEBUG
 	return false;
 #endif // NL_HEAP_ALLOCATION_NDEBUG
@@ -133,7 +151,7 @@ MEMORY_API bool StartAllocationLog (const char *filename, uint blockSize)
 MEMORY_API bool EndAllocationLog ()
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	return GlobalHeapAllocator->debugEndAllocationLog ();
+	return getGlobalHeapAllocator()->debugEndAllocationLog ();
 #else // NL_HEAP_ALLOCATION_NDEBUG
 	return false;
 #endif // NL_HEAP_ALLOCATION_NDEBUG
@@ -143,21 +161,21 @@ MEMORY_API bool EndAllocationLog ()
 
 MEMORY_API float GetFragmentationRatio ()
 {
-	return GlobalHeapAllocator->getFragmentationRatio ();
+	return getGlobalHeapAllocator()->getFragmentationRatio ();
 }
 
 // *********************************************************
 
 MEMORY_API unsigned int GetAllocatedSystemMemoryByAllocator ()
 {
-	return GlobalHeapAllocator->getAllocatedSystemMemoryByAllocator ();
+	return getGlobalHeapAllocator()->getAllocatedSystemMemoryByAllocator ();
 }
 
 // *********************************************************
 
 MEMORY_API unsigned int GetAllocatedSystemMemory ()
 {
-	return GlobalHeapAllocator->getAllocatedSystemMemory ();
+	return getGlobalHeapAllocator()->getAllocatedSystemMemory ();
 }
 
 // *********************************************************
@@ -171,14 +189,14 @@ MEMORY_API unsigned int GetAllocatedSystemMemoryHook ()
 
 MEMORY_API bool CheckHeap (bool stopOnError)
 {
-	return GlobalHeapAllocator->checkHeap (stopOnError);
+	return getGlobalHeapAllocator()->checkHeap (stopOnError);
 }
 
 // *********************************************************
 
 MEMORY_API bool			CheckHeapBySize (bool stopOnError, uint blockSize)
 {
-	return GlobalHeapAllocator->checkHeapBySize (stopOnError, blockSize);
+	return getGlobalHeapAllocator()->checkHeapBySize (stopOnError, blockSize);
 }
 
 // *********************************************************
@@ -186,7 +204,7 @@ MEMORY_API bool			CheckHeapBySize (bool stopOnError, uint blockSize)
 MEMORY_API bool StatisticsReport (const char *filename, bool memoryDump)
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	return GlobalHeapAllocator->debugStatisticsReport (filename, memoryDump);
+	return getGlobalHeapAllocator()->debugStatisticsReport (filename, memoryDump);
 #else // NL_HEAP_ALLOCATION_NDEBUG
 	return false;
 #endif // NL_HEAP_ALLOCATION_NDEBUG
@@ -197,7 +215,7 @@ MEMORY_API bool StatisticsReport (const char *filename, bool memoryDump)
 MEMORY_API void	ReportMemoryLeak ()
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	GlobalHeapAllocator->debugReportMemoryLeak ();
+	getGlobalHeapAllocator()->debugReportMemoryLeak ();
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 }
 
@@ -206,7 +224,7 @@ MEMORY_API void	ReportMemoryLeak ()
 MEMORY_API void			AlwaysCheckMemory(bool alwaysCheck)
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	GlobalHeapAllocator->debugAlwaysCheckMemory (alwaysCheck);
+	getGlobalHeapAllocator()->debugAlwaysCheckMemory (alwaysCheck);
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 }
 
@@ -215,7 +233,7 @@ MEMORY_API void			AlwaysCheckMemory(bool alwaysCheck)
 MEMORY_API bool			IsAlwaysCheckMemory()
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	return GlobalHeapAllocator->debugIsAlwaysCheckMemory ();
+	return getGlobalHeapAllocator()->debugIsAlwaysCheckMemory ();
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 	return false;
 }
@@ -224,35 +242,35 @@ MEMORY_API bool			IsAlwaysCheckMemory()
 
 MEMORY_API void			SetOutOfMemoryHook (void (*outOfMemoryCallback)())
 {
-	GlobalHeapAllocator->setOutOfMemoryHook (outOfMemoryCallback);
+	getGlobalHeapAllocator()->setOutOfMemoryHook (outOfMemoryCallback);
 }
 
 // *********************************************************
 
 MEMORY_API unsigned int GetBlockSize (void *pointer)
 {
-	return GlobalHeapAllocator->getBlockSize (pointer);
+	return getGlobalHeapAllocator()->getBlockSize (pointer);
 }
 
 // *********************************************************
 
 MEMORY_API const char * GetCategory (void *pointer)
 {
-	return GlobalHeapAllocator->getCategory (pointer);
+	return getGlobalHeapAllocator()->getCategory (pointer);
 }
 
 // *********************************************************
 
 MEMORY_API void MemoryDeallocate (void *p)
 {
-	GlobalHeapAllocator->free (p);
+	getGlobalHeapAllocator()->free (p);
 }
 
 // *********************************************************
 
 MEMORY_API NLMEMORY::CHeapAllocator* GetGlobalHeapAllocator ()
 {
-	return GlobalHeapAllocator;
+	return getGlobalHeapAllocator();
 }
 
 // *********************************************************
@@ -293,7 +311,7 @@ public:
 	~CReportMemoryLeak ()
 	{
 		// Report memory leak
-		GlobalHeapAllocator->debugReportMemoryLeak ();
+		getGlobalHeapAllocator()->debugReportMemoryLeak ();
 	}
 };
 
@@ -316,24 +334,24 @@ extern "C"
 MEMORY_API void* NelMemoryAllocate (unsigned int size)
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	return NLMEMORY::GlobalHeapAllocator->allocate (size, "", 0, 0);
+	return NLMEMORY::getGlobalHeapAllocator()->allocate (size, "", 0, 0);
 #else // NL_HEAP_ALLOCATION_NDEBUG
-	return NLMEMORY::GlobalHeapAllocator->allocate (size);
+	return NLMEMORY::getGlobalHeapAllocator()->allocate (size);
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 }
 
 MEMORY_API void* NelMemoryAllocateDebug (uint size, const char *filename, uint line, const char *category)
 {
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
-	return NLMEMORY::GlobalHeapAllocator->allocate (size, filename, line, category);
+	return NLMEMORY::getGlobalHeapAllocator()->allocate (size, filename, line, category);
 #else // NL_HEAP_ALLOCATION_NDEBUG
-	return NLMEMORY::GlobalHeapAllocator->allocate (size);
+	return NLMEMORY::getGlobalHeapAllocator()->allocate (size);
 #endif // NL_HEAP_ALLOCATION_NDEBUG
 }
 
 MEMORY_API void NelMemoryDeallocate (void *pointer)
 {
-	NLMEMORY::GlobalHeapAllocator->free (pointer);
+	NLMEMORY::getGlobalHeapAllocator()->free (pointer);
 }
 
 }
@@ -357,14 +375,14 @@ MEMORY_API void NelMemoryDeallocate (void *pointer)
 
 NLMEMORY::CAllocContext::CAllocContext (const char* str)
 {
-	GlobalHeapAllocator->debugPushCategoryString (str);
+	getGlobalHeapAllocator()->debugPushCategoryString (str);
 }
 
 // *********************************************************
 
 NLMEMORY::CAllocContext::~CAllocContext ()
 {
-	GlobalHeapAllocator->debugPopCategoryString ();
+	getGlobalHeapAllocator()->debugPopCategoryString ();
 }
 
 // *********************************************************

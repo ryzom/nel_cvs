@@ -1,7 +1,7 @@
 /** \file memory/heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.cpp,v 1.17 2005/02/21 17:02:46 corvazier Exp $
+ * $Id: heap_allocator.cpp,v 1.18 2005/04/05 10:25:06 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -23,11 +23,13 @@
  * MA 02111-1307, USA.
  */
 
-#include <string>
+//#include <string>
 #include "nel/memory/memory_manager.h"
 #include "heap_allocator.h"
 
 #include <cstdio>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
@@ -848,6 +850,8 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 
 		leaveCriticalSectionSB ();
 
+		//printf("CHeapAllocator::allocate (%d, %s, %d, %s) = %p\n", size, sourceFile, line, (category == NULL ? "" : category), (void*)((uint)node + sizeof (CNodeBegin)));
+
 		// Return the user pointer
 		finalPtr = (void*)((uint)node + sizeof (CNodeBegin));
 	}
@@ -998,7 +1002,9 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 
 			// Check the node size
 			internalAssert ( size <= getNodeSize (node) );
-			internalAssert ( std::max ((uint)BlockDataSizeMin, size + (uint)Align) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + BlockDataSizeMin >= getNodeSize (node) );
+
+			uint	asz = ((uint)BlockDataSizeMin > size + (uint)Align) ? (uint)BlockDataSizeMin : size + (uint)Align;
+			internalAssert ( asz + sizeof (CNodeBegin) + sizeof (CNodeEnd) + sizeof (CNodeBegin) + sizeof (CNodeEnd) + BlockDataSizeMin >= getNodeSize (node) );
 
 			// Check pointer alignment
 			internalAssert (((uint32)node&(Align-1)) == 0);
@@ -1009,6 +1015,8 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 			internalAssert ((uint32)node->EndMagicNumber > (uint32)(((uint8*)node+sizeof(CNodeBegin)+getNodeSize (node) ) - BlockDataSizeMin - BlockDataSizeMin - sizeof(CNodeBegin) - sizeof(CNodeEnd)));
 
 			leaveCriticalSectionLB ();
+
+			//printf("CHeapAllocator::allocate (%d, %s, %d, %s) = %p\n", size, sourceFile, line, (category == NULL ? "" : category), (void*)((uint)node + sizeof (CNodeBegin)));
 
 			// Return the user pointer
 			finalPtr = (void*)((uint)node + sizeof (CNodeBegin));
@@ -1042,6 +1050,7 @@ void *CHeapAllocator::allocate (uint size, const char *sourceFile, uint line, co
 
 void CHeapAllocator::free (void *ptr)
 {
+	//printf("CHeapAllocator::free (%p)\n", ptr);
 	// Delete a null pointer ?
 	if (ptr == NULL)
 	{
@@ -2368,6 +2377,7 @@ void CHeapAllocator::debugPopCategoryString ()
 
 void CHeapAllocator::debugCheckNode (const CNodeBegin *node, uint32 crc) const
 {
+	//printf("CHeapAllocator::checkNode(%p,%08x): checking...\n", (void*)((uint)node + sizeof (CNodeBegin)), crc);
 	// Check the bottom CRC of the node 
 	if (crc != *(node->EndMagicNumber))
 	{
@@ -2378,6 +2388,7 @@ void CHeapAllocator::debugCheckNode (const CNodeBegin *node, uint32 crc) const
 		// ********
 		// * (*node) Check for more informations
 		// ********
+		//printf("CHeapAllocator::checkNode(%p,%08x): bad crc (node magic number = %08x)!\n", (void*)((uint)node + sizeof (CNodeBegin)), crc, *(node->EndMagicNumber));
 		NL_ALLOC_STOP(node);
 	}
 
@@ -2391,6 +2402,7 @@ void CHeapAllocator::debugCheckNode (const CNodeBegin *node, uint32 crc) const
 		// ********
 		// * (*node) Check for more informations
 		// ********
+		//printf("CHeapAllocator::checkNode(%p,%08x): node not held by this heap!\n", (void*)((uint)node + sizeof (CNodeBegin)), crc);
 		NL_ALLOC_STOP(node);
 	}
 }

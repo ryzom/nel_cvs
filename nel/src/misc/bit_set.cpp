@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: bit_set.cpp,v 1.1 2000/10/02 12:56:01 berenguier Exp $
+ * $Id: bit_set.cpp,v 1.2 2000/10/09 14:48:03 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -170,7 +170,7 @@ void	CBitSet::flip()
 	if(NumBits==0)
 		return;
 
-	for(sint i=0;i<Array.size();i++)
+	for(sint i=0;i<(sint)Array.size();i++)
 		Array[i]= ~Array[i];
 
 	Array[Array.size()-1]&= MaskLast;
@@ -183,7 +183,7 @@ CBitSet	&CBitSet::operator&=(const CBitSet &bs)
 	sint	minSize= min(Array.size(), bs.Array.size());
 	for(sint i=0;i<minSize;i++)
 		Array[i]= Array[i] & bs.Array[i];
-	for(i=minSize;i<Array.size();i++)
+	for(i=minSize;i<(sint)Array.size();i++)
 		Array[i]=0;
 
 	Array[Array.size()-1]&= MaskLast;
@@ -226,7 +226,7 @@ bool	CBitSet::operator==(const CBitSet &bs) const
 	if(NumBits!=bs.NumBits)
 		return false;
 
-	for(sint i=0;i<Array.size();i++)
+	for(sint i=0;i<(sint)Array.size();i++)
 	{
 		if(Array[i]!=bs.Array[i])
 			return false;
@@ -268,7 +268,7 @@ bool	CBitSet::allSet()
 {
 	if(NumBits==0)
 		return false;
-	for(sint i=0;i<Array.size()-1;i++)
+	for(sint i=0;i<(sint)Array.size()-1;i++)
 	{
 		if( Array[i]!= (~((uint)0)) )
 			return false;
@@ -281,7 +281,7 @@ bool	CBitSet::allCleared()
 {
 	if(NumBits==0)
 		return false;
-	for(sint i=0;i<Array.size();i++)
+	for(sint i=0;i<(sint)Array.size();i++)
 	{
 		if( Array[i]!= 0 )
 			return false;
@@ -304,7 +304,7 @@ void	CBitSet::serial(IStream &f)
 		resize(sz);
 
 		f.serialCont(array32);
-		for(sint i=0;i<sz;i++)
+		for(sint i=0;i<(sint)sz;i++)
 		{
 			uint32	a=array32[i/32];
 			a&= 1<<(i&31);
@@ -318,7 +318,7 @@ void	CBitSet::serial(IStream &f)
 
 		array32.resize(sz/32);
 		fill_n(array32.begin(), array32.size(), 0);
-		for(sint i=0;i<sz;i++)
+		for(sint i=0;i<(sint)sz;i++)
 		{
 			if(get(i))
 				array32[i/32]|= 1<<(i&31);

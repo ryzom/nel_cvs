@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: service.h,v 1.7 2000/10/06 10:27:36 lecroart Exp $
+ * $Id: service.h,v 1.8 2000/10/09 14:12:37 lecroart Exp $
  *
  * Base class for all network services
  */
@@ -23,6 +23,32 @@
 
 namespace NLNET
 {
+
+/**
+ * The goal of this macro is to simplify the creation of a service, it create the main body function.
+ *
+ * Example:
+ *\code
+	// Create the Foo Service class
+	class CFooService : public IService
+	{
+	public:
+		void init () { nlinfo("init()"); }
+		bool update () { nlinfo ("update();"); return true; }
+		void release () { nlinfo("release()"); }
+	};
+	// Create the main() function that create a foo service instance and execute it.
+	// ("FS" is the short service name)
+	NLNET_SERVICE_MAIN(CFooService, "FS");
+ *\endcode
+ */
+#define NLNET_SERVICE_MAIN(ServiceClassName, ServiceName) \
+const char IService::_Name[] = ServiceName; \
+	int main(int argc, char **argv) { \
+	ServiceClassName scn; \
+	return scn.main (argc, argv); \
+}
+
 
 /**
  * Base class for all network services.

@@ -12,6 +12,8 @@ using namespace std;
 //#define DEBUG_PRINTF	printf
 #define DEBUG_PRINTF	// printf
 
+#define YY_NEVER_INTERACTIVE 1
+
 /* Types */
 
 enum cf_type { T_INT, T_STRING, T_REAL };

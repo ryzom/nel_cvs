@@ -792,7 +792,7 @@ case 5:
 				DEBUG_PRINTF(")\n");
 				int i;
 				// on recherche l'existence de la variable
-				for(i = 0; i < (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size(); i++)
+				for(i = 0; i < (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size()); i++)
 				{
 					if ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Name == yyvsp[-3].Val.String)
 					{
@@ -806,7 +806,7 @@ case 5:
 				if (cf_CurrentVar.Comp) Var = cf_CurrentVar;
 				else cf_setVar (Var, yyvsp[-1].Val);
 				Var.Name = yyvsp[-3].Val.String;
-				if (i == (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size ())
+				if (i == (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size ()))
 				{
 					// nouvelle variable
 					DEBUG_PRINTF ("yacc: new assign var '%s'\n", yyvsp[-3].Val.String);
@@ -902,7 +902,7 @@ case 24:
 				DEBUG_PRINTF("yacc: cont\n");
 				bool ok=false;
 				int i;
-				for(i = 0; i < (*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size(); i++)
+				for(i = 0; i < (int)((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM))).size()); i++)
 				{
 					if ((*((vector<NLMISC::CConfigFile::CVar>*)(YYPARSE_PARAM)))[i].Name == yyvsp[0].Val.String)
 					{

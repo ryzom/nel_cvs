@@ -1,7 +1,7 @@
 /** \file vertex_buffer.cpp
  * Vertex Buffer implementation
  *
- * $Id: vertex_buffer.cpp,v 1.37 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: vertex_buffer.cpp,v 1.38 2004/01/14 10:32:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,6 +273,65 @@ void CVertexBuffer::clearValueEx ()
 	// Reset format flags
 	_Flags=0;
 }
+
+
+// --------------------------------------------------
+
+void CVertexBuffer::dumpFormat() const
+{
+	for(uint k = 0; k < NumValue; ++k)
+	{
+		if (_Flags & (1 << k))
+		{
+			std::string result = "Component :";
+			switch(k)
+			{			
+				case Position:      result += "Position"; break;
+				case Normal:        result += "Normal"; break;
+				case TexCoord0:		result += "TexCoord0"; break;
+				case TexCoord1:		result += "TexCoord1"; break;
+				case TexCoord2:		result += "TexCoord2"; break;
+				case TexCoord3:		result += "TexCoord3"; break;
+				case TexCoord4:		result += "TexCoord4"; break;
+				case TexCoord5:		result += "TexCoord5"; break;
+				case TexCoord6:		result += "TexCoord6"; break;
+				case TexCoord7:		result += "TexCoord7"; break;
+				case PrimaryColor:	result += "PrimaryColor"; break;
+				case SecondaryColor:result += "SecondaryColor"; break;
+				case Weight:		result += "Weight"; break;
+				case PaletteSkin:	result += "PaletteSkin"; break;
+				case Fog:			result += "Fog"; break;
+				case Empty:			result += "Empty"; break;
+				case NumValue:		result += "NumValue"; break;
+				default:
+					result += "???";
+				break;
+			}
+			result += "; type :";
+			switch(_Type[k])
+			{
+				case Double1:  result +="Double1"; break;
+				case Float1:   result +="Float1";  break;
+				case Short1:   result +="Short1";  break;
+				case Double2:  result +="Double2"; break;
+				case Float2:   result +="Float2";  break;
+				case Short2:   result +="Short2";  break;
+				case Double3:  result +="Double3"; break;
+				case Float3:   result +="Float3";  break;
+				case Short3:   result +="Short3";  break;
+				case Double4:  result +="Double4"; break;
+				case Float4:   result +="Float4";  break;
+				case Short4:   result +="Short4";  break;
+				case UChar4:   result +="UChar4";  break;
+				default:
+					result += "???";
+				break;
+			}
+			nlinfo(result.c_str());
+		}
+	}
+}
+
 
 // --------------------------------------------------
 

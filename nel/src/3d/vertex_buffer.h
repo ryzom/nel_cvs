@@ -1,7 +1,7 @@
 /** \file vertex_buffer.h
  * <File description>
  *
- * $Id: vertex_buffer.h,v 1.10 2003/03/13 13:40:59 corvazier Exp $
+ * $Id: vertex_buffer.h,v 1.11 2004/01/14 10:32:48 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -503,6 +503,9 @@ public:
 	/// \name UV Routing.
 	const uint8	*getUVRouting () const { return _UVRouting; }
 	void		setUVRouting (uint8 uvChannel, uint newUVRouting) { _UVRouting[uvChannel] = newUVRouting; }
+
+	// for debug : dump format of vertex buffer
+	void		dumpFormat() const;
 
 private:
 	/// Old version serialisation. V0 and V1.

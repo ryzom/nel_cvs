@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.28 2002/08/29 10:15:38 lecroart Exp $
+ * $Id: unified_network.h,v 1.29 2002/09/02 14:53:41 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -196,10 +196,10 @@ public:
 	///          it ll return the first connection
 
 	/// Gets the CCallbackNetBase of the service
-	CCallbackNetBase	*getNetBase(const std::string &name, TSockId &host);
+	CCallbackNetBase	*getNetBase(const std::string &name, TSockId &host, uint8 nid=0xFF);
 
 	/// Gets the CCallbackNetBase of the service
-	CCallbackNetBase	*getNetBase(TServiceId sid, TSockId &host);
+	CCallbackNetBase	*getNetBase(TServiceId sid, TSockId &host, uint8 nid=0xFF);
 
 	/// Gets the total number of bytes sent
 	uint64				getBytesSent ();

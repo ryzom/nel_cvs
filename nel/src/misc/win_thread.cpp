@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.9 2002/02/28 13:35:10 corvazier Exp $
+ * $Id: win_thread.cpp,v 1.10 2002/04/17 08:46:32 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,6 +111,7 @@ CWinThread::~CWinThread ()
 void CWinThread::start ()
 {
 	ThreadHandle = (void *) CreateThread (NULL, 0, ProxyFunc, this, 0, (DWORD *)&ThreadId);
+	SetThreadPriorityBoost (ThreadHandle, TRUE); // FALSE == Enable Priority Boost
 	if (ThreadHandle == NULL)
 	{
 		throw EThread ( "Cannot create new thread" );

@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.57 2004/07/08 16:08:44 berenguier Exp $
+ * $Id: scene.h,v 1.58 2004/08/03 16:22:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,7 +73,8 @@ class	CAsyncTextureManager;
 class	CSkeletonModel;
 class	CRootModel;
 class	CVisualCollisionManager;
-
+class   CTextureCube;
+class   CWaterEnvMap;
 
 // ***************************************************************************
 /**
@@ -618,6 +619,15 @@ public:
 
 	// debugging aid : draw all occlusion test mesh that are used by flares
 	void			renderOcclusionTestMeshs();
+	
+	// Set a water envmap to be used with water surfaces in that scene. Water envmap may be shared accross several scenes.
+	void		  setWaterEnvMap(CWaterEnvMap *waterEnvMap) { _WaterEnvMap = waterEnvMap; }
+	// Get currenlty used water envmap for that scene.
+	CWaterEnvMap *getWaterEnvMap() const { return _WaterEnvMap; }	
+	/** Update water envmaps. Water textures that need to be updated includes UWaterEnvMap textures & Day/Night textures (as defined in the water material).
+	  * Should be called at the beginning of the frame before anything is rendered.
+	  */
+	void		  updateWaterEnvMaps(TGlobalAnimationTime time);
 private:
 
 	/// The camera / Viewport.
@@ -789,11 +799,12 @@ private:
 	std::vector<CTransform*>	_ToDelete;
 
 	UScene::TRenderPart	_RenderedPart;
-	void			renderOcclusionTestMeshsWithCurrMaterial();
-
+	void	renderOcclusionTestMeshsWithCurrMaterial();
+	CWaterEnvMap	*_WaterEnvMap;	
 	/// Delayed model creation For skeleton spawn script animation
 	std::vector<class CSSSModelRequest>		_SSSModelRequests;
 	void									flushSSSModelRequests();
+
 };
 
 

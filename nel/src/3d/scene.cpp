@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.127 2004/07/27 16:55:13 berenguier Exp $
+ * $Id: scene.cpp,v 1.128 2004/08/03 16:22:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,7 +59,9 @@
 #include "3d/lod_character_manager.h"
 #include "3d/seg_remanence.h"
 #include "3d/async_texture_manager.h"
+#include "3d/water_env_map.h"
 #include "3d/skeleton_spawn_script.h"
+
 
 #include <memory>
 
@@ -192,8 +194,11 @@ CScene::CScene(bool bSmallScene) : LightTrav(bSmallScene)
 	_IsRendering = false;
 
 	_FirstFlare = NULL;
-
 	_RenderedPart = UScene::RenderNothing;
+	//_WaterEnvMapRdr = NULL;
+	//_WaterEnvMap = new CTextureCube;
+
+	_WaterEnvMap = NULL;
 }
 // ***************************************************************************
 void	CScene::release()
@@ -337,6 +342,8 @@ void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::
 		
 	if ((renderPart & _RenderedPart) != 0) // start to render again ?
 	{
+		// update water envmap
+		//updateWaterEnvmap();
 		_RenderedPart = UScene::RenderNothing;
 		// **** Misc.
 		/** Particle system handling (remove the resources of those which are too far, as their clusters may not have been parsed).
@@ -355,7 +362,7 @@ void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::
 
 	if (_RenderedPart == UScene::RenderNothing)
 	{			
-
+		RenderTrav._FirstWaterModel = NULL;
 		_FirstFlare = NULL;
 
 		double fNewGlobalSystemTime = NLMISC::CTime::ticksToSecond(NLMISC::CTime::getPerformanceTime());
@@ -1541,6 +1548,19 @@ void CScene::renderOcclusionTestMeshs()
 	renderOcclusionTestMeshsWithCurrMaterial();
 	getDriver()->setPolygonMode(oldPolygonMode);
 }
+
+
+// ***************************************************************************
+void CScene::updateWaterEnvMaps(TGlobalAnimationTime time)
+{
+	IDriver *drv = getDriver();
+	nlassert(drv);
+	if (_WaterEnvMap)	
+	{
+		_WaterEnvMap->update(time, *drv);
+	}	
+}
+
 
 // ***************************************************************************
 void CScene::addSSSModelRequest(const class CSSSModelRequest &req)

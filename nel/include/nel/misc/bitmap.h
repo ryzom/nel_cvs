@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.26 2004/08/23 18:05:45 lecroart Exp $
+ * $Id: bitmap.h,v 1.26.22.1 2005/03/31 19:35:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -232,7 +232,9 @@ private :
 	CRGBA getRGBAPixel(sint x, sint y, uint32 numMipMap /*=0*/) const;
 
 
-
+	// Make a dummy from a bitfield
+	void	makeDummyFromBitField(const uint8	bitmap[1024]);
+	
 
 public:
 
@@ -306,6 +308,11 @@ public:
 	 */
 	void	makeDummy();
 
+
+	/** 
+	 * Make a dummy "2" texture. Usefull for file not power of 2. Mode is rgba.
+	 */
+	void	makeNonPowerOf2Dummy();
 
 	/** 
 	 * Return the pixels buffer of the image, or of one of its mipmap.

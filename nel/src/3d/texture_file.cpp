@@ -1,7 +1,7 @@
 /** \file texture_file.cpp
  * TODO: File description
  *
- * $Id: texture_file.cpp,v 1.26 2004/11/15 10:24:50 lecroart Exp $
+ * $Id: texture_file.cpp,v 1.26.16.1 2005/03/31 19:33:28 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ namespace NL3D
 
 
 ///==================================================================
-void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip, bool dontStretchNonPOW2Tex)
+void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string &fileName, bool asyncload, uint8 mipMapSkip, bool enlargeCanvasNonPOW2Tex)
 {
 	/* ***********************************************
 	 *	WARNING: This Class/Method must be thread-safe (ctor/dtor/serial): no static access for instance
@@ -171,20 +171,25 @@ void CTextureFile::buildBitmapFromFile(NLMISC::CBitmap &dest, const std::string 
 				}
 			}
 		}
-		if (dontStretchNonPOW2Tex)
+		if(!isPowerOf2(dest.getWidth()) || !isPowerOf2(dest.getHeight()) )
 		{
-			uint pow2w = NLMISC::raiseToNextPowerOf2(dest.getWidth());
-			uint pow2h = NLMISC::raiseToNextPowerOf2(dest.getHeight());
-			if (dest.getWidth() != pow2w ||
-				dest.getHeight() != pow2h
-			   )
+			// If the user want to correct those texture so that their canvas is enlarged
+			if (enlargeCanvasNonPOW2Tex)
 			{
+				uint pow2w = NLMISC::raiseToNextPowerOf2(dest.getWidth());
+				uint pow2h = NLMISC::raiseToNextPowerOf2(dest.getHeight());
 				CBitmap enlargedBitmap;
 				enlargedBitmap.resize(pow2w, pow2h, dest.PixelFormat);
 				// blit src bitmap
 				enlargedBitmap.blit(&dest, 0, 0);
 				// swap them
 				dest.swap(enlargedBitmap);
+			}
+			else
+			{
+				// Bug...
+				dest.makeNonPowerOf2Dummy();
+				nlwarning("TextureFile: %s is not a Power Of 2: %d,%d", fileName.c_str(), dest.getWidth(), dest.getHeight());
 			}
 		}
 	}
@@ -211,7 +216,7 @@ void CTextureFile::doGenerate(bool async)
 	 *	It can be loaded/called through CAsyncFileManager for instance
 	 * ***********************************************/
 	
-	buildBitmapFromFile(*this, _FileName, async, _MipMapSkipAtLoad, _DontStretchNonPOW2Tex);
+	buildBitmapFromFile(*this, _FileName, async, _MipMapSkipAtLoad, _EnlargeCanvasNonPOW2Tex);
 }
 
 
@@ -268,7 +273,7 @@ void CTextureFile::dupInfo(const CTextureFile &other)
 	_AllowDegradation = other._AllowDegradation;
 	_SupportSharing	  = other._SupportSharing;
 	_MipMapSkipAtLoad = other._MipMapSkipAtLoad; 
-	_DontStretchNonPOW2Tex   = other._DontStretchNonPOW2Tex;
+	_EnlargeCanvasNonPOW2Tex   = other._EnlargeCanvasNonPOW2Tex;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.21 2004/10/19 12:53:28 vizerie Exp $
+ * $Id: patch_render.cpp,v 1.22 2004/11/04 13:12:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -557,10 +557,11 @@ static	inline	void	renderFaceVector(TLandscapeIndexType *fv)
 		// Fill and increment the array.
 		#ifndef NL_LANDSCAPE_INDEX16
 			memcpy( NL3D_LandscapeGlobals_PassTriCurPtr, fv+1, nTriIndex * sizeof(uint32) );
+			NL3D_LandscapeGlobals_PassTriCurPtr= (uint32*)NL3D_LandscapeGlobals_PassTriCurPtr + nTriIndex;
 		#else		
 			memcpy( NL3D_LandscapeGlobals_PassTriCurPtr, fv+1, nTriIndex * sizeof(uint16) );
+			NL3D_LandscapeGlobals_PassTriCurPtr= (uint16*)NL3D_LandscapeGlobals_PassTriCurPtr + nTriIndex;
 		#endif
-		NL3D_LandscapeGlobals_PassTriCurPtr+= nTriIndex;
 		NL3D_LandscapeGlobals_PassNTri+= *fv;
 #endif
 	}

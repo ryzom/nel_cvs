@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * TODO: File description
  *
- * $Id: rpo2nel.cpp,v 1.26 2004/11/15 10:25:11 lecroart Exp $
+ * $Id: rpo2nel.cpp,v 1.27 2005/01/31 13:53:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -36,7 +36,7 @@
 	#include <maxscrpt.h>
 	#define new NL_NEW
 #else
-	#include <maxscrpt.h>
+	//#include <maxscrpt.h>
 #endif
 
 using namespace std;

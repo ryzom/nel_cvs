@@ -1,7 +1,7 @@
 /** \file export_script.cpp
  * Export script utility from 3dsmax
  *
- * $Id: export_script.cpp,v 1.12 2004/05/14 15:00:14 berenguier Exp $
+ * $Id: export_script.cpp,v 1.13 2005/01/31 13:53:37 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -24,6 +24,8 @@
  */
 
 #include "stdafx.h"
+#include "parser.h"
+#include "strings.h"
 #include "export_nel.h"
 #include "export_appdata.h"
 
@@ -33,8 +35,9 @@ bool CExportNel::scriptEvaluate (const char *script, void *out, TNelScriptValueT
 {
 	BOOL result=TRUE;
 	init_thread_locals();
+
 	four_typed_value_locals(Parser* parser,Value* code,Value* result,StringStream* source);
-		
+
 	#ifdef	NL_NEW
 		#undef new
 		vl.parser = new Parser;

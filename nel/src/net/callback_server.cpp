@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * <File description>
  *
- * $Id: callback_server.cpp,v 1.1 2001/02/22 16:18:35 cado Exp $
+ * $Id: callback_server.cpp,v 1.2 2001/02/22 18:04:25 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,16 +24,50 @@
  */
 
 #include "nel/net/callback_server.h"
+#include "nel/net/msg_socket.h"
 
 
 namespace NLNET {
 
 
+CCallbackServer *CCallbackServer::_TheServer = NULL;
+
+
+/*
+ * cbProcessDisconnectionCallback
+ */
+void cbProcessConnectionCallback( CMessage& msg, TSockId id )
+{
+	// Map TSockId -> the server object (CCallbackNetBase*)
+	CCallbackServer::_SockIdMap.insert( std::make_pair(id,CCallbackServer::_TheServer) ); 
+
+	if ( CCallbackServer::_TheServer->_ConnectionCallback != NULL )
+	{
+		CCallbackServer::_TheServer->_ConnectionCallback( msg, id );
+	}
+}
+
+
+/*
+ * DisconnectionCallbackArray
+ */
+TCallbackItem ConnectionCallbackArray [] =
+{
+	{ "C", cbProcessConnectionCallback }
+};
+
+
 /*
  * Constructor
  */
-CCallbackServer::CCallbackServer()
+CCallbackServer::CCallbackServer() :
+	_ConnectionCallback( NULL )
 {
+	nlassert( CCallbackServer::_TheServer == NULL );
+	CCallbackServer::_TheServer = this; // Only one server object in this implementation
+
+	// Setup incoming connection handling
+	addCallbackArray( ConnectionCallbackArray, sizeof(ConnectionCallbackArray) / sizeof(TCallbackItem) );
 }
 
 
@@ -42,7 +76,7 @@ CCallbackServer::CCallbackServer()
  */
 void CCallbackServer::init( uint16 port )
 {
-
+	_MsgSocket = new CMsgSocket( _CallbackArray, _CbArraySize, port );
 }
 
 
@@ -51,16 +85,16 @@ void CCallbackServer::init( uint16 port )
  */
 void CCallbackServer::disconnect( TSockId hostid )
 {
-
+	CMsgSocket::close( hostid );
 }
 
 
 /*
  * Send a message to the specified host
  */
-void CCallbackServer::send( TSockId hostid, CMessage& outmsg )
+void CCallbackServer::send( CMessage& outmsg, TSockId hostid )
 {
-
+	CMsgSocket::send( outmsg, hostid );
 }
 
 
@@ -69,7 +103,7 @@ void CCallbackServer::send( TSockId hostid, CMessage& outmsg )
  */
 void CCallbackServer::setConnectionCallback( TNetCallback cb )
 {
-
+	_ConnectionCallback = cb;
 }
 
 

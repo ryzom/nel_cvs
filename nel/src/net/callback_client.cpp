@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * <File description>
  *
- * $Id: callback_client.cpp,v 1.1 2001/02/22 16:18:35 cado Exp $
+ * $Id: callback_client.cpp,v 1.2 2001/02/22 18:04:25 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,6 +24,7 @@
  */
 
 #include "nel/net/callback_client.h"
+#include "nel/net/msg_socket.h"
 
 
 namespace NLNET {
@@ -42,7 +43,11 @@ CCallbackClient::CCallbackClient()
  */
 void CCallbackClient::connect( const CInetAddress& addr )
 {
+	// Connect
+	_MsgSocket = new CMsgSocket( _CallbackArray, _CbArraySize, addr );
 
+	// Map TSockId -> this (CCallbackNetBase*)
+	CCallbackNetBase::_SockIdMap.insert( std::make_pair(_MsgSocket->id(),this) ); 
 }
 
 
@@ -51,7 +56,8 @@ void CCallbackClient::connect( const CInetAddress& addr )
  */
 void CCallbackClient::disconnect()
 {
-
+	nlassert( _MsgSocket != NULL );
+	CMsgSocket::close( _MsgSocket->id() );
 }
 
 
@@ -60,7 +66,8 @@ void CCallbackClient::disconnect()
  */
 void CCallbackClient::send( CMessage& outmsg )
 {
-
+	nlassert( _MsgSocket != NULL );
+	_MsgSocket->send( outmsg );
 }
 
 

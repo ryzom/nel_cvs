@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * <File description>
  *
- * $Id: callback_server.h,v 1.1 2001/02/22 16:18:35 cado Exp $
+ * $Id: callback_server.h,v 1.2 2001/02/22 18:04:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,10 @@ namespace NLNET {
 
 
 /**
- * <Class description>
+ * Server class for layer 4
+ * Implementation: using CMsgSocket
+ * Limitation: you can instanciate only 1 server object in this implementation
+ *
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -46,18 +49,26 @@ public:
 	/// Constructor
 	CCallbackServer();
 
-	/// Listens on the specified port
+	/// Listens on the specified port (call addCallbackArray() before)
 	void	init( uint16 port );
 
 	/// Disconnect the specified host
 	void	disconnect( TSockId hostid );
 
 	/// Send a message to the specified host
-	void	send( TSockId hostid, CMessage& outmsg );
+	void	send( CMessage& outmsg, TSockId hostid );
 
 	/// Sets callback for incoming connections
 	void	setConnectionCallback( TNetCallback cb );
 
+	// Internal use
+	friend void cbProcessConnectionCallback( CMessage& msg, TSockId id );
+
+private:
+
+	TNetCallback	_ConnectionCallback;
+
+	static CCallbackServer *_TheServer;
 };
 
 

@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * <File description>
  *
- * $Id: callback_net_base.h,v 1.2 2001/02/22 17:51:26 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.3 2001/02/22 18:04:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include "nel/net/message.h"
 #include "nel/net/pt_callback_item.h"
 
+#include <map>
+
 
 namespace NLNET {
 
@@ -38,7 +40,7 @@ namespace NLNET {
 typedef uint32 TSockId;
 
 /// Callback function for message processing
-typedef void (*TNetCallback) ( TSockId, CMessage& );
+typedef void (*TNetCallback) ( CMessage&, TSockId );
 
 
 /// Callback items. See CMsgSocket::update() for an explanation on how the callbacks are called.
@@ -55,8 +57,15 @@ typedef void (*TNetCallback) ( TSockId, CMessage& );
 typedef sint16 TTypeNum;
 
 
+class CMsgSocket;
+class CCallbackNetBase;
+
+// Internal use
+typedef std::map<TSockId,CCallbackNetBase*> CSockIdToLayer4Map;
+
+
 /**
- * <Class description>
+ * Layer 4
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -65,10 +74,9 @@ class CCallbackNetBase
 {
 public:
 
-	/// Constructor
-	CCallbackNetBase();
-
-	///	Append callback array with the specified array
+	/**	Append callback array with the specified array (call BEFORE init() or connect()).
+	 * arraysize is the number of callback items.
+	 */
 	void	addCallbackArray( const TCallbackItem *callbackarray, TTypeNum arraysize );
 
 	/// Update the network (call this method evenly)
@@ -76,6 +84,24 @@ public:
 
 	/// Sets callback for detecting a disconnection
 	void	setDisconnectionCallback( TNetCallback cb );
+
+	// Internal use
+	friend void cbProcessDisconnectionCallback( CMessage& msg, TSockId id );
+
+protected:
+
+	/// Constructor
+	CCallbackNetBase();
+
+	CMsgSocket			*_MsgSocket;
+
+	TNetCallback		_DisconnectionCallback;
+
+	TCallbackItem		*_CallbackArray;
+
+	TTypeNum			_CbArraySize;
+
+	static CSockIdToLayer4Map	_SockIdMap;
 };
 
 

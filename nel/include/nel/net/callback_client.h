@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * <File description>
  *
- * $Id: callback_client.h,v 1.1 2001/02/22 16:18:35 cado Exp $
+ * $Id: callback_client.h,v 1.2 2001/02/22 18:04:16 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@ namespace NLNET {
 
 
 /**
- * <Class description>
+ * Client class for layer 4
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001
@@ -47,7 +47,7 @@ public:
 	/// Constructor
 	CCallbackClient();
 
-	/// Connects to the specified host
+	/// Connects to the specified host (call addCallbackArray() before)
 	void	connect( const CInetAddress& addr );
 
 	/// Disconnect the remote host

@@ -1,31 +1,39 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.4 2001/05/10 08:20:06 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.5 2001/05/18 16:51:33 lecroart Exp $
  *
  */
 
 /* Copyright, 2000 Nevrax Ltd.
  *
- * This file is part of NEVRAX D.T.C. SYSTEM.
- * NEVRAX D.T.C. SYSTEM is free software; you can redistribute it and/or modify
+ * This file is part of NEVRAX NeL Network Services.
+ * NEVRAX NeL Network Services is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2, or (at your option)
  * any later version.
  *
- * NEVRAX D.T.C. SYSTEM is distributed in the hope that it will be useful, but
+ * NEVRAX NeL Network Services is distributed in the hope that it will be useful, but
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with NEVRAX D.T.C. SYSTEM; see the file COPYING. If not, write to the
+ * along with NEVRAX NeL Network Services; see the file COPYING. If not, write to the
  * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
  * MA 02111-1307, USA.
  */
 
 #include <fcntl.h>
 #include <sys/stat.h>
+
+#include "nel/misc/types_nl.h"
+
+#ifdef NL_OS_WINDOWS
+#include <direct.h>
+#else
+#include <unistd.h>
+#endif
 
 #include <string>
 #include <list>
@@ -73,13 +81,15 @@ SIT find (TSockId sid)
 	return sit;
 }
 
-SIT findService (uint32 sid)
+SIT findService (uint32 sid, bool asrt = true)
 {
 	SIT sit;
 	for (sit = Services.begin(); sit != Services.end(); sit++)
 	{
 		if ((*sit).Id == sid) break;
 	}
+	if (asrt)
+		nlassert (sit != Services.end());
 	return sit;
 }
 
@@ -87,14 +97,26 @@ SIT findService (uint32 sid)
 class CExecuteCommandThread : public IRunnable
 {
 public:
-	string Command;
+	string Command, Path;
 
-	CExecuteCommandThread (string command) : Command(command) { }
+	CExecuteCommandThread (string command, string path = "") : Command(command), Path(path) { }
 
 	void run ()
 	{
-		nlinfo ("start executing: %s", Command.c_str());
+		nlinfo ("start executing '%s' in '%s' directory", Command.c_str(), Path.c_str());
+		
+		char oldpath[256];
+		if (!Path.empty())
+		{
+			_getcwd(oldpath,256);
+			_chdir(Path.c_str());
+		}
+
 		system (Command.c_str());
+		
+		if (!Path.empty())
+			_chdir(oldpath);
+
 		nlinfo ("end executing: %s", Command.c_str());
 	}
 };
@@ -222,6 +244,18 @@ static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &net
 	CNetManager::send ("AESAS", msgout);
 }
 
+static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	// received an answer for a command, give it to the AS
+
+	// broadcast the message to the admin service
+	CMessage msgout (CNetManager::getSIDA ("AESAS"), "LOG");
+	string log;
+	msgin.serial (log);
+	msgout.serial (log);
+	CNetManager::send ("AESAS", msgout);
+}
+
 void serviceConnection (const string &serviceName, TSockId from, void *arg)
 {
 	Services.push_back (CService (from));
@@ -258,6 +292,7 @@ TCallbackItem ServicesCallbackArray[] =
 {
 	{ "SID", cbServiceIdentification },
 	{ "SR", cbServiceReady },
+	{ "LOG", cbLog },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -266,25 +301,89 @@ TCallbackItem ServicesCallbackArray[] =
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+void errorMessage(string message, TSockId from)
+{
+	CMessage msgout (CNetManager::getSIDA ("AESAS"), "ERR");
+	msgout.serial (message);
+	CNetManager::send ("AESAS", msgout, from);
+}
+
 static void cbExecuteSystemCommand (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	string systemCommand;
-	uint8 background;
-	msgin.serial (systemCommand);
-	msgin.serial (background);
+	string command;
 
-	nlinfo ("I have to execute '%s'", systemCommand.c_str());
+	msgin.serial (command);
 
-	executeCommand (systemCommand, background==1);
+	IThread *thread = IThread::create (new CExecuteCommandThread (command));
+	thread->start ();
+}
+
+static void cbStartService (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	string serviceAlias, command, path;
+	msgin.serial (serviceAlias);
+
+	nlinfo ("Starting the service alias '%s'", serviceAlias.c_str());
+
+	try
+	{
+		path = IService::ConfigFile.getVar(serviceAlias).asString(0);
+		command = IService::ConfigFile.getVar(serviceAlias).asString(1);
+	}
+	catch(EConfigFile &e)
+	{
+		nlwarning ("error in serviceAlias '%s' in config file (%s)", serviceAlias.c_str(), e.what());
+		return;
+	}
+
+	command += " >NUL:";
+
+	IThread *thread = IThread::create (new CExecuteCommandThread (command, path));
+	thread->start ();
 }
 
 static void cbStopService (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	string service;
+	uint32 sid;
 
-	nlinfo ("I have to stop service");
+	msgin.serial (sid);
 
+	nlinfo ("I have to stop service '%s'");
+
+	SIT sit = findService (sid, false);
+	if (sit == Services.end())
+	{
+		// don't find the aes, send an error message
+		errorMessage ("couldn't stop service, aes didn't find the service", from);
+		return;
+	}
+
+	CMessage msgout (CNetManager::getSIDA("AES"), "STOPS");
+	CNetManager::send ("AES", msgout, (*sit).SockId);
 }
+
+static void cbExecCommand (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	uint32 sid;
+	string command;
+
+	msgin.serial (sid);
+	msgin.serial (command);
+
+	SIT sit = findService (sid, false);
+	if (sit == Services.end())
+	{
+		// don't find the aes, send an error message
+		errorMessage ("couldn't stop service, aes didn't find the service", from);
+		return;
+	}
+
+	CMessage msgout (CNetManager::getSIDA("AES"), "EXEC_COMMAND");
+	msgout.serial (command);
+	CNetManager::send ("AES", msgout, (*sit).SockId);
+}
+
+void loadAndSendServicesAliasList (CConfigFile::CVar &var);
 
 void cbASServiceConnection (const string &serviceName, TSockId from, void *arg)
 {
@@ -303,12 +402,16 @@ void cbASServiceConnection (const string &serviceName, TSockId from, void *arg)
 		msgout.serial ((*sit).Ready);
 	}
 	CNetManager::send ("AESAS", msgout, from);
+
+	loadAndSendServicesAliasList (IService::ConfigFile.getVar ("Services"));
 }
 
 TCallbackItem AESASCallbackArray[] =
 {
-	{ "ESC", cbExecuteSystemCommand },
-	{ "SS", cbStopService },
+	{ "SYS", cbExecuteSystemCommand },
+	{ "STARTS", cbStartService },
+	{ "STOPS", cbStopService },
+	{ "EXEC_COMMAND", cbExecCommand },
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -316,6 +419,20 @@ TCallbackItem AESASCallbackArray[] =
 ////////////////// SERVICE IMPLEMENTATION //////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void loadAndSendServicesAliasList (CConfigFile::CVar &services)
+{
+	vector<string> servicesaliaslist;
+	for (sint i = 0 ; i < services.size (); i++)
+	{
+		servicesaliaslist.push_back (services.asString(i));
+	}
+
+	CMessage msgout2 (CNetManager::getSIDA ("AESAS"), "SAL");
+	msgout2.serialCont (servicesaliaslist);
+	CNetManager::send ("AESAS", msgout2, 0);
+}
+
 
 class CAdminExecutorService : public IService
 {
@@ -331,6 +448,9 @@ public:
 		CNetManager::setConnectionCallback ("AESAS", cbASServiceConnection, NULL);
 		CNetManager::addServer ("AESAS", 49996);
 		CNetManager::addCallbackArray ("AESAS", AESASCallbackArray, sizeof(AESASCallbackArray)/sizeof(AESASCallbackArray[0]));
+
+		ConfigFile.setCallback ("Services", loadAndSendServicesAliasList);
+		loadAndSendServicesAliasList (IService::ConfigFile.getVar ("Services"));
 	}
 
 	bool		update ()

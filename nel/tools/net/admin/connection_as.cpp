@@ -1,7 +1,7 @@
 /** \file connection_as.cpp
  * 
  *
- * $Id: connection_as.cpp,v 1.1 2001/05/11 13:50:59 lecroart Exp $
+ * $Id: connection_as.cpp,v 1.2 2001/05/18 16:51:49 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -29,12 +29,102 @@
 #include "nel/net/net_manager.h"
 
 #include "datas.h"
+#include "interf.h"
 
 using namespace std;
 using namespace NLMISC;
 using namespace NLNET;
 
+
+
+
+
+///
+/// Get the list of AES on the AS
+///
+static void cbAESList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	CAdminService *as = (CAdminService*) from->appId();
+
+	uint32 nbaes;
+	msgin.serial(nbaes);
+
+	for (uint32 i = 0; i < nbaes; i++)
+	{
+		CAdminExecutorService aes;
+		msgin.serial (aes.Id, aes.ServerAlias, aes.ServerAddr, aes.Connected);
+
+		AESIT aesit = as->findAdminExecutorService (aes.Id, false);
+		// todo normalement, l aes ne doit pas exister => faire un assert si il existe
+		if (aesit == as->AdminExecutorServices.end ())
+		{
+			as->AdminExecutorServices.push_back (aes);
+			interfAddAES (as, &(as->AdminExecutorServices.back()));
+		}
+		else
+		{
+			nlassert ("the aes already exists, update it");
+			// copy the new values
+			(*aesit).setValues (aes);
+			interfUpdateAES (&(*aesit));
+		}
+	}
+
+	displayServices ();
+}
+
+/// Get the list of Services on the AS
 static void cbServiceList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	CAdminService *as = (CAdminService*) from->appId();
+
+	// get the list of all aes
+	uint32 nbaes;
+	msgin.serial(nbaes);
+
+	for (uint32 i = 0; i < nbaes; i++)
+	{
+		uint32 aesid;
+		msgin.serial(aesid);
+
+		AESIT aesit = as->findAdminExecutorService (aesid);
+
+		// get the list of service in this aes
+		uint32 nbs;
+		msgin.serial(nbs);
+
+		for (uint32 j = 0; j < nbs; j++)
+		{
+			CService s;
+			msgin.serial (s.Id, s.ServiceAlias, s.ShortName, s.LongName);
+			msgin.serial (s.Ready, s.Connected, s.InConfig);
+
+			SIT sit = (*aesit).findService (s.Id, false);
+			if (sit == (*aesit).Services.end ())
+			{
+				(*aesit).Services.push_back (s);
+				interfAddS (&(*aesit), &((*aesit).Services.back()));
+			}
+			else
+			{
+				nlassert ("the service already exists, update it");
+				(*sit).setValues (s);
+				interfUpdateS (&(*sit));
+			}
+		}
+	}
+
+	displayServices ();
+}
+
+
+
+
+
+
+
+
+static void cbServiceList_ (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// receive all information about the admin service
 	CAdminService *as = (CAdminService*) from->appId();
@@ -53,9 +143,10 @@ static void cbServiceList (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 		CAdminExecutorService *aes;
 		if (aesit == as->AdminExecutorServices.end ())
 		{
-			nlinfo ("push aes");
-			as->AdminExecutorServices.push_back (CAdminExecutorService(aesid));
+			as->AdminExecutorServices.push_back (CAdminExecutorService());
 			aes = &(as->AdminExecutorServices.back());
+			aes->Id = aesid;
+			interfAddAES (as, aes);
 		}
 		else
 		{
@@ -74,14 +165,33 @@ static void cbServiceList (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 		{
 			uint32 sid;
 			msgin.serial(sid);
-			nlinfo ("push ser");
-			aes->Services.push_back(CService(sid));
+			aes->Services.push_back(CService());
 			CService *s = &(aes->Services.back());
+			s->Id = sid;
 			msgin.serial(s->ShortName, s->LongName, s->Ready);
+			interfAddS(aes, s);
 		}
 	}
 
 	displayServices ();
+}
+
+static void cbServiceAliasList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
+{
+	// receive all information about the admin service
+	CAdminService *as = (CAdminService*) from->appId();
+
+	uint32 aesid;
+	msgin.serial(aesid);
+
+	AESIT aesit = as->findAdminExecutorService (aesid);
+
+	removeServiceAliasPopup (&(*aesit));
+
+	(*aesit).ServiceAliasList.clear ();
+	msgin.serialCont ((*aesit).ServiceAliasList);
+
+	addServiceAliasPopup (&(*aesit));
 }
 
 static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
@@ -122,8 +232,10 @@ static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase
 	nlinfo ("%d:%d:%d connected", as->Id, aesid, sid);
 
 	AESIT aesit = as->findAdminExecutorService(aesid);
-	nlinfo ("push ser");
-	(*aesit).Services.push_back (CService(sid));
+	(*aesit).Services.push_back (CService());
+	CService *s = &((*aesit).Services.back());
+	s->Id = sid;
+	interfAddS(&(*aesit), s);
 }
 
 static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
@@ -137,8 +249,9 @@ static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetB
 	nlinfo ("%d:%d:%d disconnected", as->Id, aesid, sid);
 
 	AESIT aesit = as->findAdminExecutorService(aesid);
-	nlinfo ("erase ser");
-	(*aesit).Services.erase ((*aesit).findService(sid));
+	SIT sit = (*aesit).findService(sid);
+	interfRemoveS (&(*sit));
+	(*aesit).Services.erase (sit);
 }
 
 
@@ -152,8 +265,10 @@ static void cbAESConnection (CMessage& msgin, TSockId from, CCallbackNetBase &ne
 
 	nlinfo ("%d:%d:* connected", as->Id, aesid);
 
-	nlinfo ("push aes");
-	as->AdminExecutorServices.push_back (CAdminExecutorService(aesid));
+	as->AdminExecutorServices.push_back (CAdminExecutorService());
+	CAdminExecutorService *aes = &(as->AdminExecutorServices.back());
+	aes->Id = aesid;
+	interfAddAES(as, aes);
 }
 
 
@@ -167,8 +282,9 @@ static void cbAESDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase 
 
 	nlinfo ("%d:%d:* disconnected", as->Id, aesid);
 
-	nlinfo ("erase aes");
-	as->AdminExecutorServices.erase (as->findAdminExecutorService(aesid));
+	AESIT aesit = as->findAdminExecutorService(aesid);
+	interfRemoveAES(&(*aesit));
+	as->AdminExecutorServices.erase (aesit);
 }
 
 static void cbError (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
@@ -182,12 +298,14 @@ static void cbASConnection (const string &serviceName, TSockId from, void *arg)
 {
 	// i'm connected to a new admin service, add the new admin service in the list
 
-	nlinfo ("push as");
-	AdminServices.push_back (CAdminService(from));
-	CAdminService *as = &(AdminServices.back());
+	CAdminService *as = (CAdminService *) arg;
 	from->setAppId ((uint64)as);
 
-	as->NetBaseName = serviceName;
+	as->Connected = true;
+	as->SockId = from;
+
+//	interfAddAS(as);
+	setBitmap ("as_connected.xpm", as->Bitmap);
 
 	nlinfo ("%d:*:* connected", as->Id);
 }
@@ -200,8 +318,14 @@ static void cbASDisconnection (const string &serviceName, TSockId from, void *ar
 	nlinfo ("%d:*:* disconnected", as->Id);
 
 	// remove the admin service
-	nlinfo ("erase as");
-	AdminServices.erase (findAdminService(as->Id));
+	//ASIT asit = findAdminService(as->Id);
+	//interfRemoveAS(&(*asit));
+	//AdminServices.erase (asit);
+	as->Connected = false;
+	as->SockId = NULL;
+	setBitmap ("as_not_connected.xpm", as->Bitmap);
+	removeSubTree (as);
+	as->AdminExecutorServices.clear();
 }
 
 static void cbLog (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
@@ -219,7 +343,8 @@ TCallbackItem ASCallbackArray[] =
 {
 	{ "ERR", cbError },
 
-	{ "SL", cbServiceList },
+	{ "SL", cbServiceList_ },
+	{ "SAL", cbServiceAliasList },
 
 	{ "SID", cbServiceIdentification },
 	{ "SR", cbServiceReady },
@@ -230,12 +355,22 @@ TCallbackItem ASCallbackArray[] =
 	{ "AESD", cbAESDisconnection },
 
 	{ "LOG", cbLog },
+
+
+	{ "AES_LIST", cbAESList },
+	{ "SERVICE_LIST", cbServiceList },
 };
 
-void connectionASInit (string addr)
+void connectionASInit (CAdminService *as)
 {
-	CNetManager::setConnectionCallback (addr, cbASConnection, NULL);
-	CNetManager::setDisconnectionCallback (addr, cbASDisconnection, NULL);
-	CNetManager::addClient (addr, addr+":49995");
-	CNetManager::addCallbackArray (addr, ASCallbackArray, sizeof(ASCallbackArray)/sizeof(ASCallbackArray[0]));
+	CNetManager::setConnectionCallback (as->ASAddr, cbASConnection, as);
+	CNetManager::setDisconnectionCallback (as->ASAddr, cbASDisconnection, NULL);
+	CNetManager::addClient (as->ASAddr, as->ASAddr+":49995", false);
+	CNetManager::addCallbackArray (as->ASAddr, ASCallbackArray, sizeof(ASCallbackArray)/sizeof(ASCallbackArray[0]));
+}
+
+void connectionASRelease (CAdminService *as)
+{
+	CNetManager::getNetBase(as->ASAddr)->disconnect ();
+	cbASDisconnection (as->ASAddr, as->SockId, NULL);
 }

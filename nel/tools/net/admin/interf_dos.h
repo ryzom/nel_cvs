@@ -1,7 +1,7 @@
-/** \file connection_as.h
+/** \file interf_dos.h
  *
  *
- * $Id: connection_as.h,v 1.2 2001/05/18 16:51:49 lecroart Exp $
+ * $Id: interf_dos.h,v 1.1 2001/05/18 16:51:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,14 +23,15 @@
  * MA 02111-1307, USA.
  */
 
-#ifndef NL_CONNECTION_AS_H
-#define NL_CONNECTION_AS_H
+#ifndef NL_INTERF_DOS_H
+#define NL_INTERF_DOS_H
 
 // Functions
 
-void connectionASInit (CAdminService *as);
-void connectionASRelease (CAdminService *as);
+void runInterfDos();
 
-#endif // NL_CONNECTION_AS_H
+inline void interfAddAS (CAdminService *as) { }
 
-/* End of connection_as.h */
+#endif // NL_INTERF_DOS_H
+
+/* End of interf_dos.h */

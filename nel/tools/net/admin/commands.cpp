@@ -1,7 +1,7 @@
 /** \file coammnds.cpp
  * 
  *
- * $Id: commands.cpp,v 1.1 2001/05/11 13:50:59 lecroart Exp $
+ * $Id: commands.cpp,v 1.2 2001/05/18 16:51:49 lecroart Exp $
  *
  * contains all admin commands
  *
@@ -43,11 +43,14 @@ using namespace NLMISC;
 using namespace NLNET;
 
 
-NLMISC_COMMAND (connect, "connect to the AS", "<ip>")
+NLMISC_COMMAND (connect, "connect to the AS", "<asid>")
 {
 	if(args.size() != 1) return false;
 
-	connectionASInit (args[0]);
+	uint32 asid = atoi (args[0].c_str());
+	ASIT asit = findAdminService (asid);
+
+	connectionASInit (&(*asit));
 	return true;
 }
 
@@ -72,10 +75,10 @@ NLMISC_COMMAND (start, "start a service", "<asid> <aesid> <service_name>")
 		return false;
 	}
 
-	CMessage msgout (CNetManager::getSIDA((*asit).NetBaseName), "STARTS");
+	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "STARTS");
 	msgout.serial (aesid);
 	msgout.serial (const_cast<string &>(args[2]));
-	CNetManager::send ((*asit).NetBaseName, msgout);
+	CNetManager::send ((*asit).ASAddr, msgout);
 
 	return true;
 }
@@ -109,10 +112,10 @@ NLMISC_COMMAND (stop, "stop a service", "<asid> <aesid> <sid>")
 		return false;
 	}
 
-	CMessage msgout (CNetManager::getSIDA((*asit).NetBaseName), "STOPS");
+	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "STOPS");
 	msgout.serial (aesid);
 	msgout.serial (sid);
-	CNetManager::send ((*asit).NetBaseName, msgout);
+	CNetManager::send ((*asit).ASAddr, msgout);
 	return true;
 }
 
@@ -149,11 +152,11 @@ NLMISC_COMMAND (ec, "execute a command on a service", "<asid> <aesid> <sid> <com
 	for (uint32 i = 3; i < args.size(); i++)
 		command += args[i];
 
-	CMessage msgout (CNetManager::getSIDA((*asit).NetBaseName), "EXEC_COMMAND");
+	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "EXEC_COMMAND");
 	msgout.serial (aesid);
 	msgout.serial (sid);
 	msgout.serial (command);
-	CNetManager::send ((*asit).NetBaseName, msgout);
+	CNetManager::send ((*asit).ASAddr, msgout);
 	return true;
 }
 
@@ -178,10 +181,10 @@ NLMISC_COMMAND (sys, "execute a system command", "<asid> <aesid> <command>")
 		return false;
 	}
 
-	CMessage msgout (CNetManager::getSIDA((*asit).NetBaseName), "SYS");
+	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "SYS");
 	msgout.serial (aesid);
 	msgout.serial (const_cast<string &>(args[2]));
-	CNetManager::send ((*asit).NetBaseName, msgout);
+	CNetManager::send ((*asit).ASAddr, msgout);
 
 	return true;
 }
@@ -199,9 +202,9 @@ NLMISC_COMMAND (exec, "execute a script on the AS", "<asid> <script_name>")
 		return false;
 	}
 
-	CMessage msgout (CNetManager::getSIDA((*asit).NetBaseName), "EXEC");
+	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "EXEC");
 	msgout.serial (const_cast<string &>(args[1]));
-	CNetManager::send ((*asit).NetBaseName, msgout);
+	CNetManager::send ((*asit).ASAddr, msgout);
 
 	return true;
 }

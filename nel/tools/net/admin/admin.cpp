@@ -1,7 +1,7 @@
 /** \file admin.cpp
  * 
  *
- * $Id: admin.cpp,v 1.3 2001/05/11 13:50:59 lecroart Exp $
+ * $Id: admin.cpp,v 1.4 2001/05/18 16:51:49 lecroart Exp $
  *
  * \warning the admin client works *only* on Windows because we use kbhit() and getch() functions that are not portable.
  *
@@ -27,32 +27,21 @@
  */
 
 #include <string>
-#include <conio.h>
 
 #include "nel/misc/debug.h"
-#include "nel/misc/log.h"
-#include "nel/misc/displayer.h"
 #include "nel/misc/command.h"
-
-#include "nel/net/net_manager.h"
+#include "nel/misc/config_file.h"
  
-using namespace std;
+#include "nel/net/net_manager.h"
+
+#include "interf.h"
+
 using namespace NLMISC;
 using namespace NLNET;
-
-
-void printLine(string line)
-{
-	printf("\r> %s \b", line.c_str());
-}
-
-CLog logstdout;
-CStdDisplayer dispstdout;
+using namespace std;
 
 int main (int argc, char **argv)
 {
-	logstdout.addDisplayer (&dispstdout);
-
 	nlinfo("Admin client for NeL Shard administration ("__DATE__" "__TIME__")\n");
 
 	DebugLog->addNegativeFilter ("L0:");
@@ -61,29 +50,26 @@ int main (int argc, char **argv)
 
 	CNetManager::init (NULL);
 
-	// todo virer ca pour pas que ca connecte automatiquement
-	ICommand::execute ("connect localhost", logstdout);
+	initInterf ();
 
-	string command;
-	printLine(command);
-
-	bool end = false;
-	while (!end)
+	CConfigFile ConfigFile;
+	ConfigFile.load ("admin.cfg");
+	CConfigFile::CVar &host = ConfigFile.getVar ("ASHosts");
+	
+	for (sint i = 0 ; i < host.size (); i += 2)
 	{
-		while (kbhit())
-		{
-			int c = getch();
-			switch (c)
-			{
-			case  8: if (command.size()>0) command.resize (command.size()-1); printLine(command); break;
-			case 27: end = true; break;
-			case 13: printf("\n"); nlinfo("execute command: %s", command.c_str()); ICommand::execute(command, logstdout); command = ""; printLine(command); break;
-			default: command += c; printLine(command); break;
-			}
-		}
+		string ASName = host.asString(i);
+		string ASAddr = host.asString(i+1);
 
-		CNetManager::update();
+		// add the AS in the list
+		AdminServices.push_back (CAdminService());
+		CAdminService *as = &(AdminServices.back());
+		as->ASAddr = ASAddr;
+		as->ASName = ASName;
+		interfAddAS (as);
 	}
+
+	runInterf ();
 
 	CNetManager::release ();
 

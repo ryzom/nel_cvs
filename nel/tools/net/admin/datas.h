@@ -1,7 +1,7 @@
 /** \file datas.h
  *
  *
- * $Id: datas.h,v 1.1 2001/05/11 13:50:59 lecroart Exp $
+ * $Id: datas.h,v 1.2 2001/05/18 16:51:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,14 +38,32 @@
 
 struct CService
 {
-	CService (uint32 sid) : Id(sid), Ready(false) { nlinfo ("adding service %d", sid); }
-
-	~CService() { nlinfo("removing service %d %s %s", Id, ShortName.c_str(), LongName.c_str()); }
+	CService () : Id(0xFFFFFFFF), Ready(false), Connected(false), InConfig(false), RootTreeItem(NULL) { }
 
 	uint32		Id;				/// uint32 to identify the service
+	std::string	ServiceAlias;	/// alias of the service used in the AES and AS to find him (unique per AES)
 	std::string	ShortName;		/// name of the service in short format ("NS" for example)
 	std::string	LongName;		/// name of the service in long format ("naming_service")
 	bool		Ready;			/// true if the service is ready
+	bool		Connected;		/// true if the service is connected to the AES
+	bool		InConfig;		/// true if the service is in the configuration
+
+	void setValues (const CService &t)
+	{
+		// copy all except gtk stuffs
+		Id = t.Id;
+		ServiceAlias = t.ServiceAlias;
+		ShortName = t.ShortName;
+		LongName = t.LongName;
+		Ready = t.Ready;
+		Connected = t.Connected;
+		InConfig = t.InConfig;
+	}
+
+	// used by gtk
+	void	*RootTreeItem;
+	void	*RootSubTree;
+	void	*Bitmap, *Label;
 };
 
 typedef std::list<CService> TServices;
@@ -54,13 +72,26 @@ typedef std::list<CService>::iterator SIT;
 
 struct CAdminExecutorService
 {
-	CAdminExecutorService (uint32 aesid) : Id(aesid) { }
+	CAdminExecutorService () : Id(0xFFFFFFFF), Connected(false), RootTreeItem(NULL) { }
 
-	~CAdminExecutorService() { nlinfo("removing AES %d", Id); }
+	uint32		Id;				/// uint32 to identify the AES where the service is running
 
-	uint32	Id;				/// uint32 to identify the AES where the service is running
+	std::string	ServerAlias;	/// name of the layer4 connection, used to send message to this AES
+	std::string	ServerAddr;		/// address in a string format (only the ip)
+	bool		Connected;		/// true if the AES is connected
 
-	TServices Services;
+	TServices	Services;
+
+	std::vector<std::string>	ServiceAliasList;	/// contains all service aliases that this AES can run
+
+	void setValues (const CAdminExecutorService &t)
+	{
+		// copy all except gtk stuffs
+		Id = t.Id;
+		ServerAlias = t.ServerAlias;
+		ServerAddr = t.ServerAddr;
+		Connected = t.Connected;
+	}
 
 	SIT findService (uint32 sid, bool asrt = true)
 	{
@@ -73,6 +104,12 @@ struct CAdminExecutorService
 			nlassert (sit != Services.end());
 		return sit;
 	}
+
+	// used by gtk
+	void	*RootTreeItem;
+	void	*RootSubTree;
+	void	*Bitmap, *Label;
+	void	*ItemFactory;
 };
 
 typedef std::list<CAdminExecutorService> TAdminExecutorServices;
@@ -81,14 +118,16 @@ typedef std::list<CAdminExecutorService>::iterator AESIT;
 
 struct CAdminService
 {
-	CAdminService (NLNET::TSockId s) : SockId(s), Id(NextId++) { }
+	CAdminService () : Connected(false), SockId(NULL), Id(NextId++), RootTreeItem(NULL) { }
 	
 	~CAdminService() { nlinfo("removing AS %d", Id); }
 
 	NLNET::TSockId	SockId;			/// connection to the AS
 	uint32			Id;				/// uint32 to identify the AS
 
-	std::string		NetBaseName;	/// name of the layer4 connection, used to send message to this AS
+	std::string		ASAddr;			/// name of the layer4 connection, used to send message to this AS (AS address and service name are the same)
+	std::string		ASName;			/// name of the shard in a human form (ex: "San Fresco Shard")
+	bool			Connected;
 
 	TAdminExecutorServices AdminExecutorServices;
 
@@ -103,6 +142,11 @@ struct CAdminService
 			nlassert (aesit != AdminExecutorServices.end());
 		return aesit;
 	}
+
+	// used by gtk
+	void	*RootTreeItem;
+	void	*RootSubTree;
+	void	*Bitmap, *Label;
 
 private:
 	static uint32 NextId;

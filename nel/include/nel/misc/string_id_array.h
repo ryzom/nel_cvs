@@ -1,7 +1,7 @@
 /** \file string_id_array.h
  * CStringIdArray
  *
- * $Id: string_id_array.h,v 1.11 2001/04/23 09:23:43 lecroart Exp $
+ * $Id: string_id_array.h,v 1.12 2001/05/10 08:15:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -58,6 +58,7 @@ public:
 	void addString(const std::string &str, TStringId id)
 	{
 		nlassert (id >= 0 && id < pow(2, sizeof (TStringId)*8));
+		nlassert (!str.empty());
 
 		if (id >= (sint32) _StringArray.size())
 			_StringArray.resize(id+1);
@@ -75,6 +76,7 @@ public:
 	void addString(const std::string &str)
 	{
 		nlassert (_StringArray.size () < pow(2, sizeof (TStringId)*8));
+		nlassert (!str.empty());
 
 		// add at the end
 		addString (str, _StringArray.size ());
@@ -85,6 +87,8 @@ public:
 	 */
 	TStringId getId (const std::string &str, bool IgnoreIfUnknown = false)
 	{
+		nlassert (!str.empty());
+
 		// sorry for this bullshit but it's the simplest way ;)
 		if (this == NULL) return -1;
 

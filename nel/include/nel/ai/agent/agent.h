@@ -1,7 +1,7 @@
 /** \file agent.h
  * Sevral class for the definition of agent.
  *
- * $Id: agent.h,v 1.13 2001/02/21 11:07:39 chafik Exp $
+ * $Id: agent.h,v 1.14 2001/03/23 09:58:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -162,6 +162,21 @@ namespace NLAIAGENT
 			throw NLAIE::CExceptionNotImplemented(text);
 			return NULL;
 		}
+
+		/**
+		runService is to processing reltative to PService Performatif. its call from the IObjectIA *run(const IMessageBase &m) method. 
+		*/
+		virtual IMessageBase *runService(const IMessageBase &m)
+		{
+			char debugString[1024*4];
+			char text[2048*8];
+			getDebugString(debugString);
+			sprintf(text,"runService(%s) note implementaited for the '%s' interface for the instence '%s'",(const char *)m.getType(),(const char *)getType(),debugString);
+			throw NLAIE::CExceptionNotImplemented(text);
+			return NULL;
+		}
+
+		
 
 	public:
 		///Contruct agent with an parent.

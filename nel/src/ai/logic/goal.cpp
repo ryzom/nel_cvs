@@ -146,8 +146,7 @@ namespace NLAILOGIC
 
 #ifdef NL_DEBUG	
 	char nameM[1024*4];
-	char nameP[1024*4];
-	char name[1024*8];
+	char nameP[1024*4];	
 	funcName->getDebugString(nameM);
 	params.getDebugString(nameP);
 

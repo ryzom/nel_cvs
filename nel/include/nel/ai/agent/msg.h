@@ -1,7 +1,7 @@
 /** \file messagerie.h
  * class message.
  *
- * $Id: msg.h,v 1.8 2001/03/08 13:42:56 portier Exp $
+ * $Id: msg.h,v 1.9 2001/03/23 09:58:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -60,8 +60,9 @@ namespace NLAIAGENT
 			PBreak,
 			PTell,
 			PKill,
-			PError,
-			PEven
+			PError,			
+			PEven,
+			PService
 		};
 
 	private:
@@ -398,6 +399,12 @@ namespace NLAIAGENT
 	public:
 		static const NLAIC::CIdentType IdMessageVector;
 	public:
+
+		CMessageVector(int n)
+		{
+			CVectorGroupType *x = new CVectorGroupType(n);
+			setMessageGroup(x);
+		}
 
 		CMessageVector()
 		{

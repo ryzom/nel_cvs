@@ -1,6 +1,6 @@
 /** \file zone.cpp
  *
- * $Id: zone.cpp,v 1.1 2001/03/14 13:50:05 chafik Exp $
+ * $Id: zone.cpp,v 1.2 2001/03/23 09:57:48 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,4 +26,36 @@
 
 namespace NLAICHARACTER
 {		
+	IZone::IZone(const IZone &c):ICharacter(c),_Character((ICharacter *)c._Character->clone()),_Attachment((NLAIAGENT::IBaseGroupType *)c._Attachment->clone())
+	{
+	}
+
+	IZone::IZone(ICharacter *c):_Character(c),_Attachment(new NLAIAGENT::CGroupType())
+	{
+	}
+
+	IZone::IZone(const std::string &name):_Character(new CCharacterChild(name)),_Attachment(new NLAIAGENT::CGroupType())
+	{
+	}
+
+	IZone::~IZone()
+	{
+		_Character->release();
+		_Attachment->release();
+	}
+
+	void IZone::addObject(const NLAIAGENT::IObjectIA *o)
+	{
+		_Attachment->push(o);
+	}
+
+	void IZone::removeObject(const NLAIAGENT::IObjectIA *o)
+	{
+		_Attachment->erase(o);
+	}
+
+	NLAIAGENT::CIteratorContener IZone::getAttachement() const
+	{
+		return _Attachment->getIterator();
+	}
 }

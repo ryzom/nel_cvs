@@ -1,6 +1,6 @@
 /** \file agents.cpp
  *
- * $Id: agents.cpp,v 1.23 2001/02/21 11:36:39 chafik Exp $
+ * $Id: agents.cpp,v 1.24 2001/03/23 09:57:48 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -105,8 +105,9 @@ namespace NLAIAGENT
 	{
 		std::list<IBasicAgent *>::iterator i_agl = _AgentList.begin();
 		while ( i_agl != _AgentList.end() )
-		{									
-			(*i_agl)->run();
+		{					
+			IBasicAgent *c = *i_agl;
+			c->run();
 			i_agl++;
 		}
 	}		

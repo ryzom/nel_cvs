@@ -1,7 +1,7 @@
 /** \file performative.h
  *	
  *
- * $Id: performative.h,v 1.6 2001/02/21 11:07:39 chafik Exp $
+ * $Id: performative.h,v 1.7 2001/03/23 09:58:05 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -318,6 +318,40 @@ namespace NLAIAGENT
 		virtual const NLAIC::IBasicType *clone() const
 		{
 			NLAIC::IBasicInterface *m = new CPEven();
+			return m;
+		}
+		
+		virtual const NLAIC::IBasicType *newInstance() const
+		{
+			return clone();
+		}
+		//@}
+		
+		virtual const char *getName() const
+		{
+			return "Even";
+		}		
+	};
+
+	class CPService: public IPerformative
+	{
+	public:
+		static const NLAIC::CIdentType IdService;
+	public:
+		CPService():IPerformative(IMessageBase::PService)
+		{
+		}
+
+		/// \name Base class member method.			
+		//@{
+		virtual const NLAIC::CIdentType &getType() const
+		{
+			return IdService;
+		}
+
+		virtual const NLAIC::IBasicType *clone() const
+		{
+			NLAIC::IBasicInterface *m = new CPService();
 			return m;
 		}
 		

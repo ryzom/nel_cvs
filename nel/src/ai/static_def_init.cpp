@@ -457,6 +457,11 @@
 		NLAIC::CTypeOfObject::tPerformative,
 		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
 
+	const NLAIC::CIdentType CPService::IdService = NLAIC::CIdentType( "Service",
+		NLAIC::CSelfClassFactory((const NLAIC::IBasicInterface &)CPService()), 
+		NLAIC::CTypeOfObject::tPerformative,
+		NLAIC::CTypeOfOperator(NLAIC::CTypeOfOperator::opNone) );
+
 //}
 
 namespace NLAISCRIPT

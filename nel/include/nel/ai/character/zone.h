@@ -1,6 +1,6 @@
 /** \file zone.h
  *
- * $Id: zone.h,v 1.1 2001/03/14 13:19:25 chafik Exp $
+ * $Id: zone.h,v 1.2 2001/03/23 09:58:05 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,10 +32,13 @@ namespace NLAICHARACTER
 	{
 	private:
 		ICharacter *_Character;
+		NLAIAGENT::IBaseGroupType *_Attachment;
 
 	public:
+		IZone(const IZone &);
 		IZone(ICharacter *);
-		IZone(const IZone &name);
+		///Built a new IZone with an CCharacterChild Character.
+		IZone(const std::string &name);
 		virtual ~IZone();
 
 		virtual const IZone *isInZone(const IZone &) const = 0
@@ -55,11 +58,15 @@ namespace NLAICHARACTER
 		{
 			return _Character->addCharacter(c);
 		}
+
 		virtual bool canAddCharacter() const
 		{
 			return _Character->canAddCharacter();
 		}
-		
+
+		virtual void addObject(const NLAIAGENT::IObjectIA *);
+		virtual void removeObject(const NLAIAGENT::IObjectIA *);
+		virtual NLAIAGENT::CIteratorContener getAttachement() const;
 	};	
 	
 }

@@ -3,9 +3,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <math.h>
-#include "script/lexsupport.h"
-#include "script/lex.h"
-using  namespace NLIASCRIPT;
+#include "nel/ai/script/lexsupport.h"
+#include "nel/ai/script/lex.h"
+using  namespace NLAISCRIPT;
 using  namespace std;
 %}
 
@@ -41,7 +41,7 @@ reel {entier10}"."{entier10}
 [Bb][01]+	{	
 				strcpy(LastyyText[0], LastyyText[1]);
 				strcpy(LastyyText[1], yytext);
-				LastyyNum = NLIASCRIPT::GetNombre(LastyyText[1],2);
+				LastyyNum = NLAISCRIPT::GetNombre(LastyyText[1],2);
 				yyColone += strlen(yytext);
 				return NOMBRE;
 }
@@ -49,14 +49,14 @@ reel {entier10}"."{entier10}
 [Ll]?[0-9]+	{								
 				strcpy(LastyyText[0], LastyyText[1]);
 				strcpy(LastyyText[1], yytext);
-				LastyyNum = NLIASCRIPT::GetNombre(LastyyText[1],10);
+				LastyyNum = NLAISCRIPT::GetNombre(LastyyText[1],10);
 				yyColone += strlen(yytext);
 				return NOMBRE;
 	}
 [xX][0-9A-Fa-f]+	{
 					strcpy(LastyyText[0], LastyyText[1]);
 					strcpy(LastyyText[1], yytext);
-					LastyyNum = NLIASCRIPT::GetNombre(LastyyText[1],16);
+					LastyyNum = NLAISCRIPT::GetNombre(LastyyText[1],16);
 					yyColone += strlen(yytext);
 					return NOMBRE;
 }
@@ -64,7 +64,7 @@ reel {entier10}"."{entier10}
 [0-9]+"."[0-9]+	{					
 					strcpy(LastyyText[0], LastyyText[1]);
 					strcpy(LastyyText[1], yytext);
-					LastyyNum = NLIASCRIPT::GetNombre(LastyyText[1],0);
+					LastyyNum = NLAISCRIPT::GetNombre(LastyyText[1],0);
 					yyColone += strlen(yytext);
 					return NOMBRE;
 	}
@@ -72,7 +72,7 @@ reel {entier10}"."{entier10}
 ([0-9]+"."[0-9]*)([Ee][+-]?[0-9]*)	{					
 					strcpy(LastyyText[0], LastyyText[1]);
 					strcpy(LastyyText[1], yytext);
-					LastyyNum = NLIASCRIPT::GetNombre(LastyyText[1],0);
+					LastyyNum = NLAISCRIPT::GetNombre(LastyyText[1],0);
 					yyColone += strlen(yytext);
 					return NOMBRE;
 	}
@@ -80,7 +80,7 @@ reel {entier10}"."{entier10}
 ([0-9]+[0-9]*)([Ee][+-]?[0-9]*)	{					
 					strcpy(LastyyText[0], LastyyText[1]);
 					strcpy(LastyyText[1], yytext);
-					LastyyNum = NLIASCRIPT::GetNombre(LastyyText[1],0);
+					LastyyNum = NLAISCRIPT::GetNombre(LastyyText[1],0);
 					yyColone += strlen(yytext);
 					return NOMBRE;
 	}
@@ -89,7 +89,7 @@ reel {entier10}"."{entier10}
 						strcpy(LastyyText[0], LastyyText[1]);
 						strcpy(LastyyText[1], yytext);
 						yyColone += strlen(yytext);					
-						int i = NLIASCRIPT::GetIdentType(yytext);
+						int i = NLAISCRIPT::GetIdentType(yytext);
 						return i;
 					
 	}

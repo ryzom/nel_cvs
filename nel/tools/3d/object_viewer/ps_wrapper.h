@@ -1,7 +1,9 @@
 /** \file ps_wrapper.h
- * <File description>
+ *  here we define interface that helps to create wrappers between the particle system interface and 
+ *	 a dialog.
  *
- * $Id: ps_wrapper.h,v 1.3 2001/06/15 16:24:45 corvazier Exp $
+ *
+ * $Id: ps_wrapper.h,v 1.4 2001/06/25 12:58:26 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,8 +39,6 @@
 #include "3d/ps_attrib_maker.h"
 #include "3d/texture.h"
 
-// here we define interface that helps to create wrappers between the particle system interface and 
-// a dialog.
 
 
 // wrapper to read write a value of type T

@@ -1,7 +1,7 @@
 /** \file range_manager.h
- * <File description>
+ * the range manager helps to store user defined preference in an CEditableRange dialog
  *
- * $Id: range_manager.cpp,v 1.2 2001/06/12 17:12:36 vizerie Exp $
+ * $Id: range_manager.cpp,v 1.3 2001/06/25 12:58:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.8 2001/06/18 14:43:31 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.9 2001/06/18 14:54:06 lecroart Exp $
  *
  */
 
@@ -143,14 +143,14 @@ public:
 		char oldpath[256];
 		if (!ServicePath.empty())
 		{
-			_getcwd(oldpath,256);
-			_chdir(ServicePath.c_str());
+			getcwd(oldpath,256);
+			chdir(ServicePath.c_str());
 		}
 
 		system (ServiceCommand.c_str());
 		
 		if (!ServicePath.empty())
-			_chdir(oldpath);
+			chdir(oldpath);
 
 		nlinfo ("end service '%s' '%s' in '%s' directory", ServiceAlias.c_str(), ServiceCommand.c_str(), ServicePath.c_str());
 	}
@@ -296,7 +296,7 @@ void serviceConnection (const string &serviceName, TSockId from, void *arg)
 {
 	Services.push_back (CService (from));
 	CService *s = &(Services.back());
-	from->setAppId ((uint64)s);
+	from->setAppId ((uint64)(uint)s);
 
 	nlinfo ("*:*:%d connected", s->Id);
 	

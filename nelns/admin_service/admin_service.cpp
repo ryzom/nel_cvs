@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.7 2001/06/18 14:43:31 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.8 2001/06/18 14:54:06 lecroart Exp $
  *
  */
 
@@ -542,7 +542,7 @@ void cbAESConnection (const string &serviceName, TSockId from, void *arg)
 	CAdminExecutorService *aes = &(*aesit);
 	
 	// set the appid to find the aes in O(1)
-	from->setAppId ((uint64)aes);
+	from->setAppId ((uint64)(uint)aes);
 
 	aes->Connected = true;
 	nlinfo ("*:%d:* connected", aes->Id);

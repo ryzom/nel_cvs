@@ -1,37 +1,47 @@
-dnl ====================================================================
-dnl Configuration script for NeLNS
-dnl ====================================================================
-dnl
-dnl $Id: configure.ac,v 1.1 2004/01/15 19:28:55 lecroart Exp $
-dnl 
+# ====================================================================
+# Configuration script for NeLNS
+# ====================================================================
+#
+# $Id: configure.ac,v 1.2 2004/01/15 19:47:01 distrib Exp $
+# 
+
+# ====================================================================
+# Process this file with autoconf to produce a configure script.
+# ====================================================================
+
+# If you want to change the version, must must change AC_INIT
+# *and* AC_SUBST(LIBTOOL_VERSION)
+
+AC_PREREQ(2.57)
+AC_INIT([nelns],[0.4.0],[nel-all@nevrax.org])
 
 
-dnl ====================================================================
-dnl Process this file with autoconf to produce a configure script.
-dnl ====================================================================
+AC_CANONICAL_TARGET
 
-AC_INIT(admin_service/admin_service.cpp)
-
-AC_CANONICAL_SYSTEM
-
-MAJOR_VERSION=0
-MINOR_VERSION=3
-PICO_VERSION=20020923
-
-AM_INIT_AUTOMAKE(nelns, $MAJOR_VERSION.$MINOR_VERSION.$PICO_VERSION)
-
-AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE
 
 
-dnl The following hack should ensure that configure doesn't add optimizing
-dnl or debugging flags to CFLAGS or CXXFLAGS
+AC_CONFIG_HEADERS([config.h])
+
+AC_SUBST(LIBTOOL_VERSION, [0:4:0])
+
+
+
+# The following hack should ensure that configure doesn't add optimizing
+# or debugging flags to CFLAGS or CXXFLAGS
 CFLAGS="$CFLAGS "
 CXXFLAGS="$CXXFLAGS "
 
+# Template needed to generate the config.h.in
+AH_TEMPLATE([NELNS_CONFIG],[Configuration files directory path])
+AH_TEMPLATE([NELNS_LOGS],[Log files directory path])
+AH_TEMPLATE([NELNS_STATE],[Local state files directory path])
+AH_TEMPLATE([HAVE_MYSQL],[Define to 1 if mysql was found])
 
-dnl ====================================================================
-dnl Checks for programs.
-dnl ====================================================================
+
+# ====================================================================
+# Checks for programs.
+# ====================================================================
 
 AC_PROG_MAKE_SET
 
@@ -41,6 +51,9 @@ AC_PROG_CXX
 AM_SANITY_CHECK
 
 AC_PROG_INSTALL
+
+AC_PROG_LIBTOOL
+AM_PROG_LIBTOOL
 
 AM_PATH_CCACHE
 
@@ -55,20 +68,20 @@ CXXFLAGS="$CXXFLAGS $MYSQL_CFLAGS"
 LIBS="$LIBS $MYSQL_LIBS"
 
 
-dnl ====================================================================
-dnl Configure Settings
-dnl ====================================================================
+# ====================================================================
+# Configure Settings
+# ====================================================================
 
-AC_LANG_CPLUSPLUS
+AC_LANG([C++])
 
 
-dnl ====================================================================
-dnl Debug/optimized compilation mode
-dnl ====================================================================
+# ====================================================================
+# Debug/optimized compilation mode
+# ====================================================================
 
 AM_NEL_DEBUG
 
-dnl Set the gcc specific warning level
+# Set the gcc specific warning level
 if test "X$CC" = "Xgcc";
 then
     if test "$with_debug" != "no"
@@ -84,56 +97,56 @@ then
     fi
 fi
 
-dnl ====================================================================
-dnl Checks for typedefs, structures, and compiler characteristics.
-dnl ====================================================================
+# ====================================================================
+# Checks for typedefs, structures, and compiler characteristics.
+# ====================================================================
 
-dnl Add the define _REENTRANT for a correct use of the threads
+# Add the define _REENTRANT for a correct use of the threads
 if test "X$CC" = "Xgcc";
 then
     CXXFLAGS="$CXXFLAGS -D_REENTRANT"
 fi
 
 
-dnl ====================================================================
-dnl Checks for header files.
-dnl ====================================================================
+# ====================================================================
+# Checks for header files.
+# ====================================================================
 
-AC_STDC_HEADERS
+AC_HEADER_STDC([])
 AC_CHECK_HEADERS(fcntl.h unistd.h)
 
 
-dnl ====================================================================
-dnl Checks compilation accelerator
-dnl ====================================================================
+# ====================================================================
+# Checks compilation accelerator
+# ====================================================================
 
 AM_PATH_CCACHE
 
-dnl ====================================================================
-dnl Checks for libraries.
-dnl ====================================================================
+# ====================================================================
+# Checks for libraries.
+# ====================================================================
 
 AC_CHECK_LIB(crypt, crypt)
 
-dnl ====================================================================
-dnl STLPort
+# ====================================================================
+# STLPort
 
 AM_PATH_STLPORT
 
 
-dnl ====================================================================
-dnl NeL
+# ====================================================================
+# NeL
 
-dnl         misc   net    3d    pacs  sound  ai    georges
+#         misc   net    3d    pacs  sound  ai    georges
 AM_PATH_NEL("yes", "yes", "no", "no", "no",  "no", "no")
 
-dnl ====================================================================
-dnl Checks for library functions.
-dnl ====================================================================
+# ====================================================================
+# Checks for library functions.
+# ====================================================================
 
-dnl ====================================================================
-dnl nelns configuration and logs file location
-dnl ====================================================================
+# ====================================================================
+# nelns configuration and logs file location
+# ====================================================================
 
 test "x$prefix" = xNONE && prefix=$ac_default_prefix
 
@@ -167,18 +180,18 @@ AC_SUBST(logdir)
 eval eval NELNS_LOGS=\"$logdir/\"
 AC_DEFINE_UNQUOTED(NELNS_LOGS, "$NELNS_LOGS")
 
-dnl ====================================================================
-dnl Output files to generate.
-dnl ====================================================================
+# ====================================================================
+# Output files to generate.
+# ====================================================================
 
-AC_OUTPUT( Makefile                        \
+AC_CONFIG_FILES([Makefile                        \
            login_service/Makefile          \
            naming_service/Makefile         \
            admin_executor_service/Makefile \
            admin_service/Makefile          \
            welcome_service/Makefile        \
-)
+])
+AC_OUTPUT
 
 
-dnl End of configure.in
-
+# End of configure.ac

@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker_helper.h
  * <File description>
  *
- * $Id: ps_attrib_maker_helper.h,v 1.5 2001/09/12 13:19:07 vizerie Exp $
+ * $Id: ps_attrib_maker_helper.h,v 1.6 2001/09/14 18:04:24 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1352,7 +1352,8 @@ public:
 	/// inherited from CPSAttribMaker
 	virtual T get(CPSLocated *loc, uint32 index) 
 	{ 
-		return _T[index]; 
+		if (index < _T.getSize()) return _T[index];
+		else return _DefaultValue;
 	}
 
 	/// inherited from CPSAttribMaker

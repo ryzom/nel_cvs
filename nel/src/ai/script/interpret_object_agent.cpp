@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.51 2002/09/10 08:27:21 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.52 2002/09/18 09:44:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1015,7 +1015,6 @@ namespace NLAISCRIPT
 
 		(*component->StaticValue) = *obj;
 	}
-
 
 	NLAIAGENT::IObjectIA *CAgentClass::getStaticComponentValue(std::string &c_name)
 	{

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.132 2002/09/10 08:26:38 chafik Exp $
+ * $Id: agent_script.cpp,v 1.133 2002/09/18 09:44:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -744,6 +744,7 @@ namespace NLAIAGENT
 		std::string name;
 		const char *type;
 		s.getDebugString(name);
+
 		type = (const char *)a->getType();
 		const char *tname = name.c_str();
 #endif

@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.68 2002/08/27 09:05:41 portier Exp $
+ * $Id: actor_script.cpp,v 1.69 2002/09/18 09:44:05 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,7 @@ namespace NLAIAGENT
 		_OnUnActivateIndex = a._OnUnActivateIndex;
 		_TopLevel = a._TopLevel;
 		_IsPaused = false;
+		_NbAnswers = a._NbAnswers;
 	}
 
 	CActorScript::CActorScript(IAgentManager *manager, 
@@ -88,6 +89,7 @@ namespace NLAIAGENT
 		_OnUnActivateIndex = -1;
 		_TopLevel = NULL;
 		_IsPaused = false;
+		_NbAnswers = 1;
 	}	
 
 	CActorScript::CActorScript(IAgentManager *manager, bool stay_alive) : CAgentScript( manager )
@@ -97,6 +99,7 @@ namespace NLAIAGENT
 		_OnUnActivateIndex = -1;
 		_TopLevel = NULL;
 		_IsPaused = false;
+		_NbAnswers = 1;
 	}
 
 	CActorScript::~CActorScript()
@@ -520,9 +523,7 @@ namespace NLAIAGENT
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
 				return r;
-				break;
-
-				
+			
 			case fid_launch_goal:
 				{
 					NLAILOGIC::CGoalPath *goal_path = new NLAILOGIC::CGoalPath( this );
@@ -537,7 +538,6 @@ namespace NLAIAGENT
 					Launch( "goal_path", goal_path );
 					return IObjectIA::CProcessResult();
 				}
-				break;
 
 			case fid_launched:
 				{
@@ -553,50 +553,46 @@ namespace NLAIAGENT
 					r.Result = result;
 					return r;
 				}
-				break;
 
 			case fid_pause:
 				pause();
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
 				return r;
-				break;
 
 			case fid_restart:
 				restart();
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
 				return r;
-				break;
 
 			case fid_success:
 			case fid_msg_success:
 				onSuccess(params);
 				r.Result = new NLAIAGENT::CSuccessMsg();
 				return r;
-				break;
 
 			case fid_failure:
 			case fid_msg_failure:
 				onFailure(params);
 				r.Result = new NLAIAGENT::CFailureMsg();
 				return r;
-				break;
+
+			case fid_nb_answers:
+				_NbAnswers = (uint32) ( (NLAIAGENT::DigitalType *) ( (NLAIAGENT::IBaseGroupType *) params )->get() )->getNumber();
+				return r;
 
 			case fid_toplevel:
 				r.Result = new CLocalAgentMail( (IBasicAgent *) getTopLevel() );				
 				return r;
-				break;
 
 			case fid_owner:
 				r.Result = new CLocalAgentMail( (IBasicAgent *) getTopLevel()->getParent() );				
 				return r;
-				break;
 
 			case fid_isactive:
 				r.Result = new NLAILOGIC::CBoolType( _IsActivated );
 				return r;
-				break;
 		}
 		return r;
 	}
@@ -695,14 +691,8 @@ namespace NLAIAGENT
 						
 						((CActorScript *)child)->activate();
 					}
-/*
-
-					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
-						((CActorScript *)child)->activate();
-*/
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
 					child->incRef();
-
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
@@ -736,6 +726,10 @@ namespace NLAIAGENT
 				r.Result = new NLAIAGENT::CFailureMsg();
 				return r;
 				break;
+
+			case fid_nb_answers:
+				_NbAnswers = (uint32) ( (NLAIAGENT::DigitalType *) ( (NLAIAGENT::IBaseGroupType *) params )->get() )->getNumber();
+				return r;
 
 			case fid_toplevel:
 				r.Result = new CLocalAgentMail( (IBasicAgent *) getTopLevel() );				
@@ -781,6 +775,8 @@ namespace NLAIAGENT
 		static NLAIAGENT::CStringVarName pause_name("Pause");
 		static NLAIAGENT::CStringVarName restart_name("Restart");
 		static NLAIAGENT::CStringVarName isactive_name("IsActivated");
+		static NLAIAGENT::CStringVarName _NbAnswers_name("WaitFor");
+
 
 		if ( *name == activate_name )
 		{
@@ -854,6 +850,13 @@ namespace NLAIAGENT
 			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
 			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_toplevel, 0.0, NULL, r_type ) );
 		}
+
+		if ( *name == _NbAnswers_name )
+		{
+			CObjectType *r_type = new CObjectType( new NLAIC::CIdentType( NLAIC::CIdentType::VoidType ) );
+			result.push( NLAIAGENT::CIdMethod( CAgentScript::getMethodIndexSize() + fid_nb_answers, 0.0, NULL, r_type ) );
+		}
+
 
 		if ( *name == owner_name )
 		{
@@ -932,9 +935,13 @@ namespace NLAIAGENT
 
 	void CActorScript::processSuccess(NLAIAGENT::IObjectIA *param)
 	{
-		if ( param != NULL )
-			param->incRef();
-		success();
+		_NbAnswers--;
+		if ( _NbAnswers == 0 )
+		{
+			if ( param != NULL )
+				param->incRef();
+			success();
+		}
 	}
 
 	void CActorScript::success()
@@ -977,8 +984,12 @@ namespace NLAIAGENT
 
 	void CActorScript::processFailure(NLAIAGENT::IObjectIA *param)
 	{
-		param->incRef();
-		failure();
+		_NbAnswers--;
+		if ( _NbAnswers == 0 )
+		{
+			param->incRef();
+			failure();
+		}
 	}
 
 	IMessageBase *CActorScript::runTell(const IMessageBase &m)

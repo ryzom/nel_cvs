@@ -1,7 +1,7 @@
 /** \file u_instance_material.h
  * <File description>
  *
- * $Id: u_instance_material.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: u_instance_material.h,v 1.2 2002/02/06 14:54:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,7 +103,19 @@ public:
 	virtual	CRGBA				getUserColor() const =0;
 	// @}
 
+	/// \name Texture files specific
+	// @{
+	/// Check wether the texture of the n-th stage is a texture file
+	virtual bool				isTextureFile(uint stage = 0) const = 0;
+	/// Get the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
+	virtual std::string			getTextureFileName(uint stage = 0) const = 0;
+	/// Set the fileName used by the n-th texture file. (must be a texture file or an assertion is raised)
+	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0) = 0;
+	// @}
 
+
+	/// Multiple textures sets mgt
+	virtual void			selectTextureSet(uint id)=0;
 };
 
 

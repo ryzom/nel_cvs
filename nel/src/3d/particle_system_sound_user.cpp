@@ -1,7 +1,7 @@
 /** \file particle_system_sound_user.cpp
  * <File description>
  *
- * $Id: particle_system_sound_user.cpp,v 1.1 2001/08/29 14:47:20 vizerie Exp $
+ * $Id: particle_system_sound_user.cpp,v 1.2 2001/08/30 08:07:30 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -25,13 +25,14 @@
 
 
 
-#include "nel/3d/u_particle_system_sound.h"
+//#include "nel/3d/u_particle_system_sound.h" we don't include this to avoid a link with NLSOUND
 #include "3d/particle_system.h"
+#include "nel/3d/u_ps_sound_interface.h"
 
 namespace NL3D 
 {
 
-void UParticleSystemSound::assignSoundServerToPS(CPSSoundServImpl *soundServer)	
+void assignSoundServerToPS(UPSSoundServer *soundServer)	
 {
 	CParticleSystem::registerSoundServer(soundServer);
 } // NL3D

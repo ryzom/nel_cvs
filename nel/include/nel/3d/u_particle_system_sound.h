@@ -1,7 +1,7 @@
 /** \file u_particle_system_sound.h
  * <File description>
  *
- * $Id: u_particle_system_sound.h,v 1.1 2001/08/29 14:26:41 vizerie Exp $
+ * $Id: u_particle_system_sound.h,v 1.2 2001/08/30 08:07:49 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -40,6 +40,17 @@ namespace NL3D {
 // if you include this, you must also have the NLSOUND library
 
 
+
+
+
+
+
+
+/// for private use only..
+void assignSoundServerToPS(UPSSoundServer *soundServer);	
+
+
+
 /**
  * This init the sound for particle systems
  * \author Nicolas Vizerie
@@ -55,9 +66,7 @@ public:
 		static CPSSoundServImpl soundServer;
 		soundServer.init(audioMixer);
 		assignSoundServerToPS(&soundServer);
-	}
-protected: 
-	static void assignSoundServerToPS(CPSSoundServImpl *soundServer);	
+	}	
 };
 
 

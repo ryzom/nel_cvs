@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.10 2001/04/09 15:07:15 berenguier Exp $
+ * $Id: transformable.cpp,v 1.11 2001/04/09 16:07:49 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -212,135 +212,6 @@ void		ITransformable::lookAt (const CVector& eye, const CVector& target, float r
 	}
 }
 
-
-
-// ***************************************************************************
-// ***************************************************************************
-// ***************************************************************************
-// ***************************************************************************
-// ***************************************************************************
-// ***************************************************************************
-// ***************************************************************************
-
-
-// Fucking GCC link bug with abstract classes / inline functions.
-#ifndef NL_OS_WINDOWS
-
-const CMatrix	&ITransformable::getMatrix() const {updateMatrix(); return _LocalMatrix;}
-bool			ITransformable::compareMatrixDate(uint64 callerDate) const
-{
-	return callerDate<_LocalMatrixDate || needCompute();
-}
-uint64			ITransformable::getMatrixDate() const
-{
-	updateMatrix();
-	return _LocalMatrixDate;
-}
-void	ITransformable::setTransformMode(TTransformMode mode, CMatrix::TRotOrder ro)
-{
-	_Mode= mode;
-	_RotOrder= ro;
-	// just for information.
-	touch(PosValue, OwnerBit);
-}
-void	ITransformable::setPos(const CVector &pos)
-{
-	nlassert(_Mode==RotEuler || _Mode==RotQuat);
-	_Pos.Value= pos;
-	touch(PosValue, OwnerBit);
-}
-void	ITransformable::setRotEuler(const CVector &rot)
-{
-	nlassert(_Mode==RotEuler);
-	_RotEuler.Value= rot;
-	touch(RotEulerValue, OwnerBit);
-}
-void	ITransformable::setRotQuat(const CQuat &quat)
-{
-	nlassert(_Mode==RotQuat);
-	_RotQuat.Value= quat;
-	touch(RotQuatValue, OwnerBit);
-}
-void	ITransformable::setScale(const CVector &scale)
-{
-	nlassert(_Mode==RotEuler || _Mode==RotQuat);
-	_Scale.Value= scale;
-	touch(ScaleValue, OwnerBit);
-}
-void	ITransformable::setPivot(const CVector &pivot)
-{
-	nlassert(_Mode==RotEuler || _Mode==RotQuat);
-	_Pivot.Value= pivot;
-	touch(PivotValue, OwnerBit);
-}
-void	ITransformable::setMatrix(const CMatrix &mat)
-{
-	nlassert(_Mode==DirectMatrix);
-	_LocalMatrix= mat;
-	// The matrix has changed.
-	_LocalMatrixDate++;
-}
-ITransformable::TTransformMode	ITransformable::getTransformMode()
-{
-	return _Mode;
-}
-CMatrix::TRotOrder	ITransformable::getRotOrder()
-{
-	return _RotOrder;
-}
-void	ITransformable::getPos(CVector &pos)
-{
-	nlassert(_Mode==RotEuler || _Mode==RotQuat);
-	pos= _Pos.Value;
-}
-void	ITransformable::getRotEuler(CVector &rot)
-{
-	nlassert(_Mode==RotEuler);
-	rot= _RotEuler.Value;
-}
-void	ITransformable::getRotQuat(CQuat &quat)
-{
-	nlassert(_Mode==RotQuat);
-	quat= _RotQuat.Value;
-}
-void	ITransformable::getScale(CVector &scale)
-{
-	nlassert(_Mode==RotEuler || _Mode==RotQuat);
-	scale= _Scale.Value;
-}
-void	ITransformable::getPivot(CVector &pivot)
-{
-	nlassert(_Mode==RotEuler || _Mode==RotQuat);
-	pivot= _Pivot.Value;
-}
-CVector	ITransformable::getPos()
-{
-	nlassert(_Mode==RotEuler || _Mode==RotQuat);
-	return _Pos.Value;
-}
-CVector	ITransformable::getRotEuler()
-{
-	nlassert(_Mode==RotEuler);
-	return _RotEuler.Value;
-}
-CQuat	ITransformable::getRotQuat()
-{
-	nlassert(_Mode==RotQuat);
-	return _RotQuat.Value;
-}
-CVector	ITransformable::getScale()
-{
-	nlassert(_Mode==RotEuler || _Mode==RotQuat);
-	return _Scale.Value;
-}
-CVector ITransformable::getPivot()
-{
-	nlassert(_Mode==RotEuler || _Mode==RotQuat);
-	return _Pivot.Value;
-}
-
-
-#endif	// NL_OS_WINDOWS
 
 
 } // NL3D

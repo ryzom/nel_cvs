@@ -2,7 +2,7 @@
  *	
  *	Scripted actors	
  *
- * $Id: actor_script.cpp,v 1.71 2002/09/30 13:13:53 chafik Exp $
+ * $Id: actor_script.cpp,v 1.72 2002/09/30 14:53:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -526,6 +526,7 @@ namespace NLAIAGENT
 					CStringType &s = (CStringType &)*i++;
 					IBasicAgent *a = (IBasicAgent *)i++;
 					Launch(s.getStr().getString(), a);
+					a->incRef();
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
 				r.Result = NULL;
@@ -543,6 +544,7 @@ namespace NLAIAGENT
 						p->popFront();
 					}
 					Launch( "goal_path", goal_path );
+					goal_path->incRef();
 					return IObjectIA::CProcessResult();
 				}
 
@@ -620,8 +622,7 @@ namespace NLAIAGENT
 			((CActorScript *)child)->activate();
 		}
 
-		_Launched.push_back( (NLAIAGENT::IAgent *) child );
-		child->incRef();
+		_Launched.push_back( (NLAIAGENT::IAgent *) child );		
 	}
 
 	
@@ -707,6 +708,7 @@ namespace NLAIAGENT
 					CStringType &s = (CStringType &)*i++;
 					IBasicAgent *a = (IBasicAgent *)i++;
 					Launch(s.getStr().getString(), a);
+					a->incRef();
 
 				}
 				r.ResultState =  NLAIAGENT::processIdle;
@@ -955,9 +957,7 @@ namespace NLAIAGENT
 #endif
 //		_NbAnswers--;
 //		if ( _NbAnswers < 1 )
-//		{
-			if ( param != NULL )
-				param->incRef();
+//		{			
 			success();
 //		}
 	}

@@ -400,6 +400,14 @@ SOURCE=..\include\nel\misc\smart_ptr_inline.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\system_info.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\system_info.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\task_manager.cpp
 # End Source File
 # Begin Source File

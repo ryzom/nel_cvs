@@ -5,7 +5,7 @@
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvShares and _VBDrvInfos entries. 
  * Add lights mgt to the driver.
  *
- * $Id: driver.h,v 1.44 2001/01/05 10:57:30 berenguier Exp $
+ * $Id: driver.h,v 1.45 2001/01/08 16:28:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -190,9 +190,15 @@ public:
 
 	/**
 	  * Get driver informations.
-	  *
+	  * get the nel name of the driver (ex: "Opengl 1.2 NeL Driver")
 	  */
 	virtual const char*		getDriverInformation ()=0;
+
+	/**
+	  * Get videocard informations.
+	  * get the official name of the driver
+	  */
+	virtual const char*		getVideocardInformation ()=0;
 
 	/// show cursor if b is true, or hide it if b is false
 	virtual void showCursor(bool b) = 0;

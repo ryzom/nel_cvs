@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.33 2001/01/05 11:00:10 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.34 2001/01/08 16:28:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,6 +161,8 @@ public:
 	{
 		return "Opengl 1.2 NeL Driver";
 	}
+
+	virtual const char*		getVideocardInformation ();
 
 	virtual bool			isActive();
 

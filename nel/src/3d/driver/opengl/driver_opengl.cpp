@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.44 2001/01/05 11:00:10 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.45 2001/01/08 16:28:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,8 @@
 #include <windows.h>
 #include <windowsx.h>
 
+#include <string>
+
 #else // NL_OS_WINDOWS
 
 #include <GL/glx.h>
@@ -53,7 +55,7 @@ uint CDriverGL::_Registered=0;
 #endif // NL_OS_WINDOWS
 
 // Version of the driver. Not the interface version!! Increment when implementation of the driver change.
-const uint32		CDriverGL::ReleaseVersion = 0x1;
+const uint32		CDriverGL::ReleaseVersion = 0x2;
 
 #ifdef NL_OS_WINDOWS
 
@@ -682,4 +684,17 @@ bool CDriverGL::isActive()
 #endif // NL_OS_UNIX
 }
 
+const char *CDriverGL::getVideocardInformation ()
+{
+	static char name[1024];
+
+	const char *vendor = (const char *) glGetString (GL_VENDOR);
+	const char *renderer = (const char *) glGetString (GL_RENDERER);
+	const char *version = (const char *) glGetString (GL_VERSION);
+
+	smprintf(name, 1024, "%s / %s / %s", vendor, renderer, version);
+	return name;
 }
+
+
+} // NL3D

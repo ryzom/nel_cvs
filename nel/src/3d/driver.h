@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.40 2002/09/05 17:59:54 corvazier Exp $
+ * $Id: driver.h,v 1.41 2002/09/24 14:44:57 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -781,10 +781,15 @@ public:
 	  */
 	virtual void			setConstantMatrix (uint index, TMatrix matrix, TTransform transform) =0;
 
+	/// Check if the driver support double sided colors vertex programs
+	virtual bool		    supportVertexProgramDoubleSidedColor() const = 0;
+	  
+
 	/**
 	  * Activate VertexProgram 2Sided Color mode. In 2Sided mode, the BackFace (if material 2Sided enabled) read the 
 	  *	result from o[BFC0], and not o[COL0].
 	  *	default is false. you should reset to false after use.
+	  * NB: no-op if not supporte by driver
 	  */
 	virtual	void			enableVertexProgramDoubleSidedColor(bool doubleSided) =0;
 
@@ -804,8 +809,25 @@ public:
 		virtual void setMatrix2DForTextureOffsetAddrMode(const uint stage, const float mat[4]) = 0;		  	
 	//@}
 
-		// Does the driver support the per-pixel lighting shader ?
-		virtual bool supportPerPixelLighting(bool specular) const = 0;
+
+	/** \name EMBM support. If texture shaders are present, this is not available, must use them instead.
+	  * EMBM is a color op of CMaterial.
+	  * NB : EMBM is the equivalent of the CMaterial::OffsetTexture addressing mode. However, it is both a texture
+	  * adressing mode and a color op.
+	  * NB : EMBM may not be supported by all stages.
+	  */
+
+	// @{
+		// Test if EMBM is supported.
+		virtual bool supportEMBM() const = 0;
+		// Test if EMBM is supported for the given stage
+		virtual bool isEMBMSupportedAtStage(uint stage) const = 0;
+		// set the matrix used for EMBM adressing :
+		virtual void setEMBMMatrix(const uint stage, const float mat[4]) = 0;
+	// @}
+
+	// Does the driver support the per-pixel lighting shader ?
+	virtual bool supportPerPixelLighting(bool specular) const = 0;
 
 
 	/// \name Misc

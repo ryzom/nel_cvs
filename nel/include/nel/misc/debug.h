@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.44 2002/09/09 17:19:24 cado Exp $
+ * $Id: debug.h,v 1.45 2002/10/24 08:26:51 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -424,7 +424,7 @@ extern bool DebugNeedAssert;
 		else \
 			NLMISC::DebugNeedAssert = true; \
 		NLMISC::AssertLog->setPosition (__LINE__, __FILE__); \
-		NLMISC::AssertLog->display ("STOP"); \
+		NLMISC::AssertLog->display ("STOP "); \
 		NLMISC::AssertLog->displayRawNL str; \
 		if (NLMISC::DefaultMsgBoxDisplayer) \
 			ignoreNextTime = NLMISC::DefaultMsgBoxDisplayer->IgnoreNextTime; \

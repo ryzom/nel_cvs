@@ -1,7 +1,7 @@
 /** \file instance_material_user.cpp
  * <File description>
  *
- * $Id: instance_material_user.cpp,v 1.7 2002/11/14 17:30:56 vizerie Exp $
+ * $Id: instance_material_user.cpp,v 1.8 2004/03/23 10:21:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,8 @@
 #include "3d/instance_material_user.h"
 #include "3d/async_texture_block.h"
 #include "3d/mesh_base_instance.h"
+#include "3d/driver.h"
+#include "3d/texture_mem.h"
 
 
 namespace NL3D
@@ -119,6 +121,26 @@ void CInstanceMaterialUser::emptyTexture(uint stage /*=0*/)
 	}
 	_Material->setTexture(stage, NULL);
 }
+
+// ***************************************************************************
+bool CInstanceMaterialUser::isSupportedByDriver(UDriver &drv)
+{	
+	IDriver *idrv = NLMISC::safe_cast<CDriverUser *>(&drv)->getDriver();
+	return _Material->isSupportedByDriver(*idrv);	
+}
+
+// ***************************************************************************
+void CInstanceMaterialUser::setTextureMem(uint stage, uint8 *data, uint32 length, bool _delete, bool isFile /*=true*/, uint width /*=0*/, uint height /*=0*/, CBitmap::TType texType /*=CBitmap::RGBA*/)
+{
+	if (stage >= IDRV_MAT_MAXTEXTURES)
+	{
+		nlwarning("UInstanceMaterialUser::emptyTexture : invalid stage");
+		return;
+	}	
+	_Material->setTexture((uint8) stage, new CTextureMem(data, length, _delete, isFile, height, texType));
+}
+
+
 
 
 

@@ -1,7 +1,7 @@
 /** \file instance_material_user.h
  * <File description>
  *
- * $Id: instance_material_user.h,v 1.14 2003/11/17 14:25:31 besson Exp $
+ * $Id: instance_material_user.h,v 1.15 2004/03/23 10:21:31 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,11 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/3d/u_instance_material.h"
+#include "nel/3d/u_driver.h"
 #include "3d/material.h"
 #include "3d/texture_file.h"
 #include "3d/texture_multi_file.h"
+#include "3d/driver_user.h"
 
 #define NL3D_MEM_MATERIAL_INSTANCE						NL_ALLOC_CONTEXT( 3dMatI )
 
@@ -214,8 +216,9 @@ public:
 	/// \name Texture files specific
 	// @{	
 	virtual bool				isTextureFile(uint stage = 0) const;
-	virtual std::string getTextureFileName(uint stage = 0) const;
+	virtual std::string			getTextureFileName(uint stage = 0) const;
 	virtual void				setTextureFileName(const std::string &fileName, uint stage = 0);
+	virtual void				setTextureMem(uint stage, uint8 *data, uint32 length, bool _delete, bool isFile = true, uint width = 0, uint height = 0, CBitmap::TType texType = CBitmap::RGBA);
 	// @}
 
 	virtual void				emptyTexture(uint stage = 0);
@@ -338,6 +341,10 @@ public:
 		}
 		return _Material->getUserTexMat(stage);
 	}
+
+	virtual	bool	isSupportedByDriver(UDriver &drv);
+
+
 	// @}
 
 private:

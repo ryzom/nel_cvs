@@ -190,7 +190,8 @@ void CWebDlg::OnDocumentComplete(LPDISPATCH pDisp, VARIANT FAR* URL)
 			((CNel_launcherDlg*)AfxGetMainWnd())->Login();
 			return;
 		}
-		else if(csSourceCode.Find("404") != -1)
+// ACE: BADDDDDD!!!! the good web page can contains 404 in the cookie because the cookie contains any number we want
+/*		else if(csSourceCode.Find("404") != -1)
 		{
 			// Authentication lost, try to redo the authentication
 			CLoginDlg	dlg;
@@ -199,7 +200,7 @@ void CWebDlg::OnDocumentComplete(LPDISPATCH pDisp, VARIANT FAR* URL)
 			OpenUrl(m_csUrl);
 			return;
 		}
-		int	iFindAction1	= csSourceCode.Find("<!--nel");
+*/		int	iFindAction1	= csSourceCode.Find("<!--nel");
 		int	iFindAction2;
 		int	iFindComment1;
 		int	iFindComment2;

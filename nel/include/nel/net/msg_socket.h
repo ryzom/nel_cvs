@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.17 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: msg_socket.h,v 1.18 2000/11/06 14:00:36 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,7 +95,7 @@ public:
 	/// Destructor. It closes all sockets (connections) that have been created by this CMsgSocket object
 	~CMsgSocket();
 
-	/// Send a message (client mode only)
+	/// Send an outpput message (client mode only)
 	void			send( CMessage& outmsg );
 
 	/** Returns true if the client is still connected (client mode only).
@@ -106,8 +106,20 @@ public:
 		return (_ClientSock != NULL);
 	}
 
-	/// Send a message to the specified host id
+	/// Send an output message to the specified host id
 	static void		send( CMessage& outmsg, TSenderId id );
+
+	/// Send an output message to all connected hosts
+	static void		sendToAll( CMessage& outmsg );
+
+	/// Send an output message to all connected hosts except the one with the specified excluded id
+	static void		sendToAllExceptHost( CMessage& outmsg, TSenderId excluded );
+
+	/// Returns the number of connected hosts
+	static uint32	numberOfConnections()
+	{
+		return _Connections.size();
+	}
 
 	/** Updates the connected sockets and accept new connections.
 	 * - When a new connection incomes (server mode only), the callback of name "C" is called if it exists. Its message contains the address of the remote socket (CInetAddress).
@@ -179,6 +191,8 @@ protected:
 	/** Find a service provider and connect (client mode only)
 	 * If the msgsocket is already connected, it is disconnected first unless the new server found
 	 * is the same as the previous one.
+	 * \todo Cado: When the naming service tells us to connect to a new server, don't disconnect
+	 * from the previous one (in order to receive potential responses) but arm a timeout.
 	 */
 	void			connectToService();
 

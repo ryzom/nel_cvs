@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.19 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: msg_socket.cpp,v 1.20 2000/11/06 14:00:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -298,6 +298,35 @@ void CMsgSocket::send( CMessage& outmsg, TSenderId id )
 	else
 	{
 		throw ESocket("Invalid host id");
+	}
+}
+
+
+/*
+ * Send an output message to all connected hosts
+ */
+void CMsgSocket::sendToAll( CMessage& outmsg )
+{
+	CConnections::iterator ipc = _Connections.begin();
+	for ( ipc++; ipc!=_Connections.end(); ++ipc )
+	{
+		(*ipc)->send( outmsg );
+	}
+}
+
+
+/*
+ * Send an output message to all connected hosts except the one with the specified id
+ */
+void CMsgSocket::sendToAllExceptHost( CMessage& outmsg, TSenderId excluded )
+{
+	CConnections::iterator ipc = _Connections.begin();
+	for ( ipc++; ipc!=_Connections.end(); ++ipc )
+	{
+		if ( (*ipc)->_SenderId != excluded )
+		{
+			(*ipc)->send( outmsg );
+		}
 	}
 }
 

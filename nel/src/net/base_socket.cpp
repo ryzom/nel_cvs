@@ -1,7 +1,7 @@
 /** \file base_socket.cpp
  * CBaseSocket class
  *
- * $Id: base_socket.cpp,v 1.13 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: base_socket.cpp,v 1.14 2000/11/06 14:00:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -407,10 +407,10 @@ void CBaseSocket::doReceive( uint8 *buffer, uint len )
 		case 0 :			throw ESocketConnectionClosed();
 		case SOCKET_ERROR :	throw ESocket( "Unable to receive data", ERROR_NUM );
 	}
-	if ( _Logging )
+	/*if ( _Logging )
 	{
 		nldebug( "Socket %d received %d bytes", _Sock, len );
-	}
+	}*/
 
 }
 

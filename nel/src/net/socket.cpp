@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.19 2000/10/24 15:35:51 lecroart Exp $
+ * $Id: socket.cpp,v 1.20 2000/11/06 14:00:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -199,7 +199,10 @@ CMessage CSocket::encode( CMessage& msg ) throw (ESocket)
 	alldata.serial( msgsize );
 
 	// 4. Write message payload
-	alldata.serialBuffer( const_cast<uint8*>(msg.buffer()), msg.length() );
+	if ( msgsize != 0 )
+	{
+		alldata.serialBuffer( const_cast<uint8*>(msg.buffer()), msg.length() );
+	}
 
 	return alldata;
 }

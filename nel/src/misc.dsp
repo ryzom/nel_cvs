@@ -347,6 +347,14 @@ SOURCE=.\misc\game_device_events.cpp
 
 SOURCE=..\include\nel\misc\game_device_events.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\misc\mouse_smoother.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\mouse_smoother.h
+# End Source File
 # End Group
 # Begin Group "Memory"
 

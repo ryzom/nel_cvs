@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.4 2001/11/05 15:42:16 lecroart Exp $
+ * $Id: service_5.h,v 1.5 2001/11/15 15:08:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,11 @@
 #define NL_SERVICE_5_H
 
 #include "nel/misc/types_nl.h"
+
+#if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
+#	include <windows.h>
+#endif
+
 #include "nel/misc/config_file.h"
 #include "nel/misc/entity_id.h"
 
@@ -70,8 +75,6 @@ typedef uint8 TServiceId;
 
 #if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
 
-#include <windows.h>
-
 #define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray) \
  \
 int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) \
@@ -79,7 +82,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setServiceName (__ServiceShortName, __ServiceLongName); \
 	scn->setPort (__ServicePort); \
-	(CUnifiedNetwork::getInstance())->addCallbackArray(__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
+	(NLNET::CUnifiedNetwork::getInstance())->addCallbackArray(__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
     sint retval = scn->main (lpCmdLine); \
 	delete scn; \
 	return retval; \
@@ -94,7 +97,7 @@ int main(int argc, char **argv) \
 	__ServiceClassName *scn = new __ServiceClassName; \
 	scn->setServiceName (__ServiceShortName, __ServiceLongName); \
 	scn->setPort (__ServicePort); \
-	(CUnifiedNetwork::getInstance())->addCallbackArray(__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
+	(NLNET::CUnifiedNetwork::getInstance())->addCallbackArray(__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
 	sint retval = scn->main (argc, argv); \
 	delete scn; \
 	return retval; \

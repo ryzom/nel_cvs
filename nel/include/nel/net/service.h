@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.35 2001/11/05 15:42:16 lecroart Exp $
+ * $Id: service.h,v 1.36 2001/11/15 15:08:42 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,11 @@
 #define NL_SERVICE_H
 
 #include "nel/misc/types_nl.h"
+
+#if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
+#	include <windows.h>
+#endif
+
 #include "nel/misc/config_file.h"
 #include "nel/misc/entity_id.h"
 
@@ -69,8 +74,6 @@ typedef uint8 TServiceId;
  */
 
 #if defined(NL_OS_WINDOWS) && defined(_WINDOWS)
-
-#include <windows.h>
 
 #define NLNET_SERVICE_MAIN(__ServiceClassName, __ServiceShortName, __ServiceLongName, __ServicePort, __ServiceCallbackArray) \
  \

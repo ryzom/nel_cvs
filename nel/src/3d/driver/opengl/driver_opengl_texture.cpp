@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.69 2004/03/29 08:31:06 boucher Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.70 2004/03/29 14:40:05 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -125,8 +125,8 @@ GLint	CDriverGL::getGlTextureFormat(ITexture& tex, bool &compressed)
 	}
 
 
-	// Get gl tex format, try S3TC compressed ones if degradation allowed.
-	if(_Extensions.EXTTextureCompressionS3TC && tex.allowDegradation())
+	// Get gl tex format, try S3TC compressed ones.
+	if(_Extensions.EXTTextureCompressionS3TC)
 	{
 		compressed= true;
 		// Try Compressed ones.
@@ -592,7 +592,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded,
 
 					// DXTC: if same format, and same mipmapOn/Off, use glTexCompressedImage*.
 					// We cannot build the mipmaps if they are not here.
-					if(tex.allowDegradation() && _Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt))
+					if(_Extensions.EXTTextureCompressionS3TC && sameDXTCFormat(tex, glfmt))
 					{
 						sint	nMipMaps = 1;
 						

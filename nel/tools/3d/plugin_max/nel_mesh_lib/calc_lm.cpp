@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.21 2001/08/30 15:46:58 besson Exp $
+ * $Id: calc_lm.cpp,v 1.22 2001/09/05 07:53:34 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -306,7 +306,10 @@ struct SGradient
 				c2 = pF->Corner[1].Color,
 				c3 = pF->Corner[2].Color;
 
-		double GradDen = 1.0 / ( (u3-u1)*(v2-v1) - (u2-u1)*(v3-v1) );
+		double GradDen = ( (u3-u1)*(v2-v1) - (u2-u1)*(v3-v1) );
+
+		if (GradDen != 0.0)
+			GradDen = 1.0 / GradDen;
 
 		this->InitU = u1;
 		this->InitV = v1;

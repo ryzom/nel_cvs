@@ -1,7 +1,7 @@
 /** \file di_keyboard.cpp
  * <File description>
  *
- * $Id: di_keyboard_device.cpp,v 1.13 2004/03/19 16:31:28 lecroart Exp $
+ * $Id: di_keyboard_device.cpp,v 1.14 2004/08/16 12:44:42 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -434,15 +434,16 @@ void CDIKeyboard::keyTriggered(bool pressed, uint dikey, CEventServer *server, u
 		sendUnicode(charValue, dikey, server, pressed);
 	}	
 	
-	_FirstPressDate  = date;	
+	_FirstPressDate  = NLMISC::CTime::getLocalTime(); // can't use the time stamp, because we can't not sure it matches the local time.
+	                                                  // time stamp is used for evenrts sorting only
 }
 
 ///========================================================================
 void CDIKeyboard::submit(IInputDeviceEvent *deviceEvent, CEventServer *server)
 {
 	CDIEvent *die = safe_cast<CDIEvent *>(deviceEvent);
-	bool pressed = (die->Datas.dwData & 0x80) != 0;	
-	keyTriggered(pressed, (uint) die->Datas.dwOfs, server, die->Datas.dwTimeStamp);			
+	bool pressed = (die->Datas.dwData & 0x80) != 0;		
+	keyTriggered(pressed, (uint) die->Datas.dwOfs, server, die->Datas.dwTimeStamp);	
 }
 
 ///========================================================================
@@ -591,10 +592,11 @@ void	CDIKeyboard::repeatKey(uint32 currentDate, CEventServer *server)
 	if (lastDate < firstDate) return;
 	
 	uint numRep = (uint) ((lastDate + _RepeatPeriod - 1) / _RepeatPeriod  - (firstDate + _RepeatPeriod - 1) / _RepeatPeriod);	
-	numRep = std::min(16u, numRep); // too much repetitions don't make sense...
+	//numRep = std::min(16u, numRep); // too much repetitions don't make sense...
 	if ((sint) numRep < 0) return; // 50 days loop..
-
+	numRep = 1; // fix : for now it seems better to limit the number of repetition to 1 per frame (it can be greater than 1 only if framerate is slow, but its not very useable)
 	
+
 	// numpad case
 	if (vkey >= KeyNUMPAD0 && vkey <= KeyNUMPAD9 || vkey == KeyDECIMAL)
 	{

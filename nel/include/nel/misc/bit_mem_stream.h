@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.21 2003/03/18 17:10:55 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.22 2003/03/18 17:14:49 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -85,6 +85,8 @@ extern bool VerboseAllTraffic;
 	
 #define serialAndLog1 serial
 #define serialAndLog2 serial
+#define serialBitAndLog serialBit
+
 
 #endif
 

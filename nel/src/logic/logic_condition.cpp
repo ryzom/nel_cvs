@@ -1,7 +1,7 @@
 /** \file logic_condition.cpp
  * 
  *
- * $Id: logic_condition.cpp,v 1.2 2002/06/20 12:17:56 lecroart Exp $
+ * $Id: logic_condition.cpp,v 1.3 2003/12/29 13:36:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,7 +243,7 @@ void CLogicConditionLogicBlock::fillVarSet( set<string>& condVars )
 void CLogicConditionLogicBlock::write (xmlNodePtr node) const
 {
 	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"CONDITION_LOGIC_NODE", NULL);
-	xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)toString(Type).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)toString((uint32)Type).c_str());
 	switch( Type )
 	{
 		case NOT : break;
@@ -449,7 +449,7 @@ void CLogicConditionNode::fillVarSet( set<string>& condVars )
 void CLogicConditionNode::write (xmlNodePtr node) const
 {
 	xmlNodePtr elmPtr = xmlNewChild ( node, NULL, (const xmlChar*)"CONDITION_NODE", NULL);
-	xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)toString(Type).c_str());
+	xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)toString((uint32)Type).c_str());
 
 	switch( Type )
 	{

@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.83 2003/11/25 11:27:18 lecroart Exp $
+ * $Id: debug.cpp,v 1.84 2003/12/29 13:36:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -495,7 +495,7 @@ public:
 		if (ok)
 		{
 			str = line.FileName;
-			str += "(" + toString (line.LineNumber) + ")";
+			str += "(" + toString ((uint32)line.LineNumber) + ")";
 			str += toString(": 0x%X", addr);
 		}
 		else
@@ -757,7 +757,7 @@ public:
 			if (disp != 0)
 			{
 				str += " + ";
-				str += toString (disp);
+				str += toString ((uint32)disp);
 				str += " bytes";
 			}
 		}

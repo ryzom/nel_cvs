@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.24 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: message.cpp,v 1.25 2003/12/29 13:35:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -441,11 +441,16 @@ NLMISC::CStringIdArray::TStringId CMessage::getId () const
 std::string CMessage::toString () const
 {
 	nlassert (_TypeSet);
-	std::stringstream s;
-	if (TypeHasAName && TypeHasAnId) s << "('" << _Name << "'," << _Id << ")";
-	else if (TypeHasAName) s << "('" << _Name << "'," << _SIDA->getId (_Name, true) << ")";
-	else if (TypeHasAnId) s << "('" << _SIDA->getString (_Id) << "'," << _Id << "')";
-	return s.str();
+//	std::stringstream s;
+//	if (TypeHasAName && TypeHasAnId) s << "('" << _Name << "'," << _Id << ")";
+//	else if (TypeHasAName) s << "('" << _Name << "'," << _SIDA->getId (_Name, true) << ")";
+//	else if (TypeHasAnId) s << "('" << _SIDA->getString (_Id) << "'," << _Id << "')";
+//	return s.str();
+	std::string str;
+	if (TypeHasAName && TypeHasAnId) str += "('" + _Name + "'," + NLMISC::toString(_Id) + ")";
+	else if (TypeHasAName) str += "('" + _Name + "'," + NLMISC::toString(_SIDA->getId (_Name, true)) + ")";
+	else if (TypeHasAnId) str += "('" + _SIDA->getString (_Id) + "'," + NLMISC::toString(_Id) + "')";
+	return str;
 }
 
 

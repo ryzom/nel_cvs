@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.22 2003/02/07 17:44:14 cado Exp $
+ * $Id: net_displayer.cpp,v 1.23 2003/12/29 13:35:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,34 +130,35 @@ void CNetDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 		}
 
 		bool needSpace = false;
-		stringstream ss;
+		//stringstream ss;
+		string str;
 
 		if (args.Date != 0)
 		{
-			ss << dateToHumanString(args.Date);
+			str += dateToHumanString(args.Date);
 			needSpace = true;
 		}
 
 		if (args.LogType != CLog::LOG_NO)
 		{
-			if (needSpace) { ss << " "; needSpace = false; }
-			ss << logTypeToString(args.LogType);
+			if (needSpace) { str += " "; needSpace = false; }
+			str += logTypeToString(args.LogType);
 			needSpace = true;
 		}
 
 		if (!args.ProcessName.empty())
 		{
-			if (needSpace) { ss << " "; needSpace = false; }
-			ss << args.ProcessName;
+			if (needSpace) { str += " "; needSpace = false; }
+			str += args.ProcessName;
 			needSpace = true;
 		}
 		
-		if (needSpace) { ss << ": "; needSpace = false; }
+		if (needSpace) { str += ": "; needSpace = false; }
 
-		ss << message;
+		str += message;
 
 		CMessage msg(_Server->getSIDA(), "LOG" );
-		string s = ss.str();
+		string s = str;
 		msg.serial( s );
 		_Server->send (msg, 0, false);
 	}

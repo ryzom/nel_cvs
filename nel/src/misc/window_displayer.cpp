@@ -2,7 +2,7 @@
  * Implementation of the CDisplayer (look at displayer.h) that display on a Windows.
  * It's the base class for win_displayer (win32 api) and gtk_displayer (gtk api)
  *
- * $Id: window_displayer.cpp,v 1.14 2003/08/27 16:16:25 distrib Exp $
+ * $Id: window_displayer.cpp,v 1.15 2003/12/29 13:36:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,13 +130,14 @@ void CWindowDisplayer::create (string windowNameEx, bool iconified, sint x, sint
 void CWindowDisplayer::doDisplay (const NLMISC::CLog::TDisplayInfo &args, const char *message)
 {
 	bool needSpace = false;
-	stringstream ss;
+	//stringstream ss;
+	string str;
 
 	uint32 color = 0xFF000000;
 
 	if (args.LogType != CLog::LOG_NO)
 	{
-		ss << logTypeToString(args.LogType);
+		str += logTypeToString(args.LogType);
 		if (args.LogType == CLog::LOG_ERROR || args.LogType == CLog::LOG_ASSERT) color = 0x00FF0000;
 		else if (args.LogType == CLog::LOG_WARNING) color = 0x00800000;
 		else if (args.LogType == CLog::LOG_DEBUG) color = 0x00808080;
@@ -147,26 +148,27 @@ void CWindowDisplayer::doDisplay (const NLMISC::CLog::TDisplayInfo &args, const 
 	// Write thread identifier
 	if ( args.ThreadId != 0 )
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << setw(4) << args.ThreadId;
+		if (needSpace) { str += " "; needSpace = false; }
+		str += NLMISC::toString("%4u", args.ThreadId);
 		needSpace = true;
 	}
 
 	if (args.Filename != NULL)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << setw(20) << CFile::getFilename(args.Filename);
+		if (needSpace) { str += " "; needSpace = false; }
+		str += NLMISC::toString("%20s", CFile::getFilename(args.Filename).c_str());
 		needSpace = true;
 	}
 
 	if (args.Line != -1)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << setw(4) << args.Line;
+		if (needSpace) { str += " "; needSpace = false; }
+		str += NLMISC::toString("%4u", args.Line);
+		//ss << setw(4) << args.Line;
 		needSpace = true;
 	}
 
-	if (needSpace) { ss << ": "; needSpace = false; }
+	if (needSpace) { str += ": "; needSpace = false; }
 
 	uint nbl = 1;
 
@@ -174,29 +176,29 @@ void CWindowDisplayer::doDisplay (const NLMISC::CLog::TDisplayInfo &args, const 
 	while ((npos = strchr (pos, '\n')))
 	{
 		*npos = '\0';
-		ss << pos;
+		str += pos;
 		if (needSlashR)
-			ss << "\r";
-		ss << "\n";
+			str += "\r";
+		str += "\n";
 		*npos = '\n';
 		pos = npos+1;
 		nbl++;
 	}
-	ss << pos;
+	str += pos;
 
 	pos = const_cast<char *>(args.CallstackAndLog.c_str());
 	while ((npos = strchr (pos, '\n')))
 	{
 		*npos = '\0';
-		ss << pos;
+		str += pos;
 		if (needSlashR)
-			ss << "\r";
-		ss << "\n";
+			str += "\r";
+		str += "\n";
 		*npos = '\n';
 		pos = npos+1;
 		nbl++;
 	}
-	ss << pos;
+	str += pos;
 
 	{
 		CSynchronized<std::list<std::pair<uint32, std::string> > >::CAccessor access (&_Buffer);
@@ -204,7 +206,7 @@ void CWindowDisplayer::doDisplay (const NLMISC::CLog::TDisplayInfo &args, const 
 		{
 			access.value().erase (access.value().begin());
 		}
-		access.value().push_back (make_pair (color, ss.str()));
+		access.value().push_back (make_pair (color, str));
 	}
 }
 

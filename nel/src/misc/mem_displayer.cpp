@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.9 2003/10/20 16:10:17 lecroart Exp $
+ * $Id: mem_displayer.cpp,v 1.10 2003/12/29 13:36:25 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
+//#include <sstream>
 #include <iomanip>
 #include <string>
 
@@ -87,7 +87,7 @@ static string getFuncInfo (DWORD funcAddr, DWORD stackAddr)
 	if (disp != 0)
 	{
 		str += " + ";
-		str += toString (disp);
+		str += toString ((uint32)disp);
 		str += " bytes";
 	}
 
@@ -329,61 +329,62 @@ void CMemDisplayer::setParam (uint32 maxStrings)
 // Log format: "2000/01/15 12:05:30 <ProcessName> <LogType> <ThreadId> <Filename> <Line> : <Msg>"
 void CMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message )
 {
-	stringstream	ss;
+//	stringstream	ss;
+	string str;
 	bool			needSpace = false;
 
 	if (!_CanUseStrings) return;
 
 	if (_NeedHeader)
 	{
-		ss << HeaderString();
+		str += HeaderString();
 		_NeedHeader = false;
 	}
 
 	if (args.Date != 0)
 	{
-		ss << dateToHumanString(args.Date);
+		str += dateToHumanString(args.Date);
 		needSpace = true;
 	}
 
 	if (!args.ProcessName.empty())
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.ProcessName;
+		if (needSpace) { str += " "; needSpace = false; }
+		str += args.ProcessName;
 		needSpace = true;
 	}
 
 	if (args.LogType != CLog::LOG_NO)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << logTypeToString(args.LogType);
+		if (needSpace) { str += " "; needSpace = false; }
+		str += logTypeToString(args.LogType);
 		needSpace = true;
 	}
 
 	// Write thread identifier
 	if ( args.ThreadId != 0 )
 	{
-		ss << setw(5) << args.ThreadId;
+		str += NLMISC::toString("%5u", args.ThreadId);
 		needSpace = true;
 	}
 
 	if (args.Filename != NULL)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << CFile::getFilename(args.Filename);
+		if (needSpace) { str += " "; needSpace = false; }
+		str += CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
 	if (args.Line != -1)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.Line;
+		if (needSpace) { str + " "; needSpace = false; }
+		str += args.Line;
 		needSpace = true;
 	}
 	
-	if (needSpace) { ss << " : "; needSpace = false; }
+	if (needSpace) { str += " : "; needSpace = false; }
 
-	ss << message;
+	str += message;
 
 	// clear old line
 	while (_Strings.size () > _MaxStrings)
@@ -391,7 +392,7 @@ void CMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 		_Strings.pop_front ();
 	}
 
-	_Strings.push_back (ss.str());
+	_Strings.push_back (str);
 }
 
 void CMemDisplayer::write (CLog *log, bool quiet)
@@ -432,12 +433,13 @@ void CMemDisplayer::write (string &str)
 
 void	CLightMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message )
 {
-	stringstream	ss;
+	//stringstream	ss;
+	string str;
 	//bool			needSpace = false;
 	
 	if (!_CanUseStrings) return;
 	
-	ss << message;
+	str += message;
 	
 	// clear old line
 	while (_Strings.size () >= _MaxStrings)
@@ -445,7 +447,7 @@ void	CLightMemDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char 
 		_Strings.pop_front ();
 	}
 	
-	_Strings.push_back (ss.str());
+	_Strings.push_back (str);
 }
 
 

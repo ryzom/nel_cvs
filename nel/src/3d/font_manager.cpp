@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.39 2003/03/20 17:56:01 lecroart Exp $
+ * $Id: font_manager.cpp,v 1.40 2003/12/29 13:36:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #include "std3d.h"
 
 #include <string>
-#include <sstream>
+//#include <sstream>
 
 #include "3d/font_manager.h"
 #include "3d/font_generator.h"
@@ -298,11 +298,12 @@ void CFontManager::computeStringInfo (	const ucstring &s,
 // ***************************************************************************
 string CFontManager::getCacheInformation() const
 {
-	stringstream ss;
-
-	ss << "MaxMemory: " << (uint) _MaxMemory << " MemSize: " << (uint) _MemSize << " NbChar: " << (uint) _NbChar;
-
-	return ss.str();
+//	stringstream ss;
+//	ss << "MaxMemory: " << (uint) _MaxMemory << " MemSize: " << (uint) _MemSize << " NbChar: " << (uint) _NbChar;
+//	return ss.str();
+	string str;
+	str = "MaxMemory: " + NLMISC::toString(_MaxMemory) + " MemSize: " + NLMISC::toString(_MemSize) + " NbChar: " + NLMISC::toString(_NbChar);
+	return str;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.37 2003/08/27 16:16:25 distrib Exp $
+ * $Id: buf_sock.cpp,v 1.38 2003/12/29 13:35:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -328,24 +328,25 @@ void CBufSock::disconnect( bool connectedstate )
  */
 string CBufSock::asString() const
 {
-	stringstream ss;
+//	stringstream ss;
+	string str;
 	if (this == InvalidSockId) // tricky
-		ss << "<Null>";
+		str = "<null>";
 	else
 	{
 		// if it crashs here, it means that the CBufSock was deleted and you try to access to the virtual table that is empty
 		// because the object is destroyed.
-		ss << typeStr();
-		ss << hex << this << dec << " (socket ";
+		str += typeStr();
+		str += NLMISC::toStringPtr(this) + " (socket ";
 		
 		if (Sock == NULL)
-			ss << "<Null>";
+			str += "<null>";
 		else
-			ss << Sock->descriptor();
+			str += NLMISC::toString(Sock->descriptor());
 
-		ss << ")";
+		str += ")";
 	}
-	return ss.str();
+	return str;
 }
 
 

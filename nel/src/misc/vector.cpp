@@ -1,7 +1,7 @@
 /** \file vector.cpp
  * CVector class
  *
- * $Id: vector.cpp,v 1.5 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: vector.cpp,v 1.6 2003/12/29 13:36:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,11 +42,11 @@ const CVector	CVector::K(0,0,1);
 /*
  * Returns the contents as a printable string "x y z"
  */
-string CVector::asString() const
+string CVector::toString() const
 {
-	stringstream ss;
-	ss << x << " " << y << " " << z;
-	return ss.str();
+	string str;
+	str = NLMISC::toString(x) + " " + NLMISC::toString(y) + " " + NLMISC::toString(z);
+	return str;
 }
 
 

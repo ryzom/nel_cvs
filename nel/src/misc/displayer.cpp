@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.57 2003/09/09 19:17:14 brigand Exp $
+ * $Id: displayer.cpp,v 1.58 2003/12/29 13:36:25 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -41,7 +41,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
+//#include <sstream>
 #include <iomanip>
 
 #include "nel/misc/path.h"
@@ -68,7 +68,7 @@ using namespace std;
 namespace NLMISC
 {
 
-static char *LogTypeToString[][8] = {
+static const char *LogTypeToString[][8] = {
 	{ "", "ERR", "WRN", "INF", "DBG", "STT", "AST", "UKN" },
 	{ "", "Error", "Warning", "Information", "Debug", "Statistic", "Assert", "Unknown" },
 	{ "", "A fatal error occurs. The program must quit", "", "", "", "", "A failed assertion occurs", "" },
@@ -148,47 +148,58 @@ void IDisplayer::display ( const CLog::TDisplayInfo& args, const char *message )
 void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message )
 {
 	bool needSpace = false;
-	stringstream ss;
+	//stringstream ss;
+	string str;
 
 	if (args.LogType != CLog::LOG_NO)
 	{
-		ss << logTypeToString(args.LogType);
+		//ss << logTypeToString(args.LogType);
+		str += logTypeToString(args.LogType);
 		needSpace = true;
 	}
 
 	// Write thread identifier
 	if ( args.ThreadId != 0 )
 	{
-		ss << setw(5) << args.ThreadId;
+		//ss << setw(5) << args.ThreadId;
+		str += NLMISC::toString("%5u", args.ThreadId);
 		needSpace = true;
 	}
 
 	if (args.Filename != NULL)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << CFile::getFilename(args.Filename);
+		//if (needSpace) { ss << " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
+		//ss << CFile::getFilename(args.Filename);
+		str += CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
 	if (args.Line != -1)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.Line;
+		//if (needSpace) { ss << " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
+		//ss << args.Line;
+		str += NLMISC::toString(args.Line);
 		needSpace = true;
 	}
 	
 	if (!args.ProcessName.empty())
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.ProcessName;
+		//if (needSpace) { ss << " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
+		//ss << args.ProcessName;
+		str + args.ProcessName;
 		needSpace = true;
 	}
 
-	if (needSpace) { ss << " : "; needSpace = false; }
-
-	ss << message;
-
-	string s = ss.str();
+	//if (needSpace) { ss << " : "; needSpace = false; }
+	if (needSpace) { str += " : "; needSpace = false; }
+	
+	//ss << message;
+	str += message;
+	
+//	string s = ss.str();
 
 	static bool consoleMode = true;
 
@@ -208,8 +219,8 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 	if (consoleMode)
 	{
 		// we don't use cout because sometimes, it crashs because cout isn't already init, printf doesn t crash.
-		if (!s.empty())
-			printf ("%s", s.c_str());
+		if (!str.empty())
+			printf ("%s", str.c_str());
 		
 		if (!args.CallstackAndLog.empty())
 			printf (args.CallstackAndLog.c_str());
@@ -221,42 +232,43 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 	// display the string in the debugger is the application is started with the debugger
 	if (IsDebuggerPresent ())
 	{
-		stringstream ss2;
+		//stringstream ss2;
+		string str2;
 		needSpace = false;
 
-		if (args.Filename != NULL) ss2 << args.Filename;
+		if (args.Filename != NULL) str2 += args.Filename;
 
 		if (args.Line != -1)
 		{
-			ss2 << '(' << args.Line << ')';
+			str2 += "(" + NLMISC::toString(args.Line) + ")";
 			needSpace = true;
 		}
 
-		if (needSpace) { ss2 << " : "; needSpace = false; }
+		if (needSpace) { str2 += " : "; needSpace = false; }
 
 		if (args.LogType != CLog::LOG_NO)
 		{
-			ss2 << logTypeToString(args.LogType);
+			str2 += logTypeToString(args.LogType);
 			needSpace = true;
 		}
 
 		// Write thread identifier
 		if ( args.ThreadId != 0 )
 		{
-			ss2 << setw(5) << args.ThreadId << ": ";
+			str2 += NLMISC::toString("%5u: ", args.ThreadId);
 		}
 
-		ss2 << message;
+		str2 += message;
 
 		const sint maxOutString = 2*1024;
 
-		if(ss2.str().size() < maxOutString)
+		if(str2.size() < maxOutString)
 		{
 			//////////////////////////////////////////////////////////////////
 			// WARNING: READ THIS !!!!!!!!!!!!!!!! ///////////////////////////
 			// If at the release time, it freezes here, it's a microsoft bug:
 			// http://support.microsoft.com/support/kb/articles/q173/2/60.asp
-			OutputDebugString(ss2.str().c_str());
+			OutputDebugString(str2.c_str());
 		}
 		else
 		{
@@ -268,7 +280,7 @@ void CStdDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 
 			sint count = 0;	
 			uint n = strlen(message);
-			std::string s(&ss2.str().c_str()[0], (ss2.str().size() - n));
+			std::string s(&str2.c_str()[0], (str2.size() - n));
 			OutputDebugString(s.c_str());
 			
 			while(true)
@@ -356,56 +368,57 @@ void CFileDisplayer::setParam (const std::string &filename, bool eraseLastLog)
 void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *message )
 {
 	bool needSpace = false;
-	stringstream ss;
+	//stringstream ss;
+	string str;
 
 	// if the filename is not set, don't log
 	if (_FileName.empty()) return;
 
 	if (args.Date != 0)
 	{
-		ss << dateToHumanString(args.Date);
+		str += dateToHumanString(args.Date);
 		needSpace = true;
 	}
 
 	if (args.LogType != CLog::LOG_NO)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << logTypeToString(args.LogType);
+		if (needSpace) { str += " "; needSpace = false; }
+		str += logTypeToString(args.LogType);
 		needSpace = true;
 	}
 
 	// Write thread identifier
 	if ( args.ThreadId != 0 )
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.ThreadId;
+		if (needSpace) { str += " "; needSpace = false; }
+		str += NLMISC::toString(args.ThreadId);
 		needSpace = true;
 	}
 
 	if (!args.ProcessName.empty())
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.ProcessName;
+		if (needSpace) { str += " "; needSpace = false; }
+		str += args.ProcessName;
 		needSpace = true;
 	}
 
 	if (args.Filename != NULL)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << CFile::getFilename(args.Filename);
+		if (needSpace) { str += " "; needSpace = false; }
+		str += CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
 	if (args.Line != -1)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.Line;
+		if (needSpace) { str += " "; needSpace = false; }
+		str += NLMISC::toString(args.Line);
 		needSpace = true;
 	}
 	
-	if (needSpace) { ss << " : "; needSpace = false; }
+	if (needSpace) { str += " : "; needSpace = false; }
 
-	ss << message;
+	str += message;
 
 	if (_FilePointer > (FILE*)1)
 	{
@@ -439,8 +452,8 @@ void CFileDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mes
 			_NeedHeader = false;
 		}
 		
-		if(!ss.str().empty())
-			fwrite (ss.str().c_str(), ss.str().size (), 1, _FilePointer);
+		if(!str.empty())
+			fwrite (str.c_str(), str.size(), 1, _FilePointer);
 
 		if(!args.CallstackAndLog.empty())
 			fwrite (args.CallstackAndLog.c_str(), args.CallstackAndLog.size (), 1, _FilePointer);
@@ -457,55 +470,60 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 #ifdef NL_OS_WINDOWS
 
 	bool needSpace = false;
-	stringstream ss;
+//	stringstream ss;
+	string str;
 
 	// create the string for the clipboard
 
 	if (args.Date != 0)
 	{
-		ss << dateToHumanString(args.Date);
+		str += dateToHumanString(args.Date);
 		needSpace = true;
 	}
 
 	if (args.LogType != CLog::LOG_NO)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << logTypeToString(args.LogType);
+		//if (needSpace) { ss << " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
+		str += logTypeToString(args.LogType);
 		needSpace = true;
 	}
 
 	if (!args.ProcessName.empty())
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.ProcessName;
+		//if (needSpace) { ss << " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
+		str += args.ProcessName;
 		needSpace = true;
 	}
 	
 	if (args.Filename != NULL)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << CFile::getFilename(args.Filename);
+		//if (needSpace) { ss << " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
+		str += CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
 	if (args.Line != -1)
 	{
-		if (needSpace) { ss << " "; needSpace = false; }
-		ss << args.Line;
+		//if (needSpace) { ss << " "; needSpace = false; }
+		if (needSpace) { str += " "; needSpace = false; }
+		str += NLMISC::toString(args.Line);
 		needSpace = true;
 	}
 
-	if (needSpace) { ss << ": "; needSpace = false; }
+	if (needSpace) { str += ": "; needSpace = false; }
 
-	ss << message;
+	str += message;
 
 	if (OpenClipboard (NULL))
 	{
-		HGLOBAL mem = GlobalAlloc (GHND|GMEM_DDESHARE, ss.str().size()+1);
+		HGLOBAL mem = GlobalAlloc (GHND|GMEM_DDESHARE, str.size()+1);
 		if (mem)
 		{
 			char *pmem = (char *)GlobalLock (mem);
-			strcpy (pmem, ss.str().c_str());
+			strcpy (pmem, str.c_str());
 			GlobalUnlock (mem);
 			EmptyClipboard ();
 			SetClipboardData (CF_TEXT, mem);
@@ -515,35 +533,37 @@ void CMsgBoxDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *m
 	
 	// create the string on the screen
 	needSpace = false;
-	stringstream ss2;
+//	stringstream ss2;
+	string str2;
 
 #ifdef NL_DEBUG
 	if (!args.ProcessName.empty())
 	{
-		if (needSpace) { ss2 << " "; needSpace = false; }
-		ss2 << args.ProcessName;
+		if (needSpace) { str2 += " "; needSpace = false; }
+		str2 += args.ProcessName;
 		needSpace = true;
 	}
 	
 	if (args.Filename != NULL)
 	{
-		if (needSpace) { ss2 << " "; needSpace = false; }
-		ss2 << CFile::getFilename(args.Filename);
+		if (needSpace) { str2 += " "; needSpace = false; }
+		str2 += CFile::getFilename(args.Filename);
 		needSpace = true;
 	}
 
 	if (args.Line != -1)
 	{
-		if (needSpace) { ss2 << " "; needSpace = false; }
-		ss2 << args.Line;
+		if (needSpace) { str2 += " "; needSpace = false; }
+		str2 += NLMISC::toString(args.Line);
 		needSpace = true;
 	}
 
-	if (needSpace) { ss2 << ": "; needSpace = false; }
+	if (needSpace) { str2 += ": "; needSpace = false; }
+
 #endif // NL_DEBUG
 
-	ss2 << message;
-	ss2 << endl << endl << "(this message was copied in the clipboard)";
+	str2 += message;
+	str2 += "\n\n(this message was copied in the clipboard)";
 
 /*	if (IsDebuggerPresent ())
 	{

@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.14 2003/11/06 12:50:03 besson Exp $
+ * $Id: sheet_id.h,v 1.15 2003/12/29 13:32:53 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -217,12 +217,6 @@ private :
 	static void loadSheetAlias ();
 	static void cbFileChange (const std::string &filename);
 };
-
-inline std::stringstream &operator << (std::stringstream &__os, const CSheetId &__t)
-{
-	__os << __t.toString ();
-	return __os;
-}
 
 } // NLMISC
 

@@ -1,7 +1,7 @@
 /** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.14 2002/12/16 18:03:09 cado Exp $
+ * $Id: sock.h,v 1.15 2003/12/29 13:32:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/net/inet_address.h"
 #include "nel/misc/common.h"
 #include "nel/misc/mutex.h"
-#include <sstream>
+//#include <sstream>
 
 /// This namespace contains all network class
 namespace NLNET {

@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.23 2003/12/08 13:18:02 boucher Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.24 2003/12/29 13:33:28 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -617,9 +617,9 @@ void CSoundDriverDSound::writeProfile(ostream& out)
     out << "\n";
 
     // Write the buffers sizes
-    out << "buffer size: " << CSourceDSound::_SecondaryBufferSize << "\n";
-    out << "copy size: " << CSourceDSound::_UpdateCopySize << "\n";
-    out << "swap size: " << CSourceDSound::_SwapCopySize << "\n";
+    out << "buffer size: " << (int)CSourceDSound::_SecondaryBufferSize << "\n";
+    out << "copy size: " << (int)CSourceDSound::_UpdateCopySize << "\n";
+    out << "swap size: " << (int)CSourceDSound::_SwapCopySize << "\n";
     out << "\n";
 
     // Write the number of hardware buffers 

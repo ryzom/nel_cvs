@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.27 2003/09/03 13:50:56 lecroart Exp $
+ * $Id: command.cpp,v 1.28 2003/12/29 13:36:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -336,13 +336,16 @@ void ICommand::expand (std::string &commandName, NLMISC::CLog &log)
 					{
 						// Display all the matching names 
 						vector<string>::iterator imn2;
-						stringstream ss;
-						ss << "Matching commands:" << endl;
+						//stringstream ss;
+						string str;
+						//ss << "Matching commands:" << endl;
+						str += "Matching commands:\n";
 						for ( imn2=matchingnames.begin(); imn2!=matchingnames.end(); ++imn2 )
 						{
-							ss << " " << (*imn2);
+							//ss << " " << (*imn2);
+							str += " " + (*imn2);
 						}
-						log.displayNL( "%s", ss.str().c_str() );
+						log.displayNL( "%s", str.c_str() );
 					}
 					lastCommandName = commandName;
 					goto returnFromExpand;

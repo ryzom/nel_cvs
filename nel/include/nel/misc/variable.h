@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.6 2003/09/09 14:29:45 lecroart Exp $
+ * $Id: variable.h,v 1.7 2003/12/29 13:32:53 lecroart Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -104,9 +104,10 @@ public: \
 	 \
 	virtual void fromString(const std::string &val, bool human=false) \
 	{ \
-		std::stringstream ss (val); \
+		/*std::stringstream ss (val);*/ \
 		__type p; \
-		ss >> p; \
+		/*ss >> p;*/ \
+		NLMISC::fromString(val, p) ; \
 		pointer (&p, false, human); \
 	} \
 	 \
@@ -114,9 +115,10 @@ public: \
 	{ \
 		__type p; \
 		pointer (&p, true, human); \
-		std::stringstream ss; \
-		ss << p; \
-		return ss.str(); \
+		/*std::stringstream ss;*/ \
+		/*ss << p;*/ \
+		/*return ss.str();*/ \
+		return NLMISC::toString(p); \
 	} \
 	\
 	void pointer(__type *pointer, bool get, bool human) const; \
@@ -193,16 +195,18 @@ public:
 
 	virtual void fromString (const std::string &val, bool human=false)
 	{
-		std::stringstream ss (val);
-		ss >> *_ValuePtr;
+		//std::stringstream ss (val);
+		//ss >> *_ValuePtr;
+		NLMISC::fromString(val, *_ValuePtr);
 		if (ChangeCallback) ChangeCallback (*this);
 	}
 
 	virtual std::string toString (bool human) const
 	{
-		std::stringstream ss;
-		ss << *_ValuePtr;
-		return ss.str();
+		//std::stringstream ss;
+		//ss << *_ValuePtr;
+		//return ss.str();
+		return NLMISC::toString(*_ValuePtr);
 	}
 
 private:
@@ -224,17 +228,19 @@ public:
 
 	virtual void fromString (const std::string &val, bool human=false)
 	{
-		std::stringstream ss (val);
 		T v;
-		ss >> v;
+		NLMISC::fromString(val, v);
+//		std::stringstream ss (val);
+//		ss >> v;
 		set (v);
 	}
 	
 	virtual std::string toString (bool human) const
 	{
-		std::stringstream ss;
-		ss << _Value;
-		return ss.str();
+		return NLMISC::toString(_Value);
+//		std::stringstream ss;
+//		ss << _Value;
+//		return ss.str();
 	}
 	
 	CVariable<T> &operator= (const T &val)
@@ -273,22 +279,26 @@ public:
 
 	std::string getStat () const
 	{
-		std::stringstream s;
-		s << _CommandName << "=" << _Value;
-		s << " Min=" << _Min;
-		s << " Max=" << _Max;
+//		std::stringstream s;
+//		s << _CommandName << "=" << _Value;
+//		s << " Min=" << _Min;
+//		s << " Max=" << _Max;
+		std::string str;
+		str = _CommandName + "=" + NLMISC::toString(_Value) + " Min=" + NLMISC::toString(_Min) + " Max=" + NLMISC::toString(_Max);
 		if (_Mean.getNumFrame()>0)
 		{
-			s << " Mean=" << _Mean.getSmoothValue();
-			s << " LastValues=";
+			str += " Mean=" + NLMISC::toString(_Mean.getSmoothValue()) + " LastValues=";
+//			s << " Mean=" << _Mean.getSmoothValue();
+//			s << " LastValues=";
 			for (uint i = 0; i < _Mean.getNumFrame(); i++)
 			{
-				s << _Mean.getLastFrames()[i];
+				str += NLMISC::toString(_Mean.getLastFrames()[i]);
+				//s << _Mean.getLastFrames()[i];
 				if (i < _Mean.getNumFrame()-1)
-					s << ",";
+					str += ","; //s << ",";
 			}
 		}
-		return s.str();
+		return str;
 	}
 	
 	virtual bool execute (const std::vector<std::string> &args, NLMISC::CLog &log, bool quiet, bool human)

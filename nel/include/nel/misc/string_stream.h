@@ -1,7 +1,7 @@
 /** \file string_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: string_stream.h,v 1.5 2001/06/21 12:35:16 lecroart Exp $
+ * $Id: string_stream.h,v 1.6 2003/12/29 13:32:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,7 @@ namespace NLMISC {
 
 /**
  * Memory stream that is serialized from/to plain text (human-readable).
+ * not any comparaison with the stl class std::stringstream
  * \author Olivier Cado
  * \author Nevrax France
  * \date 2001

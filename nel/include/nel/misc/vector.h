@@ -1,7 +1,7 @@
 /** \file vector.h
  * CVector class
  *
- * $Id: vector.h,v 1.10 2002/01/30 10:07:36 lecroart Exp $
+ * $Id: vector.h,v 1.11 2003/12/29 13:32:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -135,8 +135,12 @@ public:		// Methods.
 	//@}
 
 	/// Returns the contents as a printable string "x y z"
-	std::string	asString() const;
+	/// undeprecated, use the generic function toString()
+	std::string	asString() const { return toString(); }
 
+	/// Returns the contents as a printable string "x y z"
+	std::string	toString() const;
+	
 	// friends.
 	friend	CVector	operator*(float f, const CVector &v0);
 };

@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.21 2003/12/09 17:24:35 ledorze Exp $
+ * $Id: smart_ptr.h,v 1.22 2003/12/29 13:32:53 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -215,6 +215,9 @@ public:
 
 	sint getNbRef() { if(Ptr) return Ptr->crefs; else return 0; }
 	// No need to do any operator==. Leave the work to cast  operator T*(void).
+
+	std::string toString() { if(Ptr) return toString(*Ptr); else return "<null>"; }
+
 };
 
 

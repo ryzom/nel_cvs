@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.61 2003/12/08 13:18:02 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.62 2003/12/29 13:33:27 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -260,12 +260,12 @@ void				CAudioMixerUser::writeProfile(std::ostream& out)
 //	out << "Muted sources: " << nb << " \n";
 //	out << "Muted sources: " << max(0, sint(_PlayingSources.size())-sint(_NbTracks)) << " \n";
 //	out << "Muted sources: " << max(0, sint(_PlayingSources)-sint(_NbTracks)) << " \n";
-	out << "Muted sources: " << _PlayingSourcesMuted << "\n";
+	out << "Muted sources: " << (int)_PlayingSourcesMuted << "\n";
 	out << "Sources waiting for play: " << _SourceWaitingForPlay.size() << " \n";
-	out << "HighestPri: " << _ReserveUsage[HighestPri] << " / " << _PriorityReserve[HighestPri] << " \n";
-	out << "HighPri:    " << _ReserveUsage[HighPri] << " / " << _PriorityReserve[HighPri] << "\n";
-	out << "MidPri:     " << _ReserveUsage[MidPri] << " / " << _PriorityReserve[MidPri] << " \n";
-	out << "LowPri:     " << _ReserveUsage[LowPri] << " / " << _PriorityReserve[LowPri] << " \n";
+	out << "HighestPri: " << (int)_ReserveUsage[HighestPri] << " / " << (int)_PriorityReserve[HighestPri] << " \n";
+	out << "HighPri:    " << (int)_ReserveUsage[HighPri] << " / " << (int)_PriorityReserve[HighPri] << "\n";
+	out << "MidPri:     " << (int)_ReserveUsage[MidPri] << " / " << (int)_PriorityReserve[MidPri] << " \n";
+	out << "LowPri:     " << (int)_ReserveUsage[LowPri] << " / " << (int)_PriorityReserve[LowPri] << " \n";
 	out << "FreeTracks: " << _FreeTracks.size() << " / " << _NbTracks << " \n";
 	out << "Average update time: " << std::setw(10) << (1000.0 * _UpdateTime / _UpdateCount) << " msec\n";
 	out << "Average create time: " << std::setw(10) <<(1000.0 * _CreateTime / _CreateCount) << " msec\n";

@@ -1,7 +1,7 @@
 /** \file win_displayer.cpp
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.cpp,v 1.30 2003/02/21 15:52:10 lecroart Exp $
+ * $Id: win_displayer.cpp,v 1.31 2003/12/29 13:36:25 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 #include <iostream>
 #include <fstream>
-#include <sstream>
+//#include <sstream>
 #include <iomanip>
 #include <signal.h>
 

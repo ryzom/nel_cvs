@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.33 2003/12/11 18:31:09 boucher Exp $
+ * $Id: entity_id.h,v 1.34 2003/12/29 13:32:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -554,11 +554,11 @@ public :
 //	friend std::stringstream &operator << (std::stringstream &__os, const CEntityId &__t);
 };	
 
-inline std::stringstream &operator << (std::stringstream &__os, const CEntityId &__t)
+/*inline std::stringstream &operator << (std::stringstream &__os, const CEntityId &__t)
 {
 	__os << __t.toString ();
 	return __os;
-}
+}*/
 
 } // NLMISC
 

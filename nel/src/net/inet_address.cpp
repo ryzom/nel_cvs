@@ -1,7 +1,7 @@
 /** \file inet_address.cpp
  * Class CInetAddress (IP address + port)
  *
- * $Id: inet_address.cpp,v 1.43 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: inet_address.cpp,v 1.44 2003/12/29 13:35:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,9 +384,10 @@ uint16 CInetAddress::port() const
  */
 std::string CInetAddress::asString() const
 {
-	stringstream ss;
-	ss << hostName() << ":" << port() << " (" << ipAddress() << ")";
-	return ss.str();
+//	stringstream ss;
+//	ss << hostName() << ":" << port() << " (" << ipAddress() << ")";
+//	return ss.str();
+	return hostName() + ":" + NLMISC::toString(port()) + " (" + ipAddress() + ")";
 }
 
 
@@ -395,9 +396,10 @@ std::string CInetAddress::asString() const
  */
 std::string CInetAddress::asIPString() const
 {
-	stringstream ss;
-	ss << ipAddress() << ":" << port();
-	return ss.str();
+//	stringstream ss;
+//	ss << ipAddress() << ":" << port();
+//	return ss.str();
+	return ipAddress() + ":" + NLMISC::toString(port());
 }
 
 

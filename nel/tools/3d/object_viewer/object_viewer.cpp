@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.36 2001/09/05 15:43:04 vizerie Exp $
+ * $Id: object_viewer.cpp,v 1.37 2001/09/06 08:43:03 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@
 #include <3d/text_context.h>
 #include <3d/skeleton_model.h>
 #include <3d/init_3d.h>
+#include <3d/scene_group.h>
 
 #include <nel/misc/common.h>
 #include <nel/misc/file.h>
@@ -363,6 +364,8 @@ void CObjectViewer::initUI (HWND parent)
 	// Camera
 	initCamera (_CameraFocal);
 
+	_MainFrame->OnResetCamera();
+
 	// Create animation set dialog
 	_AnimationDlg=new CAnimationDlg (this, _MainFrame);
 	_AnimationDlg->Create (IDD_ANIMATION);
@@ -398,6 +401,7 @@ void CObjectViewer::initUI (HWND parent)
 
 	// Enable sum of vram
 	CNELU::Driver->enableUsedTextureMemorySum ();
+
 }
 
 // ***************************************************************************
@@ -817,8 +821,57 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 
 bool CObjectViewer::loadInstanceGroup(const char *igFilename)
 {
+	//AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	// Add to the path
+	char drive[256];
+	char dir[256];
+	char path[256];
+
+	// Add search path for the mesh
+	_splitpath (igFilename, drive, dir, NULL, NULL);
+	_makepath (path, drive, dir, NULL, NULL);
+	CPath::addSearchPath (path);
+
 	
-	return true;
+	// Shape pointer
+	NL3D::CInstanceGroup ig;	
+
+	// Open a file
+	CIFile file;
+	if (file.open (igFilename))
+	{		
+		try
+		{
+			// Stream it
+			file.serial(ig);
+
+			// Add all models to the scene		
+			ig.addToScene(CNELU::Scene, CNELU::Driver);
+			for (uint k = 0; k < ig.getNumInstance(); ++k)
+			{
+				_ListShapeBaseName.push_back (ig.getInstanceName(k) + ".");	
+				_ListTransformShape.push_back (ig._Instances[k]);								
+			}
+		}
+		catch (Exception& e)
+		{
+			_MainFrame->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+			return false;
+		}
+	}
+	else
+	{
+		// Create a message
+		char msg[512];
+		_snprintf (msg, 512, "Can't open the file %s for reading.", igFilename);
+		_MainFrame->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+		return false;
+	}
+
+	
+
+	return true;		
 }
 
 
@@ -1125,4 +1178,20 @@ void CObjectViewer::removeMainLoopCallBack(IMainLoopCallBack *i)
 	std::vector<IMainLoopCallBack *>::iterator it = std::find(_CallBackList.begin(), _CallBackList.end(), i) ;
 	nlassert(it  != _CallBackList.end()) ; // this object wasn't registered
 	_CallBackList.erase(it) ;	
+}
+
+// ***************************************************************************
+void CObjectViewer::removeAllInstancesFromScene()
+{
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	std::vector<class NL3D::CTransformShape*>::iterator it;
+	for (it = _ListTransformShape.begin(); it != _ListTransformShape.end(); ++it)
+	{
+		CNELU::Scene.deleteInstance(*it);
+	}
+	_ListTransformShape.clear();
+	_ListShapeBaseName.clear();
+
+
 }

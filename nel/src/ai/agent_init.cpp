@@ -1,7 +1,7 @@
 /** \file agent_init.cpp
  * <File description>
  *
- * $Id: agent_init.cpp,v 1.7 2001/10/25 14:40:19 chafik Exp $
+ * $Id: agent_init.cpp,v 1.8 2001/10/25 15:11:21 chafik Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,13 +116,12 @@ namespace NLAIE
 
 	CExceptionUnRegisterClassError::CExceptionUnRegisterClassError(const CExceptionUnRegisterClassError &e)
 	{
-		_ClassName = new char [strlen(e._ClassName) + 1];
-		strcpy(_ClassName,e._ClassName);
+		_ClassName = e._ClassName;		
 	}
-	CExceptionUnRegisterClassError::CExceptionUnRegisterClassError(const char *name)
+
+	CExceptionUnRegisterClassError::CExceptionUnRegisterClassError(const std::string &name)
 	{
-		_ClassName = new char [strlen(name) + 1];
-		strcpy(_ClassName,name);
+		_ClassName = name;
 	}
 	const IException *CExceptionUnRegisterClassError::clone() const
 	{
@@ -133,10 +132,33 @@ namespace NLAIE
 	{
 		return new CExceptionObjectNotFoundError(_ClassName);
 	}
+
+	CExceptionNotImplemented::CExceptionNotImplemented(const CExceptionNotImplemented &e)
+	{
+		_Text = e._Text;		
+	}
+		
+	CExceptionNotImplemented::CExceptionNotImplemented(const std::string &text)
+	{
+		_Text = text;		
+	}
+
 	const IException *CExceptionNotImplemented::clone() const
 	{
 		return new CExceptionNotImplemented(_Text);
 	}
+
+
+	CExceptionUnReference::CExceptionUnReference(const CExceptionUnReference &e)
+	{
+		_Text = e._Text;			
+	}
+
+	CExceptionUnReference::CExceptionUnReference(const std::string &text)
+	{
+		_Text = text;			
+	}
+
 	const IException *CExceptionUnReference::clone() const
 	{
 		return new CExceptionUnReference(_Text);

@@ -1,7 +1,7 @@
 /** \file ia_exception.h
  * some ia exception class.
  *
- * $Id: ai_exception.h,v 1.14 2001/10/25 13:35:56 chafik Exp $
+ * $Id: ai_exception.h,v 1.15 2001/10/25 15:11:15 chafik Exp $
  *
  * Available constantes:
  * - NL_OS_WINDOWS		: windows operating system (32bits)
@@ -132,24 +132,20 @@ namespace NLAIE
 	class CExceptionUnRegisterClassError: public IException
 	{
 	private:	
-		char *_ClassName;
+		std::string _ClassName;
 	public:
 		CExceptionUnRegisterClassError(const CExceptionUnRegisterClassError &e);		
-		CExceptionUnRegisterClassError(const char *name);
+		CExceptionUnRegisterClassError(const std::string &name);
 
 		const char *what() const throw() 
 		{
-			return _ClassName;
+			return _ClassName.c_str();
 		}
 
-		virtual const IException *clone() const;/*
-		{
-			return new CExceptionUnRegisterClassError(_ClassName);
-		}*/
+		virtual const IException *clone() const;
 
 		~CExceptionUnRegisterClassError()
-		{
-			delete _ClassName;
+		{			
 		}
 
 	};
@@ -157,22 +153,20 @@ namespace NLAIE
 	class CExceptionObjectNotFoundError: public IException
 	{
 	private:	
-		char *_ClassName;
+		std::string _ClassName;
 	public:
 		CExceptionObjectNotFoundError(const CExceptionObjectNotFoundError &e)
 		{
-			_ClassName = new char [strlen(e._ClassName) + 1];
-			strcpy(_ClassName,e._ClassName);
+			_ClassName = e._ClassName;
 		}
-		CExceptionObjectNotFoundError(const char *name)
+		CExceptionObjectNotFoundError(const std::string &name)
 		{
-			_ClassName = new char [strlen(name) + 1];
-			strcpy(_ClassName,name);
+			_ClassName = name;			
 		}
 
 		const char *what() const throw() 
 		{
-			return _ClassName;
+			return _ClassName.c_str();
 		}
 
 		virtual const IException *clone() const;/*
@@ -181,32 +175,24 @@ namespace NLAIE
 		}*/
 
 		~CExceptionObjectNotFoundError()
-		{
-			delete _ClassName;
+		{		
 		}
 	};
 
 	class CExceptionNotImplemented: public IException
 	{
 	private:
-		char *_Text;
+		std::string _Text;
 	public:
 
-		CExceptionNotImplemented(const CExceptionNotImplemented &e)
-		{
-			_Text = new char [strlen(e._Text) + 1];
-			strcpy(_Text,e._Text);
-		}
+		CExceptionNotImplemented(const CExceptionNotImplemented &e);		
 		
-		CExceptionNotImplemented(const char *text)
-		{
-			_Text = new char [strlen(text) + 1];
-			strcpy(_Text,text);
-		}
+		CExceptionNotImplemented(const std::string &text);
+		
 
 		const char *what() const throw() 
 		{
-			return _Text;
+			return _Text.c_str();
 		}
 
 		virtual const IException *clone() const;/*
@@ -215,38 +201,23 @@ namespace NLAIE
 		}*/
 
 		virtual ~CExceptionNotImplemented()
-		{
-			delete _Text;
+		{			
 		}
 	};
 
 	class CExceptionUnReference: public IException
 	{
 	private:
-		char *_Text;
+		std::string _Text;
 	public:
 
-		CExceptionUnReference(const CExceptionUnReference &e)
-		{
-			_Text = new char [strlen(e._Text) + 1];
-			strcpy(_Text,e._Text);
-		}
+		CExceptionUnReference(const CExceptionUnReference &e);		
 
-		CExceptionUnReference(char *text)
-		{
-			_Text = new char [strlen(text) + 1];
-			strcpy(_Text,text);
-		}
-		
-		CExceptionUnReference(const char *text)
-		{
-			_Text = new char [strlen(text) + 1];
-			strcpy(_Text,text);
-		}
+		CExceptionUnReference(const std::string &text);		
 
 		const char *what() const throw() 
 		{
-			return _Text;
+			return _Text.c_str();
 		}
 
 		virtual const IException *clone() const;/*
@@ -255,32 +226,29 @@ namespace NLAIE
 		}*/
 
 		virtual ~CExceptionUnReference()
-		{
-			delete _Text;
+		{			
 		}
 	};	
 
 	class CExceptionAllReadyExist: public IException
 	{
 	private:
-		char *_Text;
+		std::string _Text;
 	public:
 
 		CExceptionAllReadyExist(const CExceptionAllReadyExist &e)
 		{
-			_Text = new char [strlen(e._Text) + 1];
-			strcpy(_Text,e._Text);
+			_Text = e._Text;			
 		}
 		
-		CExceptionAllReadyExist(const char *text)
+		CExceptionAllReadyExist(const std::string &text)
 		{
-			_Text = new char [strlen(text) + 1];
-			strcpy(_Text,text);
+			_Text = text;			
 		}
 
 		const char *what() const throw() 
 		{
-			return _Text;
+			return _Text.c_str();
 		}
 
 		virtual const IException *clone() const;/*
@@ -289,8 +257,7 @@ namespace NLAIE
 		}*/
 
 		virtual ~CExceptionAllReadyExist()
-		{
-			delete _Text;
+		{		
 		}
 	};	
 }

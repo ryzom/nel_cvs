@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.18 2001/12/06 16:47:15 vizerie Exp $
+ * $Id: rgba.h,v 1.19 2002/02/13 09:10:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -290,6 +290,21 @@ public:
 		  * \params Stride between each color.  It is the same for sources and destination.
 		  */
 		static void subtractColors(CRGBA *dest, const CRGBA *src1, const CRGBA *src2, uint numColors, uint srcStride = sizeof(CRGBA), uint destStride = sizeof(CRGBA), uint dup = 1);
+	//@}
+
+	/// \name Color space conversions RGB only
+	//@{
+			/** Convert to HLS color space.
+			  * Lightness and satuation ranges from 0 to 1
+			  * There's no range for hue, (all hues colors range from 0 to 360, from 360 to 720 and so on)
+			  * \return true if the color is achromatic
+			  */
+			bool convertToHLS(float &h, float &l, float &S) const;
+
+			/** Build from HLS valued
+			  *	Each component ranges from 0 to 1.f
+			  */
+			void buildFromHLS(float h, float l, float s);
 	//@}
 
 

@@ -1,7 +1,7 @@
 /** \file rgba.cpp
  * ARGB pixel format
  *
- * $Id: rgba.cpp,v 1.13 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: rgba.cpp,v 1.14 2002/02/13 09:10:58 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/cpu_info.h"
-
+#include "nel/misc/common.h"
 
 
 namespace NLMISC {
@@ -605,6 +605,115 @@ void CBGRA::blendFromui(CBGRA &c0, CBGRA &c1, uint coef) // coef must be in [0,2
 
 
 // ***************************************************************************
+bool CRGBA::convertToHLS(float &h, float &l, float &s) const
+{
+	float r = R / 255.f;
+	float g = G / 255.f;
+	float b = B / 255.f;
+
+	float maxV = NLMISC::maxof(r, g, b);
+	float minV = NLMISC::minof(r, g, b);
+
+	/// get lightness
+	l = 0.5f * (maxV + minV);
+
+	/// Get saturation
+	if (minV == maxV)  // all composants are equals -> achromatique
+	{
+		s = 0;		
+		return true;
+	}
+	float diff = maxV - minV;
+	/// compute saturation
+	s  = l > 0.5f					?   /*are we in the top of the double-hexcone ? */
+		diff / (2.f - maxV - minV)  :
+		diff / (maxV + minV);
+
+	// Get hue
+
+	if (maxV == r)
+	{
+		h = (g - b) / diff;
+	}
+	else if (maxV == g)
+	{
+		h = 2.f + (b - r) / diff;
+	}
+	else
+	{
+		h = 4.f + (r - g) / diff;
+	}
+		 
+	h *= 60.f; // scale to [0..360]
+
+	if (h < 0.f) h += 360.f;
+	
+	return false;
+}
+
+
+// ***************************************************************************
+/// Used by buildFromHLS
+static float HLSValue(float h, float v1, float v2)
+{
+	/* get hue in the [0, 360] interval */
+	// h -= 360.f * ::floorf(h / 360.f);
+
+	if (h > 360.f) h -= 360.f;
+	else if (h < 0) h += 360.f;
+
+	if (h < 60.f)
+	{
+		return v1 + (v2 - v1) * h / 60.f;
+	}
+	else if (h < 180.f)
+	{
+		return v2;
+	}
+	else if (h < 240.f)
+	{
+		return v1 + (v2 - v1) * (240.f - h) / 60.f;
+	}
+	else
+	{
+		return v1;
+	}		 
+}
+
+
+// ***************************************************************************
+void CRGBA::buildFromHLS(float h, float l, float s)
+{
+	clamp(l, 0, 1);
+	clamp(s, 0, 1);
+
+	float v2 = (l <= 0.5f) ? (l * (1 + s)) : (l + s - l * s);
+	float v1 = 2.f * l - v2;
+
+	if (s == 0) // achromatic ?
+	{
+		R = G = B = (uint8) (255.f * l);
+	}
+	else // chromatic case
+	{
+		float v;
+		//
+		v = HLSValue(h + 120.f, v1, v2);
+		clamp(v, 0.f, 1.f);
+		R = (uint8) (255.f * v);
+		//
+		v = HLSValue(h, v1, v2);
+		clamp(v, 0.f, 1.f);
+		G = (uint8) (255.f * v);
+		//
+		v = HLSValue(h - 120.f, v1, v2);
+		clamp(v, 0.f, 1.f);
+		B = (uint8) (255.f * v);	
+	}
+}
+
+
+// ***************************************************************************
 // ***************************************************************************
 // CRGBAF
 // ***************************************************************************
@@ -627,6 +736,9 @@ void CRGBAF::set(float r, float g, float b, float a)
 	B = b;
 	A = a;
 }
+
+
+
 
 
 } // NLMISC

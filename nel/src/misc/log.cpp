@@ -1,7 +1,7 @@
 /** \file log.cpp
  * CLog class
  *
- * $Id: log.cpp,v 1.33 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: log.cpp,v 1.34 2002/01/04 10:20:32 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -212,10 +212,15 @@ void CLog::display (const char *format, ...)
 		args.Filename = _FileName;
 		args.Line = _Line;
 
+		uint pos = 0, npos = _Displayers.size ();
+		IDisplayer *id = NULL;
+
 		// Send to the attached displayers
 		for (CDisplayers::iterator idi=_Displayers.begin(); idi!=_Displayers.end(); idi++ )
 		{
+			id = *idi;
 			(*idi)->display( args, str );
+			pos++;
 		}
 	}
 

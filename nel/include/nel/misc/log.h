@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.26 2001/11/27 14:13:20 lecroart Exp $
+ * $Id: log.h,v 1.27 2002/01/04 10:20:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,6 @@
 #include "nel/misc/mutex.h"
 
 #include <string>
-#include <vector>
 #include <list>
 
 
@@ -125,7 +124,7 @@ protected:
 	sint                              _Line;
 	char                             *_FileName;
 
-	typedef std::vector<IDisplayer *> CDisplayers;
+	typedef std::list<IDisplayer *> CDisplayers;
 
 	CDisplayers                       _Displayers;
 

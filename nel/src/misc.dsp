@@ -924,6 +924,14 @@ SOURCE=..\include\nel\misc\value_smoother.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\variable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\variable.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\win_thread.cpp
 # End Source File
 # Begin Source File

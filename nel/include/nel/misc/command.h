@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.20 2003/02/14 14:14:58 lecroart Exp $
+ * $Id: command.h,v 1.21 2003/03/06 09:59:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,89 +85,6 @@ __name##Class __name##Instance; \
 bool __name##Class::execute(const std::vector<std::string> &args, NLMISC::CLog &log)
 
 
-
-/**
- * Add a variable that can be modify in realtime. The variable must be global. If you must acces the variable with
- * function, use NLMISC_DYNVARIABLE
- *
- * Example:
- * \code
-	// I want to look and change the variable 'foobar' in realtime, so, first i create it:
-	uint8 foobar;
-	// and then, I add it
-	NLMISC_VARIABLE(uint8, FooBar, "this is a dummy variable");
- * \endcode
- *
- * Please use the same casing than for the variable (first letter of each word in upper case)
- * ie: MyVariable, NetSpeedLoop, Time
- *
- * \author Vianney Lecroart
- * \author Nevrax France
- * \date 2001
- */
-#define NLMISC_VARIABLE(__type,__var,__help) \
-NLMISC::CVariable<__type> __var##Instance(#__var, __help " (" #__type ")", &__var)
-
-
-
-/**
- * Add a variable that can be modify in realtime. The code profide the way to access to the variable in the read
- * and write access (depending of the \c get boolean value)
- *
- * Example:
- * \code
-	// a function to read the variable
-	uint8 getVar() { return ...; }
-
-	// a function to write the variable
-	void setVar(uint8 val) { ...=val; }
-
-	// I want to look and change the variable in realtime:
-	NLMISC_DYNVARIABLE(uint8, FooBar, "this is a dummy variable")
-	{
-		// read or write the variable
-		if (get)
-			*pointer = getVar();
-		else
-			setVar(*pointer);
-	}
- * \endcode
- *
- * Please use the same casing than for the variable (first letter of each word in upper case)
- * ie: MyVariable, NetSpeedLoop, Time
- *
- * \author Vianney Lecroart
- * \author Nevrax France
- * \date 2001
- */
-#define NLMISC_DYNVARIABLE(__type,__name,__help) \
-class __name##Class : public NLMISC::ICommand \
-{ \
-public: \
-	__name##Class () : NLMISC::ICommand(#__name, __help " (" #__type ")", "[<value>]") { Type = Variable; } \
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log) \
-	{ \
-		if (args.size() == 1) \
-		{ \
-			std::stringstream ls (args[0]); \
-			__type p2; \
-			ls >> p2; \
-			pointer (&p2, false, log); \
-		} \
-		__type p; \
-		pointer (&p, true, log); \
-		std::stringstream ls; \
-		ls << "Variable " << _CommandName << " = " << p; \
-		log.displayNL(ls.str().c_str()); \
-		return (args.size() <= 1); \
-	} \
- \
-	void pointer(__type *pointer, bool get, NLMISC::CLog &log); \
-}; \
-__name##Class __name##Instance; \
-void __name##Class::pointer(__type *pointer, bool get, NLMISC::CLog &log)
-
-
 /**
  * Create a function that can be call in realtime. Don't use this class directly but use the macro NLMISC_COMMAND
  * \author Vianney Lecroart
@@ -233,40 +150,6 @@ struct CSerialCommand
 		f.serial (Name);
 		f.serialEnum (Type);
 	}
-};
-
-
-
-
-
-/**
- * Create a variable that can be modify in realtime. Don't use this class directly but use the macro NLMISC_VARIABLE
- *
- * \author Vianney Lecroart
- * \author Nevrax France
- * \date 2001
- */
-template <class T>
-class CVariable : public ICommand
-{
-public:
-	CVariable (const char *commandName, const char *commandHelp, T *pointer) : NLMISC::ICommand(commandName, commandHelp, "[<value>]"), _Pointer(pointer) {	Type = Variable; }
-	virtual bool execute(const std::vector<std::string> &args, NLMISC::CLog &log)
-	{
-		if (args.size() == 1)
-		{
-			std::stringstream s2 (args[0]);
-			s2 >> *_Pointer;
-		}
-		{
-			std::stringstream s;
-			s << "Variable " << _CommandName << " = " << *_Pointer;
-			log.displayNL(s.str().c_str());
-		}
-		return (args.size() <= 1);
-	}
-private:
-	T *_Pointer;
 };
 
 

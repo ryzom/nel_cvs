@@ -1,7 +1,7 @@
 /** \file system_info.cpp
  * <File description>
  *
- * $Id: system_info.cpp,v 1.16 2003/02/07 16:06:10 lecroart Exp $
+ * $Id: system_info.cpp,v 1.17 2003/03/06 10:00:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,6 +39,7 @@
 #include "nel/misc/system_info.h"
 #include "nel/misc/command.h"
 #include "nel/misc/heap_allocator.h"
+#include "nel/misc/variable.h"
 
 using namespace std;
 

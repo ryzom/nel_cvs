@@ -1,7 +1,7 @@
 /** \file particle_system_model.cpp
  * <File description>
  *
- * $Id: particle_system_model.cpp,v 1.17 2001/08/23 10:13:13 berenguier Exp $
+ * $Id: particle_system_model.cpp,v 1.18 2001/08/29 09:33:38 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -376,7 +376,7 @@ void	CParticleSystemClipObs::traverse(IObs *caller)
 			{
 
 				CPlane farPlane;
-				farPlane.make(trav->CamLook, trav->CamPos + ps->getMaxViewDist() * trav->CamLook);
+				farPlane.make(trav->CamLook, trav->CamPos + pss->_MaxViewDist * trav->CamLook);
 				if (!pss->_PrecomputedBBox.clipBack(farPlane  * mat  ))				
 				{
 					Visible = false;

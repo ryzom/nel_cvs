@@ -1,7 +1,7 @@
 /** \file plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.cpp,v 1.3 2001/07/04 12:29:08 vizerie Exp $
+ * $Id: ps_plane_basis_maker.cpp,v 1.4 2001/07/12 15:42:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 namespace NL3D {
 
 
-CPlaneBasis CPSPlaneBasisGradient::DefaultPlaneBasisTab[] = { CPlaneBasis(CVector::I), CPlaneBasis(CVector::J) } ;
+CPlaneBasis CPSPlaneBasisGradient::DefaultPlaneBasisTab[] = { CPlaneBasis(NLMISC::CVector::I), CPlaneBasis(NLMISC::CVector::J) } ;
 
 /////////////////////////////////////////////
 // CPSPlaneBasisFollowSpeed implementation //

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.h
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.h,v 1.32 2004/10/26 15:59:58 vizerie Exp $
+ * $Id: driver_direct3d.h,v 1.33 2004/10/26 16:08:47 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -358,16 +358,10 @@ public:
 	virtual void apply(class CDriverD3D &drv) = 0;
 	virtual ~CStateRecord() {}
 	// use STL allocator for fast alloc. this works because objects are small ( < 128 bytes)
-	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
-		// special version for nel memory
-		void *operator new(size_t size, const char *filename, int line) { return Allocator.allocate(size); }
-		void operator delete(void *block, const char *filename, int line) { Allocator.deallocate((uint8 *) block); }
-		void operator delete(void *block) { Allocator.deallocate((uint8 *) block); }
-	#else
+	#undef new
 		void *operator new(size_t size) { return Allocator.allocate(size); }\
 		void operator delete(void *block) { Allocator.deallocate((uint8 *) block); }
-	#endif
-
+	#define new NL_NEW
 
 	static std::allocator<uint8> Allocator;
 };

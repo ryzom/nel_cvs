@@ -1,7 +1,7 @@
 /** \file driver_direct3d_shader.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d_shader.cpp,v 1.11 2004/10/25 16:23:54 vizerie Exp $
+ * $Id: driver_direct3d_shader.cpp,v 1.12 2004/10/26 16:08:47 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -887,6 +887,8 @@ ULONG STDMETHODCALLTYPE CFXPassRecorder::Release(VOID)
 	return Driver->Release();
 }
 
+#undef new
+
 HRESULT STDMETHODCALLTYPE CFXPassRecorder::LightEnable(DWORD Index, BOOL Enable)
 {
 	nlassert(Driver);
@@ -1044,6 +1046,8 @@ HRESULT STDMETHODCALLTYPE CFXPassRecorder::SetVertexShaderConstantI(UINT StartRe
 	Target->States.push_back(new CStateRecordVertexShaderConstantI(StartRegister, pConstantData, RegisterCount));
 	return D3D_OK;
 }
+
+#define new NL_NEW
 
 //===================================================================================
 CFXPassRecord::~CFXPassRecord()

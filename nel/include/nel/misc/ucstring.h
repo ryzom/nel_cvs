@@ -1,7 +1,7 @@
 /** \file ucstring.h
  * Unicode stringclass using 16bits per character
  *
- * $Id: ucstring.h,v 1.12 2004/03/26 16:11:57 boucher Exp $
+ * $Id: ucstring.h,v 1.13 2004/10/26 16:08:47 corvazier Exp $
  *
  */
 
@@ -325,5 +325,28 @@ inline ucstring operator+(const std::string &c, const ucstringbase &ucstr)
 	ret += ucstr;
 	return ret;
 }
+
+namespace NLMISC
+{
+
+/** Convert an unicode string in lower case.
+ * Characters with accent are converted in a lowercase character with accent
+ * \param a string or a char to transform to lower case
+ */
+
+ucstring	toLower (const ucstring &str);
+void		toLower (ucchar *str);
+ucchar		toLower (ucchar c);
+
+/** Convert an unicode string in upper case.
+ * Characters with accent are converted in a uppercase character without accent
+ * \param a string or a char to transform to upper case
+ */
+
+ucstring	toUpper (const ucstring &str);
+void		toUpper (ucchar *str);
+ucchar		toUpper (ucchar c);
+
+};
 
 #endif // NL_UCSTRING_H

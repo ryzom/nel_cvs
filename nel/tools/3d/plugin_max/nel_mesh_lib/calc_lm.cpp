@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.15 2001/08/08 13:22:37 besson Exp $
+ * $Id: calc_lm.cpp,v 1.16 2001/08/10 14:27:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2049,8 +2049,8 @@ bool PutFaceUV1InLumelCoord( double rRatioLightMap, vector<CVector> &Vertices,
 		// Next face
 		++ItParseI;
 	}
-//	if( TextureSurf < 0.0001 )
-//		return false;
+	if( TextureSurf < 0.00001 )
+		return false;
 	double LMTextRatio = sqrt(SpaceSurf / TextureSurf) * (1.0/rRatioLightMap);
 
 	ItParseI = ItFace;
@@ -3806,7 +3806,18 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 
 				if( ! PutFaceUV1InLumelCoord( gOptions.rLumelSize, AllVertices, 
 										AllFaces.begin()+offsetSmooth, FaceGroupBySmooth[nSmoothNb] ) )
+				{
+					string sTmp = "Warning : ";
+					sTmp += ZeNode.GetName();
+					sTmp += " has mapping problem";
+					gOptions.FeedBack->setLine (11, sTmp);
+					sTmp = "Mat(" + toString(1+nMat) + ") at least one group with texture";						
+					gOptions.FeedBack->setLine (12, sTmp);
+					sTmp = "surface equal to zero";
+					gOptions.FeedBack->setLine (13, sTmp);
+					gOptions.FeedBack->update ();
 					continue;
+				}
 
 				SortFaceByPlane( FaceGroupByPlane, AllFaces.begin()+offsetSmooth, FaceGroupBySmooth[nSmoothNb] );
 				//AllPlanes.resize( FaceGroupByPlane.size() );
@@ -3897,7 +3908,7 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 			string sTmp = "Placement";
 			gOptions.FeedBack->setLine (3, sTmp);
 			sTmp = "";
-			for(i=4;i<14;++i)
+			for(i=4;i<10;++i)
 				gOptions.FeedBack->setLine (i, sTmp);
 			gOptions.FeedBack->update ();
 		}

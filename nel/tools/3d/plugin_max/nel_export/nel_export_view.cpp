@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.12 2001/08/09 13:12:50 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.13 2001/08/10 14:27:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -225,8 +225,10 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 			sTmp += pNode->GetName();
 			ProgBar.setLine (0, sTmp);
 			sTmp = "";
-			for (uint32 i = 1; i < 14; ++i) 
+			for (uint32 i = 1; i < 10; ++i) 
 				ProgBar.setLine (i, sTmp);
+			sTmp = "Last Error";
+			ProgBar.setLine (10, sTmp);
 			ProgBar.update();
 			
 			// It is a zone ?

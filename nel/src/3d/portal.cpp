@@ -1,7 +1,7 @@
 /** \file portal.cpp
  * Implementation of a portal
  *
- * $Id: portal.cpp,v 1.2 2001/08/08 13:31:27 besson Exp $
+ * $Id: portal.cpp,v 1.3 2001/08/10 14:27:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,6 +36,9 @@ using namespace std;
 
 namespace NL3D 
 {
+
+// 0.5 cm of precision
+#define PORTALPRECISION 0.005
 
 // ***************************************************************************
 CPortal::CPortal()
@@ -137,7 +140,7 @@ bool CPortal::setPoly(std::vector<CVector> &poly)
 	for( i = 0; i < (poly.size()-3); ++i )
 	{
 		dist = fabsf(p*poly[i+3]);
-		if( dist > 0.0001 )
+		if( dist > PORTALPRECISION )
 			return false;
 	}
 

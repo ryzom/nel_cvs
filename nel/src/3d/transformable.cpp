@@ -1,7 +1,7 @@
 /** \file transformable.cpp
  * <File description>
  *
- * $Id: transformable.cpp,v 1.6 2001/03/28 10:33:00 berenguier Exp $
+ * $Id: transformable.cpp,v 1.7 2001/03/28 12:13:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ ITransformable::ITransformable()
 	// Deriver note: just copy this line in each ctor.
 
 	// Init default values.
-	_Mode= DirectMatrix;
+	_Mode= RotQuat;
 	// matrix init to identity.
 	_Pos.Value= CVector::Null;
 	_RotEuler.Value= CVector::Null;

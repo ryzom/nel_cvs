@@ -1,7 +1,7 @@
 /** \file transformable.h
  * <File description>
  *
- * $Id: transformable.h,v 1.6 2001/03/28 10:31:09 berenguier Exp $
+ * $Id: transformable.h,v 1.7 2001/03/28 12:13:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,7 @@ using NLMISC::CQuat;
 
 /**
  * Something which can be transformed in 3D space / animated.
+ * By default Transformmode is RotQuat.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -56,9 +57,9 @@ public:
 
 	enum	TTransformMode
 	{
-		DirectMatrix=0,		// DirectMatrixMode (default).
+		DirectMatrix=0,		// DirectMatrixMode.
 		RotEuler,			// Matrix is computed from sperated composantes, with euler rotation.
-		RotQuat,			// Matrix is computed from sperated composantes, with quat rotation.
+		RotQuat,			// Matrix is computed from sperated composantes, with quat rotation (default).
 
 		TransformModeCount
 	};
@@ -66,7 +67,7 @@ public:
 
 public:
 
-	/// Constructor. By default, DirectMatrix mode.
+	/// Constructor. By default, RotQuat mode.
 	ITransformable();
 
 

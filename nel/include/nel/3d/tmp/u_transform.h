@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * <File description>
  *
- * $Id: u_transform.h,v 1.3 2001/03/23 10:09:03 berenguier Exp $
+ * $Id: u_transform.h,v 1.4 2001/03/28 12:13:31 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,6 +41,7 @@ using NLMISC::CQuat;
 // ***************************************************************************
 /**
  * Base interface for manipulating Movable Objects: camera, lights, instances etc...
+ * By default Transformmode is RotQuat.
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2001
@@ -51,7 +52,7 @@ protected:
 
 	/// \name Object
 	// @{
-	/// Constructor. By default, DirectMatrix mode.
+	/// Constructor. By default, RotQuat mode.
 	UTransform() {}
 	virtual	~UTransform() {}
 	// @}
@@ -72,9 +73,9 @@ public:
 	// Matrix mode.
 	enum	TTransformMode
 	{
-		DirectMatrix=0,		// DirectMatrixMode (default).
+		DirectMatrix=0,		// DirectMatrixMode .
 		RotEuler,			// Matrix is computed from sperated composantes, with euler rotation.
-		RotQuat,			// Matrix is computed from sperated composantes, with quat rotation.
+		RotQuat,			// Matrix is computed from sperated composantes, with quat rotation (default).
 
 		TransformModeCount
 	};

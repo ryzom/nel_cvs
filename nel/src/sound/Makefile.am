@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.2 2001/08/03 10:16:59 valignat Exp $
+# $Id: Makefile.am,v 1.3 2001/08/24 14:20:32 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -23,13 +23,13 @@ libnelsnd_la_SOURCES = ambiant_source.cpp                  \
                        env_sound_user.h                    \
                        listener_user.cpp                   \
                        listener_user.h                     \
+                       mixing_track.cpp                    \
+                       mixing_track.h                      \
                        playable.h                          \
                        sound.cpp                           \
                        sound.h                             \
                        source_user.cpp                     \
-                       source_user.h                       \
-                       track.cpp                           \
-                       track.h
+                       source_user.h
 
 AM_CXXFLAGS          = -I$(top_srcdir)/src
 

@@ -1,7 +1,8 @@
+
 /** \file logic_state_machine.cpp
  * 
  *
- * $Id: logic_state_machine.cpp,v 1.5 2003/03/18 14:19:00 distrib Exp $
+ * $Id: logic_state_machine.cpp,v 1.6 2003/04/15 08:08:46 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

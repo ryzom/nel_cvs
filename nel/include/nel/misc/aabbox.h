@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * <File description>
  *
- * $Id: aabbox.h,v 1.1 2001/02/28 14:31:21 berenguier Exp $
+ * $Id: aabbox.h,v 1.2 2001/04/20 07:31:34 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -102,6 +102,8 @@ public:
 	bool			clipBack(const CPlane &p) const;
 	/// Does the bbox include this point.
 	bool			include(const CVector &a) const;
+	/// Does the bbox intersect the bbox box.
+	bool			intersect(const CAABBox &box) const;
 	/// Does the bbox intersect the triangle ABC.
 	bool			intersect(const CVector &a, const CVector &b, const CVector &c) const;
 	// @}
@@ -169,6 +171,8 @@ public:
 	CVector			getSize() const {return HalfSize*2;}
 	/// Return the (stored!!) radius of the bbox.
 	float			getRadius() const {return RadiusMax;}
+	/// Return a simple Axis Aligned Bounding Box (no radius inside)
+	CAABBox			getAABBox() const { CAABBox box; box.setCenter(getCenter()); box.setHalfSize(getHalfSize()); return box; }
 	// @}
 
 	/// \name Clip
@@ -177,6 +181,9 @@ public:
 	bool			clipFront(const CPlane &p) const;
 	/// Is the bbox partially in back of the plane?? p MUST be normalized.
 	bool			clipBack(const CPlane &p) const;
+	/// Does the bbox intersect the bbox box.
+	bool			intersect(const CAABBoxExt &box) const
+		{return CAABBox::intersect(box);}
 	/// Does the bbox intersect the triangle ABC.
 	bool			intersect(const CVector &a, const CVector &b, const CVector &c) const
 		{return CAABBox::intersect(a,b,c);}

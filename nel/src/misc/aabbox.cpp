@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.1 2001/02/28 14:39:04 berenguier Exp $
+ * $Id: aabbox.cpp,v 1.2 2001/04/20 07:32:57 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,20 @@ bool			CAABBox::include(const CVector &a) const
 	return true;
 }
 
+
+// ***************************************************************************
+bool			CAABBox::intersect(const CAABBox &box) const
+{
+	CVector	mina = getMin(), maxa = getMax(),
+			minb = box.getMin(), maxb = box.getMax();
+
+	return ! ( mina.x > maxb.x ||
+			   mina.y > maxb.y ||
+			   mina.z > maxb.z ||
+			   minb.x > maxa.x ||
+			   minb.y > maxa.y ||
+			   minb.z > maxa.z);
+}
 
 // ***************************************************************************
 bool			CAABBox::intersect(const CVector &a, const CVector &b, const CVector &c) const

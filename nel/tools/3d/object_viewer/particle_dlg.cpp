@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.28 2004/06/17 17:02:14 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.29 2004/07/21 13:30:46 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -457,7 +457,7 @@ bool CParticleDlg::loadPS(HWND parent, CParticleWorkspace::CNode &psNode, TLoadP
 			loadingOK = false;
 			switch(behav)
 			{
-				case Silent: return true; // no op
+				case Silent: return false; // no op
 				case ReportError:					
 					::MessageBox(parent, (LPCTSTR) (CString(psNode.getFilename().c_str()) + " : " + getStrRsc(IDS_COULDNT_INSTANCIATE_PS)), getStrRsc(IDS_ERROR), MB_OK|MB_ICONEXCLAMATION);
 					return true;
@@ -483,7 +483,7 @@ bool CParticleDlg::loadPS(HWND parent, CParticleWorkspace::CNode &psNode, TLoadP
 	{
 		switch(behav)
 		{
-			case Silent: return true; // no op
+			case Silent: return false; // no op
 			case ReportError:	
 				::MessageBox(parent, e.what(), getStrRsc(IDS_ERROR), MB_OK|MB_ICONEXCLAMATION);				
 				return true;
@@ -504,7 +504,7 @@ bool CParticleDlg::loadPS(HWND parent, CParticleWorkspace::CNode &psNode, TLoadP
 	{		
 		localizedMessageBox(parent, IDS_FX_HAS_LOOP, IDS_WARNING, MB_OK|MB_ICONEXCLAMATION);
 	}	
-	return true;
+	return behav != Silent;
 }
 
 

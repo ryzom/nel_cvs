@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.11 2001/12/06 16:52:07 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.12 2001/12/07 09:54:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1400,7 +1400,8 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 	// For all triangles, bind correct triangles.
 	nlassert(vegetRdrPass.TriangleIndices.size() == vegetRdrPass.TriangleLocalIndices.size());
 	// Do it only for current Triangles setuped!!! same reason as vertices
-	for(i=0;i<vegetRdrPass.NTriangles;i++)
+	// For all setuped triangles indices
+	for(i=0;i<vegetRdrPass.NTriangles*3;i++)
 	{
 		// get the index in Vertices.
 		uint	localVid= vegetRdrPass.TriangleLocalIndices[i];

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.43 2003/03/20 16:17:15 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.44 2003/03/21 09:47:26 lecroart Exp $
  *
  */
 
@@ -44,6 +44,8 @@
 #ifdef NL_OS_WINDOWS
 #	include <windows.h>
 #	include <direct.h>
+#	undef max
+#	undef min
 #else
 #	include <unistd.h>
 #	include <sys/types.h>

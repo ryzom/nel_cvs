@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.9 2003/11/20 14:03:00 besson Exp $
+ * $Id: big_file.cpp,v 1.10 2003/11/20 14:05:58 corvazier Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/path.h"
 
 using namespace std;
+using namespace NLMISC;
 
 namespace NLMISC {
 
@@ -103,32 +104,51 @@ bool CBigFile::add (const std::string &sBigFileName, uint32 nOptions)
 	if (handle.File == NULL)
 		return false;
 	uint32 nFileSize=CFile::getFileSize (handle.File);
-	//fseek (handle.File, 0, SEEK_END);
+	//nlfseek64 (handle.File, 0, SEEK_END);
 	//uint32 nFileSize = ftell (handle.File);
-	fseek (handle.File, nFileSize-4, SEEK_SET);
+
+	// Result
+	if (nlfseek64 (handle.File, nFileSize-4, SEEK_SET) != 0)
+		return false;
+
 	uint32 nOffsetFromBegining;
-	fread (&nOffsetFromBegining, sizeof(uint32), 1, handle.File);
-	fseek (handle.File, nOffsetFromBegining, SEEK_SET);
+	if (fread (&nOffsetFromBegining, sizeof(uint32), 1, handle.File) != 1)
+		return false;
+
+	if (nlfseek64 (handle.File, nOffsetFromBegining, SEEK_SET) != 0)
+		return false;
+
+	// Read the file count
 	uint32 nNbFile;
-	fread (&nNbFile, sizeof(uint32), 1, handle.File);
-	map<string,BNPFile> tempMap;
+	if (fread (&nNbFile, sizeof(uint32), 1, handle.File) != 1)
+		return false;
 	for (uint32 i = 0; i < nNbFile; ++i)
 	{
 		char FileName[256];
 		uint8 nStringSize;
-		fread (&nStringSize, 1, 1, handle.File);
-		fread (FileName, 1, nStringSize, handle.File);
+		if (fread (&nStringSize, 1, 1, handle.File) != 1)
+			return false;
+		
+		if (fread (FileName, 1, nStringSize, handle.File) != nStringSize)
+			return false;
+
 		FileName[nStringSize] = 0;
 		uint32 nFileSize;
-		fread (&nFileSize, sizeof(uint32), 1, handle.File);
+		if (fread (&nFileSize, sizeof(uint32), 1, handle.File) != 1)
+			return false;
+
 		uint32 nFilePos;
-		fread (&nFilePos, sizeof(uint32), 1, handle.File);
+		if (fread (&nFilePos, sizeof(uint32), 1, handle.File) != 1)
+			return false;
+
 		BNPFile bnpfTmp;
 		bnpfTmp.Pos = nFilePos;
 		bnpfTmp.Size = nFileSize;
 		tempMap.insert (make_pair(strlwr(string(FileName)), bnpfTmp));
 	}
-	fseek (handle.File, 0, SEEK_SET);
+
+	if (nlfseek64 (handle.File, 0, SEEK_SET) != 0)
+		return false;
 
 	// Convert temp map
 	{

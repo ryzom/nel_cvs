@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.63 2003/11/18 13:45:36 lecroart Exp $
+ * $Id: common.h,v 1.64 2003/11/20 14:05:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -296,7 +296,9 @@ sint			nlstricmp(const std::string &lhs, const std::string &rhs);
 inline sint		nlstricmp(const std::string &lhs, const char *rhs) { return nlstricmp(lhs.c_str(),rhs); }
 inline sint		nlstricmp(const char *lhs, const std::string &rhs) { return nlstricmp(lhs,rhs.c_str()); }
 
-
+/** Signed 64 bit fseek. Same interface than fseek
+  */
+int		nlfseek64( FILE *stream, sint64 offset, int origin );
 
 /**
  * Base class for all NeL exception.

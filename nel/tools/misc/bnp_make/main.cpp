@@ -54,12 +54,12 @@ struct BNPHeader
 		FILE *f = fopen (filename.c_str(), "rb");
 		if (f == NULL) return false;
 
-		fseek (f, 0, SEEK_END);
-		uint32 nFileSize = ftell (f);
-		fseek (f, nFileSize-sizeof(uint32), SEEK_SET);
+		nlfseek64 (f, 0, SEEK_END);
+		uint32 nFileSize=CFile::getFileSize (filename);
+		nlfseek64 (f, nFileSize-sizeof(uint32), SEEK_SET);
 		uint32 nOffsetFromBegining;
 		fread (&nOffsetFromBegining, sizeof(uint32), 1, f);
-		if (fseek (f, nOffsetFromBegining, SEEK_SET) != 0)
+		if (nlfseek64 (f, nOffsetFromBegining, SEEK_SET) != 0)
 			return false;
 		
 		uint32 nNbFile;
@@ -167,7 +167,7 @@ void unpack (const string &dirName)
 		out = fopen (filename.c_str(), "wb");
 		if (out != NULL)
 		{
-			fseek (bnp, rBNPFile.Pos, SEEK_SET);
+			nlfseek64 (bnp, rBNPFile.Pos, SEEK_SET);
 			uint8 *ptr = new uint8[rBNPFile.Size];
 			fread (ptr, rBNPFile.Size, 1, bnp);
 			fwrite (ptr, rBNPFile.Size, 1, out);

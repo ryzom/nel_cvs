@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.34 2003/11/06 12:51:13 besson Exp $
+ * $Id: file.cpp,v 1.35 2003/11/20 14:05:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,7 +173,7 @@ bool		CIFile::open(const std::string &path, bool text)
 		if(_F != NULL)
 		{
 			// Start to load the bigfile at the file offset.
-			fseek (_F, _BigFileOffset, SEEK_SET);
+			nlfseek64 (_F, _BigFileOffset, SEEK_SET);
 
 			// Load into cache ?
 			if (_CacheFileOnOpen)
@@ -203,9 +203,9 @@ bool		CIFile::open(const std::string &path, bool text)
 			THIS CODE REPLACED BY SADGE BECAUSE SOMETIMES
 			ftell() RETRUNS 0 FOR NO GOOD REASON - LEADING TO CLIENT CRASH
 
-			fseek (_F, 0, SEEK_END);
+			nlfseek64 (_F, 0, SEEK_END);
 			_FileSize = ftell(_F);
-			fseek (_F, 0, SEEK_SET);
+			nlfseek64 (_F, 0, SEEK_SET);
 			nlassert(_FileSize==filelength(fileno(_F)));
 
 			THE FOLLOWING WORKS BUT IS NOT PORTABLE
@@ -424,7 +424,7 @@ bool		CIFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 		return true;
 
 	// seek in the file. NB: if not in bigfile, _BigFileOffset==0.
-	if (fseek(_F, _BigFileOffset+_ReadPos, SEEK_SET) != 0)
+	if (nlfseek64(_F, _BigFileOffset+_ReadPos, SEEK_SET) != 0)
 		return false;
 	return true;
 }
@@ -571,7 +571,7 @@ bool		COFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 			nlstop;
 		}
 
-		if (fseek (_F, offset, origin_c)!=0)
+		if (nlfseek64 (_F, offset, origin_c)!=0)
 			return false;
 		return true;
 	}

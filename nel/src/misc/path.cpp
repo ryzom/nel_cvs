@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.87 2003/11/20 14:03:00 besson Exp $
+ * $Id: path.cpp,v 1.88 2003/11/20 14:05:58 corvazier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -974,69 +974,75 @@ void CPath::addSearchBigFile (const string &sBigFilename, bool recurse, bool alt
 	}
 
 	// add the link with the CBigFile singleton
-	CBigFile::getInstance().add (sBigFilename, BF_ALWAYS_OPENED | BF_CACHE_FILE_ON_OPEN);
-
-	// also add the bigfile name in the map to retreive the full path of a .bnp when we want modification date of the bnp for example
-	insertFileInMap (CFile::getFilename (sBigFilename), sBigFilename, false, CFile::getExtension(sBigFilename));
-
-	// parse the big file to add file in the map
-	uint32 nFileSize=CFile::getFileSize (Handle);
-	//fseek (Handle, 0, SEEK_END);
-	//uint32 nFileSize = ftell (Handle);
-	fseek (Handle, nFileSize-4, SEEK_SET);
-	uint32 nOffsetFromBegining;
-	fread (&nOffsetFromBegining, sizeof(uint32), 1, Handle);
-	fseek (Handle, nOffsetFromBegining, SEEK_SET);
-	uint32 nNbFile;
-	fread (&nNbFile, sizeof(uint32), 1, Handle);
-	for (uint32 i = 0; i < nNbFile; ++i)
+	if (CBigFile::getInstance().add (sBigFilename, BF_ALWAYS_OPENED | BF_CACHE_FILE_ON_OPEN))
 	{
-		// Progress bar
-		if (progressCallBack)
-		{
-			progressCallBack->progress ((float)i/(float)nNbFile);
-			progressCallBack->pushCropedValues ((float)i/(float)nNbFile, (float)(i+1)/(float)nNbFile);
-		}
+		// also add the bigfile name in the map to retreive the full path of a .bnp when we want modification date of the bnp for example
+		insertFileInMap (CFile::getFilename (sBigFilename), sBigFilename, false, CFile::getExtension(sBigFilename));
 
-		char FileName[256];
-		uint8 nStringSize;
-		fread (&nStringSize, 1, 1, Handle);
-		fread (FileName, 1, nStringSize, Handle);
-		FileName[nStringSize] = 0;
-		uint32 nFileSize;
-		fread (&nFileSize, sizeof(uint32), 1, Handle);
-		uint32 nFilePos;
-		fread (&nFilePos, sizeof(uint32), 1, Handle);
-		string sTmp = strlwr(string(FileName));
-		if (sTmp.empty())
+		// parse the big file to add file in the map
+		uint32 nFileSize=CFile::getFileSize (Handle);
+		//nlfseek64 (Handle, 0, SEEK_END);
+		//uint32 nFileSize = ftell (Handle);
+		nlfseek64 (Handle, nFileSize-4, SEEK_SET);
+		uint32 nOffsetFromBegining;
+		fread (&nOffsetFromBegining, sizeof(uint32), 1, Handle);
+		nlfseek64 (Handle, nOffsetFromBegining, SEEK_SET);
+		uint32 nNbFile;
+		fread (&nNbFile, sizeof(uint32), 1, Handle);
+		for (uint32 i = 0; i < nNbFile; ++i)
 		{
-			nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
-			continue;
-		}
-		string bigfilenamealone = CFile::getFilename (sBigFilename);
-		string filenamewoext = CFile::getFilenameWithoutExtension (sTmp);
-		string ext = strlwr(CFile::getExtension(sTmp));
-
-		insertFileInMap (sTmp, bigfilenamealone + "@" + sTmp, false, ext);
-
-		for (uint j = 0; j < inst->_Extensions.size (); j++)
-		{
-			if (inst->_Extensions[j].first == ext)
+			// Progress bar
+			if (progressCallBack)
 			{
-				// need to remap
-				insertFileInMap (filenamewoext+"."+inst->_Extensions[j].second, 
-								bigfilenamealone + "@" + sTmp, 
-								true, 
-								inst->_Extensions[j].first);
+				progressCallBack->progress ((float)i/(float)nNbFile);
+				progressCallBack->pushCropedValues ((float)i/(float)nNbFile, (float)(i+1)/(float)nNbFile);
+			}
+
+			char FileName[256];
+			uint8 nStringSize;
+			fread (&nStringSize, 1, 1, Handle);
+			fread (FileName, 1, nStringSize, Handle);
+			FileName[nStringSize] = 0;
+			uint32 nFileSize;
+			fread (&nFileSize, sizeof(uint32), 1, Handle);
+			uint32 nFilePos;
+			fread (&nFilePos, sizeof(uint32), 1, Handle);
+			string sTmp = strlwr(string(FileName));
+			if (sTmp.empty())
+			{
+				nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): can't add empty file, skip it", sBigFilename.c_str(), recurse, alternative);
+				continue;
+			}
+			string bigfilenamealone = CFile::getFilename (sBigFilename);
+			string filenamewoext = CFile::getFilenameWithoutExtension (sTmp);
+			string ext = strlwr(CFile::getExtension(sTmp));
+
+			insertFileInMap (sTmp, bigfilenamealone + "@" + sTmp, false, ext);
+
+			for (uint j = 0; j < inst->_Extensions.size (); j++)
+			{
+				if (inst->_Extensions[j].first == ext)
+				{
+					// need to remap
+					insertFileInMap (filenamewoext+"."+inst->_Extensions[j].second, 
+									bigfilenamealone + "@" + sTmp, 
+									true, 
+									inst->_Extensions[j].first);
+				}
+			}
+
+			// Progress bar
+			if (progressCallBack)
+			{
+				progressCallBack->popCropedValues ();
 			}
 		}
-
-		// Progress bar
-		if (progressCallBack)
-		{
-			progressCallBack->popCropedValues ();
-		}
 	}
+	else
+	{
+		nlwarning ("PATH: CPath::addSearchBigFile(%s, %d, %d): can't add the big file", sBigFilename.c_str(), recurse, alternative);
+	}
+
 	fclose (Handle);
 }
 
@@ -1335,7 +1341,7 @@ uint32	CFile::getFileSize (const std::string &filename)
 {
 /*	FILE *fp = fopen (filename.c_str(), "rb");
 	if (fp == NULL) return 0;
-	fseek (fp, 0, SEEK_END);
+	nlfseek64 (fp, 0, SEEK_END);
 	uint32 size = ftell (fp);
 	fclose (fp);
 	return size;*/

@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.46 2003/11/20 14:02:00 besson Exp $
+ * $Id: common.cpp,v 1.47 2003/11/20 14:05:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,9 @@
 
 #ifdef NL_OS_WINDOWS
 #  include <windows.h>
+#  include <io.h>
+#  undef min
+#  undef max
 #elif defined NL_OS_UNIX
 #  include <unistd.h>
 #  include <string.h>
@@ -899,6 +902,62 @@ NLMISC_COMMAND(launchProgram, "Execute the command line using launcProgram() fun
 	launchProgram(cmd, arg);
 	log.displayNL ("End of Execution of '%s' with argument '%s'", cmd.c_str(), arg.c_str());
 	return true;
+}
+
+int	nlfseek64( FILE *stream, sint64 offset, int origin )
+{
+#ifdef NL_OS_WINDOWS
+
+	//
+	fpos_t pos64 = 0;
+	switch (origin)
+	{
+	case SEEK_CUR:
+		if (fgetpos(stream, &pos64) != 0)
+			return -1;
+	case SEEK_END:
+		pos64 = _filelengthi64(_fileno(stream));
+		if (pos64 == -1L)
+			return -1;
+	};
+
+	// Seek
+	pos64 += offset;
+
+	// Set the final position
+	return fsetpos (stream, &pos64);
+	
+#else // NL_OS_WINDOWS
+
+// This code doesn't work under windows : fseek() implementation uses a signed 32 bits offset. What ever we do, it can't seek more than 2 Go.
+// For the moment, i don't know if it works under linux for seek of more than 2 Go.
+
+	nlassert ((offset < (sint64)2147483647) && (offset > -(sint64)2147483648));
+
+	bool first = true;
+	do
+	{
+		// Get the size of the next fseek
+		sint nextSeek;
+		if (offset > 0)
+			nextSeek = (sint)std::min ((sint64)2147483647, offset);
+		else
+			nextSeek = (sint)std::max (-(sint64)2147483648, offset);
+
+		// Make a seek
+		int result = fseek ( stream, nextSeek, first?origin:SEEK_CUR );
+		if (result != 0)
+			return result;
+
+		// Remaining
+		offset -= nextSeek;
+		first = false;
+	}
+	while (offset);
+
+	return 0;
+
+#endif // NL_OS_WINDOWS
 }
 
 } // NLMISC

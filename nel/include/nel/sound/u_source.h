@@ -1,7 +1,7 @@
 /** \file u_source.h
  * USource: Game interface for sound sources (stereo or 3D sound instances)
  *
- * $Id: u_source.h,v 1.2 2001/07/13 09:37:34 cado Exp $
+ * $Id: u_source.h,v 1.3 2001/07/13 13:25:53 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -92,9 +92,7 @@ public:
 	 * st mode -> x is the pan value (from left (-1) to right (1)), set y and z to 0
 	 */
 	virtual void					setPosition( const NLMISC::CVector& pos ) = 0;
-	/** Get the position vector.
-	 * See setPosition() for details.
-	 */
+	/// Get the position vector (3D mode only)
 	virtual void					getPosition( NLMISC::CVector& pos ) const = 0;
 	/// Set the velocity vector (3D mode only, ignored in stereo mode) (default: (0,0,0))
 	virtual void					setVelocity( const NLMISC::CVector& vel ) = 0;

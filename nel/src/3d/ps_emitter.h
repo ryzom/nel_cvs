@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.15 2001/12/19 15:44:34 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.16 2002/02/15 17:03:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,7 +40,7 @@ namespace NL3D {
 /**
  * Base class for all emitters in a particle system.
  * Derivers should at least define the emit method which is called each time an emission is needed.
- * Emitter are not sharable between system, and in the same system.
+ * Not sharable accross systems.
  * 
  * \author Nicolas Vizerie
  * \author Nevrax France
@@ -210,11 +210,34 @@ public:
 	/// process a single emission. For external use (in the user interface layer)
 	void							singleEmit(uint32 index, uint quantity);
 
+	/** Enable consistent emission. The default is false. This try to keep the number of emitted particle constant, by allowing
+	  * more than one emission cycle per iteration. This is useful to deal with poor frmerate. This has several drawbacks though :
+	  * - collisions are not properly supported in this case (may be resolved later).
+	  * - The motion is in straight lines.
+	  * - It assumes that emitter has no motion (for now).
+	  * In fact, this should be used when there can't be collisions with the emitted particles, and with main emitters only.	  
+	  * NB : this has no effect if the emission period is 0 (which mean emit at each frame)
+	  */
+	void							enableConsistenEmission(bool enable) { _ConsistentEmission = enable; }
+
+	bool						    isConsistentEmissionEnabled() const { return _ConsistentEmission; }
 
 protected:	
 
 	/// this will call emit, and will add additionnal features (speed addition and so on)
 	inline void						processEmit(uint32 index, sint nbToGenerate);
+
+	/// The same as processEmit, but can also add a time delta
+	inline void						processEmitConsistent(uint32 index, sint nbToGenerate, TAnimationTime deltaT);
+
+	/// regular emission processing
+	void							processRegularEmission(TAnimationTime ellapsedTime);
+
+	/** Regular emission processing, with low-framrate compensation
+	  */
+	void							processRegularEmissionConsistent(TAnimationTime ellapsedTime);
+
+
 
 
 	/** This method is called each time one (and only one) located must be emitted.
@@ -252,9 +275,7 @@ protected:
 	TPSAttribFloat					_Phase;
 	TPSAttribUInt8					_NumEmission; // used only if MaxEmissionCount is != 0
 
-	float							_SpeedInheritanceFactor;
-	bool							_SpeedBasisEmission;
-	bool							_EmitDirBasis; // true when emission direction is in the emitter basis
+	float							_SpeedInheritanceFactor;	
 	TEmissionType					_EmissionType;
 	float _Period;
 	CPSAttribMaker<float>			*_PeriodScheme;			
@@ -262,6 +283,9 @@ protected:
 	CPSAttribMaker<uint32>			*_GenNbScheme;
 	float							_EmitDelay;
 	uint8							_MaxEmissionCount;
+	bool							_SpeedBasisEmission;
+	bool							_EmitDirBasis; // true when emission direction is in the emitter basis
+	bool							_ConsistentEmission; 
 };
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

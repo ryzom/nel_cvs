@@ -867,6 +867,10 @@ SOURCE=..\include\nel\misc\smart_ptr_inline.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\include\nel\misc\sstring.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\stdmisc.cpp
 # ADD CPP /Yc"stdmisc.h"
 # End Source File

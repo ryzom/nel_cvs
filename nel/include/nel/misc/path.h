@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.46 2004/04/05 07:52:18 corvazier Exp $
+ * $Id: path.h,v 1.47 2004/04/30 13:57:29 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -194,6 +194,12 @@ public:
 	/** Create a list of file having the requested extension.
 	 */
 	static void getFileList(const std::string &extension, std::vector<std::string> &filenames);
+
+#ifndef NL_DONT_USE_EXTERNAL_CODE
+	/** Create a list of file having the requested string in the filename and the requested extention.
+	 */
+	static void getFileListByName(const std::string &extension, const std::string &name, std::vector<std::string> &filenames);
+#endif
 
 	/** Make a path relative to another if possible, else doesn't change it.
 	 * \param basePath is the base path to be relative to.

@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle2.cpp,v 1.5 2002/01/28 14:37:43 vizerie Exp $
+ * $Id: ps_particle2.cpp,v 1.6 2002/01/28 15:47:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -561,7 +561,7 @@ void CPSRibbonBase::motionTypeChanged(bool parametric)
 	_Parametric = parametric;
 	if (parametric)
 	{
-		_Ribbons.swap(TPosVect()); // kill the vector		
+		NLMISC::contReset(_Ribbons); // kill the vector		
 	}
 	else
 	{

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.65 2002/05/28 13:53:20 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.66 2002/06/17 14:22:41 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,6 +261,25 @@ CObjectViewer::CObjectViewer ()
 		CConfigFile::CVar &search_pathes = cf.getVar ("search_pathes");
 		for (uint i=0; i<(uint)search_pathes.size(); i++)
 			CPath::addSearchPath (search_pathes.asString(i));
+
+		// Add search pathes
+		try
+		{
+			CConfigFile::CVar &extensions_remapping = cf.getVar ("extensions_remapping");
+			if (extensions_remapping.size()%2 != 0)
+			{
+				nlwarning ("extensions_remapping must have a multiple of 2 entries (ex: extensions_remapping={\"dds\",\"tga\"};)");
+			}
+			else
+			{
+				for (uint i=0; i<(uint)extensions_remapping.size(); i+=2)
+					CPath::remapExtension(extensions_remapping.asString(i), extensions_remapping.asString(i+1));
+			}
+		}
+		catch (EUnknownVar &)
+		{
+		}
+	
 
 		// set the sound file name
 		try

@@ -1,7 +1,7 @@
 /** \file ps_util.h
  * <File description>
  *
- * $Id: ps_util.h,v 1.6 2001/05/28 15:30:12 vizerie Exp $
+ * $Id: ps_util.h,v 1.7 2001/05/30 10:04:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -75,6 +75,12 @@ struct CPSUtil
 	 *  \param mat : a matrix, whose K vector is normal to the plane containing the disc
 	 */
 	static void displayDisc(IDriver &driver, float radius, const CVector &center, const CMatrix &mat, uint nbSubdiv = 32, CRGBA color = CRGBA::White) ;
+
+
+	/** draw a cylinder (not filled)	 
+	 *  \param dim dimension of the cylinder along each axis, packed in a vector
+	 */
+	static void displayCylinder(IDriver &driver, const CVector &center, const CMatrix &mat, const CVector &dim, uint nbSubdiv = 32, CRGBA color = CRGBA::White) ;
 
 	 
 

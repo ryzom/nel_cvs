@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.10 2001/05/28 15:30:12 vizerie Exp $
+ * $Id: ps_util.cpp,v 1.11 2001/05/30 10:04:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,9 @@ void CPSUtil::initFastCosNSinTable(void)
 void CPSUtil::registerSerialParticleSystem(void)
 {
 		NLMISC_REGISTER_CLASS(CPSEmitterOmni) ;
+		NLMISC_REGISTER_CLASS(CPSEmitterDirectionnal) ;
+		NLMISC_REGISTER_CLASS(CPSEmitterRectangle) ;
+		NLMISC_REGISTER_CLASS(CPSEmitterConic) ;
 		NLMISC_REGISTER_CLASS(CPSGravity) ; 
 		NLMISC_REGISTER_CLASS(CPSFluidFriction) ;
 		NLMISC_REGISTER_CLASS(CPSTurbul) ;
@@ -429,7 +432,7 @@ void CPSUtil::displaySphere(IDriver &driver, float radius, const CVector &center
 
 void CPSUtil::displayDisc(IDriver &driver, float radius, const CVector &center, const CMatrix &mat, uint nbSubdiv, CRGBA color)
 {
-
+	// not optimized, but for edition only
 	float thetaDelta = (float) NLMISC::Pi * 2.f / nbSubdiv ;
 	float theta = 0.f ;
 	const CVector &I = mat.getI() ;
@@ -443,6 +446,38 @@ void CPSUtil::displayDisc(IDriver &driver, float radius, const CVector &center, 
 		theta += thetaDelta ;
 	}
 
+}
+
+
+void CPSUtil::displayCylinder(IDriver &driver, const CVector &center, const CMatrix &mat, const CVector &dim, uint nbSubdiv, CRGBA color)
+{
+	// not optimized, but for edition only
+	float thetaDelta = (float) NLMISC::Pi * 2.f / nbSubdiv ;
+	float theta = 0.f ;
+	const CVector &I = mat.getI() ;
+	const CVector &J = mat.getJ() ;
+	const CVector &K = mat.getK() ;
+
+	for (uint k = 0 ; k < nbSubdiv ; ++k)
+	{
+		
+		CDRU::drawLine(center + dim.z * K + dim.x * cosf(theta) * I + dim.y * sinf(theta) * J
+					   , center + dim.z * K + dim.x * cosf(theta + thetaDelta) * I + dim.y * sinf(theta + thetaDelta) * J
+					   , color, driver) ;
+
+		CDRU::drawLine(center - dim.z * K + dim.x * cosf(theta) * I + dim.y * sinf(theta) * J
+					   , center - dim.z * K + dim.x * cosf(theta + thetaDelta) * I + dim.y * sinf(theta + thetaDelta) * J
+					   , color, driver) ;
+
+		CDRU::drawLine(center + dim.z * K + dim.x * cosf(theta) * I + dim.y * sinf(theta) * J
+					   , center - dim.z * K + dim.x * cosf(theta) * I + dim.y * sinf(theta) * J
+					   , color, driver) ;
+
+
+		
+		
+		theta += thetaDelta ;
+	}	
 }
 
 

@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.5 2000/10/25 08:37:50 corvazier Exp $
+ * $Id: rgba.h,v 1.6 2000/10/25 09:06:51 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -421,7 +421,7 @@ public:
  * \param f Float factor.
  * \return Return the result
  */
-CRGBAF operator* (float f, const CRGBAF& c)
+inline CRGBAF operator* (float f, const CRGBAF& c)
 {
 	return CRGBAF (c.R*f, c.G*f, c.B*f, c.A*f);
 }

@@ -1,7 +1,7 @@
 /** \file nel_export_node_properties.cpp
  * Node properties dialog
  *
- * $Id: nel_export_node_properties.cpp,v 1.52 2004/05/14 15:01:32 berenguier Exp $
+ * $Id: nel_export_node_properties.cpp,v 1.53 2004/05/19 10:19:10 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2582,7 +2582,7 @@ void CNelExport::OnNodeProperties (const std::set<INode*> &listNode)
 				param.ExportAnimatedMaterials = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_NODE_ANIMATION, BST_UNCHECKED)!=param.ExportNodeAnimation)
 				param.ExportNodeAnimation = BST_INDETERMINATE;
-			if (CExportNel::getScriptAppData (node, IDC_EXPORT_ANIMATION_PREFIXE_NAME, BST_UNCHECKED)!=param.PrefixeTracksNodeName)
+			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_EXPORT_ANIMATION_PREFIXE_NAME, BST_UNCHECKED)!=param.PrefixeTracksNodeName)
 				param.PrefixeTracksNodeName = BST_INDETERMINATE;
 			if (CExportNel::getScriptAppData (node, NEL3D_APPDATA_FLOATING_OBJECT, BST_UNCHECKED)!=param.FloatingObject)
 				param.FloatingObject = BST_INDETERMINATE;

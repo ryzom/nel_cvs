@@ -1,6 +1,6 @@
 /** \file ps_allocator.h
  *
- * $Id: ps_allocator.h,v 1.3 2004/03/19 10:45:19 vizerie Exp $
+ * $Id: ps_allocator.h,v 1.4 2004/04/09 14:26:58 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -126,12 +126,12 @@ namespace NL3D
 			if (* (TBlocAllocPtr *) realAddress)
 			{	
 				// block comes from a block allocator
-				(*(TBlocAllocPtr *) realAddress)->free((void *) realAddress);						
+				(*(TBlocAllocPtr *) realAddress)->free((void *) realAddress, n * sizeof(T) + sizeof(TBlocAllocPtr *));						
 			}
 			else
 			{
 				// block comes from the stl allocator
-				_Alloc.deallocate((uint8 *) realAddress);
+				_Alloc.deallocate((uint8 *) realAddress, n * sizeof(T) + sizeof(TBlocAllocPtr *));
 			}		
 		}
 		void construct(pointer p, const T& val) { new (p) T(val); }    
@@ -151,15 +151,14 @@ namespace NL3D
 
 	private:
 		std::allocator<uint8> _Alloc;
-	};
-	
+	};		
 
 	// allocation of objects of ps (to be used inside base class declaration, replaces operator new & delete)
 	#if !defined (NL_USE_DEFAULT_MEMORY_MANAGER) && !defined (NL_NO_DEFINE_NEW)
 		// special version for nel memory
 		#define PS_FAST_OBJ_ALLOC \
 		void *operator new(size_t size, const char *filename, int line) { return PSFastMemAlloc((uint) size); }\
-		void operator delete(void *block, const char *filename, int line) { PSFastMemFree(block); }            \
+		void operator delete(void *block, const char *filename, int line) { PSFastMemFree(block); } \
 		void operator delete(void *block) { PSFastMemFree(block); }
 	#else
 		#define PS_FAST_OBJ_ALLOC \
@@ -186,11 +185,12 @@ namespace NL3D
 
 	extern uint NumPSAlloc;
 	extern uint NumDealloc;
-
-
+	
 	// allocation of memory block for objects of a particle system
 	void *PSFastMemAlloc(uint numBytes);
 	void PSFastMemFree(void *block);
+
+	
 
 #endif
 

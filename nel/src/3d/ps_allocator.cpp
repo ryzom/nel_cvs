@@ -1,6 +1,6 @@
 /** \file ps_allocator.cpp
  *
- * $Id: ps_allocator.cpp,v 1.1 2004/03/04 14:28:43 vizerie Exp $
+ * $Id: ps_allocator.cpp,v 1.2 2004/04/09 14:26:58 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -33,36 +33,45 @@ namespace NL3D
 		NLMISC::CContiguousBlockAllocator *PSBlockAllocator;
 		static std::allocator<uint8> PSStdAllocator;
 		//
-		typedef NLMISC::CContiguousBlockAllocator *TBlocAllocPtr;	
+		typedef NLMISC::CContiguousBlockAllocator *TBlocAllocPtr;
+		//
+		struct CPSAllocInfo
+		{
+			size_t			NumAllocatedBytes;
+			TBlocAllocPtr   BlocAllocator;  // may be NULL if was allocated from stl allocator
+		};
+		//
 		void *PSFastMemAlloc(uint numBytes)
 		{
-			TBlocAllocPtr *result;
+			CPSAllocInfo *result;
 			// if a block allocator is available, use it
 			if (PSBlockAllocator)
 			{		
-				result = (TBlocAllocPtr *) PSBlockAllocator->alloc(numBytes + sizeof(TBlocAllocPtr *));
-				*result = PSBlockAllocator; // mark as a block from block allocator
+				result = (CPSAllocInfo *) PSBlockAllocator->alloc(numBytes + sizeof(CPSAllocInfo));
+				result->BlocAllocator = PSBlockAllocator; // mark as a block from block allocator
 			}
 			else
 			{
-				result = (TBlocAllocPtr *) PSStdAllocator.allocate(numBytes + sizeof(TBlocAllocPtr *));
-				*result = NULL; // mark as a stl block
+				result = (CPSAllocInfo *) PSStdAllocator.allocate(numBytes + sizeof(CPSAllocInfo));
+				result->BlocAllocator = NULL;
 			}
+			result->NumAllocatedBytes = numBytes;			
 			return (void *) (result + 1); // usable space starts after header
 		}
 
 		void PSFastMemFree(void *block)
 		{
-			uint8 *realAddress = (uint8 *) ((uint8 *) block - sizeof(TBlocAllocPtr *));
-			if (* (TBlocAllocPtr *) realAddress)
+			uint8 *realAddress = (uint8 *) ((uint8 *) block - sizeof(CPSAllocInfo));
+			CPSAllocInfo *ai = (CPSAllocInfo *) realAddress;
+			if (ai->BlocAllocator)
 			{	
 				// block comes from a block allocator
-				(*(TBlocAllocPtr *) realAddress)->free((void *) realAddress);						
+				ai->BlocAllocator->free((void *) realAddress, ai->NumAllocatedBytes + sizeof(CPSAllocInfo));
 			}
 			else
 			{
 				// block comes from the stl allocator
-				PSStdAllocator.deallocate((uint8 *) realAddress);
+				PSStdAllocator.deallocate((uint8 *) realAddress, ai->NumAllocatedBytes + sizeof(CPSAllocInfo));
 			}
 		}
 	#endif

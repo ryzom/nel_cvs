@@ -80,6 +80,66 @@ LIB32=link.exe -lib
 
 # Name "3d - Win32 Release"
 # Name "3d - Win32 Debug"
+# Begin Group "Traversals"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\clip_trav.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\clip_trav.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\hrc_trav.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\hrc_trav.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\light_trav.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\light_trav.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\render_trav.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\render_trav.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\trav_scene.h
+# End Source File
+# End Group
+# Begin Group "Models"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\3d\camera.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\camera.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\transform.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\transform.h
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\3d\mot.cpp
@@ -87,6 +147,14 @@ SOURCE=.\3d\mot.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\mot.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\scene.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\scene.h
 # End Source File
 # Begin Source File
 

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: mot.h,v 1.1 2000/10/02 12:56:15 berenguier Exp $
+ * $Id: mot.h,v 1.2 2000/10/06 16:44:09 berenguier Exp $
  *
  * The Model / Observer / Traversal  (MOT) paradgim.
  */
@@ -35,6 +35,24 @@ namespace	NLMISC
 
 namespace	NL3D
 {
+
+/*
+	// THIS IS NOT TRADUCED BECAUSE NOT FIXED YET.
+
+	IDEES / TODO:
+
+	- Pour la recherche de texture/mesh sur le disque, il faudrait implémenter un objet CPath, qui représente
+	  un simili PATH, avec des méthodes add() / del() / get(i), et une méthode open(TFile) ou TFile est un objet fichier
+	  avec une fonction "bool open(string )".
+	- Imaginons que l'on veuille implémenter un système de cache avancé: un fichier peut se trouver en mémoire, sur disque,
+	  ou sur le réseau. On pourrait faire cela en utilisant simplement CPath, et en utilisant un CMetaFile, classe qui
+	  ouvrir un type de stream suivant le nom de la string ouverte (CMemoryStream, CFile, CMessage ...).
+
+	- On pourrait implémenter un Observer de clip qui clip par matériau aussi, en faisant une sorte de 
+	  batch culling: On stocke par matériau un "plan directeur" et un delta d'erreur accepté (à préciser...)
+
+*/
+
 
 
 /*
@@ -121,8 +139,9 @@ class	ITrav;
  *
  * Before using a CMOT object, Add any traversals you want to support to your scene via addTrav().
  *
- * Then, create any model for this scene with createModel(). The model will be valid for this scene only, since it has only
- * the observers of scene's traversals.
+ * Then, you can create any model for this scene with createModel(). The model will be valid for this scene only, 
+ * since it has only the observers of scene's traversals.
+ * \sa IModel IObs ITrav
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -130,25 +149,8 @@ class	ITrav;
 class	CMOT
 {
 public:
-	/// \name Models / Observers / Traversals  Registration .
+	/// \name Traversals  Registration .
 	//@{
-	/**
-	 * Register a model, indicating from which he derive. 
-	 * By default, model's observer are those of his father (idModelBase).
-	 * \param idModel the Unique Id of the registered model
-	 * \param idModelBase the Unique Id of the base calss of the registered model
-	 * \param creator the function which create the registered model.
-	 */
-	static	void	registerModel(const NLMISC::CClassId &idModel, const NLMISC::CClassId &idModelBase, IModel* (*creator)());
-	/**
-	 * Register an observer, for a given traversal and a given model. 
-	 * If an observer was previously specified for the couple Trav/Model, he is replaced.
-	 * \param idTrav the Unique Id of the observer's traversal
-	 * \param idModel the Unique Id of the observer's model
-	 * \param creator the function which create the registered observer.
-	 */
-	static	void	registerObs(const NLMISC::CClassId &idTrav, const NLMISC::CClassId &idModel, IObs* (*creator)());
-
 	/**
 	 * Register a traversal and add it to the scene.
 	 * This is done by CSene object, and not globally. Hence, we can have different scene, which doesn't support the
@@ -166,6 +168,27 @@ public:
 	//@}
 
 
+	/// \name Models / Observers registration.
+	//@{
+	/**
+	 * Register a model, indicating from which he derive. 
+	 * By default, model's observer are those of his father (idModelBase).
+	 * \param idModel the Unique Id of the registered model
+	 * \param idModelBase the Unique Id of the base calss of the registered model
+	 * \param creator the function which create the registered model.
+	 */
+	static	void	registerModel(const NLMISC::CClassId &idModel, const NLMISC::CClassId &idModelBase, IModel* (*creator)());
+	/**
+	 * Register an observer, for a given traversal and a given model. 
+	 * If an observer was previously specified for the couple Trav/Model, he is replaced.
+	 * \param idTrav the Unique Id of the observer's traversal
+	 * \param idModel the Unique Id of the observer's model
+	 * \param creator the function which create the registered observer.
+	 */
+	static	void	registerObs(const NLMISC::CClassId &idTrav, const NLMISC::CClassId &idModel, IObs* (*creator)());
+	//@}
+
+
 public:
 	/**
 	 * Create a model according to his id.
@@ -176,7 +199,7 @@ public:
 	 *
 	 * Then, this function attach those observers to the model.
 	 *
-	 * Then, This function attach those observers to the Root of their respective traversals (if not NULL).
+	 * Then, This function attach this model to the Root of all traversals (if not NULL).
 	 * 
 	 * \param idModel the Unique Id of the Model
 	 * \return a valid model of the required type. NULL, if not found.
@@ -239,8 +262,14 @@ private:
  * A traversal provide:
  * - interface to create a default observer for models which don't specify them. See createDefaultObs().
  * - interface to identify himself with a classId. getClassId()
- * - methods for building the graph of observers. setRoot(), getRoot(), link(), unlink().
+ * - methods for building the graph of observers. setRoot(), getRoot(), link(), unlink()...
+ *
+ * \b DERIVERS \b RULES:
+ * - Implement createDefaultObs()
+ * - Implement getClassId()
+ *
  * No traverse() method is provided. The deriver may use their own function.
+ * \sa CMOT IModel IObs
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -260,8 +289,8 @@ public:
 	/// \name Misc.
 	//@{
 	/** 
-	 * This method must create a default observer for this traversal. Any model which doesn't provide (by registerObs() or by inheritance)
-	 * an observer for this view will be linked with this default observer.
+	 * This method must create a default observer for this traversal. Any model which doesn't provide (by registerObs() 
+	 * or by inheritance) an observer for this view will be linked with this default observer.
 	 */
 	virtual	IObs	*createDefaultObs() const =0;
 	/// This function must return the Unique Ident for this traversal class.
@@ -270,14 +299,18 @@ public:
 
 
 	/// \name Graph Methods.
+	//@{
 	/**
-	 * Specify a root Object. Must be called before link it to a CMOT.
-	 * CMOT::createModel() will assert if a traversal in the CMOT object has not specified a root. \n
-	 * Also, ITrav::link(NULL, ...) will assert, if no root defined.
+	 * Specify a root Model for this traversal (via his IObs).
+	 * The model must be created with a valid/final CMOT.
+	 * CMOT::createModel() will don't link the model if a traversal in the CMOT object has not specified a root. \n
+	 * ITrav::link(NULL, ...) will assert, if no root defined.
+	 *
+	 * You may specify a NULL root (this may lead to a disabled traversal).
 	 */
-	void	setRoot(IObs	*root);
-	/// Get the root of the traversal.
-	IObs	*getRoot() const;
+	void	setRoot(IModel	*root);
+	/// Get the root of the traversal (NULL if not defined).
+	IModel	*getRoot() const;
 	/**
 	 * Link 2 models via their IObs for this traversal.
 	 * m2 becomes a child of m1.
@@ -291,9 +324,30 @@ public:
 	 * if m2 was not a son of m1, no-op.
 	 */
 	void	unlink(IModel *m1, IModel *m2) const;
+	/// make the children of parentFrom unlinked, and become the children of parentTo.
+	void	moveChildren(IModel *parentFrom, IModel *parentTo) const;
+	/// make the children of parentFrom become the children of parentTo too (may works like moveChildren if children are TreeNode).
+	void	copyChildren(IModel *parentFrom, IModel *parentTo) const;
 
 
-private:
+	/// Get the number of children of the model for this traversal.
+	sint	getNumChildren(IModel *m) const;
+	/// Return the first child of the Model for this traversal. NULL returned if not found.
+	IModel	*getFirstChild(IModel *m) const;
+	/// Return the next child of the Model for this traversal. NULL returned if not found. Unpredictible results if link() / unlink() are made between a getFirstChild() / getNextChild().
+	IModel	*getNextChild(IModel *m) const;
+
+	/// Get the number of Parents of the model for this traversal.
+	sint	getNumParents(IModel *m) const;
+	/// Return the first Parent of the Model for this traversal. NULL returned if not found.
+	IModel	*getFirstParent(IModel *m) const;
+	/// Return the next Parent of the Model for this traversal. NULL returned if not found. Unpredictible results if link() / unlink() are made between a getFirstParent() / getNextParent().
+	IModel	*getNextParent(IModel *m) const;
+
+	//@}
+
+
+protected:
 	// The root observer.
 	IObs	*Root;
 
@@ -311,8 +365,14 @@ private:
  * If this is the case, then all observers will be "touched", via a IObs::foul() virtual function, and then the model is 
  * clean() -ed. Then, a dirty observer may update himself with help of the model.
  *
+ *
+ * \b DERIVERS \b RULES:
+ * - Possibly Add his own TDirty state (see TDirty and Touch), and resize Touch (see IModel()).
+ * - Implement the notification system (see clean()), as descripted above.
+ *
  * The deriver may choose how to  foul() himself: either automatic (on any mutator function), or by user (which may call a
  * foul function).
+ * \sa CMOT IObs ITrav
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -350,12 +410,17 @@ public:
 	/// Is the model dirty?
 	bool	isDirty() const { return Touch[Dirty];}
 	/// The derived model must set "Dirty" flag to force the dirty state.
-	void	foul() { Touch.set(Dirty, true);}
+	void	foul() { Touch.set(Dirty);}
 
 	/** This function must clean the model (called by model's observers). 
-	 * Must set Touch[Dirty] to 0, and reset all other special information of the model.
+	 * Must call Base::clean, reset Touch bits, update info, and reset all other special information of the model.
+	 *
+	 * The default behavior is just to set Touch[Dirty] to 0.
 	 */
-	virtual	void	clean()=0;
+	virtual	void	clean()
+	{
+		Touch.clear(Dirty);
+	}
 	//@}
 
 
@@ -366,6 +431,10 @@ protected:
 	friend	class	ITrav;
 	typedef	std::map<NLMISC::CClassId, IObs*>		CObsMap;
 	CObsMap	Observers;
+
+	// Cache the last observer acceded through getObs().
+	mutable	NLMISC::CClassId	LastClassId;
+	mutable	IObs				*LastObs;
 	/// Get an observer according to his Traversal Id. NULL, if not found.
 	IObs	*getObs(const NLMISC::CClassId &idTrav) const;
 };
@@ -378,11 +447,18 @@ protected:
  * particular traversal. Only deriver have access to /implement  observers. Users don't manipulate observers.
  *
  * IObs define:
- * - graph methods to link/unlink to observers.
+ * - graph methods to link/unlink to observers. Read carefully this section.
  * - a notification system (see IModel for an explanation)
  * - an interface for traversal to traverse() this observer. 
  *
- * \sa IModel
+ * \b DERIVERS \b RULES:
+ * - Implement the notification system: Just extend clean(), but may extend foul() and add others dirty info.
+ * - Implement the traverse() method
+ * - Possibly Extend/Modify the graph methods (see isTreeNode(), addParent() ...).
+ * - Possibly Extend/Modify the init() method.
+ *
+ * Since Models are created with CMOT::createModel(), an observer is never alone, he always has a Model and a ITrav.
+ * \sa CMOT IModel ITrav
  * \author Lionel Berenguier
  * \author Nevrax France
  * \date 2000
@@ -394,19 +470,25 @@ public:
 	ITrav	*Trav;		// The traversal for this observer.
 
 public:
-	/// The deriver should do a \c Touch.resize(Last), to ensure he resize the BitSet correctly.
+	/// The deriver may do not need to \c Touch.resize(Last), since foul() copy the touch from the model (hence resize automatically).
 	IObs();
-	// ~IObs() must destroy correclty the father/son links  (with call to virtual delChild() delParent()).
+	/// ~IObs() must destroy correclty the father/son links  (with call to virtual delChild() delParent()).
 	virtual			~IObs();
-
-	// Get the observer for an other view, via IModel.
-	IObs			*getObs(const NLMISC::CClassId &idTrav) const;
+	/** This is called at the end of createModel(). So the model is correctly constructed and linked to his observers.
+	 * The default behavior is to do nothing.
+	 */
+	virtual	void	init() {}
 
 
 	/**
-	 * \name Graph methods.
-	 * USED ONLY BY ITrav*. The deriver must implement the way this observer is linked to the traversal graph. \n
-	 * The default behavior of all those function is to use the set<> IObs::Sons and IObs::Fathers. \n
+	 * \name Graph methods. USED ONLY BY ITrav*.
+	 * BASIC EXTENSION: Although All those methods may be extended, it may be a hard work. So if an observer just want to 
+	 * choose beetween being a \b tree \b Node (which has only one parent) or being a \b Graph \b node, it may just implement 
+	 * the isTreeNode() method which return true by default.
+	 *
+	 * ADVANCED EXTENSION: the deriver may implement the way this observer is linked to the traversal graph. \n
+	 * The default behavior of all those function is to use the set<> IObs::Sons and IObs::Fathers to implement Tree behavior
+	 * or Graph behavior (dependent of isTreeNode() function).\n
 	 * We cut the behavior into two ways: addParent and addChild() (and their respective del*() function). We must do this
 	 * since some observers may link to sons in a particualr way (Z-list ...), and some others may link to parents in
 	 * a particular way (such as tree node which want to delete their old parent).
@@ -414,15 +496,19 @@ public:
 	 * ITrav::link() and ITrav::unlink() will call the correct functions:\n
 	 * o1->addChild(o2); o2->addParent(o1);
 	 *
+	 * If the deriver store the links to sons / fathers in a particular way, it must destroy them in his destructor.
+	 *
 	 */
 	//@{
+	/// For standard behavior, just modify this method, to have a TreeNode behavior or a graphNode behavior. Default: true.
+	virtual bool	isTreeNode() {return true;}
 	/// This function SHOULD JUST add son to the son list. If \c son was already a son, no-op.
 	virtual	void	addChild(IObs *son);
 	/// This function SHOULD JUST delete son from the son list. If \c son is not a son, no-op.
 	virtual	void	delChild(IObs *son);
 	/** This function SHOULD JUST add father to the parent list. If \c father was already a parent, no-op.
-     * The default behavior is to unlink from his current father, and call precFather->delChild(this). Hence this observer
-	 * has a behavior of a Tree node (can have only one parent).
+     * The default behavior is to call isTreeNode(). If true, unlink from his current father, and call 
+	 * precFather->delChild(this). Hence this observer has a behavior of a Tree node (can have only one parent).
 	 */
 	virtual	void	addParent(IObs *father);
 	/// This function SHOULD JUST delete father from the parent list. If \c father is not a parent, no-op.
@@ -434,6 +520,13 @@ public:
 	virtual	IObs	*getFirstChild() const;
 	/// Return the next child of the observer. NULL returned if not found. Unpredictible results if insertions are made between a getFirstChild() / getNextChild().
 	virtual	IObs	*getNextChild() const;
+
+	/// Get the number of parent.
+	virtual	sint	getNumParents() const;
+	/// Return the first parent of the observer. NULL returned if not found.
+	virtual	IObs	*getFirstParent() const;
+	/// Return the next parent of the observer. NULL returned if not found. Unpredictible results if insertions are made between a getFirstParent() / getNextParent().
+	virtual	IObs	*getNextParent() const;
 	//@}
 
 
@@ -441,8 +534,11 @@ public:
 	//@{
 	/**
 	 * Traverse this observer.
-	 * This function "justdoit" must do all the traversal thing: Get info from caller, call the observers sons traverse() 
-	 * function, depending on what she want to do etc...
+	 * This function "justdoit" must do all the traversal thing:
+	 *	- should call update() method, to ensure the observer is updated according to his model.
+	 *	- Get info from caller, and DoIt the observer (completly observer depedent).
+	 *	- should traverse() his sons (or simply call traverseSons()).
+	 * \param caller the father of the observer which have called traverse(). WARNING: this is NULL, for the ROOT.
 	 */
 	virtual	void	traverse(IObs *caller)=0;
 	//@}
@@ -451,29 +547,33 @@ public:
 	/// \name Notification system.
 	//@{
 	/** 
-	 * The Dirty states. Derived models may add flags with similar enum. The first enum element must begin at 
-	 * CBase::Last (where CBase is the base class), so falg compatibility is maintained.
+	 * The Dirty states, mirror of the model.
 	 */
-	enum	TDirty
-	{
-		Dirty=0,		// First bit, to say that the observer is dirty
-		Last
-	};
 	NLMISC::CBitSet	Touch;
 	/// Is the model dirty?
-	bool	isDirty() const { return Touch[Dirty];}
+	bool	isDirty() const { return Touch[IModel::Dirty];}
 
 	/**
 	 * This function must foul the observer, according to the state of the model. The observer must keep any usefull
-	 * dirty information, since the model will be cleaned soon.
+	 * dirty information from the model, since the model will be cleaned soon. 
+	 *
+	 * The default behavior is just to copy the Touch information from the model, which may be sufficient, except for 
+	 * additional model infos (like vertex intervals, etc...).
 	 */
-	virtual	void	foul()=0;
+	virtual	void	foul()
+	{
+		Touch= Model->Touch;
+	}
 	/**
-	 * This function must clean the observer, using his Touch information. She can't use the state of the model too see
-	 * what to clean, since the model has been cleaned (see IObs::foul()). But she must use the model to know how to compute 
-	 * the observer.
+	 * This function must clean the observer, using his Touch/Dirty information and the Model data. She can't use the dirty 
+	 * state of the model too see what to clean, since the model has been cleaned (see IObs::update()).
+	 *
+	 * The default behavior is just to clear the IModel::Dirty touch state.
 	 */
-	virtual	void	clean()=0;
+	virtual	void	clean()
+	{
+		Touch.clear(IModel::Dirty);
+	}
 	/**
 	 * This function should be called on any function which want to use a valid observer, particularly the traverse() function.
 	 * This function first test if the model is dirty. If this is the case, she do o->foul() for any observer o of model Model,
@@ -484,11 +584,27 @@ public:
 	//@}
 
 
+	/// \name Utility methods.
+	//@{
+	/// Do traverse() for all sons of this observer.
+	void	traverseSons()
+	{
+		for(IObs *c= getFirstChild(); c!=NULL; c= getNextChild())
+		{
+			c->traverse(this);
+		}
+	}
+	/// Get the observer for an other view, via IModel.
+	IObs			*getObs(const NLMISC::CClassId &idTrav) const;
+	//@}
+
+
 protected:
 	std::set<IObs*>	Sons;
 	std::set<IObs*>	Fathers;
 
 	mutable	std::set<IObs*>::const_iterator	SonIt;
+	mutable	std::set<IObs*>::const_iterator	FatherIt;
 
 };
 

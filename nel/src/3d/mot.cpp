@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: mot.cpp,v 1.1 2000/10/02 12:56:29 berenguier Exp $
+ * $Id: mot.cpp,v 1.2 2000/10/06 16:43:42 berenguier Exp $
  *
  * The Model / Observer / Traversal  (MOT) paradgim.
  */
@@ -18,6 +18,7 @@
 #include "nel/misc/assert.h"
 #include "nel/misc/stream.h"
 #include <algorithm>
+#include <list>
 using namespace std;
 using namespace NLMISC;
 
@@ -100,30 +101,40 @@ IModel	*CMOT::createModel(const CClassId &idModel) const
 
 	CModelEntry	e;
 	e.ModelId= idModel;
-	set<CModelEntry>::iterator	it;
-	it= Models.find(e);
+	set<CModelEntry>::iterator	itModel;
+	itModel= Models.find(e);
 
-	if(it==Models.end())
+	if(itModel==Models.end())
 		return NULL;
 	else
 	{
-		IModel	*m= (*it).Creator();
+		IModel	*m= (*itModel).Creator();
 		if(!m)	return NULL;
 
-		std::vector<CTravEntry>::const_iterator	it;
-		for(it= Traversals.begin(); it!=Traversals.end(); it++)
+		std::vector<CTravEntry>::const_iterator	itTrav;
+		for(itTrav= Traversals.begin(); itTrav!=Traversals.end(); itTrav++)
 		{
 			// Create observer.
-			IObs	*obs= createObs((*it).Trav, idModel);
+			IObs	*obs= createObs((*itTrav).Trav, idModel);
 			assert(obs);
 			// Init model.
 			obs->Model= m;
-			obs->Trav= (*it).Trav;
+			obs->Trav= (*itTrav).Trav;
 			// Attach it to Model.
-			m->Observers.insert(IModel::CObsMap::value_type((*it).TravId, obs));
+			m->Observers.insert(IModel::CObsMap::value_type((*itTrav).TravId, obs));
 			// Attach them to traversal's root.
-			(*it).Trav->link(NULL, m);
+			if((*itTrav).Trav->getRoot())
+				(*itTrav).Trav->link(NULL, m);
 		}
+
+		// After m finished, init the observers.
+		IModel::CObsMap::const_iterator	itObs;
+		for(itObs= m->Observers.begin(); itObs!=m->Observers.end(); itObs++)
+		{
+			IObs	*o= (*itObs).second;
+			o->init();
+		}
+
 
 		return m;
 	}
@@ -176,14 +187,20 @@ IObs	*CMOT::createObs(const ITrav *trav, const CClassId &idModel) const
 
 
 // ***************************************************************************
-void	ITrav::setRoot(IObs	*root)
+void	ITrav::setRoot(IModel	*root)
 {
-	Root= root;
+	if(root)
+		Root= root->getObs(getClassId());
+	else
+		Root= NULL;
 }
 // ***************************************************************************
-IObs	*ITrav::getRoot() const
+IModel	*ITrav::getRoot() const
 {
-	return Root;
+	if(Root)
+		return Root->Model;
+	else
+		return NULL;
 }
 
 // ***************************************************************************
@@ -235,6 +252,74 @@ void	ITrav::unlink(IModel *m1, IModel *m2) const
 	o1->delChild(o2);
 }
 
+// ***************************************************************************
+void	ITrav::moveChildren(IModel *parentFrom, IModel *parentTo) const
+{
+	// Make a local list of children (since link() modify the list).
+	list<IModel	*>	children;
+	for(IModel	*c= getFirstChild(parentFrom); c!=NULL; c= getNextChild(parentFrom))
+		children.push_back(c);
+
+	for(list<IModel	*>::iterator it= children.begin(); it!= children.end();it++)
+	{
+		unlink(parentFrom, *it);
+		link(parentTo, *it);
+	}
+}
+// ***************************************************************************
+void	ITrav::copyChildren(IModel *parentFrom, IModel *parentTo) const
+{
+	// Make a local list of children (since link() modify the list).
+	list<IModel	*>	children;
+	for(IModel	*c= getFirstChild(parentFrom); c!=NULL; c= getNextChild(parentFrom))
+		children.push_back(c);
+
+	for(list<IModel	*>::iterator it= children.begin(); it!= children.end();it++)
+	{
+		link(parentTo, *it);
+	}
+}
+
+
+// ***************************************************************************
+sint	ITrav::getNumChildren(IModel *m) const
+{
+	IObs	*o= m->getObs(getClassId());
+	return o->getNumChildren();
+}
+// ***************************************************************************
+IModel	*ITrav::getFirstChild(IModel *m) const
+{
+	IObs	*o= m->getObs(getClassId());
+	return o->getFirstChild()->Model;
+}
+// ***************************************************************************
+IModel	*ITrav::getNextChild(IModel *m) const
+{
+	IObs	*o= m->getObs(getClassId());
+	return o->getNextChild()->Model;
+}
+
+// ***************************************************************************
+sint	ITrav::getNumParents(IModel *m) const
+{
+	IObs	*o= m->getObs(getClassId());
+	return o->getNumParents();
+}
+// ***************************************************************************
+IModel	*ITrav::getFirstParent(IModel *m) const
+{
+	IObs	*o= m->getObs(getClassId());
+	return o->getFirstParent()->Model;
+}
+// ***************************************************************************
+IModel	*ITrav::getNextParent(IModel *m) const
+{
+	IObs	*o= m->getObs(getClassId());
+	return o->getNextParent()->Model;
+}
+
+
 
 
 // ***************************************************************************
@@ -248,6 +333,8 @@ void	ITrav::unlink(IModel *m1, IModel *m2) const
 IModel::IModel()
 {
 	Touch.resize(Last);
+	LastClassId= 0;
+	LastObs= NULL;
 }
 // ***************************************************************************
 IModel::~IModel()
@@ -264,11 +351,17 @@ IObs	*IModel::getObs(const CClassId &idTrav) const
 {
 	CObsMap::const_iterator	it;
 
+	if(idTrav==LastClassId)
+		return LastObs;
+
+	LastClassId= idTrav;
 	it= Observers.find(idTrav);
 	if(it==Observers.end())
-		return NULL;
+		LastObs= NULL;
 	else
-		return (*it).second;
+		LastObs= (*it).second;
+
+	return LastObs;
 }
 
 
@@ -284,7 +377,7 @@ IObs	*IModel::getObs(const CClassId &idTrav) const
 // ***************************************************************************
 IObs::IObs()
 {
-	Touch.resize(Last);
+	Touch.resize(IModel::Last);
 
 	Model= NULL;
 	Trav= NULL;
@@ -364,21 +457,24 @@ void	IObs::addParent(IObs *father)
 {
 	assert(father);
 
-	// Must test if father is already linked.
-	set<IObs*>::iterator	it;
-	it= Fathers.find(father);
-	if(it!=Fathers.end())
-		return;		// father is already a parent of this.
-
-	// Tree node, so delete fathers, and fathers link to me.
-	for(it= Fathers.begin(); it!=Fathers.end();it++)
+	if(isTreeNode())
 	{
-		// Must use delChild() since don't know what father is.
-		(*it)->delChild(this);
-	}
-	Fathers.clear();
+		// Must test if father is already linked.
+		set<IObs*>::iterator	it;
+		it= Fathers.find(father);
+		if(it!=Fathers.end())
+			return;		// father is already a parent of this.
 
-	// insert.
+		// Tree node, so delete fathers, and fathers links to me.
+		for(it= Fathers.begin(); it!=Fathers.end();it++)
+		{
+			// Must use delChild() since don't know what father is.
+			(*it)->delChild(this);
+		}
+		Fathers.clear();
+	}
+
+	// insert (if not exist).
 	Fathers.insert(father);
 }
 // ***************************************************************************
@@ -415,6 +511,32 @@ IObs	*IObs::getNextChild() const
 		return NULL;
 	else
 		return (*SonIt);
+}
+
+
+// ***************************************************************************
+sint	IObs::getNumParents() const
+{
+	return Fathers.size();
+}
+// ***************************************************************************
+IObs	*IObs::getFirstParent() const
+{
+	FatherIt= Fathers.begin();
+	if(FatherIt==Fathers.end())
+		return NULL;
+	else
+		return (*FatherIt);
+}
+// ***************************************************************************
+IObs	*IObs::getNextParent() const
+{
+	assert(FatherIt!=Fathers.end());
+	FatherIt++;
+	if(FatherIt==Fathers.end())
+		return NULL;
+	else
+		return (*FatherIt);
 }
 
 

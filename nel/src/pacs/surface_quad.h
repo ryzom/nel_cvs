@@ -1,7 +1,7 @@
 /** \file surface_quad.h
  * 
  *
- * $Id: surface_quad.h,v 1.2 2001/08/07 14:14:32 legros Exp $
+ * $Id: surface_quad.h,v 1.3 2002/01/29 10:32:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,7 +172,7 @@ public:
 	const NLMISC::CAABBox		&getBBox() const { return _BBox; }
 
 	void						clear();
-	void						init(float maxThickness, uint maxLevel, NLMISC::CVector &center, float halfSize=80.0f);
+	void						init(float maxThickness, uint maxLevel, const NLMISC::CVector &center, float halfSize=80.0f);
 	void						addVertex(const NLMISC::CVector &v);
 	void						compile();
 

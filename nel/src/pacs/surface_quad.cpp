@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.8 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: surface_quad.cpp,v 1.9 2002/01/29 10:32:40 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,7 +80,7 @@ void	NLPACS::CSurfaceQuadTree::clear()
 	_Root = NULL;
 }
 
-void	NLPACS::CSurfaceQuadTree::init(float maxThickness, uint maxLevel, CVector &center, float halfSize)
+void	NLPACS::CSurfaceQuadTree::init(float maxThickness, uint maxLevel, const CVector &center, float halfSize)
 {
 	nlassert(maxLevel > 0);
 	clear();

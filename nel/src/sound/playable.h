@@ -1,7 +1,7 @@
 /** \file playable.h
  * IPlayable: Playable object interface, typically one sound source or a set of sound sources
  *
- * $Id: playable.h,v 1.2 2001/07/17 15:31:57 cado Exp $
+ * $Id: playable.h,v 1.3 2002/06/20 08:35:30 hanappe Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -44,12 +44,18 @@ namespace NLSOUND {
  * \author Nevrax France
  * \date 2001
  */
-class IPlayable : public NLMISC::IStreamable
+class IPlayable //: public NLMISC::IStreamable
 {
 public:
 
 	/// Serialize useful data
-	virtual void		serial( NLMISC::IStream& s ) = 0;
+	/*
+
+		The serial interface is no longer used.	The files should now be stored as
+		George files. [PH, 20020620]
+
+    */
+	//virtual void		serial( NLMISC::IStream& s ) = 0;
 	/** Init. You can pass a position vector to link to (if the playable has stereo source(s))
 	 * When reading from a stream, call init() *after* serial().
 	 */

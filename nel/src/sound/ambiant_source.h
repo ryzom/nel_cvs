@@ -1,7 +1,7 @@
 /** \file ambiant_source.h
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.h,v 1.3 2001/08/24 16:55:53 vizerie Exp $
+ * $Id: ambiant_source.h,v 1.4 2002/06/20 08:35:45 hanappe Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -57,7 +57,7 @@ public:
 	/// Static init (call at the very beginning)
 	static void				init() 
 	{		
-		NLMISC_REGISTER_CLASS(CAmbiantSource); 			
+		//NLMISC_REGISTER_CLASS(CAmbiantSource); 			
 	}
 
 	
@@ -72,8 +72,8 @@ public:
 
 
 	/// Serialize
-	virtual void			serial( NLMISC::IStream& s );
-	NLMISC_DECLARE_CLASS(CAmbiantSource);
+	//virtual void			serial( NLMISC::IStream& s );
+	//NLMISC_DECLARE_CLASS(CAmbiantSource);
 	/// Return the stereo channels (EDIT)
 	CSourceUser				*getChannels() { return _StereoChannels; }
 	/// Set properties (EDIT)

@@ -1,7 +1,7 @@
 /** \file ambiant_source.cpp
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.cpp,v 1.6 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: ambiant_source.cpp,v 1.7 2002/06/20 08:35:45 hanappe Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -365,6 +365,7 @@ void		CAmbiantSource::calcRandomSparseSoundTime( TSoundId currentsparesound )
 /*
  * Serialize
  */
+/*
 void					CAmbiantSource::serial( NLMISC::IStream& s )
 {
 	// If you change this, increment the version number in CEnvSoundUser::load() !
@@ -390,7 +391,7 @@ void					CAmbiantSource::serial( NLMISC::IStream& s )
 	}
 }
 
-
+*/
 
 /*
  * Set properties (EDIT)

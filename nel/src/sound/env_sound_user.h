@@ -1,7 +1,7 @@
 /** \file env_sound_user.h
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.h,v 1.8 2001/08/28 16:58:40 cado Exp $
+ * $Id: env_sound_user.h,v 1.9 2002/06/20 08:35:45 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -91,11 +91,11 @@ public:
 
 	
 	/// Serialize
-	void					serial( NLMISC::IStream& s );
+	//void					serial( NLMISC::IStream& s );
 	/// Serialize file header
-	static void				serialFileHeader( NLMISC::IStream& s );
+	//static void				serialFileHeader( NLMISC::IStream& s );
 	/// Load several envsounds and return the number of envsounds loaded
-	static uint32			load( CEnvSoundUser* &envSoundTreeRoot, NLMISC::IStream& s );
+	//static uint32			load( CEnvSoundUser* &envSoundTreeRoot, NLMISC::IStream& s );
 
 
 	/// Return the position
@@ -131,7 +131,7 @@ public:
 	 */
 	void					addEnvTag( IPlayable *source, const std::string& tag="" );
 	/// Save (output stream only) (EDIT)
-	static void				save( CEnvSoundUser *envSoundTreeRoot, NLMISC::IStream& s );
+	//static void				save( CEnvSoundUser *envSoundTreeRoot, NLMISC::IStream& s );
 	/// Return the bounding shape (EDIT)
 	IBoundingShape			*getBoundingShape() { return _BoundingShape; }
 	/// Return the source (EDIT)

@@ -1,7 +1,7 @@
 /** \file env_sound_user.cpp
  * CEnvSoundUser: implementation of UEnvSound
  *
- * $Id: env_sound_user.cpp,v 1.19 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: env_sound_user.cpp,v 1.20 2002/06/20 08:35:45 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,7 @@ CEnvSoundUser::~CEnvSoundUser()
 /*
  * Serialize (recursive)
  */
+/*
 void CEnvSoundUser::serial( NLMISC::IStream& s )
 {
 	// If you change this, increment the version number in CEnvSoundUser::load() !
@@ -181,7 +182,7 @@ void CEnvSoundUser::serial( NLMISC::IStream& s )
 	s.serialPtr( _Parent );
 	s.serialContPtr( _Children );
 }
-
+*/
 
 /*
  * Select current env
@@ -221,6 +222,7 @@ void			CEnvSoundUser::selectEnv( const char *tag, bool children_too )
 /*
  * Serialize file header
  */
+/*
 void	CEnvSoundUser::serialFileHeader( NLMISC::IStream& s )
 {
 	// Envsounds file header
@@ -231,14 +233,14 @@ void	CEnvSoundUser::serialFileHeader( NLMISC::IStream& s )
 	}
 
 	// Check CSound version (and prepare CSound::serial() backward compatibility)
-	CSound::FileVersion = s.serialVersion( CSound::CurrentVersion );
-	if ( CSound::FileVersion == 0 ) // warning: not multithread-compliant
-	{
-		// Not supporting version 0 anymore
-		throw EOlderStream(s);
-	}
+	//CSound::FileVersion = s.serialVersion( CSound::CurrentVersion );
+	//if ( CSound::FileVersion == 0 ) // warning: not multithread-compliant
+	//{
+	//	// Not supporting version 0 anymore
+	//	throw EOlderStream(s);
+	//}
 }
-
+*/
 
 /*
  * Count the envs in the tree (call on the root)
@@ -258,6 +260,7 @@ uint32	CEnvSoundUser::getCount() const
 /*
  * Load several envsounds and return the number of envsounds loaded
  */
+/*
 uint32 CEnvSoundUser::load( CEnvSoundUser* &envSoundTreeRoot, NLMISC::IStream& s )
 {
 	if ( s.isReading() )
@@ -267,7 +270,7 @@ uint32 CEnvSoundUser::load( CEnvSoundUser* &envSoundTreeRoot, NLMISC::IStream& s
 		return envSoundTreeRoot->getCount();
 
 		// Reset CSound version
-		CSound::FileVersion = CSound::CurrentVersion; // warning: not multithread-compliant : do not serialize in different threads !
+		//CSound::FileVersion = CSound::CurrentVersion; // warning: not multithread-compliant : do not serialize in different threads !
 	}
 	else
 	{
@@ -275,7 +278,7 @@ uint32 CEnvSoundUser::load( CEnvSoundUser* &envSoundTreeRoot, NLMISC::IStream& s
 		return 0;
 	}
 }
-
+*/
 
 /*
  * Update the stereo mixes (call evenly on the root) (recursive)
@@ -496,6 +499,7 @@ void		CEnvSoundUser::addEnvTag( IPlayable *source, const std::string& tag )
 /*
  * Save (output stream only) (EDIT)
  */
+/*
 void CEnvSoundUser::save( CEnvSoundUser *envSoundTreeRoot, NLMISC::IStream& s )
 {
 	nlassert( ! s.isReading() );
@@ -504,7 +508,7 @@ void CEnvSoundUser::save( CEnvSoundUser *envSoundTreeRoot, NLMISC::IStream& s )
 	serialFileHeader( s );
 	s.serialPtr( envSoundTreeRoot );
 }
-
+*/
 
 /*
  * Play

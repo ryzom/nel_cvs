@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.10 2002/06/03 14:53:33 lecroart Exp $
+ * $Id: transport_class.cpp,v 1.11 2002/06/21 12:59:52 miller Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -323,7 +323,8 @@ void cbTCUpService (const std::string &serviceName, uint16 sid, void *arg)
 
 void CTransportClass::init ()
 {
-	nlassert (!Init);
+	// this isn't an error!
+	if (Init) return;
 
 	// filter all my debug stuffs
 	DebugLog->addNegativeFilter ("NETTC");

@@ -1,7 +1,7 @@
 /** \file admin_service.cpp
  * Admin Service (AS)
  *
- * $Id: admin_service.cpp,v 1.6 2001/06/07 16:19:05 lecroart Exp $
+ * $Id: admin_service.cpp,v 1.7 2001/06/18 14:43:31 lecroart Exp $
  *
  */
 
@@ -313,7 +313,7 @@ static void cbExecuteSystemCommandResult (CMessage& msgin, TSockId from, CCallba
 // get the service list from the admin exec and send the list to all admin client
 static void cbServiceList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
+	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
 	//
 	// Get the list of service from aes
@@ -384,7 +384,7 @@ static void cbServiceList (CMessage& msgin, TSockId from, CCallbackNetBase &netb
 static void cbServiceAliasList (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	// get the service list from the admin exec and send the list to all admin client
-	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
+	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
 	aes->ServiceAliasList.clear ();
 	msgin.serialCont (aes->ServiceAliasList);
@@ -402,7 +402,7 @@ static void cbServiceAliasList (CMessage& msgin, TSockId from, CCallbackNetBase 
 
 static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
+	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
 	uint32 sid;
 	string alias;
@@ -464,7 +464,7 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 
 static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
+	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
 	uint32 sid;
 	msgin.serial (sid);
@@ -486,7 +486,7 @@ static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &net
 
 static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
+	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
 	uint32 sid;
 	msgin.serial (sid);
@@ -506,7 +506,7 @@ static void cbServiceConnection (CMessage& msgin, TSockId from, CCallbackNetBase
 
 static void cbServiceDisconnection (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
+	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
 	uint32 sid;
 	msgin.serial (sid);
@@ -565,7 +565,7 @@ void cbAESConnection (const string &serviceName, TSockId from, void *arg)
 void cbAESDisconnection (const string &serviceName, TSockId from, void *arg)
 {
 	// get the aes with the appid
-	CAdminExecutorService *aes = (CAdminExecutorService*) from->appId();
+	CAdminExecutorService *aes = (CAdminExecutorService*) (uint) from->appId();
 
 	aes->Connected = false;
 
@@ -870,7 +870,8 @@ public:
 		//
 
 		CConfigFile::CVar &host = ConfigFile.getVar ("AESHosts");
-		for (sint i = 0 ; i < host.size (); i+=2)
+		sint i;
+		for (i = 0 ; i < host.size (); i+=2)
 		{
 			string serverAlias = host.asString(i);
 			string serverAddr = host.asString(i+1);

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.7 2001/06/07 16:19:05 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.8 2001/06/18 14:43:31 lecroart Exp $
  *
  */
 
@@ -44,6 +44,11 @@
 
 #include "nel/net/service.h"
 #include "nel/net/net_manager.h"
+
+#ifdef NL_OS_WINDOWS
+#define getcwd _getcwd
+#define chdir _chdir
+#endif
 
  
 using namespace std;
@@ -110,18 +115,16 @@ public:
 		char oldpath[256];
 		if (!Path.empty())
 		{
-			_getcwd(oldpath,256);
-			_chdir(Path.c_str());
+			getcwd(oldpath,256);
+			chdir(Path.c_str());
 		}
 
 		system (Command.c_str());
 		
 		if (!Path.empty())
-			_chdir(oldpath);
+			chdir(oldpath);
 
 		nlinfo ("end executing: %s", Command.c_str());
-
-
 	}
 };
 
@@ -250,7 +253,7 @@ void executeCommand (string command, TSockId from, CCallbackNetBase &netbase)
 
 static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CService *s = (CService*) from->appId();
+	CService *s = (CService*) (uint) from->appId();
 
 	msgin.serial (s->AliasName, s->ShortName, s->LongName);
 	msgin.serialCont (s->Commands);
@@ -266,7 +269,7 @@ static void cbServiceIdentification (CMessage& msgin, TSockId from, CCallbackNet
 
 static void cbServiceReady (CMessage& msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	CService *s = (CService*) from->appId();
+	CService *s = (CService*) (uint) from->appId();
 
 	nlinfo ("*:*:%d is ready", s->Id);
 	s->Ready = true;
@@ -305,7 +308,7 @@ void serviceConnection (const string &serviceName, TSockId from, void *arg)
 
 void serviceDisconnection (const string &serviceName, TSockId from, void *arg)
 {
-	CService *s = (CService*) from->appId();
+	CService *s = (CService*) (uint) from->appId();
 
 	nlinfo ("*:*:%d disconnected", s->Id);
 

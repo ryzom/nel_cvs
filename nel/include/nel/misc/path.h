@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.34 2003/01/07 17:46:20 miller Exp $
+ * $Id: path.h,v 1.35 2003/04/28 13:15:08 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -148,7 +148,7 @@ public:
 
 
 	/** List all files in a directory.
-	 *	\param path path where files are scanned (MUST NOT BE EMPTY)
+	 *	\param path path where files are scanned. No-op if empty
 	 *	\param recurse true if want to recurs directories
 	 *	\param wantDir true if want to add directorires in result
 	 *	\param wantFile true if want to add files in result

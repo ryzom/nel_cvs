@@ -111,6 +111,10 @@ LINK32=link.exe
 # Name "admin - Win32 ReleaseDebug"
 # Begin Source File
 
+SOURCE=.\admin.cfg
+# End Source File
+# Begin Source File
+
 SOURCE=.\admin.cpp
 # End Source File
 # Begin Source File

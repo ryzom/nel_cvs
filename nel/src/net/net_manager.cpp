@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.4 2001/05/16 16:21:04 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.5 2001/05/17 15:36:45 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -328,6 +328,7 @@ void CNetManager::addCallbackArray (const std::string &serviceName, const TCallb
 void CNetManager::update ()
 {
 //	nldebug ("L4: update()");
+
 	for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
 	{
 		for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)

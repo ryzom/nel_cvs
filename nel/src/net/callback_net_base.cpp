@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.9 2001/05/10 08:19:27 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.10 2001/05/17 15:36:45 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -279,7 +279,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 			}
 			else
 			{
-				nldebug ("Calling callback (%s)", _CallbackArray[pos].Key);
+				nldebug ("L3: Calling callback (%s)", _CallbackArray[pos].Key);
 				_CallbackArray[pos].Callback (msgin, realid, *this);
 			}
 		}

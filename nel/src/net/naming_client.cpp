@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.29 2001/05/10 08:14:16 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.30 2001/05/17 15:36:45 cado Exp $
  *
  */
 
@@ -97,7 +97,7 @@ static void cbLookup (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 	LookupAddrs.clear ();
 	msgin.serialCont (LookupAddrs);
 	Lookup = true;
-	nlinfo ("Received the answer of the loopkup");
+	nlinfo ("Received the answer of the look-up");
 }
 
 //
@@ -330,10 +330,12 @@ bool CNamingClient::lookup (const std::string &name, CInetAddress &addr)
 	vector<CInetAddress> addrs;
 	doReceiveLookupAnswer (name, addrs);
 
-	if (addrs.size()==0) return false;
+	if (addrs.size()==0)
+		return false;
 
 	nlassert (addrs.size()==1);
 	addr = addrs[0];
+
 	return true;
 }
 
@@ -350,10 +352,11 @@ bool CNamingClient::lookup (TServiceId sid, CInetAddress &addr)
 	vector<CInetAddress> addrs;
 	doReceiveLookupAnswer (toString(sid), addrs);
 
-	if (addrs.size()==0) return false;
+if (addrs.size()==0) return false;
 
-	nlassert (addrs.size()==1);
+nlassert (addrs.size()==1);
 	addr = addrs[0];
+	
 	return true;
 }
 

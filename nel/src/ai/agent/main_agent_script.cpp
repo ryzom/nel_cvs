@@ -1,6 +1,6 @@
 /** \file mai_agent_script.cpp
  *
- * $Id: main_agent_script.cpp,v 1.21 2001/06/14 10:23:18 chafik Exp $
+ * $Id: main_agent_script.cpp,v 1.22 2001/07/18 12:37:56 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,32 +27,34 @@
 
 namespace NLAIAGENT
 {
+
+	const StackMemSize = 4096*16;
 	CMainAgentScript::CMainAgentScript(const CMainAgentScript &a): IMainAgent(a)
 	{
-		_Stack = new NLAISCRIPT::CStackPointer(4096*8);
-		_Heap = new NLAISCRIPT::CStackPointer(4096*8);
+		_Stack = new NLAISCRIPT::CStackPointer(StackMemSize);
+		_Heap = new NLAISCRIPT::CStackPointer(StackMemSize);
 
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,a._CodeContext->InputOutput);
 	}
 
 	CMainAgentScript::CMainAgentScript(IAgentManager *main,NLAIC::IIO *io):IMainAgent (main)
 	{
-		_Stack = new NLAISCRIPT::CStackPointer(4096*8);
-		_Heap = new NLAISCRIPT::CStackPointer(4096*8);
+		_Stack = new NLAISCRIPT::CStackPointer(StackMemSize);
+		_Heap = new NLAISCRIPT::CStackPointer(StackMemSize);
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
 	}
 
 	CMainAgentScript::CMainAgentScript(IAgentManager *a,NLAIC::IIO *io, IBasicAgent *b, std::list<IObjectIA *> &v, NLAISCRIPT::CAgentClass *c):IMainAgent(a,b,v,c)
 	{
-		_Stack = new NLAISCRIPT::CStackPointer(4096*8);
-		_Heap = new NLAISCRIPT::CStackPointer(4096*8);
+		_Stack = new NLAISCRIPT::CStackPointer(StackMemSize);
+		_Heap = new NLAISCRIPT::CStackPointer(StackMemSize);
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
 	}
 	
 	CMainAgentScript::CMainAgentScript(NLAIC::IIO *io):IMainAgent (NULL)
 	{		
-		_Stack = new NLAISCRIPT::CStackPointer(4096*8);
-		_Heap = new NLAISCRIPT::CStackPointer(4096*8);
+		_Stack = new NLAISCRIPT::CStackPointer(StackMemSize);
+		_Heap = new NLAISCRIPT::CStackPointer(StackMemSize);
 		_CodeContext = new NLAISCRIPT::CCodeContext(*_Stack,*_Heap,NULL,this,io);
 	}
 

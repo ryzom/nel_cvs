@@ -4,7 +4,7 @@
  *
  * \todo yoyo: garbage collector system, to remove NULL _Shaders, _TexDrvInfos and _VBDrvInfos entries.
  *
- * $Id: driver.h,v 1.32 2000/12/05 16:50:49 berenguier Exp $
+ * $Id: driver.h,v 1.33 2000/12/05 17:04:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,7 +286,8 @@ private:
 	uint32				_FanIdx;
 	uint32*				_Fan;
 public:
-						CPrimitiveBlock(void) {_TriCapacity=_NbTris= _NbQuads=_QuadCapacity=0;};
+						CPrimitiveBlock(void) 
+						{_TriCapacity=_NbTris= _NbQuads=_QuadCapacity=_NbLines=_LineCapacity= 0;};
 						~CPrimitiveBlock(void) {}; 
 	
 	

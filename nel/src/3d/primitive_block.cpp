@@ -1,7 +1,7 @@
 /** \file primitive_block.cpp
  * Primitive Block implementation
  *
- * $Id: primitive_block.cpp,v 1.4 2000/12/05 16:51:02 berenguier Exp $
+ * $Id: primitive_block.cpp,v 1.5 2000/12/05 17:04:56 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -43,7 +43,7 @@ uint32* CPrimitiveBlock::getLinePointer(void)
 
 void				CPrimitiveBlock::reserveLine(uint32 n)
 {
-	_Line.resize(n*3);
+	_Line.resize(n*2);
 	_LineCapacity= n;
 }
 void				CPrimitiveBlock::setNumLine(uint32 n)

@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.66 2003/04/14 12:13:47 lecroart Exp $
+# $Id: Makefile.am,v 1.67 2003/09/03 14:51:25 distrib Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -63,6 +63,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         time_nl.cpp                        \
                         triangle.cpp                       \
                         uv.cpp                             \
+                        variable.cpp                       \
                         value_smoother.cpp                 \
                         vector.cpp                         \
                         vector_2d.cpp                      \

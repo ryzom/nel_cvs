@@ -1,7 +1,7 @@
 /** \file triangle.cpp
  * TODO: File description
  *
- * $Id: triangle.cpp,v 1.7 2004/11/15 10:25:05 lecroart Exp $
+ * $Id: triangle.cpp,v 1.8 2005/02/01 11:13:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,7 @@
 
 #include "nel/misc/triangle.h"
 #include "nel/misc/plane.h"
+#include "nel/misc/matrix.h"
 
 
 namespace NLMISC 
@@ -106,6 +107,15 @@ void	CTriangle::computeGradient(float c0, float c1, float c2, CVector &grad) con
 	// transform in 3D.
 	grad= locI*gx + locJ*gy;
 }
+
+// ***************************************************************************
+void CTriangle::applyMatrix(const CMatrix &m, CTriangle &dest) const
+{
+	dest.V0 = m * V0;
+	dest.V1 = m * V1;
+	dest.V2 = m * V2;
+}
+
 
 
 } // NLMISC

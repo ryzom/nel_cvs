@@ -1,7 +1,7 @@
 /** \file triangle.h
  * TODO: File description
  *
- * $Id: triangle.h,v 1.4 2004/11/15 10:24:28 lecroart Exp $
+ * $Id: triangle.h,v 1.5 2005/02/01 11:13:04 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,6 +32,7 @@
 namespace NLMISC
 {
 	class CPlane;
+	class CMatrix;
 }
 
 namespace NLMISC 
@@ -77,6 +78,9 @@ public:
 	 *	c(v)= c0 + grad*(v-V0)
 	 */
 	void	computeGradient(float c0, float c1, float c2, CVector &grad) const;
+
+	// transform triangle
+	void	applyMatrix(const CMatrix &m, CTriangle &dest) const;
 };
 
 

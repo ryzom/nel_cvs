@@ -1,7 +1,7 @@
 /** \file interpret_fsm.h
  *	Interpret class for operators
  *
- * $Id: interpret_fsm.h,v 1.4 2001/06/26 15:53:24 portier Exp $
+ * $Id: interpret_fsm.h,v 1.5 2001/06/29 08:16:19 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_FSM_CLASS
 #define NL_FSM_CLASS
 
-#include "nel/ai/script/interpret_object_agent.h"
+#include "nel/ai/script/interpret_actor.h"
 #include "nel/ai/logic/goal.h"
 #include "nel/ai/logic/fact.h"
 #include "nel/ai/logic/var.h"
@@ -34,7 +34,7 @@
 
 namespace NLAISCRIPT
 {
-	class CFsmClass: public CAgentClass
+	class CFsmClass: public CActorClass
 	{
 	private:
 		char										*_Comment;			/// Description of the operator

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.33 2001/06/21 16:00:06 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.34 2001/06/29 08:16:33 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -767,20 +767,25 @@ namespace NLAISCRIPT
 	char txtClass[2048*8];
 	sprintf(txtClass,getClassName()->getString());
 #endif					
-		if(sizeVTable() > 1)
+		if(sizeVTable() > 1 )
 		{	
 			const IClassInterpret *t= _VTable[sizeVTable() - 2];
-			if(t->getMethodIndexSize() - getBaseMethodCount()) _Methode.resize(t->getMethodIndexSize() - getBaseMethodCount());
 			
-			for(sint32 i = 0; i < t->getMethodIndexSize() - getBaseMethodCount(); i ++)
+			if(t->getMethodIndexSize() > getBaseMethodCount()) 
 			{
-				CMethodeName *m = &t->getBrancheCode(i);
+				_Methode.resize(t->getMethodIndexSize() - getBaseMethodCount());			
+			
+				int mmax = t->getMethodIndexSize() - getBaseMethodCount();
+				for(sint32 i = 0; i < mmax; i ++)
+				{
+					CMethodeName *m = &t->getBrancheCode(i);
 #ifdef NL_DEBUG
 	std::string txt;
 	m->getDebugString(txt);	
 #endif
-				m->incRef();
-				_Methode[i] = m;
+					m->incRef();
+					_Methode[i] = m;
+				}
 			}
 		}		
 	}

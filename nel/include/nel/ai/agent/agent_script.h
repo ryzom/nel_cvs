@@ -1,7 +1,7 @@
 /** \file agent_script.h
  * class for agent script.
  *
- * $Id: agent_script.h,v 1.35 2001/06/26 15:53:24 portier Exp $
+ * $Id: agent_script.h,v 1.36 2001/06/29 08:16:19 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -342,6 +342,10 @@ namespace NLAIAGENT
 		}
 
 		virtual void removeGoal( NLAILOGIC::CGoal *)
+		{
+		}
+
+		virtual void setTopLevel(NLAIAGENT::CAgentScript *)
 		{
 		}
 

@@ -88,7 +88,13 @@ namespace NLAIAGENT
 
 	/// Activates the actor
 	void CActorScript::activate()
-	{                                                    
+	{                              
+		
+
+#ifndef NL_DEBUG
+		const char *
+#endif
+
 		if ( !_IsActivated )
 		{
 			CAgentScript *father = (CAgentScript *) getParent();
@@ -288,7 +294,7 @@ namespace NLAIAGENT
 
 	sint32 CActorScript::getMethodIndexSize() const
 	{
-		return CAgentScript::getBaseMethodCount() + fid_switch;
+		return CAgentScript::getMethodIndexSize() + fid_last;
 	}
 
 //	virtual IObjectIA::CProcessResult runMethodBase(int heritance, int index,IObjectIA *);
@@ -459,10 +465,14 @@ namespace NLAIAGENT
 							((CActorScript *)child)->setTopLevel( _TopLevel );
 						else
 							((CActorScript *)child)->setTopLevel( this );
-
+						
 						((CActorScript *)child)->activate();
 					}
+/*
 
+					if ( child->isClassInheritedFrom( CStringVarName("Actor") ) != -1 )
+						((CActorScript *)child)->activate();
+*/
 					_Launched.push_back( (NLAIAGENT::IAgent *) child );
 
 				}
@@ -491,7 +501,6 @@ namespace NLAIAGENT
 	{
 		return CAgentScript::getBaseMethodCount() + fid_last;
 	}
-
 
 	tQueue CActorScript::isMember(const IVarName *className,const IVarName *name,const IObjectIA &param) const
 	{		
@@ -599,6 +608,18 @@ namespace NLAIAGENT
 	void CActorScript::setTopLevel(CAgentScript *tl)
 	{
 		_TopLevel = tl;
+
+		for (int i = 0; i < _NbComponents; i++ )
+		{
+			if ( _Components[i]->isClassInheritedFrom( NLAIAGENT::CStringVarName("Actor") ) != -1 )
+			{
+				if ( _TopLevel )
+					( (CActorScript *)_Components[i] )->setTopLevel( _TopLevel );
+				else
+					( (CActorScript *)_Components[i] )->setTopLevel( this );
+			}
+		}
+
 	}
 
 	const CAgentScript *CActorScript::getTopLevel() const

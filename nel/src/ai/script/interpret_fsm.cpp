@@ -11,35 +11,60 @@
 
 namespace NLAISCRIPT
 {
-	CFsmClass::CFsmClass(const NLAIAGENT::IVarName &n) : CAgentClass(n)
+	CFsmClass::CFsmClass(const NLAIAGENT::IVarName &n) : CActorClass(n)
 	{
 		setBaseMethodCount(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass()))->getBaseMethodCount());		
-		setBaseObjectInstance(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass())));		
+		setBaseObjectInstance(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass())));
+		setInheritanceName(NLAIAGENT::CStringVarName("Actor"));
+/*
+		setClassName(NLAIAGENT::CStringVarName("CFsmClass"));
+		buildVTable();		
+		*/
 	}
 	
-	CFsmClass::CFsmClass(const NLAIC::CIdentType &id): CAgentClass(id)
+	CFsmClass::CFsmClass(const NLAIC::CIdentType &id): CActorClass(id)
 	{
 		setBaseMethodCount(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass())));		
+		setInheritanceName(NLAIAGENT::CStringVarName("Actor"));
+/*
+		setClassName(NLAIAGENT::CStringVarName("CFsmClass"));
+		buildVTable();		
+		*/
+
 	}
 
-	CFsmClass::CFsmClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CAgentClass( inheritance )
+	CFsmClass::CFsmClass(const NLAIAGENT::IVarName &n, const NLAIAGENT::IVarName &inheritance) : CActorClass( inheritance )
 	{
 		setBaseMethodCount(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass())));		
+		setInheritanceName(NLAIAGENT::CStringVarName("Actor"));
+/*
+		setClassName(NLAIAGENT::CStringVarName("CFsmClass"));
+		buildVTable();		
+		*/
+
 	}
 
-	CFsmClass::CFsmClass(const CFsmClass &c) : CAgentClass( c )
+	CFsmClass::CFsmClass(const CFsmClass &c) : CActorClass( c )
 	{
 		setBaseMethodCount(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass())));		
+		setInheritanceName(NLAIAGENT::CStringVarName("Actor"));
+		/*setClassName(NLAIAGENT::CStringVarName("CFsmClass"));
+		buildVTable();		*/
+
 	}	
 
 	CFsmClass::CFsmClass()
 	{
 		setBaseMethodCount(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CFsmScript *)(NLAIAGENT::CFsmScript::IdFsmScript.getFactory()->getClass())));
-	}
+		setInheritanceName(NLAIAGENT::CStringVarName("Actor"));
+/*
+		setClassName(NLAIAGENT::CStringVarName("CFsmClass"));
+		buildVTable();		
+		*/	}
 
 	const NLAIC::IBasicType *CFsmClass::clone() const
 	{

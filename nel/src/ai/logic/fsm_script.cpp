@@ -287,7 +287,7 @@ namespace NLAIAGENT
 
 		for (int i = 0; i < _NbComponents; i++ )
 		{
-			if ( _Components[i]->isClassInheritedFrom( NLAIAGENT::CStringVarName("ActorScript") ) != -1 )
+			if ( _Components[i]->isClassInheritedFrom( NLAIAGENT::CStringVarName("Actor") ) != -1 )
 			{
 				if ( _TopLevel )
 					( (CActorScript *)_Components[i] )->setTopLevel( _TopLevel );

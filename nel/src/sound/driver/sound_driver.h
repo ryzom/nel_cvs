@@ -1,7 +1,7 @@
 /** \file sound_driver.h
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.h,v 1.24 2004/10/07 14:38:23 berenguier Exp $
+ * $Id: sound_driver.h,v 1.25 2004/10/28 17:38:06 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -165,7 +165,7 @@ public:
 	 *	\param CIFile opened file (must use a CIFile if for instance you want to load from a BNP, and CBigFile is static....)
 	 *	\param xFadeTime if not 0 the old music played is not stoped imediatly but a cross-fade of xFadeTime (in ms) is made between the 2.
 	 */
-	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime= 0) =0;
+	virtual bool	playMusic(NLMISC::CIFile &file, uint xFadeTime= 0, bool loop=true) =0;
 
 	/** Play some music asynchronously (.mp3 etc...) (implemented in fmod only)
 	 *	FMOD: the file is load asynchronously
@@ -179,13 +179,31 @@ public:
 	 *		or
 	 * 			playMusicAsync("C:/test/mydata.bnp", offsetOfMp3InBnp, sizeOfMp3InBnp);
 	 *		Notice that you must give the full path of the bnp (eg: "C:/test/mydata.bnp") in path.
+	 *	\param loop must be true to play the music in loop. 
 	 */
-	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0) =0;
+	virtual bool	playMusicAsync(const std::string &path, uint xFadeTime= 0, uint fileOffset=0, uint fileSize= 0, bool loop=true) =0;
 	
 	/** Stop the music previously loaded and played (the Memory is also freed)
 	 *	\param xFadeTime if not 0 the old music played is not stoped but faded out of xFadeTime (in ms)
 	 */
 	virtual void	stopMusic(uint xFadeTime= 0) =0;
+	
+	/** Pause the music previously loaded and played (the Memory is not freed)
+	 */
+	virtual void	pauseMusic() =0;
+	
+	/** Resume the music previously paused
+	 */
+	virtual void	resumeMusic() =0;
+
+	/** Get the song title. Returns false if the song is not found or the function is not implemented. 
+	 * If the song as no name, result is filled with the filename.
+	 */
+	virtual bool	getSongTitle(const std::string &filename, std::string &result, uint fileOffset=0, uint fileSize=0) =0;
+
+	/** Return true if a song is finished.
+	 */
+	virtual bool	isMusicEnded() =0;
 	
 	/** Set the music volume (if any music played). (volume value inside [0 , 1]) (default: 1)
 	 *	NB: the volume of music is NOT affected by IListener::setGain()

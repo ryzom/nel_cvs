@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.74 2004/06/22 10:29:35 legros Exp $
+ * $Id: common.h,v 1.75 2004/10/28 17:38:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,6 +211,9 @@ void		toLower ( char *str );
 
 std::string	toUpper ( const std::string &str);
 void		toUpper ( char *str);
+
+// Remove all the characters <= 32 (tab, space, new line, return, vertical tab etc..) at the begning and at the end of a string
+std::string trim (const std::string &str);
 
 //////////////////////////////////////////////////////////////////////////
 // ****  DEPRECATED *****: PLEASE DON'T USE THESE METHODS BUT FUNCTIONS ABOVE toLower() and toUpper()

@@ -1,7 +1,7 @@
 /** \file driver_direct3d.cpp
  * Direct 3d driver implementation
  *
- * $Id: driver_direct3d.cpp,v 1.27 2004/10/25 16:32:42 vizerie Exp $
+ * $Id: driver_direct3d.cpp,v 1.28 2004/10/28 17:38:05 corvazier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -3149,83 +3149,19 @@ void CDriverD3D::CMaterialState::apply(CDriverD3D *driver)
 	driver->_DeviceInterface->SetMaterial(&Current);
 }
 
+// ***************************************************************************
+void CDriverD3D::beginDialogMode()
+{	
+	if (_FullScreen && _HWnd)
+		ShowWindow(_HWnd, SW_MINIMIZE);
+}
+
+// ***************************************************************************
+void CDriverD3D::endDialogMode()
+{	
+	if (_FullScreen && _HWnd)
+		ShowWindow(_HWnd, SW_MAXIMIZE);
+}
+
 
 } // NL3D
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

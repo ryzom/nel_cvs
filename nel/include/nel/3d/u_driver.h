@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.50 2004/10/19 13:00:06 vizerie Exp $
+ * $Id: u_driver.h,v 1.51 2004/10/28 17:38:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -182,6 +182,26 @@ public:
 	virtual bool			setMode(const CMode& mode)=0;
 	virtual bool			getModes(std::vector<CMode> &modes)=0;
 	virtual bool			getCurrentScreenMode(CMode &mode)=0;
+
+	/* Pass in dialog box mode. After having called this method, you can use normal GUI. 
+	 * In fullscreen under direct3d, the main 3d window is minimized.
+	 *
+	 * \code
+	 * Driver->beginDialogMode();
+	 * CFileDialog fileDialog(TRUE);
+	 * if (fileDialog.DoModal() == IDOK)
+	 * {
+	 *	...
+	 * }
+	 * Driver->endDialogMode();
+	 */
+	virtual void			beginDialogMode() =0;
+
+	/* Leave the dialog box mode. After having called this method, you can't use normal GUI anymore. 
+	 * In fullscreen under direct3d, the main 3d window is maximized.
+	 */
+	virtual void			endDialogMode() =0;
+
 	/// Release the window. All components are released (Texture, materials, scene, textcontexts).
 	virtual	void			release() =0;
 

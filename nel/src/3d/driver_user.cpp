@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user.cpp,v 1.51 2004/10/19 12:47:24 vizerie Exp $
+ * $Id: driver_user.cpp,v 1.52 2004/10/28 17:38:05 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1724,28 +1724,20 @@ bool CDriverUser::isLost() const
 	return _Driver->isLost();
 }
 
+// ***************************************************************************
+void CDriverUser::beginDialogMode()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	_Driver->beginDialogMode();
+}
 
 // ***************************************************************************
+void CDriverUser::endDialogMode()
+{
+	NL3D_MEM_DRIVER
+	NL3D_HAUTO_UI_DRIVER
+	_Driver->endDialogMode();
+}
 
 } // NL3D
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

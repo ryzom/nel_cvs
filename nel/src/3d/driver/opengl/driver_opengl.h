@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.122 2002/08/14 08:49:54 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.123 2002/08/19 09:39:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -148,6 +148,9 @@ public:
 	uint32		PackedAmbient;
 	uint32		PackedDiffuse;
 	uint32		PackedSpecular;
+
+	// The supported Shader type.
+	CMaterial::TShader	SupportedShader;
 
 	CShaderGL(IDriver *drv, ItShaderPtrList it) : IShader(drv, it) {}
 };
@@ -359,7 +362,7 @@ public:
 
 	virtual bool			activate();
 
-	virtual	sint			getNbTextureStages() const {return _Extensions.NbTextureStages;}
+	virtual	sint			getNbTextureStages() const;
 
 	virtual bool			isTextureExist(const ITexture&tex);
 
@@ -685,6 +688,7 @@ private:
 
 	// NB: CRefPtr are not used for mem/spped optimisation. setupMaterial() and setupTexture() reset those states.
 	CMaterial*				_CurrentMaterial;
+	CMaterial::TShader		_CurrentMaterialSupportedShader;
 	ITexture*				_CurrentTexture[IDRV_MAT_MAXTEXTURES];
 	CTextureDrvInfosGL*		_CurrentTextureInfoGL[IDRV_MAT_MAXTEXTURES];
 	CMaterial::CTexEnv		_CurrentTexEnv[IDRV_MAT_MAXTEXTURES];
@@ -753,13 +757,15 @@ private:
 
 
 	/// \name Material multipass.
+	/**	NB: setupMaterial() must be called before thoses methods.
+	 */
 	// @{
-	/// init multipass for this material. return number of pass required to render this material.
-	sint			beginMultiPass(const CMaterial &mat);
+	/// init multipass for _CurrentMaterial. return number of pass required to render this material.
+	sint			beginMultiPass();
 	/// active the ith pass of this material.
-	void			setupPass(const CMaterial &mat, uint pass);
+	void			setupPass(uint pass);
 	/// end multipass for this material.
-	void			endMultiPass(const CMaterial &mat);
+	void			endMultiPass();
 	/// LastVB for UV setup.
 	CVertexBufferInfo	_LastVB;
 	// @}
@@ -772,9 +778,9 @@ private:
 	/// \name Lightmap.
 	// @{
 	void			computeLightMapInfos(const CMaterial &mat);
-	sint			beginLightMapMultiPass(const CMaterial &mat);
-	void			setupLightMapPass(const CMaterial &mat, uint pass);
-	void			endLightMapMultiPass(const CMaterial &mat);
+	sint			beginLightMapMultiPass();
+	void			setupLightMapPass(uint pass);
+	void			endLightMapMultiPass();
 
 	/// Temp Variables computed in beginLightMapMultiPass(). Reused in setupLightMapPass().
 	uint			_NLightMaps;
@@ -783,27 +789,37 @@ private:
 	// This array is the LUT from lmapId in [0, _NLightMaps[, to original lightmap id in material.
 	std::vector<uint>		_LightMapLUT;
 
+	// last stage env.
+	CMaterial::CTexEnv	_LightMapLastStageEnv;
+
+	// Caching
+	bool			_LastVertexSetupIsLightMap;
+	uint8			_LightMapUVMap[IDRV_MAT_MAXTEXTURES];
+
+	// restore std vertex Setup.
+	void			resetLightMapVertexSetup();
+
 	// @}
 
 	/// \name Specular.
 	// @{
-	sint			beginSpecularMultiPass(const CMaterial &mat);
-	void			setupSpecularPass(const CMaterial &mat, uint pass);
-	void			endSpecularMultiPass(const CMaterial &mat);
+	sint			beginSpecularMultiPass();
+	void			setupSpecularPass(uint pass);
+	void			endSpecularMultiPass();
 	// @}
 
 
 	/// \name Per pixel lighting
 	// @{
 	// per pixel lighting with specular
-	sint			beginPPLMultiPass(const CMaterial &mat);
-	void			setupPPLPass(const CMaterial &mat, uint pass);
-	void			endPPLMultiPass(const CMaterial &mat);
+	sint			beginPPLMultiPass();
+	void			setupPPLPass(uint pass);
+	void			endPPLMultiPass();
 
 	// per pixel lighting, no specular
-	sint			beginPPLNoSpecMultiPass(const CMaterial &mat);
-	void			setupPPLNoSpecPass(const CMaterial &mat, uint pass);
-	void			endPPLNoSpecMultiPass(const CMaterial &mat);
+	sint			beginPPLNoSpecMultiPass();
+	void			setupPPLNoSpecPass(uint pass);
+	void			endPPLNoSpecMultiPass();
 
 	typedef NLMISC::CSmartPtr<CTextureCube> TSPTextureCube;	
 	typedef std::vector<TSPTextureCube> TTexCubeVect;	
@@ -953,6 +969,9 @@ private:
 		NLMISC::CSmartPtr<CTextureCube>	_CausticCubeMap; // a cube map used for the rendering of caustics
 		static void initCausticCubeMap();
 	// @}
+
+	/// Same as getNbTextureStages(), but faster because inline, and not virtual!!
+	sint			inlGetNumTextStages() const {return _Extensions.NbTextureStages;}
 
 
 	NLMISC::CRGBA					_CurrentBlendConstantColor;

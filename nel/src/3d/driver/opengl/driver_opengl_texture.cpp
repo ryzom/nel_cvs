@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.54 2002/05/16 16:30:47 besson Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.55 2002/08/19 09:39:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -324,7 +324,7 @@ bool CDriverGL::setupTextureEx (ITexture& tex, bool bUpload, bool &bAllUploaded)
 		But this is grave only if a new texture is created, with the same pointer (bad luck). 
 		Since an newly allocated texture always pass here before use, we are sure to avoid any problems.
 	*/
-	for(sint stage=0 ; stage<getNbTextureStages() ; stage++)
+	for(sint stage=0 ; stage<inlGetNumTextStages() ; stage++)
 	{
 		activateTexture(stage, NULL);
 	}

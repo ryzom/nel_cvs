@@ -1,7 +1,7 @@
 /** \file driver_opengl_vertex.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.27 2002/07/02 12:35:05 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.28 2002/08/19 09:39:18 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -147,12 +147,12 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 	//==============================
 	// start multipass.
 	uint	nPass;
-	nPass= beginMultiPass(Mat);
+	nPass= beginMultiPass();
 	// draw all passes.
 	for(uint pass=0;pass<nPass; pass++)
 	{
 		// setup the pass.
-		setupPass(Mat, pass);
+		setupPass(pass);
 		// draw the primitives.
 		if(PB.getNumTri()!=0)
 			glDrawElements(GL_TRIANGLES,3*PB.getNumTri(),GL_UNSIGNED_INT,PB.getTriPointer());
@@ -162,7 +162,7 @@ bool CDriverGL::render(CPrimitiveBlock& PB, CMaterial& Mat)
 			glDrawElements(GL_LINES,2*PB.getNumLine(),GL_UNSIGNED_INT,PB.getLinePointer());
 	}
 	// end multipass.
-	endMultiPass(Mat);
+	endMultiPass();
 
 
 	// Profiling.
@@ -198,18 +198,18 @@ void	CDriverGL::renderTriangles(CMaterial& Mat, uint32 *tri, uint32 ntris)
 	//==============================
 	// start multipass.
 	uint	nPass;
-	nPass= beginMultiPass(Mat);
+	nPass= beginMultiPass();
 	// draw all passes.
 	for(uint pass=0;pass<nPass; pass++)
 	{
 		// setup the pass.
-		setupPass(Mat, pass);
+		setupPass(pass);
 		// draw the primitives.
 		if(ntris!=0)
 			glDrawElements(GL_TRIANGLES,3*ntris,GL_UNSIGNED_INT, tri);
 	}
 	// end multipass.
-	endMultiPass(Mat);
+	endMultiPass();
 
 
 	// Profiling.
@@ -264,18 +264,18 @@ void	CDriverGL::renderPoints(CMaterial& Mat, uint32 numPoints)
 	//==============================
 	// start multipass.
 	uint	nPass;
-	nPass= beginMultiPass(Mat);
+	nPass= beginMultiPass();
 	// draw all passes.
 	for(uint pass=0;pass<nPass; pass++)
 	{
 		// setup the pass.
-		setupPass(Mat, pass);
+		setupPass(pass);
 		// draw the primitives.
 		if(numPoints)
 			glDrawArrays(GL_POINTS,0, numPoints);
 	}
 	// end multipass.
-	endMultiPass(Mat);
+	endMultiPass();
 
 
 	// Profiling.
@@ -305,18 +305,18 @@ void	CDriverGL::renderQuads(CMaterial& Mat, uint32 startIndex, uint32 numQuads)
 	//==============================
 	// start multipass.
 	uint	nPass;
-	nPass= beginMultiPass(Mat);
+	nPass= beginMultiPass();
 	// draw all passes.
 	for(uint pass=0;pass<nPass; pass++)
 	{
 		// setup the pass.
-		setupPass(Mat, pass);
+		setupPass(pass);
 		// draw the primitives.
 		if(numQuads)
 			glDrawArrays(GL_QUADS, startIndex << 2, numQuads << 2) ;
 	}
 	// end multipass.
-	endMultiPass(Mat);
+	endMultiPass();
 
 
 	// Profiling.
@@ -821,7 +821,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 		_DriverGLStates.enableVertexArray(false);
 		_DriverGLStates.enableNormalArray(false);
 		_DriverGLStates.enableColorArray(false);
-		for(sint i=0; i<getNbTextureStages(); i++)
+		for(sint i=0; i<inlGetNumTextStages(); i++)
 		{
 			_DriverGLStates.clientActiveTextureARB(i);
 			_DriverGLStates.enableTexCoordArray(false);
@@ -873,7 +873,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 			_DriverGLStates.enableColorArray(false);
 
 		// Active UVs.
-		for(sint i=0; i<getNbTextureStages(); i++)
+		for(sint i=0; i<inlGetNumTextStages(); i++)
 		{
 			// normal behavior: each texture has its own UV.
 			setupUVPtr(i, vb, i);
@@ -962,6 +962,9 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb)
 			}
 		}
 	}
+
+	// Reset specials flags.
+	_LastVertexSetupIsLightMap= false;
 }
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.148 2002/08/14 08:49:54 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.149 2002/08/19 09:39:17 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -215,10 +215,18 @@ CDriverGL::CDriverGL()
 	}
 
 
-	// reserve enough space to never reallocate, nor test for reallocation.
-	_LightMapLUT.resize(NL3D_DRV_MAX_LIGHTMAP);
 	_UserTexMatEnabled = 0;
 	
+	// Ligtmap preca.
+	_LastVertexSetupIsLightMap= false;
+	// reserve enough space to never reallocate, nor test for reallocation.
+	_LightMapLUT.resize(NL3D_DRV_MAX_LIGHTMAP);
+	// must set replace for alpha part.
+	_LightMapLastStageEnv.Env.OpAlpha= CMaterial::Replace;
+	_LightMapLastStageEnv.Env.SrcArg0Alpha= CMaterial::Texture;
+	_LightMapLastStageEnv.Env.OpArg0Alpha= CMaterial::SrcAlpha;
+
+
 ///	buildCausticCubeMapTex();
 
 }
@@ -899,7 +907,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;
 	// Setup defaults for blend, lighting ...
-	_DriverGLStates.forceDefaults(getNbTextureStages());
+	_DriverGLStates.forceDefaults(inlGetNumTextStages());
 	// Default delta camera pos.
 	_PZBCameraPos= CVector::Null;
 
@@ -930,7 +938,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 
 	// Activate the default texture environnments for all stages.
 	//===========================================================
-	for(sint stage=0;stage<getNbTextureStages(); stage++)
+	for(sint stage=0;stage<inlGetNumTextStages(); stage++)
 	{
 		// init no texture.
 		_CurrentTexture[stage]= NULL;
@@ -996,7 +1004,7 @@ void CDriverGL::resetTextureShaders()
 	if (_Extensions.NVTextureShader)
 	{
 		glEnable(GL_TEXTURE_SHADER_NV);
-		for (uint stage = 0; stage < (uint) getNbTextureStages(); ++stage)
+		for (uint stage = 0; stage < (uint) inlGetNumTextStages(); ++stage)
 		{		
 			_DriverGLStates.activeTextureARB(stage);
 			if (stage != 0)
@@ -1134,7 +1142,7 @@ bool CDriverGL::swapBuffers()
 	//===========================================================
 	// This is not a requirement, but it ensure a more stable state each frame.
 	// (well, maybe the good reason is "it hides much more the bugs"  :o) ).
-	for(sint stage=0;stage<getNbTextureStages(); stage++)
+	for(sint stage=0;stage<inlGetNumTextStages(); stage++)
 	{
 		// init no texture.
 		_CurrentTexture[stage]= NULL;
@@ -1152,7 +1160,7 @@ bool CDriverGL::swapBuffers()
 	// Activate the default material.
 	//===========================================================
 	// Same reasoning as textures :)
-	_DriverGLStates.forceDefaults(getNbTextureStages());
+	_DriverGLStates.forceDefaults(inlGetNumTextStages());
 	if (_NVTextureShaderEnabled)
 	{
 		glDisable(GL_TEXTURE_SHADER_NV);
@@ -1813,7 +1821,7 @@ void CDriverGL::setMatrix2DForTextureOffsetAddrMode(const uint stage, const floa
 {
 	if (!supportTextureShaders()) return;
 	//nlassert(supportTextureShaders());
-	nlassert(stage < (uint) getNbTextureStages() )
+	nlassert(stage < (uint) inlGetNumTextStages() )
 	_DriverGLStates.activeTextureARB(stage);
 	glTexEnvfv(GL_TEXTURE_SHADER_NV, GL_OFFSET_TEXTURE_MATRIX_NV, mat);
 }
@@ -1958,6 +1966,12 @@ void			CDriverGL::setBlendConstantColor(NLMISC::CRGBA col)
 NLMISC::CRGBA	CDriverGL::getBlendConstantColor() const
 {
 	return	_CurrentBlendConstantColor;
+}
+
+// ***************************************************************************
+sint			CDriverGL::getNbTextureStages() const
+{
+	return inlGetNumTextStages();
 }
 
 } // NL3D

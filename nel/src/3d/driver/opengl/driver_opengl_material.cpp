@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.63 2002/06/13 08:45:05 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.64 2002/08/19 09:39:18 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -212,6 +212,9 @@ CMaterial::TShader	CDriverGL::getSupportedShader(CMaterial::TShader shader)
 	{
 	case CMaterial::PerPixelLighting: return _SupportPerPixelShader ? CMaterial::PerPixelLighting : CMaterial::Normal;
 	case CMaterial::PerPixelLightingNoSpec: return _SupportPerPixelShaderNoSpec ? CMaterial::PerPixelLightingNoSpec : CMaterial::Normal;
+	// Lightmap and Specular work only if at least 2 text stages.
+	case CMaterial::LightMap: return (inlGetNumTextStages()>=2) ? CMaterial::LightMap : CMaterial::Normal;
+	case CMaterial::Specular: return (inlGetNumTextStages()>=2) ? CMaterial::Specular : CMaterial::Normal;
 		default: return shader;		
 	}
 }
@@ -221,7 +224,6 @@ CMaterial::TShader	CDriverGL::getSupportedShader(CMaterial::TShader shader)
 
 bool CDriverGL::setupMaterial(CMaterial& mat)
 {
-	
 	CShaderGL*	pShader;
 	GLenum		glenum;
 	uint32		touched=mat.getTouched();
@@ -232,17 +234,89 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	_NbSetupMaterialCall++;
 
 
-	// Get shader. Fallback to other shader if not supported.
-	CMaterial::TShader matShader = getSupportedShader(mat.getShader());
+	// 0. Retrieve/Create driver shader.
+	//==================================
+	if (!mat.pShader)
+	{
+		// insert into driver list. (so it is deleted when driver is deleted).
+		ItShaderPtrList		it= _Shaders.insert(_Shaders.end());
+		// create and set iterator, for future deletion.
+		*it= mat.pShader= new CShaderGL(this, it);
+
+		// Must create all OpenGL shader states.
+		touched= IDRV_TOUCHED_ALL;
+	}
+	pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
 
 
+	// 1. Setup modified fields of material.
+	//=====================================
+	if( touched ) 
+	{
+		/* Exception: if only Textures are modified in the material, no need to "Bind OpenGL States", or even to test
+			for change, because textures are activated alone, see below.
+			No problem with delete/new problem (see below), because in this case, IDRV_TOUCHED_ALL is set (see above).
+		*/
+		// If any flag is set (but a flag of texture)
+		if( touched & (~_MaterialAllTextureTouchedFlag) )
+		{
+			// Convert Material to driver shader.
+			if (touched & IDRV_TOUCHED_BLENDFUNC)
+			{
+				convBlend( mat.getSrcBlend(),glenum );
+				pShader->SrcBlend=glenum;
+				convBlend( mat.getDstBlend(),glenum );
+				pShader->DstBlend=glenum;
+			}
+			if (touched & IDRV_TOUCHED_ZFUNC)
+			{
+				convZFunction( mat.getZFunc(),glenum);
+				pShader->ZComp= glenum;
+			}
+			if (touched & IDRV_TOUCHED_LIGHTING)
+			{
+				convColor(mat.getEmissive(), pShader->Emissive);
+				convColor(mat.getAmbient(), pShader->Ambient);
+				convColor(mat.getDiffuse(), pShader->Diffuse);
+				convColor(mat.getSpecular(), pShader->Specular);
+				pShader->PackedEmissive= mat.getEmissive().getPacked();
+				pShader->PackedAmbient= mat.getAmbient().getPacked();
+				pShader->PackedDiffuse= mat.getDiffuse().getPacked();
+				pShader->PackedSpecular= mat.getSpecular().getPacked();
+			}
+			if (touched & IDRV_TOUCHED_SHADER)
+			{
+				// Get shader. Fallback to other shader if not supported.
+				pShader->SupportedShader= getSupportedShader(mat.getShader());
+			}
 
-	// 0. Setup / Bind Textures.
+
+			// Since modified, must rebind all openGL states. And do this also for the delete/new problem.
+			/* If an old material is deleted, _CurrentMaterial is invalid. But this is grave only if a new 
+				material is created, with the same pointer (bad luck). Since an newly allocated material always 
+				pass here before use, we are sure to avoid any problems.
+			*/
+			_CurrentMaterial= NULL;
+		}
+
+		// Optimize: reset all flags at the end.
+		mat.clearTouched(0xFFFFFFFF);
+	}
+
+
+	// Now we can get the supported shader from the cache.
+	CMaterial::TShader matShader = pShader->SupportedShader;
+
+	// setup the global
+	_CurrentMaterialSupportedShader= matShader;
+
+
+	// 2. Setup / Bind Textures.
 	//==========================
 	// Must setup textures each frame. (need to test if touched).
 	// Must separate texture setup and texture activation in 2 "for"...
 	// because setupTexture() may disable all stage.
-	for(stage=0 ; stage<getNbTextureStages() ; stage++)
+	for(stage=0 ; stage<inlGetNumTextStages() ; stage++)
 	{
 		ITexture	*text= mat.getTexture(stage);
 		if (text != NULL && !setupTexture(*text))
@@ -274,7 +348,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		/* && matShader != CMaterial::Caustics	*/
 	   )
 	{
-		for(stage=0 ; stage<getNbTextureStages() ; stage++)
+		for(stage=0 ; stage<inlGetNumTextStages() ; stage++)
 		{
 			ITexture	*text= mat.getTexture(stage);
 
@@ -287,76 +361,6 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		}				
 	}
 
-
-		
-
-	// 1. Retrieve/Create driver shader.
-	//==================================
-	if (!mat.pShader)
-	{
-		// insert into driver list. (so it is deleted when driver is deleted).
-		ItShaderPtrList		it= _Shaders.insert(_Shaders.end());
-		// create and set iterator, for future deletion.
-		*it= mat.pShader= new CShaderGL(this, it);
-
-		// Must create all OpenGL shader states.
-		touched= IDRV_TOUCHED_ALL;
-	}
-	pShader=static_cast<CShaderGL*>((IShader*)(mat.pShader));
-
-
-	// 2. Setup modified fields of material.
-	//=====================================
-	if( touched ) 
-	{
-		/* Exception: if only Textures are modified in the material, no need to "Bind OpenGL States", or even to test
-			for change, because textures are activated alone, see above.
-			No problem with delete/new problem (see below), because in this case, IDRV_TOUCHED_ALL is set (see above).
-		*/
-		// If any flag is set (but a flag of texture)
-		if( touched & (~_MaterialAllTextureTouchedFlag) )
-		{
-			// Convert Material to driver shader.
-			if (touched & IDRV_TOUCHED_BLENDFUNC)
-			{
-				convBlend( mat.getSrcBlend(),glenum );
-				pShader->SrcBlend=glenum;
-				convBlend( mat.getDstBlend(),glenum );
-				pShader->DstBlend=glenum;
-			}
-			if (touched & IDRV_TOUCHED_ZFUNC)
-			{
-				convZFunction( mat.getZFunc(),glenum);
-				pShader->ZComp= glenum;
-			}
-			if (touched & IDRV_TOUCHED_LIGHTING)
-			{
-				if(! (mat.getFlags()&IDRV_MAT_DEFMAT) )
-				{
-					convColor(mat.getEmissive(), pShader->Emissive);
-					convColor(mat.getAmbient(), pShader->Ambient);
-					convColor(mat.getDiffuse(), pShader->Diffuse);
-					convColor(mat.getSpecular(), pShader->Specular);
-					pShader->PackedEmissive= mat.getEmissive().getPacked();
-					pShader->PackedAmbient= mat.getAmbient().getPacked();
-					pShader->PackedDiffuse= mat.getDiffuse().getPacked();
-					pShader->PackedSpecular= mat.getSpecular().getPacked();
-				}
-			}
-
-
-			// Since modified, must rebind all openGL states. And do this also for the delete/new problem.
-			/* If an old material is deleted, _CurrentMaterial is invalid. But this is grave only if a new 
-				material is created, with the same pointer (bad luck). Since an newly allocated material always 
-				pass here before use, we are sure to avoid any problems.
-			*/
-			_CurrentMaterial= NULL;
-		}
-
-		// Optimize: reset all flags at the end.
-		mat.clearTouched(0xFFFFFFFF);
-	}
-	
 
 	// 3. Bind OpenGL States.
 	//=======================
@@ -400,27 +404,12 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		_DriverGLStates.enableLighting(mat.getFlags()&IDRV_MAT_LIGHTING);
 		if(mat.getFlags()&IDRV_MAT_LIGHTING)
 		{
-			if(mat.getFlags()&IDRV_MAT_DEFMAT)
-			{
-				static const uint32			packedOne= (CRGBA(255,255,255,255)).getPacked();
-				static const uint32			packedZero= (CRGBA(0,0,0,255)).getPacked();
-				static const GLfloat		one[4]= {1,1,1,1};
-				static const GLfloat		zero[4]= {0,0,0,1};
-				_DriverGLStates.setEmissive(packedZero, zero);
-				_DriverGLStates.setAmbient(packedOne, one);
-				_DriverGLStates.setDiffuse(packedOne, one);
-				_DriverGLStates.setSpecular(packedZero, zero);
-				_DriverGLStates.setVertexColorLighted(false);
-			}
-			else
-			{
-				_DriverGLStates.setEmissive(pShader->PackedEmissive, pShader->Emissive);
-				_DriverGLStates.setAmbient(pShader->PackedAmbient, pShader->Ambient);
-				_DriverGLStates.setDiffuse(pShader->PackedDiffuse, pShader->Diffuse);
-				_DriverGLStates.setSpecular(pShader->PackedSpecular, pShader->Specular);
-				_DriverGLStates.setShininess(mat.getShininess());
-				_DriverGLStates.setVertexColorLighted(mat.isLightedVertexColor ());
-			}
+			_DriverGLStates.setEmissive(pShader->PackedEmissive, pShader->Emissive);
+			_DriverGLStates.setAmbient(pShader->PackedAmbient, pShader->Ambient);
+			_DriverGLStates.setDiffuse(pShader->PackedDiffuse, pShader->Diffuse);
+			_DriverGLStates.setSpecular(pShader->PackedSpecular, pShader->Specular);
+			_DriverGLStates.setShininess(mat.getShininess());
+			_DriverGLStates.setVertexColorLighted(mat.isLightedVertexColor ());
 		}
 		else
 		{
@@ -438,15 +427,12 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				// Texture addressing modes (support only via NVTextureShader for now)
 				//===================================================================				
 				
-				if ( // supported only with normal shader
-					matShader == CMaterial::Normal 
-					&& (mat.getFlags() & IDRV_MAT_TEX_ADDR)
-				   )
+				if ( mat.getFlags() & IDRV_MAT_TEX_ADDR )
 				{		
 					enableNVTextureShader(true);
 
 					GLenum glAddrMode;
-					for (stage = 0; stage < getNbTextureStages(); ++stage)
+					for (stage = 0; stage < inlGetNumTextStages(); ++stage)
 					{										
 						convTexAddr(mat.getTexture(stage), (CMaterial::TTexAddressingMode) (mat._TexAddrMode[stage]), glAddrMode);
 
@@ -476,11 +462,17 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	}
 
 
+	// 4. Misc
+	//=====================================
+
+	// If !lightMap and prec material was lihgtmap => vertex setup is dirty!
+	if( matShader != CMaterial::LightMap && _LastVertexSetupIsLightMap )
+		resetLightMapVertexSetup();
+
+	// Textures user matrix
 	if (matShader == CMaterial::Normal)
 	{
-		// Textures user matrix
-		//=====================================
-		setupUserTextureMatrix((uint) getNbTextureStages(), mat);		
+		setupUserTextureMatrix((uint) inlGetNumTextStages(), mat);		
 	}
 	else // deactivate texture matrix
 	{
@@ -492,48 +484,42 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 
 
 // ***************************************************************************
-sint			CDriverGL::beginMultiPass(const CMaterial &mat)
+sint			CDriverGL::beginMultiPass()
 {
-	// Get shader. Fallback to other shader if not supported.
-	CMaterial::TShader matShader = getSupportedShader(mat.getShader());
-
 	// Depending on material type and hardware, return number of pass required to draw this material.
-	switch(matShader)
+	switch(_CurrentMaterialSupportedShader)
 	{
 	case CMaterial::LightMap: 
-		return  beginLightMapMultiPass(mat);
+		return  beginLightMapMultiPass();
 	case CMaterial::Specular: 
-		return  beginSpecularMultiPass(mat);
+		return  beginSpecularMultiPass();
 	case CMaterial::PerPixelLighting:
-		return  beginPPLMultiPass(mat);
+		return  beginPPLMultiPass();
 	case CMaterial::PerPixelLightingNoSpec:
-		return  beginPPLNoSpecMultiPass(mat);
+		return  beginPPLNoSpecMultiPass();
 	/* case CMaterial::Caustics:
-		return  beginCausticsMultiPass(mat); */
+		return  beginCausticsMultiPass(); */
 
 	// All others materials require just 1 pass.
 	default: return 1;
 	}
 }
 // ***************************************************************************
-void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
+void			CDriverGL::setupPass(uint pass)
 {
-	// Get shader. Fallback to other shader if not supported.
-	CMaterial::TShader matShader = getSupportedShader(mat.getShader());
-
-	switch(matShader)
+	switch(_CurrentMaterialSupportedShader)
 	{
 	case CMaterial::LightMap: 
-		setupLightMapPass(mat, pass);
+		setupLightMapPass(pass);
 		break;
 	case CMaterial::Specular: 
-		setupSpecularPass(mat, pass);
+		setupSpecularPass(pass);
 		break;
 	case CMaterial::PerPixelLighting:
-		setupPPLPass(mat, pass);
+		setupPPLPass(pass);
 		break;
 	case CMaterial::PerPixelLightingNoSpec:
-		setupPPLNoSpecPass(mat, pass);
+		setupPPLNoSpecPass(pass);
 		break;
 	/* case CMaterial::Caustics:
 		case CMaterial::Caustics:
@@ -546,27 +532,24 @@ void			CDriverGL::setupPass(const CMaterial &mat, uint pass)
 
 
 // ***************************************************************************
-void			CDriverGL::endMultiPass(const CMaterial &mat)
+void			CDriverGL::endMultiPass()
 {
-	// Get shader. Fallback to other shader if not supported.
-	CMaterial::TShader matShader = getSupportedShader(mat.getShader());
-
-	switch(matShader)
+	switch(_CurrentMaterialSupportedShader)
 	{
 	case CMaterial::LightMap: 
-		endLightMapMultiPass(mat);
+		endLightMapMultiPass();
 		break;
 	case CMaterial::Specular: 
-		endSpecularMultiPass(mat);
+		endSpecularMultiPass();
 		break;
 	case CMaterial::PerPixelLighting:
-		endPPLMultiPass(mat);
+		endPPLMultiPass();
 		break;
 	case CMaterial::PerPixelLightingNoSpec:
-		endPPLNoSpecMultiPass(mat);
+		endPPLNoSpecMultiPass();
 		break;
 	/* case CMaterial::Caustics:
-		endCausticsMultiPass(mat);
+		endCausticsMultiPass();
 		break; */
 	// All others materials do not require multi pass.
 	default: return;
@@ -595,15 +578,8 @@ void CDriverGL::computeLightMapInfos (const CMaterial &mat)
 		}
 	}
 
-	// At least one lightmap if all are blacks
-	if ((mat._LightMaps.size() > 0) && (_NLightMaps == 0))
-	{
-		_LightMapLUT[_NLightMaps] = 0;
-		++_NLightMaps;
-	}
-
 	// Compute how many pass, according to driver caps.
-	_NLightMapPerPass = getNbTextureStages()-1;
+	_NLightMapPerPass = inlGetNumTextStages()-1;
 	// Can do more than 2 texture stages only if NVTextureEnvCombine4.
 	if (!_Extensions.NVTextureEnvCombine4)
 		_NLightMapPerPass = 1;
@@ -616,11 +592,9 @@ void CDriverGL::computeLightMapInfos (const CMaterial &mat)
 
 
 // ***************************************************************************
-sint CDriverGL::beginLightMapMultiPass (const CMaterial &mat)
+sint CDriverGL::beginLightMapMultiPass ()
 {
-	// One texture stage hardware not supported.
-	if (getNbTextureStages()<2)
-		return 1;
+	const CMaterial &mat= *_CurrentMaterial;
 
 	// compute how many lightmap and pass we must process.
 	computeLightMapInfos (mat);
@@ -635,24 +609,21 @@ sint CDriverGL::beginLightMapMultiPass (const CMaterial &mat)
 	return	std::max (_NLightMapPass, (uint)1);
 }
 // ***************************************************************************
-void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
+void			CDriverGL::setupLightMapPass(uint pass)
 {
-	// One texture stage hardware not supported.
-	if(getNbTextureStages()<2)
-		return;
+	const CMaterial &mat= *_CurrentMaterial;
 
-	// No lightmap??, just setup "replace texture" for stage 0.
+	// No lightmap or all blakcs??, just setup "black texture" for stage 0.
 	if(_NLightMaps==0)
 	{
 		ITexture	*text= mat.getTexture(0);
 		activateTexture(0,text);
 
+		// setup std modulate env
 		CMaterial::CTexEnv	env;
-		env.Env.OpRGB= CMaterial::Replace;
-		env.Env.SrcArg0RGB= CMaterial::Texture;
-		env.Env.OpArg0RGB= CMaterial::SrcColor;
 		activateTexEnvMode(0, env);
 		// Since Lighting is disabled, as well as colorArray, must setup alpha.
+		// setup color to 0 => blackness
 		glColor4ub(0, 0, 0, 255);
 
 		// Setup gen tex off
@@ -660,7 +631,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 		_DriverGLStates.enableTexGen (0, false);
 
 		// And disable other stages.
-		for(sint stage=1 ; stage<getNbTextureStages() ; stage++)
+		for(sint stage=1 ; stage<inlGetNumTextStages() ; stage++)
 		{
 			// disable texturing.
 			activateTexture(stage, NULL);
@@ -680,7 +651,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 	// N lightmaps for this pass, plus the texture.
 	nstages= std::min(_NLightMapPerPass, _NLightMaps-lmapId) + 1;
 	// setup all stages.
-	for(uint stage= 0; stage<(uint)getNbTextureStages(); stage++)
+	for(uint stage= 0; stage<(uint)inlGetNumTextStages(); stage++)
 	{
 		// if must setup a lightmap stage.
 		if(stage<nstages-1)
@@ -698,7 +669,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 			//==================================================
 			if(text)
 			{
-				CMaterial::CTexEnv	env;
+				static CMaterial::CTexEnv	stdEnv;
 
 				// NB, !_Extensions.NVTextureEnvCombine4, nstages==2, so here always stage==0.
 				if (stage==0)
@@ -708,7 +679,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 					glColor4ub(lmapFactor.R, lmapFactor.G, lmapFactor.B, 255);
 
 					// Leave stage as default env (Modulate with previous)
-					activateTexEnvMode(stage, env);
+					activateTexEnvMode(stage, stdEnv);
 
 					// Setup gen tex off
 					_DriverGLStates.activeTextureARB(stage);
@@ -720,8 +691,8 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 					nlassert(_Extensions.NVTextureEnvCombine4);
 
 					// setup constant color with Lightmap factor.
-					env.ConstantColor=lmapFactor;
-					activateTexEnvColor(stage, env);
+					stdEnv.ConstantColor=lmapFactor;
+					activateTexEnvColor(stage, stdEnv);
 
 					// setup TexEnvCombine4 (ignore alpha part).
 					if(_CurrentTexEnvSpecial[stage] != TexEnvSpecialLightMapNV4)
@@ -753,8 +724,11 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 					}
 				}
 
-				// setup UV, with UV1.
-				setupUVPtr(stage, _LastVB, 1);
+				// setup UV, with UV1. Only if needed (cached)
+				if( !_LastVertexSetupIsLightMap || _LightMapUVMap[stage]!=1 )
+				{
+					setupUVPtr(stage, _LastVB, 1);
+				}
 			}
 
 			// Next lightmap.
@@ -766,25 +740,22 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 			// (meaning not the same stage as preceding passes).
 			if(pass==0 || (pass==_NLightMapPass-1 && stage!=_NLightMapPerPass))
 			{
-				// setup texture in final stage.
+				// activate the texture at last stage.
 				ITexture	*text= mat.getTexture(0);
 				activateTexture(stage,text);
 
-				// activate the texture at last stage.
-				// setup default env (modulate). (this may disable possible COMBINE4_NV setup).
-				CMaterial::CTexEnv	env;
-				// must set replace for alpha part.
-				env.Env.OpAlpha= CMaterial::Replace;
-				env.Env.SrcArg0Alpha= CMaterial::Texture;
-				env.Env.OpArg0Alpha= CMaterial::SrcAlpha;
-				activateTexEnvMode(stage, env);
+				// setup ModulateRGB/ReplaceAlpha env. (this may disable possible COMBINE4_NV setup).
+				activateTexEnvMode(stage, _LightMapLastStageEnv);
 
 				// Setup gen tex off
 				_DriverGLStates.activeTextureARB(stage);
 				_DriverGLStates.enableTexGen (stage, false);
 
-				// setup UV, with UV0.
-				setupUVPtr(stage, _LastVB, 0);
+				// setup UV, with UV0. Only if needed (cached)
+				if( !_LastVertexSetupIsLightMap || _LightMapUVMap[stage]!=0 )
+				{
+					setupUVPtr(stage, _LastVB, 0);
+				}
 			}
 		}
 		else
@@ -845,10 +816,22 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 
 }
 // ***************************************************************************
-void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
+void			CDriverGL::endLightMapMultiPass()
 {
-	// special for all stage, normal UV behavior.
-	for(sint i=0; i<getNbTextureStages(); i++)
+	// Cache it. reseted in setupGLArrays(), and setupMaterial()
+	_LastVertexSetupIsLightMap= true;
+
+	// nothing to do with blending/lighting, since always setuped in activeMaterial().
+	// If material is the same, then it is still a lightmap material (if changed => touched => different!)
+	// So no need to reset lighting/blending here.
+}
+
+
+// ***************************************************************************
+void			CDriverGL::resetLightMapVertexSetup()
+{
+	// special for all stage, std UV behavior.
+	for(sint i=0; i<inlGetNumTextStages(); i++)
 	{
 		// normal behavior: each texture has its own UV.
 		setupUVPtr(i, _LastVB, i);
@@ -858,14 +841,16 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 	if (_LastVB.VertexFormat & CVertexBuffer::PrimaryColorFlag)
 		_DriverGLStates.enableColorArray(true);
 
-	// nothing to do with blending/lighting, since always setuped in activeMaterial().
-	// If material is the same, then it is still a lightmap material (if changed => touched => different!)
-	// So no need to reset lighting/blending here.
+	// flag
+	_LastVertexSetupIsLightMap= false;
 }
 
+
 // ***************************************************************************
-sint			CDriverGL::beginSpecularMultiPass(const CMaterial &mat)
+sint			CDriverGL::beginSpecularMultiPass()
 {
+	const CMaterial &mat= *_CurrentMaterial;
+
 	_DriverGLStates.activeTextureARB(1);
 	glMatrixMode(GL_TEXTURE);
 	glLoadMatrixf( _TexMtx.get() );
@@ -878,10 +863,6 @@ sint			CDriverGL::beginSpecularMultiPass(const CMaterial &mat)
 	if(!_Extensions.ARBTextureCubeMap)
 		return 1;
 
-	// One texture stage hardware not supported.
-	if(getNbTextureStages()<2)
-		return 1;
-
 	if( _Extensions.NVTextureEnvCombine4 ) // NVidia optimization
 		return 1;
 	else
@@ -889,11 +870,9 @@ sint			CDriverGL::beginSpecularMultiPass(const CMaterial &mat)
 
 }
 // ***************************************************************************
-void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
+void			CDriverGL::setupSpecularPass(uint pass)
 {
-	// One texture stage hardware not supported.
-	if(getNbTextureStages()<2)
-		return;
+	const CMaterial &mat= *_CurrentMaterial;
 
 	// Manage the rare case whe the SpecularMap is not provided (fault of graphist).
 	if(mat.getTexture(1)==NULL)
@@ -1043,7 +1022,7 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 	}
 }
 // ***************************************************************************
-void			CDriverGL::endSpecularMultiPass(const CMaterial &mat)
+void			CDriverGL::endSpecularMultiPass()
 {
 	// Disable Texture coord generation.
 	_DriverGLStates.activeTextureARB(1);
@@ -1169,7 +1148,7 @@ CTextureCube	*CDriverGL::getSpecularCubeMap(uint exp)
 }
 
 // ***************************************************************************
-sint			CDriverGL::beginPPLMultiPass(const CMaterial &mat)
+sint			CDriverGL::beginPPLMultiPass()
 {
 	#ifdef NL_DEBUG
 		nlassert(supportPerPixelLighting(true)); // make sure the hardware can do that
@@ -1178,8 +1157,10 @@ sint			CDriverGL::beginPPLMultiPass(const CMaterial &mat)
 }
 
 // ***************************************************************************
-void			CDriverGL::setupPPLPass(const CMaterial &mat, uint pass)
+void			CDriverGL::setupPPLPass(uint pass)
 {
+	const CMaterial &mat= *_CurrentMaterial;
+
 	nlassert(pass == 0);
 
 /*	ITexture *tex0 = getSpecularCubeMap(1);
@@ -1212,7 +1193,7 @@ void			CDriverGL::setupPPLPass(const CMaterial &mat, uint pass)
 	activateTexture(1, mat.getTexture(0));
 	activateTexture(2, tex2);
 
-	for (uint k = 3; k < (uint) getNbTextureStages(); ++k)
+	for (uint k = 3; k < (uint) inlGetNumTextStages(); ++k)
 	{
 		activateTexture(k, NULL);
 	}
@@ -1295,14 +1276,14 @@ void			CDriverGL::setupPPLPass(const CMaterial &mat, uint pass)
 }
 
 // ***************************************************************************
-void			CDriverGL::endPPLMultiPass(const CMaterial &mat)
+void			CDriverGL::endPPLMultiPass()
 {	
 	// nothing to do there ...
 }
 
 
 // ******PER PIXEL LIGHTING, NO SPECULAR**************************************
-sint			CDriverGL::beginPPLNoSpecMultiPass(const CMaterial &mat)
+sint			CDriverGL::beginPPLNoSpecMultiPass()
 {
 	#ifdef NL_DEBUG
 		nlassert(supportPerPixelLighting(false)); // make sure the hardware can do that
@@ -1311,8 +1292,10 @@ sint			CDriverGL::beginPPLNoSpecMultiPass(const CMaterial &mat)
 }
 
 // ******PER PIXEL LIGHTING, NO SPECULAR**************************************
-void			CDriverGL::setupPPLNoSpecPass(const CMaterial &mat, uint pass)
+void			CDriverGL::setupPPLNoSpecPass(uint pass)
 {
+	const CMaterial &mat= *_CurrentMaterial;
+
 	nlassert(pass == 0);
 
 	ITexture *tex0 = getSpecularCubeMap(1);
@@ -1327,7 +1310,7 @@ void			CDriverGL::setupPPLNoSpecPass(const CMaterial &mat, uint pass)
 	activateTexture(1, mat.getTexture(0));
 
 
-	for (uint k = 2; k < (uint) getNbTextureStages(); ++k)
+	for (uint k = 2; k < (uint) inlGetNumTextStages(); ++k)
 	{
 		activateTexture(k, NULL);
 	}
@@ -1368,7 +1351,7 @@ void			CDriverGL::setupPPLNoSpecPass(const CMaterial &mat, uint pass)
 }
 
 // ******PER PIXEL LIGHTING, NO SPECULAR**************************************
-void			CDriverGL::endPPLNoSpecMultiPass(const CMaterial &mat)
+void			CDriverGL::endPPLNoSpecMultiPass()
 {	
 	// nothing to do there ...
 }
@@ -1381,7 +1364,7 @@ void			CDriverGL::endPPLNoSpecMultiPass(const CMaterial &mat)
 {
 	nlassert(mat.getShader() == CMaterial::Caustics);
 	if (!_Extensions.ARBTextureCubeMap) return 1;
-	switch (getNbTextureStages())
+	switch (inlGetNumTextStages())
 	{
 		case 1: return 3;
 		case 2: return 2;
@@ -1417,12 +1400,12 @@ void		CDriverGL::setupCausticsPass(const CMaterial &mat, uint pass)
 	
 	nlassert(mat.getShader() == CMaterial::Caustics);
 
-	if (getNbTextureStages() == 1 || !_Extensions.ARBTextureCubeMap)
+	if (inlGetNumTextStages() == 1 || !_Extensions.ARBTextureCubeMap)
 	{
 		setupCausticsFirstTex(mat);
 	}
 	else
-	if (getNbTextureStages() >= 3) /// do it in one pass
+	if (inlGetNumTextStages() >= 3) /// do it in one pass
 	{
 		nlassert(pass == 0);		
 
@@ -1430,7 +1413,7 @@ void		CDriverGL::setupCausticsPass(const CMaterial &mat, uint pass)
 		
 
 	}
-	else if (getNbTextureStages() == 2) /// do in in 2 pass
+	else if (inlGetNumTextStages() == 2) /// do in in 2 pass
 	{
 		nlassert(pass < 2);
 		if (pass == 0) 

@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.50 2004/03/23 10:12:59 vizerie Exp $
+ * $Id: transform.h,v 1.51 2004/04/09 14:22:01 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -66,6 +66,7 @@ class	CSkinSpecularRdrPass;
 class	CShadowMap;
 class	CMaterial;
 class	IDriver;
+class CInstanceUser;
 
 // ***************************************************************************
 // ClassIds.
@@ -162,6 +163,9 @@ public:
 
 
 	// @}
+
+	// build matching user interface object (a class derived from CInstanceUser)
+	virtual CInstanceUser       *buildMatchingUserInterfaceObject(bool deleteIt);
 
 public:
 

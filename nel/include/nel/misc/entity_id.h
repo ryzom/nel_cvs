@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.35 2004/01/13 18:32:36 cado Exp $
+ * $Id: entity_id.h,v 1.36 2004/01/15 17:30:14 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -51,7 +51,7 @@ struct CEntityId
 		UNKNOWN_TYPE = (1 << TYPE_SIZE)-1
 	};
 
-private :
+protected:
 
 	// ---------------------------------------------------------------------------------
 	// instantiated data
@@ -82,7 +82,7 @@ private :
 	///The local num service id of the local machin.
 	static uint8				_ServerId;
 
-public :
+public:
 
 	// ---------------------------------------------------------------------------------
 	// static data

@@ -1,7 +1,7 @@
 /** \file naming_service.cpp
  * Naming Service (NS)
  *
- * $Id: naming_service.cpp,v 1.26 2002/08/22 12:54:27 lecroart Exp $
+ * $Id: naming_service.cpp,v 1.27 2002/09/16 14:51:07 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -383,6 +383,8 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 				msgout.serial (s);
 				msgout.serial (const_cast<string &>(name));
 				msgout.serial (sid);
+				// we need to send all addr to all services even if the service can't access because we use the address index
+				// to know which connection comes.
 				msgout.serialCont (const_cast<vector<CInetAddress> &>(addr));
 				nlinfo ("The service is %s-%d, broadcast the Registration to everybody", name.c_str(), sid);
 
@@ -432,7 +434,7 @@ bool doRegister (const string &name, const vector<CInetAddress> &addr, TServiceI
 					{
 						msgout.serial ((*it).Name);
 						msgout.serial ((*it).SId);
-						msgout.serialCont (accessibleAddress);
+						msgout.serialCont ((*it).Addr);
 					}
 				}
 			}

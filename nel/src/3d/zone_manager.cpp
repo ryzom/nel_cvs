@@ -1,7 +1,7 @@
 /** \file zone_manager.cpp
  * CZoneManager class
  *
- * $Id: zone_manager.cpp,v 1.5 2002/02/28 12:59:52 besson Exp $
+ * $Id: zone_manager.cpp,v 1.6 2002/03/04 10:30:29 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -235,6 +235,7 @@ void CZoneLoadingTask::run(void)
 	}
 	else
 	{
+		nldebug("CZoneLoadingTask::run(): File not found: %s", zonePath.c_str ());
 		_Lz->FileNotFound = true;
 		delete _Zm->Zone;
 	}

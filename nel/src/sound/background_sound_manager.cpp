@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.4 2002/07/25 13:35:10 lecroart Exp $
+ * $Id: background_sound_manager.cpp,v 1.5 2002/07/30 10:11:54 miller Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -323,10 +323,10 @@ void CBackgroundSoundManager::setDayNightRatio(float ratio)
 		{
 			if(BackgroundSounds[i].SourceDay != NULL)
 			{
+				BackgroundSounds[i].SourceDay->setGain(BackgroundSounds[i].SourceDayMaxGain);
+				
 				if (!BackgroundSounds[i].SourceDay->isPlaying())
 					BackgroundSounds[i].SourceDay->play();
-				
-				BackgroundSounds[i].SourceDay->setGain(BackgroundSounds[i].SourceDayMaxGain);
 			}
 			
 			if(BackgroundSounds[i].SourceNight != NULL)
@@ -345,26 +345,28 @@ void CBackgroundSoundManager::setDayNightRatio(float ratio)
 
 			if(BackgroundSounds[i].SourceNight != NULL)
 			{
+				BackgroundSounds[i].SourceNight->setGain(BackgroundSounds[i].SourceNightMaxGain);
+
 				if (!BackgroundSounds[i].SourceNight->isPlaying())
 					BackgroundSounds[i].SourceNight->play();
-
-				BackgroundSounds[i].SourceNight->setGain(BackgroundSounds[i].SourceNightMaxGain);
 			}
 		}
 		else
 		{
 			if(BackgroundSounds[i].SourceDay != NULL)
 			{
+				BackgroundSounds[i].SourceDay->setGain((1.0f-ratio) * BackgroundSounds[i].SourceDayMaxGain);
+
 				if (!BackgroundSounds[i].SourceDay->isPlaying())
 					BackgroundSounds[i].SourceDay->play();
-				BackgroundSounds[i].SourceDay->setGain((1.0f-ratio) * BackgroundSounds[i].SourceDayMaxGain);
 			}
 
 			if(BackgroundSounds[i].SourceNight != NULL)
 			{
+				BackgroundSounds[i].SourceNight->setGain(ratio * BackgroundSounds[i].SourceNightMaxGain);
+
 				if (!BackgroundSounds[i].SourceNight->isPlaying())
 					BackgroundSounds[i].SourceNight->play();
-				BackgroundSounds[i].SourceNight->setGain(ratio * BackgroundSounds[i].SourceNightMaxGain);
 			}
 		}
 	}

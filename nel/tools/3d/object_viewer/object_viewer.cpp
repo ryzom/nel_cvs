@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.11 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.12 2001/06/19 08:14:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -556,9 +556,12 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 	CPath::addSearchPath (path);
 
 	// Add search path for the skeleton
-	_splitpath (skeleton, drive, dir, NULL, NULL);
-	_makepath (path, drive, dir, NULL, NULL);
-	CPath::addSearchPath (path);
+	if (skeleton)
+	{
+		_splitpath (skeleton, drive, dir, NULL, NULL);
+		_makepath (path, drive, dir, NULL, NULL);
+		CPath::addSearchPath (path);
+	}
 
 	// Shape pointer
 	IShape *shapeMesh=NULL;
@@ -581,6 +584,7 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 		catch (Exception& e)
 		{
 			_SceneDlg->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+			return false;
 		}
 	}
 	else
@@ -589,6 +593,7 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 		char msg[512];
 		_snprintf (msg, 512, "Can't open the file %s for reading.", meshFilename);
 		_SceneDlg->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+		return false;
 	}
 
 	// Continue ?
@@ -638,6 +643,7 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 			if (shapeMesh)
 				delete shapeMesh;
 			shapeMesh=NULL;
+			return false;
 		}
 	}
 
@@ -648,7 +654,7 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 	// Add an entry for config
 	_ListMeshes.push_back (CMeshDesc (meshFilename, skeleton));
 
-	return false;
+	return true;
 }
 
 // ***************************************************************************

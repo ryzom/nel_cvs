@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.h
  * <File description>
  *
- * $Id: particle_tree_ctrl.h,v 1.4 2001/06/18 16:33:48 vizerie Exp $
+ * $Id: particle_tree_ctrl.h,v 1.5 2001/06/19 08:14:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,8 @@
 
 #include "nel/misc/matrix.h"
 
+#include "3d/ps_particle.h"
+#include "3d/ps_edit.h"
 
 class CParticleDlg ;
 

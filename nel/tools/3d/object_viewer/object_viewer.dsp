@@ -125,27 +125,97 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=.\animation_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
 # ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\animation_set_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
 # ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\blend_wnd.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
 # ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\main_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
 # ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\object_viewer.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
 # ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -154,17 +224,59 @@ SOURCE=.\object_viewer.rc
 # Begin Source File
 
 SOURCE=.\scene_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
 # ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\select_string.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
 # ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\slot_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
 # ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+# ADD CPP /Yu"std_afx.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -298,6 +410,17 @@ SOURCE=.\particle.bmp
 # Begin Source File
 
 SOURCE=.\attrib_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -306,6 +429,17 @@ SOURCE=.\attrib_dlg.h
 # Begin Source File
 
 SOURCE=.\attrib_list_box.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -314,6 +448,17 @@ SOURCE=.\attrib_list_box.h
 # Begin Source File
 
 SOURCE=.\color_button.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -322,6 +467,17 @@ SOURCE=.\color_button.h
 # Begin Source File
 
 SOURCE=.\color_edit.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -334,6 +490,17 @@ SOURCE=.\edit_attrib_dlg.h
 # Begin Source File
 
 SOURCE=.\editable_range.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -342,6 +509,17 @@ SOURCE=.\editable_range.h
 # Begin Source File
 
 SOURCE=.\emitter_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -350,6 +528,17 @@ SOURCE=.\emitter_dlg.h
 # Begin Source File
 
 SOURCE=.\located_bindable_dialog.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -358,6 +547,17 @@ SOURCE=.\located_bindable_dialog.h
 # Begin Source File
 
 SOURCE=.\located_properties.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -366,6 +566,17 @@ SOURCE=.\located_properties.h
 # Begin Source File
 
 SOURCE=.\located_target_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -374,6 +585,17 @@ SOURCE=.\located_target_dlg.h
 # Begin Source File
 
 SOURCE=.\particle_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -386,6 +608,17 @@ SOURCE=.\particle_dsw.h
 # Begin Source File
 
 SOURCE=.\particle_tree_ctrl.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -394,6 +627,17 @@ SOURCE=.\particle_tree_ctrl.h
 # Begin Source File
 
 SOURCE=.\ps_mover_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -406,6 +650,17 @@ SOURCE=.\ps_wrapper.h
 # Begin Source File
 
 SOURCE=.\range_manager.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -414,6 +669,17 @@ SOURCE=.\range_manager.h
 # Begin Source File
 
 SOURCE=.\range_selector.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -422,6 +688,17 @@ SOURCE=.\range_selector.h
 # Begin Source File
 
 SOURCE=.\start_stop_particle_system.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -430,6 +707,17 @@ SOURCE=.\start_stop_particle_system.h
 # Begin Source File
 
 SOURCE=.\texture_chooser.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -438,6 +726,17 @@ SOURCE=.\texture_chooser.h
 # Begin Source File
 
 SOURCE=.\value_blender_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -446,6 +745,17 @@ SOURCE=.\value_blender_dlg.h
 # Begin Source File
 
 SOURCE=.\value_gradient_dlg.cpp
+
+!IF  "$(CFG)" == "object_viewer - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 Debug"
+
+# ADD CPP /Yu
+
+!ELSEIF  "$(CFG)" == "object_viewer - Win32 ReleaseDebug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 

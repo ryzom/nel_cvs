@@ -1,7 +1,7 @@
 /** \file std_afx.h
  * <File description>
  *
- * $Id: std_afx.h,v 1.4 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: std_afx.h,v 1.5 2001/06/19 08:14:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,9 @@
 
 //#include "resource.h"
 
+#include "resource.h"
+
+/*
 #include "nel/misc/common.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/vector.h"
@@ -72,19 +75,16 @@
 #include "3d/ps_zone.h"
 
 
+
 #include <vector>
 #include <map>
 #include <algorithm>
-
-#include "resource.h"
 
 #include "animation_dlg.h"
 #include "animation_set_dlg.h"
 #include "main_dlg.h"
 #include "scene_dlg.h"
-#include "select_string.h"
-
-
+*/
 
 
 //{{AFX_INSERT_LOCATION}}

@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * <File description>
  *
- * $Id: animation_dlg.h,v 1.4 2001/04/26 17:57:41 corvazier Exp $
+ * $Id: animation_dlg.h,v 1.5 2001/06/19 08:14:31 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,6 +31,9 @@
 #endif // _MSC_VER > 1000
 // animation_dlg.h : header file
 //
+
+#include "nel/misc/types_nl.h"
+#include "nel/3d/animation_time.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CAnimationDlg dialog

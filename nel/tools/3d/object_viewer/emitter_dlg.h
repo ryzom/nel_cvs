@@ -5,6 +5,9 @@
 #pragma once
 #endif 
 
+#include "3d/ps_particle.h"
+#include "3d/ps_emitter.h"
+
 namespace NL3D
 {
 	class NL3D::CPSEmitter ;

@@ -1,7 +1,7 @@
 /** \file ps_mesh.h
- * <File description>
+ * Particle meshs
  *
- * $Id: ps_mesh.h,v 1.7 2002/01/29 13:34:18 vizerie Exp $
+ * $Id: ps_mesh.h,v 1.8 2002/02/15 17:07:53 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -346,6 +346,7 @@ public:
 	
 
 protected:
+	friend class CPSConstraintMeshHelper;
 	// inherited from CPSColoredParticle
 	virtual CPSLocated *getColorOwner(void) { return _Owner; }
 
@@ -368,9 +369,7 @@ protected:
 
 	/// draw for pre-rotated meshs
 	void				drawPreRotatedMeshs(bool opaque, TAnimationTime ellapsedTime);
-
-	/// draw for non pre-rotated meshs
-	void				drawMeshs(bool opaque);
+	
 
 	/// release the shapes used by this particle
 	void				releaseShapes();
@@ -382,7 +381,7 @@ protected:
 	  * \param startIndex   Index of the mesh being processed
 	  * \param toProcess    Number of meshs to process
 	  */
-	void	computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess);
+	void	computeColors(CVertexBuffer &outVB, const CVertexBuffer &inVB, uint startIndex, uint toProcess, uint32 srcStep);
 
 	/** Resize the bindable attributes containers. Size is the max number of element to be contained. DERIVERS MUST CALL THEIR PARENT VERSION
 	 * should not be called directly. Call CPSLocated::resize instead

@@ -192,7 +192,7 @@ value_array =
 
 rollout select_rollout "Properties"
 (
-	Label			IGNameLabel				"Name of IG:"					align:#left
+	Label			IGNameLabel				"Value of the appdata:"					align:#left
 	ListBox			IGNameList				height:29
 	Button			RefreshBt				"Refresh list"					align:#left
 	Dropdownlist		AppData					"AppData"
@@ -202,7 +202,11 @@ rollout select_rollout "Properties"
 		max select none
 		for node in objects do
 		(
-			if ((getAppData node value_array[AppData.selection*2]) == IGNameList.items[toto]) then
+			tempidata = getAppData node value_array[AppData.selection*2]
+			boolAppData = (tempidata == (IGNameList.items[toto]) )
+			appDataUndefined = (tempidata == undefined)
+			appDataEmpty = ((IGNameList.items[toto]) == "")
+			if ( boolAppData or ( appDataUndefined and ( appDataEmpty ) ) ) then
 			(
 				unhide node
 				selectmore node
@@ -215,22 +219,21 @@ rollout select_rollout "Properties"
 		array=#()
 		for node in objects do
 		(
-			igname = getAppData node value_array[AppData.selection*2]
-			if (igname != undefined) then
+			tmpData = getAppData node value_array[AppData.selection*2]
+			if (tmpData == undefined) then
+				tmpData = ""
+			found = false
+			for i=1 to array.count do
 			(
-				found = false
-				for i=1 to array.count do
+				if (array[i] == tmpData) then
 				(
-					if (array[i] == igname) then
-					(
-						found = true
-						exit
-					)
+					found = true
+					exit
 				)
-				if (found == false) then
-				(
-					append array igname
-				)
+			)
+			if (found == false) then
+			(
+				append array tmpData
 			)
 		)
 		IGNameList.items = array

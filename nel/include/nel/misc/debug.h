@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.52 2003/07/01 17:29:16 lecroart Exp $
+ * $Id: debug.h,v 1.53 2003/07/08 11:48:15 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -504,6 +504,21 @@ template<class T, class U>	inline T	safe_cast(U o)
 	// NB: must check debug because assert may still be here in release
 #ifdef	NL_DEBUG
 	nlassert(dynamic_cast<T >(o));
+#endif
+	return static_cast<T >(o);
+}
+
+/**
+ * type_cast<>: this is a function which nlassert() a dynamic_cast in Debug, and just do a static_cast in release.
+ * So slow check is made in debug, but only fast cast is made in release.
+ * Differs from safe_cast by allowinf NULL objets.
+ */
+template<class T, class U>	inline T	type_cast(U o)
+{
+	// NB: must check debug because assert may still be here in release
+#ifdef	NL_DEBUG
+	if (o)
+		nlassert(dynamic_cast<T >(o));
 #endif
 	return static_cast<T >(o);
 }

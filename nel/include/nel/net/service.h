@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.31 2001/07/11 12:14:26 lecroart Exp $
+ * $Id: service.h,v 1.32 2001/08/30 17:07:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -167,7 +167,8 @@ public:
 	 * function will not be called before this amount of time you set.
 	 * If you set the update timeout value higher than 0, all messages in queues will be process until the time greater than the timeout user update().
 	 * If you set the update timeout value to 0, all messages in queues will be process one time before calling the user update().
-	 * If you set the update timeout value to -1, only one message will be process one time before calling the user update().
+	 *
+	 * The default value is 10ms
 	 */
 	static void			setUpdateTimeout (sint32 timeout) { _UpdateTimeout = timeout; } 
 

@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.9 2001/06/27 08:24:57 lecroart Exp $
+ * $Id: net_manager.h,v 1.10 2001/08/30 17:07:57 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include <vector>
 
 #include "nel/misc/types_nl.h"
+#include "nel/misc/time_nl.h"
 #include "nel/net/callback_net_base.h"
 #include "nel/net/naming_client.h"
 
@@ -117,9 +118,8 @@ public:
 
 	/** Call it evenly. the parameter select the timeout value in milliseconds for each update. You are absolutely certain that this
 	 * function will not be returns before this amount of time you set.
-	 * If you set the update timeout value higher than 0, all messages in queues will be process until the time greater than the timeout user update().
-	 * If you set the update timeout value to 0, all messages in queues will be process one time before calling the user update().
-	 * If you set the update timeout value to -1, only one message will be process one time before calling the user update().
+	 * If you set the update timeout value higher than 0, all messages in queues will be process until the time is greater than the timeout user update().
+	 * If you set the update timeout value to 0, all messages in queues will be process one time before calling the user update(). In this case, we don't nlSleep(1).
 	 */
 	static void	update (sint32 timeout = 0);
 
@@ -162,12 +162,16 @@ private:
 	// Contains all the connections (client and server)
 	static	TBaseMap	_BaseMap;
 
-	static CCallbackNetBase::TRecordingState _RecordingState;
+	static	CCallbackNetBase::TRecordingState _RecordingState;
+
+	// used to synchonize the timeout in the update function
+	static	NLMISC::TTime _NextUpdateTime;
 
 	// Finds the service or add it if not found
 	static	ItBaseMap find (const std::string &serviceName);
 
-	friend void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInetAddress &addr);
+	friend	void RegistrationBroadcast (const std::string &name, TServiceId sid, const CInetAddress &addr);
+
 
 	// It's a static class, you can't instanciate it
 	CNetManager() { }

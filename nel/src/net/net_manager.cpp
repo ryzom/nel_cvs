@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.12 2001/06/27 08:24:57 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.13 2001/08/30 17:07:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,6 +50,7 @@ CNetManager::TBaseMap	CNetManager::_BaseMap;
 
 CCallbackNetBase::TRecordingState	CNetManager::_RecordingState;
 
+TTime CNetManager::_NextUpdateTime = 0;
 
 static void nmNewConnection (TSockId from, void *arg)
 {
@@ -338,84 +339,91 @@ void CNetManager::addCallbackArray (const std::string &serviceName, const TCallb
 	}
 }
 
-
 void CNetManager::update (sint32 timeout)
 {
 //	nldebug ("L4: update()");
 
-	// 
-	sint32 quantum = 0;
+//	sint64 p1 = CTime::getPerformanceTime ();
+
+	TTime t0 = CTime::getLocalTime ();
 
 	if (timeout > 0)
 	{
-		uint32 nbc = 0;
+		if (_NextUpdateTime == 0)
+		{
+			_NextUpdateTime = t0 + timeout;
+		}
+		else
+		{
+			sint32 err = (sint32)(t0 - _NextUpdateTime);
+			_NextUpdateTime += timeout;
+			timeout -= err;
+			if (timeout < 0) timeout = 0;
+		}
+	}
+	
+//	sint64 p2 = CTime::getPerformanceTime ();
+
+	while (true)
+	{
 		for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
 		{
 			for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
 			{
+				/// \todo ace: update() only when connected () but cado must fix the problem before because if we don't update when we are not connected, we don't receive the disconnection
+				// we get and treat all messages in this connection
+				(*itbm).second.NetBase[i]->update (0);
 				if ((*itbm).second.NetBase[i]->connected())
-					nbc++;
-			}
-		}
-		if (nbc > 0)
-		{
-			// we have to give this quantum of time for each connection
-			quantum = timeout/nbc;
-			if (quantum == 0)
-			{
-				nlwarning ("Unstable network update. I don't have enough time to update each connection, the UpdateTimeout mus be greater than %d", nbc);
-				quantum = 1;
-			}
-		}
-	}
-	else
-	{
-		quantum = timeout;
-	}
-
-	for (ItBaseMap itbm = _BaseMap.begin (); itbm != _BaseMap.end (); itbm++)
-	{
-		for (uint32 i = 0; i < (*itbm).second.NetBase.size(); i++)
-		{
-			/// \todo ace: update() only when connected () but cado must fix the problem before because if we don't update when we are not connected, we don't receive the disconnection
-			(*itbm).second.NetBase[i]->update (quantum);
-			if ((*itbm).second.NetBase[i]->connected())
-			{
-				// if connected, update
-//				(*itbm).second.NetBase[i]->update ();
-			}
-			else
-			{
-				static TTime lasttime = CTime::getLocalTime();
-				if (CTime::getLocalTime() > lasttime + 5000)
 				{
-					lasttime = CTime::getLocalTime();
-
-					// if not connected, try to connect ClientWithAddr
-					if ((*itbm).second.Type == CBaseStruct::ClientWithAddr && (*itbm).second.AutoRetry)
+					// if connected, update
+//					(*itbm).second.NetBase[i]->update ();
+				}
+				else
+				{
+					static TTime lastTime = CTime::getLocalTime();
+					if (CTime::getLocalTime() - lastTime > 5000)
 					{
-						CCallbackClient *cc = dynamic_cast<CCallbackClient *>((*itbm).second.NetBase[i]);
-						try
-						{
-							nlassert ((*itbm).second.ServiceNames.size()==1);
-							cc->connect (CInetAddress((*itbm).second.ServiceNames[0]));
+						lastTime = CTime::getLocalTime();
 
-							if ((*itbm).second.ConnectionCallback != NULL)
-								(*itbm).second.ConnectionCallback ((*itbm).second.Name, cc->getSockId(0), (*itbm).second.ConnectionCbArg);
-						}
-						catch (ESocketConnectionFailed &e)
+						// if not connected, try to connect ClientWithAddr
+						if ((*itbm).second.Type == CBaseStruct::ClientWithAddr && (*itbm).second.AutoRetry)
 						{
-							// can't connect now, try later
-							nlinfo("L4: can't connect now (%s)", e.what());
+							CCallbackClient *cc = dynamic_cast<CCallbackClient *>((*itbm).second.NetBase[i]);
+							try
+							{
+								nlassert ((*itbm).second.ServiceNames.size()==1);
+								cc->connect (CInetAddress((*itbm).second.ServiceNames[0]));
+
+								if ((*itbm).second.ConnectionCallback != NULL)
+									(*itbm).second.ConnectionCallback ((*itbm).second.Name, cc->getSockId(0), (*itbm).second.ConnectionCbArg);
+							}
+							catch (ESocketConnectionFailed &e)
+							{
+								// can't connect now, try later
+								nlinfo("L4: can't connect now to %s (reason: %s)", (*itbm).second.ServiceNames[0].c_str(), e.what());
+							}
 						}
 					}
-				}
-			}	
+				}	
+			}
 		}
+
+		// If it's the end, don't nlSleep()
+		if (CTime::getLocalTime() - t0 > timeout)
+			break;
+		
+		// Enable windows multithreading before rescanning all connections
+		nlSleep (1);
 	}
+
+//	sint64 p3 = CTime::getPerformanceTime ();
 
 	if (CNamingClient::connected ())
 		CNamingClient::update ();
+
+//	sint64 p4 = CTime::getPerformanceTime ();
+
+//	nlinfo("time : %f %f %f %d", CTime::ticksToSecond(p2-p1), CTime::ticksToSecond(p3-p2), CTime::ticksToSecond(p4-p3), timeout);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file buf_net_base.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.14 2001/08/23 17:21:56 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.15 2001/08/30 17:07:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -275,6 +275,9 @@ void CBufSock::connect( const CInetAddress& addr, bool nodelay, bool connectedst
 {
 	nlassert (this != InvalidSockId);	// invalid bufsock
 	nlassert( ! Sock->connected() );
+
+	SendNextValue = ReceiveNextValue = 0;
+	
 	Sock->connect( addr );
 	_ConnectedState = connectedstate;
 	_KnowConnected = connectedstate;
@@ -294,6 +297,8 @@ void CBufSock::disconnect( bool connectedstate )
 	Sock->disconnect();
 	_ConnectedState = connectedstate;
 	_KnowConnected = connectedstate;
+
+	SendNextValue = ReceiveNextValue = 0;
 }
 
 

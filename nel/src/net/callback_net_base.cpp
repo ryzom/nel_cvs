@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.22 2001/07/18 16:13:22 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.23 2001/08/30 17:07:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -297,17 +297,17 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 	{
 		nldebug("L3NB: First update()");
 		_FirstUpdate = false;
-		_LastUpdateTime = CTime::getLocalTime ();
-		_LastMovedStringArray = CTime::getLocalTime ();
+		_LastUpdateTime = t0;
+		_LastMovedStringArray = t0;
 	}
 
 	//
 	// Every 1 seconds if we have new unknown association, we ask them to the other side
 	//
-	if (_LastUpdateTime + 1000 < CTime::getLocalTime ())
+	if (t0 - _LastUpdateTime >  1000)
 	{
 //		nldebug("L3NB: baseUpdate()");
-		_LastUpdateTime = CTime::getLocalTime ();
+		_LastUpdateTime = t0;
 
 		const set<string> &sa = _InputSIDA.getNeedToAskedStringArray ();
 		if (!sa.empty ())
@@ -326,14 +326,14 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 			// send the message to the other side
 			send (msgout, 0);
 			_InputSIDA.moveNeedToAskToAskedStringArray();
-			_LastMovedStringArray = CTime::getLocalTime ();
+			_LastMovedStringArray = t0;
 		}
 	}
 
 	//
 	// Every 60 seconds if we have not answered association, we ask again to get them!
 	//
-	if (!_InputSIDA.getAskedStringArray().empty() && _LastMovedStringArray + 60000 < CTime::getLocalTime ())
+	if (!_InputSIDA.getAskedStringArray().empty() && t0 - _LastMovedStringArray > 60000)
 	{
 		// we didn't have an answer for the association, resend them
 		const set<string> sa = _InputSIDA.getAskedStringArray ();
@@ -350,9 +350,8 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		}
 		// sends the message to the other side
 		send (msgout, 0);
-		_LastMovedStringArray = CTime::getLocalTime ();
+		_LastMovedStringArray = t0;
 	}
-
 
 	/*
 	 * timeout -1    =>  read one message in the queue
@@ -370,43 +369,26 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 			processOneMessage ();
 			if (timeout == -1)
 			{
+				exit = true;
 				break;
 			}
 		}
 
-		// enable multithreading on windows :-/
-		nlSleep (1);
-
 		// need to exit?
-		if (timeout == -1 || timeout == 0 || (sint32)(CTime::getLocalTime()-t0) > timeout)
+		if (timeout == 0 || (sint32)(CTime::getLocalTime() - t0) > timeout)
 		{
 			exit = true;
+		}
+		else
+		{
+			// enable multithreading on windows :-/ (take at leas 10ms)
+			nlSleep (1);
 		}
 	}
 
 #ifdef USE_MESSAGE_RECORDER
 	_MR_UpdateCounter++;
 #endif
-
-/* old message processing
-	while (dataAvailable ()) // can be interrupted by "break"
-	{
-		processOneMessage ();
-
-		// Test if we read more data
-		if ( timeout == -1 )
-		{
-			break; // only one read already done => exit
-		}
-		else if ( timeout != -1 )
-		{
-			if ( (sint32)(CTime::getLocalTime()-t0) > timeout )
-			{
-				break; // the timeout has expired
-			}
-		}
-	}
-*/
 
 }
 

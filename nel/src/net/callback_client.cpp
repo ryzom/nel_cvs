@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.13 2001/08/24 08:23:52 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.14 2001/08/30 17:07:36 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -269,6 +269,8 @@ void CCallbackClient::connect( const CInetAddress& addr )
 {
 	checkThreadId ();
 
+	SendNextValue = ReceiveNextValue = 0;
+
 #ifdef USE_MESSAGE_RECORDER
 	if ( _MR_RecordingState != Replay )
 	{
@@ -335,6 +337,8 @@ void CCallbackClient::disconnect( TSockId hostid )
 {
 	nlassert (hostid != InvalidSockId);	// invalid hostid
 	checkThreadId ();
+
+	SendNextValue = ReceiveNextValue = 0;
 
 	// Disconnect only if connected (same as physically connected for the client)
 	if ( _BufSock->connectedState() )

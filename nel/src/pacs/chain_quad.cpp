@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.10 2001/08/23 13:40:04 legros Exp $
+ * $Id: chain_quad.cpp,v 1.11 2001/09/07 11:54:11 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,9 +67,14 @@ CChainQuad	&CChainQuad::operator=(const CChainQuad &o)
 	// Alloc good quaddata.
 	_QuadDataLen= o._QuadDataLen;
 	free(_QuadData);
-	_QuadData= (uint8*)malloc(_QuadDataLen);
-	// copy contents.
-	memcpy(_QuadData, o._QuadData, _QuadDataLen);
+	if(_QuadDataLen>0)
+	{
+		_QuadData= (uint8*)malloc(_QuadDataLen);
+		// copy contents.
+		memcpy(_QuadData, o._QuadData, _QuadDataLen);
+	}
+	else
+		_QuadData= NULL;
 
 	// copy infos.
 	_Width= o._Width;
@@ -484,7 +489,10 @@ void		CChainQuad::serial(NLMISC::IStream &f)
 	if(f.isReading())
 	{
 		free(_QuadData);
-		_QuadData= (uint8*)malloc(_QuadDataLen);
+		if(_QuadDataLen>0)
+			_QuadData= (uint8*)malloc(_QuadDataLen);
+		else
+			_QuadData= NULL;
 	}
 	// Since we have only uint16 (see CEdgeChainEntry), serial them in a single block.
 	uint16	*ptrQData= (uint16*)_QuadData;

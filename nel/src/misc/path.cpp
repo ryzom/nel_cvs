@@ -1,7 +1,7 @@
 /** \file path.cpp
  * CPath
  *
- * $Id: path.cpp,v 1.9 2001/03/07 13:02:51 berenguier Exp $
+ * $Id: path.cpp,v 1.10 2001/09/07 11:54:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,9 +35,9 @@ using namespace std;
 //#define	NL_DEBUG_PATH
 
 #ifdef	NL_DEBUG_PATH
-#define	NL_DISPLAY_PATH(_x_)	nlinfo("Patch: %s", _x_.c_str())
+#define	NL_DISPLAY_PATH(_x_)	nlinfo("Path: %s", _x_.c_str())
 #else 
-#define	NL_DISPLAY_PATH(_x_) NULL
+#define	NL_DISPLAY_PATH(_x_)	NULL
 #endif
 
 
@@ -77,7 +77,9 @@ void CPath::addSearchPath( const string& path )
 string CPath::lookup( const string& filename )
 {
 	if(filename.empty())
+	{
 		throw EPathNotFound( filename );
+	}
 	if ( CFile::fileExists(filename) )
 	{
 		NL_DISPLAY_PATH(filename);

@@ -1,7 +1,7 @@
 /** \file triangle.cpp
  * <File description>
  *
- * $Id: triangle.cpp,v 1.1 2001/02/28 14:39:04 berenguier Exp $
+ * $Id: triangle.cpp,v 1.2 2001/04/04 10:10:59 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -31,45 +31,27 @@ namespace NLMISC
 {
 
 #define EPSILON 0.0001f
-
 // ***************************************************************************
 bool CTriangle::intersect (const CVector& p0, const CVector& p1, CVector& hit, const CPlane& plane) const
 {
-	// Normale
-	CVector normal=plane.getNormal();
+	CVector	normal = plane.getNormal();
 
-	// Not clipped by the plane ?
-	if (plane*p0<-EPSILON)
-	{
-		if (plane*p1<-EPSILON)
-			return false;
-	}
-	else
-	{
-		if (plane*p1>EPSILON)
-			return false;
-	}
+	float	np1 = normal*p1;
+	float	lambda = (plane.d+np1)/(np1-normal*p0);
 
-	// Point on the plane
-	hit=plane.intersect (p0, p1);
-
-	// Check the point...
-	float f=((V0-hit)^(V1-hit))*normal;
-	bool negative=f<EPSILON;
-	bool positive=f>-EPSILON;
-
-	float f2=((V1-hit)^(V2-hit))*normal;
-	if ((!positive)&&(f2>EPSILON))
-		return false;
-	if ((!negative)&&(f2<-EPSILON))
+	// Checks the intersection belongs to the segment
+	if (lambda < -EPSILON || lambda > 1.0f+EPSILON)
 		return false;
 
-	f2=((V2-hit)^(V0-hit))*normal;
-	if ((!positive)&&(f2>EPSILON))
-		return false;
-	if ((!negative)&&(f2<-EPSILON))
-		return false;
-	return true;
+	// The intersection on the plane
+	hit = p0*lambda+p1*(1.0f-lambda);
+
+	float	d0 = ((V1-V0)^normal)*(hit-V0);
+	float	d1 = ((V2-V1)^normal)*(hit-V1);
+	float	d2 = ((V0-V2)^normal)*(hit-V2);
+
+	return (d0 < +EPSILON && d1 < +EPSILON && d2 < +EPSILON) ||
+		   (d0 > -EPSILON && d1 > -EPSILON && d2 > -EPSILON);
 }
 
 

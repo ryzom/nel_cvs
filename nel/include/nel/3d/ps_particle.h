@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.16 2001/06/07 10:17:57 vizerie Exp $
+ * $Id: ps_particle.h,v 1.17 2001/06/08 08:30:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,8 +130,17 @@ class CPSColoredParticle
 		 */
 		void setColorScheme(CPSAttribMaker<CRGBA> *col) ;
 
+		/// get the color scheme (NULL if none)
+		CPSAttribMaker<CRGBA> *getColorScheme(void) { return _ColorScheme ; }
+
+		/// get the color scheme (NULL if none) const version
+		const CPSAttribMaker<CRGBA> *getColorScheme(void) const { return _ColorScheme ; }
+
 		/// Set a constant color for the particles. remove any previous scheme
-		void setColor(const NLMISC::CRGBA col) ;
+		void setColor(NLMISC::CRGBA col) ;
+
+		/// Get the color
+		NLMISC::CRGBA getColor(NLMISC::CRGBA col) const { return _Color ; }
 
 		/// ctor : default are white particles (constant color)
 		CPSColoredParticle() ;
@@ -168,8 +177,19 @@ class CPSSizedParticle
 		 */
 		void setSizeScheme(CPSAttribMaker<float> *size) ;
 
+
+
+		/// get the size scheme (NULL if none)
+		CPSAttribMaker<float> *getSizeScheme(void) { return _SizeScheme ; }
+
+		/// get the size scheme (NULL if none) const version
+		const CPSAttribMaker<float> *getSizeScheme(void) const { return _SizeScheme ; }
+
 		/// Set a constant size for the particles
 		void setSize(float size) ;
+
+		/// get the constant size
+		float getSize(void) const { return _ParticleSize ; }
 
 		/// ctor : default are 0.1f particles
 		CPSSizedParticle() ;
@@ -201,11 +221,21 @@ class CPSRotated2DParticle
 		 */
 		void setAngle2DScheme(CPSAttribMaker<float> *scheme) ;
 
+		/// get the angle 2D scheme (NULL if none)
+		CPSAttribMaker<float> *getAngle2DScheme(void) { return _Angle2DScheme ; }
+
+		/// get the angle 2D scheme (NULL if none) const version
+		const CPSAttribMaker<float> *getAngle2DScheme(void) const { return _Angle2DScheme ; }
+
+
 		/** Set a constant angle for the particle. Angles range from  0.0f to 256.0f (2 pi)
 		 *	This discrad any previous scheme
 		 * \see setAngle2DScheme()
 		 */
 		void setAngle2D(float angle) ;
+
+		/// get the constant 
+		float getAngle2D(void) const { return _Angle2D ; }
 
 		/// ctor : default are unrotated particles (angle = 0.0f)
 		CPSRotated2DParticle() ;
@@ -261,11 +291,27 @@ class CPSTexturedParticle
 		 */
 		void setTextureScheme(CSmartPtr<CTextureGrouped> textureGroup, CPSAttribMaker<sint32> *animOrder) ;
 
+		/// get the texture scheme (null if none) const version
+		CPSAttribMaker<sint32> *getTextureScheme(void) { return _TextureScheme ; }
+
+		/// get the texture scheme (null if none) const version
+		const CPSAttribMaker<sint32> *getTextureScheme(void) const { return _TextureScheme ; }
+
+		/// get the texture group used if there's a texture scheme
+		CTextureGrouped *getTextureGroup(void) { nlassert(getTextureScheme()) ; return _TexGroup ; }
+
+		/// get the texture group used if there's a texture scheme (const version)
+		const CTextureGrouped *getTextureGroup(void) const { nlassert(getTextureScheme()) ; return _TexGroup ; }
+
+
 		/** Set a constant texture for the particle
 		 *	This discard any previous scheme
 		 * \see setTextureScheme()
 		 */
 		void setTexture(CSmartPtr<ITexture> tex) ;
+
+		/// get the constant texture
+		const ITexture *getTexture(void) const { return _Tex ; }
 
 		/// ctor : default have no texture. You must set it, otherwise you'll get an assertion when it's drawn
 
@@ -321,7 +367,16 @@ class CPSRotated3DPlaneParticle
 		 * \see setPlaneBasisSchemeScheme()
 		 */
 
+		/// get the plane basis scheme, (NULL if none)
+		CPSAttribMaker<CPlaneBasis> *getPlaneBasisScheme(void) { return _PlaneBasisScheme ; }
+
+		/// get the plane basis scheme, (NULL if none) const version
+		const CPSAttribMaker<CPlaneBasis> *getPlaneBasisScheme(void) const { return _PlaneBasisScheme ; }
+
 		void setPlaneBasis(const CPlaneBasis &basis) ;
+
+		/// get the constant basis
+		CPlaneBasis getPlaneBasis(void) const { return _PlaneBasis ; }
 
 		/// ctor : default have constant basis that map to the I & J vector (e.g identity)
 		CPSRotated3DPlaneParticle() ;

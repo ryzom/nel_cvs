@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.16 2001/06/07 10:17:57 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.17 2001/06/08 08:30:43 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,7 +83,7 @@ void CPSColoredParticle::setColorScheme(CPSAttribMaker<CRGBA> *col)
 {
 	if (_UseColorScheme)
 	{
-		delete _ColorScheme ;
+		delete _ColorScheme ;	
 	}
 	else
 	{
@@ -102,6 +102,7 @@ void CPSColoredParticle::setColor(NLMISC::CRGBA col)
 	if (_UseColorScheme)
 	{
 		delete _ColorScheme ;
+		_ColorScheme = NULL ;
 		_UseColorScheme = false ;
 	}
 	_Color = col ;
@@ -110,7 +111,7 @@ void CPSColoredParticle::setColor(NLMISC::CRGBA col)
 }
 
 		
-CPSColoredParticle::CPSColoredParticle() : _UseColorScheme(false), _Color(CRGBA(255, 255, 255))
+CPSColoredParticle::CPSColoredParticle() : _UseColorScheme(false), _ColorScheme(NULL), _Color(CRGBA(255, 255, 255))
 {	
 }
 
@@ -177,6 +178,7 @@ void CPSSizedParticle::setSize(float size)
 	if (_UseSizeScheme)
 	{
 		delete _SizeScheme ;
+		_SizeScheme = NULL ;
 		_UseSizeScheme = false ;
 	}
 	_ParticleSize = size ;
@@ -185,7 +187,7 @@ void CPSSizedParticle::setSize(float size)
 
 
 /// ctor : default are 0.3 sized particles
-CPSSizedParticle::CPSSizedParticle() : _UseSizeScheme(false), _ParticleSize(0.3f)
+CPSSizedParticle::CPSSizedParticle() : _UseSizeScheme(false), _SizeScheme(NULL), _ParticleSize(0.3f)
 {
 }
 	
@@ -254,6 +256,7 @@ void CPSRotated2DParticle::setAngle2D(float angle2DScheme)
 	if (_UseAngle2DScheme)
 	{
 		delete _Angle2DScheme ;
+		_Angle2DScheme = NULL ;
 		_UseAngle2DScheme = false ;
 	}
 	_Angle2D = angle2DScheme ;
@@ -361,6 +364,7 @@ void CPSTexturedParticle::setTexture(CSmartPtr<ITexture> tex)
 	if (_UseTextureScheme)
 	{
 		delete _TextureScheme ;
+		_TextureScheme = NULL ;
 		_UseTextureScheme = false ;
 	}
 	_Tex = tex ;
@@ -453,7 +457,7 @@ void CPSRotated3DPlaneParticle::setPlaneBasis(const CPlaneBasis &basis)
 {
 	if (_UsePlaneBasisScheme)
 	{
-		delete _PlaneBasisScheme ;
+		delete _PlaneBasisScheme ;		
 		_PlaneBasisScheme = NULL ;
 		_UsePlaneBasisScheme = false ;
 	}

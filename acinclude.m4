@@ -2,7 +2,7 @@ dnl =========================================================================
 dnl
 dnl Macros used by Nevrax in configure.in files.
 dnl
-dnl $Id: acinclude.m4,v 1.6 2002/01/28 14:59:45 valignat Exp $
+dnl $Id: acinclude.m4,v 1.7 2002/01/29 13:21:42 valignat Exp $
 dnl 
 dnl =========================================================================
 
@@ -214,9 +214,9 @@ AC_DEFUN(MY_NEL_LIB_CHK,
 [ AC_REQUIRE_CPP()
 
 chk_message_obj="$1"
-nel_dir_lnk="$2"
-nel_libraries="$3"
-nel_test_lib="$4"
+nel_libraries="$2"
+nel_test_lib="$3"
+nel_additional_libs="$4"
 is_mandatory="$5"
 
 if test $is_mandatory = "yes"
@@ -224,17 +224,11 @@ then
 
     AC_MSG_CHECKING(for -l$nel_test_lib)
         
-    if test $nel_libraries
-    then
-        NEL_TEST_LIBS="-L$nel_libraries -l$nel_test_lib"
-
-    else
-        NEL_TEST_LIBS="$nel_dir_lnk -l$nel_test_lib"
-    fi
+    NEL_TEST_LIBS="$NEL_LIBS $nel_additional_libs -l$nel_test_lib"
 
     _CPPFLAGS="$CPPFLAGS"
 
-    CPPFLAGS="$CXXFLAGS $NEL_TEST_LIBS"
+    CPPFLAGS="$CXXFLAGS $LIBS $NEL_TEST_LIBS"
 
     AC_TRY_LINK( , , have_nel_test_libraries="yes", have_nel_test_libraries="no")
 
@@ -279,7 +273,7 @@ nel_misc_lib="nelmisc"
 nel_net_lib="nelnet"
 nel_3d_lib="nel3d"
 nel_pacs_lib="nelpacs"
-nel_sound_lib="nelsound"
+nel_sound_lib="nelsnd"
 nel_ai_lib="nelai"
 
 nelmisc_is_mandatory="$1"
@@ -289,33 +283,6 @@ nelpacs_is_mandatory="$4"
 nelsound_is_mandatory="$5"
 nelai_is_mandatory="$6"
 
-nelconfig_libs_args=""
-
-if test "$nelnet_is_mandatory" != "yes"
-then
-    nelconfig_libs_args="$nelconfig_libs_args --without-network"
-fi
-
-if test "$nel3d_is_mandatory" != "yes"
-then
-    nelconfig_libs_args="$nelconfig_libs_args --without-3d"
-fi
-
-if test "$nelpacs_is_mandatory" != "yes"
-then
-    nelconfig_libs_args="$nelconfig_libs_args --without-pacs"
-fi
-
-if test "$nelsound_is_mandatory" != "yes"
-then
-    nelconfig_libs_args="$nelconfig_libs_args --without-sound"
-fi
-
-if test "$nelai_is_mandatory" != "yes"
-then
-    nelconfig_libs_args="$nelconfig_libs_args --without-ai"
-fi
-
 dnl Check for nel-config
 AC_PATH_PROG(NEL_CONFIG, nel-config, no)
 
@@ -324,9 +291,10 @@ then
     have_nel_config="no"
 else
     NEL_CFLAGS=`nel-config --cflags`
-    NEL_LIBS=`nel-config --libs $nelconfig_libs_args`
 
-    nel_dir_lnk=`echo '$NEL_LIBS' | sed -e 's/[[:space:]]*-l[^[:space:]]*//g'`
+    NEL_LIBS_CONFIG=`nel-config --libs`
+
+    NEL_LIBS=`echo '$NEL_LIBS_CONFIG' | sed -e 's/[[:space:]]*-l[^[:space:]]*//g'`
 
     have_nel_config="yes"
 fi
@@ -366,12 +334,12 @@ MY_NEL_HEADER_CHK([NeL Sound], [nel/sound/u_source.h], [NL_U_SOURCE_H], $nelsoun
 MY_NEL_HEADER_CHK([NeL AI], [nel/ai/nl_ai.h], [_IA_NEL_H], $nelai_is_mandatory)
 
 dnl Checking for NeL libraries
-MY_NEL_LIB_CHK([NeL Misc], $nel_dir_lnk, $nel_libraries, $nel_misc_lib, $nelmisc_is_mandatory)
-MY_NEL_LIB_CHK([NeL Network], $nel_dir_lnk, $nel_libraries, $nel_net_lib, $nelnet_is_mandatory)
-MY_NEL_LIB_CHK([NeL 3D], $nel_dir_lnk, $nel_libraries, $nel_3d_lib, $nel3d_is_mandatory)
-MY_NEL_LIB_CHK([NeL PACS], $nel_dir_lnk, $nel_libraries, $nel_pacs_lib, $nelpacs_is_mandatory)
-MY_NEL_LIB_CHK([NeL Sound], $nel_dir_lnk, $nel_libraries, $nel_sound_lib, $nelsound_is_mandatory)
-MY_NEL_LIB_CHK([NeL AI], $nel_dir_lnk, $nel_libraries, $nel_ai_lib, $nelai_is_mandatory)
+MY_NEL_LIB_CHK([NeL Misc], $nel_libraries, $nel_misc_lib, "", $nelmisc_is_mandatory)
+MY_NEL_LIB_CHK([NeL Network],$nel_libraries, $nel_net_lib, "-lnelmisc", $nelnet_is_mandatory)
+MY_NEL_LIB_CHK([NeL 3D], $nel_libraries, $nel_3d_lib, "-lnelmisc", $nel3d_is_mandatory)
+MY_NEL_LIB_CHK([NeL PACS], $nel_libraries, $nel_pacs_lib, "-lnelmisc", $nelpacs_is_mandatory)
+MY_NEL_LIB_CHK([NeL AI], $nel_libraries, $nel_ai_lib, "-lnelmisc", $nelai_is_mandatory)
+MY_NEL_LIB_CHK([NeL Sound], $nel_libraries, $nel_sound_lib, "-lnelmisc" $OPENAL_LIBS, $nelsound_is_mandatory)
 
 ])
 

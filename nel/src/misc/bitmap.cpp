@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.12 2001/10/26 08:30:33 vizerie Exp $
+ * $Id: bitmap.cpp,v 1.13 2001/10/29 09:28:19 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -124,7 +124,7 @@ uint8 CBitmap::load(NLMISC::IStream &f)
 		f.serial(width);
 		f.serial(height);
 		f.serial(imageDepth);
-		if(imageDepth!=8 && imageDepth!=24 && imageDepth!=32) return 0;
+		if(imageDepth!=8 && imageDepth!=16 && imageDepth!=24 && imageDepth!=32) return 0;
 		f.serial(desc);
 
 		if(!f.seek (0, origin))
@@ -1761,20 +1761,27 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 				if(imageDepth==24 || imageDepth==32)
 				{
 					sint32 mult = 3;
+					if(imageDepth==16)
+					{
+						mult = 2;
+					}
 					if(imageDepth==32)  
 					{
 						mult = 4;
 					}
-					for(x=0; x<_Width; x++)
+					if(imageDepth!=16)
 					{
-						// RGB(A)
-						r = scanline[x*mult+0];
-						g = scanline[x*mult+1];
-						b = scanline[x*mult+2];
-						// Switching to BGR(A)
-						scanline[x*mult+0] = b;
-						scanline[x*mult+1] = g;
-						scanline[x*mult+2] = r;
+						for(x=0; x<_Width; x++)
+						{
+							// RGB(A)
+							r = scanline[x*mult+0];
+							g = scanline[x*mult+1];
+							b = scanline[x*mult+2];
+							// Switching to BGR(A)
+							scanline[x*mult+0] = b;
+							scanline[x*mult+1] = g;
+							scanline[x*mult+2] = r;
+						}
 					}
 				}
 				
@@ -1783,23 +1790,53 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 				{
 					if(upSideDown)
 					{
-						_Data[0][(height-y-1)*width*4 + 4*i] = scanline[k++];
-						_Data[0][(height-y-1)*width*4 + 4*i + 1] = scanline[k++];
-						_Data[0][(height-y-1)*width*4 + 4*i + 2] = scanline[k++];
-						if(imageDepth==32)
-							_Data[0][(height-y-1)*width*4 + 4*i + 3] = scanline[k++];
-						else
+						if(imageDepth==16)
+						{
+							uint16 toto = (uint16)scanline[k++];
+							toto |= scanline[k++]<<8;
+							uint r = toto>>10;
+							uint g = (toto>>5)&0x1f;
+							uint b = toto&0x1f;
+							_Data[0][(height-y-1)*width*4 + 4*i] = (r<<3) | (r>>2);
+							_Data[0][(height-y-1)*width*4 + 4*i + 1] = (g<<3) | (g>>2);
+							_Data[0][(height-y-1)*width*4 + 4*i + 2] = (b<<3) | (b>>2);
 							_Data[0][(height-y-1)*width*4 + 4*i + 3] = 255;
+						}
+						else
+						{
+							_Data[0][(height-y-1)*width*4 + 4*i] = scanline[k++];
+							_Data[0][(height-y-1)*width*4 + 4*i + 1] = scanline[k++];
+							_Data[0][(height-y-1)*width*4 + 4*i + 2] = scanline[k++];
+							if(imageDepth==32)
+								_Data[0][(height-y-1)*width*4 + 4*i + 3] = scanline[k++];
+							else
+								_Data[0][(height-y-1)*width*4 + 4*i + 3] = 255;
+						}
 					}
 					else
 					{
-						_Data[0][y*width*4 + 4*i] = scanline[k++];
-						_Data[0][y*width*4 + 4*i + 1] = scanline[k++];
-						_Data[0][y*width*4 + 4*i + 2] = scanline[k++];
-						if(imageDepth==32)
-							_Data[0][y*width*4 + 4*i + 3] = scanline[k++];
-						else
+						if(imageDepth==16)
+						{
+							uint16 toto = (uint16)scanline[k++];
+							toto |= scanline[k++]<<8;
+							int r = toto>>10;
+							int g = toto&(0x3e0)>>5;
+							int b = toto&0x1f;
+							_Data[0][y*width*4 + 4*i] = (r<<3) | (r>>2);
+							_Data[0][y*width*4 + 4*i + 1] = (g<<3) | (g>>2);
+							_Data[0][y*width*4 + 4*i + 2] = (b<<3) | (b>>2);
 							_Data[0][y*width*4 + 4*i + 3] = 255;
+						}
+						else
+						{
+							_Data[0][y*width*4 + 4*i] = scanline[k++];
+							_Data[0][y*width*4 + 4*i + 1] = scanline[k++];
+							_Data[0][y*width*4 + 4*i + 2] = scanline[k++];
+							if(imageDepth==32)
+								_Data[0][y*width*4 + 4*i + 3] = scanline[k++];
+							else
+								_Data[0][y*width*4 + 4*i + 3] = 255;
+						}
 					}	
 				}
 			}
@@ -1953,11 +1990,10 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 {
 	if(f.isReading()) return false;
-	if(d!=24 && d!=32) return false;
+	if(d!=24 && d!=32 && d!=16) return false;
 	if(PixelFormat != RGBA) return false;
 
 	sint32	i,j,x,y;
-	sint32	slsize;
 	uint8	* scanline;
 	uint8	r,g,b,a;
 
@@ -1990,8 +2026,7 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 	f.serial(desc);
 
 	
-	slsize = width*d/8;
-	scanline = new uint8[slsize];
+	scanline = new uint8[width*4];
 	if(!scanline)
 	{
 		throw EAllocationFailure();
@@ -2003,12 +2038,37 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 		uint32 k=0;
 		for(i=0; i<width*4; i+=4) // 4:RGBA
 		{
-			for(j=0; j<(sint32)d/8; j++)
+			if(d==16)
 			{
-				scanline[k++] = _Data[0][(height-y-1)*width*4 + i + j];
+				for(j=0; j<(sint32)4; j++)
+				{
+					scanline[k++] = _Data[0][(height-y-1)*width*4 + i + j];
+				}
+			}
+			else
+			{
+				for(j=0; j<(sint32)d/8; j++)
+				{
+					scanline[k++] = _Data[0][(height-y-1)*width*4 + i + j];
+				}
 			}
 		}
 		
+		if(d==16)
+		{
+			for(x=0; x<(sint32)width; x++)
+			{
+				r = scanline[x*4+0];
+				g = scanline[x*4+1];
+				b = scanline[x*4+2];
+				int rr = r >>3;
+				int gg = g >>3;
+				int bb = b >>3;
+				uint16 c16 = (rr<<10) | (gg<<5) | bb;
+				scanline[x*2+0] = c16&0xff;
+				scanline[x*2+1] = c16>>8;
+			}
+		}
 		if(d==24)
 		{
 			for(x=0; x<(sint32)width; x++)
@@ -2018,7 +2078,7 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 				b = scanline[x*3+2];
 				scanline[x*3+0] = b;
 				scanline[x*3+1] = g;
-				scanline[x*3+2] = r;				
+				scanline[x*3+2] = r;
 			}
 		}
 		if(d==32)
@@ -2036,7 +2096,8 @@ bool CBitmap::writeTGA( NLMISC::IStream &f, uint32 d, bool upsideDown)
 			}
 		}
 		
-		for(i=0; i<slsize; i++)
+		int finaleSize=width*d/8;
+		for(i=0; i<finaleSize; i++)
 		{
 			f.serial(scanline[i]);
 		}		

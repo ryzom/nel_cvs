@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.30 2002/09/12 12:04:17 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.31 2002/10/01 17:01:29 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -874,7 +874,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 					if (wantArrayIndex)
 					{
 						// Error message
-						smprintf (error, 512, "Token (%s) should be an array index.", token);
+						smprintf (error, 512, "Token (%s) should be an array index.", token.c_str());
 						goto exit;
 					}
 
@@ -1093,7 +1093,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 					if (wantArrayIndex)
 					{
 						// Error message
-						smprintf (error, 512, "Token (%s) should be an array index.", token);
+						smprintf (error, 512, "Token (%s) should be an array index.", token.c_str());
 						goto exit;
 					}
 

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.9 2002/05/29 17:30:57 vizerie Exp $
+ * $Id: hierarchical_timer.h,v 1.10 2002/05/30 08:37:10 cado Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -35,7 +35,7 @@
 
 #include <algorithm>
 
-//#define ALLOW_TIMING_MEASURES
+#define ALLOW_TIMING_MEASURES
 
 
 #ifdef ALLOW_TIMING_MEASURES
@@ -449,7 +449,7 @@ inline void	CHTimer::after(bool displayAfter /*= false*/)
 	uint64 numTicks = _CurrNode->Clock.getNumTicks()  - _CurrNode->SonsPreambule - (CSimpleClock::getStartStopNumTicks() << 1);
 	_CurrNode->TotalTime += numTicks;
 	uint64 sonsTime = _CurrNode->getSonsTime();
-	nlassert(sonsTime <= numTicks);
+	//nlassert(sonsTime <= numTicks);
 	_CurrNode->TotalTimeWithoutSons += numTicks - sonsTime;
 	_CurrNode->MinTime = std::min(_CurrNode->MinTime, numTicks);
 	_CurrNode->MaxTime = std::max(_CurrNode->MaxTime, numTicks);

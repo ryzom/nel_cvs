@@ -18,7 +18,9 @@ echo -------
 date >> log.log
 date
 
-cp -u -p dds/*.dds $client_directory/$bitmap_install_directory  2>> log.log
+for i in dds/*.dds; do
+  cp -u -p $i $client_directory/$bitmap_install_directory  2>> log.log
+done
 
 panoply_file_list=`cat ../../cfg/config.cfg | grep "panoply_file_list" | sed -e 's/panoply_file_list//' | sed -e 's/ //g' | sed -e 's/=//g'`
 if test "$panoply_file_list" ; then

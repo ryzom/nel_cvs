@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.128 2004/08/03 16:22:18 vizerie Exp $
+ * $Id: scene.cpp,v 1.129 2004/09/20 11:55:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -415,8 +415,13 @@ void	CScene::render(bool	doHrcPass, UScene::TRenderPart renderPart /* = UScene::
 		// Light
 		LightTrav.traverse();
 	}
+
 	// render
 	RenderTrav.traverse(renderPart, _RenderedPart == UScene::RenderNothing);	
+	// Always must clear shadow caster (if render did not work because of IDriver::isLost())
+	RenderTrav.getShadowMapManager().clearAllShadowCasters();
+
+	// render flare
 	if (renderPart & UScene::RenderFlare)
 	{	
 		if (_FirstFlare)

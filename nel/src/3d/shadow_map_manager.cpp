@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.14 2004/08/13 15:42:41 vizerie Exp $
+ * $Id: shadow_map_manager.cpp,v 1.15 2004/09/20 11:55:25 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -226,9 +226,7 @@ CShadowMapManager::CShadowMapManager()
 // ***************************************************************************
 CShadowMapManager::~CShadowMapManager()
 {
-	_ShadowReceiverGrid.clear();
-	_ShadowCasters.clear();
-	clearGenerateShadowCasters();
+	clearAllShadowCasters();
 }
 
 // ***************************************************************************
@@ -277,9 +275,7 @@ void			CShadowMapManager::renderGenerate(CScene *scene)
 	if( _ShadowCasters.empty() || 
 		textDestW<baseTextureSize || textDestH<baseTextureSize)
 	{
-		_ShadowReceiverGrid.clear();
-		_ShadowCasters.clear();
-		clearGenerateShadowCasters();
+		clearAllShadowCasters();
 		return;
 	}
 
@@ -732,8 +728,7 @@ void			CShadowMapManager::renderProject(CScene *scene)
 
 	// Release pass.
 	// ********
-	_ShadowReceiverGrid.clear();
-	_ShadowCasters.clear();
+	clearAllShadowCasters();
 }
 
 
@@ -1124,6 +1119,15 @@ void			CShadowMapManager::selectShadowMapsToGenerate(CScene *scene)
 	{
 		_GenerateShadowCasters[i]->setGeneratingShadowMap(true);
 	}
+}
+
+
+// ***************************************************************************
+void			CShadowMapManager::clearAllShadowCasters()
+{
+	_ShadowReceiverGrid.clear();
+	_ShadowCasters.clear();
+	clearGenerateShadowCasters();
 }
 
 

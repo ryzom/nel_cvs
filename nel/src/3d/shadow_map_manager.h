@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.h
  * <File description>
  *
- * $Id: shadow_map_manager.h,v 1.8 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: shadow_map_manager.h,v 1.9 2004/09/20 11:55:25 berenguier Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -66,6 +66,13 @@ public:
 	/// change the QuadGrid size. it reset all the receivers!
 	void			setQuadGridSize(uint size, float cellSize);
 
+	/** clear both _ShadowCasters and _GenerateShadowCasters lists
+	 *	WARNING: the _GenerateShadowCasters list of shadow caster (added with addShadowCaster() / 
+	 *	selectShadowMapsToGenerate()) must have valid Ptrs. => Cannot leave this list 
+	 *	non empty at end of CScene::render() because some CTransform may be deleted between render()
+	 */
+	void			clearAllShadowCasters();
+
 	/// Add a ShadowCaster that influence the scene this pass.
 	void			addShadowCaster(CTransform *model);
 	/** From List of ShadowCaster, select a sub - part (so called Loding ShadowMap Casters)
@@ -83,6 +90,7 @@ public:
 
 	/** project ShadowMaps onto receivers. NB: renderGenerate() must have been called before.
 	 *	NB: current driver Frustum, ViewMatrix kept their initial state but ModelMatrix not.
+	 *	call clearShadowCaster
 	 */
 	void			renderProject(CScene *scene);
 
@@ -158,7 +166,7 @@ private:
 	CMaterial					_CasterShadowMaterial;
 
 	void			clearGenerateShadowCasters();
-
+		
 	// Texture allocation
 	typedef	std::map<ITexture *, CSmartPtr<ITexture> >	TTextureMap;
 	typedef	TTextureMap::iterator						ItTextureMap;

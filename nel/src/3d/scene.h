@@ -1,7 +1,7 @@
 /** \file scene.h
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.h,v 1.58 2004/08/03 16:22:18 vizerie Exp $
+ * $Id: scene.h,v 1.59 2004/09/20 11:55:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -165,6 +165,7 @@ public:
 	 * \param doHrcPass set it to false to indicate that the CHrcTrav have not to be traversed. UseFull to optimize if 
 	 * you know that NONE of your models have moved (a good example is a shoot of the scene from different cameras).
 	 * \param renderPart a combination of UScene::TRenderPart flags, allow to choose which part of the scene must be rendered
+	 *	WARNING: always must begin rendering with at least UScene::RenderOpaque, else shadows won't work
 	 */
 	void			render(bool	doHrcPass=true, UScene::TRenderPart renderPart = UScene::RenderAll);
 	//@}

@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.7 2000/11/14 13:24:18 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.8 2000/11/15 17:23:43 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -182,7 +182,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 
 
 	// Temp YOYO.
-    glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
 	
 	return(true);
 }

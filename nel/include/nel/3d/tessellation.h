@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.10 2000/11/14 13:25:28 berenguier Exp $
+ * $Id: tessellation.h,v 1.11 2000/11/15 17:23:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -399,7 +399,7 @@ public:
 	// update the error metric (even if !NeedCompute).
 	float			updateErrorMetric();
 	// can split leaf only.
-	void			split();
+	void			split(bool propagateSplit=true);
 	// can merge "short roots" only (roots which have leafs).
 	bool			merge();
 	// if NeedCompute, refine the node, and his sons.
@@ -416,6 +416,7 @@ public:
 	// Used by CPatch::bind(). Split if necessary, according to neighbors.
 	bool			updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted);
 	void			updateBind();
+	void			updateBindAndSplit();
 
 
 

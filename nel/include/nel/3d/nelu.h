@@ -1,7 +1,7 @@
 /** \file scene_ut.h
  * <File description>
  *
- * $Id: nelu.h,v 1.2 2000/11/10 09:57:34 berenguier Exp $
+ * $Id: nelu.h,v 1.3 2000/11/15 17:23:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NL3D
  * If your app want to register other Models with basics CScene traversals, it could use CSceneUt, and register his 
  * models/observers after, or even before CSceneUt::init3d().
  *
- * If your app want to add funky traversals, it MUST NOT use CSceneUt  (see CScene for more information...).
+ * If your app want to add funky traversals, it MUST NOT use CSceneUt (see CScene for more information...).
  *
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -63,7 +63,7 @@ public:
 public:
 
 	/** Init all that we need for a single GL window:
-	 * - create / init / openWindow / activate   a IDriver.
+	 * - create / init / openWindow / activate a IDriver.
 	 * - register scene basics models, 
 	 * - init the scene, with basic Traversals, 
 	 * - create a default camera, linked to the scene, and with default frustum as specified above.
@@ -84,7 +84,7 @@ public:
 	 */
 	static void		release3d(CScene &scn);
 
-private:
+public:
 	static IDriver	*Driver;
 };
 

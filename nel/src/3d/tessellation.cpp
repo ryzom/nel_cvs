@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.12 2000/11/14 14:54:56 lecroart Exp $
+ * $Id: tessellation.cpp,v 1.13 2000/11/15 17:23:35 berenguier Exp $
  *
  * \todo YOYO: check split(), and lot of todo in computeTileMaterial().
  */
@@ -195,7 +195,7 @@ CTileMaterial::CTileMaterial()
 // ***************************************************************************
 sint		CTessFace::CurrentDate=0;
 CVector		CTessFace::RefineCenter= CVector::Null;
-float		CTessFace::RefineThreshold= 0.1f;
+float		CTessFace::RefineThreshold= 0.005f;
 float		CTessFace::OORefineThreshold= 1.0f / CTessFace::RefineThreshold;
 
 float		CTessFace::FatherStartComputeLimit= 1.1f;
@@ -506,7 +506,7 @@ void	CTessFace::releaseTileMaterial()
 
 
 // ***************************************************************************
-void		CTessFace::split()
+void		CTessFace::split(bool propagateSplit)
 {
 
 	// 0. Some easy ending.
@@ -676,7 +676,7 @@ void		CTessFace::split()
 		SonRight->FLeft= FBase->SonLeft;
 		FBase->SonLeft->FRight= SonRight;
 	}
-	else
+	else if (propagateSplit)
 	{
 		// Warning: at each iteration, the pointer of FBase may change (because of split() which can change the neighbor 
 		// and so "this").
@@ -989,12 +989,31 @@ bool		CTessFace::updateBindEdge(CTessFace	*&edgeFace, bool &splitWanted)
 			nlassert(!isLeaf());
 			// The neigbor should link already to one of our son.
 			nlassert(SonLeft == edgeFace->FLeft || SonRight == edgeFace->FLeft ||
-				SonLeft == edgeFace->FRight || SonRight == edgeFace->FRight);
+				SonLeft == edgeFace->FRight || SonRight == edgeFace->FRight ||
+				SonLeft == edgeFace->FBase || SonRight == edgeFace->FBase);
 			return true;
 		}
 	}
 
 	return false;
+}
+
+
+
+// ***************************************************************************
+void		CTessFace::updateBindAndSplit()
+{
+	bool	splitWanted= false;
+	while(!updateBindEdge(FBase, splitWanted));
+	while(!updateBindEdge(FLeft, splitWanted));
+	while(!updateBindEdge(FRight, splitWanted));
+
+	split(false);
+	if(FBase)
+	{
+		while(FBase->isLeaf())
+			FBase->updateBindAndSplit();
+	}
 }
 
 
@@ -1008,18 +1027,12 @@ void		CTessFace::updateBind()
 
 	if(splitWanted && isLeaf())
 	{
-		split();
+		updateBindAndSplit();
 	}
 
 	// Recurse to sons.
 	if(!isLeaf())
 	{
-		// Force Face pointers (for enforced split face).
-		SonLeft->FBase= FLeft;
-		if(FLeft)	FLeft->changeNeighbor(this, SonLeft);
-		SonRight->FBase= FRight;
-		if(FRight)	FRight->changeNeighbor(this, SonRight);
-
 		// Update bind of sons.
 		SonLeft->updateBind();
 		SonRight->updateBind();

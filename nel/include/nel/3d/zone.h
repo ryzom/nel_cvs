@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.5 2000/11/10 09:57:34 berenguier Exp $
+ * $Id: zone.h,v 1.6 2000/11/15 17:23:24 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,28 +85,13 @@ public:
 	{
 		uint8			NPatchs;	// The number of patchs on this edge. 0,1, 2 or 4.  0 means no neigbor on this edge.
 
-		// only usefull for Bind One/One+
-		uint16			ZoneId0;	// The neighbor zone of neigbor patch 0. Often the same zone as the patch (but on border).
-		uint16			Next0;		// The neighbor patch 0.
-		// see Edge0.
-
-		// only usefull for Bind One/Two+
-		uint16			ZoneId1;	// same for patch 1.
-		uint16			Next1;		// ...
-		// see Edge1.
-
-		// only usefull for Bind One/Quad
-		uint16			ZoneId2;	// ...
-		uint16			Next2;		// ...
-		// see Edge2.
-		uint16			ZoneId3;	// ...
-		uint16			Next3;		// ...
-		// see Edge3.
-
-		uint8			Edge0;		// On which edge of Next0 we are binded.
-		uint8			Edge1;		// same for Next1.
-		uint8			Edge2;		// ...
-		uint8			Edge3;		// ...
+		// Entry 0 is only usefull for Bind One/One+
+		// Entry 1 is only usefull for Bind One/Two+
+		// Entry 2/3 is only usefull for Bind One/Four.
+		
+		uint16			ZoneId[4];	// The neighbor zone of neigbor patch i. Often the same zone as the patch (but on zone border).
+		uint16			Next[4];	// The neighbor patch i.
+		uint8			Edge[4];	// On which edge of Nexti we are binded.
 
 	public:
 		void			serial(NLMISC::IStream &f);

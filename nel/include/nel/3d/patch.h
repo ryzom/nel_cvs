@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.9 2000/11/10 09:57:34 berenguier Exp $
+ * $Id: patch.h,v 1.10 2000/11/15 17:23:24 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -121,18 +121,9 @@ public:
 	struct	CBindInfo
 	{
 		sint			NPatchs;	// The number of patchs on this edge. 0,1, 2 or 4.
-		CPatch			*Next0;		// The neighbor patch.
-		sint			Edge0;		// On which edge of Next0 we are binded.
 
-		// only usefull for Bind One/Two
-		CPatch			*Next1;		// ....
-		sint			Edge1;
-
-		// only usefull for Bind One/Four
-		CPatch			*Next2;		// ....
-		sint			Edge2;
-		CPatch			*Next3;
-		sint			Edge3;
+		CPatch			*Next[4];	// The neighbor patch i.
+		sint			Edge[4];	// On which edge of Nexti we are binded.
 	};
 
 public:

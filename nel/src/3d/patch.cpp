@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.10 2000/11/14 14:54:56 lecroart Exp $
+ * $Id: patch.cpp,v 1.11 2000/11/15 17:23:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -633,9 +633,9 @@ void			CPatch::bind(CBindInfo	Edges[4])
 		if(bind.NPatchs==1)
 		{
 			// Bind me on Next.
-			this->changeEdgeNeighbor(i, bind.Next0->getRootFaceForEdge(bind.Edge0));
+			this->changeEdgeNeighbor(i, bind.Next[0]->getRootFaceForEdge(bind.Edge[0]));
 			// Bind Next on me.
-			bind.Next0->changeEdgeNeighbor(bind.Edge0, this->getRootFaceForEdge(i));
+			bind.Next[0]->changeEdgeNeighbor(bind.Edge[0], this->getRootFaceForEdge(i));
 		}
 		// else don't bind!!! :)
 	}

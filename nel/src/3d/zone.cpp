@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.8 2000/11/14 14:54:56 lecroart Exp $
+ * $Id: zone.cpp,v 1.9 2000/11/15 17:23:35 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 // Temp YOYO.
 #include "nel/misc/events.h"
-//extern	bool	getKey(NLMISC::TKey key);
+extern	bool	getKey(NLMISC::TKey key);
 
 using namespace NLMISC;
 using namespace std;
@@ -170,13 +170,15 @@ void			CZone::CPatchConnect::serial(NLMISC::IStream &f)
 }
 void			CPatchInfo::CBindInfo::serial(NLMISC::IStream &f)
 {
+	int		i;
 	uint	ver= f.serialVersion(0);
 	f.serial(NPatchs);
-	f.serial(ZoneId0, Next0);
-	f.serial(ZoneId1, Next1);
-	f.serial(ZoneId2, Next2);
-	f.serial(ZoneId3, Next3);
-	f.serial(Edge0, Edge1, Edge2, Edge3);
+	for(i=0;i<4;i++)
+		f.serial(ZoneId[i]);
+	for(i=0;i<4;i++)
+		f.serial(Next[i]);
+	for(i=0;i<4;i++)
+		f.serial(Edge[i]);
 }
 
 // ***************************************************************************
@@ -399,28 +401,28 @@ void		CZone::bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc)
 		paBind.NPatchs= pcBind.NPatchs;
 		if(paBind.NPatchs>=1)
 		{
-			paBind.Edge0= pcBind.Edge0;
-			paBind.Next0= CZone::getZonePatch(loadedZones, pcBind.ZoneId0, pcBind.Next0);
+			paBind.Edge[0]= pcBind.Edge[0];
+			paBind.Next[0]= CZone::getZonePatch(loadedZones, pcBind.ZoneId[0], pcBind.Next[0]);
 			// If not loaded, don't bind to this edge.
-			if(!paBind.Next0)
+			if(!paBind.Next[0])
 				paBind.NPatchs=0;
 		}
 		if(paBind.NPatchs>=2)
 		{
-			paBind.Edge1= pcBind.Edge1;
-			paBind.Next1= CZone::getZonePatch(loadedZones, pcBind.ZoneId1, pcBind.Next1);
+			paBind.Edge[1]= pcBind.Edge[1];
+			paBind.Next[1]= CZone::getZonePatch(loadedZones, pcBind.ZoneId[1], pcBind.Next[1]);
 			// If not loaded, don't bind to this edge.
-			if(!paBind.Next1)
+			if(!paBind.Next[1])
 				paBind.NPatchs=0;
 		}
 		if(paBind.NPatchs>=4)
 		{
-			paBind.Edge2= pcBind.Edge2;
-			paBind.Edge3= pcBind.Edge3;
-			paBind.Next2= CZone::getZonePatch(loadedZones, pcBind.ZoneId2, pcBind.Next2);
-			paBind.Next3= CZone::getZonePatch(loadedZones, pcBind.ZoneId3, pcBind.Next3);
+			paBind.Edge[2]= pcBind.Edge[2];
+			paBind.Edge[3]= pcBind.Edge[3];
+			paBind.Next[2]= CZone::getZonePatch(loadedZones, pcBind.ZoneId[2], pcBind.Next[2]);
+			paBind.Next[3]= CZone::getZonePatch(loadedZones, pcBind.ZoneId[3], pcBind.Next[3]);
 			// If not loaded, don't bind to this edge.
-			if(!paBind.Next2 || !paBind.Next3)
+			if(!paBind.Next[2] || !paBind.Next[3])
 				paBind.NPatchs=0;
 		}
 	}
@@ -441,19 +443,19 @@ bool			CZone::patchOnBorder(const CPatchConnect &pc) const
 		nlassert(pcBind.NPatchs==0 || pcBind.NPatchs==1 || pcBind.NPatchs==2 || pcBind.NPatchs==4);
 		if(pcBind.NPatchs>=1)
 		{
-			if(pcBind.ZoneId0 != ZoneId)
+			if(pcBind.ZoneId[0] != ZoneId)
 				return true;
 		}
 		if(pcBind.NPatchs>=2)
 		{
-			if(pcBind.ZoneId1 != ZoneId)
+			if(pcBind.ZoneId[1] != ZoneId)
 				return true;
 		}
 		if(pcBind.NPatchs>=4)
 		{
-			if(pcBind.ZoneId2 != ZoneId)
+			if(pcBind.ZoneId[2] != ZoneId)
 				return true;
-			if(pcBind.ZoneId3 != ZoneId)
+			if(pcBind.ZoneId[3] != ZoneId)
 				return true;
 		}
 	}
@@ -517,7 +519,7 @@ void			CZone::refine()
 {
 	nlassert(Compiled);
 
-/*
+
 	// Temp YOYO.
 	if(getKey(NLMISC::KeyU))
 	{
@@ -529,7 +531,7 @@ void			CZone::refine()
 		pipoMap[ZoneId]= this;
 		bindPatch(pipoMap, Patchs[0], PatchConnects[0]);
 	}
-*/
+
 
 	// Force refine of invisible zones only every 8 times.
 	if(ClipResult==ClipOut && (CTessFace::CurrentDate&7)!=(ZoneId&7))

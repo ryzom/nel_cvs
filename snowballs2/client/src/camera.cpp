@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera interface between the game and NeL
  *
- * $Id: camera.cpp,v 1.20 2003/11/17 10:26:56 lecroart Exp $
+ * $Id: camera.cpp,v 1.21 2004/07/29 09:06:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,21 +57,21 @@ using namespace NL3D;
 //
 
 // The camera for the whole scene
-UCamera					*Camera = NULL;
+UCamera					Camera = NULL;
 // The collision entity use to snap the camera on the ground
 UVisualCollisionEntity	*CamCollisionEntity = NULL;
 
 // The particle system for the snowing effect
-static UInstance			*Snow = NULL;
+static UInstance			Snow = NULL;
 
 // The sky 3D objects
 static UScene				*SkyScene = NULL;
-static UCamera				*SkyCamera = NULL;
-static UInstance			*Sky = NULL;
+static UCamera				SkyCamera = NULL;
+static UInstance			Sky = NULL;
 
 // The logo 3D objects
 static UScene				*LogoScene = NULL;
-static UInstance			*Logo = NULL;
+static UInstance			Logo = NULL;
 
 static UCloudScape			*Clouds = NULL;
 
@@ -83,9 +83,9 @@ void	initCamera()
 {
 	// Set up directly the camera
 	Camera = Scene->getCam();
-	Camera->setTransformMode (UTransformable::DirectMatrix);
-	Camera->setPerspective ((float)Pi/2.f, 1.33f, 0.1f, 1000);
-	Camera->lookAt (CVector(ConfigFile.getVar("StartPoint").asFloat(0),
+	Camera.setTransformMode (UTransformable::DirectMatrix);
+	Camera.setPerspective ((float)Pi/2.f, 1.33f, 0.1f, 1000);
+	Camera.lookAt (CVector(ConfigFile.getVar("StartPoint").asFloat(0),
 							ConfigFile.getVar("StartPoint").asFloat(1),
 							ConfigFile.getVar("StartPoint").asFloat(2)),
 							CVectorD (0,0,0));
@@ -96,7 +96,7 @@ void	initCamera()
 	// Create the snowing particle system
 	Snow = Scene->createInstance("snow.ps");
 	// And setup it
-	Snow->setTransformMode (UTransformable::DirectMatrix);
+	Snow.setTransformMode (UTransformable::DirectMatrix);
 
 	//
 	// Setup the sky scene
@@ -105,13 +105,13 @@ void	initCamera()
 	SkyScene = Driver->createScene(false);
 
 	SkyCamera = SkyScene->getCam ();
-	SkyCamera->setTransformMode (UTransformable::DirectMatrix);
+	SkyCamera.setTransformMode (UTransformable::DirectMatrix);
 	// Set the very same frustum as the main camera
-	SkyCamera->setFrustum (Camera->getFrustum ());
+	SkyCamera.setFrustum (Camera.getFrustum ());
 
 	Sky = SkyScene->createInstance("sky.shape");
-	Sky->setTransformMode (UTransformable::DirectMatrix);
-	Sky->setMatrix(CMatrix::Identity);
+	Sky.setTransformMode (UTransformable::DirectMatrix);
+	Sky.setMatrix(CMatrix::Identity);
 
 	//
 	// Setup the logo scene
@@ -124,15 +124,15 @@ void	initCamera()
 	LogoScene->setViewport (v);
 
 	Logo = LogoScene->createInstance("nel_logo.shape");
-	Logo->setPos (0.0f, 3.0f, 0.0f);
+	Logo.setPos (0.0f, 3.0f, 0.0f);
 }
 
 void	updateCamera()
 {
 	// Set the new position of the snow emitter
 	CMatrix	mat = CMatrix::Identity;
-	mat.setPos (Camera->getMatrix().getPos()/*+CVector (0.0f, 0.0f, -10.0f)*/);
-	Snow->setMatrix(mat);
+	mat.setPos (Camera.getMatrix().getPos()/*+CVector (0.0f, 0.0f, -10.0f)*/);
+	Snow.setMatrix(mat);
 }
 
 void initSky ()
@@ -154,9 +154,9 @@ void updateSky ()
 	CMatrix skyCameraMatrix;
 	skyCameraMatrix.identity();
 	// 
-	skyCameraMatrix= Camera->getMatrix();
+	skyCameraMatrix= Camera.getMatrix();
 	skyCameraMatrix.setPos(CVector::Null);
-	SkyCamera->setMatrix(skyCameraMatrix);
+	SkyCamera.setMatrix(skyCameraMatrix);
 
 	SkyScene->animate (float(NewTime)/1000);
 	SkyScene->render ();
@@ -177,8 +177,8 @@ void	update3dLogo ()
 
 	static float angle=0.0;
 	angle+=0.05f;
-	Logo->setTransformMode (UTransformable::RotEuler);
-	Logo->setRotEuler (0.0f,0.0f,angle);
+	Logo.setTransformMode (UTransformable::RotEuler);
+	Logo.setRotEuler (0.0f,0.0f,angle);
 	LogoScene->animate (float(NewTime)/1000);
 	LogoScene->render ();
 }

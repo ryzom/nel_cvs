@@ -1,7 +1,7 @@
 /** \file mouse_listener.h
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.h,v 1.8 2001/07/20 17:31:08 legros Exp $
+ * $Id: mouse_listener.h,v 1.9 2004/07/29 09:06:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,10 +33,12 @@
 #include <nel/misc/types_nl.h>
 #include <nel/misc/event_listener.h>
 #include <nel/misc/matrix.h>
+#include <nel/misc/time_nl.h>
+
 #include <nel/3d/viewport.h>
 #include <nel/3d/frustum.h>
 #include <nel/3d/u_3d_mouse_listener.h>
-#include <nel/misc/time_nl.h>
+#include <nel/3d/u_instance.h>
 
 //
 // External definitions
@@ -44,11 +46,6 @@
 
 using NLMISC::CVector;
 using NLMISC::CMatrix;
-
-namespace NL3D
-{
-	class	UInstance;
-};
 
 //
 // External classes
@@ -106,7 +103,7 @@ public:
 	void setMouseMode(TMouseMode mouseMode) {}
 
 	/// Setup the camera to be used
-	void setCamera (NL3D::UCamera *camera) { _Camera = camera; }
+	void setCamera (NL3D::UCamera camera) { _Camera = camera; }
 
 	/** 
 	  * Set both the current view matrix to use.
@@ -188,7 +185,7 @@ public:
 		return _ModelMatrix ;	
 	}
 
-
+	NLMISC::IEventListener &getEventListenerInterface() { return *this; }
 
 	/** 
 	  * Get the current hot spot.
@@ -280,7 +277,7 @@ private:
 	NLMISC::CEventListenerAsync	_AsyncListener;
 
 	// viewing camera attributes
-	NL3D::UCamera		*_Camera;
+	NL3D::UCamera		_Camera;
 	float				_ViewLagBehind;
 	float				_ViewHeight;
 	float				_ViewTargetHeight;
@@ -295,7 +292,7 @@ private:
 	NLMISC::TTime		_AimingRefreshRate;
 	NLMISC::CVector		_AimedTarget;
 	NLMISC::CVector		_AimingPosition;
-	NL3D::UInstance		*_AimingInstance;
+	NL3D::UInstance		_AimingInstance;
 	bool				_InvertedMouse;
 
 	// character state

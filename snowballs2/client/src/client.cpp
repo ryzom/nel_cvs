@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs main file
  *
- * $Id: client.cpp,v 1.60 2003/11/17 10:26:56 lecroart Exp $
+ * $Id: client.cpp,v 1.61 2004/07/29 09:06:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -246,8 +246,8 @@ int main(int argc, char **argv)
 	MouseListener->addToServer(Driver->EventServer);
 	MouseListener->setCamera(Camera);
 	MouseListener->setHotSpot (CVectorD (0,0,0));
-	MouseListener->setFrustrum (Camera->getFrustum());
-	MouseListener->setMatrix (Camera->getMatrix());
+	MouseListener->setFrustrum (Camera.getFrustum());
+	MouseListener->setMatrix (Camera.getMatrix());
 	MouseListener->setSpeed(PlayerSpeed);
 	initMouseListenerConfig();
 

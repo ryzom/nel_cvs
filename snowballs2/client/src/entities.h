@@ -1,7 +1,7 @@
 /** \file entities.h
  * Snowballs 2 specific code for managing the entities
  *
- * $Id: entities.h,v 1.25 2001/07/27 09:06:36 lecroart Exp $
+ * $Id: entities.h,v 1.26 2004/07/29 09:06:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,8 @@
 #include <nel/misc/time_nl.h>
 
 #include <nel/3d/animation_time.h>
+#include <nel/3d/u_instance.h>
+#include <nel/3d/u_skeleton.h>
 
 #include "physics.h"
 #include "animation.h"
@@ -58,10 +60,8 @@ namespace NLPACS
 
 namespace NL3D
 {
-	class UInstance;
 	class UVisualCollisionEntity;
 	class UPlayList;
-	class USkeleton;
 }
 
 //
@@ -131,11 +131,11 @@ public:
 	// The collision entity (for ground snapping)
 	NL3D::UVisualCollisionEntity	*VisualCollisionEntity;
 	// The mesh instance associated to this entity
-	NL3D::UInstance					*Instance;
+	NL3D::UInstance					Instance;
 	// The skeleton binded to the instance
-	NL3D::USkeleton					*Skeleton;
+	NL3D::USkeleton					Skeleton;
 	// The particle system (for appear and disappear effects)
-	NL3D::UInstance					*Particule;
+	NL3D::UInstance					Particule;
 
 	// The sound source associated to the entity
 	NLSOUND::USource				*Source;

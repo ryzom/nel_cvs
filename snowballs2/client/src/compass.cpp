@@ -2,7 +2,7 @@
  * Snowballs 2 specific code for managing the compass.
  * This code was taken from Snowballs 1.
  *
- * $Id: compass.cpp,v 1.3 2001/07/27 09:06:08 lecroart Exp $
+ * $Id: compass.cpp,v 1.4 2004/07/29 09:06:07 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ using namespace std;
 // Variables
 //
 
-static NL3D::UMaterial *CompassMaterial = NULL;
+static NL3D::UMaterial CompassMaterial = NULL;
 
 // These variables are automatically set with the config file
 
@@ -88,9 +88,9 @@ void initCompass ()
 	cbUpdateCompass (ConfigFile.getVar ("CompassColor"));
 
 	CompassMaterial = Driver->createMaterial ();
-	CompassMaterial->initUnlit ();
-	CompassMaterial->setBlendFunc (UMaterial::srcalpha, UMaterial::invsrcalpha);
-	CompassMaterial->setBlend(true);
+	CompassMaterial.initUnlit ();
+	CompassMaterial.setBlendFunc (UMaterial::srcalpha, UMaterial::invsrcalpha);
+	CompassMaterial.setBlend(true);
 }
 
 void updateCompass ()
@@ -99,7 +99,7 @@ void updateCompass ()
 	float y = CompassPosY;
 	float radius = CompassRadius;
 
-	CompassMaterial->setColor(CompassColor);
+	CompassMaterial.setColor(CompassColor);
 
 	// tri
 	CTriangle tri;
@@ -124,7 +124,7 @@ void updateCompass ()
 	mtx.rotateZ(MouseListener->getOrientation() - (float)Pi/2);
 	mtx.translate(CVector(0,radius,0));
 	Driver->setModelMatrix (mtx);
-	Driver->drawTriangle (tri,  *CompassMaterial);
+	Driver->drawTriangle (tri,  CompassMaterial);
 
 	// down
 	mtx.identity();
@@ -132,7 +132,7 @@ void updateCompass ()
 	mtx.rotateZ(MouseListener->getOrientation() + (float)Pi/2);
 	mtx.translate(CVector(0,radius,0));
 	Driver->setModelMatrix (mtx);
-	Driver->drawTriangle (tri,  *CompassMaterial);
+	Driver->drawTriangle (tri,  CompassMaterial);
 
 	// left
 	mtx.identity();
@@ -140,7 +140,7 @@ void updateCompass ()
 	mtx.rotateZ(MouseListener->getOrientation());
 	mtx.translate(CVector(0,radius,0));
 	Driver->setModelMatrix (mtx);
-	Driver->drawTriangle (tri,  *CompassMaterial);
+	Driver->drawTriangle (tri,  CompassMaterial);
 
 	// right
 	mtx.identity();
@@ -148,14 +148,14 @@ void updateCompass ()
 	mtx.rotateZ(MouseListener->getOrientation() - (float)Pi);
 	mtx.translate(CVector(0,radius,0));
 	Driver->setModelMatrix (mtx);
-	Driver->drawTriangle (tri,  *CompassMaterial);
+	Driver->drawTriangle (tri,  CompassMaterial);
 
 	// center
 	mtx.identity();
 	mtx.translate(CVector(x,y,0));
 	mtx.rotateZ(MouseListener->getOrientation());
 	Driver->setModelMatrix (mtx);
-	Driver->drawQuad (quad,  *CompassMaterial);
+	Driver->drawQuad (quad,  CompassMaterial);
 
 	x *= 3.0/4.0f;
 

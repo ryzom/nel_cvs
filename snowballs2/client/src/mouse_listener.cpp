@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * Snowballs 2 specific code for managing the mouse listener.
  *
- * $Id: mouse_listener.cpp,v 1.16 2001/08/14 12:31:36 lecroart Exp $
+ * $Id: mouse_listener.cpp,v 1.17 2004/07/29 09:06:07 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -87,7 +87,7 @@ C3dMouseListener::C3dMouseListener()
 	_AimingStartTime = 0;
 	_AimingRefreshRate = 100;
 	_AimingInstance = Scene->createInstance("aim.shape");
-	_AimingInstance->setTransformMode(UTransformable::RotQuat);
+	_AimingInstance.setTransformMode(UTransformable::RotQuat);
 
 	_X = 0.5f;
 	_Y = 0.5f;
@@ -337,18 +337,18 @@ void C3dMouseListener::update()
 									 100);
 		}
 
-		if (Self != NULL && _AimingInstance != NULL)
+		if (Self != NULL && !_AimingInstance.empty())
 		{
-			_AimingInstance->lookAt(MouseListener->getAimedTarget(), Camera->getMatrix().getPos());
+			_AimingInstance.lookAt(MouseListener->getAimedTarget(), Camera.getMatrix().getPos());
 			float	scale = MouseListener->getDamage();
-			_AimingInstance->setScale(scale, scale, scale);
-			_AimingInstance->show();
+			_AimingInstance.setScale(scale, scale, scale);
+			_AimingInstance.show();
 		}
 	}
 	else
 	{
-		if (Self != NULL && _AimingInstance != NULL)
-			_AimingInstance->hide();
+		if (Self != NULL && !_AimingInstance.empty())
+			_AimingInstance.hide();
 	}
 
 
@@ -405,7 +405,7 @@ CVector	C3dMouseListener::getViewDirection()
 {
 //	float	angle = getOrientation();
 //	return CVector((float)cos(angle), (float)sin(angle), (_ViewTar-_ViewHeight)/_ViewLagBehind).normed();
-	return Camera->getMatrix().getJ();
+	return Camera.getMatrix().getJ();
 }
 
 void	C3dMouseListener::updateCamera()
@@ -419,7 +419,7 @@ void	C3dMouseListener::updateCamera()
 		cpos = snapped+CVector(0.0f, 0.0f, GroundCamLimit);
 		_ViewHeight = cpos.z - getPosition().z;
 	}
-	_Camera->lookAt(cpos, tpos);
+	_Camera.lookAt(cpos, tpos);
 }
 
 void	cbUpdateMouseListenerConfig(CConfigFile::CVar &var)

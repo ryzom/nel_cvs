@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.128 2004/07/27 09:23:44 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.129 2004/10/12 15:59:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -3741,11 +3741,29 @@ void		CObjectViewer::shootScene()
 				// Clear the buffers
 				CNELU::clearBuffers (_BackGroundColor);
 
+				// call of callback list
+				{
+					std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end());
+					for (std::vector<IMainLoopCallBack *>::iterator it = _CallBackList.begin(); it != _CallBackList.end(); ++it)
+					{
+						(*it)->goPreRender();
+					}
+				}
 				// Render the CS
-				_CS->render ();
-
+				if (_CS) _CS->render ();			
+			
 				// Draw the scene		
-				CNELU::Scene->render ();
+				CNELU::Scene->render();	
+				
+				// call of callback list
+				{
+					std::vector<IMainLoopCallBack *> copyVect(_CallBackList.begin(), _CallBackList.end());
+					for (std::vector<IMainLoopCallBack *>::iterator it = _CallBackList.begin(); it != _CallBackList.end(); ++it)
+					{
+						(*it)->goPostRender();
+					}
+				}
+				
 
 
 				// Swap the buffers

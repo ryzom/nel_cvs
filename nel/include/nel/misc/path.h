@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.21 2002/04/26 10:00:15 lecroart Exp $
+ * $Id: path.h,v 1.22 2002/06/06 16:10:58 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -238,12 +238,23 @@ struct CFile
 	static std::string getExtension (const std::string &filename);
 
 	/**
+	 * Return the size of the file (in bytes).
+	 *
+	 * You have to provide the full path of the file (the function doesn't lookup) 
+	 */
+	static uint32	getFileSize (const std::string &filename);
+
+	/**
 	 *	Return Time of last modification of file. 0 if not found.
+	 *
+	 * You have to provide the full path of the file (the function doesn't lookup) 
 	 */
 	static uint32	getFileModificationDate(const std::string &filename);
 
 	/**
 	 *	Return creation Time of the file. 0 if not found.
+	 *
+	 * You have to provide the full path of the file (the function doesn't lookup) 
 	 */
 	static uint32	getFileCreationDate(const std::string &filename);
 

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.27 2003/03/04 13:32:18 berenguier Exp $
+ * $Id: i18n.cpp,v 1.28 2003/03/05 15:15:41 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -743,8 +743,8 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 		text.push_back(c);
 	}
 
-	static char utf16RevHeader[] = {char(0xff), char(0xfe), 0};
-	static char utf16Header[] = {char(0xfe), char(0xff), 0};
+	static char utf16Header[] = {char(0xff), char(0xfe), 0};
+	static char utf16RevHeader[] = {char(0xfe), char(0xff), 0};
 	static char utf8Header[] = {char(0xef), char(0xbb), char(0xbf), 0};
 
 	if (forceUtf8)
@@ -760,7 +760,7 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 		text = std::string(&(*(text.begin()+3)), text.size()-3);
 		result.fromUtf8(text);
 	}
-	else if (text.find(utf16Header))
+	else if (text.find(utf16Header) == 0)
 	{
 		// remove utf16 header
 		text = std::string(&(*(text.begin()+2)), text.size()-2);
@@ -773,7 +773,7 @@ void CI18N::readTextFile(const std::string &filename, ucstring &result, bool for
 		for (uint j=0; j<text.size()/2; j++)
 			result.push_back(*src++);
 	}
-	else if (text.find(utf16RevHeader))
+	else if (text.find(utf16RevHeader) == 0)
 	{
 		// remove utf16 header
 		text = std::string(&(*(text.begin()+2)), text.size()-2);

@@ -1,7 +1,7 @@
 /** \file nel_export_scene.cpp
  * <File description>
  *
- * $Id: nel_export_scene.cpp,v 1.5 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: nel_export_scene.cpp,v 1.6 2001/08/01 14:24:55 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,112 +52,19 @@ using namespace NLMISC;
 // -----------------------------------------------------------------------------------------------
 bool CNelExport::exportInstanceGroup(string filename, vector<INode*>& vectNode, Interface& ip )
 {
-	// Extract from the node the name, the transformations and the parent
-	CInstanceGroup::TInstanceArray aIGArray;
-	int i, nNumIG = 0;
 
-	aIGArray.empty ();
-	aIGArray.resize (vectNode.size());
+	CInstanceGroup *pIG = CExportNel::buildInstanceGroup (vectNode, ip.GetTime());
 
-	TimeValue tvTime = ip.GetTime();
-
-	// Check integrity of the hierarchy and set the parents
-	std::vector<INode*>::iterator it = vectNode.begin();
-	for(i=0; i<(sint)vectNode.size(); ++i,++it)
+	if (pIG != NULL)
 	{
-		INode *pNode = *it;
-
-		if( ! RPO::isZone( *pNode, tvTime ) )
-		if( CExportNel::isMesh( *pNode, tvTime ) )
-		{
-		
-			INode *pParent = pNode->GetParentNode();
-
-			// Is the pNode has the root node for parent ?
-			if( pParent->IsRootNode() == 0 )
-			{
-				// Look if the parent is in the selection
-				std::vector<INode*>::iterator it2 = vectNode.begin();
-				for(int j=0; j<(sint)vectNode.size(); ++j,++it2)
-				{
-					INode *pNode2 = *it2;
-					if( pNode2 == pParent )
-						break;
-				}
-				if (j==(sint)vectNode.size())
-				{
-					// The parent is not selected ! This is considered as an error
-					// return ; // No more an error
-					aIGArray[nNumIG].nParent = -1;
-				}
-				else
-				{
-					aIGArray[nNumIG].nParent = j;
-				}
-			}
-			else
-			{
-				aIGArray[nNumIG].nParent = -1;
-			}
-			++nNumIG;
-		}
-	}
-	aIGArray.resize( nNumIG );
-	// Build the array of node
-	nNumIG = 0;
-	it = vectNode.begin();
-	for(i=0; i<(sint)vectNode.size(); ++i,++it)
-	{
-		INode *pNode = *it;
-
-		if( ! RPO::isZone( *pNode, tvTime ) )
-		if( CExportNel::isMesh( *pNode, tvTime ) )
-		{
-			CVector vScaleTemp;
-			CQuat qRotTemp;
-			CVector vPosTemp;
-
-			// Try to get an APPDATA for the name of the object
-			AppDataChunk *ad = pNode->GetAppDataChunk(MAXSCRIPT_UTILITY_CLASS_ID, UTILITY_CLASS_ID, NEL_OBJET_NAME_DATA );
-			if (ad&&ad->data)
-			{
-				// Get the name of the object in the APP data
-				aIGArray[nNumIG].Name=(const char*)ad->data;
-			}
-			else
-			{
-				// Extract the node name
-				aIGArray[nNumIG].Name = pNode->GetName();
-			}
-
-			//Get the local transformation matrix
-			Matrix3 nodeTM = pNode->GetNodeTM(0);
-			INode *pParent = pNode->GetParentNode();
-			Matrix3 parentTM = pParent->GetNodeTM(0);
-			Matrix3 localTM	= nodeTM*Inverse(parentTM);
-
-			// Extract transformations
-			CExportNel::decompMatrix (vScaleTemp, qRotTemp, vPosTemp, localTM);
-			aIGArray[nNumIG].Rot   = qRotTemp;
-			aIGArray[nNumIG].Pos   = vPosTemp;
-			aIGArray[nNumIG].Scale = vScaleTemp;
-			++nNumIG;
-		}
-	}
-
-	if (aIGArray.size())
-	{
-		CInstanceGroup ig;
 		COFile file;
 		
-		ig.build( aIGArray );
-
 		if (file.open (filename))
 		{
 			try
 			{
 				// Serial the skeleton
-				ig.serial (file);
+				pIG->serial (file);
 				// All is good
 			}
 			catch (Exception &c)

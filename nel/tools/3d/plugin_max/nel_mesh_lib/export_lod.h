@@ -1,7 +1,7 @@
 /** \file export_lod.h
  * LOD define
  *
- * $Id: export_lod.h,v 1.2 2001/07/06 12:51:23 corvazier Exp $
+ * $Id: export_lod.h,v 1.3 2001/08/01 14:24:55 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,8 @@
 #define NEL3D_APPDATA_LOD_DISTANCE_FINEST			(NEL3D_APPDATA_LOD_DIVISOR+1)
 #define NEL3D_APPDATA_LOD_DISTANCE_MIDDLE			(NEL3D_APPDATA_LOD_DISTANCE_FINEST+1)
 #define NEL3D_APPDATA_LOD_DISTANCE_COARSEST			(NEL3D_APPDATA_LOD_DISTANCE_MIDDLE+1)
+
+#define NEL3D_APPDATA_ACCEL							(NEL3D_APPDATA_LOD_DISTANCE_COARSEST+1)
 
 // ***************************************************************************
 

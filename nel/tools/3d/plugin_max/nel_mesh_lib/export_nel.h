@@ -1,7 +1,7 @@
 /** \file export_nel.h
  * Export from 3dsmax to NeL
  *
- * $Id: export_nel.h,v 1.16 2001/07/26 17:18:29 vizerie Exp $
+ * $Id: export_nel.h,v 1.17 2001/08/01 14:24:55 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -77,6 +77,7 @@ namespace NL3D
 	class CSkeletonShape;
 	class CMRMParameters;
 	class IMeshGeom;
+	class CInstanceGroup;
 };
 
 // ***************************************************************************
@@ -164,6 +165,12 @@ public:
 	  * This method does not care of the skeletonShape
 	  */
 	static NL3D::CMesh::CMeshBuild*	createMeshBuild(INode& node, TimeValue tvTime, bool bAbsPath, NL3D::CMesh::CMeshBaseBuild*& baseBuild);
+
+	/**
+	  * Build a NeL instance group
+	  *
+	  */
+	static NL3D::CInstanceGroup*	buildInstanceGroup(std::vector<INode*>& nodes, TimeValue tvTime);
 
 	/**
 	  * Return true if it is a mesh.

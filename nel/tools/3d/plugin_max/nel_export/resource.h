@@ -75,6 +75,12 @@
 #define IDC_DIST_COARSEST               1044
 #define IDC_ACTIVE_MRM                  1045
 #define IDC_ACTIVE_MRM2                 1046
+#define IDC_RADIOACCELNO                1046
+#define IDC_RADIOACCELPORTAL            1047
+#define IDC_RADIOACCELCLUSTER           1048
+#define IDC_FATHER_VISIBLE              1049
+#define IDC_VISIBLE_FROM_FATHER         1050
+#define IDC_DYNAMIC_PORTAL              1051
 #define IDC_COLOR                       1456
 #define IDC_EDIT                        1490
 #define IDC_SPIN                        1496
@@ -85,7 +91,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        113
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1038
+#define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

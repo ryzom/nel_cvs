@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.9 2001/07/11 16:11:29 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.10 2001/08/01 14:24:55 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -173,10 +173,8 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 	// Register classes
 	registerSerial3d ();
 	CScene::registerBasics ();
-
 	// Create an object viewer
-	IObjectViewer* view=IObjectViewer::getInterface();
-
+	IObjectViewer* view = IObjectViewer::getInterface();
 	// Build a skeleton map
 	mapRootMapBoneBindPos				skeletonMap;
 	std::map<INode*, CSkeletonModel*>	mapSkeletonShape;

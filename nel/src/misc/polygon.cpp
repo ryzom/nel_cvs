@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.5 2001/11/14 15:51:54 vizerie Exp $
+ * $Id: polygon.cpp,v 1.6 2001/11/28 15:53:32 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "nel/misc/polygon.h"
 #include "nel/misc/plane.h"
 #include <list>
+#include <set>
 
 using namespace std;
 using namespace NLMISC;
@@ -168,10 +169,18 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 	uint k, l;
 	uint numVerts = Vertices.size();	
 	CVector2f p, curr, prev;
-	uint      pIndex, p1Index, p2Index, pCurr, pPrev, pNew;
+	uint      pIndex, p1Index, p2Index, pCurr, pPrev;
 	// this is not optimized, but not used in realtime.. =)
 	nlassert(numVerts >= 3);
 	dest.Vertices.clear();
+
+	typedef std::set<uint> TIndexSet;
+	TIndexSet leftIndex;
+	for (k = 0; k < Vertices.size(); ++k)
+	{
+		leftIndex.insert(k);
+	}
+	
 
 	// 1°) find the highest point p of the set. We are sure it belongs to the hull
 	pIndex = 0;
@@ -185,8 +194,10 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 		}
 	}
 
-	// find the couple of points (p1, p2) that gives the best cross-product (p2 - p) ^ (p - p1)
-	float bestCP = 0;
+	leftIndex.erase(pIndex);
+
+
+	float bestCP = 1.1f;
 	p1Index = p2Index = pIndex;
 
 	for (k = 0; k < numVerts; ++k)
@@ -198,11 +209,12 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 				if (l != pIndex && l != k)
 				{
 					CVector2f seg1 = (Vertices[l] - p).normed();
-					CVector2f seg2 = (p - Vertices[k]).normed();
+					CVector2f seg2 = (Vertices[k] - p).normed();
 
-					CVector cp = CVector(seg1.x, seg1.y, 0) ^ CVector(seg2.x, seg2.y, 0);
-					float n = fabsf(cp.z);
-					if (n > bestCP)
+					//CVector cp = CVector(seg1.x, seg1.y, 0) ^ CVector(seg2.x, seg2.y, 0);
+					//float n = fabsf(cp.z);
+					float n = seg1 * seg2;
+					if (n < bestCP)
 					{
 						p1Index = l;
 						p2Index = k;
@@ -212,6 +224,10 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 			}
 		}
 	}
+
+
+	leftIndex.erase(p2Index);
+
 	
 
 	// start from the given triplet, and complete the poly until we reach the first point
@@ -223,41 +239,41 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 
 	// create the first triplet vertices
 	dest.Vertices.push_back(Vertices[p1Index]);
-	dest.Vertices.push_back(Vertices[pPrev]);
-	dest.Vertices.push_back(Vertices[pCurr]); 
-
+	dest.Vertices.push_back(prev);
+	dest.Vertices.push_back(curr); 
 
 	uint step = 0;
-	for(;;)
-	{
-		bestCP = 0;
-		pNew   = pCurr;
-		for (l = 0; l < numVerts; ++l)
-		{
-			if (step == 0 && l == p1Index) continue;
-			if (l != pCurr && l != pPrev)
-			{
-				CVector2f seg1 = (Vertices[l] - curr).normed();
-				CVector2f seg2 = (curr - prev).normed();
 
-				CVector cp = CVector(seg1.x, seg1.y, 0) ^ CVector(seg2.x, seg2.y, 0);				
-				float n = fabsf(cp.z);
-				if (n > bestCP)
-				{
-					if (l == p1Index) return; // if we reach the start point we have finished
-					bestCP = n;
-					pNew   = l;					
-				}
-			}
+	for(;;)
+	{		
+		bestCP = 1.1f;		
+		CVector2f seg2 = (prev - curr).normed();
+		TIndexSet::const_iterator bestIt = leftIndex.end();
+		for (TIndexSet::const_iterator it =  leftIndex.begin(); it != leftIndex.end(); ++it)
+		{	
+			if (step == 0 && *it == p1Index) continue;
+			CVector2f seg1 = (Vertices[*it] - curr).normed();							
+			float n = seg1 * seg2;
+			if (n < bestCP)
+			{				
+				bestCP = n;
+				bestIt = it;				
+			}			
 		}
-		nlassert(pNew != pCurr);
+
+		nlassert(bestIt != leftIndex.end());
+		leftIndex.erase(bestIt);
+		if (*bestIt == p1Index)
+		{			
+			return; // if we reach the start point we have finished
+		}		
 		prev = curr;
-		curr = Vertices[pNew];
+		curr = Vertices[*bestIt];
 		pPrev = pCurr;
-		pCurr = pNew;
+		pCurr = *bestIt;
 		// add new point to the destination
-		dest.Vertices.push_back(curr); 
-		++ step;
+		dest.Vertices.push_back(curr);
+		++step;
 	}
 }
 

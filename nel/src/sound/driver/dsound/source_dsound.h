@@ -1,7 +1,7 @@
 /** \file source_dsound.h
  * DirectSound sound source
  *
- * $Id: source_dsound.h,v 1.10 2003/03/03 12:58:09 boucher Exp $
+ * $Id: source_dsound.h,v 1.11 2003/03/03 17:21:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,8 @@
 
 //#include <windows.h>
 #include <dsound.h>
+#undef min
+#undef max
 
 
 namespace NLSOUND {

@@ -1,7 +1,7 @@
 /** \file sound_driver.cpp
  * ISoundDriver: sound driver interface
  *
- * $Id: sound_driver.cpp,v 1.13 2003/03/03 12:58:09 boucher Exp $
+ * $Id: sound_driver.cpp,v 1.14 2003/03/03 17:21:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,6 +30,8 @@
 #ifdef NL_OS_WINDOWS
 
 #include <windows.h>
+#undef min
+#undef max
 
 #else // NL_OS_WINDOWS
 

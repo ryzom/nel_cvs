@@ -1,7 +1,7 @@
 /** \file listener_dsound.h
  * DirectSound sound listener
  *
- * $Id: listener_dsound.h,v 1.7 2003/03/03 12:58:09 boucher Exp $
+ * $Id: listener_dsound.h,v 1.8 2003/03/03 17:21:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,6 +35,9 @@
 #if EAX_AVAILABLE == 1
 #include <eax.h>
 #endif
+
+#undef min
+#undef max
 
 
 namespace NLSOUND {

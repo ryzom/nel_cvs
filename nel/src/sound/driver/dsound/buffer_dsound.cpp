@@ -1,7 +1,7 @@
 /** \file buffer_dsound.cpp
  * DirectSound sound buffer
  *
- * $Id: buffer_dsound.cpp,v 1.6 2003/03/03 12:58:09 boucher Exp $
+ * $Id: buffer_dsound.cpp,v 1.7 2003/03/03 17:21:17 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,8 @@
 
 #include <windows.h>
 #include <mmsystem.h>
+#undef min
+#undef max
 
 using namespace NLMISC;
 using namespace std;

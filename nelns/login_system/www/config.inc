@@ -7,8 +7,8 @@
 // ---------------------------------------------------------------------------------------- 
 
 	// where we can find the mysql database
-	$DBHost		= "localhost";
-	$DBUserName	= "";
+	$DBHost		= "net2";
+	$DBUserName	= "root";
 	$DBPassword	= "";
 	$DBName		= "nel";
 

@@ -12,7 +12,7 @@
 		
 		while (!feof($fp))
 		{
-			$contents = fread($fp, filesize ($filename));
+			$contents = fread($fp, 3*1024*1024/*filesize ($filename)*/);
 			gzwrite ($gz, $contents);
 		}
 
@@ -26,6 +26,8 @@
 	echo "<html><head><title>make patch</title></head><body>";
 
 	$ok = true;
+
+	set_time_limit (3600);
 
 	if (!isset($shard_version))
 	{
@@ -65,7 +67,7 @@
 		while (false !== ($entry = $d->read()))
 		{
 			// only add file that are not .ngz
-			if (is_file("$path/$entry") && substr("$entry", -3) != ".ngz")
+			if (is_file("$path/$entry") && substr("$entry", -4) != ".ngz")
 			{
 				// if the gz associated doesn't exist or too old, create it
 				if (!file_exists("$path/$entry.ngz") || filemtime ("$path/$entry.ngz") < filemtime ("$path/$entry"))

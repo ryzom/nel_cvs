@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.45 2003/04/16 16:37:40 lecroart Exp $
+ * $Id: admin_executor_service.cpp,v 1.46 2003/04/16 16:57:37 lecroart Exp $
  *
  */
 
@@ -95,6 +95,7 @@ struct CRequest
 {
 	CRequest (uint32 id, uint16 sid) : Id(id), NbWaiting(0), NbReceived(0), SId(sid)
 	{
+		nldebug ("++ NbWaiting %d NbReceived %d", NbWaiting, NbReceived);
 		Time = CTime::getSecondsSince1970 ();
 	}
 
@@ -512,6 +513,7 @@ void addRequestWaitingNb (uint32 rid)
 		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting++;
+			nldebug ("++ i %d rid %d NbWaiting++ %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			// if we add a waiting, reset the timer
 			Requests[i].Time = CTime::getSecondsSince1970 ();
 			return;
@@ -527,6 +529,7 @@ void subRequestWaitingNb (uint32 rid)
 		if (Requests[i].Id == rid)
 		{
 			Requests[i].NbWaiting--;
+			nldebug ("++ i %d rid %d NbWaiting-- %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			return;
 		}
 	}
@@ -548,6 +551,7 @@ void addRequestAnswer (uint32 rid, const vector <pair<vector<string>, vector<str
 				Requests[i].Answers.push_back (make_pair(answer[t].first, answer[t].second));
 			}
 			Requests[i].NbReceived++;
+			nldebug ("++ i %d rid %d NbWaiting %d NbReceived++ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 			return;
 		}
 	}
@@ -570,7 +574,8 @@ void addRequestAnswer (uint32 rid, const vector<string> &variables, const vector
 			Requests[i].Answers.push_back (make_pair(variables, values));
 
 			Requests[i].NbReceived++;
-
+			nldebug ("++ i %d rid %d NbWaiting %d NbReceived++ %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
+			
 			return;
 		}
 	}
@@ -700,6 +705,7 @@ void cleanRequest ()
 
 			// set to 0 to erase it
 			Requests[i].NbWaiting = 0;
+			nldebug ("++ i %d rid %d NbWaiting0 %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 		}
 
 		if (Requests[i].NbWaiting == 0)
@@ -1720,6 +1726,7 @@ NLMISC_COMMAND (clearRequests, "clear all pending requests", "")
 		if (Requests[i].NbWaiting <= Requests[i].NbReceived)
 		{
 			Requests[i].NbWaiting = Requests[i].NbReceived;
+			nldebug ("++ i %d rid %d NbWaiting= %d NbReceived %d", i, Requests[i].Id, Requests[i].NbWaiting, Requests[i].NbReceived);
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file di_mouse.cpp
  * <File description>
  *
- * $Id: di_mouse_device.cpp,v 1.1 2002/03/28 10:30:15 vizerie Exp $
+ * $Id: di_mouse_device.cpp,v 1.2 2002/04/10 12:41:49 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -380,7 +380,7 @@ void	CDIMouse::updateMove(CEventServer *server)
 }
 
 //======================================================
-void CDIMouse::transitionOccured(CEventServer *server)
+void CDIMouse::transitionOccured(CEventServer *server, const IInputDeviceEvent *)
 {
 	updateMove(server);	
 }

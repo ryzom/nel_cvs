@@ -1,7 +1,7 @@
 /** \file input_device_server.cpp
  * <File description>
  *
- * $Id: input_device_server.cpp,v 1.1 2002/03/28 10:34:08 vizerie Exp $
+ * $Id: input_device_server.cpp,v 1.2 2002/04/10 12:42:00 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -84,7 +84,7 @@ void	CInputDeviceServer::poll(CEventServer *server)
 		if (lastVisitedDevice && (*eventIt)->Emitter != lastVisitedDevice)
 		{
 			// yes, tells that a transition occured
-			lastVisitedDevice->transitionOccured(server);
+			lastVisitedDevice->transitionOccured(server, *eventIt);
 			lastVisitedDevice = (*eventIt)->Emitter;
 		}
 		nlassert((*eventIt)->Emitter != NULL);
@@ -93,7 +93,7 @@ void	CInputDeviceServer::poll(CEventServer *server)
 	//
 	for (deviceIt = _Devices.begin(); deviceIt != _Devices.end(); ++deviceIt)
 	{
-		(*deviceIt)->transitionOccured(server);
+		(*deviceIt)->transitionOccured(server, NULL);
 	}
 	// delete the messages
 	for (eventIt = _Events.begin(); eventIt != _Events.end(); ++eventIt)

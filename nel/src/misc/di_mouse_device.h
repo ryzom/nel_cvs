@@ -1,7 +1,7 @@
 /** \file di_mouse_device.h
  * <File description>
  *
- * $Id: di_mouse_device.h,v 1.2 2002/03/29 16:22:39 vizerie Exp $
+ * $Id: di_mouse_device.h,v 1.3 2002/04/10 12:41:49 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -151,7 +151,7 @@ private:
 	//@{
 		virtual void poll(CInputDeviceServer *dev);	
 		virtual void submit(IInputDeviceEvent *deviceEvent, CEventServer *server);	
-		virtual void transitionOccured(CEventServer *server);		
+		virtual void transitionOccured(CEventServer *server, const IInputDeviceEvent *nextMessage);		
 	//@}
 };
 

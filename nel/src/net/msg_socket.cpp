@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.42 2000/12/19 13:29:04 cado Exp $
+ * $Id: msg_socket.cpp,v 1.43 2000/12/19 17:35:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,6 +273,7 @@ CMsgSocket::~CMsgSocket()
 	CConnections::iterator its;
 	for ( its=_Connections.begin(); its!=_Connections.end(); its++ )
 	{
+		CSocket *t = (*its).second;
 		delete (*its).second; // BUG: crashes sometimes
 	}
 }

@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.21 2000/12/15 17:48:08 cado Exp $
+ * $Id: local_area.cpp,v 1.22 2000/12/19 17:35:31 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,7 +238,8 @@ CLocalArea::CLocalArea( const CMsgSocket *clientsocket, const CVector& userpos, 
  */
 CLocalArea::~CLocalArea()
 {
-	delete ClientSocket;
+//	delete ClientSocket;
+	ClientSocket = NULL;
 	for ( CRemoteEntities::iterator ire=_Neighbors.begin(); ire!=_Neighbors.end(); ++ire )
 	{
 		if ( (*ire).second != NULL ) 

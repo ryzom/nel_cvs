@@ -287,14 +287,6 @@ SOURCE=..\include\nel\misc\events.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\misc\unix_event_emitter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=..\include\nel\misc\unix_event_emitter.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\misc\win_event_emitter.cpp
 # End Source File
 # Begin Source File

@@ -1,7 +1,7 @@
 /** \file bitmap.cpp
  * Class managing bitmaps
  *
- * $Id: bitmap.cpp,v 1.12 2000/12/11 15:52:33 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.13 2000/12/18 09:44:30 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1717,10 +1717,9 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 
 			for(y=0; y<_Height ;y++)
 			{
-				for(i=0; i<slsize; i++)
-				{
-					f.serial(scanline[i]);
-				}
+				// Serial buffer: more efficient way to load.
+				f.serialBuffer (scanline, slsize);
+
 				if(imageDepth==24 || imageDepth==32)
 				{
 					sint32 mult = 3;

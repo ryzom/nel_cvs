@@ -1,7 +1,7 @@
 /** \file stream_inline.h
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  *
- * $Id: stream_inline.h,v 1.14 2000/11/28 11:17:20 berenguier Exp $
+ * $Id: stream_inline.h,v 1.15 2000/12/07 09:15:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -282,11 +282,13 @@ inline	void		IStream::serial(bool &b) throw(EStream)
 	serialBit(b);
 }
 
+#ifndef NL_OS_CYGWIN
 // ======================================================================================================
 inline	void		IStream::serial(char &b) throw(EStream)
 {
 	serialBuffer((uint8 *)&b, 1);
 }
+#endif
 
 // ======================================================================================================
 inline	void		IStream::serial(std::string &b) throw(EStream)

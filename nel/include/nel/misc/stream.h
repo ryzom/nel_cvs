@@ -1,7 +1,7 @@
 /** \file stream.h
  * This File handles IStream 
  *
- * $Id: stream.h,v 1.30 2000/12/05 10:37:31 berenguier Exp $
+ * $Id: stream.h,v 1.31 2000/12/07 09:15:52 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -197,6 +197,7 @@ public:
 	 * Those method are a specialisation of template method "void serial(T&)".
 	 */
 	//@{
+
 	void			serial(uint8 &b) throw(EStream);
 	void			serial(sint8 &b) throw(EStream);
 	void			serial(uint16 &b) throw(EStream);
@@ -208,7 +209,9 @@ public:
 	void			serial(float &b) throw(EStream);
 	void			serial(double &b) throw(EStream);
 	void			serial(bool &b) throw(EStream);
+#ifndef NL_OS_CYGWIN
 	void			serial(char &b) throw(EStream);
+#endif
 	void			serial(std::string &b) throw(EStream);
 	void			serial(ucstring &b) throw(EStream);
 	//@}

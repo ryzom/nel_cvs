@@ -1,7 +1,7 @@
 /** \file located_bindable_dialog.cpp
  * a dialog for located bindable properties (particles ...)
  *
- * $Id: located_bindable_dialog.cpp,v 1.17 2001/12/06 16:56:04 vizerie Exp $
+ * $Id: located_bindable_dialog.cpp,v 1.18 2001/12/18 18:38:00 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,7 @@
 #include "texture_anim_dlg.h"
 #include "particle_dlg.h"
 #include "constraint_mesh_dlg.h"
+#include "constraint_mesh_tex_dlg.h"
 
 
 using NL3D::CPSLocatedBindable; 
@@ -262,7 +263,6 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		}
 
 		// fanlight
-
 		if (dynamic_cast<NL3D::CPSFanLight *>(_Bindable))
 		{
 			CEditableRangeUInt *nbf = new CEditableRangeUInt(std::string("NB_FANS"), 3, 127);
@@ -369,10 +369,11 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 		// shape particle
 		if (dynamic_cast<NL3D::CPSShapeParticle *>(_Bindable))
 		{
-			CMeshDlg *md = new CMeshDlg(dynamic_cast<NL3D::CPSShapeParticle *>(_Bindable));
+			CMeshDlg *md = new CMeshDlg(dynamic_cast<NL3D::CPSShapeParticle *>(_Bindable), _ParticleDlg);
 			md->init(this, xPos, yPos);
 			md->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
+			pushWnd(md);
 		}
 
 		// constraint mesh particle
@@ -382,6 +383,13 @@ void CLocatedBindableDialog::init(CParticleDlg* pParent)
 			cmd->init(xPos, yPos, this);
 			cmd->GetClientRect(&rect);
 			yPos += rect.bottom + 3;
+			CConstraintMeshTexDlg *cmtd = new CConstraintMeshTexDlg(static_cast<NL3D::CPSConstraintMesh *>(_Bindable),
+																	this);
+			cmtd->init(xPos, yPos, this);
+			cmtd->GetClientRect(&rect);
+			yPos += rect.bottom + 3;
+			pushWnd(cmd);
+			pushWnd(cmtd);			
 		}
 
 

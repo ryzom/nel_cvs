@@ -1,3 +1,28 @@
+/** \file value_from_emitter_dlg.h
+ * Dialog used to tune particle attributes that are computed from their emitter
+ *
+ * $Id: value_from_emitter_dlg.h,v 1.5 2001/12/18 18:41:25 vizerie Exp $
+ */
+
+/* Copyright, 2001 Nevrax Ltd.
+ *
+ * This file is part of NEVRAX NEL.
+ * NEVRAX NEL is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2, or (at your option)
+ * any later version.
+
+ * NEVRAX NEL is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with NEVRAX NEL; see the file COPYING. If not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place - Suite 330, Boston,
+ * MA 02111-1307, USA.
+ */
+
 #if !defined(AFX_VALUE_FROM_EMITTER_DLG_H__D3416DBF_1735_4FBB_A1FD_7E8DCC133825__INCLUDED_)
 #define AFX_VALUE_FROM_EMITTER_DLG_H__D3416DBF_1735_4FBB_A1FD_7E8DCC133825__INCLUDED_
 

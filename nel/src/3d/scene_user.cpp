@@ -1,7 +1,7 @@
 /** \file scene_user.cpp
  * <File description>
  *
- * $Id: scene_user.cpp,v 1.17 2002/05/13 16:45:56 berenguier Exp $
+ * $Id: scene_user.cpp,v 1.18 2002/05/16 16:28:39 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -285,6 +285,9 @@ const CVector	&CSceneUser::getGlobalWindDirection() const
 // ***************************************************************************
 void CSceneUser::updateWaitingIG()
 {
+#ifdef NL_DEBUG
+	if (_WaitingIGs.size() > 0)
+#endif
 	for(TWaitingIGList::iterator it = _WaitingIGs.begin(); it != _WaitingIGs.end(); ++it)
 	{
 		if (it->IGToLoad != NULL) // ig loaded ?
@@ -301,7 +304,11 @@ void CSceneUser::updateWaitingIG()
 					*it->CallerPtr = it->IGToLoad;
 					// remove from list
 					it = _WaitingIGs.erase(it);
-				break;			
+#ifdef NL_DEBUG
+					if (_WaitingIGs.size() == 0)
+						return;
+#endif
+				break;
 				default:
 				break;
 			}			

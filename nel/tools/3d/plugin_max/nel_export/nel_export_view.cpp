@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.31 2002/03/13 16:59:59 berenguier Exp $
+ * $Id: nel_export_view.cpp,v 1.32 2002/03/15 10:57:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -111,6 +111,13 @@ void CNelExport::viewMesh (Interface& ip, TimeValue time, CExportNelOptions &opt
 	
 	// Create an object viewer
 	IObjectViewer* view = IObjectViewer::getInterface();
+
+	// Check wether there's not an instance currently running
+	if (view->isInstanceRunning())
+	{
+		::MessageBox(NULL, "An instance of the viewer is currently running, please close it :)", "NeL Export", MB_OK|MB_ICONEXCLAMATION);
+		return;
+	}
 
 	// set the water pool manager
 	view->setWaterPoolManager(NL3D::GetWaterPoolManager());

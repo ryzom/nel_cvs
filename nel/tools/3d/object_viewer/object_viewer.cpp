@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.60 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: object_viewer.cpp,v 1.61 2002/03/15 10:57:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -154,6 +154,9 @@ CObject_viewerApp::CObject_viewerApp()
 // The one and only CObject_viewerApp object
 
 CObject_viewerApp theApp;
+
+
+bool CObjectViewer::_InstanceRunning = false;
 
 // ***************************************************************************
 
@@ -815,7 +818,10 @@ void CObjectViewer::setupPlaylist (float time)
 
 void CObjectViewer::go ()
 {
+	nlassert(!_InstanceRunning); // this shouldn't be called if an instance of the viewer is running.
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	_InstanceRunning = true;
 
 	do
 	{
@@ -1036,6 +1042,7 @@ void CObjectViewer::go ()
 		_LastTime=_AnimationDlg->getTime();
 	}
 	while (!CNELU::AsyncListener.isKeyPushed(KeyESCAPE)&&CNELU::Driver->isActive());
+	_InstanceRunning = false;
 }
 
 // ***************************************************************************

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.34 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: object_viewer.h,v 1.35 2002/03/15 10:57:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -209,6 +209,8 @@ public:
 
 	// Go
 	void go ();
+
+	virtual bool	isInstanceRunning() { return _InstanceRunning; }
 
 	// Release the UI
 	void releaseUI ();
@@ -507,6 +509,8 @@ private:
 	COVLogicInfo								_ObjectLightTestLogicInfo;
 
 	// @}
+
+	static bool									_InstanceRunning;
 
 };
 

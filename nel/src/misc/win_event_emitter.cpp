@@ -1,7 +1,7 @@
 /** \file win_event_emitter.cpp
  * class CWinEnventEmitter
  *
- * $Id: win_event_emitter.cpp,v 1.6 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: win_event_emitter.cpp,v 1.7 2002/03/15 10:57:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -243,7 +243,7 @@ void CWinEventEmitter::processMessage (uint32 hWnd, uint32 msg, uint32 wParam, u
 }
 
 void CWinEventEmitter::resetButtonFlagState ()
-{
+{ 
 	_CtrlButton=( (GetAsyncKeyState(VK_CONTROL)&0x8000) != 0);
 	_ShiftButton=( (GetAsyncKeyState(VK_SHIFT)&0x8000) != 0);
 	_AltButton=( (GetAsyncKeyState(VK_MENU)&0x8000) != 0);

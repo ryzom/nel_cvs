@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.16 2002/03/12 16:32:25 berenguier Exp $
+ * $Id: object_viewer_interface.h,v 1.17 2002/03/15 10:57:51 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,7 +61,10 @@ public:
 	// Init the UI
 	virtual void initUI (HWND parent=NULL)=0;
 
-	// Go
+	// Test wether an instance of the viewer is running
+	virtual bool	isInstanceRunning() = 0;
+
+	// Go. It shouldn't be called if there's an instance of the viewer that is running.
 	virtual void go ()=0;
 
 	// Release the UI

@@ -18,6 +18,11 @@ The NeL library is further divided into a few libraries: network, ai, 3d and mis
 to use ai, 3d or network you also need to use the misc part of the library. Ai, 3d and network are
 totally independant from each other so you can use only the parts you really need in your project.
 
+A good example is the platform Nevrax intends to use NeL for. That platform uses the
+following architecture:
+
+\image html Architect.gif
+
 \section build Building system
 
 Building systems are very different, depending on whether you work on a Windows/Visual

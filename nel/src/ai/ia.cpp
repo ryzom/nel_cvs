@@ -1,4 +1,4 @@
-#include "nel/ai/link/nl_ia.h"
+#include "nel/ai/nl_ia.h"
 #include "nel/ai/script/compilateur.h"
 #include "nel/ai/agent/agent.h"
 #include "nel/ai/agent/agent_digital.h"

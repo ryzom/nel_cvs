@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.22 2002/04/11 14:54:54 cado Exp $
+ * $Id: bitmap.cpp,v 1.23 2002/05/28 14:27:44 hanappe Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2500,6 +2500,9 @@ void	CBitmap::loadSize(const std::string &path, uint32 &retWidth, uint32 &retHei
 
 void	CBitmap::flipH()
 {
+	if (PixelFormat != RGBA)
+		return;
+
 	sint32 nWidth = getWidth(0);
 	sint32 nHeight = getHeight(0);
 	sint32 i, j;
@@ -2529,6 +2532,9 @@ void	CBitmap::flipH()
 
 void	CBitmap::flipV()
 {
+	if (PixelFormat != RGBA)
+		return;
+
 	sint32 nWidth = getWidth(0);
 	sint32 nHeight = getHeight(0);
 	sint32 i, j;
@@ -2558,6 +2564,8 @@ void	CBitmap::flipV()
 
 void	CBitmap::rot90CW()
 {
+	if (PixelFormat != RGBA)
+		return;
 	sint32 nWidth = getWidth(0);
 	sint32 nHeight = getHeight(0);
 	sint32 i, j;
@@ -2591,6 +2599,8 @@ void	CBitmap::rot90CW()
 
 void	CBitmap::rot90CCW()
 {
+	if (PixelFormat != RGBA)
+		return;
 	sint32 nWidth = getWidth(0);
 	sint32 nHeight = getHeight(0);
 	sint32 i, j;

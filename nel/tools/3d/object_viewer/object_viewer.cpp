@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.13 2001/06/22 12:45:41 besson Exp $
+ * $Id: object_viewer.cpp,v 1.14 2001/06/25 13:36:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,7 +130,7 @@ CObjectViewer::CObjectViewer ()
 CObjectViewer::~CObjectViewer ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	if (_SlotDlg)
+	if (_SlotDlg)	
 		delete _SlotDlg;
 	if (_AnimationSetDlg)
 		delete _AnimationSetDlg;

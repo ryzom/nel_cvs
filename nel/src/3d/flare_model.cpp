@@ -1,7 +1,7 @@
 /** \file flare_model.cpp
  * <File description>
  *
- * $Id: flare_model.cpp,v 1.5 2001/08/07 14:17:11 vizerie Exp $
+ * $Id: flare_model.cpp,v 1.6 2001/08/08 14:10:36 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -199,7 +199,8 @@ void	CFlareRenderObs::traverse(IObs *caller)
 		if (norm < fs->getDazzleAttenuationRange())
 		{
 			float dazzleIntensity = 1.f - norm / fs->getDazzleAttenuationRange() ;
-			col.modulateFromui(fs->getDazzleColor(), (uint) (255.f * m->_Intensity * dazzleIntensity)) ;
+			CRGBA dazzleColor = fs->getDazzleColor(); 
+			col.modulateFromui(dazzleColor, (uint) (255.f * m->_Intensity * dazzleIntensity)) ;
 			material.setColor(col) ;
 			material.setTexture(0, NULL) ;
 	

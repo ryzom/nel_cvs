@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.38 2001/09/06 15:20:54 besson Exp $
+ * $Id: object_viewer.cpp,v 1.39 2001/09/12 13:30:22 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,6 +59,7 @@
 #include "resource.h"
 #include "main_frame.h"
 #include "sound_system.h"
+#include "scheme_manager.h"
 
 
 
@@ -236,6 +237,20 @@ CObjectViewer::CObjectViewer ()
 			_CameraFocal = 75.f; // default value for the focal
 		}
 
+		// load the scheme bank if one is present
+		
+		CIFile iF;
+		if (iF.open("default.scb"))
+		{
+			try
+			{
+				iF.serial(SchemeManager);
+			}
+			catch (NLMISC::EStream &e)
+			{
+				::MessageBox(NULL, ("Unable to load the default scheme bank file : "  + std::string(e.what())).c_str(), "Object Viewer", MB_ICONEXCLAMATION);
+			}
+		}			
 	}
 	catch (Exception& e)
 	{
@@ -583,7 +598,9 @@ void CObjectViewer::releaseUI ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-	
+	// release sound
+	CSoundSystem::releaseSoundSystem();
+
 	if (CNELU::Driver->isActive())
 	{
 		// register window position
@@ -602,8 +619,7 @@ void CObjectViewer::releaseUI ()
 	// exit
 	CNELU::release();
 
-	// release sound
-	CSoundSystem::releaseSoundSystem();
+	
 }
 
 // ***************************************************************************

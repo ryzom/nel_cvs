@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * <File description>
  *
- * $Id: u_scene.h,v 1.12 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: u_scene.h,v 1.13 2002/01/07 10:24:12 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -220,6 +220,19 @@ public:
 	*/
 	virtual void setDynamicCoarseMeshManagerColor (const NLMISC::CRGBA& color) =0;
 
+	//@}
+
+
+	/// \name transparent Layers mgt
+	//@{
+		/** Set the order or rendering of layers containing transparent objects.
+		  * In real case, with direct order, we have:
+		  * - Underwater is rendered.
+		  * - Water is rendered.
+		  * - Objects above water are rendered.
+		  */
+		virtual void  setLayersRenderingOrder(bool directOrder = true) = 0;
+		virtual bool  getLayersRenderingOrder() const = 0;
 	//@}
 };
 

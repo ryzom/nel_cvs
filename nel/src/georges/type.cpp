@@ -1,7 +1,7 @@
 /** \file _type.cpp
  * Georges type class
  *
- * $Id: type.cpp,v 1.3 2002/06/04 14:14:15 corvazier Exp $
+ * $Id: type.cpp,v 1.4 2002/06/11 17:38:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,6 +84,12 @@ void CType::write (xmlDocPtr doc) const
 	if (!Max.empty())
 	{
 		xmlSetProp (node, (const xmlChar*)"Max", (const xmlChar*)Max.c_str());
+	}
+
+	// Increment valid
+	if (!Increment.empty())
+	{
+		xmlSetProp (node, (const xmlChar*)"Increment", (const xmlChar*)Increment.c_str());
 	}
 
 	// Definition 
@@ -212,6 +218,18 @@ void CType::read (xmlNodePtr root)
 	}
 	else
 		Max = "";
+
+	// Read Increment
+	value = (const char*)xmlGetProp (root, (xmlChar*)"Increment");
+	if (value)
+	{
+		Increment = value;
+
+		// Delete the value
+		xmlFree ((void*)value);
+	}
+	else
+		Increment = "";
 
 	// Read the definitions
 	uint childrenCount = CIXml::countChildren (root, "DEFINITION");
@@ -483,5 +501,22 @@ UType::TType CType::getType () const
 
 // ***************************************************************************
 
+bool CType::uiCompatible (TType type, TUI ui)
+{
+	switch (type)
+	{
+	case UnsignedInt:
+	case SignedInt:
+	case Double:
+		return (ui == Edit) || (ui == EditSpin) || (ui == NonEditableCombo);
+	case String:
+		return (ui == Edit) || (ui == NonEditableCombo) || (ui == FileBrowser) || (ui == BigEdit);
+	case Color:
+		return (ui == ColorEdit);
+	}
+	return false;
+}
+
+// ***************************************************************************
 
 } // NLGEORGES

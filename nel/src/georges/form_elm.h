@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.8 2002/06/06 13:33:32 corvazier Exp $
+ * $Id: form_elm.h,v 1.9 2002/06/11 17:38:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -369,8 +369,21 @@ public:
 	// Read an array
 	void				read (xmlNodePtr node, CFormLoader &loader, CForm *form);
 
+	// A struct element
+	class CElement
+	{
+	public:
+		CElement ()
+		{
+			Element = NULL;
+		}
+
+		std::string		Name;
+		CFormElm*		Element;
+	};
+
 	// Array of elements
-	std::vector<CFormElm*>		Elements;
+	std::vector<CElement>		Elements;
 };
 
 /**

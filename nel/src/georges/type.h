@@ -1,7 +1,7 @@
 /** \file type.h
  * Georges type class
  *
- * $Id: type.h,v 1.2 2002/05/23 16:50:38 corvazier Exp $
+ * $Id: type.h,v 1.3 2002/06/11 17:38:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,6 +58,9 @@ public:
 		UITypeCount
 	};
 
+	// Is a UI compatible with a type ?
+	static bool uiCompatible (TType type, TUI ui);
+
 	// Get the default value
 	const std::string& getDefault () const
 	{
@@ -84,6 +87,9 @@ public:
 
 	// Max value
 	std::string			Max;
+
+	// Increment step value
+	std::string			Increment;
 
 	// Evaluate a node
 	bool				getValue (std::string &result, const class CForm *form, const class CFormElmAtom *node, const class CFormDfn &parentDfn, 

@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.8 2002/06/04 14:14:15 corvazier Exp $
+ * $Id: form.cpp,v 1.9 2002/06/11 17:38:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,8 @@ namespace NLGEORGES
 {
 
 // ***************************************************************************
+// UForm
+// ***************************************************************************
 
 UForm::~UForm ()
 {
@@ -55,6 +57,30 @@ UFormElm& CForm::getRootNode ()
 const UFormElm& CForm::getRootNode () const
 {
 	return Elements;
+}
+
+// ***************************************************************************
+// CForm
+// ***************************************************************************
+
+CForm::CForm () : Elements (this, NULL, NULL, 0xffffffff)
+{
+	uint i;
+	for (i=0; i<HeldElementCount; i++)
+	{
+		HeldElements[i] = new CFormElmStruct (this, NULL, NULL, 0xffffffff);
+	}
+}
+
+// ***************************************************************************
+
+CForm::~CForm ()
+{
+	uint i;
+	for (i=0; i<HeldElementCount; i++)
+	{
+		delete HeldElements[i];
+	}
 }
 
 // ***************************************************************************
@@ -82,6 +108,13 @@ void CForm::write (xmlDocPtr doc, const char *filename)
 
 	// Write elements
 	Elements.write (node, this, NULL, true);
+
+	// Write held elements
+	uint i;
+	for (i=0; i<HeldElementCount; i++)
+	{
+		HeldElements[i]->write (node, this, NULL, true);
+	}
 
 	// Header
 	Header.write (node);
@@ -154,6 +187,21 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn, const cha
 
 	// Read the struct
 	Elements.read (child, loader, dfn, this);
+
+	// Get next struct node
+	child = CIXml::getNextChildNode (node, "STRUCT");
+	uint index = 0;
+	while ( (child != NULL) && (index < HeldElementCount))
+	{
+		HeldElements[index]->read (child, loader, dfn, this);
+		index++;
+	}
+	while (index < HeldElementCount)
+	{
+		// Build the Form
+		HeldElements[index]->build (dfn);
+		index++;
+	}
 
 	// Get the old parent parameter
 	const char *parent = (const char*)xmlGetProp (node, (xmlChar*)"Parent");

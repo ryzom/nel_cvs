@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.8 2002/06/06 13:33:32 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.9 2002/06/11 17:38:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -76,6 +76,8 @@ void CFormDfn::write (xmlDocPtr doc) const
 		case UFormDfn::EntryType:
 			xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)"Type");
 			xmlSetProp (elmPtr, (const xmlChar*)"Filename", (const xmlChar*)Entries[elm].Filename.c_str());
+			if ((!Entries[elm].FilenameExt.empty ()) && Entries[elm].FilenameExt != "*.*")
+				xmlSetProp (elmPtr, (const xmlChar*)"FilenameExt", (const xmlChar*)Entries[elm].FilenameExt.c_str());
 			break;
 		case UFormDfn::EntryDfn:
 			xmlSetProp (elmPtr, (const xmlChar*)"Type", (const xmlChar*)"Dfn");
@@ -189,6 +191,19 @@ void CFormDfn::read (xmlNodePtr root, CFormLoader &loader, bool forceLoad)
 			else
 			{
 				Entries[childNumber].Filename.clear ();
+			}
+
+			const char *filenameExt = (const char*)xmlGetProp (child, (xmlChar*)"FilenameExt");
+			if ( filenameExt )
+			{
+				Entries[childNumber].FilenameExt = filenameExt;
+
+				// Delete the value
+				xmlFree ((void*)filenameExt);
+			}
+			else
+			{
+				Entries[childNumber].FilenameExt = "*.*";
 			}
 			
 			// Read the type
@@ -1240,6 +1255,20 @@ bool CFormDfn::getParentFilename (uint parent, std::string &filename) const
 const std::string& CFormDfn::getComment (std::string &comment) const
 {
 	return Header.Comments;
+}
+
+// ***************************************************************************
+
+const std::string &CFormDfn::CEntry::getFilenameExt() const
+{
+	return FilenameExt;
+}
+
+// ***************************************************************************
+
+void CFormDfn::CEntry::setFilenameExt (const char *ext)
+{
+	FilenameExt = ext;
 }
 
 // ***************************************************************************

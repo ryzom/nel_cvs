@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.14 2002/06/06 13:33:32 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.15 2002/06/11 17:38:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -689,7 +689,7 @@ bool CFormElm::arrayInsertNodeByName (const char *name, const CFormDfn **parentD
 				nlassert (newelm);
 
 				// Set the element pointer
-				array->Elements[arrayIndex] = newelm;
+				array->Elements[arrayIndex].Element = newelm;
 
 				// Ok 
 				return true;
@@ -730,8 +730,8 @@ bool CFormElm::arrayDeleteNodeByName (const char *name, const CFormDfn **parentD
 			if (arrayIndex<array->Elements.size ())
 			{
 				// Insert the element
-				if (array->Elements[arrayIndex])
-					delete array->Elements[arrayIndex];
+				if (array->Elements[arrayIndex].Element)
+					delete array->Elements[arrayIndex].Element;
 
 				// Erase the entry
 				array->Elements.erase (array->Elements.begin () + arrayIndex);
@@ -1164,7 +1164,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 									created = true;
 
 									// Set the element pointer
-									array->Elements[i] = newelm;
+									array->Elements[i].Element = newelm;
 								}
 							}
 							else
@@ -1200,7 +1200,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 						CFormElmArray *parentNode = safe_cast<CFormElmArray*> (*node);
 
 						// Get the element
-						*node = parentNode->Elements[arrayIndex];
+						*node = parentNode->Elements[arrayIndex].Element;
 
 						// Is a dfn ?
 						*nodeDfn = (*parentDfn)->getEntry (indexDfn).getDfnPtr ();
@@ -1250,7 +1250,7 @@ bool CFormElm::getIternalNodeByName (CForm *form, const char *name, const CFormD
 							created = true;
 
 							// Set the element pointer
-							parentNode->Elements[arrayIndex] = *node;
+							parentNode->Elements[arrayIndex].Element = *node;
 						}
 
 						// Is a virtual DFN ?
@@ -2075,8 +2075,8 @@ void CFormElmArray::clean ()
 	uint elm;
 	for (elm =0; elm<Elements.size(); elm++)
 	{
-		if (Elements[elm])
-			delete Elements[elm];
+		if (Elements[elm].Element)
+			delete Elements[elm].Element;
 	}
 	Elements.clear ();
 }
@@ -2102,7 +2102,7 @@ bool CFormElmArray::getArrayNode (const UFormElm **result, uint arrayIndex) cons
 {
 	if (arrayIndex<Elements.size())
 	{
-		*result = Elements[arrayIndex];
+		*result = Elements[arrayIndex].Element;
 		return true;
 	}
 	else
@@ -2118,7 +2118,7 @@ bool CFormElmArray::getArrayNode (UFormElm **result, uint arrayIndex)
 {
 	if (arrayIndex<Elements.size())
 	{
-		*result = Elements[arrayIndex];
+		*result = Elements[arrayIndex].Element;
 		return true;
 	}
 	else
@@ -2135,7 +2135,7 @@ bool CFormElmArray::getArrayValue (std::string &result, uint arrayIndex, bool ev
 {
 	if (Type)
 	{
-		return (Type->getValue (result, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where));
+		return (Type->getValue (result, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where));
 	}
 	else
 	{
@@ -2152,7 +2152,7 @@ bool CFormElmArray::getArrayValue (sint8 &result, uint arrayIndex, bool evaluate
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2172,7 +2172,7 @@ bool CFormElmArray::getArrayValue (uint8 &result, uint arrayIndex, bool evaluate
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2192,7 +2192,7 @@ bool CFormElmArray::getArrayValue (sint16 &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2212,7 +2212,7 @@ bool CFormElmArray::getArrayValue (uint16 &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2232,7 +2232,7 @@ bool CFormElmArray::getArrayValue (sint32 &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2253,7 +2253,7 @@ bool CFormElmArray::getArrayValue (uint32 &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2273,7 +2273,7 @@ bool CFormElmArray::getArrayValue (float &result, uint arrayIndex, bool evaluate
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2293,7 +2293,7 @@ bool CFormElmArray::getArrayValue (double &result, uint arrayIndex, bool evaluat
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2313,7 +2313,7 @@ bool CFormElmArray::getArrayValue (bool &result, uint arrayIndex, bool evaluate,
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2333,7 +2333,7 @@ bool CFormElmArray::getArrayValue (NLMISC::CRGBA &result, uint arrayIndex, bool 
 	if (Type)
 	{
 		string str;
-		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex]), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
+		if (Type->getValue (str, Form, safe_cast<const CFormElmAtom*> (Elements[arrayIndex].Element), *ParentDfn, ParentIndex, evaluate, (uint32*)where))
 		{
 			return convertValue (result, str.c_str ());
 		}
@@ -2368,8 +2368,8 @@ xmlNodePtr CFormElmArray::write (xmlNodePtr root, const CForm *form, const char 
 		for (elm=0; elm<Elements.size(); elm++)
 		{
 			// Create a node
-			if (Elements[elm])
-				Elements[elm]->write (node, form, NULL, true);
+			if (Elements[elm].Element)
+				Elements[elm].Element->write (node, form, Elements[elm].Name.empty ()?NULL:Elements[elm].Name.c_str (), true);
 		}
 
 		// Return the new node
@@ -2405,9 +2405,17 @@ void CFormElmArray::read (xmlNodePtr node, CFormLoader &loader, CForm *form)
 			xmlNodePtr child = CIXml::getFirstChildNode (node, "ATOM");
 			while (child)
 			{
+				// Get node name
+				const char *name = (const char*)xmlGetProp (child, (xmlChar*)"Name");
+
 				// Create a new node
 				CFormElmAtom *newElt = new CFormElmAtom (form, this, ParentDfn, ParentIndex);
-				Elements[childNum] = newElt;
+				Elements[childNum].Element = newElt;
+				if (name)
+				{
+					Elements[childNum].Name = name;
+					xmlFree ((void*)name);
+				}
 				newElt->read (child, loader, Type, form);
 
 				// Next child
@@ -2431,9 +2439,17 @@ void CFormElmArray::read (xmlNodePtr node, CFormLoader &loader, CForm *form)
 			xmlNodePtr child = CIXml::getFirstChildNode (node, "STRUCT");
 			while (child)
 			{
+				// Get node name
+				const char *name = (const char*)xmlGetProp (child, (xmlChar*)"Name");
+
 				// Create a new node
 				CFormElmStruct *newElt = new CFormElmStruct (form, this, ParentDfn, ParentIndex);
-				Elements[childNum] = newElt;
+				Elements[childNum].Element = newElt;
+				if (name)
+				{
+					Elements[childNum].Name = name;
+					xmlFree ((void*)name);
+				}
 				newElt->read (child, loader, FormDfn, form);
 
 				// Next child
@@ -2458,9 +2474,9 @@ void CFormElmArray::unlink (CFormElm *child)
   uint i;
 	for (i=0; i<Elements.size (); i++)
 	{
-		if (Elements[i] == child)
+		if (Elements[i].Element == child)
 		{
-			Elements[i] = NULL;
+			Elements[i].Element = NULL;
 			break;
 		}
 	}
@@ -2504,7 +2520,7 @@ void CFormElmArray::getFormName (std::string &result, const CFormElm *child) con
 		for (i=0; i<Elements.size (); i++)
 		{
 			// This one ?
-			if (Elements[i] == child)
+			if (Elements[i].Element == child)
 			{
 				char name[20];
 				smprintf (name, 20, "[%d]", i);

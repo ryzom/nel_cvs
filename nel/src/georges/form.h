@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.7 2002/06/04 14:14:15 corvazier Exp $
+ * $Id: form.h,v 1.8 2002/06/11 17:38:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,8 @@ class CForm : public UForm
 	friend bool convertFormFile (const char *oldFileName, const char *newFileName);
 public:
 
+	enum { HeldElementCount = 4 };
+
 	// From UForm
 	UFormElm&		getRootNode ();
 	const UFormElm& getRootNode () const;
@@ -54,7 +56,8 @@ public:
 
 
 #pragma warning (disable : 4355)
-	CForm () : Elements (this, NULL, NULL, 0xffffffff) {};
+	CForm ();
+	~CForm ();
 
 	// Clean the form. Erase parents.
 	void				clean ();
@@ -68,6 +71,9 @@ public:
 
 	/// Vector of CFormElm*
 	CFormElmStruct		Elements;
+
+	/// Backup slots
+	CFormElmStruct		*HeldElements[HeldElementCount];
 
 	// ** IO functions
 	// Set the filename before saving the form

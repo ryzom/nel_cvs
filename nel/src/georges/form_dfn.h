@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.8 2002/06/06 13:33:32 corvazier Exp $
+ * $Id: form_dfn.h,v 1.9 2002/06/11 17:38:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,7 @@ public:
 		CEntry ()
 		{
 			TypeElement = EntryType;
+			FilenameExt = "*.*";
 		}
 
 		// Get the type
@@ -102,8 +103,14 @@ public:
 		// Get the filename
 		const std::string			&getFilename() const;
 
+		// Get the filename extension
+		const std::string			&getFilenameExt() const;
+
 		// Set the filename
 		void						setFilename (const char *def);
+
+		// Set the filename extension
+		void						setFilenameExt (const char *ext);
 
 		// Get default value
 		const std::string			&getDefault () const;
@@ -132,6 +139,9 @@ public:
 
 		// The default value for atom
 		std::string					Default;
+
+		// The filename
+		std::string					FilenameExt;
 
 		// Smart ptr on the type or the dfn
 		NLMISC::CSmartPtr<CType>	Type;

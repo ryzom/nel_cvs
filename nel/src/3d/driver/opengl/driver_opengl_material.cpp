@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.74 2003/08/07 08:56:56 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.75 2003/10/13 09:42:27 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -130,9 +130,7 @@ void CDriverGL::setTextureEnvFunction(uint stage, CMaterial& mat)
 		_DriverGLStates.activeTextureARB(stage);
 		if (mat.getTexCoordGen (stage))
 		{
-			// Enable it
-			_DriverGLStates.enableTexGen (stage, true);
-
+			// set mode and enable.
 			CMaterial::TTexCoordGenMode	mode= mat.getTexCoordGenMode(stage);
 			if(mode==CMaterial::TexCoordGenReflect)
 			{
@@ -143,13 +141,16 @@ void CDriverGL::setTextureEnvFunction(uint stage, CMaterial& mat)
 					_DriverGLStates.setTexGenMode (stage, GL_SPHERE_MAP);
 			}
 			else if(mode==CMaterial::TexCoordGenObjectSpace)
+			{
 				_DriverGLStates.setTexGenMode (stage, GL_OBJECT_LINEAR);
+			}
 			else if(mode==CMaterial::TexCoordGenEyeSpace)
 				_DriverGLStates.setTexGenMode (stage, GL_EYE_LINEAR);
 		}
 		else
 		{
-			_DriverGLStates.enableTexGen (stage, false);
+			// Disable.
+			_DriverGLStates.setTexGenMode(stage, 0);
 		}
 	}
 }
@@ -685,7 +686,7 @@ void			CDriverGL::setupLightMapPass(uint pass)
 
 		// Setup gen tex off
 		_DriverGLStates.activeTextureARB(0);
-		_DriverGLStates.enableTexGen (0, false);
+		_DriverGLStates.setTexGenMode(0, 0);
 
 		// And disable other stages.
 		for(sint stage=1 ; stage<inlGetNumTextStages() ; stage++)
@@ -740,7 +741,7 @@ void			CDriverGL::setupLightMapPass(uint pass)
 
 					// Setup gen tex off
 					_DriverGLStates.activeTextureARB(stage);
-					_DriverGLStates.enableTexGen (stage, false);
+					_DriverGLStates.setTexGenMode(stage, 0);
 				}
 				else
 				{
@@ -829,7 +830,7 @@ void			CDriverGL::setupLightMapPass(uint pass)
 
 				// Setup gen tex off
 				_DriverGLStates.activeTextureARB(stage);
-				_DriverGLStates.enableTexGen (stage, false);
+				_DriverGLStates.setTexGenMode(stage, 0);
 
 				// setup UV, with UV0. Only if needed (cached)
 				if( !_LastVertexSetupIsLightMap || _LightMapUVMap[stage]!=0 )
@@ -981,7 +982,7 @@ void			CDriverGL::setupSpecularBegin()
 
 	// Disable texGen for stage 0
 	_DriverGLStates.activeTextureARB(0);
-	_DriverGLStates.enableTexGen (0, false);
+	_DriverGLStates.setTexGenMode(0, 0);
 
 	// ---- Stage 1 Common Setup.
 	// NB don't setup the TexEnv here (stage1 setuped in setupSpecularPass() according to extensions)
@@ -989,7 +990,6 @@ void			CDriverGL::setupSpecularBegin()
 	_DriverGLStates.activeTextureARB(1);
 	_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
 	_DriverGLStates.setTexGenMode (1, GL_REFLECTION_MAP_ARB);
-	_DriverGLStates.enableTexGen (1, true);
 	// setup the good matrix for stage 1.
 	glMatrixMode(GL_TEXTURE);
 	glLoadMatrixf( _SpecularTexMtx.get() );
@@ -1001,7 +1001,7 @@ void			CDriverGL::setupSpecularEnd()
 {
 	// Disable Texture coord generation.
 	_DriverGLStates.activeTextureARB(1);
-	_DriverGLStates.enableTexGen (1, false);
+	_DriverGLStates.setTexGenMode(1, 0);
 
 	// Happiness !!! we have already enabled the stage 1
 	glMatrixMode(GL_TEXTURE);

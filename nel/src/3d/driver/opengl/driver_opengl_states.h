@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.12 2003/02/12 16:45:36 corvazier Exp $
+ * $Id: driver_opengl_states.h,v 1.13 2003/10/13 09:42:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,7 +116,7 @@ public:
 	void			setShininess(float shin);
 	void			setVertexColorLighted(bool enable);
 	void			setDepthRange (float zDelta);
-	void			enableTexGen (uint stage, bool enable);
+	// NB: set 0 to reset TexGen.
 	void			setTexGenMode (uint stage, GLint mode);
 	// @}
 	
@@ -195,7 +195,6 @@ private:
 	bool			_TexCoordArrayEnabled[8];
 	bool			_VertexAttribArrayEnabled[CVertexBuffer::NumValue];	
 
-	bool			_TexGen[8];
 	GLint			_TexGenMode[8];
 
 	float			_CurZRangeDelta;

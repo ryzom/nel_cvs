@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.17 2003/02/12 16:45:36 corvazier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.18 2003/10/13 09:42:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -126,14 +126,11 @@ void			CDriverGLStates::forceDefaults(uint nbStages)
 		_TextureMode[stage]= TextureDisabled;
 
 		// Tex gen init
-		_TexGen[stage] = false;
-		_TexGenMode[stage] = GL_SPHERE_MAP;
-		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
-		glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, GL_SPHERE_MAP);
+		_TexGenMode[stage] = 0;
 		glDisable( GL_TEXTURE_GEN_S );
 		glDisable( GL_TEXTURE_GEN_T );
 		glDisable( GL_TEXTURE_GEN_R );
+		glDisable( GL_TEXTURE_GEN_Q );
 	}
 
 	// ActiveTexture current texture to 0.
@@ -414,31 +411,6 @@ void		CDriverGLStates::setDepthRange (float zDelta)
 }
 
 // ***************************************************************************
-void		CDriverGLStates::enableTexGen (uint stage, bool enable)
-{
-#ifndef NL3D_GLSTATE_DISABLE_CACHE
-	if (enable != _TexGen[stage])
-#endif
-	{		
-		_TexGen[stage] = enable;
-
-		// Enable the tex gen
-		if (_TexGen[stage])
-		{
-			glEnable( GL_TEXTURE_GEN_S );
-			glEnable( GL_TEXTURE_GEN_T );
-			glEnable( GL_TEXTURE_GEN_R );
-		}
-		else
-		{
-			glDisable( GL_TEXTURE_GEN_S );
-			glDisable( GL_TEXTURE_GEN_T );
-			glDisable( GL_TEXTURE_GEN_R );
-		}
-	}
-}
-
-// ***************************************************************************
 void		CDriverGLStates::setTexGenMode (uint stage, GLint mode)
 {
 #ifndef NL3D_GLSTATE_DISABLE_CACHE
@@ -447,9 +419,38 @@ void		CDriverGLStates::setTexGenMode (uint stage, GLint mode)
 	{		
 		_TexGenMode[stage] = mode;
 
-		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, mode);
-		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, mode);
-		glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, mode);
+		if(mode==0)
+		{
+			glDisable( GL_TEXTURE_GEN_S );
+			glDisable( GL_TEXTURE_GEN_T );
+			glDisable( GL_TEXTURE_GEN_R );
+			glDisable( GL_TEXTURE_GEN_Q );
+		}
+		else
+		{
+			glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, mode);
+			glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, mode);
+			glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, mode);
+			/* Object or Eye Space ? => enable W generation. VERY IMPORTANT because 
+				was a bug with VegetableRender and ShadowRender:
+					- Vegetable use the TexCoord1.w in his VertexProgram
+					- Shadow Render don't use any TexCoord in VB (since projected)
+					=> TexCoord1.w dirty!!
+			*/
+			if(mode==GL_OBJECT_LINEAR || mode==GL_EYE_LINEAR)
+			{
+				glTexGeni( GL_Q, GL_TEXTURE_GEN_MODE, mode);
+			}
+			else
+			{
+				glTexGeni( GL_Q, GL_TEXTURE_GEN_MODE, GL_EYE_LINEAR);
+			}
+			// Enable All.
+			glEnable( GL_TEXTURE_GEN_S );
+			glEnable( GL_TEXTURE_GEN_T );
+			glEnable( GL_TEXTURE_GEN_R );
+			glEnable( GL_TEXTURE_GEN_Q );
+		}
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service_5.h,v 1.9 2002/01/14 13:55:56 lecroart Exp $
+ * $Id: service_5.h,v 1.10 2002/01/22 14:07:57 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,6 +42,12 @@
 
 #include <string>
 #include <vector>
+
+
+namespace NLMISC
+{
+	class CWindowDisplayer;
+}
 
 namespace NLNET
 {
@@ -223,6 +229,8 @@ protected:
 	/// Sets the service identifier
 	void setServiceId (NLNET::TServiceId sid)	{ _SId = sid; }
 
+	NLMISC::CWindowDisplayer	*_WindowDisplayer;
+
 	friend void AESConnection (const std::string &serviceName, uint16 sid, void *arg);
 
 private:
@@ -241,7 +249,6 @@ private:
 
 	/// This variable is used to generate uniq id for entities on this service.
 	static NLMISC::CEntityId	_NextEntityId;
-
 };
 
 }; // NLNET

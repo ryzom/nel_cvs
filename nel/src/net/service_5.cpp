@@ -1,7 +1,7 @@
 /** \file service_5.cpp
  * Base class for all network services
  *
- * $Id: service_5.cpp,v 1.16 2002/01/14 17:51:17 lecroart Exp $
+ * $Id: service_5.cpp,v 1.17 2002/01/22 14:08:49 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -189,6 +189,7 @@ IService5::IService5()
 	nlassert( IService5::Instance == NULL );
 	IService5::Instance = this;
 	_Initialized = false;
+	_WindowDisplayer = NULL;
 }
 
 
@@ -344,7 +345,6 @@ sint IService5::main ()
 {
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
-	CWindowDisplayer *wd = NULL;
 
 	try
 	{
@@ -362,18 +362,18 @@ sint IService5::main ()
 #ifdef NL_USE_GTK
 			if (disp == "GTK")
 			{
-				wd = new CGtkDisplayer ("DEFAULT_WD");
+				_WindowDisplayer = new CGtkDisplayer ("DEFAULT_WD");
 			}
 #endif // NL_USE_GTK
 
 #ifdef NL_OS_WINDOWS
 			if (disp == "WIN")
 			{
-				wd = new CWinDisplayer ("DEFAULT_WD");
+				_WindowDisplayer = new CWinDisplayer ("DEFAULT_WD");
 			}
 #endif // NL_OS_WINDOWS
 
-			if (wd == NULL && disp != "NONE")
+			if (_WindowDisplayer == NULL && disp != "NONE")
 			{
 				nlwarning ("Unknown value for the WindowStyle (should be GTK, WIN or NONE), use no window displayer");
 			}
@@ -384,7 +384,7 @@ sint IService5::main ()
 		}
 
 		uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel, scrollLabel;
-		if (wd != NULL)
+		if (_WindowDisplayer != NULL)
 		{
 			//
 			// Init window param if necessary
@@ -398,22 +398,22 @@ sint IService5::main ()
 			try { h = ConfigFile.getVar("HWinParam").asInt(); } catch (EUnknownVar&) { }
 
 			if (w == -1 && h == -1)
-				wd->create (_ShortName + " " + _LongName, x, y);
+				_WindowDisplayer->create (_ShortName + " " + _LongName, x, y);
 			else
-				wd->create (_ShortName + " " + _LongName, x, y, w, h);
+				_WindowDisplayer->create (_ShortName + " " + _LongName, x, y, w, h);
 
-			DebugLog->addDisplayer (wd);
-			InfoLog->addDisplayer (wd);
-			WarningLog->addDisplayer (wd);
-			ErrorLog->addDisplayer (wd);
-			AssertLog->addDisplayer (wd);
-			speedNetLabel = wd->createLabel ("");
-			speedUsrLabel = wd->createLabel ("");
-			rcvLabel = wd->createLabel ("");
-			sndLabel = wd->createLabel ("");
-			rcvQLabel = wd->createLabel ("");
-			sndQLabel = wd->createLabel ("");
-			scrollLabel = wd->createLabel ("");
+			DebugLog->addDisplayer (_WindowDisplayer);
+			InfoLog->addDisplayer (_WindowDisplayer);
+			WarningLog->addDisplayer (_WindowDisplayer);
+			ErrorLog->addDisplayer (_WindowDisplayer);
+			AssertLog->addDisplayer (_WindowDisplayer);
+			speedNetLabel = _WindowDisplayer->createLabel ("");
+			speedUsrLabel = _WindowDisplayer->createLabel ("");
+			rcvLabel = _WindowDisplayer->createLabel ("");
+			sndLabel = _WindowDisplayer->createLabel ("");
+			rcvQLabel = _WindowDisplayer->createLabel ("");
+			sndQLabel = _WindowDisplayer->createLabel ("");
+			scrollLabel = _WindowDisplayer->createLabel ("");
 		}
 
 		nlinfo ("Starting Service 5 '%s' using NeL ("__DATE__" "__TIME__")", _ShortName.c_str());
@@ -830,10 +830,10 @@ sint IService5::main ()
 			// count the amount of time to manage internal system
 			TTime before = CTime::getLocalTime ();
 
-			if (wd != NULL)
+			if (_WindowDisplayer != NULL)
 			{
 				// update the window displayer and quit if asked
-				if (!wd->update ())
+				if (!_WindowDisplayer->update ())
 					ExitSignalAsked = true;
 			}
 
@@ -872,34 +872,34 @@ sint IService5::main ()
 			NetSpeedLoop = (sint32) (CTime::getLocalTime () - before);
 			UserSpeedLoop = (sint32) (before - bbefore);
 
-			if (wd != NULL)
+			if (_WindowDisplayer != NULL)
 			{
 				string str;
 				CUnifiedNetwork	*instance = CUnifiedNetwork::getInstance();
 				str = "NetLop: ";
 				str += toString (NetSpeedLoop);
-				wd->setLabel (speedNetLabel, str);
+				_WindowDisplayer->setLabel (speedNetLabel, str);
 				str = "UsrLop: ";
 				str += toString (UserSpeedLoop);
-				wd->setLabel (speedUsrLabel, str);
+				_WindowDisplayer->setLabel (speedUsrLabel, str);
 				str = "Rcv: ";
 				str += toString (instance->getBytesReceived ());
-				wd->setLabel (rcvLabel, str);
+				_WindowDisplayer->setLabel (rcvLabel, str);
 				str = "Snd: ";
 				str += toString (instance->getBytesSent ());
-				wd->setLabel (sndLabel, str);
+				_WindowDisplayer->setLabel (sndLabel, str);
 				str = "RcvQ: ";
 				str += toString (instance->getReceiveQueueSize ());
-				wd->setLabel (rcvQLabel, str);
+				_WindowDisplayer->setLabel (rcvQLabel, str);
 				str = "SndQ: ";
 				str += toString (instance->getSendQueueSize ());
-				wd->setLabel (sndQLabel, str);
+				_WindowDisplayer->setLabel (sndQLabel, str);
 
 				// display the scroll text
 				static string foo =	"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! "
 									"Welcome to NeL Service! This scroll is used to see the update frequency of the main function and to see if the service is frozen or not. Have a nice day and hope you'll like NeL!!! ";
 				static int pos = 0;
-				wd->setLabel (scrollLabel, foo.substr ((pos++)%(foo.size()/2), 10));
+				_WindowDisplayer->setLabel (scrollLabel, foo.substr ((pos++)%(foo.size()/2), 10));
 			}
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
@@ -960,16 +960,16 @@ sint IService5::main ()
 		// Remove the window displayer
 		//
 
-		if (wd != NULL)
+		if (_WindowDisplayer != NULL)
 		{
-			DebugLog->removeDisplayer (wd);
-			InfoLog->removeDisplayer (wd);
-			WarningLog->removeDisplayer (wd);
-			ErrorLog->removeDisplayer (wd);
-			AssertLog->removeDisplayer (wd);
+			DebugLog->removeDisplayer (_WindowDisplayer);
+			InfoLog->removeDisplayer (_WindowDisplayer);
+			WarningLog->removeDisplayer (_WindowDisplayer);
+			ErrorLog->removeDisplayer (_WindowDisplayer);
+			AssertLog->removeDisplayer (_WindowDisplayer);
 
-			delete wd;
-			wd = NULL;
+			delete _WindowDisplayer;
+			_WindowDisplayer = NULL;
 		}
 
 		nlinfo ("Service released succesfuly");

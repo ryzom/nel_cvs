@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.71 2001/06/18 09:09:20 cado Exp $
+ * $Id: service.cpp,v 1.72 2001/06/27 08:32:40 lecroart Exp $
  *
  * \todo ace: test the signal redirection on Unix
  * \todo ace: add parsing command line (with CLAP?)
@@ -221,6 +221,11 @@ void IService::getCustomParams()
 }
 
 
+uint32 toto = 200675;
+NLMISC_VARIABLE(uint32, toto, "this is the toto variable");
+
+
+
 NLMISC_COMMAND (hello, "hello", "")
 {
 	if(args.size() != 0) return false;
@@ -242,9 +247,7 @@ void AESConnection (const string &serviceName, TSockId from, void *arg)
 
 	CMessage msgout (CNetManager::getSIDA ("AES"), "SID");
 	msgout.serial (IService::_AliasName, IService::_ShortName, IService::_LongName);
-	vector<string> commands;
-	ICommand::getCommands (commands);
-	msgout.serialCont (commands);
+	ICommand::serialCommands (msgout);
 	CNetManager::send ("AES", msgout);
 
 	if (IService::Instance->_Initialized)
@@ -294,23 +297,63 @@ CCallbackServer *IService::getServer()
 	return dynamic_cast<CCallbackServer*>(CNetManager::getNetBase(IService::_ShortName));
 }
 
-// The main function of the service
+sint IService::main (char *args, void *wd)
+{
+	_Args.push_back ("program name");
+
+	string sargs (args);
+	sint pos1 = 0, pos2 = 0;
+
+	do
+	{
+		pos1 = sargs.find_first_not_of (" ", pos2);
+		if (pos1 == string::npos) break;
+		pos2 = sargs.find_first_of (" ", pos1);
+		_Args.push_back (sargs.substr (pos1, pos2-pos1));
+	}
+	while (pos2 != string::npos);
+
+	return main (wd);
+}
+
 sint IService::main (int argc, char **argv, void *wd)
+{
+	for (sint i = 0; i < argc; i++)
+	{
+		_Args.push_back (argv[i]);
+	}
+	return main (wd);
+}
+
+
+
+// The main function of the service
+sint IService::main (void *wd)
 {
 	bool userInitCalled = false;
 	bool resyncEvenly = false;
 
+
 	try
 	{
 		createDebug ();
+
 #if defined (NL_OS_WINDOWS)
-		if (wd != NULL)
+		CWinDisplayer *cwd = (CWinDisplayer *) wd;
+		uint speedNetLabel, speedUsrLabel, rcvLabel, sndLabel, rcvQLabel, sndQLabel;
+		if (cwd != NULL)
 		{
-			DebugLog->addDisplayer ((CWinDisplayer *)wd);
-			InfoLog->addDisplayer ((CWinDisplayer *)wd);
-			WarningLog->addDisplayer ((CWinDisplayer *)wd);
-			ErrorLog->addDisplayer ((CWinDisplayer *)wd);
-			AssertLog->addDisplayer ((CWinDisplayer *)wd);
+			DebugLog->addDisplayer (cwd);
+			InfoLog->addDisplayer (cwd);
+			WarningLog->addDisplayer (cwd);
+			ErrorLog->addDisplayer (cwd);
+			AssertLog->addDisplayer (cwd);
+			speedNetLabel = cwd->createLabel ("");
+			speedUsrLabel = cwd->createLabel ("");
+			rcvLabel = cwd->createLabel ("");
+			sndLabel = cwd->createLabel ("");
+			rcvQLabel = cwd->createLabel ("");
+			sndQLabel = cwd->createLabel ("");
 		}
 #endif
 
@@ -318,14 +361,14 @@ sint IService::main (int argc, char **argv, void *wd)
 		DebugLog->addNegativeFilter ("L3NB_ASSOC:");
 		DebugLog->addNegativeFilter ("L3NB_CB:");
 
-
 		//
-		// Parse argc argv into easy to use format
+		// Display command line arguments
 		//
 
-		for (sint i = 0; i < argc; i++)
+		nlinfo ("args = %d", _Args.size ());
+		for (uint i = 0; i < _Args.size (); i++)
 		{
-			_Args.push_back (argv[i]);
+			nlinfo ("argv[%d] = '%s'", i, _Args[i]);
 		}
 
 		setStatus (EXIT_SUCCESS);
@@ -415,6 +458,28 @@ sint IService::main (int argc, char **argv, void *wd)
 		//
 
 		ConfigFile.load (_LongName + ".cfg");
+
+		//
+		// Init window param if necessary
+		//
+
+#if defined (NL_OS_WINDOWS)
+		if (cwd != NULL)
+		{
+			sint x=-1, y=-1, w=-1, h=-1;
+			try
+			{
+				x = ConfigFile.getVar("XWinParam").asInt();
+				y = ConfigFile.getVar("YWinParam").asInt();
+				w = ConfigFile.getVar("WWinParam").asInt();
+				h = ConfigFile.getVar("HWinParam").asInt();
+			}
+			catch ( EUnknownVar& )
+			{
+			}
+			cwd->setWindowParams (x, y, w, h);
+		}
+#endif
 
 		//
 		// Initialize server parameters
@@ -533,9 +598,9 @@ sint IService::main (int argc, char **argv, void *wd)
 			//
 			// Setup Net Displayer
 			//
-/* todo: mettre le netloger kan on aura reussi a virer le probleme des log recursif
-   todo: ne pas oublier de deleter nd a la fin du programme
-			if (IService::_Name != "LOGS")
+/// \todo ace: activate the netloger when we resolved the recursive logging bug
+/// \todo ace: don't forget to delete the netloger at the end of the program
+/*			if (IService::_Name != "LOGS")
 			{
 				CNetDisplayer *nd = new CNetDisplayer();
 				if ( nd->connected() )
@@ -621,7 +686,7 @@ sint IService::main (int argc, char **argv, void *wd)
 
 		int pid = fork();
 
-		// todo ace: probleme kan on fork sous linux car le process pere essaie de liberer les thread => torche
+		/// \todo ace: when we fork() on linux, the father process tries to release threads but it should not, so we have to find a solution
 
 		if (pid == -1)
 		{
@@ -657,9 +722,15 @@ sint IService::main (int argc, char **argv, void *wd)
 
 		do
 		{
+			// count the amount of time to manage internal system
+			TTime bbefore = CTime::getLocalTime ();
+
 			// call the user update and exit if the user update asks it
 			if (!update ()) break;
 			
+			// count the amount of time to manage internal system
+			TTime before = CTime::getLocalTime ();
+
 			// stop the loop if the exit signal asked
 			if (ExitSignalAsked) break;
 
@@ -668,8 +739,6 @@ sint IService::main (int argc, char **argv, void *wd)
 			((CWinDisplayer *)wd)->update ();
 #endif // NL_OS_WINDOWS
 
-			// count the amount of time to manage internal system
-			TTime before = CTime::getLocalTime ();
 	
 			CConfigFile::checkConfigFiles ();
 
@@ -699,7 +768,34 @@ sint IService::main (int argc, char **argv, void *wd)
 				}
 			}
 
-			sint32 delta = (sint32)(CTime::getLocalTime () - before);
+			sint32 deltaNet = (sint32)(CTime::getLocalTime () - before);
+			sint32 deltaUsr = (sint32)(before - bbefore);
+
+#if defined (NL_OS_WINDOWS)
+			if (cwd != NULL)
+			{
+				string str;
+				str = "NetSpdLoop: ";
+				str += toString (deltaNet);
+				cwd->setLabel (speedNetLabel, str.c_str ());
+				str = "UsrSpdLoop: ";
+				str += toString (deltaUsr);
+				cwd->setLabel (speedUsrLabel, str.c_str ());
+				str = "Rcv: ";
+				str += toString (CNetManager::getBytesReceived ());
+				cwd->setLabel (rcvLabel, str.c_str ());
+				str = "Snd: ";
+				str += toString (CNetManager::getBytesSended ());
+				cwd->setLabel (sndLabel, str.c_str ());
+				str = "RcvQ: ";
+				str += toString (CNetManager::getReceiveQueueSize ());
+				cwd->setLabel (rcvQLabel, str.c_str ());
+				str = "SndQ: ";
+				str += toString (CNetManager::getSendQueueSize ());
+				cwd->setLabel (sndQLabel, str.c_str ());
+			}
+#endif
+
 
 //			nldebug ("SYNC: updatetimeout must be %d and is %d, sleep the rest of the time", _UpdateTimeout, delta);
 

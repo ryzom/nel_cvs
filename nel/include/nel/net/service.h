@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.29 2001/06/18 09:07:59 cado Exp $
+ * $Id: service.h,v 1.30 2001/06/27 08:32:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdL
 	scn->setServiceName (__ServiceShortName, __ServiceLongName); \
 	scn->setPort (__ServicePort); \
 	scn->setCallbackArray (__ServiceCallbackArray, sizeof(__ServiceCallbackArray)/sizeof(__ServiceCallbackArray[0])); \
-    sint retval = scn->main (0, NULL, &__wd); \
+    sint retval = scn->main (lpCmdLine, &__wd); \
 	delete scn; \
 	return retval; \
 }
@@ -156,8 +156,8 @@ public:
 	/// want to know the return value of the application to do the appropriate things.
 	void				setStatus (sint status) { _Status = status; }
 
-	/// User must just have to call this function in his main C function (wd is used to pass the window displayer if necessary)
 	sint				main (int argc, char **argv, void *wd = NULL);
+	sint				main (char *args, void *wd = NULL);
 
 	static void			setServiceName (const char *shortName, const char *longName) { _ShortName = shortName; _LongName = longName; }
 
@@ -221,6 +221,9 @@ protected:
 	friend void AESConnection (const std::string &serviceName, TSockId from, void *arg);
 
 private:
+
+	// this main is called by other main, the command line must be processing before calling this function
+	sint				main (void *wd = NULL);
 
 	/// Select timeout value in milliseconds
 	static sint32				_UpdateTimeout;

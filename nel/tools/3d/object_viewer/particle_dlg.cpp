@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.8 2001/06/27 16:47:10 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.9 2001/07/04 12:16:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -117,6 +117,7 @@ CParticleDlg::CParticleDlg(CWnd *pParent, CSceneDlg* sceneDlg)
 
 
 	_CurrSystemModel->enableDisplayTools() ;
+	_CurrSystemModel->enableAutoGetEllapsedTime(false) ;		
 	_CurrSystemModel->setEllapsedTime(0.f) ;
 	_CurrPS = _CurrSystemModel->getPS() ;
 

@@ -1,7 +1,7 @@
 /** \file context_debug.cpp
  * Debug informations in the context.
  *
- * $Id: context_debug.cpp,v 1.5 2001/01/17 10:32:10 chafik Exp $
+ * $Id: context_debug.cpp,v 1.6 2001/01/25 17:50:49 robert Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -177,7 +177,7 @@ namespace NLAISCRIPT
 			if ((*itC)->getType() == CCodeBrancheRunDebug::IdCodeBrancheRunDebug)
 			{
 				pCbrd = (CCodeBrancheRunDebug*)(*itC);
-				inputOutput->Echo("%s\n",pCbrd->getSourceFileName());
+				inputOutput->Echo("%s\n",pCbrd->getSourceFileName().c_str());
 				pCbrd->printCurrentSourceCodeLine();
 			}
 			itC++;

@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.53 2004/09/02 10:15:13 boucher Exp $
+ * $Id: i18n.cpp,v 1.54 2004/09/03 08:43:24 boucher Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -70,7 +70,7 @@ void CI18N::load (const std::string &languageCode)
 //	nlassert (lid < _NbLanguages);
 //	nlassert (_LanguagesNamesLoaded);
 
-  uint i;
+	uint i;
 	for (i=0; i<_NbLanguages; ++i)
 	{
 		if (_LanguageCodes[i] == languageCode)
@@ -544,10 +544,10 @@ void CI18N::readTextFile(const std::string &filename,
 				{
 					temp.append(result.begin()+lastPos, result.begin()+pos+1);
 					temp += '\n';
+					lastPos = pos+1;
 				}
 				// skip this char
 				pos++;
-				lastPos = pos;
 
 				// look the next '\r'
 				pos = result.find('\r', pos);
@@ -570,10 +570,10 @@ void CI18N::readTextFile(const std::string &filename,
 					temp.append(result.begin()+lastPos, result.begin()+pos);
 					temp += '\r';
 					temp += '\n';
+					lastPos = pos+1;
 				}
 				// skip this char
 				pos++;
-				lastPos = pos;
 
 				pos = result.find('\n', pos);
 			}

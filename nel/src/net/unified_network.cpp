@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.49 2002/08/29 10:15:27 lecroart Exp $
+ * $Id: unified_network.cpp,v 1.50 2002/09/02 15:09:03 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -40,8 +40,8 @@ static uint ThreadCreator = 0;
 
 static const uint64 AppIdDeadConnection = 0xDEAD;
 
-//#define AUTOCHECK_DISPLAY nlwarning
-#define AUTOCHECK_DISPLAY CUnifiedNetwork::getInstance()->displayInternalTables (), nlerror
+#define AUTOCHECK_DISPLAY nlwarning
+//#define AUTOCHECK_DISPLAY CUnifiedNetwork::getInstance()->displayInternalTables (), nlerror
 
 // ace retirer ca
 static string allstuffs;
@@ -334,7 +334,7 @@ void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
 	if (from->appId() == AppIdDeadConnection)
 	{
-		AUTOCHECK_DISPLAY ("HNETL5: Receive a message from a dead connection, ignoring it");
+		AUTOCHECK_DISPLAY ("HNETL5: Receive a message from a dead connection");
 		return;
 	}
 
@@ -648,9 +648,6 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 		{
 			uc->Connection[i] = CUnifiedNetwork::CUnifiedConnection::TConnection(cbc);
 
-			// temp to savoir comment c est possible ce cas la
-			nlassert (uc->Connection.size()<3);
-
 			nlinfo ("%s", allstuffs.c_str ());
 		}
 
@@ -858,7 +855,7 @@ uint8 CUnifiedNetwork::findConnectionId (uint32 sid, uint8 nid)
 	if (nid == 0xFF)
 	{
 		// it s often appen because they didn't set a good network configuration, so it s in debug to disable it easily
-		nldebug ("HNETL5: nid %hu, will use the default connection %hu", (uint16)nid, (uint16)connectionId);
+		//nldebug ("HNETL5: nid %hu, will use the default connection %hu", (uint16)nid, (uint16)connectionId);
 	}
 	else if (nid >= _IdCnx[sid].NetworkConnectionAssociations.size())
 	{
@@ -886,7 +883,7 @@ uint8 CUnifiedNetwork::findConnectionId (uint32 sid, uint8 nid)
 			if (_IdCnx[sid].Connection[connectionId].valid() && _IdCnx[sid].Connection[connectionId].CbNetBase->connected())
 			{
 				// we found one at last, use this one
-				nlinfo ("HNETL5: Ok, we found a valid connectionid, use %hu",  (uint16)connectionId);
+				//nldebug ("HNETL5: Ok, we found a valid connectionid, use %hu",  (uint16)connectionId);
 				break;
 			}
 		}
@@ -923,8 +920,9 @@ void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout, ui
 			uint16	sid = (*it).second;
 			if (sid >= _IdCnx.size () || _IdCnx[sid].State != CUnifiedNetwork::CUnifiedConnection::Ready)
 			{
-				// should never happen
-				AUTOCHECK_DISPLAY ("HNETL5: Can't send to the service '%s' because it was in the _NamedCnx but not in _IdCnx", serviceName.c_str ());
+				// It often happen when the service is down (connection broke and the naming not already say that it s down)
+				// In this case, just warn
+				nlwarning ("HNETL5: Can't send to the service '%s' because it was in the _NamedCnx but not in _IdCnx (means that the service is down)", serviceName.c_str ());
 				return;
 			}
 
@@ -932,9 +930,12 @@ void	CUnifiedNetwork::send(const string &serviceName, const CMessage &msgout, ui
 
 			uint8 connectionId = findConnectionId (sid, nid);
 			if (connectionId == 0xff)	// failed
+			{
+				nlwarning ("HNETL5: Can't send message to %hu because no connection available", sid);
 				continue;
+			}
 
-			nlinfo("HNETL5: send message to %s using nid %d cnx %d / %s", serviceName.c_str (), nid, connectionId, connectionId<_IdCnx[sid].ExtAddress.size ()?_IdCnx[sid].ExtAddress[connectionId].asString().c_str():"???");
+			//nldebug ("HNETL5: send message to %s using nid %d cnx %d / %s", serviceName.c_str (), nid, connectionId, connectionId<_IdCnx[sid].ExtAddress.size ()?_IdCnx[sid].ExtAddress[connectionId].asString().c_str():"???");
 			_IdCnx[sid].Connection[connectionId].CbNetBase->send (msgout, _IdCnx[sid].Connection[connectionId].HostId);
 		}
 	}
@@ -951,14 +952,17 @@ void	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout, uint8 nid)
 
 	if (sid >= _IdCnx.size () || _IdCnx[sid].State != CUnifiedNetwork::CUnifiedConnection::Ready)
 	{
-		// should never happen
-		AUTOCHECK_DISPLAY ("HNETL5: Can't send to the service '%hu' because not in _IdCnx", sid);
+		// happen when trying to send a message to an unknown service id
+		nlwarning ("HNETL5: Can't send to the service '%hu' because not in _IdCnx", sid);
 		return;
 	}
 
 	uint8 connectionId = findConnectionId (sid, nid);
 	if (connectionId == 0xff)	// failed
+	{
+		nlwarning ("HNETL5: Can't send to the service '%hu' because no connection available", sid);
 		return;
+	}
 
 	_IdCnx[sid].Connection[connectionId].CbNetBase->send (msgout, _IdCnx[sid].Connection[connectionId].HostId);
 }
@@ -974,15 +978,12 @@ void	CUnifiedNetwork::send(const CMessage &msgout, uint8 nid)
 	{
 		if (_IdCnx[i].State == CUnifiedNetwork::CUnifiedConnection::Ready)
 		{
-			if (_IdCnx[i].Connection.size () == 0 || !_IdCnx[i].Connection[0].valid() || !_IdCnx[i].Connection[0].CbNetBase->connected())
-			{
-				nldebug ("HNETL5: Can't send message to %u because no connection available", i);
-				continue;
-			}
-
 			uint8 connectionId = findConnectionId (i, nid);
 			if (connectionId == 0xff)	// failed
+			{
+				nlwarning ("HNETL5: Can't send message to %u because no connection available", i);
 				continue;
+			}
 
 			_IdCnx[i].Connection[connectionId].CbNetBase->send (msgout, _IdCnx[i].Connection[connectionId].HostId);
 		}
@@ -1151,33 +1152,37 @@ uint64 CUnifiedNetwork::getReceiveQueueSize ()
 	return received;
 }
 
-CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &host)
+CCallbackNetBase	*CUnifiedNetwork::getNetBase(const std::string &name, TSockId &host, uint8 nid)
 {
 	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::getNetBase() whereas it is not initialised yet"));
 
 	if (ThreadCreator != NLMISC::getThreadId()) nlwarning ("HNETL5: Multithread access but this class is not thread safe thread creator = %u thread used = %u", ThreadCreator, NLMISC::getThreadId());
 
 	sint	count = _NamedCnx.count(name);
-	
+
 	if (count <= 0)
 	{
-		AUTOCHECK_DISPLAY ("HNETL5: couldn't access the service %s", name.c_str());
+		nlwarning ("HNETL5: couldn't access the service %s", name.c_str());
 		return NULL;
 	}
 	else if (count > 1)
 	{
-		AUTOCHECK_DISPLAY ("HNETL5: %d services %s to get CCallbackNetBase", count, name.c_str());
+		nlwarning ("HNETL5: %d services %s to getNetBase, returns the first valid", count, name.c_str());
 	}
 
 	TNameMappedConnection::const_iterator	itnmc = _NamedCnx.find(name);
 
-// ace todo can send on a selected connection
-	nlassert (_IdCnx[(*itnmc).second].Connection.size () > 0 && _IdCnx[(*itnmc).second].Connection[0].valid());
-	host = _IdCnx[(*itnmc).second].Connection[0].HostId;
-	return _IdCnx[(*itnmc).second].Connection[0].CbNetBase;
+	uint8 connectionId = findConnectionId ((*itnmc).second, nid);
+	if (connectionId == 0xff)	// failed
+	{
+		nlwarning ("Can't getNetBase %s because no connection available", name.c_str());
+	}
+
+	host = _IdCnx[(*itnmc).second].Connection[connectionId].HostId;
+	return _IdCnx[(*itnmc).second].Connection[connectionId].CbNetBase;
 }
 
-CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
+CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host, uint8 nid)
 {
 	nlassertex(_Initialised == true, ("Try to CUnifiedNetwork::getNetBase() whereas it is not initialised yet"));
 
@@ -1185,16 +1190,19 @@ CCallbackNetBase	*CUnifiedNetwork::getNetBase(TServiceId sid, TSockId &host)
 
 	if (sid >= _IdCnx.size () || _IdCnx[sid].State != CUnifiedNetwork::CUnifiedConnection::Ready)
 	{
-		// should never happen
-		AUTOCHECK_DISPLAY ("HNETL5: Can't get net base to the service '%hu' because not in _IdCnx", sid);
+		nlwarning ("HNETL5: Can't get net base to the service '%hu' because not in _IdCnx", sid);
 		host = InvalidSockId;
 		return NULL;
 	}
 
-// ace todo can send on a selected connection
-	nlassert (_IdCnx[sid].Connection.size () > 0 && _IdCnx[sid].Connection[0].valid());
-	host = _IdCnx[sid].Connection[0].HostId;
-	return _IdCnx[sid].Connection[0].CbNetBase;
+	uint8 connectionId = findConnectionId (sid, nid);
+	if (connectionId == 0xff)	// failed
+	{
+		nlwarning ("Can't getNetBase %hu because no connection available", sid);
+	}
+
+	host = _IdCnx[sid].Connection[connectionId].HostId;
+	return _IdCnx[sid].Connection[connectionId].CbNetBase;
 }
 
 TUnifiedMsgCallback CUnifiedNetwork::findCallback (const std::string &callbackName)

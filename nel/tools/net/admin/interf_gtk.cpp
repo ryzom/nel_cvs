@@ -1,7 +1,7 @@
 /** \file interf_dos.cpp
  * 
  *
- * $Id: interf_gtk.cpp,v 1.7 2001/07/05 14:16:06 lecroart Exp $
+ * $Id: interf_gtk.cpp,v 1.8 2001/07/06 17:26:52 lecroart Exp $
  *
  *
  */
@@ -908,6 +908,7 @@ static GtkItemFactoryEntry CMenuItems[] = {
 	{ "/Update one time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 0xFFFFFFFF, NULL },
 	{ "/Update every time", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 0, NULL },
 	{ "/Update every 1s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 1000, NULL },
+	{ "/Update every 5s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 5000, NULL },
 	{ "/Update every 10s", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 10*1000, NULL },
 	{ "/Update every 1mn", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 60*1000, NULL },
 	{ "/Update every 10mn", NULL, (GtkItemFactoryCallback)cbSetUpdateFrequency, 10*60*1000, NULL },

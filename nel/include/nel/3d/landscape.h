@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.37 2001/02/28 14:21:00 berenguier Exp $
+ * $Id: landscape.h,v 1.38 2001/04/23 16:31:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,6 +47,9 @@
 
 namespace NL3D 
 {
+
+
+class	CHeightMap;
 
 
 // ***************************************************************************
@@ -267,6 +270,20 @@ public:
 	// @}
 
 
+	/// \name HeightField DeltaZ.
+	// @{
+	/// return the HeightField DeltaZ for the 2D position. (0,0,dZ) is returned.
+	CVector		getHeightFieldDeltaZ(float x, float y) const;
+	/** set the HeightField data. NB: take lot of place in memory.
+	 * only one is possible. You should setup this heightfield around the zones which will be loaded.
+	 * It is applied only when a zone is loaded, so you should setup it 2km around the user, each time you move too far 
+	 * from a previous place (eg 160m from last setup).
+	 */
+	void		setHeightField(const CHeightMap &hf);
+	// @}
+
+
+
 // ********************************
 private:
 	// Private part used by CPatch.
@@ -403,6 +420,41 @@ private:
 
 	// check a zone, adding error to exception.
 	void			checkZoneBinds(CZone &curZone, EBadBind &bindError);
+
+
+	/** A Bezier patch of One value only.
+	 * NB: unlike CBezierPatch, layout is inverted on Y. (NB: same formulas...)
+	 */
+	struct	CBezierPatchZ
+	{
+		/// The vertices a,b,c,d of the quad patch.
+		float		Vertices[4];		
+		/// The tangents ab, ba, bc, cb, cd, dc, da, ad. NB: tangents are points, not vectors.
+		float		Tangents[8];		
+		/// The interiors, ia,ib,ic,id. NB: interiors are points, not vectors.
+		float		Interiors[4];		
+
+		/// make default Interiors, according to Vertices and Tangents.
+		void		makeInteriors();
+		/// Evaluate.
+		float		eval(float s, float t) const;			// s,t coordinates for quad.
+	};
+
+
+	// HeightFields.
+	struct	CHeightField
+	{
+		std::vector<CBezierPatchZ>		ZPatchs;
+
+		/// The origin of the bottom-left corner of this heightmap.
+		float			OriginX, OriginY;
+		/// The size of one Element ot this HeightMap (eg: 160x160 for a zone).
+		float			SizeX, SizeY;
+		float			OOSizeX, OOSizeY;
+		/// The size of this array. Heights.size
+		uint			Width, Height;
+	};
+	CHeightField	_HeightField;
 
 };
 

@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.34 2001/03/06 15:14:44 corvazier Exp $
+ * $Id: zone.cpp,v 1.35 2001/04/23 16:31:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -61,6 +61,19 @@ CZone::~CZone()
 
 
 // ***************************************************************************
+void			CZone::computeBBScaleBias(const CAABBox	&bb)
+{
+	ZoneBB= bb;
+	// Take a security for noise. (usefull for zone clipping).
+	ZoneBB.setHalfSize(ZoneBB.getHalfSize()+CVector(NL3D_NOISE_MAX, NL3D_NOISE_MAX, NL3D_NOISE_MAX));
+	CVector	hs= ZoneBB.getHalfSize();
+	float	rmax= maxof(hs.x, hs.y, hs.z);
+	PatchScale= rmax / 32760;		// Prevent from float imprecision by taking 32760 and not 32767.
+	PatchBias= ZoneBB.getCenter();
+}
+
+
+// ***************************************************************************
 void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const std::vector<CBorderVertex> &borderVertices)
 {
 	sint	i,j;
@@ -85,13 +98,8 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 		for(i=0;i<4;i++)
 			bb.extend(p.Interiors[i]);
 	}
-	ZoneBB= bb;
-	// Take a security for noise. (usefull for zone clipping).
-	ZoneBB.setHalfSize(ZoneBB.getHalfSize()+CVector(NL3D_NOISE_MAX, NL3D_NOISE_MAX, NL3D_NOISE_MAX));
-	CVector	hs= ZoneBB.getHalfSize();
-	float	rmax= maxof(hs.x, hs.y, hs.z);
-	PatchScale= rmax / 32760;		// Prevent from float imprecision by taking 32760 and not 32767.
-	PatchBias= ZoneBB.getCenter();
+	// Compute BBox, and Patch Scale Bias, according to Noise.
+	computeBBScaleBias(bb);
 
 
 	// Compute/compress Patchs.
@@ -989,6 +997,87 @@ void			CZone::debugBinds(FILE *f)
 		fprintf(f,"current : %d -> (zone %d) vertex %d\n",BorderVertices[i].CurrentVertex,
 											BorderVertices[i].NeighborZoneId,
 											BorderVertices[i].NeighborVertex);
+	}
+}
+
+
+// ***************************************************************************
+void			CZone::applyHeightField(const CLandscape &landScape)
+{
+	sint	i,j;
+	vector<CBezierPatch>	patchs;
+
+	// no patch, do nothing.
+	if(Patchs.size()==0)
+		return;
+
+	// 0. Unpack patchs to Bezier Patchs.
+	//===================================
+	patchs.resize(Patchs.size());
+	for(j=0;j<(sint)patchs.size();j++)
+	{
+		CBezierPatch		&p= patchs[j];
+		CPatch				&pa= Patchs[j];
+
+		// re-Build the uncompressed bezier patch.
+		for(i=0;i<4;i++)
+			pa.Vertices[i].unpack(p.Vertices[i], PatchBias, PatchScale);
+		for(i=0;i<8;i++)
+			pa.Tangents[i].unpack(p.Tangents[i], PatchBias, PatchScale);
+		for(i=0;i<4;i++)
+			pa.Interiors[i].unpack(p.Interiors[i], PatchBias, PatchScale);
+	}
+
+	// 1. apply heightfield on bezier patchs.
+	//===================================
+	for(j=0;j<(sint)patchs.size();j++)
+	{
+		CBezierPatch		&p= patchs[j];
+
+		// apply delta.
+		for(i=0;i<4;i++)
+			p.Vertices[i]+= landScape.getHeightFieldDeltaZ(p.Vertices[i].x, p.Vertices[i].y);
+		for(i=0;i<8;i++)
+			p.Tangents[i]+= landScape.getHeightFieldDeltaZ(p.Tangents[i].x, p.Tangents[i].y);
+		for(i=0;i<4;i++)
+			p.Interiors[i]+= landScape.getHeightFieldDeltaZ(p.Interiors[i].x, p.Interiors[i].y);
+	}
+
+
+	// 2. Re-compute Patch Scale/Bias, and Zone BBox.
+	//===================================
+	CAABBox		bb;
+	bb.setCenter(patchs[0].Vertices[0]);
+	bb.setHalfSize(CVector::Null);
+	for(j=0;j<(sint)patchs.size();j++)
+	{
+		// extend bbox.
+		const CBezierPatch	&p= patchs[j];
+		for(i=0;i<4;i++)
+			bb.extend(p.Vertices[i]);
+		for(i=0;i<8;i++)
+			bb.extend(p.Tangents[i]);
+		for(i=0;i<4;i++)
+			bb.extend(p.Interiors[i]);
+	}
+	// Compute BBox, and Patch Scale Bias, according to Noise.
+	computeBBScaleBias(bb);
+
+
+	// 3. Re-pack patchs.
+	//===================================
+	for(j=0;j<(sint)patchs.size();j++)
+	{
+		CBezierPatch		&p= patchs[j];
+		CPatch				&pa= Patchs[j];
+
+		// Build the packed patch.
+		for(i=0;i<4;i++)
+			pa.Vertices[i].pack(p.Vertices[i], PatchBias, PatchScale);
+		for(i=0;i<8;i++)
+			pa.Tangents[i].pack(p.Tangents[i], PatchBias, PatchScale);
+		for(i=0;i<4;i++)
+			pa.Interiors[i].pack(p.Interiors[i], PatchBias, PatchScale);
 	}
 }
 

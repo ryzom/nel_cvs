@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.51 2001/04/19 11:10:06 berenguier Exp $
+ * $Id: landscape.cpp,v 1.52 2001/04/23 16:31:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/3d/texture_file.h"
 #include "nel/3d/texture_far.h"
 #include "nel/3d/landscape_profile.h"
+#include "nel/3d/height_map.h"
 using namespace NLMISC;
 using namespace std;
 
@@ -229,7 +230,14 @@ bool			CLandscape::addZone(const CZone	&newZone)
 	if(Zones.find(zoneId)!=Zones.end())
 		return false;
 	CZone	*zone= new CZone;
+
+	// copy zone.
 	zone->build(newZone);
+
+	// apply the landscape heightField, modifying BBoxes.
+	zone->applyHeightField(*this);
+
+	// compile the zone for this landscape.
 	zone->compile(this, Zones);
 
 	return true;
@@ -1509,5 +1517,208 @@ void			CLandscape::setupStaticLight (const CRGBA &diffuse, const CRGBA &ambiant,
 		_LightValue[i].A=255;
 	}
 }
+
+
+// ***************************************************************************
+CVector		CLandscape::getHeightFieldDeltaZ(float x, float y) const
+{
+	if(_HeightField.ZPatchs.size()==0)
+		return CVector::Null;
+
+	// map to _HeightField coordinates.
+	x-= _HeightField.OriginX;
+	y-= _HeightField.OriginY;
+	x*= _HeightField.OOSizeX;
+	y*= _HeightField.OOSizeY;
+	// get patch on the grid.
+	sint	ix, iy;
+	ix= (sint)floor(x);
+	iy= (sint)floor(y);
+	// out of the grid?
+	if( ix<0 || ix>=(sint)_HeightField.Width || iy<0 || iy>=(sint)_HeightField.Height)
+		return CVector::Null;
+
+	// get patch.
+	const CBezierPatchZ	&paz= _HeightField.ZPatchs[iy*_HeightField.Width + ix];
+
+	// compute result.
+	CVector	ret=CVector::Null;
+	ret.x= 0;
+	ret.y= 0;
+	ret.z= paz.eval(x-ix, y-iy);
+
+	return ret;
+}
+
+
+
+// ***************************************************************************
+void		CLandscape::CBezierPatchZ::makeInteriors()
+{
+	float		&a = Vertices[0];
+	float		&b = Vertices[1];
+	float		&c = Vertices[2];
+	float		&d = Vertices[3];
+	Interiors[0] = Tangents[7] + Tangents[0] - a;
+	Interiors[1] = Tangents[1] + Tangents[2] - b;
+	Interiors[2] = Tangents[3] + Tangents[4] - c;
+	Interiors[3] = Tangents[5] + Tangents[6] - d;
+}
+// ***************************************************************************
+float		CLandscape::CBezierPatchZ::eval(float ps, float pt) const
+{
+	float	p;
+
+	float ps2 = ps * ps;
+	float ps1 = 1.0f - ps;
+	float ps12 = ps1 * ps1;
+	float s0 = ps12 * ps1;
+	float s1 = 3.0f * ps * ps12;
+	float s2 = 3.0f * ps2 * ps1;
+	float s3 = ps2 * ps;
+	float pt2 = pt * pt;
+	float pt1 = 1.0f - pt;
+	float pt12 = pt1 * pt1;
+	float t0 = pt12 * pt1;
+	float t1 = 3.0f * pt * pt12;
+	float t2 = 3.0f * pt2 * pt1;
+	float t3 = pt2 * pt;
+
+	p = Vertices[0]	* s0 * t0	+ 
+		Tangents[7] * s1 * t0	+ 
+		Tangents[6] * s2 * t0	+ 
+		Vertices[3] * s3 * t0;
+	p+= Tangents[0] * s0 * t1	+ 
+		Interiors[0]* s1 * t1	+ 
+		Interiors[3]* s2 * t1	+ 
+		Tangents[5] * s3 * t1;
+	p+=	Tangents[1] * s0 * t2	+ 
+		Interiors[1]* s1 * t2	+ 
+		Interiors[2]* s2 * t2	+ 
+		Tangents[4] * s3 * t2;
+	p+=	Vertices[1] * s0 * t3	+ 
+		Tangents[2] * s1 * t3	+ 
+		Tangents[3] * s2 * t3	+ 
+		Vertices[2] * s3 * t3;
+	
+	return p;
+}
+
+
+// ***************************************************************************
+void		CLandscape::setHeightField(const CHeightMap &hf)
+{
+	if(hf.getWidth()<2)
+		return;
+	if(hf.getHeight()<2)
+		return;
+
+	// Fill basics.
+	_HeightField.OriginX= hf.OriginX;
+	_HeightField.OriginY= hf.OriginY;
+	_HeightField.SizeX= hf.SizeX;
+	_HeightField.SizeY= hf.SizeY;
+	_HeightField.OOSizeX= 1/hf.SizeX;
+	_HeightField.OOSizeY= 1/hf.SizeY;
+	uint	w= hf.getWidth()-1;
+	uint	h= hf.getHeight()-1;
+	_HeightField.Width= w;
+	_HeightField.Height= h;
+	_HeightField.ZPatchs.resize(w * h);
+
+	// compute  patchs
+	sint	x,y;
+
+	// compute vertices / tangents on each patch
+	for(y=0;y<(sint)h;y++)
+	{
+		for(x=0;x<(sint)w;x++)
+		{
+			CBezierPatchZ	&paz= _HeightField.ZPatchs[y*w+x];
+			// vertices.
+			paz.Vertices[0]= hf.getZ(x, y);
+			paz.Vertices[1]= hf.getZ(x, y+1);
+			paz.Vertices[2]= hf.getZ(x+1, y+1);
+			paz.Vertices[3]= hf.getZ(x+1, y);
+		}
+	}
+
+	// compute tangents
+	for(y=0;y<(sint)h;y++)
+	{
+		for(x=0;x<(sint)w;x++)
+		{
+			CBezierPatchZ	&paz= _HeightField.ZPatchs[y*w+x];
+			sint	tg;
+			// For each tangent, what vertex (relative to x,y) we must take.
+			struct	CDeltaPos
+			{
+				sint	ox,oy;
+				sint	dx1,dy1;
+				sint	dx2,dy2;
+			};
+			static CDeltaPos	deltas[8]= {
+				{0,0, 0,1, 0,-1} ,
+				{0,1, 0,0, 0,2} ,
+				{0,1, 1,1, -1,1} ,
+				{1,1, 0,1, 2,1} ,
+				{1,1, 1,0, 1,2} ,
+				{1,0, 1,1, 1,-1} ,
+				{1,0, 0,0, 2,0} ,
+				{0,0, 1,0, -1,0} ,
+				};
+
+			// compute each tangent of this patch.
+			for(tg=0; tg<8;tg++)
+			{
+				sint	x0,y0;
+				sint	x1,y1;
+				sint	x2,y2;
+				x0= x+deltas[tg].ox; y0= y+deltas[tg].oy;
+				x1= x+deltas[tg].dx1; y1= y+deltas[tg].dy1;
+				x2= x+deltas[tg].dx2; y2= y+deltas[tg].dy2;
+
+				// borders case.
+				if(x2<0 || x2>=(sint)hf.getWidth() || y2<0 || y2>=(sint)hf.getHeight())
+				{
+					float		v,dv;
+					// base of tangents.
+					v= hf.getZ(x0,y0);
+					// target tangents.
+					dv= hf.getZ(x1,y1) - v;
+					// result of tangent.
+					paz.Tangents[tg]= v+dv/3;
+				}
+				// middle case.
+				else
+				{
+					float		v,dv;
+					// base of tangents.
+					v= hf.getZ(x0,y0);
+					// target tangents.
+					dv= hf.getZ(x1,y1) - v;
+					// add mirror target tangent.
+					dv+= -(hf.getZ(x2,y2) - v);
+					dv/=2;
+					// result of tangent.
+					paz.Tangents[tg]= v+dv/3;
+				}
+			}
+		}
+	}
+
+	// compute interiors.
+	for(y=0;y<(sint)h;y++)
+	{
+		for(x=0;x<(sint)w;x++)
+		{
+			CBezierPatchZ	&paz= _HeightField.ZPatchs[y*w+x];
+			paz.makeInteriors();
+		}
+	}
+
+}
+
+
 
 } // NL3D

@@ -1,7 +1,7 @@
 /** \file bezier_patch.cpp
  * <File description>
  *
- * $Id: bezier_patch.cpp,v 1.6 2001/01/15 15:45:23 corvazier Exp $
+ * $Id: bezier_patch.cpp,v 1.7 2001/04/23 16:31:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -58,7 +58,6 @@ void		CBezierPatch::make(CVector vertices[4], CVector	normals[4])
 // ***************************************************************************
 void		CBezierPatch::makeInteriors()
 {
-	// Lam-ed from Max sdk.
 	CVector		&a = Vertices[0];
 	CVector		&b = Vertices[1];
 	CVector		&c = Vertices[2];

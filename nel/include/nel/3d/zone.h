@@ -1,7 +1,7 @@
 /** \file zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.26 2001/03/06 15:14:40 corvazier Exp $
+ * $Id: zone.h,v 1.27 2001/04/23 16:31:32 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -393,6 +393,14 @@ public:
 		{nlassert(patch>=0 && patch<(sint)Patchs.size()); return &(PatchConnects[patch]);}
 
 
+	/** apply a landscape heightfield on a zone (modification of Z control points values).
+	 *  NB: this is done in Landscape addZone(), before compile().
+	 * \param landScape the landscape which gives Z delta values, for a x,y point.
+	 */
+	void			applyHeightField(const CLandscape &landScape);
+
+
+
 // Private part.
 private:
 /*********************************/
@@ -461,6 +469,9 @@ private:
 	static void		bindPatch(TZoneMap &loadedZones, CPatch &pa, CPatchConnect &pc);
 	// Is the patch on a border of this zone???
 	bool			patchOnBorder(const CPatchConnect &pc) const;
+
+	// compute AABBox, PatchBias and PatchScale, from a bbox.
+	void			computeBBScaleBias(const CAABBox	&bb);
 
 };
 

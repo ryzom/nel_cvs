@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.cpp
  * Raytrace part of the lightmap calculation
  *
- * $Id: calc_lm_rt.cpp,v 1.7 2003/02/05 09:56:49 corvazier Exp $
+ * $Id: calc_lm_rt.cpp,v 1.8 2004/01/20 09:33:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 
 #include "stdafx.h"			// Precompiled header
 #include "export_nel.h"
+#include "export_appdata.h"
 #include "calc_lm_rt.h"
 
 using namespace std;
@@ -357,37 +358,45 @@ void CRTWorld::addNode (INode *pNode, vector< CMesh::CMeshBuild* > &Meshes,  vec
 	{
 		// Nel export
 		CExportNel exportNel (_ErrorInDialog, _View, true, _Ip, _ErrorTitle, NULL);
+		CAABBox aabbox;
+		exportNel.buildMeshAABBox(*pNode, aabbox, tvTime);
+		aabbox.setCenter(aabbox.getCenter()+GlobalTrans);
 
-		CMesh::CMeshBuild *pMB;
-		CMeshBase::CMeshBaseBuild *pMBB;
-		pMB = exportNel.createMeshBuild ( *pNode, tvTime, pMBB);
-		// If the mesh has no interaction with one of the light selected we do not need it
+		// Not an excluded node ?
 		bool bInteract = false;
-		if( pMBB->bCastShadows )
+		if (excludeNode.find (pNode) == excludeNode.end())
 		{
-			// Not an excluded node ?
-			if (excludeNode.find (pNode) == excludeNode.end())
+			for( uint32 i = 0; i < AllLights.size(); ++i )
 			{
-				for( uint32 i = 0; i < AllLights.size(); ++i )
+				if( isInteractionWithLight (AllLights[i], aabbox))
 				{
-					if( isInteractionLightMesh (AllLights[i], *pMB, *pMBB))
-					{
-						bInteract = true;
-						break;
-					}
+					bInteract = true;
+					break;
 				}
 			}
 		}
+
+
 		if( bInteract )
 		{
-			Meshes.push_back( pMB );
-			MeshesBase.push_back( pMBB );
-			INodes.push_back( pNode );
-		}
-		else
-		{
-			delete pMB; // No interaction so delete the mesh
-			delete pMBB; // No interaction so delete the mesh
+			int nAccelType = CExportNel::getScriptAppData (pNode, NEL3D_APPDATA_ACCEL, 32);
+			if ((nAccelType&3) == 0) // If not an accelerator
+			{
+				CMesh::CMeshBuild *pMB;
+				CMeshBase::CMeshBaseBuild *pMBB;
+				pMB = exportNel.createMeshBuild ( *pNode, tvTime, pMBB);
+				if( pMBB->bCastShadows )
+				{
+					Meshes.push_back( pMB );
+					MeshesBase.push_back( pMBB );
+					INodes.push_back( pNode );
+				}
+				else
+				{
+					delete pMB; // No interaction so delete the mesh
+					delete pMBB; // No interaction so delete the mesh
+				}
+			}
 		}
 	}
 }
@@ -511,22 +520,8 @@ bool CRTWorld::intersectionSphereCylinder (CBSphere &s, CVector &cyCenter, CVect
 }
 
 // -----------------------------------------------------------------------------------------------
-bool CRTWorld::isInteractionLightMesh (SLightBuild &rSLB, NL3D::CMesh::CMeshBuild &rMB, NL3D::CMeshBase::CMeshBaseBuild &rMBB)
+bool CRTWorld::isInteractionWithLight (SLightBuild &rSLB, CAABBox &meshBox)
 {
-	if (rSLB.Type == SLightBuild::LightAmbient)
-		return false;
-
-	// Get the mesh bbox. Warning the vertices need to be transformed.
-	CAABBox meshBox;
-	CMatrix MBMatrix = getObjectToWorldMatrix (&rMB, &rMBB);
-	MBMatrix.movePos (GlobalTrans);
-
-	for( uint32 j = 0; j < rMB.Vertices.size(); ++j )
-		if( j == 0 )
-			meshBox.setCenter( MBMatrix * rMB.Vertices[j] );
-		else
-			meshBox.extend( MBMatrix * rMB.Vertices[j] );
-
 	switch( rSLB.Type )
 	{
 		case SLightBuild::LightAmbient: // No need an ambient light...
@@ -568,6 +563,26 @@ bool CRTWorld::isInteractionLightMesh (SLightBuild &rSLB, NL3D::CMesh::CMeshBuil
 		break;
 	}
 	return false;
+}
+
+// -----------------------------------------------------------------------------------------------
+bool CRTWorld::isInteractionLightMesh (SLightBuild &rSLB, NL3D::CMesh::CMeshBuild &rMB, NL3D::CMeshBase::CMeshBaseBuild &rMBB)
+{
+	if (rSLB.Type == SLightBuild::LightAmbient)
+		return false;
+
+	// Get the mesh bbox. Warning the vertices need to be transformed.
+	CAABBox meshBox;
+	CMatrix MBMatrix = getObjectToWorldMatrix (&rMB, &rMBB);
+	MBMatrix.movePos (GlobalTrans);
+
+	for( uint32 j = 0; j < rMB.Vertices.size(); ++j )
+		if( j == 0 )
+			meshBox.setCenter( MBMatrix * rMB.Vertices[j] );
+		else
+			meshBox.extend( MBMatrix * rMB.Vertices[j] );
+
+	return isInteractionWithLight(rSLB, meshBox);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file calc_lm.cpp
  * This is the core source for calculating ligtmaps
  *
- * $Id: calc_lm.cpp,v 1.47 2003/04/25 13:51:08 berenguier Exp $
+ * $Id: calc_lm.cpp,v 1.48 2004/01/20 09:33:08 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -651,25 +651,29 @@ void SortFaceByMaterialId(  vector<sint32> &FaceGroup, vector<CMesh::CFace*>::it
 // Test if the 2 faces are continuous (same vertex, same normal (if wanted), same uv (if wanted))
 bool FaceContinuous( CMesh::CFace *pF1, CMesh::CFace *pF2, bool bTestUV = true, bool bTestNormal = true )
 {
-	sint32 i, j;
-	sint32 F1c[2] = { -1, -1 };
-	sint32 F2c[2] = { -1, -1 };
+	sint8 i, j, inext, jnext;
+	sint8 F1c[2] = { -1, -1 };
+	sint8 F2c[2] = { -1, -1 };
 
 	// Is there a vertices continuity
 	for( j = 0; j < 3; ++j )
 	for( i = 0; i < 3; ++i )
 	{
+		inext = (i == 2) ? 0 : (i+1);
+		jnext = (j == 2) ? 0 : (j+1);
 		if( (pF1->Corner[j].Vertex == pF2->Corner[i].Vertex) && 
-			(pF1->Corner[(j+1)%3].Vertex == pF2->Corner[(i+1)%3].Vertex) )
+			(pF1->Corner[jnext].Vertex == pF2->Corner[inext].Vertex) )
 		{
-			F1c[0] = j; F1c[1] = (j+1)%3;
-			F2c[0] = i; F2c[1] = (i+1)%3;
+			F1c[0] = j; F1c[1] = jnext;
+			F2c[0] = i; F2c[1] = inext;
+			break;
 		}
-		if( (pF1->Corner[j].Vertex == pF2->Corner[(i+1)%3].Vertex) && 
-			(pF1->Corner[(j+1)%3].Vertex == pF2->Corner[i].Vertex) )
+		if( (pF1->Corner[j].Vertex == pF2->Corner[inext].Vertex) && 
+			(pF1->Corner[jnext].Vertex == pF2->Corner[i].Vertex) )
 		{
-			F1c[0] = (j+1)%3; F1c[1] = j;
-			F2c[0] = i;		  F2c[1] = (i+1)%3;
+			F1c[0] = jnext;	F1c[1] = j;
+			F2c[0] = i;		F2c[1] = inext;
+			break;
 		}
 	}
 	// No -> out
@@ -2163,7 +2167,6 @@ bool CExportNel::calculateLM( CMesh::CMeshBuild *pZeMeshBuild, CMeshBase::CMeshB
 	lodListToInclude.insert (&ZeNode);
 
 	// Get all meshes that are influenced by the lights L
-	//buildWorldRT( WorldRT, AllLights, ip, true );
 	WorldRT.build (AllLights, -vGlobalPos, gOptions.bExcludeNonSelected, lodListToExclude, lodListToInclude);
 
 	//for( nNode=0; nNode < nNbMesh; ++nNode )

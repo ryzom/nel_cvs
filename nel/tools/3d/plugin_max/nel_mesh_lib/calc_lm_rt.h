@@ -1,7 +1,7 @@
 /** \file calc_lm_rt.h
  * Raytrace module
  *
- * $Id: calc_lm_rt.h,v 1.4 2002/03/29 14:58:34 corvazier Exp $
+ * $Id: calc_lm_rt.h,v 1.5 2004/01/20 09:33:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,6 +173,8 @@ private:
 
 	bool intersectionSphereCylinder (NLMISC::CBSphere &s, NLMISC::CVector &cyCenter, 
 									NLMISC::CVector &cyDir, float cyRadius);
+
+	bool isInteractionWithLight (SLightBuild &rSLB, NLMISC::CAABBox &meshBox);
 
 	bool isInteractionLightMesh (SLightBuild &rSLB, NL3D::CMesh::CMeshBuild &rMB, NL3D::CMeshBase::CMeshBaseBuild &rMBB);
 

@@ -1,7 +1,7 @@
 /** \file rgba.h
  * ARGB pixel format
  *
- * $Id: rgba.h,v 1.22 2002/08/21 09:36:01 lecroart Exp $
+ * $Id: rgba.h,v 1.23 2003/02/20 16:56:14 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,17 @@ public:
 	 */
 	CRGBA(uint8 r, uint8 g, uint8 b, uint8 a=255) :
 		R(r), G(g), B(b), A(a) {}
+
+	/** 
+	 * setup as a packed pixel
+	 */
+	void	setPacked(uint packed)
+	{
+		R= (packed>>24)&255;
+		G= (packed>>16)&255;
+		B= (packed>>8)&255;
+		A= packed & 255;
+	}
 
 	/** 
 	 * Return a packed pixel

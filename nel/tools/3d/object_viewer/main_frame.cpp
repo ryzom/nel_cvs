@@ -482,34 +482,47 @@ void CMainFrame::OnFileOpen()
 	static char BASED_CODE szFilter[] = "NeL Shape Files (*.shape)|*.shape|Instances Groups (*.ig)|*.ig|All Files (*.*)|*.*||";
 	CFileDialog fileDlg( TRUE, ".shape", "*.shape", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
 	if (fileDlg.DoModal()==IDOK)
-	{
+	{		
 		// test wether it is a single shape or an intance group
-		//if ( std::string(fileDlg.GetPathName()).find("
-		// Create a dialog
-		static char BASED_CODE szFilter2[] = "NeL Skeleton Files (*.skel)|*.skel|All Files (*.*)|*.*||";
-		CFileDialog fileDlg2 ( TRUE, ".skel", "*.skel", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter2);
-		if (fileDlg2.DoModal()==IDOK)
+		if ( fileDlg.GetPathName().Find(".ig")) // we load an instance group
 		{
-			// Load the shape with a skeleton
-			if (ObjView->loadMesh (fileDlg.GetPathName(), fileDlg2.GetPathName()))
+			// Load the instance group
+			if (ObjView->loadInstanceGroup (fileDlg.GetPathName()))
 			{
 				// Reset the camera
 				OnResetCamera();
-
 				// Touch the channel mixer
 				ObjView->reinitChannels ();
 			}
 		}
 		else
-		{
-			// Load the shape without skeleton
-			if (ObjView->loadMesh (fileDlg.GetPathName(), ""))
+		{	// we load a shape
+			// Create a dialog
+			static char BASED_CODE szFilter2[] = "NeL Skeleton Files (*.skel)|*.skel|All Files (*.*)|*.*||";
+			CFileDialog fileDlg2 ( TRUE, ".skel", "*.skel", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter2);
+			if (fileDlg2.DoModal()==IDOK)
 			{
-				// Reset the camera
-				OnResetCamera();
+				// Load the shape with a skeleton
+				if (ObjView->loadMesh (fileDlg.GetPathName(), fileDlg2.GetPathName()))
+				{
+					// Reset the camera
+					OnResetCamera();
 
-				// Touch the channel mixer
-				ObjView->reinitChannels ();
+					// Touch the channel mixer
+					ObjView->reinitChannels ();
+				}
+			}
+			else
+			{
+				// Load the shape without skeleton
+				if (ObjView->loadMesh (fileDlg.GetPathName(), ""))
+				{
+					// Reset the camera
+					OnResetCamera();
+
+					// Touch the channel mixer
+					ObjView->reinitChannels ();
+				}
 			}
 		}
 	}

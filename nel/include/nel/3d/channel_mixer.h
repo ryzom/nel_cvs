@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.6 2001/03/19 09:33:15 berenguier Exp $
+ * $Id: channel_mixer.h,v 1.7 2001/03/19 14:05:08 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/smart_ptr.h"
 #include "nel/3d/animation_time.h"
 #include "nel/3d/animation_set.h"
 #include <map>
@@ -59,7 +60,7 @@ class CAnimationSet;
  * \author Nevrax France
  * \date 2001
  */
-class CChannelMixer
+class CChannelMixer : public NLMISC::CRefCount
 {
 public:
 
@@ -163,6 +164,10 @@ private:
 		/// The id of the animated value in the IAnimatable object.
 		uint32				_ValueId;
 
+		/// the detail mode.
+		bool				_Detail;
+
+
 		/// The default track pointer used when track are missing in the animation. Can't be NULL.
 		const ITrack*		_DefaultTracks;
 
@@ -217,8 +222,11 @@ public:
 	  * They are stored in a linked list managed by the channel array.
 	  *
 	  * Others are initialized with the default channel value.
+	  *
+	  * \param detail true if eval the detail part of animation. (done after clipping).
+	  * \param evalDetailDate chann mixer store the last date of anim detail evaluated. if same, do nothing. ingored if detail is false.
 	  */
-	void eval ();
+	void eval (bool detail, uint64 evalDetailDate=0);
 
 	/// \name Channel access
 
@@ -233,8 +241,9 @@ public:
       * \param defaultValue is a track used by default if a track is not presents in the animation for this channel. 
 	  * It will be kept by the CChannelMixer until it is removed from the channel.
 	  * \param valueId is the value ID in the IAnimatable object.
+	  * \param detail true if this channel must be evaluated in detail mode (see eval()).
 	  */
-	void addChannel (const std::string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId);
+	void addChannel (const std::string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId, bool detail);
 
 	/// Reset the channel list if the mixer. All channels are removed from the mixer.
 	void resetChannels ();
@@ -362,8 +371,14 @@ private:
 	// The set of CChannel infos. Only channels added by addChannel are present.
 	std::map<uint, CChannel>		_Channels;
 
-	// The first channel. If NULL, no channel to animate.
-	CChannel*						_FirstChannel;
+	// The first Global channel. If NULL, no channel to animate.  (animed in eval(false))
+	CChannel*						_FirstChannelGlobal;
+
+	// The first dertail channel. If NULL, no channel to animate.  (animed in eval(true))
+	CChannel*						_FirstChannelDetail;
+
+	// last date of evalDetail().
+	sint64							_LastEvalDetailDate;
 
 	// The channels list is dirty if true.
 	bool							_Dirt;

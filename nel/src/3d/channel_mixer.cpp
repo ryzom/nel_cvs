@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.6 2001/03/19 09:33:15 berenguier Exp $
+ * $Id: channel_mixer.cpp,v 1.7 2001/03/19 14:05:24 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -41,13 +41,17 @@ namespace NL3D
 CChannelMixer::CChannelMixer()
 {
 	// No channel in the list
-	_FirstChannel=NULL;
+	_FirstChannelGlobal=NULL;
+	_FirstChannelDetail=NULL;
 
 	// No animation set
 	_AnimationSet=NULL;
 
 	// Mixer no dirty
 	_Dirt=false;
+
+	// never evaluated.
+	_LastEvalDetailDate= -1;
 }
 
 // ***************************************************************************
@@ -71,11 +75,14 @@ const CAnimationSet* CChannelMixer::getAnimationSet () const
 
 // ***************************************************************************
 
-void CChannelMixer::eval ()
+void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 {
 	// Setup an array of animation that are not empty and stay
 	uint numActive=0;
 	uint activeSlot[NumAnimationSlot];
+
+	if(detail && (sint64)evalDetailDate== _LastEvalDetailDate)
+		return;
 
 	if(_Dirt)
 	{
@@ -93,7 +100,16 @@ void CChannelMixer::eval ()
 	}
 
 	// For each selected channel
-	CChannel* pChannel=_FirstChannel;
+	CChannel* pChannel;
+	if(detail)
+	{
+		pChannel=_FirstChannelDetail;
+		// eval the animation only one time per scene traversal.
+		_LastEvalDetailDate= evalDetailDate;
+	}
+	else
+		pChannel=_FirstChannelGlobal;
+
 
 	while (pChannel)
 	{
@@ -148,7 +164,7 @@ void CChannelMixer::eval ()
 
 // ***************************************************************************
 
-void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultTrack, uint32 valueId)
+void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultTrack, uint32 valueId, bool detail)
 {
 	// Check the animationSet has been set
 	nlassert (_AnimationSet);
@@ -181,6 +197,9 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 
 		// Set the value ID in the object
 		entry._ValueId=valueId;
+
+		// in what mode is the channel?
+		entry._Detail= detail;
 
 		// All weights default to 1. All Tracks default to defaultTrack.
 		for(sint s=0;s<NumAnimationSlot;s++)
@@ -394,7 +413,9 @@ void CChannelMixer::refreshList ()
 	}
 
 	// Last channel pointer
-	CChannel **lastPointer=&_FirstChannel;
+	CChannel **lastPointerGlobal=&_FirstChannelGlobal;
+	CChannel **lastPointerDetail=&_FirstChannelDetail;
+
 
 	// Now scan each channel
 	map<uint, CChannel>::iterator		itChannel;
@@ -457,11 +478,21 @@ void CChannelMixer::refreshList ()
 			// It is in the list
 			channel._InTheList=true;
 
-			// Set the last pointer value
-			*lastPointer=&channel;
+			if(channel._Detail)
+			{
+				// Set the last pointer value
+				*lastPointerDetail=&channel;
+				// Change last pointer
+				lastPointerDetail=&channel._Next;
+			}
+			else
+			{
+				// Set the last pointer value
+				*lastPointerGlobal=&channel;
+				// Change last pointer
+				lastPointerGlobal=&channel._Next;
+			}
 
-			// Change last pointer
-			lastPointer=&channel._Next;
 		}
 		else
 		{
@@ -471,7 +502,8 @@ void CChannelMixer::refreshList ()
 	}
 
 	// End of the list
-	*lastPointer=NULL;
+	*lastPointerGlobal=NULL;
+	*lastPointerDetail=NULL;
 }
 
 // ***************************************************************************

@@ -125,7 +125,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LIB32=link.exe -lib
 # ADD BASE LIB32 /nologo /out:"../../../obj/Debug/nlsound_lowlevel_debug.lib"
-# ADD LIB32 /nologo /out:"../../../obj/Debug/nlsound_lowlevel_debug.lib"
+# ADD LIB32 /nologo /out:"../../../obj/Debug/nlsound_lowlevel_debug_fast.lib"
 
 !ENDIF 
 

@@ -25,7 +25,7 @@ CFG=3d - Win32 Debug
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
-CPP=cl.exe
+CPP=xicl6.exe
 RSC=rc.exe
 
 !IF  "$(CFG)" == "3d - Win32 Release"
@@ -47,7 +47,7 @@ RSC=rc.exe
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d.lib"
 
@@ -70,7 +70,7 @@ LIB32=link.exe -lib
 BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
-LIB32=link.exe -lib
+LIB32=xilink6.exe -lib
 # ADD BASE LIB32 /nologo
 # ADD LIB32 /nologo /out:"../lib/nl3d_debug.lib"
 
@@ -164,16 +164,16 @@ SOURCE=..\include\nel\3d\patch.h
 SOURCE=.\3d\tessellation.cpp
 # End Source File
 # Begin Source File
+
 SOURCE=..\include\nel\3d\tessellation.h
 # End Source File
-
 # Begin Source File
+
 SOURCE=.\3d\zone.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=..\include\nel\3d\zone.h
-
 # End Source File
 # End Group
 # Begin Group "Driver"
@@ -195,7 +195,6 @@ SOURCE=.\3d\primitive_block.cpp
 
 SOURCE=.\3d\vertex_buffer.cpp
 # End Source File
-
 # End Group
 # Begin Group "Maths"
 
@@ -216,6 +215,14 @@ SOURCE=.\3d\aabbox.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\3d\aabbox.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\3d\bsphere.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\3d\bsphere.h
 # End Source File
 # End Group
 # Begin Source File

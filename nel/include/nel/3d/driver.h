@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : CTexture, Cmaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.3 2000/10/30 14:52:45 viau Exp $
+ * $Id: driver.h,v 1.4 2000/11/02 14:02:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -261,6 +261,7 @@ public:
 
 	bool					setVertexFormat(uint32 Flags);
 	bool					reserve(uint16 n);
+	sint					capacity() {return _Verts.size();}
 	bool					setNumVertices(uint16 n);
 
 	bool					setVertexCoord(uint idx, float x, float y, float z);

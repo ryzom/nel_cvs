@@ -1,7 +1,7 @@
 /** \file zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.2 2000/11/02 13:48:50 berenguier Exp $
+ * $Id: zone.cpp,v 1.3 2000/11/02 13:58:54 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,7 @@ void			CZone::build(uint16 zoneId, const std::vector<CPatchInfo> &patchs, const 
 
 	for(sint i=0;i<(sint)patchs.size();i++)
 	{
+	//sint					capacity() {return _Verts.size();}
 	}
 }
 

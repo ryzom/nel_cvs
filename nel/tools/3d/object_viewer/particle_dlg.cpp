@@ -2,7 +2,7 @@
  * The main dialog for particle system edition. If holds a tree constrol describing the system structure,
  * and show the properties of the selected object
  *
- * $Id: particle_dlg.cpp,v 1.25 2003/11/25 16:57:20 vizerie Exp $
+ * $Id: particle_dlg.cpp,v 1.26 2004/02/19 09:53:09 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -75,6 +75,9 @@ CParticleDlg::CParticleDlg(class CObjectViewer* main, CWnd *pParent, CMainFrame*
 	nlverify (FontManager = main->getFontManager());
 	nlverify (FontGenerator = main->getFontGenerator());
 
+
+	NL3D::CParticleSystem::setSerializeIdentifierFlag(true); // serialize identifiers for edition
+
 	resetSystem();	
 
 
@@ -103,8 +106,7 @@ void CParticleDlg::resetSystem(void)
 	CNELU::Scene->getShapeBank()->add(emptySystemName, pss);
 	
 	_CurrSystemModel = (NL3D::CParticleSystemModel *) CNELU::Scene->createInstance(emptySystemName);
-	_CurrSystemModel->setTransformMode(NL3D::CTransform::DirectMatrix);
-	
+	_CurrSystemModel->setTransformMode(NL3D::CTransform::DirectMatrix);	
 
 	// link to the root for manipulation
 	_ObjView->getSceneRoot()->hrcLinkSon(_CurrSystemModel);

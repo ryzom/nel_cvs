@@ -63,7 +63,8 @@ namespace NLAIAGENT
 			}
 
 			// Looks for the function to call at the activation of the state
-			tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnActivate"), NLAISCRIPT::CParam() );
+			CStringVarName activate_func_name("OnActivate");
+			tQueue r = _AgentClass->isMember( NULL, &activate_func_name, NLAISCRIPT::CParam() );
 			if ( !r.empty() )
 				_OnActivateIndex = r.top().Index;
 
@@ -83,7 +84,8 @@ namespace NLAIAGENT
 				( (CFsmScript *)father)->unactivate( this );
 			}
 
-			tQueue r = _AgentClass->isMember( NULL, &CStringVarName("OnUnActivate"), NLAISCRIPT::CParam() );
+			CStringVarName unactivate_func_name("OnUnActivate");
+			tQueue r = _AgentClass->isMember( NULL, &unactivate_func_name, NLAISCRIPT::CParam() );
 			if ( !r.empty() )
 			{	
 				_OnUnActivateIndex = r.top().Index;

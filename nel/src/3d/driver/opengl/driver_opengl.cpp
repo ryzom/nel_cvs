@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.213 2004/04/21 08:49:09 vizerie Exp $
+ * $Id: driver_opengl.cpp,v 1.214 2004/04/21 12:04:03 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -1632,6 +1632,7 @@ bool CDriverGL::swapBuffers()
 	}
 	else if (_Extensions.ARBVertexBufferObject)
 	{
+		/*
 		static	CVertexBuffer	dummyVB;
 		static	bool			dummyVBinit= false; 
 		if(!dummyVBinit)
@@ -1651,6 +1652,7 @@ bool CDriverGL::swapBuffers()
 		// maybe it's a driver bug..
 		activeVertexBuffer(dummyVB);
 		nlassert(_CurrentVertexBufferHard!=NULL);
+		*/
 	}
 	
 

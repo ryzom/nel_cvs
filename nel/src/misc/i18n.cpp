@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.15 2001/01/12 10:31:17 lecroart Exp $
+ * $Id: i18n.cpp,v 1.16 2001/01/12 11:29:33 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -39,7 +39,7 @@ const char						*CI18N::_LanguageFiles[] = { "english", "french", "fun" };
 map<string, ucstring>			 CI18N::_StrMap;
 bool							 CI18N::_StrMapLoaded = false;
 string							 CI18N::_Path = "";
-string							 CI18N::_FileName;
+string							 CI18N::_FileName = "";
 
 vector<ucstring>				 CI18N::_LanguageNames;
 bool							 CI18N::_LanguagesNamesLoaded = false;

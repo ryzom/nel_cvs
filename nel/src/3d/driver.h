@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.30 2002/03/18 14:45:29 berenguier Exp $
+ * $Id: driver.h,v 1.31 2002/03/28 10:48:40 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,6 +49,9 @@
 namespace NLMISC
 {
 class IEventEmitter;
+struct IMouseDevice;
+struct IKeyboardDevice;
+struct IInputDeviceManager;
 class CRect;
 };
 
@@ -69,6 +72,8 @@ class CPrimitiveBlock;
 class CLight;
 class CScissor;
 class CViewport;
+
+
 
 
 //****************************************************************************
@@ -549,17 +554,48 @@ public:
 	  */
 	virtual const char*		getVideocardInformation () = 0;
 
-	/// show cursor if b is true, or hide it if b is false
-	virtual void			showCursor (bool b) = 0;
+	/// \name Mouse / Keyboard / Game devices
+	// @{
+		/// show cursor if b is true, or hide it if b is false
+		virtual void			showCursor (bool b) = 0;
 
-	/// x and y must be between 0.0 and 1.0
-	virtual void			setMousePos (float x, float y) = 0;
+		/// x and y must be between 0.0 and 1.0
+		virtual void			setMousePos (float x, float y) = 0;
+
+		/** Enable / disable  low level mouse. This allow to take advantage of some options (speed of the mouse, automatic wrapping)
+		  * It returns a interface to these parameters when it is supported, or NULL otherwise
+		  * The interface pointer is valid as long as the low level mouse is enabled.
+		  * A call to disable the mouse returns NULL, and restore the default mouse behaviour
+		  * NB : - In this mode the mouse cursor isn't drawn.
+	      *      - Calls to showCursor have no effects
+		  *      - Calls to setCapture have no effects
+		  */
+		virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable) = 0;
+
+		/** Enable / disable  a low level keyboard.
+		  * Such a keyboard can only send KeyDown and KeyUp event. It just consider the keyboard as a
+		  * gamepad with lots of buttons...
+		  * This returns a interface to some parameters when it is supported, or NULL otherwise.
+		  * The interface pointer is valid as long as the low level keyboard is enabled.
+		  * A call to disable the keyboard returns NULL, and restore the default keyboard behaviour		  
+		  */
+		virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable) = 0;
+
+		/** If true, capture the mouse to force it to stay under the window.
+		  * NB : this has no effects if a low level mouse is used
+		  */
+		virtual void			setCapture (bool b) = 0;
+
+		/** Check wether there is a low level device manager available, and get its interface. Return NULL if not available
+		  * From this interface you can deal with mouse and keyboard as above, but you can also manage game device (joysticks, joypads ...)		  
+		  */
+		virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager() = 0;
+
+	// @}
 
 	/// Get the width and the height of the window
 	virtual void			getWindowSize (uint32 &width, uint32 &height) = 0;
-
-	/// If true, capture the mouse to force it to stay under the window.
-	virtual void			setCapture (bool b) = 0;
+	
 
 	/** get the RGBA back buffer
 	  *

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.114 2002/03/20 11:13:59 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.115 2002/03/28 10:49:20 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -67,6 +67,7 @@
 #include "nel/misc/bit_set.h"
 #include "3d/ptr_set.h"
 #include "nel/misc/heap_memory.h"
+#include "nel/misc/event_emitter_multi.h"
 #include "driver_opengl_states.h"
 #include "3d/texture_cube.h"
 
@@ -502,9 +503,15 @@ public:
 	virtual void			showCursor (bool b);
 
 	// between 0.0 and 1.0
-	virtual void setMousePos(float x, float y);
+	virtual void			setMousePos(float x, float y);
 
 	virtual void			setCapture (bool b);
+
+	virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable);
+		
+	virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable);
+
+	virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager();
 
 	virtual void			getWindowSize (uint32 &width, uint32 &height);
 
@@ -603,7 +610,7 @@ private:
     HGLRC						_hRC;
 	static uint					_Registered;
 	DEVMODE						_OldScreenMode;
-	NLMISC::CWinEventEmitter	_EventEmitter;
+	NLMISC::CEventEmitterMulti	_EventEmitter; // this can contains a win emitter and eventually a direct input emitter	
 	bool						_DestroyWindow;
 
 	// Off-screen rendering in Dib section

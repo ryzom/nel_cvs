@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.140 2002/03/18 16:04:02 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.141 2002/03/28 10:49:19 vizerie Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -32,8 +32,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <windowsx.h>
-
 #include <string>
+
 
 #else // NL_OS_UNIX
 
@@ -50,6 +50,7 @@
 #include "3d/light.h"
 #include "3d/primitive_block.h"
 #include "nel/misc/rect.h"
+#include "nel/misc/di_event_emitter.h"
 
 using namespace std;
 using namespace NLMISC;
@@ -100,9 +101,13 @@ __declspec(dllexport) uint32 NL3D_interfaceVersion ()
 
 static void GlWndProc(CDriverGL *driver, HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	// Process the message by the emitter
-	driver->_EventEmitter.setHWnd((uint32)hWnd);
-	driver->_EventEmitter.processMessage ((uint32)hWnd, message, wParam, lParam);
+	if (driver->_EventEmitter.getNumEmitters() > 0)
+	{
+		CWinEventEmitter *we = NLMISC::safe_cast<CWinEventEmitter *>(driver->_EventEmitter.getEmitter(0));
+		// Process the message by the emitter
+		we->setHWnd((uint32)hWnd);
+		we->processMessage ((uint32)hWnd, message, wParam, lParam);
+	}
 }
 
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -570,6 +575,27 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 		wglMakeCurrent(_hDC,_hRC);
 	}
 
+	/// release old emitter
+	while (_EventEmitter.getNumEmitters() != 0)
+	{
+		_EventEmitter.removeEmitter(_EventEmitter.getEmitter(_EventEmitter.getNumEmitters() - 1));
+	}
+	NLMISC::CWinEventEmitter *we = new NLMISC::CWinEventEmitter;
+	// setup the event emitter, and try to retrieve a direct input interface
+	_EventEmitter.addEmitter(we, true /*must delete*/); // the main emitter
+	/// try to get direct input
+	try
+	{
+		NLMISC::CDIEventEmitter *diee = NLMISC::CDIEventEmitter::create(GetModuleHandle(NULL), _hWnd, we);
+		if (diee)
+		{
+			_EventEmitter.addEmitter(diee, true);
+		}
+	}
+	catch(EDirectInput &e)
+	{
+		nlinfo(e.what());
+	}
 
 #elif defined(NL_OS_UNIX) // NL_OS_WINDOWS
 
@@ -1041,6 +1067,14 @@ bool CDriverGL::swapBuffers()
 		itVBHard++;
 	}
 
+
+#ifdef NL_OS_WINDOWS
+	if (_EventEmitter.getNumEmitters() > 1) // is direct input running ?
+	{
+		// flush direct input messages if any
+		NLMISC::safe_cast<NLMISC::CDIEventEmitter *>(_EventEmitter.getEmitter(1))->poll();
+	}
+#endif
 
 
 #ifdef NL_OS_WINDOWS
@@ -1880,6 +1914,74 @@ void	CDriverGL::setPerPixelLightingLight(CRGBA diffuse, CRGBA specular, float sh
 	_PPLExponent = shininess;
 	_PPLightDiffuseColor = diffuse;
 	_PPLightSpecularColor = specular;
+}
+
+// ***************************************************************************
+NLMISC::IMouseDevice	*CDriverGL::enableLowLevelMouse(bool enable)
+{
+	#ifdef NL_OS_WINDOWS
+		if (_EventEmitter.getNumEmitters() < 2) return NULL;
+		NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<CDIEventEmitter *>(_EventEmitter.getEmitter(1));		
+		if (enable)
+		{
+			try
+			{
+				NLMISC::IMouseDevice *md = diee->getMouseDevice();				
+				return md;
+			}
+			catch (EDirectInput &)
+			{
+				return NULL;
+			}
+		}
+		else
+		{
+			diee->releaseMouse();			
+			return NULL;
+		}
+	#else
+		return NULL;
+	#endif
+}
+		
+// ***************************************************************************
+NLMISC::IKeyboardDevice		*CDriverGL::enableLowLevelKeyboard(bool enable)
+{
+	#ifdef NL_OS_WINDOWS
+		if (_EventEmitter.getNumEmitters() < 2) return NULL;
+		NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<NLMISC::CDIEventEmitter *>(_EventEmitter.getEmitter(1));
+		if (enable)
+		{
+			try
+			{
+				NLMISC::IKeyboardDevice *md = diee->getKeyboardDevice();
+				return md;
+			}
+			catch (EDirectInput &)
+			{
+				return NULL;
+			}
+		}
+		else
+		{
+			diee->releaseKeyboard();
+			return NULL;
+		}
+	#else
+		return NULL;
+	#endif
+}
+
+// ***************************************************************************
+NLMISC::IInputDeviceManager		*CDriverGL::getLowLevelInputDeviceManager()
+{
+	#ifdef NL_OS_WINDOWS
+		if (_EventEmitter.getNumEmitters() < 2) return NULL;
+		NLMISC::CDIEventEmitter *diee = NLMISC::safe_cast<NLMISC::CDIEventEmitter *>(_EventEmitter.getEmitter(1));
+		return diee;
+	#else
+		return NULL;
+	#endif
 }
 
 

@@ -1,7 +1,7 @@
 /** \file driver_user.h
  * <File description>
  *
- * $Id: driver_user.h,v 1.9 2002/01/18 10:05:20 berenguier Exp $
+ * $Id: driver_user.h,v 1.10 2002/03/28 10:48:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -440,6 +440,42 @@ public:
 	// @}
 
 
+	/// \name Mouse / Keyboards / Game devices
+	// @{
+		virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable)
+		{
+			return _Driver->enableLowLevelMouse(enable);
+		}
+		//
+		virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable) 
+		{
+			return _Driver->enableLowLevelKeyboard(enable);
+		}
+
+				
+		virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager()
+		{
+			return _Driver->getLowLevelInputDeviceManager();
+		}
+
+		/// show cursor if b is true, or hide it if b is false
+		virtual void			showCursor (bool b)
+		{
+			_Driver->showCursor(b);
+		}
+
+		/// x and y must be between 0.0 and 1.0
+		virtual void			setMousePos (float x, float y)
+		{
+			_Driver->setMousePos (x, y);
+		}
+
+		/// If true, capture the mouse to force it to stay under the window.
+		virtual void			setCapture (bool b)
+		{
+			_Driver->setCapture (b);
+		}
+	// @}
 
 	/// \name Misc.
 	// @{
@@ -454,24 +490,7 @@ public:
 	  * \param icon This is the icon of the message box should use like warning, error etc...
 	  */
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon);
-
-	/// show cursor if b is true, or hide it if b is false
-	virtual void			showCursor (bool b)
-	{
-		_Driver->showCursor(b);
-	}
-
-	/// x and y must be between 0.0 and 1.0
-	virtual void			setMousePos (float x, float y)
-	{
-		_Driver->setMousePos (x, y);
-	}
-
-	/// If true, capture the mouse to force it to stay under the window.
-	virtual void			setCapture (bool b)
-	{
-		_Driver->setCapture (b);
-	}
+	
 
 	/** Set the global polygon mode. Can be filled, line or point. The implementation driver must
 	  * call IDriver::setPolygonMode and active this mode.

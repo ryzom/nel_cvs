@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.12 2002/02/20 18:04:40 lecroart Exp $
+ * $Id: u_driver.h,v 1.13 2002/03/28 10:47:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,15 @@
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
 #include "nel/3d/primitive_profile.h"
+
+
+
+namespace NLMISC
+{
+	struct IMouseDevice;
+	struct IKeyboardDevice;
+	struct IInputDeviceManager;
+}
 
 
 namespace NL3D
@@ -403,6 +412,45 @@ public:
 	// @}
 
 
+	/// \name Mouse / Keyboard / Gamedevices
+	// @{
+		/** Enable / disable  low level mouse. This allow to take advantage of some options (speed of the mouse, automatic wrapping)
+		  * It returns a interface to these parameters when it is supported, or NULL otherwise
+		  * The interface pointer is valid as long as the low level mouse is enabled.
+		  * A call to disable the mouse returns NULL, and restore the default mouse behaviour
+		  * NB : - In this mode the mouse cursor isn't drawn.
+		  *      - Calls to showCursor have no effects
+		  *      - Calls to setCapture have no effects
+		  */
+		virtual NLMISC::IMouseDevice			*enableLowLevelMouse(bool enable) = 0;
+
+		/** Enable / disable  a low level keyboard.
+		  * Such a keyboard can only send KeyDown and KeyUp events. It just consider the keyboard as a
+		  * gamepad with lots of buttons...		  
+		  * This returns a interface to some parameters when it is supported, or NULL otherwise.
+		  * The interface pointer is valid as long as the low level keyboard is enabled.
+		  * A call to disable the keyboard returns NULL, and restore the default keyboard behaviour.	  
+		  */
+		virtual NLMISC::IKeyboardDevice			*enableLowLevelKeyboard(bool enable) = 0;
+
+		/** Check wether there is a low level device manager available, and get its interface. Return NULL if not available.
+		  * From this interface you can deal with mouse and keyboard as above, but you can also manage game devices (joysticks, joypads ...)
+		  */
+		virtual NLMISC::IInputDeviceManager		*getLowLevelInputDeviceManager() = 0;
+
+		/** show cursor if b is true, or hide it if b is false
+		  * NB: This has no effects if a low level mouse is used.
+		  */
+		virtual void			showCursor (bool b) = 0;
+
+		/// x and y must be between 0.0 and 1.0
+		virtual void			setMousePos (float x, float y) = 0;
+	
+		/** If true, capture the mouse to force it to stay under the window.
+		  * NB : If a low level mouse is used, it does nothing
+		  */
+		virtual void			setCapture (bool b) = 0;
+	// @}
 
 	/// \name Misc.
 	// @{
@@ -417,16 +465,7 @@ public:
 	  * \param icon This is the icon of the message box should use like warning, error etc...
 	  */
 	virtual TMessageBoxId	systemMessageBox (const char* message, const char* title, TMessageBoxType type=okType, TMessageBoxIcon icon=noIcon) =0;
-
-
-	/// show cursor if b is true, or hide it if b is false
-	virtual void			showCursor (bool b) = 0;
-
-	/// x and y must be between 0.0 and 1.0
-	virtual void			setMousePos (float x, float y) = 0;
-
-	/// If true, capture the mouse to force it to stay under the window.
-	virtual void			setCapture (bool b) = 0;
+	
 
 	/** Set the global polygon mode. Can be filled, line or point. The implementation driver must
 	  * call IDriver::setPolygonMode and active this mode.

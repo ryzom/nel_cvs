@@ -1,7 +1,7 @@
 /** \file driver_opengl_extension.h
  * OpenGL driver extension registry
  *
- * $Id: driver_opengl_extension.h,v 1.37 2004/04/27 12:11:21 vizerie Exp $
+ * $Id: driver_opengl_extension.h,v 1.38 2004/05/14 15:46:18 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -110,7 +110,7 @@ struct	CGlExtensions
 	bool	ARBVertexBufferObject;
 	bool	ARBVertexProgram;
 
-	// hint : is it an ATI or above 9500
+	// hint : is it an ATI 9500 or above ?
 	bool	IsATI9500OrAbove;
 
 public:

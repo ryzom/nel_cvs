@@ -1,7 +1,7 @@
 /** \file basis_edit.h
  * a dialog to edit the orientation of a basis
  *
- * $Id: basis_edit.h,v 1.2 2001/06/25 13:14:37 vizerie Exp $
+ * $Id: basis_edit.h,v 1.3 2001/09/12 13:23:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ class CBasisEdit : public CEditAttribDlg
 {
 // Construction
 public:
-	CBasisEdit(const std::string &id, CWnd* pParent = NULL);   // standard constructor
+	CBasisEdit(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CBasisEdit)

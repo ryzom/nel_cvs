@@ -1,7 +1,7 @@
 /** \file color_edit.cpp
  * a dialog to edit a color (or call the windows color dialog)
  *
- * $Id: color_edit.cpp,v 1.4 2001/07/04 12:23:42 vizerie Exp $
+ * $Id: color_edit.cpp,v 1.5 2001/09/12 13:26:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@ static char THIS_FILE[] = __FILE__;
 // CColorEdit dialog
 
 
-CColorEdit::CColorEdit(std::string &, CWnd* pParent /*=NULL*/)	
+CColorEdit::CColorEdit(CWnd* pParent /*=NULL*/)	
 {
 	// we don't use the first parameter here, it is for template compatibility with CEditAttribDlg
 

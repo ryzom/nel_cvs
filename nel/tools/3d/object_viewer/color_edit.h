@@ -1,7 +1,7 @@
 /** \file color_edit.h
  * a dialog to edit a color (or call the windows color dialog)
  *
- * $Id: color_edit.h,v 1.5 2001/07/04 12:23:42 vizerie Exp $
+ * $Id: color_edit.h,v 1.6 2001/09/12 13:26:24 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,7 +54,7 @@ class CColorEdit : public CEditAttribDlg
 // Construction
 public:
 	// construct the dialog.
-	CColorEdit(std::string &id, CWnd* pParent = NULL);   // standard constructor
+	CColorEdit(CWnd* pParent = NULL);   // standard constructor
 
 
 	// inherited from CEditAttribDlg

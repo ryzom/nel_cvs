@@ -1,7 +1,7 @@
 /** \file basis_edit.cpp
  * a dialog to edit the orientation of a basis
  *
- * $Id: basis_edit.cpp,v 1.3 2001/09/05 08:47:29 vizerie Exp $
+ * $Id: basis_edit.cpp,v 1.4 2001/09/12 13:23:54 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 // CBasisEdit dialog
 
 
-CBasisEdit::CBasisEdit(const std::string &, CWnd* pParent /*=NULL*/)
+CBasisEdit::CBasisEdit(CWnd* pParent /*=NULL*/)
 {
 	//{{AFX_DATA_INIT(CBasisEdit)
 	m_Psi = 0;

@@ -1,7 +1,7 @@
 /** \file animation_time.h
  * <File description>
  *
- * $Id: animation_time.h,v 1.1 2001/02/05 16:52:44 corvazier Exp $
+ * $Id: animation_time.h,v 1.2 2001/03/13 17:05:58 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NL3D
 
 
 /**
- * Animation time unit.
+ * Animation time in second.
  *
  * \author Cyril 'Hulud' Corvazier
  * \author Nevrax France

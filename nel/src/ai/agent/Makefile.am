@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.19 2001/10/04 14:11:37 chafik Exp $
+# $Id: Makefile.am,v 1.20 2001/10/11 08:27:54 chafik Exp $
 #
 
 MAINTAINERCLEANFILES    = Makefile.in
@@ -22,8 +22,7 @@ libagent_la_SOURCES     = baseai.cpp \
                           actor_script.cpp \
                           agent_string.cpp \
                           agent_script.cpp \
-                          agent_timer.cpp \
-                          gd_agent_script.cpp \
+                          agent_timer.cpp \                          
                           ident.cpp \
                           init_agent.cpp \
                           msg_container.cpp \

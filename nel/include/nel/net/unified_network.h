@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.45 2004/06/14 15:04:41 cado Exp $
+ * $Id: unified_network.h,v 1.46 2004/07/12 14:07:41 miller Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -524,9 +524,9 @@ private:
 	friend void	uncbMsgProcessing(CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 	friend void	uNetRegistrationBroadcast(const std::string &name, TServiceId sid, const std::vector<CInetAddress> &addr);
 	friend void	uNetUnregistrationBroadcast(const std::string &name, TServiceId sid, const std::vector<CInetAddress> &addr);
-	friend struct isServiceLocalClass;
-	friend struct l5CallbackClass;
-	friend struct l5QueuesStatsClass;
+	friend struct nel_isServiceLocalClass;
+	friend struct nel_l5CallbackClass;
+	friend struct nel_l5QueuesStatsClass;
 };
 
 

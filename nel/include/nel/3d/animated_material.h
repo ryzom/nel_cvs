@@ -1,7 +1,7 @@
 /** \file animated_material.h
  * <File description>
  *
- * $Id: animated_material.h,v 1.4 2001/03/28 10:31:09 berenguier Exp $
+ * $Id: animated_material.h,v 1.5 2001/04/03 07:51:18 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,12 +73,9 @@ public:
 	CTrackDefaultRGBA		DefaultDiffuse;
 	CTrackDefaultRGBA		DefaultSpecular;
 	CTrackDefaultFloat		DefaultShininess;
-	CTrackDefaultFloat		DefaultEmissive;
+	CTrackDefaultRGBA		DefaultEmissive;
 	CTrackDefaultFloat		DefaultOpacity;
 	CTrackDefaultInt		DefaultTexture;
-
-	// RGB emissive factor.
-	NLMISC::CRGBA			EmissiveFactor;
 
 
 	/// save/load.
@@ -215,15 +212,12 @@ private:
 	// The material.
 	CRefPtr<CMaterial>		_Material;
 
-	// RGB emissive factor.
-	NLMISC::CRGBA			_EmissiveFactor;
-
 	// AnimValues.
 	CAnimatedValueRGBA		_Ambient;
 	CAnimatedValueRGBA		_Diffuse;
 	CAnimatedValueRGBA		_Specular;
 	CAnimatedValueFloat		_Shininess;
-	CAnimatedValueFloat		_Emissive;
+	CAnimatedValueRGBA		_Emissive;
 	CAnimatedValueFloat		_Opacity;
 	CAnimatedValueInt		_Texture;
 

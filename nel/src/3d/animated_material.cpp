@@ -1,7 +1,7 @@
 /** \file animated_material.cpp
  * <File description>
  *
- * $Id: animated_material.cpp,v 1.5 2001/03/28 10:33:00 berenguier Exp $
+ * $Id: animated_material.cpp,v 1.6 2001/04/03 07:51:18 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -64,12 +64,9 @@ CMaterialBase::CMaterialBase()
 	DefaultDiffuse.setValue(CRGBA(128,128,128));
 	DefaultSpecular.setValue(CRGBA(0,0,0));
 	DefaultShininess.setValue(10);
-	DefaultEmissive.setValue(1);
+	DefaultEmissive.setValue(CRGBA(128,128,128));
 	DefaultOpacity.setValue(1);
 	DefaultTexture.setValue(0x7FFFFFFF);
-
-
-	EmissiveFactor.set(0,0,0,0);
 }
 
 
@@ -81,7 +78,6 @@ void	CMaterialBase::serial(NLMISC::IStream &f)
 	f.serial(Name);
 	f.serial(DefaultAmbient, DefaultDiffuse, DefaultSpecular);
 	f.serial(DefaultShininess, DefaultEmissive, DefaultOpacity, DefaultTexture);
-	f.serial(EmissiveFactor);
 
 	f.serialMap(_AnimatedTextures);
 }
@@ -94,10 +90,8 @@ void	CMaterialBase::copyFromMaterial(CMaterial *pMat)
 	DefaultDiffuse.setValue(pMat->getDiffuse());
 	DefaultSpecular.setValue(pMat->getSpecular());
 	DefaultShininess.setValue(pMat->getShininess());
-	DefaultEmissive.setValue(1);
+	DefaultEmissive.setValue(pMat->getEmissive());
 	DefaultOpacity.setValue(pMat->getDiffuse().A/255.f);
-
-	EmissiveFactor= pMat->getEmissive();
 }
 
 
@@ -140,8 +134,6 @@ CAnimatedMaterial::CAnimatedMaterial(CMaterialBase *baseMat)
 	nlassert(baseMat);
 	_MaterialBase= baseMat;
 
-	_EmissiveFactor= _MaterialBase->EmissiveFactor;
-
 	_Ambient.affect(_MaterialBase->DefaultAmbient.getValue());
 	_Diffuse.affect(_MaterialBase->DefaultDiffuse.getValue());
 	_Specular.affect(_MaterialBase->DefaultSpecular.getValue());
@@ -177,20 +169,14 @@ void	CAnimatedMaterial::update()
 	{
 		// well, just update all...  :)
 
-		// em part.
-		CRGBA	em= _EmissiveFactor;
-		sint	c= (sint)(_Emissive.Value*255);
-		clamp(c, 0, 255);
-		em.blendFromui(CRGBA(0,0,0,0), em, c);
-
 		// diffuse part.
 		CRGBA	diff= _Diffuse.Value;
-		c= (sint)(_Opacity.Value*255);
+		sint c= (sint)(_Opacity.Value*255);
 		clamp(c, 0, 255);
 		diff.A= c;
 
 		// setup material.
-		_Material->setLighting(true, false, em, _Ambient.Value, diff, _Specular.Value, _Shininess.Value);
+		_Material->setLighting(true, false, _Emissive.Value, _Ambient.Value, diff, _Specular.Value, _Shininess.Value);
 
 		// clear flags.
 		clearFlag(AmbientValue);

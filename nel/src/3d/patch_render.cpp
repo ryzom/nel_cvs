@@ -1,7 +1,7 @@
 /** \file patch_render.cpp
  * CPatch implementation of render: VretexBuffer and PrimitiveBlock build.
  *
- * $Id: patch_render.cpp,v 1.13 2002/08/21 09:39:52 lecroart Exp $
+ * $Id: patch_render.cpp,v 1.14 2002/08/26 13:01:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -339,12 +339,12 @@ void			CPatch::preRender()
 	// This patch is visible. So if good far, append.
 	if(Far0>0)
 	{
-		Pass0.PatchRdrPass->appendRdrPatchFar0(&Pass0);
+		Pass0.PatchRdrPass->appendRdrPatchFar0(&Pass0, NumRenderableFaces);
 	}
 	// Same for Far1.
 	if(Far1>0)
 	{
-		Pass1.PatchRdrPass->appendRdrPatchFar1(&Pass1);
+		Pass1.PatchRdrPass->appendRdrPatchFar1(&Pass1, NumRenderableFaces);
 	}
 
 
@@ -388,7 +388,7 @@ void			CPatch::preRender()
 					// If tile exist
 					if(tblock.RdrTileRoot[j])
 						// add it to the renderList
-						tblock.RdrTileRoot[j]->appendTileToEachRenderPass();
+						tblock.RdrTileRoot[j]->appendTileToEachRenderPass(NumRenderableFaces);
 				}
 			}	
 		}
@@ -471,19 +471,53 @@ static	inline	void	renderFaceVector(CLandscapeFaceVector *fv)
 	// If not NULL (ie not empty).
 	if(fv)
 	{
+		// TestYoyo: Bench.
+		/*
+		extern	uint	TEMP_NRFV;
+		extern	uint	TEMP_NRFVTri;
+		extern	float	TEMP_NRFVMeanTri;
+		extern	float	TEMP_NRFVDeltaTri;
+		TEMP_NRFV++;
+		TEMP_NRFVTri+= fv->NumTri;
+		TEMP_NRFVDeltaTri+= sqr(fv->NumTri-TEMP_NRFVMeanTri);
+		*/
+
 		// here we have NumTri>0, because fv!=NULL.
 
 		// making lot of render() is slower than copy a block, and render it.
 		//CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(fv->TriPtr, fv->NumTri);
 
+#ifdef	NL_OS_WINDOWS
+		__asm
+		{
+			mov		ebx, fv
+			mov		edi, NL3D_LandscapeGlobals_PassTriCurPtr
+
+			mov		edx, NL3D_LandscapeGlobals_PassNTri
+			xor		eax, eax		// Avoid AGI stall.
+
+			mov		ecx, [ebx]fv.NumTri
+			mov		esi, [ebx]fv.TriPtr
+
+			mov		eax, ecx				// eax= bkup NumTris
+			lea		ecx, [ecx + ecx*2]		// ecx= nTriIndex= NumTris*3
+
+			// copy tri indices
+			rep		movsd
+
+			add		edx, eax				// edx= NL3D_LandscapeGlobals_PassNTri + fv->NumTri;
+
+			// NL3D_LandscapeGlobals_PassTriCurPtr= edi= new ptr after copy
+			mov		NL3D_LandscapeGlobals_PassTriCurPtr, edi
+			mov		NL3D_LandscapeGlobals_PassNTri, edx
+		}
+#else
 		uint	nTriIndex= fv->NumTri*3;
-		uint	oldSize= CLandscapeGlobals::PassNTri*3;
-		// realloc if necessary
-		if( CLandscapeGlobals::PassTriArray.size() < oldSize + nTriIndex )
-			CLandscapeGlobals::PassTriArray.resize( oldSize + nTriIndex );
 		// Fill and increment the array.
-		memcpy( &CLandscapeGlobals::PassTriArray[oldSize], fv->TriPtr, nTriIndex * sizeof(uint32) );
-		CLandscapeGlobals::PassNTri+= fv->NumTri;
+		memcpy( NL3D_LandscapeGlobals_PassTriCurPtr, fv->TriPtr, nTriIndex * sizeof(uint32) );
+		NL3D_LandscapeGlobals_PassTriCurPtr+= nTriIndex;
+		NL3D_LandscapeGlobals_PassNTri+= fv->NumTri;
+#endif
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.122 2002/08/23 16:32:51 berenguier Exp $
+ * $Id: landscape.cpp,v 1.123 2002/08/26 13:01:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -262,6 +262,11 @@ CLandscape::CLandscape() :
 	_TextureDLM= new CTextureDLM(NL3D_LANDSCAPE_DLM_WIDTH, NL3D_LANDSCAPE_DLM_HEIGHT);
 	_PatchDLMContextList= new CPatchDLMContextList;
 	_DLMMaxAttEnd= 30.f;
+
+
+	// Alloc some global space for tri rendering.
+	if( CLandscapeGlobals::PassTriArray.size() < 1000 )
+		CLandscapeGlobals::PassTriArray.resize( 1000 );
 
 }
 // ***************************************************************************
@@ -906,13 +911,25 @@ void			CLandscape::updateTessBlocksFaceVector()
 
 
 // ***************************************************************************
+static inline void	initPassTriArray(CPatchRdrPass &pass)
+{
+	uint	numIndices= pass.getMaxRenderedFaces()*3;
+	// realloc if necessary
+	if( CLandscapeGlobals::PassTriArray.size() < numIndices )
+		CLandscapeGlobals::PassTriArray.resize( numIndices );
+	// reset ptr.
+	NL3D_LandscapeGlobals_PassTriCurPtr= &CLandscapeGlobals::PassTriArray[0];
+}
+
+
+// ***************************************************************************
 static inline void	drawPassTriArray(CMaterial &mat)
 {
-	if(CLandscapeGlobals::PassNTri>0)
+	if(NL3D_LandscapeGlobals_PassNTri>0)
 	{
 		CLandscapeGlobals::PatchCurrentDriver->setupMaterial(mat);
-		CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(&CLandscapeGlobals::PassTriArray[0], CLandscapeGlobals::PassNTri);
-		CLandscapeGlobals::PassNTri= 0;
+		CLandscapeGlobals::PatchCurrentDriver->renderSimpleTriangles(&CLandscapeGlobals::PassTriArray[0], NL3D_LandscapeGlobals_PassNTri);
+		NL3D_LandscapeGlobals_PassNTri= 0;
 	}
 }
 
@@ -1250,6 +1267,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				// that don't affect the operator< of this class
 				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
 
+				// Enlarge PassTriArray as needed
+				initPassTriArray(pass);
+
 				// Setup Diffuse texture of the tile.
 				TileMaterial.setTexture(0, pass.TextureDiffuse);
 
@@ -1289,6 +1309,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 			{
 				CPatchRdrPass	&pass= *_TextureNears[lightRdrPass];
 
+				// Enlarge PassTriArray as needed
+				initPassTriArray(pass);
+
 				// Setup Lightmap into stage1. Because we share UV with pass RGB0. So we use UV1.
 				// Also, now stage0 is used for DynamicLightmap
 				TileMaterial.setTexture(1, pass.TextureDiffuse);
@@ -1325,6 +1348,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				// that don't affect the operator< of this class
 				CPatchRdrPass	&pass= const_cast<CPatchRdrPass&>(*itTile);
 
+				// Enlarge PassTriArray as needed
+				initPassTriArray(pass);
+
 				// Add triangles to array
 				CRdrTileId		*tileToRdr= pass.getRdrTileRoot(passOrder);
 				while(tileToRdr)
@@ -1335,7 +1361,7 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 				}
 
 				// Pass not empty ?
-				if(CLandscapeGlobals::PassNTri>0)
+				if(NL3D_LandscapeGlobals_PassNTri>0)
 				{
 					// Setup material.
 					// Setup Diffuse texture of the tile.
@@ -1397,6 +1423,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	{
 		CPatchRdrPass	&pass= **itFar;
 
+		// Enlarge PassTriArray as needed
+		initPassTriArray(pass);
+
 		// Setup the material.
 		FarMaterial.setTexture(0, pass.TextureDiffuse);
 		// If the texture need to be updated, do it now.
@@ -1444,6 +1473,9 @@ void			CLandscape::render(const CVector &refineCenter, const CVector &frontVecto
 	while (itFar!=_FarRdrPassSet.end())
 	{
 		CPatchRdrPass	&pass= **itFar;
+
+		// Enlarge PassTriArray as needed
+		initPassTriArray(pass);
 
 		// Setup the material.
 		FarMaterial.setTexture(0, pass.TextureDiffuse);

@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
  * <File description>
  *
- * $Id: patch_rdr_pass.h,v 1.3 2001/09/24 12:22:48 berenguier Exp $
+ * $Id: patch_rdr_pass.h,v 1.4 2002/08/26 13:01:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -98,26 +98,35 @@ public:
 
 
 	/// \name The Patch/Tile List for this pass.. updated at each render(), (in CPatch::preRender() and CLandscape::render()).
+	/**	
+	 *	maxRenderedFaces is used to over-estimate the number of faces that will be rendered in this pass.
+	 *	Since all Far0/Far1/Tiles are added, this is REALLY over-estimated because in CLandscape::render(),
+	 *	Far0/Far1/Tiles render are split.
+	 */
 	// @{
 	void		clearAllRenderList();
-	void		appendRdrPatchFar0(CRdrPatchId *rdrPatch)
+	void		appendRdrPatchFar0(CRdrPatchId *rdrPatch, uint maxRenderedFaces)
 	{
+		_MaxRenderedFaces+= maxRenderedFaces;
 		rdrPatch->_Next= _Far0ListRoot;
 		_Far0ListRoot= rdrPatch;
 	}
-	void		appendRdrPatchFar1(CRdrPatchId *rdrPatch)
+	void		appendRdrPatchFar1(CRdrPatchId *rdrPatch, uint maxRenderedFaces)
 	{
+		_MaxRenderedFaces+= maxRenderedFaces;
 		rdrPatch->_Next= _Far1ListRoot;
 		_Far1ListRoot= rdrPatch;
 	}
-	void		appendRdrPatchTile(uint pass, CRdrTileId *rdrTile)
+	void		appendRdrPatchTile(uint pass, CRdrTileId *rdrTile, uint maxRenderedFaces)
 	{
+		_MaxRenderedFaces+= maxRenderedFaces;
 		rdrTile->_Next= _TileListRoot[pass];
 		_TileListRoot[pass]= rdrTile;
 	}
 	CRdrPatchId *getRdrPatchFar0() {return _Far0ListRoot;}
 	CRdrPatchId *getRdrPatchFar1() {return _Far1ListRoot;}
 	CRdrTileId  *getRdrTileRoot(uint pass) {return _TileListRoot[pass];}
+	uint		getMaxRenderedFaces() const {return _MaxRenderedFaces;}
 	// @}
 
 
@@ -135,6 +144,7 @@ public:
 	}
 
 private:
+	uint				_MaxRenderedFaces;
 	// The list for Far0 and Far1 to render.
 	CRdrPatchId			*_Far0ListRoot;
 	CRdrPatchId			*_Far1ListRoot;

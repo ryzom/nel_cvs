@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.89 2002/08/23 16:32:51 berenguier Exp $
+ * $Id: patch.cpp,v 1.90 2002/08/26 13:01:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,7 @@ CPatch::CPatch()
 	Clipped=false;
 	RenderClipped= true;
 	OldRenderClipped= true;
+	NumRenderableFaces= 0;
 
 	// for Pacs process. By default, false.
 	ExcludeFromRefineAll= false;
@@ -695,6 +696,7 @@ void			CPatch::resetMasterBlock()
 
 	MasterBlock.FarVertexList.clear();
 	MasterBlock.FarFaceList.clear();
+	NumRenderableFaces= 0;
 	// no tiles should be here!!
 	nlassert(MasterBlock.NearVertexList.size()==0);
 }
@@ -780,6 +782,9 @@ void			CPatch::dirtTessBlockFaceVector(CTessBlock &tb)
 // ***************************************************************************
 void			CPatch::appendFaceToRenderList(CTessFace *face)
 {
+	// Update the number of renderable Faces
+	NumRenderableFaces++;
+
 	// Update Gnal render.
 	//====================
 	if(face->Level<TessBlockLimitLevel)
@@ -825,6 +830,10 @@ void			CPatch::appendFaceToRenderList(CTessFace *face)
 // ***************************************************************************
 void			CPatch::removeFaceFromRenderList(CTessFace *face)
 {
+	// Update the number of renderable Faces
+	NumRenderableFaces--;
+	nlassert(NumRenderableFaces>=0);
+
 	// Update Gnal render.
 	//====================
 	if(face->Level<TessBlockLimitLevel)

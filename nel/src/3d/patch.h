@@ -1,7 +1,7 @@
 /** \file patch.h
  * <File description>
  *
- * $Id: patch.h,v 1.31 2002/08/21 17:14:47 berenguier Exp $
+ * $Id: patch.h,v 1.32 2002/08/26 13:01:42 berenguier Exp $
  * \todo yoyo:
 		- "UV correction" infos.
 		- NOISE, or displacement map (ptr/index).
@@ -873,6 +873,8 @@ private:
 	std::vector<CTessBlock>		TessBlocks;
 	// The counter of faces which need TessBlocks (FarFaces, TileMaterial and FarVertices). When 0, the vector is contReset()-ed.
 	sint						TessBlockRefCount;
+	// Tells how many Renderable Face this Patch has. updated in append/remove/FaceToRenderList()
+	sint						NumRenderableFaces;
 	// @}
 
 

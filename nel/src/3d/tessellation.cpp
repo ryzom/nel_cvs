@@ -1,7 +1,7 @@
 /** \file tessellation.cpp
  * <File description>
  *
- * $Id: tessellation.cpp,v 1.64 2002/08/23 16:32:52 berenguier Exp $
+ * $Id: tessellation.cpp,v 1.65 2002/08/26 13:01:42 berenguier Exp $
  *
  */
 
@@ -80,7 +80,7 @@ CTileMaterial::CTileMaterial()
 
 
 // ***************************************************************************
-void		CTileMaterial::appendTileToEachRenderPass()
+void		CTileMaterial::appendTileToEachRenderPass(uint patchNumRenderableFaces)
 {
 	for(uint i=0;i<NL3D_MAX_TILE_PASS;i++)
 	{
@@ -88,7 +88,15 @@ void		CTileMaterial::appendTileToEachRenderPass()
 		CPatchRdrPass	*rdrPass= Pass[i].PatchRdrPass;
 		if(rdrPass!=NULL)
 		{
-			rdrPass->appendRdrPatchTile(i, &Pass[i]);
+			/* enlarge the capacity of the pass so it can renders the tile faces of this patch.
+			 *	NumRenderableFaces is really too big since the tile-material surely doesn't use all
+			 *	faces of the patch (except if same texture...)
+			 *	But doesn't matter. Even if all the visible Tile Surface (80m*80m) is in the same pass,
+			 *	it leads to only 76K final in CLandscapeGlobals::PassTriArray:
+			 *	80*80(Visible surface at 80m max) /4 (2m*2m) *2(triangles) *2 (over-estimate) *3*4(triSize)=
+			 *	76800
+			 */
+			rdrPass->appendRdrPatchTile(i, &Pass[i], patchNumRenderableFaces);
 		}
 	}
 }

@@ -1,7 +1,7 @@
 /** \file tessellation.h
  * <File description>
  *
- * $Id: tessellation.h,v 1.15 2002/08/23 16:32:52 berenguier Exp $
+ * $Id: tessellation.h,v 1.16 2002/08/26 13:01:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -191,7 +191,7 @@ struct	CTileMaterial
 	CTileMaterial();
 
 	// For fast Tile clipping, may add only tiles which are visibles in RenderPass. (see preRender()).
-	void			appendTileToEachRenderPass();
+	void			appendTileToEachRenderPass(uint patchNumRenderableFaces);
 
 	// Render of this tile. code in patch_render.cpp. use pass to acces both Pass[] and TileFaceVectors[].
 	// So don't work for lightmap.

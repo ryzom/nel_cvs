@@ -1,7 +1,7 @@
 /** \file landscape_def.h
  * Global Definitions for Landscape
  *
- * $Id: landscape_def.h,v 1.10 2002/08/23 16:32:51 berenguier Exp $
+ * $Id: landscape_def.h,v 1.11 2002/08/26 13:01:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,10 +160,14 @@ public:
 	static IDriver				*PatchCurrentDriver;
 	// The triangles array for the current pass rendered.
 	static std::vector<uint32>	PassTriArray;
-	static uint					PassNTri;
-
 
 };
+
+
+// ***************************************************************************
+// Out of CLandscapeGlobals, because myabe used in __asm{}
+extern	uint		NL3D_LandscapeGlobals_PassNTri;
+extern	uint32		*NL3D_LandscapeGlobals_PassTriCurPtr;
 
 
 

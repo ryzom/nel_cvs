@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.cpp
  * <File description>
  *
- * $Id: patch_rdr_pass.cpp,v 1.10 2002/02/28 12:59:50 besson Exp $
+ * $Id: patch_rdr_pass.cpp,v 1.11 2002/08/26 13:01:42 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -63,6 +63,7 @@ CPatchRdrPass::CPatchRdrPass()
 // ***************************************************************************
 void	CPatchRdrPass::clearAllRenderList()
 {
+	_MaxRenderedFaces= 0;
 	_Far0ListRoot= NULL;
 	_Far1ListRoot= NULL;
 	for(uint i=0;i<NL3D_MAX_TILE_PASS; i++)

@@ -1,3 +1,5 @@
+@echo off
+
 mkdir output 2> null
 mkdir zones 2> null
 mkdir zoneLigos 2> null

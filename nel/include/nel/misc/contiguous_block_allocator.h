@@ -1,6 +1,6 @@
 /** \file contiguous_block_allocator.h
  *
- * $Id: contiguous_block_allocator.h,v 1.2 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: contiguous_block_allocator.h,v 1.3 2004/04/09 14:17:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -64,7 +64,7 @@ public:
 	// allocated a block of n bytes
 	void *alloc(uint numBytes);
 	// deallocate a block
-	void free(void *block);
+	void free(void *block, uint numBytes);
 	// compute the total number of bytes allocated since init 
 	// NB : freed block are not subtracted from that total !!
 	uint getNumAllocatedBytes() const { return _NumAllocatedBytes; }

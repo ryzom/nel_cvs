@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.6 2000/12/04 13:21:40 berenguier Exp $
+ * $Id: nelu.h,v 1.7 2000/12/04 14:29:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,10 +30,15 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/3d/scene.h"
 #include "nel/3d/dru.h"
+#include "nel/misc/event_server.h"
+#include "nel/misc/event_listener.h"
 
 
 namespace NL3D 
 {
+
+
+using NLMISC::CSmartPtr;
 
 
 /**
@@ -44,6 +49,7 @@ namespace NL3D
  * models/observers after, or even before CNELU::init3d().
  *
  * If your app want to add funky traversals, it MUST NOT use CNELU (see CScene for more information...).
+ * NB: actually it may use yet initDriver() and initEventServer() but not initScene()...
  *
  * \author Lionel Berenguier
  * \author Nevrax France
@@ -58,35 +64,70 @@ public:
 	static const float		DefLzNear;	//=0.15f;
 	static const float		DefLzFar;	//=1000.0f;
 
-public:
-	static NLMISC::CSmartPtr<CCamera>	Camera;
 
 public:
-
 	/** Init all that we need for a single GL window:
 	 * - create / init / openWindow / activate a IDriver.
+	 *
+	 * You can access the driver with CNELU::Driver.
+	 */
+	static void		initDriver(uint w, uint h, uint bpp=32, bool windowed=true) throw(EDru);
+
+	/** Init all that we need for a Scene.
 	 * - register scene basics models, 
 	 * - init the scene, with basic Traversals, 
 	 * - create a default camera, linked to the scene, and with default frustum as specified above.
 	 *
 	 * After creation, use the CNELU::Camera to manipulates the camera of scene (but you may change all you want 
 	 * to this camera or create/use an other camera if you want...)
-	 *
-	 * You can retrieve the created driver with scene.getDriver(). Usefull for window message processing as example.
-	 * \param scene a non-inited CScene.
+	 * \param viewport the viewport, fullscreen by default.
 	 */
-	static void		init3d(CScene &scene, uint w, uint h, const class CViewport& viewport, uint bpp=32, bool windowed=true) throw(EDru);
+	static void		initScene(CViewport viewport=CViewport());
 
-	/** Delete all 3d:
-	 * - delete the camera.
-	 * - release scene.
-	 * - release / delete Driver.
-	 *
+	/** Init all that we need for a window message processing:
+	 * - a server.
+	 * - an asynclistener for get async key states.
 	 */
-	static void		release3d(CScene &scn);
+	static void		initEventServer();
+
+
+	/** Release / delete the driver. (close window etc...)
+	 */
+	static void		releaseDriver();
+
+	/** Release the scene.
+	 */
+	static void		releaseScene();
+
+	/** Release the event server and the asynclistener.
+	 */
+	static void		releaseEventServer();
+
 
 public:
-	static IDriver	*Driver;
+
+	/** Init all NELU
+	 * - initDriver();
+	 * - initScene();
+	 * - initEventServer();
+	 */
+	static void		init(uint w, uint h, CViewport viewport=CViewport(), uint bpp=32, bool windowed=true) throw(EDru);
+
+	/** Delete all:
+	 * - releaseEventServer();
+	 * - releaseScene()
+	 * - releaseDriver().
+	 */
+	static void		release();
+
+
+public:
+	static IDriver				*Driver;
+	static CScene				Scene;
+	static CSmartPtr<CCamera>	Camera;
+	static NLMISC::CEventServer			EventServer;
+	static NLMISC::CEventListenerAsync	AsyncListener;
+
 };
 
 

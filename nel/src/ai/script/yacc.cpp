@@ -1,6 +1,6 @@
 /** \file yacc.cpp
  *
- * $Id: yacc.cpp,v 1.26 2001/10/24 10:24:17 chafik Exp $
+ * $Id: yacc.cpp,v 1.27 2001/10/24 13:40:16 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1005,5 +1005,21 @@ namespace NLAISCRIPT
 		bool state = computContraint();
 		((NLAIAGENT::IObjectIA *)_SelfClass.pop())->release();
 		return state;
+	}
+
+	bool CCompilateur::definClass(const char *className)
+	{
+		try
+		{
+			NLAIC::CIdentType id(className);
+			return false;
+		}
+		catch(NLAIE::IException &)
+		{
+			( (IClassInterpret *) _SelfClass.get() )->setClassName(NLAIAGENT::CStringVarName(className));
+			( (IClassInterpret *) _SelfClass.get() )->buildVTable();
+			RegisterClass();
+			return true;
+		}
 	}
 }

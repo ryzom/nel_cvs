@@ -1,7 +1,7 @@
 /** \file compilateur.h
  * Includes all for compiling a script.
  *
- * $Id: compilateur.h,v 1.24 2001/07/06 08:23:22 portier Exp $
+ * $Id: compilateur.h,v 1.25 2001/10/24 13:40:29 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -480,6 +480,7 @@ namespace NLAISCRIPT
 		void initMessageManager();
 		bool endMessageManager();
 		bool caseRunMsg();
+		bool definClass(const char *className);
 
 
 		/// Logic compilation

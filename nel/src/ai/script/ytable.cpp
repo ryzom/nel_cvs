@@ -286,32 +286,32 @@ static const short yyrhs[] = {    96,
 #if YYDEBUG != 0
 static const short yyrline[] = { 0,
     67,    71,    74,    82,    88,    91,    95,   101,   107,   117,
-   120,   136,   138,   139,   158,   161,   164,   165,   167,   168,
-   171,   172,   175,   176,   177,   185,   188,   191,   192,   195,
-   196,   199,   203,   213,   213,   223,   225,   226,   227,   228,
-   229,   230,   235,   251,   258,   272,   275,   281,   301,   303,
-   324,   326,   347,   352,   359,   382,   384,   390,   397,   405,
-   412,   412,   427,   442,   453,   511,   513,   521,   528,   532,
-   536,   539,   548,   552,   556,   561,   563,   571,   572,   575,
-   634,   634,   695,   703,   713,   714,   717,   722,   727,   731,
-   737,   738,   741,   742,   745,   749,   754,   759,   766,   769,
-   770,   773,   780,   781,   782,   783,   786,   787,   788,   789,
-   796,   823,   828,   836,   838,   848,   860,   861,   866,   869,
-   876,   877,   885,   887,   894,   907,   911,   918,   926,   927,
-   930,   936,   942,   949,   954,   960,   961,   962,   963,   966,
-   967,   971,   972,   978,   978,   982,   988,   990,   996,  1011,
-  1012,  1015,  1016,  1019,  1020,  1023,  1025,  1028,  1036,  1042,
-  1054,  1059,  1070,  1075,  1086,  1096,  1102,  1113,  1118,  1128,
-  1133,  1143,  1148,  1158,  1163,  1168,  1176,  1180,  1191,  1197,
-  1209,  1217,  1223,  1228,  1233,  1238,  1243,  1248,  1253,  1258,
-  1263,  1269,  1279,  1284,  1288,  1292,  1296,  1300,  1304,  1308,
-  1312,  1316,  1323,  1332,  1344,  1352,  1370,  1375,  1378,  1384,
-  1388,  1394,  1399,  1404,  1405,  1409,  1416,  1423,  1429,  1433,
-  1444,  1447,  1452,  1463,  1467,  1471,  1475,  1482,  1488,  1500,
-  1509,  1519,  1526,  1532,  1539,  1541,  1551,  1556,  1558,  1563,
-  1566,  1571,  1576,  1582,  1586,  1593,  1598,  1603,  1607,  1611,
-  1614,  1632,  1637,  1643,  1648,  1653,  1657,  1663,  1667,  1672,
-  1674
+   120,   136,   138,   139,   151,   154,   157,   158,   160,   161,
+   164,   165,   168,   169,   170,   178,   181,   184,   185,   188,
+   189,   192,   196,   206,   206,   216,   218,   219,   220,   221,
+   222,   223,   228,   244,   251,   265,   268,   274,   294,   296,
+   317,   319,   340,   345,   352,   375,   377,   383,   390,   398,
+   405,   405,   420,   435,   446,   504,   506,   514,   521,   525,
+   529,   532,   541,   545,   549,   554,   556,   564,   565,   568,
+   627,   627,   688,   696,   706,   707,   710,   715,   720,   724,
+   730,   731,   734,   735,   738,   742,   747,   752,   759,   762,
+   763,   766,   773,   774,   775,   776,   779,   780,   781,   782,
+   789,   816,   821,   829,   831,   841,   853,   854,   859,   862,
+   869,   870,   878,   880,   887,   900,   904,   911,   919,   920,
+   923,   929,   935,   942,   947,   953,   954,   955,   956,   959,
+   960,   964,   965,   971,   971,   975,   981,   983,   989,  1004,
+  1005,  1008,  1009,  1012,  1013,  1016,  1018,  1021,  1029,  1035,
+  1047,  1052,  1063,  1068,  1079,  1089,  1095,  1106,  1111,  1121,
+  1126,  1136,  1141,  1151,  1156,  1161,  1169,  1173,  1184,  1190,
+  1202,  1210,  1216,  1221,  1226,  1231,  1236,  1241,  1246,  1251,
+  1256,  1262,  1272,  1277,  1281,  1285,  1289,  1293,  1297,  1301,
+  1305,  1309,  1316,  1325,  1337,  1345,  1363,  1368,  1371,  1377,
+  1381,  1387,  1392,  1397,  1398,  1402,  1409,  1416,  1422,  1426,
+  1437,  1440,  1445,  1456,  1460,  1464,  1468,  1475,  1481,  1493,
+  1502,  1512,  1519,  1525,  1532,  1534,  1544,  1549,  1551,  1556,
+  1559,  1564,  1569,  1575,  1579,  1586,  1591,  1596,  1600,  1604,
+  1607,  1625,  1630,  1636,  1641,  1646,  1650,  1656,  1660,  1665,
+  1667
 };
 #endif
 
@@ -1260,31 +1260,24 @@ case 11:
     break;}
 case 14:
 #line 140 "grammar.yacc"
-{
-								try
+{								
+								if(!definClass(LastyyText[1]))
 								{
-									NLAIC::CIdentType id(LastyyText[1]);
 									char text[1024*4];
 									sprintf(text,"class '%s' all ready exist",LastyyText[1]);
 									yyerror(text);
 									return 0;
 								}
-								catch(NLAIE::IException &)
-								{
-									( (IClassInterpret *) _SelfClass.get() )->setClassName(NLAIAGENT::CStringVarName(LastyyText[1]));
-									( (IClassInterpret *) _SelfClass.get() )->buildVTable();
-									RegisterClass();
-								}
 							;
     break;}
 case 15:
-#line 159 "grammar.yacc"
+#line 152 "grammar.yacc"
 {
 								((IClassInterpret *)_SelfClass.get())->setClassName(NLAIAGENT::CStringVarName(LastyyText[1]));
 							;
     break;}
 case 25:
-#line 178 "grammar.yacc"
+#line 171 "grammar.yacc"
 {
 								if ( classIsAnOperator() )
 								{
@@ -1294,7 +1287,7 @@ case 25:
 							;
     break;}
 case 33:
-#line 204 "grammar.yacc"
+#line 197 "grammar.yacc"
 {
 #ifdef NL_DEBUG
 								const char *dbg_y0 = LastyyText[0];
@@ -1305,7 +1298,7 @@ case 33:
 							;
     break;}
 case 35:
-#line 214 "grammar.yacc"
+#line 207 "grammar.yacc"
 {
 #ifdef NL_DEBUG
 								const char *dbg_y0 = LastyyText[0];
@@ -1316,7 +1309,7 @@ case 35:
 							;
     break;}
 case 43:
-#line 238 "grammar.yacc"
+#line 231 "grammar.yacc"
 {
 								char *txt1 = LastyyText[0];
 								char *txt2 = LastyyText[1];
@@ -1330,7 +1323,7 @@ case 43:
 							;
     break;}
 case 44:
-#line 252 "grammar.yacc"
+#line 245 "grammar.yacc"
 {
 								is_cond = true;
 								initParam();
@@ -1338,7 +1331,7 @@ case 44:
 							;
     break;}
 case 45:
-#line 258 "grammar.yacc"
+#line 251 "grammar.yacc"
 {
 								// Adds the conds to the operator class
 								if ( classIsAnOperator() )
@@ -1354,14 +1347,14 @@ case 45:
 							;
     break;}
 case 47:
-#line 276 "grammar.yacc"
+#line 269 "grammar.yacc"
 {
 								if ( !classIsAnOperator() )
 								 	return 0;
 							;
     break;}
 case 48:
-#line 282 "grammar.yacc"
+#line 275 "grammar.yacc"
 {
 								if ( _Goal ) 
 								{
@@ -1382,7 +1375,7 @@ case 48:
 							;
     break;}
 case 50:
-#line 304 "grammar.yacc"
+#line 297 "grammar.yacc"
 {
 									if ( classIsAnOperator() )
 									{
@@ -1404,7 +1397,7 @@ case 50:
 								;
     break;}
 case 52:
-#line 327 "grammar.yacc"
+#line 320 "grammar.yacc"
 {
 									if ( classIsAnOperator() )
 									{
@@ -1426,7 +1419,7 @@ case 52:
 								;
     break;}
 case 54:
-#line 353 "grammar.yacc"
+#line 346 "grammar.yacc"
 {
 								is_cond = false;
 								initParam();
@@ -1434,7 +1427,7 @@ case 54:
 							;
     break;}
 case 55:
-#line 359 "grammar.yacc"
+#line 352 "grammar.yacc"
 {
 								// Adds the conds to the operator class
 								if ( classIsAnOperator() )
@@ -1459,7 +1452,7 @@ case 55:
 							;
     break;}
 case 57:
-#line 385 "grammar.yacc"
+#line 378 "grammar.yacc"
 {
 #ifdef NL_DEBUG
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
@@ -1467,7 +1460,7 @@ case 57:
 							;
     break;}
 case 58:
-#line 391 "grammar.yacc"
+#line 384 "grammar.yacc"
 {
 #ifdef NL_DEBUG
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
@@ -1475,7 +1468,7 @@ case 58:
 							;
     break;}
 case 59:
-#line 397 "grammar.yacc"
+#line 390 "grammar.yacc"
 {
 #ifdef NL_DEBUG
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
@@ -1483,7 +1476,7 @@ case 59:
 							;
     break;}
 case 60:
-#line 406 "grammar.yacc"
+#line 399 "grammar.yacc"
 {
 #ifdef NL_DEBUG
 								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
@@ -1491,7 +1484,7 @@ case 60:
 							;
     break;}
 case 62:
-#line 413 "grammar.yacc"
+#line 406 "grammar.yacc"
 {
 								if ( classIsAnOperator() )
 								{
@@ -1508,7 +1501,7 @@ case 62:
 							;
     break;}
 case 63:
-#line 429 "grammar.yacc"
+#line 422 "grammar.yacc"
 {									
 								COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
 								while ( _LastAsserts.size() )
@@ -1524,7 +1517,7 @@ case 63:
 							;
     break;}
 case 64:
-#line 443 "grammar.yacc"
+#line 436 "grammar.yacc"
 {
 								clean();
 								_LastBloc = new IBlock(_Debug);
@@ -1536,7 +1529,7 @@ case 64:
 							;
     break;}
 case 65:
-#line 453 "grammar.yacc"
+#line 446 "grammar.yacc"
 {
 								if(_LastBloc != NULL && !_LastBloc->isCodeMonted())
 								{
@@ -1596,34 +1589,34 @@ case 65:
 							;
     break;}
 case 67:
-#line 514 "grammar.yacc"
+#line 507 "grammar.yacc"
 {
 							char *param_name = LastyyText[1];
 							_LastBooleanConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
 						;
     break;}
 case 68:
-#line 523 "grammar.yacc"
+#line 516 "grammar.yacc"
 {
 								char *param_name = LastyyText[1];
 								_LastFuzzyConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
 							;
     break;}
 case 69:
-#line 528 "grammar.yacc"
+#line 521 "grammar.yacc"
 {
 								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
 							;
     break;}
 case 70:
-#line 532 "grammar.yacc"
+#line 525 "grammar.yacc"
 {
 								char *param_name = LastyyText[1];
 								_LastFuzzyConds.push_back( new NLAIAGENT::CStringVarName( param_name ) );
 							;
     break;}
 case 72:
-#line 542 "grammar.yacc"
+#line 535 "grammar.yacc"
 {
 							const char *assert_name = LastyyText[1];
 							_LastAsserts.push_back( new NLAIAGENT::CStringVarName( LastyyText[1] ) );
@@ -1631,26 +1624,26 @@ case 72:
 						;
     break;}
 case 74:
-#line 553 "grammar.yacc"
+#line 546 "grammar.yacc"
 {
 								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
 							;
     break;}
 case 75:
-#line 557 "grammar.yacc"
+#line 550 "grammar.yacc"
 {
 								for (int i = 0; i < 20; i++);  // To put breakpoints for debugging...
 							;
     break;}
 case 77:
-#line 564 "grammar.yacc"
+#line 557 "grammar.yacc"
 {
 							char *var_name = LastyyText[1];
 							_LastLogicParams.back().push_back( new NLAIAGENT::CStringVarName( var_name ) );
 						;
     break;}
 case 80:
-#line 577 "grammar.yacc"
+#line 570 "grammar.yacc"
 {
 								if(_LastBloc != NULL && !_LastBloc->isCodeMonted())
 								{
@@ -1709,7 +1702,7 @@ case 80:
 							;
     break;}
 case 82:
-#line 636 "grammar.yacc"
+#line 629 "grammar.yacc"
 {	
 								if(_LastBloc != NULL && !_LastBloc->isCodeMonted())
 								{
@@ -1768,7 +1761,7 @@ case 82:
 							;
     break;}
 case 83:
-#line 696 "grammar.yacc"
+#line 689 "grammar.yacc"
 {				
 								NLAIAGENT::CStringVarName name(LastyyText[1]);
 								//name += NLAIAGENT::CStringVarName(LastyyText[1]);
@@ -1778,7 +1771,7 @@ case 83:
 							;
     break;}
 case 84:
-#line 704 "grammar.yacc"
+#line 697 "grammar.yacc"
 {
 								NLAIAGENT::CStringVarName name(LastyyText[1]);
 								//name += NLAIAGENT::CStringVarName(LastyyText[1]);
@@ -1788,44 +1781,44 @@ case 84:
 							;
     break;}
 case 87:
-#line 718 "grammar.yacc"
+#line 711 "grammar.yacc"
 {								
 								initParam();
 							;
     break;}
 case 88:
-#line 722 "grammar.yacc"
+#line 715 "grammar.yacc"
 {
 								if(!registerMethod()) return false;
 							;
     break;}
 case 89:
-#line 728 "grammar.yacc"
+#line 721 "grammar.yacc"
 {
 								initParam();
 							;
     break;}
 case 90:
-#line 732 "grammar.yacc"
+#line 725 "grammar.yacc"
 {
 								registerMethod();
 							;
     break;}
 case 96:
-#line 750 "grammar.yacc"
+#line 743 "grammar.yacc"
 {
 								_LastString = NLAIAGENT::CStringVarName(LastyyText[0]);
 								_BaseObjectDef = false;
 							;
     break;}
 case 97:
-#line 755 "grammar.yacc"
+#line 748 "grammar.yacc"
 {
 								_LastString = NLAIAGENT::CStringVarName(LastyyText[1]);
 							;
     break;}
 case 98:
-#line 760 "grammar.yacc"
+#line 753 "grammar.yacc"
 {
 								_LastBaseObjectDef = NLAIAGENT::CStringVarName(LastyyText[1]);
 								_BaseObjectDef = true;
@@ -1833,13 +1826,13 @@ case 98:
 							;
     break;}
 case 102:
-#line 774 "grammar.yacc"
+#line 767 "grammar.yacc"
 {
 								if(!setParamVarName()) return 0;
 							;
     break;}
 case 110:
-#line 790 "grammar.yacc"
+#line 783 "grammar.yacc"
 {
 								_LastStringParam.back()->release();
 								_LastStringParam.pop_back();
@@ -1848,7 +1841,7 @@ case 110:
 							;
     break;}
 case 111:
-#line 798 "grammar.yacc"
+#line 791 "grammar.yacc"
 {
 								if(!_InLineParse)
 								{
@@ -1874,20 +1867,20 @@ case 111:
 							;
     break;}
 case 112:
-#line 824 "grammar.yacc"
+#line 817 "grammar.yacc"
 {
 								_LastString = NLAIAGENT::CStringVarName(LastyyText[1]);
 							;
     break;}
 case 113:
-#line 832 "grammar.yacc"
+#line 825 "grammar.yacc"
 {					
 								NLAIAGENT::CStringVarName x(LastyyText[1]);			
 								if(!castVariable(_LastString,x)) return false;
 							;
     break;}
 case 115:
-#line 839 "grammar.yacc"
+#line 832 "grammar.yacc"
 {								
 								std::list<NLAISCRIPT::CStringType>::iterator i = _LasVarStr.begin();
 								_LasAffectationVarStr.clear();
@@ -1898,7 +1891,7 @@ case 115:
 							;
     break;}
 case 116:
-#line 849 "grammar.yacc"
+#line 842 "grammar.yacc"
 {
 								if(!affectation()) 
 								{
@@ -1909,13 +1902,13 @@ case 116:
 							;
     break;}
 case 118:
-#line 862 "grammar.yacc"
+#line 855 "grammar.yacc"
 {
 								
 							;
     break;}
 case 120:
-#line 870 "grammar.yacc"
+#line 863 "grammar.yacc"
 {
 								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
 								_Param.push_back(new CParam);								
@@ -1924,7 +1917,7 @@ case 120:
 							;
     break;}
 case 122:
-#line 878 "grammar.yacc"
+#line 871 "grammar.yacc"
 {								
 								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
 								_Param.push_back(new CParam);								
@@ -1933,13 +1926,13 @@ case 122:
 							;
     break;}
 case 124:
-#line 888 "grammar.yacc"
+#line 881 "grammar.yacc"
 {
 								nameMethodeProcessing();
 							;
     break;}
 case 125:
-#line 895 "grammar.yacc"
+#line 888 "grammar.yacc"
 {	
 								_ExpressionType = _ExpressionTypeTmp.back();
 								_ExpressionTypeTmp.pop_back();								
@@ -1952,77 +1945,77 @@ case 125:
 							;
     break;}
 case 126:
-#line 908 "grammar.yacc"
+#line 901 "grammar.yacc"
 {
 								pushParamExpression();								
 							;
     break;}
 case 127:
-#line 913 "grammar.yacc"
+#line 906 "grammar.yacc"
 {
 								pushParamExpression();
 							;
     break;}
 case 128:
-#line 920 "grammar.yacc"
+#line 913 "grammar.yacc"
 {
 								if ( !_InCond )
 									if(!typeOfMethod()) return false;
 							;
     break;}
 case 131:
-#line 932 "grammar.yacc"
+#line 925 "grammar.yacc"
 {								
 								ifInterrogation();
 							;
     break;}
 case 132:
-#line 937 "grammar.yacc"
+#line 930 "grammar.yacc"
 {
 								interrogationEnd();
 							;
     break;}
 case 133:
-#line 945 "grammar.yacc"
+#line 938 "grammar.yacc"
 {								
 								ifInterrogation();
 							;
     break;}
 case 134:
-#line 950 "grammar.yacc"
+#line 943 "grammar.yacc"
 {								
 								ifInterrogationPoint()
 							;
     break;}
 case 135:
-#line 955 "grammar.yacc"
+#line 948 "grammar.yacc"
 {
 								ifInterrogationEnd();
 							;
     break;}
 case 143:
-#line 973 "grammar.yacc"
+#line 966 "grammar.yacc"
 {
 								CComponent *c = ((IClassInterpret *)_SelfClass.get())->getComponent(_LastRegistered);								
 								if(c != NULL) c->Local = true;								
 							;
     break;}
 case 146:
-#line 983 "grammar.yacc"
+#line 976 "grammar.yacc"
 {
 								CComponent *c = ((IClassInterpret *)_SelfClass.get())->getComponent(_LastRegistered);								
 								if(c != NULL) c->Static = true;
 							;
     break;}
 case 148:
-#line 991 "grammar.yacc"
+#line 984 "grammar.yacc"
 {								
 								_LastString = NLAIAGENT::CStringVarName(LastyyText[1]);
 								_LastRegistered = ((IClassInterpret *)_SelfClass.get())->registerComponent(_LastString);
 							;
     break;}
 case 149:
-#line 997 "grammar.yacc"
+#line 990 "grammar.yacc"
 {
 								if(((IClassInterpret *)_SelfClass.get())->getComponent(NLAIAGENT::CStringVarName(LastyyText[1])) == NULL)
 								{
@@ -2037,7 +2030,7 @@ case 149:
 							;
     break;}
 case 158:
-#line 1029 "grammar.yacc"
+#line 1022 "grammar.yacc"
 {	
 								if(_FacteurEval)
 								{								
@@ -2047,7 +2040,7 @@ case 158:
 							;
     break;}
 case 159:
-#line 1037 "grammar.yacc"
+#line 1030 "grammar.yacc"
 {								
 								allocExpression(new CNegOpCode);
 								setTypeExpression(NLAIC::CTypeOfOperator::opAdd,"(-)");
@@ -2055,7 +2048,7 @@ case 159:
 							;
     break;}
 case 160:
-#line 1043 "grammar.yacc"
+#line 1036 "grammar.yacc"
 {	
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opAdd))
 								{
@@ -2069,14 +2062,14 @@ case 160:
 							;
     break;}
 case 161:
-#line 1055 "grammar.yacc"
+#line 1048 "grammar.yacc"
 {									
 								allocExpression(new CAddOpCode,true);		
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opAdd,"+");	
 							;
     break;}
 case 162:
-#line 1060 "grammar.yacc"
+#line 1053 "grammar.yacc"
 {
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opSub))
 								{
@@ -2089,14 +2082,14 @@ case 162:
 							;
     break;}
 case 163:
-#line 1071 "grammar.yacc"
+#line 1064 "grammar.yacc"
 {								
 								allocExpression(new CSubOpCode,false);
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opSub,"-");							
 							;
     break;}
 case 164:
-#line 1076 "grammar.yacc"
+#line 1069 "grammar.yacc"
 {
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opNot))
 								{
@@ -2109,7 +2102,7 @@ case 164:
 							;
     break;}
 case 165:
-#line 1087 "grammar.yacc"
+#line 1080 "grammar.yacc"
 {
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opDiff))
 								{
@@ -2121,7 +2114,7 @@ case 165:
 							;
     break;}
 case 166:
-#line 1097 "grammar.yacc"
+#line 1090 "grammar.yacc"
 {								
 								allocExpression(new CDiffOpCode,true);
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opDiff,"!=");
@@ -2129,7 +2122,7 @@ case 166:
 							;
     break;}
 case 167:
-#line 1103 "grammar.yacc"
+#line 1096 "grammar.yacc"
 {
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opInf))
 								{
@@ -2142,14 +2135,14 @@ case 167:
 							;
     break;}
 case 168:
-#line 1114 "grammar.yacc"
+#line 1107 "grammar.yacc"
 {								
 								allocExpression(new CInfOpCode,false);	
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opInf,"<");							
 							;
     break;}
 case 169:
-#line 1119 "grammar.yacc"
+#line 1112 "grammar.yacc"
 {
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opSup))
 								{
@@ -2161,14 +2154,14 @@ case 169:
 							;
     break;}
 case 170:
-#line 1129 "grammar.yacc"
+#line 1122 "grammar.yacc"
 {								
 								allocExpression(new CSupOpCode,false);
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opSup,">");							
 							;
     break;}
 case 171:
-#line 1134 "grammar.yacc"
+#line 1127 "grammar.yacc"
 {
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opSupEq))
 								{
@@ -2180,14 +2173,14 @@ case 171:
 							;
     break;}
 case 172:
-#line 1144 "grammar.yacc"
+#line 1137 "grammar.yacc"
 {								
 								allocExpression(new CSupEqOpCode,false);	
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opSupEq,">=");
 							;
     break;}
 case 173:
-#line 1149 "grammar.yacc"
+#line 1142 "grammar.yacc"
 {
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opInfEq))
 								{
@@ -2199,21 +2192,21 @@ case 173:
 							;
     break;}
 case 174:
-#line 1159 "grammar.yacc"
+#line 1152 "grammar.yacc"
 {								
 								allocExpression(new CInfEqOpCode,false);
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opInfEq,"<=");
 							;
     break;}
 case 175:
-#line 1164 "grammar.yacc"
+#line 1157 "grammar.yacc"
 {
 								setTypeExpressionG();	
 								allocExpression(NULL);														
 							;
     break;}
 case 176:
-#line 1169 "grammar.yacc"
+#line 1162 "grammar.yacc"
 {								
 								allocExpression(new CEqOpCode,false);
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opEq,"==");
@@ -2221,13 +2214,13 @@ case 176:
 							;
     break;}
 case 177:
-#line 1177 "grammar.yacc"
+#line 1170 "grammar.yacc"
 {
 								_FacteurEval = true;	
 							;
     break;}
 case 178:
-#line 1181 "grammar.yacc"
+#line 1174 "grammar.yacc"
 {
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opMul))
 								{
@@ -2240,7 +2233,7 @@ case 178:
 							;
     break;}
 case 179:
-#line 1192 "grammar.yacc"
+#line 1185 "grammar.yacc"
 {									
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opMul,"+");
 								allocExpression(new CMulOpCode,false);
@@ -2248,7 +2241,7 @@ case 179:
 							;
     break;}
 case 180:
-#line 1198 "grammar.yacc"
+#line 1191 "grammar.yacc"
 {
 								/*if(!(_lastOperatorType & NLAIC::CTypeOfOperator::opDiv))
 								{
@@ -2262,7 +2255,7 @@ case 180:
 							;
     break;}
 case 181:
-#line 1210 "grammar.yacc"
+#line 1203 "grammar.yacc"
 {																
 								allocExpression(new CDivOpCode,false);	
 								setTypeExpressionD(NLAIC::CTypeOfOperator::opDiv,"/");
@@ -2270,77 +2263,77 @@ case 181:
 							;
     break;}
 case 182:
-#line 1219 "grammar.yacc"
+#line 1212 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PExec);
 							;
     break;}
 case 183:
-#line 1224 "grammar.yacc"
+#line 1217 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PAchieve);
 							;
     break;}
 case 184:
-#line 1229 "grammar.yacc"
+#line 1222 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PAsk);
 							;
     break;}
 case 185:
-#line 1234 "grammar.yacc"
+#line 1227 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PBreak);
 							;
     break;}
 case 186:
-#line 1239 "grammar.yacc"
+#line 1232 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PError);
 							;
     break;}
 case 187:
-#line 1244 "grammar.yacc"
+#line 1237 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PTell);
 							;
     break;}
 case 188:
-#line 1249 "grammar.yacc"
+#line 1242 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PKill);
 							;
     break;}
 case 189:
-#line 1254 "grammar.yacc"
+#line 1247 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setPerformative(NLAIAGENT::IMessageBase::PEven);
 							;
     break;}
 case 190:
-#line 1259 "grammar.yacc"
+#line 1252 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setImediateVarNill();
 							;
     break;}
 case 191:
-#line 1265 "grammar.yacc"
+#line 1258 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 								setImediateVar();
 							;
     break;}
 case 192:
-#line 1270 "grammar.yacc"
+#line 1263 "grammar.yacc"
 {								
 								_IsFacteurIsExpression = false;
 								if(!processingVar())
@@ -2352,68 +2345,68 @@ case 192:
 							;
     break;}
 case 193:
-#line 1280 "grammar.yacc"
+#line 1273 "grammar.yacc"
 {								
 								_IsFacteurIsExpression = true;								
 								setMethodVar();
 							;
     break;}
 case 194:
-#line 1285 "grammar.yacc"
+#line 1278 "grammar.yacc"
 {							
 								_IsFacteurIsExpression = true;
 							;
     break;}
 case 195:
-#line 1289 "grammar.yacc"
+#line 1282 "grammar.yacc"
 {							
 								_IsFacteurIsExpression = false;
 							;
     break;}
 case 196:
-#line 1293 "grammar.yacc"
+#line 1286 "grammar.yacc"
 {							
 								_IsFacteurIsExpression = false;
 							;
     break;}
 case 197:
-#line 1297 "grammar.yacc"
+#line 1290 "grammar.yacc"
 {							
 								_IsFacteurIsExpression = false;
 							;
     break;}
 case 198:
-#line 1301 "grammar.yacc"
+#line 1294 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 							;
     break;}
 case 199:
-#line 1305 "grammar.yacc"
+#line 1298 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 							;
     break;}
 case 200:
-#line 1309 "grammar.yacc"
+#line 1302 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 							;
     break;}
 case 201:
-#line 1313 "grammar.yacc"
+#line 1306 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 							;
     break;}
 case 202:
-#line 1317 "grammar.yacc"
+#line 1310 "grammar.yacc"
 {
 								_IsFacteurIsExpression = false;
 							;
     break;}
 case 203:
-#line 1324 "grammar.yacc"
+#line 1317 "grammar.yacc"
 {
 								_LasVarStr.clear();
 								_LasVarStr.push_back(NLAISCRIPT::CStringType(LastyyText[1]));
@@ -2423,7 +2416,7 @@ case 203:
 							;
     break;}
 case 204:
-#line 1333 "grammar.yacc"
+#line 1326 "grammar.yacc"
 {
 								_LasVarStr.clear();
 								cleanTypeList();
@@ -2436,7 +2429,7 @@ case 204:
 							;
     break;}
 case 205:
-#line 1345 "grammar.yacc"
+#line 1338 "grammar.yacc"
 {	
 								cleanTypeList();
 								_TypeList.push_back(_FlotingExpressionType);
@@ -2445,7 +2438,7 @@ case 205:
 							;
     break;}
 case 206:
-#line 1354 "grammar.yacc"
+#line 1347 "grammar.yacc"
 {									
 								if(_IsFacteurIsExpression)
 								{
@@ -2461,76 +2454,76 @@ case 206:
 							;
     break;}
 case 207:
-#line 1371 "grammar.yacc"
+#line 1364 "grammar.yacc"
 {									
 								setListVar();
 							;
     break;}
 case 209:
-#line 1379 "grammar.yacc"
+#line 1372 "grammar.yacc"
 {									
 								setChaineVar();
 							;
     break;}
 case 210:
-#line 1385 "grammar.yacc"
+#line 1378 "grammar.yacc"
 {
 								_LastBloc->addCode((new CAddOpCode));								
 							;
     break;}
 case 211:
-#line 1389 "grammar.yacc"
+#line 1382 "grammar.yacc"
 {								
 								_LastBloc->addCode((new CAddOpCode));
 							;
     break;}
 case 212:
-#line 1395 "grammar.yacc"
+#line 1388 "grammar.yacc"
 {
 								_LastStringParam.push_back(new NLAIAGENT::CGroupType());								
 
 							;
     break;}
 case 213:
-#line 1400 "grammar.yacc"
+#line 1393 "grammar.yacc"
 {
 								_LastBloc->addCode(new CLdbOpCode (NLAIAGENT::CGroupType()));
 							;
     break;}
 case 215:
-#line 1406 "grammar.yacc"
+#line 1399 "grammar.yacc"
 {
 								if(!buildObject()) return false;
 							;
     break;}
 case 216:
-#line 1410 "grammar.yacc"
+#line 1403 "grammar.yacc"
 {
 								if(!buildObject()) return false;
 							;
     break;}
 case 217:
-#line 1417 "grammar.yacc"
+#line 1410 "grammar.yacc"
 {							
 								_LastStringParam.back()->cpy(NLAIAGENT::CStringType(NLAIAGENT::CStringVarName(LastyyText[1])));
 								_Param.push_back(new CParam);								
 							;
     break;}
 case 218:
-#line 1424 "grammar.yacc"
+#line 1417 "grammar.yacc"
 {
 							// Met la clause en somment de pile dans une liste
 							_LastBloc->addCode( new CMakeArgOpCode() );				
 						;
     break;}
 case 219:
-#line 1429 "grammar.yacc"
+#line 1422 "grammar.yacc"
 {
 							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						;
     break;}
 case 220:
-#line 1433 "grammar.yacc"
+#line 1426 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 //							_LastBloc->addCode( new CLdbNewOpCode(CRule()) );		
@@ -2542,13 +2535,13 @@ case 220:
 						;
     break;}
 case 222:
-#line 1448 "grammar.yacc"
+#line 1441 "grammar.yacc"
 {
 							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						;
     break;}
 case 223:
-#line 1452 "grammar.yacc"
+#line 1445 "grammar.yacc"
 {
 							_LastBloc->addCode( new CLdbNewOpCode( CClause() ) );
 							//_LastBloc->addCode( new CAddOpCode() );
@@ -2559,37 +2552,37 @@ case 223:
 						;
     break;}
 case 224:
-#line 1464 "grammar.yacc"
+#line 1457 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 						;
     break;}
 case 225:
-#line 1468 "grammar.yacc"
+#line 1461 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 						;
     break;}
 case 226:
-#line 1472 "grammar.yacc"
+#line 1465 "grammar.yacc"
 {
 							//_LastBloc->addCode( new CAddOpCode() );							
 						;
     break;}
 case 227:
-#line 1477 "grammar.yacc"
+#line 1470 "grammar.yacc"
 {
 							//_LastBloc->addCode( new CAddOpCode() );													
 						;
     break;}
 case 228:
-#line 1483 "grammar.yacc"
+#line 1476 "grammar.yacc"
 {
 							_LastBloc->addCode( new CTellOpCode() );
 						;
     break;}
 case 229:
-#line 1489 "grammar.yacc"
+#line 1482 "grammar.yacc"
 {
 							/*char buf[256];
 							strcpy(buf, LastyyText[1]);
@@ -2602,7 +2595,7 @@ case 229:
 						;
     break;}
 case 230:
-#line 1502 "grammar.yacc"
+#line 1495 "grammar.yacc"
 {
 							_LastBloc->addCode(new CLdbOpCode( NLAIAGENT::CGroupType()) );
 							char *txt = LastyyText[1];
@@ -2612,7 +2605,7 @@ case 230:
 						;
     break;}
 case 231:
-#line 1510 "grammar.yacc"
+#line 1503 "grammar.yacc"
 {
 /*							setStackVar( CFactPattern::IdFactPattern );
 							IBaseAssert *my_assert = _FactBase->addAssert( _LastAssert, _NbLogicParams );
@@ -2622,12 +2615,12 @@ case 231:
 						;
     break;}
 case 232:
-#line 1520 "grammar.yacc"
+#line 1513 "grammar.yacc"
 {
 						;
     break;}
 case 233:
-#line 1527 "grammar.yacc"
+#line 1520 "grammar.yacc"
 {
 								_LastBloc->addCode((new CAddOpCode));
 //								_param.back()->push(_lastIdentType);
@@ -2635,7 +2628,7 @@ case 233:
 							;
     break;}
 case 234:
-#line 1533 "grammar.yacc"
+#line 1526 "grammar.yacc"
 {
 								_LastBloc->addCode((new CAddOpCode));
 //								_param.back()->push(_lastIdentType);
@@ -2643,7 +2636,7 @@ case 234:
 							;
     break;}
 case 236:
-#line 1542 "grammar.yacc"
+#line 1535 "grammar.yacc"
 {
 							char buf[256];
 							strcpy(buf, LastyyText[1]);
@@ -2652,50 +2645,50 @@ case 236:
 						;
     break;}
 case 237:
-#line 1552 "grammar.yacc"
+#line 1545 "grammar.yacc"
 {
 							_LastBloc->addCode(new CLdbOpCode( NLAIAGENT::CGroupType()) );
 						;
     break;}
 case 239:
-#line 1559 "grammar.yacc"
+#line 1552 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 						;
     break;}
 case 240:
-#line 1563 "grammar.yacc"
+#line 1556 "grammar.yacc"
 {
 							for (sint32 i = 0; i < 20; i++);
 						;
     break;}
 case 241:
-#line 1567 "grammar.yacc"
+#line 1560 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 						;
     break;}
 case 242:
-#line 1571 "grammar.yacc"
+#line 1564 "grammar.yacc"
 {
 							for (sint32 i = 0; i < 20; i++);
 						;
     break;}
 case 243:
-#line 1577 "grammar.yacc"
+#line 1570 "grammar.yacc"
 {
 							// Met la clause en somment de pile dans une liste
 							_LastBloc->addCode( new CMakeArgOpCode() );
 						;
     break;}
 case 244:
-#line 1582 "grammar.yacc"
+#line 1575 "grammar.yacc"
 {
 							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						;
     break;}
 case 245:
-#line 1586 "grammar.yacc"
+#line 1579 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 							_LastBloc->addCode( new CLdbNewOpCode( CFuzzyRule() ) );		
@@ -2703,31 +2696,31 @@ case 245:
 						;
     break;}
 case 246:
-#line 1594 "grammar.yacc"
+#line 1587 "grammar.yacc"
 {
 							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						;
     break;}
 case 247:
-#line 1598 "grammar.yacc"
+#line 1591 "grammar.yacc"
 {
 							
 						;
     break;}
 case 248:
-#line 1604 "grammar.yacc"
+#line 1597 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 						;
     break;}
 case 249:
-#line 1608 "grammar.yacc"
+#line 1601 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 						;
     break;}
 case 251:
-#line 1615 "grammar.yacc"
+#line 1608 "grammar.yacc"
 {
 							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 							// Composant?
@@ -2747,58 +2740,58 @@ case 251:
 						;
     break;}
 case 252:
-#line 1633 "grammar.yacc"
+#line 1626 "grammar.yacc"
 {
 							_LastString = NLAIAGENT::CStringVarName( LastyyText[0] );
 						;
     break;}
 case 253:
-#line 1637 "grammar.yacc"
+#line 1630 "grammar.yacc"
 {
 							for (sint32 i = 0; i < 20; i++ );
 							_LastBloc->addCode(new CLdbNewOpCode( CSimpleFuzzyCond(NULL, NULL) ) );
 						;
     break;}
 case 254:
-#line 1644 "grammar.yacc"
+#line 1637 "grammar.yacc"
 {
 							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						;
     break;}
 case 255:
-#line 1648 "grammar.yacc"
+#line 1641 "grammar.yacc"
 {
 							_LastBloc->addCode( new CLdbOpCode( (NLAIAGENT::IObjectIA &) NLAIAGENT::CStringVarName( LastyyText[1] ) ) );
 							_LastBloc->addCode( new CAddOpCode() );
 						;
     break;}
 case 256:
-#line 1653 "grammar.yacc"
+#line 1646 "grammar.yacc"
 {
 							_LastBloc->addCode( new CLdbOpCode( NLAIAGENT::CGroupType() ) );
 						;
     break;}
 case 257:
-#line 1657 "grammar.yacc"
+#line 1650 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 							_LastBloc->addCode( new CLdbNewOpCode( CFuzzyVar(NLAIAGENT::CStringVarName("Inst"),0,1) ) );
 						;
     break;}
 case 258:
-#line 1664 "grammar.yacc"
+#line 1657 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 						;
     break;}
 case 259:
-#line 1668 "grammar.yacc"
+#line 1661 "grammar.yacc"
 {
 							_LastBloc->addCode( new CAddOpCode() );
 						;
     break;}
 case 261:
-#line 1675 "grammar.yacc"
+#line 1668 "grammar.yacc"
 {
 							for (sint32 i = 0; i < 20; i++);
 						;
@@ -3001,5 +2994,5 @@ yyerrhandle:
   yystate = yyn;
   goto yynewstate;
 }
-#line 1679 "grammar.yacc"
+#line 1672 "grammar.yacc"
 

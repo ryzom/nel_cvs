@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.10 2002/07/30 21:06:13 lecroart Exp $
+ * $Id: load_form.h,v 1.11 2002/09/04 12:14:25 coutelas Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -163,7 +163,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 
 	// set up the current sheet in container to remove sheet that are in the container and not in the directory anymore
 	std::map<NLMISC::CSheetId, bool> sheetToRemove;
-	for (std::map<NLMISC::CSheetId, T>::iterator it = container.begin(); it != container.end(); it++)
+	for (typename std::map<NLMISC::CSheetId, T>::iterator it = container.begin(); it != container.end(); it++)
 	{
 		sheetToRemove.insert (make_pair((*it).first, true));
 	}
@@ -228,7 +228,7 @@ void loadForm (const std::vector<std::string> &sheetFilters, const std::string &
 			}*/
 			
 			// add the new creature, it could be already loaded by the packed sheets but will be overwrite with the new one
-			std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(sheetIds[NeededToRecompute[j]],T()));
+			typename std::pair<std::map<NLMISC::CSheetId, T>::iterator, bool> res = container.insert(std::make_pair(sheetIds[NeededToRecompute[j]],T()));
 
 			(*res.first).second.readGeorges (form, sheetIds[NeededToRecompute[j]]);
 			containerChanged = true;

@@ -11,7 +11,7 @@ then
 	touch ChangeLog
 fi
 
-libtoolize --force --copy
+libtoolize --force --copy \
 && aclocal \
 && autoheader \
 && automake --gnu --add-missing --copy \

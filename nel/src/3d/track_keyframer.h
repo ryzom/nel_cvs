@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.15 2004/04/07 09:51:56 berenguier Exp $
+ * $Id: track_keyframer.h,v 1.16 2004/04/09 13:07:44 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -557,7 +557,7 @@ public:
 							TAnimationTime datePrevious, TAnimationTime dateNext,
 							TAnimationTime date, IAnimatedValue &result )
 	{
-		CAnimatedValueBlendable<T>	&resultVal= static_cast<CAnimatedValueBlendable<T>&>(result);
+		CAnimatedValueBlendable<CQuat>	&resultVal= static_cast<CAnimatedValueBlendable<CQuat>&>(result);
 		
 		if(previous && next)
 		{
@@ -596,7 +596,7 @@ public:
 							TAnimationTime datePrevious, TAnimationTime dateNext,
 							TAnimationTime date, IAnimatedValue &result )
 	{
-		CAnimatedValueBlendable<T>	&resultVal= static_cast<CAnimatedValueBlendable<T>&>(result);
+		CAnimatedValueBlendable<NLMISC::CRGBA>	&resultVal= static_cast<CAnimatedValueBlendable<NLMISC::CRGBA>&>(result);
 		
 		if(previous && next)
 		{

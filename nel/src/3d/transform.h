@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.1 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: transform.h,v 1.2 2001/06/28 09:17:34 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -185,76 +185,20 @@ class	CTransformHrcObs : public IBaseHrcObs
 public:
 
 
-	virtual	void	update()
-	{
-		IBaseHrcObs::update();
-
-		if(Model->TouchObs[CTransform::TransformDirty])
-		{
-			// update the local matrix.
-			LocalMatrix= static_cast<CTransform*>(Model)->getMatrix();
-			IBaseHrcObs::LocalVis= static_cast<CTransform*>(Model)->Visibility;
-			// update the date of the local matrix.
-			LocalDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
-		}
-	}
+	virtual	void	update();
 
 
 	/// \name Utility methods.
 	//@{
 	/// Update the world state according to the parent world state and the local states.
-	void	updateWorld(IBaseHrcObs *caller)
-	{
-		const	CMatrix		*pFatherWM;
-		bool				visFather;
-
-
-		// If not root case, link to caller.
-		if(caller)
-		{
-			pFatherWM= &(caller->WorldMatrix);
-			visFather= caller->WorldVis;
-		}
-		// else, default!!
-		else
-		{
-			pFatherWM= &(CMatrix::Identity);
-			visFather= true;
-		}
-
-		// Combine matrix
-		if(LocalDate>WorldDate || (caller && caller->WorldDate>WorldDate) )
-		{
-			// Must recompute the world matrix.  ONLY IF I AM NOT SKINNED/STICKED TO A SKELETON!
-			if( ((CTransform*)Model)->_FatherSkeletonModel==NULL)
-			{
-				WorldMatrix=  *pFatherWM * LocalMatrix;
-				WorldDate= static_cast<CHrcTrav*>(Trav)->CurrentDate;
-			}
-		}
-
-		// Combine visibility.
-		switch(LocalVis)
-		{
-			case CHrcTrav::Herit: WorldVis= visFather; break;
-			case CHrcTrav::Hide: WorldVis= false; break;
-			case CHrcTrav::Show: WorldVis= true; break;
-		}
-	}
+	void	updateWorld(IBaseHrcObs *caller);
 	//@}
 
 
 	/// \name The base doit method.
 	//@{
 	/// The base behavior is to update() the observer, updateWorld() states, and traverseSons().
-	virtual	void	traverse(IObs *caller)
-	{
-		// Recompute the matrix, according to caller matrix mode, and local matrix.
-		nlassert(!caller || dynamic_cast<IBaseHrcObs*>(caller));
-		updateWorld(static_cast<IBaseHrcObs*>(caller));
-		// DoIt the sons.
-		traverseSons();
-	}
+	virtual	void	traverse(IObs *caller);
 	//@}
 
 };
@@ -265,7 +209,7 @@ public:
  * This observer:
  * - leave the notification system to DO NOTHING.
  * - implement the clip() method to return true (not renderable)
- * - leave the traverse() method as IBaseClipObs.
+ * - implement traverse() method.
  *
  * \sa CHrcTrav IBaseClipObs
  * \author Lionel Berenguier
@@ -293,36 +237,7 @@ public:
 	 *	- if Visible==true, and renderable, add it to the RenderTraversal: \c RenderTrav->addRenderObs(RenderObs);
 	 *	- always traverseSons(), to clip the sons.
 	 */
-	virtual	void	traverse(IObs *caller)
-	{
-		nlassert(!caller || dynamic_cast<IBaseClipObs*>(caller));
-
-		Visible= false;
-
-		// If linked to a SkeletonModel, don't clip, and use skeleton model clip result.
-		// This works because we are sons of the SkeletonModel in the Clip traversal...
-		bool	skeletonClip= false;
-		if( ((CTransform*)Model)->_FatherSkeletonModel!=NULL )
-		{
-			skeletonClip= static_cast<IBaseClipObs*>(caller)->Visible;
-		}
-
-		// Test visibility or clip.
-		if(HrcObs->WorldVis && ( skeletonClip  ||  clip( static_cast<IBaseClipObs*>(caller)) )  )
-		{
-			Visible= true;
-
-			// Insert the model in the render list.
-			if(isRenderable())
-			{
-				nlassert(dynamic_cast<CClipTrav*>(Trav));
-				static_cast<CClipTrav*>(Trav)->RenderTrav->addRenderObs(RenderObs);
-			}
-		}
-
-		// DoIt the sons.
-		traverseSons();
-	}
+	virtual	void	traverse(IObs *caller);
 
 };
 
@@ -346,25 +261,10 @@ public:
 	 *	- animdetail if the model channelmixer is not NULL, AND if model not clipped!!
 	 *	- traverseSons().
 	 */
-	virtual	void	traverse(IObs *caller)
-	{
-		// AnimDetail behavior: animate only if not clipped.
-		if(ClipObs->Visible)
-		{
-			// test if the refptr is NULL or not (RefPtr).
-			CChannelMixer	*chanmix= static_cast<CTransform*>(Model)->_ChannelMixer;
-			if(chanmix)
-			{
-				// eval detail!!
-				chanmix->eval(true, static_cast<CAnimDetailTrav*>(Trav)->CurrentDate);
-			}
-		}
-
-		// important for the root only. Else, There is no reason to do a hierarchy for AnimDetail.
-		traverseSons();
-	}
+	virtual	void	traverse(IObs *caller);
 
 };
+
 
 
 }

@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.23 2002/06/28 19:33:41 hanappe Exp $
+ * $Id: source_user.cpp,v 1.24 2002/07/10 17:08:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -164,8 +164,8 @@ void					CSourceUser::play()
 	if ( _Track != NULL )
 	{
 		_Track->DrvSource->play();
-////		nldebug( "AM: Playing source %s", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
-////		nlinfo( "AM: Playing source %p", this);
+//		nldebug( "AM: Playing source %s", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
+//		nlinfo( "AM: Playing source %p", this);
 	}
 	_Playing = true;
 	_PlayStart = CTime::getLocalTime();
@@ -181,7 +181,7 @@ void					CSourceUser::stop()
 	{
 		_Track->DrvSource->stop();
 		nldebug( "AM: Source %s stopped", getSound() && (getSound()->getName()!="") ? getSound()->getName().c_str() : "" );
-////		nlinfo( "AM: Stoping source %p", this);
+		nlinfo( "AM: Stoping source %p", this);
 	}
 	_Playing = false;
 }

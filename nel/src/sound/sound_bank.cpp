@@ -1,7 +1,7 @@
 /** \file sound_bank.cpp
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.cpp,v 1.3 2002/07/03 10:08:06 vizerie Exp $
+ * $Id: sound_bank.cpp,v 1.4 2002/07/10 17:08:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,9 +116,9 @@ void				CSoundBank::load()
 					{
 						// create a new sound and ask it to import the form
 						NLSOUND::CSound* sound = new CSound();
-//						sound->importForm((*iter), form->getRootNode());
+						sound->importForm((*iter), form->getRootNode());
 						_Sounds.insert(make_pair(sound->getName().c_str(), sound));
-						//nldebug("Loaded sound %s, sample %s", sound->getName().c_str(), sound->getBuffername().c_str());
+						//nlwarning("Loaded sound %s, sample %s", sound->getName().c_str(), sound->getBuffername().c_str());
 
 					} 
 					else
@@ -212,6 +212,7 @@ void				CSoundBank::getNames( std::vector<const char *>& names )
 	for (iter = _Sounds.begin(); iter != _Sounds.end(); ++iter)
 	{
 		names.push_back((*iter).first);
+		//nlwarning("getting sound %s", (*iter).first);
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file source_dsound.cpp
  * DirectSound sound source
  *
- * $Id: source_dsound.cpp,v 1.9 2002/06/28 19:35:19 hanappe Exp $
+ * $Id: source_dsound.cpp,v 1.10 2002/07/10 17:08:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -380,6 +380,8 @@ void CSourceDSound::play()
 	_UserState = NL_DSOUND_PLAYING;
 	DBGPOS(("[%p] PLAY: PLAYING", this));
 
+	//nldebug ("NLSOUND: %p play", this);
+
 	LeaveCriticalSection(&_CriticalSection); 
 }
 
@@ -394,6 +396,8 @@ void CSourceDSound::stop()
 
 	_UserState = NL_DSOUND_STOPPED;
 	DBGPOS(("[%p] STOP: STOPPED", this));
+
+	//nldebug ("NLSOUND: %p stop", this);
 
 	if (old == NL_DSOUND_PLAYING)
 	{
@@ -415,6 +419,8 @@ void CSourceDSound::pause()
 
 	_UserState = NL_DSOUND_PAUSED;
 	DBGPOS(("[%p] PAUZ: PAUSED", this));
+
+	//nldebug ("NLOUND: pause %p", this);
 
 	if (old == NL_DSOUND_PLAYING)
 	{
@@ -560,9 +566,13 @@ void CSourceDSound::setPos( const NLMISC::CVector& pos )
 	// Coordinate system: conversion from NeL to OpenAL/GL:
 	if (_3DBuffer != NULL)
 	{
-		if (_3DBuffer->SetPosition(pos.x, pos.z, -pos.y, DS3D_DEFERRED) != DS_OK)
+		if (_3DBuffer->SetPosition(pos.x, pos.z, pos.y, DS3D_DEFERRED) != DS_OK)
 		{
-			nldebug("SetPosition failed");
+			nlwarning ("SetPosition failed");
+		}
+		else
+		{
+			nldebug ("NLSOUND: %p set source NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, pos.x, pos.y, pos.z, pos.x, pos.z, pos.y);
 		}
 	}
 }
@@ -580,12 +590,12 @@ void CSourceDSound::getPos( NLMISC::CVector& pos ) const
 
 		if (hr != DS_OK)
 		{
-			nldebug("GetPosition failed");
+			nlwarning ("GetPosition failed");
 			pos.set(0, 0, 0);	
 		}
 		else
 		{
-			pos.set(v.x, -v.z, v.y);
+			pos.set(v.x, v.z, v.y);
 		}
 	}
 	else
@@ -601,9 +611,9 @@ void CSourceDSound::setVelocity( const NLMISC::CVector& vel )
 {
 	if (_3DBuffer != NULL)
 	{
-		if (_3DBuffer->SetVelocity(vel.x, vel.z, -vel.y, DS3D_DEFERRED) != DS_OK)
+		if (_3DBuffer->SetVelocity(vel.x, vel.z, vel.y, DS3D_DEFERRED) != DS_OK)
 		{
-			nldebug("SetVelocity failed");
+			nlwarning ("SetVelocity failed");
 		}
 	}
 }
@@ -619,12 +629,12 @@ void CSourceDSound::getVelocity( NLMISC::CVector& vel ) const
 
 		if (_3DBuffer->GetVelocity(&v) != DS_OK)
 		{
-			nldebug("GetVelocity failed");
+			nlwarning ("GetVelocity failed");
 			vel.set(0, 0, 0);	
 		}
 		else
 		{
-			vel.set(v.x, -v.z, v.y);
+			vel.set(v.x, v.z, v.y);
 		}
 	}
 	else
@@ -640,9 +650,13 @@ void CSourceDSound::setDirection( const NLMISC::CVector& dir )
 {
 	if (_3DBuffer != 0)
 	{
-		if (_3DBuffer->SetConeOrientation(dir.x, dir.z, -dir.y, DS3D_DEFERRED) != DS_OK)
+		if (_3DBuffer->SetConeOrientation(dir.x, dir.z, dir.y, DS3D_DEFERRED) != DS_OK)
 		{
-			nldebug("SetConeOrientation failed (x=%.2f, y=%.2f, z=%.2f)", dir.x, dir.y, dir.z);
+			nlwarning ("SetConeOrientation failed (x=%.2f, y=%.2f, z=%.2f)", dir.x, dir.y, dir.z);
+		}
+		else
+		{
+			nldebug ("NLSOUND: %p set source direction NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", this, dir.x, dir.y, dir.z, dir.x, dir.z, dir.y);
 		}
 	}
 }
@@ -658,17 +672,17 @@ void CSourceDSound::getDirection( NLMISC::CVector& dir ) const
 
 		if (_3DBuffer->GetConeOrientation(&v) != DS_OK)
 		{
-			nldebug("GetConeOrientation failed");
-			dir.set(0, 1, 0);	
+			nlwarning("GetConeOrientation failed");
+			dir.set(0, 0, 1);	
 		}
 		else
 		{
-			dir.set(v.x, -v.z, v.y);
+			dir.set(v.x, v.z, v.y);
 		}
 	}
 	else
 	{
-		dir.set(0, 1, 0);	
+		dir.set(0, 0, 1);	
 	}
 }
 
@@ -741,7 +755,7 @@ float CSourceDSound::getPitch() const
 
 		if (_SecondaryBuffer->GetFrequency(&freq) != DS_OK)
 		{
-			nldebug("GetFrequency failed");
+			nlwarning("GetFrequency failed");
 			return 1.0;
 		}
 
@@ -771,12 +785,12 @@ void CSourceDSound::setSourceRelativeMode( bool mode )
 
 		if (hr != DS_OK)
 		{
-			nldebug("SetMode failed");
+			nlwarning("SetMode failed");
 		}
 	}
 	else
 	{
-		nldebug("Requested setSourceRelativeMode on a non-3D source");
+		nlwarning("Requested setSourceRelativeMode on a non-3D source");
 	}
 }
 
@@ -791,7 +805,7 @@ bool CSourceDSound::getSourceRelativeMode() const
 
 		if (_3DBuffer->GetMode(&mode) != DS_OK)
 		{
-			nldebug("GetMode failed");
+			nlwarning("GetMode failed");
 			return false;
 		}
 
@@ -799,7 +813,7 @@ bool CSourceDSound::getSourceRelativeMode() const
 	}
 	else
 	{
-		nldebug("Requested setSourceRelativeMode on a non-3D source");
+		nlwarning("Requested setSourceRelativeMode on a non-3D source");
 		return false;
 	}
 }
@@ -814,12 +828,12 @@ void CSourceDSound::setMinMaxDistances( float mindist, float maxdist )
 		if ((_3DBuffer->SetMinDistance(mindist, DS3D_DEFERRED) != DS_OK)
 			|| (_3DBuffer->SetMaxDistance(maxdist, DS3D_DEFERRED) != DS_OK))
 		{
-			nldebug("SetMinDistance or SetMaxDistance failed");
+			nlwarning("SetMinDistance or SetMaxDistance failed");
 		}
 	}
 	else
 	{
-		nldebug("Requested setMinMaxDistances on a non-3D source");
+		nlwarning("Requested setMinMaxDistances on a non-3D source");
 	}
 }
 
@@ -837,7 +851,7 @@ void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
 		{
 			mindist = 0.0f;
 			maxdist = 0.0f;
-			nldebug("GetMinDistance or GetMaxDistance failed");
+			nlwarning("GetMinDistance or GetMaxDistance failed");
 		}
 		else
 		{
@@ -849,7 +863,7 @@ void CSourceDSound::getMinMaxDistances( float& mindist, float& maxdist ) const
 	{
 		mindist = 0.0f;
 		maxdist = 0.0f;
-		nldebug("Requested getMinMaxDistances on a non-3D source");
+		nlwarning("Requested getMinMaxDistances on a non-3D source");
 	}
 }
 

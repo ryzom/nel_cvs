@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.cpp,v 1.5 2002/07/03 10:12:08 vizerie Exp $
+ * $Id: sound_anim_manager.cpp,v 1.6 2002/07/10 17:08:56 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,11 +85,6 @@ TSoundAnimId CSoundAnimManager::loadAnimation(std::string& name)
 	{
 		filename = name;
 		filename.append(".sound_anim");
-	}
-
-	if (filename == "FY_HOM_course.sound_anim")
-	{
-		int debug = 0;
 	}
 
 	// throws exception if file not found

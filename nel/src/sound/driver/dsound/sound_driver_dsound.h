@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.4 2002/06/28 19:35:19 hanappe Exp $
+ * $Id: sound_driver_dsound.h,v 1.5 2002/07/10 17:08:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -101,7 +101,6 @@ public:
 
     /// Get the gain
 	float getGain();
-
 
 private:
 

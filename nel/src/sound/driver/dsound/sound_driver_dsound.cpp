@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.6 2002/06/28 19:35:19 hanappe Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.7 2002/07/10 17:08:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -481,6 +481,7 @@ void CSoundDriverDSound::writeProfile(ostream& out)
     out << "\n";
 
     // Write the number of hardware buffers 
+#if NLSOUND_PROFILE
     out << "update time total --- " <<  getAverageUpdateTime()<< "\n";
 	out << "update time source --- " << CSourceDSound::getAverageUpdateTime() << "\n";
 	out << "update --- t: " << CSourceDSound::getAverageCumulTime();
@@ -493,6 +494,7 @@ void CSoundDriverDSound::writeProfile(ostream& out)
 	out << "update byte size --- " << CSourceDSound::getAverageUpdateSize() << "\n";
 	out << "swap time --- " << CSourceDSound::getTestAverage() << "\n";
 	out << "src --- " << countPlayingSources() << "\n";
+#endif
 }
 
 

@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.7 2002/06/28 19:35:20 hanappe Exp $
+ * $Id: listener_dsound.cpp,v 1.8 2002/07/10 17:08:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,9 +89,13 @@ void CListenerDSound::setPos( const NLMISC::CVector& pos )
 	// Coordinate system: conversion from NeL to OpenAL/GL:
     if (_Listener != NULL)
     {
-        if (FAILED(_Listener->SetPosition(pos.x, pos.z, -pos.y, DS3D_DEFERRED)))
+        if (FAILED(_Listener->SetPosition(pos.x, pos.z, pos.y, DS3D_DEFERRED)))
 		{
 			nldebug("SetPosition failed");
+		}
+		else
+		{
+			nldebug ("NLSOUND: set listener NEL(p:%.2f/%.2f/%.2f) DS(p:%.2f/%.2f/%.2f)", pos.x, pos.y, pos.z, pos.x, pos.z, pos.y);
 		}
     }
 }
@@ -113,7 +117,7 @@ void CListenerDSound::getPos( NLMISC::CVector& pos ) const
 		}
 		else
 		{
-			pos.set(v.x, -v.z, v.y);
+			pos.set(v.x, v.z, v.y);
 		}
     }
 	else
@@ -130,7 +134,7 @@ void CListenerDSound::setVelocity( const NLMISC::CVector& vel )
 {
     if (_Listener != NULL)
     {
-        if (FAILED(_Listener->SetVelocity(vel.x, vel.z, -vel.y, DS3D_DEFERRED)))
+        if (FAILED(_Listener->SetVelocity(vel.x, vel.z, vel.y, DS3D_DEFERRED)))
 		{
 			nldebug("SetVelocity failed");
 		}
@@ -153,7 +157,7 @@ void CListenerDSound::getVelocity( NLMISC::CVector& vel ) const
 		}
 		else
 		{
-			vel.set(v.x, -v.z, v.y);
+			vel.set(v.x, v.z, v.y);
 		}
     }
 	else
@@ -170,7 +174,14 @@ void CListenerDSound::setOrientation( const NLMISC::CVector& front, const NLMISC
 {
     if (_Listener != NULL)
     {
-        _Listener->SetOrientation(front.x, front.z, -front.y, up.x, up.z, -up.y, DS3D_DEFERRED);
+        if (FAILED(_Listener->SetOrientation(front.x, front.z, front.y, up.x, up.z, up.y, DS3D_DEFERRED)))
+		{
+			nldebug("SetOrientation failed");
+		}
+		else
+		{
+			nldebug ("NLSOUND: set listener orientation NEL(f:%.2f/%.2f/%.2f up:%.2f/%.2f/%.2f) DS(f:%.2f/%.2f/%.2f up:%.2f/%.2f/%.2f)", front.x, front.y, front.z, up.x, up.y, up.z, front.x, front.z, front.y, up.x, up.z, up.y);
+		}
     }
 }
 
@@ -186,19 +197,19 @@ void CListenerDSound::getOrientation( NLMISC::CVector& front, NLMISC::CVector& u
         if (FAILED(_Listener->GetOrientation(&vfront, &vtop)))
 		{
 			nldebug("GetOrientation failed");
-			front.set(0.0f, -1.0f, 0.0f);
-			up.set(0.0f, 0.0f, 1.0f);
+			front.set(0.0f, 0.0f, 1.0f);
+			up.set(0.0f, 1.0f, 0.0f);
 		}
 		else
 		{
-			front.set(vfront.x, -vfront.z, vfront.y);
-			up.set(vtop.x, -vtop.z, vtop.y);
+			front.set(vfront.x, vfront.z, vfront.y);
+			up.set(vtop.x, vtop.z, vtop.y);
 		}
     }
 	else
 	{
-		front.set(0, -1, 0);	
-		up.set(0, 0, 1);	
+		front.set(0, 0, 1);
+		up.set(0, 1, 0);
 	}
 }
 

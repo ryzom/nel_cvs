@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.24 2002/06/28 19:32:25 hanappe Exp $
+ * $Id: audio_mixer_user.cpp,v 1.25 2002/07/10 17:08:56 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,7 +153,7 @@ CAudioMixerUser::~CAudioMixerUser()
 
 void				CAudioMixerUser::writeProfile(std::ostream& out)
 {
-	double time = CTime::getLocalTime();
+	double time = (double)CTime::getLocalTime();
 
 	out << "Mixer: \n";
 	out << "Playing sources: " << getPlayingSourcesNumber() << " \n";
@@ -673,9 +673,11 @@ void				CAudioMixerUser::loadEnvEffects( const char *filename )
 	}
 	_EnvEffects.clear();
 
+	string str = CPath::lookup( filename, false );
+
 	// Load env effects
 	CIFile file;
-	if ( file.open( CPath::lookup( filename ) ) )
+	if ( !str.empty() && file.open(str) )
 	{
 		uint32 n = CEnvEffect::load( _EnvEffects, file );
 		nldebug( "AM: Loaded %u environmental effects", n );
@@ -808,8 +810,10 @@ void			CAudioMixerUser::loadEnvSounds( const char *filename, UEnvSound **treeRoo
 	nlassert( filename != NULL );
 	nlinfo( "Loading environment sounds from %s...", filename );
 
+	string str = CPath::lookup( filename, false );
+
 	CIFile file;
-	if ( file.open( CPath::lookup( filename ) ) )
+	if ( !str.empty() && file.open( str ) )
 	{
 		uint32 n = 0; //CEnvSoundUser::load( _EnvSounds, file );
 		nldebug( "AM: Loaded %u environment sounds", n );

@@ -1,7 +1,7 @@
 /** \file nel_export_view.cpp
  * <File description>
  *
- * $Id: nel_export_view.cpp,v 1.39 2002/08/28 15:32:57 corvazier Exp $
+ * $Id: nel_export_view.cpp,v 1.40 2002/09/16 08:19:38 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -513,8 +513,9 @@ void CNelExport::viewMesh (TimeValue time)
 					slInfo.CellSurfaceLightSize= theExportSceneStruct.SurfaceLightingCellSize;
 					NLMISC::clamp(slInfo.CellSurfaceLightSize, 0.001f, 1000000.f);
 					slInfo.CellRaytraceDeltaZ= theExportSceneStruct.SurfaceLightingDeltaZ;
-					slInfo.ColIdentifierPrefix= "col_";
-					slInfo.ColIdentifierSuffix= "_";
+					// no more add any prefix to the colision identifier.
+					slInfo.ColIdentifierPrefix= "";
+					slInfo.ColIdentifierSuffix= "";
 					// Build RetrieverBank and GlobalRetriever from collisions in scene
 					_ExportNel->computeCollisionRetrieverFromScene(time, slInfo.RetrieverBank, slInfo.GlobalRetriever, 
 						slInfo.ColIdentifierPrefix.c_str(), slInfo.ColIdentifierSuffix.c_str(), slInfo.IgFileName);

@@ -1,7 +1,7 @@
 /** \file export_collision.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_collision.cpp,v 1.13 2002/09/04 12:27:16 corvazier Exp $
+ * $Id: export_collision.cpp,v 1.14 2002/09/16 08:19:26 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -411,6 +411,8 @@ void	CExportNel::computeCollisionRetrieverFromScene(TimeValue time,
 		// create a retriverBnak and a global retrevier.
 		retrieverBank= new CRetrieverBank;
 		globalRetriever= new CGlobalRetriever;
+		// must init default grid.
+		globalRetriever->init();
 
 		// list of valid instance to create.
 		vector<pair<uint32, CVector> >	retrieverInstances;
@@ -445,11 +447,21 @@ void	CExportNel::computeCollisionRetrieverFromScene(TimeValue time,
 			if(igname.find(igNamePrefix)==0)
 			{
 				uint	lenPrefix= strlen(igNamePrefix);
-				sint	pos= igname.find(igNameSuffix, lenPrefix);
-				if(pos!=string::npos)
+				sint	endPos;
+				// if no suffix
+				if(string(igNameSuffix).empty())
+				{
+					endPos= igname.size();
+				}
+				else
+				{
+					endPos= igname.find(igNameSuffix, lenPrefix);
+				}
+				// if found suffix, or empty suffix.
+				if(endPos!=string::npos)
 				{
 					// Yes => setup the name between prefix/suffix
-					retIgName= igname.substr(lenPrefix, pos-lenPrefix);
+					retIgName= igname.substr(lenPrefix, endPos-lenPrefix);
 				}
 			}
 		}

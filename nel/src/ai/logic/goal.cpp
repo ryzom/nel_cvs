@@ -93,6 +93,7 @@ namespace NLAILOGIC
 		op->getDebugString(buffer);
 #endif
 */
+
 		nlinfo("operatorSuccess: 0x%0x, %d, (0x%0x, %s)", this, _Successors.size(),op,(const char *)op->getType());
 		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
 		while ( it_s != _Successors.end() )
@@ -108,7 +109,7 @@ namespace NLAILOGIC
 			{
 				(*it_s)->release();
 				_Successors.erase( it_s );
-				return;
+				break;
 			}
 			it_s++;
 		}
@@ -122,10 +123,23 @@ namespace NLAILOGIC
 			case achieveForever:
 				break;
 		}
+
 	}
 
 	void CGoal::operatorFailure(NLAIAGENT::IBasicAgent *op)
 	{
+		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
+		while ( it_s != _Successors.end() )
+		{
+			if ( (**it_s) == *op )
+			{
+				(*it_s)->release();
+				_Successors.erase( it_s );
+				break;
+			}
+			it_s++;
+		}
+
 		switch ( _Mode )
 		{
 			case achieveOnce:
@@ -134,17 +148,6 @@ namespace NLAILOGIC
 
 			case achieveForever:
 				break;
-		}
-		std::vector<NLAIAGENT::IBasicAgent *>::iterator it_s = _Successors.begin();
-		while ( it_s != _Successors.end() )
-		{
-			if ( (**it_s) == *op )
-			{
-				(*it_s)->release();
-				_Successors.erase( it_s );
-				return;
-			}
-			it_s++;
 		}
 	}
 

@@ -1,7 +1,7 @@
 /** \file instance_group_user.cpp
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.cpp,v 1.8 2001/08/14 16:22:35 besson Exp $
+ * $Id: instance_group_user.cpp,v 1.9 2001/08/15 12:00:27 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -214,7 +214,20 @@ const NLMISC::CVector& CInstanceGroupUser::getInstanceScale (uint instanceNb) co
 	return _InstanceGroup.getInstanceScale (instanceNb);
 }
 
+
+
 // ***************************************************************************
+UInstance *CInstanceGroupUser::getByName (std::string &name)
+{
+	map<string,CInstanceUser*>::iterator it = _Instances.find (name);
+	if (it != _Instances.end())
+		return it->second;
+	else
+		return NULL;
+}
+
+// ***************************************************************************
+
 const UInstance *CInstanceGroupUser::getByName (std::string &name) const
 {
 	map<string,CInstanceUser*>::const_iterator it = _Instances.find (name);
@@ -225,12 +238,14 @@ const UInstance *CInstanceGroupUser::getByName (std::string &name) const
 }
 
 // ***************************************************************************
+
 void CInstanceGroupUser::setLightFactor (const std::string &LightName, CRGBA nFactor)
 {
 	_InstanceGroup.setLightFactor (LightName, nFactor);
 }
 
 // ***************************************************************************
+
 void CInstanceGroupUser::createRoot (UScene &scene)
 {
 	_InstanceGroup.createRoot (((CSceneUser*)&scene)->getScene());

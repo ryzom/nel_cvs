@@ -1,7 +1,7 @@
 /** \file instance_group_user.h
  * Implementation of the user interface managing instance groups.
  *
- * $Id: instance_group_user.h,v 1.5 2001/08/14 16:22:35 besson Exp $
+ * $Id: instance_group_user.h,v 1.6 2001/08/15 12:00:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,7 @@ private:
 	const NLMISC::CVector& getInstancePos (uint instanceNb) const;
 	const NLMISC::CQuat& getInstanceRot (uint instanceNb) const;
 	const NLMISC::CVector& getInstanceScale (uint instanceNb) const;
+	UInstance *getByName (std::string& name);
 	const UInstance *getByName (std::string& name) const;
 
 	void setLightFactor (const std::string &LightName, NLMISC::CRGBA nFactor);

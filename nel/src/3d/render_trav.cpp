@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.54 2004/08/03 16:22:59 vizerie Exp $
+ * $Id: render_trav.cpp,v 1.55 2004/08/13 15:41:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -88,6 +88,8 @@ CRenderTrav::CRenderTrav()
 	_LayersRenderingOrder= true;		
 	_FirstWaterModel = NULL;		
 }
+
+
 // ***************************************************************************
 void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 {
@@ -201,7 +203,7 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 		// fast floor
 		NLMISC::OptFastFloorEnd();
 	}
-
+	
 	if (renderPart & UScene::RenderOpaque)
 	{	
 		// Render Opaque stuff.
@@ -223,10 +225,10 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 		_CurrentPassOpaque = true;
 		OrderOpaqueList.begin();
 		while( OrderOpaqueList.get() != NULL )
-		{
+		{			
 			CTransform	*tr= OrderOpaqueList.get();
-			tr->traverseRender();
-			OrderOpaqueList.next();
+			tr->traverseRender();			
+			OrderOpaqueList.next();			
 		}
 
 		/* Render MeshBlock Manager. 
@@ -287,36 +289,38 @@ void		CRenderTrav::traverse(UScene::TRenderPart renderPart, bool newRender)
 
 	if (renderPart & UScene::RenderTransparent)
 	{
-		// setup water models
-		CWaterModel *curr = _FirstWaterModel;
-		uint numWantedVertices = 0;
-		while (curr)
-		{
-			numWantedVertices += curr->getNumWantedVertices();
-			curr = curr->_Next;
-		}
-		CWaterModel::setupVertexBuffer(numWantedVertices, getDriver());
-		//
+		if (_FirstWaterModel) // avoid a lock if no water is to be rendered
 		{		
-
-			CVertexBufferReadWrite vbrw;
-			CWaterModel::VB.lock(vbrw);
+			// setup water models
 			CWaterModel *curr = _FirstWaterModel;
-			void *datas = vbrw.getVertexCoordPointer(0);			
-			//
-			uint tri = 0;
+			uint numWantedVertices = 0;
 			while (curr)
 			{
-				tri = curr->fillVB(datas, tri, *getDriver());
-				nlassert(tri <= numWantedVertices);
+				numWantedVertices += curr->getNumWantedVertices();
 				curr = curr->_Next;
-			}	
-			nlassert(tri * 3 == numWantedVertices);
-		}
-		// Unlink all water model
-		while (_FirstWaterModel)
-		{
-			_FirstWaterModel->unlink();
+			}
+			CWaterModel::setupVertexBuffer(numWantedVertices, getDriver());
+			//
+			{		
+				CVertexBufferReadWrite vbrw;
+				CWaterModel::VB.lock(vbrw);
+				CWaterModel *curr = _FirstWaterModel;
+				void *datas = vbrw.getVertexCoordPointer(0);			
+				//
+				uint tri = 0;
+				while (curr)
+				{
+					tri = curr->fillVB(datas, tri, *getDriver());
+					nlassert(tri <= numWantedVertices);
+					curr = curr->_Next;
+				}	
+				nlassert(tri * 3 == numWantedVertices);
+			}
+			// Unlink all water model
+			while (_FirstWaterModel)
+			{
+				_FirstWaterModel->unlink();
+			}
 		}
 	}
 

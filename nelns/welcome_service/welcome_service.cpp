@@ -1,7 +1,7 @@
 /** \file welcome_service.cpp
  * Welcome Service (WS)
  *
- * $Id: welcome_service.cpp,v 1.10 2002/03/04 10:17:55 lecroart Exp $
+ * $Id: welcome_service.cpp,v 1.11 2002/03/04 15:33:43 lecroart Exp $
  *
  */
 
@@ -24,13 +24,13 @@
  * MA 02111-1307, USA.
  */
 
+#include "nel/misc/types_nl.h"
+
 #include <stdio.h>
 #include <ctype.h>
 #include <math.h>
 
 #include <list>
-
-#include "nel/misc/types_nl.h"
 
 #include "nel/misc/debug.h"
 #include "nel/misc/config_file.h"
@@ -301,7 +301,21 @@ void cbLSConnection (const std::string &serviceName, uint16 sid, void *arg)
 {
 	CMessage msgout ("WS_IDENT");
 	string shardName;
-	try { shardName = ServiceInstance->ConfigFile.getVar ("ShardName").asString(); } catch(Exception &) { }
+	
+	try
+	{
+		shardName = ServiceInstance->ConfigFile.getVar ("ShardName").asString();
+	}
+	catch(Exception &)
+	{
+		shardName = "::";
+	}
+
+	if (shardName.empty())
+	{
+		nlerror ("ShardName variable in the config file must not be empty, set it to \"::\" for the default behavior");
+	}
+
 	msgout.serial (shardName);
 	CUnifiedNetwork::getInstance()->send (serviceName, msgout);
 }
@@ -350,7 +364,7 @@ public:
 };
 
 
-/// Welcome Service
+// Service instanciation
 NLNET_SERVICE_MAIN (CWelcomeService, "WS", "welcome_service", 0, FESCallbackArray);
 
 

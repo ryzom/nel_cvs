@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.11 2001/07/04 17:18:51 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.12 2001/07/12 16:09:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,8 @@
 #include "value_blender_dlg.h"
 #include "value_gradient_dlg.h"
 #include "value_from_emitter_dlg.h"
-
+#include "bin_op_dlg.h"
+#include "edit_user_param.h"
 
 
 #include "3d/ps_attrib_maker.h"
@@ -321,6 +322,7 @@ void CAttribDlg::init(HBITMAP bitmap, sint x, sint y, CWnd *pParent)
 		m_UseScheme.ShowWindow(SW_HIDE) ;
 	}
 
+	inputValueUpdate() ;
 
 	ShowWindow(SW_SHOW) ;
 }
@@ -329,6 +331,7 @@ void CAttribDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAttribDlg)
+	DDX_Control(pDX, IDC_EDIT_INPUT, m_EditUserParam);
 	DDX_Control(pDX, IDC_SCHEME_INPUT, m_SchemeInput);
 	DDX_Control(pDX, IDC_CONSTANT_VALUE_POS, m_CstValuePos);
 	DDX_Control(pDX, IDC_ATTRIB_NB_CYCLES, m_NbCyclePos);
@@ -339,6 +342,18 @@ void CAttribDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_SCHEME, m_Scheme);
 	DDX_Check(pDX, IDC_CLAMP_ATTRIB, m_Clamp);
 	//}}AFX_DATA_MAP
+}
+
+void CAttribDlg::inputValueUpdate(void)
+{
+	if (useScheme() && getSchemeInput().InputType == NL3D::CPSInputType::attrUserParam)
+	{
+		m_EditUserParam.EnableWindow(TRUE) ;
+	}
+	else
+	{
+		m_EditUserParam.EnableWindow(FALSE) ;
+	}
 }
 
 
@@ -407,7 +422,8 @@ void CAttribDlg::schemeValueUpdate()
 	if (hasSchemeCustomInput())
 	{
 		m_SchemeInput.EnableWindow() ;
-		m_SchemeInput.SetCurSel(getSchemeInput()) ;
+		m_SchemeInput.SetCurSel((uint) getSchemeInput().InputType) ;
+		inputValueUpdate() ;
 	}
 	else
 	{
@@ -468,7 +484,14 @@ void CAttribDlg::OnEditScheme()
 void CAttribDlg::OnSelchangeSchemeInput() 
 {
 	UpdateData() ;
-	setSchemeInput((NL3D::TPSInputType::TInputType) m_SchemeInput.GetCurSel()) ;
+	NL3D::CPSInputType it ;
+	it.InputType = (NL3D::CPSInputType::TInputType) m_SchemeInput.GetCurSel() ; 
+	if (it.InputType == NL3D::CPSInputType::attrUserParam)
+	{
+		it.UserParamNum = 0 ;
+	}	
+	setSchemeInput(it) ;
+	inputValueUpdate() ;
 }
 
 
@@ -479,8 +502,23 @@ void CAttribDlg::OnClampAttrib()
 }
 
 
-
-
+void CAttribDlg::OnEditInput() 
+{
+	switch (getSchemeInput().InputType)
+	{
+		case NL3D::CPSInputType::attrUserParam:
+		{
+			CEditUserParam ep(getSchemeInput().UserParamNum) ;
+			if (ep.DoModal() == IDOK)
+			{
+				NL3D::CPSInputType it =  getSchemeInput() ;
+				it.UserParamNum = ep.getUserParamIndex() ;
+				setSchemeInput(it) ;
+			}
+		} 
+		break ;
+	}	
+}
 
 BEGIN_MESSAGE_MAP(CAttribDlg, CDialog)
 	//{{AFX_MSG_MAP(CAttribDlg)
@@ -489,6 +527,7 @@ BEGIN_MESSAGE_MAP(CAttribDlg, CDialog)
 	ON_BN_CLICKED(IDC_EDIT_SCHEME, OnEditScheme)
 	ON_CBN_SELCHANGE(IDC_SCHEME_INPUT, OnSelchangeSchemeInput)
 	ON_BN_CLICKED(IDC_CLAMP_ATTRIB, OnClampAttrib)
+	ON_BN_CLICKED(IDC_EDIT_INPUT, OnEditInput)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -538,11 +577,11 @@ END_MESSAGE_MAP()
 
 	uint CAttribDlgFloat::getNumScheme(void) const
 	{
-		return _DisableMemoryScheme ? 2 : 3 ;
+		return _DisableMemoryScheme ? 2 : 4 ;
 	}
 	std::string CAttribDlgFloat::getSchemeName(uint index) const
 	{
-		nlassert(index < 3) ;
+		nlassert(index < 4) ;
 		switch (index)
 		{
 			case 0 :
@@ -553,6 +592,9 @@ END_MESSAGE_MAP()
 			break ;
 			case 2 :
 				return std::string("value computed from emitter") ;
+			break ;
+			case 3 :
+				return std::string("binary operator") ;
 			break ;
 			default:
 				return std::string("") ;
@@ -589,6 +631,11 @@ END_MESSAGE_MAP()
 			CValueFromEmitterDlgT<float, CAttribDlgFloat> vfe( (NL3D::CPSFloatMemory *)(scheme), std::string("FLOAT SCHEME"), m_AttrBitmap.GetBitmap()) ;			
 			vfe.DoModal() ;
 		}
+		if (dynamic_cast<const NL3D::CPSFloatBinOp *>(scheme)) 
+		{
+			CBinOpDlgT<float, CAttribDlgFloat> bod( (NL3D::CPSFloatBinOp *)(scheme), std::string("FLOAT BIN OP"), m_AttrBitmap.GetBitmap()) ;	
+			bod.DoModal() ;
+		}
 	}
 
 	sint CAttribDlgFloat::getCurrentScheme(void) const
@@ -607,13 +654,17 @@ END_MESSAGE_MAP()
 		{
 			return 2 ;
 		}
+		if (dynamic_cast<const NL3D::CPSFloatBinOp *>(scheme)) 
+		{
+			return 3 ;
+		}
 		return -1 ;
 	}
 
 
 	void CAttribDlgFloat::setCurrentScheme(uint index)
 	{
-		nlassert(index < 3) ;
+		nlassert(index < 4) ;
 
 
 		NL3D::CPSAttribMaker<float> *scheme = NULL ;
@@ -629,6 +680,11 @@ END_MESSAGE_MAP()
 			case 2 :
 				scheme = new NL3D::CPSFloatMemory ;
 				((NL3D::CPSAttribMakerMemory<float> *) scheme)->setScheme(new NL3D::CPSFloatBlender) ;
+			break ;
+			case 3 :
+				scheme = new NL3D::CPSFloatBinOp ;
+				((NL3D::CPSFloatBinOp *) scheme)->setArg(0, new NL3D::CPSFloatBlender) ;
+				((NL3D::CPSFloatBinOp *) scheme)->setArg(1, new NL3D::CPSFloatBlender) ;
 			break ;
 
 			default:	
@@ -682,11 +738,11 @@ END_MESSAGE_MAP()
 	uint CAttribDlgUInt::getNumScheme(void) const
 	{
 
-		return _DisableMemoryScheme ? 2 : 3 ;
+		return _DisableMemoryScheme ? 2 : 4 ;
 	}
 	std::string CAttribDlgUInt::getSchemeName(uint index) const
 	{
-		nlassert(index < 3) ;
+		nlassert(index < 4) ;
 		switch (index)
 		{
 			case 0 :
@@ -697,6 +753,9 @@ END_MESSAGE_MAP()
 			break ;
 			case 2 :
 				return std::string("values computed from emitter") ;
+			break ;
+			case 3 :
+				return std::string("binary operator") ;
 			break ;
 			default:
 				return std::string("") ;
@@ -730,8 +789,13 @@ END_MESSAGE_MAP()
 		}
 		if (dynamic_cast<const NL3D::CPSUIntMemory *>(scheme)) 
 		{
-			CValueFromEmitterDlgT<uint32, CAttribDlgUInt> vfe( (NL3D::CPSUIntMemory *)(scheme), std::string("FLOAT SCHEME"), m_AttrBitmap.GetBitmap()) ;			
+			CValueFromEmitterDlgT<uint32, CAttribDlgUInt> vfe( (NL3D::CPSUIntMemory *)(scheme), std::string("UINT SCHEME"), m_AttrBitmap.GetBitmap()) ;			
 			vfe.DoModal() ;
+		}
+		if (dynamic_cast<const NL3D::CPSUIntBinOp *>(scheme)) 
+		{
+			CBinOpDlgT<uint32, CAttribDlgUInt> bod( (NL3D::CPSUIntBinOp *)(scheme), std::string("UINT BIN OP"), m_AttrBitmap.GetBitmap()) ;	
+			bod.DoModal() ;
 		}
 		
 	}
@@ -752,13 +816,17 @@ END_MESSAGE_MAP()
 		{
 			return 2 ;
 		}
+		if (dynamic_cast<const NL3D::CPSUIntBinOp *>(scheme)) 
+		{
+			return 3 ;
+		}
 		return -1 ;
 	}
 
 
 	void CAttribDlgUInt::setCurrentScheme(uint index)
 	{
-		nlassert(index < 3) ;
+		nlassert(index < 4) ;
 
 
 		NL3D::CPSAttribMaker<uint32> *scheme = NULL ;
@@ -774,6 +842,11 @@ END_MESSAGE_MAP()
 			case 2 :
 				scheme = new NL3D::CPSUIntMemory ;
 				((NL3D::CPSAttribMakerMemory<uint32> *) scheme)->setScheme(new NL3D::CPSUIntBlender) ;
+			break ;
+			case 3 :
+				scheme = new NL3D::CPSUIntBinOp ;
+				((NL3D::CPSUIntBinOp *) scheme)->setArg(0, new NL3D::CPSUIntBlender) ;
+				((NL3D::CPSUIntBinOp *) scheme)->setArg(1, new NL3D::CPSUIntBlender) ;
 			break ;
 			default:	
 			break ;
@@ -825,11 +898,11 @@ END_MESSAGE_MAP()
 
 	uint CAttribDlgInt::getNumScheme(void) const
 	{
-		return _DisableMemoryScheme ? 2 : 3 ;
+		return _DisableMemoryScheme ? 2 : 4 ;
 	}
 	std::string CAttribDlgInt::getSchemeName(uint index) const
 	{
-		nlassert(index < 3) ;
+		nlassert(index < 4) ;
 		switch (index)
 		{
 			case 0 :
@@ -840,6 +913,9 @@ END_MESSAGE_MAP()
 			break ;
 			case 2 :
 				return std::string("value computed from emitter") ;
+			break ;
+			case 3 :
+				return std::string("binary operator") ;
 			break ;
 			default:
 				return std::string("") ;
@@ -881,6 +957,11 @@ END_MESSAGE_MAP()
 			CValueFromEmitterDlgT<float, CAttribDlgFloat> vfe( (NL3D::CPSFloatMemory *)(scheme), std::string("UINT SCHEME"), m_AttrBitmap.GetBitmap()) ;			
 			vfe.DoModal() ;
 		}
+		if (dynamic_cast<const NL3D::CPSIntBinOp *>(scheme)) 
+		{
+			CBinOpDlgT<sint32, CAttribDlgInt> bod( (NL3D::CPSIntBinOp *)(scheme), std::string("SINT BIN OP"), m_AttrBitmap.GetBitmap()) ;	
+			bod.DoModal() ;
+		}
 	}
 
 	sint CAttribDlgInt::getCurrentScheme(void) const
@@ -899,13 +980,17 @@ END_MESSAGE_MAP()
 		{
 			return 2 ;
 		}
+		if (dynamic_cast<const NL3D::CPSIntBinOp *>(scheme)) 
+		{
+			return 3 ;
+		}
 		return -1 ;
 	}
 
 
 	void CAttribDlgInt::setCurrentScheme(uint index)
 	{
-		nlassert(index < 3) ;
+		nlassert(index < 4) ;
 
 
 		NL3D::CPSAttribMaker<sint32> *scheme = NULL ;
@@ -921,6 +1006,11 @@ END_MESSAGE_MAP()
 			case 2 :
 				scheme = new NL3D::CPSIntMemory ;
 				((NL3D::CPSAttribMakerMemory<sint32> *) scheme)->setScheme(new NL3D::CPSIntBlender) ; 
+			break ;
+			case 3 :
+				scheme = new NL3D::CPSIntBinOp ;
+				((NL3D::CPSIntBinOp *) scheme)->setArg(0, new NL3D::CPSIntBlender) ;
+				((NL3D::CPSIntBinOp *) scheme)->setArg(1, new NL3D::CPSIntBlender) ;
 			break ;
 			default:	
 			break ;
@@ -985,12 +1075,12 @@ END_MESSAGE_MAP()
 
 	uint CAttribDlgRGBA::getNumScheme(void) const
 	{
-		return _DisableMemoryScheme ? 3 : 4 ;
+		return _DisableMemoryScheme ? 3 : 5 ;
 	}
 
 	std::string CAttribDlgRGBA::getSchemeName(uint index) const
 	{
-		nlassert(index < 4) ;
+		nlassert(index < 5) ;
 		switch (index)
 		{
 			case 0 :
@@ -1004,6 +1094,9 @@ END_MESSAGE_MAP()
 			break ;
 			case 3 :
 				return std::string("value computed from emitter") ;
+			break ;
+			case 4 :
+				return std::string("binary operator") ;
 			break ;
 			default:
 				return std::string("") ;
@@ -1048,11 +1141,19 @@ END_MESSAGE_MAP()
 			CValueFromEmitterDlgT<CRGBA, CAttribDlgRGBA> vfe( (NL3D::CPSColorMemory *)(scheme), std::string("COLOR SCHEME"), m_AttrBitmap.GetBitmap()) ;			
 			vfe.DoModal() ;
 		}
+
+		if (dynamic_cast<const NL3D::CPSColorBinOp *>(scheme)) 
+		{
+			CBinOpDlgT<CRGBA, CAttribDlgRGBA> bod( (NL3D::CPSColorBinOp *)(scheme), std::string("COLOR BIN OP"), m_AttrBitmap.GetBitmap()) ;	
+			bod.DoModal() ;
+		}		
+
+
 	}
 
 	void CAttribDlgRGBA::setCurrentScheme(uint index)
 	{
-		nlassert(index < 4) ;
+		nlassert(index < 5) ;
 
 		NL3D::CPSAttribMaker<CRGBA> *scheme = NULL ;
 
@@ -1070,6 +1171,11 @@ END_MESSAGE_MAP()
 			case 3 :
 				scheme = new NL3D::CPSColorMemory ;
 				((NL3D::CPSAttribMakerMemory<CRGBA> *) scheme)->setScheme(new NL3D::CPSColorBlender) ;
+			break ;
+			case 4 :
+				scheme = new NL3D::CPSColorBinOp ;
+				((NL3D::CPSColorBinOp *) scheme)->setArg(0, new NL3D::CPSColorBlender) ;
+				((NL3D::CPSColorBinOp *) scheme)->setArg(1, new NL3D::CPSColorBlender) ;
 			break ;
 			default:	
 			break ;
@@ -1100,6 +1206,10 @@ END_MESSAGE_MAP()
 		if (dynamic_cast<const NL3D::CPSColorMemory *>(scheme)) 
 		{
 			return 3 ;
+		}
+		if (dynamic_cast<const NL3D::CPSColorBinOp *>(scheme)) 
+		{
+			return 4 ;
 		}
 		return -1 ;
 	}
@@ -1158,12 +1268,12 @@ END_MESSAGE_MAP()
 
 	uint CAttribDlgPlaneBasis::getNumScheme(void) const
 	{
-		return _DisableMemoryScheme ? 2 : 3 ;
+		return _DisableMemoryScheme ? 2 : 4 ;
 	}
 
 	std::string CAttribDlgPlaneBasis::getSchemeName(uint index) const
 	{
-		nlassert(index < 3) ;
+		nlassert(index < 4) ;
 		switch (index)
 		{			
 			case 0:
@@ -1174,6 +1284,9 @@ END_MESSAGE_MAP()
 			break ;
 			case 2:
 				return std::string("value computed from emitter") ;
+			break ;
+			case 3:
+				return std::string("binary operator") ;
 			break ;
 			default:
 				return std::string("") ;
@@ -1207,12 +1320,18 @@ END_MESSAGE_MAP()
 			CValueFromEmitterDlgT<NL3D::CPlaneBasis, CAttribDlgPlaneBasis> vfe( (NL3D::CPSPlaneBasisMemory *)(scheme), std::string("PLANE BASIS SCHEME"), m_AttrBitmap.GetBitmap()) ;			
 			vfe.DoModal() ;
 		}
+
+		if (dynamic_cast<const NL3D::CPSPlaneBasisBinOp *>(scheme)) 
+		{
+			CBinOpDlgT<NL3D::CPlaneBasis, CAttribDlgPlaneBasis> bod( (NL3D::CPSPlaneBasisBinOp *)(scheme), std::string("PLANE BASIS BIN OP"), m_AttrBitmap.GetBitmap()) ;	
+			bod.DoModal() ;
+		}	
 	
 	}
 
 	void CAttribDlgPlaneBasis::setCurrentScheme(uint index)
 	{
-		nlassert(index < 3) ;
+		nlassert(index < 4) ;
 
 		NL3D::CPSAttribMaker<NL3D::CPlaneBasis> *scheme = NULL ;
 
@@ -1227,6 +1346,11 @@ END_MESSAGE_MAP()
 			case 2:	
 				scheme = new NL3D::CPSPlaneBasisMemory ;
 				((NL3D::CPSAttribMakerMemory<NL3D::CPlaneBasis> *) scheme)->setScheme(new NL3D::CPSPlaneBasisFollowSpeed) ;
+			break ;
+			case 3 :
+				scheme = new NL3D::CPSPlaneBasisBinOp ;
+				((NL3D::CPSPlaneBasisBinOp *) scheme)->setArg(0, new NL3D::CPSPlaneBasisFollowSpeed) ;
+				((NL3D::CPSPlaneBasisBinOp *) scheme)->setArg(1, new NL3D::CPSPlaneBasisFollowSpeed) ;
 			break ;
 			default:	
 			break ;
@@ -1256,6 +1380,10 @@ END_MESSAGE_MAP()
 		{
 			return 2 ;
 		}
+		if (dynamic_cast<const NL3D::CPSPlaneBasisBinOp *>(scheme)) 
+		{
+			return 3 ;
+		}
 		
 		
 		return -1 ;
@@ -1269,6 +1397,7 @@ END_MESSAGE_MAP()
 	
 		return ce ;
 	}
+
 
 
 

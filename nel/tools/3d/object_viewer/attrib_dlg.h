@@ -1,7 +1,7 @@
 /** \file attrib_dlg.h
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.h,v 1.7 2001/07/04 12:24:32 vizerie Exp $
+ * $Id: attrib_dlg.h,v 1.8 2001/07/12 16:09:39 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,7 @@
 
 #include "nel/misc/rgba.h"
 #include "3d/ps_plane_basis.h"
+#include "3d/ps_attrib_maker.h"
 #include "editable_range.h"
 
 
@@ -65,6 +66,7 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CAttribDlg)
 	enum { IDD = IDD_ATTRIB_DLG };
+	CButton	m_EditUserParam;
 	CComboBox	m_SchemeInput;
 	CStatic	m_CstValuePos;
 	CStatic	m_NbCyclePos;
@@ -118,6 +120,9 @@ protected:
 	// change the dialog for constant values
 	void cstValueUpdate() ;
 
+	/// enable / disable the 'edit input' button, when input can be edited
+	void inputValueUpdate(void) ;
+
 
 	// toggle back from scheme to cst value
 	virtual void resetCstValue(void) = 0 ;
@@ -152,9 +157,9 @@ protected:
 	// tells wether the scheme supports custom input
 	virtual bool hasSchemeCustomInput(void) const = 0 ;
 	// retrieve the scheme input id
-	virtual uint getSchemeInput(void) const = 0 ;
+	virtual NL3D::CPSInputType getSchemeInput(void) const = 0 ;
 	// set the scheme input id
-	virtual void setSchemeInput(uint index) = 0 ;
+	virtual void setSchemeInput(const NL3D::CPSInputType &input) = 0 ;
 
 	// tells wether the scheme input value is clamped or not
 	virtual bool isSchemeClamped(void) const = 0 ;
@@ -195,6 +200,7 @@ protected:
 	afx_msg void OnEditScheme();
 	afx_msg void OnSelchangeSchemeInput();
 	afx_msg void OnClampAttrib();
+	afx_msg void OnEditInput();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
@@ -230,8 +236,8 @@ public:
 	}
 
 	virtual bool hasSchemeCustomInput(void) const { return _SchemeWrapper->getScheme()->hasCustomInput() ; }
-	virtual uint getSchemeInput(void) const { return (uint)  _SchemeWrapper->getScheme()->getInput() ; }	
-	virtual void setSchemeInput(uint index) { _SchemeWrapper->getScheme()->setInput((NL3D::TPSInputType::TInputType) index) ; }
+	virtual NL3D::CPSInputType getSchemeInput(void) const { return  _SchemeWrapper->getScheme()->getInput() ; }	
+	virtual void setSchemeInput(const NL3D::CPSInputType &input) { _SchemeWrapper->getScheme()->setInput(input) ; }
 
 
 	virtual float getSchemeNbCycles(void) const { return _SchemeWrapper->getScheme()->getNbCycles() ; }

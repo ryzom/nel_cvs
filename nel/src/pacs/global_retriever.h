@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.31 2003/06/26 15:36:29 legros Exp $
+ * $Id: global_retriever.h,v 1.32 2003/10/23 18:58:13 puzin Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -256,7 +256,7 @@ public:
 
 		waterHeight = surface.getWaterHeight();
 
-		return (surface.getFlags() & CRetrievableSurface::IsUnderWaterBit) != 0;
+		return (surface.getFlags() & (1 << CRetrievableSurface::IsUnderWaterBit)) != 0;
 	}
 
 	//@}

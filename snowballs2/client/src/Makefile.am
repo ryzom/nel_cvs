@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.5 2001/07/27 15:50:40 corvazier Exp $
+# $Id: Makefile.am,v 1.6 2001/08/07 14:49:50 valignat Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -18,8 +18,8 @@ snowballs_SOURCES    = animation.cpp                       \
                        compass.h                           \
                        entities.cpp                        \
                        entities.h                          \
-					   graph.cpp						   \
-					   graph.h							   \
+		       graph.cpp                           \
+		       graph.h                             \
                        interface.cpp                       \
                        interface.h                         \
                        landscape.cpp                       \
@@ -32,8 +32,8 @@ snowballs_SOURCES    = animation.cpp                       \
                        network.h                           \
                        pacs.cpp                            \
                        pacs.h                              \
-					   physics.cpp						   \
-					   physics.h						   \
+                       physics.cpp                         \
+                       physics.h                           \
                        radar.cpp                           \
                        radar.h                             \
                        sound.cpp                           \

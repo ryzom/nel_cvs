@@ -1,7 +1,7 @@
 /** \file particle_tree_ctrl.cpp
  * shows the structure of a particle system
  *
- * $Id: particle_tree_ctrl.cpp,v 1.28 2001/10/04 12:32:11 vizerie Exp $
+ * $Id: particle_tree_ctrl.cpp,v 1.29 2001/11/23 18:49:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -604,6 +604,10 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 		case IDM_SOUND_LOC:  createLocAndBindable = true;
 		case IDM_SOUND:
 			toCreate = new NL3D::CPSSound;
+			if (!_ParticleDlg->StartStopDlg->isRunning())
+			{
+				(static_cast<NL3D::CPSSound *>(toCreate))->stopSound();
+			}
 		break;
 
 		//////////////
@@ -795,6 +799,7 @@ BOOL CParticleTreeCtrl::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDL
 
 						
 						buildTreeFromPS(nt->PS, nt->PSModel);
+						nt->PS->stopSound();
 					}
 					else
 					{

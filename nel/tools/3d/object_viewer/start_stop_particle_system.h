@@ -1,7 +1,7 @@
 /** \file start_stop_particle_system.h
  * a pop-up dialog that allow to start and stop a particle system
  *
- * $Id: start_stop_particle_system.h,v 1.7 2001/09/26 17:52:25 vizerie Exp $
+ * $Id: start_stop_particle_system.h,v 1.8 2001/11/23 18:49:50 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -80,6 +80,8 @@ public:
 	// reset all initial infos
 	void reset();
 
+	
+
 	// initial position and speed of a located instance in a particle system
 	struct CInitPSInstanceInfo
 	{	
@@ -100,6 +102,8 @@ public:
 		NLMISC::CVector Scale;
 	};
 
+	NL3D::CParticleSystem *getPS() { return _PS; }
+	const NL3D::CParticleSystem *getPS() const { return _PS; }
 
 
 protected:

@@ -1,7 +1,7 @@
 /** \file logic_state.cpp
  * 
  *
- * $Id: logic_state.cpp,v 1.2 2002/06/20 12:17:56 lecroart Exp $
+ * $Id: logic_state.cpp,v 1.3 2002/07/26 09:52:24 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -242,7 +242,7 @@ void CLogicState::trySendEntryMessages()
 	vector<CLogicEventMessage>::iterator itMsg;
 	for( itMsg = _EntryMessages.begin(); itMsg != _EntryMessages.end(); ++itMsg )
 	{
-		if( !(*itMsg).Sent && (*itMsg).DestinationId.Type != 0xfe )
+		if( !(*itMsg).Sent && (*itMsg).DestinationId.getType() != 0xfe )
 		{
 			CMessage msgOut( (*itMsg).MessageId );
 			msgOut.serial( (*itMsg).Arguments );
@@ -272,7 +272,7 @@ void CLogicState::trySendEventMessages()
 		{
 			if( (*itEvent).EventAction.EventMessage.Sent == false )
 			{
-				if( (*itEvent).EventAction.EventMessage.DestinationId.Type != 0xfe )
+				if( (*itEvent).EventAction.EventMessage.DestinationId.getType() != 0xfe )
 				{
 					CMessage msgOut( (*itEvent).EventAction.EventMessage.MessageId );
 					msgOut.serial( (*itEvent).EventAction.EventMessage.Arguments );

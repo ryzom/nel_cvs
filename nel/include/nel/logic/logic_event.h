@@ -1,7 +1,7 @@
 /** \file logic_event.h
  * 
  *
- * $Id: logic_event.h,v 1.2 2002/06/20 12:17:49 lecroart Exp $
+ * $Id: logic_event.h,v 1.3 2002/07/26 09:52:24 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -79,9 +79,9 @@ public:
 		Sent = false;
 		Destination = "no_destination";
 		MessageId = "no_id";
-		DestinationId.Type = 0xfe;
-		DestinationId.CreatorId = 0;
-		DestinationId.DynamicId = 0;
+		DestinationId.setType( 0xfe );
+		DestinationId.setCreatorId( 0 );
+		DestinationId.setDynamicId( 0 );
 		Arguments = "no_arguments";
 	}
 

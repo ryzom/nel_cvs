@@ -1,7 +1,7 @@
 /** \file logic_state_machine.cpp
  * 
  *
- * $Id: logic_state_machine.cpp,v 1.3 2002/06/20 12:17:56 lecroart Exp $
+ * $Id: logic_state_machine.cpp,v 1.4 2002/07/26 09:52:24 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -326,9 +326,9 @@ void CLogicStateMachine::displayVariables()
 	// extract the unclaimed variables from all the variables
 	vector<string> unclaimedVariables;
 	CEntityId unknown;
-	unknown.Type = 0xfe;
-	unknown.CreatorId = 0;
-	unknown.DynamicId = 0;
+	unknown.setType( 0xfe );
+	unknown.setCreatorId( 0 );
+	unknown.setDynamicId( 0 );
 	pair<multimap<CEntityId,string>::iterator,multimap<CEntityId,string>::iterator> itVarsRng = allVariables.equal_range(unknown);
 	multimap<CEntityId,string>::iterator itVars;
 	
@@ -358,7 +358,7 @@ void CLogicStateMachine::displayVariables()
 	for( itVars = allVariables.begin(); itVars != allVariables.end(); ++itVars )
 	{
 		map<string, CLogicVariable>::const_iterator itV = _Variables.find( (*itVars).second );
-		nlinfo("[%d] %s = %f",(uint8)(*itVars).first.DynamicId,(*itV).first.c_str(),(double)(*itV).second.getValue());
+		nlinfo("[%d] %s = %f",(uint8)(*itVars).first.getDynamicId(),(*itV).first.c_str(),(double)(*itV).second.getValue());
 	}
 
 	// display the unclaimed variables

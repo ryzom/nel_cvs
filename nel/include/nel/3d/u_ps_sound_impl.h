@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * <File description>
  *
- * $Id: u_ps_sound_impl.h,v 1.9 2002/11/04 15:40:42 boucher Exp $
+ * $Id: u_ps_sound_impl.h,v 1.10 2002/11/25 14:01:28 boucher Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -204,7 +204,8 @@ void CPSSoundInstanceImpl::release(void)
 	{
 		if (_SoundServImpl->getAudioMixer())
 		{			
-			_SoundServImpl->getAudioMixer()->removeSource(_Source);
+//			_SoundServImpl->getAudioMixer()->removeSource(_Source);
+			delete _Source;
 		}
 	}
 	else

@@ -1,7 +1,7 @@
 /** \file export_mesh.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_mesh.cpp,v 1.24 2001/11/14 15:13:17 corvazier Exp $
+ * $Id: export_mesh.cpp,v 1.25 2001/11/14 15:44:15 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1490,6 +1490,9 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 
 	Texmap *maxDiffuseMap = NULL;
 	Texmap *maxEnvMap2 = NULL;
+	Texmap *maxEnvMapUnderWater  = NULL;
+	Texmap *maxEnvMapUnderWater2 = NULL;
+
 
 
 
@@ -1524,7 +1527,28 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 		maxEnvMap2 = pNodeMat->GetSubTexmap (ID_RR);
 		if (!isClassIdCompatible(*maxEnvMap2, Class_ID (BMTEX_CLASS_ID,0))) 
 		{
-			nlinfo("ERROR : BuildWaterShape : specular map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+			nlinfo("ERROR : BuildWaterShape : refraction map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+			return NULL;
+		}
+	}
+	
+
+	if (mapEnables[ID_OP])
+	{
+		maxEnvMapUnderWater = pNodeMat->GetSubTexmap (ID_OP);
+		if (!isClassIdCompatible(*maxEnvMapUnderWater, Class_ID (BMTEX_CLASS_ID,0))) 
+		{
+			nlinfo("ERROR : BuildWaterShape : spcular map is not a valid bitmap (when exporting water node : %s)", node.GetName());
+			return NULL;
+		}
+	}
+
+	if (mapEnables[ID_FI])
+	{
+		maxEnvMapUnderWater2 = pNodeMat->GetSubTexmap (ID_FI);
+		if (!isClassIdCompatible(*maxEnvMapUnderWater2, Class_ID (BMTEX_CLASS_ID,0))) 
+		{
+			nlinfo("ERROR : BuildWaterShape : opacity map is not a valid bitmap (when exporting water node : %s)", node.GetName());
 			return NULL;
 		}
 	}
@@ -1545,8 +1569,14 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 			return NULL;
 		}
 	}				
-	NLMISC::CSmartPtr<ITexture> colorMap		 = buildATexture (*maxDiffuseMap, _3dsTexChannel, time, absolutePath);	
-	NLMISC::CSmartPtr<ITexture> envMap			 = NULL;
+	NLMISC::CSmartPtr<ITexture> colorMap = NULL;
+	if (maxDiffuseMap)
+	{
+		colorMap = buildATexture (*maxDiffuseMap, _3dsTexChannel, time, absolutePath);
+	}
+	NLMISC::CSmartPtr<ITexture> envMap				= NULL;
+	NLMISC::CSmartPtr<ITexture> envMapUnderWater	= NULL;
+
 
 
 
@@ -1567,6 +1597,23 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 		}
 	}
 
+	if (maxEnvMapUnderWater)
+	{
+		if (!maxEnvMapUnderWater2)
+		{
+			envMapUnderWater = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time, absolutePath);
+		}
+		else
+		{
+			NLMISC::CSmartPtr<ITexture> tex0, tex1;
+			tex0	 = buildATexture (*maxEnvMapUnderWater, _3dsTexChannel, time, absolutePath);
+			tex1	 = buildATexture (*maxEnvMapUnderWater2, _3dsTexChannel, time, absolutePath);
+			envMapUnderWater = new CTextureBlend;
+			(static_cast<CTextureBlend *>((ITexture *) envMapUnderWater))->setBlendTexture(0, tex0);
+			(static_cast<CTextureBlend *>((ITexture *) envMapUnderWater))->setBlendTexture(1, tex1);
+		}
+	}
+
 
 	nlinfo("buildWaterShape : Texture have been built");
 
@@ -1575,7 +1622,9 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 
 
 
-	ws->setEnvMap((ITexture *) envMap);
+	ws->setEnvMap(0, (ITexture *) envMap);
+	ws->setEnvMap(1, (ITexture *) envMapUnderWater);
+
 	ws->setHeightMap(0, (ITexture *) displaceMap);
 	ws->setHeightMap(1, (ITexture *) bumpMap);
 
@@ -1606,7 +1655,7 @@ NL3D::IShape				*CExportNel::buildWaterShape(INode& node, TimeValue time, bool a
 
 
 
-	if (colorMap)
+	if (colorMap != NULL)
 	{
 		if (pMesh->getNumTVerts() == 0) // no mapping
 		{

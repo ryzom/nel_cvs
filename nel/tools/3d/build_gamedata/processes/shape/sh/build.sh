@@ -25,8 +25,8 @@ date
 
 # build shadow skin?
 do_build_shadow_skin=`cat ../../cfg/config.cfg | grep -w "build_shadow_skin" | sed -e 's/build_shadow_skin//' | sed -e 's/ //g' | sed -e 's/=//g'`
-build_shadow_skin_ratio==`cat ../../cfg/config.cfg | grep "build_shadow_skin_ratio" | sed -e 's/build_shadow_skin_ratio//' | sed -e 's/ //g' | sed -e 's/=//g'`
-build_shadow_skin_maxface==`cat ../../cfg/config.cfg | grep "build_shadow_skin_maxface" | sed -e 's/build_shadow_skin_maxface//' | sed -e 's/ //g' | sed -e 's/=//g'`
+build_shadow_skin_ratio=`cat ../../cfg/config.cfg | grep "build_shadow_skin_ratio" | sed -e 's/build_shadow_skin_ratio//' | sed -e 's/ //g' | sed -e 's/=//g'`
+build_shadow_skin_maxface=`cat ../../cfg/config.cfg | grep "build_shadow_skin_maxface" | sed -e 's/build_shadow_skin_maxface//' | sed -e 's/ //g' | sed -e 's/=//g'`
 
 
 # if config wanted then must compute shadowSkin
@@ -48,7 +48,7 @@ fi
 
 
 # Log error
-echo ------- > log.log
+echo ------- >> log.log
 echo --- Build shape : Copy Shape / build CLodTex >> log.log
 echo ------- >> log.log
 echo ------- 

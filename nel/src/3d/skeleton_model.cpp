@@ -1,7 +1,7 @@
 /** \file skeleton_model.cpp
  * <File description>
  *
- * $Id: skeleton_model.cpp,v 1.10 2002/02/28 12:59:51 besson Exp $
+ * $Id: skeleton_model.cpp,v 1.11 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,6 +77,160 @@ CSkeletonModel::~CSkeletonModel()
 }
 
 
+// ***************************************************************************
+void		CSkeletonModel::initBoneUsages()
+{
+	// reset all to 0.
+	_BoneUsage.resize(Bones.size(), 0);
+	_ForcedBoneUsage.resize(Bones.size(), 0);
+	_BoneToCompute.resize(Bones.size(), 0);
+	_BoneToComputeDirty= false;
+	_NumBoneComputed= 0;
+}
+
+
+// ***************************************************************************
+void		CSkeletonModel::incBoneUsage(uint i, bool forced)
+{
+	nlassert(i<_BoneUsage.size());
+	nlassert(i<_ForcedBoneUsage.size());
+
+	if(forced)
+	{
+		// If the bone was not used before, must update _BoneToCompute.
+		if(_ForcedBoneUsage[i]==0)
+			_BoneToComputeDirty= true;
+
+		// Inc the refCount of the bone.
+		nlassert(_ForcedBoneUsage[i]<255);
+		_ForcedBoneUsage[i]++;
+	}
+	else
+	{
+		// If the bone was not used before, must update _BoneToCompute.
+		if(_BoneUsage[i]==0)
+			_BoneToComputeDirty= true;
+
+		// Inc the refCount of the bone.
+		nlassert(_BoneUsage[i]<255);
+		_BoneUsage[i]++;
+	}
+}
+
+
+// ***************************************************************************
+void		CSkeletonModel::decBoneUsage(uint i, bool forced)
+{
+	nlassert(i<_BoneUsage.size());
+	nlassert(i<_ForcedBoneUsage.size());
+
+	if(forced)
+	{
+		// If the bone was used before (and now won't be more), must update _BoneToCompute.
+		if(_ForcedBoneUsage[i]==1)
+			_BoneToComputeDirty= true;
+
+		// Inc the refCount of the bone.
+		nlassert(_ForcedBoneUsage[i]>0);
+		_ForcedBoneUsage[i]--;
+	}
+	else
+	{
+		// If the bone was used before (and now won't be more), must update _BoneToCompute.
+		if(_BoneUsage[i]==1)
+			_BoneToComputeDirty= true;
+
+		// Inc the refCount of the bone.
+		nlassert(_BoneUsage[i]>0);
+		_BoneUsage[i]--;
+	}
+}
+
+
+// ***************************************************************************
+void		CSkeletonModel::flagBoneAndParents(uint32 boneId, std::vector<bool>	&boneUsage) const
+{
+	nlassert( boneUsage.size()==Bones.size() );
+	nlassert( boneId<Bones.size() );
+
+	// Flag this bone.
+	boneUsage[boneId]= true;
+
+	// if has father, flag it (recurs).
+	sint	fatherId= Bones[boneId].getFatherId();
+	if(fatherId>=0)
+		flagBoneAndParents(fatherId, boneUsage);
+}
+
+
+// ***************************************************************************
+void		CSkeletonModel::incForcedBoneUsageAndParents(uint i)
+{
+	// inc forced.
+	incBoneUsage(i, true);
+
+	// recurs to father
+	sint	fatherId= Bones[i].getFatherId();
+	// if not a root bone...
+	if(fatherId>=0)
+		incForcedBoneUsageAndParents(fatherId);
+}
+
+// ***************************************************************************
+void		CSkeletonModel::decForcedBoneUsageAndParents(uint i)
+{
+	// dec forced
+	decBoneUsage(i, true);
+
+	// recurs to father
+	sint	fatherId= Bones[i].getFatherId();
+	// if not a root bone...
+	if(fatherId>=0)
+		decForcedBoneUsageAndParents(fatherId);
+}
+
+
+// ***************************************************************************
+void		CSkeletonModel::updateBoneToCompute()
+{
+	// If already computed, skip
+	if(!_BoneToComputeDirty)
+		return;
+
+	// get the channelMixer owned by CTransform.
+	CChannelMixer	*chanMixer= getChannelMixer();
+
+	// TODODO: skel shape Lods infos.
+
+	// recompute _NumBoneComputed
+	_NumBoneComputed= 0;
+
+	// For all bones
+	for(uint i=0; i<_BoneToCompute.size(); i++)
+	{
+		// set _BoneToCompute[i] to non 0 if BoneUsage[i] || ForcedBoneUsage[i];
+		_BoneToCompute[i]= _BoneUsage[i] | _ForcedBoneUsage[i];
+		// If the bone must be computed (if !0)
+		if(_BoneToCompute[i])
+		{
+			// Inc _NumBoneComputed.
+			_NumBoneComputed++;
+			// lodEnable the channels of this bone
+			if(chanMixer)
+				Bones[i].lodEnableChannels(chanMixer, true);
+		}
+		else
+		{
+			// lodDisable the channels of this bone
+			if(chanMixer)
+				Bones[i].lodEnableChannels(chanMixer, false);
+		}
+	}
+
+	// computed
+	_BoneToComputeDirty= false;
+}
+
 
 // ***************************************************************************
 void		CSkeletonModel::bindSkin(CTransform *mi)
@@ -92,6 +246,7 @@ void		CSkeletonModel::bindSkin(CTransform *mi)
 
 	// advert skin transform it is skinned.
 	mi->_FatherSkeletonModel= this;
+	// setApplySkin() use _FatherSkeletonModel to computeBonesId() and to update current skeleton bone usage.
 	mi->setApplySkin(true);
 
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
@@ -108,6 +263,8 @@ void		CSkeletonModel::stickObject(CTransform *mi, uint boneId)
 
 	// Then Add me.
 	_StickedObjects.insert(mi);
+	// increment the refCount usage of the bone
+	incForcedBoneUsageAndParents(boneId);
 
 	// advert transform of its sticked state.
 	mi->_FatherSkeletonModel= this;
@@ -122,17 +279,30 @@ void		CSkeletonModel::detachSkeletonSon(CTransform *tr)
 {
 	nlassert(tr);
 
+	// If the instance is not binded/sticked to the skeleton, exit.
+	if(!tr->_FatherSkeletonModel)
+		return;
+
 	// try to erase from StickObject.
 	_StickedObjects.erase(tr);
 	// try to erase from Skins.
 	_Skins.erase(tr);
 
+	// If the instance is not skinned, then it is sticked
+	if( !tr->isSkinned() )
+	{
+		// Then decrement Bone Usage RefCount.
+		decForcedBoneUsageAndParents(tr->_FatherBoneId);
+	}
+	else
+	{
+		// it is skinned, advert the skinning is no more OK.
+		// setApplySkin() use _FatherSkeletonModel to update current skeleton bone usage.
+		tr->setApplySkin(false);
+	}
+
 	// advert transform it is no more sticked/skinned.
 	tr->_FatherSkeletonModel= NULL;
-
-	// If it is a skin, advert him the skinning is no more OK.
-	if(tr->isSkinnable())
-		tr->setApplySkin(false);
 
 	// link correctly Hrc only. ClipTrav grah updated in Hrc traversal.
 	cacheTravs();
@@ -161,13 +331,20 @@ sint32		CSkeletonModel::getBoneIdByName(const std::string &name) const
 // ***************************************************************************
 void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 {
+	CSkeletonModel	*sm= (CSkeletonModel*)Model;
+
+	/* If needed, let's know which bone has to be computed.
+		Additionaly, enable / disable (lod) channels in channelMixer.
+	*/ 
+	sm->updateBoneToCompute();
+
+	// Animate skeleton
 	CTransformAnimDetailObs::traverse(caller);
 
 	// if skeleton is clipped, no need to transform.
 	// NB: no need to test ClipObs->Visible because of VisibilityList use.
 
 	// test if bones must be updated.
-	CSkeletonModel	*sm= (CSkeletonModel*)Model;
 	if(sm->IAnimatable::isTouched(CSkeletonModel::OwnerBit))
 	{
 		// Retrieve the WorldMatrix of the current CTransformShape.
@@ -177,14 +354,18 @@ void	CSkeletonModelAnimDetailObs::traverse(IObs *caller)
 		// Since they are orderd in depth-first order, we are sure that parent are computed before sons.
 		for(uint i=0;i<sm->Bones.size();i++)
 		{
-			sint	fatherId= sm->Bones[i].getFatherId();
-			// if a root bone...
-			if(fatherId==-1)
-				// Compute root bone worldMatrix.
-				sm->Bones[i].compute( NULL, modelWorldMatrix);
-			else
-				// Compute bone worldMatrix.
-				sm->Bones[i].compute( &sm->Bones[fatherId], modelWorldMatrix);
+			// Do nothing if the bone doesn't need to be computed (not used, lods ...)
+			if(sm->_BoneToCompute[i])
+			{
+				sint	fatherId= sm->Bones[i].getFatherId();
+				// if a root bone...
+				if(fatherId==-1)
+					// Compute root bone worldMatrix.
+					sm->Bones[i].compute( NULL, modelWorldMatrix);
+				else
+					// Compute bone worldMatrix.
+					sm->Bones[i].compute( &sm->Bones[fatherId], modelWorldMatrix);
+			}
 		}
 
 		sm->IAnimatable::clearFlag(CSkeletonModel::OwnerBit);

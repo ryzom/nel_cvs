@@ -1,7 +1,7 @@
 /** \file transform.cpp
  * <File description>
  *
- * $Id: transform.cpp,v 1.36 2002/03/04 19:00:34 berenguier Exp $
+ * $Id: transform.cpp,v 1.37 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -103,13 +103,11 @@ void	CTransform::initModel()
 // ***************************************************************************
 CTransform::~CTransform()
 {
-	if(_FatherSkeletonModel)
-	{
-		// detach me from the skeleton.
-		// Observers hierarchy is modified.
-		_FatherSkeletonModel->detachSkeletonSon(this);
-		_FatherSkeletonModel= NULL;
-	}
+	/* cannot detach me from skeleton here because detachSkeletonSon()
+		use some virtual calls of transform: isSkinned(), setApplySkin().
+		Hence, It is the deriver job to detach himself from the skeleton.
+	*/
+	nlassert(_FatherSkeletonModel==NULL);
 
 	// resetLighting, removing me from PointLight Transform list.
 	// NB: not done for FrozenStaticLightSetup, because those lights don't owns me.

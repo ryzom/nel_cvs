@@ -1,7 +1,7 @@
 /** \file mesh_multi_lod_instance.h
  * An instance of CMeshMulitLod
  *
- * $Id: mesh_multi_lod_instance.h,v 1.7 2002/02/26 14:17:55 berenguier Exp $
+ * $Id: mesh_multi_lod_instance.h,v 1.8 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ const NLMISC::CClassId		MeshMultiLodInstanceId=NLMISC::CClassId(0x1ade6ef8, 0x75
  * \author Nevrax France
  * \date 2001
  */
-class CMeshMultiLodInstance : public CMeshInstance
+class CMeshMultiLodInstance : public CMeshBaseInstance
 {
 public:
 	

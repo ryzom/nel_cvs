@@ -1,7 +1,7 @@
 /** \file channel_mixer.h
  * class CChannelMixer
  *
- * $Id: channel_mixer.h,v 1.3 2001/11/22 15:34:13 corvazier Exp $
+ * $Id: channel_mixer.h,v 1.4 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -142,13 +142,16 @@ private:
 	{
 		friend class CChannelMixer;
 	public:
+		enum	{EnableUserFlag= 1, EnableLodFlag= 2, EnableAllFlag= 3};
+
+	public:
 		/// Default ctor
 		CChannel ()
 		{
 			// not in the list
 			_InTheList=false;
 			// enabled by default.
-			_Enabled= true;
+			_EnableFlags= EnableAllFlag;
 		}
 	private:
 		/// True if this channel is in the list
@@ -157,8 +160,8 @@ private:
 		/// the detail mode.
 		bool				_Detail;
 
-		/// Is this enabled???
-		bool				_Enabled;
+		/// enabled Flags. User | Lod
+		uint8				_EnableFlags;
 
 		/// Is this Animated Value a CQuat Animated Value???
 		bool				_IsQuat;
@@ -255,23 +258,37 @@ public:
 	  * \param valueId is the value ID in the IAnimatable object.
 	  * \param ownerId is the owner Bit of the animated vlaue, in the IAnimatable object. touched when the animatedvalue is touched.
 	  * \param detail true if this channel must be evaluated in detail mode (see eval()).
+	  * \return -1 if the track was not found in the animationSet, else it return the channelId 
+	  *	as if returned by CAnimationSet::getChannelIdByName(channelName).
 	  */
-	void addChannel (const std::string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId, uint32 ownerValueId, bool detail);
+	sint addChannel (const std::string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId, uint32 ownerValueId, bool detail);
 
 	/// Reset the channel list if the mixer. All channels are removed from the mixer.
 	void resetChannels ();
 
+
 	/** disabling a channel means it is no more modified during animation. Default is enabled. 
 	 *	NB: this channel must have been added (via addChannel()....).
-	 *	\param channelId channelId get from CAnimationSet::getChannelIdByName().
+	 *	\param channelId channelId get from CAnimationSet::getChannelIdByName() or addChannel()
 	 */
 	void enableChannel (uint channelId, bool enable);
 
 	/** see enableChannel(). return false if channel do not exist...
-	 *	NB: this channel must have been added (via addChannel()....).
-	 *	\param channelId channelId get from CAnimationSet::getChannelIdByName().
+	 *	\param channelId channelId get from CAnimationSet::getChannelIdByName() or addChannel()
 	 */
 	bool isChannelEnabled (uint channelId) const;
+
+	/** Same as enableChannel but for Animation Lod system. The channel is animated only if both
+	 *	enableChannel() and lodEnableChannel() are true. Default is enabled.
+	 *	NB: this channel must have been added (via addChannel()....).
+	 *	\param channelId channelId get from CAnimationSet::getChannelIdByName() or addChannel()
+	 */
+	void lodEnableChannel (uint channelId, bool enable);
+
+	/** see enableChannel(). return false if channel do not exist...
+	 *	\param channelId channelId get from CAnimationSet::getChannelIdByName() or addChannel()
+	 */
+	bool isChannelLodEnabled (uint channelId) const;
 
 
 	/// \name Slots acces

@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.20 2002/03/14 18:07:51 vizerie Exp $
+ * $Id: mesh.h,v 1.21 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -200,6 +200,9 @@ public:
 	/// Compute skinning id
 	void			computeBonesId (CSkeletonModel *skeleton);
 
+	/// update Skeleton Usage. increment or decrement.
+	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
+
 	/// \name From IShape
 	// @{
 
@@ -290,6 +293,10 @@ public:
 
 	/// Compute skinning id
 	void			computeBonesId (CSkeletonModel *skeleton);
+
+	/// update Skeleton Usage. increment or decrement.
+	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
+
 
 	/// \name From IMeshGeom
 	// @{
@@ -537,9 +544,13 @@ private:
 
 	/// This boolean is true if the bones id have been passed in the skeleton
 	bool						_BoneIdComputed;
+	/// true if the _BonesId have been extended to include parents (for bone Usage).
+	bool						_BoneIdExtended;
 
-	/// This array give the name of the local bones
+	/// This array give the name of the local bones used.
 	std::vector<std::string>	_BonesName;
+	/// This array give the index in the skeleton of the local bones used. computed at first computeBoneId()
+	std::vector<sint32>			_BonesId;
 
 
 	/// \name VBufferHard mgt.
@@ -638,6 +649,8 @@ private:
 	// optimize triangles order of all render pass.
 	void	optimizeTriangleOrder();
 
+	// Build bone Usage information for serialized mesh <= version 3.
+	void	buildBoneUsageVer3 ();
 };
 
 

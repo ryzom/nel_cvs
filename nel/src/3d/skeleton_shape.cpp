@@ -1,7 +1,7 @@
 /** \file skeleton_shape.cpp
  * <File description>
  *
- * $Id: skeleton_shape.cpp,v 1.8 2002/02/28 12:59:51 besson Exp $
+ * $Id: skeleton_shape.cpp,v 1.9 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -90,6 +90,9 @@ CTransformShape		*CSkeletonShape::createInstance(CScene &scene)
 		// Must set the Animatable father of the bone (the skeleton model!).
 		sm->Bones[i].setFather(sm, CSkeletonModel::OwnerBit);
 	}
+
+	// Must create and init skeleton bone usage to 0.
+	sm->initBoneUsages();
 
 	return sm;
 }

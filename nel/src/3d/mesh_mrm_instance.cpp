@@ -1,7 +1,7 @@
 /** \file mesh_mrm_instance.cpp
  * <File description>
  *
- * $Id: mesh_mrm_instance.cpp,v 1.3 2002/03/06 10:24:47 corvazier Exp $
+ * $Id: mesh_mrm_instance.cpp,v 1.4 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,10 +27,25 @@
 
 #include "3d/mesh_mrm_instance.h"
 #include "3d/mesh_mrm.h"
+#include "3d/skeleton_model.h"
 
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+CMeshMRMInstance::~CMeshMRMInstance()
+{
+	// Auto detach me from skeleton. Must do it here, not in ~CTransform().
+	if(_FatherSkeletonModel)
+	{
+		// detach me from the skeleton.
+		// Observers hierarchy is modified.
+		_FatherSkeletonModel->detachSkeletonSon(this);
+		nlassert(_FatherSkeletonModel==NULL);
+	}
+}
 
 
 // ***************************************************************************
@@ -45,14 +60,17 @@ void		CMeshMRMInstance::setApplySkin(bool state)
 	// Call parents method
 	CMeshBaseInstance::setApplySkin (state);
 
+	// Get a pointer on the shape
+	CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
+
 	// Recompute the id
 	if (state)
 	{
-		// Get a pointer on the shape
-		CMeshMRM *pMesh = NLMISC::safe_cast<CMeshMRM *>((IShape*)Shape);
-
 		pMesh->computeBonesId (_FatherSkeletonModel);
 	}
+
+	// update the skeleton usage according to the mesh.
+	pMesh->updateSkeletonUsage(_FatherSkeletonModel, state);
 }
 
 

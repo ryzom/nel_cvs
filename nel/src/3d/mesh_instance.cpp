@@ -1,7 +1,7 @@
 /** \file mesh_instance.cpp
  * <File description>
  *
- * $Id: mesh_instance.cpp,v 1.9 2002/03/06 10:24:47 corvazier Exp $
+ * $Id: mesh_instance.cpp,v 1.10 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,12 +27,27 @@
 
 #include "3d/mesh_instance.h"
 #include "3d/mesh.h"
+#include "3d/skeleton_model.h"
 #include <list>
 
 using namespace std;
 
 namespace NL3D 
 {
+
+
+// ***************************************************************************
+CMeshInstance::~CMeshInstance()
+{
+	// Auto detach me from skeleton. Must do it here, not in ~CTransform().
+	if(_FatherSkeletonModel)
+	{
+		// detach me from the skeleton.
+		// Observers hierarchy is modified.
+		_FatherSkeletonModel->detachSkeletonSon(this);
+		nlassert(_FatherSkeletonModel==NULL);
+	}
+}
 
 
 // ***************************************************************************
@@ -47,14 +62,17 @@ void		CMeshInstance::setApplySkin(bool state)
 	// Call parents method
 	CMeshBaseInstance::setApplySkin (state);
 
+	// Get a pointer on the shape
+	CMesh *pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
+
 	// Recompute the id
 	if (state)
 	{
-		// Get a pointer on the shape
-		CMesh *pMesh = NLMISC::safe_cast<CMesh *>((IShape*)Shape);
-
 		pMesh->computeBonesId (_FatherSkeletonModel);
 	}
+
+	// update the skeleton usage according to the mesh.
+	pMesh->updateSkeletonUsage(_FatherSkeletonModel, state);
 }
 
 } // NL3D

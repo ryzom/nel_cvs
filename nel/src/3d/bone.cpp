@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.6 2002/02/28 12:59:49 besson Exp $
+ * $Id: bone.cpp,v 1.7 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -87,6 +87,13 @@ CBone::CBone(CBoneBase *boneBase)
 	ITransformable::setRotQuat( ((CAnimatedValueQuat&)_BoneBase->DefaultRotQuat.getValue()).Value  );
 	ITransformable::setScale( ((CAnimatedValueVector&)_BoneBase->DefaultScale.getValue()).Value  );
 	ITransformable::setPivot( ((CAnimatedValueVector&)_BoneBase->DefaultPivot.getValue()).Value  );
+
+	// By default, the bone is not binded to a channelMixer.
+	_PosChannelId= -1;
+	_RotEulerChannelId= -1;
+	_RotQuatChannelId= -1;
+	_ScaleChannelId= -1;
+	_PivotChannelId= -1;
 }
 
 // ***************************************************************************
@@ -115,11 +122,12 @@ ITrack* CBone::getDefaultTrack (uint valueId)
 void	CBone::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &prefix)
 {
 	// For CBone, channels are detailled.
-	addValue(chanMixer, PosValue, OwnerBit, prefix, true);
-	addValue(chanMixer, RotEulerValue, OwnerBit, prefix, true);
-	addValue(chanMixer, RotQuatValue, OwnerBit, prefix, true);
-	addValue(chanMixer, ScaleValue, OwnerBit, prefix, true);
-	addValue(chanMixer, PivotValue, OwnerBit, prefix, true);
+	// Bkup each channelId (for disable).
+	_PosChannelId= addValue(chanMixer, PosValue, OwnerBit, prefix, true);
+	_RotEulerChannelId= addValue(chanMixer, RotEulerValue, OwnerBit, prefix, true);
+	_RotQuatChannelId= addValue(chanMixer, RotQuatValue, OwnerBit, prefix, true);
+	_ScaleChannelId= addValue(chanMixer, ScaleValue, OwnerBit, prefix, true);
+	_PivotChannelId= addValue(chanMixer, PivotValue, OwnerBit, prefix, true);
 
 	// Deriver note: if necessary, call	BaseClass::registerToChannelMixer(chanMixer, prefix);
 }
@@ -179,6 +187,26 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix)
 
 	// Compute BoneSkinMatrix.
 	_BoneSkinMatrix= _LocalSkeletonMatrix * _BoneBase->InvBindPos;
+}
+
+
+// ***************************************************************************
+void	CBone::lodEnableChannels(CChannelMixer *chanMixer, bool enable)
+{
+	nlassert(chanMixer);
+
+	// Lod Enable channels if they are correclty registered to the channelMixer.
+	if( _PosChannelId>=0 )
+		chanMixer->lodEnableChannel(_PosChannelId, enable);
+	if( _RotEulerChannelId>=0 )
+		chanMixer->lodEnableChannel(_RotEulerChannelId, enable);
+	if( _RotQuatChannelId>=0 )
+		chanMixer->lodEnableChannel(_RotQuatChannelId, enable);
+	if( _ScaleChannelId>=0 )
+		chanMixer->lodEnableChannel(_ScaleChannelId, enable);
+	if( _PivotChannelId>=0 )
+		chanMixer->lodEnableChannel(_PivotChannelId, enable);
+
 }
 
 

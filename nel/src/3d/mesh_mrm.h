@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.22 2002/03/14 18:12:34 vizerie Exp $
+ * $Id: mesh_mrm.h,v 1.23 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,6 +84,10 @@ public:
 
 	/// Compute skinning id
 	void			computeBonesId (CSkeletonModel *skeleton);
+
+	/// update Skeleton Usage. increment or decrement.
+	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
+
 
 	/// \name From IMeshGeom
 	// @{
@@ -351,9 +355,13 @@ private:
 
 	/// This boolean is true if the bones id have been passed in the skeleton
 	bool						_BoneIdComputed;
+	/// true if the _BonesId have been extended to include parents (for bone Usage).
+	bool						_BoneIdExtended;
 
 	/// This array give the name of the local bones
 	std::vector<std::string>	_BonesName;
+	/// This array give the index in the skeleton of the local bones used. computed at first computeBoneId()
+	std::vector<sint32>			_BonesId;
 
 	/// List of Lods.
 	std::vector<CLod>			_Lods;
@@ -437,13 +445,15 @@ private:
 
 
 
-	/// load the header of this mesh.
-	void		loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream);
+	/// load the header of this mesh. return the version of the header.
+	sint		loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream);
 	/// load this mesh.
 	void		load(NLMISC::IStream &f) throw(NLMISC::EStream);
 	/// save the entire mesh.
 	void		save(NLMISC::IStream &f) throw(NLMISC::EStream);
 
+	// Build bone Usage information for serialized mesh <= version 2.
+	void		buildBoneUsageVer2 ();
 };
 
 
@@ -488,6 +498,10 @@ public:
 
 	/// Compute skinning id
 	void			computeBonesId (CSkeletonModel *skeleton);
+
+	/// update Skeleton Usage. increment or decrement.
+	void			updateSkeletonUsage(CSkeletonModel *sm, bool increment);
+
 
 	/// \name From IShape
 	// @{

@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.18 2002/02/28 12:59:49 besson Exp $
+ * $Id: channel_mixer.cpp,v 1.19 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -115,8 +115,8 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 
 	while (pChannel)
 	{
-		// if the channel is enabled, eval all active slot.
-		if(pChannel->_Enabled)
+		// if the channel is enabled (both user and lod), eval all active slot.
+		if(pChannel->_EnableFlags == CChannel::EnableAllFlag)
 		{
 			// For Quat animated value only.
 			CQuat	firstQuat;
@@ -195,7 +195,7 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 
 // ***************************************************************************
 
-void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId, uint32 ownerValueId, bool detail)
+sint CChannelMixer::addChannel (const string& channelName, IAnimatable* animatable, IAnimatedValue* value, ITrack* defaultValue, uint32 valueId, uint32 ownerValueId, bool detail)
 {
 	// Check the animationSet has been set
 	nlassert (_AnimationSet);
@@ -257,6 +257,14 @@ void CChannelMixer::addChannel (const string& channelName, IAnimatable* animatab
 
 		// Touch the animated value and its owner to recompute them later.
 		entry._Object->touch (entry._ValueId, entry._OwnerValueId);
+
+		// return the id.
+		return iDInAnimationSet;
+	}
+	else
+	{
+		// return Not found.
+		return -1;
 	}
 }
 
@@ -275,7 +283,9 @@ void CChannelMixer::enableChannel (uint channelId, bool enable)
 	std::map<uint, CChannel>::iterator	it= _Channels.find(channelId);
 	if(it!=_Channels.end())
 	{
-		it->second._Enabled= enable;
+		it->second._EnableFlags &= ~CChannel::EnableUserFlag;
+		if(enable)
+			it->second._EnableFlags |= CChannel::EnableUserFlag;
 	}
 }
 
@@ -286,11 +296,38 @@ bool CChannelMixer::isChannelEnabled (uint channelId) const
 	std::map<uint, CChannel>::const_iterator	it= _Channels.find(channelId);
 	if(it!=_Channels.end())
 	{
-		return it->second._Enabled;
+		return (it->second._EnableFlags & CChannel::EnableUserFlag) != 0;
 	}
 	else
 		return false;
 }
+
+
+// ***************************************************************************
+void CChannelMixer::lodEnableChannel (uint channelId, bool enable)
+{
+	std::map<uint, CChannel>::iterator	it= _Channels.find(channelId);
+	if(it!=_Channels.end())
+	{
+		it->second._EnableFlags &= ~CChannel::EnableLodFlag;
+		if(enable)
+			it->second._EnableFlags |= CChannel::EnableLodFlag;
+	}
+}
+
+
+// ***************************************************************************
+bool CChannelMixer::isChannelLodEnabled (uint channelId) const
+{
+	std::map<uint, CChannel>::const_iterator	it= _Channels.find(channelId);
+	if(it!=_Channels.end())
+	{
+		return (it->second._EnableFlags & CChannel::EnableLodFlag) != 0;
+	}
+	else
+		return false;
+}
+
 
 
 // ***************************************************************************

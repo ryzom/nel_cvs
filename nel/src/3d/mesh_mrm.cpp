@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.27 2002/03/14 18:12:22 vizerie Exp $
+ * $Id: mesh_mrm.cpp,v 1.28 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -196,6 +196,7 @@ CMeshMRMGeom::CMeshMRMGeom()
 	_Skinned= false;
 	_NbLodLoaded= 0;
 	_BoneIdComputed = false;
+	_BoneIdExtended = false;
 }
 
 
@@ -861,7 +862,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 	// Is this mesh skinned?? true only if mesh is skinned, skeletonmodel is not NULL, and isSkinApply().
 	bool bMorphApplied = _MeshMorpher.BlendShapes.size() > 0;
 	bool bSkinApplied = _Skinned && mi->isSkinApply() && skeleton;
-	bool useTangentSpace = _MeshVertexProgram || !_MeshVertexProgram->needTangentSpace();
+	bool useTangentSpace = _MeshVertexProgram && _MeshVertexProgram->needTangentSpace();
 
 	if (bMorphApplied)
 	{
@@ -876,7 +877,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, bool passOpaque,
 								 _VBHard,
 								 &_OriginalSkinVertices,
 								 &_OriginalSkinNormals,
-								 _MeshVertexProgram->needTangentSpace() ? &_OriginalTGSpace : NULL,
+								 useTangentSpace ? &_OriginalTGSpace : NULL,
 								 bSkinApplied 
 								);
 		}
@@ -1080,9 +1081,11 @@ void	CMeshMRMGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 
 // ***************************************************************************
-void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
+sint	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 4:
+		- serial SkinWeights per MRM, not per Lod
 	Version 3:
 		- Bones names.
 	Version 2:
@@ -1092,7 +1095,7 @@ void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(3);
+	sint	ver= f.serialVersion(4);
 
 	// if >= version 3, serial boens names
 	if(ver>=3)
@@ -1102,6 +1105,8 @@ void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// Version3-: Bones index are in skeleton model id list
 	_BoneIdComputed = (ver < 3);
+	// Must always recompute usage of parents of bones used.
+	_BoneIdExtended = false;
 
 	// Mesh Vertex Program.
 	if (ver >= 2)
@@ -1151,6 +1156,13 @@ void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 	}
 
 
+	// If new version, serial SkinWeights in header, not in lods.
+	if(ver >= 4)
+	{
+		f.serialCont(_SkinWeights);
+	}
+
+
 	// Serial lod offsets.
 	// ==================
 	// This is the reference pos, to load / save relative offsets.
@@ -1174,6 +1186,9 @@ void	CMeshMRMGeom::loadHeader(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// Flag the fact that no lod is loaded for now.
 	_NbLodLoaded= 0;
+
+	// return version of the header
+	return ver;
 }
 
 
@@ -1187,7 +1202,7 @@ void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 
 	// Load the header of the stream.
 	// ==================
-	loadHeader(f);
+	sint	verHeader= loadHeader(f);
 
 	// Read All lod subsets.
 	// ==================
@@ -1201,9 +1216,14 @@ void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 		// this is done in serialLodVertexData(). by subset
 	}
 
-
 	// Now, all lods are loaded.
 	_NbLodLoaded= _Lods.size();
+
+	// If version doen't have boneNames, must build BoneId now.
+	if(verHeader <= 2)
+	{
+		buildBoneUsageVer2 ();
+	}
 }
 
 
@@ -1211,6 +1231,8 @@ void	CMeshMRMGeom::load(NLMISC::IStream &f) throw(NLMISC::EStream)
 void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	/*
+	Version 4:
+		- serial SkinWeights per MRM, not per Lod
 	Version 3:
 		- Bones names.
 	Version 2:
@@ -1220,7 +1242,7 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(3);
+	sint	ver= f.serialVersion(4);
 	uint	i;
 
 	// if >= version 3, serial bones names
@@ -1267,6 +1289,13 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serial(nWedges);
 	// Save the VBuffer header.
 	_VBufferFinal.serialHeader(f);
+
+
+	// If new version, serial SkinWeights in header, not in lods.
+	if(ver >= 4)
+	{
+		f.serialCont(_SkinWeights);
+	}
 
 
 	// Serial lod offsets.
@@ -1319,7 +1348,11 @@ void	CMeshMRMGeom::save(NLMISC::IStream &f) throw(NLMISC::EStream)
 // ***************************************************************************
 void	CMeshMRMGeom::serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint endWedge)
 {
-	sint	ver= f.serialVersion(0);
+	/*
+	Version 1:
+		- serial SkinWeights per MRM, not per Lod
+	*/
+	sint	ver= f.serialVersion(1);
 
 	// VBuffer part.
 	_VBufferFinal.serialSubset(f, startWedge, endWedge);
@@ -1327,9 +1360,13 @@ void	CMeshMRMGeom::serialLodVertexData(NLMISC::IStream &f, uint startWedge, uint
 	// SkinWeights.
 	if(_Skinned)
 	{
-		for(uint i= startWedge; i<endWedge; i++)
+		// Serialize SkinWeight per lod only for old versions.
+		if(ver<1)
 		{
-			f.serial(_SkinWeights[i]);
+			for(uint i= startWedge; i<endWedge; i++)
+			{
+				f.serial(_SkinWeights[i]);
+			}
 		}
 		// if reading, must copy original vertices from VB.
 		if( f.isReading())
@@ -1350,17 +1387,27 @@ void	CMeshMRMGeom::loadFirstLod(NLMISC::IStream &f)
 
 	// Load the header of the stream.
 	// ==================
-	loadHeader(f);
+	sint	verHeader= loadHeader(f);
 
 
 	// If empty MRM, quit.
 	if(_LodInfos.size()==0)
 		return;
 
+	/* If the version is <4, then SkinWeights are serialised per Lod.
+		But for computebonesId(), we must have all SkinWeights RIGHT NOW.
+		Hence, if too old version (<4), serialize all the MRM....
+	*/
+	uint	numLodToLoad;
+	if(verHeader<4)
+		numLodToLoad= _LodInfos.size();
+	else
+		numLodToLoad= 1;
 
-	// Read only the first lod subset.
+
+	// Read lod subset(s).
 	// ==================
-	for(uint i=0;i<1; i++)
+	for(uint i=0;i<numLodToLoad; i++)
 	{
 		// read the lod face data.
 		f.serial(_Lods[i]);
@@ -1370,10 +1417,14 @@ void	CMeshMRMGeom::loadFirstLod(NLMISC::IStream &f)
 		// this is done in serialLodVertexData(). by subset
 	}
 
+	// Now, just first lod is loaded (but if too old file)
+	_NbLodLoaded= numLodToLoad;
 
-	// Now, just first lod is loaded.
-	_NbLodLoaded= 1;
-
+	// If version doen't have boneNames, must build BoneId now.
+	if(verHeader <= 2)
+	{
+		buildBoneUsageVer2 ();
+	}
 }
 
 
@@ -2192,6 +2243,9 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 		nlassert (skeleton);
 		if (skeleton)
 		{
+			// Resize boneId to the good size.
+			_BonesId.resize(_BonesName.size());
+
 			// Remap bones id table
 			std::vector<uint> remap (_BonesName.size());
 
@@ -2201,6 +2255,9 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 			{
 				// Look for the bone
 				sint32 boneId = skeleton->getBoneIdByName (_BonesName[bone]);
+
+				// Setup the _BoneId.
+				_BonesId[bone]= boneId;
 
 				// Bones found ?
 				if (boneId != -1)
@@ -2256,7 +2313,116 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 			_BoneIdComputed = true;
 		}
 	}
+
+	// Already extended ?
+	if (!_BoneIdExtended)
+	{
+		nlassert (skeleton);
+		if (skeleton)
+		{
+			// the total bone Usage of the mesh.
+			vector<bool>	boneUsage;
+			boneUsage.resize(skeleton->Bones.size(), false);
+
+			// for all Bones marked as valid.
+			uint	i;
+			for(i=0; i<_BonesId.size(); i++)
+			{
+				// if not a valid boneId, skip it.
+				if(_BonesId[i]<0)
+					continue;
+
+				// mark him and his father in boneUsage.
+				skeleton->flagBoneAndParents(_BonesId[i], boneUsage);
+			}
+
+			// refill _BonesId with parents.
+			_BonesId.clear();
+			for(i=0; i<boneUsage.size();i++)
+			{
+				// if the bone is used by the mesh, add it to BoneId.
+				if(boneUsage[i])
+					_BonesId.push_back(i);
+			}
+
+		}
+
+		// Extended
+		_BoneIdExtended= true;
+	}
+
 }
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::buildBoneUsageVer2 ()
+{
+	if(_Skinned)
+	{
+		// parse all vertices, couting MaxBoneId used.
+		uint32	maxBoneId= 0;
+		// for each vertex
+		uint vert;
+		for (vert=0; vert<_SkinWeights.size(); vert++)
+		{
+			// For each weight
+			for (uint weight=0; weight<NL3D_MESH_SKINNING_MAX_MATRIX; weight++)
+			{
+				// Active ?
+				if ((_SkinWeights[vert].Weights[weight]>0)||(weight==0))
+				{
+					maxBoneId= max(_SkinWeights[vert].MatrixId[weight], maxBoneId);
+				}
+			}				
+		}
+
+		// alloc an array of maxBoneId+1, reset to 0.
+		std::vector<uint8>		boneUsage;
+		boneUsage.resize(maxBoneId+1, 0);
+
+		// reparse all vertices, counting usage for each bone.
+		for (vert=0; vert<_SkinWeights.size(); vert++)
+		{
+			// For each weight
+			for (uint weight=0; weight<NL3D_MESH_SKINNING_MAX_MATRIX; weight++)
+			{
+				// Active ?
+				if ((_SkinWeights[vert].Weights[weight]>0)||(weight==0))
+				{
+					// mark this bone as used.
+					boneUsage[_SkinWeights[vert].MatrixId[weight]]= 1;
+				}
+			}				
+		}
+
+		// For each bone used
+		_BonesId.clear();
+		for(uint i=0; i<boneUsage.size();i++)
+		{
+			// if the bone is used by the mesh, add it to BoneId.
+			if(boneUsage[i])
+				_BonesId.push_back(i);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshMRMGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
+{
+	// For all Bones used.
+	for(uint i=0; i<_BonesId.size();i++)
+	{
+		// increment or decrement Forced, because CMeshMRMGeom does not support Skeleton LOD (for now)
+		// Hence the bones that this mesh use must always be present
+		if(increment)
+			sm->incBoneUsage(_BonesId[i], true);
+		else
+			sm->decBoneUsage(_BonesId[i], true);
+	}
+}
+
+
 
 // ***************************************************************************
 // ***************************************************************************
@@ -2366,6 +2532,13 @@ void	CMeshMRM::computeBonesId (CSkeletonModel *skeleton)
 {
 	_MeshMRMGeom.computeBonesId (skeleton);
 }
+
+// ***************************************************************************
+void	CMeshMRM::updateSkeletonUsage (CSkeletonModel *skeleton, bool increment)
+{
+	_MeshMRMGeom.updateSkeletonUsage(skeleton, increment);
+}
+
 
 } // NL3D
 

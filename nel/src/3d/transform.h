@@ -1,7 +1,7 @@
 /** \file transform.h
  * <File description>
  *
- * $Id: transform.h,v 1.15 2002/02/18 13:21:55 berenguier Exp $
+ * $Id: transform.h,v 1.16 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -283,7 +283,9 @@ protected:
 	virtual	bool			isSkinnable() const {return false;}
 	/// Deriver must change this method to konw when the model is skinned.
 	virtual	bool			isSkinned() const {return false;}
-	/// Deriver must change this method if isSkinnable(). called by CSkeletonModel::bindSkin()
+	/** Deriver must change this method if isSkinnable(). called by CSkeletonModel::bindSkin()
+	 *	NB: _FatherSkeletonModel is valid when setApplySkin() is called
+	 */
 	virtual	void			setApplySkin(bool state) {}
 
 
@@ -314,6 +316,11 @@ protected:
 	CLightingManager::CQGItLightedModel		_LightedModelIt;
 
 	// @}
+
+
+	/** get the channelMixer owned by the transform. return result of a refPtr => may be NULL.
+	 */
+	CChannelMixer			*getChannelMixer() const {return _ChannelMixer;}
 
 private:
 	static IModel	*creator() {return new CTransform;}

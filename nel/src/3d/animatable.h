@@ -1,7 +1,7 @@
 /** \file animatable.h
  * Class IAnimatable
  *
- * $Id: animatable.h,v 1.1 2001/06/15 16:24:42 corvazier Exp $
+ * $Id: animatable.h,v 1.2 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -220,8 +220,11 @@ private:
 
 
 protected:
-	/// This is a tool function which add a given value to a channel.
-	void	addValue(CChannelMixer *chanMixer, uint valueId, uint ownerValueId, const std::string &prefix, bool detail);
+	/** This is a tool function which add a given value to a channel.
+	  * \return -1 if the track was not found in the animationSet, else it return the channelId 
+	  *	as if returned by CAnimationSet::getChannelIdByName(channelName).
+	  */
+	sint	addValue(CChannelMixer *chanMixer, uint valueId, uint ownerValueId, const std::string &prefix, bool detail);
 
 	/// This method clear a bit in the bitset.
 	void	clearFlag(uint valueId)

@@ -1,7 +1,7 @@
 /** \file skeleton_model.h
  * <File description>
  *
- * $Id: skeleton_model.h,v 1.7 2002/02/06 16:54:57 berenguier Exp $
+ * $Id: skeleton_model.h,v 1.8 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -82,10 +82,10 @@ public:
 	// @}
 
 
-
 	/// \name Skin operation.
 	// @{
 	/** bind a skin to the skeleton. NB: ~CTransform() calls detachSkeletonSon().
+	 * NB: nlassert() if there is too many skins/sticked objects on this skeleton (more than 255).
 	 * NB: nlassert(mi->isSkinnable());
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
@@ -93,6 +93,7 @@ public:
 	 */
 	void		bindSkin(CTransform *mi);
 	/** parent a CTransform to a bone of the skeleton. NB: ~CTransform() calls detachSkeletonSon().
+	 * NB: nlassert() if there is too many skins/sticked objects on this skeleton (more than 255).
 	 * NB: an object can't be skinned and sticked at same time :)
 	 * NB: replaced if already here.
 	 * NB: mi is made son of skeleton model in Traversals Hrc, and change are made at render() for ClipTrav.
@@ -105,10 +106,28 @@ public:
 	// @}
 
 
+	/// \name Skin/BoneUsage Accessor. Called by CMeshInstance only.
+	// @{
+	/// increment the refCount of the ith bone. set forced to false for MRM that follow MultiResolutionSkeleton reduction.
+	void		incBoneUsage(uint i, bool forced= true);
+	/// decrement the refCount of the ith bone. set forced to false for MRM that follow MultiResolutionSkeleton reduction.
+	void		decBoneUsage(uint i, bool forced= true);
+
+	/** This method update boneUsage (must be of size of Bones).
+	 *	It's flag boneUsage[boneId] to true, and all parents of boneId.
+	 */
+	void		flagBoneAndParents(uint32 boneId, std::vector<bool>	&boneUsage) const;
+
+	// @}
+
+
 	/// \name Misc.
 	// @{
 	/// return, from skeleton shape, the BoneIdByName. -1 if not here.
 	sint32		getBoneIdByName(const std::string &name) const;
+
+	/// return the number of bones currently animated/computed (because of bindSkin()/stickObject()).
+	uint		getNumBoneComputed() const {return _NumBoneComputed;}
 	// @}
 
 
@@ -150,6 +169,34 @@ private:
 	TTransformSet				_Skins;
 	/// The StickedObjects.
 	TTransformSet				_StickedObjects;
+
+
+	/// \name Bone Usage.
+	// @{
+
+	/// The list of BoneUsage (refCount). Updated by Meshes and stickObject().
+	std::vector<uint8>			_BoneUsage;
+	/// Same as BoneUsage, but must be animated/computed, even if Skeleton Lods say not (stickedObjects, std Meshes, old MRM meshes).
+	std::vector<uint8>			_ForcedBoneUsage;
+	/// The current state: which bones need to be computed. ie (BoneUsage & currentLodUsage) | ForcedBoneUsage.
+	std::vector<uint8>			_BoneToCompute;
+	/// Flag set if the MRSkeleton lod change, or if a new bone Usage change (only if was 0 or become 0).
+	bool						_BoneToComputeDirty;
+	/// Number of bones computed, ie number of entries in _BoneToCompute which are not 0.
+	uint						_NumBoneComputed;
+
+	/// called by CSkeletonShape::createInstance(). init the 3 vectors.
+	void		initBoneUsages();
+
+	/// increment the refCount of the ith bone and its parents. for stickObjects.
+	void		incForcedBoneUsageAndParents(uint i);
+	/// increment the refCount of the ith bone and its parents. for stickObjects.
+	void		decForcedBoneUsageAndParents(uint i);
+
+	/// According to _BoneUsage, _ForedBoneUsage and current skeleton Lod, update _BoneToCompute.
+	void		updateBoneToCompute();
+
+	// @}
 
 
 	// The Hrc traversal of the Scene which owns this Skeleton.

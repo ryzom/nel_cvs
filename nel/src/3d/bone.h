@@ -1,7 +1,7 @@
 /** \file bone.h
  * <File description>
  *
- * $Id: bone.h,v 1.2 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: bone.h,v 1.3 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,6 +132,8 @@ public:
 	const CMatrix	&getBoneSkinMatrix() const {return _BoneSkinMatrix;}
 
 
+	/// enable the channels (lodEnable) associated to this bone in the channelMixer.
+	void			lodEnableChannels(CChannelMixer *chanMixer, bool enable);
 
 
 // *************************
@@ -145,6 +147,13 @@ private:
 	CMatrix						_WorldMatrix;
 	// The result Disaplcement _LocalSkeletonMatrix, local to the skeleton.
 	CMatrix						_BoneSkinMatrix;
+
+	// The bkuped channelIds for each channel of the bone. -1 if not registered (or no tracks in animationSet).
+	sint						_PosChannelId;
+	sint						_RotEulerChannelId;
+	sint						_RotQuatChannelId;
+	sint						_ScaleChannelId;
+	sint						_PivotChannelId;
 };
 
 

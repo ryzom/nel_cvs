@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.46 2002/03/14 18:07:51 vizerie Exp $
+ * $Id: mesh.cpp,v 1.47 2002/03/20 11:17:25 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -121,6 +121,7 @@ CMeshGeom::CMeshGeom()
 	_VertexBufferHardDirty= true;
 	_MeshMorpher = new CMeshMorpher;
 	_BoneIdComputed = false;
+	_BoneIdExtended= false;
 }
 
 
@@ -426,6 +427,7 @@ void	CMeshGeom::build (CMesh::CMeshBuild &m, uint numMaxMaterial)
 
 		// Bone id in local
 		_BoneIdComputed = false;
+		_BoneIdExtended = false;
 	}
 
 
@@ -751,6 +753,8 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	{
 		// Version3-: Bones index are in skeleton model id list
 		_BoneIdComputed = (ver < 4);
+		// In all case, must recompute usage of parents.
+		_BoneIdExtended= false;
 	}
 	else
 	{
@@ -801,6 +805,11 @@ void	CMeshGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 			optimizeTriangleOrder();
 		}
 	}
+
+	// Skinning: If Version < 4, _BonesName are not present, must compute _BonesId from localId
+	// Else it is computed at first computeBonesId().
+	if(ver < 4)
+		buildBoneUsageVer3();
 
 }
 
@@ -1173,6 +1182,9 @@ void	CMeshGeom::computeBonesId (CSkeletonModel *skeleton)
 		nlassert (skeleton);
 		if (skeleton)
 		{
+			// Resize boneId to the good size.
+			_BonesId.resize(_BonesName.size());
+
 			// For each matrix block
 			uint matrixBlock;
 			for (matrixBlock=0; matrixBlock<_MatrixBlocks.size(); matrixBlock++)
@@ -1187,6 +1199,9 @@ void	CMeshGeom::computeBonesId (CSkeletonModel *skeleton)
 					// Get bone id in the skeleton
 					nlassert (mb.MatrixId[matrix]<_BonesName.size());
 					sint32 boneId = skeleton->getBoneIdByName (_BonesName[mb.MatrixId[matrix]]);
+
+					// Setup the _BoneId.
+					_BonesId[mb.MatrixId[matrix]]= boneId;
 
 					// Bones found ?
 					if (boneId != -1)
@@ -1208,6 +1223,107 @@ void	CMeshGeom::computeBonesId (CSkeletonModel *skeleton)
 			// Computed
 			_BoneIdComputed = true;
 		}
+	}
+
+	// Already extended ?
+	if (!_BoneIdExtended)
+	{
+		nlassert (skeleton);
+		if (skeleton)
+		{
+			// the total bone Usage of the mesh.
+			vector<bool>	boneUsage;
+			boneUsage.resize(skeleton->Bones.size(), false);
+
+			// for all Bones marked as valid.
+			uint	i;
+			for(i=0; i<_BonesId.size(); i++)
+			{
+				// if not a valid boneId, skip it.
+				if(_BonesId[i]<0)
+					continue;
+
+				// mark him and his father in boneUsage.
+				skeleton->flagBoneAndParents(_BonesId[i], boneUsage);
+			}
+
+			// refill _BonesId with parents.
+			_BonesId.clear();
+			for(i=0; i<boneUsage.size();i++)
+			{
+				// if the bone is used by the mesh, add it to BoneId.
+				if(boneUsage[i])
+					_BonesId.push_back(i);
+			}
+
+		}
+
+		// Extended
+		_BoneIdExtended= true;
+	}
+
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::buildBoneUsageVer3 ()
+{
+	if(_Skinned)
+	{
+		// parse all matrixBlocks, couting MaxBoneId used.
+		uint32	maxBoneId= 0;
+		// For each matrix block
+		uint matrixBlock;
+		for (matrixBlock=0; matrixBlock<_MatrixBlocks.size(); matrixBlock++)
+		{
+			CMatrixBlock &mb = _MatrixBlocks[matrixBlock];
+			// For each matrix
+			for (uint matrix=0; matrix<mb.NumMatrix; matrix++)
+			{
+				maxBoneId= max(mb.MatrixId[matrix], maxBoneId);
+			}
+		}
+
+		// alloc an array of maxBoneId+1, reset to 0.
+		std::vector<uint8>		boneUsage;
+		boneUsage.resize(maxBoneId+1, 0);
+
+		// reparse all matrixBlocks, counting usage for each bone.
+		for (matrixBlock=0; matrixBlock<_MatrixBlocks.size(); matrixBlock++)
+		{
+			CMatrixBlock &mb = _MatrixBlocks[matrixBlock];
+			// For each matrix
+			for (uint matrix=0; matrix<mb.NumMatrix; matrix++)
+			{
+				// mark this bone as used.
+				boneUsage[mb.MatrixId[matrix]]= 1;
+			}
+		}
+
+		// For each bone used
+		_BonesId.clear();
+		for(uint i=0; i<boneUsage.size();i++)
+		{
+			// if the bone is used by the mesh, add it to BoneId.
+			if(boneUsage[i])
+				_BonesId.push_back(i);
+		}
+	}
+}
+
+
+// ***************************************************************************
+void	CMeshGeom::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
+{
+	// For all Bones used.
+	for(uint i=0; i<_BonesId.size();i++)
+	{
+		// increment or decrement Forced, because CMeshGeom does not support Skeleton LOD.
+		// Hence the bones that this mesh use must always be present
+		if(increment)
+			sm->incBoneUsage(_BonesId[i], true);
+		else
+			sm->decBoneUsage(_BonesId[i], true);
 	}
 }
 
@@ -1473,6 +1589,14 @@ void	CMesh::computeBonesId (CSkeletonModel *skeleton)
 {
 	nlassert (_MeshGeom);
 	_MeshGeom->computeBonesId (skeleton);
+}
+
+
+// ***************************************************************************
+void	CMesh::updateSkeletonUsage(CSkeletonModel *sm, bool increment)
+{
+	nlassert (_MeshGeom);
+	_MeshGeom->updateSkeletonUsage(sm, increment);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file header.cpp
  * Georges header file class
  *
- * $Id: header.cpp,v 1.1 2002/05/17 06:28:05 corvazier Exp $
+ * $Id: header.cpp,v 1.2 2002/05/22 12:09:45 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "header.h"
 #include "nel/misc/thread.h"
 #include "nel/misc/i_xml.h"
+#include "nel/misc/common.h"
 
 using namespace NLMISC;
 
@@ -49,7 +50,7 @@ void CFileHeader::write (xmlNodePtr node) const
 {
 	// Version
 	char tmp[100];
-	_snprintf (tmp, 100, "%d.%d", MajorVersion, MinorVersion);
+	smprintf (tmp, 100, "%d.%d", MajorVersion, MinorVersion);
 	xmlSetProp (node, (const xmlChar*)"Version", (const xmlChar*)tmp);
 
 	// State

@@ -1,7 +1,7 @@
 /** \file form_loader.cpp
  * Georges form loader implementation
  *
- * $Id: form_loader.cpp,v 1.3 2002/05/17 06:31:04 corvazier Exp $
+ * $Id: form_loader.cpp,v 1.4 2002/05/22 12:09:45 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "nel/georges/u_form.h"
 
 #include "form_loader.h"
-#include "Type.h"
+#include "type.h"
 #include "form.h"
 #include "form_dfn.h"
 

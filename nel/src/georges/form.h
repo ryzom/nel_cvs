@@ -1,7 +1,7 @@
 /** \file form.h
  * Georges form class
  *
- * $Id: form.h,v 1.3 2002/05/21 08:59:24 corvazier Exp $
+ * $Id: form.h,v 1.4 2002/05/22 12:09:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,7 +44,7 @@ class UFormElm;
 class CForm : public UForm
 {
 	friend class CFormLoader;
-	friend bool ::convertFormFile (const char *oldFileName, const char *newFileName);
+	friend bool convertFormFile (const char *oldFileName, const char *newFileName);
 public:
 
 	// From UForm

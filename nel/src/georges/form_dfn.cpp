@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.1 2002/05/17 06:28:04 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.2 2002/05/22 12:09:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,11 @@
 
 using namespace NLMISC;
 using namespace std;
+
+#ifndef NL_OS_WINDOWS
+#define stricmp strcasecmp
+#endif
+
 
 namespace NLGEORGES
 {

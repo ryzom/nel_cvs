@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.1 2002/05/17 06:28:04 corvazier Exp $
+ * $Id: form_dfn.h,v 1.2 2002/05/22 12:09:45 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,7 +48,7 @@ class CFormDfn : public NLMISC::CRefCount
 	friend class CFormElm;
 	friend class CFormLoader;
 	friend class CFormElmStruct;
-	friend bool ::convertDfnFile (const char *oldFileName, const char *newFileName);
+	friend bool convertDfnFile (const char *oldFileName, const char *newFileName);
 public:
 
 	// A form defnition entry
@@ -56,10 +56,10 @@ public:
 	{
 		friend class CType;
 		friend class CForm;
-		friend CFormElm;
-		friend CFormDfn;
-		friend CFormElmStruct;
-		friend bool ::convertDfnFile (const char *oldFileName, const char *newFileName);
+		friend class CFormElm;
+		friend class CFormDfn;
+		friend class CFormElmStruct;
+		friend bool convertDfnFile (const char *oldFileName, const char *newFileName);
 	public:
 
 		CEntry ()

@@ -1,7 +1,7 @@
 /** \file form.cpp
  * Georges form class
  *
- * $Id: form.cpp,v 1.4 2002/05/17 11:38:42 corvazier Exp $
+ * $Id: form.cpp,v 1.5 2002/05/22 12:09:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "stdgeorges.h"
 
 #include "nel/misc/i_xml.h"
+#include "nel/misc/common.h"
 
 #include "form.h"
 #include "form_loader.h"
@@ -83,7 +84,7 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn)
 	{
 		// Make an error message
 		char tmp[512];
-		_snprintf (tmp, 512, "Georges FORM XML Syntax error in block line %d, node %s should be FORM", 
+		smprintf (tmp, 512, "Georges FORM XML Syntax error in block line %d, node %s should be FORM", 
 			(int)node->content, node->name);
 		throw EXmlParsingError (tmp);
 	}
@@ -94,7 +95,7 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn)
 	{
 		// Make an error message
 		char tmp[512];
-		_snprintf (tmp, 512, "Georges FORM XML Syntax error in block line %d, node %s should have a STRUCT child node", 
+		smprintf (tmp, 512, "Georges FORM XML Syntax error in block line %d, node %s should have a STRUCT child node", 
 			(int)node->content, node->name);
 		throw EXmlParsingError (tmp);
 	}
@@ -118,7 +119,7 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn)
 			{
 				// Make an error message
 				char tmp[512];
-				_snprintf (tmp, 512, "Can't set the parent FORM named %s. Check if it is the same form or if it use a differnt formDfn.", parent);
+				smprintf (tmp, 512, "Can't set the parent FORM named %s. Check if it is the same form or if it use a differnt formDfn.", parent);
 
 				// Delete the value
 				xmlFree ((void*)parent);
@@ -130,7 +131,7 @@ void CForm::read (xmlNodePtr node, CFormLoader &loader, CFormDfn *dfn)
 		{
 			// Make an error message
 			char tmp[512];
-			_snprintf (tmp, 512, "Can't load the parent FORM named %s.", parent);
+			smprintf (tmp, 512, "Can't load the parent FORM named %s.", parent);
 
 			// Delete the value
 			xmlFree ((void*)parent);

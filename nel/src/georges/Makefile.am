@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.4 2002/03/26 13:52:57 valignat Exp $
+# $Id: Makefile.am,v 1.5 2002/05/22 12:09:44 cado Exp $
 #
 
 MAINTAINERCLEANFILES     = Makefile.in
@@ -7,35 +7,15 @@ MAINTAINERCLEANFILES     = Makefile.in
 lib_LTLIBRARIES          = libnelgeorges.la
 
 libnelgeorges_la_SOURCES = form.cpp                        \
-                           form_body_elt.cpp               \
-                           form_body_elt_atom.cpp          \
-                           form_body_elt_list.cpp          \
-                           form_body_elt_struct.cpp        \
-                           form_file.cpp                   \
-                           form_head.cpp                   \
                            form_loader.cpp                 \
-                           georges_loader.cpp              \
-                           item.cpp                        \
-                           item_elt.cpp                    \
-                           item_elt_atom.cpp               \
-                           item_elt_list.cpp               \
-                           item_elt_struct.cpp             \
-                           item_loader.cpp                 \
-                           mold_elt.cpp                    \
-                           mold_elt_define.cpp             \
-                           mold_elt_define_list.cpp        \
-                           mold_elt_type.cpp               \
-                           mold_elt_type_list.cpp          \
-                           mold_loader.cpp                 \
+						   form_dfn.cpp                    \
+						   form_elm.cpp                    \
                            stdgeorges.cpp                  \
                            stdgeorges.h                    \
-                           string_ex.cpp                   \
-                           type_unit.cpp                   \
-                           type_unit_double.cpp            \
-                           type_unit_file_name.cpp         \
-                           type_unit_int_signed.cpp        \
-                           type_unit_int_unsigned.cpp      \
-                           type_unit_string.cpp
+						   header.cpp                      \
+						   type.cpp
+
+AM_CXXFLAGS         	 = -I$(top_srcdir)/src
 
 libnelgeorges_la_LIBADD  = -lc -lpthread
 

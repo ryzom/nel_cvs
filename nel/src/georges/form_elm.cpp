@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.5 2002/05/21 13:06:48 vizerie Exp $
+ * $Id: form_elm.cpp,v 1.6 2002/05/22 12:09:45 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -575,8 +575,8 @@ bool CFormElm::getNodeByName (const char *name, const CFormDfn **parentDfn, uint
 	{
 		nlassert (!isArray ());
 		lastElement = 0xffffffff;
-		*nodeType = isAtom () ? safe_cast<const CFormElmAtom*>(this)->Type : NULL;		
-		*nodeDfn = isStruct () ? safe_cast<const CFormElmStruct*>(this)->FormDfn : NULL;
+		*nodeType = isAtom () ? safe_cast<const CFormElmAtom*>(this)->Type : NULL;
+		*nodeDfn = isStruct () ? (const CFormDfn *)(safe_cast<const CFormElmStruct*>(this)->FormDfn) : NULL;
 		type = isAtom () ? CFormDfn::CEntry::EntryType : isVirtualStruct () ? CFormDfn::CEntry::EntryDfnPointer : CFormDfn::CEntry::EntryDfn;
 	}
 
@@ -747,7 +747,7 @@ bool CFormElm::getNodeByName (const char *name, const CFormDfn **parentDfn, uint
 					if (sscanf (token.c_str(), "%d", &arrayIndex)!=1)
 					{
 						// Error message
-						nlwarning ("Georges (CFormElm::getNodeByName) : %s is not an array index. Can't open the node %s", token, name);
+						nlwarning ("Georges (CFormElm::getNodeByName) : %s is not an array index. Can't open the node %s", token.c_str(), name);
 						return false;
 					}
 
@@ -760,14 +760,14 @@ bool CFormElm::getNodeByName (const char *name, const CFormDfn **parentDfn, uint
 						if (arrayIndex>=arraySize)
 						{
 							// Error message
-							nlwarning ("Georges (CFormElm::getNodeByName) : Out of array bounds (size of %s is %d). Can't open the node %s", currentName, arraySize, name);
+							nlwarning ("Georges (CFormElm::getNodeByName) : Out of array bounds (size of %s is %d). Can't open the node %s", currentName.c_str(), arraySize, name);
 							return false;
 						}
 					}
 					else
 					{
 						// Error message
-						nlwarning ("Georges (CFormElm::getNodeByName) : The array %s is not defined.", currentName);
+						nlwarning ("Georges (CFormElm::getNodeByName) : The array %s is not defined.", currentName.c_str());
 						return false;
 					}
 				}

@@ -158,16 +158,15 @@ namespace NLAIAGENT
 					else
 						onActivate();
 				}
+				else
+				if ( (_CurrentGoal != NULL) && (_IsActivated == true) )
+				{
+					if ( (_IsPaused == false) && _CurrentGoal->isSelected() )
+						pause();
+					if ( (_IsPaused == true)  && !_CurrentGoal->isSelected() )
+						restart();
+				}
 			}
-
-			if ( (_CurrentGoal != NULL) && (_IsActivated == true) )
-			{
-				if ( (_IsPaused == false) && _CurrentGoal->isSelected() )
-					pause();
-				if ( (_IsPaused == true)  && !_CurrentGoal->isSelected() )
-					restart();
-			}
-
 
 			if ( _CurrentGoal != NULL)
 			{

@@ -2,7 +2,7 @@
  *	
  *	Instances of operators
  *
- * $Id: operator_script.h,v 1.15 2001/06/01 14:49:45 portier Exp $
+ * $Id: operator_script.h,v 1.16 2001/06/21 16:00:37 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -90,7 +90,7 @@ namespace NLAIAGENT
 //			virtual void setParent(const IWordNumRef *parent);
 
 			/// Binds the goal args to the variables of the operator (defined by the "Goal:" field in the script).
-			void instanciateGoalArgs(NLAILOGIC::CGoal *);
+			void linkGoalArgs(NLAILOGIC::CGoal *);
 
 			virtual void cancel();
 //			virtual bool isActive();

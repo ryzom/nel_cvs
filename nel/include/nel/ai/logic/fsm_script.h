@@ -2,7 +2,7 @@
  *	
  *	Instances of finite state machines
  *
- * $Id: fsm_script.h,v 1.6 2001/05/22 16:08:01 chafik Exp $
+ * $Id: fsm_script.h,v 1.7 2001/06/21 16:00:37 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,6 +99,8 @@ namespace NLAIAGENT
 
 			static void initClass();
 			static void releaseClass();
+
+			virtual void setTopLevel(NLAIAGENT::CAgentScript *);
 	};
 }
 #endif

@@ -664,6 +664,28 @@ namespace NLAISCRIPT
 	
 		_Goal = new NLAILOGIC::CGoal( *(NLAIAGENT::CStringVarName *) assert->clone() );
 
+		std::list<const NLAIAGENT::IVarName *>::iterator it_var = args.begin();
+		while ( it_var != args.end() )
+		{
+			// Looks in the class components if the var already exists
+			sint32 id_var = getComponentIndex( **it_var );
+
+			if ( id_var != -1 )
+			{
+				// If it exists, stores its index
+				_GoalPosVar.push_back( id_var );
+			}
+			else
+			{
+				// If it doesn't exist, registers the var as a component of the class
+				NLAIAGENT::CStringVarName var_name("Var");
+				registerComponent( var_name , (const NLAIAGENT::CStringVarName &) **it_var );
+//				_Vars.push_back( (NLAILOGIC::IBaseVar *)(*it_cond)->clone() );
+				_GoalPosVar.push_back( getComponentIndex(**it_var) );
+			}
+			it_var++;
+		}
+
 		std::list<NLAIAGENT::IObjectIA *> arg_list;
 		while ( !args.empty() )
 		{

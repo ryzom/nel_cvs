@@ -278,4 +278,20 @@ namespace NLAIAGENT
 		// Envoi d'un message echec au père
 	}
 	*/
+
+	void CFsmScript::setTopLevel(NLAIAGENT::CAgentScript *tl)
+	{
+		_TopLevel = tl;
+
+		for (int i = 0; i < _NbComponents; i++ )
+		{
+			if ( _Components[i]->isClassInheritedFrom( NLAIAGENT::CStringVarName("ActorScript") ) != -1 )
+			{
+				if ( _TopLevel )
+					( (CActorScript *)_Components[i] )->setTopLevel( _TopLevel );
+				else
+					( (CActorScript *)_Components[i] )->setTopLevel( this );
+			}
+		}
+	}
 }

@@ -1,7 +1,7 @@
 /** \file file.cpp
  *	Interpret class for operators
  *
- * $Id: interpret_object_operator.h,v 1.13 2001/06/01 14:49:45 portier Exp $
+ * $Id: interpret_object_operator.h,v 1.14 2001/06/21 16:00:37 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,7 +40,8 @@ namespace NLAISCRIPT
 		NLAILOGIC::CGoal							*_Goal;				/// Goal the operator tris to validate
 
 		const NLAIAGENT::IVarName					*_GoalAssert;		/// Name of the goal's assert
-		std::list<const NLAIAGENT::IVarName *>		_GoalVars;		/// Name of the goal's vars
+		std::list<const NLAIAGENT::IVarName *>		_GoalVars;			/// Name of the goal's vars
+		std::vector<sint32>							_GoalPosVar;		/// Pos of the goal's var in the operato's static components
 
 		std::vector<NLAILOGIC::IBaseVar *>			_Vars;				/// Variables of the operator
 
@@ -49,6 +50,7 @@ namespace NLAISCRIPT
 
 		std::vector<NLAILOGIC::IBaseAssert *>		_Concs;				/// Postconditions asserts			
 		std::vector< std::vector<sint32> >			_PosVarsConc;		/// Pos of a postcondition pattern's vars in the operator's vars table
+
 
 /*		std::vector< int >							_FuzzyVars;
 		std::vector< NLAIFUZZY::IFuzzySet *>		_FuzzySets;
@@ -217,6 +219,14 @@ public:
 		{
 			return _PosVarsConc;
 		}
+
+		std::vector<sint32> &getGoalVarPos()
+		{
+			return _GoalPosVar;
+		}
+
+
+
 	};
 }
 #endif

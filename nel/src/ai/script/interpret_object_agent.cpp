@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.32 2001/06/14 14:48:55 portier Exp $
+ * $Id: interpret_object_agent.cpp,v 1.33 2001/06/21 16:00:06 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -627,6 +627,10 @@ namespace NLAISCRIPT
 		for(sint32 i = 0; i < getMethodIndexSize() - getBaseMethodCount(); i ++)
 		{
 			CMethodeName &m = classType->getBrancheCode(i);
+#ifdef NL_DEBUG
+			const char *dbg_this_name = m.getName().getString();
+			const char *dbg_func_name = methodName->getString();
+#endif
 			if(m.getName() == *methodName )
 			{
 				k.Weight = m.getParam().eval((const CParam &)param);
@@ -779,7 +783,7 @@ namespace NLAISCRIPT
 				_Methode[i] = m;
 			}
 		}		
-	}	
+	}
 
 	sint32 CAgentClass::isClassInheritedFrom(const NLAIAGENT::IVarName &className) const
 	{		

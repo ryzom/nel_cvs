@@ -100,20 +100,6 @@ namespace NLAIAGENT
 		// TODO
 	}
 
-	void COperatorScript::instanciateGoalArgs(NLAILOGIC::CGoal *goal)
-	{
-		const std::vector<IObjectIA *> &args = goal->getArgs();
-		std::vector<IObjectIA *>::const_iterator it_arg = args.begin();
-		while ( it_arg != args.end() )
-		{
-#ifdef NL_DEBUG
-			std::string buffer;
-			(*it_arg)->getDebugString( buffer );
-#endif
-			it_arg++;
-		}
-	}
-
 	const IObjectIA::CProcessResult &COperatorScript::run()
 	{
 #ifdef NL_DEBUG
@@ -177,9 +163,8 @@ namespace NLAIAGENT
 			{
 				// Registers with the goal and gets the args
 				NLAILOGIC::CGoal *current_goal = activated_goals.front();
-				instanciateGoalArgs(current_goal);
 				current_goal->addSuccessor( (IBasicAgent *) this );
-//				setTopLevel( this/*(CAgentScript *) current_goal->getReceiver() */);
+				linkGoalArgs( current_goal );
 
 				activate();
 
@@ -368,6 +353,18 @@ namespace NLAIAGENT
 		{
 			delete result;
 			return NULL;
+		}
+	}
+
+	void COperatorScript::linkGoalArgs(NLAILOGIC::CGoal *g)
+	{
+		std::vector<NLAIAGENT::IObjectIA *>::const_iterator it_arg = g->getArgs().begin();
+		std::vector<sint32>::iterator &it_pos = ( (NLAISCRIPT::COperatorClass *) _AgentClass )->getGoalVarPos().begin();
+		while ( it_arg != g->getArgs().end() )
+		{
+			setStaticMember( *it_pos, *it_arg );
+			it_arg++;
+			it_pos++;
 		}
 	}
 }

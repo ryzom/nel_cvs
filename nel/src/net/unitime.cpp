@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * CUniTime class
  *
- * $Id: unitime.cpp,v 1.4 2000/11/21 17:59:01 valignat Exp $
+ * $Id: unitime.cpp,v 1.5 2000/11/22 11:17:35 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -55,7 +55,7 @@ void CUniTime::syncUniTimeFromService ()
 	uint16 validitytime;
 	if ( CNamingClient::lookup( "CTS", servaddr, validitytime ) )
 	{
-		CSocket server(true,false);
+		CSocket server;
 		server.connect( servaddr );
 
 		sint attempt = 0;

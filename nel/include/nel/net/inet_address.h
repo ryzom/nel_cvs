@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.h,v 1.13 2000/11/20 15:51:49 cado Exp $
+ * $Id: inet_address.h,v 1.14 2000/11/22 11:17:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,6 +35,10 @@
 
 struct sockaddr_in;
 
+#ifdef NL_OS_WINDOWS
+// automatically add the win socket library if you use nel network part
+#pragma comment(lib, "ws2_32.lib")
+#endif
 
 namespace NLMISC
 {

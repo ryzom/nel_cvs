@@ -1,7 +1,7 @@
 /** \file time_nl.h
  * CTime class
  *
- * $Id: time_nl.h,v 1.2 2000/11/10 16:58:34 cado Exp $
+ * $Id: time_nl.h,v 1.3 2000/11/22 11:17:06 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,6 +27,11 @@
 #define NL_TIME_H
 
 #include "nel/misc/types_nl.h"
+
+#ifdef NL_OS_WINDOWS
+// automatically add the win multimedia library if you use CTime class
+#pragma comment(lib, "winmm.lib")
+#endif
 
 namespace NLMISC
 {

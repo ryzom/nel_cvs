@@ -1,7 +1,7 @@
 /** \file particle_system.h
  * <File description>
  *
- * $Id: particle_system.h,v 1.46 2004/02/19 09:51:19 vizerie Exp $
+ * $Id: particle_system.h,v 1.47 2004/03/04 14:26:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,7 @@
 #include "nel/misc/aabbox.h"
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/rgba.h"
+#include "nel/misc/object_arena_allocator.h"
 #include "nel/3d/animation_time.h"
 #include "nel/3d/animation_time.h"
 #include "3d/animated_value.h"
@@ -83,6 +84,7 @@ const uint MaxPSUserParam = 4;
 class CParticleSystem : public NLMISC::CRefCount
 {
 public:
+	PS_FAST_OBJ_ALLOC
 	// the pass that is applied on particles
 	enum TPass { Anim, SolidRender, BlendRender, ToolRender };
 public:
@@ -1022,6 +1024,10 @@ public:
 			static bool getSerializeIdentifierFlag() { return _SerialIdentifiers; }
 			// list all textures used by the ps, and append them in the given vector
 			void enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, IDriver &drv);
+			// Change z-bias of all materials. The z-bias value is given in world coordinates
+			void setZBias(float value);
+			// debug : force to display bbox of all particle systems
+			static void forceDisplayBBox(bool on) { _ForceDisplayBBox = on; }			
 		// @}
 
 	
@@ -1046,7 +1052,7 @@ private:
 	// the driver used for rendering
 	IDriver					 *_Driver;	
 		
-	typedef std::vector< CParticleSystemProcess *> TProcessVect;
+	typedef CPSVector<CParticleSystemProcess *>::V TProcessVect;
 	TProcessVect			 _ProcessVect;
 	CFontGenerator			 *_FontGenerator;
 	CFontManager			 *_FontManager;
@@ -1150,8 +1156,8 @@ private:
 	TPresetBehaviour							_PresetBehaviour;
 
 	typedef 
-	std::multimap<uint32, CPSLocatedBindable *> TLBMap;
-	TLBMap										_LBMap;
+		CPSMultiMap<uint32, CPSLocatedBindable *>::M TLBMap;
+	TLBMap											_LBMap;
 
 	float										_AutoLODStartDistPercent;
 	uint8										_AutoLODDegradationExponent;
@@ -1182,6 +1188,7 @@ private:
 	bool										_HiddenAtPreviousFrame				 : 1;
 
 	static bool									_SerialIdentifiers;
+	static bool									_ForceDisplayBBox;
 
 	/// Inverse of the ellapsed time (call to step, valid only for motion pass)
 	float										_InverseEllapsedTime;	
@@ -1275,3 +1282,4 @@ class CPSCopyHelper
 #endif // NL_PARTICLE_SYSTEM_H
 
 /* End of particle_system.h */
+

@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.cpp
  * <File description>
  *
- * $Id: particle_system_instance_user.cpp,v 1.28 2003/12/05 11:08:17 vizerie Exp $
+ * $Id: particle_system_instance_user.cpp,v 1.29 2004/03/04 14:26:30 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -413,6 +413,13 @@ void UParticleSystemInstance::setGlobalVectorValue(const std::string &name,const
 }
 
 //===================================================================
+void UParticleSystemInstance::forceDisplayBBox(bool on)
+{
+	CParticleSystem::forceDisplayBBox(on);
+}
+
+
+//===================================================================
 NLMISC::CVector UParticleSystemInstance::getGlobalVectorValue(const std::string &name)
 {
 	NL3D_MEM_PS_INSTANCE
@@ -500,12 +507,30 @@ void CParticleSystemInstanceUser::setUserMatrix(const NLMISC::CMatrix &userMat)
 }
 
 //===================================================================
+void CParticleSystemInstanceUser::forceSetUserMatrix(const NLMISC::CMatrix &userMat)
+{
+	NL3D_MEM_PS_INSTANCE
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	psm->forceSetUserMatrix(userMat);	
+}
+
+
+//===================================================================
 void CParticleSystemInstanceUser::forceInstanciate()
 {
 	NL3D_MEM_PS_INSTANCE
 	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
 	psm->forceInstanciate();
 }
+
+//===================================================================
+void CParticleSystemInstanceUser::setZBias(float value)
+{
+	NL3D_MEM_PS_INSTANCE
+	CParticleSystemModel *psm = NLMISC::safe_cast<CParticleSystemModel *>(_Transform);
+	psm->setZBias(value);
+}
+
 
 
 } // NL3D

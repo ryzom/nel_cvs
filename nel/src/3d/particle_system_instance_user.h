@@ -1,7 +1,7 @@
 /** \file particle_system_instance_user.h
  * <File description>
  *
- * $Id: particle_system_instance_user.h,v 1.26 2003/12/18 18:03:26 vizerie Exp $
+ * $Id: particle_system_instance_user.h,v 1.27 2004/03/04 14:26:30 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -148,10 +148,15 @@ public:
 	virtual float               getCoarseMeshDist() const { return -1.f; }
 
 	virtual void		setUserMatrix(const NLMISC::CMatrix &userMat);
+	virtual void		forceSetUserMatrix(const NLMISC::CMatrix &userMat);
+	
 
 	// no-op for slice time
 	virtual void		setSliceTime(float duration) {}
 	virtual float		getSliceTime() const { return 0.f; }
+
+	virtual void		setZBias(float value);	
+
 
 private:
 	/// list of observers

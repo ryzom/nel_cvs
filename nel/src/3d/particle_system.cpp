@@ -1,7 +1,7 @@
  /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.76 2004/02/19 09:51:19 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.77 2004/03/04 14:26:08 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,6 +25,8 @@
 
 #include "std3d.h"
 
+
+
 #include "3d/particle_system.h"
 #include "3d/ps_located.h"
 #include "3d/driver.h"
@@ -41,6 +43,9 @@
 #include "nel/misc/aabbox.h"
 #include "nel/misc/file.h"
 #include "nel/misc/stream.h"
+
+// tmp
+#include "3d/particle_system_model.h"
 
 
 #ifdef NL_DEBUG
@@ -65,6 +70,8 @@ uint	CParticleSystem::_NumInstances = 0;
 
 static const float PS_MIN_TIMEOUT = 1.f; // the test that check if there are no particles left 
 bool CParticleSystem::_SerialIdentifiers = false;
+bool CParticleSystem::_ForceDisplayBBox = false;
+
 
 
 ///////////////////////////////////
@@ -386,12 +393,21 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			// update global color
 			updateColor();			
 			stepLocated(PSBlendRender, ellapsedTime, ellapsedTime);
+			if (_ForceDisplayBBox)
+			{	
+				NLMISC::CAABBox box;
+				computeBBox(box);
+				getDriver()->setupModelMatrix(*_CoordSystemInfo.Matrix);
+				CPSUtil::displayBBox(getDriver(), box);
+			}
 		break;
 		case ToolRender:
+			// tmp
+			return;
 			stepLocated(PSToolRender, ellapsedTime, ellapsedTime);
 		break;
 		case Anim:
-		{						
+		{													
 			// update user param from global value if needed, unless this behaviour is bypassed has indicated by a flag in _BypassGlobalUserParam
 			if (_UserParamGlobalValue)
 			{
@@ -405,11 +421,11 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 					}
 					bypassMask <<= 1;
 				}
-			}
+			}			
 			//
-			_BBoxTouched = true;
-			TAnimationTime et = ellapsedTime;
 			uint nbPass = 1;
+			TAnimationTime et = ellapsedTime;						
+			_BBoxTouched = true;
 			if (_AccurateIntegration)
 			{
 				if (et > _TimeThreshold)
@@ -445,100 +461,129 @@ void CParticleSystem::step(TPass pass, TAnimationTime ellapsedTime)
 			{
 				_InverseEllapsedTime = ellapsedTime != 0 ? 1.f / ellapsedTime : 0.f;
 			}
-			updateLODRatio();
-
-			if (_AutoLOD && !_Sharing)
+			updateLODRatio();			
 			{
-				float currLODRatio = 1.f - _OneMinusCurrentLODRatio;
-				if (currLODRatio <= _AutoLODStartDistPercent)
+				MINI_TIMER(PSAnim3)
+				if (_AutoLOD && !_Sharing)
 				{
-					_AutoLODEmitRatio = 1.f; // no LOD applied
+					float currLODRatio = 1.f - _OneMinusCurrentLODRatio;
+					if (currLODRatio <= _AutoLODStartDistPercent)
+					{
+						_AutoLODEmitRatio = 1.f; // no LOD applied
+					}
+					else
+					{
+						float lodValue = (currLODRatio - 1.f) / (_AutoLODStartDistPercent - 1.f);
+						NLMISC::clamp(lodValue, 0.f, 1.f);
+						float finalValue = lodValue;
+						for(uint l = 1; l < _AutoLODDegradationExponent; ++l)
+						{
+							finalValue *= lodValue;
+						}
+						_AutoLODEmitRatio = (1.f - _MaxDistLODBias) * finalValue + _MaxDistLODBias;
+					}
+				}						
+			}
+			{
+				MINI_TIMER(PSAnim4)
+				// set start position. Used by emitters that emit from Local basis to world			
+				if (!_HiddenAtPreviousFrame && !_HiddenAtCurrentFrame)
+				{			
+					_CoordSystemInfo.CurrentDeltaPos = _CoordSystemInfo.OldPos - _CoordSystemInfo.Matrix->getPos();						
+					if (_UserCoordSystemInfo)
+					{
+						CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
+						csi.CurrentDeltaPos = csi.OldPos - csi.Matrix->getPos();
+					}
 				}
 				else
 				{
-					float lodValue = (currLODRatio - 1.f) / (_AutoLODStartDistPercent - 1.f);
-					NLMISC::clamp(lodValue, 0.f, 1.f);
-					float finalValue = lodValue;
-					for(uint l = 1; l < _AutoLODDegradationExponent; ++l)
+					_CoordSystemInfo.CurrentDeltaPos = NLMISC::CVector::Null;
+					_CoordSystemInfo.OldPos = _CoordSystemInfo.Matrix->getPos();
+					if (_UserCoordSystemInfo)
 					{
-						finalValue *= lodValue;
+						CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
+						csi.CurrentDeltaPos = NLMISC::CVector::Null;
+						csi.OldPos = csi.Matrix->getPos();
 					}
-					_AutoLODEmitRatio = (1.f - _MaxDistLODBias) * finalValue + _MaxDistLODBias;
 				}
-			}						
-			// set start position. Used by emitters that emit from Local basis to world			
-			if (!_HiddenAtPreviousFrame && !_HiddenAtCurrentFrame)
-			{			
-				_CoordSystemInfo.CurrentDeltaPos = _CoordSystemInfo.OldPos - _CoordSystemInfo.Matrix->getPos();						
-				if (_UserCoordSystemInfo)
-				{
-					CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
-					csi.CurrentDeltaPos = csi.OldPos - csi.Matrix->getPos();
-				}
+				//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Red);
+				// process passes				
 			}
-			else
-			{
-				_CoordSystemInfo.CurrentDeltaPos = NLMISC::CVector::Null;
-				_CoordSystemInfo.OldPos = _CoordSystemInfo.Matrix->getPos();
-				if (_UserCoordSystemInfo)
-				{
-					CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
-					csi.CurrentDeltaPos = NLMISC::CVector::Null;
-					csi.OldPos = csi.Matrix->getPos();
-				}
-			}
-			//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Red);
-			// process passes
 			float realEt = _KeepEllapsedTimeForLifeUpdate ? (ellapsedTime / nbPass)
-														  : et;									
+														  : et;
+			/*PSMaxET = std::max(PSMaxET, ellapsedTime);
+			PSMaxNBPass = std::max(PSMaxNBPass, nbPass);*/
 			do
-			{					
-				// position of the system at the end of the integration
-				_CoordSystemInfo.CurrentDeltaPos += (_CoordSystemInfo.Matrix->getPos() - _CoordSystemInfo.OldPos) * (et * _InverseEllapsedTime);
-				if (_UserCoordSystemInfo)
-				{
-					CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
-					csi.CurrentDeltaPos += (csi.Matrix->getPos() - csi.OldPos) * (et * _InverseEllapsedTime);
-				}
-
-				//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Blue);
-				// the order of the following is important...
-				stepLocated(PSCollision, et,  realEt);
-				for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
-				{
-					(*it)->updateLife(realEt);
-					(*it)->step(PSMotion, et, realEt);					
-				}
-				_SystemDate += realEt;
-				stepLocated(PSEmit, et,  realEt);
-								
-
-				if (_BypassIntegrationStepLimit)
-				{
-					// check that system is finished to avoid unuseful processing
-					if (isDestroyConditionVerified())
+			{		
+				{				
+					MINI_TIMER(PSAnim5)
+					// position of the system at the end of the integration
+					_CoordSystemInfo.CurrentDeltaPos += (_CoordSystemInfo.Matrix->getPos() - _CoordSystemInfo.OldPos) * (et * _InverseEllapsedTime);
+					if (_UserCoordSystemInfo)
 					{
-						return;
+						CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
+						csi.CurrentDeltaPos += (csi.Matrix->getPos() - csi.OldPos) * (et * _InverseEllapsedTime);
+					}
+				}
+				{				
+					MINI_TIMER(PSAnim6)
+					//displaySysPos(_Driver, _CurrentDeltaPos + _OldSysMat.getPos(), CRGBA::Blue);
+					// the order of the following is important...
+					stepLocated(PSCollision, et,  realEt);
+				}								
+					
+				for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)					
+				{
+					{						
+						MINI_TIMER(PSAnim1)
+						(*it)->updateLife(realEt);
+					}
+					{						
+						MINI_TIMER(PSAnim2)
+						(*it)->step(PSMotion, et, realEt);						
+					}
+				}
+				_SystemDate += realEt;				
+				{				
+					MINI_TIMER(PSAnim8)
+					stepLocated(PSEmit, et,  realEt);
+				}
+				{				
+					MINI_TIMER(PSAnim9)
+					if (_BypassIntegrationStepLimit)
+					{
+						// check that system is finished to avoid unuseful processing
+						if (isDestroyConditionVerified())
+						{
+							return;
+						}
 					}
 				}
 			}
 			while (--nbPass);
 			
-			// perform parametric motion if present
-			for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
-			{
-				if ((*it)->isParametricMotionEnabled()) (*it)->performParametricMotion(_SystemDate, ellapsedTime, realEt);
-			}	
-			
-			// memorize position of matrix for next frame (becomes old position)
-			_CoordSystemInfo.OldPos = _CoordSystemInfo.Matrix->getPos();
-			if (_UserCoordSystemInfo)
-			{
-				CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
-				csi.OldPos =  csi.Matrix->getPos();
+			{				
+				MINI_TIMER(PSAnim10)
+				// perform parametric motion if present
+				for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+				{
+					if ((*it)->isParametricMotionEnabled()) (*it)->performParametricMotion(_SystemDate, ellapsedTime, realEt);
+				}	
 			}
+			
+			{				
+				MINI_TIMER(PSAnim11)
+				// memorize position of matrix for next frame (becomes old position)
+				_CoordSystemInfo.OldPos = _CoordSystemInfo.Matrix->getPos();
+				if (_UserCoordSystemInfo)
+				{
+					CCoordSystemInfo &csi = _UserCoordSystemInfo->CoordSystemInfo;
+					csi.OldPos =  csi.Matrix->getPos();
+				}
 
-			_HiddenAtPreviousFrame = _HiddenAtCurrentFrame;
+				_HiddenAtPreviousFrame = _HiddenAtCurrentFrame;
+			}
 		}
 	}	
 	CHECK_INTEGRITY
@@ -1901,9 +1946,20 @@ void CParticleSystem::enumTexs(std::vector<NLMISC::CSmartPtr<ITexture> > &dest, 
 	}
 }
 
+///=======================================================================================
+void CParticleSystem::setZBias(float value)
+{
+	for (TProcessVect::iterator it = _ProcessVect.begin(); it != _ProcessVect.end(); ++it)
+	{			
+		(*it)->setZBias(value);
+	}
+}
+
+
 
 
 } // NL3D
+
 
 
 

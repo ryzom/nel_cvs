@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.42 2003/05/12 16:07:40 distrib Exp $
+ * $Id: mesh_mrm.h,v 1.43 2003/05/13 15:35:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -59,6 +59,7 @@ class	CMatrix3x4;
 class	CMatrix3x4SSE;
 class	CRawVertexNormalSkin1;
 class	CRawVertexNormalSkin2;
+class	CRawVertexNormalSkin3;
 class	CRawVertexNormalSkin4;
 class	CRawSkinNormalCache;
 class	CMeshMRMInstance;
@@ -545,8 +546,8 @@ private:
 	  */
 	void	applySkinWithNormal(CLod &lod, const CSkeletonModel *skeleton);
 	void	applySkinWithNormalSSE(CLod &lod, const CSkeletonModel *skeleton);
-	void	applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton);
-	void	applyRawSkinWithNormalSSE(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton);
+	void	applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton, uint8 *vbHard, float alphaLod);
+	void	applyRawSkinWithNormalSSE(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton, uint8 *vbHard, float alphaLod);
 
 	/** The same as apply skin with normal, but with a tangent space added (encoded in a texture coordinate).
 	  * The tangent space is modified, but not normalized (must be done in a vertex program).
@@ -590,27 +591,28 @@ private:
 
 	// ApplySkin method
 	void		applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
-		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
+		CMatrix3x4 *boneMat3x4, uint nInf);
 	void		applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
-		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
-		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
+		CMatrix3x4 *boneMat3x4, uint nInf);
+	void		applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *destVertexPtr, 
+		CMatrix3x4 *boneMat3x4, uint nInf);
 	void		applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
-		CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf);
+		CMatrix3x4 *boneMat3x4, uint nInf);
 	// Same for SSE
 	void		applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
-		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
+		CMatrix3x4SSE *boneMat3x4, uint nInf);
 	void		applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
-		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
-	void		applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
-		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
+		CMatrix3x4SSE *boneMat3x4, uint nInf);
+	void		applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *destVertexPtr, 
+		CMatrix3x4SSE *boneMat3x4, uint nInf);
 	void		applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
-		CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf);
+		CMatrix3x4SSE *boneMat3x4, uint nInf);
 
 
 public:
 	static  uint	NumCacheVertexNormal1;
 	static  uint	NumCacheVertexNormal2;
+	static  uint	NumCacheVertexNormal3;
 	static  uint	NumCacheVertexNormal4;
 
 	// @}

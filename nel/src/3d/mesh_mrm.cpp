@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.60 2003/05/06 15:33:02 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.61 2003/05/13 15:35:27 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1209,8 +1209,8 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 	// Skinning.
 	//===========
 
-	// Use RawSkin if possible: only if no morph, and only Vertex/Normal
-	updateRawSkinNormal(!bMorphApplied && !useTangentSpace && useNormal, mi, numLod);
+	// Never use RawSkin. Actually used in skinGrouping.
+	updateRawSkinNormal(false, mi, numLod);
 
 	// applySkin.
 	//--------
@@ -1230,11 +1230,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 			if (!useTangentSpace)
 			{
 				// skinning with normal, but no tangent space
-				if(mi->_RawSkinCache)
-					// Use faster RawSkin if possible.
-					applyRawSkinWithNormalSSE(lod, *(mi->_RawSkinCache), skeleton);
-				else
-					applySkinWithNormalSSE (lod, skeleton);
+				applySkinWithNormalSSE (lod, skeleton);
 			}
 			else
 			{
@@ -1249,11 +1245,7 @@ void	CMeshMRMGeom::renderSkin(CTransformShape *trans, float alphaMRM)
 			if (!useTangentSpace)
 			{
 				// skinning with normal, but no tangent space
-				if(mi->_RawSkinCache)
-					// Use faster RawSkin if possible.
-					applyRawSkinWithNormal (lod, *(mi->_RawSkinCache), skeleton);
-				else
-					applySkinWithNormal (lod, skeleton);
+				applySkinWithNormal (lod, skeleton);
 			}
 			else
 			{
@@ -1403,52 +1395,69 @@ sint	CMeshMRMGeom::renderSkinGroupGeom(CMeshMRMInstance	*mi, float alphaMRM, uin
 	// Use RawSkin if possible: only if no morph, and only Vertex/Normal
 	updateRawSkinNormal(!bMorphApplied, mi, numLod);
 
-	// applySkin.
-	//--------
-
-	// Use SSE when possible
-	if( CSystemInfo::hasSSE() )
-	{
-		// skinning with normal, but no tangent space
-		if(mi->_RawSkinCache)
-			// Use faster RawSkin if possible.
-			applyRawSkinWithNormalSSE(lod, *(mi->_RawSkinCache), skeleton);
-		else
-			applySkinWithNormalSSE (lod, skeleton);
-	}
-	// Standard FPU skinning
-	else
-	{
-		// skinning with normal, but no tangent space
-		if(mi->_RawSkinCache)
-			// Use faster RawSkin if possible.
-			applyRawSkinWithNormal (lod, *(mi->_RawSkinCache), skeleton);
-		else
-			applySkinWithNormal (lod, skeleton);
-	}
-
-	// endSkin.
-	//--------
-	// Fill the usefull AGP memory (if any one loaded/Used).
-	fillAGPSkinPartWithVBHardPtr(lod, vbDest);
-	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
-	lod.OriginalSkinRestored= false;
-
-
 	// NB: the skeleton matrix has already been setuped by CSkeletonModel
 	// NB: the normalize flag has already been setuped by CSkeletonModel
 
+	// dirt this lod part. (NB: this is not optimal, but sufficient :) ).
+	lod.OriginalSkinRestored= false;
 
-	// Geomorph.
-	//===========
-	// Geomorph the choosen Lod (if not the coarser mesh).
-	if(numLod>0)
+	// applySkin with RawSkin.
+	//--------
+	if(mi->_RawSkinCache)
 	{
-		applyGeomorphWithVBHardPtr(lod.Geomorphs, alphaLod, vbDest);
-	}
+		// RawSkin do all the job in optimized way: Skinning, copy to VBHard and Geomorph.
 
-	// How many vertices are added to the VBuffer ???
-	return lod.NWedges;
+		// Use SSE when possible
+		if( CSystemInfo::hasSSE() )
+		{
+			// skinning with normal, but no tangent space
+			applyRawSkinWithNormalSSE(lod, *(mi->_RawSkinCache), skeleton, vbDest, alphaLod);
+		}
+		// Standard FPU skinning
+		else
+		{
+			// skinning with normal, but no tangent space
+			applyRawSkinWithNormal (lod, *(mi->_RawSkinCache), skeleton, vbDest, alphaLod);
+		}
+
+		// Vertices are packed in RawSkin mode (ie no holes due to MRM!)
+		return	mi->_RawSkinCache->Geomorphs.size() + 
+				mi->_RawSkinCache->TotalSoftVertices + 
+				mi->_RawSkinCache->TotalHardVertices;
+	}
+	// applySkin STD.
+	//--------
+	else
+	{
+		// Use SSE when possible
+		if( CSystemInfo::hasSSE() )
+		{
+			// skinning with normal, but no tangent space
+			applySkinWithNormalSSE (lod, skeleton);
+		}
+		// Standard FPU skinning
+		else
+		{
+			// skinning with normal, but no tangent space
+			applySkinWithNormal (lod, skeleton);
+		}
+
+		// endSkin.
+		//--------
+		// Fill the usefull AGP memory (if any one loaded/Used).
+		fillAGPSkinPartWithVBHardPtr(lod, vbDest);
+
+		// Geomorph.
+		//===========
+		// Geomorph the choosen Lod (if not the coarser mesh).
+		if(numLod>0)
+		{
+			applyGeomorphWithVBHardPtr(lod.Geomorphs, alphaLod, vbDest);
+		}
+
+		// How many vertices are added to the VBuffer ???
+		return lod.NWedges;
+	}
 }
 
 // ***************************************************************************
@@ -1474,55 +1483,6 @@ void	CMeshMRMGeom::renderSkinGroupPrimitives(CMeshMRMInstance	*mi, uint baseVert
 	updateShiftedTriangleCache(mi, _LastLodComputed, baseVertex);
 	nlassert(mi->_ShiftedTriangleCache);
 
-	// Render Quad or line, if needed (Yoyo: maybe never :/)
-	//===========
-	if(mi->_ShiftedTriangleCache->HasQuadOrLine)
-	{
-		for(uint i=0;i<lod.RdrPass.size();i++)
-		{
-			CRdrPass	&rdrPass= lod.RdrPass[i];
-
-			// CMaterial Ref
-			CMaterial &material=mi->Materials[rdrPass.MaterialId];
-
-			// NB: don't optimize Specular Batching with quadOrLine because maybe never used (save a "if"...)
-
-			// Compute a PBlock (static to avoid reallocation) shifted to baseVertex
-			static	CPrimitiveBlock		dstPBlock;
-			dstPBlock.setNumLine(0);
-			dstPBlock.setNumQuad(0);
-			// Lines.
-			uint	numLines= rdrPass.PBlock.getNumLine();
-			if(numLines)
-			{
-				uint	nIds= numLines*2;
-				// allocate, in the tmp buffer
-				dstPBlock.setNumLine(numLines);
-				// index, and fill
-				uint32	*pSrcLine= rdrPass.PBlock.getLinePointer();
-				uint32	*pDstLine= dstPBlock.getLinePointer();
-				for(;nIds>0;nIds--,pSrcLine++,pDstLine++)
-					*pDstLine= *pSrcLine + baseVertex;
-			}
-			// Quads
-			uint	numQuads= rdrPass.PBlock.getNumQuad();
-			if(numQuads)
-			{
-				uint	nIds= numQuads*4;
-				// allocate, in the tmp buffer
-				dstPBlock.setNumQuad(numQuads);
-				// index, and fill
-				uint32	*pSrcQuad= rdrPass.PBlock.getQuadPointer();
-				uint32	*pDstQuad= dstPBlock.getQuadPointer();
-				for(;nIds>0;nIds--,pSrcQuad++,pDstQuad++)
-					*pDstQuad= *pSrcQuad + baseVertex;
-			}
-
-
-			// Render with the Materials of the MeshInstance.
-			drv->render(dstPBlock, material);
-		}
-	}
 
 	// Render Triangles with cache
 	//===========
@@ -1606,8 +1566,6 @@ void	CMeshMRMGeom::renderSkinGroupSpecularRdrPass(CMeshMRMInstance	*mi, uint rdr
 	// _ShiftedTriangleCache must have been computed in renderSkinGroupPrimitives
 	nlassert(mi->_ShiftedTriangleCache);
 
-	// NB: don't optimize Specular Batching with quadOrLine because maybe never used (save a "if"...)
-
 
 	// Render Triangles with cache
 	//===========
@@ -1650,25 +1608,37 @@ void	CMeshMRMGeom::updateShiftedTriangleCache(CMeshMRMInstance *mi, sint curLodI
 		mi->_ShiftedTriangleCache->LodId= curLodId;
 		mi->_ShiftedTriangleCache->BaseVertex= baseVertex;
 
-		// Default.
-		mi->_ShiftedTriangleCache->HasQuadOrLine= false;
+		// Build list of PBlock. From Lod, or from RawSkin cache.
+		static	vector<CPrimitiveBlock*>	pbList;
+		pbList.clear();
+		if(mi->_RawSkinCache)
+		{
+			pbList.resize(mi->_RawSkinCache->RdrPass.size());
+			for(uint i=0;i<pbList.size();i++)
+			{
+				pbList[i]= &mi->_RawSkinCache->RdrPass[i];
+			}
+		}
+		else
+		{
+			CLod	&lod= _Lods[curLodId];
+			pbList.resize(lod.RdrPass.size());
+			for(uint i=0;i<pbList.size();i++)
+			{
+				pbList[i]= &lod.RdrPass[i].PBlock;
+			}
+		}
 
 		// Build RdrPass
-		CLod	&lod= _Lods[curLodId];
-		mi->_ShiftedTriangleCache->RdrPass.resize(lod.RdrPass.size());
+		mi->_ShiftedTriangleCache->RdrPass.resize(pbList.size());
 
 		// First pass, count number of triangles, and fill header info
 		uint	totalTri= 0;
 		uint	i;
-		for(i=0;i<lod.RdrPass.size();i++)
+		for(i=0;i<pbList.size();i++)
 		{
-			CRdrPass	&srcRdrPass= lod.RdrPass[i];
-			mi->_ShiftedTriangleCache->RdrPass[i].NumTriangles= srcRdrPass.PBlock.getNumTri();
-			totalTri+= srcRdrPass.PBlock.getNumTri();
-			// Has quad or line??
-			if( srcRdrPass.PBlock.getNumQuad() || srcRdrPass.PBlock.getNumLine() )
-				// Yes => must inform the cache
-				mi->_ShiftedTriangleCache->HasQuadOrLine= true;
+			mi->_ShiftedTriangleCache->RdrPass[i].NumTriangles= pbList[i]->getNumTri();
+			totalTri+= pbList[i]->getNumTri();
 		}
 
 		// Allocate triangles indices.
@@ -1677,19 +1647,18 @@ void	CMeshMRMGeom::updateShiftedTriangleCache(CMeshMRMInstance *mi, sint curLodI
 
 		// Second pass, fill ptrs, and fill Arrays
 		uint	indexTri= 0;
-		for(i=0;i<lod.RdrPass.size();i++)
+		for(i=0;i<pbList.size();i++)
 		{
-			CRdrPass						&srcRdrPass= lod.RdrPass[i];
 			CShiftedTriangleCache::CRdrPass	&dstRdrPass= mi->_ShiftedTriangleCache->RdrPass[i];
 			dstRdrPass.Triangles= rawPtr + indexTri*3;
 
 			// Fill the array
-			uint	numTris= srcRdrPass.PBlock.getNumTri();
+			uint	numTris= pbList[i]->getNumTri();
 			if(numTris)
 			{
 				uint	nIds= numTris*3;
 				// index, and fill
-				uint32	*pSrcTri= srcRdrPass.PBlock.getTriPointer();
+				uint32	*pSrcTri= pbList[i]->getTriPointer();
 				uint32	*pDstTri= dstRdrPass.Triangles;
 				for(;nIds>0;nIds--,pSrcTri++,pDstTri++)
 					*pDstTri= *pSrcTri + baseVertex;
@@ -2566,11 +2535,24 @@ void	CMeshMRMGeom::compileRunTime()
 		_SupportSkinGrouping= false;
 	else
 	{
-		// The Mesh must follow thos restrictions, to support group skinning
+		// The Mesh must follow those restrictions, to support group skinning
 		_SupportSkinGrouping=
 			_VBufferFinal.getVertexFormat() == NL3D_MESH_SKIN_MANAGER_VERTEXFORMAT &&
 			_VBufferFinal.getNumVertices() < NL3D_MESH_SKIN_MANAGER_MAXVERTICES &&
 			!_MeshVertexProgram;
+		// Additionally, NONE of the RdrPass should have Quads or lines...
+		for(uint i=0;i<_Lods.size();i++)
+		{
+			for(uint j=0;j<_Lods[i].RdrPass.size();j++)
+			{
+				CPrimitiveBlock		&pb= _Lods[i].RdrPass[j].PBlock;
+				if( pb.getNumQuad() || pb.getNumLine() )
+				{
+					_SupportSkinGrouping= false;
+					break;
+				}
+			}
+		}
 	}
 
 	// Support MeshBlockRendering only if not skinned/meshMorphed.
@@ -3076,6 +3058,7 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 			CRawSkinNormalCache	&skinLod= *mi->_RawSkinCache;
 			CLod				&lod= _Lods[curLodId];
 			uint				i;
+			sint				rawIdx;
 
 			// Clear the raw skin mesh.
 			skinLod.clearArrays();
@@ -3085,6 +3068,68 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 
 			// For each matrix influence.
 			nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
+
+			// For each vertex, acknowledge if it is a src for geomorph.
+			static	vector<uint8>	softVertices;
+			softVertices.clear();
+			softVertices.resize( _VBufferFinal.getNumVertices(), 0 );
+			for(i=0;i<lod.Geomorphs.size();i++)
+			{
+				softVertices[lod.Geomorphs[i].Start]= 1;
+				softVertices[lod.Geomorphs[i].End]= 1;
+			}
+
+			// The remap from old index in _VBufferFinal to RawSkin vertices (without Geomorphs).
+			static	vector<uint32>	vertexRemap;
+			vertexRemap.resize( _VBufferFinal.getNumVertices() );
+			sint	softSize[4];
+			sint	hardSize[4];
+			sint	softStart[4];
+			sint	hardStart[4];
+			// count vertices
+			skinLod.TotalSoftVertices= 0;
+			skinLod.TotalHardVertices= 0;
+			for(i=0;i<4;i++)
+			{
+				softSize[i]= 0;
+				hardSize[i]= 0;
+				// Count.
+				for(uint j=0;j<lod.InfluencedVertices[i].size();j++)
+				{
+					uint	vid= lod.InfluencedVertices[i][j];
+					if(softVertices[vid])
+						softSize[i]++;
+					else
+						hardSize[i]++;
+				}
+				skinLod.TotalSoftVertices+= softSize[i];
+				skinLod.TotalHardVertices+= hardSize[i];
+				skinLod.SoftVertices[i]= softSize[i];
+				skinLod.HardVertices[i]= hardSize[i];
+			}
+			// compute offsets
+			softStart[0]= 0;
+			hardStart[0]= skinLod.TotalSoftVertices;
+			for(i=1;i<4;i++)
+			{
+				softStart[i]= softStart[i-1]+softSize[i-1];
+				hardStart[i]= hardStart[i-1]+hardSize[i-1];
+			}
+			// compute remap
+			for(i=0;i<4;i++)
+			{
+				uint	softIdx= softStart[i];
+				uint	hardIdx= hardStart[i];
+				for(uint j=0;j<lod.InfluencedVertices[i].size();j++)
+				{
+					uint	vid= lod.InfluencedVertices[i][j];
+					if(softVertices[vid])
+						vertexRemap[vid]= softIdx++;
+					else
+						vertexRemap[vid]= hardIdx++;
+				}
+			}
+
 
 			// Resize the dest array.
 			skinLod.Vertices1.resize(lod.InfluencedVertices[0].size());
@@ -3098,11 +3143,17 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 			{
 				// get the dest vertex.
 				uint	vid= lod.InfluencedVertices[0][i];
+				// where to store?
+				rawIdx= vertexRemap[vid];
+				if(softVertices[vid])
+					rawIdx-= softStart[0];
+				else
+					rawIdx+= softSize[0]-hardStart[0];
 				// fill raw struct
-				skinLod.Vertices1[i].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
-				skinLod.Vertices1[i].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices1[i].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices1[i].VertexId= vid;
+				skinLod.Vertices1[rawIdx].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
+				skinLod.Vertices1[rawIdx].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices1[rawIdx].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices1[rawIdx].UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
 			}
 
 			// 2 Matrix skinning.
@@ -3111,14 +3162,20 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 			{
 				// get the dest vertex.
 				uint	vid= lod.InfluencedVertices[1][i];
+				// where to store?
+				rawIdx= vertexRemap[vid];
+				if(softVertices[vid])
+					rawIdx-= softStart[1];
+				else
+					rawIdx+= softSize[1]-hardStart[1];
 				// fill raw struct
-				skinLod.Vertices2[i].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
-				skinLod.Vertices2[i].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
-				skinLod.Vertices2[i].Weights[0]= _SkinWeights[vid].Weights[0];
-				skinLod.Vertices2[i].Weights[1]= _SkinWeights[vid].Weights[1];
-				skinLod.Vertices2[i].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices2[i].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices2[i].VertexId= vid;
+				skinLod.Vertices2[rawIdx].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
+				skinLod.Vertices2[rawIdx].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
+				skinLod.Vertices2[rawIdx].Weights[0]= _SkinWeights[vid].Weights[0];
+				skinLod.Vertices2[rawIdx].Weights[1]= _SkinWeights[vid].Weights[1];
+				skinLod.Vertices2[rawIdx].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices2[rawIdx].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices2[rawIdx].UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
 			}
 
 			// 3 Matrix skinning.
@@ -3127,11 +3184,22 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 			{
 				// get the dest vertex.
 				uint	vid= lod.InfluencedVertices[2][i];
+				// where to store?
+				rawIdx= vertexRemap[vid];
+				if(softVertices[vid])
+					rawIdx-= softStart[2];
+				else
+					rawIdx+= softSize[2]-hardStart[2];
 				// fill raw struct
-				skinLod.Vertices3[i].SkinWeight= _SkinWeights[vid];
-				skinLod.Vertices3[i].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices3[i].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices3[i].VertexId= vid;
+				skinLod.Vertices3[rawIdx].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
+				skinLod.Vertices3[rawIdx].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
+				skinLod.Vertices3[rawIdx].MatrixId[2]= _SkinWeights[vid].MatrixId[2];
+				skinLod.Vertices3[rawIdx].Weights[0]= _SkinWeights[vid].Weights[0];
+				skinLod.Vertices3[rawIdx].Weights[1]= _SkinWeights[vid].Weights[1];
+				skinLod.Vertices3[rawIdx].Weights[2]= _SkinWeights[vid].Weights[2];
+				skinLod.Vertices3[rawIdx].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices3[rawIdx].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices3[rawIdx].UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
 			}
 
 			// 4 Matrix skinning.
@@ -3140,13 +3208,61 @@ void		CMeshMRMGeom::updateRawSkinNormal(bool enabled, CMeshMRMInstance *mi, sint
 			{
 				// get the dest vertex.
 				uint	vid= lod.InfluencedVertices[3][i];
+				// where to store?
+				rawIdx= vertexRemap[vid];
+				if(softVertices[vid])
+					rawIdx-= softStart[3];
+				else
+					rawIdx+= softSize[3]-hardStart[3];
 				// fill raw struct
-				skinLod.Vertices4[i].SkinWeight= _SkinWeights[vid];
-				skinLod.Vertices4[i].Vertex= _OriginalSkinVertices[vid];
-				skinLod.Vertices4[i].Normal= _OriginalSkinNormals[vid];
-				skinLod.Vertices4[i].VertexId= vid;
+				skinLod.Vertices4[rawIdx].MatrixId[0]= _SkinWeights[vid].MatrixId[0];
+				skinLod.Vertices4[rawIdx].MatrixId[1]= _SkinWeights[vid].MatrixId[1];
+				skinLod.Vertices4[rawIdx].MatrixId[2]= _SkinWeights[vid].MatrixId[2];
+				skinLod.Vertices4[rawIdx].MatrixId[3]= _SkinWeights[vid].MatrixId[3];
+				skinLod.Vertices4[rawIdx].Weights[0]= _SkinWeights[vid].Weights[0];
+				skinLod.Vertices4[rawIdx].Weights[1]= _SkinWeights[vid].Weights[1];
+				skinLod.Vertices4[rawIdx].Weights[2]= _SkinWeights[vid].Weights[2];
+				skinLod.Vertices4[rawIdx].Weights[3]= _SkinWeights[vid].Weights[3];
+				skinLod.Vertices4[rawIdx].Vertex= _OriginalSkinVertices[vid];
+				skinLod.Vertices4[rawIdx].Normal= _OriginalSkinNormals[vid];
+				skinLod.Vertices4[rawIdx].UV= *(CUV*)_VBufferFinal.getTexCoordPointer(vid);
 			}
 
+			// Remap Geomorphs.
+			//========
+			uint	numGeoms= lod.Geomorphs.size();
+			skinLod.Geomorphs.resize( numGeoms );
+			for(i=0;i<numGeoms;i++)
+			{
+				// NB: don't add "numGeoms" to the index because RawSkin look in a TempArray in RAM, wich start at 0...
+				skinLod.Geomorphs[i].Start= vertexRemap[lod.Geomorphs[i].Start];
+				skinLod.Geomorphs[i].End= vertexRemap[lod.Geomorphs[i].End];
+			}
+
+			// Remap RdrPass.
+			//========
+			skinLod.RdrPass.resize(lod.RdrPass.size());
+			for(i=0;i<skinLod.RdrPass.size();i++)
+			{
+				// NB: since RawSkin is possible only with SkinGrouping, and since SkniGrouping is 
+				// possible only with no Quads/Lines, we should have only Tris here.
+				nlassert( lod.RdrPass[i].PBlock.getNumQuad()== 0);
+				nlassert( lod.RdrPass[i].PBlock.getNumLine()== 0);
+				// remap tris.
+				skinLod.RdrPass[i].setNumTri(lod.RdrPass[i].PBlock.getNumTri());
+				uint32	*srcTriPtr= lod.RdrPass[i].PBlock.getTriPointer();
+				uint32	*dstTriPtr= skinLod.RdrPass[i].getTriPointer();
+				uint32	numIndices= lod.RdrPass[i].PBlock.getNumTri()*3;
+				for(uint j=0;j<numIndices;j++, srcTriPtr++, dstTriPtr++)
+				{
+					uint	vid= *srcTriPtr;
+					// If this index refers to a Geomorphed vertex, don't modify!
+					if(vid<numGeoms)
+						*dstTriPtr= vid;
+					else
+						*dstTriPtr= vertexRemap[vid] + numGeoms;
+				}
+			}
 		}
 	}
 }

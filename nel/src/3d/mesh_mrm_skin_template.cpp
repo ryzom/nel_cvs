@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin_template.cpp
  * File not compiled. Included from mesh_mrm_skin.cpp. It is a "old school" template.
  *
- * $Id: mesh_mrm_skin_template.cpp,v 1.5 2002/11/08 18:41:58 berenguier Exp $
+ * $Id: mesh_mrm_skin_template.cpp,v 1.6 2003/05/13 15:35:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -510,15 +510,18 @@ void	CMeshMRMGeom::applySkinWithTangentSpace(CLod &lod, const CSkeletonModel *sk
 // ***************************************************************************
 
 
-#define	NL3D_RAWSKIN_NORMAL_OFF 12
+#define	NL3D_RAWSKIN_NORMAL_OFF		12
+#define	NL3D_RAWSKIN_UV_OFF			24
+#define	NL3D_RAWSKIN_VERTEX_SIZE	32
+
 
 // ***************************************************************************
 #ifdef NL_SKIN_SSE
 void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
-	CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
+	CMatrix3x4SSE *boneMat3x4, uint nInf)
 #else
 void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *destVertexPtr, 
-	CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
+	CMatrix3x4 *boneMat3x4, uint nInf)
 #endif
 {
 	for(;nInf>0;)
@@ -538,16 +541,18 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *
 	#endif
 
 		//  for all InfluencedVertices only.
-		for(;nBlockInf>0;nBlockInf--, src++)
+		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
 		{
-			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
-			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + NL3D_RAWSKIN_NORMAL_OFF);
+			CVector				*dstVertex= (CVector*)(destVertexPtr);
+			CVector				*dstNormal= (CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF);
 
+			// For 1 matrix, can write directly to AGP (if destVertexPtr is AGP...)
 			// Vertex.
-			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *dstVertex);
+			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, *(CVector*)(destVertexPtr) );
 			// Normal.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *dstNormal);
+			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, *(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF) );
+			// UV copy.
+			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
 		}
 	}
 
@@ -557,12 +562,15 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal1(CRawVertexNormalSkin1 *src, uint8 *
 // ***************************************************************************
 #ifdef NL_SKIN_SSE
 void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
-	CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
+	CMatrix3x4SSE *boneMat3x4, uint nInf)
 #else
 void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *destVertexPtr, 
-	CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
+	CMatrix3x4 *boneMat3x4, uint nInf)
 #endif
 {
+	// Since VertexPtr may be a AGP Ram, MUST NOT read into it! (mulAdd*() do it!)
+	CVector	tmpVert;
+
 	for(;nInf>0;)
 	{
 		// number of vertices to process for this block.
@@ -580,18 +588,18 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *
 	#endif
 
 		//  for all InfluencedVertices only.
-		for(;nBlockInf>0;nBlockInf--, src++)
+		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
 		{
-			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
-			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + NL3D_RAWSKIN_NORMAL_OFF);
-
 			// Vertex.
-			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, src->Weights[0], *dstVertex);
-			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex, src->Weights[1], *dstVertex);
+			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex, src->Weights[1], tmpVert);
+			*(CVector*)(destVertexPtr)= tmpVert;
 			// Normal.
-			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, src->Weights[0], *dstNormal);
-			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Normal, src->Weights[1], *dstNormal);
+			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Normal, src->Weights[1], tmpVert);
+			*(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF)= tmpVert;
+			// UV copy.
+			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
 		}
 	}
 
@@ -599,13 +607,63 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal2(CRawVertexNormalSkin2 *src, uint8 *
 
 // ***************************************************************************
 #ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
-	CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
+void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *destVertexPtr, 
+	CMatrix3x4SSE *boneMat3x4, uint nInf)
 #else
-void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
-	CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
+void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin3 *src, uint8 *destVertexPtr, 
+	CMatrix3x4 *boneMat3x4, uint nInf)
 #endif
 {
+	// Since VertexPtr may be a AGP Ram, MUST NOT read into it! (mulAdd*() do it!)
+	CVector	tmpVert;
+
+	for(;nInf>0;)
+	{
+		// number of vertices to process for this block.
+		uint	nBlockInf= min(NumCacheVertexNormal4, nInf);
+		// next block.
+		nInf-= nBlockInf;
+
+	#ifdef NL_SKIN_SSE
+		// cache the data in L1 cache.
+		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin3));
+	#else
+		// slower precache but still usefull
+		if( CSystemInfo::hasMMX() )
+			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin3));
+	#endif
+
+		//  for all InfluencedVertices only.
+		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
+		{
+			// Vertex.
+			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[2] ].mulAddPoint( src->Vertex, src->Weights[2], tmpVert);
+			*(CVector*)(destVertexPtr)= tmpVert;
+			// Normal.
+			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Normal, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[2] ].mulAddVector( src->Normal, src->Weights[2], tmpVert);
+			*(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF)= tmpVert;
+			// UV copy.
+			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
+		}
+	}
+}
+
+// ***************************************************************************
+#ifdef NL_SKIN_SSE
+void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
+	CMatrix3x4SSE *boneMat3x4, uint nInf)
+#else
+void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
+	CMatrix3x4 *boneMat3x4, uint nInf)
+#endif
+{
+	// Since VertexPtr may be a AGP Ram, MUST NOT read into it! (mulAdd*() do it!)
+	CVector	tmpVert;
+
 	for(;nInf>0;)
 	{
 		// number of vertices to process for this block.
@@ -623,66 +681,22 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal3(CRawVertexNormalSkin4 *src, uint8 *
 	#endif
 
 		//  for all InfluencedVertices only.
-		for(;nBlockInf>0;nBlockInf--, src++)
+		for(;nBlockInf>0;nBlockInf--, src++, destVertexPtr+=NL3D_RAWSKIN_VERTEX_SIZE)
 		{
-			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
-			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + NL3D_RAWSKIN_NORMAL_OFF);
-
 			// Vertex.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetPoint( src->Vertex, src->SkinWeight.Weights[0], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[1], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[2], *dstVertex);
+			boneMat3x4[ src->MatrixId[0] ].mulSetPoint( src->Vertex, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddPoint( src->Vertex, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[2] ].mulAddPoint( src->Vertex, src->Weights[2], tmpVert);
+			boneMat3x4[ src->MatrixId[3] ].mulAddPoint( src->Vertex, src->Weights[3], tmpVert);
+			*(CVector*)(destVertexPtr)= tmpVert;
 			// Normal.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetVector( src->Normal, src->SkinWeight.Weights[0], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddVector( src->Normal, src->SkinWeight.Weights[1], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddVector( src->Normal, src->SkinWeight.Weights[2], *dstNormal);
-		}
-	}
-}
-
-// ***************************************************************************
-#ifdef NL_SKIN_SSE
-void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
-	CMatrix3x4SSE *boneMat3x4, uint vertexSize, uint nInf)
-#else
-void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *destVertexPtr, 
-	CMatrix3x4 *boneMat3x4, uint vertexSize, uint nInf)
-#endif
-{
-	for(;nInf>0;)
-	{
-		// number of vertices to process for this block.
-		uint	nBlockInf= min(NumCacheVertexNormal4, nInf);
-		// next block.
-		nInf-= nBlockInf;
-
-	#ifdef NL_SKIN_SSE
-		// cache the data in L1 cache.
-		CFastMem::precacheSSE(src, nBlockInf * sizeof(CRawVertexNormalSkin4));
-	#else
-		// slower precache but still usefull
-		if( CSystemInfo::hasMMX() )
-			CFastMem::precacheMMX(src, nBlockInf * sizeof(CRawVertexNormalSkin4));
-	#endif
-
-		//  for all InfluencedVertices only.
-		for(;nBlockInf>0;nBlockInf--, src++)
-		{
-			uint8				*dstVertexVB= destVertexPtr + src->VertexId * vertexSize;
-			CVector				*dstVertex= (CVector*)(dstVertexVB);
-			CVector				*dstNormal= (CVector*)(dstVertexVB + NL3D_RAWSKIN_NORMAL_OFF);
-
-			// Vertex.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetPoint( src->Vertex, src->SkinWeight.Weights[0], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[1], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[2], *dstVertex);
-			boneMat3x4[ src->SkinWeight.MatrixId[3] ].mulAddPoint( src->Vertex, src->SkinWeight.Weights[3], *dstVertex);
-			// Normal.
-			boneMat3x4[ src->SkinWeight.MatrixId[0] ].mulSetVector( src->Normal, src->SkinWeight.Weights[0], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[1] ].mulAddVector( src->Normal, src->SkinWeight.Weights[1], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[2] ].mulAddVector( src->Normal, src->SkinWeight.Weights[2], *dstNormal);
-			boneMat3x4[ src->SkinWeight.MatrixId[3] ].mulAddVector( src->Normal, src->SkinWeight.Weights[3], *dstNormal);
+			boneMat3x4[ src->MatrixId[0] ].mulSetVector( src->Normal, src->Weights[0], tmpVert);
+			boneMat3x4[ src->MatrixId[1] ].mulAddVector( src->Normal, src->Weights[1], tmpVert);
+			boneMat3x4[ src->MatrixId[2] ].mulAddVector( src->Normal, src->Weights[2], tmpVert);
+			boneMat3x4[ src->MatrixId[3] ].mulAddVector( src->Normal, src->Weights[3], tmpVert);
+			*(CVector*)(destVertexPtr + NL3D_RAWSKIN_NORMAL_OFF)= tmpVert;
+			// UV copy.
+			*(CUV*)(destVertexPtr + NL3D_RAWSKIN_UV_OFF)= src->UV;
 		}
 	}
 }
@@ -690,31 +704,27 @@ void		CMeshMRMGeom::applyArrayRawSkinNormal4(CRawVertexNormalSkin4 *src, uint8 *
 
 // ***************************************************************************
 #ifdef NL_SKIN_SSE
-void	CMeshMRMGeom::applyRawSkinWithNormalSSE(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton)
+void	CMeshMRMGeom::applyRawSkinWithNormalSSE(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton, uint8 *vbHard, float alphaLod)
 #else
-void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton)
+void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSkinLod, const CSkeletonModel *skeleton, uint8 *vbHard, float alphaLod)
 #endif
 {
 	nlassert(_Skinned);
 	if(_SkinWeights.size()==0)
 		return;
 
-	// get vertexPtr / normalOff.
+	// Some assert
 	//===========================
-	uint8		*destVertexPtr= (uint8*)_VBufferFinal.getVertexCoordPointer();
-	uint		flags= _VBufferFinal.getVertexFormat();
-	sint32		vertexSize= _VBufferFinal.getVertexSize();
-	// must have XYZ and Normal.
-	nlassert((flags & CVertexBuffer::PositionFlag) 
-			 && (flags & CVertexBuffer::NormalFlag) 
-			);
+	// must have XYZ, Normal and UV only
+	nlassert( _VBufferFinal.getVertexFormat() == (CVertexBuffer::PositionFlag | CVertexBuffer::NormalFlag | CVertexBuffer::TexCoord0Flag) );
+	nlassert( _VBufferFinal.getValueType(CVertexBuffer::TexCoord0) == CVertexBuffer::Float2 );
+	nlassert( _VBufferFinal.getVertexSize() ==NL3D_RAWSKIN_VERTEX_SIZE);
 
-
-	// Compute offset of each component of the VB.
-	sint32		normalOff;
-	normalOff= _VBufferFinal.getNormalOff();
 	// HardCoded for normalOff==12 (see applyArrayRawSkinNormal*)
-	nlassert(normalOff==NL3D_RAWSKIN_NORMAL_OFF);
+	nlassert( _VBufferFinal.getNormalOff()==NL3D_RAWSKIN_NORMAL_OFF );
+	nlassert( _VBufferFinal.getTexCoordOff()==NL3D_RAWSKIN_UV_OFF );
+	// assert, code below is written especially for 4 per vertex.
+	nlassert( NL3D_MESH_SKINNING_MAX_MATRIX==4 );
 
 
 	// Compute usefull Matrix for this lod.
@@ -724,31 +734,6 @@ void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSki
 	computeBoneMatrixes3x4(boneMat3x4, lod.MatrixInfluences, skeleton);
 
 
-	// apply skinning.
-	//===========================
-	// assert, code below is written especially for 4 per vertex.
-	nlassert(NL3D_MESH_SKINNING_MAX_MATRIX==4);
-	uint	nInf;
-	// apply the skin to the vertices
-
-	// 1 Matrix
-	nInf= rawSkinLod.Vertices1.size();
-	if(nInf>0)
-		applyArrayRawSkinNormal1(&rawSkinLod.Vertices1[0], destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
-	// 2 Matrix
-	nInf= rawSkinLod.Vertices2.size();
-	if(nInf>0)
-		applyArrayRawSkinNormal2(&rawSkinLod.Vertices2[0], destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
-	// 3 Matrix
-	nInf= rawSkinLod.Vertices3.size();
-	if(nInf>0)
-		applyArrayRawSkinNormal3(&rawSkinLod.Vertices3[0], destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
-	// 4 Matrix
-	nInf= rawSkinLod.Vertices4.size();
-	if(nInf>0)
-		applyArrayRawSkinNormal4(&rawSkinLod.Vertices4[0], destVertexPtr, &boneMat3x4[0], vertexSize, nInf);
-
-
 	// TestYoyo
 	/*extern	uint TESTYOYO_NumSkinVertices;
 	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices1.size();
@@ -756,7 +741,115 @@ void	CMeshMRMGeom::applyRawSkinWithNormal(CLod &lod, CRawSkinNormalCache &rawSki
 	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices3.size();
 	TESTYOYO_NumSkinVertices+= rawSkinLod.Vertices4.size();*/
 
+
+	uint	nInf;
+
+	// Manage "SoftVertices"
+	if(rawSkinLod.TotalSoftVertices)
+	{
+		// apply skinning into Temp RAM for vertices that are Src of Geomorph
+		//===========================
+		static	vector<uint8>	tempSkin;
+		uint	tempVbSize= rawSkinLod.TotalSoftVertices*NL3D_RAWSKIN_VERTEX_SIZE;
+		if(tempSkin.size() < tempVbSize)
+			tempSkin.resize(tempVbSize);
+		uint8		*destVertexPtr= &tempSkin[0];
+
+		// 1 Matrix
+		nInf= rawSkinLod.SoftVertices[0];
+		if(nInf>0)
+		{
+			applyArrayRawSkinNormal1(&rawSkinLod.Vertices1[0], destVertexPtr, &boneMat3x4[0], nInf);
+			destVertexPtr+= nInf * NL3D_RAWSKIN_VERTEX_SIZE;
+		}
+		// 2 Matrix
+		nInf= rawSkinLod.SoftVertices[1];
+		if(nInf>0)
+		{
+			applyArrayRawSkinNormal2(&rawSkinLod.Vertices2[0], destVertexPtr, &boneMat3x4[0], nInf);
+			destVertexPtr+= nInf * NL3D_RAWSKIN_VERTEX_SIZE;
+		}
+		// 3 Matrix
+		nInf= rawSkinLod.SoftVertices[2];
+		if(nInf>0)
+		{
+			applyArrayRawSkinNormal3(&rawSkinLod.Vertices3[0], destVertexPtr, &boneMat3x4[0], nInf);
+			destVertexPtr+= nInf * NL3D_RAWSKIN_VERTEX_SIZE;
+		}
+		// 4 Matrix
+		nInf= rawSkinLod.SoftVertices[3];
+		if(nInf>0)
+		{
+			applyArrayRawSkinNormal4(&rawSkinLod.Vertices4[0], destVertexPtr, &boneMat3x4[0], nInf);
+			destVertexPtr+= nInf * NL3D_RAWSKIN_VERTEX_SIZE;
+		}
+
+		// Fast Copy this into AGP Ram. NB: done before Geomorphs, because ensure some precaching this way!!
+		//===========================
+		// Skin geomorphs.
+		uint8	*vbHardStart= vbHard + rawSkinLod.Geomorphs.size()*NL3D_RAWSKIN_VERTEX_SIZE;
+
+		// copy
+		#ifdef NL_SKIN_SSE
+			CFastMem::memcpySSE(vbHardStart, &tempSkin[0], tempVbSize);
+		#else
+			memcpy(vbHardStart, &tempSkin[0], tempVbSize);
+		#endif
+
+
+		// Geomorphs directly into AGP Ram
+		//===========================
+		clamp(alphaLod, 0.f, 1.f);
+		float		a= alphaLod;
+		float		a1= 1 - alphaLod;
+
+		// Fast Geomorph
+		applyGeomorphPosNormalUV0(rawSkinLod.Geomorphs, &tempSkin[0], vbHard, NL3D_RAWSKIN_VERTEX_SIZE, a, a1);
+	}
+
+	// Manage HardVertices
+	if(rawSkinLod.TotalHardVertices)
+	{
+		// apply skinning directly into AGP RAM for vertices that are not Src of Geomorph
+		//===========================
+		uint	startId;
+
+		// Skip Geomorphs and SoftVertices.
+		uint8		*destVertexPtr= vbHard + (rawSkinLod.Geomorphs.size()+rawSkinLod.TotalSoftVertices)*NL3D_RAWSKIN_VERTEX_SIZE;
+
+		// 1 Matrix
+		nInf= rawSkinLod.HardVertices[0];
+		startId= rawSkinLod.SoftVertices[0];
+		if(nInf>0)
+		{
+			applyArrayRawSkinNormal1(&rawSkinLod.Vertices1[startId], destVertexPtr, &boneMat3x4[0], nInf);
+			destVertexPtr+= nInf * NL3D_RAWSKIN_VERTEX_SIZE;
+		}
+		// 2 Matrix
+		nInf= rawSkinLod.HardVertices[1];
+		startId= rawSkinLod.SoftVertices[1];
+		if(nInf>0)
+		{
+			applyArrayRawSkinNormal2(&rawSkinLod.Vertices2[startId], destVertexPtr, &boneMat3x4[0], nInf);
+			destVertexPtr+= nInf * NL3D_RAWSKIN_VERTEX_SIZE;
+		}
+		// 3 Matrix
+		nInf= rawSkinLod.HardVertices[2];
+		startId= rawSkinLod.SoftVertices[2];
+		if(nInf>0)
+		{
+			applyArrayRawSkinNormal3(&rawSkinLod.Vertices3[startId], destVertexPtr, &boneMat3x4[0], nInf);
+			destVertexPtr+= nInf * NL3D_RAWSKIN_VERTEX_SIZE;
+		}
+		// 4 Matrix
+		nInf= rawSkinLod.HardVertices[3];
+		startId= rawSkinLod.SoftVertices[3];
+		if(nInf>0)
+		{
+			applyArrayRawSkinNormal4(&rawSkinLod.Vertices4[startId], destVertexPtr, &boneMat3x4[0], nInf);
+			destVertexPtr+= nInf * NL3D_RAWSKIN_VERTEX_SIZE;
+		}
+	}
+
 }
-
-
 

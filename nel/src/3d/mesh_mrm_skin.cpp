@@ -1,7 +1,7 @@
 /** \file mesh_mrm_skin.cpp
  * Skin computation part for class CMeshMRM.
  *
- * $Id: mesh_mrm_skin.cpp,v 1.12 2002/10/28 17:32:13 corvazier Exp $
+ * $Id: mesh_mrm_skin.cpp,v 1.13 2003/05/13 15:35:28 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -342,7 +342,9 @@ const	uint	NL_BlockByteL1= 4096;
 uint	CMeshMRMGeom::NumCacheVertexNormal1= NL_BlockByteL1 / sizeof(CRawVertexNormalSkin1);
 // Number of vertices per block to process with 2 matrix.
 uint	CMeshMRMGeom::NumCacheVertexNormal2= NL_BlockByteL1 / sizeof(CRawVertexNormalSkin2);
-// Number of vertices per block to process with 3/4 matrix.
+// Number of vertices per block to process with 3 matrix.
+uint	CMeshMRMGeom::NumCacheVertexNormal3= NL_BlockByteL1 / sizeof(CRawVertexNormalSkin3);
+// Number of vertices per block to process with 4 matrix.
 uint	CMeshMRMGeom::NumCacheVertexNormal4= NL_BlockByteL1 / sizeof(CRawVertexNormalSkin4);
 
 

@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.21 2001/01/05 16:00:51 corvazier Exp $
+ * $Id: texture.h,v 1.22 2001/01/15 15:14:22 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -159,6 +159,8 @@ public:
 	TWrapMode		getWrapT() const {return _WrapT;}
 	/** Replace the uploaded format of the texture.
 	 * If "Auto", the driver use CBitmap::getPixelFormat() to find the best associated pixelFormat.
+	 * When no alpha is wanted (RGB, Luminance....), texture default output is 1.0.
+	 * For "Alpha" mode, RGB output is (0,0,0).
 	 */
 	void			setUploadFormat(TUploadFormat pf);
 	TUploadFormat	getUploadFormat() const {return _UploadFormat;}

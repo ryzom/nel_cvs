@@ -1,7 +1,7 @@
 /** \file texture_font.cpp
  * <File description>
  *
- * $Id: texture_font.cpp,v 1.1 2000/12/15 18:20:22 berenguier Exp $
+ * $Id: texture_font.cpp,v 1.2 2001/01/15 15:15:46 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,27 +45,10 @@ void CTextureFont::generate()
 	uint8 *bitmap = _FontGen->getBitmap(Char, _Size, _CharWidth, _CharHeight, pitch, Left, Top, AdvX, GlyphIndex);
 
 	// computing new width and height as powers of 2
-	if(!NLMISC::isPowerOf2(_CharWidth))
-	{
-		_Width = NLMISC::raiseToNextPowerOf2(_CharWidth);
-		CBitmap::_Width = _Width;
-	}
-	else
-	{
-		_Width = _CharWidth;
-		CBitmap::_Width = _Width;
-	}
-	if(!NLMISC::isPowerOf2(_CharHeight))
-	{
-		_Height = NLMISC::raiseToNextPowerOf2(_CharHeight);
-		CBitmap::_Height = _Height;
-	}
-	else
-	{
-		_Height = _CharHeight;
-		CBitmap::_Height = _Height;
-	}
-	
+	_Width = NLMISC::raiseToNextPowerOf2(_CharWidth+1);
+	CBitmap::_Width = _Width;
+	_Height = NLMISC::raiseToNextPowerOf2(_CharHeight+1);
+	CBitmap::_Height = _Height;
 
 	// calculating memory size taken by the bitmap
 	uint32 bitmapSize = _Width*_Height*4;

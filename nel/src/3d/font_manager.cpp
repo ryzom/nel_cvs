@@ -1,7 +1,7 @@
 /** \file font_manager.cpp
  * <File description>
  *
- * $Id: font_manager.cpp,v 1.17 2001/01/15 11:10:59 berenguier Exp $
+ * $Id: font_manager.cpp,v 1.18 2001/01/15 15:15:46 coutelas Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -83,6 +83,8 @@ NLMISC::CSmartPtr<CMaterial> CFontManager::getFontMaterial(CFontDescriptor desc)
 		pMatFont->setDstBlend(CMaterial::invsrcalpha);
 		pMatFont->setBlend(true);
 		pMatFont->setTexture(0, pTexFont);
+		pMatFont->texEnvOpRGB(0, CMaterial::Replace);
+		pMatFont->texEnvArg0RGB(0, CMaterial::Diffuse, CMaterial::SrcColor);
 
 		_MaterialFontList.push_front(pMatFont);
 
@@ -164,6 +166,9 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 		sint32 dz = -((sint32)pTexFont->getCharHeight()-(sint32)(pTexFont->Top));
 		float	um= (float)pTexFont->getCharWidth()/pTexFont->getWidth();
 		float	vm= (float)pTexFont->getCharHeight()/pTexFont->getHeight();
+		float	hlfW= 0.5f/pTexFont->getWidth();
+		float	hlfH= 0.5f/pTexFont->getHeight();
+		float	hlfPix= 0.5f/ height;
 
 		if (pTexFont->getWidth() > 0 && pTexFont->getHeight() > 0)
 		{
@@ -171,32 +176,32 @@ template  <class T> static void NL3DcomputeString (CFontManager *fm, const std::
 			z = (penz + dz) * FontRatio;
 			x/= height;
 			z/= height;
-			output.Vertices.setVertexCoord(4*i, x, 0, z);
-			output.Vertices.setTexCoord(4*i,0,0,vm);
+			output.Vertices.setVertexCoord(4*i, x-hlfPix, 0, z-hlfPix);
+			output.Vertices.setTexCoord(4*i,0,0-hlfW,vm+hlfH);
 			output.Vertices.setColor(4*i, color);
 
 			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * FontRatio;
 			z = (penz + dz) * FontRatio;
 			x/= height;
 			z/= height;
-			output.Vertices.setVertexCoord(4*i+1, x, 0, z);
-			output.Vertices.setTexCoord(4*i+1,0,um,vm);
+			output.Vertices.setVertexCoord(4*i+1, x+hlfPix, 0, z-hlfPix);
+			output.Vertices.setTexCoord(4*i+1,0,um+hlfW,vm+hlfH);
 			output.Vertices.setColor(4*i+1, color);
 
 			x = (penx + dx + (sint32)pTexFont->getCharWidth()) * FontRatio;
 			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * FontRatio;
 			x/= height;
 			z/= height;
-			output.Vertices.setVertexCoord(4*i+2, x, 0, z); 
-			output.Vertices.setTexCoord(4*i+2,0,um,0);
+			output.Vertices.setVertexCoord(4*i+2, x+hlfPix, 0, z+hlfPix); 
+			output.Vertices.setTexCoord(4*i+2,0,um+hlfW,0-hlfH);
 			output.Vertices.setColor(4*i+2, color);
 
 			x = (penx + dx) * FontRatio;
 			z = (penz + dz + (sint32)pTexFont->getCharHeight()) * FontRatio;
 			x/= height;
 			z/= height;
-			output.Vertices.setVertexCoord(4*i+3, x, 0, z); 
-			output.Vertices.setTexCoord(4*i+3,0,0,0);
+			output.Vertices.setVertexCoord(4*i+3, x-hlfPix, 0, z+hlfPix); 
+			output.Vertices.setTexCoord(4*i+3,0,0-hlfW,0-hlfH);
 			output.Vertices.setColor(4*i+3, color);
 			
 			if(z>output.StringHeight) output.StringHeight = z;

@@ -205,10 +205,20 @@ void FlagVertices (CMeshGeom &mg, uint InMatID, vector<bool> &verticesNeedRemap)
 
 				// Remap triangles
 				uint index;
-				const uint32 *indexPtr=iba.getPtr();
-				uint32 numIndex=primitiveBlock.getNumIndexes();
-				for (index=0; index<numIndex; index++)
-					vertexToRemap.insert (indexPtr[index]);
+				if (iba.getFormat() == CIndexBuffer::Indices32)
+				{
+					const uint32 *indexPtr=(const uint32 *)iba.getPtr();
+					uint32 numIndex=primitiveBlock.getNumIndexes();
+					for (index=0; index<numIndex; index++)
+						vertexToRemap.insert (indexPtr[index]);
+				}
+				else
+				{
+					const uint16 *indexPtr=(const uint16 *)iba.getPtr();
+					uint32 numIndex=primitiveBlock.getNumIndexes();
+					for (index=0; index<numIndex; index++)
+						vertexToRemap.insert (indexPtr[index]);
+				}
 
 				// Remap the vertex
 				std::set<uint>::iterator iteRemap=vertexToRemap.begin();
@@ -253,10 +263,20 @@ void FlagVerticesMRM (CMeshMRMGeom &mg, uint InMatID, vector<bool> &verticesNeed
 
 				// Remap triangles
 				uint index;
-				const uint32 *indexPtr=iba.getPtr();
-				uint32 numIndex=primitiveBlock.getNumIndexes();
-				for (index=0; index<numIndex; index++)
-					vertexToRemap.insert (indexPtr[index]);
+				if (iba.getFormat() == CIndexBuffer::Indices32)
+				{
+					const uint32 *indexPtr=(const uint32 *)iba.getPtr();
+					uint32 numIndex=primitiveBlock.getNumIndexes();
+					for (index=0; index<numIndex; index++)
+						vertexToRemap.insert (indexPtr[index]);
+				}
+				else
+				{
+					const uint16 *indexPtr=(const uint16 *)iba.getPtr();
+					uint32 numIndex=primitiveBlock.getNumIndexes();
+					for (index=0; index<numIndex; index++)
+						vertexToRemap.insert (indexPtr[index]);
+				}
 
 				// Remap the vertex
 				std::set<uint>::iterator iteRemap=vertexToRemap.begin();

@@ -66,13 +66,27 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 		const CIndexBuffer *pb = getRdrPassPrimitiveBlock(meshIn, lodId, i);
 		CIndexBufferRead iba;
 		pb->lock (iba);
-		const uint32	*triPtr= iba.getPtr();
-		for(j=0;j<pb->getNumIndexes();j++)
+		if (iba.getFormat() == CIndexBuffer::Indices32)
 		{
-			uint	idx= *triPtr;
-			// Flag the vertex with its own index => used.
-			vertexUsed[idx]= idx;
-			triPtr++;
+			const uint32	*triPtr= (const uint32 *) iba.getPtr();
+			for(j=0;j<pb->getNumIndexes();j++)
+			{
+				uint	idx= *triPtr;
+				// Flag the vertex with its own index => used.
+				vertexUsed[idx]= idx;
+				triPtr++;
+			}
+		}
+		else
+		{
+			const uint16	*triPtr= (const uint16 *) iba.getPtr();
+			for(j=0;j<pb->getNumIndexes();j++)
+			{
+				uint	idx= *triPtr;
+				// Flag the vertex with its own index => used.
+				vertexUsed[idx]= idx;
+				triPtr++;
+			}
 		}
 	}
 	// Special for Geomorphs: must take The End target vertex.
@@ -159,17 +173,35 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 		const CIndexBuffer *pb = getRdrPassPrimitiveBlock(meshIn, lodId, i);
 		CIndexBufferRead iba;
 		pb->lock (iba);
-		const uint32	*triPtr= iba.getPtr();
-		for(j=0;j<pb->getNumIndexes();j++)
+		if (iba.getFormat() == CIndexBuffer::Indices32)
 		{
-			uint	idx= *triPtr;
-			// Get the real Vertex (ie not the geomporhed one).
-			idx= vertexUsed[idx];
-			// Get the ShadowVertex associated
-			idx= vertexToVSkin[idx];
+			const uint32	*triPtr= (const uint32 *) iba.getPtr();
+			for(j=0;j<pb->getNumIndexes();j++)
+			{
+				uint	idx= *triPtr;
+				// Get the real Vertex (ie not the geomporhed one).
+				idx= vertexUsed[idx];
+				// Get the ShadowVertex associated
+				idx= vertexToVSkin[idx];
 
-			shadowTriangles.push_back(idx);
-			triPtr++;
+				shadowTriangles.push_back(idx);
+				triPtr++;
+			}
+		}
+		else
+		{
+			const uint16	*triPtr= (const uint16 *) iba.getPtr();
+			for(j=0;j<pb->getNumIndexes();j++)
+			{
+				uint	idx= *triPtr;
+				// Get the real Vertex (ie not the geomporhed one).
+				idx= vertexUsed[idx];
+				// Get the ShadowVertex associated
+				idx= vertexToVSkin[idx];
+
+				shadowTriangles.push_back(idx);
+				triPtr++;
+			}
 		}
 	}
 
@@ -196,11 +228,23 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 		{
 			CIndexBufferReadWrite iba;
 			pb.lock (iba);
-			const uint32	*triPtr= iba.getPtr();
-			for(i=0;i<shadowTriangles.size();i++)
+			if (iba.getFormat() == CIndexBuffer::Indices32)
 			{
-				shadowTriangles[i]= *triPtr;
-				triPtr++;
+				const uint32	*triPtr= (const uint32 *) iba.getPtr();
+				for(i=0;i<shadowTriangles.size();i++)
+				{
+					shadowTriangles[i]= *triPtr;
+					triPtr++;
+				}
+			}
+			else
+			{
+				const uint16	*triPtr= (const uint16 *) iba.getPtr();
+				for(i=0;i<shadowTriangles.size();i++)
+				{
+					shadowTriangles[i]= *triPtr;
+					triPtr++;
+				}
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file lod_texture_builder.cpp
  * <File description>
  *
- * $Id: lod_texture_builder.cpp,v 1.4 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: lod_texture_builder.cpp,v 1.5 2004/10/21 16:57:13 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -108,8 +108,16 @@ bool			CLodTextureBuilder::computeTexture(const CMesh &mesh, NL3D::CLodCharacter
 			CIndexBufferRead iba;
 			pb.lock (iba);
 			uint	matId= mesh.getRdrPassMaterial(mb, rp);
-			// samples the tris of this pass
-			addSampleTris(srcPos, srcNormal, srcUV, vertexSize, iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
+			// samples the tris of this pass			
+			if (iba.getFormat() == CIndexBuffer::Indices16)
+			{					
+				addSampleTris(srcPos, srcNormal, srcUV, vertexSize, (uint16 *) iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
+			}
+			else
+			{
+				nlassert(iba.getFormat() == CIndexBuffer::Indices32);
+				addSampleTris(srcPos, srcNormal, srcUV, vertexSize, (uint32 *) iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
+			}
 		}
 	}
 
@@ -157,7 +165,15 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRM &meshMRM, NL3D::CLodCha
 		pb.lock (iba);
 		uint	matId= meshMRM.getRdrPassMaterial(lodId, rp);
 		// samples the tris of this pass
-		addSampleTris(srcPos, srcNormal, srcUV, vertexSize, iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
+		if (iba.getFormat() == CIndexBuffer::Indices16)
+		{
+			addSampleTris(srcPos, srcNormal, srcUV, vertexSize, (uint16 *) iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
+		}
+		else
+		{
+			nlassert(iba.getFormat() == CIndexBuffer::Indices32);
+			addSampleTris(srcPos, srcNormal, srcUV, vertexSize, (uint32 *) iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
+		}
 	}
 
 
@@ -207,7 +223,14 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRMSkinned &meshMRM, NL3D::
 		CIndexBufferRead iba;
 		pb.lock (iba);
 		// samples the tris of this pass
-		addSampleTris(srcPos, srcNormal, srcUV, vertexSize, iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
+		if (iba.getFormat() == CIndexBuffer::Indices16)
+		{
+			addSampleTris(srcPos, srcNormal, srcUV, vertexSize, (uint16 *) iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
+		}
+		else
+		{
+			addSampleTris(srcPos, srcNormal, srcUV, vertexSize, (uint32 *) iba.getPtr(), pb.getNumIndexes()/3, matId, edgeSet);
+		}
 	}
 
 
@@ -217,6 +240,13 @@ bool			CLodTextureBuilder::computeTexture(const CMeshMRMSkinned &meshMRM, NL3D::
 	return true;
 }
 
+// ***************************************************************************
+void			CLodTextureBuilder::addSampleTris(const uint8 *srcPos, const uint8 *srcNormal, const uint8 *srcUV, uint vertexSize, 
+	const uint16 *triPointer, uint numTris, uint materialId, TEdgeSet &edgeSet)
+{
+	std::vector<uint32> indices32(triPointer, triPointer + numTris * 3);
+	addSampleTris(srcPos, srcNormal, srcUV, vertexSize, &indices32[0], numTris, materialId, edgeSet);
+}
 
 // ***************************************************************************
 void			CLodTextureBuilder::addSampleTris(const uint8 *srcPos, const uint8 *srcNormal, const uint8 *srcUV, uint vertexSize, 

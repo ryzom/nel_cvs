@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.9 2003/03/24 16:38:54 legros Exp $
+ * $Id: retriever_bank.h,v 1.10 2003/03/31 11:59:09 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,9 +65,12 @@ protected:
 	/// The loaded retrievers, if the retriever bank is not in loadAll mode
 	std::set<uint>						_LoadedRetrievers;
 
+	///  Tells if retrievers should be read from rbank directly or streamed from disk
+	bool								_LrInRBank;
+
 public:
 	/// Constructor
-	CRetrieverBank(bool allLoaded = true) : _AllLoaded(allLoaded) {}
+	CRetrieverBank(bool allLoaded = true) : _AllLoaded(allLoaded), _LrInRBank(true) {}
 
 	/// Returns the vector of retrievers.
 	const std::vector<CLocalRetriever>	&getRetrievers() const { return _Retrievers; }
@@ -104,32 +107,77 @@ public:
 	/// Cleans the bank up.
 	void								clean();
 
+	/// Set the lr status
+	void								setLrInFileFlag(bool status)	{ _LrInRBank = status; }
+
 	/// Serialises this CRetrieverBank.
 	void								serial(NLMISC::IStream &f)
 	{
 		/*
 		Version 0:
 			- base version.
+		Version 1:
+			- saves & loads lr in rbank only if bool LrInFile true
 		*/
-		(void)f.serialVersion(0);
+		uint	ver = f.serialVersion(1);
 
-		if (!_AllLoaded)
+		bool	lrPresent = true;
+		if (ver > 0)
 		{
-			if (f.isReading())
+			lrPresent = _LrInRBank;
+			f.serial(lrPresent);
+		}
+
+		if (f.isReading())
+		{
+			if (!_AllLoaded)
 			{
 				uint32	num = 0;
 				f.serial(num);
 				nlinfo("Presetting RetrieverBank '%s', %d retriever slots allocated", _NamePrefix.c_str(), num);
 				_Retrievers.resize(num);
 			}
+			else if (lrPresent)
+			{
+				f.serialCont(_Retrievers);
+			}
 			else
 			{
-				nlwarning("Unable to write incomplete CRetrieverBank '%s' to stream, data might be lost!", _NamePrefix.c_str());
+				uint32	num = 0;
+				f.serial(num);
+				_Retrievers.resize(num);
+
+				uint	i;
+				for (i=0; i<num; ++i)
+				{
+					std::string	fname = NLMISC::CPath::lookup(_NamePrefix + "_" + NLMISC::toString(i) + ".lr", false, true);
+					if (fname == "")
+						continue;
+
+					NLMISC::CIFile	f(fname);
+					try
+					{
+						f.serial(_Retrievers[i]);
+					}
+					catch (NLMISC::Exception &e)
+					{
+						nlwarning("Couldn't load retriever file '%s', %s", fname.c_str(), e.what());
+						_Retrievers[i].clear();
+					}
+				}
 			}
 		}
 		else
 		{
-			f.serialCont(_Retrievers);
+			if (lrPresent)
+			{
+				f.serialCont(_Retrievers);
+			}
+			else
+			{
+				uint32	num = _Retrievers.size();
+				f.serial(num);
+			}
 		}
 	}
 
@@ -145,14 +193,16 @@ public:
 	}
 
 	/// Write separate retrievers using dynamic filename convention
-	void								saveShortBank(const std::string &path, const std::string &bankPrefix)
+	void								saveShortBank(const std::string &path, const std::string &bankPrefix, bool saveLr = true)
 	{
-		NLMISC::COFile	f(NLMISC::CPath::standardizePath(path) + "short_" + bankPrefix + ".rbank");
+		NLMISC::COFile	f(NLMISC::CPath::standardizePath(path) + bankPrefix + ".rbank");
 
-		f.serialVersion(0);
+		_LrInRBank = false;
 
-		uint32	num = _Retrievers.size();
-		f.serial(num);
+		serial(f);
+
+		if (saveLr)
+			saveRetrievers(path, bankPrefix);
 	}
 
 	/// @name Dynamic retrieve loading

@@ -1,7 +1,7 @@
 /** \file transport_class.h
  * <File description>
  *
- * $Id: transport_class.h,v 1.18 2003/06/06 12:54:12 lecroart Exp $
+ * $Id: transport_class.h,v 1.19 2003/07/16 13:17:17 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -397,6 +397,21 @@ protected:
 	friend void cbTCUpService (const std::string &serviceName, uint16 sid, void *arg);
 	friend void cbTCReceiveOtherSideClass (NLNET::CMessage &msgin, const std::string &name, uint16 sid);
 };
+
+
+
+/**
+ * Get the name of message (for displaying), or extract the class name if it is a transport class.
+ *
+ * Preconditions:
+ * - msgin is an input message that contains a valid message
+ *
+ * Postconditions:
+ * - msgin.getPos() was modified
+ * - msgName contains "msg %s" or "transport class %s" where %s is the name of message, or the name
+ *   transport class is the message is a CT_MSG
+ */
+void getNameOfMessageOrTransportClass( NLNET::CMessage& msgin, std::string& msgName );
 
 
 //

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.17 2003/07/09 15:17:19 cado Exp $
+ * $Id: transport_class.cpp,v 1.18 2003/07/16 13:17:18 cado Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -400,6 +400,39 @@ void CTransportClass::createLocalRegisteredClassMessage ()
 			TempMessage.serial ((*it).second.Instance->Prop[j]->Name);
 			TempMessage.serialEnum ((*it).second.Instance->Prop[j]->Type);
 		}
+	}
+}
+
+
+/*
+ * Get the name of message (for displaying), or extract the class name if it is a transport class.
+ *
+ * Preconditions:
+ * - msgin is an input message that contains a valid message
+ *
+ * Postconditions:
+ * - the pos in msgin was modified
+ * - msgName contains "msg %s" or "transport class %s" where %s is the name of message, or the name
+ * transport class is the message is a CT_MSG.
+ */
+void getNameOfMessageOrTransportClass( NLNET::CMessage& msgin, std::string& msgName )
+{
+	if ( msgin.getName() == "CT_MSG" )
+	{
+		try
+		{
+			msgin.seek( msgin.getHeaderSize(), NLMISC::IStream::begin );
+			msgin.serial( msgName );
+		}
+		catch ( EStreamOverflow& )
+		{
+			msgName = "<Name not found>";
+		}
+		msgName = "transport class " + msgName;
+	}
+	else
+	{
+		msgName = "msg " + msgin.getName();
 	}
 }
 

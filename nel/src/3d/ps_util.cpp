@@ -1,7 +1,7 @@
 /** \file ps_util.cpp
  * <File description>
  *
- * $Id: ps_util.cpp,v 1.25 2001/09/10 15:25:32 lecroart Exp $
+ * $Id: ps_util.cpp,v 1.26 2001/09/13 14:22:44 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -129,6 +129,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSFloatGradient);
 		NLMISC_REGISTER_CLASS(CPSFloatMemory);
 		NLMISC_REGISTER_CLASS(CPSFloatBinOp);
+		NLMISC_REGISTER_CLASS(CPSFloatLagrange);
 		NLMISC_REGISTER_CLASS(CPSIntBlender);		
 		NLMISC_REGISTER_CLASS(CPSIntMemory);		
 		NLMISC_REGISTER_CLASS(CPSIntBinOp);		
@@ -153,6 +154,7 @@ void CPSUtil::registerSerialParticleSystem(void)
 		NLMISC_REGISTER_CLASS(CPSPlaneBasisFollowSpeed);
 		NLMISC_REGISTER_CLASS(CPSBasisSpinner);
 		NLMISC_REGISTER_CLASS(CPSSound);
+
 
 		// while we are here, we perform some important inits
 		CPSRotated2DParticle::initRotTable(); // init the precalc rot table for face lookat

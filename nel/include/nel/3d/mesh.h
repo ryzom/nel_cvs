@@ -1,7 +1,7 @@
 /** \file mesh.h
  * <File description>
  *
- * $Id: mesh.h,v 1.3 2000/12/13 10:25:22 berenguier Exp $
+ * $Id: mesh.h,v 1.4 2000/12/18 09:45:20 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,7 +84,7 @@ public:
 	/// A Triangle face.
 	struct	CFace
 	{
-		CCorner		C0,C1,C2;
+		CCorner		Corner[3];
 		sint		MaterialId;
 	};
 

@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.3 2000/12/13 10:26:09 berenguier Exp $
+ * $Id: mesh.cpp,v 1.4 2000/12/18 09:45:13 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -156,9 +156,9 @@ void	CMesh::build(const CMeshBuild &m)
 	for(;N>0;N--, pFace++)
 	{
 		ItCornerSet	it;
-		findVBId(corners, &pFace->C0, currentVBIndex, m.Vertices[pFace->C0.Vertex]);
-		findVBId(corners, &pFace->C1, currentVBIndex, m.Vertices[pFace->C1.Vertex]);
-		findVBId(corners, &pFace->C2, currentVBIndex, m.Vertices[pFace->C2.Vertex]);
+		findVBId(corners, &pFace->Corner[0], currentVBIndex, m.Vertices[pFace->Corner[0].Vertex]);
+		findVBId(corners, &pFace->Corner[1], currentVBIndex, m.Vertices[pFace->Corner[1].Vertex]);
+		findVBId(corners, &pFace->Corner[2], currentVBIndex, m.Vertices[pFace->Corner[2].Vertex]);
 	}
 
 
@@ -179,7 +179,7 @@ void	CMesh::build(const CMeshBuild &m)
 	N= m.Faces.size();
 	for(;N>0;N--, pFace++)
 	{
-		_RdrPass[pFace->MaterialId].PBlock.addTri(pFace->C0.VBId, pFace->C1.VBId, pFace->C2.VBId);
+		_RdrPass[pFace->MaterialId].PBlock.addTri(pFace->Corner[0].VBId, pFace->Corner[1].VBId, pFace->Corner[2].VBId);
 	}
 
 	// End!!
@@ -219,6 +219,10 @@ void	CMesh::render(IDriver *drv)
 // ***************************************************************************
 void	CMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
+	// Serial the shape
+	IShape::serial (f);
+
+	// Serial the mesh
 	sint	ver= f.serialVersion(0);
 
 	f.serial(_VBuffer);

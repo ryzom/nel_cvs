@@ -1328,17 +1328,6 @@ SOURCE=.\3d\coarse_mesh_manager.h
 # Begin Source File
 
 SOURCE=.\3d\event_mouse_listener.cpp
-
-!IF  "$(CFG)" == "3d - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "3d - Win32 Debug"
-
-# SUBTRACT CPP /YX
-
-!ELSEIF  "$(CFG)" == "3d - Win32 ReleaseDebug"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 

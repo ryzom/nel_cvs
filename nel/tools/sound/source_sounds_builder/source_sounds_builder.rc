@@ -38,6 +38,8 @@ BEGIN
     DEFPUSHBUTTON   "Add a sound",IDC_AddSound,5,5,45,14
     PUSHBUTTON      "Save file...",IDC_Save,265,5,50,14
     PUSHBUTTON      "Load file...",IDC_Load,210,5,50,14
+    PUSHBUTTON      "Up",IDC_MoveUp,53,5,20,14
+    PUSHBUTTON      "Down",IDC_MoveDown,75,5,20,14
 END
 
 IDD_SoundPage DIALOG DISCARDABLE  98, 20, 224, 167

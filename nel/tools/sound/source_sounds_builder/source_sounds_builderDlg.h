@@ -25,6 +25,8 @@ class CSource_sounds_builderDlg : public CDialog
 public:
 	CSource_sounds_builderDlg(CWnd* pParent = NULL);	// standard constructor
 
+	void	setModified() { _Modified = true; }
+	
 // Dialog Data
 	//{{AFX_DATA(CSource_sounds_builderDlg)
 	enum { IDD = IDD_SOURCE_SOUNDS_BUILDER_DIALOG };
@@ -52,12 +54,17 @@ protected:
 	afx_msg void OnSave();
 	afx_msg void OnDeleteitemTree1(NMHDR* pNMHDR, LRESULT* pResult);
 	afx_msg void OnLoad();
+	afx_msg void OnMoveUp();
+	afx_msg void OnMoveDown();
+	afx_msg void OnClose();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
 	vector<CSound*>		_Sounds;
 
 	CSoundPage			*_SoundPage;
+
+	bool				_Modified;
 
 	void				ResetTree();
 

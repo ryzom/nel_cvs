@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "source_sounds_builder.h"
+#include "source_sounds_builderDlg.h"
 #include "SoundPage.h"
 
 #include <nel/misc/common.h>
@@ -151,10 +152,11 @@ void CSoundPage::OnApply()
 	UpdateData( true );
 	UpdateCurrentSound();
 
+	(static_cast<CSource_sounds_builderDlg*>(GetOwner()))->setModified();
+
 	nlassert( _Tree && _CurrentSound );
 	_Tree->SetItemText( _HItem, m_Filename );
 	_Tree->SelectItem( NULL );
-
 
 	GetOwner()->SetFocus();
 }

@@ -44,6 +44,9 @@ BEGIN_MESSAGE_MAP(CSource_sounds_builderDlg, CDialog)
 	ON_BN_CLICKED(IDC_Save, OnSave)
 	ON_NOTIFY(TVN_DELETEITEM, IDC_TREE1, OnDeleteitemTree1)
 	ON_BN_CLICKED(IDC_Load, OnLoad)
+	ON_BN_CLICKED(IDC_MoveUp, OnMoveUp)
+	ON_BN_CLICKED(IDC_MoveDown, OnMoveDown)
+	ON_WM_CLOSE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -60,6 +63,8 @@ BOOL CSource_sounds_builderDlg::OnInitDialog()
 	/*
 	 * Init
 	 */
+
+	_Modified = false;
 
 	ResetTree();
 
@@ -149,12 +154,14 @@ void CSource_sounds_builderDlg::OnSelchangedTree1(NMHDR* pNMHDR, LRESULT* pResul
 		_SoundPage->setCurrentSound( _Sounds[index], pNMTreeView->itemNew.hItem );
 		_SoundPage->getPropertiesFromSound();
 		_SoundPage->ShowWindow( SW_SHOW );
+		((CButton*)GetDlgItem( IDC_Save ))->EnableWindow( false );
 		_SoundPage->SetFocus();
 	}
 	else
 	{
 		_SoundPage->ShowWindow( SW_HIDE );
 		_SoundPage->setCurrentSound( NULL, NULL );
+		((CButton*)GetDlgItem( IDC_Save ))->EnableWindow( true );
 	}
 
 	*pResult = 0;
@@ -188,9 +195,62 @@ void CSource_sounds_builderDlg::OnDeleteitemTree1(NMHDR* pNMHDR, LRESULT* pResul
 			m_Tree.SetItemData( hitem, index );
 			hitem = m_Tree.GetNextItem( hitem, TVGN_NEXT );
 		}
+
+		_Modified = true;
 	}
 
 	*pResult = 0;
+}
+
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnMoveUp() 
+{
+	HTREEITEM hitem = m_Tree.GetSelectedItem();
+	if ( (hitem != NULL) && (hitem != m_Tree.GetRootItem()) )
+	{
+		uint32 oldindex = m_Tree.GetItemData( hitem );
+		uint32 newindex = oldindex - 1;
+		if ( oldindex > 0 )
+		{
+			CSound *snd = _Sounds[oldindex];
+			_Sounds[oldindex] = _Sounds[newindex];
+			_Sounds[newindex] = snd;
+			m_Tree.SetItemText( hitem, _Sounds[oldindex]->getFilename().c_str() );
+			hitem = m_Tree.GetPrevSiblingItem( hitem );
+			m_Tree.SetItemText( hitem, _Sounds[newindex]->getFilename().c_str() );
+			m_Tree.SelectItem( hitem );
+			_Modified = true;
+		}
+	}
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnMoveDown() 
+{
+	HTREEITEM hitem = m_Tree.GetSelectedItem();
+	if ( (hitem != NULL) && (hitem != m_Tree.GetRootItem()) )
+	{
+		uint32 oldindex = m_Tree.GetItemData( hitem );
+		uint32 newindex = oldindex + 1;
+		if ( oldindex < _Sounds.size()-1 )
+		{
+			CSound *snd = _Sounds[oldindex];
+			_Sounds[oldindex] = _Sounds[newindex];
+			_Sounds[newindex] = snd;
+			m_Tree.SetItemText( hitem, _Sounds[oldindex]->getFilename().c_str() );
+			hitem = m_Tree.GetNextSiblingItem( hitem );
+			m_Tree.SetItemText( hitem, _Sounds[newindex]->getFilename().c_str() );
+			m_Tree.SelectItem( hitem );
+			_Modified = true;
+		}
+	}
 }
 
 
@@ -211,6 +271,8 @@ void CSource_sounds_builderDlg::OnSave()
 		CSound::save( _Sounds, file );
 		file.close();
 
+		_Modified = false;
+
 		waitcursor.Restore();
 	}
 }
@@ -230,6 +292,7 @@ void CSource_sounds_builderDlg::OnLoad()
 		// Clear tree
 		ResetTree();
 		_SoundPage->ShowWindow( SW_HIDE );
+		((CButton*)GetDlgItem( IDC_Save ))->EnableWindow( true );
 
 		// Load
 		CIFile file;
@@ -246,6 +309,31 @@ void CSource_sounds_builderDlg::OnLoad()
 		}
 		m_Tree.Expand( m_Tree.GetRootItem(), TVE_EXPAND );
 
+		_Modified = false;
+
 		waitcursor.Restore();
+	}
+}
+
+
+/*
+ *
+ */
+void CSource_sounds_builderDlg::OnClose() 
+{
+	if ( ! _Modified )
+	{
+		CDialog::OnClose();
+	}
+	else
+	{
+		switch ( AfxMessageBox( "Save before exiting ?", MB_YESNOCANCEL | MB_ICONQUESTION ) )
+		{
+		// no break;
+		case IDYES:
+			OnSave();
+		case IDNO:
+			CDialog::OnClose();
+		}
 	}
 }

@@ -102,12 +102,12 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 
 
 	// **** For all vertices used (not geomorphs), compute vertex Skins.
-	vector<T::CShadowVertex>		shadowVertices;
+	vector<CShadowVertex>		shadowVertices;
 	vector<sint>				vertexToVSkin;
 	vertexToVSkin.resize(vertexUsed.size());
 	shadowVertices.reserve(vertexUsed.size());
 	// use a map to remove duplicates (because of UV/normal discontinuities before!!)
-	map<T::CShadowVertex, uint>	shadowVertexMap;
+	map<CShadowVertex, uint>	shadowVertexMap;
 	uint						numMerged= 0;
 	// Skip Geomorphs.
 	for(i=geomorphs.size();i<vertexUsed.size();i++)
@@ -116,7 +116,7 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 		if(vertexUsed[i]!=-1)
 		{
 			// Build the vertex
-			T::CShadowVertex	shadowVert;
+			CShadowVertex	shadowVert;
 			shadowVert.Vertex= *(CVector*)vba.getVertexCoordPointer(i);
 			// Select the best Matrix.
 			CMesh::CSkinWeight		sw= skinWeights[i];
@@ -136,7 +136,7 @@ void		addShadowMesh(T *meshIn, float paramFaceRatio, sint paramMaxFace, const st
 			shadowVert.MatrixId= matId;
 
 			// If dont find the shadowVertex in the map.
-			map<T::CShadowVertex, uint>::iterator		it= shadowVertexMap.find(shadowVert);
+			map<CShadowVertex, uint>::iterator		it= shadowVertexMap.find(shadowVert);
 			if(it==shadowVertexMap.end())
 			{
 				// Append

@@ -1,7 +1,7 @@
 /** \file gtk_displayer.h
  * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: gtk_displayer.h,v 1.1 2001/11/05 15:42:49 lecroart Exp $
+ * $Id: gtk_displayer.h,v 1.2 2002/11/15 15:41:01 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,7 @@ public:
 	CGtkDisplayer (const char *displayerName = "") : CWindowDisplayer(displayerName)
 	{
 		needSlashR = false;
+		createLabel ("@Clear|CLEAR");
 	}
 
 	virtual ~CGtkDisplayer ();
@@ -61,18 +62,28 @@ public:
 private:
 
 	// called by DT only
+	void	resizeLabels ();
+	// called by DT only
 	void	updateLabels ();
 
 	// called by DT only
-	void	open (std::string WindowNameEx, sint x, sint y, sint w, sint h, sint hs);
+	void	open (std::string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww);
 	// called by DT only
 	void	clear ();
 	// called by DT only
 	void	display_main ();
 
+	virtual void	setTitleBar (const std::string &titleBar);
+	
+	virtual void	getWindowPos (uint32 &x, uint32 &y, uint32 &w, uint32 &h);
+	
 	// all these variables above is used only by the DT
-	friend sint updateInterf (void *data);
-	friend gint ButtonClear(GtkWidget *Widget, GdkEventKey *Event, gpointer *Data);
+	
+	friend gint updateInterf (gpointer data);
+	friend gint ButtonClicked(GtkWidget *Widget, gpointer *Data);
+		
+	// the MT must set the value to true to exit the thread
+	bool Exit;
 };
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file gtk_displayer.cpp
  * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: gtk_displayer.cpp,v 1.2 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: gtk_displayer.cpp,v 1.3 2002/11/15 15:40:43 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,24 +62,101 @@ CGtkDisplayer::~CGtkDisplayer ()
 	}
 }
 
+gint ButtonClicked(GtkWidget *Widget, gpointer *Data)
+{
+	CGtkDisplayer *disp = (CGtkDisplayer *) Data;
+	
+	// find the button and execute the command
+	CSynchronized<std::vector<CGtkDisplayer::CLabelEntry> >::CAccessor access (&(disp->_Labels));
+	for (uint i = 0; i < access.value().size(); i++)
+	{
+		if (access.value()[i].Hwnd == Widget)
+		{
+			if(access.value()[i].Value == "@Clear|CLEAR")
+			{
+				// special commands because the clear must be called by the display thread and not main thread
+				disp->clear ();
+			}
+			else
+			{
+				// the button was found, add the command in the command stack
+				CSynchronized<std::vector<std::string> >::CAccessor accessCommands (&disp->_CommandsToExecute);
+				string str;
+				nlassert (!access.value()[i].Value.empty());
+				nlassert (access.value()[i].Value[0] == '@');
+				
+				int pos = access.value()[i].Value.find ("|");
+				if (pos != string::npos)
+				{
+					str = access.value()[i].Value.substr(pos+1);
+				}
+				else
+				{
+					str = access.value()[i].Value.substr(1);
+				}
+				if (!str.empty())
+					accessCommands.value().push_back(str);
+			}
+			break;
+		}
+	}
+	return TRUE;
+}
+
+
 void CGtkDisplayer::updateLabels ()
 {
 	{
 		CSynchronized<std::vector<CLabelEntry> >::CAccessor access (&_Labels);
 		for (uint i = 0; i < access.value().size(); i++)
 		{
-			if (access.value()[i].Hwnd == NULL)
+			if (access.value()[i].NeedUpdate && !access.value()[i].Value.empty())
 			{
-				access.value()[i].Hwnd = gtk_label_new ("");
-				gtk_label_set_justify (GTK_LABEL (access.value()[i].Hwnd), GTK_JUSTIFY_LEFT);
-				gtk_label_set_line_wrap (GTK_LABEL (access.value()[i].Hwnd), FALSE);
-				gtk_widget_show (GTK_WIDGET (access.value()[i].Hwnd));
-				gtk_box_pack_start (GTK_BOX (hrootbox), GTK_WIDGET (access.value()[i].Hwnd), TRUE, TRUE, 0);
-			}
-			if (!access.value()[i].Value.empty())
-			{
-				gtk_label_set_text (GTK_LABEL (access.value()[i].Hwnd), access.value()[i].Value.c_str());
-				access.value()[i].Value = "";
+				string n;
+				
+				// do this fucking tricks to be sure that windows will clear what is after the number
+				if (access.value()[i].Value[0] != '@')
+					n = access.value()[i].Value + "                                                 ";
+				else
+				{
+					int pos = access.value()[i].Value.find ('|');
+					if (pos != string::npos)
+					{
+						n = access.value()[i].Value.substr (1, pos - 1);
+					}
+					else
+					{
+						n = access.value()[i].Value.substr (1);
+					}
+				}
+				
+				if (access.value()[i].Hwnd == NULL)
+				{
+					// create a button for command and label for variables
+					if (access.value()[i].Value[0] == '@')
+					{
+						access.value()[i].Hwnd = gtk_button_new_with_label (n.c_str());
+						nlassert (access.value()[i].Hwnd != NULL);
+						gtk_signal_connect (GTK_OBJECT (access.value()[i].Hwnd), "clicked", GTK_SIGNAL_FUNC (ButtonClicked), (gpointer) this);
+						gtk_label_set_justify (GTK_LABEL (access.value()[i].Hwnd), GTK_JUSTIFY_LEFT);
+						gtk_label_set_line_wrap (GTK_LABEL (access.value()[i].Hwnd), FALSE);
+						gtk_widget_show (GTK_WIDGET (access.value()[i].Hwnd));
+						gtk_box_pack_start (GTK_BOX (hrootbox), GTK_WIDGET (access.value()[i].Hwnd), TRUE, TRUE, 0);
+					}
+					else
+					{
+						access.value()[i].Hwnd = gtk_label_new ("");
+						gtk_label_set_justify (GTK_LABEL (access.value()[i].Hwnd), GTK_JUSTIFY_LEFT);
+						gtk_label_set_line_wrap (GTK_LABEL (access.value()[i].Hwnd), FALSE);
+						gtk_widget_show (GTK_WIDGET (access.value()[i].Hwnd));
+						gtk_box_pack_start (GTK_BOX (hrootbox), GTK_WIDGET (access.value()[i].Hwnd), TRUE, TRUE, 0);
+					}
+				}
+
+				if (access.value()[i].Value[0] != '@')
+					gtk_label_set_text (GTK_LABEL (access.value()[i].Hwnd), n.c_str());
+
+				access.value()[i].NeedUpdate = false;
 			}
 		}
 	}
@@ -124,13 +201,15 @@ gint KeyOut(GtkWidget *Widget, GdkEventKey *Event, gpointer *Data)
 }
 
 
-gint ButtonClear(GtkWidget *Widget, GdkEventKey *Event, gpointer *Data)
+/*gint ButtonClear(GtkWidget *Widget, GdkEventKey *Event, gpointer *Data)
 {
 	CGtkDisplayer *disp = (CGtkDisplayer *) Data;
 
 	disp->clear ();
 	return TRUE;
 }
+*/
+
 
 // the user typed  command, execute it
 gint cbValidateCommand (GtkWidget *widget, GdkEvent *event, gpointer data)
@@ -146,22 +225,45 @@ gint cbValidateCommand (GtkWidget *widget, GdkEvent *event, gpointer data)
 }
 
 
-void CGtkDisplayer::open (string windowNameEx, sint x, sint y, sint w, sint h, sint hs)
+void CGtkDisplayer::setTitleBar (const string &titleBar)
+{
+	string wn;
+	if (!titleBar.empty())
+	{
+		wn += titleBar;
+		wn += ": ";
+	}
+#ifdef NL_RELEASE_DEBUG
+	string mode = "NL_RELEASE_DEBUG";
+#elif defined(NL_DEBUG_FAST)
+	string mode = "NL_DEBUG_FAST";
+#elif defined(NL_DEBUG)
+	string mode = "NL_DEBUG";
+#elif defined(NL_RELEASE)
+	string mode = "NL_RELEASE";
+#else
+	string mode = "???";
+#endif
+	wn += "Nel Service Console (compiled " __DATE__ " " __TIME__ " in " + mode + " mode)";
+
+	gtk_window_set_title (GTK_WINDOW (RootWindow), wn.c_str());
+}
+
+void CGtkDisplayer::open (std::string titleBar, bool iconified, sint x, sint y, sint w, sint h, sint hs, sint fs, const std::string &fn, bool ww)
 {
 	_HistorySize = hs;
+
+	if (w == -1)
+		w = 700;
+	if (h == -1)
+		h = 300;
+	if (hs = -1)
+		hs = 10000;
 
 	gtk_init (NULL, NULL);
 
 	// Root window
 	RootWindow = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-	string wn;
-	if (!windowNameEx.empty())
-	{
-		wn += windowNameEx;
-		wn += ": ";
-	}
-	wn += "Nel Service Console (compiled " __DATE__ " " __TIME__ ") ";
-	gtk_window_set_title (GTK_WINDOW (RootWindow), wn.c_str());
 	gtk_window_set_default_size (GTK_WINDOW (RootWindow), w, h);
 	gtk_signal_connect (GTK_OBJECT (RootWindow), "delete_event", GTK_SIGNAL_FUNC (delete_event), NULL);
 
@@ -175,12 +277,12 @@ void CGtkDisplayer::open (string windowNameEx, sint x, sint y, sint w, sint h, s
 	nlassert (hrootbox != NULL);
 	gtk_box_pack_start (GTK_BOX (vrootbox), hrootbox, FALSE, FALSE, 0);
 
-	// Clear button
+/*	// Clear button
     GtkWidget *button = gtk_button_new_with_label ("Clear");
 	nlassert (button != NULL);
     gtk_signal_connect (GTK_OBJECT (button), "clicked", GTK_SIGNAL_FUNC (ButtonClear), (gpointer) this);
 	gtk_box_pack_start (GTK_BOX (hrootbox), button, FALSE, FALSE, 0);
-
+*/
 	// Output text
 	GtkWidget *scrolled_win2 = gtk_scrolled_window_new (NULL, NULL);
 	nlassert (scrolled_win2 != NULL);
@@ -201,13 +303,15 @@ void CGtkDisplayer::open (string windowNameEx, sint x, sint y, sint w, sint h, s
 	gtk_signal_connect(GTK_OBJECT(InputText),"key_press_event",GTK_SIGNAL_FUNC(KeyIn),NULL);
 	gtk_box_pack_start (GTK_BOX (vrootbox), InputText, FALSE, FALSE, 0);
 
-	gtk_widget_show (button);
+//	gtk_widget_show (button);
 	gtk_widget_show (OutputText);
 	gtk_widget_show (InputText);
 	
 	gtk_widget_show (hrootbox);
 	gtk_widget_show (vrootbox);
     gtk_widget_show (RootWindow);
+
+	setTitleBar (titleBar);
 
 	_Init = true;
 }
@@ -235,23 +339,25 @@ gint updateInterf (gpointer data)
 	// Display the bufferized string
 	//
 
-	string str;
+	std::vector<std::pair<uint32, std::string> > vec;
 	{
-		CSynchronized<std::string>::CAccessor access (&disp->_Buffer);
-		str = access.value();
-		access.value() = "";
+		CSynchronized<std::vector<std::pair<uint32, std::string> > >::CAccessor access (&disp->_Buffer);
+		vec = access.value ();
+		access.value().clear ();
 	}
-
-	// nothing to do
-	if (str.empty ())
-		return TRUE;
-
+	
 	GtkAdjustment *Adj = (GTK_TEXT(OutputText))->vadj;
 	bool Bottom = (Adj->value >= Adj->upper - Adj->page_size);
 
-	gtk_text_freeze (GTK_TEXT (OutputText));
-	gtk_text_insert (GTK_TEXT (OutputText), NULL, NULL, NULL, str.c_str(), -1);
-	gtk_text_thaw (GTK_TEXT (OutputText));
+	for (uint i = 0; i < vec.size(); i++)
+	{
+		string str = vec[i].second;
+		uint32 col = vec[i].first;
+
+		gtk_text_freeze (GTK_TEXT (OutputText));
+		gtk_text_insert (GTK_TEXT (OutputText), NULL, NULL, NULL, str.c_str(), -1);
+		gtk_text_thaw (GTK_TEXT (OutputText));
+	}
 
 	if (Bottom)
 	{
@@ -271,6 +377,15 @@ void CGtkDisplayer::display_main ()
 	gtk_timeout_add (10, updateInterf, this);
 	gtk_main ();	
 }
+
+
+void CGtkDisplayer::getWindowPos (uint32 &x, uint32 &y, uint32 &w, uint32 &h)
+{
+// todo
+	x = y = w = h = 0;
+}
+
+
 
 } // NLMISC
 

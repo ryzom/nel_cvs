@@ -1,0 +1,27 @@
+// Loader.cpp: implementation of the CLoader class.
+//
+//////////////////////////////////////////////////////////////////////
+
+#include "stdafx.h"
+//#include "Georges.h"
+#include "Loader.h"
+
+/*#ifdef _DEBUG
+#undef THIS_FILE
+static char THIS_FILE[]=__FILE__;
+#define new DEBUG_NEW
+#endif*/
+
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+CLoader::CLoader()
+{
+	ml.SetLoader( this );
+}
+
+CLoader::~CLoader()
+{
+
+}

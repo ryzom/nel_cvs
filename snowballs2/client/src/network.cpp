@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.12 2001/07/24 17:29:23 lecroart Exp $
+ * $Id: network.cpp,v 1.13 2001/07/27 09:07:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -79,15 +79,17 @@ static void cbAddEntity (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 
 	msgin.serial (id, name, race, startPosition);
 
-	nlinfo ("receive add entity %u '%s' %s (%f,%f,%f)", id, name.c_str(), race==0?"penguin":"gnu", startPosition.x, startPosition.y, startPosition.z);
+	nlinfo ("%s", stringFromVector (msgin.bufferAsVector()));
+
+	nlinfo ("Receive add entity %u '%s' %s (%f,%f,%f)", id, name.c_str(), race==0?"penguin":"gnu", startPosition.x, startPosition.y, startPosition.z);
 
 	if (id != Self->Id)
 	{
-		addEntity(id, CEntity::Other, startPosition, startPosition);
+		addEntity(id, name, CEntity::Other, startPosition, startPosition);
 	}
 	else
 	{
-		nlinfo ("receive my add entity");
+		nlinfo ("Receive my add entity");
 	}
 }
 
@@ -111,9 +113,9 @@ static void cbEntityPos (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 
 	msgin.serial (id, position, angle, state);
 
-	nlinfo ("Receive entity pos %u (%f,%f,%f) %f, %u", id, position.x, position.y, position.z, angle, state);
+//	nlinfo ("(%5d) Receive entity pos %u (%f,%f,%f) %f, %u", msgin.length(), id, position.x, position.y, position.z, angle, state);
 
-	if (Self->Id = id)
+	if (Self->Id == id)
 	{
 		// receive my info, ignore them, i know where i am
 		return;
@@ -138,23 +140,36 @@ static void cbEntityPos (CMessage &msgin, TSockId from, CCallbackNetBase &netbas
 	}
 }
 
-static void cbSBHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
+static void cbHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	nlinfo ("Receive hit msg");
+	uint32 sid, eid;
+	bool direct;
+
+	msgin.serial (sid, eid, direct);
+
+	nlinfo ("Receive hit msg %u %u %d", sid, eid, direct);
+
+	EIT eit = findEntity (eid);
+	CEntity	&entity = (*eit).second;
+
+	EAnim a = entity.AnimQueue.front ();
+	playAnimation (entity, HitAnim, true);
+	playAnimation (entity, a);
+
+	removeEntity (sid);
 }
 
 static void cbSnowball (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 {
-	uint32 eid;
+	uint32 eid, sid;
 	CVector position, target;
-	float speed;
-	TTime startTime;
+	float speed, deflagRadius;
 
-	msgin.serial (eid, position, target, speed, startTime);
+	msgin.serial (sid, eid, position, target, speed, deflagRadius);
 	
 	nlinfo ("Receive a snowball message");
 
-	shotSnowball (eid, position, target, speed, startTime);
+	shotSnowball (sid, eid, position, target, speed, deflagRadius);
 }
 
 static void cbChat (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
@@ -169,25 +184,30 @@ static void cbIdentification (CMessage &msgin, TSockId from, CCallbackNetBase &n
 	uint32 id;
 	msgin.serial (id);
 	
+	nlinfo ("my online id is %u", id);
+
 	if (Self == NULL)
 		nlerror ("Self is NULL");
 
-	// copy my old entity
-	CEntity me = *Self;
-	
-	// set my new online id
-	me.Id = id;
+	if (Self->Id != id)
+	{
+		nlinfo ("remaping my entity from %u to %u", Self->Id, id);
+		
+		// copy my old entity
+		CEntity me = *Self;
+		
+		// set my new online id
+		me.Id = id;
 
-	// add my new entity in the array
-	EIT eit = (Entities.insert (make_pair (id, me))).first;
+		// add my new entity in the array
+		EIT eit = (Entities.insert (make_pair (id, me))).first;
 
-	// remove my old entity
-	Entities.erase (Self->Id);
+		// remove my old entity
+		Entities.erase (Self->Id);
 
-	// remap Self
-	Self = &((*eit).second);
-	
-	nlinfo ("my online id is %u", id);
+		// remap Self
+		Self = &((*eit).second);
+	}
 
 	// send to the network my entity					
 	sendAddEntity (Self->Id, Self->Name, 1, Self->Position);
@@ -203,7 +223,7 @@ static TCallbackItem ClientCallbackArray[] =
 	{ "ADD_ENTITY", cbAddEntity },
 	{ "REMOVE_ENTITY", cbRemoveEntity },
 	{ "ENTITY_POS", cbEntityPos },
-	{ "SB_HIT", cbSBHit },
+	{ "HIT", cbHit },
 	{ "CHAT", cbChat },
 	{ "SNOWBALL", cbSnowball },
 	{ "IDENTIFICATION", cbIdentification },
@@ -230,7 +250,11 @@ void	sendChatLine (string Line)
 	if (!isOnline ()) return;
 
 	CMessage msgout (Connection->getSIDA(), "CHAT");
-	msgout.serial (Line);
+	if (Self != NULL)
+		msgout.serial (Self->Name + string("> ") + Line);
+	else
+		msgout.serial (string("Unknown> ") + Line);
+
 	Connection->send (msgout);
 }
 
@@ -245,22 +269,20 @@ void	sendEntityPos (CEntity &entity)
 	CMessage msgout (Connection->getSIDA(), "ENTITY_POS");
 	msgout.serial (entity.Id, entity.Position, entity.Angle, state);
 
-	UploadGraph.addValue ((float)msgout.length ());
-	
 	Connection->send (msgout);
 	
-	nlinfo("sending pos to network (%f,%f,%f, %f), %u", entity.Position.x, entity.Position.y, entity.Position.z, entity.Angle, state);
+//	nlinfo("(%5d) Sending pos to network (%f,%f,%f, %f), %u", msgout.length(), entity.Position.x, entity.Position.y, entity.Position.z, entity.Angle, state);
 }
 
-void	sendSnowBall (uint32 eid, const NLMISC::CVector &position, const NLMISC::CVector &target, float speed, NLMISC::TTime startTime)
+void	sendSnowBall (uint32 eid, const NLMISC::CVector &position, const NLMISC::CVector &target, float speed, float deflagRadius)
 {
 	if (!isOnline ()) return;
 
 	CMessage msgout (Connection->getSIDA(), "SNOWBALL");
-	msgout.serial (eid, const_cast<CVector &>(position), const_cast<CVector &>(target), speed, startTime);
+	msgout.serial (eid, const_cast<CVector &>(position), const_cast<CVector &>(target), speed, deflagRadius);
 	Connection->send (msgout);
 
-	nlinfo("sending snowball to network (%f,%f,%f) to (%f,%f,%f) with %f %"NL_I64"d", position.x, position.y, position.z, target.x, target.y, target.z, speed, startTime);
+	nlinfo("Sending snowball to network (%f,%f,%f) to (%f,%f,%f) with %f %f", position.x, position.y, position.z, target.x, target.y, target.z, speed, deflagRadius);
 }
 
 
@@ -279,6 +301,8 @@ void	updateNetwork()
 {
 	if (Connection != NULL)
 	{
+		Connection->update ();
+
 		sint64 newBytesDownloaded = (sint64) Connection->newBytesDownloaded ();
 		sint64 newBytesUploaded = (sint64) Connection->newBytesUploaded ();
 
@@ -293,15 +317,17 @@ void	updateNetwork()
 		DownloadGraph.addValue ((float)newBytesDownloaded);
 		UploadGraph.addValue ((float)newBytesUploaded);
 
-		Connection->update ();
-
 		if (isOnline () && Self != NULL)
 		{
-			if (CTime::getLocalTime () > LastPosSended + 100)
+			static float oldAngle = 0.0f;
+			
+			if ((Self->Angle != oldAngle || Self->IsAiming || Self->IsWalking) && CTime::getLocalTime () > LastPosSended + 100)
 			{
 				sendEntityPos (*Self);
 
 				LastPosSended = CTime::getLocalTime ();
+
+				oldAngle = Self->Angle;
 			}
 		}
 	}

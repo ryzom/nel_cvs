@@ -1,7 +1,7 @@
 /** \file ps_float.cpp
  * <File description>
  *
- * $Id: ps_float.cpp,v 1.16 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_float.cpp,v 1.17 2003/07/30 16:04:15 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 
 #include "3d/ps_float.h"
 #include "3d/ps_register_float_attribs.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 
 namespace NL3D {
 

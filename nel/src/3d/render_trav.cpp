@@ -1,7 +1,7 @@
 /** \file render_trav.cpp
  * <File description>
  *
- * $Id: render_trav.cpp,v 1.45 2003/05/22 12:51:03 berenguier Exp $
+ * $Id: render_trav.cpp,v 1.46 2003/07/30 16:05:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,7 +38,7 @@
 #include "nel/misc/hierarchical_timer.h"
 
 #include "3d/transform.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/mesh_skin_manager.h"
 
 using namespace std;
@@ -137,7 +137,7 @@ void		CRenderTrav::traverse()
 	uint32	transparentOtMax= OrderTransparentList.getSize()-1;
 	uint32	otId;
 	// fast floor
-	OptFastFloorBegin();
+	NLMISC::OptFastFloorBegin();
 	// For all rdr models
 	for( ; nNbModels>0; itRdrModel++, nNbModels-- )
 	{
@@ -153,7 +153,7 @@ void		CRenderTrav::traverse()
 		{
 			// since norm, we are sure that rPseudoZ>=0
 			rPseudoZ2 = rPseudoZ * opaqueOtSize;
-			otId= OptFastFloor(rPseudoZ2);
+			otId= NLMISC::OptFastFloor(rPseudoZ2);
 			otId= min(otId, opaqueOtMax);
 			OrderOpaqueList.insert( otId, pTransform );
 		}
@@ -161,7 +161,7 @@ void		CRenderTrav::traverse()
 		{
 			// since norm, we are sure that rPseudoZ>=0
 			rPseudoZ2 = rPseudoZ * transparentOtSize;
-			otId= OptFastFloor(rPseudoZ2);
+			otId= NLMISC::OptFastFloor(rPseudoZ2);
 			otId= min(otId, transparentOtMax);
 			// must invert id, because transparent, sort from back to front
 			OrderTransparentList.insert( pTransform->getOrderingLayer(), pTransform, transparentOtMax-otId );
@@ -169,7 +169,7 @@ void		CRenderTrav::traverse()
 
 	}
 	// fast floor
-	OptFastFloorEnd();
+	NLMISC::OptFastFloorEnd();
 
 
 	// Render Opaque stuff.

@@ -1,7 +1,7 @@
 /** \file ps_plane_basis_maker.h
  * <File description>
  *
- * $Id: ps_plane_basis_maker.h,v 1.9 2003/07/01 14:06:15 vizerie Exp $
+ * $Id: ps_plane_basis_maker.h,v 1.10 2003/07/30 16:04:49 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "3d/ps_attrib_maker_template.h"
 #include "3d/ps_attrib_maker_bin_op.h"
 #include "3d/ps_plane_basis.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 
 
 namespace NL3D {
@@ -187,7 +187,7 @@ class CSpinnerFunctor
 {
 public:
 	CSpinnerFunctor();
-	const CPlaneBasis &operator()(float date) const { return _PBTab[OptFastFloor(date * _NbSamples)]; }
+	const CPlaneBasis &operator()(float date) const { return _PBTab[NLMISC::OptFastFloor(date * _NbSamples)]; }
 	/// set the rotation axis
 	void					setAxis(const NLMISC::CVector &axis);
 	/// get the rotation axis

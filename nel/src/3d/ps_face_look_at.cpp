@@ -1,7 +1,7 @@
 /** \file ps_face_look_at.cpp
  * Face look at particles.
  *
- * $Id: ps_face_look_at.cpp,v 1.3 2002/08/21 09:39:53 lecroart Exp $
+ * $Id: ps_face_look_at.cpp,v 1.4 2003/07/30 16:04:01 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #include "3d/ps_face_look_at.h"
 #include "3d/ps_macro.h"
 #include "3d/driver.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/ps_iterator.h"
 
 
@@ -390,12 +390,12 @@ public:
 				la.updateVbColNUVForRender(vb, size - leftToDo, toProcess, srcStep);					
 				T endIt = it + toProcess;
 				CVector v1, v2;
-				OptFastFloorBegin();
+				NLMISC::OptFastFloorBegin();
 				if (!la._IndependantSizes)
 				{				
 					while (it != endIt)
 					{
-						const uint32 tabIndex = ((OptFastFloor(*currentAngle)) & 0xff) << 2;			
+						const uint32 tabIndex = ((NLMISC::OptFastFloor(*currentAngle)) & 0xff) << 2;			
 						// lets avoid some ctor calls
 						v1.x = *currentSize * (rotTable[tabIndex] * I.x + rotTable[tabIndex + 1] * K.x);
 						v1.y = *currentSize * (rotTable[tabIndex] * I.y + rotTable[tabIndex + 1] * K.y);
@@ -490,7 +490,7 @@ public:
 						currentSize2 += currentSizeStep2;			
 					}
 				}				
-				OptFastFloorEnd();							
+				NLMISC::OptFastFloorEnd();							
 				driver->renderQuads(la._Mat, 0, toProcess);			
 				leftToDo -= toProcess;
 			}

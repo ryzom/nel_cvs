@@ -1,7 +1,7 @@
 /** \file ps_float.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.11 2003/04/09 16:03:06 vizerie Exp $
+ * $Id: ps_float.h,v 1.12 2003/07/30 16:04:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -160,7 +160,7 @@ class CPSFloatCurveFunctor
 		#endif
 		float operator()(TAnimationTime time) const
 		{
-			return _Tab[OptFastFloor(time * _NumSamples)];
+			return _Tab[NLMISC::OptFastFloor(time * _NumSamples)];
 		}
 
 		/// compute an exact value at the given date, which must be in [0, 1[

@@ -194,6 +194,14 @@ SOURCE=..\include\nel\misc\bsphere.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\fast_floor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\fast_floor.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\geom_ext.cpp
 # End Source File
 # Begin Source File
@@ -215,6 +223,14 @@ SOURCE=.\misc\matrix.cpp
 # Begin Source File
 
 SOURCE=..\include\nel\misc\matrix.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\misc\noise_value.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\noise_value.h
 # End Source File
 # Begin Source File
 

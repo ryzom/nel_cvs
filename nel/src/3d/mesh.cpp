@@ -1,7 +1,7 @@
 /** \file mesh.cpp
  * <File description>
  *
- * $Id: mesh.cpp,v 1.78 2003/03/31 10:27:59 vizerie Exp $
+ * $Id: mesh.cpp,v 1.79 2003/07/30 16:00:16 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -32,7 +32,7 @@
 #include "3d/mesh_morpher.h"
 #include "nel/misc/bsphere.h"
 #include "3d/stripifier.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "nel/misc/hierarchical_timer.h"
 #include "3d/mesh_blender.h"
 #include "3d/matrix_3x4.h"
@@ -699,7 +699,7 @@ void	CMeshGeom::render(IDriver *drv, CTransformShape *trans, float polygonCount,
 
 	// Global alpha used ?
 	uint32	globalAlphaUsed= rdrFlags & IMeshGeom::RenderGlobalAlpha;
-	uint8	globalAlphaInt=(uint8)OptFastFloor(globalAlpha*255);
+	uint8	globalAlphaInt=(uint8)NLMISC::OptFastFloor(globalAlpha*255);
 
 
 	// For all _MatrixBlocks

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.62 2003/05/22 09:16:57 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.63 2003/07/30 16:00:46 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,7 +38,7 @@
 #include "3d/stripifier.h"
 #include "3d/mesh_blender.h"
 #include "3d/render_trav.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/raw_skin.h"
 #include "3d/shifted_triangle_cache.h"
 #include "3d/texture_file.h"
@@ -1058,7 +1058,7 @@ void	CMeshMRMGeom::render(IDriver *drv, CTransformShape *trans, float polygonCou
 
 	// Global alpha used ?
 	uint32	globalAlphaUsed= rdrFlags & IMeshGeom::RenderGlobalAlpha;
-	uint8	globalAlphaInt=(uint8)OptFastFloor(globalAlpha*255);
+	uint8	globalAlphaInt=(uint8)NLMISC::OptFastFloor(globalAlpha*255);
 
 	// Render all pass.
 	if (globalAlphaUsed)
@@ -2895,7 +2895,6 @@ CTransformShape		*CMeshMRM::createInstance(CScene &scene)
 	//===============================================
 	CMeshMRMInstance		*mi= (CMeshMRMInstance*)scene.createModel(NL3D::MeshMRMInstanceId);
 	mi->Shape= this;
-
 
 	// instanciate the material part of the MeshMRM, ie the CMeshBase.
 	CMeshBase::instanciateMeshBase(mi, &scene);

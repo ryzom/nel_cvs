@@ -1,7 +1,7 @@
 /** \file nelu.h
  * <File description>
  *
- * $Id: nelu.h,v 1.5 2003/03/26 10:20:55 berenguier Exp $
+ * $Id: nelu.h,v 1.6 2003/07/30 16:01:27 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,7 @@
 
 
 namespace NL3D 
-{
+{	
 
 
 using NLMISC::CSmartPtr;

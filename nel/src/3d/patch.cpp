@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.93 2003/04/23 10:14:32 berenguier Exp $
+ * $Id: patch.cpp,v 1.94 2003/07/30 16:01:59 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -35,7 +35,7 @@
 #include "nel/misc/common.h"
 #include "3d/patchuv_locator.h"
 #include "3d/vegetable_manager.h"
-#include "3d/fast_floor.h"
+#include "nel/misc/fast_floor.h"
 #include "3d/light_influence_interpolator.h"
 #include "3d/patchdlm_context.h"
 #include "nel/misc/hierarchical_timer.h"
@@ -2240,8 +2240,8 @@ CTileElement *CPatch::getTileElement(const CUV &uv)
 
 	// fastFloor: use a precision of 256 to avoid doing OptFastFloorBegin.
 	// add 128, to round and get cneter of lumel.
-	ts= OptFastFloor(uv.U* (OrderS<<8) + 128);	ts>>=8;
-	tt= OptFastFloor(uv.V* (OrderT<<8) + 128);	tt>>=8;
+	ts= NLMISC::OptFastFloor(uv.U* (OrderS<<8) + 128);	ts>>=8;
+	tt= NLMISC::OptFastFloor(uv.V* (OrderT<<8) + 128);	tt>>=8;
 	clamp(ts, 0, OrderS-1);
 	clamp(tt, 0, OrderT-1);
 

@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.25 2004/06/14 15:04:41 cado Exp $
+ * $Id: mem_stream.cpp,v 1.25.8.1 2004/10/29 16:27:21 saffray Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -73,9 +73,13 @@ namespace NLMISC
 void CMemStream::serialBuffer(uint8 *buf, uint len)
 {
 	// commented for optimum performance
-	nlassert (len > 0);
-	nlassert (buf != NULL);
+//	nlassert (len > 0);
 
+	if (len == 0)
+		return;
+
+	nlassert (buf != NULL);
+	
 	if ( isReading() )
 	{
 		// Check that we don't read more than there is to read

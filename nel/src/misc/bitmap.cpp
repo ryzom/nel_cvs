@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.56 2005/03/31 13:41:54 berenguier Exp $
+ * $Id: bitmap.cpp,v 1.57 2005/04/04 10:24:59 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1903,10 +1903,6 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 	uint8	imageDepth;
 	uint8	desc;
 
-	// Image/Color map data
-	uint8 *imageID;
-	
-	
 	
 	// Determining whether file is in Original or New TGA format
 	
@@ -1955,9 +1951,9 @@ uint8 CBitmap::readTGA( NLMISC::IStream &f)
 
 	if(lengthID>0)
 	{
-		imageID = new uint8[lengthID];
+		uint8	dummy;
 		for(i=0; i<lengthID; i++)
-			f.serial(imageID[i]);
+			f.serial(dummy);
 	}
 
 
@@ -2950,7 +2946,7 @@ void	CBitmap::loadSize(NLMISC::IStream &f, uint32 &retWidth, uint32 &retHeight)
 		f.serial(width);
 		f.serial(height);
 		f.serial(imageDepth);
-		if(imageDepth!=8 && imageDepth!=24 && imageDepth!=32) return;
+		if(imageDepth!=8 && imageDepth!=16 && imageDepth!=24 && imageDepth!=32) return;
 		f.serial(desc);
 
 		// Ok, we have width and height.

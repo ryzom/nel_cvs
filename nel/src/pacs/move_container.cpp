@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.23 2002/05/24 12:34:50 vizerie Exp $
+ * $Id: move_container.cpp,v 1.24 2002/05/28 08:09:13 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1151,7 +1151,7 @@ void	UMoveContainer::deleteMoveContainer (UMoveContainer	*container)
 
 // ***************************************************************************
 
-UMovePrimitive *CMoveContainer::addCollisionablePrimitive (uint8 firstWorldImage, uint8 numWorldImage)
+UMovePrimitive *CMoveContainer::addCollisionablePrimitive (uint8 firstWorldImage, uint8 numWorldImage, const UMovePrimitive *copyFrom)
 {
 	// Allocate primitive
 	CMovePrimitive *primitive=allocatePrimitive (firstWorldImage, numWorldImage);
@@ -1159,13 +1159,36 @@ UMovePrimitive *CMoveContainer::addCollisionablePrimitive (uint8 firstWorldImage
 	// Add into the set
 	_PrimitiveSet.insert (primitive);
 
+	// if copy from primitive is not null, copy attributes
+	if (copyFrom != NULL)
+	{
+		primitive->setPrimitiveType(copyFrom->getPrimitiveType());
+		primitive->setReactionType(copyFrom->getReactionType());
+		primitive->setTriggerType(copyFrom->getTriggerType());
+		primitive->setCollisionMask(copyFrom->getCollisionMask());
+		primitive->setOcclusionMask(copyFrom->getOcclusionMask());
+		primitive->setObstacle(copyFrom->getObstacle());
+		primitive->setAbsorbtion(copyFrom->getAbsorbtion());
+		primitive->setHeight(copyFrom->getHeight());
+		if (primitive->getPrimitiveType() == UMovePrimitive::_2DOrientedBox)
+		{
+			float	width=0.0f, height=0.0f;
+			copyFrom->getSize(width, height);
+			primitive->setSize(width, height);
+		}
+		else
+		{
+			primitive->setRadius(copyFrom->getRadius());
+		}
+	}
+
 	// Return it
 	return primitive;
 }
 
 // ***************************************************************************
 
-UMovePrimitive *CMoveContainer::addNonCollisionablePrimitive ()
+UMovePrimitive *CMoveContainer::addNonCollisionablePrimitive (const UMovePrimitive *copyFrom)
 {
 	// Allocate primitive
 	CMovePrimitive *primitive=allocatePrimitive (0, 1);
@@ -1175,6 +1198,29 @@ UMovePrimitive *CMoveContainer::addNonCollisionablePrimitive ()
 	
 	// Add into the set
 	_PrimitiveSet.insert (primitive);
+
+	// if copy from primitive is not null, copy attributes
+	if (copyFrom != NULL)
+	{
+		primitive->setPrimitiveType(copyFrom->getPrimitiveType());
+		primitive->setReactionType(copyFrom->getReactionType());
+		primitive->setTriggerType(copyFrom->getTriggerType());
+		primitive->setCollisionMask(copyFrom->getCollisionMask());
+		primitive->setOcclusionMask(copyFrom->getOcclusionMask());
+		primitive->setObstacle(copyFrom->getObstacle());
+		primitive->setAbsorbtion(copyFrom->getAbsorbtion());
+		primitive->setHeight(copyFrom->getHeight());
+		if (primitive->getPrimitiveType() == UMovePrimitive::_2DOrientedBox)
+		{
+			float	width=0.0f, height=0.0f;
+			copyFrom->getSize(width, height);
+			primitive->setSize(width, height);
+		}
+		else
+		{
+			primitive->setRadius(copyFrom->getRadius());
+		}
+	}
 
 	// Return it
 	return primitive;

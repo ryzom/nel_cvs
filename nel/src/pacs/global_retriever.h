@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.19 2002/02/01 18:17:58 berenguier Exp $
+ * $Id: global_retriever.h,v 1.20 2002/05/28 08:09:13 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -226,8 +226,19 @@ public:
 	/// Retrieves the position of an estimated point in the global retriever (double instead.)
 	UGlobalPosition					retrievePosition(const NLMISC::CVectorD &estimated, double threshold) const;
 
+	/// Return the retriever id from the string id
+	sint32							getIdentifier(const std::string &id) const;
+
 	/// Get the identifier of the global position.
 	const std::string				&getIdentifier(const UGlobalPosition &position) const;
+
+	/**
+	  * Builds a instance of retriever, and link it on the ground (or wherever)
+	  * \param id a valid retriever id to be instanciated
+	  * \param a valid position where the retriever should be instanciated
+	  * \return false if failed
+	  */
+	bool							buildInstance(const std::string &id, const NLMISC::CVectorD &position);
 
 	/// Snaps to interior ground.
 //	void							snapToInteriorGround(UGlobalPosition &position) const;

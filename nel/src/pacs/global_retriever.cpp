@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.60 2002/04/18 14:15:19 berenguier Exp $
+ * $Id: global_retriever.cpp,v 1.61 2002/05/28 08:09:13 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -361,6 +361,8 @@ const NLPACS::CRetrieverInstance	&NLPACS::CGlobalRetriever::makeInstance(uint32 
 
 		if (getRetriever(instance.getRetrieverId()).getType() == CLocalRetriever::Interior)
 			instance.initEdgeQuad(*this);
+
+		_InstanceGrid.insert(instance.getBBox().getMin(), instance.getBBox().getMax(), instance.getInstanceId());
 	}
 
 	return instance;
@@ -571,6 +573,16 @@ NLPACS::UGlobalPosition	NLPACS::CGlobalRetriever::retrievePosition(const CVector
 
 //
 
+sint32			NLPACS::CGlobalRetriever::getIdentifier(const string &id) const
+{
+	sint32	i;
+	for (i=0; i<(sint32)(_RetrieverBank->getRetrievers().size()); ++i)
+		if (getRetriever(i).getIdentifier() == id)
+			return i;
+
+	return -1;
+}
+
 const string	&NLPACS::CGlobalRetriever::getIdentifier(const NLPACS::UGlobalPosition &position) const
 {
 	static const string		nullString = string("");
@@ -580,6 +592,29 @@ const string	&NLPACS::CGlobalRetriever::getIdentifier(const NLPACS::UGlobalPosit
 
 	return getRetriever(_Instances[position.InstanceId].getRetrieverId()).getIdentifier();
 }
+
+//
+
+bool			NLPACS::CGlobalRetriever::buildInstance(const string &id, const NLMISC::CVectorD &position)
+{
+	sint32	retrieverId = getIdentifier(id);
+
+	// check retriever exists
+	if (retrieverId < 0)
+		return false;
+
+	const CRetrieverInstance	&instance = makeInstance(retrieverId, 0, CVector(position));
+
+	// check make instance success
+	if (&instance == NULL || instance.getInstanceId() == -1 || instance.getRetrieverId() != retrieverId)
+		return false;
+
+	// links new instance to its neighbors
+	makeLinks(instance.getInstanceId());
+
+	return true;
+}
+
 
 //
 /*

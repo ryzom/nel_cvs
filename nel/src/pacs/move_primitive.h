@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.11 2002/05/24 12:34:50 vizerie Exp $
+ * $Id: move_primitive.h,v 1.12 2002/05/28 08:09:13 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -52,6 +52,7 @@ namespace NLPACS
 class CMovePrimitive: public UMovePrimitive
 {
 private:
+	friend class CMoveContainer;
 
 	// Some flags
 	enum TStaticFlags
@@ -336,6 +337,12 @@ public:
 	bool isObstacle () const
 	{
 		return (_StaticFlags&ObstacleFlag)!=0;
+	}
+
+	/// Is collisionable
+	bool	isCollisionable() const
+	{
+		return !isNonCollisionable();
 	}
 
 	/// Add a collision time ordered table element

@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.12 2002/05/24 12:35:03 vizerie Exp $
+ * $Id: u_move_container.h,v 1.13 2002/05/28 08:08:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -77,7 +77,7 @@ public:
 	  * \param numWorldImage is the count of world image where the primitive can be inserted.	  
 	  * \return a pointer on the new primitive.
 	  */
-	virtual UMovePrimitive		*addCollisionablePrimitive (uint8 firstWorldImage, uint8 numWorldImage) =0;
+	virtual UMovePrimitive		*addCollisionablePrimitive (uint8 firstWorldImage, uint8 numWorldImage, const UMovePrimitive *copyFrom = NULL) =0;
 
 	/**
 	  * Add a noncollisionable primitive in the container. Return the pointer on the primitive.
@@ -85,9 +85,10 @@ public:
 	  *
 	  * This primitive can't be inserted in a world image.
 	  *
+	  * \param copyFrom is an optional primitive to copy attributes from (so the primitive is initialised with same values)
 	  * \return a pointer on the new primitive.
 	  */
-	virtual UMovePrimitive		*addNonCollisionablePrimitive () =0;
+	virtual UMovePrimitive		*addNonCollisionablePrimitive (const UMovePrimitive *copyFrom = NULL) =0;
 
 	/**
 	  * Load a PACS primitive block. (*.pacs_prim)

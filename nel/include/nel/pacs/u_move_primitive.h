@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.9 2002/05/24 12:35:03 vizerie Exp $
+ * $Id: u_move_primitive.h,v 1.10 2002/05/28 08:08:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -285,6 +285,11 @@ public:
 	  * \param radius is the new radius size of the cylinder.
 	  */
 	virtual float			getRadius () const =0;
+
+	/**
+	  * Return true if the primitive is collisionable
+	  */
+	virtual bool			isCollisionable() const =0;
 
 	/// \name Setup the primitive dynamic parts.
 

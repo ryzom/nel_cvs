@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.11 2002/05/24 12:34:50 vizerie Exp $
+ * $Id: move_container.h,v 1.12 2002/05/28 08:09:13 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -84,10 +84,10 @@ public:
 		uint8 numWorldImage, uint maxIteration, uint otSize);
 
 	/// Add a collisionable primitive in the container. Return the pointer on the primitive.
-	UMovePrimitive*				addCollisionablePrimitive (uint8 firstWorldImage, uint8 numWorldImage);
+	UMovePrimitive*				addCollisionablePrimitive (uint8 firstWorldImage, uint8 numWorldImage, const UMovePrimitive *copyFrom = NULL);
 
 	/// Add a noncollisionable primitive in the container. Return the pointer on the primitive.
-	UMovePrimitive*				addNonCollisionablePrimitive ();
+	UMovePrimitive*				addNonCollisionablePrimitive (const UMovePrimitive *copyFrom = NULL);
 
 	/// Load a block of collisionable primitive
 	bool						loadCollisionablePrimitiveBlock (const char *filename, uint8 firstWorldImage, uint8 numWorldImage, std::vector<UMovePrimitive*> *primitives, float orientation, const NLMISC::CVector &position, bool dontSnapToGround = false);

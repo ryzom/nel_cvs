@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.14 2001/11/29 16:36:53 legros Exp $
+ * $Id: u_global_retriever.h,v 1.15 2002/05/28 08:08:55 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -68,9 +68,23 @@ public:
 	virtual float					getMeanHeight(const UGlobalPosition &pos) const =0;
 
 	/**
+	  * Return the retriever id from the string id
+	  * \return a valid retriever id or -1 if failed
+	  */
+	virtual sint32					getIdentifier(const std::string &id) const =0;
+
+	/**
 	  * Returns a human readable identifier of the global position
 	  */
 	virtual const std::string		&getIdentifier(const UGlobalPosition &pos) const =0;
+
+	/**
+	  * Builds a instance of retriever, and link it on the ground (or wherever)
+	  * \param id a valid retriever id to be instanciated
+	  * \param a valid position where the retriever should be instanciated
+	  * \return false if failed
+	  */
+	virtual bool					buildInstance(const std::string &id, const NLMISC::CVectorD &position) =0;
 
 	/**
 	  * Returns the material corresponding to the global position

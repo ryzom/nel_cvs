@@ -1,7 +1,7 @@
 /** \file path.h
  * Utility class for searching files in differents paths.
  *
- * $Id: path.h,v 1.38 2003/11/06 12:50:03 besson Exp $
+ * $Id: path.h,v 1.39 2003/11/07 08:45:57 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -221,7 +221,7 @@ private:
 	public:
 		bool operator()(const std::string &x, const std::string &y) const
 		{
-			return stricmp(x.c_str(), y.c_str()) < 0;
+			return nlstricmp(x.c_str(), y.c_str()) < 0;
 		}
 	};
 

@@ -1,7 +1,7 @@
 /** \file visual_collision_mesh.cpp
  * <File description>
  *
- * $Id: visual_collision_mesh.cpp,v 1.3 2004/06/24 17:33:08 berenguier Exp $
+ * $Id: visual_collision_mesh.cpp,v 1.4 2004/10/19 13:01:09 vizerie Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -389,6 +389,7 @@ void		CVisualCollisionMesh::receiveShadowMap(const NLMISC::CMatrix &instanceMatr
 	// **** Clip and fill the triangles
 	uint	currentTriIdx= 0;
 	// enlarge the index buffer as max of triangles possibly intersected
+	shadowContext.IndexBuffer.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	if(shadowContext.IndexBuffer.getNumIndexes()<numTrisInQuadGrid*3)
 		shadowContext.IndexBuffer.setNumIndexes(numTrisInQuadGrid*3);
 
@@ -396,53 +397,107 @@ void		CVisualCollisionMesh::receiveShadowMap(const NLMISC::CMatrix &instanceMatr
 	{
 		CIndexBufferReadWrite	iba;
 		shadowContext.IndexBuffer.lock(iba);
-		uint32	*ibPtr= iba.getPtr();
-
-		// for all triangles selected with the quadgrid
-		for(uint triq=0; triq<numTrisInQuadGrid;triq++)
+		if (iba.getFormat() == CIndexBuffer::Indices32)
 		{
-			uint			triId[3];
-			triId[0]= _Triangles[uint(triInQuadGrid[triq])*3+0];
-			triId[1]= _Triangles[uint(triInQuadGrid[triq])*3+1];
-			triId[2]= _Triangles[uint(triInQuadGrid[triq])*3+2];
-			uint			triFlag= NL3D_VCM_SHADOW_NUM_CLIP_PLANE_MASK;
-			
-			// for all vertices, clip them
-			for(uint i=0;i<3;i++)
+			uint32	*ibPtr= (uint32 *) iba.getPtr();
+			// for all triangles selected with the quadgrid
+			for(uint triq=0; triq<numTrisInQuadGrid;triq++)
 			{
-				uint	vid= triId[i];
-				uint	vf= vertexFlags[vid];
+				uint			triId[3];
+				triId[0]= _Triangles[uint(triInQuadGrid[triq])*3+0];
+				triId[1]= _Triangles[uint(triInQuadGrid[triq])*3+1];
+				triId[2]= _Triangles[uint(triInQuadGrid[triq])*3+2];
+				uint			triFlag= NL3D_VCM_SHADOW_NUM_CLIP_PLANE_MASK;
 				
-				// if this vertex is still not computed
-				if(!vf)
+				// for all vertices, clip them
+				for(uint i=0;i<3;i++)
 				{
-					// For all planes of the Clip Volume, clip this vertex.
-					for(uint j=0;j<localClipPlanes.size();j++)
+					uint	vid= triId[i];
+					uint	vf= vertexFlags[vid];
+					
+					// if this vertex is still not computed
+					if(!vf)
 					{
-						// out if in front
-						bool	out= localClipPlanes[j]*_Vertices[vid] > 0;
+						// For all planes of the Clip Volume, clip this vertex.
+						for(uint j=0;j<localClipPlanes.size();j++)
+						{
+							// out if in front
+							bool	out= localClipPlanes[j]*_Vertices[vid] > 0;
+							
+							vf|= ((uint)out)<<j;
+						}
 						
-						vf|= ((uint)out)<<j;
+						// add the bit flag to say "computed".
+						vf|= NL3D_VCM_SHADOW_NUM_CLIP_PLANE_SHIFT;
+						
+						// store
+						vertexFlags[vid]= vf;
 					}
 					
-					// add the bit flag to say "computed".
-					vf|= NL3D_VCM_SHADOW_NUM_CLIP_PLANE_SHIFT;
-					
-					// store
-					vertexFlags[vid]= vf;
+					// And all vertex bits.
+					triFlag&= vf;
 				}
 				
-				// And all vertex bits.
-				triFlag&= vf;
+				// if triangle not clipped, add the triangle
+				if( (triFlag & NL3D_VCM_SHADOW_NUM_CLIP_PLANE_MASK)==0 )
+				{
+					// Add the 3 index to the index buffer.
+					ibPtr[currentTriIdx++]= triId[0];
+					ibPtr[currentTriIdx++]= triId[1];
+					ibPtr[currentTriIdx++]= triId[2];
+				}
 			}
-			
-			// if triangle not clipped, add the triangle
-			if( (triFlag & NL3D_VCM_SHADOW_NUM_CLIP_PLANE_MASK)==0 )
+		}
+		else
+		{
+			nlassert(iba.getFormat() == CIndexBuffer::Indices16);
+			uint16	*ibPtr= (uint16 *) iba.getPtr();
+			// for all triangles selected with the quadgrid
+			for(uint triq=0; triq<numTrisInQuadGrid;triq++)
 			{
-				// Add the 3 index to the index buffer.
-				ibPtr[currentTriIdx++]= triId[0];
-				ibPtr[currentTriIdx++]= triId[1];
-				ibPtr[currentTriIdx++]= triId[2];
+				uint			triId[3];
+				triId[0]= _Triangles[uint(triInQuadGrid[triq])*3+0];
+				triId[1]= _Triangles[uint(triInQuadGrid[triq])*3+1];
+				triId[2]= _Triangles[uint(triInQuadGrid[triq])*3+2];
+				uint			triFlag= NL3D_VCM_SHADOW_NUM_CLIP_PLANE_MASK;
+				
+				// for all vertices, clip them
+				for(uint i=0;i<3;i++)
+				{
+					uint	vid= triId[i];
+					uint	vf= vertexFlags[vid];
+					
+					// if this vertex is still not computed
+					if(!vf)
+					{
+						// For all planes of the Clip Volume, clip this vertex.
+						for(uint j=0;j<localClipPlanes.size();j++)
+						{
+							// out if in front
+							bool	out= localClipPlanes[j]*_Vertices[vid] > 0;
+							
+							vf|= ((uint)out)<<j;
+						}
+						
+						// add the bit flag to say "computed".
+						vf|= NL3D_VCM_SHADOW_NUM_CLIP_PLANE_SHIFT;
+						
+						// store
+						vertexFlags[vid]= vf;
+					}
+					
+					// And all vertex bits.
+					triFlag&= vf;
+				}
+				
+				// if triangle not clipped, add the triangle
+				if( (triFlag & NL3D_VCM_SHADOW_NUM_CLIP_PLANE_MASK)==0 )
+				{
+					// Add the 3 index to the index buffer.
+					ibPtr[currentTriIdx++]= (uint16) triId[0];
+					ibPtr[currentTriIdx++]= (uint16) triId[1];
+					ibPtr[currentTriIdx++]= (uint16) triId[2];
+				}
 			}
 		}
 	}

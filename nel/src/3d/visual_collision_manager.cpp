@@ -1,7 +1,7 @@
 /** \file visual_collision_manager.cpp
  * <File description>
  *
- * $Id: visual_collision_manager.cpp,v 1.13 2004/08/13 15:47:12 vizerie Exp $
+ * $Id: visual_collision_manager.cpp,v 1.14 2004/10/19 13:00:47 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ CVisualCollisionManager::CVisualCollisionManager() :
 	_MeshIdPool= 1;
 
 	_PlayerInside= false;
-
+	_ShadowIndexBuffer.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	NL_SET_IB_NAME(_ShadowIndexBuffer, "CVisualCollisionManager");
 }
 // ***************************************************************************

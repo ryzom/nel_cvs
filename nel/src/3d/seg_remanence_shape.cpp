@@ -1,6 +1,6 @@
 /** \file seg_remanence_shape.cpp
  *
- * $Id: seg_remanence_shape.cpp,v 1.15 2004/08/13 15:41:42 vizerie Exp $
+ * $Id: seg_remanence_shape.cpp,v 1.16 2004/10/19 12:57:47 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -203,6 +203,7 @@ void CSegRemanenceShape::setupVBnPB()
 		}
 	}
 	// create primitive block
+	_PB.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	_PB.setNumIndexes(3 * 2 * (numCorners - 1) * _NumSlices);
 	CIndexBufferReadWrite ibaWrite;
 	_PB.lock (ibaWrite);

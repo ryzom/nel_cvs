@@ -1,7 +1,7 @@
 /** \file vegetable_shape.cpp
  * <File description>
  *
- * $Id: vegetable_shape.cpp,v 1.9 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: vegetable_shape.cpp,v 1.10 2004/10/19 13:00:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -95,7 +95,7 @@ void		CVegetableShape::build(CVegetableShapeBuild &vbuild)
 	TriangleIndices.resize(vbuild.PB.getNumIndexes());
 	CIndexBufferRead ibaRead;
 	vbuild.PB.lock (ibaRead);
-	const uint32	*srcTri= ibaRead.getPtr();
+	const uint32	*srcTri= (const uint32 *) ibaRead.getPtr();
 	// fill
 	for(i=0; i<vbuild.PB.getNumIndexes()/3; i++)
 	{

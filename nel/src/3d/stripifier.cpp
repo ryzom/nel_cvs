@@ -1,7 +1,7 @@
 /** \file stripifier.cpp
  * <File description>
  *
- * $Id: stripifier.cpp,v 1.5 2004/03/19 10:11:36 corvazier Exp $
+ * $Id: stripifier.cpp,v 1.6 2004/10/19 12:58:42 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,12 +221,28 @@ void		CStripifier::optimizeTriangles(const CIndexBuffer &in, CIndexBuffer &out, 
 		CIndexBufferRead ibaRead;
 		in.lock (ibaRead);
 		inFaces.resize(numTris);
-		for(i=0;i< numTris; i++)
+		if (ibaRead.getFormat() == CIndexBuffer::Indices32)
 		{
-			inFaces[i].v[0]= ibaRead.getPtr()[i*3 + 0];
-			inFaces[i].v[1]= ibaRead.getPtr()[i*3 + 1];
-			inFaces[i].v[2]= ibaRead.getPtr()[i*3 + 2];
-			inFaces[i].Inserted= false;
+			for(i=0;i< numTris; i++)
+			{
+				const uint32 *ibaPtr = (const uint32 *) ibaRead.getPtr();
+				inFaces[i].v[0]= ibaPtr[i*3 + 0];
+				inFaces[i].v[1]= ibaPtr[i*3 + 1];
+				inFaces[i].v[2]= ibaPtr[i*3 + 2];
+				inFaces[i].Inserted= false;
+			}
+		}
+		else
+		{
+			nlassert(ibaRead.getFormat() == CIndexBuffer::Indices16);
+			for(i=0;i< numTris; i++)
+			{
+				const uint16 *ibaPtr = (const uint16 *) ibaRead.getPtr();
+				inFaces[i].v[0]= ibaPtr[i*3 + 0];
+				inFaces[i].v[1]= ibaPtr[i*3 + 1];
+				inFaces[i].v[2]= ibaPtr[i*3 + 2];				
+				inFaces[i].Inserted= false;
+			}
 		}
 	}
 
@@ -274,6 +290,7 @@ void		CStripifier::optimizeTriangles(const CIndexBuffer &in, CIndexBuffer &out, 
 
 	// build output optimized triangles
 	//--------------------
+	out.setFormat(in.getFormat());
 	out.setNumIndexes(0);
 	out.reserve(3*numTris);
 

@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.38 2004/05/06 13:26:04 berenguier Exp $
+ * $Id: zone_lighter.cpp,v 1.39 2004/10/19 13:01:44 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1749,34 +1749,69 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshGeom &mes
 				// Dump triangles
 				CIndexBufferRead iba;
 				primitive.lock (iba);
-				const uint32* triIndex=iba.getPtr ();
-				uint numTri=primitive.getNumIndexes ()/3;
-				uint tri;
-				for (tri=0; tri<numTri; tri++)
+				if (iba.getFormat() == CIndexBuffer::Indices32)
 				{
-					// Vertex
-					CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
-					CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
-					CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
-
-					// UV
-					float u[3];
-					float v[3];
-					for (uint i=0; i<3; i++)
+					const uint32* triIndex= (const uint32*) iba.getPtr ();
+					uint numTri=primitive.getNumIndexes ()/3;
+					uint tri;
+					for (tri=0; tri<numTri; tri++)
 					{
-						// Get UV coordinates
-						const float *uv = (const float*)vba.getTexCoordPointer (triIndex[tri*3+i], 0);
-						if (uv)
-						{
-							// Copy it
-							u[i] = uv[0];
-							v[i] = uv[1];
-						}
-					}
+						// Vertex
+						CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+						CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+						CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
 
-					// Make a triangle
-					triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
-						alphaTestThreshold));
+						// UV
+						float u[3];
+						float v[3];
+						for (uint i=0; i<3; i++)
+						{
+							// Get UV coordinates
+							const float *uv = (const float*)vba.getTexCoordPointer (triIndex[tri*3+i], 0);
+							if (uv)
+							{
+								// Copy it
+								u[i] = uv[0];
+								v[i] = uv[1];
+							}
+						}
+
+						// Make a triangle
+						triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
+							alphaTestThreshold));
+					}
+				}
+				else
+				{
+					const uint16* triIndex=(const uint16*)iba.getPtr ();
+					uint numTri=primitive.getNumIndexes ()/3;
+					uint tri;
+					for (tri=0; tri<numTri; tri++)
+					{
+						// Vertex
+						CVector v0=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3]));
+						CVector v1=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+1]));
+						CVector v2=modelMT*(*vba.getVertexCoordPointer (triIndex[tri*3+2]));
+
+						// UV
+						float u[3];
+						float v[3];
+						for (uint i=0; i<3; i++)
+						{
+							// Get UV coordinates
+							const float *uv = (const float*)vba.getTexCoordPointer (triIndex[tri*3+i], 0);
+							if (uv)
+							{
+								// Copy it
+								u[i] = uv[0];
+								v[i] = uv[1];
+							}
+						}
+
+						// Make a triangle
+						triangleArray.push_back (CTriangle (NLMISC::CTriangle (v0, v1, v2), doubleSided, texture, clampU, clampV, u, v, 
+							alphaTestThreshold));
+					}
 				}
 			}
 		}
@@ -1882,7 +1917,7 @@ void CZoneLighter::addTriangles (const CMeshBase &meshBase, const CMeshMRMGeom &
 			// Dump triangles
 			CIndexBufferRead iba;
 			primitive.lock (iba);
-			const uint32* triIndex=iba.getPtr ();
+			const uint32* triIndex= (const uint32 *) iba.getPtr ();
 			uint numTri=primitive.getNumIndexes ()/3;
 			uint tri;
 			for (tri=0; tri<numTri; tri++)

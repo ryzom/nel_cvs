@@ -1,7 +1,7 @@
 /** \file vegetable_sort_block.cpp
  * <File description>
  *
- * $Id: vegetable_sort_block.cpp,v 1.9 2004/08/13 15:45:51 vizerie Exp $
+ * $Id: vegetable_sort_block.cpp,v 1.10 2004/10/19 13:00:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -49,7 +49,7 @@ CVegetableSortBlock::CVegetableSortBlock()
 	_NTriangles= 0;
 	_NIndices= 0;
 	_Dirty= false;
-	_UnderWater= false;
+	_UnderWater= false;	
 	NL_SET_IB_NAME(_SortedTriangleArray, "CVegetableSortBlock");
 }
 
@@ -114,33 +114,45 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 	else
 	{
 		// else, re-allocate the array
+		_SortedTriangleArray.setFormat(ZSortHardMode ? CIndexBuffer::Indices16 : CIndexBuffer::Indices32);
 		_SortedTriangleArray.setNumIndexes(_NIndices * NL3D_VEGETABLE_NUM_QUADRANT);
 	}
 
-	// resize an array for sorting.
-	nlassert(_NTriangles < 65536);
+	// resize an array for sorting.	
 	static	std::vector<CSortTri>	triSort;
-	static	std::vector<uint32>		triIndices;
+	static	std::vector<uint32>		triIndices32;
+	static	std::vector<uint16>		triIndices16;
 	// don't use resize because fill with default values. size() is the capacity here.
 	if(triSort.size()<_NTriangles)
 	{
-		triSort.resize(_NTriangles);
-		triIndices.resize(_NIndices);
+		triSort.resize(_NTriangles);		
+	}
+
+	if (ZSortHardMode)
+	{
+		nlassert(_NTriangles < 65536);
+		if (triIndices16.size() < _NIndices) triIndices16.resize(_NIndices);
+	}
+	else
+	{
+		if (triIndices32.size() < _NIndices) triIndices32.resize(_NIndices);
 	}
 
 	// fill indices with all ig info.
 	//-------------
+	if (ZSortHardMode)
 	{
-		uint32		*triIdxPtr= &triIndices[0];
+		uint16		*triIdxPtr= &triIndices16[0];
 		// for all igs in the sortBlock.
 		ptrIg= _InstanceGroupList.begin();
 		while(ptrIg)
 		{
 			CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ptrIg->_RdrPass[NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT];
+			nlassert(vegetRdrPass.HardMode);	
 			CIndexBufferRead ibaRead;
-			vegetRdrPass.TriangleIndices.lock (ibaRead);
-			const uint32		*triSrcPtr= ibaRead.getPtr();
-
+			vegetRdrPass.TriangleIndices.lock (ibaRead);			
+			nlassert(ibaRead.getFormat() == CIndexBuffer::Indices16);			
+			const uint16		*triSrcPtr= (const uint16 *) ibaRead.getPtr();
 			// add only zsort rdrPass triangles.
 			for(uint i=0; i<vegetRdrPass.NTriangles; i++)
 			{
@@ -148,8 +160,32 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 				*(triIdxPtr++)= *(triSrcPtr++);
 				*(triIdxPtr++)= *(triSrcPtr++);
 				*(triIdxPtr++)= *(triSrcPtr++);
-			}
-
+			}			
+			// next Ig in the SortBlock
+			ptrIg= (CVegetableInstanceGroup*)(ptrIg->Next);
+		}
+	}
+	else
+	{
+		uint32		*triIdxPtr= &triIndices32[0];
+		// for all igs in the sortBlock.
+		ptrIg= _InstanceGroupList.begin();
+		while(ptrIg)
+		{
+			CVegetableInstanceGroup::CVegetableRdrPass	&vegetRdrPass= ptrIg->_RdrPass[NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT];
+			nlassert(!vegetRdrPass.HardMode);
+			CIndexBufferRead ibaRead;
+			vegetRdrPass.TriangleIndices.lock (ibaRead);			
+			nlassert(ibaRead.getFormat() == CIndexBuffer::Indices32);
+			const uint32		*triSrcPtr= (const uint32 *) ibaRead.getPtr();
+			// add only zsort rdrPass triangles.
+			for(uint i=0; i<vegetRdrPass.NTriangles; i++)
+			{
+				// fill the triangle indices.
+				*(triIdxPtr++)= *(triSrcPtr++);
+				*(triIdxPtr++)= *(triSrcPtr++);
+				*(triIdxPtr++)= *(triSrcPtr++);
+			}			
 			// next Ig in the SortBlock
 			ptrIg= (CVegetableInstanceGroup*)(ptrIg->Next);
 		}
@@ -197,13 +233,29 @@ void			CVegetableSortBlock::updateSortBlock(CVegetableManager &vegetManager)
 		// fill the indices.
 		CIndexBufferReadWrite ibaReadWrite;
 		_SortedTriangleArray.lock (ibaReadWrite);
-		uint32	*pIdx= ibaReadWrite.getPtr() + _SortedTriangleIndices[quadrant];
-		for(uint i=0; i<_NTriangles; i++)
+		if (ZSortHardMode)
 		{
-			uint32	idTriIdx= triSort[i].TriIndex * 3;
-			*(pIdx++)= triIndices[idTriIdx+0];
-			*(pIdx++)= triIndices[idTriIdx+1];
-			*(pIdx++)= triIndices[idTriIdx+2];
+			nlassert(ibaReadWrite.getFormat() == CIndexBuffer::Indices16);
+			uint16	*pIdx= (uint16 *) ibaReadWrite.getPtr() + _SortedTriangleIndices[quadrant];
+			for(uint i=0; i<_NTriangles; i++)
+			{
+				uint32	idTriIdx= triSort[i].TriIndex * 3;
+				*(pIdx++)= (uint16) triIndices16[idTriIdx+0];
+				*(pIdx++)= (uint16) triIndices16[idTriIdx+1];
+				*(pIdx++)= (uint16) triIndices16[idTriIdx+2];
+			}			
+		}
+		else
+		{
+			nlassert(ibaReadWrite.getFormat() == CIndexBuffer::Indices32);
+			uint32	*pIdx= (uint32 *) ibaReadWrite.getPtr() + _SortedTriangleIndices[quadrant];
+			for(uint i=0; i<_NTriangles; i++)
+			{
+				uint32	idTriIdx= triSort[i].TriIndex * 3;
+				*(pIdx++)= triIndices32[idTriIdx+0];
+				*(pIdx++)= triIndices32[idTriIdx+1];
+				*(pIdx++)= triIndices32[idTriIdx+2];
+			}
 		}
 	}
 }

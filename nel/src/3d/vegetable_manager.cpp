@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.42 2004/09/23 18:50:16 berenguier Exp $
+ * $Id: vegetable_manager.cpp,v 1.43 2004/10/19 13:00:28 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -912,7 +912,8 @@ void			CVegetableManager::reserveIgCompile(CVegetableInstanceGroup *ig, const CV
 		uint	numVertices= vegetIgReserve._RdrPass[rdrPass].NVertices;
 		uint	numTris= vegetIgReserve._RdrPass[rdrPass].NTriangles;
 		uint	numLightedInstances= vegetIgReserve._RdrPass[rdrPass].NLightedInstances;
-		// reserve triangles indices and vertices for this rdrPass.
+		// reserve triangles indices and vertices for this rdrPass.		
+		vegetRdrPass.TriangleIndices.setFormat(vegetRdrPass.HardMode ? CIndexBuffer::Indices16 : CIndexBuffer::Indices32);
 		vegetRdrPass.TriangleIndices.setNumIndexes(numTris*3);
 		vegetRdrPass.TriangleLocalIndices.resize(numTris*3);
 		vegetRdrPass.Vertices.resize(numVertices);
@@ -1460,15 +1461,31 @@ void			CVegetableManager::addInstance(CVegetableInstanceGroup *ig,
 	// for all indices, fill IG
 	CIndexBufferReadWrite ibaWrite;
 	vegetRdrPass.TriangleIndices.lock (ibaWrite);
-	uint32 *ptr = ibaWrite.getPtr();
-	for(i=0; i<(sint)numNewIndices; i++)
+	if (vegetRdrPass.TriangleIndices.getFormat() == CIndexBuffer::Indices16)
 	{
-		// get the index of the vertex in the shape
-		uint	vid= shape->TriangleIndices[i];
-		// re-direction, using InstanceVertices;
-		ptr[offTriIdx + i]= shape->InstanceVertices[vid];
-		// local re-direction: adding vertexOffset.
-		vegetRdrPass.TriangleLocalIndices[offTriIdx + i]= offVertex + vid;
+		uint16 *ptr = (uint16 *) ibaWrite.getPtr();
+		for(i=0; i<(sint)numNewIndices; i++)
+		{
+			// get the index of the vertex in the shape
+			uint	vid= shape->TriangleIndices[i];
+			// re-direction, using InstanceVertices;
+			ptr[offTriIdx + i]= (uint16) shape->InstanceVertices[vid];
+			// local re-direction: adding vertexOffset.
+			vegetRdrPass.TriangleLocalIndices[offTriIdx + i]= offVertex + vid;
+		}
+	}
+	else
+	{
+		uint32 *ptr = (uint32 *) ibaWrite.getPtr();
+		for(i=0; i<(sint)numNewIndices; i++)
+		{
+			// get the index of the vertex in the shape
+			uint	vid= shape->TriangleIndices[i];
+			// re-direction, using InstanceVertices;
+			ptr[offTriIdx + i]= shape->InstanceVertices[vid];
+			// local re-direction: adding vertexOffset.
+			vegetRdrPass.TriangleLocalIndices[offTriIdx + i]= offVertex + vid;
+		}
 	}
 
 	// new triangle and vertex size.
@@ -1564,14 +1581,30 @@ void			CVegetableManager::swapIgRdrPassHardMode(CVegetableInstanceGroup *ig, uin
 	// Do it only for current Triangles setuped!!! same reason as vertices
 	// For all setuped triangles indices
 	CIndexBufferReadWrite ibaWrite;
-	vegetRdrPass.TriangleIndices.lock (ibaWrite);
-	uint32 *ptr = ibaWrite.getPtr();
-	for(i=0;i<vegetRdrPass.NTriangles*3;i++)
+	// For hard mode, uses faster 16 bit indices because the VB is not bigger than 65K
+	vegetRdrPass.TriangleIndices.setFormat(vegetRdrPass.HardMode ? CIndexBuffer::Indices32 : CIndexBuffer::Indices16); // NB : this is not an error here : vegetRdrPass.HardMode has not been inverted yet
+	vegetRdrPass.TriangleIndices.lock (ibaWrite);	
+	if (ibaWrite.getFormat() == CIndexBuffer::Indices16)
 	{
-		// get the index in Vertices.
-		uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
-		// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices
-		ptr[i]= vegetRdrPass.Vertices[localVid];
+		uint16 *ptr = (uint16 *) ibaWrite.getPtr();
+		for(i=0;i<vegetRdrPass.NTriangles*3;i++)
+		{
+			// get the index in Vertices.
+			uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
+			// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices
+			ptr[i]= (TIndexType) vegetRdrPass.Vertices[localVid];
+		}
+	}
+	else
+	{
+		uint32 *ptr = (uint32 *) ibaWrite.getPtr();
+		for(i=0;i<vegetRdrPass.NTriangles*3;i++)
+		{
+			// get the index in Vertices.
+			uint	localVid= vegetRdrPass.TriangleLocalIndices[i];
+			// get the index in new VBufffer (dstAllocator), and copy to TriangleIndices
+			ptr[i]= (TIndexType) vegetRdrPass.Vertices[localVid];
+		}
 	}
 
 	// Since change is made, flag the IG rdrpass

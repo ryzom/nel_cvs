@@ -1,6 +1,6 @@
 /** \file water_env_map.cpp
  *
- * $Id: water_env_map.cpp,v 1.4 2004/09/23 16:17:52 vizerie Exp $
+ * $Id: water_env_map.cpp,v 1.5 2004/10/19 13:01:27 vizerie Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -288,6 +288,7 @@ void CWaterEnvMap::initFlattenVB()
 	_FlattenVB.initEx();	
 	nlctassert(FVB_NUM_SIDES % 4 == 0); // number of sides must be a multiple of 4 so that sections sides will align with corners	
 	_FlattenVB.setNumVertices(FVB_NUM_VERTS);
+	_FlattenIB.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	_FlattenIB.setNumIndexes(3 * FVB_NUM_TRIS);	
 	{	
 		CVertexBufferReadWrite vbrw;
@@ -369,6 +370,7 @@ void CWaterEnvMap::initTestVB()
 	_TestVB.addValueEx (CVertexBuffer::TexCoord0, CVertexBuffer::Float3);
 	_TestVB.initEx();		
 	_TestVB.setNumVertices(TEST_VB_NUM_SEGMENT * 2 * (TEST_VB_NUM_SLICE + 1));
+	_TestIB.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
 	_TestIB.setNumIndexes(3 * TEST_VB_NUM_TRIS);
 	{	
 		CVertexBufferReadWrite vbrw;

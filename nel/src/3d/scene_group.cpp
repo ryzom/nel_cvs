@@ -1,7 +1,7 @@
 /** \file scene_group.cpp
  * <File description>
  *
- * $Id: scene_group.cpp,v 1.76 2004/09/27 13:31:50 berenguier Exp $
+ * $Id: scene_group.cpp,v 1.77 2004/10/19 12:57:18 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1287,6 +1287,12 @@ void			CInstanceGroup::displayDebugClusters(IDriver *drv, class CTextContext *tx
 	CIndexBuffer		clusterLines;
 	CIndexBuffer		portalTriangles;
 	CIndexBuffer		portalLines;
+	//
+	clusterTriangles.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	clusterLines.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	portalTriangles.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	portalLines.setFormat(NL_DEFAULT_INDEX_BUFFER_FORMAT);
+	//
 	clusterTriangles.setNumIndexes(maxVertices*3);
 	clusterLines.setNumIndexes(maxVertices*2);
 	portalTriangles.setNumIndexes(maxVertices*3);

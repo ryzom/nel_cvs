@@ -1,7 +1,7 @@
 /** \file listener_dsound.cpp
  * DirectSound listener
  *
- * $Id: listener_dsound.cpp,v 1.6 2002/06/11 09:36:09 hanappe Exp $
+ * $Id: listener_dsound.cpp,v 1.7 2002/06/28 19:35:20 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -255,17 +255,11 @@ void CListenerDSound::setRolloffFactor( float f )
 {
     if (_Listener != NULL)
     {
-		if (f > DS3D_MAXROLLOFFFACTOR)
-		{
-			f = DS3D_MAXROLLOFFFACTOR;
-		}
-		else if (f < DS3D_MINROLLOFFFACTOR)
-		{
-			f = DS3D_MINROLLOFFFACTOR;
-		}
+		//clamp(f, DS3D_MINROLLOFFFACTOR, DS3D_MAXROLLOFFFACTOR);
 
-		// FIXME: VOLUMETEST
-		//f = DS3D_MINROLLOFFFACTOR;
+		// VOLUMETEST: Don't use the rolloff factor. We manage the
+		// volumes ourselves
+		f = DS3D_MINROLLOFFFACTOR;
 
         
 		if (FAILED(_Listener->SetRolloffFactor(f, DS3D_DEFERRED)))

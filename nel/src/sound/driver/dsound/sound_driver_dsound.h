@@ -1,7 +1,7 @@
 /** \file sound_dirver_dsound.h
  * DirectSound sound source
  *
- * $Id: sound_driver_dsound.h,v 1.3 2002/06/04 10:01:21 hanappe Exp $
+ * $Id: sound_driver_dsound.h,v 1.4 2002/06/28 19:35:19 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,8 +69,11 @@ public:
 	/// Create a source
 	virtual	ISource *createSource();
 
-
+	/// Commit all the changes made to 3D settings of listener and sources
 	virtual void commit3DChanges();
+
+	/// Return the maximum number of sources that can created
+	virtual uint countMaxSources();
 
 	/// Count the number of available hardware streaming 3D buffers
     uint countHw3DBuffers();

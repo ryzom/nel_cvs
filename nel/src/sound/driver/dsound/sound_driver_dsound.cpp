@@ -1,7 +1,7 @@
 /** \file sound_driver_dsound.cpp
  * DirectSound driver
  *
- * $Id: sound_driver_dsound.cpp,v 1.5 2002/06/11 09:36:09 hanappe Exp $
+ * $Id: sound_driver_dsound.cpp,v 1.6 2002/06/28 19:35:19 hanappe Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,7 +47,9 @@ HINSTANCE CSoundDriverDllHandle = 0;
 HWND CSoundDriverWnd = 0;
 
 
-/* The main entry of the DLL. It's used to get a hold of the hModule handle. */
+// ******************************************************************
+// The main entry of the DLL. It's used to get a hold of the hModule handle.
+
 BOOL WINAPI DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
   CSoundDriverDllHandle = (HINSTANCE) hModule;
@@ -55,13 +57,15 @@ BOOL WINAPI DllMain(HANDLE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 }
 
 
-/* The event handling procedure of the invisible window created below. */
+// ******************************************************************
+// The event handling procedure of the invisible window created below. 
+
 long FAR PASCAL CSoundDriverCreateWindowProc(HWND hWnd, unsigned message, WPARAM wParam, LPARAM lParam)
 {
     return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
-
+// ******************************************************************
 
 __declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance()
 {
@@ -102,12 +106,14 @@ __declspec(dllexport) ISoundDriver *NLSOUND_createISoundDriverInstance()
 	return driver;
 }
 
+// ******************************************************************
 
 __declspec(dllexport) uint32 NLSOUND_interfaceVersion()
 {
 	return ISoundDriver::InterfaceVersion;
 }
 
+// ******************************************************************
 
 __declspec(dllexport) void NLSOUND_outputProfile(ostream &out)
 {
@@ -118,10 +124,8 @@ __declspec(dllexport) void NLSOUND_outputProfile(ostream &out)
 
 
 
+// ******************************************************************
 
-/*
- * Constructor
- */
 CSoundDriverDSound::CSoundDriverDSound() : ISoundDriver()
 {
 	if ( _Instance == NULL )
@@ -149,10 +153,8 @@ CSoundDriverDSound::CSoundDriverDSound() : ISoundDriver()
 	}
 }
 
+// ******************************************************************
 
-/*
- * Destructor
- */
 CSoundDriverDSound::~CSoundDriverDSound()
 {
 	nldebug("Destroying DirectSound driver");
@@ -195,6 +197,8 @@ CSoundDriverDSound::~CSoundDriverDSound()
     }
 }
 
+// ******************************************************************
+
 class CDeviceDescription
 {
 public:
@@ -235,10 +239,8 @@ BOOL CALLBACK CSoundDriverDSoundEnumCallback(LPGUID guid, LPCSTR description, PC
     return TRUE;
 }
 
+// ******************************************************************
 
-/*
- * Initialization
- */
 bool CSoundDriverDSound::init(HWND wnd)
 {
     if (FAILED(DirectSoundEnumerate(CSoundDriverDSoundEnumCallback, this)))
@@ -428,7 +430,29 @@ bool CSoundDriverDSound::init(HWND wnd)
     return true;
 }
 
+// ******************************************************************
 
+uint CSoundDriverDSound::countMaxSources()
+{
+	// Try the hardware 3d buffers first
+	uint n = countHw3DBuffers();
+	if (n > 0) 
+	{
+		return n;
+	}
+
+	// If not, try the hardware 2d buffers first
+	n = countHw2DBuffers();
+	if (n > 0)
+	{
+		return n;
+	}
+
+	// Okay, we'll use 32 software buffers
+	return 32;
+}
+
+// ******************************************************************
 
 void CSoundDriverDSound::writeProfile(ostream& out)
 {
@@ -478,7 +502,7 @@ void CALLBACK CSoundDriverDSound::TimerCallback(UINT uID, UINT uMsg, DWORD dwUse
     driver->update();
 }
 
-
+// ******************************************************************
 
 void CSoundDriverDSound::update()
 {
@@ -510,10 +534,8 @@ void CSoundDriverDSound::update()
 #endif
 }
 
+// ******************************************************************
 
-/**
- *  Count the number of available 3D hardware buffers
- */
 uint CSoundDriverDSound::countHw3DBuffers()
 {
     DSCAPS caps;
@@ -527,10 +549,8 @@ uint CSoundDriverDSound::countHw3DBuffers()
     return caps.dwFreeHw3DStreamingBuffers;
 }
 
+// ******************************************************************
 
-/**
- *  Count the number of available 3D software buffers
- */
 uint CSoundDriverDSound::countHw2DBuffers()
 {
     DSCAPS caps;
@@ -544,10 +564,8 @@ uint CSoundDriverDSound::countHw2DBuffers()
     return caps.dwFreeHwMixingStreamingBuffers;
 }
 
+// ******************************************************************
 
-/**
- *  Create the listener
- */
 IListener *CSoundDriverDSound::createListener()
 {
     LPDIRECTSOUND3DLISTENER dsoundListener;
@@ -571,10 +589,8 @@ IListener *CSoundDriverDSound::createListener()
     return new CListenerDSound(dsoundListener);
 }
 
+// ******************************************************************
 
-/** 
- *  Create a sound buffer 
- */
 IBuffer *CSoundDriverDSound::createBuffer()
 {
     if (_PrimaryBuffer == 0) 
@@ -587,29 +603,21 @@ IBuffer *CSoundDriverDSound::createBuffer()
     return new CBufferDSound();   
 }
 
+// ******************************************************************
 
-/**
- *  Remove a buffer (should be called by the friend destructor of the buffer class)
- */
 void CSoundDriverDSound::removeBuffer(IBuffer *buffer)
 {
 }
 
+// ******************************************************************
 
-
-/**
- *  Load a wave file into the buffer
- */
 bool CSoundDriverDSound::loadWavFile(IBuffer *destbuffer, const char *filename)
 {
 	return ((CBufferDSound*) destbuffer)->loadWavFile(filename);
 }
 
+// ******************************************************************
 
-
-/**
- *  Create a new source
- */
 ISource *CSoundDriverDSound::createSource()
 {
     if (_PrimaryBuffer == 0) 
@@ -626,14 +634,14 @@ ISource *CSoundDriverDSound::createSource()
 }
 
 
-/** 
- *  Remove a source (should be called by the friend destructor of the source class) 
- */
+// ******************************************************************
+
 void CSoundDriverDSound::removeSource(ISource *source)
 {
 	_Sources.erase((CSourceDSound*) source);
 }
 
+// ******************************************************************
 
 void CSoundDriverDSound::commit3DChanges()
 {
@@ -641,13 +649,14 @@ void CSoundDriverDSound::commit3DChanges()
 	listener->commit3DChanges();
 
 
-	// FIXME: VOLUMETEST
-	/*
 	CVector origin;
 	listener->getPos(origin);
 
 	set<CSourceDSound*>::iterator iter;
 
+	// We handle the volume of the source according to the distance
+	// ourselves. Call updateVolume() to, well..., update the volume
+	// according to, euh ..., the new distance!
 	for (iter = _Sources.begin(); iter != _Sources.end(); iter++)
 	{
 		if ((*iter)->isPlaying()) 
@@ -655,9 +664,10 @@ void CSoundDriverDSound::commit3DChanges()
 			(*iter)->updateVolume(origin);
 		}
 	}
-	*/
 }
 
+
+// ******************************************************************
 
 uint CSoundDriverDSound::countPlayingSources()
 {
@@ -676,12 +686,8 @@ uint CSoundDriverDSound::countPlayingSources()
 }
 
 
-/** Set the gain (volume value inside [0 , 1]). (default: 1)
- * 0.0 -> silence
- * 0.5 -> -6dB
- * 1.0 -> no attenuation
- * values > 1 (amplification) not supported by most drivers
- */
+// ******************************************************************
+
 void CSoundDriverDSound::setGain( float gain )
 {
 	if (_PrimaryBuffer != 0)
@@ -712,9 +718,8 @@ void CSoundDriverDSound::setGain( float gain )
 	}
 }
 
-/*
- * Get the gain
- */
+// ******************************************************************
+
 float CSoundDriverDSound::getGain()
 {
 	if (_PrimaryBuffer != 0)
@@ -739,17 +744,21 @@ float CSoundDriverDSound::getGain()
 
 #if NLSOUND_PROFILE
 
+// ******************************************************************
+
 uint CSoundDriverDSound::countTimerIntervals()
 {
     return 1024;
 }
 
+// ******************************************************************
 
 uint CSoundDriverDSound::getTimerIntervals(uint index)
 {           
     return _TimerInterval[index];
 }
 
+// ******************************************************************
 
 void CSoundDriverDSound::addTimerInterval(uint32 dt) 
 {
@@ -761,14 +770,14 @@ void CSoundDriverDSound::addTimerInterval(uint32 dt)
     _TimerInterval[_TimerIntervalCount++] = dt;
 }
 
-
+// ******************************************************************
 
 double CSoundDriverDSound::getCPULoad()
 {
     return (_TotalTime > 0.0)? 100.0 * _TotalUpdateTime / _TotalTime : 0.0;  
 }
 
-
+// ******************************************************************
 
 void CSoundDriverDSound::printDriverInfo(FILE* fp)
 {

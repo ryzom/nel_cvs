@@ -1,7 +1,7 @@
 /** \file u_move_container.h
  * A container for movable objects
  *
- * $Id: u_move_container.h,v 1.14 2002/06/06 15:28:27 legros Exp $
+ * $Id: u_move_container.h,v 1.15 2002/07/01 18:23:04 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -175,9 +175,11 @@ public:
 	  * \param speed is the wanted speed of the primitive
 	  * \param deltaTime is the deltaTime of the move of the primitive.
 	  * \param worldImage is the world image where you want to test the move of the primitive.
+	  * \param contactNormal is a pointer to CVectorD to store contactNormal with terrain, if not NULL
 	  * \return true if the move is successful, false else.
 	  */
-	virtual bool				testMove (UMovePrimitive* primitive, const NLMISC::CVectorD& speed, double deltaTime, uint8 worldImage) =0;
+	virtual bool				testMove (UMovePrimitive* primitive, const NLMISC::CVectorD& speed, double deltaTime, uint8 worldImage,
+											NLMISC::CVectorD *contactNormal) =0;
 
 	/// \name World image management.
 

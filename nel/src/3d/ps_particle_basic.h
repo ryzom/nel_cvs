@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.h
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.h,v 1.6 2002/02/20 11:16:07 vizerie Exp $
+ * $Id: ps_particle_basic.h,v 1.7 2002/02/21 17:35:05 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -790,10 +790,19 @@ public:
 
 
 	/** Force the material to have one texture that is modulated by diffuse, and a constant color
-	  * and its diffuse color. This is not compatible with multitextureing.
+	  * and its diffuse color. This is not compatible with multitextureing, however.
 	  * \param force true to force constant color modulation
 	  */
 	void forceModulateConstantColor(bool force, const NLMISC::CRGBA &col = NLMISC::CRGBA::White);
+
+	/** This setup n stage of a material with at least texture. 
+	 * - If a texture was present for a given stage it still is
+	 * - If a texture wasn't present, it create a dummy white texture there
+	 * - Above numStages, textures are disabled.
+	 * It can be used to do extra math with stages that have no textures (required by the driver)
+	 */
+	void forceTexturedMaterialStages(uint numStages);
+
 	
 protected:
 	CMaterial _Mat;		

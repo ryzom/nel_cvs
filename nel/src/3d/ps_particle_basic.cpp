@@ -1,7 +1,7 @@
 /** \file ps_particle_basic.cpp
  * Some classes used for particle building.
  *
- * $Id: ps_particle_basic.cpp,v 1.2 2002/02/15 17:10:03 vizerie Exp $
+ * $Id: ps_particle_basic.cpp,v 1.3 2002/02/21 17:34:54 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,6 +28,7 @@
 #include "3d/driver.h"
 #include "3d/texture_grouped.h"
 #include "3d/texture_bump.h"
+#include "3d/texture_mem.h"
 #include "3d/particle_system.h"
 
 
@@ -481,24 +482,15 @@ CPSMaterial::CPSMaterial()
 	_Mat.setBlend(true);
 	_Mat.setBlendFunc(CMaterial::one, CMaterial::one);
 	_Mat.setZWrite(false);	
-
 }
 
 ///===================================================================================
 void CPSMaterial::serialMaterial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	f.serialVersion(1);
-	if (f.isReading())
-	{
-		TBlendingMode m = add; // initialization to avoid a warning only
-		f.serialEnum(m);
-		setBlendingMode(m);
-	}
-	else
-	{
-		TBlendingMode m = getBlendingMode();
-		f.serialEnum(m);
-	}
+	f.serialVersion(1);	
+	TBlendingMode m = getBlendingMode();
+	f.serialEnum(m);
+	setBlendingMode(m);	
 }
 
 ///===================================================================================
@@ -555,7 +547,6 @@ CPSMaterial::TBlendingMode CPSMaterial::getBlendingMode(void) const
 }
 
 ///===================================================================================
-
 void CPSMaterial::forceModulateConstantColor(bool force, const NLMISC::CRGBA &col)
 {
 	if (force)
@@ -568,17 +559,40 @@ void CPSMaterial::forceModulateConstantColor(bool force, const NLMISC::CRGBA &co
 		_Mat.texEnvArg1RGB(1, CMaterial::Constant, CMaterial::SrcColor);
 		_Mat.texEnvArg0Alpha(1, CMaterial::Previous, CMaterial::SrcAlpha);
 		_Mat.texEnvArg1Alpha(1, CMaterial::Constant, CMaterial::SrcAlpha);
-		if (_Mat.getTexture(1) == NULL)
-		{
-			_Mat.setTexture(1, _Mat.getTexture(0));
-		}
+		forceTexturedMaterialStages(2);
 	}
 	else
-	{
+	{		
 		if (_Mat.getTexture(1) != NULL)
 		{
 			_Mat.setTexture(1, NULL);
 		}
+	}
+}
+
+
+///===================================================================================
+void CPSMaterial::forceTexturedMaterialStages(uint numStages)
+{
+	ITexture *blankTex = NULL;
+	uint k;
+	for (k = 0; k < numStages; ++k)
+	{
+		if (_Mat.getTexture(k) == NULL)
+		{
+			if (!blankTex)
+			{
+				blankTex = CTextureMem::Create1x1WhiteTex();
+			}
+			_Mat.setTexture(k, blankTex);
+		}
+	}
+	for (; k < IDRV_MAT_MAXTEXTURES; ++k)
+	{
+		if (_Mat.getTexture(k) != NULL)
+		{
+			_Mat.setTexture(k, NULL);
+		}		
 	}
 }
 

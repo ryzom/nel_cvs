@@ -1,7 +1,7 @@
 /** \file _form_elt.h
  * Georges form element class
  *
- * $Id: form_elm.h,v 1.19 2003/10/13 08:35:15 corvazier Exp $
+ * $Id: form_elm.h,v 1.20 2003/10/14 09:30:46 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -131,6 +131,7 @@ public:
 	virtual bool	getValue (double &resultname, TEval evaluate) const;
 	virtual bool	getValue (bool &resultname, TEval evaluate) const;
 	virtual bool	getValue (NLMISC::CRGBA &resultname, TEval evaluate) const;
+	virtual UFormDfn	*getStructDfn () { return NULL; }
 
 	// ** Convert functions
 
@@ -301,7 +302,8 @@ public:
 	bool				getStructNodeName (uint element, std::string &result) const;
 	bool				getStructNode (uint element, const UFormElm **result) const;
 	bool				getStructNode (uint element, UFormElm **result);
-
+	UFormDfn			*getStructDfn ();
+	
 	// From CFormElm
 	bool				isUsed (const CForm *form) const;
 	xmlNodePtr			write (xmlNodePtr node, const CForm *form, const char *structName, bool forceWrite = false) const;

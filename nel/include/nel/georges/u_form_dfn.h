@@ -1,7 +1,7 @@
 /** \file u_form_dfn.h
  * Georges form element interface
  *
- * $Id: u_form_dfn.h,v 1.7 2003/10/13 15:53:38 corvazier Exp $
+ * $Id: u_form_dfn.h,v 1.8 2003/10/14 09:30:45 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -84,8 +84,10 @@ public:
 	  * \param name will be filled with the entry name.
 	  * \return true if successed, false if the entry doesn't exist.
 	  */
-	virtual bool getEntryName (uint entry, std::string &name) const = 0;
+	virtual bool	getEntryName (uint entry, std::string &name) const = 0;
 
+	virtual	bool	getEntryIndexByName (uint &entry, const	std::string &name) const = 0;
+	
 	/**
 	  * Return the filename of the type or the DFN.
 	  * Doesn't look in parents DFN.
@@ -115,6 +117,17 @@ public:
 	  * \return true if successed, false if the entry doesn't exist or is not a DFN.
 	  */
 	virtual bool getEntryDfn (uint entry, UFormDfn **dfn) = 0;
+
+	/**
+	  * Return the entry DFN pointer
+	  * Doesn't look in parents DFN.
+	  *
+	  * \param name is the supposed name of the dfn.
+	  * \param dfn will be filled with the DFN pointer.
+	  * \return true if successed, false if the entry doesn't exist or is not a DFN.
+	  */
+	virtual bool	getEntryDfnByName		(const std::string &name, UFormDfn **dfn) = 0;
+	virtual bool	isAnArrayEntryByName	(const std::string &name)	const = 0;
 
 	/**
 	  * Return the entry Type pointer

@@ -1,7 +1,7 @@
 /** \file _form_dfn.cpp
  * Georges form definition class
  *
- * $Id: form_dfn.cpp,v 1.21 2003/10/13 15:53:39 corvazier Exp $
+ * $Id: form_dfn.cpp,v 1.22 2003/10/14 09:30:46 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -684,6 +684,24 @@ bool CFormDfn::getEntryFilenameExt (uint entry, std::string& filename) const
 
 // ***************************************************************************
 
+bool CFormDfn::getEntryIndexByName (uint &entry, const	std::string &name) const
+{
+	uint	entryIndex=0;
+	while	(entryIndex<Entries.size ())
+	{
+		if (Entries[entryIndex].Name==name)
+		{
+			entry=entryIndex;
+			return	true;
+		}
+		entryIndex++;
+	}
+	entry=~0;
+	return	false;
+}
+
+// ***************************************************************************
+
 bool CFormDfn::getEntryName (uint entry, std::string &name) const
 {
 	if (entry < Entries.size ())
@@ -697,7 +715,7 @@ bool CFormDfn::getEntryName (uint entry, std::string &name) const
 
 // ***************************************************************************
 
-bool CFormDfn::getEntryDfn (uint entry, UFormDfn **dfn)
+bool	CFormDfn::getEntryDfn (uint entry, UFormDfn **dfn)
 {
 	if (entry < Entries.size ())
 	{
@@ -711,6 +729,45 @@ bool CFormDfn::getEntryDfn (uint entry, UFormDfn **dfn)
 	}
 	warning (false, "getEntryDfn", "Wrong entry ID.");
 	return false;
+}
+
+bool	CFormDfn::getEntryByName (const std::string &name, CFormDfn::CEntry **entry)
+{
+	int	entryIndex=Entries.size ()-1;
+	while (entryIndex>=0)
+	{
+		CEntry	*entryPtr=&Entries[entryIndex];
+		if (entryPtr->getName()==name)
+		{
+			*entry=entryPtr;
+			return	true;
+		}
+		entryIndex--;
+	}
+	*entry=NULL;
+	return	false;	
+}
+
+bool	CFormDfn::getEntryDfnByName (const std::string &name, UFormDfn **dfn)
+{
+	CFormDfn::CEntry	*entry;
+	if	(getEntryByName (name, &entry))
+	{
+		*dfn=entry->getDfnPtr();
+		return	true;
+	}
+	*dfn=NULL;
+	return	false;
+}
+
+bool	CFormDfn::isAnArrayEntryByName	(const std::string &name)	const
+{
+	CFormDfn::CEntry	*entry;
+	if	(const_cast<CFormDfn*>(this)->getEntryByName (name, &entry))
+	{
+		return	entry->getArrayFlag();
+	}
+	return	false;
 }
 
 // ***************************************************************************

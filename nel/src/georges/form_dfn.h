@@ -1,7 +1,7 @@
 /** \file _form_dfn.h
  * Georges form definition class
  *
- * $Id: form_dfn.h,v 1.18 2003/10/13 15:53:39 corvazier Exp $
+ * $Id: form_dfn.h,v 1.19 2003/10/14 09:30:46 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -211,7 +211,13 @@ public:
 	// Form UFormDfn
 	bool							getEntryType (uint entry, TEntryType &type, bool &array) const;
 	bool							getEntryName (uint entry, std::string &name) const;
+	bool							getEntryIndexByName (uint &entry, const	std::string &name) const;
 	bool							getEntryDfn (uint entry, UFormDfn **dfn);
+
+	bool							getEntryByName			(const std::string &name, CFormDfn::CEntry **entry);
+	bool							getEntryDfnByName		(const std::string &name, UFormDfn **dfn);
+	bool							isAnArrayEntryByName	(const std::string &name)	const;
+	
 	bool							getEntryType (uint entry, UType **type);
 	uint							getNumParents () const;
 	bool							getParent (uint parent, UFormDfn **parentRet);

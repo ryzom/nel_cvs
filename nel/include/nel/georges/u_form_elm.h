@@ -1,7 +1,7 @@
 /** \file _u_form_elm.h
  * Georges form element interface
  *
- * $Id: u_form_elm.h,v 1.11 2003/10/13 10:39:07 saffray Exp $
+ * $Id: u_form_elm.h,v 1.12 2003/10/14 09:30:45 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,6 +226,8 @@ public:
 	/// Return a mutable element pointer. Can be NULL if the node doesn't exist.
 	virtual bool	getStructNode (uint element, UFormElm **result) = 0;
 
+	/// Return the struct dfn
+	virtual class UFormDfn	*getStructDfn () = 0;
 
 	// ** Atom element methods
 

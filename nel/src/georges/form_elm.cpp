@@ -1,7 +1,7 @@
 /** \file form_elt.h
  * Georges form element implementation class
  *
- * $Id: form_elm.cpp,v 1.42 2003/10/13 08:35:15 corvazier Exp $
+ * $Id: form_elm.cpp,v 1.43 2003/10/14 09:30:46 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1756,6 +1756,13 @@ bool CFormElmStruct::getStructNode (uint element, const UFormElm **result) const
 		return false;
 	}
 };
+
+// ***************************************************************************
+
+UFormDfn *CFormElmStruct::getStructDfn ()
+{
+	return (CFormDfn*)FormDfn;
+}
 
 // ***************************************************************************
 

@@ -85,10 +85,10 @@ echo "DFNDir = $dir_dfn;" >> land_exporter.cfg
 echo "RefCMBDir = \"$dir_ligobricks/cmb\";" >> land_exporter.cfg
 
 # CMB output directory
-echo "OutCMBdir = ../rbank/cmb;" >> land_exporter.cfg
+echo "OutCMBDir = \"../rbank/cmb\";" >> land_exporter.cfg
 
 #input .continent file
-echo "ContinentFile = $dir_world/$continent_file;" >> land_exporter.cfg
+echo "ContinentFile = \"$dir_world/$continent_file\";" >> land_exporter.cfg
 
 # Force export of collisions and additionnal igs
 echo "ExportCollisions = 1;" >> land_exporter.cfg

@@ -1,7 +1,7 @@
 /** \file connection_web.cpp
  * 
  *
- * $Id: connection_web.cpp,v 1.7 2003/06/30 09:49:27 lecroart Exp $
+ * $Id: connection_web.cpp,v 1.8 2004/06/23 14:31:10 lecroart Exp $
  *
  */
 
@@ -128,7 +128,7 @@ void cbAskClientConnection (CMemStream &msgin, TSockId host)
 	{
 		msgin.serial (userPriv);
 	}
-	catch (Exception &e)
+	catch (Exception &)
 	{
 		nlwarning ("Web didn't give me the user privilege for user '%s', set to empty", userName.c_str());
 	}

@@ -1,7 +1,7 @@
 /** \file tile_color.h
  * <File description>
  *
- * $Id: tile_color.h,v 1.1 2001/01/09 15:25:02 berenguier Exp $
+ * $Id: tile_color.h,v 1.2 2001/01/10 09:25:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -48,6 +48,8 @@ public:
 	uint16			Color565;
 	/// The light information.
 	uint8			Shade;
+	/// For Bump: The Light Vector in Patch Tangent Space.
+	uint8			LightX,LightY,LightZ;
 
 public:
 
@@ -58,6 +60,7 @@ public:
 	{
 		f.serial(Color565);
 		f.serial(Shade);
+		f.serial(LightX,LightY,LightZ);
 	}
 };
 

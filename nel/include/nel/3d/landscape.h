@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.24 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: landscape.h,v 1.25 2001/01/10 09:25:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -202,8 +202,8 @@ private:
 	CPatchRdrPass	*getFarRenderPass(CPatch* pPatch, uint farIndex, float& far1UVScale, float& far1UBias, float& far1VBias, bool& bRot);
 	// Free the render pass for a far texture here.
 	void freeFarRenderPass (CPatch* pPatch, CPatchRdrPass* pass, uint farIndex);
-	// Return the render pass for a tile Id.
-	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass);
+	// Return the render pass for a tile Id, and a patch Near Lightmap Texture.
+	CPatchRdrPass	*getTileRenderPass(uint16 tileId, bool additiveRdrPass, CPatch *patch);
 	// Return the UvScaleBias for a tile Id. uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
 	void			getTileUvScaleBias(uint16 tileId, CTile::TBitmap bitmapType, CVector &uvScaleBias);
 
@@ -224,17 +224,17 @@ private:
 	CPrimitiveBlock	PBlock;
 
 
-	// Shortcuts.
-	// Use a RefPtr because TileTextureMap must not reference the object, but the ptr.
+	// Tiles Types.
+	//=============
+	// Texture Map. Use a RefPtr because TileTextureMap must not reference the object, but the ptr.
 	typedef	NLMISC::CRefPtr<ITexture>			RPTexture;
-
-
-	// The map of tile texture loaded.
 	typedef	std::map<std::string, RPTexture>	TTileTextureMap;
 	typedef	TTileTextureMap::iterator			ItTileTextureMap;
-	TTileTextureMap								TileTextureMap;
-
-	
+	// RdrPass Set.
+	typedef	std::set<CPatchRdrPass>				TTileRdrPassSet;
+	typedef	TTileRdrPassSet::iterator			ItTileRdrPassSet;
+	typedef	std::set<CPatchRdrPass*>			TTileRdrPassPtrSet;
+	typedef	TTileRdrPassPtrSet::iterator		ItTileRdrPassPtrSet;
 	// The additional realtime structure for a tile.
 	struct	CTileInfo
 	{
@@ -244,6 +244,8 @@ private:
 		CPatchRdrPass	*DiffuseRdrPass;
 		// The rdrpass for additive material (may be NULL if no additive part).
 		CPatchRdrPass	*AdditiveRdrPass;
+		// The RdrPass list of Diffuse+Bump+LightMap.
+		TTileRdrPassPtrSet		LightedRdrPass;
 		// The scale/Bias to access those tiles in the big texture.
 		// uv.z has the scale info. uv.x has the BiasU, and uv.y has the BiasV.
 		// Manages the demi-texel on tile border too.
@@ -252,14 +254,15 @@ private:
 		CVector			AdditiveUvScaleBias;
 	};
 
-	// The parrallel array of tile of those existing in TileBank. size of NbTilesMax.
-	std::vector<CTileInfo*>				TileInfos;
 
-
+	// Tiles Data.
+	//=============
+	// The map of tile texture loaded.
+	TTileTextureMap				TileTextureMap;
 	// The set of tile Rdr Pass.
-	typedef	std::set<CPatchRdrPass>		TTileRdrPassSet;
-	typedef	TTileRdrPassSet::iterator	ItTileRdrPassSet;
-	TTileRdrPassSet		TileRdrPassSet;
+	TTileRdrPassSet				TileRdrPassSet;
+	// The parrallel array of tile of those existing in TileBank. size of NbTilesMax.
+	std::vector<CTileInfo*>		TileInfos;
 
 
 	// The Tile material.
@@ -267,6 +270,7 @@ private:
 
 	// The Far material.
 	CMaterial		FarMaterial;
+
 
 	// *** Far texture	
 

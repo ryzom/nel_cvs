@@ -1,7 +1,7 @@
 /** \file patch_rdr_pass.h
  * <File description>
  *
- * $Id: patch_rdr_pass.h,v 1.3 2001/01/08 17:58:29 corvazier Exp $
+ * $Id: patch_rdr_pass.h,v 1.4 2001/01/10 09:25:55 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,11 +52,24 @@ class	CPatchRdrPass : public CRefCount
 public:
 	enum	TBlendType {Alpha=0, NegativeAlpha, Additive};
 
-	// The Tiny material for this pass.
+	/// \name The Tiny material for this pass.
+	// @{
+	// The diffuse texture (for Far and tiles).
 	NLMISC::CSmartPtr<ITexture>		TextureDiffuse;
+	// The bump texture (for tiles only).
 	NLMISC::CSmartPtr<ITexture>		TextureBump;
+	// The Near Lightmap (for tiles only).
+	NLMISC::CSmartPtr<ITexture>		LightMap;
+	// Type of blending (for tile only).
 	TBlendType						BlendType;
+	// @}
 
+
+	/// \name The "Primitive List" for this pass..
+	/** Format of a single block:
+	 * |LEN|ID0|ID1|ID2|ID0|ID1|ID2....|JMP|
+	 */
+	// @{
 	// The refcount to know how many tiles use it (init at 0).
 	sint			RefCount;
 	
@@ -68,9 +81,8 @@ public:
 	sint			CurIndex;
 	// The BlockLen index, to know what is the length of a block (in Triangles).
 	sint			BlockLenIndex;
+	// @}
 
-	// Format of a single block:
-	// |LEN|ID0|ID1|ID2|ID0|ID1|ID2....|JMP|
 
 public:
 	CPatchRdrPass();
@@ -88,7 +100,9 @@ public:
 		}
 		else
 		{
-			if(TextureBump!=o.TextureBump)
+			if(LightMap!=o.LightMap)
+				return (void*)LightMap<(void*)o.LightMap;
+			else if(TextureBump!=o.TextureBump)
 				return (void*)TextureBump<(void*)o.TextureBump;
 			else
 				return (void*)TextureDiffuse<(void*)o.TextureDiffuse;

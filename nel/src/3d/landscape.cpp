@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.29 2001/01/09 14:55:20 berenguier Exp $
+ * $Id: landscape.cpp,v 1.30 2001/01/10 09:26:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,6 +264,7 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		CPatchRdrPass::resetGlobalTriList();
 
 		// Process all zones.
+		//=============================
 		// Inc at each pass!!
 		CTessFace::CurrentRenderDate++;
 		for(it= Zones.begin();it!=Zones.end();it++)
@@ -272,10 +273,12 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 		}
 
 		// Active VB.
+		//=============================
 		CTessFace::CurrentVB->setNumVertices(CTessFace::CurrentVertexIndex);
 		driver->activeVertexBuffer(*CTessFace::CurrentVB);
 
 		// Setup common material for this pass.
+		//=============================
 		if(i==0)
 		{
 			TileMaterial.setBlend(false);
@@ -288,8 +291,12 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 				TileMaterial.setBlendFunc(CMaterial::srcalpha, CMaterial::one);
 			// Else Blendfunc will change during render (negative or not material...)
 		}
+		// Reset the lightmap (so there is none in Addtive pass).
+		TileMaterial.setTexture(1, NULL);
+
 
 		// Render All material RdrPass.
+		//=============================
 		ItTileRdrPassSet	itTile;
 		for(itTile= TileRdrPassSet.begin(); itTile!= TileRdrPassSet.end(); itTile++)
 		{
@@ -314,8 +321,14 @@ void			CLandscape::render(IDriver *driver, const CVector &refineCenter, bool doT
 				else
 					TileMaterial.setBlendFunc(CMaterial::invsrcalpha, CMaterial::srcalpha);
 			}
-			// Setup texture.
+			// Setup Diffuse texture of the tile.
 			TileMaterial.setTexture(0, pass.TextureDiffuse);
+			// If diffuse part, must enable the lightmap for this pass.
+			if((i&1)==0)
+			{
+				TileMaterial.setTexture(1, pass.LightMap);
+			}
+
 
 			// Render!
 			driver->render(PBlock, TileMaterial);
@@ -486,7 +499,7 @@ void			CLandscape::loadTile(uint16 tileId)
 		CPatchRdrPass	pass;
 		pass.BlendType= CPatchRdrPass::Additive;
 		pass.TextureDiffuse= findTileTexture(textName);
-		// no bump for additive.
+		// no bump for additive, nor LightMap.
 
 		// Fill tileInfo.
 		tileInfo->AdditiveRdrPass= findTileRdrPass(pass);
@@ -518,6 +531,9 @@ void			CLandscape::loadTile(uint16 tileId)
 		if(textName!="")
 			pass.TextureBump= findTileTexture(textName);
 	}
+	// Do not Fill the LightMap pass here.
+	// RdrPass duplicated after.
+
 
 	// Fill tileInfo.
 	tileInfo->DiffuseRdrPass= findTileRdrPass(pass);
@@ -552,6 +568,7 @@ void			CLandscape::releaseTile(uint16 tileId)
 		tileInfo->AdditiveRdrPass->RefCount--;
 	if(tileInfo->DiffuseRdrPass)
 		tileInfo->DiffuseRdrPass->RefCount--;
+	// TODODO: do something with list of lightmapped version.
 
 	delete tileInfo;
 	TileInfos[tileId]= NULL;
@@ -559,7 +576,7 @@ void			CLandscape::releaseTile(uint16 tileId)
 
 
 // ***************************************************************************
-CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass)
+CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass, CPatch *patch)
 {
 	/*
 	// TODO_TEXTURE and TODO_BUMP.
@@ -588,7 +605,38 @@ CPatchRdrPass	*CLandscape::getTileRenderPass(uint16 tileId, bool additiveRdrPass
 	if(additiveRdrPass)
 		return tile->AdditiveRdrPass;
 	else
-		return tile->DiffuseRdrPass;
+	{
+		// If no patch id given, return the one with no LightMap.
+		//if(!patch || !patch->NearLightMap)
+			return tile->DiffuseRdrPass;
+		/*else
+		{
+			// Must get the good render pass for the correct lightmaped version of this tile.
+
+			// Copy the render pass from the one with no lightmap.
+			CPatchRdrPass	pass;
+			pass.BlendType= tile->DiffuseRdrPass->BlendType;
+			pass.TextureDiffuse= tile->DiffuseRdrPass->TextureDiffuse;
+			pass.TextureBump= tile->DiffuseRdrPass->TextureBump;
+			// Retrieve the lightmap from the patch.
+			pass.LightMap= patch->NearLightMap;
+
+			// Insert/Retrieve this rdrpass.
+			CPatchRdrPass	*rdrpass= findTileRdrPass(pass);
+
+			// If not already inserted in the tile list.
+			ItTileRdrPassPtrSet	itPtr;
+			itPtr= LightedRdrPass.find(rdrpass);
+			if(itPtr==LightedRdrPass.end())
+			{
+				itPtr= LightedRdrPass.insert(rdrpass);
+				// Now, we have one more tile which use this lighted rdrpass...
+				rdrpass->RefCount++;
+			}
+			// TODODODO.
+			// ptain de probleme de release.
+		}*/
+	}
 }
 
 
@@ -617,9 +665,9 @@ NLMISC::CSmartPtr<ITexture>		CLandscape::getTileTexture(uint16 tileId, CTile::TB
 {
 	CPatchRdrPass	*pass;
 	if(bitmapType== CTile::additive)
-		pass= getTileRenderPass(tileId, true);
+		pass= getTileRenderPass(tileId, true, NULL);
 	else
-		pass= getTileRenderPass(tileId, false);
+		pass= getTileRenderPass(tileId, false, NULL);
 	if(!pass)
 		return NULL;
 	getTileUvScaleBias(tileId, bitmapType, uvScaleBias);
@@ -661,6 +709,7 @@ void			CLandscape::flushTiles(IDriver *drv, uint16 tileStart, uint16 nbTiles)
 // ***************************************************************************
 void			CLandscape::releaseTiles(uint16 tileStart, uint16 nbTiles)
 {
+	// TODODODO: do something with TileTextures and lightmaps.
 	// release tiles.
 	for(sint tileId= tileStart; tileId<tileStart+nbTiles; tileId++)
 	{

@@ -1,7 +1,7 @@
 /** \file patch.cpp
  * <File description>
  *
- * $Id: patch.cpp,v 1.28 2001/01/09 15:25:29 berenguier Exp $
+ * $Id: patch.cpp,v 1.29 2001/01/10 09:26:09 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1121,6 +1121,9 @@ void			CPatch::serial(NLMISC::IStream &f)
 		{
 			TileColors[i].Color565= 0xFFFF;
 			TileColors[i].Shade= 0xFF;
+			TileColors[i].LightX= 0xFF;
+			TileColors[i].LightY= 0x00;
+			TileColors[i].LightZ= 0x00;
 		}
 	}
 }
@@ -1139,13 +1142,13 @@ CPatchRdrPass	*CPatch::getTileRenderPass(sint tileId, sint pass)
 	{
 		// Display a "fake" only if pass 0.
 		if(pass==0)
-			return Zone->Landscape->getTileRenderPass(0xFFFF, false);
+			return Zone->Landscape->getTileRenderPass(0xFFFF, false, this);
 		return NULL;
 	}
 	else
 	{
 		// return still may be NULL, in additive case.
-		return Zone->Landscape->getTileRenderPass(tileNumber, additive);
+		return Zone->Landscape->getTileRenderPass(tileNumber, additive, this);
 	}
 }
 

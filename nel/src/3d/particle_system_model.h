@@ -1,7 +1,7 @@
 /** \file particle_system_model.h
  * <File description>
  *
- * $Id: particle_system_model.h,v 1.6 2001/07/13 17:04:47 vizerie Exp $
+ * $Id: particle_system_model.h,v 1.7 2001/07/17 15:56:23 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,6 +40,10 @@ namespace NL3D {
 
 class CParticleSystem ;
 class CParticleSystemClipObs ;
+class CParticleSystemDetailObs ;
+class CScene ;
+class CParticleSystemShape ;
+
 
 /// A particle system model : it is build using a CParticleSystemShape
  
@@ -54,19 +58,48 @@ class CParticleSystemModel : public CTransformShape
 		/// ctor
 		CParticleSystemModel() ;
 		/// dtor
-		~CParticleSystemModel() ;		
+		~CParticleSystemModel() ;
 
-		/// Get the particle system contained in this transform shape
+		/**this struct is used to notify that a particle system has removed himself
+		  */
+		struct IPSModelObserver
+		{
+			/// called when a ParticleSystemModel has been removed
+			virtual void psDestroyed(CParticleSystemModel *psm) = 0 ; 
+		} ;
+		
+		/** This model may remove himself from the scene when the particle system has been created
+		  * with a flag that precise it. This allow to register an observer that will be warned when the system is detroyed
+		  * This also means that you can't safely keep a pointer on a particle system model in this case ...
+		  * An assertion occurs when the caller has been registered before
+		  *  \see removeDtorObserver()
+		  *  \see isDtorObserver
+		  */
+		void registerDtorObserver(IPSModelObserver *obs) ;
+
+		/** remove  dtor observer
+		  * \see registerDtorObserver()
+		  * \see isDtorObserver() ;
+		  */
+		void removeDtorObserver(IPSModelObserver *obs) ;
+
+		/// check wether obs is an observer of this model
+		bool isDtorObserver(IPSModelObserver *obs) ;
+
+		/** Get the particle system contained in this transform shape
+		  * \return pointer to the system, or NULL if no system is currently hold by this model.
+		  *			this may happen when the system is not visible and that it has been deleted
+		  */
 		CParticleSystem *getPS(void)
 		{
-			nlassert(_ParticleSystem) ; // it should have been set by CParticleSystemShape::createInstance
 			return _ParticleSystem ;
 		}
 
-		/// Get the particle system contained in this transform shape (const version)
+		/** Get the particle system contained in this transform shape. this may be null if the model
+		  * Is not visible
+		  */
 		const CParticleSystem *getPS(void) const
-		{
-			nlassert(_ParticleSystem) ; // it should have been set by CParticleSystemShape::createInstance
+		{		
 			return _ParticleSystem ;
 		}
 
@@ -162,21 +195,19 @@ class CParticleSystemModel : public CTransformShape
 
 	protected:
 
+		friend class CParticleSystemShape ;
+		friend class CParticleSystemDetailObs ;
 		friend class CParticleSystemClipObs ;
 
-		bool _AutoGetEllapsedTime ;
 
-		// instance of the particle system that this model holds
-		CParticleSystem *_ParticleSystem ;
-
-		CAnimationTime _EllapsedTime ;
-
-		bool _ToolDisplayEnabled ;
-
-		
-		bool _TransparencyStateTouched ;
-
-		bool _EditionMode ;
+		bool									_AutoGetEllapsedTime ;		
+		CParticleSystem						   *_ParticleSystem ;
+		CScene							  	   *_Scene ;
+		CAnimationTime						    _EllapsedTime ;
+		bool									_ToolDisplayEnabled ;		
+		bool									_TransparencyStateTouched ;
+		bool									_EditionMode ;
+		std::vector<IPSModelObserver *>			_Observers ;
 } ;
 
 
@@ -205,13 +236,8 @@ public:
 class CParticleSystemClipObs : public CTransformClipObs
 {
 public:
-
-	
-	virtual	bool	isRenderable() const { return true; }
-
-	
-	virtual	bool	clip(IBaseClipObs *caller) ;
-
+	virtual	bool	isRenderable() const {return true;}
+	void	traverse(IObs *caller) ;
 	static IObs	*creator() {return new CParticleSystemClipObs ;}
 	
 };

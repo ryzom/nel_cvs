@@ -1,7 +1,7 @@
 /** \file ps_mesh.cpp
  * Particle meshs
  *
- * $Id: ps_mesh.cpp,v 1.27 2003/07/31 14:56:14 vizerie Exp $
+ * $Id: ps_mesh.cpp,v 1.25 2003/07/03 16:16:45 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -919,9 +919,8 @@ CPSConstraintMesh::CPSConstraintMesh() : _NumFaces(0),
 										 _GlobalAnimationEnabled(0),
 										 _ReinitGlobalAnimTimeOnNewElement(0),
 										 _HasLightableFaces(0),
-										 _ValidBuild(0),
 										 _MorphValue(0),
-										 _MorphScheme(NULL)
+										 _MorphScheme(NULL)									 
 {		
 	_Name = std::string("ConstraintMesh");
 }
@@ -967,7 +966,6 @@ void CPSConstraintMesh::setShape(const std::string &meshFileName)
 	_MeshShapeFileName.resize(1);	
 	_MeshShapeFileName[0] = meshFileName;
 	_Touched = 1;
-	_ValidBuild = 0;
 }
 
 
@@ -983,22 +981,11 @@ std::string			CPSConstraintMesh::getShape(void) const
 }
 
 //====================================================================================
-bool CPSConstraintMesh::isValidBuild() const
-{
-	if (_Touched) 
-	{	
-		const_cast<CPSConstraintMesh *>(this)->update();
-	}
-	return _ValidBuild != 0;
-}
-
-//====================================================================================
 void		CPSConstraintMesh::setShapes(const std::string *shapesNames, uint numShapes)
 {
 	_MeshShapeFileName.resize(numShapes);
 	std::copy(shapesNames, shapesNames + numShapes, _MeshShapeFileName.begin());
 	_Touched = 1;
-	_ValidBuild = 0;
 }
 
 //====================================================================================
@@ -1029,7 +1016,6 @@ void		CPSConstraintMesh::setShape(uint index, const std::string &shapeName)
 	nlassert(index < _MeshShapeFileName.size());
 	_MeshShapeFileName[index] = shapeName;
 	_Touched = 1;
-	_ValidBuild = 0;
 }
 
 	
@@ -1100,14 +1086,7 @@ static IShape *GetDummyShapeFromBank(CShapeBank &sb)
 }
 
 //====================================================================================
-void CPSConstraintMesh::getShapeNumVerts(std::vector<sint> &numVerts)
-{
-	_Touched = 1; // force reload
-	update(&numVerts);
-}
-
-//====================================================================================
-bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
+bool CPSConstraintMesh::update(void)
 {		
 	bool ok = true;
 	if (!_Touched) return ok;
@@ -1117,7 +1096,7 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 	nlassert(_Owner->getScene());
 
 	CScene *scene = _Owner->getScene();
-	_ModelBank = scene->getShapeBank();
+	CShapeBank *sb = scene->getShapeBank();
 	IShape *is;
 
 
@@ -1132,12 +1111,11 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 	
 
 	_Shapes.resize(_MeshShapeFileName.size());	
-	if (numVertsVect) numVertsVect->resize(_MeshShapeFileName.size());
 	for (uint k = 0; k < _MeshShapeFileName.size(); ++k)
 	{
-		if (_ModelBank->isPresent(_MeshShapeFileName[k]) == CShapeBank::Present)
+		if (sb->isPresent(_MeshShapeFileName[k]) == CShapeBank::Present)
 		{
-			_Shapes[k] = _ModelBank->addRef(_MeshShapeFileName[k]);
+			_Shapes[k] = sb->addRef(_MeshShapeFileName[k]);
 
 			/// get  the mesh format, or check that is was the same that previous shapes ' one
 			const CMesh &m  = * NLMISC::safe_cast<CMesh *>((IShape *) _Shapes[k]); // only mesh shape's can be used with this class!
@@ -1145,7 +1123,6 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 			{			
 				vFormat = m.getVertexBuffer().getVertexFormat();
 				numVerts =  m.getVertexBuffer().getNumVertices();
-				if (numVertsVect) (*numVertsVect)[k] = (sint) numVerts;
 			}
 			else
 			{
@@ -1153,15 +1130,14 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 					|| numVerts != m.getVertexBuffer().getNumVertices())
 				{
 					ok = false;
-				}				
-				if (numVertsVect) (*numVertsVect)[k] = (sint) m.getVertexBuffer().getNumVertices();
-			}			
+				}
+			}
 		}
 		else
 		{
 			try
 			{
-				_ModelBank->load(_MeshShapeFileName[k]);
+				sb->load(_MeshShapeFileName[k]);
 			}	
 			catch (NLMISC::EPathNotFound &)
 			{
@@ -1169,20 +1145,18 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 				// shape not found, so not present in the shape bank -> we create a dummy shape
 			}
 
-			if (_ModelBank->isPresent(_MeshShapeFileName[k]) != CShapeBank::Present)
+			if (sb->isPresent(_MeshShapeFileName[k]) != CShapeBank::Present)
 			{					
 				ok = false;
-				if (numVertsVect) (*numVertsVect)[k] = ShapeFileNotLoaded;
 			}
 			else
 			{
-				is = _ModelBank->addRef(_MeshShapeFileName[k]);
+				is = sb->addRef(_MeshShapeFileName[k]);
 				if (!dynamic_cast<CMesh *>(is)) // is it a mesh
 				{
 					nlwarning("Tried to bind a shape that is not a mesh to a mesh particle : %s", _MeshShapeFileName[k].c_str());
-					_ModelBank->release(is);					
+					sb->release(is);					
 					ok = false;
-					if (numVertsVect) (*numVertsVect)[k] = ShapeFileIsNotAMesh;
 				}
 				else
 				{
@@ -1191,9 +1165,8 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 					if (m.getVertexBuffer().getNumVertices() > ConstraintMeshMaxNumVerts)
 					{
 						nlwarning("Tried to bind a mesh that has more than %d vertices to a particle mesh: %s", (int) ConstraintMeshMaxNumVerts, _MeshShapeFileName[k].c_str());
-						_ModelBank->release(is);						
+						sb->release(is);						
 						ok = false;
-						if (numVertsVect) (*numVertsVect)[k] = ShapeHasTooMuchVertices;
 					}
 					else
 					{
@@ -1204,17 +1177,14 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 						{			
 							vFormat = m.getVertexBuffer().getVertexFormat();
 							numVerts =  m.getVertexBuffer().getNumVertices();
-							if (numVertsVect) (*numVertsVect)[k] = numVerts;
 						}
 						else
 						{
-							uint32 otherVFormat = m.getVertexBuffer().getVertexFormat();
-							uint   otherNumVerts = m.getVertexBuffer().getNumVertices();
-							if (otherVFormat != vFormat || otherNumVerts != numVerts)
+							if (vFormat != m.getVertexBuffer().getVertexFormat()
+								|| numVerts != m.getVertexBuffer().getNumVertices())
 							{
 								ok = false;
 							}
-							if (numVertsVect) (*numVertsVect)[k] = otherNumVerts;
 						}
 					}
 				}
@@ -1225,8 +1195,8 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 		{
 			releaseShapes();
 			_Shapes.resize(1);
-			_Shapes[0] = GetDummyShapeFromBank(*_ModelBank);
-			if (!numVertsVect) break;
+			_Shapes[0] = GetDummyShapeFromBank(*sb);
+			break;
 		}
 	}
 
@@ -1242,10 +1212,10 @@ bool CPSConstraintMesh::update(std::vector<sint> *numVertsVect /*= NULL*/)
 	CheckForOpaqueAndTransparentFacesInMesh(m, hasTransparentFaces, hasOpaqueFaces);
 	_HasTransparentFaces = hasTransparentFaces;	
 	_HasOpaqueFaces = hasOpaqueFaces;
-	_HasLightableFaces = CheckForLightableFacesInMesh(m);		
+	_HasLightableFaces = CheckForLightableFacesInMesh(m);
+	_ModelBank = sb;	
 	_GlobalAnimDate = _Owner->getOwner()->getSystemDate();
 	_Touched = 0;
-	_ValidBuild = ok ? 1 : 0;
 	nlassert(_Shapes.size() > 0);
 
 	#ifdef NL_DEBUG
@@ -1368,8 +1338,7 @@ void CPSConstraintMesh::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		{	
 			_MeshShapeFileName.resize(1);				
 			f.serial(_MeshShapeFileName[0]);
-			_Touched = true;
-			_ValidBuild = 0;
+			_Touched = true;			
 		}
 	}
 
@@ -1462,7 +1431,7 @@ void CPSConstraintMesh::releaseShapes()
 	{
 		if (*it)
 		{
-			if (_ModelBank) _ModelBank->release(*it);
+			_ModelBank->release(*it);
 		}
 	}
 	_Shapes.clear();
@@ -1645,8 +1614,7 @@ void CPSConstraintMesh::draw(bool opaque, TAnimationTime ellapsedTime)
 
 //====================================================================================
 void CPSConstraintMesh::setupMaterialColor(CMaterial &destMat, CMaterial &srcMat)
-{		
-	if (destMat.getShader() != CMaterial::Normal) return;
+{	
 	for (uint k = 0; k < IDRV_MAT_MAXTEXTURES; ++k)
 	{		
 		if (_ModulatedStages & (1 << k))

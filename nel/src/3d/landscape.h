@@ -1,7 +1,7 @@
 /** \file landscape.h
  * <File description>
  *
- * $Id: landscape.h,v 1.47 2003/07/31 16:40:11 corvazier Exp $
+ * $Id: landscape.h,v 1.46 2003/04/25 13:44:37 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -138,7 +138,7 @@ public:
 class CLandscape : public NLMISC::CRefCount
 {
 public:
-	// The bank of tiles information. Each time you change the bank, you should call CLandscape::initTileBank();
+	// The bank of tiles information.
 	CTileBank		TileBank;
 	CTileFarBank	TileFarBank;
 	class CLandscapeModel	*OwnerModel;
@@ -155,9 +155,6 @@ public:
 	// @{
 	/// init the landscape VBuffers, texture cache etc...
 	void			init();
-
-	/// Reinit the tile bank if the bank change
-	void			initTileBank();
 
 	/** Add a zone which should be builded (or loaded), but not compiled. CLandscape compile it.
 	 * The contents of newZone are copied into the landscape.

@@ -1,7 +1,7 @@
 /** \file tile_bank.cpp
  * Management of tile texture.
  *
- * $Id: tile_bank.cpp,v 1.45 2003/07/31 16:40:11 corvazier Exp $
+ * $Id: tile_bank.cpp,v 1.44 2003/02/05 09:56:49 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -218,9 +218,6 @@ void CTileBank::clear ()
 	_LandVector.clear ();
 	_TileSetVector.clear ();
 	_TileVector.clear ();
-	_TileXRef.clear ();
-	_DisplacementMap.clear ();
-	_AbsPath.clear ();
 }
 // ***************************************************************************
 sint CTileBank::createTile ()

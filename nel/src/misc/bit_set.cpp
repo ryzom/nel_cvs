@@ -1,7 +1,7 @@
 /** \file bit_set.cpp
  * CBitSet class
  *
- * $Id: bit_set.cpp,v 1.7 2001/04/24 14:55:08 corvazier Exp $
+ * $Id: bit_set.cpp,v 1.8 2001/08/01 09:41:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,9 +37,6 @@ namespace	NLMISC
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 
-
-// Size in bit of base word.
-#define	BITLEN	(sizeof(uint)*8)
 
 
 // ***************************************************************************
@@ -86,8 +83,8 @@ void	CBitSet::resize(uint numBits)
 		clear();
 
 	NumBits= numBits;
-	Array.resize( (NumBits+BITLEN-1) / BITLEN );
-	uint	nLastBits= NumBits & (BITLEN-1) ;
+	Array.resize( (NumBits+NL_BITLEN-1) / NL_BITLEN );
+	uint	nLastBits= NumBits & (NL_BITLEN-1) ;
 	// Generate the mask for the last word.
 	if(nLastBits==0)
 		MaskLast= ~((uint)0);
@@ -104,8 +101,8 @@ void	CBitSet::resizeNoReset(uint numBits, bool value)
 
 	uint oldNum=NumBits;
 	NumBits= numBits;
-	Array.resize( (NumBits+BITLEN-1) / BITLEN );
-	uint	nLastBits= NumBits & (BITLEN-1) ;
+	Array.resize( (NumBits+NL_BITLEN-1) / NL_BITLEN );
+	uint	nLastBits= NumBits & (NL_BITLEN-1) ;
 	// Generate the mask for the last word.
 	if(nLastBits==0)
 		MaskLast= ~((uint)0);
@@ -119,33 +116,6 @@ void	CBitSet::resizeNoReset(uint numBits, bool value)
 uint	CBitSet::size() const
 {
 	return NumBits;
-}
-void	CBitSet::set(sint bitNumber, bool value)
-{
-	nlassert(bitNumber>=0 && bitNumber<NumBits);
-
-	uint	mask= bitNumber&(BITLEN-1);
-	mask= 1<<mask;
-	if(value)
-		Array[bitNumber / BITLEN]|= mask ;
-	else
-		Array[bitNumber / BITLEN]&= ~mask;
-}
-bool	CBitSet::get(sint bitNumber) const
-{
-	nlassert(bitNumber>=0 && bitNumber<NumBits);
-
-	uint	mask= bitNumber&(BITLEN-1);
-	mask= 1<<mask;
-	return (Array[bitNumber / BITLEN] & mask) != 0;
-}
-bool	CBitSet::operator[](sint bitNumber) const
-{
-	nlassert(bitNumber>=0 && bitNumber<NumBits);
-
-	uint	mask= bitNumber&(BITLEN-1);
-	mask= 1<<mask;
-	return (Array[bitNumber / BITLEN] & mask) != 0;
 }
 void	CBitSet::setAll()
 {
@@ -273,10 +243,10 @@ bool	CBitSet::compareRestrict(const CBitSet &bs) const
 	sint	n=min(NumBits, bs.NumBits);
 	if(n==0) return true;
 
-	sint	nA= (n+BITLEN-1) / BITLEN;
+	sint	nA= (n+NL_BITLEN-1) / NL_BITLEN;
 	uint	mask;
 
-	uint	nLastBits= n & (BITLEN-1) ;
+	uint	nLastBits= n & (NL_BITLEN-1) ;
 	// Generate the mask for the last common word.
 	if(nLastBits==0)
 		mask= ~((uint)0);

@@ -1,7 +1,7 @@
 /** \file bit_set.h
  * CBitSet class
  *
- * $Id: bit_set.h,v 1.4 2001/04/24 14:55:08 corvazier Exp $
+ * $Id: bit_set.h,v 1.5 2001/08/01 09:41:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,6 +34,10 @@
 namespace	NLMISC
 {
 
+// Size in bit of base word.
+#define	NL_BITLEN			(4*8)
+#define	NL_BITLEN_SHIFT		5
+
 
 // ***************************************************************************
 /**
@@ -65,11 +69,31 @@ public:
 	/// Return size of the bit array.
 	uint	size() const;
 	/// Set a bit to 0 or 1.
-	void	set(sint bitNumber, bool value);
+	void	set(sint bitNumber, bool value)
+	{
+		nlassert(bitNumber>=0 && bitNumber<NumBits);
+
+		uint	mask= bitNumber&(NL_BITLEN-1);
+		mask= 1<<mask;
+		if(value)
+			Array[bitNumber >> NL_BITLEN_SHIFT]|= mask ;
+		else
+			Array[bitNumber >> NL_BITLEN_SHIFT]&= ~mask;
+	}
 	/// Get the value of a bit.
-	bool	get(sint bitNumber) const;
+	bool	get(sint bitNumber) const
+	{
+		nlassert(bitNumber>=0 && bitNumber<NumBits);
+
+		uint	mask= bitNumber&(NL_BITLEN-1);
+		mask= 1<<mask;
+		return (Array[bitNumber >> NL_BITLEN_SHIFT] & mask) != 0;
+	}
 	/// Get the value of a bit.
-	bool	operator[](sint bitNumber) const;
+	bool	operator[](sint bitNumber) const
+	{
+		return get(bitNumber);
+	}
 	/// Set a bit to 1.
 	void	set(sint bitNumber) {set(bitNumber, true);}
 	/// Set a bit to 0.
@@ -142,9 +166,9 @@ public:
 	void	serial(NLMISC::IStream &f);
 
 private:
-	std::vector<uint>	Array;
+	std::vector<uint32>	Array;
 	sint			NumBits;
-	uint			MaskLast;	// Mask for the last uint.
+	uint32			MaskLast;	// Mask for the last uint32.
 };
 
 

@@ -1,7 +1,7 @@
 /** \file mot.cpp
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.cpp,v 1.14 2001/07/30 14:40:14 besson Exp $
+ * $Id: mot.cpp,v 1.15 2001/08/01 09:41:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -513,15 +513,23 @@ IObs::IObs()
 {
 	Model= NULL;
 	Trav= NULL;
-	SonIt=Sons.end();
+
+	NumFathers= 0;
+	NumSons= 0;
+	CurSonIt= SonList.end();
+	CurFatherIt= FatherList.end();
 }
 // ***************************************************************************
 IObs::~IObs()
 {
-	set<IObs*>::iterator	it;
+	ItObsList	it;
+
+	// delete map of Its.
+	SonMap.clear();
+	FatherMap.clear();
 
 	// Delete link from fathers.
-	for(it= Fathers.begin(); it!=Fathers.end(); it++)
+	for(it= FatherList.begin(); it!=FatherList.end(); it++)
 	{
 		IObs	*father= (*it);
 		// Must use delChild() since don't know what father is.
@@ -529,12 +537,18 @@ IObs::~IObs()
 	}
 
 	// Delete link from sons.
-	for(it= Sons.begin(); it!=Sons.end(); it++)
+	for(it= SonList.begin(); it!=SonList.end(); it++)
 	{
 		IObs	*son= (*it);
 		// Must use delParent() since don't know what son is.
 		son->delParent(this);
 	}
+
+	// And so delete lists.
+	SonList.clear();
+	FatherList.clear();
+	NumFathers= 0;
+	NumSons= 0;
 }
 // ***************************************************************************
 IObs	*IObs::getObs(const CClassId &idTrav) const
@@ -549,7 +563,13 @@ void	IObs::addChild(IObs *son)
 	nlassert(son);
 
 	// insert (if not exist).
-	Sons.insert(son);
+	ItObsMap	it= SonMap.find(son);
+	if(it==SonMap.end())
+	{
+		// insert in the map and in the list.
+		SonMap[son]= SonList.insert(SonList.end(), son);
+		NumSons++;
+	}
 }
 // ***************************************************************************
 void	IObs::delChild(IObs *son)
@@ -557,7 +577,14 @@ void	IObs::delChild(IObs *son)
 	nlassert(son);
 
 	// Just erase (if possible).
-	Sons.erase(son);
+	ItObsMap	it= SonMap.find(son);
+	if(it!=SonMap.end())
+	{
+		// erase from list, then from mapt
+		SonList.erase(it->second);
+		SonMap.erase(it);
+		NumSons--;
+	}
 }
 // ***************************************************************************
 void	IObs::addParent(IObs *father)
@@ -567,22 +594,29 @@ void	IObs::addParent(IObs *father)
 	if(isTreeNode())
 	{
 		// Must test if father is already linked.
-		set<IObs*>::iterator	it;
-		it= Fathers.find(father);
-		if(it!=Fathers.end())
+		ItObsMap	itMap;
+		itMap= FatherMap.find(father);
+		if(itMap!=FatherMap.end())
 			return;		// father is already a parent of this.
 
 		// Tree node, so delete fathers, and fathers links to me.
-		for(it= Fathers.begin(); it!=Fathers.end();it++)
+		for(ItObsList it= FatherList.begin(); it!=FatherList.end();it++)
 		{
 			// Must use delChild() since don't know what father is.
 			(*it)->delChild(this);
 		}
-		Fathers.clear();
+		FatherMap.clear();
+		FatherList.clear();
 	}
 
 	// insert (if not exist).
-	Fathers.insert(father);
+	ItObsMap	it= FatherMap.find(father);
+	if(it==FatherMap.end())
+	{
+		// insert in the map and in the list.
+		FatherMap[father]= FatherList.insert(FatherList.end(), father);
+		NumFathers++;
+	}
 }
 // ***************************************************************************
 void	IObs::delParent(IObs *father)
@@ -590,63 +624,15 @@ void	IObs::delParent(IObs *father)
 	nlassert(father);
 
 	// Just erase (if possible).
-	Fathers.erase(father);
+	ItObsMap	it= FatherMap.find(father);
+	if(it!=FatherMap.end())
+	{
+		// erase from list, then from mapt
+		FatherList.erase(it->second);
+		FatherMap.erase(it);
+		NumFathers--;
+	}
 }
-
-
-
-// ***************************************************************************
-sint	IObs::getNumChildren() const
-{
-	return Sons.size();
-}
-// ***************************************************************************
-IObs	*IObs::getFirstChild() const
-{
-	SonIt= Sons.begin();
-	if(SonIt==Sons.end())
-		return NULL;
-	else
-		return (*SonIt);
-}
-// ***************************************************************************
-IObs	*IObs::getNextChild() const
-{
-	nlassert(SonIt!=Sons.end());
-	SonIt++;
-	if(SonIt==Sons.end())
-		return NULL;
-	else
-		return (*SonIt);
-}
-
-
-// ***************************************************************************
-sint	IObs::getNumParents() const
-{
-	return Fathers.size();
-}
-// ***************************************************************************
-IObs	*IObs::getFirstParent() const
-{
-	FatherIt= Fathers.begin();
-	if(FatherIt==Fathers.end())
-		return NULL;
-	else
-		return (*FatherIt);
-}
-// ***************************************************************************
-IObs	*IObs::getNextParent() const
-{
-	nlassert(FatherIt!=Fathers.end());
-	FatherIt++;
-	if(FatherIt==Fathers.end())
-		return NULL;
-	else
-		return (*FatherIt);
-}
-
-
 
 
 

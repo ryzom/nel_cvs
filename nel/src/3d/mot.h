@@ -1,7 +1,7 @@
 /** \file mot.h
  * The Model / Observer / Traversal  (MOT) paradgim.
  *
- * $Id: mot.h,v 1.2 2001/06/29 13:04:13 berenguier Exp $
+ * $Id: mot.h,v 1.3 2001/08/01 09:41:12 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -384,8 +384,8 @@ public:
 	 * the isTreeNode() method which return true by default.
 	 *
 	 * ADVANCED EXTENSION: the deriver may implement the way this observer is linked to the traversal graph. \n
-	 * The default behavior of all those function is to use the set<> IObs::Sons and IObs::Fathers to implement Tree behavior
-	 * or Graph behavior (dependent of isTreeNode() function).\n
+	 * The deriver must use list<> IObs::SonList and IObs::FatherList and set<> IObs::SonMap and IObs::FatherMap 
+	 *	in the same way the default implementation use them. \n
 	 * We cut the behavior into two ways: addParent and addChild() (and their respective del*() function). We must do this
 	 * since some observers may link to sons in a particualr way (Z-list ...), and some others may link to parents in
 	 * a particular way (such as tree node which want to delete their old parent).
@@ -394,6 +394,7 @@ public:
 	 * o1->addChild(o2); o2->addParent(o1);
 	 *
 	 * If the deriver store the links to sons / fathers in a particular way, it must destroy them in his destructor.
+	 *	NB: in all case, get*() are NOT virtual because of speed consideration.
 	 *
 	 */
 	//@{
@@ -412,18 +413,49 @@ public:
 	virtual	void	delParent(IObs *father);
 
 	/// Get the number of children.
-	virtual	sint	getNumChildren() const;
+	sint	getNumChildren() const {return NumSons;}
 	/// Return the first child of the observer. NULL returned if not found.
-	virtual	IObs	*getFirstChild() const;
-	/// Return the next child of the observer. NULL returned if not found. Unpredictible results if insertions are made between a getFirstChild() / getNextChild().
-	virtual	IObs	*getNextChild() const;
+	IObs	*getFirstChild() const
+	{
+		if(NumSons==0)
+			return 0;
+		CurSonIt= SonList.begin();
+		nlassert(CurSonIt!=SonList.end());
+		return (*CurSonIt);
+	}
+	/// Return the next child of the observer. NULL returned if not found. Unpredictible results if insertions/deletions are made between a getFirstChild() / getNextChild().
+	IObs	*getNextChild() const
+	{
+		nlassert(CurSonIt!=SonList.end());
+		CurSonIt++;
+		if(CurSonIt==SonList.end())
+			return NULL;
+		else
+			return (*CurSonIt);
+	}
 
 	/// Get the number of parent.
-	virtual	sint	getNumParents() const;
+	sint	getNumParents() const {return NumFathers;}
 	/// Return the first parent of the observer. NULL returned if not found.
-	virtual	IObs	*getFirstParent() const;
-	/// Return the next parent of the observer. NULL returned if not found. Unpredictible results if insertions are made between a getFirstParent() / getNextParent().
-	virtual	IObs	*getNextParent() const;
+	IObs	*getFirstParent() const
+	{
+		if(NumFathers==0)
+			return 0;
+		CurFatherIt= FatherList.begin();
+		nlassert(CurFatherIt!=FatherList.end());
+		return (*CurFatherIt);
+	}
+	/// Return the next parent of the observer. NULL returned if not found. Unpredictible results if insertions/deletions are made between a getFirstParent() / getNextParent().
+	IObs	*getNextParent() const
+	{
+		nlassert(CurFatherIt!=FatherList.end());
+		CurFatherIt++;
+		if(CurFatherIt==FatherList.end())
+			return NULL;
+		else
+			return (*CurFatherIt);
+	}
+
 	//@}
 
 
@@ -471,11 +503,22 @@ public:
 
 
 protected:
-	std::set<IObs*>	Sons;
-	std::set<IObs*>	Fathers;
+	typedef	std::list<IObs*>	TObsList;
+	typedef	TObsList::iterator	ItObsList;
+	typedef	TObsList::const_iterator	ConstItObsList;
+	typedef	std::map<IObs *, ItObsList>	TObsMap;
+	typedef	TObsMap::iterator			ItObsMap;
 
-	mutable	std::set<IObs*>::const_iterator	SonIt;
-	mutable	std::set<IObs*>::const_iterator	FatherIt;
+	// separate in list/set, to have o(1) lookup, and o(logn) insertion/erase.
+	TObsList					SonList;
+	TObsList					FatherList;
+	TObsMap						SonMap;
+	TObsMap						FatherMap;
+	sint						NumFathers;
+	sint						NumSons;
+
+	mutable	ConstItObsList		CurSonIt;
+	mutable	ConstItObsList		CurFatherIt;
 
 };
 

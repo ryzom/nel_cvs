@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.1 2001/05/14 09:58:51 berenguier Exp $
+ * $Id: chain_quad.cpp,v 1.2 2001/05/15 13:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,6 +54,40 @@ CChainQuad::~CChainQuad()
 	_QuadData= NULL;
 	_QuadDataLen= 0;
 }
+// ***************************************************************************
+CChainQuad::CChainQuad(const CChainQuad &o)
+{
+	_QuadData= NULL;
+	_QuadDataLen= 0;
+	*this= o;
+}
+// ***************************************************************************
+CChainQuad	&CChainQuad::operator=(const CChainQuad &o)
+{
+	// Alloc good quaddata.
+	_QuadDataLen= o._QuadDataLen;
+	free(_QuadData);
+	_QuadData= (uint8*)malloc(_QuadDataLen);
+	// copy contents.
+	memcpy(_QuadData, o._QuadData, _QuadDataLen);
+
+	// copy infos.
+	_Width= o._Width;
+	_Height= o._Height;
+	_X= o._X;
+	_Y= o._Y;
+
+	// copy good pointers.
+	_Quad.resize(o._Quad.size());;
+	for(sint i=0; i<(sint)_Quad.size(); i++)
+	{
+		uint32	off= (uint32)(o._Quad[i]-o._QuadData);
+		_Quad[i]= _QuadData+off;
+	}
+
+
+	return *this;
+}
 
 
 
@@ -74,7 +108,7 @@ void			CChainQuad::getGridBounds(sint32 &x0, sint32 &y0, sint32 &x1, sint32 &y1,
 // ***************************************************************************
 void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 {
-	vector< list<CChainQuad::CEdgeChainEntry> >	tempQuad;
+	vector< list<CEdgeChainEntry> >	tempQuad;
 	sint	i,j;
 
 	// first, clear any pr-build.
@@ -141,7 +175,7 @@ void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 			{
 				for(sint x= x0; x<x1; x++)
 				{
-					list<CChainQuad::CEdgeChainEntry>	&quadNode= tempQuad[y*_Width+x];
+					list<CEdgeChainEntry>	&quadNode= tempQuad[y*_Width+x];
 
 					addEdgeToQuadNode(quadNode, i, j);
 				}
@@ -156,7 +190,7 @@ void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 	// run all quads.
 	for(i=0;i<(sint)tempQuad.size();i++)
 	{
-		list<CChainQuad::CEdgeChainEntry>	&quadNode= tempQuad[i];
+		list<CEdgeChainEntry>	&quadNode= tempQuad[i];
 
 		if(!quadNode.empty())
 		{
@@ -177,8 +211,8 @@ void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 	uint8	*ptr= _QuadData;
 	for(i=0;i<(sint)tempQuad.size();i++)
 	{
-		list<CChainQuad::CEdgeChainEntry>			&srcQuadNode= tempQuad[i];
-		list<CChainQuad::CEdgeChainEntry>::iterator	it;
+		list<CEdgeChainEntry>			&srcQuadNode= tempQuad[i];
+		list<CEdgeChainEntry>::iterator	it;
 
 		if(!srcQuadNode.empty())
 		{
@@ -205,11 +239,11 @@ void			CChainQuad::build(const std::vector<COrderedChain> &ochains)
 
 
 // ***************************************************************************
-void			CChainQuad::addEdgeToQuadNode(list<CChainQuad::CEdgeChainEntry> &quadNode, sint ochainId, sint edgeId)
+void			CChainQuad::addEdgeToQuadNode(list<CEdgeChainEntry> &quadNode, sint ochainId, sint edgeId)
 {
 	// 0. try to find, insert an edge in an existing CEdgeChainEntry.
 	//=========================================
-	list<CChainQuad::CEdgeChainEntry>::iterator		it;
+	list<CEdgeChainEntry>::iterator		it;
 	for(it= quadNode.begin(); it!=quadNode.end();it++)
 	{
 		if(it->OChainId==ochainId)
@@ -232,10 +266,14 @@ void			CChainQuad::addEdgeToQuadNode(list<CChainQuad::CEdgeChainEntry> &quadNode
 
 
 // ***************************************************************************
-sint			CChainQuad::selectEdges(const NLMISC::CAABBox &bbox, CEdgeChainEntry *edgeChainArray, uint edgeChainMax, uint16 ochainLUT[65536]) const
+sint			CChainQuad::selectEdges(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst) const
 {
-	sint	nRes= 0;
+	sint	nRes=0;
 	sint	i;
+	uint16	*ochainLUT= cst.OChainLUT;
+
+	// start: no edge found.
+	cst.EdgeChainEntries.clear();
 
 	// get bounding coordinate of this bbox in the quadgrid.
 	sint32	x0, y0, x1, y1;
@@ -258,10 +296,6 @@ sint			CChainQuad::selectEdges(const NLMISC::CAABBox &bbox, CEdgeChainEntry *edg
 			quadNode+= sizeof(uint16);
 			CEdgeChainEntry		*ptrEdgeChainEntry= (CEdgeChainEntry*)quadNode;
 
-			// This is an error to not have enough place to store result.
-			if( numEdgeChainEntries+nRes > (sint)edgeChainMax)
-				throw EChainQuad("EChainQuad: Not enough Mem to select all edge for collision");
-
 			// For each one, add it to the result list.
 			for(i=0;i<numEdgeChainEntries;i++)
 			{
@@ -272,15 +306,16 @@ sint			CChainQuad::selectEdges(const NLMISC::CAABBox &bbox, CEdgeChainEntry *edg
 				{
 					// inc the list.
 					ochainLUT[ochainId]= nRes;
-					edgeChainArray[nRes]= ptrEdgeChainEntry[i];
+					cst.EdgeChainEntries.push_back(ptrEdgeChainEntry[i]);
 					nRes++;
 				}
 				else
 				{
 					// extend the entry in the list.
 					uint16 id= ochainLUT[ochainId];
-					edgeChainArray[id].EdgeStart= min(edgeChainArray[id].EdgeStart, ptrEdgeChainEntry[i].EdgeStart);
-					edgeChainArray[id].EdgeEnd= max(edgeChainArray[id].EdgeEnd, ptrEdgeChainEntry[i].EdgeEnd);
+					CEdgeChainEntry		&ece= cst.EdgeChainEntries[id];
+					ece.EdgeStart= min(ece.EdgeStart, ptrEdgeChainEntry[i].EdgeStart);
+					ece.EdgeEnd= max(ece.EdgeEnd, ptrEdgeChainEntry[i].EdgeEnd);
 				}
 			}
 		}
@@ -290,7 +325,7 @@ sint			CChainQuad::selectEdges(const NLMISC::CAABBox &bbox, CEdgeChainEntry *edg
 	// reset LUT to 0xFFFF for all ochains selected.
 	for(i=0;i<nRes;i++)
 	{
-		uint16	ochainId= edgeChainArray[i].OChainId;
+		uint16	ochainId= cst.EdgeChainEntries[i].OChainId;
 		ochainLUT[ochainId]= 0xFFFF;
 	}
 

@@ -1,7 +1,7 @@
 /** \file local_retriever.h
  * 
  *
- * $Id: local_retriever.h,v 1.6 2001/05/15 08:03:09 legros Exp $
+ * $Id: local_retriever.h,v 1.7 2001/05/15 13:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -224,7 +224,14 @@ public:
 	/// \name  Collisions part.
 	// @{
 	/// compute the chain quad, used for collisions. the ChainQuad is serialised in serial(). _OrderedChains must be OK.
-	void								computeCollisionChainQuad();
+	void			computeCollisionChainQuad();
+	/** add possible collisions chains to the temp result.
+	 * \param cst the temp result to store collision chains. they are appened to cst.CollisionChains.
+	 * \param bboxMove the bbox which bounds the movement of the entity.
+	 * \param transBase the vector we use to translate local position of edge.
+	 */
+	void			testCollision(CCollisionSurfaceTemp &cst, const NLMISC::CAABBox &bboxMove, const NLMISC::CVector2f &transBase);
+
 	// @}
 
 

@@ -1,7 +1,7 @@
 /** \file collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: collision_desc.h,v 1.1 2001/05/04 14:36:59 corvazier Exp $
+ * $Id: collision_desc.h,v 1.2 2001/05/15 13:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,6 +46,45 @@ public:
 	NLMISC::CVector		ContactNormal;
 	float				ContactTime;
 };
+
+
+
+/**
+ * Ident of a surface.
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CSurfaceIdent
+{
+public:
+
+	// the surface mesh instance Id.
+	sint32				RetrieverInstance;
+	// the surface Id of this surface mesh instance. -1 if Wall/impossible to walk through.
+	sint32				SurfaceId;
+};
+
+
+/**
+ * Description of the contact of a collision against a surface (interior/zones).
+ *
+ * \author Lionel Berenguier
+ * \author Nevrax France
+ * \date 2001
+ */
+class CCollisionSurfaceDesc
+{
+public:
+	NLMISC::CVector		ContactPosition;
+	NLMISC::CVector		ContactNormal;
+	float				ContactTime;
+
+	/// To which surface we have collided.
+	CSurfaceIdent		ContactSurface;
+};
+
 
 
 } // NLPACS

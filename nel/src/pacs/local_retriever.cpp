@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.5 2001/05/15 08:02:55 legros Exp $
+ * $Id: local_retriever.cpp,v 1.6 2001/05/15 13:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,6 +31,9 @@
 #include "nel/misc/debug.h"
 
 #include "nel/pacs/local_retriever.h"
+
+#include "nel/pacs/collision_desc.h"
+
 
 using namespace std;
 using namespace NLMISC;
@@ -401,5 +404,160 @@ void	NLPACS::CLocalRetriever::retrievePosition(CVector estimated, std::vector<ui
 void	NLPACS::CLocalRetriever::computeCollisionChainQuad()
 {
 	_ChainQuad.build(_OrderedChains);
+}
+
+
+// ***************************************************************************
+void	NLPACS::CLocalRetriever::testCollision(CCollisionSurfaceTemp &cst, const CAABBox &bboxMove, const CVector2f &transBase)
+{
+	sint	i;
+
+	// 0. select ordered chains in the chainquad.
+	//=====================================
+	sint	nEce= _ChainQuad.selectEdges(bboxMove, cst);
+	// NB: cst.OChainLUT is assured to be full of 0xFFFF after this call (if was right before).
+
+
+	// 1. regroup them in chains. build cst.CollisionChains
+	//=====================================
+	// NB: use cst.OChainLUT to look if a Chain has been inserted before.
+	uint16	*chainLUT= cst.OChainLUT;
+
+	// bkup where we begin to add chains.
+	uint	firstChainAdded= cst.CollisionChains.size();
+
+	// For all edgechain entry.
+	for(i=0;i<nEce;i++)
+	{
+		CEdgeChainEntry		&ece= cst.EdgeChainEntries[i];
+		// this is the ordered chain in the retriever.
+		const	COrderedChain	&oChain= this->getOrderedChains()[ece.OChainId];
+		// this is the id of the chain is the local retriever.
+		uint16				chainId= oChain.getParentId();
+
+
+		// add/retrieve the id in cst.CollisionChains.
+		//=================================
+		uint				ccId;
+		// if never added.
+		if(chainLUT[chainId]==0xFFFF)
+		{
+			// add a new CCollisionChain.
+			ccId= cst.CollisionChains.size();
+			cst.CollisionChains.push_back();
+			// Fill it with default.
+			cst.CollisionChains[ccId].Tested= false;
+			cst.CollisionChains[ccId].FirstEdgeCollide= 0xFFFFFFFF;
+			cst.CollisionChains[ccId].ChainId= chainId;
+			// Fill Left right info.
+			cst.CollisionChains[ccId].LeftSurface.SurfaceId= this->getChains()[chainId].getLeft();
+			cst.CollisionChains[ccId].RightSurface.SurfaceId= this->getChains()[chainId].getRight();
+			// NB: cst.CollisionChains[ccId].*Surface.RetrieverInstance is not filled here because we don't have
+			// this info at this level.
+
+			// store this Id in the LUT of chains.
+			chainLUT[chainId]= ccId;
+		}
+		else
+		{
+			// get the id of this collision chain.
+			ccId= chainLUT[chainId];
+		}
+
+		// add edge collide to the list.
+		//=================================
+		CCollisionChain			&colChain= cst.CollisionChains[ccId];
+		const std::vector<NLMISC::CVector>	&oChainVertices= oChain.getVertices();
+		for(sint edge=ece.EdgeStart; edge<ece.EdgeEnd; edge++)
+		{
+			const CVector		&v0= oChainVertices[edge];
+			const CVector		&v1= oChainVertices[edge+1];
+
+			// alloc a new edgeCollide.
+			uint32	ecnId= cst.allocEdgeCollideNode();
+			CEdgeCollideNode	&ecn= cst.getEdgeCollideNode(ecnId);
+
+			// append to the front of the list.
+			ecn.Next= colChain.FirstEdgeCollide;
+			colChain.FirstEdgeCollide= ecnId;
+
+			// build this edge.
+			CVector2f	p0(v0.x, v0.y);
+			CVector2f	p1(v1.x, v1.y);
+			p0+= transBase;
+			p1+= transBase;
+			ecn.make(p0, p1);
+		}
+	}
+
+
+
+	// 2. Reset LUT to 0xFFFF.
+	//=====================================
+
+	// for all collisions chains inserted (starting from firstChainAdded), reset LUT.
+	for(i=firstChainAdded; i<(sint)cst.CollisionChains.size(); i++)
+	{
+		uint	ccId= cst.CollisionChains[i].ChainId;
+		chainLUT[ccId]= 0xFFFF;
+	}
+
+}
+
+
+
+/*
+
+  // TODODO: ds CWorldCollisionMachin
+- // try a movement against this local retriever. All coordinate in local space of the retriever.
+//void			tryMove(CVector &start, CVector &end, float radius, const CAABBox &bboxMove, ???);
+
+Après tous les surfaces meshes.:
+- doit remplir Left/Right_Surface.RetrieverInstance de toutes les CollisionChains après testCollision().
+- doit remplir Left/Right_Surface.SurfaceId sur les Bords de toutes les CollisionChains après testCollision().
+- doit niker les doublons Left/Right.
+
+*/
+
+
+
+// ***************************************************************************
+// TODODO: à foutre dans CCollisionWorld machin....
+const	std::vector<NLPACS::CCollisionSurfaceDesc>	&tryMove(CVector &start, CVector &end, float radius, NLPACS::CCollisionSurfaceTemp &cst)
+{
+	// 0. reset.
+	//===========
+	// reset result.
+	cst.CollisionDescs.clear();
+
+	// reset possible chains.
+	cst.CollisionChains.clear();
+	cst.resetEdgeCollideNodes();
+
+	// 1. compute bboxmove.
+	//===========
+	CAABBox		bboxMove;
+	// bounds the movement in a bbox.
+	bboxMove.setCenter(start-CVector(radius, radius, 0));
+	bboxMove.extend(start+CVector(radius, radius, 0));
+	bboxMove.extend(end-CVector(radius, radius, 0));
+	bboxMove.extend(end+CVector(radius, radius, 0));
+
+
+	// 2. Fill CollisionChains.
+	//===========
+	// TODODO.
+	// For each possible surface mesh, test.
+	uint32	retrieverInstance;
+
+
+	// 3. test collisions with CollisionChains.
+	//===========
+	// TODODO.
+
+
+
+	// result.
+	return cst.CollisionDescs;
 }
 

@@ -157,6 +157,14 @@ SOURCE=..\include\nel\pacs\collision_desc.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\pacs\collision_surface_temp.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\pacs\collision_surface_temp.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\pacs\edge_collide.cpp
 # End Source File
 # Begin Source File

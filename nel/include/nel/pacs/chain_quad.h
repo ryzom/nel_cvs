@@ -1,7 +1,7 @@
 /** \file chain_quad.h
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.h,v 1.1 2001/05/14 09:58:51 berenguier Exp $
+ * $Id: chain_quad.h,v 1.2 2001/05/15 13:36:58 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,6 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/aabbox.h"
 #include "nel/pacs/chain.h"
+#include "nel/pacs/collision_surface_temp.h"
 #include <vector>
 
 
@@ -58,22 +59,15 @@ struct EChainQuad : public NLMISC::Exception
 class CChainQuad
 {
 public:
-	struct	CEdgeChainEntry
-	{
-		/// The id of the ordered chain.
-		uint16		OChainId;
-		/// the first edge of the ordered chain, found in this quad.
-		uint16		EdgeStart;
-		/// the end edge of the ordered chain, found in this quad. "end edge" is lastEdge+1: numEdges= end-start.
-		uint16		EdgeEnd;
-	};
-
-public:
 
 	/// Constructor
 	CChainQuad();
+	/// Copy Constructor
+	CChainQuad(const CChainQuad &o);
 	/// Destructor
 	~CChainQuad();
+	/// operator=.
+	CChainQuad &operator=(const CChainQuad &o);
 
 
 	/// build a chain quad, with a list of OrderedChains.
@@ -83,12 +77,10 @@ public:
 	/** look in the quad to select a list of chain from a bbox.
 	 * NB: The outpout do not contains any redundant edge. A OChain appears only one time in the result.
 	 * \param bbox the area of interest.
-	 * \param edgeChainArray the array to fill
-	 * \param edgeChainMax maxsize of edgeChainArray.  EChainQuad throwed if not enough.
-	 * \param ochainLUT an array for internal use. In: must be filled with 0xFFFF. Out: still filled with 0xFFFF.
-	 * \return number of edgechain found. 0 to edgeChainMax.
+	 * \param cst the array of CEdgeChainEntry to fill. contain also OChainLUT, an array for internal use. In: must be filled with 0xFFFF. Out: still filled with 0xFFFF.
+	 * \return number of edgechain found. stored in cst.EdgeChainEntries (array cleared first).
 	 */
-	sint			selectEdges(const NLMISC::CAABBox &bbox, CEdgeChainEntry *edgeChainArray, uint edgeChainMax, uint16 ochainLUT[65536]) const;
+	sint			selectEdges(const NLMISC::CAABBox &bbox, CCollisionSurfaceTemp &cst) const;
 
 
 	/// serial.

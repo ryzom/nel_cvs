@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.45 2004/07/29 09:06:07 lecroart Exp $
+ * $Id: entities.cpp,v 1.44 2003/04/04 17:04:19 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -188,9 +188,9 @@ void addEntity (uint32 eid, std::string name, CEntity::TType type, const CVector
 		entity.Instance = Scene->createInstance ("gnu.shape");
 		entity.Skeleton = Scene->createSkeleton ("gnu.skel");
 		// use the instance on the skeleton
-		entity.Skeleton.bindSkin (entity.Instance);
+		entity.Skeleton->bindSkin (entity.Instance);
 
-		entity.Instance.hide ();
+		entity.Instance->hide ();
 
 		entity.Angle = MouseListener->getOrientation();
 
@@ -217,8 +217,8 @@ void addEntity (uint32 eid, std::string name, CEntity::TType type, const CVector
 
 		entity.Instance = Scene->createInstance ("gnu.shape");
 		entity.Skeleton = Scene->createSkeleton ("gnu.skel");
-		entity.Skeleton.bindSkin (entity.Instance);
-		entity.Instance.hide ();
+		entity.Skeleton->bindSkin (entity.Instance);
+		entity.Instance->hide ();
 
 		entity.Speed = PlayerSpeed;
 		entity.Particule = Scene->createInstance ("appear.ps");
@@ -244,24 +244,24 @@ void addEntity (uint32 eid, std::string name, CEntity::TType type, const CVector
 		break;
 	}
 
-	if (!entity.Skeleton.empty())
-		entity.Skeleton.setPos (startPosition);
+	if (entity.Skeleton != NULL)
+		entity.Skeleton->setPos (startPosition);
 
-	entity.Instance.setPos (startPosition);
+	entity.Instance->setPos (startPosition);
 
 // todo sound
 //	if (entity.Source != NULL)
 //		entity.Source->setPosition (startPosition);
 
-	if (!entity.Particule.empty())
-		entity.Particule.setPos (startPosition);
+	if (entity.Particule != NULL)
+		entity.Particule->setPos (startPosition);
 
 }
 
 // effectively remove the entity (don't play animation)
 void deleteEntity (CEntity &entity)
 {
-	if (!entity.Particule.empty())
+	if (entity.Particule != NULL)
 	{
 		Scene->deleteInstance (entity.Particule);
 		entity.Particule = NULL;
@@ -269,14 +269,14 @@ void deleteEntity (CEntity &entity)
 
 	deleteAnimation (entity);
 
-	if (!entity.Skeleton.empty())
+	if (entity.Skeleton != NULL)
 	{
-		entity.Skeleton.detachSkeletonSon (entity.Instance);
+		entity.Skeleton->detachSkeletonSon (entity.Instance);
 		Scene->deleteSkeleton (entity.Skeleton);
 		entity.Skeleton = NULL;
 	}
 
-	if (!entity.Instance.empty())
+	if (entity.Instance != NULL)
 	{
 		Scene->deleteInstance (entity.Instance);
 		entity.Instance = NULL;
@@ -315,7 +315,7 @@ void removeEntity (uint32 eid)
 	CEntity	&entity = (*eit).second;
 
 	// if there is a particule system linked, delete it
-	if (!entity.Particule.empty())
+	if (entity.Particule != NULL)
 	{
 		Scene->deleteInstance (entity.Particule);
 		entity.Particule = NULL;
@@ -325,7 +325,7 @@ void removeEntity (uint32 eid)
 	{
 
 		entity.Particule = Scene->createInstance("disappear.ps");
-		entity.Particule.setPos (entity.Position);
+		entity.Particule->setPos (entity.Position);
 	}
 
 	playAnimation (entity, LogOffAnim, true);
@@ -363,15 +363,15 @@ void stateAppear (CEntity &entity)
 	// after 1 second, show the instance
 	if (CTime::getLocalTime () > entity.StateStartTime + 1000)
 	{
-		if (entity.Instance.getVisibility () != UTransform::Show)
-			entity.Instance.show ();
+		if (entity.Instance->getVisibility () != UTransform::Show)
+			entity.Instance->show ();
 	}
 
 	// after 5 seconds, delete the particle system (if any)
 	// and passe the entity into the Normal state
 	if (CTime::getLocalTime () > entity.StateStartTime + 3000)
 	{
-		if (!entity.Particule.empty())
+		if (entity.Particule != NULL)
 		{
 			Scene->deleteInstance (entity.Particule);
 			entity.Particule = NULL;
@@ -390,7 +390,7 @@ void stateDisappear (CEntity &entity)
 	// after 1 second, remove the mesh and all collision stuff
 	if (CTime::getLocalTime () > entity.StateStartTime + 1000)
 	{
-		if (entity.Instance.getVisibility () != UTransform::Hide)
+		if (entity.Instance->getVisibility () != UTransform::Hide)
 		{
 			if (entity.Type == CEntity::Self)
 			{
@@ -399,7 +399,7 @@ void stateDisappear (CEntity &entity)
 				Self = NULL;
 			}
 
-			entity.Instance.hide ();
+			entity.Instance->hide ();
 		}
 	}
 
@@ -510,7 +510,7 @@ void stateNormal (CEntity &entity)
 		nlinfo("dist=%f", (entity.Position-tp).norm());
 		if ((entity.Position-tp).norm()<30.0f)
 		{
-			static UInstance t = NULL;
+			static UInstance *t = NULL;
 			if (t != NULL)
 			{
 				Scene->deleteInstance (t);
@@ -646,7 +646,7 @@ void stateNormal (CEntity &entity)
 		if (newPos != entity.Position)
 		{
 			entity.Position = entity.Trajectory.eval(NewTime);
-			entity.Instance.show ();
+			entity.Instance->show ();
 		}
 	}
 	else
@@ -740,7 +740,7 @@ void updateEntities ()
 
 		}
 
-		if (!entity.Instance.empty())
+		if (entity.Instance != NULL)
 		{
 			CVector	jdir;
 			switch (entity.Type)
@@ -756,23 +756,23 @@ void updateEntities ()
 				break;
 			}
 
-			if (!entity.Skeleton.empty())
+			if (entity.Skeleton != NULL)
 			{
-				entity.Skeleton.setPos(entity.Position);
-				entity.Skeleton.setRotQuat(jdir);
+				entity.Skeleton->setPos(entity.Position);
+				entity.Skeleton->setRotQuat(jdir);
 			}
 
-			entity.Instance.setPos(entity.Position);
-			entity.Instance.setRotQuat(jdir);
+			entity.Instance->setPos(entity.Position);
+			entity.Instance->setRotQuat(jdir);
 		}
 
 // todo sound
 //		if (entity.Source != NULL)
 //			entity.Source->setPosition (entity.Position);
 
-		if (!entity.Particule.empty())
+		if (entity.Particule != NULL)
 		{
-			entity.Particule.setPos(entity.Position);
+			entity.Particule->setPos(entity.Position);
 		}
 
 		if (entity.Type == CEntity::Self)
@@ -786,7 +786,7 @@ void updateEntities ()
 void renderEntitiesNames ()
 {
 	// Setup the driver in matrix mode
-	Driver->setMatrixMode3D (Camera);
+	Driver->setMatrixMode3D (*Camera);
 	// Setup the drawing context
 	TextContext->setHotSpot (UTextContext::MiddleTop);
 	TextContext->setColor (EntityNameColor);
@@ -795,9 +795,9 @@ void renderEntitiesNames ()
 	for (EIT eit = Entities.begin (); eit != Entities.end (); eit++)
 	{
 		CEntity	&entity = (*eit).second;
-		if (!entity.Instance.empty() && entity.Type == CEntity::Other)
+		if (entity.Instance != NULL && entity.Type == CEntity::Other)
 		{
-			CMatrix		mat = Camera.getMatrix();
+			CMatrix		mat = Camera->getMatrix();
 			mat.setPos(entity.Position + CVector(0.0f, 0.0f, 4.0f));
 			mat.scale(10.0f);
 			TextContext->render3D(mat, entity.Name);
@@ -866,7 +866,7 @@ void	shotSnowball(uint32 sid, uint32 eid, const CVector &start, const CVector &t
 
 	snowball.AutoMove = 1;
 	snowball.Trajectory.init(start, target, speed, CTime::getLocalTime ()+1000);
-	snowball.Instance.hide();
+	snowball.Instance->hide();
 
 	EIT eit = findEntity (eid);
 	CEntity	&entity = (*eit).second;

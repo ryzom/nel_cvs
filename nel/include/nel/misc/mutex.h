@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.17 2002/10/21 13:47:17 cado Exp $
+ * $Id: mutex.h,v 1.18 2002/10/22 13:09:44 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -220,8 +220,6 @@ private:
 	TNelRtlCriticalSection	_Cs;
 #elif defined NL_OS_UNIX
 	sem_t			_Sem;
-	volatile uint	_OwnerPid; // reentrance control
-	uint			_ReentranceCount;
 #else
 #	error "No fair mutex implementation for this OS"
 #endif

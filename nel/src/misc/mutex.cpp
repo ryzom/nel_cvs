@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * mutex and synchronization implementation
  *
- * $Id: mutex.cpp,v 1.32 2002/10/18 17:32:28 cado Exp $
+ * $Id: mutex.cpp,v 1.33 2002/10/22 13:10:31 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -417,13 +417,13 @@ void CUnfairMutex::leave()
 /*
  * Unix version
  */
-CFairMutex::CFairMutex() : _OwnerPid( ~0 )
+CFairMutex::CFairMutex()
 {
 	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }
 
 
-CFairMutex::CFairMutex(	const std::string &name ) : _OwnerPid( ~0 )
+CFairMutex::CFairMutex(	const std::string &name )
 {
 	sem_init( const_cast<sem_t*>(&_Sem), 0, 1 );
 }
@@ -443,14 +443,7 @@ CFairMutex::~CFairMutex()
  */
 void CFairMutex::enter()
 {
-	// Allow the call to be reentrant (do not wait if same thread)
-	uint pid = getpid();
-	if ( pid != _OwnerPid )
-	{
-		_OwnerPid = pid; // pb with atomicity
-		sem_wait( const_cast<sem_t*>(&_Sem) );
-	}
-	++_ReentranceCount;
+	sem_wait( const_cast<sem_t*>(&_Sem) );
 }
 
 
@@ -459,19 +452,11 @@ void CFairMutex::enter()
  */
 void CFairMutex::leave()
 {
-	if ( getpid() == _OwnerPid )
-	{
-		--_ReentranceCount; // pb with atomicity
-		if ( _ReentranceCount==0 )
-		{
-			sem_post( const_cast<sem_t*>(&_Sem) );
-			_OwnerPid = ~0;
-		}
-	}
+	sem_post( const_cast<sem_t*>(&_Sem) );
 }
 
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /*
  *

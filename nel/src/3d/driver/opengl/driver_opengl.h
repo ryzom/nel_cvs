@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.95 2001/10/26 08:27:51 vizerie Exp $
+ * $Id: driver_opengl.h,v 1.96 2001/10/29 16:09:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,6 +33,12 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#  ifdef min
+#    undef min
+#  endif
+#  ifdef max
+#    undef max
+#  endif
 
 #else // NL_OS_UNIX
 

@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.6 2001/10/29 08:37:55 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.7 2001/10/29 16:09:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -365,10 +365,10 @@ void CZoneLighter::light (CLandscape &landscape, CZone& output, uint zoneToLight
 			if (triangle.ZoneId!=-1)
 			{
 				// Fill the heightfield
-				sint minX=std::max (0, (sint)floor (0.5f+(min.x-_OrigineHeightField.x)/_HeightfieldCellSize));
-				sint maxX=std::min (_HeightFieldCellCount, (sint)floor (0.5f+(max.x-_OrigineHeightField.x)/_HeightfieldCellSize));
-				sint minY=std::max (0, (sint)floor (0.5f+(min.y-_OrigineHeightField.y)/_HeightfieldCellSize));
-				sint maxY=std::min (_HeightFieldCellCount, (sint)floor (0.5f+(max.y-_OrigineHeightField.y)/_HeightfieldCellSize));
+				sint minX=max (0, (sint)floor (0.5f+(min.x-_OrigineHeightField.x)/_HeightfieldCellSize));
+				sint maxX=min (_HeightFieldCellCount, (sint)floor (0.5f+(max.x-_OrigineHeightField.x)/_HeightfieldCellSize));
+				sint minY=max (0, (sint)floor (0.5f+(min.y-_OrigineHeightField.y)/_HeightfieldCellSize));
+				sint maxY=min (_HeightFieldCellCount, (sint)floor (0.5f+(max.y-_OrigineHeightField.y)/_HeightfieldCellSize));
 
 				// Calc position in the heightfield
 				for (sint y=minY; y<maxY; y++)
@@ -1381,10 +1381,10 @@ void CZoneLighter::addTriangles (CLandscape &landscape, vector<uint> &listZone, 
 		const CTessFace *face=leaves[leave];
 
 		// Start and end coordinate
-		float startS=std::min (std::min (face->PVBase.getS(), face->PVLeft.getS()), face->PVRight.getS());
-		float endS=std::max (std::max (face->PVBase.getS(), face->PVLeft.getS()), face->PVRight.getS());
-		float startT=std::min (std::min (face->PVBase.getT(), face->PVLeft.getT()), face->PVRight.getT());
-		float endT=std::max (std::max (face->PVBase.getT(), face->PVLeft.getT()), face->PVRight.getT());
+		float startS=min (min (face->PVBase.getS(), face->PVLeft.getS()), face->PVRight.getS());
+		float endS=max (max (face->PVBase.getS(), face->PVLeft.getS()), face->PVRight.getS());
+		float startT=min (min (face->PVBase.getT(), face->PVLeft.getT()), face->PVRight.getT());
+		float endT=max (max (face->PVBase.getT(), face->PVLeft.getT()), face->PVRight.getT());
 
 		// Add a triangle
 		triangleArray.push_back (CTriangle (NLMISC::CTriangle (face->VBase->Pos, face->VLeft->Pos, face->VRight->Pos), 

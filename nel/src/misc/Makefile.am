@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.25 2001/08/07 12:38:43 valignat Exp $
+# $Id: Makefile.am,v 1.26 2001/10/08 14:52:19 valignat Exp $
 #
 
 MAINTAINERCLEANFILES  = Makefile.in
@@ -28,6 +28,7 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         file.cpp                           \
                         geom_ext.cpp                       \
 			heap_memory.cpp                    \
+                        i_xml.cpp                          \
                         i18n.cpp                           \
                         line.cpp                           \
                         log.cpp                            \
@@ -60,8 +61,9 @@ libnelmisc_la_SOURCES = aabbox.cpp                         \
                         win_event_emitter.cpp              \
                         win_thread.cpp
 
+AM_CXXFLAGS           = @XML_CFLAGS@
 
-libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread
+libnelmisc_la_LIBADD  = config_file/libconfig.la -lc -lpthread @XML_LIBS@
 
 libnelmisc_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
 

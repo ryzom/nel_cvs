@@ -8,6 +8,7 @@ Requirements
       - FreeType 2     <URL:http://freetype.sourceforge.net/>   (NeL 3D)
       - OpenAL         <URL:http://www.openal.org/>             (NeL Sound)
       - Python 1.5     <URL:http://www.python.org/>             (NeL AI)
+      - LibXML         <URL:http://www.xmlsoft.org/>            (NeL Misc)
 
    STLPort need to be compiled. NeL is using the SGI iostreams and it require
    the STLPort compilation and a linking of NeL with the STLPort library.

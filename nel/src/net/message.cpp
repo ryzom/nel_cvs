@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.12 2000/11/08 14:57:17 lecroart Exp $
+ * $Id: message.cpp,v 1.13 2000/11/21 17:31:29 valignat Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.

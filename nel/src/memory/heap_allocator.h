@@ -1,7 +1,7 @@
 /** \file heap_allocator.cpp
  * A Heap allocator
  *
- * $Id: heap_allocator.h,v 1.4 2003/11/17 10:43:34 besson Exp $
+ * $Id: heap_allocator.h,v 1.5 2004/01/15 17:36:48 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -97,7 +97,7 @@ public:
 			TOutOfMemoryMode outOfMemoryMode = ThrowException );
 
 	/** Destruction */
-	~CHeapAllocator ();
+	virtual ~CHeapAllocator ();
 
 	/** To allocate, use the macro NelAlloc and NelRealloc */
 
@@ -327,7 +327,7 @@ private:
 
 #ifndef NL_HEAP_ALLOCATION_NDEBUG
 	static uint32			evalMagicNumber (const CNodeBegin *node);
-#endif NL_HEAP_ALLOCATION_NDEBUG
+#endif // NL_HEAP_ALLOCATION_NDEBUG
 	static const CNodeBegin	*getNextNode	(const CNodeBegin *current);
 	static CNodeBegin		*getNextNode	(CNodeBegin *current);
 	static const CFreeNode	*getFreeNode	(const CNodeBegin *current);

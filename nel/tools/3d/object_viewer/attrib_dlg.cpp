@@ -1,7 +1,7 @@
 /** \file attrib_dlg.cpp
  * class for a dialog box that help to edit an attrib value : it helps setting a constant value or not
  *
- * $Id: attrib_dlg.cpp,v 1.12 2001/07/12 16:09:39 vizerie Exp $
+ * $Id: attrib_dlg.cpp,v 1.13 2001/08/07 14:23:47 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -952,11 +952,11 @@ END_MESSAGE_MAP()
 			CValueFromEmitterDlgT<sint32, CAttribDlgInt> vfe((NL3D::CPSIntMemory *) _SchemeWrapper->getScheme(), std::string("INT SCHEME"), m_AttrBitmap.GetBitmap() ) ;			
 			vfe.DoModal() ;
 		}
-		if (dynamic_cast<const NL3D::CPSIntMemory *>(scheme)) 
+	/*	if (dynamic_cast<const NL3D::CPSIntMemory *>(scheme)) 
 		{
 			CValueFromEmitterDlgT<float, CAttribDlgFloat> vfe( (NL3D::CPSFloatMemory *)(scheme), std::string("UINT SCHEME"), m_AttrBitmap.GetBitmap()) ;			
 			vfe.DoModal() ;
-		}
+		}*/
 		if (dynamic_cast<const NL3D::CPSIntBinOp *>(scheme)) 
 		{
 			CBinOpDlgT<sint32, CAttribDlgInt> bod( (NL3D::CPSIntBinOp *)(scheme), std::string("SINT BIN OP"), m_AttrBitmap.GetBitmap()) ;	

@@ -541,6 +541,90 @@ SOURCE=..\..\..\..\..\distrib\nel\lib\nlmisc_debug_fast.lib
 !ENDIF 
 
 # End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\nel\lib\nlnet_rd.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\nel\lib\nlnet_debug.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\nel\lib\nlnet_debug_fast.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\..\..\..\distrib\nel\lib\nlnet.lib
+
+!IF  "$(CFG)" == "logic_editor - Win32 Release"
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 Debug"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 DebugFast"
+
+# PROP Exclude_From_Build 1
+
+!ELSEIF  "$(CFG)" == "logic_editor - Win32 ReleaseDebug"
+
+# PROP Exclude_From_Build 1
+
+!ENDIF 
+
+# End Source File
 # End Group
 # Begin Source File
 

@@ -1,6 +1,6 @@
 /** \file interpret_object_agent.cpp
  *
- * $Id: interpret_object_agent.cpp,v 1.46 2002/05/17 13:46:34 chafik Exp $
+ * $Id: interpret_object_agent.cpp,v 1.47 2002/07/02 08:50:12 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,6 +45,7 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 		_Base_class = NULL;
+		_ConstructorIndex = -1;
 	}
 
 	CAgentClass::CAgentClass(const NLAIAGENT::IVarName &name, const NLAIAGENT::IVarName &base_class_name) :
@@ -58,6 +59,7 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 		_Base_class = NULL;
+		_ConstructorIndex = -1;
 	}
 	
 	CAgentClass::CAgentClass( const CAgentClass &a):
@@ -70,6 +72,7 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 		_Base_class = a._Base_class;
+		_ConstructorIndex = a._ConstructorIndex;
 	}
 	
 	CAgentClass::CAgentClass(const NLAIC::CIdentType &ident):_Components(0),_Inheritance(NULL)
@@ -82,6 +85,7 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 		_Base_class = NULL;
+		_ConstructorIndex = -1;
 	}
 
 	CAgentClass::CAgentClass():_Components(0),_Inheritance(NULL)
@@ -95,6 +99,7 @@ namespace NLAISCRIPT
 		setBaseMethodCount(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass()))->getBaseMethodCount());
 		setBaseObjectInstance(((NLAIAGENT::CAgentScript *)(NLAIAGENT::CAgentScript::IdAgentScript.getFactory()->getClass())));
 		_Base_class = NULL;
+		_ConstructorIndex = -1;
 	}
 
 	CAgentClass::~CAgentClass()
@@ -247,113 +252,6 @@ namespace NLAISCRIPT
 		}
 	}
 
-/*
-	void CAgentClass::buildChildMsgPath( CAgentClass *father_class)
-	{
-		if ( father_class == NULL )
-			father_class = this;
-
-		for (sint32 i =0; i < (int) father_class->_Components.size() ; i++ ) // ... for each of its components ...
-		{
-			NLAIC::CIdentType c_type( father_class->_Components[ i ]->RegisterName->getString() );
-			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
-				buildChildMsgPath( (CAgentClass *) father_class->_Components[i] );
-		}
-		buildChildsMessageMap( father_class );
-	}
-*/
-/*
-	/// Build the table that translates an agent's message processing function index into
-	/// it's child equivalent message processing function index.
-	void CAgentClass::buildChildsMessageMap(CAgentClass *father_class)
-	{
-		
-		sint32 i, child_index;
-
-#ifdef NL_DEBUG
-		const char *dbg_this_class_name = father_class->getClassName()->getString();
-#endif
-		father_class->clearIndirectMsgTable();
-
-		/// Counts the number of scripted components
-		for (i =0; i < (int) father_class->_Components.size() ; i++ ) // ... for each of its components ...
-		{
-			NLAIC::CIdentType c_type( father_class->_Components[ i ]->RegisterName->getString() );
-			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
-				_NbScriptedComponents ++;
-		}
-
-		// For each message processing function of the father, 
-		// allocates the table with by default -1, which means the child doesn't process the
-		// message.
-		for ( i = 0; i < (int) father_class->_Methode.size(); i++ )
-		{
-			CMethodeName &method = father_class->getBrancheCode( (int) i );
-			if ( isMessageFunc( method.getParam() ) )
-			{
-				father_class->_MsgIndirectTable.push_back( new sint32[ _NbScriptedComponents ] );
-				for ( child_index = 0; child_index < _NbScriptedComponents; child_index++ )
-					father_class->_MsgIndirectTable[i][child_index] = -1;
-			}
-			else
-				father_class->_MsgIndirectTable.push_back( NULL );
-		}
-		
-		sint32 index_component = 0;
-			
-		for (i =0; i < (int) father_class->_Components.size() ; i++ ) // ... for each of its components ...
-		{
-			NLAIC::CIdentType c_type( father_class->_Components[ i ]->RegisterName->getString() );
-#ifdef NL_DEBUG
-			const char *dbg_class_name = father_class->_Components[ i ]->RegisterName->getString();
-#endif
-			if( ((const NLAIC::CTypeOfObject &) c_type) & NLAIC::CTypeOfObject::tAgentInterpret ) // ...if it's a scripted agent...
-			{
-				CAgentClass *child_class = (CAgentClass *) c_type.getFactory()->getClass();
-#ifdef NL_DEBUG
-				sint32 dbg_nb_funcs = child_class->getBrancheCodeSize();
-#endif
-				for (child_index =0; child_index < child_class->getBrancheCodeSize(); child_index++ ) // ... for each of its methods...
-				{
-					CMethodeName &method = child_class->getBrancheCode( (int) child_index );
-#ifdef NL_DEBUG
-					const char *dbg_meth_name = method.getName().getString();
-#endif
-					if ( isMessageFunc( method.getParam() ) )	// ... if it's a message processing function...
-					{
-						// Looks if the father has a procecessing function for this message
-						sint32 father_index = father_class->findMethod( method.getName(), method.getParam() );
-						if ( father_index != -1 )
-						{
-							// The father processes this message. Puts the index for the child in the table.
-							father_class->_MsgIndirectTable[ father_index ][ index_component ] = child_index;
-						}
-						else
-						{
-							// Ajoute la méthode chez le père
-							father_index = addBrancheCode( method.getName(), method.getParam() );
-							father_class->_Methode[ father_index ]->setCode((IOpCode *)NULL);
-							father_class->_Methode[ father_index ]->setTypeOfMethode( new NLAISCRIPT::COperandVoid() );
-
-						
-							// Créée le tableau
-							if ( father_index >= (int) father_class->_MsgIndirectTable.size() )
-							{
-								father_class->_MsgIndirectTable.push_back( new sint32[ _NbScriptedComponents ] );
-								sint32 x;
-								for ( x =0; x < _NbScriptedComponents; x++) 
-									father_class->_MsgIndirectTable[ father_index ][x] = -1;
-							}
-							father_class->_MsgIndirectTable[ father_index ] [ index_component ] = child_index;
-						}
-					}
-				}
-				index_component++;
-			}
-		}
-	}
-*/
-
 	sint32 CAgentClass::getChildMessageIndex(const NLAIAGENT::IMessageBase *msg, sint32 child_index )
 	{
 		return _MsgIndirectTable[ msg->getMethodIndex() - getBaseMethodCount() ][child_index];
@@ -463,33 +361,7 @@ namespace NLAISCRIPT
 		else
 			return -1;
 	}
-/*
-	sint32 CAgentClass::getInheritedStaticMemberIndex(const NLAIAGENT::IVarName &name) const
-	{
-		sint32 n = 0;
-		const IClassInterpret *classType = getBaseClass();
-		while(classType != NULL)
-		{
-			n += classType->getStaticMemberSize();
-			classType = classType->getBaseClass();
-		}
-		classType = this;
-		while(classType != NULL)
-		{		
-			for(sint32 i = classType->getStaticMemberSize() - 1; i >= 0; i --)
-			{
-				if (classType->getComponent(i)->ObjectName != NULL && *classType->getComponent(i)->ObjectName == name) 
-				{										
-					return i + n;
-				}
-			}			
-			classType = classType->getBaseClass();
-			if(classType != NULL) n -= classType->getStaticMemberSize();
 
-		}
-		return -1;
-	}
-*/
 	const NLAIAGENT::IObjectIA *CAgentClass::getStaticMember(sint32 index) const
 	{	
 		int iiii = 0;
@@ -540,30 +412,8 @@ namespace NLAISCRIPT
 
 	CComponent *CAgentClass::getComponent(sint32 i) const
 	{
-		/*sint32 n = 0;
-		const IClassInterpret *classType = getBaseClass();
-		while(classType != NULL)
-		{
-			n += classType->getStaticMemberSize();
-			classType = classType->getBaseClass();
-		}
-		classType = this;
-		while(classType != NULL)
-		{		
-			for(sint32 i = classType->getStaticMemberSize() - 1; i >= 0; i --)
-			{
-				if (classType->getComponent(i)->ObjectName != NULL && *classType->getComponent(i)->ObjectName == name) 
-				{										
-					return i + n;
-				}
-			}			
-			classType = classType->getBaseClass();
-			if(classType != NULL) n -= classType->getStaticMemberSize();
-		}*/
-
-
-		if ( i < (sint32)_Components.size() ) 
-			return _Components[i];
+		if ( i < (sint32) _Components.size() ) 
+			return _Components[ i ];
 		else 
 			return NULL;
 	}
@@ -642,6 +492,11 @@ namespace NLAISCRIPT
 			_lastRef = _Methode.size() - 1;
 			_Methode.back().setMethodBasedOnBaseClassState(false);
 		}
+
+		static NLAIAGENT::CStringVarName constructor_name("Constructor");
+		if ( name == constructor_name )
+			_ConstructorIndex = _lastRef;
+
 		return _lastRef;
 	}
 
@@ -876,6 +731,9 @@ namespace NLAISCRIPT
 
 		// Création de l'agent
 		NLAIAGENT::CAgentScript *instance = new NLAIAGENT::CAgentScript(NULL, NULL, components,  (CAgentClass *) this );
+
+
+		// TODO: add constructor call here!!!!!
 
 		return instance;
 	}
@@ -1164,5 +1022,10 @@ namespace NLAISCRIPT
 	{
 		CComponent *component = getComponent( NLAIAGENT::CStringVarName( c_name.c_str() ) );
 		return component->StaticValue;
+	}
+
+	sint32 CAgentClass::getConstructorIndex()
+	{
+		return _ConstructorIndex;
 	}
 }

@@ -326,7 +326,28 @@ using  namespace NLAIFUZZY;
 								POINT_VI
 							;
 
-	Priority				:	PRIORITY POINT_DEUX NOMBRE	
+	Priority				:	PRIORITY POINT_DEUX PriorityVal
+							;
+
+
+	PriorityVal				:									
+								FuzzyCond
+								{
+									if ( classIsAnOperator() )
+									{
+
+										NLAIAGENT::CStringVarName *vvar = _LastFuzzyConds.back();
+										_LastFuzzyConds.pop_back();
+
+										NLAIAGENT::CStringVarName *vset = _LastFuzzyConds.back();
+										_LastFuzzyConds.pop_back();
+
+										COperatorClass *op_class = (COperatorClass *) _SelfClass.get();
+										op_class->addFuzzyCond(vvar, vset);
+									}
+								}
+								|
+								NOMBRE
 								{
 									if ( classIsAnOperator() )
 									{
@@ -347,10 +368,7 @@ using  namespace NLAIFUZZY;
 									}	
 								}
 								POINT_VI
-							;
-
-
-
+								;
 
 	PostCondition		:	POSTCONDITION POINT_DEUX 
 							{
@@ -385,34 +403,13 @@ using  namespace NLAIFUZZY;
 							;
 
 	OperatorCond		:	SingleOpCond 
-							{
-#ifdef NL_DEBUG
-								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
-#endif
-							}
 						|	SingleOpCond 
-							{
-#ifdef NL_DEBUG
-								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
-#endif
-							}
 							OperatorCond
-							{
-#ifdef NL_DEBUG
-								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
-#endif
-							}
-
 						;
 
 	SingleOpCond		:	BooleanCond
-							{
-#ifdef NL_DEBUG
-								for (int i = 0; i < 20; i++);	// To put breakpoints for debugging...
-#endif
-							}
 							POINT_VI
-						|	FuzzyCond
+/*						|	FuzzyCond
 							{
 								if ( classIsAnOperator() )
 								{
@@ -427,6 +424,7 @@ using  namespace NLAIFUZZY;
 									op_class->addFuzzyCond(vvar, vset);
 								}
 							}
+							*/
 						|	FirstOrderPattern
 							POINT_VI
 							{									

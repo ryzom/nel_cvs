@@ -1,7 +1,7 @@
 /** \file fuzzyset.cpp
  * Fuzzy sets: triangle, trapeze...
  *
- * $Id: fuzzyset.cpp,v 1.9 2001/09/12 12:17:54 portier Exp $
+ * $Id: fuzzyset.cpp,v 1.10 2002/07/02 08:50:12 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -286,6 +286,13 @@ namespace NLAIFUZZY
 				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( CTriangleFuzzySet::IdTriangleFuzzySet ) );
 				r.push( NLAIAGENT::CIdMethod( 0 + IObjectIA::getMethodIndexSize(), 0.0, NULL, c) );
 			}
+
+			if( (*funcName) == NLAIAGENT::CStringVarName( "Membership" ) )
+			{					
+				NLAIAGENT::CObjectType *c = new NLAIAGENT::CObjectType( new NLAIC::CIdentType( NLAIAGENT::DigitalType::IdDigitalType ) );
+				r.push( NLAIAGENT::CIdMethod( 1 + IObjectIA::getMethodIndexSize(), 0.0, NULL, c) );
+			}
+
 		}
 
 		if ( r.empty() )
@@ -298,12 +305,18 @@ namespace NLAIFUZZY
 	{
 		NLAIAGENT::IBaseGroupType *param = (NLAIAGENT::IBaseGroupType *)p;
 
+		IObjectIA::CProcessResult r;
+
 		switch(index - IObjectIA::getMethodIndexSize() )
 		{
 		case 0:
 			{					
 				init(p);
 			}
+			break;
+
+		case 1:
+
 			break;
 		}
 

@@ -1,6 +1,6 @@
 /** \file agent_script.cpp
  *
- * $Id: agent_script.cpp,v 1.122 2002/06/21 15:57:13 robert Exp $
+ * $Id: agent_script.cpp,v 1.123 2002/07/02 08:50:12 portier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1480,7 +1480,8 @@ namespace NLAIAGENT
 				try
 				{
 					IObjectIA *o = IBasicAgent::run( msg );
-					if(o != NULL) o->release();
+					if (o != NULL) 
+						o->release();
 					mail->popMessage();
 				}
 				catch(NLAIE::CExceptionNotImplemented &e)

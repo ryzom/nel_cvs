@@ -15,12 +15,6 @@ namespace NLAIAGENT
 	COperatorScript::COperatorScript(const COperatorScript &a) : CActorScript(a)
 	{
 		_CurrentGoal = a._CurrentGoal;		
-		/*if ( _CurrentGoal != NULL )
-			_CurrentGoal->incRef();*/
-		_FactBase = a._FactBase;
-		/*if ( _FactBase != NULL )
-			_FactBase->incRef();*/
-
 		_CyclesBeforeUpdate = a._CyclesBeforeUpdate;
 		_IsActivable = a._IsActivable;
 		_Maintain = a._Maintain;
@@ -40,7 +34,6 @@ namespace NLAIAGENT
 		_Maintain = false;
 		_Priority = 0;
 		_Exclusive = true;
-		_FactBase = NULL;
 	}	
 
 	COperatorScript::COperatorScript(IAgentManager *manager, bool stay_alive) : CActorScript( manager )
@@ -51,7 +44,6 @@ namespace NLAIAGENT
 		_Maintain = false;
 		_Priority = 0;
 		_Exclusive = true;
-		_FactBase = NULL;
 	}
 
 	COperatorScript::~COperatorScript()
@@ -59,13 +51,6 @@ namespace NLAIAGENT
 #ifdef NL_DEBUG
 		//const char *className = (const char *)getType();
 #endif
-
-		/*if ( _CurrentGoal != NULL )
-			_CurrentGoal->release();
-
-		if ( _FactBase != NULL )
-			_FactBase->release();*/
-
 		std::vector<NLAIAGENT::IObjectIA *>::iterator it_val = _VarValues.begin();
 		while ( it_val != _VarValues.end() )
 		{
@@ -116,8 +101,6 @@ namespace NLAIAGENT
 		text = NLAIC::stringGetBuild("%f", priority() );
 		t += text;
 		t += "\n\t";
-
-//		CAgentScript::getDebugString(t); //***G*** Je l'ai retiré pour une meilleur lecture de debug.
 	}
 
 	bool COperatorScript::isEqual(const IBasicObjectIA &a) const
@@ -270,7 +253,12 @@ namespace NLAIAGENT
 	NLAILOGIC::CGoal *COperatorScript::selectGoal()
 	{
 		if ( !_ActivatedGoals.empty() )
+		{
+			// TODO: instantiate each goal's variables and compute priority.
+			// then select the highest priority goal.
 			return _ActivatedGoals.front();
+		}
+
 		else
 			return NULL;
 	}

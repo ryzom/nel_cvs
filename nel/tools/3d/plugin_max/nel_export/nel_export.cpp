@@ -1,7 +1,7 @@
 /** \file nel_export.cpp
  * <File descr_Iption>
  *
- * $Id: nel_export.cpp,v 1.27 2002/04/05 13:32:02 corvazier Exp $
+ * $Id: nel_export.cpp,v 1.28 2002/04/10 14:39:40 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -294,12 +294,12 @@ static BOOL CALLBACK CNelExportDlgProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
 			// ---
 			case ID_SAVEMODEL:
 				{
-					// Load the options
-					theCNelExport.initOptions();
-
 					// Init the exporter
 					nlassert (theIP);
 					theCNelExport.init (false, true, theIP);
+
+					// Load the options
+					theCNelExport.initOptions();
 
 					// Register 3d models
 					// done in dllentry registerSerial3d();

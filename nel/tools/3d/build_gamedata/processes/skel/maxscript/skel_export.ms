@@ -30,7 +30,7 @@ fn nlerror message =
 	print message
 )
 
-try
+-- try
 (
 	-- Get files in the skel_source_directory
 	files = getFiles "skel_source_directory/*.max" 
@@ -44,7 +44,7 @@ try
 		-- For each files
 		for i = 1 to files.count do
 		(
-			try
+			--try
 			(
 				-- Output file
 				output = ("output_directory/"+(getFilenameFile files[i])+".skel")
@@ -67,7 +67,10 @@ try
 						if ($ != undefined) then
 						(
 							-- Set figure mode on
-							$.controller.figureMode = true
+							if ((classof $) == Biped_Object) then
+							(
+								$.controller.figureMode = true
+							)
 
 							-- Export the skeleton template
 							if (NelExportSkeleton $ output) == false then
@@ -96,10 +99,10 @@ try
 					nlerror ("SKIPPED "+files[i])
 				)
 			)
-			catch 
+			-- catch 
 			(
 				-- Error
-				nlerror ("ERROR error exporting skeleton in files " + files[i])
+			--	nlerror ("ERROR error exporting skeleton in files " + files[i])
 			)
 		)
 	)
@@ -108,10 +111,10 @@ try
 		nlerror ("WARNING no skeleton file in folder skel_source_directory")
 	)
 )
-catch 
+-- catch 
 (
 	-- Error
-	nlerror ("ERROR fatal error exporting skeleton in folder skel_source_directory")
+--	nlerror ("ERROR fatal error exporting skeleton in folder skel_source_directory")
 )
 
 -- Bye

@@ -1,7 +1,7 @@
 /** \file ps_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.18 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: ps_located.h,v 1.19 2002/02/27 13:56:04 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -520,6 +520,8 @@ public:
 		return _TriggerID; 
 	}
 
+	
+
 protected:
 
 
@@ -701,6 +703,9 @@ public:
 
 	 /// PRIVATE USE: decrease the reference count to say that a non-integrable force has been removed.
 	 void releaseNonIntegrableForceRef(void);
+
+	 /// PRIVATE USE : access to parametric infos
+	 TPSAttribParametricInfo &getParametricInfos() { return _PInfo; }
 };
 
 

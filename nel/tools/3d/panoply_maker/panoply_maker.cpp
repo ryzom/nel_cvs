@@ -1,7 +1,7 @@
 /** \file panoply_maker.cpp
  * Panoply maker
  *
- * $Id: panoply_maker.cpp,v 1.2 2002/02/06 13:15:46 vizerie Exp $
+ * $Id: panoply_maker.cpp,v 1.3 2002/02/06 17:57:46 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -325,6 +325,12 @@ static void BuildColoredVersionForOneBitmap(const CBuildInfo &bi, const std::str
 				return;
 			}
 		}
+	}
+
+	if (masks.size() == 0) 
+	{
+		nlinfo("no masks found, processing next");
+		return; // perhaps it was a mask ?
 	}
 
 	/// generate each texture 

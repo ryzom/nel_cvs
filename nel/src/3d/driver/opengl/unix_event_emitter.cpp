@@ -1,7 +1,7 @@
 /** \file unix_event_emitter.cpp
  * <File description>
  *
- * $Id: unix_event_emitter.cpp,v 1.2 2001/02/08 10:10:26 lecroart Exp $
+ * $Id: unix_event_emitter.cpp,v 1.3 2001/02/23 09:10:58 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -234,13 +234,13 @@ void CUnixEventEmitter::processMessage (XEvent &event, CEventServer &server)
      
 	TKey key = getKey (k);
 	// TODO manage the bool (first time pressed)
-	server.postEvent (new CEventKeyDown (key, true, this));
+	server.postEvent (new CEventKeyDown (key, noKeyButton, true, this));
 
 	Text[c] = '\0';
 	if(c>0)
 	  {
 	    for (uint32 i = 0; i < c; i++)
-		server.postEvent (new CEventChar (Text[i], this));
+		server.postEvent (new CEventChar (Text[i], noKeyButton, this));
 	  }
 	break;
       }
@@ -253,7 +253,7 @@ void CUnixEventEmitter::processMessage (XEvent &event, CEventServer &server)
      
 	TKey key = getKey (k);
 	// TODO manage the bool (first time pressed)
-	server.postEvent (new CEventKeyUp (key, this));
+	server.postEvent (new CEventKeyUp (key, noKeyButton, this));
 	break;
       }
     Case(FocusIn)

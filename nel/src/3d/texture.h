@@ -1,7 +1,7 @@
 /** \file texture.h
  * Interface ITexture
  *
- * $Id: texture.h,v 1.4 2001/08/23 10:09:03 berenguier Exp $
+ * $Id: texture.h,v 1.5 2001/10/26 08:20:08 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -129,7 +129,7 @@ public:
 		Luminance,
 		Alpha,
 		AlphaLuminance,
-
+		DsDt,
 		UploadFormatCount
 	};
 

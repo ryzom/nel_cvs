@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * <File description>
  *
- * $Id: landscape.cpp,v 1.59 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: landscape.cpp,v 1.60 2001/06/21 13:13:21 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1534,7 +1534,6 @@ CVector			CLandscape::getTesselatedPos(const CPatchIdent &patchId, const CUV &uv
 	{
 		sint	N= (*it).second->getNumPatchs();
 		// patch must exist in the zone.
-		nlassert(patchId.PatchId>=0);
 		nlassert(patchId.PatchId<N);
 		const CPatch	*pa= const_cast<const CZone*>((*it).second)->getPatch(patchId.PatchId);
 

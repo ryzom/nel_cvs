@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.43 2002/02/20 11:01:41 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.44 2002/02/21 11:25:10 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -166,7 +166,7 @@ float CParticleSystem::getWantedNumTris(float dist)
 			 	 
 	if (dist > _MaxViewDist) return 0;
 	float retValue = ((1.f - dist * _InvMaxViewDist) * _MaxNumFacesWanted);	
-	nlassertex(retValue >= 0 && retValue < 10000, ("dist = %f, _MaxViewDist = %f, _MaxNumFacesWanted = %d, retValue = %f",  dist, _MaxViewDist, _MaxNumFacesWanted, retValue));
+	///nlassertex(retValue >= 0 && retValue < 10000, ("dist = %f, _MaxViewDist = %f, _MaxNumFacesWanted = %d, retValue = %f",  dist, _MaxViewDist, _MaxNumFacesWanted, retValue));
 	return retValue;
 }
 

@@ -1,7 +1,7 @@
 /** \file admin_executor_service.cpp
  * Admin Executor Service (AES)
  *
- * $Id: admin_executor_service.cpp,v 1.66 2004/09/03 09:04:46 legros Exp $
+ * $Id: admin_executor_service.cpp,v 1.67 2004/10/21 11:50:02 lecroart Exp $
  *
  */
 
@@ -63,7 +63,7 @@
 #include "nel/misc/common.h"
 #include "nel/misc/path.h"
 #include "nel/misc/value_smoother.h"
-#include "nel/misc/singelton.h"
+#include "nel/misc/singleton.h"
 #include "nel/misc/file.h"
 
 #include "nel/net/service.h"

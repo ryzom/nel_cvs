@@ -1,7 +1,7 @@
 /** \file ps_attrib_maker.h
  * <File description>
  *
- * $Id: ps_attrib_maker.h,v 1.5 2001/07/04 16:04:57 vizerie Exp $
+ * $Id: ps_attrib_maker.h,v 1.6 2001/07/04 16:12:32 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1013,7 +1013,7 @@ public:
 	/// get the scheme used
 	CPSAttribMaker<T> *getScheme(void) { return _Scheme ; }
 	/// get the scheme used (const version)
-	const CPSAttribMaker<T> *getScheme(void) const { Return _Scheme ; }
+	const CPSAttribMaker<T> *getScheme(void) const { return _Scheme ; }
 
 
 

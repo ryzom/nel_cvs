@@ -1,7 +1,7 @@
 /** \file collision_ot.h
  * Collision descriptor for time odered table
  *
- * $Id: collision_ot.h,v 1.5 2001/06/27 15:15:34 corvazier Exp $
+ * $Id: collision_ot.h,v 1.6 2003/10/10 10:08:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -195,13 +195,19 @@ public:
 	{
 		return _Enter;
 	}
-
+	
 	// Is exit
 	bool				isExit() const
 	{
 		return _Exit;
 	}
-
+	
+	// Is exit
+	bool				isInside() const
+	{
+		return _Inside;
+	}
+	
 	// Is second primitive is static ?
 	bool				isSecondStatic () const
 	{
@@ -222,7 +228,7 @@ public:
 
 	// Init the info
 	void				init (CMovePrimitive *firstPrimitive, CMovePrimitive *secondPrimitive, const CCollisionDesc& desc, bool collision,
-								bool enter, bool exit, uint8 firstWorldImage, uint8 secondWorldImage, bool secondStatic)
+								bool enter, bool exit, bool inside, uint8 firstWorldImage, uint8 secondWorldImage, bool secondStatic)
 	{
 		_FirstPrimitive=firstPrimitive;
 		_SecondPrimitive=secondPrimitive;
@@ -230,6 +236,7 @@ public:
 		_Collision=collision;
 		_Enter=enter;
 		_Exit=exit;
+		_Inside=inside;
 		_FirstWorldImage=firstWorldImage;
 		_SecondWorldImage=secondWorldImage;
 		_SecondStatic=secondStatic;
@@ -321,6 +328,7 @@ private:
 	bool				_Collision;
 	bool				_Enter;
 	bool				_Exit;
+	bool				_Inside;
 	bool				_SecondStatic;
 
 	// World images

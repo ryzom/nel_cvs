@@ -1,7 +1,7 @@
 /** \file move_primitive.cpp
  * Description of movables primitives
  *
- * $Id: move_primitive.cpp,v 1.18 2003/06/26 15:36:29 legros Exp $
+ * $Id: move_primitive.cpp,v 1.19 2003/10/10 10:08:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -392,5 +392,31 @@ uint8 CMovePrimitive::getNumWorldImageV () const
 }
 
 // ***************************************************************************
+
+bool CMovePrimitive::isInCollision (CMovePrimitive *primitive)
+{
+	// Should be ok
+	CCollisionOTInfo	*element=_RootOTInfo;
+	
+	// Look for it
+	while (element)
+	{
+		// Dynamic collision ?
+		if (!element->isCollisionAgainstStatic())
+		{
+			// Cast
+			const CCollisionOTDynamicInfo *dynInfo=static_cast<const CCollisionOTDynamicInfo*> (element);
+			
+			// Check if the primitive is used
+			if ((dynInfo->getFirstPrimitive()== primitive)||(dynInfo->getSecondPrimitive()== primitive))
+				return true;
+		}
+		
+		// Look for next
+		element=element->getNext (this);
+	}
+	
+	return false;
+}
 
 } // NLPACS

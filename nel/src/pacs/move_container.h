@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.17 2003/01/30 17:55:21 legros Exp $
+ * $Id: move_container.h,v 1.18 2003/10/10 10:08:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -245,7 +245,7 @@ private:
 
 	// Add a collision in the time ordered table
 	void						newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, 
-												bool collision, bool enter, bool exit, uint firstWorldImage, uint secondWorldImage, 
+												bool collision, bool enter, bool exit, bool inside, uint firstWorldImage, uint secondWorldImage, 
 												bool secondIsStatic, CCollisionOTDynamicInfo *dynamicColInfo);
 
 	// Add a collision in the time ordered table

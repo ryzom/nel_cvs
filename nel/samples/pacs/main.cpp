@@ -1,7 +1,7 @@
 /** \file pacs/main.cpp
  * Pacs sample using user interface.
  *
- * $Id: main.cpp,v 1.3 2002/12/17 11:20:41 corvazier Exp $
+ * $Id: main.cpp,v 1.4 2003/10/10 10:08:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,7 +155,7 @@ int main ()
 		// Each frame, the sample eval the collision in the next dynamic world image.
 		// This is to show the multiple world images fonctionnality.
 		UMoveContainer *container=UMoveContainer::createMoveContainer (-ARENA_SIZE/2.0, -ARENA_SIZE/2.0, ARENA_SIZE/2.0, ARENA_SIZE/2.0,
-			NUM_CELL, NUM_CELL, (double)SIZE_PRIMITIVE_MAX*sqrt(2.0), MAX_WORLD_IMAGE );
+			NUM_CELL, NUM_CELL, (double)SIZE_PRIMITIVE_MAX*sqrt(2.0), MAX_WORLD_IMAGE);
 
 		// Set the world image 0 as static (for borders)
 		container->setAsStatic (0);
@@ -170,16 +170,16 @@ int main ()
 			// Create static boxes around the test area
 			arrayArena.push_back (new CObjectDyn (SIZE_PRIMITIVE_MAX, SIZE_PRIMITIVE_MAX, 10*SIZE_PRIMITIVE_MAX, 0, 
 				CVectorD (SIZE_PRIMITIVE_MAX*cell-(ARENA_SIZE-SIZE_PRIMITIVE_MAX)/2, (ARENA_SIZE-SIZE_PRIMITIVE_MAX)/2, 0),
-				CVectorD(0,0,0), true, *container, *pScene, UMovePrimitive::DoNothing, 0, 1, 0));
+				CVectorD(0,0,0), true, *container, *pScene, UMovePrimitive::DoNothing, UMovePrimitive::NotATrigger, 0, 1, 0));
 			arrayArena.push_back (new CObjectDyn (SIZE_PRIMITIVE_MAX, SIZE_PRIMITIVE_MAX, 10*SIZE_PRIMITIVE_MAX, 0, 
 				CVectorD (SIZE_PRIMITIVE_MAX*cell-(ARENA_SIZE-SIZE_PRIMITIVE_MAX)/2, -(ARENA_SIZE-SIZE_PRIMITIVE_MAX)/2, 0),
-				CVectorD(0,0,0), true, *container, *pScene, UMovePrimitive::DoNothing, 0, 1, 0));
+				CVectorD(0,0,0), true, *container, *pScene, UMovePrimitive::DoNothing, UMovePrimitive::NotATrigger, 0, 1, 0));
 			arrayArena.push_back (new CObjectDyn (SIZE_PRIMITIVE_MAX, SIZE_PRIMITIVE_MAX, 10*SIZE_PRIMITIVE_MAX, 0, 
 				CVectorD ((ARENA_SIZE-SIZE_PRIMITIVE_MAX)/2, SIZE_PRIMITIVE_MAX*cell-(ARENA_SIZE-SIZE_PRIMITIVE_MAX)/2, 0),
-				CVectorD(0,0,0), true, *container, *pScene, UMovePrimitive::DoNothing, 0, 1, 0));
+				CVectorD(0,0,0), true, *container, *pScene, UMovePrimitive::DoNothing, UMovePrimitive::NotATrigger, 0, 1, 0));
 			arrayArena.push_back (new CObjectDyn (SIZE_PRIMITIVE_MAX, SIZE_PRIMITIVE_MAX, 10*SIZE_PRIMITIVE_MAX, 0, 
 				CVectorD (-(ARENA_SIZE-SIZE_PRIMITIVE_MAX)/2, SIZE_PRIMITIVE_MAX*cell-(ARENA_SIZE-SIZE_PRIMITIVE_MAX)/2, 0),
-				CVectorD(0,0,0), true, *container, *pScene, UMovePrimitive::DoNothing, 0, 1, 0));
+				CVectorD(0,0,0), true, *container, *pScene, UMovePrimitive::DoNothing, UMovePrimitive::NotATrigger, 0, 1, 0));
 		}
 
 		// Setup camera
@@ -200,7 +200,7 @@ int main ()
 		// Create one object
 		arrayObj.push_back (
 			new CObjectDyn (randomSize (), randomSize (), randomPos (), CVectorD(0,0,0), true, *container, *pScene, 
-				UMovePrimitive::Reflexion, 1, 30, 1));
+				UMovePrimitive::Reflexion, UMovePrimitive::NotATrigger, 1, 30, 1));
 
 		// Selected object
 		uint selected=0;
@@ -225,20 +225,38 @@ int main ()
 			// Insert objects in press INSERT
 			if (pDriver->AsyncListener.isKeyDown (KeyINSERT))
 			{
-				// Random cylinder and boxes
-				if (rand()&1)
-					arrayObj.push_back (new CObjectDyn (randomSize(), randomSize(), randomSize(), randomRot(), randomPos (), CVectorD(0,0,0), 
-					true, *container, *pScene, UMovePrimitive::Reflexion, 1, 30, worldImage));
+				if (pDriver->AsyncListener.isKeyDown (KeyMENU))
+				{
+					// Random cylinder and boxes
+					if (rand()&1)
+						arrayObj.push_back (new CObjectDyn (randomSize(), randomSize(), randomSize(), randomRot(), randomPos (), CVectorD(0,0,0), 
+						false, *container, *pScene, UMovePrimitive::DoNothing, (UMovePrimitive::TTrigger)(UMovePrimitive::EnterTrigger|UMovePrimitive::ExitTrigger|UMovePrimitive::OverlapTrigger), 1, 30, worldImage));
+					else
+						arrayObj.push_back (new CObjectDyn (randomSize (), randomSize (), randomPos (), CVectorD(0,0,0), false, *container, 
+						*pScene, UMovePrimitive::DoNothing, (UMovePrimitive::TTrigger)(UMovePrimitive::EnterTrigger|UMovePrimitive::ExitTrigger|UMovePrimitive::OverlapTrigger), 1, 30, worldImage));
+				}
 				else
-					arrayObj.push_back (new CObjectDyn (randomSize (), randomSize (), randomPos (), CVectorD(0,0,0), true, *container, 
-					*pScene, UMovePrimitive::Reflexion, 1, 30, worldImage));
+				{
+					// Random cylinder and boxes
+					bool fixed = (rand()&1) != 0;
+					if (rand()&1)
+						arrayObj.push_back (new CObjectDyn (randomSize(), randomSize(), randomSize(), randomRot(), randomPos (), CVectorD(0,0,0), 
+						true, *container, *pScene, fixed?UMovePrimitive::DoNothing:UMovePrimitive::Reflexion, UMovePrimitive::NotATrigger,
+						1, 30, worldImage));
+					else
+						arrayObj.push_back (new CObjectDyn (randomSize (), randomSize (), randomPos (), CVectorD(0,0,0), true, *container, 
+						*pScene, fixed?UMovePrimitive::DoNothing:UMovePrimitive::Reflexion, UMovePrimitive::NotATrigger, 1, 30, worldImage));
+				}
 			}
 
 			// Make caos if SPACE pressed
 			if (pDriver->AsyncListener.isKeyDown (KeySPACE))
 			{
 				for (uint t=0; t<arrayObj.size(); t++)
-					arrayObj[t]->setSpeed (randomSpeed ());
+				{
+					if (!arrayObj[t]->Freezed)
+						arrayObj[t]->setSpeed (randomSpeed ());
+				}
 			}
 
 			// Keyboard
@@ -279,16 +297,12 @@ int main ()
 			container->evalCollision (DELTA_TIME, worldImage);
 			
 			// Simulation new position
+			uint i;
 			for (i=0; i<arrayObj.size(); i++)
 				arrayObj[i]->doMove (DELTA_TIME, worldImage);
 
 			// Check triggers
 			clearColor=CRGBA::Black;
-			if (container->getNumTriggerInfo())
-			{
-				// White if collision
-				clearColor=CRGBA (100,100,100);
-			}
 
 			// Setup view matrix
 			int size=arrayObj.size();
@@ -313,6 +327,26 @@ int main ()
 			// Draw some lines
 			pDriver->setMatrixMode3D(*pCam);
 
+			// Compute triggers
+			uint in = 0;
+			uint out = 0;
+			uint inside = 0;
+			for (i=0; i<container->getNumTriggerInfo(); i++)
+			{
+				uint8 type = container->getTriggerInfo(i).CollisionType;
+				in += (type == UTriggerInfo::In)?1:0;
+				out += (type == UTriggerInfo::Out)?1:0;
+				inside += (type == UTriggerInfo::Inside)?1:0;
+				if (type == UTriggerInfo::Out)
+					int toto = 0;
+			}
+
+			// Draw the trigger bar
+			pDriver->setMatrixMode2D11();
+			pDriver->drawQuad(0, 0.10f, 1.f * (float)in / 50.f, 0.15f, CRGBA::Red);
+			pDriver->drawQuad(0, 0.05f, 1.f * (float)inside / 50.f, 0.10f, CRGBA::Green);
+			pDriver->drawQuad(0, 0.00f, 1.f * (float)out / 50.f, 0.05f, CRGBA::Blue);
+			
 			// Swap
 			pDriver->swapBuffers ();
 

@@ -1,7 +1,7 @@
 /** \file net_layer5/object.cpp
  * Objects for the sample. Link between 3d instance and collision primitives.
  *
- * $Id: object.cpp,v 1.2 2002/02/20 18:07:14 lecroart Exp $
+ * $Id: object.cpp,v 1.3 2003/10/10 10:08:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,6 +32,7 @@
 // 3d includes
 #include <nel/3d/u_scene.h>
 #include <nel/3d/u_instance.h>
+#include <nel/3d/u_instance_material.h>
 
 // Misc includes
 #include <nel/misc/vectord.h>
@@ -49,16 +50,48 @@ using namespace NLPACS;
 
 CObjectDyn::CObjectDyn (double width, double depth, double height, double orientation, const CVectorD& pos, 
 				 const CVectorD& speed, bool obstacle, UMoveContainer &container, UScene &scene, 
-				 UMovePrimitive::TReaction reaction, uint8 worldImage, uint8 nbImage, uint8 insertWorldImage)
+				 UMovePrimitive::TReaction reaction, NLPACS::UMovePrimitive::TTrigger trigger,
+				 uint8 worldImage, uint8 nbImage, uint8 insertWorldImage)
 {
 	// Create a box instance
 	_Instance = scene.createInstance ("rectangle.shape");
 	nlassert (_Instance);
 
+	// Freezed
+	Freezed = reaction == UMovePrimitive::DoNothing;
+	
+	// Setup the instance
+	if (_Instance->getNumMaterials())
+	{
+		uint i;
+		for (i=0; i<_Instance->getNumMaterials(); i++)
+		{
+			UInstanceMaterial &material = _Instance->getMaterial(i);
+			if (trigger != UMovePrimitive::NotATrigger)
+			{
+				// material.setBlend(true);
+				/// material.setBlendFunc(UInstanceMaterial::srcalpha, UInstanceMaterial::invsrcalpha);
+				material.setDiffuse (CRGBA(255,255,255,255));
+				// material.setOpacity(128);
+			}
+			else
+			{
+				if (Freezed)
+				{
+					material.setDiffuse (CRGBA(128,0,0,255));
+					material.setOpacity(255);
+				}
+				else
+				{
+				}
+			}
+		}
+	}
+
 	// Setup the instance
 	_Instance->setScale (CVectorD (width, depth, height));
 	_Instance->setRotQuat (CQuat (CVectorD (0, 0, 1), (float)orientation));
-
+	
 	// Create a collision volume
 	_MovePrimitive = container.addCollisionablePrimitive (worldImage, nbImage);
 	_MovePrimitive->insertInWorldImage (insertWorldImage);
@@ -71,10 +104,10 @@ CObjectDyn::CObjectDyn (double width, double depth, double height, double orient
 
 	 // This primitive is an obstacle (it blocks others)
 	_MovePrimitive->setObstacle (obstacle);
-
-	 // Setup reaction type
+	
+	// Setup reaction type
 	_MovePrimitive->setReactionType (reaction);
-
+	
 	// Setup absorption value
 	_MovePrimitive->setAbsorbtion (0.9f);
 
@@ -82,7 +115,7 @@ CObjectDyn::CObjectDyn (double width, double depth, double height, double orient
 	_MovePrimitive->UserData=(uint)this;
 
 	// Setup trigger type
-	_MovePrimitive->setTriggerType (UMovePrimitive::EnterTrigger);
+	_MovePrimitive->setTriggerType (trigger);
 
 	// Set pos and speed
 	setPos (pos);
@@ -95,12 +128,43 @@ CObjectDyn::CObjectDyn (double width, double depth, double height, double orient
 
 CObjectDyn::CObjectDyn (double diameter, double height, const CVectorD& pos, const CVectorD& speed, 
 	bool obstacle, UMoveContainer &container, UScene &scene, UMovePrimitive::TReaction reaction, 
-	uint8 worldImage, uint8 nbImage, uint8 insertWorldImage)
+	NLPACS::UMovePrimitive::TTrigger trigger, uint8 worldImage, uint8 nbImage, uint8 insertWorldImage)
 {
 	// Create a box instance
 	_Instance = scene.createInstance ("cylinder.shape");
 	nlassert (_Instance);
 
+	// Freezed
+	Freezed = reaction == UMovePrimitive::DoNothing;
+	
+	// Setup the instance
+	if (_Instance->getNumMaterials())
+	{
+		uint i;
+		for (i=0; i<_Instance->getNumMaterials(); i++)
+		{
+			UInstanceMaterial &material = _Instance->getMaterial(i);
+			if (trigger != UMovePrimitive::NotATrigger)
+			{
+				// material.setBlend(true);
+				// material.setBlendFunc(UInstanceMaterial::srcalpha, UInstanceMaterial::invsrcalpha);
+				material.setDiffuse (CRGBA(255,255,255));
+				// material.setOpacity(128);
+			}
+			else
+			{
+				if (Freezed)
+				{
+					material.setDiffuse (CRGBA(128,0,0));
+					material.setOpacity(255);
+				}
+				else
+				{
+				}
+			}
+		}
+	}
+	
 	// Setup the instance
 	_Instance->setScale (CVectorD (diameter, diameter, height));
 
@@ -114,7 +178,7 @@ CObjectDyn::CObjectDyn (double diameter, double height, const CVectorD& pos, con
 	_MovePrimitive->setRadius ((float)diameter/2.f);
 
 	// This primitive is an obstacle (it blocks others)
-	_MovePrimitive->setObstacle (true);
+	_MovePrimitive->setObstacle (obstacle);
 
 	// Setup reaction type
 	_MovePrimitive->setReactionType (reaction);
@@ -126,7 +190,7 @@ CObjectDyn::CObjectDyn (double diameter, double height, const CVectorD& pos, con
 	_MovePrimitive->UserData=(uint)this;
 
 	// Setup trigger type
-	_MovePrimitive->setTriggerType (UMovePrimitive::EnterTrigger);
+	_MovePrimitive->setTriggerType (trigger);
 
 	// Set pos and speed
 	setPos (pos);

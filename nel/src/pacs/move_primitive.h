@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.14 2003/06/26 15:36:29 legros Exp $
+ * $Id: move_primitive.h,v 1.15 2003/10/10 10:08:48 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -432,6 +432,8 @@ public:
 	}
 
 	// *** Primitive over primitive
+
+	bool	isInCollision (CMovePrimitive *primitive);
 
 private:
 	// The length of the 4 edges. The first is the width, the second is the depth

@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.42 2003/06/05 13:10:02 ledorze Exp $
+ * $Id: move_container.cpp,v 1.43 2003/10/10 10:08:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,6 +42,23 @@ using namespace NLMISC;
 
 H_AUTO_DECL ( NLPACS_Eval_Collision )
 #define	NLPACS_HAUTO_EVAL_COLLISION	H_AUTO_USE ( NLPACS_Eval_Collision )
+
+/****************************************************************************
+
+Doc: 
+
+	  // Non collisionnable primitive
+	Their moves are evaluate one by one with evalNCPrimitiveCollision().
+	If a collision is found, reaction() is called.
+  
+	// Collisionnable primitives
+	Each primitive must be moved first with the move() method.
+	Their moves are evaluate all at once. All the collisions found are time sorted in a time orderin table (_TimeOT).
+	While the table is not empty, the first collision occured in time is solved and  
+	If a collision is found, reaction() is called.
+	
+	  
+****************************************************************************/
 
 namespace NLPACS 
 {
@@ -215,6 +232,19 @@ void  CMoveContainer::evalCollision (double deltaTime, uint8 worldImage)
 
 		// Keep this collision
 		reaction (*nextCollision);
+
+		// Remove this collision from ot
+		if (!nextCollision->isCollisionAgainstStatic ())
+		{
+			// Remove the primitive from OT
+			nextCollision->unlink();
+
+			CCollisionOTDynamicInfo *info = static_cast<CCollisionOTDynamicInfo*>(nextCollision);
+			if (info->getFirstPrimitive())
+				info->getFirstPrimitive()->removeCollisionOTInfo(info);
+			if (info->getSecondPrimitive())
+				info->getSecondPrimitive()->removeCollisionOTInfo(info);
+		}
 
 		// Last time
 		double newTime=nextCollision->getCollisionTime ();
@@ -800,12 +830,16 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 						// Look if valid in Y
 						if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 						{
-							if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
-								primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo, contactNormal))
+							// If not already in collision with this primitive
+							if (!primitive->isInCollision (otherPrimitive))
 							{
-								if (testMove)
-									return true;
-								found=true;
+								if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
+									primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo, contactNormal))
+								{
+									if (testMove)
+										return true;
+									found=true;
+								}
 							}
 						}
 					}
@@ -832,12 +866,16 @@ bool CMoveContainer::evalOnePrimitiveCollision (double beginTime, CMovePrimitive
 					// Look if valid in Y
 					if ( (wI->getBBYMin() < otherWI->getBBYMax()) && (otherWI->getBBYMin() < wI->getBBYMax()) )
 					{
-						if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
-							primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo, contactNormal))
+						// If not already in collision with this primitive
+						if (!primitive->isInCollision (otherPrimitive))
 						{
-							if (testMove)
-								return true;
-							found=true;
+							if (evalPrimAgainstPrimCollision (beginTime, primitive, otherPrimitive, wI, otherWI, testMove,
+							primitiveWorldImage, worldImage, secondIsStatic, dynamicColInfo, contactNormal))
+							{
+								if (testMove)
+									return true;
+								found=true;
+							}
 						}
 					}
 				}
@@ -869,48 +907,53 @@ bool CMoveContainer::evalPrimAgainstPrimCollision (double beginTime, CMovePrimit
 								firstTime, lastTime, *primitive, *otherPrimitive))
 	{
 		// Enter or exit
-		bool enter = (beginTime<=firstTime) && (firstTime<_DeltaTime);
-		bool exit = (beginTime<=lastTime) && (lastTime<_DeltaTime);
-		bool overlap = (firstTime<=beginTime) && (lastTime>_DeltaTime);
-		bool collision = ( beginTime<((firstTime+lastTime)/2) ) && (firstTime<=_DeltaTime);
-
+		bool enter = (beginTime<=firstTime) && (firstTime<_DeltaTime) && ((primitive->getTriggerType()&UMovePrimitive::EnterTrigger) 
+			|| (otherPrimitive->getTriggerType()&UMovePrimitive::EnterTrigger));
+		bool exit = (beginTime<=lastTime) && (lastTime<_DeltaTime) && ((primitive->getTriggerType()&UMovePrimitive::ExitTrigger) 
+			|| (otherPrimitive->getTriggerType()&UMovePrimitive::ExitTrigger));
+		bool overlap = (firstTime<=beginTime) && (lastTime>_DeltaTime) && ((primitive->getTriggerType()&UMovePrimitive::OverlapTrigger) 
+			|| (otherPrimitive->getTriggerType()&UMovePrimitive::OverlapTrigger));
+		bool contact = ( beginTime<((firstTime+lastTime)/2) ) && (firstTime<=_DeltaTime);
+		bool collision = contact && (primitive->isObstacle() && otherPrimitive->isObstacle ());
+		
 		// Return collision time
 
-		if (testMove && collision)
-			return true;
-		else
+		if (testMove)
+			return contact;
+
+		/** 
+		  * Raise Trigger !
+		  * For collisionnable primitives, trigger are raised here (in reaction) because
+		  * this is the moment we are sure the collision happened.
+		  *
+		  * For non collisionable primitves, the trigger is raised at collision time because without OT,
+		  * we can't stop evaluating collision on triggers.
+		  */
+		if (primitive->isNonCollisionable () && (enter || exit || overlap))
 		{
-			// TODO: make new collision when collision==false to raise triggers
-
-			/** 
-			  * Raise Trigger !
-			  * For collisionnable primitives, trigger are raised here (in reaction) because
-			  * this is the moment we are sure the collision happened.
-			  *
-			  * For non collisionable primitves, the trigger is raised at collision time because without OT,
-			  * we can't stop evaluating collision on triggers.
-			  */
-			if (primitive->isNonCollisionable () && (enter || exit || overlap))
+			if (primitive->isTriggered (*otherPrimitive, enter, exit))
 			{
-				if (primitive->isTriggered (*otherPrimitive, enter, exit))
-				{
-					// Add a trigger
-					newTrigger (primitive, otherPrimitive, desc, enter ? UTriggerInfo::In : exit ? UTriggerInfo::Out : UTriggerInfo::Inside);
-				}
-
-				// If the other primitive is not an obstacle, skip it because it will re-generate collisions.
-				if (!otherPrimitive->isObstacle ())
-					return false;
+				// Add a trigger
+				if (enter)
+					newTrigger (primitive, otherPrimitive, desc, UTriggerInfo::In);
+				if (exit)
+					newTrigger (primitive, otherPrimitive, desc, UTriggerInfo::Out);
+				if (overlap)
+					newTrigger (primitive, otherPrimitive, desc, UTriggerInfo::Inside);
 			}
 
-			// OK, collision
-			if (collision)
-				newCollision (primitive, otherPrimitive, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic,
-								dynamicColInfo);
-
-			// Collision
-			return collision;
+			// If the other primitive is not an obstacle, skip it because it will re-generate collisions.
+			if (!collision)
+				return false;
 		}
+
+		// OK, collision
+		if (contact || enter || exit || overlap)
+			newCollision (primitive, otherPrimitive, desc, contact, enter, exit, overlap, firstWorldImage, secondWorldImage, secondIsStatic,
+							dynamicColInfo);
+
+		// Collision
+		return collision;
 	}
 	return false;
 }
@@ -1001,7 +1044,7 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 
 // ***************************************************************************
 
-void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, bool collision, bool enter, bool exit,
+void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second, const CCollisionDesc& desc, bool collision, bool enter, bool exit, bool inside,
 								   uint firstWorldImage, uint secondWorldImage, bool secondIsStatic, CCollisionOTDynamicInfo *dynamicColInfo)
 {
 //	H_AUTO(PACS_MC_newCollision_short);
@@ -1010,7 +1053,7 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 
 	if (dynamicColInfo)
 	{
-		dynamicColInfo->init (first, second, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
+		dynamicColInfo->init (first, second, desc, collision, enter, exit, inside, firstWorldImage, secondWorldImage, secondIsStatic);
 	}
 	else
 	{
@@ -1026,7 +1069,7 @@ void CMoveContainer::newCollision (CMovePrimitive* first, CMovePrimitive* second
 		{
 			// Build info
 			CCollisionOTDynamicInfo *info = allocateOTDynamicInfo ();
-			info->init (first, second, desc, collision, enter, exit, firstWorldImage, secondWorldImage, secondIsStatic);
+			info->init (first, second, desc, collision, enter, exit, inside, firstWorldImage, secondWorldImage, secondIsStatic);
 
 			// Add in the primitive list
 			first->addCollisionOTInfo (info);
@@ -1569,8 +1612,14 @@ void CMoveContainer::reaction (const CCollisionOTInfo& first)
 		if (dynInfo->getFirstPrimitive ()->isCollisionable ())
 		{
 			if (dynInfo->getFirstPrimitive ()->isTriggered (*dynInfo->getSecondPrimitive (), dynInfo->isEnter(), dynInfo->isExit()))
-				newTrigger (dynInfo->getFirstPrimitive (), dynInfo->getSecondPrimitive (), dynInfo->getCollisionDesc (),
-							dynInfo->isEnter() ? UTriggerInfo::In : dynInfo->isExit() ? UTriggerInfo::Out : UTriggerInfo::Inside);
+			{
+				if (dynInfo->isEnter())
+					newTrigger (dynInfo->getFirstPrimitive (), dynInfo->getSecondPrimitive (), dynInfo->getCollisionDesc (), UTriggerInfo::In);
+				if (dynInfo->isExit())
+					newTrigger (dynInfo->getFirstPrimitive (), dynInfo->getSecondPrimitive (), dynInfo->getCollisionDesc (), UTriggerInfo::Out);
+				if (dynInfo->isInside())
+					newTrigger (dynInfo->getFirstPrimitive (), dynInfo->getSecondPrimitive (), dynInfo->getCollisionDesc (), UTriggerInfo::Inside);
+			}
 		}
 	}
 }

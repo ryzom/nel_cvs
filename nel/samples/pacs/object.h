@@ -1,7 +1,7 @@
 /** \file net_layer5/object.h
  * Objects for the sample. Link between 3d instance and collision primitives.
  *
- * $Id: object.h,v 1.2 2002/02/20 18:07:14 lecroart Exp $
+ * $Id: object.h,v 1.3 2003/10/10 10:08:49 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -66,12 +66,14 @@ public:
 	/// Box constructor
 	CObjectDyn (double width, double depth, double height, double orientation, const NLMISC::CVectorD& pos,
 		const NLMISC::CVectorD& speed, bool obstacle, NLPACS::UMoveContainer &container, NL3D::UScene &scene, 
-		NLPACS::UMovePrimitive::TReaction reaction, uint8 worldImage, uint8 nbImage, uint8 insertWorldImage);
+		NLPACS::UMovePrimitive::TReaction reaction, NLPACS::UMovePrimitive::TTrigger trigger, 
+		uint8 worldImage, uint8 nbImage, uint8 insertWorldImage);
 
 	/// Cylinder constructor
 	CObjectDyn (double radius, double height, const NLMISC::CVectorD& pos, const NLMISC::CVectorD& speed, 
 		bool obstacle, NLPACS::UMoveContainer &container, NL3D::UScene &scene, 
-		NLPACS::UMovePrimitive::TReaction reaction, uint8 worldImage, uint8 nbImage, uint8 insertWorldImage);
+		NLPACS::UMovePrimitive::TReaction reaction, NLPACS::UMovePrimitive::TTrigger trigger, 
+		uint8 worldImage, uint8 nbImage, uint8 insertWorldImage);
 
 	/// Set position
 	void			setPos (const NLMISC::CVectorD& pos);
@@ -99,6 +101,8 @@ public:
 	/// Remove object from container
 	void			remove (NLPACS::UMoveContainer &container, NL3D::UScene &scene);
 
+	bool						Freezed;
+	
 private:
 
 	bool						_TryMove;

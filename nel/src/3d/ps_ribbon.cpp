@@ -1,7 +1,7 @@
 /** \file ps_ribbon.cpp
  * Ribbons particles.
  *
- * $Id: ps_ribbon.cpp,v 1.4 2002/02/28 12:59:51 besson Exp $
+ * $Id: ps_ribbon.cpp,v 1.5 2002/03/01 16:36:55 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -112,6 +112,11 @@ CPSRibbon::TVBMap			CPSRibbon::_TexColoredVBMap;		// index / vertex buffer + col
 CPSRibbon::TVBMap			CPSRibbon::_TexFadedColoredVBMap;   // index / vertex buffer + faded colors + texture
 
 
+struct CDummy2DAngle : CPSRotated2DParticle
+{
+	CPSLocated *getAngle2DOwner(void) { return NULL; }
+};
+
 ///==================================================================================================================
 void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
@@ -159,12 +164,7 @@ void CPSRibbon::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 		CPSSizedParticle::serialSizeScheme(f);
 
 		// we dont use the 2d angle anymore...serial a dummy one
-		{
-			struct CDummy2DAngle : CPSRotated2DParticle
-			{
-				CPSLocated *getAngle2DOwner(void) { return NULL; }
-			};
-
+		{			
 			 CDummy2DAngle _Dummy2DAngle;
 			_Dummy2DAngle.serialAngle2DScheme(f); 
 		}

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.10 2000/11/24 11:22:13 cado Exp $
+ * $Id: naming_client.cpp,v 1.11 2000/11/27 10:07:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -52,15 +52,18 @@ CRegServices	CNamingClient::_RegisteredServices;
 bool			CNamingClient::_TransactionMode = true;
 
 
-/* These values must correspond to CallbackArray in the Naming Service.
+
+/**@name These values must correspond to CallbackArray in the Naming Service.
  * They are used instead of their string equivalents to prevent the NS from sending back
  * binding values.
  */
+//@{
 const sint16 LK_CBINDEX = 0;
 const sint16 LA_CBINDEX = 1;
 const sint16 RG_CBINDEX = 2;
 const sint16 UN_CBINDEX = 3;
 const sint16 QP_CBINDEX = 4;
+//@}
 
 
 /*
@@ -223,7 +226,7 @@ uint16 CNamingClient::queryServicePort( const std::string& name, const CInetAddr
 	CNamingClient::_ClientSock->send( msgout );
 
 	// Wait for answer
-	uint16 port;
+	uint16 port = 0;
 	CMessage msgin( "", true );
 	CNamingClient::_ClientSock->receive( msgin );
 	msgin.serial( port );

@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.10 2000/11/23 14:11:51 cado Exp $
+ * $Id: local_area.cpp,v 1.11 2000/11/27 10:07:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -116,7 +116,7 @@ void NLNET::cbProcessEntityStateFull( CMessage& msgin, TSenderId idfrom )
  */
 void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
 {
-	TEntityId id;
+	TEntityId id = 0;
 	msgin.serial( id );
 	CLocalArea::Instance->User.setId( id );
 	nldebug( "Local entity has id %u", id );
@@ -128,7 +128,7 @@ void NLNET::cbAssignId( CMessage& msgin, TSenderId idfrom )
  */
 void NLNET::cbRemoveEntity( CMessage& msgin, TSenderId idfrom )
 {
-	TEntityId id;
+	TEntityId id = 0;
 	msgin.serial( id );
 	CLocalArea::Instance->_Neighbors.erase( id );
 	nldebug( "Removed entity %u", id );

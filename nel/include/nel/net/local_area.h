@@ -1,7 +1,7 @@
 /** \file local_area.h
  * The area all around a player
  *
- * $Id: local_area.h,v 1.7 2000/11/10 16:58:34 cado Exp $
+ * $Id: local_area.h,v 1.8 2000/11/27 10:07:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -37,7 +37,10 @@
 namespace NLNET {
 
 
+/// Type of the map from entity identifies to remote entities
 typedef std::map<TEntityId,CRemoteEntity*> CRemoteEntities;
+
+/// Iterator on CRemoteEntities
 typedef CRemoteEntities::iterator ItRemoteEntities;
 
 class CMessage;

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.h,v 1.19 2000/11/24 11:22:13 cado Exp $
+ * $Id: socket.h,v 1.20 2000/11/27 10:07:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -42,7 +42,7 @@ namespace NLNET
 typedef uint32 TSenderId;
 
 
-// Map for msg name and msg type number association
+/// Map for msg name and msg type number association
 typedef std::map<std::string,TTypeNum> CMsgMap;
 
 

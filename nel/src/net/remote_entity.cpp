@@ -1,7 +1,7 @@
 /** \file remote_entity.cpp
  * Remote-controlled entities
  *
- * $Id: remote_entity.cpp,v 1.6 2000/11/20 15:51:49 cado Exp $
+ * $Id: remote_entity.cpp,v 1.7 2000/11/27 10:07:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -34,7 +34,7 @@ namespace NLNET {
 
 
 /// Converge duration constant
-const TDuration CRemoteEntity::ConvergeDuration = 0.5;
+const TDuration CRemoteEntity::ConvergeDuration = 2.0; //0.5;
 
 
 /*

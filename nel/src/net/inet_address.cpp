@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: inet_address.cpp,v 1.19 2000/11/23 13:09:50 cado Exp $
+ * $Id: inet_address.cpp,v 1.20 2000/11/27 10:07:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,12 +176,12 @@ CInetAddress& CInetAddress::setByName( const std::string& hostName )
 #ifdef NL_OS_WINDOWS
 	iaddr.S_un.S_addr = inet_addr( hostName.c_str() );
 	if ( iaddr.S_un.S_addr == INADDR_NONE )
-	{
 #elif defined NL_OS_UNIX
 	iaddr.s_addr = inet_addr( hostName.c_str() );
 	if ( iaddr.s_addr == INADDR_NONE )
-	{
 #endif
+	{
+
 		// Otherwise use the traditional DNS look-up
 		hostent *phostent = gethostbyname( hostName.c_str() );
 		if ( phostent == NULL )

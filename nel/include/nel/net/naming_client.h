@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.11 2000/11/24 11:22:13 cado Exp $
+ * $Id: naming_client.h,v 1.12 2000/11/27 10:07:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NLNET {
 
 class CSocket;
 
+/// Type of map of registered services
 typedef std::map<std::string,CInetAddress> CRegServices;
 
 

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.25 2000/11/21 17:44:06 valignat Exp $
+ * $Id: socket.cpp,v 1.26 2000/11/27 10:07:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -143,7 +143,7 @@ bool CSocket::dataAvailable() throw (ESocket)
 void CSocket::processBindMessage( CMessage& message )
 {
 	std::string key;
-	TTypeNum num;
+	TTypeNum num = 0;
 	message.serial( key );
 	message.serial( num );
 	_MsgMap.insert( TMsgMapItem(key,num) );
@@ -220,7 +220,7 @@ CMessage CSocket::encode( CMessage& msg ) throw (ESocket)
 CMessage CSocket::decode( CMessage& alldata ) throw (ESocket)
 {
 	// 1. Read message type
-	TTypeNum msgtype;
+	TTypeNum msgtype = 0;
 	alldata.serial( msgtype );
 
 	// 2. Read message name (optional)
@@ -234,7 +234,7 @@ CMessage CSocket::decode( CMessage& alldata ) throw (ESocket)
 		msgname[msgnamelen] = '\0';
 	}
 	// 3. Read message payload size
-	uint32 msgsize;
+	uint32 msgsize = 0;
 	alldata.serial( msgsize );
 
 	// Set message type

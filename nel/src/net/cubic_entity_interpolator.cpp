@@ -1,7 +1,7 @@
 /** \file cubic_entity_interpolator.cpp
  * Cubic interpolation of entity
  *
- * $Id: cubic_entity_interpolator.cpp,v 1.2 2000/11/21 10:57:50 cado Exp $
+ * $Id: cubic_entity_interpolator.cpp,v 1.3 2000/11/27 10:07:07 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -40,6 +40,7 @@ namespace NLNET {
 CMatrix	CCubicEntityInterpolator::_BezierMatrix;
 bool	CCubicEntityInterpolator::_Initialized = false;
 
+/// The 4x4 Bezier Matrix
 const float BezierValues [16] =
 {
 	-1, 3, -3, 1, // column 1
@@ -88,8 +89,8 @@ void CCubicEntityInterpolator::begin( const IMovingEntity& src, const IMovingEnt
 
 	// Precompute CubicMatrix
 	CVector p1 = src.pos();
-	CVector p2 = src.pos() + src.trajVector()/12.0f; // amplitude correction
-	CVector p3 = dest.pos() - dest.trajVector()/12.0f; // amplitude correction
+	CVector p2 = src.pos() + src.trajVector()/8.0f; // amplitude correction
+	CVector p3 = dest.pos() - dest.trajVector()/8.0f; // amplitude correction
 	CVector p4 = dest.pos();
 
 	// Test

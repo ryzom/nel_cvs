@@ -1,7 +1,7 @@
 /** \file dru.cpp
  * Driver Utilities.
  *
- * $Id: dru.cpp,v 1.28 2001/01/31 08:54:23 coutelas Exp $
+ * $Id: dru.cpp,v 1.29 2001/02/07 15:15:00 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -128,7 +128,7 @@ IDriver		*CDRU::createGlDriver() throw (EDru)
 
 
 // ***************************************************************************
-void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& texture, IDriver& driver, CViewport viewport)
+void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& texture, IDriver& driver, CViewport viewport, bool blend)
 {
 	CMatrix mtx;
 	mtx.identity();
@@ -140,7 +140,7 @@ void	CDRU::drawBitmap (float x, float y, float width, float height, ITexture& te
 	static CMaterial mat;
 	mat.initUnlit ();
 	mat.setTexture (0, &texture);
-	mat.setBlend(true);
+	mat.setBlend(blend);
 
 	static CVertexBuffer vb;
 	vb.setVertexFormat (IDRV_VF_XYZ|IDRV_VF_UV[0]);

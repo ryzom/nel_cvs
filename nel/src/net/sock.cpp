@@ -1,7 +1,7 @@
 /** \file sock.cpp
  * Network engine, layer 0, base class
  *
- * $Id: sock.cpp,v 1.30 2003/01/16 09:16:08 lecroart Exp $
+ * $Id: sock.cpp,v 1.31 2003/02/14 14:13:24 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -49,8 +49,8 @@
 #	include <netdb.h>
 #	include <fcntl.h>
 #	include <errno.h>
-#	define SOCKET_ERROR -1
-#	define INVALID_SOCKET -1
+#	define SOCKET_ERROR (~0U)
+#	define INVALID_SOCKET (~0U)
 #	define ERROR_NUM errno
 #	define ERROR_WOULDBLOCK EWOULDBLOCK
 #	define ERROR_MSG strerror(errno)

@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.cpp,v 1.6 2003/02/10 10:26:14 lecroart Exp $
+ * $Id: report.cpp,v 1.7 2003/02/14 14:13:01 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -201,7 +201,7 @@ TReportResult report (const std::string &title, const std::string &header, const
 	SendMessage (edit, WM_SETFONT, (LONG) font, TRUE);
 
 	// set the edit text limit to lot of :)
-	SendMessage (edit, EM_LIMITTEXT, -1, 0);
+	SendMessage (edit, EM_LIMITTEXT, ~0U, 0);
 
 	string formatedBody;
 	// replace \n with \r\n

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.71 2003/01/14 12:10:58 lecroart Exp $
+ * $Id: path.cpp,v 1.72 2003/02/14 14:12:18 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -1068,7 +1068,7 @@ bool CFile::isDirectory (const string &filename)
 {
 #ifdef NL_OS_WINDOWS
 	DWORD res = GetFileAttributes(filename.c_str());
-	if (res == -1)
+	if (res == ~0U)
 	{
 		nlwarning ("%s is not a valid file / directory name", filename);
 		return false;
@@ -1089,7 +1089,7 @@ bool CFile::isDirectory (const string &filename)
 bool CFile::isExists (const string &filename)
 {
 #ifdef NL_OS_WINDOWS
-	return (GetFileAttributes(filename.c_str()) != -1);
+	return (GetFileAttributes(filename.c_str()) != ~0U);
 #else // NL_OS_WINDOWS
 	struct stat buf;
 	return stat (filename.c_str (), &buf) == 0;

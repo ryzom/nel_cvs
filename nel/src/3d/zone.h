@@ -1,7 +1,7 @@
 /** \file 3d/zone.h
  * <File description>
  *
- * $Id: zone.h,v 1.17 2002/08/21 13:38:05 corvazier Exp $
+ * $Id: zone.h,v 1.18 2003/04/23 10:07:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/smart_ptr.h"
 #include "nel/misc/stream.h"
 #include "nel/misc/debug.h"
+#include "nel/misc/bit_set.h"
 #include "3d/tessellation.h"
 #include "3d/patch.h"
 #include "3d/bezier_patch.h"
@@ -520,6 +521,15 @@ public:
 	  */
 	void copyTilesFlags(sint destPatchId, const CPatch *srcPatch);
 
+	/** Get the Bounding spehere of a patch. Stored in Zone as an array and not in CPatch for Fast Memory access
+		consideration during clipping.
+		Work only when zone compiled.
+	*/
+	const CBSphere	&getPatchBSphere(uint patch) const;
+
+	/// Is the patch clipped (ie not visible). crash if bad Id.
+	bool			isPatchRenderClipped(uint patch) const {return _PatchRenderClipped.get(patch);}
+
 // Private part.
 private:
 /*********************************/
@@ -557,6 +567,11 @@ private:
 	// The patchs.
 	std::vector<CPatch>			Patchs;
 	std::vector<CPatchConnect>	PatchConnects;
+	// Clipped States and BSphere stored here and not in CPatch for faster memory access during clip
+	std::vector<CBSphere>		_PatchBSpheres;
+	NLMISC::CBitSet				_PatchRenderClipped;
+	NLMISC::CBitSet				_PatchOldRenderClipped;
+
 
 	/** List of PointLights that may influences Patchs and objects walking on them.
 	 */
@@ -596,6 +611,8 @@ private:
 	// For CPatch: build a bindInfo.
 	void			buildBindInfo(uint patchId, uint edge, CZone *neighborZone, CPatch::CBindInfo	&paBind);
 
+	// Patch Array Clip
+	void			clipPatchs(const std::vector<CPlane>	&pyramid);
 };
 
 

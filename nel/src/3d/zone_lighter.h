@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.h
  * Class to light zones
  *
- * $Id: zone_lighter.h,v 1.15 2003/04/09 12:18:18 corvazier Exp $
+ * $Id: zone_lighter.h,v 1.16 2003/04/23 10:06:28 berenguier Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,6 +33,8 @@
 #include "nel/misc/bit_set.h"
 #include "nel/misc/pool_memory.h"
 #include "nel/misc/random.h"
+#include "nel/misc/bitmap.h"
+#include "nel/misc/mutex.h"
 
 #include "nel/3d/frustum.h"
 #include "3d/zone.h"
@@ -56,6 +58,7 @@ class CMeshBase;
 class CMeshMRMGeom;
 class CWaterShape;
 class CRenderZBuffer;
+class CMaterial;
 
 // The zone lighter
 class CZoneLighter
@@ -460,7 +463,7 @@ private:
 	std::vector<std::vector<uint8> >			_ShadowArray;
 
 	// Processes
-	CSynchronized<std::vector<bool> >			_PatchComputed;
+	NLMISC::CSynchronized<std::vector<bool> >	_PatchComputed;
 	std::vector<uint>							_LastPatchComputed;
 	uint										_NumberOfPatchComputed;
 	uint										_ProcessCount;

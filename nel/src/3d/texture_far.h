@@ -1,7 +1,7 @@
 /** \file texture_far.h
  * <File description>
  *
- * $Id: texture_far.h,v 1.5 2002/08/21 17:18:19 berenguier Exp $
+ * $Id: texture_far.h,v 1.6 2003/04/23 10:07:58 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -139,6 +139,11 @@ public:
 	/// For lighting update, get Next (CiruclarList). If ==this, then list is empty
 	CTextureFar					*getNextUL() const {return _ULNext;}
 
+
+	// Get number of patch in this textureFar
+	uint32						getPatchCount() const {return _PatchCount;}
+	uint32						getPatchWidth() const {return _OriginalWidth/NL_NUM_FAR_PATCHES_BY_EDGE;}
+	uint32						getPatchHeight() const {return _OriginalHeight/NL_NUM_FAR_PATCHES_BY_EDGE;}
 
 	// Data
 

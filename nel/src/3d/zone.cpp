@@ -1,7 +1,7 @@
 /** \file 3d/zone.cpp
  * <File description>
  *
- * $Id: zone.cpp,v 1.66 2003/04/14 09:33:08 berenguier Exp $
+ * $Id: zone.cpp,v 1.67 2003/04/23 10:07:41 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -238,6 +238,11 @@ void			CZone::build(const CZoneInfo &zoneInfo, uint32 numVertices)
 	NumVertices= maxVertex+1;
 	NumVertices= max((uint32)NumVertices, numVertices);
 
+	// Init the Clip Arrays
+	_PatchRenderClipped.resize(Patchs.size());
+	_PatchOldRenderClipped.resize(Patchs.size());
+	_PatchRenderClipped.setAll();
+	_PatchOldRenderClipped.setAll();
 
 	// Copy PointLights.
 	//=========================
@@ -376,6 +381,13 @@ void			CZone::build(const CZone &zone)
 	Patchs= zone.Patchs;
 	PatchConnects= zone.PatchConnects;
 
+	// Init the Clip Arrays
+	_PatchRenderClipped.resize(Patchs.size());
+	_PatchOldRenderClipped.resize(Patchs.size());
+	_PatchRenderClipped.setAll();
+	_PatchOldRenderClipped.setAll();
+
+
 	// copy pointLights.
 	//=========================
 	_PointLightArray= zone._PointLightArray;
@@ -466,6 +478,15 @@ void			CZone::serial(NLMISC::IStream &f)
 		f.xmlPop ();
 	}
 
+	// If read, must create and init Patch Clipped state to true (clipped even if not compiled)
+	if(f.isReading())
+	{
+		_PatchRenderClipped.resize(Patchs.size());
+		_PatchOldRenderClipped.resize(Patchs.size());
+		_PatchRenderClipped.setAll();
+		_PatchOldRenderClipped.setAll();
+	}
+
 	// If read and version 0, must init default TileColors of patchs.
 	//===============================================================
 	// if(f.isReading() && ver<2) ... 
@@ -538,6 +559,19 @@ void			CZone::compile(CLandscape *landscape, TZoneMap &loadedZones)
 		baseVertices[3]= &(BaseVertices[pc.BaseVertices[3]]->Vert);
 		pa.compile(this, j, pa.OrderS, pa.OrderT, baseVertices, pc.ErrorSize);
 	};
+
+	// compile() the Clip information for the patchs.
+	//======================
+	_PatchBSpheres.resize(Patchs.size());
+	for(j=0;j<(sint)Patchs.size();j++)
+	{
+		CPatch				&pa= Patchs[j];
+
+		// Buil the BSPhere of the patch.
+		CAABBox	bb= pa.buildBBox();
+		_PatchBSpheres[j].Center= bb.getCenter();
+		_PatchBSpheres[j].Radius= bb.getRadius();
+	}
 
 	// bind() the patchs. (after all compiled).
 	//===================
@@ -873,6 +907,17 @@ bool			CZone::patchOnBorder(const CPatchConnect &pc) const
 
 
 // ***************************************************************************
+const CBSphere	&CZone::getPatchBSphere(uint patch) const
+{
+	static	CBSphere	dummySphere;
+	if(patch<_PatchBSpheres.size())
+		return _PatchBSpheres[patch];
+	else
+		return dummySphere;
+}
+
+
+// ***************************************************************************
 void			CZone::clip(const std::vector<CPlane>	&pyramid)
 {
 	H_AUTO( NLMISC_ClipZone );
@@ -925,25 +970,15 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	{
 		H_AUTO( NLMISC_ClipZone_Out );
 
-		CPatch		*pPatch= &(*Patchs.begin());
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-		{
-			// The patch is entirely clipped, and so on for Render.
-			pPatch->forceClip();
-			pPatch->forceRenderClip();
-		}
+		// Set All RenderClip flags to true.
+		_PatchRenderClipped.setAll();
 	}
 	else if(ClipResult==ClipIn)
 	{
 		H_AUTO( NLMISC_ClipZone_In );
 
-		CPatch		*pPatch= &(*Patchs.begin());
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-		{
-			// The patch is entirely unclipped, and so on for Render.
-			pPatch->forceNoClip();
-			pPatch->forceNoRenderClip();
-		}
+		// Set All RenderClip flags to false.
+		_PatchRenderClipped.clearAll();
 	}
 	else
 	{
@@ -957,13 +992,8 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 			patchPyramid[i]= pyramid[patchPyramidIndex[i]];
 		}
 
-		// For all patchs
-		CPatch		*pPatch= &(*Patchs.begin());
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-		{
-			// clip with the simplified pyramid
-			pPatch->clip(patchPyramid);
-		}
+		// clip all patchs with the simplified pyramid
+		clipPatchs(patchPyramid);
 	}
 
 
@@ -972,16 +1002,56 @@ void			CZone::clip(const std::vector<CPlane>	&pyramid)
 	// If there is a change in the Clip of the zone, or if patchs may have change (ie ClipSide is undetermined).
 	if(oldClipResult!=ClipResult || oldClipResult==ClipSide)
 	{
+		// get BitSet as Raw Array of uint32
+		uint32	*oldRenderClip= const_cast<uint32*>(&_PatchOldRenderClipped.getVector()[0]);
+		const	uint32	*newRenderClip= &_PatchRenderClipped.getVector()[0];
+		uint	numPatchs= Patchs.size();
 		// Then, we must test by patch.
-		CPatch		*pPatch= &(*Patchs.begin());
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+		for(uint i=0;i<numPatchs;oldRenderClip++, newRenderClip++)
 		{
-			// For all patchs, we may delete or allocate / Fill VBs.
-			pPatch->updateClipPatchVB();
+			uint32	oldWord= *oldRenderClip;
+			uint32	newWord= *newRenderClip;
+			// process at max 32 patch
+			uint	maxNumBits= min((numPatchs-i), 32U);
+			uint32	mask= 1;
+			for(;maxNumBits>0;maxNumBits--, mask<<=1, i++)
+			{
+				// same as: if(_PatchOldRenderClipped[i] != _PatchRenderClipped[i])
+				if( (oldWord^newWord)&mask )
+				{
+					// set the flag.
+					*oldRenderClip&= ~mask;
+					*oldRenderClip|= newWord&mask;
+					// update clip patch
+					Patchs[i].updateClipPatchVB( (newWord&mask)!=0 );
+				}
+			}
 		}
 
 	}
 
+}
+
+
+// ***************************************************************************
+void			CZone::clipPatchs(const std::vector<CPlane>	&pyramid)
+{
+	// Init all to Not clipped
+	_PatchRenderClipped.clearAll();
+
+	for(uint j=0;j<_PatchBSpheres.size();j++)
+	{
+		CBSphere	&bSphere= _PatchBSpheres[j];
+		for(sint i=0;i<(sint)pyramid.size();i++)
+		{
+			// If entirely out.
+			if(!bSphere.clipBack(pyramid[i]))
+			{
+				_PatchRenderClipped.set(j, true);
+				break;
+			}
+		}
+	}
 }
 
 
@@ -1066,19 +1136,12 @@ void			CZone::refineAll()
 	if(Patchs.size()==0)
 		return;
 
-	// Do a dummy clip.
-	CPatch		*pPatch= &(*Patchs.begin());
-	sint n;
-	for(n=(sint)Patchs.size();n>0;n--, pPatch++)
-	{
-		pPatch->forceNoClip();
-		// DO NOT do a forceNoRenderClip(), to avoid big allocation of Near/Far VB vertices in driver.
-	}
+	// DO NOT do a forceNoRenderClip(), to avoid big allocation of Near/Far VB vertices in driver.
 	// DO NOT modify ClipResult, to avoid big allocation of Near/Far VB vertices in driver.
 
-
 	// refine ALL patchs (even those which may be invisible).
-	pPatch= &(*Patchs.begin());
+	CPatch		*pPatch= &(*Patchs.begin());
+	sint n;
 	for(n=(sint)Patchs.size();n>0;n--, pPatch++)
 	{
 		// For Pacs construction: may exclude some patch from refineAll (for speed improvement).
@@ -1113,9 +1176,9 @@ void			CZone::preRender()
 	nlassert(Compiled);
 
 	// Must be 2^X-1.
-	static const	sint	updateFarRefineFreq= 15;
+	static const	uint	updateFarRefineFreq= 15;
 	// Take the renderDate here.
-	sint		curDateMod= CLandscapeGlobals::CurrentRenderDate & updateFarRefineFreq;
+	uint		curDateMod= CLandscapeGlobals::CurrentRenderDate & updateFarRefineFreq;
 
 	// If no patchs, do nothing.
 	if(Patchs.empty())
@@ -1133,39 +1196,40 @@ void			CZone::preRender()
 		if( curDateMod==(ZoneId & updateFarRefineFreq) )
 		{
 			// updateTextureFarOnly for all patchs.
-			CPatch		*pPatch= &(*Patchs.begin());
-			for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-				pPatch->updateTextureFarOnly();
+			for(uint i=0;i<Patchs.size();i++)
+			{
+				Patchs[i].updateTextureFarOnly(_PatchBSpheres[i]);
+			}
 		}
 	}
 	// else If some patchs only are visible.
 	else if(ClipResult==ClipSide)
 	{
-		// PreRender Pass, or updateTextureFarOnly(), according to RenderClipped state.
-		CPatch		*pPatch= &(*Patchs.begin());
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+		// PreRender Pass, or updateTextureFarOnly(), according to _PatchRenderClipped state.
+		for(uint i=0;i<Patchs.size();i++)
 		{
 			// If the patch is visible
-			if(!pPatch->isRenderClipped())
+			if(!_PatchRenderClipped[i])
 			{
 				// Then preRender it.
-				pPatch->preRender();
+				Patchs[i].preRender(_PatchBSpheres[i]);
 			}
 			else
 			{
 				// else maybe updateFar it.
-				// ZoneId+n for better repartition.
-				if( curDateMod==((ZoneId+n) & updateFarRefineFreq) )
-					pPatch->updateTextureFarOnly();
+				// ZoneId+i for better repartition.
+				if( curDateMod==((ZoneId+i) & updateFarRefineFreq) )
+					Patchs[i].updateTextureFarOnly(_PatchBSpheres[i]);
 			}
 		}
 	}
 	else	// ClipResult==ClipIn
 	{
 		// PreRender Pass for All
-		CPatch		*pPatch= &(*Patchs.begin());
-		for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
-			pPatch->preRender();
+		for(uint i=0;i<Patchs.size();i++)
+		{
+			Patchs[i].preRender(_PatchBSpheres[i]);
+		}
 	}
 
 }
@@ -1174,21 +1238,18 @@ void			CZone::preRender()
 // ***************************************************************************
 void			CZone::resetRenderFarAndDeleteVBFV()
 {
-	CPatch		*pPatch=0;
-	if(Patchs.size()>0)
-		pPatch= &(*Patchs.begin());
-	for(sint n=(sint)Patchs.size();n>0;n--, pPatch++)
+	for(uint i=0;i<Patchs.size();i++)
 	{
 		// If patch is visible
-		if(!pPatch->RenderClipped)
+		if(!_PatchRenderClipped[i])
 		{
 			// release VertexBuffer, and FaceBuffer
-			pPatch->deleteVBAndFaceVector();
+			Patchs[i].deleteVBAndFaceVector();
 			// Flag.
-			pPatch->RenderClipped= true;
+			_PatchRenderClipped.set(i, true);
 		}
 
-		pPatch->resetRenderFar();
+		Patchs[i].resetRenderFar();
 	}
 }
 
@@ -1237,7 +1298,7 @@ void			CZone::changePatchTextureAndColor (sint numPatch, const std::vector<CTile
 	if (Compiled)
 	{
 		// If the patch is visible, then we must LockBuffers, because new VertexVB may be created.
-		if(!Patchs[numPatch].RenderClipped)
+		if(!_PatchRenderClipped[numPatch])
 			Landscape->updateGlobalsAndLockBuffers(CVector::Null);
 
 		// Recompute UVs for new setup of Tiles.
@@ -1245,7 +1306,7 @@ void			CZone::changePatchTextureAndColor (sint numPatch, const std::vector<CTile
 		Patchs[numPatch].recreateTileUvs();
 
 		// unlockBuffers() if necessary.
-		if(!Patchs[numPatch].RenderClipped)
+		if(!_PatchRenderClipped[numPatch])
 		{
 			Landscape->unlockBuffers();
 			// This patch is visible, and TileFaces have been deleted / added.

@@ -1,7 +1,7 @@
 /** \file driver_user.cpp
  * <File description>
  *
- * $Id: driver_user2.cpp,v 1.9 2001/08/30 10:07:12 corvazier Exp $
+ * $Id: driver_user2.cpp,v 1.10 2001/10/16 16:45:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -155,6 +155,20 @@ void			CDriverUser::profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitive
 uint32			CDriverUser::profileAllocatedTextureMemory()
 {
 	return _Driver->profileAllocatedTextureMemory();
+}
+
+
+// ***************************************************************************
+uint32			CDriverUser::profileSetupedMaterials() const
+{
+	return _Driver->profileSetupedMaterials();
+}
+
+
+// ***************************************************************************
+uint32			CDriverUser::profileSetupedModelMatrix() const
+{
+	return _Driver->profileSetupedModelMatrix();
 }
 
 

@@ -5,7 +5,7 @@
  * changed (eg: only one texture in the whole world), those parameters are not bound!!! 
  * OPTIM: like the TexEnvMode style, a PackedParameter format should be done, to limit tests...
  *
- * $Id: driver_opengl_texture.cpp,v 1.37 2001/10/02 10:20:56 corvazier Exp $
+ * $Id: driver_opengl_texture.cpp,v 1.38 2001/10/16 16:45:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -368,16 +368,16 @@ bool CDriverGL::setupTexture(ITexture& tex)
 			gltext= getTextureGl(tex);
 
 			// system of "backup the previous binded texture" seems to not work with some drivers....
-			glActiveTextureARB(GL_TEXTURE0_ARB);
+			_DriverGLStates.activeTextureARB(0);
 			if(tex.isTextureCube())
 			{
-				glEnable(GL_TEXTURE_CUBE_MAP_ARB);
+				_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
 				// Bind this texture, for reload...
 				glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, gltext->ID);
 			}
 			else
 			{
-				glEnable(GL_TEXTURE_2D);
+				_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
 				// Bind this texture, for reload...
 				glBindTexture(GL_TEXTURE_2D, gltext->ID);
 			}
@@ -600,7 +600,6 @@ bool CDriverGL::setupTexture(ITexture& tex)
 				glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_WRAP_R, translateWrapToGl(ITexture::Clamp, _Extensions));
 				glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
 				glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
-				glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 			}
 			else
 			{
@@ -608,10 +607,12 @@ bool CDriverGL::setupTexture(ITexture& tex)
 				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, translateWrapToGl(gltext->WrapT, _Extensions));
 				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, translateMagFilterToGl(gltext->MagFilter));
 				glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
-				glDisable(GL_TEXTURE_2D);
 			}
 
+
+			// Disable texture 0
 			_CurrentTexture[0]= NULL;
+			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
 		}
 
 
@@ -627,17 +628,18 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 {
 	if (this->_CurrentTexture[stage]!=tex)
 	{
-		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		_DriverGLStates.activeTextureARB(stage);
 		if(tex)
 		{
 			if(tex->isTextureCube())
 			{
+				// setup texture mode, after activeTextureARB()
+				_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
+
 				if(_Extensions.ARBTextureCubeMap)
 				{
 					// Activate texturing...
 					//======================
-					glDisable(GL_TEXTURE_2D);
-					glEnable(GL_TEXTURE_CUBE_MAP_ARB);
 					CTextureDrvInfosGL*	gltext;
 					gltext= getTextureGl(*tex);
 					glBindTexture(GL_TEXTURE_CUBE_MAP_ARB, getTextureGl(*tex)->ID);
@@ -655,18 +657,14 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 						glTexParameteri(GL_TEXTURE_CUBE_MAP_ARB,GL_TEXTURE_MIN_FILTER, translateMinFilterToGl(gltext->MinFilter));
 					}
 				}
-				else
-				{
-					glDisable(GL_TEXTURE_2D);
-				}
 			}
 			else
 			{
-				// Activate texturing...
+				// setup texture mode, after activeTextureARB()
+				_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
+
+				// Activate texture...
 				//======================
-				glEnable(GL_TEXTURE_2D);
-				if(_Extensions.ARBTextureCubeMap)
-					glDisable(GL_TEXTURE_CUBE_MAP_ARB);
 				CTextureDrvInfosGL*	gltext;
 				gltext= getTextureGl(*tex);
 				glBindTexture(GL_TEXTURE_2D, getTextureGl(*tex)->ID);
@@ -697,9 +695,8 @@ bool CDriverGL::activateTexture(uint stage, ITexture *tex)
 		}
 		else
 		{
-			glDisable(GL_TEXTURE_2D);
-			if(_Extensions.ARBTextureCubeMap)
-				glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+			// setup texture mode, after activeTextureARB()
+			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
 		}
 
 		this->_CurrentTexture[stage]= tex;
@@ -733,7 +730,7 @@ void		CDriverGL::forceActivateTexEnvMode(uint stage, const CMaterial::CTexEnv  &
 
 
 	// Setup the gl env mode.
-	glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+	_DriverGLStates.activeTextureARB(stage);
 	// "Normal drivers", setup EnvCombine.
 	if(_Extensions.EXTTextureEnvCombine)
 	{
@@ -799,7 +796,7 @@ void		CDriverGL::forceActivateTexEnvColor(uint stage, const CMaterial::CTexEnv  
 	_CurrentTexEnv[stage].ConstantColor= col;
 
 	// Setup the gl cte color.
-	glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+	_DriverGLStates.activeTextureARB(stage);
 	GLfloat		glcol[4];
 	glcol[0]= col.R*OO255;
 	glcol[1]= col.G*OO255;

@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.h
  * <File description>
  *
- * $Id: driver_opengl_states.h,v 1.1 2001/09/20 16:43:10 berenguier Exp $
+ * $Id: driver_opengl_states.h,v 1.2 2001/10/16 16:45:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,6 +27,7 @@
 #define NL_DRIVER_OPENGL_STATES_H
 
 #include "nel/misc/types_nl.h"
+#include "3d/vertex_buffer.h"
 #include <GL/gl.h>
 
 
@@ -43,6 +44,16 @@ namespace NL3D
 			- GL_CULL_FACE
 			- GL_ALPHA_TEST
 			- GL_LIGHTING
+			- GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP_ARB.
+		- glActiveTextureARB()
+		- glClientActiveTextureARB()
+		- glEnableClientState() glDisableClientState() with:
+			- GL_VERTEX_ARRAY
+			- GL_NORMAL_ARRAY
+			- GL_VERTEX_WEIGHTING_EXT
+			- GL_COLOR_ARRAY
+			- GL_TEXTURE_COORD_ARRAY
+			- GL_VERTEX_ATTRIB_ARRAY0_NV + i.
 		- glDepthMask()
 		- glAlphaFunc()
 		- glBlendFunc()
@@ -63,9 +74,11 @@ public:
 
 	/// Constructor. no-op.
 	CDriverGLStates();
+	// init. Do it just after setDisplay()
+	void			init(bool supportTextureCubeMap);
 
 	/// Reset all OpenGL states of interest to default, and update caching.
-	void			forceDefaults();
+	void			forceDefaults(uint nbTextureStages);
 
 	/// \name enable if !0
 	// @{
@@ -92,6 +105,32 @@ public:
 	void			setShininess(float shin);
 	// @}
 
+	/// \name Texture Mode setting.
+	// @{
+	enum			TTextureMode {TextureDisabled, Texture2D, TextureCubeMap, TextureModeCount};
+	/// same as glActiveTextureARB(). usefull for setTextureMode.
+	void			activeTextureARB(uint stage);
+	/** change if needed the texture mode of the current active Texture ARB.
+	 *	NB: if CubeMap extension not supported, TextureCubeMap <=> TextureDisabled.
+	 */
+	void			setTextureMode(TTextureMode texMode);
+	// @}
+
+	/// \name Vertex Array enabling.
+	/// equivalent to glEnableClientState() / glDisableClientState(). NB: Not modified by forceDefaults()
+	// @{
+	void			enableVertexArray(bool enable);
+	void			enableNormalArray(bool enable);
+	void			enableWeightArray(bool enable);
+	void			enableColorArray(bool enable);
+	/// same as glClientActiveTextureARB(). usefull for enableTexCoordArray.
+	void			clientActiveTextureARB(uint stage);
+	/// NB: caller must call correct clientActiveTextureARB() before.
+	void			enableTexCoordArray(bool enable);
+	/// For vertexProgram. do not check if supported or not.
+	void			enableVertexAttribArray(uint glIndex, bool enable);
+	// @}
+
 
 private:
 	bool			_CurBlend;
@@ -110,6 +149,17 @@ private:
 	uint32			_CurSpecular;
 	float			_CurShininess;
 
+	bool			_TextureCubeMapSupported;
+	uint			_CurrentActiveTextureARB;
+	TTextureMode	_TextureMode[IDRV_MAT_MAXTEXTURES];
+
+	bool			_VertexArrayEnabled;
+	bool			_NormalArrayEnabled;
+	bool			_WeightArrayEnabled;
+	bool			_ColorArrayEnabled;
+	uint			_CurrentClientActiveTextureARB;
+	bool			_TexCoordArrayEnabled[IDRV_MAT_MAXTEXTURES];
+	bool			_VertexAttribArrayEnabled[CVertexBuffer::NumValue];
 };
 
 

@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.90 2001/10/02 08:41:34 berenguier Exp $
+ * $Id: driver_opengl.h,v 1.91 2001/10/16 16:45:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -431,6 +431,10 @@ public:
 
 	virtual	uint32			profileAllocatedTextureMemory();
 
+	virtual	uint32			profileSetupedMaterials() const;
+
+	virtual	uint32			profileSetupedModelMatrix() const;
+
 	void					enableUsedTextureMemorySum (bool enable);
 	
 	uint32					getUsedTextureMemory() const;
@@ -782,6 +786,8 @@ private:
 	CPrimitiveProfile				_PrimitiveProfileIn;
 	CPrimitiveProfile				_PrimitiveProfileOut;
 	uint32							_AllocatedTextureMemory;
+	uint32							_NbSetupMaterialCall;
+	uint32							_NbSetupModelMatrixCall;
 	bool							_SumTextureMemoryUsed;
 	std::set<ITexture*>				_TextureUsed;
 	uint							computeMipMapMemoryUsage(uint w, uint h, GLint glfmt) const;

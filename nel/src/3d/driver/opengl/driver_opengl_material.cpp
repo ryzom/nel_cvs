@@ -1,7 +1,7 @@
 /** \file driver_opengl_material.cpp
  * OpenGL driver implementation : setupMaterial
  *
- * $Id: driver_opengl_material.cpp,v 1.40 2001/09/21 14:24:14 berenguier Exp $
+ * $Id: driver_opengl_material.cpp,v 1.41 2001/10/16 16:45:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -78,6 +78,10 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 	sint		stage;
 
 
+	// profile.
+	_NbSetupMaterialCall++;
+
+
 	// 0. Setup / Bind Textures.
 	//==========================
 	// Must setup textures each frame. (need to test if touched).
@@ -99,6 +103,7 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 				return(false);
 		}
 	}
+
 
 	// Activate the textures.
 	// Do not do it for Lightmap, because done in multipass in a very special fashion.
@@ -231,8 +236,6 @@ bool CDriverGL::setupMaterial(CMaterial& mat)
 		_DriverGLStates.enableLighting(mat.getFlags()&IDRV_MAT_LIGHTING);
 		if(mat.getFlags()&IDRV_MAT_LIGHTING)
 		{
-			// Temp. Yoyo, defo light.
-			glEnable(GL_LIGHT0);
 			if(mat.getFlags()&IDRV_MAT_DEFMAT)
 			{
 				static const uint32			packedOne= (CRGBA(255,255,255,255)).getPacked();
@@ -367,7 +370,7 @@ sint CDriverGL::beginLightMapMultiPass (const CMaterial &mat)
 	_DriverGLStates.enableLighting(false);
 	// reset VertexColor array if necessary.
 	if (_LastVB.VertexFormat & CVertexBuffer::PrimaryColorFlag)
-		glDisableClientState (GL_COLOR_ARRAY);
+		_DriverGLStates.enableColorArray(false);
 
 	// Manage too if no lightmaps.
 	return	std::max (_NLightMapPass, (uint)1);
@@ -458,7 +461,7 @@ void			CDriverGL::setupLightMapPass(const CMaterial &mat, uint pass)
 						_CurrentTexEnvSpecial[stage] = TexEnvSpecialLightMapNV4;
 
 						// Setup env for texture stage.
-						glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+						_DriverGLStates.activeTextureARB(stage);
 
 						// What we want to setup is  Texture*Constant + Previous*1.
 						glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
@@ -543,7 +546,7 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 
 	// pop VertexColor array if necessary.
 	if (_LastVB.VertexFormat & CVertexBuffer::PrimaryColorFlag)
-		glEnableClientState(GL_COLOR_ARRAY);
+		_DriverGLStates.enableColorArray(true);
 
 	// nothing to do with blending/lighting, since always setuped in activeMaterial().
 	// If material is the same, then it is still a lightmap material (if changed => touched => different!)
@@ -553,7 +556,7 @@ void			CDriverGL::endLightMapMultiPass(const CMaterial &mat)
 // ***************************************************************************
 sint			CDriverGL::beginSpecularMultiPass(const CMaterial &mat)
 {
-	glActiveTextureARB(GL_TEXTURE0_ARB+1);
+	_DriverGLStates.activeTextureARB(1);
 	glMatrixMode(GL_TEXTURE);
 	glLoadMatrixf( _TexMtx.get() );
 	glMatrixMode(GL_MODELVIEW);
@@ -589,7 +592,7 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 			// TexEnv is special.
 			_CurrentTexEnvSpecial[0] = TexEnvSpecialSpecularStage0NV4;
 
-			glActiveTextureARB(GL_TEXTURE0_ARB+0);
+			_DriverGLStates.activeTextureARB(0);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
 			// Operator.
 			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
@@ -630,7 +633,7 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 			// TexEnv is special.
 			_CurrentTexEnvSpecial[1] = newEnvStage1;
 
-			glActiveTextureARB(GL_TEXTURE0_ARB+1);
+			_DriverGLStates.activeTextureARB(1);
 			glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_COMBINE4_NV);
 			// Operator Add (Arg0*Arg1+Arg2*Arg3)
 			glTexEnvi(GL_TEXTURE_ENV, GL_COMBINE_RGB_EXT, GL_ADD );
@@ -659,8 +662,8 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 		}
 
 		// Setup TexCoord gen for stage1.
-		glActiveTextureARB(GL_TEXTURE0_ARB+1);
-		glEnable( GL_TEXTURE_CUBE_MAP_ARB );
+		_DriverGLStates.activeTextureARB(1);
+		_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
 		glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
 		glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
 		glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
@@ -674,8 +677,8 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 		if( pass == 0 )
 		{ // Just display the texture
 			_DriverGLStates.enableBlend(false);
-			glActiveTextureARB(GL_TEXTURE0_ARB+1);
-			glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+			_DriverGLStates.activeTextureARB(1);
+			_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
 		}
 		else
 		{ // Multiply texture1 by alpha_texture0 and display with add
@@ -683,7 +686,7 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 			_DriverGLStates.blendFunc(GL_ONE, GL_ONE);
 
 			// Set stage 0
-			glActiveTextureARB(GL_TEXTURE0_ARB+0);
+			_DriverGLStates.activeTextureARB(0);
 			CMaterial::CTexEnv	env;
 
 			env.Env.OpRGB = CMaterial::Replace;
@@ -713,8 +716,8 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 			activateTexEnvMode(1, env);
 
 			// Set Stage 1
-			glActiveTextureARB(GL_TEXTURE0_ARB+1);
-			glEnable( GL_TEXTURE_CUBE_MAP_ARB );
+			_DriverGLStates.activeTextureARB(1);
+			_DriverGLStates.setTextureMode(CDriverGLStates::TextureCubeMap);
 			glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
 			glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
 			glTexGeni( GL_R, GL_TEXTURE_GEN_MODE, GL_REFLECTION_MAP_ARB );
@@ -728,11 +731,11 @@ void			CDriverGL::setupSpecularPass(const CMaterial &mat, uint pass)
 void			CDriverGL::endSpecularMultiPass(const CMaterial &mat)
 {
 	// Disable Texture coord generation.
-	glActiveTextureARB( GL_TEXTURE0_ARB+1);
+	_DriverGLStates.activeTextureARB(1);
 	glDisable( GL_TEXTURE_GEN_S );
 	glDisable( GL_TEXTURE_GEN_T );
 	glDisable( GL_TEXTURE_GEN_R );
-	//glDisable( GL_TEXTURE_CUBE_MAP_ARB );
+	//_DriverGLStates.setTextureMode(1, CDriverGLStates::TextureDisabled);
 
 	// Happiness !!! we have already enabled the stage 1
 	glMatrixMode(GL_TEXTURE);

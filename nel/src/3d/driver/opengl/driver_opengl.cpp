@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.cpp,v 1.122 2001/10/02 08:41:34 berenguier Exp $
+ * $Id: driver_opengl.cpp,v 1.123 2001/10/16 16:45:23 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -598,6 +598,9 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	// \todo yoyo: TODO_HARDWARE_SKINNIG:
 	_PaletteSkinHard= false;
 
+	// init _DriverGLStates
+	_DriverGLStates.init(_Extensions.ARBTextureCubeMap);
+
 
 	// Init OpenGL/Driver defaults.
 	//=============================
@@ -614,12 +617,11 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	glDisable(GL_LINE_SMOOTH);
 	glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_NORMALIZE);
 	_CurrentGlNormalize= false;
 	_ForceNormalize= false;
 	// Setup defaults for blend, lighting ...
-	_DriverGLStates.forceDefaults();
+	_DriverGLStates.forceDefaults(getNbTextureStages());
 
 	// Be always in EXTSeparateSpecularColor.
 	if(_Extensions.EXTSeparateSpecularColor)
@@ -645,8 +647,7 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	{
 		// init no texture.
 		_CurrentTexture[stage]= NULL;
-		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
-		glDisable(GL_TEXTURE_2D);
+		// texture are disabled in DriverGLStates.forceDefaults().
 		
 		// init default env.
 		CMaterial::CTexEnv	env;	// envmode init to default.
@@ -669,6 +670,11 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	for (uint i=0; i<MaxLight; i++)
 		_LightEnable[i]=false;
 
+	// Backward compatibility: default lighting is Light0 default openGL
+	// meaning that light direction is always (0,1,0) in eye-space
+	// use enableLighting(0....), to get normal behaviour
+	glEnable(GL_LIGHT0);
+
 	_Initialized = true;
 
 	_ForceDXTCCompression= false;
@@ -678,6 +684,8 @@ bool CDriverGL::setDisplay(void *wnd, const GfxMode &mode) throw(EBadDisplay)
 	_TextureUsed.clear();
 	_PrimitiveProfileIn.reset();
 	_PrimitiveProfileOut.reset();
+	_NbSetupMaterialCall= 0;
+	_NbSetupModelMatrixCall= 0;
 
 	return true;
 }
@@ -796,9 +804,7 @@ bool CDriverGL::swapBuffers()
 	{
 		// init no texture.
 		_CurrentTexture[stage]= NULL;
-		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
-		glDisable(GL_TEXTURE_2D);
-		glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+		// texture are disabled in DriverGLStates.forceDefaults().
 		
 		// init default env.
 		CMaterial::CTexEnv	env;	// envmode init to default.
@@ -806,19 +812,20 @@ bool CDriverGL::swapBuffers()
 		forceActivateTexEnvMode(stage, env);
 		forceActivateTexEnvColor(stage, env);
 	}
-	glActiveTextureARB(GL_TEXTURE0_ARB);
 
 
 	// Activate the default material.
 	//===========================================================
 	// Same reasoning as textures :)
-	_DriverGLStates.forceDefaults();
+	_DriverGLStates.forceDefaults(getNbTextureStages());
 	_CurrentMaterial= NULL;
 
 
 	// Reset the profiling counter.
 	_PrimitiveProfileIn.reset();
 	_PrimitiveProfileOut.reset();
+	_NbSetupMaterialCall= 0;
+	_NbSetupModelMatrixCall= 0;
 
 	// Reset the texture set
 	_TextureUsed.clear();
@@ -1275,15 +1282,17 @@ void CDriverGL::copyFrameBufferToTexture(ITexture *tex, uint32 level
 
 	
 
-	glActiveTextureARB(GL_TEXTURE0_ARB);
-	glEnable(GL_TEXTURE_2D) ; 
+	_DriverGLStates.activeTextureARB(0);
+	// setup texture mode, after activeTextureARB()
+	_DriverGLStates.setTextureMode(CDriverGLStates::Texture2D);
 	glBindTexture(GL_TEXTURE_2D, gltext->ID);	
 
 
 	glCopyTexSubImage2D(GL_TEXTURE_2D, level, offsetx, offsety, x, y, width, height);
 	
 
-	glDisable(GL_TEXTURE_2D) ;
+	// disable texturing.
+	_DriverGLStates.setTextureMode(CDriverGLStates::TextureDisabled);
 
 
 }
@@ -1438,6 +1447,20 @@ void			CDriverGL::profileRenderedPrimitives(CPrimitiveProfile &pIn, CPrimitivePr
 uint32			CDriverGL::profileAllocatedTextureMemory()
 {
 	return _AllocatedTextureMemory;
+}
+
+
+// ***************************************************************************
+uint32			CDriverGL::profileSetupedMaterials() const
+{
+	return _NbSetupMaterialCall;
+}
+
+
+// ***************************************************************************
+uint32			CDriverGL::profileSetupedModelMatrix() const
+{
+	return _NbSetupModelMatrixCall;
 }
 
 

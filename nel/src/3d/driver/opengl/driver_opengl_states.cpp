@@ -1,7 +1,7 @@
 /** \file driver_opengl_states.cpp
  * <File description>
  *
- * $Id: driver_opengl_states.cpp,v 1.1 2001/09/20 16:43:10 berenguier Exp $
+ * $Id: driver_opengl_states.cpp,v 1.2 2001/10/16 16:45:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,10 +38,34 @@ namespace NL3D
 // ***************************************************************************
 CDriverGLStates::CDriverGLStates()
 {
+	_TextureCubeMapSupported= false;
 }
 
+
 // ***************************************************************************
-void			CDriverGLStates::forceDefaults()
+void			CDriverGLStates::init(bool supportTextureCubeMap)
+{
+	_TextureCubeMapSupported= supportTextureCubeMap;
+
+	// By default all arrays are disabled.
+	_VertexArrayEnabled= false;
+	_NormalArrayEnabled= false;
+	_WeightArrayEnabled= false;
+	_ColorArrayEnabled= false;
+	uint	i;
+	for(i=0; i<IDRV_MAT_MAXTEXTURES; i++)
+	{
+		_TexCoordArrayEnabled[i]= false;
+	}
+	for(i=0; i<CVertexBuffer::NumValue; i++)
+	{
+		_VertexAttribArrayEnabled[i]= false;
+	}
+}
+
+
+// ***************************************************************************
+void			CDriverGLStates::forceDefaults(uint nbStages)
 {
 	// Enable / disable.
 	_CurBlend= false;
@@ -81,6 +105,23 @@ void			CDriverGLStates::forceDefaults()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, zero);
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, _CurShininess);
 
+
+	// TexModes
+	for(uint stage=0;stage<nbStages; stage++)
+	{
+		// disable texturing.
+		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		glDisable(GL_TEXTURE_2D);
+		if(_TextureCubeMapSupported)
+			glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+		_TextureMode[stage]= TextureDisabled;
+	}
+
+	// ActiveTexture current texture to 0.
+	glActiveTextureARB(GL_TEXTURE0_ARB);
+	_CurrentActiveTextureARB= 0;
+	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	_CurrentClientActiveTextureARB= 0;
 }
 
 
@@ -281,6 +322,135 @@ void			CDriverGLStates::setShininess(float shin)
 	}
 }
 
+
+// ***************************************************************************
+void			CDriverGLStates::setTextureMode(TTextureMode texMode)
+{
+	TTextureMode	oldTexMode = _TextureMode[_CurrentActiveTextureARB];
+	if(oldTexMode != texMode)
+	{
+		// Disable first old mode.
+		if(oldTexMode == Texture2D)
+			glDisable(GL_TEXTURE_2D);
+		else if(oldTexMode == TextureCubeMap)
+		{
+			if(_TextureCubeMapSupported)
+				glDisable(GL_TEXTURE_CUBE_MAP_ARB);
+			else
+				glDisable(GL_TEXTURE_2D);
+		}
+
+		// Enable new mode.
+		if(texMode == Texture2D)
+			glEnable(GL_TEXTURE_2D);
+		else if(texMode == TextureCubeMap)
+		{
+			if(_TextureCubeMapSupported)
+				glEnable(GL_TEXTURE_CUBE_MAP_ARB);
+			else
+				glDisable(GL_TEXTURE_2D);
+		}
+
+		// new mode.
+		_TextureMode[_CurrentActiveTextureARB]= texMode;
+	}
+}
+
+
+// ***************************************************************************
+void			CDriverGLStates::activeTextureARB(uint stage)
+{
+	if( _CurrentActiveTextureARB != stage )
+	{
+		glActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		_CurrentActiveTextureARB= stage;
+	}
+}
+
+
+// ***************************************************************************
+void			CDriverGLStates::enableVertexArray(bool enable)
+{
+	if(_VertexArrayEnabled != enable)
+	{
+		if(enable)
+			glEnableClientState(GL_VERTEX_ARRAY);
+		else
+			glDisableClientState(GL_VERTEX_ARRAY);
+		_VertexArrayEnabled= enable;
+	}
+}
+// ***************************************************************************
+void			CDriverGLStates::enableNormalArray(bool enable)
+{
+	if(_NormalArrayEnabled != enable)
+	{
+		if(enable)
+			glEnableClientState(GL_NORMAL_ARRAY);
+		else
+			glDisableClientState(GL_NORMAL_ARRAY);
+		_NormalArrayEnabled= enable;
+	}
+}
+// ***************************************************************************
+void			CDriverGLStates::enableWeightArray(bool enable)
+{
+	if(_WeightArrayEnabled != enable)
+	{
+		if(enable)
+			glEnableClientState(GL_VERTEX_WEIGHTING_EXT);
+		else
+			glDisableClientState(GL_VERTEX_WEIGHTING_EXT);
+		_WeightArrayEnabled= enable;
+	}
+}
+// ***************************************************************************
+void			CDriverGLStates::enableColorArray(bool enable)
+{
+	if(_ColorArrayEnabled != enable)
+	{
+		if(enable)
+			glEnableClientState(GL_COLOR_ARRAY);
+		else
+			glDisableClientState(GL_COLOR_ARRAY);
+		_ColorArrayEnabled= enable;
+	}
+}
+
+// ***************************************************************************
+void			CDriverGLStates::clientActiveTextureARB(uint stage)
+{
+	if( _CurrentClientActiveTextureARB != stage )
+	{
+		glClientActiveTextureARB(GL_TEXTURE0_ARB+stage);
+		_CurrentClientActiveTextureARB= stage;
+	}
+}
+
+// ***************************************************************************
+void			CDriverGLStates::enableTexCoordArray(bool enable)
+{
+	if(_TexCoordArrayEnabled[_CurrentClientActiveTextureARB] != enable)
+	{
+		if(enable)
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		else
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		_TexCoordArrayEnabled[_CurrentClientActiveTextureARB]= enable;
+	}
+}
+// ***************************************************************************
+void			CDriverGLStates::enableVertexAttribArray(uint glIndex, bool enable)
+{
+	if(_VertexAttribArrayEnabled[glIndex] != enable)
+	{
+		if(enable)
+			glEnableClientState(glIndex+GL_VERTEX_ATTRIB_ARRAY0_NV);
+		else
+			glDisableClientState(glIndex+GL_VERTEX_ATTRIB_ARRAY0_NV);
+		_VertexAttribArrayEnabled[glIndex]= enable;
+	}
+}
 
 
 } // NL3D

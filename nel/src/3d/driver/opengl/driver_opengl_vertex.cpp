@@ -1,7 +1,7 @@
 /** \file driver_opengl.cpp
  * OpenGL driver implementation for vertex Buffer / render manipulation.
  *
- * $Id: driver_opengl_vertex.cpp,v 1.14 2001/10/02 08:41:34 berenguier Exp $
+ * $Id: driver_opengl_vertex.cpp,v 1.15 2001/10/16 16:45:23 berenguier Exp $
  *
  * \todo manage better the init/release system (if a throw occurs in the init, we must release correctly the driver)
  */
@@ -671,17 +671,17 @@ void	CDriverGL::refreshSoftwareSkinning()
 // ***************************************************************************
 void		CDriverGL::setupUVPtr(uint stage, CVertexBufferInfo &VB, uint uvId)
 {
-	glClientActiveTextureARB(GL_TEXTURE0_ARB+stage);
+	_DriverGLStates.clientActiveTextureARB(stage);
 	if (VB.VertexFormat & (CVertexBuffer::TexCoord0Flag<<uvId))
 	{
 		// Check type
 		nlassert (VB.Type[CVertexBuffer::TexCoord0+uvId]==CVertexBuffer::Float2);
 
-		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		_DriverGLStates.enableTexCoordArray(true);
 		glTexCoordPointer(2,GL_FLOAT,VB.VertexSize,VB.ValuePtr[CVertexBuffer::TexCoord0+uvId]);
 	}
 	else
-		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+		_DriverGLStates.enableTexCoordArray(false);
 }
 
 
@@ -1204,7 +1204,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 		{
 			// Index
 			uint glIndex=GLVertexAttribIndex[value];
-			glDisableClientState (glIndex+GL_VERTEX_ATTRIB_ARRAY0_NV);
+			_DriverGLStates.enableVertexAttribArray(glIndex, false);
 		}
 
 		// no more a vertex program setup.
@@ -1215,22 +1215,21 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 	if( !_LastSetupGLArrayVertexProgram && isVertexProgramEnabled () )
 	{
 		// Disable all standards ptrs.
-		glDisableClientState(GL_VERTEX_ARRAY);
-		glDisableClientState(GL_NORMAL_ARRAY);
+		_DriverGLStates.enableVertexArray(false);
+		_DriverGLStates.enableNormalArray(false);
 		if(_Extensions.EXTVertexWeighting)
-			glDisable (GL_VERTEX_WEIGHTING_EXT);
-		glDisableClientState(GL_COLOR_ARRAY);
+			_DriverGLStates.enableWeightArray(false);
+		_DriverGLStates.enableColorArray(false);
 		for(sint i=0; i<getNbTextureStages(); i++)
 		{
-			glClientActiveTextureARB(GL_TEXTURE0_ARB+i);
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			_DriverGLStates.clientActiveTextureARB(i);
+			_DriverGLStates.enableTexCoordArray(false);
 		}
 
 
 		// now, vertex program setup.
 		_LastSetupGLArrayVertexProgram= true;
 	}
-
 
 	// Setup Vertex / Normal.
 	//=======================
@@ -1249,7 +1248,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 			nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
 
 			// Must point on computed Vertex array.
-			glEnableClientState(GL_VERTEX_ARRAY);
+			_DriverGLStates.enableVertexArray(true);
 
 			// array is compacted.
 			glVertexPointer(3,GL_FLOAT,0,&(*vbInf->SoftSkinVertices.begin()));
@@ -1264,14 +1263,14 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 				nlassert(vbInf->SoftSkinNormals.size()==vb.NumVertices);
 
 				// Must point on computed Normal array.
-				glEnableClientState(GL_NORMAL_ARRAY);
-		
+				_DriverGLStates.enableNormalArray(true);
+
 				// array is compacted.
 				glNormalPointer(GL_FLOAT,0,&(*vbInf->SoftSkinNormals.begin()));
 			}
 			else
 			{
-				glDisableClientState(GL_NORMAL_ARRAY);
+				_DriverGLStates.enableNormalArray(false);
 			}
 		}
 		else
@@ -1279,7 +1278,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 			// Check type
 			nlassert (vb.Type[CVertexBuffer::Position]==CVertexBuffer::Float3);
 
-			glEnableClientState(GL_VERTEX_ARRAY);
+			_DriverGLStates.enableVertexArray(true);
 			glVertexPointer(3,GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Position]);
 
 			// Check for normal param in vertex buffer
@@ -1288,12 +1287,12 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 				// Check type
 				nlassert (vb.Type[CVertexBuffer::Normal]==CVertexBuffer::Float3);
 
-				glEnableClientState(GL_NORMAL_ARRAY);
+				_DriverGLStates.enableNormalArray(true);
 				glNormalPointer(GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Normal]);
 			}
 			else
 			{
-				glDisableClientState(GL_NORMAL_ARRAY);
+				_DriverGLStates.enableNormalArray(false);
 			}
 		}
 
@@ -1331,7 +1330,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 					disableVertexWeight=false;
 
 					// Setup
-					glEnableClientState(GL_VERTEX_WEIGHT_ARRAY_EXT);
+					_DriverGLStates.enableWeightArray(true);
 					glVertexWeightPointerEXT(1, GL_FLOAT, vb.VertexSize, vb.ValuePtr[CVertexBuffer::Weight]);
 				}
 				else
@@ -1343,8 +1342,7 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 
 		// Disable vertex weight
 		if (disableVertexWeight)
-			glDisable (GL_VERTEX_WEIGHTING_EXT);
-
+			_DriverGLStates.enableWeightArray(false);
 
 		// Setup Color / UV.
 		//==================
@@ -1354,11 +1352,11 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 			// Check type
 			nlassert (vb.Type[CVertexBuffer::PrimaryColor]==CVertexBuffer::UChar4);
 
-			glEnableClientState(GL_COLOR_ARRAY);
+			_DriverGLStates.enableColorArray(true);
 			glColorPointer(4,GL_UNSIGNED_BYTE, vb.VertexSize, vb.ValuePtr[CVertexBuffer::PrimaryColor]);
 		}
 		else
-			glDisableClientState(GL_COLOR_ARRAY);
+			_DriverGLStates.enableColorArray(false);
 
 		// Active UVs.
 		for(sint i=0; i<getNbTextureStages(); i++)
@@ -1391,12 +1389,12 @@ void		CDriverGL::setupGlArrays(CVertexBufferInfo &vb, CVBDrvInfosGL *vbInf, bool
 			if (flags & flag)
 			{
 				// Active this value
-				glEnableClientState (glIndex+GL_VERTEX_ATTRIB_ARRAY0_NV);
+				_DriverGLStates.enableVertexAttribArray(glIndex, true);
 				glVertexAttribPointerNV (glIndex, NumCoordinatesType[type], GLType[type], vb.VertexSize, vb.ValuePtr[value]);
 			}
 			else
 			{
-				glDisableClientState (glIndex+GL_VERTEX_ATTRIB_ARRAY0_NV);
+				_DriverGLStates.enableVertexAttribArray(glIndex, false);
 			}
 		}
 	}

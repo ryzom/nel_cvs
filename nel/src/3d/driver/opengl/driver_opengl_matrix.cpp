@@ -1,7 +1,7 @@
 /** \file driver_matrix.cpp
  * OpenGL driver implementation : matrix
  *
- * $Id: driver_opengl_matrix.cpp,v 1.9 2001/08/29 17:07:35 berenguier Exp $
+ * $Id: driver_opengl_matrix.cpp,v 1.10 2001/10/16 16:45:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -85,6 +85,9 @@ void CDriverGL::setupModelMatrix(const CMatrix& mtx, uint8 n)
 {
 	// Check args
 	nlassert (n<IDriver::MaxModelMatrix);
+
+	// profiling
+	_NbSetupModelMatrixCall++;
 
 
 	// Dirt flags.

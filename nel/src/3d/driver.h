@@ -2,7 +2,7 @@
  * Generic driver header.
  * Low level HW classes : ITexture, CMaterial, CVertexBuffer, CPrimitiveBlock, IDriver
  *
- * $Id: driver.h,v 1.17 2001/09/18 14:39:54 corvazier Exp $
+ * $Id: driver.h,v 1.18 2001/10/16 16:45:23 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -408,6 +408,16 @@ public:
 	virtual	uint32			profileAllocatedTextureMemory() =0;
 
 	
+	/** Get the number of material setuped from the last swapBuffers() call.
+	 */
+	virtual	uint32			profileSetupedMaterials() const =0;
+
+
+	/** Get the number of matrix setuped from the last swapBuffers() call.
+	 */
+	virtual	uint32			profileSetupedModelMatrix() const =0;
+
+
 	/** Enable the sum of texture memory used since last swapBuffers() call. To retrieve the memory used call getUsedTextureMemory().
 	 */
 	virtual void			enableUsedTextureMemorySum (bool enable=true) =0;

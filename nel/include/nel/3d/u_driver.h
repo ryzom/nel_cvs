@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * <File description>
  *
- * $Id: u_driver.h,v 1.8 2001/08/30 10:07:11 corvazier Exp $
+ * $Id: u_driver.h,v 1.9 2001/10/16 16:45:23 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -484,6 +484,14 @@ public:
 	 *	NB: because of GeForce*, RGB888 is considered to be 32 bits. So it may be false for others cards :).
 	 */
 	virtual	uint32			profileAllocatedTextureMemory() =0;
+
+	/** Get the number of material setuped from the last swapBuffers() call.
+	 */
+	virtual	uint32			profileSetupedMaterials() const =0;
+
+	/** Get the number of matrix setuped from the last swapBuffers() call.
+	 */
+	virtual	uint32			profileSetupedModelMatrix() const =0;
 
 	/** Enable the sum of texture memory used since last swapBuffers() call. To retrieve the memory used call getUsedTextureMemory().
 	 */

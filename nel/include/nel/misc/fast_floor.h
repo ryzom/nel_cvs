@@ -1,7 +1,7 @@
 /** \file fast_floor.h
  * <File description>
  *
- * $Id: fast_floor.h,v 1.1 2003/07/30 16:10:14 vizerie Exp $
+ * $Id: fast_floor.h,v 1.2 2004/10/06 06:36:53 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -33,7 +33,9 @@ namespace NLMISC
 {					  
 
 // fastFloor function. 
-#ifdef NL_OS_WINDOWS
+// Actually, it doesn't work on VC7 (functions returns bad values)
+// TODO: fix that
+#if defined(NL_OS_WINDOWS) && defined(NL_COMP_VC6)
 
 #include <float.h>
 

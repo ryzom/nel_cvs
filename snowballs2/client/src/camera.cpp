@@ -1,7 +1,7 @@
 /** \file camera.cpp
  * Camera management
  *
- * $Id: camera.cpp,v 1.9 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: camera.cpp,v 1.10 2001/07/17 16:43:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -89,13 +89,7 @@ void	updateCamera()
 	CMatrix	mat = CMatrix::Identity;
 	mat.setPos (Camera->getMatrix().getPos());
 	Snow->setMatrix(mat);
-
-/*old
-	CVector pos = mat.getPos ();
-	CMatrix mat2;
-	mat2.setPos (pos);
-	Snow->setMatrix (mat2);
-*/}
+}
 
 
 void	updateSky ()

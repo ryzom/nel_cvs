@@ -1,7 +1,7 @@
 /** \file event_mouse_listener.cpp
  * <File description>
  *
- * $Id: mouse_listener.cpp,v 1.1 2001/07/17 13:49:45 legros Exp $
+ * $Id: mouse_listener.cpp,v 1.2 2001/07/17 16:43:36 legros Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,6 +65,7 @@ C3dMouseListener::C3dMouseListener() :  _CurrentModelRotationAxis(zAxis),
 
 	_X = 0.5f;
 	_Y = 0.5f;
+	_InvertedMouse = false;
 }
 
 
@@ -130,7 +131,10 @@ void C3dMouseListener::operator ()(const CEvent& event)
 			// Then turn along the X axis with Y mouse
 			CMatrix turnX;
 			turnX.identity();
-			_ViewHeight += 3.0f*(mouseEvent->Y-_Y);
+			if (_InvertedMouse)
+				_ViewHeight += 3.0f*(mouseEvent->Y-_Y);
+			else
+				_ViewHeight -= 3.0f*(mouseEvent->Y-_Y);
 
 			// Then come back from hotspot
 			CMatrix goToHotSpot=comeFromHotSpot;
@@ -187,21 +191,21 @@ void C3dMouseListener::operator ()(const CEvent& event)
 	else if (event==EventMouseDownId)
 	{
 		// aim
-		
+		_AimingState = true;
 	}
 	else if (event==EventMouseUpId)
 	{
 		// throw snowball
-		float	angle = getOrientation();
-		CVector	Direction = CVector((float)cos(angle), (float)sin(angle), (2.0f-_ViewHeight)/_ViewLagBehind).normed();
+		_AimingState = false;
+		CVector	Direction = getViewDirection();
 		shotSnowball(Self->Id, Self->Position+Direction*100.0f);
 	}
 	else if (event==EventMouseWheelId)
 	{
 		CEventMouseWheel* mouseEvent=(CEventMouseWheel*)&event;
-		_ViewLagBehind += (mouseEvent->Direction? 0.1f : -0.1f);
-		if (_ViewLagBehind < 0.1f)
-			_ViewLagBehind = 0.1f;
+		_ViewLagBehind += (mouseEvent->Direction? -0.1f : +0.1f);
+		if (_ViewLagBehind < 0.5f)
+			_ViewLagBehind = 0.5f;
 	}
 }
 
@@ -317,7 +321,8 @@ float	C3dMouseListener::getOrientation()
 
 CVector	C3dMouseListener::getViewDirection()
 {
-	return getViewMatrix().getJ();
+	float	angle = getOrientation();
+	return CVector((float)cos(angle), (float)sin(angle), (2.0f-_ViewHeight)/_ViewLagBehind).normed();
 }
 
 
@@ -327,13 +332,26 @@ void	C3dMouseListener::updateCamera()
 	CVector	cpos = getPosition()+CVector(-(float)cos(getOrientation())*_ViewLagBehind, -(float)sin(getOrientation())*_ViewLagBehind, _ViewHeight);
 	CVector snapped = cpos,
 			normal;
-	if (CamCollisionEntity->snapToGround(snapped, normal) && (cpos.z-snapped.z)*normal.z < 0.0f)
+	if (CamCollisionEntity->snapToGround(snapped, normal) && (cpos.z-(snapped.z+1.0f))*normal.z < 0.0f)
 	{
-		cpos = snapped;
+		cpos = snapped+CVector(0.0f, 0.0f, 1.0f);
 		_ViewHeight = cpos.z - getPosition().z;
 	}
-	Camera->lookAt(cpos, tpos);
+	_Camera->lookAt(cpos, tpos);
 }
 
-
 }; // NL3D
+
+
+void	cbUpdateMouseListenerConfig(CConfigFile::CVar &var)
+{
+	if (var.Name == "InvertMouse") MouseListener->setInvertMouseMode(var.asInt() != 0);
+	else nlwarning ("Unknown variable update %s", var.Name.c_str());
+}
+
+void	initMouseListenerConfig()
+{
+	ConfigFile.setCallback ("InvertMouse", cbUpdateMouseListenerConfig);
+	cbUpdateMouseListenerConfig(ConfigFile.getVar ("InvertMouse"));
+}
+

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * commands management with user interface
  *
- * $Id: entities.cpp,v 1.16 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: entities.cpp,v 1.17 2001/07/17 16:43:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -83,8 +83,8 @@ float			WorldWidth = 20*160;
 float			WorldHeight = 6*160;
 
 uint32			NextEID = 0;
-float			PlayerSpeed = 3.0f;	// 6 km/h
-float			SnowballSpeed = 10.0f;	// 6 km/h
+float			PlayerSpeed = 1.8f;		// 6.5 km/h
+float			SnowballSpeed = 10.0f;	// 36 km/h
 
 // these variables are set with the config file
 
@@ -98,6 +98,8 @@ CRGBA		EntityNameColor;
 
 CEntity		*Self = NULL;
 UInstance	*AimingInstance = NULL;
+TTime		LastAimingUpdate = 0;
+TTime		RefreshRate = 100;
 
 void CEntity::setState (TState state)
 {
@@ -224,6 +226,7 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 
 //		entity.Instance = Scene->createInstance("box.shape");
 		entity.Instance = Scene->createInstance("snowball.ps");
+		entity.Skeleton = NULL;
 		entity.Speed = SnowballSpeed;
 
 		playSound (entity, SoundId);
@@ -397,6 +400,7 @@ void stateNormal (CEntity &entity)
 		// get new orientation
 		entity.Angle = MouseListener->getOrientation();
 
+		// modify the orientation depending on the straff
 		if (Driver->AsyncListener.isKeyDown (KeyUP))
 		{
 			if (Driver->AsyncListener.isKeyDown (KeyLEFT))
@@ -462,6 +466,24 @@ void stateNormal (CEntity &entity)
 		entity.Angle += entity.InterpolatedAuxiliaryAngle;
 
 		entity.MovePrimitive->move((newPos-oldPos)/(float)dt, 0);
+
+		if (MouseListener->getAimingState() && Self != NULL && AimingInstance != NULL)
+		{
+			if (CTime::getLocalTime() - LastAimingUpdate > RefreshRate)
+			{
+				LastAimingUpdate = CTime::getLocalTime();
+				CVector start = MouseListener->getPosition()+CVector(0.0f, 0.0f, 1.3f);
+				CVector direction = MouseListener->getViewDirection().normed();
+				CVector	target = getTarget(start, direction, 100);
+				AimingInstance->lookAt(target, Camera->getMatrix().getPos());
+				AimingInstance->show();
+			}
+		}
+		else
+		{
+			LastAimingUpdate = 0;
+			AimingInstance->hide();
+		}
 	}
 	else if (entity.Type == CEntity::Other && pDelta.norm()>0.1f)
 	{
@@ -576,7 +598,7 @@ void updateEntities ()
 			// snap to the ground
 			entity.VisualCollisionEntity->snapToGround(entity.Position);
 		}
-
+/*
 		if (entity.Type == CEntity::Snowball && SnapSnowballs)
 		{
 			CVector	snapPos = entity.Position;
@@ -585,7 +607,8 @@ void updateEntities ()
 			CVector	jdir = CVector((float)cos(entity.Angle), (float)sin(entity.Angle), 0.0f);
 			entity.Instance->setRotQuat(jdir);
 		}
-		else if (entity.Instance != NULL)
+		else */
+		if (entity.Instance != NULL)
 		{
 			CVector	jdir = CVector(-(float)cos(entity.Angle), -(float)sin(entity.Angle), 0.0f);
 
@@ -649,10 +672,15 @@ void initEntities()
 
 	cbUpdateEntities (ConfigFile.getVar ("EntityNameColor"));
 	cbUpdateEntities (ConfigFile.getVar ("EntityNameSize"));
+
+	AimingInstance = Scene->createInstance("box.shape");
+	AimingInstance->setTransformMode(UTransformable::RotQuat);
 }
 
 void releaseEntities()
 {
+	Scene->deleteInstance(AimingInstance);
+	AimingInstance = NULL;
 }
 
 //
@@ -868,5 +896,22 @@ NLMISC_COMMAND(add_entity,"add a local entity","<nb_entities> <auto_update>")
 		(*eit).second.AutoMove = atoi(args[1].c_str()) == 1;
 	}
 
+	return true;
+}
+
+NLMISC_COMMAND(set_speed,"set the speed of an identity","<eid> <speed>")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if(args.size() != 2) return false;
+
+	uint eid = (uint)atoi(args[0].c_str());
+	EIT eit = findEntity (eid);
+	CEntity	&entity = (*eit).second;
+
+	entity.Speed = (float)atof(args[1].c_str());
+	if (entity.Type == CEntity::Self)
+	{
+		MouseListener->setSpeed(entity.Speed);
+	}
 	return true;
 }

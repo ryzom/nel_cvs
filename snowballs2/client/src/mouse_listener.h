@@ -1,7 +1,7 @@
 /** \file mouse_listener.h
  * <File description>
  *
- * $Id: mouse_listener.h,v 1.1 2001/07/17 13:49:45 legros Exp $
+ * $Id: mouse_listener.h,v 1.2 2001/07/17 16:43:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -243,12 +243,17 @@ public:
 	float getOrientation();
 	/// get the view direction
 	CVector	getViewDirection();
+	/// get the aiming state
+	bool getAimingState() const { return _AimingState; }
 
 	///
 	void updateKeys();
 
 	/// Updates the camera
 	void updateCamera();
+
+	bool getInvertMouseMode() const { return _InvertedMouse; }
+	void setInvertMouseMode(bool invertMouse) { _InvertedMouse = invertMouse; }
 
 private:
 	/// Internal use
@@ -282,6 +287,7 @@ private:
 	float				_ViewHeight;
 	float				_ViewTargetHeight;
 	bool				_AimingState;
+	bool				_InvertedMouse;
 
 	/** remove composant of translations that are not permitted
 	  * \see enableModelTranslationAxis()
@@ -290,6 +296,8 @@ private:
 }; // NL3D
 
 }
+
+void	initMouseListenerConfig();
 
 #endif // NL_EVENT_MOUSE_LISTENER_H
 

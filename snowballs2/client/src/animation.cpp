@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * manage anmiation
  *
- * $Id: animation.cpp,v 1.2 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: animation.cpp,v 1.3 2001/07/17 16:43:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -128,8 +128,8 @@ void	createAnimation (CEntity &entity)
 
 void	deleteAnimation (CEntity &entity)
 {
-	nlassert (entity.PlayList != NULL);
-
+	if (entity.PlayList == NULL)
+		return;
 	PlayListManager->deletePlayList (entity.PlayList);
 	entity.PlayList= NULL;
 }

@@ -1,7 +1,7 @@
 /** \file client.cpp
  * Snowballs 2 main file
  *
- * $Id: client.cpp,v 1.30 2001/07/17 13:57:34 lecroart Exp $
+ * $Id: client.cpp,v 1.31 2001/07/17 16:43:36 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -100,6 +100,8 @@ bool				NeedExit = false;
 bool				ShowRadar;
 bool				ShowCommands;
 bool				SnapSnowballs;
+
+bool				CaptureState = false;
 
 
 uint loginState = 0;
@@ -253,6 +255,7 @@ int main(int argc, char **argv)
 	MouseListener->setMatrix (Camera->getMatrix());
 	MouseListener->setMouseMode (U3dMouseListener::firstPerson);
 	MouseListener->setSpeed(PlayerSpeed);
+	initMouseListenerConfig();
 
 	// Init sound control
 	initInterface();
@@ -379,6 +382,22 @@ int main(int argc, char **argv)
 			clearCommands ();
 		}
 		else if (Driver->AsyncListener.isKeyPushed (KeyF9))
+		{
+			if (!CaptureState)
+			{
+				Driver->setCapture(false);
+				Driver->showCursor(true);
+				MouseListener->removeFromServer(Driver->EventServer);
+			}
+			else
+			{
+				Driver->setCapture(true);
+				Driver->showCursor(false);
+				MouseListener->addToServer(Driver->EventServer);
+			}
+			CaptureState = !CaptureState;
+		}
+		else if (Driver->AsyncListener.isKeyPushed (KeyF11))
 		{
 			if (Self != NULL)
 				resetEntityPosition(Self->Id);

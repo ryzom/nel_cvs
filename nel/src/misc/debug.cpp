@@ -1,7 +1,7 @@
 /** \file debug.cpp
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.cpp,v 1.53 2002/06/14 14:44:55 corvazier Exp $
+ * $Id: debug.cpp,v 1.54 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -81,7 +81,9 @@ CLog *AssertLog = NULL;
 CMemDisplayer *DefaultMemDisplayer = NULL;
 
 static CStdDisplayer *sd = NULL;
+#if LOG_IN_FILE
 static CFileDisplayer *fd = NULL;
+#endif // LOG_IN_FILE
 static CMsgBoxDisplayer *mbd = NULL;
 
 void nlFatalError (const char *format, ...)

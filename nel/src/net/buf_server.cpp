@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.32 2002/07/02 15:56:58 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.33 2002/08/21 09:44:50 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,21 +57,21 @@ namespace NLNET {
 CBufServer::CBufServer( TThreadStategy strategy,
 	uint16 max_threads, uint16 max_sockets_per_thread, bool nodelay, bool replaymode ) :
 	CBufNetBase(),
-	_ThreadStrategy( strategy ),
 	_NoDelay( nodelay ),
+	_ThreadStrategy( strategy ),
 	_MaxThreads( max_threads ),
 	_MaxSocketsPerThread( max_sockets_per_thread ),
+	_ListenTask( NULL ),
+	_ListenThread( NULL ),
+	_ThreadPool("CBufServer::_ThreadPool"),
 	_ConnectionCallback( NULL ),
 	_ConnectionCbArg( NULL ),
 	_BytesPushedOut( 0 ),
 	_BytesPoppedIn( 0 ),
 	_PrevBytesPoppedIn( 0 ),
 	_PrevBytesPushedOut( 0 ),
-	_ReplayMode( replaymode ),
-	_ListenTask( NULL ),
-	_ListenThread( NULL ),
 	_NbConnections (0),
-	_ThreadPool("CBufServer::_ThreadPool")
+	_ReplayMode( replaymode )
 {
 	nlnettrace( "CBufServer::CBufServer" );
 	if ( ! _ReplayMode )
@@ -725,7 +725,7 @@ void CBufServer::dispatchNewSocket( CServerBufSock *bufsock )
 		uint min = 0xFFFFFFFF;
 		uint max = 0;
 		CThreadPool::iterator ipt, iptmin, iptmax;
-		for ( ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
+		for ( iptmin=iptmax=ipt=poolsync.value().begin(); ipt!=poolsync.value().end(); ++ipt )
 		{
 			uint noc = receiveTask(ipt)->numberOfConnections();
 			if ( noc < min )

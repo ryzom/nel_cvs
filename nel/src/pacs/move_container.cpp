@@ -1,7 +1,7 @@
 /** \file move_container.cpp
  * <File description>
  *
- * $Id: move_container.cpp,v 1.31 2002/07/15 13:03:04 legros Exp $
+ * $Id: move_container.cpp,v 1.32 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -915,8 +915,6 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 		}
 
 		CVectorD d0=wI->getDeltaPosition();
-		CVector f0=wI->getDeltaPosition();
-		CVector f0bis=_SurfaceTemp.PrecDeltaPos;
 
 		// Find a collision
 		bool found=false;
@@ -937,14 +935,12 @@ void CMoveContainer::evalAllCollisions (double beginTime, uint8 worldImage)
 		}
 
 		CVectorD d1=wI->getDeltaPosition();
-		CVector f1=_SurfaceTemp.PrecDeltaPos;
 
 		// Eval collision in the world image if not already tested
 		if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
 			found|=evalOnePrimitiveCollision (beginTime, primitive, worldImage, primitiveWorldImage, false, false, testMoveValid, NULL, NULL);
 
 		CVectorD d2=wI->getDeltaPosition();
-		CVector f2=_SurfaceTemp.PrecDeltaPos;
 
 		// No collision ?
 		if (!found)
@@ -1556,7 +1552,7 @@ void CMoveContainer::duplicateWorldImage (uint8 source, uint8 dest)
 	{
 		// Get first X
 		CMoveElement *elm;
-		while (elm=_VectorCell[dest][i].getFirstX ())
+		while ((elm=_VectorCell[dest][i].getFirstX ()))
 		{
 			// Get primitive world image
 			CPrimitiveWorldImage *wI=elm->Primitive->getWorldImage (dest);
@@ -1816,8 +1812,6 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 			wI->update (beginTime, deltaTime, *(CMovePrimitive*)primitive);
 
 			CVectorD d0=wI->getDeltaPosition();
-			CVector f0=wI->getDeltaPosition();
-			CVector f0bis=_SurfaceTemp.PrecDeltaPos;
 
 			// Eval collision again the terrain
 			bool testMoveValid = false;
@@ -1853,7 +1847,6 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 
 			// Checks
 			CVectorD d1=wI->getDeltaPosition();
-			CVector f1=_SurfaceTemp.PrecDeltaPos;
 
 			// Eval collision again the world image
 			if (_StaticWorldImage.find (worldImage)==_StaticWorldImage.end())
@@ -1870,7 +1863,6 @@ bool CMoveContainer::evalNCPrimitiveCollision (double deltaTime, UMovePrimitive 
 
 			// Checks
 			CVectorD d2=wI->getDeltaPosition();
-			CVector f2=_SurfaceTemp.PrecDeltaPos;
 			nlassert ((d0==d1)&&(d0==d2));
 
 //			if (found)

@@ -1,7 +1,7 @@
 /** \file bit_set.cpp
  * CBitSet class
  *
- * $Id: bit_set.cpp,v 1.9 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: bit_set.cpp,v 1.10 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -295,7 +295,7 @@ bool	CBitSet::allCleared()
 
 void	CBitSet::serial(IStream &f)
 {
-	sint	ver=f.serialVersion(0);
+	(void)f.serialVersion(0);
 	uint32	sz=0;
 	vector<uint32>	array32;
 

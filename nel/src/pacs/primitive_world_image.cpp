@@ -1,7 +1,7 @@
 /** \file primitive_world_image.cpp
  * Data for the primitive duplicated for each world image it is linked
  *
- * $Id: primitive_world_image.cpp,v 1.14 2002/06/06 15:29:20 legros Exp $
+ * $Id: primitive_world_image.cpp,v 1.15 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -973,12 +973,6 @@ void CPrimitiveWorldImage::precalcBB (double beginTime, double endTime, CMovePri
 	// Box ?
 	if (type==UMovePrimitive::_2DOrientedBox)
 	{
-		// Point index
-		const static uint minX[4]={ 3, 2, 1, 0 };
-		const static uint minY[4]={ 0, 3, 2, 1 };
-		const static uint maxX[4]={ 1, 0, 3, 2 };
-		const static uint maxY[4]={ 2, 1, 0, 3 };
-
 		// Orientation index
 		sint orient= (sint)(256.f*_OBData.Orientation/(2.f*NLMISC::Pi));
 		orient&=0xff;
@@ -1070,7 +1064,6 @@ void CPrimitiveWorldImage::addMoveElement (CMoveCell& cell, uint16 x, uint16 y, 
 		{
 			// Primitive center
 			double cx=(_BBXMin+_BBXMax)/2.f;
-			double cy=(_BBYMin+_BBYMax)/2.f;
 
 			// Allocate move element
 			_MoveElement[slot]=container.allocateMoveElement ();
@@ -1224,6 +1217,7 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 		case UMovePrimitive::Stop:
 			newSpeed.set (0,0,0);
 			break;
+		default: break;
 		}
 	}
 
@@ -1303,6 +1297,7 @@ void CPrimitiveWorldImage::reaction (CPrimitiveWorldImage& second, const CCollis
 			case UMovePrimitive::Stop:
 				newSpeed.set (0,0,0);
 				break;
+			default: break;
 			}
 		}
 

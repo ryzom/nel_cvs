@@ -1,7 +1,7 @@
 /** \file sound_driver_al.h
  * OpenAL sound driver
  *
- * $Id: sound_driver_al.h,v 1.7 2002/06/28 19:35:44 hanappe Exp $
+ * $Id: sound_driver_al.h,v 1.8 2002/08/21 09:41:46 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -67,7 +67,7 @@ extern EAXGet	EAXGetProp;
 #ifdef NL_DEBUG
 void TestALError();
 #else
-#define TestALError() NULL
+#define TestALError() 
 #endif
 
 

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.cpp
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.cpp,v 1.20 2002/07/26 09:01:39 lecroart Exp $
+ * $Id: hierarchical_timer.cpp,v 1.21 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -374,7 +374,6 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 	log->displayRawNL("HTIMER: =========================================================================");
 	log->displayRawNL("HTIMER: Bench by execution path");
 	nlassert(_BenchStartedOnce); // should have done at least one bench	
-	bool wasBenching = _Benching;	
 	//
 	typedef std::vector<CNodeStat>   TNodeStatVect;
 	typedef std::vector<CNodeStat *> TNodeStatPtrVect;
@@ -472,7 +471,6 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 	log->displayNL("HTIMER: =========================================================================");
 	log->displayRawNL("HTIMER: Hierarchical display of bench");
 	nlassert(_BenchStartedOnce); // should have done at least one bench
-	bool wasBenching = _Benching;	
 	typedef std::map<CHTimer *, TNodeVect> TNodeMap;
 	TNodeMap nodeMap;
 	TNodeVect nodeLeft;	
@@ -553,7 +551,6 @@ void		CHTimer::displayByExecutionPath(CLog *log, TSortCriterion criterion, bool 
 	CSimpleClock	benchClock;
 	benchClock.start();
 	nlassert(_BenchStartedOnce); // should have done at least one bench
-	bool wasBenching = _Benching;	
 
 	// get root total time.
 	CStats	rootStats;

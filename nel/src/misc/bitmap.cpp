@@ -3,7 +3,7 @@
  *
  * \todo yoyo: readDDS and decompressDXTC* must wirk in BigEndifan and LittleEndian.
  *
- * $Id: bitmap.cpp,v 1.26 2002/08/07 07:45:35 lecroart Exp $
+ * $Id: bitmap.cpp,v 1.27 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -264,8 +264,6 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 
 	//------------- reading mipmap levels compressed data
 	
-	uint32 linearSize = _DDSSurfaceDesc[4];
-
 	uint32 w = _Width;
 	uint32 h = _Height;
 
@@ -301,6 +299,7 @@ uint8 CBitmap::readDDS(NLMISC::IStream &f)
 		case DXTC1Alpha : return 32;
 		case DXTC3  : return 32;
 		case DXTC5  : return 32;
+		default  : break;
 	}
 
 	return 0;
@@ -2148,7 +2147,6 @@ void CBitmap::rotateCCW()
 {
 	// Copy the array
 	std::vector<uint8> copy=_Data[0];
-	uint size=copy.size();
 
 	switch (PixelFormat)
 	{
@@ -2162,6 +2160,7 @@ void CBitmap::rotateCCW()
 	case AlphaLuminance:
 		NLMISC::rotateCCW ((uint16*)&(_Data[0][0]), (uint16*)&(copy[0]), _Width, _Height);;
 		break;
+	default: break;
 	}
 
 	uint32 tmp=_Width;
@@ -2411,6 +2410,7 @@ CRGBAF CBitmap::getColor (float x, float y) const
 				return CRGBAF (finalVal, finalVal, finalVal, 255.0f);
 		}
 		break;
+		default: break;
 	}
 
 	return CRGBAF (0.0f, 0.0f, 0.0f, 0.0f);

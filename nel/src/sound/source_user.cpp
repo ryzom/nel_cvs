@@ -1,7 +1,7 @@
 /** \file source_user.cpp
  * CSourceUSer: implementation of USource
  *
- * $Id: source_user.cpp,v 1.27 2002/07/26 09:02:37 lecroart Exp $
+ * $Id: source_user.cpp,v 1.28 2002/08/21 09:42:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -42,10 +42,21 @@ namespace NLSOUND
  * Constructor
  */
 CSourceUser::CSourceUser( TSoundId id, bool spawn, TSpawnEndCallback cb, void *cbUserParam, CSoundContext *context, const std::string &buffername) :
-	_Priority(MidPri), _Playing(false),
-	_Position(CVector::Null), _Velocity(CVector::Null), _Direction(CVector::Null),
-	_Gain(1.0f), _Pitch(1.0f), _RelativeMode(false), _Looping(false),
-	_Track(NULL), _3DPosition(NULL), _PlayStart(0), _Spawn(spawn), _SpawnEndCb(cb), _CbUserParam(cbUserParam)
+	_Priority(MidPri),
+	_Playing(false),
+	_Looping(false),
+	_Position(CVector::Null),
+	_Velocity(CVector::Null),
+	_Direction(CVector::Null),
+	_Gain(1.0f),
+	_Pitch(1.0f),
+	_RelativeMode(false),
+	_Track(NULL),
+	_3DPosition(NULL),
+	_PlayStart(0),
+	_Spawn(spawn),
+	_SpawnEndCb(cb),
+	_CbUserParam(cbUserParam)
 {
 	setSound( id, context, buffername );
 }

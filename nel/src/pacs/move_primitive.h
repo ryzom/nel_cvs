@@ -1,7 +1,7 @@
 /** \file move_primitive.h
  * Description of movables primitives
  *
- * $Id: move_primitive.h,v 1.12 2002/05/28 08:09:13 legros Exp $
+ * $Id: move_primitive.h,v 1.13 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -85,7 +85,7 @@ public:
 	CMovePrimitive (CMoveContainer* container, uint8 firstWorldImage, uint8 numWorldImage);
 
 	/// Destructor
-	~CMovePrimitive ();
+	virtual ~CMovePrimitive ();
 	//
 	virtual	void	setDontSnapToGround(bool dont)
 	{

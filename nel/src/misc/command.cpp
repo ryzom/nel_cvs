@@ -1,7 +1,7 @@
 /** \file command.cpp
  * <File description>
  *
- * $Id: command.cpp,v 1.17 2002/06/06 13:13:03 lecroart Exp $
+ * $Id: command.cpp,v 1.18 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -252,7 +252,7 @@ end:
 void ICommand::expand (std::string &commandName, NLMISC::CLog &log)
 {
 	// Take out the string before the last separator and remember it as a prefix
-	sint lastseppos = commandName.find_last_of( " " );
+	uint32 lastseppos = commandName.find_last_of( " " );
 	string prefix;
 	bool useprefix;
 	if ( lastseppos != string::npos )

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.cpp
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.cpp,v 1.18 2002/05/23 17:32:31 cado Exp $
+ * $Id: bit_mem_stream.cpp,v 1.19 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -123,7 +123,7 @@ sint32 CBitMemStream::getPosInBit ()
 }
 
 
-#define displayByteBits if ( false ) 
+#define displayByteBits(a,b,c)
 /*void displayByteBits( uint8 b, uint nbits, sint beginpos )
 {
 	string s1, s2;
@@ -142,7 +142,7 @@ sint32 CBitMemStream::getPosInBit ()
 }*/
 
 
-#define displayDwordBits if ( false ) 
+#define displayDwordBits(a,b,c)
 /*void displayDwordBits( uint32 b, uint nbits, sint beginpos )
 {
 	string s1, s2;

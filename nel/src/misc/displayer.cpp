@@ -1,7 +1,7 @@
 /** \file displayer.cpp
  * Little easy displayers implementation
  *
- * $Id: displayer.cpp,v 1.35 2002/07/08 18:04:35 corvazier Exp $
+ * $Id: displayer.cpp,v 1.36 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -491,7 +491,10 @@ void CMsgBoxDisplayer::doDisplay ( const TDisplayInfo& args, const char *message
 
 
 
-/*
+/***************************************************************/
+/******************* THE FOLLOWING CODE IS COMMENTED OUT *******/
+/***************************************************************
+
 void CStdDisplayer::display (const std::string& str)
 {
 //	printf("%s", str.c_str ());
@@ -503,8 +506,6 @@ void CStdDisplayer::display (const std::string& str)
 		OutputDebugString(str.c_str ());
 #endif
 }
-
-//****************************************************************************
 
 void CFileDisplayer::display (const std::string& str)
 {
@@ -526,8 +527,6 @@ void CFileDisplayer::display (const std::string& str)
 //	fclose (fp);
 }
 
-
-//****************************************************************************
 
 void CMsgBoxDisplayer::display (const std::string& str)
 {
@@ -552,7 +551,8 @@ void CMsgBoxDisplayer::display (const std::string& str)
 	MessageBox (NULL, strf.c_str (), "", MB_OK | MB_ICONEXCLAMATION);
 #endif
 }
-*/
+***************************************************************/
+
 
 
 } // NLMISC

@@ -1,7 +1,7 @@
 /** \file primitive_block_pacs.cpp
  * Block of PACS primitives
  *
- * $Id: primitive_block_pacs.cpp,v 1.2 2002/05/23 09:57:40 vizerie Exp $
+ * $Id: primitive_block_pacs.cpp,v 1.3 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,7 +50,7 @@ CPrimitiveDesc::CPrimitiveDesc ()
 void CPrimitiveDesc::serial (NLMISC::IStream &s)
 {
 	// Serial the version
-	int ver = s.serialVersion (0);
+	(void)s.serialVersion (0);
 	
 	s.xmlPush ("LENGTH");
 	s.serial (Length[0]);
@@ -89,7 +89,7 @@ void CPrimitiveBlock::serial (NLMISC::IStream &s)
 	s.serialCheck ((uint32)'KBRP');
 
 	// Serial the version
-	int ver = s.serialVersion (0);
+	(void)s.serialVersion (0);
 
 	s.xmlPush ("PRIMITIVES");
 	s.serialCont (Primitives);

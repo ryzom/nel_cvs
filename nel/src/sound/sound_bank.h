@@ -1,7 +1,7 @@
 /** \file sound_bank.h
  * CSoundBank: a set of sounds
  *
- * $Id: sound_bank.h,v 1.1 2002/06/11 09:41:56 hanappe Exp $
+ * $Id: sound_bank.h,v 1.2 2002/08/21 09:42:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -69,7 +69,7 @@ public:
 
 
 	/// Constructor
-	CSoundBank(const std::string& path) : _Loaded(false), _Path(path) {};
+	CSoundBank(const std::string& path) : _Path(path), _Loaded(false) {};
 
 	/// Destructor
 	virtual ~CSoundBank();

@@ -1,7 +1,7 @@
 /** \file transport_class.cpp
  * <File description>
  *
- * $Id: transport_class.cpp,v 1.12 2002/07/02 17:27:30 miller Exp $
+ * $Id: transport_class.cpp,v 1.13 2002/08/21 09:44:05 lecroart Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -83,8 +83,7 @@ string typeToString (CTransportClass::TProp type)
 
 	if (type > CTransportClass::PropUKN)
 		return "<InvalidType>";
-	else
-		return conv[type];
+	return conv[type];
 }
 
 void CTransportClass::displayDifferentClass (uint8 sid, const string &className, const vector<CRegisteredBaseProp> &otherClass, const vector<CRegisteredBaseProp *> &myClass)

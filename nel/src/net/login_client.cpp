@@ -2,7 +2,7 @@
  * CLoginClient is the interface used by the client to identifies itself to the login_sytem and
  * connects to the shard.
  *
- * $Id: login_client.cpp,v 1.14 2002/02/11 10:20:54 lecroart Exp $
+ * $Id: login_client.cpp,v 1.15 2002/08/21 09:44:28 lecroart Exp $
  *
  */
 
@@ -281,7 +281,7 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CCallbackClient &cnx
 	}
 	catch (ESocket &e)
 	{
-		return "FES refused the connection (%s)", e.what ();
+		return string("FES refused the connection (") + e.what () + ")";
 	}
 
 	return ShardValidateReason;
@@ -305,7 +305,7 @@ string CLoginClient::connectToShard (uint32 shardListIndex, CUdpSock &cnx, CLogi
 	}
 	catch (ESocket &e)
 	{
-		return "FES refused the connection (%s)", e.what ();
+		return string("FES refused the connection (") + e.what () + ")";
 	}
 
 	return ShardValidateReason;

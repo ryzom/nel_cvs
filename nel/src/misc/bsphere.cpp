@@ -1,7 +1,7 @@
 /** \file bsphere.cpp
  * <File description>
  *
- * $Id: bsphere.cpp,v 1.3 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: bsphere.cpp,v 1.4 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -99,7 +99,7 @@ void	CBSphere::applyTransform(const CMatrix &mat, CBSphere &res)
 		{
 			// must compute max of 3 axis.
 			float	m, mx;
-			CVector	i,j,k,sum;
+			CVector	i,j,k;
 			i= mat.getI();
 			j= mat.getJ();
 			k= mat.getK();

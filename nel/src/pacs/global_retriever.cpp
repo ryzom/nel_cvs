@@ -1,7 +1,7 @@
 /** \file global_retriever.cpp
  *
  *
- * $Id: global_retriever.cpp,v 1.64 2002/07/19 13:30:13 legros Exp $
+ * $Id: global_retriever.cpp,v 1.65 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -110,7 +110,7 @@ void	NLPACS::CGlobalRetriever::serial(NLMISC::IStream &f)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serialCont(_Instances);
 	f.serial(_BBox);
@@ -1251,11 +1251,11 @@ void	NLPACS::CGlobalRetriever::testCollisionWithCollisionChains(CCollisionSurfac
 
 				// test all edges of this chain, and get tmin
 				//========================
-				float		t, tMin=1;
+				float		t=0.0, tMin=1;
 				CVector2f	normal, normalMin;
 				// run list of edge.
 				sint32		curEdge= colChain.FirstEdgeCollide;
-				while(curEdge!=0xFFFFFFFF)
+				while(curEdge!=(sint32)0xFFFFFFFF)
 				{
 					// get the edge.
 					CEdgeCollideNode	&colEdge= cst.getEdgeCollideNode(curEdge);
@@ -1442,7 +1442,7 @@ NLPACS::CSurfaceIdent	NLPACS::CGlobalRetriever::testMovementWithCollisionChains(
 		CRational64		t;
 		// run list of edge.
 		sint32		curEdge= colChain.FirstEdgeCollide;
-		while(curEdge!=0xFFFFFFFF)
+		while(curEdge!=(sint32)0xFFFFFFFF)
 		{
 			// get the edge.
 			CEdgeCollideNode	&colEdge= cst.getEdgeCollideNode(curEdge);
@@ -1994,7 +1994,7 @@ void	NLPACS::CGlobalRetriever::testRotCollisionWithCollisionChains(CCollisionSur
 		//========================
 		// run list of edge.
 		sint32		curEdge= colChain.FirstEdgeCollide;
-		while(curEdge!=0xFFFFFFFF)
+		while(curEdge!=(sint32)0xFFFFFFFF)
 		{
 			// get the edge.
 			CEdgeCollideNode	&colEdge= cst.getEdgeCollideNode(curEdge);

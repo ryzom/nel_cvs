@@ -1,7 +1,7 @@
 /** \file sheet_id.cpp
  * This class defines a sheet id
  * 
- * $Id: sheet_id.cpp,v 1.12 2002/07/12 16:50:58 lecroart Exp $
+ * $Id: sheet_id.cpp,v 1.13 2002/08/21 09:41:13 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -380,7 +380,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::s
 void CSheetId::buildIdVector(std::vector <CSheetId> &result,const std::string &fileExtension)
 {
 	uint32 type=typeFromFileExtension(fileExtension);
-	if (type!=~0)
+	if (type!=(uint32)~0)
 		buildIdVector(result,(uint8)type);
 
 } // buildIdVector //
@@ -392,7 +392,7 @@ void CSheetId::buildIdVector(std::vector <CSheetId> &result,const std::string &f
 void CSheetId::buildIdVector(std::vector <CSheetId> &result, std::vector <std::string> &resultFilenames,const std::string &fileExtension)
 {
 	uint32 type=typeFromFileExtension(fileExtension);
-	if (type!=~0)
+	if (type!=(uint32)~0)
 		buildIdVector(result,resultFilenames, (uint8)type);
 
 } // buildIdVector //

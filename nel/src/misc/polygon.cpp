@@ -1,7 +1,7 @@
 /** \file polygon.cpp
  * <File description>
  *
- * $Id: polygon.cpp,v 1.14 2002/04/23 16:25:44 vizerie Exp $
+ * $Id: polygon.cpp,v 1.15 2002/08/21 09:41:13 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -958,7 +958,7 @@ void		CPolygon2D::buildConvexHull(CPolygon2D &dest) const
 
 void CPolygon2D::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
-	sint ver = f.serialVersion(0);
+	(void)f.serialVersion(0);
 	f.serialCont(Vertices);
 }
 
@@ -1344,7 +1344,6 @@ bool		CPolygon2D::contains(const CVector2f &p) const
 	{
 		float a0, b0, c0; /// contains the seg 2d equation
 		getLineEquation(nonNullSegIndex, a0, b0, c0);
-		float orient = sumDPAgainstLine(a0, b0, c0);
 
 		for (uint k = 0; k < Vertices.size(); ++k)
 		{

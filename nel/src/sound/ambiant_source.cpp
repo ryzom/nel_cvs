@@ -1,7 +1,7 @@
 /** \file ambiant_source.cpp
  * CAmbiantSource: Stereo mix of a envsound, seen as a source
  *
- * $Id: ambiant_source.cpp,v 1.7 2002/06/20 08:35:45 hanappe Exp $
+ * $Id: ambiant_source.cpp,v 1.8 2002/08/21 09:42:29 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -42,9 +42,14 @@ namespace NLSOUND {
 /*
  * Constructor
  */
-CAmbiantSource::CAmbiantSource() :
-	_Play(false), _RandomSoundChosen(false), _Sustain(false), _StereoGain(0.0f),
-	_CrossfadeTime(4000), _SustainTime(8000), _SparseAvgPeriod(20000), _NextSparseSoundTime(0)
+CAmbiantSource::CAmbiantSource() : _Play(false),
+								   _StereoGain(0.0f),
+								   _Sustain(false),
+								   _RandomSoundChosen(false),
+								   _NextSparseSoundTime(0),
+								   _CrossfadeTime(4000),
+								   _SustainTime(8000),
+								   _SparseAvgPeriod(20000)
 {
 	_StereoChannels[AMBIANT_CH1].setLooping( true );
 	_StereoChannels[AMBIANT_CH2].setLooping( true );
@@ -238,8 +243,8 @@ void CAmbiantSource::update()
 
 	// Calc pos in cycle
 	bool crossfade;
-	uint32 leadchannel, backchannel;
-	TTime posInCycle;
+	uint32 leadchannel, backchannel=0;
+	TTime posInCycle=0;
 	if ( _AmbiantSounds.size() > 1 )
 	{
 		posInCycle = calcPosInCycle( crossfade, leadchannel );

@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.16 2002/07/02 15:56:58 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.17 2002/08/21 09:44:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -53,11 +53,11 @@ namespace NLNET {
  */
 CBufClient::CBufClient( bool nodelay, bool replaymode ) :
 	CBufNetBase(),
-	_RecvTask( NULL ),
-	_RecvThread( NULL ),
 	_NoDelay( nodelay ),
 	_PrevBytesDownloaded( 0 ),
-	_PrevBytesUploaded( 0 )
+	_PrevBytesUploaded( 0 ),
+	_RecvTask( NULL ),
+	_RecvThread( NULL )
 	/*_PrevBytesReceived( 0 ),
 	_PrevBytesSent( 0 )*/
 {
@@ -129,7 +129,7 @@ void CBufClient::send( const NLMISC::CMemStream& buffer )
  */
 bool CBufClient::dataAvailable()
 {
-	H_AUTO (CBufClient_dataAvailable);
+//	H_AUTO (CBufClient_dataAvailable);
 	{
 		CFifoAccessor recvfifo( &receiveQueue() );
 		do

@@ -1,7 +1,7 @@
 /** \file exterior_mesh.cpp
  *
  *
- * $Id: exterior_mesh.cpp,v 1.5 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: exterior_mesh.cpp,v 1.6 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -98,7 +98,7 @@ namespace NLPACS
 		Version 0:
 			- base version.
 		*/
-		sint	ver= f.serialVersion(0);
+		(void)f.serialVersion(0);
 
 		f.serialCont(_Edges);
 		f.serialCont(_OrderedEdges);

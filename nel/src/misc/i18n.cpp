@@ -1,7 +1,7 @@
 /** \file i18n.cpp
  * Internationalisation
  *
- * $Id: i18n.cpp,v 1.21 2002/06/24 10:23:27 lecroart Exp $
+ * $Id: i18n.cpp,v 1.22 2002/08/21 09:41:12 lecroart Exp $
  *
  * \todo ace: manage unicode format
  */
@@ -48,7 +48,7 @@ ucchar CI18N::eatChar (IStream &is)
 {
 	uint8 c;
 	ucchar code;
-	sint iterations;
+	sint iterations = 0;
 
 	is.serial (c);
 	code = c;
@@ -116,7 +116,7 @@ void CI18N::skipComment(IStream &is, int &line)
 {
 	// the first '/' is already eated
 	ucchar c;
-	bool longcomment;
+	bool longcomment = false;
 
 	c = eatChar (is);
 	if (c == '/') longcomment = false;
@@ -191,7 +191,7 @@ void CI18N::createLanguageEntry (const string &lval, const string &rval)
 		}
 	}
 
-	for (i = 0; i < sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0]); i++)
+	for (i = 0; i < (sint)(sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0])); i++)
 	{
 		COFile cof;
 		nlverify (cof.open (_Path + _LanguageFiles[i] + ".uxt", true, true));
@@ -390,7 +390,7 @@ const vector<ucstring> &CI18N::getLanguageNames()
 
 	if (!_LanguagesNamesLoaded)
 	{
-		for (int i = 0; i < sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0]); i++)
+		for (int i = 0; i < (int)(sizeof(_LanguageFiles)/sizeof(_LanguageFiles[0])); i++)
 		{
 			string fn = _Path + _LanguageFiles[i] + ".uxt";
 

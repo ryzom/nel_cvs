@@ -1,7 +1,7 @@
 /** \file event_listener.cpp
  * <File description>
  *
- * $Id: event_listener.cpp,v 1.12 2002/04/15 12:04:04 vizerie Exp $
+ * $Id: event_listener.cpp,v 1.13 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -163,6 +163,7 @@ void CEventListenerAsync::operator ()(const CEvent& event)
 					}
 				}
 			break;			
+			default: break;
 		}
 
 

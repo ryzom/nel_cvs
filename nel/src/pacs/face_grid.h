@@ -1,7 +1,7 @@
 /** \file face_grid.h
  * 
  *
- * $Id: face_grid.h,v 1.1 2001/08/14 13:59:58 legros Exp $
+ * $Id: face_grid.h,v 1.2 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -173,7 +173,7 @@ inline void	CFaceGrid::serial(NLMISC::IStream &f)
 	Version 0:
 		- base version
 	*/
-	uint	version = f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	f.serial(_Width, _Log2Width, _ElSize);
 	f.serialCont(_Grid);

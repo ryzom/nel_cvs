@@ -1,7 +1,7 @@
 /** \file unitime.cpp
  * _CUniTime class
  *
- * $Id: unitime.cpp,v 1.31 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: unitime.cpp,v 1.32 2002/08/21 09:43:49 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -144,15 +144,21 @@ static void cbGetUniversalTime (CMessage &msgin, TSockId from, CCallbackNetBase 
 	GetUniversalTime = true;
 }
 
+/***************************************************************/
+/******************* THE FOLLOWING CODE IS COMMENTED OUT *******/
+/***************************************************************
 static TCallbackItem UniTimeCallbackArray[] =
 {
 	{ "GUT", cbGetUniversalTime }
 };
+***************************************************************/
 
 void _CUniTime::syncUniTimeFromService (CCallbackNetBase::TRecordingState rec, const CInetAddress *addr)
 {
 	nlstop;
-	/*
+/***************************************************************/
+/******************* THE FOLLOWING CODE IS COMMENTED OUT *******/
+/***************************************************************
 	TTime deltaAdjust, lt;
 	uint32 firstsecond, nextsecond;
 	TTime before, after, delta;
@@ -238,7 +244,8 @@ void _CUniTime::syncUniTimeFromService (CCallbackNetBase::TRecordingState rec, c
 
 error:
 	nlerror ("Time Service is not found, lost or can't synchronize universal time");
-*/
+***************************************************************/
+
 }
 
 
@@ -293,16 +300,24 @@ static void cbClientGetUniversalTime (CMessage &msgin, TSockId from, CCallbackNe
 	GetClientUniversalTime = true;
 }
 
+/***************************************************************/
+/******************* THE FOLLOWING CODE IS COMMENTED OUT *******/
+/***************************************************************
 static TCallbackItem ClientUniTimeCallbackArray[] =
 {
 	{ "GUT", cbClientGetUniversalTime }
 };
+***************************************************************/
 
 
 void _CUniTime::syncUniTimeFromServer (CCallbackClient *client)
 {
 	nlstop;
-/*	static bool alreadyAddedCallback = false;
+/***************************************************************/
+/******************* THE FOLLOWING CODE IS COMMENTED OUT *******/
+/***************************************************************
+
+	static bool alreadyAddedCallback = false;
 	nlassert (client != NULL);
 
 	if (!alreadyAddedCallback)
@@ -354,7 +369,7 @@ void _CUniTime::syncUniTimeFromServer (CCallbackClient *client)
 	return;
 error:
 	nlwarning ("there's no connection or lost or can't synchronize universal time");
-*/
+***************************************************************/
 }
 
 

@@ -1,7 +1,7 @@
 /** \file global_retriever.h
  * 
  *
- * $Id: global_retriever.h,v 1.21 2002/06/07 12:34:37 legros Exp $
+ * $Id: global_retriever.h,v 1.22 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -130,6 +130,8 @@ public:
 	CGlobalRetriever(const CRetrieverBank *bank=NULL) 
 		: _RetrieverBank(bank)
 	{ }
+	virtual ~CGlobalRetriever() {}
+	
 
 	/// Setup an empty global retriever
 	void							init();

@@ -1,7 +1,7 @@
 /** \file retriever_bank.h
  * 
  *
- * $Id: retriever_bank.h,v 1.5 2001/08/10 12:09:44 legros Exp $
+ * $Id: retriever_bank.h,v 1.6 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -88,7 +88,7 @@ public:
 		Version 0:
 			- base version.
 		*/
-		sint	ver= f.serialVersion(0);
+		(void)f.serialVersion(0);
 
 		f.serialCont(_Retrievers);
 	}

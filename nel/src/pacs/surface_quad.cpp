@@ -1,7 +1,7 @@
 /** \file surface_quad.cpp
  *
  *
- * $Id: surface_quad.cpp,v 1.10 2002/07/01 18:23:55 legros Exp $
+ * $Id: surface_quad.cpp,v 1.11 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -332,7 +332,7 @@ void	NLPACS::CSurfaceQuadTree::serial(NLMISC::IStream &f)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	uint8	childType = 0;
 	f.serial(_MaxThickness);

@@ -1,7 +1,7 @@
 /** \file sample_bank.cpp
  * CSampleBank: a set of sound samples
  *
- * $Id: sample_bank.cpp,v 1.5 2002/07/25 13:35:10 lecroart Exp $
+ * $Id: sample_bank.cpp,v 1.6 2002/08/21 09:42:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -63,7 +63,7 @@ IBuffer*		CSampleBank::get(const char* name)
 
 // ********************************************************
 
-CSampleBank::CSampleBank(const std::string& path, ISoundDriver *sd) : _Loaded(false), _SoundDriver(sd), _Path(path) 
+CSampleBank::CSampleBank(const std::string& path, ISoundDriver *sd) : _SoundDriver(sd), _Path(path), _Loaded(false)
 {
 	_Name = CFile::getFilenameWithoutExtension(_Path);
 	_Banks.insert(this);

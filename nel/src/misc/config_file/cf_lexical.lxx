@@ -14,7 +14,11 @@ using namespace NLMISC;
 /* Constantes */
 
 //#define DEBUG_PRINTF	InfoLog->displayRaw
+#ifdef __GNUC__
+#define DEBUG_PRINTF(format, args...)
+#else // __GNUC__
 #define DEBUG_PRINTF	// InfoLog->displayRaw
+#endif // __GNUC__
 
 #define YY_NEVER_INTERACTIVE 1
 

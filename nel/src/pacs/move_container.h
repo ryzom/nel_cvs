@@ -1,7 +1,7 @@
 /** \file move_container.h
  * Container for movable object
  *
- * $Id: move_container.h,v 1.15 2002/07/01 18:23:55 legros Exp $
+ * $Id: move_container.h,v 1.16 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -73,7 +73,7 @@ public:
 	}
 
 	/// Destructor
-	~CMoveContainer ();
+	virtual ~CMoveContainer ();
 
 	/// Init the container without global retriever
 	void init (double xmin, double ymin, double xmax, double ymax, uint widthCellCount, uint heightCellCount, double primitiveMaxSize, 

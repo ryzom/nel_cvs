@@ -1,7 +1,7 @@
 /** \file eval_num_expr.cpp
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.cpp,v 1.3 2002/06/04 14:14:15 corvazier Exp $
+ * $Id: eval_num_expr.cpp,v 1.4 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -34,7 +34,7 @@ using namespace std;
 
 // ***************************************************************************
 
-inline CEvalNumExpr::TReturnState CEvalNumExpr::readDecimal (double &value)
+CEvalNumExpr::TReturnState CEvalNumExpr::readDecimal (double &value)
 {
 	// Read first integer value
 	readIntegerNumberDecimal (value);
@@ -62,7 +62,7 @@ inline CEvalNumExpr::TReturnState CEvalNumExpr::readDecimal (double &value)
 
 // ***************************************************************************
 
-inline void CEvalNumExpr::readIntegerNumberDecimal (double &value)
+void CEvalNumExpr::readIntegerNumberDecimal (double &value)
 {
 	// Registered values
 	register double regValue = 0;
@@ -96,7 +96,7 @@ inline void CEvalNumExpr::readIntegerNumberDecimal (double &value)
 CEvalNumExpr::TReturnState CEvalNumExpr::getNextToken (TToken &token)
 {
 	// Get the current char
-	char currentChar = *_ExprPtr;
+	uint8 currentChar = *_ExprPtr;
 
 	// Skip space
 	while ((currentChar!=0) && (currentChar<=0x20))

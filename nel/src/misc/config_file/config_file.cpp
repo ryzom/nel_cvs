@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.37 2002/06/20 12:23:19 lecroart Exp $
+ * $Id: config_file.cpp,v 1.38 2002/08/21 09:40:36 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -170,6 +170,7 @@ bool CConfigFile::CVar::operator==	(const CVar& var) const
 		case T_INT: return IntValues == var.IntValues; break;
 		case T_REAL: return RealValues == var.RealValues; break;
 		case T_STRING: return StrValues == var.StrValues; break;
+		default: break;
 		}
 	}
 	return false;
@@ -189,6 +190,7 @@ void CConfigFile::CVar::add (const CVar &var)
 		case T_INT: IntValues.insert (IntValues.end(), var.IntValues.begin(), var.IntValues.end()); break;
 		case T_REAL: RealValues.insert (RealValues.end(), var.RealValues.begin(), var.RealValues.end()); break;
 		case T_STRING: StrValues.insert (StrValues.end(), var.StrValues.begin(), var.StrValues.end()); break;
+		default: break;
 		}
 	}
 }
@@ -348,7 +350,7 @@ void CConfigFile::reparse (const char *filename)
 CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 {
 	uint i;
-	for (i = 0; i < (int)_Vars.size(); i++)
+	for (i = 0; i < _Vars.size(); i++)
 	{
 		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
 		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
@@ -372,7 +374,7 @@ CConfigFile::CVar &CConfigFile::getVar (const std::string &varName)
 CConfigFile::CVar *CConfigFile::getVarPtr (const std::string &varName)
 {
 	uint i;
-	for (i = 0; i < (int)_Vars.size(); i++)
+	for (i = 0; i < _Vars.size(); i++)
 	{
 		// the type could be T_UNKNOWN if we add a callback on this name but this var is not in the config file
 		if (_Vars[i].Name == varName && (_Vars[i].Type != CVar::T_UNKNOWN || _Vars[i].Comp))
@@ -432,6 +434,7 @@ void CConfigFile::save () const
 				}
 				break;
 			}
+			default: break;
 			}
 			fprintf(fp, "};\n");
 		}
@@ -448,6 +451,7 @@ void CConfigFile::save () const
 			case CConfigFile::CVar::T_REAL:
 				fprintf(fp, "%-20s = %.10f;\n", _Vars[i].Name.c_str(), _Vars[i].RealValues[0]);
 				break;
+			default: break;
 			}
 		}
 	}

@@ -1,7 +1,7 @@
 /** \file aabbox.cpp
  * <File description>
  *
- * $Id: aabbox.cpp,v 1.7 2002/04/22 08:13:42 berenguier Exp $
+ * $Id: aabbox.cpp,v 1.8 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -164,7 +164,7 @@ void			CAABBox::makePyramid(CPlane	planes[6]) const
 // ***************************************************************************
 void			CAABBox::serial(NLMISC::IStream &f)
 {
-	uint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 	f.serial(Center);
 	f.serial(HalfSize);
 }

@@ -1,7 +1,7 @@
 /** \file mem_displayer.cpp
  * <File description>
  *
- * $Id: mem_displayer.cpp,v 1.1 2002/03/14 13:49:27 lecroart Exp $
+ * $Id: mem_displayer.cpp,v 1.2 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -314,7 +314,7 @@ static void displayCallStack (CLog *log)
 /*
  * Constructor
  */
-CMemDisplayer::CMemDisplayer (const char *displayerName) : IDisplayer (displayerName), _NeedHeader(true), _MaxStrings(50), _CanUseStrings(true)
+CMemDisplayer::CMemDisplayer (const char *displayerName) : IDisplayer (displayerName), _CanUseStrings(true), _NeedHeader(true), _MaxStrings(50)
 {
 	setParam (50);
 }

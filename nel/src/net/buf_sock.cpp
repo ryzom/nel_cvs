@@ -1,7 +1,7 @@
 /** \file buf_sock.cpp
  * Network engine, layer 1, base
  *
- * $Id: buf_sock.cpp,v 1.27 2002/07/02 15:56:58 lecroart Exp $
+ * $Id: buf_sock.cpp,v 1.28 2002/08/21 09:44:58 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -50,16 +50,16 @@ NLMISC::CMutex nettrace_mutex("nettrace_mutex");
  * Constructor
  */
 CBufSock::CBufSock( CTcpSock *sock ) :
+	SendNextValue(0),
+	ReceiveNextValue(0),
 	Sock( sock ),
+	_KnowConnected( false ),
+	_LastFlushTime( 0 ),
 	_TriggerTime( 20 ),
 	_TriggerSize( -1 ),
-	_LastFlushTime( 0 ),
-	_KnowConnected( false ),
-	_ConnectedState( false ),
 	_RTSBIndex( 0 ),
 	_AppId( 0 ),
-	SendNextValue(0),
-	ReceiveNextValue(0)
+	_ConnectedState( false )
 {
 	nlnettrace( "CBufSock::CBufSock" ); // don't define a global object
 
@@ -169,7 +169,6 @@ bool CBufSock::flush()
 		// Send
 		CSock::TSockResult res;
 		TBlockSize len = _ReadyToSendBuffer.size() - _RTSBIndex;
-		TBlockSize realLen = len;
 
 		res = Sock->send( _ReadyToSendBuffer.getPtr()+_RTSBIndex, len, false );
 
@@ -350,10 +349,10 @@ string CBufSock::asString() const
  */
 CServerBufSock::CServerBufSock( CTcpSock *sock ) :
 	CBufSock( sock ),
+	_Advertised( false ),
 	_NowReadingBuffer( false ),
 	_BytesRead( 0 ),
 	_Length( 0 ),
-	_Advertised( false ),
 	_OwnerTask( NULL )
 {
 	nlassert (this != InvalidSockId);	// invalid bufsock

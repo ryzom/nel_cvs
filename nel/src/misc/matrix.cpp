@@ -1,7 +1,7 @@
 /** \file matrix.cpp
  * <description>
  *
- * $Id: matrix.cpp,v 1.32 2002/07/11 17:18:27 berenguier Exp $
+ * $Id: matrix.cpp,v 1.33 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -1536,7 +1536,7 @@ void		CMatrix::getRot(CQuat &quat) const
 void		CMatrix::serial(IStream &f)
 {
 	// Use versionning, maybe for futur improvement.
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 
 	if(f.isReading())
 		identity();

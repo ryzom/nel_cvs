@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.3 2002/02/18 16:26:34 valignat Exp $
+# $Id: Makefile.am,v 1.4 2002/08/21 09:42:02 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES          = Makefile.in
@@ -20,9 +20,6 @@ libnelsnd_lowlevel_la_SOURCES = buffer.cpp                 \
                                 source.h
 
 AM_CXXFLAGS                   = -I$(top_srcdir)/src
-
-libnelsnd_lowlevel_la_LDFLAGS = -version-info @LIBTOOL_VERSION@
-
 
 # End of Makefile.am
 

@@ -1,7 +1,7 @@
 /** \file background_sound_manager.cpp
  * CBackgroundSoundManager
  *
- * $Id: background_sound_manager.cpp,v 1.8 2002/07/31 17:49:37 miller Exp $
+ * $Id: background_sound_manager.cpp,v 1.9 2002/08/21 09:42:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ class CBackgroundSound
 {
 public:
 
-	CBackgroundSound () : SourceDay(NULL), SourceNight(NULL), Loaded(false) {}
+	CBackgroundSound () : Loaded(false), SourceDay(NULL), SourceNight(NULL) {}
 
 	// name of the background sound (add _day or _night to know the source name)
 	string				Name;
@@ -201,7 +201,7 @@ void CBackgroundSoundManager::load (const string &continent)
 	{
 		if(region.VZones[i].VPoints.size()>2)
 		{
-			sint32 pos1 = region.VZones[i].Name.find ("-");
+			uint32 pos1 = region.VZones[i].Name.find ("-");
 			if(pos1 == string::npos)
 			{
 				nlwarning ("zone %d have the malformated name '%s' missing -name-", i, region.VZones[i].Name.c_str());
@@ -209,7 +209,7 @@ void CBackgroundSoundManager::load (const string &continent)
 			}
 			pos1++;
 
-			sint32 pos2 = region.VZones[i].Name.find ("-", pos1);
+			uint32 pos2 = region.VZones[i].Name.find ("-", pos1);
 			if(pos2 == string::npos)
 			{
 				nlwarning ("zone %d have the malformated name '%s' missing -name-", i, region.VZones[i].Name.c_str());

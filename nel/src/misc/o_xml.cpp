@@ -1,7 +1,7 @@
 /** \file o_xml.cpp
  * Output xml stream
  *
- * $Id: o_xml.cpp,v 1.7 2002/05/21 16:41:31 lecroart Exp $
+ * $Id: o_xml.cpp,v 1.8 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -643,7 +643,7 @@ int xmlOutputWriteCallbackForNeL ( void *context, const char *buffer, int len)
 int xmlOutputCloseCallbackForNeL ( void *context )
 {
 	// Get the object
-	COXml *object = (COXml*) context;
+	// COXml *object = (COXml*) context;
 
 	// Does nothing
 	return 1;

@@ -1,7 +1,7 @@
 /** \file local_retriever.cpp
  *
  *
- * $Id: local_retriever.cpp,v 1.50 2002/07/01 18:23:55 legros Exp $
+ * $Id: local_retriever.cpp,v 1.51 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,10 +43,10 @@ const float	NLPACS::CLocalRetriever::_EdgeTipThreshold = 0.1f;
 /// The threshold distance to insure a position belongs to a surface
 const float	InsurePositionThreshold = 2.0e-2f;
 
-static float	hybrid2dNorm(const CVector &v)
-{
-	return (float)(sqrt(sqr(v.x)+sqr(v.y))+fabs(v.z)*0.1);
-}
+//static float	hybrid2dNorm(const CVector &v)
+//{
+//	return (float)(sqrt(sqr(v.x)+sqr(v.y))+fabs(v.z)*0.1);
+//}
 
 
 
@@ -1256,7 +1256,10 @@ float	NLPACS::CLocalRetriever::getHeight(const NLPACS::ULocalPosition &position)
 
 
 
+#ifdef NL_OS_WINDOWS
 #pragma optimize( "", off )
+#endif // NL_OS_WINDOWS
+
 void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosition &A, 
 										  const NLPACS::CLocalRetriever::CLocalPosition &B, 
 										  std::vector<NLPACS::CVector2s> &path, 
@@ -1469,7 +1472,9 @@ void	NLPACS::CLocalRetriever::findPath(const NLPACS::CLocalRetriever::CLocalPosi
 
 	path.push_back(CVector2s(B.Estimation));
 }
+#ifdef NL_OS_WINDOWS
 #pragma optimize( "", on ) 
+#endif // NL_OS_WINDOWS
 
 // ***************************************************************************
 // ***************************************************************************
@@ -1613,7 +1618,7 @@ void	NLPACS::CLocalRetriever::buildInteriorSurfaceBBoxes(std::vector<NLMISC::CAA
 		// Extend the surface of this face with her 3 points.
 
 		// check good id.
-		if(intFace.Surface==-1)
+		if(intFace.Surface==(uint)-1)
 			continue;
 		nlassert(intFace.Surface<_Surfaces.size());
 

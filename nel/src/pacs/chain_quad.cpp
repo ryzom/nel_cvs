@@ -1,7 +1,7 @@
 /** \file chain_quad.cpp
  * a quadgrid of list of edge chain.
  *
- * $Id: chain_quad.cpp,v 1.12 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: chain_quad.cpp,v 1.13 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -476,7 +476,7 @@ void		CChainQuad::serial(NLMISC::IStream &f)
 	Version 0:
 		- base version.
 	*/
-	sint	ver= f.serialVersion(0);
+	(void)f.serialVersion(0);
 	uint	i;
 
 	// serial basics.

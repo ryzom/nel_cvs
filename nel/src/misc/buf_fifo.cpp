@@ -1,7 +1,7 @@
 /** \file buf_fifo.cpp
  * Implementation for CBufFIFO
  *
- * $Id: buf_fifo.cpp,v 1.23 2002/05/21 16:41:31 lecroart Exp $
+ * $Id: buf_fifo.cpp,v 1.24 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ using namespace std;
 namespace NLMISC {
 
 
-CBufFIFO::CBufFIFO() : _Buffer(NULL), _BufferSize(0), _Head(NULL), _Tail(NULL), _Empty(true), _Rewinder(NULL)
+CBufFIFO::CBufFIFO() : _Buffer(NULL), _BufferSize(0), _Empty(true), _Head(NULL), _Tail(NULL), _Rewinder(NULL)
 {
 	// reset statistic
 	_BiggestBlock = 0;

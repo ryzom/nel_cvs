@@ -2,9 +2,9 @@
 
 /* Includes */
 
-#ifndef __GNUC__
+#ifdef NL_OS_WINDOWS
 #pragma warning (disable : 4786)
-#endif // __GNUC__
+#endif // NL_OS_WINDOWS
 
 #include <stdio.h>
 #include <vector>
@@ -22,7 +22,11 @@ using namespace NLMISC;
 #define YYPARSE_PARAM pvararray
 
 //#define DEBUG_PRINTF	InfoLog->displayRaw
+#ifdef __GNUC__
+#define DEBUG_PRINTF(format, args...)
+#else // __GNUC__
 #define DEBUG_PRINTF	// InfoLog->displayRaw
+#endif // __GNUC__
 
 /* Types */
 
@@ -277,6 +281,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:		a.Int *= b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Int *= (int)b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: int*str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_REAL:
@@ -285,6 +290,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:		a.Real *= (double)b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Real *= b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: real*str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_STRING:
@@ -293,8 +299,10 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:		DEBUG_PRINTF("ERROR: str*int\n");  break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	DEBUG_PRINTF("ERROR: str*real\n");  break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: str*str\n");  break;
+			default: break;
 			}
 			break;
+		default: break;
 		}
 		break;
 	case OP_DIVIDE:																//  //////////////////////
@@ -306,6 +314,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:		a.Int /= b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Int /= (int)b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: int/str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_REAL:
@@ -314,6 +323,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:		a.Real /= (double)b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Real /= b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: real/str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_STRING:
@@ -322,8 +332,10 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:		DEBUG_PRINTF("ERROR: str/int\n"); break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	DEBUG_PRINTF("ERROR: str/real\n"); break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: str/str\n"); break;
+			 default: break;
 			}
 			break;
+		default: break;
 		}
 		break;
 	case OP_PLUS:																//  ++++++++++++++++++++++++
@@ -335,6 +347,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:	a.Int += b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Int += (int)b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	a.Int += atoi(b.String); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_REAL:
@@ -343,6 +356,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:	a.Real += (double)b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Real += b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	a.Real += atof (b.String); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_STRING:
@@ -351,8 +365,10 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:	{ char str2[60]; NLMISC::smprintf(str2, 60, "%d", b.Int); strcat(a.String, str2); break; }
 			case NLMISC::CConfigFile::CVar::T_REAL:	{ char str2[60]; NLMISC::smprintf(str2, 60, "%f", b.Real); strcat(a.String, str2); break; }
 			case NLMISC::CConfigFile::CVar::T_STRING:	strcat (a.String, b.String); break;
+			default: break;
 			}
 			break;
+		default: break;
 		}
 		break;
 	case OP_MINUS:																//  -------------------------
@@ -364,6 +380,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:	a.Int -= b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Int -= (int)b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: int-str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_REAL:
@@ -372,6 +389,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:	a.Real -= (double)b.Int; break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	a.Real -= b.Real; break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: real-str\n"); break;
+			default: break;
 			}
 			break;
 		case NLMISC::CConfigFile::CVar::T_STRING:
@@ -380,8 +398,10 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 			case NLMISC::CConfigFile::CVar::T_INT:	DEBUG_PRINTF("ERROR: str-int\n"); break;
 			case NLMISC::CConfigFile::CVar::T_REAL:	DEBUG_PRINTF("ERROR: str-real\n"); break;
 			case NLMISC::CConfigFile::CVar::T_STRING:	DEBUG_PRINTF("ERROR: str-str\n"); break;
+			default: break;
 			}
 			break;
+		default: break;
 		}
 		break;
 	case OP_NEG:																// neg
@@ -390,6 +410,7 @@ cf_value cf_op (cf_value a, cf_value b, cf_operation op)
 		case NLMISC::CConfigFile::CVar::T_INT:		a.Int = -a.Int; break;
 		case NLMISC::CConfigFile::CVar::T_REAL:		a.Real = -a.Real; break;
 		case NLMISC::CConfigFile::CVar::T_STRING:		DEBUG_PRINTF("ERROR: -str\n"); break;
+		default: break;
 		}
 		break;
 	}
@@ -406,6 +427,7 @@ void cf_print (cf_value Val)
 	case NLMISC::CConfigFile::CVar::T_INT: DEBUG_PRINTF("'%d'", Val.Int); break;
 	case NLMISC::CConfigFile::CVar::T_REAL: DEBUG_PRINTF("`%f`", Val.Real); break;
 	case NLMISC::CConfigFile::CVar::T_STRING: DEBUG_PRINTF("\"%s\"", Val.String); break;
+	default: break;
 	}
 }
 
@@ -419,6 +441,7 @@ void cf_setVar (NLMISC::CConfigFile::CVar &Var, cf_value Val)
 	case NLMISC::CConfigFile::CVar::T_INT: Var.IntValues.push_back (Val.Int); break;
 	case NLMISC::CConfigFile::CVar::T_REAL: Var.RealValues.push_back (Val.Real); break;
 	case NLMISC::CConfigFile::CVar::T_STRING: Var.StrValues.push_back(Val.String); break;
+	default: break;
 	}
 }
 

@@ -1,7 +1,7 @@
 /** \file edge_collide.cpp
  * Collisions against edge in 2D.
  *
- * $Id: edge_collide.cpp,v 1.13 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: edge_collide.cpp,v 1.14 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -530,12 +530,9 @@ float		CEdgeCollide::testBBoxMove(const CVector2f &start, const CVector2f &delta
 {
 	// distance from center to line.
 	float	dist= start*Norm + C;
-	// projection of speed on normal.
-	float	speed= delta*Norm;
 
 	// test if the movement is against the line or not.
 	bool	sensPos= dist>0;
-	bool	sensSpeed= speed>0;
 	// if signs are equals, same side of the line, so we allow the circle to leave the line.
 	/*if(sensPos==sensSpeed)
 		return 1;*/

@@ -1,7 +1,7 @@
 /** \file udp_sock.cpp
  * Network engine, layer 0, udp socket
  *
- * $Id: udp_sock.cpp,v 1.11 2002/04/17 09:54:00 cado Exp $
+ * $Id: udp_sock.cpp,v 1.12 2002/08/21 09:44:10 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -161,7 +161,7 @@ void CUdpSock::receive( uint8 *buffer, uint32& len )
 	len = ::recv( _Sock, (char*)buffer, len , 0 );
 
 	// Check for errors (after setting the address)
-	if ( len == SOCKET_ERROR )
+	if ( ((int)len) == SOCKET_ERROR )
 	{
 		throw ESocket( "Cannot receive data" );
 	}
@@ -190,7 +190,7 @@ void CUdpSock::receivedFrom( uint8 *buffer, uint& len, CInetAddress& addr )
 	addr.setSockAddr( &saddr );
 
 	// Check for errors (after setting the address)
-	if ( len == SOCKET_ERROR )
+	if ( ((int)len) == SOCKET_ERROR )
 	{
 		throw ESocket( "Cannot receive data" );
 	}

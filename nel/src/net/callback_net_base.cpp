@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.33 2002/06/12 10:16:34 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.34 2002/08/21 09:45:09 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,10 +32,14 @@
 #include "nel/net/callback_net_base.h"
 
 #ifdef USE_MESSAGE_RECORDER
+#ifdef NL_OS_WINDOWS
 #pragma message ( "NeL Net layer 3: message recorder enabled" )
+#endif // NL_OS_WINDOWS
 #include "nel/net/message_recorder.h"
 #else
+#ifdef NL_OS_WINDOWS
 #pragma message ( "NeL Net layer 3: message recorder disabled" )
+#endif // NL_OS_WINDOWS
 #endif
 
 
@@ -327,7 +331,7 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 {
 	checkThreadId ();
 
-	H_AUTO (CCallbackNetBase_baseUpdate);
+//	H_AUTO (CCallbackNetBase_baseUpdate);
 
 	nlassert( timeout >= -1 );
 	TTime t0 = CTime::getLocalTime();

@@ -1,7 +1,7 @@
 /** \file login_cookie.cpp
  * <File description>
  *
- * $Id: login_cookie.cpp,v 1.3 2001/12/28 10:17:21 lecroart Exp $
+ * $Id: login_cookie.cpp,v 1.4 2002/08/21 09:44:21 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -44,7 +44,7 @@ bool operator== (const CLoginCookie &c1, const CLoginCookie &c2)
 	return c1._UserAddr==c2._UserAddr && c1._UserKey==c2._UserKey && c1._UserId==c2._UserId;
 }
 
-CLoginCookie::CLoginCookie (uint32 addr, uint32 id) : _UserAddr(addr), _UserId(id), _Valid(true)
+CLoginCookie::CLoginCookie (uint32 addr, uint32 id) : _Valid(true), _UserAddr(addr), _UserId(id)
 {
 	// generates the key for this cookie
 	_UserKey = generateKey();

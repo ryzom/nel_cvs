@@ -1,7 +1,7 @@
 /** \file file.cpp
  * Standard File Input/Output
  *
- * $Id: file.cpp,v 1.23 2002/06/12 10:10:51 lecroart Exp $
+ * $Id: file.cpp,v 1.24 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -425,7 +425,7 @@ bool		COFile::seek (sint32 offset, IStream::TSeekOrigin origin) throw(EStream)
 {
 	if (_F)
 	{
-		int origin_c;
+		int origin_c = SEEK_SET;
 		switch (origin)
 		{
 		case IStream::begin:

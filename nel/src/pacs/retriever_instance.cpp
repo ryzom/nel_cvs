@@ -1,7 +1,7 @@
 /** \file retriever_instance.cpp
  *
  *
- * $Id: retriever_instance.cpp,v 1.38 2002/07/19 13:29:55 legros Exp $
+ * $Id: retriever_instance.cpp,v 1.39 2002/08/21 09:41:34 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -374,7 +374,6 @@ void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVector &estimat
 void	NLPACS::CRetrieverInstance::retrievePosition(const NLMISC::CVectorD &estimated, const CLocalRetriever &retriever, CCollisionSurfaceTemp &cst) const
 {
 	CVector							localEstimated;
-	CLocalRetriever::CLocalPosition	retrieved;
 
 //	nldebug("PACS: retrievePosition in instance %d (retriever %d)", _InstanceId, _RetrieverId);
 

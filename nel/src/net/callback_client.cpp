@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.24 2002/06/12 10:16:34 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.25 2002/08/21 09:45:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -270,7 +270,6 @@ TSockId	CCallbackClient::getSockId (TSockId hostid)
 {
 	nlassert (hostid == InvalidSockId);
 	checkThreadId ();
-	nlassert (connected ());
 
 	return id ();
 }

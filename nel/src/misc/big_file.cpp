@@ -1,7 +1,7 @@
 /** \file big_file.cpp
  * Big file management
  *
- * $Id: big_file.cpp,v 1.2 2002/06/12 10:12:46 lecroart Exp $
+ * $Id: big_file.cpp,v 1.3 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -154,7 +154,7 @@ FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize,
 						 uint32 &rBigFileOffset, bool &rCacheFileOnOpen, bool &rAlwaysOpened)
 {
 	string zeFileName, zeBigFileName, lwrFileName = strlwr (sFileName);
-	sint32 i, nPos = sFileName.find ('@');
+	uint32 i, nPos = sFileName.find ('@');
 	if (nPos == string::npos)
 	{
 		nlwarning ("Couldn't load '%s'", sFileName.c_str());
@@ -164,7 +164,7 @@ FILE* CBigFile::getFile (const std::string &sFileName, uint32 &rFileSize,
 	for (i = 0; i < nPos; ++i)
 		zeBigFileName += lwrFileName[i];
 	++i; // Skip @
-	for (; i < (sint32)lwrFileName.size(); ++i)
+	for (; i < lwrFileName.size(); ++i)
 		zeFileName += lwrFileName[i];
 
 	if (_BNPs.find (zeBigFileName) == _BNPs.end())

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.29 2002/07/30 14:25:26 miller Exp $
+ * $Id: audio_mixer_user.cpp,v 1.30 2002/08/21 09:42:29 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -70,7 +70,7 @@ const char *PriToCStr [NbSoundPriorities] = { "XH", "HI", "MD", "LO" };
 
 const char *getPriorityStr( TSoundPriority p )
 {
-	nlassert( p < NbSoundPriorities );
+	nlassert( ((uint)p) < NbSoundPriorities );
 	return PriToCStr[p];
 }
 
@@ -85,9 +85,14 @@ UAudioMixer	*UAudioMixer::createAudioMixer()
 
 // ******************************************************************
 
-CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL), _NbTracks(0), _CurEnvEffect(NULL),
-	_BalancePeriod(0), _ListenPosition(CVector::Null), _Leaving(false), _EnvSounds(NULL),
-	_MaxNbTracks(0)
+CAudioMixerUser::CAudioMixerUser() : _SoundDriver(NULL),
+									 _ListenPosition(CVector::Null),
+									 _EnvSounds(NULL),
+									 _BalancePeriod(0),
+									 _CurEnvEffect(NULL),
+									 _NbTracks(0),
+									 _MaxNbTracks(0),
+									 _Leaving(false)
 {
 	if ( _Instance == NULL )
 	{
@@ -156,8 +161,6 @@ CAudioMixerUser::~CAudioMixerUser()
 
 void				CAudioMixerUser::writeProfile(std::ostream& out)
 {
-	double time = (double)CTime::getLocalTime();
-
 	out << "Mixer: \n";
 	out << "Playing sources: " << getPlayingSourcesNumber() << " \n";
 	out << "Available tracks: " << getNumberAvailableTracks() << " \n";
@@ -574,7 +577,7 @@ USource				*CAudioMixerUser::createSource( TSoundId id, bool spawn, TSpawnEndCal
 	}
 	else
 	{
-		int dummy = 0; // FIXME
+		; // FIXME
 	}
 
 #if NL_PROFILE_MIXER
@@ -712,7 +715,7 @@ uint32			CAudioMixerUser::loadSampleBank( const char *filename, std::vector<std:
 	string path = _SamplePath;
 	path.append("/").append(filename);
 
-	nldebug( "Loading samples from %s...", path );
+	nldebug( "Loading samples from %s...", path.c_str() );
 
 	CSampleBank* bank = new CSampleBank(path, _SoundDriver);
 

@@ -1,7 +1,7 @@
 /** \file bounding_box.cpp
  * CBoundingBox: Bounding box (different from the NL3D ones)
  *
- * $Id: bounding_box.cpp,v 1.4 2001/12/28 15:37:02 lecroart Exp $
+ * $Id: bounding_box.cpp,v 1.5 2002/08/21 09:42:29 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -36,7 +36,7 @@ namespace NLSOUND {
 /*
  * Constructor
  */
-CBoundingBox::CBoundingBox() : _Center(CVector::Null), _Rx(0.0f), _Ry(0.0f), _Rz(0.0f)
+CBoundingBox::CBoundingBox() : _Rx(0.0f), _Ry(0.0f), _Rz(0.0f), _Center(CVector::Null)
 {
 }
 

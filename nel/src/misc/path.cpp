@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.51 2002/08/14 08:51:52 berenguier Exp $
+ * $Id: path.cpp,v 1.52 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -58,7 +58,11 @@ namespace NLMISC {
 #ifdef	NL_DEBUG_PATH
 #define	NL_DISPLAY_PATH	nlinfo
 #else 
+#ifdef __GNUC__
+#define	NL_DISPLAY_PATH(format, args...)
+#else // __GNUC__
 #define	NL_DISPLAY_PATH if(false)
+#endif // __GNUC__
 #endif
 
 
@@ -160,7 +164,7 @@ void CPath::remapExtension (const string &ext1, const string &ext2, bool substit
 			if (!(*it).second.Remapped && (*it).second.Extension == ext1lwr)
 			{
 				// find if already exist
-				sint pos = (*it).first.find_last_of (".");
+				uint32 pos = (*it).first.find_last_of (".");
 				if (pos != string::npos)
 				{
 					string file = (*it).first.substr (0, pos + 1);
@@ -699,8 +703,6 @@ void CPath::addSearchFile (const string &file, bool remap, const string &virtual
 
 void CPath::addSearchListFile (const string &filename, bool recurse, bool alternative)
 {
-	CPath *inst = CPath::getInstance();
-
 	// check empty file
 	if (filename.empty())
 	{
@@ -870,7 +872,7 @@ void CPath::display ()
 
 int CFile::getLastSeparator (const string &filename)
 {
-	int pos = filename.find_last_of ('/');
+	uint32 pos = filename.find_last_of ('/');
 	if (pos == string::npos)
 	{
 		pos = filename.find_last_of ('\\');
@@ -884,7 +886,7 @@ int CFile::getLastSeparator (const string &filename)
 
 string CFile::getFilename (const string &filename)
 {
-	int pos = CFile::getLastSeparator(filename);
+	uint32 pos = CFile::getLastSeparator(filename);
 	if (pos != string::npos)
 		return filename.substr (pos + 1);
 	else
@@ -894,7 +896,7 @@ string CFile::getFilename (const string &filename)
 string CFile::getFilenameWithoutExtension (const string &filename)
 {
 	string filename2 = getFilename (filename);
-	int pos = filename2.find_last_of ('.');
+	uint32 pos = filename2.find_last_of ('.');
 	if (pos == string::npos)
 		return filename2;
 	else
@@ -903,7 +905,7 @@ string CFile::getFilenameWithoutExtension (const string &filename)
 
 string CFile::getExtension (const string &filename)
 {
-	int pos = filename.find_last_of ('.');
+	uint32 pos = filename.find_last_of ('.');
 	if (pos == string::npos)
 		return "";
 	else
@@ -912,7 +914,7 @@ string CFile::getExtension (const string &filename)
 
 string CFile::getPath (const string &filename)
 {
-	int pos = CFile::getLastSeparator(filename);
+	uint32 pos = CFile::getLastSeparator(filename);
 	if (pos != string::npos)
 		return filename.substr (0, pos + 1);
 	else
@@ -955,7 +957,7 @@ bool CFile::fileExists (const string& filename)
 
 string CFile::findNewFile (const string &filename)
 {
-	int pos = filename.find_last_of ('.');
+	uint32 pos = filename.find_last_of ('.');
 	if (pos == string::npos)
 		return filename;
 	
@@ -1067,8 +1069,6 @@ void CFile::checkFileChange (TTime frequency)
 	{
 		for (uint i = 0; i < FileToCheck.size(); i++)
 		{
-			uint32 t = CFile::getFileModificationDate(FileToCheck[i].FileName), t2 = FileToCheck[i].LastModified;
-			
 			if(CFile::getFileModificationDate(FileToCheck[i].FileName) != FileToCheck[i].LastModified)
 			{
 				// need to reload it
@@ -1096,6 +1096,7 @@ static bool CopyMoveFile(const char *dest, const char *src, bool copyFile, bool 
 					 : MoveFile(dossrc.c_str(), dosdest.c_str()) != FALSE;
 #else
 	nlstop; // not implemented yet
+	return false;
 #endif	
 }
 

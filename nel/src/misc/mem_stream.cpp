@@ -1,7 +1,7 @@
 /** \file mem_stream.cpp
  * CMemStream class
  *
- * $Id: mem_stream.cpp,v 1.16 2002/05/31 10:07:51 corvazier Exp $
+ * $Id: mem_stream.cpp,v 1.17 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -376,7 +376,10 @@ inline uint32 atoui( const char *ident)
 	return (uint32) strtoul (ident, NULL, 10);
 }
 */
-/*
+/***************************************************************/
+/******************* THE FOLLOWING CODE IS COMMENTED OUT *******/
+/***************************************************************
+
 // ======================================================================================================
 void		CMemStream::serial(uint8 &b) 
 {
@@ -696,7 +699,7 @@ void		CMemStream::serial(ucstring &b)
 
 
 // Specialisation of serialCont() for vector<bool>
-/*void	CMemStream::serialCont(std::vector<bool> &cont)
+void	CMemStream::serialCont(std::vector<bool> &cont)
 {
 	sint32	len=0;
 	if(isReading())
@@ -725,13 +728,11 @@ void		CMemStream::serial(ucstring &b)
 			serial( b );
 		}
 	}
-}*/
+}
 
 
-/*
- * Serialisation in hexadecimal
- */
-/*void	CMemStream::serialHex(uint32 &b)
+// Serialisation in hexadecimal
+void	CMemStream::serialHex(uint32 &b)
 {
 	if ( _StringMode )
 	{
@@ -750,8 +751,7 @@ void		CMemStream::serial(ucstring &b)
 	}
 }
 
-*/
-
+***************************************************************/
 }
 
 	

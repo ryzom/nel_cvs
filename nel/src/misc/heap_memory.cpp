@@ -1,7 +1,7 @@
 /** \file heap_memory.cpp
  * A Heap manager
  *
- * $Id: heap_memory.cpp,v 1.4 2001/12/28 10:17:20 lecroart Exp $
+ * $Id: heap_memory.cpp,v 1.5 2002/08/21 09:41:12 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -138,7 +138,6 @@ void			*CHeapMemory::allocate(uint size)
 		return NULL;
 	else
 	{
-		uint8	*ptr= it->second;
 		// NB: this space must exist in the "array".
 		bestSpace= _EmptySpaces[it->second];
 	}

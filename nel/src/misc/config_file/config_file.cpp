@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.40 2002/11/25 14:11:21 boucher Exp $
+ * $Id: config_file.cpp,v 1.41 2002/12/02 18:13:09 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -353,7 +353,7 @@ void CConfigFile::reparse (const char *filename, bool callingCallback)
 
 	if (callingCallback)
 	{
-		nlwarning("Callback ptr : %p", _Callback);
+//		nlwarning("Callback ptr : %p", _Callback);
 		if (_Callback != NULL) 
 			_Callback();
 	}

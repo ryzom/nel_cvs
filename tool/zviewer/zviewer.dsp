@@ -147,11 +147,23 @@ SOURCE=.\move_listener.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\nevraxpill.ico
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\zviewer.cfg
 # End Source File
 # Begin Source File
 
 SOURCE=.\zviewer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\zviewer.rc
 # End Source File
 # End Target
 # End Project

@@ -1,7 +1,7 @@
 /** \file zviewer.cpp
  *
  *
- * $Id: zviewer.cpp,v 1.18 2004/03/19 10:29:24 corvazier Exp $
+ * $Id: zviewer.cpp,v 1.19 2004/10/26 13:53:11 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -775,8 +775,7 @@ void writeConfigFile(const char * configFileName)
 	fprintf(f,"IgPath = \"%s\";\n",ViewerCfg.IgPath.c_str());
 	fprintf(f,"ShapePath = \"%s\";\n",ViewerCfg.ShapePath.c_str());
 	fprintf(f,"MapsPath = \"%s\";\n",ViewerCfg.MapsPath.c_str());
-	
-
+	fprintf(f,"FontPath = \"%s\";\n",ViewerCfg.FontPath.c_str());
 
 	fprintf(f,"HeightFieldName = \"%s\";\n", ViewerCfg.HeightFieldName.c_str());
 	fprintf(f,"HeightFieldMaxZ = %f;\n", ViewerCfg.HeightFieldMaxZ);
@@ -897,6 +896,9 @@ void initViewerConfig(const char * configFileName)
 		ViewerCfg.MapsPath = cvMapsPath.asString();
 		CPath::addSearchPath(cvMapsPath.asString());
 
+		CConfigFile::CVar &cvFontPath = cf.getVar("FontPath");
+		ViewerCfg.FontPath = cvFontPath.asString();
+
 		CConfigFile::CVar &cvHeightFieldName = cf.getVar("HeightFieldName");
 		ViewerCfg.HeightFieldName = cvHeightFieldName.asString();
 		
@@ -962,12 +964,13 @@ void main()
 		NL3D::CNELU::Camera->setTransformMode(ITransformable::DirectMatrix);
 
 		// Init the font manager
-		ViewerCfg.TextContext.init (CNELU::Driver, &ViewerCfg.FontManager);
-		ViewerCfg.TextContext.setFontGenerator("\\\\server\\code\\fonts\\arialuni.ttf");
-		ViewerCfg.TextContext.setFontSize(12);
-		ViewerCfg.FontManager.setMaxMemory(2000000);
 
 		initViewerConfig("zviewer.cfg");
+
+		ViewerCfg.TextContext.init (CNELU::Driver, &ViewerCfg.FontManager);
+		ViewerCfg.TextContext.setFontGenerator(ViewerCfg.FontPath);
+		ViewerCfg.TextContext.setFontSize(12);
+		ViewerCfg.FontManager.setMaxMemory(2000000);
 
 		displayZones();
 			

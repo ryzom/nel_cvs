@@ -134,7 +134,42 @@ DELETE   : diminuer le threshold
 ADD      : augmenter la hauteur des yeux
 SUBTRACT : diminuer la hauteur des yeux
 
+==================== ZVIEWER ENGLISH ====================
+ 
+ZViewer allows you to view one or more zones exported from 3DSMax inside the NeL Engine
 
 
+When you run ZViewer for the first time if no configuration file is located one will be created with default values.
+The Configuration file defines the zones to load and other vital information and will not work in it's default state
 
 
+Keys 
+
+ESC: exit ZViewer
+F1: toggles information
+F3: toggles between full and the wire frame mode
+F12: screenshot
+SPACE: toggles between Walk and Free-Look mode
+RETURN: release or capture mouse
+UP: move forward
+DOWN: move back
+LEFT: turn left
+RIGHT: turn right
+SHIFT: increases altitude
+CTRL: decreases altitude
+1: 5 km/h
+2: 10 km/h
+3: 20 km/h
+4: 40 km/h
+5: 80 km/h
+6: 160 km/h
+7: 320 km/h
+8: 640 km/h
+PAGEUP: increases the clipping distance
+PAGEDOWN: decreases the clipping distance
+HOME: increases tilenear
+END: decreases the tilenear
+INSERT: increases threshold
+DELETE: decreases threshold
+ADD: increases the eye height
+SUBTRACT: decreases the eye height

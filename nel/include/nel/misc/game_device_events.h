@@ -1,7 +1,7 @@
 /** \file game_device_event.h
  * <File description>
  *
- * $Id: game_device_events.h,v 1.2 2002/08/21 09:36:01 lecroart Exp $
+ * $Id: game_device_events.h,v 1.3 2003/02/25 14:16:48 berenguier Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -57,6 +57,8 @@ public:
 public:
 	CGDMouseMove(IEventEmitter *emitter, IMouseDevice *md, sint x, sint y) : CEvent(emitter, EventGDMouseMove), MD(md), X(x), Y(y)
 	{}
+
+	virtual	CEvent			*clone() const {return new CGDMouseMove(*this);}
 };
 
 
@@ -116,6 +118,8 @@ public:
 	CGDButtonDown(uint buttonIndex, IGameDevice *gameDevice, IEventEmitter *emitter) 
 				 : CGDButton(buttonIndex, true, gameDevice, emitter, EventGDButtonDownId)
 	{}
+
+	virtual	CEvent			*clone() const {return new CGDButtonDown(*this);}
 };
 
 //==========================================================================================
@@ -128,6 +132,8 @@ public:
 	CGDButtonUp(uint buttonIndex, IGameDevice *gameDevice, IEventEmitter *emitter) 
 				 : CGDButton(buttonIndex, false, gameDevice, emitter, EventGDButtonUpId)
 	{}
+
+	virtual	CEvent			*clone() const {return new CGDButtonUp(*this);}
 };
 
 //==========================================================================================
@@ -149,6 +155,8 @@ public:
 				   Axis(axis),
 				   Value(value)
 	{}																		 
+
+	virtual	CEvent			*clone() const {return new CGDAxisMoved(*this);}
 };
 
 
@@ -171,6 +179,8 @@ public:
 				   SliderIndex(sliderIndex),
 				   SliderPos(sliderPos)
 	{}
+
+	virtual	CEvent			*clone() const {return new CGDSliderMoved(*this);}
 };
 
 //==========================================================================================
@@ -195,6 +205,8 @@ public:
 				   Centered(centered),
 				   POVAngle(povAngle)
 	{}
+
+	virtual	CEvent			*clone() const {return new CGDPOVChanged(*this);}
 };
 
 

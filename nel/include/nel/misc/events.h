@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.16 2001/02/23 09:08:18 corvazier Exp $
+ * $Id: events.h,v 1.17 2003/02/25 14:16:48 berenguier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,6 +46,9 @@ class CEvent : public CClassId
 public:
 	/// Emitter of the event. Can be NULL if the event is posted directly to the CEventServer.
 	IEventEmitter* Emitter;
+
+	// duplicate the object
+	virtual	CEvent		*clone() const =0;
 protected:
 	/** Constructor.
 	  * \param emitter is the emitter of the event. Can be NULL if the event is posted directly to the CEventServer.
@@ -248,6 +251,12 @@ public:
 		Button=button;
 	}
 	TKeyButton Button;
+
+public:
+	// return a TKey for its associated String (eg KeyA for "KeyA")
+	static	TKey				getKeyFromString(const std::string &str);
+	// return the string equivalent to the TKey (eg "KeyA" for KeyA)
+	static	const std::string	&getStringFromKey(TKey k);
 };
 
 /**
@@ -264,6 +273,8 @@ public:
 	}
 	TKey Key;
 	bool FirstTime;
+
+	virtual	CEvent			*clone() const {return new CEventKeyDown(*this);}
 };
 
 /**
@@ -277,6 +288,8 @@ public:
 		Key=key;
 	}
 	TKey Key;
+
+	virtual	CEvent			*clone() const {return new CEventKeyUp(*this);}
 };
 
 /**
@@ -290,6 +303,8 @@ public:
 		Char=c;
 	}
 	ucchar Char;
+
+	virtual	CEvent			*clone() const {return new CEventChar(*this);}
 };
 
 
@@ -322,6 +337,8 @@ class CEventMouseDown : public CEventMouse
 public:
 	CEventMouseDown (float x, float y, TMouseButton button, IEventEmitter* emitter) : CEventMouse (x, y, button, emitter, EventMouseDownId)
 	{}
+
+	virtual	CEvent			*clone() const {return new CEventMouseDown(*this);}
 };
 
 
@@ -335,6 +352,8 @@ class CEventMouseUp : public CEventMouse
 public:
 	CEventMouseUp (float x, float y, TMouseButton button, IEventEmitter* emitter) : CEventMouse (x, y, button, emitter, EventMouseUpId)
 	{}	
+
+	virtual	CEvent			*clone() const {return new CEventMouseUp(*this);}
 };
 
 
@@ -348,6 +367,8 @@ class CEventMouseMove : public CEventMouse
 public:
 	CEventMouseMove (float x, float y, TMouseButton button, IEventEmitter* emitter) : CEventMouse (x, y, button, emitter, EventMouseMoveId)
 	{}	
+
+	virtual	CEvent			*clone() const {return new CEventMouseMove(*this);}
 };
 
 
@@ -361,6 +382,8 @@ class CEventMouseDblClk : public CEventMouse
 public:
 	CEventMouseDblClk (float x, float y, TMouseButton button, IEventEmitter* emitter) : CEventMouse (x, y, button, emitter, EventMouseDblClkId)
 	{}	
+
+	virtual	CEvent			*clone() const {return new CEventMouseDblClk(*this);}
 };
 
 
@@ -379,6 +402,8 @@ public:
 	{
 		Direction=direction;
 	}
+
+	virtual	CEvent			*clone() const {return new CEventMouseWheel(*this);}
 };
 
 
@@ -401,6 +426,8 @@ public:
 	{
 		Activate = activate;
 	}
+
+	virtual	CEvent			*clone() const {return new CEventActivate(*this);}
 };
 
 
@@ -423,6 +450,8 @@ public:
 	{
 		Get = get;
 	}
+
+	virtual	CEvent			*clone() const {return new CEventSetFocus(*this);}
 };
 
 
@@ -435,6 +464,8 @@ public:
 	CEventDestroyWindow (IEventEmitter* emitter) : CEvent (emitter, EventDestroyWindowId)
 	{
 	}
+
+	virtual	CEvent			*clone() const {return new CEventDestroyWindow(*this);}
 };
 
 

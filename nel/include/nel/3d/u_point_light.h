@@ -1,7 +1,7 @@
 /** \file u_point_light.h
  * User interface for point lights.
  *
- * $Id: u_point_light.h,v 1.4 2004/06/22 10:08:52 berenguier Exp $
+ * $Id: u_point_light.h,v 1.5 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
-#include "nel/3d/u_transform.h"
+#include "u_transform.h"
 
 
 namespace NL3D 

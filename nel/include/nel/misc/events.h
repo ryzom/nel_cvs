@@ -1,7 +1,7 @@
 /** \file events.h
  * Events
  *
- * $Id: events.h,v 1.18 2004/03/12 16:42:06 lecroart Exp $
+ * $Id: events.h,v 1.19 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_EVENTS_H
 #define NL_EVENTS_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/class_id.h"
+#include "types_nl.h"
+#include "class_id.h"
 #include <map>
 #include <list>
 

@@ -1,7 +1,7 @@
 /** \file tcp_sock.h
  * Network engine, layer 0, tcp socket
  *
- * $Id: tcp_sock.h,v 1.4 2001/08/22 15:51:30 cado Exp $
+ * $Id: tcp_sock.h,v 1.5 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_TCP_SOCK_H
 #define NL_TCP_SOCK_H
 
-#include "nel/net/sock.h"
+#include "sock.h"
 
 
 namespace NLNET {

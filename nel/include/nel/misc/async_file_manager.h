@@ -1,7 +1,7 @@
 /** \file async_file_manager.h
  * TODO: File description
  *
- * $Id: async_file_manager.h,v 1.4 2004/11/15 10:24:24 lecroart Exp $
+ * $Id: async_file_manager.h,v 1.5 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,8 +25,8 @@
 #ifndef NL_ASYNC_FILE_MANAGER_H
 #define NL_ASYNC_FILE_MANAGER_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/task_manager.h"
+#include "types_nl.h"
+#include "task_manager.h"
 
 
 namespace NLMISC

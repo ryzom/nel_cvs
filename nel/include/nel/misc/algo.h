@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.12 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: algo.h,v 1.13 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_ALGO_H
 #define NL_ALGO_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 #include <vector>
 #include <string>
-#include "nel/misc/ucstring.h"
+#include "ucstring.h"
 
 
 namespace NLMISC 

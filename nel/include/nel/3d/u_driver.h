@@ -1,7 +1,7 @@
 /** \file u_driver.h
  * TODO: File description
  *
- * $Id: u_driver.h,v 1.53 2005/01/17 16:39:41 lecroart Exp $
+ * $Id: u_driver.h,v 1.54 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_U_DRIVER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/viewport.h"
-#include "nel/3d/scissor.h"
-#include "nel/3d/frustum.h"
+#include "viewport.h"
+#include "scissor.h"
+#include "frustum.h"
 #include "nel/misc/geom_ext.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/rgba.h"
@@ -38,7 +38,7 @@
 #include "nel/misc/event_server.h"
 #include "nel/misc/event_listener.h"
 #include "nel/misc/hierarchical_timer.h"
-#include "nel/3d/primitive_profile.h"
+#include "primitive_profile.h"
 
 
 

@@ -2,7 +2,7 @@
  * OS independant class for the mutex management with Windows and Posix implementation
  * Classes CMutex, CSynchronized
  *
- * $Id: mutex.h,v 1.27 2004/01/08 15:13:03 lecroart Exp $
+ * $Id: mutex.h,v 1.28 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #ifndef NL_MUTEX_H
 #define NL_MUTEX_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/time_nl.h"
+#include "types_nl.h"
+#include "time_nl.h"
 #include <map>
 
 #ifdef NL_OS_UNIX

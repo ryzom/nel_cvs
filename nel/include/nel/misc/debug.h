@@ -1,7 +1,7 @@
 /** \file debug.h
  * This file contains all features that help us to debug applications
  *
- * $Id: debug.h,v 1.77 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: debug.h,v 1.78 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,11 +28,11 @@
 
 #include <cstdio>
 
-#include "nel/misc/common.h"
-#include "nel/misc/log.h"
-#include "nel/misc/mutex.h"
-#include "nel/misc/mem_displayer.h"
-#include "nel/misc/displayer.h"
+#include "common.h"
+#include "log.h"
+#include "mutex.h"
+#include "mem_displayer.h"
+#include "displayer.h"
 #include <set>
 
 namespace NLMISC
@@ -90,6 +90,36 @@ void	setCrashAlreadyReported(bool state);
 
 
 // Macros
+
+/// Utility macro used by NL_MACRO_TO_STR to concatenate macro in text message.
+#define NL_MACRO_TO_STR_SUBPART(x) #x
+
+/** Use this macro to concatenate macro such
+ *	You can use this macro to build '#pragma message' friendly macro
+ *	eg : #define M1 foo
+ *		 #define MESSAGE "the message is "NL_MACRO_TO_STR(M1)
+ *		 #pragma message(MESSAGE)
+ */
+#define NL_MACRO_TO_STR(x) NL_MACRO_TO_STR_SUBPART(x)
+
+/** the two following macros help to build compiler message using #pragma message
+ *	on visual C++.
+ *	The macro generate a message formated like the visual C++ compiler message.
+ *	NL_LOC_MSG generate informative message and
+ *	NL_LOC_WRN generate warning message not differentiable to genuine Visual C++ warning.
+ *	The two message allow automatic source access with F4 or double click in 
+ *	output window.
+ *
+ *  usage : #pragma message( NL_LOC_MGS "your message" )
+ *
+ *  Note : If you want to concatenate another macro to your message, you
+ *			can append using the NL_MACRO_TO_STR macro like in
+ *			#define CLASS_NAME TheClassName
+ *			#pragma message( NL_LOC_MGS "The class name is " NL_MACRO_TO_STR(CLASS_NAME))
+ */
+#define NL_LOC_MSG __FILE__"("NL_MACRO_TO_STR(__LINE__)") : Message: "
+#define NL_LOC_WRN __FILE__"("NL_MACRO_TO_STR(__LINE__)") : Warning: "
+
 
 /**
  * \def nldebug(exp)

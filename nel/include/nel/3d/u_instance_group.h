@@ -1,7 +1,7 @@
 /** \file u_instance_group.h
  * Game interface for managing group instance.
  *
- * $Id: u_instance_group.h,v 1.34 2004/07/20 16:20:38 berenguier Exp $
+ * $Id: u_instance_group.h,v 1.35 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
-#include "nel/3d/point_light_influence.h"
+#include "point_light_influence.h"
 
 #include <vector>
 #include <string>

@@ -1,7 +1,7 @@
 /** \file listen_sock.h
  * Network engine, layer 0, listening tcp socket
  *
- * $Id: listen_sock.h,v 1.1 2001/05/02 12:36:30 lecroart Exp $
+ * $Id: listen_sock.h,v 1.2 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_LISTEN_SOCK_H
 
 
-#include "nel/net/tcp_sock.h"
+#include "tcp_sock.h"
 
 namespace NLNET
 {

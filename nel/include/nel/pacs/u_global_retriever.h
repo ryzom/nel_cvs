@@ -1,7 +1,7 @@
 /** \file u_global_retriever.h
  * A class that allows to retrieve surface in a large amount of zones (referred as instances.)
  *
- * $Id: u_global_retriever.h,v 1.21 2004/01/06 17:33:20 corvazier Exp $
+ * $Id: u_global_retriever.h,v 1.22 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 
-#include "nel/pacs/u_retriever_bank.h"
-#include "nel/pacs/u_global_position.h"
+#include "u_retriever_bank.h"
+#include "u_global_position.h"
 
 namespace NLMISC
 {

@@ -1,7 +1,7 @@
 /** \file input_device.h
  * TODO: File description
  *
- * $Id: input_device.h,v 1.3 2004/11/15 10:24:25 lecroart Exp $
+ * $Id: input_device.h,v 1.4 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_INPUT_DEVICE_H
 #define NL_INPUT_DEVICE_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 
 namespace NLMISC 

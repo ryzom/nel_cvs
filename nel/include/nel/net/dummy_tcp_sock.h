@@ -1,7 +1,7 @@
 /** \file dummy_tcp_sock.h
  * Dummy TCP socket, used by the message recorder for playback
  *
- * $Id: dummy_tcp_sock.h,v 1.2 2001/06/21 08:44:56 cado Exp $
+ * $Id: dummy_tcp_sock.h,v 1.3 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_DUMMY_TCP_SOCK_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/net/tcp_sock.h"
+#include "tcp_sock.h"
 
 
 namespace NLNET {

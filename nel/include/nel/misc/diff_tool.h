@@ -1,6 +1,6 @@
 /** \file diff_tool.h
  *
- * $Id: diff_tool.h,v 1.9 2005/01/14 10:11:38 boucher Exp $
+ * $Id: diff_tool.h,v 1.10 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef DIFF_TOOL_H
 #define DIFF_TOOL_H
 
-#include "nel/misc/i18n.h"
+#include "i18n.h"
 
 namespace STRING_MANAGER
 {

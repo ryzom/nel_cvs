@@ -1,7 +1,7 @@
 /** \file log.h
  * Logging system providing multi displayer output and filtering processing
  *
- * $Id: log.h,v 1.36 2004/09/22 18:22:40 distrib Exp $
+ * $Id: log.h,v 1.37 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_LOG_H
 #define NL_LOG_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/mutex.h"
+#include "types_nl.h"
+#include "mutex.h"
 
 #include <string>
 #include <list>

@@ -1,7 +1,7 @@
 /** \file line.h
  * A simple couple of vertex.
  *
- * $Id: line.h,v 1.2 2002/04/23 16:23:20 vizerie Exp $
+ * $Id: line.h,v 1.3 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_LINE_H
 #define NL_LINE_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
+#include "types_nl.h"
+#include "vector.h"
 
 
 namespace NLMISC 

@@ -1,7 +1,7 @@
 /** \file win_displayer.h
  * Win32 Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: win_displayer.h,v 1.14 2003/02/21 15:53:51 lecroart Exp $
+ * $Id: win_displayer.h,v 1.15 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_WIN_DISPLAYER_H
 #define NL_WIN_DISPLAYER_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 #ifdef NL_OS_WINDOWS
 
@@ -35,8 +35,8 @@
 #undef min
 #undef max
 
-#include "nel/misc/displayer.h"
-#include "nel/misc/reader_writer.h"
+#include "displayer.h"
+#include "reader_writer.h"
 
 #include "window_displayer.h"
 

@@ -1,6 +1,6 @@
 /** \file traits_nl.h
  *
- * $Id: traits_nl.h,v 1.3 2004/03/19 17:54:08 lecroart Exp $
+ * $Id: traits_nl.h,v 1.4 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #define NL_TRAITS_H
 
 
-#include "nel/misc/rgba.h"
-#include "nel/misc/vector.h"
+#include "rgba.h"
+#include "vector.h"
 
 namespace NLMISC
 {

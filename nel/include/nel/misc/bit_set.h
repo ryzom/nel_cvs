@@ -1,7 +1,7 @@
 /** \file bit_set.h
  * CBitSet class
  *
- * $Id: bit_set.h,v 1.8 2004/10/22 12:51:36 berenguier Exp $
+ * $Id: bit_set.h,v 1.9 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_BIT_SET_H
 
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/stream.h"
+#include "types_nl.h"
+#include "stream.h"
 
 
 namespace	NLMISC

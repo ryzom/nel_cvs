@@ -1,6 +1,6 @@
 /** \file mouse_smoother.h
  *
- * $Id: mouse_smoother.h,v 1.2 2004/03/19 16:31:27 lecroart Exp $
+ * $Id: mouse_smoother.h,v 1.3 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -25,8 +25,8 @@
 #ifndef NL_MOUSE_SMOOTHER_H
 #define NL_MOUSE_SMOOTHER_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector_2f.h"
+#include "types_nl.h"
+#include "vector_2f.h"
 
 namespace NLMISC
 {

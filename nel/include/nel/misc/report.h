@@ -2,7 +2,7 @@
  * This function display a custom message box to report something.
  * It is used in the debug system
  *
- * $Id: report.h,v 1.2 2004/04/30 18:06:12 corvazier Exp $
+ * $Id: report.h,v 1.3 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #ifndef NL_REPORT_H
 #define NL_REPORT_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 namespace NLMISC {
 

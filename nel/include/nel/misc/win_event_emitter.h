@@ -1,7 +1,7 @@
 /** \file win_event_emitter.h
  * TODO: File description
  *
- * $Id: win_event_emitter.h,v 1.6 2004/11/15 10:24:28 lecroart Exp $
+ * $Id: win_event_emitter.h,v 1.7 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_WIN_EVENT_EMITTER_H
 #define NL_WIN_EVENT_EMITTER_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/event_emitter.h"
-#include "nel/misc/events.h"
+#include "types_nl.h"
+#include "event_emitter.h"
+#include "events.h"
 
 
 #ifdef NL_OS_WINDOWS

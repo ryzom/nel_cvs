@@ -1,7 +1,7 @@
 /** \file class_id.h
  * CClassId class
  *
- * $Id: class_id.h,v 1.4 2000/11/09 16:16:49 coutelas Exp $
+ * $Id: class_id.h,v 1.5 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_CLASS_ID_H
 
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 
 namespace	NLMISC

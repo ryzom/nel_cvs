@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.81 2005/02/02 11:24:05 corvazier Exp $
+ * $Id: service.h,v 1.82 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,7 +46,7 @@
 #include "nel/misc/entity_id.h"
 #include "nel/misc/cpu_time_stat.h"
 
-#include "nel/net/unified_network.h"
+#include "unified_network.h"
 
 #include <string>
 #include <vector>

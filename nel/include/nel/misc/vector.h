@@ -1,7 +1,7 @@
 /** \file vector.h
  * CVector class
  *
- * $Id: vector.h,v 1.12 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: vector.h,v 1.13 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,12 +26,12 @@
 #ifndef NL_VECTOR_H
 #define NL_VECTOR_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 #include <cmath>
 #include <string>
 
-#include "nel/misc/stream.h"
+#include "stream.h"
 
 namespace	NLMISC
 {
@@ -149,7 +149,7 @@ public:		// Methods.
 }
 
 
-#include "nel/misc/vector_inline.h"
+#include "vector_inline.h"
 
 
 #endif // NL_VECTOR_H

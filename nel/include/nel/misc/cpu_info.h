@@ -1,7 +1,7 @@
 /** \file cpu_info.h
  * TODO: File description
  *
- * $Id: cpu_info.h,v 1.5 2004/11/15 10:24:24 lecroart Exp $
+ * $Id: cpu_info.h,v 1.6 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_CPU_INFO_H
 #define NL_CPU_INFO_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 
 namespace NLMISC {

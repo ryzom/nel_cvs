@@ -1,7 +1,7 @@
 /** \file event_listener.h
  * events listener
  *
- * $Id: event_listener.h,v 1.12 2004/04/09 14:16:50 vizerie Exp $
+ * $Id: event_listener.h,v 1.13 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_EVENT_LISTENER_H
 #define NL_EVENT_LISTENER_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/events.h"
-#include "nel/misc/bit_set.h"
+#include "types_nl.h"
+#include "events.h"
+#include "bit_set.h"
 
 
 namespace NLMISC {

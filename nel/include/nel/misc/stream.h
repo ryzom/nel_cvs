@@ -1,7 +1,7 @@
 /** \file stream.h
  * serialization interface class
  *
- * $Id: stream.h,v 1.72 2004/11/15 11:18:54 legros Exp $
+ * $Id: stream.h,v 1.73 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_STREAM_H
 #define NL_STREAM_H
 
-#include	"nel/misc/types_nl.h"
-#include	"nel/misc/ucstring.h"
-#include	"nel/misc/class_registry.h"
-#include	"nel/misc/common.h"
+#include	"types_nl.h"
+#include	"ucstring.h"
+#include	"class_registry.h"
+#include	"common.h"
 #include	<utility>
 #include	<string>
 #include	<vector>
@@ -1519,7 +1519,7 @@ public:
 
 
 // Inline Implementation.
-#include "nel/misc/stream_inline.h"
+#include "stream_inline.h"
 
 
 #endif // NL_STREAM_H

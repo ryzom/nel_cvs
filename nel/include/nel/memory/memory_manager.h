@@ -1,7 +1,7 @@
 /** \file memory_manager.h
  * A new memory manager
  *
- * $Id: memory_manager.h,v 1.20 2005/02/21 17:02:23 corvazier Exp $
+ * $Id: memory_manager.h,v 1.21 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_MEMORY_MANAGER_H
 
 // CONFIGURATION
-#include "nel/memory/memory_config.h"
+#include "memory_config.h"
 
 // Malloc
 #include <malloc.h>

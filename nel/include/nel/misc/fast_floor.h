@@ -1,7 +1,7 @@
 /** \file fast_floor.h
  * TODO: File description
  *
- * $Id: fast_floor.h,v 1.4 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: fast_floor.h,v 1.5 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_FAST_FLOOR_H
 #define NL_FAST_FLOOR_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 #include <cmath>
 
 namespace NLMISC

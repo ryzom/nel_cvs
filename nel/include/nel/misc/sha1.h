@@ -8,7 +8,7 @@
  *      single character names, were used because those were the names
  *      used in the publication.
  *
- * $Id: sha1.h,v 1.5 2004/07/28 07:56:19 besson Exp $
+ * $Id: sha1.h,v 1.6 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -35,8 +35,8 @@
 
 #include <string>
 
-#include "nel/misc/common.h"
-#include "nel/misc/stream.h"
+#include "common.h"
+#include "stream.h"
 
 struct CHashKey
 {

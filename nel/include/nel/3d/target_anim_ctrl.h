@@ -1,7 +1,7 @@
 /** \file target_anim_ctrl.h
  * TODO: File description
  *
- * $Id: target_anim_ctrl.h,v 1.2 2004/11/15 10:24:17 lecroart Exp $
+ * $Id: target_anim_ctrl.h,v 1.3 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/matrix.h"
 #include "nel/misc/quat.h"
-#include "nel/3d/anim_ctrl.h"
+#include "anim_ctrl.h"
 
 
 namespace NL3D {

@@ -1,7 +1,7 @@
 /** \file event_emitter.h
  * class CEventEmitter
  *
- * $Id: event_emitter.h,v 1.11 2003/06/18 14:38:57 corvazier Exp $
+ * $Id: event_emitter.h,v 1.12 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_EVENT_EMITTER_H
 #define NL_EVENT_EMITTER_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/event_server.h"
-#include "nel/misc/smart_ptr.h"
+#include "types_nl.h"
+#include "event_server.h"
+#include "smart_ptr.h"
 
 
 

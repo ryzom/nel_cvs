@@ -1,7 +1,7 @@
 /** \file u_collision_desc.h
  * Description of the contact of a collision
  *
- * $Id: u_collision_desc.h,v 1.5 2002/06/13 14:39:03 legros Exp $
+ * $Id: u_collision_desc.h,v 1.6 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vectord.h"
 
-#include "nel/pacs/u_move_primitive.h"
+#include "u_move_primitive.h"
 
 #include <vector>
 

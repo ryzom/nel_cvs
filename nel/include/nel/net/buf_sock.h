@@ -1,7 +1,7 @@
 /** \file buf_sock.h
  * Network engine, layer 1, helper
  *
- * $Id: buf_sock.h,v 1.21 2004/12/22 19:44:28 cado Exp $
+ * $Id: buf_sock.h,v 1.22 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,8 +29,8 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/hierarchical_timer.h"
 
-#include "nel/net/buf_net_base.h"
-#include "nel/net/tcp_sock.h"
+#include "buf_net_base.h"
+#include "tcp_sock.h"
 
 //#include <deque>
 

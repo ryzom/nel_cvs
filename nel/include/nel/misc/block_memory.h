@@ -1,7 +1,7 @@
 /** \file block_memory.h
  * Block memory allocation
  *
- * $Id: block_memory.h,v 1.5 2003/08/19 09:12:37 berenguier Exp $
+ * $Id: block_memory.h,v 1.6 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #ifndef NL_BLOCK_MEMORY_H
 #define NL_BLOCK_MEMORY_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 #include <list>
 #include <vector>
-#include "nel/misc/debug.h"
-#include "nel/misc/mutex.h"
+#include "debug.h"
+#include "mutex.h"
 
 
 namespace NLMISC 

@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.17 2004/12/22 19:44:28 cado Exp $
+ * $Id: callback_server.h,v 1.18 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 
-#include "nel/net/callback_net_base.h"
-#include "nel/net/buf_server.h"
+#include "callback_net_base.h"
+#include "buf_server.h"
 
 
 namespace NLNET {

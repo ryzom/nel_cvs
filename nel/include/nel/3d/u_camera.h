@@ -1,7 +1,7 @@
 /** \file u_camera.h
  * User interface for camera.
  *
- * $Id: u_camera.h,v 1.3 2004/05/07 14:41:41 corvazier Exp $
+ * $Id: u_camera.h,v 1.4 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_U_CAMERA_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/u_transform.h"
-#include "nel/3d/frustum.h"
+#include "u_transform.h"
+#include "frustum.h"
 
 
 namespace NL3D

@@ -1,7 +1,7 @@
 /** \file quat.h
  * CQuat class
  *
- * $Id: quat.h,v 1.9 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: quat.h,v 1.10 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_QUAT_H 
 #define NL_QUAT_H 
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
-#include "nel/misc/stream.h"
+#include "types_nl.h"
+#include "vector.h"
+#include "stream.h"
 #include <cmath>
 
 namespace	NLMISC

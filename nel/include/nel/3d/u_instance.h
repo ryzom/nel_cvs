@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * Interface for instance objects.
  *
- * $Id: u_instance.h,v 1.19 2004/07/27 17:48:38 berenguier Exp $
+ * $Id: u_instance.h,v 1.20 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_U_INSTANCE_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/u_transform.h"
-#include "nel/3d/u_instance_material.h"
+#include "u_transform.h"
+#include "u_instance_material.h"
 #include "nel/misc/aabbox.h"
 
 

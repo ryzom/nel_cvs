@@ -1,6 +1,6 @@
 /** \file u_water_env_map.h
  *
- * $Id: u_water_env_map.h,v 1.1 2004/08/03 16:17:33 vizerie Exp $
+ * $Id: u_water_env_map.h,v 1.2 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000-2004 Nevrax Ltd.
@@ -25,8 +25,8 @@
 #ifndef NL_U_WATER_ENVMAP_H
 #define NL_U_WATER_ENVMAP_H
 
-#include "nel/3d/u_scene.h"
-#include "nel/3d/u_camera.h"
+#include "u_scene.h"
+#include "u_camera.h"
 
 namespace NL3D
 {

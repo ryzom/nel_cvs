@@ -1,7 +1,7 @@
 /** \file u_move_primitive.h
  * Description of movables primitives.
  *
- * $Id: u_move_primitive.h,v 1.11 2003/06/26 15:35:24 legros Exp $
+ * $Id: u_move_primitive.h,v 1.12 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_U_MOVE_PRIMITIVE_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/pacs/u_global_position.h"
+#include "u_global_position.h"
 
 namespace NLMISC
 {

@@ -1,7 +1,7 @@
 /** \file tds.h
  * Thread dependant storage class
  *
- * $Id: tds.h,v 1.1 2002/10/24 10:08:28 corvazier Exp $
+ * $Id: tds.h,v 1.2 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_TDS_H
 #define NL_TDS_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 
 namespace NLMISC 

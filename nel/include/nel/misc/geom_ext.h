@@ -1,7 +1,7 @@
 /** \file geom_ext.h
  * Set of extension of triangles (triangle with uv, color, uvcolor etc...)
  *
- * $Id: geom_ext.h,v 1.3 2003/01/22 11:15:49 corvazier Exp $
+ * $Id: geom_ext.h,v 1.4 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,12 +26,12 @@
 #ifndef NL_TRIANGLE_EXT_H
 #define NL_TRIANGLE_EXT_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/line.h"
-#include "nel/misc/triangle.h"
-#include "nel/misc/quad.h"
-#include "nel/misc/uv.h"
-#include "nel/misc/rgba.h"
+#include "types_nl.h"
+#include "line.h"
+#include "triangle.h"
+#include "quad.h"
+#include "uv.h"
+#include "rgba.h"
 
 
 namespace NLMISC 

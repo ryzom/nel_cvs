@@ -1,6 +1,6 @@
 /** \file object_arena_allocator.h
  *
- * $Id: object_arena_allocator.h,v 1.6 2004/11/15 10:24:26 lecroart Exp $
+ * $Id: object_arena_allocator.h,v 1.7 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -25,7 +25,7 @@
 #ifndef NL_OBJECT_ARENA_ALLOCATOR_H
 #define NL_OBJECT_ARENA_ALLOCATOR_H
 
-#include "nel/misc/singleton.h"
+#include "singleton.h"
 
 namespace NLMISC
 {

@@ -1,7 +1,7 @@
 /** \file stl_block_list.h
  * TODO: File description
  *
- * $Id: stl_block_list.h,v 1.4 2004/11/15 10:24:27 lecroart Exp $
+ * $Id: stl_block_list.h,v 1.5 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_STL_BLOCK_LIST_H
 #define NL_STL_BLOCK_LIST_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/stl_block_allocator.h"
+#include "types_nl.h"
+#include "stl_block_allocator.h"
 #include <list>
 
 

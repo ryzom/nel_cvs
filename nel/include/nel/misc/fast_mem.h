@@ -1,7 +1,7 @@
 /** \file fast_mem.h
  * Fast memory copy and precache
  *
- * $Id: fast_mem.h,v 1.3 2004/01/15 17:27:40 lecroart Exp $
+ * $Id: fast_mem.h,v 1.4 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_FAST_MEM_H
 #define NL_FAST_MEM_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 
 namespace NLMISC

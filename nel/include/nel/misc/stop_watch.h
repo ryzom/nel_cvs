@@ -1,7 +1,7 @@
 /** \file stop_watch.h
  * Performance stopwatch
  *
- * $Id: stop_watch.h,v 1.1 2001/11/27 14:03:46 cado Exp $
+ * $Id: stop_watch.h,v 1.2 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_STOP_WATCH_H
 #define NL_STOP_WATCH_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/time_nl.h"
+#include "types_nl.h"
+#include "time_nl.h"
 #include <deque>
 
 

@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * Client part of the Naming Service
  *
- * $Id: naming_client.h,v 1.36 2002/10/24 08:27:09 lecroart Exp $
+ * $Id: naming_client.h,v 1.37 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -32,8 +32,8 @@
 
 #include "nel/misc/mutex.h"
 
-#include "nel/net/inet_address.h"
-#include "nel/net/callback_client.h"
+#include "inet_address.h"
+#include "callback_client.h"
 
 
 namespace NLNET {

@@ -1,7 +1,7 @@
 /** \file vector_2d.h
  * A 2D vector of double.
  *
- * $Id: vector_2d.h,v 1.3 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: vector_2d.h,v 1.4 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,13 +26,13 @@
 #ifndef NL_VECTOR_2D_H
 #define NL_VECTOR_2D_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 #include <cmath>
 #include <string>
 
-#include "nel/misc/stream.h"
-#include "nel/misc/vector_2f.h"
+#include "stream.h"
+#include "vector_2f.h"
 
 namespace NLMISC
 {

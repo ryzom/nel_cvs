@@ -1,7 +1,7 @@
 /** \file vector_h.h
  * Homogeneous vector
  *
- * $Id: vector_h.h,v 1.3 2001/06/14 13:36:05 berenguier Exp $
+ * $Id: vector_h.h,v 1.4 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_VECTOR_H_H
 #define NL_VECTOR_H_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
+#include "types_nl.h"
+#include "vector.h"
 
 
 namespace NLMISC {

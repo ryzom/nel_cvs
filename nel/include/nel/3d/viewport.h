@@ -1,7 +1,7 @@
 /** \file viewport.h
  * TODO: File description
  *
- * $Id: viewport.h,v 1.9 2004/11/15 10:24:19 lecroart Exp $
+ * $Id: viewport.h,v 1.10 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/matrix.h"
-#include "nel/3d/frustum.h"
+#include "frustum.h"
 
 #define NL3D_MEM_VIEWPORT						NL_ALLOC_CONTEXT( 3dVwPrt )
 

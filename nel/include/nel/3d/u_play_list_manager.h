@@ -1,7 +1,7 @@
 /** \file u_play_list_manager.h
  * TODO: File description
  *
- * $Id: u_play_list_manager.h,v 1.5 2004/11/15 10:24:18 lecroart Exp $
+ * $Id: u_play_list_manager.h,v 1.6 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_U_PLAY_LIST_MANAGER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/animation_time.h"
+#include "animation_time.h"
 
 
 namespace NL3D

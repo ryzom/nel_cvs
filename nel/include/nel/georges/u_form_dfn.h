@@ -1,7 +1,7 @@
 /** \file u_form_dfn.h
  * Georges form element interface
  *
- * $Id: u_form_dfn.h,v 1.9 2005/01/17 16:39:41 lecroart Exp $
+ * $Id: u_form_dfn.h,v 1.10 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_U_FORM_DFN_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/georges/u_form_elm.h"
+#include "u_form_elm.h"
 #include "nel/misc/smart_ptr.h"
 
 namespace NLGEORGES

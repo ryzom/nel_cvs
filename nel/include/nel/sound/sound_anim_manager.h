@@ -2,7 +2,7 @@
  * The sound animation manager handles all request to load, play, and
  * update sound animations.
  *
- * $Id: sound_anim_manager.h,v 1.12 2003/07/10 15:04:02 boucher Exp $
+ * $Id: sound_anim_manager.h,v 1.13 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 
 
 #include "nel/misc/vector.h"
-#include "nel/sound/u_source.h"
+#include "u_source.h"
 #include <hash_map>
 
 namespace NL3D

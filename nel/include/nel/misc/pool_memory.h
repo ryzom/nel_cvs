@@ -1,7 +1,7 @@
 /** \file pool_memory.h
  * Pool memory allocation
  *
- * $Id: pool_memory.h,v 1.5 2003/02/03 16:42:13 coutelas Exp $
+ * $Id: pool_memory.h,v 1.6 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_POOL_MEMORY_H
 #define NL_POOL_MEMORY_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 #include <list>
 #include <vector>
 

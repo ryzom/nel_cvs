@@ -28,7 +28,7 @@
  *
  *	Boris.
  *
- * $Id: primitive_utils.h,v 1.10 2004/09/19 01:57:53 boucher Exp $
+ * $Id: primitive_utils.h,v 1.11 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -56,7 +56,7 @@
 #ifndef PRIMITIVE_UTIL_H
 #define PRIMITIVE_UTIL_H
 
-#include "nel/ligo/primitive.h"
+#include "primitive.h"
 #include "nel/misc/i_xml.h"
 #include "nel/misc/o_xml.h"
 #include "nel/misc/file.h"

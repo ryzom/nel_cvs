@@ -2,7 +2,7 @@
  * This class provides the same function as CUdpSock but can simulate
  * lag and other parameter like packet lost.
  *
- * $Id: udp_sim_sock.h,v 1.1 2002/11/04 13:11:07 lecroart Exp $
+ * $Id: udp_sim_sock.h,v 1.2 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -29,8 +29,8 @@
 
 #include "nel/misc/config_file.h"
 
-#include "nel/net/sock.h"
-#include "nel/net/udp_sock.h"
+#include "sock.h"
+#include "udp_sock.h"
 
 
 namespace NLNET {

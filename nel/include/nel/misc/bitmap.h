@@ -1,7 +1,7 @@
 /** \file bitmap.h
  * Class managing bitmaps
  *
- * $Id: bitmap.h,v 1.26 2004/08/23 18:05:45 lecroart Exp $
+ * $Id: bitmap.h,v 1.27 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -38,11 +38,11 @@ extern "C"
 //---------------- END OF PNG STUFFS ------------------
 
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/rgba.h"
-#include "nel/misc/debug.h"
+#include "types_nl.h"
+#include "rgba.h"
+#include "debug.h"
 #include <vector>
-#include "nel/misc/object_vector.h"
+#include "object_vector.h"
 
 struct png_struct;
 

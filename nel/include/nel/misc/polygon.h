@@ -1,7 +1,7 @@
 /** \file polygon.h
  * 3D and 2D Polygons classes
  *
- * $Id: polygon.h,v 1.16 2004/08/03 16:25:04 vizerie Exp $
+ * $Id: polygon.h,v 1.17 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_POLYGON_H
 #define NL_POLYGON_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/matrix.h"
-#include "nel/misc/stream.h"
-#include "nel/misc/vector_2f.h"
+#include "types_nl.h"
+#include "matrix.h"
+#include "stream.h"
+#include "vector_2f.h"
 #include <vector>
 
 

@@ -1,7 +1,7 @@
 /** \file event_server.h
  * events server
  *
- * $Id: event_server.h,v 1.8 2004/11/05 18:05:37 berenguier Exp $
+ * $Id: event_server.h,v 1.9 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_EVENT_SERVER_H
 #define NL_EVENT_SERVER_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/class_id.h"
+#include "types_nl.h"
+#include "class_id.h"
 #include <map>
 #include <list>
 

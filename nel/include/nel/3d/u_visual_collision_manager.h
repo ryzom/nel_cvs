@@ -1,7 +1,7 @@
 /** \file u_visual_collision_manager.h
  * Interface to visual collision manager.
  *
- * $Id: u_visual_collision_manager.h,v 1.9 2004/08/03 16:18:22 vizerie Exp $
+ * $Id: u_visual_collision_manager.h,v 1.10 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include <vector>
 
 #include "nel/misc/vector.h"
-#include "nel/3d/u_visual_collision_mesh.h"
+#include "u_visual_collision_mesh.h"
 
 namespace NLMISC
 {

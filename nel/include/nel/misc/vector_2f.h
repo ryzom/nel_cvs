@@ -1,7 +1,7 @@
 /** \file vector_2f.h
  * TODO: File description
  *
- * $Id: vector_2f.h,v 1.7 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: vector_2f.h,v 1.8 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_VECTOR_2F_H
 #define NL_VECTOR_2F_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
+#include "types_nl.h"
+#include "vector.h"
 #include <cmath>
-#include "nel/misc/stream.h"
+#include "stream.h"
 #include <string>
 
 

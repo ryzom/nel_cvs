@@ -2,7 +2,7 @@
 /** \file path.h
  * Abstract system directory architecture and file management
  *
- * $Id: old_path.h,v 1.2 2001/12/03 14:21:12 lecroart Exp $
+ * $Id: old_path.h,v 1.3 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #ifndef NL_PATH_H
 #define NL_PATH_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/common.h"
+#include "types_nl.h"
+#include "common.h"
 #include <string>
 #include <vector>
 

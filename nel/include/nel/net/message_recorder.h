@@ -1,7 +1,7 @@
 /** \file message_recorder.h
  * Class CMessageRecorder (allows to record/replay message input/output)
  *
- * $Id: message_recorder.h,v 1.5 2002/08/23 12:33:45 lecroart Exp $
+ * $Id: message_recorder.h,v 1.6 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_MESSAGE_RECORDER_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/net/buf_net_base.h"
-//#include "nel/net/callback_net_base.h"
-#include "nel/net/message.h"
+#include "buf_net_base.h"
+//#include "callback_net_base.h"
+#include "message.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/mem_stream.h"
 

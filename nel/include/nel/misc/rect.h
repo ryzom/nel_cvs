@@ -1,7 +1,7 @@
 /** \file rect.h
  * TODO: File description
  *
- * $Id: rect.h,v 1.5 2004/11/15 10:24:26 lecroart Exp $
+ * $Id: rect.h,v 1.6 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_RECT_H
 #define NL_RECT_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 
 namespace NLMISC {

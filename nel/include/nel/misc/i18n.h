@@ -1,7 +1,7 @@
 /** \file i18n.h
  * Internationalisation class for localisation of the system
  *
- * $Id: i18n.h,v 1.20 2004/09/01 16:51:20 boucher Exp $
+ * $Id: i18n.h,v 1.21 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_I18N_H
 #define NL_I18N_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/debug.h"
-#include "nel/misc/file.h"
+#include "types_nl.h"
+#include "debug.h"
+#include "file.h"
 
 #include <string>
 #include <map>

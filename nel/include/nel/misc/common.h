@@ -1,7 +1,7 @@
 /** \file misc/common.h
  * common algorithms, constants and functions
  *
- * $Id: common.h,v 1.80 2005/02/17 17:11:47 berenguier Exp $
+ * $Id: common.h,v 1.81 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef	NL_COMMON_H
 #define	NL_COMMON_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 #include <cctype>
 #include <cstdio>
@@ -46,7 +46,7 @@
 #	include <sys/types.h>
 #endif
 
-#include "nel/misc/string_common.h"
+#include "string_common.h"
 
 /// This namespace contains all miscellaneous class used by other module
 namespace	NLMISC

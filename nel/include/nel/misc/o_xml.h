@@ -1,7 +1,7 @@
 	/** \file o_xml.h
  * Output xml stream
  *
- * $Id: o_xml.h,v 1.7 2003/03/13 13:41:16 corvazier Exp $
+ * $Id: o_xml.h,v 1.8 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -31,8 +31,8 @@
 
 #ifndef NL_DONT_USE_EXTERNAL_CODE
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/stream.h"
+#include "types_nl.h"
+#include "stream.h"
 
 // Include from libxml2
 #include <libxml/parser.h>

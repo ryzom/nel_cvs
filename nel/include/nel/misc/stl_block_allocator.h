@@ -1,7 +1,7 @@
 /** \file stl_block_allocator.h
  * TODO: File description
  *
- * $Id: stl_block_allocator.h,v 1.8 2004/11/15 10:24:27 lecroart Exp $
+ * $Id: stl_block_allocator.h,v 1.9 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_STL_BLOCK_ALLOCATOR_H
 
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/block_memory.h"
+#include "types_nl.h"
+#include "block_memory.h"
 
 
 namespace NLMISC {

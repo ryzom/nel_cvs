@@ -1,7 +1,7 @@
 /** \file command.h
  * Management of runtime command line processing
  *
- * $Id: command.h,v 1.34 2005/02/18 17:39:00 berenguier Exp $
+ * $Id: command.h,v 1.35 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_COMMAND_H
 #define NL_COMMAND_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 #include <string>
 #include <map>
@@ -35,9 +35,9 @@
 //#include <sstream>
 #include <istream>
 
-#include "nel/misc/stream.h"
-#include "nel/misc/config_file.h"
-#include "nel/misc/log.h"
+#include "stream.h"
+#include "config_file.h"
+#include "log.h"
 
 
 namespace NLMISC {

@@ -1,7 +1,7 @@
 /** \file config_file.h
  * Manage variable based configuration files with auto reloading when content changes.
  *
- * $Id: config_file.h,v 1.42 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: config_file.h,v 1.43 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_CONFIG_FILE_H
 #define NL_CONFIG_FILE_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/common.h"
-#include "nel/misc/debug.h"
-#include "nel/misc/log.h"
+#include "types_nl.h"
+#include "common.h"
+#include "debug.h"
+#include "log.h"
 
 #include <vector>
 #include <string>

@@ -1,7 +1,7 @@
 /** \file eval_num_expr.h
  * Evaluate numerical expressions
  *
- * $Id: eval_num_expr.h,v 1.7 2003/03/13 17:21:12 coutelas Exp $
+ * $Id: eval_num_expr.h,v 1.8 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_EVAL_NUM_EXPR_H
 #define NL_EVAL_NUM_EXPR_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 namespace NLMISC
 {

@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.18 2004/05/07 12:56:21 cado Exp $
+ * $Id: net_manager.h,v 1.19 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -43,8 +43,8 @@
 #include <vector>
 
 #include "nel/misc/time_nl.h"
-#include "nel/net/callback_net_base.h"
-#include "nel/net/naming_client.h"
+#include "callback_net_base.h"
+#include "naming_client.h"
 
 namespace NLNET {
 

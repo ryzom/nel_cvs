@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.12 2004/12/22 19:44:28 cado Exp $
+ * $Id: buf_client.h,v 1.13 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_BUF_CLIENT_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/net/buf_net_base.h"
-#include "nel/net/tcp_sock.h"
-#include "nel/net/buf_sock.h"
+#include "buf_net_base.h"
+#include "tcp_sock.h"
+#include "buf_sock.h"
 
 
 namespace NLNET {

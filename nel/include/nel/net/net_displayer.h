@@ -1,7 +1,7 @@
 /** \file net_displayer.h
  * Implementation of the CDisplayer (look at displayer.h) that display on a network connection
  *
- * $Id: net_displayer.h,v 1.18 2003/02/07 17:42:44 cado Exp $
+ * $Id: net_displayer.h,v 1.19 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/log.h"
 #include "nel/misc/displayer.h"
 
-#include "nel/net/callback_client.h"
+#include "callback_client.h"
 
 namespace NLNET {
 

@@ -1,7 +1,7 @@
 /** \file words_dictionary.h
  * Words dictionary>
  *
- * $Id: words_dictionary.h,v 1.6 2005/01/19 10:38:05 brigand Exp $
+ * $Id: words_dictionary.h,v 1.7 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_WORDS_DICTIONARY_H
 #define NL_WORDS_DICTIONARY_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/sstring.h"
+#include "types_nl.h"
+#include "sstring.h"
 
 
 namespace NLMISC {

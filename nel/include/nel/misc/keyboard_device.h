@@ -1,7 +1,7 @@
 /** \file keyboard_device.h
  * TODO: File description
  *
- * $Id: keyboard_device.h,v 1.3 2004/11/15 10:24:26 lecroart Exp $
+ * $Id: keyboard_device.h,v 1.4 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_KEYBOARD_DEVICE_H
 #define NL_KEYBOARD_DEVICE_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/events.h"
-#include "nel/misc/input_device.h"
+#include "types_nl.h"
+#include "events.h"
+#include "input_device.h"
 
 
 

@@ -1,7 +1,7 @@
 /** \file input_device_manager.h
  * TODO: File description
  *
- * $Id: input_device_manager.h,v 1.4 2004/11/15 10:24:26 lecroart Exp $
+ * $Id: input_device_manager.h,v 1.5 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_INPUT_DEVICE_MANAGER_H
 #define NL_INPUT_DEVICE_MANAGER_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/game_device.h"
+#include "types_nl.h"
+#include "game_device.h"
 
 
 namespace NLMISC 

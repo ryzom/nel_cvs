@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.27 2004/12/22 19:44:28 cado Exp $
+ * $Id: callback_net_base.h,v 1.28 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,12 +31,12 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"
 
-#include "nel/net/buf_net_base.h"
-#include "nel/net/message.h"
-#include "nel/net/inet_address.h"
+#include "buf_net_base.h"
+#include "message.h"
+#include "inet_address.h"
 
 #ifdef USE_MESSAGE_RECORDER
-#include "nel/net/message_recorder.h"
+#include "message_recorder.h"
 #include <queue>
 #endif
 

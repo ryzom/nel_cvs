@@ -1,7 +1,7 @@
 /** \file sheet_id.h
  * This class defines a sheet id
  *
- * $Id: sheet_id.h,v 1.20 2005/02/08 18:32:12 boucher Exp $
+ * $Id: sheet_id.h,v 1.21 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #define NL_SHEET_ID_H
 
 // misc
-#include "nel/misc/types_nl.h"
-#include "nel/misc/stream.h"
-#include "nel/misc/static_map.h"
+#include "types_nl.h"
+#include "stream.h"
+#include "static_map.h"
 
 // std
 #include <string>

@@ -1,7 +1,7 @@
 /** \file u_transform.h
  * Interface for transform objects.
  *
- * $Id: u_transform.h,v 1.23 2004/06/24 17:34:06 berenguier Exp $
+ * $Id: u_transform.h,v 1.24 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
-#include "nel/3d/u_instance_group.h"
-#include "nel/3d/u_transformable.h"
+#include "u_instance_group.h"
+#include "u_transformable.h"
 
 
 namespace NL3D 

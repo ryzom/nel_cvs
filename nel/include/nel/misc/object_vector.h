@@ -1,7 +1,7 @@
 /** \file object_vector.h
  * TODO: File description
  *
- * $Id: object_vector.h,v 1.14 2004/11/15 10:24:26 lecroart Exp $
+ * $Id: object_vector.h,v 1.15 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_OBJECT_VECTOR_H
 #define NL_OBJECT_VECTOR_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/common.h"
-#include "nel/misc/stream.h"
-#include "nel/misc/debug.h"
+#include "types_nl.h"
+#include "common.h"
+#include "stream.h"
+#include "debug.h"
 
 // With NeL Memory Debug, use new
 #ifndef NL_USE_DEFAULT_MEMORY_MANAGER

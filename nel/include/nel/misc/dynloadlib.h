@@ -1,7 +1,7 @@
 /** \file misc/dynloadlib.h
  * class for dynamic library loading
  *
- * $Id: dynloadlib.h,v 1.2 2004/08/31 17:40:29 boucher Exp $
+ * $Id: dynloadlib.h,v 1.3 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,20 +26,44 @@
 #ifndef NL_DYNLIBLOAD_H
 #define NL_DYNLIBLOAD_H
 
-//typedef int (CALLBACK *NL_FARPROC);
-//typedef int (FAR WINAPI *NL_FARPROC)();
+#include "types_nl.h"
+#include <string>
+#include <vector>
 
-// Currently this class supports Windows only
 #ifdef NL_OS_WINDOWS
-
 #include <windows.h>
 #undef max
 #undef min
+#else
+#include <dlfcn.h>
+#endif
 
+namespace NLMISC 
+{
 
+/// Define the os specific type for dynamic library module handler
+#if defined (NL_OS_WINDOWS)
+typedef HMODULE		NL_LIB_HANDLE;
+#elif defined (NL_OS_UNIX)
+typedef void*		NL_LIB_HANDLE;
+#else
+# error "You must define the module type on this platform"
+#endif
 
-#include "nel/misc/types_nl.h"
-namespace NLMISC {
+#ifdef NL_OS_WINDOWS
+#define NL_LIB_EXPORT	__declspec(dllexport)
+#define NL_LIB_IMPORT	__declspec(dllimport)
+#else
+#define NL_LIB_EXPORT
+#define NL_LIB_IMPORT
+#endif
+
+/// Generic dynamic library loading function.
+NL_LIB_HANDLE	nlLoadLibrary(const std::string &libName);
+/// Generic dynamic library unloading function.
+bool			nlFreeLibrary(NL_LIB_HANDLE libHandle);
+/// Generic dynamic library symbol address lookup function.
+void			*nlGetSymbolAddress(NL_LIB_HANDLE libHandle, const std::string &symbolName);
 
 /*
  *
@@ -49,48 +73,66 @@ namespace NLMISC {
  */
 class CLibrary
 {
-	HMODULE lib;	
+	/// Dynamic library handle
+	NL_LIB_HANDLE	_LibHandle;
+	/// Loaded library name
+	std::string		_LibFileName;
+
+	/** When a module hanmdle is assigned to the instance, this
+	 *	flag state whether the CLibrary will free the library or not
+	*/
+	bool			_Ownership;
+
+	/// Lib paths
+	static std::vector<std::string>	_LibPaths;
+
 public:
 	CLibrary();
-	CLibrary(HMODULE newLib);
+	/// Assign a existing module handler to a new dynamic library instance
+	CLibrary(NL_LIB_HANDLE libHandle, bool ownership);
+	/// Load the specified library and take ownership
+	CLibrary(const std::string &libName, bool addNelSuffixe, bool tryLibPath, bool ownership = true);
+	/// Destructor, free the library is the object have ownership
 	virtual ~CLibrary();
-	static HMODULE loadLibrary(std::string& libName);
-	static FARPROC loadFunction(HMODULE&,std::string&);
-	static BOOL closeLib(HMODULE& hm);
 
-	void setLib(const HMODULE& libVal);
-	FARPROC loadFunction(std::string&);
-	BOOL closeLib();
+	/** Load the specified library.
+	*	The method assert if a module is already assigned or loaded
+	*	If addNelSuffixe is true, the standard nel suffixe and library extention are 
+	*	appended to the lib name (with is just a base name).
+	*	If tryLibPath is true, then the method will try to find the required 
+	*	library in the added library files (in order of addition).
+	*	Return true if the library load ok.
+	*/
+	bool loadLibrary(const std::string &libName, bool addNelSuffixe, bool tryLibPath, bool ownership = true);
+
+	/** Unload (free) the assigned/loaded library.
+	*	The object must have ownership over the library or the call will assert.
+	*	After this call, you can recall loadLibrary.
+	*/
+	void freeLibrary();
+
+	/** Get the address a the specified procedure in the library
+	*	Return NULL is the proc is not found,
+	*	Assert if the library is not load or assigned.
+	*/
+	void *getSymbolAddress(const std::string &symbolName);
+
+	/// Get the name of the loaded library
+	std::string getLibFileName()
+	{
+		return _LibFileName;
+	}
+
+	/// Build a NeL standard library name according to platform and compilation mode setting.
+	static std::string makeLibName(const std::string &baseName);
+	/// Add a list of library path
+	static void addLibPaths(const std::vector<std::string> &paths);
+	/// Add a library path
+	static void addLibPath(const std::string &path);
 
 };
 
-inline HMODULE CLibrary::loadLibrary(std::string& libName)
-{
-	HMODULE hm = LoadLibrary(libName.c_str());
-
-	if (hm == NULL)
-	{
-		nlwarning("CLibrary::loadLibrary: failed to load the module '%s'", libName.c_str());
-	}
-
-	return hm;
-}
-
-inline FARPROC CLibrary::loadFunction(HMODULE& hm,std::string& functionName)
-{
-	return GetProcAddress( hm,functionName.c_str());
-}
-
-inline BOOL CLibrary::closeLib(HMODULE& hm)
-{
-	return FreeLibrary(hm);
-}
 } // NLMISC
 
-#endif //NL_OS_WINDOWS
-
 #endif // NL_DYNLIBLOAD_H
-
-/* End of thread.h */
-
 

@@ -1,7 +1,7 @@
 /** \file u_audio_mixer.h
  * UAudioMixer: game interface for audio
  *
- * $Id: u_audio_mixer.h,v 1.44 2004/12/13 17:50:09 berenguier Exp $
+ * $Id: u_audio_mixer.h,v 1.45 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/string_mapper.h"
-#include "nel/sound/u_source.h"
+#include "u_source.h"
 #include "nel/ligo/primitive.h"
 #include <vector>
 

@@ -2,7 +2,7 @@
  * Manage universal time (synchronized with a centralized time manager)
  * THIS CLASS IS DEPRECATED, DON'T USE IT
  *
- * $Id: unitime.h,v 1.14 2004/11/15 10:24:29 lecroart Exp $
+ * $Id: unitime.h,v 1.15 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,7 +30,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/time_nl.h"
 #include "nel/misc/debug.h"
-#include "nel/net/callback_net_base.h"
+#include "callback_net_base.h"
 
 namespace NLNET
 {

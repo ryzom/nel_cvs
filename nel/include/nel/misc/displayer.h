@@ -1,7 +1,7 @@
 /** \file displayer.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: displayer.h,v 1.23 2004/03/01 19:47:53 cado Exp $
+ * $Id: displayer.h,v 1.24 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #ifndef NL_DISPLAYER_H
 #define NL_DISPLAYER_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 #include <string>
 
-#include "nel/misc/log.h"
+#include "log.h"
 
 namespace NLMISC
 {

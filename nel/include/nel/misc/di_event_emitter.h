@@ -1,7 +1,7 @@
 /** \file di_event_emitter.h
  * TODO: File description
  *
- * $Id: di_event_emitter.h,v 1.6 2004/11/15 10:24:24 lecroart Exp $
+ * $Id: di_event_emitter.h,v 1.7 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 
 #ifdef NL_OS_WINDOWS
@@ -36,13 +36,13 @@
 
 #define DIRECTINPUT_VERSION 0x0800
 
-#include "nel/misc/input_device_server.h"
-#include "nel/misc/input_device_manager.h"
-#include "nel/misc/event_emitter.h"
-#include "nel/misc/smart_ptr.h"
-#include "nel/misc/events.h"
-#include "nel/misc/rect.h"
-#include "nel/misc/game_device.h"
+#include "input_device_server.h"
+#include "input_device_manager.h"
+#include "event_emitter.h"
+#include "smart_ptr.h"
+#include "events.h"
+#include "rect.h"
+#include "game_device.h"
 #include <windows.h>
 #include <dinput.h>
 

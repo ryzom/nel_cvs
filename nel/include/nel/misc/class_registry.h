@@ -1,7 +1,7 @@
 /** \file class_registry.h
  * This File handles CClassRegistry.
  *
- * $Id: class_registry.h,v 1.12 2004/02/19 09:58:32 vizerie Exp $
+ * $Id: class_registry.h,v 1.13 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_CLASS_REGISTRY_H
 #define NL_CLASS_REGISTRY_H
 
-#include	"nel/misc/types_nl.h"
-#include	"nel/misc/common.h"
+#include	"types_nl.h"
+#include	"common.h"
 #include	<typeinfo>
 #include	<string>
 #include	<set>

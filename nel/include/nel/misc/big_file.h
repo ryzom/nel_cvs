@@ -1,7 +1,7 @@
 /** \file big_file.h
  * Big file management
  *
- * $Id: big_file.h,v 1.5 2004/10/07 14:49:10 berenguier Exp $
+ * $Id: big_file.h,v 1.6 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2002 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_BIG_FILE_H
 #define NL_BIG_FILE_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/tds.h"
+#include "types_nl.h"
+#include "tds.h"
 
 
 namespace NLMISC {

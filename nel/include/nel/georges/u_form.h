@@ -1,7 +1,7 @@
 /** \file u_form.h
  * Georges form interface class
  *
- * $Id: u_form.h,v 1.9 2005/01/17 16:39:41 lecroart Exp $
+ * $Id: u_form.h,v 1.10 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_U_FORM_H
 #define NL_U_FORM_H
 
-#include	"nel/misc/types_nl.h"
-#include	"nel/misc/smart_ptr.h"
-#include	<set>
+#include "nel/misc/types_nl.h"
+#include "nel/misc/smart_ptr.h"
+#include <set>
 
 namespace NLMISC
 {

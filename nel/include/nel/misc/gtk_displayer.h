@@ -1,7 +1,7 @@
 /** \file gtk_displayer.h
  * Gtk Implementation of the CWindowDisplayer (look at window_displayer.h)
  *
- * $Id: gtk_displayer.h,v 1.3 2003/05/13 16:28:02 lecroart Exp $
+ * $Id: gtk_displayer.h,v 1.4 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,10 +28,10 @@
 
 #ifdef NL_USE_GTK
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
-#include "nel/misc/displayer.h"
-#include "nel/misc/reader_writer.h"
+#include "displayer.h"
+#include "reader_writer.h"
 
 #include "window_displayer.h"
 

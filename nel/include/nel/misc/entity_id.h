@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.41 2004/04/28 18:49:56 boucher Exp $
+ * $Id: entity_id.h,v 1.42 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_ENTITY_ID_H
 #define NL_ENTITY_ID_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/debug.h"
-#include "nel/misc/common.h"
-#include "nel/misc/stream.h"
+#include "types_nl.h"
+#include "debug.h"
+#include "common.h"
+#include "stream.h"
 
 namespace NLMISC {
 

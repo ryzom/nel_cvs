@@ -1,7 +1,7 @@
 /** \file logic_info.h
  * TODO: File description
  *
- * $Id: logic_info.h,v 1.5 2004/11/15 10:24:16 lecroart Exp $
+ * $Id: logic_info.h,v 1.6 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/rgba.h"
-#include "nel/3d/point_light_influence.h"
+#include "point_light_influence.h"
 #include <vector>
 
 #define NL3D_MEM_LOGIC						NL_ALLOC_CONTEXT( 3dLogic )

@@ -1,7 +1,7 @@
 /** \file hierarchical_timer.h
  * Hierarchical timer
  *
- * $Id: hierarchical_timer.h,v 1.31 2004/11/04 12:39:10 legros Exp $
+ * $Id: hierarchical_timer.h,v 1.32 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -29,9 +29,9 @@
 #include <string>
 #include <vector>
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/time_nl.h"
-#include "nel/misc/debug.h"
+#include "types_nl.h"
+#include "time_nl.h"
+#include "debug.h"
 
 #include <algorithm>
 

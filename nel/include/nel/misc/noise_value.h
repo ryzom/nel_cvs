@@ -1,7 +1,7 @@
 /** \file noise_value.h
  * TODO: File description
  *
- * $Id: noise_value.h,v 1.2 2004/11/15 10:24:26 lecroart Exp $
+ * $Id: noise_value.h,v 1.3 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_NOISE_VALUE_H
 #define NL_NOISE_VALUE_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
-#include "nel/misc/stream.h"
-#include "nel/misc/rgba.h"
+#include "types_nl.h"
+#include "vector.h"
+#include "stream.h"
+#include "rgba.h"
 
 
 namespace NLMISC

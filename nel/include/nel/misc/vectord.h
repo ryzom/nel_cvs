@@ -1,7 +1,7 @@
 /** \file vectord.h
  * CVectorD class
  *
- * $Id: vectord.h,v 1.5 2005/01/31 13:50:53 lecroart Exp $
+ * $Id: vectord.h,v 1.6 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_VECTORD_H
 
 #include	<cmath>
-#include	"nel/misc/vector.h"
+#include	"vector.h"
 
 
 namespace	NLMISC
@@ -139,7 +139,7 @@ public:		// Methods.
 }
 
 
-#include "nel/misc/vectord_inline.h"
+#include "vectord_inline.h"
 
 
 #endif // NL_VECTOR_H

@@ -1,7 +1,7 @@
 /** \file input_device_server.h
  * TODO: File description
  *
- * $Id: input_device_server.h,v 1.2 2004/11/15 10:24:26 lecroart Exp $
+ * $Id: input_device_server.h,v 1.3 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_INPUT_DEVICE_SERVER_H
 #define NL_INPUT_DEVICE_SERVER_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 #include <vector>
 
 

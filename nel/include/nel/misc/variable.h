@@ -1,7 +1,7 @@
 /** \file variable.h
  * Management of runtime variable
  *
- * $Id: variable.h,v 1.19 2004/12/03 10:36:25 cado Exp $
+ * $Id: variable.h,v 1.20 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_VARIABLE_H
 #define NL_VARIABLE_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/command.h"
-#include "nel/misc/value_smoother.h"
+#include "types_nl.h"
+#include "command.h"
+#include "value_smoother.h"
 
 
 namespace NLMISC {

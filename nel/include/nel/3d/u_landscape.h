@@ -1,7 +1,7 @@
 /** \file u_landscape.h
  * TODO: File description
  *
- * $Id: u_landscape.h,v 1.31 2004/11/15 10:24:17 lecroart Exp $
+ * $Id: u_landscape.h,v 1.32 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -29,7 +29,7 @@
 #include "nel/misc/types_nl.h"
 #include "nel/misc/vector.h"
 #include "nel/misc/rgba.h"
-#include "nel/3d/height_map.h"
+#include "height_map.h"
 #include <string>
 
 namespace NLMISC

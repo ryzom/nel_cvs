@@ -1,6 +1,6 @@
 /** \file reader_writer.h
  *
- * $Id: reader_writer.h,v 1.1 2001/10/16 09:28:21 legros Exp $
+ * $Id: reader_writer.h,v 1.2 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,8 +25,8 @@
 #ifndef NL_READER_WRITER_H
 #define NL_READER_WRITER_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/mutex.h"
+#include "types_nl.h"
+#include "mutex.h"
 
 
 namespace NLMISC {

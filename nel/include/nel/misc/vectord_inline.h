@@ -1,7 +1,7 @@
 /** \file vectord_inline.h
  * CVectorD class inline definitions.
  *
- * $Id: vectord_inline.h,v 1.8 2003/10/24 13:27:40 vizerie Exp $
+ * $Id: vectord_inline.h,v 1.9 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,7 +28,7 @@
 #define NL_VECTORD_INLINE_H
 
 
-#include "nel/misc/common.h"
+#include "common.h"
 
 
 namespace	NLMISC

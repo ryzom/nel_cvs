@@ -1,7 +1,7 @@
 /** \file static_map.h
  * a map that do not change over time. (lighter in memory consumption)
  *
- * $Id: static_map.h,v 1.3 2003/11/17 10:47:08 besson Exp $
+ * $Id: static_map.h,v 1.4 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002, 2003 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_STATIC_MAP_H
 #define NL_STATIC_MAP_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/common.h"
-#include "nel/misc/stream.h"
-#include "nel/misc/debug.h"
+#include "types_nl.h"
+#include "common.h"
+#include "stream.h"
+#include "debug.h"
 
 #include <map>
 

@@ -1,7 +1,7 @@
 /** \file u_shape_bank.h
  * Game interface for managing shape bank.
  *
- * $Id: u_shape_bank.h,v 1.6 2004/06/21 17:38:43 lecroart Exp $
+ * $Id: u_shape_bank.h,v 1.7 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,7 +27,7 @@
 #define NL_U_SHAPE_BANK_H
 
 #include "nel/misc/types_nl.h"
-#include "nel/3d/u_shape.h"
+#include "u_shape.h"
 
 
 namespace NLMISC

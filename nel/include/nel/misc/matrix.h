@@ -2,7 +2,7 @@
  * 
  * \todo yoyo: Optimize.
  *
- * $Id: matrix.h,v 1.23 2004/11/15 10:24:26 lecroart Exp $
+ * $Id: matrix.h,v 1.24 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,9 +27,9 @@
 #ifndef NL_MATRIX_H
 #define NL_MATRIX_H
 
-#include "nel/misc/vector.h"
-#include "nel/misc/vector_h.h"
-#include "nel/misc/quat.h"
+#include "vector.h"
+#include "vector_h.h"
+#include "quat.h"
 
 
 namespace	NLMISC

@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.48 2005/01/25 16:42:39 cado Exp $
+ * $Id: unified_network.h,v 1.49 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -32,9 +32,9 @@
 #include <vector>
 
 #include "nel/misc/time_nl.h"
-#include "nel/net/callback_client.h"
-#include "nel/net/callback_server.h"
-#include "nel/net/naming_client.h"
+#include "callback_client.h"
+#include "callback_server.h"
+#include "naming_client.h"
 
 namespace NLNET {
 

@@ -1,7 +1,7 @@
 /** \file p_thread.h
  * Posix implementation of CThread class (look at thread.h)
  *
- * $Id: p_thread.h,v 1.11 2005/01/17 16:39:41 lecroart Exp $
+ * $Id: p_thread.h,v 1.12 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,8 +28,8 @@
 
 #ifdef NL_OS_UNIX
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/thread.h"
+#include "types_nl.h"
+#include "thread.h"
 #include <pthread.h>
 
 

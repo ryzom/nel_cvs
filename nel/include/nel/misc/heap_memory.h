@@ -1,7 +1,7 @@
 /** \file heap_memory.h
  * A Heap manager
  *
- * $Id: heap_memory.h,v 1.2 2001/07/11 15:20:47 berenguier Exp $
+ * $Id: heap_memory.h,v 1.3 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_HEAP_MEMORY_H
 #define NL_HEAP_MEMORY_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 #include <map>
 
 

@@ -1,7 +1,7 @@
 /** \file bit_mem_stream.h
  * Bit-oriented memory stream
  *
- * $Id: bit_mem_stream.h,v 1.27 2004/04/19 09:45:49 cado Exp $
+ * $Id: bit_mem_stream.h,v 1.28 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_BIT_MEM_STREAM_H
 #define NL_BIT_MEM_STREAM_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/mem_stream.h"
+#include "types_nl.h"
+#include "mem_stream.h"
 
 
 namespace NLMISC {

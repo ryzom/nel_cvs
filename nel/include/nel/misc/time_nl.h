@@ -1,7 +1,7 @@
 /** \file time_nl.h
  * OS independant time class provided system clock
  *
- * $Id: time_nl.h,v 1.10 2005/01/06 16:21:33 cado Exp $
+ * $Id: time_nl.h,v 1.11 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_TIME_H
 #define NL_TIME_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 #ifdef NL_OS_WINDOWS
 // automatically add the win multimedia library if you use CTime class

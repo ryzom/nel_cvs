@@ -1,7 +1,7 @@
 /** \file mem_stream.h
  * From memory serialization implementation of IStream using ASCII format (look at stream.h)
  *
- * $Id: mem_stream.h,v 1.40 2004/06/14 15:04:41 cado Exp $
+ * $Id: mem_stream.h,v 1.41 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,10 +26,10 @@
 #ifndef NL_MEM_STREAM_H
 #define NL_MEM_STREAM_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/stream.h"
-#include "nel/misc/object_vector.h"
-#include "nel/misc/fast_mem.h"
+#include "types_nl.h"
+#include "stream.h"
+#include "object_vector.h"
+#include "fast_mem.h"
 
 namespace NLMISC
 {

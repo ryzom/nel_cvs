@@ -1,7 +1,7 @@
 /** \file shared_memory.h
  * Encapsulation of shared memory APIs
  *
- * $Id: shared_memory.h,v 1.8 2004/06/14 15:04:41 cado Exp $
+ * $Id: shared_memory.h,v 1.9 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_SHARED_MEMORY_H
 #define NL_SHARED_MEMORY_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 #ifdef NL_OS_WINDOWS
 #include <map>

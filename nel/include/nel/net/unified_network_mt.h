@@ -1,7 +1,7 @@
 /** \file unified_network_mt.h
  * Network engine, layer 5
  *
- * $Id: unified_network_mt.h,v 1.3 2004/11/15 10:24:29 lecroart Exp $
+ * $Id: unified_network_mt.h,v 1.4 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -40,9 +40,9 @@
 #include <hash_map>
 
 #include "nel/misc/time_nl.h"
-#include "nel/net/callback_client.h"
-#include "nel/net/callback_server.h"
-#include "nel/net/naming_client.h"
+#include "callback_client.h"
+#include "callback_server.h"
+#include "naming_client.h"
 #include "nel/misc/mutex.h"
 #include "nel/misc/reader_writer.h"
 

@@ -1,7 +1,7 @@
 /** \file win_thread.h
  * Windows implementation of CThread class (look at thread.h)
  *
- * $Id: win_thread.h,v 1.10 2004/09/22 14:53:37 berenguier Exp $
+ * $Id: win_thread.h,v 1.11 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_WIN_THREAD_H
 #define NL_WIN_THREAD_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/thread.h"
+#include "types_nl.h"
+#include "thread.h"
 
 #ifdef NL_OS_WINDOWS
 

@@ -1,7 +1,7 @@
 /** \file uv.h
  * TODO: File description
  *
- * $Id: uv.h,v 1.5 2004/11/15 10:24:28 lecroart Exp $
+ * $Id: uv.h,v 1.6 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_UV_H
 #define NL_UV_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/stream.h"
+#include "types_nl.h"
+#include "stream.h"
 
 
 namespace NLMISC 

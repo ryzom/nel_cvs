@@ -1,7 +1,7 @@
 /** \file aabbox.h
  * TODO: File description
  *
- * $Id: aabbox.h,v 1.13 2004/11/15 10:24:24 lecroart Exp $
+ * $Id: aabbox.h,v 1.14 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,11 +26,11 @@
 #ifndef NL_AABBOX_H
 #define NL_AABBOX_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/vector.h"
-#include "nel/misc/plane.h"
-#include "nel/misc/common.h"
-#include "nel/misc/stream.h"
+#include "types_nl.h"
+#include "vector.h"
+#include "plane.h"
+#include "common.h"
+#include "stream.h"
 
 
 namespace NLMISC

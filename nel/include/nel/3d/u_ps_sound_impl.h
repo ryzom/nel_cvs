@@ -1,7 +1,7 @@
 /** \file u_ps_sound_impl.h
  * TODO: File description
  *
- * $Id: u_ps_sound_impl.h,v 1.18 2005/01/17 16:39:41 lecroart Exp $
+ * $Id: u_ps_sound_impl.h,v 1.19 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -31,7 +31,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/rgba.h"
 #include "nel/sound/u_audio_mixer.h"
-#include "nel/3d/u_particle_system_sound.h"
+#include "u_particle_system_sound.h"
 
 
 // WARNING : this file is not intended to be directly included by the client. 

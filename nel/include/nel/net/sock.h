@@ -1,7 +1,7 @@
 /** \file sock.h
  * Network engine, layer 0, base class
  *
- * $Id: sock.h,v 1.17 2005/01/04 18:26:37 cado Exp $
+ * $Id: sock.h,v 1.18 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_SOCK_H
 #define NL_SOCK_H
 
-#include "nel/net/inet_address.h"
+#include "inet_address.h"
 #include "nel/misc/common.h"
 #include "nel/misc/mutex.h"
 //#include <sstream>

@@ -1,7 +1,7 @@
 /** \file mem_displayer.h
  * TODO: File description
  *
- * $Id: mem_displayer.h,v 1.9 2004/11/15 10:24:26 lecroart Exp $
+ * $Id: mem_displayer.h,v 1.10 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_MEM_DISPLAYER_H
 #define NL_MEM_DISPLAYER_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/displayer.h"
+#include "types_nl.h"
+#include "displayer.h"
 
 #include <deque>
 #include <string>

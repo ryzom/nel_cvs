@@ -1,7 +1,7 @@
 /** \file misc/thread.h
  * Base OS independant class interface for the thread management
  *
- * $Id: thread.h,v 1.21 2004/09/22 14:53:37 berenguier Exp $
+ * $Id: thread.h,v 1.22 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,8 +26,8 @@
 #ifndef NL_THREAD_H
 #define NL_THREAD_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/common.h"
+#include "types_nl.h"
+#include "common.h"
 
 
 namespace NLMISC {
@@ -39,7 +39,7 @@ namespace NLMISC {
  *
  *\code
 
-	#include "nel/misc/thread.h"
+	#include "thread.h"
 
 	class HelloLoopThread : public IRunnable
 	{

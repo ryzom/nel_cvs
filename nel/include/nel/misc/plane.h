@@ -1,7 +1,7 @@
 /** \file plane.h
  * class CPlane
  *
- * $Id: plane.h,v 1.7 2004/01/15 17:29:26 lecroart Exp $
+ * $Id: plane.h,v 1.8 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -27,8 +27,8 @@
 #define NL_PLANE_H
 
 
-#include	"nel/misc/stream.h"
-#include	"nel/misc/vector.h"
+#include	"stream.h"
+#include	"vector.h"
 
 
 namespace NLMISC
@@ -171,7 +171,7 @@ public:
 }
 
 
-#include "nel/misc/plane_inline.h"
+#include "plane_inline.h"
 
 
 #endif // NL_PLANE_H

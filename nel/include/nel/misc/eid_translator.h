@@ -1,7 +1,7 @@
 /** \file eid_translator.h
  * convert eid into entity name or user name and so on
  *
- * $Id: eid_translator.h,v 1.17 2005/01/12 15:02:09 legros Exp $
+ * $Id: eid_translator.h,v 1.18 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2003 Nevrax Ltd.
@@ -30,10 +30,10 @@
 #include <vector>
 #include <map>
 
-#include <nel/misc/types_nl.h>
-#include <nel/misc/entity_id.h>
-#include <nel/misc/ucstring.h>
-#include <nel/misc/command.h>
+#include "types_nl.h"
+#include "entity_id.h"
+#include "ucstring.h"
+#include "command.h"
 
 namespace	NLMISC
 {

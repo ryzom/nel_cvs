@@ -1,7 +1,7 @@
 /** \file pacs_client.h
  * Client part of the PACS Service
  *
- * $Id: pacs_client.h,v 1.3 2001/12/28 10:17:30 lecroart Exp $
+ * $Id: pacs_client.h,v 1.4 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,9 +28,9 @@
 
 #include "stdnet.h"
 
-#include "nel/net/inet_address.h"
-#include "nel/net/callback_client.h"
-#include "nel/net/naming_client.h"
+#include "inet_address.h"
+#include "callback_client.h"
+#include "naming_client.h"
 
 #include "nel/pacs/u_move_primitive.h"
 #include "nel/pacs/u_collision_desc.h"

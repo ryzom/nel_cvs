@@ -1,7 +1,7 @@
 /** \file load_form.h
  * quick load of values from georges sheet (using a fast load with compacted file)
  *
- * $Id: load_form.h,v 1.33 2004/11/30 13:27:08 berenguier Exp $
+ * $Id: load_form.h,v 1.34 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,8 +37,8 @@
 #include "nel/misc/sheet_id.h"
 #include "nel/misc/algo.h"
 
-#include "nel/georges/u_form_loader.h"
-#include "nel/georges/u_form.h"
+#include "u_form_loader.h"
+#include "u_form.h"
 
 /** This function is used to load values from georges sheet in a quick way.
  * The first time it loads the sheet and parse it with the readGeorges function

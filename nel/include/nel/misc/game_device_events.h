@@ -1,7 +1,7 @@
 /** \file game_device_events.h
  * TODO: File description
  *
- * $Id: game_device_events.h,v 1.6 2005/01/17 16:39:41 lecroart Exp $
+ * $Id: game_device_events.h,v 1.7 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,9 +26,9 @@
 #ifndef NL_GAME_DEVICE_EVENT_H
 #define NL_GAME_DEVICE_EVENT_H
 
-#include "nel/misc/types_nl.h"
-#include "nel/misc/events.h"
-#include "nel/misc/game_device.h"
+#include "types_nl.h"
+#include "events.h"
+#include "game_device.h"
 
 
 

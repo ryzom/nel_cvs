@@ -1,7 +1,7 @@
 /** \file misc/heap_allocator.h
  * A Heap allocator
  *
- * $Id: heap_allocator.h,v 1.6 2004/11/15 10:24:25 lecroart Exp $
+ * $Id: heap_allocator.h,v 1.7 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -27,11 +27,11 @@
 #define NL_HEAP_ALLOCATOR_H
 
 /* 
- * Include "nel/misc/types_nl.h" but don't redefine new
+ * Include "types_nl.h" but don't redefine new
  */
-#include "nel/misc/types_nl.h"
-#include "nel/misc/mutex.h"
-#include "nel/misc/tds.h"
+#include "types_nl.h"
+#include "mutex.h"
+#include "tds.h"
 
 #include <vector>
 

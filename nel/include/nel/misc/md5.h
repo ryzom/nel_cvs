@@ -1,7 +1,7 @@
 /** \file md5.h
  * Displayer class interface and classic standard displayers
  *
- * $Id: md5.h,v 1.1 2004/07/28 07:55:51 besson Exp $
+ * $Id: md5.h,v 1.2 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000, 2001, 2002,2003,2004 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_MD5_H
 #define NL_MD5_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 
 #include <string>
 

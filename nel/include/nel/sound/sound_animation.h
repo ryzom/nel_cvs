@@ -1,7 +1,7 @@
 /** \file sound_animation.h
  * A sound event marer on a sound track
  *
- * $Id: sound_animation.h,v 1.7 2005/01/17 16:39:41 lecroart Exp $
+ * $Id: sound_animation.h,v 1.8 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_SOUND_ANIM_TRACK_H
 #define NL_SOUND_ANIM_TRACK_H
 
-#include "nel/sound/sound_anim_manager.h"
+#include "sound_anim_manager.h"
 
 namespace NLMISC
 {

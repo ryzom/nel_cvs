@@ -1,7 +1,7 @@
 /** \file u_scene.h
  * TODO: File description
  *
- * $Id: u_scene.h,v 1.59 2005/01/20 11:15:04 berenguier Exp $
+ * $Id: u_scene.h,v 1.60 2005/02/22 10:14:13 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -28,7 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 #include "nel/misc/quat.h"
-#include "nel/3d/animation_time.h"
+#include "animation_time.h"
 #include <map>
 
 

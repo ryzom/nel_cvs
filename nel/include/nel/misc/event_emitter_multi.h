@@ -1,7 +1,7 @@
 /** \file event_emitter_multi.h
  * TODO: File description
  *
- * $Id: event_emitter_multi.h,v 1.4 2004/11/15 10:24:24 lecroart Exp $
+ * $Id: event_emitter_multi.h,v 1.5 2005/02/22 10:14:12 besson Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -26,7 +26,7 @@
 #ifndef NL_EVENT_EMITTER_MULTI_H
 #define NL_EVENT_EMITTER_MULTI_H
 
-#include "nel/misc/types_nl.h"
+#include "types_nl.h"
 #include "event_emitter.h"
 #include <vector>
 

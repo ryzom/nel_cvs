@@ -1,7 +1,7 @@
 /** \file edge_quad.cpp
  * a quadgrid of list of exterior edges.
  *
- * $Id: edge_quad.cpp,v 1.2 2001/08/31 08:26:10 legros Exp $
+ * $Id: edge_quad.cpp,v 1.3 2001/09/03 08:37:23 legros Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -167,9 +167,19 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 		CVector		s0, s1,
 					mins, maxs;
 
-		UGlobalPosition	gp = global.retrievePosition(p0);
-		global.updateHeight(gp);
-		TCollisionSurfaceDescVector	cd = global.testCylinderMove(gp, p1-p0, 0.01f, cst);
+		UGlobalPosition	gp0 = global.retrievePosition(p0);
+		global.updateHeight(gp0);
+		UGlobalPosition	gp1 = global.retrievePosition(p1);
+		global.updateHeight(gp1);
+
+		if (gp0.InstanceId == -1)
+		{
+			swap(p0, p1);
+			swap(op0, op1);
+			swap(gp0, gp1);
+		}
+		
+		TCollisionSurfaceDescVector	cd = global.testCylinderMove(gp0, p1-p0, 0.01f, cst);
 
 		if (edges[i].Link != -1 && cd.size() > 0)
 		{
@@ -180,8 +190,8 @@ void			CEdgeQuad::build(const CExteriorMesh &em,
 		// add start surface to the collision description
 		CCollisionSurfaceDesc	stcd;
 		stcd.ContactTime = 0.0f;
-		stcd.ContactSurface.RetrieverInstanceId = gp.InstanceId;
-		stcd.ContactSurface.SurfaceId = gp.LocalPosition.Surface;
+		stcd.ContactSurface.RetrieverInstanceId = gp0.InstanceId;
+		stcd.ContactSurface.SurfaceId = gp0.LocalPosition.Surface;
 		cd.insert(cd.begin(), stcd);
 
 		// get the surface, chain ...

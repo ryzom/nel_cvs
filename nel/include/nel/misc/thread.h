@@ -1,7 +1,7 @@
 /** \file thread.h
  * thread interface
  *
- * $Id: thread.h,v 1.9 2001/01/30 13:44:16 lecroart Exp $
+ * $Id: thread.h,v 1.10 2001/02/13 17:40:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -65,7 +65,6 @@ namespace NLMISC {
 class IRunnable
 {
 public:
-	int bidon;
 	// Called when a thread is run.
 	virtual void run()=0;
 	virtual ~IRunnable()
@@ -74,7 +73,7 @@ public:
 };
 
 /**
- * Thread base interaface, must be implemented for all OS
+ * Thread base interface, must be implemented for all OS
  * \author Vianney Lecroart
  * \author Nevrax France
  * \date 2000
@@ -94,7 +93,7 @@ public:
 	// Terminate the thread. (use with caution under win98)
 	virtual void terminate()=0;
 
-	// Terminate the thread. (use with caution under win98)
+	// In the calling program, wait until the specified thread has existed (use with caution under win98)
 	virtual void wait()=0;
 
 	// Sleep the thread
@@ -104,18 +103,8 @@ public:
 
 struct EThread : public Exception
 {
-	virtual const char	*what() const throw() { return "Can't create new thread"; }
 };
 
-
-
-#ifdef NL_OS_UNIX
-// not implemented ;)
-inline IThread *IThread::create (IRunnable *runnable)
-{
-	return NULL;
-}
-#endif // NL_OS_UNIX
 
 } // NLMISC
 

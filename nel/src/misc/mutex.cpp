@@ -1,7 +1,7 @@
 /** \file mutex.cpp
  * <File description>
  *
- * $Id: mutex.cpp,v 1.3 2000/12/20 15:24:18 lecroart Exp $
+ * $Id: mutex.cpp,v 1.4 2001/02/13 17:40:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -29,9 +29,25 @@
 
 #ifdef NL_OS_WINDOWS
 #include <windows.h>
+#elif defined NL_OS_UNIX
+#include <pthread.h>
 #endif // NL_OS_WINDOWS
 
 namespace NLMISC {
+
+
+#ifdef NL_OS_UNIX
+
+/*
+ * Clanlib authors say: "We need to do this because the posix threads library
+ * under linux obviously suck:"
+ */
+extern "C"
+{
+	int pthread_mutexattr_setkind_np( pthread_mutexattr_t *attr, int kind );
+}
+
+#endif // NL_OS_UNIX
 
 
 /*
@@ -40,15 +56,41 @@ namespace NLMISC {
 CMutex::CMutex()
 {
 #ifdef NL_OS_WINDOWS
+
 	// Create a mutex with no initial owner.
 	Mutex = (void *) CreateMutex (NULL, FALSE, NULL);
 	nlassert (Mutex != NULL);
+
+#elif defined NL_OS_UNIX
+
+	pthread_mutexattr_t attr;
+	pthread_mutexattr_init( &attr );
+	pthread_mutexattr_setkind_np( &attr, PTHREAD_MUTEX_RECURSIVE_NP );
+	pthread_mutex_init( &mutex, &attr );
+	pthread_mutexattr_destroy( &attr );
+
 #endif // NL_OS_WINDOWS
 }
 
+
+/*
+ * Destructor
+ */
+CMutex::~CMutex()
+{
+#ifdef NL_OS_UNIX
+	pthread_mutex_destroy( &mutex );
+#endif // NL_OS_UNIX
+}
+
+
+/*
+ * enter
+ */
 void CMutex::enter ()
 {
 #ifdef NL_OS_WINDOWS
+
     // Request ownership of mutex during 10s
 	DWORD dwWaitResult = WaitForSingleObject (Mutex, 10000);
 	switch (dwWaitResult)
@@ -60,13 +102,34 @@ void CMutex::enter ()
 	// Got ownership of the abandoned mutex object.
 	case WAIT_ABANDONED:	nlerror ("A thread forgot to release the mutex");
     }
+
+#elif defined NL_OS_UNIX
+
+	if ( pthread_mutex_lock( &mutex ) != 0 )
+	{
+		nlerror( "Error locking a mutex" );
+	}
+
 #endif // NL_OS_WINDOWS
 }
 
+
+/*
+ * leave
+ */
 void CMutex::leave ()
 {
 #ifdef NL_OS_WINDOWS
+
 	nlverify (ReleaseMutex(Mutex));
+
+#elif defined NL_OS_UNIX
+
+	if ( pthread_mutex_unlock( &mutex ) != 0 )
+	{
+		nlerror( "Error unlocking a mutex" );
+	}
+
 #endif // NL_OS_WINDOWS
 }
 

@@ -380,6 +380,14 @@ SOURCE=..\include\nel\misc\mutex.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\misc\p_thread.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=..\include\nel\misc\p_thread.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\misc\path.cpp
 # End Source File
 # Begin Source File

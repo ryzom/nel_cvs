@@ -1,7 +1,7 @@
 /** \file mutex.h
  * class CMutex
  *
- * $Id: mutex.h,v 1.1 2000/12/15 14:51:53 lecroart Exp $
+ * $Id: mutex.h,v 1.2 2001/02/13 17:40:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,6 +28,10 @@
 
 #include "nel/misc/types_nl.h"
 
+#ifdef NL_OS_UNIX
+#include <pthread.h>
+#endif
+
 
 namespace NLMISC {
 
@@ -51,6 +55,9 @@ public:
 	/// Constructor
 	CMutex();
 
+	/// Destructor
+	~CMutex();
+
 	void enter ();
 	void leave ();
 
@@ -58,9 +65,12 @@ private:
 
 #ifdef NL_OS_WINDOWS
 	void *Mutex;
+#elif defined NL_OS_UNIX
+	pthread_mutex_t mutex;
 #endif // NL_OS_WINDOWS
 
 };
+
 
 /**
  * This class ensure that the Value is access by only one thread. First you have to create a CSynchronized class with you type.

@@ -1,7 +1,7 @@
 /** \file win_thread.cpp
  * class CWinThread
  *
- * $Id: win_thread.cpp,v 1.1 2000/12/14 17:04:23 lecroart Exp $
+ * $Id: win_thread.cpp,v 1.2 2001/02/13 17:40:33 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -23,13 +23,12 @@
  * MA 02111-1307, USA.
  */
 
-#include "nel/misc/types_nl.h"
-
 #ifdef NL_OS_WINDOWS
 
+#include "nel/misc/types_nl.h"
 #include "nel/misc/win_thread.h"
-
 #include <windows.h>
+
 
 namespace NLMISC {
 
@@ -66,7 +65,7 @@ void CWinThread::start ()
 	ThreadHandle = (void *) CreateThread (NULL, 0, ProxyFunc, this, 0, (DWORD *)&ThreadId);
 	if (ThreadHandle == NULL)
 	{
-		throw EThread ();
+		throw EThread ( "Cannot create new thread" );
 	}
 }
 

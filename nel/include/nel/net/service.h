@@ -1,7 +1,7 @@
 /** \file service.h
  * Base class for all network services
  *
- * $Id: service.h,v 1.80 2005/01/25 16:42:39 cado Exp $
+ * $Id: service.h,v 1.81 2005/02/02 11:24:05 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -232,7 +232,9 @@ public:
 	/// Returns true if the argument if present in the command line (ie: haveArg('p') will return true if -p is in the command line)
 	bool							haveArg (char argName);
 
-	/** Returns the parameter linked to an option (ie: getArg('p') will return "toto" if -ptoto is in the command line)
+	/** Returns the parameter linked to an option
+	 * getArg('p') will return toto if -ptoto is in the command line
+	 * getArg('p') will return C:\Documents and Settings\toto.tmp if -p"C:\Documents and Settings\toto.tmp" is in the command line
 	 * It'll thrown an Exception if the argName is not found
 	 */
 	std::string						getArg (char argName);

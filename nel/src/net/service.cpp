@@ -1,7 +1,7 @@
 /** \file service.cpp
  * Base class for all network services
  *
- * $Id: service.cpp,v 1.221 2005/01/31 13:52:40 lecroart Exp $
+ * $Id: service.cpp,v 1.222 2005/02/02 11:24:05 corvazier Exp $
  *
  * \todo ace: test the signal redirection on Unix
  */
@@ -339,7 +339,21 @@ string IService::getArg (char argName)
 		{
 			if (_Args[i][1] == argName)
 			{
-				return _Args[i].substr(2);
+				/* Remove the first and last '"' : 
+				-c"C:\Documents and Settings\toto.tmp" 
+				will return :
+				C:\Documents and Settings\toto.tmp
+				*/
+				uint begin = 2;
+				if (_Args[i][begin] == '"')
+					begin++;
+
+				// End
+				uint size = _Args[i].size();
+				if (size && _Args[i][size-1] == '"')
+					size--;
+				size = (uint)(std::max((int)0, (int)size-(int)begin));
+				return _Args[i].substr(begin, size);
 			}
 		}
 	}
@@ -356,10 +370,32 @@ void IService::setArgs (const char *args)
 
 	do
 	{
+		// Look for the first non space character
 		pos1 = sargs.find_first_not_of (" ", pos2);
 		if (pos1 == string::npos) break;
-		pos2 = sargs.find_first_of (" ", pos1);
-		_Args.push_back (sargs.substr (pos1, pos2-pos1));
+
+		// Look for the first space or "
+		pos2 = sargs.find_first_of (" \"", pos1);
+		if (pos2 != string::npos)
+		{
+			// " ?
+			if (sargs[pos2] == '"')
+			{
+				// Look for the final \"
+				pos2 = sargs.find_first_of ("\"", pos2+1);
+				if (pos2 != string::npos)
+				{
+					// Look for the first space
+					pos2 = sargs.find_first_of (" ", pos2+1);
+				}
+			}
+
+			// Compute the size of the string to extract
+			if (pos2 != string::npos)
+				pos2 = pos2-pos1;
+		}
+		string tmp = sargs.substr (pos1, pos2);
+		_Args.push_back (tmp);
 	}
 	while (pos2 != string::npos);
 }

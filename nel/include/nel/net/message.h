@@ -1,7 +1,7 @@
 /** \file message.h
  * From memory serialization implementation of IStream with typed system (look at stream.h)
  *
- * $Id: message.h,v 1.37 2003/12/29 13:32:53 lecroart Exp $
+ * $Id: message.h,v 1.38 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -28,11 +28,7 @@
 
 #include "nel/misc/types_nl.h"
 
-//#include <sstream>
-
 #include "nel/misc/mem_stream.h"
-
-#include "nel/misc/string_id_array.h"
 
 #include <vector>
 
@@ -47,9 +43,6 @@ extern const char *LockedSubMessageError;
  * over a network, using the NeL network engine.
  * If MESSAGES_PLAIN_TEXT is defined, the messages will be serialized to/from plain text (human-readable),
  * instead of binary.
- * Warning: if you don't give a "sida", the message type will not be associated with id so, it'll not be optimized
- * Warning: THE ASSOCIATION Id<->String SYSTEM FOR THE MESSAGE TYPE IS DISABLED BECAUSE 2 DIFFERENT CLIENTS COULD HAVE
- *          SAME STRING ASSOC AND DIFFERENT ID SO WE HAVE TO PUT ONE SIDA TABLE PER CONNECTION AND NOT PER NET_BASE
  *
  * \author Vianney Lecroart
  * \author Nevrax France
@@ -61,8 +54,6 @@ public:
 
 	enum TStreamFormat { UseDefault, Binary, String };
 
-	CMessage (NLMISC::CStringIdArray &sida, const std::string &name = "", bool inputStream = false, TStreamFormat streamformat = UseDefault, uint32 defaultCapacity = 1000);
-
 	CMessage (const std::string &name = "", bool inputStream = false, TStreamFormat streamformat = UseDefault, uint32 defaultCapacity = 1000);
 
 	CMessage (NLMISC::CMemStream &memstr);
@@ -73,9 +64,6 @@ public:
 	/// Assignment operator
 	CMessage &operator= (const CMessage &other);
 	
-	/// Sets the message type as a number (in range 0..32767) and put it in the buffer if we are in writing mode
-	void setType (NLMISC::CStringIdArray::TStringId id);
-
 	/// Sets the message type as a string and put it in the buffer if we are in writing mode
 	void setType (const std::string &name);
 
@@ -219,9 +207,6 @@ public:
 	 */
 	std::string getName () const;
 	
-	/// Returns the type id of this message is available.
-	NLMISC::CStringIdArray::TStringId getId () const;
-
 	/** Returns a readable string to display it to the screen. It's only for debugging purpose!
 	 * Don't use it for anything else than to debugging, the string format could change in the futur
 	 */
@@ -236,9 +221,6 @@ public:
 	/// Encapsulate/decapsulate another message inside the current message
 	void	serialMessage( CMessage& msg );
 
-	bool TypeHasAnId;
-	bool TypeHasAName;
-
 protected:
 
 	/// Utility method
@@ -252,8 +234,6 @@ protected:
 	}
 
 private:
-	NLMISC::CStringIdArray				*_SIDA;
-	
 	std::string							_Name;
 	
 	// When sub message lock mode is enabled, beginning position of sub message to read (before header)
@@ -264,8 +244,6 @@ private:
 
 	// Size of the header (that contains the name type or number type)
 	uint32								_HeaderSize;
-
-	NLMISC::CStringIdArray::TStringId	_Id;
 
 	bool								_TypeSet;
 

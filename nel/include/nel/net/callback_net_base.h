@@ -1,7 +1,7 @@
 /** \file callback_net_base.h
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.h,v 1.25 2003/02/07 16:07:56 lecroart Exp $
+ * $Id: callback_net_base.h,v 1.26 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -104,7 +104,7 @@ public:
 	/**	Appends callback array with the specified array. You can add callback only *after* adding the server or the client.
 	 * \param arraysize is the number of callback items.
 	 */
-	void	addCallbackArray (const TCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
+	void	addCallbackArray (const TCallbackItem *callbackarray, sint arraysize);
 
 	/// Sets default callback for unknown message types
 	void	setDefaultCallback(TMsgCallback defaultCallback) { _DefaultCallback = defaultCallback; }
@@ -125,9 +125,6 @@ public:
 	/// Returns true if this is a CCallbackServer
 	bool	isAServer () const { checkThreadId (); return _IsAServer; }
 
-	/// Use this function to get the String ID Array needed when you want to create a message
-	NLMISC::CStringIdArray	&getSIDA () { return _InputSIDA; }
-
 	/// This function is implemented in the client and server class
 	virtual bool	dataAvailable () { nlstop; return false; }
 	/// This function is implemented in the client and server class
@@ -139,25 +136,6 @@ public:
 
 	/// Returns the address of the specified host
 	virtual const	CInetAddress& hostAddress (TSockId hostid);
-
-	/// Used by client and server class
-	void	sendAllMyAssociations (TSockId to);
-
-	/** Gives some association of the other side. The goal is, in specific case, we don't want to
-	 * ask associations to the other side (client is not secure for example). In this case, we can
-	 * set other side associations by hand using this functions.
-	 */
-	void	setOtherSideAssociations (const char **associationarray, NLMISC::CStringIdArray::TStringId arraysize);
-
-	void	displayAllMyAssociations ();
-
-	/// If you ignore all unknown id, the net will not ask for other side to know new association.
-	/// It's used in the naming service for example because the naming client will never answer.
-	/// In this case, it will always send the message with the full string name (slower)
-	void	ignoreAllUnknownId(bool b)
-	{
-		_InputSIDA.ignoreAllUnknownId (b);
-	}
 
 	// Defined even when USE_MESSAGE_RECORDER is not defined
 	enum TRecordingState { Off, Record, Replay };
@@ -180,17 +158,6 @@ protected:
 
 	/// On this layer, you can't call directly receive, It s the update() function that receive and call your callaback
 	virtual void	receive (CMessage &buffer, TSockId *hostid) = 0;
-
-	/* It's the layer4 that full the buffer association because it's based on callback system
-	 * this is message association used when received a message number from the socket to know the
-	 * associated message name
-	 */
-	NLMISC::CStringIdArray _InputSIDA;
-
-	/* It's the layer4 that full the buffer association because it's based on callback system
-	 * this is message association used when you want to send a message to a socket
-	 */
-	NLMISC::CStringIdArray _OutputSIDA;
 
 	// contains callbacks
 	std::vector<TCallbackItem>	_CallbackArray;

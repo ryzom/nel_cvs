@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.23 2003/12/29 13:35:56 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.24 2004/05/07 12:56:22 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -157,7 +157,7 @@ void CNetDisplayer::doDisplay ( const CLog::TDisplayInfo& args, const char *mess
 
 		str += message;
 
-		CMessage msg(_Server->getSIDA(), "LOG" );
+		CMessage msg("LOG" );
 		string s = str;
 		msg.serial( s );
 		_Server->send (msg, 0, false);

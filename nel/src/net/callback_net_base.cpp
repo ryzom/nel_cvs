@@ -1,7 +1,7 @@
 /** \file callback_net_base.cpp
  * Network engine, layer 3, base
  *
- * $Id: callback_net_base.cpp,v 1.44 2003/12/16 18:02:59 lecroart Exp $
+ * $Id: callback_net_base.cpp,v 1.45 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -25,7 +25,6 @@
 
 #include "stdnet.h"
 
-#include "nel/misc/string_id_array.h"
 #include "nel/misc/hierarchical_timer.h"
 
 #include "nel/net/buf_sock.h"
@@ -47,78 +46,6 @@ using namespace std;
 using namespace NLMISC;
 
 namespace NLNET {
-
-
-/*
- *
- */
-void cbnbMessageRecvAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	// receive a new message association
-
-	CStringIdArray::TStringId size;
-	msgin.serial (size);
-
-	nldebug ("LNETL3NB_ASSOC: The other side gave me %d association strings", size);
-
-	for (CStringIdArray::TStringId i = 0; i < size; i++)
-	{
-		std::string name;
-		CStringIdArray::TStringId id;
-
-		msgin.serial (name);
-		msgin.serial (id);
-
-		// if id == -1, it means that there are no callback associated to this message
-		// it should not happen, it mean that one side send a message that the other side
-		// can't manage in his callbackarray.
-		// to resolve the problem, add the callback in the callbackarray in the other side
-		// and put NULL if you don't want to manage this message
-		nlassert (id != -1);
-
-		nldebug ("LNETL3NB_ASSOC:  association '%s' -> %d", name.c_str (), id);
-		netbase.getSIDA().addString (name, id);
-	}
-}
-
-
-/*
- * the other side want to know some of my association, send them!
- */
-void cbnbMessageAskAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	CMessage msgout (netbase.getSIDA(), "RA");
-	CStringIdArray::TStringId size;
-	msgin.serial (size);
-
-	nldebug ("LNETL3NB_ASSOC: The other side want %d string associations", size);
-
-	msgout.serial (size);
-
-	for (sint i = 0; i < size; i++)
-	{
-		string name;
-		msgin.serial (name);
-		nldebug ("LNETL3NB_ASSOC:  sending association '%s' -> %d", name.c_str (), netbase._OutputSIDA.getId(name));
-
-		// if this assert occurs, it means that the other side ask an unknown message
-		// or that there are different types of client (with differents callbackarray) and one of the client doesn't have this callback
-		nlassert(netbase._OutputSIDA.getId(name) != -1);
-
-		msgout.serial (name);
-
-		CStringIdArray::TStringId id = netbase._OutputSIDA.getId (name);
-		msgout.serial (id);
-	}
-	// send the message to the other side
-	netbase.send (msgout, from);
-}
-
-static TCallbackItem cbnbMessageAssociationArray[] =
-{
-	{ "AA", cbnbMessageAskAssociations },
-	{ "RA", cbnbMessageRecvAssociations },
-};
 
 
 /*
@@ -159,9 +86,6 @@ CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilen
 
 	createDebug(); // for addNegativeFilter to work even in release and releasedebug modes
 
-	// add the callback needed to associate messages with id
-	addCallbackArray (cbnbMessageAssociationArray, sizeof (cbnbMessageAssociationArray) / sizeof (cbnbMessageAssociationArray[0]));
-
 #ifdef USE_MESSAGE_RECORDER
 	switch ( _MR_RecordingState )
 	{
@@ -181,12 +105,9 @@ CCallbackNetBase::CCallbackNetBase(  TRecordingState rec, const string& recfilen
 /*
  *	Append callback array with the specified array
  */
-void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CStringIdArray::TStringId arraysize)
+void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, sint arraysize)
 {
 	checkThreadId ();
-
-	// be sure that the 2 array have the same size
-	nlassert (_CallbackArray.size () == (uint)_OutputSIDA.size ());
 
 	if (arraysize == 1 && callbackarray[0].Callback == NULL && string("") == callbackarray[0].Key)
 	{
@@ -198,19 +119,16 @@ void CCallbackNetBase::addCallbackArray (const TCallbackItem *callbackarray, CSt
 	sint oldsize = _CallbackArray.size();
 
 	_CallbackArray.resize (oldsize + arraysize);
-	_OutputSIDA.resize (oldsize + arraysize);
 
 //TOO MUCH MESSAGE	nldebug ("L3NB_CB: Adding %d callback to the array", arraysize);
 
 	for (sint i = 0; i < arraysize; i++)
 	{
-		CStringIdArray::TStringId ni = oldsize + i;
+		sint ni = oldsize + i;
 //TOO MUCH MESSAGE		nldebug ("L3NB_CB: Adding callback to message '%s', id '%d'", callbackarray[i].Key, ni);
 		// copy callback value
 		
 		_CallbackArray[ni] = callbackarray[i];
-		// add the string to the string id array
-		_OutputSIDA.addString (callbackarray[i].Key, ni);
 
 	}
 //	nldebug ("LNETL3NB_CB: Added %d callback Now, there're %d callback associated with message type", arraysize, _CallbackArray.size ());
@@ -226,29 +144,22 @@ void CCallbackNetBase::processOneMessage ()
 
 	// slow down the layer H_AUTO (CCallbackNetBase_processOneMessage);
 
-	CMessage msgin (_OutputSIDA, "", true);
+	CMessage msgin ("", true);
 	TSockId tsid;
 	receive (msgin, &tsid);
 
 	_BytesReceived += msgin.length ();
 	
 	// now, we have to call the good callback
-	NLMISC::CStringIdArray::TStringId pos = -1;
-	if (msgin.TypeHasAnId)
+	sint pos = -1;
+	std::string name = msgin.getName ();
+	sint i;
+	for (i = 0; i < (sint)_CallbackArray.size (); i++)
 	{
-		pos = msgin.getId ();
-	}
-	else
-	{
-		std::string name = msgin.getName ();
-		sint16 i;
-		for (i = 0; i < (sint16) _CallbackArray.size (); i++)
+		if (name == _CallbackArray[i].Key)
 		{
-			if (name == _CallbackArray[i].Key)
-			{
-				pos = i;
-				break;
-			}
+			pos = i;
+			break;
 		}
 	}
 
@@ -347,58 +258,6 @@ void CCallbackNetBase::baseUpdate (sint32 timeout)
 		_LastMovedStringArray = t0;
 	}
 
-	//
-	// Every 1 seconds if we have new unknown association, we ask them to the other side
-	//
-	if (t0 - _LastUpdateTime >  1000)
-	{
-//		nldebug("LNETL3NB: baseUpdate()");
-		_LastUpdateTime = t0;
-
-		const set<string> &sa = _InputSIDA.getNeedToAskedStringArray ();
-		if (!sa.empty ())
-		{
-			CMessage msgout (_InputSIDA, "AA");
-			//nlassert (sa.size () < 65536); // no size limit anymore
-			CStringIdArray::TStringId size = sa.size ();
-			nldebug ("LNETL3NB_ASSOC: I need %d string association, ask them to the other side", size);
-			msgout.serial (size);
-			for (set<string>::iterator it = sa.begin(); it != sa.end(); it++)
-			{
-				nldebug ("LNETL3NB_ASSOC:  what is the id of '%s'?", (*it).c_str ());
-				string str(*it);
-				msgout.serial (str);
-			}
-			// send the message to the other side
-			send (msgout, 0);
-			_InputSIDA.moveNeedToAskToAskedStringArray();
-			_LastMovedStringArray = t0;
-		}
-	}
-
-	//
-	// Every 60 seconds if we have not answered association, we ask again to get them!
-	//
-	if (!_InputSIDA.getAskedStringArray().empty() && t0 - _LastMovedStringArray > 60000)
-	{
-		// we didn't have an answer for the association, resend them
-		const set<string> sa = _InputSIDA.getAskedStringArray ();
-		CMessage msgout (_InputSIDA, "AA");
-		//nlassert (sa.size () < 65536); // no size limit anymore
-		CStringIdArray::TStringId size = sa.size ();
-		nldebug ("LNETL3NB_ASSOC: client didn't answer my asked association, retry! I need %d string association, ask them to the other side", size);
-		msgout.serial (size);
-		for (set<string>::iterator it = sa.begin(); it != sa.end(); it++)
-		{
-			nldebug ("LNETL3NB_ASSOC:  what is the id of '%s'?", (*it).c_str ());
-			string str(*it);
-			msgout.serial (str);
-		}
-		// sends the message to the other side
-		send (msgout, 0);
-		_LastMovedStringArray = t0;
-	}
-
 	/*
 	 * timeout -1    =>  read one message in the queue or nothing if no message in queue
 	 * timeout 0     =>  read all messages in the queue
@@ -446,26 +305,6 @@ const	CInetAddress& CCallbackNetBase::hostAddress (TSockId hostid)
 	nlstop;
 	static CInetAddress tmp;
 	return tmp;
-}
-
-void	CCallbackNetBase::setOtherSideAssociations (const char **associationarray, NLMISC::CStringIdArray::TStringId arraysize)
-{
-	checkThreadId ();
-
-	nldebug ("LNETL3NB_ASSOC: setOtherSideAssociations() sets %d association strings", arraysize);
-
-	for (sint i = 0; i < arraysize; i++)
-	{
-		nldebug ("LNETL3NB_ASSOC:  association '%s' -> %d", associationarray[i], i);
-		getSIDA().addString (associationarray[i], i);
-	}
-}
-
-void	CCallbackNetBase::displayAllMyAssociations ()
-{
-	checkThreadId ();
-
-	_OutputSIDA.display ();
 }
 
 void	CCallbackNetBase::authorizeOnly (const char *callbackName, TSockId hostid)

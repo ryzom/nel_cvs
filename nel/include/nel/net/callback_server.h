@@ -1,7 +1,7 @@
 /** \file callback_server.h
  * Network engine, layer 3, server
  *
- * $Id: callback_server.h,v 1.15 2003/02/07 16:07:56 lecroart Exp $
+ * $Id: callback_server.h,v 1.16 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -46,7 +46,7 @@ class CCallbackServer : public CCallbackNetBase, public CBufServer
 public:
 
 	/// Constructor
-	CCallbackServer( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true );
+	CCallbackServer( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true, bool initPipeForDataAvailable=true );
 
 	/// Sends a message to the specified host
 	void	send (const CMessage &buffer, TSockId hostid, bool log = true);

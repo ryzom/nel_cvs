@@ -1,7 +1,7 @@
 /** \file buf_server.cpp
  * Network engine, layer 1, server
  *
- * $Id: buf_server.cpp,v 1.44 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: buf_server.cpp,v 1.45 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -56,7 +56,7 @@ uint32 	NbServerReceiveTask = 0;
  * Constructor
  */
 CBufServer::CBufServer( TThreadStategy strategy,
-	uint16 max_threads, uint16 max_sockets_per_thread, bool nodelay, bool replaymode ) :
+	uint16 max_threads, uint16 max_sockets_per_thread, bool nodelay, bool replaymode, bool initPipeForDataAvailable ) :
 	CBufNetBase(),
 	_NoDelay( nodelay ),
 	_ThreadStrategy( strategy ),
@@ -84,6 +84,12 @@ CBufServer::CBufServer( TThreadStategy strategy,
 		CSynchronized<uint32>::CAccessor syncbpi ( &_BytesPushedIn );
 		syncbpi.value() = 0;
 	}*/
+
+#ifdef NL_OS_UNIX
+	if ( initPipeForDataAvailable )
+		if ( ::pipe( _DataAvailablePipeHandle ) != 0 )
+			nlwarning( "Unable to create D.A. pipe" );
+#endif
 }
 
 
@@ -399,7 +405,14 @@ bool CBufServer::dataAvailable()
 				
 			// Normal message available
 			case CBufNetBase::User:
-				return true; // return immediatly, do not extract the message
+			{
+#ifdef NL_OS_UNIX
+				uint8 b;
+				if ( read( _DataAvailablePipeHandle[PipeRead], &b, 1 ) == -1 )
+					nlwarning( "LNETL1: Read pipe failed in dataAvailable" );
+#endif
+				return true; // return immediately, do not extract the message
+			}
 
 			// Process disconnection event
 			case CBufNetBase::Disconnection:
@@ -461,102 +474,29 @@ bool CBufServer::dataAvailable()
 }
 
 
-/* // OLD VERSION
-bool CBufServer::dataAvailable()
+#ifdef NL_OS_UNIX
+/* Wait until the receive queue contains something to read (implemented with a select()).
+ * This is where the connection/disconnection callbacks can be called.
+ * \param usecMax Max time to wait in microsecond (up to 1 sec)
+ */
+void	CBufServer::sleepUntilDataAvailable( uint usecMax )
 {
-	// slow down the layer H_AUTO (CBufServer_dataAvailable);
+	fd_set readers;
+	TIMEVAL tv;
+	do
 	{
-		CFifoAccessor recvfifo( &receiveQueue() );
-		do
-		{
-			// Check if the receive queue is empty
-			if ( recvfifo.value().empty() )
-			{
-				return false;
-			}
-			else
-			{
-			  //sint32 mbsize = recvfifo.value().size() / 1048576;
-			  //if ( mbsize > 0 )
-			    //{
-			    //  nlwarning( "The receive queue size exceeds %d MB", mbsize );
-			    //}
-
-				uint8 val = recvfifo.value().frontLast();
-				
-				//vector<uint8> buffer;
-				//recvfifo.value().front( buffer );
-
-				// Test if it the next block is a system event
-				//switch ( buffer[buffer.size()-1] )
-				switch ( val )
-				{
-					
-				// Normal message available
-				case CBufNetBase::User:
-					return true; // return immediatly, do not extract the message
-
-				// Process disconnection event
-				case CBufNetBase::Disconnection:
-				{
-					vector<uint8> buffer;
-					recvfifo.value().front( buffer );
-
-					TSockId sockid = *((TSockId*)(&*buffer.begin()));
-					nldebug( "LNETL1: Disconnection event for %p %s", sockid, sockid->asString().c_str());
-
-					sockid->setConnectedState( false );
-
-					// Call callback if needed
-					if ( disconnectionCallback() != NULL )
-					{
-						disconnectionCallback()( sockid, argOfDisconnectionCallback() );
-					}
-
-					// Add socket object into the synchronized remove list
-					nldebug( "LNETL1: Adding the connection to the remove list" );
-					nlassert( ((CServerBufSock*)sockid)->ownerTask() != NULL );
-					((CServerBufSock*)sockid)->ownerTask()->addToRemoveSet( sockid );
-					break;
-				}
-				// Process connection event
-				case CBufNetBase::Connection:
-				{
-					vector<uint8> buffer;
-					recvfifo.value().front( buffer );
-
-					TSockId sockid = *((TSockId*)(&*buffer.begin()));
-					nldebug( "LNETL1: Connection event for %p %s", sockid, sockid->asString().c_str());
-
-					sockid->setConnectedState( true );
-					
-					// Call callback if needed
-					if ( connectionCallback() != NULL )
-					{
-						connectionCallback()( sockid, argOfConnectionCallback() );
-					}
-					break;
-				}
-				default:
-					vector<uint8> buffer;
-					recvfifo.value().front( buffer );
-
-					nlinfo( "LNETL1: Invalid block type: %hu (should be = to %hu", (uint16)(buffer[buffer.size()-1]), (uint16)(val) );
-					nlinfo( "LNETL1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
-					nlinfo( "LNETL1: Receive queue:" );
-					recvfifo.value().display();
-					nlerror( "LNETL1: Invalid system event type in server receive queue" );
-
-				}
-
-				// Extract system event
-				recvfifo.value().pop();
-			}
-		}
-		while ( true );
+		FD_ZERO( &readers );
+		FD_SET( _DataAvailablePipeHandle[PipeRead], &readers );
+		tv.tv_sec = 0;
+		tv.tv_usec = usecMax;
+		int res = ::select( _DataAvailablePipeHandle[PipeRead]+1, &readers, NULL, NULL, &tv );
+		if ( res == -1 )
+			nlerror( "LNETL1: Select failed in sleepUntilDataAvailable (code %u)", CSock::getLastError() );
 	}
+	while ( ! dataAvailable() ); // will loop if only a connection/disconnection event was read
 }
-*/
+#endif
+
  
 /*
  * Receives next block of data in the specified. The length and hostid are output arguments.
@@ -786,7 +726,6 @@ void CListenTask::run()
 #ifdef NL_OS_UNIX
 	SOCKET descmax;
 	fd_set readers;
-	timeval tv;
 	descmax = _ListenSock.descriptor()>_WakeUpPipeHandle[PipeRead]?_ListenSock.descriptor():_WakeUpPipeHandle[PipeRead];
 #endif
 
@@ -800,13 +739,11 @@ void CListenTask::run()
 			FD_ZERO( &readers );
 			FD_SET( _ListenSock.descriptor(), &readers );
 			FD_SET( _WakeUpPipeHandle[PipeRead], &readers );
-			tv.tv_sec = 60; /// \todo ace: we perhaps could put NULL to never wake up the select (look at the select man page)
-			tv.tv_usec = 0;
-			int res = ::select( descmax+1, &readers, NULL, NULL, &tv );
+			int res = ::select( descmax+1, &readers, NULL, NULL, NULL ); /// Wait indefinitely
 
 			switch ( res )
 			{
-			case  0 : continue; // time-out expired, no results
+			//case  0 : continue; // time-out expired, no results
 			case -1 :
 				// we'll ignore message (Interrupted system call) caused by a CTRL-C
 				if (CSock::getLastError() == 4)
@@ -993,11 +930,9 @@ void CServerReceiveTask::run()
 	SOCKET descmax;
 	fd_set readers;
 
-	// Time-out value for select (it can be long because we do not do any thing else in this thread)
-	timeval tv;
 #if defined NL_OS_UNIX
 	// POLL7
-	nice( 2 );
+	nice( 2 ); // is this really useful as long as select() sleeps?
 #endif // NL_OS_UNIX
 	
 	// Copy of _Connections
@@ -1067,25 +1002,30 @@ void CServerReceiveTask::run()
 #endif
 
 #ifdef NL_OS_WINDOWS
+		TIMEVAL tv;
 		tv.tv_sec = 0; // short time because the newly added connections can't be added to the select fd_set
-		tv.tv_usec = 10000; // NEW: set to 500ms because otherwise new connections handling are too slow
-#elif defined NL_OS_UNIX
-		// POLL7
-		tv.tv_sec = 3600;		// 1 hour (=> 1 select every 3.6 second for 1000 connections)
-		tv.tv_usec = 0;
-#endif // NL_OS_WINDOWS
+		tv.tv_usec = 10000;
 
 		// Call select
 		int res = ::select( descmax+1, &readers, NULL, NULL, &tv );
+
+#elif defined NL_OS_UNIX
+
+		// Call select
+		int res = ::select( descmax+1, &readers, NULL, NULL, NULL );
+
+#endif // NL_OS_WINDOWS
+
 
 		// POLL9
 
 		// 3. Test the result
 		switch ( res )
 		{
+#ifdef NL_OS_WINDOWS
 			case  0 : continue; // time-out expired, no results
-
-			/// \todo cado: the error code is not properly retrieved
+#endif
+			/// \todo the error code is not properly retrieved
 			case -1 :
 				// we'll ignore message (Interrupted system call) caused by a CTRL-C
 				/*if (CSock::getLastError() == 4)
@@ -1116,19 +1056,12 @@ void CServerReceiveTask::run()
 						// Push message into receive queue
 						//uint32 bufsize;
 						//sint32 mbsize;
-						{
-							//nldebug( "RCV: Acquiring the receive queue... ");
-							CFifoAccessor recvfifo( &_Server->receiveQueue() );
-							//nldebug( "RCV: Acquired, pushing the received buffer... ");
-							recvfifo.value().push( serverbufsock->receivedBuffer() );
 
-							_Server->setDataAvailableFlag( true );
+						_Server->pushMessageIntoReceiveQueue( serverbufsock->receivedBuffer() );
 
-							//nldebug( "RCV: Pushed, releasing the receive queue..." );
-							//recvfifo.value().display();
-							//bufsize = serverbufsock->receivedBuffer().size();
-							//mbsize = recvfifo.value().size() / 1048576;
-						}
+						//recvfifo.value().display();
+						//bufsize = serverbufsock->receivedBuffer().size();
+						//mbsize = recvfifo.value().size() / 1048576;
 						//nldebug( "RCV: Released." );
 						/*if ( mbsize > 1 )
 						{

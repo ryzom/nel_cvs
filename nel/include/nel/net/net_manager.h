@@ -1,7 +1,7 @@
 /** \file net_manager.h
  * Network engine, layer 4
  *
- * $Id: net_manager.h,v 1.17 2002/10/24 08:44:22 lecroart Exp $
+ * $Id: net_manager.h,v 1.18 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -125,7 +125,7 @@ public:
 	static void	addGroup (const std::string &groupName, const std::string &serviceName);
 
 	/// Adds a callback array to a specific service connection. You can add callback only *after* adding the server, the client or the group
-	static void	addCallbackArray (const std::string &serviceName, const TCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
+	static void	addCallbackArray (const std::string &serviceName, const TCallbackItem *callbackarray, sint arraysize);
 
 	/** Call it evenly. the parameter select the timeout value in milliseconds for each update. You are absolutely certain that this
 	 * function will not be returns before this amount of time you set.
@@ -148,9 +148,6 @@ public:
 		On a server, the callback is called each time a client is disconnected
 	 */
 	static void	setDisconnectionCallback (const std::string &serviceName, TNetManagerCallback cb, void *arg);
-
-	/// Use this function to get the String ID Array needed when you want to create a message
-	static NLMISC::CStringIdArray	&getSIDA (const std::string &serviceName);
 
 	/// Returns the connection if you want to do specific calls
 	static CCallbackNetBase *getNetBase (const std::string &serviceName);

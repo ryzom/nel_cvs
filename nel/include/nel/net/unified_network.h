@@ -1,7 +1,7 @@
 /** \file unified_network.h
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.h,v 1.42 2004/03/15 15:17:23 cado Exp $
+ * $Id: unified_network.h,v 1.43 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -105,7 +105,7 @@ public:
 
 	/** Adds a callback array in the system. You can add callback only *after* adding the server, the client or the group.
 	 */
-	void	addCallbackArray (const TUnifiedCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize);
+	void	addCallbackArray (const TUnifiedCallbackItem *callbackarray, sint arraysize);
 
 	/** Call it evenly. the parameter select the timeout value in seconds for each update. You are absolutely certain that this
 	 * function will not be returns before this amount of time you set.
@@ -420,6 +420,18 @@ private:
 		}
 	};
 
+protected:
+
+	/// Auto-reconnect
+	void				autoReconnect( CUnifiedConnection &uc, uint connectionIndex );
+
+#ifdef NL_OS_UNIX
+	/// Sleep (implemented by select())
+	void				sleepUntilDataAvailable( TTime msecMax );
+#endif
+
+private:
+
 	/// Vector of connections by service id (sid is the entry in this array, it means that there s some hole)
 	std::vector<CUnifiedConnection>				_IdCnx;
 
@@ -432,9 +444,6 @@ private:
 	/// The callback server
 	CCallbackServer								*_CbServer;
 
-	/// The server port
-	uint16										_ServerPort;
-
 	/// Map of the up/down service callbacks
 	TNameMappedCallback							_UpCallbacks;
 	std::vector<TCallbackArgItem>				_UpUniCallback;
@@ -444,14 +453,14 @@ private:
 	/// Recording state
 	CCallbackNetBase::TRecordingState			_RecordingState;
 
-	/// Service id of the running service
-	TServiceId									_SId;
-
 	/// Service name
 	std::string									_Name;
 
 	/// Map of callbacks
 	TMsgMappedCallback							_Callbacks;
+
+	/// The server port
+	uint16										_ServerPort;
 
 	/// Used for external service
 	uint16										_ExtSId;
@@ -468,15 +477,23 @@ private:
 	/// Naming service
 	NLNET::CInetAddress							_NamingServiceAddr;
 
-	/// true if initialisation function called
-	bool										_Initialised;
-
 	/// for each nid, which network address
 	std::vector<uint32>							_NetworkAssociations;
 
 	/// for each services, which network to take
 	std::vector<std::string>					_DefaultNetwork;
-	
+
+#ifdef NL_OS_UNIX
+	/// Pipe to select() on data available (shared among all connections)
+	int											_MainDataAvailablePipe [2];
+#endif
+
+	/// Service id of the running service
+	TServiceId									_SId;
+
+	/// true if initialisation function called
+	bool										_Initialised;
+
 	//
 	CUnifiedNetwork() : _CbServer(0), _ExtSId(256), _LastRetry(0), _NextUpdateTime(0), _Initialised(false)
 	{

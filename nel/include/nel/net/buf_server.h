@@ -1,7 +1,7 @@
 /** \file buf_server.h
  * Network engine, layer 1, server
  *
- * $Id: buf_server.h,v 1.15 2003/02/07 16:07:56 lecroart Exp $
+ * $Id: buf_server.h,v 1.16 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -161,11 +161,13 @@ public:
 
 	/** Constructor
 	 * Set nodelay to true to disable the Nagle buffering algorithm (see CTcpSock documentation)
+	 * initPipeForDataAvailable is for Linux only. Set it to false if you provide an external pipe with
+	 * setExternalPipeForDataAvailable().
 	 */
 	CBufServer( TThreadStategy strategy=DEFAULT_STRATEGY,
 				uint16 max_threads=DEFAULT_MAX_THREADS,
 				uint16 max_sockets_per_thread=DEFAULT_MAX_SOCKETS_PER_THREADS,
-				bool nodelay=true, bool replaymode=false );
+				bool nodelay=true, bool replaymode=false, bool initPipeForDataAvailable=true );
 
 	/// Destructor
 	virtual ~CBufServer();
@@ -195,10 +197,18 @@ public:
 	 */
 	bool	dataAvailable();
 
-	/** Receives next block of data in the specified (resizes the vector)
-	 * You must call dataAvailable() before every call to receive()
+#ifdef NL_OS_UNIX
+	/** Wait until the receive queue contains something to read (implemented with a select()).
+	 * This is where the connection/disconnection callbacks can be called.
+	 * If you use this method (blocking scheme), don't use dataAvailable() (non-blocking scheme).
+	 * \param usecMax Max time to wait in microsecond (up to 1 sec)
 	 */
-	//void	receive( std::vector<uint8>& buffer, TSockId* hostid );
+	void	sleepUntilDataAvailable( uint usecMax=100000 );
+#endif
+
+	/** Receives next block of data in the specified (resizes the vector)
+	 * You must call dataAvailable() or sleepUntilDataAvailable() before every call to receive()
+	 */
 	void	receive( NLMISC::CMemStream& buffer, TSockId* hostid );
 
 	/// Update the network (call this method evenly)
@@ -319,9 +329,6 @@ protected:
 
 private:
 
-	/// TCP_NODELAY
-	bool							_NoDelay;
-
 	/// Thread socket-handling strategy
 	TThreadStategy					_ThreadStrategy;
 
@@ -365,6 +372,9 @@ private:
 
 	/// Number of connections (debug stat)
 	uint32							_NbConnections;
+
+	/// TCP_NODELAY
+	bool							_NoDelay;
 
 	/// Replay mode flag
 	bool							_ReplayMode;

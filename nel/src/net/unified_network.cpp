@@ -1,7 +1,7 @@
 /** \file unified_network.cpp
  * Network engine, layer 5 with no multithread support
  *
- * $Id: unified_network.cpp,v 1.78 2004/04/30 18:46:33 distrib Exp $
+ * $Id: unified_network.cpp,v 1.79 2004/05/07 12:56:22 cado Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -48,7 +48,10 @@ static const uint64 AppIdDeadConnection = 0xDEAD;
 
 static uint32 TotalCallbackCalled = 0;
 
-CVariable<uint32> UseYieldMethod( "UseYieldMethod", "0=Nothing 1=Yield 2=nanosleep 3=usleep", 3, 0, true );
+#ifdef NL_OS_UNIX
+/// Yield method (Unix only)
+CVariable<uint32> UseYieldMethod( "UseYieldMethod", "0=select 1=usleep 2=nanosleep 3=sched_yield 4=none", 0, 0, true );
+#endif
 
 #define AUTOCHECK_DISPLAY nlwarning
 //#define AUTOCHECK_DISPLAY CUnifiedNetwork::getInstance()->displayInternalTables (), nlerror
@@ -518,13 +521,22 @@ bool	CUnifiedNetwork::init(const CInetAddress *addr, CCallbackNetBase::TRecordin
 			port = CNamingClient::queryServicePort ();
 	}
 
+#ifdef NL_OS_UNIX
+	/// Init the main pipe to select() on data available
+	if ( ::pipe( _MainDataAvailablePipe ) != 0 )
+		nlwarning( "Unable to create main D.A. pipe" );
+#endif
+
 	// setup the server callback only if server port != 0, otherwise there's no server callback
 	_ServerPort = port;
 
 	if(_ServerPort != 0)
 	{
 		nlassert (_CbServer == 0);
-		_CbServer = new CCallbackServer;
+		_CbServer = new CCallbackServer( CCallbackNetBase::Off, "", true, false ); // don't init one pipe per connection
+#ifdef NL_OS_UNIX
+		_CbServer->setExternalPipeForDataAvailable( _MainDataAvailablePipe ); // the main pipe is shared for all connections
+#endif
 		_CbServer->init(port);
 		_CbServer->addCallbackArray(unServerCbArray, 1);				// the service ident callback
 		_CbServer->setDefaultCallback(uncbMsgProcessing);				// the default callback wrapper
@@ -743,8 +755,11 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 			}
 		}
 
-		// create a new connection with the service, setup callback and connect
-		CCallbackClient	*cbc = new CCallbackClient();
+		// Create a new connection with the service, setup callback and connect
+		CCallbackClient	*cbc = new CCallbackClient( CCallbackNetBase::Off, "", true, false ); // don't init one pipe per connection
+#ifdef NL_OS_UNIX
+		cbc->setExternalPipeForDataAvailable( _MainDataAvailablePipe ); // the main pipe is shared for all connections
+#endif
 		cbc->setDisconnectionCallback(uncbDisconnection, NULL);
 		cbc->setDefaultCallback(uncbMsgProcessing);
 		cbc->getSockId()->setAppId(sid);
@@ -860,6 +875,9 @@ void	CUnifiedNetwork::addService(const string &name, const vector<CInetAddress> 
 	tick += (_time_block_after - _before); \
 }
 
+/*
+ *
+ */
 void	CUnifiedNetwork::update(TTime timeout)
 {
 	H_AUTO(CUnifiedNetworkUpdate);
@@ -963,66 +981,7 @@ void	CUnifiedNetwork::update(TTime timeout)
 				}
 				else if (enableRetry && uc.AutoRetry)
 				{
-					H_AUTO(L5AutoReconnect);
-					try
-					{
-						CCallbackClient *cbc = (CCallbackClient *)uc.Connection[j].CbNetBase;
-						cbc->connect(uc.ExtAddress[j]);
-						uc.Connection[j].CbNetBase->getSockId()->setAppId(uc.ServiceId);
-						nlinfo ("HNETL5: reconnection to %s-%hu success", uc.ServiceName.c_str(), uc.ServiceId);
-
-
-						// add the name only if at least one connection is ok
-						if (!haveNamedCnx (uc.ServiceName, uc.ServiceId))
-							addNamedCnx (uc.ServiceName, uc.ServiceId);
-
-						// resend the identification is necessary
-						if (uc.SendId)
-						{
-							// send identification to the service
-							CMessage	msg("UN_SIDENT");
-							msg.serial(_Name);
-
-							uint16		ssid = _SId;
-							if (uc.IsExternal)
-							{
-								// in the case that the service is external, we can't send our sid because the external service can
-								// have other connection with the same sid (for example, LS can have 2 WS with same sid => sid = 0 and leave
-								// the other side to find a good number
-								ssid = 0;
-							}
-							msg.serial(ssid);	// serializes a 16 bits service id
-							uint8 pos = j;
-							msg.serial(pos);	// send the position in the connection table
-							msg.serial (uc.IsExternal);
-							uc.Connection[j].CbNetBase->send (msg, uc.Connection[j].HostId);
-						}
-
-						// call the user callback
-						callServiceUpCallback (uc.ServiceName, uc.ServiceId);
-						/*
-						CUnifiedNetwork::TNameMappedCallback::iterator	it = _UpCallbacks.find(uc.ServiceName);
-						if (it != _UpCallbacks.end())
-						{
-							// call it
-							for (list<TCallbackArgItem> it2 = (*it).second.begin(); it2 != (*it).second.end(); it2++)
-							{
-								TUnifiedNetCallback	cb = (*it2).first;
-								if (cb) cb(uc.ServiceName, uc.ServiceId, (*it2).second);
-							}
-						}
-
-						for (uint c = 0; c < _UpUniCallback.size (); c++)
-						{
-							if (_UpUniCallback[c].first != NULL)
-								_UpUniCallback[c].first (uc.ServiceName, uc.ServiceId, _UpUniCallback[c].second);
-						}
-						*/
-					}
-					catch (ESocketConnectionFailed &e)
-					{
-						nlinfo ("HNETL5: can't connect to %s-%hu now (%s)", uc.ServiceName.c_str(), uc.ServiceId, e.what ());
-					}
+					autoReconnect( uc, j );
 				}
 			}
 		}
@@ -1030,26 +989,158 @@ void	CUnifiedNetwork::update(TTime timeout)
 		enableRetry = false;
 
 		// If it's the end, don't nlSleep()
-		if (CTime::getLocalTime() - t0 > timeout)
+		TTime remainingTime = t0 + timeout - CTime::getLocalTime();
+		if ( remainingTime <= 0 )
 			break;
 		
 #ifdef NL_OS_WINDOWS
 		// Enable windows multithreading before rescanning all connections
 		H_TIME(L5UpdateSleep, nlSleep(1);); // 0 (yield) would be too harmful to other applications
 #else
+
+		// Sleep until the time expires or we receive a message
+		H_BEFORE(L5UpdateSleep);
 		switch ( UseYieldMethod.get() )
 		{
-		case 0: break;
-		case 1:	sched_yield(); break; // makes all slow!
-		case 2: { H_TIME(L5UpdateSleep, nlSleep(1);); break; }
-		default: { H_TIME(L5UpdateSleep, usleep(1000);); break; }
+		case 0: sleepUntilDataAvailable( remainingTime ); break; // accurate sleep
+		case 1: ::usleep(1000); break; // 20 ms
+		case 2: nlSleep(1); break; // 10 ms (by nanosleep, but 20 ms measured)
+		case 3:	::sched_yield(); break; // makes all slow (kernel 2.4.20) !
+		default: break; // don't sleep at all, makes all slow!
 		}
+		H_AFTER(L5UpdateSleep);
+
 #endif
 	}
 	H_AFTER(UNUpdateCnx);
 
 	H_TIME(UNAutoCheck, autoCheck(););
 }
+
+
+/*
+ * Auto-reconnect
+ */
+void CUnifiedNetwork::autoReconnect( CUnifiedConnection &uc, uint connectionIndex )
+{
+	H_AUTO(L5AutoReconnect);
+	try
+	{
+		CCallbackClient *cbc = (CCallbackClient *)uc.Connection[connectionIndex].CbNetBase;
+		cbc->connect(uc.ExtAddress[connectionIndex]);
+		uc.Connection[connectionIndex].CbNetBase->getSockId()->setAppId(uc.ServiceId);
+		nlinfo ("HNETL5: reconnection to %s-%hu success", uc.ServiceName.c_str(), uc.ServiceId);
+
+		// add the name only if at least one connection is ok
+		if (!haveNamedCnx (uc.ServiceName, uc.ServiceId))
+			addNamedCnx (uc.ServiceName, uc.ServiceId);
+
+		// resend the identification is necessary
+		if (uc.SendId)
+		{
+			// send identification to the service
+			CMessage	msg("UN_SIDENT");
+			msg.serial(_Name);
+
+			uint16		ssid = _SId;
+			if (uc.IsExternal)
+			{
+				// in the case that the service is external, we can't send our sid because the external service can
+				// have other connection with the same sid (for example, LS can have 2 WS with same sid => sid = 0 and leave
+				// the other side to find a good number
+				ssid = 0;
+			}
+			msg.serial(ssid);	// serializes a 16 bits service id
+			uint8 pos = connectionIndex;
+			msg.serial(pos);	// send the position in the connection table
+			msg.serial (uc.IsExternal);
+			uc.Connection[connectionIndex].CbNetBase->send (msg, uc.Connection[connectionIndex].HostId);
+		}
+
+		// call the user callback
+		callServiceUpCallback (uc.ServiceName, uc.ServiceId);
+		/*
+		CUnifiedNetwork::TNameMappedCallback::iterator	it = _UpCallbacks.find(uc.ServiceName);
+		if (it != _UpCallbacks.end())
+		{
+			// call it
+			for (list<TCallbackArgItem> it2 = (*it).second.begin(); it2 != (*it).second.end(); it2++)
+			{
+				TUnifiedNetCallback	cb = (*it2).first;
+				if (cb) cb(uc.ServiceName, uc.ServiceId, (*it2).second);
+			}
+		}
+
+		for (uint c = 0; c < _UpUniCallback.size (); c++)
+		{
+			if (_UpUniCallback[c].first != NULL)
+				_UpUniCallback[c].first (uc.ServiceName, uc.ServiceId, _UpUniCallback[c].second);
+		}
+		*/
+	}
+	catch (ESocketConnectionFailed &e)
+	{
+		nlinfo ("HNETL5: can't connect to %s-%hu now (%s)", uc.ServiceName.c_str(), uc.ServiceId, e.what ());
+	}
+}
+
+#ifdef NL_OS_UNIX
+/*
+ *
+ */
+void CUnifiedNetwork::sleepUntilDataAvailable( TTime msecMax )
+{
+	// Prepare for select()
+	TIMEVAL tv;
+	SOCKET descmax = 0;
+	fd_set readers;
+	FD_ZERO( &readers );
+	/*
+	// Code that would select on one pipe per CCallbackNetBase object. Not needed because we don't check
+	// which socket state changed.
+	if ( _CbServer )
+	{
+		// Include the main server queue in the check list
+		int pipeDesc = _CbServer->dataAvailablePipeReadHandle();
+		FD_SET(	pipeDesc, &readers );
+		if ( pipeDesc > descmax )
+			descmax = pipeDesc;
+	}
+	for ( uint k = 0; k!=_UsedConnection.size(); ++k )
+	{
+		// Include all client queues in the check list
+		CUnifiedConnection &uc = _IdCnx[_UsedConnection[k]];
+		nlassert (uc.State == CUnifiedNetwork::CUnifiedConnection::Ready);
+		for (uint j = 0; j < uc.Connection.size (); j++)
+		{
+			if (!uc.Connection[j].valid())
+				continue;
+
+			if (uc.Connection[j].IsServerConnection)
+				continue;
+
+			if (uc.Connection[j].CbNetBase->connected ())
+			{
+				int pipeDesc = uc.Connection[j].CbNetBase->dataAvailablePipeReadHandle();
+				FD_SET( pipeDesc, &readers );
+				if ( pipeDesc > descmax )
+					descmax = pipeDesc;
+			}
+		}
+	}*/
+	FD_SET( _MainDataAvailablePipe[PipeRead], &readers );
+	descmax = _MainDataAvailablePipe[PipeRead] + 1;
+
+	// Select
+	TIMEVAL tv;
+	tv.tv_sec = 0;
+	tv.tv_usec = msecMax * 1000;
+	int res = ::select( descmax+1, &readers, NULL, NULL, &tv );
+	if ( res == -1 )
+		nlwarning( "HNETL5: Select failed in sleepUntilDataAvailable");
+}
+#endif
+
 
 //
 //
@@ -1067,7 +1158,7 @@ uint8 CUnifiedNetwork::findConnectionId (uint16 sid, uint8 nid)
 
 	if (nid == 0xFF)
 	{
-		// it s often appen because they didn't set a good network configuration, so it s in debug to disable it easily
+		// it s often happen because they didn't set a good network configuration, so it s in debug to disable it easily
 		//nldebug ("HNETL5: nid %hu, will use the default connection %hu", (uint16)nid, (uint16)connectionId);
 	}
 	else if (nid >= _IdCnx[sid].NetworkConnectionAssociations.size())
@@ -1168,7 +1259,7 @@ bool	CUnifiedNetwork::send(uint16 sid, const CMessage &msgout, uint8 nid)
 
 	if (sid >= _IdCnx.size () || _IdCnx[sid].State != CUnifiedNetwork::CUnifiedConnection::Ready)
 	{
-		// happen when trying to send a message to an unknown service id
+		// Happens when trying to send a message to an unknown service id
 		nlwarning ("HNETL5: Can't send to the service '%hu' because not in _IdCnx", sid);
 		return false;
 	}
@@ -1212,7 +1303,7 @@ void	CUnifiedNetwork::sendAll(const CMessage &msgout, uint8 nid)
 //
 //
 
-void	CUnifiedNetwork::addCallbackArray (const TUnifiedCallbackItem *callbackarray, CStringIdArray::TStringId arraysize)
+void	CUnifiedNetwork::addCallbackArray (const TUnifiedCallbackItem *callbackarray, sint arraysize)
 {
 	uint	i;
 

@@ -1,7 +1,7 @@
 /** \file callback_client.h
  * Network engine, layer 3, client
  *
- * $Id: callback_client.h,v 1.15 2003/02/07 16:07:56 lecroart Exp $
+ * $Id: callback_client.h,v 1.16 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -48,7 +48,7 @@ class CCallbackClient : public CCallbackNetBase, public CBufClient
 public:
 
 	/// Constructor
-	CCallbackClient( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true );
+	CCallbackClient( TRecordingState rec=Off, const std::string& recfilename="", bool recordall=true, bool initPipeForDataAvailable=true );
 
 	/// Sends a message to the remote host (the second parameter isn't used)
 	void	send (const CMessage &buffer, TSockId hostid = InvalidSockId, bool log = true);

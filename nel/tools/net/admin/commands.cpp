@@ -1,7 +1,7 @@
 /** \file coammnds.cpp
  * 
  *
- * $Id: commands.cpp,v 1.7 2002/03/26 09:44:58 lecroart Exp $
+ * $Id: commands.cpp,v 1.8 2004/05/07 12:56:22 cado Exp $
  *
  * contains all admin commands
  *
@@ -77,7 +77,7 @@ NLMISC_COMMAND (startService, "start a service", "<asid> <aesid> <service_alias>
 		return false;
 	}
 
-	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "STARTS");
+	CMessage msgout ("STARTS");
 	msgout.serial (aesid);
 	msgout.serial (const_cast<string &>(args[2]));
 	CNetManager::send ((*asit).ASAddr, msgout);
@@ -114,7 +114,7 @@ NLMISC_COMMAND (stopService, "stop a service", "<asid> <aesid> <sid>")
 		return false;
 	}
 
-	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "STOPS");
+	CMessage msgout ("STOPS");
 	msgout.serial (aesid);
 	msgout.serial (sid);
 	CNetManager::send ((*asit).ASAddr, msgout);
@@ -161,7 +161,7 @@ NLMISC_COMMAND (ec, "execute a command on a service", "<asid> <aesid> <sid> <com
 	for (uint32 i = 3; i < args.size(); i++)
 		command += args[i] + " ";
 
-	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "EXEC_COMMAND");
+	CMessage msgout ("EXEC_COMMAND");
 	msgout.serial (aesid);
 	msgout.serial (sid);
 	msgout.serial (command);
@@ -190,7 +190,7 @@ NLMISC_COMMAND (sys, "execute a system command", "<asid> <aesid> <command>")
 		return false;
 	}
 
-	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "SYS");
+	CMessage msgout ("SYS");
 	msgout.serial (aesid);
 	msgout.serial (const_cast<string &>(args[2]));
 	CNetManager::send ((*asit).ASAddr, msgout);
@@ -224,7 +224,7 @@ NLMISC_COMMAND (startAllServices, "start all services on a as", "<asid>")
 		nlwarning ("couldn't run all service, asid %d is not connected", asid);
 	}
 
-	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "START_ALL_SERVICES");
+	CMessage msgout ("START_ALL_SERVICES");
 	CNetManager::send ((*asit).ASAddr, msgout);
 
 	return true;
@@ -247,7 +247,7 @@ NLMISC_COMMAND (stopAllServices, "stop all services on a as", "<asid>")
 		nlwarning ("couldn't run all service, asid %d is not connected", asid);
 	}
 
-	CMessage msgout (CNetManager::getSIDA((*asit).ASAddr), "STOP_ALL_SERVICES");
+	CMessage msgout ("STOP_ALL_SERVICES");
 	CNetManager::send ((*asit).ASAddr, msgout);
 
 	return true;

@@ -1,7 +1,7 @@
 /** \file buf_client.h
  * Network engine, layer 1, client
  *
- * $Id: buf_client.h,v 1.9 2003/02/07 16:07:56 lecroart Exp $
+ * $Id: buf_client.h,v 1.10 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -94,8 +94,11 @@ class CBufClient : public CBufNetBase
 {
 public:
 
-	/// Constructor. Set nodelay to true to disable the Nagle buffering algorithm (see CTcpSock documentation)
-	CBufClient( bool nodelay=true, bool replaymode=false );
+	/** Constructor. Set nodelay to true to disable the Nagle buffering algorithm (see CTcpSock documentation)
+	 * initPipeForDataAvailable is for Linux only. Set it to false if you provide an external pipe with
+	 * setExternalPipeForDataAvailable().
+	 */
+	CBufClient( bool nodelay=true, bool replaymode=false, bool initPipeForDataAvailable=true );
 
 	/// Destructor
 	virtual ~CBufClient();
@@ -119,6 +122,15 @@ public:
 	 * This is where the connection/disconnection callbacks can be called
 	 */
 	bool	dataAvailable();
+
+#ifdef NL_OS_UNIX
+	/** Wait until the receive queue contains something to read (implemented with a select()).
+	 * This is where the connection/disconnection callbacks can be called.
+	 * If you use this method (blocking scheme), don't use dataAvailable() (non-blocking scheme).
+	 * \param usecMax Max time to wait in microsecond (up to 1 sec)
+	 */
+	void	sleepUntilDataAvailable( uint usecMax=100000 );
+#endif
 
 	/** Receives next block of data in the specified buffer (resizes the vector)
 	 * You must call dataAvailable() before every call to receive()

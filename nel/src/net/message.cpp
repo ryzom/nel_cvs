@@ -1,7 +1,7 @@
 /** \file message.cpp
  * CMessage class
  *
- * $Id: message.cpp,v 1.25 2003/12/29 13:35:56 lecroart Exp $
+ * $Id: message.cpp,v 1.26 2004/05/07 12:56:22 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -45,22 +45,11 @@ const char *LockedSubMessageError = "a sub message is forbidden";
 
 
 /*
- * Constructor by id (disabled)
- */
-CMessage::CMessage (NLMISC::CStringIdArray &sida, const std::string &name, bool inputStream, TStreamFormat streamformat, uint32 defaultCapacity) :
-	NLMISC::CMemStream (inputStream, false, defaultCapacity),
-	TypeHasAnId(false), TypeHasAName(false), _SIDA (&sida), _SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
-{
-	init( name, streamformat );
-}
-
-
-/*
  * Constructor by name
  */
 CMessage::CMessage (const std::string &name, bool inputStream, TStreamFormat streamformat, uint32 defaultCapacity) :
 	NLMISC::CMemStream (inputStream, false, defaultCapacity),
-	TypeHasAnId(false), TypeHasAName(false), _SIDA (NULL), _SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
+	_SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
 {
 	init( name, streamformat );
 }
@@ -90,7 +79,7 @@ void CMessage::init( const std::string &name, TStreamFormat streamformat )
  */
 CMessage::CMessage (NLMISC::CMemStream &memstr) :
 	NLMISC::CMemStream( memstr ),
-	TypeHasAnId(false), TypeHasAName(false), _SIDA (NULL), _SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
+	_SubMessagePosR(0), _LengthR(0), _HeaderSize(0xFFFFFFFF), _TypeSet (false)
 {
 	sint32 pos = getPos();
 	bool reading = isReading();
@@ -122,11 +111,7 @@ CMessage &CMessage::operator= (const CMessage &other)
 
 	CMemStream::operator= (other);
 	_TypeSet = other._TypeSet;
-	_SIDA = other._SIDA;
-	TypeHasAnId = other.TypeHasAnId;
-	TypeHasAName = other.TypeHasAName;
 	_Name = other._Name;
-	_Id = other._Id;
 	_HeaderSize = other._HeaderSize;
 	_SubMessagePosR = other._SubMessagePosR;
 	_LengthR = other._LengthR;
@@ -168,62 +153,6 @@ void CMessage::assignFromSubMessage( const CMessage& msgin )
 
 
 /*
- * Sets the message type as a number (in range 0..32767) and put it in the buffer if we are in writing mode
- */
-void CMessage::setType (NLMISC::CStringIdArray::TStringId id)
-{
-	// PATCH: the id system is not available
-	nlstop;
-
-	// check if we already do a setType ()
-	nlassert (!_TypeSet);
-	// don't accept negative value
-	nlassert (id >= 0 && id < pow(2, sizeof (NLMISC::CStringIdArray::TStringId)*8));
-
-	_Id = id;
-	TypeHasAnId = true;
-	TypeHasAName = false;
-
-	if (!isReading ())
-	{
-		// check if they don't already serial some stuffs
-		nlassert (length () == 0);
-
-		uint8 format = FormatLong | (_StringMode << 1);
-		//nlinfo( "MSG: OUT format = %hu", (uint16)format );
-
-		// Force binary mode for header
-		bool msgmode = _StringMode;
-		_StringMode = false;
-
-		// debug features, we number all packet to be sure that they are all sent and received
-		// \todo remove this debug feature when ok
-		// this value will be fill after in the callback function
-		uint32 zeroValue = 123;
-		serial (zeroValue);
-
-		serial (format);
-
-		// End of binary header
-		_StringMode = msgmode;
-
-		serial (id);
-		_HeaderSize = getPos ();
-	}
-	else
-	{
-		// we set the id, now, we try to set the name if available in the sida
-		if (_SIDA != NULL)
-		{
-			_Name = _SIDA->getString (id);
-			TypeHasAName = true;
-		}
-	}
-
-	_TypeSet = true;
-}
-
-/*
  * Sets the message type as a string and put it in the buffer if we are in writing mode
  */
 void CMessage::setType (const std::string &name)
@@ -234,8 +163,6 @@ void CMessage::setType (const std::string &name)
 	nlassert (!name.empty ());
 
 	_Name = name;
-	TypeHasAnId = false;
-	TypeHasAName = true;
 
 	if (!isReading ())
 	{
@@ -244,9 +171,6 @@ void CMessage::setType (const std::string &name)
 
 		// if we can send the id instead of the string, "just do it" (c)nike!
 		//NLMISC::CStringIdArray::TStringId id = _SIDA->getId (name);
-
-		// PATCH: always send in full text
-		NLMISC::CStringIdArray::TStringId id = -1;
 
 		// Force binary mode for header
 		bool msgmode = _StringMode;
@@ -258,31 +182,15 @@ void CMessage::setType (const std::string &name)
 		uint32 zeroValue = 123;
 		serial (zeroValue);
 
-		if (id == -1)
-		{
-			uint8 format = FormatLong | (msgmode << 1);
-			//nldebug( "OUT format = %hu", (uint16)format );
-			serial (format);
+		uint8 format = FormatLong | (msgmode << 1);
+		//nldebug( "OUT format = %hu", (uint16)format );
+		serial (format);
 
-			// End of binary header
-			_StringMode = msgmode;
+		// End of binary header
+		_StringMode = msgmode;
 
-			serial ((std::string&)name);
-		}
-		else
-		{
-			uint8 format = FormatShort | (msgmode << 1);
-			//nldebug( "MSG: OUT format = %hu", (uint16)format );
-			serial (format);
+		serial ((std::string&)name);
 
-			// End of binary header
-			_StringMode = msgmode;
-
-			serial (id);
-
-			_Id = id;
-			TypeHasAnId = true;
-		}
 		_HeaderSize = getPos ();
 	}
 
@@ -340,18 +248,9 @@ void CMessage::readType ()
 
 	// Set mode for the following of the buffer
 	_StringMode = (format >> 1) & 1;
-	if (LongFormat)
-	{
-		std::string name;
-		serial (name);
-		setType (name);
-	}
-	else
-	{
-		NLMISC::CStringIdArray::TStringId id;
-		serial (id);
-		setType (id);
-	}
+	std::string name;
+	serial (name);
+	setType (name);
 	_HeaderSize = getPos();
 }
 
@@ -421,18 +320,9 @@ std::string CMessage::getName () const
 	}
 	else
 	{
-		nlassert (_TypeSet && TypeHasAName);
+		nlassert (_TypeSet);
 		return _Name;
 	}
-}
-
-/*
- * Returns the type id of this message is available.
- */
-NLMISC::CStringIdArray::TStringId CMessage::getId () const
-{
-	nlassert (_TypeSet && TypeHasAnId);
-	return _Id;
 }
 
 /* Returns a readable string to display it to the screen. It's only for debugging purpose!
@@ -441,16 +331,7 @@ NLMISC::CStringIdArray::TStringId CMessage::getId () const
 std::string CMessage::toString () const
 {
 	nlassert (_TypeSet);
-//	std::stringstream s;
-//	if (TypeHasAName && TypeHasAnId) s << "('" << _Name << "'," << _Id << ")";
-//	else if (TypeHasAName) s << "('" << _Name << "'," << _SIDA->getId (_Name, true) << ")";
-//	else if (TypeHasAnId) s << "('" << _SIDA->getString (_Id) << "'," << _Id << "')";
-//	return s.str();
-	std::string str;
-	if (TypeHasAName && TypeHasAnId) str += "('" + _Name + "'," + NLMISC::toString(_Id) + ")";
-	else if (TypeHasAName) str += "('" + _Name + "'," + NLMISC::toString(_SIDA->getId (_Name, true)) + ")";
-	else if (TypeHasAnId) str += "('" + _SIDA->getString (_Id) + "'," + NLMISC::toString(_Id) + "')";
-	return str;
+	return "('" + _Name + ")";
 }
 
 

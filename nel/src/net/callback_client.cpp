@@ -1,7 +1,7 @@
 /** \file callback_client.cpp
  * Network engine, layer 3, client
  *
- * $Id: callback_client.cpp,v 1.29 2003/12/29 17:29:49 lecroart Exp $
+ * $Id: callback_client.cpp,v 1.30 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -37,34 +37,12 @@ namespace NLNET {
 
 
 /*
- * Callbacks management
- */
-
-static void cbcMessageRecvAllAssociations (CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
-{
-	netbase.getSIDA().ignoreAllUnknownId (false);
-	cbnbMessageRecvAssociations (msgin, from, netbase);
-}
-
-
-static TCallbackItem ClientMessageAssociationArray[] =
-{
-	{ "RAA", cbcMessageRecvAllAssociations },
-};
-
-
-/*
  * Constructor
  */
-CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfilename, bool recordall ) :
-	CCallbackNetBase( rec, recfilename, recordall ), CBufClient( true, rec==Replay ), SendNextValue(0), ReceiveNextValue(0)
+CCallbackClient::CCallbackClient( TRecordingState rec, const std::string& recfilename, bool recordall, bool initPipeForDataAvailable ) :
+	CCallbackNetBase( rec, recfilename, recordall ), CBufClient( true, rec==Replay, initPipeForDataAvailable ), SendNextValue(0), ReceiveNextValue(0)
 {
 	CBufClient::setDisconnectionCallback (_NewDisconnectionCallback, this);
-
-	// add the callback needed to associate messages with id
-	addCallbackArray (ClientMessageAssociationArray, sizeof (ClientMessageAssociationArray) / sizeof (ClientMessageAssociationArray[0]));
-
-	_InputSIDA.ignoreAllUnknownId (true);
 
 	_IsAServer = false;
 	_DefaultCallback = NULL;

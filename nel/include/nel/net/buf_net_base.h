@@ -1,7 +1,7 @@
 /** \file buf_net_base.h
  * Network engine, layer 1, base
  *
- * $Id: buf_net_base.h,v 1.12 2003/08/12 16:45:43 cado Exp $
+ * $Id: buf_net_base.h,v 1.13 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,6 +81,19 @@ public:
 	/// Destructor
 	virtual ~CBufNetBase() {};
 
+#ifdef NL_OS_UNIX
+	/** Init the pipe for data available with an external pipe.
+	 * Call it only if you set initPipeForDataAvailable to false in the constructor.
+	 * Then don't call sleepUntilDataAvailable() but use select() on the pipe.
+	 * The pipe will be written one byte when receiving a message.
+	 */
+	void	setExternalPipeForDataAvailable( int *twoPipeHandles )
+	{
+		_DataAvailablePipeHandle[PipeRead] = twoPipeHandles[PipeRead];
+		_DataAvailablePipeHandle[PipeWrite] = twoPipeHandles[PipeWrite];
+	}
+#endif
+
 	/// Sets callback for detecting a disconnection (or NULL to disable callback)
 	void	setDisconnectionCallback( TNetCallback cb, void* arg ) { _DisconnectionCallback = cb; _DisconnectionCbArg = arg; }
 
@@ -143,6 +156,14 @@ public:
 		return _MaxSentBlockSize;
 	}
 
+#ifdef NL_OS_UNIX
+	/**
+	 * Return the handle for reading the 'data available pipe'. Use it if you want to do a select on
+	 * multiple CBufNetClient/CBufNetServer objects (then, don't call sleepUntilDataAvailable() on them).
+	 */
+	int		dataAvailablePipeReadHandle() const { return _DataAvailablePipeHandle[PipeRead]; }
+#endif
+
 protected:
 
 	friend class NLNET::CBufSock;
@@ -151,53 +172,20 @@ protected:
 	CBufNetBase();
 
 	/// Access to the receive queue
-	CSynchronizedFIFO& receiveQueue() { return _RecvFifo; }
+	CSynchronizedFIFO&	receiveQueue() { return _RecvFifo; }
 
 	/// Returns the disconnection callback
-	TNetCallback	disconnectionCallback() const { return _DisconnectionCallback; }
+	TNetCallback		disconnectionCallback() const { return _DisconnectionCallback; }
 
 	/// Returns the argument of the disconnection callback
-	void*			argOfDisconnectionCallback() const { return _DisconnectionCbArg; }
+	void*				argOfDisconnectionCallback() const { return _DisconnectionCbArg; }
 
 	/// Push message into receive queue (mutexed)
 	// TODO OPTIM never use this function
-	void	pushMessageIntoReceiveQueue( const std::vector<uint8>& buffer )
-	{
-		//sint32 mbsize;
-		{
-			//nldebug( "BNB: Acquiring the receive queue... ");
-			CFifoAccessor recvfifo( &_RecvFifo );
-			//nldebug( "BNB: Acquired, pushing the received buffer... ");
-			recvfifo.value().push( buffer );
-			//nldebug( "BNB: Pushed, releasing the receive queue..." );
-			//mbsize = recvfifo.value().size() / 1048576;
-			setDataAvailableFlag( true );
-		}
-		//nldebug( "BNB: Released." );
-		//if ( mbsize > 1 )
-		//{
-		//	nlwarning( "The receive queue size exceeds %d MB", mbsize );
-		//}
-	}
+	void				pushMessageIntoReceiveQueue( const std::vector<uint8>& buffer );
 
-	void	pushMessageIntoReceiveQueue( const uint8 *buffer, uint32 size)
-	{
-		//sint32 mbsize;
-		{
-			//nldebug( "BNB: Acquiring the receive queue... ");
-			CFifoAccessor recvfifo( &_RecvFifo );
-			//nldebug( "BNB: Acquired, pushing the received buffer... ");
-			recvfifo.value().push( buffer, size );
-			//nldebug( "BNB: Pushed, releasing the receive queue..." );
-			//mbsize = recvfifo.value().size() / 1048576;
-			setDataAvailableFlag( true );
-		}
-		//nldebug( "BNB: Released." );
-		/*if ( mbsize > 1 )
-		{
-			nlwarning( "The receive queue size exceeds %d MB", mbsize );
-		}*/
-	}
+	/// Push message into receive queue (mutexed)
+	void				pushMessageIntoReceiveQueue( const uint8 *buffer, uint32 size );
 
 	/// Sets _DataAvailable
 	void				setDataAvailableFlag( bool da ) { _DataAvailable = da; }
@@ -209,6 +197,11 @@ private:
 
 	/// The receive queue, protected by a mutex-like device
 	CSynchronizedFIFO	_RecvFifo;
+
+#ifdef NL_OS_UNIX
+	/// Pipe to select() on data available
+	int					_DataAvailablePipeHandle [2];
+#endif
 
 	/// True if there is data available (avoids locking a mutex)
 	volatile bool		_DataAvailable;

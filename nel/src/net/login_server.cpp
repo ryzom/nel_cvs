@@ -1,7 +1,7 @@
 /** \file login_server.cpp
  * CLoginServer is the interface used by the front end to *s authenticate users.
  *
- * $Id: login_server.cpp,v 1.33 2004/04/09 17:57:08 lecroart Exp $
+ * $Id: login_server.cpp,v 1.34 2004/05/07 12:56:22 cado Exp $
  *
  */
 
@@ -200,7 +200,7 @@ void cbShardValidation (CMessage &msgin, TSockId from, CCallbackNetBase &netbase
 		cookie.set (rand(), rand(), rand());
 	}
 
-	CMessage msgout2 (netbase.getSIDA (), "SV");
+	CMessage msgout2 ("SV");
 	msgout2.serial (reason);
 	netbase.send (msgout2, from);
 	

@@ -1,7 +1,7 @@
 /** \file net_layer4/ping_service.cpp
  * Layer 4 and IService example
  *
- * $Id: ping_service.cpp,v 1.1 2002/04/17 08:08:32 lecroart Exp $
+ * $Id: ping_service.cpp,v 1.2 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -65,7 +65,7 @@ void cbPing( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	msgin.serial( counter );
 
 	// Output (uses layer 4 but this is not really necessary, see server.cpp in layer 3 example)
-	CMessage msgout( CNetManager::getSIDA( "PS" ), "PONG" );
+	CMessage msgout( "PONG" );
 	msgout.serial( counter );
 	CNetManager::send( "PS", msgout, from );
 

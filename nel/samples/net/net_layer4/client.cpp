@@ -1,7 +1,7 @@
 /** \file net_layer4/client.cpp
  * Layer4 example
  *
- * $Id: client.cpp,v 1.1 2002/04/17 08:08:32 lecroart Exp $
+ * $Id: client.cpp,v 1.2 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -71,7 +71,7 @@ void cbPong( CMessage& msgin, TSockId from, CCallbackNetBase& client )
 	counter++;
 
 	// Output
-	CMessage msgout ( client.getSIDA(), "PING" );
+	CMessage msgout ( "PING" );
 	msgout.serial( counter );
 	CNetManager::send( SVC, msgout );
 	nlinfo( "Sent PING number %u", counter );
@@ -102,7 +102,7 @@ void main( int argc, char **argv )
 
 		// Send a PING message
 		uint32 counter = 0;
-		CMessage msg( CNetManager::getSIDA( SVC ), "PING" );	// create the message
+		CMessage msg( "PING" );	// create the message
 		msg.serial( counter );						// serialize the counter into the message
 		CNetManager::send( SVC, msg );							// put into the send queue
 		nlinfo( "Sent PING number %u", counter );

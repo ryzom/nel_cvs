@@ -1,7 +1,7 @@
 /** \file net_layer3/frontend_service.cpp
  * example of the IService class
  *
- * $Id: frontend_service.cpp,v 1.1 2002/04/17 08:08:32 lecroart Exp $
+ * $Id: frontend_service.cpp,v 1.2 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -81,7 +81,7 @@ void cbPing( CMessage& msgin, TSockId from, CCallbackNetBase& frontendserver )
 	ClientIds.push_back( from ); // store client sockid
 
 	// Output
-	CMessage msgout( ToPingService->getSIDA(), "PING" );
+	CMessage msgout( "PING" );
 	msgout.serial( counter );
 	vector<uint8> vect( 400000 );
 	msgout.serialCont( vect );
@@ -139,7 +139,7 @@ void cbPong( CMessage& msgin, TSockId from, CCallbackNetBase& clientofthepingser
 
 	// Output: send the reply to the client
 	CCallbackServer *server = IService::getInstance()->getServer();
-	CMessage msgout( server->getSIDA(), "PONG" );
+	CMessage msgout( "PONG" );
 	msgout.serial( counter );
 	server->send( msgout, clientfrom );
 

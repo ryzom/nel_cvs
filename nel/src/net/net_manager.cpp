@@ -1,7 +1,7 @@
 /** \file net_manager.cpp
  * Network engine, layer 3, base
  *
- * $Id: net_manager.cpp,v 1.26 2002/10/24 08:44:41 lecroart Exp $
+ * $Id: net_manager.cpp,v 1.27 2004/05/07 12:56:22 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -35,7 +35,6 @@
 
 #include "stdnet.h"
 
-#include "nel/misc/string_id_array.h"
 #include "nel/misc/time_nl.h"
 
 #include "nel/net/naming_client.h"
@@ -83,13 +82,6 @@ static void nmNewDisconnection (TSockId from, void *arg)
 		basest->DisconnectionCallback (basest->Name, from, basest->DisconnectionCbArg);
 
 	/// \todo ace: when a group is disconnected, we have to handle the problem
-
-	// on a client, we have to clear the associations
-	if (basest->Type != CBaseStruct::Server)
-	{
-		nlassert (basest->NetBase.size() == 1);
-		basest->NetBase[0]->getSIDA ().clear ();
-	}
 }
 
 
@@ -330,18 +322,6 @@ void CNetManager::addGroup (const std::string &groupName, const std::string &ser
 	}
 }
 
-
-
-NLMISC::CStringIdArray &CNetManager::getSIDA (const std::string &serviceName)
-{
-	nldebug ("HNETL4: getSIDA() for service '%s'", serviceName.c_str ());
-	ItBaseMap itbm = find (serviceName);
-
-	// in case of group, we can return association only if there s only one service on it
-	nlassert ((*itbm).second.NetBase.size() == 1);
-
-	return (*itbm).second.NetBase[0]->getSIDA ();
-}
 
 void CNetManager::addCallbackArray (const std::string &serviceName, const TCallbackItem *callbackarray, NLMISC::CStringIdArray::TStringId arraysize)
 {

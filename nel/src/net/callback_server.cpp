@@ -1,7 +1,7 @@
 /** \file callback_server.cpp
  * Network engine, layer 3, server
  *
- * $Id: callback_server.cpp,v 1.26 2003/12/29 17:29:49 lecroart Exp $
+ * $Id: callback_server.cpp,v 1.27 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,8 +24,6 @@
  */
 
 #include "stdnet.h"
-
-#include "nel/misc/string_id_array.h"
 
 #include "nel/net/callback_server.h"
 
@@ -67,9 +65,9 @@ void cbsNewConnection (TSockId from, void *data)
 /*
  * Constructor
  */
-CCallbackServer::CCallbackServer( TRecordingState rec, const string& recfilename, bool recordall ) :
+CCallbackServer::CCallbackServer( TRecordingState rec, const string& recfilename, bool recordall, bool initPipeForDataAvailable ) :
 	CCallbackNetBase( rec, recfilename, recordall ),
-	CBufServer( DEFAULT_STRATEGY, DEFAULT_MAX_THREADS, DEFAULT_MAX_SOCKETS_PER_THREADS, true, rec==Replay ),
+	CBufServer( DEFAULT_STRATEGY, DEFAULT_MAX_THREADS, DEFAULT_MAX_SOCKETS_PER_THREADS, true, rec==Replay, initPipeForDataAvailable ),
 	_ConnectionCallback(NULL),
 	_ConnectionCbArg(NULL)
 {
@@ -82,37 +80,6 @@ CCallbackServer::CCallbackServer( TRecordingState rec, const string& recfilename
 
 	_IsAServer = true;
 	_DefaultCallback = NULL;
-}
-
-
-/*
- *
- */
-void CCallbackServer::sendAllMyAssociations (TSockId to)
-{
-	nlassert (to != InvalidSockId);	// invalid hostid
-	checkThreadId ();
-	nlassert (connected ());
-
-	// he wants all associations
-	CMessage msgout (getSIDA(), "RAA");
-
-	CStringIdArray::TStringId size;
-	size = _OutputSIDA.size ();
-
-	nldebug ("LNETL3S: Send all (%d) my string association to %s", size, to->asString().c_str());
-	
-	msgout.serial (size);
-
-	for (CStringIdArray::TStringId i = 0; i < size; i++)
-	{
-//		nldebug ("LNETL3S:  sending association '%s' -> %d", _OutputSIDA.getString(i).c_str (), i);
-		string str(_OutputSIDA.getString(i));
-		msgout.serial (str);
-		msgout.serial (i);
-	}
-
-	send (msgout, to);
 }
 
 
@@ -186,7 +153,6 @@ void CCallbackServer::update ( sint32 timeout )
 	if ( _MR_RecordingState != Replay )
 	{
 #endif
-
 		// L1-2 Update (nothing to do in replay mode)
 		CBufServer::update (); // then send
 

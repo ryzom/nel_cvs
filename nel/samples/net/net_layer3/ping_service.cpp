@@ -1,7 +1,7 @@
 /** \file net_layer3/ping_service.cpp
  * Example of the IService class and the layer 3
  *
- * $Id: ping_service.cpp,v 1.1 2002/04/17 08:08:32 lecroart Exp $
+ * $Id: ping_service.cpp,v 1.2 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,7 +62,7 @@ void cbPing( CMessage& msgin, TSockId from, CCallbackNetBase& server )
 	msgin.serial( counter );
 
 	// Output
-	CMessage msgout( server.getSIDA(), "PONG" );
+	CMessage msgout( "PONG" );
 	msgout.serial( counter );
 	server.send( msgout, from );
 

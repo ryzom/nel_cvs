@@ -1,7 +1,7 @@
 /** \file buf_client.cpp
  * Network engine, layer 1, client
  *
- * $Id: buf_client.cpp,v 1.26 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: buf_client.cpp,v 1.27 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -54,7 +54,7 @@ uint32 	NbClientReceiveTask = 0;
 /*
  * Constructor
  */
-CBufClient::CBufClient( bool nodelay, bool replaymode ) :
+CBufClient::CBufClient( bool nodelay, bool replaymode, bool initPipeForDataAvailable ) :
 	CBufNetBase(),
 	_NoDelay( nodelay ),
 	_PrevBytesDownloaded( 0 ),
@@ -75,6 +75,13 @@ CBufClient::CBufClient( bool nodelay, bool replaymode ) :
 		_BufSock = new CNonBlockingBufSock(); // CHANGED: non-blocking client connection
 		_RecvTask = new CClientReceiveTask( this, _BufSock );
 	}
+
+#ifdef NL_OS_UNIX
+	if ( initPipeForDataAvailable )
+		if ( ::pipe( _DataAvailablePipeHandle ) != 0 )
+			nlwarning( "Unable to create D.A. pipe" );
+#endif
+
 }
 
 
@@ -160,6 +167,11 @@ bool CBufClient::dataAvailable()
 				
 			// Normal message available
 			case CBufNetBase::User:
+#ifdef NL_OS_UNIX
+				uint8 b;
+				if ( read( _DataAvailablePipeHandle[PipeRead], &b, 1 ) == -1 )
+					nlwarning( "LNETL1: Read pipe failed in dataAvailable" );
+#endif
 				return true; // return immediatly, do not extract the message
 
 			// Process disconnection event
@@ -204,66 +216,29 @@ bool CBufClient::dataAvailable()
 }
 
 
-/* // OLD VERSION
-bool CBufClient::dataAvailable()
+#ifdef NL_OS_UNIX
+/* Wait until the receive queue contains something to read (implemented with a select()).
+ * This is where the connection/disconnection callbacks can be called.
+ * \param usecMax Max time to wait in microsecond (up to 1 sec)
+ */
+void	CBufClient::sleepUntilDataAvailable( uint usecMax )
 {
-	// slow down the layer H_AUTO (CBufClient_dataAvailable);
+	fd_set readers;
+	TIMEVAL tv;
+	do
 	{
-		CFifoAccessor recvfifo( &receiveQueue() );
-		do
-		{
-			// Check if the receive queue is empty
-			if ( recvfifo.value().empty() )
-			{
-				return false;
-			}
-			else
-			{
-				uint8 val = recvfifo.value().frontLast ();
-
-				// Test if it the next block is a system event
-				switch ( val )
-				{
-					
-				// Normal message available
-				case CBufNetBase::User:
-					return true; // return immediatly, do not extract the message
-
-				// Process disconnection event
-				case CBufNetBase::Disconnection:
-
-					nldebug( "Disconnection event" );
-					_BufSock->setConnectedState( false );
-
-					// Call callback if needed
-					if ( disconnectionCallback() != NULL )
-					{
-						disconnectionCallback()( id(), argOfDisconnectionCallback() );
-					}
-
-					// Unlike the server version, we do not delete the CBufSock object here,
-					// it will be done in the destructor of CBufClient
-					break;
-
-				default:
-					{
-					vector<uint8> buffer;
-					recvfifo.value().front (buffer);
-					nlinfo( "LNETL1: Invalid block type: %hu (should be = %hu)", (uint16)(buffer[buffer.size()-1]), (uint16)val );
-					nlinfo( "LNETL1: Buffer (%d B): [%s]", buffer.size(), stringFromVector(buffer).c_str() );
-					nlinfo( "LNETL1: Receive queue:" );
-					recvfifo.value().display();
-					nlerror( "LNETL1: Invalid system event type in client receive queue" );
-					}
-				}
-				// Extract system event
-				recvfifo.value().pop();
-			}
-		}
-		while ( true );
+		FD_ZERO( &readers );
+		FD_SET( _DataAvailablePipeHandle[PipeRead], &readers );
+		tv.tv_sec = 0;
+		tv.tv_usec = usecMax;
+		int res = ::select( _DataAvailablePipeHandle[PipeRead]+1, &readers, NULL, NULL, &tv );
+		if ( res == -1 )
+			nlerror( "LNETL1: Select failed in sleepUntilDataAvailable (code %u)", CSock::getLastError() );
 	}
+	while ( ! dataAvailable() ); // will loop if only a connection/disconnection event was read
 }
-*/
+#endif
+
 
 /*
  * Receives next block of data in the specified buffer (resizes the vector)

@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.58 2003/10/20 16:12:01 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.59 2004/05/07 12:56:22 cado Exp $
  *
  */
 
@@ -206,7 +206,7 @@ void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &net
 
 	// send the ACK to the NS
 
-	CMessage msgout (CNamingClient::_Connection->getSIDA(), "ACK_UNI");
+	CMessage msgout ("ACK_UNI");
 	msgout.serial (sid);
 	CNamingClient::_Connection->send (msgout);
 
@@ -250,7 +250,7 @@ void CNamingClient::connect( const CInetAddress &addr, CCallbackNetBase::TRecord
 	_Connection->connect (addr);
 
 /*	// send the available addresses
-	CMessage msgout (_Connection->getSIDA(), "RS");
+	CMessage msgout ("RS");
 	msgout.serialCont (const_cast<vector<CInetAddress>&>(addresses));
 	_Connection->send (msgout);
 	
@@ -304,7 +304,7 @@ bool CNamingClient::registerService (const std::string &name, const std::vector<
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
-	CMessage msgout (_Connection->getSIDA(), "RG");
+	CMessage msgout ("RG");
 	msgout.serial (const_cast<std::string&>(name));
 	msgout.serialCont (const_cast<vector<CInetAddress>&>(addr));
 	sid = 0;
@@ -342,7 +342,7 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const std::
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
-	CMessage msgout (_Connection->getSIDA(), "RG");
+	CMessage msgout ("RG");
 	msgout.serial (const_cast<std::string&>(name));
 	msgout.serialCont (const_cast<vector<CInetAddress>&>(addr));
 	msgout.serial (sid);
@@ -375,7 +375,7 @@ void CNamingClient::resendRegisteration (const std::string &name, const std::vec
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
-	CMessage msgout (_Connection->getSIDA(), "RRG");
+	CMessage msgout ("RRG");
 	msgout.serial (const_cast<std::string&>(name));
 	msgout.serialCont (const_cast<vector<CInetAddress>&>(addr));
 	msgout.serial (sid);
@@ -387,7 +387,7 @@ void CNamingClient::unregisterService (TServiceId sid)
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
-	CMessage msgout (_Connection->getSIDA(), "UNI");
+	CMessage msgout ("UNI");
 	msgout.serial (sid);
 	_Connection->send (msgout);
 
@@ -413,7 +413,7 @@ uint16 CNamingClient::queryServicePort ()
 	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
-	CMessage msgout (_Connection->getSIDA(), "QP");
+	CMessage msgout ("QP");
 	_Connection->send (msgout);
 
 	// wait the answer of the naming service "QP"

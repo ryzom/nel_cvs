@@ -1,7 +1,7 @@
 /** \file net_layer4/frontend_service.cpp
  * Layer 4 and IService example
  *
- * $Id: frontend_service.cpp,v 1.1 2002/04/17 08:08:32 lecroart Exp $
+ * $Id: frontend_service.cpp,v 1.2 2004/05/07 12:56:21 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -80,7 +80,7 @@ void cbPing( CMessage& msgin, TSockId from, CCallbackNetBase& frontendserver )
 	ClientIds.push_back( make_pair( from, counter ) ); // store client sockid
 
 	// Output
-	CMessage msgout( CNetManager::getSIDA( "PS" ), "PING" );
+	CMessage msgout( "PING" );
 	msgout.serial( counter );
 	CNetManager::send( "PS", msgout ); // does not send if not connected
 
@@ -119,7 +119,7 @@ void cbPong( CMessage& msgin, TSockId from, CCallbackNetBase& clientofthepingser
 		ClientIds.pop_front();
 
 		// Output: send the reply to the client
-		CMessage msgout( CNetManager::getSIDA( "FS" ), "PONG" );
+		CMessage msgout( "PONG" );
 		msgout.serial( counter );
 		CNetManager::send( "FS", msgout, clientfrom );
 
@@ -155,7 +155,7 @@ void onReconnectPS( const std::string &serviceName, TSockId from, void *arg )
 	// Output: forward all stored pings to the reconnected ping service
 	for ( i=0; i!=ClientIds.size(); i++ )
 	{
-		CMessage msgout( CNetManager::getSIDA( "PS" ), "PING" );
+		CMessage msgout( "PING" );
 		counter = ClientIds[i].second;
 		msgout.serial( counter );
 		CNetManager::send( "PS", msgout );

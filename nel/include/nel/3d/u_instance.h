@@ -1,7 +1,7 @@
 /** \file u_instance.h
  * <File description>
  *
- * $Id: u_instance.h,v 1.2 2001/06/29 14:27:40 berenguier Exp $
+ * $Id: u_instance.h,v 1.3 2001/12/27 15:11:37 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -62,6 +62,13 @@ public:
 	 */
 	virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const =0;
 
+	/**
+	 * Set the blend shape factor for this instance
+	 * blenShapeName is the name of the blendshape we want to set
+	 * factor the blendshape percentage from 0.0 to 100.0
+	 * dynamic tells the optimizer if the blendshape have to change in real time
+	 */
+	virtual void				setBlendShapeFactor (const std::string &blendShapeName, float factor, bool dynamic) { }
 
 	/// \name Material access.
 	// @{

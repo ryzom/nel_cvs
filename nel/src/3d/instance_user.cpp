@@ -1,7 +1,7 @@
 /** \file instance_user.cpp
  * <File description>
  *
- * $Id: instance_user.cpp,v 1.6 2001/09/21 13:39:24 berenguier Exp $
+ * $Id: instance_user.cpp,v 1.7 2001/12/27 15:12:25 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -61,5 +61,16 @@ void				CInstanceUser::getShapeAABBox(NLMISC::CAABBox &bbox) const
 	_Instance->getAABBox(bbox);
 }
 
+// ***************************************************************************
+void CInstanceUser::setBlendShapeFactor (const std::string &blendShapeName, float factor, bool dynamic)
+{
+	CMeshBaseInstance	*mi= dynamic_cast<CMeshBaseInstance*>(_Instance);
+
+	if (mi)
+	{
+		mi->setBlendShapeFactor (blendShapeName, factor);
+		// \todo trap takes care of the dynamic flag
+	}
+}
 
 } // NL3D

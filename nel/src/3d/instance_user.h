@@ -1,7 +1,7 @@
 /** \file instance_user.h
  * <File description>
  *
- * $Id: instance_user.h,v 1.4 2001/07/12 14:31:57 berenguier Exp $
+ * $Id: instance_user.h,v 1.5 2001/12/27 15:12:25 besson Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -72,6 +72,8 @@ public:
 
 
 	virtual void				getShapeAABBox(NLMISC::CAABBox &bbox) const;
+
+	virtual void				setBlendShapeFactor (const std::string &blendShapeName, float factor, bool dynamic);
 
 
 	/// \name Material access.

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.h
  * <File description>
  *
- * $Id: mesh_mrm.h,v 1.1 2001/06/15 16:24:43 corvazier Exp $
+ * $Id: mesh_mrm.h,v 1.2 2001/06/20 09:36:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -221,6 +221,10 @@ private:
 	std::vector<CLod>			_Lods;
 	/// For clipping. this is the BB of all vertices of all Lods.
 	NLMISC::CAABBoxExt			_BBox;
+
+
+	/// Apply the geomorph to the _VBuffer.
+	void	applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod);
 
 
 };

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.4 2001/06/19 16:58:13 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.5 2001/06/20 09:36:42 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,6 +132,177 @@ bool	CMeshMRM::clip(const std::vector<CPlane>	&pyramid)
 }
 
 
+
+// ***************************************************************************
+void	CMeshMRM::applyGeomorph(std::vector<CMRMWedgeGeom>  &geoms, float alphaLod)
+{
+	// no geomorphs? quit.
+	if(geoms.size()==0)
+		return;
+
+	uint		i;
+	clamp(alphaLod, 0.f, 1.f);
+	float		a= alphaLod;
+	float		a1= 1 - alphaLod;
+	uint		ua= (uint)(a*256);
+	clamp(ua, (uint)0, (uint)256);
+	uint		ua1= 256 - ua;
+
+
+	// info from VBuffer.
+	uint8		*vertexPtr= (uint8*)_VBuffer.getVertexCoordPointer();
+	uint		flags= _VBuffer.getVertexFormat();
+	sint32		vertexSize= _VBuffer.getVertexSize();
+	// because of the unrolled code for 4 first UV, must assert this.
+	nlassert(IDRV_VF_MAXSTAGES>=4);
+	// must have XYZ.
+	nlassert(flags & IDRV_VF_XYZ);
+
+
+	// if an offset is 0, it means that the component is not in the VBuffer.
+	sint32		normalOff;
+	sint32		colorOff;
+	sint32		specularOff;
+	sint32		uvOff[IDRV_VF_MAXSTAGES];
+
+
+	// Compute offset of each component of the VB.
+	if(flags & IDRV_VF_NORMAL)
+		normalOff= _VBuffer.getNormalOff();
+	else
+		normalOff= 0;
+	if(flags & IDRV_VF_COLOR)
+		colorOff= _VBuffer.getColorOff();
+	else
+		colorOff= 0;
+	if(flags & IDRV_VF_SPECULAR)
+		specularOff= _VBuffer.getSpecularOff();
+	else
+		specularOff= 0;
+	for(i= 0; i<IDRV_VF_MAXSTAGES;i++)
+	{
+		if(flags & IDRV_VF_UV[i])
+			uvOff[i]= _VBuffer.getTexCoordOff(i);
+		else
+			uvOff[i]= 0;
+	}
+
+
+	// For all geomorphs.
+	uint			nGeoms= geoms.size();
+	CMRMWedgeGeom	*ptrGeom= &(geoms[0]);
+	uint8			*destPtr= vertexPtr;
+	/* NB: optimisation: lot of "if" in this Loop, but because of BTB, they always cost nothing (prediction is good).
+	   NB: this also is why we unroll the 4 1st Uv. The other (if any), are done in the other loop.
+	*/
+	for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
+	{
+		uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
+		uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
+
+		// Vertex.
+		{
+			CVector		*start=	(CVector*)startPtr;
+			CVector		*end=	(CVector*)endPtr;
+			CVector		*dst=	(CVector*)destPtr;
+			*dst= *start * a + *end * a1;
+		}
+
+		// Normal.
+		if(normalOff)
+		{
+			CVector		*start= (CVector*)(startPtr + normalOff);
+			CVector		*end=	(CVector*)(endPtr   + normalOff);
+			CVector		*dst=	(CVector*)(destPtr  + normalOff);
+			*dst= *start * a + *end * a1;
+		}
+		// color.
+		if(colorOff)
+		{
+			CRGBA		*start= (CRGBA*)(startPtr + colorOff);
+			CRGBA		*end=	(CRGBA*)(endPtr   + colorOff);
+			CRGBA		*dst=	(CRGBA*)(destPtr  + colorOff);
+			dst->blendFromui(*start, *end,  ua1);
+		}
+		// specular.
+		if(specularOff)
+		{
+			CRGBA		*start= (CRGBA*)(startPtr + specularOff);
+			CRGBA		*end=	(CRGBA*)(endPtr   + specularOff);
+			CRGBA		*dst=	(CRGBA*)(destPtr  + specularOff);
+			dst->blendFromui(*start, *end,  ua1);
+		}
+
+		// Uvs.
+		// uv[0].
+		if(uvOff[0])
+		{
+			// Uv.
+			CUV			*start= (CUV*)(startPtr + uvOff[0]);
+			CUV			*end=	(CUV*)(endPtr   + uvOff[0]);
+			CUV			*dst=	(CUV*)(destPtr  + uvOff[0]);
+			*dst= *start * a + *end * a1;
+		}
+		// uv[1].
+		if(uvOff[1])
+		{
+			// Uv.
+			CUV			*start= (CUV*)(startPtr + uvOff[1]);
+			CUV			*end=	(CUV*)(endPtr   + uvOff[1]);
+			CUV			*dst=	(CUV*)(destPtr  + uvOff[1]);
+			*dst= *start * a + *end * a1;
+		}
+		// uv[2].
+		if(uvOff[2])
+		{
+			// Uv.
+			CUV			*start= (CUV*)(startPtr + uvOff[2]);
+			CUV			*end=	(CUV*)(endPtr   + uvOff[2]);
+			CUV			*dst=	(CUV*)(destPtr  + uvOff[2]);
+			*dst= *start * a + *end * a1;
+		}
+		// uv[3].
+		if(uvOff[3])
+		{
+			// Uv.
+			CUV			*start= (CUV*)(startPtr + uvOff[3]);
+			CUV			*end=	(CUV*)(endPtr   + uvOff[3]);
+			CUV			*dst=	(CUV*)(destPtr  + uvOff[3]);
+			*dst= *start * a + *end * a1;
+		}
+
+	}
+
+
+	// Process extra UVs (maybe never :)).
+	// For all stages after 4.
+	for(i=4;i<IDRV_VF_MAXSTAGES;i++)
+	{
+		uint			nGeoms= geoms.size();
+		CMRMWedgeGeom	*ptrGeom= &(geoms[0]);
+		uint8			*destPtr= vertexPtr;
+
+		// For all geomorphs.
+		for(; nGeoms>0; nGeoms--, ptrGeom++, destPtr+= vertexSize )
+		{
+			uint8			*startPtr=	vertexPtr + ptrGeom->Start*vertexSize;
+			uint8			*endPtr=	vertexPtr + ptrGeom->End*vertexSize;
+
+			// uv[i].
+			if(uvOff[i])
+			{
+				// Uv.
+				CUV			*start= (CUV*)(startPtr + uvOff[i]);
+				CUV			*end=	(CUV*)(endPtr	+ uvOff[i]);
+				CUV			*dst=	(CUV*)(destPtr	+ uvOff[i]);
+				*dst= *start * a + *end * a1;
+			}
+
+		}
+	}
+}
+
+
 // ***************************************************************************
 void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 {
@@ -173,34 +344,7 @@ void	CMeshMRM::render(IDriver *drv, CTransformShape *trans)
 	// Geomorph the choosen Lod (if not the coarser mesh).
 	if(numLod>0)
 	{
-		float	a= alphaLod;
-		float	a1= 1 - alphaLod;
-		for(uint i=0; i<lod.Geomorphs.size(); i++)
-		{
-			CMRMWedgeGeom	&geom= lod.Geomorphs[i];
-			// TODODO.
-			{
-				// Vertex.
-				CVector		*start=	(CVector*)_VBuffer.getVertexCoordPointer(geom.Start);
-				CVector		*end=	(CVector*)_VBuffer.getVertexCoordPointer(geom.End);
-				CVector		*dst=	(CVector*)_VBuffer.getVertexCoordPointer(i);
-				*dst= *start * a + *end * a1;
-			}
-			{
-				// Normal.
-				CVector		*start= (CVector*)_VBuffer.getNormalCoordPointer(geom.Start);
-				CVector		*end=	(CVector*)_VBuffer.getNormalCoordPointer(geom.End);
-				CVector		*dst=	(CVector*)_VBuffer.getNormalCoordPointer(i);
-				*dst= *start * a + *end * a1;
-			}
-			{
-				// Uv.
-				CUV		*start= (CUV*)_VBuffer.getTexCoordPointer(geom.Start, 0);
-				CUV		*end=	(CUV*)_VBuffer.getTexCoordPointer(geom.End, 0);
-				CUV		*dst=	(CUV*)_VBuffer.getTexCoordPointer(i, 0);
-				*dst= *start * a + *end * a1;
-			}
-		}
+		applyGeomorph(lod.Geomorphs, alphaLod);
 	}
 
 

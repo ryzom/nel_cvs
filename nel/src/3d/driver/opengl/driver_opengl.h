@@ -1,7 +1,7 @@
 /** \file driver_opengl.h
  * OpenGL driver implementation
  *
- * $Id: driver_opengl.h,v 1.166 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: driver_opengl.h,v 1.167 2004/04/08 13:01:40 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -193,7 +193,7 @@ public:
 	void					*ValuePtr[CVertexBuffer::NumValue];
 
 	
-	enum TVBMode { None = 0, SysMem, HwNVIDIA, HwARB, HwATI }; // standard VBs, or Hard VBs using different extensions
+	enum TVBMode { TVBModeNone = 0, SysMem, HwNVIDIA, HwARB, HwATI }; // standard VBs, or Hard VBs using different extensions
 
 	// Kind of vb
 	TVBMode					VBMode;
@@ -202,7 +202,7 @@ public:
 
 	CVertexBufferInfo()
 	{		
-		VBMode = None;
+		VBMode = TVBModeNone;
 	}
 
 	void		setupVertexBuffer(CVertexBuffer &vb);

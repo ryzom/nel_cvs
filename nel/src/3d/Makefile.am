@@ -1,5 +1,5 @@
 #
-# $Id: Makefile.am,v 1.105 2004/03/19 16:31:27 lecroart Exp $
+# $Id: Makefile.am,v 1.106 2004/04/08 13:01:39 lecroart Exp $
 #
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -552,6 +552,9 @@ libnel3d_la_SOURCES  = \
 	visual_collision_entity_user.h \
 	visual_collision_manager.cpp \
 	visual_collision_manager.h \
+	u_visual_collision_mesh.cpp \
+	visual_collision_mesh.cpp \
+	visual_collision_mesh.h \
 	visual_collision_manager_user.cpp \
 	visual_collision_manager_user.h \
 	water_height_map.cpp \

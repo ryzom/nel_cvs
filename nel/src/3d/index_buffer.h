@@ -1,7 +1,7 @@
 /** \file index_buffer.h
  * Index buffers.
  *
- * $Id: index_buffer.h,v 1.3 2004/04/08 09:05:45 corvazier Exp $
+ * $Id: index_buffer.h,v 1.4 2004/04/08 13:01:39 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -46,42 +46,6 @@ class	CIndexBuffer;
 class	IDriver;
 typedef	std::list<IIBDrvInfos*>			TIBDrvInfoPtrList;
 typedef	TIBDrvInfoPtrList::iterator		ItIBDrvInfoPtrList;
-
-/**
-  * Index buffer driver informations.
-  */
-// *** IMPORTANT ********************
-// *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
-// **********************************
-class IIBDrvInfos : public CRefCount
-{
-protected:
-	IDriver				*_Driver;
-private:
-	ItIBDrvInfoPtrList	_DriverIterator;
-
-public:
-	CRefPtr<CIndexBuffer>	IndexBufferPtr;
-
-	IIBDrvInfos(IDriver	*drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) {_Driver= drv; _DriverIterator= it; IndexBufferPtr = ib;}
-
-	/** Lock method.
-	  * \param first is the first index to be accessed. What ever is this index, 
-	  * the returned pointer always points on the vertex 0.
-	  * \param last is the last index to be accessed + 1. Must not be 0.
-	  */
-	virtual uint32	*lock (uint first, uint last, bool readOnly) =0;
-
-	/** Unlock method.
-	  * \param first is the index of the first indexes to update. 0 to update all the indexes.
-	  * \param last is the index of the last indexes to update + 1. 0 to update all the indexes.
-	  */
-	virtual void	unlock (uint first, uint last) =0;
-
-	/* The virtual dtor is important.
-	 * The driver implementation must call setLocation (NotResident) if IndexBufferPtr!=NULL.*/
-	virtual ~IIBDrvInfos();
-};
 
 /**
  * An index buffer to work with the driver
@@ -387,6 +351,42 @@ private:
 
 	// Keep in local memory
 	bool					_KeepLocalMemory;
+};
+
+/**
+  * Index buffer driver informations.
+  */
+// *** IMPORTANT ********************
+// *** IF YOU MODIFY THE STRUCTURE OF THIS CLASS, PLEASE INCREMENT IDriver::InterfaceVersion TO INVALIDATE OLD DRIVER DLL
+// **********************************
+class IIBDrvInfos : public CRefCount
+{
+protected:
+	IDriver				*_Driver;
+private:
+	ItIBDrvInfoPtrList	_DriverIterator;
+
+public:
+	CRefPtr<CIndexBuffer>	IndexBufferPtr;
+
+	IIBDrvInfos(IDriver	*drv, ItIBDrvInfoPtrList it, CIndexBuffer *ib) {_Driver= drv; _DriverIterator= it; IndexBufferPtr = ib;}
+
+	/** Lock method.
+	  * \param first is the first index to be accessed. Put 0 to select all the indexes. What ever is this index, 
+	  * the indexices in the index buffer remain the same.
+	  * \param last is the last index to be accessed + 1. Put 0 to select all the indexes.
+	  */
+	virtual uint32	*lock (uint first, uint last, bool readOnly) =0;
+
+	/** Unlock method.
+	  * \param first is the index of the first indexes to update. 0 to update all the indexes.
+	  * \param last is the index of the last indexes to update + 1. 0 to update all the indexes.
+	  */
+	virtual void	unlock (uint first, uint last) =0;
+
+	/* The virtual dtor is important.
+	 * The driver implementation must call setLocation (NotResident) if IndexBufferPtr!=NULL.*/
+	virtual ~IIBDrvInfos();
 };
 
 /**

@@ -1,7 +1,7 @@
 /** \file skeleton_user.cpp
  * <File description>
  *
- * $Id: skeleton_user.cpp,v 1.16 2003/05/23 21:22:52 puzin Exp $
+ * $Id: skeleton_user.cpp,v 1.17 2003/07/09 16:32:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -289,6 +289,24 @@ void		CSkeletonUser::computeLodTexture()
 	NL3D_HAUTO_UI_SKELETON;
 
 	_Skeleton->computeLodTexture();
+}
+
+// ***************************************************************************
+void		CSkeletonUser::setBoneAnimCtrl(uint boneId, IAnimCtrl *ctrl)
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+
+	_Skeleton->setBoneAnimCtrl(boneId, ctrl);
+}
+
+// ***************************************************************************
+IAnimCtrl	*CSkeletonUser::getBoneAnimCtrl(uint boneId) const
+{
+	NL3D_MEM_SKELETON
+	NL3D_HAUTO_UI_SKELETON;
+
+	return _Skeleton->getBoneAnimCtrl(boneId);
 }
 
 

@@ -1,7 +1,7 @@
 /** \file skeleton_user.h
  * <File description>
  *
- * $Id: skeleton_user.h,v 1.20 2003/05/23 21:22:52 puzin Exp $
+ * $Id: skeleton_user.h,v 1.21 2003/07/09 16:32:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -137,6 +137,12 @@ public:
 	// @{
 	virtual	bool		computeRenderedBBox(NLMISC::CAABBox &bbox, bool computeInWorld= false);
 	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0, bool forceCompute = false, bool computeInWorld= false);
+	// @}
+
+	/// \name AnimCtrl (IK...)
+	// @{
+	virtual	void		setBoneAnimCtrl(uint boneId, IAnimCtrl *ctrl);
+	virtual	IAnimCtrl	*getBoneAnimCtrl(uint boneId) const;
 	// @}
 
 public:

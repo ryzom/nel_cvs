@@ -1,7 +1,7 @@
 /** \file u_skeleton.h
  * <File description>
  *
- * $Id: u_skeleton.h,v 1.15 2003/05/23 21:22:53 puzin Exp $
+ * $Id: u_skeleton.h,v 1.16 2003/07/09 16:31:02 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,7 @@ namespace NL3D
 class	UInstance;
 class	UBone;
 class	UPlayList;
+class	IAnimCtrl;
 
 // ***************************************************************************
 /**
@@ -209,6 +210,18 @@ public:
 	 */
 	virtual	bool		computeCurrentBBox(NLMISC::CAABBox &bbox, UPlayList *playList, double playTime=0, bool forceCompute = false, bool computeInWorld= false) =0;
 
+	// @}
+
+
+	/// \name AnimCtrl (IK...)
+	// @{
+	/** Set a special ctrl on a bone. see IAnimCtrl.
+	 *	set to NULL if you want to reset this bone AnimCtrl.
+	 *	No-op if Bad BoneId.
+	 */
+	virtual	void		setBoneAnimCtrl(uint boneId, IAnimCtrl *ctrl) =0;
+	/// return NULL if bad BoneId
+	virtual	IAnimCtrl	*getBoneAnimCtrl(uint boneId) const =0;
 	// @}
 
 };

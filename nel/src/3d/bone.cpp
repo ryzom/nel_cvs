@@ -1,7 +1,7 @@
 /** \file bone.cpp
  * <File description>
  *
- * $Id: bone.cpp,v 1.10 2002/07/09 13:14:43 berenguier Exp $
+ * $Id: bone.cpp,v 1.11 2003/07/09 16:32:30 berenguier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -26,6 +26,7 @@
 #include "std3d.h"
 
 #include "3d/bone.h"
+#include "nel/3d/anim_ctrl.h"
 
 
 namespace NL3D
@@ -108,6 +109,9 @@ CBone::CBone(CBoneBase *boneBase)
 	_RotQuatChannelId= -1;
 	_ScaleChannelId= -1;
 	_PivotChannelId= -1;
+
+	// No animCtrl by default
+	_AnimCtrl= NULL;
 }
 
 // ***************************************************************************
@@ -147,7 +151,7 @@ void	CBone::registerToChannelMixer(CChannelMixer *chanMixer, const std::string &
 }
 
 // ***************************************************************************
-void	CBone::compute(CBone *parent, const CMatrix &rootMatrix)
+void	CBone::compute(CBone *parent, const CMatrix &rootMatrix, CSkeletonModel *skeletonForAnimCtrl)
 {
 	nlassert(_BoneBase);
 
@@ -211,6 +215,10 @@ void	CBone::compute(CBone *parent, const CMatrix &rootMatrix)
 
 	// Compute BoneSkinMatrix. Do: _BoneSkinMatrix= _LocalSkeletonMatrix * _BoneBase->InvBindPos
 	_BoneSkinMatrix.setMulMatrixNoProj( _LocalSkeletonMatrix, _BoneBase->InvBindPos );
+
+	// When compute is done, do extra user ctrl?
+	if(_AnimCtrl && skeletonForAnimCtrl)
+		_AnimCtrl->execute(skeletonForAnimCtrl, this);
 }
 
 

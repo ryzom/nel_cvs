@@ -1,6 +1,6 @@
 /** \file baseia.cpp
  *
- * $Id: baseai.cpp,v 1.7 2001/01/24 17:13:32 chafik Exp $
+ * $Id: baseai.cpp,v 1.8 2001/01/25 16:16:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -273,6 +273,11 @@ namespace NLAIAGENT
 		return tQueue();
 	}
 
+
+	bool IObjectIA::isLocal()
+	{
+		return true;
+	}
 
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////

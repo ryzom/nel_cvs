@@ -1,7 +1,7 @@
 /** \file identifiant.h
  * Sevral class for identification an objects fonctionality.
  *
- * $Id: ident.h,v 1.4 2001/01/25 09:39:11 chafik Exp $
+ * $Id: ident.h,v 1.5 2001/01/25 16:16:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -53,12 +53,12 @@ namespace NLAIAGENT
 	  * \author Nevrax France
 	  * \date 2000
 	*/
-	template<sint32 indexMax = maxIndex>
+	template<class T = sint64, sint32 indexMax = maxIndex>
 	class CIndexVariant
 	{		
-	private:
+	protected:
 		///_Id is a table were is store the number.
-		uint64 _Id[indexMax];
+		T _Id[indexMax];
 	private:
 
 		/**
@@ -74,7 +74,7 @@ namespace NLAIAGENT
 				throw NLAIE::CExceptionIndexError();
 			}
 
-			if (_Id[n] == (uint64)-1)
+			if (_Id[n] == (T)-1)
 			{
 				// If an index is max, we increment the next index.
 				inc(n+1);
@@ -86,13 +86,13 @@ namespace NLAIAGENT
 
 
 		///Copy contructor
-		CIndexVariant(const CIndexVariant &a)
+		CIndexVariant(const CIndexVariant<T,indexMax> &a)
 		{
-			memcpy(_Id,a._Id,getMaxIndex()*sizeof(uint64));
+			memcpy(_Id,a._Id,getMaxIndex()*sizeof(T));
 		}
 
 		///fill with a table.
-		CIndexVariant(const uint64 *id)
+		CIndexVariant(const T *id)
 		{
 			for(sint32 i = 0; i < getMaxIndex(); i ++) 
 			{
@@ -100,13 +100,14 @@ namespace NLAIAGENT
 			}
 		}
 
-		///fill a number
-		CIndexVariant(uint64 n)
+		///Initializ by an value.
+		CIndexVariant(T n)
 		{
-			for(sint32 i = 0; i < getMaxIndex(); i ++) 
+			/*for(sint32 i = 0; i < getMaxIndex(); i ++) 
 			{
 				_Id[i] = n;
-			}
+			}*/
+			*this = n;
 		}
 
 
@@ -132,9 +133,8 @@ namespace NLAIAGENT
 
 		///\name comparison of two CIndexVariant.
 		//@{
-		bool operator == (const CIndexVariant &a) const
-		{
-			if(getMaxIndex() != a.getMaxIndex()) return false;
+		bool operator == (const CIndexVariant<T,indexMax> &a) const
+		{			
 			for(sint32 i = 0; i < getMaxIndex(); i ++)
 			{
 				if(_Id[i] != a._Id[i]) return false;
@@ -142,48 +142,117 @@ namespace NLAIAGENT
 			
 			return true;
 		}
-
-
-		bool operator < (const CIndexVariant &a) const
-		{
-			if(getMaxIndex() <= a.getMaxIndex())
+				
+		bool operator < (const CIndexVariant<T,indexMax> &a) const
+		{			
+			for(sint32 i = a.getMaxIndex()-1; i >= 0; i --)
 			{
-				for(sint32 i = getMaxIndex()-1; i >= 0; i --)
-				{
-					if(_Id[i] < a._Id[i]) return true;
-				}
-			}
-			else
-			{
-				for(sint32 i = a.getMaxIndex()-1; i >= 0; i --)
-				{
-					if(_Id[i] < a._Id[i]) return true;
-				}			
-
-			}
+				if(_Id[i] < a._Id[i]) return true;
+			}			
 			return false;
 		}
 
-		bool operator > (const CIndexVariant &a) const
-		{
-			if(getMaxIndex() <= a.getMaxIndex())
+		bool operator > (const CIndexVariant<T,indexMax> &a) const
+		{			
+			for(sint32 i = a.getMaxIndex()-1; i >= 0; i --)
 			{
-				for(sint32 i = getMaxIndex()-1; i >= 0; i --)
-				{
-					if(_Id[i] > a._Id[i]) return true;
-				}
+				if(_Id[i] > a._Id[i]) return true;
 			}
-			else
-			{
-				for(sint32 i = a.getMaxIndex()-1; i >= 0; i --)
-				{
-					if(_Id[i] > a._Id[i]) return true;
-				}
-			}
+			
 			return false;
 		}
 		//@}
 
+		///\name Binary method.
+		//@{
+		const CIndexVariant<T,indexMax> &operator |= (const CIndexVariant<T,indexMax> &a)
+		{
+			for(sint32 i = 0; i < getMaxIndex(); i ++)
+			{
+				_Id[i] |= a._Id[i];
+			}		
+			return *this;
+		}
+		const CIndexVariant<T,indexMax> &operator &= (const CIndexVariant<T,indexMax> &a)
+		{
+			for(sint32 i = 0; i < getMaxIndex(); i ++)
+			{
+				_Id[i] &= a._Id[i];
+			}		
+			return *this;
+		}
+
+		const CIndexVariant<T,indexMax> &operator ^= (const CIndexVariant<T,indexMax> &a)
+		{
+			for(sint32 i = 0; i < getMaxIndex(); i ++)
+			{
+				_Id[i] ^= a._Id[i];
+			}		
+			return *this;
+		}
+		//@}
+
+		///\name Assignment method.
+		//@{
+		const CIndexVariant<T,indexMax> &operator = (const CIndexVariant<T,indexMax> &a)
+		{
+			for(sint32 i = 0; i < getMaxIndex(); i ++)
+			{
+				_Id[i] = a._Id[i];
+			}		
+			return *this;
+		}
+
+		const CIndexVariant<T,indexMax> &operator = (T a)
+		{
+			memset(_Id,0,getMaxIndex()*sizeof(T));
+			_Id[0] = a;
+			return *this;
+		}
+
+		const CIndexVariant<T,indexMax> &operator >>= (sint a)
+		{
+			T bits = 1;
+			T r;
+			T bitlen = 8*sizeof(T) - a;
+			sint i;			
+
+			bits <<= a;
+			bits -= 1;
+			_Id[0] >>= a;
+			for(i = 1; i < getMaxIndex(); i ++)
+			{			
+				r = _Id[i] & bits;
+				_Id[i] >>= a;
+				r <<= bitlen;
+				_Id[i - 1] |= r;
+			}		
+
+			return *this;
+		}
+
+		const CIndexVariant<T,indexMax> &operator <<= (sint a)
+		{
+			T bits = (1 << a) - 1;
+			T r;
+			T bitlen = 8*sizeof(T) - a;
+			sint i;
+
+			bits <<= (bitlen);
+
+			_Id[getMaxIndex() - 1] <<= a;
+			for(i = getMaxIndex() - 2 ; i >= 0; i --)
+			{			
+				r = _Id[i] & bits;
+				r >>= bitlen;
+				_Id[i] <<= a;
+				_Id[i+1] |= r;
+			}		
+
+			return *this;
+		}
+
+		//@}	
 
 		
 		///saving the nomber in an output stream.
@@ -194,7 +263,7 @@ namespace NLAIAGENT
 			os.serial(i);
 			for(i = 0; i < getMaxIndex(); i ++)
 			{
-				uint64 n = _Id[i];				
+				T n = _Id[i];				
 				os.serial(n);				
 			}
 		}
@@ -212,7 +281,7 @@ namespace NLAIAGENT
 
 			for(i = 0; i < getMaxIndex(); i ++)
 			{		
-				uint64 num;
+				T num;
 				is.serial(num);
 				_Id[i] = num;
 			}
@@ -220,24 +289,27 @@ namespace NLAIAGENT
 		}
 		///Have a debug string.
 		void getDebugString(char *str) const 
-		{			
-			char num[200];
-
-			strcpy(str,"id:[");
-
-			sint32 i;
-			
-			for(i = 0; i < getMaxIndex() - 1; i ++)
+		{									
+			str[0] = 0;
+			char b[sizeof(T)*8 + 1];
+			b[sizeof(T)*8] = 0;
+			sint i;
+			for(i = getMaxIndex() - 1 ; i >= 0; i --)
 			{
-				//_itoa(_Id[i],num,10);
-				sprintf(num,"%d",_Id[i]);
-				strcat(str,num);
-				strcat(str,",");
-
+				memset(b,'0',sizeof(T)*8);
+				T s = _Id[i];
+				sint base = 0;
+				sint count = 0;
+				for(base = 0; base < sizeof(T)*8; base ++)
+				{
+					if(s & 1)
+					{
+						b[sizeof(T)*8 - base - 1] = '1'; 
+					}
+					s >>= 1;
+				}							
+				strcat(str,b);
 			}
-			sprintf(num,"%d",_Id[i]);
-			strcat(str,num);
-			strcat(str,"]");
 		}
 		
 
@@ -258,17 +330,17 @@ namespace NLAIAGENT
 	{
 	public:		
 		///_I is a static IndexVariant were he have 0 at the initial time.
-		static CIndexVariant<maxIndex> _I;
+		static CIndexVariant<sint64,maxIndex> _I;
 	private:
-		CIndexVariant<maxIndex> _Id;
+		CIndexVariant<sint64,maxIndex> _Id;
 	public:
 		///The constructor creat a new number by increment the _I numbre.
-		CNumericIndex():_Id (CIndexVariant<maxIndex>(_I++))
+		CNumericIndex():_Id (CIndexVariant<sint64,maxIndex>(_I++))
 		{
 		}
 
 		///copy constructor.
-		CNumericIndex(const CIndexVariant<maxIndex> &i):_Id (i)
+		CNumericIndex(const CIndexVariant<sint64,maxIndex> &i):_Id (i)
 		{
 		}
 

@@ -1,6 +1,6 @@
 /** \file agent_nombre.cpp
  *
- * $Id: agent_nombre.cpp,v 1.1 2001/01/17 17:05:53 chafik Exp $
+ * $Id: agent_nombre.cpp,v 1.2 2001/01/25 16:16:53 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -64,7 +64,4 @@ namespace NLAIAGENT
 	{
 		return -1;
 	}
-
-
-
 }

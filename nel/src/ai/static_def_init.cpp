@@ -31,7 +31,7 @@
 	using namespace NLAIFUZZY;
 
 	CLocWordNumRef::tMapRef *CLocWordNumRef::_LocRefence = new CLocWordNumRef::tMapRef;
-	CIndexVariant<maxIndex>	CNumericIndex::_I = CIndexVariant<maxIndex>((uint64)0);
+	CIndexVariant<sint64,maxIndex>	CNumericIndex::_I = CIndexVariant<sint64,maxIndex>((uint64)0);
 
 	CIndexedVarName::CNameStruc *CIndexedVarName::_TableName = NULL;
 	const sint32 CIndexedVarName::_Bank = 256;

@@ -1,7 +1,7 @@
 /** \file basicia.h
  * Sevral class for the ia objects fonctionality.
  *
- * $Id: baseai.h,v 1.4 2001/01/19 11:11:56 chafik Exp $
+ * $Id: baseai.h,v 1.5 2001/01/25 16:16:57 chafik Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -304,6 +304,9 @@ namespace NLAIAGENT
 		tQueue contain the liste of method (same as a run(msg)) that coud process the msg.
 		*/
 		virtual	tQueue canProcessMessage(const IVarName &);
+
+		///If the result is true the object is loclal else its a representation of an object on the server. By the method return true.
+		virtual bool isLocal();
 
 		virtual ~IObjectIA();
 	};	

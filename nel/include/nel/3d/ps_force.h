@@ -1,7 +1,7 @@
 /** \file ps_force.h
  * <File description>
  *
- * $Id: ps_force.h,v 1.10 2001/05/23 17:09:40 vizerie Exp $
+ * $Id: ps_force.h,v 1.11 2001/06/07 10:17:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -223,7 +223,7 @@ public:
 	float getG(void) const { return _G ; } 
 
 	CPSGravity(float g = 9.8f) : _G(g)
-	{}
+	{ _Name = std::string("Gravity") ; }
 
 	/// serialization
 	virtual void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
@@ -265,7 +265,7 @@ public:
 	/// ctor : k is the coefficient of the spring
 
 	CPSSpring(float k = 1.0f) : _K(1.0f)
-	{}
+	{ _Name = std::string("Spring") ; }
 
 
 	/// serialization
@@ -336,6 +336,7 @@ public:
 	CPSFluidFriction(float frictionCoeff = .1f)
 	{
 		_F.setK(frictionCoeff) ;
+		_Name = std::string("FluidFriction") ;
 	}
 
 	// get the friction coefficient
@@ -393,6 +394,7 @@ public:
 		setScale(scale) ;
 		setIntensity(intensity) ;
 		setNumOctaves(numOctaves) ;
+		_Name = std::string("Turbulence") ;
 	}
 
 	

@@ -1,7 +1,7 @@
 /** \file particle_system_located.cpp
  * <File description>
  *
- * $Id: ps_located.cpp,v 1.11 2001/05/28 15:30:12 vizerie Exp $
+ * $Id: ps_located.cpp,v 1.12 2001/06/07 10:17:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -47,6 +47,7 @@ CPSLocated::CPSLocated() : _MinMass(1), _MaxMass(1), _LastForever(true)
 						 , _MaxSize(DefaultMaxLocatedInstance), _UpdateLock(false)
 						 , _CollisionInfo(NULL), _CollisionInfoNbRef(0)
 						 , _NbFramesToSkip(0)
+						 , _Name(std::string("located"))
 {		
 }
 
@@ -276,6 +277,8 @@ void CPSLocated::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 	f.serialVersion(1) ;
 
 	
+	f.serial(_Name) ;
+
 	f.serial(_InvMass) ;
 	f.serial(_Pos) ;
 	f.serial(_Speed) ;
@@ -643,6 +646,7 @@ void CPSTargetLocatedBindable::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
 {
 	f.serialVersion(1) ;	
 	f.serialPtr(_Owner) ;
+	f.serial(_Name) ;
 	if (f.isReading())
 	{
 		// delete previous attached bindables...

@@ -1,7 +1,7 @@
 /** \file ps_zone.h
  * <File description>
  *
- * $Id: ps_zone.h,v 1.9 2001/05/31 12:16:11 vizerie Exp $
+ * $Id: ps_zone.h,v 1.10 2001/06/07 10:17:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -214,7 +214,10 @@ class CPSZoneSphere : public CPSZone, public IPSMover
 
 		NLMISC_DECLARE_CLASS(CPSZoneSphere) ;
 
-
+		CPSZoneSphere()
+		{
+			_Name = std::string("ZoneSphere") ;
+		}
 		/// left multiply the current matrix by the given one. No valid index -> assert		 		 
 		virtual void applyMatrix(uint32 index, const CMatrix &m) ;
 		// return a matrix of the system. No valid index -> assert
@@ -249,6 +252,10 @@ class CPSZoneDisc : public CPSZone, public IPSMover
 		virtual void performMotion(CAnimationTime ellapsedTime) ;
 		virtual void show(CAnimationTime ellapsedTime)  ;
 	
+		CPSZoneDisc()
+		{
+			_Name = std::string("ZoneDisc") ;
+		}
 
 		NLMISC_DECLARE_CLASS(CPSZoneDisc) ;
 
@@ -288,6 +295,10 @@ class CPSZoneCylinder : public CPSZone, public IPSMover
 		virtual void performMotion(CAnimationTime ellapsedTime) ;
 		virtual void show(CAnimationTime ellapsedTime)  ;
 	
+		CPSZoneCylinder()
+		{
+			_Name = std::string("ZoneCylinder") ;
+		}
 
 		NLMISC_DECLARE_CLASS(CPSZoneCylinder) ;
 
@@ -335,6 +346,10 @@ class CPSZoneRectangle : public CPSZone, public IPSMover
 		virtual void performMotion(CAnimationTime ellapsedTime) ;
 		virtual void show(CAnimationTime ellapsedTime)  ;
 	
+		CPSZoneRectangle()
+		{
+			_Name = std::string("CPSZoneRectangle")  ;
+		}
 
 		NLMISC_DECLARE_CLASS(CPSZoneRectangle) ;
 

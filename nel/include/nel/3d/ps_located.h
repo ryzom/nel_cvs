@@ -1,7 +1,7 @@
 /** \file particle_system_located.h
  * <File description>
  *
- * $Id: ps_located.h,v 1.12 2001/06/06 12:23:29 vizerie Exp $
+ * $Id: ps_located.h,v 1.13 2001/06/07 10:17:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -399,8 +399,15 @@ public:
 
 	enum AttributeType { attrDate = 0, attrPosition = 1, attrInvMass = 2, attrSpeed = 3, attrLast } ;
 	 
+		 /// set the located bindable name (edition purpose)
+	void setName(const std::string &name) { _Name = name ; }
+
+	/// get the located bindable name (edition purpose)
+	std::string getName(void) const { return _Name ; }
 
 protected:	
+
+	std::string _Name ;
 	
 	// number of frame to skip between motion ...
 	uint32 _NbFramesToSkip ;
@@ -620,8 +627,13 @@ public:
 	*/
 	virtual uint32 getPriority(void) const = 0 ;
 	
-	/// ctor
-	CPSLocatedBindable() : _Owner(NULL) {}
+	/// ctor	
+	CPSLocatedBindable() 
+	{
+		_Owner = NULL ;
+	}
+
+	//  CPSLocatedBindable() : _Owner(NULL) {}
 
 
 	/// serialization
@@ -786,9 +798,16 @@ public:
 	 /// get the located that owns this bindable (const version)
  	 const CPSLocated *getOwner(void) const { return _Owner ; }
 	
-	 
+	
+	 /// set the located bindable name (edition purpose)
+	void setName(const std::string &name) { _Name = name ; }
+
+	/// get the located bindable name (edition purpose)
+	std::string getName(void) const { return _Name ; }
 
 protected:    
+
+	std::string _Name ;
 
 	friend class CPSLocated ;
 

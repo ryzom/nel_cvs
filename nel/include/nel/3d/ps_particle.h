@@ -1,7 +1,7 @@
 /** \file ps_particle.h
  * <File description>
  *
- * $Id: ps_particle.h,v 1.15 2001/06/06 08:24:07 vizerie Exp $
+ * $Id: ps_particle.h,v 1.16 2001/06/07 10:17:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -366,7 +366,7 @@ class CPSDot : public CPSParticle, public CPSColoredParticle
 		
 		/// ctor
 
-		CPSDot() { init() ; }
+		CPSDot() { init() ; _Name = std::string("point") ;}
 
 		NLMISC_DECLARE_CLASS(CPSDot) ;
 
@@ -1177,6 +1177,7 @@ public:
 	CPSMesh(const std::string &shape = "") : _Invalidated(false)
 	{
 		_Shape = shape ;
+		_Name = std::string("Mesh") ;
 	}
 
 	/// set a new shape for that kind of particles
@@ -1248,6 +1249,7 @@ class CPSConstraintMesh : public  CPSParticle, public CPSSizedParticle
 public:	
 	CPSConstraintMesh() : _ModelShape(NULL), _ModelVb(NULL), _ModelBank(NULL), _Touched(false)
 	{		
+		_Name = std::string("ConstraintMesh") ;
 	}
 
 	virtual ~CPSConstraintMesh() ;

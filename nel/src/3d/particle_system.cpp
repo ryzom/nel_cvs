@@ -1,7 +1,7 @@
 /** \file particle_system.cpp
  * <File description>
  *
- * $Id: particle_system.cpp,v 1.13 2001/05/23 16:58:42 vizerie Exp $
+ * $Id: particle_system.cpp,v 1.14 2001/06/07 10:17:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -172,10 +172,9 @@ void CParticleSystem::attach(CParticleSystemProcess *ptr)
 void CParticleSystem::remove(CParticleSystemProcess *ptr)
 {
 	TProcessVect::iterator it = std::find(_ProcessVect.begin(), _ProcessVect.end(), ptr) ;
-	nlassert(it != _ProcessVect.end() ) ;
-	delete *it ;
+	nlassert(it != _ProcessVect.end() ) ;	
 	_ProcessVect.erase(it) ;
-	ptr->setOwner(NULL) ;
+	delete ptr ;
 }
 
 

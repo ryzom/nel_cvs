@@ -1,7 +1,7 @@
 /** \file ps_emitter.h
  * <File description>
  *
- * $Id: ps_emitter.h,v 1.9 2001/05/31 12:16:11 vizerie Exp $
+ * $Id: ps_emitter.h,v 1.10 2001/06/07 10:17:56 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -378,7 +378,7 @@ public:
 
 
 	CPSEmitterDirectionnal() : _Dir(CVector::K)
-	{}
+	{ _Name = std::string("DirectionnalEmitter") ; }
 
 	/// serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
@@ -406,6 +406,10 @@ class CPSEmitterOmni : public CPSEmitter, public CPSModulatedEmitter
 	
 public:
 
+	CPSEmitterOmni()
+	{
+		_Name = std::string("EmitterOmni") ;
+	}
 
 	/// serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;
@@ -429,6 +433,7 @@ class CPSEmitterRectangle : public CPSEmitter, public CPSModulatedEmitter, publi
 
 		CPSEmitterRectangle() : _Dir(-CVector::K)
 		{
+			_Name = std::string("EmitterRectangle") ;
 		}
 
 		/// serialisation
@@ -500,6 +505,10 @@ class CPSEmitterConic : public CPSEmitterDirectionnal
 {	
 public:
 
+	CPSEmitterConic()
+	{
+		_Name = std::string("EmitterConic") ;
+	}
 
 	/// serialisation
  	virtual	void serial(NLMISC::IStream &f) throw(NLMISC::EStream) ;

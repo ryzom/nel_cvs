@@ -1,7 +1,7 @@
 /** \file ps_particle.cpp
  * <File description>
  *
- * $Id: ps_particle.cpp,v 1.15 2001/06/06 08:24:07 vizerie Exp $
+ * $Id: ps_particle.cpp,v 1.16 2001/06/07 10:17:57 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -627,6 +627,7 @@ CPSQuad::CPSQuad(CSmartPtr<ITexture> tex)
 	setTexture(tex) ;
 	init() ;
 	// we don't init the _IndexBuffer for now, as it will be when resize is called
+	_Name = std::string("quad") ;
 }
 
 
@@ -783,6 +784,7 @@ if (_UseTextureScheme) // if it has a constant texture we are sure it has been s
 /// create the face look at by giving a texture and an optionnal color
 CPSFaceLookAt::CPSFaceLookAt(CSmartPtr<ITexture> tex) : CPSQuad(tex), _MotionBlurCoeff(0.f)
 {	
+	_Name = std::string("LookAt") ;
 }
 
 void CPSFaceLookAt::draw(void)
@@ -1363,6 +1365,7 @@ CPSFanLight::CPSFanLight(uint32 nbFans) : _IndexBuffer(NULL), _NbFans(nbFans), _
 	// TODO : remove this later, as it will be useless
 
 	init() ;
+	_Name = std::string("FanLight") ;
 }
 
 CPSFanLight::~CPSFanLight()
@@ -1470,6 +1473,7 @@ CPSTailDot::CPSTailDot(uint32 nbSegmentInTail) : _TailNbSeg(nbSegmentInTail), _C
 {
 	nlassert(_TailNbSeg <= 255) ;
 	init() ;
+	_Name = std::string("TailDot") ;
 }
 
 
@@ -1955,8 +1959,8 @@ CPSRibbon::CPSRibbon(uint32 nbSegmentInTail
 	nlassert(_TailNbSeg >= 2) ;
 	setShape(shape, nbPointsInShape) ;
 	setTailNbSeg(nbSegmentInTail) ; 
-
 	_AliveRibbons._Ib = NULL ;
+	_Name = std::string("Ribbon") ;
 }
 
 
@@ -2945,7 +2949,8 @@ void CPSRibbon::setupUV(CRibbonsDesc &rb)
 
 
 CPSFace::CPSFace(CSmartPtr<ITexture> tex) : CPSQuad(tex)
-{    
+{   
+	_Name = std::string("Face") ;	
 }
 
 void CPSFace::draw(void)
@@ -3338,6 +3343,7 @@ CPSShockWave::CPSShockWave(uint nbSeg, float radiusCut, CSmartPtr<ITexture> tex)
 	nlassert(nbSeg > 2 && nbSeg <= 64) ;
 	setTexture(tex) ;
 	init() ;
+	_Name = std::string("ShockWave") ;
 }
 
 

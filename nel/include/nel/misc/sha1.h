@@ -8,7 +8,7 @@
  *      single character names, were used because those were the names
  *      used in the publication.
  *
- * $Id: sha1.h,v 1.2 2003/02/19 18:09:22 lecroart Exp $
+ * $Id: sha1.h,v 1.3 2003/03/31 09:37:09 lecroart Exp $
  */
 
 /* Copyright, 2002 Nevrax Ltd.
@@ -61,7 +61,7 @@ struct CHashKey
 		else if (str.size() == 40)
 		{
 			HashKeyString = "";
-			for(sint i = 0; i < str.size(); i+=2)
+			for(uint i = 0; i < str.size(); i+=2)
 			{
 				uint8 val;
 				if (isdigit(str[i+0]))
@@ -87,7 +87,7 @@ struct CHashKey
 	std::string toString() const
 	{
 		std::string str;
-		for (sint i = 0; i < HashKeyString.size(); i++)
+		for (uint i = 0; i < HashKeyString.size(); i++)
 		{
 			str += NLMISC::toString("%02X", (uint8)(HashKeyString[i]));
 		}

@@ -1,7 +1,7 @@
 /** \file export_material.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_material.cpp,v 1.14 2001/08/02 12:17:56 besson Exp $
+ * $Id: export_material.cpp,v 1.15 2001/11/07 17:18:13 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -44,6 +44,26 @@ using namespace std;
 
 #define NEL_MTL_A 0x64c75fec
 #define NEL_MTL_B 0x222b9eb9
+
+/** Test wether the given max material is a water material. A water object should only have one material, and must have planar, convex geometry.
+  * Morevover, the mapping should only have scale and offsets, no rotation
+  */
+bool CExportNel::hasWaterMaterial(INode& node, TimeValue time)
+{
+	// Get primary material pointer of the node
+	Mtl* pNodeMat = node.GetMtl();
+	// If NULL, no material at all at this node
+	if (pNodeMat == NULL) return false;
+	if (pNodeMat->NumSubMtls() != 0) return 0; // subMaterials not supported for water
+
+	int bWater = 0; // false
+	CExportNel::getValueByNameUsingParamBlock2 (*pNodeMat, "bWater", (ParamType2)TYPE_BOOL, &bWater, time);
+	return bWater != 0;
+}
+
+
+
+
 
 // Build an array of NeL material corresponding with max material at this node. Return the number of material exported.
 // Fill an array to remap the 3ds vertexMap channels for each materials. maxBaseBuild.RemapChannel.size() must be == to materials.size(). 

@@ -1,7 +1,7 @@
 /** \file algo.h
  * Some common algorithms.
  *
- * $Id: algo.h,v 1.1 2002/05/30 14:23:39 berenguier Exp $
+ * $Id: algo.h,v 1.2 2002/08/06 10:18:27 vizerie Exp $
  */
 
 /* Copyright, 2000-2002 Nevrax Ltd.
@@ -32,6 +32,29 @@
 
 namespace NLMISC 
 {
+
+/** bilinear of 4 values
+  *  v3    v2
+  *  +-----+
+  *  |     |
+  *  |     |
+  *  +-----+
+  *  v0    v1
+  *
+  *
+  *  T
+  *  ^
+  *  |
+  *  |
+  *  +---> S  
+  */
+template <class T, class U>
+T computeBilinear(const T &v0, const T &v1, const T &v2, const T &v3, const U &s, const U &t)
+{
+	T h0 = t * v3 + ((U) 1 - t) * v0;
+	T h1 = t * v2 + ((U) 1 - t) * v1;
+	return s * h1 + ((U) 1 - s) * h0;
+}
 
 // ***************************************************************************
 /**	Search the lower_bound in a sorted array of Value, in growing order (0, 1, 2....).

@@ -15,10 +15,6 @@
 
 -- *** Some constant
 
--- Options
-
-debug = false
-
 -- Blend mode
 
 BlendOne = 1
@@ -90,13 +86,6 @@ ShaderLightmap = 4
 ShaderSpecular = 5
 ShaderWater = 6
 
--- Functions
-
-fn debugMessage message =
-(
-	if debug == true then messagebox message
-)
-
 -- Nel Material properties
 plugin material NelMaterial
     name:"NeL Material"
@@ -118,10 +107,10 @@ plugin material NelMaterial
 		bUnlighted type:#boolean default:false ui:cbUnlighted
 		bStainedGlassWindow type:#boolean default:false ui:cbStainedGlassWindow
 
-		bAlphaTest type:#boolean default:false ui:cbAlphaTest
-		bForceZWrite type:#boolean default:false ui:cbForceZWrite
-		bForceNoZWrite type:#boolean default:false ui:cbForceNoZWrite
-		bWater         type:#boolean default:false
+		bAlphaTest 		type:#boolean default:true ui:cbAlphaTest
+		bForceZWrite 	type:#boolean default:false ui:cbForceZWrite
+		bForceNoZWrite 	type:#boolean default:false ui:cbForceNoZWrite
+		bWater         	type:#boolean default:false
 
 		fBumpUScale     type:#float default: 0.01 ui:cfBumpUScale
 		fBumpVScale     type:#float default: 0.01 ui:cfBumpVScale	
@@ -132,6 +121,9 @@ plugin material NelMaterial
 		fDisplaceMapVScale     type:#float default: 0.005 ui:cfDisplaceMapVScale	
 		fDisplaceMapUSpeed     type:#float default: 0.005 ui:cfDisplaceMapUSpeed
 		fDisplaceMapVSpeed     type:#float default: 0.005 ui:cfDisplaceMapVSpeed
+		
+		fWaterHeightFactor	   type:#float default: 1.0   ui:cfWaterHeightFactor
+		iWaterPoolID		   type:#integer default: 0   ui:ciWaterPoolID
 	
 		-- New in version 3
 		bColorVertex	type:#boolean default:false ui:cbColorVertex
@@ -337,6 +329,12 @@ plugin material NelMaterial
 		)
 		group "Water"
 		(
+			Label	lbWaterPoolID "Water pool ID :"  align:#left across:2
+			Spinner	ciWaterPoolID     "" range:[0,3,1] type:#integer align:#left width:70
+			Label	 lbWaterHeightFactor "Water height factor :" align:#left across:2
+			Spinner	cfWaterHeightFactor   "" range:[0,1000,1] type:#integer align:#left width:70
+
+			
 			Label	cfBumpUScaleLabel "BumpMap U Scale :"  align:#left across:2
 			Spinner	cfBumpUScale      "" range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
 			Label	cfBumpVScaleLabel "BumpMap V Scale :" align:#left across:2 
@@ -345,6 +343,7 @@ plugin material NelMaterial
 			Spinner	cfBumpUSpeed      "" range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
 			Label	cfBumpVSpeedLabel "BumpMap V Speed :" align:#left across:2 
 			Spinner	cfBumpVSpeed      "" range:[-10,10,0.01] type:#float scale:0.001 align:#left width:70
+			
 		
 			Label	lbDisplaceMapUScale "DisplaceMap U Scale :" align:#left across:2
 			Spinner   cfDisplaceMapUScale      ""  range:[-10,10,0.005] type:#float scale:0.001 align:#left width:70
@@ -424,7 +423,9 @@ plugin material NelMaterial
 				cfDisplaceMapUScale.enabled = bWater and (not bLightMap)
 				cfDisplaceMapVScale.enabled = bWater and (not bLightMap)
 				cfDisplaceMapUSpeed.enabled = bWater and (not bLightMap)
-				cfDisplaceMapVSpeed.enabled = bWater and (not bLightMap)
+				cfDisplaceMapVSpeed.enabled = bWater and (not bLightMap)				
+				ciWaterPoolID.enabled = bWater and (not bLightMap)
+				cfWaterHeightFactor.enabled = bWater and (not bLightMap)
 
 				if (bWater == true) then
 				(
@@ -1815,8 +1816,6 @@ plugin material NelMaterial
 
 	on load do 
 	( 
-		debugMessage "Begin Load NeLMaterial"
-
 		-- Update to version 4 ?
 		if updateToVersion4 == true then
 		(
@@ -1894,24 +1893,16 @@ plugin material NelMaterial
 		)
 
 		updateToVersion4 = false
-
-		debugMessage "End Load NeLMaterial"
 	)
 
 	on create do 
 	( 
-		debugMessage "Begin Create NeLMaterial"
-
 		-- Single shader
 		loadShader ShaderSingleTexture
-
-		debugMessage "End Create NeLMaterial"
 	)
 
 	on update do 
 	( 
-		debugMessage "Begin Update NeLMaterial"
-
 		-- Initialise V3 fields.
 		if (version < 3) and (version >= 2) then
 		(
@@ -1933,8 +1924,6 @@ plugin material NelMaterial
 		(
 			updateToVersion4 = true
 		)
-
-		debugMessage "End Update NeLMaterial"
 	) 
 
 	fn globalUpdateUI update =

@@ -1,7 +1,7 @@
 /** \file path.cpp
  * Utility class for searching files in differents paths.
  *
- * $Id: path.cpp,v 1.24 2002/04/02 16:48:08 vizerie Exp $
+ * $Id: path.cpp,v 1.25 2002/04/04 09:04:23 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001 Nevrax Ltd.
@@ -365,8 +365,9 @@ string getname (dirent *de)
 }
 
 void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool wantFile, vector<string> &result)
-{
+{			
 	DIR *dir = opendir (path.c_str());
+
 	if (dir == NULL)
 	{
 		NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): could not open the directory", path.c_str(), recurse, wantDir, wantFile);
@@ -406,11 +407,18 @@ void CPath::getPathContent (const string &path, bool recurse, bool wantDir, bool
 		}
 		if (wantFile && isfile(de))
 		{
+			int lastSep = CFile::getLastSeparator(path);
 			#ifdef NL_OS_WINDOWS
-				string stdName = path + "\\" + getname(de);
+				char sep = lastSep == std::string::npos ? '\\'
+													    : path[lastSep];
 			#else
-				string stdName = path + "/" + getname(de);
+				char sep = lastSep == std::string::npos ? '/'
+														: path[lastSep];
 			#endif
+			
+			string stdName = path + sep + getname(de);
+			
+				
 			NL_DISPLAY_PATH("CPath::getPathContent(%s, %d, %d, %d): adding file '%s'", path.c_str(), recurse, wantDir, wantFile, stdName.c_str());
 			result.push_back (stdName);
 		}

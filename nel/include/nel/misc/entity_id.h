@@ -1,7 +1,7 @@
 /** \file entity_id.h
  * This class generate uniq Id for worl entities
  *
- * $Id: entity_id.h,v 1.1 2001/10/19 15:16:31 lecroart Exp $
+ * $Id: entity_id.h,v 1.2 2001/12/17 17:50:51 saffray Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -127,12 +127,12 @@ struct CEntityId
 
 	///\name comparison of two CIndexVariant.
 	//@{
-	bool operator == (const CEntityId &a) const
+	virtual bool operator == (const CEntityId &a) const
 	{
 		return (Id == a.Id && CreatorId == a.CreatorId);
 	}
 
-	bool operator < (const CEntityId &a) const
+	virtual bool operator < (const CEntityId &a) const
 	{
 		if(Id < a.Id)
 			return true;
@@ -142,7 +142,7 @@ struct CEntityId
 		return false;
 	}
 
-	bool operator > (const CEntityId &a) const
+	virtual bool operator > (const CEntityId &a) const
 	{
 		if(Id > a.Id)
 			return true;

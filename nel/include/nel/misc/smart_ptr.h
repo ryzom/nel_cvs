@@ -1,7 +1,7 @@
 /** \file smart_ptr.h
  * CSmartPtr and CRefPtr class.
  *
- * $Id: smart_ptr.h,v 1.18 2003/09/25 16:28:47 ledorze Exp $
+ * $Id: smart_ptr.h,v 1.19 2003/10/17 16:28:00 ledorze Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -297,6 +297,34 @@ public:
 	// No need to do any operator==. Leave the work to cast  operator T*(void).
 };
 
+
+	/**
+	 * A little quick coded class made to find invalid object pointer existence while a destructor call on an objet.
+	 *
+	 * Feature:
+	 *   If you try to delete an object and if there still some pointer referencing it, it causes an assertion.
+	 *   This Debug feature depends on NL_DEBUG_PTR definition (change it as your convenience).
+	 *   These are only debug classes and are not design to use information for your code comportment
+	 *  as they are made to desappear in final version (NL_DEBUG_PTR undefined),
+	 *  so don't use method calls outside NL_DEBUG_PTR scope.
+	 *
+	 * How to:
+	 *   Derivate your objet from CDbgRefCount<T> where T is the type of pointer you allow to use on this object (you can use many).
+	 *  then use CDbgPtr<T> to point an object of type T (which must derivates from CDbgRefCount<T>), its the pointer.
+	 *
+	 * Warning:
+	 *  Be carefull to derivates first from CDbgRefCount<T> as derivation order implicates constructor/destructor order calls.
+	 *  Sometimes u may have to write some explicit casts, don't worry, it would be only common courtesy ;)
+	 *	 
+	 * Futur work (only if you need it):
+	 *  enhanced features (like __FILE__ __LINE__ information).
+	 *
+	 * \author Stephane Le Dorze
+	 * \author Nevrax France
+	 * \date 2003
+	 */
+
+
 #ifdef NL_DEBUG
 	#define NL_DEBUG_PTR
 #endif
@@ -309,20 +337,22 @@ class CDbgRefCount
 {
 #ifdef NL_DEBUG_PTR
 public:
-    CDbgRefCount( const CDbgRefCount &other)	// check if there's a memory crash (losing dbgcrefs).
+    CDbgRefCount( const CDbgRefCount &other)
 	{
-#ifdef NL_DEBUG
-		nlassert(dbgcrefs==0x0cdcdcdcd || dbgcrefs==0x0cccccccc || dbgcrefs==0);
-#endif
+//#ifdef NL_DEBUG
+//		//	check memory state ..
+//		nlassert(dbgcrefs==0x0cdcdcdcd || dbgcrefs==0x0cccccccc || dbgcrefs==0);
+//#endif
 		dbgcrefs=other.dbgcrefs;
 		_maxRef=other._maxRef;
 		_checkOn=true;
 	}
     CDbgRefCount(sint32 maxRef=(1<<30))
 	{
-#ifdef NL_DEBUG
-		nlassert(dbgcrefs==0x0cdcdcdcd || dbgcrefs==0x0cccccccc || dbgcrefs==0);
-#endif
+//#ifdef NL_DEBUG
+//		//	check memory state ..
+//		nlassert(dbgcrefs==0x0cdcdcdcd || dbgcrefs==0x0cccccccc || dbgcrefs==0);
+//#endif
 		dbgcrefs = 0;
 		_maxRef	= maxRef;
 	}
@@ -375,22 +405,36 @@ class CDbgPtr
     T* Ptr;
 public:
 	
-	/// Init a NULL Ptr.
-    CDbgPtr()	{ Ptr=NULL;	}
-	
-	/// Attach a ptr to a SmartPtr.
-    CDbgPtr(const T* p)
+    CDbgPtr()
+	{	Ptr=NULL;	}
+
+private:	
+//    inline	CDbgPtr(const T* p)
+//	{
+//		Ptr=const_cast<T*>(p);
+//#ifdef NL_DEBUG_PTR
+//		if(Ptr)
+//		{
+//			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
+//			ref->incRef(*this);
+//		}
+//#endif
+//	}
+
+public:
+	template	<class W>
+    inline	CDbgPtr(const W* p)
 	{
-		Ptr=const_cast<T*>(p);
+		Ptr=const_cast<T*>(NLMISC::type_cast<const T*>(p));
 #ifdef NL_DEBUG_PTR
-	if(Ptr)
-	{
-		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
-		ref->incRef(*this);
-	}
+		if	(Ptr)
+		{
+			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
+			ref->incRef(*this);
+		}
 #endif
 	}
-	/// Copy constructor.
+	
     CDbgPtr(const CDbgPtr &copy)
 	{
 		Ptr=copy.Ptr;
@@ -402,25 +446,106 @@ public:
 	}
 #endif
 	}
-	/// Release the SmartPtr.
     ~CDbgPtr();
+
+	inline	bool	isNULL	()	const
+	{
+		return	Ptr==NULL;
+	}
+
+	inline	T	*ptr	()	const
+	{
+		return	Ptr;
+	}
+
+	operator T*(void) const
+	{
+		return Ptr;
+	}
 	
-	
-	/// Cast operator.
-    operator T*(void) const {	return Ptr; }
-	/// Indirection operator. Doesn't check NULL.
+	template	<class W>
+    operator W*(void) const
+	{
+		return NLMISC::type_cast<W*>(Ptr);
+	}
+
     T& operator*(void) const {	return *Ptr; }
-	/// Selection operator. Doesn't check NULL.
     T* operator->(void) const {	return Ptr; }
-	/// returns if there's no object pointed by this SmartPtr.
-	//	bool	isNull	() const { return Ptr==NULL; }
 	
-	/// operator=. Giving a NULL pointer is a valid operation.
-    CDbgPtr& operator=(const T* p);
-	/// operator=. Giving a NULL pointer is a valid operation.
+//private:	
+//    inline	CDbgPtr& operator=(const T* p);
+
+	template	<class W>
+	inline	CDbgPtr& operator=(const W* p)
+	{
+#ifdef NL_DEBUG_PTR	
+		if	(p)
+		{
+			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(NLMISC::type_cast<const T*>(p)));
+			ref->incRef(*this);
+		}
+		if	(Ptr)
+		{
+			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
+			ref->decRef(*this);
+		}
+		Ptr = const_cast<T*>(NLMISC::type_cast<const T*>(p));
+		
+#else
+		Ptr = const_cast<T*>(NLMISC::type_cast<const T*>(p));
+#endif
+		return *this;
+	}
+
+	inline	CDbgPtr& operator=(const int value)
+	{
+#ifdef NL_DEBUG
+		nlassert(value==NULL);
+#endif
+
+#ifdef NL_DEBUG_PTR	
+		if	(Ptr)
+		{
+			CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
+			ref->decRef(*this);
+		}
+		Ptr = NULL;
+		
+#else
+		Ptr = NULL;
+#endif
+		return *this;
+	}
+	
+//public:
+//	template	<class W>
+//    inline	CDbgPtr& operator=(const W* p)
+//	{
+//		return	operator=(NLMISC::type_cast<T*>(p));
+//	}
+
     CDbgPtr& operator=(const CDbgPtr &p);
-	/// operator<. Compare the pointers.
     bool operator<(const CDbgPtr &p) const;
+    
+	template <class W>
+	bool operator==(const W* p) const
+	{
+		return	Ptr==NLMISC::type_cast<const T*>(p);
+	}
+	template <class W>
+	bool operator!=(const W* p) const
+	{
+		return	Ptr!=NLMISC::type_cast<const T*>(p);
+	}
+	
+    bool operator==(const CDbgPtr &p) const
+	{
+		return	Ptr==p.Ptr;
+	}
+    bool operator!=(const CDbgPtr &p) const
+	{
+		return	Ptr!=p.Ptr;
+	}
 };
 
 
@@ -439,42 +564,62 @@ inline CDbgPtr<T>::~CDbgPtr(void)
 #endif
 }
 
-template<class T>    
-inline CDbgPtr<T>& CDbgPtr<T>::operator=(const T* p)
-{
-#ifdef NL_DEBUG_PTR
-	
-	// Implicit manage auto-assignation.
-    if(p)
-	{
-		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(p));
-		ref->incRef(*this);
-	}
-    if(Ptr)
-	{
-		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
-		ref->decRef(*this);
-	}
-	Ptr = const_cast<T*>(p);
-	
-#else
-	Ptr = const_cast<T*>(p);
-#endif
-	return *this;
-}
+//template<class T>
+//inline CDbgPtr<T>& CDbgPtr<T>::operator=(const T* p)
+//{
+//#ifdef NL_DEBUG_PTR	
+//    if(p)
+//	{
+//		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(p));
+//		ref->incRef(*this);
+//	}
+//    if(Ptr)
+//	{
+//		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
+//		ref->decRef(*this);
+//	}
+//	Ptr = const_cast<T*>(p);
+//	
+//#else
+//	Ptr = const_cast<T*>(p);
+//#endif
+//	return *this;
+//}
+//
+//
+//template<class T>    
+//inline CDbgPtr<T>& CDbgPtr<T>::operator=(const T* p)
+//{
+//#ifdef NL_DEBUG_PTR	
+//    if(p)
+//	{
+//		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(p));
+//		ref->incRef(*this);
+//	}
+//    if(Ptr)
+//	{
+//		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(Ptr);
+//		ref->decRef(*this);
+//	}
+//	Ptr = const_cast<T*>(p);
+//	
+//#else
+//	Ptr = const_cast<T*>(p);
+//#endif
+//	return *this;
+//}
+
 template<class T>    
 inline CDbgPtr<T>& CDbgPtr<T>::operator=(const CDbgPtr &p)
 {
 	return CDbgPtr<T>::operator=(p.Ptr);
 }
+
 template<class T>    
 inline bool CDbgPtr<T>::operator<(const CDbgPtr &p) const
 {
 	return Ptr<p.Ptr;
 }
-
-
-
 
 
 template <class T>
@@ -483,10 +628,7 @@ class CstCDbgPtr
     const T*	Ptr;
 public:
 	
-	/// Init a NULL Ptr.
     CstCDbgPtr()	{ Ptr=NULL;	}
-	
-	/// Attach a ptr to a SmartPtr.
     CstCDbgPtr(const T* p)
 	{
 		Ptr=p;
@@ -498,7 +640,6 @@ public:
 		}
 #endif
 	}
-	/// Copy constructor.
     CstCDbgPtr(const CstCDbgPtr &copy)
 	{
 		Ptr=copy.Ptr;
@@ -510,24 +651,15 @@ public:
 	}
 #endif
 	}
-	/// Release the SmartPtr.
     ~CstCDbgPtr();
 	
 	
-	/// Cast operator.
     operator const T*(void) const {	return Ptr; }
-	/// Indirection operator. Doesn't check NULL.
     const T& operator*(void) const {	return *Ptr; }
-	/// Selection operator. Doesn't check NULL.
     const T* operator->(void) const {	return Ptr; }
-	/// returns if there's no object pointed by this SmartPtr.
-	//	bool	isNull	() const { return Ptr==NULL; }
 	
-	/// operator=. Giving a NULL pointer is a valid operation.
     CstCDbgPtr& operator=(const T* p);
-	/// operator=. Giving a NULL pointer is a valid operation.
     CstCDbgPtr& operator=(const CstCDbgPtr &p);
-	/// operator<. Compare the pointers.
     bool operator<(const CstCDbgPtr &p) const;	
 };
 
@@ -551,8 +683,6 @@ template<class T>
 inline CstCDbgPtr<T>& CstCDbgPtr<T>::operator=(const T* p)
 {
 #ifdef NL_DEBUG_PTR
-	
-	// Implicit manage auto-assignation.
     if(p)
 	{
 		CDbgRefCount<T>	*ref=static_cast<CDbgRefCount<T>*>(const_cast<T*>(p));

@@ -1,7 +1,7 @@
 /** \file zone_welder.cpp
  * Tool for welding zones exported from 3dsMax
  *
- * $Id: zone_welder.cpp,v 1.11 2001/08/20 14:56:11 berenguier Exp $
+ * $Id: zone_welder.cpp,v 1.12 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -269,6 +269,9 @@ void weldZones(const char *center)
 
 	uint16 weldCount = 0;
 
+	// Error messages
+	vector<string>		errorMessage;
+
 	for(i=0; i<8; i++)
 	{
 		if(adjZonesName[i]=="empty") continue;
@@ -530,33 +533,69 @@ void weldZones(const char *center)
 					centerZonePatchs[ptch].BaseVertices[2],
 					centerZonePatchs[ptch].BaseVertices[3]);
 #endif
-					
-				centerZonePatchs[ptch].BindEdges[j].NPatchs = 1;
-				centerZonePatchs[ptch].BindEdges[j].ZoneId = adjZonesId[i];
-				centerZonePatchs[ptch].BindEdges[j].Next[0] = patchIndex;   
-				centerZonePatchs[ptch].BindEdges[j].Edge[0] = edgeIndex;  
 
-				// adjacent zone edge
-				adjZonePatchs[patchIndex].BindEdges[edgeIndex].NPatchs = 1;
-				adjZonePatchs[patchIndex].BindEdges[edgeIndex].ZoneId = centerZoneId;
-				adjZonePatchs[patchIndex].BindEdges[edgeIndex].Next[0] = ptch;
-				adjZonePatchs[patchIndex].BindEdges[edgeIndex].Edge[0] = j;
+				// Check the edge find is not binded
+				if (adjZonePatchs[patchIndex].BindEdges[edgeIndex].NPatchs!=0)
+				{
+					// Build an error message
+					char error[8000];
 
+					// Zone name
+					string nameCenter, nameAdj;
+					getZoneNameByCoord (centerZoneId&0xff, (centerZoneId>>8)+1, nameCenter);
+					getZoneNameByCoord (adjZonesId[i]&0xff, (adjZonesId[i]>>8)+1, nameAdj);
 
-				// tangent become the mean or both tangents (adj and center)
-				// Here we cross the mean because adjacent edges are counter-oriented
-				// due to the patchs constant orientation.
-				CVector		middle0= (centerZonePatchs[ptch].Patch.Tangents[2*j]+
-					adjZonePatchs[patchIndex].Patch.Tangents[2*edgeIndex+1])/2;
-				CVector		middle1= (centerZonePatchs[ptch].Patch.Tangents[2*j+1]+
-					adjZonePatchs[patchIndex].Patch.Tangents[2*edgeIndex])/2;
+					// Main message
+					smprintf (error, 2048,
+						"Bind Error: try to bind the patch n %d in zone n %s with patch n %d in zone %s\n"
+						"This patch is already binded with the following patches : ", ptch+1, nameAdj.c_str(), 
+						patchIndex+1, nameCenter.c_str() );
 
-				centerZonePatchs[ptch].Patch.Tangents[2*j] = 
-				adjZonePatchs[patchIndex].Patch.Tangents[2*edgeIndex+1] = middle0;
-					
-				centerZonePatchs[ptch].Patch.Tangents[2*j+1] = 
-				adjZonePatchs[patchIndex].Patch.Tangents[2*edgeIndex] = middle1;
+					// Sub message
+					for (uint i=0; i<adjZonePatchs[patchIndex].BindEdges[edgeIndex].NPatchs; i++)
+					{
+						// Last patch ?
+						bool last=(i==(uint)(adjZonePatchs[patchIndex].BindEdges[edgeIndex].NPatchs-1));
 
+						// Sub message
+						char subMessage[512];
+						smprintf ( subMessage, 512,
+							"patch n %d%s", adjZonePatchs[patchIndex].BindEdges[edgeIndex].Next[i]+1, last?"\n":",");
+
+						// Concat the message
+						strcat (error, subMessage);
+					}
+
+					// Add an error message
+					errorMessage.push_back (error);
+				}
+				else
+				{
+					centerZonePatchs[ptch].BindEdges[j].NPatchs = 1;
+					centerZonePatchs[ptch].BindEdges[j].ZoneId = adjZonesId[i];
+					centerZonePatchs[ptch].BindEdges[j].Next[0] = patchIndex;   
+					centerZonePatchs[ptch].BindEdges[j].Edge[0] = edgeIndex;  
+
+					// adjacent zone edge
+					adjZonePatchs[patchIndex].BindEdges[edgeIndex].NPatchs = 1;
+					adjZonePatchs[patchIndex].BindEdges[edgeIndex].ZoneId = centerZoneId;
+					adjZonePatchs[patchIndex].BindEdges[edgeIndex].Next[0] = ptch;
+					adjZonePatchs[patchIndex].BindEdges[edgeIndex].Edge[0] = j;
+
+					// tangent become the mean or both tangents (adj and center)
+					// Here we cross the mean because adjacent edges are counter-oriented
+					// due to the patchs constant orientation.
+					CVector		middle0= (centerZonePatchs[ptch].Patch.Tangents[2*j]+
+						adjZonePatchs[patchIndex].Patch.Tangents[2*edgeIndex+1])/2;
+					CVector		middle1= (centerZonePatchs[ptch].Patch.Tangents[2*j+1]+
+						adjZonePatchs[patchIndex].Patch.Tangents[2*edgeIndex])/2;
+
+					centerZonePatchs[ptch].Patch.Tangents[2*j] = 
+					adjZonePatchs[patchIndex].Patch.Tangents[2*edgeIndex+1] = middle0;
+						
+					centerZonePatchs[ptch].Patch.Tangents[2*j+1] = 
+					adjZonePatchs[patchIndex].Patch.Tangents[2*edgeIndex] = middle1;
+				}
 			}
 			
 		}
@@ -809,41 +848,56 @@ void weldZones(const char *center)
 		}
 	}*/
 
-
-	// Save adjacent zones.
-	//=====================
-	for(i=0;i<8;i++)
+	// Some errors ?
+	if (errorMessage.empty())
 	{
-		if(adjZonesName[i]=="empty") continue;
-		if(!adjZoneFileFound[i]) continue;
+		// Save adjacent zones.
+		//=====================
+		for(i=0;i<8;i++)
+		{
+			if(adjZonesName[i]=="empty") continue;
+			if(!adjZoneFileFound[i]) continue;
 
-		std::vector<CPatchInfo>		&adjZonePatchs= adjZoneInfos[i].Patchs;
-		std::vector<CBorderVertex>	&adjZoneBorderVertices= adjZoneInfos[i].BorderVertices;
+			std::vector<CPatchInfo>		&adjZonePatchs= adjZoneInfos[i].Patchs;
+			std::vector<CBorderVertex>	&adjZoneBorderVertices= adjZoneInfos[i].BorderVertices;
 
-		adjZones[i].build(adjZonesId[i], adjZonePatchs, adjZoneBorderVertices);
-#if WELD_LOG
-		fprintf(fdbg,"[%d] binds :\n");
-		adjZones[i].debugBinds(fdbg);
-#endif
+			adjZones[i].build(adjZonesId[i], adjZonePatchs, adjZoneBorderVertices);
+	#if WELD_LOG
+			fprintf(fdbg,"[%d] binds :\n");
+			adjZones[i].debugBinds(fdbg);
+	#endif
+			std::string strtmp;
+
+			//strtmp = outputPath;
+			strtmp = outputDir+adjZonesName[i]+outputExt;
+			COFile adjSave(strtmp);
+			printf("writing file %s\n",strtmp.c_str());
+			adjZones[i].serial(adjSave);
+
+		}
+
+		// Save center zone.
+		//==================
+		zone.build(centerZoneId, centerZonePatchs, centerZoneBorderVertices);
 		std::string strtmp;
+		strtmp = outputDir+center+outputExt;
 
-		//strtmp = outputPath;
-		strtmp = outputDir+adjZonesName[i]+outputExt;
-		COFile adjSave(strtmp);
+		COFile centerSave(strtmp);
 		printf("writing file %s\n",strtmp.c_str());
-		adjZones[i].serial(adjSave);
-
+		zone.serial(centerSave);
 	}
+	else
+	{
+		// Main message
+		printf ("ERROR: weld failed. Correct errors below: (indices are MAX indices (+1))\n");
 
-	// Save center zone.
-	//==================
-	zone.build(centerZoneId, centerZonePatchs, centerZoneBorderVertices);
-	std::string strtmp;
-	strtmp = outputDir+center+outputExt;
-
-	COFile centerSave(strtmp);
-	printf("writing file %s\n",strtmp.c_str());
-	zone.serial(centerSave);
+		// For each message
+		for (uint i=0; i<errorMessage.size(); i++)
+		{
+			// Message
+			printf ("%s", errorMessage[i].c_str());
+		}
+	}
 
 }
 

@@ -1,7 +1,7 @@
 /** \file track_keyframer.h
  * Definition of TrackKeyframer.
  *
- * $Id: track_keyframer.h,v 1.6 2001/08/31 08:07:43 vizerie Exp $
+ * $Id: track_keyframer.h,v 1.7 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -189,6 +189,13 @@ public:
 			// must slerp from last to first, 
 			dateNext= _LoopEnd;
 		}
+		else if (!_LoopMode && _MapKey.size()>=1 )
+		{
+			// clamp to the last
+			TMapTimeCKey::iterator iteLast= ite;
+			iteLast--;
+			next= &(iteLast->second);
+		}
 
 
 		// First previous ?
@@ -198,6 +205,12 @@ public:
 			ite--;
 			previous= &(ite->second);
 			datePrevious=ite->first;
+		}
+		else if (!_MapKey.empty())
+		{
+			// Clamp at beginTime
+			next= &(ite->second);
+			dateNext=ite->first;
 		}
 
 		// Call evalutation fonction

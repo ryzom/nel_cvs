@@ -1,7 +1,7 @@
 /** \file scene.cpp
  * A 3d scene, manage model instantiation, tranversals etc..
  *
- * $Id: scene.cpp,v 1.53 2001/09/20 13:45:43 besson Exp $
+ * $Id: scene.cpp,v 1.54 2001/10/16 14:57:06 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -571,7 +571,9 @@ void CScene::animate( double atTime )
 	else
 	{
 		_EllapsedTime = (float) (atTime - _RealTime) ;
-		nlassert(_EllapsedTime >= 0);
+		//nlassert(_EllapsedTime >= 0);
+		if (_EllapsedTime < 0.0f)	// NT WorkStation PATCH (Yes you are not dreaming
+			_EllapsedTime = 0.01f;	// deltaTime can be less than zero!!)
 		_EllapsedTime = fabsf(_EllapsedTime);
 		_RealTime = atTime ;
 		_CurrentTime += _EllapsedTime ;

@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * main header file for the OBJECT_VIEWER DLL
  *
- * $Id: object_viewer.h,v 1.21 2001/09/18 14:40:58 corvazier Exp $
+ * $Id: object_viewer.h,v 1.22 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -95,17 +95,33 @@ class CMeshDesc
 {
 public:
 	CMeshDesc () {};
-	CMeshDesc (const char* meshName, const char* skeletonName)
+	CMeshDesc (std::vector<std::string> &meshNames, const char* skeletonName)
 	{
-		MeshName=meshName;
+		MeshNames=meshNames;
 		SkeletonName=skeletonName;
 	}
-	std::string		MeshName;
-	std::string		SkeletonName;
+
+	std::vector<std::string>	MeshNames;
+	std::string					SkeletonName;
 	void			serial (NLMISC::IStream& s)
 	{
-		int ver=s.serialVersion (0);
-		s.serial (MeshName);
+		int ver=s.serialVersion (1);
+
+		if (ver<1)
+		{
+			// Readonly
+			nlassert (s.isReading());
+
+			// One name
+			std::string singleName;
+			s.serial (singleName);
+			MeshNames.clear ();
+			MeshNames.push_back (singleName);
+		}
+		else
+		{
+			s.serialCont (MeshNames);
+		}
 		s.serial (SkeletonName);
 	}
 };
@@ -143,7 +159,7 @@ public:
 	void					 removeAllInstancesFromScene();
 
 	// Load a mesh
-	bool loadMesh (const char* meshFilename, const char* skeleton="");
+	bool loadMesh (std::vector<std::string> &meshFilename, const char* skeleton="");
 
 	// Load an instance group
 	bool loadInstanceGroup(const char *igFilename);
@@ -224,6 +240,15 @@ public:
 	/// eval sound tracks
 	void evalSoundTrack (float lastTime, float currentTime);
 
+	/// Setup the playlist with the playlist
+	void setupPlaylist (float time);
+		
+	/// Enable disable channels
+	void enableChannels ();
+		
+	/// Setup transform positions
+	void setupPositions ();
+
 private:
 
 	CMainFrame									*_MainFrame;
@@ -235,7 +260,7 @@ private:
 	std::vector<CMeshDesc>						_ListMeshes;
 	std::vector<class NL3D::CTransformShape*>	_ListTransformShape;
 	NL3D::CAnimationSet							_AnimationSet;
-	NL3D::CChannelMixer							_ChannelMixer;
+	std::vector<NL3D::CChannelMixer>			_ChannelMixer;
 	NL3D::CEvent3dMouseListener					_MouseListener;
 	NLMISC::CRGBA								_HotSpotColor;
 	float										_HotSpotSize;

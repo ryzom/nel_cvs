@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * <File description>
  *
- * $Id: animation_set_dlg.h,v 1.6 2001/06/15 16:24:45 corvazier Exp $
+ * $Id: animation_set_dlg.h,v 1.7 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,8 +47,10 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CAnimationSetDlg)
 	enum { IDD = IDD_ANIMATION_SET };
+	CListBox	PlayList;
 	CTreeCtrl	SkelTree;
 	CTreeCtrl	Tree;
+	int			UseMixer;
 	//}}AFX_DATA
 
 
@@ -78,6 +80,13 @@ protected:
 	afx_msg void OnReset();
 	afx_msg void OnAddSkelWt();
 	afx_msg void OnDestroy();
+	afx_msg void OnListInsert();
+	afx_msg void OnListUp();
+	afx_msg void OnListDown();
+	afx_msg void OnListDelete();
+	afx_msg void OnSetAnimLength();
+	afx_msg void OnUseList();
+	afx_msg void OnUseMixer();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * <File description>
  *
- * $Id: animation_dlg.h,v 1.7 2001/09/18 14:40:58 corvazier Exp $
+ * $Id: animation_dlg.h,v 1.8 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -57,6 +57,8 @@ public:
 	float	Start;
 	BOOL	Loop;
 	int		UICurrentFrame;
+	BOOL	Inplace;
+	BOOL	IncPos;
 	//}}AFX_DATA
 
 	bool					Playing;

@@ -1,7 +1,7 @@
 /** \file export_anim.cpp
  * Export from 3dsmax to NeL
  *
- * $Id: export_anim.cpp,v 1.19 2001/10/10 15:39:11 besson Exp $
+ * $Id: export_anim.cpp,v 1.20 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -39,9 +39,6 @@
 
 using namespace NLMISC;
 using namespace NL3D;
-
-#define PATH_POS_NAME "PathPos"
-#define PATH_ROT_NAME "PathRotQuat"
 
 static Class_ID DefNoteTrackClassID(NOTETRACK_CLASS_ID, 0);
 
@@ -284,10 +281,7 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			if (pTrack)
 			{
 				// Choose the good name for this track
-				if ((!root)||view)
-					name=parentName+std::string (ITransformable::getRotQuatValueName());
-				else
-					name=parentName+std::string (PATH_ROT_NAME);
+				name=parentName+std::string (ITransformable::getRotQuatValueName());
 				if (animation.getTrackByName (name.c_str()))
 				{
 					delete pTrack;
@@ -310,10 +304,7 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			if (pTrack)
 			{
 				// Choose the good name for this track
-				if ((!root)||view)
-					name=parentName+std::string (ITransformable::getPosValueName());
-				else
-					name=parentName+std::string (PATH_POS_NAME);
+				name=parentName+std::string (ITransformable::getPosValueName());
 				if (animation.getTrackByName (name.c_str()))
 				{
 					delete pTrack;
@@ -331,10 +322,7 @@ void CExportNel::addNodeTracks (CAnimation& animation, INode& node, const char* 
 			if (pTrack)
 			{
 				// Choose the good name for this track
-				if ((!root)||view)
-					name=parentName+std::string (ITransformable::getPosValueName());
-				else
-					name=parentName+std::string (PATH_POS_NAME);
+				name=parentName+std::string (ITransformable::getPosValueName());
 				if (animation.getTrackByName (name.c_str()))
 				{
 					delete pTrack;

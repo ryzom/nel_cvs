@@ -1,7 +1,7 @@
 /** \file object_viewer.cpp
  * : Defines the initialization routines for the DLL.
  *
- * $Id: object_viewer.cpp,v 1.41 2001/09/18 14:40:58 corvazier Exp $
+ * $Id: object_viewer.cpp,v 1.42 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -176,9 +176,6 @@ CObjectViewer::CObjectViewer ()
 	_AnimationDlg=NULL;
 	_ParticleDlg = NULL ;
 	_FontGenerator = NULL ;
-
-	// Setup animation set
-	_ChannelMixer.setAnimationSet (&_AnimationSet);
 
 	// no lag is the default
 	_Lag = 0;
@@ -446,6 +443,175 @@ void CObjectViewer::initUI (HWND parent)
 
 // ***************************************************************************
 
+void addTransformation (CMatrix &current, CAnimation *anim, float begin, float end, ITrack *posTrack, ITrack *rotquatTrack)
+{
+	// Normalize the mt
+	CVector I = current.getI ();
+	CVector J = current.getJ ();
+	I.z = 0;
+	J.z = 0;
+	J.normalize ();
+	CVector K = I^J;
+	K.normalize ();
+	I = J^K;
+	I.normalize ();
+	CMatrix normalized;
+	normalized.setRot (I, J, K);
+	normalized.setPos (current.getPos ());
+	current = normalized;
+
+	// Remove the start of the animation
+	CQuat rotStart (0,0,0,1);
+	CVector posStart (0,0,0);
+	CQuat rotEnd (0,0,0,1);
+	CVector posEnd (0,0,0);
+	if (rotquatTrack)
+	{
+		// Interpolate the rotation
+		rotquatTrack->interpolate (begin, rotStart);
+		rotquatTrack->interpolate (end, rotEnd);
+	}
+	if (posTrack)
+	{
+		// Interpolate the position
+		posTrack->interpolate (begin, posStart);
+		posTrack->interpolate (end, posEnd);
+	}
+
+	// Remove the init rotation and position
+	normalized.setRot (rotStart);
+	normalized.setPos (posStart);
+	normalized.invert ();
+	current *= normalized;
+
+	// Add the final rotation and position
+	normalized.setRot (rotEnd);
+	normalized.setPos (posEnd);
+	current *= normalized;
+}
+
+// ***************************************************************************
+
+void CObjectViewer::setupPlaylist (float time)
+{
+	// A playlist
+	CAnimationPlaylist playlist;
+
+	// Empty with playlist
+	for (uint i=0; i<CChannelMixer::NumAnimationSlot; i++)
+	{
+		// Empty slot
+		playlist.setAnimation (i, CAnimationPlaylist::empty);
+	}
+
+	// Index choosed
+	uint choosedIndex = 0xffffffff;
+
+	// Current matrix
+	CMatrix current;
+	current.identity ();
+
+	// Track here
+	bool there = false;
+
+	// Some animation in the list ?
+	if (_AnimationSetDlg->PlayList.GetCount()>0)
+	{
+		// Current animation
+		CAnimation *anim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (0));
+		ITrack *posTrack = (ITrack *)anim->getTrackByName ("pos");
+		ITrack *rotquatTrack = (ITrack *)anim->getTrackByName ("rotquat");
+		there = posTrack || rotquatTrack;
+
+		// Accumul time
+		float startTime=0;
+		float endTime=anim->getEndTime()-anim->getBeginTime();
+
+		// Animation index
+		int index = 0;
+
+		// Get animation used in the list
+		while (time>=endTime)
+		{
+			// Add the transformation
+			addTransformation (current, anim, anim->getBeginTime(), anim->getEndTime(), posTrack, rotquatTrack);
+
+			// Next animation
+			index++;
+			if (index<_AnimationSetDlg->PlayList.GetCount())
+			{
+
+				// Pointer on the animation
+				anim=_AnimationSet.getAnimation (_AnimationSetDlg->PlayList.GetItemData (index));
+				posTrack = (ITrack *)anim->getTrackByName ("pos");
+				rotquatTrack = (ITrack *)anim->getTrackByName ("rotquat");
+
+				// Add start time
+				startTime = endTime;
+				endTime = startTime + anim->getEndTime()-anim->getBeginTime();
+
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		// Time cropped ?
+		if (index>=_AnimationSetDlg->PlayList.GetCount())
+		{
+			// Yes
+			index--;
+
+			// Good index
+			choosedIndex = _AnimationSetDlg->PlayList.GetItemData (index);
+			anim=_AnimationSet.getAnimation (choosedIndex);
+
+			// End time for last anim
+			startTime = anim->getEndTime () - time;
+		}
+		else
+		{
+			// No
+
+			// Add the transformation
+			addTransformation (current, anim, anim->getBeginTime(), anim->getBeginTime() + time - startTime, posTrack, rotquatTrack);
+
+			// Good index
+			choosedIndex = _AnimationSetDlg->PlayList.GetItemData (index);
+
+			// Get the animation
+			anim=_AnimationSet.getAnimation (choosedIndex);
+
+			// Final time
+			startTime -= anim->getBeginTime ();
+		}
+
+		// Set the slot		
+		playlist.setTimeOrigin (0, startTime);
+		playlist.setWrapMode (0, CAnimationPlaylist::Clamp);
+		playlist.setStartWeight (0, 1, 0);
+		playlist.setEndWeight (0, 1, 1);
+		playlist.setAnimation (0, choosedIndex);
+	}
+
+	// Set the channel mixer
+	for (i=0; i<_ChannelMixer.size(); i++)
+	{
+		// Setup the channel
+		playlist.setupMixer (_ChannelMixer[i], _AnimationDlg->getTime());
+
+		// Setup the pos and rot for this shape
+		if (there)
+		{
+			_ListTransformShape[i]->setPos (current.getPos());
+			_ListTransformShape[i]->setRotQuat (current.getRot());
+		}
+	}
+}
+
+// ***************************************************************************
+
 void CObjectViewer::go ()
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -474,7 +640,17 @@ void CObjectViewer::go ()
 		_SlotDlg->getSlot ();
 
 		// Setup the channel mixer
-		_SlotDlg->Playlist.setupMixer (_ChannelMixer, _AnimationDlg->getTime());
+		_AnimationSetDlg->UpdateData ();
+		if (_AnimationSetDlg->UseMixer)
+		{
+			// For each channel mixer
+			for (uint i=0; i<_ChannelMixer.size(); i++)
+			{
+				_SlotDlg->Playlist.setupMixer (_ChannelMixer[i], _AnimationDlg->getTime());
+			}
+		}
+		else
+			setupPlaylist (_AnimationDlg->getTime());
 
 		// Eval sound tracks
 		evalSoundTrack (_AnimationDlg->getLastTime(), _AnimationDlg->getTime());
@@ -485,9 +661,8 @@ void CObjectViewer::go ()
 		CNELU::Scene.animate( (float) 0.001f * NLMISC::CTime::getLocalTime());
 
 		// Eval channel mixer for transform
-		_ChannelMixer.eval (false);
-
-
+		for (uint i=0; i<_ChannelMixer.size(); i++)
+			_ChannelMixer[i].eval (false);
 
 		// Clear the buffers
 
@@ -716,12 +891,46 @@ void CObjectViewer::resetSlots ()
 
 void CObjectViewer::reinitChannels ()
 {
-	// Reset the channels
-	_ChannelMixer.resetChannels ();
+	// Reset the channel mixxer array
+	_ChannelMixer.resize (_ListTransformShape.size());
 
 	// Add all the instance in the channel mixer
 	for (uint i=0; i<_ListTransformShape.size(); i++)
-		_ListTransformShape[i]->registerToChannelMixer (&_ChannelMixer, _ListShapeBaseName[i]);
+	{
+		// Reset the channels
+		_ChannelMixer[i].resetChannels ();
+
+		// Setup animation set
+		_ChannelMixer[i].setAnimationSet (&_AnimationSet);
+
+		// Register the transform
+		_ListTransformShape[i]->registerToChannelMixer (&(_ChannelMixer[i]), _ListShapeBaseName[i]);
+	}
+
+	// Enable / disable channels
+	enableChannels ();
+}
+
+// ***************************************************************************
+
+void CObjectViewer::enableChannels ()
+{
+	// Disable some channels
+	_AnimationSetDlg->UpdateData ();
+	bool enable = (_AnimationSetDlg->UseMixer == 1);
+
+	// Get the pos and rot channel id
+	uint posId = _AnimationSet.getChannelIdByName ("pos");
+	uint rotQuatId = _AnimationSet.getChannelIdByName ("rotquat");
+	uint rotEulerId = _AnimationSet.getChannelIdByName ("roteuler");
+
+	// Add all the instance in the channel mixer
+	for (uint i=0; i<_ListTransformShape.size(); i++)
+	{
+		_ChannelMixer[i].enableChannel (posId, enable);
+		_ChannelMixer[i].enableChannel (rotQuatId, enable);
+		_ChannelMixer[i].enableChannel (rotEulerId, enable);
+	}
 }
 
 // ***************************************************************************
@@ -797,7 +1006,9 @@ void CObjectViewer::serial (NLMISC::IStream& f)
 	{
 		// Load each shape
 		for (uint s=0; s<meshArray.size(); s++)
-			loadMesh (meshArray[s].MeshName.c_str(), meshArray[s].SkeletonName.c_str());
+		{
+			loadMesh (meshArray[s].MeshNames, meshArray[s].SkeletonName.c_str());
+		}
 	}
 
 	// List of animation
@@ -926,7 +1137,7 @@ bool CObjectViewer::loadInstanceGroup(const char *igFilename)
 
 // ***************************************************************************
 
-bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
+bool CObjectViewer::loadMesh (std::vector<std::string> &meshFilename, const char* skeleton)
 {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -934,11 +1145,6 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 	char drive[256];
 	char dir[256];
 	char path[256];
-
-	// Add search path for the mesh
-	_splitpath (meshFilename, drive, dir, NULL, NULL);
-	_makepath (path, drive, dir, NULL, NULL);
-	CPath::addSearchPath (path);
 
 	// Add search path for the skeleton
 	if (skeleton)
@@ -948,98 +1154,120 @@ bool CObjectViewer::loadMesh (const char* meshFilename, const char* skeleton)
 		CPath::addSearchPath (path);
 	}
 
-	// Shape pointer
-	IShape *shapeMesh=NULL;
-	IShape *shapeSkel=NULL;
-
 	// Open a file
 	CIFile file;
-	if (file.open (meshFilename))
-	{
-		// Sream a shape
-		CShapeStream streamShape;
-		try
-		{
-			// Stream it
-			streamShape.serial (file);
 
-			// Add the shape
-			shapeMesh=streamShape.getShapePointer();
-		}
-		catch (Exception& e)
-		{
-			_MainFrame->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
-			return false;
-		}
-	}
-	else
-	{
-		// Create a message
-		char msg[512];
-		_snprintf (msg, 512, "Can't open the file %s for reading.", meshFilename);
-		_MainFrame->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
-		return false;
-	}
+	// Shape pointer
+	IShape *shapeSkel=NULL;
+	NL3D::CSkeletonModel *transformSkel=NULL;
+
+	// Skel error ?
+	bool skelError=false;
 
 	// Continue ?
 	if (skeleton&&(strcmp (skeleton, "")!=0))
 	{
-		// Skel error ?
-		bool skelError=false;
 
-		if (skeleton)
+		// Open a file
+		if (file.open (skeleton))
 		{
-			// Open a file
-			if (file.open (skeleton))
+			// Sream a shape
+			CShapeStream streamShape;
+			try
 			{
-				// Sream a shape
-				CShapeStream streamShape;
-				try
-				{
-					// Stream it
-					streamShape.serial (file);
+				// Stream it
+				streamShape.serial (file);
 
-					// Add the shape
-					shapeSkel=streamShape.getShapePointer();
-				}
-				catch (Exception& e)
-				{
-					_MainFrame->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
-
-					// error
-					skelError=true;
-				}
+				// Add the shape
+				shapeSkel=streamShape.getShapePointer();
 			}
-			else
+			catch (Exception& e)
 			{
-				// Create a message
-				char msg[512];
-				_snprintf (msg, 512, "Can't open the file %s for reading.", meshFilename);
-				_MainFrame->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+				_MainFrame->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
 
 				// error
 				skelError=true;
 			}
 		}
-
-		// Remove the mesh shape ?
-		if (skelError)
+		else
 		{
-			if (shapeMesh)
-				delete shapeMesh;
-			shapeMesh=NULL;
-			return false;
+			// Create a message
+			char msg[512];
+			_snprintf (msg, 512, "Can't open the file %s for reading.", meshFilename);
+			_MainFrame->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+
+			// error
+			skelError=true;
 		}
 	}
 
-	// Add the skel shape
-	NL3D::CSkeletonModel *transformSkel=NULL;
-	if (shapeSkel)
-		transformSkel=addSkel (shapeSkel, skeleton, "");
+	// Skeleton error ?
+	if (skelError)
+		return false;
 
-	// Add the skel shape
-	if (shapeMesh)
-		addMesh (shapeMesh, meshFilename, "", transformSkel);
+	// Skeleton used ?
+	bool skelUsed = false;
+
+	// For each meshes
+	for (uint i=0; i<meshFilename.size(); i++)
+	{
+		// Filename
+		const char *fileName = meshFilename[i].c_str();
+
+		// Add search path for the mesh
+		_splitpath (fileName, drive, dir, NULL, NULL);
+		_makepath (path, drive, dir, NULL, NULL);
+		CPath::addSearchPath (path);
+
+		// Shape pointer
+		IShape *shapeMesh=NULL;
+
+		if (file.open (fileName))
+		{
+			// Sream a shape
+			CShapeStream streamShape;
+			try
+			{
+				// Stream it
+				streamShape.serial (file);
+
+				// Add the shape
+				shapeMesh=streamShape.getShapePointer();
+			}
+			catch (Exception& e)
+			{
+				_MainFrame->MessageBox (e.what(), "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+				continue;
+			}
+		}
+		else
+		{
+			// Create a message
+			char msg[512];
+			_snprintf (msg, 512, "Can't open the file %s for reading.", fileName);
+			_MainFrame->MessageBox (msg, "NeL object viewer", MB_OK|MB_ICONEXCLAMATION);
+			continue;
+		}
+
+		// Add the skel shape
+		if (shapeSkel&&(!skelUsed))
+		{
+			// Add the skel
+			transformSkel=addSkel (shapeSkel, skeleton, "");
+			skelUsed = true;
+		}
+
+		// Add the skel shape
+		if (shapeMesh)
+			addMesh (shapeMesh, fileName, "", transformSkel);
+	}
+
+	// Skel not used ?
+	if ((!skelUsed)&&shapeSkel)
+	{
+		// Remove it
+		delete shapeSkel;
+	}
 
 	// Add an entry for config
 	_ListMeshes.push_back (CMeshDesc (meshFilename, skeleton));
@@ -1168,6 +1396,7 @@ void CObjectViewer::setSingleAnimation (NL3D::CAnimation* pAnim, const char* nam
 	// Add the animation to the animationSet
 	_AnimationSetDlg->UpdateData (TRUE);
 	_AnimationSetDlg->addAnimation (pAnim, name);
+	_AnimationSetDlg->UseMixer = 1;
 	_AnimationSetDlg->UpdateData (FALSE);
 
 	// Set time

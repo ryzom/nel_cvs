@@ -1,6 +1,6 @@
 /** \file object_viewer_interface.cpp
  *
- * $Id: object_viewer_interface.h,v 1.10 2001/09/06 08:45:16 vizerie Exp $
+ * $Id: object_viewer_interface.h,v 1.11 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -70,7 +70,7 @@ public:
 	virtual void					 removeAllInstancesFromScene()=0;
 
 	// Load a mesh
-	virtual bool loadMesh (const char* meshFilename, const char* skeleton)=0;
+	virtual bool loadMesh (std::vector<std::string> &meshFilename, const char* skeleton)=0;
 
 	// Load a shape
 	virtual void resetCamera ()=0;

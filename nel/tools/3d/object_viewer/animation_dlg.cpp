@@ -1,7 +1,7 @@
 /** \file animation_dlg.cpp
  * implementation file
  *
- * $Id: animation_dlg.cpp,v 1.6 2001/09/18 14:40:58 corvazier Exp $
+ * $Id: animation_dlg.cpp,v 1.7 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -54,6 +54,8 @@ CAnimationDlg::CAnimationDlg(class CObjectViewer* main, CWnd* pParent /*=NULL*/)
 	Loop = TRUE;
 	UICurrentFrame = 0;
 	CurrentFrame = 0.0f;
+	Inplace = FALSE;
+	IncPos = FALSE;
 	//}}AFX_DATA_INIT
 	LastFrame = 0;
 	Playing=false;
@@ -74,6 +76,8 @@ void CAnimationDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_START_EDIT, Start);
 	DDX_Check(pDX, IDC_LOOP, Loop);
 	DDX_Text(pDX, IDC_CURRENT_FRAME, UICurrentFrame);
+	DDX_Check(pDX, IDC_INPLACE, Inplace);
+	DDX_Check(pDX, IDC_INC_POS, IncPos);
 	//}}AFX_DATA_MAP
 }
 

@@ -1,7 +1,7 @@
 /** \file rpo2nel.cpp
  * <File description>
  *
- * $Id: rpo2nel.cpp,v 1.8 2001/10/08 15:02:51 corvazier Exp $
+ * $Id: rpo2nel.cpp,v 1.9 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,10 @@
 // For MAX_RELEASE
 #include <plugapi.h>
 
+// For mprintf
+#include <maxscrpt.h>
+
+using namespace std;
 using namespace NL3D;
 using namespace NLMISC;
 
@@ -132,6 +136,75 @@ bool RPatchMesh::exportZone(INode* pNode, PatchMesh* pPM, NL3D::CZone& zone, int
 	Patch*					pPatch;
 	
 	TM=pNode->GetObjectTM(0);
+
+	// ---
+	// --- Basic checks
+	// ---
+
+	// Map edge count
+	map<pair<uint, uint>, uint >	edgeSet;
+
+	// Triple edge Patch error
+	set<uint>	patchError;
+
+	// For each patches
+	for (uint patch=0; patch<(uint)pPM->numPatches; patch++)
+	{
+		// For each edges
+		for (uint edge=0; edge<4; edge++)
+		{
+			// Two vertices
+			uint v1 = pPM->edges[pPM->patches[patch].edge[edge]].v1;
+			uint v2 = pPM->edges[pPM->patches[patch].edge[edge]].v2;
+
+			// Insert in the map
+			map<pair<uint, uint>, uint >::iterator	ite;
+			ite = edgeSet.find (pair<uint, uint>(min(v1, v2), max(v1, v2)));
+			
+			// Inserted ?
+			if (ite == edgeSet.end())
+				ite = edgeSet.insert (pair<pair<uint, uint>, uint>(pair<uint, uint>(min(v1, v2), max(v1, v2)), 1)).first;
+			else
+			{
+				// Add a ref
+				ite->second++;
+
+				// Patch error ?
+				if (ite->second>=3)
+				{
+					// Add a patch error
+					patchError.insert (patch);
+				}
+			}
+		}
+	}
+
+	// Some errors ?
+	if (!patchError.empty())
+	{
+		// Make an error message
+		char error[2098];
+		smprintf (error, 2098, "Error: triple edge detected in ");
+
+		// For each error
+		set<uint>::iterator ite=patchError.begin();
+		while (ite!=patchError.end())
+		{
+			// Sub error message
+			char subError[512];
+			smprintf (subError, 512, "patch %d ", (*ite)+1);
+			strcat (error, subError);
+
+			// Next error
+			ite++;
+		}
+
+		// Show the message
+		mprintf (error);
+
+		// Error
+		return false;
+	}
 
 	// ---
 	// --- Basic exports

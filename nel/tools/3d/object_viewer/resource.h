@@ -70,13 +70,18 @@
 #define IDR_LOCATED_BINDABLE_MENU       1025
 #define IDC_FRW                         1026
 #define IDR_PARTICLE_SYSTEM_MENU        1026
+#define IDC_LIST_INSERT                 1026
 #define IDC_FFW                         1027
 #define IDD_LOCATED_BINDABLE            1027
+#define IDC_LIST_DELETE                 1027
 #define IDB_PARTICLE_SIZE               1028
+#define IDC_LIST_UP                     1028
 #define IDC_START                       1029
 #define IDB_PARTICLE_COLOR              1029
+#define IDC_LIST_DOWN                   1029
 #define IDC_END                         1030
 #define IDB_PARTICLE_ANGLE              1030
+#define IDC_SET_ANIM_LENGTH             1030
 #define IDC_START_EDIT                  1031
 #define IDD_COLOR_EDIT                  1031
 #define IDC_END_EDIT                    1032
@@ -299,6 +304,11 @@
 #define IDC_PARAMETRIC_MOTION           1189
 #define IDC_TRIGGER_ON_DEATH            1191
 #define IDC_EDIT_TRIGGER_ON_DEATH       1192
+#define IDC_INPLACE                     1194
+#define IDC_INC_POS                     1195
+#define IDC_USE_LIST                    1195
+#define IDC_USE_MIXER                   1196
+#define IDC_PLAYLIST                    1197
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -416,7 +426,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1089
 #define _APS_NEXT_COMMAND_VALUE         32871
-#define _APS_NEXT_CONTROL_VALUE         1193
+#define _APS_NEXT_CONTROL_VALUE         1198
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

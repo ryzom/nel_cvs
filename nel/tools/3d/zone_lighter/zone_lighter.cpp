@@ -1,7 +1,7 @@
 /** \file zone_lighter.cpp
  * zone_lighter.cpp : Very simple zone lighter
  *
- * $Id: zone_lighter.cpp,v 1.9 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.10 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -412,6 +412,8 @@ int main(int argc, char* argv[])
 				// **********
 				// *** Build triangle array
 				// **********
+
+				landscape->checkBinds ();
 
 				// Add triangles from landscape
 				landscape->enableAutomaticLighting (false);

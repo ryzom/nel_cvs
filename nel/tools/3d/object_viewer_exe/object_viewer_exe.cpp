@@ -11,6 +11,7 @@
 
 using namespace NL3D;
 using namespace NLMISC;
+using namespace std;
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
@@ -42,8 +43,12 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		// Argument ?
 		if (strcmp (commandLinePtr, "")!=0)
 		{
+			// Make a string vector
+			vector<string> strVector;
+			strVector.push_back (commandLinePtr);
+
 			// Try to load a shape
-			if (objectViewer->loadMesh (commandLinePtr, ""))
+			if (objectViewer->loadMesh (strVector, ""))
 			{
 				// Reset the camera
 				objectViewer->resetCamera ();

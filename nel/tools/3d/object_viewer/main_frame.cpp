@@ -378,7 +378,7 @@ void CMainFrame::OnClear()
 	ObjView->_ListTransformShape.clear ();
 
 	// Erase the channel mixer
-	ObjView->_ChannelMixer.resetChannels ();
+	ObjView->_ChannelMixer.clear ();
 
 	// Erase the entry of the viewer
 	ObjView->_ListMeshes.clear ();
@@ -474,37 +474,112 @@ void CMainFrame::OnFileLoadconfig()
 	}
 }
 
+#include <dlgs.h>       // for standard control IDs for commdlg
+
 void CMainFrame::OnFileOpen() 
 {
 	// update UI
 	update ();
 
 	// Create a dialog
-	static char BASED_CODE szFilter[] = "NeL Shape Files & IG (*.shape;*.ig;*.ps)|*.shape; *.ig; *.ps||";
-	CFileDialog fileDlg( TRUE, ".shape", "*.shape;*.ig;*.ps", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter);
-	if (fileDlg.DoModal()==IDOK)
+	static char BASED_CODE szFilter[] = 
+		"All NeL Files (*.shape;*.ps;*.ig)\0*.shape;*.ps;*.ig\0"
+		"NeL Shape Files (*.shape)\0*.shape\0"
+		"NeL Particule System Files (*.ps)\0*.ps\0"
+		"NeL Instance Group Files (*.ig)\0*.ig\0"
+		"All Files (*.*)\0*.*\0\0";
+
+	// Filename buffer
+	char buffer[65535];
+	buffer[0]=0;
+
+	OPENFILENAME openFile;
+	memset (&openFile, 0, sizeof (OPENFILENAME));
+	openFile.lStructSize = sizeof (OPENFILENAME);
+	openFile.hwndOwner = this->m_hWnd;
+    openFile.lpstrFilter = szFilter;
+    openFile.nFilterIndex = 0;
+    openFile.lpstrFile = buffer;
+    openFile.nMaxFile = 65535;
+    openFile.Flags = OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT|OFN_ALLOWMULTISELECT|OFN_ENABLESIZING|OFN_EXPLORER;
+    openFile.lpstrDefExt = "*.shape;*.ig;*.ps";
+	
+
+	if (GetOpenFileName(&openFile))
 	{		
-		// test wether it is a single shape or an intance group
-		if ( fileDlg.GetPathName().Find(".ig") != -1) // we load an instance group
+		// Build an array of name
+		std::vector<std::string> meshFilename;
+
+		// Filename pointer
+		char *c=buffer;
+
+		// Read the path
+		CString path = buffer;
+		if (path.GetLength()>openFile.nFileOffset)
 		{
-			// Load the instance group
-			if (ObjView->loadInstanceGroup (fileDlg.GetPathName()))
-			{
-				// Reset the camera
-				OnResetCamera();
-				// Touch the channel mixer
-				ObjView->reinitChannels ();
-			}
+			// Double zero at the end
+			c[path.GetLength()+1]=0;
+
+			// Path is empty
+			path = "";
 		}
 		else
-		{	// we load a shape
-			// Create a dialog
+		{
+			// Adda slash
+			path += "\\";
+
+			// Look for the next string
+			while (*(c++)) {}
+		}
+
+		// For each file selected
+		while (*c)
+		{
+			// File name
+			char filename[256];
+			char *ptr=filename;
+
+			// Read a file name
+			while (*c)
+			{
+				*(ptr++)=*(c++);
+			}
+			*ptr=0;
+			c++;
+
+			// File name
+			CString name = path + filename;
+
+			// file is an ig ?
+			if (name.Find(".ig") != -1)
+			{
+				// Load the instance group
+				if (ObjView->loadInstanceGroup (name))
+				{
+					// Reset the camera
+					OnResetCamera();
+
+					// Touch the channel mixer
+					ObjView->reinitChannels ();
+				}
+			}
+			else
+			{
+				// Add it in the array
+				meshFilename.push_back ((const char*)name);
+			}
+		}
+
+		// Some mesh to load ?
+		if ( !meshFilename.empty() )
+		{	
+			// Create a dialog for the skel
 			static char BASED_CODE szFilter2[] = "NeL Skeleton Files (*.skel)|*.skel|All Files (*.*)|*.*||";
 			CFileDialog fileDlg2 ( TRUE, ".skel", "*.skel", OFN_HIDEREADONLY|OFN_OVERWRITEPROMPT, szFilter2);
 			if (fileDlg2.DoModal()==IDOK)
 			{
 				// Load the shape with a skeleton
-				if (ObjView->loadMesh (fileDlg.GetPathName(), fileDlg2.GetPathName()))
+				if (ObjView->loadMesh (meshFilename, fileDlg2.GetPathName()))
 				{
 					// Reset the camera
 					OnResetCamera();
@@ -516,7 +591,7 @@ void CMainFrame::OnFileOpen()
 			else
 			{
 				// Load the shape without skeleton
-				if (ObjView->loadMesh (fileDlg.GetPathName(), ""))
+				if (ObjView->loadMesh (meshFilename, ""))
 				{
 					// Reset the camera
 					OnResetCamera();

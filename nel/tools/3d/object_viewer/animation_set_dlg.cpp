@@ -1,7 +1,7 @@
 /** \file animation_set_dlg.cpp
  * implementation file
  *
- * $Id: animation_set_dlg.cpp,v 1.7 2001/09/12 09:46:10 corvazier Exp $
+ * $Id: animation_set_dlg.cpp,v 1.8 2001/10/16 14:57:07 corvazier Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -47,7 +47,7 @@ CAnimationSetDlg::CAnimationSetDlg(CObjectViewer* objView, CWnd* pParent /*=NULL
 	: CDialog(CAnimationSetDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CAnimationSetDlg)
-		// NOTE: the ClassWizard will add member initialization here
+	UseMixer = 0;
 	//}}AFX_DATA_INIT
 
 	_ObjView=objView;
@@ -58,8 +58,10 @@ void CAnimationSetDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAnimationSetDlg)
+	DDX_Control(pDX, IDC_PLAYLIST, PlayList);
 	DDX_Control(pDX, IDC_TREE2, SkelTree);
 	DDX_Control(pDX, IDC_TREE, Tree);
+	DDX_Radio(pDX, IDC_USE_LIST, UseMixer);
 	//}}AFX_DATA_MAP
 }
 
@@ -70,6 +72,13 @@ BEGIN_MESSAGE_MAP(CAnimationSetDlg, CDialog)
 	ON_BN_CLICKED(IDC_RESET, OnReset)
 	ON_BN_CLICKED(IDC_ADD_SKEL_WT, OnAddSkelWt)
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_LIST_INSERT, OnListInsert)
+	ON_BN_CLICKED(IDC_LIST_UP, OnListUp)
+	ON_BN_CLICKED(IDC_LIST_DOWN, OnListDown)
+	ON_BN_CLICKED(IDC_LIST_DELETE, OnListDelete)
+	ON_BN_CLICKED(IDC_SET_ANIM_LENGTH, OnSetAnimLength)
+	ON_BN_CLICKED(IDC_USE_LIST, OnUseList)
+	ON_BN_CLICKED(IDC_USE_MIXER, OnUseMixer)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -153,6 +162,9 @@ void CAnimationSetDlg::OnReset ()
 	_ListAnimation.clear();
 	_ListSkeleton.clear();
 
+	// Clear the list
+	PlayList.ResetContent ();
+
 	// Clear the TREE
 	Tree.DeleteAllItems ();
 
@@ -199,13 +211,14 @@ void CAnimationSetDlg::loadAnimation (const char* fileName)
 void CAnimationSetDlg::addAnimation (NL3D::CAnimation* anim, const char* name)
 {
 	// Add an animation
-	_ObjView->_AnimationSet.addAnimation (name, anim);
+	uint id = _ObjView->_AnimationSet.addAnimation (name, anim);
 
 	// Rebuild the animationSet
 	_ObjView->_AnimationSet.build ();
 
 	// Insert an intem
 	HTREEITEM item=Tree.InsertItem (name);
+	Tree.SetItemData (item, id);
 	nlassert (item!=NULL);
 
 	// For all tracks in the animation
@@ -216,6 +229,7 @@ void CAnimationSetDlg::addAnimation (NL3D::CAnimation* anim, const char* name)
 	{
 		// Add this string
 		HTREEITEM newItem = Tree.InsertItem (ite->c_str(), item);
+		Tree.SetItemData (newItem, 0xffffffff);
 
 		// Get the track
 		ITrack *track=anim->getTrack (anim->getIdTrackByName (*ite));
@@ -231,14 +245,16 @@ void CAnimationSetDlg::addAnimation (NL3D::CAnimation* anim, const char* name)
 			// Print track info
 			char name[512];
 			_snprintf (name, 512, "%s (%f - %f) %d keys", typeid(*track).name(), track->getBeginTime (), track->getEndTime (), keys.size());
-			Tree.InsertItem (name, newItem);
+			HTREEITEM keyItem = Tree.InsertItem (name, newItem);
+			Tree.SetItemData (keyItem, 0xffffffff);
 		}
 		else
 		{
 			// Print track info
 			char name[512];
 			_snprintf (name, 512, "%s (%f - %f)", typeid(*track).name(), track->getBeginTime (), track->getEndTime ());
-			Tree.InsertItem (name, newItem);
+			HTREEITEM keyItem = Tree.InsertItem (name, newItem);
+			Tree.SetItemData (keyItem, 0xffffffff);
 		}
 
 		ite++;
@@ -302,4 +318,136 @@ void CAnimationSetDlg::OnDestroy()
 	CDialog::OnDestroy();
 	
 	// TODO: Add your message handler code here	
+}
+
+void CAnimationSetDlg::OnListInsert() 
+{
+	// Update
+	UpdateData ();
+
+	// Get selected animation
+	HTREEITEM item = Tree.GetSelectedItem ();
+	if (item && (Tree.GetItemData (item)!=0xffffffff))
+	{
+		// Insert the string
+		int itemList = PlayList.InsertString (-1, Tree.GetItemText(item));
+		PlayList.SetItemData (itemList, Tree.GetItemData (item));
+
+		// Reselect the item
+		Tree.SelectItem (item);
+	}
+	
+	// Update back
+	UpdateData (FALSE);
+}
+
+void CAnimationSetDlg::OnListUp() 
+{
+	// Update
+	UpdateData ();
+
+	// Get selected item
+	int sel = PlayList.GetCurSel ();
+	if ((sel != LB_ERR) && (sel>0))
+	{
+		// Backup the string
+		CString text;
+		PlayList.GetText (sel, text);
+		DWORD data = PlayList.GetItemData (sel);
+
+		// Remove the node
+		PlayList.DeleteString (sel);
+
+		// Insert the string
+		int pos = PlayList.InsertString (sel-1, text);
+		PlayList.SetItemData (pos, data);
+		PlayList.SetCurSel (pos);
+	}
+	
+	// Update back
+	UpdateData (FALSE);
+}
+
+void CAnimationSetDlg::OnListDown() 
+{
+	// Update
+	UpdateData ();
+
+	// Get selected item
+	int sel = PlayList.GetCurSel ();
+	if ((sel != LB_ERR) && (sel<PlayList.GetCount()-1))
+	{
+		// Backup the string
+		CString text;
+		PlayList.GetText (sel, text);
+		DWORD data = PlayList.GetItemData (sel);
+
+		// Remove the node
+		PlayList.DeleteString (sel);
+
+		// Insert the string
+		int pos = PlayList.InsertString (sel+1, text);
+		PlayList.SetItemData (pos, data);
+		PlayList.SetCurSel (pos);
+	}
+	
+	// Update back
+	UpdateData (FALSE);
+}
+
+void CAnimationSetDlg::OnListDelete() 
+{
+	// Update
+	UpdateData ();
+
+	// Get selected item
+	int sel = PlayList.GetCurSel ();
+	if (sel != LB_ERR)
+	{
+		// Remove the node
+		PlayList.DeleteString (sel);
+
+		if (sel>=PlayList.GetCount ())
+			sel--;
+		if (sel>=0)
+			PlayList.SetCurSel (sel);
+	}
+	
+	// Update back
+	UpdateData (FALSE);
+}
+
+void CAnimationSetDlg::OnSetAnimLength() 
+{
+	// There is some anim ?
+	if (PlayList.GetCount())
+	{
+		// Calculate the length
+		float length = 0;
+
+		// For each animation in the list
+		for (uint i=0; i<(uint)PlayList.GetCount(); i++)
+		{
+			// Get the animation
+			CAnimation *anim = anim=_ObjView->_AnimationSet.getAnimation (PlayList.GetItemData (i));
+
+			// Add the length
+			length += anim->getEndTime () - anim->getBeginTime ();
+		}
+
+		// Adjuste length
+		_ObjView->setAnimTime (0, length * _ObjView->getFrameRate ());
+	}
+}
+
+void CAnimationSetDlg::OnUseList() 
+{
+	// Disable channels
+	_ObjView->enableChannels ();
+}
+
+void CAnimationSetDlg::OnUseMixer() 
+{
+	// Enable channels
+	_ObjView->enableChannels ();
 }

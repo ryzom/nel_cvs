@@ -1,4 +1,4 @@
--- plugin to put a nel particle system in a scene
+-- plugin to edit a nel flare
 plugin Geometry nel_flare
 name:"Nel flare"
 category:"Nel Tools"
@@ -40,16 +40,16 @@ extends:Sphere
 		size8			 type:#Float   default: 1      ui:UISize8
 		size9			 type:#Float   default: 1      ui:UISize9
 
-		pos0			 type:#Float   default: 1      ui:UIPos0
-		pos1			 type:#Float   default: 1      ui:UIPos1
-		pos2			 type:#Float   default: 1      ui:UIPos2
-		pos3			 type:#Float   default: 1      ui:UIPos3
-		pos4			 type:#Float   default: 1      ui:UIPos4
-		pos5			 type:#Float   default: 1      ui:UIPos5
-		pos6			 type:#Float   default: 1      ui:UIPos6
-		pos7			 type:#Float   default: 1      ui:UIPos7
-		pos8			 type:#Float   default: 1      ui:UIPos8
-		pos9			 type:#Float   default: 1      ui:UIPos9
+		pos0			 type:#Float   default: 0      ui:UIPos0
+		pos1			 type:#Float   default: 0.1      ui:UIPos1
+		pos2			 type:#Float   default: 0.2      ui:UIPos2
+		pos3			 type:#Float   default: 0.3      ui:UIPos3
+		pos4			 type:#Float   default: 0.4      ui:UIPos4
+		pos5			 type:#Float   default: 0.5      ui:UIPos5
+		pos6			 type:#Float   default: 0.6      ui:UIPos6
+		pos7			 type:#Float   default: 0.7      ui:UIPos7
+		pos8			 type:#Float   default: 0.8      ui:UIPos8
+		pos9			 type:#Float   default: 0.9      ui:UIPos9
 
 
 		
@@ -60,7 +60,7 @@ extends:Sphere
 		Attenuable       		 type:#boolean  animatable:false default:  false ui:UIAttenuable
 		FirstFlareKeepSize 		 type:#Boolean  animatable:false default:  false ui:UIFirstFlareKeepSize 
 		HasDazzle				 type:#boolean  animatable:false default:  false ui:UIHasDazzle
-		DazzleColor				 type:#color	animatable:false default:  white ui:UIHasDazzle
+		DazzleColor				 type:#color	animatable:false default:  white ui:UIDazzleColor
 		DazzleAttenuationRange	 type:#float	animatable:false default:  0.5   ui:UIDazzleAttenuationRange
 
 	)
@@ -74,7 +74,9 @@ extends:Sphere
 		spinner     UIAttenuationRange  "atten. range"        	   range:[0,20,1]  type:#float align:#left
 		checkbox    UIFirstFlareKeepSize "keep 1st size  :"	       type:#boolean
 		checkbox	UIHasDazzle			 "Enable dazzle  :"		   type:#boolean
-
+		spinner     UIDazzleAttenuationRange  "dazzle atten.:" 	   range:[0,20,1]  type:#float align:#left
+		colorpicker UIDazzleColor 		"dazzle color" 	               color:white 
+		
 		group "Flare 0"
 		(
 			edittext  tex_file_name_et0 "texture:"

@@ -1,7 +1,7 @@
 /** \file sound_system.cpp
  * This initilize the sound system
  *
- * $Id: sound_system.cpp,v 1.13 2002/07/25 13:36:43 lecroart Exp $
+ * $Id: sound_system.cpp,v 1.14 2002/08/08 11:00:03 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -153,7 +153,7 @@ void CSoundSystem::play(const string &soundName)
 {
 	if (_AudioMixer)
 	{
-		NLSOUND::USource *src =  _AudioMixer->createSource(soundName.c_str(), true);
+		NLSOUND::USource *src = _AudioMixer->createSource(soundName.c_str(), true);
 		if (src)
 		{
 			src->setLooping(false);
@@ -161,6 +161,10 @@ void CSoundSystem::play(const string &soundName)
 			_AudioMixer->getListener()->getPos(pos);
 			src->setPos(pos);
 			src->play();
+		}
+		else
+		{
+			MessageBox(NULL, "Can't play the sound (perhaps it's contextual sound)", "warning", MB_OK|MB_ICONWARNING );
 		}
 	}
 }

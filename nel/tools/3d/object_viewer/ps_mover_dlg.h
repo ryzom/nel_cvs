@@ -1,6 +1,6 @@
 /** \file ps_mover_dlg.h
  * this dialog display coordinate of an instance of a located in a particle system 
- * $Id: ps_mover_dlg.h,v 1.6 2001/06/27 16:44:55 vizerie Exp $
+ * $Id: ps_mover_dlg.h,v 1.7 2001/09/26 17:51:49 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -33,7 +33,6 @@
 namespace NL3D
 {
 	class CEvent3dMouseListener ;
-	struct IPSMover ;
 }
 
 namespace NLMISC
@@ -41,6 +40,7 @@ namespace NLMISC
 	class CVector ;
 }
 
+#include "3d/ps_edit.h"
 #include "ps_wrapper.h"
 
 

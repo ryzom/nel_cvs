@@ -1,6 +1,6 @@
 /** \file mesh_dlg.cpp
  * A dialog that allows to choose a mesh (for mesh particles), and display the current mesh name 
- * $Id: mesh_dlg.cpp,v 1.2 2001/06/27 16:53:03 vizerie Exp $
+ * $Id: mesh_dlg.cpp,v 1.3 2001/09/26 17:50:23 vizerie Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -25,6 +25,7 @@
 #include "std_afx.h"
 #include "object_viewer.h"
 #include "mesh_dlg.h"
+#include "3d/ps_particle.h"
 
 #include "nel/misc/path.h"
 

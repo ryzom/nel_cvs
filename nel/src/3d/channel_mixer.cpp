@@ -1,7 +1,7 @@
 /** \file channel_mixer.cpp
  * class CChannelMixer
  *
- * $Id: channel_mixer.cpp,v 1.10 2001/03/29 09:50:20 corvazier Exp $
+ * $Id: channel_mixer.cpp,v 1.11 2001/03/29 15:14:53 corvazier Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -113,6 +113,9 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 
 	while (pChannel)
 	{
+		CQuat	tmpQuat;
+		bool	isQuat=(typeid (*(pChannel->_Value))==typeid (CAnimatedValueBlendable<NLMISC::CQuat>))!=0;
+
 		// First slot found
 		bool bFirst=true;
 
@@ -137,6 +140,10 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 				// First track to be eval ?
 				if (bFirst)
 				{
+					CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
+					if (isQuat)
+					 tmpQuat=pQuatValue->Value;
+
 					// Copy the interpolated value
 					pChannel->_Value->affect (pChannel->_Tracks[slot]->getValue());
 
@@ -148,6 +155,12 @@ void CChannelMixer::eval (bool detail, uint64 evalDetailDate)
 				}
 				else
 				{
+					if (isQuat)
+					{
+						CAnimatedValueBlendable<NLMISC::CQuat>	*pQuatValue2=(CAnimatedValueBlendable<NLMISC::CQuat>*)&pChannel->_Tracks[slot]->getValue();
+						pQuatValue2->Value.makeClosest (tmpQuat);
+					}
+
 					// Blend with this value and the previous sum
 					pChannel->_Value->blend (pChannel->_Tracks[slot]->getValue(), lastBlend/(lastBlend+blend));
 

@@ -1,7 +1,7 @@
 /** \file net_displayer.cpp
  * CNetDisplayer class
  *
- * $Id: net_displayer.cpp,v 1.19 2001/05/18 14:46:46 lecroart Exp $
+ * $Id: net_displayer.cpp,v 1.20 2001/06/13 10:20:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -51,8 +51,8 @@ const sint16 LOG_CBINDEX = 0;
 /*
  * Constructor
  */
-CNetDisplayer::CNetDisplayer(bool autoConnect)/* :
-	_Server( true, false ) */// disable logging otherwise an infinite recursion may occur
+CNetDisplayer::CNetDisplayer(bool autoConnect) :
+	_Server(NULL), _ServerAllocated (false) // disable logging otherwise an infinite recursion may occur
 {
 	if (autoConnect) findAndConnect();
 }
@@ -63,26 +63,36 @@ CNetDisplayer::CNetDisplayer(bool autoConnect)/* :
  */
 void CNetDisplayer::findAndConnect()
 {
-	if ( CNamingClient::lookupAndConnect( "LOGS", _Server ) )
+	if (_Server == NULL)
+	{
+		_Server = new CCallbackClient();
+		_ServerAllocated = true;
+	}
+
+	if ( CNamingClient::lookupAndConnect( "LOGS", *_Server ) )
 	{
 		nldebug( "Connected to logging service" );
-		_ServerNumber = 1;
 	}
 }
 
 /*
  * Sets logging server address
  */
-void CNetDisplayer::setLogServer( const CInetAddress& logServerAddr )
+void CNetDisplayer::setLogServer (const CInetAddress& logServerAddr)
 {
-	if (_ServerNumber==1 && _Server.connected()) return;
-	if (_ServerNumber==2 && _Server2->connected()) return;
+	if (_Server != NULL && _Server->connected()) return;
 
 	_ServerAddr = logServerAddr;
+
+	if (_Server == NULL)
+	{
+		_Server = new CCallbackClient();
+		_ServerAllocated = true;
+	}
+	
 	try
 	{
-		_Server.connect( _ServerAddr );
-		_ServerNumber = 1;
+		_Server->connect (_ServerAddr);
 	}
 	catch( ESocket& )
 	{
@@ -90,22 +100,24 @@ void CNetDisplayer::setLogServer( const CInetAddress& logServerAddr )
 	}
 }
 
-void CNetDisplayer::setLogServer( CCallbackClient *server )
+void CNetDisplayer::setLogServer (CCallbackClient *server)
 {
-	if (_ServerNumber==1 && _Server.connected()) return;
+	if (_Server != NULL && _Server->connected()) return;
 
-	_Server2 = server;
-	_ServerNumber = 2;
+	_Server = server;
 }
 
 
 /*
  * Destructor
  */
-CNetDisplayer::~CNetDisplayer()
+CNetDisplayer::~CNetDisplayer ()
 {
-	if (_ServerNumber == 1)
-		_Server.disconnect();
+	if (_ServerAllocated)
+	{
+		_Server->disconnect ();
+		delete _Server;
+	}
 }
 
 
@@ -118,16 +130,7 @@ void CNetDisplayer::doDisplay ( const TDisplayInfo& args, const char *message)
 {
 	try
 	{
-		CCallbackClient	*server;
-		if (_ServerNumber == 1) server = &_Server;
-		else if (_ServerNumber == 2) server = _Server2;
-		else nlstop;
-
-		if ( _ServerNumber == 1 && !_Server.connected() )
-		{
-			findAndConnect();
-		}
-		else if (_ServerNumber ==2 && !_Server2->connected())
+		if (_Server == NULL || !_Server->connected())
 		{
 			return;
 		}
@@ -159,10 +162,10 @@ void CNetDisplayer::doDisplay ( const TDisplayInfo& args, const char *message)
 
 		ss << message;
 
-		CMessage msg(server->getSIDA(), "LOG" );
+		CMessage msg(_Server->getSIDA(), "LOG" );
 		string s = ss.str();
 		msg.serial( s );
-		server->send (msg, 0, false);
+		_Server->send (msg, 0, false);
 	}
 	catch( NLMISC::Exception& )
 	{

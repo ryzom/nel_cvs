@@ -1,7 +1,7 @@
 /** \file naming_client.h
  * CNamingClient
  *
- * $Id: naming_client.h,v 1.22 2001/06/12 15:39:49 lecroart Exp $
+ * $Id: naming_client.h,v 1.23 2001/06/13 10:21:02 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -57,7 +57,6 @@ typedef void (*TBroadcastCallback)(const std::string &name, TServiceId sid, cons
 class CNamingClient
 {
 public:
-
 
 	/// Connect to the naming service.
 	static void			connect (const CInetAddress& addr);
@@ -215,12 +214,16 @@ private:
 	friend void cbUnregisterBroadcast (CMessage &msgin, TSockId from, CCallbackNetBase &netbase);
 
 
-
+protected:
+	/// \todo debug feature that we should remove one day
+	static uint	_ThreadId;
+	static void	checkThreadId ();
 
 
 //////////////////////
 ////////////////////// OLD NAMING CLIENT
 //////////////////////
+private:
 
 	/// Finalization. Unregisters all services registered by registerService() and not unregistered yet.
 //	static void			finalize();

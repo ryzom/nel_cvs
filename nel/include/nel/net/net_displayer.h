@@ -1,7 +1,7 @@
 /** \file net_displayer.h
  * CNetDisplayer class
  *
- * $Id: net_displayer.h,v 1.15 2001/05/18 14:46:46 lecroart Exp $
+ * $Id: net_displayer.h,v 1.16 2001/06/13 10:20:48 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -59,10 +59,7 @@ public:
 	void setLogServer( CCallbackClient *server );
 
 	/// Returns true if the displayer is connected to a Logging Service.
-	bool connected()
-	{
-		return _Server.connected();
-	}
+	bool connected () { return _Server->connected(); }
 
 	/// Destructor
 	virtual ~CNetDisplayer();
@@ -80,9 +77,10 @@ protected:
 private:
 
 	CInetAddress	_ServerAddr;
-	CCallbackClient	_Server;
-	CCallbackClient	*_Server2;
-	uint32			_ServerNumber;
+//	CCallbackClient	_Server;
+	CCallbackClient	*_Server;
+	bool			_ServerAllocated;
+//	uint32			_ServerNumber;
 };
 
 

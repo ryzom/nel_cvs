@@ -1,7 +1,7 @@
 /** \file naming_client.cpp
  * CNamingClient
  *
- * $Id: naming_client.cpp,v 1.31 2001/06/12 15:39:49 lecroart Exp $
+ * $Id: naming_client.cpp,v 1.32 2001/06/13 10:21:02 lecroart Exp $
  *
  */
 
@@ -43,6 +43,8 @@ CNamingClient::TRegServices CNamingClient::_RegisteredServices;
 
 static TBroadcastCallback _RegistrationBroadcastCallback = NULL;
 static TBroadcastCallback _UnregistrationBroadcastCallback = NULL;
+
+uint	CNamingClient::_ThreadId;
 
 std::list<CNamingClient::CServiceEntry>	CNamingClient::RegisteredServices;
 NLMISC::CMutex CNamingClient::RegisteredServicesMutex;
@@ -181,14 +183,19 @@ void CNamingClient::connect (const CInetAddress &addr)
 	}
 
 	_Connection->connect (addr);
+
+	_ThreadId = getThreadId ();
 }
 
 
 void CNamingClient::disconnect ()
 {
+	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 	
 	_Connection->disconnect ();
+	delete _Connection;
+	_Connection = NULL;
 
 	_RegisteredServices.clear ();
 
@@ -198,6 +205,7 @@ void CNamingClient::disconnect ()
 
 TServiceId CNamingClient::registerService (const std::string &name, const CInetAddress &addr)
 {
+	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
 	CMessage msgout (_Connection->getSIDA(), "RG");
@@ -227,6 +235,7 @@ TServiceId CNamingClient::registerService (const std::string &name, const CInetA
 
 bool CNamingClient::registerServiceWithSId (const std::string &name, const CInetAddress &addr, TServiceId sid)
 {
+	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
 	CMessage msgout (_Connection->getSIDA(), "RG");
@@ -278,6 +287,7 @@ bool CNamingClient::registerServiceWithSId (const std::string &name, const CInet
 
 void CNamingClient::unregisterService (TServiceId sid)
 {
+	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
 	CMessage msgout (_Connection->getSIDA(), "UNI");
@@ -290,6 +300,7 @@ void CNamingClient::unregisterService (TServiceId sid)
 
 void CNamingClient::unregisterAllServices ()
 {
+	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
 	while (!_RegisteredServices.empty())
@@ -302,6 +313,7 @@ void CNamingClient::unregisterAllServices ()
 
 uint16 CNamingClient::queryServicePort ()
 {
+	checkThreadId ();
 	nlassert (_Connection != NULL && _Connection->connected ());
 
 	CMessage msgout (_Connection->getSIDA(), "QP");
@@ -531,11 +543,19 @@ bool CNamingClient::lookupAndConnect (const std::string &name, CCallbackClient &
 
 void CNamingClient::update ()
 {
+	checkThreadId ();
 	// get message for naming service (new registration for example)
 	if (_Connection != NULL && _Connection->connected ())
 		_Connection->update ();
 }
 
+void CNamingClient::checkThreadId ()
+{
+	if (getThreadId () != _ThreadId)
+	{
+		nlerror ("You try to access to the CNamingClient with 2 differents thread (%d and %d)", _ThreadId, getThreadId());
+	}
+}
 
 
 

@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangeant space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.cpp,v 1.1 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: mesh_mrm_skinned.cpp,v 1.2 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -988,7 +988,7 @@ void	CMeshMRMSkinnedGeom::updateShiftedTriangleCache(CMeshMRMSkinnedInstance *mi
 
 
 // ***************************************************************************
-void	CMeshMRMSkinnedGeom::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void	CMeshMRMSkinnedGeom::serial(NLMISC::IStream &f)
 {
 	// because of complexity, serial is separated in save / load.
 
@@ -1107,7 +1107,7 @@ void	CMeshMRMSkinnedGeom::computeBonesId (CSkeletonModel *skeleton)
 			uint	lod;
 			for (lod=0; lod<_Lods.size(); lod++)
 			{
-				nGeomSpace= max(nGeomSpace, _Lods[lod].Geomorphs.size());
+				nGeomSpace= max(nGeomSpace, (uint)_Lods[lod].Geomorphs.size());
 			}
 
 			// Prepare Sphere compute
@@ -1479,7 +1479,7 @@ void	CMeshMRMSkinned::render(IDriver *drv, CTransformShape *trans, bool passOpaq
 
 
 // ***************************************************************************
-void	CMeshMRMSkinned::serial(NLMISC::IStream &f) throw(NLMISC::EStream)
+void	CMeshMRMSkinned::serial(NLMISC::IStream &f)
 {
 	/*
 	Version 0:

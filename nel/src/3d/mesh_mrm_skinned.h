@@ -3,7 +3,7 @@
  * This shape works only in skin group mode. You must enable the mesh skin manager in the render traversal of your scene to used this model.
  * Tangent space, vertex program, mesh block rendering and vertex buffer hard are not available.
  *
- * $Id: mesh_mrm_skinned.h,v 1.2 2003/12/22 13:01:05 lecroart Exp $
+ * $Id: mesh_mrm_skinned.h,v 1.3 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -132,7 +132,7 @@ public:
 	virtual float	getNumTriangles (float distance);
 
 	/// serial this meshGeom.
-	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	virtual void	serial(NLMISC::IStream &f);
 	NLMISC_DECLARE_CLASS(CMeshMRMSkinnedGeom);
 
 	/// Scene profile
@@ -465,7 +465,7 @@ public:
 			void setPos (const CVector &pos, float scaleFactor);
 
 			// Serial it
-			void serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+			void serial(NLMISC::IStream &f);
 		};
 
 		// Build it
@@ -719,7 +719,7 @@ public:
 	virtual float	getNumTriangles (float distance);
 
 	/// serial this mesh.
-	virtual void	serial(NLMISC::IStream &f) throw(NLMISC::EStream);
+	virtual void	serial(NLMISC::IStream &f);
 	NLMISC_DECLARE_CLASS(CMeshMRMSkinned);
 
 	/// Get bbox.

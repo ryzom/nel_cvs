@@ -1,7 +1,7 @@
 /** \file 3d/zone_lighter.cpp
  * Class to light zones
  *
- * $Id: zone_lighter.cpp,v 1.33 2003/09/18 08:25:41 corvazier Exp $
+ * $Id: zone_lighter.cpp,v 1.34 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -2815,7 +2815,7 @@ void CZoneLighter::lightShapes(uint zoneID, const CLightDesc& description)
 	for (uint k = 0; k < _LightableShapes.size(); ++k, ++process)
 	{
 		uint lastShapeIndex = currShapeIndex + numShapePerThread;
-		lastShapeIndex = std::min(_LightableShapes.size(), lastShapeIndex);		
+		lastShapeIndex = std::min((uint)_LightableShapes.size(), lastShapeIndex);		
 		IThread *pThread = IThread::create (new CCalcLightableShapeRunnable(process, this, &description, &_LightableShapes, currShapeIndex, lastShapeIndex));
 		pThread->start();
 		currShapeIndex = lastShapeIndex;
@@ -3438,7 +3438,7 @@ void			CZoneLighter::processZonePointLightRT(vector<CPointLightNamed> &listPoint
 				// sort.
 				sort(lightInfs.begin(), lightInfs.end(), predPLTP);
 				// truncate.
-				lightInfs.resize( min(lightInfs.size(), (uint)CTileLightInfluence::NumLightPerCorner) );
+				lightInfs.resize( min((uint)lightInfs.size(), (uint)CTileLightInfluence::NumLightPerCorner) );
 
 
 				// For each of them, fill TLI

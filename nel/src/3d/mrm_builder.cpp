@@ -1,7 +1,7 @@
 /** \file mrm_builder.cpp
  * A Builder of MRM.
  *
- * $Id: mrm_builder.cpp,v 1.32 2003/12/08 13:54:59 corvazier Exp $
+ * $Id: mrm_builder.cpp,v 1.33 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -467,13 +467,13 @@ CMesh::CSkinWeight	CMRMBuilder::collapseSkinWeight(const CMesh::CSkinWeight &sw1
 		nbMatsOut= max(nbMats1, nbMats2);
 		break;
 	case CMRMParameters::SkinReductionBest:
-		nbMatsOut= min( sws.size(), (uint)NL3D_MESH_SKINNING_MAX_MATRIX );
+		nbMatsOut= min( (uint)sws.size(), (uint)NL3D_MESH_SKINNING_MAX_MATRIX );
 		break;
 	default:
 		nlstop;
 	};
 	// For security.
-	nbMatsOut= min(nbMatsOut, sws.size());
+	nbMatsOut= min(nbMatsOut, (uint)sws.size());
 	nlassert(nbMatsOut<=NL3D_MESH_SKINNING_MAX_MATRIX);
 
 

@@ -1,7 +1,7 @@
 /** \file instance_lighter.cpp
  * <File description>
  *
- * $Id: instance_lighter.cpp,v 1.14 2003/07/04 13:34:21 berenguier Exp $
+ * $Id: instance_lighter.cpp,v 1.15 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -1239,7 +1239,7 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 		// sort.
 		sort(lightInfs.begin(), lightInfs.end(), predPLTP);
 		// truncate.
-		lightInfs.resize( min(lightInfs.size(), (uint)CInstanceGroup::NumStaticLightPerInstance) );
+		lightInfs.resize( min((uint)lightInfs.size(), (uint)CInstanceGroup::NumStaticLightPerInstance) );
 
 
 		// For each of them, fill instance
@@ -1343,7 +1343,7 @@ void			CInstanceLighter::processIGPointLightRT(std::vector<CPointLightNamed> &li
 				// sort.
 				sort(lightInfs.begin(), lightInfs.end(), predPLTP);
 				// truncate.
-				lightInfs.resize( min(lightInfs.size(), (uint)CSurfaceLightGrid::NumLightPerCorner) );
+				lightInfs.resize( min((uint)lightInfs.size(), (uint)CSurfaceLightGrid::NumLightPerCorner) );
 
 
 				// For each of them, fill cellInfo

@@ -1,7 +1,7 @@
 /** \file mesh_mrm.cpp
  * <File description>
  *
- * $Id: mesh_mrm.cpp,v 1.69 2003/12/10 12:47:33 berenguier Exp $
+ * $Id: mesh_mrm.cpp,v 1.70 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -2338,7 +2338,7 @@ void	CMeshMRMGeom::computeBonesId (CSkeletonModel *skeleton)
 			uint	lod;
 			for (lod=0; lod<_Lods.size(); lod++)
 			{
-				nGeomSpace= max(nGeomSpace, _Lods[lod].Geomorphs.size());
+				nGeomSpace= max(nGeomSpace, (uint)_Lods[lod].Geomorphs.size());
 			}
 
 			// Prepare Sphere compute

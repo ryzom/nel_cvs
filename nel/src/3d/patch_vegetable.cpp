@@ -1,7 +1,7 @@
 /** \file patch_vegetable.cpp
  * CPatch implementation for vegetable management
  *
- * $Id: patch_vegetable.cpp,v 1.19 2003/08/19 14:11:34 berenguier Exp $
+ * $Id: patch_vegetable.cpp,v 1.20 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -150,7 +150,7 @@ void		CPatch::generateTileVegetable(CVegetableInstanceGroup *vegetIg, uint distT
 	// Setup the vegetLex directly in the ig. 
 	CVegetableLightEx	&vegetLex= vegetIg->VegetableLightEx;
 	// take only 2 first, computing direction to tilePos and computing attenuation.
-	vegetLex.NumLights= min((uint)CVegetableLightEx::MaxNumLight, lightList.size());
+	vegetLex.NumLights= min((uint)CVegetableLightEx::MaxNumLight, (uint)lightList.size());
 	for(i=0;i<vegetLex.NumLights;i++)
 	{
 		// WARNING: can C cast to CPointLightNamed here because comes from CPatch::appendTileLightInfluences() only!

@@ -1,7 +1,7 @@
 /** \file shadow_map_manager.cpp
  * <File description>
  *
- * $Id: shadow_map_manager.cpp,v 1.4 2003/11/13 18:10:30 berenguier Exp $
+ * $Id: shadow_map_manager.cpp,v 1.5 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -925,7 +925,7 @@ void			CShadowMapManager::selectShadowMapsToGenerate(CScene *scene)
 	sort(sortList.begin(), sortList.end());
 
 	// Select the best
-	uint	numSel= min(sortList.size(), maxPerFrame);
+	uint	numSel= min((uint)sortList.size(), maxPerFrame);
 	_GenerateShadowCasters.resize(numSel);
 	for(i= 0;i<numSel;i++)
 	{

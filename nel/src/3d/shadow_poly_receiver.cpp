@@ -1,7 +1,7 @@
 /** \file shadow_poly_receiver.cpp
  * <File description>
  *
- * $Id: shadow_poly_receiver.cpp,v 1.1 2003/08/07 08:49:13 berenguier Exp $
+ * $Id: shadow_poly_receiver.cpp,v 1.2 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2000-2003 Nevrax Ltd.
@@ -216,7 +216,7 @@ void			CShadowPolyReceiver::render(IDriver *drv, CMaterial &shadowMat, const CSh
 	// set -casterPos, because to transform a plane, we must do plane * M-1
 	worldMat.setPos(-casterPos);
 	// Allow max bits of planes clip.
-	worldClipPlanes.resize(min(shadowMap->LocalClipPlanes.size(), (uint)NL3D_SPR_NUM_CLIP_PLANE));
+	worldClipPlanes.resize(min((uint)shadowMap->LocalClipPlanes.size(), (uint)NL3D_SPR_NUM_CLIP_PLANE));
 	// Transform into world
 	for(i=0;i<worldClipPlanes.size();i++)
 	{

@@ -1,7 +1,7 @@
 /** \file clip_trav.cpp
  * <File description>
  *
- * $Id: clip_trav.cpp,v 1.41 2003/11/06 09:17:03 berenguier Exp $
+ * $Id: clip_trav.cpp,v 1.42 2004/01/15 17:33:18 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -491,7 +491,7 @@ void CClipTrav::loadBalanceSkeletonCLod()
 	}
 
 	// **** set CLod flag 
-	uint	n= min(nMaxSkelsInNotCLodForm, _TmpSortSkeletons.size());
+	uint	n= min(nMaxSkelsInNotCLodForm, (uint)_TmpSortSkeletons.size());
 	uint	i;
 	// The lowest priority are displayed in std form
 	for(i=0;i<n;i++)
@@ -637,7 +637,7 @@ void	CClipTrav::clipSkeletonShadowMaps()
 	sort(screenCastSkeletons.begin(), screenCastSkeletons.end());
 
 	// For All Around nearest Casters, decrement their fadeOutScreen
-	uint	numNearCast= min(aroundCastSkeletons.size(), maxCastAround);
+	uint	numNearCast= min((uint)aroundCastSkeletons.size(), maxCastAround);
 	uint	i;
 	for(i=0;i<numNearCast;i++)
 	{
@@ -648,7 +648,7 @@ void	CClipTrav::clipSkeletonShadowMaps()
 	}
 
 	// For InScreen Casters, increment or decrement their fadeInScreen. Also resolve InScreenFadeAccum.
-	numNearCast= min(screenCastSkeletons.size(), maxCastInScreen);
+	numNearCast= min((uint)screenCastSkeletons.size(), maxCastInScreen);
 	// nearest: decrement fadeInScreen, and remove accum
 	for(i=0;i<numNearCast;i++)
 	{

@@ -297,6 +297,8 @@
 #define IDC_SMOOTHING_ON                1187
 #define IDC_LAST_EQUAL_FIRST            1188
 #define IDC_PARAMETRIC_MOTION           1189
+#define IDC_TRIGGER_ON_DEATH            1191
+#define IDC_EDIT_TRIGGER_ON_DEATH       1192
 #define IDM_DOT_LOC                     2000
 #define IDM_LOOKAT_LOC                  2001
 #define IDM_FANLIGHT_LOC                2002
@@ -403,14 +405,16 @@
 #define IDM_MERGE_PS                    32864
 #define IDM_RIBBON_LOOK_AT              32865
 #define IDM_RIBBON_LOOK_AT_LOC          32866
+#define IDM_MAGNETIC_FORCE              32867
+#define IDM_MAGNETIC_FORCE_LOC          32868
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        1089
-#define _APS_NEXT_COMMAND_VALUE         32867
-#define _APS_NEXT_CONTROL_VALUE         1190
+#define _APS_NEXT_COMMAND_VALUE         32869
+#define _APS_NEXT_CONTROL_VALUE         1193
 #define _APS_NEXT_SYMED_VALUE           1000
 #endif
 #endif

@@ -1,7 +1,7 @@
 /** \file config_file.cpp
  * CConfigFile class
  *
- * $Id: config_file.cpp,v 1.31 2002/04/23 15:54:40 lecroart Exp $
+ * $Id: config_file.cpp,v 1.32 2002/05/02 12:48:59 lecroart Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -230,14 +230,14 @@ void CConfigFile::load (const string &fileName)
 
 		path += RootConfigFilename;
 
-			reparse (path.c_str());
+		reparse (path.c_str());
 	}
 	catch (EConfigFile &)
 	{
 		// variable not found, not important
 	}
 
-	//print ();
+//	print ();
 }
 
 
@@ -265,7 +265,7 @@ void CConfigFile::reparse (const char *filename)
 		}
 		else
 		{
-			nlwarning ("ConfigFile '%s' not found", _FileName.c_str());
+			nlwarning ("ConfigFile '%s' not found in the path '%s'", _FileName.c_str(), CPath::getCurrentPath().c_str());
 			throw EFileNotFound (_FileName);
 		}
 	}
@@ -374,8 +374,8 @@ void CConfigFile::print () const
 {
 	createDebug ();
 
-	InfoLog->displayRawNL ("%d results:", _Vars.size());
-	InfoLog->displayRawNL ("-------------------------------------");
+	InfoLog->displayRawNL ("ConfigFile %s have %d variables:", _FileName.c_str(), _Vars.size());
+	InfoLog->displayRawNL ("------------------------------------------------------");
 	for(int i = 0; i < (int)_Vars.size(); i++)
 	{
 		InfoLog->displayRaw ((_Vars[i].Callback==NULL)?"   ":"CB ");

@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.h,v 1.34 2001/01/18 16:50:12 cado Exp $
+ * $Id: msg_socket.h,v 1.35 2001/01/26 13:33:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,6 +226,9 @@ public:
 
 	/// Returns the address of a connected host
 	static const CInetAddress	*addressFromId( TSenderId id );
+
+	/// Returns the callback item for a client socket or for a server socket (if argument is NULL). Returns NULL if index not in range.
+	static const TCallbackItem *callbackItem( const CMsgSocket *clientsocket, TTypeNum index );
 
 	/// Returns the local address (client mode only)
 	const CInetAddress&			localAddr() const

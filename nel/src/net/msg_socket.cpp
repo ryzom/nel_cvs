@@ -3,7 +3,7 @@
  * Thanks to Vianney Lecroart <lecroart@nevrax.com> and
  * Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for ideas
  *
- * $Id: msg_socket.cpp,v 1.52 2001/01/18 16:50:12 cado Exp $
+ * $Id: msg_socket.cpp,v 1.53 2001/01/26 13:33:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -928,6 +928,34 @@ CConnections::iterator CMsgSocket::iteratorFromId( TSenderId id )
 	return _Connections.find( id );
 }
 
+
+/*
+ * Returns the callback item for a client socket or for a server socket if argument is NULL. Returns NULL if index not in range.
+ */
+const TCallbackItem *CMsgSocket::callbackItem( const CMsgSocket *clientsocket, TTypeNum index )
+{
+	const TTypeNum		*the_cba_size;
+	const TCallbackItem	*the_callback_array;
+	if ( clientsocket == NULL )
+	{
+		the_cba_size = &_CbaSize;
+		the_callback_array = _CallbackArray;
+	}
+	else
+	{
+		the_cba_size = &clientsocket->_ClientCbaSize;
+		the_callback_array = clientsocket->_ClientCallbackArray;
+	}
+	if ( index < *the_cba_size )
+	{
+		return &(the_callback_array[index]);
+	}
+	else
+	{
+		return NULL;
+	}
+	
+}
 
 
 /*

@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.h,v 1.23 2001/01/10 18:39:03 cado Exp $
+ * $Id: socket.h,v 1.24 2001/01/26 13:33:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -140,8 +140,8 @@ protected:
 	/// Process an incoming bind message
 	void		processBindMessage( CMessage& message );
 
-	/// Transforms a message replacing its string type by the corresponding num type if it is bound
-	void		packMessage( CMessage& message );
+	/// Returns the type number corresponding to the message type name, or -1 if it is not bound yet
+	TTypeNum	getBoundTypeNumber( const CMessage& message );
 
 	///@name These methods are provided only to be called by CMsgSocket (friend)
 	//@{

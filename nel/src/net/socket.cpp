@@ -3,7 +3,7 @@
  * Thanks to Daniel Bellen <huck@pool.informatik.rwth-aachen.de> for libsock++,
  * from which I took some ideas
  *
- * $Id: socket.cpp,v 1.41 2001/01/15 13:40:57 cado Exp $
+ * $Id: socket.cpp,v 1.42 2001/01/26 13:33:37 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -30,6 +30,7 @@
 #include "nel/misc/debug.h"
 #include "nel/misc/common.h"
 #include "nel/net/net_log.h"
+#include "nel/net/msg_socket.h" // used to retrieve msg names by number
 
 
 #ifdef NL_OS_WINDOWS
@@ -117,8 +118,8 @@ void CSocket::send( CMessage& message ) throw(ESocket)
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "P1: Socket %d sent message %hd (%s) (%d bytes +%d)",
-				_Sock, message.typeAsNumber(), message.typeAsString().c_str(), len, alldata.length()-len  );
+			nldebug( "P1: Socket %d sent message %s (%hd) (%d bytes +%d)",
+				_Sock, message.typeAsString().c_str(), message.typeAsNumber(), len, alldata.length()-len  );
 		}
 		else
 		{
@@ -172,17 +173,25 @@ void CSocket::processBindMessage( CMessage& message )
 
 
 /*
- * Transforms a message replacing its string type by the corresponding num type if it is bound
+ * Returns the type number corresponding to the message type name, or -1 if it is not bound yet
  */
-void CSocket::packMessage( CMessage& message )
+TTypeNum CSocket::getBoundTypeNumber( const CMessage& message )
 {
 	if ( ! message.typeIsNumber() )
 	{
 		CMsgMap::iterator im = _BindMapForSends.find( message.typeAsString() );
 		if ( im != _BindMapForSends.end() )
 		{
-			message.setType( (*im).second );
+			return (*im).second;
 		}
+		else
+		{
+			return -1;
+		}
+	}
+	else
+	{
+		return message.typeAsNumber();
 	}
 }
 
@@ -195,37 +204,32 @@ CMessage CSocket::encode( CMessage& msg ) throw (ESocket)
 	CMessage alldata( "", false, msg.length()+CMessage::maxHeaderLength() );
 
 	// 1. Write message type
-	packMessage( msg );
-	TTypeNum code;
-	TTypeNum namelen = msg.typeAsString().length();
-	if ( msg.typeIsNumber() )
+	TTypeNum code = getBoundTypeNumber( msg );
+	if ( code == -1 ) // type is string
 	{
-		// Message type number
-		code = msg.typeAsNumber();
-		nlassert( code < 60 );
+		// Encoded length of message type string
+		TTypeNum namelen = msg.typeAsString().length();
+		code = namelen | 0x8000;
+		alldata.serial( code );
+
+		// 1.5 Write message name (optional)
+		alldata.serialBuffer( (uint8*)const_cast<char*>(msg.typeAsString().c_str()), namelen );
 	}
 	else
 	{
-		// Encoded length of message type string
-		code = namelen | 0x8000;
-	}
-	alldata.serial( code );
-
-	// 2. Write message name (optional)
-	if ( ! msg.typeIsNumber() )
-	{
-		alldata.serialBuffer( (uint8*)const_cast<char*>(msg.typeAsString().c_str()), namelen );
+		// Type as number
+		alldata.serial( code );
 	}
 
-	// 3. Write message size
+	// 2. Write message size
 	uint32 msgsize = msg.length();
 	alldata.serial( msgsize );
 
-	// 4. Write message number
+	// 3. Write message number
 	alldata.serial( _CurrentMsgNumberSend );
 	_CurrentMsgNumberSend++;
 
-	// 5. Write message payload
+	// 4. Write message payload
 	if ( msgsize != 0 )
 	{
 		alldata.serialBuffer( const_cast<uint8*>(msg.buffer()), msg.length() );
@@ -390,8 +394,17 @@ void CSocket::doReceive( CMessage& message ) throw (ESocket)
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "P1: Socket %d received message %hd (%d bytes +%d)",
-				_Sock, message.typeAsNumber(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
+			const TCallbackItem *cbitem = CMsgSocket::callbackItem( ownerClient(), message.typeAsNumber() );
+			if ( cbitem != NULL )
+			{
+				nldebug( "P1: Socket %d received message %s (%hd) (%d bytes +%d)",
+						 _Sock, cbitem->Key, message.typeAsNumber(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
+			}
+			else
+			{
+				nldebug( "P1: Socket %d received unknown message (%hd) (%d bytes +%d)",
+						 _Sock, message.typeAsNumber(), message.length(), sizeof(msgtype)+msgnamelen+sizeof(msgsize) );
+			}
 		}
 		else
 		{
@@ -414,12 +427,12 @@ void CSocket::sendTo( CMessage& message, const CInetAddress& addr ) throw (ESock
 	{
 		if ( message.typeIsNumber() )
 		{
-			nldebug( "P1: Socket %d sent message %hd (%s)",
-				_Sock, message.typeAsNumber(), message.typeAsString().c_str() );
+			nldebug( "P1: Socket %d sent message %s (%hd)",
+				_Sock,  message.typeAsString().c_str(), message.typeAsNumber() );
 		}
 		else
 		{
-			nldebug( "P1: Socket %d sent message %s of %d bytes",
+			nldebug( "P1: Socket %d sent message %s",
 				_Sock, message.typeAsString().c_str() );
 		}
 	}

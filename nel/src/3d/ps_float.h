@@ -1,7 +1,7 @@
 /** \file ps_float.h
  * <File description>
  *
- * $Id: ps_float.h,v 1.9 2002/02/20 18:08:11 lecroart Exp $
+ * $Id: ps_float.h,v 1.10 2002/11/14 17:34:37 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -99,7 +99,7 @@ public:
 	CPSAttribMakerBase *clone() const { return new CPSFloatBinOp(*this); }
 };
 
-/// this functor produce float based on a hermite curb
+/// this functor produce float based on a hermite curve
 class CPSFloatCurveFunctor
 {
 	public:

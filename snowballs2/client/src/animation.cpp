@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.15 2001/10/29 18:54:45 lecroart Exp $
+ * $Id: animation.cpp,v 1.16 2002/01/15 13:34:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -103,7 +103,8 @@ void	computeAnimation (CEntity &entity, EAnim anim)
 	// Get the current time
 	double currentTime = double (CTime::getLocalTime ())/1000.0f;
 
-	//nlinfo ("playing animation %s ct%f st%f et%f", AnimIdArray[anim][0].Name, currentTime, AnimIdArray[anim][0].Animation->getBeginTime (), AnimIdArray[anim][0].Animation->getEndTime ());
+//	nlinfo ("%d playing animation", anim);
+//	nlinfo ("%d playing animation %s ct%f st%f et%f", anim, AnimIdArray[anim][0].Name, currentTime, AnimIdArray[anim][0].Animation->getBeginTime (), AnimIdArray[anim][0].Animation->getEndTime ());
 
 	// Find the new slot for the full animation (0 or 1)
 	uint newSlot = entity.NextEmptySlot;
@@ -152,6 +153,9 @@ void	computeAnimation (CEntity &entity, EAnim anim)
 
 void	playAnimation (CEntity &entity, EAnim anim, bool force)
 {
+	nlassert (anim > -2 && anim < 20);
+//	nlinfo ("playAnimation() %d", anim);
+
 	// Get the current time
 	CAnimationTime currentTime = CAnimationTime(CTime::getLocalTime ())/1000.0f;
 
@@ -173,7 +177,8 @@ void	playAnimation (CEntity &entity, EAnim anim, bool force)
 			entity.AnimQueue.pop ();
 	}
 
-	//nlinfo ("pushing animation %s", AnimIdArray[anim][0].Name);
+//	nlinfo ("pushing animation %d", anim);
+//	nlinfo ("pushing animation %s", AnimIdArray[anim][0].Name);
 	entity.AnimQueue.push (anim);
 }
 

@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.17 2001/11/28 14:57:17 lecroart Exp $
+ * $Id: network.cpp,v 1.18 2002/01/15 13:34:06 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -159,10 +159,17 @@ static void cbHit(CMessage &msgin, TSockId from, CCallbackNetBase &netbase)
 	EIT eit = findEntity (eid);
 	CEntity	&entity = (*eit).second;
 
-	EAnim a = entity.AnimQueue.front ();
-	playAnimation (entity, HitAnim, true);
-	playAnimation (entity, a);
-
+	if (!entity.AnimQueue.empty())
+	{
+		EAnim a = entity.AnimQueue.front ();
+		playAnimation (entity, HitAnim, true);
+		playAnimation (entity, a);
+	}
+	else
+	{
+		playAnimation (entity, HitAnim, true);
+	}
+	
 	removeEntity (sid);
 }
 

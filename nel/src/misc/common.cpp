@@ -1,7 +1,7 @@
 /** \file common.cpp
  * Common functions
  *
- * $Id: common.cpp,v 1.70 2005/03/22 14:40:34 besson Exp $
+ * $Id: common.cpp,v 1.71 2005/04/04 10:18:41 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -879,6 +879,7 @@ sint64 nlftell64(FILE *stream)
 		else return -1;
 	#else
 		nlerror("Not implemented");
+		return -1;
 	#endif
 }
 

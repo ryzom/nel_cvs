@@ -1,6 +1,6 @@
 /** \file export_flare.cpp
  *
- * $Id: export_flare.cpp,v 1.1 2002/07/03 09:15:24 vizerie Exp $
+ * $Id: export_flare.cpp,v 1.2 2002/11/13 14:30:19 vizerie Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -26,7 +26,8 @@
 
 #include "StdAfx.h"
 #include "export_nel.h"
-#include <3d/flare_shape.h>
+#include "3d/flare_shape.h"
+#include "nel/misc/path.h"
 
 
 using namespace NL3D;
@@ -103,11 +104,8 @@ IShape* CExportNel::buildFlare(INode& node, TimeValue time)
 				fshape->setTexture(k, new NL3D::CTextureFile(fileName.c_str()));
 			}
 			else
-			{
-				char fName[_MAX_FNAME];
-				// get file name only
-				::_splitpath(fileName.c_str(), NULL, NULL, fName, NULL);
-				fshape->setTexture(k, new NL3D::CTextureFile(fName));
+			{				
+				fshape->setTexture(k, new NL3D::CTextureFile(NLMISC::CFile::getFilename(fileName)));
 			}
 		}
 		else

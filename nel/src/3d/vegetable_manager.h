@@ -1,7 +1,7 @@
 /** \file vegetable_manager.h
  * <File description>
  *
- * $Id: vegetable_manager.h,v 1.18 2002/05/22 16:30:28 berenguier Exp $
+ * $Id: vegetable_manager.h,v 1.19 2002/09/24 15:02:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -31,12 +31,14 @@
 #include "nel/misc/rgba.h"
 #include "nel/misc/block_memory.h"
 #include "nel/misc/vector_2f.h"
+#include "nel/misc/smart_ptr.h"
 #include "3d/vegetable_clip_block.h"
 #include "3d/vegetable_sort_block.h"
 #include "3d/vegetable_instance_group.h"
 #include "3d/vegetable_shape.h"
 #include "3d/vegetablevb_allocator.h"
 #include "3d/material.h"
+#include "3d/driver.h"
 #include "3d/vegetable_uv8.h"
 
 
@@ -44,7 +46,6 @@ namespace NL3D
 {
 
 
-class	IDriver;
 class	CVegetableBlendLayerModel;
 class	CScene;
 class	CVegetableLightEx;
@@ -442,6 +443,9 @@ private:
 
 
 	// @}
+
+	// last driver setupped with a call to update driver
+	NLMISC::CRefPtr<IDriver> _LastDriver;
 
 
 };

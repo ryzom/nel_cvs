@@ -1,7 +1,7 @@
 /** \file vegetable_manager.cpp
  * <File description>
  *
- * $Id: vegetable_manager.cpp,v 1.28 2002/08/21 09:39:54 lecroart Exp $
+ * $Id: vegetable_manager.cpp,v 1.29 2002/09/24 15:02:29 vizerie Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -38,6 +38,8 @@
 #include "3d/vegetable_light_ex.h"
 #include "nel/misc/hierarchical_timer.h"
 
+#include <algorithm>
+
 
 using namespace std;
 using namespace NLMISC;
@@ -71,11 +73,7 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 	_VBSoftAllocator[CVegetableVBAllocator::VBTypeLighted].init( CVegetableVBAllocator::VBTypeLighted, 0 );
 	_VBSoftAllocator[CVegetableVBAllocator::VBTypeUnlit].init( CVegetableVBAllocator::VBTypeUnlit, 0 );
 
-	// Init all the vertex program with the appropriate pass.
-	for(i=0; i <NL3D_VEGETABLE_NRDRPASS; i++)
-	{
-		initVertexProgram(i);
-	}
+	// NB Vertex programs are initilized during the first call to update driver.
 
 	// setup the material. Unlit (doesn't matter, lighting in VP) Alpha Test.
 	_VegetableMaterial.initUnlit();
@@ -121,6 +119,8 @@ CVegetableManager::CVegetableManager(uint maxVertexVbHardUnlit, uint maxVertexVb
 
 	// Misc.
 	_NumVegetableFaceRendered= 0;
+
+	std::fill(_VertexProgram, _VertexProgram + NL3D_VEGETABLE_NRDRPASS, (CVertexProgram *) NULL);
 
 }
 
@@ -320,21 +320,21 @@ const char* NL3D_FastBendProgram=
 																						\n\
 	# animation: use the 64 LUT entries													\n\
 	EXP	R0.y, R0.x;						# fract part=> R0.y= [0,1[						\n\
-	MUL	R0.x, R0.y, c[23].x;			# R0.x= [0,64[									\n\
+	MUL	R0,  R0.y, c[23].xyyy;			# R0.x= [0,64[									\n\
 	ARL	A0.x, R0.x;						# A0.x= index in the LUT						\n\
 	EXP	R0.y, R0.x;						# R0.y= R0.x-A0.x= fp (fract part)				\n\
-	# lookup and lerp in one it: R1= value + fp * dv.									\n\
-	MAD	R1.xy, R0.y, c[A0.x+32].zwww, c[A0.x+32].xyww;									\n\
+	# lookup and lerp in one it: R0= value + fp * dv.									\n\
+	MAD	R0.xy, R0.y, c[A0.x+32].zwww, c[A0.x+32].xyww;									\n\
 																						\n\
 	# The direction and power of the wind is encoded in the LUT.						\n\
 	# Scale now by vertex BendFactor (stored in v[0].w)									\n\
-	MAD	R5.xyz, R1, v[0].w, v[0].xyzw;													\n\
+	MAD	R5, R0, v[0].w, v[0].xyzw;													\n\
 	# compute 1/norm, and multiply by original norm stored in v[9].x					\n\
 	DP3	R0.x, R5, R5;																	\n\
 	RSQ	R0.x, R0.x;																		\n\
 	MUL	R0.x, R0.x, v[9].x;																\n\
 	# mul by this factor, and add to center												\n\
-	MAD	R5, R0.x, R5, v[10];															\n\
+	MAD	R5, R0.xxxw, R5, v[10];															\n\
 																						\n\
 	# make local to camera pos. Important for ZBuffer precision							\n\
 	ADD R5, R5, -c[10];																	\n\
@@ -419,39 +419,38 @@ const char* NL3D_BendProgramP1=
 	# remind: c[16].z== angleAxis.z== 0													\n\
 	MUL	R0, c[16], R0.yyyx;				# R0= quaternion.xyzw							\n\
 																						\n\
-																						\n\
 	# build	our matrix from this quaternion, into R7,R8,R9								\n\
 	# Quaternion TO matrix 3x3 in 7 ope, with quat.z==0									\n\
 	MUL	R1, R0, c[8].w;					# R1= quat2= 2*quat == 2*x, 2*y, 0, 2*w			\n\
 	MUL R2, R1, R0.x;					# R2= quatX= xx, xy, 0, wx						\n\
 	MUL R3, R1, R0.y;					# R3= quatY= xy, yy, 0, wy						\n\
 	# NB: c[21]= {0, 1, -1, 0}															\n\
-	MAD	R7.xyz, c[21].zyyw, R3.yxww, c[21].yxxw;										\n\
+	# Write to w, then w = 0, this avoid an unitialized component                       \n\
+	MAD	R7.xyzw, c[21].zyyw, R3.yxww, c[21].yxxw;										\n\
 	# R7.x= a11 = 1.0f - (yy)															\n\
 	# R7.y= a12 = xy																	\n\
 	# R7.z= a13 = wy																	\n\
 	# NB: c[21]= {0, 1, -1, 0}															\n\
-	MAD	R8.xyz, c[21].yzzw, R2.yxww, c[21].xyxw;										\n\
+	# Write to w, then w = 0, this avoid an unitialized component                       \n\
+	MAD	R8.xyzw, c[21].yzzw, R2.yxww, c[21].xyxw;										\n\
 	# R8.x= a21 = xy																	\n\
 	# R8.y= a22 = 1.0f - (xx)															\n\
 	# R8.z= a23 = - wx																	\n\
 	# NB: c[21]= {0, 1, -1, 0}															\n\
-	ADD	R9.xyz, R2.zwxw, R3.wzyw;		# a31= 0+wy, a32= wx+0, a33= xx + yy, because z==0	\n\
-	MAD R9.xyz, R9.xyzw, c[21].zyzw, c[21].xxyw;										\n\
+	# Write to w, then w = 0, this avoid an unitialized component                       \n\
+	ADD	R9.xyzw, R2.zwxw, R3.wzyw;		# a31= 0+wy, a32= wx+0, a33= xx + yy, because z==0	\n\
+	MAD R9.xyzw, R9.xyzw, c[21].zyzw, c[21].xxyw;										\n\
 	# R9.x= a31 = - wy																	\n\
 	# R9.y= a32 = wx																	\n\
 	# R9.z= a33 = 1.0f - (xx + yy)														\n\
-																						\n\
-																						\n\
 	# transform pos																		\n\
 	DP3	R5.x, R7, v[0];																	\n\
 	DP3	R5.y, R8, v[0];																	\n\
 	DP3	R5.z, R9, v[0];				# R5= bended relative pos to center.				\n\
-																						\n\
-																						\n\
+	#temp, to optimize																	\n\
+	MOV R5.w, c[21].w;																    \n\
 	# add pos to center pos.															\n\
 	ADD	R5, R5, v[10];				# R5= world pos. R5.w= R5.w+v[10].w= 0+1= 1			\n\
-																						\n\
 	# make local to camera pos. Important for ZBuffer precision							\n\
 	ADD R5, R5, -c[10];																	\n\
 ";
@@ -481,9 +480,10 @@ const char* NL3D_LightedStartVegetableProgram=
 	DP3	R6.z, R9, R0;				# R6= bended normal.								\n\
 																						\n\
 	# Normalize normal, and dot product, into R0.x										\n\
-	DP3	R0.x, R6, R6;				# R0.x= R6.sqrnorm()								\n\
+	# w hasn't been written                                                             \n\
+	DP3	R0.x, R6.xyzz, R6.xyzz;		# R0.x= R6.sqrnorm()								\n\
 	RSQ R0.x, R0.x;					# R0.x= 1/norm()									\n\
-	MUL	R6, R6, R0.x;				# R6= R6.normed()									\n\
+	MUL	R6, R6.xyzz, R0.x;				# R6= R6.normed()								\n\
 	DP3	R0.x, R6, c[9];																	\n\
 ";
 
@@ -554,6 +554,19 @@ const char* NL3D_UnlitMiddle2SidedAlphaBlendVegetableProgram=
 ";
 
 
+//	1Sided "lighting" + AlphaBlend.
+const char* NL3D_UnlitMiddle1SidedAlphaBlendVegetableProgram=
+"	MOV o[COL0].xyz, v[3];			# col.RGBA= vertex color							\n\
+																						\n\
+	#Blend transition. NB: in R5, we already have the position relative to the camera	\n\
+	DP3	R0.x, R5, R5;				# R0.x= sqr(dist to viewer).						\n\
+	RSQ R0.y, R0.x;																		\n\
+	MUL R0.x, R0.x, R0.y;			# R0.x= dist to viewer								\n\
+	# setup alpha Blending. Distance of appartition is encoded in the vertex.			\n\
+	MAD o[COL0].w, R0.x, c[11].x, v[9].w;												\n\
+";
+
+
 
 
 // ***********************
@@ -597,6 +610,7 @@ const char* NL3D_SimpleStartVegetableProgram=
 // ***************************************************************************
 void					CVegetableManager::initVertexProgram(uint vpType)
 {
+	nlassert(_LastDriver); // update driver should have been called at least once !
 	// Init the Vertex Program.
 	string	vpgram;
 	// start always with Bend.
@@ -604,6 +618,10 @@ void					CVegetableManager::initVertexProgram(uint vpType)
 		vpgram= NL3D_BendProgram;
 	else
 		vpgram= NL3D_FastBendProgram;
+
+	// If double sided V.P are not supported, switch to 1-sided version
+	bool doubleSided = _LastDriver->supportVertexProgramDoubleSidedColor();
+
 	// combine the VP according to Type
 	switch(vpType)
 	{
@@ -613,7 +631,8 @@ void					CVegetableManager::initVertexProgram(uint vpType)
 		break;
 	case NL3D_VEGETABLE_RDRPASS_LIGHTED_2SIDED:		
 		vpgram+= string(NL3D_LightedStartVegetableProgram);
-		vpgram+= string(NL3D_LightedMiddle2SidedVegetableProgram);
+		vpgram+= string(doubleSided ? NL3D_LightedMiddle2SidedVegetableProgram 
+			                        : NL3D_LightedMiddle1SidedVegetableProgram);
 		break;
 	case NL3D_VEGETABLE_RDRPASS_UNLIT:		
 		vpgram+= string(NL3D_UnlitStartVegetableProgram);
@@ -621,12 +640,16 @@ void					CVegetableManager::initVertexProgram(uint vpType)
 		break;
 	case NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED:		
 		vpgram+= string(NL3D_UnlitStartVegetableProgram);
-		vpgram+= string(NL3D_UnlitMiddle2SidedVegetableProgram);
+		vpgram+= string(doubleSided ? NL3D_UnlitMiddle2SidedVegetableProgram
+			                        : NL3D_UnlitMiddle1SidedVegetableProgram
+			           );
 		break;
 	case NL3D_VEGETABLE_RDRPASS_UNLIT_2SIDED_ZSORT:		
 		vpgram+= string(NL3D_UnlitStartVegetableProgram);
-		vpgram+= string(NL3D_UnlitMiddle2SidedAlphaBlendVegetableProgram);
-		break;
+		vpgram+= string(doubleSided ? NL3D_UnlitMiddle2SidedAlphaBlendVegetableProgram
+			                        : NL3D_UnlitMiddle1SidedAlphaBlendVegetableProgram
+			           );
+		break;	
 	}
 
 	// common end of VP
@@ -1660,6 +1683,16 @@ void			CVegetableManager::updateDriver(IDriver *driver)
 		_VBHardAllocator[i].updateDriver(driver);
 		_VBSoftAllocator[i].updateDriver(driver);
 	}
+	
+	// if driver changed, recreate vertex programs
+	if (driver != _LastDriver)
+	{
+		_LastDriver = driver;
+		for(i=0; i <NL3D_VEGETABLE_NRDRPASS; i++)
+		{
+			initVertexProgram(i);
+		}		
+	}	
 }
 
 

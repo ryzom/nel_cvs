@@ -1,7 +1,7 @@
 /** \file sound.cpp
  * CSound: a sound buffer and its static properties
  *
- * $Id: sound.cpp,v 1.16 2001/09/11 11:28:47 cado Exp $
+ * $Id: sound.cpp,v 1.17 2001/09/13 18:29:02 cado Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -55,7 +55,7 @@ uint			CSound::CurrentVersion = 4;
 uint			CSound::FileVersion = 0;
 
 // Allow to load sound files when corresponding wave file is not present ?
-bool			CSound::_AllowMissingWave = false;
+bool			CSound::_AllowMissingWave = true;
 
 
 /*

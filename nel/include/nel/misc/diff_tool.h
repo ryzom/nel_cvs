@@ -1,6 +1,6 @@
 /** \file diff_tool.h
  *
- * $Id: diff_tool.h,v 1.5 2004/03/19 18:14:45 boucher Exp $
+ * $Id: diff_tool.h,v 1.6 2004/04/01 20:36:49 boucher Exp $
  */
 
 /* Copyright, 2000, 2001, 2002 Nevrax Ltd.
@@ -226,7 +226,7 @@ namespace STRING_MANAGER
 		void insertRow(uint rowIndex, const TRow &row)
 		{
 			nlassertex(rowIndex <= Data.size(), ("TWorksheet::insertRow: bad row index: rowIndex(%u) is out of range (max=%u)", rowIndex, Data.size()-1));
-			nlassertex(row.size() == ColCount, ("TWorksheet::insertRow: bad column count : inserted row size(%u) is invalid (must be %u)", row.size(), ColCount));
+			nlassertex(row.size() == ColCount, ("TWorksheet::insertRow: bad column count : inserted row size(%u) is invalid (must be %u) at rowIndex(%u)", row.size(), ColCount, rowIndex));
 
 			Data.insert(Data.begin()+rowIndex, row);
 		}
@@ -262,7 +262,7 @@ namespace STRING_MANAGER
 		void setData(uint rowIndex, uint colIndex, const ucstring &value)
 		{
 			nlassertex(rowIndex < Data.size(), ("TWorksheet::setData: bad row index: rowIndex(%u) is out of range (max=%u)", rowIndex, Data.size()));
-			nlassertex(colIndex < ColCount, ("TWorksheet::setData: bad column index: colIndex(%u) is not less than ColCount(%u)", colIndex, ColCount));
+			nlassertex(colIndex < ColCount, ("TWorksheet::setData: bad column index: colIndex(%u) is not less than ColCount(%u) ar rowIndex(%u)", colIndex, ColCount, rowIndex));
 
 			Data[rowIndex][colIndex] = value;
 		}
@@ -270,7 +270,7 @@ namespace STRING_MANAGER
 		const ucstring &getData(uint rowIndex, uint colIndex) const
 		{
 			nlassertex(rowIndex < Data.size(), ("TWorksheet::getData: bad row index: rowIndex(%u) is out of range (max=%u)", rowIndex, Data.size()));
-			nlassertex(colIndex < ColCount, ("TWorksheet::getData: bad column index: colIndex(%u) is not less than ColCount(%u)", colIndex, ColCount));
+			nlassertex(colIndex < ColCount, ("TWorksheet::getData: bad column index: colIndex(%u) is not less than ColCount(%u) at rowIndex(%u)", colIndex, ColCount, rowIndex));
 
 			return Data[rowIndex][colIndex];
 		}

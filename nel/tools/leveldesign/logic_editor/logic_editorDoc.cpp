@@ -446,15 +446,14 @@ void CLogic_editorDoc::deleteState( CString name)
 BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 {
 	POSITION pos;
+	CString eltName;
 
 	string fName( fileName );
 	COFile f( fName );
 
 	CLogicStateMachine logicStateMachine;
-	toLogicStateMachine( logicStateMachine );
-	
-	
-	/// store the variables
+		
+	/// convert and store the variables
 	CString variable;
 	for( pos = m_variables.GetHeadPosition(); pos != NULL; )
 	{
@@ -464,20 +463,49 @@ BOOL CLogic_editorDoc::OnSaveDocument( LPCTSTR fileName )
 		logicStateMachine.addVariable( logicVariable );
 	}
 	
-	// store the counters
-	CString counterName;
+	// convert and store the counters
 	CCounter * pCounter = new CCounter();
 	for( pos = m_counters.GetStartPosition(); pos != NULL; )
 	{
 		// get counter
-		m_counters.GetNextAssoc( pos, counterName, (void*&)pCounter );
+		m_counters.GetNextAssoc( pos, eltName, (void*&)pCounter );
 		// set logic counter from counter
 		CLogicCounter logicCounter;
 		cCounterToCLogicCounter( *pCounter, logicCounter );
 		// set the logic counter name
-		logicCounter.setName( (LPCSTR)counterName );
+		logicCounter.setName( (LPCSTR)eltName );
 		// add the logic counter
 		logicStateMachine.addCounter( logicCounter );
+	}
+
+	// convert and store the conditions
+	CCondition * pCondition = new CCondition();
+	for( pos = m_conditions.GetStartPosition(); pos != NULL; )
+	{
+		// get condition
+		m_conditions.GetNextAssoc( pos, eltName, (void*&)pCondition );
+		// set logic condition from condition
+		CLogicCondition logicCondition;
+		cConditionToCLogicCondition( *pCondition, logicCondition );
+		// set the logic condition name
+		logicCondition.setName( (LPCSTR)eltName );
+		// add the logic condition
+		logicStateMachine.addCondition( logicCondition );
+	}
+
+	// convert and store the states
+	CState * pState = new CState();
+	for( pos = m_states.GetStartPosition(); pos != NULL; )
+	{
+		// get state
+		m_states.GetNextAssoc( pos, eltName, (void*&)pState );
+		// set the logic state from state
+		CLogicState logicState;
+		cStateToCLogicState( *pState, logicState );
+		// set the logic state's name
+		logicState.setName( (LPCSTR)eltName );
+		// add the logic state
+		logicStateMachine.addState( logicState );
 	}
 
 	// save the logic state machine
@@ -503,7 +531,7 @@ BOOL CLogic_editorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 	// load the logic state machine
 	vector<CLogicVariable> variables;
 	vector<CLogicCounter> counters;
-	vector<CLogicState> states;
+	map<string,CLogicState> states;
 	f.serialCont( variables );
 	f.serialCont( counters );
 	f.serialCont( states );
@@ -528,31 +556,6 @@ BOOL CLogic_editorDoc::OnOpenDocument(LPCTSTR lpszPathName)
 
 } // OnOpenDocument //
 
-
-
-//------------------------------------------------------
-//	toLogicStateMachine
-//
-//------------------------------------------------------
-void CLogic_editorDoc::toLogicStateMachine( CLogicStateMachine& logicStateMachine )
-{
-
-	// states
-	POSITION pos;
-	CString stateName;
-	CState * pState;
-	for( pos = m_states.GetStartPosition(); pos != NULL; )
-	{
-		m_states.GetNextAssoc( pos, stateName, (void*&)pState );
-		CLogicState logicState;
-		cStateToCLogicState( *pState, logicState );
-		logicStateMachine.addState( logicState );
-	}
-	
-	// file name
-	// TODO
-
-} // toLogicStateMachine //
 
 
 

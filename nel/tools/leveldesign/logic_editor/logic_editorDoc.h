@@ -100,12 +100,6 @@ public:
 
 
 	/**
-	 * set a serializable state machine
-	 */
-	void toLogicStateMachine( CLogicStateMachine& logicStateMachine );
-
-
-	/**
 	 * callback called at document save
 	 */
 	virtual BOOL OnSaveDocument( LPCTSTR fileName );

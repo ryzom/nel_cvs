@@ -134,7 +134,7 @@ void CConditionNode::conditionDeleted( const CString &name)
 
 
 //-----------------------------------------------------
-//	toLogicConditionNode
+//	cConditionNodeToCLogicConditionNode
 //
 //-----------------------------------------------------
 void cConditionNodeToCLogicConditionNode(CConditionNode& conditionNode, CLogicConditionNode& logicConditionNode )
@@ -190,7 +190,7 @@ void cConditionNodeToCLogicConditionNode(CConditionNode& conditionNode, CLogicCo
 		}
 	}
 
-} // toLogicConditionNode //
+} // cConditionNodeToCLogicConditionNode //
 
 
 

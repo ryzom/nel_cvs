@@ -114,4 +114,13 @@ public:
 	TPtrConditionList	m_ctConditionTree;
 };
 
+
+class CLogicCondition;
+/**
+ *	cConditionToCLogicCondition
+ */
+void cConditionToCLogicCondition( CCondition& condition, CLogicCondition& logicCondition );
+
+
+
 #endif // !defined(AFX_CONDITION_H__160ED1FB_6106_4D5D_B298_0C66ED094B4B__INCLUDED_)

@@ -1,7 +1,7 @@
 /** \file audio_mixer_user.cpp
  * CAudioMixerUser: implementation of UAudioMixer
  *
- * $Id: audio_mixer_user.cpp,v 1.59 2003/09/26 19:23:45 boucher Exp $
+ * $Id: audio_mixer_user.cpp,v 1.60 2003/11/21 16:29:48 boucher Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -24,14 +24,10 @@
  */
 
 #include "stdsound.h"
+#include "nel/memory/memory_manager.h"
 
-//#include "env_sound_user.h"
-//#include "env_effect.h"
 #include "simple_sound.h"
 #include "complex_sound.h"
-//#include "ambiant_source.h"
-//#include "bounding_sphere.h"
-//#include "bounding_box.h"
 #include "driver/buffer.h"
 #include "sample_bank.h"
 #include "sound_bank.h"
@@ -75,7 +71,7 @@ using namespace std;
 namespace NLSOUND {
 
 
-#ifdef _DEBUG
+#if defined(NL_DEBUG) || defined(NL_DEBUG_FAST)
 CAudioMixerUser::IMixerEvent	*CurrentEvent = 0;
 #endif
 
@@ -680,7 +676,11 @@ void	CAudioMixerUser::buildSampleBankList()
 //					sbf.serialCont(mono16Buffers[j]);
 //					sbf.serialCont(adpcmBuffers[j]);
 				}
-				bankFile.insert(bankFile.begin()+i, filename);
+				// NB : the next commented line replaced by the next two line.
+				//		The first generate an access violation at the 64th insert !
+				// bankFile.insert(bankFile.begin()+i, filename);
+				bankFile.insert(bankFile.begin()+i);
+				bankFile[i] = filename;
 			}
 		}
 		else if (bankname < CFile::getFilenameWithoutExtension(bankDir[i]))
@@ -848,7 +848,7 @@ public:
 			CAudioMixerUser::CControledSources	cs;
 
 			// preset the default value
-			cs.Value = 1.0f;
+			cs.Value = 0.0f;
 
 			root.getValueByName(varname, ".Name");
 			root.getValueByName(paramId, ".ParamId");
@@ -894,6 +894,7 @@ public:
 
 void CAudioMixerUser::initUserVar()
 {
+	_UserVarControls.clear();
 	/// Temporary container.
 	std::map<std::string, CUserVarSerializer> Container;
 
@@ -964,8 +965,8 @@ void CAudioMixerUser::CControledSources::serial (NLMISC::IStream &s)
 		}
 	}
 
-	// Default value to 1.
-	Value = 1.0f;
+	// Default value to 0.
+	Value = 0.0f;
 }
 
 
@@ -1349,7 +1350,7 @@ void				CAudioMixerUser::update()
 		TTime now = NLMISC::CTime::getLocalTime();
 		while (!_EventList.empty() && _EventList.begin()->first <= now)
 		{
-#ifdef NL_DEBUG
+#if defined(NL_DEBUG) || defined(NL_DEBUG_FAST)
 			CurrentEvent = _EventList.begin()->second;
 #endif
 //			nldebug("Sending Event %p", _EventList.begin()->second);
@@ -1365,7 +1366,7 @@ void				CAudioMixerUser::update()
 				it++;
 			}
 			_EventList.erase(_EventList.begin());
-#ifdef NL_DEBUG
+#if defined(NL_DEBUG) || defined(NL_DEBUG_FAST)
 			CurrentEvent = 0;
 #endif
 		}

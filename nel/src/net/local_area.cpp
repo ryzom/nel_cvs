@@ -1,7 +1,7 @@
 /** \file local_area.cpp
  * The area all around a player
  *
- * $Id: local_area.cpp,v 1.20 2000/12/15 16:59:28 cado Exp $
+ * $Id: local_area.cpp,v 1.21 2000/12/15 17:48:08 cado Exp $
  */
 
 /* Copyright, 2000 Nevrax Ltd.
@@ -226,10 +226,13 @@ CLocalArea::CLocalArea( const CMsgSocket *clientsocket, const CVector& userpos, 
 	User.resetPos( userpos );
 	User.resetBodyHeading( userhdg );
 	ClientSocket = const_cast<CMsgSocket*>(clientsocket);
-	ClientSocket->addClientCallbackArray( CbArray, sizeof(CbArray)/sizeof(TCallbackItem) );
+	if ( ClientSocket != NULL )
+	{
+		ClientSocket->addClientCallbackArray( CbArray, sizeof(CbArray)/sizeof(TCallbackItem) );
+	}
 }
 
-
+	
 /*
  * Destructor
  */

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.cpp,v 1.5 2000/09/14 15:58:40 berenguier Exp $
+ * $Id: stream.cpp,v 1.6 2000/09/15 15:17:42 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -57,7 +57,7 @@ void	IStream::getVersionException(bool &throwOnOlder, bool &throwOnNewer)
 // ======================================================================================================
 void			IStream::serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream)
 {
-	uint64	node;
+	uint64	node=0;
 
 	if(isReading())
 	{
@@ -137,8 +137,8 @@ void			IStream::resetPtrTable()
 // ======================================================================================================
 uint IStream::serialVersion(uint currentVersion) throw(EStream)
 {
-	uint8	b;
-	uint32	v;
+	uint8	b=0;
+	uint32	v=0;
 	uint	streamVersion;
 
 	if(isReading())
@@ -175,6 +175,85 @@ uint IStream::serialVersion(uint currentVersion) throw(EStream)
 	return streamVersion;
 }
 
+
+// ======================================================================================================
+// ======================================================================================================
+// ======================================================================================================
+
+
+// ======================================================================================================
+void			IStream::serialCont(vector<uint8> &cont) throw(EStream)
+{
+	sint32	len=0;
+	if(isReading())
+	{
+		serial(len);
+		cont.resize(len);
+		serialBuffer( (uint8*)&(*cont.begin()) ,  len);
+	}
+	else
+	{
+		len= cont.size();
+		serial(len);
+		serialBuffer( (uint8*)&(*cont.begin()) ,  len);
+	}
+}
+// ======================================================================================================
+void			IStream::serialCont(vector<sint8> &cont) throw(EStream)
+{
+	sint32	len=0;
+	if(isReading())
+	{
+		serial(len);
+		cont.resize(len);
+		serialBuffer( (uint8*)&(*cont.begin()) ,  len);
+	}
+	else
+	{
+		len= cont.size();
+		serial(len);
+		serialBuffer( (uint8*)&(*cont.begin()) ,  len);
+	}
+}
+// ======================================================================================================
+void			IStream::serialCont(vector<bool> &cont) throw(EStream)
+{
+	sint32	len=0;
+	vector<uint8>	vec;
+
+	if(isReading())
+	{
+		serial(len);
+		cont.resize(len);
+
+		// read as uint8*.
+		sint	lb= (len+7)/8;
+		vec.resize(lb);
+		serialBuffer( (uint8*)&(*vec.begin()) ,  lb);
+		for(sint i=0;i<len;i++)
+		{
+			uint	bit= (vec[i>>3]>>(i&7)) & 1;
+			cont[i]= bit?true:false;
+		}
+	}
+	else
+	{
+		len= cont.size();
+		serial(len);
+
+		// write as uint8*.
+		sint	lb= (len+7)/8;
+		vec.resize(lb);
+		fill_n(vec.begin(), lb, 0);
+		for(sint i=0;i<len;i++)
+		{
+			uint	bit= cont[i]?1:0;
+			vec[i>>3]|= bit<<(i&7);
+		}
+		serialBuffer( (uint8*)&(*vec.begin()) ,  lb);
+	}
+
+}
 
 
 }

@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream_inline.h,v 1.7 2000/09/14 10:03:56 berenguier Exp $
+ * $Id: stream_inline.h,v 1.8 2000/09/15 15:17:51 berenguier Exp $
  *
  * This File Declares inline for stream.h CRegistry and CBaseStream 
  */
@@ -293,7 +293,7 @@ inline	void		IStream::serial(char &b) throw(EStream)
 // ======================================================================================================
 inline	void		IStream::serial(std::string &b) throw(EStream)
 {
-	sint32	len;
+	sint32	len=0;
 	// Read/Write the length.
 	if(isReading())
 	{
@@ -329,7 +329,7 @@ inline	void		IStream::serial(wchar &b) throw(EStream)
 // ======================================================================================================
 inline	void		IStream::serial(std::wstring &b) throw(EStream)
 {
-	sint32	len;
+	sint32	len=0;
 	// Read/Write the length.
 	if(isReading())
 	{

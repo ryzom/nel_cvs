@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.11 2000/09/14 15:58:56 berenguier Exp $
+ * $Id: stream.h,v 1.12 2000/09/15 15:17:51 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -22,6 +22,7 @@
 #include	<utility>
 #include	<string>
 #include	<map>
+#include	<vector>
 
 
 namespace	NLMISC
@@ -157,9 +158,9 @@ public:
 
 	/**
 	 * Template Object serialisation.
-	 * \param obj any object providing a "void serial(IStream&)" method.
+	 * \param obj any object providing a "void serial(IStream&)" method. The object doesn't have to derive from IStreamable.
 	 * 
-	 * the VC++ error "error C2228: left of '.serial' must have class/struct/union type" signifie you don't provide
+	 * the VC++ error "error C2228: left of '.serial' must have class/struct/union type" means you don't provide
 	 * a serial() method to your object. Or you may have use serial with a int / uint / sint type. REMEMBER YOU CANNOT
 	 * do this, since those type have unspecified length.
 	 */
@@ -254,6 +255,14 @@ public:
 			}
 		}
 	}
+
+
+	/// Specialisation of serialCont() for vector<uint8>
+	void			serialCont(std::vector<uint8> &cont) throw(EStream);
+	/// Specialisation of serialCont() for vector<sint8>
+	void			serialCont(std::vector<sint8> &cont) throw(EStream);
+	/// Specialisation of serialCont() for vector<bool>
+	void			serialCont(std::vector<bool> &cont) throw(EStream);
 
 
 	/**
@@ -523,7 +532,8 @@ private:
 
 // ======================================================================================================
 /**
- * An Object Streamable interface.
+ * An Object Streamable interface. Any polymorphic class which want to use serial() in a polymorphic way, must derive
+ * from this interface.
  * \author Lionel Berenguier
  * \author Vianney Lecroart
  * \author Nevrax France
@@ -536,7 +546,7 @@ public:
 };
 
 
-}	// namespace NLMISC.
+} // NLMISC.
 
 
 // Inline Implementation.

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: entities.cpp,v 1.26 2001/07/19 10:18:07 legros Exp $
+ * $Id: entities.cpp,v 1.27 2001/07/19 13:45:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -198,8 +198,8 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
 
 		// create instance of the mesh character
-		entity.Instance = Scene->createInstance("barman.shape");
-		entity.Skeleton = Scene->createSkeleton ("fy_hom.skel");
+		entity.Instance = Scene->createInstance("gnu.shape");
+		entity.Skeleton = Scene->createSkeleton ("gnu.skel");
 		// use the instance on the skeleton
 		entity.Skeleton->bindSkin (entity.Instance);
 		entity.Instance->hide ();
@@ -224,8 +224,8 @@ void addEntity (uint32 eid, CEntity::TType type, const CVector &startPosition, c
 		entity.MovePrimitive->insertInWorldImage(0);
 		entity.MovePrimitive->setGlobalPosition(CVectorD(startPosition.x, startPosition.y, startPosition.z), 0);
 
-		entity.Instance = Scene->createInstance("barman.shape");
-		entity.Skeleton = Scene->createSkeleton ("fy_hom.skel");
+		entity.Instance = Scene->createInstance("gnu.shape");
+		entity.Skeleton = Scene->createSkeleton ("gnu.skel");
 		entity.Skeleton->bindSkin (entity.Instance);
 		entity.Instance->hide ();
 
@@ -833,14 +833,29 @@ NLMISC_COMMAND(set_speed,"set the speed of an identity","<eid> <speed>")
 	return true;
 }
 
-NLMISC_COMMAND(teleport, "teleport an entity to a given position", "<eid> <x> <y>")
+NLMISC_COMMAND(speed,"set the player speed","<speed in km/h>")
 {
 	// check args, if there s not the right number of parameter, return bad
-	if(args.size() != 3) return false;
+	if(args.size() != 1) return false;
+	float speed = min( max( (float)atof(args[0].c_str()), 0.1f ), 200.0f ); // speed range in km/h
+	if (Self != NULL)
+	{
+		MouseListener->setSpeed( speed / 3.6f );
+	}
+	return true;
+}
 
-	uint eid = (uint)atoi(args[0].c_str());
-	EIT eit = findEntity (eid);
-	CEntity	&entity = (*eit).second;
+NLMISC_COMMAND(goto, "go to a given position", "<x> <y>")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if(args.size() != 2) return false;
+
+	if (Self == NULL)
+	{
+		return false;
+	}
+
+	CEntity	&entity = *Self;
 
 	float	x, y;
 
@@ -870,4 +885,3 @@ NLMISC_COMMAND(teleport, "teleport an entity to a given position", "<eid> <x> <y
 
 	return true;
 }
-

@@ -1,7 +1,7 @@
 /** \file network.cpp
  * Animation interface between the game and NeL
  *
- * $Id: network.cpp,v 1.6 2001/07/19 09:06:23 lecroart Exp $
+ * $Id: network.cpp,v 1.7 2001/07/19 13:45:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -116,11 +116,9 @@ void	sendChatLine (string Line)
 {
 	if (!isOnline ()) return;
 
-	/// \todo ace: send the message
-
-//	CMessage msgout (Connection.getSIDA(), "CHAT");
-//	msgout.serial (Line);
-//	Connection.send (msgout);
+	CMessage msgout (Connection->getSIDA(), "CHAT");
+	msgout.serial (Line);
+	Connection->send (msgout);
 }
 
 void	sendEntityPos (const CEntity &entity)

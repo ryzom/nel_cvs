@@ -2,7 +2,7 @@
  * Snowballs 2 specific code for managing the radar.
  * This code was taken from Snowballs 1.
  *
- * $Id: radar.cpp,v 1.4 2001/07/18 17:15:04 lecroart Exp $
+ * $Id: radar.cpp,v 1.5 2001/07/19 13:45:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -33,6 +33,7 @@
 #include <nel/misc/types_nl.h>
 #include <nel/misc/vector.h>
 #include <nel/misc/matrix.h>
+#include <nel/misc/command.h>
 
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_camera.h>
@@ -42,6 +43,7 @@
 
 #include "camera.h"
 #include "client.h"
+#include "commands.h"
 #include "mouse_listener.h"
 #include "entities.h"
 
@@ -599,4 +601,49 @@ void updateRadar ()
 
 void releaseRadar ()
 {
+}
+
+NLMISC_COMMAND(go,"change position of the player with a player name or location","<player_name>|<location_name>")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if (args.size() == 1)
+	{
+		bool gotoplayer = true;
+
+		vector<RadarParticularPlace>::iterator itpp;
+		for(itpp = RadarParticularPlaces.begin(); itpp != RadarParticularPlaces.end(); itpp++)
+		{
+			if((*itpp).name==args[0])
+			{
+				string cmd = "goto " + toString ((*itpp).x) + " " + toString ((*itpp).y);
+				ICommand::execute (cmd, CommandsLog);
+
+				gotoplayer = false;
+				break;
+			}
+		}
+		
+		if(gotoplayer)
+		{
+			EIT itre;
+			for(itre=Entities.begin(); itre!=Entities.end(); itre++)
+			{
+				if((*itre).second.Type != CEntity::Snowball)
+				{
+					if((*itre).second.Name == args[0])
+					{
+						string cmd = "goto " + toString ((*itre).second.Position.x) + " " + toString ((*itre).second.Position.y);
+						ICommand::execute (cmd, CommandsLog);
+
+						break;
+					}
+				}
+			}
+		}
+	}
+	else
+		return false;
+
+
+	return true;
 }

@@ -1,7 +1,7 @@
 /** \file landscape.cpp
  * Landscape interface between the game and NeL
  *
- * $Id: landscape.cpp,v 1.10 2001/07/18 17:30:17 lecroart Exp $
+ * $Id: landscape.cpp,v 1.11 2001/07/19 13:45:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -45,12 +45,14 @@
 #include <nel/3d/u_scene.h>
 #include <nel/3d/u_material.h>
 #include <nel/3d/u_landscape.h>
+#include <nel/3d/u_instance_group.h>
 
 #include <nel/3d/u_visual_collision_entity.h>
 #include <nel/3d/u_visual_collision_manager.h>
 
 #include "client.h"
 #include "pacs.h"
+#include "commands.h"
 #include "mouse_listener.h"
 
 //
@@ -71,6 +73,22 @@ UVisualCollisionEntity	*AimingEntity = NULL;
 //
 // Functions
 //
+
+void cbUpdateLandscape (CConfigFile::CVar &var)
+{
+	if (var.Name == "LandscapeTileNear") Landscape->setTileNear (var.asFloat ());
+	else if (var.Name == "LandscapeThresold") Landscape->setThreshold (var.asFloat ());
+	else if (var.Name == "FogStart") Driver->setupFog (var.asFloat (), ConfigFile.getVar ("FogEnd").asFloat (), CRGBA(ConfigFile.getVar ("FogColor").asInt (0), ConfigFile.getVar ("FogColor").asInt (1), ConfigFile.getVar ("FogColor").asInt (2)));
+	else if (var.Name == "FogEnd") Driver->setupFog (ConfigFile.getVar ("FogStart").asFloat (), var.asFloat (), CRGBA(ConfigFile.getVar ("FogColor").asInt (0), ConfigFile.getVar ("FogColor").asInt (1), ConfigFile.getVar ("FogColor").asInt (2)));
+	else if (var.Name == "FogColor") Driver->setupFog (ConfigFile.getVar ("FogStart").asFloat (), ConfigFile.getVar ("FogEnd").asFloat (), CRGBA(var.asInt (0), var.asInt (1), var.asInt (2)));
+	else if (var.Name == "FogEnable")
+	{
+		Driver->enableFog (var.asInt () == 1);
+		Driver->setupFog (ConfigFile.getVar ("FogStart").asFloat (), ConfigFile.getVar ("FogStart").asFloat (), CRGBA(ConfigFile.getVar ("FogColor").asInt (0), ConfigFile.getVar ("FogColor").asInt (1), ConfigFile.getVar ("FogColor").asInt (2)));
+	}
+	else nlwarning ("Unknown variable update %s", var.Name.c_str());
+}
+
 
 void	initLandscape()
 {
@@ -96,6 +114,23 @@ void	initLandscape()
 		CRGBA(ConfigFile.getVar("LandscapeDiffuseColor").asInt(0), ConfigFile.getVar("LandscapeDiffuseColor").asInt(1), ConfigFile.getVar("LandscapeDiffuseColor").asInt(2)),
 		ConfigFile.getVar("LandscapeMultiplyFactor").asFloat(0));
 
+	UInstanceGroup *pIG = UInstanceGroup::createInstanceGroup ("6_AG.ig");
+	nlassert (pIG != NULL);
+	pIG->addToScene (*Scene);
+
+	ConfigFile.setCallback ("LandscapeTileNear", cbUpdateLandscape);
+	ConfigFile.setCallback ("LandscapeThresold", cbUpdateLandscape);
+	ConfigFile.setCallback ("FogStart", cbUpdateLandscape);
+	ConfigFile.setCallback ("FogEnd", cbUpdateLandscape);
+	ConfigFile.setCallback ("FogColor", cbUpdateLandscape);
+	ConfigFile.setCallback ("FogEnable", cbUpdateLandscape);
+
+	cbUpdateLandscape (ConfigFile.getVar ("LandscapeTileNear"));
+	cbUpdateLandscape (ConfigFile.getVar ("LandscapeThresold"));
+	cbUpdateLandscape (ConfigFile.getVar ("FogStart"));
+	cbUpdateLandscape (ConfigFile.getVar ("FogEnd"));
+	cbUpdateLandscape (ConfigFile.getVar ("FogColor"));
+	cbUpdateLandscape (ConfigFile.getVar ("FogEnable"));
 }
 
 void	updateLandscape()
@@ -140,4 +175,38 @@ CVector	getTarget(const CVector &start, const CVector &step, uint numSteps)
 	}
 
 	return testPos;
+}
+
+
+NLMISC_DYNVARIABLE(float,tilenear,"landscape tile near")
+{
+	if (get)
+		*pointer = Landscape->getTileNear();
+	else
+		Landscape->setTileNear(*pointer);
+}
+
+NLMISC_DYNVARIABLE(float,threshold,"landscape threshold")
+{
+	if (get)
+		*pointer = Landscape->getThreshold();
+	else
+		Landscape->setThreshold(*pointer);
+}
+
+// boost to 
+NLMISC_COMMAND(boost,"switch landscape parameters between high speed and high quality","0|1")
+{
+	if (args.size() != 1 ) return false;
+	if ( args[0]=="1" )
+	{
+		ICommand::execute( "tilenear 5", CommandsLog);
+		ICommand::execute( "threshold 1", CommandsLog);
+	}
+	else
+	{
+		ICommand::execute( "tilenear 100", CommandsLog);
+		ICommand::execute( "threshold 0.01", CommandsLog);
+	}
+	return true;
 }

@@ -1,7 +1,7 @@
 /** \file commands.cpp
  * Snowballs 2 specific code for managing the command interface
  *
- * $Id: commands.cpp,v 1.13 2001/07/18 17:30:17 lecroart Exp $
+ * $Id: commands.cpp,v 1.14 2001/07/19 13:45:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -293,7 +293,7 @@ void	updateCommands()
 	// Display the user input line
 	string line = string("> ")+CommandsListener.line() + string ("_");
 	TextContext->printfAt (CommandsBoxX, CommandsBoxY + CommandsBoxBorder, line.c_str());
-	CommandsListener.setMaxWidthReached (TextContext->getLastXBound() > CommandsBoxWidth*1.33f); // max is 1.33=4/3
+	CommandsListener.setMaxWidthReached (TextContext->getLastXBound() > (CommandsBoxWidth-CommandsBoxBorder)*1.33f); // max is 1.33=4/3
 
 	// Display stored lines
 	float yPos = CommandsBoxY + CommandsBoxBorder;
@@ -316,4 +316,12 @@ void	releaseCommands()
 {
 	// Rmove the keyboard listener from the server
 	Driver->EventServer.removeListener (EventCharId, &CommandsListener);
+}
+
+NLMISC_COMMAND(clear,"clear the chat history","")
+{
+	// check args, if there s not the right number of parameter, return bad
+	if(args.size() != 0) return false;
+	clearCommands ();
+	return true;
 }

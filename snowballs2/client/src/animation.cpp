@@ -1,7 +1,7 @@
 /** \file animation.cpp
  * Animation interface between the game and NeL
  *
- * $Id: animation.cpp,v 1.4 2001/07/18 16:06:20 lecroart Exp $
+ * $Id: animation.cpp,v 1.5 2001/07/19 13:45:53 lecroart Exp $
  */
 
 /* Copyright, 2001 Nevrax Ltd.
@@ -185,8 +185,8 @@ void	initAnimation()
 	AnimationSet = Scene->createAnimationSet ();
 	
 	// Add all animations in the animation set
-	IdleAnimId = AnimationSet->addAnimation ("idle_in_place.anim","IDLE");
-	WalkAnimId = AnimationSet->addAnimation ("walk_in_place.anim","WALK");
+	IdleAnimId = AnimationSet->addAnimation ("idle.anim","IDLE");
+	WalkAnimId = AnimationSet->addAnimation ("marche.anim","WALK");
 	AnimationSet->build ();
 
 	PlayListManager = Scene->createPlayListManager ();

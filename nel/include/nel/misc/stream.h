@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.h,v 1.10 2000/09/14 10:03:56 berenguier Exp $
+ * $Id: stream.h,v 1.11 2000/09/14 15:58:56 berenguier Exp $
  *
  * This File handles IStream 
  */
@@ -110,6 +110,8 @@ class	IStreamable;
 	}
  };
  \endcode
+ *
+ * NB: \b YOU \b CANNOT use serial with a int / uint / sint type, since those type have unspecified length.
  * \author Lionel Berenguier
  * \author Vianney Lecroart
  * \author Nevrax France
@@ -156,6 +158,10 @@ public:
 	/**
 	 * Template Object serialisation.
 	 * \param obj any object providing a "void serial(IStream&)" method.
+	 * 
+	 * the VC++ error "error C2228: left of '.serial' must have class/struct/union type" signifie you don't provide
+	 * a serial() method to your object. Or you may have use serial with a int / uint / sint type. REMEMBER YOU CANNOT
+	 * do this, since those type have unspecified length.
 	 */
     template<class T>
 	void			serial(T &obj) throw(EStream)
@@ -220,6 +226,7 @@ public:
 	 *
 	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>.
 	 * \param cont a STL container (vector<>, set<> ...).
+	 * \see serialContPtr() serialContPolyPtr()
 	 */
 	template<class T>
 	void			serialCont(T &cont) throw(EStream)
@@ -244,6 +251,96 @@ public:
 			for(sint i=0;i<len;i++, it++)
 			{
 				serial((*it));
+			}
+		}
+	}
+
+
+	/**
+	 * standard STL containers serialisation of Non polymorphic Ptr. Don't work with map<> and multimap<>.
+	 * Support up to sint32 length containers.
+	 *
+	 * the object T must provide:
+	 *	\li typedef iterator;		(providing operator++() and operator*())
+	 *	\li typedef value_type;		(a ptr on a base type (uint...) or on a object providing "void serial(IStream&)" method.)
+	 *	\li void clear();
+	 *	\li size_type size() const;
+	 *	\li iterator begin();
+	 *	\li iterator end();
+	 *	\li iterator insert(iterator it, const value_type& x);
+	 *
+	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>.
+	 * \param cont a STL container (vector<>, set<> ...).
+	 * \see serialCont() serialContPolyPtr()
+	 */
+	template<class T>
+	void			serialContPtr(T &cont) throw(EStream)
+	{
+		sint32	len;
+		if(isReading())
+		{
+			cont.clear();
+			serial(len);
+			for(sint i=0;i<len;i++)
+			{
+				T::value_type	v;
+				serialPtr(v);
+				cont.insert(cont.end(), v);
+			}
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+			T::iterator		it= cont.begin();
+			for(sint i=0;i<len;i++, it++)
+			{
+				serialPtr((*it));
+			}
+		}
+	}
+
+
+	/**
+	 * standard STL containers serialisation of Polymorphic Ptr. Don't work with map<> and multimap<>.
+	 * Support up to sint32 length containers.
+	 *
+	 * the object T must provide:
+	 *	\li typedef iterator;		(providing operator++() and operator*())
+	 *	\li typedef value_type;		(a ptr on a IStreamable object)
+	 *	\li void clear();
+	 *	\li size_type size() const;
+	 *	\li iterator begin();
+	 *	\li iterator end();
+	 *	\li iterator insert(iterator it, const value_type& x);
+	 *
+	 * Known Supported containers: vector<>, list<>, deque<>, set<>, multiset<>.
+	 * \param cont a STL container (vector<>, set<> ...).
+	 * \see serialCont() serialContPtr()
+	 */
+	template<class T>
+	void			serialContPolyPtr(T &cont) throw(EStream)
+	{
+		sint32	len;
+		if(isReading())
+		{
+			cont.clear();
+			serial(len);
+			for(sint i=0;i<len;i++)
+			{
+				T::value_type	v;
+				serialPolyPtr(v);
+				cont.insert(cont.end(), v);
+			}
+		}
+		else
+		{
+			len= cont.size();
+			serial(len);
+			T::iterator		it= cont.begin();
+			for(sint i=0;i<len;i++, it++)
+			{
+				serialPolyPtr((*it));
 			}
 		}
 	}
@@ -297,6 +394,71 @@ public:
 
 
 	/** 
+	 * Serialize Non Polymorphic Objet Ptr.
+	 * Works with NULL pointers. If the same object is found mutliple time in the stream, ONLY ONE instance is written!
+	 * NB: The ptr is serialised as a uint64 (64 bit compliant).
+	 * \param ptr a pointer on a base type or an object.
+	 * \see resetPtrTable()
+	 */
+	template<class T>
+	void			serialPtr(T* &ptr) throw(EStream)
+	{
+		uint64	node;
+
+		if(isReading())
+		{
+			serial(node);
+			if(node==0)
+				ptr=NULL;
+			else
+			{
+				ItIdMap	it;
+				it= _IdMap.find(node);
+
+				// Test if object already created/read.
+				if( it==_IdMap.end() )
+				{
+					// Construct object.
+					ptr= new T;
+					if(ptr==NULL)
+						throw EStream();
+
+					// Read the object!
+					serial(*ptr);
+
+					// Insert the node.
+					_IdMap.insert( ValueIdMap(node, ptr) );
+				}
+				else
+					ptr= static_cast<T*>(it->second);
+			}
+		}
+		else
+		{
+			if(ptr==NULL)
+			{
+				node= 0;
+				serial(node);
+			}
+			else
+			{
+				node= (uint64)ptr;
+				serial(node);
+
+				// Test if object already written.
+				// If the Id was not yet registered (ie insert works).
+				if( _IdMap.insert( ValueIdMap(node, ptr) ).second==true )
+				{
+					// Write the object!
+					serial(*ptr);
+				}
+			}
+		}
+
+	}
+
+	
+	/** 
 	 * Serialize Polymorphic Objet Ptr.
 	 * Works with NULL pointers. If the same object is found mutliple time in the stream, ONLY ONE instance is written!
 	 * NB: The ptr is serialised as a uint64 (64 bit compliant).
@@ -304,7 +466,7 @@ public:
 	 * \see resetPtrTable()
 	 */
 	template<class T>
-	void			serialPtr(T* &ptr) throw(ERegistry, EStream)
+	void			serialPolyPtr(T* &ptr) throw(ERegistry, EStream)
 	{ IStreamable *p=ptr; serialIStreamable(p); ptr= static_cast<T*>(p);}
 
 
@@ -343,9 +505,9 @@ private:
 	static	bool	_ThrowOnNewer;
 
 	// Ptr registry. We store 64 bit Id, to be compatible with futur 64+ bits pointers.
-	std::map<uint64, IStreamable*>				_IdMap;
-	typedef std::map<uint64, IStreamable*>::iterator	ItIdMap;
-	typedef std::map<uint64, IStreamable*>::value_type	ValueIdMap;
+	std::map<uint64, void*>				_IdMap;
+	typedef std::map<uint64, void*>::iterator	ItIdMap;
+	typedef std::map<uint64, void*>::value_type	ValueIdMap;
 
 	// Ptr serialisation.
 	void			serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream);

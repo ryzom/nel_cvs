@@ -57,8 +57,8 @@ typedef	unsigned	__int32		uint32;
 typedef	signed		__int64		sint64;
 typedef	unsigned	__int64		uint64;
 
-typedef	signed		__int32		sint;			// at least 32bits (depend of processor)
-typedef	unsigned	__int32		uint;			// at least 32bits (depend of processor)
+typedef	signed		int			sint;			// at least 32bits (depend of processor)
+typedef	unsigned	int			uint;			// at least 32bits (depend of processor)
 
 #elif defined (NL_OS_LINUX)
 

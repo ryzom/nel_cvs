@@ -8,7 +8,7 @@
  */
 
 /*
- * $Id: stream.cpp,v 1.4 2000/09/13 14:55:02 berenguier Exp $
+ * $Id: stream.cpp,v 1.5 2000/09/14 15:58:40 berenguier Exp $
  *
  * <Replace this by a description of the file>
  */
@@ -90,7 +90,7 @@ void			IStream::serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream)
 				_IdMap.insert( ValueIdMap(node, ptr) );
 			}
 			else
-				ptr= it->second;
+				ptr= static_cast<IStreamable*>(it->second);
 		}
 	}
 	else
@@ -104,8 +104,6 @@ void			IStream::serialIStreamable(IStreamable* &ptr) throw(ERegistry, EStream)
 		{
 			node= (uint64)ptr;
 			serial(node);
-
-			ValueIdMap	nd(node, ptr);
 
 			// Test if object already written.
 			// If the Id was not yet registered (ie insert works).
